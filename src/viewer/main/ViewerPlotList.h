@@ -199,6 +199,9 @@ typedef std::map<std::string, int> StringIntMap;
 //    Kathleen Bonnell, Tue Jun  1 17:57:52 PDT 2004 
 //    Added args to StartPick. 
 //
+//    Mark C. Miller, Tue Jun  8 14:43:36 PDT 2004
+//    Added GetWindowId
+//
 // ****************************************************************************
 
 
@@ -350,6 +353,8 @@ public:
     std::string GetVarName();
     ViewerPlot *GetPlot(const int id) const;
     void GetActivePlotIDs(intVector &) const;
+
+    int GetWindowId() const;
 
     static void ClearDefaultSILRestrictions(const std::string &host,
                                             const std::string &database);

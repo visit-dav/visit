@@ -31,6 +31,9 @@ class vtkGlyphSource2D;
 //    Changed arguments to SetAttachmentPoint from an array to 3 values.
 //    Added a glyph for NodePick.
 //
+//    Kathleen Bonnell, Tue Jun  8 17:42:59 PDT 2004 
+//    Added 'GetLetterPosition'. 
+//
 // ****************************************************************************
 
 class PLOTTER_API avtPickActor
@@ -47,6 +50,7 @@ class PLOTTER_API avtPickActor
     void               SetAttachmentPoint(const float newPos[3]);
     void               SetAttachmentPoint(float x, float y, float z);
     const float *      GetAttachmentPoint() { return attach; };
+    const float *      GetLetterPosition(void); 
     void               SetMode3D(const bool);
     void               SetScale(float);
     void               SetDesignator(const char *l);

@@ -191,6 +191,9 @@ class avtToolInterface;
 //    Kathleen Bonnell, Tue Jun  1 17:57:52 PDT 2004 
 //    Added bool args to StartPick. 
 //
+//    Mark C. Miller, Tue Jun  8 14:43:36 PDT 2004
+//    Added GetWindowId
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerPlot
@@ -350,6 +353,7 @@ class VIEWER_API ViewerPlot
     void SetCloneId(int id) { clonedNetworkId = id; } ;
     int  GetCloneId(void) { return clonedNetworkId; } ;
 
+    int GetWindowId(void) const;
 
     void UpdateDataExtents();
   protected:
