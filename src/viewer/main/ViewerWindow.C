@@ -5284,6 +5284,9 @@ ViewerWindow::ChangeScalableRenderingMode(bool newMode)
         // clear support info for external render requests
         ClearLastExternalRenderRequest();
 
+        // remove all plot's actors from the VisWindow
+        ClearPlots();
+
         // transmute the plots
         animation->GetPlotList()->TransmutePlots(animation->GetFrameIndex(),!newMode);
 
@@ -5291,7 +5294,7 @@ ViewerWindow::ChangeScalableRenderingMode(bool newMode)
         visWindow->SetScalableRendering(newMode);
 
         if (updatesEnabled)
-            RedrawWindow();
+            animation->UpdateWindows(true);
 
         // update the window information
         ViewerWindowManager::Instance()->UpdateWindowInformation(windowId, false);
@@ -5507,8 +5510,8 @@ ViewerWindow::CreateNode(DataNode *parentNode, bool detailed)
     {
         windowNode->AddNode(new DataNode("cameraView", cameraView));
         windowNode->AddNode(new DataNode("maintainView", maintainView));
-        windowNode->AddNode(new DataNode("viewIsLocked", viewIsLocked));
         windowNode->AddNode(new DataNode("viewExtentsType", avtExtentType_ToString(plotExtentsType)));
+        windowNode->AddNode(new DataNode("viewIsLocked", viewIsLocked));
         windowNode->AddNode(new DataNode("timeLocked", timeLocked));
         windowNode->AddNode(new DataNode("toolsLocked", toolsLocked));
 
@@ -5639,6 +5642,9 @@ ViewerWindow::CreateNode(DataNode *parentNode, bool detailed)
 //   Hank Childs, Sat Nov 15 14:28:26 PST 2003
 //   Read in specular properties.
 //
+//   Eric Brugger, Fri Dec  5 14:10:11 PST 2003
+//   Correct an error reading viewExtentsType.
+//
 // ****************************************************************************
 
 void
@@ -5693,6 +5699,22 @@ ViewerWindow::SetFromNode(DataNode *parentNode)
         SetCameraViewMode(node->AsBool());
     if((node = windowNode->GetNode("maintainView")) != 0)
         SetMaintainViewMode(node->AsBool());
+    if((node = windowNode->GetNode("viewExtentsType")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            ival = (ival < 0 || ival > 3) ? 0 : ival;
+            SetViewExtentsType(avtExtentType(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            avtExtentType value;
+            if(avtExtentType_FromString(node->AsString(), value))
+                SetViewExtentsType(value);
+        }
+    }
 
     //
     // Read in lock flags.
@@ -5807,26 +5829,6 @@ ViewerWindow::SetFromNode(DataNode *parentNode)
     // Let other objects get their information.
     //
     actionMgr->SetFromNode(windowNode);
-
-    //
-    // Set the view extents type.
-    //
-    if((node = windowNode->GetNode("viewExtentsType")) != 0)
-    {
-        // Allow enums to be int or string in the config file
-        if(node->GetNodeType() == INT_NODE)
-        {
-            int ival = windowNode->AsInt();
-            ival = (ival < 0 || ival > 3) ? 0 : ival;
-            SetViewExtentsType(avtExtentType(ival));
-        }
-        else if(node->GetNodeType() == STRING_NODE)
-        {
-            avtExtentType value;
-            if(avtExtentType_FromString(node->AsString(), value))
-                SetViewExtentsType(value);
-        }
-    }
 
     //
     // Read in and set the interaction mode.

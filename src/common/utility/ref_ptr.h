@@ -184,7 +184,10 @@ template <class T>
 inline void
 ref_ptr<T>::Print(ostream &out)
 {
-    out << "<" << *n << ", " << p << ">";
+    if ((n!=NULL) && (p!=NULL))
+        out << "<" << *n << ", " << p << ">";
+    else
+        out << "<NULL>";
 }
 
 

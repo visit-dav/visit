@@ -1611,6 +1611,9 @@ ViewerPlotList::FindCompatiblePlot(ViewerPlot *givenPlot)
 //    Brad Whitlock, Tue Nov 11 13:39:58 PST 2003
 //    I made i be declared outside of the for loop so it builds on Windows.
 //
+//    Mark C. Miller Mon Dec  8 09:23:45 PST 2003
+//    Added call to UpdatePlotList
+//
 // ****************************************************************************
 
 void
@@ -1624,6 +1627,11 @@ ViewerPlotList::TransmutePlots(int frame, bool turningOffScalableRendering)
     {
         plots[i].plot->ClearActors();
     }
+
+    //
+    // Update the GUI's plot list information
+    //
+    UpdatePlotList();
 
     //
     // transmute the actors associated with the plots
