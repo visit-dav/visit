@@ -311,6 +311,26 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
 }
 
 // ****************************************************************************
+//  Method:  Engine::GetInputSocket
+//
+//  Purpose:
+//    Return the file descriptor for the input socket.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    January 12, 2004
+//
+// ****************************************************************************
+
+int
+Engine::GetInputSocket()
+{
+    return theViewer.GetWriteConnection()->GetDescriptor();
+}
+
+// ****************************************************************************
 // Function: ConnectViewer
 //
 // Purpose: 

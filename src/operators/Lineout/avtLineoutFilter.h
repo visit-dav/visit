@@ -30,6 +30,9 @@ class vtkDataSet;
 //    Kathleen Bonnell, Tue Dec 23 10:18:06 PST 2003 
 //    Added PerformRestriction. 
 //
+//    Kathleen Bonnell, Wed Jan 14 12:02:38 PST 2004 
+//    Added PostExecute. 
+//
 // ****************************************************************************
 
 class avtLineoutFilter : public avtPluginStreamer
@@ -52,6 +55,7 @@ class avtLineoutFilter : public avtPluginStreamer
     LineoutAttributes         atts;
 
     virtual vtkDataSet       *ExecuteData(vtkDataSet *, int, std::string);
+    virtual void              PostExecute(void);
     virtual void              VerifyInput(void);
     virtual void              RefashionDataObjectInfo(void);
     virtual avtPipelineSpecification_p

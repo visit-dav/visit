@@ -7,6 +7,8 @@
 #include <vtkDataSet.h>
 #include <vtkLineoutFilter.h>
 #include <vtkPolyData.h>
+#include <avtDatasetExaminer.h>
+#include <avtExtents.h>
 #include <avtMetaData.h>
 #include <avtIntervalTree.h>
 #include <InvalidDimensionsException.h>
@@ -244,3 +246,28 @@ avtLineoutFilter::PerformRestriction(avtPipelineSpecification_p spec)
 }
 
 
+// ****************************************************************************
+//  Method: avtLineoutFilter::PostExecute
+//
+//  Purpose:
+//      Cleans up after the execution.  This manages extents.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   January 14, 2004
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtLineoutFilter::PostExecute(void)
+{
+    avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
+    outAtts.GetTrueSpatialExtents()->Clear();
+    outAtts.GetEffectiveSpatialExtents()->Clear();
+
+    double bounds[6];
+    avtDataset_p ds = GetTypedOutput();
+    avtDatasetExaminer::GetSpatialExtents(ds, bounds);
+    outAtts.GetCumulativeTrueSpatialExtents()->Set(bounds);
+}

@@ -146,6 +146,7 @@ class avtSAMRAIFileFormat : public avtSTMDFileFormat
     map<string, var_t>            var_names_num_components;
 
     bool                          has_mats;
+    bool                          inferVoidMaterial;
     int                           num_mats;
     string                       *mat_names;
     int                          *mat_num_ghosts;
@@ -186,6 +187,7 @@ class avtSAMRAIFileFormat : public avtSTMDFileFormat
     static void          FinalizeHDF5();
 
     virtual vtkDataSet   *ReadMesh(int);
+    vtkDataArray         *ReadVar(int patch, const char *visit_var_name);
 
     void            ReadAndCheckVDRVersion(hid_t &h5_file);
 
