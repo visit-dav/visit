@@ -1,6 +1,6 @@
 #ifndef MIR_OPTIONS_H
 #define MIR_OPTIONS_H
-#include <database_exports.h>
+#include <mir_exports.h>
 
 #define MAX_TETS_PER_CELL 10
 #define MAX_TRIS_PER_CELL 10
@@ -35,7 +35,7 @@
 //    Added cleanZonesOnly.
 //
 // ****************************************************************************
-class DATABASE_API MIROptions
+class MIR_API MIROptions
 {
   public:
     enum SubdivisionLevel

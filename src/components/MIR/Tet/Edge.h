@@ -1,6 +1,6 @@
 #ifndef EDGE_H
 #define EDGE_H
-#include <database_exports.h>
+#include <mir_exports.h>
 
 #include <limits.h>
 
@@ -16,7 +16,7 @@
 //  Creation:    December 12, 2000
 //
 // ****************************************************************************
-class DATABASE_API Edge
+class MIR_API Edge
 {
   public:
     Edge();

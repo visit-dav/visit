@@ -1,4 +1,4 @@
-#include "MIR.h"
+#include "TetMIR.h"
 
 #include <stdio.h>
 #include <limits.h>
@@ -51,9 +51,9 @@ using std::vector;
 // ----------------------------------------------------------------------------
 //                             Static Data
 // ----------------------------------------------------------------------------
-float MIR::xGrid=1e6;
-float MIR::yGrid=1e6;
-float MIR::zGrid=1e6;
+float TetMIR::xGrid=1e6;
+float TetMIR::yGrid=1e6;
+float TetMIR::zGrid=1e6;
 
 
 // ----------------------------------------------------------------------------
@@ -70,14 +70,14 @@ typedef vector<bool>                     ZoneCleanList;
 // ----------------------------------------------------------------------------
 static double FindIntersect(double,double,double,double);
 
-static FaceHash* CreateFaceHash(MIR::MIRConnectivity &, int,
+static FaceHash* CreateFaceHash(TetMIR::MIRConnectivity &, int,
                                 unsigned int (*)(Face&));
-static EdgeHash* CreateEdgeHash(MIR::MIRConnectivity &, int,
+static EdgeHash* CreateEdgeHash(TetMIR::MIRConnectivity &, int,
                                 unsigned int (*)(Edge&));
-static ZoneCleanList *CreateZoneCleanList(MIR::MIRConnectivity &, int,
+static ZoneCleanList *CreateZoneCleanList(TetMIR::MIRConnectivity &, int,
                               avtMaterial *, int, int*, NodeList*, int&, int&);
 
-static void SubsampleVFsAndCreateNodeList(MIR::MIRConnectivity &, int,
+static void SubsampleVFsAndCreateNodeList(TetMIR::MIRConnectivity &, int,
                               avtMaterial*,int*,NodeList*,FaceHash*,EdgeHash*);
 static void ExtractCellVFs(int, int, const int *, int, int, float *,
                                 NodeList*, FaceHash*, EdgeHash*,
@@ -85,7 +85,7 @@ static void ExtractCellVFs(int, int, const int *, int, int, float *,
                                 vector<float>*,
                                 vector<float>*,
                                 vector<float>*);
-static void SetUpCoords(vtkDataSet *, vector<MIR::ReconstructedCoord> &);
+static void SetUpCoords(vtkDataSet *, vector<TetMIR::ReconstructedCoord> &);
 static void AddFaces(int, const int *, FaceHash *, int, int=0, int* =NULL, float* =NULL);
 static void AddEdges(int, const int *, EdgeHash *, int, int=0, int* =NULL, float* =NULL);
 static void AddNodes(int, const int *, NodeList *, int, int=0, int* =NULL, float* =NULL);
@@ -97,7 +97,7 @@ static void AddNodes(int, const int *, NodeList *, int, int=0, int* =NULL, float
 
 // ****************************************************************************
 // ****************************************************************************
-//                        class MIR::ReconstructedCoord
+//                        class TetMIR::ReconstructedCoord
 // ****************************************************************************
 // ****************************************************************************
 
@@ -121,7 +121,7 @@ static void AddNodes(int, const int *, NodeList *, int, int=0, int* =NULL, float
 //
 // ****************************************************************************
 unsigned int
-MIR::ReconstructedCoord::HashFunction(MIR::ReconstructedCoord &c)
+TetMIR::ReconstructedCoord::HashFunction(TetMIR::ReconstructedCoord &c)
 {
     int gridx         = int(c.x * xGrid);
     int gridy         = int(c.y * yGrid);
@@ -155,7 +155,7 @@ MIR::ReconstructedCoord::HashFunction(MIR::ReconstructedCoord &c)
 //
 // ****************************************************************************
 bool
-MIR::ReconstructedCoord::operator==(const ReconstructedCoord &c) 
+TetMIR::ReconstructedCoord::operator==(const ReconstructedCoord &c) 
 {
     return ((int(x * xGrid) == int(c.x * xGrid)) &&
             (int(y * yGrid) == int(c.y * yGrid)) &&
@@ -171,7 +171,7 @@ MIR::ReconstructedCoord::operator==(const ReconstructedCoord &c)
 //
 // ****************************************************************************
 
-MIR::MIRConnectivity::MIRConnectivity()
+TetMIR::MIRConnectivity::MIRConnectivity()
 {
     connectivity = NULL;
     celltype = NULL;
@@ -186,7 +186,7 @@ MIR::MIRConnectivity::MIRConnectivity()
 //
 // ****************************************************************************
 
-MIR::MIRConnectivity::~MIRConnectivity()
+TetMIR::MIRConnectivity::~MIRConnectivity()
 {
     if (connectivity != NULL)
     {
@@ -210,7 +210,7 @@ MIR::MIRConnectivity::~MIRConnectivity()
 // ****************************************************************************
 
 void
-MIR::MIRConnectivity::SetUpConnectivity(vtkDataSet *ds)
+TetMIR::MIRConnectivity::SetUpConnectivity(vtkDataSet *ds)
 {
     int dstype = ds->GetDataObjectType();
 
@@ -317,87 +317,7 @@ MIR::MIRConnectivity::SetUpConnectivity(vtkDataSet *ds)
 
 
 // ****************************************************************************
-//  Method:  MIR::SetSubdivisionLevel
-//
-//  Purpose:
-//    Set the option subdivisionLevel.
-//
-//  Programmer:  Jeremy Meredith
-//  Creation:    August 13, 2002
-//
-// ****************************************************************************
-void
-MIR::SetSubdivisionLevel(MIROptions::SubdivisionLevel sl)
-{
-    options.subdivisionLevel = sl;
-}
-
-// ****************************************************************************
-//  Method:  MIR::SetNumIterations
-//
-//  Purpose:
-//    Set the option numIterations.
-//
-//  Programmer:  Jeremy Meredith
-//  Creation:    August 13, 2002
-//
-// ****************************************************************************
-void
-MIR::SetNumIterations(int ni)
-{
-    options.numIterations = ni;
-}
-
-// ****************************************************************************
-//  Method:  MIR::SetSmoothing
-//
-//  Purpose:
-//    Set the option smoothing.
-//
-//  Programmer:  Jeremy Meredith
-//  Creation:    August 13, 2002
-//
-// ****************************************************************************
-void
-MIR::SetSmoothing(bool sm)
-{
-    options.smoothing = sm;
-}
-
-// ****************************************************************************
-//  Method:  MIR::SetLeaveCleanZonesWhole
-//
-//  Purpose:
-//    Set the option leaveCleanZonesWhole.
-//
-//  Programmer:  Jeremy Meredith
-//  Creation:    August 13, 2002
-//
-// ****************************************************************************
-void
-MIR::SetLeaveCleanZonesWhole(bool lczw)
-{
-    options.leaveCleanZonesWhole = lczw;
-}
-
-// ****************************************************************************
-//  Method:  MIR::SetCleanZonesOnly
-//
-//  Purpose:
-//    Set the option cleanZonesOnly.
-//
-//  Programmer:  Jeremy Meredith
-//  Creation:    October 25, 2002
-//
-// ****************************************************************************
-void
-MIR::SetCleanZonesOnly(bool czo)
-{
-    options.cleanZonesOnly = czo;
-}
-
-// ****************************************************************************
-//  Default Constructor:  MIR::MIR
+//  Default Constructor:  TetMIR::TetMIR
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    December 12, 2000
@@ -411,7 +331,7 @@ MIR::SetCleanZonesOnly(bool czo)
 //    Initialize outPts.
 //
 // ****************************************************************************
-MIR::MIR()
+TetMIR::TetMIR()
 {
     mesh   = NULL;
     outPts = NULL;
@@ -419,7 +339,7 @@ MIR::MIR()
 }
 
 // ****************************************************************************
-//  Destructor:  MIR::~MIR
+//  Destructor:  TetMIR::~TetMIR
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    December 12, 2000
@@ -437,7 +357,7 @@ MIR::MIR()
 //    bloats if we don't do it.
 //
 // ****************************************************************************
-MIR::~MIR()
+TetMIR::~TetMIR()
 {
     if (mesh != NULL)
     {
@@ -457,33 +377,10 @@ MIR::~MIR()
     coordsList.clear();
     zonesList.clear();
     indexList.clear();
-    mix_index.clear();
 }
 
 // ****************************************************************************
-//  Method: MIR::Destruct
-//
-//  Purpose:
-//      This is a function that is kept with a void reference pointer so that
-//      MIRs can be properly destructed.
-//
-//  Programmer: Hank Childs
-//  Creation:   September 24, 2002
-//
-// ****************************************************************************
-
-void
-MIR::Destruct(void *p)
-{
-    MIR *mir = (MIR *) p;
-    if (mir != NULL)
-    {
-        delete mir;
-    }
-}
-
-// ****************************************************************************
-//  Method:  MIR::Reconstruct3DMesh
+//  Method:  TetMIR::Reconstruct3DMesh
 //
 //  Purpose:
 //    Main method for interface reconstruction in 3d.
@@ -580,7 +477,7 @@ MIR::Destruct(void *p)
 //
 // ****************************************************************************
 bool
-MIR::Reconstruct3DMesh(vtkDataSet *mesh, avtMaterial *mat_orig)
+TetMIR::Reconstruct3DMesh(vtkDataSet *mesh, avtMaterial *mat_orig)
 {
     // check that Reconstruct hasn't already been called
     if (!coordsList.empty())
@@ -767,7 +664,7 @@ MIR::Reconstruct3DMesh(vtkDataSet *mesh, avtMaterial *mat_orig)
 }
 
 // ****************************************************************************
-//  Method:  MIR::Reconstruct2DMesh
+//  Method:  TetMIR::Reconstruct2DMesh
 //
 //  Purpose:
 //    Main method for interface reconstruction in 2d.
@@ -858,7 +755,7 @@ MIR::Reconstruct3DMesh(vtkDataSet *mesh, avtMaterial *mat_orig)
 //
 // ****************************************************************************
 bool
-MIR::Reconstruct2DMesh(vtkDataSet *mesh, avtMaterial *mat_orig)
+TetMIR::Reconstruct2DMesh(vtkDataSet *mesh, avtMaterial *mat_orig)
 {
     // check that Reconstruct hasn't already been called
     if (!coordsList.empty())
@@ -1030,7 +927,7 @@ MIR::Reconstruct2DMesh(vtkDataSet *mesh, avtMaterial *mat_orig)
 
 
 // ****************************************************************************
-//  Method:  MIR::ReconstructCleanMesh
+//  Method:  TetMIR::ReconstructCleanMesh
 //
 //  Purpose:
 //    Main loop for interface reconstruction for any clean mesh.
@@ -1074,7 +971,7 @@ MIR::Reconstruct2DMesh(vtkDataSet *mesh, avtMaterial *mat_orig)
 //
 // ****************************************************************************
 bool
-MIR::ReconstructCleanMesh(vtkDataSet *mesh, avtMaterial *mat,
+TetMIR::ReconstructCleanMesh(vtkDataSet *mesh, avtMaterial *mat,
                           MIRConnectivity &conn)
 {
     // no need to pack, so fake that part
@@ -1117,7 +1014,7 @@ MIR::ReconstructCleanMesh(vtkDataSet *mesh, avtMaterial *mat,
 }
 
 // ****************************************************************************
-//  Method: MIR::GetDataset
+//  Method: TetMIR::GetDataset
 //
 //  Purpose:
 //      Get the reconstructured mesh (for possibly a subset of materials).
@@ -1153,7 +1050,7 @@ MIR::ReconstructCleanMesh(vtkDataSet *mesh, avtMaterial *mat,
 // ****************************************************************************
 
 vtkDataSet *
-MIR::GetDataset(vector<int> mats, vtkDataSet *ds, 
+TetMIR::GetDataset(vector<int> mats, vtkDataSet *ds, 
                 vector<avtMixedVariable *> mixvars, bool doMats)
 {
     int i, j, timerHandle = visitTimer->StartTimer();
@@ -1358,71 +1255,7 @@ MIR::GetDataset(vector<int> mats, vtkDataSet *ds,
 
 
 // ****************************************************************************
-//  Method:  MIR::GetExternalMeshSurface
-//
-//  Purpose:
-//    Get the reconstructed mesh (for possibly a subset of materials)
-//    then return only the external surfaces with polygons decimated
-//    within zones.
-//
-//  Arguments:
-//    mats      the subset of [0..n) mat numbers
-//
-//  Programmer:  Jeremy Meredith
-//  Creation:    December 12, 2000
-//
-// ****************************************************************************
-vtkDataSet *
-MIR::GetExternalMeshSurface(std::vector<int>)
-{
-    return NULL;
-}
-
-
-// ****************************************************************************
-//  Method:  MIR::GetExternalMaterialSurface
-//
-//  Purpose:
-//    Get the reconstructed mesh (for possibly a subset of materials)
-//    then return only the external surfaces with a zonal matno var.
-//
-//  Arguments:
-//    mats      the subset of [0..n) mat numbers
-//
-//  Programmer:  Jeremy Meredith
-//  Creation:    December 12, 2000
-//
-// ****************************************************************************
-vtkDataSet *
-MIR::GetExternalMaterialSurface(std::vector<int>)
-{
-    return NULL;
-}
-
-
-// ****************************************************************************
-//  Method:  MIR::GetInternalMaterialSurface
-//
-//  Purpose:
-//    Get the reconstructed mesh (for possibly a subset of materials)
-//    then return only the internal surfaces with a zonal matno var.
-//
-//  Arguments:
-//    mats      the subset of [0..n) mat numbers
-//
-//  Programmer:  Jeremy Meredith
-//  Creation:    December 12, 2000
-//
-// ****************************************************************************
-vtkDataSet *
-MIR::GetInternalMaterialSurface(std::vector<int>)
-{
-    return NULL;
-}
-
-
-// ****************************************************************************
-//  Method:  MIR::IndexTetNode
+//  Method:  TetMIR::IndexTetNode
 //
 //  Purpose:
 //    1) Create a coordinate value from the weights of the node
@@ -1463,7 +1296,7 @@ MIR::GetInternalMaterialSurface(std::vector<int>)
 //
 // ****************************************************************************
 void
-MIR::IndexTetNode(Tet::Node &node, int c, int npts, const int *c_ptr,
+TetMIR::IndexTetNode(Tet::Node &node, int c, int npts, const int *c_ptr,
                   const MaterialTetrahedron &mattet)
 {
     if (node.index != -1)
@@ -1505,7 +1338,7 @@ MIR::IndexTetNode(Tet::Node &node, int c, int npts, const int *c_ptr,
 
 
 // ****************************************************************************
-//  Method:  MIR::IndexTriNode
+//  Method:  TetMIR::IndexTriNode
 //
 //  Purpose:
 //    1) Create a coordinate value from the weights of the node
@@ -1546,7 +1379,7 @@ MIR::IndexTetNode(Tet::Node &node, int c, int npts, const int *c_ptr,
 //
 // ****************************************************************************
 void
-MIR::IndexTriNode(Tri::Node &node, int c, int npts, const int *c_ptr,
+TetMIR::IndexTriNode(Tri::Node &node, int c, int npts, const int *c_ptr,
                   const MaterialTriangle &mattri)
 {
     if (node.index != -1)
@@ -1586,7 +1419,7 @@ MIR::IndexTriNode(Tri::Node &node, int c, int npts, const int *c_ptr,
 
 
 // ****************************************************************************
-//  Method:  MIR::ReconstructCleanCell
+//  Method:  TetMIR::ReconstructCleanCell
 //
 //  Purpose:
 //    Perform reconstruction on an entire known-clean cell.
@@ -1606,7 +1439,7 @@ MIR::IndexTriNode(Tri::Node &node, int c, int npts, const int *c_ptr,
 //
 // ****************************************************************************
 void
-MIR::ReconstructCleanCell(int matno, int c, int nIds, const int *ids,
+TetMIR::ReconstructCleanCell(int matno, int c, int nIds, const int *ids,
                           int celltype)
 {
     ReconstructedZone zone;
@@ -1625,7 +1458,7 @@ MIR::ReconstructCleanCell(int matno, int c, int nIds, const int *ids,
 
 
 // ****************************************************************************
-//  Method:  MIR::ReconstructTet
+//  Method:  TetMIR::ReconstructTet
 //
 //  Purpose:
 //    Perform reconstruction for a single tet.
@@ -1693,7 +1526,7 @@ MIR::ReconstructCleanCell(int matno, int c, int nIds, const int *ids,
 //
 // ****************************************************************************
 void
-MIR::ReconstructTet(int c, int npts, const int *c_ptr,
+TetMIR::ReconstructTet(int c, int npts, const int *c_ptr,
                      const MaterialTetrahedron &mattet,
                      const vector<float> &vf, int *mix_index, int nmat)
 {
@@ -1907,7 +1740,7 @@ MIR::ReconstructTet(int c, int npts, const int *c_ptr,
 }
 
 // ****************************************************************************
-//  Method:  MIR::ReconstructCleanTet
+//  Method:  TetMIR::ReconstructCleanTet
 //
 //  Purpose:
 //    Perform reconstruction on a known-clean tetrahedron.
@@ -1928,7 +1761,7 @@ MIR::ReconstructTet(int c, int npts, const int *c_ptr,
 //
 // ****************************************************************************
 void
-MIR::ReconstructCleanTet(int matno, int c, int npts, const int *c_ptr,
+TetMIR::ReconstructCleanTet(int matno, int c, int npts, const int *c_ptr,
                          const MaterialTetrahedron &mattet)
 {
     ReconstructedZone zone;
@@ -1960,7 +1793,7 @@ MIR::ReconstructCleanTet(int matno, int c, int npts, const int *c_ptr,
 }
 
 // ****************************************************************************
-//  Method:  MIR::ReconstructTri
+//  Method:  TetMIR::ReconstructTri
 //
 //  Purpose:
 //    Perform reconstruction for a single tri.
@@ -2025,7 +1858,7 @@ MIR::ReconstructCleanTet(int matno, int c, int npts, const int *c_ptr,
 //
 // ****************************************************************************
 void
-MIR::ReconstructTri(int c, int npts, const int *c_ptr,
+TetMIR::ReconstructTri(int c, int npts, const int *c_ptr,
                      const MaterialTriangle &mattri,
                      const vector<float> &vf, int *mix_index, int nmat)
 {
@@ -2134,7 +1967,7 @@ MIR::ReconstructTri(int c, int npts, const int *c_ptr,
 }
 
 // ****************************************************************************
-//  Method:  MIR::ReconstructCleanTri
+//  Method:  TetMIR::ReconstructCleanTri
 //
 //  Purpose:
 //    Perform reconstruction on a known-clean triangle.
@@ -2157,7 +1990,7 @@ MIR::ReconstructTri(int c, int npts, const int *c_ptr,
 //
 // ****************************************************************************
 void
-MIR::ReconstructCleanTri(int matno, int c, int npts, const int *c_ptr,
+TetMIR::ReconstructCleanTri(int matno, int c, int npts, const int *c_ptr,
                          const MaterialTriangle &mattri)
 {
     Tri tri(c,mattri,matno);
@@ -2290,7 +2123,7 @@ FindIntersect(double a1, double b1, double a2, double b2)
 //
 // ****************************************************************************
 void
-MIR::MergeTetsHelper(TetList &tetlist, WedgeList &wedgelist,
+TetMIR::MergeTetsHelper(TetList &tetlist, WedgeList &wedgelist,
                      int c, int npts, const int *c_ptr,
                      const MaterialTetrahedron &mattet, int *maxmat,
                      const Tet &tet1, const Tet &tet2,
@@ -2482,7 +2315,7 @@ MIR::MergeTetsHelper(TetList &tetlist, WedgeList &wedgelist,
 //
 // ****************************************************************************
 void
-MIR::MergeTrisHelper(TriList &trilist, int c, int npts, const int *c_ptr,
+TetMIR::MergeTrisHelper(TriList &trilist, int c, int npts, const int *c_ptr,
                      const MaterialTriangle &mattri, int *maxmat,
                      const Tri &tri1, const Tri &tri2,
                      int forcedMat)
@@ -2595,7 +2428,7 @@ MIR::MergeTrisHelper(TriList &trilist, int c, int npts, const int *c_ptr,
 //
 // ****************************************************************************
 void
-MIR::MergeWedges(TetList &tetlist, WedgeList &wedgelist,
+TetMIR::MergeWedges(TetList &tetlist, WedgeList &wedgelist,
                  int c, int npts, const int *c_ptr,
                  const MaterialTetrahedron &mattet,
                  const Wedge &wedge1, const Wedge &wedge2,
@@ -2690,7 +2523,7 @@ MIR::MergeWedges(TetList &tetlist, WedgeList &wedgelist,
 //
 // ****************************************************************************
 void
-MIR::MergeTets(TetList &tetlist, WedgeList &wedgelist,
+TetMIR::MergeTets(TetList &tetlist, WedgeList &wedgelist,
                int c, int npts, const int *c_ptr,
                const MaterialTetrahedron &mattet,
                const Tet &tet1, const Tet &tet2,
@@ -2753,7 +2586,7 @@ MIR::MergeTets(TetList &tetlist, WedgeList &wedgelist,
 //
 // ****************************************************************************
 void
-MIR::MergeTris(TriList &trilist, int c, int npts, const int *c_ptr,
+TetMIR::MergeTris(TriList &trilist, int c, int npts, const int *c_ptr,
                const MaterialTriangle &mattri, const Tri &tri1,const Tri &tri2,
                int forcedMat)
 {
@@ -2807,7 +2640,7 @@ MIR::MergeTris(TriList &trilist, int c, int npts, const int *c_ptr,
 //
 // ****************************************************************************
 static FaceHash *
-CreateFaceHash(MIR::MIRConnectivity &conn, int nmat, 
+CreateFaceHash(TetMIR::MIRConnectivity &conn, int nmat, 
                unsigned int (*hashfunc)(Face&))
 {
     FaceHash *face_hash = new FaceHash(conn.ncells*3, hashfunc);
@@ -2968,7 +2801,7 @@ AddFaces(int celltype, const int *cellids, FaceHash *face_hash, int nmat,
 //
 // ****************************************************************************
 static EdgeHash *
-CreateEdgeHash(MIR::MIRConnectivity &conn, int nmat, 
+CreateEdgeHash(TetMIR::MIRConnectivity &conn, int nmat, 
                unsigned int (*hashfunc)(Edge&))
 {
     int nCells = conn.ncells;
@@ -3156,7 +2989,7 @@ AddNodes(int nPts, const int *cellids, NodeList *node_list, int nmat,
 //
 // ****************************************************************************
 ZoneCleanList *
-CreateZoneCleanList(MIR::MIRConnectivity &conn, int nPts, avtMaterial *mat, 
+CreateZoneCleanList(TetMIR::MIRConnectivity &conn, int nPts, avtMaterial *mat, 
                     int nmat, int *mat_cnt, NodeList *node_list,
                     int &nrealclean, int &nrealmixed)
 {
@@ -3257,7 +3090,7 @@ CreateZoneCleanList(MIR::MIRConnectivity &conn, int nPts, avtMaterial *mat,
 //
 // ****************************************************************************
 static void
-SubsampleVFsAndCreateNodeList(MIR::MIRConnectivity      &conn,
+SubsampleVFsAndCreateNodeList(TetMIR::MIRConnectivity      &conn,
                               int                        npts,
                               avtMaterial               *mat,
                               int                       *mat_cnt,
@@ -3474,180 +3307,6 @@ ExtractCellVFs(int c, int nPts, const int *ids, int celltype, int nmat,
 
 
 // ****************************************************************************
-//  Method:  MIR::SpeciesSelect
-//
-//  Purpose:
-//    Perform species selection on a variable.
-//
-//  Arguments:
-//    selection   true for each material-species index if it is selected
-//    mat         the material object
-//    spec        the species object
-//    var_in      the zonal scalar array input
-//    mixvar_in   the mixed scalar array input
-//    var_out     the zonal scalar array output
-//    mixvar_out  the zonal scalar array output
-//
-//  Programmer:  Jeremy Meredith
-//  Creation:    December 18, 2001
-//
-//  Modifications:
-//
-//    Kathleen Bonnell, Fri Feb  8 11:03:49 PST 2002
-//    vtkScalars has been deprecated in VTK 4.0, 
-//    use vtkDataArray and vtkFloatArray instead.
-//
-//    Hank Childs, Thu Jul  4 16:51:37 PDT 2002
-//    Add new name argument to mixed variable constructor.
-//
-//    Hank Childs, Wed Sep 25 15:16:13 PDT 2002
-//    Fixed memory leak.
-//
-//    Hank Childs, Tue Dec 10 15:37:14 PST 2002
-//    Put in a sanity check.
-//
-// ****************************************************************************
-void
-MIR::SpeciesSelect(const vector<bool> &selection,
-                   avtMaterial *mat, avtSpecies *spec,
-                   vtkDataArray *var_in, avtMixedVariable *mixvar_in,
-                   vtkDataArray *&var_out, avtMixedVariable *&mixvar_out)
-{
-    if (mat->GetNMaterials() != spec->GetNMat())
-    {
-        string str = "The species and the material do not match up.  This may"
-                " be a problem with the data file or it may be an internal "
-                "error.";
-        EXCEPTION1(VisItException, str);
-    }
-
-    vector<bool>          selMat(mat->GetNMaterials(), false);
-    vector<vector<bool> > selSpec(mat->GetNMaterials());
-    int selIndex = 0;
-
-    // Make a couple easier lookup arrays for which mats/specs are selected
-    for (int m=0; m<mat->GetNMaterials(); m++)
-    {
-        for (int s=0; s<spec->GetNSpecies()[m]; s++)
-        {
-            if (selection[selIndex])
-            {
-                selMat[m] = true;
-                selSpec[m].push_back(true);
-            }
-            else
-            {
-                selSpec[m].push_back(false);
-            }
-            selIndex++;
-        }
-    }
-
-    // Get the necessary input arrays
-    int                nCells         = mat->GetNZones();
-    const int         *matlist        = mat->GetMatlist();
-    const int         *mixmat         = mat->GetMixMat();
-    const int         *mixnext        = mat->GetMixNext();
-    const float       *mixvf          = mat->GetMixVF();
-    const vector<int> &nSpecies       = spec->GetNSpecies();
-    const float       *specMF         = spec->GetSpecMF();
-    const int         *speclist       = spec->GetSpeclist();
-    const int         *mixSpeclist    = spec->GetMixSpeclist();
-
-    // Get the input mixed arrays
-    int                mixlen         = mixvar_in ? mat->GetMixlen() : 0;
-    const float       *mixvarbuff     = mixlen ? mixvar_in->GetBuffer() : NULL;
-
-    // create the output arrays
-    float       *mixvarbuff_out = mixlen ? new float[mixlen] : NULL;
-    vtkFloatArray  *var         = vtkFloatArray::New();
-    var->SetNumberOfTuples(nCells);
-
-    // Loop over every zone
-    for (int i=0; i<nCells; i++)
-    {
-        float specmf = 0;
-        int matno  = matlist[i];
-        if (matno >= 0)
-        {
-            // Clean zone
-            if (selMat[matno])
-            {
-                int specindex = speclist[i];
-                if (specindex == 0)
-                {
-                    // A zero indicates only one species in this material
-                    specmf = 1;
-                }
-                else
-                {
-                    for (int j=0 ; j<nSpecies[matno]; j++)
-                    {
-                        if (selSpec[matno][j])
-                            specmf += specMF[specindex + j - 1];
-                    }
-                }
-            }
-        }
-        else
-        {
-            // Mixed zone ; loop over every material in the zone
-            int mixindex = -matno - 1;
-            while (mixindex >= 0)
-            {
-                float vf = mixvf[mixindex];
-                int mixmatno = mixmat[mixindex];
-
-                float mixspecmf = 0;
-                if (selMat[mixmatno])
-                {
-                    int specindex = mixSpeclist[mixindex];
-                    if (specindex == 0)
-                    {
-                        // A zero indicates only one species in this material
-                        mixspecmf = 1;
-                    }
-                    else
-                    {
-                        for (int j=0 ; j<nSpecies[mixmatno]; j++)
-                        {
-                            if (selSpec[mixmatno][j])
-                                mixspecmf += specMF[specindex + j - 1];
-                        }
-                    }
-                }
-
-                // Do the mixed values while we know the mixspecmf
-                if (mixlen)
-                {
-                    mixvarbuff_out[mixindex] = mixspecmf*mixvarbuff[mixindex];
-                }
-
-                // Weight the mass fractions by volume fraction
-                // (This is so they sum to 1.0)
-                specmf += mixspecmf * vf;
-
-                mixindex = mixnext[mixindex] - 1;
-            }
-        }
-
-        // Set the clean values
-        var->SetValue(i, specmf * var_in->GetTuple1(i));
-    }
-
-    // Set the return values
-    var_out = var;
-    var_out->SetName(var_in->GetName());
-    mixvar_out = NULL;
-    if (mixlen > 0)
-    {
-        mixvar_out = new avtMixedVariable(mixvarbuff_out, mixlen,
-                                          mixvar_in->GetVarname());
-    }
-    delete [] mixvarbuff_out;
-}
-
-// ****************************************************************************
 //  Function: SetUpCoords
 //
 //  Purpose:
@@ -3660,7 +3319,7 @@ MIR::SpeciesSelect(const vector<bool> &selection,
 // ****************************************************************************
 
 void
-SetUpCoords(vtkDataSet *mesh, vector<MIR::ReconstructedCoord> &coordsList)
+SetUpCoords(vtkDataSet *mesh, vector<TetMIR::ReconstructedCoord> &coordsList)
 {
     int nPoints = mesh->GetNumberOfPoints();
     int i, j, k;
@@ -3700,7 +3359,7 @@ SetUpCoords(vtkDataSet *mesh, vector<MIR::ReconstructedCoord> &coordsList)
             {
                 for (i = 0 ; i < nx ; i++)
                 {
-                    MIR::ReconstructedCoord &c = coordsList[pt];
+                    TetMIR::ReconstructedCoord &c = coordsList[pt];
                     c.orignode = pt;
                     c.x = x[i];
                     c.y = y[j];
@@ -3719,7 +3378,7 @@ SetUpCoords(vtkDataSet *mesh, vector<MIR::ReconstructedCoord> &coordsList)
         float *ptr = (float *) ps->GetPoints()->GetVoidPointer(0);
         for (int n=0; n<nPoints; n++)
         {
-            MIR::ReconstructedCoord &c = coordsList[n];
+            TetMIR::ReconstructedCoord &c = coordsList[n];
             c.orignode = n;
             c.x = *ptr++;
             c.y = *ptr++;

@@ -1,4 +1,4 @@
-#                            Copyright 2000 - 2000
+#                            Copyright 2000 - 2003
 #                 The Regents of the University of California.
 #                             All rights reserved.
 # 
@@ -100,13 +100,19 @@
 #    Hank Childs, Fri Apr  4 15:11:01 PST 2003 
 #    Add avtMTMDFileFormatInterface, avtMTMDFileFormat.
 #
+#    Jeremy Meredith, Wed Aug 20 09:53:52 PDT 2003
+#    I moved MIR into its own library.
+#
+#    Akira Haddox, Wed Aug 20 11:22:47 PDT 2003
+#    Added avtUnstructuredDomainBoundaries, avtUnstructuredPointBoundaries.
+#
 ##############################################################################
 
 @SET_MAKE@
 @VARIABLES@
 
-SUBDIRS=Database Ghost Formats MIR
-SRC=$(Database_src) $(Ghost_src) $(Formats_src) $(MIR_src)
+SUBDIRS=Database Ghost Formats
+SRC=$(Database_src) $(Ghost_src) $(Formats_src)
 
 Database_src= \
   Database/avtDatabase.C \
@@ -133,19 +139,9 @@ Formats_src= \
 Ghost_src= \
   Ghost/StructuredBoundary.C \
   Ghost/avtDomainBoundaries.C \
-  Ghost/avtStructuredDomainBoundaries.C
-MIR_src= \
-  MIR/Edge.C \
-  MIR/Face.C \
-  MIR/MIR.C \
-  MIR/MIROptions.C \
-  MIR/MaterialTetrahedron.C \
-  MIR/MaterialTriangle.C \
-  MIR/QuadraticHash.C \
-  MIR/Tetrahedralizer.C \
-  MIR/Triangulator.C \
-  MIR/mat3d_tet.C
-
+  Ghost/avtStructuredDomainBoundaries.C \
+  Ghost/avtUnstructuredDomainBoundaries.C \
+  Ghost/avtUnstructuredPointBoundaries.C
 
 CPPFLAGS=-I../../include @COMPONENT_CPPFLAGS@ @CPPFLAGS@
 
@@ -163,19 +159,6 @@ all: $(LIBSHAREDSER) @LIBSHAREDPAR@
 clean:
 	$(RM) $(LIBSHAREDSER) @LIBSHAREDPAR@
 	$(RM) $(SEROBJ) $(PAROBJ)
-
-##
-## Nonstandard stuff for material tables
-##
-.NO_CONFIG_REC:  mat3d_tet.h mat3d_tet.C MIR/mat3d_tet.h MIR/mat3d_tet.C
-.NO_WINK_IN:  mat3d_tet.h mat3d_tet.C MIR/mat3d_tet.h MIR/mat3d_tet.C
-.NO_DO_FOR_SIBLING: mat3d_tet.h mat3d_tet.C MIR/mat3d_tet.h MIR/mat3d_tet.C
-mat3d_tet MIR/mat3d_tet.h MIR/mat3d_tet.C:  MIR/mat3d_tables.C
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) MIR/mat3d_tables.C -o mat3d_tables
-	rm -f MIR/mat3d_tet.h MIR/mat3d_tet.C
-	./mat3d_tables
-	mv mat3d_tet.h MIR/mat3d_tet.h
-	mv mat3d_tet.C MIR/mat3d_tet.C
 
 ##
 ## Automatic dependency stuff

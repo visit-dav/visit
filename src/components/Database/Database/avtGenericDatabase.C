@@ -39,7 +39,7 @@
 #include <avtTypes.h>
 #include <PickAttributes.h>
 #include <PickVarInfo.h>
-#include <MIR.h>
+#include <TetMIR.h>
 
 #include <DebugStream.h>
 #include <ImproperUseException.h>
@@ -2206,7 +2206,7 @@ avtGenericDatabase::GetMIR(int domain, const char *varname, int timestep,
             EXCEPTION0(NoInputException);
         }
 
-        MIR *mir = new MIR;
+        MIR *mir = new TetMIR;
         mir->SetLeaveCleanZonesWhole(!needValidConnectivity);
         mir->SetSmoothing(needSmoothMaterialInterfaces);
         mir->SetCleanZonesOnly(needCleanZonesOnly);
@@ -3447,6 +3447,10 @@ avtGenericDatabase::CreateStructuredIndices(avtDatasetCollection &dsc,
 //    We should do MIR if we are told to by the data spec, not if the type of
 //    variable is material.
 //
+//    Jeremy Meredith, Wed Aug 20 09:56:19 PDT 2003
+//    Refactored MIR into a base and subclass.  This will allow us to swap
+//    in other MIR algorithms more easily.
+//
 // ****************************************************************************
 
 int
@@ -3464,7 +3468,6 @@ avtGenericDatabase::NumStagesForFetch(avtDataSpecification_p spec)
     //
     bool needMatSel = false;
     
-    const char *var = spec->GetVariable();
     needMatSel |= spec->MustDoMaterialInterfaceReconstruction();
     if (!needMatSel)
     {

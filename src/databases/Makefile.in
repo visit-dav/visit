@@ -85,6 +85,9 @@
 #   Hank Childs, Mon Aug 11 15:51:54 PDT 2003
 #   Add PLOT2D.
 #
+#   Akira Haddox, Fri Aug  8 10:50:10 PDT 2003
+#   Added Boxlib2D, Boxlib3D readers.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -92,6 +95,8 @@
 all: message
 	for dir in $(SUBDIRS); do (cd $$dir && $(MAKE) $@) || exit 1; done
 
+BOXLIB2D=Boxlib2D
+BOXLIB3D=Boxlib3D
 EXODUS=Exodus TimeVaryingExodus
 HDF4=Cosmos
 HDF5=Tetrad SAMRAI
@@ -103,8 +108,8 @@ REQUIRED=BOV Curve2D EnSight Lines PLOT2D PLOT3D Point3D STL Silo Spheral VTK Wa
 
 OPTIONAL=
 
-SUBDIRS=$(REQUIRED) @DB_OPTIONAL_DIRS@ @EXODUS@ @SAF@ @HDF4@ @HDF5@ @PDB@ @MILI@
-ALLSUBDIRS=$(REQUIRED) $(EXODUS) $(SAF) $(HDF4) $(HDF5) $(MILI) $(PDB) $(SAMPLES) $(OPTIONAL)
+SUBDIRS=$(REQUIRED) @DB_OPTIONAL_DIRS@ @EXODUS@ @SAF@ @HDF4@ @HDF5@ @PDB@ @MILI@ @BOXLIB2D@ @BOXLIB3D@
+ALLSUBDIRS=$(REQUIRED) $(EXODUS) $(SAF) $(HDF4) $(HDF5) $(MILI) $(PDB) $(BOXLIB2D) $(BOXLIB3D) $(SAMPLES) $(OPTIONAL)
 
 message:
 	@echo

@@ -1,6 +1,6 @@
 #ifndef TETLIST_H
 #define TETLIST_H
-#include <database_exports.h>
+#include <mir_exports.h>
 
 #include "Tet.h"
 #include "Array.h"
@@ -37,7 +37,7 @@
 //    the forced material instead of the normal requested material.
 //
 // ****************************************************************************
-class DATABASE_API TetList
+class MIR_API TetList
 {
   private:
     Array<Tet> list;

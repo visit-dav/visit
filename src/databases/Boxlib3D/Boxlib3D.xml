@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+  <Plugin name="Boxlib3D" type="database" label="Boxlib3D" version="1.0" dbtype="MTMD">
+    <CXXFLAGS>
+      $(BOXLIB3D_INCLUDE)
+    </CXXFLAGS>
+    <LIBS>
+      $(BOXLIB3D_LIBS)
+    </LIBS>
+    <Extensions>
+      boxlib3d
+      boxlib3D
+    </Extensions>
+    <Attribute name="" purpose="" persistent="false" exportAPI="" exportInclude="">
+    </Attribute>
+  </Plugin>

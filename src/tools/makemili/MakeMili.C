@@ -11,6 +11,9 @@
 //    Takes in a root name. Name can either be the Mili family name for
 //    a single domained dataset, or the root of a Mili family name for
 //    a multi domained dataset.
+//
+//    Also takes the optional arguments:
+//      -dynapart <DynaPart partition file>
 // 
 //  Programmer:     Akira Haddox
 //  Creation:       June 25, 2003
@@ -833,6 +836,9 @@ void FatalError(const string &s)
 //    Akira Haddox, Fri Jul 25 11:21:38 PDT 2003
 //    Added check to find rootname, ignoring hyphen-ed arguments.
 //
+//    Akira Haddox, Mon Aug 18 15:19:21 PDT 2003
+//    Added -dynapart option.
+//
 // ***************************************************************************
 
 int main(int argc, char* argv[])
@@ -844,15 +850,27 @@ int main(int argc, char* argv[])
     MPI_Comm_size(MPI_COMM_WORLD, &numProcesses);
 #endif 
 
-    // Find first non-hyphened argument.
+    char *dynapartFile = NULL;
     char * argument = NULL;
     int argi;
     for (argi = 1; argi < argc; ++argi)
-        if (argv[argi][0] != '-')
+    {
+        if (!strcmp(argv[argi], "-dynapart"))
+        {
+            // Check the next argument for bad usage.
+            if (argi + 1 >= argc || argv[argi + 1] == NULL
+                                 || argv[argi + 1][0] == '-')
+            {
+                argument = NULL;
+                break;
+            }
+            dynapartFile = argv[++argi];
+        }
+        else if (argv[argi][0] != '-' && !argument)
         {
             argument = argv[argi];
-            break;
         }
+    }
 
     if (argument == NULL)
     {
@@ -861,10 +879,11 @@ int main(int argc, char* argv[])
         
         cout <<
 "makemili help:\n"
-"  Single argument: the root name of a single or multi domained Mili dataset.\n"
+"  Req. Argument:   the root name of a single or multi domained Mili dataset.\n"
 "                   The path to the dataset may be included in the name.\n"
 "                   The output .mili file will be written in the same\n"
-"                   directory as the dataset." << endl; 
+"                   directory as the dataset.\n\n"
+"  Opt. Argument:   -dynapart <DynaPart partition filename>\n" << endl;
  
         exit(-1);
     }
@@ -879,6 +898,8 @@ int main(int argc, char* argv[])
         ndomains = GetNumDomains();
         cout << "General: \n----------------------\n";
         cout << "Root: " << root << " \tPath: " << path << endl;
+        if (dynapartFile)
+            cout << "DynaPart file option: " << dynapartFile << endl;
         if (ndomains <= 0)
         {
             FatalError("Unable to find matching files.");
@@ -979,6 +1000,8 @@ int main(int argc, char* argv[])
     if (myRank == 0)
     {
         PrintInfo(cout, compiledInfo, true);
+        if (dynapartFile)
+            cout << "DynaPart file: " << dynapartFile << endl;
 
         char outfname[255];
         sprintf(outfname, "%s/%s.mili", path, root);
@@ -989,6 +1012,9 @@ int main(int argc, char* argv[])
         else
         {
             PrintInfo(out, compiledInfo, false);
+            // Write out the dynapart file if we have one
+            if (dynapartFile)
+                out << dynapartFile << endl;
             cout << "File " << outfname << " successfully written." << endl; 
         }
         out.close();

@@ -1,6 +1,6 @@
 #ifndef TRILIST_H
 #define TRILIST_H
-#include <database_exports.h>
+#include <mir_exports.h>
 
 #include "Tri.h"
 #include "Array.h"
@@ -37,7 +37,7 @@
 //    the forced material instead of the normal requested material.
 //
 // ****************************************************************************
-class DATABASE_API TriList
+class MIR_API TriList
 {
   private:
     Array<Tri> list;
