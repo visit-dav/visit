@@ -1483,10 +1483,13 @@ SetActivePlotsAction::~SetActivePlotsAction()
 // Creation:   Fri Apr 11 07:50:49 PDT 2003
 //
 // Modifications:
-//    Eric Brugger, Mon Jul 28 16:48:01 PDT 2003
-//    Added code to make the database for the first active plot the database
-//    for the plotlist when the plotlist has at least one active plot.
-//   
+//   Eric Brugger, Mon Jul 28 16:48:01 PDT 2003
+//   Added code to make the database for the first active plot the database
+//   for the plotlist when the plotlist has at least one active plot.
+//
+//   Brad Whitlock, Mon Dec 8 15:25:54 PST 2003
+//   I removed Eric's code.
+//
 // ****************************************************************************
 
 void
@@ -1501,21 +1504,6 @@ SetActivePlotsAction::Execute()
     bool moreThanPlotsValid          = args.GetBoolFlag();
     window->GetAnimation()->GetPlotList()->SetActivePlots(activePlots,
         activeOperators, expandedPlots, moreThanPlotsValid);
-
-    //
-    // If there is at least one active plot then make the database associated
-    // with the first active plot the database for the plotlist.
-    // 
-    if (!activePlots.empty())
-    {
-        ViewerPlotList *plotList = window->GetAnimation()->GetPlotList();
-        ViewerPlot *plot = plotList->GetPlot(activePlots[0]);
-
-        const std::string &hostName = plot->GetHostName();
-        const std::string &dbName   = plot->GetDatabaseName();
-
-        plotList->SetHostDatabaseName(hostName + std::string(":") + dbName);
-    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

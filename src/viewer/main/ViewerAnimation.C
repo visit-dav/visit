@@ -324,6 +324,10 @@ ViewerAnimation::GetFrameIndex() const
 //    Eric Brugger, Fri Dec  5 16:42:30 PST 2003
 //    I added code to set view limit merging if the frame was changed.
 //
+//    Eric Brugger, Tue Dec  9 09:03:30 PST 2003
+//    I corrected a bug I introduced in the previous change with the
+//    setting of view limit merging.
+//
 // ****************************************************************************
 
 void
@@ -335,6 +339,7 @@ ViewerAnimation::NextFrame()
     {
     case Looping:
         // Move to the next frame.
+        SetMergeViewLimits(true);
         SetFrameIndex(nextFrameIndex);
         break;
     case PlayOnce:
@@ -344,10 +349,16 @@ ViewerAnimation::NextFrame()
             if(nextFrameIndex == 0)
                 Stop(true);
             else
+            {
+                SetMergeViewLimits(true);
                 SetFrameIndex(nextFrameIndex);
+            }
         }
         else
+        {
+            SetMergeViewLimits(true);
             SetFrameIndex(nextFrameIndex);
+        }
         break;
     case Swing:
         // If we're playing then make sure that we reverse the play direction
@@ -357,18 +368,16 @@ ViewerAnimation::NextFrame()
             if(nextFrameIndex == 0)
                 mode = ReversePlayMode;
             else
+            {
+                SetMergeViewLimits(true);
                 SetFrameIndex(nextFrameIndex);
+            }
         }
         else
+        {
+            SetMergeViewLimits(true);
             SetFrameIndex(nextFrameIndex);
-    }
-
-    //
-    // If we changed frames, then turn on view limit merging.
-    //
-    if (curFrame == nextFrameIndex)
-    {
-        SetMergeViewLimits(true);
+        }
     }
 }
 
@@ -395,6 +404,10 @@ ViewerAnimation::NextFrame()
 //    Eric Brugger, Fri Dec  5 16:42:30 PST 2003
 //    I added code to set view limit merging if the frame was changed.
 //
+//    Eric Brugger, Tue Dec  9 09:03:30 PST 2003
+//    I corrected a bug I introduced in the previous change with the
+//    setting of view limit merging.
+//
 // ****************************************************************************
 
 void
@@ -406,6 +419,7 @@ ViewerAnimation::PrevFrame()
     {
     case Looping:
         // Move to the previous frame.
+        SetMergeViewLimits(true);
         SetFrameIndex(prevFrameIndex);
         break;
     case PlayOnce:
@@ -415,10 +429,16 @@ ViewerAnimation::PrevFrame()
             if(prevFrameIndex == nFrames-1)
                 Stop(true);
             else
+            {
+                SetMergeViewLimits(true);
                 SetFrameIndex(prevFrameIndex);
+            }
         }
         else
+        {
+            SetMergeViewLimits(true);
             SetFrameIndex(prevFrameIndex);
+        }
         break;
     case Swing:
         // If we're playing then make sure that we reverse the play direction
@@ -428,18 +448,16 @@ ViewerAnimation::PrevFrame()
             if(prevFrameIndex == nFrames-1)
                 mode = PlayMode;
             else
+            {
+                SetMergeViewLimits(true);
                 SetFrameIndex(prevFrameIndex);
+            }
         }
         else
+        {
+            SetMergeViewLimits(true);
             SetFrameIndex(prevFrameIndex);
-    }
-
-    //
-    // If we changed frames, then turn on view limit merging.
-    //
-    if (curFrame == prevFrameIndex)
-    {
-        SetMergeViewLimits(true);
+        }
     }
 }
 

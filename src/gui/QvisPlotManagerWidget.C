@@ -1229,6 +1229,10 @@ QvisPlotManagerWidget::drawPlots()
 //   the first active plot since that is now done by the viewer when the
 //   active plots are changed.
 //
+//   Brad Whitlock, Mon Dec 8 15:43:08 PST 2003
+//   I removed code to open a database in the file server since we now do
+//   not want the open database to change when we select active plots.
+//
 // ****************************************************************************
 
 void
@@ -1287,23 +1291,6 @@ QvisPlotManagerWidget::setActivePlots()
         {
             viewer->SetActivePlots(newPlotSelection, newOperatorSelection,
                                    newExpandedPlots);
-        }
-
-        // If there was at least 1 selected plot, select that plot's file in
-        // file fileServer if it is not already selected.
-        if(found)
-        {
-            // Create a constant reference to the first selected plot.
-            const Plot &selFile = plotList->operator[](firstSelectedFile);
-
-            QualifiedFilename qualifiedFile(selFile.GetDatabaseName());
-
-            // Set the fileServer's active file and notify observers.
-            // This is mostly to sync them up to the fileServer in case
-            // They got out of sync.
-            int timeState = globalAtts->GetCurrentState();
-            fileServer->OpenFile(qualifiedFile, timeState);
-            fileServer->Notify();
         }
     }
 }

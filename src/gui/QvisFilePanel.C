@@ -620,6 +620,13 @@ QvisFilePanel::UpdateFileList(bool doAll)
 //   Brad Whitlock, Tue Sep 9 15:40:40 PST 2003
 //   I made it return early if the slider is down.
 //
+//   Brad Whitlock, Mon Dec 8 15:39:56 PST 2003
+//   I changed the code so the file server's open file is never changed unless
+//   it is changed to the same file that is open. The purpose of that is to
+//   expand databases that we previously displayed as a single file (like
+//   .visit files). This also allows the selected files list to show the active
+//   time state for the database.
+//
 // ****************************************************************************
 
 void
@@ -631,15 +638,15 @@ QvisFilePanel::UpdateAnimationControls(bool doAll)
     // currentFile changed.  Update the file server.
     if(globalAtts->IsSelected(6) || doAll)
     {
+        QualifiedFilename qf(globalAtts->GetCurrentFile());
+
         if (globalAtts->GetCurrentFile() == "notset")
         {
             fileServer->CloseFile();
             fileServer->Notify();
         }
-        else
+        else if(fileServer->GetOpenFile() == qf)
         {
-            QualifiedFilename qf(globalAtts->GetCurrentFile());
-
             TRY
             {
                 fileServer->OpenFile(qf, globalAtts->GetCurrentState());
