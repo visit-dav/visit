@@ -8760,11 +8760,17 @@ echo "${ECHO_T}found" >&6
 echo "${ECHO_T}not found" >&6
    fi
 else
+   # In this case, PTHREAD_LIB was found in the config-site file so
+   # we don't need to define it.
    echo "$as_me:$LINENO: result: found" >&5
 echo "${ECHO_T}found" >&6
-                  if test -z "$PTHREAD_CXXFLAGS"; then
-      PTHREAD_CXXFLAGS=""
-   fi
+   PTHREAD_CXXFLAGS=""
+   # Make sure that we define the HAVE_THREADS macro because if it does
+   # not get defined then we'll never get the connection progress window
+   cat >>confdefs.h <<\_ACEOF
+#define HAVE_THREADS 1
+_ACEOF
+
 fi
 
 

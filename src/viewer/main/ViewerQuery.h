@@ -49,6 +49,9 @@ class avtToolInterface;
 //    whether Lineout should initialize itself with its default atts or
 //    its client atts. 
 //
+//    Kathleen Bonnell, Thu Mar 11 08:19:10 PST 2004 
+//    Removed width/height GetWidth/GetHeight, no longer used. 
+//
 // ****************************************************************************
 
 
@@ -70,9 +73,6 @@ class VIEWER_API ViewerQuery : public SimpleObserver
     void             DeleteVisualCue();
 
     virtual void     Update(Subject *) ;
-
-    double           GetWidth() const;
-    double           GetHeight() const;
 
     ViewerWindow    *GetResultsWindow() const;
     ViewerWindow    *GetOriginatingWindow() const;
@@ -102,8 +102,6 @@ class VIEWER_API ViewerQuery : public SimpleObserver
     ViewerPlot      *resultsPlot;
     ViewerPlot      *originatingPlot;
 
-    double           width;
-    double           height;
     bool             handlingTool;
 
     PlaneAttributes *planeAtts;

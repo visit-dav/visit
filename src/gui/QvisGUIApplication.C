@@ -284,6 +284,9 @@ LongFileName(const char *shortName)
 //   Brad Whitlock, Mon Nov 10 14:53:42 PST 2003
 //   I initialized sessionFile.
 //
+//   Brad Whitlock, Fri Mar 12 13:47:37 PST 2004
+//   I added keepAliveTimer.
+//
 // ****************************************************************************
 
 QvisGUIApplication::QvisGUIApplication(int &argc, char **argv) :
@@ -325,6 +328,7 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv) :
     showSplash = true;
     fromViewer = 0;
     allowSocketRead = false;
+    keepAliveTimer = 0;
 
     // Create the viewer, statusSubject, and fileServer for GUIBase.
     viewer = new ViewerProxy;
@@ -783,6 +787,10 @@ QvisGUIApplication::SyncCallback(Subject *s, void *data)
 //   Kathleen Bonnell, Mon Dec  1 08:40:21 PST 2003 
 //   Ensure that qprinter is initialized with the viewer's PrinterAttributes. 
 //
+//   Brad Whitlock, Fri Mar 12 14:15:35 PST 2004
+//   Added code to create a timer that is used to send keep alive signals
+//   to the mdservers.
+//
 // ****************************************************************************
 
 void
@@ -846,9 +854,18 @@ QvisGUIApplication::FinalInitialization()
         RestoreSessionFile(sessionFile);
         break;
     case 6:
+        // Create a timer that will send keep alive signals to the mdservers
+        // every 5 minutes.
+        keepAliveTimer = new QTimer(this, "keepAliveTimer");
+        connect(keepAliveTimer, SIGNAL(timeout()),
+                this, SLOT(SendKeepAlives()));
+        keepAliveTimer->start(5 * 60 * 1000);
+        break;
+   case 7:
+        visitTimer->StopTimer(completeInit, "VisIt to be ready");
+
         moreInit = false;
         ++initStage;
-        visitTimer->StopTimer(completeInit, "VisIt to be ready");
         break;
     default:
         moreInit = false;
@@ -3277,6 +3294,26 @@ void
 QvisGUIApplication::DelayedReadFromViewer()
 {
      ReadFromViewer(0);
+}
+
+// ****************************************************************************
+// Method: QvisGUIApplication::SendKeepAlives
+//
+// Purpose: 
+//   This is a Qt slot function that tells the file server to send keep alive
+//   signals to the mdservers.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Mar 12 14:12:30 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisGUIApplication::SendKeepAlives()
+{
+    fileServer->SendKeepAlives();
 }
 
 // ****************************************************************************

@@ -26,6 +26,7 @@
 #include <ClearCacheRPC.h>
 #include <DefineVirtualDatabaseRPC.h>
 #include <ExecuteRPC.h>
+#include <KeepAliveRPC.h>
 #include <MakePlotRPC.h>
 #include <OpenDatabaseRPC.h>
 #include <PickRPC.h>
@@ -73,6 +74,33 @@ RPCExecutor<QuitRPC>::Execute(QuitRPC *rpc)
 #endif
         rpc->SendReply();
     }
+}
+
+// ****************************************************************************
+// Method: RPCExecutor<KeepAliveRPC>::Execute
+//
+// Purpose: 
+//   Handles the KeepAliveRPC.
+//
+// Arguments:
+//   rpc : A pointer to the KeepAlive RPC object.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Mar 12 11:36:11 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+template<>
+void
+RPCExecutor<KeepAliveRPC>::Execute(KeepAliveRPC *rpc)
+{
+    //
+    // Now send back some data on the command and data sockets.
+    //
+    Engine *engine = Engine::Instance();
+    engine->SendKeepAliveReply();
 }
 
 // ****************************************************************************

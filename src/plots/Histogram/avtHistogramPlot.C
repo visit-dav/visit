@@ -9467,13 +9467,17 @@ avtExprFilterNoNamespaceConflict::SetOutputVariableName(const char *name)
 //  Programmer: Hank Childs
 //  Creation:   June 7, 2002
 //
+//  Modifications:
+//    Kathleen Bonnell, Thu Mar 11 08:19:10 PST 2004
+//    Change to DataExtents -- they now always have two components.
+//
 // ****************************************************************************
  
 void
 avtExprFilterNoNamespaceConflict::PreExecute(void)
 {
     avtStreamer::PreExecute();
-    double exts[6] = {FLT_MAX, -FLT_MAX, FLT_MAX, -FLT_MAX, FLT_MAX, -FLT_MAX};
+    double exts[2] = {FLT_MAX, -FLT_MAX }; 
     GetOutput()->GetInfo().GetAttributes().GetCumulativeTrueDataExtents()->Set(exts);
 }
 
@@ -9551,6 +9555,9 @@ avtExprFilterNoNamespaceConflict::PostExecute(void)
 //    Hank Childs, Thu Jan 23 11:19:14 PST 2003
 //    Set only the cumulative extents.
 //
+//    Kathleen Bonnell, Thu Mar 11 08:19:10 PST 2004
+//    Change to DataExtents -- they now always have two components.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -9599,7 +9606,7 @@ avtExprFilterNoNamespaceConflict::ExecuteData(vtkDataSet *in_ds, int, std::strin
     //
     // Make our best attempt at maintaining our extents.
     //
-    double exts[6];
+    double exts[2];
     unsigned char *ghosts = NULL;
     if (!IsPointVariable())
     {
@@ -9612,11 +9619,8 @@ avtExprFilterNoNamespaceConflict::ExecuteData(vtkDataSet *in_ds, int, std::strin
     }
     int ntuples = dat->GetNumberOfTuples();
     int nvars   = dat->GetNumberOfComponents();
-    for (i = 0 ; i < nvars ; i++)
-    {
-        exts[2*i+0] = +FLT_MAX;
-        exts[2*i+1] = -FLT_MAX;
-    }
+    exts[0] = +FLT_MAX;
+    exts[1] = -FLT_MAX;
     for (i = 0 ; i < ntuples ; i++)
     {
         if (ghosts != NULL && ghosts[i] > 0) 
@@ -9626,13 +9630,13 @@ avtExprFilterNoNamespaceConflict::ExecuteData(vtkDataSet *in_ds, int, std::strin
         float *val = dat->GetTuple(i);
         for (j = 0 ; j < nvars ; j++)
         {
-            if (val[j] < exts[2*j+0])
+            if (val[j] < exts[0])
             {
-                exts[2*j+0] = val[j];
+                exts[0] = val[j];
             }
-            if (val[j] > exts[2*j+1])
+            if (val[j] > exts[1])
             {
-                exts[2*j+1] = val[j];
+                exts[1] = val[j];
             }
         }
     }

@@ -36,6 +36,9 @@ class avtToolInterface;
 //    Kathleen Bonnell, Wed Jul  9 09:21:22 PDT 2003  
 //    Added method ViewDimChanged.
 //
+//    Kathleen Bonnell, Thu Mar 11 08:19:10 PST 2004 
+//    Removed unused GetMaxQueryWidth, GetMaxQueryHeight. 
+//
 // ****************************************************************************
 
 class VIEWER_API LineoutListItem : public SimpleObserver
@@ -65,9 +68,6 @@ class VIEWER_API LineoutListItem : public SimpleObserver
     void DeleteOriginatingWindow(void);
 
     ViewerWindow *GetResultsWindow(void) { return resWin; };
-
-    double GetMaxQueryWidth(void);
-    double GetMaxQueryHeight(void);
 
     void HandleTool(const avtToolInterface &);
     bool InitializeTool(avtToolInterface &);

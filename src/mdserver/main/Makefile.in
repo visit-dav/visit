@@ -1,4 +1,4 @@
-#                            Copyright 2000 - 2003
+#                            Copyright 2000 - 2004
 #                 The Regents of the University of California.
 #                             All rights reserved.
 # 
@@ -133,6 +133,9 @@
 #    Hank Childs, Thu Jan 22 15:45:47 PST 2004
 #    Use the lightweight VTK libraries.  Also add LoadPluginsRPCExecutor.
 #
+#    Brad Whitlock, Fri Mar 12 10:28:57 PDT 2004
+#    I added KeepAliveRPCExecutor.
+#
 ##############################################################################
 
 ##
@@ -166,10 +169,20 @@ CXXFLAGS=@CXXFLAGS@ -I. -I../../include -I../../include/visit
 ##
 ## Files...
 ##
-SRC=ChangeDirectoryRPCExecutor.C GetMetaDataRPCExecutor.C ConnectRPCExecutor.C \
-    MDServerApplication.C GetDirectoryRPCExecutor.C MDServerConnection.C \
-    GetFileListRPCExecutor.C QuitRPCExecutor.C GetSILRPCExecutor.C \
-    ExpandPathRPCExecutor.C CloseDatabaseRPCExecutor.C LoadPluginsRPCExecutor.C main.C
+SRC=ChangeDirectoryRPCExecutor.C \
+    CloseDatabaseRPCExecutor.C \
+    ConnectRPCExecutor.C \
+    ExpandPathRPCExecutor.C \
+    GetDirectoryRPCExecutor.C \
+    GetFileListRPCExecutor.C \
+    GetMetaDataRPCExecutor.C \
+    GetSILRPCExecutor.C \
+    KeepAliveRPCExecutor.C \
+    LoadPluginsRPCExecutor.C \
+    MDServerApplication.C \
+    MDServerConnection.C \
+    QuitRPCExecutor.C \
+    main.C
 
 OBJ=$(SRC:.C=.o)
 

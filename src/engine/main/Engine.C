@@ -167,7 +167,11 @@ Engine::Initialize(int *argc, char **argv[])
 //    Hank Childs, Fri Mar  5 11:46:09 PST 2004
 //    Made the database plugins be loaded on demand.
 //
+//    Brad Whitlock, Fri Mar 12 11:20:58 PDT 2004
+//    I added keepAliveRPC.
+//
 // ****************************************************************************
+
 void
 Engine::SetUpViewerInterface(int *argc, char **argv[])
 {
@@ -212,6 +216,7 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
 
     // Create some RPC objects and make Xfer observe them.
     quitRPC                         = new QuitRPC;
+    keepAliveRPC                    = new KeepAliveRPC;
     readRPC                         = new ReadRPC;
     applyOperatorRPC                = new ApplyOperatorRPC;
     makePlotRPC                     = new MakePlotRPC;
@@ -229,6 +234,7 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     setWinAnnotAttsRPC              = new SetWinAnnotAttsRPC;
 
     xfer->Add(quitRPC);
+    xfer->Add(keepAliveRPC);
     xfer->Add(readRPC);
     xfer->Add(applyOperatorRPC);
     xfer->Add(makePlotRPC);
@@ -247,6 +253,7 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
 
     // Create an object to implement the RPCs
     rpcExecutors.push_back(new RPCExecutor<QuitRPC>(quitRPC));
+    rpcExecutors.push_back(new RPCExecutor<KeepAliveRPC>(keepAliveRPC));
     rpcExecutors.push_back(new RPCExecutor<ReadRPC>(readRPC));
     rpcExecutors.push_back(new RPCExecutor<ApplyOperatorRPC>(applyOperatorRPC));
     rpcExecutors.push_back(new RPCExecutor<PrepareOperatorRPC>(&applyOperatorRPC->GetPrepareOperatorRPC()));
@@ -548,7 +555,7 @@ Engine::EventLoop()
             TRY
             {
                 // We've got some work to do.  Disable the alarm.
-                int num_seconds_in_half_hour = 30*60;
+                const int num_seconds_in_half_hour = 30*60;
                 ResetTimeout(num_seconds_in_half_hour);
 
                 // Process input.
@@ -688,6 +695,7 @@ Engine::ProcessCommandLine(int argc, char **argv)
 //    Made the engine an object.
 //
 // ****************************************************************************
+
 void
 Engine::AlarmHandler(int signal)
 {
@@ -981,6 +989,40 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer)
 #endif
 }
 
+// ****************************************************************************
+// Method: Engine::SendKeepAliveReply
+//
+// Purpose: 
+//   Sends a small string to the client over the engine's data socket.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Mar 12 11:32:25 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+Engine::SendKeepAliveReply()
+{
+#ifdef PARALLEL
+    if(PAR_UIProcess())
+    {
+#endif
+        //
+        // Send a reply on the command socket.
+        //
+        keepAliveRPC->SendReply();
+
+        //
+        // Send a little data on the data socket.
+        //
+        const char *str = "VisIt!!!";
+        vtkConnection->DirectWrite((const unsigned char *)str, 10);
+#ifdef PARALLEL
+    }
+#endif
+}
 
 // ****************************************************************************
 //  Function: EngineAbortCallback

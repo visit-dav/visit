@@ -514,6 +514,45 @@ ViewerServerManager::CloseLaunchers()
 }
 
 // ****************************************************************************
+// Method: ViewerServerManager::SendKeepAlivesToLaunchers
+//
+// Purpose: 
+//   Sends keep alive signals to the component launchers.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Mar 12 12:02:25 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerServerManager::SendKeepAlivesToLaunchers()
+{
+    LauncherMap::iterator pos;
+    for(pos = launchers.begin(); pos != launchers.end();)
+    {
+        TRY
+        {
+            debug2 << "Sending keep alive signal to launcher on "
+                   << pos->first.c_str() << endl;
+            pos->second->SendKeepAlive();
+            ++pos;
+        }
+        CATCHALL(...)
+        {
+            debug2 << "Could not send keep alive signal to launcher on "
+                   << pos->first.c_str() << " so that launcher will be closed."
+                   << endl;
+            delete pos->second;
+            pos->second = 0;
+            launchers.erase(pos++);
+        }
+        ENDTRY
+    }
+}
+
+// ****************************************************************************
 // Method: ViewerServerManager::StartLauncher
 //
 // Purpose: 

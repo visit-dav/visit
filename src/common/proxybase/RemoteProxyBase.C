@@ -15,11 +15,14 @@
 // Creation:   Fri May 2 14:56:19 PST 2003
 //
 // Modifications:
-//   
+//  Brad Whitlock, Thu Mar 11 12:47:34 PDT 2004
+//  Added KeepAliveRPC.
+//
 // ****************************************************************************
 
 RemoteProxyBase::RemoteProxyBase(const std::string &compName) :
-    componentName(compName), xfer(), quitRPC(), remoteUserName(), argv()
+    componentName(compName), xfer(), quitRPC(), keepAliveRPC(),
+    remoteUserName(), argv()
 {
     component = 0;
     nWrite = nRead = 1;
@@ -66,6 +69,9 @@ RemoteProxyBase::~RemoteProxyBase()
 //    Added ability to manually specify a client host name or to have it
 //    parsed from the SSH_CLIENT (or related) environment variables.  Added
 //    ability to specify an SSH port.
+//
+//    Brad Whitlock, Thu Mar 11 12:51:34 PDT 2004
+//    I added keep alive RPC.
 //
 // ****************************************************************************
 
@@ -114,6 +120,7 @@ RemoteProxyBase::Create(const std::string &hostName,
     xfer.SetOutputConnection(component->GetReadConnection());
     xfer.SetInputConnection(component->GetWriteConnection());
     xfer.Add(&quitRPC);
+    xfer.Add(&keepAliveRPC);
 
     //
     // Set up the RPC's for the remote component.
@@ -143,6 +150,28 @@ void
 RemoteProxyBase::Close()
 {
     quitRPC(true);
+}
+
+// ****************************************************************************
+// Method: RemoteProxyBase::SendKeepAlive
+//
+// Purpose: 
+//   Sends a keep alive RPC to the component.
+//
+// Note:       This method could throw an exception if the connection to the
+//             component has been lost.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Mar 12 10:11:02 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+RemoteProxyBase::SendKeepAlive()
+{
+    keepAliveRPC();
 }
 
 // ****************************************************************************

@@ -1,5 +1,5 @@
 #
-#                            Copyright 2000 - 2003
+#                            Copyright 2000 - 2004
 #                 The Regents of the University of California.
 #                             All rights reserved.
 # 
@@ -213,6 +213,9 @@
 #    Brad Whitlock, Wed Oct 29 10:22:06 PDT 2003
 #    I added AnnotationObject and AnnotationObjectList.
 #
+#    Brad Whitlock, Fri Mar 12 10:09:50 PDT 2004
+#    I added KeepAliveRPC.
+#
 ##############################################################################
 
 ##
@@ -256,6 +259,7 @@ SRC=    AnimationAttributes.C \
         GlobalLineoutAttributes.C \
         HostProfile.C \
         HostProfileList.C \
+        KeepAliveRPC.C \
         KeyframeAttributes.C \
 	LightAttributes.C \
 	LightList.C \

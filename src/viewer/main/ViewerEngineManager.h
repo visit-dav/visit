@@ -129,6 +129,9 @@ typedef struct
 //    Hank Childs, Fri Mar  5 11:12:20 PST 2004
 //    Add a format when opening a database.
 //
+//    Brad Whitlock, Fri Mar 12 11:39:27 PDT 2004
+//    Added SendKeepAlives.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerEngineManager : public ViewerServerManager,
@@ -149,6 +152,7 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
     void InterruptEngine(const char *hostName);
     void InterruptEngine(int index);
     bool InExecute() const;
+    void SendKeepAlives();
 
     bool ExternalRender(std::vector<const char*> pluginIDsList,
                         stringVector hostsList,

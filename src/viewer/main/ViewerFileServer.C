@@ -947,6 +947,46 @@ ViewerFileServer::CloseServer(const std::string &host, bool close)
 }
 
 // ****************************************************************************
+// Method: ViewerFileServer::SendKeepAlives
+//
+// Purpose: 
+//   Sends keep alive signals to all of the mdservers.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Mar 12 12:07:13 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerFileServer::SendKeepAlives()
+{
+    ServerMap::iterator pos;
+    for(pos = servers.begin(); pos != servers.end();)
+    {
+        TRY
+        {
+            debug2 << "Sending keep alive signal to mdserver on "
+                   << pos->first.c_str() << endl;
+            pos->second->proxy->SendKeepAlive();
+            ++pos;
+        }
+        CATCHALL(...)
+        {
+            debug2 << "Could not send keep alive signal to mdserver on "
+                   << pos->first.c_str() << " so that mdserver will be closed."
+                   << endl;
+            delete pos->second->proxy;
+            delete pos->second;
+            pos->second = 0;
+            servers.erase(pos++);
+        }
+        ENDTRY
+    }
+}
+
+// ****************************************************************************
 // Method: ViewerFileServer::ConnectServer
 //
 // Purpose: 

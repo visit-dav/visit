@@ -243,6 +243,9 @@ avtDatabase::GetOutput(const char *var, int ts)
 //    Update for new data attribute interface.  Now add variables for each of
 //    the secondary variables in data specification.
 //
+//    Kathleen Bonnell, Thu Mar 11 11:17:58 PST 2004
+//    DataExtents now always has only 2 componnts. 
+//
 // ****************************************************************************
 
 void
@@ -348,16 +351,10 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
             //
             if (vmd->hasDataExtents)
             {
-                double *extents = new double[2*vmd->varDim];
-                for (j = 0 ; j < vmd->varDim ; j++)
-                {
-                    extents[2*j  ] = vmd->minDataExtents[j];
-                    extents[2*j+1] = vmd->maxDataExtents[j];
-                }
-    
+                double extents [2];
+                extents[0] = vmd->minDataExtents;
+                extents[1] = vmd->maxDataExtents;
                 atts.GetTrueDataExtents(var_list[i])->Set(extents);
-    
-                delete [] extents;
             }
         }
     

@@ -163,6 +163,9 @@ class StatusAttributes;
 //    Hank Childs, Fri Mar  5 11:41:12 PST 2004
 //    Add file format type to open database.
 //
+//    Brad Whitlock, Fri Mar 12 10:43:41 PDT 2004
+//    I added an override of the base class's SendKeepAlive method.
+//
 // ****************************************************************************
 
 class ENGINE_PROXY_API EngineProxy : public RemoteProxyBase
@@ -170,6 +173,8 @@ class ENGINE_PROXY_API EngineProxy : public RemoteProxyBase
 public:
     EngineProxy();
     virtual ~EngineProxy();
+
+    virtual void SendKeepAlive();
 
     virtual bool Parallel() const { return numProcs > 1; };
     virtual std::string GetComponentName() const;

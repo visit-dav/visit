@@ -26,6 +26,7 @@ class ColorTableAttributes;
 class MessageAttributes;
 class QApplication;
 class QSocketNotifier;
+class QTimer;
 class StatusAttributes;
 class SyncAttributes;
 class ViewerConfigManager;
@@ -295,6 +296,9 @@ struct avtDefaultPlotMetaData;
 //    Brad Whitlock, Thu Feb 26 13:32:43 PST 2004
 //    Added ClearCacheForAllEngines.
 //
+//    Brad Whitlock, Fri Mar 12 12:08:59 PDT 2004
+//    I added SendKeepAlives.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerSubject : public QObject
@@ -446,6 +450,7 @@ private slots:
     void ProcessRendererMessage();
     void ReadFromParentAndProcess(int);
     void DelayedProcessSettings();
+    void SendKeepAlives();
 
     void ConnectWindow(ViewerWindow *win);
     void DisconnectWindow(ViewerWindow *win);
@@ -464,6 +469,7 @@ private:
     QApplication          *mainApp;
     QSocketNotifier       *checkParent;
     QSocketNotifier       *checkRenderer;
+    QTimer                *keepAliveTimer;
     bool                   launchingComponent;
     bool                   deferHeavyInitialization;
     bool                   heavyInitializationDone;

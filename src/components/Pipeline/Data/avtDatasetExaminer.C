@@ -191,6 +191,9 @@ avtDatasetExaminer::GetSpatialExtents(avtDataset_p &ds, double *se)
 //    Hank Childs, Tue Feb 24 17:36:32 PST 2004
 //    Account for multiple variables.
 //
+//    Kathleen Bonnell, Thu Mar 11 10:14:20 PST 2004 
+//    DataExtents now always has only 2 components. 
+//
 // ****************************************************************************
  
 bool
@@ -206,11 +209,8 @@ avtDatasetExaminer::GetDataExtents(avtDataset_p &ds, double *de,
 
     bool foundExtents = false;
     int dim = ds->GetInfo().GetAttributes().GetVariableDimension(varname);
-    for (int i = 0 ; i < dim ; i++)
-    {
-        de[2*i]   = +DBL_MAX;
-        de[2*i+1] = -DBL_MAX;
-    }
+    de[0] = +DBL_MAX;
+    de[1] = -DBL_MAX;
  
     GetVariableRangeArgs gvra;
     gvra.varname = varname;
@@ -225,62 +225,6 @@ avtDatasetExaminer::GetDataExtents(avtDataset_p &ds, double *de,
         debug1 << "Unable to determine data extents -- dataset needs an "
                << "update" << endl;
     }
- 
-    return foundExtents;
-}
-
-
-// ****************************************************************************
-//  Method: avtDatasetExaminer::GetDataMagnitudeExtents
-//
-//  Purpose:
-//      Gets the data extents of the magnitude of the dataset.
-//
-//  Arguments:
-//      de        A place to put the data extents
-//
-//  Returns:      Whether or not the extents were obtained.
-//
-//  Programmer:   Brad Whitlock
-//  Creation:     Wed Dec 4 11:46:46 PDT 2002
-//
-//  Modifications:
-//
-//    Hank Childs, Tue Feb 24 17:36:32 PST 2004
-//    Account for multiple variables.
-//
-// ****************************************************************************
- 
-bool
-avtDatasetExaminer::GetDataMagnitudeExtents(avtDataset_p &ds, double *de, 
-                                            const char *varname)
-{
-    if (varname == NULL)
-    {
-        varname = ds->GetInfo().GetAttributes().GetVariableName().c_str();
-    }
-
-    avtDataTree_p dataTree = ds->dataTree;
-
-    bool foundExtents = false;
-    de[0] = +DBL_MAX;
-    de[1] = -DBL_MAX;
- 
-    GetVariableRangeArgs gvra;
-    gvra.varname = varname;
-    gvra.extents = de;
-    if ( *dataTree != NULL )
-    {
-        dataTree->Traverse(CGetDataMagnitudeExtents, (void *) &gvra, 
-                           foundExtents);
-    }
- 
-    if (!foundExtents)
-    {
-        debug1 << "Unable to determine data magnitude extents -- dataset "
-               << "needs an update" << endl;
-    }
- 
     return foundExtents;
 }
 

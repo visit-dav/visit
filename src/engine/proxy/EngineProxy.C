@@ -163,7 +163,7 @@ EngineProxy::SetupComponentRPCs()
 // Creation:   Fri May 2 15:38:22 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -226,6 +226,42 @@ std::string
 EngineProxy::GetComponentName() const
 {
     return "compute engine";
+}
+
+// ****************************************************************************
+// Method: EngineProxy::SendKeepAlive
+//
+// Purpose: 
+//   Sends a KeepAlive RPC to the compute engine and waits for a response.
+//
+// Note:       This method can cause a LostConnectionException if the engine
+//             cannot be contacted.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Mar 12 11:04:57 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+EngineProxy::SendKeepAlive()
+{
+    debug3 << "Sending KeepAlive RPC to compute engine." << endl;
+
+    //
+    // Call the base class's SendKeepAlive method so the command sockets
+    // will be exercised.
+    //
+    RemoteProxyBase::SendKeepAlive();
+
+    //
+    // Now read some input back from the engine's data socket.
+    //
+#define KEEPALIVE_SIZE 10
+    unsigned char buf[KEEPALIVE_SIZE];
+    if (component->GetWriteConnection(1)->DirectRead(buf, KEEPALIVE_SIZE) < 0)
+        debug1 << "Error reading keep alive data from engine!!!!\n";
 }
 
 // ****************************************************************************

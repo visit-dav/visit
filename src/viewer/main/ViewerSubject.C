@@ -121,6 +121,9 @@ using std::string;
 //    Brad Whitlock, Thu Dec 18 12:33:17 PDT 2003
 //    I initialized processingFromParent.
 //
+//    Brad Whitlock, Fri Mar 12 12:12:59 PDT 2004
+//    Added keepAliveTimer.
+//
 // ****************************************************************************
 
 ViewerSubject::ViewerSubject() : parent(), xfer(), viewerRPC(),
@@ -181,6 +184,7 @@ ViewerSubject::ViewerSubject() : parent(), xfer(), viewerRPC(),
     //
     // Initialize pointers to some objects that don't get created until later.
     //
+    keepAliveTimer = 0;
     viewerRPCObserver = 0;
     syncObserver = 0;
     messageAtts = 0;
@@ -564,6 +568,16 @@ ViewerSubject::ConnectObjectsAndHandlers()
     syncObserver = new ViewerRPCObserver(syncAtts);
     connect(syncObserver, SIGNAL(executeRPC()),
             this, SLOT(HandleSync()));
+
+    //
+    // Create a timer that activates every 5 minutes to send a keep alive
+    // signal to all of the remote processes. This will keep their connections
+    // alive.
+    //
+    keepAliveTimer = new QTimer(this, "keepAliveTimer");
+    connect(keepAliveTimer, SIGNAL(timeout()),
+            this, SLOT(SendKeepAlives()));
+//    keepAliveTimer->start(5 * 60 * 1000);
 
     //
     // Register a callback function to be called when launching a remote
@@ -5372,6 +5386,43 @@ ViewerSubject::LaunchProgressCB(void *d, int stage)
     }
 
     return retval;
+}
+
+// ****************************************************************************
+// Method: ViewerSubject::SendKeepAlives
+//
+// Purpose: 
+//   This is a Qt slot function that sends keep alive signals to all of the
+//   remote components.
+//
+// Note:       If we're launching a remote component or if the engine is
+//             executing then we don't send the keep alives. Instead, we
+//             reschedule the routine to run again in 20 seconds.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Mar 12 12:17:02 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerSubject::SendKeepAlives()
+{
+    if(launchingComponent || ViewerEngineManager::Instance()->InExecute())
+    {
+        // We're launching a component so we don't want to send keep alive
+        // signals right now but try again in 20 seconds.
+        QTimer::singleShot(20 * 1000, this, SLOT(SendKeepAlives()));
+    }
+    else
+    {
+        Status("Sending keep alive signals...");
+        ViewerFileServer::Instance()->SendKeepAlives();
+        ViewerEngineManager::Instance()->SendKeepAlives();
+        ViewerServerManager::SendKeepAlivesToLaunchers();
+        ClearStatus();
+    }
 }
 
 // ****************************************************************************

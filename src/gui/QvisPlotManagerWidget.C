@@ -96,6 +96,9 @@ using std::vector;
 //   Brad Whitlock, Tue Feb 24 16:27:15 PST 2004
 //   I added varMenuPopulator and a few other new members.
 //
+//   Brad Whitlock, Mon Mar 15 11:46:34 PDT 2004
+//   I added varMenuFlags.
+//
 // ****************************************************************************
 
 QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,
@@ -107,6 +110,7 @@ QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,
     updateOperatorMenuEnabledState = false;
     updateVariableMenuEnabledState = false;
     maxVarCount = 0;
+    varMenuFlags = 0;
 
     topLayout = new QGridLayout(this, 4, 4);
     topLayout->setSpacing(5);
@@ -852,7 +856,7 @@ QvisPlotManagerWidget::PopulateVariableLists(VariableMenuPopulator &populator,
 }
 
 // ****************************************************************************
-// Method: QvisPlotManagerWidget::UpdateVariableMenus
+// Method: QvisPlotManagerWidget::UpdatePlotVariableMenu
 //
 // Purpose: 
 //   Updates all of the variable lists in the plots menu.
@@ -1096,6 +1100,10 @@ QvisPlotManagerWidget::UpdatePlotAndOperatorMenuEnabledState()
 //   Brad Whitlock, Tue Feb 24 16:20:36 PST 2004
 //   I made it use a separate menu populator.
 //
+//   Brad Whitlock, Mon Mar 15 11:49:52 PDT 2004
+//   I made it take the plot's varTypes into account when determining if the
+//   variable menu needs to be updated.
+//
 // ****************************************************************************
 
 void
@@ -1117,13 +1125,17 @@ QvisPlotManagerWidget::UpdateVariableMenu()
             // Update the variable menu's menu populator and if an update
             // is needed, update the menu.
             //
-            if(PopulateVariableLists(varMenuPopulator,
-                                     current.GetDatabaseName()) ||
-               varMenu->count() == 0)
+            bool changeVarLists = PopulateVariableLists(varMenuPopulator,
+                current.GetDatabaseName());
+            int plotVarFlags = plotPlugins[current.GetPlotType()].varTypes;
+            bool flagsDiffer = (plotVarFlags != varMenuFlags);
+            if(changeVarLists || flagsDiffer || varMenu->count() == 0)
             {
                 // Set the variable list based on the first active plot.
                 int varCount = varMenuPopulator.UpdateSingleVariableMenu(varMenu,
-                    this, plotPlugins[current.GetPlotType()].varTypes, true);
+                    this, plotVarFlags, true);
+                varMenuFlags = plotVarFlags;
+
                 //
                 // Set the flag that indicates that we need to update the
                 // enabled state for the variables menu.

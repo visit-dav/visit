@@ -17,6 +17,7 @@ class DataNode;
 class ObserverToCallback;
 class QPrinter;
 class QSocketNotifier;
+class QTimer;
 class QvisAnimationWindow;
 class QvisAnnotationWindow;
 class QvisAppearanceWindow;
@@ -211,6 +212,9 @@ typedef std::vector<QvisWindowBase *> WindowBaseVector;
 //    Brad Whitlock, Mon Nov 10 14:51:46 PST 2003
 //    I added sessionFile.
 //
+//    Brad Whitlock, Fri Mar 12 13:39:25 PST 2004
+//    I added keepAliveTimer and a new slot function.
+//
 // ****************************************************************************
 
 class GUI_API QvisGUIApplication : public QObject, public ConfigManager, public GUIBase
@@ -256,6 +260,7 @@ private slots:
     void HeavyInitialization();
     void ReadFromViewer(int);
     void DelayedReadFromViewer();
+    void SendKeepAlives();
     void SaveSettings();
     void ActivatePlotWindow(int index);
     void ActivateOperatorWindow(int index);
@@ -286,6 +291,9 @@ private:
     // A socket notifier to tell us when the viewer proxy has input.
     QSocketNotifier              *fromViewer;
     bool                          allowSocketRead;
+
+    // A timer to make sure that we send keep alives to the mdservers.
+    QTimer                       *keepAliveTimer;
 
     QPrinter                     *printer;
     ObserverToCallback           *printerObserver;

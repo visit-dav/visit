@@ -104,8 +104,8 @@ struct DBATTS_API avtVectorMetaData : public AttributeSubject
     int                  varDim;
 
     bool                 hasDataExtents;
-    floatVector          minDataExtents;
-    floatVector          maxDataExtents;
+    float                minDataExtents;
+    float                maxDataExtents;
 
     bool                 validVariable;
 

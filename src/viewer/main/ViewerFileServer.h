@@ -73,6 +73,9 @@ class avtSIL;
 //    Mark C. Miller, Wed Oct  8 23:46:25 PDT 2003
 //    Added methods to query a given database's MetaData or SIL for invariance
 //
+//    Brad Whitlock, Fri Mar 12 12:04:53 PDT 2004
+//    I added SendKeepAlives.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerFileServer : public ViewerServerManager
@@ -119,6 +122,7 @@ public:
     void                       CloseServers();
     void                       ConnectServer(const std::string &host,
                                              const stringVector &args);
+    void                       SendKeepAlives();
 
     void                       ClearFile(const std::string &fullName);
     void                       CloseFile(const std::string &host);
@@ -129,7 +133,7 @@ protected:
 private:
     static ViewerFileServer *instance;
 
-    ServerMap                servers, failedServers;
+    ServerMap                servers;
     FileMetaDataMap          fileMetaData;
     FileSILMap               fileSIL;
 };

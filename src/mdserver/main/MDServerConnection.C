@@ -39,6 +39,8 @@
 #include <GetMetaDataRPCExecutor.h>
 #include <GetSILRPC.h>
 #include <GetSILRPCExecutor.h>
+#include <KeepAliveRPC.h>
+#include <KeepAliveRPCExecutor.h>
 #include <LoadPluginsRPC.h>
 #include <LoadPluginsRPCExecutor.h>
 #include <CouldNotConnectException.h>
@@ -180,6 +182,9 @@ MDServerConnection::VirtualFileInformationMap MDServerConnection::virtualFiles;
 //    Hank Childs, Thu Jan 22 21:02:56 PST 2004
 //    Added LoadPlugins.
 //
+//    Brad Whitlock, Fri Mar 12 10:19:24 PDT 2004
+//    I added KeepAliveRPC.
+//
 // ****************************************************************************
 
 MDServerConnection::MDServerConnection(int *argc, char **argv[])
@@ -235,6 +240,7 @@ MDServerConnection::MDServerConnection(int *argc, char **argv[])
 
     // Create the RPCs
     quitRPC = new QuitRPC;
+    keepAliveRPC = new KeepAliveRPC;
     getDirectoryRPC = new GetDirectoryRPC;
     changeDirectoryRPC = new ChangeDirectoryRPC;
     getFileListRPC = new GetFileListRPC;
@@ -248,6 +254,7 @@ MDServerConnection::MDServerConnection(int *argc, char **argv[])
 
     // Hook up the RPCs to the xfer object.
     xfer->Add(quitRPC);
+    xfer->Add(keepAliveRPC);
     xfer->Add(getDirectoryRPC);
     xfer->Add(changeDirectoryRPC);
     xfer->Add(getFileListRPC);
@@ -261,6 +268,7 @@ MDServerConnection::MDServerConnection(int *argc, char **argv[])
 
     // Create the RPC Observers.
     quitExecutor = new QuitRPCExecutor(quitRPC);
+    keepAliveExecutor = new KeepAliveRPCExecutor(keepAliveRPC);
     getDirectoryExecutor = new GetDirectoryRPCExecutor(this, getDirectoryRPC);
     changeDirectoryExecutor = 
         new ChangeDirectoryRPCExecutor(this, changeDirectoryRPC);
@@ -308,12 +316,16 @@ MDServerConnection::MDServerConnection(int *argc, char **argv[])
 //   Hank Childs, Thu Jan 22 21:02:56 PST 2004
 //   Added loadPlugins.
 //
+//   Brad Whitlock, Fri Mar 12 10:19:42 PDT 2004
+//   I added KeepAliveRPC.
+//
 // ****************************************************************************
 
 MDServerConnection::~MDServerConnection()
 {
     // Delete the RPC executors.
     delete quitExecutor;
+    delete keepAliveExecutor;
     delete getDirectoryExecutor;
     delete changeDirectoryExecutor;
     delete getFileListExecutor;
@@ -327,6 +339,7 @@ MDServerConnection::~MDServerConnection()
 
     // Delete the RPCs
     delete quitRPC;
+    delete keepAliveRPC;
     delete getDirectoryRPC;
     delete changeDirectoryRPC;
     delete getFileListRPC;

@@ -612,6 +612,10 @@ avtFilter::TryDataExtents(double *outexts, const char *varname)
 //    Mark C. Miller, Sat Jan 31 13:31:08 PST 2004
 //    Added optional size of 18 for UnifyMinMax (max # comps = 9 for tensor)
 //
+//    Kathleen Bonnell, Thu Mar 11 10:14:20 PST 2004
+//    DataExtents now restricted to only 2 components, regardless of variable
+//    dimension. 
+//
 // ****************************************************************************
 
 void
@@ -635,7 +639,7 @@ avtFilter::GetDataExtents(double *outexts, const char *varname)
         SearchDataForDataExtents(outexts);
     }
 
-    UnifyMinMax(outexts, atts.GetVariableDimension()*2, 18);
+    UnifyMinMax(outexts, 2, 2);
 
     if (varname == NULL)
     {
@@ -646,7 +650,6 @@ avtFilter::GetDataExtents(double *outexts, const char *varname)
         GetOutput()->GetInfo().GetAttributes().GetTrueDataExtents()
                                                                 ->Set(outexts);
     }
-
 }
 
 
@@ -790,6 +793,11 @@ avtFilter::TryCurrentDataExtents(double *outexts)
 //
 //    Mark C. Miller, Sat Jan 31 13:31:08 PST 2004
 //    Added optional size of 18 for UnifyMinMax (max # comps = 9 for tensor)
+//
+//    Kathleen Bonnell, Thu Mar 11 10:14:20 PST 2004
+//    DataExtents now restricted to only 2 components, regardless of variable
+//    dimension.
+// 
 // ****************************************************************************
 
 void
@@ -806,7 +814,7 @@ avtFilter::GetCurrentDataExtents(double *newexts)
     avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
     atts.GetCumulativeCurrentDataExtents()->CopyTo(newexts);
 
-    UnifyMinMax(newexts, atts.GetVariableDimension()*2, 18);
+    UnifyMinMax(newexts, 2, 2);
 
     //
     // We now have determined the current data extents, so we may as well set
