@@ -36,6 +36,9 @@ class PickAttributes;
 //    Kathleen Bonnell, Tue May 25 16:16:25 PDT 2004 
 //    Add virtual method 'QueryZoneCenter'.
 //
+//    Kathleen Bonnell, Thu Jun 10 18:31:22 PDT 2004 
+//    Renamed QueryZoneCenter to QueryCoords, added bool arg.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtQueryableSource : virtual public avtDataObjectSource
@@ -50,8 +53,9 @@ class PIPELINE_API avtQueryableSource : virtual public avtDataObjectSource
                                     const int, const char*, float[3], int &)=0;
     virtual void                  GetDomainName(const std::string&, const int, 
                                     const int, std::string&)=0;
-    virtual bool                  QueryZoneCenter(const std::string&, const int, 
-                                    const int, const int, float[3])=0;
+    virtual bool                  QueryCoords(const std::string&, const int, 
+                                    const int, const int, float[3], 
+                                    const bool)=0;
 };
 
 

@@ -566,27 +566,32 @@ avtSourceFromDatabase::GetDomainName(const std::string &var, const int ts,
 
 
 // ****************************************************************************
-//  Method: avtSourceFromDatabase::QueryZoneCenter
+//  Method: avtSourceFromDatabase::QueryCoords
 //
-//  Purpose:    A query to find the geometric center of a zone.
+//  Purpose:    A query to find the coordinates of a zone or node. 
 //
 //  Arguments:
 //    var       The variable to use in searching the database.
 //    dom       The domain to use in searching the database.
-//    zone      The zone to use in searching the database.
+//    id        The zone or node to use in searching the database.
 //    ts        The timestep to use in searching the database.
 //    coord     A place to store the zone center. 
+//    forZone   A flag indicating if the query is for zone or node. 
 //
 //  Returns:    True if the query was successful, false otherwise.
 //
 //  Programmer: Kathleen Bonnell
 //  Creation:   May 25, 2004 
 //
+//  Modifications:
+//    Kathleen Bonnell, Thu Jun 10 18:15:11 PDT 2004
+//    Renamed from QueryZoneCenter to QueryCoords, added bool arg. 
+//
 // ****************************************************************************
 
 bool
-avtSourceFromDatabase::QueryZoneCenter(const std::string &var, const int dom,
-    const int zone, const int ts, float coord[3])
+avtSourceFromDatabase::QueryCoords(const std::string &var, const int dom,
+    const int zone, const int ts, float coord[3], const bool forZone)
 {
-    return database->QueryZoneCenter(var, dom, zone, ts, coord);
+    return database->QueryCoords(var, dom, zone, ts, coord, forZone);
 }

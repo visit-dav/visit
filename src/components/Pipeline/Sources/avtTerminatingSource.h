@@ -63,6 +63,9 @@ typedef void                   (*InitializeProgressCallback)(void *, int);
 //    Jeremy Meredith, Wed Jun  9 09:13:39 PDT 2004
 //    Added species aux data.
 //
+//    Kathleen Bonnell, Thu Jun 10 18:31:22 PDT 2004 
+//    Renamed QueryZoneCenter to QueryCoords, added bool arg.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtTerminatingSource : virtual public avtQueryableSource
@@ -107,8 +110,9 @@ class PIPELINE_API avtTerminatingSource : virtual public avtQueryableSource
                                        { return false;};
     virtual void                   GetDomainName(const std::string &, const int, 
                                        const int, std::string &) {;};
-    virtual bool                   QueryZoneCenter(const std::string &, const int, 
-                                       const int, const int, float[3])
+    virtual bool                   QueryCoords(const std::string &, const int, 
+                                       const int, const int, float[3],
+                                       const bool)
                                        { return false;};
 
   protected:

@@ -184,6 +184,9 @@ class     PickVarInfo;
 //    Kathleen Bonnell, Wed Jun  9 12:44:48 PDT 2004 
 //    Add bool arg to QueryMesh. 
 //
+//    Kathleen Bonnell, Thu Jun 10 18:15:11 PDT 2004 
+//    Rename QueryZoneCenter to QueryCoords, added bool arg.
+//
 // ****************************************************************************
 
 class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
@@ -353,8 +356,9 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
                                           const bool, const bool, 
                                           std::vector<std::string> &,
                                           std::vector<std::string> &); 
-    virtual bool               QueryZoneCenter(const std::string &, const int,
-                                               const int, const int, float[3]);
+    virtual bool               QueryCoords(const std::string &, const int,
+                                           const int, const int, float[3],
+                                           const bool);
 
     void                       AssociateBounds(vtkDataSet *);
     void                       ScaleMesh(vtkDataSet *);

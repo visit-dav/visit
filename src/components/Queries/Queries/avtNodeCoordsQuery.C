@@ -1,8 +1,8 @@
 // ************************************************************************* //
-//                            avtZoneCenterQuery.C                           //
+//                            avtNodeCoordsQuery.C                           //
 // ************************************************************************* //
 
-#include <avtZoneCenterQuery.h>
+#include <avtNodeCoordsQuery.h>
 #include <avtTerminatingSource.h>
 #include <avtSILRestrictionTraverser.h>
 #include <vector>
@@ -18,56 +18,53 @@ using std::string;
 
 
 // ****************************************************************************
-//  Method: avtZoneCenterQuery constructor
+//  Method: avtNodeCoordsQuery constructor
 //
 //  Programmer: Kathleen Bonnell 
-//  Creation:   May 25, 2004 
+//  Creation:   June 10, 2004 
 //
 //  Modifications:
 //
 // ****************************************************************************
 
-avtZoneCenterQuery::avtZoneCenterQuery() : avtDatasetQuery() 
+avtNodeCoordsQuery::avtNodeCoordsQuery() : avtDatasetQuery() 
 {
 }
 
 
 // ****************************************************************************
-//  Method: avtZoneCenterQuery destructor
+//  Method: avtNodeCoordsQuery destructor
 //
 //  Programmer: Kathleen Bonnell 
-//  Creation:   May 25, 2004 
+//  Creation:   June 10, 2004 
 //
 //  Modifications:
 //
 // ****************************************************************************
 
-avtZoneCenterQuery::~avtZoneCenterQuery() 
+avtNodeCoordsQuery::~avtNodeCoordsQuery() 
 {
 }
 
 
 // ****************************************************************************
-//  Method: avtZoneCenterQuery::PerformQuery
+//  Method: avtNodeCoordsQuery::PerformQuery
 //
 //  Purpose:
 //    Perform the requested query. 
 //
 //  Programmer: Kathleen Bonnell 
-//  Creation:   May 25, 2004 
+//  Creation:   June 10, 2004 
 //
 //  Modifications:
 //
 //    Mark C. Miller, Wed Jun  9 21:50:12 PDT 2004
 //    Eliminated use of MPI_ANY_TAG and modified to use GetUniqueMessageTags
 //
-//    Kathleen Bonnell, Fri Jun 11 14:35:50 PDT 2004 
-//    Renamed QueryZoneCenter to QueryCoords, added bool arg. 
-//
 // ****************************************************************************
 
 void
-avtZoneCenterQuery::PerformQuery(QueryAttributes *qA)
+avtNodeCoordsQuery::PerformQuery(QueryAttributes *qA)
 {
     queryAtts = *qA;
     Init(); 
@@ -86,17 +83,15 @@ avtZoneCenterQuery::PerformQuery(QueryAttributes *qA)
     }
 
     int blockOrigin = GetInput()->GetInfo().GetAttributes().GetBlockOrigin();
-    int cellOrigin  = GetInput()->GetInfo().GetAttributes().GetCellOrigin();
     int dim         = GetInput()->GetInfo().GetAttributes().GetSpatialDimension();
     int domain      = qA->GetDomain()  - blockOrigin;
-    int zone        = qA->GetElement() - cellOrigin;
+    int node        = qA->GetElement(); 
     int ts          = qA->GetTimeStep();
     string var      = qA->GetVariables()[0];
 
     float coord[3] = {0., 0., 0.};
 
     domain = (domain < 0 ? 0 : domain);
-    zone = (zone < 0 ? 0 : zone);
 
     avtSILRestrictionTraverser trav(querySILR);
     trav.GetDomainList(dlist);
@@ -121,13 +116,13 @@ avtZoneCenterQuery::PerformQuery(QueryAttributes *qA)
         {
             if (dlist[i] == domain)
             {
-                success = (int)src->QueryCoords(var, domain, zone, ts, coord, true);
+                success = (int)src->QueryCoords(var, domain, node, ts, coord, false);
             }
         }
     }
     else if (PAR_Rank() == 0)
     {
-        success = (int)src->QueryCoords(var, domain, zone, ts, coord, true);
+        success = (int)src->QueryCoords(var, domain, node, ts, coord, false);
     }
     
 
@@ -173,12 +168,12 @@ avtZoneCenterQuery::PerformQuery(QueryAttributes *qA)
         {
             if (dim == 2)
             {
-                SNPRINTF(msg, 120, "The center of zone %d is (%g, %g).", 
+                SNPRINTF(msg, 120, "The coords of node %d are (%g, %g).", 
                          qA->GetElement(), coord[0], coord[1]);
             }
             else 
             {
-                SNPRINTF(msg, 120, "The center of zone %d is (%g, %g, %g).", 
+                SNPRINTF(msg, 120, "The coords of node %d are (%g, %g, %g).", 
                          qA->GetElement(), coord[0], coord[1], coord[2]);
             }
         }
@@ -188,13 +183,13 @@ avtZoneCenterQuery::PerformQuery(QueryAttributes *qA)
             src->GetDomainName(var, ts, domain, domainName);
             if (dim == 2)
             {
-                SNPRINTF(msg, 120, "The center of zone %d (%s) is (%g, %g).", 
+                SNPRINTF(msg, 120, "The coords of node %d (%s) are (%g, %g).", 
                          qA->GetElement(), domainName.c_str(),
                          coord[0], coord[1]);
             }
             else 
             {
-                SNPRINTF(msg, 120, "The center of zone %d (%s) is (%g, %g, %g).", 
+                SNPRINTF(msg, 120, "The coords of node %d (%s) are (%g, %g, %g).", 
                          qA->GetElement(), domainName.c_str(),
                          coord[0], coord[1], coord[2]);
             }
@@ -210,14 +205,14 @@ avtZoneCenterQuery::PerformQuery(QueryAttributes *qA)
     {
         if (singleDomain)
         {
-            SNPRINTF(msg, 120, "The center of zone %d could not be determined.",
+            SNPRINTF(msg, 120, "The coords of node %d could not be determined.",
                      qA->GetElement());
         }
         else
         {
             string domainName;
             src->GetDomainName(var, ts, domain, domainName);
-            SNPRINTF(msg, 120, "The center of zone %d (%s) could not be determined.",
+            SNPRINTF(msg, 120, "The coords of node %d (%s) could not be determined.",
                      qA->GetElement(), domainName.c_str());
         }
     }

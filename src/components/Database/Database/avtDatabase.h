@@ -171,6 +171,9 @@ typedef struct {
 //    Kathleen Bonnell, Wed Jun  9 12:44:48 PDT 2004 
 //    Added bool arg to QueryMesh. 
 //
+//    Kathleen Bonnell, Thu Jun 10 18:15:11 PDT 2004
+//    Rename QueryZoneCenter to QueryCoords, added bool arg. 
+//
 // ****************************************************************************
 
 class DATABASE_API avtDatabase
@@ -212,8 +215,8 @@ class DATABASE_API avtDatabase
     virtual bool                FindElementForPoint(const char *, const int, 
                                     const int, const char *, float[3], int &)
                                     { return false; } ;
-    virtual bool                QueryZoneCenter(const std::string &, const int, 
-                                    const int, const int, float[3] )
+    virtual bool                QueryCoords(const std::string &, const int, 
+                                    const int, const int, float[3], const bool)
                                     { return false; } ;
 
     virtual void                GetDomainName(const std::string &, const int ts,

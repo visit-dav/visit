@@ -13,6 +13,7 @@
 #include <avtIntegrateQuery.h>
 #include <avtL2NormQuery.h>
 #include <avtL2NormBetweenCurvesQuery.h>
+#include <avtNodeCoordsQuery.h>
 #include <avtOriginalDataMinMaxQuery.h>
 #include <avtOriginalDataNumNodesQuery.h>
 #include <avtOriginalDataNumZonesQuery.h>
@@ -118,6 +119,9 @@ avtQueryFactory::Instance()
 //
 //    Kathleen Bonnell, Tue May 25 16:16:25 PDT 2004 
 //    Added Zone center query.
+//
+//    Kathleen Bonnell, Fri Jun 11 14:35:50 PDT 2004 
+//    Added NodeCoords query.
 //
 // ****************************************************************************
 
@@ -256,6 +260,10 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
     else if (qname == "Zone Center")
     {
         query = new avtZoneCenterQuery();
+    }
+    else if (qname == "Node Coords")
+    {
+        query = new avtNodeCoordsQuery();
     }
     return query;
 }

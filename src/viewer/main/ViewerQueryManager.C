@@ -2697,6 +2697,8 @@ ViewerQueryManager::InitializeQueryList()
     queryTypes->SetWindowType("PickByNode", QueryList::DomainNode);
     queryTypes->AddQuery("Zone Center", QueryList::DatabaseQuery);
     queryTypes->SetWindowType("Zone Center", QueryList::DomainZone);
+    queryTypes->AddQuery("Node Coords", QueryList::DatabaseQuery);
+    queryTypes->SetWindowType("Node Coords", QueryList::DomainNode);
 
     queryTypes->SelectAll();
 }
