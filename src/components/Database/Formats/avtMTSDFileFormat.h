@@ -41,6 +41,9 @@ class     vtkDataArray;
 //    vtkScalars and vtkVectors have been deprecated in VTK 4.0, 
 //    use vtkDataArray instead.
 //
+//    Brad Whitlock, Mon Oct 13 14:14:21 PST 2003
+//    Added a method to get the times.
+//
 // ****************************************************************************
 
 class DATABASE_API avtMTSDFileFormat : public avtFileFormat
@@ -54,6 +57,7 @@ class DATABASE_API avtMTSDFileFormat : public avtFileFormat
                                             DestructorFunction &);
 
     virtual void           GetCycles(std::vector<int> &);
+    virtual void           GetTimes(std::vector<double> &);
     virtual int            GetNTimesteps(void);
 
     virtual const char    *GetFilename(void) { return filenames[0]; };

@@ -69,6 +69,26 @@ avtSTSDFileFormat::GetCycle(void)
     return GuessCycle(filename);
 }
 
+// ****************************************************************************
+// Method: avtSTSDFileFormat::GetTime
+//
+// Purpose: 
+//   Returns the time.
+//
+// Returns:    The time.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Oct 13 14:44:06 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+double
+avtSTSDFileFormat::GetTime(void)
+{
+    return 0.;
+}
 
 // ****************************************************************************
 //  Method: avtSTSDFileFormat::GetAuxiliaryData

@@ -148,10 +148,14 @@ const int FileTree::FileTreeNode::DATABASE_NODE = 3;
 //   Brad Whitlock, Fri May 16 12:28:49 PDT 2003
 //   Initialized displayInfo.
 //
+//   Brad Whitlock, Mon Oct 13 15:24:56 PST 2003
+//   Initialized timeStateFormat.
+//
 // ****************************************************************************
 
 QvisFilePanel::QvisFilePanel(QWidget *parent, const char *name) :
-   QWidget(parent, name), SimpleObserver(), GUIBase(), displayInfo()
+   QWidget(parent, name), SimpleObserver(), GUIBase(), displayInfo(),
+   timeStateFormat()
 {
     // Create the top layout that will contain the widgets.
     QVBoxLayout *topLayout = new QVBoxLayout(this);
@@ -208,7 +212,6 @@ QvisFilePanel::QvisFilePanel(QWidget *parent, const char *name) :
 
     // Create the animation time field.
     timeField = new QLineEdit(this, "timeField");
-    timeField->setMaxLength(5);
     timeField->setEnabled(false);
     connect(timeField, SIGNAL(returnPressed()), this, SLOT(processTimeText()));
     animationLayout->addWidget(timeField, 5);
@@ -262,6 +265,109 @@ QvisFilePanel::~QvisFilePanel()
     delete computerPixmap;
     delete databasePixmap;
     delete folderPixmap;
+}
+
+// ****************************************************************************
+// Method: QvisFilePanel::SetTimeStateFormat
+//
+// Purpose: 
+//   Sets the display mode for the file panel. We can make it display files
+//   using cycle information or we can make it use time information.
+//
+// Arguments: 
+//   m : The new timestate display mode.
+//
+// Notes:      This method resets the text on the expanded databases, which
+//             are open databases with more than one time state, so that
+//             they show time using the new timestate display mode.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Oct 13 16:15:46 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisFilePanel::SetTimeStateFormat(const TimeFormat &m)
+{
+    if(m != timeStateFormat)
+    {
+        timeStateFormat = m;
+
+        // Count the number of items in the fileListView. I didn't see a way to
+        // count them all without traversing them all.
+        int i, count = 0;
+        QListViewItemIterator it(fileListView);
+        for ( ; it.current(); ++it )
+            ++count;
+
+        // If there are no items, return early.
+        if(count < 1)
+            return;
+
+        // Create an array to store pointers to all of the items. We save the
+        // pointers in an array because later when we expand databases, we
+        // can't traverse using an iterator because as we add items, the
+        // iterator is invalidated.
+        QvisListViewFileItem **items = new QvisListViewFileItem*[count];
+        it = QListViewItemIterator(fileListView);
+        for (i = 0; it.current(); ++it, ++i)
+            items[i] = (QvisListViewFileItem *)it.current();
+
+        //
+        // Iterate through the items and expand them if they are databases.
+        //
+        for(i = 0; i < count; ++i)
+        {
+            QvisListViewFileItem *item = items[i];
+            if(item != 0)
+            {
+                if(HaveFileInformation(item->file))
+                {
+                    // See if the file is a database
+                    const avtDatabaseMetaData *md = fileServer->GetMetaData(item->file);
+                    if(md != 0 && md->GetNumStates() > 1)
+                    {
+                        int j, maxts = QMIN(md->GetNumStates(), item->childCount());
+                        QListViewItemIterator it(item); ++it;
+                        for(j = 0; j < maxts; ++j, ++it)
+                        {
+                             // Reset the label so that it shows the right values.
+                             it.current()->setText(0, CreateItemLabel(md, j));
+                        }
+                    }
+                }
+            }
+        }
+
+        // Delete the temporary array.
+        delete [] items;
+
+        // Update the time text field.
+        UpdateTimeFieldText(globalAtts->GetCurrentState());
+    }
+}
+
+// ****************************************************************************
+// Method: QvisFilePanel::GetTimeStateFormat
+//
+// Purpose: 
+//   Returns the time state format.
+//
+// Returns:    The time state format.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Oct 13 17:19:20 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+const TimeFormat &
+QvisFilePanel::GetTimeStateFormat() const
+{
+    return timeStateFormat;
 }
 
 // ****************************************************************************
@@ -601,7 +707,9 @@ QvisFilePanel::UpdateAnimationControls(bool doAll)
 // Creation:   Tue Aug 21 16:52:35 PST 2001
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Oct 13 16:01:58 PST 2003
+//   Added support for showing time in the text field.
+//
 // ****************************************************************************
 
 void
@@ -615,7 +723,25 @@ QvisFilePanel::UpdateTimeFieldText(int timeState)
     if((md != 0) && (md->GetNumStates() > 1))
     {
         QString timeString;
-        timeString.sprintf("%04d", md->GetCycles()[timeState]);
+
+        if(timeStateFormat.GetDisplayMode() == TimeFormat::Cycles ||
+           timeStateFormat.GetDisplayMode() == TimeFormat::CyclesAndTimes)
+        {
+            if(timeState < md->GetCycles().size())
+                timeString = FormattedCycleString(md->GetCycles()[timeState]);
+        }
+        else if(timeStateFormat.GetDisplayMode() == TimeFormat::Times)
+        {
+            if(timeState < md->GetTimes().size())
+            {
+                timeString = FormattedTimeString(md->GetTimes()[timeState],
+                                                 md->IsTimeAccurate(timeState));
+            }
+            else
+                timeString = "?";
+        }
+
+
         timeField->setText(timeString);
     }
     else
@@ -653,6 +779,10 @@ QvisFilePanel::UpdateTimeFieldText(int timeState)
 //   Brad Whitlock, Wed Sep 17 18:18:50 PST 2003
 //   Fixed a small bug with how the cycles are displayed when we have a
 //   virtual file that does not have all of the cycle numbers.
+//
+//   Brad Whitlock, Mon Oct 13 15:57:36 PST 2003
+//   I made virtual files able to expand to their full size if they have
+//   more time states than files.
 //
 // ****************************************************************************
 
@@ -692,34 +822,23 @@ QvisFilePanel::ExpandDatabases()
                 ExpandDatabaseItem(item);
             }
             else if(HaveFileInformation(item->file) &&
-                    !FileShowsCorrectCycles(item->file))
+                    !FileShowsCorrectData(item->file))
             {
                 // See if the file is a database
                 const avtDatabaseMetaData *md = fileServer->GetMetaData(item->file);
                 if(md != 0 && md->GetNumStates() > 1)
                 {
-                    int maxts = QMIN(md->GetNumStates(), item->childCount());
+                    int j, maxts = QMIN(md->GetNumStates(), item->childCount());
                     QListViewItemIterator it(item); ++it;
-                    for(int j = 0; j < maxts; ++j, ++it)
+                    for(j = 0; j < maxts; ++j, ++it)
                     {
-                         QString label;
-                         int cycle = (j < md->GetCycles().size()) ? md->GetCycles()[j] : j;
-                         if(md->GetIsVirtualDatabase())
-                         {
-                             QualifiedFilename name(md->GetTimeStepNames()[j]);
-                             label.sprintf("%s cycle %04d", name.filename.c_str(),
-                                 cycle);
-                         }
-                         else
-                             label.sprintf("cycle %04d", cycle);
-
                          // Reset the label so that it shows the right values.
-                         it.current()->setText(0, label);
+                         it.current()->setText(0, CreateItemLabel(md, j));
                     }
 
                     // Remember that the item now has the correct information
                     // displayed through its children.
-                    SetFileShowsCorrectCycles(item->file, true);
+                    SetFileShowsCorrectData(item->file, true);
                 }
             }
         }
@@ -746,6 +865,9 @@ QvisFilePanel::ExpandDatabases()
 //   I corrected an error with how the cycle is displayed for virtual files
 //   that don't know all of the cycles.
 //
+//   Brad Whitlock, Mon Oct 13 15:37:56 PST 2003
+//   Moved code into CreateItemLabel method.
+//
 // ****************************************************************************
 
 void
@@ -769,18 +891,8 @@ QvisFilePanel::ExpandDatabaseItem(QvisListViewFileItem *item)
             fileListView->blockSignals(true);
             for(int i = 0; i < md->GetNumStates(); ++i)
             {
-                QString label;
-                int cycle = (i < md->GetCycles().size()) ? md->GetCycles()[i] : i;
-                if(md->GetIsVirtualDatabase())
-                {
-                    QualifiedFilename name(md->GetTimeStepNames()[i]);
-                    label.sprintf("%s cycle %04d", name.filename.c_str(),
-                        cycle);
-                }
-                else
-                    label.sprintf("cycle %04d", cycle);
                 QvisListViewFileItem *fi = new QvisListViewFileItem(
-                    item, label, fileServer->GetOpenFile(),
+                    item, CreateItemLabel(md, i), fileServer->GetOpenFile(),
                     QvisListViewFileItem::FILE_NODE, i);
                 fi->setOpen(false);
             }
@@ -791,7 +903,7 @@ QvisFilePanel::ExpandDatabaseItem(QvisListViewFileItem *item)
 
             // Remember that the item now has the correct information
             // displayed through its children.
-            SetFileShowsCorrectCycles(item->file, true);
+            SetFileShowsCorrectData(item->file, true);
         }
     }
     else if(item->file.IsVirtual())
@@ -816,8 +928,146 @@ QvisFilePanel::ExpandDatabaseItem(QvisListViewFileItem *item)
 
         // Remember that the item does not have the correct information
         // displayed through its children since we have not opened it yet.
-        SetFileShowsCorrectCycles(item->file, false);
+        SetFileShowsCorrectData(item->file, false);
     }
+}
+
+// ****************************************************************************
+// Method: QvisFilePanel::CreateItemLabel
+//
+// Purpose: 
+//   Creates the label for the item at the requested database timestate.
+//
+// Arguments:
+//   md : The metadata to use when computing the label.
+//   ts : The timestate to use when computing the label.
+//
+// Returns:    A string to use in the file panel to help display the file.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Oct 13 15:42:17 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+QString
+QvisFilePanel::CreateItemLabel(const avtDatabaseMetaData *md, int ts)
+{
+    QString label;
+
+    if(timeStateFormat.GetDisplayMode() == TimeFormat::Cycles)
+    {
+        int cycle = (ts < md->GetCycles().size()) ? md->GetCycles()[ts] : ts;
+        if(md->GetIsVirtualDatabase())
+        {
+            QualifiedFilename name(md->GetTimeStepNames()[ts]);
+            label = QString(name.filename.c_str()) +
+                    QString(" cycle ") + FormattedCycleString(cycle);
+        }
+        else
+            label = QString("cycle ") + FormattedCycleString(cycle);
+    }
+    else if(timeStateFormat.GetDisplayMode() == TimeFormat::Times)
+    {
+        double t = (ts < md->GetTimes().size()) ? md->GetTimes()[ts] : double(ts);
+        bool   accurate = (ts < md->GetTimes().size()) ?
+                          md->IsTimeAccurate(ts) : false;
+        if(md->GetIsVirtualDatabase())
+        {
+            QualifiedFilename name(md->GetTimeStepNames()[ts]);
+
+            label = QString(name.filename.c_str()) +
+                    QString(" time ") + FormattedTimeString(t, accurate);
+        }
+        else
+            label = QString("time ") + FormattedTimeString(t, accurate);
+    }
+    else if(timeStateFormat.GetDisplayMode() == TimeFormat::CyclesAndTimes)
+    {
+        int    cycle = (ts < md->GetCycles().size()) ? md->GetCycles()[ts] : ts;
+        double t = (ts < md->GetTimes().size()) ? md->GetTimes()[ts] : double(ts);
+        bool   accurate = (ts < md->GetTimes().size()) ?
+                          md->IsTimeAccurate(ts) : false;
+        if(md->GetIsVirtualDatabase())
+        {
+            QualifiedFilename name(md->GetTimeStepNames()[ts]);
+
+            label = QString(name.filename.c_str()) +
+                    QString(" cycle ") + FormattedCycleString(cycle) +
+                    QString("  time ") + FormattedTimeString(t, accurate);
+        }
+        else
+        {
+            label = QString("cycle ") + FormattedCycleString(cycle) +
+                    QString("  time ") + FormattedTimeString(t, accurate);
+        }
+    }
+
+    return label;
+}
+
+// ****************************************************************************
+// Method: QvisFilePanel::FormattedCycleString
+//
+// Purpose: 
+//   Returns a formatted cycle string.
+//
+// Arguments:
+//   cycle : The cycle that we want to convert to a string.
+//
+// Returns:    A formatted cycle string.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Oct 14 11:31:42 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+QString
+QvisFilePanel::FormattedCycleString(const int cycle) const
+{
+    QString retval;
+    retval.sprintf("%04d", cycle);
+    return retval;
+}
+
+// ****************************************************************************
+// Method: QvisFilePanel::FormattedTimeString
+//
+// Purpose: 
+//   Returns a formatted time string.
+//
+// Arguments:
+//   t        : The time value to format.
+//   accurate : Whether the time can be believed. If it can't then we return
+//              a question mark string.
+//
+// Returns:    A formatted time string.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Oct 13 16:03:37 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+QString
+QvisFilePanel::FormattedTimeString(const double t, bool accurate) const
+{
+    QString retval("?");
+    if(accurate)
+    {
+        QString formatString;
+        formatString.sprintf("%%.%dg", timeStateFormat.GetPrecision());
+        retval.sprintf((const char *)formatString.latin1(), t);
+    }
+    return retval;
 }
 
 // ****************************************************************************
@@ -1250,7 +1500,7 @@ QvisFilePanel::FileIsExpanded(const QualifiedFilename &filename)
 }
 
 // ****************************************************************************
-// Method: QvisFilePanel::FileShowsCorrectCycles
+// Method: QvisFilePanel::FileShowsCorrectData
 //
 // Purpose: 
 //   Returns whether or not we're showing the right cycles for the file.
@@ -1266,13 +1516,13 @@ QvisFilePanel::FileIsExpanded(const QualifiedFilename &filename)
 // ****************************************************************************
 
 bool
-QvisFilePanel::FileShowsCorrectCycles(const QualifiedFilename &filename)
+QvisFilePanel::FileShowsCorrectData(const QualifiedFilename &filename)
 {
-    return displayInfo[filename.FullName()].correctCycles;
+    return displayInfo[filename.FullName()].correctData;
 }
 
 // ****************************************************************************
-// Method: QvisFilePanel::SetFileShowsCorrectCycles
+// Method: QvisFilePanel::SetFileShowsCorrectData
 //
 // Purpose: 
 //   Sets the flag that indicates whether or not we're showing the right
@@ -1290,10 +1540,10 @@ QvisFilePanel::FileShowsCorrectCycles(const QualifiedFilename &filename)
 // ****************************************************************************
 
 void
-QvisFilePanel::SetFileShowsCorrectCycles(const QualifiedFilename &filename,
+QvisFilePanel::SetFileShowsCorrectData(const QualifiedFilename &filename,
     bool val)
 {
-    displayInfo[filename.FullName()].correctCycles = val;
+    displayInfo[filename.FullName()].correctData = val;
 }
 
 //
@@ -1899,7 +2149,9 @@ QvisFilePanel::sliderChange(int val)
 // Creation:   Tue Sep 26 17:16:01 PST 2000
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Oct 13 16:05:11 PST 2003
+//   I changed the code so it's possible to enter time into the text field.
+//
 // ****************************************************************************
 
 void
@@ -1909,26 +2161,58 @@ QvisFilePanel::processTimeText()
     QString temp(timeField->text().stripWhiteSpace());
     if(temp.isEmpty())
         return;
+
+    const avtDatabaseMetaData *md = fileServer->GetMetaData();
+    int  index = 0;
     bool okay = false;
-    int cycle = temp.toInt(&okay);
-    if(!okay)
+
+    //
+    // If the string has a decimal in it then assume it is a time.
+    //
+    if(temp.find('.') != -1)
     {
-        timeField->setText("");
-        return;
+        double t = temp.toDouble(&okay);
+        if(!okay)
+        {
+            timeField->setText("");
+            return;
+        } 
+
+        // Loop through the times for the current file while the
+        // time that was entered is greater than or equal to the
+        // time in the list.
+        if(md->GetTimes().size() == md->GetNumStates())
+        {
+            for(int i = 0; i < md->GetNumStates(); ++i)
+            {
+                if(t <= md->GetTimes()[i])
+                    break;
+                else
+                    ++index;
+            }
+        }
+    }
+    else
+    {
+        int cycle = temp.toInt(&okay);
+        if(!okay)
+        {
+            timeField->setText("");
+            return;
+        } 
+
+        // Loop through the cycles for the current file while the
+        // cycle that was entered is greater than or equal to the
+        // cycle in the list.
+        for(int i = 0; i < md->GetNumStates(); ++i)
+        {
+            if(cycle <= md->GetCycles()[i])
+                break;
+            else
+                ++index;
+        }
     }
 
-    // Loop through the cycles for the current file while the
-    // cycle that was entered is greater than or equal to the
-    // cycle in the list.
-    const avtDatabaseMetaData *md = fileServer->GetMetaData();
-    int index = 0;
-    for(int i = 0; i < md->GetNumStates(); ++i)
-    {
-        if(cycle <= md->GetCycles()[i])
-            break;
-        else
-            ++index;
-    }
     // Make sure that index is no larger than numstates.
     if(index >= md->GetNumStates())
         index = md->GetNumStates() - 1;

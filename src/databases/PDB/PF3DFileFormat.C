@@ -341,9 +341,30 @@ PF3DFileFormat::Initialize()
 // ****************************************************************************
 
 int
-PF3DFileFormat::GetCycle()
+PF3DFileFormat::GetCycle(void)
 {
     return cycle;
+}
+
+// ****************************************************************************
+// Method: PF3DFileFormat::GetTime
+//
+// Purpose: 
+//   Returns the time for the file.
+//
+// Returns:    The time for the file.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Oct 13 15:11:48 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+double
+PF3DFileFormat::GetTime(void)
+{
+    return dtime;
 }
 
 // ****************************************************************************

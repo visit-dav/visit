@@ -36,6 +36,7 @@ public:
     virtual const char   *GetType();
     virtual void          PopulateDatabaseMetaData(avtDatabaseMetaData *);
     virtual int           GetCycle(void);
+    virtual double        GetTime(void);
     virtual vtkDataSet   *GetMesh(const char *var);
     virtual vtkDataArray *GetVar(const char *var);
 protected:
