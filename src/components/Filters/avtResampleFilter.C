@@ -375,6 +375,17 @@ avtResampleFilter::ResampleInput(void)
     CreateViewFromBounds(view, bounds, scale);
 
     //
+    // World space is a right-handed coordinate system.  Image space (as used
+    // in the sample point extractor) is a left-handed coordinate system.
+    // This is because large X is at the right and large Y is at the top.
+    // The z-buffer has the closest points at z=0, so Z is going away from the
+    // screen ===> left handed coordinate system.  If we reflect across X,
+    // then this will account for the difference between the coordinate 
+    // systems.
+    //
+    scale[0] *= -1.;
+
+    //
     // We don't want an Update to go all the way up the pipeline, so make
     // a terminating source corresponding to our input.
     //

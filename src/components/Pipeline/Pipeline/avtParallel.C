@@ -54,13 +54,16 @@ static vector<char> broadcastBuffer(1000);
 //    Jeremy Meredith, Mon Nov  1 16:42:58 PST 2004
 //    Do not close down MPI if we were not the ones to start it.
 //
+//    Mark C. Miller, Wed Jan 12 14:56:33 PST 2005
+//    Removed unary negation from test for whether to call MPI_Finalize
+//
 // ****************************************************************************
 
 void
 PAR_Exit(void)
 {
 #ifdef PARALLEL
-    if (!we_initialized_MPI)
+    if (we_initialized_MPI)
         MPI_Finalize();
 #endif
 }
