@@ -1,6 +1,7 @@
 #include <visitstream.h>
 
 #include <qcombobox.h>
+#include <qheader.h>
 #include <qlabel.h>
 #include <qlistview.h> 
 #include <qlayout.h>
@@ -182,6 +183,11 @@ const int FileTree::FileTreeNode::DATABASE_NODE = 3;
 //   Brad Whitlock, Tue Apr 27 12:11:29 PDT 2004
 //   I improved the spacing for newer versions of Qt.
 //
+//   Jeremy Meredith, Wed Oct 13 20:38:30 PDT 2004
+//   Prevent the header of the file list from being clicked.  Leaving it
+//   enabled allows changing of the sort and in some circumstances broke
+//   time sequences.  ('5391)
+//
 // ****************************************************************************
 
 QvisFilePanel::QvisFilePanel(QWidget *parent, const char *name) :
@@ -197,6 +203,7 @@ QvisFilePanel::QvisFilePanel(QWidget *parent, const char *name) :
     
     // Create the selected file list.
     fileListView = new QListView(this, "fileList");
+    fileListView->header()->setClickEnabled(false);
     fileListView->addColumn("Selected files", 1);
     fileListView->setColumnWidth(0, fileListView->visibleWidth());
     fileListView->setVScrollBarMode(QScrollView::AlwaysOn);
