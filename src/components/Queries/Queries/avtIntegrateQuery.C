@@ -52,6 +52,11 @@ avtIntegrateQuery::~avtIntegrateQuery()
 //  Programmer:   Hank Childs
 //  Creation:     October 3, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Sat Feb 14 09:59:51 PST 2004
+//    Fix cut-n-paste bug.
+//
 // ****************************************************************************
 
 double
@@ -72,7 +77,7 @@ avtIntegrateQuery::CurveQuery(int n1, const float *x1, const float *y1)
         integral += (base1+base2)*height / 2.;
     }
 
-    return sqrt(integral);
+    return integral;
 }
 
 

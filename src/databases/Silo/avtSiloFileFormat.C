@@ -5082,6 +5082,9 @@ avtSiloFileFormat::GetAuxiliaryData(const char *var, int domain,
 //    Hank Childs, Wed Jan 14 12:04:19 PST 2004
 //    Avoid redundant DBGetMultimat calls.
 //
+//    Hank Childs, Fri Feb 13 17:18:04 PST 2004
+//    Add the domain to the CalcMaterial call.
+//
 // ****************************************************************************
 
 avtMaterial *
@@ -5151,7 +5154,7 @@ avtSiloFileFormat::GetMaterial(int dom, const char *mat)
     char   *directory_mat = NULL;
     DetermineFileAndDirectory(matname, domain_file, directory_mat);
 
-    avtMaterial *rv = CalcMaterial(domain_file, directory_mat);
+    avtMaterial *rv = CalcMaterial(domain_file, directory_mat, dom);
 
     if (matname != NULL)
     {
@@ -5388,10 +5391,13 @@ avtSiloFileFormat::GetExternalFacelist(int dom, const char *mesh)
 //    I modified the routine to take into account the major order of
 //    the variable being read.
 //
+//    Hank Childs, Fri Feb 13 17:18:04 PST 2004
+//    Add the domain to the material constructor.
+//
 // ****************************************************************************
 
 avtMaterial *
-avtSiloFileFormat::CalcMaterial(DBfile *dbfile, char *matname)
+avtSiloFileFormat::CalcMaterial(DBfile *dbfile, char *matname, int dom)
 {
     DBmaterial *silomat = DBGetMaterial(dbfile, matname);
     if (silomat == NULL)
@@ -5399,6 +5405,8 @@ avtSiloFileFormat::CalcMaterial(DBfile *dbfile, char *matname)
         EXCEPTION1(InvalidVariableException, matname);
     }
 
+    char dom_string[128];
+    sprintf(dom_string, "Domain %d", dom);
     avtMaterial *mat = new avtMaterial(silomat->nmat,
                                        silomat->matnos,
                                        silomat->matnames,
@@ -5410,7 +5418,8 @@ avtSiloFileFormat::CalcMaterial(DBfile *dbfile, char *matname)
                                        silomat->mix_mat,
                                        silomat->mix_next,
                                        silomat->mix_zone,
-                                       silomat->mix_vf);
+                                       silomat->mix_vf,
+                                       dom_string);
 
     DBFreeMaterial(silomat);
 

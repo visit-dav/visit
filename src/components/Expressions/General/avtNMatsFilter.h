@@ -41,6 +41,9 @@ class EXPRESSION_API avtNMatsFilter : public avtSingleInputExpressionFilter
   protected:
     virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
     virtual bool              IsPointVariable(void)  { return false; };
+
+    virtual avtPipelineSpecification_p
+                             PerformRestriction(avtPipelineSpecification_p);
 };
 
 

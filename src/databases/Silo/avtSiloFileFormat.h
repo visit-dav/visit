@@ -78,6 +78,9 @@ typedef struct
 //    Mark C. Miller, Mon Feb  9 16:10:16 PST 2004
 //    Added interface method, ActivateTimestep
 //
+//    Hank Childs, Fri Feb 13 17:18:04 PST 2004
+//    Added argument to CalcMaterial.
+//
 // ****************************************************************************
 
 class avtSiloFileFormat : public avtSTMDFileFormat
@@ -171,7 +174,7 @@ class avtSiloFileFormat : public avtSTMDFileFormat
                                      int &, int *&, int &, int *&, bool, bool);
 
     avtFacelist          *CalcExternalFacelist(DBfile *, char *);
-    avtMaterial          *CalcMaterial(DBfile *, char *);
+    avtMaterial          *CalcMaterial(DBfile *, char *, int dom);
     avtSpecies           *CalcSpecies(DBfile *, char *);
 
     void                  GetQuadGhostZones(DBquadmesh *, vtkDataSet *);

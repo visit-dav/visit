@@ -7,6 +7,7 @@
 #include <vtkCellData.h>
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
+#include <vtkFloatArray.h>
 #include <vtkPointData.h>
 
 #include <ImproperUseException.h>
@@ -93,6 +94,9 @@ avtUnaryMathFilter::~avtUnaryMathFilter()
 //
 //    Hank Childs, Mon Nov  3 16:02:21 PST 2003
 //    Make use of virtual function CreateArray to create VTK arrays.
+//
+//    Hank Childs, Tue Feb 10 08:33:05 PST 2004
+//    Account for case where there is no variable to work from ['4435].
 //
 // ****************************************************************************
 
@@ -196,10 +200,28 @@ avtUnaryMathFilter::DeriveVariable(vtkDataSet *in_ds)
     //
     // Set up a VTK variable reflecting the calculated variable
     //
-    int ncomps = data->GetNumberOfComponents();
-    int nvals  = data->GetNumberOfTuples();
+    int ncomps = 0;
+    int nvals = 0;
+    vtkDataArray *dv = NULL;
+    if (data == NULL)
+    {
+        //
+        // We could not find a single array.  We must be doing something with
+        // the mesh.
+        //
+        ncomps = 1;
+        nvals = in_ds->GetNumberOfCells();
+        vtkFloatArray *tmp = vtkFloatArray::New();
+        dv = CreateArray(tmp);
+        tmp->Delete();
+    }
+    else
+    {
+        ncomps = data->GetNumberOfComponents();
+        nvals  = data->GetNumberOfTuples();
+        dv = CreateArray(data);
+    }
 
-    vtkDataArray *dv = CreateArray(data);
     int noutcomps = GetNumberOfComponentsInOutput(ncomps);
     dv->SetNumberOfComponents(noutcomps);
     dv->SetNumberOfTuples(nvals);
