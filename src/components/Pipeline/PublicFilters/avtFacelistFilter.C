@@ -58,6 +58,9 @@ using     std::vector;
 //    Jeremy Meredith, Tue Jul  9 09:24:40 PDT 2002
 //    Added initialization of create3DCellNumbers.
 //
+//    Hank Childs, Wed Oct 15 19:17:11 PDT 2003
+//    Added forceFaceConsolidation.
+//
 // ****************************************************************************
 
 avtFacelistFilter::avtFacelistFilter()
@@ -67,6 +70,7 @@ avtFacelistFilter::avtFacelistFilter()
     uf = vtkUnstructuredGridFacelistFilter::New();
     useFacelists = true;
     create3DCellNumbers = false;
+    forceFaceConsolidation = false;
 }
 
 
@@ -126,6 +130,27 @@ void
 avtFacelistFilter::SetCreate3DCellNumbers(bool create)
 {
     create3DCellNumbers = create;
+}
+
+
+// ****************************************************************************
+//  Method:  avtFacelistFilter::SetForceFaceConsolidation
+//
+//  Purpose:
+//      Tells the facelist filter that it can consolidate faces.
+//
+//  Arguments:
+//    create     true if the filter should create the 3D cell number array
+//
+//  Programmer:  Hank Childs
+//  Creation:    October 15, 2003
+//
+// ****************************************************************************
+void
+avtFacelistFilter::SetForceFaceConsolidation(bool afc)
+{
+    forceFaceConsolidation = afc;
+    rf->SetForceFaceConsolidation(afc ? 1 : 0);
 }
 
 
@@ -432,6 +457,10 @@ avtFacelistFilter::Take3DFaces(vtkDataSet *in_ds, int domain)
 //    Hank Childs, Wed Oct  2 17:00:01 PDT 2002
 //    Re-wrote routine by hand.  Approx. 15x faster for structured grids.
 //
+//    Hank Childs, Wed Oct 15 21:09:26 PDT 2003
+//    Use the rectilinear grid facelist filter since it can do face
+//    consolidation.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -462,17 +491,18 @@ avtFacelistFilter::Take2DFaces(vtkDataSet *in_ds)
     //
     // Now create the cells.  Structured ones are easy.
     //
-    if (dstype == VTK_RECTILINEAR_GRID || dstype == VTK_STRUCTURED_GRID)
+    if (dstype == VTK_RECTILINEAR_GRID)
+    {
+        rf->SetInput((vtkRectilinearGrid *) in_ds);
+        rf->SetOutput(out_ds);
+        out_ds->Update();
+        rf->SetOutput(NULL);
+        out_ds->SetSource(NULL);
+    }
+    else if (dstype == VTK_STRUCTURED_GRID)
     {
         int dims[3];
-        if (dstype == VTK_RECTILINEAR_GRID)
-        {
-            ((vtkRectilinearGrid *) in_ds)->GetDimensions(dims);
-        }
-        else
-        {
-            ((vtkStructuredGrid *) in_ds)->GetDimensions(dims);
-        }
+        ((vtkStructuredGrid *) in_ds)->GetDimensions(dims);
         int nx = dims[0]-1;
         int ny = dims[1]-1;
         int ncells = nx*ny;

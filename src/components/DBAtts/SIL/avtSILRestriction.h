@@ -99,6 +99,8 @@ class DBATTS_API avtSILRestriction : public avtSIL
     void                      Union(avtSILRestriction_p);
 
     void                      RestrictDomains(const std::vector<int> &);
+    void                      RestrictDomainsForLoadBalance(
+                                                    const std::vector<int> &);
 
     SILRestrictionAttributes *MakeAttributes(void) const;
     CompactSILRestrictionAttributes *
@@ -117,6 +119,8 @@ class DBATTS_API avtSILRestriction : public avtSIL
     void                      GetLeafSets(int, std::vector<int> &);
 
   private:
+    void                      RestrictDomains(const std::vector<int> &,
+                                              bool forLoadBalance);
                               avtSILRestriction();
                               avtSILRestriction(const avtSILRestriction &);
     const avtSILRestriction  &operator=(const avtSILRestriction &);

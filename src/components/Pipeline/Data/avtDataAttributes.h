@@ -209,6 +209,13 @@ class PIPELINE_API avtDataAttributes
     const std::string       &GetZUnits(void) const { return zUnits; };
     void                     SetZUnits(const std::string &s) { zUnits=s; };
 
+    const std::string       &GetXLabel(void) const { return xLabel; };
+    void                     SetXLabel(const std::string &s) { xLabel=s; };
+    const std::string       &GetYLabel(void) const { return yLabel; };
+    void                     SetYLabel(const std::string &s) { yLabel=s; };
+    const std::string       &GetZLabel(void) const { return zLabel; };
+    void                     SetZLabel(const std::string &s) { zLabel=s; };
+
     bool                     HasTransform(void); 
     void                     SetTransform(const double *);
     const avtMatrix         *GetTransform(void) { return transform;};
@@ -255,6 +262,9 @@ class PIPELINE_API avtDataAttributes
     std::string              xUnits;
     std::string              yUnits;
     std::string              zUnits;
+    std::string              xLabel;
+    std::string              yLabel;
+    std::string              zLabel;
 
     void                     WriteLabels(avtDataObjectString &,
                                          const avtDataObjectWriter *);

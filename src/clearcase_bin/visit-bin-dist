@@ -243,8 +243,14 @@ endif
 # Determine the operating system.
 #
 if("$OSGiven" == "FALSE") then
-   set uname = `which uname`
-   set os = `$uname -s | tr "[A-Z]" "[a-z]" | tr -d "[0-9]"`
+    if(-e /bin/uname) then 
+        set os = `/bin/uname -s | tr "[A-Z]" "[a-z]" | tr -d "[0-9]"`
+    else if(-e /usr/bin/uname) then
+        set os = `/usr/bin/uname -s | tr "[A-Z]" "[a-z]" | tr -d "[0-9]"`
+    else
+        echo "Can't find uname program!"
+        exit
+    endif
 endif
 
 #

@@ -141,6 +141,7 @@ Ghost_src= \
   Ghost/avtDomainBoundaries.C \
   Ghost/avtStructuredDomainBoundaries.C \
   Ghost/avtUnstructuredDomainBoundaries.C \
+  Ghost/avtStructuredDomainNesting.C \
   Ghost/avtUnstructuredPointBoundaries.C
 
 CPPFLAGS=-I../../include @COMPONENT_CPPFLAGS@ @CPPFLAGS@

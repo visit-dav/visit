@@ -97,6 +97,24 @@ avtGhostZoneAndFacelistFilter::SetCreate3DCellNumbers(bool val)
 
 
 // ****************************************************************************
+//  Method: avtGhostZoneAndFacelistFilter::SetForceFaceConsolidation
+//
+//  Purpose:
+//      Used to tell the facelist filter to consolidate faces.
+//
+//  Programmer: Hank Childs
+//  Creation:   October 15, 2003
+//
+// ****************************************************************************
+
+void
+avtGhostZoneAndFacelistFilter::SetForceFaceConsolidation(bool val)
+{
+    faceFilter->SetForceFaceConsolidation(val);
+}
+
+
+// ****************************************************************************
 //  Method: avtGhostZoneAndFacelistFilter::Execute
 //
 //  Purpose:
@@ -131,6 +149,9 @@ avtGhostZoneAndFacelistFilter::SetCreate3DCellNumbers(bool val)
 //    Hank Childs, Thu May 15 16:31:41 PDT 2003
 //    Fixed a problem where under bizarre circumstances, the ghost zone filter
 //    is applied when it should not be ['3352].
+//
+//    Mark C. Miller, Thu Oct 16 05:46:06 PDT 2003
+//    Added condition that if ghost were CREATED, apply facelist filter first
 //
 // ****************************************************************************
 
@@ -174,7 +195,8 @@ avtGhostZoneAndFacelistFilter::Execute(void)
     else
     {
         // if we are using all the data, apply the facelist filter first.
-        bool faceFirst = v.GetUsingAllDomains();
+        bool faceFirst = v.GetUsingAllDomains() ||
+                         (a.GetContainsGhostZones() == AVT_CREATED_GHOSTS);
 
         if (faceFirst)
         {

@@ -22,7 +22,7 @@
 
 #include <avtDatabaseMetaData.h>
 #include <avtIntervalTree.h>
-#include <avtStructuredDomainBoundaries.h>
+#include <avtStructuredDomainNesting.h>
 #include <avtVariableCache.h>
 
 #include <BadIndexException.h>
@@ -36,23 +36,6 @@ using std::string;
 
 static string GetDirName(const char *path);
 static string GetNameLevel(const char *name_level_str, unsigned int &level, char link);
-
-static int numColors = 12;
-static int colors[][4] = {
-  {255,   0,   0, 255},
-  {  0, 255,   0, 255},
-  {  0,   0, 255, 255},
-  {  0, 255, 255, 255},
-  {255,   0, 255, 255},
-  {255, 255,   0, 255},
-  {255, 135,   0, 255},
-  {255,   0, 135, 255},
-  {  0, 255, 135, 255},
-  {135, 255,   0, 255},
-  {  0, 135, 255, 255},
-  {135,   0, 255, 255}
-};
-
 
 // ****************************************************************************
 //  Constructor:  avtSAMRAIFileFormat::avtSAMRAIFileFormat
@@ -90,11 +73,6 @@ avtSAMRAIFileFormat::avtSAMRAIFileFormat(const char *fname)
     dir_name = GetDirName(fname);
     file_name = fname;
 
-    ReadMetaDataFile();
-
-    cached_patches = new vtkDataSet*[num_patches];
-    for (int p=0; p<num_patches; p++)
-        cached_patches[p] = NULL;
 }
 
 // ****************************************************************************
@@ -616,6 +594,8 @@ avtSAMRAIFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     {
         static const char *mesh_name = "amr_mesh";
 
+        ReadMetaDataFile();
+
         avtMeshMetaData *mesh = new avtMeshMetaData;
         mesh->name = mesh_name;
 
@@ -636,7 +616,7 @@ avtSAMRAIFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         for (int i = 0; i < num_patches; i++)
         {
            char tmpName[64];
-           sprintf(tmpName,"patch%d",patch_map[i].patch_number);
+           sprintf(tmpName,"level%d,patch%d",patch_map[i].level_number, patch_map[i].patch_number);
 
            groupIds[i] = patch_map[i].level_number;
            blockPieceNames[i] = tmpName;
@@ -663,7 +643,6 @@ avtSAMRAIFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 
         md->Add(plot);
         
-        int v=0;
         std::map<std::string, var_t>::const_iterator var_it;
         for (var_it = var_names_num_components.begin();
              var_it != var_names_num_components.end(); 
@@ -796,7 +775,13 @@ avtSAMRAIFileFormat::ReadMetaDataFile()
         ReadParentArray(h5_file);
         ReadParentPointerArray(h5_file);
 
+        BuildDomainNestingInfo();
+
         H5Fclose(h5_file);
+
+        cached_patches = new vtkDataSet*[num_patches];
+        for (int p=0; p<num_patches; p++)
+            cached_patches[p] = NULL;
     }
 }
 
@@ -1751,6 +1736,76 @@ avtSAMRAIFileFormat::ReadParentPointerArray(hid_t &h5_file)
     H5Tclose(h5_datatype);
 }
 
+// ****************************************************************************
+//  Method:  BuildDomainNestingInfo 
+//
+//  Purpose:
+//    Builds the domain nesting information object and caches it 
+//
+//  Programmer:  Mark C. Miller 
+//  Creation:    October 13, 2003 
+//
+// ****************************************************************************
+void 
+avtSAMRAIFileFormat::BuildDomainNestingInfo()
+{
+
+    if (child_array_length > 0)
+    {
+
+        //
+        // build the avtDomainNesting object
+        //
+        avtStructuredDomainNesting *dn =
+            new avtStructuredDomainNesting(num_patches, num_levels);
+
+        dn->SetNumDimensions(num_dim_problem);
+
+        //
+        // Set refinement level ratio information
+        //
+        vector<int> ratios(3,1);
+        dn->SetLevelRefinementRatios(0, ratios);
+        for (int i = 1; i < num_levels; i++)
+        {
+           vector<int> ratios(3);
+           ratios[0] = ratios_coarser_levels[3*i+0];
+           ratios[1] = ratios_coarser_levels[3*i+1];
+           ratios[2] = ratios_coarser_levels[3*i+2];
+           dn->SetLevelRefinementRatios(i, ratios);
+        }
+
+        //
+        // set each domain's level, children and logical extents
+        //
+        for (int i = 0; i < num_patches; i++)
+        {
+            vector<int> childPatches;
+            for (int j = 0; j < child_pointer_array[i].number_children; j++)
+            {
+               int offset = child_pointer_array[i].offset;
+               childPatches.push_back(child_array[offset+j]);
+            }
+
+            vector<int> logExts(6);
+            logExts[0] = patch_extents[i].lower[0];
+            logExts[1] = patch_extents[i].lower[1];
+            logExts[2] = patch_extents[i].lower[2];
+            logExts[3] = patch_extents[i].upper[0];
+            logExts[4] = patch_extents[i].upper[1];
+            logExts[5] = patch_extents[i].upper[2];
+
+            dn->SetNestingForDomain(i, patch_map[i].level_number,
+                childPatches, logExts);
+        }
+
+        void_ref_ptr vr = void_ref_ptr(dn, avtStructuredDomainNesting::Destruct);
+
+        cache->CacheVoidRef("any_mesh", AUXILIARY_DATA_DOMAIN_NESTING_INFORMATION,
+            timestep, -1, vr);
+
+    }
+}
 
 // ****************************************************************************
 //  Method:  GetPatchOffset

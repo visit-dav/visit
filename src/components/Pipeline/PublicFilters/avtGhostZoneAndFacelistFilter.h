@@ -47,6 +47,7 @@ class PIPELINE_API avtGhostZoneAndFacelistFilter :
 
     void                  SetUseFaceFilter(bool val) { useFaceFilter = val; };
     void                  SetCreate3DCellNumbers(bool val);
+    void                  SetForceFaceConsolidation(bool);
 
     virtual void          ReleaseData(void);
 

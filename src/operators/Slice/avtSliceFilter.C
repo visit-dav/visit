@@ -911,6 +911,9 @@ avtSliceFilter::ReleaseData(void)
 //    Do not project the extents here, since the origin has not been
 //    established yet.
 //
+//    Hank Childs, Wed Oct 15 21:50:27 PDT 2003
+//    Re-arrange the labels when we are slicing orthogonally.
+//
 // ****************************************************************************
 
 void
@@ -928,6 +931,52 @@ avtSliceFilter::RefashionDataObjectInfo(void)
         outAtts.SetSpatialDimension(2);
         outValidity.InvalidateSpatialMetaData();
         outValidity.SetPointsWereTransformed(true);
+    }
+
+    if (atts.GetProject2d())
+    {
+        const double *normal = atts.GetNormal();
+        const double *up     = atts.GetUpAxis();
+        if ((normal[0] != 0.) && (normal[1] == 0.) && (normal[2] == 0.))
+        {
+            if ((up[0] == 0.) && (up[1] != 0.) && (up[2] == 0.))
+            {
+                outAtts.SetXLabel(inAtts.GetZLabel());
+                outAtts.SetZLabel(inAtts.GetXLabel());
+            }
+            else if ((up[0] == 0.) && (up[1] == 0.) && (up[2] != 0.))
+            {
+                outAtts.SetXLabel(inAtts.GetYLabel());
+                outAtts.SetYLabel(inAtts.GetZLabel());
+                outAtts.SetZLabel(inAtts.GetXLabel());
+            }
+        }
+        if ((normal[0] == 0.) && (normal[1] != 0.) && (normal[2] == 0.))
+        {
+            if ((up[0] != 0.) && (up[1] == 0.) && (up[2] == 0.))
+            {
+                outAtts.SetYLabel(inAtts.GetXLabel());
+                outAtts.SetXLabel(inAtts.GetZLabel());
+                outAtts.SetZLabel(inAtts.GetYLabel());
+            }
+            else if ((up[0] == 0.) && (up[1] == 0.) && (up[2] != 0.))
+            {
+                outAtts.SetYLabel(inAtts.GetZLabel());
+                outAtts.SetZLabel(inAtts.GetYLabel());
+            }
+        }
+        if ((normal[0] == 0.) && (normal[1] == 0.) && (normal[2] != 0.))
+        {
+            if ((up[0] != 0.) && (up[1] == 0.) && (up[2] == 0.))
+            {
+                outAtts.SetXLabel(inAtts.GetYLabel());
+                outAtts.SetYLabel(inAtts.GetXLabel());
+            }
+            else if ((up[0] == 0.) && (up[1] != 0.) && (up[2] == 0.))
+            {
+                // Pretty much a no-op
+            }
+        }
     }
 }
 

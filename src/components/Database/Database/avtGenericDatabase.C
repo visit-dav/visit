@@ -33,6 +33,7 @@
 #include <avtDatabaseMetaData.h>
 #include <avtDatasetCollection.h>
 #include <avtDomainBoundaries.h>
+#include <avtDomainNesting.h>
 #include <avtFileFormatInterface.h>
 #include <avtMetaData.h>
 #include <avtMixedVariable.h>
@@ -239,8 +240,10 @@ avtGenericDatabase::GetOutput(avtDataSpecification_p spec,
     //
     avtSILRestriction_p silr = spec->GetRestriction();
     avtSILRestrictionTraverser trav(silr);
-    vector<int> domains;
+    vector<int> domains, allDomains;
     trav.GetDomainList(domains);
+    trav.GetDomainListAllProcs(allDomains);
+
 
     //
     // Set up a data tree for each of the domains.
@@ -335,6 +338,12 @@ avtGenericDatabase::GetOutput(avtDataSpecification_p spec,
     {
         didGhosts = CommunicateGhosts(datasetCollection, domains, spec, src);
     }
+
+    //
+    // Apply ghosting when domains nest within other domains (AMR meshes)
+    //
+    bool didNestingGhosts =
+        ApplyGhostForDomainNesting(datasetCollection, domains, allDomains, spec);
 
     //
     // Finally, do the material selection.
@@ -3554,6 +3563,72 @@ avtGenericDatabase::CommunicateGhosts(avtDatasetCollection &ds,
 
     return rv;
 }
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::ApplyGhostForDomainNesting
+//
+//  Purpose:
+//      When domains nest within each other (as for an AMR mesh), this method
+//      will apply the "vtkGhostLevels" label to any zones in coarser domains 
+//      that have finer domains in the current selection.
+//
+//      Note: In addition to knowing the list of domains being processed on
+//      this processor, we also need to know the list of domains being
+//      processed on all processors. The fact is, this processor may contain
+//      a coarse domain that should have zones ghosted out due to a finer
+//      patch in the current selection but living on another processor 
+//
+//  Arguments:
+//      ds        The dataset collection.
+//      doms      A list of domains.
+//      spec      A data specification.
+//
+//  Returns:      True if any zones where ghosted.  False otherwise.
+//
+//  Programmer:   Mark C. Miller
+//  Creation:     October 13, 2003
+//
+// ****************************************************************************
+
+bool
+avtGenericDatabase::ApplyGhostForDomainNesting(avtDatasetCollection &ds, 
+   vector<int> &doms, vector<int> &allDoms, avtDataSpecification_p &spec)
+{
+    bool rv = false;
+
+    void_ref_ptr vr = cache.GetVoidRef("any_mesh",
+                                   AUXILIARY_DATA_DOMAIN_NESTING_INFORMATION,
+                                  spec->GetTimestep(), -1);
+
+    if (*vr != NULL)
+    {
+        int  i;
+        avtDomainNesting *dn = (avtDomainNesting*)*vr;
+
+        vector<vtkDataSet *> list;
+        for (i = 0 ; i < doms.size() ; i++)
+        {
+            list.push_back(ds.GetDataset(i, 0));
+            list[i]->Register(NULL);
+        }
+
+        rv = dn->ApplyGhost(doms, allDoms, list);
+
+        //
+        // Tell everything downstream that we do have ghost zones.
+        //
+        if (rv)
+        {
+            int ts = spec->GetTimestep();
+            avtDatabaseMetaData *md = GetMetaData(ts);
+            string meshname = md->MeshForVar(spec->GetVariable());
+            GetMetaData(ts)->SetContainsGhostZones(meshname, AVT_CREATED_GHOSTS);
+        }
+    }
+
+    return rv;
+}
+
 
 // ****************************************************************************
 //  Method: avtGenericDatabase::MaterialSelect

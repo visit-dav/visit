@@ -431,7 +431,7 @@ LoadBalancer::Reduce(avtPipelineSpecification_p input)
             }
         }
 
-        silr->RestrictDomains(mylist);
+        silr->RestrictDomainsForLoadBalance(mylist);
         pipelineInfo[input->GetPipelineIndex()].complete = true;
     }
     else
@@ -607,7 +607,7 @@ LoadBalancer::Reduce(avtPipelineSpecification_p input)
             else
             {
                 vector<int> domainList(1, domain);
-                new_data->GetRestriction()->RestrictDomains(domainList);
+                new_data->GetRestriction()->RestrictDomainsForLoadBalance(domainList);
             }
         }
     }

@@ -41,6 +41,9 @@
 //    Eric Brugger, Wed Jul 16 11:17:28 PDT 2003
 //    Modified to work with the new way legends are managed.
 //
+//    Hank Childs, Wed Oct 15 20:30:10 PDT 2003
+//    Tell facelist filter to consolidate faces.
+//
 // ****************************************************************************
 
 avtSubsetPlot::avtSubsetPlot()
@@ -65,8 +68,10 @@ avtSubsetPlot::avtSubsetPlot()
 
     wf    = new avtFeatureEdgesFilter();
     gzfl  = new avtGhostZoneAndFacelistFilter();
+    gzfl->SetForceFaceConsolidation(true);
     gz    = new avtGhostZoneFilter();
     fl    = new avtFacelistFilter();
+    fl->SetForceFaceConsolidation(true);
     sub   = new avtSubsetFilter();
     smooth= new avtSmoothPolyDataFilter();
 }

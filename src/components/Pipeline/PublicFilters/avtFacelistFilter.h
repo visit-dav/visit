@@ -67,6 +67,7 @@ class PIPELINE_API avtFacelistFilter : public avtStreamer
     virtual void                         ReleaseData(void);
 
     void                                 SetCreate3DCellNumbers(bool);
+    void                                 SetForceFaceConsolidation(bool);
 
   protected:
     vtkRectilinearGridFacelistFilter    *rf;
@@ -74,6 +75,7 @@ class PIPELINE_API avtFacelistFilter : public avtStreamer
     vtkUnstructuredGridFacelistFilter   *uf;
     bool                                 useFacelists;
     bool                                 create3DCellNumbers;
+    int                                  forceFaceConsolidation;
 
     virtual vtkDataSet                  *ExecuteData(vtkDataSet *, int,
                                                      std::string);

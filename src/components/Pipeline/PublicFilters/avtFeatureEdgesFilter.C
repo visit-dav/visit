@@ -41,6 +41,10 @@ using     std::string;
 //    Renamed to ExecuteData and handled memory issues entirely from within
 //    routine.
 //
+//    Hank Childs, Wed Oct 15 21:19:00 PDT 2003
+//    Improved for the single cell case -- VTK feature edges was handling
+//    poorly.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -58,39 +62,93 @@ avtFeatureEdgesFilter::ExecuteData(vtkDataSet *inDS, int, string)
         return inDS;
     }
 
-    //
-    // Set up and apply the filter
-    //
-    vtkFeatureEdges *featureEdgesFilter = vtkFeatureEdges::New();
-    featureEdgesFilter->SetInput((vtkPolyData*)inDS);
-    vtkPolyData *newDS = vtkPolyData::New();
-    featureEdgesFilter->SetOutput(newDS);
+    vtkDataSet *outDS = NULL;
 
-    featureEdgesFilter->BoundaryEdgesOn();
-    if (GetInput()->GetInfo().GetAttributes().GetSpatialDimension() == 3)
+    if (inDS->GetNumberOfCells() == 1)
     {
-        featureEdgesFilter->FeatureEdgesOn();
-        featureEdgesFilter->SetFeatureAngle(60.0);
+        //
+        // VTK doesn't do a good job with 1-cell feature edges, so just do it
+        // ourselves.
+        //
+        int  i;
+
+        vtkCell *cell = inDS->GetCell(0);
+        vtkPolyData  *output = vtkPolyData::New();
+        vtkCellData  *inCD   = inDS->GetCellData();
+        vtkPointData *inPD   = inDS->GetPointData();
+        vtkCellData  *outCD  = output->GetCellData();
+        vtkPointData *outPD  = output->GetPointData();
+        
+        vtkIdList *ids = cell->GetPointIds();
+        int npts = ids->GetNumberOfIds();
+        vtkPoints *pts = vtkPoints::New();
+        pts->SetNumberOfPoints(npts);
+        outPD->CopyAllocate(inPD, npts);
+        for (i = 0 ; i < npts ; i++)
+        {
+             outPD->CopyData(inPD, ids->GetId(i), i);
+             float pt[3];
+             inDS->GetPoint(ids->GetId(i), pt);
+             pts->SetPoint(i, pt);
+        }
+        int ncells = cell->GetNumberOfEdges();
+        outCD->CopyAllocate(inCD, ncells);
+        vtkCellArray *lines = vtkCellArray::New();
+        lines->Allocate(ncells*(2+1));
+        for (i = 0 ; i < ncells ; i++)
+        {
+             outCD->CopyData(inCD, 0, i);
+             vtkCell *edge = cell->GetEdge(i);
+             vtkIdList *edge_ids = edge->GetPointIds();
+             int line[2];
+             line[0] = edge_ids->GetId(0);
+             line[1] = edge_ids->GetId(1);
+             lines->InsertNextCell(2, line);
+        }
+
+        output->SetPoints(pts);
+        pts->Delete();
+        output->SetLines(lines);
+        lines->Delete();
+
+        ManageMemory(output);
+        output->Delete();
+        outDS = output;
     }
     else
     {
-        featureEdgesFilter->FeatureEdgesOff();
+        //
+        // Set up and apply the filter
+        //
+        vtkFeatureEdges *featureEdgesFilter = vtkFeatureEdges::New();
+        featureEdgesFilter->SetInput((vtkPolyData*)inDS);
+        vtkPolyData *newDS = vtkPolyData::New();
+        featureEdgesFilter->SetOutput(newDS);
+
+        featureEdgesFilter->BoundaryEdgesOn();
+        if (GetInput()->GetInfo().GetAttributes().GetSpatialDimension() == 3)
+        {
+            featureEdgesFilter->FeatureEdgesOn();
+            featureEdgesFilter->SetFeatureAngle(60.0);
+        }
+        else
+        {
+            featureEdgesFilter->FeatureEdgesOff();
+        }
+        featureEdgesFilter->NonManifoldEdgesOff();
+        featureEdgesFilter->ManifoldEdgesOff();
+        featureEdgesFilter->ColoringOff();
+
+        newDS->Update();
+
+        if (newDS->GetNumberOfCells() > 0)
+        {
+            outDS = newDS;
+        }
+        ManageMemory(outDS);
+        newDS->Delete();
+        featureEdgesFilter->Delete();
     }
-    featureEdgesFilter->NonManifoldEdgesOff();
-    featureEdgesFilter->ManifoldEdgesOff();
-    featureEdgesFilter->ColoringOff();
-
-    newDS->Update();
-
-    vtkDataSet *outDS = NULL;
-    if (newDS->GetNumberOfCells() > 0)
-    {
-        outDS = newDS;
-    }
-
-    ManageMemory(outDS);
-    newDS->Delete();
-    featureEdgesFilter->Delete();
 
     return outDS;
 }
