@@ -12,6 +12,7 @@
 #include <vtkPointData.h>
 
 #include <avtDatabaseMetaData.h>
+#include <avtMaterial.h>
 #include <avtVariableCache.h>
 
 #include <BadIndexException.h>
@@ -22,6 +23,9 @@
 using     std::string;
 using     std::vector;
 using     std::sort;
+
+
+vector< vector<string> >   *avtExodusFileFormat::globalFileLists = NULL;
 
 
 // ****************************************************************************
@@ -38,6 +42,9 @@ using     std::sort;
 //    Hank Childs, Tue Apr  8 10:58:18 PDT 2003
 //    Defer reading in the file.
 //
+//    Hank Childs, Thu Jul 22 14:28:10 PDT 2004
+//    Add support for registering file lists.
+//
 // ****************************************************************************
 
 avtExodusFileFormat::avtExodusFileFormat(const char *name)
@@ -46,6 +53,37 @@ avtExodusFileFormat::avtExodusFileFormat(const char *name)
     reader = NULL;
     cache  = NULL;
     readInFile = false;
+    fileList = -1;
+}
+
+
+// ****************************************************************************
+//  Method: avtExodusFileFormat::RegisterFileList
+//
+//  Purpose:
+//      Registers a file list with this format.  The file list is the "real"
+//      list of file names in the Nemesis file.
+//
+//  Programmer: Hank Childs
+//  Creation:   July 22, 2004
+//
+// ****************************************************************************
+
+int
+avtExodusFileFormat::RegisterFileList(const char *const *list, int nlist)
+{
+    if (globalFileLists == NULL)
+    {
+        globalFileLists = new vector< vector<string> >;
+    }
+
+    vector<string> thisList(nlist);
+    for (int i = 0 ; i < nlist ; i++)
+        thisList[i] = list[i];
+
+    globalFileLists->push_back(thisList);
+
+    return globalFileLists->size()-1;
 }
 
 
@@ -171,6 +209,9 @@ avtExodusFileFormat::FreeUpResources(void)
 //    Hank Childs, Sun Jun 27 10:31:18 PDT 2004
 //    Tell the reader that it should always generate the global node id numbers
 //
+//    Hank Childs, Thu Jul 22 10:43:36 PDT 2004
+//    Tell the reader to generate block ids.
+//
 // ****************************************************************************
 
 vtkExodusReader *
@@ -184,6 +225,7 @@ avtExodusFileFormat::GetReader(void)
     reader = vtkExodusReader::New();
     reader->SetFileName(filenames[0]);
     reader->SetGenerateNodeGlobalIdArray(1);
+    reader->SetGenerateBlockIdCellArray(1);
 
     //
     // Everything we want will assume that at least the information has been
@@ -310,6 +352,9 @@ avtExodusFileFormat::GetNTimesteps(void)
 //    Hank Childs, Sun Jun 27 13:20:51 PDT 2004
 //    Indicate that we have global node ids.
 //
+//    Hank Childs, Thu Jul 22 14:41:51 PDT 2004
+//    Use the real filenames when creating the SIL.
+//
 // ****************************************************************************
 
 void
@@ -337,8 +382,13 @@ avtExodusFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     mesh->blockOrigin = 0;
     mesh->spatialDimension = spatialDimension;
     mesh->topologicalDimension = spatialDimension;
-    mesh->blockTitle = "file";
-    mesh->blockPieceName = "file";
+    mesh->blockTitle = "File";
+    if (globalFileLists != NULL && fileList >= 0 && 
+        (fileList < globalFileLists->size()))
+    {
+        mesh->blockNames = (*globalFileLists)[fileList];
+    }
+    mesh->blockPieceName = "File";
     mesh->containsGlobalNodeIds = true;
     md->Add(mesh);
 
@@ -448,15 +498,7 @@ avtExodusFileFormat::GetMesh(int ts, const char *mesh)
     //
     // See if we have this cached.
     //
-    const char *matname = NULL;
-    if (doMaterialSelection)
-    {
-        matname = materialName;
-    }
-    else
-    {
-        matname = "_all";
-    }
+    const char *matname = "_all";
     int fts = 0;
     int dom = 0;
     vtkDataSet *cmesh = (vtkDataSet *) cache->GetVTKObject(mesh,
@@ -559,6 +601,7 @@ avtExodusFileFormat::GetVar(int ts, const char *var)
 }
 
 
+
 // ****************************************************************************
 //  Method: avtExodusFileFormat::GetVectorVar
 //
@@ -628,6 +671,70 @@ avtExodusFileFormat::GetVectorVar(int ts, const char *var)
 
 
 // ****************************************************************************
+//  Method: avtExodusFileFormat::GetAuxiliaryData
+//
+//  Purpose:
+//      Gets the auxiliary data specified.
+//
+//  Arguments:
+//      var        The variable of interest.
+//      ts         The timestep of interest.
+//      type       The type of auxiliary data.
+//      <unnamed>  The arguments for that type -- not used.
+//      df         Destructor function.
+//
+//  Returns:    The auxiliary data.
+//
+//  Programmer: Hank Childs
+//  Creation:   July 22, 2004
+//
+// ****************************************************************************
+
+void *
+avtExodusFileFormat::GetAuxiliaryData(const char *var, int ts, 
+                                    const char * type, void *,
+                                    DestructorFunction &df)
+{
+    int   i;
+
+    if (strcmp(type, AUXILIARY_DATA_MATERIAL) != 0)
+        return NULL;
+
+    if (strstr(var, "ElementBlock") != var)
+        EXCEPTION1(InvalidVariableException, var);
+
+    vtkDataSet *ds = ForceRead("_none");
+    if (ds == NULL)
+        return NULL;
+    vtkDataArray *arr = ds->GetCellData()->GetArray("BlockId");
+    if (arr == NULL)
+        return NULL;
+    
+    int nzones = ds->GetNumberOfCells();
+
+    vector<int> sortedBlockIds = blockId;
+    sort(sortedBlockIds.begin(), sortedBlockIds.end());
+    std::vector<std::string> mats(numBlocks);
+    for (i = 0 ; i < numBlocks ; i++)
+    {
+        char num[1024];
+        sprintf(num, "%d", sortedBlockIds[i]);
+        mats[i] = num;
+    }
+
+    int *mat_0 = new int[nzones];
+    int *ptr = (int *) arr->GetVoidPointer(0);
+    for (i = 0 ; i < nzones ; i++)
+        mat_0[i] = ptr[i]-1;
+    avtMaterial *mat = new avtMaterial(numBlocks, mats, nzones, mat_0,
+                                       0, NULL, NULL, NULL, NULL);
+    delete [] mat_0;
+    df = avtMaterial::Destruct;
+    return (void*) mat;
+}
+
+
+// ****************************************************************************
 //  Method: avtExodusFileFormat::SetTimestep
 //
 //  Purpose:
@@ -649,54 +756,6 @@ avtExodusFileFormat::SetTimestep(int ts)
 
     vtkExodusReader *rdr = GetReader();
     rdr->SetTimeStep(ts+1);
-}
-
-
-// ****************************************************************************
-//  Method: avtExodusFileFormat::GetBlockInformation
-//
-//  Purpose:
-//      Determine which block we should read in.
-//
-//  Arguments:
-//      bIdx    A location to place a block index.
-//
-//  Returns:    True if we should read in only one block, false otherwise.
-//
-//  Programmer: Hank Childs
-//  Creation:   October 9, 2001
-//
-// ****************************************************************************
-
-bool
-avtExodusFileFormat::GetBlockInformation(int &bIdx)
-{
-    if (!doMaterialSelection)
-    {
-        return false;
-    }
-
-    bool gotBlock = false;
-    for (int i = 0 ; i < numBlocks ; i++)
-    {
-        char name[1024];
-        sprintf(name, "%d", blockId[i]);
-        if (strcmp(name, materialName) == 0)
-        {
-            bIdx = i;
-            gotBlock = true;
-            break;
-        }
-    }
-
-    if (!gotBlock)
-    {
-        debug1 << "Exodus file format could not find block "
-               << materialName << endl;
-        return false;
-    }
-
-    return true;
 }
 
 
@@ -788,42 +847,9 @@ avtExodusFileFormat::ForceRead(const char *var)
 {
     vtkExodusReader *rdr = GetReader();
 
-    //
-    // Determine which block we should read in.
-    //
-    int  bId;
-    bool useBlockIds = GetBlockInformation(bId);
-
-    //
-    // It might be a block that is not valid for this domain (this frequently
-    // happens with Exodus files).  If so, just return a dummy.
-    //
-    if (useBlockIds)
-    {
-        if (!validBlock[bId])
-        {
-            debug5 << "Asked Exodus file for a block that it does not have, "
-                   << "returning NULL." << endl;
-            return NULL;
-        }
-    }
-
-    //
-    // We can use the "pieces" mechanism to only read in part of the Exodus
-    // file.  We can bypass it if we want to read in the whole thing -- the
-    // else case.
-    //
     vtkDataSet *ds = rdr->GetOutput();
-    if (useBlockIds)
-    {
-        ds->SetUpdatePiece(bId);
-        ds->SetUpdateNumberOfPieces(numBlocks);
-    }
-    else
-    {
-        ds->SetUpdatePiece(0);
-        ds->SetUpdateNumberOfPieces(1);
-    }
+    ds->SetUpdatePiece(0);
+    ds->SetUpdateNumberOfPieces(1);
 
     //
     // Use a helper function to set up the reader to only read in the variable

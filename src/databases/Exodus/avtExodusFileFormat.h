@@ -7,6 +7,9 @@
 
 #include <avtMTSDFileFormat.h>
 
+#include <vector>
+#include <string>
+
 
 class     vtkExodusReader;
 
@@ -30,6 +33,10 @@ class     avtVariableCache;
 //    Hank Childs, Sat Apr 17 07:42:40 PDT 2004
 //    Added support for times.
 //
+//    Hank Childs, Thu Jul 22 11:29:31 PDT 2004
+//    Make materials go throw the standard generic database path.  Also add
+//    support for registering file lists.
+//
 // ****************************************************************************
 
 class avtExodusFileFormat : public avtMTSDFileFormat
@@ -37,6 +44,9 @@ class avtExodusFileFormat : public avtMTSDFileFormat
   public:
                                 avtExodusFileFormat(const char *);
     virtual                    ~avtExodusFileFormat();
+ 
+    static int                  RegisterFileList(const char *const *, int);
+    void                        SetFileList(int fl) { fileList = fl; };
 
     virtual void                FreeUpResources(void);
     const char                 *GetType(void) { return "Exodus File Format"; };
@@ -50,7 +60,10 @@ class avtExodusFileFormat : public avtMTSDFileFormat
     virtual vtkDataArray       *GetVectorVar(int, const char *);
 
     virtual void                PopulateDatabaseMetaData(avtDatabaseMetaData*);
-    virtual bool                PerformsMaterialSelection(void) {return true;};
+
+    virtual void         *GetAuxiliaryData(const char *var, int, 
+                                           const char *type, void *args,
+                                           DestructorFunction &);
 
   protected:
     vtkExodusReader            *reader;
@@ -61,9 +74,13 @@ class avtExodusFileFormat : public avtMTSDFileFormat
     std::vector<std::string>    cellVars;
     avtVariableCache           *cache;
     bool                        readInFile;
+    int                         fileList;
+
+    // Note: this needs to be a pointer because there are issues with 
+    // constructors being called in shared libraries for static objects.
+    static std::vector< std::vector<std::string> > *globalFileLists;
 
     vtkExodusReader            *GetReader(void);
-    bool                        GetBlockInformation(int &);
     void                        SetTimestep(int);
     void                        LoadVariable(vtkExodusReader *, const char *);
     vtkDataSet                 *ForceRead(const char *);

@@ -81,6 +81,8 @@ ExodusCommonPluginInfo::GetDefaultExtensions()
 //    Hank Childs, Tue Feb 25 13:56:42 PST 2003
 //    Account for .EXODUS, .nemesis, and .NEMESIS.
 //
+//    Hank Childs, Thu Jul 22 11:29:31 PDT 2004
+//    Register the file list 
 // ****************************************************************************
 avtDatabase *
 ExodusCommonPluginInfo::SetupDatabase(const char *const *list,
@@ -124,10 +126,25 @@ ExodusCommonPluginInfo::SetupDatabase(const char *const *list,
         return rv;
     }
 
+    //
+    // We don't want to register the file list with every Exodus file format,
+    // because that list can get big.  Instead, register a list statically
+    // with the format.  It will return an index and then tell each new
+    // instance that it should use this index.
+    //
+    int fileListId = -1;
+    if (!containsManyFiles)
+    {
+        fileListId = avtExodusFileFormat::RegisterFileList(list, nList);
+    }
+
     avtMTSDFileFormat **ffl = new avtMTSDFileFormat*[nList];
     for (int i = 0 ; i < nList ; i++)
     {
-        ffl[i] = new avtExodusFileFormat(list[i]);
+        avtExodusFileFormat *exo = new avtExodusFileFormat(list[i]);
+        if (!containsManyFiles)
+            exo->SetFileList(fileListId);
+        ffl[i] = exo; 
     }
     avtMTSDFileFormatInterface *inter 
            = new avtMTSDFileFormatInterface(ffl, nList);
