@@ -1,0 +1,59 @@
+<?xml version="1.0"?>
+  <Plugin name="Subset" type="plot" label="Subset" version="1.0" vartype="subset" iconFile="Subset.xpm">
+    <Attribute name="SubsetAttributes" purpose="This class contains the plot attributes for the subset boundary plot." persistent="true" codefile="SubsetAttributes.code">
+      <Enum name="Subset_Type">
+        Domain
+        Group
+        Material
+        Unknown
+      </Enum>
+      <Enum name="ColoringMethod">
+        ColorBySingleColor
+        ColorByMultipleColors
+        ColorByColorTable
+      </Enum>
+      <Field name="colorType" label="colorType" type="enum" subtype="ColoringMethod">
+        ColorByMultipleColors
+      </Field>
+      <Field name="colorTableName" label="Color table" type="colortable">
+        Default
+      </Field>
+      <Field name="filledFlag" label="filledFlag" type="bool">
+        true
+      </Field>
+      <Field name="legendFlag" label="legendFlag" type="bool">
+        true
+      </Field>
+      <Field name="lineStyle" label="lineStyle" type="linestyle">
+        0
+      </Field>
+      <Field name="lineWidth" label="lineWidth" type="linewidth">
+        0
+      </Field>
+      <Field name="singleColor" label="singleColor" type="color">
+      </Field>
+      <Field name="multiColor" label="multiColor" type="att" subtype="ColorAttributeList">
+      </Field>
+      <Field name="subsetNames" label="subsetNames" type="stringVector">
+      </Field>
+      <Field name="subsetType" label="subsetType" type="enum" subtype="Subset_Type">
+        Unknown
+      </Field>
+      <Field name="opacity" label="opacity" type="opacity">
+        1.000000
+      </Field>
+      <Field name="wireframe" label="wireframe" type="bool">
+        false
+      </Field>
+      <Field name="drawInternal" label="drawInternal" type="bool">
+        false
+      </Field>
+      <Field name="smoothingLevel" label="Smoothing level" type="int">
+        0
+      </Field>
+      <Function name="ChangesRequireRecalculation" user="true" member="true">
+      </Function>
+      <Function name="VarChangeRequiresReset" user="true" member="true">
+      </Function>
+    </Attribute>
+  </Plugin>

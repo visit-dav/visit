@@ -1,0 +1,282 @@
+#include <ViewerToolbar.h>
+#include <ViewerAction.h>
+#include <ViewerWindow.h>
+#include <qtoolbar.h>
+
+// ****************************************************************************
+// Method: ViewerToolbar::ViewerToolbar
+//
+// Purpose: 
+//   Constructor for the ViewerToolbar class.
+//
+// Arguments:
+//   win : A pointer to the ViewerWindow that owns this toolbar.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jan 30 09:48:06 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+ViewerToolbar::ViewerToolbar(ViewerWindow *win) : toolbars()
+{    
+    window = win;
+    hidden = true;
+}
+
+// ****************************************************************************
+// Method: ViewerToolbar::~ViewerToolbar
+//
+// Purpose: 
+//   Destructor for the ViewerToolbar class.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jan 30 09:48:10 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+ViewerToolbar::~ViewerToolbar()
+{
+}
+
+// ****************************************************************************
+// Method: ViewerToolbar::Show
+//
+// Purpose: 
+//   Shows the named toolbar.
+//
+// Arguments:
+//   toolBarName : The name of the toolbar.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jan 30 09:41:58 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerToolbar::Show(const std::string &toolBarName)
+{
+    ToolbarMap::iterator pos;
+    if((pos = toolbars.find(toolBarName)) != toolbars.end())
+    {
+        if(pos->second.toolbar)
+        {
+            pos->second.toolbar->show();
+            pos->second.visible = true;
+        }
+    }
+}
+
+// ****************************************************************************
+// Method: ViewerToolbar::Hide
+//
+// Purpose: 
+//   Hides the named toolbar.
+//
+// Arguments:
+//   toolBarName : The name of the toolbar.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jan 30 09:41:58 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerToolbar::Hide(const std::string &toolBarName)
+{
+    ToolbarMap::iterator pos;
+    if((pos = toolbars.find(toolBarName)) != toolbars.end())
+    {
+        if(pos->second.toolbar)
+        {
+            pos->second.toolbar->hide();
+            pos->second.visible = false;
+        }
+    }
+}
+
+// ****************************************************************************
+// Method: ViewerToolbar::ShowAll
+//
+// Purpose: 
+//   Shows all of the toolbars that have been marked as visible. This way we
+//   can create some toolbars and have them not show up if they are not
+//   enabled.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jan 30 09:41:58 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerToolbar::ShowAll()
+{
+    hidden = false;
+    // Iterate through the toolbars in the map and show them.
+    ToolbarMap::iterator pos;
+    for(pos = toolbars.begin(); pos != toolbars.end(); ++pos)
+    {
+        if(pos->second.visible && pos->second.toolbar)
+            pos->second.toolbar->show();
+    }
+}
+
+// ****************************************************************************
+// Method: ViewerToolbar::HideAll
+//
+// Purpose: 
+//   Hides all of the toolbars that have been marked as visible.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jan 30 09:41:58 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerToolbar::HideAll()
+{
+    hidden = true;
+    // Iterate through the toolbars in the map and hide them.
+    ToolbarMap::iterator pos;
+    for(pos = toolbars.begin(); pos != toolbars.end(); ++pos)
+    {
+        if(pos->second.visible && pos->second.toolbar)
+            pos->second.toolbar->hide();
+    }
+}
+
+// ****************************************************************************
+// Method: ViewerToolbar::AddAction
+//
+// Purpose: 
+//   Adds an action to the named toolbar. If the toolbar does not exist, it
+//   is created.
+//
+// Arguments:
+//   toolBarName : The name of the toolbar.
+//   action          : The action that we're adding to the toolbar.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jan 30 09:45:09 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerToolbar::AddAction(const std::string &toolBarName,
+    ViewerActionBase *action)
+{
+    // Create the named toolbar.
+    ToolbarItem item(CreateToolbar(toolBarName));
+
+    // If the toolbar was created then let the action add itself to the toolbar.
+    if(item.toolbar)
+    {
+        // Let the action add its buttons to the toolbar.
+        action->ConstructToolbar(item.toolbar);
+    }
+}
+
+// ****************************************************************************
+// Method: ViewerToolbar::RemoveAction
+//
+// Purpose: 
+//   Lets an action remove itself from all toolbars.
+//
+// Arguments:
+//   action : The action that we want to remove.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Feb 25 10:27:37 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerToolbar::RemoveAction(ViewerActionBase *action)
+{
+    ToolbarMap::iterator pos;
+    for(pos = toolbars.begin(); pos != toolbars.end(); ++pos)
+        action->RemoveFromToolbar(pos->second.toolbar);
+}
+
+// ****************************************************************************
+// Method: ViewerToolbar::CreateToolbar
+//
+// Purpose: 
+//   Creates a toolbar with the specified name. If that toolbar already exists
+//   then the existing toolbar is returned.
+//
+// Arguments:
+//   toolBarName : The name of the toolbar to create.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jan 30 09:46:44 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+ViewerToolbar::ToolbarItem
+ViewerToolbar::CreateToolbar(const std::string &toolBarName)
+{
+    ToolbarMap::iterator pos;
+    if((pos = toolbars.find(toolBarName)) != toolbars.end())
+        return pos->second;
+    else
+    {
+        // Create a toolbar
+        QToolBar *tb = (QToolBar *)window->CreateToolbar(toolBarName);
+
+        ToolbarItem retval(tb, false);
+        toolbars[toolBarName] = retval;
+
+        return retval;
+    }
+}
+
+//
+// ViewerToolbar::ToolbarItem class.
+//
+
+ViewerToolbar::ToolbarItem::ToolbarItem()
+{
+    toolbar = 0;
+    visible = false;
+}
+
+ViewerToolbar::ToolbarItem::ToolbarItem(const ViewerToolbar::ToolbarItem &obj)
+{
+    toolbar = obj.toolbar;
+    visible = obj.visible;
+}
+
+ViewerToolbar::ToolbarItem::ToolbarItem(QToolBar *tb, bool v)
+{
+    toolbar = tb;
+    visible = v;
+}
+
+ViewerToolbar::ToolbarItem::~ToolbarItem()
+{
+}
+
+void
+ViewerToolbar::ToolbarItem::operator = (const ViewerToolbar::ToolbarItem &obj)
+{
+    toolbar = obj.toolbar;
+    visible = obj.visible;
+}

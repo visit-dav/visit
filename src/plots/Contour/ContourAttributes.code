@@ -1,0 +1,449 @@
+Code: SetContourNLevels
+Prefix:
+    if(contourNLevels < 1)
+        contourNLevels = 1;
+    if(contourNLevels > MAX_CONTOURS)
+        contourNLevels = MAX_CONTOURS;
+Postfix:
+    // Grow the color vector.
+    EnlargeMultiColor(contourNLevels);
+
+Code: SetContourPercent
+Prefix:
+Postfix:
+    // Grow the color vector.
+    EnlargeMultiColor(contourPercent.size());
+
+Code: SetDefaultPalette
+Prefix:
+Postfix:
+    // Grow the color vector if necessary.
+    if(contourMethod == Level)
+        EnlargeMultiColor(contourNLevels);
+    else if(contourMethod == Value)
+        EnlargeMultiColor(contourValue.size());
+    else
+        EnlargeMultiColor(contourPercent.size());
+
+Code: SetContourValue
+Prefix:
+Postfix:
+    // Grow the color vector.
+    EnlargeMultiColor(contourValue.size());
+
+Constant: MAX_CONTOURS
+Declaration: static const int MAX_CONTOURS;
+Definition: const int ContourAttributes::MAX_CONTOURS = 100;
+
+
+Function: ChangesRequireRecalculation
+Declaration: bool ChangesRequireRecalculation(const ContourAttributes &obj);
+Definition:
+bool
+ContourAttributes::ChangesRequireRecalculation(const ContourAttributes &obj)
+{
+    return ((contourNLevels != obj.contourNLevels) ||
+            (contourValue != obj.contourValue) ||
+            (contourPercent != obj.contourPercent) ||
+            (contourMethod != obj.contourMethod) ||
+            (minFlag != obj.minFlag) ||
+            (maxFlag != obj.maxFlag) ||
+            (min != obj.min) ||
+            (max != obj.max) ||
+            (scaling != obj.scaling) ||
+            (wireframe != obj.wireframe));
+}
+
+Function: SetContourValue
+Declaration: void SetContourValue(int i, double d);
+Definition:
+void
+ContourAttributes::SetContourValue(int i, double d)
+{
+    contourValue[i] = d;
+    Select(7, (void *)&contourValue);
+}
+
+Function: SetContourPercent
+Declaration: void SetContourPercent(int i, double d);
+Definition:
+void
+ContourAttributes::SetContourPercent(int i, double d)
+{
+    contourPercent[i] = d;
+    Select(8, (void *)&contourPercent);
+}
+
+Function: EnlargeMultiColor
+Declaration: void EnlargeMultiColor(int newSize);
+Definition:
+// ****************************************************************************
+// Method: ContourAttributes::EnlargeMultiColor
+//
+// Purpose: 
+//   Enlarges the multiColor vector to the new size.
+//
+// Arguments:
+//   newSize : The new size of the color vector.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Mar 2 17:08:32 PST 2001
+//
+// Modifications:
+//   Brad Whitlock, Fri Nov 22 11:51:23 PDT 2002
+//   I changed how the default colors are created so that the multicolor
+//   gets the appropriate colors.
+//   
+// ****************************************************************************
+
+void
+ContourAttributes::EnlargeMultiColor(int newSize)
+{
+    // Add any colors that are needed to the end of the vector to ensure
+    // we have the right number of elements in the vector.
+    if(newSize > 0)
+    {
+        unsigned char *rgb = new unsigned char[newSize * 3];
+
+        // If it's a discrete color table, just use the colors of
+        // the control points. Otherwise, sample the color table.
+        if(defaultPalette.GetDiscreteFlag())
+        {
+            int nColors = defaultPalette.GetNumColorControlPoints();
+            for(int i = 0, index = 0; i < newSize; ++i, index += 3)
+            {
+                int j = i % nColors;
+                const ColorControlPoint &ccp = defaultPalette.operator[](j);
+                const unsigned char *c = ccp.GetColors();
+                rgb[index] = c[0];
+                rgb[index+1] = c[1];
+                rgb[index+2] = c[2];
+            }
+        }
+        else
+        {
+            defaultPalette.GetColors(rgb, newSize);
+        }
+
+        bool modified = false;
+        for(int i = 0; i < newSize; ++i)
+        {
+            int j = i * 3;
+            if(i < multiColor.GetNumColorAttributes())
+            {
+                if(!ColorIsChanged(i))
+                {
+                    ColorAttribute &ca = multiColor.GetColorAttribute(i);
+                    ca.SetRgb(int(rgb[j]), int(rgb[j+1]), int(rgb[j+2]));
+                }
+            }
+            else
+            {
+                multiColor.AddColorAttribute(ColorAttribute(rgb[j],
+                                                            rgb[j+1],
+                                                            rgb[j+2]));
+            }
+            modified = true;
+        }
+        delete [] rgb;
+
+        // If the multiColor vector was modified, select it.
+        if(modified)
+            SelectMultiColor();
+    }
+}
+
+Function: CreateNode
+Declaration: virtual bool CreateNode(DataNode *, bool);
+Definition:
+// ****************************************************************************
+// Method: ContourAttributes::CreateNode
+//
+// Purpose: 
+//   This method creates a DataNode representation of the object so it can be saved to a config file.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   Tue Dec 3 08:50:34 PDT 2002
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+ContourAttributes::CreateNode(DataNode *parentNode, bool forceAdd)
+{
+    if(parentNode == 0)
+        return false;
+
+    ContourAttributes defaultObject;
+    bool addToParent = false;
+    // Create a node for ContourAttributes.
+    DataNode *node = new DataNode("ContourAttributes");
+
+    if(!FieldsEqual(2, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("colorType", ColoringMethod_ToString(colorType)));
+    }
+
+    if(!FieldsEqual(3, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("colorTableName", colorTableName));
+    }
+
+    if(!FieldsEqual(4, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("legendFlag", legendFlag));
+    }
+
+    if(!FieldsEqual(5, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("lineStyle", lineStyle));
+    }
+
+    if(!FieldsEqual(6, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("lineWidth", lineWidth));
+    }
+
+    if(!FieldsEqual(7, &defaultObject))
+    {
+        DataNode *singleColorNode = new DataNode("singleColor");
+        if(singleColor.CreateNode(singleColorNode, false))
+        {
+            addToParent = true;
+            node->AddNode(singleColorNode);
+        }
+        else
+            delete singleColorNode;
+    }
+
+    if(!FieldsEqual(9, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("contourNLevels", contourNLevels));
+    }
+
+    if(!FieldsEqual(10, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("contourValue", contourValue));
+    }
+
+    if(!FieldsEqual(11, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("contourPercent", contourPercent));
+    }
+
+    if(!FieldsEqual(12, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("contourMethod", Select_by_ToString(contourMethod)));
+    }
+
+    if(!FieldsEqual(13, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("minFlag", minFlag));
+    }
+
+    if(!FieldsEqual(14, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("maxFlag", maxFlag));
+    }
+
+    if(!FieldsEqual(15, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("min", min));
+    }
+
+    if(!FieldsEqual(16, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("max", max));
+    }
+
+    if(!FieldsEqual(17, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("scaling", Scaling_ToString(scaling)));
+    }
+
+    if(!FieldsEqual(18, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("wireframe", wireframe));
+    }
+
+
+    // Add the node to the parent node.
+    if(addToParent || forceAdd)
+        parentNode->AddNode(node);
+    else
+        delete node;
+
+    return (addToParent || forceAdd);
+}
+
+
+Function: SetFromNode
+Declaration: virtual void SetFromNode(DataNode *);
+Definition:
+// ****************************************************************************
+// Method: ContourAttributes::SetFromNode
+//
+// Purpose: 
+//   This method sets attributes in this object from values in a DataNode representation of the object.
+//
+// Note:       Autogenerated by xml2atts.
+//
+// Programmer: xml2atts
+// Creation:   Tue Dec 3 08:50:34 PDT 2002
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ContourAttributes::SetFromNode(DataNode *parentNode)
+{
+    if(parentNode == 0)
+        return;
+
+    DataNode *searchNode = parentNode->GetNode("ContourAttributes");
+    if(searchNode == 0)
+        return;
+
+    DataNode *node;
+    if((node = searchNode->GetNode("colorType")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+            SetColorType(ColoringMethod(node->AsInt()));
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            ColoringMethod value;
+            if(ColoringMethod_FromString(node->AsString(), value))
+                SetColorType(value);
+        }
+    }
+    if((node = searchNode->GetNode("colorTableName")) != 0)
+        SetColorTableName(node->AsString());
+    if((node = searchNode->GetNode("legendFlag")) != 0)
+        SetLegendFlag(node->AsBool());
+    if((node = searchNode->GetNode("lineStyle")) != 0)
+        SetLineStyle(node->AsInt());
+    if((node = searchNode->GetNode("lineWidth")) != 0)
+        SetLineWidth(node->AsInt());
+    if((node = searchNode->GetNode("singleColor")) != 0)
+        singleColor.SetFromNode(node);
+    if((node = searchNode->GetNode("contourNLevels")) != 0)
+        SetContourNLevels(node->AsInt());
+    if((node = searchNode->GetNode("contourValue")) != 0)
+        SetContourValue(node->AsDoubleVector());
+    if((node = searchNode->GetNode("contourPercent")) != 0)
+        SetContourPercent(node->AsDoubleVector());
+    if((node = searchNode->GetNode("contourMethod")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+            SetContourMethod(Select_by(node->AsInt()));
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            Select_by value;
+            if(Select_by_FromString(node->AsString(), value))
+                SetContourMethod(value);
+        }
+    }
+    if((node = searchNode->GetNode("minFlag")) != 0)
+        SetMinFlag(node->AsBool());
+    if((node = searchNode->GetNode("maxFlag")) != 0)
+        SetMaxFlag(node->AsBool());
+    if((node = searchNode->GetNode("min")) != 0)
+        SetMin(node->AsDouble());
+    if((node = searchNode->GetNode("max")) != 0)
+        SetMax(node->AsDouble());
+    if((node = searchNode->GetNode("scaling")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+            SetScaling(Scaling(node->AsInt()));
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            Scaling value;
+            if(Scaling_FromString(node->AsString(), value))
+                SetScaling(value);
+        }
+    }
+    if((node = searchNode->GetNode("wireframe")) != 0)
+        SetWireframe(node->AsBool());
+}
+
+
+Function: ColorIsChanged
+Declaration: bool ColorIsChanged(int index) const;
+Definition:
+// ****************************************************************************
+// Method: ContourAttributes::ColorIsChanged
+//
+// Purpose: 
+//   Returns whether or not a color has been modified.
+//
+// Arguments:
+//   index : A color index.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Dec 9 11:27:59 PDT 2002
+//
+// Modifications:
+//   
+// ***************************************************************************
+bool
+ContourAttributes::ColorIsChanged(int index) const
+{
+    int i = 0;
+    for(; i < changedColors.size(); ++i)
+    {
+        if(changedColors[i] == ((unsigned char)index))
+            break;
+    }
+
+    return (i < changedColors.size());
+}
+
+Function: MarkColorAsChanged
+Declaration: void MarkColorAsChanged(int index);
+Definition:
+// ****************************************************************************
+// Method: ContourAttributes::MarkColorAsChanged
+//
+// Purpose: 
+//   Marks a color as having been modified.
+//
+// Arguments:
+//   index : A color index.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Dec 9 11:27:59 PDT 2002
+//
+// Modifications:
+//   
+// ****************************************************************************
+void
+ContourAttributes::MarkColorAsChanged(int index)
+{
+    if(!ColorIsChanged(index))
+    {
+        changedColors.push_back(((unsigned char)index));
+        SelectChangedColors();
+    }
+}

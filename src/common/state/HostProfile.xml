@@ -1,0 +1,85 @@
+<?xml version="1.0"?>
+  <Attribute name="HostProfile" purpose="This class contains information needed to launch a remote,VisIt engine." persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="HostProfile.code">
+    <Field name="profileName" label="profileName" type="string">
+      notset
+    </Field>
+    <Field name="host" label="host" type="string">
+      localhost
+    </Field>
+    <Field name="userName" label="userName" type="string" init="true">
+      notset
+    </Field>
+    <Field name="timeout" label="timeout" type="int">
+      240
+    </Field>
+    <Field name="numProcessors" label="numProcessors" type="int">
+      1
+    </Field>
+    <Field name="numNodesSet" label="numNodesSet" type="bool">
+      false
+    </Field>
+    <Field name="numNodes" label="numNodes" type="int">
+      1
+    </Field>
+    <Field name="partitionSet" label="partitionSet" type="bool">
+      false
+    </Field>
+    <Field name="partition" label="partition" type="string">
+    </Field>
+    <Field name="bankSet" label="bankSet" type="bool">
+      false
+    </Field>
+    <Field name="bank" label="bank" type="string">
+    </Field>
+    <Field name="timeLimitSet" label="timeLimitSet" type="bool">
+      false
+    </Field>
+    <Field name="timeLimit" label="timeLimit" type="string">
+    </Field>
+    <Field name="launchMethodSet" label="launchMethodSet" type="bool">
+      false
+    </Field>
+    <Field name="launchMethod" label="launchMethod" type="string">
+    </Field>
+    <Field name="forceStatic" label="forceStatic" type="bool">
+      true
+    </Field>
+    <Field name="forceDynamic" label="forceDynamic" type="bool">
+      false
+    </Field>
+    <Field name="active" label="active" type="bool">
+      false
+    </Field>
+    <Field name="arguments" label="arguments" type="stringVector">
+    </Field>
+    <Field name="parallel" label="parallel" type="bool">
+      false
+    </Field>
+    <Field name="launchArgsSet" label="launchArgsSet" type="bool">
+      false
+    </Field>
+    <Field name="launchArgs" label="launchArgs" type="string">
+    </Field>
+    <Field name="hostAliases" label="hostAliases" type="string">
+    </Field>
+    <Field name="shareOneBatchJob" label="shareOneBatchJob" type="bool">
+      false
+    </Field>
+    <Function name="defaultUserName" user="true" member="true">
+    </Function>
+    <Function name="SplitHostPattern" user="true" member="true">
+    </Function>
+    <Function name="ProfileMatchesHost" user="true" member="true">
+    </Function>
+    <Function name="GetShortHostname" user="true" member="true">
+    </Function>
+    <Function name="GetShortHostname_static" user="true" member="true">
+    </Function>
+    <Function name="GetDefaultUserName_static" user="true" member="true">
+    </Function>
+    <Function name="SetDefaultUserName_static" user="true" member="true">
+    </Function>
+    <Include file="source" quoted="false">
+      Utility.h
+    </Include>
+  </Attribute>

@@ -1,0 +1,46 @@
+#!/bin/csh -f
+#-----------------------------------------------------------------------
+#
+# PY-INSTALL - Install a pre-built Python directory in a specified directory.
+#
+# Author: Brad Whitlock
+# Date:   Wed Nov 8 11:57:34 PDT 2000
+#
+# Usage:
+#    py-install source-dir install-dir
+#
+# Modifications:
+#
+#-----------------------------------------------------------------------
+
+if($#argv < 2) then
+    echo "Usage: py-install source-dir install-dir"
+    exit(1)
+endif
+
+set SDIR=$argv[1]
+set IDIR=$argv[2]
+
+## Create the python dir
+cd $IDIR
+mkdir lib
+mkdir include
+
+## Copy the Include directory
+cp -R $SDIR/Include/* $IDIR/include
+cp $SDIR/config.h $IDIR/include/config.h
+
+## Copy the Lib directory
+cp -R $SDIR/Lib/* $IDIR/lib
+
+## Copy python and the python library
+cp $SDIR/python $IDIR
+cp $SDIR/libpython*.a $IDIR/lib
+
+## Change permissions
+chgrp -R bdiv $IDIR
+chmod 775  $IDIR/lib
+chmod 664  $IDIR/lib/*
+chmod 775  $IDIR/include
+chmod 664  $IDIR/include/*
+chmod 775  $IDIR/python

@@ -1,0 +1,20 @@
+Function: SetWindowArea
+Declaration: void SetWindowArea(int x, int y, int w, int h);
+Definition:
+// ****************************************************************************
+//  Method:  ViewerRPC::SetWindowArea
+//
+//  Purpose:
+//    Sets the window area used by the viewer.
+//
+//  Programmer:  Brad Whitlock
+//  Creation:    Fri Dec 20 14:18:12 PST 2002
+//
+// ****************************************************************************
+void
+ViewerRPC::SetWindowArea(int x, int y, int w, int h)
+{
+    char str[50];
+    snprintf(str, 50, "%dx%d+%d+%d", w, h, x, y);
+    SetWindowArea(str);
+}

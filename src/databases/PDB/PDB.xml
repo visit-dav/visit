@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+  <Plugin name="PDB" label="PDB" type="database" dbtype="STSD" version="1.0">
+    <Extensions> pdb r0000 </Extensions>
+    <CXXFLAGS> $(PDB_FLAGS) </CXXFLAGS>
+    <LIBS>     $(PDB_LIBS)  </LIBS>
+    <Files components="E,M">PDBFactory.C PDBReader.C PF3DReader.C SiloReader.C</Files>
+  </Plugin>

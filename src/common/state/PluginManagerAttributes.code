@@ -1,0 +1,84 @@
+Function:  GetIndexByID
+Declaration: int GetIndexByID(const std::string &s);
+Definition:
+// ****************************************************************************
+// Method: PluginManagerAttributes::GetIndexByID
+//
+// Purpose: 
+//   Find the index of a plugin by its ID, or -1 if it does not exist
+//
+// Programmer: Jeremy Meredith
+// Creation:   September  7, 2001
+//
+// ****************************************************************************
+
+int
+PluginManagerAttributes::GetIndexByID(const std::string &s)
+{
+    for (int i=0; i<id.size(); i++)
+    {
+        if (id[i] == s)
+            return i;
+    }
+    // not found -- return -1
+    return -1;
+}
+
+
+Function:  AddPlugin
+Declaration: void AddPlugin(const std::string &n,const std::string &t,const std::string &v,const std::string &i);
+Definition:
+// ****************************************************************************
+// Method: PluginManagerAttributes::AddPlugin
+//
+// Purpose: 
+//   Add a new plugin.
+//
+// Programmer: Jeremy Meredith
+// Creation:   September  7, 2001
+//
+// ****************************************************************************
+
+void 
+PluginManagerAttributes::AddPlugin(const std::string &n,
+                                   const std::string &t,
+                                   const std::string &v,
+                                   const std::string &i)
+{
+    name.push_back(n);
+    type.push_back(t);
+    version.push_back(v);
+    id.push_back(i);
+    enabled.push_back(true);
+    SelectAll();
+}
+
+
+Function:  RemovePlugin
+Declaration: void RemovePlugin(const std::string &s);
+Definition:
+// ****************************************************************************
+// Method: PluginManagerAttributes::AddPlugin
+//
+// Purpose: 
+//   Add a new plugin.
+//
+// Programmer: Jeremy Meredith
+// Creation:   September 27, 2001
+//
+// ****************************************************************************
+
+void 
+PluginManagerAttributes::RemovePlugin(const std::string &s)
+{
+    int index = GetIndexByID(s);
+    if (index<0)
+        return;
+
+    name   .erase(name   .begin() + index);
+    type   .erase(type   .begin() + index);
+    version.erase(version.begin() + index);
+    id     .erase(id     .begin() + index);
+    enabled.erase(enabled.begin() + index);
+    SelectAll();
+}

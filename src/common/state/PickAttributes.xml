@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+  <Attribute name="PickAttributes" codefile="PickAttributes.code" persistent="true" purpose="This class contains attributes used for pick." exportAPI="STATE_API" exportInclude="state_exports.h">
+
+    <Field name = "clearWindow"      type = "bool">  false </Field>
+    <Field name = "fulfilled"        type = "bool">  false       </Field>
+    <Field name = "validPick"        type = "bool">  false       </Field>
+    <Field name = "pickLetter"       type = "string"> " "       </Field>
+    <Field name = "zoneNumber"       type = "int">   -1      </Field>
+    <Field name = "timeStep"         type = "int">   -1      </Field>
+    <Field name = "domain"           type = "int">   -1      </Field>
+    <Field name = "dimension"        type = "int">   -1      </Field>
+    <Field name = "databaseName"     type = "string"> " "        </Field>
+    <Field name = "activeVariable"   type = "string"> " "        </Field>
+    <Field name = "pickPoint"        type = "floatArray" length="3"> 0. 0. 0. </Field>
+    <Field name = "cellPoint"        type = "floatArray" length="3"> 0. 0. 0. </Field>
+    <Field name = "nodes"            type = "intVector" > </Field>
+    <Field name = "userSelectedVars" type = "stringVector" > "default"   </Field>
+    <Field name = "varInfo"          type = "attVector" subtype = "PickVarInfo" > </Field>
+    <Field name = "useNodeCoords"    type = "bool"> false   </Field>
+    <Field name = "logicalCoords"    type = "bool"> false   </Field>
+    <Field name = "nodeCoords"       type = "stringVector"> </Field>
+    <Field name = "rayPoint1"        type = "floatArray" length="3"> 0. 0. 0. </Field>
+    <Field name = "rayPoint2"        type = "floatArray" length="3"> 0. 0. 0. </Field>
+    <Field name = "needTransformMessage"  type = "bool">false </Field>
+
+    <Include file="source">stdio.h</Include>  
+    <Include file="header">iostream.h</Include>  
+    <Function name = "Reset"               member = "true" user = "true">
+    </Function>
+    <Function name = "PrintSelf"           member = "true" user = "true">
+    </Function>
+    <Function name = "CreateOutputString"  member = "true" user = "true">
+    </Function>
+  </Attribute>

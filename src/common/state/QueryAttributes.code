@@ -1,0 +1,44 @@
+Function: Reset
+Declaration: void Reset();
+Definition:
+void
+QueryAttributes::Reset()
+{
+    name    = " ";
+    resultsMessage  = " ";
+    if (!variables.empty())
+    {
+        variables.clear();
+        variables.push_back("default");
+    }
+    worldPoint[0] = worldPoint[1] = worldPoint[2] = 0.;
+    rayPoint1[0] = rayPoint1[1] = rayPoint1[2] = 0.;
+    rayPoint2[0] = rayPoint2[1] = rayPoint2[2] = 0.;
+    domain = -1;
+    zone = -1;
+    SelectAll();
+}
+
+Function: PrintSelf
+Declaration: void PrintSelf(ostream &os);
+Definition:
+void
+QueryAttributes::PrintSelf(ostream &os)
+{
+    int i;
+    os << "\n" << name.c_str() << ":  ";
+    os << "selected variables: ";
+    for (i = 0; i < variables.size(); i++)
+        os << variables[i].c_str() << "  ";
+    os << "\n";
+    os << "Results: <" << resultsMessage.c_str() << ">\n";
+    os << "World point: <" << worldPoint[0] << ", " << worldPoint[1] 
+       << ", " << worldPoint[2] << ">\n"; 
+    os << "Domain:      " << domain << "\n";
+    os << "Zone:        " << zone << "\n";
+    os << "Ray point 1: <" << rayPoint1[0] << ", " << rayPoint1[1] 
+       << ", " << rayPoint1[2] << ">\n"; 
+    os << "Ray point 2: <" << rayPoint2[0] << ", " << rayPoint2[1] 
+       << ", " << rayPoint2[2] << ">\n"; 
+}
+

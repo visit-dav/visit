@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+  <Attribute name="WindowAttributes" purpose="This class contains the attributes for a visualization window." exportAPI="STATE_API" exportInclude="state_exports.h">
+    <Field name="view" type="att" subtype="ViewAttributes"></Field>
+    <Field name="lights" type="att" subtype="LightList"></Field>
+    <Field name="renderAtts" type="att" subtype="RenderingAttributes"></Field>
+    <Field name="colorTables" type="att" subtype="ColorTableAttributes"></Field>
+    <Field name="size" type="intArray" length="2">300 300</Field>
+    <Field name="background" type="ucharArray" length="3">255 255 255</Field>
+    <Field name="foreground" type="ucharArray" length="3">0 0 0</Field>
+    <Field name="backgroundMode" type="int">0</Field>
+    <Field name="gradBG1" type="floatArray" length="3">0. 0. 1.</Field>
+    <Field name="gradBG2" type="floatArray" length="3">0. 0. 0.</Field>
+  </Attribute>

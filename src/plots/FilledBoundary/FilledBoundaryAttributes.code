@@ -1,0 +1,29 @@
+Function: ChangesRequireRecalculation
+Declaration: bool ChangesRequireRecalculation(const FilledBoundaryAttributes &obj);
+Definition:
+// ****************************************************************************
+// Modifications:
+//    Jeremy Meredith, Mon Dec  9 16:30:54 PST 2002
+//    Added smoothing level.
+//
+// ****************************************************************************
+bool
+FilledBoundaryAttributes::ChangesRequireRecalculation(const FilledBoundaryAttributes &obj)
+{
+    return ((filledFlag != obj.filledFlag) ||
+            (boundaryType != obj.boundaryType) || 
+            (boundaryNames != obj.boundaryNames) ||
+            (wireframe != obj.wireframe) ||
+            (drawInternal != obj.drawInternal) ||
+            (smoothingLevel != obj.smoothingLevel));
+}
+
+Function: VarChangeRequiresReset
+Declaration: virtual bool VarChangeRequiresReset(void);
+Definition:
+bool
+FilledBoundaryAttributes::VarChangeRequiresReset()
+{ 
+    return true;
+}
+

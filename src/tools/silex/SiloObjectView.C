@@ -1,0 +1,216 @@
+#include "SiloObjectView.h"
+#include <SiloFile.h>
+#include <qapplication.h>
+#include <iostream.h>
+
+// ----------------------------------------------------------------------------
+//                            Object View Window
+// ----------------------------------------------------------------------------
+
+// ****************************************************************************
+//  Constructor:  SiloObjectViewWindow::SiloObjectViewWindow
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November 12, 2001
+//
+// ****************************************************************************
+SiloObjectViewWindow::SiloObjectViewWindow(SiloFile *s, const QString &n, QWidget *p)
+    : QMainWindow(p, n), silo(s), name(n)
+{
+    setCaption(QString("Object: ")+name);
+
+    SiloObjectView *ov = new SiloObjectView(silo,name,this);
+    setCentralWidget(ov);
+    connect(ov,   SIGNAL(doubleClicked(QListViewItem*)),
+            this, SLOT(ShowItem(QListViewItem*)));
+}
+
+// ****************************************************************************
+//  Method:  SiloObjectViewWindow::ShowItem
+//
+//  Purpose:
+//    A slot used to signal a "show var" event.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November 12, 2001
+//
+// ****************************************************************************
+void
+SiloObjectViewWindow::ShowItem(QListViewItem *i)
+{
+    if (i->text(1) == "var")
+        emit showRequested(i->text(2));
+}
+
+// ----------------------------------------------------------------------------
+//                               Object View
+// ----------------------------------------------------------------------------
+
+// ****************************************************************************
+//  Constructor: SiloObjectView::SiloObjectView
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November 12, 2001
+//
+// ****************************************************************************
+SiloObjectView::SiloObjectView(SiloFile *s, const QString &n, QWidget *p)
+    : QListView(p, n), silo(s), name(n)
+{
+    setSorting(-1);
+    setAllColumnsShowFocus(true);
+    addColumn("Component");
+    addColumn("Type");
+    addColumn("Value");
+
+    DBobject *object = silo->GetObject(name);
+    if (!object)
+    {
+        cerr << "SiloObjectView::SiloObjectView -- not an object\n";
+        throw;
+    }
+
+    QListViewItem *lastItem = NULL;
+    for (int i=0; i<object->ncomponents; i++)
+    {
+        QString compname = object->comp_names[i];
+        QString pdbname  = object->pdb_names[i];
+        void *comp = silo->GetComponent(name, compname);
+        if (!comp)
+        {
+            cerr << "ERROR: DBGetComponent failed for object '"<<name<<"', component '"<<compname<<"'"<<endl;
+            continue;
+        }
+        int   type = silo->GetComponentType(name, compname);
+        QString typestr = "";
+        char  value[256] = "";
+        int ival = -1;
+        switch (type)
+        {
+          case DB_INT:
+            typestr = "int";
+            sprintf(value, "%d", *((int*)comp));
+            ival = *((int*)comp);
+            break;
+          case DB_SHORT:
+            typestr = "short";
+            sprintf(value, "%d", *((short*)comp));
+            ival = *((short*)comp);
+            break;
+          case DB_LONG:
+            typestr = "long";
+            sprintf(value, "%ld", *((long*)comp));
+            ival = *((long*)comp);
+            break;
+          case DB_FLOAT:
+            typestr = "float";
+            sprintf(value, "%g", *((float*)comp));
+            break;
+          case DB_DOUBLE:
+            typestr = "double";
+            sprintf(value, "%g", *((double*)comp));
+            break;
+          case DB_CHAR:
+            typestr = "char";
+            sprintf(value, "%s", ((char*)comp));
+            break;
+          case DB_NOTYPE:
+            typestr = "notype";
+            sprintf(value, "NOTYPE");
+            break;
+          default:
+            typestr = "var";
+            sprintf(value, "%s", pdbname.latin1());
+            break;
+        }
+        
+        if (type==DB_INT || type==DB_SHORT || type==DB_LONG)
+        {
+            if (compname == "coordtype")
+            {
+                if (ival == DB_COLLINEAR)    strcat(value, " (DB_COLLINEAR)");
+                if (ival == DB_NONCOLLINEAR) strcat(value, " (DB_NONCOLLINEAR)");
+            }
+            if (compname == "centering")
+            {
+                if (ival == DB_NOTCENT)      strcat(value, " (DB_NOTCENT)");
+                if (ival == DB_NODECENT)     strcat(value, " (DB_NODECENT)");
+                if (ival == DB_ZONECENT)     strcat(value, " (DB_ZONECENT)");
+                if (ival == DB_FACECENT)     strcat(value, " (DB_FACECENT)");
+            }
+            if (compname == "major_order")
+            {
+                if (ival == DB_ROWMAJOR)     strcat(value, " (DB_ROWMAJOR)");
+                if (ival == DB_COLMAJOR)     strcat(value, " (DB_COLMAJOR)");
+            }
+            if (compname == "coord_sys")
+            {
+                if (ival == DB_CARTESIAN)    strcat(value, " (DB_CARTESIAN)");
+                if (ival == DB_CYLINDRICAL)  strcat(value, " (DB_CYLINDRICAL)");
+                if (ival == DB_SPHERICAL)    strcat(value, " (DB_SPHERICAL)");
+                if (ival == DB_NUMERICAL)    strcat(value, " (DB_NUMERICAL)");
+                if (ival == DB_OTHER)        strcat(value, " (DB_OTHER)");
+            }
+            if (compname == "planar")
+            {
+                if (ival == DB_AREA)         strcat(value, " (DB_AREA)");
+                if (ival == DB_VOLUME)       strcat(value, " (DB_VOLUME)");
+            }
+            if (compname == "facetype")
+            {
+                if (ival == DB_RECTILINEAR)  strcat(value, " (DB_RECTILINEAR)");
+                if (ival == DB_CURVILINEAR)  strcat(value, " (DB_CURVILINEAR)");
+            }
+            if (compname == "datatype")
+            {
+                if (ival == DB_INT)          strcat(value, " (DB_INT)");
+                if (ival == DB_SHORT)        strcat(value, " (DB_SHORT)");
+                if (ival == DB_LONG)         strcat(value, " (DB_LONG)");
+                if (ival == DB_FLOAT)        strcat(value, " (DB_FLOAT)");
+                if (ival == DB_DOUBLE)       strcat(value, " (DB_DOUBLE)");
+                if (ival == DB_CHAR)         strcat(value, " (DB_CHAR)");
+                if (ival == DB_NOTYPE)       strcat(value, " (DB_NOTYPE)");
+            }
+        }
+        if (lastItem)
+            lastItem = new QListViewItem(this,
+                                         lastItem,
+                                         object->comp_names[i],
+                                         typestr,
+                                         value);
+        else
+            lastItem = new QListViewItem(this,
+                                         object->comp_names[i],
+                                         typestr,
+                                         value);
+    }
+
+    total_items = object->ncomponents;
+}
+
+// ****************************************************************************
+//  Method:  SiloObjectView::sizeHint
+//
+//  Purpose:
+//    Suggest a good size for the view.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November 12, 2001
+//
+// ****************************************************************************
+QSize
+SiloObjectView::sizeHint() const
+{
+    QSize size = QListView::sizeHint();
+    if (total_items == 0 || firstChild() == 0)
+        return size;
+
+    size.setHeight(QMIN(QMAX(size.height(),
+                             firstChild()->height() * (total_items+2)),
+                        QApplication::desktop()->height() * 7/8));
+    if (!size.isValid())
+        size.setWidth(200);
+
+    return size;
+}
+
+

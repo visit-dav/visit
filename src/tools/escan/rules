@@ -1,0 +1,53 @@
+%{
+#include <exception_scanner.h>
+#include <string.h>
+%}
+WORD [_a-zA-Z][_a-zA-Z0-9]*
+STRING \".+\"
+COMMENT "//".*
+BEGINSCOPE "{"
+ENDSCOPE "}"
+%%
+{WORD} processToken(yytext);
+{STRING} ignoreToken();
+\n advanceSourceLineCount();
+{BEGINSCOPE} incrementScope();
+{ENDSCOPE} decrementScope();
+. ignoreToken();
+{COMMENT} ignoreToken();
+%%
+
+int
+main(int argc, char *argv[])
+{
+    int i;
+
+    if(argc < 2)
+        fprintf(stderr, "No input files were specified!");
+
+    for(i = 1; i < argc; ++i)
+    {
+        if(strcmp("-debug", argv[i]) == 0)
+            set_debugflag(1);
+        else if(strcmp("-verbose", argv[i]) == 0)
+            set_verboseflag(1);
+        else
+        {
+            yyin = fopen(argv[i], "r");
+            if(yyin == NULL)
+            {
+                printf("Cannot open input file: %s\n", argv[i]);
+                continue;
+            }
+
+            set_filename(argv[i]);
+
+            /* Call the lexer. */
+            yylex();
+
+            fclose(yyin);
+        }
+    }
+
+    return 0;
+}

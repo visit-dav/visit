@@ -1,0 +1,556 @@
+#include <qxml.h>
+#include <iostream.h>
+#include <fstream.h>
+#include "Field.h"
+#include "Attribute.h"
+#include "Enum.h"
+#include "Plugin.h"
+
+vector<EnumType*> EnumType::enums;
+
+bool print   = true;
+bool clobber = false;
+bool installpublic  = false;
+bool installprivate = false;
+
+#ifdef TEST_ONLY
+#endif
+#ifdef GENERATE_ATTS
+#include "GenerateAtts.h"
+#endif
+#ifdef GENERATE_WINDOW
+#include "GenerateWindow.h"
+#endif
+#ifdef GENERATE_INFO
+#include "GenerateInfo.h"
+#endif
+#ifdef GENERATE_MAKEFILE
+#include "GenerateMakefile.h"
+#endif
+#ifdef GENERATE_AVT
+#include "GenerateAVT.h"
+#endif
+#ifdef GENERATE_PYTHON
+#include "GeneratePython.h"
+#endif
+#ifdef GENERATE_JAVA
+#include "GenerateJava.h"
+#endif
+
+#include "XMLParser.h"
+
+void
+PrintUsage(const char *prog)
+{
+    cerr << "usage: "<<prog<<" [options] <file.xml>" << endl;
+    cerr << "    options:" << endl;
+    cerr << "        -clobber       overwrite old files if possible" << endl;
+    cerr << "        -noprint       no debug output" << endl;
+    cerr << "        -public        (xml2makefile only) install publicly" << endl;
+    cerr << "        -private       (xml2makefile only) install privately" << endl;
+}
+
+class ErrorHandler : public QXmlErrorHandler
+{
+    bool error(const QXmlParseException & exception)
+    {
+        cerr << "Error: " << exception.message() << endl;
+        cerr << "Line: "   << exception.lineNumber() << endl;
+        cerr << "Column: " << exception.columnNumber() << endl;
+        return true;
+    }
+    bool warning(const QXmlParseException & exception)
+    {
+        cerr << "Warning: " << exception.message() << endl;
+        cerr << "Line: "   << exception.lineNumber() << endl;
+        cerr << "Column: " << exception.columnNumber() << endl;
+        return true;
+    }
+    bool fatalError(const QXmlParseException & exception)
+    {
+        cerr << "Fatal error: " << exception.message() << endl;
+        cerr << "Line: "   << exception.lineNumber() << endl;
+        cerr << "Column: " << exception.columnNumber() << endl;
+        return true;
+    }
+    QString errorString()
+    {
+        return "No error string defined....";
+    }
+};
+
+bool
+Open(ofstream &file, const QString &name)
+{
+    bool alreadyexists = false;
+    if (clobber)
+        file.open(name.latin1(), ios::out);
+    else
+    {
+        ifstream testopen(name.latin1(), ios::in);
+        if (!testopen)
+        {
+            file.open(name.latin1(), ios::out);
+        }
+        else
+        {
+            testopen.close();
+            alreadyexists = true;
+        }
+    }
+    if (alreadyexists || !file)
+    {
+        cerr << "Warning: Could not create file '"<<name<<"' for writing." << endl;
+        if (!clobber)
+        {
+            cerr << "Info: If you wish to overwrite file '"<<name<<"'," << endl;
+            cerr << "Info: you might want to give the -clobber flag." << endl;
+        }
+    }
+    return bool(file);
+}
+
+
+// ****************************************************************************
+//  Function:  main
+//
+//  Purpose:
+//    Parse an xml file and generate code if asked.
+//
+//  Arguments:
+//    <file.xml> :     File name
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    August 28, 2001
+//
+//  Modifications:
+//    Jeremy Meredith, Fri Sep 28 13:25:08 PDT 2001
+//    Added Common plugin info.
+//
+//    Jeremy Meredith, Wed Feb  6 16:53:39 PST 2002
+//    Added code so it will not clobber existing files unless the 
+//    "-clobber" flag is given, and so it will not print if
+//    the "-noprint" option is given.
+//
+//    Brad Whitlock, Thu Feb 21 16:40:54 PST 2002
+//    Added some more top level try/catch code.
+//
+//    Jeremy Meredith, Fri Apr 19 15:35:59 PDT 2002
+//    Pulled printing code to a common place.  Added check to make sure
+//    a file exists before trying to parse it.
+//
+//    Jeremy Meredith, Mon Jul 15 01:22:09 PDT 2002
+//    Big enhancements so all our plugin makefile can be build automatically.
+//
+//    Jeremy Meredith, Fri Jul 19 17:35:32 PDT 2002
+//    Fixed an if test that was missing braces.
+//
+//    Brad Whitlock, Thu Aug 8 17:54:21 PST 2002
+//    I added conditionally compiled code to generate Java source code.
+//
+//    Jeremy Meredith, Tue Aug 27 14:32:40 PDT 2002
+//    Added support for database plugins.
+//
+//    Brad Whitlock, Mon Nov 18 14:07:54 PST 2002
+//    I renamed the Parser class to XMLParser to make it build on Windows. I
+//    also changed some exception handling so giving non-plugin files to
+//    xml2info and xml2avt does not crash.
+//
+// ****************************************************************************
+
+int main(int argc, char *argv[])
+{
+    if (argc < 2)
+    {
+        PrintUsage(argv[0]);
+        exit(1);
+    }
+
+    for (int i=1; i<argc; i++)
+    {
+        if (strcmp(argv[i], "-noprint") == 0)
+        {
+            print = false;
+            argc--;
+            for (int j=i; j<argc; j++)
+                argv[j] = argv[j+1];
+            i--;
+        }
+        else if (strcmp(argv[i], "-clobber") == 0)
+        {
+            clobber = true;
+            argc--;
+            for (int j=i; j<argc; j++)
+                argv[j] = argv[j+1];
+            i--;
+        }
+        else if (strcmp(argv[i], "-public") == 0)
+        {
+            installpublic = true;
+            argc--;
+            for (int j=i; j<argc; j++)
+                argv[j] = argv[j+1];
+            i--;
+        }
+        else if (strcmp(argv[i], "-private") == 0)
+        {
+            installprivate = true;
+            argc--;
+            for (int j=i; j<argc; j++)
+                argv[j] = argv[j+1];
+            i--;
+        }
+    }
+
+    if (installpublic && installprivate)
+    {
+        cerr << "Cannot specify -public and -private at the same time!\n";
+        PrintUsage(argv[0]);
+        exit(1);
+    }
+
+    ifstream testfile(argv[1],ios::in);
+    if (!testfile)
+    {
+        cerr << "File '"<<argv[1]<<"' doesn't exist!\n";
+        exit(1);
+    }
+    testfile.close();
+
+
+    QString    file(argv[1]);
+
+    QString    docType;
+    Plugin    *plugin    = NULL;
+    Attribute *attribute = NULL;
+
+    FieldFactory  *fieldFactory = new FieldFactory;
+    XMLParser     parser(fieldFactory, file);
+    try
+    {
+        QFile             xmlFile(file);
+        QXmlInputSource   source(xmlFile);
+        QXmlSimpleReader  reader;
+        ErrorHandler      errorhandler;
+        
+        reader.setFeature("http://trolltech.com/xml/features/report-whitespace-only-CharData", false);
+        reader.setContentHandler(&parser);
+        reader.setErrorHandler(&errorhandler);
+        reader.parse(source);
+
+        docType   = parser.docType;
+        plugin    = parser.plugin;
+
+        if (docType == "Attribute")
+            attribute = parser.attribute;
+        else if(plugin != NULL)
+            attribute = plugin->atts;
+
+#ifndef GENERATE_MAKEFILE
+        if(attribute == NULL && plugin->type != "database")
+            throw "Cannot generate code for this XML file.";
+#endif
+    }
+    catch (const char *s)
+    {
+        cerr << "ERROR: " << s << endl;
+        exit(-1);
+    }
+    catch (const QString &s)
+    {
+        cerr << "ERROR: " << s << endl;
+        exit(-1);
+    }
+
+    if (docType.isNull())
+    {
+        cerr << "Error in parsing " << file << endl;
+        exit(-1);
+    }
+
+    if (print)
+    {
+        cerr << "-----------------------------------------------------------------" << endl;
+        cerr << "               Parsed document of type " << docType << endl;
+        cerr << "-----------------------------------------------------------------" << endl;
+        cerr << endl;
+    }
+
+    // test mode
+    try
+    {
+        if (print)
+        {
+            for (int i=0; i<EnumType::enums.size(); i++)
+            {
+                EnumType::enums[i]->Print(cout);
+                cout << endl;
+            }
+            if (docType == "Plugin")
+                plugin->Print(cout);
+            else if (docType == "Attribute")
+                attribute->Print(cout);
+            else
+            {
+                cerr << "Document type " << docType << "not supported" << endl;
+                exit(-1);
+            }
+            cout << endl;
+        }
+
+#ifdef GENERATE_ATTS
+        if (docType == "Plugin" && plugin->type == "database")
+        {
+            cerr << "No attributes to generate for database plugins\n";
+        }
+        else
+        {
+            // atts writer mode
+            ofstream h;
+            if (Open(h, attribute->name+".h"))
+            {
+                attribute->WriteHeader(h);
+                h.close();
+            }
+
+            ofstream c;
+            if (Open(c, attribute->name+".C"))
+            {
+                attribute->WriteSource(c);
+                c.close();
+            }
+        }
+#endif
+#ifdef GENERATE_WINDOW
+        if (docType == "Plugin" && plugin->type == "database")
+        {
+            cerr << "No window to generate for database plugins\n";
+        }
+        else
+        {
+            // window writer mode
+            if (docType == "Plugin")
+            {
+                attribute->windowname = plugin->windowname;
+                attribute->plugintype = plugin->type;
+            }
+
+            ofstream h;
+            if (Open(h, attribute->windowname+".h"))
+            {
+                attribute->WriteHeader(h);
+                h.close();
+            }
+
+            ofstream c;
+            if (Open(c, attribute->windowname+".C"))
+            {
+                attribute->WriteSource(c);
+                c.close();
+            }
+        }
+#endif
+#ifdef GENERATE_INFO
+        // info writer mode
+        if (docType == "Plugin" && plugin->type == "database")
+        {
+            ofstream ih;
+            if (Open(ih, plugin->name+"PluginInfo.h"))
+            {
+                plugin->WriteInfoHeader(ih);
+                ih.close();
+            }
+
+            ofstream ic;
+            if (Open(ic, plugin->name+"PluginInfo.C"))
+            {
+                plugin->WriteInfoSource(ic);
+                ic.close();
+            }
+
+            ofstream cc;
+            if (Open(cc, plugin->name+"CommonPluginInfo.C"))
+            {
+                plugin->WriteCommonInfoSource(cc);
+                cc.close();
+            }
+
+            ofstream mc;
+            if (Open(mc, plugin->name+"MDServerPluginInfo.C"))
+            {
+                plugin->WriteMDServerInfoSource(mc);
+                mc.close();
+            }
+
+            ofstream ec;
+            if (Open(ec, plugin->name+"EnginePluginInfo.C"))
+            {
+                plugin->WriteEngineInfoSource(ec);
+                ec.close();
+            }
+        }
+        else
+        {
+            ofstream ih;
+            if (Open(ih, plugin->name+"PluginInfo.h"))
+            {
+                plugin->WriteInfoHeader(ih);
+                ih.close();
+            }
+
+            ofstream ic;
+            if (Open(ic, plugin->name+"PluginInfo.C"))
+            {
+                plugin->WriteInfoSource(ic);
+                ic.close();
+            }
+
+            ofstream cc;
+            if (Open(cc, plugin->name+"CommonPluginInfo.C"))
+            {
+                plugin->WriteCommonInfoSource(cc);
+                cc.close();
+            }
+
+            ofstream gc;
+            if (Open(gc, plugin->name+"GUIPluginInfo.C"))
+            {
+                plugin->WriteGUIInfoSource(gc);
+                gc.close();
+            }
+
+            ofstream vc;
+            if (Open(vc, plugin->name+"ViewerPluginInfo.C"))
+            {
+                plugin->WriteViewerInfoSource(vc);
+                vc.close();
+            }
+
+            ofstream ec;
+            if (Open(ec, plugin->name+"EnginePluginInfo.C"))
+            {
+                plugin->WriteEngineInfoSource(ec);
+                ec.close();
+            }
+
+            ofstream sc;
+            if (Open(sc, plugin->name+"ScriptingPluginInfo.C"))
+            {
+                plugin->WriteScriptingInfoSource(sc);
+                sc.close();
+            }
+        }
+#endif
+#ifdef GENERATE_MAKEFILE
+        // makefile writer mode
+        ofstream out;
+        if (Open(out, "Makefile"))
+        {
+            plugin->WriteMakefile(out);
+            out.close();
+        }
+#endif
+#ifdef GENERATE_AVT
+        if (docType == "Plugin" && plugin->type == "database")
+        {
+            cerr << "No AVT code to generate for database plugins\n";
+        }
+        else
+        {
+            // avt writer mode
+            ofstream fh;
+            if (Open(fh, QString("avt") + plugin->name + "Filter.h"))
+            {
+                plugin->WriteFilterHeader(fh);
+                fh.close();
+            }
+
+            ofstream fc;
+            if (Open(fc, QString("avt") + plugin->name + "Filter.C"))
+            {
+                plugin->WriteFilterSource(fc);
+                fc.close();
+            }
+
+            if (plugin->type=="plot")
+            {
+                ofstream ph;
+                if (Open(ph, QString("avt") + plugin->name + "Plot.h"))
+                {
+                    plugin->WritePlotHeader(ph);
+                    ph.close();
+                }
+
+                ofstream pc;
+                if (Open(pc, QString("avt") + plugin->name + "Plot.C"))
+                {
+                    plugin->WritePlotSource(pc);
+                    pc.close();
+                }
+            }
+        }
+#endif
+#ifdef GENERATE_PYTHON
+        if (docType == "Plugin" && plugin->type == "database")
+        {
+            cerr << "No python to generate for database plugins\n";
+        }
+        else
+        {
+            // scripting writer mode
+            QString prefix("Py");
+            ofstream h;
+            if (Open(h, prefix+attribute->name+".h"))
+            {
+                attribute->WriteHeader(h);
+                h.close();
+            }
+
+            ofstream s;
+            if (Open(s, prefix+attribute->name+".C"))
+            {
+                attribute->WriteSource(s);
+                s.close();
+            }
+        }
+#endif
+#ifdef GENERATE_JAVA
+        if (docType == "Plugin" && plugin->type == "database")
+        {
+            cerr << "No java to generate for database plugins\n";
+        }
+        else
+        {
+            if (docType == "Plugin")
+            {
+                attribute->pluginVersion = plugin->version;
+                attribute->pluginName = plugin->name;
+                attribute->pluginType = plugin->type;
+            }
+
+            // java atts writer mode
+            ofstream j;
+            if (Open(j, attribute->name+".java"))
+            {
+                attribute->WriteSource(j);
+                j.close();
+            }
+        }
+#endif
+
+        delete attribute;
+        delete plugin;
+    }
+    catch (const char *s)
+    {
+        cerr << "ERROR: " << s << endl;
+        exit(-1);
+    }
+    catch (const QString &s)
+    {
+        cerr << "ERROR: " << s << endl;
+        exit(-1);
+    }
+
+    return 0;
+}

@@ -1,0 +1,109 @@
+#!/bin/ksh
+#
+# Script : run_doxygen
+#         
+# Purpose: Runs doxygenate on all of the C++ files in the current and 
+#          sub- directories and executes doxygen.
+#
+# Change History : 
+#   MM/DD/YY    USERID    DESCRIPTION
+#   --------    ------    -----------
+#   04/13/00    childs    Created
+#   06/12/00    childs    Removed restriction that script can only be run on
+#                         hyper and improved automation.
+#   06/15/00    childs    Ignore symbolic links and specify output directory.
+#   06/15/00    childs    Improve copying over of Doxyfile.
+#   06/26/00    childs    Assume Doxyfile is in the same directory as script.
+# 
+# *****************************************************************************
+
+function doxygenate_everything
+{
+  terms=$(ls *.@(C|c|h|cxx) 2> /dev/null)
+  if [[ $? = 0 ]] ; then
+    for i in $terms ; do
+      if [[ ! -L $i ]] ; then
+        TARGET="${TARGET_DIR}${PWD#$BASE_DIR}/$i"
+        print "Doxygenating $i"
+        doxygenate < $i > $TARGET
+      fi
+    done
+  fi
+  for i in * ; do
+    if [[ -d $i ]] ; then
+       cd $i
+       mkdir ${TARGET_DIR}${PWD#$BASE_DIR}
+       if [[ $PWD != ${TARGET_DIR} ]] ; then
+         doxygenate_everything
+       fi
+       cd ..
+    fi
+  done
+}
+
+function Usage
+{
+  print "Usage: ${0##*/} <output directory>"
+  exit 1
+}
+
+#
+# Figure out where we should put the output
+#
+if [[ $# = 0 ]] ; then
+  Usage
+fi
+typeset -L1 firstchar
+firstchar=$1
+if [[ "$firstchar" = "-" ]] ; then
+  Usage
+fi
+if [[ ! -d $1 ]] ; then
+  mkdir $1
+  if [[ $? != 0 ]] ; then
+    print "Could not make output directory $1"
+    exit 1
+  fi
+fi
+
+BASE_DIR=$PWD
+TARGET_DIR=$1
+
+
+#
+# Check to make sure we will be able to run before we start.
+#
+if [[ "$(whence doxygen)" = "" ]] ; then
+  print "Cannot find doxygen."
+  exit 1
+fi
+if [[ "$(whence doxygenate)" = "" ]] ; then
+  print "Cannot find doxygenate."
+  exit 1
+fi
+if [[ ! -f ${TARGET_DIR}/Doxyfile ]] ; then
+  print $0
+  script_location=${0%/*}
+  if [[ ! -f $script_location/Doxyfile ]] ; then
+    print "There is no Doxyfile - doxygen cannot run."
+    exit 1
+  else
+    cp $script_location/Doxyfile ${TARGET_DIR}
+  fi
+fi
+   
+
+#
+# Run doxygenate
+#
+doxygenate_everything
+
+# 
+# Run doxygen
+#
+cd ${TARGET_DIR}
+doxygen
+
+exit 0
+
+

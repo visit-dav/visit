@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+  <Attribute name="ColorTableAttributes" codefile="ColorTableAttributes.code" purpose="This class contains the list of colortables." exportAPI="STATE_API" exportInclude="state_exports.h">
+    <Field name="names" type="stringVector"></Field>
+    <Field name="colorTables" type="attVector" subtype="ColorControlPointList"></Field>
+    <Field name="activeContinuous" type="string">"hot"</Field>
+    <Field name="activeDiscrete"   type="string">"levels"</Field>
+    <Function name="GetColorTableIndex"           user="true"></Function>
+    <Function name="GetColorControlPoints1"       user="true"></Function>
+    <Function name="GetColorControlPoints2"       user="true"></Function>
+    <Function name="AddColorTable"                user="true"></Function>
+    <Function name="RemoveColorTable1"            user="true"></Function>
+    <Function name="RemoveColorTable2"            user="true"></Function>
+    <Function name="GetNumColorTables"            user="true"></Function>
+    <Function name="CreateNode"                   user="false"></Function>
+    <Function name="SetFromNode"                  user="false"></Function>
+    <Include file="source">ColorControlPoint.h</Include>
+    <Include file="source">snprintf.h</Include>
+    <Include file="source">map</Include>
+  </Attribute>

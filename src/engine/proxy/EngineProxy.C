@@ -1,0 +1,1049 @@
+// ************************************************************************* //
+//                               EngineProxy.C                               //
+// ************************************************************************* //
+
+#include <EngineProxy.h>
+
+#include <AbortException.h>
+#include <RemoteProcess.h>
+#include <SocketConnection.h>
+#include <StatusAttributes.h>
+#include <DebugStream.h>
+
+#include <stdio.h>
+
+#if defined(_WIN32)
+// Windows compiler kludge
+#define GetMessageA GetMessage
+#endif
+
+// ****************************************************************************
+//  Method: EngineProxy constructor
+//
+//  Programmer: Eric Brugger
+//  Creation:   July 26, 2000
+//
+//  Modifications:
+//     Brad Whitlock, Fri Oct 20 12:50:32 PDT 2000
+//     Added intialization of remoteUserName.
+//
+//     Brad Whitlock, Mon Apr 30 17:43:51 PST 2001
+//     Added code to create the status attributes.
+//
+//     Brad Whitlock, Thu Sep 26 17:28:54 PST 2002
+//     Initialized the progress callbacks.
+//
+//     Brad Whitlock, Wed Nov 27 14:10:03 PST 2002
+//     I added numProcs, numNodes, and loadBalancing.
+//
+//     Brad Whitlock, Fri May 2 15:32:27 PST 2003
+//     I made it inherit from RemoteProxyBase.
+//
+// ****************************************************************************
+
+EngineProxy::EngineProxy() : RemoteProxyBase("-engine")
+{
+    // Indicate that we want 2 write sockets from the engine.
+    nWrite = 2;
+
+    // Initialize the engine information that we can query.
+    numProcs = 1;
+    numNodes = -1;
+    loadBalancing = 0;
+
+    // Create the status attributes that we use to communicate status
+    // information to the client.
+    statusAtts = new StatusAttributes;
+}
+
+// ****************************************************************************
+//  Method: EngineProxy destructor
+//
+//  Programmer: Eric Brugger
+//  Creation:   July 26, 2000
+//
+//  Modifications:
+//    Brad Whitlock, Fri Sep 29 19:18:02 PST 2000
+//    Added code to delete command line arguments.
+//
+//    Hank Childs, Mon Oct 16 11:18:58 PDT 2000
+//    Fixed up memory leak.
+//
+//    Brad Whitlock, Fri Oct 6 11:32:23 PDT 2000
+//    I removed the SocketConnections.
+//
+//    Brad Whitlock, Fri Oct 20 12:51:14 PDT 2000
+//    Added code to delete remoteUserName.
+//
+//    Brad Whitlock, Tue Apr 24 12:48:21 PDT 2001
+//    Added code to delete the engine.
+//
+//    Brad Whitlock, Mon Apr 30 17:43:23 PST 2001
+//    Added code to delete the status attributes.
+//
+//    Brad Whitlock, Fri May 2 15:33:21 PST 2003
+//    I removed some members since they are now deleted in the base class.
+//
+// ****************************************************************************
+
+EngineProxy::~EngineProxy()
+{
+    delete statusAtts;
+}
+
+// ****************************************************************************
+// Method: EngineProxy::SetupComponentRPCs
+//
+// Purpose: 
+//   Hook up the engine's RPC's to the xfer object. This is called after the
+//   engine is launched.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri May 2 15:34:54 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+EngineProxy::SetupComponentRPCs()
+{
+    //
+    // Add RPCs to the transfer object.
+    //
+    xfer.Add(&readRPC);
+    xfer.Add(&applyOperatorRPC);
+    xfer.Add(&applyNamedFunctionRPC);
+    xfer.Add(&setFinalVariableNameRPC);
+    xfer.Add(&makePlotRPC);
+    xfer.Add(&useNetworkRPC);
+    xfer.Add(&updatePlotAttsRPC);
+    xfer.Add(&setWindowAttsRPC);
+    xfer.Add(&pickRPC);
+    xfer.Add(&startPickRPC);
+    xfer.Add(&executeRPC);
+    xfer.Add(&clearCacheRPC);
+    xfer.Add(&queryRPC);
+    xfer.Add(&releaseDataRPC);
+    xfer.Add(&openDatabaseRPC);
+    xfer.Add(&defineVirtualDatabaseRPC);
+    xfer.Add(&renderRPC);
+
+    // Extract some information about the engine from the command line
+    // arguments that were used to create it.
+    ExtractEngineInformation();
+}
+
+// ****************************************************************************
+// Method: EngineProxy::ExtractEngineInformation
+//
+// Purpose: 
+//   Extracts information about the engine from its command line arguments.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri May 2 15:38:22 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+EngineProxy::ExtractEngineInformation()
+{
+    //
+    // Look for certain key arguments in the command line arguments
+    // and parse them out so we can query their values in the
+    // engine proxy.
+    //
+    for(int i = 0; i < argv.size(); ++i)
+    {
+        if(argv[i] == "-np" && (i+1) < argv.size())
+        {
+           int np = 1;
+           if(sscanf(argv[i+1].c_str(), "%d", &np) == 1)
+           {
+              if(np >= 1)
+                  numProcs = np;
+           }
+           ++i;
+        }
+        else if(argv[i] == "-nn" && (i+1) < argv.size())
+        {
+           int nn = 1;
+           if(sscanf(argv[i+1].c_str(), "%d", &nn) == 1)
+           {
+              if(nn >= 1)
+                  numNodes = nn;
+           }
+           ++i;
+        }
+        else if(argv[i] == "-forcestatic")
+        {
+           loadBalancing = 0;
+        }
+        else if(argv[i] == "-forcedynamic")
+        {
+           loadBalancing = 1;
+        }
+    }
+}
+
+// ****************************************************************************
+// Method: EngineProxy::GetComponentName
+//
+// Purpose: 
+//   Returns the name of this component.
+//
+// Returns:    The name of the component.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue May 6 10:47:35 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+std::string
+EngineProxy::GetComponentName() const
+{
+    return "compute engine";
+}
+
+// ****************************************************************************
+//  Method: EngineProxy::ReadDataObject
+//
+//  Purpose:
+//      Start a new network and open a variable/time from a database
+//
+//  Arguments:
+//      file      the file to read from
+//      var       the variable to read
+//      time      the time step to read
+//      silr      the sil restriction to use.
+//
+//  Returns:    
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   September 25, 2000
+//
+//  Modifications:
+//
+//    Kathleen Bonnell, Wed May 2 10:43:22 PDT 2001
+//    Added reconstruction and throw of VisItException upon error status. 
+//
+//    Hank Childs, Wed Jun 13 10:50:35 PDT 2001
+//    Added SIL restriction.
+//
+//    Brad Whitlock, Tue Oct 23 14:11:29 PST 2001
+//    Modified to use a macro for doing exceptions.
+//
+//    Jeremy Meredith, Thu Oct 24 16:15:11 PDT 2002
+//    Added material options.
+//
+// ****************************************************************************
+void
+EngineProxy::ReadDataObject(const string &file, const string &var,
+                            const int time, avtSILRestriction_p silr,
+                            const MaterialAttributes &matopts)
+{
+    CompactSILRestrictionAttributes *atts = silr->MakeCompactAttributes();
+    readRPC(file, var, time, *atts, matopts);
+    if (readRPC.GetStatus() == VisItRPC::error)
+    {
+        RECONSTITUTE_EXCEPTION(readRPC.GetExceptionType(),
+                               readRPC.GetMessage());
+    }
+    delete atts;
+}
+
+// ****************************************************************************
+//  Method: EngineProxy::ApplyOperator
+//
+//  Purpose:
+//      Apply an operator to the end of the current pipeline
+//
+//  Arguments:
+//      name       the name of the operator
+//      atts       the attributes to apply
+//
+//  Returns:    
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   March  2, 2001
+//
+//  Modifications:
+//    Kathleen Bonnell, Wed May 2 10:43:22 PDT 2001
+//    Added reconstruction and throw of VisItException upon error status. 
+//
+//    Brad Whitlock, Tue Oct 23 14:11:29 PST 2001
+//    Modified to use a macro for doing exceptions.
+//
+// ****************************************************************************
+void
+EngineProxy::ApplyOperator(const string &name, const AttributeSubject *atts)
+{
+    applyOperatorRPC(name, atts);
+    if (applyOperatorRPC.GetStatus() == VisItRPC::error)
+    {
+        RECONSTITUTE_EXCEPTION(applyOperatorRPC.GetExceptionType(),
+                               applyOperatorRPC.GetMessage());
+    }
+}
+
+// ****************************************************************************
+//  Method: EngineProxy::ApplyNamedFunction
+//
+//  Purpose:
+//      Apply a named function to the end of the current pipeline
+//
+//  Arguments:
+//      name       the name of the function to apply
+//      nargs      the number of arguments to the function
+//
+//  Returns:    
+//
+//  Programmer: Sean Ahern
+//  Creation:   Wed Mar 20 22:01:13 PST 2002
+//
+//  Modifications:
+//
+// ****************************************************************************
+void
+EngineProxy::ApplyNamedFunction(const std::string &name, int nargs)
+{
+    applyNamedFunctionRPC(name, nargs);
+    if (applyNamedFunctionRPC.GetStatus() == VisItRPC::error)
+    {
+        RECONSTITUTE_EXCEPTION(applyNamedFunctionRPC.GetExceptionType(),
+                               applyNamedFunctionRPC.GetMessage());
+    }
+}
+
+// ****************************************************************************
+//  Method: EngineProxy::SetFinalVariableName
+//
+//  Purpose:
+//      Set the name of the final output variable.
+//
+//  Arguments:
+//      name       the name of the final variable
+//
+//  Returns:    
+//
+//  Programmer: Sean Ahern
+//  Creation:   Thu Jun 13 14:59:13 PDT 2002
+//
+//  Modifications:
+//
+// ****************************************************************************
+void
+EngineProxy::SetFinalVariableName(const std::string &name)
+{
+    setFinalVariableNameRPC(name);
+    if (setFinalVariableNameRPC.GetStatus() == VisItRPC::error)
+    {
+        RECONSTITUTE_EXCEPTION(setFinalVariableNameRPC.GetExceptionType(),
+                               setFinalVariableNameRPC.GetMessage());
+    }
+}
+ 
+// ****************************************************************************
+//  Method: EngineProxy::MakePlot
+//
+//  Purpose:
+//      Create a plot from the current pipeline
+//
+//  Arguments:
+//      name       the name of the plot
+//      atts       the attributes to apply
+//
+//  Returns:    
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   March  4, 2001
+//
+//  Modifications:
+//    Kathleen Bonnell, Wed May 2 10:43:22 PDT 2001
+//    Added reconstruction and throw of VisItException upon error status. 
+//
+//    Brad Whitlock, Tue Oct 23 14:11:29 PST 2001
+//    Modified to use a macro for doing exceptions.
+//
+//    Jeremy Meredith, Fri Nov  9 10:21:15 PST 2001
+//    Made it return the network id.
+//
+// ****************************************************************************
+int
+EngineProxy::MakePlot(const string &name, const AttributeSubject *atts)
+{
+    int id;
+    id = makePlotRPC(name, atts);
+    if (makePlotRPC.GetStatus() == VisItRPC::error)
+    {
+        RECONSTITUTE_EXCEPTION(makePlotRPC.GetExceptionType(),
+                               makePlotRPC.GetMessage());
+    }
+    return id;
+}
+
+// ****************************************************************************
+//  Method:  EngineProxy::UseNetwork
+//
+//  Purpose:
+//    Set up the engine to re-use an existing network.
+//
+//  Arguments:
+//    id         the id of the network to reuse
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November  7, 2001
+//
+// ****************************************************************************
+
+void
+EngineProxy::UseNetwork(int id)
+{
+    useNetworkRPC(id);
+    if (useNetworkRPC.GetStatus() == VisItRPC::error)
+    {
+        RECONSTITUTE_EXCEPTION(useNetworkRPC.GetExceptionType(),
+                               useNetworkRPC.GetMessage());
+    }
+}
+
+
+// ****************************************************************************
+//  Method:  EngineProxy::UpdatePlotAttributes
+//
+//  Purpose:
+//      Tell the engine to update the attributes for a plot.
+//
+//  Arguments:
+//    id         the id of the network to reuse
+//    atts       the attributes for a plot.
+//
+//  Programmer:  Hank Childs
+//  Creation:    November 28, 2001
+//
+// ****************************************************************************
+
+void
+EngineProxy::UpdatePlotAttributes(const string &name, int id,
+                                  const AttributeSubject *atts)
+{
+    updatePlotAttsRPC(name, id, atts);
+    if (updatePlotAttsRPC.GetStatus() == VisItRPC::error)
+    {
+        RECONSTITUTE_EXCEPTION(updatePlotAttsRPC.GetExceptionType(),
+                               updatePlotAttsRPC.GetMessage());
+    }
+}
+
+// ****************************************************************************
+//  Method:  EngineProxy::SetWindowAtts
+//
+//  Purpose:
+//    Set up the current window attributes for the engine (for image mode).
+//
+//  Arguments:
+//    atts       the current window's attributes
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November  8, 2001
+//
+// ****************************************************************************
+
+void
+EngineProxy::SetWindowAtts(const WindowAttributes *atts)
+{
+    setWindowAttsRPC(atts);
+    if (setWindowAttsRPC.GetStatus() == VisItRPC::error)
+    {
+        RECONSTITUTE_EXCEPTION(setWindowAttsRPC.GetExceptionType(),
+                               setWindowAttsRPC.GetMessage());
+    }
+}
+
+
+// ****************************************************************************
+//  Method: EngineProxy::Execute
+//
+//  Purpose:
+//      Execute the current pipeline and return the result
+//
+//  Arguments:
+//
+//  Returns:    The avtDataObjectReader
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   September 25, 2000
+//
+//  Modifications:
+//
+//    Jeremy Meredith, Tue Sep 26 16:40:08 PDT 2000
+//    Switched to use avt reader instead of vtk reader.
+//
+//    Hank Childs, Thu Sep 28 22:14:46 PDT 2000
+//    Made return type be an avtDataset.
+//
+//    Hank Childs, Tue Oct 17 08:36:36 PDT 2000
+//    Made return type be an avtDataSetReader.
+//
+//    Hank Childs, Fri Dec 29 08:48:12 PST 2000
+//    Made return type be an avtDataObjectReader.
+//
+//    Brad Whitlock, Tue May 1 14:29:22 PST 2001
+//    Added code to send status updates.
+//
+//    Kathleen Bonnell, Wed May 2 10:43:22 PDT 2001
+//    Added reconstruction and throw of VisItException upon error status. 
+//
+//    Jeremy Meredith, Tue Jul  3 15:03:43 PDT 2001
+//    Added handling of execution aborting.
+//
+//    Hank Childs, Mon Sep 17 11:22:30 PDT 2001
+//    Allow avtDataObjectReader to manage memory to prevent unneed copies.
+//
+//    Brad Whitlock, Wed Oct 17 15:55:40 PST 2001
+//    Added support for warnings coming from the RPC.
+//
+//    Brad Whitlock, Tue Oct 23 14:11:29 PST 2001
+//    Modified to use a macro for doing exceptions.
+//
+//    Jeremy Meredith, Fri Dec 14 12:35:10 PST 2001
+//    Removed some useless debug statements.
+//
+//    Brad Whitlock, Mon Mar 25 10:44:19 PDT 2002
+//    Modified communication a little.
+//
+// ****************************************************************************
+
+avtDataObjectReader_p
+EngineProxy::Execute(bool respondWithNull, void (*waitCB)(void *), void *cbData)
+{
+    // Send a status message indicating that we're starting to execute
+    // the pipeline.
+    Status("Executing pipeline.");
+
+    // Do it!
+    executeRPC(respondWithNull);
+
+    // Get the reply and update the progress bar
+    while (executeRPC.GetStatus() == VisItRPC::incomplete ||
+           executeRPC.GetStatus() == VisItRPC::warning)
+    {
+        executeRPC.RecvReply();
+
+        // Send a warning message if the status is a warning.
+        if(executeRPC.GetStatus() == VisItRPC::incomplete)
+        {
+            // Send a status message.
+            Status(executeRPC.GetPercent(), executeRPC.GetCurStageNum(),
+                   executeRPC.GetCurStageName(), executeRPC.GetMaxStageNum());
+        }
+        else if(executeRPC.GetStatus() == VisItRPC::warning)
+        {
+            debug4 << "Warning: " << executeRPC.GetMessage().c_str() << endl;
+            Warning(executeRPC.GetMessage().c_str());
+        }
+
+        // If we passed a callback function, execute it.
+        if(waitCB)
+            waitCB(cbData);
+    }
+
+    // Check for abort
+    if (executeRPC.GetStatus() == VisItRPC::abort)    
+    {
+        ClearStatus();
+        EXCEPTION0(AbortException);
+    }
+    // Check for an error
+    if (executeRPC.GetStatus() == VisItRPC::error)    
+    {
+        RECONSTITUTE_EXCEPTION(executeRPC.GetExceptionType(),
+                               executeRPC.GetMessage());
+    }
+
+    // Send a status message that indicates the output of the engine is
+    // being transferred across the network.
+    Status("Reading engine output.");
+
+    // Read the VTK data
+    long size = executeRPC.GetReplyLen();
+    char *buf = new char[size];
+
+    if (component->GetWriteConnection(1)->DirectRead((unsigned char *)buf, size) < 0)
+        debug1 << "Error reading VTK data!!!!\n";
+
+    // The data object reader will clean up the memory with buf.
+    avtDataObjectReader_p avtreader  = new avtDataObjectReader;
+    avtreader->Read(size, buf);
+
+    // Output a message that indicates we're done reading the engine's output.
+    ClearStatus();
+
+    // Whoever called Execute will own the reader when this is returned since
+    // the reference count will be decremented when avtreader goes out of
+    // scope.
+    return avtreader;
+}
+
+// ****************************************************************************
+// Method: EngineProxy::ClearCache
+//
+// Purpose: 
+//   This method calls an RPC that clears the engine's cache for the specified
+//   database.
+//
+// Arguments:
+//   filename : The name of the database to clear out.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jul 30 13:05:31 PST 2002
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+EngineProxy::ClearCache()
+{
+    clearCacheRPC("none", true);
+}
+
+void
+EngineProxy::ClearCache(const std::string &filename)
+{
+    clearCacheRPC(filename, false);
+}
+
+// ****************************************************************************
+// Method: EngineProxy::OpenDatabase
+//
+// Purpose: 
+//   Tells the engine to open the specified database.
+//
+// Arguments:
+//   file : The database name.
+//   time : The timestep to open.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Dec 10 14:24:21 PST 2002
+//
+// Modifications:
+//    Jeremy Meredith, Tue Mar  4 13:07:17 PST 2003
+//    Removed the check for status since OpenDatabaseRPC is now non-blocking.
+//   
+// ****************************************************************************
+
+void
+EngineProxy::OpenDatabase(const std::string &file, int time)
+{
+    openDatabaseRPC(file, time);
+}
+
+// ****************************************************************************
+// Method: EngineProxy::DefineVirtualDatabase
+//
+// Purpose: 
+//   Tells the engine to define the specified virtual database.
+//
+// Arguments:
+//   dbName : The database name.
+//   files  : The files in the database.
+//   time   : The timestep to open.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Mar 25 13:59:32 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+EngineProxy::DefineVirtualDatabase(const std::string &wholeDBName,
+    const std::string &pathToFiles, const stringVector &files, int time)
+{
+    defineVirtualDatabaseRPC(wholeDBName, pathToFiles, files, time);
+}
+
+// ****************************************************************************
+// Method: EngineProxy::Render
+//
+// Purpose: 
+//   Tells the engine to render the plots specified in the list of ids 
+//
+// Arguments:
+//   networkIDs : the network IDs of the plots to render 
+//
+// Programmer: Mark C. Miller 
+// Creation:   07Apr03 
+//   
+// ****************************************************************************
+
+avtDataObjectReader_p
+EngineProxy::Render(bool sendZBuffer, const intVector& networkIDs)
+{
+
+    // Send a status message indicating that we're starting a scalable render 
+    Status("Scalable Rendering.");
+
+    // Do it!
+    renderRPC(networkIDs, sendZBuffer);
+
+    // Get the reply and update the progress bar
+    while (renderRPC.GetStatus() == VisItRPC::incomplete ||
+           renderRPC.GetStatus() == VisItRPC::warning)
+    {
+        renderRPC.RecvReply();
+
+        // Send a warning message if the status is a warning.
+        if(renderRPC.GetStatus() == VisItRPC::incomplete)
+        {
+            // Send a status message.
+            Status(renderRPC.GetPercent(), renderRPC.GetCurStageNum(),
+                   renderRPC.GetCurStageName(), renderRPC.GetMaxStageNum());
+        }
+        else if(renderRPC.GetStatus() == VisItRPC::warning)
+        {
+            debug4 << "Warning: " << renderRPC.GetMessage().c_str() << endl;
+            Warning(renderRPC.GetMessage().c_str());
+        }
+
+    }
+
+    // Check for abort
+    if (renderRPC.GetStatus() == VisItRPC::abort)    
+    {
+        ClearStatus();
+        EXCEPTION0(AbortException);
+    }
+    // Check for an error
+    if (renderRPC.GetStatus() == VisItRPC::error)    
+    {
+        RECONSTITUTE_EXCEPTION(renderRPC.GetExceptionType(),
+                               renderRPC.GetMessage());
+    }
+
+    // Send a status message that indicates the output of the engine is
+    // being transferred across the network.
+    if (sendZBuffer)
+       Status("Reading engine output [with zbuffer]");
+    else
+       Status("Reading engine output.");
+
+    // Read the VTK data
+    long size = renderRPC.GetReplyLen();
+    char *buf = new char[size];
+
+    if (component->GetWriteConnection(1)->DirectRead((unsigned char *)buf, size) < 0)
+        debug1 << "Error reading VTK data!!!!\n";
+
+    // The data object reader will clean up the memory with buf.
+    avtDataObjectReader_p avtreader  = new avtDataObjectReader;
+    avtreader->Read(size, buf);
+
+    // Output a message that indicates we're done reading the engine's output.
+    ClearStatus();
+
+    // Whoever called Execute will own the reader when this is returned since
+    // the reference count will be decremented when avtreader goes out of
+    // scope.
+    return avtreader;
+}
+
+
+// ****************************************************************************
+// Method: EngineProxy::GetStatusAttributes
+//
+// Purpose: 
+//   Returns a pointer to the status attributes.
+//
+// Returns:    A pointer to the status attributes.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Apr 30 17:45:01 PST 2001
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+StatusAttributes *
+EngineProxy::GetStatusAttributes() const
+{
+    return statusAtts;
+}
+
+// ****************************************************************************
+// Method: EngineProxy::Status
+//
+// Purpose: 
+//   Sends a status message to the observers of the proxy's status attributes.
+//
+// Arguments:
+//   message : The message to send.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Apr 30 17:53:51 PST 2001
+//
+// Modifications:
+//    Jeremy Meredith, Fri Jun 29 15:14:45 PDT 2001
+//    Added MessageType field.
+//
+// ****************************************************************************
+
+void
+EngineProxy::Status(const char *message)
+{
+    statusAtts->SetClearStatus(false);
+    statusAtts->SetMessageType(1);
+    statusAtts->SetMessage(message);
+    statusAtts->Notify();
+}
+
+// ****************************************************************************
+// Method: EngineProxy::Status
+//
+// Purpose: 
+//   Sends a status message to the observers of the proxy's status attributes.
+//
+// Arguments:
+//   percent      : The percent complete.
+//   curStage     : The current stage number,
+//   curStageName : The name of the current stage.
+//   maxStage     : The max number of stages.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Apr 30 17:53:51 PST 2001
+//
+// Modifications:
+//    Jeremy Meredith, Fri Jun 29 15:14:45 PDT 2001
+//    Added MessageType field.
+//
+// ****************************************************************************
+
+void
+EngineProxy::Status(int percent, int curStage, const std::string &curStageName,
+   int maxStage)
+{
+    statusAtts->SetClearStatus(false);
+    statusAtts->SetMessageType(2);
+    statusAtts->SetPercent(percent);
+    statusAtts->SetCurrentStage(curStage);
+    statusAtts->SetCurrentStageName(curStageName);
+    statusAtts->SetMaxStage(maxStage);
+    statusAtts->Notify();
+}
+
+// ****************************************************************************
+// Method: EngineProxy::Warning
+//
+// Purpose: 
+//   Sends a warning message to the observer's of the proxy's status attributes.
+//
+// Arguments:
+//   message : A pointer to the message string to send.
+//
+// Note:       I'm using the status attributes to send a message. Note the
+//             message type is a new one (3).
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Oct 17 16:01:20 PST 2001
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+EngineProxy::Warning(const char *message)
+{
+    statusAtts->SetClearStatus(false);
+    statusAtts->SetMessageType(3);
+    statusAtts->SetMessage(message);
+    statusAtts->Notify();
+}
+
+// ****************************************************************************
+// Method: EngineProxy::ClearStatus
+//
+// Purpose: 
+//   Clears the status.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Apr 30 17:56:08 PST 2001
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+EngineProxy::ClearStatus()
+{
+    statusAtts->SetClearStatus(true);
+    statusAtts->Notify();
+}
+
+
+// ****************************************************************************
+//  Method: EngineProxy::Interrupt
+//
+//  Purpose: 
+//    Interrupt execution of the current pipeline in the engine.
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   July  2, 2001
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+EngineProxy::Interrupt()
+{
+    xfer.SendInterruption();
+}
+
+// ****************************************************************************
+//  Method:  EngineProxy::Pick
+//
+//  Purpose:
+//    Set up the engine to re-use an existing network.
+//
+//  Arguments:
+//    atts       the pick attributes 
+//
+//  Programmer:  Kathleen Bonnell 
+//  Creation:    November 20, 2001
+//
+//  Modifications:
+//    Kathleen Bonnell, Tue Mar  5 09:27:51 PST 2002  
+//    Remove unnecessary debug lines.
+//
+// ****************************************************************************
+
+void 
+EngineProxy::Pick(const int nid, const PickAttributes *atts,
+                  PickAttributes &retAtts)
+{
+    retAtts = pickRPC(nid, atts);
+
+    if (pickRPC.GetStatus() == VisItRPC::error)
+    {
+        RECONSTITUTE_EXCEPTION(pickRPC.GetExceptionType(),
+                             pickRPC.GetMessage());
+    }
+}
+
+
+// ****************************************************************************
+//  Method:  EngineProxy::StartPick
+//
+//  Purpose:
+//
+//  Arguments:
+//
+//  Programmer:  Kathleen Bonnell 
+//  Creation:    November 26, 2001
+//
+// ****************************************************************************
+
+void 
+EngineProxy::StartPick(const bool flag, const int nid)
+{
+
+    startPickRPC(flag, nid);
+
+    if (startPickRPC.GetStatus() == VisItRPC::error)
+    {
+        RECONSTITUTE_EXCEPTION(startPickRPC.GetExceptionType(),
+                             startPickRPC.GetMessage());
+    }
+}
+
+
+// ****************************************************************************
+//  Method:  EngineProxy::Query
+//
+//  Purpose:
+//    Set up the engine to perform a query.
+//
+//  Arguments:
+//    nid        The network Id this query should use.
+//    atts       Attributes to be used by this query.
+//    retAtts    Attributes to be returned by this query.
+//
+//  Programmer:  Kathleen Bonnell 
+//  Creation:    September 6, 2002 
+//
+// ****************************************************************************
+
+void 
+EngineProxy::Query(const int nid, const QueryAttributes *atts,
+                   QueryAttributes &retAtts)
+{
+    queryRPC(nid, atts);
+
+    // Get the reply and update the progress bar
+    while (queryRPC.GetStatus() == VisItRPC::incomplete ||
+           queryRPC.GetStatus() == VisItRPC::warning)
+    {
+        queryRPC.RecvReply();
+ 
+        // Send a warning message if the status is a warning.
+        if(queryRPC.GetStatus() == VisItRPC::incomplete)
+        {
+            // Send a status message.
+            Status(queryRPC.GetPercent(), queryRPC.GetCurStageNum(),
+                   queryRPC.GetCurStageName(), queryRPC.GetMaxStageNum());
+        }
+        else if(queryRPC.GetStatus() == VisItRPC::warning)
+        {
+            debug4 << "Warning: " << queryRPC.GetMessage().c_str() << endl;
+            Warning(queryRPC.GetMessage().c_str());
+        }
+    }
+ 
+    // Check for abort
+    if (queryRPC.GetStatus() == VisItRPC::abort)
+    {
+        ClearStatus();
+        EXCEPTION0(AbortException);
+    }
+
+    // Check for an error
+    if (queryRPC.GetStatus() == VisItRPC::error)    
+    {
+        RECONSTITUTE_EXCEPTION(queryRPC.GetExceptionType(),
+                               queryRPC.GetMessage());
+    }
+    retAtts = queryRPC.GetReturnAtts();
+    ClearStatus();
+}
+
+
+// ****************************************************************************
+//  Method:  EngineProxy::ReleaseData
+//
+//  Purpose:
+//    Set up the engine to have an existing network release its data.
+//
+//  Arguments:
+//    id         the id of the network to release data.
+//
+//  Programmer:  Kathleen Bonnell 
+//  Creation:    September 18, 2002 
+//
+// ****************************************************************************
+
+void
+EngineProxy::ReleaseData(const int id)
+{
+    releaseDataRPC(id);
+    if (releaseDataRPC.GetStatus() == VisItRPC::error)
+    {
+        RECONSTITUTE_EXCEPTION(releaseDataRPC.GetExceptionType(),
+                               releaseDataRPC.GetMessage());
+    }
+}
+

@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+  <Attribute name="EngineList" purpose="This class contains a list of host names on which engines are running." exportAPI="STATE_API" exportInclude="state_exports.h">
+    <Field name="engines" type="stringVector"></Field>
+    <Field name="numProcessors" type="intVector"></Field>
+    <Field name="numNodes" type="intVector"></Field>
+    <Field name="loadBalancing" type="intVector"></Field>
+  </Attribute>

@@ -1,0 +1,193 @@
+#                            Copyright 2000 - 2002
+#                 The Regents of the University of California.
+#                             All rights reserved.
+# 
+# This work  was produced at the  University of California, Lawrence Livermore
+# National Laboratory  (UC LLNL)  under contract no.   W-7405-ENG-48 (Contract
+# 48) between  the U.S.  Department  of Energy (DOE)  and  The Regents  of the
+# University  of   California (University)   for   the operation  of UC  LLNL.
+# Copyright  is reserved  to     the University for   purposes  of  controlled
+# dissemination,   commercialization   through   formal licensing,   or  other
+# disposition  under  terms  of Contract   48; DOE  policies, regulations  and
+# orders;  and U.S.   statutes.  The  rights of   the  Federal Government  are
+# reserved under  Contract 48 subject to the  restrictions agreed  upon by DOE
+# and University.
+# 
+#                                 DISCLAIMER
+# 
+# This software was prepared as an  account of work sponsored  by an agency of
+# the United  States Government. Neither the United  States Government nor the
+# University of California  nor any  of their  employees, makes any  warranty,
+# express or  implied,  or assumes  any  liability  or responsiblity for   the
+# accuracy, completeness,  or   usefullness of   any  information,  apparatus,
+# product, or process disclosed, or represents that its use would not infringe
+# privately   owned  rights. Reference    herein to   any specific  commercial
+# products, process, or service   by trade name, trademark,   manufacturer, or
+# otherwise,  does not    necessarily  constitute or    imply its endorsement,
+# recommendation,  or  favoring by    the  United  States Government  or   the
+# University of California. The views and opinions of authors expressed herein
+# do not necessarily state or reflect those of the United States Government or
+# the University of  California,  and shall not  be  used for  advertising  or
+# product endorsement purposes.
+#
+# Modifications:
+#   Brad Whitlock, Wed Aug 21 11:47:26 PDT 2002
+#   I added a target to build versionwriter and then write a Java class
+#   file that contains VisIt's version.
+#
+#   Brad Whitlock, Mon Sep 16 14:23:18 PST 2002
+#   I added WindowInformation.java and RenderingAttributes.java.
+#
+#   Brad Whitlock, Tue Oct 1 12:06:46 PDT 2002
+#   I added QueryList and QueryAttributes.
+#
+#   Jeremy Meredith, Thu Oct 24 17:00:05 PDT 2002
+#   Added material options.
+#
+#   Brad Whitlock, Thu Oct 24 13:20:03 PST 2002
+#   I added BoxExtents.java.
+#
+#   Brad Whitlock, Wed Nov 6 12:17:19 PDT 2002
+#   I added a make target for jar files.
+#
+#   Brad Whitlock, Thu Jan 2 15:38:08 PST 2003
+#   I added some new exception classes.
+#
+#   Brad Whitlock, Tue Feb 11 07:25:05 PDT 2003
+#   I added SILMatrixAttributes.java.
+#
+#   Brad Whitlock, Thu Mar 20 10:28:05 PDT 2003
+#   I added GlobalLineoutAttributes.java
+#
+##############################################################################
+
+##
+## Programs and options...
+##
+@SET_MAKE@
+@VARIABLES@
+
+INSTDIR=llnl/visit
+
+##
+## Files...
+##
+
+PACKAGE_STATE_SRC= AnimationAttributes.java \
+AnnotationAttributes.java \
+AppearanceAttributes.java \
+BoxExtents.java \
+ColorAttribute.java \
+ColorAttributeList.java \
+ColorControlPoint.java \
+ColorControlPointList.java \
+ColorTableAttributes.java \
+CouldNotConnectException.java \
+EngineList.java \
+Expression.java \
+ExpressionList.java \
+GaussianControlPoint.java \
+GaussianControlPointList.java \
+GlobalAttributes.java \
+GlobalLineoutAttributes.java \
+HostProfile.java \
+HostProfileList.java \
+IncompatibleSecurityTokenException.java \
+IncompatibleVersionException.java \
+KeyframeAttributes.java \
+LightAttributes.java \
+LightList.java \
+MaterialAttributes.java \
+MessageAttributes.java \
+NamespaceAttributes.java \
+PickAttributes.java \
+PickVarInfo.java \
+Plot.java \
+PlotList.java \
+Plugin.java \
+PluginManagerAttributes.java \
+Point.java \
+PrinterAttributes.java \
+QueryAttributes.java \
+QueryList.java \
+RenderingAttributes.java \
+SaveWindowAttributes.java \
+SILAttributes.java \
+SILMatrixAttributes.java \
+SILRestrictionAttributes.java \
+StatusAttributes.java \
+SyncAttributes.java \
+ViewAttributes.java \
+ViewerRPC.java \
+WindowInformation.java
+
+PACKAGE_SRC = AttributeSubject.java \
+CommunicationBuffer.java \
+CommunicationHeader.java \
+Connection.java \
+LostConnectionException.java \
+MessageObserver.java \
+PluginManager.java \
+RemoteProcess.java \
+SimpleObserver.java \
+Version.java \
+ViewerProxy.java \
+Xfer.java
+
+MAIN_SRC = RunViewer.java TryLighting.java TryQuery.java
+MAIN_CLASS = $(MAIN_SRC:.java=.class)
+
+VERSIONWRITER = versionwriter
+VERSIONWRITER_SRC = VersionWriter.C
+VERSIONWRITER_OBJ = $(VERSIONWRITER_SRC:.C=.o)
+
+JARFILE=visit.jar
+
+##
+## Standard targets...
+##
+
+all: package main
+
+install: install_bin
+
+clean:
+	$(RM) $(JARFILE) $(MAIN_CLASS) $(INSTDIR)/*.class
+	$(RM) $(VERSIONWRITER_OBJ) $(VERSIONWRITER)
+
+##
+## Other targets...
+##
+$(VERSIONWRITER): $(VERSIONWRITER_OBJ)
+	$(CXX) -o ${VERSIONWRITER} $(CXXFLAGS) $(VERSIONWRITER_OBJ)
+
+version: $(VERSIONWRITER)
+	$(VERSIONWRITER)
+
+package:
+	$(JAVAC) -d . $(JAVAFLAGS) $(PACKAGE_SRC) $(PACKAGE_STATE_SRC)
+
+main:
+	$(JAVAC) $(JAVAFLAGS) $(MAIN_SRC)
+
+jar: package
+	$(JAR) cvf $(JARFILE) llnl 
+
+pack: jar main
+	$(RM) jvisit.tar
+	$(RM) -rf src
+	mkdir src
+	mkdir src/plots
+	mkdir src/operators
+	cp *.java src
+	cp Makefile src
+	cp ../plots/*/*.java src/plots
+	cp ../operators/*/*.java src/operators
+	tar -cf jvisit.tar $(JARFILE) src $(MAIN_CLASS)
+	$(RM) -rf src
+
+##
+## Automatic dependency stuff
+##
+@TARGETS@
+@LIBTARGETS@

@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+  <Plugin name="IndexSelect" type="operator" label="Index Select" version="1.0" iconFile="IndexSelect.xpm">
+    <Attribute name="IndexSelectAttributes" purpose="This class contains attributes for the index select operator." persistent="true">
+      <Enum name="Dimension">
+        OneD
+        TwoD
+        ThreeD
+      </Enum>
+      <Enum name="DataType">
+        AllDomains
+        OneDomain
+        OneGroup
+      </Enum>
+      <Field name="dim" label="Dimension" type="enum" subtype="Dimension">
+        TwoD
+      </Field>
+      <Field name="xMin" label="X-Min" type="int">
+        0
+      </Field>
+      <Field name="xMax" label="X-Max" type="int">
+        -1
+      </Field>
+      <Field name="xIncr" label="X-Incr" type="int">
+        1
+      </Field>
+      <Field name="yMin" label="Y-Min" type="int" enabler="dim:TwoD,ThreeD">
+        0
+      </Field>
+      <Field name="yMax" label="Y-Max" type="int">
+        -1
+      </Field>
+      <Field name="yIncr" label="Y-Incr" type="int">
+        1
+      </Field>
+      <Field name="zMin" label="Z-Min" type="int" enabler="dim:ThreeD">
+        0
+      </Field>
+      <Field name="zMax" label="Z-Max" type="int">
+        -1
+      </Field>
+      <Field name="zIncr" label="Z-Incr" type="int">
+        1
+      </Field>
+      <Field name="whichData" label="Which Data" type="enum" subtype="DataType">
+        AllDomains
+      </Field>
+      <Field name="domainIndex" label="Domain" type="int" enabler="whichData:OneDomain">
+        0
+      </Field>
+      <Field name="groupIndex" label="Group" type="int" enabler="whichData:OneGroup">
+        0
+      </Field>
+    </Attribute>
+  </Plugin>

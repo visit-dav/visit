@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+  <Attribute name="Expression" codefile="Expression.code" purpose="This class contains an expression." exportAPI="STATE_API" exportInclude="state_exports.h">
+    <!--
+
+    WARNING:
+    If you change this list of types, update the code in
+    "Expression.code".  Also update the list of expression types in
+    QvisPlotManagerWidget::PopulateVariableLists.
+
+    -->
+    <Enum name="ExprType">
+     Unknown
+     ScalarMeshVar
+     VectorMeshVar
+     Mesh
+     Material
+     Species
+    </Enum>
+    <Field name="name" type="string">"notset"</Field>
+    <Field name="definition" type="string">"notset"</Field>
+    <Field name="hidden" type="bool">false</Field>
+    <Field name="type" type="enum" subtype="ExprType">ScalarMeshVar</Field>
+    <Function name="GetNumTypes"    user="true"></Function>
+    <Function name="GetTypeString"  user="true"></Function>
+    <Function name="GetTypeId"      user="true"></Function>
+  </Attribute>

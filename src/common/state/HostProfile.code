@@ -1,0 +1,228 @@
+Initialization: userName
+    userName = defaultUserName;
+
+Function: defaultUserName
+Declaration: static std::string defaultUserName;
+Definition:
+std::string HostProfile::defaultUserName("notset");
+
+Function: SplitHostPattern
+Declaration: static std::vector<std::string> SplitHostPattern(const std::string &host);
+Definition:
+// ****************************************************************************
+//  Method:  SplitHostPattern
+//
+//  Purpose:
+//    Returns the host name pattern split into strings by whitespace or commas.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    February 13, 2002
+//
+// ****************************************************************************
+std::vector<std::string>
+HostProfile::SplitHostPattern(const std::string &host)
+{
+    std::vector<std::string> vec;
+    std::string              name = "";
+
+    for (int i=0; i<host.length(); i++)
+    {
+        if (host[i] == ' '  || host[i] == '\t' || host[i] == ',')
+        {
+            if (!name.empty())
+            {
+                vec.push_back(name);
+                name = "";
+            }
+            continue;
+        }
+        else
+        {
+            name += host[i];
+        }
+    }
+    if (!name.empty())
+    {
+        vec.push_back(name);
+        name = "";
+    }
+
+    return vec;
+}
+
+Function: ProfileMatchesHost
+Declaration: bool ProfileMatchesHost(const std::string&) const;
+Definition:
+// ****************************************************************************
+//  Method:  ProfileMatchesHost
+//
+//  Purpose:
+//    True if a hostname matches the host name pattern in the profile.
+//
+//  Arguments:
+//    h          the hostname to compare with this profile
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    February 13, 2002
+//
+//  Modifications:
+//    Jeremy Meredith, Mon Apr 14 10:06:34 PDT 2003
+//    Added matching of host aliases.
+//
+// ****************************************************************************
+bool
+HostProfile::ProfileMatchesHost(const std::string &h) const
+{
+    std::vector<std::string> patterns = SplitHostPattern(host);
+    bool match = false;
+    int i;
+
+    // Try to match the actual host name
+    for (i = 0; i < patterns.size() && !match; i++)
+    {
+         match = WildcardStringMatch(patterns[i], h);
+    }
+
+    // Now match any aliases
+    std::vector<std::string> aliases = SplitHostPattern(hostAliases);
+    for (i = 0; i < aliases.size() && !match; i++)
+    {
+         match = WildcardStringMatch(aliases[i], h);
+    }
+
+    return match;
+}
+
+Function: GetShortHostname
+Declaration: std::string GetShortHostname() const;
+Definition:
+// ****************************************************************************
+//  Method:  GetShortHostname
+//
+//  Purpose:
+//    Returns a shortened version of the hostname.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    February 13, 2002
+//
+// ****************************************************************************
+std::string
+HostProfile::GetShortHostname() const
+{
+    return GetShortHostname(host);
+}
+
+Function: GetShortHostname_static
+Declaration: static std::string GetShortHostname(const std::string &host);
+Definition:
+// ****************************************************************************
+//  Method:  GetShortHostname
+//
+//  Purpose:
+//    Returns a shortened version of the hostname.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    February 13, 2002
+//
+//  Modifications:
+//    Jeremy Meredith, Mon Apr 14 14:35:07 PDT 2003
+//    Added ability to append a common suffix from patterns.
+//
+// ****************************************************************************
+std::string
+HostProfile::GetShortHostname(const std::string &host)
+{
+    std::vector<std::string> patterns = SplitHostPattern(host);
+    std::string              prefix = "";
+    std::string              suffix = "";
+    std::string              shortname;
+
+    if (patterns.empty())
+        return "";
+
+    // find the minimum length of any string
+    int l = patterns[0].length();
+    for (int i = 1; i < patterns.size(); i++)
+    {
+        if (patterns[i].length() < l)
+            l = patterns[i].length();
+    }
+
+    // find a common prefix
+    for (int p = 0; p < l; p++)
+    {
+        char c = patterns[0][p];
+        for (int i = 1; i < patterns.size() && c != '\0'; i++)
+        {
+            if (patterns[i][p] != c)
+                c = '\0';
+        }
+        if (!c)
+            break;
+        if (c != '*' && c != '?')
+            prefix += c;
+    }
+
+    // find a common suffix, too
+    for (int s = 0; s < l - prefix.length() - 1 && patterns.size() > 1; s++)
+    {
+        char c = patterns[0][l-1-s];
+        for (int i = 1; i < patterns.size() && c != '\0'; i++)
+        {
+            if (patterns[i][l-1-s] != c)
+                c = '\0';
+        }
+        if (!c)
+            break;
+        if (c != '*' && c != '?')
+            suffix = c + suffix;
+    }
+
+    // combine the short name
+    shortname = prefix + suffix;
+    if (prefix.empty())
+        return patterns[0];
+    else
+        return shortname;
+}
+
+Function: GetDefaultUserName_static
+Declaration: static const std::string &GetDefaultUserName();
+Definition:
+// ****************************************************************************
+//  Method:  GetDefaultUserName
+//
+//  Purpose:
+//    Returns the default user name.
+//
+//  Programmer:  Brad Whitlock
+//  Creation:    Thu Apr 11 15:13:46 PST 2002
+//
+// ****************************************************************************
+
+const std::string &
+HostProfile::GetDefaultUserName()
+{
+    return defaultUserName;
+}
+
+Function: SetDefaultUserName_static
+Declaration: static void SetDefaultUserName(const std::string &n);
+Definition:
+// ****************************************************************************
+//  Method:  SetDefaultUserName
+//
+//  Purpose:
+//    Returns the default user name.
+//
+//  Programmer:  Brad Whitlock
+//  Creation:    Thu Apr 11 15:13:46 PST 2002
+//
+// ****************************************************************************
+
+void
+HostProfile::SetDefaultUserName(const std::string &n)
+{
+    defaultUserName = n;
+}
+

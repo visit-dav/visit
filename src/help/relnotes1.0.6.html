@@ -1,0 +1,60 @@
+<html>
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>VisIt 1.0.6 Release Notes</title>
+</head>
+<body>
+<p align="center"><b><font size="6">VisIt 1.0.6 Release Notes</font></b></p>
+<p>Welcome to VisIt's release notes page. This page describes the important 
+enhancements and bug-fixes that were added to this release.</p>
+<p><b><font size="4">Features added in version 1.0.6</font></b></p>
+<ul>
+  <li>VisIt has a new Streamline plot that operates on vector fields. The new plot uses VisIt's interactive tools to position seed points from which streamlines are calculated. Each streamline indicates the path that a particle would take in the vector field.</li>
+  <li>VisIt's Aslice operator has been renamed "Slice" since it now supports some orthogonal slice capabilities.</li>
+  <li>VisIt now has an interactive Box tool that works with the Box and Transform operators and the Streamline plot.</li>
+  <li>The Windows menu now contains options for locking visualization windows together in time, tools, and view. Locking windows together in time is useful for side by side comparisons of similar time-varying databases because when the timestep is changed in a window that is locked in time, the timestep changes in all other windows that are locked in time. Make sure that you have a .visit file available since locking windows in time is only available through the animation controls.</li>
+  <li>A reduce operator for connected components has been added.</li>
+  <li>The View window now supports "zoom", "rx", "ry", "rz" commands.</li>
+  <li>A Material options window has been added to allow the user to set material interface reconstruction options. In particular, mixed variable information is now available without doing material selection.</li>
+  <li>The Launch Progress window now appears on IBM and Tru64 machines.</li>
+  <li>The VisIt Python interface now has improved support for subset selection.</li>
+  <li>The silex (Silo examiner) tool and VisIt's suite of XML tools have been ported to the Windows platform.</li>
+  <li>The File selection window no longer displays the full path for files unless it is necessary.</li>
+  <li>The VisIt Python interface has new functions to create vector expressions, mesh expressions, etc.</li>
+</ul>
+<p><b><font size="4">Bugs fixed in version 1.0.6</font></b></p>
+<ul>
+  <li>Nodesets are not read in correctly.</li>
+  <li>Subset plots of materials defined with double-precision numbers cases crash on gps cluster.</li>
+  <li>Subset plots no longer cause the compute engine to crash on the Windows platform.</li>
+  <li>VisIt's Python cli no longer crashes when it is run in a directory that lacks write permission.</li>
+  <li>Use of expressions containing the gradient filter cause the compute engine to crash.</li>
+  <li>VisIt has improved support for Hydra style ghost cells.</li>
+  <li>Pick does not work when material selection is enabled.</li>
+  <li>Pick does not work with expressions.</li>
+  <li>VisIt hangs when trying to switch into pick mode while a plot is calculating.</li>
+  <li>The File Selection window has columns that are too small.</li>
+  <li>Giving an invalid file format when saving a window crashes the viewer.</li>
+  <li>The Subset window does not update when changing the active window.</li>
+  <li>The xml2atts code generation tool generates code that causes many warnings with SGI compilers.</li>
+  <li>Reference line label options are not consistently applied when not default.</li>
+  <li>Cloning a window that contains a time varying database does not copy all timesteps.</li>
+  <li>No error message when an invalid variable name is entered into the Pick window.</li>
+  <li>Pick points are not reported when an invalid variable name is entered into the Pick Window.</li>
+  <li>The Pick window does not resize in a useful manner.</li>
+  <li>The Plane tool is black when lighting is disabled.</li>
+  <li>Operator windows' "Do not prompt again" setting is not saved for future VisIt sessions.</li>
+  <li>Invalid paths saved in the config file cause VisIt to crash when starting on some platforms.</li>
+  <li>Problems related to launching remote components have been fixed.</li>
+  <li>The Java client has been fixed so it can work correctly when Java is given multiple class paths. The Java client is now packaged as a Jar file.</li>
+  <li>The View window has been fixed so the "perspective" option can be set.</li>
+</ul>
+<p>Click the following link to view the release notes for the previous version 
+of VisIt: <a href="relnotes1.0.5.html">VisIt 1.0.5 Release Notes</a>.</p>
+
+</body>
+
+</html>

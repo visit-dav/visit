@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+  <Attribute name="ViewAttributes" purpose="This class contains the view attributes." exportAPI="STATE_API" exportInclude="state_exports.h">
+    <Field name="camera" type="doubleArray" length="3">0. 0. -1.</Field>
+    <Field name="focus" type="doubleArray" length="3">0. 0. 0.</Field>
+    <Field name="viewUp" type="doubleArray" length="3">0. 0. 0.</Field>
+    <Field name="viewAngle" type="double">30.</Field>
+    <Field name="setScale" type="bool">false</Field>
+    <Field name="parallelScale" type="double">1.</Field>
+    <Field name="nearPlane" type="double">0.001</Field>
+    <Field name="farPlane" type="double">100</Field>
+    <Field name="perspective" type="bool">true</Field>
+    <Field name="windowCoords" type="doubleArray" length="4">0. 0. 1. 1.</Field>
+    <Field name="viewportCoords" type="doubleArray" length="4">0.1 0.1 0.9 0.9</Field>
+  </Attribute>

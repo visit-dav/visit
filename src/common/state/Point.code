@@ -1,0 +1,152 @@
+Function: Point
+Declaration: Point(double,double,double);
+Definition:
+// ****************************************************************************
+//  Method:  Point::Point
+//
+//  Purpose:
+//    Constructor which takes a triple of values as input.
+//
+//  Arguments:
+//    ox,oy,oz   the coordinate
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    March 15, 2002
+//
+// ****************************************************************************
+
+Point::Point(double ox, double oy, double oz) : AttributeSubject("s")
+{
+    char str[100];
+    sprintf(str, "%g %g %g", ox, oy, oz);
+    value = str;
+}
+
+Function: GetValueType
+Declaration: ValueType GetValueType() const;
+Definition:
+// ****************************************************************************
+//  Method:  Point::GetValueType
+//
+//  Purpose:
+//    Get the type of function or tuple contained in the Point.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    March 15, 2002
+//
+// ****************************************************************************
+Point::ValueType
+Point::GetValueType() const
+{
+    int i;
+    char s[1000];
+    double d;
+
+    if (GetTupleArgs(d,d,d))
+        return VT_Tuple;
+    if (GetMinArgs(s))
+        return VT_Min;
+    if (GetMaxArgs(s))
+        return VT_Max;
+    if (GetDomainZoneArgs(i,i))
+        return VT_DomainZone;
+    if (GetZoneArgs(i))
+        return VT_Zone;
+    if (GetDomainNodeArgs(i,i))
+        return VT_DomainNode;
+    if (GetNodeArgs(i))
+        return VT_Node;
+
+    return VT_Unknown;
+}
+
+Function: GetTupleArgs
+Declaration: bool GetTupleArgs(double&, double&, double&) const;
+Definition:
+// ****************************************************************************
+//  Methods to parse tuples, functions, and arguments
+// ****************************************************************************
+
+bool
+Point::GetTupleArgs(double &d1, double &d2, double &d3) const
+{
+    const char *str = value.c_str();
+    return (sscanf(str, "%lg %lg %lg", &d1, &d2, &d3) == 3);
+}
+
+Function: GetMinArgs
+Declaration: bool GetMinArgs(char*) const;
+Definition:
+bool
+Point::GetMinArgs(char *s) const
+{
+    const char *str = value.c_str();
+    if (sscanf(str, "min( %[^) ] )", s) == 1)
+        return true;
+    else if (strcmp(str, "min()") == 0)
+    {
+        s[0] = '\0';
+        return true;
+    }
+    else
+        return false;
+}
+
+Function: GetMaxArgs
+Declaration: bool GetMaxArgs(char*) const;
+Definition:
+bool
+Point::GetMaxArgs(char *s) const
+{
+    const char *str = value.c_str();
+    if (sscanf(str, "max( %[^) ] )", s) == 1)
+        return true;
+    else if (strcmp(str, "min()") == 0)
+    {
+        s[0] = '\0';
+        return true;
+    }
+    else
+        return false;
+}
+
+Function: GetDomainZoneArgs
+Declaration: bool GetDomainZoneArgs(int&, int&) const;
+Definition:
+bool
+Point::GetDomainZoneArgs(int &d, int &z) const
+{
+    const char *str = value.c_str();
+    return (sscanf(str, "zone( %d %d )", &d, &z) == 2);
+}
+
+Function: GetZoneArgs
+Declaration: bool GetZoneArgs(int&) const;
+Definition:
+bool
+Point::GetZoneArgs(int &z) const
+{
+    const char *str = value.c_str();
+    return (sscanf(str, "zone( %d )", &z) == 1);
+}
+
+Function: GetDomainNodeArgs
+Declaration: bool GetDomainNodeArgs(int&, int&) const;
+Definition:
+bool
+Point::GetDomainNodeArgs(int &d, int &n) const
+{
+    const char *str = value.c_str();
+    return (sscanf(str, "node( %d %d )", &d, &n) == 2);
+}
+
+Function: GetNodeArgs
+Declaration: bool GetNodeArgs(int&) const;
+Definition:
+bool
+Point::GetNodeArgs(int &n) const
+{
+    const char *str = value.c_str();
+    return (sscanf(str, "node( %d )", &n) == 1);
+}
+

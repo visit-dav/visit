@@ -1,0 +1,213 @@
+Function: Reset
+Declaration: void Reset();
+Definition:
+void
+PickVarInfo::Reset()
+{
+    variableName = " ";
+    centering = None;
+    mixVar = false;
+
+    if (!names.empty())
+        names.clear();
+    if (!values.empty())
+        values.clear();
+    if (!mixNames.empty())
+        mixNames.clear();
+    if (!mixValues.empty())
+        mixValues.clear();
+
+    SelectAll();
+}
+
+Function: PrintSelf
+Declaration: void PrintSelf(ostream &os);
+Definition:
+void
+PickVarInfo::PrintSelf(ostream &os)
+{
+    int i;
+    os << variableName.c_str() << ":  ";
+    switch (centering)
+    {
+        case Nodal:  os << "nodal " ; break;
+        case Zonal:  os << "zonal " ; break;
+        case None : break;
+    }
+    if (!names.empty())
+    {  
+        for (i = 0; i < names.size(); i++)
+        {
+            os << "    " << names[i].c_str() << " = ";
+            if (values.size() > names.size())
+            {
+                int stride = values.size() / names.size();
+                os << "(";
+                for (int j = 0; j < stride; j++) 
+                {
+                    os << values[i*stride + j] << ", " ;
+                }
+                os << ")\n";
+            }
+            else if (values.size() == names.size())
+            {
+                os << values[i] << "\n" ;
+            }
+        }
+    }
+    else if (!miscMessage.empty())
+    {
+        os << "    " << miscMessage.c_str() << "\n";
+    }
+    else
+    {
+        os << "    No Information Found\n";
+    }
+    if (mixVar)
+    {
+        for (i = 0; i < mixNames.size(); i++)
+        {
+            os << "        " << mixNames[i].c_str() << " = ";
+            os <<  mixValues[i] << "\n";
+        }
+    }
+}
+
+Function: CreateOutputString
+Declaration: void CreateOutputString(std::string &os);
+Definition:
+void
+PickVarInfo::CreateOutputString(std::string &os)
+{
+    int i;
+    char buff[256];
+    os = variableName;
+    os +=  ":  ";
+    switch (centering)
+    {
+        case Nodal:  os += "<nodal>\n" ; break;
+        case Zonal:  os += "<zonal>\n" ; break;
+        case None :  os += "\n";         break;
+    }
+    if (!names.empty())
+    {  
+        for (i = 0; i < names.size(); i++)
+        {
+            SNPRINTF(buff, 256, "    %s ", names[i].c_str());
+            os += buff;
+            if (values.size() > names.size())
+            {
+                int stride = values.size() / names.size();
+                SNPRINTF(buff, 256, "= (%g", values[i*stride]);
+                os += buff;
+                for (int j = 1; j < stride-1; j++) 
+                {
+                    SNPRINTF(buff, 256, ",%g", values[i*stride+j]);
+                    os += buff;
+                }
+                SNPRINTF(buff, 256, ") mag = %g\n", values[i*stride+stride-1]);
+                os += buff; 
+            }
+            else if (values.size() == names.size())
+            {
+                SNPRINTF(buff, 256, "= %g\n", values[i]);
+                os += buff;
+            }
+            else 
+            {
+                os += "\n";
+            }
+        }
+    }
+    else if (!miscMessage.empty())
+    {
+        SNPRINTF(buff, 256, "    %s\n", miscMessage.c_str());
+        os += buff;
+    }
+    else
+    {
+        SNPRINTF(buff, 256, "    No Information Found\n"); 
+        os += buff;
+    }
+    if (mixVar)
+    {
+        for (i = 0; i < mixNames.size(); i++)
+        {
+            SNPRINTF(buff, 256, "        material %s = ", mixNames[i].c_str());
+            os += buff;
+            SNPRINTF(buff, 256, "%g\n", mixValues[i]);
+            os += buff;
+        }
+    }
+}
+
+
+Function: CreateOutputStrings
+Declaration: void CreateOutputStrings(std::vector<std::string> &os);
+Definition:
+void
+PickVarInfo::CreateOutputStrings(std::vector<std::string> &os)
+{
+    int i;
+    char buff[256];
+    char buf2[256];
+    switch (centering)
+    {
+        case Nodal:  SNPRINTF(buff, 256, "%s: <nodal>", variableName.c_str()); 
+                     os.push_back(buff);
+                     break;
+        case Zonal:  SNPRINTF(buff, 256, "%s: <zonal>", variableName.c_str()); 
+                     os.push_back(buff);
+                     break;
+        case None :  SNPRINTF(buff, 256, "%s: ", variableName.c_str()); 
+                     os.push_back(buff);
+                     break;
+    }
+    if (!names.empty())
+    {  
+        for (i = 0; i < names.size(); i++)
+        {
+            SNPRINTF(buff, 256, "    %s ", names[i].c_str());
+            // Vectors?
+            if (values.size() > names.size())
+            {
+                int stride = values.size() / names.size();
+                SNPRINTF(buf2, 256, "= (%g", values[i*stride]);
+                strcat(buff, buf2);
+                for (int j = 1; j < stride-1; j++) 
+                {
+                    SNPRINTF(buf2, 256, ", %g", values[i*stride+j]);
+                    strcat(buff, buf2);
+                }
+                SNPRINTF(buf2, 256, ") mag = %g", values[i*stride+stride-1]);
+                strcat(buff,  buf2);
+            }
+            // Scalars?
+            else if (values.size() == names.size())
+            {
+                SNPRINTF(buf2, 256, "= %g", values[i]);
+                strcat(buff, buf2);
+            }
+            os.push_back(buff);
+        }
+    }
+    else if (!miscMessage.empty())
+    {
+        SNPRINTF(buff, 256, "    %s", miscMessage.c_str());
+        os.push_back(buff);
+    }
+    else   
+    {
+        SNPRINTF(buff, 256, "    No Information Found");
+        os.push_back(buff);
+    }
+    if (mixVar)
+    {
+        for (i = 0; i < mixNames.size(); i++)
+        {
+            SNPRINTF(buff, 256, "        material %s = %g", mixNames[i].c_str(), mixValues[i]);
+            os.push_back(buff);
+        }
+    }
+}
+

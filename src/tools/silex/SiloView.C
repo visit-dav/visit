@@ -1,0 +1,164 @@
+#include "SiloView.h"
+#include <SiloFile.h>
+#include <SiloDirTreeView.h>
+#include <SiloDirView.h>
+#include <SiloValueView.h>
+#include <SiloArrayView.h>
+#include <SiloObjectView.h>
+#include <qheader.h>
+
+// ----------------------------------------------------------------------------
+//                            Silo View
+// ----------------------------------------------------------------------------
+
+// ****************************************************************************
+//  Constructor: SiloView::SiloView
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November 12, 2001
+//
+// ****************************************************************************
+SiloView::SiloView(const QString &file, QWidget *p, const QString &n)
+    : QSplitter(p, n)
+{
+    silo        = new SiloFile(file);
+    dirTreeView = new SiloDirTreeView(silo, this, "DirTreeView");
+    dirView     = new SiloDirView(this, "DirView");
+
+    connect(dirTreeView, SIGNAL(currentChanged(QListViewItem*)),
+            this,        SLOT(SetDir(QListViewItem*)));
+    connect(dirView,     SIGNAL(doubleClicked(QListViewItem*)),
+            this,        SLOT(ShowItem(QListViewItem*)));
+
+    dirTreeView->OpenRootDir();
+    dirTreeView->header()->setResizeEnabled(false);
+    dirView->header()->setResizeEnabled(false);
+}
+
+// ****************************************************************************
+//  Method:  SiloView::Set
+//
+//  Purpose:
+//    Replace with a new file.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November 12, 2001
+//
+// ****************************************************************************
+void
+SiloView::Set(const QString &file)
+{
+    delete silo;
+    silo = new SiloFile(file);
+    dirTreeView->Set(silo);
+    dirTreeView->OpenRootDir();
+}
+
+// ****************************************************************************
+//  Method:  SiloView::SetDir
+//
+//  Purpose:
+//    Tell the current SiloDirView directories.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November 12, 2001
+//
+// ****************************************************************************
+void
+SiloView::SetDir(QListViewItem *i)
+{
+    dirView->ChangeDir(i);
+}
+
+// ****************************************************************************
+//  Method:  SiloView::ShowVariable
+//
+//  Purpose:
+//    Pop up a new window to show a variable or simple array.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November 12, 2001
+//
+// ****************************************************************************
+void
+SiloView::ShowVariable(const QString &name)
+{
+    int len = silo->GetVarLength(name);
+    if (len == 1)
+    {
+        SiloValueViewWindow *vv = new SiloValueViewWindow(silo, name, NULL);
+        vv->show();
+    }
+    else
+    {
+        SiloArrayViewWindow *av = new SiloArrayViewWindow(silo, name, NULL);
+        av->show();
+        av->resize(av->sizeHint());
+    }
+}
+
+// ****************************************************************************
+//  Method:  SiloView::ShowObject
+//
+//  Purpose:
+//    Pop up a new window to show a compound object.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November 12, 2001
+//
+// ****************************************************************************
+void
+SiloView::ShowObject(const QString &name)
+{
+    SiloObjectViewWindow *ov = new SiloObjectViewWindow(silo, name, NULL);
+    connect(ov,   SIGNAL(showRequested(const QString&)),
+            this, SLOT(ShowUnknown(const QString&)));
+    ov->show();
+}
+
+// ****************************************************************************
+//  Method:  SiloView::ShowUnknown
+//
+//  Purpose:
+//    Pop up a new window to show an item based on its type.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November 12, 2001
+//
+// ****************************************************************************
+void
+SiloView::ShowUnknown(const QString &name)
+{
+    DBObjectType type = silo->InqVarType(name);
+    bool isObject = (type != DB_VARIABLE);
+
+    if (isObject)
+        ShowObject(name);
+    else
+        ShowVariable(name);
+}
+
+// ****************************************************************************
+//  Method:  SiloView::ShowItem
+//
+//  Purpose:
+//    Wrapper for ShowUnknown appropriate for a QListViewItem callback.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November 12, 2001
+//
+// ****************************************************************************
+void
+SiloView::ShowItem(QListViewItem *i)
+{
+    SiloDirViewItem *item = (SiloDirViewItem*)i;
+    if (!item->dir)
+        return;
+
+    QString name = item->dir->path;
+    if (name != "/")
+        name += "/";
+    name += item->name;
+
+    ShowUnknown(name);
+}

@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+  <Attribute name="PlotQueryInfo" persistent="false" purpose="This class is a ." exportAPI="STATE_API" exportInclude="state_exports.h">
+    <Enum name="ChangeType">
+      None
+      Database
+      VarName
+      AddOp
+      OpAtts
+      PlotAtts
+      MoveOperator
+      RemoveOperator
+      RemoveAll
+      RemoveLast
+    </Enum>
+    <Field name="changeType" type="enum" subtype="ChangeType">None</Field>
+  </Attribute>

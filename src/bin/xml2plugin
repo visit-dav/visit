@@ -1,0 +1,58 @@
+#!/bin/sh
+# Do a little magic to run perl from anywhere in your path.
+
+lines=`cat $0 | wc -l`
+lines=`expr $lines - 10`
+tail -$lines $0 > /tmp/visitperl$$
+echo "__END__" >> /tmp/visitperl$$
+echo "$0 $*" >> /tmp/visitperl$$
+exec perl /tmp/visitperl$$ $0 ${1+"$@"}
+
+unlink $0;
+$0 = shift @ARGV;
+
+
+###############################################################################
+# Run all the plugin tools
+###############################################################################
+
+chomp( $progdir = `dirname $0` );
+$ENV{PATH} = join ':' , ("$progdir", "$ENV{PATH}");
+
+$xmlfile = pop @ARGV;
+
+if (! -e "$progdir/xmltest") {
+    die "\nError -- xml tools have not been built yet.\n\n";
+}
+
+print "********* running: xmltest      $xmlfile *********\n";
+print `xmltest       @ARGV $xmlfile`;
+die "\nError when parsing... aborting!\n\n" if ($?);
+
+print "********* running: xml2atts     $xmlfile *********\n";
+print `xml2atts      @ARGV -noprint $xmlfile`;
+die "\nError running xml2atts... aborting!\n\n" if ($?);
+
+print "********* running: xml2window   $xmlfile *********\n";
+print `xml2window    @ARGV -noprint $xmlfile`;
+die "\nError runnin xml2window... aborting!\n\n" if ($?);
+
+print "********* running: xml2info     $xmlfile *********\n";
+print `xml2info      @ARGV -noprint $xmlfile`;
+die "\nError runnin xml2info... aborting!\n\n" if ($?);
+
+print "********* running: xml2makefile $xmlfile *********\n";
+print `xml2makefile  @ARGV -noprint $xmlfile`;
+die "\nError running xml2makefile... aborting!\n\n" if ($?);
+
+print "********* running: xml2avt      $xmlfile *********\n";
+print `xml2avt       @ARGV -noprint $xmlfile`;
+die "\nError running xml2avt... aborting!\n\n" if ($?);
+
+print "********* running: xml2python   $xmlfile *********\n";
+print `xml2python    @ARGV -noprint $xmlfile`;
+die "\nError running xml2python... aborting!\n\n" if ($?);
+
+print "********* running: xml2java   $xmlfile *********\n";
+print `xml2java    @ARGV -noprint $xmlfile`;
+die "\nError running xml2java... aborting!\n\n" if ($?);

@@ -1,0 +1,374 @@
+#!/bin/env perl
+
+## Time-stamp: <97/07/16 12:21:23 robb>
+
+## Programmer:
+#
+#       Robb Matzke <robb@nuance.mdn.com>
+#       Copyright (C) 1996 All rights reserved.
+#
+
+## Purpose:
+#
+#       Looks at Makefile.in (or Makefile) files in the specified directory
+#       and all subdirectories recursively to determine which files should be
+#       included in a source distribution.  It then spits those names out on
+#       standard output.
+#
+
+## Usage:
+#
+#       $0 [-OPTIONS] DIRECTORIES... > manifest-file
+#
+#       Each specified directory is searched for a `Makefile.in',
+#       `Makefile' or `makefile' (in that order) and the first one
+#       found is read.  Macro lines which define `SRC', `HDR' and
+#       `DISTRIB' are found and the files mentioned are added to the
+#       manifest. Macro lines which define `NOT_DISTRIB' cause the
+#       named files to be removed from the manifest.  The `SRC' and
+#       `HDR' variables can be prepended with upper-case letters and
+#       underscores like `XSRC' or `PUB_HDR'.  The value should be a
+#       space-separated list of file names (relative names are with
+#       respect to the directory contining the Makefile).  The value
+#       can be continued on subsequent lines by escaping the line-feed
+#       with a back-slash in the normal Makefile manner.  Any file
+#       name containing a filename wild card `*', `?', `[', or `{'
+#       will be sent to the shell for expansion so one can still say
+#       things like `DISTRIB=*.[ch] *.texi'.
+#
+#       The resulting manifest file contains blank lines and comments.  A
+#       comment begins with a hash (#) and continues to the next line-feed.
+#       Each line of output that mentions a file will also mention the reason
+#       the file was included in the manifest.  Here's a sample:
+#
+#
+#       # These files are not mentioned in any Makefile but probably should
+#       # be. If you really don't want to distribute them, then add them to
+#       # the appropriate Makefile.in or Makefile as the value of the
+#       # NOT_DISTRIB macro.
+#       #
+#       #
+#       # ./except.h
+#       # ./palm.h
+#
+#       ./Makefile                               # Makefile
+#       ./Palm.c                                 # Makefile $(SRC)
+#       ./comp.c                                 # Makefile $(SRC)
+#       ./cons.c                                 # Makefile $(SRC)
+#       ./eval.c                                 # Makefile $(SRC)
+#
+
+## Options:
+#       Options can be introduced with `-' or `--' and can be abbreviated to
+#       the shortest non-ambiguous prefix.  Options cannot be combined into
+#       a single option (`-rqs' is different than `-r -q -s').  Boolean
+#       valued options can be prefixed with `no' to turn the option off.
+#
+#       --quiet
+#          Progress information is not written to the standard error stream.
+#
+#       --recursive
+#          All subdirectories are searched as well.
+#
+#       --simple
+#          The output format is very simple: one file name per line with no
+#          comments.
+#
+#       --debug
+#          Print out extra information
+#
+
+## Bugs:
+#       Variable interpolation is not performed in the macro value.
+#       Therefore, don't say things like:
+#
+#               OBJ = a.o b.o c.o
+#               SRC = $(OBJ:.o=.c) $(XSRC)
+#
+#       Autoconf macros are not expanded in `Makefile.in' files, so don't say
+#       things like:
+#
+#               SRC = a.c b.c @OTHER_SRC@
+#
+#       If you do happen to say one of the bad things listed above, mkman will
+#       attempt to find the file named `$(XSRC)', for instance, and fail.
+#       Files which cannot be found are not added to the manifest.  Well,
+#       actually they're added, but commented out.
+
+## Modifications
+#
+#    Robb Matzke, 11 Jul 1997
+#    Checks also for GNUmakefile after Makefile.in but before Makefile.
+#
+#    Sean Ahern, Mon Feb 23 16:20:56 PST 1998
+#    Changed how "double_check" maintains its list of directories.  See the 
+#    function for more detailed comments.
+#
+#    Jeremy Meredith, Fri Jul 13 11:06:07 PDT 2001
+#    Removed the "mentioned more than once" error.
+#    Only print "Not found" if it is *not* a variable substitution error.
+#
+#    Jeremy Meredith, Fri Mar  8 12:55:04 PST 2002
+#    Add support for symbolic links.
+#
+#    Sean Ahern, Tue Sep  3 10:36:00 PDT 2002
+#    Used "ct pwv" to see if we're in a view, rather than checking
+#    CLEARCASE_ROOT, which doesn't always seem to be set.
+
+require 5.003;
+use Getopt::Long;
+use English;
+$Recursive=0;
+$Quiet=0;
+$Simple=0;
+$debug=0;
+$|=1;
+
+
+##
+## Funtion for sorting by directory name, then file name.  The directory
+## component is optional.
+##
+sub by_directory {
+   my ($p1, $b1) = $a =~ m%^(.*)/([^/]+)$%;
+   my ($p2, $b2) = $b =~ m%^(.*)/([^/]+)$%;
+   $p1 ||= ".";
+   $p2 ||= ".";
+   $b1 ||= $a;
+   $b2 ||= $b;
+   return ($p1 cmp $p2 || $b1 cmp $b2);
+}
+
+##
+## Addes or removes files from the manifest hash.  The value of each hash
+## entry is the name of the Makefile.in or Makefile macro that listed the
+## file.  If the file is to be excluded from the manifest or the file does not
+## exist then the value will begin with `#'.
+##
+sub mkman ($@) {
+   my ($manref, @dirs) = @_;
+   my ($dir, $entry, @entries, $makefile, $file);
+   local ($_);
+
+   while ($dir=shift @dirs) {
+
+      ## Get the names of all the subdirectories and unshift them
+      ## onto the directory list.
+      if ($Recursive) {
+         opendir DIR, $dir or do {
+            warn "cannot read directory $dir: $!\n";
+            next;
+         };
+         @entries = readdir DIR;
+         unshift @dirs, map "$dir/$_",
+            grep !/^\.\.?$/ && -d "$dir/$_", @entries;
+         unshift @dirs, grep -d $_, map "$dir/$_", readdir DIR;
+         closedir DIR;
+      }
+
+      ## Look for a Makefile.in or a Makefile.
+      ($makefile) = grep -f "$dir/$_", qw(Makefile.in GNUmakefile
+                                          Makefile makefile);
+      next unless $makefile;
+      $manref->{"$dir/$makefile"} = $makefile;
+
+      print STDERR "Searching $dir/$makefile\n" unless $Quiet;
+      open MAKEFILE, "< $dir/$makefile" or do {
+         warn "cannot read $dir/$makefile: $!\n";
+         next;
+      };
+      while (<MAKEFILE>) {
+         if (/^([A-Z_]*(SRC|HDR)|(NOT_)?DISTRIB)\s*=\s*(.*)$/) {
+            my ($macro, $value) = ($1, $4);
+
+            ## Read continuation lines
+            while ($value =~ /(\\\s*)$/ && ($_=<MAKEFILE>)) {
+               $value = $` . $_;
+            }
+
+            $value =~ s/^\s+|\s+$//g;
+            print "File list ($macro): <$value>\n" if ($Debug);
+            for $file (map {/[*?{}\[\]]/?glob "$dir/$_":"$dir/$_"}
+                       split /\s+/, $value) {
+               print "File: <$file>\n" if ($Debug);
+               # If we haven't seen this file before, process it
+               unless (exists $manref->{$file})
+               {
+                   if ($macro eq "NOT_DISTRIB") {
+                      $manref->{$file} = "# Not distributed";
+                   } elsif ((! -f $file) && (! -l $file)) {
+                      $manref->{$file} = "# Does not exist";
+                      # Only warn if it's not a variable substitution problem:
+                      ($basename = $file) =~ s|.*/(.*)|$1|;
+                      if (!(($basename =~ /^\$/) || ($basename =~ /^\@.*\@$/)))
+                      {
+                          warn "Directory: $file\n" if (-d $file);
+                          warn "Not found: $file\n" unless (-d $file);
+                      }
+                   } else {
+                      $manref->{$file} = "$makefile \$($macro)";
+                   }
+               }
+            }
+         }
+      }
+      close MAKEFILE;
+   }
+}
+
+##
+## If we are running under clearcase, then add all vob objects to the
+## manifest.
+##
+sub add_vob_objects ($@) {
+   my ($manref, @dirs) = @_;
+   my ($i, $dir, $src, $version) = (0);
+   local ($_);
+
+   chomp($view = `cleartool pwv`);
+   return if ($CHILD_ERROR != 0);
+   return if ($view =~ /NONE/);
+   print STDERR "Looking for ClearCase vob objects (this may take a while)..."
+       unless $Quiet;
+
+   for $dir (@dirs) {
+      my $cmd = "cleartool ls " . ($Recursive?"-recurse ":" ") . $dir;
+      open LS, "$cmd |" or do {
+         warn "cannot run cleartool\n";
+         next;
+      };
+
+      while (<LS>) {
+
+         # Indicate progress because cleartool is S L O W !
+         print STDERR +("-", "\\", "|", "/")[$i%4], "\b"
+             unless $i++ % 9 || $Quiet;
+
+         next unless (($src, $version) = /^(.+?)@@(.+?)\s+Rule:/) ||
+                     (($src) = /^(.+?)\s+\-\-\>\s+/) ;
+         $version = "(symlink)" if (!defined $version);
+         $src = "./".$src unless $src =~ m%/%;
+         next unless -f $src ;  # don't include directories and such.
+         next if m%/lost\+found/% ; # clearcase maintenance file.
+
+         $manref->{$src} = "ClearCase $version" unless exists $manref->{$src};
+      }
+      close LS;
+   }
+   print STDERR " \b\n" unless $Quiet;
+}
+
+##
+## Print warning messages for files not mentioned in the manifest which
+## probably should be.
+##
+## Modifications:
+##      Sean Ahern, Mon Feb 23 16:20:17 PST 1998
+##      Changed "unshift" to "push" to allow the "dirs" array to be maintained 
+##      correctly.  The old way was causing an infinite loop.
+sub double_check ($@) {
+   my ($manref, @dirs) = @_;
+   my ($dir, $entry, @missing, $prev);
+   local ($_);
+
+   print STDERR "Checking for files not mentioned in Makefiles...\n"
+       unless $Quiet;
+   for $dir (@dirs) {
+      opendir DIR, $dir or do {
+         warn "cannot read directory $dir: $!\n";
+         next;
+      };
+      for (readdir DIR) {
+         next if /^\.\.?$/;
+         next if exists $manref->{"$dir/$_"};
+
+         if (-d "$dir/$_") {
+            push @dirs, "$dir/$_" if $Recursive;
+         } elsif (/\.[ch]$/) {
+            push @missing, "$dir/$_";
+         } elsif (/\.texi$/) {
+            push @missing, "$dir/$_";
+         }
+      }
+      closedir DIR;
+   }
+
+   if (@missing) {
+      if ($Simple && !$Quiet) {
+         print STDERR "These files were not mentioned:\n";
+         for (sort by_directory @missing) {
+            print STDERR "   ", $_, "\n";
+         }
+      } elsif (!$Simple) {
+         print <<EOF;
+# These files are not mentioned in any Makefile.in but probably should
+# be.  If you really do not want to distribute them then add them to
+# the appropriate Makefile.in (or Makefile or makefile) as the value of
+# the NOT_DISTRIB macro.
+#
+EOF
+         $prev = "";
+         for (sort by_directory @missing) {
+            $dir = m%^(.*)/[^/]+$%;
+            print "#\n" unless $dir eq $prev;
+            print "# $_\n";
+            $prev = $dir;
+         }
+         print "\n";
+      }
+   }
+}
+
+
+##
+## Prints the manifest hash to the current output file.
+##
+sub print_man (%) {
+   my (%man) = @_;
+   my ($prev, $dir);
+   local ($_);
+
+   $prev = "";
+   for (sort by_directory keys %man) {
+      ($dir) = m%^(.*)/[^/]+$%;
+      print "\n" unless $dir eq $prev || $Simple;
+      if ($man{$_} =~ /^\#/) {
+         printf "# %-38s %s\n", $_, $man{$_} unless $Simple;
+      } elsif ($Simple) {
+         print $_, "\n";
+      } else {
+         printf "%-40s # %s\n", $_, $man{$_};
+      }
+      $prev = $dir;
+   }
+}
+
+##
+## Main program
+##
+$GetOpt::Long::ignorecase=0; # options are case sensitive.
+$GetOpt::Long::ignorecase=0; # suppress -w warning
+GetOptions (
+            "quiet!"            => \$Quiet,
+            "recursive!"        => \$Recursive,
+            "simple!"           => \$Simple,
+            "debug!"            => \$Debug,
+            ) || exit 1;
+
+unless ($Simple) {
+   print "##\n";
+   print "## This file is machine generated -- do not modify!\n";
+   print "## Created on ", `date`;
+   print "##\n";
+}
+
+%Manifest = ();
+mkman \%Manifest, @ARGV;
+add_vob_objects \%Manifest, @ARGV;
+double_check \%Manifest, @ARGV;
+print_man %Manifest;
+
+##
+## Local Variables:
+## time-stamp-format: ("Version " time-stamp-yyyy/mm/dd time-stamp-hh:mm user-login-name "@" time-stamp-mail-host-name)
+## End:

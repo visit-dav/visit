@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+  <Attribute name="CompactSILRestrictionAttributes" purpose="The class contains attributes for a compacted SIL restrictions." persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h">
+    <Field name="useSet" label="useSet" type="ucharVector">
+    </Field>
+    <Field name="topSet" label="topSet" type="int">
+      -1
+    </Field>
+  </Attribute>

@@ -1,0 +1,174 @@
+#!/bin/sh
+# Do a little magic to run perl from anywhere in your path.
+
+lines=`cat $0 | wc -l`
+lines=`expr $lines - 10`
+tail -$lines $0 > /tmp/visitperl$$
+echo "__END__" >> /tmp/visitperl$$
+echo "$0 $*" >> /tmp/visitperl$$
+exec perl /tmp/visitperl$$ $0 ${1+"$@"}
+
+unlink($0);
+$0 = shift @ARGV;
+
+# This script packages up visit for distribution on the net.  It tars up
+# files and gzips the tar.
+#
+#       USAGE: $0 package_file
+#
+# Programmer: Sean Ahern (ahern@llnl.gov)
+# Creation date: July 31, 1996
+#
+# Modifications:
+#     Brad Whitlock, Mon May 22 14:58:40 PST 2000
+#     Adapted the script to handle VisIt.
+#
+#     Eric Brugger, Tue Sep  4 09:22:51 PDT 2001
+#     I removed the creation and distribution of help files.
+#
+#     Sean Ahern, Mon Nov  5 16:35:00 PST 2001
+#     Retired "package" in favor of tar and gzip.
+#
+#     Eric Brugger, Mon Nov 19 09:50:18 PST 2001
+#     I modified the tar command which creates the distribution file to
+#     pipe the results of tar into gzip instead of using the -z option to
+#     tar which only exists in gnu's version of tar.
+#
+#     Eric Brugger, Wed Nov 21 08:43:19 PST 2001
+#     I replaced the tar command used to copy the distribution files with
+#     a cpio command.  I also added user write permissions to all the
+#     files in the distribution.
+#
+#     Jeremy Meredith, Tue Nov 27 14:58:37 PST 2001
+#     Allowed a path in the distribution filename.  This path is only
+#     a location to store the .tar.gz file, and is ignored when unpacking.
+#
+#     Hank Childs, Thu Mar  7 11:31:29 PST 2002
+#     Allow for Exodus files not to be distributed.
+#
+#     Sean Ahern, Mon May 20 13:40:48 PDT 2002
+#     Added a check to see if you specified a distribution file.
+#
+#     Brad Whitlock, Fri Jul 12 17:38:10 PST 2002
+#     Added the option of creating and distributing the help files.
+#
+#     Hank Childs, Tue Aug 20 08:34:21 PDT 2002
+#     Added support for not distributing the Verdict library.
+#
+#     Jeremy Meredith, Tue Aug 27 11:07:45 PDT 2002
+#     Changed the way exodus is removed from the distribution.
+#
+#     Eric Brugger, Wed Nov 20 11:25:21 PST 2002
+#     Modified the script to take into account the new location of the
+#     verdict library.
+#
+#     Eric Brugger, Wed May 21 13:16:22 PDT 2003
+#     Removed the -noexodus and -noverdict options.
+#
+
+require "newgetopt.pl";
+
+$USAGE = "USAGE: $0 dist_file [-withhelp]\n";
+
+if (! -d "engine")
+{
+    print STDERR "Invoke $0 from the the root of the source tree.\n";
+    print STDERR $USAGE;
+    exit(-1);
+}
+
+# Parse the argument list.
+&NGetOpt("withhelp");
+
+# If we wanted help files then create them now.
+if($opt_withhelp)
+{
+    system("./clearcase_bin/makehelp");
+}
+
+$dist = "";
+$filelist = "./clearcase_bin/source_files";
+$fulldist = shift;
+if (!defined($fulldist))
+{
+    print STDERR "No distribution file specified.\n\n";
+    print STDERR "$USAGE";
+    exit(1);
+}
+chomp($dist = `basename $fulldist`);
+
+# Check that a distribution name was specified.
+if ($dist eq ".")
+{
+    print STDERR "No dist file specified.\n";
+    print STDERR $USAGE;
+    exit(-1);
+}
+
+print "Getting the list of files to package up...\n";
+@files = `$filelist`;
+grep(chop,@files);
+
+open(FILELIST,">/tmp/visit-dist$$") || die "Can't create file \"/tmp/visit-dist$$\": $!\n";
+print FILELIST join("\n",@files),"\n";
+close(FILELIST);
+
+print "Creating distribution...\n";
+if (!mkdir($dist, 0755))
+{
+    print STDERR <<"EOF";
+ERROR: $!
+Unable to create distribution subdirectory \"$dist\".
+EOF
+    exit(-4);
+}
+
+$status = system("cat /tmp/visit-dist$$ | cpio -pmud $dist");
+$status /= 256;
+if ($status != 0)
+{
+    print STDERR <<"EOF";
+ERROR: $!
+Unable to move distribution files to subdirectory \"%dist\".
+EOF
+    exit(-5);
+}
+
+$status = system("chmod -R u+w $dist");
+$status /= 256;
+if ($status != 0)
+{
+    print STDERRR <<"EOF";
+ERROR: $!
+Unable to add user write permissions to subdirectory \"%dist\".
+EOF
+    exit(-6);
+}
+
+$status = system("tar cf - $dist | gzip > $fulldist.tar.gz");
+$status /= 256;
+
+if ($status != 0)
+{
+    print STDERR <<"EOF";
+ERROR: $!
+An error occurred while attempting to run "tar".  The distribution was left
+in the subdirectory \"$dist\".
+EOF
+    exit(-2);
+} else
+{
+    unlink("/tmp/visit-dist$$");
+}
+
+print "Cleaning up...\n";
+$status = system("rm -rf $dist");
+if ($status != 0)
+{
+    print STDERR <<"EOF";
+ERROR: $!
+Unable to remove temporary directory \"$dist\".
+EOF
+}
+
+print "Finished.\nYour distribution is in the file \"$fulldist.tar.gz\".\n";

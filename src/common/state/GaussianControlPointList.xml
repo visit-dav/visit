@@ -1,0 +1,4 @@
+<?xml version="1.0"?>
+  <Attribute name="GaussianControlPointList" purpose="This class contains a list of GaussianControlPoint objects." exportAPI="STATE_API" exportInclude="state_exports.h">
+    <Field name="controlPoints" type="attVector" subtype="GaussianControlPoint"></Field>
+  </Attribute>

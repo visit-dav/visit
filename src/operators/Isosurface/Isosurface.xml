@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+  <Plugin name="Isosurface" type="operator" label="Isosurface" version="1.0" iconFile="Isosurface.xpm">
+    <Attribute name="IsosurfaceAttributes" purpose="Attributes for the isosurface operator" persistent="true">
+      <Enum name="Select_by">
+        Level
+        Value
+        Percent
+      </Enum>
+      <Enum name="Scaling">
+        Linear
+        Log
+      </Enum>
+      <Field name="contourNLevels" label="contourNLevels" type="int">
+        10
+      </Field>
+      <Field name="contourValue" label="contourValue" type="doubleVector">
+      </Field>
+      <Field name="contourPercent" label="contourPercent" type="doubleVector">
+      </Field>
+      <Field name="contourMethod" label="contourMethod" type="enum" subtype="Select_by">
+        Level
+      </Field>
+      <Field name="minFlag" label="minFlag" type="bool">
+        false
+      </Field>
+      <Field name="min" label="min" type="double" enabler="minFlag:true">
+        0.000000
+      </Field>
+      <Field name="maxFlag" label="maxFlag" type="bool">
+        false
+      </Field>
+      <Field name="max" label="max" type="double" enabler="maxFlag:true">
+        1.000000
+      </Field>
+      <Field name="scaling" label="scaling" type="enum" subtype="Scaling">
+        Linear
+      </Field>
+      <Field name="variable" label="variable" type="string">
+        default
+      </Field>
+    </Attribute>
+  </Plugin>

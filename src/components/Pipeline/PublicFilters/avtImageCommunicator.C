@@ -1,0 +1,222 @@
+// ************************************************************************* //
+//                            avtImageCommunicator.C                         //
+// ************************************************************************* //
+
+#include <avtImageCommunicator.h>
+
+#include <vtkImageData.h>
+
+#include <avtImagePartition.h>
+#include <avtImageRepresentation.h>
+
+#include <ImproperUseException.h>
+#include <TimingsManager.h>
+
+
+//
+// Most of the code for the communicator depends on mpi calls, so ifdef the
+// whole thing out if we are not running in parallel.
+//
+#ifdef PARALLEL
+
+#include <mpi.h>
+
+
+// ****************************************************************************
+//  Method: avtImageCommunicator constructor
+//
+//  Programmer: Hank Childs
+//  Creation:   January 25, 2001
+//
+// ****************************************************************************
+
+avtImageCommunicator::avtImageCommunicator()
+{
+    MPI_Comm_size(MPI_COMM_WORLD, &numProcs);
+    MPI_Comm_rank(MPI_COMM_WORLD, &myRank);
+    imagePartition = NULL;
+}
+
+
+// ****************************************************************************
+//  Method: avtImageCommunicator::SetImagePartition
+//
+//  Purpose:
+//      Sets the image partition to be used for the image communicator.
+//
+//  Arguments:
+//      ip       The image partition to use.
+//
+//  Programmmer: Hank Childs
+//  Creation:    March 6, 2001
+//
+// ****************************************************************************
+
+void
+avtImageCommunicator::SetImagePartition(avtImagePartition *ip)
+{
+    imagePartition = ip;
+}
+
+
+// ****************************************************************************
+//  Method: avtImageCommunicator::Execute
+//
+//  Purpose:
+//      Communicates the image to processor 0.
+//
+//  Programmer: Hank Childs
+//  Creation:   January 25, 2001
+//
+//  Modifications:
+//
+//    Hank Childs, Tue Mar  6 10:33:51 PST 2001
+//    Accounted for image coming out-of-order from dynamic image partitioning.
+//
+//    Eric Brugger, Mon Nov  5 13:42:17 PST 2001
+//    Modified to always compile the timing code.
+//
+//    Hank Childs, Mon Dec 17 17:56:32 PST 2001
+//    Make initialization to prevent UMR.
+//
+//    Hank Childs, Tue Jan  1 14:00:57 PST 2002
+//    Reflect new interface for avtImagePartition.
+//
+//    Hank Childs, Thu Jan  3 09:50:29 PST 2002
+//    Allow for NULL images to be passed down from the compositer -- this
+//    case occurs when an empty partition is assigned to a processor.
+//
+//    Hank Childs, Fri Jan  4 10:03:52 PST 2002
+//    Account for case when processor 0 got an empty partition.
+//
+// ****************************************************************************
+
+void
+avtImageCommunicator::Execute(void)
+{
+    int timingsIndex = visitTimer->StartTimer();
+
+    if (imagePartition == NULL)
+    {
+        EXCEPTION0(ImproperUseException);
+    }
+
+    //
+    // Get the scanlines for this processor.
+    //
+    unsigned char *data = NULL;
+    int  width  = 0;
+    int  height = 0;
+    if (GetImageRep().Valid())
+    {
+        vtkImageData  *image = GetImageRep().GetImageVTK();
+        data   = (unsigned char *) image->GetScalarPointer(0, 0, 0);
+        int  extents[6];
+        image->GetExtent(extents);
+        width  = extents[1] - extents[0] + 1;
+        height = extents[3] - extents[2] + 1;
+    }
+
+    //
+    // Determine the size of this image.
+    //
+    int  size = 3 * width * height;   // 3 = one char per r, g, b.
+
+    //
+    // Gather the sizes on processor 0.
+    //
+    int *sizelist = NULL;
+    if (myRank == 0)
+    {
+        sizelist = new int[numProcs];
+    }
+    MPI_Gather(&size, 1, MPI_INT, sizelist, 1, MPI_INT, 0, MPI_COMM_WORLD);
+
+    //
+    // Calculate the displacements for the gathering of the data.
+    //
+    int *disp = NULL;
+    if (myRank == 0)
+    {
+        disp = new int[numProcs];
+        disp[0] = 0;
+        for (int i = 1 ; i < numProcs ; i++)
+        {
+            disp[i] = disp[i-1] + sizelist[i-1];
+        }
+    }
+
+    //
+    // Make an array that the data can go onto.
+    //
+    unsigned char *alldata = NULL;
+    int total = 0;
+    if (myRank == 0)
+    {
+        for (int i = 0 ; i < numProcs ; i++)
+        {
+            total += sizelist[i];
+        }
+        alldata = new unsigned char[total];
+    }
+
+    //
+    // Gather all of the data onto processor 0.
+    //
+    MPI_Gatherv(data, size, MPI_UNSIGNED_CHAR, alldata, sizelist, disp,
+                MPI_UNSIGNED_CHAR, 0, MPI_COMM_WORLD);
+
+    //
+    // Create the VTK image from all of the scanlines.
+    //
+    if (myRank == 0)
+    {
+        height = imagePartition->GetHeight();
+        width  = imagePartition->GetWidth();
+        vtkImageData *newimage = avtImageRepresentation::NewImage(width,
+                                                                  height);
+
+        //
+        // We can get the image buffer directly from the VTK object.
+        //
+        unsigned char *d = (unsigned char *)newimage->GetScalarPointer(0, 0,0);
+
+        //
+        // Get the image partition assignments from the image partition.  If
+        // assignments are thought of as a function, then the domain is
+        // the partitions and the range is the processors.
+        //
+        const int *assignments = 
+                          imagePartition->GetPartitionToProcessorAssignments();
+
+        //
+        // The messages have come out-of-order, so sort them as they are copied
+        // into the image buffer.
+        //
+        char *tmp = (char *) d;
+        int numParts = numProcs; // For clarity of what we are iterating over.
+        for (int i = 0 ; i < numParts ; i++)
+        {
+            int p = assignments[i]; // the processor that partition i sits on.
+            memcpy(tmp, ((char *)alldata) + disp[p], sizelist[p]);
+            tmp += sizelist[p];
+        }
+
+        SetOutputImage(newimage);
+        newimage->Delete();
+        delete [] alldata;
+        delete [] sizelist;
+        delete [] disp;
+    }
+
+    visitTimer->StopTimer(timingsIndex, "Image Communication");
+}
+
+
+//
+// We previously ifdef'd out this whole file if we weren't in parallel, so
+// put in the matching endif here.
+//
+#endif
+
+

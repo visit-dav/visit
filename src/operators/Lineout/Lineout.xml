@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+  <Plugin name="Lineout" type="operator" label="Lineout" version="1.0" iconFile="Lineout.xpm">
+    <Attribute name="LineoutAttributes" purpose="Attributes for the Lineout operator " persistent="true" codefile="LineoutAttributes.code">
+      <Field name="point1" label="Point 1" type="doubleArray" length="3">
+        0.000000
+        0.000000
+        0.000000
+      </Field>
+      <Field name="point2" label="Point 2" type="doubleArray" length="3">
+        1.000000
+        1.000000
+        0.000000
+      </Field>
+      <Field name="numberOfSamplePoints" label="Number of Sample Points " type="int">
+        50
+      </Field>
+      <Field name="interactive" label="Interactive" type="bool">
+        false
+      </Field>
+      <Field name="reflineLabels" label="Refline Labels" type="bool">
+        false
+      </Field>
+      <Field name="designator" label="Designator" type="string" internal="true">
+         
+      </Field>
+      <Function name="CopyAttributes" user="false" member="true">
+      </Function>
+      <Function name="CreateCompatible" user="false" member="true">
+      </Function>
+      <Function name="Print" user="true" member="true">
+      </Function>
+      <Include file="source" quoted="false">
+        Line.h
+      </Include>
+      <Include file="header" quoted="false">
+        iostream.h
+      </Include>
+    </Attribute>
+  </Plugin>

@@ -1,0 +1,22 @@
+Function: AddQuery
+Declaration: void AddQuery(const std::string &name, QueryType t, CoordinateRepresentation rep = WorldSpace);
+Definition:
+// ****************************************************************************
+//  Method:  AddQuery
+//
+//  Purpose:
+//    Adds a query to the query list.
+//
+//  Programmer:  Brad Whitlock
+//  Creation:    Mon Sep 9 15:45:37 PST 2002
+//
+// ****************************************************************************
+ 
+void
+QueryList::AddQuery(const std::string &name, QueryList::QueryType t,
+    QueryList::CoordinateRepresentation rep)
+{
+    names.push_back(name);
+    types.push_back((int)t);
+    coordRep.push_back((int)rep);
+}

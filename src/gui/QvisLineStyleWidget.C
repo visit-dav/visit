@@ -1,0 +1,306 @@
+#include <stdio.h>
+
+#include <QvisLineStyleWidget.h>
+#include <qcombobox.h>
+#include <qlayout.h>
+#include <qpixmap.h>
+#include <qpixmapcache.h>
+
+// Some static pixmap data.
+const char *QvisLineStyleWidget::style4[] = {
+"40 18 2 1",
+"  c None",
+". c black",
+"                                        ",
+"                                        ",
+"                                        ",
+"                                        ",
+"                                        ",
+"                                        ",
+"                                        ",
+" ..  ....  ..  ....  ..  ....  ..  .... ",
+" ..  ....  ..  ....  ..  ....  ..  .... ",
+"                                        ",
+"                                        ",
+"                                        ",
+"                                        ",
+"                                        ",
+"                                        ",
+"                                        ",
+"                                        ",
+"                                        "};
+
+const char *QvisLineStyleWidget::style3[] = {
+"40 18 2 1",
+"  c None",
+". c black",
+"                                        ",
+"                                        ",
+"                                        ",
+"                                        ",
+"                                        ",
+"                                        ",
+"                                        ",
+"                                        ",
+" ..  ..  ..  ..  ..  ..  ..  ..  ..  .. ",
+" ..  ..  ..  ..  ..  ..  ..  ..  ..  .. ",
+"                                        ",
+"                                        ",
+"                                        ",
+"                                        ",
+"                                        ",
+"                                        ",
+"                                        ",
+"                                        "};
+
+const char *QvisLineStyleWidget::style2[] = {
+"40 18 2 1",
+"  c None",
+". c black",
+"                                        ",
+"                                        ",
+"                                        ",
+"                                        ",
+"                                        ",
+"                                        ",
+"                                        ",
+"                                        ",
+"...  ....  ....  ....  ....  ....  .... ",
+"...  ....  ....  ....  ....  ....  .... ",
+"                                        ",
+"                                        ",
+"                                        ",
+"                                        ",
+"                                        ",
+"                                        ",
+"                                        ",
+"                                        "};
+
+const char *QvisLineStyleWidget::style1[] = {
+"40 18 2 1",
+"  c None",
+". c black",
+"                                        ",
+"                                        ",
+"                                        ",
+"                                        ",
+"                                        ",
+"                                        ",
+"                                        ",
+"                                        ",
+"........................................",
+"........................................",
+"                                        ",
+"                                        ",
+"                                        ",
+"                                        ",
+"                                        ",
+"                                        ",
+"                                        ",
+"                                        "};
+
+char *QvisLineStyleWidget::augmentedData[23];
+char QvisLineStyleWidget::augmentedForeground[15];
+
+// ****************************************************************************
+// Method: QvisLineStyleWidget::QvisLineStyleWidget
+//
+// Purpose: 
+//   Constructor for the QvisLineStyleWidget class.
+//
+// Arguments:
+//   style  : The default style to use.
+//   parent : The widget's parent.
+//   name   : The widget's name.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Nov 14 16:17:45 PST 2000
+//
+// Modifications:
+//   Brad Whitlock, Fri Dec 1 16:37:25 PST 2000
+//   Changed code so the pixmap is changed before being used.
+//
+//   Brad Whitlock, Thu Sep 6 15:42:41 PST 2001
+//   Changed the combobox from using a background color to a background mode.
+//
+// ****************************************************************************
+
+QvisLineStyleWidget::QvisLineStyleWidget(int style, QWidget *parent,
+                                         const char *name) : 
+                                         QWidget(parent, name)
+{
+    // Create some pixmaps and store them in the application global
+    // pixmap cache.
+    QPixmap style1Pixmap;
+    if(!QPixmapCache::find("visit_gui_linestyle1", style1Pixmap))
+    {
+        AugmentPixmap(style1);
+        QPixmap s1p((const char **)augmentedData);
+        QPixmapCache::insert("visit_gui_linestyle1", s1p);
+        style1Pixmap = s1p;
+    }
+    QPixmap style2Pixmap;
+    if(!QPixmapCache::find("visit_gui_linestyle2", style2Pixmap))
+    {
+        AugmentPixmap(style2);
+        QPixmap s2p((const char **)augmentedData);
+        QPixmapCache::insert("visit_gui_linestyle2", s2p);
+        style2Pixmap = s2p;
+    }
+    QPixmap style3Pixmap;
+    if(!QPixmapCache::find("visit_gui_linestyle3", style3Pixmap))
+    {
+        AugmentPixmap(style3);
+        QPixmap s3p((const char **)augmentedData);
+        QPixmapCache::insert("visit_gui_linestyle3", s3p);
+        style3Pixmap = s3p;
+    }
+    QPixmap style4Pixmap;
+    if(!QPixmapCache::find("visit_gui_linestyle4", style4Pixmap))
+    {
+        AugmentPixmap(style4);
+        QPixmap s4p((const char **)augmentedData);
+        QPixmapCache::insert("visit_gui_linestyle4", s4p);
+        style4Pixmap = s4p;
+    }
+
+    // Create the combo box and add the pixmaps to it.
+    QHBoxLayout *topLayout = new QHBoxLayout(this);
+    lineStyleComboBox = new QComboBox(false, this, "lineStyleComboBox");
+    lineStyleComboBox->insertItem(style1Pixmap);
+    lineStyleComboBox->insertItem(style2Pixmap);
+    lineStyleComboBox->insertItem(style3Pixmap);
+    lineStyleComboBox->insertItem(style4Pixmap);
+    lineStyleComboBox->setBackgroundMode(PaletteBackground);
+    lineStyleComboBox->setCurrentItem(style);
+    topLayout->addWidget(lineStyleComboBox);
+    connect(lineStyleComboBox, SIGNAL(activated(int)),
+            this, SIGNAL(lineStyleChanged(int)));
+}
+
+// ****************************************************************************
+// Method: QvisLineStyleWidget::~QvisLineStyleWidget
+//
+// Purpose: 
+//   Destructor for the QvisLineStyleWidget class.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Nov 14 16:19:15 PST 2000
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+QvisLineStyleWidget::~QvisLineStyleWidget()
+{
+    // nothing
+}
+
+// ****************************************************************************
+// Method: QvisLineStyleWidget::setEnabled
+//
+// Purpose: 
+//   This is a Qt slot function that sets the enabled state of the widget.
+//
+// Arguments:
+//   val : The new enabled state.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Nov 14 16:40:53 PST 2000
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisLineStyleWidget::setEnabled(bool val)
+{
+    lineStyleComboBox->setEnabled(val);
+}
+
+// ****************************************************************************
+// Method: QvisLineStyleWidget::SetLineWidth
+//
+// Purpose: 
+//   This method sets the widget's line style. Doing so causes the right
+//   pixmap to be displayed.
+//
+// Arguments:
+//   style : The new line style to display. Valid values are 0,1,2,3.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Nov 14 16:19:32 PST 2000
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisLineStyleWidget::SetLineStyle(int style)
+{
+    if(style < 0 || style > 3)
+        return;
+
+    lineStyleComboBox->blockSignals(true);
+    lineStyleComboBox->setCurrentItem(style);
+    lineStyleComboBox->blockSignals(false);
+
+    // If signals are not blocked, emit the LineStyleChanged signal.
+    if(!signalsBlocked())
+        emit lineStyleChanged(style);
+}
+
+// ****************************************************************************
+// Method: QvisLineStyleWidget::GetLineWidth
+//
+// Purpose: 
+//   This method returns the current line style.
+//
+// Arguments:
+//
+// Returns:    This method returns the current line style.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Nov 14 16:21:07 PST 2000
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+int
+QvisLineStyleWidget::GetLineStyle() const
+{
+    return lineStyleComboBox->currentItem();
+}
+
+// ****************************************************************************
+// Method: QvisLineStyleWidget::AugmentPixmap
+//
+// Purpose: 
+//   This method augments pixmap data so that the application's foreground
+//   color is used instead of the default of black.
+//
+// Arguments:
+//   xpm : A pointer to xpm pixmap strings.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Dec 1 16:29:56 PST 2000
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisLineStyleWidget::AugmentPixmap(const char *xpm[])
+{
+    for(int i = 0; i < 23; ++i)
+        augmentedData[i] = (char *)xpm[i];
+
+    // Turn the third element into the foreground color.
+    sprintf(augmentedForeground, ". c #%02x%02x%02x", 
+            foregroundColor().red(), foregroundColor().green(),
+            foregroundColor().blue());
+    augmentedData[2] = augmentedForeground;
+}

@@ -1,0 +1,125 @@
+#                            Copyright 2000 - 2001
+#                 The Regents of the University of California.
+#                             All rights reserved.
+# 
+# This work  was produced at the  University of California, Lawrence Livermore
+# National Laboratory  (UC LLNL)  under contract no.   W-7405-ENG-48 (Contract
+# 48) between  the U.S.  Department  of Energy (DOE)  and  The Regents  of the
+# University  of   California (University)   for   the operation  of UC  LLNL.
+# Copyright  is reserved  to     the University for   purposes  of  controlled
+# dissemination,   commercialization   through   formal licensing,   or  other
+# disposition  under  terms  of Contract   48; DOE  policies, regulations  and
+# orders;  and U.S.   statutes.  The  rights of   the  Federal Government  are
+# reserved under  Contract 48 subject to the  restrictions agreed  upon by DOE
+# and University.
+# 
+#                                 DISCLAIMER
+# 
+# This software was prepared as an  account of work sponsored  by an agency of
+# the United  States Government. Neither the United  States Government nor the
+# University of California  nor any  of their  employees, makes any  warranty,
+# express or  implied,  or assumes  any  liability  or responsiblity for   the
+# accuracy, completeness,  or   usefullness of   any  information,  apparatus,
+# product, or process disclosed, or represents that its use would not infringe
+# privately   owned  rights. Reference    herein to   any specific  commercial
+# products, process, or service   by trade name, trademark,   manufacturer, or
+# otherwise,  does not    necessarily  constitute or    imply its endorsement,
+# recommendation,  or  favoring by    the  United  States Government  or   the
+# University of California. The views and opinions of authors expressed herein
+# do not necessarily state or reflect those of the United States Government or
+# the University of  California,  and shall not  be  used for  advertising  or
+# product endorsement purposes.
+#
+# Programmer:  Jeremy Meredith
+# Date:        August 21, 2002
+#
+# Modifications:
+#
+#   Hank Childs, Thu Oct  3 11:01:23 PDT 2002
+#   Add a reader for Tetrad.
+#
+#   Hank Childs, Sun Oct 13 21:23:52 PDT 2002
+#   Added a KullLite reader based on work by Akira Haddox.
+#
+#   Brad Whitlock, Mon Oct 14 16:34:22 PST 2002
+#   Added the PDB reader.
+#
+#   Sean Ahern, Fri Nov 15 15:20:20 PST 2002
+#   Added the ability for some databases to be "optional", just like
+#   operators.  Not sure this will be used, but...
+#
+#   Hank Childs, Tue Mar 11 15:48:01 PST 2003
+#   Added Spheral++ reader.  Point of contact is Mike Owen.
+#
+#   Hank Childs, Sat Mar 15 14:18:02 PST 2003
+#   Added Points3D reader.  Point of contact is Bill Moran.
+#
+#   Jeremy Meredith, Tue Apr  8 13:18:29 PDT 2003
+#   Added sample readers Rect and Hex.
+#
+#   Hank Childs, Fri Apr 11 07:25:27 PDT 2003
+#   Added Mili reader.
+#
+#   Hank Childs, Tue Apr 22 16:19:42 PDT 2003
+#   Added EnSight reader.
+#
+#   Jeremy Meredith, Wed May  7 14:00:19 PDT 2003
+#   Removed PDB reader.  It should be added to the "PDB" target class
+#   if we want it again.
+#
+#   Hank Childs, Mon May 12 22:36:20 PDT 2003
+#   Added BOV reader.
+#
+##############################################################################
+
+@SET_MAKE@
+@VARIABLES@
+all: message
+	for dir in $(SUBDIRS); do (cd $$dir && $(MAKE) $@) || exit 1; done
+
+EXODUS=Exodus TimeVaryingExodus
+HDF5=Tetrad
+MILI=Mili
+PDB=KullLite
+SAF=SAF
+SAMPLES=Rect Hex
+REQUIRED=BOV Curve2D EnSight Lines PLOT3D Point3D STL Silo Spheral VTK WavefrontOBJ
+
+OPTIONAL=
+
+SUBDIRS=$(REQUIRED) @DB_OPTIONAL_DIRS@ @EXODUS@ @SAF@ @HDF5@ @PDB@ @MILI@
+ALLSUBDIRS=$(REQUIRED) $(EXODUS) $(SAF) $(HDF5) $(MILI) $(PDB) $(SAMPLES)
+
+message:
+	@echo
+	@echo "****************************************************************************"
+	@echo "****************************************************************************"
+	@echo "***"
+	@echo "*** Building Databases"
+	@echo "***"
+	@echo "****************************************************************************"
+	@echo "****************************************************************************"
+
+
+dirmakefiles:
+	for dir in $(ALLSUBDIRS); do if test -d $$dir; then (cd $$dir && $(tmpbin)/visit -xml2makefile -noprint -clobber $${dir}.xml) || exit 1; fi; done
+
+clean:
+	-$(RM) $(LIB)
+	for dir in $(SUBDIRS); do (cd $$dir && test ! -f Makefile || $(MAKE) $@) || exit 1; done
+	-$(RM) $(CLEAN_FILES)
+
+distclean: clean
+	if test -n "$(SUBDIRS)"; then \
+		rev=""; for dir in $(SUBDIRS); do rev="$$dir $$rev"; done; \
+		for dir in $$rev; do (cd $$dir && test ! -f Makefile || $(MAKE) $@); done \
+	fi
+	-$(RM) $(DISTCLEAN_FILES) *~ .depend core
+	-$(RM) Makefile
+
+depend: dirmakefiles
+	for dir in $(SUBDIRS); do (cd $$dir && $(MAKE) $@) || exit 1; done
+
+checkdep: dirmakefiles
+	for dir in $(SUBDIRS); do (cd $$dir && $(MAKE) $@) || exit 1; done
+

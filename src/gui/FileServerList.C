@@ -1,0 +1,2328 @@
+#include <FileServerList.h>
+#include <BadHostException.h>
+#include <ChangeDirectoryException.h>
+#include <CouldNotConnectException.h>
+#include <GetFileListException.h>
+#include <GetMetaDataException.h>
+#include <LostConnectionException.h>
+#include <IncompatibleVersionException.h>
+#include <IncompatibleSecurityTokenException.h>
+#include <MessageAttributes.h>
+#include <avtDatabaseMetaData.h>
+#include <avtSIL.h>
+#include <DataNode.h>
+#include <stdio.h>
+#include <snprintf.h>
+#include <visit-config.h>
+
+// Some static constants.
+static const int FILE_NOACTION = 0;
+static const int FILE_OPEN = 1;
+static const int FILE_REPLACE = 2;
+static const int FILE_OVERLAY = 3;
+static const int FILE_CLOSE = 4;
+
+// ****************************************************************************
+// Method: FileServerList::FileServerList
+//
+// Purpose: 
+//   Constructor for the FileServerList class.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Aug 21 14:38:05 PST 2000
+//
+// Modifications:
+//   Brad Whitlock, Tue Aug 29 17:17:27 PST 2000
+//   I added code to catch a GetFileListException.
+//
+//   Brad Whitlock, Wed Apr 25 13:41:46 PST 2001
+//   Added messageAtts.
+//
+//   Brad Whitlock, Fri Jul 26 13:50:05 PST 2002
+//   I initialized the useCurrentDirectoryFlag member.
+//
+//   Brad Whitlock, Mon Aug 19 11:10:09 PDT 2002
+//   I added an attribute to the format string.
+//
+//   Brad Whitlock, Thu Sep 5 16:16:03 PST 2002
+//   I made the "useCurrentDirectory" setting turned off by default on
+//   the Windows platform.
+//
+//   Brad Whitlock, Mon Sep 30 08:09:00 PDT 2002
+//   I initialized some callback functions.
+//
+//   Brad Whitlock, Thu Mar 27 09:19:05 PDT 2003
+//   I initialized automaticFileGroupingFlag.
+//
+// ****************************************************************************
+
+FileServerList::FileServerList() : AttributeSubject("bbbbbibb"), servers(),
+    activeHost("localhost"), fileList(), appliedFileList(), openFile(),
+    fileMetaData(), recentPaths()
+{
+    hostFlag = pathFlag = filterFlag = false;
+    fileListFlag = appliedFileListFlag = false;
+    fileAction = FILE_NOACTION;
+#if defined(_WIN32)
+    useCurrentDirectoryFlag = false;
+#else
+    useCurrentDirectoryFlag = true;
+#endif
+    automaticFileGroupingFlag = true;
+
+    // Initialize some callback functions.
+    connectCallback = 0;
+    connectCallbackData = 0;
+    progressCallback = 0;
+    progressCallbackData = 0;
+
+    // Create the message attributes.
+    messageAtts = new MessageAttributes;
+}
+
+// ****************************************************************************
+// Method: FileServerList::~FileServerList
+//
+// Purpose: 
+//   Destructor for the FileServerList class.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Aug 21 14:38:45 PST 2000
+//
+// Modifications:
+//   Brad Whitlock, Mon Mar 19 15:40:44 PST 2001
+//   I removed the code that told the mdserver to quit. This is no
+//   longer the GUI's responsibility since the viewer now launches the
+//   mdservers.
+//
+//   Brad Whitlock, Wed Apr 25 13:43:08 PST 2001
+//   Added messageAtts.
+//
+//   Eric Brugger, Thu Nov 29 12:02:21 PST 2001
+//   Added caching of SILs.
+//
+// ****************************************************************************
+
+FileServerList::~FileServerList()
+{
+    // Iterate through the server list, close and destroy each
+    // server and remove the server from the map.
+    ServerMap::iterator pos;
+    for(pos = servers.begin(); pos != servers.end(); ++pos)
+    {
+        // Delete the server
+        delete pos->second->server;
+
+        // Delete the ServerInfo item.
+        delete pos->second;
+    }
+    servers.clear();
+
+    // Iterate through the file metadata list, detroying each
+    // metadata entry.
+    FileMetaDataMap::iterator fpos;
+    for(fpos = fileMetaData.begin(); fpos != fileMetaData.end(); ++fpos)
+    {
+        // Delete the metadata
+        delete fpos->second;
+    }
+    fileMetaData.clear();
+
+    // Iterate through the file sil list, destroying each sil entry.
+    SILMap::iterator spos;
+    for(spos = SILData.begin(); spos != SILData.end(); ++spos)
+    {
+        // Delete the SIL
+        delete spos->second;
+    }
+    SILData.clear();
+
+    // delete the message attributes.
+    delete messageAtts;
+}
+
+// ****************************************************************************
+// Method: FileServerList::SelectAll
+//
+// Purpose: 
+//   Selects all of the attributes.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Aug 21 14:39:08 PST 2000
+//
+// Modifications:
+//   Brad Whitlock, Mon Aug 19 11:02:19 PDT 2002
+//   I made useCurrentDirectoryFlag into an attribute.
+//
+//   Brad Whitlock, Thu Mar 27 09:19:54 PDT 2003
+//   I added automaticFileGroupingFlag.
+//
+// ****************************************************************************
+
+void
+FileServerList::SelectAll()
+{
+    Select(0, (void *)&hostFlag);
+    Select(1, (void *)&pathFlag);
+    Select(2, (void *)&filterFlag);
+    Select(3, (void *)&fileListFlag);
+    Select(4, (void *)&appliedFileListFlag);
+    Select(5, (void *)&fileAction);
+    Select(6, (void *)&useCurrentDirectoryFlag);
+    Select(7, (void *)&automaticFileGroupingFlag);
+}
+
+// *************************************************************************************
+// Method: FileServerList::Initialize
+//
+// Purpose: 
+//   Connects to an mdserver running on localhost. This method must be called
+//   before doing anything with the FileServerList object.
+//
+// Notes:      This method could throw an IncompatibleVersionException object.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Nov 21 14:01:18 PST 2000
+//
+// Modifications:
+//   Brad Whitlock, Fri Apr 27 11:05:01 PDT 2001
+//   Caught IncompatibleVersionException.
+//
+//   Jeremy Meredith, Fri Apr 27 15:40:09 PDT 2001
+//   Made it catch VisItExceptions from StartServer.
+//
+//   Brad Whitlock, Mon Oct 22 18:25:42 PST 2001
+//   Changed the exception handling keywords to macros.
+//
+//   Brad Whitlock, Mon Aug 19 11:34:12 PDT 2002
+//   I made fileList selected.
+//
+//   Brad Whitlock, Thu Mar 27 09:23:47 PDT 2003
+//   I made it use the file grouping flag.
+//
+// *************************************************************************************
+
+void
+FileServerList::Initialize()
+{
+    // Start a MetaData server on the local machine.
+    TRY
+    {
+        StartServer(activeHost);
+    }
+    CATCH(VisItException)
+    {
+        // Do nothing.
+    }
+    ENDTRY
+
+    // Get the remote file list and copy it to the local file list.
+    ServerMap::iterator info = servers.find(activeHost);
+    if(info != servers.end())
+    {
+        TRY
+        {
+            // Try to get the file list from the MD Server.
+            fileList = *(info->second->server->GetFileList(info->second->filter,
+                automaticFileGroupingFlag));
+            Select(3, (void *)&fileListFlag);
+
+            // Copy virtual files from the fileList into the
+            // virtualFiles map.
+            DefineVirtualFiles();
+
+            // Generate the applied file list from the file list.
+            appliedFileList = GetFilteredFileList();
+
+            // Select the applied file list.
+            Select(4, (void *)&appliedFileListFlag);
+        }
+        CATCH(GetFileListException)
+        {
+            // We got a GetFileListException exception.
+            fileList.Clear();
+        }
+        ENDTRY
+    }
+}
+
+// ****************************************************************************
+// Method: FileServerList::Notify
+//
+// Purpose: 
+//   Does some RPC calls to talk to the MetaData server. This can
+//   update the file list. The subject's observers are then called
+//   to respond to the changes in the file list. It's done this way
+//   because of the potentially high cost of RPC's and the observers
+//   should not have to worry where their file list came from.
+//
+// Notes:
+//   This routine can throw exceptions. When SetPath was called before
+//   this routine, GetFileListException or ChangeDirectoryException
+//   can be thrown. When SetHost is called before this routine,
+//   GetFileListException can be thrown.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Aug 21 14:21:02 PST 2000
+//
+// Modifications:
+//   Brad Whitlock, Tue Aug 29 17:29:59 PST 2000
+//   I added exception handlers.
+//
+//   Brad Whitlock, Wed Aug 30 15:36:42 PST 2000
+//   I changed the exception handlers so they rethrow the exception
+//   so the routine that called Notify can use the exception to
+//   let the user know there were problems. I changed it because
+//   if there were problems, I don't want the other observers to
+//   be notified.
+//
+//   Brad Whitlock, Wed Oct 4 16:40:13 PST 2000
+//   I changed the logic so the host and the path can be set in the
+//   same call to this method.
+//
+//   Brad Whitlock, Tue Apr 24 18:11:46 PST 2001
+//   Added code to try and restart the mdserver if it was determined that it
+//   is no longer alive.
+//
+//   Brad Whitlock, Wed Apr 25 12:52:29 PDT 2001
+//   Added code to catch version errors.
+//
+//   Brad Whitlock, Fri Apr 27 13:58:46 PST 2001
+//   Fixed a memory problem.
+//
+//   Brad Whitlock, Mon Oct 22 18:33:37 PST 2001
+//   Changed the exception keywords to macros.
+//
+//   Brad Whitlock, Wed Feb 13 12:57:03 PDT 2002
+//   Added code to add a new path to the recently used path list.
+//
+//   Brad Whitlock, Tue Jul 30 11:31:58 PDT 2002
+//   I changed the routine so that if the fileAction variable is FILE_CLOSE,
+//   we make a CloseDatabaseRPC to the active mdserver.
+//
+//   Brad Whitlock, Mon Aug 26 15:06:44 PST 2002
+//   I changed the code so it always gets the name of the current directory
+//   after changing to a new directory. This filters stuff out of the path
+//   name since the MDServer now is responsible for filtering the pathname.
+//
+//   Brad Whitlock, Mon Mar 24 14:26:40 PST 2003
+//   I passed the filter to the server's GetFileList rpc.
+//
+// ****************************************************************************
+
+void
+FileServerList::Notify()
+{
+    // Return if there is no mdserver associated with the active host.
+    ServerMap::iterator pos;
+    if((pos = servers.find(activeHost)) == servers.end())
+        return;
+
+    // Get a pointer to the mdserver for the active host.
+    ServerInfo *info = servers[activeHost];
+    int        numAttempts = 0;
+    bool       tryAgain = false;
+
+    // Try and do the specified operations.
+    do
+    {
+        TRY
+        {
+            // If the fileAction is to close the file, close it. Otherwise,
+            // try and change the host or path, etc.
+            if(fileAction == FILE_CLOSE)
+            {
+                info->server->CloseDatabase();
+            }
+            else
+            {
+                if(hostFlag)
+                {
+                    if(!pathFlag)
+                    {
+                        // Get the file list from the MDServerProxy.
+                        const MDServerProxy::FileList *fl =
+                            info->server->GetFileList(info->filter,
+                                                      automaticFileGroupingFlag);
+                        // copy the file list into the local file list.
+                        fileList = *fl;
+                        Select(3, (void *)&fileListFlag);
+
+                        // Copy virtual files from the fileList into the
+                        // virtualFiles map.
+                        DefineVirtualFiles();
+                    }
+
+                    // Changing hosts requires the path, filter, and file list
+                    // to be updated too. Select them.
+                    Select(1, (void *)&pathFlag);
+                    Select(2, (void *)&filterFlag);
+                }
+
+                if(pathFlag || (filterFlag && automaticFileGroupingFlag) ||
+                   IsSelected(7))
+                {
+                    TRY
+                    {
+                        // Change to the new path.
+                        if(pathFlag)
+                        {
+                            info->server->ChangeDirectory(info->path);
+                            info->path = info->server->GetDirectory();
+                        }
+
+                        // Copy the file list into the local file list.
+                        const MDServerProxy::FileList *fl =
+                            info->server->GetFileList(info->filter,
+                                                      automaticFileGroupingFlag);
+                        fileList = *fl;
+                        Select(3, (void *)&fileListFlag);
+
+                        // Copy virtual files from the fileList into the
+                        // virtualFiles map.
+                        DefineVirtualFiles();
+
+                        // The path must be valid to get to this point. Since
+                        // that must be true, add the path to the recently
+                        // visited path list.
+                        AddPathToRecentList(activeHost, info->path);
+                    }
+                    CATCH(ChangeDirectoryException)
+                    {
+                        // Set the directory back to the previous directory name.
+                        info->path = info->server->GetDirectory();
+                        // Reset the flags for future operations and rethrow.
+                        hostFlag = pathFlag = filterFlag = false;
+                        fileListFlag = appliedFileListFlag = false;
+                        fileAction = FILE_NOACTION;
+
+                        UnSelectAll();
+                        RETHROW;
+                    }
+                    ENDTRY
+                }
+            }
+
+            // Indicate that we do not need to try the loop again.
+            tryAgain = false;
+        }
+        CATCH(GetFileListException)
+        {
+            // We could not get a file list back from the MDServerProxy
+            // so we should clear the list since we changed to a new
+            // directory.
+            fileList.Clear();
+
+            // Reset the flags for future operations and rethrow.
+            hostFlag = pathFlag = filterFlag = false;
+            fileListFlag = appliedFileListFlag = false;
+            fileAction = FILE_NOACTION;
+
+            UnSelectAll();
+            RETHROW;
+        }
+        CATCH(LostConnectionException)
+        {
+            ++numAttempts;
+            tryAgain = (numAttempts < 2);
+
+            TRY
+            {
+                // Save the old path and filter.
+                std::string oldPath(info->path);
+                std::string oldFilter(info->filter);
+
+                // Try and restart the mdserver.
+                CloseServer(activeHost);
+                StartServer(activeHost);
+
+                // If the server was added to the server map, reset the info
+                // pointer and set the path and filter.
+                if((pos = servers.find(activeHost)) != servers.end())
+                {
+                    info = servers[activeHost];
+
+                    // Set the path and filter.
+                    SetPath(oldPath);
+                    SetFilter(oldFilter);
+                    hostFlag = false;
+                }
+                else
+                    info = 0;
+            }
+            CATCHALL(...)
+            {
+                info = 0;
+                tryAgain = false;
+            }
+            ENDTRY
+        }
+        ENDTRY
+    } while(tryAgain);
+
+    // Call the base class's Notify method.
+    AttributeSubject::Notify();
+
+    // Reset the flags for future operations.
+    hostFlag = pathFlag = filterFlag = false;
+    fileListFlag = appliedFileListFlag = false;
+    fileAction = FILE_NOACTION;
+}
+
+// ****************************************************************************
+// Method: FileServerList::SetHost
+//
+// Purpose: 
+//   Sets the current host. If the host is not in the server map, a
+//   new mdserver is created. When Notify() is called, 
+//
+// Notes:
+//   BadHostException is thrown when calling this function with a
+//   bad host name.
+//
+// Arguments:
+//   host : The name of the new active host.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Aug 21 14:39:45 PST 2000
+//
+// Modifications:
+//   Brad Whitlock, Thu Apr 26 16:21:12 PST 2001
+//   Added code to catch IncompatibleVersionException.
+//
+//   Jeremy Meredith, Fri Apr 27 15:40:09 PDT 2001
+//   Made it catch VisItExceptions from StartServer.
+//
+//   Brad Whitlock, Mon Oct 22 18:33:37 PST 2001
+//   Changed the exception keywords to macros.
+//
+//   Brad Whitlock, Thu Oct 25 15:22:48 PST 2001
+//   Added code to rethrow BadHostException.
+//
+//   Brad Whitlock, Wed Feb 13 15:01:15 PST 2002
+//   Added code to rethrow CouldNotConnectException.
+//
+//   Jeremy Meredith, Thu Feb 14 15:10:07 PST 2002
+//   Look up the fully qualified host name so it doesn't create duplicate
+//   qualified and unqualified ones.
+//
+//   Brad Whitlock, Fri Feb 15 15:22:56 PST 2002
+//   Added code to migrate an existing mdserver to a qualified server name.
+//
+//   Jeremy Meredith, Wed Feb 20 10:21:35 PST 2002
+//   Added code to only resolve up the host name if we are not trying to
+//   look up locahost.
+//
+//   Jeremy Meredith, Sun Mar  3 21:55:17 PST 2002
+//   Removed the code to resolve to a fully qualified host name.  The problem
+//   is that although correct, it forced users to have the fully qualified
+//   host name in their .ssh/known_hosts, where if they have never used it
+//   it will not exist.  By postponing the FQ lookup until trying to match a
+//   host profile, this lets ssh go to host names the users actually entered.
+//
+// ****************************************************************************
+
+void
+FileServerList::SetHost(const std::string &host)
+{
+    // If the fully qualified host name is not the same as the regular
+    // hostname and we have a server under the regular hostname, migrate
+    // the server to the new hostname.
+    ServerMap::iterator pos = servers.find(host);
+    if(pos != servers.end())
+    {
+        ServerInfo *oldServer = pos->second;
+        servers.erase(pos);
+        servers[host] = oldServer;
+
+        StringStringVectorMap::iterator pos2 = recentPaths.find(host);
+        if(pos2 != recentPaths.end())
+        {
+            stringVector oldRecentPaths(pos2->second);
+            recentPaths.erase(pos2);
+            recentPaths[host] = oldRecentPaths;
+        }
+    }
+
+    // If the host is not in the map, we need to create a new
+    // server on that host.
+    TRY
+    {
+        if((pos = servers.find(host)) == servers.end())
+        {
+            StartServer(host);
+        }
+
+        // Set the new active host.
+        hostFlag = true;
+        activeHost = host;
+        Select(0, (void *)&hostFlag);
+
+        // Set the file action to none.
+        fileAction = FILE_NOACTION;
+        Select(5, (void *)&fileAction);
+
+        // Use the path & filter for the new host.
+        SetPath(servers[host]->path);
+        SetFilter(servers[host]->filter);
+    }
+    CATCH(BadHostException)
+    {
+        // Rethrow the exception.
+        RETHROW;
+    }
+    CATCH(CouldNotConnectException)
+    {
+        // Rethrow the exception.
+        RETHROW;
+    }
+    CATCH(VisItException)
+    {
+        // Do nothing.
+    }
+    ENDTRY
+}
+
+// ****************************************************************************
+// Method: FileServerList::StartServer
+//
+// Purpose: 
+//   Starts a MetaData server on the specified host.
+//
+// Arguments:
+//   host : The name of the host where the server will be started.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Aug 22 09:50:46 PDT 2000
+//
+// Modifications:
+//   Brad Whitlock, Fri Aug 25 14:34:30 PST 2000
+//   I added a clean-up handler that deletes the new server when
+//   an exception is thrown.
+//
+//   Eric Brugger, Wed Oct 25 15:35:34 PDT 2000
+//   I modified the routine to match a change to the MDServerProxy Create
+//   method.
+//
+//   Brad Whitlock, Tue Nov 21 13:20:18 PST 2000
+//   I passed a callback to the MDServerProxy::Create method.
+//
+//   Brad Whitlock, Thu Apr 26 11:46:26 PDT 2001
+//   Added handler for IncompatibleVersionException.
+//
+//   Jeremy Meredith, Fri Apr 27 15:40:39 PDT 2001
+//   Added catch for CouldNotConnectException.
+//
+//   Brad Whitlock, Mon Oct 22 18:33:37 PST 2001
+//   Changed the exception keywords to macros.
+//
+//   Brad Whitlock, Thu Feb 7 09:56:33 PDT 2002
+//   Fixed the hostname used in the error messages.
+//
+//   Brad Whitlock, Wed Feb 13 13:51:45 PST 2002
+//   Added code that appends the start directory to the recent paths.
+//
+//   Brad Whitlock, Fri Feb 15 16:59:24 PST 2002
+//   Added code to delete the mdserver proxy when an exception is thrown.
+//
+//   Brad Whitlock, Mon Sep 30 08:12:51 PDT 2002
+//   Added code to set the mdserver's progress callback.
+//
+//   Brad Whitlock, Mon Dec 16 16:36:47 PST 2002
+//   I added support for IncompatibleSecurityTokenException.
+//
+// ****************************************************************************
+
+void
+FileServerList::StartServer(const std::string &host)
+{
+    ServerInfo *info = new ServerInfo();
+    info->server = 0;
+
+    // Create a new MD server on the remote machine.
+    TRY
+    {
+        info->server = new MDServerProxy();
+        info->server->SetProgressCallback(progressCallback,
+            progressCallbackData);
+        info->server->Create(host, connectCallback, connectCallbackData);
+
+        // Get the current directory from the server
+        info->path = info->server->GetDirectory();
+        info->filter = std::string("*");
+
+        // Add the information about the new server to the 
+        // server map.
+        servers[host] = info;
+
+        // Add the default path to the recent path list.
+        AddPathToRecentList(host, info->path);
+    }
+    CATCHALL(...) // Clean-up handler
+    {
+        delete info->server;
+        delete info;
+        // re-throw the exception
+        RETHROW;
+    }
+    ENDTRY
+}
+
+// ****************************************************************************
+// Method: FileServerList::CloseServer
+//
+// Purpose: 
+//   Closes the mdserver associated with the specified host.
+//
+// Arguments:
+//   host : The hostname for the mdserver we want to close.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Apr 24 16:50:58 PST 2001
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+FileServerList::CloseServer(const std::string &host)
+{
+    ServerMap::iterator pos;
+    if((pos = servers.find(host)) != servers.end()) 
+    {
+        // Delete the server
+        delete pos->second->server;
+
+        // Delete the ServerInfo item.
+        delete pos->second;
+
+        // Remove the entry from the server map.
+        servers.erase(pos);
+    }
+}
+
+// ****************************************************************************
+// Method: FileServerList::SetPath
+//
+// Purpose: 
+//   Sets a new path. When Notify() is called, the file list gets
+//   updated.
+//
+// Arguments:
+//   path : The name of the new path.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Aug 21 14:40:59 PST 2000
+//
+// Modifications:
+//   Brad Whitlock, Mon Aug 19 13:34:40 PST 2002
+//   Set the file action to no action.
+//
+// ****************************************************************************
+
+void
+FileServerList::SetPath(const std::string &path)
+{
+    // If the activeHost is in the server map, set its path.
+    ServerMap::iterator pos;
+    if((pos = servers.find(activeHost)) != servers.end())
+    {
+        if(pos->second->path != path)
+        {
+            // Set the file action to none.
+            fileAction = FILE_NOACTION;
+            Select(5, (void *)&fileAction);
+
+            pathFlag = true;
+            pos->second->path = path;
+            Select(1, (void *)&pathFlag);
+        }
+    }
+}
+
+// ****************************************************************************
+// Method: FileServerList::SetFilter
+//
+// Purpose: 
+//   Sets a new file filter.
+//
+// Arguments:
+//   filter : The new filter to use.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Aug 21 14:42:17 PST 2000
+//
+// Modifications:
+//   Brad Whitlock, Mon Aug 19 13:34:40 PST 2002
+//   Set the file action to no action.
+//   
+// ****************************************************************************
+
+void
+FileServerList::SetFilter(const std::string &filter)
+{
+    // If the activeHost is in the server map, set its filter.
+    ServerMap::iterator pos;
+    if((pos = servers.find(activeHost)) != servers.end())
+    {
+        if(pos->second->filter != filter)
+        {
+            // Set the file action to none.
+            fileAction = FILE_NOACTION;
+            Select(5, (void *)&fileAction);
+
+            filterFlag = true;
+            pos->second->filter = filter;
+            Select(2, (void *)&filterFlag);
+        }
+    }
+}
+
+// ****************************************************************************
+// Method: FileServerList::SetAppliedFileList
+//
+// Purpose: 
+//   Sets the selected file list.
+//
+// Arguments:
+//   newFiles : This is a vector of strings representing the selected
+//              file list. It is a vector of strings that contain
+//              qualified file names.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Aug 30 10:29:22 PDT 2000
+//
+// Modifications:
+//   Brad Whitlock, Mon Aug 19 13:34:40 PST 2002
+//   Set the file action to no action.
+//
+//   Brad Whitlock, Wed Apr 2 10:14:19 PDT 2003
+//   I made the open file reopen if it is in the list and it is a virtual file.
+//   This makes sure that we get new metadata for the virtual file in case
+//   its contents changed.
+//
+// ****************************************************************************
+
+void
+FileServerList::SetAppliedFileList(const QualifiedFilenameVector &newFiles)
+{
+    // Remove the metadata and SIL for any virtual files.
+    for(int i = 0; i < appliedFileList.size(); ++i)
+    {
+        if(appliedFileList[i].IsVirtual())
+        {
+            ClearFile(appliedFileList[i]);
+
+            // If the file happens to be the open file, reopen it so we
+            // get new cached metadata for later.
+            if(openFile == appliedFileList[i])
+            {
+                TRY
+                {
+                    CloseFile();
+                    OpenFile(appliedFileList[i], 0);
+                }
+                CATCH(VisItException)
+                {
+                }
+                ENDTRY
+            }
+        }
+    }
+
+    // Set the file action to none.
+    fileAction = FILE_NOACTION;
+    Select(5, (void *)&fileAction);
+
+    // Overwrite the applied file list with a new one.
+    appliedFileList = newFiles;
+    appliedFileListFlag = true;
+    Select(4, (void *)&appliedFileListFlag);
+}
+
+// ****************************************************************************
+// Method: FileServerList::SetUseCurrentDirectory
+//
+// Purpose: 
+//   Sets the flag that tells VisIt to start up in the current directory.
+//
+// Arguments:
+//   val : The new value of the flag.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jul 26 13:54:32 PST 2002
+//
+// Modifications:
+//   Brad Whitlock, Mon Aug 19 11:09:36 PDT 2002
+//   I made useCurrentDirectoryFlag into an attribute.
+//
+// ****************************************************************************
+
+void
+FileServerList::SetUseCurrentDirectory(bool val)
+{
+    useCurrentDirectoryFlag = val;
+    Select(6, (void *)&useCurrentDirectoryFlag);
+}
+
+// ****************************************************************************
+// Method: FileServerList::SetAutomaticFileGrouping
+//
+// Purpose: 
+//   Sets the flag that tells VisIt to use automatic file grouping.
+//
+// Arguments:
+//   val : The new value of the flag.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 27 09:35:32 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+FileServerList::SetAutomaticFileGrouping(bool val)
+{
+    automaticFileGroupingFlag = val;
+    Select(7, (void *)&automaticFileGroupingFlag);
+}
+
+// ****************************************************************************
+// Method: FileServerList::OpenFile
+//
+// Purpose: 
+//   Opens the specified file.
+//
+// Arguments:
+//   filename  : The filename to open.
+//   timeState : The time state to open.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Aug 30 22:29:13 PST 2000
+//
+// Modifications:
+//   Brad Whitlock, Tue May 13 15:14:29 PST 2003
+//   I added the timeState argument.
+//
+// ****************************************************************************
+
+void
+FileServerList::OpenFile(const QualifiedFilename &filename, int timeState)
+{
+    OpenAndGetMetaData(filename, timeState, FILE_OPEN);
+}
+
+// ****************************************************************************
+// Method: FileServerList::ReplaceFile
+//
+// Purpose: 
+//   Replaces the current file with the specified file.
+//
+// Arguments:
+//   filename : The filename to open.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Aug 30 22:29:13 PST 2000
+//
+// Modifications:
+//   Brad Whitlock, Thu May 15 12:52:39 PDT 2003
+//   Changed interface to OpenAndGetMetaData.
+//
+// ****************************************************************************
+
+void
+FileServerList::ReplaceFile(const QualifiedFilename &filename)
+{
+    OpenAndGetMetaData(filename, 0, FILE_REPLACE);
+}
+
+// ****************************************************************************
+// Method: FileServerList::OverlayFile
+//
+// Purpose: 
+//   Overlays the specified file on the current file.
+//
+// Arguments:
+//   filename : The filename to open.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Aug 30 22:29:13 PST 2000
+//
+// Modifications:
+//   Brad Whitlock, Thu May 15 12:52:39 PDT 2003
+//   Changed interface to OpenAndGetMetaData.
+//   
+// ****************************************************************************
+
+void
+FileServerList::OverlayFile(const QualifiedFilename &filename)
+{
+    OpenAndGetMetaData(filename, 0, FILE_OVERLAY);
+}
+
+// ****************************************************************************
+// Method: FileServerList::CloseFile
+//
+// Purpose: 
+//   Closes the open file and clears the active file.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Sep 14 11:00:27 PDT 2000
+//
+// Modifications:
+//   Brad Whitlock, Wed Apr 2 09:04:42 PDT 2003
+//   Actually try to close the file on the mdserver so we get new metadata
+//   the next time we open the file.
+//
+// ****************************************************************************
+
+void
+FileServerList::CloseFile()
+{
+    // Try to close the file on the mdserver.
+    if(servers.find(openFile.host) != servers.end())
+    {
+        TRY
+        {
+            servers[openFile.host]->server->CloseDatabase();
+        }
+        CATCH(LostConnectionException)
+        {
+            CloseServer(openFile.host);
+        }
+        ENDTRY
+    }
+
+    openFile = QualifiedFilename();
+    fileAction = FILE_CLOSE;
+    Select(5, (void *)&fileAction);
+}
+
+// ****************************************************************************
+// Method: FileServerList::OpenAndGetMetaData
+//
+// Purpose: 
+//   Opens specified file and makes it the current file.
+//
+// Arguments:
+//   filename  : The filename to open.
+//   timeState : The timestate to open.
+//   action    : How we're opening the file (FILE_OPEN, FILE_REPLACE,
+//               FILE_OVERLAY) 
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Aug 31 11:31:10 PDT 2000
+//
+// Modifications:
+//   Brad Whitlock, Tue Apr 24 16:35:56 PST 2001
+//   Added code that attempts to restart an mdserver if it has been determined
+//   that the mdserver it thought was there is dead.
+//
+//   Brad Whitlock, Fri May 18 09:51:31 PDT 2001
+//   I put in code to handle the case where the mdserver repeatedly crashes
+//   right after being re-launched.
+//
+//   Brad Whitlock, Mon Oct 22 18:33:37 PST 2001
+//   Changed the exception keywords to macros.
+//
+//   Eric Brugger, Thu Nov 29 12:02:21 PST 2001
+//   Added caching of SILs.
+//
+//   Brad Whitlock, Thu Feb 7 11:32:20 PDT 2002
+//   Modified the exception handling code so it can give a reason as to
+//   why the exception is happening.
+//
+//   Brad Whitlock, Tue May 13 15:10:19 PST 2003
+//   I added the timeState argument so we can request a specific timestate.
+//
+//   Brad Whitlock, Thu May 15 12:53:31 PDT 2003
+//   I changed the order of the arguments.
+//
+// ****************************************************************************
+
+void
+FileServerList::OpenAndGetMetaData(const QualifiedFilename &filename,
+    int timeState, int action)
+{
+    // If the metadata has been seen before, indicate that we have it.
+    // Otherwise, read it from the MetaData Server.
+    if(fileMetaData.find(filename.FullName()) != fileMetaData.end())
+    {
+        // The metadata has been read previously.
+        fileAction = action;
+        Select(5, (void *)&fileAction);
+        // We made it to here then really set the open file.
+        openFile = filename;
+    }
+    else
+    {
+        bool changedHosts = false;
+
+        // If the specified MDServer is not in the list, try and
+        // start one. This could throw a BadHostException.
+        if(servers.find(filename.host) == servers.end())
+        {
+            changedHosts = true;
+            SetHost(filename.host);
+            // maybe set the path?
+        }
+
+        // There is a loop around this code to open the file and get its
+        // metadata because we initially do not know whether or not the
+        // mdserver we're talking to is still alive. If it is not alive then
+        // we re-start it and try to open the file again.
+        int         numAttempts = 0;
+        bool        tryAgain;
+        bool        readFileFailed = true;
+        std::string reason;
+        do
+        {
+            tryAgain = false;
+
+            TRY
+            {
+                // Do a GetMetaData RPC on the MD Server.
+                MDServerProxy *mds = servers[filename.host]->server;
+                const avtDatabaseMetaData *tmd = mds->GetMetaData(
+                    filename.PathAndFile(), timeState);
+
+                // Create a new metadata object and copy the one that
+                // was returned from the MDServer.
+                avtDatabaseMetaData *newMetaData = new avtDatabaseMetaData();
+                *newMetaData = *tmd;
+
+                // Add the new Metadata object to the map. Use the fully
+                // qualified name as a key.
+                fileMetaData[filename.FullName()] = newMetaData;
+
+                // Do a GetSIL RPC on the MD Server.
+                const SILAttributes *sil = mds->GetSIL(filename.PathAndFile(),
+                    timeState);
+                readFileFailed = false;
+
+                // Create a new SIL object and copy the one that was
+                // returned from the MDServer.
+                avtSIL *newSIL = new avtSIL(*sil);
+
+                // Add the new SIL object to the map. Use the fully
+                // qualified name as a key.
+                SILData[filename.FullName()] = newSIL;
+
+                // We made it to here then really set the open file.
+                openFile = filename;
+                fileAction = action;
+                Select(5, (void *)&fileAction);
+            }
+            CATCH2(GetMetaDataException, gmde)
+            {
+                // Save the reason of why the metadata could be read.
+                reason = gmde.GetMessage();
+
+                //Is there much to do here?
+                if(changedHosts)
+                    Notify();
+            }
+            CATCH2(LostConnectionException, lce)
+            {
+                // Save the reason of why the connection was lost.
+                reason = lce.GetMessage();
+
+                ++numAttempts;
+                tryAgain = (numAttempts < 2);
+
+                TRY
+                {
+                    CloseServer(filename.host);
+                    StartServer(filename.host);
+                }
+                CATCHALL(...)
+                {
+                    tryAgain = false;
+                }
+                ENDTRY
+            }
+            ENDTRY
+        } while(tryAgain);
+
+        // If we could not read the file, throw an exception.
+        if(readFileFailed)
+        {
+            EXCEPTION1(GetMetaDataException, reason);
+        }
+    }
+}
+
+// ****************************************************************************
+// Method: FileServerList::ClearFile
+//
+// Purpose: 
+//   Removes metadata and SIL information for the specified file from the
+//   internal caches so that it must be re-read.
+//
+// Arguments:
+//   filename : The file for which we're removing information.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Jul 29 14:51:59 PST 2002
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+FileServerList::ClearFile(const QualifiedFilename &filename)
+{
+    // Clear cached metadata if it is in the cache.
+    FileMetaDataMap::iterator mpos;
+    if((mpos = fileMetaData.find(filename.FullName())) != fileMetaData.end())
+    {
+        delete mpos->second;
+        fileMetaData.erase(mpos);
+    }
+
+    // Clear cached SIL information if it is in the cache.
+    SILMap::iterator spos;
+    if((spos = SILData.find(filename.FullName())) != SILData.end())
+    {
+        delete spos->second;
+        SILData.erase(spos);
+    }
+}
+
+// ****************************************************************************
+// Method: FileServerList::HaveOpenedFile
+//
+// Purpose: 
+//   Returns whether we have opened the file in the past.
+//
+// Arguments:
+//   filename : The name of the file to check.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Feb 28 08:25:17 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+FileServerList::HaveOpenedFile(const QualifiedFilename &filename) const
+{
+    return fileMetaData.find(filename.FullName()) != fileMetaData.end();
+}
+
+// ****************************************************************************
+// Method: FileServerList::GetFileIndex
+//
+// Purpose: 
+//   Returns the index of the filename in the applied file list.
+//
+// Arguments:
+//   fileName : This is a NON-QUALIFIED filename of the form [path/]file.
+//
+// Returns:    
+//   The index of the file is returned. If it is not found, -1
+//   is returned.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Sep 11 16:59:38 PST 2000
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+int
+FileServerList::GetFileIndex(const QualifiedFilename &fileName)
+{
+    int index = 0;
+    bool still_looking = true;
+    std::string fullName(fileName.FullName());
+    QualifiedFilenameVector::iterator pos;
+    for(pos = appliedFileList.begin();
+        pos != appliedFileList.end() && still_looking; ++pos, ++index)
+    {
+        // Compare the complete filenames.
+        still_looking = (pos->FullName() != fullName);
+    }
+
+    return still_looking ? -1 : index;
+}
+
+// ****************************************************************************
+// Method: FileServerList::QualifiedFilename
+//
+// Purpose: 
+//   Prepends the hostname and path of the current MD Server to the 
+//   given filename. The resulting qualified filename is of the form:
+//   host:path:filename.
+//
+// Arguments:
+//   fileName : The filename string to use.
+//
+// Returns:    
+//   A qualified filename.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Aug 30 10:27:39 PDT 2000
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+QualifiedFilename
+FileServerList::QualifiedName(const std::string &fileName)
+{
+    return QualifiedFilename(activeHost, servers[activeHost]->path,
+                             fileName);
+}
+
+// ****************************************************************************
+// Method: FileServerList::SetConnectCallback
+//
+// Purpose: 
+//   Sets the callback function used to tell the viewer to launch an
+//   mdserver.
+//
+// Arguments:
+//   cb   : The address of the callback function.
+//   data : Callback data.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Nov 21 13:16:45 PST 2000
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+FileServerList::SetConnectCallback(ConnectCallback *cb, void *data)
+{
+    connectCallback = cb;
+    connectCallbackData = data;
+}
+
+// ****************************************************************************
+// Method: FileServerList::SetProgressCallback
+//
+// Purpose: 
+//   Sets the progress callback that is called while we launch a new mdserver.
+//
+// Arguments:
+//   cb   : The address of the callback function.
+//   data : Callback data.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Sep 30 08:10:14 PDT 2002
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+FileServerList::SetProgressCallback(bool (*cb)(void *, int), void *data)
+{
+    progressCallback = cb;
+    progressCallbackData = data;
+}
+
+// ****************************************************************************
+// Method: FileServerList::GetFilteredFileList
+//
+// Purpose: 
+//   Compares all of the files in fileList against the filter list
+//   and returns a list of qualified filenames that match any of the
+//   filters. 
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Oct 4 15:20:28 PST 2000
+//
+// Modifications:
+//   Brad Whitlock, Thu Mar 27 09:28:57 PDT 2003
+//   I made the routine do different things based on the flag for automatic
+//   file grouping.
+//
+//   Brad Whitlock, Tue Apr 29 12:35:58 PDT 2003
+//   I made it preserve the access flag for files when automatic file grouping
+//   is turned off so the file selection window displays files that can't be
+//   accessed in the right color.
+//
+// ****************************************************************************
+
+QualifiedFilenameVector
+FileServerList::GetFilteredFileList()
+{
+    QualifiedFilenameVector retval;
+
+    if(automaticFileGroupingFlag)
+    {
+        // Go through each file in the file and virtualFiles list and add them
+        // all to the returned list.
+        MDServerProxy::FileEntryVector::const_iterator pos;
+        for(pos = fileList.files.begin();
+            pos != fileList.files.end(); ++pos)
+        {
+            // Add the host qualified filename to the applied file list.
+            QualifiedFilename f(activeHost, servers[activeHost]->path,
+                                pos->name, pos->CanAccess(), pos->IsVirtual());
+            retval.push_back(f);
+        }
+    }
+    else
+    {
+        // Parse the filter string into a list of filter strings.
+        stringVector filterList;
+        ParseFilterString(GetFilter(), filterList);
+
+        // Make sure we have at least one filter.
+        if(filterList.size() == 0)
+            filterList.push_back("*");
+
+        // Go through each file in the file list and
+        MDServerProxy::FileEntryVector::const_iterator pos;
+        for(pos = fileList.files.begin();
+            pos != fileList.files.end(); ++pos)
+        {
+            if(FileMatchesFilterList(pos->name, filterList))
+            {
+                // Add the host qualified filename to the applied file list.
+                QualifiedFilename f(activeHost, servers[activeHost]->path,
+                                    pos->name, pos->CanAccess(), false);
+                retval.push_back(f);
+            }
+        }
+    }
+
+    return retval;
+}
+
+// ****************************************************************************
+// Method: QvisFileSelectionWindow::ParseFilterString
+//
+// Purpose: 
+//   Given a string that possibly contains multiple filters, this
+//   function parses the string into a list of filters and stores
+//   them in the filter list.
+//
+// Arguments:
+//   filter     : The string containing the filters.
+//   filterList : The list of filters that is returned.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Aug 29 15:15:47 PST 2000
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+FileServerList::ParseFilterString(const std::string &filter,
+    stringVector &filterList)
+{
+    // Create a temporary C string since strtok messes up the string.
+    char *temp  = new char[filter.size() + 1];
+    char *ptr, *temp2 = temp;
+    memcpy((void *)temp, (void *)filter.c_str(), filter.size() + 1);
+
+    // Parse the filter string and store the result in filterList.
+    filterList.clear();
+    while((ptr = strtok(temp2, " ")) != NULL)
+    {
+        filterList.push_back(std::string(ptr));
+        temp2 = NULL;
+    }
+    delete[] temp;
+}
+
+// ****************************************************************************
+// Method: FileServerList::FileMatchesFilterList
+//
+// Purpose: 
+//   Checks a filename against a list of filters to see if it matches
+//   any of them.
+//
+// Arguments:
+//   fileName   : The filename we're checking against the filters.
+//   filterList : The list of filters we're checking for.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Oct 4 15:19:12 PST 2000
+//
+// Modifications:
+//   Brad Whitlock, Thu Sep 12 14:33:04 PST 2002
+//   I restructured the code so it is easier to understand. I also changed it
+//   to fit the new interface for FileMatchesFilter.
+//
+// ****************************************************************************
+
+bool
+FileServerList::FileMatchesFilterList(const std::string &fileName,
+    const stringVector &filterList)
+{
+    // Try the filename against all the filters in the list until
+    // it matches or we've tested all the filters.
+    bool match = false;
+    for(int i = 0; i < filterList.size() && !match; ++i)
+    {
+        int index = 0;
+        match = FileMatchesFilter(filterList[i].c_str(),
+                                  fileName.c_str(),
+                                  index);
+    }
+
+    return match;
+}
+
+// ****************************************************************************
+// Method: FileServerList::FileMatchesFilter
+//
+// Purpose: 
+//   Checks a filename against a filter string.
+//
+// Arguments:
+//   filter : The filter to check against.
+//   str    : The string to check against the filter.
+//   j      : An index into the original string.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Oct 4 15:18:18 PST 2000
+//
+// Modifications:
+//   Brad Whitlock, Thu Sep 12 14:33:44 PST 2002
+//   Changed it so files that begin with '.' do not match the '*' filter.
+//
+// ****************************************************************************
+
+bool
+FileServerList::FileMatchesFilter(const char *filter, const char *str, int &j)
+{
+    bool val;
+    int i1 = 0;
+    int i2 = 0;
+    for (;;)
+    {
+        switch (filter[i1])
+        {
+        case '\0':
+            if (str[i2] == '\0')
+                return true;
+            else
+                return false;
+            /* NOTREACHED */
+            break;
+        case '?':
+            if (str[i2] != '\0')
+            {
+                i1++;
+                i2++;
+            } else
+            {
+                return false;
+            }
+            break;
+        case '*':
+            i1++;
+            val = (j == 0) ? (str[i2] != '.') : true;
+            while (str[i2] != '\0' && val &&
+                   !FileMatchesFilter(&filter[i1], &str[i2], j))
+            {
+                j++;
+                i2++;
+            }
+            break;
+        default:
+            if (filter[i1] == str[i2])
+            {
+                i1++;
+                i2++;
+            } else
+                return false;
+            break;
+        }
+    }
+}
+
+// ****************************************************************************
+// Method: FileServerList::AddPathToRecentList
+//
+// Purpose: 
+//   Adds the path to the recently used path list for the active host.
+//
+// Arguments:
+//   path : The path that we're adding.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Feb 13 13:02:15 PST 2002
+//
+// Modifications:
+//   Brad Whitlock, Mon Aug 26 15:51:26 PST 2002
+//   I removed the code to filter the path since it is now done in the 
+//   mdserver.
+//
+//   Brad Whitlock, Tue Apr 22 13:59:48 PST 2003
+//   I fixed a crash on Windows.
+//
+// ****************************************************************************
+
+void
+FileServerList::AddPathToRecentList(const std::string &host,
+    const std::string &path)
+{
+    StringStringVectorMap::iterator pos = recentPaths.find(host);
+    if(pos != recentPaths.end())
+    {
+        // Search the list to see if it already exists.
+        bool exists = false;
+        for(int i = 0; i < pos->second.size(); ++i)
+        {
+            if(path == pos->second[i])
+            {
+                exists = true;
+                break;
+            }
+        }
+
+        if(!exists)
+        {
+            pos->second.push_back(path);
+        }
+    }
+    else
+    {
+        stringVector tmp;
+        tmp.push_back(path);
+        recentPaths[host] = tmp;
+    }
+}
+
+// ****************************************************************************
+// Method: FileServerList::DefineVirtualFiles
+//
+// Purpose: 
+//   Copies the fileList's virtual files to the virtual files map.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Mar 31 12:16:19 PDT 2003
+//
+// Modifications:
+//   Brad Whitlock, Tue Apr 22 13:59:21 PST 2003
+//   I fixed a crash on Windows.
+//
+// ****************************************************************************
+
+void
+FileServerList::DefineVirtualFiles()
+{
+    StringStringVectorMap::const_iterator pos;
+    for(pos = fileList.virtualFiles.begin();
+        pos != fileList.virtualFiles.end(); ++pos)
+    {
+        QualifiedFilename name(activeHost, servers[activeHost]->path, pos->first);
+
+        virtualFiles[name.FullName()] = pos->second;
+    }
+}
+
+// ****************************************************************************
+// Method: FileServerList::GetVirtualFileDefinition
+//
+// Purpose: 
+//   Gets the list of files contained by the virtual file.
+//
+// Arguments:
+//   name : The name of the virtual file.
+//
+// Returns:    A vector of strings that contains the list of files.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Mar 31 12:26:49 PDT 2003
+//
+// Modifications:
+//   Brad Whitlock, Tue Apr 22 13:57:44 PST 2003
+//   I fixed a crash on Windows.
+//
+// ****************************************************************************
+
+stringVector
+FileServerList::GetVirtualFileDefinition(const QualifiedFilename &name) const
+{
+    StringStringVectorMap::const_iterator pos = virtualFiles.find(name.FullName());
+    if(pos != virtualFiles.end())
+        return pos->second;
+
+    stringVector retval;
+    return retval;
+}
+
+// ****************************************************************************
+// Method: FileServerList::CreateNode
+//
+// Purpose: 
+//   Adds FileServerList to the DataNode tree used to write the config file.
+//
+// Arguments:
+//   parentNode : The parent node under which the file server node
+//                should be added.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Oct 4 12:51:34 PDT 2000
+//
+// Modifications:
+//   Brad Whitlock, Wed Feb 13 15:58:02 PST 2002
+//   Added support for saving recent paths.
+//
+//   Brad Whitlock, Fri Jul 26 13:51:07 PST 2002
+//   Added the useCurrentDirectoryFlag flag.
+//
+//   Brad Whitlock, Thu Aug 22 14:45:33 PST 2002
+//   I added code to encode spaces in path names.
+//
+//   Brad Whitlock, Thu Mar 27 09:30:14 PDT 2003
+//   I added automaticFileGroupingFlag.
+//
+// ****************************************************************************
+
+bool
+FileServerList::CreateNode(DataNode *parentNode, bool)
+{
+    DataNode *fsNode = new DataNode("FileServerList");
+    parentNode->AddNode(fsNode);
+
+    // Add the path and filter for localhost to the fsNode.
+    fsNode->AddNode(new DataNode("host", activeHost));
+    fsNode->AddNode(new DataNode("path", servers[activeHost]->path));
+    fsNode->AddNode(new DataNode("filter", servers[activeHost]->filter));
+    fsNode->AddNode(new DataNode("useCurrentDir", useCurrentDirectoryFlag));
+    fsNode->AddNode(new DataNode("automaticFileGrouping", automaticFileGroupingFlag));
+
+    // Add nodes for the recent paths.
+    DataNode *pathNode = new DataNode("recentpaths");
+    fsNode->AddNode(pathNode);
+    StringStringVectorMap::const_iterator pos;
+    for(pos = recentPaths.begin(); pos != recentPaths.end(); ++pos)
+    {
+        // Encode any spaces that might be in the path names.
+        stringVector paths;
+        for(int i = 0; i < pos->second.size(); ++i)
+            paths.push_back(EncodePath(pos->second[i]));
+
+        // Add a node for the paths from the current host.
+        pathNode->AddNode(new DataNode(pos->first, paths));
+    }
+
+    return true;
+}
+
+// ****************************************************************************
+// Method: FileServerList::SetFromNode
+//
+// Purpose: 
+//   Sets the path and the filter from the config file.
+//
+// Arguments:
+//   parentNode : The parent of the file server node.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Oct 4 12:56:33 PDT 2000
+//
+// Modifications:
+//   Brad Whitlock, Wed Feb 13 16:09:22 PST 2002
+//   Added support for reading in recent paths.
+//
+//   Brad Whitlock, Fri Jul 26 13:51:07 PST 2002
+//   Added the useCurrentDirectoryFlag flag.
+//
+//   Brad Whitlock, Mon Aug 19 11:12:22 PDT 2002
+//   I made useCurrentDirectoryFlag an attribute.
+//
+//   Brad Whitlock, Thu Aug 22 14:07:50 PST 2002
+//   I made the recent paths be added to the recent paths so we don't lose
+//   any recent paths that are not already in the list. I also change it
+//   so recent paths that contained spaces are decoded.
+//
+//   Brad Whitlock, Thu Mar 27 09:31:55 PDT 2003
+//   I added automaticFileGrouping.
+//
+// ****************************************************************************
+
+void
+FileServerList::SetFromNode(DataNode *parentNode)
+{
+    DataNode *fsNode = parentNode->GetNode("FileServerList");
+    if(fsNode == 0)
+        return;
+
+    // See if we should use the current directory by default.
+    DataNode *node;
+    if((node = fsNode->GetNode("useCurrentDir")) != 0)
+        SetUseCurrentDirectory(node->AsBool());
+
+    if((node = fsNode->GetNode("automaticFileGrouping")) != 0)
+        SetAutomaticFileGrouping(node->AsBool());
+
+    // If we are not using the current directory, read the default host
+    // and path from the default settings.
+    if(!useCurrentDirectoryFlag)
+    {
+        // Read the filter and the path from the DataNode tree.
+        if((node = fsNode->GetNode("host")) != 0)
+            SetHost(node->AsString());
+        if((node = fsNode->GetNode("path")) != 0)
+            SetPath(node->AsString());
+    }
+    if((node = fsNode->GetNode("filter")) != 0)
+        SetFilter(node->AsString());
+
+    // Set the recent paths from the saved settings.
+    if((node = fsNode->GetNode("recentpaths")) != 0)
+    {
+        DataNode **children = node->GetChildren();
+        for(int i = 0; i < node->GetNumChildren(); ++i)
+        {
+            const stringVector &sv = children[i]->AsStringVector();
+            for(int j = 0; j < sv.size(); ++j)
+                AddPathToRecentList(children[i]->GetKey(), DecodePath(sv[j]));
+        }
+    }
+}
+
+//
+// Some convenience functions. This is so the user of this class
+// does not have to test whether or not an attribute is selected
+// by using the ordinal.
+//
+
+bool
+FileServerList::HostChanged() const
+{
+    return IsSelected(0);
+}
+
+bool
+FileServerList::PathChanged() const
+{
+    return IsSelected(1);
+}
+
+bool
+FileServerList::FilterChanged()   const
+{
+    return IsSelected(2);
+}
+
+bool
+FileServerList::FileListChanged() const
+{
+    return IsSelected(3);
+}
+
+bool
+FileServerList::AppliedFileListChanged() const
+{
+    return IsSelected(4);
+}
+
+bool
+FileServerList::FileChanged() const
+{
+    return IsSelected(5);
+}
+
+bool
+FileServerList::OpenedFile() const
+{
+    return (IsSelected(5) && (fileAction == FILE_OPEN));
+}
+
+bool
+FileServerList::ReplacedFile() const
+{
+    return (IsSelected(5) && (fileAction == FILE_REPLACE));
+}
+
+bool
+FileServerList::OverlayedFile() const
+{
+    return (IsSelected(5) && (fileAction == FILE_OVERLAY));
+}
+
+bool
+FileServerList::ClosedFile() const
+{
+    return (IsSelected(5) && (fileAction == FILE_CLOSE));
+}
+
+//
+// Property getting functions.
+//
+
+const std::string &
+FileServerList::GetHost() const
+{
+    return activeHost;
+}
+
+const std::string &
+FileServerList::GetPath() const
+{
+    static std::string retval("~");
+
+    ServerMap::const_iterator pos;
+    if((pos = servers.find(activeHost)) != servers.end())
+        retval = pos->second->path;
+
+    return retval;
+}
+
+// ****************************************************************************
+// Method: FileServerList::GetRecentHosts
+//
+// Purpose: 
+//   Returns a list of the recently visited hosts.
+//
+// Returns:    The list of recently visited hosts.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Feb 25 15:44:16 PST 2002
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+stringVector
+FileServerList::GetRecentHosts() const
+{
+    stringVector retval;
+    for(StringStringVectorMap::const_iterator pos = recentPaths.begin();
+        pos != recentPaths.end(); ++pos)
+    {
+        retval.push_back(pos->first);
+    }
+
+    return retval;
+}
+
+const stringVector &
+FileServerList::GetRecentPaths(const std::string &host) const
+{
+    StringStringVectorMap::const_iterator pos = recentPaths.find(host);
+    if(pos == recentPaths.end())
+    {
+        EXCEPTION1(BadHostException, host);
+    }
+
+    return pos->second;
+}
+
+const std::string &
+FileServerList::GetFilter() const
+{
+    static std::string retval("*");
+
+    ServerMap::const_iterator pos;
+    if((pos = servers.find(activeHost)) != servers.end())
+        retval = pos->second->filter;
+
+    return retval;
+}
+
+const MDServerProxy::FileList &
+FileServerList::GetFileList() const
+{
+    return fileList;
+}
+
+const QualifiedFilenameVector &
+FileServerList::GetAppliedFileList()
+{
+    return appliedFileList;
+}
+
+const QualifiedFilename &
+FileServerList::GetOpenFile()
+{
+    return openFile;
+}
+
+const avtDatabaseMetaData *
+FileServerList::GetMetaData()
+{
+    std::string temp(openFile.FullName());
+
+    if(fileMetaData.find(temp) != fileMetaData.end())
+        return fileMetaData[temp];
+    else
+        return 0;
+}
+
+const avtDatabaseMetaData *
+FileServerList::GetMetaData(const QualifiedFilename &filename)
+{
+    std::string temp(filename.FullName());
+
+    if(fileMetaData.find(temp) != fileMetaData.end())
+        return fileMetaData[temp];
+    else
+        return 0;
+}
+
+bool
+FileServerList::GetUseCurrentDirectory() const
+{
+    return useCurrentDirectoryFlag;
+}
+
+bool
+FileServerList::GetAutomaticFileGrouping() const
+{
+    return automaticFileGroupingFlag;
+}
+
+// ****************************************************************************
+// Method: FileServerList::GetSIL
+//
+// Purpose: 
+//   Returns a pointer to a SIL for the given filename.
+//
+// Arguments:
+//   filename : The filename for which we will try and read a SIL.
+//
+// Returns:    A pointer to a the SIL or NULL if the filename is bad.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jul 5 09:53:57 PDT 2001
+//
+// Modifications:
+//   Eric Brugger, Thu Nov 29 12:02:21 PST 2001
+//   Added caching of SILs.
+//   
+// ****************************************************************************
+
+const avtSIL *
+FileServerList::GetSIL(const QualifiedFilename &filename)
+{
+    std::string temp(filename.FullName());
+
+    if(SILData.find(temp) != SILData.end())
+        return SILData[temp];
+    else
+        return 0;
+}
+
+// ****************************************************************************
+// Method: FileServerList::CreateGroupList
+//
+// Purpose: 
+//   Tells the server to group files together in a list.  Then refreshes
+//   the list of files from that server.
+//
+// Arguments:
+//   filename:  The name of the group file to create
+//   groupList: The list of files to group together.
+//
+// Programmer: Sean Ahern
+// Creation:   Wed Feb 28 17:11:40 PST 2001
+//
+// Modifications:
+//   Brad Whitlock, Wed Feb 13 12:50:55 PDT 2002
+//   Changed prototype.
+//
+// ****************************************************************************
+
+void
+FileServerList::CreateGroupList(const std::string &filename,
+    const stringVector &groupList)
+{
+    ServerInfo *info = servers[activeHost];
+    info->server->CreateGroupList(filename, groupList);
+
+    // Reread the file list from the server
+    pathFlag = true;
+    Select(1, (void *)&pathFlag);
+    Notify();
+}
+
+// ****************************************************************************
+// Method: FileServerList::GetHomePath
+//
+// Purpose: 
+//   Gets the home path for the active file server.
+//
+// Returns:    The home path for the active file server.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jun 27 11:46:35 PDT 2002
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+std::string
+FileServerList::GetHomePath()
+{
+    // Get a pointer to the mdserver for the active host.
+    ServerInfo *info = servers[activeHost];
+
+    // Initialize the return value.
+    std::string homePath("~");
+
+    TRY
+    {
+        homePath = info->server->ExpandPath("~");
+    }
+    CATCH(LostConnectionException)
+    {
+        Error("Could not get home directory");
+    }
+    ENDTRY
+
+    return homePath;
+}
+
+// ****************************************************************************
+// Method: FileServerList::ExpandPath
+//
+// Purpose: 
+//   Expands the path to a full path.
+//
+// Arguments:
+//   p : The path to expand.
+//
+// Returns:    A string containing the expanded path.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Apr 29 12:05:20 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+std::string
+FileServerList::ExpandPath(const std::string &p)
+{
+    // Initialize the return value.
+    std::string homePath(p);
+
+    if(servers.find(activeHost) != servers.end())
+    {
+        // Get a pointer to the mdserver for the active host.
+        ServerInfo *info = servers[activeHost];
+
+        TRY
+        {
+            homePath = info->server->ExpandPath(p);
+        }
+        CATCH(VisItException)
+        {
+            Error("VisIt could not expand the path.");
+        }
+        ENDTRY
+    }
+
+    return homePath;
+}
+
+// ****************************************************************************
+// Method: FileServerList::GetMessageAttributes
+//
+// Purpose: 
+//   Returns a pointer the object's MessageAttributes.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Apr 26 10:01:50 PDT 2001
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+MessageAttributes *
+FileServerList::GetMessageAttributes()
+{
+    return messageAtts;
+}
+
+// ****************************************************************************
+// Method: FileServerList::Error
+//
+// Purpose: 
+//   Notifies the file server's client that there was an error.
+//
+// Arguments:
+//   message : The error message to use.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Apr 26 10:02:13 PDT 2001
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+FileServerList::Error(const char *message)
+{
+    messageAtts->SetSeverity(MessageAttributes::Error);
+    messageAtts->SetText(std::string(message));
+    messageAtts->Notify();
+}
+
+// ****************************************************************************
+// Method: FileServerList::Warning
+//
+// Purpose: 
+//   Notifies the file server's client that there was a warning.
+//
+// Arguments:
+//   message : The warning message to use.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Apr 26 10:02:13 PDT 2001
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+FileServerList::Warning(const char *message)
+{
+    messageAtts->SetSeverity(MessageAttributes::Warning);
+    messageAtts->SetText(std::string(message));
+    messageAtts->Notify();
+}
+
+// ****************************************************************************
+// Method: FileServerList::EncodePath
+//
+// Purpose: 
+//   Replaces all of the spaces in a string with "%32".
+//
+// Arguments:
+//   path : The input string.
+//
+// Returns:    A string in which all spaces have been turned to %32.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Aug 22 14:26:39 PST 2002
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+std::string
+FileServerList::EncodePath(const std::string &path)
+{
+    int index = 0;
+    std::string retval(path);
+
+    while((index = retval.find(" ", index)) != -1)
+        retval.replace(index, 1, "%32");
+
+    return retval;
+}
+
+// ****************************************************************************
+// Method: FileServerList::DecodePath
+//
+// Purpose: 
+//   Replaces all "%32" strings in the input string with spaces.
+//
+// Arguments:
+//   path : The input string.
+//
+// Returns:    A string in which all "%32" strings have been turned to spaces.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Aug 22 14:26:35 PST 2002
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+std::string
+FileServerList::DecodePath(const std::string &path)
+{
+    int index = 0;
+    std::string retval(path);
+
+    while((index = retval.find("%32", index)) != -1)
+        retval.replace(index, 3, " ");
+
+    return retval;
+}
+
+// ****************************************************************************
+// Method: FileServerList::GetSeparator
+//
+// Purpose: 
+//   Returns the character used to separate directory names.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Aug 26 15:47:44 PST 2002
+//
+// Modifications:
+//   Brad Whitlock, Fri Jan 17 15:41:07 PST 2003
+//   I made it use a wrapper that tries to restart the mdserver. This prevents
+//   us from ever trying to use a NULL pointer.
+//
+// ****************************************************************************
+
+#define SAFE_GET_SEPARATOR(host, func)    TRY\
+    {\
+        if(servers.find(host) == servers.end())\
+            StartServer(host);\
+        if(servers.find(host) != servers.end())\
+        {   const ServerInfo *info = servers[host]; \
+            sep = info->server->func();\
+        }\
+    }\
+    CATCHALL(...)\
+    {\
+    }\
+    ENDTRY
+
+char
+FileServerList::GetSeparator()
+{
+    char sep = SLASH_CHAR;
+    SAFE_GET_SEPARATOR(activeHost, GetSeparator);
+    return sep;
+}
+
+char
+FileServerList::GetSeparator(const std::string &host)
+{
+    char sep = SLASH_CHAR;
+    SAFE_GET_SEPARATOR(host, GetSeparator);
+    return sep;
+}
+
+// ****************************************************************************
+// Method: FileServerList::GetSeparatorString
+//
+// Purpose: 
+//   Returns the string used to separate directory names.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Aug 26 15:48:07 PST 2002
+//
+// Modifications:
+//   Brad Whitlock, Fri Jan 17 15:41:07 PST 2003
+//   I made it use a wrapper that tries to restart the mdserver. This prevents
+//   us from ever trying to use a NULL pointer.
+//   
+// ****************************************************************************
+
+std::string
+FileServerList::GetSeparatorString()
+{
+    std::string sep(SLASH_STRING);
+    SAFE_GET_SEPARATOR(activeHost, GetSeparatorString);
+    return sep;
+}
+
+std::string
+FileServerList::GetSeparatorString(const std::string &host)
+{
+    std::string sep(SLASH_STRING);
+    SAFE_GET_SEPARATOR(host, GetSeparatorString);
+    return sep;
+}

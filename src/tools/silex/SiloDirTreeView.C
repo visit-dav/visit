@@ -1,0 +1,133 @@
+#include "SiloDirTreeView.h"
+#include <SiloFile.h>
+#include <qpixmap.h>
+#include <qapplication.h>
+
+#include "folder.xpm"
+
+// ****************************************************************************
+//  Constructor:  SiloDirTreeView::SiloDirTreeView
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November 12, 2001
+//
+// ****************************************************************************
+SiloDirTreeView::SiloDirTreeView(SiloFile *s, QWidget *p, const QString &n)
+    : QListView(p,n), silo(s)
+{
+    folder_pixmap = new QPixmap(folder_xpm);
+ 
+    addColumn("Contents");
+    //setRootIsDecorated(true);
+
+    total_items = 0;
+    QListViewItem *root = AddDir(silo->root, NULL);
+    root->setOpen(true);
+}
+
+// ****************************************************************************
+//  Method:  SiloDirTreeView::AddDir
+//
+//  Purpose:
+//    Add a new directory to the DirTree.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November 12, 2001
+//
+// ****************************************************************************
+QListViewItem *
+SiloDirTreeView::AddDir(SiloDir *d, QListViewItem *parent)
+{
+    total_items++;
+
+    QListViewItem *item;
+    if (!parent)
+        item = new SiloDirTreeViewItem(d, this, d->name);
+    else
+        item = new SiloDirTreeViewItem(d, parent, d->name);
+
+    item->setPixmap(0,*folder_pixmap);
+    for (int i=0; i<d->subdir.size(); i++)
+        AddDir(d->subdir[i], item);
+
+    return item;
+}
+
+// ****************************************************************************
+//  Method:  SiloDirTreeView::Set
+//
+//  Purpose:
+//    Reset the view to a new file.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November 12, 2001
+//
+// ****************************************************************************
+void
+SiloDirTreeView::Set(SiloFile *s)
+{
+    clear();
+    total_items = 0;
+    QListViewItem *root = AddDir(silo->root, NULL);
+    root->setOpen(true);
+}
+
+// ****************************************************************************
+//  Method:  SiloDirTreeView::OpenRootDir
+//
+//  Purpose:
+//    Select the root directory of the dree.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November 12, 2001
+//
+// ****************************************************************************
+void
+SiloDirTreeView::OpenRootDir()
+{
+    setSelected(firstChild(), true);
+}
+
+// ****************************************************************************
+//  Method:  SiloDirTreeView::resizeEvent
+//
+//  Purpose:
+//    Make the column header fill the width of the listview.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November 12, 2001
+//
+// ****************************************************************************
+void
+SiloDirTreeView::resizeEvent(QResizeEvent *re)
+{
+    QListView::resizeEvent(re);
+    setColumnWidth(0, width() - 4);
+}
+
+// ****************************************************************************
+//  Method:  SiloDirTreeView::sizeHint
+//
+//  Purpose:
+//    Suggest a good size for the view.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November 12, 2001
+//
+// ****************************************************************************
+QSize
+SiloDirTreeView::sizeHint() const
+{
+    QSize size = QListView::sizeHint();
+    if (total_items == 0 || firstChild() == 0)
+        return size;
+
+    size.setHeight(QMIN(QMAX(size.height(),
+                             firstChild()->height() * (total_items+2)),
+                        QApplication::desktop()->height() * 7/8));
+    if (!size.isValid())
+        size.setWidth(200);
+
+    return size;
+}
+

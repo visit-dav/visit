@@ -1,0 +1,4 @@
+<?xml version="1.0"?>
+  <Attribute name="KeyframeAttributes" purpose="This class contains the attributes used for keyframing." exportAPI="STATE_API" exportInclude="state_exports.h">
+    <Field name="enabled" label="Enabled"           type="bool"> false </Field>
+  </Attribute>

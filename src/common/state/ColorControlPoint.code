@@ -1,0 +1,25 @@
+Function:  ColorControlPoint
+Declaration: ColorControlPoint(float pos, unsigned char r, unsigned char g, unsigned char b, unsigned char a);
+Definition:
+// ****************************************************************************
+// Method: ColorControlPoint::ColorControlPoint
+//
+// Purpose: 
+//   Constructor for the ColorControlPoint class.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jun 12 16:51:24 PST 2001
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+ColorControlPoint::ColorControlPoint(float pos, unsigned char r,
+    unsigned char g, unsigned char b, unsigned char a) : AttributeSubject("Uf")
+{
+    position = pos;
+    colors[0] = r;
+    colors[1] = g;
+    colors[2] = b;
+    colors[3] = a;
+}

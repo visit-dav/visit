@@ -1,0 +1,14 @@
+Function: PlotList2
+Declaration: void AddPlot(const Plot &p, int id);
+Definition:
+void
+PlotList::AddPlot(const Plot &p, int id)
+{
+    Plot *newPlot = new Plot(p);
+    newPlot->SetId(id);
+    plots.push_back(newPlot);
+
+    // Indicate that things have changed by selecting the plot list.
+    Select(0, (void *)&plots);
+}
+

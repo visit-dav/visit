@@ -1,0 +1,4 @@
+<?xml version="1.0"?>
+  <Attribute name="SyncAttributes" purpose="This class contains an integer that can be used to synchronize the viewer and its clients." exportAPI="STATE_API" exportInclude="state_exports.h">
+    <Field name="syncTag" type="int">-1</Field>
+  </Attribute>

@@ -1,0 +1,54 @@
+<html>
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>VisIt 1.0.4 Release Notes</title>
+</head>
+<body>
+<p align="center"><b><font size="6">VisIt 1.0.4 Release Notes</font></b></p>
+<p>Welcome to VisIt's release notes page. This page describes the important 
+enhancements and bug-fixes that were added to this release.</p>
+<p><b><font size="4">Features added in version 1.0.4</font></b></p>
+<ul>
+  <li>VisIt now has a Query window under its Controls menu that allows the 
+user to query values from the open database as well as retrieve information
+such as total volume or surface area.</li>
+  <li>VisIt now provides a Renderer options window under the Options menu that
+allows the user to specify stereo rendering, antialiasing, surface
+representation, and use of OpenGL display lists as well as view the frame
+rate, extents, and approximate number of triangles rendered.</li>
+  <li>VisIt's view window has been redesigned.</li>
+  <li>The Main Window's Window menu now has options for controlling the active vis window.</li>
+  <li>Less frequently used menu options in the vis window's popup menu have been relocated to the GUI.</li>
+  <li>VisIt now uses the labels stored in a files option list for the to label the vis window axes.</li>
+  <li>The viewer sometimes takes a long time to disappear after a long VisIt session.</li>
+  <li>Pick points now display the original location for point meshes.</li>
+  <li>The compute engine is not launched when an invalid file is opened.</li>
+  <li>Image differences in the test suite are brighter.</li>
+  <li>Would like '*' in the File Selection window to not match filenames that begin with dot.</li>
+  <li>The File Selection window no longer replaces replaces the path when it is invalid.</li>
+  <li>Host profiles are now used to populate the File Selection window's list of hosts.</li>
+</ul>
+<p><b><font size="4">Bugs fixed in version 1.0.4</font></b></p>
+<ul>
+  <li>Material selection crashes VisIt's engine on certain mesh types.</li>
+  <li>VisIt sometimes crashes when communicating ghost zones.</li>
+  <li>Number of 2D view axis labels/gridlines changes unexpectedly when panning.</li>
+  <li>Interactive view changes for non-active windows appear in the view window.</li>
+  <li>Subset plots of domains change colors in parallel.</li>
+  <li>Volume plots with 2D datasets runs out of memory.</li>
+  <li>VisIt's launch script assumes csh.</li>
+  <li>VisIt SAF database reader doesn't handle databases with multiple time states.</li>
+  <li>Sometimes the mdserver does not give an up directory option on the Windows platform.</li>
+  <li>Changing font size in the help window does not take effect immediately.</li>
+  <li>Bookmarks in the help window malfunction sometimes.</li>
+  <li>SAF does not compile.</li>
+</ul>
+<p>Click the following link to view the release notes for the previous version 
+of VisIt: <a href="relnotes1.0.3.html">VisIt 1.0.3 Release Notes</a>.</p>
+
+</body>
+
+</html>

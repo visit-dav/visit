@@ -1,0 +1,60 @@
+<?xml version="1.0"?>
+  <Attribute name="WindowInformation" purpose="This class contains the attributes that tell the button state of a viewer window." persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="WindowInformation.code">
+    <Field name="windowMode" label="windowMode" type="int">
+      0
+    </Field>
+    <Field name="boundingBoxNavigate" label="boundingBoxNavigate" type="bool">
+      true
+    </Field>
+    <Field name="spin" label="spin" type="bool">
+      false
+    </Field>
+    <Field name="perspective" label="perspective" type="bool">
+      true
+    </Field>
+    <Field name="lockView" label="lockView" type="bool">
+      false
+    </Field>
+    <Field name="viewExtentsType" label="viewExtentsType" type="int">
+      0
+    </Field>
+    <Field name="viewDimension" label="viewDimension" type="int">
+      2
+    </Field>
+    <Field name="lastRenderMin" label="lastRenderMin" type="float">
+      0.000000
+    </Field>
+    <Field name="lastRenderAvg" label="lastRenderAvg" type="float">
+      0.000000
+    </Field>
+    <Field name="lastRenderMax" label="lastRenderMax" type="float">
+      0.000000
+    </Field>
+    <Field name="numTriangles" label="numTriangles" type="int">
+      0
+    </Field>
+    <Field name="extents" label="extents" type="doubleArray" length="6">
+      0.000000
+      0.000000
+      0.000000
+      0.000000
+      0.000000
+      0.000000
+    </Field>
+    <Field name="lockTools" label="lockTools" type="bool">
+      false
+    </Field>
+    <Field name="lockTime" label="lockTime" type="bool">
+      false
+    </Field>
+    <Field name="cameraViewMode" label="cameraViewMode" type="bool">
+      false
+    </Field>
+    <Field name="fullFrame" label="fullFrame" type="bool">
+      false
+    </Field>
+    <Function name="SetFromNode" user="false" member="true">
+    </Function>
+    <Function name="CreateNode" user="false" member="true">
+    </Function>
+  </Attribute>

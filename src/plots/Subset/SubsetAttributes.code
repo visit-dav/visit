@@ -1,0 +1,29 @@
+Function: ChangesRequireRecalculation
+Declaration: bool ChangesRequireRecalculation(const SubsetAttributes &obj);
+Definition:
+// ****************************************************************************
+// Modifications:
+//    Jeremy Meredith, Mon Dec  9 16:30:54 PST 2002
+//    Added smoothing level.
+//
+// ****************************************************************************
+bool
+SubsetAttributes::ChangesRequireRecalculation(const SubsetAttributes &obj)
+{
+    return ((filledFlag != obj.filledFlag) ||
+            (subsetType != obj.subsetType) || 
+            (subsetNames != obj.subsetNames) ||
+            (wireframe != obj.wireframe) ||
+            (drawInternal != obj.drawInternal) ||
+            (smoothingLevel != obj.smoothingLevel));
+}
+
+Function: VarChangeRequiresReset
+Declaration: virtual bool VarChangeRequiresReset(void);
+Definition:
+bool
+SubsetAttributes::VarChangeRequiresReset()
+{ 
+    return true;
+}
+

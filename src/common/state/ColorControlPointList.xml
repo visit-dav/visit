@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+  <Attribute name="ColorControlPointList" codefile="ColorControlPointList.code" purpose="This class contains a list of ColorControlPoint objects." exportAPI="STATE_API" exportInclude="state_exports.h">
+    <Field name="controlPoints" type="attVector" subtype="ColorControlPoint"></Field>
+    <Field name="smoothingFlag" type="bool">true</Field>
+    <Field name="equalSpacingFlag" type="bool">false</Field>
+    <Field name="discreteFlag" type="bool">false</Field>
+    <Function name="GetColors" user="true" member="true"></Function>
+  </Attribute>

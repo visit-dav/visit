@@ -1,0 +1,93 @@
+
+
+                       Installation instructions for VisIt
+                      =====================================
+
+This document contains instructions for installing VisIt on both Unix and
+Windows systems.  The Unix installation instructions are first followed
+by the Windows installation instructions.
+
+Unix:
+
+1.  Run the visit-install script to install visit.  Note that it can
+    create a new distribution directory or update an existing
+    distribution.  This is handled automatically.
+
+        visit-install "version" "platform" "directory"
+
+    where
+
+        "version" will be 1.1.4 for the current distribution.
+
+        "platform" will be one of the following:  aix, irix6, linux, osf1,
+        or sunos5 depending on the machine.  The one you use should match
+        the name of the accompanying distribution file.
+
+        "directory" is the directory you wish to install visit into.
+        If the directory doesn't exist the script will create it.
+
+    For example
+
+        visit-install 1.1.4 irix6 /usr/local/visit
+
+    will install the irix6, 1.1.4 version of visit in the directory
+    "/usr/local/visit".  Note that you will need to have the file
+    "visit1_1_4.irix6.tar.gz" present in the current directory for this
+    to function properly.  You can install multiple binaries into the
+    same directory.  For example, you could then execute
+
+        visit-install -a 1.1.4 linux /usr/local/visit
+
+    to add a linux, 1.1.4 version of visit to the same directory.
+
+2.  Add the bin directory below the installation directory
+    (/usr/local/visit/bin in our example) to each user's search path.
+    The best way to do this is to add it to the user's .cshrc file.
+    The bin directory contains the visit script which starts VisIt.
+    It can be run on many machines.  The script determines the type of
+    machine it is running on and starts the appropriate executable.
+    If visit were installed in the directory "/usr/local/visit",
+    then the following commands would set your search path
+    appropriately.
+
+        cd
+        echo "set path = ($path /usr/local/visit/bin)" >> .cshrc
+
+    This completes the installation process for VisIt.
+
+3.  If you are installing VisIt on a Linux system with an NVidia graphics
+    card, we recommend using the NVidia 2960 driver unless you will be
+    doing stereo rendering.  If you will be doing stereo rendering then you
+    must use the 3123 driver, although it has some bugs.  Below are notes
+    on the various NVidia Linux drivers.
+
+      2802 - Not recommended.  It has a triangle shading bug.
+
+      2960 - Recommended.  Doesn't support stereo rendering.
+
+      3123 - Recommended for stereo rendering.  It may not render large
+             numbers of polygons when using display lists.  You can turn
+             off display lists by bringing up the "Rendering options"
+             window and deselecting the "Use display lists" toggle button.
+
+      4191 - Not recommended.  VisIt either crashes your X server or puts
+             up a visualization window that never gets refreshed.
+
+
+Windows:
+
+1.  Copy the file visit1.1.4.exe to your desktop.
+
+2.  Right click on the visit1.1.4.exe icon using your mouse and selecting
+    "Extract to folder C:\...\Desktop\visit1.1.4" from the popup menu.  A
+    window will popup as the file is extracted into the directory.  Once
+    the process is complete a "visit1.1.4" directory icon should appear on
+    your desktop.
+
+3.  Double click on the "visit1.1.4" directory icon bringing up a file
+    system browsing window.
+
+4.  Double click on the SETUP icon with the computer display icon to run
+    InstallShield.
+
+5.  Follow the directions provided by InstallShield.

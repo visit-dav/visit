@@ -1,0 +1,191 @@
+Function: Reset
+Declaration: void Reset();
+Definition:
+void
+PickAttributes::Reset()
+{
+    clearWindow  = false;
+    fulfilled    = false;
+    validPick    = false;
+    needTransformMessage = false;
+    pickLetter   = " ";
+    zoneNumber   = -1;
+    timeStep     = -1;
+    domain       = -1;
+    dimension    = -1;
+    pickPoint[0] = 0;
+    pickPoint[1] = 0;
+    pickPoint[2] = 0;
+    cellPoint[0] = 0;
+    cellPoint[1] = 0;
+    cellPoint[2] = 0;
+
+    rayPoint1[0] = rayPoint1[1] = rayPoint1[2] = 0;
+    rayPoint2[0] = rayPoint2[1] = rayPoint2[2] = 0;
+
+    activeVariable = " ";
+    databaseName = " ";
+    if (!nodes.empty())
+        nodes.clear();
+
+    if (!userSelectedVars.empty())
+    {
+        userSelectedVars.clear();
+        userSelectedVars.push_back("default");
+    }
+
+    if (!nodeCoords.empty())
+        nodeCoords.clear();
+
+    useNodeCoords = false;
+    logicalCoords = false;
+
+    ClearPickVarInfos();
+
+    SelectAll();
+}
+
+Function: PrintSelf
+Declaration: void PrintSelf(ostream &os);
+Definition:
+void
+PickAttributes::PrintSelf(ostream &os)
+{
+    int i;
+    std::string fileName;
+    int pos = databaseName.find_last_of('/');
+    if (pos >= databaseName.size())
+        fileName = databaseName;
+    else
+        fileName = databaseName.substr(pos+1) ;
+    os << "\n" << pickLetter.c_str() << ":  ";
+    os << fileName.c_str() << " ";
+    os << "timestep " << timeStep << " ";
+    os << "domain " << domain << "\n";
+    os << "active variable:   " << activeVariable.c_str() << "\n";
+    os << "selected variables: ";
+    for (i = 0; i < userSelectedVars.size(); i++)
+        os << userSelectedVars[i].c_str() << "  ";
+    os << "\n";
+    if (!needTransformMessage)
+    {
+        os << "PickedPoint: <" << cellPoint[0] << ", " 
+                               << cellPoint[1] << ", " 
+                               << cellPoint[2] << ">\n";
+    }
+    else 
+    {
+        os << "PickedPoint:  (in transformed space) <" 
+           << cellPoint[0] << ", " 
+           << cellPoint[1] << ", " 
+           << cellPoint[2] << ">\n";
+    }
+    os << "Zone " << zoneNumber << " ";
+    os << "Nodes " ; 
+    for (i = 0; i < nodes.size(); i++)
+    {
+        os << nodes[i] << "  ";
+        if (useNodeCoords && !nodeCoords.empty())
+        {
+            os << nodeCoords[i].c_str() << "\n";
+        } 
+    }
+    os << "\n";
+    for (i = 0; i < varInfo.size(); i++)
+        ((PickVarInfo*)varInfo[i])->PrintSelf(os);
+    os << "RayPoint 1: <" << rayPoint1[0] << ", " 
+                          << rayPoint1[1] << ", " 
+                          << rayPoint1[2] << ">\n";
+    os << "RayPoint 2: <" << rayPoint2[0] << ", " 
+                          << rayPoint2[1] << ", " 
+                          << rayPoint2[2] << ">\n";
+}
+
+Function: CreateOutputString
+Declaration: void CreateOutputString(std::string &os);
+Definition:
+void
+PickAttributes::CreateOutputString(std::string &os)
+{
+    int i;
+    char buff[256];
+   
+    std::string fileName; 
+    int pos = databaseName.find_last_of('/');
+    if (pos >= databaseName.size())
+        fileName = databaseName;
+    else
+        fileName = databaseName.substr(pos+1) ;
+
+    sprintf(buff, "\n%s:  ", pickLetter.c_str());
+    os += buff;
+    os += fileName;
+    if (domain != -1)
+    {
+        sprintf(buff, "  timestep %d  domain %d\n", timeStep, domain);
+    }
+    else 
+    {
+        sprintf(buff, "  timestep %d  \n", timeStep);
+    }
+    os += buff;
+    if (dimension == 2)
+    {
+        if (!needTransformMessage)
+        {
+            sprintf(buff, "Point: <%f, %f>\n",
+                    cellPoint[0], cellPoint[1]);
+        }
+        else 
+        {
+            sprintf(buff, "Point: (in transformed space)\n        <%f, %f>\n",
+                    cellPoint[0], cellPoint[1]);
+        }
+    }
+    else 
+    {
+        if (!needTransformMessage)
+        {
+            sprintf(buff, "Point: <%f, %f, %f>\n",
+                    cellPoint[0], cellPoint[1], cellPoint[2]);
+        }
+        else 
+        {
+            sprintf(buff, "Point: (in transformed space) \n       <%f, %f, %f>\n",
+                    cellPoint[0], cellPoint[1], cellPoint[2]);
+        }
+    }
+    os += buff;
+
+    sprintf(buff, "Zone:  %d\n", zoneNumber);
+    os += buff;
+    os += "Nodes:  " ; 
+    bool printCoords = useNodeCoords && !nodeCoords.empty(); 
+    if (printCoords)
+    {
+        os += "\n    "; 
+    }
+    for (i = 0; i < nodes.size(); i++)
+    {
+        sprintf(buff, "%d  ", nodes[i]);
+        os += buff; 
+        if (printCoords)
+        {
+            sprintf(buff, "%s\n    ", nodeCoords[i].c_str());
+            os += buff;
+        }
+    }
+    os += "\n";
+
+    for (i = 0; i < varInfo.size(); i++)
+    {
+        std::string iv;
+        //
+        // VarInfo does not append a newline char, but we need one here
+        //
+        ((PickVarInfo*)varInfo[i])->CreateOutputString(iv);
+        os += iv;
+        os += "\n";
+    }
+}
+

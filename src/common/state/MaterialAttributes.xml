@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+  <Attribute name="MaterialAttributes" purpose="Attributes to control material interface reconstruction" persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h">
+    <Field name="smoothing" label="Enable interface smoothing" type="bool">
+      false
+    </Field>
+    <Field name="forceMIR" label="Force interface reconstruction" type="bool">
+      false
+    </Field>
+    <Field name="cleanZonesOnly" label="Clean zones only" type="bool">
+      false
+    </Field>
+  </Attribute>

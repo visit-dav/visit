@@ -1,0 +1,4 @@
+<?xml version="1.0"?>
+  <Attribute name="ColorAttributeList" purpose="This class contains a list of ColorAttributes." exportAPI="STATE_API" exportInclude="state_exports.h">
+    <Field name="colors" type="attVector" subtype="ColorAttribute"></Field>
+  </Attribute>

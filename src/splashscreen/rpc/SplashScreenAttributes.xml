@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+  <Attribute name="SplashScreenAttributes"
+             purpose="This class contains attributes for communicating with the SplashScreen.">
+    <Field name="text" type="string">""</Field>
+    <Field name="progress" type="int">0</Field>
+    <Field name="quit" type="bool">False</Field>
+    <Field name="visible" type="bool">True</Field>
+    <Field name="displayAsSplashScreen" type="bool">True</Field>
+  </Attribute>

@@ -1,0 +1,278 @@
+Initialization: colorControlPoints
+    SetDefaultColorControlPoints();
+
+Initialization: freeformOpacity
+    for(int i = 0; i < 256; ++i)
+        freeformOpacity[i] = (unsigned char)i;
+
+Code: SetFromNode
+Prefix:
+Postfix:
+    if(colorControlPoints.GetNumColorControlPoints() < 2)
+         SetDefaultColorControlPoints();
+
+Function: ChangesRequireRecalculation
+Declaration: bool ChangesRequireRecalculation(const VolumeAttributes &obj) const;
+Definition:
+bool
+VolumeAttributes::ChangesRequireRecalculation(const VolumeAttributes &obj) const
+{
+    if (opacityVariable != obj.opacityVariable)
+        return true;
+    if (resampleTarget != obj.resampleTarget)
+        return true;
+
+    return false;
+}
+
+Function: GetTransferFunction
+Declaration: void GetTransferFunction(unsigned char *rgba);
+Definition:
+
+// ****************************************************************************
+// Method: VolumeAttributes::GetTransferFunction
+//
+// Purpose: 
+//   This method calculates the transfer function and stores it in the rgba
+//   array that is passed in.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Aug 21 15:44:34 PST 2001
+//
+// Modifications:
+//   Brad Whitlock, Thu Nov 21 15:05:25 PST 2002
+//   GetColors has been moved to ColorControlPointList. I updated this code
+//   to take that into account.
+//
+// ****************************************************************************
+
+void
+VolumeAttributes::GetTransferFunction(unsigned char *rgba)
+{
+    unsigned char rgb[256 * 3];
+    unsigned char alphas[256];
+    unsigned char *a_ptr;
+
+    // Figure out the colors
+    colorControlPoints.GetColors(rgb, 256);
+    // Figure out the opacities
+    if(freeformFlag)
+        a_ptr = freeformOpacity;
+    else
+    {
+        GetGaussianOpacities(alphas);
+        a_ptr = alphas;
+    }
+
+    unsigned char *rgb_ptr = rgb;
+    unsigned char *rgba_ptr = rgba;
+    for(int i = 0; i < 256; ++i)
+    {
+        // Copy the color
+        *rgba_ptr++ = *rgb_ptr++;
+        *rgba_ptr++ = *rgb_ptr++;
+        *rgba_ptr++ = *rgb_ptr++;
+        // Copy the alpha
+        *rgba_ptr++ = *a_ptr++;
+    }
+}
+
+Function: SetDefaultColorControlPoints
+Declaration: void SetDefaultColorControlPoints();
+Definition:
+// ****************************************************************************
+// Method: VolumeAttributes::SetDefaultColorControlPoints
+//
+// Purpose: 
+//   This method replaces all of the color control points in the list with the
+//   default color control points.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Aug 21 15:44:34 PST 2001
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+VolumeAttributes::SetDefaultColorControlPoints()
+{
+    const float positions[] = {0., 0.25, 0.5, 0.75, 1.};
+    const unsigned char colors[5][4] = {
+        {0,   0,   255, 255},
+        {0,   255, 255, 255},
+        {0,   255, 0,   255},
+        {255, 255, 0,   255},
+        {255, 0,   0,   255}};
+
+    // Clear the color control point list.
+    colorControlPoints.ClearColorControlPoints();
+
+    // Set the default control points in the color control point list.
+    for(int i = 0; i < 5; ++i)
+    {
+        ColorControlPoint cpt;
+        cpt.SetPosition(positions[i]);
+        cpt.SetColors(colors[i]);
+        colorControlPoints.AddColorControlPoint(cpt);
+    }
+    SelectColorControlPoints();
+}
+
+Function: GetGaussianOpacities
+Declaration: void GetGaussianOpacities(unsigned char *alphas);
+Definition:
+// ****************************************************************************
+// Method: VolumeAttributes::GetGaussianOpacities
+//
+// Purpose: 
+//   This method calculates the opacities using the object's gaussian control
+//   point list and stores the results in the alphas array that is passed in.
+//
+// Arguments:
+//   alphas : The return array for the colors.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Sep 6 10:23:59 PDT 2001
+//
+// Modifications:
+//   
+// ****************************************************************************
+#include <math.h>
+void
+VolumeAttributes::GetGaussianOpacities(unsigned char *alphas)
+{
+    int i;
+    float values[256];
+    for (i=0; i<256; i++)
+        values[i] = 0.;
+
+    for (int p=0; p<opacityControlPoints.GetNumGaussianControlPoints(); p++)
+    {
+        GaussianControlPoint &pt = opacityControlPoints.GetGaussianControlPoint(p);
+        float pos    = pt.GetX();
+        float width  = pt.GetWidth();
+        float height = pt.GetHeight();
+        float xbias  = pt.GetXBias();
+        float ybias  = pt.GetYBias();
+        for (int i=0; i<256; i++)
+        {
+            float x = float(i)/float(256-1);
+
+            // clamp non-zero values to pos +/- width
+            if (x > pos+width || x < pos-width)
+            {
+                values[i] = (values[i] > 0.) ? values[i] : 0.;
+                continue;
+            }
+
+            // non-zero width
+            if (width == 0)
+                width = .00001;
+
+            // translate the original x to a new x based on the xbias
+            float x0;
+            if (xbias==0 || x == pos+xbias)
+            {
+                x0 = x;
+            }
+            else if (x > pos+xbias)
+            {
+                if (width == xbias)
+                    x0 = pos;
+                else
+                    x0 = pos+(x-pos-xbias)*(width/(width-xbias));
+            }
+            else // (x < pos+xbias)
+            {
+                if (-width == xbias)
+                    x0 = pos;
+                else
+                    x0 = pos-(x-pos-xbias)*(width/(width+xbias));
+            }
+
+            // center around 0 and normalize to -1,1
+            float x1 = (x0-pos)/width;
+
+            // do a linear interpolation between:
+            //    a gaussian and a parabola        if 0<ybias<1
+            //    a parabola and a step function   if 1<ybias<2
+            float h0a = exp(-(4*x1*x1));
+            float h0b = 1. - x1*x1;
+            float h0c = 1.;
+            float h1;
+            if (ybias < 1)
+                h1 = ybias*h0b + (1-ybias)*h0a;
+            else
+                h1 = (2-ybias)*h0b + (ybias-1)*h0c;
+            float h2 = height * h1;
+            
+            // perform the MAX over different guassians, not the sum
+            values[i] = (values[i] > h2) ? values[i] : h2;
+        }
+    }
+
+    // Convert to unsigned char and return.
+    for(i = 0; i < 256; ++i)
+    {
+        int tmp = int(values[i] * 255.);
+        if(tmp < 0)
+            tmp = 0;
+        else if(tmp > 255)
+            tmp = 255;
+        alphas[i] = (unsigned char)(tmp);
+    }
+}
+
+Function: GetOpacities
+Declaration: void GetOpacities(unsigned char *alphas);
+Definition:
+void
+VolumeAttributes::GetOpacities(unsigned char *alphas)
+{
+    if(freeformFlag)
+    {
+        for(int i = 0; i < 256; ++i)
+            alphas[i] = freeformOpacity[i];
+    }
+    else
+        GetGaussianOpacities(alphas);
+}
+
+Function: SetSmoothingFlag
+Declaration: void SetSmoothingFlag(bool val);
+Definition:
+void
+VolumeAttributes::SetSmoothingFlag(bool val)
+{
+    colorControlPoints.SetSmoothingFlag(val);
+    Select(2, (void *)&colorControlPoints);
+}
+
+Function: GetSmoothingFlag
+Declaration: bool GetSmoothingFlag() const;
+Definition:
+bool
+VolumeAttributes::GetSmoothingFlag() const
+{
+    return colorControlPoints.GetSmoothingFlag();
+}
+
+Function: SetEqualSpacingFlag
+Declaration: void SetEqualSpacingFlag(bool val);
+Definition:
+void
+VolumeAttributes::SetEqualSpacingFlag(bool val)
+{
+    colorControlPoints.SetEqualSpacingFlag(val);
+    Select(2, (void *)&colorControlPoints);
+}
+
+Function: GetEqualSpacingFlag
+Declaration: bool GetEqualSpacingFlag() const;
+Definition:
+bool
+VolumeAttributes::GetEqualSpacingFlag() const
+{
+    return colorControlPoints.GetEqualSpacingFlag();
+}

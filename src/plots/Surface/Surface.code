@@ -1,0 +1,19 @@
+Function: ChangesRequireRecalculation
+Declaration: bool ChangesRequireRecalculation(const SurfaceAttributes &) const;
+Definition:
+// ****************************************************************************
+// Modifications:
+//   Kathleen Bonnell, Thu Mar 28 14:03:19 PST 2002
+//   Removed 'scaling' modifier from min/max and min/maxFlag.
+//
+// ****************************************************************************
+bool
+SurfaceAttributes::ChangesRequireRecalculation(const SurfaceAttributes &obj) const
+{
+    return ((minFlag != obj.minFlag) ||
+            (maxFlag != obj.maxFlag) ||
+            (scaling != obj.scaling) ||
+            (skewFactor != obj.skewFactor) ||
+            (min != obj.min) ||
+            (max != obj.max) );
+}

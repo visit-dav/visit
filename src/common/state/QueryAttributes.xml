@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+  <Attribute name="QueryAttributes" codefile="QueryAttributes.code" persistent="true" purpose="This class contains attributes used for query." exportAPI="STATE_API" exportInclude="state_exports.h">
+
+    <Field name = "name"           type = "string">        " "       </Field>
+    <Field name = "variables"      type = "stringVector" > "default" </Field>
+    <Field name = "resultsMessage" type = "string" >       " "       </Field>
+    <Field name = "worldPoint"     type = "floatArray" length = "3"  > 0. 0. 0.</Field>
+    <Field name = "domain"         type = "int" > -1 </Field>
+    <Field name = "zone"           type = "int" > -1 </Field>
+    <Field name = "rayPoint1"      type = "floatArray" length = "3" > 0. 0. 0. </Field>
+    <Field name = "rayPoint2"      type = "floatArray" length = "3" > 0. 0. 0. </Field>
+    <Field name = "cellPoint"      type = "floatArray" length = "3" > 0. 0. 0. </Field>
+
+    <Include file="source" quoted="false"> stdio.h    </Include>  
+    <Include file="header" quoted="false"> iostream.h </Include>  
+    <Function name = "Reset"       member = "true" user = "true"> </Function>
+    <Function name = "PrintSelf"   member = "true" user = "true"> </Function>
+  </Attribute>

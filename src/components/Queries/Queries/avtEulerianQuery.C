@@ -1,0 +1,302 @@
+// ************************************************************************* //
+//                             avtEulerianQuery.C                           //
+// ************************************************************************* //
+
+#include <avtEulerianQuery.h>
+
+#include <snprintf.h>
+
+#include <set>
+#include <vector>
+
+#include <vtkDataSet.h>
+#include <vtkGeometryFilter.h>
+#include <vtkPolyData.h>
+
+#include <DebugStream.h>
+
+#ifdef PARALLEL
+#include <mpi.h>
+#endif
+
+using std::set;
+using std::vector;
+
+
+
+// ****************************************************************************
+//  Method: avtEulerianQuery::avtEulerianQuery
+//
+//  Purpose:
+//      Construct an avtEulerianQuery object.
+//
+//  Programmer:   Akira Haddox
+//  Creation:     June 28, 2002
+//
+//  Modifications:
+//    Kathleen Bonnell, Fri Nov 15 12:37:11 PST 2002 
+//    Moved from avtEulerianFilter.  
+//
+// ****************************************************************************
+
+avtEulerianQuery::avtEulerianQuery()
+{
+    gFilter = vtkGeometryFilter::New();
+}
+
+// ****************************************************************************
+//  Method: avtEulerianQuery::~avtEulerianQuery
+//
+//  Purpose:
+//      Destruct an avtEulerianQuery object.
+//
+//  Programmer:   Akira Haddox
+//  Creation:     June 28, 2002
+//
+//  Modifications:
+//    Kathleen Bonnell, Fri Nov 15 12:37:11 PST 2002 
+//    Moved from avtEulerianFilter. 
+//
+// ****************************************************************************
+
+avtEulerianQuery::~avtEulerianQuery()
+{
+    if (gFilter)
+        gFilter->Delete();
+}
+
+
+// ****************************************************************************
+//  Method: avtEulerianQuery::Execute
+//
+//  Purpose:
+//      Computes the Eulerian number of the input dataset. 
+//
+//  Arguments:
+//      inDS      The input dataset.
+//      dom       The domain number.
+//
+//  Programmer:   Akira Haddox
+//  Creation:     June 28, 2002
+//
+//  Modifications:
+//    Kathleen Bonnell, Fri Nov 15 12:37:11 PST 2002 
+//    Moved from avtEulerianFilter::DeriveVariable.
+//    Instead of creating a data array, keep track of the Eulerian
+//    for this domain in domToEulerMap. 
+//
+// ****************************************************************************
+
+void 
+avtEulerianQuery::Execute(vtkDataSet *in_ds, const int dom)
+{
+    gFilter->SetInput(in_ds);
+ 
+    vtkPolyData *pds = vtkPolyData::New();
+ 
+    gFilter->SetOutput(pds);
+ 
+    pds->Delete();
+    pds->Update();
+    pds->SetSource(NULL);
+
+    // I believe this isn't good enough. I believe the facelist filter
+    // simply passes points through, and only modifies the cell structure.
+    // As such, the number of points is greater than the number of points
+    // that are actually used.
+    int nPoints = pds->GetNumberOfPoints();
+    // So we'll keep track manually of which points are used.
+    vector<bool> pointsUsed(nPoints,false);
+
+    int nCells = pds->GetNumberOfCells();
+
+    int Eulerian;
+
+    // We go through all the cells, and for each cell, add each edge of
+    // that cell into our set of edges. Due to the nature of a set, and
+    // that the ordering of nodes in an edgepair not mattering was specified
+    // in the edgepair class, we will basically be able to tell how many
+    // edges are in the mesh simply by the size of the set.
+
+    set<edgepair> edges;
+
+    int i,j;
+    for (i = 0; i < nCells; i++)
+    {
+        vtkCell *cell=pds->GetCell(i);
+        int numCellPoints = cell->GetNumberOfPoints();
+
+        // Marked all the points in the cell as being used in our records
+        for (int m = 0; m < numCellPoints; m++)
+            pointsUsed[cell->GetPointId(m)] = true;
+
+        switch (cell->GetCellType())
+        {
+        // Triangles, straight forward. Three points, three edges
+            case VTK_TRIANGLE:
+                edges.insert(edgepair(cell->GetPointId(0),
+                                      cell->GetPointId(1)));
+                edges.insert(edgepair(cell->GetPointId(1),
+                                      cell->GetPointId(2)));
+                edges.insert(edgepair(cell->GetPointId(2),
+                                      cell->GetPointId(0)));
+                break;
+
+        // Quads, four points, four edges.
+            case VTK_QUAD:
+                edges.insert(edgepair(cell->GetPointId(0),
+                                      cell->GetPointId(1)));
+                edges.insert(edgepair(cell->GetPointId(1),
+                                      cell->GetPointId(2)));
+                edges.insert(edgepair(cell->GetPointId(2),
+                                      cell->GetPointId(3)));
+                edges.insert(edgepair(cell->GetPointId(3),
+                                      cell->GetPointId(0)));
+                break;
+
+        // Polygons are also easy. There's an edge between node 0 and N,
+        // and all the other edges are bewtween edge n and n+1
+            case VTK_POLYGON:
+                edges.insert(edgepair(cell->GetPointId(0),
+                                      cell->GetPointId(numCellPoints-1)));
+                for (j = 1; j < numCellPoints-1; j++)
+                    edges.insert(edgepair(cell->GetPointId(j),
+                                          cell->GetPointId(j+1)));
+                break;
+
+        //Each node [save for outer ones] is connected to two nodes
+        //before them, and two after. Since we don't repeat edges,
+        //we can just count edges infront of us to get them all
+            case VTK_TRIANGLE_STRIP:
+                for (j = 0; j < numCellPoints-2; j++)
+                {
+                    edges.insert(edgepair(cell->GetPointId(j),
+                                          cell->GetPointId(j+1)));
+                    edges.insert(edgepair(cell->GetPointId(j),
+                                          cell->GetPointId(j+2)));
+                }
+                break;
+
+            default:
+                debug5 << "Geometry filter returned unexpected type." << endl;
+                debug5 << "Type is: " << cell->GetCellType() << endl;
+        }
+    }    
+
+    int numUsedPoints = 0;
+    for (i = 0; i < pointsUsed.size(); i++)
+        if (pointsUsed[i])
+            ++numUsedPoints;
+
+    // Now for the magic: Euler-Descartes formula
+    Eulerian = numUsedPoints - edges.size() + nCells;
+
+    domToEulerMap.insert(DomainToEulerMap::value_type(dom, Eulerian));
+}
+
+
+
+// ****************************************************************************
+//  Method: avtEulerianQuery::PostExecute
+//
+//  Purpose:
+//      This is called after all of the domains are executed.
+//      If in parallel, gathers the Eulerian number for each domain onto one 
+//      processor. 
+//      Constructs an output string listing Eulerian number for each domain, 
+//      for output to the gui window.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   November 15, 2002
+//
+// ****************************************************************************
+
+void
+avtEulerianQuery::PostExecute(void)
+{
+#ifdef PARALLEL
+    int myRank, numProcs;
+    int size, i, j;
+    int *buf;
+ 
+    MPI_Comm_rank(MPI_COMM_WORLD, &myRank);
+    MPI_Comm_size(MPI_COMM_WORLD, &numProcs);
+    if (myRank == 0)
+    {
+        for (i = 1; i < numProcs; i++)
+        {
+            MPI_Status stat, stat2;
+             
+            MPI_Recv(&size, 1, MPI_INT, MPI_ANY_SOURCE,
+                     MPI_ANY_TAG, MPI_COMM_WORLD, &stat);
+            if (size > 0)
+            {
+                buf = new int [size];
+                MPI_Recv(buf, size, MPI_INT, stat.MPI_SOURCE, MPI_ANY_TAG,
+                         MPI_COMM_WORLD, &stat2);
+                for (j = 0; j < size/2; j++)
+                { 
+                    domToEulerMap.insert(DomainToEulerMap::value_type(
+                        buf[j*2], buf[j*2+1]));
+                } 
+                delete [] buf;
+            }
+        }
+    }
+    else
+    {
+        size = domToEulerMap.size() * 2;
+        MPI_Send(&size, 1, MPI_INT, 0, myRank, MPI_COMM_WORLD);
+        if (size > 0)
+        {
+            buf = new int[size];
+            DomainToEulerMap::iterator iter;
+            for (iter = domToEulerMap.begin(), i = 0; 
+                 iter != domToEulerMap.end(); iter++, i++)
+            {
+                buf[2*i] = (*iter).first;
+                buf[2*i+1] = (*iter).second;
+            }
+            MPI_Send(buf, size, MPI_INT, 0, myRank, MPI_COMM_WORLD);
+            delete [] buf;
+        }
+        return;
+    }
+#endif
+
+    string msg;
+    char msgBuff[500];
+    DomainToEulerMap::iterator iter;
+    int blockOrigin = GetInput()->GetInfo().GetAttributes().GetBlockOrigin();
+    for (iter = domToEulerMap.begin(); iter != domToEulerMap.end(); iter++)
+    {
+        SNPRINTF(msgBuff, 500, "Eulerian for domain %d is %d\n", 
+                 (*iter).first + blockOrigin, (*iter).second);
+        msg += msgBuff;
+    }
+    if (msg.size() == 0)
+        msg = "Eulerian could not compute.\n" ;
+    SetMessage(msg);
+}
+
+
+// ****************************************************************************
+//  Method: avtEulerianQuery::PreExecute
+//
+//  Purpose:
+//      This is called before any of the domains are executed.
+//      Ensures the storage for Eulerian numbers is clear. 
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   November 15, 2002
+//
+// ****************************************************************************
+
+void
+avtEulerianQuery::PreExecute()
+{
+   if (!domToEulerMap.empty())
+       domToEulerMap.clear();
+}
+
+

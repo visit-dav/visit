@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+  <Plugin name="Kerbel" type="plot" label="Kerbel" version="1.0" vartype="mesh">
+    <Files components="G">
+      QvisKerbelPlotWindowWithButtons.C
+    </Files>
+    <Files components="W">
+      QvisKerbelPlotWindowWithButtons.h
+    </Files>
+    <Attribute name="KerbelAttributes" purpose="This class contains the attributes for a Kerbel plot." persistent="true">
+      <Field name="Center" label="Center" type="floatArray" length="3">
+        0.000000
+        0.000000
+        0.000000
+      </Field>
+      <Field name="Radius" label="Radius" type="float">
+        1.000000
+      </Field>
+      <Field name="filename" label="Filename" type="string">
+        save.xml
+      </Field>
+    </Attribute>
+  </Plugin>

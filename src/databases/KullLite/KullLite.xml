@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+  <Plugin name="KullLite" label="KullLite" type="database" dbtype="STMD" version="1.0">
+    <Extensions> pdb </Extensions>
+    <CXXFLAGS> $(PDB_FLAGS) </CXXFLAGS>
+    <LIBS>     $(PDB_LIBS)     </LIBS>
+  </Plugin>

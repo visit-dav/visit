@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+  <Plugin name="Box" type="operator" label="Box" version="1.0" iconFile="Box.xpm">
+    <Attribute name="BoxAttributes" purpose="This class contains attributes for the box operator." persistent="true" codefile="BoxAttributes.code">
+      <Enum name="Amount">
+        Some
+        All
+      </Enum>
+      <Field name="amount" label="Amount of cell in the range" type="enum" subtype="Amount">
+        Some
+      </Field>
+      <Field name="minx" label="X-Minimum" type="double">
+        0.000000
+      </Field>
+      <Field name="maxx" label="X-Maximum" type="double">
+        1.000000
+      </Field>
+      <Field name="miny" label="Y-Minimum" type="double">
+        0.000000
+      </Field>
+      <Field name="maxy" label="Y-Maximum" type="double">
+        1.000000
+      </Field>
+      <Field name="minz" label="Z-Minimum" type="double">
+        0.000000
+      </Field>
+      <Field name="maxz" label="Z-Maximum" type="double">
+        1.000000
+      </Field>
+      <Function name="CopyAttributes" user="false" member="true">
+      </Function>
+      <Function name="CreateCompatible" user="false" member="true">
+      </Function>
+      <Include file="source" quoted="false">
+        BoxExtents.h
+      </Include>
+    </Attribute>
+  </Plugin>

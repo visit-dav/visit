@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+  <Plugin name="ExternalSurface" label="External Surface" type="operator" version="1.0">
+    <Attribute name="ExternalSurfaceAttributes" purpose="This class contains attributes for the external surface operator.">
+      <Field name="dummy" type="bool"></Field>
+    </Attribute>
+  </Plugin>

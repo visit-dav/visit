@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+  <Attribute name="ActionGroupDescription" purpose="This class contains the attributes that describe an action group." persistent="true" codefile="ActionGroupDescription.code">
+    <Field name="name" label="name" type="string">
+    </Field>
+    <Field name="actions" label="actions" type="stringVector">
+    </Field>
+    <Field name="visible" label="visible" type="bool">
+      true
+    </Field>
+    <Function name="ActionGroupDescription" user="true" member="true">
+    </Function>
+    <Function name="AddAction" user="true" member="true">
+    </Function>
+    <Function name="GetAction" user="true" member="true">
+    </Function>
+    <Include file="header" quoted="false">
+      ViewerRPC.h
+    </Include>
+  </Attribute>

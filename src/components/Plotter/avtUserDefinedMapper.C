@@ -1,0 +1,305 @@
+// ************************************************************************* //
+//                           avtUserDefinedMapper.C                          //
+// ************************************************************************* //
+
+#include <avtUserDefinedMapper.h>
+
+#include <vtkObjectFactory.h>
+#include <vtkRenderer.h>
+
+
+// ****************************************************************************
+//  Method: avtUserDefinedMapper constructor
+//
+//  Arguments:
+//      r       The custom-defined renderer.
+//
+//  Programmer: Hank Childs
+//  Creation:   March 26, 2001
+//
+// ****************************************************************************
+
+avtUserDefinedMapper::avtUserDefinedMapper(avtCustomRenderer_p r)
+{
+    renderer = r;
+}
+
+
+// ****************************************************************************
+//  Method: avtUserDefinedMapper::GetDataRange
+//
+//  Arguments:
+//    rmin      The minimum in the range.
+//    rmax      The maximum in the range.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   October 4, 2001 
+//
+// ****************************************************************************
+
+bool
+avtUserDefinedMapper::GetDataRange(float &rmin, float &rmax)
+{
+    if (mappers == NULL)
+    {
+        //
+        // We have been asked for the range before the input has been set.
+        //
+        rmin = 0.;
+        rmin = 1.;
+        return false;
+    }
+
+    avtMapper::GetRange(rmin, rmax);
+    return true;
+}
+
+
+// ****************************************************************************
+//  Method: avtUserDefinedMapper::GetCurrentDataRange
+//
+//  Arguments:
+//    rmin      The minimum in the range.
+//    rmax      The maximum in the range.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   October 4, 2001 
+//
+// ****************************************************************************
+
+bool
+avtUserDefinedMapper::GetCurrentDataRange(float &rmin, float &rmax)
+{
+    if (mappers == NULL)
+    {
+        //
+        // We have been asked for the range before the input has been set.
+        //
+        rmin = 0.;
+        rmin = 1.;
+        return false;
+    }
+
+    avtMapper::GetCurrentRange(rmin, rmax);
+    return true;
+}
+
+
+// ****************************************************************************
+//  Method: avtUserDefinedMapper::CustomizeMappers
+//
+//  Purpose:
+//      A hook from the base class that allows the user defined mapper to
+//      determine its extents and set them.
+//
+//  Programmer: Hank Childs
+//  Creation:   November 19, 2001
+//
+//  Modifications:
+//    Kathleen Bonnell, Wed Mar 19 14:26:05 PST 2003
+//    Removed test for min == max, no longer an issue with vtkLookupTables or 
+//    vtkMappers.
+// ****************************************************************************
+
+void
+avtUserDefinedMapper::CustomizeMappers(void)
+{
+    if (renderer->OperatesOnScalars())
+    {
+        float mmin = 0.;
+        float mmax = 0.;
+        GetRange(mmin, mmax);
+    
+        //
+        // Now tell the renderer what its variable range should be.
+        //
+        renderer->SetRange(mmin, mmax);
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtUserDefinedMapper::CreateMapper
+//
+//  Purpose:
+//      Creates a mapper that will act as a bridge from vtk to the user's
+//      custom defined renderer.
+//
+//  Returns:     The mapper.
+//
+//  Programmer:  Hank Childs
+//  Creation:    March 26, 2001
+//
+// ****************************************************************************
+
+vtkDataSetMapper *
+avtUserDefinedMapper::CreateMapper(void)
+{
+    vtkUserDefinedMapperBridge *rv = vtkUserDefinedMapperBridge::New();
+    rv->SetRenderer(renderer);
+
+    return rv;
+}
+
+
+// ****************************************************************************
+//  Method: avtUserDefinedMapper::GlobalLightingOn
+//
+//  Purpose:
+//      Tells the renderer that global lighting has been turned on. 
+//      Allows the renderer to update lighting coefficients if necessary. 
+//
+//  Programmer:  Kathleen Bonnell 
+//  Creation:    August 13, 2002 
+//
+// ****************************************************************************
+
+void 
+avtUserDefinedMapper::GlobalLightingOn()
+{
+    renderer->GlobalLightingOn();
+}
+
+
+// ****************************************************************************
+//  Method: avtUserDefinedMapper::GlobalLightingOff
+//
+//  Purpose:
+//      Tells the renderer that global lighting has been turned off. 
+//      Allows the renderer to update lighting coefficients if necessary. 
+//
+//  Programmer:  Kathleen Bonnell 
+//  Creation:    August 13, 2002 
+//
+// ****************************************************************************
+
+void 
+avtUserDefinedMapper::GlobalLightingOff()
+{
+    renderer->GlobalLightingOff();
+}
+
+
+// ****************************************************************************
+//  Method: avtUserDefinedMapper::GlobalSetAmbientCoefficient
+//
+//  Purpose:
+//      Tells the renderer that global ambient lighting coefficient has
+//      been set.
+//
+//  Programmer:  Kathleen Bonnell 
+//  Creation:    August 13, 2002 
+//
+// ****************************************************************************
+
+void 
+avtUserDefinedMapper::GlobalSetAmbientCoefficient(const float amb)
+{
+    renderer->GlobalSetAmbientCoefficient(amb);
+}
+
+
+// ****************************************************************************
+//  Method: vtkUserDefinedMapperBridge::New
+//
+//  Purpose:
+//      Meets the VTK convention of instantiating objects through a static
+//      function, since the constructors and destructors are protected for
+//      reference counting reasons.
+//
+//  Returns:     A new instance of vtkUserDefinedMapperBridge
+//
+//  Programmer:  Hank Childs
+//  Creation:    March 26, 2001
+//
+// ****************************************************************************
+
+vtkUserDefinedMapperBridge *
+vtkUserDefinedMapperBridge::New(void)
+{
+    //
+    // First try to create the object from the vtkObjectFactory
+    //
+    vtkObject *ret = NULL;
+    ret = vtkObjectFactory::CreateInstance("vtkUserDefinedMapperBridge");
+    if (ret == NULL)
+    {
+        ret = new vtkUserDefinedMapperBridge;
+    }
+
+    return (vtkUserDefinedMapperBridge *) ret;
+}
+
+
+// ****************************************************************************
+//  Method: vtkUserDefinedMapperBridge constructor
+//
+//  Programmer: Hank Childs
+//  Creation:   March 26, 2001
+//
+// ****************************************************************************
+
+vtkUserDefinedMapperBridge::vtkUserDefinedMapperBridge()
+{
+    ren = NULL;
+}
+
+
+// ****************************************************************************
+//  Method: vtkUserDefinedMapperBridge::SetRenderer
+//
+//  Purpose:
+//      Registers the renderer that the bridge should call asked to map data.
+//
+//  Arguments:
+//      r       The renderer.
+//
+//  Programmer: Hank Childs
+//  Creation:   March 26, 2001
+//
+// ****************************************************************************
+
+void 
+vtkUserDefinedMapperBridge::SetRenderer(avtCustomRenderer_p r)
+{
+    ren = r;
+}
+
+
+// ****************************************************************************
+//  Method: vtkUserDefinedMapperBridge::Render
+//
+//  Purpose:
+//      Called when a mapper should makes its rendering calls.  This re-routes
+//      the call to the avtCustomRenderer and sets some information with the
+//      renderer.
+//
+//  Arguments:
+//      r          The vtkRenderer.
+//      <unnamed>  The actor associated with the mapper.
+//
+//  Programmer: Hank Childs
+//  Creation:   March 26, 2001
+//
+// ****************************************************************************
+
+void 
+vtkUserDefinedMapperBridge::Render(vtkRenderer *r, vtkActor *)
+{
+    //
+    // Retrieve the view information and set it with the avt renderer.
+    //
+    avtViewInfo view;
+    vtkCamera *cam = r->GetActiveCamera();
+    view.SetViewFromCamera(cam);
+    ren->SetView(view);
+
+    //
+    // Ask the avt renderer to draw this dataset.
+    //
+    vtkDataSet *input = this->GetInput();
+    ren->SetVTKRenderer(r);
+    ren->Execute(input);
+}
+
+

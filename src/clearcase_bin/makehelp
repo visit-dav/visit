@@ -1,0 +1,108 @@
+#!/bin/csh -f
+###############################################################################
+#
+# Script: makehelp
+#
+# Purpose: This script creates small html documents from the User's Manual
+#          and also creates an XML file called visit.helpml to index the
+#          html documents for the help viewer.
+#
+# Author:  Brad Whitlock
+# Date:    Thurs, July 11 2002
+#
+# Modifications:
+#  Brad Whitlock, Fri Aug 30 14:42:09 PST 2002
+#  I added code to add fmbatch to the path if we're on sunspot/sunburn and
+#  rebuild the mif2help conversion program. I also added the new Help chapter.
+#
+###############################################################################
+
+# Keep this until we get our sysadmins to add fmbatch to the path.
+if(`hostname` == "sunspot.llnl.gov" || `hostname` == "sunburn.llnl.gov") then
+    set path = (/usr/local/framemaker/bin $path)
+endif
+
+# Make sure that we have Frame Maker's fmbatch program in our path.
+set haveFrame = `which fmbatch | grep no`
+if("$haveFrame" != "") then
+    echo "ERROR: fmbatch not found! It is required to convert the User manual"
+    echo "       into MIF files which are then turned into help HTML files"
+    echo "       Try running this script on hyper."
+    exit
+endif
+
+# Init some variables
+set inputFiles = "Intro WorkingWithFiles Plots Operators SavingPrinting Quantitative MakingItPretty Animation InteractiveTools RemoteVisualization Preferences Help"
+set inputPath = "/data_vobs/VisIt/docs/UserManual"
+set outputPath = "/tmp/frameconvert"
+set helpPath = "/data_vobs/VisIt/help"
+set fmCommands = "$outputPath/fmcommands"
+set startDir = `pwd`
+
+# First make sure the mif2help tool is built.
+cd $helpPath
+# If there is no Makefile, run configure.
+if(!(-e Makefile)) then
+    cd ..
+    echo "No Makefile was found. We need to configure\!"
+    if(-e config.cache) then
+        rm -f config.cache
+    endif
+    configure
+    cd $helpPath
+else
+    # Remove the current version of the mif2help program in case it is old.
+    make clean
+endif
+# Rebuild the mif2help tool to ensure that it is up to date.
+make
+
+# Create a temp directory if one does not exist.
+if(!(-e $outputPath)) then
+    mkdir $outputPath
+endif
+
+# Create MIF files for each of the input frame maker files.
+foreach input ($inputFiles)
+    if(-e $fmCommands) then
+        rm -f $fmCommands
+    endif
+    
+    # Copy the frame maker file to the temp directory
+    set srcFile = "$outputPath/$input.fm"
+    cp -f $inputPath/$input.fm $srcFile
+    chmod 600 $srcFile
+        
+    # Create the frame maker command file
+    set mifName = "$outputPath/$input.mif"
+    echo "Open $srcFile\
+SaveAs m $srcFile $mifName\
+Quit" > $fmCommands
+    
+    # Convert the file to MIF.
+    fmbatch $fmCommands > /dev/null
+    if(!(-e $mifName)) then
+        echo "Framemaker could not convert $input.fm to a MIF file."
+    endif
+end
+
+# If the tool is built then proceed.
+if(-e mif2help) then
+    # Create a list of MIF files to pass to mif2help.
+    set mifargs = " "
+    foreach input ($inputFiles)
+        set mifName = "$outputPath/$input.mif"
+        set tmpvar =  "$mifargs $mifName"
+        set mifargs = "$tmpvar"
+    end
+
+    mif2help $mifargs
+else
+    echo "The mif2help tool failed to build."
+endif
+
+# Remove the temp directory
+rm -rf $outputPath
+
+# Go back to the starting directory.
+cd $startDir

@@ -1,0 +1,98 @@
+#
+#                            Copyright 2000 - 2000
+#                 The Regents of the University of California.
+#                             All rights reserved.
+# 
+# This work  was produced at the  University of California, Lawrence Livermore
+# National Laboratory  (UC LLNL)  under contract no.   W-7405-ENG-48 (Contract
+# 48) between  the U.S.  Department  of Energy (DOE)  and  The Regents  of the
+# University  of   California (University)   for   the operation  of UC  LLNL.
+# Copyright  is reserved  to     the University for   purposes  of  controlled
+# dissemination,   commercialization   through   formal licensing,   or  other
+# disposition  under  terms  of Contract   48; DOE  policies, regulations  and
+# orders;  and U.S.   statutes.  The  rights of   the  Federal Government  are
+# reserved under  Contract 48 subject to the  restrictions agreed  upon by DOE
+# and University.
+# 
+#                                 DISCLAIMER
+# 
+# This software was prepared as an  account of work sponsored  by an agency of
+# the United  States Government. Neither the United  States Government nor the
+# University of California  nor any  of their  employees, makes any  warranty,
+# express or  implied,  or assumes  any  liability  or responsiblity for   the
+# accuracy, completeness,  or   usefullness of   any  information,  apparatus,
+# product, or process disclosed, or represents that its use would not infringe
+# privately   owned  rights. Reference    herein to   any specific  commercial
+# products, process, or service   by trade name, trademark,   manufacturer, or
+# otherwise,  does not    necessarily  constitute or    imply its endorsement,
+# recommendation,  or  favoring by    the  United  States Government  or   the
+# University of California. The views and opinions of authors expressed herein
+# do not necessarily state or reflect those of the United States Government or
+# the University of  California,  and shall not  be  used for  advertising  or
+# product endorsement purposes.
+#
+#
+# Modifications:
+#
+#    Jeremy Meredith, Fri Aug  4 16:42:44 PDT 2000
+#    Changed source listing to use SRC=$(OBJ:.o=.C).  This allows parsing
+#    of this Makefile.in for object files inside configure.
+#
+#    Jeremy Meredith, Thu May 10 14:02:09 PDT 2001
+#    Made it create a shared library.
+#
+#    Jeremy Meredith, Tue Sep  4 10:36:49 PDT 2001
+#    Changed library building: the LIB targets has no extension, and
+#    either LIBSINGLETARGETS or LIBMULTITARGETS must be included
+#    in addition to TARGETS depending on whether the library is build
+#    from object files in one directory or multiple subdirectories.
+#
+#    Jeremy Meredith, Fri Jul 12 14:37:45 PDT 2002
+#    Unified include directories.
+#
+##############################################################################
+
+##
+## Programs and options...
+##
+@SET_MAKE@
+@VARIABLES@
+
+CPPFLAGS=-I../../include/visit @SILO_INCLUDE@ @CPPFLAGS@
+
+##
+## Files...
+##
+SRC=TimeSequence.C Field.C Material.C Mesh.C StructuredTopology.C \
+     UnstructuredTopology.C Value.C SiloObjLib.C IntervalTree.C \
+     OnionPeel.C BoundaryList.C 
+HDR=TimeSequence.h Field.h Material.h Mesh.h StructuredTopology.h \
+     UnstructuredTopology.h Value.h SiloObjLib.h IntervalTree.h \
+     OnionPeel.h BoundaryList.h
+OBJ=$(SRC:.C=.o)
+LIB=libsiloobj
+LIBS=@SILO_LIB@
+NOT_DISTRIB=
+
+##
+## Standard targets...
+##
+all: message $(LIBSHARED)
+
+clean:
+	$(RM) $(LIBSHARED) $(OBJ)
+
+##
+## Other targets
+##
+message:
+	@echo
+	@echo "****************************************************************************"
+	@echo "*** Building SILO Object Library ($(LIB))"
+	@echo "****************************************************************************"
+
+##
+## Automatic dependency stuff
+##
+@TARGETS@
+@LIBTARGETS@

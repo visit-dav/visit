@@ -1,0 +1,4 @@
+<?xml version="1.0"?>
+  <Plugin name="STL" label="STL" type="database" dbtype="STSD" version="1.0">
+    <Extensions> stl </Extensions>
+  </Plugin>

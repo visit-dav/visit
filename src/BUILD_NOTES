@@ -1,0 +1,454 @@
+
+
+                          Build instructions for VisIt
+                         ==============================
+
+VisIt relies on several external libraries which must be built and installed
+prior to building VisIt.  This document provides detailed step by step
+instructions for building VisIt and each of the dependent libraries.  The
+instructions have been designed so that you can cut and paste most of the
+commands needed to build the libraries and VisIt from this file into your
+shell prompt.
+
+
+    Library  Version  Description            For More information
+    =======  =======  ===========            ====================
+    Mesa     5.0      3-D Graphics Library   http://www.mesa3d.org/
+    Python   2.1.2    Scripting Language     http://www.python.org
+    Qt       2.3.0    GUI Toolkit            http://www.trolltech.com
+    Silo     4.3.1    File I/O library       http://www.llnl.gov/bdiv/meshtv
+    VTK      021216   Visualization Toolkit  http://www.kitware.com
+
+
+The public version of VisIt has been built with the above listed versions
+of the libraries, so it is known to work properly with those versions.  For
+all the packages except VTK and Qt, you can probably use newer versions of the
+packages and VisIt should work properly.  For Mesa, you must build a mangled
+version of Mesa.  The distribution provided has already been set up to build
+a mangled version so no additional work is required if you use it.  For VTK,
+you must use the December 16 distribution provided. The version of Qt used to
+build VisIt must be greater than or equal to 2.3.0. VisIt is also compatible
+with Qt version 3.
+
+Building VisIt
+===============
+
+VisIt can currently be built on aix, irix, linux, solaris, tru64 and
+windows operating systems.  The following instructions only apply to
+building VisIt on Unix systems and does not apply to Windows.
+
+We currently build VisIt using the following compilers on the following
+operating systems.  It is suggested that you use the same compilers.
+
+
+   Operating System          Compiler
+   ================          ========
+   AIX 5.1                   g++ 3.1
+   IRIX64 6.5                MIPSpro 7.3.1.1m and MIPSpro 7.3.1.2m
+   Redhat Linux 7.1 and 7.2  g++ 2.96
+   Solaris 7                 g++ 2.95.2
+   Tru64 5.1                 g++ 3.0.4 
+
+
+It is essential that you build all the dependent packages and visit using
+the same c++ compiler or you will encounter linking problems because different
+compilers or different versions of the same compiler may use different name
+mangling schemes.
+
+If you are using gmake or are building on an SGI and your machine has
+multiple CPUs, you may speed up the build process for many of the products
+by doing a parallel make.  For gmake, the command would be
+
+   make -j "# of processors"
+
+and for an SGI the command would be
+
+   env PARALLEL="# of processors" make -P
+
+Lets go ahead and build VisIt.  Start off by creating a directory to hold
+visit and the installed versions of each of the dependent libraries.
+
+mkdir visit
+echo `pwd`/visit > visitpath
+
+Now build each of the dependent libraries followed by VisIt.
+
+
+Mesa
+=====
+
+Mesa is a 3-D graphics library with an API which is very similar to that of
+OpenGL.  It is used for performing off-screen rendering.
+
+#
+# Build Mesa
+#
+gunzip Mesa-5.0-mangled.tar.gz
+tar xf Mesa-5.0-mangled.tar
+cd Mesa-5.0
+
+#
+# To build Mesa, one of the following targets should probably be used.  The
+# complete list of targets is available by typing "make" in the Mesa-5.0
+# directory.
+#
+#  make aix                  for IBM RS/6000
+#  make irix6-n32-dso        for SGI systems with IRIX 6.x, make n32-bit DSOs
+#  make irix6-64-dso         for SGI systems with IRIX 6.x, make 64-bit DSOs
+#  make linux                for Linux systems, make shared .so libs
+#  make linux-alpha          for Linux on Alpha systems
+#  make osf1-sl              for DEC Alpha systems with OSF/1, make shared libs
+#  make solaris-x86          for PCs with Solaris
+#  make solaris-x86-gcc      for PCs with Solaris using GCC
+#  make sunos5-sl            for Suns with SunOS 5.x, make shared libs
+#  make sunos5-gcc-sl        for Suns with SunOS 5.x, GCC, make shared libs
+
+#
+# Install it in the visit directory under the mesa directory.
+#
+mkdir ../visit/mesa
+mkdir ../visit/mesa/{include,lib}
+mkdir ../visit/mesa/include/GL
+cp include/GL/*.h ../visit/mesa/include/GL
+#
+# On AIX systems you will need to build shared libraries from the
+# archives.
+#
+# cd lib
+# ar -x libMesaGL.a
+# g++ -Wl,-G -shared -o libMesaGL.so -Wl,-bmaxdata:0x70000000 -Wl,-brtl *.o
+# rm *.o
+# ar -x libOSMesa.a
+# g++ -Wl,-G -shared -o libOSMesa.so -Wl,-bmaxdata:0x70000000 -Wl,-brtl *.o
+# rm *.o
+# cd ..
+#
+cp lib/*.so       ../visit/mesa/lib 
+cd ..
+
+
+VTK
+====
+
+VTK is an object oriented library for visualizing 3D data.  VisIt uses it
+for all its visualization functionality. Follow the directions listed below
+to build VTK.  If you have any problems building or installing VTK, read the
+VTK/README.html file included in the VTK distribution for more information.
+
+#
+# Build cmake which is used by VTK to configure its distribution
+#
+gunzip CMake1.4.7-src-unix.tar.gz
+tar xf CMake1.4.7-src-unix.tar
+cd CMake-1.4.7
+env CXXFLAGS="" ./configure
+
+#
+# Build VTK
+#
+cd ..
+gunzip vtk_cvs_16Dec02.tar.gz
+tar xf vtk_cvs_16Dec02.tar
+cd VTK
+../CMake-1.4.7/Source/cmake
+#
+# Edit CMakeCache.txt.  Turn BUILD_SHARED_LIBS, VTK_USE_HYBRID, and
+# VTK_USE_MANGLED_MESA on, Turn BUILD_TESTING off.
+#
+# If you want to change the compilers you should modify CMAKE_CXX_COMPILER
+# and CMAKE_C_COMPILER.  If you want to change the compiler flags you should
+# modify CMAKE_CXX_FLAGS and CMAKE_C_FLAGS.  You might want to specify "-O2"
+# as a compiler flag to build an optimized version.  If you want to specify
+# the location of the OpenGL library you should modify OPENGL_LIBRARY
+# (/usr/shlib/libGL.so on tru64 systems.)
+#
+../CMake-1.4.7/Source/cmake
+#
+# Edit CMakeCache.txt, setting MANGLED_MESA_INCLUDE_DIR, MANGLED_MESA_LIBRARY,
+# MANGLED_OSMESA_LIBRARY, to point to the appropriate files and directories 
+# in the mesa directory.
+# For example:
+#
+# MANGLED_MESA_INCLUDE_DIR:PATH=/home/visit/mesa/include
+# MANGLED_MESA_LIBRARY:FILEPATH=/home/visit/mesa/lib/libMesaGL.so
+# MANGLED_OSMESA_LIBRARY:FILEPATH=/home/visit/mesa/lib/libOSMesa.so
+#
+# Note that you need to be very careful in setting the above variables so
+# that you provide the appropriate filename or path.
+#
+../CMake-1.4.7/Source/cmake
+
+#
+# On tru64 systems using g++ 3.0.4, several files in the Imaging directory
+# will not compile because of an internal compiler error.  You will need to
+# comment out the code in the method ThreadedExecute (with "#if 0" as the
+# first line in the method and "#endif" as the last line in the method.)
+# The files are:
+#    Imaging/vtkImageContinuousDilate3D.cxx
+#    Imaging/vtkImageContinuousErode3D.cxx
+#    Imaging/vtkImageConvolve.cxx
+#    Imaging/vtkImageRange3D.cxx
+#    Imaging/vtkImageVariance3D.cxx
+#
+make
+
+#
+# Install it in the visit directory under the vtk directory.
+#
+mkdir ../visit/vtk
+mkdir ../visit/vtk/{Common,Filtering,Graphics,Hybrid,IO,Imaging,Rendering,MangleMesaInclude,lib}
+cp vtkConfigure.h        ../visit/vtk
+cp vtkToolkits.h         ../visit/vtk
+cp vtk*Instantiator.h    ../visit/vtk
+cp Common/*.h            ../visit/vtk/Common
+cp Filtering/*.h         ../visit/vtk/Filtering
+cp Graphics/*.h          ../visit/vtk/Graphics
+cp Hybrid/*.h            ../visit/vtk/Hybrid
+cp IO/*.h                ../visit/vtk/IO
+cp Imaging/*.h           ../visit/vtk/Imaging
+cp Rendering/*.h         ../visit/vtk/Rendering
+cp MangleMesaInclude/*.h ../visit/vtk/MangleMesaInclude
+cp bin/*.so              ../visit/vtk/lib
+cd ..
+
+#
+# Several of the header files in MangleMesaInclude have absolute paths
+# of other headers files that are located in the directories you built
+# VTK in.  This means that even though the header files were copied to
+# the visit/vtk directory, there are still references to header files
+# in directories where you built VTK.  This may cause problems if you
+# later remove the directories where you built VTK, or if someone else
+# were to use your installation and the permissions in your directories
+# were incorrect.
+#
+
+Qt
+===
+
+The Qt toolkit from Trolltech is a free (for non-commercial use), cross-
+platform Graphical User Inteface toolkit that runs on X11, MS Windows, and
+Mac-X. VisIt uses Qt as the basis of its GUI and Viewer.  Follow the
+directions listed below to build Qt.  You can use Qt version 2.3.0 or 3.0.2
+on all the systems except tru64 where you must use 3.0.2.  Version 2.3.0
+generally looks nicer than version 3.0.2, so we recommend it where possible.
+If you have any problems building or installing Qt, read the INSTALL file
+in the Qt distribution for more information.
+
+#
+# Build Qt 2.3.0
+#
+gunzip qt-x11-2.3.0.tar.gz
+tar xf qt-x11-2.3.0.tar
+cd qt-2.3.0
+setenv QTDIR `pwd`
+# Use the appropriate configure command based on the operating system on
+# which you are building Qt.
+./configure -platform aix-g++ -shared -qt-libpng
+./configure -platform irix-64 -shared -qt-libpng
+./configure -platform linux-g++ -shared -qt-libpng
+./configure -platform solaris-g++ -shared -qt-libpng
+./configure -platform tru64-g++ -shared -qt-libpng
+#
+# On aix systems you will need to make the following changes to
+# the file mkspecs/aix-g++/qmake.conf:
+# remove "/usr/X11R6/include" from QMAKE_INCDIR_X11
+# remove "/usr/X11R6/include" from QMAKE_INCDIR_OPENGL
+#
+make
+
+#
+# Install it in the visit directory under the qt directory.
+#
+mkdir ../visit/qt
+mkdir ../visit/qt/bin
+mkdir ../visit/qt/include
+mkdir ../visit/qt/lib
+cp bin/{designer,findtr,moc,qt20fix,qtrename140} ../visit/qt/bin
+cd include; cp *.h ../../visit/qt/include
+cd ../lib;find . -print | cpio -pvmud ../../visit/qt/lib
+cd ../..
+#
+# On AIX systems you will need to add an additional link to the lib
+# directory so that the loader can find the library.
+#
+# ln -s libqt.so.2.3.0 visit/qt/lib/libqt.so
+#
+
+#
+# Build Qt 3.0.2
+#
+gunzip qt-x11-free-3.0.2.tar.gz
+tar xf qt-x11-free-3.0.2.tar
+cd qt-x11-free-3.0.2
+setenv QTDIR `pwd`
+# Use the appropriate configure command based on the operating system on
+# which you are building Qt.
+./configure -platform aix-g++ -shared -qt-libpng
+./configure -platform irix-64 -shared -qt-libpng
+./configure -platform linux-g++ -shared -qt-libpng
+./configure -platform solaris-g++ -shared -qt-libpng
+./configure -platform tru64-g++ -shared -qt-libpng
+#
+# On tru64 systems you will need to make the following changes to
+# the file mkspecs/tru64-g++/qmake.conf:
+# remove "/usr/X11R6/include" from QMAKE_INCDIR_X11
+# remove "/usr/X11R6/lib"     from QMAKE_LIBDIR_X11
+# remove "/usr/X11R6/include" from QMAKE_INCDIR_OPENGL
+# set QMAKE_LIBDIR_OPENGL to "/usr/shlib"
+#
+# On aix systems you will need to make the following changes to
+# the file mkspecs/aix-g++/qmake.conf:
+# remove "/usr/X11R6/include" from QMAKE_INCDIR_X11
+# remove "/usr/X11R6/include" from QMAKE_INCDIR_OPENGL
+#
+make
+
+#
+# Install it in the visit directory under the qt directory.
+#
+mkdir ../visit/qt
+mkdir ../visit/qt/bin
+mkdir ../visit/qt/include
+mkdir ../visit/qt/include/private
+mkdir ../visit/qt/lib
+cp bin/{designer,findtr,moc,qt20fix,qtrename140} ../visit/qt/bin
+cd include; cp *.h ../../visit/qt/include
+cp private/*.h ../../visit/qt/include/private
+cd ../lib;find . -print | cpio -pvmud ../../visit/qt/lib
+cd ../..
+#
+# On AIX systems you will need to add an additional link to the lib
+# directory so that the loader can find the library.
+#
+# ln -s libqt.so.2.3.0 visit/qt/lib/libqt.so
+#
+
+Silo
+=====
+
+Silo is a self-describing, machine-independent scientific file format.
+Silo is one of the file formats supported by VisIt.  Follow the directions
+listed below to build Silo.  If you have any problems building or installing
+Silo, read the INSTALL_NOTES file in the SILO distribution for more information.
+
+#
+# Build Silo
+#
+sh silo020325.sh
+cd silo020325
+env CFLAGS=-O2 ./configure --without-readline --without-hdf5 --without-exodus
+make
+
+#
+# Install it in the visit directory under the silo directory.
+#
+mkdir ../visit/silo
+mkdir ../visit/silo/include
+mkdir ../visit/silo/lib
+cp silo/silo/silo.h   ../visit/silo/include
+cp silo/silo/silo.inc ../visit/silo/include
+cp silo/sdx/sdx.h     ../visit/silo/include
+cp silo/sdx/sdx.inc   ../visit/silo/include
+cp lib/libsilo.a      ../visit/silo/lib
+cd ..
+
+
+Python
+=======
+
+Python is a powerful, free scripting language that is used to drive VisIt's
+viewer when running VisIt without a GUI. Python is cross platform and runs on
+many UNIXes as well as MS Windows and other platforms. VisIt can be configured
+to run without Python if scripting features are not desired.  Follow the
+directions listed below to build Python.  If you have any problems building
+or installing Python, read the README file in the Python distribution for more
+information.
+
+#
+# Build and install it in the visit directory under the python directory.
+#
+gunzip Python-2.1.2.tar.gz
+tar xf Python-2.1.2.tar
+cd Python-2.1.2
+./configure --prefix=`cat ../visitpath`/python
+make
+make install
+
+#
+# You will also need to create a shared version of the python library.
+#
+mkdir tmpdir
+cd tmpdir
+ar -x ../libpython2.1.a
+# Use the appropriate command based on the operating system on which
+# you are creating the shared library.
+g++ -Wl,-G -shared -o ../libpython2.1.so *.o                         # aix
+g++ -shared -o ../libpython2.1.so *.o                                # irix
+g++ -shared -o ../libpython2.1.so *.o                                # linux
+g++ -Wl,-G -o ../libpython2.1.so *.o                                 # solaris
+g++ -Wl,-expect_unresolved -Wl,'*' -shared -o ../libpython2.1.so *.o # tru64
+cd ..
+rm -rf tmpdir
+cp libpython2.1.so ../visit/python/lib/python2.1/config/libpython2.1.so
+cd ..
+
+
+VisIt
+======
+
+VisIt uses GNU's autoconf system to provide platform independence when
+building VisIt in a UNIX environment. Autoconf creates a script called
+configure that tests your system for various libraries and programs required
+to build VisIt.  Follow the directions listed below to build VisIt.
+More information about building VisIt follows after that.
+
+#
+# Build and install it in the visit directory.
+#
+gunzip visit030508.tar.gz
+tar xf visit030508.tar
+cd visit030508/config-site
+echo VISITHOME=`cat ../../visitpath` > `hostname`.conf
+cat Template.conf >> `hostname`.conf
+cd ..
+env CXXFLAGS=-O2 ./configure
+make
+clearcase_bin/visit-bin-dist -v 1.1.4
+# Use the appropriate install command based on the operating system on
+# which you built VisIt.
+clearcase_bin/visit-install 1.1.4 aix `cat ../visitpath`
+clearcase_bin/visit-install 1.1.4 irix6 `cat ../visitpath`
+clearcase_bin/visit-install 1.1.4 linux `cat ../visitpath`
+clearcase_bin/visit-install 1.1.4 osf1 `cat ../visitpath`
+clearcase_bin/visit-install 1.1.4 sunos5 `cat ../visitpath`
+
+When running the configure script you can enable or disable certain dependent
+packages.  All the configure options are listed at the beginning of the
+configure script or can listed by the configure script by typing
+"./configure -help".  The most commonly used options are:
+
+  --enable-parallel       make the parallel version
+  --disable-scripting     build without Python scripting capability
+  --enable-java           build the Java interface library
+  --enable-buildall       build all plugins
+
+  --with-hdf5=INC,LIB     Location of HDF5 header and library
+  --with-vbt=INC,LIB      Location of VBT/DSL headers and libraries
+  --with-saf=INC,LIB      Location of SAF headers and libraries
+
+  --with-exodus[=<DIR>]           enable Exodus driver
+  --with-exodus-include[=<DIR>]   specify Exodus include path
+  --with-exodus-lib[=<DIR>]       specify Exodus lib path
+
+The enable parallel option builds the parallel version of VisIt.  Parallel
+versions are supported on SGI and IBM AIX systems.  The disable scripting
+option builds VisIt without the Python scripting.  The enable buildall
+option builds all the VisIt plugins.  By default, only the most common
+plugins are built.
+
+The second group of options are used when building with support for reading
+SAF files.  The third group of options are used when building with support
+for reading exodus files.
+
+If you have any problems send e-mail to visit-help@llnl.gov.
+

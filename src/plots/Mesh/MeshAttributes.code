@@ -1,0 +1,27 @@
+Function: ChangesRequireRecalculation
+Declaration: bool ChangesRequireRecalculation(const MeshAttributes &obj);
+Definition:
+// ****************************************************************************
+//  Modifications: 
+//
+//    Kathleen Bonnell, Wed Aug 22 16:00:32 PDT 2001
+//    Changing opaque mode no longer requires recalculation.
+//
+//    Jeremy Meredith, Mon Dec  9 16:30:54 PST 2002
+//    Added smoothing level.
+//
+//    Jeremy Meredith, Fri Dec 20 11:33:43 PST 2002
+//    Added point size variable and its enabled flag.
+//
+// ****************************************************************************
+
+bool
+MeshAttributes::ChangesRequireRecalculation(const MeshAttributes &obj)
+{
+    return ((outlineOnlyFlag != obj.outlineOnlyFlag) ||
+            (errorTolerance != obj.errorTolerance) ||
+            (pointSize != obj.pointSize) ||
+            (pointSizeVar != obj.pointSizeVar) ||
+            (pointSizeVarEnabled != obj.pointSizeVarEnabled) ||
+            (smoothingLevel != obj.smoothingLevel));
+}

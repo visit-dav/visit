@@ -1,0 +1,82 @@
+Function: CopyAttributes
+Declaration: virtual bool CopyAttributes(const AttributeGroup *);
+Definition:
+// ****************************************************************************
+// Method: SphereSliceAttributes::CopyAttributes
+//
+// Purpose: 
+//   CopyAttributes method for the SphereSliceAttributes class.
+//
+// Notes:
+//   Copied from old .C file so that it will always be regenerated correctly
+//   when xml2atts is run.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   December 16, 2002 
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool
+SphereSliceAttributes::CopyAttributes(const AttributeGroup *atts)
+{
+    bool retval = false;
+
+    if(TypeName() == atts->TypeName())
+    {
+        // Call assignment operator.
+        const SphereSliceAttributes *tmp = (const SphereSliceAttributes *)atts;
+        *this = *tmp;
+        retval = true;
+    }
+    else if(atts->TypeName() == "SphereAttributes")
+    {
+        const SphereAttributes *tmp = (const SphereAttributes *)atts;
+        SetOrigin(tmp->GetOrigin());
+        SetRadius(tmp->GetRadius());
+        retval = true;
+    }
+
+    return retval;
+}
+
+Function: CreateCompatible
+Declaration: virtual AttributeSubject *CreateCompatible(const std::string &) const;
+Definition:
+// ****************************************************************************
+// Method: SphereSliceAttributes::CreateCompatible
+//
+// Purpose: 
+//   CreateCompatible method for the SphereSliceAttributes class.
+//
+// Notes:
+//   Copied from old .C file so that it will always be regenerated correctly
+//   when xml2atts is run.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   December 16, 2002 
+//
+// Modifications:
+//
+// ****************************************************************************
+AttributeSubject *
+SphereSliceAttributes::CreateCompatible(const std::string &tname) const
+{
+    AttributeSubject *retval = 0;
+
+    if(TypeName() == tname)
+    {
+        retval = new SphereSliceAttributes(*this);
+    }
+    else if(tname == "SphereAttributes")
+    {
+        SphereAttributes *s = new SphereAttributes;
+        s->SetOrigin(GetOrigin());
+        s->SetRadius(GetRadius());
+        retval = s;
+    }
+
+    return retval;
+}
+

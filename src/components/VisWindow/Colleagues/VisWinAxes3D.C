@@ -1,0 +1,733 @@
+// ************************************************************************* //
+//                                VisWinAxes3D.C                              //
+// ************************************************************************* //
+
+#include <vtkKatCubeAxesActor.h>
+#include <vtkRenderer.h>
+#include <vtkActorCollection.h>
+#include <vtkActor.h>
+#include <vtkPolyDataMapper.h>
+#include <vtkProperty.h>
+#include <vtkOutlineSource.h>
+
+#include <VisWindow.h>
+#include <VisWindowColleagueProxy.h>
+#include <VisWinAxes3D.h>
+
+
+
+// ****************************************************************************
+//  Method: VisWinAxes3D constructor
+//
+//  Arguments:
+//      p      A proxy that allows more access to the VisWindow for this 
+//             colleague.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   June 28, 2001
+//
+//  Modifications:
+//
+//    Kathleen Bonnell, Fri Aug  3 14:55:59 PDT 2001
+//    Changed from using a 2d cube axes actor to using a 3d version.
+//
+//    Kathleen Bonnell, Tue Oct 30 10:30:10 PST 2001 
+//    Removed last*Pow, last*AxisDigits. 
+//
+//    Kathleen Bonnell, Mon Nov 26 9:16:32 PST 2001
+//    Make the axes un-pickable.
+//
+//    Kathleen Bonnell, Thu Oct  3 14:41:19 PDT 2002  
+//    Disable lighting on the axesBox by setting its ambient/diffuse
+//    coefficients. 
+//
+// ****************************************************************************
+
+VisWinAxes3D::VisWinAxes3D(VisWindowColleagueProxy &p) : VisWinColleague(p)
+{
+    axes = vtkKatCubeAxesActor::New();
+    axes->SetFlyModeToClosestTriad();
+    axes->GetProperty()->SetColor(0, 0, 0);
+    axes->SetCornerOffset(0.);
+    axes->PickableOff();
+
+    axesBoxSource = vtkOutlineSource::New();
+    axesBoxMapper = vtkPolyDataMapper::New();
+    axesBoxMapper->SetInput(axesBoxSource->GetOutput());
+    axesBox = vtkActor::New();
+    axesBox->SetMapper(axesBoxMapper);
+    axesBox->PickableOff();
+    axesBox->GetProperty()->SetAmbient(1.);
+    axesBox->GetProperty()->SetDiffuse(0.);
+    visibility = true;
+
+    for (int i = 0; i < 6; i++)
+    {
+        currentBounds[i] = -1;
+    }
+    addedAxes3D = false;
+}
+
+
+// ****************************************************************************
+//  Method: VisWinAxes3D destructor
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   June 28, 2001
+//
+// ****************************************************************************
+
+VisWinAxes3D::~VisWinAxes3D()
+{
+    if (axes != NULL)
+    {
+        axes->Delete();
+        axes = NULL;
+    }
+    if (axesBoxSource != NULL)
+    {
+        axesBoxSource->Delete();
+        axesBoxSource = NULL;
+    }
+    if (axesBoxMapper != NULL)
+    {
+        axesBoxMapper->Delete();
+        axesBoxMapper = NULL;
+    }
+    if (axesBox != NULL)
+    {
+        axesBox->Delete();
+        axesBox = NULL;
+    }
+}
+
+
+// ****************************************************************************
+//  Method: VisWinAxes3D::SetForegroundColor
+//
+//  Purpose:
+//      Sets the color of the axes.
+//
+//  Arguments:
+//      fr        The red component of the foreground color.
+//      fg        The green component of the foreground color.
+//      fb        The blue component of the foreground color.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   June 28, 2001
+//
+// ****************************************************************************
+
+void
+VisWinAxes3D::SetForegroundColor(float fr, float fg, float fb)
+{
+    axes->GetProperty()->SetColor(fr, fg, fb);
+    axesBox->GetProperty()->SetColor(fr, fg, fb);
+}
+
+
+// ****************************************************************************
+//  Method: VisWinAxes3D::Start3DMode
+//
+//  Purpose:
+//      We are about to enter 3D mode, so the axes should be added to the
+//      background, as long as there are plots.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   June 28, 2001
+//
+// ****************************************************************************
+
+void
+VisWinAxes3D::Start3DMode(void)
+{
+    if (ShouldAddAxes3D())
+    {
+        AddAxes3DToWindow();
+    }
+}
+
+
+// ****************************************************************************
+//  Method: VisWinAxes3D::Stop3DMode
+//
+//  Purpose:
+//      We are about to leave 3D mode, so the axes should be removed from the
+//      background.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   June 28, 2001
+//
+// ****************************************************************************
+
+void
+VisWinAxes3D::Stop3DMode(void)
+{
+    RemoveAxes3DFromWindow();
+}
+
+
+// ****************************************************************************
+//  Method: VisWinAxes3D::HasPlots
+//
+//  Purpose:
+//      This routine is how the vis window tells this colleague that it now
+//      has plots.  We can now add the axes.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   June 28, 2001
+//
+// ****************************************************************************
+
+void
+VisWinAxes3D::HasPlots(void)
+{
+    if (ShouldAddAxes3D())
+    {
+        AddAxes3DToWindow();
+    }
+}
+
+
+// ****************************************************************************
+//  Method: VisWinAxes3D::NoPlots
+//
+//  Purpose:
+//      This routine is how the vis window tells this colleague that it no
+//      longer has plots.  Remove the axes.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   June 28, 2001
+//
+// ****************************************************************************
+
+void
+VisWinAxes3D::NoPlots(void)
+{
+    RemoveAxes3DFromWindow();
+}
+
+
+// ****************************************************************************
+//  Method: VisWinAxes3D::ShouldAddAxes3D
+//
+//  Purpose:
+//      There are two constraints on whether the axes should be added to the
+//      VisWindow - whether we are in 3D mode and whether we have plots.  This
+//      buffers the logic for that so the individual operations don't need to
+//      know about each other.
+//
+//  Returns:    true if the axes should be added to the window, false 
+//              otherwise.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   June 28, 2001
+//
+// ****************************************************************************
+
+bool
+VisWinAxes3D::ShouldAddAxes3D()
+{
+    return (mediator.GetMode() == WINMODE_3D && mediator.HasPlots());
+}
+
+
+// ****************************************************************************
+//  Method: VisWinAxes3D::AddAxes3DToWindow
+//
+//  Purpose:
+//      Adds the axes to the window.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   June 28, 2001
+//
+// ****************************************************************************
+
+void
+VisWinAxes3D::AddAxes3DToWindow(void)
+{
+    if (addedAxes3D)
+    {
+        return;
+    }
+
+    //
+    // Get the camera of the canvas and register it with the axes.
+    //
+    axes->SetCamera(mediator.GetCanvas()->GetActiveCamera());
+
+    //
+    // Add the axes to the background (note that we are using a different
+    // renderer's camera -- the canvas').
+    //
+    mediator.GetCanvas()->AddProp(axes);
+    mediator.GetCanvas()->AddActor(axesBox);
+
+    addedAxes3D = true;
+}
+
+
+// ****************************************************************************
+//  Method: VisWinAxes3D::RemoveAxes3DFromWindow
+//
+//  Purpose:
+//      Removes the axes from the window.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   June 28, 2001
+//
+// ****************************************************************************
+
+void
+VisWinAxes3D::RemoveAxes3DFromWindow(void)
+{
+    if (!addedAxes3D)
+    {
+        return;
+    }
+
+    mediator.GetCanvas()->RemoveProp(axes);
+    mediator.GetCanvas()->RemoveActor(axesBox);
+
+    addedAxes3D = false;
+}
+
+
+// ****************************************************************************
+//  Method: VisWinAxes3D::SetBounds
+//
+//  Purpose:
+//    Sets the bounds for this axes to use.
+//
+//  Arguments:
+//    bounds    The bounds as min-x, max-x, min-y, max-y, min-z, and max-z.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   June 20, 2l01
+//
+//  Modifications:
+//    Kathleen Bonnell, Tue Oct 30 10:30:10 PST 2001 
+//    Removed calls to AdjustValues, AdjustRange. Functionality moved to
+//    more appropriate location of vtkKatCubeAxesActor.
+//
+// ****************************************************************************
+
+void
+VisWinAxes3D::SetBounds(float bounds[6])
+{
+    bool boundsChanged = false; 
+
+    for (int i = 0; i < 6 ; i++)
+    {
+      if (currentBounds[i] == bounds[i])
+      {
+          continue;
+      }
+
+      boundsChanged = true; 
+      break;
+    }
+
+    if (boundsChanged)
+    {
+        //
+        // Add a fudge-factor to prevent axes from being obscured by plots
+        // that fill their full extents. 
+        //
+        float fudgeX = (bounds[1] - bounds[0]) * 0.001;
+        float fudgeY = (bounds[3] - bounds[2]) * 0.001;
+        float fudgeZ = (bounds[5] - bounds[4]) * 0.001;
+        currentBounds[0] = bounds[0] - fudgeX;
+        currentBounds[1] = bounds[1] + fudgeX;
+        currentBounds[2] = bounds[2] - fudgeY;
+        currentBounds[3] = bounds[3] + fudgeY;
+        currentBounds[4] = bounds[4] - fudgeZ;
+        currentBounds[5] = bounds[5] + fudgeZ;
+
+        axes->SetBounds(currentBounds);
+        axesBoxSource->SetBounds(currentBounds);
+    }
+}
+
+
+// ****************************************************************************
+//  Method: VisWinAxes3D::UpdateView
+//
+//  Purpose:
+//      Updates the axes' camera with the active camera. 
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   June 20, 2001
+//
+// ****************************************************************************
+
+void
+VisWinAxes3D::UpdateView()
+{
+    axes->SetCamera(mediator.GetCanvas()->GetActiveCamera());
+}
+
+
+// ****************************************************************************
+//  Method: VisWinAxes3D::UpdatePlotList
+//
+//  Purpose:
+//      Decides what the units are for the X, Y, and Z directions.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 27, 2002
+//
+// ****************************************************************************
+
+void
+VisWinAxes3D::UpdatePlotList(vector<avtActor_p> &list)
+{
+    int nActors = list.size();
+    string x, y, z;
+    for (int i = 0 ; i < nActors ; i++)
+    {
+        avtDataAttributes &atts = 
+                             list[i]->GetBehavior()->GetInfo().GetAttributes();
+
+        // Last one in is the winner.
+        if (atts.GetXUnits() != "")
+        {
+            x = atts.GetXUnits();
+        }
+        if (atts.GetYUnits() != "")
+        {
+            y = atts.GetYUnits();
+        }
+        if (atts.GetZUnits() != "")
+        {
+            z = atts.GetZUnits();
+        }
+    }
+
+    axes->SetXUnits(x.c_str());
+    axes->SetYUnits(y.c_str());
+    axes->SetZUnits(z.c_str());
+}
+
+
+// ****************************************************************************
+//  Function: SetXTickVisibility
+//
+//  Purpose:
+//    Sets the visibility of x-axis ticks.
+//
+//  Arguments:
+//    xVis       The visibility of the x-axis ticks.
+//    xLabelsVis The visibility of the x-axis labels.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   June 28, 2001.
+//
+// ****************************************************************************
+
+void
+VisWinAxes3D::SetXTickVisibility(int xVis, int xLabelsVis)
+{
+    axes->SetXAxisMinorTickVisibility(xVis);
+    // Major ticks dependent upon labels visibility, too
+    axes->SetXAxisTickVisibility(xVis || xLabelsVis);
+}
+
+
+// ****************************************************************************
+//  Function: SetYTickVisibility
+//
+//  Pupose:
+//    Sets the visibility of y-axis ticks.
+//
+//  Arguments:
+//    yVis       The visibility of the y-axis ticks.
+//    yLabelsVis The visibility of the y-axis labels.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   June 28, 2001.
+//
+// ****************************************************************************
+
+void
+VisWinAxes3D::SetYTickVisibility(int yVis, int yLabelsVis)
+{
+    axes->SetYAxisMinorTickVisibility(yVis);
+    // Major ticks dependent upon labels visibility, too
+    axes->SetYAxisTickVisibility(yVis || yLabelsVis);
+}
+
+// ****************************************************************************
+//  Function: SetZTickVisibility
+//
+//  Purpose:
+//    Sets the visibility of z-axis ticks.
+//
+//  Arguments:
+//    zVis       The visibility of the z-axis ticks.
+//    zLabelsVis The visibility of the z-axis labels.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   June 28, 2001.
+//
+// ****************************************************************************
+
+void
+VisWinAxes3D::SetZTickVisibility(int zVis, int zLabelsVis)
+{
+    axes->SetZAxisMinorTickVisibility(zVis);
+    // Major ticks dependent upon labels visibility, too
+    axes->SetZAxisTickVisibility(zVis || zLabelsVis);
+}
+
+
+// ****************************************************************************
+//  Function: SetXLabelVisibility
+//
+//  Purpose:
+//      Sets the visibility of x-axis labels.
+//
+//  Arguments:
+//      x-vis     The visibility of the x-axis labels.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   June 28, 2001.
+//
+// ****************************************************************************
+
+void
+VisWinAxes3D::SetXLabelVisibility(int xVis)
+{
+    axes->SetXAxisLabelVisibility(xVis);
+    axes->SetXAxisTickVisibility(xVis);
+}
+
+   
+// ****************************************************************************
+//  Function: SetYLabelVisibility
+//
+//  Purpose:
+//      Sets the visibility of y-axis labels.
+//
+//  Arguments:
+//      y-vis     The visibility of the y-axis labels.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   June 28, 2001.
+//
+// ****************************************************************************
+
+void
+VisWinAxes3D::SetYLabelVisibility(int yVis)
+{
+    axes->SetYAxisLabelVisibility(yVis);
+}
+
+   
+// ****************************************************************************
+//  Function: SetZLabelVisibility
+//
+//  Purpose:
+//      Sets the visibility of z-axis labels.
+//
+//  Arguments:
+//      z-vis     The visibility of the z-axis labels.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   June 28, 2001.
+//
+// ****************************************************************************
+
+void
+VisWinAxes3D::SetZLabelVisibility(int zVis)
+{
+    axes->SetZAxisLabelVisibility(zVis);
+}
+
+
+// ****************************************************************************
+//  Function: SetXGridVisibility
+//
+//  Purpose:
+//      Sets the visibility of x-axis gridlines.
+//
+//  Arguments:
+//      x-vis     The visibility of the x-axis gridlines.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   August 3, 2001.
+//
+// ****************************************************************************
+
+void
+VisWinAxes3D::SetXGridVisibility(int xVis)
+{
+    axes->SetDrawXGridlines(xVis);
+}
+
+
+// ****************************************************************************
+//  Function: SetYGridVisibility
+//
+//  Purpose:
+//      Sets the visibility of y-axis gridlines.
+//
+//  Arguments:
+//      y-vis     The visibility of the y-axis gridlines.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   August 3, 2001.
+//
+// ****************************************************************************
+
+void
+VisWinAxes3D::SetYGridVisibility(int yVis)
+{
+    axes->SetDrawYGridlines(yVis);
+}
+
+
+// ****************************************************************************
+//  Function: SetZGridVisibility
+//
+//  Purpose:
+//      Sets the visibility of z-axis gridlines.
+//
+//  Arguments:
+//      z-vis     The visibility of the z-axis gridlines.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   August 3, 2001.
+//
+// ****************************************************************************
+
+void
+VisWinAxes3D::SetZGridVisibility(int zVis)
+{
+    axes->SetDrawZGridlines(zVis);
+}
+
+   
+// ****************************************************************************
+//  Function: SetVisibility
+//
+//  Purpose:
+//      Sets the visibility of this colleague.
+//
+//  Arguments:
+//      vis     The visibility of this colleague.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   June 28, 2001.
+//
+// ****************************************************************************
+
+void
+VisWinAxes3D::SetVisibility(int vis)
+{
+    visibility = vis;
+    axes->SetVisibility(vis);
+    axesBox->SetVisibility(vis);
+}
+   
+
+// ****************************************************************************
+//  Function: SetBBoxVisibility
+//
+//  Purpose:
+//      Sets the visibility of the bounding box. 
+//
+//  Arguments:
+//      vis     The visibility of this bounding box.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   June 28, 2001.
+//
+// ****************************************************************************
+
+void
+VisWinAxes3D::SetBBoxVisibility(int vis)
+{
+    axesBox->SetVisibility(vis && visibility);
+}
+
+
+// ****************************************************************************
+//  Function: SetFlyMode
+//
+//  Purpose:
+//      Sets the fly-mode (closest-triad, furthest-triad, outer-edges).
+//
+//  Arguments:
+//      mode     The fly-mode.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   June 28, 2001.
+//
+//  Modifications:
+//
+//    Kathleen Bonnell, Fri Aug  3 15:04:32 PDT 2001
+//    Added Static mode, enabled furthest triad mode.
+//
+//    Kathleen Bonnell, Wed Nov  7 17:45:20 PST 2001 
+//    Changed Static to StaticEdges, added StaticTriad  mode. 
+//
+// ****************************************************************************
+
+void
+VisWinAxes3D::SetFlyMode(int mode)
+{
+    switch (mode)
+    {
+        case 0 : axes->SetFlyModeToClosestTriad(); break;
+        case 1 : axes->SetFlyModeToFurthestTriad(); break;
+        case 2 : axes->SetFlyModeToOuterEdges(); break;
+        case 3 : axes->SetFlyModeToStaticTriad(); break;
+        case 4 : axes->SetFlyModeToStaticEdges(); break;
+        default : axes->SetFlyModeToClosestTriad(); break;
+    }
+}
+
+  
+// ****************************************************************************
+//  Function: SetTickLocation
+//
+//  Purpose:
+//      Sets the location of the ticks.
+//
+//  Arguments:
+//      loc     The location of the ticks.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   June 28, 2001.
+//
+// ****************************************************************************
+
+void
+VisWinAxes3D::SetTickLocation(int loc)
+{
+    axes->SetTickLocation(loc);
+} 
+
+
+// ****************************************************************************
+//  Function: ReAddToWindow
+//
+//  Purpose:
+//    Removes, then adds the axes back into the window.  For Anti-aliasing
+//    purposes, so that the axes is rendered after the plots.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   May 28, 2003
+//
+// ****************************************************************************
+
+void
+VisWinAxes3D::ReAddToWindow()
+{
+    RemoveAxes3DFromWindow();
+    if (ShouldAddAxes3D())
+    {
+        AddAxes3DToWindow();
+    }
+}

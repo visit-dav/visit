@@ -1,0 +1,188 @@
+<html>
+<body bgcolor="#ffffff">
+<center><b><font size="6">Command line arguments</font></b></center>
+<p>
+When VisIt is run from the command line, you may provide several optional 
+arguments that influence how it is run. Here is a complete list of those
+arguments along with descriptions of what they do. The various command line 
+arguments are divided into several categories. Clicking on the links below will 
+display the arguments for the selected category.</p>
+<ul>
+  <li><a href="#ProgramArguments">Program arguments</a></li>
+  <li><a href="#WindowArguments">Window arguments</a></li>
+  <li><a href="#ParallelArguments">Parallel arguments</a></li>
+  <li><a href="#FileArguments">File arguments</a></li>
+  <li><a href="#VersionArguments">Version arguments</a></li>
+  <li><a href="#ViewerArguments">Viewer arguments</a></li>
+  <li><a href="#DebuggingArguments">Debugging arguments</a></li>
+</ul>
+<p>
+&nbsp;</p>
+<p>
+<b><font size="4"><a name="ProgramArguments">Program arguments</a></font></b></p>
+<p>
+VisIt can have multiple user interfaces. At present, VisIt has a Graphical User 
+Interface (GUI) and a Command Line Interface (CLI). These arguments allow you to 
+choose between those interfaces.
+</p>
+<table border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="100%" id="AutoNumber1">
+  <tr>
+    <td width="21%">-gui</td>
+    <td width="79%">Run with the Graphical User Interface. This is the default.</td>
+  </tr>
+  <tr>
+    <td width="21%">-cli</td>
+    <td width="79%">Run with the Command Line Interface. This allows you to run 
+    Python scripts that control VisIt.</td>
+  </tr>
+</table>
+<p>&nbsp;</p>
+<p><b><font size="4"><a name="WindowArguments">Window arguments</a></font></b></p>
+<p>These arguments control the size, location, colors, and style of VisIt's GUI 
+and viewer.</p>
+<table border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="100%" id="AutoNumber4">
+  <tr>
+    <td width="21%">-small</td>
+    <td width="79%">Forces the viewer to use a smaller window area. </td>
+  </tr>
+  <tr>
+    <td width="21%">-geometry <i>spec</i></td>
+    <td width="79%">Specifies the portion of the screen to use. This is a 
+    standard X-Windows geometry specification.</td>
+  </tr>
+  <tr>
+    <td width="21%">-style <i>style</i></td>
+    <td width="79%">Specifies the Window style to use. This is one of the 
+    following: windows, cde, motif, sgi.</td>
+  </tr>
+  <tr>
+    <td width="21%">-background <i>color</i></td>
+    <td width="79%">Specifies the background color for the GUI.</td>
+  </tr>
+  <tr>
+    <td width="21%">-foreground <i>color</i></td>
+    <td width="79%">Specifies the foreground color for the GUI.</td>
+  </tr>
+  <tr>
+    <td width="21%">-nowin</td>
+    <td width="79%">Runs VisIt without viewer windows.</td>
+  </tr>
+</table>
+<p>&nbsp;</p>
+<p><b><font size="4"><a name="ParallelArguments">Parallel arguments</a></font></b></p>
+<p>VisIt provides several options that control how the compute engine is 
+launched and run in a parallel computing environment. None of these options 
+apply for the serial version of the compute engine.. These options allow you to 
+specify the number of processors and nodes on which the compute engine is run. 
+You can also specify options that are useful to running the compute engine in a 
+batch environment.</p>
+<table border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="100%" id="AutoNumber5">
+  <tr>
+    <td width="20%">-par</td>
+    <td width="80%">Select the parallel version.</td>
+  </tr>
+  <tr>
+    <td width="20%">-l <i>method</i></td>
+    <td width="80%">The launch method to use. This is platform dependent. Use <i>
+    mpirun</i> on SGI systems.&nbsp; Use <i>psub</i> or <i>poe</i> on AIX 
+    systems.</td>
+  </tr>
+  <tr>
+    <td width="20%">-np <i>processors</i></td>
+    <td width="80%">The number of processors to use.</td>
+  </tr>
+  <tr>
+    <td width="20%">-nn <i>nodes</i></td>
+    <td width="80%">The number of nodes to allocate</td>
+  </tr>
+  <tr>
+    <td width="20%">-p <i>partition</i></td>
+    <td width="80%">The partition to run in.</td>
+  </tr>
+  <tr>
+    <td width="20%">-n <i>name</i></td>
+    <td width="80%">The parallel job name.</td>
+  </tr>
+  <tr>
+    <td width="20%">-b <i>bank</i></td>
+    <td width="80%">Bank from which to draw resources.</td>
+  </tr>
+  <tr>
+    <td width="20%">-t <i>time</i></td>
+    <td width="80%">Maximum job run time</td>
+  </tr>
+  <tr>
+    <td width="20%">-forcestatic</td>
+    <td width="80%">Forces VisIt's compute engine to use static load balancing.</td>
+  </tr>
+  <tr>
+    <td width="20%">-forcedynamic</td>
+    <td width="80%">Forces VisIt's compute engine to use dynamic load balancing.</td>
+  </tr>
+</table>
+<p>&nbsp;</p>
+<p><b><font size="4"><a name="FileArguments">File arguments</a></font></b></p>
+<p>VisIt provides a couple options that allow you to specify default data files 
+or script files to process when VisIt starts.</p>
+<table border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="100%" id="AutoNumber6">
+  <tr>
+    <td width="20%">-s <i>scriptname</i></td>
+    <td width="80%">This argument runs the specified VisIt script. Note that 
+    this argument only takes effect if the -cli argument is also specified.</td>
+  </tr>
+  <tr>
+    <td width="20%">-o <i>filename</i></td>
+    <td width="80%">Attempts to have VisIt open the specified data file. Note 
+    that the data file need not be located on the local machine. If the file is 
+    located remotely, the filename must be of the form:&nbsp; <i>
+    hostname:filename</i>.</td>
+  </tr>
+</table>
+<p>&nbsp;</p>
+<p><b><font size="4"><a name="VersionArguments">Version arguments</a></font></b></p>
+<p>These arguments allow you to run a different version other than the newest 
+installed version of VisIt. Note that these arguments are only useful if 
+multiple versions of VisIt are installed.</p>
+<table border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="100%" id="AutoNumber2">
+  <tr>
+    <td width="21%">-beta</td>
+    <td width="79%">Run the current beta version if one exists.</td>
+  </tr>
+  <tr>
+    <td width="21%">-v</td>
+    <td width="79%">Run the specified version.</td>
+  </tr>
+  <tr>
+    <td width="21%">-dir</td>
+    <td width="79%">Run the version in the given directory.</td>
+  </tr>
+</table>
+<p>&nbsp;</p>
+<p><b><font size="4"><a name="ViewerArguments">Viewer arguments</a></font></b></p>
+<p>These arguments apply only to VisIt's viewer and are primarily for internal 
+use. Most users will not need to use these arguments.</p>
+<table border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="100%" id="AutoNumber3">
+  <tr>
+    <td width="20%">-noconfig</td>
+    <td width="80%">Prevents VisIt from reading configuration files.</td>
+  </tr>
+  <tr>
+    <td width="20%">-noint</td>
+    <td width="80%">Disables interruption capability.</td>
+  </tr>
+</table>
+<p>&nbsp;</p>
+<p><b><font size="4"><a name="DebuggingArguments">Debugging arguments</a></font></b></p>
+<p>When VisIt's debugging argument is specified, VisIt opens a set of log files 
+into which it writes progress reports. The log files are useful for determining 
+the flow of program control or where any failures occurred. Most users will not 
+need to use these arguments.</p>
+<table border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="100%" id="AutoNumber7">
+  <tr>
+    <td width="20%">-debug <i>level</i></td>
+    <td width="80%">Runs VisIt in debug mode producing different levels of 
+    detailed output. There level must be between 1 and 5.</td>
+  </tr>
+</table>
+</body>
+</html>

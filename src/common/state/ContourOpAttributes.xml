@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+  <Attribute name="ContourOpAttributes" purpose="This class contains the operator attributes for the contour operator." persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h">
+    <Enum name="ContourMethod">
+      Level
+      Value
+      Percent
+    </Enum>
+    <Enum name="ContourScaling">
+      Linear
+      Log
+    </Enum>
+    <Field name="contourNLevels" label="contourNLevels" type="int">
+      10
+    </Field>
+    <Field name="contourValue" label="contourValue" type="doubleVector">
+    </Field>
+    <Field name="contourPercent" label="contourPercent" type="doubleVector">
+    </Field>
+    <Field name="contourMethod" label="contourMethod" type="enum" subtype="ContourMethod">
+    </Field>
+    <Field name="minFlag" label="minFlag" type="bool">
+      false
+    </Field>
+    <Field name="maxFlag" label="maxFlag" type="bool">
+      false
+    </Field>
+    <Field name="min" label="min" type="double">
+      0.000000
+    </Field>
+    <Field name="max" label="max" type="double">
+      1.000000
+    </Field>
+    <Field name="scaling" label="scaling" type="enum" subtype="ContourScaling">
+    </Field>
+    <Field name="variable" label="variable" type="string">
+      default
+    </Field>
+  </Attribute>

@@ -1,0 +1,25 @@
+/* XPM */
+static const char *folder_xpm[] = {
+"16 16 5 1",
+". c #040404",
+"# c #808304",
+"a c None",
+"b c #f3f704",
+"c c #f3f7f3",
+"aaaaaaaaaaaaaaaa",
+"aaaaaaaaaaaaaaaa",
+"aaaaaaaaaaaaaaaa",
+"a...aaaaaaaaaaaa",
+".bcb.........aaa",
+".cbcbcbcbcbcb.aa",
+".bc...........aa",
+".c.##########.aa",
+".c.##########.aa",
+".b.##########.aa",
+".c.##########.aa",
+".b.##########.aa",
+"..###########.aa",
+"..............aa",
+"aaaaaaaaaaaaaaaa",
+"aaaaaaaaaaaaaaaa"
+};
