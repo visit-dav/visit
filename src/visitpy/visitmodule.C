@@ -1280,7 +1280,10 @@ visit_AnimationSetFrame(PyObject *self, PyObject *args)
 // Creation:   Tue Mar 2 09:13:29 PDT 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Mar 31 11:21:10 PDT 2004
+//   I removed the invalid time slider check so it can be handled more
+//   appropriately in the viewer.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -1294,19 +1297,6 @@ visit_SetActiveTimeSlider(PyObject *self, PyObject *args)
     char *tsName = NULL;
     if(!PyArg_ParseTuple(args, "s", &tsName))
         return NULL;
-
-    //
-    // Make sure that the time slider has a correlation. If not, it is not
-    // a valid time slider.
-    //
-    DatabaseCorrelationList *correlations = viewer->GetDatabaseCorrelationList();
-    DatabaseCorrelation *c = correlations->FindCorrelation(tsName);
-    if(c == 0)
-    {
-        fprintf(stderr, "You cannot set the active time slider to \"%s\" "
-            "because there is no such time slider.\n", tsName);
-        return NULL;
-    }
 
     MUTEX_LOCK();
         viewer->SetActiveTimeSlider(tsName);

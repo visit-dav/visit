@@ -1,7 +1,11 @@
 #include <AnimationActions.h>
+#include <ViewerFileServer.h>
 #include <ViewerPlotList.h>
 #include <ViewerWindow.h>
 #include <ViewerWindowManager.h>
+
+#include <DatabaseCorrelationList.h>
+#include <DebugStream.h>
 
 #include <qiconset.h>
 #include <qpixmap.h>
@@ -209,8 +213,41 @@ SetActiveTimeSliderAction::SetActiveTimeSliderAction(ViewerWindow *win) :
     DisableVisual();
 }
 
+// ****************************************************************************
+// Method: SetActiveTimeSliderAction::Execute
+//
+// Purpose: 
+//   This method executes the SetActiveTimeSlider action.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Mar 31 09:50:32 PDT 2004
+//
+// Modifications:
+//   Brad Whitlock, Wed Mar 31 09:50:37 PDT 2004
+//   Added code to expand the time slider name in case it contains relative
+//   paths, etc.
+//
+// ****************************************************************************
+
 void
 SetActiveTimeSliderAction::Execute()
 {
-    windowMgr->SetActiveTimeSlider(args.GetDatabase(), windowId);
+    //
+    // If we don't find a correlation for the desired time slider, expand the
+    // time slider name and try and use the expanded time slider name.
+    //
+    ViewerFileServer *fs = ViewerFileServer::Instance();
+    DatabaseCorrelationList *cL = fs->GetDatabaseCorrelationList();
+    std::string tsName(args.GetDatabase());
+    if(cL->FindCorrelation(tsName) == 0)
+    {
+        std::string host, db;
+        fs->ExpandDatabaseName(tsName, host, db);
+        debug3 << "The new time slider had to be expanded before we could "
+                  "use it. It was called: "
+               << args.GetDatabase().c_str() << ". Now it is called: "
+               << tsName.c_str() << endl;
+    }
+
+    windowMgr->SetActiveTimeSlider(tsName, windowId);
 }

@@ -846,6 +846,10 @@ ViewerFileServer::ExpandDatabaseName(std::string &hostDBName,
 //   Brad Whitlock, Mon Jan 13 16:36:11 PST 2003
 //   I added code to handle a LostConnectionException.
 //
+//   Brad Whitlock, Wed Mar 31 09:55:20 PDT 2004
+//   Added a call to ExpansionRequired so we can prevent calls to the
+//   mdserver if they are not really needed.
+//
 // ****************************************************************************
 
 std::string
@@ -854,53 +858,101 @@ ViewerFileServer::ExpandedFileName(const std::string &host,
 {
     std::string retval(filename);
 
-    // Try and start a server.
-    NoFaultStartServer(host);
-
-    if(servers.find(host) != servers.end())
+    //
+    // If filename expansion is required, expand the filename.
+    //
+    if(ExpansionRequired(filename))
     {
-        int  numAttempts = 0;
-        bool tryAgain = false;
+        // Try and start a server.
+        NoFaultStartServer(host);
 
-        do
+        if(servers.find(host) != servers.end())
         {
-            TRY
-            {
-                retval = servers[host]->proxy->ExpandPath(filename);
-                tryAgain = false;
-            }
-            CATCH(LostConnectionException)
-            {
-                // Tell the GUI that the mdserver is dead.
-                if(numAttempts == 0)
-                {
-                    char message[200];
-                    SNPRINTF(message, 200, "The metadata server running on host "
-                             "%s has exited abnormally. VisIt is trying to "
-                             "restart it.", host.c_str());
-                    Warning(message);
-                }
+            int  numAttempts = 0;
+            bool tryAgain = false;
 
-                ++numAttempts;
-                tryAgain = (numAttempts < 2);
-
+            do
+            {
                 TRY
                 {
-                    stringVector startArgs(servers[host]->arguments);
-                    CloseServer(host, false);
-                    StartServer(host, startArgs);
-                }
-                CATCHALL(...)
-                {
+                    retval = servers[host]->proxy->ExpandPath(filename);
                     tryAgain = false;
                 }
+                CATCH(LostConnectionException)
+                {
+                    // Tell the GUI that the mdserver is dead.
+                    if(numAttempts == 0)
+                    {
+                        char message[200];
+                        SNPRINTF(message, 200, "The metadata server running on host "
+                                 "%s has exited abnormally. VisIt is trying to "
+                                 "restart it.", host.c_str());
+                        Warning(message);
+                    }
+
+                    ++numAttempts;
+                    tryAgain = (numAttempts < 2);
+
+                    TRY
+                    {
+                        stringVector startArgs(servers[host]->arguments);
+                        CloseServer(host, false);
+                        StartServer(host, startArgs);
+                    }
+                    CATCHALL(...)
+                    {
+                        tryAgain = false;
+                    }
+                    ENDTRY
+                }
                 ENDTRY
-            }
-            ENDTRY
-        } while(tryAgain);
+            } while(tryAgain);
+        }
     }
 
     return retval;
+}
+
+// ****************************************************************************
+// Method: ViewerFileServer::ExpansionRequired
+//
+// Purpose: 
+//   Returns whether a filename needs to be expanded my the mdserver.
+//
+// Arguments:
+//   filename : The filename that we're checking for proper expansion.
+//
+// Returns:    True if the filename needs to be expanded; false otherwise.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Mar 31 10:00:43 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+ViewerFileServer::ExpansionRequired(const std::string &filename) const
+{
+    if(filename.size() > 0)
+    {
+#if defined(_WIN32)
+        // Look for some drive punctuation
+        if(filename.find(":\\") != std::string::npos)
+            return true;
+#else
+        // Make sure that we have an absolute path.
+        if(filename[0] != '/')
+            return true;
+#endif
+        if(filename.find("~") != std::string::npos)
+            return true;
+
+        if(filename.find("..") != std::string::npos)
+            return true;
+    }
+
+    return false;
 }
 
 // ****************************************************************************

@@ -59,7 +59,6 @@ using std::pair;
 //    it could otherwise get into an infinite loop.
 //
 #define ENGINE_PROXY_RPC_BEGIN(rpcname)  \
-    cerr << "About to execute rpc="<<rpcname<<endl; \
     bool retval = false; \
     bool retry = false; \
     int  numAttempts = 0; \
