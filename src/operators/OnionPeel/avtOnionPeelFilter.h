@@ -71,16 +71,16 @@ class avtOnionPeelFilter : public avtPluginStreamer
     virtual void         SetAtts(const AttributeGroup*);
     virtual bool         Equivalent(const AttributeGroup*);
 
-    void                 BadSeedCell(int, int, bool);
-    static void          BadSeedCellCallback(void *, int, int, bool);
+    void                 BadSeed(int, int, bool);
+    static void          BadSeedCallback(void *, int, int, bool);
 
 
   protected:
     OnionPeelAttributes   atts;
     vtkOnionPeelFilter   *opf;
 
-    int                   badSeedCell;
-    int                   maximumCells;
+    int                   badSeed;
+    int                   maximumIds;
     bool                  encounteredBadSeed;
     bool                  encounteredGhostSeed;
     bool                  groupCategory;

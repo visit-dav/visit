@@ -5,6 +5,10 @@
         Node
         Face
       </Enum>
+      <Enum name="SeedIdType">
+        SeedCell
+        SeedNode
+      </Enum>
       <Field name="adjacencyType" label="Adjacency" type="enum" subtype="NodeFace">
         Node
       </Field>
@@ -25,6 +29,9 @@
       </Field>
       <Field name="requestedLayer" label="Layers" type="int">
         0
+      </Field>
+      <Field name="seedType" label="Seed Type" type="enum" subtype="SeedIdType">
+        SeedCell
       </Field>
     </Attribute>
   </Plugin>

@@ -16,6 +16,7 @@
 #include <vtkCell.h>
 #include <vtkCellData.h>
 #include <vtkIdList.h>
+#include <vtkIntArray.h>
 #include <vtkObjectFactory.h>
 #include <vtkOnionPeelFilter.h>
 #include <vtkPointData.h>
@@ -46,17 +47,21 @@ vtkStandardNewMacro(vtkOnionPeelFilter);
 //   Kathleen Bonnell, Tue Jan 18 19:37:46 PST 2005 
 //   Initialize ReconstructOriginalCells. 
 //
+//   Kathleen Bonnell, Wed Jan 19 15:54:38 PST 2005 
+//   Renamed 'SeedCellId' to 'SeedId'.  Initialize SeedIdIsForCell. 
+//
 //======================================================================
 vtkOnionPeelFilter::vtkOnionPeelFilter()
 {
     this->RequestedLayer = 0;
-    this->SeedCellId = 0;
+    this->SeedId = 0;
     this->logicalIndex[0] = this->logicalIndex[1] = this->logicalIndex[2] = 0;
     this->useLogicalIndex = false;
     this->maxLayersReached = 0;
     this->maxLayerNum = VTK_LARGE_INTEGER;
     this->AdjacencyType = VTK_NODE_ADJACENCY;
     this->ReconstructOriginalCells = 0; 
+    this->SeedIdIsForCell = 1; 
 
     this->layerCellIds = vtkIdList::New();
     this->layerCellIds->Allocate(500);
@@ -82,7 +87,7 @@ vtkOnionPeelFilter::~vtkOnionPeelFilter()
 
 //======================================================================
 //
-// Method:   vtkOnionPeelFilter::SetBadSeedCellCallback
+// Method:   vtkOnionPeelFilter::SetBadSeedCallback
 //
 // Purpose:  
 //     Sets a callback that is called if the seed cell is bad.
@@ -96,9 +101,12 @@ vtkOnionPeelFilter::~vtkOnionPeelFilter()
 // Programmer: Hank Childs
 // Creation:   May 22, 2002
 //
+// Modifications:
+//   Kathleen Bonnell, Wed Jan 19 15:54:38 PST 2005
+//   Removed 'Cell' from method name, arg name.
 //======================================================================
 void 
-vtkOnionPeelFilter::SetBadSeedCellCallback(BadSeedCellCallback cb, void *args)
+vtkOnionPeelFilter::SetBadSeedCallback(BadSeedCallback cb, void *args)
 {
     bsc_callback = cb;
     bsc_args     = args;
@@ -144,10 +152,14 @@ vtkOnionPeelFilter::SetBadSeedCellCallback(BadSeedCellCallback cb, void *args)
 //   Addeed logic to handle requests for reconstructing original cells,
 //   e.g. when connectivity of original input has changed.
 //
+//   Kathleen Bonnell, Wed Jan 19 15:54:38 PST 2005 
+//   Renamed 'SeedCellId to 'SeedId', 'numCells' arg to 'numIds'.
+//   Added code to handle seedId that is a node. 
+// 
 //======================================================================
 
 bool 
-vtkOnionPeelFilter::Initialize(const int numCells)
+vtkOnionPeelFilter::Initialize(const int numIds)
 {
     this->maxLayersReached = 0;
     this->maxLayerNum = VTK_LARGE_INTEGER;
@@ -171,80 +183,162 @@ vtkOnionPeelFilter::Initialize(const int numCells)
         {
             if (bsc_callback != NULL) 
             {
-                bsc_callback(bsc_args, SeedCellId, numCells, false);
+                bsc_callback(bsc_args, SeedId, numIds, false);
            
             } 
-            vtkWarningMacro(<<"SeedCellIndex (" << this->logicalIndex[0] << " "
+            vtkWarningMacro(<<"SeedIndex (" << this->logicalIndex[0] << " "
                 << this->logicalIndex[1] << " " << this->logicalIndex[2] 
                 << ")  Exceeds dimensions of dataset ("
                 << dims[0] << " " << dims[1] << " " << dims[2] << ").");
             return false; //unsuccessful initialization
         } 
-        this->SeedCellId = this->logicalIndex[2]*(dims[0]-1)*(dims[1]-1) + 
+        if (this->SeedIdIsForCell)
+        {
+            this->SeedId = this->logicalIndex[2]*(dims[0]-1)*(dims[1]-1) + 
                            this->logicalIndex[1]*(dims[0]-1) + 
                            this->logicalIndex[0];
+        } 
+        else 
+        {
+            this->SeedId = this->logicalIndex[2]*(dims[0])*(dims[1]) + 
+                           this->logicalIndex[1]*(dims[0]) + 
+                           this->logicalIndex[0];
+        } 
     }
     // check for out-of-range error on seedcellId;
-    if (this->SeedCellId < 0 || this->SeedCellId >= numCells) 
+    if (this->SeedId < 0 || this->SeedId >= numIds) 
     {
         if (bsc_callback != NULL) 
         {
             if (useLogicalIndex)
             {
-                bsc_callback(bsc_args, SeedCellId, numCells, false);
+                bsc_callback(bsc_args, SeedId, numIds, false);
             }
             else 
             {
-                bsc_callback(bsc_args, SeedCellId, numCells, false);
+                bsc_callback(bsc_args, SeedId, numIds, false);
             }
         }
-        vtkWarningMacro(<<"SeedCellId " << this->SeedCellId << " is Invalid."
-                        <<"\nValid ids range from 0 to " << numCells-1 << ".");
+        vtkWarningMacro(<<"SeedId " << this->SeedId << " is Invalid."
+                        <<"\nValid ids range from 0 to " << numIds-1 << ".");
         return false; //unsuccessful initialization
     }
     //
     // check if seedcellId is a ghost cell;
     //
-    vtkDataArray *ghosts = input->GetCellData()->GetArray("avtGhostZones");
+    vtkDataArray *ghosts;
+    if (this->SeedIdIsForCell)
+       ghosts = input->GetCellData()->GetArray("avtGhostZones");
+    else
+       ghosts = input->GetCellData()->GetArray("avtGhostNodes");
     if (ghosts)
     {
-        if (ghosts->GetComponent(this->SeedCellId, 0) != 0)
+        if (ghosts->GetComponent(this->SeedId, 0) != 0)
         {
             if (bsc_callback != NULL) 
             {
                 if (useLogicalIndex)
                 {
-                    bsc_callback(bsc_args, SeedCellId, numCells, true);
+                    bsc_callback(bsc_args, SeedId, numIds, true);
                 }
                 else 
                 {
-                    bsc_callback(bsc_args, SeedCellId, numCells, true);
+                    bsc_callback(bsc_args, SeedId, numIds, true);
                 }
             }
-            vtkWarningMacro(<<"SeedCellId " << this->SeedCellId << " is a Ghost Cell.");
+            vtkWarningMacro(<<"SeedId " << this->SeedId << " is a Ghost Cell.");
             return false; //unsuccessful initialization
         }
     }
 
     this->layerCellIds->Reset();
     this->cellOffsets->Reset();
-    if (!this->ReconstructOriginalCells)
+    if (this->SeedIdIsForCell)
     {
-        this->layerCellIds->InsertNextId(this->SeedCellId);
-    }
-    else 
-    {
-        this->FindCellsCorrespondingToOriginal(this->SeedCellId, this->layerCellIds);
-        if (this->layerCellIds->GetNumberOfIds() == 0) 
+        if (!this->ReconstructOriginalCells)
         {
-            if (bsc_callback != NULL) 
-                bsc_callback(bsc_args, SeedCellId, numCells, false);
-            vtkWarningMacro(<<"SeedCellId " << this->SeedCellId 
-                            << " is not available from current data.");
-            return false; //unsuccessful initialization
+            this->layerCellIds->InsertNextId(this->SeedId);
+        }
+        else 
+        {
+            this->FindCellsCorrespondingToOriginal(this->SeedId, this->layerCellIds);
+            if (this->layerCellIds->GetNumberOfIds() == 0) 
+            {
+                if (bsc_callback != NULL) 
+                    bsc_callback(bsc_args, SeedId, numIds, false);
+                vtkWarningMacro(<<"SeedId " << this->SeedId 
+                                << " is not available from current data.");
+                return false; //unsuccessful initialization
+            }
         }
     }
+    else  //SeedId is a node Id
+    {
+        if (!this->ReconstructOriginalCells)
+        {
+            GetInput()->GetPointCells(this->SeedId, this->layerCellIds); 
+            if (this->layerCellIds->GetNumberOfIds() == 0) 
+            {
+                if (bsc_callback != NULL) 
+                    bsc_callback(bsc_args, SeedId, numIds, false);
+                vtkWarningMacro(<<"SeedId " << this->SeedId 
+                                << " is not available from current data.");
+                return false; //unsuccessful initialization
+            }
+        }
+        else 
+        {
+            int i;
+            vtkIdList *nodes = vtkIdList::New();
+            this->FindNodesCorrespondingToOriginal(this->SeedId, nodes);
+            if (nodes->GetNumberOfIds() == 0)
+            {
+                if (bsc_callback != NULL) 
+                    bsc_callback(bsc_args, SeedId, numIds, false);
+                vtkWarningMacro(<<"SeedId " << this->SeedId 
+                                << " is not available from current data.");
+                return false; //unsuccessful initialization
+            }
+            vtkIdList *neighbors = vtkIdList::New();
+            for (i = 0; i < nodes->GetNumberOfIds(); i++)
+            {
+                input->GetPointCells(nodes->GetId(i), neighbors);        
+                for (int nId = 0; nId < neighbors->GetNumberOfIds(); nId++)
+                {
+                    this->layerCellIds->InsertUniqueId(neighbors->GetId(nId));
+                }
+            }
+            nodes->Delete();
+            neighbors->Delete();
+            vtkUnsignedIntArray *origCells = vtkUnsignedIntArray::SafeDownCast(
+                this->GetInput()->GetCellData()->GetArray("avtOriginalCellNumbers"));
 
+            if (origCells)
+            {
+                unsigned int *oc = origCells->GetPointer(0);
+                int nc = origCells->GetNumberOfComponents();
+                int comp = nc -1;
+                vtkIdList *origIds = vtkIdList::New();
+                for (i = 0; i < this->layerCellIds->GetNumberOfIds(); i++)
+                {
+                        int cellId = this->layerCellIds->GetId(i);
+                        int index = cellId *nc + comp;;
+                        origIds->InsertNextId(oc[index]);
+                }
+                FindCellsCorrespondingToOriginal(origIds, this->layerCellIds);
+                origIds->Delete();
+            }
+            
+            if (this->layerCellIds->GetNumberOfIds() == 0) 
+            {
+                if (bsc_callback != NULL) 
+                    bsc_callback(bsc_args, SeedId, numIds, false);
+                vtkWarningMacro(<<"SeedId " << this->SeedId 
+                                << " is not available from current data.");
+                return false; //unsuccessful initialization
+            }
+        }
+    }
     //layer 0 offset always zero, so use zeroth slot to indicate AdjacencyType
     this->cellOffsets->InsertNextId(this->AdjacencyType);
     return true; // successful initialization
@@ -408,6 +502,9 @@ vtkOnionPeelFilter::Grow()
 //   Made Initialize return a bool indicating wheter the initialization
 //   was a success or not.  If not, don't process further. 
 // 
+//   Kathleen Bonnell, Wed Jan 19 15:54:38 PST 2005 
+//   Use different args for Initialize when seedId is for a node. 
+//
 //======================================================================
 
 void 
@@ -415,11 +512,14 @@ vtkOnionPeelFilter::Execute()
 {
     vtkDataSet *input= this->GetInput();
 
-    int numCells = input->GetNumberOfCells();
 
     vtkDebugMacro(<<"Generating OnionPeelFilter Layers");
 
-    bool success = this->Initialize(numCells);
+    bool success;
+    if (this->SeedIdIsForCell)
+       success = this->Initialize(input->GetNumberOfCells());
+    else 
+       success = this->Initialize(input->GetNumberOfPoints());
 
     if (!success)
     {
@@ -552,7 +652,7 @@ vtkOnionPeelFilter::PrintSelf(ostream& os, vtkIndent indent)
 {
     this->Superclass::PrintSelf(os,indent);
 
-    os << indent << "Seed Cell Id:    " << this->SeedCellId << "\n";
+    os << indent << "Seed Cell Id:    " << this->SeedId << "\n";
     os << indent << "Requested Layer: " << this->RequestedLayer << "\n";
     os << indent << "Adjacency Type:  " 
        << this->GetAdjacencyTypeAsString() << "\n";
@@ -752,7 +852,7 @@ vtkOnionPeelFilter::SetLogicalIndex(const int i, const int j, const int k)
 
 //======================================================================
 //
-// Method:   vtkOnionPeelFilter::SetSeedCellId
+// Method:   vtkOnionPeelFilter::SetSeedId
 //
 // Purpose:  
 //   Set the seed cell id. 
@@ -770,11 +870,11 @@ vtkOnionPeelFilter::SetLogicalIndex(const int i, const int j, const int k)
 //=======================================================================
 
 void
-vtkOnionPeelFilter::SetSeedCellId(const int seed)
+vtkOnionPeelFilter::SetSeedId(const int seed)
 {  
-    if (useLogicalIndex || this->SeedCellId != seed)
+    if (useLogicalIndex || this->SeedId != seed)
     {
-        this->SeedCellId = seed;
+        this->SeedId = seed;
         this->Modified();
     }
     useLogicalIndex = false;
@@ -864,3 +964,47 @@ vtkOnionPeelFilter::FindCellsCorrespondingToOriginal(vtkIdList *origs, vtkIdList
         }
     }
 }
+
+//======================================================================
+//
+// Method:   vtkOnionPeelFilter::FindNodesCorrespondingToOriginal
+//
+// Purpose:  
+//   Finds all nodes whose 'originalNode' designation matches the
+//   original id passed as arg. 
+// 
+// Arguments:  
+//   orig      The original node id. 
+//   group     A place to store the corresponding cells.
+//   
+// Returns:    None 
+//
+// Programmer: Kathleen Bonnell
+// Creation:   January 19, 2005 
+//
+// Modifications:
+//  
+//=======================================================================
+
+void
+vtkOnionPeelFilter::FindNodesCorrespondingToOriginal(int orig, vtkIdList *group)
+{
+    vtkIntArray *origNodes = vtkIntArray::SafeDownCast(
+        this->GetInput()->GetPointData()->GetArray("avtOriginalNodeNumbers"));
+
+    if (origNodes)
+    {
+        int *on = origNodes->GetPointer(0);
+        int n = origNodes->GetNumberOfTuples();
+        int nc = origNodes->GetNumberOfComponents();
+        int comp = nc -1;
+        for (int i = comp; i < n; i+=nc )
+        {
+            int id = i / nc;
+            if (on[i] == orig && group->IsId(id) == -1)
+                group->InsertNextId(id);
+        }
+    }
+}
+
+

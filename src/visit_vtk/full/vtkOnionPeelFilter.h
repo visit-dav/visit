@@ -58,11 +58,15 @@ class vtkIdList;
 //    Added  bool 'ReconstructOriginalCells' and Set/Get methods.  Added
 //    FindCellsCorrespondingToOriginal.
 // 
+//    Kathleen Bonnell, Wed Jan 19 15:54:38 PST 2005 
+//    Took 'Cell' out of callback name, renamed 'SeedCellId' to 'SeedId'. 
+//    Added 'SeedIdIsForCell'.  Added 'FindNodesCorrespondingToOriginal'.
+//
 //*****************************************************************************
 
 
 
-typedef void (*BadSeedCellCallback)(void *, int, int, bool);
+typedef void (*BadSeedCallback)(void *, int, int, bool);
 
 class VISIT_VTK_API  
 vtkOnionPeelFilter : public vtkDataSetToUnstructuredGridFilter
@@ -73,9 +77,15 @@ public:
   void PrintSelf(ostream& os, vtkIndent indent);
 
   // Description:
-  // Set the current SeedCell value.
-  void SetSeedCellId(const int);
-  int GetSeedCellId(void);
+  // Set the current Seed value.
+  void SetSeedId(const int);
+  vtkGetMacro(SeedId, int);
+
+  // Description:
+  // Turn on/off scaling of source geometry.
+  vtkSetMacro(SeedIdIsForCell,int);
+  vtkBooleanMacro(SeedIdIsForCell,int);
+  vtkGetMacro(SeedIdIsForCell,int);
 
   // Description:
   // Set the current LogicalIndex value.
@@ -108,7 +118,7 @@ public:
 
   bool Initialize(const int = VTK_LARGE_INTEGER);
 
-  void SetBadSeedCellCallback(BadSeedCellCallback, void *);
+  void SetBadSeedCallback(BadSeedCallback, void *);
  
 protected:
 // Protected Methods
@@ -124,6 +134,7 @@ protected:
   void FindCellNeighborsByFaceAdjacency(vtkIdList *, vtkIdList*);
   void FindCellsCorrespondingToOriginal(int, vtkIdList*);
   void FindCellsCorrespondingToOriginal(vtkIdList *, vtkIdList*);
+  void FindNodesCorrespondingToOriginal(int, vtkIdList*);
 
 // Protected Data Members
 
@@ -134,12 +145,13 @@ protected:
   int maxLayerNum;
   int RequestedLayer;
   int AdjacencyType;
-  int SeedCellId;
+  int SeedId;
   int ReconstructOriginalCells;
+  int SeedIdIsForCell;
 
   int logicalIndex[3];
   bool useLogicalIndex;
-  BadSeedCellCallback  bsc_callback;
+  BadSeedCallback  bsc_callback;
   void                *bsc_args;
   
 private:

@@ -32,6 +32,9 @@ class SILRestrictionAttributes;
 //   Added useGlobalId checkbox, related methods and method
 //   UpdateComboBoxesEnabledState. 
 //   
+//   Kathleen Bonnell, Wed Jan 19 15:45:38 PST 2005 
+//   Added 'seedType' button group and 'seedTypeChanged' slot.
+//
 // ****************************************************************************
 
 class QvisOnionPeelWindow : public QvisOperatorWindow
@@ -50,6 +53,7 @@ class QvisOnionPeelWindow : public QvisOperatorWindow
     virtual void GetCurrentValues(int which_widget);
   private slots:
     void adjacencyTypeChanged(int val);
+    void seedTypeChanged(int val);
     void categoryNameChanged();
     void subsetNameChanged();
     void indexChanged();
@@ -63,6 +67,7 @@ class QvisOnionPeelWindow : public QvisOperatorWindow
     void FillSubsetBox();
 
     QButtonGroup *adjacencyType;
+    QButtonGroup *seedType;
     QLabel    *categoryLabel;
     QComboBox *categoryName;
     QLabel    *subsetLabel;

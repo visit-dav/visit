@@ -258,11 +258,10 @@ endif
 #
 if ($logging == false) then
    cp distribution/visit/bin/legacylauncher $dir/bin/legacylauncher+
-   cp distribution/visit/bin/frontendlauncher $dir/bin/frontendlauncher+
 else
    sed -e "s/logging[ \t]*= 0/logging        = 1/" distribution/visit/bin/legacylauncher > $dir/bin/legacylauncher+
-   sed -e "s/logging[ \t]*= 0/logging        = 1/" distribution/visit/bin/frontendlauncher > $dir/bin/frontendlauncher+
 endif
+cp distribution/visit/bin/frontendlauncher $dir/bin/frontendlauncher+
 
 if (-e $dir/$version+)           rm -rf $dir/$version+
 if ($append == false) then
@@ -350,6 +349,7 @@ if ($group_ownership != none) then
 endif
 
 if ($logging == true) then
+    sed -e "s/logging[ \t]*= 0/logging        = 1/" distribution/visit/$version/bin/internallauncher > $dir/$version+/bin/internallauncher
     touch $dir/$version+/usagelog
     chmod 666 $dir/$version+/usagelog
     if ($group_ownership != none) then
