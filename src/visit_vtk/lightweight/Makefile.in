@@ -35,6 +35,9 @@
 #    Hank Childs, Thu Jan 22 17:15:33 PST 2004
 #    Created.
 #
+#    Hank Childs, Sun Feb  1 13:21:44 PST 2004
+#    Added vtkDataSetFromVolume.
+#
 ##############################################################################
 
 ##
@@ -53,6 +56,7 @@ SRC=InitVTKNoGraphics.C \
     ClipCasesTet.C \
     ClipCasesTri.C \
     ClipCasesWdg.C \
+    vtkDataSetFromVolume.C \
     vtkDebugStream.C \
     vtkTriangulationTables.C \
     vtkUnstructuredGridBoundaryFilter.C \

@@ -126,6 +126,9 @@ SpecializedIndexer::SpecializedIndexer(int x, int y, int z)
 //  Hank Childs, Fri Jan 30 08:31:44 PST 2004
 //  Use pointer arithmetic to construct poly data output.
 //
+//  Hank Childs, Sun Feb  1 22:02:51 PST 2004
+//  Do a better job of estimating the number of cells in the 2D case.
+//
 // ****************************************************************************
 
 void vtkRectilinearGridFacelistFilter::Execute()
@@ -322,7 +325,11 @@ void vtkRectilinearGridFacelistFilter::Execute()
   //
   // Have the cell data allocate memory.
   //
-  int   numOutCells = 2*(nX-1)*(nY-1) + 2*(nX-1)*(nZ-1) + 2*(nY-1)*(nZ-1);
+  int   numOutCells;
+  if (nZ > 1)
+     numOutCells = 2*(nX-1)*(nY-1) + 2*(nX-1)*(nZ-1) + 2*(nY-1)*(nZ-1);
+  else
+     numOutCells = (nX-1)*(nY-1);
   outCellData->CopyAllocate(inCellData);
 
   vtkCellArray *polys = vtkCellArray::New();
