@@ -621,17 +621,16 @@ avtBehavior::RequiresReExecuteForQuery(const bool needInvT, const bool needZones
 //  Programmer: Kathleen Bonnell 
 //  Creation:   May 7, 2002 
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed Dec 22 16:36:29 PST 2004
+//    Removed exception for variable dimension != 1, as all var extents now
+//    contain two elements, regardless of dimension.
+//
 // ****************************************************************************
 
 void
 avtBehavior::GetDataExtents(float &dmin, float &dmax)
 {
-
-    if (info.GetAttributes().GetVariableDimension() != 1)
-    {
-        EXCEPTION0(ImproperUseException);
-    }
-
     double extents[2];
     bool gotExtents = info.GetAttributes().GetDataExtents(extents);
 

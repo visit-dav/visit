@@ -16,5 +16,7 @@ PyObject       *PyStreamlineAttributes_WrapPyObject(const StreamlineAttributes *
 void            PyStreamlineAttributes_SetLogging(bool val);
 void            PyStreamlineAttributes_SetDefaults(const StreamlineAttributes *atts);
 
+PyObject       *PyStreamlineAttributes_StringRepresentation(const StreamlineAttributes *atts);
+
 #endif
 

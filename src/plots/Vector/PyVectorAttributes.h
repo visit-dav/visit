@@ -16,5 +16,7 @@ PyObject       *PyVectorAttributes_WrapPyObject(const VectorAttributes *attr);
 void            PyVectorAttributes_SetLogging(bool val);
 void            PyVectorAttributes_SetDefaults(const VectorAttributes *atts);
 
+PyObject       *PyVectorAttributes_StringRepresentation(const VectorAttributes *atts);
+
 #endif
 

@@ -9,6 +9,8 @@
 class vtkVisItStreamLine;
 class vtkTubeFilter;
 class vtkPolyData;
+class vtkRibbonFilter;
+class vtkRungeKutta4;
 class vtkAppendPolyData;
 
 #define STREAMLINE_SOURCE_POINT      0
@@ -16,6 +18,14 @@ class vtkAppendPolyData;
 #define STREAMLINE_SOURCE_PLANE      2
 #define STREAMLINE_SOURCE_SPHERE     3
 #define STREAMLINE_SOURCE_BOX        4
+
+#define STREAMLINE_COLOR_SOLID       0
+#define STREAMLINE_COLOR_SPEED       1
+#define STREAMLINE_COLOR_VORTICITY   2
+
+#define STREAMLINE_DISPLAY_LINES     0
+#define STREAMLINE_DISPLAY_TUBES     1
+#define STREAMLINE_DISPLAY_RIBBONS   2
 
 // ****************************************************************************
 // Class: avtStreamlineFilter
@@ -27,6 +37,8 @@ class vtkAppendPolyData;
 // Creation:   Mon Nov 4 15:32:05 PST 2002
 //
 // Modifications:
+//   Brad Whitlock, Wed Dec 22 12:45:29 PDT 2004
+//   Added ability to color by vorticity and the ability to display as ribbons.
 //
 // ****************************************************************************
 
@@ -55,19 +67,22 @@ class avtStreamlineFilter : public avtStreamer
     void                      SetSphereSource(double O[3], double R);
     void                      SetBoxSource(double E[6]);
 
-    void                      SetShowTube(bool);
+    void                      SetDisplayMethod(int d);
     void                      SetShowStart(bool);
-    void                      SetTubeRadius(double rad);
+    void                      SetRadius(double rad);
     void                      SetPointDensity(int den);
+
+    void                      SetColoringMethod(int);
 
   protected:
     int    sourceType;   
     double stepLength;
     double maxTime;
-    double tubeRadius;
-    bool   showTube;
+    double radius;
+    int    displayMethod;
     bool   showStart;
     int    pointDensity;
+    int    coloringMethod;
 
     // Various starting locations for streamlines.
     double pointSource[3];
@@ -79,6 +94,8 @@ class avtStreamlineFilter : public avtStreamer
     // Internal filters.
     vtkVisItStreamLine       *streamline;
     vtkTubeFilter            *tubes;
+    vtkRibbonFilter          *ribbons;
+    vtkRungeKutta4           *integrator;
 
     virtual vtkDataSet       *ExecuteData(vtkDataSet *, int, std::string);
     virtual void              RefashionDataObjectInfo(void);

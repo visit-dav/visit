@@ -44,7 +44,6 @@ vtkCxxRevisionMacro(vtkVisItStreamLine, "$Revision: 1.50 $");
 vtkStandardNewMacro(vtkVisItStreamLine);
 
 #define VTK_STREAMLINE_EPSILON 1e-6
-#define MAX_ITERATIONS 100
 #define VTK_START_FROM_POSITION 0
 #define VTK_START_FROM_LOCATION 1
 
@@ -187,6 +186,12 @@ void vtkVisItStreamLine::Execute()
 
         tOffset = sPrev->t;
 
+        // Take the largest of 2*maxtime or 100. It's simply an artificial
+        // limit to the number of times to iterate to break out of a loop that
+        // looks infinite.
+        int MAX_ITERATIONS = int(this->GetMaximumPropagationTime() * 2.);
+        MAX_ITERATIONS = (MAX_ITERATIONS < 100) ? 100 : MAX_ITERATIONS;
+
         for(i = 1; 
             i < this->Streamers[ptId].GetNumberOfPoints() && sPtr->cellId >= 0;
             i++, sPrev=sPtr, sPtr=this->Streamers[ptId].GetStreamPoint(i))
@@ -195,7 +200,9 @@ void vtkVisItStreamLine::Execute()
             // Create points for line
             //
             int iterations = 0;
-            while(tOffset >= sPrev->t && tOffset < sPtr->t && iterations < MAX_ITERATIONS)
+            while(tOffset >= sPrev->t &&
+                  tOffset < sPtr->t &&
+                  iterations < MAX_ITERATIONS)
             {
                 r = (tOffset - sPrev->t) / (sPtr->t - sPrev->t);
 
@@ -379,6 +386,12 @@ vtkVisItStreamLine::ThreadedIntegrate( void *arg)
     float maxtime = self->GetMaximumPropagationTime();
     float savePointInterval = self->GetSavePointInterval();
 
+    // Take the largest of 2*maxtime or 100. It's simply an artificial
+    // limit to the number of times to iterate to break out of a loop that
+    // looks infinite.
+    int MAX_ITERATIONS = int(maxtime * 2.);
+    MAX_ITERATIONS = (MAX_ITERATIONS < 100) ? 100 : MAX_ITERATIONS;
+
     // For each streamer, integrate in appropriate direction
     // Do only the streamers that this thread should handle.
     for (ptId=0; ptId < self->GetNumberOfStreamers(); ptId++)
@@ -406,7 +419,10 @@ vtkVisItStreamLine::ThreadedIntegrate( void *arg)
 
             //integrate until time has been exceeded
             int iterations = 0;
-            while(pt1.cellId >= 0 && pt1.speed > termspeed && pt1.t <  maxtime && iterations < MAX_ITERATIONS)
+            while(pt1.cellId >= 0 &&
+                  pt1.speed > termspeed &&
+                  pt1.t <  maxtime &&
+                  iterations < MAX_ITERATIONS)
             {
                 if(counter++ % 1000 == 0)
                 {

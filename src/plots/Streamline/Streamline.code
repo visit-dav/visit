@@ -11,6 +11,8 @@ Definition:
 // Creation:   Fri Oct 4 15:22:57 PST 2002
 //
 // Modifications:
+//    Brad Whitlock, Wed Dec 22 12:57:53 PDT 2004
+//    I added code to support the point tool.
 //
 // ****************************************************************************
 
@@ -26,6 +28,15 @@ StreamlineAttributes::CopyAttributes(const AttributeGroup *atts)
         *this = *tmp;
         retval = true;
     }
+    else if(atts->TypeName() == "PointAttributes")
+    {
+        if(sourceType == SpecifiedPoint)
+        {
+            const PointAttributes *p = (PointAttributes *)atts;
+            SetPointSource(p->GetPoint());
+            retval = true;
+        }
+    } 
     else if(atts->TypeName() == "Line")
     {
         if(sourceType == SpecifiedLine)
@@ -66,7 +77,7 @@ StreamlineAttributes::CopyAttributes(const AttributeGroup *atts)
             SetBoxExtents(box->GetExtents());
             retval = true;
         }
-    }   
+    }
 
     return retval;
 }
@@ -89,6 +100,9 @@ Definition:
 //    I added code to set the "have radius" flag to true so the plane tool
 //    resizes properly when resizing the plane radius.
 //
+//    Brad Whitlock, Wed Dec 22 12:54:43 PDT 2004
+//    I added code to support the point tool.
+//
 // ****************************************************************************
 
 AttributeSubject *
@@ -99,6 +113,12 @@ StreamlineAttributes::CreateCompatible(const std::string &tname) const
     if(TypeName() == tname)
     {
         retval = new StreamlineAttributes(*this);
+    }
+    else if(tname == "PointAttributes")
+    {
+        PointAttributes *p = new PointAttributes;
+        p->SetPoint(GetPointSource());
+        retval = p;
     }
     else if(tname == "Line")
     {
@@ -151,6 +171,9 @@ Definition:
 //  Notes:  Most attributes cause the streamline to change.
 //
 //  Modifications:
+//    Brad Whitlock, Wed Dec 22 12:52:45 PDT 2004
+//    I made the coloring method matter when comparing streamline attributes
+//    and I added support for ribbons.
 //
 // ****************************************************************************
 
@@ -198,18 +221,19 @@ StreamlineAttributes::ChangesRequireRecalculation(const StreamlineAttributes &ob
         sourceType == SpecifiedBox) &&
         (pointDensity != obj.pointDensity);
 
-    bool tubeRadiusMatters = showTube && (tubeRadius != obj.tubeRadius);
+    bool radiusMatters = (displayMethod != Lines) && (radius != obj.radius);
 
     return (sourceType != obj.sourceType) ||
-           (showTube != obj.showTube) ||
+           (displayMethod != obj.displayMethod) ||
            (showStart != obj.showStart) ||
            (maxTime != obj.maxTime) ||
            (stepLength != obj.stepLength) ||
+           (coloringMethod != obj.coloringMethod && obj.coloringMethod != Solid) ||
            sourcePointsDiffer ||
            sourceLineDiffers ||
            sourcePlaneDiffers ||
            sourceSphereDiffers ||
            boxSourceDiffers ||
            densityMatters ||
-           tubeRadiusMatters;
+           radiusMatters;
 }

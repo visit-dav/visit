@@ -7,12 +7,17 @@
 #include <DatabasePluginInfo.h>
 #include <Init.h>
 
+#include <ExprParser.h>
+#include <ParsingExprList.h>
+
 #include <avtDatabase.h>
 #include <avtDatabaseFactory.h>
 #include <avtDatabaseMetaData.h>
 #include <avtDatabaseWriter.h>
 #include <avtExpressionEvaluatorFilter.h>
+#include <avtExprNodeFactory.h>
 
+#include <VisItException.h>
 
 static void UsageAndExit(const char *);
 
@@ -38,10 +43,15 @@ static void UsageAndExit(const char *);
 //    Jeremy Meredith, Wed Nov 24 15:39:02 PST 2004
 //    Added expression support back in.  ('3769)
 //
+//    Hank Childs, Wed Dec 22 11:33:30 PST 2004
+//    Make expressions work ('5701), also add better error handling ('5771).
+//
 // ****************************************************************************
 
 int main(int argc, char *argv[])
 {
+    int  i;
+
     Init::Initialize(argc, argv);
 
     //
@@ -178,8 +188,18 @@ int main(int argc, char *argv[])
     }
     const avtMeshMetaData *mmd = md->GetMesh(0);
 
+    //
+    // Hook up the expressions we have associated with the databse, so
+    // we can get those as well.
+    //
+    Parser *p = new ExprParser(new avtExprNodeFactory());
+    ParsingExprList *l = new ParsingExprList(p);
+    ExpressionList *list = l->GetList();
+    for (i = 0 ; i < md->GetNumberOfExpressions() ; i++)
+        list->AddExpression(*md->GetExpression(i));
+
     cerr << "Operating on " << md->GetNumStates() << " timestep(s)." << endl;
-    for (int i = 0 ; i < md->GetNumStates() ; i++)
+    for (i = 0 ; i < md->GetNumStates() ; i++)
     {
          avtDataObject_p dob = db->GetOutput(mmd->name.c_str(), i);
          avtExpressionEvaluatorFilter eef;
@@ -195,16 +215,27 @@ int main(int argc, char *argv[])
          else
              sprintf(filename, "%04d.%s", i, argv[2]);
         
-         if (doSpecificVariable)
+         TRY
          {
-             std::vector<std::string> varlist;
-             varlist.push_back(var);
-             wrtr->Write(filename, md, varlist);
+             if (doSpecificVariable)
+             {
+                 std::vector<std::string> varlist;
+                 varlist.push_back(var);
+                 wrtr->Write(filename, md, varlist);
+             }
+             else
+             {
+                 wrtr->Write(filename, md);
+             } 
          }
-         else
+         CATCH2(VisItException, e)
          {
-             wrtr->Write(filename, md);
-         } 
+             cerr << "Error encountered.  Unable to write files." << endl;
+             cerr << "Error was: " << endl;
+             cerr << e.Message() << endl;
+             break;
+         }
+         ENDTRY
     }
 }
 

@@ -755,17 +755,16 @@ avtMapper::SetLabels(vector<string> &, bool)
 //    Hank Childs, Thu Oct 10 08:25:18 PDT 2002
 //    Added a return value.
 //
+//    Kathleen Bonnell, Wed Dec 22 16:36:29 PST 2004
+//    Removed exception for variable dimension != 1, as all var extents now
+//    contain two elements, regardless of dimension.
+//
 // ****************************************************************************
 
 bool
 avtMapper::GetCurrentRange(float &rmin, float &rmax)
 {
     avtDataAttributes &data = GetInput()->GetInfo().GetAttributes();
-
-    if (data.GetVariableDimension() != 1)
-    {
-        EXCEPTION0(ImproperUseException);
-    }
 
     double extents[2];
     bool gotExtents = data.GetCurrentDataExtents(extents);

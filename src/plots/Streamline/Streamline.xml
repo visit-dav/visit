@@ -14,6 +14,16 @@
         SpecifiedSphere
         SpecifiedBox
       </Enum>
+      <Enum name="ColoringMethod">
+        Solid
+        ColorBySpeed
+        ColorByVorticity
+      </Enum>
+      <Enum name="DisplayMethod">
+        Lines
+        Tubes
+        Ribbons
+      </Enum>
       <Field name="sourceType" label="Source" type="enum" subtype="SourceType">
         SpecifiedPoint
       </Field>
@@ -75,25 +85,25 @@
       <Field name="pointDensity" label="Point density" type="int">
         2
       </Field>
-      <Field name="showTube" label="Show tubes" type="bool">
-        false
+      <Field name="displayMethod" label="Display method" type="enum" subtype="DisplayMethod">
+        Lines
       </Field>
-      <Field name="showStart" label="Show tube start" type="bool" enabler="showTube:true">
+      <Field name="showStart" label="Show tube start" type="bool">
         true
       </Field>
-      <Field name="tubeRadius" label="Tube radius" type="double" enabler="showTube:true">
+      <Field name="radius" label="Radius" type="double">
         0.125000
       </Field>
       <Field name="lineWidth" label="Line width" type="linewidth">
         2
       </Field>
-      <Field name="colorBySpeed" label="Color by speed" type="bool">
-        true
+      <Field name="coloringMethod" label="Coloring method" type="enum" subtype="ColoringMethod">
+        ColorBySpeed
       </Field>
-      <Field name="colorTableName" label="Color table" type="colortable" enabler="colorBySpeed:true">
+      <Field name="colorTableName" label="Color table" type="colortable">
         Default
       </Field>
-      <Field name="singleColor" label="Single color" type="color" enabler="colorBySpeed:false">
+      <Field name="singleColor" label="Single color" type="color">
         0
         0
         0
@@ -111,6 +121,9 @@
       </Function>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>
+      <Include file="source" quoted="false">
+        PointAttributes.h
+      </Include>
       <Include file="source" quoted="false">
         Line.h
       </Include>

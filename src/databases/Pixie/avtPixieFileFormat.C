@@ -800,6 +800,10 @@ avtPixieFileFormat::CreatePointMesh(int timestate, const VarInfo &info,
 //   I modified the routine to handle the fact that variables defined on a
 //   curvilinear mesh are now nodal.
 //
+//   Eric Brugger, Wed Dec 22 07:56:05 PST 2004
+//   I added back some code that I inadvertently deleted that caused the
+//   reading of 3d meshes to fail.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -866,7 +870,12 @@ avtPixieFileFormat::CreateCurvilinearMesh(int timestate, const VarInfo &info,
             }
             break;
         case 3:
-            // If things are 3D then the [0];
+            // If things are 3D then the varDims array did not get reduced
+            // in the DetermineVarDimensions call in GetMesh so the numbers
+            // of dimensions will be stored Z,Y,X.
+            nx = varDims[2];
+            ny = varDims[1];
+            nz = varDims[0];
             coord0 = coords[0];
             coord1 = coords[1];
             coord2 = coords[2];
