@@ -67,6 +67,7 @@ ViewerQueryManager *ViewerQueryManager::instance = 0;
 
 QueryAttributes *ViewerQueryManager::queryClientAtts=0;
 PickAttributes *ViewerQueryManager::pickAtts=0;
+PickAttributes *ViewerQueryManager::pickDefaultAtts=0;
 PickAttributes *ViewerQueryManager::pickClientAtts=0;
 GlobalLineoutAttributes *ViewerQueryManager::globalLineoutAtts=0;
 GlobalLineoutAttributes *ViewerQueryManager::globalLineoutClientAtts=0;
@@ -1146,12 +1147,12 @@ ViewerQueryManager::LineQuery(const char *qName, const double *pt1,
 
 
 // ****************************************************************************
-//  Method: ViewerQueryManager::GetPickAtts
+//  Method: ViewerQueryManager::GetPickDefaultAtts
 //
 //  Purpose:
-//    Returns a pointer to the pick attributes.
+//    Returns a pointer to the default pick attributes.
 //
-//  Returns:    A pointer to the pick attributes.
+//  Returns:    A pointer to the default pick attributes.
 //
 //  Programmer: Kathleen Bonnell
 //  Creation:   November 15, 2002 
@@ -1159,17 +1160,16 @@ ViewerQueryManager::LineQuery(const char *qName, const double *pt1,
 // ****************************************************************************
 
 PickAttributes *
-ViewerQueryManager::GetPickAtts()
+ViewerQueryManager::GetPickDefaultAtts()
 {
     //
     // If the attributes haven't been allocated then do so.
     //
-    if (pickAtts == 0)
+    if (pickDefaultAtts == 0)
     {
-        pickAtts = new PickAttributes;
+        pickDefaultAtts = new PickAttributes;
     }
- 
-    return pickAtts;
+    return pickDefaultAtts;
 }
 
 
@@ -1196,13 +1196,12 @@ ViewerQueryManager::GetPickClientAtts()
     {
         pickClientAtts = new PickAttributes;
     }
- 
     return pickClientAtts;
 }
 
 
 // ****************************************************************************
-//  Method: ViewerQueryManager::ResetPickAttributes
+//  Method: ViewerQueryManager::ResetPickLetter
 //
 //  Purpose:
 //    Resets pickAtts to the default state. 
@@ -1210,16 +1209,59 @@ ViewerQueryManager::GetPickClientAtts()
 //  Programmer: Kathleen Bonnell
 //  Creation:   November 26 , 2003 
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed Dec 17 14:45:22 PST 2003
+//    Renamed from ResetPickAttributes.  Only call ResetDesignator.
+//
 // ****************************************************************************
 
 void
-ViewerQueryManager::ResetPickAttributes()
+ViewerQueryManager::ResetPickLetter()
 {
-    pickAtts->Reset();
     ResetDesignator();
-    UpdatePickAtts();
 }
 
+// ****************************************************************************
+//  Method: ViewerQueryManager::SetClientPickAttsFromDefault
+//
+//  Purpose:
+//    Copies the default pick attributes into the client pick attributes. 
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   December 9, 2003
+//
+// ****************************************************************************
+
+void
+ViewerQueryManager::SetClientPickAttsFromDefault()
+{
+    if (pickDefaultAtts != 0 && pickClientAtts != 0)
+    {
+        *pickAtts = *pickDefaultAtts;
+        *pickClientAtts = *pickDefaultAtts;
+         pickClientAtts->Notify();
+    }
+}
+
+// ****************************************************************************
+//  Method: ViewerQueryManager::SetDefaultPickAttsFromClient
+//
+//  Purpose:
+//    Sets the default pickAtts using the client pick attributes. 
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   December 9, 2003
+//
+// ****************************************************************************
+
+void
+ViewerQueryManager::SetDefaultPickAttsFromClient()
+{
+    if (pickDefaultAtts != 0 && pickClientAtts != 0)
+    {
+        *pickDefaultAtts = *pickClientAtts;
+    }
+}
 
 // ****************************************************************************
 //  Method: ViewerQueryManager::SetPickAttsFromClient
@@ -1241,6 +1283,29 @@ ViewerQueryManager::SetPickAttsFromClient()
     }
 
     *pickAtts = *pickClientAtts;
+}
+
+// ****************************************************************************
+//  Method: ViewerQueryManager::SetPickAttsFromDefault
+//
+//  Purpose:
+//    Sets the pickAtts using the default pick attributes. 
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   December 9, 2003 
+//
+// ****************************************************************************
+
+void
+ViewerQueryManager::SetPickAttsFromDefault()
+{
+    if (pickAtts == 0)
+    {
+        pickAtts = new PickAttributes;
+    }
+
+    *pickAtts = *pickDefaultAtts;
+    UpdatePickAtts();
 }
 
 

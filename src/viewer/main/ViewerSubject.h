@@ -285,6 +285,9 @@ struct avtDefaultPlotMetaData;
 //    Brad Whitlock, Wed Oct 29 11:00:55 PDT 2003
 //    Added methods to handle several new annotation RPCs.
 //
+//    Kathleen Bonnell, Wed Dec 17 14:45:22 PST 2003 
+//    Added SetDefaultPickAttributes, ResetPickLetter. 
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerSubject : public QObject
@@ -423,7 +426,9 @@ private:
     void ResetMaterialAttributes();
     void SetGlobalLineoutAttributes();
     void SetPickAttributes();
+    void SetDefaultPickAttributes();
     void ResetPickAttributes();
+    void ResetPickLetter();
 
 private slots:
     void HandleViewerRPC();

@@ -122,6 +122,8 @@ vtkVisItUtility::GetPoints(vtkDataSet *inDS)
 //      ID      The id of the point or the cell. 
 //      ijk     A place to store the logical indices (all -1 if ds is not
 //              a rectilinear or structured grid). 
+//      global  An optional flag indicating that the global indices should be
+//              returned. 
 //
 //  Programmer: Kathleen Bonnell 
 //  Creation:   December 27, 2002 
@@ -138,11 +140,15 @@ vtkVisItUtility::GetPoints(vtkDataSet *inDS)
 //    this method to work on a non-structured dataset if the array inidicating
 //    original dimensions is present.
 //
+//    Kathleen Bonnell, Tue Dec  9 09:27:20 PST 2003 
+//    If 'global' flag is set, use the "base_index" array to determine the
+//    global 'ijk'. 
+//
 // ****************************************************************************
 
 void
 vtkVisItUtility::GetLogicalIndices(vtkDataSet *ds, const bool forCell, const int ID, 
-                                   int ijk[3])
+                                   int ijk[3], const bool global)
 { 
     int dimX, dimY, dims[3], base[3] = {0, 0, 0};
 
@@ -172,12 +178,20 @@ vtkVisItUtility::GetLogicalIndices(vtkDataSet *ds, const bool forCell, const int
         }
     }
 
+    vtkIntArray *bi = (vtkIntArray*)ds->GetFieldData()->GetArray("base_index");
+    if (global && bi)
+    {
+        base[0] = bi->GetValue(0);
+        base[1] = bi->GetValue(1);
+        base[2] = bi->GetValue(2);
+    }
+
     vtkIntArray *realDims = (vtkIntArray*)ds->GetFieldData()->GetArray("avtRealDims");
     if (realDims)
     {
-        base[0] = realDims->GetValue(0);
-        base[1] = realDims->GetValue(2);
-        base[2] = realDims->GetValue(4);
+        base[0] -= realDims->GetValue(0);
+        base[1] -= realDims->GetValue(2);
+        base[2] -= realDims->GetValue(4);
     }
 
     if (forCell)
@@ -191,9 +205,9 @@ vtkVisItUtility::GetLogicalIndices(vtkDataSet *ds, const bool forCell, const int
         dimY = (dims[1] == 0 ? 1 : dims[1]);
     }
 
-    ijk[0] = (ID % dimX)          - base[0];
-    ijk[1] = ((ID / dimX) % dimY) - base[1];
-    ijk[2] = (ID / (dimX * dimY)) - base[2];
+    ijk[0] = (ID % dimX)          + base[0];
+    ijk[1] = ((ID / dimX) % dimY) + base[1];
+    ijk[2] = (ID / (dimX * dimY)) + base[2];
 }
 
 

@@ -121,7 +121,7 @@ PickVarInfo::PrintSelf(ostream &os)
 }
 
 Function: CreateOutputString
-Declaration: void CreateOutputString(std::string &os);
+Declaration: void CreateOutputString(std::string &, const std::string &);
 Definition:
 
 // ****************************************************************************
@@ -142,9 +142,12 @@ Definition:
 //   Kathleen Bonnell, Thu Nov 20 10:18:54 PST 2003
 //   Support species variableType. 
 // 
+//   Kathleen Bonnell, Wed Dec 17 15:19:46 PST 2003 
+//   Added arg 'type' indicating the type of pick that generated this info. 
+// 
 // ****************************************************************************
 void
-PickVarInfo::CreateOutputString(std::string &os)
+PickVarInfo::CreateOutputString(std::string &os, const std::string &type)
 {
     int i, j, k;
     int matOffset = 0, mixOffset = 0;
@@ -152,16 +155,24 @@ PickVarInfo::CreateOutputString(std::string &os)
     char buff[256];
     os = variableName;
     os +=  ":  ";
+    bool centeringsMatch = false;
     switch (centering)
     {
-        case Nodal:  os += "<nodal>\n" ; break;
-        case Zonal:  os += "<zonal>\n" ; break;
+        case Nodal:  os += "<nodal> " ; 
+                     if (strcmp(type.c_str(), "Node") == 0)
+                         centeringsMatch = true;
+                     break;
+        case Zonal:  os += "<zonal> " ; 
+                     if (strcmp(type.c_str(), "Zone") == 0)
+                         centeringsMatch = true;
+                     break;
         case None :  os += "\n";         break;
     }
     if (!(names.empty() && mixNames.empty()))
     {  
         if (variableType == "material")
         {
+            os += "\n";
             mixOffset  = 0;
             std::string spacing;
             for (i = 0; i < numMatsPerZone.size(); i++)
@@ -192,6 +203,7 @@ PickVarInfo::CreateOutputString(std::string &os)
         }
         else if (variableType == "species")
         {
+            os += "\n";
             matOffset  = 0;
             mixOffset  = 0;
             std::string spacing1;
@@ -241,11 +253,16 @@ PickVarInfo::CreateOutputString(std::string &os)
         }
         else
         {
+            if (!centeringsMatch)
+               os += "\n";
             mixOffset  = 0;
             for (i = 0; i < names.size(); i++)
             {
-                SNPRINTF(buff, 256, "    %s ", names[i].c_str());
-                os += buff;
+                if (!centeringsMatch)
+                {
+                    SNPRINTF(buff, 256, "    %s ", names[i].c_str());
+                    os += buff;
+                }
                 if (variableType == "vector")
                 {
                     int stride = values.size() / names.size();

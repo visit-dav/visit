@@ -1034,6 +1034,9 @@ avtDatabase::GetFileListFromTextFile(const char *textfile,
 //    Kathleen Bonnell, Thu Nov 20 15:17:21 PST 2003 
 //    Added support for MATSPECIES vars. 
 //    
+//    Kathleen Bonnell, Wed Dec 17 14:58:31 PST 2003 
+//    Added support for multiple types of coordinates to be returned. 
+//    
 // ****************************************************************************
 
 void               
@@ -1045,8 +1048,11 @@ avtDatabase::Query(PickAttributes *pa)
     int zonePick    = pa->GetPickType() == PickAttributes::Zone;
     float *PPT, *CPT, ppt[3], cpt[3];
     std::vector<int> incEls  = pa->GetIncidentElements();
-    std::vector<std::string> nodeCoords  = pa->GetNodeCoords();
-    std::vector<std::string> zoneCoords  = pa->GetZoneCoords();
+    std::vector<std::string> pnodeCoords  = pa->GetPnodeCoords();
+    std::vector<std::string> dnodeCoords  = pa->GetDnodeCoords();
+    std::vector<std::string> bnodeCoords  = pa->GetBnodeCoords();
+    std::vector<std::string> dzoneCoords  = pa->GetDzoneCoords();
+    std::vector<std::string> bzoneCoords  = pa->GetBzoneCoords();
     vector<string> userVars = pa->GetVariables();
     std::string vName; 
 
@@ -1068,19 +1074,25 @@ avtDatabase::Query(PickAttributes *pa)
         vName = pa->GetActiveVariable();
         bool success; 
 
+        bool logicalDNodes = pa->GetShowNodeDomainLogicalCoords();
+        bool logicalBNodes = pa->GetShowNodeBlockLogicalCoords();
+        bool physicalNodes = pa->GetShowNodePhysicalCoords();
+        bool logicalDZones = pa->GetShowZoneDomainLogicalCoords(); 
+        bool logicalBZones = pa->GetShowZoneBlockLogicalCoords();
+
         if (zonePick)
         {
             success = QueryNodes(vName, foundDomain, foundEl, ts, incEls, ppt, 
-                          pa->GetDimension(), pa->GetUseNodeCoords(), 
-                          pa->GetLogicalCoords(), nodeCoords,
-                          pa->GetLogicalZone(), zoneCoords);
+                          pa->GetDimension(), physicalNodes, logicalDNodes,
+                          logicalBNodes, pnodeCoords, dnodeCoords, bnodeCoords,
+                          logicalDZones, logicalBZones, dzoneCoords, bzoneCoords);
         }
         else       
         {
             success = QueryZones(vName, foundDomain, foundEl, ts, incEls, cpt,
-                          pa->GetDimension(), pa->GetUseNodeCoords(), 
-                          pa->GetLogicalCoords(), nodeCoords,
-                          pa->GetLogicalZone(), zoneCoords);
+                          pa->GetDimension(), physicalNodes, logicalDNodes,
+                          logicalBNodes, pnodeCoords, dnodeCoords, bnodeCoords,
+                          logicalDZones, logicalBZones, dzoneCoords, bzoneCoords);
             if (success)
                 pa->SetElementNumber(foundEl);
         }
@@ -1088,8 +1100,11 @@ avtDatabase::Query(PickAttributes *pa)
         {
             pa->SetFulfilled(true);
             pa->SetIncidentElements(incEls);
-            pa->SetNodeCoords(nodeCoords);
-            pa->SetZoneCoords(zoneCoords);
+            pa->SetPnodeCoords(pnodeCoords);
+            pa->SetDnodeCoords(dnodeCoords);
+            pa->SetBnodeCoords(bnodeCoords);
+            pa->SetDzoneCoords(dzoneCoords);
+            pa->SetBzoneCoords(bzoneCoords);
             pa->SetPickPoint(ppt);
             pa->SetCellPoint(cpt);
         }

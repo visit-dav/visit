@@ -127,6 +127,8 @@
       SetAnnotationObjectOptionsRPC
       SetDefaultAnnotationObjectListRPC
       ResetAnnotationObjectListRPC
+      ResetPickLetterRPC
+      SetDefaultPickAttributesRPC
       MaxRPC
     </Enum>
     <Field name="RPCType" label="RPCType" type="enum" subtype="ViewerRPCType">

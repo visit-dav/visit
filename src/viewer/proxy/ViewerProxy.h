@@ -476,7 +476,9 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
 
     void SetGlobalLineoutAttributes();
     void SetPickAttributes();
+    void SetDefaultPickAttributes();
     void ResetPickAttributes();
+    void ResetPickLetter();
 
     void WriteConfigFile();
     void ExportEntireState(const std::string &filename);

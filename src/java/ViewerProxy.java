@@ -93,6 +93,9 @@ import java.util.Vector;
 //   Added ResetPickAttributes method. Added overloaded PointQuery and
 //   DatabaseQuery methods to handle optional arguments.
 //
+//   Kathleen Bonnell, Wed Dec 17 15:19:46 PST 2003 
+//   Added SetDefaultPickAttributes, ResetPickLetter. 
+//
 // ****************************************************************************
 
 public class ViewerProxy implements SimpleObserver
@@ -1299,9 +1302,23 @@ public class ViewerProxy implements SimpleObserver
         return synchronous ? Synchronize() : true;
     }
 
+    public boolean SetDefaultPickAttributes()
+    {
+        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETDEFAULTPICKATTRIBUTESRPC);
+        rpc.Notify();
+        return synchronous ? Synchronize() : true;
+    }
+
     public boolean ResetPickAttributes()
     {
         rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_RESETPICKATTRIBUTESRPC);
+        rpc.Notify();
+        return synchronous ? Synchronize() : true;
+    }
+
+    public boolean ResetPickLetter()
+    {
+        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_RESETPICKLETTERRPC);
         rpc.Notify();
         return synchronous ? Synchronize() : true;
     }

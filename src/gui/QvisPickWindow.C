@@ -6,6 +6,7 @@
 #include <vector>
 
 #include <qcheckbox.h>
+#include <qgroupbox.h>
 #include <qlabel.h>
 #include <qlayout.h>
 #include <qlineedit.h>
@@ -56,12 +57,15 @@ using std::vector;
 //   Kathleen Bonnell, Wed Sep 10 08:02:02 PDT 2003 
 //   Added savePicks flag.
 //
+//   Kathleen Bonnell, Wed Dec 17 15:06:34 PST 2003 
+//   Made the window have all buttons.  
+//
 // ****************************************************************************
 
 QvisPickWindow::QvisPickWindow(PickAttributes *subj, const char *caption, 
-                             const char *shortName, QvisNotepadArea *notepad) :
-    QvisPostableWindowObserver(subj, caption, shortName, notepad,
-                               QvisPostableWindowObserver::ApplyButton, false),
+                           const char *shortName, QvisNotepadArea *notepad) :
+    QvisPostableWindowObserver(subj, caption, shortName, notepad, 
+                           QvisPostableWindowObserver::AllExtraButtons, false),
     lastLetter(" ")
 {
     pickAtts = subj;
@@ -121,6 +125,10 @@ QvisPickWindow::~QvisPickWindow()
 //   Kathleen Bonnell, Tue Nov 18 14:03:22 PST 2003 
 //   Added  logicalZone checkbox.
 //
+//   Kathleen Bonnell, Wed Dec 17 15:19:46 PST 2003 
+//   Reorganized, added more buttons for user control of what type of
+//   output pick returns. 
+//
 // ****************************************************************************
 
 void
@@ -141,7 +149,7 @@ QvisPickWindow::CreateWindowContents()
         tabWidget->addTab(pages[i]," "); 
     }
 
-    QGridLayout *gLayout = new QGridLayout(topLayout, 5, 4);
+    QGridLayout *gLayout = new QGridLayout(topLayout, 6, 4);
     varsLineEdit = new QLineEdit(central, "varsLineEdit");
     varsLineEdit->setText("default"); 
     connect(varsLineEdit, SIGNAL(returnPressed()),
@@ -150,34 +158,76 @@ QvisPickWindow::CreateWindowContents()
     gLayout->addWidget(new QLabel(varsLineEdit, "variables", 
                                   central, "varLabel"), 0, 0);
 
-    useNodeCoords = new QCheckBox("Return coordinates of nodes", central, 
-                                  "useNodeCoords");
-    connect(useNodeCoords, SIGNAL(toggled(bool)),
-            this, SLOT(useNodeCoordsToggled(bool)));
-    gLayout->addMultiCellWidget(useNodeCoords, 1, 1, 0, 1);
+    displayIncEls = new QCheckBox("Display incident nodes/zones.", central, 
+                                  "displayIncEls");
+    connect(displayIncEls, SIGNAL(toggled(bool)),
+            this, SLOT(displayIncElsToggled(bool)));
+    gLayout->addMultiCellWidget(displayIncEls, 1, 1, 0, 1);
 
-    logicalCoords = new QCheckBox("Logical ", central, "logicalCoords");
-    logicalCoords->setEnabled(useNodeCoords->isChecked());
-    connect(logicalCoords, SIGNAL(toggled(bool)),
-            this, SLOT(logicalCoordsToggled(bool)));
-    gLayout->addMultiCellWidget(logicalCoords, 1, 1, 2, 3);
 
-    logicalZone = new QCheckBox("Logical Zone Coordinates", central, "logicalZone");
-    connect(logicalZone, SIGNAL(toggled(bool)),
-            this, SLOT(logicalZoneToggled(bool)));
-    gLayout->addMultiCellWidget(logicalZone, 2, 2, 0, 3);
+    // Node settings
+    QGroupBox *nodeGroupBox = new QGroupBox(central, "nodeGroupBox");
+    nodeGroupBox->setTitle("Display for Nodes:");
+    nodeGroupBox->setMargin(10);
+    gLayout->addMultiCellWidget(nodeGroupBox, 2, 2, 0, 3);
+    QGridLayout *nLayout = new QGridLayout(nodeGroupBox, 3, 4);
+    nLayout->setMargin(10);
+    nLayout->setSpacing(10);
+    nLayout->addRowSpacing(0, 15);
+
+    nodeId = new QCheckBox("Id", nodeGroupBox, "nodeId");
+    connect(nodeId, SIGNAL(toggled(bool)),
+            this, SLOT(nodeIdToggled(bool)));
+    nLayout->addMultiCellWidget(nodeId, 1, 1, 0, 1);
+    nodePhysical = new QCheckBox("Physical Coords", nodeGroupBox, "nodePhysical");
+    connect(nodePhysical, SIGNAL(toggled(bool)),
+            this, SLOT(nodePhysicalToggled(bool)));
+    nLayout->addMultiCellWidget(nodePhysical, 2, 2, 0, 1);
+    nodeDomLog = new QCheckBox("Domain-Logical Coords", nodeGroupBox, "nodeDomLog");
+    connect(nodeDomLog, SIGNAL(toggled(bool)),
+            this, SLOT(nodeDomLogToggled(bool)));
+    nLayout->addMultiCellWidget(nodeDomLog, 1, 1, 2, 3);
+    nodeBlockLog = new QCheckBox("Block-Logical Coords", nodeGroupBox, "nodeBlockLog");
+    connect(nodeBlockLog, SIGNAL(toggled(bool)),
+            this, SLOT(nodeBlockLogToggled(bool)));
+    nLayout->addMultiCellWidget(nodeBlockLog, 2, 2, 2, 3);
+
+    // Zone settings
+    QGroupBox *zoneGroupBox = new QGroupBox(central, "zoneGroupBox");
+    zoneGroupBox->setTitle("Display for Zones:");
+    zoneGroupBox->setMargin(10);
+    gLayout->addMultiCellWidget(zoneGroupBox, 3, 3, 0, 3);
+    QGridLayout *zLayout = new QGridLayout(zoneGroupBox, 3, 4);
+    zLayout->setMargin(10);
+    zLayout->setSpacing(10);
+    zLayout->addRowSpacing(0, 15);
+
+    zoneId = new QCheckBox("Id", zoneGroupBox, "zoneId");
+    connect(zoneId, SIGNAL(toggled(bool)),
+            this, SLOT(zoneIdToggled(bool)));
+    zLayout->addMultiCellWidget(zoneId, 1, 1, 0, 1);
+    zoneDomLog = new QCheckBox("Domain-Logical Coords", zoneGroupBox, "zoneDomLog");
+    connect(zoneDomLog, SIGNAL(toggled(bool)),
+            this, SLOT(zoneDomLogToggled(bool)));
+    zLayout->addMultiCellWidget(zoneDomLog, 1, 1, 2, 3);
+    zoneBlockLog = new QCheckBox("Block-Logical Coords", zoneGroupBox, "zoneBlockLog");
+    connect(zoneBlockLog, SIGNAL(toggled(bool)),
+            this, SLOT(zoneBlockLogToggled(bool)));
+    zLayout->addMultiCellWidget(zoneBlockLog, 2, 2, 2, 3);
+
+   
 
     autoShowCheckBox = new QCheckBox("Automatically show window", central,
                                      "autoShowCheckBox");
     connect(autoShowCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(autoShowToggled(bool)));
-    gLayout->addMultiCellWidget(autoShowCheckBox, 3, 3, 0, 3);
+    gLayout->addMultiCellWidget(autoShowCheckBox, 4, 4, 0, 3);
 
     savePicksCheckBox = new QCheckBox("Don't clear this window", central,
                                      "savePicksCheckBox");
     connect(savePicksCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(savePicksToggled(bool)));
-    gLayout->addMultiCellWidget(savePicksCheckBox, 4, 4, 0, 3);
+    gLayout->addMultiCellWidget(savePicksCheckBox, 5, 5, 0, 3);
 }
 
 // ****************************************************************************
@@ -215,6 +265,9 @@ QvisPickWindow::CreateWindowContents()
 //   Kathleen Bonnell, Tue Nov 18 14:03:22 PST 2003 
 //   Update logicalZone. 
 //
+//   Kathleen Bonnell, Wed Dec 17 15:19:46 PST 2003 
+//   Mor options, reordered old options. 
+//
 // ****************************************************************************
 
 void
@@ -237,7 +290,9 @@ QvisPickWindow::UpdateWindow(bool doAll)
     //  information in a tab-page.  If pick letter changes, we assume
     //  all other vital-to-be-displayed information has also changed.
     //
-    if (pickAtts->IsSelected(2) || pickAtts->IsSelected(0) || doAll)
+
+    // 10 == pickLetter 9 == clearWindow
+    if (pickAtts->IsSelected(10) || pickAtts->IsSelected(9) || doAll)
     {
         bool clearWindow = (savePicks ? false : 
                             pickAtts->GetClearWindow());
@@ -251,9 +306,9 @@ QvisPickWindow::UpdateWindow(bool doAll)
         UpdatePage();
     }
 
-    //  If userSelectedVars changes, 
+    //  If variables changes, 
     //
-    if (pickAtts->IsSelected(12) || doAll)
+    if (pickAtts->IsSelected(0) || doAll)
     {
         stringVector userVars = pickAtts->GetVariables();
         std::string allVars2;
@@ -264,24 +319,69 @@ QvisPickWindow::UpdateWindow(bool doAll)
         }
         varsLineEdit->setText(allVars2.c_str()); 
     }
-    if (pickAtts->IsSelected(14) || doAll)
+
+    // displayIncidentElements
+    if (pickAtts->IsSelected(1) || doAll)
     {
-        useNodeCoords->blockSignals(true);
-        useNodeCoords->setChecked(pickAtts->GetUseNodeCoords());
-        logicalCoords->setEnabled(pickAtts->GetUseNodeCoords());
-        useNodeCoords->blockSignals(false);
+        displayIncEls->blockSignals(true);
+        displayIncEls->setChecked(pickAtts->GetDisplayIncidentElements());
+        displayIncEls->blockSignals(false);
+ 
+   }
+    // showNodeId
+    if (pickAtts->IsSelected(2) || doAll)
+    {
+        nodeId->blockSignals(true);
+        nodeId->setChecked(pickAtts->GetShowNodeId());
+        nodeId->blockSignals(false);
     }
-    if (pickAtts->IsSelected(15) || doAll)
+
+    // showNodeDomainLogicalCoords
+    if (pickAtts->IsSelected(3) || doAll)
     {
-        logicalCoords->blockSignals(true);
-        logicalCoords->setChecked(pickAtts->GetLogicalCoords());
-        logicalCoords->blockSignals(false);
+        nodeDomLog->blockSignals(true);
+        nodeDomLog->setChecked(pickAtts->GetShowNodeDomainLogicalCoords());
+        nodeDomLog->blockSignals(false);
     }
-    if (pickAtts->IsSelected(26) || doAll)
+
+    // showNodeBlockLogicalCoords
+    if (pickAtts->IsSelected(4) || doAll)
     {
-        logicalZone->blockSignals(true);
-        logicalZone->setChecked(pickAtts->GetLogicalZone());
-        logicalZone->blockSignals(false);
+        nodeBlockLog->blockSignals(true);
+        nodeBlockLog->setChecked(pickAtts->GetShowNodeBlockLogicalCoords());
+        nodeBlockLog->blockSignals(false);
+    }
+
+    // showNodePhysicalLogicalCoords
+    if (pickAtts->IsSelected(5) || doAll)
+    {
+        nodePhysical->blockSignals(true);
+        nodePhysical->setChecked(pickAtts->GetShowNodePhysicalCoords());
+        nodePhysical->blockSignals(false);
+    }
+
+    // showZoneId
+    if (pickAtts->IsSelected(6) || doAll)
+    {
+        zoneId->blockSignals(true);
+        zoneId->setChecked(pickAtts->GetShowZoneId());
+        zoneId->blockSignals(false);
+    }
+
+    // showZoneDomainLogicalCoords
+    if (pickAtts->IsSelected(7) || doAll)
+    {
+        zoneDomLog->blockSignals(true);
+        zoneDomLog->setChecked(pickAtts->GetShowZoneDomainLogicalCoords());
+        zoneDomLog->blockSignals(false);
+    }
+
+    // showZoneBlockLogicalCoords
+    if (pickAtts->IsSelected(8) || doAll)
+    {
+        zoneBlockLog->blockSignals(true);
+        zoneBlockLog->setChecked(pickAtts->GetShowZoneBlockLogicalCoords());
+        zoneBlockLog->blockSignals(false);
     }
 }
 
@@ -583,74 +683,6 @@ QvisPickWindow::ClearPages()
     tabWidget->showPage(pages[0]);
 }
 
-// ****************************************************************************
-// Method: QvisPickWindow::useNodeCoordsToggled
-//
-// Purpose:
-//   This is a Qt slot function that sets the flag indicating whether
-//   or not the node coordinates should be used. 
-//
-// Arguments:
-//   val : The state of the toggle button.
-//
-// Programmer: Kathleen Bonnell 
-// Creation:   December 23, 2002 
-//
-// ****************************************************************************
- 
-void
-QvisPickWindow::useNodeCoordsToggled(bool val)
-{
-    pickAtts->SetUseNodeCoords(val);
-    Apply();
-}
-
-
-// ****************************************************************************
-// Method: QvisPickWindow::logicalCoordsToggled
-//
-// Purpose:
-//   This is a Qt slot function that sets the flag indicating whether
-//   or not logical node coordinates should be used. 
-//
-// Arguments:
-//   val : The state of the toggle button.
-//
-// Programmer: Kathleen Bonnell 
-// Creation:   December 27, 2002 
-//
-// ****************************************************************************
- 
-void
-QvisPickWindow::logicalCoordsToggled(bool val)
-{
-    pickAtts->SetLogicalCoords(val);
-    Apply();
-}
-
-
-// ****************************************************************************
-// Method: QvisPickWindow::logicalZoneToggled
-//
-// Purpose:
-//   This is a Qt slot function that sets the flag indicating whether
-//   or not logical zone coordinates should be used. 
-//
-// Arguments:
-//   val : The state of the toggle button.
-//
-// Programmer: Kathleen Bonnell 
-// Creation:   November 18, 2003 
-//
-// ****************************************************************************
-
-void
-QvisPickWindow::logicalZoneToggled(bool val)
-{
-    pickAtts->SetLogicalZone(val);
-    Apply();
-}
-
 
 // ****************************************************************************
 // Method: QvisPickWindow::autoShowToggled
@@ -698,3 +730,225 @@ QvisPickWindow::savePicksToggled(bool val)
 {
     savePicks = val;
 }
+
+
+// ****************************************************************************
+// Method: QvisPickWindow::makeDefault
+//
+// Purpose: 
+//   This is a Qt slot function to make the current pick attributes
+//   the defaults.
+//
+// Programmer: Kathleen Bonnell
+// Creation:   December 3, 2001 
+//
+// ****************************************************************************
+
+void
+QvisPickWindow::makeDefault()
+{
+    // Tell the viewer to set the default pc attributes.
+    GetCurrentValues(-1);
+    pickAtts->Notify();
+    viewer->SetDefaultPickAttributes();
+}
+
+// ****************************************************************************
+// Method: QvisPickWindow::reset
+//
+// Purpose: 
+//   This is a Qt slot function to reset the PickAttributes to the
+//   last applied values.
+//
+// Programmer: Kathleen Bonnell
+// Creation:   December 3, 2001 
+//
+// ****************************************************************************
+
+void
+QvisPickWindow::reset()
+{
+    // Tell the viewer to reset the pick attributes to the last
+    // applied values.
+    //
+    viewer->ResetPickAttributes();
+}
+
+
+// ****************************************************************************
+// Method: QvisPickWindow::displayIncElsToggled
+//
+// Purpose:
+//   This is a Qt slot function that sets the flag indicating whether
+//   or not the indicdent elements should be displayed. 
+//
+// Arguments:
+//   val : The state of the toggle button.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   December 9, 2003 
+//
+// ****************************************************************************
+ 
+void
+QvisPickWindow::displayIncElsToggled(bool val)
+{
+    pickAtts->SetDisplayIncidentElements(val);
+    Apply();
+}
+
+
+// ****************************************************************************
+// Method: QvisPickWindow::nodeIdToggled
+//
+// Purpose:
+//   This is a Qt slot function that sets the flag indicating whether
+//   or not the node id should be displayed. 
+//
+// Arguments:
+//   val : The state of the toggle button.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   December 9, 2003 
+//
+// ****************************************************************************
+ 
+void
+QvisPickWindow::nodeIdToggled(bool val)
+{
+    pickAtts->SetShowNodeId(val);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisPickWindow::nodeDomLogToggled
+//
+// Purpose:
+//   This is a Qt slot function that sets the flag indicating whether
+//   or not the nodes' domain logical coordinates should be displayed. 
+//
+// Arguments:
+//   val : The state of the toggle button.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   December 9, 2003 
+//
+// ****************************************************************************
+ 
+void
+QvisPickWindow::nodeDomLogToggled(bool val)
+{
+    pickAtts->SetShowNodeDomainLogicalCoords(val);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisPickWindow::nodeBlockLogToggled
+//
+// Purpose:
+//   This is a Qt slot function that sets the flag indicating whether
+//   or not the nodes' block logical coordinates should be displayed. 
+//
+// Arguments:
+//   val : The state of the toggle button.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   December 9, 2003 
+//
+// ****************************************************************************
+ 
+void
+QvisPickWindow::nodeBlockLogToggled(bool val)
+{
+    pickAtts->SetShowNodeBlockLogicalCoords(val);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisPickWindow::nodePhysicalToggled
+//
+// Purpose:
+//   This is a Qt slot function that sets the flag indicating whether
+//   or not the nodes' physical coordinates should be displayed. 
+//
+// Arguments:
+//   val : The state of the toggle button.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   December 9, 2003 
+//
+// ****************************************************************************
+ 
+void
+QvisPickWindow::nodePhysicalToggled(bool val)
+{
+    pickAtts->SetShowNodePhysicalCoords(val);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisPickWindow::zoneIdToggled
+//
+// Purpose:
+//   This is a Qt slot function that sets the flag indicating whether
+//   or not the zones' id should be displayed. 
+//
+// Arguments:
+//   val : The state of the toggle button.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   December 9, 2003 
+//
+// ****************************************************************************
+ 
+void
+QvisPickWindow::zoneIdToggled(bool val)
+{
+    pickAtts->SetShowZoneId(val);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisPickWindow::zoneDomLogToggled
+//
+// Purpose:
+//   This is a Qt slot function that sets the flag indicating whether
+//   or not the zone's domain logical coordinates should be displayed. 
+//
+// Arguments:
+//   val : The state of the toggle button.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   December 9, 2003 
+//
+// ****************************************************************************
+ 
+void
+QvisPickWindow::zoneDomLogToggled(bool val)
+{
+    pickAtts->SetShowZoneDomainLogicalCoords(val);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisPickWindow::zoneBlockLogToggled
+//
+// Purpose:
+//   This is a Qt slot function that sets the flag indicating whether
+//   or not the zones' block logical coordinates should be displayed. 
+//
+// Arguments:
+//   val : The state of the toggle button.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   December 9, 2003 
+//
+// ****************************************************************************
+ 
+void
+QvisPickWindow::zoneBlockLogToggled(bool val)
+{
+    pickAtts->SetShowZoneBlockLogicalCoords(val);
+    Apply();
+}
+

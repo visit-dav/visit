@@ -15,7 +15,8 @@ namespace vtkVisItUtility
 {
     VISIT_VTK_API vtkPoints  *GetPoints(vtkDataSet *);
     VISIT_VTK_API void        GetLogicalIndices(vtkDataSet *, const bool, 
-                                                const int, int [3]);
+                                                const int, int [3], 
+                                                const bool = false);
     VISIT_VTK_API int         CalculateRealID(const int, const bool, 
                                               vtkDataSet *ds);
     VISIT_VTK_API int         ComputeStructuredCoordinates(

@@ -4801,17 +4801,23 @@ avtGenericDatabase::QueryMaterial(const std::string &varName, const int dom,
 //    Kathleen Bonnell, Wed Nov 26 14:35:29 PST 2003
 //    Set ppt to Cell center if doing PickByZone (ppt[0] == FLT_MAX). 
 //    
+//    Kathleen Bonnell, Wed Dec 17 15:04:57 PST 2003 
+//    Updated args list to include multiple types of Coordinates. 
+//    
 // ****************************************************************************
 
 bool
 avtGenericDatabase::QueryNodes(const std::string &varName, const int dom, 
                                const int zone, const int ts, 
                                std::vector<int> &nodes, float ppt[3],
-                               const int dim, const bool useNodeCoords, 
-                               const bool logicalNodes, 
-                               std::vector<std::string> &nCoords,
-                               const bool logicalZones, 
-                               std::vector<std::string> &zCoords)
+                               const int dim, const bool physicalNodes, 
+                               const bool logicalDNodes, const bool logicalBNodes,
+                               std::vector<std::string> &pnCoords,
+                               std::vector<std::string> &dnCoords,
+                               std::vector<std::string> &bnCoords,
+                               const bool logicalDZones, const bool logicalBZones,
+                               std::vector<std::string> &dzCoords,
+                               std::vector<std::string> &bzCoords)
 {
     string meshName = GetMetaData(ts)->MeshForVar(varName);
     vtkDataSet *ds = GetMeshDataset(meshName.c_str(), ts, dom, "_all");
@@ -4824,21 +4830,10 @@ avtGenericDatabase::QueryNodes(const std::string &varName, const int dom,
         int ijk[3];
         char buff[80];
         int type = ds->GetDataObjectType();
-        vtkIntArray *bi = (vtkIntArray*)ds->GetFieldData()->GetArray("base_index");
-        int base[3] = {0, 0, 0};
-        if (bi)
-        {
-            base[0] = bi->GetValue(0);
-            base[1] = bi->GetValue(1);
-            base[2] = bi->GetValue(2);
-        }
-        if (logicalZones && (type == VTK_RECTILINEAR_GRID ||
+        if (logicalDZones && (type == VTK_RECTILINEAR_GRID ||
                              type == VTK_STRUCTURED_GRID ))
         {
-            vtkVisItUtility::GetLogicalIndices(ds, true, zone, ijk);
-            ijk[0] += base[0];
-            ijk[1] += base[1];
-            ijk[2] += base[2];
+            vtkVisItUtility::GetLogicalIndices(ds, true, zone, ijk, false);
             if (dim == 2)
             {
                 sprintf(buff, "<%d, %d>", ijk[0], ijk[1]);
@@ -4847,42 +4842,67 @@ avtGenericDatabase::QueryNodes(const std::string &varName, const int dom,
             {
                 sprintf(buff, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
             }
-            zCoords.push_back(buff);
+            dzCoords.push_back(buff);
+        }
+        if (logicalBZones && (type == VTK_RECTILINEAR_GRID ||
+                             type == VTK_STRUCTURED_GRID ))
+        {
+            vtkVisItUtility::GetLogicalIndices(ds, true, zone, ijk, true);
+            if (dim == 2)
+            {
+                sprintf(buff, "<%d, %d>", ijk[0], ijk[1]);
+            }
+            else 
+            {
+                sprintf(buff, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
+            }
+            bzCoords.push_back(buff);
         }
         for (int i = 0; i < ptIds->GetNumberOfIds(); i++)
         {
             nodes.push_back(ptIds->GetId(i));
-            if (useNodeCoords)
+            if (logicalDNodes && (type == VTK_RECTILINEAR_GRID ||
+                                 type == VTK_STRUCTURED_GRID ))
             {
-                if (logicalNodes && (type == VTK_RECTILINEAR_GRID ||
-                                     type == VTK_STRUCTURED_GRID ))
+                vtkVisItUtility::GetLogicalIndices(ds, false, 
+                                         ptIds->GetId(i), ijk, false);
+                if (dim == 2)
                 {
-                    vtkVisItUtility::GetLogicalIndices(ds, false, ptIds->GetId(i), ijk);
-                    ijk[0] += base[0];
-                    ijk[1] += base[1];
-                    ijk[2] += base[2];
-                    if (dim == 2)
-                    {
-                        sprintf(buff, "<%d, %d>", ijk[0], ijk[1]);
-                    }
-                    else 
-                    {
-                        sprintf(buff, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
-                    }
+                    sprintf(buff, "<%d, %d>", ijk[0], ijk[1]);
                 }
-                else
+                else 
                 {
-                    ds->GetPoint(ptIds->GetId(i), coord);
-                    if (dim == 2)
-                    {
-                        sprintf(buff, "<%g, %g>", coord[0], coord[1]);
-                    }
-                    else 
-                    {
-                        sprintf(buff, "<%g, %g, %g>", coord[0], coord[1], coord[2]);
-                    }
+                    sprintf(buff, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
                 }
-                nCoords.push_back(buff);
+                dnCoords.push_back(buff);
+            }
+            if (logicalBNodes && (type == VTK_RECTILINEAR_GRID ||
+                                 type == VTK_STRUCTURED_GRID ))
+            {
+                vtkVisItUtility::GetLogicalIndices(ds, false, 
+                                         ptIds->GetId(i), ijk, true);
+                if (dim == 2)
+                {
+                    sprintf(buff, "<%d, %d>", ijk[0], ijk[1]);
+                }
+                else 
+                {
+                    sprintf(buff, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
+                }
+                bnCoords.push_back(buff);
+            }
+            if (physicalNodes)
+            {
+                ds->GetPoint(ptIds->GetId(i), coord);
+                if (dim == 2)
+                {
+                    sprintf(buff, "<%g, %g>", coord[0], coord[1]);
+                }
+                else 
+                {
+                    sprintf(buff, "<%g, %g, %g>", coord[0], coord[1], coord[2]);
+                }
+                pnCoords.push_back(buff);
             }
         }
         ptIds->Delete();
@@ -5016,17 +5036,25 @@ avtGenericDatabase::QueryMesh(const std::string &varName, const int ts,
 //    Kathleen Bonnell, Wed Nov 26 14:35:29 PST 2003
 //    Use foundEl as minId if doing PickByNode (ppt[0] == FLT_MAX). 
 //    
+//    Kathleen Bonnell, Wed Dec 17 15:04:57 PST 2003 
+//    Updated args list to include multiple types of Coordinates. 
+//    
 // ****************************************************************************
 
 bool
 avtGenericDatabase::QueryZones(const string &varName, const int dom, 
                                int &foundEl, const int ts, vector<int> &zones, 
                                float ppt[3], const int dimension,
-                               const bool useNodeCoords, 
-                               const bool logicalNodes, 
-                               vector<string> &nodeCoords,
-                               const bool logicalZones, 
-                               vector<string> &zoneCoords)
+                               const bool physicalNodes, 
+                               const bool logicalDNodes, 
+                               const bool logicalBNodes, 
+                               vector<string> &pnodeCoords,
+                               vector<string> &dnodeCoords,
+                               vector<string> &bnodeCoords,
+                               const bool logicalDZones, 
+                               const bool logicalBZones, 
+                               vector<string> &dzoneCoords,
+                               vector<string> &bzoneCoords)
 {
     string meshName = GetMetaData(ts)->MeshForVar(varName);
     vtkDataSet *ds = GetMeshDataset(meshName.c_str(), ts, dom, "_all");
@@ -5041,14 +5069,6 @@ avtGenericDatabase::QueryZones(const string &varName, const int dom,
         int ijk[3];
         char buff[80];
         int type = ds->GetDataObjectType();
-        vtkIntArray *bi = (vtkIntArray*)ds->GetFieldData()->GetArray("base_index"); 
-        int base[3] = {0, 0, 0};
-        if (bi)
-        {
-            base[0] = bi->GetValue(0);
-            base[1] = bi->GetValue(1);
-            base[2] = bi->GetValue(2);
-        }
         if (ppt[0] == FLT_MAX)
         {
             minId = foundEl;
@@ -5089,37 +5109,46 @@ avtGenericDatabase::QueryZones(const string &varName, const int dom,
 
             foundEl = minId;
 
-            if (useNodeCoords)
+            if (logicalDNodes  && (type == VTK_STRUCTURED_GRID || 
+                                   type == VTK_RECTILINEAR_GRID))
             {
-                if (logicalNodes && (type == VTK_STRUCTURED_GRID || 
-                     type == VTK_RECTILINEAR_GRID))
+                vtkVisItUtility::GetLogicalIndices(ds, false, minId, ijk, false);
+                if (dimension == 2)
                 {
-                    vtkVisItUtility::GetLogicalIndices(ds, false, minId, ijk);
-                    ijk[0] += base[0];
-                    ijk[1] += base[1];
-                    ijk[2] += base[2];
-                    if (dimension == 2)
-                    {
-                        sprintf(buff, "<%d, %d>", ijk[0], ijk[1]);
-                    }
-                    else 
-                    {
-                        sprintf(buff, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
-                    }
+                    sprintf(buff, "<%d, %d>", ijk[0], ijk[1]);
                 }
-                else
+                else 
                 {
-                    points->GetPoint(minId, coord); 
-                    if (dimension  == 2)
-                    {
-                        sprintf(buff, "<%g, %g>", coord[0], coord[1]);
-                    }
-                    else 
-                    {
-                        sprintf(buff, "<%g, %g, %g>", coord[0], coord[1], coord[2]);
-                    }
-                 }
-                 nodeCoords.push_back(buff);
+                    sprintf(buff, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
+                }
+                dnodeCoords.push_back(buff);
+            }
+            if (logicalBNodes  && (type == VTK_STRUCTURED_GRID || 
+                                   type == VTK_RECTILINEAR_GRID))
+            {
+                vtkVisItUtility::GetLogicalIndices(ds, false, minId, ijk, true);
+                if (dimension == 2)
+                {
+                    sprintf(buff, "<%d, %d>", ijk[0], ijk[1]);
+                }
+                else 
+                {
+                    sprintf(buff, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
+                }
+                bnodeCoords.push_back(buff);
+            }
+            if (physicalNodes)
+            {
+                points->GetPoint(minId, coord); 
+                if (dimension  == 2)
+                {
+                    sprintf(buff, "<%g, %g>", coord[0], coord[1]);
+                }
+                else 
+                {
+                    sprintf(buff, "<%g, %g, %g>", coord[0], coord[1], coord[2]);
+                }
+                pnodeCoords.push_back(buff);
             }
             ids->Reset();
             ds->GetPointCells(minId, ids);
@@ -5138,13 +5167,11 @@ avtGenericDatabase::QueryZones(const string &varName, const int dom,
                         continue;
                     zones.push_back(idptr[i]);
 
-                    if (logicalZones && (type == VTK_STRUCTURED_GRID || 
-                         type == VTK_RECTILINEAR_GRID))
+                    if (logicalDZones && (type == VTK_STRUCTURED_GRID || 
+                                          type == VTK_RECTILINEAR_GRID))
                     {
-                        vtkVisItUtility::GetLogicalIndices(ds, true, idptr[i], ijk);
-                        ijk[0] += base[0];
-                        ijk[1] += base[1];
-                        ijk[2] += base[2];
+                        vtkVisItUtility::GetLogicalIndices(ds, true, idptr[i], 
+                                              ijk, false);
                         if (dimension == 2)
                         {
                             sprintf(buff, "<%d, %d>", ijk[0], ijk[1]);
@@ -5153,7 +5180,22 @@ avtGenericDatabase::QueryZones(const string &varName, const int dom,
                         {
                             sprintf(buff, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
                         }
-                        zoneCoords.push_back(buff);
+                        dzoneCoords.push_back(buff);
+                    }
+                    if (logicalBZones && (type == VTK_STRUCTURED_GRID || 
+                                          type == VTK_RECTILINEAR_GRID))
+                    {
+                        vtkVisItUtility::GetLogicalIndices(ds, true, idptr[i], 
+                                              ijk, true);
+                        if (dimension == 2)
+                        {
+                            sprintf(buff, "<%d, %d>", ijk[0], ijk[1]);
+                        }
+                        else 
+                        {
+                            sprintf(buff, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
+                        }
+                        bzoneCoords.push_back(buff);
                     }
                 }
                 rv = true;
