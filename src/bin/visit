@@ -319,6 +319,9 @@ $0 = shift @ARGV;
 #    Brad Whitlock, Tue Apr 27 09:49:57 PDT 2004
 #    I removed some obsolete MacOS X coding and I updated the GDB directories.
 #
+#    Hank Childs, Sun May  9 11:48:58 PDT 2004
+#    Add a line to the usage regarding "default_format".
+#
 ###############################################################################
 
 
@@ -456,6 +459,8 @@ USAGE:  visit [arguments]
                              -gui or -movie.
         -verbose             Prints status information during pipeline
                              execution.
+        -default_format      Sets the database plugin format to use as a default
+                             if the file type cannot be resolved by using extensions.
 
     Debugging arguments:
         -debug <level>       Run with <level> levels of output logging.

@@ -35,6 +35,10 @@ static int FormatLine(char *line);
 //    Hank Childs, Mon Sep 15 09:21:29 PDT 2003
 //    Initialized nodalCentering.
 //
+//    Hank Childs, Sun May  9 07:56:42 PDT 2004
+//    Allow for the format not to be broken up into bricklets.  Also add
+//    support for byte data.
+//
 // ****************************************************************************
 
 avtBOVFileFormat::avtBOVFileFormat(const char *fname)
@@ -80,7 +84,7 @@ avtBOVFileFormat::avtBOVFileFormat(const char *fname)
     varname = new char[strlen("var") + 1];
     strcpy(varname, "var");
     min = 0.;
-    max = 0.;
+    max = 1.;
     origin[0] = 0.;
     origin[1] = 0.;
     origin[2] = 0.;
@@ -89,9 +93,11 @@ avtBOVFileFormat::avtBOVFileFormat(const char *fname)
     dimensions[2] = 1.;
     var_brick_min = NULL;
     var_brick_max = NULL;
+    declaredEndianess = false;
     littleEndian = false;
     hasBoundaries = false;
     nodalCentering = true;
+    byteData = true;
 
     ReadTOC();
 
@@ -107,8 +113,9 @@ avtBOVFileFormat::avtBOVFileFormat(const char *fname)
     }
     if (bricklet_size[0] <= 0 || bricklet_size[1] <= 0 || bricklet_size[2] <= 0)
     {
-        debug1 << "Was not able to determine \"DATA_BRICKLETS\"" << endl;
-        EXCEPTION1(InvalidFilesException, fname);
+        bricklet_size[0] = full_size[0];
+        bricklet_size[1] = full_size[1];
+        bricklet_size[2] = full_size[2];
     }
     if (dimensions[0] <= 0. || dimensions[1] <= 0. || dimensions[2] <= 0.)
     {
@@ -311,6 +318,14 @@ avtBOVFileFormat::GetMesh(int dom, const char *meshname)
 //  Programmer: Hank Childs
 //  Creation:   May 12, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Sun May  9 07:56:42 PDT 2004
+//    Better support for non-bricklet format.  Also better support for fully
+//    qualified pathnames.  Also add support for bytes vs floats.  Also
+//    add support for gzipped vs non-gzipped.  Also do a better job of closing
+//    file descriptors and freeing memory.
+//
 // ****************************************************************************
 
 // FROM FConvert.C
@@ -354,10 +369,28 @@ avtBOVFileFormat::GetVar(int dom, const char *var)
     char filename[1024];
     sprintf(filename, file_pattern, dom);
     char qual_filename[1024];
-    sprintf(qual_filename, "%s%s", path, filename);
+    if (filename[0] != '/')
+        sprintf(qual_filename, "%s%s", path, filename);
+    else
+        strcpy(qual_filename, filename);
 
-    void *f_handle = gzopen(qual_filename, "r");
-    if (f_handle == NULL)
+    void *gz_handle = NULL;
+    FILE *file_handle = NULL;
+    bool gzipped = false;
+    if (strstr(qual_filename, ".gz") != NULL)
+    {
+        gz_handle = gzopen(qual_filename, "r");
+        gzipped = true;
+    }
+    else
+    {
+        file_handle = fopen(qual_filename, "r");
+        gzipped = false;
+    }
+
+    int unit_size = (byteData == true ? sizeof(unsigned char) : sizeof(float));
+
+    if (file_handle == NULL && gz_handle == NULL)
     {
         EXCEPTION1(InvalidFilesException, qual_filename);
     }
@@ -379,37 +412,112 @@ avtBOVFileFormat::GetVar(int dom, const char *var)
         rv->SetNumberOfTuples(n_real_vals);
         float *buff = (float *) rv->GetVoidPointer(0);
 
+        //
+        // How much we should allocate depends on whether we have floats or 
+        // unsigned chars.
+        //
         int total_vals = (dx*dy*dz);
-        float *buff2 = new float[total_vals];
-        gzread(f_handle, buff2, total_vals*sizeof(float));
+        unsigned char *uc_buff = NULL;
+        float *f_buff = NULL;
+        if (byteData)
+            uc_buff = new unsigned char[total_vals];
+        else
+            f_buff = new float[total_vals];
+        void *buff2 = (byteData ? (void *) uc_buff : (void *) f_buff);
+
+        //
+        // Read in based on whether or not we have a gzipped file.
+        //
+        if (gzipped)
+            gzread(gz_handle, buff2, total_vals*unit_size);
+        else
+            fread(buff2, unit_size, total_vals, file_handle);
+
         int ptId = 0;
         for (int i = z_start ; i < z_stop ; i++)
             for (int j = y_start ; j < y_stop ; j++)
                 for (int k = x_start ; k < x_stop ; k++)
                 {
                     int index = i*dx*dy + j*dx + k;
-                    buff[ptId++] = buff2[index];
+                    if (byteData)
+                        buff[ptId++] = min + (max-min)*(uc_buff[index]/255.);
+                    else
+                        buff[ptId++] = f_buff[index];
                 }
+
+        if (uc_buff != NULL)
+            delete [] uc_buff;
+        if (f_buff != NULL)
+            delete [] f_buff;
     }
     else
     {
         int nvals = bricklet_size[0] * bricklet_size[1] * bricklet_size[2];
         rv->SetNumberOfTuples(nvals);
-        float *buff = (float *) rv->GetVoidPointer(0);
-        gzread(f_handle, buff, nvals*sizeof(float));
-    }
 
-    if (littleEndian)
-    {
-        int nvals = rv->GetNumberOfTuples();
-        float *buff = (float *) rv->GetVoidPointer(0);
-        for (int i = 0 ; i < nvals ; i++)
+        //
+        // If we have unsigned chars, then we have to create temporary buffer to
+        // read into.  If we have floats, we can just use the buffer directly.
+        //
+        unsigned char *uc_buff = NULL;
+        float *f_buff = NULL;
+        if (byteData)
+            uc_buff = new unsigned char[nvals];
+        else
+            f_buff = (float *) rv->GetVoidPointer(0);
+        void *buff = (byteData ? (void *) uc_buff : (void *) f_buff);
+
+        //
+        // Read in based on whether or not we have a gzipped file.
+        //
+        if (gzipped)
+            gzread(gz_handle, buff, nvals*unit_size);
+        else
+            fread(buff, unit_size, nvals, file_handle);
+
+        if (byteData)
         {
-            float tmp;
-            float32_Reverse_Endian(buff[i], (unsigned char *) &tmp);
-            buff[i] = tmp;
+            float *tmp = (float *) rv->GetVoidPointer(0);
+            for (int i = 0 ; i < nvals ; i++)
+                tmp[i] = min + (max-min)*(uc_buff[i]/255.);
+            delete [] uc_buff;
         }
     }
+
+    //
+    // If the endian is opposite of this platform, then reverse it...
+    //
+    if (declaredEndianess)
+    {
+        bool machineEndianIsLittle = true;
+#ifdef WORDS_BIGENDIAN
+        machineEndianIsLittle = false;
+#else
+        machineEndianIsLittle = true;
+#endif
+        if (littleEndian != machineEndianIsLittle)
+        {
+            if (!byteData)
+            {
+                int nvals = rv->GetNumberOfTuples();
+                float *buff = (float *) rv->GetVoidPointer(0);
+                for (int i = 0 ; i < nvals ; i++)
+                {
+                    float tmp;
+                    float32_Reverse_Endian(buff[i], (unsigned char *) &tmp);
+                    buff[i] = tmp;
+                }
+            }
+        }
+    }
+
+    //
+    // Close the file descriptors.
+    //
+    if (gzipped)
+        gzclose(gz_handle);
+    else
+        fclose(file_handle);
 
     return rv;
 }
@@ -423,6 +531,11 @@ avtBOVFileFormat::GetVar(int dom, const char *var)
 //
 //  Programmer: Hank Childs
 //  Creation:   May 12, 2003
+//
+//  Modifications:
+//
+//    Hank Childs, Sun May  9 08:43:33 PDT 2004
+//    Do not assume that we have valid data extents.
 //
 // ****************************************************************************
 
@@ -444,16 +557,19 @@ avtBOVFileFormat::GetAuxiliaryData(const char *var, int domain,
         {
             EXCEPTION1(InvalidVariableException, var);
         }
-        avtIntervalTree *itree = new avtIntervalTree(nbricks, 1);
-        for (int i = 0 ; i < nbricks ; i++)
+        if (var_brick_min != NULL && var_brick_max != NULL)
         {
-            float range[2] = { var_brick_min[i], var_brick_max[i] };
-            itree->AddDomain(i, range);
-        }
-        itree->Calculate(true);
+            avtIntervalTree *itree = new avtIntervalTree(nbricks, 1);
+            for (int i = 0 ; i < nbricks ; i++)
+            {
+                float range[2] = { var_brick_min[i], var_brick_max[i] };
+                itree->AddDomain(i, range);
+            }
+            itree->Calculate(true);
 
-        rv = (void *) itree;
-        df = avtIntervalTree::Destruct;
+            rv = (void *) itree;
+            df = avtIntervalTree::Destruct;
+        }
     }
     else if (strcmp(type, AUXILIARY_DATA_SPATIAL_EXTENTS) == 0)
     {
@@ -550,6 +666,10 @@ avtBOVFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Hank Childs, Mon Sep 15 11:12:32 PDT 2003
 //    Allow for centering to be specified.
 //
+//    Hank Childs, Sun May  9 08:51:38 PDT 2004
+//    Add support for byte data.  Also interpret palette min/max as variable
+//    min/max as well.
+//
 // ****************************************************************************
 
 void
@@ -597,6 +717,17 @@ avtBOVFileFormat::ReadTOC(void)
             line += strlen(line)+1;
             full_size[2] = atoi(line);
         }
+        else if (strcmp(line, "DATA_FORMAT:") == 0)
+        {
+            line += strlen("DATA_FORMAT:") + 1;
+            if (strncmp(line, "FLOAT", strlen("FLOAT")) == 0)
+                byteData = false;
+            else if (strncmp(line, "BYTE", strlen("BYTE")) == 0)
+                byteData = true;
+            else
+                debug1 << "Unknown keyword for BOV byte data: " 
+                       << line << endl;
+        }
         else if (strcmp(line, "DATA_BRICKLETS:") == 0)
         {
             line += strlen("DATA_BRICKLETS:") + 1;
@@ -628,6 +759,19 @@ avtBOVFileFormat::ReadTOC(void)
             line += strlen("DATA_ENDIAN:") + 1;
             if (strcmp(line, "LITTLE") == 0)
                 littleEndian = true;
+            else
+                littleEndian = false;
+            declaredEndianess = true;
+        }
+        else if (strcmp(line, "VARIABLE_PALETTE_MIN:") == 0)
+        {
+            line += strlen("VARIABLE_PALETTE_MIN:") + 1;
+            min = atof(line);
+        }
+        else if (strcmp(line, "VARIABLE_PALETTE_MAX:") == 0)
+        {
+            line += strlen("VARIABLE_PALETTE_MAX:") + 1;
+            max = atof(line);
         }
         else if (strcmp(line, "VARIABLE_MIN:") == 0)
         {
@@ -705,6 +849,11 @@ avtBOVFileFormat::ReadTOC(void)
 //  Programmer: Hank Childs
 //  Creation:   May 12, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Sun May  9 07:56:42 PDT 2004
+//    Combine words before the first colon using underscores.
+//
 // ****************************************************************************
 
 static int
@@ -717,13 +866,15 @@ FormatLine(char *line)
     bool inQuotes = false;
     int buffOffset = 0;
     int nchar = strlen(line);
+    bool hasColon = (strstr(line, ":") != NULL);
+    bool foundColon = false;
     int i;
     for (i = 0 ; i < nchar ; i++)
     {
         if (line[i] == '\"')
-        {
             inQuotes = (inQuotes ? false : true);
-        }
+        if (line[i] == ':')
+            foundColon = true;
  
         bool is_space = isspace(line[i]);
         if (inQuotes)
@@ -733,8 +884,13 @@ FormatLine(char *line)
         {
             if (is_space)
             {
-                buff[buffOffset++] = '\0';
-                inWord = false;
+                if (hasColon && !foundColon)
+                    buff[buffOffset++] = '_';
+                else
+                {
+                    buff[buffOffset++] = '\0';
+                    inWord = false;
+                }
             }
             else
             {
