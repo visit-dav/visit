@@ -477,13 +477,15 @@ CreateViewInfoFromViewAttributes(avtViewInfo &vi, const View3DAttributes &view)
 //    Kathleen Bonnell, Fri Mar  4 13:53:45 PST 2005 
 //    Account for different scaling methods. 
 //
+//    Hank Childs, Sun Mar 13 10:00:01 PST 2005
+//    Tell filters upstream that we have rectilinear optimizations.
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
 avtVolumeFilter::PerformRestriction(avtPipelineSpecification_p spec)
 {
     avtPipelineSpecification_p newspec = NULL;
-
 
     if (primaryVariable != NULL)
     {
@@ -555,6 +557,7 @@ avtVolumeFilter::PerformRestriction(avtPipelineSpecification_p spec)
     }
 
     newspec->NoDynamicLoadBalancing();
+    newspec->SetHaveRectilinearMeshOptimizations(true);
     return newspec;
 }
 

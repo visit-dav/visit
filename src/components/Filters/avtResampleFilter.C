@@ -922,12 +922,22 @@ GetCoordinates(float start, float length, int numEls)
 //    Hank Childs, Sat Jan 29 11:01:59 PST 2005
 //    If we are going to use an arbitrator, make sure to request the variable.
 //
+//    Hank Childs, Sun Mar 13 10:00:01 PST 2005
+//    Tell filters upstream that we have rectilinear optimizations.
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
-avtResampleFilter::PerformRestriction(avtPipelineSpecification_p spec)
+avtResampleFilter::PerformRestriction(avtPipelineSpecification_p oldspec)
 {
+    //
+    // Best copy constructor we have??
+    //
+    avtPipelineSpecification_p spec = new avtPipelineSpecification(oldspec,
+                                              oldspec->GetDataSpecification());
+
     spec->NoDynamicLoadBalancing();
+    spec->SetHaveRectilinearMeshOptimizations(true);
     if (atts.GetUseArbitrator())
     {
         if (atts.GetArbitratorVarName() != "default")
