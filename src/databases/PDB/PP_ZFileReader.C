@@ -22,6 +22,7 @@
 #include <avtMixedVariable.h>
 
 #include <DebugStream.h>
+#include <snprintf.h>
 
 // This header file is last because it includes "scstd.h" (indirectly
 // through "pdb.h"), which defines min and max, which conflict with
@@ -484,6 +485,118 @@ PP_ZFileReader::GetTimeVaryingInformation(int state, avtDatabaseMetaData *md)
 }
 
 // ****************************************************************************
+// Method: PP_ZFileReader::ReadMaterialNamesHelper
+//
+// Purpose: 
+//   Helper function that reads a string variable from the file and splits
+//   out the material names from it.
+//
+// Arguments:
+//   namregVar : The name of the variable that contains the names of the
+//               materials.
+//   nmats     : The expected number of materials.
+//   matNames  : The return vector for the material names.
+//
+// Returns:    True if successful; false otherwise.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Sep 8 11:09:50 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+PP_ZFileReader::ReadMaterialNamesHelper(const char *namregVar, int nmats,
+    stringVector &matNames)
+{
+    bool     retval = false;
+    TypeEnum t;
+    int      nTotalElements, *dims = 0, nDims = 0;
+
+    if(pdb->SymbolExists(namregVar, &t, &nTotalElements, &dims, &nDims))
+    {
+        char *namreg = 0;
+        int   namregLen = 0, maxNameLength = 64;
+
+        // Determine the maximum length for a material name.
+        if(nDims > 1)
+            maxNameLength = dims[0];
+
+        if(pdb->GetString(namregVar, &namreg, &namregLen))
+        {
+            debug5 << "namregLen = " << namregLen << " namreg="
+                   << namreg << endl;
+
+            int nmatNames = 0;
+            char *sptr = namreg;
+            bool keepGoing = true;
+            do
+            {
+                // Null terminate the string.
+                char *s = sptr + maxNameLength - 1;
+                for(; s > sptr && *s == ' '; --s) 
+                    *s = '\0';
+
+                // If we have a non-empty string, add it to the list of
+                // material names.
+                if(s > sptr)
+                {
+                    char tmp[100]; 
+                    SNPRINTF(tmp, 100, "%d %s", nmatNames+1, sptr);
+                    matNames.push_back(tmp);
+                    ++nmatNames;
+                }
+                else
+                    keepGoing = false;
+
+                sptr += maxNameLength;
+                if(sptr - namreg > namregLen)
+                   keepGoing = false;
+            }
+            while(nmatNames < nmats && keepGoing);
+
+            delete [] namreg;
+            retval = (nmatNames == nmats);
+        }
+
+        delete [] dims;
+    }
+
+    return retval;
+}
+
+// ****************************************************************************
+// Method: PP_ZFileReader::ReadMaterialNames
+//
+// Purpose: 
+//   Reads actual material names from the file if they are present.
+//
+// Arguments:
+//   nmats    : The expected number of materials.
+//   matNames : The return stringVector for the material names.
+//
+// Returns:    True if successful; false otherwise.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Sep 8 09:42:30 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+PP_ZFileReader::ReadMaterialNames(int nmats, stringVector &matNames)
+{
+    // Try this variable first.
+    if(ReadMaterialNamesHelper("namreg@value", nmats, matNames))
+        return true;
+
+    // Try this variable second.
+    return ReadMaterialNamesHelper("namreg@las", nmats, matNames);
+}
+
+// ****************************************************************************
 // Method: PP_ZFileReader::PopulateMaterialNames
 //
 // Purpose: 
@@ -501,6 +614,9 @@ PP_ZFileReader::GetTimeVaryingInformation(int state, avtDatabaseMetaData *md)
 //   I fixed a bug that could cause gaps in the material range when we have
 //   to read the ireg array to determine the list of materials.
 //
+//   Brad Whitlock, Fri Sep 3 07:26:53 PDT 2004
+//   Added support for mixed materials in Flash files.
+//
 // ****************************************************************************
 
 bool
@@ -512,17 +628,57 @@ PP_ZFileReader::PopulateMaterialNames()
     // Look for evidence of materials in the file.
     //
     int nMaterials = 0;
+    int *nMatsOverTime = 0, nTimes = 0;
     if(pdb->GetInteger("nreg@las", &nMaterials))
     {
         debug4 << "We found evidence of " << nMaterials 
                << " materials in the file." << endl;
 
-        for(int i = 0; i < nMaterials; ++i)
+        //
+        // Read any material names that might be stored in the file.
+        //
+        ReadMaterialNames(nMaterials, materialNames);
+
+        //
+        // Fill in any materials that were not added yet.
+        //
+        for(int i = materialNames.size(); i < nMaterials; ++i)
         {
             char tmp[20];
-            sprintf(tmp, "%d", i + 1);
+            SNPRINTF(tmp, 20, "%d", i + 1);
             materialNames.push_back(tmp);
         }
+    }
+    else if(pdb->GetIntegerArray("nreg@history", &nMatsOverTime, &nTimes))
+    {
+        nMaterials = nMatsOverTime[0];
+        for(int i = 1; i < nTimes; ++i)
+        {
+            if(nMatsOverTime[i] != nMaterials)
+            {
+                debug4 << "We have a changing number of materials over time! "
+                          "Let's take the largest number." << endl;
+                nMaterials = (nMatsOverTime[i] > nMaterials) ? 
+                    nMatsOverTime[i] : nMaterials;
+            }
+        }
+
+        //
+        // Read any material names that might be stored in the file.
+        //
+        ReadMaterialNames(nMaterials, materialNames);
+
+        //
+        // Fill in any materials that were not added yet.
+        //
+        for(int j = materialNames.size(); j < nMaterials; ++j)
+        {
+            char tmp[20];
+            SNPRINTF(tmp, 20, "%d", j + 1);
+            materialNames.push_back(tmp);
+        }
+
+        delete [] nMatsOverTime;
     }
     else if(varStorage.find("ireg") != varStorage.end())
     {
@@ -670,6 +826,10 @@ PP_ZFileReader::InitializeVarStorage()
 //   I added code to prevent the Windows version from saying that it has
 //   a revolved mesh because it crashes on Windows and it's safer this way
 //   since it's probably not too important to fix at this time.
+//
+//   Brad Whitlock, Fri Sep 3 07:30:28 PDT 2004
+//   Changed code to account for mixed material arrays having another
+//   suffix in Flash files.
 //
 // ****************************************************************************
 
@@ -844,22 +1004,29 @@ PP_ZFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         // Look for evidence of mixed materials.
         //
         int nszmmt = 0;
-        pdb->GetInteger("nszmmt@las", &nszmmt);
+        std::string matSuffix("@las");
+        if(!pdb->GetInteger("nszmmt@las", &nszmmt))
+        {
+            matSuffix = "@history";
+            pdb->GetInteger("nszmmt@history", &nszmmt);
+        }
+
         if(nszmmt > 0)
         {
             //
             // Add the mixed material arrays to the cache so we can read them
             // later and have them be cached.
             //
-            VariableData *v = new VariableData("iregmm@las");
+            VariableData *v = new VariableData(std::string("iregmm") +
+                matSuffix);
             varStorage["iregmm"] = v;
-            v = new VariableData("volfmm@las");
+            v = new VariableData(std::string("volfmm") + matSuffix);
             varStorage["volfmm"] = v;
-            v = new VariableData("ilamm@las");
+            v = new VariableData(std::string("ilamm") + matSuffix);
             varStorage["ilamm"] = v;
             if(varStorage.find("nummm") == varStorage.end())
             {
-                v = new VariableData("nummm@las");
+                v = new VariableData(std::string("nummm") + matSuffix);
                 varStorage["nummm"] = v;
             }
  
@@ -1025,6 +1192,35 @@ PP_ZFileReader::AddRayMetaData(avtDatabaseMetaData *md)
             md->Add(new avtScalarMetaData("ray3d/rel_power", "ray3d", AVT_NODECENT));
         }
     }
+}
+
+// ****************************************************************************
+// Method: PP_ZFileReader::FreeUpResources
+//
+// Purpose: 
+//   Clears the cached data arrays from the varStorage map and closes the 
+//   PDB file object to free up the file descriptor.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Sep 2 00:02:13 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+PP_ZFileReader::FreeUpResources()
+{
+    // Free all of the data arrays that we've read into the varStorage cache.
+    for(VariableDataMap::iterator pos = varStorage.begin();
+        pos != varStorage.end(); ++pos)
+    {
+        pos->second->FreeData();
+    }
+
+    // Close the PDB file to free the file descriptor. If we need it again,
+    // we'll open it up transparently.
+    pdb->Close();
 }
 
 // ****************************************************************************
@@ -2413,6 +2609,46 @@ PP_ZFileReader::GetVar(int state, const char *var)
 }
 
 // ****************************************************************************
+// Function: FindGhostMaterial
+//
+// Purpose: 
+//   Finds the first non-ghost material value so we can use it for the
+//   material in ghost cells so VisIt does not yell at us for using an
+//   invalid material.
+//
+// Returns:    The material number to use in ghost cells.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Sep 8 12:02:03 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+int
+FindGhostMaterial(const int *ireg, int kmax, int lmax)
+{
+    int ghostMaterial = 1;
+    bool keepLooking = true;
+    for(int j = 1; j < lmax && keepLooking; ++j)
+    {
+         const int *ireg_row = ireg + j * kmax;
+         for(int i = 1; i < kmax && keepLooking; ++i)
+         {
+             if(ireg_row[i] > 0)
+             {
+                 ghostMaterial = ireg_row[i];
+                 keepLooking = false;
+             }
+         }
+    }
+    debug4 << "Using material " << ghostMaterial << " for ghost cells."
+           << endl;
+
+    return ghostMaterial;
+}
+
+// ****************************************************************************
 // Function: AddCleanMaterials
 //
 // Purpose:
@@ -2425,7 +2661,10 @@ PP_ZFileReader::GetVar(int state, const char *var)
 // Creation:   Mon Aug 11 13:56:37 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Sep 7 16:55:20 PST 2004
+//   I prevented invalid material ids from being used in ghost zones since
+//   it was causing VisIt to complain.
+//
 // ****************************************************************************
 
 static void
@@ -2453,12 +2692,21 @@ AddCleanMaterials(MaterialEncoder &mats, const int *ireg, int kmax, int lmax,
     }
     else
     {
+        //
+        // Look for a valid material that we can use when we have to
+        // add a material for a ghost zone.
+        //
+        int ghostMaterial = FindGhostMaterial(ireg, kmax, lmax);
+
         int zoneId = 0;
         for(int j = 1; j < lmax; ++j)
         {
             const int *ireg_row = ireg + j * kmax;
             for(int i = 1; i < kmax; ++i, ++zoneId)
-                mats.AddClean(zoneId, ireg_row[i]);
+            {
+                int matno = (ireg_row[i] > 0) ? ireg_row[i] : ghostMaterial;
+                mats.AddClean(zoneId, matno);
+            }
         }
     }
 }
@@ -2481,6 +2729,10 @@ AddCleanMaterials(MaterialEncoder &mats, const int *ireg, int kmax, int lmax,
 //
 //   Brad Whitlock, Mon Jun 7 10:02:11 PDT 2004
 //   Removed stray debugging statements.
+//
+//   Brad Whitlock, Tue Sep 7 16:57:28 PST 2004
+//   Added code to make sure that VisIt does not use an invalid material
+//   number in ghost zones.
 //
 // ****************************************************************************
 
@@ -2524,6 +2776,12 @@ AddMixedMaterials(MaterialEncoder &mats, const int *ireg, const int *iregmm,
     }
     else
     {
+        //
+        // Look for a valid material that we can use when we have to
+        // add a material for a ghost zone.
+        //
+        int ghostMaterial = FindGhostMaterial(ireg, kmax, lmax);
+
         int zoneId = 0;
         for(int j = 1; j < lmax; ++j)
         {
@@ -2532,7 +2790,14 @@ AddMixedMaterials(MaterialEncoder &mats, const int *ireg, const int *iregmm,
              const int *ilamm_row = ilamm + j * 2 * kmax;
              for(int i = 1; i < kmax; ++i, ++zoneId)
              {
-                 if(nummm_row[i] == 0)
+                 if(ireg_row[i] < 1)
+                 {
+                     // This is a ghost zone. To make VisIt be quiet about
+                     // "invalid material 0", stick a valid material number
+                     // in the ghost zone.
+                     mats.AddClean(zoneId, ghostMaterial);
+                 }
+                 else if(nummm_row[i] == 0)
                      mats.AddClean(zoneId, ireg_row[i]);
                  else
                  {
@@ -2570,6 +2835,9 @@ AddMixedMaterials(MaterialEncoder &mats, const int *ireg, const int *iregmm,
 // Modifications:
 //   Brad Whitlock, Mon Jun 7 11:20:56 PDT 2004
 //   Added support for float arrays.
+//
+//   Brad Whitlock, Wed Sep 8 13:39:33 PST 2004
+//   Fixed mixed materials over time so they work correctly with Flash files.
 //
 // ****************************************************************************
 
@@ -2610,7 +2878,6 @@ PP_ZFileReader::GetAuxiliaryData(int state, const char *var, const char *type,
             const int *ireg = 0;
             if(data->dataType == INTEGERARRAY_TYPE)
             {
-
                 // Get a pointer to ireg's data at the right time state.
                 ireg = (const int *)data->data;
                 ireg += ((state < nCycles) ? (state * nnodes) : 0);
@@ -2658,6 +2925,14 @@ PP_ZFileReader::GetAuxiliaryData(int state, const char *var, const char *type,
                         volfmm_data->dataType == FLOATARRAY_TYPE) &&
                        iregmm_data->dataType == INTEGERARRAY_TYPE)
                     {
+                        // Figure out the size of each time step for the
+                        // iregmm, volfmm arrays.
+                        int mixOffset = 0;
+                        if(iregmm_data->nDims > 1)
+                            mixOffset = iregmm_data->dims[0];
+                        else
+                            mixOffset = iregmm_data->nTotalElements / nCycles;
+
                         const int *nummm = (const int *)nummm_data->data;
                         nummm += ((state < nCycles) ? (state * nnodes) : 0);
 
@@ -2665,34 +2940,33 @@ PP_ZFileReader::GetAuxiliaryData(int state, const char *var, const char *type,
                         ilamm += ((state < nCycles) ? (state * 2 * nnodes) : 0);
 
                         const int *iregmm = (const int *)iregmm_data->data;
+                        iregmm += ((state < nCycles) ? (state * mixOffset) : 0);
 
-                        //
-                        // Add materials for all of the zones. If the nummm
-                        // value for the zone is zero, then there are no
-                        // mixed materials in the zone. Otherwise, there are
-                        // mixed materials and we use the ilamm value for the
-                        // zone to index into the volfmm and iregmm arrays
-                        // to get the volume fraction and material numbers.
-                        //
-                        if(volfmm_data->dataType == DOUBLEARRAY_TYPE)
+                        if(volfmm_data->dataType == FLOATARRAY_TYPE)
                         {
-                            const double *volfmm = (const double *)volfmm_data->data;
-                            AddMixedMaterials(mats, ireg, iregmm, nummm, ilamm,
-                                              volfmm, kmax, lmax,
-                                              wantRevolvedMaterial, nSteps);
-                        }
-                        else
-                        {
-                            double *volfmm = new double[volfmm_data->nTotalElements];
-                            double *dptr = volfmm;
+                            // Convert the float data to double.
+                            double *d = new double[volfmm_data->nTotalElements];
+                            double *dptr = d;
                             const float *src = (const float *)volfmm_data->data;
                             for(int i = 0; i < volfmm_data->nTotalElements; ++i)
                                 *dptr++ = double(*src++);
-                            AddMixedMaterials(mats, ireg, iregmm, nummm, ilamm,
-                                              volfmm, kmax, lmax,
-                                              wantRevolvedMaterial, nSteps);
-                            delete [] volfmm;
+                            
+                            // Free the old data.
+                            free_void_mem(volfmm_data->data, FLOATARRAY_TYPE);
+
+                            // Store the converted double data.
+                            volfmm_data->data = (void *)d;
+                            volfmm_data->dataType = DOUBLEARRAY_TYPE;
                         }
+
+                        //
+                        // Add materials for all of the zones.
+                        //
+                        const double *volfmm = (const double *)volfmm_data->data;
+                        volfmm += ((state < nCycles) ? (state * mixOffset) : 0);
+                        AddMixedMaterials(mats, ireg, iregmm, nummm, ilamm,
+                                          volfmm, kmax, lmax,
+                                          wantRevolvedMaterial, nSteps);
                     }
                     else
                     {

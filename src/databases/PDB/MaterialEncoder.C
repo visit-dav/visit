@@ -228,28 +228,29 @@ MaterialEncoder::GetMixedSize() const
 // Creation:   Wed Aug 6 11:39:57 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Sep 8 14:52:13 PST 2004
+//   I added support for material names back in.
+//
 // ****************************************************************************
 
 avtMaterial *
 MaterialEncoder::CreateMaterial(const int *dims, int ndims) const
 {
     int *matnos = new int[matNames.size()];
+    char **names = new char *[matNames.size()];
     for(int i = 0; i < matNames.size(); ++i)
+    {
         matnos[i] = i + 1;
+        names[i] = (char *)matNames[i].c_str();
+    }
 
-    //
-    // Note, I needed to use this class some place where I don't have
-    // material names so I'm not giving them to the avtMaterial. If this
-    // changes someday, then add the matNames back in.
-    //
     avtMaterial *retval;
     if(have_mixed)
     {
         retval = new avtMaterial(
             matNames.size(),
             matnos,
-            0,
+            names,
             ndims,
             dims,
             0,
@@ -266,7 +267,7 @@ MaterialEncoder::CreateMaterial(const int *dims, int ndims) const
         retval = new avtMaterial(
             matNames.size(),
             matnos,
-            0,
+            names,
             ndims,
             dims,
             0,
@@ -279,7 +280,9 @@ MaterialEncoder::CreateMaterial(const int *dims, int ndims) const
             );
     }
 
-    delete []  matnos;
+    delete [] matnos;
+    delete [] names;
+
     return retval;
 }
 

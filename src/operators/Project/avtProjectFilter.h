@@ -23,6 +23,12 @@ class vtkRectilinearGrid;
 //  Programmer: Jeremy Meredith
 //  Creation:   Tue May 18 14:35:38 PST 2004
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Sep  9 16:44:38 PDT 2004
+//    Added PerformRestriction so pick could get the node/zone numbers if
+//    needed.  Force a rectilinear dataset to always project into a
+//    curvilinear one.  Added projection of vectors.
+//
 // ****************************************************************************
 
 class avtProjectFilter : public avtPluginStreamer
@@ -42,13 +48,16 @@ class avtProjectFilter : public avtPluginStreamer
   protected:
     ProjectAttributes   atts;
 
-    virtual vtkDataSet  *ExecuteData(vtkDataSet *, int, std::string);
-    virtual void         RefashionDataObjectInfo(void);
-    void                 ProjectPoint(float &x, float &y, float &z);
-    vtkDataSet          *ProjectPointSet(vtkPointSet*);
-    vtkDataSet          *ProjectRectilinearGrid(vtkRectilinearGrid*);
-    vtkDataSet          *ProjectRectilinearToRectilinear(vtkRectilinearGrid*);
-    vtkDataSet          *ProjectRectilinearToCurvilinear(vtkRectilinearGrid*);
+    virtual vtkDataSet         *ExecuteData(vtkDataSet *, int, std::string);
+    virtual void                RefashionDataObjectInfo(void);
+    avtPipelineSpecification_p  PerformRestriction(avtPipelineSpecification_p);
+
+  private:
+    void                ProjectPoint(float &x, float &y, float &z);
+    vtkPointSet        *ProjectPointSet(vtkPointSet*);
+    vtkPointSet        *ProjectRectilinearGrid(vtkRectilinearGrid*);
+    void                ProjectVectors(vtkDataSet*,vtkDataSet*,
+                                       vtkDataArray*,vtkDataArray*,bool);
 };
 
 

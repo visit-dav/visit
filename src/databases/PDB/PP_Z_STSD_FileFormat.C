@@ -1,6 +1,7 @@
 #include <PP_Z_STSD_FileFormat.h>
 #include <avtSTSDFileFormatInterface.h>
 #include <VisItException.h>
+#include <DebugStream.h>
 
 // ****************************************************************************
 // Method: PP_Z_STSD_FileFormat::CreateInterface
@@ -219,4 +220,24 @@ PP_Z_STSD_FileFormat::GetAuxiliaryData(const char *var, const char *type,
     void *args, DestructorFunction &df)
 {
      return reader.GetAuxiliaryData(0, var, type, args, df);
+}
+
+// ****************************************************************************
+// Method: PP_Z_STSD_FileFormat::FreeUpResources
+//
+// Purpose: 
+//   Frees the data and file descriptor.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Sep 2 00:14:28 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+PP_Z_STSD_FileFormat::FreeUpResources()
+{
+    debug4 << "PP_Z_STSD_FileFormat::FreeUpResources" << endl;
+    reader.FreeUpResources();
 }
