@@ -73,6 +73,9 @@ class ViewerProxy;
 //   Brad Whitlock, Wed Oct 15 15:18:43 PST 2003
 //   Added an optional timeState argument to ReplaceFile.
 //
+//   Brad Whitlock, Fri Oct 24 14:40:58 PST 2003
+//   Added an internal AnimationSetFrame method.
+//
 // ****************************************************************************
 
 class GUI_API QvisFilePanel : public QWidget, public SimpleObserver, public GUIBase
@@ -137,6 +140,7 @@ private:
     QString CreateItemLabel(const avtDatabaseMetaData *md, int ts);
     QString FormattedCycleString(const int cycle) const;
     QString FormattedTimeString(const double d, bool accurate) const;
+    void AnimationSetFrame(int, bool);
 private slots:
     void prevFrame();
     void reversePlay();

@@ -2498,6 +2498,9 @@ ViewerSubject::RedrawWindow()
 //    Brad Whitlock, Wed Oct 22 12:27:30 PDT 2003
 //    I made the method actually use the addDefaultPlots argument.
 //
+//    Brad Whitlock, Fri Oct 24 17:07:52 PST 2003
+//    I moved the code to update the expression list into the plot list.
+//
 // ****************************************************************************
 
 void
@@ -2551,17 +2554,9 @@ ViewerSubject::OpenDatabaseHelper(const std::string &entireDBName,
         }
 
         //
-        // Remove any expressions associated with the old database and add
-        // expressions associated with the new database.
+        // Update the expression list.
         //
-        ExpressionList *exprList = ParsingExprList::Instance()->GetList();
-        int nExpr = exprList->GetNumExpressions();
-        for (i = nExpr-1 ; i >= 0 ; i--)
-            if (exprList->GetExpression(i).GetFromDB())
-                exprList->RemoveExpression(i);
-        for (i = 0 ; i < md->GetNumberOfExpressions() ; i++)
-            exprList->AddExpression(*(md->GetExpression(i)));
-        exprList->Notify();
+        plotList->UpdateExpressionList(false);
 
         //
         // Create a compute engine to use with the database.

@@ -87,6 +87,13 @@ VariableMenuPopulator::~VariableMenuPopulator()
 //
 //   Hank Childs, Tue Sep 23 22:05:54 PDT 2003
 //   Add support for tensors.
+//
+//   Brad Whitlock, Thu Oct 23 16:27:38 PST 2003
+//   I made the code take into account whether material and subset variables
+//   are valid variables using information from the metadata. I also changed
+//   how expressions are added to the list so that expressions from the
+//   expression list and expressions from metadata are added separately.
+//
 // ****************************************************************************
 
 void
@@ -142,57 +149,7 @@ VariableMenuPopulator::PopulateVariableLists(const avtDatabaseMetaData *md,
     for (i = 0; i < md->GetNumSymmTensors(); ++i)
     {
         const avtSymmetricTensorMetaData *tmd = md->GetSymmTensor(i);
-        tensorVars[tmd->name] = tmd->validVariable;
-    }
-
-    // Process the expressions
-    int nexp = exprList->GetNumExpressions();
-    for(i = 0; i < nexp; ++i)
-    {
-        const Expression &expr = exprList->operator[](i);
-        if(!expr.GetHidden())
-        {
-            // Figure out which list this expression should be added to.
-            StringBoolMap *m = 0;
-            switch (expr.GetType())
-            {
-            case Expression::ScalarMeshVar:
-                m = &scalarVars;
-                break;
-            case Expression::VectorMeshVar:
-                m = &vectorVars;
-                break;
-            case Expression::Mesh:
-                m = &meshVars;
-                break;
-            case Expression::Material:
-                m = &materialVars;
-                break;
-            case Expression::Species:
-                m = &speciesVars;
-                break;
-            case Expression::TensorMeshVar:
-                m = &tensorVars;
-                break;
-            case Expression::SymmetricTensorMeshVar:
-                m = &symmTensorVars;
-                break;
-            default:
-                break;
-            }
-
-            // Check if the name is already in the list
-            if(m)
-            {
-                if(m->find(expr.GetName()) == m->end())
-                    m->insert(StringBoolMap::value_type(expr.GetName(), true));
-                else
-                {
-                    string name(expr.GetName() + " (expression)");
-                    m->insert(StringBoolMap::value_type(name, true));
-                }
-            }
-        }
+        symmTensorVars[tmd->name] = tmd->validVariable;
     }
 
     // Do stuff with the sil
@@ -235,21 +192,111 @@ VariableMenuPopulator::PopulateVariableLists(const avtDatabaseMetaData *md,
 
             string  varName = sil->GetSILCollection(idx)->GetCategory();
             int     role = sil->GetSILCollection(idx)->GetRole();
+            bool    validVariable = true;
+
+            //
+            // If we're looking at a material, test to see if the material
+            // is a valid variable
+            //
+            if(role == SIL_MATERIAL)
+            {
+                for(int m = 0; m < md->GetNumMaterials(); ++m)
+                {
+                    const avtMaterialMetaData *mmd = md->GetMaterial(m);
+                    if(mmd->name == varName)
+                    {
+                        validVariable = mmd->validVariable;
+                        break;
+                    }
+                }
+            }
 
             //
             // Only add the set name if necessary.
             //
             if (roleCount[role] > 1)
                 varName += setName;
-            subsetVars[varName] = true;
+            subsetVars[varName] = validVariable;
 
             //
             // Also add the varName to the material variable map so we can
             // have plots, etc that just use materials instead of any type
             // of subset variable.
             //
-            if (sil->GetSILCollection(idx)->GetRole() == SIL_MATERIAL)
-                materialVars[varName] = true;
+            if (role == SIL_MATERIAL)
+                materialVars[varName] = validVariable;
+        }
+    }
+
+    //
+    // Add the expressions from the expression list.
+    //
+    int nexp = exprList->GetNumExpressions();
+    for(i = 0; i < nexp; ++i)
+    {
+        const Expression &expr = exprList->operator[](i);
+        if(!expr.GetHidden())
+            AddExpression(expr);
+    }
+}
+
+// ****************************************************************************
+// Method: VariableMenuPopulator::AddExpression
+//
+// Purpose: 
+//   This method adds an expression to the appropriate variable list.
+//
+// Arguments:
+//   expr : The expression to add to a varialbe list.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Oct 24 15:39:47 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+VariableMenuPopulator::AddExpression(const Expression &expr)
+{
+    // Figure out which list this expression should be added to.
+    StringBoolMap *m = 0;
+    switch (expr.GetType())
+    {
+    case Expression::ScalarMeshVar:
+        m = &scalarVars;
+        break;
+    case Expression::VectorMeshVar:
+        m = &vectorVars;
+        break;
+    case Expression::Mesh:
+        m = &meshVars;
+        break;
+    case Expression::Material:
+        m = &materialVars;
+        break;
+    case Expression::Species:
+        m = &speciesVars;
+        break;
+    case Expression::TensorMeshVar:
+        m = &tensorVars;
+        break;
+    case Expression::SymmetricTensorMeshVar:
+        m = &symmTensorVars;
+        break;
+    default:
+        break;
+    }
+
+    // Check if the name is already in the list
+    if(m)
+    {
+        if(m->find(expr.GetName()) == m->end())
+            m->insert(StringBoolMap::value_type(expr.GetName(), true));
+        else
+        {
+            string name(expr.GetName() + " (expression)");
+            m->insert(StringBoolMap::value_type(name, true));
         }
     }
 }

@@ -78,10 +78,28 @@ class Xfer;
 //    Brad Whitlock, Mon Jun 9 10:51:52 PDT 2003
 //    I added a method that lets us explicitly load plugins.
 //
+//    Brad Whitlock, Mon Oct 27 11:41:47 PDT 2003
+//    Added VirtualFileName type so VirtualFileInformationMap sorts
+//    using the numeric sorting algorithm.
+//
 // ****************************************************************************
 
 class MDServerConnection
 {
+    class VirtualFileName
+    {
+    public:
+        VirtualFileName();
+        VirtualFileName(const VirtualFileName &);
+        VirtualFileName(const std::string &);
+        ~VirtualFileName();
+        void operator = (const VirtualFileName &);
+        bool operator == (const VirtualFileName &) const;
+        bool operator < (const VirtualFileName &) const;
+
+        std::string name;
+    };
+
     class VirtualFileInformation
     {
     public:
@@ -94,7 +112,7 @@ class MDServerConnection
         stringVector files;
     };
 
-    typedef std::map<std::string, VirtualFileInformation> VirtualFileInformationMap;
+    typedef std::map<VirtualFileName, VirtualFileInformation> VirtualFileInformationMap;
 
     const VirtualFileInformationMap::iterator
         GetVirtualFileDefinition(const std::string &file);

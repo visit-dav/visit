@@ -152,6 +152,9 @@ typedef std::map<std::string, avtSILRestriction_p> SILRestrictionMap;
 //    Hank Childs, Thu Oct  2 14:22:16 PDT 2003
 //    Renamed GetPlotID to GetActivePlotIDs.
 //
+//    Brad Whitlock, Fri Oct 24 16:19:25 PST 2003
+//    Added UpdateExpressionList.
+//
 // ****************************************************************************
 
 
@@ -236,6 +239,7 @@ class VIEWER_API ViewerPlotList
     void UpdatePlotList() const;
     void UpdateSILRestrictionAtts();
     void InterruptUpdatePlotList();
+    void UpdateExpressionList(bool considerPlots);
 
     void GetPlotLimits(int frame, int nDimensions, double *limits) const;
     void SetSpatialExtentsType(avtExtentType);

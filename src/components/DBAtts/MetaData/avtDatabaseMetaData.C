@@ -1585,16 +1585,18 @@ avtSymmetricTensorMetaData::Print(ostream &out, int indent) const
 //  Creation:   August 31, 2000
 //
 //  Modifications:
-//
 //    Hank Childs, Mon Dec  9 17:04:39 PST 2002
 //    Initialized validVariable.
+//
+//    Brad Whitlock, Thu Oct 23 16:10:39 PST 2003
+//    I made validVariable be true by default.
 //
 // ****************************************************************************
 
 avtMaterialMetaData::avtMaterialMetaData()
     : AttributeSubject("ssis*b")
 {
-    validVariable = false;
+    validVariable = true;
 }
 
 

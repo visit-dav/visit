@@ -7,6 +7,7 @@
 
 class avtDatabaseMetaData;
 class avtSIL;
+class Expression;
 class ExpressionList;
 class QvisVariablePopupMenu;
 class QObject;
@@ -34,6 +35,9 @@ class QObject;
 //   Hank Childs, Tue Sep 23 22:05:54 PDT 2003
 //   Added support for tensors.
 //
+//   Brad Whitlock, Fri Oct 24 15:41:54 PST 2003
+//   Added an internal method that helps add expressions to the right list.
+//
 // ****************************************************************************
 
 class WINUTIL_API VariableMenuPopulator
@@ -59,6 +63,7 @@ private:
                           const StringBoolMap &vars, bool changeVar);
     void Split(const std::string &varName, stringVector &pieces) const;
     void AddVars(StringBoolMap &to, const StringBoolMap &from);
+    void AddExpression(const Expression &);
 
     // Create some lists to keep track of the variable names.
     StringBoolMap meshVars, scalarVars, materialVars, vectorVars, subsetVars,

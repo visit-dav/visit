@@ -1442,6 +1442,9 @@ ViewerPlotList::DeletePlot(ViewerPlot *whichOne, bool doUpdate)
 //    Kathleen Bonnell, Thu Aug 28 10:10:35 PDT 2003 
 //    Added call to CanMeshPlotBeOpaque.
 //
+//    Brad Whitlock, Fri Oct 24 17:39:38 PST 2003
+//    I made it update the expression list.
+//
 // ****************************************************************************
 
 void
@@ -1495,6 +1498,7 @@ ViewerPlotList::DeleteActivePlots()
     UpdatePlotList();
     UpdatePlotAtts();
     UpdateSILRestrictionAtts();
+    UpdateExpressionList(true);
 
     //
     // Update the frame.
@@ -1800,6 +1804,9 @@ ViewerPlotList::SetPlotOperatorAtts(const int operatorType, bool applyToAll)
 //   I added code to adjust the plot's time range if we're not in keyframing
 //   mode.
 //
+//   Brad Whitlock, Fri Oct 24 17:40:36 PST 2003
+//   I made it update the expression list.
+//
 // ****************************************************************************
 
 void
@@ -1911,6 +1918,7 @@ ViewerPlotList::ReplaceDatabase(const std::string &host, const std::string &data
     // Update the client attributes.
     //
     UpdatePlotList();
+    UpdateExpressionList(true);
 
     //
     // Update the SIL restriction attributes if necessary.
@@ -2289,6 +2297,9 @@ ViewerPlotList::SILRestrictionKey(const std::string &host, const std::string &db
 //    Brad Whitlock, Fri Apr 11 09:35:55 PDT 2003
 //    I added activeOperators, expandedPlots, and moreThanPlotsValid arguments.
 //
+//    Brad Whitlock, Fri Oct 24 16:19:58 PST 2003
+//    I added code to update the expression list.
+//
 // ****************************************************************************
 
 void
@@ -2337,6 +2348,7 @@ ViewerPlotList::SetActivePlots(const intVector &activePlots,
     UpdatePlotList();
     UpdateSILRestrictionAtts();
     UpdatePlotAtts();
+    UpdateExpressionList(true);
 }
 
 // ****************************************************************************
@@ -3743,6 +3755,84 @@ ViewerPlotList::UpdateSILRestrictionAtts()
 }
 
 // ****************************************************************************
+// Method: ViewerPlotList::UpdateExpressionList
+//
+// Purpose: 
+//   Sends an updated expression list to the client.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Oct 24 16:47:12 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerPlotList::UpdateExpressionList(bool considerPlots)
+{
+    ExpressionList *exprList = ParsingExprList::Instance()->GetList();
+
+    //
+    // Create a new expression list that contains all of the expressions
+    // from the main expression list that are not expressions that come
+    // from databases.
+    //
+    ExpressionList newList;
+    for(int i = 0; i < exprList->GetNumExpressions(); ++i)
+    {
+        const Expression &expr = exprList->GetExpression(i);
+        if(!expr.GetFromDB())
+            newList.AddExpression(expr);
+    }
+
+    //
+    // If there are selected plots, use the database from the first selected
+    // plot. Otherwise, use the "open" database.
+    //
+    std::string host(hostName), db(databaseName);
+    int t = animation->GetFrameIndex();
+    if(considerPlots && nPlots > 0)
+    {
+        for(int i = 0; i < nPlots; ++i)
+        {
+            if(plots[i].active)
+            {
+                host = plots[i].plot->GetHostName();
+                db = plots[i].plot->GetDatabaseName();
+                t = plots[i].plot->GetDatabaseState(animation->GetFrameIndex());
+                break;
+            }
+        }
+    }
+
+    //
+    // Try and get the metadata for the database.
+    //
+    if(host.size() > 0 && db.size() > 0)
+    {
+        ViewerFileServer *fileServer = ViewerFileServer::Instance();
+        const avtDatabaseMetaData *md = fileServer->GetMetaData(host, db, t);
+        if(md != 0)
+        {
+            // Add the expressions for the database.
+            for (int j = 0 ; j < md->GetNumberOfExpressions(); ++j)
+                newList.AddExpression(*(md->GetExpression(j)));
+        }
+    }
+
+    //
+    // If the new expression list is different from the expression list
+    // that we already have, save the new expression list and send it to
+    // the client.
+    //
+    if(newList != *exprList)
+    {
+        *exprList = newList;
+        exprList->Notify();
+    }
+}
+
+// ****************************************************************************
 //  Method: ViewerPlotList::GetPlotLimits
 //
 //  Purpose:
@@ -4169,7 +4259,7 @@ ViewerPlotList::StopPick()
 
 
 // ****************************************************************************
-//  Method: ViewerPlotList::
+//  Method: ViewerPlotList::GetVarName
 //
 //  Purpose:    Retrieve the variable name associated with the
 //              first active, realized non-hidden plot in the list.

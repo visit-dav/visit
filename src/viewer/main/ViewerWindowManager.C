@@ -3425,6 +3425,9 @@ ViewerWindowManager::RenderInformationCallback(void *data)
 //   I added code to turn off view stacking when calling UpdateViewAtts so
 //   that a new view doesn't get pushed on the view stack.
 //
+//   Brad Whitlock, Fri Oct 24 17:10:07 PST 2003
+//   Added code to update the expression list.
+//
 // ****************************************************************************
 
 void
@@ -3446,6 +3449,7 @@ ViewerWindowManager::UpdateAllAtts()
         plotList->UpdatePlotList();
         plotList->UpdatePlotAtts();
         plotList->UpdateSILRestrictionAtts();
+        plotList->UpdateExpressionList(true);
         keyframeClientAtts->SetEnabled(plotList->GetKeyframeMode());
         keyframeClientAtts->Notify();
     }
