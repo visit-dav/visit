@@ -1288,6 +1288,9 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer)
 //    I modified the setting of the view information to set curve, 2d and
 //    3d views.
 //
+//    Hank Childs, Sat Nov 15 14:59:47 PST 2003
+//    Make sure vis window gets specular options.
+//
 // ****************************************************************************
 void
 NetworkManager::SetWindowAttributes(const WindowAttributes &atts)
@@ -1325,6 +1328,11 @@ NetworkManager::SetWindowAttributes(const WindowAttributes &atts)
     //
     const LightList& lights = atts.GetLights();
     viswin->SetLightList(&lights);
+
+    viswin->SetSpecularProperties(atts.GetRenderAtts().GetSpecularFlag(),
+                                  atts.GetRenderAtts().GetSpecularCoeff(),
+                                  atts.GetRenderAtts().GetSpecularPower(),
+                                  atts.GetRenderAtts().GetSpecularColor());
 
     //
     // Set the background.

@@ -137,6 +137,11 @@ avtBoxlib3DFileFormat::~avtBoxlib3DFileFormat()
 //  Programmer: Hank Childs
 //  Creation:   November 6, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Sat Nov 15 14:23:46 PST 2003
+//    Do a better job of parsing material numbers.
+//
 // ****************************************************************************
 
 void
@@ -224,12 +229,7 @@ avtBoxlib3DFileFormat::InitializeReader(void)
         if (varNames[i].find("frac") == 0)
         {
             varUsedElsewhere[i] = true;
-            int j;
-            for (j = 4; isdigit(varNames[i][j]); ++j)
-            {
-                val *= 10;
-                val += varNames[i][j] - '0';
-            }
+            int val = atoi(varNames[i].c_str()+4);
 
             if (val > nMaterials)
                 nMaterials = val;
