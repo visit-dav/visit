@@ -19,6 +19,11 @@
 //  Programmer: Hank Childs
 //  Creation:   September 17, 2004
 //
+//  Modifications:
+// 
+//    Hank Childs, Thu Jan 20 11:10:08 PST 2005
+//    Add better warnings when error conditions are encountered.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtNeighborEvaluatorFilter 
@@ -42,11 +47,13 @@ class EXPRESSION_API avtNeighborEvaluatorFilter
                                     { return "avtNeighborEvaluatorFilter"; };
     virtual const char       *GetDescription(void)
                                     { return "Calculating neighbors values"; };
+    virtual void              PreExecute(void);
 
   protected:
     EvaluationType            evaluationType;
     float                    *buff;
     int                      *nEntries;
+    bool                      haveIssuedWarning;
 
     virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
     virtual avtPipelineSpecification_p

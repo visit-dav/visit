@@ -70,6 +70,9 @@ class avtPointAttribute;
 //    Kathleen Bonnell, Wed Jun  2 09:11:01 PDT 2004
 //    Store transform matrix for possible use later in the pipeline. 
 //
+//    Hank Childs, Thu Jan 20 10:36:10 PST 2005
+//    Added extra argument to ProjectExtents.
+//
 // ****************************************************************************
 
 class avtSliceFilter : public avtPluginStreamer
@@ -86,6 +89,7 @@ class avtSliceFilter : public avtPluginStreamer
 
     virtual void            SetAtts(const AttributeGroup*);
     virtual bool            Equivalent(const AttributeGroup*);
+    void                    ProjectExtents(const double *, double *);
 
   protected:
     SliceAttributes               atts;
@@ -107,7 +111,6 @@ class avtSliceFilter : public avtPluginStreamer
     virtual void            RefashionDataObjectInfo(void);
 
     void                    CalculateRectilinearCells(vtkRectilinearGrid *);
-    void                    ProjectExtents(double *);
     void                    SetPlaneOrientation(double *);
 
     void                    GetOrigin(double &, double &, double &);

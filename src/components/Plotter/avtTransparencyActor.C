@@ -182,12 +182,19 @@ avtTransparencyActor::~avtTransparencyActor()
 //  Programmer:  Hank Childs
 //  Creation:    July 8, 2002
 //
+//  Modifications:
+//
+//    Mark C. Miller, Thu Jan 20 22:27:39 PST 2005
+//    Added opacity arg. Added code to stick opacity value in map
+//
 // ****************************************************************************
 
 void
-avtTransparencyActor::InputWasModified(int)
+avtTransparencyActor::InputWasModified(int transparencyIndex, float opacity)
 {
     inputModified = true;
+    if (opacity != -1.0)
+        inputsOpacities[transparencyIndex] = opacity;
 }
 
 
@@ -245,6 +252,9 @@ avtTransparencyActor::UsePerfectSort(bool perfect)
 //    Hank Childs, Thu Jul 11 16:02:45 PDT 2002
 //    Add visibility.
 //
+//    Mark C. Miller, Thu Jan 20 22:27:39 PST 2005
+//    Initialized inputsOpacities
+//
 // ****************************************************************************
 
 int
@@ -269,6 +279,8 @@ avtTransparencyActor::AddInput(vector<vtkDataSet *> &d,
     preparedDataset.push_back(pd);
 
     inputModified = true;
+
+    inputsOpacities[index] = 1.0;
 
     return index;
 }
@@ -333,6 +345,11 @@ avtTransparencyActor::ReplaceInput(int ind, vector<vtkDataSet *> &d,
 //  Programmer: Hank Childs
 //  Creation:   June 25, 2003
 //
+//  Modifications:
+//
+//    Mark C. Miller, Thu Jan 20 22:27:39 PST 2005
+//    Set inputsOpacities for associated input to zero
+//
 // ****************************************************************************
 
 void
@@ -351,6 +368,8 @@ avtTransparencyActor::RemoveInput(int ind)
             preparedDataset[ind][i] = NULL;
         }
     }
+
+    inputsOpacities[ind] = 0.0;
 
     useActor[ind] = false;
 }
@@ -1200,6 +1219,33 @@ avtTransparencyActor::TransparenciesExist()
     return has_stuff;
 }
 
+
+// ****************************************************************************
+//  Method: avtTransparencyActor::TransparenciesMightExist
+//
+//  Purpose:
+//    Returns true if their might be some transparency on some processor 
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   January 20, 2005
+//
+// ****************************************************************************
+
+bool
+avtTransparencyActor::TransparenciesMightExist() const
+{
+    std::map<int,float>::const_iterator it;
+    bool has_transparency = false;
+    for (it = inputsOpacities.begin(); it != inputsOpacities.end(); it++)
+    {
+        if (it->second > 0.0 && it->second < 1.0)
+        {
+            has_transparency = true;
+            break;
+        }
+    }
+    return has_transparency;
+}
 
 // ****************************************************************************
 //  Method: avtTransparencyActor::SetIs2Dimensional

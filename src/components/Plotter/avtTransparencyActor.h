@@ -6,6 +6,7 @@
 #define AVT_TRANSPARENCY_ACTOR_H
 #include <plotter_exports.h>
 #include <vector>
+#include <map>
 
 
 class     vtkActor;
@@ -85,7 +86,7 @@ class PLOTTER_API avtTransparencyActor
     void                             TurnOffInput(int);
     void                             TurnOnInput(int);
     void                             RemoveInput(int);
-    void                             InputWasModified(int);
+    void                             InputWasModified(int, float=-1.0);
     void                             SetVisibility(int, bool);
     void                             VisibilityOff(void);
     void                             VisibilityOn(void);
@@ -94,6 +95,7 @@ class PLOTTER_API avtTransparencyActor
     bool                             UsePerfectSort(bool);
 
     bool                             TransparenciesExist(void);
+    bool                             TransparenciesMightExist(void) const;
 
     void                             AddToRenderer(vtkRenderer *);
     void                             RemoveFromRenderer(vtkRenderer *);
@@ -110,6 +112,8 @@ class PLOTTER_API avtTransparencyActor
     std::vector<std::vector <vtkDataSet *> >         datasets;
     std::vector<std::vector <vtkDataSetMapper *> >   mappers;
     std::vector<std::vector <vtkActor *> >           actors;
+
+    std::map<int,float>                              inputsOpacities;
 
     std::vector<std::vector <vtkPolyData *> >        preparedDataset;
 

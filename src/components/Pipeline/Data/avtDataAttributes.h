@@ -135,6 +135,9 @@ class     avtExtents;
 //    Hank Childs, Sat Jan  1 11:23:50 PST 2005
 //    Set the name of the mesh.
 //
+//    Hank Childs, Thu Jan 20 09:40:25 PST 2005
+//    Added TransformSpatialExtents.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataAttributes
@@ -301,6 +304,9 @@ class PIPELINE_API avtDataAttributes
                                    { return containsGlobalNodeIds; };
     void                     SetContainsGlobalNodeIds(bool c)
                                    { containsGlobalNodeIds= c; };
+
+    void                     TransformSpatialExtents(avtDataAttributes &,
+                                void (*)(const double *,double*,void*),void *);
 
   protected:
     int                      spatialDimension;

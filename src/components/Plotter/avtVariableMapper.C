@@ -545,6 +545,9 @@ avtVariableMapper::TurnLightingOff(void)
 //    Hank Childs, Mon Jul  8 09:56:41 PDT 2002
 //    Add support for transparency.
 //
+//    Mark C. Miller, Thu Jan 20 22:27:39 PST 2005
+//    Passed opacity to InputWasModified
+//
 // ****************************************************************************
 
 void
@@ -575,7 +578,7 @@ avtVariableMapper::SetOpacity(float opac)
 
     if (transparencyActor != NULL)
     {
-        transparencyActor->InputWasModified(transparencyIndex);
+        transparencyActor->InputWasModified(transparencyIndex, opac);
     }
 }
 

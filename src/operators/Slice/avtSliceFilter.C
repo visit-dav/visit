@@ -38,6 +38,8 @@ static void      FindCells(float *x, float *y, float *z, int nx, int ny,
                            int nz, int *clist, int &ncells, float *plane, 
                            int dim, int ax, int ay, int az, int onx, int ony,
                            int onz);
+static void      ProjectExtentsCallback(const double *in, double *out,
+                                        void *args);
 
 
 // ****************************************************************************
@@ -1150,6 +1152,25 @@ avtSliceFilter::RefashionDataObjectInfo(void)
 
 
 // ****************************************************************************
+//  Function: ProjectExtentsCallback
+//
+//  Purpose:
+//      A callback to project extents.
+//
+//  Programmer: Hank Childs
+//  Creation:   January 20, 2005
+//
+// ****************************************************************************
+
+static void
+ProjectExtentsCallback(const double *in, double *out, void *args)
+{
+    avtSliceFilter *p = (avtSliceFilter *) args;
+    p->ProjectExtents(in, out);
+}
+
+
+// ****************************************************************************
 //  Method: avtSliceFilter::ProjectExtents
 //
 //  Purpose:
@@ -1176,11 +1197,22 @@ avtSliceFilter::RefashionDataObjectInfo(void)
 //    Hank Childs, Mon May 24 16:11:41 PDT 2004
 //    Do a better job of getting the extents if we slice a plane.
 //
+//    Hank Childs, Thu Jan 20 10:36:10 PST 2005
+//    Added argument so this could be called through a callback.
+//
 // ****************************************************************************
 
 void
-avtSliceFilter::ProjectExtents(double *b)
+avtSliceFilter::ProjectExtents(const double *b_in, double *b_out)
 {
+    double b[6];
+    b[0] = b_in[0];
+    b[1] = b_in[1];
+    b[2] = b_in[2];
+    b[3] = b_in[3];
+    b[4] = b_in[4];
+    b[5] = b_in[5];
+
     //
     // Clean up leftovers from previous executions.
     //
@@ -1281,8 +1313,11 @@ avtSliceFilter::ProjectExtents(double *b)
         b[2] = 0.;
         b[3] = 0.;
     }
-    b[4] = 0.;
-    b[5] = 0.;
+
+    b_out[0] = b[0];
+    b_out[1] = b[1];
+    b_out[2] = b[2];
+    b_out[3] = b[3];
 
     x->Delete();
     y->Delete();
@@ -1601,6 +1636,9 @@ PlaneIntersectsCube(float plane[4], float bounds[6])
 //    Kathleen Bonnell, Wed Jun  2 09:11:01 PDT 2004 
 //    Added origTrans. 
 //
+//    Hank Childs, Thu Jan 20 10:44:24 PST 2005
+//    Make use of new method in data attributes to transform spatial extents.
+//
 // ****************************************************************************
 
 void
@@ -1614,42 +1652,7 @@ avtSliceFilter::PostExecute()
         GetOutput()->GetInfo().GetAttributes().SetInvTransform((*invTrans)[0]);
         GetOutput()->GetInfo().GetAttributes().SetTransform((*origTrans)[0]);
 
-        double b[6];
- 
-        if (inAtts.GetTrueSpatialExtents()->HasExtents())
-        {
-            inAtts.GetTrueSpatialExtents()->CopyTo(b);
-            ProjectExtents(b);
-            outAtts.GetTrueSpatialExtents()->Set(b);
-        }
-
-        if (inAtts.GetCumulativeTrueSpatialExtents()->HasExtents())
-        {
-            inAtts.GetCumulativeTrueSpatialExtents()->CopyTo(b);
-            ProjectExtents(b);
-            outAtts.GetCumulativeTrueSpatialExtents()->Set(b);
-        }
-
-        if (inAtts.GetEffectiveSpatialExtents()->HasExtents())
-        {
-            inAtts.GetEffectiveSpatialExtents()->CopyTo(b);
-            ProjectExtents(b);
-            outAtts.GetEffectiveSpatialExtents()->Set(b);
-        }
-
-        if (inAtts.GetCurrentSpatialExtents()->HasExtents())
-        {
-            inAtts.GetCurrentSpatialExtents()->CopyTo(b);
-            ProjectExtents(b);
-            outAtts.GetCurrentSpatialExtents()->Set(b);
-        }
-
-        if (inAtts.GetCumulativeCurrentSpatialExtents()->HasExtents())
-        {
-            inAtts.GetCumulativeCurrentSpatialExtents()->CopyTo(b);
-            ProjectExtents(b);
-            outAtts.GetCumulativeCurrentSpatialExtents()->Set(b);
-        }
+        inAtts.TransformSpatialExtents(outAtts, ProjectExtentsCallback, this);
     }
 }
 

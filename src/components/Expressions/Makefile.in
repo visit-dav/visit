@@ -92,6 +92,9 @@
 #   Brad Whitlock, Tue Jan 4 18:14:57 PST 2005
 #   Added -lexpr so we can link on MacOS X.
 #
+#   Hank Childs, Thu Jan 20 15:47:25 PST 2005
+#   Added avtSideVolume, avtResradFilter.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -144,6 +147,7 @@ General_src= \
   General/avtNeighborEvaluatorFilter.C \
   General/avtProcessorIdFilter.C \
   General/avtRelativeDifferenceFilter.C \
+  General/avtResradFilter.C \
   General/avtRandomFilter.C \
   General/avtRecenterFilter.C \
   General/avtSpecMFFilter.C \
@@ -191,6 +195,7 @@ MeshQuality_src= \
   MeshQuality/avtNodeDegreeFilter.C \
   MeshQuality/avtRevolvedSurfaceArea.C \
   MeshQuality/avtRevolvedVolume.C \
+  MeshQuality/avtSideVolume.C \
   MeshQuality/avtVMetricArea.C \
   MeshQuality/avtVMetricAspectGamma.C \
   MeshQuality/avtVMetricAspectRatio.C \

@@ -3250,3 +3250,63 @@ avtDataAttributes::GetSelectionsApplied() const
 {
     return selectionsApplied;
 }
+
+
+// ****************************************************************************
+//  Method: avtDataAttributes::TransformSpatialExtents
+//
+//  Purpose:
+//      Transforms all of the spatial extents using a callback function.
+//      The advantage of this routine is that all of the different extents
+//      flavors don't have to be enumerated by the caller.
+//
+//  Programmer: Hank Childs
+//  Creation:   January 20, 2005
+//
+// ****************************************************************************
+
+void
+avtDataAttributes::TransformSpatialExtents(avtDataAttributes &outAtts,
+              void (*ProjectExtentsCallback)(const double *, double *, void *),
+              void *args)
+{
+    double in[6], out[6]; // 6 is biggest possible -- not necessarily using
+                          // all 6 -- up to callback function to decide.
+
+    if (GetTrueSpatialExtents()->HasExtents())
+    {
+        GetTrueSpatialExtents()->CopyTo(in);
+        ProjectExtentsCallback(in, out, args);
+        outAtts.GetTrueSpatialExtents()->Set(out);
+    }
+
+    if (GetCumulativeTrueSpatialExtents()->HasExtents())
+    {
+        GetCumulativeTrueSpatialExtents()->CopyTo(in);
+        ProjectExtentsCallback(in, out, args);
+        outAtts.GetCumulativeTrueSpatialExtents()->Set(out);
+    }
+
+    if (GetEffectiveSpatialExtents()->HasExtents())
+    {
+        GetEffectiveSpatialExtents()->CopyTo(in);
+        ProjectExtentsCallback(in, out, args);
+        outAtts.GetEffectiveSpatialExtents()->Set(out);
+    }
+
+    if (GetCurrentSpatialExtents()->HasExtents())
+    {
+        GetCurrentSpatialExtents()->CopyTo(in);
+        ProjectExtentsCallback(in, out, args);
+        outAtts.GetCurrentSpatialExtents()->Set(out);
+    }
+
+    if (GetCumulativeCurrentSpatialExtents()->HasExtents())
+    {
+        GetCumulativeCurrentSpatialExtents()->CopyTo(in);
+        ProjectExtentsCallback(in, out, args);
+        outAtts.GetCumulativeCurrentSpatialExtents()->Set(out);
+    }
+}
+
+

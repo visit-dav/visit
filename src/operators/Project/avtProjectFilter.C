@@ -12,6 +12,9 @@
 #include <vtkUnstructuredGrid.h>
 #include <vtkPolyData.h>
 
+#include <avtDatasetExaminer.h>
+#include <avtExtents.h>
+
 #include <ImproperUseException.h>
 
 
@@ -174,6 +177,35 @@ avtProjectFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 
 
     return out_ds;
+}
+
+
+// ****************************************************************************
+//  Method: avtProjectFilter::PostExecute
+//
+//  Purpose:
+//      Finds the extents once we have been projected and set those.
+//
+//  Programmer: Hank Childs
+//  Creation:   January 20, 2005
+//
+// ****************************************************************************
+
+void
+avtProjectFilter::PostExecute(void)
+{
+    avtPluginStreamer::PostExecute();
+
+    avtDataAttributes& outAtts = GetOutput()->GetInfo().GetAttributes();
+
+    // get the outputs's spatial extents
+    double se[6];
+    avtDataset_p output = GetTypedOutput();
+    avtDatasetExaminer::GetSpatialExtents(output, se);
+
+    // over-write spatial extents
+    outAtts.GetTrueSpatialExtents()->Clear();
+    outAtts.GetCumulativeTrueSpatialExtents()->Set(se);
 }
 
 

@@ -39,6 +39,9 @@
 //    Hank Childs, Sun Jan  2 15:32:00 PST 2005
 //    Added curl, divergence, Laplacian, materror.
 //
+//    Hank Childs, Thu Jan 20 15:51:16 PST 2005
+//    Added side volume, resrad.
+//
 // ****************************************************************************
 struct ExprNameList
 {
@@ -63,6 +66,7 @@ const char *expr_meshquality[] = {
     "shape",
     "shape_and_size",
     "shear",
+    "side_volume",
     "skew",
     "smallest_angle",
     "stretch",
@@ -163,6 +167,7 @@ const char *expr_misc[] = {
     "gradient",
     "Laplacian",
     "recenter",
+    "resrad",
     NULL
 };
 

@@ -29,6 +29,9 @@ class vtkRectilinearGrid;
 //    needed.  Force a rectilinear dataset to always project into a
 //    curvilinear one.  Added projection of vectors.
 //
+//    Hank Childs, Thu Jan 20 10:27:29 PST 2005
+//    Added extents calculation in PostExecute.
+//
 // ****************************************************************************
 
 class avtProjectFilter : public avtPluginStreamer
@@ -49,6 +52,7 @@ class avtProjectFilter : public avtPluginStreamer
     ProjectAttributes   atts;
 
     virtual vtkDataSet         *ExecuteData(vtkDataSet *, int, std::string);
+    virtual void                PostExecute(void);
     virtual void                RefashionDataObjectInfo(void);
     avtPipelineSpecification_p  PerformRestriction(avtPipelineSpecification_p);
 
