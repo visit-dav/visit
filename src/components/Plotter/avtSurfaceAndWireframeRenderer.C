@@ -215,6 +215,9 @@ avtSurfaceAndWireframeRenderer::Draw()
 //    Kathleen Bonnell, Thu Aug  7 08:35:53 PDT 2003 
 //    Added early return if there are no points in the dataset.
 //    
+//    Kathleen Bonnell, Fri Aug 22 12:40:55 PDT 2003 
+//    Set lutColorsChanged to false. 
+//    
 // ****************************************************************************
 
 void
@@ -291,6 +294,7 @@ avtSurfaceAndWireframeRenderer::Render(vtkDataSet *ds)
     lastEdgeColor[inputNum].r = prop->GetEdgeColor()[0];
     lastEdgeColor[inputNum].g = prop->GetEdgeColor()[1];
     lastEdgeColor[inputNum].b = prop->GetEdgeColor()[2];
+    lutColorsChanged = false;
 }
 
 

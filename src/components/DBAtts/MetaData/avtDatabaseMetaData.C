@@ -4077,14 +4077,27 @@ avtDatabaseMetaData::ParseCompoundForCategory(const std::string &inVar,
 //  Programmer: Kathleen Bonnell 
 //  Creation:   September 5, 2002 
 //
+//  Modifications:
+//    Kathleen Bonnell, Fri Aug 22 18:02:15 PDT 2003
+//    Subset vars are no longer always 'compound', parse accordingly.
+// 
 // ****************************************************************************
 
 avtSubsetType
 avtDatabaseMetaData::DetermineSubsetType(const std::string &inVar) 
 {
     std::string category, mesh;
-    ParseCompoundForMesh(inVar, mesh);
-    ParseCompoundForCategory(inVar, category);
+ 
+    if (VarIsCompound(inVar))
+    {
+        ParseCompoundForMesh(inVar, mesh);
+        ParseCompoundForCategory(inVar, category);
+    }
+    else 
+    {
+        category = inVar;
+        mesh = MeshForVar(inVar);
+    }
 
     //
     // determine which part of the var we want to return

@@ -75,6 +75,10 @@ vtkVisItPolyDataNormals::Execute()
 //  Programmer:  Jeremy Meredith
 //  Creation:    August 12, 2003
 //
+//  Modifications:
+//    Kathleen Bonnell, Fri Aug 22 16:48:20 PDT 2003
+//    Pass along Verts and Lines.
+//
 // ****************************************************************************
 void
 vtkVisItPolyDataNormals::ExecutePointWithoutSplitting()
@@ -180,6 +184,10 @@ vtkVisItPolyDataNormals::ExecutePointWithoutSplitting()
 
     outPD->SetNormals(newNormals);
     newNormals->Delete();
+
+    // copy the original vertices and lines to the output
+    output->SetVerts(input->GetVerts());
+    output->SetLines(input->GetLines());
 }
 
 // ****************************************************************************
@@ -305,6 +313,11 @@ class NormalList
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    August 12, 2003
+//
+//  Modifications:
+//    Kathleen Bonnell, Fri Aug 22 16:48:20 PDT 2003
+//    Pass along Verts and Lines.  Added test for ne->oldId < 0 when
+//    adding original points and normals. 
 //
 // ****************************************************************************
 void
@@ -509,11 +522,22 @@ vtkVisItPolyDataNormals::ExecutePointWithSplitting()
     for (i = 0 ; i < nPoints ; i++)
     {
         NormalEntry *ne = &normalList.normals[i];
-        outPts->SetPoint(i, inPts->GetPoint(ne->oldId));
-        outPD->CopyData(inPD, ne->oldId, i);
-        newNormalPtr[3*i+0] = ne->nn[0];
-        newNormalPtr[3*i+1] = ne->nn[1];
-        newNormalPtr[3*i+2] = ne->nn[2];
+        if (ne->oldId < 0)
+        {
+            outPts->SetPoint(i, inPts->GetPoint(i));
+            outPD->CopyData(inPD, i, i);
+            newNormalPtr[3*i+0] = 0;
+            newNormalPtr[3*i+1] = 0;
+            newNormalPtr[3*i+2] = 1;
+        }
+        else 
+        {
+            outPts->SetPoint(i, inPts->GetPoint(ne->oldId));
+            outPD->CopyData(inPD, ne->oldId, i);
+            newNormalPtr[3*i+0] = ne->nn[0];
+            newNormalPtr[3*i+1] = ne->nn[1];
+            newNormalPtr[3*i+2] = ne->nn[2];
+        }
     }
 
     // Add all the new (duplicated) points
@@ -541,6 +565,10 @@ vtkVisItPolyDataNormals::ExecutePointWithSplitting()
 
     outPD->SetNormals(newNormals);
     newNormals->Delete();
+
+    // copy the original vertices and lines to the output
+    output->SetVerts(input->GetVerts());
+    output->SetLines(input->GetLines());
 
 }
 

@@ -103,6 +103,9 @@ QvisPseudocolorPlotWindow::~QvisPseudocolorPlotWindow()
 //   Jeremy Meredith, Fri Dec 20 11:36:03 PST 2002
 //   Added scaling of point variables by a scalar field.
 //
+//   Hank Childs, Thu Aug 21 21:36:38 PDT 2003
+//   Added point type options.
+//
 // ****************************************************************************
 
 void
@@ -173,7 +176,7 @@ QvisPseudocolorPlotWindow::CreateWindowContents()
     limitsLayout->addWidget(maxLineEdit, 2, 2);
 
     //
-    // Create the centering radio buttons
+    // Create the scale radio buttons
     //
     QHBoxLayout *scaleLayout = new QHBoxLayout(topLayout);
 
@@ -197,14 +200,14 @@ QvisPseudocolorPlotWindow::CreateWindowContents()
     scaleButtonsLayout->addWidget(rb);
     scaleLayout->addWidget( scalingButtons );
     scaleLayout->addStretch(0);
-    // Each time a radio button is clicked, call the centeringClicked slot.
+    // Each time a radio button is clicked, call the scalelicked slot.
     connect(scalingButtons, SIGNAL(clicked(int)),
             this, SLOT(scaleClicked(int)));
 
     //
     // Create the rest of the window in a grid layout.
     //
-    QGridLayout *gLayout = new QGridLayout(topLayout, 7, 2);
+    QGridLayout *gLayout = new QGridLayout(topLayout, 8, 2);
 
     // Create the skew factor line edit    
     skewLineEdit = new QLineEdit(central, "skewLineEdit");
@@ -215,7 +218,7 @@ QvisPseudocolorPlotWindow::CreateWindowContents()
     skewLabel->setAlignment(AlignRight | AlignVCenter);
     gLayout->addWidget(skewLabel, 0, 0);
 
-    // Create the point size ine edit
+    // Create the point size line edit
     pointsizeLineEdit = new QLineEdit(central, "pointsizeLineEdit");
     connect(pointsizeLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processPointSizeText())); 
@@ -239,6 +242,28 @@ QvisPseudocolorPlotWindow::CreateWindowContents()
     gLayout->addMultiCellLayout(psVarLayout, 2, 2, 0, 1);
 
     //
+    // Create the point type radio buttons
+    //
+    // Create the smoothing level buttons
+    pointTypeButtons = new QButtonGroup(0, "pointTypeButtons");
+    connect(pointTypeButtons, SIGNAL(clicked(int)),
+            this, SLOT(pointTypeChanged(int)));
+    QGridLayout *pointTypeLayout = new QGridLayout(1, 5);
+    pointTypeLayout->setSpacing(10);
+    pointTypeLayout->setColStretch(4, 1000);
+    pointTypeLayout->addWidget(new QLabel("Point Type", central), 0,0);
+    rb = new QRadioButton("Box", central, "Box");
+    pointTypeButtons->insert(rb);
+    pointTypeLayout->addWidget(rb, 0, 1);
+    rb = new QRadioButton("Axis", central, "Axis");
+    pointTypeButtons->insert(rb);
+    pointTypeLayout->addWidget(rb, 0, 2);
+    rb = new QRadioButton("Icosahedron", central, "Icosahedron");
+    pointTypeButtons->insert(rb);
+    pointTypeLayout->addWidget(rb, 0, 3);
+    gLayout->addMultiCellLayout(pointTypeLayout, 3,3 , 0,1);
+
+    //
     // Create the opacity slider
     //
     opacitySlider = new QvisOpacitySlider(0, 255, 25, 255, central, 
@@ -247,34 +272,34 @@ QvisPseudocolorPlotWindow::CreateWindowContents()
     opacitySlider->setGradientColor(QColor(0, 0, 0));
     connect(opacitySlider, SIGNAL(valueChanged(int, const void*)),
             this, SLOT(changedOpacity(int, const void*)));
-    gLayout->addWidget(opacitySlider, 3, 1);
+    gLayout->addWidget(opacitySlider, 4, 1);
 
     QLabel *opacityLabel = new QLabel(opacitySlider, "Opacity", 
                                       central, "opacityLabel"); 
     opacityLabel->setAlignment(AlignRight | AlignVCenter);
-    gLayout->addWidget(opacityLabel, 3, 0);
+    gLayout->addWidget(opacityLabel, 4, 0);
 
     // Create the color table widgets
     colorTableButton = new QvisColorTableButton(central, "colorTableButton");
     connect(colorTableButton, SIGNAL(selectedColorTable(bool, const QString &)),
             this, SLOT(colorTableClicked(bool, const QString &)));
-    gLayout->addWidget(colorTableButton, 4, 1, AlignLeft | AlignVCenter);
+    gLayout->addWidget(colorTableButton, 5, 1, AlignLeft | AlignVCenter);
     QLabel *colorTableLabel = new QLabel(colorTableButton, "Color table",
                                          central, "colorTableLabel");
     colorTableLabel->setAlignment(AlignRight | AlignVCenter);
-    gLayout->addWidget(colorTableLabel, 4, 0);
+    gLayout->addWidget(colorTableLabel, 5, 0);
 
     // Create the legend toggle
     legendToggle = new QCheckBox("Legend", central, "legendToggle");
     connect(legendToggle, SIGNAL(toggled(bool)),
             this, SLOT(legendToggled(bool)));
-    gLayout->addWidget(legendToggle, 5, 0);
+    gLayout->addWidget(legendToggle, 6, 0);
 
     // Create the lighting toggle
     lightingToggle = new QCheckBox("Lighting", central, "lightingToggle");
     connect(lightingToggle, SIGNAL(toggled(bool)),
             this, SLOT(lightingToggled(bool)));
-    gLayout->addWidget(lightingToggle, 5, 1);
+    gLayout->addWidget(lightingToggle, 6, 1);
 
     // Create the smoothing level buttons
     smoothingLevelButtons = new QButtonGroup(0, "smoothingButtons");
@@ -293,7 +318,7 @@ QvisPseudocolorPlotWindow::CreateWindowContents()
     rb = new QRadioButton("High", central, "HighSmoothing");
     smoothingLevelButtons->insert(rb);
     smoothingLayout->addWidget(rb, 0, 3);
-    gLayout->addMultiCellLayout(smoothingLayout, 6,6 , 0,1);
+    gLayout->addMultiCellLayout(smoothingLayout, 7,7 , 0,1);
 }
 
 // ****************************************************************************
@@ -339,6 +364,9 @@ QvisPseudocolorPlotWindow::CreateWindowContents()
 //
 //   Jeremy Meredith, Fri Dec 20 11:36:03 PST 2002
 //   Added scaling of point variables by a scalar field.
+//
+//   Hank Childs, Thu Aug 21 21:59:56 PDT 2003
+//   Account for point type.
 //
 // ****************************************************************************
 
@@ -425,30 +453,35 @@ QvisPseudocolorPlotWindow::UpdateWindow(bool doAll)
             temp.sprintf("%g", pcAtts->GetPointSize());
             pointsizeLineEdit->setText(temp);
             break;
-        case 10: // skewFactor
+        case 10:
+            pointTypeButtons->blockSignals(true);
+            pointTypeButtons->setButton(pcAtts->GetPointType());
+            pointTypeButtons->blockSignals(false);
+            break;
+        case 11: // skewFactor
             temp.sprintf("%g", pcAtts->GetSkewFactor());
             skewLineEdit->setText(temp);
             break;
-        case 11: // opacity
+        case 12: // opacity
             opacitySlider->blockSignals(true);
             opacitySlider->setValue(int(pcAtts->GetOpacity() * 255.));
             opacitySlider->blockSignals(false);
             break;
-        case 12: // colorTableName
+        case 13: // colorTableName
             colorTableButton->setColorTable(pcAtts->GetColorTableName().c_str());
             break;
-        case 13: // smoothingLevel
+        case 14: // smoothingLevel
             smoothingLevelButtons->blockSignals(true);
             smoothingLevelButtons->setButton(pcAtts->GetSmoothingLevel());
             smoothingLevelButtons->blockSignals(false);
             break;
-        case 14: // pointSizeVarEnabled
+        case 15: // pointSizeVarEnabled
             pointSizeVarToggle->blockSignals(true);
             pointSizeVarToggle->setChecked(pcAtts->GetPointSizeVarEnabled());
             pointSizeVarToggle->blockSignals(false);
             pointSizeVarLineEdit->setEnabled(pcAtts->GetPointSizeVarEnabled());
             break;
-        case 15: // pointSizeVar
+        case 16: // pointSizeVar
             pointSizeVarLineEdit->blockSignals(true);
             pointSizeVarLineEdit->setText(pcAtts->GetPointSizeVar().c_str());
             pointSizeVarLineEdit->blockSignals(false);
@@ -796,6 +829,30 @@ void
 QvisPseudocolorPlotWindow::smoothingLevelChanged(int level)
 {
     pcAtts->SetSmoothingLevel(level);
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+//  Method:  QvisPseudocolorPlotWindow::pointTypeChanged
+//
+//  Purpose:
+//    Qt slot function that is called when one of the point types is clicked.
+//
+//  Arguments:
+//    type   :   The new type
+//
+//  Programmer:  Hank Childs
+//  Creation:    August 21, 2003
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+QvisPseudocolorPlotWindow::pointTypeChanged(int type)
+{
+    pcAtts->SetPointType((PseudocolorAttributes::PointType) type);
     SetUpdate(false);
     Apply();
 }

@@ -183,6 +183,9 @@ char QvisVCRControl::augmentedForeground[15];
 //   Added code to ensure that the widget's foreground color is used instead
 //   of always using black.
 //
+//   Jeremy Meredith, Fri Aug 22 14:15:21 PDT 2003
+//   Made it respond to mousedown (press()) events instead of click() events.
+//
 // ****************************************************************************
 
 QvisVCRControl::QvisVCRControl(QWidget *parent, const char *name) :
@@ -229,13 +232,13 @@ QvisVCRControl::QvisVCRControl(QWidget *parent, const char *name) :
     buttons[4] = new QPushButton(this, "wadvance");
     buttons[4]->setPixmap(p5);
 
-    // Connect the buttons' clicked signals to the appropriate VCR
+    // Connect the buttons' "pressed" signals to the appropriate VCR
     // clicked slot.
-    connect(buttons[0], SIGNAL(clicked()), this, SLOT(b0_clicked()));
-    connect(buttons[1], SIGNAL(clicked()), this, SLOT(b1_clicked()));
-    connect(buttons[2], SIGNAL(clicked()), this, SLOT(b2_clicked()));
-    connect(buttons[3], SIGNAL(clicked()), this, SLOT(b3_clicked()));
-    connect(buttons[4], SIGNAL(clicked()), this, SLOT(b4_clicked()));
+    connect(buttons[0], SIGNAL(pressed()), this, SLOT(b0_clicked()));
+    connect(buttons[1], SIGNAL(pressed()), this, SLOT(b1_clicked()));
+    connect(buttons[2], SIGNAL(pressed()), this, SLOT(b2_clicked()));
+    connect(buttons[3], SIGNAL(pressed()), this, SLOT(b3_clicked()));
+    connect(buttons[4], SIGNAL(pressed()), this, SLOT(b4_clicked()));
 
     // Add all the buttons to the top layout.
     for(int i = 0; i < 5; ++i)
@@ -422,7 +425,6 @@ QvisVCRControl::b1_clicked()
 //   I made the button be toggled.
 //
 // ****************************************************************************
-
 void
 QvisVCRControl::b2_clicked()
 {

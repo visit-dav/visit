@@ -233,8 +233,12 @@ avtPseudocolorPlot::ApplyOperators(avtDataObject_p input)
 //  Creation:   October 22, 2002 
 //
 //  Modifications:
+//
 //    Jeremy Meredith, Fri Dec 20 11:36:03 PST 2002
 //    Added scaling of point variables by a scalar field.
+//
+//    Hank Childs, Thu Aug 21 22:05:14 PDT 2003
+//    Added support for different types of point glyphs.
 //
 // ****************************************************************************
 
@@ -256,6 +260,7 @@ avtPseudocolorPlot::ApplyRenderingTransformation(avtDataObject_p input)
             glyphPoints->SetScaleVariable("default");
         }
         glyphPoints->SetInput(dob);
+        glyphPoints->SetGlyphType((int) atts.GetPointType());
         dob = glyphPoints->GetOutput();
     }
 
