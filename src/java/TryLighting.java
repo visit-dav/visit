@@ -4,7 +4,7 @@ import llnl.visit.ColorAttribute;
 import llnl.visit.LightList;
 import llnl.visit.LightAttributes;
 import llnl.visit.SimpleObserver;
-import llnl.visit.ViewAttributes;
+import llnl.visit.View3DAttributes;
 
 // ****************************************************************************
 // Class: TryLighting
@@ -25,6 +25,9 @@ import llnl.visit.ViewAttributes;
 //
 //   Brad Whitlock, Thu Dec 12 10:44:31 PDT 2002
 //   Updated because of changse to color table methods.
+//
+//   Eric Brugger, Wed Aug 27 09:06:38 PDT 2003
+//   I modified it to use the new view interface.
 //
 // ****************************************************************************
 
@@ -51,7 +54,7 @@ public class TryLighting extends RunViewer implements SimpleObserver
             viewer.SetActiveContinuousColorTable("calewhite");
 
             // Set the view
-            ViewAttributes v = viewer.GetView3D();
+            View3DAttributes v = viewer.GetView3D();
             v.SetViewNormal(0.456808, 0.335583, 0.823839);
             v.SetFocus(-0.927295, -1.22113, 1.01159);
             v.SetViewUp(-0.184554, 0.941716, -0.281266);

@@ -14,7 +14,9 @@
 #include <qvbox.h>
 
 #include <DataNode.h>
-#include <ViewAttributes.h>
+#include <ViewCurveAttributes.h>
+#include <View2DAttributes.h>
+#include <View3DAttributes.h>
 #include <WindowInformation.h>
 #include <ViewerProxy.h>
 
@@ -42,12 +44,16 @@
 //   Brad Whitlock, Tue Sep 17 13:00:23 PST 2002
 //   I added another subject.
 //
+//   Eric Brugger, Wed Aug 20 14:04:21 PDT 2003
+//   I added support for curve views.
+//
 // ****************************************************************************
 
 QvisViewWindow::QvisViewWindow(const char *caption, const char *shortName,
     QvisNotepadArea *notepad) : QvisPostableWindowSimpleObserver(caption,
     shortName, notepad)
 {
+    viewCurve = 0;
     view2d = 0;
     view3d = 0;
     windowInfo = 0;
@@ -67,10 +73,16 @@ QvisViewWindow::QvisViewWindow(const char *caption, const char *shortName,
 //   Brad Whitlock, Tue Sep 17 13:00:23 PST 2002
 //   I added another subject.
 //
+//   Eric Brugger, Wed Aug 20 14:04:21 PDT 2003
+//   I added support for curve views.
+//
 // ****************************************************************************
 
 QvisViewWindow::~QvisViewWindow()
 {
+    if(viewCurve)
+        viewCurve->Detach(this);
+
     if(view2d)
         view2d->Detach(this);
 
@@ -113,12 +125,15 @@ QvisViewWindow::~QvisViewWindow()
 //   I added controls for image pan and image zoom. I renamed camera
 //   to view normal in the view attributes.
 //
+//   Eric Brugger, Wed Aug 20 14:04:21 PDT 2003
+//   I added support for curve views.
+//
 // ****************************************************************************
 
 void
 QvisViewWindow::CreateWindowContents()
 {
-    // Group the options into 2d and 3d tabs.
+    // Group the options into curve, 2d, 3d and advanced tabs.
     tabs = new QTabWidget(central, "tabs");
     connect(tabs, SIGNAL(selected(const QString &)),
             this, SLOT(tabSelected(const QString &)));
@@ -126,7 +141,49 @@ QvisViewWindow::CreateWindowContents()
     topLayout->addWidget(tabs);
 
     //
-    // Add the basic controls for the 2d view.
+    // Add the controls for the curve view.
+    //
+    pageCurve = new QVBox(central, "pageCurve");
+    pageCurve->setSpacing(5);
+    pageCurve->setMargin(10);
+    tabs->addTab(pageCurve, "Curve view");
+
+    viewCurveGroup = new QGroupBox(pageCurve, "viewCurveGroup");
+    viewCurveGroup->setFrameStyle(QFrame::NoFrame);
+
+    QVBoxLayout *internalLayoutCurve = new QVBoxLayout(viewCurveGroup);
+    internalLayoutCurve->addSpacing(10);
+    QGridLayout *LayoutCurve = new QGridLayout(internalLayoutCurve, 3, 2);
+    LayoutCurve->setSpacing(5);
+
+    viewportCurveLineEdit = new QLineEdit(viewCurveGroup, "viewportCurveLineEdit");
+    connect(viewportCurveLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(processViewportCurveText()));
+    LayoutCurve->addWidget(viewportCurveLineEdit, 0, 1);
+    QLabel *viewportCurveLabel = new QLabel(viewportCurveLineEdit, "Viewport",
+                                       viewCurveGroup, "viewportCurveLabel");
+    LayoutCurve->addWidget(viewportCurveLabel, 0, 0);
+
+    domainLineEdit = new QLineEdit(viewCurveGroup, "domainLineEdit");
+    connect(domainLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(processDomainText()));
+    LayoutCurve->addWidget(domainLineEdit, 1, 1);
+    QLabel *domainLabel = new QLabel(domainLineEdit, "Domain",
+                                     viewCurveGroup, "domainLabel");
+    LayoutCurve->addWidget(domainLabel, 1, 0);
+    internalLayoutCurve->addStretch(10);
+
+    rangeLineEdit = new QLineEdit(viewCurveGroup, "rangeLineEdit");
+    connect(rangeLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(processRangeText()));
+    LayoutCurve->addWidget(rangeLineEdit, 2, 1);
+    QLabel *rangeLabel = new QLabel(rangeLineEdit, "Range",
+                                    viewCurveGroup, "rangeLabel");
+    LayoutCurve->addWidget(rangeLabel, 2, 0);
+    internalLayoutCurve->addStretch(10);
+
+    //
+    // Add the controls for the 2d view.
     //
     page2D = new QVBox(central, "page2D");
     page2D->setSpacing(5);
@@ -143,7 +200,7 @@ QvisViewWindow::CreateWindowContents()
 
     viewportLineEdit = new QLineEdit(view2DGroup, "viewportLineEdit");
     connect(viewportLineEdit, SIGNAL(returnPressed()),
-            this, SLOT(processViewportText2d()));
+            this, SLOT(processViewportText()));
     Layout2d->addWidget(viewportLineEdit, 0, 1);
     QLabel *viewportLabel = new QLabel(viewportLineEdit, "Viewport",
                                        view2DGroup, "viewportLabel");
@@ -151,7 +208,7 @@ QvisViewWindow::CreateWindowContents()
 
     windowLineEdit = new QLineEdit(view2DGroup, "windowLineEdit");
     connect(windowLineEdit, SIGNAL(returnPressed()),
-            this, SLOT(processWindowText2d()));
+            this, SLOT(processWindowText()));
     Layout2d->addWidget(windowLineEdit, 1, 1);
     QLabel *windowLabel = new QLabel(windowLineEdit, "Window",
                                      view2DGroup, "windowLabel");
@@ -350,7 +407,9 @@ QvisViewWindow::CreateWindowContents()
 void
 QvisViewWindow::SubjectRemoved(Subject *TheRemovedSubject)
 {
-    if(TheRemovedSubject == view2d)
+    if(TheRemovedSubject == viewCurve)
+        viewCurve = 0;
+    else if(TheRemovedSubject == view2d)
         view2d = 0;
     else if(TheRemovedSubject == view3d)
         view3d = 0;
@@ -359,14 +418,21 @@ QvisViewWindow::SubjectRemoved(Subject *TheRemovedSubject)
 }
 
 void
-QvisViewWindow::Connect2DAttributes(ViewAttributes *v)
+QvisViewWindow::ConnectCurveAttributes(ViewCurveAttributes *v)
+{
+    viewCurve = v;
+    viewCurve->Attach(this);
+}
+
+void
+QvisViewWindow::Connect2DAttributes(View2DAttributes *v)
 {
     view2d = v;
     view2d->Attach(this);
 }
 
 void
-QvisViewWindow::Connect3DAttributes(ViewAttributes *v)
+QvisViewWindow::Connect3DAttributes(View3DAttributes *v)
 {
     view3d = v;
     view3d->Attach(this);
@@ -399,18 +465,73 @@ QvisViewWindow::ConnectWindowInformation(WindowInformation *w)
 //   Brad Whitlock, Tue Sep 17 13:11:04 PST 2002
 //   I added another update method call.
 //
+//   Eric Brugger, Wed Aug 20 14:04:21 PDT 2003
+//   I added support for curve views.
+//
 // ****************************************************************************
 
 void
 QvisViewWindow::UpdateWindow(bool doAll)
 {
     // Update the appropriate widgets.
+    if(SelectedSubject() == viewCurve || doAll)
+        UpdateCurve(doAll);
     if(SelectedSubject() == view2d || doAll)
         Update2D(doAll);
     if(SelectedSubject() == view3d || doAll)
         Update3D(doAll);
     if(SelectedSubject() == windowInfo || doAll)
         UpdateGlobal(doAll);
+}
+
+// ****************************************************************************
+// Method: QvisViewWindow::UpdateCurve
+//
+// Purpose: 
+//   Update the portion of the window for curve views.
+//
+// Programmer: Eric Brugger
+// Creation:   Wed Aug 20 14:04:21 PDT 2003
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisViewWindow::UpdateCurve(bool doAll)
+{
+    if(viewCurve == 0)
+        return;
+
+    QString temp;
+
+    for(int i = 0; i < viewCurve->NumAttributes(); ++i)
+    {
+        if(!viewCurve->IsSelected(i) && !doAll)
+            continue;
+
+        switch(i)
+        {
+        case 0: // domainCoords
+          { const double *v = viewCurve->GetDomainCoords();
+            temp.sprintf("%g %g", v[0], v[1]);
+            domainLineEdit->setText(temp);
+            break;
+          }
+        case 1: // rangeCoords
+          { const double *v = viewCurve->GetRangeCoords();
+            temp.sprintf("%g %g", v[0], v[1]);
+            rangeLineEdit->setText(temp);
+            break;
+          }
+        case 2: // viewportCoords
+          { const double *v = viewCurve->GetViewportCoords();
+            temp.sprintf("%g %g %g %g", v[0], v[1], v[2], v[3]);
+            viewportCurveLineEdit->setText(temp);
+            break;
+          }
+        }
+    }
 }
 
 // ****************************************************************************
@@ -432,6 +553,9 @@ QvisViewWindow::UpdateWindow(bool doAll)
 //   Eric Brugger, Tue Jun 10 12:25:05 PDT 2003
 //   I renamed camera to view normal in the view attributes.
 //
+//   Eric Brugger, Wed Aug 20 14:04:21 PDT 2003
+//   I split the view attributes into 2d and 3d parts.
+//
 // ****************************************************************************
 
 void
@@ -449,13 +573,13 @@ QvisViewWindow::Update2D(bool doAll)
 
         switch(i)
         {
-        case 11: // windowcoords
+        case 0: // windowcoords
           { const double *w = view2d->GetWindowCoords();
             temp.sprintf("%g %g %g %g", w[0], w[1], w[2], w[3]);
             windowLineEdit->setText(temp);
             break;
           }
-        case 12: // viewportcoords
+        case 1: // viewportcoords
           { const double *v = view2d->GetViewportCoords();
             temp.sprintf("%g %g %g %g", v[0], v[1], v[2], v[3]);
             viewportLineEdit->setText(temp);
@@ -484,6 +608,9 @@ QvisViewWindow::Update2D(bool doAll)
 //   Eric Brugger, Tue Jun 10 12:25:05 PDT 2003
 //   I added controls for image pan and image zoom. I renamed camera
 //   to view normal in the view attributes.
+//
+//   Eric Brugger, Wed Aug 20 14:04:21 PDT 2003
+//   I split the view attributes into 2d and 3d parts.
 //
 // ****************************************************************************
 
@@ -527,29 +654,29 @@ QvisViewWindow::Update3D(bool doAll)
             temp.sprintf("%g", view3d->GetViewAngle());
             viewAngleLineEdit->setText(temp);
             break;
-        case 5: // parallelScale
+        case 4: // parallelScale
             temp.sprintf("%g", view3d->GetParallelScale());
             parallelScaleLineEdit->setText(temp);
             break;
-        case 6: // near
+        case 5: // near
             temp.sprintf("%g", view3d->GetNearPlane());
             nearLineEdit->setText(temp);
             break;
-        case 7: // far
+        case 6: // far
             temp.sprintf("%g", view3d->GetFarPlane());
             farLineEdit->setText(temp);
             break;
-        case 8: // imagePan
+        case 7: // imagePan
             temp.sprintf("%g %g",
                          view3d->GetImagePan()[0],
                          view3d->GetImagePan()[1]);
             imagePanLineEdit->setText(temp);
             break;
-        case 9: // imageZoom
+        case 8: // imageZoom
             temp.sprintf("%g", view3d->GetImageZoom());
             imageZoomLineEdit->setText(temp);
             break;
-        case 10: // perspective.
+        case 9: // perspective.
             perspectiveToggle->blockSignals(true);
             perspectiveToggle->setChecked(view3d->GetPerspective());
             perspectiveToggle->blockSignals(false);
@@ -647,6 +774,8 @@ QvisViewWindow::UpdateGlobal(bool doAll)
 // Creation:   Mon Mar 4 14:44:18 PST 2002
 //
 // Modifications:
+//   Eric Brugger, Wed Aug 20 14:04:21 PDT 2003
+//   I added support for curve views.
 //   
 // ****************************************************************************
 
@@ -655,13 +784,20 @@ QvisViewWindow::Apply(bool ignore)
 {
     if(AutoUpdate() || ignore)
     {
-        bool do2d = (view2d->NumAttributesSelected() > 0);
-        bool do3d = (view3d->NumAttributesSelected() > 0);
+        bool doCurve = (viewCurve->NumAttributesSelected() > 0);
+        bool do2d    = (view2d->NumAttributesSelected() > 0);
+        bool do3d    = (view3d->NumAttributesSelected() > 0);
 
         // Get the current aslice attributes and tell the other
         // observers about them.
         GetCurrentValues(-1);
 
+        // Tell the viewer to set the curve view attributes.
+        if(doCurve || ignore)
+        {
+            viewCurve->Notify();
+            viewer->SetViewCurve();
+        }
         // Tell the viewer to set the 2D view attributes.
         if(do2d || ignore)
         {
@@ -678,6 +814,7 @@ QvisViewWindow::Apply(bool ignore)
     else
     {
         // Send the new state to the viewer.
+        viewCurve->Notify();
         view2d->Notify();
         view3d->Notify();
     }
@@ -752,6 +889,112 @@ QvisViewWindow::SetFromNode(DataNode *parentNode, const int *borders)
 }
 
 // ****************************************************************************
+// Method: QvisViewWindow::GetCurrentValuesCurve
+//
+// Purpose: 
+//   Get the current values for the curve text fields.
+//
+// Programmer: Eric Brugger
+// Creation:   Wed Aug 20 14:04:21 PDT 2003
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisViewWindow::GetCurrentValuesCurve(int which_widget)
+{
+    bool okay, doAll = (which_widget == -1);
+    QString msg, temp;
+
+    // Do the viewport values.
+    if(which_widget == 0 || doAll)
+    {
+        temp = viewportCurveLineEdit->displayText().stripWhiteSpace();
+        okay = !temp.isEmpty();
+        if(okay)
+        {
+            double v[4];
+            if(sscanf(temp.latin1(), "%lg %lg %lg %lg",
+                      &v[0], &v[1], &v[2], &v[3]) == 4)
+            {
+                viewCurve->SetViewportCoords(v);
+            }
+            else
+                okay = false;
+        }
+
+        if(!okay)
+        {
+            msg.sprintf("The viewport values were invalid. "
+                "Resetting to the last good values of %g %g %g %g.",
+                 viewCurve->GetViewportCoords()[0],
+                 viewCurve->GetViewportCoords()[1],
+                 viewCurve->GetViewportCoords()[2],
+                 viewCurve->GetViewportCoords()[3]);
+            Error(msg);
+            viewCurve->SetViewportCoords(viewCurve->GetViewportCoords());
+        }
+    }
+
+    // Do the domain values.
+    if(which_widget == 1 || doAll)
+    {
+        temp = domainLineEdit->displayText().stripWhiteSpace();
+        okay = !temp.isEmpty();
+        if(okay)
+        {
+            double domain[2];
+            if(sscanf(temp.latin1(), "%lg %lg",
+                      &domain[0], &domain[1]) == 2)
+            {
+                viewCurve->SetDomainCoords(domain);
+            }
+            else
+                okay = false;
+        }
+
+        if(!okay)
+        {
+            msg.sprintf("The domain values were invalid. "
+                "Resetting to the last good values of %g %g.",
+                 viewCurve->GetDomainCoords()[0],
+                 viewCurve->GetDomainCoords()[1]);
+            Error(msg);
+            viewCurve->SetDomainCoords(viewCurve->GetDomainCoords());
+        }
+    }
+
+    // Do the range values.
+    if(which_widget == 2 || doAll)
+    {
+        temp = rangeLineEdit->displayText().stripWhiteSpace();
+        okay = !temp.isEmpty();
+        if(okay)
+        {
+            double range[2];
+            if(sscanf(temp.latin1(), "%lg %lg",
+                      &range[0], &range[1]) == 2)
+            {
+                viewCurve->SetRangeCoords(range);
+            }
+            else
+                okay = false;
+        }
+
+        if(!okay)
+        {
+            msg.sprintf("The range values were invalid. "
+                "Resetting to the last good values of %g %g.",
+                 viewCurve->GetRangeCoords()[0],
+                 viewCurve->GetRangeCoords()[1]);
+            Error(msg);
+            viewCurve->SetRangeCoords(viewCurve->GetRangeCoords());
+        }
+    }
+}
+
+// ****************************************************************************
 // Method: QvisViewWindow::GetCurrentValues2d
 //
 // Purpose: 
@@ -766,6 +1009,9 @@ QvisViewWindow::SetFromNode(DataNode *parentNode, const int *borders)
 //
 //   Brad Whitlock, Fri Feb 15 11:47:34 PDT 2002
 //   Fixed format strings.
+//
+//   Eric Brugger, Wed Aug 20 14:04:21 PDT 2003
+//   I corrected an error message.
 //
 // ****************************************************************************
 
@@ -794,7 +1040,7 @@ QvisViewWindow::GetCurrentValues2d(int which_widget)
 
         if(!okay)
         {
-            msg.sprintf("The window values were invalid. "
+            msg.sprintf("The viewport values were invalid. "
                 "Resetting to the last good values of %g %g %g %g.",
                  view2d->GetViewportCoords()[0],
                  view2d->GetViewportCoords()[1],
@@ -1116,6 +1362,7 @@ QvisViewWindow::GetCurrentValues3d(int which_widget)
 void
 QvisViewWindow::GetCurrentValues(int which_widget)
 {
+    GetCurrentValuesCurve(which_widget);
     GetCurrentValues2d(which_widget);
     GetCurrentValues3d(which_widget);
 }
@@ -1650,8 +1897,10 @@ QvisViewWindow::show()
 
     tabs->blockSignals(true);
     if(activeTab == 0)
-        tabs->showPage(page2D);
+        tabs->showPage(pageCurve);
     else if(activeTab == 1)
+        tabs->showPage(page2D);
+    else if(activeTab == 2)
         tabs->showPage(page3D);
     else
         tabs->showPage(pageAdvanced);
@@ -1678,20 +1927,6 @@ QvisViewWindow::processCommandText()
     commandLineEdit->setText("");
 }
 
-void
-QvisViewWindow::processViewportText2d()
-{
-    GetCurrentValues(0);
-    Apply();    
-}
-
-void
-QvisViewWindow::processWindowText2d()
-{
-    GetCurrentValues(1);
-    Apply();    
-}
-
 // ****************************************************************************
 // Method: QvisViewWindow::tabSelected
 //
@@ -1705,18 +1940,65 @@ QvisViewWindow::processWindowText2d()
 // Creation:   Wed Sep 18 10:18:20 PDT 2002
 //
 // Modifications:
+//   Eric Brugger, Wed Aug 20 14:04:21 PDT 2003
+//   I added support for curve views.
 //   
 // ****************************************************************************
 
 void
 QvisViewWindow::tabSelected(const QString &tabLabel)
 {
-    if(tabLabel == QString("2D view"))
+    if(tabLabel == QString("Curve view"))
         activeTab = 0;
-    else if(tabLabel == QString("3D view"))
+    else if(tabLabel == QString("2D view"))
         activeTab = 1;
-    else
+    else if(tabLabel == QString("3D view"))
         activeTab = 2;
+    else
+        activeTab = 3;
+}
+
+//
+// Slots for curve Widgets.
+//
+
+void
+QvisViewWindow::processViewportCurveText()
+{
+    GetCurrentValues(0);
+    Apply();    
+}
+
+void
+QvisViewWindow::processDomainText()
+{
+    GetCurrentValues(1);
+    Apply();    
+}
+
+void
+QvisViewWindow::processRangeText()
+{
+    GetCurrentValues(2);
+    Apply();    
+}
+
+//
+// Slots for 2d Widgets.
+//
+
+void
+QvisViewWindow::processViewportText()
+{
+    GetCurrentValues(0);
+    Apply();    
+}
+
+void
+QvisViewWindow::processWindowText()
+{
+    GetCurrentValues(1);
+    Apply();    
 }
 
 //

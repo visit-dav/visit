@@ -21,7 +21,9 @@
 #include <PrinterAttributes.h>
 #include <RenderingAttributes.h>
 #include <SaveWindowAttributes.h>
-#include <ViewAttributes.h>
+#include <ViewCurveAttributes.h>
+#include <View2DAttributes.h>
+#include <View3DAttributes.h>
 #include <WindowInformation.h>
 #include <ViewerActionManager.h>
 #include <ViewerEngineManager.h>
@@ -68,8 +70,9 @@ const int ViewerWindowManager::maxLayouts=6;
 const int ViewerWindowManager::validLayouts[]={1, 4, 9, 16, 2, 8};
 GlobalAttributes *ViewerWindowManager::clientAtts=0;
 SaveWindowAttributes *ViewerWindowManager::saveWindowClientAtts=0;
-ViewAttributes *ViewerWindowManager::view2DClientAtts=0;
-ViewAttributes *ViewerWindowManager::view3DClientAtts=0;
+ViewCurveAttributes *ViewerWindowManager::viewCurveClientAtts=0;
+View2DAttributes *ViewerWindowManager::view2DClientAtts=0;
+View3DAttributes *ViewerWindowManager::view3DClientAtts=0;
 AnimationAttributes *ViewerWindowManager::animationClientAtts=0;
 AnnotationAttributes *ViewerWindowManager::annotationClientAtts=0;
 AnnotationAttributes *ViewerWindowManager::annotationDefaultAtts=0;
@@ -126,6 +129,9 @@ extern ViewerSubject  *viewerSubject;
 //
 //    Brad Whitlock, Wed Jan 22 16:44:26 PST 2003
 //    I initialized the windowsIconified member.
+//
+//    Eric Brugger, Wed Aug 20 13:22:14 PDT 2003
+//    I added undoing of curve views.
 //
 // ****************************************************************************
 
@@ -200,6 +206,7 @@ ViewerWindowManager::ViewerWindowManager() : QObject()
     // Initialize the view stacks.
     //
     viewStacking = true;
+    viewCurveStackTop = -1;
     view2DStackTop = -1;
     view3DStackTop = -1;
 
@@ -1608,6 +1615,47 @@ ViewerWindowManager::SetInteractionMode(INTERACTION_MODE m,
 }
 
 // ****************************************************************************
+//  Method: ViewerWindowManager::SetViewCurveFromClient
+//
+//  Purpose: 
+//    Sets the view for the active window using the client view attributes.
+//
+//  Programmer: Eric Brugger
+//  Creation:   August 20, 2003
+//
+// ****************************************************************************
+
+void
+ViewerWindowManager::SetViewCurveFromClient()
+{
+    avtViewCurve viewCurve = windows[activeWindow]->GetViewCurve();
+
+    const double *viewport=viewCurveClientAtts->GetViewportCoords();
+    const double *domain=viewCurveClientAtts->GetDomainCoords();
+    const double *range=viewCurveClientAtts->GetRangeCoords();
+
+    for (int i = 0; i < 4; i++)
+    {
+        viewCurve.viewport[i] = viewport[i];
+    }
+    viewCurve.domain[0] = domain[0];
+    viewCurve.domain[1] = domain[1];
+    viewCurve.range[0]  = range[0];
+    viewCurve.range[1]  = range[1];
+
+    //
+    // Set the 2D view for the active viewer window.
+    //
+    windows[activeWindow]->SetViewCurve(viewCurve);
+
+    //
+    // This will maintain our internal state and also make locked windows
+    // get this view.
+    //
+    UpdateViewAtts(activeWindow, true, false, false);
+}
+
+// ****************************************************************************
 //  Method: ViewerWindowManager::SetView2DFromClient
 //
 //  Purpose: 
@@ -1629,6 +1677,9 @@ ViewerWindowManager::SetInteractionMode(INTERACTION_MODE m,
 //    Kathleen Bonnell, Tue Jul 15 08:30:52 PDT 2003
 //    Retrieve active window's 2d view, instead of instantiating a new one,
 //    so that scale factor for full-frame mode is not lost during update. 
+//
+//    Eric Brugger, Wed Aug 20 13:22:14 PDT 2003
+//    I changed the call to UpdateViewAtts.
 //
 // ****************************************************************************
 
@@ -1655,7 +1706,7 @@ ViewerWindowManager::SetView2DFromClient()
     // This will maintain our internal state and also make locked windows
     // get this view.
     //
-    UpdateViewAtts(activeWindow, true, false);
+    UpdateViewAtts(activeWindow, false, true, false);
 }
 
 // ****************************************************************************
@@ -1680,6 +1731,9 @@ ViewerWindowManager::SetView2DFromClient()
 //    Eric Brugger, Tue Jun 10 13:10:17 PDT 2003
 //    I renamed camera to view normal in the view attributes.  I added
 //    image pan and image zoom to the 3d view attributes.
+//
+//    Eric Brugger, Wed Aug 20 13:22:14 PDT 2003
+//    I changed the call to UpdateViewAtts.
 //
 // ****************************************************************************
 
@@ -1715,7 +1769,7 @@ ViewerWindowManager::SetView3DFromClient()
     // This will maintain our internal state and also make locked windows
     // get this view.
     //
-    UpdateViewAtts(activeWindow, false, true);
+    UpdateViewAtts(activeWindow, false, false, true);
 }
 
 // ****************************************************************************
@@ -2296,6 +2350,9 @@ ViewerWindowManager::ToggleLockViewMode(int windowIndex)
 //    Brad Whitlock, Tue Nov 19 14:38:58 PST 2002
 //    Changed it so only the 3d view updates.
 //
+//    Eric Brugger, Wed Aug 20 13:22:14 PDT 2003
+//    I changed the call to UpdateViewAtts.
+//
 // ****************************************************************************
 
 void
@@ -2313,7 +2370,7 @@ ViewerWindowManager::TogglePerspective(int windowIndex)
         //
         // Send the new view info to the client.
         //
-        UpdateViewAtts(index, false, true);
+        UpdateViewAtts(index, false, false, true);
         UpdateWindowInformation(index);
     }
 }
@@ -2334,6 +2391,8 @@ ViewerWindowManager::TogglePerspective(int windowIndex)
 //  Creation:   May 13, 2003 
 //
 //  Modifications:
+//    Eric Brugger, Wed Aug 20 13:22:14 PDT 2003
+//    I changed the call to UpdateViewAtts.
 //
 // ****************************************************************************
 
@@ -2352,7 +2411,7 @@ ViewerWindowManager::ToggleFullFrameMode(int windowIndex)
         //
         // Send the new view info to the client.
         //
-        UpdateViewAtts(index, false, true);
+        UpdateViewAtts(index, false, true, false);
         UpdateWindowInformation(index);
     }
 }
@@ -2402,6 +2461,8 @@ ViewerWindowManager::ToggleMaintainViewMode(int windowIndex)
 // Creation:   Mon Jan 28 15:55:50 PST 2002
 //
 // Modifications:
+//    Eric Brugger, Wed Aug 20 13:22:14 PDT 2003
+//    I added undoing of curve views.
 //
 // ****************************************************************************
 
@@ -2414,22 +2475,46 @@ ViewerWindowManager::UndoView(int windowIndex)
     int index = (windowIndex == -1) ? activeWindow : windowIndex;
     if(windows[index] != 0)
     {
-        if(windows[index]->GetViewDimension() == 3)
+        if(windows[index]->GetWindowMode() == WINMODE_CURVE)
         {
             // Pop the top off of the stack
-            if(view3DStackTop > 0)
+            if(viewCurveStackTop > 0)
             {
-                --view3DStackTop;
-                windows[index]->SetView3D(view3DStack[view3DStackTop]);
+                //
+                // The top of the stack contains the current view.  We
+                // want to go back to the previous view, so pop the stack
+                // and use the view that is now at the top.
+                //
+                --viewCurveStackTop;
+                windows[index]->SetViewCurve(viewCurveStack[viewCurveStackTop]);
             }
         }
-        else
+        else if(windows[index]->GetWindowMode() == WINMODE_2D)
         {
             // Pop the top off of the stack
             if(view2DStackTop > 0)
             {
+                //
+                // The top of the stack contains the current view.  We
+                // want to go back to the previous view, so pop the stack
+                // and use the view that is now at the top.
+                //
                 --view2DStackTop;
                 windows[index]->SetView2D(view2DStack[view2DStackTop]);
+            }
+        }
+        else if(windows[index]->GetWindowMode() == WINMODE_3D)
+        {
+            // Pop the top off of the stack
+            if(view3DStackTop > 0)
+            {
+                //
+                // The top of the stack contains the current view.  We
+                // want to go back to the previous view, so pop the stack
+                // and use the view that is now at the top.
+                //
+                --view3DStackTop;
+                windows[index]->SetView3D(view3DStack[view3DStackTop]);
             }
         }
 
@@ -2959,24 +3044,37 @@ ViewerWindowManager::UpdateGlobalAtts() const
 //    I used new convenience methods for setting the viewAtts with the avt
 //    view objects.
 //
+//    Eric Brugger, Wed Aug 20 13:22:14 PDT 2003
+//    I split the view attributes into 2d and 3d parts.
+//
 // ****************************************************************************
 
 void
-ViewerWindowManager::UpdateViewAtts(int windowIndex, bool update2d,
-    bool update3d)
+ViewerWindowManager::UpdateViewAtts(int windowIndex, bool updateCurve,
+    bool update2d, bool update3d)
 {
     int index = (windowIndex == -1 ? activeWindow : windowIndex);
-    const avtView3D &view3d = windows[index]->GetView3D();
+    const avtViewCurve &viewCurve = windows[index]->GetViewCurve();
     const avtView2D &view2d = windows[index]->GetView2D();
+    const avtView3D &view3d = windows[index]->GetView3D();
 
     if(index == activeWindow || windows[index]->GetViewIsLocked())
     {
+        //
+        // Set the curve attributes from the window's view.
+        //
+        if(updateCurve)
+        {
+            viewCurve.SetToViewCurveAttributes(viewCurveClientAtts);
+            viewCurveClientAtts->Notify();
+        }
+
         //
         // Set the 2D attributes from the window's view.
         //
         if(update2d)
         {
-            view2d.SetToViewAttributes(view2DClientAtts);
+            view2d.SetToView2DAttributes(view2DClientAtts);
             view2DClientAtts->Notify();
         }
 
@@ -2985,7 +3083,7 @@ ViewerWindowManager::UpdateViewAtts(int windowIndex, bool update2d,
         //
         if(update3d)
         {
-            view3d.SetToViewAttributes(view3DClientAtts);
+            view3d.SetToView3DAttributes(view3DClientAtts);
             view3DClientAtts->Notify();
         }
     }
@@ -3001,8 +3099,9 @@ ViewerWindowManager::UpdateViewAtts(int windowIndex, bool update2d,
             {
                 if (windows[i]->GetViewIsLocked())
                 {
-                    windows[i]->SetView3D(view3d);
+                    windows[i]->SetViewCurve(viewCurve);
                     windows[i]->SetView2D(view2d);
+                    windows[i]->SetView3D(view3d);
                 }
             }
         }
@@ -3013,20 +3112,20 @@ ViewerWindowManager::UpdateViewAtts(int windowIndex, bool update2d,
     //
     if(viewStacking)
     {
-        if(windows[index]->GetViewDimension() == 3)
+        if(windows[index]->GetWindowMode() == WINMODE_CURVE)
         {
-            if(view3DStackTop == VIEWER_WINDOW_MANAGER_VSTACK - 1)
+            if(viewCurveStackTop == VIEWER_WINDOW_MANAGER_VSTACK - 1)
             {
                 // Shift down
                 for(int i = 0; i < VIEWER_WINDOW_MANAGER_VSTACK - 1; ++i)
-                    view3DStack[i] = view3DStack[i+1];
+                    viewCurveStack[i] = viewCurveStack[i+1];
             }
             else
-                ++view3DStackTop;
+                ++viewCurveStackTop;
 
-            view3DStack[view3DStackTop] = view3d;
+            viewCurveStack[viewCurveStackTop] = viewCurve;
         }
-        else
+        else if(windows[index]->GetWindowMode() == WINMODE_2D)
         {
             if(view2DStackTop == VIEWER_WINDOW_MANAGER_VSTACK - 1)
             {
@@ -3038,6 +3137,19 @@ ViewerWindowManager::UpdateViewAtts(int windowIndex, bool update2d,
                 ++view2DStackTop;
 
             view2DStack[view2DStackTop] = view2d;
+        }
+        else if(windows[index]->GetWindowMode() == WINMODE_3D)
+        {
+            if(view3DStackTop == VIEWER_WINDOW_MANAGER_VSTACK - 1)
+            {
+                // Shift down
+                for(int i = 0; i < VIEWER_WINDOW_MANAGER_VSTACK - 1; ++i)
+                    view3DStack[i] = view3DStack[i+1];
+            }
+            else
+                ++view3DStackTop;
+
+            view3DStack[view3DStackTop] = view3d;
         }
     }
 }
@@ -3214,7 +3326,7 @@ ViewerWindowManager::RenderInformationCallback(void *data)
 //   right one when we change the active window.
 //
 //   Kathleen Bonnell, Fri Nov 15 09:07:36 PST 2002  
-//   Removed UpatePickAttributes. 
+//   Removed UpdatePickAttributes. 
 //
 //   Brad Whitlock, Mon Apr 14 17:26:24 PST 2003
 //   Factored some updates out of UpdateGlobalAtts.
@@ -3334,6 +3446,33 @@ ViewerWindowManager::GetSaveWindowClientAtts()
 }
 
 // ****************************************************************************
+// Method: ViewerWindowManager::GetViewCurveClientAtts
+//
+// Purpose: 
+//   Returns a pointer to the curve view attributes.
+//
+// Returns:    A pointer to the curve view attributes.
+//
+// Programmer: Eric Brugger
+// Creation:   August 20, 2003
+//
+// ****************************************************************************
+
+ViewCurveAttributes *
+ViewerWindowManager::GetViewCurveClientAtts()
+{
+    //
+    // If the client attributes haven't been allocated then do so.
+    //
+    if (viewCurveClientAtts == 0)
+    {
+        viewCurveClientAtts = new ViewCurveAttributes;
+    }
+
+    return viewCurveClientAtts;
+}
+
+// ****************************************************************************
 // Method: ViewerWindowManager::GetView2DClientAtts
 //
 // Purpose: 
@@ -3344,9 +3483,13 @@ ViewerWindowManager::GetSaveWindowClientAtts()
 // Programmer: Brad Whitlock
 // Creation:   Fri Jul 20 10:25:14 PDT 2001
 //
+// Modifications:
+//   Eric Brugger, Wed Aug 20 13:22:14 PDT 2003
+//   I split the view attributes into 2d and 3d parts.
+//
 // ****************************************************************************
 
-ViewAttributes *
+View2DAttributes *
 ViewerWindowManager::GetView2DClientAtts()
 {
     //
@@ -3354,7 +3497,7 @@ ViewerWindowManager::GetView2DClientAtts()
     //
     if (view2DClientAtts == 0)
     {
-        view2DClientAtts = new ViewAttributes;
+        view2DClientAtts = new View2DAttributes;
     }
 
     return view2DClientAtts;
@@ -3371,9 +3514,13 @@ ViewerWindowManager::GetView2DClientAtts()
 //  Programmer: Brad Whitlock
 //  Creation:   Fri Jul 20 10:25:14 PDT 2001
 //
+//  Modifications:
+//    Eric Brugger, Wed Aug 20 13:22:14 PDT 2003
+//    I split the view attributes into 2d and 3d parts.
+//
 // ****************************************************************************
 
-ViewAttributes *
+View3DAttributes *
 ViewerWindowManager::GetView3DClientAtts()
 {
     //
@@ -3381,7 +3528,7 @@ ViewerWindowManager::GetView3DClientAtts()
     //
     if (view3DClientAtts == 0)
     {
-        view3DClientAtts = new ViewAttributes;
+        view3DClientAtts = new View3DAttributes;
     }
 
     return view3DClientAtts;
@@ -4188,6 +4335,9 @@ ViewerWindowManager::GetWindowInformation()
 //   Brad Whitlock, Wed May 21 07:50:49 PDT 2003
 //   I added fullframe to the WindowInformation.
 //
+//   Eric Brugger, Wed Aug 20 13:22:14 PDT 2003
+//   I split the view attributes into 2d and 3d parts.
+//
 // ****************************************************************************
 
 void
@@ -4208,7 +4358,7 @@ ViewerWindowManager::UpdateWindowInformation(int windowIndex, bool reportTimes)
         windowInfo->SetSpin(win->GetSpinMode());
         windowInfo->SetLockView(win->GetViewIsLocked());
         windowInfo->SetViewExtentsType(int(win->GetViewExtentsType()));
-        windowInfo->SetViewDimension(win->GetViewDimension());
+        windowInfo->SetWindowMode(win->GetWindowMode());
         windowInfo->SetPerspective(win->GetPerspectiveProjection());
         windowInfo->SetLockTools(win->GetToolLock());
         windowInfo->SetLockTime(win->GetTimeLock());
@@ -4229,7 +4379,10 @@ ViewerWindowManager::UpdateWindowInformation(int windowIndex, bool reportTimes)
 
         // Set the bounding box.
         double extents[6] = {0., 0., 0., 0., 0., 0.};
-        win->GetExtents(win->GetViewDimension(), extents);
+        if (win->GetWindowMode() == WINMODE_3D)
+            win->GetExtents(3, extents);
+        else
+            win->GetExtents(2, extents);
         windowInfo->SetExtents(extents);
 
         windowInfo->Notify();
@@ -4621,6 +4774,14 @@ ViewerWindowManager::SetWindowAttributes(int windowIndex, bool copyAtts)
 //    Eric Brugger, Fri Apr 18 12:38:05 PDT 2003 
 //    I added code to set the 2d view as modified if the view dimension is 2.
 //
+//    Eric Brugger, Wed Aug 20 13:22:14 PDT 2003
+//    I modified the routine to set curve, 2d and 3d view attributes in the
+//    window attributes.  I removed some unused code.
+//
+//    Eric Brugger, Thu Aug 28 12:22:14 PDT 2003
+//    I added a call to mark the view as changed if the window is in
+//    curve mode.
+//
 // ****************************************************************************
 
 void
@@ -4644,11 +4805,16 @@ ViewerWindowManager::ViewCallback(VisWindow *vw)
     }
 
     //
-    // If the window dimension is 2, mark the view as having been modified.
+    // Mark the view as having been modified.
     //
-    if (instance->windows[index]->GetViewDimension() == 2)
+    switch (instance->windows[index]->GetWindowMode())
     {
+      case WINMODE_CURVE:
+        instance->windows[index]->SetViewModifiedCurve();
+        break;
+      case WINMODE_2D:
         instance->windows[index]->SetViewModified2d();
+        break;
     }
 
     //
@@ -4657,12 +4823,12 @@ ViewerWindowManager::ViewCallback(VisWindow *vw)
     instance->UpdateViewAtts(index);
 
     //
-    // For software rendering.  It looks like the size isn't being used.
+    // For software rendering.
     //
     WindowAttributes winAtts;
-    winAtts.SetView(*GetView3DClientAtts());
-    int size[2];
-    vw->GetWindowSize(size[0], size[1]);
+    winAtts.SetViewCurve(*GetViewCurveClientAtts());
+    winAtts.SetView2D(*GetView2DClientAtts());
+    winAtts.SetView3D(*GetView3DClientAtts());
     avtCallback::SetCurrentWindowAtts(winAtts);
 }
 
@@ -5139,6 +5305,9 @@ ViewerWindowManager::GetRenderingAttributes()
 //   possibility of copying window attributes and doesn't make the new
 //   window active.
 //
+//   Eric Brugger, Wed Aug 20 13:22:14 PDT 2003
+//   Removed call to SetTypeIsCurve since it is no longer necessary.
+//
 // ****************************************************************************
 
 ViewerWindow *
@@ -5178,7 +5347,6 @@ ViewerWindowManager::GetLineoutWindow()
                   "maximum number of windows was exceeded.");
             return NULL;
         }
-        windows[lineoutWindow]->SetTypeIsCurve(true);
         windows[lineoutWindow]->SetInteractionMode(NAVIGATE);
         referenced[lineoutWindow] = true;
     }
@@ -5196,6 +5364,10 @@ ViewerWindowManager::GetLineoutWindow()
 // Programmer: Kathleen Bonnell
 // Creation:   May 7, 2002 
 //
+// Modifications:
+//   Eric Brugger, Wed Aug 20 13:22:14 PDT 2003
+//   Removed call to SetTypeIsCurve since it is no longer necessary.
+//
 // ****************************************************************************
 
 void ViewerWindowManager::ResetLineoutDesignation(int winIndex)
@@ -5208,10 +5380,6 @@ void ViewerWindowManager::ResetLineoutDesignation(int winIndex)
     if ((winIndex == -1 && activeWindow == lineoutWindow) ||
          winIndex == lineoutWindow)
     {
-        if (windows[lineoutWindow] != 0)
-        {
-            windows[lineoutWindow]->SetTypeIsCurve(false);
-        }
         lineoutWindow = -1;
     }
 }
@@ -5424,6 +5592,9 @@ ViewerWindowManager::EndEngineExecute()
 //   Brad Whitlock, Thu Jul 17 14:20:27 PST 2003
 //   Added information for a full restart.
 //
+//   Eric Brugger, Wed Aug 20 13:22:14 PDT 2003
+//   Added writing out of lineout window.
+//
 // ****************************************************************************
 
 void
@@ -5439,6 +5610,7 @@ ViewerWindowManager::CreateNode(DataNode *parentNode, bool detailed)
     // Add information about the ViewerWindowManager.
     //
     mgrNode->AddNode(new DataNode("activeWindow", activeWindow));
+    mgrNode->AddNode(new DataNode("lineoutWindow", lineoutWindow));
 
     //
     // Let each window add its own data.
@@ -5469,6 +5641,9 @@ ViewerWindowManager::CreateNode(DataNode *parentNode, bool detailed)
 // Modifications:
 //   Brad Whitlock, Thu Jul 17 14:25:02 PST 2003
 //   Added code to reconstruct all of the windows in the config file.
+//
+//   Eric Brugger, Wed Aug 20 13:22:14 PDT 2003
+//   Removed call to SetTypeIsCurve since it is no longer necessary.
 //
 //   Brad Whitlock, Mon Aug 25 11:42:49 PDT 2003
 //   Added code to temporarily disable "clone window on first reference" when
@@ -5646,12 +5821,12 @@ ViewerWindowManager::SetFromNode(DataNode *parentNode)
     //
     // Set the lineout window.
     //
-    for(i = 0; i < maxWindows; ++i)
+    if((node = searchNode->GetNode("lineoutWindow")) != 0)
     {
-        if(windows[i] != 0 && windows[i]->GetTypeIsCurve())
-        {
-            lineoutWindow = i;
-            break;
-        }
+        int n = node->AsInt();
+        if (n < 0 || n >= maxWindows)
+            lineoutWindow = -1;
+        else
+            lineoutWindow = n;
     }
 }

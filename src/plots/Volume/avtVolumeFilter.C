@@ -30,7 +30,7 @@
 //
 
 static void CreateViewInfoFromViewAttributes(avtViewInfo &,
-                                             const ViewAttributes &);
+                                             const View3DAttributes &);
 
 
 // ****************************************************************************
@@ -218,6 +218,10 @@ avtVolumeFilter::GetOutput(void)
 //    Hank Childs, Mon Jul  7 22:24:26 PDT 2003
 //    If an error occurred, pass that message on.
 //
+//    Eric Brugger, Wed Aug 20 10:28:00 PDT 2003
+//    Modified to handle the splitting of the view attributes into 2d and
+//    3d parts.
+//
 // ****************************************************************************
 
 void
@@ -379,7 +383,7 @@ avtVolumeFilter::Execute(void)
         const int *size = window.GetSize();
         software->SetScreen(size[0], size[1]);
 
-        const ViewAttributes &view = window.GetView();
+        const View3DAttributes &view = window.GetView3D();
         avtViewInfo vi;
         CreateViewInfoFromViewAttributes(vi, view);
         software->SetView(vi);
@@ -484,10 +488,14 @@ avtVolumeFilter::Execute(void)
 //    Hank Childs, Tue Jul  8 22:43:39 PDT 2003
 //    Copy over image zoom, pan.
 //
+//    Eric Brugger, Wed Aug 20 10:28:00 PDT 2003
+//    Modified to handle the splitting of the view attributes into 2d and
+//    3d parts.
+//
 // ****************************************************************************
 
 void
-CreateViewInfoFromViewAttributes(avtViewInfo &vi, const ViewAttributes &view)
+CreateViewInfoFromViewAttributes(avtViewInfo &vi, const View3DAttributes &view)
 {
     //
     // Conversion routines are already established for converting to 3D.

@@ -92,7 +92,7 @@ avtRandomFilter::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
     if (secondTree->GetTypeName() != "Const")
     {
         debug5 << "avtRandomFilter: Second argument is not a constant: "
-               << secondTree->GetTypeName() << endl;
+               << secondTree->GetTypeName().c_str() << endl;
         EXCEPTION1(ExpressionException, "avtRandomFilter: Second argument is not a constant.");
     }
     EngineConstExpr *con = dynamic_cast<EngineConstExpr*>(secondTree);
@@ -102,7 +102,7 @@ avtRandomFilter::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
     if (t->GetType() != TT_IntegerConst)
     {
         debug5 << "avtRandomFilter: Second argument is not an integer: "
-               << GetTokenTypeString(t->GetType()) << endl;
+               << GetTokenTypeString(t->GetType()).c_str() << endl;
         EXCEPTION1(ExpressionException, "avtRandomFilter: Second argument is not an integer.");
     }
 

@@ -293,6 +293,9 @@ ViewerQueryManager::SetOperatorFactory(ViewerOperatorFactory *factory)
 //    Kathleen Bonnell, Wed Apr 23 11:38:47 PDT 2003 
 //    Allow MATSPECIES var type. 
 //    
+//    Eric Brugger, Wed Aug 20 11:05:54 PDT 2003
+//    I removed a call to UpdateScaleFactor since it no longer exists.
+//
 // ****************************************************************************
 
 void
@@ -355,7 +358,6 @@ ViewerQueryManager::AddQuery(ViewerWindow *origWin, Line *lineAtts)
     //
     SimpleAddQuery(newQuery, oplot, origWin, resWin);
 
-    UpdateScaleFactor(resWin);
     UpdateDesignator();
 
     //
@@ -483,8 +485,11 @@ ViewerQueryManager::SimpleAddQuery(ViewerQuery_p query, ViewerPlot *oplot,
 //    Kathleen Bonnell, Fri Jul 12 18:42:11 PDT 2002 
 //    Added call to UpdateScaleFactor.
 //
-//   Kathleen Bonnell, Thu Mar  6 15:21:45 PST 2003  
-//   Reworked to reflect that lineout queries stored in LineoutList.
+//    Kathleen Bonnell, Thu Mar  6 15:21:45 PST 2003  
+//    Reworked to reflect that lineout queries stored in LineoutList.
+//
+//    Eric Brugger, Wed Aug 20 11:05:54 PDT 2003
+//    I removed a call to UpdateScaleFactor since it no longer exists.
 //
 // ****************************************************************************
 
@@ -538,10 +543,6 @@ ViewerQueryManager::Delete(ViewerPlot *vp)
         }
     }
     nLineouts = nLineoutsNew;
-    if (resWin)
-    {
-        UpdateScaleFactor(resWin);
-    }
 } 
 
 
@@ -611,66 +612,6 @@ ViewerQueryManager::Delete(ViewerWindow *vw)
     }
     nLineouts = nLineoutsNew;
 } 
-
-
-// ****************************************************************************
-//  Method: ViewerQueryManager::UpdateScaleFactor
-//
-//  Purpose:
-//    Determines what scale factor should be used to make the curves
-//    look nice in the vis window.  Uses the max width/height from
-//    all queries in the specified window in making the computation. 
-//    This method is called when new lineouts are added or removed.
-//
-//  Arguments:
-//    vw        A pointer to the ViewerWindow that should have its curves
-//              scaled.
-//
-//  Programmer: Kathleen Bonnell 
-//  Creation:   July 12, 2002 
-//
-//  Modifications:
-//    Kathleen Bonnell, Sat Jul 13 18:03:18 PDT 2002
-//    Only update ViewCurve and scale plots if we've found a match
-//    to the passed window.
-//
-// ****************************************************************************
-
-void
-ViewerQueryManager::UpdateScaleFactor(ViewerWindow *vw) 
-{
-    if (nLineouts == 0)
-    {
-        return;
-    }
- 
-    double width  = -DBL_MAX;
-    double height = -DBL_MAX;
-    double scale  = 1.;
-    int i;
-    double w, h;
-    for (i = 0; i < nLineouts; i++)
-    {
-        if (lineoutList[i]->MatchResultsWindow(vw))
-        {
-            w = lineoutList[i]->GetMaxQueryWidth();
-            h = lineoutList[i]->GetMaxQueryHeight();
-            width  = (width  > w ? width : w);
-            height = (height > h ? height : h);
-        }
-    }
-
-    if (height > 0. && width > 0.)  // we found a match
-    {
-        scale =  width / height;
-        avtViewCurve viewCurve= vw->GetViewCurve();
-        float vec[3] = {1., scale, 1.};
-        vw->ScalePlots(vec);
-        viewCurve.yScale = scale;
-        vw->SetViewCurve(viewCurve);
-        vw->ResetView();
-    }
-}
 
 
 // ****************************************************************************
@@ -1222,6 +1163,9 @@ ViewerQueryManager::ClearPickPoints()
 //    Moved clean-up of pickAtts ivars to PickAttributes::PrepareForNewPick. 
 //    Added call to UpdatePickAtts.
 //    
+//    Eric Brugger, Wed Aug 20 11:05:54 PDT 2003
+//    I replaced the use of GetViewDimension with GetWindowMode. 
+//   
 // ****************************************************************************
 
 void
@@ -1294,7 +1238,7 @@ ViewerQueryManager::Pick(PICK_POINT_INFO *ppi)
         // in the scaled full-frame space.  Reverse the scaling to get the 
         // correct ray points. 
         //
-        if (win->GetFullFrameMode() && win->GetViewDimension() == 2)
+        if (win->GetFullFrameMode() && win->GetWindowMode() == WINMODE_2D)
         {
             double scale;
             int type;
@@ -1473,6 +1417,10 @@ ViewerQueryManager::GetColor()
 //   Kathleen Bonnell, Wed Jul 23 16:51:18 PDT 2003 
 //   Added samples argument.  Removed calls to win->SetInteractionMode.
 //   
+//   Eric Brugger, Wed Aug 20 11:05:54 PDT 2003
+//   Replaced references to GetTypeIsCurve and GetViewDimension with
+//   GetWindowMode.
+//
 // ****************************************************************************
 
 void
@@ -1480,11 +1428,12 @@ ViewerQueryManager::Lineout(ViewerWindow *win, const double pt1[3],
                             const double pt2[3], const string &vName,
                             const int samples)
 {
-    if (win->GetTypeIsCurve())
+    if (win->GetWindowMode() == WINMODE_CURVE)
     {
         Error("Lineout cannot be performed on curve windows.");
     }
-    else if ((win->GetViewDimension() == 2) && (pt1[2] != 0 || pt2[2] != 0))
+    else if ((win->GetWindowMode() == WINMODE_2D) &&
+             (pt1[2] != 0 || pt2[2] != 0))
     {
         string msg = "Only 2D points allowed for 2D lineouts. ";
         msg += "Please set z-coord to 0.";
@@ -1527,6 +1476,10 @@ ViewerQueryManager::Lineout(ViewerWindow *win, const double pt1[3],
 //   Kathleen Bonnell, Wed Jul 23 16:51:18 PDT 2003 
 //   Removed calls to win->SetInteractionMode.
 //   
+//   Eric Brugger, Wed Aug 20 11:05:54 PDT 2003
+//   Replaced references to GetTypeIsCurve and GetViewDimension with
+//   GetWindowMode.
+//
 // ****************************************************************************
 
 void
@@ -1535,7 +1488,7 @@ ViewerQueryManager::Lineout(ViewerWindow *win)
     if(operatorFactory == 0)
         return;
 
-    if (win->GetTypeIsCurve())
+    if (win->GetWindowMode() == WINMODE_CURVE)
     {
         Error("Lineout cannot be performed on curve windows.");
     }
@@ -1546,7 +1499,8 @@ ViewerQueryManager::Lineout(ViewerWindow *win)
         Line *line = (Line*)atts->CreateCompatible("Line");
         double *pt1 = line->GetPoint1();
         double *pt2 = line->GetPoint2();
-        if ((win->GetViewDimension() == 2) && (pt1[2] != 0 || pt2[2] != 0))
+        if ((win->GetWindowMode() == WINMODE_2D) &&
+            (pt1[2] != 0 || pt2[2] != 0))
         {
             string msg = "Only 2D points allowed for 2D lineouts. ";
             msg += "Please set z-coord to 0.";
@@ -1869,6 +1823,9 @@ ViewerQueryManager::HandlePickCache()
 //    Kathleen Bonnell, Wed Jul 23 16:56:15 PDT 2003 
 //    Added support for WorldPick and WorldNodePick. 
 //    
+//    Eric Brugger, Wed Aug 20 11:05:54 PDT 2003
+//    Replaced references to GetTypeIsCurve with GetWindowMode.
+//
 // ****************************************************************************
 
 void         
@@ -1894,7 +1851,7 @@ ViewerQueryManager::PointQuery(const string &qName, const double *pt,
              (strcmp(qName.c_str(), "WorldNodePick") == 0))
     {
         ViewerWindow *win = ViewerWindowManager::Instance()->GetActiveWindow();
-        if (win->GetTypeIsCurve())   
+        if (win->GetWindowMode() == WINMODE_CURVE)   
         {
             Error("Curve windows cannot be picked for values.");
             return;
@@ -1936,6 +1893,8 @@ ViewerQueryManager::PointQuery(const string &qName, const double *pt,
 // Creation:   June 6, 2003 
 //
 // Modifications:
+//   Eric Brugger, Wed Aug 20 11:05:54 PDT 2003
+//   I replaced the use of GetViewDimension with GetWindowMode. 
 //   
 // ****************************************************************************
 
@@ -1947,7 +1906,7 @@ ViewerQueryManager::Lineout(ViewerWindow *origWin, Line *lineAtts)
     // in the scaled full-frame space.  Reverse the scaling to get the 
     // correct end points. 
     //
-    if (origWin->GetFullFrameMode() && origWin->GetViewDimension() == 2)
+    if (origWin->GetFullFrameMode() && origWin->GetWindowMode() == WINMODE_2D)
     {
         double *pt1 = lineAtts->GetPoint1();
         double *pt2 = lineAtts->GetPoint2();

@@ -7,7 +7,7 @@
 #include <pipeline_exports.h>
 
 struct avtViewInfo;
-class ViewAttributes;
+class View2DAttributes;
 
 // ****************************************************************************
 //  Class: avtView2D
@@ -25,6 +25,10 @@ class ViewAttributes;
 //    Kathleen Bonnell, Wed Jul 16 16:46:02 PDT 2003 
 //    Added methods ScaleWindow and ReverseScaleWindow.
 // 
+//    Eric Brugger, Wed Aug 20 09:35:51 PDT 2003
+//    I replaced SetFromViewAttributes with SetFromView2DAttributes and
+//    SetToViewAttributes with SetToView2DAttributes.
+//
 // ****************************************************************************
 
 struct PIPELINE_API avtView2D
@@ -43,8 +47,8 @@ struct PIPELINE_API avtView2D
     void            SetViewInfoFromView(avtViewInfo &) const;
     void            SetViewportFromView(double *, const int, const int) const;
 
-    void            SetFromViewAttributes(const ViewAttributes *);
-    void            SetToViewAttributes(ViewAttributes *) const;
+    void            SetFromView2DAttributes(const View2DAttributes *);
+    void            SetToView2DAttributes(View2DAttributes *) const;
 
   protected:
     void            GetValidWindow(double *) const;

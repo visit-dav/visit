@@ -55,6 +55,9 @@
 #include <StatusAttributes.h>
 #include <SyncAttributes.h>
 #include <ViewAttributes.h>
+#include <ViewCurveAttributes.h>
+#include <View2DAttributes.h>
+#include <View3DAttributes.h>
 #include <WindowInformation.h>
 #include <ExpressionList.h>
 #include <Expression.h>
@@ -72,6 +75,9 @@
 #include <PySaveWindowAttributes.h>
 #include <PySILRestriction.h>
 #include <PyViewAttributes.h>
+#include <PyViewCurveAttributes.h>
+#include <PyView2DAttributes.h>
+#include <PyView3DAttributes.h>
 #include <PyWindowInformation.h>
 
 #include <avtSILRestrictionTraverser.h>
@@ -3291,6 +3297,85 @@ visit_GetSaveWindowAttributes(PyObject *self, PyObject *args)
 }
 
 // ****************************************************************************
+// Function: visit_SetViewCurve
+//
+// Purpose:
+//   Tells the viewer to use the new curve view we're giving it.
+//
+// Notes:      
+//
+// Programmer: Eric Brugger
+// Creation:   Wed Aug 20 14:20:25 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_SetViewCurve(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    PyObject *view = NULL;
+    // Try and get the view pointer.
+    if(!PyArg_ParseTuple(args,"O",&view))
+    {
+        cerr << "visit_SetViewCurve: Cannot parse object!" << endl;
+        return NULL;
+    }
+    if(!PyViewCurveAttributes_Check(view))
+    {
+        VisItErrorFunc("Argument is not a ViewCurveAttributes object");
+        return NULL;
+    }
+
+    MUTEX_LOCK();
+        ViewCurveAttributes *va = PyViewCurveAttributes_FromPyObject(view);
+
+        // Copy the object into the view attributes.
+        *(viewer->GetViewCurveAttributes()) = *va;
+        viewer->GetViewCurveAttributes()->Notify();
+        viewer->SetViewCurve();
+
+        if(logging)
+            fprintf(logFile, "SetViewCurve()\n");
+    MUTEX_UNLOCK();
+    Synchronize();
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+// ****************************************************************************
+// Function: visit_GetViewCurve
+//
+// Purpose:
+//   Returns the curve view.
+//
+// Notes:      
+//
+// Programmer: Eric Brugger
+// Creation:   Fri Aug 15 14:34:27 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_GetViewCurve(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    PyObject *retval = PyViewCurveAttributes_NewPyObject();
+    ViewCurveAttributes *va = PyViewCurveAttributes_FromPyObject(retval);
+
+    // Copy the viewer proxy's curve view into the return data structure.
+    *va = *(viewer->GetViewCurveAttributes());
+
+    return retval;
+}
+
+// ****************************************************************************
 // Function: visit_SetView2D
 //
 // Purpose:
@@ -3302,6 +3387,8 @@ visit_GetSaveWindowAttributes(PyObject *self, PyObject *args)
 // Creation:   Mon Nov 12 12:15:53 PDT 2001
 //
 // Modifications:
+//   Eric Brugger, Wed Aug 20 14:20:25 PDT 2003
+//   Modified to handle a generic view attribute or a 2d view attribute.
 //   
 // ****************************************************************************
 
@@ -3317,23 +3404,50 @@ visit_SetView2D(PyObject *self, PyObject *args)
         cerr << "visit_SetView2D: Cannot parse object!" << endl;
         return NULL;
     }
-    if(!PyViewAttributes_Check(view))
+    if(PyView2DAttributes_Check(view))
     {
-        VisItErrorFunc("Argument is not a ViewAttributes object");
+        MUTEX_LOCK();
+            View2DAttributes *va = PyView2DAttributes_FromPyObject(view);
+
+            // Copy the object into the view attributes.
+            *(viewer->GetView2DAttributes()) = *va;
+            viewer->GetView2DAttributes()->Notify();
+            viewer->SetView2D();
+
+            if(logging)
+                fprintf(logFile, "SetView2D()\n");
+        MUTEX_UNLOCK();
+    }
+    else if (PyViewAttributes_Check(view))
+    {
+        //
+        // This feature is deprecated and the coding to support this
+        // should be removed in visit 1.3.  The coding should match that
+        // in SetViewCurve.
+        //
+        MUTEX_LOCK();
+            ViewAttributes *va = PyViewAttributes_FromPyObject(view);
+            View2DAttributes *v2da = viewer->GetView2DAttributes();
+
+            // Copy the object into the view attributes.
+            v2da->SetWindowCoords(va->GetWindowCoords());
+            v2da->SetViewportCoords(va->GetViewportCoords());
+            v2da->Notify();
+            viewer->SetView2D();
+
+            cerr << "Warning: Passing a ViewAttribute to SetView2D is"
+                 << " deprecated.  Pass a" << endl
+                 << " View2DAttribute instead." << endl;
+            if(logging)
+                fprintf(logFile, "SetView2D()\n");
+        MUTEX_UNLOCK();
+    }
+    else
+    {
+        VisItErrorFunc("Argument is not a View2DAttributes object");
         return NULL;
     }
 
-    MUTEX_LOCK();
-        ViewAttributes *va = PyViewAttributes_FromPyObject(view);
-
-        // Copy the object into the view attributes.
-        *(viewer->GetView2DAttributes()) = *va;
-        viewer->GetView2DAttributes()->Notify();
-        viewer->SetView2D();
-
-        if(logging)
-            fprintf(logFile, "SetView2D()\n");
-    MUTEX_UNLOCK();
     Synchronize();
 
     Py_INCREF(Py_None);
@@ -3352,6 +3466,8 @@ visit_SetView2D(PyObject *self, PyObject *args)
 // Creation:   Mon Nov 12 12:15:53 PDT 2001
 //
 // Modifications:
+//   Eric Brugger, Wed Aug 20 14:20:25 PDT 2003
+//   Modify to return a 2d view attribute.
 //   
 // ****************************************************************************
 
@@ -3360,10 +3476,10 @@ visit_GetView2D(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
 
-    PyObject *retval = PyViewAttributes_NewPyObject();
-    ViewAttributes *va = PyViewAttributes_FromPyObject(retval);
+    PyObject *retval = PyView2DAttributes_NewPyObject();
+    View2DAttributes *va = PyView2DAttributes_FromPyObject(retval);
 
-    // Copy the viewer proxy's view into the return data structure.
+    // Copy the viewer proxy's 2d view into the return data structure.
     *va = *(viewer->GetView2DAttributes());
 
     return retval;
@@ -3381,6 +3497,8 @@ visit_GetView2D(PyObject *self, PyObject *args)
 // Creation:   Mon Nov 12 12:15:53 PDT 2001
 //
 // Modifications:
+//   Eric Brugger, Wed Aug 20 14:20:25 PDT 2003
+//   Modified to handle a generic view attribute or a 3d view attribute.
 //   
 // ****************************************************************************
 
@@ -3396,23 +3514,58 @@ visit_SetView3D(PyObject *self, PyObject *args)
         cerr << "visit_SetView3D: Cannot parse object!" << endl;
         return NULL;
     }
-    if(!PyViewAttributes_Check(view))
+    if(PyView3DAttributes_Check(view))
     {
-        VisItErrorFunc("Argument is not a ViewAttributes object");
+        MUTEX_LOCK();
+            View3DAttributes *va = PyView3DAttributes_FromPyObject(view);
+
+            // Copy the object into the view attributes.
+            *(viewer->GetView3DAttributes()) = *va;
+            viewer->GetView3DAttributes()->Notify();
+            viewer->SetView3D();
+
+            if(logging)
+                fprintf(logFile, "SetView3D()\n");
+        MUTEX_UNLOCK();
+    }
+    else if (PyViewAttributes_Check(view))
+    {
+        //
+        // This feature is deprecated and the coding to support this
+        // should be removed in visit 1.3.  The coding should match that
+        // in SetViewCurve.
+        //
+        MUTEX_LOCK();
+            ViewAttributes *va = PyViewAttributes_FromPyObject(view);
+            View3DAttributes *v3da = viewer->GetView3DAttributes();
+
+            // Copy the object into the view attributes.
+            v3da->SetViewNormal(va->GetViewNormal());
+            v3da->SetFocus(va->GetFocus());
+            v3da->SetViewUp(va->GetViewUp());
+            v3da->SetViewAngle(va->GetViewAngle());
+            v3da->SetParallelScale(va->GetParallelScale());
+            v3da->SetNearPlane(va->GetNearPlane());
+            v3da->SetFarPlane(va->GetFarPlane());
+            v3da->SetImagePan(va->GetImagePan());
+            v3da->SetImageZoom(va->GetImageZoom());
+            v3da->SetPerspective(va->GetPerspective());
+            v3da->Notify();
+            viewer->SetView3D();
+
+            cerr << "Warning: Passing a ViewAttribute to SetView3D is"
+                 << " deprecated.  Pass a" << endl
+                 << " View3DAttribute instead." << endl;
+            if(logging)
+                fprintf(logFile, "SetView3D()\n");
+        MUTEX_UNLOCK();
+    }
+    else
+    {
+        VisItErrorFunc("Argument is not a View3DAttributes object");
         return NULL;
     }
 
-    MUTEX_LOCK();
-        ViewAttributes *va = PyViewAttributes_FromPyObject(view);
-
-        // Copy the object into the view attributes.
-        *(viewer->GetView3DAttributes()) = *va;
-        viewer->GetView3DAttributes()->Notify();
-        viewer->SetView3D();
-
-        if(logging)
-            fprintf(logFile, "SetView3D()\n");
-    MUTEX_UNLOCK();
     Synchronize();
 
     Py_INCREF(Py_None);
@@ -3431,6 +3584,8 @@ visit_SetView3D(PyObject *self, PyObject *args)
 // Creation:   Mon Nov 12 12:15:53 PDT 2001
 //
 // Modifications:
+//   Eric Brugger, Wed Aug 20 14:20:25 PDT 2003
+//   Modify to return a 3d view attribute.
 //   
 // ****************************************************************************
 
@@ -3439,10 +3594,10 @@ visit_GetView3D(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
 
-    PyObject *retval = PyViewAttributes_NewPyObject();
-    ViewAttributes *va = PyViewAttributes_FromPyObject(retval);
+    PyObject *retval = PyView3DAttributes_NewPyObject();
+    View3DAttributes *va = PyView3DAttributes_FromPyObject(retval);
 
-    // Copy the viewer proxy's view into the return data structure.
+    // Copy the viewer proxy's 3d view into the return data structure.
     *va = *(viewer->GetView3DAttributes());
 
     return retval;
@@ -6929,6 +7084,9 @@ AddMethod(const char *methodName, PyObject *(cb)(PyObject *, PyObject *),
 //   Brad Whitlock, Mon Jul 28 16:40:37 PST 2003
 //   Added AnimationGetNFrames, SaveSession, RestoreSession.
 //
+//   Eric Brugger, Wed Aug 20 14:20:25 PDT 2003
+//   Added SetViewCurve.
+//
 // ****************************************************************************
 
 static void
@@ -7058,6 +7216,7 @@ AddDefaultMethods()
     AddMethod("SetRenderingAttributes", visit_SetRenderingAttributes);
     AddMethod("SetSaveWindowAttributes", visit_SetSaveWindowAttributes);
     AddMethod("SetViewExtentsType", visit_SetViewExtentsType);
+    AddMethod("SetViewCurve", visit_SetViewCurve);
     AddMethod("SetView2D", visit_SetView2D);
     AddMethod("SetView3D", visit_SetView3D);
     AddMethod("SetViewKeyframe", visit_SetViewKeyframe);
@@ -7125,6 +7284,9 @@ AddDefaultMethods()
 //   Brad Whitlock, Tue Sep 24 09:47:16 PDT 2002
 //   I added WindowInformation and RenderingAttributes.
 //
+//   Eric Brugger, Wed Aug 20 14:20:25 PDT 2003
+//   Added ViewCurveAttributes, View2DAttributes and View3DAttributes.
+//
 // ****************************************************************************
 
 static void
@@ -7141,6 +7303,9 @@ AddExtensions()
     ADD_EXTENSION(PySaveWindowAttributes_GetMethodTable);
     ADD_EXTENSION(PySILRestriction_GetMethodTable);
     ADD_EXTENSION(PyViewAttributes_GetMethodTable);
+    ADD_EXTENSION(PyViewCurveAttributes_GetMethodTable);
+    ADD_EXTENSION(PyView2DAttributes_GetMethodTable);
+    ADD_EXTENSION(PyView3DAttributes_GetMethodTable);
     ADD_EXTENSION(PyWindowInformation_GetMethodTable);
 }
 
@@ -7165,6 +7330,10 @@ AddExtensions()
 //   Brad Whitlock, Thu Nov 7 09:57:35 PDT 2002
 //   I initialized some extensions.
 //
+//   Eric Brugger, Wed Aug 20 14:20:25 PDT 2003
+//   Removed ViewAttributes and added ViewCurveAttributes, View2DAttributes
+//   and View3DAttributes.
+//
 // ****************************************************************************
 
 static void
@@ -7176,7 +7345,9 @@ InitializeExtensions()
     PyPrinterAttributes_StartUp(viewer->GetPrinterAttributes(), logFile);
     PyRenderingAttributes_StartUp(viewer->GetRenderingAttributes(), logFile);
     PySaveWindowAttributes_StartUp(viewer->GetSaveWindowAttributes(), logFile);
-    PyViewAttributes_StartUp(viewer->GetView3DAttributes(), logFile);
+    PyViewCurveAttributes_StartUp(viewer->GetViewCurveAttributes(), logFile);
+    PyView2DAttributes_StartUp(viewer->GetView2DAttributes(), logFile);
+    PyView3DAttributes_StartUp(viewer->GetView3DAttributes(), logFile);
     PyWindowInformation_StartUp(viewer->GetWindowInformation(), logFile);
 }
 
@@ -7190,10 +7361,13 @@ InitializeExtensions()
 // Creation:   Mon Sep 17 11:42:44 PDT 2001
 //
 // Modifications:
-//   
 //   Jeremy Meredith, Thu Oct 24 16:48:15 PDT 2002
 //   Added material options.
 //
+//   Eric Brugger, Wed Aug 20 14:20:25 PDT 2003
+//   Removed ViewAttributes and added ViewCurveAttributes, View2DAttributes
+//   and View3DAttributes.
+//   
 // ****************************************************************************
 
 static void
@@ -7203,7 +7377,9 @@ CloseExtensions()
     PyMaterialAttributes_CloseDown();
     PyPrinterAttributes_CloseDown();
     PySaveWindowAttributes_CloseDown();
-    PyViewAttributes_CloseDown();
+    PyViewCurveAttributes_CloseDown();
+    PyView2DAttributes_CloseDown();
+    PyView3DAttributes_CloseDown();
 }
 
 // ****************************************************************************

@@ -222,6 +222,9 @@ class VisitInteractor;
 //    Mark C. Miller, 07Jul03
 //    Added method to get window size as opposed to renderable portion thereof
 //
+//    Eric Brugger, Wed Aug 20 10:06:56 PDT 2003
+//    Removed GetTypeIsCurve and SetTypeIsCurve.  Added GetWindowMode.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindow
@@ -294,9 +297,6 @@ public:
     bool                 GetSpinMode() const;
     void                 SetViewExtentsType(avtExtentType);
 
-    void                 SetTypeIsCurve(bool);
-    bool                 GetTypeIsCurve() const;
-
     void                 ResetView(void);
     void                 SetView2D(const avtView2D &);
     const avtView2D     &GetView2D();
@@ -305,6 +305,7 @@ public:
     void                 SetViewCurve(const avtViewCurve &);
     const avtViewCurve  &GetViewCurve();
 
+    WINDOW_MODE          GetWindowMode() const;
     void                 GetScaleFactorAndType(double &s, int &t);
     bool                 GetFullFrameMode(void);
     void                 FullFrameOn(const double, const int);
@@ -407,7 +408,6 @@ protected:
     WINDOW_MODE                        mode;
     bool                               updatesEnabled;
     bool                               hasPlots;
-    bool                               typeIsCurve;
 
     avtView2D                          view2D;
     avtView3D                          view3D;

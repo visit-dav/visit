@@ -117,6 +117,9 @@ static void      start_render(void *);
 //    Create lighting colleague before view colleague, as updating the view
 //    also updates lighting.
 //
+//    Eric Brugger, Wed Aug 20 10:09:15 PDT 2003
+//    Removed typeIsCurve.
+//
 // ****************************************************************************
 
 VisWindow::VisWindow(bool doNoWinMode)
@@ -212,8 +215,6 @@ VisWindow::VisWindow(bool doNoWinMode)
 
     performLineoutCallback= 0;
     loInfo = 0;
-
-    typeIsCurve = false;
 }
 
 
@@ -2183,6 +2184,11 @@ VisWindow::SetViewCurve(const avtViewCurve &v)
 //  Programmer: Kathleen Bonnell 
 //  Creation:   May 10, 2002
 //
+//  Modifications:
+//    Eric Brugger, Wed Aug 20 10:09:15 PDT 2003
+//    Modified the routine to pass the window size to SetViewFromViewInfo
+//    so that it could handle non-square windows.
+//
 // ****************************************************************************
 
 const avtViewCurve &
@@ -2192,12 +2198,34 @@ VisWindow::GetViewCurve(void)
     // In the future this should propably be done by the VisWinView
     // colleague.
     //
+    int *size=rendering->GetFirstRenderer()->GetSize();
+
     if (mode == WINMODE_CURVE)
     {
-        viewCurve.SetViewFromViewInfo(view->GetViewInfo());
+        viewCurve.SetViewFromViewInfo(view->GetViewInfo(), size);
     }
 
     return viewCurve;
+}
+
+
+// ****************************************************************************
+//  Method: VisWindow::GetWindowMode
+//
+//  Purpose:
+//    Gets the window mode from the window.
+//
+//  Returns:    The currrent window mode.
+//
+//  Programmer: Eric Brugger
+//  Creation:   August 20, 2003
+//
+// ****************************************************************************
+
+WINDOW_MODE
+VisWindow::GetWindowMode() const
+{
+    return mode;
 }
 
 
@@ -2296,6 +2324,11 @@ VisWindow::Render(void)
 //    Kathleen Bonnell, Fri May 10 15:38:14 PDT 2002   
 //    Added support for WINMODE_CURVE. 
 //
+//    Eric Brugger, Wed Aug 20 10:09:15 PDT 2003
+//    Added code to scale the plot if setting a curve view.  Pass the size
+//    to avtViewCurve::SetViewInfoFromView so that it can handle non-square
+//    windows.
+//
 // ****************************************************************************
 
 void
@@ -2337,7 +2370,17 @@ VisWindow::UpdateView()
         {
             SetViewport(viewport[0], viewport[2], viewport[1], viewport[3]);
         }
-        viewCurve.SetViewInfoFromView(viewInfo);
+
+        float vec[3];
+        vec[0] = 1.;
+        vec[1] = ((viewCurve.domain[1] - viewCurve.domain[0]) /
+                  (viewCurve.range[1] - viewCurve.range[0])) *
+                 ((viewport[3] - viewport[2]) / (viewport[1] - viewport[0])) *
+                 ((double) size[1] / (double) size[0]) ;
+        vec[2] = 1.;
+        plots->ScalePlots(vec);
+
+        viewCurve.SetViewInfoFromView(viewInfo, size);
         view->SetViewInfo(viewInfo);
     }
 }
@@ -3692,46 +3735,6 @@ VisWindow::QueryIsValid(const PickAttributes *pa, const Line *lineAtts)
 
 
 // ****************************************************************************
-//  Method: VisWindow::SetTypeIsCurve
-//
-//  Purpose:
-//      Sets the VisWindow's typeIsCurve flag.
-//
-//  Programmer: Kathleen Bonnell 
-//  Creation:   April 17, 2002 
-//
-// ****************************************************************************
-
-void
-VisWindow::SetTypeIsCurve(bool flag)
-{
-    if (typeIsCurve != flag)
-    {
-        typeIsCurve = flag;
-        if (typeIsCurve)
-            ChangeMode(WINMODE_CURVE);
-    }
-}
-
-
-// ****************************************************************************
-//  Method: VisWindow::GetTypeIsCurve
-//
-//  Purpose:
-//      Gets the VisWindow's typeIsCurve flag.
-//
-//  Programmer: Kathleen Bonnell 
-//  Creation:   April 17, 2002 
-//
-// ****************************************************************************
-
-bool
-VisWindow::GetTypeIsCurve() const
-{
-    return typeIsCurve;
-}
-
-// ****************************************************************************
 //  Method: VisWindow::GetScaleFactorAndType
 //
 //  Purpose:
@@ -3739,6 +3742,11 @@ VisWindow::GetTypeIsCurve() const
 //
 //  Programmer: Kathleen Bonnell 
 //  Creation:   May 13, 2003 
+//
+//  Modifications:
+//    Eric Brugger, Wed Aug 20 10:09:15 PDT 2003
+//    I modified the routine to calculate the scale in the curve case
+//    from the domain and range.
 //
 // ****************************************************************************
 
@@ -3752,7 +3760,12 @@ VisWindow::GetScaleFactorAndType(double &s, int &t)
     }
     else if (mode == WINMODE_CURVE)
     {
-        s = viewCurve.yScale;
+        int *size=rendering->GetFirstRenderer()->GetSize();
+
+        s = ((viewCurve.domain[1] - viewCurve.domain[0]) /
+             (viewCurve.range[1]  - viewCurve.range[0])) *
+            ((viewportTop - viewportBottom) / (viewportRight - viewportLeft)) *
+            ((double) size[1] / (double) size[0]);
         t = 1; // y_axis
     }
     else // this really doesn't apply, set scale to 0. 

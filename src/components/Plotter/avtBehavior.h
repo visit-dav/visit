@@ -12,6 +12,7 @@
 #include <avtDataObjectInformation.h>
 #include <avtLegend.h>
 #include <RenderOrder.h>
+#include <VisWindowTypes.h>
 
 class  vtkRenderer;
 
@@ -45,6 +46,9 @@ class  vtkRenderer;
 //    Renamed "GetTransformedPoints" to "RequiresReExecuteForQuery" to more
 //    accurately reflect its purpose. 
 //
+//    Eric Brugger, Wed Aug 20 09:50:56 PDT 2003
+//    Added GetWindowMode.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtBehavior
@@ -64,6 +68,7 @@ class PLOTTER_API avtBehavior
     void                       GetDataExtents(float &dmin, float &dmax);
 
     int                        GetDimension(void);
+    WINDOW_MODE                GetWindowMode(void);
     bool                       RequiresReExecuteForQuery(void);
 
     void                       SetShiftFactor(float);

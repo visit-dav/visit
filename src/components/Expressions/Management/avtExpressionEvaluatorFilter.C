@@ -122,6 +122,9 @@ avtExpressionEvaluatorFilter::AdditionalPipelineFilters(void)
 //    Sean Ahern, Wed Jul 23 16:53:07 PDT 2003
 //    Reorganized the code slightly to reduce code duplication.
 //
+//    Brad Whitlock, Wed Aug 27 14:08:36 PST 2003
+//    Made it work on Windows.
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -165,13 +168,13 @@ avtExpressionEvaluatorFilter::PerformRestriction(avtPipelineSpecification_p spec
     pipelineState.SetDataObject(NULL);
     while (!candidates.empty())
     {
-        set<string>::iterator front = candidates.begin();
+        std::set<string>::iterator front = candidates.begin();
         string var = *front;
         candidates.erase(front);
-        debug5 << "EEF::PerformRestriction:     candidate: " << var << endl;
+        debug5 << "EEF::PerformRestriction:     candidate: " << var.c_str() << endl;
 
         // Have we seen this before?
-        vector<string>::iterator search;
+        std::vector<string>::iterator search;
         search = find(expr_list.begin(), expr_list.end(), var);
         if (search != expr_list.end())
         {
@@ -199,8 +202,8 @@ avtExpressionEvaluatorFilter::PerformRestriction(avtPipelineSpecification_p spec
             set<string> roots = tree->GetVarLeaves();
             while (!roots.empty())
             {
-                set<string>::iterator front = roots.begin();
-                debug5 << "EEF::PerformRestriction:         " << *front << endl;
+                std::set<string>::iterator front = roots.begin();
+                debug5 << "EEF::PerformRestriction:         " << front->c_str() << endl;
                 candidates.insert(*front);
                 roots.erase(front);
             }
@@ -210,7 +213,7 @@ avtExpressionEvaluatorFilter::PerformRestriction(avtPipelineSpecification_p spec
     // Take the list of expressions and make the filters for them.
     while (!expr_list.empty())
     {
-        vector<string>::iterator back = expr_list.end() - 1;
+        std::vector<string>::iterator back = expr_list.end() - 1;
         string var = *back;
         expr_list.erase(back);
         
@@ -244,25 +247,25 @@ avtExpressionEvaluatorFilter::PerformRestriction(avtPipelineSpecification_p spec
     //
 
     // Check if the original variable is in our "real" list.
-    set<string>::iterator i;
+    std::set<string>::iterator it;
     bool haveActiveVariable = false;
-    for (i = real_list.begin() ; i != real_list.end() ; i++)
+    for (it = real_list.begin() ; it != real_list.end() ; it++)
     {
-        if (*i == ds->GetVariable())
+        if (*it == ds->GetVariable())
             haveActiveVariable = true;
     }
 
     // Set up the data spec.
-    i = real_list.begin();
+    it = real_list.begin();
     if (haveActiveVariable)
         newds = new avtDataSpecification(ds, ds->GetVariable());
     else
-        newds = new avtDataSpecification(ds, (*i++).c_str());
+        newds = new avtDataSpecification(ds, (*it++).c_str());
 
     newds->RemoveAllSecondaryVariables();
-    for ( ; i != real_list.end() ; i++)
-        if (*i != ds->GetVariable())
-            newds->AddSecondaryVariable((*i).c_str());
+    for ( ; it != real_list.end() ; it++)
+        if (*it != ds->GetVariable())
+            newds->AddSecondaryVariable((*it).c_str());
 
     rv = new avtPipelineSpecification(spec, newds);
 

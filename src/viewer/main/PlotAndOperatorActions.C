@@ -190,14 +190,16 @@ AddOperatorAction::Execute(int)
 //   Brad Whitlock, Fri Apr 4 14:10:07 PST 2003
 //   I disabled the action in curve windows.
 //
+//   Eric Brugger, Wed Aug 20 10:53:00 PDT 2003
+//   I removed the disabling of the action in curve windows.
+//
 // ****************************************************************************
 
 bool
 AddOperatorAction::Enabled() const
 {
     return ViewerMultipleAction::Enabled() &&
-           (window->GetAnimation()->GetPlotList()->GetNumPlots() > 0) &&
-           !window->GetTypeIsCurve();
+           (window->GetAnimation()->GetPlotList()->GetNumPlots() > 0);
 }
 
 // ****************************************************************************
@@ -524,14 +526,15 @@ RemoveLastOperatorAction::Execute()
 // Creation:   Thu Mar 20 12:41:50 PDT 2003
 //
 // Modifications:
+//   Eric Brugger, Wed Aug 20 10:53:00 PDT 2003
+//   I removed the disabling of the action in curve windows.
 //   
 // ****************************************************************************
 
 bool
 RemoveLastOperatorAction::Enabled() const
 {
-    return !window->GetTypeIsCurve() &&
-           window->GetAnimation()->GetPlotList()->GetNumPlots() > 0;
+    return window->GetAnimation()->GetPlotList()->GetNumPlots() > 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -614,13 +617,15 @@ RemoveAllOperatorsAction::Execute()
 //   Brad Whitlock, Fri Apr 4 14:21:24 PST 2003
 //   I made the action inactive in curve windows.
 //
+//   Eric Brugger, Wed Aug 20 10:53:00 PDT 2003
+//   I removed the disabling of the action in curve windows.
+//   
 // ****************************************************************************
 
 bool
 RemoveAllOperatorsAction::Enabled() const
 {
-    return !window->GetTypeIsCurve() &&
-            window->GetAnimation()->GetPlotList()->GetNumPlots() > 0;
+    return window->GetAnimation()->GetPlotList()->GetNumPlots() > 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -886,15 +891,16 @@ AddPlotAction::Execute(int)
 //   Brad Whitlock, Fri Apr 4 14:11:58 PST 2003
 //   I prevented the action from being enabled in curve windows.
 //
+//   Eric Brugger, Wed Aug 20 10:53:00 PDT 2003
+//   I removed the disabling of the action in curve windows.
+//   
 // ****************************************************************************
 
 bool
 AddPlotAction::Enabled() const
 {
     bool dbIsOpen = (window->GetAnimation()->GetPlotList()->GetHostDatabaseName().length() > 0);
-    return ViewerMultipleAction::Enabled() &&
-           dbIsOpen &&
-           !window->GetTypeIsCurve();
+    return ViewerMultipleAction::Enabled() && dbIsOpen;
 }
 
 // ****************************************************************************

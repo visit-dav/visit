@@ -74,6 +74,9 @@ class     VisitInteractor;
 //    Kathleen Bonnell, Wed May 28 16:04:50 PDT 2003  
 //    Added GetFullFrameMode. 
 //
+//    Eric Brugger, Wed Aug 20 10:04:13 PDT 2003
+//    Removed ProxiedGetTypeIsCurve and ProxiedSetTypeIsCurve.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindowProtectionProxy
@@ -116,8 +119,6 @@ class VISWINDOW_API VisWindowProtectionProxy
     void                ProxiedPick(int, int);
     void                ProxiedUpdatePlotList(std::vector<avtActor_p> &);
     void                ProxiedLineout(int, int, int, int);
-    void                ProxiedSetTypeIsCurve(bool b);
-    bool                ProxiedGetTypeIsCurve();
     float               ProxiedComputeVectorTextScaleFactor(const float *p, 
                                                         const float *v = NULL);
     void                ProxiedMotionBegin(void);

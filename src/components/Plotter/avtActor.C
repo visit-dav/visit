@@ -317,6 +317,31 @@ avtActor::GetDimension(void)
 
 
 // ****************************************************************************
+//  Method: avtActor::GetWindowMode
+//
+//  Purpose:
+//      Gets the window mode of the plot.
+//
+//  Returns:    the window mode of the plot
+//
+//  Programmer: Eric Brugger
+//  Creation:   August 20, 2003
+//
+// ****************************************************************************
+
+WINDOW_MODE
+avtActor::GetWindowMode(void)
+{
+    if (*behavior == NULL)
+    {
+        EXCEPTION0(NoInputException);
+    }
+
+    return behavior->GetWindowMode();
+}
+
+
+// ****************************************************************************
 //  Method: avtActor::GetRenderOrder
 //
 //  Purpose:

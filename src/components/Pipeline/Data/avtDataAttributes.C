@@ -50,6 +50,9 @@ using     std::vector;
 //    Kathleen Bonnell, Thu Apr 10 10:31:54 PDT 2003  
 //    Initialize transform.
 //
+//    Eric Brugger, Wed Aug 20 09:28:48 PDT 2003
+//    Initialize windowMode.
+// 
 // ****************************************************************************
 
 avtDataAttributes::avtDataAttributes()
@@ -90,6 +93,8 @@ avtDataAttributes::avtDataAttributes()
 
     transform = NULL;
     canUseTransform = true;
+
+    windowMode = WINMODE_NONE;
 }
 
 
@@ -217,6 +222,9 @@ avtDataAttributes::~avtDataAttributes()
 //    Kathleen Bonnell, Thu Apr 10 10:31:54 PDT 2003  
 //    Copy transform.
 //
+//    Eric Brugger, Wed Aug 20 09:28:48 PDT 2003
+//    Copy windowMode.
+// 
 // ****************************************************************************
 
 void
@@ -269,6 +277,7 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
     SetContainsOriginalCells(di.GetContainsOriginalCells());
     CopyTransform(di.transform);
     canUseTransform = di.canUseTransform;
+    windowMode = di.windowMode;
 }
 
 
@@ -313,13 +322,16 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
 //    Kathleen Bonnell, Wed Jun 18 17:50:20 PDT 2003 
 //    Account for avtGhostType AVT_CREATED_GHOSTS. 
 //
+//    Eric Brugger, Wed Aug 20 09:28:48 PDT 2003
+//    Merge windowMode.
+// 
 // ****************************************************************************
 
 void
 avtDataAttributes::Merge(const avtDataAttributes &da)
 {
     //
-    // Make sure that it will make sense to merge the extents.
+    // Make sure that it will make sense to merge the data.
     //
     if (centering != da.centering)
     {
@@ -355,6 +367,10 @@ avtDataAttributes::Merge(const avtDataAttributes &da)
     if (timeIsAccurate && da.timeIsAccurate && dtime != da.dtime)
     {
         EXCEPTION2(InvalidMergeException, dtime, da.dtime);
+    }
+    if (windowMode != da.windowMode)
+    {
+        EXCEPTION2(InvalidMergeException, windowMode, da.windowMode);
     }
 
     if (GetContainsGhostZones() == AVT_MAYBE_GHOSTS)
@@ -775,13 +791,16 @@ avtDataAttributes::SetTime(double d)
 //    Kathleen Bonnell, Thu Apr 10 10:31:54 PDT 2003  
 //    Write transform.
 //
+//    Eric Brugger, Wed Aug 20 09:28:48 PDT 2003
+//    Write windowMode.
+// 
 // ****************************************************************************
 
 void
 avtDataAttributes::Write(avtDataObjectString &str,
                          const avtDataObjectWriter *wrtr)
 {
-    const int numVals = 13;
+    const int numVals = 14;
     int vals[numVals];
     vals[0] = topologicalDimension;
     vals[1] = spatialDimension;
@@ -796,6 +815,7 @@ avtDataAttributes::Write(avtDataObjectString &str,
     vals[10] = (containsOriginalCells ? 1 : 0);
     vals[11] = (canUseTransform ? 1 : 0);
     vals[12] = (canUseCummulativeAsTrueOrCurrent ? 1 : 0);
+    vals[13] = windowMode;
     wrtr->WriteInt(str, vals, numVals);
     wrtr->WriteDouble(str, dtime);
 
@@ -870,6 +890,9 @@ avtDataAttributes::Write(avtDataObjectString &str,
 //    Kathleen Bonnell, Thu Apr 10 10:31:54 PDT 2003  
 //    Read transform.
 //
+//    Eric Brugger, Wed Aug 20 09:28:48 PDT 2003
+//    Read windowMode.
+// 
 // ****************************************************************************
 
 int
@@ -930,6 +953,10 @@ avtDataAttributes::Read(char *input)
     memcpy(&tmp, input, sizeof(int));
     input += sizeof(int); size += sizeof(int);
     canUseCummulativeAsTrueOrCurrent = (tmp != 0 ? true : false);
+
+    memcpy(&tmp, input, sizeof(int));
+    input += sizeof(int); size += sizeof(int);
+    windowMode = (WINDOW_MODE) tmp;
 
     memcpy(&dtmp, input, sizeof(double));
     input += sizeof(double); size += sizeof(double);

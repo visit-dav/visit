@@ -3047,6 +3047,10 @@ ViewerPlotList::UpdatePlots(const int frame, bool animating)
 //    Eric Brugger, Wed Apr 23 14:52:32 PDT 2003
 //    I added a call to turn off the merging of view limits.
 //
+//    Eric Brugger, Wed Aug 20 11:02:14 PDT 2003
+//    I modified the routine to use the window mode instead of the view
+//    dimension.
+//
 // ****************************************************************************
 
 void
@@ -3063,19 +3067,18 @@ ViewerPlotList::UpdateWindow(ViewerWindow *const window, const int frame,
     window->ClearPlots();
 
     //
-    // Loop over the plots, calculating their global dimension, their global
-    // extents, and adding their actors to the window.  The dimension of the
-    // window is taken to be the dimension of the first plot encountered.
-    // If any subsequent plots don't match that dimension then they are not
-    // added to the window.  Hidden plots are included in the calculation of
-    // the global extents so that the view doesn't change as plots are shown
-    // and hidden.
+    // Loop over the plots, calculating their global window mode, their global
+    // extents, and adding their actors to the window.  The window mode of the
+    // window is taken to be the window mode of the first plot encountered.
+    // If any subsequent plots don't match that window mode then they are not
+    // added to the window.  Hidden plots are not included in the calculation
+    // of the global extents.
     //
-    int    globalDimension;
-    double globalExtents[6];
-    int    errorCount = 0;
+    WINDOW_MODE globalWindowMode;
+    double      globalExtents[6];
+    int         errorCount = 0;
 
-    globalDimension = -1;
+    globalWindowMode = WINMODE_NONE;
     globalExtents[0] = DBL_MAX; globalExtents[1] = -DBL_MAX;
     globalExtents[2] = DBL_MAX; globalExtents[3] = -DBL_MAX;
     globalExtents[4] = DBL_MAX; globalExtents[5] = -DBL_MAX;
@@ -3088,29 +3091,32 @@ ViewerPlotList::UpdateWindow(ViewerWindow *const window, const int frame,
             continue;
         }
 
+        //
         // If the reader or the actor is bad then mark the plot as bad. This
         // usually happens when a plot generated before the current plot has
         // had an error and the current plot has not been generated.
+        //
         if (*(plots[i].plot->GetReader(frame)) == 0 ||
             plots[i].plot->NoActorExists(frame))
         {
             continue;
         }
 
-        if (plots[i].plot->IsInFrameRange(frame) && plots[i].realized == true)
+        if (plots[i].plot->IsInFrameRange(frame) &&
+            plots[i].realized == true && plots[i].hidden == false)
         {
+            avtActor_p &actor = plots[i].plot->GetActor(frame);
+            WINDOW_MODE plotWindowMode = actor->GetWindowMode();
             int plotDimension = plots[i].plot->GetSpatialDimension(frame);
-            if (globalDimension == -1)
-                globalDimension = plotDimension;
 
-            if (plotDimension != globalDimension)
+            if (globalWindowMode == WINMODE_NONE)
+                globalWindowMode = plotWindowMode;
+
+            if (plotWindowMode != globalWindowMode)
             {
                 if (errorCount == 0)
                 {
-                    char message[200];
-                    SNPRINTF(message, 200, "It is illegal to have a %d-d plot in a "
-                            "%d-d window.", plotDimension, globalDimension);
-                    Error(message);
+                    Error("The plot dimensions do not match.");
                     ++errorCount;
                 }
 
@@ -3124,7 +3130,7 @@ ViewerPlotList::UpdateWindow(ViewerWindow *const window, const int frame,
 
                 double *plotExtents = plots[i].plot->GetSpatialExtents(frame);
 
-                switch (globalDimension)
+                switch (plotDimension)
                 {
                   case 3:
                     globalExtents[4] = min(globalExtents[4], plotExtents[4]);
@@ -3138,10 +3144,7 @@ ViewerPlotList::UpdateWindow(ViewerWindow *const window, const int frame,
                 }
                 delete [] plotExtents;
                    
-                if (plots[i].hidden == false)
-                {
-                    window->AddPlot(plots[i].plot->GetActor(frame));
-                }
+                window->AddPlot(actor);
             }
         }
     }
@@ -3151,7 +3154,7 @@ ViewerPlotList::UpdateWindow(ViewerWindow *const window, const int frame,
     //
     if (globalExtents[0] != DBL_MAX)
     {
-        window->UpdateView(globalDimension, globalExtents);
+        window->UpdateView(globalWindowMode, globalExtents);
     }
 
     //

@@ -66,6 +66,9 @@
 #    Kathleen Bonnell, Fri Jun  6 12:22:12 PDT 2003 
 #    Added pick options.
 #
+#    Eric Brugger, Wed Aug 20 14:16:41 PDT 2003
+#    I added View2DAttributes, View3DAttributes and ViewCurveAttributes.
+#
 ##############################################################################
 
 ##
@@ -87,7 +90,10 @@ SRC= \
     PyRenderingAttributes.C \
     PySaveWindowAttributes.C \
     PySILRestriction.C \
+    PyView2DAttributes.C \
+    PyView3DAttributes.C \
     PyViewAttributes.C \
+    PyViewCurveAttributes.C \
     PyWindowInformation.C \
     visitmodule.C
 
@@ -101,7 +107,10 @@ HDR= \
     PyRenderingAttributes.h \
     PySaveWindowAttributes.h \
     PySILRestriction.h \
+    PyView2DAttributes.h \
+    PyView3DAttributes.h \
     PyViewAttributes.h \
+    PyViewCurveAttributes.h \
     PyWindowInformation.h
 
 OBJ=$(SRC:.C=.o)

@@ -59,6 +59,9 @@
 //    Kathleen Bonnell, Fri Jun  6 15:31:37 PDT 2003  
 //    Added GetFullFrameMode method. 
 //
+//    Eric Brugger, Wed Aug 20 10:03:43 PDT 2003
+//    Removed GetTypeIsCurve and SetTypeIsCurve.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindowColleagueProxy : public VisWindowProtectionProxy
@@ -106,12 +109,6 @@ class VISWINDOW_API VisWindowColleagueProxy : public VisWindowProtectionProxy
 
     void                UpdatePlotList(std::vector<avtActor_p> &l)
                                   { ProxiedUpdatePlotList(l); };
-
-    void                SetTypeIsCurve(bool b)
-                                  { ProxiedSetTypeIsCurve(b); };
-
-    bool                GetTypeIsCurve()
-                                  { return ProxiedGetTypeIsCurve(); };
 
     float               ComputeVectorTextScaleFactor(const float *p, const float*v = NULL) 
                                   { return ProxiedComputeVectorTextScaleFactor(p, v); };

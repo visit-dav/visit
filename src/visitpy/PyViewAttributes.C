@@ -776,6 +776,10 @@ ViewAttributes_add(PyObject *v, PyObject *w)
     c->SetFarPlane(a->GetFarPlane() + b->GetFarPlane());
     c->SetPerspective(a->GetPerspective() + b->GetPerspective());
 
+    c->GetImagePan()[0] = a->GetImagePan()[0] + b->GetImagePan()[0];
+    c->GetImagePan()[1] = a->GetImagePan()[1] + b->GetImagePan()[1];
+    c->SetImageZoom(a->GetImageZoom() + b->GetImageZoom());
+
     c->GetWindowCoords()[0] = a->GetWindowCoords()[0] + b->GetWindowCoords()[0];
     c->GetWindowCoords()[1] = a->GetWindowCoords()[1] + b->GetWindowCoords()[1];
     c->GetWindowCoords()[2] = a->GetWindowCoords()[2] + b->GetWindowCoords()[2];
@@ -848,6 +852,10 @@ ViewAttributes_mul(PyObject *v, PyObject *w)
         c->SetNearPlane(a->GetNearPlane() * val);
         c->SetFarPlane(a->GetFarPlane() * val);
         c->SetPerspective(a->GetPerspective() * val);
+
+        c->GetImagePan()[0] = a->GetImagePan()[0] * val;
+        c->GetImagePan()[1] = a->GetImagePan()[1] * val;
+        c->SetImageZoom(a->GetImageZoom() * val);
 
         c->GetWindowCoords()[0] = a->GetWindowCoords()[0] * val;
         c->GetWindowCoords()[1] = a->GetWindowCoords()[1] * val;

@@ -98,6 +98,9 @@ class avtToolInterface;
 //    Added 'samples' arg to LineQuery and Lineout methods.
 //    Added 'arg1' and 'arg2' to DatabaseQuery.
 //
+//    Eric Brugger, Wed Aug 20 11:04:40 PDT 2003
+//    Removed UpdateScaleFactor.
+//
 // ****************************************************************************
     
 class VIEWER_API ViewerQueryManager 
@@ -127,8 +130,6 @@ class VIEWER_API ViewerQueryManager
     void            HandleTool(ViewerWindow *, const avtToolInterface &ti);
     bool            InitializeTool(ViewerWindow *, avtToolInterface &ti);
     void            DisableTool(ViewerWindow *, avtToolInterface &ti);
-
-    void            UpdateScaleFactor(ViewerWindow *);
 
     QueryList      *GetQueryTypes() { return queryTypes; };
 

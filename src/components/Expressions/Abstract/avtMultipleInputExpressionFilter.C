@@ -63,7 +63,6 @@ avtMultipleInputExpressionFilter::IsPointVariable(void)
     if (cent != AVT_UNKNOWN_CENT)
     {
         return (cent == AVT_NODECENT);
-        return cent;
     }
 
     return avtExpressionFilter::IsPointVariable();

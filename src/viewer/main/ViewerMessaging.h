@@ -1,8 +1,9 @@
 #ifndef VIEWER_MESSAGING_H
 #define VIEWER_MESSAGING_H
+#include <viewer_exports.h>
 
 // Functions to send messages
-void Error(const char *message);
+VIEWER_API void Error(const char *message);
 void Warning(const char *message);
 void Message(const char *message);
 

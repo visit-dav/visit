@@ -12,7 +12,9 @@ class QLabel;
 class QLineEdit;
 class QTabWidget;
 class QVBox;
-class ViewAttributes;
+class ViewCurveAttributes;
+class View2DAttributes;
+class View3DAttributes;
 class WindowInformation;
 class QPushButton;
 
@@ -52,6 +54,10 @@ class QPushButton;
 //   Eric Brugger, Tue Jun 10 12:48:03 PDT 2003
 //   I added image pan and image zoom fields to the 3d view.
 //
+//   Eric Brugger, Wed Aug 20 14:02:49 PDT 2003
+//   I added support for curve views and split the view attributes into
+//   2d and 3d parts.
+//
 // ****************************************************************************
 
 class GUI_API QvisViewWindow : public QvisPostableWindowSimpleObserver
@@ -64,8 +70,9 @@ public:
     virtual void CreateWindowContents();
     void SubjectRemoved(Subject *TheRemovedSubject);
 
-    void Connect2DAttributes(ViewAttributes *v);
-    void Connect3DAttributes(ViewAttributes *v);
+    void ConnectCurveAttributes(ViewCurveAttributes *v);
+    void Connect2DAttributes(View2DAttributes *v);
+    void Connect3DAttributes(View3DAttributes *v);
     void ConnectWindowInformation(WindowInformation *);
 
     virtual void CreateNode(DataNode *parentNode);
@@ -75,10 +82,12 @@ public slots:
 protected:
     void Apply(bool ignore = false);
     void GetCurrentValues(int which_widget);
+    void GetCurrentValuesCurve(int which_widget);
     void GetCurrentValues2d(int which_widget);
     void GetCurrentValues3d(int which_widget);
 
     virtual void UpdateWindow(bool doAll);
+    void UpdateCurve(bool doAll);
     void Update2D(bool doAll);
     void Update3D(bool doAll);
     void UpdateGlobal(bool doAll);
@@ -86,8 +95,12 @@ private slots:
     void apply();
     void processCommandText();
 
-    void processViewportText2d();
-    void processWindowText2d();
+    void processViewportCurveText();
+    void processDomainText();
+    void processRangeText();
+
+    void processViewportText();
+    void processWindowText();
 
     void processNormalText();
     void processFocusText();
@@ -116,10 +129,18 @@ private:
     void Viewport(const double *viewport);
     void Window(const double *window);
 
-    ViewAttributes    *view2d;
-    ViewAttributes    *view3d;
-    WindowInformation *windowInfo;
-    int               activeTab;
+    ViewCurveAttributes *viewCurve;
+    View2DAttributes    *view2d;
+    View3DAttributes    *view3d;
+    WindowInformation   *windowInfo;
+    int                 activeTab;
+
+    // Curve widgets
+    QVBox       *pageCurve;
+    QGroupBox   *viewCurveGroup;
+    QLineEdit   *viewportCurveLineEdit;
+    QLineEdit   *domainLineEdit;
+    QLineEdit   *rangeLineEdit;
 
     // 2d widgets
     QVBox       *page2D;

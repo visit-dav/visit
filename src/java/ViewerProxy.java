@@ -73,6 +73,10 @@ import java.util.Vector;
 //   Brad Whitlock, Wed Jul 9 12:30:58 PDT 2003
 //   I added methods to tell the viewer to export and import its entire state.
 //
+//   Eric Brugger, Wed Aug 27 09:10:35 PDT 2003
+//   I added viewCurveAttributes.  I split the view attributes into 2d
+//   and 3d parts.
+//
 // ****************************************************************************
 
 public class ViewerProxy implements SimpleObserver
@@ -108,8 +112,9 @@ public class ViewerProxy implements SimpleObserver
         expressionList = new ExpressionList();
         annotationAtts = new AnnotationAttributes();
         silRestrictionAtts = new SILRestrictionAttributes();
-        view2D = new ViewAttributes();
-        view3D = new ViewAttributes();
+        viewCurve = new ViewCurveAttributes();
+        view2D = new View2DAttributes();
+        view3D = new View3DAttributes();
         lightList = new LightList();
         materialAtts = new MaterialAttributes();
         animationAtts = new AnimationAttributes();
@@ -173,6 +178,7 @@ public class ViewerProxy implements SimpleObserver
             xfer.Add(expressionList);
             xfer.Add(annotationAtts);
             xfer.Add(silRestrictionAtts);
+            xfer.Add(viewCurve);
             xfer.Add(view2D);
             xfer.Add(view3D);
             xfer.Add(lightList);
@@ -829,6 +835,13 @@ public class ViewerProxy implements SimpleObserver
         return synchronous ? Synchronize() : true;
     }
 
+    public boolean SetViewCurve()
+    {
+        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETVIEWCURVERPC);
+        rpc.Notify();
+        return synchronous ? Synchronize() : true;
+    }
+
     public boolean SetView2D()
     {
         rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETVIEW2DRPC);
@@ -1203,8 +1216,9 @@ public class ViewerProxy implements SimpleObserver
     public PluginManagerAttributes GetPluginAtts() { return pluginAtts;}
     public HostProfileList GetHostProfiles() { return hostProfiles; }
     public AppearanceAttributes GetAppearanceAttributes() { return appearanceAtts; }
-    public ViewAttributes GetView2D() { return view2D; }
-    public ViewAttributes GetView3D() { return view3D; }
+    public ViewCurveAttributes GetViewCurve() { return viewCurve; }
+    public View2DAttributes GetView2D() { return view2D; }
+    public View3DAttributes GetView3D() { return view3D; }
     public ColorTableAttributes GetColorTableAttributes() { return colorTableAtts; }
     public SaveWindowAttributes GetSaveWindowAttributes() { return saveAtts; }
     public StatusAttributes GetStatusAttributes() { return statusAtts; }
@@ -1360,8 +1374,9 @@ public class ViewerProxy implements SimpleObserver
     private ExpressionList           expressionList;
     private AnnotationAttributes     annotationAtts;
     private SILRestrictionAttributes silRestrictionAtts;
-    private ViewAttributes           view2D;
-    private ViewAttributes           view3D;
+    private ViewCurveAttributes      viewCurve;
+    private View2DAttributes         view2D;
+    private View3DAttributes         view3D;
     private LightList                lightList;
     private AnimationAttributes      animationAtts;
     private PickAttributes           pickAtts;

@@ -27,7 +27,6 @@ using std::string;
 #include <PickAttributes.h>
 #include <PickPointInfo.h>
 #include <RenderingAttributes.h>
-#include <ViewAttributes.h>
 #include <ViewerActionManager.h>
 #include <ViewerAnimation.h>
 #include <ViewerMessaging.h>
@@ -147,6 +146,9 @@ extern ViewerSubject  *viewerSubject;
 //    Kathleen Bonnell, Thu May 15 11:52:56 PDT 2003  
 //    Intialize fullFrame. 
 //
+//    Eric Brugger, Wed Aug 20 11:15:07 PDT 2003
+//    I added a curve view.  I replaced view dimension with window mode.
+//
 // ****************************************************************************
 
 ViewerWindow::ViewerWindow(int windowIndex)
@@ -164,7 +166,10 @@ ViewerWindow::ViewerWindow(int windowIndex)
     cameraView = false;
     maintainView = false;
     viewIsLocked = false;
-    viewDimension = 2;
+    windowMode = WINMODE_NONE;
+    boundingBoxValidCurve = false;
+    haveRenderedInCurve = false;
+    viewModifiedCurve = false;
     boundingBoxValid2d = false;
     haveRenderedIn2d = false;
     viewModified2d = false;
@@ -234,9 +239,12 @@ ViewerWindow::ViewerWindow(int windowIndex)
     viewCurve.viewport[3] = 0.95;
     visWindow->SetViewCurve(viewCurve);
 
-    curView = new ViewAttributes;
-    view2DAtts = new AttributeSubjectMap;
-    view3DAtts = new AttributeSubjectMap;
+    curViewCurve  = new ViewCurveAttributes;
+    curView2D     = new View2DAttributes;
+    curView3D     = new View3DAttributes;
+    viewCurveAtts = new AttributeSubjectMap;
+    view2DAtts    = new AttributeSubjectMap;
+    view3DAtts    = new AttributeSubjectMap;
 
     fullFrame = false;
     //
@@ -268,6 +276,9 @@ ViewerWindow::ViewerWindow(int windowIndex)
 //    Kathleen Bonnell, Tue Feb 11 12:55:49 PST 2003  
 //    Added toolbar. 
 //
+//    Eric Brugger, Wed Aug 20 11:15:07 PDT 2003
+//    I added a curve view.
+//
 // ****************************************************************************
 
 ViewerWindow::~ViewerWindow()
@@ -277,7 +288,10 @@ ViewerWindow::~ViewerWindow()
     delete visWindow;
     delete toolbar;
 
-    delete curView;
+    delete curViewCurve;
+    delete curView2D;
+    delete curView3D;
+    delete viewCurveAtts;
     delete view2DAtts;
     delete view3DAtts;
     delete actionMgr;
@@ -844,6 +858,9 @@ ViewerWindow::GetToolName(int index) const
 //    Eric Brugger, Tue Jan 14 07:59:31 PST 2003
 //    I added the number of dimensions to the GetExtents call.
 //
+//    Eric Brugger, Wed Aug 20 11:15:07 PDT 2003
+//    I added a curve view.
+//
 // ****************************************************************************
 
 void
@@ -851,22 +868,21 @@ ViewerWindow::RecenterView()
 {
     double limits[6];
 
-    //
-    // Get the limits at the current time and recenter the view using those
-    // limits.
-    //
-    GetExtents(viewDimension, limits);
-
-    switch (viewDimension)
+    switch (visWindow->GetWindowMode())
     {
-      case 2:
-        if (!GetTypeIsCurve())
-            RecenterView2d(limits);
-        else 
-            RecenterViewCurve(limits);
+      case WINMODE_CURVE:
+        GetExtents(2, limits);
+        RecenterViewCurve(limits);
         break;
-      case 3:
+      case WINMODE_2D:
+        GetExtents(2, limits);
+        RecenterView2d(limits);
+        break;
+      case WINMODE_3D:
+        GetExtents(3, limits);
         RecenterView3d(limits);
+        break;
+      default:
         break;
     }
 }
@@ -894,21 +910,26 @@ ViewerWindow::RecenterView()
 //    Kathleen Bonnell, Fri May 10 16:27:40 PDT 2002  
 //    Support avtViewCurve. 
 //
+//    Eric Brugger, Wed Aug 20 11:15:07 PDT 2003
+//    I added a curve view.
+//
 // ****************************************************************************
 
 void
 ViewerWindow::ResetView()
 {
-    switch (viewDimension)
+    switch (visWindow->GetWindowMode())
     {
-      case 2:
-        if (!GetTypeIsCurve())
-            ResetView2d();
-        else 
-            ResetViewCurve();
+      case WINMODE_CURVE:
+        ResetViewCurve();
         break;
-      case 3:
+      case WINMODE_2D:
+        ResetView2d();
+        break;
+      case WINMODE_3D:
         ResetView3d();
+        break;
+      default:
         break;
     }
 }
@@ -923,12 +944,15 @@ ViewerWindow::ResetView()
 //  Creation:   January 6, 2003
 //
 //  Modifications:
+//    Eric Brugger, Wed Aug 20 11:15:07 PDT 2003
+//    I added a curve view.
 //
 // ****************************************************************************
 
 void
 ViewerWindow::ClearViewKeyframes()
 {
+    viewCurveAtts->ClearAtts();
     view2DAtts->ClearAtts();
     view3DAtts->ClearAtts();
 }
@@ -946,6 +970,8 @@ ViewerWindow::ClearViewKeyframes()
 //  Creation:   January 6, 2003
 //
 //  Modifications:
+//    Eric Brugger, Wed Aug 20 11:15:07 PDT 2003
+//    I added a curve view.
 //
 // ****************************************************************************
 
@@ -971,6 +997,7 @@ ViewerWindow::DeleteViewKeyframe(const int frame)
     //
     int f0, f1;
 
+    viewCurveAtts->DeleteAtts(frame, f0, f1);
     view2DAtts->DeleteAtts(frame, f0, f1);
     view3DAtts->DeleteAtts(frame, f0, f1);
     f1 = f1 < (nFrames - 1) ? f1 : (nFrames - 1);
@@ -999,6 +1026,8 @@ ViewerWindow::DeleteViewKeyframe(const int frame)
 //  Creation:   January 29, 2003
 //
 //  Modifications:
+//    Eric Brugger, Wed Aug 20 11:15:07 PDT 2003
+//    I added a curve view.
 //
 // ****************************************************************************
 
@@ -1025,6 +1054,8 @@ ViewerWindow::MoveViewKeyframe(int oldFrame, int newFrame)
     //
     int f0, f1;
 
+    if (!viewCurveAtts->MoveAtts(oldFrame, newFrame, f0, f1))
+        return;
     if (!view2DAtts->MoveAtts(oldFrame, newFrame, f0, f1))
         return;
     if (!view3DAtts->MoveAtts(oldFrame, newFrame, f0, f1))
@@ -1055,39 +1086,52 @@ ViewerWindow::MoveViewKeyframe(int oldFrame, int newFrame)
 //    I renamed camera to view normal in the view attributes.  I added
 //    image pan and image zoom to the 3d view attributes.
 //
+//    Eric Brugger, Wed Aug 20 11:15:07 PDT 2003
+//    I added a curve view.  I split the view attributes into 2d and 3d parts.
+//
 // ****************************************************************************
 
 void
 ViewerWindow::SetViewKeyframe()
 {
     //
+    // Set a curve view keyframe.
+    //
+    const avtViewCurve &viewCurve = visWindow->GetViewCurve();
+
+    curViewCurve->SetDomainCoords(viewCurve.domain);
+    curViewCurve->SetRangeCoords(viewCurve.range);
+    curViewCurve->SetViewportCoords(viewCurve.viewport);
+
+    viewCurveAtts->SetAtts(animation->GetFrameIndex(), curViewCurve);
+
+    //
     // Set a 2d view keyframe.
     //
     const avtView2D &view2d = visWindow->GetView2D();
 
-    curView->SetWindowCoords(view2d.window);
-    curView->SetViewportCoords(view2d.viewport);
+    curView2D->SetWindowCoords(view2d.window);
+    curView2D->SetViewportCoords(view2d.viewport);
 
-    view2DAtts->SetAtts(animation->GetFrameIndex(), curView);
+    view2DAtts->SetAtts(animation->GetFrameIndex(), curView2D);
 
     //
     // Set a 3d view keyframe.
     //
     const avtView3D &view3d = visWindow->GetView3D();
 
-    curView->SetViewNormal(view3d.normal);
-    curView->SetFocus(view3d.focus);
-    curView->SetViewUp(view3d.viewUp);
-    curView->SetViewAngle(view3d.viewAngle);
-    curView->SetParallelScale(view3d.parallelScale);
-    curView->SetSetScale(true);
-    curView->SetNearPlane(view3d.nearPlane);
-    curView->SetFarPlane(view3d.farPlane);
-    curView->SetImagePan(view3d.imagePan);
-    curView->SetImageZoom(view3d.imageZoom);
-    curView->SetPerspective(view3d.perspective);
+    curView3D->SetViewNormal(view3d.normal);
+    curView3D->SetFocus(view3d.focus);
+    curView3D->SetViewUp(view3d.viewUp);
+    curView3D->SetViewAngle(view3d.viewAngle);
+    curView3D->SetParallelScale(view3d.parallelScale);
+    curView3D->SetNearPlane(view3d.nearPlane);
+    curView3D->SetFarPlane(view3d.farPlane);
+    curView3D->SetImagePan(view3d.imagePan);
+    curView3D->SetImageZoom(view3d.imageZoom);
+    curView3D->SetPerspective(view3d.perspective);
 
-    view3DAtts->SetAtts(animation->GetFrameIndex(), curView);
+    view3DAtts->SetAtts(animation->GetFrameIndex(), curView3D);
 }
 
 // ****************************************************************************
@@ -1121,6 +1165,10 @@ ViewerWindow::GetViewKeyframeIndices(int &nKeyframes) const
 //  Programmer: Hank Childs
 //  Creation:   July 15, 2002
 //
+//  Modifications:
+//    Eric Brugger, Wed Aug 20 11:15:07 PDT 2003
+//    I added a curve view.
+//
 // ****************************************************************************
 
 void
@@ -1129,6 +1177,7 @@ ViewerWindow::SetViewExtentsType(avtExtentType viewType)
     visWindow->SetViewExtentsType(viewType);
     if (viewType != plotExtentsType)
     {
+        boundingBoxValidCurve = false;
         boundingBoxValid2d = false;
         boundingBoxValid3d = false;
         plotExtentsType = viewType;
@@ -1316,6 +1365,14 @@ ViewerWindow::GetCameraViewMode() const
 //  Programmer: Eric Brugger
 //  Creation:   April 18, 2003
 //
+//  Modifications:
+//    Eric Brugger, Wed Aug 20 11:15:07 PDT 2003
+//    I replace view dimension with window mode.
+//
+//    Eric Brugger, Thu Aug 28 12:27:42 PDT 2003
+//    I added code to also recenter the view if the window is in curve mode
+//    and the curve view has not been modified.
+//
 // ****************************************************************************
 
 void
@@ -1326,8 +1383,11 @@ ViewerWindow::SetMaintainViewMode(const bool mode)
     //
     if (maintainView == true && mode == false)
     {
-        if (viewDimension == 3 ||
-            (viewDimension == 2 && viewModified2d == false))
+        if (visWindow->GetWindowMode() == WINMODE_3D ||
+            (visWindow->GetWindowMode() == WINMODE_2D &&
+             viewModified2d == false) ||
+            (visWindow->GetWindowMode() == WINMODE_CURVE &&
+             viewModifiedCurve == false))
         {
             RecenterView();
         }
@@ -1381,6 +1441,9 @@ ViewerWindow::GetMaintainViewMode() const
 //    Removed scaling of view2D.window, handled by avtView2D. 
 //    Moved test for valid bbox to Compute2DScaleFactor.
 //
+//    Eric Brugger, Wed Aug 20 11:15:07 PDT 2003
+//    I added a curve view.
+//
 // ****************************************************************************
 
 void
@@ -1393,7 +1456,7 @@ ViewerWindow::SetFullFrameMode(const bool mode)
 
     fullFrame = mode;
 
-    if (viewDimension == 2 && !GetTypeIsCurve())
+    if (visWindow->GetWindowMode() == WINMODE_2D)
     {
         avtView2D view2D=visWindow->GetView2D();
         if (fullFrame)
@@ -2023,32 +2086,62 @@ ViewerWindow::SendDeleteMessage()
 //
 //    Kathleen Bonnell, Fri May 10 16:27:40 PDT 2002  
 //    Support avtViewCurve. 
-
+//
+//    Eric Brugger, Wed Aug 20 11:15:07 PDT 2003
+//    I added a curve view.
+//
 // ****************************************************************************
 
 void
-ViewerWindow::UpdateView(const int dimension, const double *limits)
+ViewerWindow::UpdateView(const WINDOW_MODE mode, const double *limits)
 {
-    if (viewDimension != dimension)
+    if (windowMode != mode)
         ViewerQueryManager::Instance()->ViewDimChanged(this);
 
-    viewDimension = dimension;
-    switch (dimension)
+    windowMode = mode;
+    switch (visWindow->GetWindowMode())
     {
-      case 2:
-        if (!GetTypeIsCurve())
-        {
-            UpdateView2d(limits);
-        }
-        else 
-        {
-            UpdateViewCurve(limits);
-        }
+      case WINMODE_CURVE:
+        UpdateViewCurve(limits);
         break;
-      case 3:
+      case WINMODE_2D:
+        UpdateView2d(limits);
+        break;
+      case WINMODE_3D:
         UpdateView3d(limits);
         break;
+      default:
+        break;
     }
+}
+
+// ****************************************************************************
+//  Method: ViewerWindow::SetViewCurve
+//
+//  Purpose: 
+//    Sets the Curve view for the window and updates the window if the
+//    window is Curve.
+//
+//  Arguments:
+//    v         The new view info.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   May 10, 2002 
+//
+//  Modifications:
+//    Eric Brugger, Wed Aug 20 11:15:07 PDT 2003
+//    I added a curve view.
+//
+// ****************************************************************************
+
+void
+ViewerWindow::SetViewCurve(const avtViewCurve &v)
+{
+    visWindow->SetViewCurve(v);
+
+    haveRenderedInCurve = true;
+
+    viewModifiedCurve = true;
 }
 
 // ****************************************************************************
@@ -2118,28 +2211,24 @@ ViewerWindow::SetView3D(const avtView3D &v)
     haveRenderedIn3d = true;
 }
 
-
 // ****************************************************************************
-//  Method: ViewerWindow::SetViewCurve
+//  Method: ViewerWindow::GetViewCurve
 //
 //  Purpose: 
-//    Sets the Curve view for the window and updates the window if the
-//    window is Curve.
+//    Returns a constant reference to the Curve view.
 //
-//  Arguments:
-//    v         The new view info.
+//  Returns:    A constant reference to the Curve view.
 //
 //  Programmer: Kathleen Bonnell 
-//  Creation:   May 10, 2002 
+//  Creation:   May 10, 2002  
 //
 // ****************************************************************************
 
-void
-ViewerWindow::SetViewCurve(const avtViewCurve &v)
+const avtViewCurve &
+ViewerWindow::GetViewCurve() const
 {
-    visWindow->SetViewCurve(v);
+    return visWindow->GetViewCurve();
 }
-
 
 // ****************************************************************************
 //  Method: ViewerWindow::GetView2D
@@ -2188,26 +2277,6 @@ ViewerWindow::GetView3D() const
 }
 
 // ****************************************************************************
-//  Method: ViewerWindow::GetViewCurve
-//
-//  Purpose: 
-//    Returns a constant reference to the Curve view.
-//
-//  Returns:    A constant reference to the Curve view.
-//
-//  Programmer: Kathleen Bonnell 
-//  Creation:   May 10, 2002  
-//
-// ****************************************************************************
-
-const avtViewCurve &
-ViewerWindow::GetViewCurve() const
-{
-    return visWindow->GetViewCurve();
-}
-
-
-// ****************************************************************************
 // Method: ViewerWindow::CopyViewAttributes
 //
 // Purpose: 
@@ -2234,29 +2303,39 @@ ViewerWindow::GetViewCurve() const
 //    Eric Brugger, Fri Apr 18 12:21:13 PDT 2003
 //    I removed autoCenter and added viewModified2d.
 //
+//    Eric Brugger, Wed Aug 20 11:15:07 PDT 2003
+//    I added a curve view.
+//
 // ****************************************************************************
 
 void
 ViewerWindow::CopyViewAttributes(const ViewerWindow *source)
 {
     //
-    // Copy the 2d and 3d view.
+    // Copy the views.
     //
+    visWindow->SetViewCurve(source->visWindow->GetViewCurve());
     visWindow->SetView2D(source->visWindow->GetView2D());
     visWindow->SetView3D(source->visWindow->GetView3D());
 
     //
-    // Copy the 2d and 3d bounding boxes.
+    // Copy the bounding boxes.
     //
-    boundingBoxValid2d = source->boundingBoxValid2d;
-    centeringValid2d   = source->centeringValid2d;
-    haveRenderedIn2d   = source->haveRenderedIn2d;
-    viewModified2d     = source->viewModified2d;
-    boundingBoxValid3d = source->boundingBoxValid3d;
-    centeringValid3d   = source->centeringValid3d;
-    haveRenderedIn3d   = source->haveRenderedIn3d;
-    int       i;
+    boundingBoxValidCurve = source->boundingBoxValidCurve;
+    centeringValidCurve   = source->centeringValidCurve;
+    haveRenderedInCurve   = source->haveRenderedInCurve;
+    viewModifiedCurve     = source->viewModifiedCurve;
+    boundingBoxValid2d    = source->boundingBoxValid2d;
+    centeringValid2d      = source->centeringValid2d;
+    haveRenderedIn2d      = source->haveRenderedIn2d;
+    viewModified2d        = source->viewModified2d;
+    boundingBoxValid3d    = source->boundingBoxValid3d;
+    centeringValid3d      = source->centeringValid3d;
+    haveRenderedIn3d      = source->haveRenderedIn3d;
 
+    int       i;
+    for (i = 0; i < 4; i++)
+        boundingBoxCurve[i] = source->boundingBoxCurve[i];
     for (i = 0; i < 4; i++)
         boundingBox2d[i] = source->boundingBox2d[i];
     for (i = 0; i < 6; i++)
@@ -2281,6 +2360,9 @@ ViewerWindow::CopyViewAttributes(const ViewerWindow *source)
 //   Don't instantiate new avtView2D, but retrieve from VisWindow so that
 //   axisScale information can be preserved. 
 //   
+//   Eric Brugger, Wed Aug 20 11:15:07 PDT 2003
+//   I added a curve view.
+//
 // ****************************************************************************
 
 void
@@ -2292,14 +2374,35 @@ ViewerWindow::UpdateCameraView()
     //
     if (cameraView && view2DAtts->GetNIndices() > 0)
     {
-        if (viewDimension == 2)
+        if (visWindow->GetWindowMode() == WINMODE_CURVE)
         {
-            view2DAtts->GetAtts(animation->GetFrameIndex(), curView);
+            viewCurveAtts->GetAtts(animation->GetFrameIndex(), curViewCurve);
+ 
+            avtViewCurve viewCurve = visWindow->GetViewCurve();
+ 
+            const double *domain=curViewCurve->GetDomainCoords();
+            const double *range=curViewCurve->GetRangeCoords();
+            const double *viewport=curViewCurve->GetViewportCoords();
+ 
+            for (int i = 0; i < 4; i++)
+            {
+                viewCurve.viewport[i] = viewport[i];
+            }
+            viewCurve.domain[0] = domain[0];
+            viewCurve.domain[1] = domain[1];
+            viewCurve.range[0]  = range[0];
+            viewCurve.range[1]  = range[1];
+ 
+            visWindow->SetViewCurve(viewCurve);
+        }
+        else if (visWindow->GetWindowMode() == WINMODE_2D)
+        {
+            view2DAtts->GetAtts(animation->GetFrameIndex(), curView2D);
  
             avtView2D view2d = visWindow->GetView2D();
  
-            const double *viewport=curView->GetViewportCoords();
-            const double *window=curView->GetWindowCoords();
+            const double *viewport=curView2D->GetViewportCoords();
+            const double *window=curView2D->GetWindowCoords();
  
             for (int i = 0; i < 4; i++)
             {
@@ -2311,27 +2414,27 @@ ViewerWindow::UpdateCameraView()
         }
         else
         {
-            view3DAtts->GetAtts(animation->GetFrameIndex(), curView);
+            view3DAtts->GetAtts(animation->GetFrameIndex(), curView3D);
 
             avtView3D view3d;
 
-            view3d.normal[0] = curView->GetViewNormal()[0];
-            view3d.normal[1] = curView->GetViewNormal()[1];
-            view3d.normal[2] = curView->GetViewNormal()[2];
-            view3d.focus[0] = curView->GetFocus()[0];
-            view3d.focus[1] = curView->GetFocus()[1];
-            view3d.focus[2] = curView->GetFocus()[2];
-            view3d.viewUp[0] = curView->GetViewUp()[0];
-            view3d.viewUp[1] = curView->GetViewUp()[1];
-            view3d.viewUp[2] = curView->GetViewUp()[2];
-            view3d.viewAngle = curView->GetViewAngle();
-            view3d.parallelScale = curView->GetParallelScale();
-            view3d.nearPlane = curView->GetNearPlane();
-            view3d.farPlane = curView->GetFarPlane();
-            view3d.imagePan[0] = curView->GetImagePan()[0];
-            view3d.imagePan[1] = curView->GetImagePan()[1];
-            view3d.imageZoom = curView->GetImageZoom();
-            view3d.perspective = curView->GetPerspective();
+            view3d.normal[0] = curView3D->GetViewNormal()[0];
+            view3d.normal[1] = curView3D->GetViewNormal()[1];
+            view3d.normal[2] = curView3D->GetViewNormal()[2];
+            view3d.focus[0] = curView3D->GetFocus()[0];
+            view3d.focus[1] = curView3D->GetFocus()[1];
+            view3d.focus[2] = curView3D->GetFocus()[2];
+            view3d.viewUp[0] = curView3D->GetViewUp()[0];
+            view3d.viewUp[1] = curView3D->GetViewUp()[1];
+            view3d.viewUp[2] = curView3D->GetViewUp()[2];
+            view3d.viewAngle = curView3D->GetViewAngle();
+            view3d.parallelScale = curView3D->GetParallelScale();
+            view3d.nearPlane = curView3D->GetNearPlane();
+            view3d.farPlane = curView3D->GetFarPlane();
+            view3d.imagePan[0] = curView3D->GetImagePan()[0];
+            view3d.imagePan[1] = curView3D->GetImagePan()[1];
+            view3d.imageZoom = curView3D->GetImageZoom();
+            view3d.perspective = curView3D->GetPerspective();
 
             visWindow->SetView3D(view3d);
         }
@@ -2668,6 +2771,26 @@ ViewerWindow::GetRealized()
 }
 
 // ****************************************************************************
+// Method: ViewerWindow::SetVisible
+//
+// Purpose: 
+//   Set the window visibility flag.
+//
+// Arguments:
+//   val       The new visibility flag.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Mar 12 09:38:19 PDT 2003
+//
+// ****************************************************************************
+
+void
+ViewerWindow::SetVisible(bool val)
+{
+    isVisible = val;
+}
+
+// ****************************************************************************
 // Method: ViewerWindow::IsVisible
 //
 // Purpose: 
@@ -2678,8 +2801,6 @@ ViewerWindow::GetRealized()
 // Programmer: Brad Whitlock
 // Creation:   Wed Mar 12 09:38:19 PDT 2003
 //
-// Modifications:
-//   
 // ****************************************************************************
 
 bool
@@ -2688,10 +2809,20 @@ ViewerWindow::IsVisible() const
     return visWindow->IsVisible();
 }
 
-void
-ViewerWindow::SetVisible(bool val)
+// ****************************************************************************
+//  Method: ViewerWindow::GetWindowMode
+//
+//  Purpose: 
+//
+//  Programmer: Eric Brugger
+//  Creation:   August 20, 2003 
+//
+// ****************************************************************************
+
+WINDOW_MODE
+ViewerWindow::GetWindowMode() const 
 {
-    isVisible = val;
+    return visWindow->GetWindowMode();
 }
 
 // ****************************************************************************
@@ -2716,87 +2847,6 @@ ViewerWindow::SetPlotColors(const double *bg, const double *fg)
     {
         SendRedrawMessage();
     }
-}
-
-// ****************************************************************************
-//  Method: ViewerWindow::RecenterView2d
-//
-//  Purpose: 
-//    Recenter the window's 2d view using the specified limits.
-//
-//  Arguments:
-//    limits    The limits of all the plots.
-//
-//  Programmer: Eric Brugger
-//  Creation:   April 24, 2001
-//
-//  Modifications:
-//    Eric Brugger, Mon Aug 20 12:01:02 PDT 2001
-//    I modified the way the window handles view information.
-//
-//    Eric Brugger, Mon Apr 15 13:15:09 PDT 2002
-//    I modified the routine to handle the case where there are no plots in
-//    the window.
-//
-//    Eric Brugger, Fri Apr 18 12:21:13 PDT 2003
-//    I modified the routine to set the viewModified2d flag.
-//
-//    Kathleen Bonnell, Thu May 15 11:52:56 PDT 2003   
-//    Added code to compute axis scale factor when in fullFrame mode. 
-//
-//    Kathleen Bonnell, Wed Jul 16 10:02:52 PDT 2003 
-//    Don't scale view2D's window, handled in avtView2d. 
-//
-// ****************************************************************************
-
-void
-ViewerWindow::RecenterView2d(const double *limits)
-{
-    //
-    // If the plot limits are invalid then there are no plots so mark the
-    // bounding box as invalid so that the view is set from scratch the
-    // next time it is updated.
-    //
-    if (limits[0] == DBL_MAX && limits[1] == -DBL_MAX)
-    {
-        centeringValid2d = false;
-        return;
-    }
-
-    //
-    // Set the new window.
-    //
-    int       i;
-
-    for (i = 0; i < 4; i++)
-    {
-        boundingBox2d[i] = limits[i];
-    }
-
-    //
-    // Update the view.
-    //
-    avtView2D view2D=visWindow->GetView2D();
-
-    for (i = 0; i < 4; i++)
-    {
-        view2D.window[i] = limits[i];
-    }
-
-    if (fullFrame)
-    { 
-        Compute2DScaleFactor(view2D.axisScaleFactor, view2D.axisScaleType);
-    }
-    else
-    {
-        view2D.axisScaleFactor = 0.;
-    }
-    visWindow->SetView2D(view2D);
-
-    //
-    // Flag the view as unmodified.
-    //
-    viewModified2d = false;
 }
 
 // ****************************************************************************
@@ -2879,13 +2929,15 @@ ViewerWindow::Compute2DScaleFactor(double &s, int & t)
 //  Creation:   June 2, 2003 
 //
 //  Modifications:
+//    Eric Brugger, Wed Aug 20 11:15:07 PDT 2003
+//    I added a curve view.
 //
 // ****************************************************************************
 
 void
 ViewerWindow::GetScaleFactorAndType(double &s, int &t)
 {
-    if (fullFrame && viewDimension == 2 && !GetTypeIsCurve())
+    if (fullFrame && visWindow->GetWindowMode() == WINMODE_2D)
     {
         avtView2D view2D=visWindow->GetView2D();
         s = view2D.axisScaleFactor;
@@ -2898,6 +2950,171 @@ ViewerWindow::GetScaleFactorAndType(double &s, int &t)
     }
 }
 
+// ****************************************************************************
+//  Method: ViewerWindow::RecenterViewCurve
+//
+//  Purpose: 
+//    Recenter the window's Curve view using the specified limits.
+//
+//  Arguments:
+//    limits    The limits of all the plots.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   May 10, 2002
+//
+//  Modifications:
+//    Kathleen Bonnell, Fri Jul 12 17:28:31 PDT 2002
+//    Use the scale factor when setting the window.
+//
+//    Kathleen Bonnell, Thu Apr 24 17:17:21 PDT 2003 
+//    Make the bbox square when it is reported as 1D.
+//
+//    Eric Brugger, Wed Aug 20 11:15:07 PDT 2003
+//    I added a curve view.
+//
+//    Eric Brugger, Thu Aug 28 12:27:42 PDT 2003
+//    I modified the routine to set the viewModifiedCurve flag.
+//
+// ****************************************************************************
+
+void
+ViewerWindow::RecenterViewCurve(const double *limits)
+{
+    //
+    // If the plot limits are invalid then there are no plots so mark the
+    // bounding box as invalid so that the view is set from scratch the
+    // next time it is updated.
+    //
+    if (limits[0] == DBL_MAX && limits[1] == -DBL_MAX)
+    {
+        centeringValidCurve = false;
+        return;
+    }
+
+    //
+    // Set the new window.
+    //
+    int       i;
+
+    for (i = 0; i < 4; i++)
+    {
+        boundingBoxCurve[i] = limits[i];
+    }
+
+    //
+    // If one of the axes has no extents, create some based on the extents
+    // of the other axis.
+    //
+    if (boundingBoxCurve[2] == boundingBoxCurve[3])
+    {
+        double fudge = (boundingBoxCurve[1] - boundingBoxCurve[0] ) * 0.5;
+        boundingBoxCurve[2] -= fudge;
+        boundingBoxCurve[3] += fudge;
+    }
+    else if (boundingBoxCurve[0] == boundingBoxCurve[1])
+    {
+        double fudge = (boundingBoxCurve[3] - boundingBoxCurve[2] ) * 0.5;
+        boundingBoxCurve[0] -= fudge;
+        boundingBoxCurve[1] += fudge;
+    }
+
+    //
+    // Update the view.
+    //
+    avtViewCurve viewCurve=visWindow->GetViewCurve();
+    viewCurve.domain[0] = boundingBoxCurve[0];
+    viewCurve.domain[1] = boundingBoxCurve[1];
+    viewCurve.range[0]  = boundingBoxCurve[2];
+    viewCurve.range[1]  = boundingBoxCurve[3];
+
+    visWindow->SetViewCurve(viewCurve);
+
+    //
+    // Flag the view as unmodified.
+    //
+    viewModifiedCurve = false;
+}
+
+// ****************************************************************************
+//  Method: ViewerWindow::RecenterView2d
+//
+//  Purpose: 
+//    Recenter the window's 2d view using the specified limits.
+//
+//  Arguments:
+//    limits    The limits of all the plots.
+//
+//  Programmer: Eric Brugger
+//  Creation:   April 24, 2001
+//
+//  Modifications:
+//    Eric Brugger, Mon Aug 20 12:01:02 PDT 2001
+//    I modified the way the window handles view information.
+//
+//    Eric Brugger, Mon Apr 15 13:15:09 PDT 2002
+//    I modified the routine to handle the case where there are no plots in
+//    the window.
+//
+//    Eric Brugger, Fri Apr 18 12:21:13 PDT 2003
+//    I modified the routine to set the viewModified2d flag.
+//
+//    Kathleen Bonnell, Thu May 15 11:52:56 PDT 2003   
+//    Added code to compute axis scale factor when in fullFrame mode. 
+//
+//    Kathleen Bonnell, Wed Jul 16 10:02:52 PDT 2003 
+//    Don't scale view2D's window, handled in avtView2d. 
+//
+// ****************************************************************************
+
+void
+ViewerWindow::RecenterView2d(const double *limits)
+{
+    //
+    // If the plot limits are invalid then there are no plots so mark the
+    // bounding box as invalid so that the view is set from scratch the
+    // next time it is updated.
+    //
+    if (limits[0] == DBL_MAX && limits[1] == -DBL_MAX)
+    {
+        centeringValid2d = false;
+        return;
+    }
+
+    //
+    // Set the new window.
+    //
+    int       i;
+
+    for (i = 0; i < 4; i++)
+    {
+        boundingBox2d[i] = limits[i];
+    }
+
+    //
+    // Update the view.
+    //
+    avtView2D view2D=visWindow->GetView2D();
+
+    for (i = 0; i < 4; i++)
+    {
+        view2D.window[i] = limits[i];
+    }
+
+    if (fullFrame)
+    { 
+        Compute2DScaleFactor(view2D.axisScaleFactor, view2D.axisScaleType);
+    }
+    else
+    {
+        view2D.axisScaleFactor = 0.;
+    }
+    visWindow->SetView2D(view2D);
+
+    //
+    // Flag the view as unmodified.
+    //
+    viewModified2d = false;
+}
 
 // ****************************************************************************
 //  Method: ViewerWindow::RecenterView3d
@@ -3003,73 +3220,90 @@ ViewerWindow::RecenterView3d(const double *limits)
 }
 
 // ****************************************************************************
-//  Method: ViewerWindow::RecenterViewCurve
+//  Method: ViewerWindow::ResetViewCurve
 //
 //  Purpose: 
-//    Recenter the window's Curve view using the specified limits.
+//    Reset the window's Curve view.
 //
-//  Arguments:
-//    limits    The limits of all the plots.
+//  Notes:
+//    We do not reset the window.  That would be an annoying feature.
 //
 //  Programmer: Kathleen Bonnell 
-//  Creation:   May 10, 2002
+//  Creation:   May 10, 2002. 
 //
 //  Modifications:
 //    Kathleen Bonnell, Fri Jul 12 17:28:31 PDT 2002
 //    Use the scale factor when setting the window.
 //
+//    Brad Whitlock, Mon Sep 23 12:55:33 PDT 2002
+//    I made it use the new GetExtents method.
+//
+//    Eric Brugger, Tue Jan 14 07:59:31 PST 2003
+//    I added the number of dimensions to the GetExtents call.
+//
 //    Kathleen Bonnell, Thu Apr 24 17:17:21 PDT 2003 
-//    Make the bbox square when it is reported as 1D.
+//    Create a square bounding box when it is reported as 1D.
+//
+//    Eric Brugger, Wed Aug 20 11:15:07 PDT 2003
+//    I added a curve view.
+//
+//    Eric Brugger, Thu Aug 28 12:27:42 PDT 2003
+//    I modified the routine to set the viewModifiedCurve flag.
 //
 // ****************************************************************************
 
 void
-ViewerWindow::RecenterViewCurve(const double *limits)
+ViewerWindow::ResetViewCurve()
 {
+    avtViewCurve viewCurve=visWindow->GetViewCurve();
+
+    //
+    // Set the bounding box based on the plot limits.
+    //
+    GetExtents(2, boundingBoxCurve);
+
     //
     // If the plot limits are invalid then there are no plots so mark the
     // bounding box as invalid so that the view is set from scratch the
     // next time it is updated.
     //
-    if (limits[0] == DBL_MAX && limits[1] == -DBL_MAX)
+    if (boundingBoxCurve[0] == DBL_MAX && boundingBoxCurve[1] == -DBL_MAX)
     {
-        centeringValid2d = false;
+        boundingBoxValidCurve = false;
         return;
     }
 
     //
-    // Set the new window.
+    // If one of the axes has no extents, create some based on the extents
+    // of the other axis.
     //
-    int       i;
-
-    for (i = 0; i < 4; i++)
+    if (boundingBoxCurve[2] == boundingBoxCurve[3])
     {
-        boundingBox2d[i] = limits[i];
+        double fudge = (boundingBoxCurve[1] - boundingBoxCurve[0]) * 0.5;
+        boundingBoxCurve[2] -= fudge;
+        boundingBoxCurve[3] += fudge;
     }
-
-    if (boundingBox2d[2] == boundingBox2d[3])
+    else if (boundingBoxCurve[0] == boundingBoxCurve[1])
     {
-        double fudge = (boundingBox2d[1] - boundingBox2d[0] ) * 0.5;
-        boundingBox2d[2] -= fudge;
-        boundingBox2d[3] += fudge;
-    }
-    else if (boundingBox2d[0] == boundingBox2d[1])
-    {
-        double fudge = (boundingBox2d[3] - boundingBox2d[2] ) * 0.5;
-        boundingBox2d[0] -= fudge;
-        boundingBox2d[1] += fudge;
+        double fudge = (boundingBoxCurve[3] - boundingBoxCurve[2]) * 0.5;
+        boundingBoxCurve[0] -= fudge;
+        boundingBoxCurve[1] += fudge;
     }
 
     //
-    // Update the view.
+    // Set the window.
     //
-    avtViewCurve viewCurve=visWindow->GetViewCurve();
-    viewCurve.window[0] = boundingBox2d[0];
-    viewCurve.window[1] = boundingBox2d[1];
-    viewCurve.window[2] = boundingBox2d[2]*viewCurve.yScale;
-    viewCurve.window[3] = boundingBox2d[3]*viewCurve.yScale;
+    viewCurve.domain[0]  = boundingBoxCurve[0];
+    viewCurve.domain[1]  = boundingBoxCurve[1];
+    viewCurve.range[0]   = boundingBoxCurve[2];
+    viewCurve.range[1]   = boundingBoxCurve[3];
 
     visWindow->SetViewCurve(viewCurve);
+
+    //
+    // Flag the view as unmodified.
+    //
+    viewModifiedCurve = false;
 }
 
 // ****************************************************************************
@@ -3284,78 +3518,6 @@ ViewerWindow::ResetView3d()
 }
 
 // ****************************************************************************
-//  Method: ViewerWindow::ResetViewCurve
-//
-//  Purpose: 
-//    Reset the window's Curve view.
-//
-//  Notes:
-//    We do not reset the window.  That would be an annoying feature.
-//
-//  Programmer: Kathleen Bonnell 
-//  Creation:   May 10, 2002. 
-//
-//  Modifications:
-//    Kathleen Bonnell, Fri Jul 12 17:28:31 PDT 2002
-//    Use the scale factor when setting the window.
-//
-//    Brad Whitlock, Mon Sep 23 12:55:33 PDT 2002
-//    I made it use the new GetExtents method.
-//
-//    Eric Brugger, Tue Jan 14 07:59:31 PST 2003
-//    I added the number of dimensions to the GetExtents call.
-//
-//    Kathleen Bonnell, Thu Apr 24 17:17:21 PDT 2003 
-//    Create a square bounding box when it is reported as 1D.
-//
-// ****************************************************************************
-
-void
-ViewerWindow::ResetViewCurve()
-{
-    avtViewCurve viewCurve=visWindow->GetViewCurve();
-
-    //
-    // Set the bounding box based on the plot limits.
-    //
-    GetExtents(2, boundingBox2d);
-
-    //
-    // If the plot limits are invalid then there are no plots so mark the
-    // bounding box as invalid so that the view is set from scratch the
-    // next time it is updated.
-    //
-    if (boundingBox2d[0] == DBL_MAX && boundingBox2d[1] == -DBL_MAX)
-    {
-        boundingBoxValid2d = false;
-        return;
-    }
-
-    if (boundingBox2d[2] == boundingBox2d[3])
-    {
-        double fudge = (boundingBox2d[1] - boundingBox2d[0]) * 0.5;
-        boundingBox2d[2] -= fudge;
-        boundingBox2d[3] += fudge;
-    }
-    else if (boundingBox2d[0] == boundingBox2d[1])
-    {
-        double fudge = (boundingBox2d[3] - boundingBox2d[2]) * 0.5;
-        boundingBox2d[0] -= fudge;
-        boundingBox2d[1] += fudge;
-    }
-
-    //
-    // Set the window.
-    //
-    viewCurve.window[0]   = boundingBox2d[0];
-    viewCurve.window[1]   = boundingBox2d[1];
-    viewCurve.window[2]   = boundingBox2d[2]*viewCurve.yScale;
-    viewCurve.window[3]   = boundingBox2d[3]*viewCurve.yScale;
-
-    visWindow->SetViewCurve(viewCurve);
-}
-
-// ****************************************************************************
 //  Method: ViewerWindow::AdjustView3d
 //
 //  Purpose: 
@@ -3456,6 +3618,109 @@ ViewerWindow::AdjustView3d(const double *limits)
     // Update the view.
     //
     visWindow->SetView3D(view3D);
+}
+
+// ****************************************************************************
+//  Method: ViewerWindow::UpdateViewCurve
+//
+//  Purpose: 
+//    Update the Curve view for the window.
+//
+//  Arguments:
+//    limits    The limits of all the plots.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   May 10, 2002 
+//
+//  Modifications:
+//
+//    Hank Childs, Thu Jul 18 15:04:20 PDT 2002
+//    Don't be so aggressive about reseting the view.  The old test (whether
+//    or not the bbox is valid) is not as applicable because the actual vs
+//    original spatial extents can invalidate bbox extents.
+//
+//    Eric Brugger, Fri Apr 18 12:21:13 PDT 2003
+//    I replaced autoCenter with maintainView.  I added logic to deal with
+//    viewModified2d and mergeViewLimits.
+//
+//    Eric Brugger, Wed Aug 20 11:15:07 PDT 2003
+//    I added a curve view.
+//
+// ****************************************************************************
+
+void
+ViewerWindow::UpdateViewCurve(const double *limits)
+{
+    //
+    // If this is the first time that this routine is being called for this
+    // window, set the limits and reset the view.
+    //
+    if (boundingBoxValidCurve == false)
+    {
+        for (int i = 0; i < 4; i++)
+            boundingBoxCurve[i] = limits[i];
+
+        boundingBoxValidCurve = true;
+        centeringValidCurve   = true;
+
+        if (!haveRenderedInCurve)
+        {
+            ResetViewCurve();
+        }
+        else
+        {
+            //
+            // Update the view to scale any new plots appropriately.
+            //
+            visWindow->UpdateView();
+        }
+
+        ViewerWindowManager::Instance()->UpdateViewAtts();
+    }
+    //
+    // If the centering is invalid or if maintain view is off, the view has
+    // not been modified and the limits have changed, recenter the view.
+    // The recentering uses the current limits or the merged limits from
+    // the previous plots based on the mergeViewLimits flag.
+    //
+    else if (centeringValidCurve == false ||
+             maintainView == false && viewModifiedCurve == false &&
+             (limits[0] != boundingBoxCurve[0] ||
+              limits[1] != boundingBoxCurve[1] ||
+              limits[2] != boundingBoxCurve[2] ||
+              limits[3] != boundingBoxCurve[3]))
+    {
+        if (centeringValidCurve == true && mergeViewLimits == true)
+        {
+            boundingBoxCurve[0] = boundingBoxCurve[0] < limits[0] ?
+                                  boundingBoxCurve[0] : limits[0];
+            boundingBoxCurve[1] = boundingBoxCurve[1] > limits[1] ?
+                                  boundingBoxCurve[1] : limits[1];
+            boundingBoxCurve[2] = boundingBoxCurve[2] < limits[2] ?
+                                  boundingBoxCurve[2] : limits[2];
+            boundingBoxCurve[3] = boundingBoxCurve[3] > limits[3] ?
+                                  boundingBoxCurve[3] : limits[3];
+
+            RecenterViewCurve(boundingBoxCurve);
+        }
+        else
+        {
+            centeringValidCurve   = true;
+
+            RecenterViewCurve(limits);
+        }
+
+        ViewerWindowManager::Instance()->UpdateViewAtts();
+    }
+    //
+    // Update the view to scale any new plots appropriately.
+    //
+    else
+    {
+        visWindow->UpdateView();
+    }
+
+    haveRenderedInCurve = true;
 }
 
 // ****************************************************************************
@@ -3656,91 +3921,6 @@ ViewerWindow::UpdateView3d(const double *limits)
 }
 
 // ****************************************************************************
-//  Method: ViewerWindow::UpdateViewCurve
-//
-//  Purpose: 
-//    Update the Curve view for the window.
-//
-//  Arguments:
-//    limits    The limits of all the plots.
-//
-//  Programmer: Kathleen Bonnell 
-//  Creation:   May 10, 2002 
-//
-//  Modifications:
-//
-//    Hank Childs, Thu Jul 18 15:04:20 PDT 2002
-//    Don't be so aggressive about reseting the view.  The old test (whether
-//    or not the bbox is valid) is not as applicable because the actual vs
-//    original spatial extents can invalidate bbox extents.
-//
-//    Eric Brugger, Fri Apr 18 12:21:13 PDT 2003
-//    I replaced autoCenter with maintainView.  I added logic to deal with
-//    viewModified2d and mergeViewLimits.
-//
-// ****************************************************************************
-
-void
-ViewerWindow::UpdateViewCurve(const double *limits)
-{
-    //
-    // If this is the first time that this routine is being called for this
-    // window, set the limits and reset the view.
-    //
-    if (boundingBoxValid2d == false)
-    {
-        for (int i = 0; i < 4; i++)
-            boundingBox2d[i] = limits[i];
-
-        boundingBoxValid2d = true;
-        centeringValid2d   = true;
-
-        if (!haveRenderedIn2d)
-        {
-            ResetViewCurve();
-        }
-
-        ViewerWindowManager::Instance()->UpdateViewAtts();
-    }
-    //
-    // If the centering is invalid or if maintain view is off, the view has
-    // not been modified and the limits have changed, recenter the view.
-    // The recentering uses the current limits or the merged limits from
-    // the previous plots based on the mergeViewLimits flag.
-    //
-    else if (centeringValid2d == false ||
-             maintainView == false && viewModified2d == false &&
-             (limits[0] != boundingBox2d[0] || limits[1] != boundingBox2d[1] ||
-              limits[2] != boundingBox2d[2] || limits[3] != boundingBox2d[3]))
-    {
-        if (centeringValid2d == true && mergeViewLimits == true)
-        {
-            boundingBox2d[0] = boundingBox2d[0] < limits[0] ?
-                               boundingBox2d[0] : limits[0];
-            boundingBox2d[1] = boundingBox2d[1] > limits[1] ?
-                               boundingBox2d[1] : limits[1];
-            boundingBox2d[2] = boundingBox2d[2] < limits[2] ?
-                               boundingBox2d[2] : limits[2];
-            boundingBox2d[3] = boundingBox2d[3] > limits[3] ?
-                               boundingBox2d[3] : limits[3];
-
-            RecenterView2d(boundingBox2d);
-        }
-        else
-        {
-            centeringValid2d   = true;
-
-            RecenterView2d(limits);
-        }
-
-        ViewerWindowManager::Instance()->UpdateViewAtts();
-    }
-
-    haveRenderedIn2d = true;
-}
-
-
-// ****************************************************************************
 //  Method: ViewerWindow::ShowMenuCallback
 //
 //  Purpose: 
@@ -3934,6 +4114,9 @@ ViewerWindow::CreateToolbar(const std::string &name)
 //   I used new convenience methods for setting the viewAtts with the avt
 //   view objects.
 //
+//   Eric Brugger, Wed Aug 20 11:15:07 PDT 2003
+//   I added a curve view.
+//
 // ****************************************************************************
 
 WindowAttributes
@@ -3944,26 +4127,20 @@ ViewerWindow::GetWindowAttributes() const
     //
     // Set the view
     //
-    ViewAttributes viewAtts;
-    if (viewDimension == 2)
-    {
-        if (!GetTypeIsCurve())
-        {
-            const avtView2D &view2d = GetView2D();
-            view2d.SetToViewAttributes(&viewAtts);
-        }
-        else 
-        {
-            const avtViewCurve &viewCurve = GetViewCurve();
-            viewCurve.SetToViewAttributes(&viewAtts);
-        }
-    }
-    else
-    {
-        const avtView3D &view3d = GetView3D();
-        view3d.SetToViewAttributes(&viewAtts);
-    }
-    winAtts.SetView(viewAtts);
+    ViewCurveAttributes viewCurveAtts;
+    const avtViewCurve &viewCurve = GetViewCurve();
+    viewCurve.SetToViewCurveAttributes(&viewCurveAtts);
+    winAtts.SetViewCurve(viewCurveAtts);
+   
+    View2DAttributes view2DAtts;
+    const avtView2D &view2d = GetView2D();
+    view2d.SetToView2DAttributes(&view2DAtts);
+    winAtts.SetView2D(view2DAtts);
+
+    View3DAttributes view3DAtts;
+    const avtView3D &view3d = GetView3D();
+    view3d.SetToView3DAttributes(&view3DAtts);
+    winAtts.SetView3D(view3DAtts);
 
     //
     // Set the size
@@ -4042,12 +4219,15 @@ ViewerWindow::GetWindowAttributes() const
 //   Added pickMode argument, so that correct interaction mode is set
 //   before picking. 
 //   
+//   Eric Brugger, Wed Aug 20 11:15:07 PDT 2003
+//   I added a curve view.
+//
 // ****************************************************************************
 
 void
 ViewerWindow::Pick(int x, int y, const INTERACTION_MODE pickMode)
 {
-    if(GetTypeIsCurve())
+    if(visWindow->GetWindowMode() == WINMODE_CURVE)
         Error("Curve windows cannot be picked for values.");
     else
     {
@@ -4238,42 +4418,6 @@ void
 ViewerWindow::ValidateQuery(const PickAttributes *pa, const Line *lineAtts)
 {
     visWindow->QueryIsValid(pa, lineAtts);
-}
-
-
-
-// ****************************************************************************
-//  Method: ViewerWindow::SetTypeIsCurve
-//
-//  Purpose: 
-//
-//  Programmer: Kathleen Bonnell 
-//  Creation:   April 17, 2002 
-//
-// ****************************************************************************
-
-void
-ViewerWindow::SetTypeIsCurve(const bool val)
-{
-    visWindow->SetTypeIsCurve(val);
-}
-
-
-
-// ****************************************************************************
-//  Method: ViewerWindow::GetTypeIsCurve
-//
-//  Purpose: 
-//
-//  Programmer: Kathleen Bonnell 
-//  Creation:   April 17, 2002 
-//
-// ****************************************************************************
-
-bool
-ViewerWindow::GetTypeIsCurve() const 
-{
-    return visWindow->GetTypeIsCurve();
 }
 
 
@@ -4746,6 +4890,8 @@ ViewerWindow::SetPopupEnabled(bool val)
 // Creation:   Mon Jun 30 13:10:30 PST 2003
 //
 // Modifications:
+//   Eric Brugger, Wed Aug 20 11:15:07 PDT 2003
+//   I added a curve view.
 //   
 // ****************************************************************************
 
@@ -4775,8 +4921,6 @@ ViewerWindow::CreateNode(DataNode *parentNode, bool detailed)
         windowNode->AddNode(new DataNode("cameraView", cameraView));
         windowNode->AddNode(new DataNode("maintainView", maintainView));
         windowNode->AddNode(new DataNode("viewIsLocked", viewIsLocked));
-        windowNode->AddNode(new DataNode("curveWindow", GetTypeIsCurve()));
-        windowNode->AddNode(new DataNode("viewDimension", viewDimension));
         windowNode->AddNode(new DataNode("viewExtentsType", avtExtentType_ToString(plotExtentsType)));
         windowNode->AddNode(new DataNode("timeLocked", timeLocked));
         windowNode->AddNode(new DataNode("toolsLocked", toolsLocked));
@@ -4827,46 +4971,41 @@ ViewerWindow::CreateNode(DataNode *parentNode, bool detailed)
         //
         // View
         //
-        ViewAttributes viewAtts;
-        if (viewDimension == 2)
-        {
-            if (!GetTypeIsCurve())
-            {
-                const avtView2D &view2d = GetView2D();
-                view2d.SetToViewAttributes(&viewAtts);
-            }
-            else 
-            {
-                const avtViewCurve &viewCurve = GetViewCurve();
-                viewCurve.SetToViewAttributes(&viewAtts);
-            }
-        }
-        else
-        {
-            const avtView3D &view3d = GetView3D();
-            view3d.SetToViewAttributes(&viewAtts);
-        }
-        viewAtts.CreateNode(windowNode, false);
+        ViewCurveAttributes tmpViewCurveAtts;
+        const avtViewCurve &viewCurve = GetViewCurve();
+        viewCurve.SetToViewCurveAttributes(&tmpViewCurveAtts);
+        tmpViewCurveAtts.CreateNode(windowNode, false);
+
+        View2DAttributes tmpView2DAtts;
+        const avtView2D &view2d = GetView2D();
+        view2d.SetToView2DAttributes(&tmpView2DAtts);
+        tmpView2DAtts.CreateNode(windowNode, false);
+
+        View3DAttributes tmpView3DAtts;
+        const avtView3D &view3d = GetView3D();
+        view3d.SetToView3DAttributes(&tmpView3DAtts);
+        tmpView3DAtts.CreateNode(windowNode, false);
 
         //
         // Save out the view keyframes.
         //
-        if(viewDimension == 3)
-        {
-            DataNode *view3DNode = new DataNode("view3DKeyframes");
-            if(view3DAtts->CreateNode(view3DNode))
-                windowNode->AddNode(view3DNode);
-            else
-                delete view3DNode;
-        }
+        DataNode *viewCurveNode = new DataNode("viewCurveKeyframes");
+        if(viewCurveAtts->CreateNode(viewCurveNode))
+            windowNode->AddNode(viewCurveNode);
         else
-        {
-            DataNode *view2DNode = new DataNode("view2DKeyframes");
-            if(view2DAtts->CreateNode(view2DNode))
-                windowNode->AddNode(view2DNode);
-            else
-                delete view2DNode;
-        }
+            delete viewCurveNode;
+
+        DataNode *view2DNode = new DataNode("view2DKeyframes");
+        if(view2DAtts->CreateNode(view2DNode))
+            windowNode->AddNode(view2DNode);
+        else
+            delete view2DNode;
+
+        DataNode *view3DNode = new DataNode("view3DKeyframes");
+        if(view3DAtts->CreateNode(view3DNode))
+            windowNode->AddNode(view3DNode);
+        else
+            delete view3DNode;
 
         //
         // Let the animation add its information.
@@ -4893,6 +5032,8 @@ ViewerWindow::CreateNode(DataNode *parentNode, bool detailed)
 // Creation:   Mon Jun 30 13:11:52 PST 2003
 //
 // Modifications:
+//   Eric Brugger, Wed Aug 20 11:15:07 PDT 2003
+//   I added a curve view.
 //   
 // ****************************************************************************
 
@@ -4917,35 +5058,32 @@ ViewerWindow::SetFromNode(DataNode *parentNode)
     //
     // Read in the view and set the view.
     //
-    if((node = windowNode->GetNode("viewDimension")) != 0)
-        viewDimension = node->AsInt();
-    if((node = windowNode->GetNode("curveWindow")) != 0)
-        SetTypeIsCurve(node->AsBool());
-    if(windowNode->GetNode("ViewAttributes") != 0)
+    if(windowNode->GetNode("ViewCurveAttributes") != 0)
     {
-        ViewAttributes viewAtts;
-        viewAtts.SetFromNode(windowNode);
-        if (viewDimension == 2)
-        {
-            if (!GetTypeIsCurve())
-            {
-                avtView2D view2d;
-                view2d.SetFromViewAttributes(&viewAtts);
-                SetView2D(view2d);
-            }
-            else 
-            {
-                avtViewCurve viewCurve;
-                viewCurve.SetFromViewAttributes(&viewAtts);
-                SetViewCurve(viewCurve);
-            }
-        }
-        else
-        {
-            avtView3D view3d;
-            view3d.SetFromViewAttributes(&viewAtts);
-            SetView3D(view3d);
-        }
+        ViewCurveAttributes viewCurveAtts;
+        avtViewCurve viewCurve;
+
+        viewCurveAtts.SetFromNode(windowNode);
+        viewCurve.SetFromViewCurveAttributes(&viewCurveAtts);
+        SetViewCurve(viewCurve);
+    }
+    if(windowNode->GetNode("View2DAttributes") != 0)
+    {
+        View2DAttributes view2dAtts;
+        avtView2D view2d;
+
+        view2dAtts.SetFromNode(windowNode);
+        view2d.SetFromView2DAttributes(&view2dAtts);
+        SetView2D(view2d);
+    }
+    if(windowNode->GetNode("View3DAttributes") != 0)
+    {
+        View3DAttributes view3dAtts;
+        avtView3D view3d;
+
+        view3dAtts.SetFromNode(windowNode);
+        view3d.SetFromView3DAttributes(&view3dAtts);
+        SetView3D(view3d);
     }
     if((node = windowNode->GetNode("cameraView")) != 0)
         SetCameraViewMode(node->AsBool());
@@ -5008,11 +5146,15 @@ ViewerWindow::SetFromNode(DataNode *parentNode)
     //
     // Read in the view keyframes.
     //
-    ViewAttributes v;
+    ViewCurveAttributes tmpViewCurve;
+    if((node = windowNode->GetNode("viewCurveKeyframes")) != 0)
+        viewCurveAtts->SetFromNode(node, &tmpViewCurve);
+    View2DAttributes tmpView2D;
     if((node = windowNode->GetNode("view2DKeyframes")) != 0)
-        view2DAtts->SetFromNode(node, &v);
+        view2DAtts->SetFromNode(node, &tmpView2D);
+    View3DAttributes tmpView3D;
     if((node = windowNode->GetNode("view3DKeyframes")) != 0)
-        view3DAtts->SetFromNode(node, &v);
+        view3DAtts->SetFromNode(node, &tmpView3D);
 
     //
     // Let other objects get their information.
@@ -5059,7 +5201,6 @@ ViewerWindow::SetFromNode(DataNode *parentNode)
         const stringVector &activeTools = node->AsStringVector();
         for(int i = 0; i < activeTools.size(); ++i)
         {
-            int toolIndex = -1;
             for(int j = 0; j < GetNumTools(); ++j)
             {
                 if(GetToolName(j) == activeTools[i])

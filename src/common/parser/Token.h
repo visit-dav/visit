@@ -18,7 +18,7 @@ enum TokenType {
     TT_NTokens
 };
 
-std::string GetTokenTypeString(int t);
+PARSER_API std::string GetTokenTypeString(int t);
 
 // ****************************************************************************
 //  Class:  Token

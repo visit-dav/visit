@@ -518,46 +518,6 @@ VisWindowProtectionProxy::ProxiedLineout(int x1, int y1, int x2, int y2)
     viswin->Lineout(x1, y1, x2, y2);
 }
 
-// ****************************************************************************
-// Method: VisWindowProtectionProxy::ProxiedSetTypeIsCurve
-//
-// Purpose:   Sets that flag that designates the window as a curve type.
-//
-// Arguments:
-//   b          True if the window should be considered a curve window,
-//              false otherwise.
-//
-// Programmer:  Kathleen Bonnell
-// Creation:    April 17, 2002 
-//
-// ****************************************************************************
-
-void
-VisWindowProtectionProxy::ProxiedSetTypeIsCurve(bool b)
-{
-    viswin->SetTypeIsCurve(b);
-}
-
-
-// ****************************************************************************
-// Method: VisWindowProtectionProxy::ProxiedGetTypeIsCurve
-//
-// Purpose:     Gets the VisWindow's flag that designates the window as a curve
-//              type window.
-//
-// Returns:     The current value of the flag.
-//
-// Programmer:  Kathleen Bonnell
-// Creation:    April 17, 2002 
-//
-// ****************************************************************************
-
-bool
-VisWindowProtectionProxy::ProxiedGetTypeIsCurve()
-{
-    return viswin->GetTypeIsCurve();
-}
-
 
 // ****************************************************************************
 // Method: VisWindowProtectionProxy::ProxiedComputeVectorTextScaleFactor

@@ -250,6 +250,14 @@ struct ExternalRenderRequestInfo
 //    Mark C. Miller, 07Jul03
 //    Added GetWindowSize method
 //
+//    Eric Brugger, Wed Aug 20 11:14:04 PDT 2003
+//    I implemented curve view as a first class view type.  I split the
+//    view attributes into 2d and 3d parts.  I added the concept of a
+//    window mode.
+//
+//    Eric Brugger, Thu Aug 28 12:16:23 PDT 2003
+//    I added SetViewModifiedCurve.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerWindow
@@ -332,14 +340,14 @@ public:
 
     bool IsTheSameWindow(VisWindow *);
 
-    void UpdateView(const int dimension, const double *limits);
+    void UpdateView(const WINDOW_MODE mode, const double *limits);
+    void SetViewCurve(const avtViewCurve &v);
     void SetView2D(const avtView2D &v);
     void SetView3D(const avtView3D &v);
-    void SetViewCurve(const avtViewCurve &v);
+    const avtViewCurve &GetViewCurve() const;
     const avtView2D &GetView2D() const;
     const avtView3D &GetView3D() const;
-    const avtViewCurve &GetViewCurve() const;
-    int  GetViewDimension() const { return viewDimension; }
+    void SetViewModifiedCurve() { viewModifiedCurve = true; }
     void SetViewModified2d() { viewModified2d = true; }
     void SetMergeViewLimits(bool mode) { mergeViewLimits = mode; }
     void CopyViewAttributes(const ViewerWindow *);
@@ -378,8 +386,7 @@ public:
     bool GetRealized();
     void SetVisible(bool);
     bool IsVisible() const;
-    void SetTypeIsCurve(const bool);
-    bool GetTypeIsCurve() const;
+    WINDOW_MODE GetWindowMode() const;
 
     void SetPlotColors(const double *bg, const double *fg);
 
@@ -397,7 +404,6 @@ public:
     bool GetFullFrameMode() const;
     void Compute2DScaleFactor(double &s, int &t);
     void GetScaleFactorAndType(double &s, int &t);
-
 
     void ScalePlots(const float [3]);
 
@@ -423,16 +429,16 @@ public:
        {return turningOffScalableRendering; }
 
 private:
+    void RecenterViewCurve(const double *limits);
     void RecenterView2d(const double *limits);
     void RecenterView3d(const double *limits);
-    void RecenterViewCurve(const double *limits);
+    void ResetViewCurve();
     void ResetView2d();
     void ResetView3d();
-    void ResetViewCurve();
     void AdjustView3d(const double *limits);
+    void UpdateViewCurve(const double *limits);
     void UpdateView2d(const double *limits);
     void UpdateView3d(const double *limits);
-    void UpdateViewCurve(const double *limits);
 
     static void ShowCallback(void *);
     static void HideCallback(void *);
@@ -452,7 +458,10 @@ private:
     ViewerAnimation     *animation;
     ViewerActionManager *actionMgr;
 
-    ViewAttributes      *curView;
+    ViewCurveAttributes *curViewCurve;
+    View2DAttributes    *curView2D;
+    View3DAttributes    *curView3D;
+    AttributeSubjectMap *viewCurveAtts;
     AttributeSubjectMap *view2DAtts;
     AttributeSubjectMap *view3DAtts;
 
@@ -463,27 +472,33 @@ private:
     bool            cameraView;
     bool            maintainView;
     bool            viewIsLocked;
-    int             viewDimension;
+    WINDOW_MODE     windowMode;
     avtExtentType   plotExtentsType;
     bool            timeLocked;
     bool            toolsLocked;
     int             windowId;
     bool            isVisible;
 
+    double          boundingBoxCurve[4];
+    bool            boundingBoxValidCurve;
+    bool            haveRenderedInCurve;
+    bool            viewModifiedCurve;
+
     double          boundingBox2d[4];
     bool            boundingBoxValid2d;
     bool            haveRenderedIn2d;
     bool            viewModified2d;
-    bool            mergeViewLimits;
 
     double          boundingBox3d[6];
     bool            boundingBoxValid3d;
     bool            haveRenderedIn3d;
 
+    bool            centeringValidCurve;
     bool            centeringValid2d;
     bool            centeringValid3d;
 
     bool            fullFrame;
+    bool            mergeViewLimits;
 
     static bool     doNoWinMode;
 

@@ -1143,24 +1143,43 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer)
 //    uses convenience methods so we don't have to trapse all over the code
 //    when the ViewAttributes change field names.
 //
+//    Eric Brugger, Wed Aug 20 13:53:02 PDT 2003
+//    I modified the setting of the view information to set curve, 2d and
+//    3d views.
+//
 // ****************************************************************************
 void
 NetworkManager::SetWindowAttributes(const WindowAttributes &atts)
 {
-    //cerr << "NetworkManager::SetWindowAttributes()" << endl;
     viswin->SetSize(atts.GetSize()[0], atts.GetSize()[1]);
 
-#if 0
-    // What are bounds? 
-    viswin->SetBounds();
-    // What about 2D views?
-    viswin->SetView2D();
-#endif
+    //
+    // Set the view information.
+    //
+    const ViewCurveAttributes& viewCurveAtts = atts.GetViewCurve();
+    avtViewCurve viewCurve;
+    viewCurve.SetFromViewCurveAttributes(&viewCurveAtts);
+    viswin->SetViewCurve(viewCurve);
 
-    {  const LightList& lights = atts.GetLights();
-       viswin->SetLightList(&lights);
-    }
+    const View2DAttributes& view2DAtts = atts.GetView2D();
+    avtView2D view2D;
+    view2D.SetFromView2DAttributes(&view2DAtts);
+    viswin->SetView2D(view2D);
 
+    const View3DAttributes& view3DAtts = atts.GetView3D();
+    avtView3D view3D;
+    view3D.SetFromView3DAttributes(&view3DAtts);
+    viswin->SetView3D(view3D);
+
+    //
+    // Set the lights.
+    //
+    const LightList& lights = atts.GetLights();
+    viswin->SetLightList(&lights);
+
+    //
+    // Set the background.
+    //
     viswin->SetBackgroundColor(atts.GetBackground()[0]/255.0,
                                atts.GetBackground()[1]/255.0,
                                atts.GetBackground()[2]/255.0);
@@ -1181,22 +1200,6 @@ NetworkManager::SetWindowAttributes(const WindowAttributes &atts)
                                                      atts.GetGradBG2()[1],
                                                      atts.GetGradBG2()[2]);
     }
-
-    // Set the 3D view
-    {
-        const ViewAttributes& viewAtts = atts.GetView();
-        avtView3D view3d;
-        view3d.SetFromViewAttributes(&viewAtts);
-        view3d.imagePan[0] = viewAtts.GetImagePan()[0];
-        view3d.imagePan[1] = viewAtts.GetImagePan()[1];
-        view3d.imageZoom = viewAtts.GetImageZoom();
-        viswin->SetView3D(view3d);
-    }
-
-    viswin->SetViewport(atts.GetView().GetViewportCoords()[0],
-                        atts.GetView().GetViewportCoords()[1],
-                        atts.GetView().GetViewportCoords()[2],
-                        atts.GetView().GetViewportCoords()[3]);
 
     // rendering options
     viswin->SetAntialiasing(atts.GetRenderAtts().GetAntialiasing());

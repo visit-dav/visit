@@ -1,5 +1,5 @@
 
-import llnl.visit.ViewAttributes;
+import llnl.visit.View3DAttributes;
 import llnl.visit.plots.PseudocolorAttributes;
 
 // ****************************************************************************
@@ -16,6 +16,9 @@ import llnl.visit.plots.PseudocolorAttributes;
 // Modifications:
 //   Brad Whitlock, Tue Sep 24 08:05:51 PDT 2002
 //   I changed it so the view is set after the plot is drawn.
+//
+//   Eric Brugger, Wed Aug 27 09:04:55 PDT 2003
+//   I modified it to use the new view interface.
 //
 // ****************************************************************************
 
@@ -43,7 +46,7 @@ public class PlotAtts extends RunViewer
             viewer.DrawPlots();
 
             // Set the view
-            ViewAttributes v = viewer.GetView3D();
+            View3DAttributes v = viewer.GetView3D();
             v.SetCamera(0.456808, 0.335583, 0.823839);
             v.SetFocus(-0.927295, -1.22113, 1.01159);
             v.SetViewUp(-0.184554, 0.941716, -0.281266);

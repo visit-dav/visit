@@ -59,6 +59,10 @@
 #   Brad Whitlock, Thu Mar 20 10:28:05 PDT 2003
 #   I added GlobalLineoutAttributes.java
 #
+#   Eric Brugger, Thu Aug 28 08:32:59 PDT 2003
+#   I added ViewCurveAttributes.  I replaced ViewAttributes with
+#   View2DAttributes and View3DAttributes.
+#
 ##############################################################################
 
 ##
@@ -117,7 +121,9 @@ SILMatrixAttributes.java \
 SILRestrictionAttributes.java \
 StatusAttributes.java \
 SyncAttributes.java \
-ViewAttributes.java \
+View2DAttributes.java \
+View3DAttributes.java \
+ViewCurveAttributes.java \
 ViewerRPC.java \
 WindowInformation.java
 

@@ -1,4 +1,5 @@
 #include <ViewActions.h>
+#include <ViewAttributes.h>
 #include <ViewerAnimation.h>
 #include <ViewerMessaging.h>
 #include <ViewerPlotList.h>
@@ -8,6 +9,7 @@
 #include <ViewerWindowManager.h>
 #include <snprintf.h>
 
+#include <avtViewCurve.h>
 #include <avtView2D.h>
 #include <avtView3D.h>
 
@@ -184,9 +186,9 @@ bool
 ToggleFullFrameAction::Enabled() const
 {
     // This action should only be enabled if the window to which the action 
-    // belongs has plots in it, is 2D and not a Curve window.
+    // belongs has plots in it, and is 2D.
     return (window->GetAnimation()->GetPlotList()->GetNumPlots() > 0) &&
-           (window->GetViewDimension() == 2 && !window->GetTypeIsCurve());
+           (window->GetWindowMode() == WINMODE_2D);
 }
 
 bool
@@ -296,14 +298,14 @@ SaveViewAction::DeleteViews()
             avtViewCurve *v = (avtViewCurve *)views[i].view;
             delete v;
         }
-        else if(views[i].viewType == VIEW3D)
+        else if(views[i].viewType == VIEW2D)
         {
-            avtView3D *v = (avtView3D *)views[i].view;
+            avtView2D *v = (avtView2D *)views[i].view;
             delete v;
         }
         else
         {
-            avtView2D *v = (avtView2D *)views[i].view;
+            avtView3D *v = (avtView3D *)views[i].view;
             delete v;
         }
     }
@@ -400,6 +402,10 @@ SaveViewAction::Execute(int val)
 //   Brad Whitlock, Tue Jul 1 14:50:11 PST 2003
 //   I moved some code into AddNewView.
 //
+//   Eric Brugger, Wed Aug 20 10:56:24 PDT 2003
+//   I Modified the routine to use the window mode to determine the type of
+//   view to save.
+//
 // ****************************************************************************
 
 void
@@ -411,25 +417,25 @@ SaveViewAction::SaveCurrentView()
         int vt;
 
         // Create storage for the view based on the window type and dimension.
-        if(window->GetTypeIsCurve())
+        if(window->GetWindowMode() == WINMODE_CURVE)
         {
             avtViewCurve *v = new avtViewCurve;
             *v = window->GetViewCurve();
             vt = VIEWCurve;
             saveView = (void *)v;
         }
-        else if(window->GetViewDimension() == 3)
-        {
-            avtView3D *v = new avtView3D;
-            *v = window->GetView3D();
-            vt = VIEW3D;
-            saveView = (void *)v;
-        }
-        else
+        else if(window->GetWindowMode() == WINMODE_2D)
         {
             avtView2D *v = new avtView2D;
             *v = window->GetView2D();
             vt = VIEW2D;
+            saveView = (void *)v;
+        }
+        else
+        {
+            avtView3D *v = new avtView3D;
+            *v = window->GetView3D();
+            vt = VIEW3D;
             saveView = (void *)v;
         }
 
@@ -523,6 +529,9 @@ SaveViewAction::AddNewView(void *v, int vt)
 // Creation:   Thu Feb 27 15:10:00 PST 2003
 //
 // Modifications:
+//   Eric Brugger, Wed Aug 20 10:56:24 PDT 2003
+//   I modified the routine to use the window mode to determine if the saved
+//   view is appropriate.  I changed the call to UpdateViewAtts.
 //   
 // ****************************************************************************
 
@@ -533,7 +542,7 @@ SaveViewAction::UseSavedView(int index)
     {
         if(views[index].viewType == VIEWCurve)
         {
-            if(window->GetTypeIsCurve())
+            if(window->GetWindowMode() == WINMODE_CURVE)
             {
                 window->SetViewCurve(*((avtViewCurve *)views[index].view));
             }
@@ -546,28 +555,13 @@ SaveViewAction::UseSavedView(int index)
                 Error(msg);
             }
         }
-        else if(views[index].viewType == VIEW3D)
+        else if(views[index].viewType == VIEW2D)
         {
-            if(window->GetViewDimension() == 3)
-            {
-                window->SetView3D(*((avtView3D *)views[index].view));
-                windowMgr->UpdateViewAtts(window->GetWindowId(), false, true);
-            }
-            else
-            {
-                char msg[200];
-                SNPRINTF(msg, 200, "VisIt cannot use saved view %d because "
-                         "it is a 3D view and the window does not "
-                         "contain 3D plots.", index + 1);
-                Error(msg);
-            }
-        }
-        else
-        {
-            if(window->GetViewDimension() == 2)
+            if(window->GetWindowMode() == WINMODE_2D)
             {
                 window->SetView2D(*((avtView2D *)views[index].view));
-                windowMgr->UpdateViewAtts(window->GetWindowId(), true, false);
+                windowMgr->UpdateViewAtts(window->GetWindowId(),
+                                          false, true, false);
             }
             else
             {
@@ -575,6 +569,23 @@ SaveViewAction::UseSavedView(int index)
                 SNPRINTF(msg, 200, "VisIt cannot use saved view %d because "
                          "it is a 2D view and the window does not "
                          "contain 2D plots.", index + 1);
+                Error(msg);
+            }
+        }
+        else
+        {
+            if(window->GetWindowMode() == WINMODE_3D)
+            {
+                window->SetView3D(*((avtView3D *)views[index].view));
+                windowMgr->UpdateViewAtts(window->GetWindowId(),
+                                          false, false, true);
+            }
+            else
+            {
+                char msg[200];
+                SNPRINTF(msg, 200, "VisIt cannot use saved view %d because "
+                         "it is a 3D view and the window does not "
+                         "contain 3D plots.", index + 1);
                 Error(msg);
             }
         }
@@ -647,6 +658,10 @@ SaveViewAction::ChoiceEnabled(int i) const
 // Creation:   Tue Jul 1 14:26:23 PST 2003
 //
 // Modifications:
+//   Eric Brugger, Wed Aug 20 10:56:24 PDT 2003
+//   I modified the routine to write a ViewCurveAttribute when writing a curve
+//   view.  I split the view attributes into 2d and 3d parts.  I added code
+//   to delete any existing views before adding the new ones.
 //   
 // ****************************************************************************
 
@@ -656,6 +671,9 @@ SaveViewAction::CreateNode(DataNode *parentNode)
     if(parentNode == 0)
         return false;
 
+    // Delete any existing views.
+    DeleteViews();
+
     DataNode *saveviewNode = new DataNode("SaveViewAction");
     bool haveViews = false;
 
@@ -663,28 +681,44 @@ SaveViewAction::CreateNode(DataNode *parentNode)
     intVector viewTypes;
     for(int i = 0; i < views.size(); ++i)
     {
-        ViewAttributes viewAtts;
-
         if(views[i].viewType == VIEWCurve)
         {
+            ViewCurveAttributes viewAtts;
+
             avtViewCurve *v = (avtViewCurve *)views[i].view;
-            v->SetToViewAttributes(&viewAtts);
+            v->SetToViewCurveAttributes(&viewAtts);
+
+            if(viewAtts.CreateNode(saveviewNode, false))
+            {
+                haveViews = true;
+                viewTypes.push_back(views[i].viewType);
+            }
         }
         else if(views[i].viewType == VIEW2D)
         {
+            View2DAttributes viewAtts;
+
             avtView2D *v = (avtView2D *)views[i].view;
-            v->SetToViewAttributes(&viewAtts);
+            v->SetToView2DAttributes(&viewAtts);
+
+            if(viewAtts.CreateNode(saveviewNode, false))
+            {
+                haveViews = true;
+                viewTypes.push_back(views[i].viewType);
+            }
         }
         else if(views[i].viewType == VIEW3D)
         {
-            avtView3D *v = (avtView3D *)views[i].view;
-            v->SetToViewAttributes(&viewAtts);
-        }
+            View3DAttributes viewAtts;
 
-        if(viewAtts.CreateNode(saveviewNode, false))
-        {
-            haveViews = true;
-            viewTypes.push_back(views[i].viewType);
+            avtView3D *v = (avtView3D *)views[i].view;
+            v->SetToView3DAttributes(&viewAtts);
+
+            if(viewAtts.CreateNode(saveviewNode, false))
+            {
+                haveViews = true;
+                viewTypes.push_back(views[i].viewType);
+            }
         }
     }
 
@@ -712,6 +746,10 @@ SaveViewAction::CreateNode(DataNode *parentNode)
 // Creation:   Tue Jul 1 14:58:58 PST 2003
 //
 // Modifications:
+//   Eric Brugger, Wed Aug 20 10:56:24 PDT 2003
+//   I modified the routine to read a ViewCurveAttribute when reading a curve
+//   view.  I split the view attributes into 2d and 3d parts.
+//
 //   Brad Whitlock, Tue Aug 12 11:31:04 PDT 2003
 //   I made it clear out views before reading them back in so we don't get
 //   an ever-increasing number of views.
@@ -744,30 +782,94 @@ SaveViewAction::SetFromNode(DataNode *parentNode)
     int index = 0;
     for(int i = 0; i < saveviewNode->GetNumChildren(); ++i)
     {
-        if(views[i]->GetKey() == "ViewAttributes")
+        if(views[i]->GetKey() == "ViewCurveAttributes")
         {
+            // Read the view from the config node.
+            ViewCurveAttributes viewAtts;
+            viewAtts.SetFromNode(views[i]);
+
+            // Create the curve view.
+            avtViewCurve *v = new avtViewCurve;
+            v->SetFromViewCurveAttributes(&viewAtts);
+
+            // Add it to the saved views.
+            AddNewView((void *)v, VIEWCurve);
+            addedOrRemovedViews = true;
+
+            ++index;
+        }
+        else if(views[i]->GetKey() == "View2DAttributes")
+        {
+            // Read the view from the config node.
+            View2DAttributes viewAtts;
+            viewAtts.SetFromNode(views[i]);
+
+            // Create the curve view.
+            avtView2D *v = new avtView2D;
+            v->SetFromView2DAttributes(&viewAtts);
+
+            // Add it to the saved views.
+            AddNewView((void *)v, VIEW2D);
+            addedOrRemovedViews = true;
+
+            ++index;
+        }
+        else if(views[i]->GetKey() == "View3DAttributes")
+        {
+            // Read the view from the config node.
+            View3DAttributes viewAtts;
+            viewAtts.SetFromNode(views[i]);
+
+            // Create the curve view.
+            avtView3D *v = new avtView3D;
+            v->SetFromView3DAttributes(&viewAtts);
+
+            // Add it to the saved views.
+            AddNewView((void *)v, VIEW3D);
+            addedOrRemovedViews = true;
+
+            ++index;
+        }
+        else if(views[i]->GetKey() == "ViewAttributes")
+        {
+            //
+            // This coding is for reading saved views from release 1.2 and
+            // earlier.  It should be removed in release 1.3.
+            //
             // Read the view from the config node.
             ViewAttributes viewAtts;
             viewAtts.SetFromNode(views[i]);
 
             // Use the information to create the appropriate view type.
             void *viewPtr = 0;
-            if(viewTypes[index] == VIEWCurve)
-            {
-                avtViewCurve *v = new avtViewCurve;
-                v->SetFromViewAttributes(&viewAtts);
-                viewPtr = (void *)v;
-            }
-            else if(viewTypes[index] == VIEW2D)
+            if(viewTypes[index] == VIEW2D)
             {
                 avtView2D *v = new avtView2D;
-                v->SetFromViewAttributes(&viewAtts);
+                for(int i = 0; i < 4; ++i)
+                {
+                    v->viewport[i] = viewAtts.GetViewportCoords()[i];
+                    v->window[i] = viewAtts.GetWindowCoords()[i];
+                }
                 viewPtr = (void *)v;
             }
             else if(viewTypes[index] == VIEW3D)
             {
                 avtView3D *v = new avtView3D;
-                v->SetFromViewAttributes(&viewAtts);
+                for(int i = 0; i < 3; ++i)
+                {
+                    v->normal[i] = viewAtts.GetViewNormal()[i];
+                    v->focus[i]  = viewAtts.GetFocus()[i];
+                    v->viewUp[i] = viewAtts.GetViewUp()[i];
+                }
+
+                v->viewAngle = viewAtts.GetViewAngle();
+                v->parallelScale = viewAtts.GetParallelScale();
+                v->nearPlane = viewAtts.GetNearPlane();
+                v->farPlane = viewAtts.GetFarPlane();
+                v->imagePan[0] = viewAtts.GetImagePan()[0];
+                v->imagePan[1] = viewAtts.GetImagePan()[1];
+                v->imageZoom = viewAtts.GetImageZoom();
+                v->perspective = viewAtts.GetPerspective();
                 viewPtr = (void *)v;
             }
 

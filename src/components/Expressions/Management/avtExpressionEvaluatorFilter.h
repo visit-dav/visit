@@ -4,7 +4,7 @@
 
 #ifndef AVT_EXPRESSION_EVALUATOR_FILTER_H
 #define AVT_EXPRESSION_EVALUATOR_FILTER_H
-
+#include <expression_exports.h>
 
 #include <avtDatasetToDatasetFilter.h>
 #include <avtQueryableSource.h>
@@ -23,9 +23,13 @@
 //  Programmer: Sean Ahern
 //  Creation:   Thu Nov 21 15:15:07 PST 2002
 //
+// Modifications:
+//   Brad Whitlock, Wed Aug 27 14:06:00 PST 2003
+//   Made it use the right API.
+//
 // ****************************************************************************
 
-class PIPELINE_API avtExpressionEvaluatorFilter 
+class EXPRESSION_API avtExpressionEvaluatorFilter 
     : virtual public avtDatasetToDatasetFilter,
       virtual public avtQueryableSource
 {

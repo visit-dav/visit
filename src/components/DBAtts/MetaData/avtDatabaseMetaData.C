@@ -3186,7 +3186,7 @@ void
 avtDatabaseMetaData::Print(ostream &out, int indent) const
 {
     Indent(out, indent);
-    out << "Database: " << databaseName << endl;
+    out << "Database: " << databaseName.c_str() << endl;
 
     Indent(out, indent);
     out << "Num Time States: " << numStates << endl;
@@ -3337,8 +3337,9 @@ avtDatabaseMetaData::Print(ostream &out, int indent) const
                 vartype = "unknown!";
                 break;
             }
-            out << exprList[i].GetName() << " (" << vartype << "): \t"
-                << exprList[i].GetDefinition() << endl;
+            out << exprList[i].GetName().c_str()
+                << " (" << vartype.c_str() << "): \t"
+                << exprList[i].GetDefinition().c_str() << endl;
         }
     }
 }

@@ -7,7 +7,7 @@
 #include <pipeline_exports.h>
 
 struct avtViewInfo;
-class ViewAttributes;
+class View3DAttributes;
 
 // ****************************************************************************
 //  Class: avtView3D
@@ -24,6 +24,10 @@ class ViewAttributes;
 //
 //    Eric Brugger, Fri Jun  6 15:20:43 PDT 2003
 //    I added image pan and image zoom.
+//
+//    Eric Brugger, Wed Aug 20 09:38:17 PDT 2003
+//    I replaced SetFromViewAttributes with SetFromView3DAttributes and
+//    SetToViewAttributes with SetToView3DAttributes.
 //
 // ****************************************************************************
 
@@ -47,8 +51,8 @@ struct PIPELINE_API avtView3D
     void            SetToDefault(void);
     void            SetViewInfoFromView(avtViewInfo &) const;
 
-    void            SetFromViewAttributes(const ViewAttributes *);
-    void            SetToViewAttributes(ViewAttributes *) const;
+    void            SetFromView3DAttributes(const View3DAttributes *);
+    void            SetToView3DAttributes(View3DAttributes *) const;
 };
 
 

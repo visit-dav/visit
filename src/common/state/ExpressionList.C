@@ -756,26 +756,21 @@ ExpressionList::FieldsEqual(int index_, const AttributeGroup *rhs) const
 // User-defined methods.
 ///////////////////////////////////////////////////////////////////////////////
 
+// Modifications:
+//   Brad Whitlock, Thu Aug 28 15:29:59 PST 2003
+//   Simplified and removed dynamic_cast so it works on Windows.
+//
 Expression*
 ExpressionList::operator[](const char *varname)
 {   
-    int found = -1;
-
     // Check to see if there is an expression of this name.
     std::string var(varname);
-    int i;
-    for (i = 0; i < GetNumExpressions(); i++)
-    {   
-        if (((Expression*)(expressions[i]))->GetName() == var)
-        {   
-            found = i;
-            break;
-        }
+    for (int i = 0; i < GetNumExpressions(); ++i)
+    {
+        Expression *e = (Expression*)expressions[i];
+        if (e->GetName() == var)
+            return e;
     }
 
-    if (found == -1)
-        return (Expression*)NULL;
-    else
-        return dynamic_cast<Expression*>(expressions[found]);
+    return 0;
 }
-
