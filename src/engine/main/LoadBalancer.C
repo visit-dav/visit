@@ -445,7 +445,7 @@ LoadBalancer::Reduce(avtPipelineSpecification_p input)
         }
         else if (scheme == LOAD_BALANCE_DBPLUGIN_DYNAMIC)
         {
-            if (list.size()!=1 && list[0]!=0))
+            if (list.size()!=1 && list[0]!=0)
             {
                 EXCEPTION1(VisitException,
                     "invalid use of DBPLUGIN_DYNAMIC scheme"); 
