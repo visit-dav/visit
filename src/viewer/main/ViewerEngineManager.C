@@ -1278,6 +1278,9 @@ ViewerEngineManager::LaunchMessage(const EngineKey &ek)  const
 //
 //   Mark C. Miller, Mon Jul 12 19:46:32 PDT 2004
 //   Removed call back arguments in call to EngineProxy::Render
+//
+//   Mark C. Miller, Tue Jul 27 15:11:11 PDT 2004
+//   Added code to deal with frame and state in window/annotation atts
 // ****************************************************************************
 
 bool
@@ -1296,6 +1299,7 @@ ViewerEngineManager::ExternalRender(const ExternalRenderRequestInfo& reqInfo,
     const AnnotationObjectList& annotObjs            = reqInfo.annotObjs;
     const string& extStr                             = reqInfo.extStr;
     const VisualCueList& visCues                     = reqInfo.visCues;
+    const int* frameAndState                         = reqInfo.frameAndState;
 
     bool retval = true;
     EngineKey ek;
@@ -1333,7 +1337,7 @@ ViewerEngineManager::ExternalRender(const ExternalRenderRequestInfo& reqInfo,
         {
             ek = pos->first;
             engines[ek]->SetWinAnnotAtts(&winAtts, &annotAtts, &annotObjs,
-                             extStr, &visCues);
+                             extStr, &visCues, frameAndState);
         }
 
         // send per-plot RPCs
@@ -1534,6 +1538,9 @@ ViewerEngineManager::ExternalRender(const ExternalRenderRequestInfo& reqInfo,
 //    Mark C. Miller, Wed Jun  9 17:44:38 PDT 2004
 //    Added code to pass visual cue list to SetWinAnnotAtts
 //
+//    Mark C. Miller, Tue Jul 27 15:11:11 PDT 2004
+//    Added code to deal with frame and state in window/annotation atts
+//
 // ****************************************************************************
 
 avtDataObjectReader_p
@@ -1610,7 +1617,10 @@ ViewerEngineManager::GetDataObjectReader(ViewerPlot *const plot)
            string extStr = avtExtentType_ToString(w->GetViewExtentsType());
            VisualCueList visCues;
            w->UpdateVisualCueList(visCues);
-           engine->SetWinAnnotAtts(&winAtts,&annotAtts,&annotObjs,extStr,&visCues);
+           int fns[7];
+           w->GetFrameAndState(fns[0], fns[1], fns[2], fns[3],
+                                       fns[4], fns[5], fns[6]);
+           engine->SetWinAnnotAtts(&winAtts,&annotAtts,&annotObjs,extStr,&visCues,fns);
         }
 
         //
@@ -2140,6 +2150,9 @@ ViewerEngineManager::StartPick(const EngineKey &ek, const bool forZones,
 //    Mark C. Miller, Wed Jun  9 17:44:38 PDT 2004
 //    Added VisualCueList arg
 //
+//    Mark C. Miller, Tue Jul 27 15:11:11 PDT 2004
+//    Added code to deal with frame and state in window/annotation atts
+//
 // ****************************************************************************
 
 bool
@@ -2148,10 +2161,11 @@ ViewerEngineManager::SetWinAnnotAtts(const EngineKey &ek,
                                      const AnnotationAttributes *aa,
                                      const AnnotationObjectList *ao,
                                      const string extstr,
-                                     const VisualCueList *visCues)
+                                     const VisualCueList *visCues,
+                                     const int *frameAndState)
 {
     ENGINE_PROXY_RPC_BEGIN("SetWinAnnotAtts");
-    engine->SetWinAnnotAtts(wa,aa,ao,extstr,visCues);
+    engine->SetWinAnnotAtts(wa,aa,ao,extstr,visCues,frameAndState);
     ENGINE_PROXY_RPC_END;
 }
 
@@ -2522,6 +2536,8 @@ ViewerEngineManager::Update(Subject *TheChangedSubject)
 //    Mark C. Miller, Wed Jun  9 17:44:38 PDT 2004
 //    Added code to pass visual cue list to SetWinAnnotAtts
 //
+//    Mark C. Miller, Tue Jul 27 15:11:11 PDT 2004
+//    Added code to deal with frame and state in window/annotation atts
 // ****************************************************************************
 
 void
@@ -2540,9 +2556,12 @@ ViewerEngineManager::GetImage(int index, avtDataObject_p &dob)
     string extStr = avtExtentType_ToString(w->GetViewExtentsType());
     VisualCueList visCues;
     w->UpdateVisualCueList(visCues);
+    int fns[7];
+    w->GetFrameAndState(fns[0], fns[1], fns[2], fns[3],
+                                fns[4], fns[5], fns[6]);
 
     // send to the engine
-    engine->SetWinAnnotAtts(&winAtts,&annotAtts,&annotObjs,extStr,&visCues);
+    engine->SetWinAnnotAtts(&winAtts,&annotAtts,&annotObjs,extStr,&visCues,fns);
     
     engine->UseNetwork(index);
 #ifdef VIEWER_MT

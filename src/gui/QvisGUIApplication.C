@@ -3384,6 +3384,41 @@ QvisGUIApplication::InitializeFileServer(DataNode *guiNode)
 }
 
 // ****************************************************************************
+// Method: QvisGUIApplication::GetVirtualDatabaseDefinitions
+//
+// Purpose: 
+//   Gets all of the virtual file definitions for files in the applied
+//   file list.
+//
+// Arguments:
+//   defs : The map into which the definitions will be stored.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jul 27 11:59:42 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisGUIApplication::GetVirtualDatabaseDefinitions(
+    StringStringVectorMap &defs)
+{
+    const QualifiedFilenameVector &files = fileServer->GetAppliedFileList();
+
+    // Add the definitions for all virtual files to the map.
+    defs.clear();
+    for(int i = 0; i < files.size(); ++i)
+    {
+        if(files[i].IsVirtual())
+        {
+            defs[files[i].FullName()] = 
+                fileServer->GetVirtualFileDefinition(files[i].FullName());
+        }
+    }
+}
+
+// ****************************************************************************
 // Method: QvisGUIApplication::RefreshFileList
 //
 // Purpose: 
@@ -3406,10 +3441,13 @@ QvisGUIApplication::InitializeFileServer(DataNode *guiNode)
 void
 QvisGUIApplication::RefreshFileList()
 {
-    // Save the current host and path and virtual file definition.
+    // Save the current host and path.
     std::string  oldHost(fileServer->GetHost());
     std::string  oldPath(fileServer->GetPath());
-    stringVector dbDef(fileServer->GetVirtualFileDefinition(fileServer->GetOpenFile()));
+
+    // Save the definitions for the virtual databases.
+    StringStringVectorMap oldVirtualDefinitions;
+    GetVirtualDatabaseDefinitions(oldVirtualDefinitions);
 
     //
     // Create a list of hosts,paths for which we must get a new list of files.
@@ -3462,27 +3500,33 @@ QvisGUIApplication::RefreshFileList()
     fileServer->SetAppliedFileList(refreshedFiles);
     fileServer->Notify();
 
+    // Get the definitions for the virtual databases now that we have reread
+    // all of the directories.
+    StringStringVectorMap newVirtualDefinitions;
+    GetVirtualDatabaseDefinitions(newVirtualDefinitions);
+
     //
     // If the open file is in the list of new files and it is a virtual db,
     // then reopen it so we pick up new time states.
     //
     for(i = 0; i < refreshedFiles.size(); ++i)
     {
-        if(refreshedFiles[i].IsVirtual() &&
-           refreshedFiles[i] == fileServer->GetOpenFile())
+        if(refreshedFiles[i].IsVirtual())
         {
-            // Get the new virtual file definiton.
-            stringVector newDef(
-                fileServer->GetVirtualFileDefinition(fileServer->GetOpenFile()));
+            std::string fileName(refreshedFiles[i].FullName());
+            StringStringVectorMap::const_iterator oldDef = 
+                oldVirtualDefinitions.find(fileName);
+            StringStringVectorMap::const_iterator newDef =
+                newVirtualDefinitions.find(fileName);
 
             // If the virtual file definitions are different then reopen the
             // database on the viewer so that plots are reexecuted.
-            if(dbDef != newDef)
+            if(oldDef != newDef)
             {
-                viewer->ReOpenDatabase(refreshedFiles[i].FullName().c_str(),
-                                       false);
+                debug1 << "Telling the viewer to check " << fileName.c_str()
+                       << " for new time states." << endl;
+                viewer->CheckForNewStates(fileName);
             }
-            break;
         }
     }
 }

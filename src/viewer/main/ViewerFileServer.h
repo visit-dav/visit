@@ -97,6 +97,9 @@ class DataNode;
 //    I added methods to query if the user has ever declined to create a 
 //    database correlation for a given set of files.
 //
+//    Brad Whitlock, Tue Jul 27 10:39:34 PDT 2004
+//    I added UpdateDatabaseCorrelation.
+//
 // ****************************************************************************
 
 class ViewerFileServer : public ViewerServerManager
@@ -188,6 +191,7 @@ public:
     DatabaseCorrelation       *CreateDatabaseCorrelation(const std::string &,
                                                          const stringVector &,
                                                          int, int=-1);
+    void                       UpdateDatabaseCorrelation(const std::string &);
     DatabaseCorrelation       *GetMostSuitableCorrelation(const stringVector &) const;
     std::string                CreateNewCorrelationName() const;
     bool                       PreviouslyDeclinedCorrelationCreation(

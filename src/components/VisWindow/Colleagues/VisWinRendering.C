@@ -21,7 +21,7 @@
 #include <avtCallback.h>
 #include <avtSourceFromImage.h>
 
-#include <BadWindowModeException.h>
+#include <ImproperUseException.h>
 #include <DebugStream.h>
 #include <TimingsManager.h>
 
@@ -652,6 +652,60 @@ VisWinRendering::Realize(void)
     }
 }
 
+// ****************************************************************************
+//  Method: VisWinRendering::GetCaptureRegion
+//
+//  Purpose:
+//      Computes the size of the region to capture based in image mode and
+//      request to do the viewport only or not
+//
+//  Programmer: Mark C. Miller
+//  Creation:   July 26, 2004 
+//
+// ****************************************************************************
+void
+VisWinRendering::GetCaptureRegion(int& r0, int& c0, int& w, int& h,
+    bool doViewportOnly)
+{
+    vtkRenderWindow *renWin = GetRenderWindow();
+
+    r0 = 0;
+    c0 = 0;
+    w = renWin->GetSize()[0];
+    h = renWin->GetSize()[1];
+
+    if (doViewportOnly)
+    {
+        bool haveViewport = false;
+        double viewPort[4];
+
+        if (mediator.GetMode() == WINMODE_2D)
+        {
+            VisWindow *vw = mediator;
+            avtView2D v = vw->GetView2D();
+            v.GetActualViewport(viewPort, w, h);
+            haveViewport = true;
+        }
+        else if (mediator.GetMode() == WINMODE_CURVE)
+        {
+            VisWindow *vw = mediator;
+            avtViewCurve v = vw->GetViewCurve();
+            v.GetViewport(viewPort);
+            haveViewport = true;
+        }
+
+        if (haveViewport)
+        {
+            int neww = (int) ((viewPort[1] - viewPort[0]) * w + 0.5);
+            int newh = (int) ((viewPort[3] - viewPort[2]) * h + 0.5);
+
+            c0 = (int) (viewPort[0] * w + 0.5);
+            r0 = (int) (viewPort[2] * h + 0.5);
+            w = neww;
+            h = newh;
+        }
+    }
+}
 
 // ****************************************************************************
 //  Method: VisWinRendering::ScreenCapture
@@ -693,6 +747,12 @@ VisWinRendering::Realize(void)
 //    Fixed problem where used 2D view to control region selection for 
 //    window in CURVE mode
 //
+//    Mark C. Miller, Mon Jul 26 15:08:39 PDT 2004
+//    Moved code to compute size and origin of region to capture to
+//    GetCaptureRegion. Also, changed code to instead of swaping canvase
+//    and foreground layer order to just remove foreground layer and re-add
+//    it at the end.
+//
 // ****************************************************************************
 
 avtImage_p
@@ -706,10 +766,10 @@ VisWinRendering::ScreenCapture(bool doViewportOnly, bool doCanvasZBufferToo)
     {
         //
         // If we want zbuffer for the canvas, we need to take care that
-        // the canvas is rendered last 
+        // the canvas is rendered last. To achieve this, we temporarily
+        // remove the foreground renderer. 
         //
-        foreground->SetLayer(1);
-        canvas->SetLayer(0);
+        renWin->RemoveRenderer(foreground);
     }
 
     //
@@ -720,41 +780,8 @@ VisWinRendering::ScreenCapture(bool doViewportOnly, bool doCanvasZBufferToo)
     //
     // Set region origin/size to be captured
     //
-    int c0 = 0;
-    int r0 = 0;
-    int w = renWin->GetSize()[0];
-    int h = renWin->GetSize()[1];
-    if (doViewportOnly)
-    {
-        bool haveViewport = false;
-        double viewPort[4];
-
-        if (mediator.GetMode() == WINMODE_2D)
-        {
-            VisWindow *vw = mediator;
-            avtView2D v = vw->GetView2D();
-            v.GetActualViewport(viewPort, w, h);
-            haveViewport = true;
-        }
-        else if (mediator.GetMode() == WINMODE_CURVE)
-        {
-            VisWindow *vw = mediator;
-            avtViewCurve v = vw->GetViewCurve();
-            v.GetViewport(viewPort);
-            haveViewport = true;
-        }
-
-        if (haveViewport)
-        {
-            int neww = (int) ((viewPort[1] - viewPort[0]) * w + 0.5);
-            int newh = (int) ((viewPort[3] - viewPort[2]) * h + 0.5);
-
-            c0 = (int) (viewPort[0] * w + 0.5);
-            r0 = (int) (viewPort[2] * h + 0.5);
-            w = neww;
-            h = newh;
-        }
-    }
+    int r0, c0, w, h;
+    GetCaptureRegion(r0, c0, w, h, doViewportOnly);
 
     if (doCanvasZBufferToo)
     {
@@ -791,13 +818,12 @@ VisWinRendering::ScreenCapture(bool doViewportOnly, bool doCanvasZBufferToo)
     image->Delete();
 
     //
-    // If we swapped the foreground & canvas layers to get the canvas' zbuffer,
-    // swap them back before we leave
+    // If we removed the foreground layers to get the canvas' zbuffer,
+    // put it back before we leave
     //
     if (doCanvasZBufferToo)
     {
-       canvas->SetLayer(1);
-       foreground->SetLayer(0);
+       renWin->AddRenderer(foreground);
        if (extRequestMode)
           mediator.EnableExternalRenderRequests();
     }
@@ -805,6 +831,89 @@ VisWinRendering::ScreenCapture(bool doViewportOnly, bool doCanvasZBufferToo)
     return img;
 }
 
+// ****************************************************************************
+//  Method: VisWinRendering::PostProcessScreenCapture
+//
+//  Purpose:
+//      Does any necessary post-processing on a screen captured image. This
+//      is necessary when the engine is doing ALL rendering as in a
+//      non-"Screen Capture" (GUI terminology) save window that includes any
+//      annotations that are rendered in the foreground layer. Ordinarily,
+//      the engine never renders the foreground layer and it can only do so
+//      correctly after it has done a parallel image composite. 
+//
+//  Programmer: Mark C. Miller
+//  Creation:   July 26, 2004 
+//
+// ****************************************************************************
+
+avtImage_p
+VisWinRendering::PostProcessScreenCapture(avtImage_p capturedImage,
+    bool doViewportOnly)
+{
+    unsigned char *pixels;
+
+    int useFrontBuffer = 1;
+    vtkRenderWindow *renWin = GetRenderWindow();
+
+    // compute size of region we'll be writing back to the frame buffer
+    int r0, c0, w, h;
+    GetCaptureRegion(r0, c0, w, h, doViewportOnly);
+
+    // confirm image passed in is the correct size
+    int iw, ih;
+    capturedImage->GetSize(&iw, &ih);
+    if ((iw != w) || (ih != h))
+    {
+        EXCEPTION1(ImproperUseException, "size of image passed for "
+            "PostProcessScreenCapture does not match vtkRenderWindow size");
+    }
+
+    // set pixel data
+    // Note that there appears to be a bug in VTK's implementation of the
+    // vtkRenderWindow::SetPixelData method such that the *first* call to
+    // set pixel data does NOT write to the correct portion of the framebuffer.
+    // However, succeeding calls do. So, as a work-around, we have an additional
+    // dummy call to SetPixelData. 
+    pixels = capturedImage->GetImage().GetRGBBuffer();
+    renWin->SetPixelData(0, 0, 0, 0, pixels, useFrontBuffer); // Why? See above.
+    renWin->SetPixelData(c0, r0, c0+w-1, r0+h-1, pixels, useFrontBuffer);
+
+    // temporarily remove canvas and background renderers
+    renWin->RemoveRenderer(canvas);
+    renWin->RemoveRenderer(background);
+
+    // render (foreground layer only)
+    renWin->Render();
+
+    // capture the whole image now 
+    GetCaptureRegion(r0, c0, w, h, false);
+    pixels = renWin->GetPixelData(c0,r0,c0+w-1,r0+h-1, useFrontBuffer);
+
+    // add canvas and background renderers back in
+    renWin->AddRenderer(background);
+    renWin->AddRenderer(canvas);
+
+    // return new image
+    vtkImageData *image = avtImageRepresentation::NewImage(w, h);
+    unsigned char *img_pix = (unsigned char *)image->GetScalarPointer(0, 0, 0);
+
+    memcpy(img_pix, pixels, 3*w*h);
+    delete [] pixels;
+
+    //
+    // Force some updates so we can let screenCaptureSource be destructed.
+    // The img->Update forces the window to render, so we explicitly
+    // disable external render requests
+    //
+    avtSourceFromImage screenCaptureSource(image);
+    avtImage_p img = screenCaptureSource.GetTypedOutput();
+    img->Update(screenCaptureSource.GetGeneralPipelineSpecification());
+    img->SetSource(NULL);
+    image->Delete();
+
+    return img;
+}
 
 // ****************************************************************************
 //  Method: VisWinRendering::SetSize

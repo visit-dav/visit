@@ -174,6 +174,9 @@ class WindowAttributes;
 //    Mark C. Miller, Tue Jun 15 19:49:22 PDT 2004
 //    Added 'rendering' bool data member and Begin/EndEngineRender() methods
 //
+//    Mark C. Miller, Tue Jul 27 15:11:11 PDT 2004
+//    Added arg for frame and state to SetWinAnnotAtts
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerEngineManager : public ViewerServerManager,
@@ -246,7 +249,8 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
                          const AnnotationAttributes *aa,
                          const AnnotationObjectList *ao,
                          const std::string extStr,
-                         const VisualCueList *visCues);
+                         const VisualCueList *visCues,
+                         const int *frameAndState);
     bool ClearCache(const EngineKey &ek, const char *dbName = 0);
     bool Query(const EngineKey &ek, const std::vector<int> &networkIds, 
                const QueryAttributes *atts, QueryAttributes &retAtts);

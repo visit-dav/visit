@@ -4,6 +4,7 @@
 #include <vectortypes.h>
 #include <QvisDelayedWindowSimpleObserver.h>
 #include <QualifiedFilename.h>
+#include <maptypes.h>
 
 // Forward declarations.
 class FileServerList;
@@ -75,6 +76,9 @@ class QvisRecentPathRemovalWindow;
 //   Brad Whitlock, Tue Dec 2 16:30:37 PST 2003
 //   I added currentVirtualDatabaseDefinition.
 //
+//   Brad Whitlock, Tue Jul 27 11:26:34 PDT 2004
+//   I replaced currentVirtualDatabaseDefinition with a map.
+//
 // ****************************************************************************
 
 class GUI_API QvisFileSelectionWindow : public QvisDelayedWindowSimpleObserver
@@ -114,6 +118,7 @@ private:
     void ActivateComboBoxItem(QComboBox *cb, const QString &newActive);
     void HighlightComboBox(QComboBox *cb);
     void GetDirectoryStrings(QString &curdir, QString &updir);
+    void GetVirtualDatabaseDefinitions(StringStringVectorMap &);
 
     static bool ProgressCallback(void *data, int stage);
 private slots:
@@ -161,7 +166,7 @@ private:
     QPixmap         *databasePixmap;
 
     QualifiedFilenameVector intermediateFileList;
-    stringVector            currentVirtualDatabaseDefinition;
+    StringStringVectorMap   currentVirtualDatabaseDefinitions;
 };
 
 #endif

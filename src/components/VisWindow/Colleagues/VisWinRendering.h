@@ -120,6 +120,9 @@ class VisWindowColleagueProxy;
 //    Added data members for same.
 //    Elminated call to SetScalableThreshold.
 //
+//    Mark C. Miller, Mon Jul 26 15:08:39 PDT 2004
+//    Added GetCaptureRegion() and PostProcessScreenCapture() methods
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinRendering : public VisWinColleague
@@ -149,8 +152,13 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
     virtual void             MotionEnd(void);
 
     void                     Realize(void);
+
+    void                     GetCaptureRegion(int& r0, int& c0, int& w, int& h,
+                                 bool doViewportOnly);
     avtImage_p               ScreenCapture(bool doViewportOnly = false,
                                            bool doCanvasZBufferToo = false);
+    avtImage_p               PostProcessScreenCapture(avtImage_p capturedImage,
+                                 bool doViewportOnly);
 
     void                     SetSize(int, int);
     void                     GetSize(int&, int&);

@@ -1381,6 +1381,12 @@ NetworkManager::GetOutput(bool respondWithNullData, bool calledForRender)
 //    added plots. Moved test for exceeding scalable threshold to after point
 //    where each plot's network output is actually computed.
 //
+//    Mark C. Miller, Mon Jul 26 15:08:39 PDT 2004
+//    Added code to post process the composited image when the engine
+//    is doing more than just 3D annotations. Fixed bug in determination of
+//    viewportedMode bool. Added code to pass frame and state info to
+//    set Win/Annot atts.
+//
 // ****************************************************************************
 avtDataObjectWriter_p
 NetworkManager::Render(intVector plotIds, bool getZBuffer, bool do3DAnnotsOnly)
@@ -1475,7 +1481,6 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, bool do3DAnnotsOnly)
 
             plotsCurrentlyInWindow = plotIds;
             visitTimer->StopTimer(t2, "Setting up window contents");
-
         }
 
         int  scalableThreshold = GetScalableThreshold(); 
@@ -1552,7 +1557,8 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, bool do3DAnnotsOnly)
             if (!do3DAnnotsOnly)
             {
                 SetAnnotationAttributes(annotationAttributes,
-                                        annotationObjectList, visualCueList, false);
+                                        annotationObjectList, visualCueList,
+                                        frameAndState, false);
             }
 
             debug5 << "Rendering " << viswin->GetNumTriangles() << " triangles. " 
@@ -1561,9 +1567,9 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, bool do3DAnnotsOnly)
 
             // render the image and capture it. Relies upon explicit render
             int t3 = visitTimer->StartTimer();
-            bool viewportedMode = do3DAnnotsOnly &&
-                                  (viswin->GetWindowMode() == WINMODE_2D ||
-                                   viswin->GetWindowMode() == WINMODE_CURVE);
+            bool viewportedMode = !do3DAnnotsOnly || 
+                                  (viswin->GetWindowMode() == WINMODE_2D) ||
+                                  (viswin->GetWindowMode() == WINMODE_CURVE);
             avtImage_p theImage = viswin->ScreenCapture(viewportedMode, true);
             visitTimer->StopTimer(t3, "Screen capture for SR");
 
@@ -1613,6 +1619,23 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, bool do3DAnnotsOnly)
             //
             imageCompositer.Execute();
             avtDataObject_p compositedImageAsDataObject = imageCompositer.GetOutput();
+
+            //
+            // If the engine is doing more than just 3D attributes,
+            // post-process the composited image.
+            //
+#ifdef PARALLEL
+            if (!do3DAnnotsOnly && (PAR_Rank() == 0))
+#else
+            if (!do3DAnnotsOnly)
+#endif
+            {
+                avtImage_p compositedImage;
+                CopyTo(compositedImage, compositedImageAsDataObject);
+                avtImage_p postProcessedImage = 
+                    viswin->PostProcessScreenCapture(compositedImage, viewportedMode);
+                CopyTo(compositedImageAsDataObject, postProcessedImage);
+            }
             writer = compositedImageAsDataObject->InstantiateWriter();
             writer->SetInput(compositedImageAsDataObject);
 
@@ -1815,11 +1838,15 @@ NetworkManager::SetWindowAttributes(const WindowAttributes &atts,
 //
 //    Mark C. Miller, Wed Jun  9 17:44:38 PDT 2004
 //    Added code to deal with VisualCueList
+//
+//    Mark C. Miller, Tue Jul 27 15:11:11 PDT 2004
+//    Added code to deal with frame and state in VisWindow for
+//    AnnotationObjects
 // ****************************************************************************
 void
 NetworkManager::SetAnnotationAttributes(const AnnotationAttributes &atts,
     const AnnotationObjectList &aolist, const VisualCueList &visCues,
-    bool do3DAnnotsOnly)
+    const int *fns, bool do3DAnnotsOnly)
 {
    int i;
 
@@ -1837,6 +1864,15 @@ NetworkManager::SetAnnotationAttributes(const AnnotationAttributes &atts,
           newAtts.SetLegendInfoFlag(false);
           newAtts.SetTriadFlag(false);
           newAtts.SetAxesFlag2D(false);
+          viswin->DeleteAllAnnotationObjects();
+      }
+      else
+      {
+          viswin->DeleteAllAnnotationObjects();
+          viswin->CreateAnnotationObjectsFromList(aolist);
+          viswin->SetFrameAndState(fns[0],
+                                   fns[1],fns[2],fns[3],
+                                   fns[4],fns[5],fns[6]);
       }
 
       viswin->SetAnnotationAtts(&newAtts);
@@ -1864,20 +1900,13 @@ NetworkManager::SetAnnotationAttributes(const AnnotationAttributes &atts,
               }
           }
       }
-
-      if (do3DAnnotsOnly)
-          viswin->DeleteAllAnnotationObjects();
-      else
-      {
-          viswin->DeleteAllAnnotationObjects();
-          viswin->CreateAnnotationObjectsFromList(aolist);
-      }
-
    }
 
    annotationAttributes = atts;
    annotationObjectList = aolist;
    visualCueList = visCues;
+   for (i = 0; i < sizeof(frameAndState)/sizeof(frameAndState[0]); i++)
+       frameAndState[i] = fns[i];
 
 }
 

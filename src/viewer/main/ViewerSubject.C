@@ -3449,7 +3449,9 @@ ViewerSubject::ActivateDatabase()
 // Creation:   Fri Jan 30 23:56:42 PST 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Jul 27 10:10:47 PDT 2004
+//   I made it do something.
+//
 // ****************************************************************************
 
 void
@@ -3459,7 +3461,9 @@ ViewerSubject::CheckForNewStates()
     // Add new states to the specified database and update the metadata,
     // correlations, and plot list caches.
     //
-    debug1 << "CheckForNewStates: " << viewerRPC.GetDatabase().c_str();
+    debug1 << "CheckForNewStates: " << viewerRPC.GetDatabase().c_str() << endl;
+
+    ViewerWindowManager::Instance()->CheckForNewStates(viewerRPC.GetDatabase());
 }
 
 // ****************************************************************************

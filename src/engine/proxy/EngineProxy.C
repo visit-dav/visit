@@ -487,6 +487,9 @@ EngineProxy::UpdatePlotAttributes(const string &name, int id,
 //    Mark C. Miller, Wed Jun  9 17:44:38 PDT 2004
 //    Added arguement for visual cues
 //
+//    Mark C. Miller, Tue Jul 27 15:11:11 PDT 2004
+//    Added argument for frame and state
+//
 // ****************************************************************************
 
 void
@@ -494,9 +497,11 @@ EngineProxy::SetWinAnnotAtts(const WindowAttributes *winAtts,
                              const AnnotationAttributes *annotAtts,
                              const AnnotationObjectList *aoList,
                              const string extStr,
-                             const VisualCueList *visCues)
+                             const VisualCueList *visCues,
+                             const int *frameAndState)
 {
-    setWinAnnotAttsRPC(winAtts, annotAtts, aoList, extStr, visCues);
+    setWinAnnotAttsRPC(winAtts, annotAtts, aoList, extStr, visCues,
+        frameAndState);
     if (setWinAnnotAttsRPC.GetStatus() == VisItRPC::error)
     {
         RECONSTITUTE_EXCEPTION(setWinAnnotAttsRPC.GetExceptionType(),
