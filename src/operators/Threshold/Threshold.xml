@@ -9,10 +9,10 @@
         Some
       </Field>
       <Field name="lbound" label="Lower bound" type="double">
-        0.000000
+        -1e37
       </Field>
       <Field name="ubound" label="Upper bound" type="double">
-        0.000000
+        +1e37
       </Field>
       <Field name="variable" label="variable" type="string">
         default

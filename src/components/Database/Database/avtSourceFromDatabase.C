@@ -121,6 +121,10 @@ avtSourceFromDatabase::~avtSourceFromDatabase()
 //    Hank Childs, Fri May 16 10:14:40 PDT 2003
 //    Catch exceptions thrown by the database.
 //
+//    Hank Childs, Thu Sep 25 16:30:09 PDT 2003
+//    Make sure the variable being sent up to the database is a variable
+//    contained within that database.
+//
 // ****************************************************************************
 
 bool
@@ -129,7 +133,9 @@ avtSourceFromDatabase::FetchDataset(avtDataSpecification_p spec,
 {
     TRY
     {
-        tree = database->GetOutput(spec, this);
+        avtDataSpecification_p tmp_spec = new avtDataSpecification(spec,
+                                                        spec->GetDBVariable());
+        tree = database->GetOutput(tmp_spec, this);
     }
     CATCH2(VisItException, e)
     {
@@ -308,11 +314,18 @@ avtSourceFromDatabase::FetchMaterialAuxiliaryData(const char *type, void *args,
 //    Hank Childs, Thu Jul 26 12:59:02 PDT 2001
 //    Added logic to set the top set.
 //
+//    Hank Childs, Thu Sep 25 16:27:38 PDT 2003
+//    If a 'last spec' is available, use its variable.
+//
 // ****************************************************************************
 
 avtDataSpecification_p
 avtSourceFromDatabase::GetFullDataSpecification(void)
 {
+    const char *acting_var = variable;
+    if (*lastSpec != NULL)
+        acting_var = lastSpec->GetVariable();
+
     avtSIL *sil = database->GetSIL();
     avtSILRestriction_p silr = new avtSILRestriction(sil);
 
@@ -323,7 +336,7 @@ avtSourceFromDatabase::GetFullDataSpecification(void)
     string mesh = md->MeshForVar(variable);
     silr->SetTopSet(mesh.c_str());
 
-    return new avtDataSpecification(variable, timestep, silr);
+    return new avtDataSpecification(acting_var, timestep, silr);
 }
 
 

@@ -257,10 +257,9 @@ avtExpressionEvaluatorFilter::PerformRestriction(avtPipelineSpecification_p spec
 
     // Set up the data spec.
     it = real_list.begin();
-    if (haveActiveVariable)
-        newds = new avtDataSpecification(ds, ds->GetVariable());
-    else
-        newds = new avtDataSpecification(ds, (*it++).c_str());
+    newds = new avtDataSpecification(ds);
+    if (!haveActiveVariable)
+        newds->SetDBVariable((*it).c_str());
 
     newds->RemoveAllSecondaryVariables();
     for ( ; it != real_list.end() ; it++)

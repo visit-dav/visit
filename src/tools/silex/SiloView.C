@@ -17,6 +17,11 @@
 //  Programmer:  Jeremy Meredith
 //  Creation:    November 12, 2001
 //
+//  Modifications:
+//    Jeremy Meredith, Wed Sep 24 11:19:27 PDT 2003
+//    I added a call to set the root directory in the directory-contents
+//    panel.  This was unnecessary in Qt versions before 3.x.
+//
 // ****************************************************************************
 SiloView::SiloView(const QString &file, QWidget *p, const QString &n)
     : QSplitter(p, n)
@@ -31,6 +36,8 @@ SiloView::SiloView(const QString &file, QWidget *p, const QString &n)
             this,        SLOT(ShowItem(QListViewItem*)));
 
     dirTreeView->OpenRootDir();
+    dirView->Set(silo->root);
+
     dirTreeView->header()->setResizeEnabled(false);
     dirView->header()->setResizeEnabled(false);
 }

@@ -89,6 +89,9 @@ typedef ref_ptr<avtDataSpecification> avtDataSpecification_p;
 //    Jeremy Meredith, Fri Sep  5 15:14:22 PDT 2003
 //    Added flag to use new MIR algorithm.
 //
+//    Hank Childs, Thu Sep 25 08:28:28 PDT 2003
+//    Allow the setting of a "db" variable.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataSpecification
@@ -114,9 +117,12 @@ class PIPELINE_API avtDataSpecification
     avtSILSpecification         &GetSIL(void)          { return sil; };
     avtSILRestriction_p          GetRestriction(void);
 
+    const char                  *GetDBVariable(void) {return db_variable;};
+    void                         SetDBVariable(const char *);
     void                         AddSecondaryVariable(const char *);
     void                         RemoveSecondaryVariable(const char *);
-    void                         RemoveAllSecondaryVariables() {secondaryVariables.clear();};
+    void                         RemoveAllSecondaryVariables()
+                                               { secondaryVariables.clear(); };
     bool                         HasSecondaryVariable(const char *);
     const std::vector<CharStrRef> &
                                  GetSecondaryVariables(void)
@@ -206,6 +212,14 @@ class PIPELINE_API avtDataSpecification
     char                        *variable;
     avtSILSpecification          sil;
     std::vector<CharStrRef>      secondaryVariables;
+
+    // db_variable is the name of a variable that exists in the database.
+    // variable is the active variable that will be drawn.  Typically, 
+    // db_variable and variable are the same.  But they differ when variable
+    // is an expression, for example.
+    // Note: if you set up a db_variable, it must still be added as a
+    // secondary variable.
+    char                        *db_variable;
 
     bool                         needZones;
     bool                         needNodes;

@@ -2,7 +2,6 @@
 //                             avtDataSpecification.C                        //
 // ************************************************************************* //
 
-
 #include <avtDataSpecification.h>
 
 #include <avtSILRestrictionTraverser.h>
@@ -65,6 +64,9 @@ using     std::vector;
 //    Jeremy Meredith, Mon Sep 15 17:12:16 PDT 2003
 //    Added a flag for the material interface algorithm to use.
 //
+//    Hank Childs, Thu Sep 25 08:28:28 PDT 2003
+//    Set the db variable.
+//
 // ****************************************************************************
 
 avtDataSpecification::avtDataSpecification(const char *var, int ts,
@@ -92,6 +94,13 @@ avtDataSpecification::avtDataSpecification(const char *var, int ts,
 
     variable  = new char[strlen(var)+1];
     strcpy(variable, var);
+
+    //
+    // Assume the 'db' variable is the input variable.  If this is not true,
+    // it will be corrected later.
+    //
+    db_variable = new char[strlen(var)+1];
+    strcpy(db_variable, var);
 }
 
 
@@ -143,6 +152,9 @@ avtDataSpecification::avtDataSpecification(const char *var, int ts,
 //    Jeremy Meredith, Mon Sep 15 17:12:16 PDT 2003
 //    Added a flag for the material interface algorithm to use.
 //
+//    Hank Childs, Thu Sep 25 08:28:28 PDT 2003
+//    Set the db variable.
+//
 // ****************************************************************************
 
 avtDataSpecification::avtDataSpecification(const char *var, int ts, int ch)
@@ -169,6 +181,13 @@ avtDataSpecification::avtDataSpecification(const char *var, int ts, int ch)
 
     variable  = new char[strlen(var)+1];
     strcpy(variable, var);
+
+    //
+    // Assume the 'db' variable is the input variable.  If this is not true,
+    // it will be corrected later.
+    //
+    db_variable = new char[strlen(var)+1];
+    strcpy(db_variable, var);
 }
 
 
@@ -187,12 +206,16 @@ avtDataSpecification::avtDataSpecification(const char *var, int ts, int ch)
 //    Hank Childs, Thu Sep  6 15:39:36 PDT 2001
 //    Initialized variable to NULL.
 //
+//    Hank Childs, Thu Sep 25 08:28:28 PDT 2003
+//    Initialized db_variable to NULL.
+//
 // ****************************************************************************
 
 avtDataSpecification::avtDataSpecification(avtDataSpecification_p spec,
                                            avtSILRestriction_p silr)
 {
     variable = NULL;
+    db_variable = NULL;
     (*this) = **spec;
     sil.useRestriction = true;
     sil.silr = silr;
@@ -209,12 +232,18 @@ avtDataSpecification::avtDataSpecification(avtDataSpecification_p spec,
 //  Programmer:  Hank Childs
 //  Creation:    June 5, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Sep 25 08:28:28 PDT 2003
+//    Initialized db_variable to NULL.
+//
 // ****************************************************************************
 
 avtDataSpecification::avtDataSpecification(avtDataSpecification_p spec,
                                            int cdi)
 {
     variable = NULL;
+    db_variable = NULL;
     (*this) = **spec;
     sil.useRestriction = false;
     sil.dataChunk = cdi;
@@ -236,19 +265,32 @@ avtDataSpecification::avtDataSpecification(avtDataSpecification_p spec,
 //    Hank Childs, Mon Jan 14 14:23:22 PST 2002
 //    Fix memory leak.
 //
+//    Hank Childs, Thu Sep 25 08:28:28 PDT 2003
+//    Handle the db_variable as well.
+//
 // ****************************************************************************
 
 avtDataSpecification::avtDataSpecification(avtDataSpecification_p spec,
                                            const char *name)
 {
     variable = NULL;
+    db_variable = NULL;
+
     (*this) = **spec;
+
     if (variable != NULL)
     {
         delete [] variable;
     }
+    if (db_variable != NULL)
+    {
+        delete [] db_variable;
+    }
+
     variable = new char[strlen(name)+1];
     strcpy(variable, name);
+    db_variable = new char[strlen(name)+1];
+    strcpy(db_variable, name);
 }
 
 
@@ -261,11 +303,17 @@ avtDataSpecification::avtDataSpecification(avtDataSpecification_p spec,
 //  Programmer:  Hank Childs
 //  Creation:    June 7, 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Sep 25 08:28:28 PDT 2003
+//    Initialized db_variable to NULL.
+//
 // ****************************************************************************
 
 avtDataSpecification::avtDataSpecification(avtDataSpecification_p spec)
 {
     variable = NULL;
+    db_variable = NULL;
     (*this) = **spec;
 }
 
@@ -320,6 +368,9 @@ avtDataSpecification::avtDataSpecification(avtDataSpecification_p spec)
 //    Jeremy Meredith, Mon Sep 15 17:12:16 PDT 2003
 //    Added a flag for the material interface algorithm to use.
 //
+//    Hank Childs, Thu Sep 25 08:28:28 PDT 2003
+//    Handle db_variable.
+//
 // ****************************************************************************
 
 avtDataSpecification &
@@ -329,10 +380,18 @@ avtDataSpecification::operator=(const avtDataSpecification &spec)
     {
         delete [] variable;
     }
+    if (db_variable != NULL)
+    {
+        delete [] db_variable;
+    }
 
     timestep = spec.timestep;
+
     variable = new char[strlen(spec.variable)+1];
     strcpy(variable, spec.variable);
+
+    db_variable = new char[strlen(spec.db_variable)+1];
+    strcpy(db_variable, spec.db_variable);
 
     sil.useRestriction = spec.sil.useRestriction;
     if (sil.useRestriction)
@@ -421,6 +480,9 @@ avtDataSpecification::operator=(const avtDataSpecification &spec)
 //    Jeremy Meredith, Mon Sep 15 17:12:16 PDT 2003
 //    Added a flag for the material interface algorithm to use.
 //
+//    Hank Childs, Thu Sep 25 08:28:28 PDT 2003
+//    Compare db_variable.
+//
 // ****************************************************************************
 
 bool
@@ -435,6 +497,10 @@ avtDataSpecification::operator==(const avtDataSpecification &ds)
     // Assumption here that we don't have NULL pointers.
     //
     if (strcmp(variable, ds.variable) != 0)
+    {
+        return false;
+    }
+    if (strcmp(db_variable, ds.db_variable) != 0)
     {
         return false;
     }
@@ -538,6 +604,11 @@ avtDataSpecification::operator==(const avtDataSpecification &ds)
 //  Programmer: Hank Childs
 //  Creation:   May 19, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Sep 25 08:28:28 PDT 2003
+//    Destruct db_variable.
+//
 // ****************************************************************************
 
 avtDataSpecification::~avtDataSpecification()
@@ -546,6 +617,38 @@ avtDataSpecification::~avtDataSpecification()
     {
         delete [] variable;
         variable = NULL;
+    }
+    if (db_variable != NULL)
+    {
+        delete [] db_variable;
+        db_variable = NULL;
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtDataSpecification::SetDBVariable
+//
+//  Purpose:
+//      Sets the variable that is known to be good on the database.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 25, 2003
+//
+// ****************************************************************************
+
+void
+avtDataSpecification::SetDBVariable(const char *v)
+{
+    if (db_variable != NULL)
+    {
+        delete [] db_variable;
+        db_variable = NULL;
+    }
+    if (v != NULL)
+    {
+        db_variable = new char[strlen(v)+1];
+        strcpy(db_variable, v);
     }
 }
 
