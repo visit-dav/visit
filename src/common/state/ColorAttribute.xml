@@ -14,4 +14,5 @@
     <Function name="Blue"            user="true"></Function>
     <Function name="Alpha"           user="true"></Function>
     <Function name="CreateNode"      user="false"></Function>
+    <Function name="SetRgba2"        user="true"></Function>
   </Attribute>

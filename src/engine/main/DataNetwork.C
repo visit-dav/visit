@@ -15,6 +15,10 @@ using std::deque;
 //  Programmer:  Jeremy Meredith
 //  Creation:    November  9, 2001
 //
+//  Modifications:
+//
+//    Mark C. Miller, Thu May 27 11:05:15 PDT 2004
+//    Added missing initialization for plotActor data member
 // ****************************************************************************
 DataNetwork::DataNetwork(void)
 {
@@ -22,6 +26,7 @@ DataNetwork::DataNetwork(void)
     pspec = NULL;
     dspec = NULL;
     writer = NULL;
+    plotActor = NULL;
 }
 
 // ****************************************************************************
@@ -84,43 +89,22 @@ DataNetwork::GetWriter(avtDataObject_p dob, avtPipelineSpecification_p pspec,
 //  Programmer:  Mark C. Miller
 //  Creation:    December 5, 2003 
 //
+//  Modifications:
+//
+//     Mark C. Miller, Thu May 27 11:05:15 PDT 2004
+//     Removed window attributes argument and dependencies
+//
 // ****************************************************************************
 avtActor_p
-DataNetwork::GetActor(avtDataObject_p dob, WindowAttributes *atts)
+DataNetwork::GetActor(avtDataObject_p dob)
 {
-    if ((*plotActor != NULL) &&
-        (bgColor[0] == atts->GetBackground()[0]/255.0) &&
-        (bgColor[1] == atts->GetBackground()[1]/255.0) &&
-        (bgColor[2] == atts->GetBackground()[2]/255.0) &&
-        (fgColor[0] == atts->GetForeground()[0]/255.0) &&
-        (fgColor[1] == atts->GetForeground()[1]/255.0) &&
-        (fgColor[2] == atts->GetForeground()[2]/255.0))
-
+    if (*plotActor == NULL)
     {
-        return plotActor;
-    }
-    else
-    {
-
-        plotActor = (avtActor *) 0;
-      
-        avtPlot_p aPlot = GetPlot();
-
-        // set foreground and background colors of the plot
-        bgColor[0] = atts->GetBackground()[0]/255.0,
-        bgColor[1] = atts->GetBackground()[1]/255.0,
-        bgColor[2] = atts->GetBackground()[2]/255.0,
-        aPlot->SetBackgroundColor(bgColor);
-        fgColor[0] = atts->GetForeground()[0]/255.0,
-        fgColor[1] = atts->GetForeground()[1]/255.0,
-        fgColor[2] = atts->GetForeground()[2]/255.0,
-        aPlot->SetForegroundColor(fgColor);
-
         // do the part of the execute we'd do in the viewer
-        plotActor = aPlot->Execute(NULL, dob);
-
-        return plotActor;
+        plotActor = GetPlot()->Execute(NULL, dob);
    }
+
+   return plotActor;
 
 }
 

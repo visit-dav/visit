@@ -16,5 +16,7 @@ PyObject       *PyAnnotationAttributes_WrapPyObject(const AnnotationAttributes *
 void            PyAnnotationAttributes_SetLogging(bool val);
 void            PyAnnotationAttributes_SetDefaults(const AnnotationAttributes *atts);
 
+PyObject       *PyAnnotationAttributes_StringRepresentation(const AnnotationAttributes *atts);
+
 #endif
 
