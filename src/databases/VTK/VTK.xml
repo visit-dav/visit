@@ -1,4 +1,15 @@
 <?xml version="1.0"?>
   <Plugin name="VTK" label="VTK" type="database" dbtype="STSD" version="1.0" haswriter="yes">
     <Extensions> vtk </Extensions>
+    <Files components="M,E">
+      avtVTKFileFormat.C
+      vtkVisItDataReader.C
+      vtkVisItDataSetReader.C
+      vtkVisItPolyDataReader.C
+      vtkVisItRectilinearGridReader.C
+      vtkVisItStructuredGridReader.C
+      vtkVisItStructuredPointsReader.C
+      vtkVisItUnstructuredGridReader.C
+    </Files>
+ 
   </Plugin>

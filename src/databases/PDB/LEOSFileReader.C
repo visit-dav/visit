@@ -77,6 +77,7 @@ FixMatName(char *matName, int maxLen)
     // note that VisIt interprets special meaning for '(' and ')' in a
     // variable name, so if we see them, change them to '[' and ']'
     int i = 0;
+    int lastNonSpace = 0;
     while ((matName[i] != 0) && (i < maxLen))
     {
         if (matName[i] < 0)
@@ -87,10 +88,17 @@ FixMatName(char *matName, int maxLen)
             matName[i] = ']';
         if (validChars[matName[i]] == 0)
             matName[i] = '?';
+        if (matName[i] != ' ')
+            lastNonSpace = i;
         i++;
     }
+
     if (i == maxLen)
         return false;
+
+    // strip trailing space chars by pinching at last non space char
+    if (lastNonSpace < i - 1)
+        matName[lastNonSpace+1] = 0;
 
     return true;
 }
@@ -157,24 +165,24 @@ void
 LEOSFileReader::ThrowInvalidVariableException(bool ignorable, const char *varClass,
     const char *assumedVal, const char *actualVal, const char *fullVarName)
 {
-    char errMsg[1024];
+    char errMsg[2048];
 
     char *errMsgIgnore = "For expediency, the LEOS reader plugin makes certain "
         "assumptions about eos variables. When these assumptions turn out "
-        "to be incorrect, this error condition is generated.\n"
-        "In this case, the value for %s was assumed to be %s but in reality "
-        "is %s. You can ignore this error by hitting the draw button a second "
-        "time. However, the values displayed for %s will be wrong. Alternatively, "
-        "you can exit VisIt and set an environment variable, VISIT_LEOS_TRY_HARDER "
-        "to a value of 2 and restart it. It will take VisIt longer to load the "
+        "to be incorrect, this error condition is generated.\n\n"
+        "In this case, the value for \"%s\" was assumed to be \"%s\" but in reality "
+        "is \"%s\". You can ignore this error by hitting the draw button a second "
+        "time. However, the values displayed for \"%s\" will be wrong.\n\nAlternatively, "
+        "you can exit VisIt and set an environment variable, VISIT_LEOS_TRY_HARDER, "
+        "to a value of 2 and restart VisIt. It will take VisIt longer to load the "
         "LEOS database but this error will not appear.";
 
     char *errMsgRestart = "For expediency, the LEOS reader plugin makes certain "
         "assumptions about eos variables. When these assumptions turn out "
-        "to be incorrect, this error condition is generated.\n "
+        "to be incorrect, this error condition is generated.\n\n"
         "To work-around this problem, you can exit VisIt and set an "
-        "environment variable, VISIT_LEOS_TRY_HARDER "
-        "to a value of 2 and restart it. It will take VisIt longer to load the "
+        "environment variable, VISIT_LEOS_TRY_HARDER, "
+        "to a value of 2 and restart VisIt. It will take VisIt longer to load the "
         "LEOS database but this error will not appear.";
 
     // check if we've already issued an exception for this variable
@@ -192,11 +200,11 @@ LEOSFileReader::ThrowInvalidVariableException(bool ignorable, const char *varCla
     if (ignorable)
     {
         sprintf(errMsg, errMsgIgnore, varClass, assumedVal, actualVal, varClass);
-        EXCEPTION1(InvalidVariableException, errMsg);
+        EXCEPTION1(VisItException, errMsg);
     }
     else
     {
-        EXCEPTION1(InvalidVariableException, errMsgRestart);
+        EXCEPTION1(VisItException, errMsgRestart);
     }
 }
 
@@ -215,8 +223,8 @@ LEOSFileReader::ThrowInvalidVariableException(bool ignorable, const char *varCla
 // ****************************************************************************
 
 void
-LEOSFileReader::ValidateVariableInfoAssumptions(eosVarInfo_t &fileInfo,
-    eosVarInfo_t &mapInfo, const char *fullVarName)
+LEOSFileReader::ValidateVariableInfoAssumptions(eosVarInfo_t &mapInfo,
+    eosVarInfo_t &fileInfo, const char *fullVarName)
 {
     // we cannot ignore invalid assumptions in ndims. Always error in this case 
     if (mapInfo.ndims != fileInfo.ndims)
@@ -338,7 +346,7 @@ LEOSFileReader::BuildVarInfoMap()
     SET_MAP_ENTRY(eosVarInfoMap["S2p" ] , 2, "table", "erg/g-K",
         "rho", "g/cc", "numrho", "temp", "K", "numtemp");
 
-    SET_MAP_ENTRY(eosVarInfoMap["St"  ] , 2, "table", "erg/g-k",
+    SET_MAP_ENTRY(eosVarInfoMap["St"  ] , 2, "table", "erg/g-K",
         "rho", "g/cc", "numrho", "temp", "K", "numtemp");
 
     SET_MAP_ENTRY(eosVarInfoMap["Tm"  ] , 1, "table", "K",
@@ -372,7 +380,7 @@ LEOSFileReader::AddVariableAndMesh(avtDatabaseMetaData *md, const char *matDirNa
 
     // if the material formula isn't now known, read it
     string materialFormula;
-    if (((matForm == NULL) || (string(matForm) == "??")) && (tryHardLevel > 0))
+    if ((matForm == 0) && (tryHardLevel > 0))
     {
         // collect the material formula (e.g. 'H2O' for water)
         char tmpStr[256];
@@ -389,7 +397,11 @@ LEOSFileReader::AddVariableAndMesh(avtDatabaseMetaData *md, const char *matDirNa
     // compute mesh and variable names to be served up to VisIt
     char *varName = CXX_strdup(varDirName);
     varName[strlen(varName)-1] = 0;
-    string meshBaseName = string(matName) + " {"  + string(matForm) + "}";
+    string meshBaseName;
+    if (matForm == 0)
+        meshBaseName = string(matName);
+    else
+        meshBaseName = string(matName) + " {" + string(matForm) + "}";
     string mdVarName  = meshBaseName + '/' + string(varName);
     string mdMeshName = mdVarName + "_mesh";
 
@@ -457,7 +469,7 @@ LEOSFileReader::GetTopDirs()
     if (topDirs == 0)
     {
         PDBfile *pdbPtr = pdb->filePointer();
-        topDirs = PD_ls(pdbPtr, NULL /*path*/, "Directory", &numTopDirs);
+        topDirs = PD_ls(pdbPtr, 0 /*path*/, "Directory", &numTopDirs);
     }
 }
 
@@ -597,7 +609,9 @@ LEOSFileReader::ReadMaterialInfo(const char *matDirName, string &matName,
     sprintf(tmpStr,"/%smaterial_info/material_name", matDirName);
     if (!pdb->GetString(tmpStr, &resultStr))
         return false;
-    matName = RemoveSpaces(resultStr);
+    if (!FixMatName(resultStr, 128))
+        return false;
+    matName = string(resultStr);
     delete [] resultStr;
 
     // collect the material formula (e.g. 'H2O' for water)
@@ -735,7 +749,36 @@ LEOSFileReader::ParseContentsAndPopulateMetaData(avtDatabaseMetaData *md,
         char varName[32];
 
         // scan material directory number and name
-        sscanf(&contents[n], "%5c:%s", dirDigits, matName);
+        i = j = 0;
+        bool haveSeenColon = false;
+        while (contents[n] != 10)
+        {
+            if (contents[n] == ':')
+            {
+                haveSeenColon = true;
+                n++;
+                continue;
+            }
+
+            if (haveSeenColon)
+                matName[j++] = contents[n];
+            else
+                dirDigits[i++] = contents[n];
+
+            n++;
+        }
+        if (contents[n] == 0)
+            break;
+        n++;
+
+        // tack on the null char to what we scanned 
+        dirDigits[i] = 0;
+        matName[j] = 0;
+
+        // fix any bad characters in matname and remove trailing spaces
+        if (!FixMatName(matName, sizeof(matName)))
+            return false;
+
         string matDirName = RemoveSpaces(dirDigits);
 
         // the matDirName doesn't contain the full directory name, so try to find it
@@ -755,16 +798,6 @@ LEOSFileReader::ParseContentsAndPopulateMetaData(avtDatabaseMetaData *md,
         // set matDirName to actual dir name (which will contain a trailing '/')
         matDirName = string(topDirs[i]);
 
-        if (!FixMatName(matName, sizeof(matName)))
-            return false;
-
-        // skip to just after next new-line character
-        while (contents[n] != 10)
-            n++;
-        if (contents[n] == 0)
-            break;
-        n++;
-
         // read all the variables names for this material
         // and add each variable name and its mesh
         while (contents[n] != 10)
@@ -781,7 +814,7 @@ LEOSFileReader::ParseContentsAndPopulateMetaData(avtDatabaseMetaData *md,
                 varName[j++] = '/';
                 varName[j++] = 0;
 
-                if (!AddVariableAndMesh(md, matDirName.c_str(), matName, "??", varName))
+                if (!AddVariableAndMesh(md, matDirName.c_str(), matName, 0, varName))
                     return false;
             }
         }
@@ -812,7 +845,7 @@ LEOSFileReader::ParseContentsAndPopulateMetaData(avtDatabaseMetaData *md,
 void
 LEOSFileReader::ReadFileAndPopulateMetaData(avtDatabaseMetaData *md)
 {
-    int i;
+    int i, j;
     string matName, matForm;
 
     //
@@ -833,14 +866,14 @@ LEOSFileReader::ReadFileAndPopulateMetaData(avtDatabaseMetaData *md)
             PDBfile *pdbPtr = pdb->filePointer();
             char **varList = PD_ls(pdbPtr, topDirs[i], "Directory", &numVars);
 
-            for (i = 0; i < numVars; i++)
+            for (j = 0; j < numVars; j++)
             {
                 // skip dirs known NOT to be eos variable dirs
-                if (strcmp(varList[i],"material_info/") == 0)
+                if (strcmp(varList[j],"material_info/") == 0)
                     continue;
 
                 AddVariableAndMesh(md, topDirs[i], matName.c_str(),
-                    matForm.c_str(), varList[i]);
+                    matForm.c_str(), varList[j]);
             }
 
             SFREE(varList);
@@ -881,7 +914,7 @@ LEOSFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     // LEOS data isn't so large that remote engine scenarious are likely.
     //
     char *s = getenv("VISIT_LEOS_TRY_HARDER");
-    if (s != NULL)
+    if (s != 0)
         tryHardLevel = atoi(s);
 
     //

@@ -1069,7 +1069,7 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
         }
         CATCH2(VisItException, e)
         {
-            char message[500];
+            char message[2048];
 
             if (e.GetExceptionType() == "InvalidDimensionsException")
             {
@@ -1077,7 +1077,7 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
                 //  Create message for the gui that includes the query name
                 //  and message.
                 //
-                SNPRINTF(message, 500, "%s:  %s", qName.c_str(),
+                SNPRINTF(message, sizeof(message), "%s:  %s", qName.c_str(),
                          e.GetMessage().c_str());
             }
             else if (e.GetExceptionType() == "NonQueryableInputException")
@@ -1086,7 +1086,7 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
                 //  Create message for the gui that includes the plot name
                 //  and message.
                 //
-                SNPRINTF(message, 500, "%s%s",
+                SNPRINTF(message, sizeof(message), "%s%s",
                          "The currently active plot is non-queryable.\n",
                          "Please select a different plot and try again.");
             }
@@ -1097,7 +1097,7 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
                 // including plot name, exception type and exception
                 // message.
                 //
-                SNPRINTF(message, 500, "%s:  (%s)\n%s", qName.c_str(),
+                SNPRINTF(message, sizeof(message), "%s:  (%s)\n%s", qName.c_str(),
                          e.GetExceptionType().c_str(),
                          e.GetMessage().c_str());
 
@@ -1679,12 +1679,12 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom, const int e
                 // Reset the vars to what the user actually typed.
                 //
                 pickAtts->SetVariables(userVars);
-                char message[500];
+                char message[2048];
                 //
                 // Add as much information to the message as we can,
                 // including exception type and exception message.
                 //
-                SNPRINTF(message, 500, "Pick:  (%s)\n%s", 
+                SNPRINTF(message, sizeof(message), "Pick:  (%s)\n%s", 
                          e.GetExceptionType().c_str(),
                          e.GetMessage().c_str());
 

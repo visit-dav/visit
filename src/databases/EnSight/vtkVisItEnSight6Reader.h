@@ -1,10 +1,10 @@
 /*=========================================================================
 
   Program:   Visualization Toolkit
-  Module:    $RCSfile: vtkEnSight6BinaryReader.h,v $
+  Module:    $RCSfile: vtkVisItEnSight6Reader.h,v $
   Language:  C++
-  Date:      $Date: 2003/10/24 17:16:18 $
-  Version:   $Revision: 1.16 $
+  Date:      $Date: 2003/06/02 20:43:58 $
+  Version:   $Revision: 1.15 $
 
   Copyright (c) 1993-2002 Ken Martin, Will Schroeder, Bill Lorensen 
   All rights reserved.
@@ -15,9 +15,9 @@
      PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
-// .NAME vtkEnSight6BinaryReader - class to read binary EnSight6 files
+// .NAME vtkVisItEnSight6Reader - class to read EnSight6 files
 // .SECTION Description
-// vtkEnSight6BinaryReader is a class to read binary EnSight6 files into vtk.
+// vtkVisItEnSight6Reader is a class to read EnSight6 files into vtk.
 // Because the different parts of the EnSight data can be of various data
 // types, this reader produces multiple outputs, one per part in the input
 // file.
@@ -35,28 +35,26 @@
 // This reader can only handle static EnSight datasets (both static geometry
 // and variables).
 
-#ifndef __vtkEnSight6BinaryReader_h
-#define __vtkEnSight6BinaryReader_h
+#ifndef __vtkVisItEnSight6Reader_h
+#define __vtkVisItEnSight6Reader_h
+#include <database_exports.h>
 
-#include "vtkEnSightReader.h"
-#include <vtk_sl_io_exports.h>
+#include "vtkVisItEnSightReader.h"
 
 class vtkIdTypeArray;
 class vtkPoints;
 
-class VTK_SL_IO_API vtkEnSight6BinaryReader : public vtkEnSightReader
+class DATABASE_API VTK_IO_EXPORT vtkVisItEnSight6Reader : 
+                                 public vtkVisItEnSightReader
 {
 public:
-  static vtkEnSight6BinaryReader *New();
-  vtkTypeRevisionMacro(vtkEnSight6BinaryReader, vtkEnSightReader);
+  static vtkVisItEnSight6Reader *New();
+  vtkTypeRevisionMacro(vtkVisItEnSight6Reader, vtkVisItEnSightReader);
   virtual void PrintSelf(ostream& os, vtkIndent indent);
   
 protected:
-  vtkEnSight6BinaryReader();
-  ~vtkEnSight6BinaryReader();
-
-  // Returns 1 if successful.  Sets file size as a side action.
-  int OpenFile(const char* filename);
+  vtkVisItEnSight6Reader();
+  ~vtkVisItEnSight6Reader();
   
   // Description:
   // Read the geometry file.  If an error occurred, 0 is returned; otherwise 1.
@@ -112,7 +110,7 @@ protected:
   // Read an unstructured part (partId) from the geometry file and create a
   // vtkUnstructuredGrid output.  Return 0 if EOF reached.
   virtual int CreateUnstructuredGridOutput(int partId, 
-                                           char line[256],
+                                           char line[256], 
                                            const char* name);
   
   // Description:
@@ -122,48 +120,13 @@ protected:
                                          char line[256],
                                          const char* name);
   
-  // Description:
-  // Internal function to read in a line up to 80 characters.
-  // Returns zero if there was an error.
-  int ReadLine(char result[80]);
-
-  // Description:
-  // Internal function to read in a single integer.
-  // Returns zero if there was an error.
-  // This also tries to determine the byte order of this file.
-  int ReadIntNumber(int *result);
-
-  // Description:
-  // Internal function to read in an integer array.
-  // Returns zero if there was an error.
-  int ReadIntArray(int *result, int numInts);
-
-  // Description:
-  // Internal function to read in a float array.
-  // Returns zero if there was an error.
-  int ReadFloatArray(float *result, int numFloats);
-
-  // Description:
-  // Read to the next time step in the geometry file.
-  void SkipTimeStep();
-  int SkipStructuredGrid(char line[256]);
-  int SkipUnstructuredGrid(char line[256]);
-  
   // global list of points for the unstructured parts of the model
   int NumberOfUnstructuredPoints;
   vtkPoints* UnstructuredPoints;
   vtkIdTypeArray* UnstructuredNodeIds; // matching of node ids to point ids
-  
-  int ElementIdsListed;
-
-  // The size of the file is used to choose byte order.
-  int FileSize;
-  
-  ifstream *IFile;
 private:
-  vtkEnSight6BinaryReader(const vtkEnSight6BinaryReader&);  // Not implemented.
-  void operator=(const vtkEnSight6BinaryReader&);  // Not implemented.
+  vtkVisItEnSight6Reader(const vtkVisItEnSight6Reader&);  // Not implemented.
+  void operator=(const vtkVisItEnSight6Reader&);  // Not implemented.
 };
 
 #endif
-

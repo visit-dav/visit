@@ -1,43 +1,40 @@
 /*=========================================================================
 
   Program:   Visualization Toolkit
-  Module:    $RCSfile: vtkGenericEnSightReader.cxx,v $
-  Language:  C++
-  Date:      $Date: 2003/10/27 18:13:58 $
-  Version:   $Revision: 1.50 $
+  Module:    $RCSfile: vtkVisItGenericEnSightReader.cxx,v $
 
-  Copyright (c) 1993-2002 Ken Martin, Will Schroeder, Bill Lorensen 
+  Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
   All rights reserved.
   See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
 
-     This software is distributed WITHOUT ANY WARRANTY; without even 
-     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+     This software is distributed WITHOUT ANY WARRANTY; without even
+     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
      PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
-#include "vtkGenericEnSightReader.h"
+#include "vtkVisItGenericEnSightReader.h"
 
 #include "vtkCallbackCommand.h"
 #include "vtkDataArrayCollection.h"
 #include "vtkDataArraySelection.h"
 #include "vtkDataSet.h"
-#include "vtkEnSight6BinaryReader.h"
-#include "vtkEnSight6Reader.h"
-#include "vtkEnSightGoldBinaryReader.h"
-#include "vtkEnSightGoldReader.h"
+#include "vtkVisItEnSight6BinaryReader.h"
+#include "vtkVisItEnSight6Reader.h"
+#include "vtkVisItEnSightGoldBinaryReader.h"
+#include "vtkVisItEnSightGoldReader.h"
 #include "vtkIdListCollection.h"
 #include "vtkObjectFactory.h"
 
 #include <string>
 
-vtkCxxRevisionMacro(vtkGenericEnSightReader, "$Revision: 1.50 $");
-vtkStandardNewMacro(vtkGenericEnSightReader);
+vtkCxxRevisionMacro(vtkVisItGenericEnSightReader, "$Revision: 1.55 $");
+vtkStandardNewMacro(vtkVisItGenericEnSightReader);
 
-vtkCxxSetObjectMacro(vtkGenericEnSightReader,TimeSets, 
+vtkCxxSetObjectMacro(vtkVisItGenericEnSightReader,TimeSets, 
                      vtkDataArrayCollection);
 
 //----------------------------------------------------------------------------
-vtkGenericEnSightReader::vtkGenericEnSightReader()
+vtkVisItGenericEnSightReader::vtkVisItGenericEnSightReader()
 {
   this->Reader = NULL;
   this->IS = NULL;
@@ -79,7 +76,7 @@ vtkGenericEnSightReader::vtkGenericEnSightReader()
   
   this->ReadAllVariables = 1;
 
-  this->ByteOrder = FILE_BIG_ENDIAN;
+  this->ByteOrder = FILE_UNKNOWN_ENDIAN;
   
   this->EnSightVersion = -1;
   
@@ -90,7 +87,7 @@ vtkGenericEnSightReader::vtkGenericEnSightReader()
   // selection is changed.
   this->SelectionObserver = vtkCallbackCommand::New();
   this->SelectionObserver->SetCallback(
-    &vtkGenericEnSightReader::SelectionModifiedCallback);
+    &vtkVisItGenericEnSightReader::SelectionModifiedCallback);
   this->SelectionObserver->SetClientData(this);
   this->PointDataArraySelection->AddObserver(vtkCommand::ModifiedEvent,
                                              this->SelectionObserver);
@@ -100,7 +97,7 @@ vtkGenericEnSightReader::vtkGenericEnSightReader()
 }
 
 //----------------------------------------------------------------------------
-vtkGenericEnSightReader::~vtkGenericEnSightReader()
+vtkVisItGenericEnSightReader::~vtkVisItGenericEnSightReader()
 {
   int i;
   
@@ -161,7 +158,7 @@ vtkGenericEnSightReader::~vtkGenericEnSightReader()
 }
 
 //----------------------------------------------------------------------------
-void vtkGenericEnSightReader::Execute()
+void vtkVisItGenericEnSightReader::Execute()
 {
   int i;
 
@@ -253,7 +250,7 @@ void vtkGenericEnSightReader::Execute()
 }
 
 //----------------------------------------------------------------------------
-void vtkGenericEnSightReader::SetTimeValue(float value)
+void vtkVisItGenericEnSightReader::SetTimeValue(float value)
 {
   vtkDebugMacro(<< this->GetClassName() << " (" << this << "): setting TimeValue to " << value);
   if (this->TimeValue != value)
@@ -265,7 +262,7 @@ void vtkGenericEnSightReader::SetTimeValue(float value)
 }
 
 //----------------------------------------------------------------------------
-int vtkGenericEnSightReader::DetermineEnSightVersion()
+int vtkVisItGenericEnSightReader::DetermineEnSightVersion()
 {
   char line[256], subLine[256], subLine1[256], subLine2[256], binaryLine[81];
   int stringRead;
@@ -311,9 +308,9 @@ int vtkGenericEnSightReader::DetermineEnSightVersion()
     if (stringRead == 1)
       {
       stringRead = sscanf(line, " %*s %s %s", subLine1, subLine2);
-      if (strcmp(subLine1, "ensight") == 0)
+      if (strncmp(subLine1,"ensight",7) == 0)
         {
-        if (strcmp(subLine2, "gold") == 0)
+        if (strncmp(subLine2,"gold",4) == 0)
           {
           this->ReadNextDataLine(line);
           if (strncmp(line, "GEOMETRY", 8) == 0)
@@ -376,9 +373,10 @@ int vtkGenericEnSightReader::DetermineEnSightVersion()
             if (this->IFile == NULL)
               {
               vtkErrorMacro("Unable to open file: " << sfilename.c_str());
+              vtkWarningMacro("Assuming binary file.");
               this->IFile = NULL;
               delete [] fileName;
-              return 0;
+              return vtkVisItGenericEnSightReader::ENSIGHT_GOLD_BINARY;
               } // end if IFile == NULL
           
             this->ReadBinaryLine(binaryLine);
@@ -386,25 +384,25 @@ int vtkGenericEnSightReader::DetermineEnSightVersion()
             sscanf(binaryLine, " %*s %s", subLine);
             // If the file is ascii, there might not be a null
             // terminator. This leads to a UMR in sscanf
-            if (strcmp(subLine, "Binary") == 0 ||
-                strcmp(subLine, "binary") == 0)
+            if (strncmp(subLine,"Binary",6) == 0 ||
+                strncmp(subLine,"binary",6) == 0)
               {
               fclose(this->IFile);
               this->IFile = NULL;
               delete [] fileName;
-              return vtkGenericEnSightReader::ENSIGHT_GOLD_BINARY;
+              return vtkVisItGenericEnSightReader::ENSIGHT_GOLD_BINARY;
               } //end if binary
           
             fclose(this->IFile);
             this->IFile = NULL;
             delete [] fileName;
-            return vtkGenericEnSightReader::ENSIGHT_GOLD;
+            return vtkVisItGenericEnSightReader::ENSIGHT_GOLD;
             } // if we found the geometry section in the case file
           } // if ensight gold file
         } // if regular ensight file (not master_server)
-      else if (strcmp(subLine1, "master_server") == 0)
+      else if (strncmp(subLine1,"master_server",13) == 0)
         {
-        return vtkGenericEnSightReader::ENSIGHT_MASTER_SERVER;
+        return vtkVisItGenericEnSightReader::ENSIGHT_MASTER_SERVER;
         }
       } // if the type line is like "type: xxxx xxxx"
     else
@@ -469,10 +467,11 @@ int vtkGenericEnSightReader::DetermineEnSightVersion()
         if (this->IFile == NULL)
           {
           vtkErrorMacro("Unable to open file: " << sfilename.c_str());
+          vtkWarningMacro("Assuming binary file.");
           fclose(this->IFile);
           this->IFile = NULL;
           delete [] fileName;
-          return 0;
+          return vtkVisItGenericEnSightReader::ENSIGHT_6_BINARY;
           } // end if IFile == NULL
         
         this->ReadBinaryLine(binaryLine);
@@ -480,18 +479,18 @@ int vtkGenericEnSightReader::DetermineEnSightVersion()
         // terminator. This leads to a UMR in sscanf
         binaryLine[80] = '\0';
         sscanf(binaryLine, " %*s %s", subLine);
-        if (strcmp(subLine, "Binary") == 0)
+        if (strncmp(subLine,"Binary",6) == 0)
           {
           fclose(this->IFile);
           this->IFile = NULL;
           delete [] fileName;
-          return vtkGenericEnSightReader::ENSIGHT_6_BINARY;
+          return vtkVisItGenericEnSightReader::ENSIGHT_6_BINARY;
           } //end if binary
         
         fclose(this->IFile);
         this->IFile = NULL;
         delete [] fileName;
-        return vtkGenericEnSightReader::ENSIGHT_6;
+        return vtkVisItGenericEnSightReader::ENSIGHT_6;
         } // if we found the geometry section in the case file
       } // not ensight gold
     } // if we found the format section in the case file
@@ -504,7 +503,7 @@ int vtkGenericEnSightReader::DetermineEnSightVersion()
   return -1;
 }
 
-void vtkGenericEnSightReader::SetCaseFileName(const char* fileName)
+void vtkVisItGenericEnSightReader::SetCaseFileName(const char* fileName)
 {
   char *endingSlash = NULL;
   char *path, *newFileName;
@@ -556,7 +555,7 @@ void vtkGenericEnSightReader::SetCaseFileName(const char* fileName)
 
 // Internal function to read in a line up to 256 characters.
 // Returns zero if there was an error.
-int vtkGenericEnSightReader::ReadLine(char result[256])
+int vtkVisItGenericEnSightReader::ReadLine(char result[256])
 {
   this->IS->getline(result,256);
 //  if (this->IS->eof()) 
@@ -570,7 +569,7 @@ int vtkGenericEnSightReader::ReadLine(char result[256])
 
 // Internal function to read in a line (from a binary file) up
 // to 80 characters.  Returns zero if there was an error.
-int vtkGenericEnSightReader::ReadBinaryLine(char result[80])
+int vtkVisItGenericEnSightReader::ReadBinaryLine(char result[80])
 {
   fread(result, sizeof(char), 80, this->IFile);
 
@@ -585,7 +584,7 @@ int vtkGenericEnSightReader::ReadBinaryLine(char result[80])
 // Internal function that skips blank lines and comment lines
 // and reads the next line it finds (up to 256 characters).
 // Returns 0 is there was an error.
-int vtkGenericEnSightReader::ReadNextDataLine(char result[256])
+int vtkVisItGenericEnSightReader::ReadNextDataLine(char result[256])
 {
   int value, sublineFound;
   char subline[256];
@@ -603,7 +602,7 @@ int vtkGenericEnSightReader::ReadNextDataLine(char result[256])
 }
 
 //----------------------------------------------------------------------------
-void vtkGenericEnSightReader::Update()
+void vtkVisItGenericEnSightReader::Update()
 {
   int i;
   
@@ -620,16 +619,16 @@ void vtkGenericEnSightReader::Update()
 }
 
 //----------------------------------------------------------------------------
-void vtkGenericEnSightReader::ExecuteInformation()
+void vtkVisItGenericEnSightReader::ExecuteInformation()
 {
   int version = this->DetermineEnSightVersion();
   int createReader = 1;
-  if (version == vtkGenericEnSightReader::ENSIGHT_6)
+  if (version == vtkVisItGenericEnSightReader::ENSIGHT_6)
     {
     vtkDebugMacro("EnSight6");
     if (this->Reader)
       {
-      if (strcmp(this->Reader->GetClassName(), "vtkEnSight6Reader") == 0)
+      if (strcmp(this->Reader->GetClassName(), "vtkVisItEnSight6Reader") == 0)
         {
         createReader = 0;
         }
@@ -640,15 +639,15 @@ void vtkGenericEnSightReader::ExecuteInformation()
       }
     if (createReader)
       {
-      this->Reader = vtkEnSight6Reader::New();
+      this->Reader = vtkVisItEnSight6Reader::New();
       }
     }
-  else if (version == vtkGenericEnSightReader::ENSIGHT_6_BINARY)
+  else if (version == vtkVisItGenericEnSightReader::ENSIGHT_6_BINARY)
     {
     vtkDebugMacro("EnSight6 binary");
     if (this->Reader)
       {
-      if (strcmp(this->Reader->GetClassName(), "vtkEnSight6BinaryReader") == 0)
+      if (strcmp(this->Reader->GetClassName(), "vtkVisItEnSight6BinaryReader") == 0)
         {
         createReader = 0;
         }
@@ -659,15 +658,15 @@ void vtkGenericEnSightReader::ExecuteInformation()
       }
     if (createReader)
       {
-      this->Reader = vtkEnSight6BinaryReader::New();
+      this->Reader = vtkVisItEnSight6BinaryReader::New();
       }
     }
-  else if (version == vtkGenericEnSightReader::ENSIGHT_GOLD)
+  else if (version == vtkVisItGenericEnSightReader::ENSIGHT_GOLD)
     {
     vtkDebugMacro("EnSightGold");
     if (this->Reader)
       {
-      if (strcmp(this->Reader->GetClassName(), "vtkEnSightGoldReader") == 0)
+      if (strcmp(this->Reader->GetClassName(), "vtkVisItEnSightGoldReader") == 0)
         {
         createReader = 0;
         }
@@ -678,16 +677,16 @@ void vtkGenericEnSightReader::ExecuteInformation()
       }
     if (createReader)
       {
-      this->Reader = vtkEnSightGoldReader::New();
+      this->Reader = vtkVisItEnSightGoldReader::New();
       }
     }
-  else if (version == vtkGenericEnSightReader::ENSIGHT_GOLD_BINARY)
+  else if (version == vtkVisItGenericEnSightReader::ENSIGHT_GOLD_BINARY)
     {
     vtkDebugMacro("EnSightGold binary");
     if (this->Reader)
       {
       if (strcmp(this->Reader->GetClassName(),
-                 "vtkEnSightGoldBinaryReader") == 0)
+                 "vtkVisItEnSightGoldBinaryReader") == 0)
         {
         createReader = 0;
         }
@@ -698,7 +697,7 @@ void vtkGenericEnSightReader::ExecuteInformation()
       }
     if (createReader)
       {
-      this->Reader = vtkEnSightGoldBinaryReader::New();
+      this->Reader = vtkVisItEnSightGoldBinaryReader::New();
       }
     }
   else
@@ -730,7 +729,7 @@ void vtkGenericEnSightReader::ExecuteInformation()
 }
 
 //----------------------------------------------------------------------------
-void vtkGenericEnSightReader::AddVariableDescription(char* description)
+void vtkVisItGenericEnSightReader::AddVariableDescription(char* description)
 {
   int size = this->NumberOfVariables;
   int i;
@@ -770,7 +769,7 @@ void vtkGenericEnSightReader::AddVariableDescription(char* description)
   vtkDebugMacro("description: " << this->VariableDescriptions[size]);
 }
 
-void vtkGenericEnSightReader::AddComplexVariableDescription(char* description)
+void vtkVisItGenericEnSightReader::AddComplexVariableDescription(char* description)
 {
   int i;
   int size = this->NumberOfComplexVariables;
@@ -807,33 +806,33 @@ void vtkGenericEnSightReader::AddComplexVariableDescription(char* description)
                 << this->ComplexVariableDescriptions[size]);
 }
 
-int vtkGenericEnSightReader::GetNumberOfVariables(int type)
+int vtkVisItGenericEnSightReader::GetNumberOfVariables(int type)
 {
   switch (type)
     {
-    case vtkEnSightReader::SCALAR_PER_NODE:
+    case vtkVisItEnSightReader::SCALAR_PER_NODE:
       return this->GetNumberOfScalarsPerNode();
-    case vtkEnSightReader::VECTOR_PER_NODE:
+    case vtkVisItEnSightReader::VECTOR_PER_NODE:
       return this->GetNumberOfVectorsPerNode();
-    case vtkEnSightReader::TENSOR_SYMM_PER_NODE:
+    case vtkVisItEnSightReader::TENSOR_SYMM_PER_NODE:
       return this->GetNumberOfTensorsSymmPerNode();
-    case vtkEnSightReader::SCALAR_PER_ELEMENT:
+    case vtkVisItEnSightReader::SCALAR_PER_ELEMENT:
       return this->GetNumberOfScalarsPerElement();
-    case vtkEnSightReader::VECTOR_PER_ELEMENT:
+    case vtkVisItEnSightReader::VECTOR_PER_ELEMENT:
       return this->GetNumberOfVectorsPerElement();
-    case vtkEnSightReader::TENSOR_SYMM_PER_ELEMENT:
+    case vtkVisItEnSightReader::TENSOR_SYMM_PER_ELEMENT:
       return this->GetNumberOfTensorsSymmPerElement();
-    case vtkEnSightReader::SCALAR_PER_MEASURED_NODE:
+    case vtkVisItEnSightReader::SCALAR_PER_MEASURED_NODE:
       return this->GetNumberOfScalarsPerMeasuredNode();
-    case vtkEnSightReader::VECTOR_PER_MEASURED_NODE:
+    case vtkVisItEnSightReader::VECTOR_PER_MEASURED_NODE:
       return this->GetNumberOfVectorsPerMeasuredNode();
-    case vtkEnSightReader::COMPLEX_SCALAR_PER_NODE:
+    case vtkVisItEnSightReader::COMPLEX_SCALAR_PER_NODE:
       return this->GetNumberOfComplexScalarsPerNode();
-    case vtkEnSightReader::COMPLEX_VECTOR_PER_NODE:
+    case vtkVisItEnSightReader::COMPLEX_VECTOR_PER_NODE:
       return this->GetNumberOfComplexVectorsPerNode();
-    case vtkEnSightReader::COMPLEX_SCALAR_PER_ELEMENT:
+    case vtkVisItEnSightReader::COMPLEX_SCALAR_PER_ELEMENT:
       return this->GetNumberOfComplexScalarsPerElement();
-    case vtkEnSightReader::COMPLEX_VECTOR_PER_ELEMENT:
+    case vtkVisItEnSightReader::COMPLEX_VECTOR_PER_ELEMENT:
       return this->GetNumberOfComplexVectorsPerElement();
     default:
       vtkWarningMacro("unknow variable type");
@@ -841,7 +840,7 @@ int vtkGenericEnSightReader::GetNumberOfVariables(int type)
     }
 }
 
-char* vtkGenericEnSightReader::GetDescription(int n)
+char* vtkVisItGenericEnSightReader::GetDescription(int n)
 {
   if (n < this->NumberOfVariables)
     {
@@ -850,7 +849,7 @@ char* vtkGenericEnSightReader::GetDescription(int n)
   return NULL;
 }
 
-char* vtkGenericEnSightReader::GetComplexDescription(int n)
+char* vtkVisItGenericEnSightReader::GetComplexDescription(int n)
 {
   if (n < this->NumberOfComplexVariables)
     {
@@ -859,7 +858,7 @@ char* vtkGenericEnSightReader::GetComplexDescription(int n)
   return NULL;
 }
 
-char* vtkGenericEnSightReader::GetDescription(int n, int type)
+char* vtkVisItGenericEnSightReader::GetDescription(int n, int type)
 {
   int i, numMatches = 0;
   
@@ -902,7 +901,7 @@ char* vtkGenericEnSightReader::GetDescription(int n, int type)
 }
 
 //----------------------------------------------------------------------------
-void vtkGenericEnSightReader::AddVariableType(int variableType)
+void vtkVisItGenericEnSightReader::AddVariableType(int variableType)
 {
   int size;
   int i;
@@ -928,7 +927,7 @@ void vtkGenericEnSightReader::AddVariableType(int variableType)
   vtkDebugMacro("variable type: " << this->VariableTypes[size]);
 }
 
-void vtkGenericEnSightReader::AddComplexVariableType(int variableType)
+void vtkVisItGenericEnSightReader::AddComplexVariableType(int variableType)
 {
   int i;
   int* types = NULL;
@@ -959,7 +958,7 @@ void vtkGenericEnSightReader::AddComplexVariableType(int variableType)
                 << this->ComplexVariableTypes[size]);
 }
 
-int vtkGenericEnSightReader::GetVariableType(int n)
+int vtkVisItGenericEnSightReader::GetVariableType(int n)
 {
   if (n < this->NumberOfVariables)
     {
@@ -968,7 +967,7 @@ int vtkGenericEnSightReader::GetVariableType(int n)
   return -1;
 }
 
-int vtkGenericEnSightReader::GetComplexVariableType(int n)
+int vtkVisItGenericEnSightReader::GetComplexVariableType(int n)
 {
   if (n < this->NumberOfComplexVariables)
     {
@@ -977,7 +976,7 @@ int vtkGenericEnSightReader::GetComplexVariableType(int n)
   return -1;
 }
 
-void vtkGenericEnSightReader::ReplaceWildcards(char* fileName, int timeSet,
+void vtkVisItGenericEnSightReader::ReplaceWildcards(char* fileName, int timeSet,
                                                int fileSet)
 {
   char line[256], subLine[256];
@@ -1068,7 +1067,7 @@ void vtkGenericEnSightReader::ReplaceWildcards(char* fileName, int timeSet,
   this->IS = NULL;
 }
 
-void vtkGenericEnSightReader::ReplaceWildcardsHelper(char* fileName, int num)
+void vtkVisItGenericEnSightReader::ReplaceWildcardsHelper(char* fileName, int num)
 {
   int wildcardPos, numWildcards, numDigits = 1, i;
   int tmpNum = num, multTen = 1;
@@ -1138,17 +1137,17 @@ void vtkGenericEnSightReader::ReplaceWildcardsHelper(char* fileName, int num)
     }
 }
 
-void vtkGenericEnSightReader::SetByteOrderToBigEndian()
+void vtkVisItGenericEnSightReader::SetByteOrderToBigEndian()
 {
   this->ByteOrder = FILE_BIG_ENDIAN;
 }
 
-void vtkGenericEnSightReader::SetByteOrderToLittleEndian()
+void vtkVisItGenericEnSightReader::SetByteOrderToLittleEndian()
 {
   this->ByteOrder = FILE_LITTLE_ENDIAN;
 }
 
-const char *vtkGenericEnSightReader::GetByteOrderAsString()
+const char *vtkVisItGenericEnSightReader::GetByteOrderAsString()
 {
   if ( this->ByteOrder ==  FILE_LITTLE_ENDIAN)
     {
@@ -1160,7 +1159,7 @@ const char *vtkGenericEnSightReader::GetByteOrderAsString()
     }
 }
 
-void vtkGenericEnSightReader::PrintSelf(ostream& os, vtkIndent indent)
+void vtkVisItGenericEnSightReader::PrintSelf(ostream& os, vtkIndent indent)
 {
   this->Superclass::PrintSelf(os,indent);
 
@@ -1205,7 +1204,7 @@ void vtkGenericEnSightReader::PrintSelf(ostream& os, vtkIndent indent)
 }
 
 //----------------------------------------------------------------------------
-char** vtkGenericEnSightReader::CreateStringArray(int numStrings)
+char** vtkVisItGenericEnSightReader::CreateStringArray(int numStrings)
 {
   char** strings = new char*[numStrings];
   int i;
@@ -1217,7 +1216,7 @@ char** vtkGenericEnSightReader::CreateStringArray(int numStrings)
 }
 
 //----------------------------------------------------------------------------
-void vtkGenericEnSightReader::DestroyStringArray(int numStrings,
+void vtkVisItGenericEnSightReader::DestroyStringArray(int numStrings,
                                                  char** strings)
 {
   int i;
@@ -1232,7 +1231,7 @@ void vtkGenericEnSightReader::DestroyStringArray(int numStrings,
 }
 
 //----------------------------------------------------------------------------
-void vtkGenericEnSightReader::SetDataArraySelectionSetsFromVariables()
+void vtkVisItGenericEnSightReader::SetDataArraySelectionSetsFromVariables()
 {
   int numPointArrays = (this->NumberOfScalarsPerNode +
                         this->NumberOfVectorsPerNode +
@@ -1257,19 +1256,19 @@ void vtkGenericEnSightReader::SetDataArraySelectionSetsFromVariables()
     {
     switch (this->VariableTypes[i])
       {
-      case vtkEnSightReader::SCALAR_PER_NODE:
-      case vtkEnSightReader::VECTOR_PER_NODE:
-      case vtkEnSightReader::TENSOR_SYMM_PER_NODE:
-      case vtkEnSightReader::SCALAR_PER_MEASURED_NODE:
-      case vtkEnSightReader::VECTOR_PER_MEASURED_NODE:
+      case vtkVisItEnSightReader::SCALAR_PER_NODE:
+      case vtkVisItEnSightReader::VECTOR_PER_NODE:
+      case vtkVisItEnSightReader::TENSOR_SYMM_PER_NODE:
+      case vtkVisItEnSightReader::SCALAR_PER_MEASURED_NODE:
+      case vtkVisItEnSightReader::VECTOR_PER_MEASURED_NODE:
         pointNames[pointArrayCount] =
           new char[strlen(this->VariableDescriptions[i])+1];
         strcpy(pointNames[pointArrayCount], this->VariableDescriptions[i]);
         ++pointArrayCount;
         break;
-      case vtkEnSightReader::SCALAR_PER_ELEMENT:
-      case vtkEnSightReader::VECTOR_PER_ELEMENT:
-      case vtkEnSightReader::TENSOR_SYMM_PER_ELEMENT:
+      case vtkVisItEnSightReader::SCALAR_PER_ELEMENT:
+      case vtkVisItEnSightReader::VECTOR_PER_ELEMENT:
+      case vtkVisItEnSightReader::TENSOR_SYMM_PER_ELEMENT:
         cellNames[cellArrayCount] =
           new char[strlen(this->VariableDescriptions[i])+1];
         strcpy(cellNames[cellArrayCount], this->VariableDescriptions[i]);
@@ -1281,16 +1280,16 @@ void vtkGenericEnSightReader::SetDataArraySelectionSetsFromVariables()
     {
     switch(this->ComplexVariableTypes[i])
       {
-      case vtkEnSightReader::COMPLEX_SCALAR_PER_NODE:
-      case vtkEnSightReader::COMPLEX_VECTOR_PER_NODE:
+      case vtkVisItEnSightReader::COMPLEX_SCALAR_PER_NODE:
+      case vtkVisItEnSightReader::COMPLEX_VECTOR_PER_NODE:
         pointNames[pointArrayCount] =
           new char[strlen(this->ComplexVariableDescriptions[i])+1];
         strcpy(pointNames[pointArrayCount],
                this->ComplexVariableDescriptions[i]);
         ++pointArrayCount;
         break;
-      case vtkEnSightReader::COMPLEX_SCALAR_PER_ELEMENT:
-      case vtkEnSightReader::COMPLEX_VECTOR_PER_ELEMENT:
+      case vtkVisItEnSightReader::COMPLEX_SCALAR_PER_ELEMENT:
+      case vtkVisItEnSightReader::COMPLEX_VECTOR_PER_ELEMENT:
         cellNames[cellArrayCount] =
           new char[strlen(this->ComplexVariableDescriptions[i])+1];
         strcpy(cellNames[cellArrayCount],
@@ -1311,7 +1310,7 @@ void vtkGenericEnSightReader::SetDataArraySelectionSetsFromVariables()
 }
 
 //----------------------------------------------------------------------------
-void vtkGenericEnSightReader::SetDataArraySelectionSetsFromReader()
+void vtkVisItGenericEnSightReader::SetDataArraySelectionSetsFromReader()
 {
   this->SelectionModifiedDoNotCallModified = 1;
   this->PointDataArraySelection->CopySelections(
@@ -1322,7 +1321,7 @@ void vtkGenericEnSightReader::SetDataArraySelectionSetsFromReader()
 }
 
 //----------------------------------------------------------------------------
-void vtkGenericEnSightReader::SetReaderDataArraySelectionSetsFromSelf()
+void vtkVisItGenericEnSightReader::SetReaderDataArraySelectionSetsFromSelf()
 {
   // Set the real reader's data array selections from ours.
   this->Reader->GetPointDataArraySelection()->CopySelections(
@@ -1332,16 +1331,16 @@ void vtkGenericEnSightReader::SetReaderDataArraySelectionSetsFromSelf()
 }
 
 //----------------------------------------------------------------------------
-void vtkGenericEnSightReader::SelectionModifiedCallback(vtkObject*,
+void vtkVisItGenericEnSightReader::SelectionModifiedCallback(vtkObject*,
                                                         unsigned long,
                                                         void* clientdata,
                                                         void*)
 {
-  static_cast<vtkGenericEnSightReader*>(clientdata)->SelectionModified();
+  static_cast<vtkVisItGenericEnSightReader*>(clientdata)->SelectionModified();
 }
 
 //----------------------------------------------------------------------------
-void vtkGenericEnSightReader::SelectionModified()
+void vtkVisItGenericEnSightReader::SelectionModified()
 {
   if(!this->SelectionModifiedDoNotCallModified)
     {
@@ -1350,25 +1349,25 @@ void vtkGenericEnSightReader::SelectionModified()
 }
 
 //----------------------------------------------------------------------------
-int vtkGenericEnSightReader::GetNumberOfPointArrays()
+int vtkVisItGenericEnSightReader::GetNumberOfPointArrays()
 {
   return this->PointDataArraySelection->GetNumberOfArrays();
 }
 
 //----------------------------------------------------------------------------
-const char* vtkGenericEnSightReader::GetPointArrayName(int index)
+const char* vtkVisItGenericEnSightReader::GetPointArrayName(int index)
 {
   return this->PointDataArraySelection->GetArrayName(index);
 }
 
 //----------------------------------------------------------------------------
-int vtkGenericEnSightReader::GetPointArrayStatus(const char* name)
+int vtkVisItGenericEnSightReader::GetPointArrayStatus(const char* name)
 {
   return this->PointDataArraySelection->ArrayIsEnabled(name);
 }
 
 //----------------------------------------------------------------------------
-void vtkGenericEnSightReader::SetPointArrayStatus(const char* name, int status)
+void vtkVisItGenericEnSightReader::SetPointArrayStatus(const char* name, int status)
 {
   if(status)
     {
@@ -1381,25 +1380,25 @@ void vtkGenericEnSightReader::SetPointArrayStatus(const char* name, int status)
 }
 
 //----------------------------------------------------------------------------
-int vtkGenericEnSightReader::GetNumberOfCellArrays()
+int vtkVisItGenericEnSightReader::GetNumberOfCellArrays()
 {
   return this->CellDataArraySelection->GetNumberOfArrays();
 }
 
 //----------------------------------------------------------------------------
-const char* vtkGenericEnSightReader::GetCellArrayName(int index)
+const char* vtkVisItGenericEnSightReader::GetCellArrayName(int index)
 {
   return this->CellDataArraySelection->GetArrayName(index);
 }
 
 //----------------------------------------------------------------------------
-int vtkGenericEnSightReader::GetCellArrayStatus(const char* name)
+int vtkVisItGenericEnSightReader::GetCellArrayStatus(const char* name)
 {
   return this->CellDataArraySelection->ArrayIsEnabled(name);
 }
 
 //----------------------------------------------------------------------------
-void vtkGenericEnSightReader::SetCellArrayStatus(const char* name, int status)
+void vtkVisItGenericEnSightReader::SetCellArrayStatus(const char* name, int status)
 {
   if(status)
     {
@@ -1410,66 +1409,3 @@ void vtkGenericEnSightReader::SetCellArrayStatus(const char* name, int status)
     this->CellDataArraySelection->DisableArray(name);
     }
 }
-
-//----------------------------------------------------------------------------
-#ifndef VTK_REMOVE_LEGACY_CODE
-void vtkGenericEnSightReader::AddVariableName(char* variableName,
-                                              int attributeType)
-{
-  VTK_LEGACY_METHOD(AddVariableName, "4.4");
-  if (attributeType == 0)
-    {
-    this->PointDataArraySelection->EnableArray(variableName);
-    }
-  else if (attributeType == 1)
-    {
-    this->CellDataArraySelection->EnableArray(variableName);
-    }
-}
-
-void vtkGenericEnSightReader::AddPointVariableName(char* variableName)
-{
-  VTK_LEGACY_METHOD(AddPointVariableName, "4.4");
-  this->PointDataArraySelection->EnableArray(variableName);
-}
-
-void vtkGenericEnSightReader::AddCellVariableName(char* variableName)
-{
-  VTK_LEGACY_METHOD(AddCellVariableName, "4.4");
-  this->CellDataArraySelection->EnableArray(variableName);
-}
-
-void vtkGenericEnSightReader::RemoveAllVariableNames()
-{
-  VTK_LEGACY_METHOD(RemoveAllVariableNames, "4.4");
-  this->PointDataArraySelection->RemoveAllArrays();
-  this->CellDataArraySelection->RemoveAllArrays();
-}
-
-void vtkGenericEnSightReader::RemoveAllPointVariableNames()
-{
-  VTK_LEGACY_METHOD(RemoveAllPointVariableNames, "4.4");
-  this->PointDataArraySelection->RemoveAllArrays();
-}
-
-void vtkGenericEnSightReader::RemoveAllCellVariableNames()
-{
-  VTK_LEGACY_METHOD(RemoveAllCellVariableNames, "4.4");
-  this->CellDataArraySelection->RemoveAllArrays();
-}
-
-int vtkGenericEnSightReader::IsRequestedVariable(const char* variableName,
-                                                 int attributeType)
-{
-  VTK_LEGACY_METHOD(IsRequestedVariable, "4.4");
-  if(attributeType == 0)
-    {
-    return this->PointDataArraySelection->ArrayIsEnabled(variableName);
-    }
-  else
-    {
-    return this->CellDataArraySelection->ArrayIsEnabled(variableName);
-    }
-}
-
-#endif

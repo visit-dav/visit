@@ -1,7 +1,7 @@
 /*=========================================================================
 
   Program:   Visualization Toolkit
-  Module:    $RCSfile: vtkEnSightReader.cxx,v $
+  Module:    $RCSfile: vtkVisItEnSightReader.cxx,v $
   Language:  C++
   Date:      $Date: 2003/04/18 18:57:10 $
   Version:   $Revision: 1.47 $
@@ -15,8 +15,9 @@
      PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
-#include "vtkEnSightReader.h"
+#include "vtkVisItEnSightReader.h"
 
+#include "vtkByteSwap.h"
 #include "vtkDataArrayCollection.h"
 #include "vtkFloatArray.h"
 #include "vtkIdList.h"
@@ -33,14 +34,14 @@
 
 
 
-vtkCxxRevisionMacro(vtkEnSightReader, "$Revision: 1.47 $");
+vtkCxxRevisionMacro(vtkVisItEnSightReader, "$Revision: 1.47 $");
 
 //----------------------------------------------------------------------------
-typedef std::vector< vtkSmartPointer<vtkIdList> > vtkEnSightReaderCellIdsTypeBase;
-class vtkEnSightReaderCellIdsType: public vtkEnSightReaderCellIdsTypeBase {};
+typedef std::vector< vtkSmartPointer<vtkIdList> > vtkVisItEnSightReaderCellIdsTypeBase;
+class vtkVisItEnSightReaderCellIdsType: public vtkVisItEnSightReaderCellIdsTypeBase {};
 
 //----------------------------------------------------------------------------
-vtkEnSightReader::vtkEnSightReader()
+vtkVisItEnSightReader::vtkVisItEnSightReader()
 {
   this->MeasuredFileName = NULL;
   this->MatchFileName = NULL;
@@ -95,7 +96,7 @@ vtkEnSightReader::vtkEnSightReader()
 }
 
 //----------------------------------------------------------------------------
-vtkEnSightReader::~vtkEnSightReader()
+vtkVisItEnSightReader::~vtkVisItEnSightReader()
 {
   int i;
 
@@ -171,7 +172,7 @@ vtkEnSightReader::~vtkEnSightReader()
 }
 
 //----------------------------------------------------------------------------
-void vtkEnSightReader::Execute()
+void vtkVisItEnSightReader::Execute()
 {
   vtkDebugMacro("In execute ");
 
@@ -376,7 +377,7 @@ void vtkEnSightReader::Execute()
 }
 
 //----------------------------------------------------------------------------
-void vtkEnSightReader::Update()
+void vtkVisItEnSightReader::Update()
 {
   vtkDebugMacro("In update");;
   int i;
@@ -393,14 +394,14 @@ void vtkEnSightReader::Update()
     }
 }
 //----------------------------------------------------------------------------
-void vtkEnSightReader::ExecuteInformation()
+void vtkVisItEnSightReader::ExecuteInformation()
 {
   vtkDebugMacro("In execute information");
   this->CaseFileRead = this->ReadCaseFile();
 }
 
 //----------------------------------------------------------------------------
-int vtkEnSightReader::ReadCaseFile()
+int vtkVisItEnSightReader::ReadCaseFile()
 {
   char line[256], formatLine[256];
   char subLine[256], subLine2[256];
@@ -483,9 +484,9 @@ int vtkEnSightReader::ReadCaseFile()
     if (stringRead == 1)
       {
       if (strcmp(subLine, "gold") == 0 &&
-          strcmp(this->GetClassName(), "vtkEnSight6Reader") == 0)
+          strcmp(this->GetClassName(), "vtkVisItEnSight6Reader") == 0)
         {
-        // The class is vtkEnSight6Reader, but the case file says "gold".
+        // The class is vtkVisItEnSight6Reader, but the case file says "gold".
         vtkErrorMacro("This is not an EnSight6 file.");
         delete this->IS;
         this->IS = NULL;
@@ -494,9 +495,9 @@ int vtkEnSightReader::ReadCaseFile()
       }
     else
       {
-      if (strcmp(this->GetClassName(), "vtkEnSightGoldReader") == 0)
+      if (strcmp(this->GetClassName(), "vtkVisItEnSightGoldReader") == 0)
         {
-        // The class is vtkEnSightGoldReader, but the case file does
+        // The class is vtkVisItEnSightGoldReader, but the case file does
         // not say "gold".
         vtkErrorMacro("This is not an EnSight Gold file.");
         delete this->IS;
@@ -602,7 +603,7 @@ int vtkEnSightReader::ReadCaseFile()
         if (strcmp(subLine, "node:") == 0)
           {
           vtkDebugMacro("scalar per node");
-          this->VariableMode = vtkEnSightReader::SCALAR_PER_NODE;
+          this->VariableMode = vtkVisItEnSightReader::SCALAR_PER_NODE;
           if (sscanf(line, " %*s %*s %*s %d %d %s", &timeSet, &fileSet,
                      subLine) == 3)
             {
@@ -629,7 +630,7 @@ int vtkEnSightReader::ReadCaseFile()
         else if (strcmp(subLine, "element:") == 0)
           {
           vtkDebugMacro("scalar per element");
-          this->VariableMode = vtkEnSightReader::SCALAR_PER_ELEMENT;
+          this->VariableMode = vtkVisItEnSightReader::SCALAR_PER_ELEMENT;
           if (sscanf(line, " %*s %*s %*s %d %d %s", &timeSet, &fileSet,
                      subLine) == 3)
             {
@@ -656,7 +657,7 @@ int vtkEnSightReader::ReadCaseFile()
         else if (strcmp(subLine, "measured") == 0)
           {
           vtkDebugMacro("scalar per measured node");
-          this->VariableMode = vtkEnSightReader::SCALAR_PER_MEASURED_NODE;
+          this->VariableMode = vtkVisItEnSightReader::SCALAR_PER_MEASURED_NODE;
           if (sscanf(line, " %*s %*s %*s %*s %d %d %s", &timeSet, &fileSet,
                      subLine) == 3)
             {
@@ -690,7 +691,7 @@ int vtkEnSightReader::ReadCaseFile()
         if (strcmp(subLine, "node:") == 0)
           {
           vtkDebugMacro("vector per node");
-          this->VariableMode = vtkEnSightReader::VECTOR_PER_NODE;
+          this->VariableMode = vtkVisItEnSightReader::VECTOR_PER_NODE;
           if (sscanf(line, " %*s %*s %*s %d %d %s", &timeSet, &fileSet,
                      subLine) == 3)
             {
@@ -717,7 +718,7 @@ int vtkEnSightReader::ReadCaseFile()
         else if (strcmp(subLine, "element:") == 0)
           {
           vtkDebugMacro("vector per element");
-          this->VariableMode = vtkEnSightReader::VECTOR_PER_ELEMENT;
+          this->VariableMode = vtkVisItEnSightReader::VECTOR_PER_ELEMENT;
           if (sscanf(line, " %*s %*s %*s %d %d %s", &timeSet, &fileSet,
                      subLine) == 3)
             {
@@ -744,7 +745,7 @@ int vtkEnSightReader::ReadCaseFile()
         else if (strcmp(subLine, "measured") == 0)
           {
           vtkDebugMacro("vector per measured node");
-          this->VariableMode = vtkEnSightReader::VECTOR_PER_MEASURED_NODE;
+          this->VariableMode = vtkVisItEnSightReader::VECTOR_PER_MEASURED_NODE;
           if (sscanf(line, " %*s %*s %*s %*s %d %d %s", &timeSet, &fileSet,
                      subLine) == 3)
             {
@@ -778,7 +779,7 @@ int vtkEnSightReader::ReadCaseFile()
         if (strcmp(subLine, "node:") == 0)
           {
           vtkDebugMacro("tensor symm per node");
-          this->VariableMode = vtkEnSightReader::TENSOR_SYMM_PER_NODE;
+          this->VariableMode = vtkVisItEnSightReader::TENSOR_SYMM_PER_NODE;
           if (sscanf(line, " %*s %*s %*s %*s %d %d %s", &timeSet, &fileSet,
                      subLine) == 3)
             {
@@ -806,7 +807,7 @@ int vtkEnSightReader::ReadCaseFile()
         else if (strcmp(subLine, "element:") == 0)
           {
           vtkDebugMacro("tensor symm per element");
-          this->VariableMode = vtkEnSightReader::TENSOR_SYMM_PER_ELEMENT;
+          this->VariableMode = vtkVisItEnSightReader::TENSOR_SYMM_PER_ELEMENT;
           if (sscanf(line, " %*s %*s %*s %*s %d %d %s", &timeSet, &fileSet,
                      subLine) == 3)
             {
@@ -843,7 +844,7 @@ int vtkEnSightReader::ReadCaseFile()
           if (strcmp(subLine, "node:") == 0)
             {
             vtkDebugMacro("complex scalar per node");
-            this->VariableMode = vtkEnSightReader::COMPLEX_SCALAR_PER_NODE;
+            this->VariableMode = vtkVisItEnSightReader::COMPLEX_SCALAR_PER_NODE;
             if (sscanf(line, " %*s %*s %*s %*s %d %d %s", &timeSet, &fileSet,
                        subLine) == 3)
               {
@@ -873,7 +874,7 @@ int vtkEnSightReader::ReadCaseFile()
           else if (strcmp(subLine, "element:") == 0)
             {
             vtkDebugMacro("complex scalar per element");
-            this->VariableMode = vtkEnSightReader::COMPLEX_SCALAR_PER_ELEMENT;
+            this->VariableMode = vtkVisItEnSightReader::COMPLEX_SCALAR_PER_ELEMENT;
             if (sscanf(line, " %*s %*s %*s %*s %d %d %s", &timeSet, &fileSet,
                        subLine) == 3)
               {
@@ -907,7 +908,7 @@ int vtkEnSightReader::ReadCaseFile()
           if (strcmp(subLine, "node:") == 0)
             {
             vtkDebugMacro("complex vector per node");
-            this->VariableMode = vtkEnSightReader::COMPLEX_VECTOR_PER_NODE;
+            this->VariableMode = vtkVisItEnSightReader::COMPLEX_VECTOR_PER_NODE;
             if (sscanf(line, " %*s %*s %*s %*s %d %d %s", &timeSet, &fileSet,
                        subLine) == 3)
               {
@@ -937,7 +938,7 @@ int vtkEnSightReader::ReadCaseFile()
           else if (strcmp(subLine, "element:") == 0)
             {
             vtkDebugMacro("complex vector per element");
-            this->VariableMode = vtkEnSightReader::COMPLEX_VECTOR_PER_ELEMENT;
+            this->VariableMode = vtkVisItEnSightReader::COMPLEX_VECTOR_PER_ELEMENT;
             if (sscanf(line, " %*s %*s %*s %*s %d %d %s", &timeSet, &fileSet,
                        subLine) == 3)
               {
@@ -1124,7 +1125,7 @@ int vtkEnSightReader::ReadCaseFile()
 }
 
 //----------------------------------------------------------------------------
-int vtkEnSightReader::ReadVariableFiles()
+int vtkVisItEnSightReader::ReadVariableFiles()
 {
   int i, j;
   char description[256];
@@ -1134,7 +1135,6 @@ int vtkEnSightReader::ReadVariableFiles()
   vtkIdList *numStepsList, *filenameNumbers;
   int validTime, fileNum, filenameNum;
   char* fileName, *fileName2;
-  
   for (i = 0; i < this->NumberOfVariables; i++)
     {
     switch (this->VariableTypes[i])
@@ -1246,35 +1246,35 @@ int vtkEnSightReader::ReadVariableFiles()
       {
       switch (this->VariableTypes[i])
         {
-        case vtkEnSightReader::SCALAR_PER_NODE:
+        case vtkVisItEnSightReader::SCALAR_PER_NODE:
           this->ReadScalarsPerNode(fileName, this->VariableDescriptions[i],
                                    timeStepInFile);
           break;
-        case vtkEnSightReader::SCALAR_PER_MEASURED_NODE:
+        case vtkVisItEnSightReader::SCALAR_PER_MEASURED_NODE:
           this->ReadScalarsPerNode(fileName, this->VariableDescriptions[i], 
                                    timeStepInFile, 1);
           break;
-        case vtkEnSightReader::VECTOR_PER_NODE:
+        case vtkVisItEnSightReader::VECTOR_PER_NODE:
           this->ReadVectorsPerNode(fileName, this->VariableDescriptions[i],
                                    timeStepInFile);
           break;
-        case vtkEnSightReader::VECTOR_PER_MEASURED_NODE:
+        case vtkVisItEnSightReader::VECTOR_PER_MEASURED_NODE:
           this->ReadVectorsPerNode(fileName, this->VariableDescriptions[i],
                                    timeStepInFile, 1);
           break;
-        case vtkEnSightReader::TENSOR_SYMM_PER_NODE:
+        case vtkVisItEnSightReader::TENSOR_SYMM_PER_NODE:
           this->ReadTensorsPerNode(fileName, this->VariableDescriptions[i],
                                    timeStepInFile);
           break;
-        case vtkEnSightReader::SCALAR_PER_ELEMENT:
+        case vtkVisItEnSightReader::SCALAR_PER_ELEMENT:
           this->ReadScalarsPerElement(fileName, this->VariableDescriptions[i],
                                       timeStepInFile);
           break;
-        case vtkEnSightReader::VECTOR_PER_ELEMENT:
+        case vtkVisItEnSightReader::VECTOR_PER_ELEMENT:
           this->ReadVectorsPerElement(fileName, this->VariableDescriptions[i],
                                       timeStepInFile);
           break;
-        case vtkEnSightReader::TENSOR_SYMM_PER_ELEMENT:
+        case vtkVisItEnSightReader::TENSOR_SYMM_PER_ELEMENT:
           this->ReadTensorsPerElement(fileName, this->VariableDescriptions[i],
                                       timeStepInFile);
           break;
@@ -1390,7 +1390,7 @@ int vtkEnSightReader::ReadVariableFiles()
       {
       switch (this->ComplexVariableTypes[i])
         {
-        case vtkEnSightReader::COMPLEX_SCALAR_PER_NODE:
+        case vtkVisItEnSightReader::COMPLEX_SCALAR_PER_NODE:
           this->ReadScalarsPerNode(fileName,
                                    this->ComplexVariableDescriptions[i],
                                    timeStepInFile, 0, 2);
@@ -1398,7 +1398,7 @@ int vtkEnSightReader::ReadVariableFiles()
                                    this->ComplexVariableDescriptions[i],
                                    timeStepInFile, 0, 2, 1);
           break;
-        case vtkEnSightReader::COMPLEX_VECTOR_PER_NODE:
+        case vtkVisItEnSightReader::COMPLEX_VECTOR_PER_NODE:
           strcpy(description, this->ComplexVariableDescriptions[i]);
           strcat(description, "_r");
           this->ReadVectorsPerNode(fileName, description, timeStepInFile);
@@ -1406,7 +1406,7 @@ int vtkEnSightReader::ReadVariableFiles()
           strcat(description, "_i");
           this->ReadVectorsPerNode(fileName2, description, timeStepInFile);
           break;
-        case vtkEnSightReader::COMPLEX_SCALAR_PER_ELEMENT:
+        case vtkVisItEnSightReader::COMPLEX_SCALAR_PER_ELEMENT:
           this->ReadScalarsPerElement(fileName,
                                       this->ComplexVariableDescriptions[i],
                                       timeStepInFile, 2);
@@ -1414,7 +1414,7 @@ int vtkEnSightReader::ReadVariableFiles()
                                       this->ComplexVariableDescriptions[i],
                                       timeStepInFile, 2, 1);
           break;
-        case vtkEnSightReader::COMPLEX_VECTOR_PER_ELEMENT:
+        case vtkVisItEnSightReader::COMPLEX_VECTOR_PER_ELEMENT:
           strcpy(description, this->ComplexVariableDescriptions[i]);
           strcat(description, "_r");
           this->ReadVectorsPerElement(fileName, description, timeStepInFile);
@@ -1432,7 +1432,7 @@ int vtkEnSightReader::ReadVariableFiles()
 }
 
 //----------------------------------------------------------------------------
-void vtkEnSightReader::AddVariableFileName(char* fileName1,
+void vtkVisItEnSightReader::AddVariableFileName(char* fileName1,
                                            char* fileName2)
 {
   int size;
@@ -1512,7 +1512,7 @@ void vtkEnSightReader::AddVariableFileName(char* fileName1,
 }
 
 //----------------------------------------------------------------------------
-void vtkEnSightReader::AddVariableDescription(char* description)
+void vtkVisItEnSightReader::AddVariableDescription(char* description)
 {
   int size;
   int i;
@@ -1590,7 +1590,7 @@ void vtkEnSightReader::AddVariableDescription(char* description)
 }
 
 //----------------------------------------------------------------------------
-void vtkEnSightReader::AddVariableType()
+void vtkVisItEnSightReader::AddVariableType()
 {
   int size;
   int i;
@@ -1648,71 +1648,71 @@ void vtkEnSightReader::AddVariableType()
     }
 }
 
-int vtkEnSightReader::GetElementType(char* line)
+int vtkVisItEnSightReader::GetElementType(char* line)
 {
   if (strncmp(line, "point", 5) == 0)
     {
-    return vtkEnSightReader::POINT;
+    return vtkVisItEnSightReader::POINT;
     }
   else if (strncmp(line, "bar2", 4) == 0)
     {
-    return vtkEnSightReader::BAR2;
+    return vtkVisItEnSightReader::BAR2;
     }
   else if (strncmp(line, "bar3", 4) == 0)
     {
-    return vtkEnSightReader::BAR3;
+    return vtkVisItEnSightReader::BAR3;
     }
   else if (strncmp(line, "nsided", 6) == 0)
     {
-    return vtkEnSightReader::NSIDED;
+    return vtkVisItEnSightReader::NSIDED;
     }
   else if (strncmp(line, "tria3", 5) == 0)
     {
-    return vtkEnSightReader::TRIA3;
+    return vtkVisItEnSightReader::TRIA3;
     }
   else if (strncmp(line, "tria6", 5) == 0)
     {
-    return vtkEnSightReader::TRIA6;
+    return vtkVisItEnSightReader::TRIA6;
     }
   else if (strncmp(line, "quad4", 5) == 0)
     {
-    return vtkEnSightReader::QUAD4;
+    return vtkVisItEnSightReader::QUAD4;
     }
   else if (strncmp(line, "quad8", 5) == 0)
     {
-    return vtkEnSightReader::QUAD8;
+    return vtkVisItEnSightReader::QUAD8;
     }
   else if (strncmp(line, "tetra4", 6) == 0)
     {
-    return vtkEnSightReader::TETRA4;
+    return vtkVisItEnSightReader::TETRA4;
     }
   else if (strncmp(line, "tetra10", 7) == 0)
     {
-    return vtkEnSightReader::TETRA10;
+    return vtkVisItEnSightReader::TETRA10;
     }
   else if (strncmp(line, "pyramid5", 8) == 0)
     {
-    return vtkEnSightReader::PYRAMID5;
+    return vtkVisItEnSightReader::PYRAMID5;
     }
   else if (strncmp(line, "pyramid13", 9) == 0)
     {
-    return vtkEnSightReader::PYRAMID13;
+    return vtkVisItEnSightReader::PYRAMID13;
     }
   else if (strncmp(line, "hexa8", 5) == 0)
     {
-    return vtkEnSightReader::HEXA8;
+    return vtkVisItEnSightReader::HEXA8;
     }
   else if (strncmp(line, "hexa20", 6) == 0)
     {
-    return vtkEnSightReader::HEXA20;
+    return vtkVisItEnSightReader::HEXA20;
     }
   else if (strncmp(line, "penta6", 6) == 0)
     {
-    return vtkEnSightReader::PENTA6;
+    return vtkVisItEnSightReader::PENTA6;
     }
   else if (strncmp(line, "penta15", 7) == 0)
     {
-    return vtkEnSightReader::PENTA15;
+    return vtkVisItEnSightReader::PENTA15;
     }
   else
     {
@@ -1720,7 +1720,7 @@ int vtkEnSightReader::GetElementType(char* line)
     }
 }
 
-void vtkEnSightReader::ReplaceWildcards(char* filename, int num)
+void vtkVisItEnSightReader::ReplaceWildcards(char* filename, int num)
 {
   int wildcardPos, numWildcards, numDigits = 1, i;
   int tmpNum = num, multTen = 1;
@@ -1797,7 +1797,7 @@ void vtkEnSightReader::ReplaceWildcards(char* filename, int num)
 
 //----------------------------------------------------------------------------
 // Called by constructor to set up output array.
-void vtkEnSightReader::SetNumberOfOutputsInternal(int num)
+void vtkVisItEnSightReader::SetNumberOfOutputsInternal(int num)
 {
   int idx;
   vtkDataObject **outputs;
@@ -1838,7 +1838,7 @@ void vtkEnSightReader::SetNumberOfOutputsInternal(int num)
 }
 
 //----------------------------------------------------------------------------
-void vtkEnSightReader::ReplaceNthOutput(int idx, vtkDataObject* newOutput)
+void vtkVisItEnSightReader::ReplaceNthOutput(int idx, vtkDataObject* newOutput)
 {
   vtkDataObject *oldOutput;
   
@@ -1897,7 +1897,7 @@ void vtkEnSightReader::ReplaceNthOutput(int idx, vtkDataObject* newOutput)
 
 }
 
-int vtkEnSightReader::CheckOutputConsistency()
+int vtkVisItEnSightReader::CheckOutputConsistency()
 {
   if (this->NumberOfOutputs > this->NumberOfNewOutputs &&
       ! this->InitialRead)
@@ -1915,7 +1915,7 @@ int vtkEnSightReader::CheckOutputConsistency()
 }
 
 //----------------------------------------------------------------------------
-vtkIdList* vtkEnSightReader::GetCellIds(int index, int cellType)
+vtkIdList* vtkVisItEnSightReader::GetCellIds(int index, int cellType)
 {
   // Check argument range.
   if(cellType < 0 || cellType > 15)
@@ -1935,7 +1935,7 @@ vtkIdList* vtkEnSightReader::GetCellIds(int index, int cellType)
   // Create the container if necessary.
   if(!this->CellIds)
     {
-    this->CellIds = new vtkEnSightReaderCellIdsType;
+    this->CellIds = new vtkVisItEnSightReaderCellIdsType;
     }
   
   // Get the index of the actual vtkIdList requested.
@@ -1960,7 +1960,7 @@ vtkIdList* vtkEnSightReader::GetCellIds(int index, int cellType)
 }
 
 //----------------------------------------------------------------------------
-void vtkEnSightReader::PrintSelf(ostream& os, vtkIndent indent)
+void vtkVisItEnSightReader::PrintSelf(ostream& os, vtkIndent indent)
 {
   this->Superclass::PrintSelf(os,indent);
 

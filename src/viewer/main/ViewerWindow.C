@@ -6635,13 +6635,13 @@ ViewerWindow::ExternalRenderCallback(void *data, avtDataObject_p& dob)
     }
     CATCH2(VisItException, e)
     {
-        char message[500];
+        char message[2048];
         //
         // Add as much information to the message as we can,
         // including plot name, exception type and exception 
         // message.
         // 
-        SNPRINTF(message, 500, "%s:  (%s)\n%s", 
+        SNPRINTF(message, sizeof(message), "%s:  (%s)\n%s", 
             "Scalable Render Request Failed",
             e.GetExceptionType().c_str(),
             e.GetMessage().c_str());
