@@ -2078,6 +2078,10 @@ ViewerWindowManager::SetViewExtentsType(avtExtentType viewType,
 //   I changed the code so it redraws the window like it's supposed to after
 //   setting rendering options like the surface representation.
 //
+//   Mark C. Miller, Mon Nov  3 15:29:57 PST 2003
+//   I made it so only those parts of rendereing attributes that actually
+//   were changed are changed on the window 
+//
 // ****************************************************************************
 
 void
@@ -2088,22 +2092,31 @@ ViewerWindowManager::SetRenderingAttributes(int windowIndex)
     {
         bool updatesEnabled = windows[index]->UpdatesEnabled();
         windows[index]->DisableUpdates();
-        windows[index]->SetAntialiasing(renderAtts->GetAntialiasing());
-        windows[index]->SetSurfaceRepresentation((int)
+
+        if (windows[index]->GetAntialiasing() != renderAtts->GetAntialiasing())
+            windows[index]->SetAntialiasing(renderAtts->GetAntialiasing());
+
+        if (windows[index]->GetSurfaceRepresentation() !=
+            (int) renderAtts->GetGeometryRepresentation())
+            windows[index]->SetSurfaceRepresentation((int)
             renderAtts->GetGeometryRepresentation());
-        windows[index]->SetImmediateModeRendering(!renderAtts->GetDisplayLists());
-        windows[index]->SetStereoRendering(renderAtts->GetStereoRendering(),
-            (int)renderAtts->GetStereoType());
-        windows[index]->SetNotifyForEachRender(renderAtts->GetNotifyForEachRender());
 
-//
-// Note to MCM: Modification comments would be nice so I can better tell what
-//              you were thinking when you changed this function since I also
-//              needed to modify it.
-//
+        if (windows[index]->GetImmediateModeRendering() != 
+            !renderAtts->GetDisplayLists())
+            windows[index]->SetImmediateModeRendering(!renderAtts->GetDisplayLists());
 
-        //MCM_FIX windows[index]->SetScalableRendering(renderAtts->GetScalableRendering(), true);
-        windows[index]->SetScalableThreshold(renderAtts->GetScalableThreshold());
+        if ((windows[index]->GetStereo() != renderAtts->GetStereoRendering()) ||
+            (windows[index]->GetStereoType() != (int) renderAtts->GetStereoType()))
+            windows[index]->SetStereoRendering(renderAtts->GetStereoRendering(),
+                (int)renderAtts->GetStereoType());
+
+        if (windows[index]->GetNotifyForEachRender() != 
+            renderAtts->GetNotifyForEachRender())
+            windows[index]->SetNotifyForEachRender(renderAtts->GetNotifyForEachRender());
+
+        if (windows[index]->GetScalableThreshold() !=
+            renderAtts->GetScalableThreshold())
+            windows[index]->SetScalableThreshold(renderAtts->GetScalableThreshold());
 
         // If the updatesEnabled flag was true before we temporarily disabled
         // updates, turn updates back on and force the window to redraw so the
@@ -3366,6 +3379,8 @@ ViewerWindowManager::UpdateRenderingAtts(int windowIndex)
         renderAtts->SetStereoType((RenderingAttributes::StereoTypes)
             win->GetStereoType());
         renderAtts->SetNotifyForEachRender(win->GetNotifyForEachRender());
+        renderAtts->SetScalableRendering(win->GetScalableRendering());
+        renderAtts->SetScalableThreshold(win->GetScalableThreshold());
 
         // Tell the client about the new rendering information.
         renderAtts->Notify();
@@ -4484,6 +4499,9 @@ ViewerWindowManager::UpdateWindowInformation(int windowIndex, bool reportTimes)
             windowInfo->SetLastRenderMax(times[2]);
         }
 
+        // indicate if we're in scalable rendering mode
+        windowInfo->SetUsingScalableRendering(win->GetScalableRendering());
+
         // Set the approximate number of triangles.
         windowInfo->SetNumTriangles(win->GetNumTriangles());
 
@@ -4854,7 +4872,6 @@ ViewerWindowManager::SetWindowAttributes(int windowIndex, bool copyAtts)
     w->SetStereoRendering(renderAtts->GetStereoRendering(),
         (int)renderAtts->GetStereoType());
     w->SetNotifyForEachRender(renderAtts->GetNotifyForEachRender());
-    //MCM_FIX w->SetScalableRendering(renderAtts->GetScalableRendering());
     w->SetScalableThreshold(renderAtts->GetScalableThreshold());
 }
 

@@ -14,6 +14,8 @@
 #include <vtkQtRenderWindow.h>
 #include <vtkQtRenderWindowInteractor.h>
 
+#include <RenderingAttributes.h>
+
 #include <VisWindow.h>
 #include <VisWindowColleagueProxy.h>
 
@@ -73,6 +75,10 @@ bool VisWinRendering::stereoEnabled = false;
 //    is the one from this module.  So I am setting it to be very high until
 //    '3922 is fixed.
 //
+//    Mark C. Miller, Tue Nov  4 17:01:09 PST 2003
+//    Set scalableThreshold to be default value obtiained from
+//    RenderingAttributes.
+//
 // ****************************************************************************
 
 VisWinRendering::VisWinRendering(VisWindowColleagueProxy &p) 
@@ -94,7 +100,7 @@ VisWinRendering::VisWinRendering(VisWindowColleagueProxy &p)
     notifyForEachRender            = false;
     inMotion                       = false;
     scalableRendering              = false;
-    scalableThreshold              = 20000000;
+    scalableThreshold              = RenderingAttributes::DEFAULT_SCALABLE_THRESHOLD;
 
     canvas       = vtkRenderer::New();
     canvas->SetInteractive(1);

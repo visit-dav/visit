@@ -161,10 +161,18 @@ avtSAMRAIFileFormat::~avtSAMRAIFileFormat()
 //  Programmer:  Walter Herrera Jimenez
 //  Creation:    June 19, 2003
 //
+//  Modifications
+//
+//     Mark C. Miller, Mon Nov 10 09:55:59 PST 2003
+//     Added call to BuildDomainNestingInfo
+//
 // ****************************************************************************
 vtkDataSet *
 avtSAMRAIFileFormat::GetMesh(int patch, const char *level_name)
 {
+    // Make sure the domain nest info object exists
+    BuildDomainNestingInfo();
+
     if (cached_patches[patch] != NULL)
     {
         // The reference count will be decremented by the generic database,
@@ -774,8 +782,6 @@ avtSAMRAIFileFormat::ReadMetaDataFile()
         ReadParentArrayLength(h5_file);
         ReadParentArray(h5_file);
         ReadParentPointerArray(h5_file);
-
-        BuildDomainNestingInfo();
 
         H5Fclose(h5_file);
 
@@ -1745,12 +1751,24 @@ avtSAMRAIFileFormat::ReadParentPointerArray(hid_t &h5_file)
 //  Programmer:  Mark C. Miller 
 //  Creation:    October 13, 2003 
 //
+//  Modifications:
+//
+//     Mark C. Miller, Mon Nov 10 09:55:59 PST 2003
+//     Added code to check to see if its in cache before we try to build it.
+//     This makes it ok to include a call to BuildDomainNestingInfo() in the
+//     GetMesh method without serious performance drawbacks.
+//
 // ****************************************************************************
 void 
 avtSAMRAIFileFormat::BuildDomainNestingInfo()
 {
 
-    if (child_array_length > 0)
+    // first, look to see if we don't already have it cached
+    void_ref_ptr vrTmp = cache->GetVoidRef("any_mesh",
+                                   AUXILIARY_DATA_DOMAIN_NESTING_INFORMATION,
+                                  timestep, -1);
+
+    if ((*vrTmp == NULL) && (child_array_length > 0))
     {
 
         //

@@ -35,6 +35,12 @@ choose between those interfaces.
     <td width="79%">Run with the Command Line Interface. This allows you to run 
     Python scripts that control VisIt.</td>
   </tr>
+  <tr>
+    <td width="21%">-movie</td>
+    <td width="79%">Run with the Command Line Interface with a movie making 
+    script. When you give this option, you must also provide -sessionfile or -s 
+    arguments.</td>
+  </tr>
 </table>
 <p>&nbsp;</p>
 <p><b><font size="4"><a name="WindowArguments">Window arguments</a></font></b></p>
@@ -137,8 +143,12 @@ or script files to process when VisIt starts.</p>
     located remotely, the filename must be of the form:&nbsp; <i>
     hostname:filename</i>.</td>
   </tr>
+  <tr>
+    <td width="20%"><i>-sessionfile filename</i></td>
+    <td width="80%">This argument tells VisIt's GUI or movie making script&nbsp; 
+    to load the specified session file.</td>
+  </tr>
 </table>
-<p>&nbsp;</p>
 <p><b><font size="4"><a name="VersionArguments">Version arguments</a></font></b></p>
 <p>These arguments allow you to run a different version other than the newest 
 installed version of VisIt. Note that these arguments are only useful if 

@@ -63,8 +63,7 @@ class PIPELINE_API avtDataset : public avtDataObject
     virtual                 ~avtDataset() {;};
 
     virtual const char      *GetType(void)  { return "avtDataset"; };
-    virtual int              GetNumberOfCells(void) const
-                                { return dataTree->GetNumberOfCells(); };
+    virtual int              GetNumberOfCells(bool polysOnly = false) const;
     virtual void             ReleaseData(void);
 
     virtual avtDataObject   *Instance(void);

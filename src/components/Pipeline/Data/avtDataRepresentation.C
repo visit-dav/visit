@@ -334,15 +334,22 @@ avtDataRepresentation::Valid(void)
 //  Method: avtDataRepresentation::GetNumberOfCells
 //
 //  Purpose:
-//     Count number of cells in this object 
+//     Count number of cells in this object. If we're counting polygons only
+//     we'll return the value for the underlying vtk's GetNumberOfCells()
+//     only if topoDim < 3;
 //
 //  Programmer: Mark C. Miller 
 //  Creation:   19Aug03 
 //
+//  Modifications:
+//
+//  Mark C. Miller, Wed Nov  5 09:48:13 PST 2003
+//  Added option to count polygons only
+//
 // ****************************************************************************
 
 int
-avtDataRepresentation::GetNumberOfCells(void) const
+avtDataRepresentation::GetNumberOfCells(int topoDim, bool polysOnly) const
 {
    if (asVTK == NULL)
    {
@@ -351,9 +358,25 @@ avtDataRepresentation::GetNumberOfCells(void) const
       return -1;
    }
    else
-      return (int) asVTK->GetNumberOfCells();
-}
+   {
+      int numCells = 0;
 
+      if (polysOnly)
+      {
+         if (topoDim < 3)
+            numCells = (int) asVTK->GetNumberOfCells();
+         else
+            numCells = 0;
+      }
+      else
+      {
+         numCells = (int) asVTK->GetNumberOfCells();
+      }
+       
+      return numCells;
+
+   }
+}
 
 // ****************************************************************************
 //  Method: avtDataRepresentation::GetDataString

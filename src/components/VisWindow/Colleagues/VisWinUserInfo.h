@@ -40,6 +40,9 @@ class VisWindowColleagueProxy;
 //    vtkTextMapper/vtkScaledTextActor pairs have been replaced by 
 //    vtkTextActor which defines its own mapper. (new vtk api).
 //
+//    Brad Whitlock, Wed Oct 29 08:46:49 PDT 2003
+//    Added UpdateUserText method. Added override of UpdatePlotList method.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinUserInfo : public VisWinColleague
@@ -52,6 +55,8 @@ class VISWINDOW_API VisWinUserInfo : public VisWinColleague
 
     virtual void         HasPlots(void);
     virtual void         NoPlots(void);
+    virtual void         UpdatePlotList(std::vector<avtActor_p> &);
+
     void                 SetVisibility(bool);
 
   protected:
@@ -62,6 +67,7 @@ class VISWINDOW_API VisWinUserInfo : public VisWinColleague
 
     void                 AddToWindow(void);
     void                 RemoveFromWindow(void);
+    void                 UpdateUserText();
 };
 
 

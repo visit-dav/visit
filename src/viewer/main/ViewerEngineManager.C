@@ -1071,7 +1071,7 @@ ViewerEngineManager::GetDataObjectReader(ViewerPlot *const plot,
         ViewerWindowManager *vwm = ViewerWindowManager::Instance();
         ViewerWindow *w = vwm->GetActiveWindow();
         bool replyWithNullData = w->GetScalableRendering();
-        if (w->IsTurningOffScalableRendering())
+        if (w->IsChangingScalableRenderingMode(false))
         {
            WindowAttributes winAtts = w->GetWindowAttributes();
            AnnotationAttributes annotAtts = *(w->GetAnnotationAttributes());
@@ -1094,7 +1094,7 @@ ViewerEngineManager::GetDataObjectReader(ViewerPlot *const plot,
                retval = engine->Execute(true, 0, 0);
 
                // now, tell viewer to go into SR mode
-               w->SetScalableRendering(true,true);
+               w->SendScalableRenderingModeChangeMessage(true);
             }
 #else
             BeginEngineExecute();
@@ -1110,8 +1110,87 @@ ViewerEngineManager::GetDataObjectReader(ViewerPlot *const plot,
                retval = engine->Execute(true, 0, 0);
 
                // now, tell viewer to go into SR mode
-               w->SetScalableRendering(true,true);
+               w->SendScalableRenderingModeChangeMessage(true);
             }
+
+            EndEngineExecute();
+#endif
+        }
+    }
+    CATCH(LostConnectionException)
+    {
+#ifndef VIEWER_MT
+        EndEngineExecute();
+#endif
+        // Remove the specified engine from the list of engines.
+        RemoveFailedEngine(engineIndex);
+        UpdateEngineList();
+    }
+    CATCH(VisItException)
+    {
+#ifndef VIEWER_MT
+        EndEngineExecute();
+#endif
+        // Send a message to the client to clear the status for the
+        // engine that had troubles.
+        ClearStatus(engines[engineIndex]->hostName);
+
+        //
+        //  Let calling method handle this exception. 
+        //
+        RETHROW;
+    }
+    ENDTRY
+
+    return retval;
+}
+
+// ****************************************************************************
+//  Method: ViewerEngineManager::UseDataObjectReader
+//
+//  Purpose:
+//      Return a pointer to an avt data object reader for a currently existing
+//      plot. This is only ever used in the transition into and out of 
+//      Scalable Rendering mode.
+//
+//  Returns:    A pointer to the avt data object reader.
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   Wed Oct 29 16:56:14 PST 2003 
+// ****************************************************************************
+
+avtDataObjectReader_p
+ViewerEngineManager::UseDataObjectReader(ViewerPlot *const plot,
+                                         bool turningOffScalableRendering)
+{
+    // The return value.
+    avtDataObjectReader_p retval(NULL);
+
+    const char *hostName = RealHostName(plot->GetHostName());
+    EngineProxy *engine = GetEngine(hostName);
+    int engineIndex = GetEngineIndex(hostName);
+
+    if (engine == NULL || engineIndex < 0)
+        return retval;
+
+    TRY
+    {
+        // tell engine which network to re-use
+        UseNetwork(hostName, plot->GetNetworkID());
+
+        bool replyWithNullData = !turningOffScalableRendering; 
+
+        //
+        // Return the result.
+        //
+        {
+#ifdef VIEWER_MT
+            retval = engine->Execute(replyWithNullData, 0, 0);
+#else
+            BeginEngineExecute();
+
+            retval = engine->Execute(replyWithNullData, ViewerSubject::ProcessEventsCB,
+                                     (void *)viewerSubject);
 
             EndEngineExecute();
 #endif

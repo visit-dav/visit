@@ -4884,6 +4884,18 @@ ViewerSubject::ProcessRendererMessage()
             window->GetAnimation()->UpdateFrame();
             ViewerWindowManager::Instance()->UpdateActions();
         }
+        else if (strncmp(msg, "setScalableRenderingMode", 24) == 0)
+        {
+            ViewerWindow *window = 0;
+            int iMode = 0;
+            int offset = 27;  // = strlen("setScalableRenderingMode 0x");
+            sscanf (&msg[offset], "%p %d", &window, &iMode);
+            bool newMode = (iMode==1?true:false);
+
+            // Tell the window to change scalable rendering modes, if necessary 
+            if (window->GetScalableRendering() != newMode)
+                window->ChangeScalableRenderingMode(newMode);
+        }
     }
 }
 

@@ -46,7 +46,7 @@ class PIPELINE_API avtImage : public avtDataObject
     virtual                  ~avtImage() {;};
 
     virtual const char       *GetType(void)  { return "avtImage"; };
-    virtual int               GetNumberOfCells(void) const;
+    virtual int               GetNumberOfCells(bool polysOnly = false) const;
     virtual avtDataObjectWriter
                              *InstantiateWriter(void);
     virtual void              ReleaseData(void);

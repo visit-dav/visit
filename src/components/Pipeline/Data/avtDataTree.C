@@ -615,10 +615,15 @@ avtDataTree::GetDataRepresentation()
 //  Programmer: Mark C. Miller
 //  Creation:   19Aug03 
 //
+//  Modifications:
+//
+//    Mark C. Miller, Wed Nov  5 09:48:13 PST 2003
+//    Added optional argument to count polygons only
+//
 // ****************************************************************************
 
 int
-avtDataTree::GetNumberOfCells(void) const
+avtDataTree::GetNumberOfCells(int topoDim, bool polysOnly) const
 {
     if (nChildren > 0)
     {
@@ -626,18 +631,17 @@ avtDataTree::GetNumberOfCells(void) const
         for (int i = 0; i < nChildren; i++)
         {
             if (*children[i] != NULL)
-                sum += children[i]->GetNumberOfCells();
+                sum += children[i]->GetNumberOfCells(topoDim, polysOnly);
         }
         return sum;
     }
     else if (dataRep != NULL)
     {
-        return dataRep->GetNumberOfCells();
+        return dataRep->GetNumberOfCells(topoDim, polysOnly);
     }
 
     return 0;
 }
-
 
 // ****************************************************************************
 //  Method: avtDataTree::GetAllLeaves

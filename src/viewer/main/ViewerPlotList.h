@@ -155,6 +155,10 @@ typedef std::map<std::string, avtSILRestriction_p> SILRestrictionMap;
 //    Brad Whitlock, Fri Oct 24 16:19:25 PST 2003
 //    Added UpdateExpressionList.
 //
+//    Mark C. Miller, Wed Oct 29 14:36:35 PST 2003
+//    Added method to TransmutePlots() to support smooth transitions into
+//    and out of scalable rendering.
+//
 // ****************************************************************************
 
 
@@ -197,6 +201,7 @@ class VIEWER_API ViewerPlotList
     void MovePlotDatabaseKeyframe(int plotId, int oldFrame, int newFrame);
     void CopyFrom(const ViewerPlotList *pl);
     void ClearPlots();
+    void TransmutePlots(int frame, bool turningOffScalableRendering);
     void DeleteActivePlots();
 
     void DeletePlot(ViewerPlot *, bool);

@@ -82,6 +82,7 @@ NetworkManager::NetworkManager(void) : virtualDatabases()
        newAtts.SetTriadFlag(false);
        newAtts.SetBboxFlag(false);
        newAtts.SetAxesFlag(false);
+       newAtts.SetAxesFlag2D(false);
        viswin->SetAnnotationAtts(&newAtts);
        viswin->DisableUpdates();
     }
@@ -1038,7 +1039,8 @@ NetworkManager::GetOutput(bool respondWithNullData, bool calledForRender)
         // compute this network's cell count if we haven't already 
         if (globalCellCounts[netId] == -1)
         {
-           int localCellCount = writer->GetInput()->GetNumberOfCells();
+           bool polysOnly = false;
+           int localCellCount = writer->GetInput()->GetNumberOfCells(polysOnly);
            int totalCellCount;
 #ifdef PARALLEL
            MPI_Allreduce(&localCellCount, &totalCellCount, 1, MPI_INT, MPI_SUM,
@@ -1065,9 +1067,11 @@ NetworkManager::GetOutput(bool respondWithNullData, bool calledForRender)
         }
         else if (!calledForRender)
         {
+
+#ifdef PARALLEL
            int  scalableThreshold = windowAttributes.GetRenderAtts().GetScalableThreshold();
 
-           if (GetTotalGlobalCellCounts() > scalableThreshold)
+           if ((PAR_Size() > 1) && (GetTotalGlobalCellCounts() > scalableThreshold))
            {
               avtNullData_p nullData = new avtNullData(NULL,AVT_NULL_DATASET_MSG);
               avtDataObject_p dummyDob;
@@ -1076,6 +1080,7 @@ NetworkManager::GetOutput(bool respondWithNullData, bool calledForRender)
               writer->SetInput(dummyDob);
               clearNetwork = false;
            }
+#endif
 
         }
 
@@ -1171,6 +1176,53 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer)
              viswin->AddPlot(anActor);
           }
 
+          // adjust window size, viewport, etc. if we're in 2D mode
+          WINDOW_MODE windowMode = viswin->GetWindowMode();
+          if (windowMode == WINMODE_2D)
+          {  avtView2D v = viswin->GetView2D();
+
+             // set window size to size of viewport, in pixels
+             double viewPort[4];
+             int oldRows, oldCols;
+             viswin->GetSize(oldCols, oldRows);
+             v.GetActualViewport(viewPort, oldCols, oldRows);
+
+             int newCols = (int) ((viewPort[1] - viewPort[0]) * oldCols + 0.5);
+             int newRows = (int) ((viewPort[3] - viewPort[2]) * oldRows + 0.5);
+             viswin->SetSize(newCols, newRows);
+
+             // set viewport to [0,1,0,1]
+             View2DAttributes vAtts;
+             v.SetToView2DAttributes(&vAtts);
+             double viewportCoords[4] = {0.0, 1.0, 0.0, 1.0};
+             vAtts.SetViewportCoords(viewportCoords);
+             v.SetFromView2DAttributes(&vAtts);
+
+             viswin->SetView2D(v);
+          }
+          else if (windowMode == WINMODE_CURVE)
+          {  avtViewCurve v = viswin->GetViewCurve();
+
+             // set window size to size of viewport, in pixels
+             double viewPort[4];
+             int oldRows, oldCols;
+             viswin->GetSize(oldCols, oldRows);
+             v.GetViewport(viewPort);
+
+             int newCols = (int) ((viewPort[1] - viewPort[0]) * oldCols + 0.5);
+             int newRows = (int) ((viewPort[3] - viewPort[2]) * oldRows + 0.5);
+             viswin->SetSize(newCols, newRows);
+
+             // set viewport to [0,1,0,1]
+             ViewCurveAttributes vAtts;
+             v.SetToViewCurveAttributes(&vAtts);
+             double viewportCoords[4] = {0.0, 1.0, 0.0, 1.0};
+             vAtts.SetViewportCoords(viewportCoords);
+             v.SetFromViewCurveAttributes(&vAtts);
+
+             viswin->SetViewCurve(v);
+          }
+
           int numTriangles = viswin->GetNumTriangles();
           debug1 << "Rendering " << numTriangles << " triangles. " 
                  << "Balanced speedup = " << RenderBalance(numTriangles)
@@ -1240,7 +1292,15 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer)
 void
 NetworkManager::SetWindowAttributes(const WindowAttributes &atts)
 {
-    viswin->SetSize(atts.GetSize()[0], atts.GetSize()[1]);
+    // do nothing if nothing changed
+    if (windowAttributes == atts)
+       return;
+
+    // only update size if its different
+    int s0,s1;
+    viswin->GetSize(s0,s1);
+    if ((s0 != atts.GetSize()[0]) || (s1 != atts.GetSize()[1]))
+       viswin->SetSize(atts.GetSize()[0], atts.GetSize()[1]);
 
     //
     // Set the view information.
@@ -1290,10 +1350,12 @@ NetworkManager::SetWindowAttributes(const WindowAttributes &atts)
                                                      atts.GetGradBG2()[2]);
     }
 
-    // rendering options
-    viswin->SetAntialiasing(atts.GetRenderAtts().GetAntialiasing());
-    viswin->SetSurfaceRepresentation(atts.GetRenderAtts().GetGeometryRepresentation());
-    viswin->SetImmediateModeRendering(!atts.GetRenderAtts().GetDisplayLists());
+    if (viswin->GetAntialiasing() != atts.GetRenderAtts().GetAntialiasing())
+       viswin->SetAntialiasing(atts.GetRenderAtts().GetAntialiasing());
+    if (viswin->GetSurfaceRepresentation() != atts.GetRenderAtts().GetGeometryRepresentation())
+       viswin->SetSurfaceRepresentation(atts.GetRenderAtts().GetGeometryRepresentation());
+    if (viswin->GetImmediateModeRendering() != !atts.GetRenderAtts().GetDisplayLists())
+       viswin->SetImmediateModeRendering(!atts.GetRenderAtts().GetDisplayLists());
 
     windowAttributes = atts;
 }
@@ -1323,6 +1385,7 @@ NetworkManager::SetAnnotationAttributes(const AnnotationAttributes &atts)
       newAtts.SetDatabaseInfoFlag(false);
       newAtts.SetLegendInfoFlag(false);
       newAtts.SetTriadFlag(false);
+      newAtts.SetAxesFlag2D(false);
       viswin->SetAnnotationAtts(&newAtts);
    }
    annotationAttributes = atts;

@@ -46,7 +46,7 @@ class PIPELINE_API  avtSamplePoints : public avtDataObject
 
     void                        SetNumberOfVariables(int);
     int                         GetNumberOfVariables(void) { return numVars; };
-    virtual int                 GetNumberOfCells(void) const
+    virtual int                 GetNumberOfCells(bool polysOnly = false) const
                                    { return celllist->GetNumberOfCells(); };
     void                        SetVolume(int, int, int);
     avtVolume                  *GetVolume(void)  { return volume; };

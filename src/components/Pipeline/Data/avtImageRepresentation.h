@@ -58,7 +58,7 @@ class PIPELINE_API avtImageRepresentation
 
     void                 SetOrigin(const int rowOrigin, const int colOrigin);
     void                 GetOrigin(int *rowOrigin, int *colOrigin) const;
-    virtual int          GetNumberOfCells(void) const; 
+    virtual int          GetNumberOfCells(bool polysOnly = false) const; 
 
     bool                 Valid(void);
     void                 ReleaseData(void);

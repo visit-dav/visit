@@ -33,49 +33,22 @@
 //    infoActor now a vtkTextActor instead of vtkScaledTextActor. infoMapper
 //    no longer necessary (new vtk api). 
 //
+//    Brad Whitlock, Wed Oct 29 08:48:17 PDT 2003
+//    I moved some code into the UpdateUserText method.
+//
 // ****************************************************************************
 
 VisWinUserInfo::VisWinUserInfo(VisWindowColleagueProxy &p) 
     : VisWinColleague(p)
 {
-    //
-    // Get the user name.
-    //
-    char *user = NULL;
-#if defined(_WIN32)
-    char username[100];
-    DWORD maxLen = 100;
-    GetUserName((LPTSTR)username, (LPDWORD)&maxLen);
-    user = username;
-#else
-    user = getenv("USER");
-    if (user == NULL)
-    {
-        user = getenv("LOGNAME");
-    }
-#endif
-
-    //
-    // Get the date.
-    //
-    time_t  binary_time  = time(0);
-    char   *current_time = ctime(&binary_time);
-    current_time[strlen(current_time)-1] = '\0';
-
-    //
-    // Set the mapper to have a combined string separated by a new line.  This
-    // makes relative positioning _much_ easier.
-    //
-    infoString = new char[strlen("user: ") + strlen(user) + strlen("\n") 
-                          + strlen(current_time) + 1];
-    sprintf(infoString, "user: %s\n%s", user, current_time);
+    infoString = NULL;
 
     //
     // Create and position the actors.
     //
     infoActor = vtkTextActor::New();
     infoActor->ScaledTextOn();
-    infoActor->SetInput(infoString);
+    UpdateUserText();
     vtkCoordinate *pos = infoActor->GetPositionCoordinate();
     pos->SetCoordinateSystemToNormalizedViewport();
     pos->SetValue(0.75, 0.015, 0.);
@@ -251,6 +224,29 @@ VisWinUserInfo::NoPlots(void)
 
 
 // ****************************************************************************
+// Method: VisWinUserInfo::UpdatePlotList
+//
+// Purpose: 
+//   Updates the user information and time when the plot list changes.
+//
+// Arguments:
+//   p : A vector of reference pointers to plot objects.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Oct 29 08:50:08 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+VisWinUserInfo::UpdatePlotList(std::vector<avtActor_p> &p)
+{
+    if(p.size() > 0)
+        UpdateUserText();
+}
+
+// ****************************************************************************
 // Method: VisWinUserInfo::SetVisibility
 //
 // Purpose: 
@@ -270,4 +266,61 @@ void
 VisWinUserInfo::SetVisibility(bool val)
 {
     infoActor->SetVisibility(val?1:0);
+}
+
+// ****************************************************************************
+// Method: VisWinUserInfo::UpdateUserText
+//
+// Purpose: 
+//   Updates the user and time string.
+//
+// Programmer: Hank Childs
+// Creation:   Wed Oct 29 08:45:44 PDT 2003
+//
+// Modifications:
+//   Brad Whitlock, Wed Oct 29 08:45:55 PDT 2003
+//   I moved this code from the constructor to this function, which can be
+//   called again and again.
+//
+// ****************************************************************************
+
+void
+VisWinUserInfo::UpdateUserText()
+{
+    if(infoActor)
+    {
+        //
+        // Get the user name.
+        //
+        char *user = NULL;
+#if defined(_WIN32)
+        char username[100];
+        DWORD maxLen = 100;
+        GetUserName((LPTSTR)username, (LPDWORD)&maxLen);
+        user = username;
+#else
+        user = getenv("USER");
+        if (user == NULL)
+        {
+            user = getenv("LOGNAME");
+        }
+#endif
+
+        //
+        // Get the date.
+        //
+        time_t  binary_time  = time(0);
+        char   *current_time = ctime(&binary_time);
+        current_time[strlen(current_time)-1] = '\0';
+
+        //
+        // Set the mapper to have a combined string separated by a new line.  This
+        // makes relative positioning _much_ easier.
+        //
+        delete [] infoString;
+        infoString = new char[strlen("user: ") + strlen(user) + strlen("\n") 
+                              + strlen(current_time) + 1];
+        sprintf(infoString, "user: %s\n%s", user, current_time);
+        infoActor->SetInput(infoString);
+    }
 }

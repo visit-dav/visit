@@ -11,6 +11,7 @@ class QComboBox;
 class QGroupBox;
 class QLabel;
 class QNarrowLineEdit;
+class QPushButton;
 class QTabWidget;
 class QVBox;
 class QvisColorButton;
@@ -41,6 +42,9 @@ class QvisLineWidthWidget;
 //   Added the ability to control the 2d axes line width and replaced the
 //   2d font size setting with individual controls for setting the x label,
 //   y label, x title, and y title font heights.
+//
+//   Brad Whitlock, Mon Nov 10 16:27:45 PST 2003
+//   I added a button to turn off all annotation.
 //
 // ****************************************************************************
 
@@ -104,12 +108,14 @@ private slots:
     void userInfoChecked(bool val);
     void databaseInfoChecked(bool val);
     void legendChecked(bool val);
+    void turnOffAllAnnotations();
 private:
     AnnotationAttributes *annotationAtts;
 
     QCheckBox       *userInfo;
     QCheckBox       *databaseInfo;
     QCheckBox       *legendInfo;
+    QPushButton     *turnOffAllButton;
     QTabWidget      *tabs;
     QVBox           *page2D;
     QVBox           *page3D;

@@ -36,7 +36,7 @@ class PIPELINE_API avtNullData : public avtDataObject
     virtual                  ~avtNullData() {;};
 
     virtual const char       *GetType(void)  { return typeStr.c_str(); };
-    virtual int               GetNumberOfCells(void) const { return 0;};
+    virtual int               GetNumberOfCells(bool polysOnly = false) const { return 0;};
     virtual void              SetType(char *_typeStr )  { typeStr = _typeStr; };
     avtDataObjectWriter      *InstantiateWriter(void);
 

@@ -138,6 +138,9 @@ QvisAnnotationWindow::~QvisAnnotationWindow()
 //   2d font size setting with individual controls for setting the x label,
 //   y label, x title, and y title font heights.
 //
+//   Brad Whitlock, Mon Nov 10 16:28:36 PST 2003
+//   I added a button that can turn off all annotations.
+//
 // ****************************************************************************
 
 void
@@ -162,6 +165,13 @@ QvisAnnotationWindow::CreateWindowContents()
     connect(legendInfo, SIGNAL(toggled(bool)),
             this, SLOT(legendChecked(bool)));
     glayout->addWidget(legendInfo, 1, 0);
+
+    // Create a button that can turn off all annotations.
+    turnOffAllButton = new QPushButton("No annotations", central,
+        "turnOffAllButton");
+    connect(turnOffAllButton, SIGNAL(clicked()),
+            this, SLOT(turnOffAllAnnotations()));
+    glayout->addWidget(turnOffAllButton, 1, 1);
 
     // Create the tab widget.
     QTabWidget *tabs = new QTabWidget(central, "tabs");
@@ -2498,5 +2508,31 @@ QvisAnnotationWindow::legendChecked(bool val)
 {
     annotationAtts->SetLegendInfoFlag(val);
     SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisAnnotationWindow::turnOffAllAnnotations
+//
+// Purpose: 
+//   Turns off all annotations.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Oct 31 14:40:08 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisAnnotationWindow::turnOffAllAnnotations()
+{
+    annotationAtts->SetAxesFlag2D(false);
+    annotationAtts->SetAxesFlag(false);
+    annotationAtts->SetTriadFlag(false);
+    annotationAtts->SetBboxFlag(false);
+    annotationAtts->SetUserInfoFlag(false);
+    annotationAtts->SetDatabaseInfoFlag(false);
+    annotationAtts->SetLegendInfoFlag(false);
     Apply();
 }

@@ -2,3 +2,6 @@ Constant: DEFAULT_SCALABLE_THRESHOLD
 Declaration: static const int DEFAULT_SCALABLE_THRESHOLD;
 Definition: const int RenderingAttributes::DEFAULT_SCALABLE_THRESHOLD = 2000000;
 
+Constant: ModeToThreshold
+Declaration: static int ModeToThreshold[3];
+Definition: int RenderingAttributes::ModeToThreshold[3] = {DEFAULT_SCALABLE_THRESHOLD, 0, (1<<30)};

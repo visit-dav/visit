@@ -1985,10 +1985,17 @@ ViewerPlot::GetReader(const int frame) const
 //    Hank Childs, Wed Sep 17 09:31:59 PDT 2003
 //    If the meta-data varies over time, don't re-use the SIL.
 //
+//    Mark C. Miller, Wed Oct 29 15:38:31 PST 2003
+//    Added optional bool 'createNew' (which is true by default) which
+//    controls how the data object reader is obtained from the viewer
+//    engine manager. Also added bool for whether switching into or out
+//    of scalable rendering.
+//
 // ****************************************************************************
 
 void
-ViewerPlot::CreateActor(const int frame)
+ViewerPlot::CreateActor(const int frame, bool createNew,
+                                         bool turningOffScalableRendering)
 {
     avtDataObjectReader_p reader;
 
@@ -2015,8 +2022,16 @@ ViewerPlot::CreateActor(const int frame)
             SetSILRestriction(newsilr);
         }
 
-        reader = ViewerEngineManager::Instance()->
-                                      GetDataObjectReader(this,frame);
+        if (!createNew)
+        {
+            reader = ViewerEngineManager::Instance()->
+                         UseDataObjectReader(this,turningOffScalableRendering);
+        }
+        else
+        {
+            reader = ViewerEngineManager::Instance()->
+                         GetDataObjectReader(this,frame);
+        }
     }
     CATCH(AbortException)
     {
@@ -2235,6 +2250,30 @@ ViewerPlot::ClearActors(const int f0, const int f1)
         readerList[i] = (avtDataObjectReader *)0;
     }
 }
+
+
+
+// ****************************************************************************
+//  Method: ViewerPlot::TransmuteActor
+//
+//  Purpose: This method supports smooth transitions into and out of scalable
+//  rendering. When switching into scalable rendering, we clear all the actors
+//  and then re-acquire each one again from the engine but setting the 
+//  'respondWithNullData' flag to true. When swithcing out of scalable
+//  rendering, we clear all the actors and then re-acquire each one again
+//  but setting 'respondWithNullData' to false. In either case, it is assumed
+//  the associated networks already exist in cache on the engine.
+//  
+//  Programmer: Mark C. Miller
+//  Creation:   October 29, 2003 
+//
+// ****************************************************************************
+
+void
+ViewerPlot::TransmuteActor(int frame, bool turningOffScalableRendering)
+{
+    CreateActor(frame, false, turningOffScalableRendering);
+} 
 
 // ****************************************************************************
 //  Method: ViewerPlot::GetSpatialDimension
