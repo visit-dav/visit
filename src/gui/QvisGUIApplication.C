@@ -1069,7 +1069,7 @@ QvisGUIApplication::FinalInitialization()
             ConfigStateEnum code;
             ConfigStateIncrementRunCount(code);
             if(code == CONFIGSTATE_FIRSTTIME)
-                QTimer::singleShot(1000, this, SLOT(displayReleaseNotes()));
+                QTimer::singleShot(1000, this, SLOT(displayReleaseNotesIfAvailable()));
         }
         visitTimer->StopTimer(timeid, "stage 10 - Incrementing run count");
         visitTimer->StopTimer(stagedInit, "FinalInitialization");
@@ -2688,9 +2688,12 @@ QvisGUIApplication::EnsureOperatorWindowIsCreated(int i)
 //    Brad Whitlock, Wed May 5 16:11:34 PST 2004
 //    I changed how we iterate through otherWindows.
 //
+//    Brad Whitlock, Thu Feb 17 16:02:55 PST 2005
+//    I made it return a bool.
+//
 // ****************************************************************************
 
-void
+bool
 QvisGUIApplication::WriteConfigFile(const char *filename)
 {
     // Create the root node called "VisIt" and create a "Version"
@@ -2760,7 +2763,7 @@ QvisGUIApplication::WriteConfigFile(const char *filename)
 
     // Try to open the output file.
     if((fp = fopen(filename, "wt")) == 0)
-        return;
+        return false;
 
     // Write the output file to stdout for now.
     fprintf(fp, "<?xml version=\"1.0\"?>\n");
@@ -2769,6 +2772,8 @@ QvisGUIApplication::WriteConfigFile(const char *filename)
     // close the file
     fclose(fp);
     fp = 0;
+
+    return true;
 }
 
 // ****************************************************************************
@@ -5089,8 +5094,10 @@ void QvisGUIApplication::showMaterialWindow()        { GetInitializedWindowPoint
 void QvisGUIApplication::showHelpWindow()            { GetInitializedWindowPointer(WINDOW_HELP)->show(); }
 void QvisGUIApplication::displayCopyright()          { ((QvisHelpWindow *)GetInitializedWindowPointer(WINDOW_HELP))->displayCopyright(); }
 void QvisGUIApplication::displayReleaseNotes()       { ((QvisHelpWindow *)GetInitializedWindowPointer(WINDOW_HELP))->displayReleaseNotes(); }
+void QvisGUIApplication::displayReleaseNotesIfAvailable()
+                                                     { ((QvisHelpWindow *)GetInitializedWindowPointer(WINDOW_HELP))->displayReleaseNotesIfAvailable(); }
 void QvisGUIApplication::showQueryWindow()           { GetInitializedWindowPointer(WINDOW_QUERY)->show(); }
 void QvisGUIApplication::showRenderingWindow()       { GetInitializedWindowPointer(WINDOW_RENDERING)->show(); }
 void QvisGUIApplication::showCorrelationListWindow() { GetInitializedWindowPointer(WINDOW_CORRELATION)->show(); }
 void QvisGUIApplication::showQueryOverTimeWindow()   { GetInitializedWindowPointer(WINDOW_TIMEQUERY)->show(); }
-void QvisGUIApplication::showInteractorWindow()   { GetInitializedWindowPointer(WINDOW_INTERACTOR)->show(); }
+void QvisGUIApplication::showInteractorWindow()      { GetInitializedWindowPointer(WINDOW_INTERACTOR)->show(); }

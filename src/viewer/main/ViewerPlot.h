@@ -10,6 +10,7 @@
 #include <avtTypes.h>
 #include <avtPlot.h>
 #include <EngineKey.h>
+#include <ExpressionList.h>
 #include <string>
 
 // Forward declarations
@@ -203,6 +204,9 @@ class avtToolInterface;
 //    Kathleen Bonnell, Tue Jan 11 16:16:48 PST 2005 
 //    Added isLabel. 
 //
+//    Brad Whitlock, Fri Feb 18 10:08:36 PDT 2005
+//    Added GetExpressions method.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerPlot
@@ -245,11 +249,12 @@ class VIEWER_API ViewerPlot
     const avtCentering GetVariableCentering() const;
 
     //
-    // Get/Set the SIL restriction and get metadata.
+    // Get/Set the SIL restriction, get metadata, get expressions.
     //
     void SetSILRestriction(avtSILRestriction_p silr);
     avtSILRestriction_p GetSILRestriction() const;
     const avtDatabaseMetaData *GetMetaData() const;
+    ExpressionList GetExpressions() const;
 
     //
     // Returns the database state that the plot currently displays.

@@ -36,6 +36,9 @@
 //   Removed GetUserVisItDirectory, GetDefaultConfigFile, GetSystemConfigFile
 //   methods and made them part of the utility library (Utility.h).
 //
+//   Brad Whitlock, Thu Feb 17 15:45:19 PST 2005
+//   I made WriteConfigFile return a bool.
+//
 // ****************************************************************************
 
 class STATE_API ConfigManager
@@ -44,7 +47,7 @@ public:
     ConfigManager();
     virtual ~ConfigManager();
 
-    virtual void WriteConfigFile(const char *filename) = 0;
+    virtual bool WriteConfigFile(const char *filename) = 0;
     virtual DataNode *ReadConfigFile(const char *filename) = 0;
 protected:
     // Functions to write out the tree.

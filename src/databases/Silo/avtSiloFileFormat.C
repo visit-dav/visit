@@ -69,6 +69,8 @@ static void      AddDefvars(const char *, avtDatabaseMetaData *);
 static int  SiloZoneTypeToVTKZoneType(int);
 static void TranslateSiloWedgeToVTKWedge(const int *, vtkIdType [6]);
 static void TranslateSiloPyramidToVTKPyramid(const int *, vtkIdType [5]);
+static void TranslateSiloTetrahedronToVTKTetrahedron(const int *,
+                                                     vtkIdType [4]);
 
 static int  ComputeNumZonesSkipped(vector<int>& zoneRangesSkipped);
 
@@ -4025,6 +4027,9 @@ avtSiloFileFormat::GetUnstructuredMesh(DBfile *dbfile, const char *mn,
 //    Hank Childs, Fri Aug 27 17:18:37 PDT 2004
 //    Rename ghost zone arrays.
 //
+//    Hank Childs, Tue Jan 11 14:48:38 PST 2005
+//    Translate tetrahedrons as well.
+//
 // ****************************************************************************
 
 void
@@ -4153,6 +4158,7 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
 
                 if (vtk_zonetype != VTK_WEDGE &&
                     vtk_zonetype != VTK_PYRAMID &&
+                    vtk_zonetype != VTK_TETRA &&
                     vtk_zonetype != -1)
                 {
                     *nl++ = shapesize;
@@ -4179,6 +4185,18 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
                     for (k = 0 ; k < 5 ; k++)
                     {
                         *nl++ = vtk_pyramid[k]-origin;
+                    }
+                }
+                else if (vtk_zonetype == VTK_TETRA)
+                {
+                    *nl++ = 4;
+
+                    vtkIdType vtk_tetra[4];
+                    TranslateSiloTetrahedronToVTKTetrahedron(nodelist,
+                                                             vtk_tetra);
+                    for (k = 0 ; k < 4 ; k++)
+                    {
+                        *nl++ = vtk_tetra[k]-origin;
                     }
                 }
                 else if (vtk_zonetype == -1)
@@ -7229,6 +7247,10 @@ SiloZoneTypeToVTKZoneType(int zonetype)
 //    Kathleen Bonnell, Thu Aug  9 15:50:15 PDT 2001
 //    Changed parameters from int to vtkIdType to match VTK 4.0 API.
 //
+//    Hank Childs, Tue Jan 11 14:48:38 PST 2005
+//    We were following the comment in vtkWedge.h, which turns out to be
+//    wrong.  Correct it now.
+//
 // ****************************************************************************
 
 void
@@ -7241,11 +7263,11 @@ TranslateSiloWedgeToVTKWedge(const int *siloWedge, vtkIdType vtkWedge[6])
     // and edge lists in vtkWedge.cxx.
     //
     vtkWedge[0] = siloWedge[2];
-    vtkWedge[1] = siloWedge[5];
-    vtkWedge[2] = siloWedge[1];
+    vtkWedge[1] = siloWedge[1];
+    vtkWedge[2] = siloWedge[5];
     vtkWedge[3] = siloWedge[3];
-    vtkWedge[4] = siloWedge[4];
-    vtkWedge[5] = siloWedge[0];
+    vtkWedge[4] = siloWedge[0];
+    vtkWedge[5] = siloWedge[4];
 }
 
 
@@ -7261,6 +7283,8 @@ TranslateSiloWedgeToVTKWedge(const int *siloWedge, vtkIdType vtkWedge[6])
 //
 //  Programmer: Kathleen Bonnell 
 //  Creation:   May 23, 2001
+//
+//  Modifications:
 //
 //    Kathleen Bonnell, Thu Aug  9 15:50:15 PDT 2001
 //    Changed parameters from int to vtkIdType to match VTK 4.0 API.
@@ -7282,6 +7306,37 @@ TranslateSiloPyramidToVTKPyramid(const int *siloPyramid, vtkIdType vtkPyramid[5]
     vtkPyramid[3] = siloPyramid[1];
     vtkPyramid[4] = siloPyramid[4];
 }
+
+
+// ****************************************************************************
+//  Function: TranslateSiloTetrahedronToVTKTetrahedron
+//
+//  Purpose:
+//    The silo and VTK tetrahedrons are stored differently; translate between
+//     them.
+//
+//  Arguments:
+//    siloTetrahedron     A list of nodes from a Silo node list.
+//    vtkTetrahedron      The list of nodes in VTK ordering.
+//
+//  Programmer:  Hank Childs 
+//  Creation:    January 11, 2005
+//
+// ****************************************************************************
+
+void
+TranslateSiloTetrahedronToVTKTetrahedron(const int *siloTetrahedron,
+                                         vtkIdType vtkTetrahedron[4])
+{
+    //
+    // The Silo and VTK tetrahedrons are inverted.
+    //
+    vtkTetrahedron[0] = siloTetrahedron[1];
+    vtkTetrahedron[1] = siloTetrahedron[0];
+    vtkTetrahedron[2] = siloTetrahedron[2];
+    vtkTetrahedron[3] = siloTetrahedron[3];
+}
+
 
 // ****************************************************************************
 //  Function: ComputeNumZonesSkipped 

@@ -902,44 +902,34 @@ MDServerConnection::ExpandPath(const std::string &path)
 // Creation:   Wed Apr 2 12:47:50 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Feb 17 15:05:34 PST 2005
+//   Moved some code into the utility library, callable from ExpandUserPath.
+//
 // ****************************************************************************
 
 std::string
 MDServerConnection::ExpandPathHelper(const std::string &path,
     const std::string &workingDir) const
 {
-    std::string newPath(path);
+    std::string newPath;
 
 #if defined(_WIN32)
     char driveLetter;
 
     if(path[0] == '~')
     {
-        char username[256];
-        int  i;
-
-        // Find the user name portion of the path, ie ~user
-        for (i = 1; isalnum(path[i]); i++)
-        {
-            username[i - 1] = path[i];
-        }
-        username[i - 1] = '\0';
-
-        // Append the rest of the path to the home directory.
-        std::string restOfPath(path.substr(i, path.length() - i + 1));
-        std::string homeDir("C:\\Documents and Settings\\");
-        newPath = homeDir + std::string(username) + restOfPath;
+        newPath = ExpandUserPath(path);
     }
     else if(sscanf(path.c_str(), "My Computer\\%c:", &driveLetter) == 1)
     {
-         // Filter out the "My Computer" part of the path.
-         char tmp[2] = {driveLetter, '\0'};
-         newPath = std::string(tmp) + ":\\";
+        // Filter out the "My Computer" part of the path.
+        char tmp[2] = {driveLetter, '\0'};
+        newPath = std::string(tmp) + ":\\";
     }
     else if(sscanf(path.c_str(), "%c:\\", &driveLetter) == 1)
     {
-         // absolute path. do nothing
+        // absolute path. do nothing
+        newPath = path;
     }
     else
     {
@@ -949,43 +939,7 @@ MDServerConnection::ExpandPathHelper(const std::string &path,
 #else
     if(path[0]=='~')
     {
-        char username[256];
-        int  i;
-
-        // Find the user name portion of the path, ie ~user
-        for (i = 1; isalnum(path[i]); i++)
-        {
-            username[i - 1] = path[i];
-        }
-        username[i - 1] = '\0';
-
-        // Check if the user specified '~' or '~name'.
-        struct passwd *users_passwd_entry = NULL;
-        if (i == 1)
-        {
-            // User just specified '~', get /etc/passwd entry
-            users_passwd_entry = getpwuid(getuid());
-        } else
-        {
-            // User specified '~name', get /etc/passwd entry
-            users_passwd_entry = getpwnam(username);
-        }
-
-        // Now that we have a passwd entry, validate it.
-        if (users_passwd_entry == NULL)
-        {
-            // Did not specify a valid user name.  Do nothing. 
-            return path;
-        }
-        if (users_passwd_entry->pw_dir == NULL)
-        {
-            // Passwd entry is invalid.  Do nothing.
-            return path;
-        }
-
-        // Append the rest of the path to the home directory.
-        std::string restOfPath(path.substr(i, path.length() - i + 1));
-        newPath = std::string(users_passwd_entry->pw_dir) + restOfPath;
+        newPath = ExpandUserPath(path);
     }
     else if(path[0] != '/')
     {
@@ -995,6 +949,7 @@ MDServerConnection::ExpandPathHelper(const std::string &path,
     else
     {
         // absolute path: do nothing
+        newPath = path;
     }
 #endif
 

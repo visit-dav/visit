@@ -247,6 +247,10 @@ avtIndexSelectFilter::Equivalent(const AttributeGroup *a)
 //    Added code to bypass the operator if the selection is applied by a
 //    plugin
 //
+//    Kathleen Bonnell, Fri Feb 18 09:41:16 PST 2005 
+//    Account for the fact the vtkExtractGrid and vtkRectilinearExtractGrid
+//    may return 'empty' datasets, so we want to return a NULL dataset. 
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -341,10 +345,13 @@ avtIndexSelectFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
             removeGhostCells->Delete();
         }
 
-        out_ds = (vtkDataSet *) rv->NewInstance();
-        out_ds->ShallowCopy(rv);
-        ManageMemory(out_ds);
-        out_ds->Delete();
+        if (rv->GetNumberOfPoints() > 0 && rv->GetNumberOfCells() > 0)
+        {
+            out_ds = (vtkDataSet *) rv->NewInstance();
+            out_ds->ShallowCopy(rv);
+            ManageMemory(out_ds);
+            out_ds->Delete();
+        }
     }
     else
     {

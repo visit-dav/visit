@@ -183,7 +183,7 @@ sub mkman ($@) {
          next;
       };
       while (<MAKEFILE>) {
-         if (/^([A-Z_]*(SRC|HDR)|(NOT_)?DISTRIB)\s*=\s*(.*)$/) {
+         if (/^([A-Z_]*(SRC|HDR)|(NOT_|IF_AVAILABLE_)?DISTRIB)\s*=\s*(.*)$/) {
             my ($macro, $value) = ($1, $4);
 
             ## Read continuation lines
@@ -208,7 +208,7 @@ sub mkman ($@) {
                       if (!(($basename =~ /^\$/) || ($basename =~ /^\@.*\@$/)))
                       {
                           warn "Directory: $file\n" if (-d $file);
-                          warn "Not found: $file\n" unless (-d $file);
+                          warn "Not found: $file\n" unless ((-d $file) || ($macro eq "IF_AVAILABLE_DISTRIB"));
                       }
                    } else {
                       $manref->{$file} = "$makefile \$($macro)";

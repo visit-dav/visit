@@ -22,6 +22,9 @@ class DataNode;
 //   Brad Whitlock, Thu Nov 13 11:51:47 PDT 2003
 //   I changed how messages are passed out of Export.
 //
+//   Brad Whitlock, Thu Feb 17 15:54:26 PST 2005
+//   Made WriteConfigFile return bool.
+//
 // ****************************************************************************
 
 class STATE_API ColorTableManager : public ConfigManager
@@ -35,7 +38,7 @@ public:
                              std::string &message);
     bool              ImportColorTables(ColorTableAttributes *cta);
 
-    virtual void      WriteConfigFile(const char *filename);
+    virtual bool      WriteConfigFile(const char *filename);
     virtual DataNode *ReadConfigFile(const char *filename);
 protected:
     void              ImportColorTable(const std::string &ctFileName);

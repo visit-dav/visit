@@ -54,6 +54,9 @@ class ViewerSubject;
 //    Brad Whitlock, Mon Aug 25 14:28:23 PST 2003
 //    Added NotifyIfSelected.
 //
+//    Brad Whitlock, Thu Feb 17 16:06:02 PST 2005
+//    I made WriteConfig return a bool.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerConfigManager : public ConfigManager
@@ -62,7 +65,7 @@ public:
     ViewerConfigManager(ViewerSubject *);
     virtual ~ViewerConfigManager();
 
-    virtual void WriteConfigFile(const char *filename);
+    virtual bool WriteConfigFile(const char *filename);
     virtual DataNode *ReadConfigFile(const char *filename);
     void ProcessConfigSettings(DataNode *);
     void Notify();

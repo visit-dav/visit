@@ -4700,6 +4700,9 @@ ViewerSubject::ExportColorTable()
 //    Brad Whitlock, Wed Feb 16 11:51:49 PDT 2005
 //    Made it call utility function GetDefaultConfigFile.
 //
+//    Brad Whitlock, Thu Feb 17 16:11:21 PST 2005
+//    I made it issue an error message if the settings can't be saved.
+//
 // ****************************************************************************
 
 void
@@ -4716,7 +4719,13 @@ ViewerSubject::WriteConfigFile()
     //
     // Tell the configuration manager to write the file.
     //
-    configMgr->WriteConfigFile(defaultConfigFile);
+    if(!configMgr->WriteConfigFile(defaultConfigFile))
+    {
+        std::string err("VisIt could not save your settings to: ");
+        err += defaultConfigFile;
+        err += ".";
+        Error(err.c_str());
+    }
 
     //
     // Delete the memory for the config file name.
