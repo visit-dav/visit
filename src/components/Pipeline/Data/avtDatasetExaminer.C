@@ -572,3 +572,65 @@ avtDatasetExaminer::GetVariableCentering(avtDataset_p &ds, const char *varname)
     return args.centering;
 }
 
+
+// ****************************************************************************
+//  Method: avtDatasetExaminer::GetNumberOfNodes
+//
+//  Purpose:
+//    Gets the number of nodes in the data tree.
+//
+//  Returns:
+//    The number of nodes (vertices) in the underlying vtk dataset of the
+//    avtDataTree.
+//
+//  Programmer:  Kathleen Bonnell
+//  Creation:    February 18, 2004
+//
+// ****************************************************************************
+
+int
+avtDatasetExaminer::GetNumberOfNodes(avtDataset_p &ds)
+{
+    avtDataTree_p dataTree = ds->dataTree;
+
+    int numNodes = 0;
+    if (*dataTree != NULL)
+    {
+        bool dummy;
+        dataTree->Traverse(CGetNumberOfNodes, &numNodes, dummy);
+    }
+    return numNodes;
+}
+
+
+// ****************************************************************************
+//  Method: avtDatasetExaminer::GetNumberOfZones
+//
+//  Purpose:
+//    Gets the number of zones in the data tree.
+//    Counts 'real' and 'ghost' zones separately.
+//
+//  Returns:
+//    The number of zones (cells) in the underlying vtk dataset of the
+//    avtDataTree.
+//
+//  Programmer:  Kathleen Bonnell
+//  Creation:    January 04, 2001
+//
+// ****************************************************************************
+
+void
+avtDatasetExaminer::GetNumberOfZones(avtDataset_p &ds, int &nReal, int &nGhost)
+{
+    avtDataTree_p dataTree = ds->dataTree;
+
+    int numZones[2] = {0, 0} ;
+    if (*dataTree != NULL)
+    {
+        bool dummy;
+        dataTree->Traverse(CGetNumberOfRealZones, numZones, dummy);
+    }
+    nReal = numZones[0];
+    nGhost = numZones[1];
+}
+

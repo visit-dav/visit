@@ -24,6 +24,7 @@ QueryAttributes::Reset()
         resultsValue.clear();
         resultsValue.push_back(0.);
     }
+    pipeIndex = -1;
  
     SelectAll();
 }

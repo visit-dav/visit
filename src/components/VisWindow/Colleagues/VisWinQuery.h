@@ -60,6 +60,10 @@
 //    Kathleen Bonnell, Tue Jul  8 20:02:21 PDT 2003 
 //    Add method ReAddToWindow. 
 //    
+//    Kathleen Bonnell, Fri Feb 20 12:37:26 PST 2004 
+//    Added methods CreateTranslationVector, CreateShiftVector, 
+//    CalculateShiftDistance.
+//    
 // ****************************************************************************
 
 class VISWINDOW_API VisWinQuery : public VisWinColleague
@@ -89,6 +93,12 @@ class VISWINDOW_API VisWinQuery : public VisWinColleague
     virtual void                  ReAddToWindow(void);
 
   protected:
+    void                          CreateTranslationVector(const double, 
+                                      const int, float vec[3]);
+    void                          CreateTranslationVector(float vec[3]);
+    void                          CreateShiftVector(float vec[3], const float);
+    float                         CalculateShiftDistance(void);
+
     std::vector< avtPickActor_p >      pickPoints;
     std::vector< avtLineoutActor_p >   lineOuts;
 

@@ -16,6 +16,7 @@
 #include <vtkMath.h>
 #include <vtkPointData.h>
 #include <vtkUnsignedIntArray.h>
+#include <vtkUnsignedCharArray.h>
 
 #include <avtCallback.h>
 #include <avtDataTree.h>
@@ -1934,3 +1935,90 @@ CGetVariableCentering(avtDataRepresentation &data, void *arg, bool &success)
 }
 
 
+// ****************************************************************************
+//  Method: CGetNumberOfNodes
+//
+//  Purpose:
+//    Adds the number of nodes in the vtk input to the passed sum argument. 
+//
+//  Arguments:
+//    data      The data from which to calculate number of nodes.
+//    sum       A place to store the cumulative number of nodes.
+//    <unused> 
+//
+//  Notes:
+//      This method is designed to be used as the function parameter of
+//      avtDataTree::Iterate.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   February 18, 2004
+//
+// ****************************************************************************
+
+void
+CGetNumberOfNodes(avtDataRepresentation &data, void *sum, bool &)
+{
+    int *numNodes = (int*)sum;
+    if (!data.Valid())
+    {
+        EXCEPTION0(NoInputException);
+    }
+    vtkDataSet *ds = data.GetDataVTK();
+    *numNodes += ds->GetNumberOfPoints();
+}
+
+
+// ****************************************************************************
+//  Method: CGetNumberOfRealZones
+//
+//  Purpose:
+//    Adds the number of zones in the vtk input to the passed sum argument. 
+//    Counts 'real' and 'ghost' separately.
+//
+//  Arguments:
+//    data      The data from which to calculate number of zones.
+//    sum       A place to store the cumulative number of zones.
+//    <unused> 
+//
+//  Notes:
+//      This method is designed to be used as the function parameter of
+//      avtDataTree::Iterate.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   February 18, 2004
+//
+// ****************************************************************************
+
+void
+CGetNumberOfRealZones(avtDataRepresentation &data, void *sum, bool &)
+{
+    int *numZones = (int*)sum;
+    //
+    // realZones  stored in numZones[0]
+    // ghostZones stored in numZones[1]
+    //
+    if (!data.Valid())
+    {
+        EXCEPTION0(NoInputException);
+    }
+    vtkDataSet *ds = data.GetDataVTK();
+    vtkUnsignedCharArray *ghosts = (vtkUnsignedCharArray*)
+        ds->GetCellData()->GetArray("vtkGhostLevels");
+
+    int nCells = ds->GetNumberOfCells();
+    if (ghosts)
+    {
+        unsigned char *gptr = ghosts->GetPointer(0);
+        for (int i = 0; i < nCells; i++)
+        {
+           if (gptr[i])
+               numZones[1]++;
+           else 
+               numZones[0]++;
+        }
+    }
+    else
+    {
+        numZones[0] += nCells;
+    }
+}

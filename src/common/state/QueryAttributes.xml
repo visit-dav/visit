@@ -51,6 +51,9 @@
     <Field name="dataType" label="dataType" type="enum" subtype="DataType" internal="true">
       ActualData
     </Field>
+    <Field name="pipeIndex" label="pipeIndex" type="int" internal="true">
+       -1
+    </Field>
     <Function name="Reset" user="true" member="true">
     </Function>
     <Function name="PrintSelf" user="true" member="true">

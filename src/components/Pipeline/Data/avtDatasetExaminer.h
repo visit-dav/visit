@@ -28,12 +28,17 @@ class     vtkDataArray;
 //    Brad Whitlock, Wed Dec 4 11:44:40 PDT 2002
 //    I added GetDataMagnitudeExtents.
 //
+//    Kathleen Bonnell, Wed Feb 18 08:31:26 PST 2004
+//    Added GetNumberOfNodes, another GetNumberOfZones.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDatasetExaminer
 {
   public:
+    static int                GetNumberOfNodes(avtDataset_p &);
     static int                GetNumberOfZones(avtDataset_p &);
+    static void               GetNumberOfZones(avtDataset_p &, int &, int &);
     static void               GetVariableList(avtDataset_p &, VarList &);
     static bool               GetSpatialExtents(avtDataset_p &, double *);
     static bool               GetDataExtents(avtDataset_p &, double *);

@@ -433,7 +433,6 @@ BuildLabels(vtkViewport * viewport, float bo, float bw, float bh, int nLabels)
   float labelOrig[3] = { 0., 0., 0. };
   float delta; 
   int* viewSize = viewport->GetSize(); 
-  int labelSize[2] = { 0, 0 };
   float offset;
 
   labelOrig[0] = (bw + bw*0.25 ) / viewSize[0]; 
@@ -1049,22 +1048,26 @@ void vtkVerticalScalarBarActor::ShallowCopy(vtkProp *prop)
   this->Superclass::ShallowCopy(prop);
 }
 
+// ****************************************************************************
+//  Modifications:
+//
+//    Kathleen Bonnell, Thu Feb 19 14:10:21 PST 2004 
+//    Removed the scaling portion. 
+//
+// ****************************************************************************
+ 
 float
 vtkVerticalScalarBarActor::SkewTheValue(float val, float min, float max)
 {
   if (this->SkewFactor < 0.) this->SkewFactor = 1.;
   if (this->SkewFactor == 1.) return val;
 
-  int expmax = (int) floor(log10(max));
-  int dif = abs(expmax) %3;
-  int useexp = (expmax > 0) ? (expmax -dif) : (expmax +dif);
-  float scale = pow(10.0, (double)useexp);
   float rangeDif = max - min;
   float log_skew_inv = 1./(log(this->SkewFactor));
   float k = (this->SkewFactor -1.) / rangeDif;
 
   float v2 = log((val - min) * k + 1) * log_skew_inv;
-  float temp  = (rangeDif * v2 + min) / scale ;
+  float temp  = (rangeDif * v2 + min) ;
   return temp;
 }
 

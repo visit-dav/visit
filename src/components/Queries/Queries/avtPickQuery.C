@@ -12,11 +12,11 @@
 #include <vtkIdList.h>
 #include <vtkMath.h>
 #include <vtkPointData.h>
-#include <vtkRectilinearGrid.h>
-#include <vtkStructuredGrid.h>
-#include <vtkVisItCellLocator.h>
+#include <vtkPoints.h>
+#include <vtkUnsignedCharArray.h>
 #include <vtkVisItUtility.h>
 
+#include <avtCallback.h>
 #include <avtMatrix.h>
 #include <avtTerminatingSource.h>
 #include <avtVector.h>
@@ -291,6 +291,10 @@ avtPickQuery::PostExecute(void)
 //    Verify zone/node number is in range when doing a PickByNode or 
 //    PickByZone. 
 //
+//    Kathleen Bonnell, Wed Feb 18 10:08:24 PST 2004 
+//    Issued a warning via avtCallback when pick is unable to locate the
+//    zone contained by the pick point. 
+//
 // ****************************************************************************
 
 void
@@ -332,6 +336,9 @@ avtPickQuery::Execute(vtkDataSet *ds, const int dom)
             pickAtts.SetElementNumber(-1);
             debug5 << "PICK BIG PROBLEM!  "
                    << "Could not find zone corresponding to pick point" << endl;
+            avtCallback::IssueWarning(
+                "The pick operation has encountered an internal "
+                "error.  Please contact a VisIt developer"); 
             return;
         }
         
@@ -1151,5 +1158,4 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds)
         pickAtts.AddPickVarInfo(varInfo);
     } // for all vars  
 }
-
 

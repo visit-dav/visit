@@ -43,6 +43,9 @@ class     vtkDataArray;
 //    Hank Childs, Thu Jan 22 15:42:54 PST 2004
 //    Removed unused CSetMapperInput.
 //
+//    Kathleen Bonnell, Wed Feb 18 08:31:26 PST 2004 
+//    Added CGetNumberOfRealZones, CGetNumberOfNodes. 
+//
 // ****************************************************************************
 
 //
@@ -67,6 +70,8 @@ PIPELINE_API void CLocateZone(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CLocateNode(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CGetArray(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CGetVariableCentering(avtDataRepresentation &, void *, bool &);
+PIPELINE_API void CGetNumberOfNodes(avtDataRepresentation &, void *, bool &);
+PIPELINE_API void CGetNumberOfRealZones(avtDataRepresentation &, void *, bool &);
 
 PIPELINE_API void GetDataRange(vtkDataSet *, double *, int);
 PIPELINE_API void GetDataMagnitudeRange(vtkDataSet *, double *, int);

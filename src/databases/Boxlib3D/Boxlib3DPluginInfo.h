@@ -38,6 +38,7 @@ class Boxlib3DCommonPluginInfo : public virtual CommonDatabasePluginInfo, public
   public:
     virtual DatabaseType              GetDatabaseType();
     virtual std::vector<std::string>  GetDefaultExtensions();
+    virtual std::vector<std::string>  GetFilenames();
     virtual avtDatabase              *SetupDatabase(const char * const *list,
                                                     int nList, int nBlock);
     virtual avtDatabaseWriter        *GetWriter(void);
