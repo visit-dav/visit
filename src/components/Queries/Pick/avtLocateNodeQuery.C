@@ -267,6 +267,12 @@ avtLocateNodeQuery::DeterminePickedNode(vtkDataSet *ds, int foundCell, float *pp
 //    Kathleen Bonnell, Tue Aug 10 09:06:54 PDT 2004 
 //    Set id when validOrigNodes size is 1. 
 //
+//    Kathleen Bonnell, Mon Aug 30 18:20:50 PDT 2004
+//    Revamped: FindClosestNPoints orders the points in increasing distance
+//    from the isect point, so don't need to recalculate distances.  Simply
+//    keep the first node that has a valid OrigNode associated with it AND is
+//    part of the isectedCell.
+//
 // ****************************************************************************
 
 int
@@ -295,61 +301,24 @@ avtLocateNodeQuery::FindClosestPoint(vtkDataSet *ds, const int isectedCell,
             ds->GetPointData()->GetArray("avtOriginalNodeNumbers"));
         if (origNodes)
         {
+            // some close nodes are same distance, find the one
+            // that belongs to the isected cell.
+            vtkIdList *cellPts = vtkIdList::New();
+            ds->GetCellPoints(isectedCell, cellPts);
             int comp = origNodes->GetNumberOfComponents()-1;
             int oNode = -1;
-            float dist, minDist = FLT_MAX;
-            intVector validOrigNodes;
-            intVector validClosestPoints;
-            vtkPoints *pts = vtkVisItUtility::GetPoints(ds);
-            for (int i = 0; i < ncp; i++)
+            for (int i = 0; i < ncp && oNode == -1; i++)
             {
                 id = closestPoints->GetId(i);
                 oNode = (int)origNodes->GetComponent(id, comp);
-                if (oNode != -1)
+                if (oNode != -1 && (cellPts->IsId(id) == -1))
                 {
-                    dist = vtkMath::Distance2BetweenPoints(isect, pts->GetPoint(id));
-                    if (dist <= minDist)
-                    {
-                        validOrigNodes.push_back(oNode);
-                        validClosestPoints.push_back(id);
-                        minDist = dist;
-                    } 
-                }
-            }
-            if (validOrigNodes.size() > 0)
-            {
-                if (validOrigNodes.size() == 1)
-                {
-                    origNode = validOrigNodes[0];
-                    id = validClosestPoints[0];
-                }
-                else 
-                {
+                    //
+                    // We only want to consider nodes that are part of
+                    // the isected cell.
+                    //
                     oNode = -1;
-                    id = -1;
-                    // some close nodes are same distance, find the one
-                    // that belongs to the isected cell.
-                    vtkIdList *cellPts = vtkIdList::New();
-                    ds->GetCellPoints(isectedCell, cellPts);
-                    for (int j = 0; j < validOrigNodes.size(), oNode == -1; j++)
-                    {
-                        if (cellPts->IsId(validClosestPoints[j]) != -1)
-                        {
-                            oNode = validOrigNodes[j];
-                            id = validClosestPoints[j];
-                        }
-                    }
-                    cellPts->Delete();
-                    if (oNode != -1)
-                        origNode = oNode;
-                    else
-                        origNode = closestPoints->GetId(0);
- 
                 }
-            }
-            else
-            {
-                id = closestPoints->GetId(0);
             }
         }
         else 

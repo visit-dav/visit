@@ -54,7 +54,7 @@ class avtExpressionEvaluatorFilter;
 //    Kathleen Bonnell, Thu Apr  1 09:21:22 PST 2004 
 //    Inherit from avtVariableQuery, moved common methods to parent class 
 //    (RetrieveNodes, RetrieveZones, RetrieveVarInfo). 
-//    
+// 
 //    Kathleen Bonnell, Thu Jul 29 17:10:48 PDT 2004 
 //    No longer inherit from avtVariableQuery, moved common methods back to
 //    this class: (RetrieveNodes, RetrieveZones, RetrieveVarInfo). 
@@ -62,6 +62,9 @@ class avtExpressionEvaluatorFilter;
 //    Kathleen Bonnell, Wed Aug 11 09:21:07 PDT 2004 
 //    Added RetrieveVarInfo method with extra args.  Added two
 //    GetCurrentZoneForOriginal methods. 
+// 
+//    Kathleen Bonnell, Mon Aug 30 17:56:29 PDT 2004
+//    Added skippedLocate flag, and Set method.
 // 
 // ****************************************************************************
 
@@ -85,6 +88,8 @@ class QUERY_API avtPickQuery : public avtDatasetQuery
     virtual void                    SetInvTransform(const avtMatrix *m){};
     void                            SetNeedTransform(const bool b)
                                         { needTransform = b; };
+    void                            SetSkippedLocate(const bool s)
+                                        { skippedLocate = s; };
 
   protected:
     int                             cellOrigin;
@@ -93,6 +98,7 @@ class QUERY_API avtPickQuery : public avtDatasetQuery
     const avtMatrix                *transform;
     bool                            singleDomain;
     bool                            needTransform;
+    bool                            skippedLocate;
 
     // Query-specific code that needs to be defined.
     virtual void                    VerifyInput(void);
