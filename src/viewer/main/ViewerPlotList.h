@@ -13,6 +13,7 @@
 
 // Forward declarations.
 class AttributeSubject;
+class DataNode;
 class PlotList;
 class SILRestrictionAttributes;
 class ViewerAnimation;
@@ -138,6 +139,9 @@ typedef std::map<std::string, avtSILRestriction_p> SILRestrictionMap;
 //    I added PromoteOperator, DemoteOperator, and RemoveOperator methods and
 //    added 3 new arguments to SetActivePlots.
 //
+//    Brad Whitlock, Wed Jul 16 13:15:58 PST 2003
+//    I added CreateNode and SetFromNode.
+//
 // ****************************************************************************
 
 
@@ -248,6 +252,8 @@ class VIEWER_API ViewerPlotList
     static void ClearDefaultSILRestrictions(const std::string &host,
                                             const std::string &database);
 
+    void CreateNode(DataNode *);
+    bool SetFromNode(DataNode *);
   protected:
     ViewerPlot *NewPlot(int type, const std::string &host,
                         const std::string &db, const std::string &var,

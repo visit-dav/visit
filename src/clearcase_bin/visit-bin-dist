@@ -446,6 +446,7 @@ switch ($os)
       breaksw
 endsw
 
+set verdir = distribution/visit/$Version
 set bindir = distribution/visit/$Version/$visitbindir/bin
 set libdir = distribution/visit/$Version/$visitbindir/lib
 set incdir = distribution/visit/$Version/$visitbindir/include
@@ -609,10 +610,10 @@ endif
 #
 # Copy the configuration files.
 #
-mkdir $VisItDir/.visit
-cp clearcase_bin/visit-config-closed $VisItDir/.visit
-cp clearcase_bin/visit-config-open   $VisItDir/.visit
-ln -s visit-config-open $VisItDir/.visit/config
+mkdir $verdir/.visit
+cp $VisItDir/clearcase_bin/visit-config-closed $verdir/.visit
+cp $VisItDir/clearcase_bin/visit-config-open   $verdir/.visit
+ln -s visit-config-open $verdir/.visit/config
 
 #
 # Strip the executables and shared libraries.

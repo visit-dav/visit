@@ -23,6 +23,7 @@
 #include <math.h>
 
 using     std::string;
+using     std::vector;
 
 #if !defined(M_PI)
 #define M_PI 3.14159265358979323846
@@ -74,6 +75,11 @@ avtCompactnessQuery::avtCompactnessQuery() : avtTwoPassDatasetQuery()
 //    Jeremy Meredith, Thu Apr 17 12:52:13 PDT 2003
 //    Added more queries.
 //
+//    Jeremy Meredith, Wed Jul 23 13:28:57 PDT 2003
+//    Turned xBound and yBound into class data members, and made them
+//    STL vectors.  This way we can easily collect the boundary points
+//    across all domains and processors.
+//
 // ****************************************************************************
 
 void
@@ -101,6 +107,9 @@ avtCompactnessQuery::PreExecute(void)
     centMassY            = 0;
     distBound_dv_den_vol = 0;
     distCMass_dv_den_vol = 0;
+
+    xBound.clear();
+    yBound.clear();
 }
 
 // ****************************************************************************
@@ -111,6 +120,12 @@ avtCompactnessQuery::PreExecute(void)
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    April 17, 2003
+//
+//  Modifications:
+//    Jeremy Meredith, Wed Jul 23 13:34:18 PDT 2003
+//    Turned xBound and yBound into class data members, and made them
+//    STL vectors.  Added code to collect the boundary points
+//    across all processors.
 //
 // ****************************************************************************
 
@@ -128,6 +143,40 @@ avtCompactnessQuery::MidExecute(void)
         centMassX /= totalRotMass;
         centMassY /= totalRotMass;
     }
+
+#ifdef PARALLEL
+    // Calculate up the boundary points array across all processors.
+    int rank = PAR_Rank();
+    int nprocs = PAR_Size();
+
+    int mySize = xBound.size();
+    int totalSize;
+    MPI_Allreduce(&mySize, &totalSize, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+
+    xBound.resize(totalSize);
+    yBound.resize(totalSize);
+    int position = mySize;
+    for (int proc = 0; proc < nprocs; proc++)
+    {
+        if (proc == rank)
+        {
+            // Sending
+            int len = mySize;
+            MPI_Bcast(&len, 1, MPI_INT, proc, MPI_COMM_WORLD);
+            MPI_Bcast(&xBound[0], len, MPI_FLOAT, proc, MPI_COMM_WORLD);
+            MPI_Bcast(&yBound[0], len, MPI_FLOAT, proc, MPI_COMM_WORLD);
+        }
+        else
+        {
+            // Receiving
+            int len;
+            MPI_Bcast(&len, 1, MPI_INT, proc, MPI_COMM_WORLD);
+            MPI_Bcast(&xBound[position], len, MPI_FLOAT, proc, MPI_COMM_WORLD);
+            MPI_Bcast(&yBound[position], len, MPI_FLOAT, proc, MPI_COMM_WORLD);
+            position += len;
+        }
+    }
+#endif
 }
 
 // ****************************************************************************
@@ -146,6 +195,9 @@ avtCompactnessQuery::MidExecute(void)
 //
 //    Kathleen Bonnell, Fri Jul 11 16:29:41 PDT 2003 
 //    Renamed 'SetMessage' to 'SetResultMessage'. 
+//
+//    Jeremy Meredith, Wed Jul 23 13:34:18 PDT 2003
+//    Turned xBound and yBound into class data members, and free them here.
 //
 // ****************************************************************************
 
@@ -174,6 +226,11 @@ avtCompactnessQuery::PostExecute(void)
         distBound_dv_den_vol /= totalRotMass;
         distCMass_dv_den_vol /= totalRotMass;
     }
+
+    // We're done with the xBound and yBound arrays now; free up
+    // their memory.
+    xBound.clear();
+    yBound.clear();
 
     //
     //  Parent class uses this message to set the Results message
@@ -250,6 +307,10 @@ avtCompactnessQuery::PostExecute(void)
 //    Split part of the former Execute method into this method.
 //    Added new queries.
 //
+//    Jeremy Meredith, Wed Jul 23 13:34:18 PDT 2003
+//    Turned xBound and yBound into class data members, and made them
+//    STL vectors.  Made it collect the boundary points across all domains.
+//
 // ****************************************************************************
 
 void
@@ -319,37 +380,6 @@ avtCompactnessQuery::Execute1(vtkDataSet *ds, const int dom)
     }
 
     //
-    // Clean up
-    //
-    delete[] cellArea;
-    delete[] cellVol;
-    delete[] cellCentX;
-    delete[] cellCentY;
-    gzFilter2->Delete();
-}
-
-// ****************************************************************************
-//  Method: avtCompactnessQuery::Execute2
-//
-//  Purpose:
-//      Processes a single domain -- second pass.
-//
-//  Programmer: Jeremy Meredith
-//  Creation:   April  9, 2003
-//
-//  Modifications:
-//    Jeremy Meredith, Thu Apr 17 12:53:15 PDT 2003
-//    Split part of the former Execute method into this method.
-//    Added new queries.
-//
-// ****************************************************************************
-
-void
-avtCompactnessQuery::Execute2(vtkDataSet *ds, const int dom)
-{
-    int i,j;
-
-    //
     // Create the boundary edges and remove ghost zone edges
     //
     vtkGeometryFilter *geomFilter = vtkGeometryFilter::New();
@@ -382,22 +412,65 @@ avtCompactnessQuery::Execute2(vtkDataSet *ds, const int dom)
         debug1 << "Did not get poly data from ghost zone filter output\n";
         return;
     }
-    vtkPolyData *ps_1d_nogz = (vtkPolyData*)ds_1d_nogz;
+    vtkPolyData *pd_1d_nogz = (vtkPolyData*)ds_1d_nogz;
 
     //
     // Extract the boundary edges to a convenient format
     //
-    vtkPoints *pts1d = ps_1d_nogz->GetPoints();
+    vtkPoints *pts1d = pd_1d_nogz->GetPoints();
     int npts1d = pts1d->GetNumberOfPoints();
-    float *xBound = new float[npts1d];
-    float *yBound = new float[npts1d];
+    int oldBoundSize = xBound.size();
+    xBound.resize(oldBoundSize + npts1d);
+    yBound.resize(oldBoundSize + npts1d);
     for (i=0; i<npts1d; i++)
     {
         float pt[3];
         pts1d->GetPoint(i, pt);
-        xBound[i] = pt[0];
-        yBound[i] = pt[1];
+        xBound[oldBoundSize+i] = pt[0];
+        yBound[oldBoundSize+i] = pt[1];
     }
+
+    //
+    // Clean up
+    //
+    delete[] cellArea;
+    delete[] cellVol;
+    delete[] cellCentX;
+    delete[] cellCentY;
+    gzFilter1->Delete();
+    gzFilter2->Delete();
+    geomFilter->Delete();
+    boundaryFilter->Delete();
+}
+
+// ****************************************************************************
+//  Method: avtCompactnessQuery::Execute2
+//
+//  Purpose:
+//      Processes a single domain -- second pass.
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   April  9, 2003
+//
+//  Modifications:
+//    Jeremy Meredith, Thu Apr 17 12:53:15 PDT 2003
+//    Split part of the former Execute method into this method.
+//    Added new queries.
+//
+//    Jeremy Meredith, Wed Jul 23 13:31:16 PDT 2003
+//    Two things: 
+//    1.  Moved the boundary point calculation out of here so we are now
+//        collecting the points across all domains and processors.
+//    2.  Put in a hack to disallow points along y=0 as being part of
+//        the "Boundary", since we are assuming a rotation around y=0
+//        already.
+//
+// ****************************************************************************
+
+void
+avtCompactnessQuery::Execute2(vtkDataSet *ds, const int dom)
+{
+    int i,j;
 
     //
     // Remove ghost zones from the polygon dataset
@@ -431,6 +504,7 @@ avtCompactnessQuery::Execute2(vtkDataSet *ds, const int dom)
     //
     float *distOrigin   = new float[ncells2d];
     float *distBoundary = new float[ncells2d];
+    int npts1d = xBound.size();
     for (i = 0 ; i < ncells2d ; i++)
     {
         // distance to origin
@@ -440,6 +514,14 @@ avtCompactnessQuery::Execute2(vtkDataSet *ds, const int dom)
         distBoundary[i] = FLT_MAX;
         for (j = 0 ; j < npts1d ; j++)
         {
+            // semi-hack: ignore points along the y=0 line,
+            // and assume they are not part of a boundary.
+            // This is safe because we are already assuming
+            // a rotation around y=0, and thus in 3D the y=0 
+            // points have no surface area.
+            if (yBound[j] < 0.00001)
+                continue;
+
             float dx = cellCentX[i] - xBound[j];
             float dy = cellCentY[i] - yBound[j];
             float dist2 = dx*dx + dy*dy;
@@ -496,26 +578,21 @@ avtCompactnessQuery::Execute2(vtkDataSet *ds, const int dom)
     delete[] cellVol;
     delete[] cellCentX;
     delete[] cellCentY;
-    delete[] xBound;
-    delete[] yBound;
     delete[] distOrigin;
     delete[] distBoundary;
-    geomFilter->Delete();
-    boundaryFilter->Delete();
-    gzFilter1->Delete();
     gzFilter2->Delete();
 }
 
 
 
 // ****************************************************************************
-//  Method:  
+//  Method:  avtCompactnessQuery::Get2DTriangleArea
 //
 //  Purpose:
-//    
+//    Gets the area of a triangle.
 //
 //  Arguments:
-//    
+//    p0,p1,p2   three two-float arrays
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    April 12, 2003
@@ -533,13 +610,13 @@ avtCompactnessQuery::Get2DTriangleArea(float *p0, float *p1, float *p2)
 }
 
 // ****************************************************************************
-//  Method:  
+//  Method:  avtCompactnessQuery::Get2DCellArea
 //
 //  Purpose:
-//    
+//    Gets the area of a vtkCell, assuming it is 2D.
 //
 //  Arguments:
-//    
+//    cell       the vtkCell to get the area of
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    April 12, 2003
@@ -587,13 +664,14 @@ avtCompactnessQuery::Get2DCellArea(vtkCell *cell)
 }
 
 // ****************************************************************************
-//  Method:  
+//  Method:  avtCompactnessQuery::Get2DCellCentroid
 //
 //  Purpose:
-//    
+//    Gets the x,y centroid of a vtkCell.
 //
 //  Arguments:
-//    
+//    cell          (i)    the vtkCell to get the centroid of
+//    xCent,yCent   (o)    the x,y location of the centroid
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    April 12, 2003

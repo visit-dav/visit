@@ -172,6 +172,9 @@
 //    Brad Whitlock, Mon Jun 23 10:09:51 PDT 2003
 //    I added a button to refresh the file list.
 //
+//    Brad Whitlock, Mon Jul 14 11:47:34 PDT 2003
+//    I added menu options for saving and restoring the session.
+//
 // ****************************************************************************
 
 QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
@@ -239,6 +242,9 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
 //    file->setItemEnabled(id, false);
     id = file->insertItem(printIcon, tr("Print window"), this, SIGNAL(printWindow()));
     id = file->insertItem(tr("Set Print options . . ."), this, SIGNAL(activatePrintWindow()));
+    file->insertSeparator();
+    id = file->insertItem(tr("Restore session . . ."), this, SIGNAL(restoreSession()));
+    id = file->insertItem(tr("Save session . . ."), this, SIGNAL(saveSession()));
     file->insertSeparator();
     file->insertItem( tr("E&xit"), qApp, SLOT(quit()), CTRL+Key_X );
 

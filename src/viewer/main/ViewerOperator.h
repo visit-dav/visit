@@ -8,6 +8,7 @@
 
 // Forward declarations
 class AttributeSubject;
+class DataNode;
 class ViewerPlot;
 class ViewerOperatorPluginInfo;
 class avtPluginFilter;
@@ -58,6 +59,9 @@ class avtPluginFilter;
 //    Jeremy Meredith, Wed May 21 13:08:31 PDT 2003
 //    Added NeedsRecalculation.
 //
+//    Brad Whitlock, Wed Jul 16 17:08:10 PST 2003
+//    Added GetPluginID, CreateNode, SetFromNode.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerOperator
@@ -68,20 +72,24 @@ class VIEWER_API ViewerOperator
                    ViewerPlot *plot_);
     virtual ~ViewerOperator();
 
-    bool ExecuteEngineRPC() const;
     int  GetType() const;
+    const char *GetPluginID() const;
+    const char *GetName() const;
 
     void SetClientAttsFromOperator();
     void SetOperatorAttsFromClient();
     bool SetOperatorAtts(const AttributeSubject *toolAtts);
     const AttributeSubject *GetOperatorAtts() const;
-    const char * GetName() const;
 
     bool Removeable() const;
     bool Moveable() const;
     bool AllowsSubsequentOperators() const;
 
     bool NeedsRecalculation() const;
+    bool ExecuteEngineRPC() const;
+
+    void CreateNode(DataNode *);
+    void SetFromNode(DataNode *);
 
   protected:
     ViewerPlot                   *plot;

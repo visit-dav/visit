@@ -211,6 +211,9 @@ using std::string;
 //    Brad Whitlock, Mon Jun 30 12:30:18 PDT 2003
 //    I passed this pointer to ViewerConfigManager's constructor.
 //
+//    Brad Whitlock, Wed Jul 23 13:49:48 PST 2003
+//    Initialized the launchingCompoent flag.
+//
 // ****************************************************************************
 
 ViewerSubject::ViewerSubject(int *argc, char ***argv) : borders(), shift(),
@@ -220,6 +223,11 @@ ViewerSubject::ViewerSubject(int *argc, char ***argv) : borders(), shift(),
     // Enabled interruption checking by default.
     //
     interruptionEnabled = true;
+
+    //
+    // Set a flag indicating that we're not presently launching a component.
+    //
+    launchingComponent = false;
 
     //
     // Will be set by the -launchengine flag.
@@ -910,7 +918,10 @@ ViewerSubject::Connect(int *argc, char ***argv)
 //   
 //    Kathleen Bonnell, Fri Feb  7 09:09:47 PST 2003  
 //    Added registration of the authentication callback. (moved from viewer.C)
-//    
+//
+//    Brad Whitlock, Wed Jul 23 13:55:03 PST 2003
+//    I replaced AddInitialWindows with AddWindow.
+//
 // ****************************************************************************
 
 int
@@ -931,8 +942,8 @@ ViewerSubject::Execute()
         // Initialize the area that will be used to place the windows.
         InitializeWorkArea();
 
-        // Make the window manager add its initial number of windows.
-        windowManager->AddInitialWindows();
+        // Make the window manager add an initial window.
+        windowManager->AddWindow();
     }
 
     //
@@ -1962,16 +1973,19 @@ ViewerSubject::ClearStatus(const char *sender)
 //
 // Arguments:
 //   parentNode : The node to which the state is added.
+//   detailed   : Tells whether lots of details should be added to the nodes.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Jun 30 12:32:00 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Jul 18 10:47:20 PDT 2003
+//   Added detailed argument. Made query manager add its data.
+//
 // ****************************************************************************
 
 void
-ViewerSubject::CreateNode(DataNode *parentNode)
+ViewerSubject::CreateNode(DataNode *parentNode, bool detailed)
 {
     if(parentNode == 0)
         return;
@@ -1979,7 +1993,9 @@ ViewerSubject::CreateNode(DataNode *parentNode)
     DataNode *vsNode = new DataNode("ViewerSubject");
     parentNode->AddNode(vsNode);
 
-    ViewerWindowManager::Instance()->CreateNode(vsNode);
+    ViewerWindowManager::Instance()->CreateNode(vsNode, detailed);
+    if(detailed)
+        ViewerQueryManager::Instance()->CreateNode(vsNode);
 }
 
 // ****************************************************************************
@@ -1995,7 +2011,9 @@ ViewerSubject::CreateNode(DataNode *parentNode)
 // Creation:   Mon Jun 30 12:36:00 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Jul 22 10:12:59 PDT 2003
+//   Added code to let the query manager initialize itself.
+//
 // ****************************************************************************
 
 void
@@ -2010,6 +2028,7 @@ ViewerSubject::SetFromNode(DataNode *parentNode)
 
     // Let the other objects set themselves up using data from searchNode.
     ViewerWindowManager::Instance()->SetFromNode(searchNode);
+    ViewerQueryManager::Instance()->SetFromNode(searchNode);
 }
 
 // ****************************************************************************
@@ -3106,6 +3125,44 @@ ViewerSubject::WriteConfigFile()
 }
 
 // ****************************************************************************
+// Method: ViewerSubject::ExportEntireState
+//
+// Purpose: 
+//   Exports the viewer's entire state to an XML file.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jul 9 12:38:35 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerSubject::ExportEntireState()
+{
+    configMgr->ExportEntireState(viewerRPC.GetVariable());
+}
+
+// ****************************************************************************
+// Method: ViewerSubject::ImportEntireState
+//
+// Purpose: 
+//   Imports the viewer's entire state from an XML file.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jul 9 12:38:35 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerSubject::ImportEntireState()
+{
+     configMgr->ImportEntireState(viewerRPC.GetVariable());
+}
+
+// ****************************************************************************
 //  Method: ViewerSubject::SetAnimationAttributes
 //
 //  Purpose:
@@ -3937,6 +3994,12 @@ ViewerSubject::BlockSocketSignals(bool b)
 //    delete can happen using the window decorations which is outside our
 //    normal control paths.
 //
+//    Brad Whitlock, Fri Jul 18 12:20:06 PDT 2003
+//    I added code to handle updateFrame, setInteractiveMode, and
+//    activateTool. I also made the routine reschedule itself with the event
+//    loop and return early if the engine is executing or if we're launching
+//    a component.
+//
 // ****************************************************************************
 
 void
@@ -3985,6 +4048,18 @@ ViewerSubject::ProcessRendererMessage()
 
             window->RedrawWindow();
         }
+        //
+        // If the engine manager is executing, return early but tell the
+        // event loop to try to process the message again later.
+        //
+        else if(ViewerEngineManager::Instance()->InExecute() ||
+                launchingComponent)
+        {
+            // Add the message back into the buffer.
+            messageBuffer->AddString(msg);
+            QTimer::singleShot(400, this, SLOT(ProcessRendererMessage()));
+            return;
+        }
         else if (strncmp(msg, "deleteWindow", 12) == 0)
         {
             ViewerWindow *window=0;
@@ -3994,6 +4069,39 @@ ViewerSubject::ProcessRendererMessage()
 
             // Tell the viewer window manager to delete the window.
             ViewerWindowManager::Instance()->DeleteWindow(window);
+            ViewerWindowManager::Instance()->UpdateActions();
+        }
+        else if (strncmp(msg, "activateTool", 12) == 0)
+        {
+            ViewerWindow *window = 0;
+            int toolId = 0;
+            int offset = 15;  // = strlen("activateTool 0x");
+            sscanf (&msg[offset], "%p %d", &window, &toolId);
+
+            // Tell the viewer window manager to delete the window.
+            window->SetToolEnabled(toolId, true);
+            ViewerWindowManager::Instance()->UpdateActions();
+        }
+        else if (strncmp(msg, "setInteractionMode", 18) == 0)
+        {
+            ViewerWindow *window = 0;
+            int windowMode = 0;
+            int offset = 21;  // = strlen("setInteractionMode 0x");
+            sscanf (&msg[offset], "%p %d", &window, &windowMode);
+
+            // Tell the window to set its interaction mode.
+            window->SetInteractionMode(INTERACTION_MODE(windowMode));
+            ViewerWindowManager::Instance()->UpdateActions();
+        }
+        else if (strncmp(msg, "updateFrame", 11) == 0)
+        {
+            ViewerWindow *window = 0;
+
+            int offset = 14;  // = strlen("updateFrame 0x");
+            sscanf (&msg[offset], "%p", &window);
+
+            // Tell the window's animation to update.
+            window->GetAnimation()->UpdateFrame();
             ViewerWindowManager::Instance()->UpdateActions();
         }
     }
@@ -4010,12 +4118,15 @@ ViewerSubject::ProcessRendererMessage()
 // Creation:   Fri Sep 27 15:50:30 PST 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Jul 23 13:51:04 PST 2003
+//   Set the launchingComponent flag.
+//
 // ****************************************************************************
 
 void
 ViewerSubject::StartLaunchProgress()
 {
+    launchingComponent = true;
     checkParent->setEnabled(false);
 }
 
@@ -4030,12 +4141,15 @@ ViewerSubject::StartLaunchProgress()
 // Creation:   Fri Sep 27 15:50:30 PST 2002
 //
 // Modifications:
+//   Brad Whitlock, Wed Jul 23 13:51:04 PST 2003
+//   Set the launchingComponent flag.
 //   
 // ****************************************************************************
 
 void
 ViewerSubject::EndLaunchProgress()
 {
+    launchingComponent = false;
     checkParent->setEnabled(true);
 }
 
@@ -4153,6 +4267,9 @@ ViewerSubject::LaunchProgressCB(void *d, int stage)
 //
 //    Brad Whitlock, Tue Jul 1 17:00:30 PST 2003
 //    Added ExportColorTable.
+//
+//    Brad Whitlock, Wed Jul 9 12:35:44 PDT 2003
+//    Added ExportEntireState and ImportEntireState.
 //
 // ****************************************************************************
 
@@ -4350,6 +4467,12 @@ ViewerSubject::HandleViewerRPC()
         break;
     case ViewerRPC::ExportColorTableRPC:
         ExportColorTable();
+        break;
+    case ViewerRPC::ExportEntireStateRPC:
+        ExportEntireState();
+        break;
+    case ViewerRPC::ImportEntireStateRPC:
+        ImportEntireState();
         break;
     case ViewerRPC::MaxRPC:
         break;

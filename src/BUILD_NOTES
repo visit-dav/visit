@@ -185,6 +185,19 @@ cd VTK
 ../CMake-1.4.7/Source/cmake
 
 #
+# On linux systems you will want to avoid using runtime type identification
+# (rtti) to achieve maximum portability among different versions of linux.
+# Ideally this would be done by editing CMakeCache.txt, adding "-fno-rtti"
+# to the CMAKE_CXX_FLAGS string and running cmake, but alas, this doesn't
+# work.  The work around is to do the following:
+#    env CXXFLAGS="-fno-rtti" ../CMake-1.4.7/Source/cmake
+#
+# This indirectly turns off rtti, because VTK_NO_ANSI_STRING_STREAM is set
+# to 1.  This causes vtkOStrStreamWrapper.cxx to use <strstream> instead
+# of <sstream>, which requires rtti.
+#
+
+#
 # On tru64 systems using g++ 3.0.4, several files in the Imaging directory
 # will not compile because of an internal compiler error.  You will need to
 # comment out the code in the method ThreadedExecute (with "#if 0" as the

@@ -28,6 +28,9 @@
 //    Hank Childs, Fri Mar 15 17:40:02 PST 2002
 //    Account for new avtDatasetExaminer.
 //
+//    Hank Childs, Wed Jul 23 14:59:55 PDT 2003
+//    Account for not sampling VTK and AVT variables.
+//
 // ****************************************************************************
 
 void
@@ -61,7 +64,17 @@ avtDatasetToSamplePointsFilter::PreExecute(void)
 
     if (!leaveAsIs)
     {
-        sp->SetNumberOfVariables(vl.nvars);
+        int realNVars = 0;
+        for (int i = 0 ; i < vl.nvars ; i++)
+        {
+            const char *vname = vl.varnames[i].c_str();
+            if (strstr(vname, "vtk") != NULL)
+                continue;
+            if (strstr(vname, "avt") != NULL)
+                continue;
+            realNVars++;
+        }
+        sp->SetNumberOfVariables(realNVars);
     }
 }
 

@@ -3070,6 +3070,55 @@ ViewerProxy::WriteConfigFile()
 }
 
 // ****************************************************************************
+// Method: ViewerProxy::ExportEntireState
+//
+// Purpose: 
+//   Tells the viewer to dump its entire state to an XML file.
+//
+// Arguments:
+//   filename : The name of the file used to write the state.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jul 9 11:58:00 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerProxy::ExportEntireState(const std::string &filename)
+{
+    viewerRPC->SetRPCType(ViewerRPC::ExportEntireStateRPC);
+    viewerRPC->SetVariable(filename);
+    viewerRPC->Notify();
+}
+
+// ****************************************************************************
+// Method: ViewerProxy::ImportEntireState
+//
+// Purpose: 
+//   Tells the viewer to set its entire state using the values stored in
+//   the named file.
+//
+// Arguments:
+//   filename : The name of the file to read for the state.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jul 9 11:58:23 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerProxy::ImportEntireState(const std::string &filename)
+{
+    viewerRPC->SetRPCType(ViewerRPC::ImportEntireStateRPC);
+    viewerRPC->SetVariable(filename);
+    viewerRPC->Notify();
+}
+
+// ****************************************************************************
 // Method: ViewerProxy::SetView2D
 //
 // Purpose: 

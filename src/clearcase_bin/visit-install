@@ -144,9 +144,6 @@ while ($config == prompt)
          breaksw
    endsw
 end
-echo "config=$config"
-
-exit (1)
 
 if ($config != none && $config != open && $config != closed) then
    echo "Illegal configuration option, choices are none, open and closed."
@@ -236,11 +233,11 @@ cp distribution/visit/data/* $dir/data
 #
 # Set the link for the configuration file.
 #
-rm -f $dir/.visit/config
+rm -f $dir/$version+/.visit/config
 if ($config == open) then
-   ln -s visit-config-open $dir/.visit/config
+   ln -s visit-config-open $dir/$version+/.visit/config
 else if ($config == closed) then
-   ln -s visit-config-closed $dir/.visit/config
+   ln -s visit-config-closed $dir/$version+/.visit/config
 endif
 
 #

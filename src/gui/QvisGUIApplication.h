@@ -199,6 +199,9 @@ typedef std::vector<QvisWindowBase *> WindowBaseVector;
 //    Brad Whitlock, Mon Jun 23 11:42:54 PDT 2003
 //    I added RefreshFileList.
 //
+//    Brad Whitlock, Mon Jul 14 11:50:34 PDT 2003
+//    I added RestoreSession and SaveSession.
+//
 // ****************************************************************************
 
 class GUI_API QvisGUIApplication : public QObject, public ConfigManager, public GUIBase
@@ -250,6 +253,8 @@ private slots:
     void SetPrinterOptions();
     void PrintWindow();
     void RefreshFileList();
+    void RestoreSession();
+    void SaveSession();
 private:
     bool                         viewerIsAlive;
 
@@ -331,6 +336,8 @@ private:
 
     // File to load on startup.
     QualifiedFilename            loadFile;
+
+    int                          sessionCount;
 };
 
 #endif

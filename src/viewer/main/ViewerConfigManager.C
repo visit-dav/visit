@@ -4,6 +4,7 @@
 // For the state objects we're going to save out/read in.
 #include <AttributeSubject.h>
 #include <ViewerSubject.h>
+#include <ViewerMessaging.h>
 
 // ****************************************************************************
 //  Method: ViewerConfigManager::ViewerConfigManager
@@ -36,6 +37,7 @@
 ViewerConfigManager::ViewerConfigManager(ViewerSubject *vs) : ConfigManager()
 {
     parent = vs;
+    writeDetail = false;
 }
 
 // ****************************************************************************
@@ -114,16 +116,19 @@ ViewerConfigManager::WriteConfigFile(const char *filename)
     DataNode *viewerNode = new DataNode("VIEWER");
     visitNode->AddNode(viewerNode);
 
-    // Add the attributes under the "VIEWER" node.
-    std::vector<AttributeSubject *>::iterator pos;
+    // Create a "DEFAULT_VALUES" node and add it under "VIEWER".
+    DataNode *defaultsNode = new DataNode("DEFAULT_VALUES");
+    viewerNode->AddNode(defaultsNode);
 
+    // Add the attributes under the "DEFAULT_VALUES" node.
+    std::vector<AttributeSubject *>::iterator pos;
     for (pos = subjectList.begin(); pos != subjectList.end(); ++pos)
     {
-        (*pos)->CreateNode(viewerNode, false);
+        (*pos)->CreateNode(defaultsNode, false);
     }
 
-    // Let the parent write its data.
-    parent->CreateNode(viewerNode);
+    // Let the parent write its data to the "VIEWER" node.
+    parent->CreateNode(viewerNode, writeDetail);
 
     // Try to open the output file.
     if((fp = fopen(filename, "wb")) == 0)
@@ -230,6 +235,12 @@ ViewerConfigManager::ProcessConfigSettings(DataNode *node)
     if(viewerNode == 0)
         return;
 
+    // Get the defaults node. If it cannot be found, use the VIEWER node so
+    // we still support older config files.
+    DataNode *defaultsNode = visitRoot->GetNode("DEFAULT_VALUES");
+    if(defaultsNode == 0)
+        defaultsNode = viewerNode;
+
     // Get the version
     DataNode *version = visitRoot->GetNode("Version");
     if(version != 0)
@@ -239,7 +250,7 @@ ViewerConfigManager::ProcessConfigSettings(DataNode *node)
         std::vector<AttributeSubject *>::iterator pos;
         for (pos = subjectList.begin(); pos != subjectList.end(); ++pos)
         {
-            (*pos)->ProcessOldVersions(viewerNode, configVersion.c_str());
+            (*pos)->ProcessOldVersions(defaultsNode, configVersion.c_str());
         }
     }
 
@@ -247,7 +258,7 @@ ViewerConfigManager::ProcessConfigSettings(DataNode *node)
     std::vector<AttributeSubject *>::iterator pos;
     for (pos = subjectList.begin(); pos != subjectList.end(); ++pos)
     {
-        (*pos)->SetFromNode(viewerNode);
+        (*pos)->SetFromNode(defaultsNode);
     }
 }
 
@@ -315,5 +326,84 @@ void
 ViewerConfigManager::Add(AttributeSubject *subject)
 {
     subjectList.push_back(subject);
+}
+
+// ****************************************************************************
+// Method: ViewerConfigManager::ExportEntireState
+//
+// Purpose: 
+//   Exports the viewer's entire state to an XML file.
+//
+// Arguments:
+//   filename : The name of the file to which the state is exported.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jul 9 13:06:12 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerConfigManager::ExportEntireState(const std::string &filename)
+{
+    writeDetail = true;
+    WriteConfigFile(filename.c_str());
+    writeDetail = false;
+
+    std::string str("VisIt exported the current session to: ");
+    str += filename;
+    str += ".";
+    Message(str.c_str());
+}
+
+// ****************************************************************************
+// Method: ViewerConfigManager::ImportEntireState
+//
+// Purpose: 
+//   Imports the entire state from the named file.
+//
+// Arguments:
+//   filename : The state file to use.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jul 9 13:06:37 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerConfigManager::ImportEntireState(const std::string &filename)
+{
+    DataNode *node = ReadConfigFile(filename.c_str());
+    if(node)
+    {
+        // Make the hooked up objects get their settings.
+        ProcessConfigSettings(node);
+
+        // Get the VisIt node.
+        DataNode *visitRoot = node->GetNode("VisIt");
+        if(visitRoot != 0)
+        {
+            // Get the viewer node.
+            DataNode *viewerNode = visitRoot->GetNode("VIEWER");
+            if(viewerNode != 0)
+            {
+                // Let the parent read its settings.
+                parent->SetFromNode(viewerNode);
+
+                std::string str("VisIt imported an old session from: ");
+                str += filename;
+                str += ".";
+                Message(str.c_str());
+                return;
+            }
+        }
+    }
+
+    std::string str("VisIt could not import a session from the file: " +
+                    filename);
+    Warning(str.c_str());
 }
 

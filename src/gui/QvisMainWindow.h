@@ -93,6 +93,9 @@ class WindowInformation;
 //   Brad Whitlock, Mon Jun 23 10:14:54 PDT 2003
 //   I added refreshFileList.
 //
+//   Brad Whitlock, Mon Jul 14 11:46:45 PDT 2003
+//   I added restoreSession, saveSession signals.
+//
 // ****************************************************************************
 
 class GUI_API QvisMainWindow : public QvisWindowBase, public SimpleObserver
@@ -156,6 +159,8 @@ signals:
     void printWindow();
 
     void refreshFileList();
+    void saveSession();
+    void restoreSession();
 public slots:
     void unreadOutput(bool);
 protected:

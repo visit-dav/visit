@@ -197,6 +197,7 @@ then
    if [ $test = no ]
    then
       scp kickit:/var/tmp/$user/kickit/visitbuild/visit$ver2.linux.tar.gz .
+      scp kickit:/var/tmp/$user/kickit/visitbuild/visit$ver2.linux_suse.tar.gz .
       scp visit$ver2.linux.tar.gz kickit:
       scp visit-install kickit:
       scp kickit kickit:kickit_install

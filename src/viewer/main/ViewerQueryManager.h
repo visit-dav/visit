@@ -13,7 +13,7 @@
 #include <vector>
 
 // Forward declarations.
-
+class DataNode;
 class GlobalLineoutAttributes;
 class Line;
 class LineoutListItem;
@@ -91,6 +91,9 @@ class avtToolInterface;
 //    Kathleen Bonnell, Wed Jul  9 08:58:27 PDT 2003 
 //    Add method ViewDimChanged. 
 //
+//    Brad Whitlock, Tue Jul 22 10:14:14 PDT 2003
+//    Added methods that let the query manager write its data to a config file.
+//
 // ****************************************************************************
     
 class VIEWER_API ViewerQueryManager 
@@ -146,6 +149,9 @@ class VIEWER_API ViewerQueryManager
     void            StartPickMode(const bool, const bool);
     void            StopPickMode();
     void            ViewDimChanged(ViewerWindow *);
+
+    void            CreateNode(DataNode *);
+    void            SetFromNode(DataNode *);
 
   protected:
                     ViewerQueryManager();

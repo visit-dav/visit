@@ -6,6 +6,7 @@
 #define VIEWER_ANIMATION_H
 #include <viewer_exports.h>
 
+class DataNode;
 class ViewerPlotList;
 class ViewerWindow;
 
@@ -66,6 +67,9 @@ class ViewerWindow;
 //    I removed the concept of database time state since it's really a
 //    plot-oriented concept and not related to the animation.
 //
+//    Brad Whitlock, Wed Jul 16 13:05:27 PST 2003
+//    Added CreateNode and SetFromNode.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerAnimation
@@ -104,6 +108,9 @@ class VIEWER_API ViewerAnimation
     bool GetPipelineCaching() const;
 
     bool SetWindowAtts(const char *hostName);
+
+    void CreateNode(DataNode *);
+    bool SetFromNode(DataNode *);
 
   private:
     int             nFrames;

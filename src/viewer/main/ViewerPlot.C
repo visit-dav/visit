@@ -19,6 +19,7 @@
 #include <AttributeSubject.h>
 #include <AttributeSubjectMap.h>
 #include <DatabaseAttributes.h>
+#include <OperatorPluginManager.h>
 #include <PickAttributes.h>
 #include <PlotPluginInfo.h>
 #include <PlotQueryInfo.h>
@@ -31,6 +32,7 @@
 #include <ViewerSubject.h>
 
 #include <DebugStream.h>
+#include <DataNode.h>
 #include <InvalidLimitsException.h>
 #include <NoInputException.h>
 #include <ImproperUseException.h>
@@ -1186,9 +1188,12 @@ ViewerPlot::SetErrorFlag(bool val)
 //    I got rid of a bad check that used an actual operator name. I added
 //    code to set the active operator index.
 //
+//    Brad Whitlock, Thu Jul 17 10:05:04 PDT 2003
+//    I made it return the index of the new operator in the operators array.
+//
 // ****************************************************************************
 
-void
+int
 ViewerPlot::AddOperator(const int type)
 {
     if (nOperators > 0)
@@ -1199,7 +1204,7 @@ ViewerPlot::AddOperator(const int type)
             SNPRINTF(msg, 200, "VisIt cannot apply other operators after a "
                      "%s operator.", operators[nOperators-1]->GetName());
             Error(msg);
-            return;
+            return -1;
         }
     }
 
@@ -1242,6 +1247,8 @@ ViewerPlot::AddOperator(const int type)
     // Clear the actor cache.
     //
     ClearActors();
+
+    return nOperators-1;
 }
 
 // ****************************************************************************
@@ -3429,5 +3436,187 @@ ViewerPlot::CheckCache(const int f0, const int f1, const bool force)
     {
         queryAtts->SetChangeType(PlotQueryInfo::PlotAtts);
         queryAtts->Notify();
+    }
+}
+// ****************************************************************************
+// Method: ViewerPlot::CreateNode
+//
+// Purpose: 
+//   Lets the plot save its information for a config file's DataNode.
+//
+// Arguments:
+//   parentNode : The node to which we're saving information.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jul 16 13:09:04 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerPlot::CreateNode(DataNode *parentNode)
+{
+    if(parentNode == 0)
+        return;
+
+    DataNode *plotNode = new DataNode("ViewerPlot");
+    parentNode->AddNode(plotNode);
+
+    //
+    // Add information specific to the plot.
+    //
+    plotNode->AddNode(new DataNode("spatialExtentsType",
+        avtExtentType_ToString(spatialExtentsType)));
+    plotNode->AddNode(new DataNode("bgColor", bgColor, 3));
+    plotNode->AddNode(new DataNode("fgColor", fgColor, 3));
+    plotNode->AddNode(new DataNode("expandedFlag", expandedFlag));
+
+    //
+    // Store the current plot attributes.
+    //
+    curPlotAtts->CreateNode(plotNode, false);
+
+    //
+    // Store the operators
+    //
+    if(nOperators > 0)
+    {
+        DataNode *operatorNode = new DataNode("Operators");
+        operatorNode->AddNode(new DataNode("activeOperatorIndex",
+            activeOperatorIndex));
+
+        for(int i = 0; i < nOperators; ++i)
+        {
+            char tmp[20];
+            SNPRINTF(tmp, 20, "operator%02d", i);
+            DataNode *opNode = new DataNode(std::string(tmp));
+            operatorNode->AddNode(opNode);
+            opNode->AddNode(new DataNode("operatorType",
+                std::string(operators[i]->GetPluginID())));
+            operators[i]->CreateNode(opNode);
+        }
+
+        plotNode->AddNode(operatorNode);
+    }
+
+    //
+    // Store the keyframed plot attributes.
+    //
+    DataNode *plotKFNode = new DataNode("plotKeyframes");
+    if(plotAtts->CreateNode(plotKFNode))
+        plotNode->AddNode(plotKFNode);
+    else
+        delete plotKFNode;
+
+    //
+    // Store the keyframed database attributes.
+    //
+    DataNode *databaseKFNode = new DataNode("databaseKeyframes");
+    if(databaseAtts->CreateNode(databaseKFNode))
+        plotNode->AddNode(databaseKFNode);
+    else
+        delete databaseKFNode;
+}
+
+// ****************************************************************************
+// Method: ViewerPlot::SetFromNode
+//
+// Purpose: 
+//   Lets the plot reset its values from a config file.
+//
+// Arguments:
+//   parentNode : The config file information DataNode pointer.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jul 16 13:10:51 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerPlot::SetFromNode(DataNode *parentNode)
+{
+    DataNode *node;
+
+    if(parentNode == 0)
+        return;
+
+    DataNode *plotNode = parentNode->GetNode("ViewerPlot");
+    if(plotNode == 0)
+        return;
+
+    // Read in some plot attributes.
+    if((node = plotNode->GetNode("spatialExtentsType")) != 0)
+    {
+        avtExtentType t;
+        if(avtExtentType_FromString(node->AsString(), t))
+            SetSpatialExtentsType(t);
+    }
+    if((node = plotNode->GetNode("bgColor")) != 0)
+        SetBackgroundColor(node->AsDoubleArray());
+    if((node = plotNode->GetNode("fgColor")) != 0)
+        SetForegroundColor(node->AsDoubleArray());
+    if((node = plotNode->GetNode("expandedFlag")) != 0)
+        expandedFlag = node->AsBool();
+
+    // Read in the current plot attributes.
+    curPlotAtts->SetFromNode(plotNode);
+    SetPlotAtts(curPlotAtts);
+
+    //
+    // Read in the plot keyframes.
+    //
+    if((node = plotNode->GetNode("plotKeyframes")) != 0)
+        plotAtts->SetFromNode(node, curPlotAtts);
+
+    //
+    // Read in the database keyframes.
+    //
+    if((node = plotNode->GetNode("databaseKeyframes")) != 0)
+        databaseAtts->SetFromNode(node, curDatabaseAtts);
+
+    //
+    // Add operators.
+    //
+    DataNode *operatorNode = plotNode->GetNode("Operators");
+    if(operatorNode)
+    {
+        bool addOperator = true;
+        for(int i = 0; addOperator; ++i)
+        {
+            char key[20];
+            SNPRINTF(key, 20, "operator%02d", i);
+            DataNode *opNode = operatorNode->GetNode(key);
+            if(opNode)
+            {
+                //
+                // Add the operator.
+                //
+                if((node = opNode->GetNode("operatorType")) != 0) 
+                {
+                    int type = OperatorPluginManager::Instance()->
+                        GetEnabledIndex(node->AsString());
+                    if(type != -1)
+                    {
+                        int index = AddOperator(type);
+
+                        // Let the operator finish initializing itself.
+                        if(index != -1)
+                            operators[index]->SetFromNode(opNode);
+                    }
+                }
+            }
+            else
+                addOperator = false;
+        }
+
+        // Now that operators are created, set the active operator index.
+        if((node = operatorNode->GetNode("activeOperatorIndex")) != 0)
+        {
+            if(node->AsInt() < nOperators && node->AsInt() >= 0)
+                activeOperatorIndex = node->AsInt();
+        }
     }
 }

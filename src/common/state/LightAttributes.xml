@@ -5,7 +5,7 @@
       Object
       Camera
     </Enum>
-    <Field name="enabledFlag" type="bool">true</Field>
+    <Field name="enabledFlag" type="bool">false</Field>
     <Field name="type" type="enum" subtype="LightType">Camera</Field>
     <Field name="direction" type="doubleArray" length="3">0. 0. -1.</Field>
     <Field name="color" type="color">255 255 255 255</Field>

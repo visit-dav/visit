@@ -14,6 +14,7 @@
 #include <avtDatabaseMetaData.h>
 #include <avtToolInterface.h>
 #include <avtTypes.h>
+#include <DataNode.h>
 #include <DebugStream.h>
 #include <Line.h>
 #include <LineoutListItem.h>
@@ -1946,3 +1947,77 @@ ViewerQueryManager::ViewDimChanged(ViewerWindow *modWin)
     }
 } 
 
+// ****************************************************************************
+// Method: ViewerQueryManager::CreateNode
+//
+// Purpose: 
+//   Lets the query manager add its data to the tree that gets written to
+//   the config file.
+//
+// Arguments:
+//   parentNode : The node on which the query manager can add its data.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jul 22 10:15:14 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerQueryManager::CreateNode(DataNode *parentNode)
+{
+    if(parentNode == 0)
+        return;
+
+    DataNode *mgrNode = new DataNode("ViewerQueryManager");
+    parentNode->AddNode(mgrNode);
+
+    //
+    // Add information about the ViewerQueryManager.
+    //
+    mgrNode->AddNode(new DataNode("baseDesignator", baseDesignator));
+    mgrNode->AddNode(new DataNode("cycleDesignator", cycleDesignator));
+    mgrNode->AddNode(new DataNode("colorIndex", colorIndex));
+}
+
+// ****************************************************************************
+// Method: ViewerQueryManager::SetFromNode
+//
+// Purpose: 
+//   Lets the query manager initialize itself from data read in from the
+//   config file.
+//
+// Arguments:
+//   parentNode : The node where the query manager's data is stored.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jul 22 10:16:07 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerQueryManager::SetFromNode(DataNode *parentNode)
+{
+    if(parentNode == 0)
+        return;
+
+    DataNode *mgrNode = parentNode->GetNode("ViewerQueryManager");
+    if(mgrNode == 0)
+        return;
+
+    DataNode *node;
+    if((node = mgrNode->GetNode("cycleDesignator")) != 0)
+        cycleDesignator = node->AsBool();
+
+    if((node = mgrNode->GetNode("baseDesignator")) != 0)
+    {
+        baseDesignator = node->AsChar() - 1;
+        UpdateDesignator();
+    }
+
+    if((node = mgrNode->GetNode("colorIndex")) != 0)
+        colorIndex = node->AsInt();
+}

@@ -2,6 +2,7 @@
 #define VIEWER_CONFIGURATION_MANAGER_H
 #include <viewer_exports.h>
 #include <ConfigManager.h>
+#include <string>
 
 // Forward declarations
 class AttributeSubject;
@@ -47,6 +48,9 @@ class ViewerSubject;
 //    Brad Whitlock, Mon Jun 30 12:24:43 PDT 2003
 //    I made it require a pointer to its parent ViewerSubject.
 //
+//    Brad Whitlock, Wed Jul 9 12:44:08 PDT 2003
+//    I added methods to export the entire state and import the entire state.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerConfigManager : public ConfigManager
@@ -63,7 +67,11 @@ public:
 
     void Add(AttributeSubject *subject);
 
+    void ExportEntireState(const std::string &filename);
+    void ImportEntireState(const std::string &filename);
+
 private:
+    bool                             writeDetail;
     std::vector<AttributeSubject *>  subjectList;
     ViewerSubject                   *parent;
 };

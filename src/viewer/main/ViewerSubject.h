@@ -265,6 +265,9 @@ class MaterialAttributes;
 //    Brad Whitlock, Tue Jul 1 16:59:00 PST 2003
 //    Added ExportColorTable.
 //
+//    Brad Whitlock, Wed Jul 9 12:33:40 PDT 2003
+//    Added ExportEntireState and ImportEntireState.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerSubject : public QObject
@@ -302,7 +305,7 @@ public:
     void EndLaunchProgress();
     void BlockSocketSignals(bool);
 
-    void CreateNode(DataNode *node);
+    void CreateNode(DataNode *node, bool detailed);
     void SetFromNode(DataNode *node);
 private:
     void ProcessEvents();
@@ -341,6 +344,8 @@ private:
     void UpdateColorTable();
     void ExportColorTable();
     void WriteConfigFile();
+    void ExportEntireState();
+    void ImportEntireState();
     void SetAnnotationAttributes();
     void SetDefaultAnnotationAttributes();
     void ResetAnnotationAttributes();
@@ -400,6 +405,7 @@ private:
     QApplication          *mainApp;
     QSocketNotifier       *checkParent;
     QSocketNotifier       *checkRenderer;
+    bool                   launchingComponent;
     bool                   interruptionEnabled;
     std::string            launchEngineAtStartup;
     bool                   blockSocketSignals;

@@ -4,6 +4,7 @@
 
 #include <AttributeSubject.h>
 #include <AttributeSubjectMap.h>
+#include <DataNode.h>
 
 #include <limits.h>
 
@@ -23,6 +24,11 @@ AttributeSubjectMap::AttributeSubjectMap()
     maxIndices = MAP_INCR;
     atts       = new AttributeSubject*[MAP_INCR];
     indices    = new int[MAP_INCR];
+    for(int i = 0; i < MAP_INCR; ++i)
+    {
+        atts[i] = 0;
+        indices[i] = 0;
+    }
 }
 
 // ****************************************************************************
@@ -133,6 +139,10 @@ AttributeSubjectMap::SetAtts(const int index, const AttributeSubject *attr)
 //  Programmer: Eric Brugger
 //  Creation:   November 15, 2002
 //
+//  Modifications:
+//    Brad Whitlock, Wed Jul 23 11:25:12 PDT 2003
+//    Made it use NewInstance.
+//
 // ****************************************************************************
 
 void
@@ -171,8 +181,7 @@ AttributeSubjectMap::SetAtts(const int index, const AttributeSubject *attr,
             atts[j]  = atts[j-1];
             indices[j] = indices[j-1];
         }
-        atts[i] = attr->CreateCompatible(attr->TypeName());
-        atts[i]->CopyAttributes(attr);
+        atts[i] = attr->NewInstance(true);
         indices[i] = index;
         nIndices++;
     }
@@ -209,23 +218,27 @@ void
 AttributeSubjectMap::GetAtts(const int index, AttributeSubject *attr) const
 {
     int i;
-    for (i = 0; i < nIndices && indices[i] <= index; ++i) ;
- 
-    if (i == 0)
-    {
-        attr->CopyAttributes(atts[0]);
-    }
-    else if (i == nIndices)
-    {
-        attr->CopyAttributes(atts[nIndices-1]);
-    }
-    else
-    {
-        int i0 = indices[i-1];
-        int i1 = indices[i];
-        double f = (double) (index - i0) / (double) (i1 - i0);
 
-        attr->InterpolateLinear(atts[i-1], atts[i], f);
+    if(nIndices > 0)
+    {
+        for (i = 0; i < nIndices && indices[i] <= index; ++i) ;
+
+        if (i == 0)
+        {
+            attr->CopyAttributes(atts[0]);
+        }
+        else if (i == nIndices)
+        {
+            attr->CopyAttributes(atts[nIndices-1]);
+        }
+        else
+        {
+            int i0 = indices[i-1];
+            int i1 = indices[i];
+            double f = (double) (index - i0) / (double) (i1 - i0);
+
+            attr->InterpolateLinear(atts[i-1], atts[i], f);
+        }
     }
 }
 
@@ -247,6 +260,8 @@ AttributeSubjectMap::ClearAtts()
     for (i = 0; i < nIndices; ++i)
     {
         delete atts[i];
+        atts[i] = 0;
+        indices[i] = 0;
     }
 
     nIndices = 0;
@@ -603,4 +618,123 @@ AttributeSubjectMap::ResizeMap(const int newSize)
     indices = indices2;
 
     maxIndices = newSize;
+}
+
+// ****************************************************************************
+// Method: AttributeSubjectMap::CreateNode
+//
+// Purpose: 
+//   Saves the AttributeSubjectMap to a DataNode.
+//
+// Arguments:
+//   parentNode : The node to which the map will be saved.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jul 22 11:32:17 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+AttributeSubjectMap::CreateNode(DataNode *parentNode)
+{
+    bool retval = false;
+
+    if(parentNode == 0)
+        return retval;
+
+    if(nIndices > 0)
+    {
+        DataNode *mapNode = new DataNode("AttributeSubjectMap");
+        parentNode->AddNode(mapNode);
+
+        // Add the indices.
+        intVector ids;
+        int i;
+        for(i = 0; i < nIndices; ++i)
+            ids.push_back(indices[i]);
+        mapNode->AddNode(new DataNode("indices", ids));
+
+        // Add the attributes.
+        DataNode *attNode = new DataNode("attributes");
+        mapNode->AddNode(attNode);
+        for(i = 0; i < nIndices; ++i)
+            atts[i]->CreateNode(attNode, true);
+
+        retval = true;
+    }
+
+    return retval;
+}
+
+// ****************************************************************************
+// Method: AttributeSubjectMap::SetFromNode
+//
+// Purpose: 
+//   Initializes the map using the data in the config file.
+//
+// Arguments:
+//   parentNode : The data node that will be used to initialize the map.
+//   factoryObj : The object that we use to create new instances of attributes.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jul 22 11:33:21 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+AttributeSubjectMap::SetFromNode(DataNode *parentNode,
+    AttributeSubject *factoryObj)
+{
+    //
+    // Clear the attributes.
+    //
+    ClearAtts();
+
+    //
+    // Look for the required nodes.
+    //
+    if(parentNode == 0)
+        return;
+
+    DataNode *mapNode = parentNode->GetNode("AttributeSubjectMap");
+    if(mapNode == 0)
+        return;
+
+    DataNode *indicesNode = mapNode->GetNode("indices");
+    if(indicesNode == 0)
+        return;
+
+    DataNode *attsNode = mapNode->GetNode("attributes");
+    if(attsNode == 0)
+        return;
+
+    //
+    // Now that we have all of the nodes that we need, read in the objects
+    // and add them to the "map".
+    //
+    const intVector &iv = indicesNode->AsIntVector();
+    DataNode **attsObjects = attsNode->GetChildren();
+    const int numAtts = attsNode->GetNumChildren();
+    for(int i = 0; i < iv.size(); ++i)
+    {
+        if(i < numAtts)
+        {
+            // Create a fresh AttributeSubject so that its fields are
+            // initialized to the default values and not those last read in.
+            AttributeSubject *reader = factoryObj->NewInstance(false);
+
+            // Initialize the object using the data node.
+            reader->SetFromNode(attsObjects[i]);
+
+            // Add the object to the map.
+            SetAtts(iv[i], reader);
+
+            // delete the reader object.
+            delete reader;
+        }
+    }
 }

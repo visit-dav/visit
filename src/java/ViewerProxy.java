@@ -70,6 +70,9 @@ import java.util.Vector;
 //   Brad Whitlock, Tue Jul 1 16:49:48 PST 2003
 //   I added a method to tell the viewer to export a colortable.
 //
+//   Brad Whitlock, Wed Jul 9 12:30:58 PDT 2003
+//   I added methods to tell the viewer to export and import its entire state.
+//
 // ****************************************************************************
 
 public class ViewerProxy implements SimpleObserver
@@ -798,6 +801,22 @@ public class ViewerProxy implements SimpleObserver
     public boolean WriteConfigFile()
     {
         rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_WRITECONFIGFILERPC);
+        rpc.Notify();
+        return synchronous ? Synchronize() : true;
+    }
+
+    public boolean ExportEntireState(String filename)
+    {
+        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_EXPORTENTIRESTATERPC);
+        rpc.SetVariable(filename);
+        rpc.Notify();
+        return synchronous ? Synchronize() : true;
+    }
+
+    public boolean ImportEntireState(String filename)
+    {
+        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_IMPORTENTIRESTATERPC);
+        rpc.SetVariable(filename);
         rpc.Notify();
         return synchronous ? Synchronize() : true;
     }

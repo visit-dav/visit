@@ -6,6 +6,7 @@
 #include <qapplication.h>
 #include <qcolor.h>
 #include <qcursor.h>
+#include <qfiledialog.h>
 #include <qprintdialog.h>
 #include <qprinter.h>
 #include <qsocketnotifier.h>
@@ -238,6 +239,7 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv) :
     // Default values.
     localOnly = false;
     readConfig = true;
+    sessionCount = 0;
 
     // Create the viewer, statusSubject, and fileServer for GUIBase.
     viewer = new ViewerProxy;
@@ -1350,6 +1352,9 @@ QvisGUIApplication::AddViewerSpaceArguments(int orientation)
 //    Brad Whitlock, Wed Apr 9 12:46:06 PDT 2003
 //    I made the plot list widget capable of opening the subset window.
 //
+//    Brad Whitlock, Mon Jul 14 11:51:54 PDT 2003
+//    I connected the main window to RestoreSession and SaveSession slots.
+//
 // ****************************************************************************
 
 void
@@ -1380,6 +1385,8 @@ QvisGUIApplication::CreateWindows(int orientation)
     connect(mainWin->GetPlotManager(), SIGNAL(activateOperatorWindow(int)),
             this, SLOT(ActivateOperatorWindow(int)));
     connect(mainWin, SIGNAL(refreshFileList()), this, SLOT(RefreshFileList()));
+    connect(mainWin, SIGNAL(restoreSession()), this, SLOT(RestoreSession()));
+    connect(mainWin, SIGNAL(saveSession()), this, SLOT(SaveSession()));
     mainWin->ConnectMessageAttr(&message);
     mainWin->ConnectGUIMessageAttributes();
     mainWin->ConnectGlobalAttributes(viewer->GetGlobalAttributes());
@@ -1862,6 +1869,44 @@ QvisGUIApplication::WritePluginWindowConfigs(DataNode *parentNode)
 }
 
 // ****************************************************************************
+// Method: QvisGUIApplication::SaveSession
+//
+// Purpose: 
+//   This is a Qt slot function that tells the viewer to save out all of its
+//   state to an XML file.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Jul 14 11:52:52 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisGUIApplication::SaveSession()
+{
+    // Create the name of a VisIt session file to use.
+    QString defaultFile; defaultFile.sprintf("%svisit%04d.session",
+          GetUserVisItDirectory().c_str(), sessionCount);
+
+    // Get the name of the file that the user saved.
+    QString fileName = QFileDialog::getSaveFileName(defaultFile,
+        "VisIt session (*.session)");
+
+    // If the user chose to save a file, tell the viewer to write its state
+    // to that file.
+    if(!fileName.isNull())
+    {
+        ++sessionCount;
+        viewer->ExportEntireState(fileName.latin1());
+
+        // Write the gui part of the session with a ".gui" extension.
+        fileName += ".gui";
+        WriteConfigFile(fileName.latin1());
+    }
+}
+
+// ****************************************************************************
 // Method: QvisGUIApplication::ReadConfigFile
 //
 // Purpose: 
@@ -1935,6 +1980,61 @@ QvisGUIApplication::ReadConfigFile(const char *filename)
     viewer->GetAppearanceAttributes()->SetFromNode(guiNode);
 
     return node;
+}
+
+// ****************************************************************************
+// Method: QvisGUIApplication::RestoreSession
+//
+// Purpose: 
+//   This is a Qt slot function that allows the user to choose the name of
+//   a VisIt session to restore and then tells the viewer to restore the
+//   session using the file.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Jul 14 11:54:10 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisGUIApplication::RestoreSession()
+{
+    // Get the name of the session to load.
+    QString s(QFileDialog::getOpenFileName(GetUserVisItDirectory().c_str(),
+              "VisIt session (*.session)"));
+
+    // If the user chose a file, tell the viewer to import that session file.
+    if(!s.isEmpty())
+    {
+        // Have the viewer read in its part of the config.
+        std::string filename(s.latin1());
+        viewer->ImportEntireState(filename);
+
+        // Make the gui read in its part of the config.
+        filename += ".gui";
+        DataNode *node = ReadConfigFile(filename.c_str());
+        if(node)
+        {
+            ProcessConfigSettings(node, false);
+            ProcessWindowConfigSettings(node); 
+
+            // Look for the VisIt tree.
+            DataNode *visitRoot = node->GetNode("VisIt");
+            if(visitRoot != 0)
+            {
+                // Get the gui node.
+                DataNode *guiNode = visitRoot->GetNode("GUI");
+                if(guiNode != 0)
+                {
+                    viewer->GetAppearanceAttributes()->SetFromNode(guiNode);
+                    CustomizeAppearance(true);
+                }
+            }
+
+            delete node;
+        }
+    }
 }
 
 // ****************************************************************************

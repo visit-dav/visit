@@ -839,6 +839,10 @@ QvisKeyframeWindow::UpdatePlotList()
 //    Brad Whitlock, Thu Mar 20 11:08:33 PDT 2003
 //    I updated the attribute numbering for GlobalAttributes.
 //
+//    Brad Whitlock, Wed Jul 23 15:21:13 PST 2003
+//    I made the Keyframing enabled checkbox get set when the keyframing
+//    attributes are updated.
+//
 // ****************************************************************************
 
 void
@@ -861,7 +865,10 @@ QvisKeyframeWindow::UpdateWindow(bool doAll)
 
             switch(i)
             {
-              case 0: //enabled
+            case 0: //enabled
+                keyframeEnabledCheck->blockSignals(true);
+                keyframeEnabledCheck->setChecked(kfAtts->GetEnabled());
+                keyframeEnabledCheck->blockSignals(false);
                 break;
             }
         }

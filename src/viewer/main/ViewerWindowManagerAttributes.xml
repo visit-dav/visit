@@ -1,16 +1,5 @@
 <?xml version="1.0"?>
   <Attribute name="ViewerWindowManagerAttributes" purpose="This class contains the attributes that dictate where viewer windows are positioned, etc." persistent="true" codefile="ViewerWindowManagerAttributes.code">
-    <Field name="nWindows" label="nWindows" type="int">
-      1
-    </Field>
-    <Field name="windowX" label="windowX" type="intVector">
-    </Field>
-    <Field name="windowY" label="windowY" type="intVector">
-    </Field>
-    <Field name="windowWidth" label="windowWidth" type="intVector">
-    </Field>
-    <Field name="windowHeight" label="windowHeight" type="intVector">
-    </Field>
     <Field name="actionConfigurations" label="actionConfigurations" type="attVector" subtype="ActionGroupDescription" init="true">
     </Field>
     <Function name="CreateNode" user="false" member="true">

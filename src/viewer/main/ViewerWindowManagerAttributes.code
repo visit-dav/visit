@@ -21,6 +21,8 @@ Definition:
 // Creation:   Wed Feb 5 12:27:55 PDT 2003
 //
 // Modifications:
+//   Brad Whitlock, Wed Jul 23 14:00:55 PST 2003
+//   Removed window size, location coding.
 //
 // ****************************************************************************
 
@@ -32,11 +34,6 @@ ViewerWindowManagerAttributes::CreateNode(DataNode *parentNode, bool)
 
     // Create a node for ViewerWindowManagerAttributes.
     DataNode *node = new DataNode("ViewerWindowManagerAttributes");
-    node->AddNode(new DataNode("nWindows", nWindows));
-    node->AddNode(new DataNode("windowX", windowX));
-    node->AddNode(new DataNode("windowY", windowY));
-    node->AddNode(new DataNode("windowWidth", windowWidth));
-    node->AddNode(new DataNode("windowHeight", windowHeight));
     DataNode *attNode = new DataNode("ActionConfigurations");
     for(int i = 0; i < actionConfigurations.size(); ++i)
         actionConfigurations[i]->CreateNode(attNode, true);
@@ -63,6 +60,8 @@ Definition:
 // Creation:   Wed Feb 5 12:27:55 PDT 2003
 //
 // Modifications:
+//   Brad Whitlock, Wed Jul 23 14:00:55 PST 2003
+//   Removed window size, location coding.
 //
 // ****************************************************************************
 
@@ -76,19 +75,6 @@ ViewerWindowManagerAttributes::SetFromNode(DataNode *parentNode)
     if(searchNode == 0)
         return;
 
-    DataNode *node;
-    DataNode **children;
-    if((node = searchNode->GetNode("nWindows")) != 0)
-        SetNWindows(node->AsInt());
-    if((node = searchNode->GetNode("windowX")) != 0)
-        SetWindowX(node->AsIntVector());
-    if((node = searchNode->GetNode("windowY")) != 0)
-        SetWindowY(node->AsIntVector());
-    if((node = searchNode->GetNode("windowWidth")) != 0)
-        SetWindowWidth(node->AsIntVector());
-    if((node = searchNode->GetNode("windowHeight")) != 0)
-        SetWindowHeight(node->AsIntVector());
-
     // Look for the action configuration.
     DataNode *attNode = searchNode->GetNode("ActionConfigurations");
     if(attNode)
@@ -98,7 +84,7 @@ ViewerWindowManagerAttributes::SetFromNode(DataNode *parentNode)
 
         // Go through all of the children and construct a new
         // ActionGroupDescription for each one of them.
-        children = attNode->GetChildren();
+        DataNode **children = attNode->GetChildren();
         for(int i = 0; i < attNode->GetNumChildren(); ++i)
         {
             if(children[i]->GetKey() == "ActionGroupDescription")
