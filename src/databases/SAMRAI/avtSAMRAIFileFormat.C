@@ -127,6 +127,8 @@ avtSAMRAIFileFormat::avtSAMRAIFileFormat(const char *fname)
         InitializeHDF5();
     avtSAMRAIFileFormat::objcnt++;
 
+    time_step_number = 0;
+
     cached_patches = NULL;
     xlo = NULL;
     dx = NULL;

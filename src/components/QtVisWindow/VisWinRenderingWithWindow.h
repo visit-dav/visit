@@ -4,7 +4,7 @@
 
 #ifndef VIS_WIN_RENDERING_WITH_WINDOW_H
 #define VIS_WIN_RENDERING_WITH_WINDOW_H
-#include <viswindow_exports.h>
+#include <qtviswindow_exports.h>
 #include <VisWinRendering.h>
 
 
@@ -46,7 +46,7 @@ class     vtkQtRenderWindowInteractor;
 //
 // ****************************************************************************
 
-class VISWINDOW_API VisWinRenderingWithWindow : public VisWinRendering
+class QTVISWINDOW_API VisWinRenderingWithWindow : public VisWinRendering
 {
   public:
                                        VisWinRenderingWithWindow(

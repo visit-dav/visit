@@ -200,6 +200,33 @@ AttributeSubjectMap::SetAtts(const int index, const AttributeSubject *attr)
 }
 
 // ****************************************************************************
+//  Method: AttributeSubjectMap::SetAttsLe
+//
+//  Purpose:
+//    Set the attributes for the AttributeSubjectMap at the index that is
+//    nearest to but less then or equal to the specified index
+//
+//  Arguments:
+//    index     The given index
+//    attr      The attribute subject to store.
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   March 25, 2004 
+//
+// ****************************************************************************
+
+void
+AttributeSubjectMap::SetAttsLe(const int index, const AttributeSubject *attr)
+{
+
+    // find an index that is less than or equal to the given index
+    int i, i0, i1;
+    for (i = 0; i < nIndices && indices[i] <= index; ++i);
+
+    SetAtts(i, attr, i0, i1);
+}
+
+// ****************************************************************************
 //  Method: AttributeSubjectMap::SetAtts
 //
 //  Purpose:

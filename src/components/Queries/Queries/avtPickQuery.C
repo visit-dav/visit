@@ -684,7 +684,8 @@ avtPickQuery::ApplyFilters(avtDataObject_p inData)
     pspec->SetDataSpecification(dspec);
 
     pspec->GetDataSpecification()->GetRestriction()->TurnOnAll();
-    for (int i = 0; i < useSet.size(); i++)
+    int i;
+    for (i = 0; i < useSet.size(); i++)
     {
         if (useSet[i] == 0)
             pspec->GetDataSpecification()->GetRestriction()->TurnOffSet(i);
@@ -695,7 +696,7 @@ avtPickQuery::ApplyFilters(avtDataObject_p inData)
         pspec->GetDataSpecification()->GetRestriction()->RestrictDomains(dlist);
     }
 
-    for (int i = 0; i < vars.size(); i++)
+    for (i = 0; i < vars.size(); i++)
     {
         if (strcmp(pspec->GetDataSpecification()->GetVariable(), vars[i].c_str()) != 0)
         {

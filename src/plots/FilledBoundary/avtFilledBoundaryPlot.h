@@ -34,6 +34,9 @@ class     avtSmoothPolyDataFilter;
 //
 //  Modifications:
 //
+//    Mark C. Miller, Wed Mar 24 19:23:21 PST 2004
+//    Added AttributesDependOnDatabaseMetaData
+//
 // ****************************************************************************
 
 class
@@ -50,6 +53,9 @@ avtFilledBoundaryPlot : public avtVolumeDataPlot
     virtual void              SetAtts(const AttributeGroup*);
     virtual void              ReleaseData(void);
     virtual bool              SetColorTable(const char *ctName);
+
+    virtual bool              AttributesDependOnDatabaseMetaData(void)
+                                  { return true; };
 
     void                      SetLegend(bool);
     void                      SetLineWidth(int);

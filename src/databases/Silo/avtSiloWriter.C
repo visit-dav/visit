@@ -295,7 +295,7 @@ avtSiloWriter::ConstructMultivar(DBfile *dbfile, const string &sname,
     int ncomps = 0;
     vector<double> minVals;
     vector<double> maxVals;
-    map<string, vector<double> >::iterator minsMap;
+    std::map<string, vector<double> >::iterator minsMap;
     minsMap = dataMins.find(sname);
     if (minsMap != dataMins.end())
     {
@@ -1009,7 +1009,7 @@ avtSiloWriter::WriteUcdvars(DBfile *dbfile, vtkPointData *pd,
          //
          vector<double> varMins;
          vector<double> varMaxs;
-         map<string, vector<double> >::iterator minsMap;
+         std::map<string, vector<double> >::iterator minsMap;
          minsMap = dataMins.find(arr->GetName());
          if (minsMap != dataMins.end())
          {
@@ -1099,7 +1099,7 @@ avtSiloWriter::WriteUcdvars(DBfile *dbfile, vtkPointData *pd,
          //
          vector<double> varMins;
          vector<double> varMaxs;
-         map<string, vector<double> >::iterator minsMap;
+         std::map<string, vector<double> >::iterator minsMap;
          minsMap = dataMins.find(arr->GetName());
          if (minsMap != dataMins.end())
          {
@@ -1212,7 +1212,7 @@ avtSiloWriter::WriteQuadvars(DBfile *dbfile, vtkPointData *pd,
          //
          vector<double> varMins;
          vector<double> varMaxs;
-         map<string, vector<double> >::iterator minsMap;
+         std::map<string, vector<double> >::iterator minsMap;
          minsMap = dataMins.find(arr->GetName());
          if (minsMap != dataMins.end())
          {
@@ -1300,7 +1300,7 @@ avtSiloWriter::WriteQuadvars(DBfile *dbfile, vtkPointData *pd,
          //
          vector<double> varMins;
          vector<double> varMaxs;
-         map<string, vector<double> >::iterator minsMap;
+         std::map<string, vector<double> >::iterator minsMap;
          minsMap = dataMins.find(arr->GetName());
          if (minsMap != dataMins.end())
          {
