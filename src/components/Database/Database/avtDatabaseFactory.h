@@ -43,13 +43,16 @@ class avtDatabase;
 //    Jeremy Meredith, Tue Aug 27 15:08:29 PDT 2002
 //    Removed all formats and placed them in database plugins.
 //
+//    Hank Childs, Mon Mar  1 08:48:26 PST 2004
+//    Added the timestep as an argument.
+//
 // ****************************************************************************
 
 class DATABASE_API avtDatabaseFactory
 {
   public:
-    static avtDatabase           *FileList(const char * const *, int);
-    static avtDatabase           *VisitFile(const char *);
+    static avtDatabase           *FileList(const char * const *, int, int);
+    static avtDatabase           *VisitFile(const char *, int);
 };
 
 

@@ -27,6 +27,11 @@ static void UsageAndExit(const char *);
 //  Programmer: Hank Childs
 //  Creation:   September 9, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Mon Mar  1 09:08:11 PST 2004
+//    Send timestep to database factory.
+//
 // ****************************************************************************
 
 int main(int argc, char *argv[])
@@ -99,9 +104,9 @@ int main(int argc, char *argv[])
     //
     avtDatabase *db = NULL;
     if (strstr(argv[1], ".visit") != NULL)
-        db = avtDatabaseFactory::VisitFile(argv[1]);
+        db = avtDatabaseFactory::VisitFile(argv[1], 0);
     else
-        db = avtDatabaseFactory::FileList(argv+1, 1);
+        db = avtDatabaseFactory::FileList(argv+1, 1, 0);
 
     //
     // Figure out which mesh to operate on.

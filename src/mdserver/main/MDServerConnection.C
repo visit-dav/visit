@@ -1685,6 +1685,9 @@ MDServerConnection::GetVirtualFileDefinition(const std::string &file)
 //    does NOT have invariant metadata, then metadata at a different time
 //    step can be correctly read without having to close and re-open. 
 //
+//    Hank Childs, Mon Mar  1 08:48:26 PST 2004
+//    Set the time state to the database factory.
+//
 // ****************************************************************************
 
 avtDatabase *
@@ -1739,7 +1742,8 @@ MDServerConnection::GetDatabase(string file, int timeState)
             TRY
             {
                 // Try and make a database out of the filenames.
-                currentDatabase = avtDatabaseFactory::FileList(names, fileNames.size());
+                currentDatabase = avtDatabaseFactory::FileList(names,
+                                                  fileNames.size(), timeState);
 
                 // Free the memory that we used.
                 for(i = 0; i < fileNames.size(); ++i)
@@ -1761,11 +1765,11 @@ MDServerConnection::GetDatabase(string file, int timeState)
         }
         else if (strstr(fn, ".visit") != NULL)
         {
-            currentDatabase = avtDatabaseFactory::VisitFile(fn);
+            currentDatabase = avtDatabaseFactory::VisitFile(fn, timeState);
         }
         else
         {
-            currentDatabase = avtDatabaseFactory::FileList(&fn, 1);
+            currentDatabase = avtDatabaseFactory::FileList(&fn, 1, timeState);
         }
 
         visitTimer->StopTimer(timeid, timerMessage);

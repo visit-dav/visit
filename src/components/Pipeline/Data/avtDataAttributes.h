@@ -105,6 +105,9 @@ class     avtExtents;
 //    Mark C. Miller, Thu Jan 29 17:31:20 PST 2004
 //    Added bools to Merge method to control ignoring certain attributes
 //
+//    Mark C. Miller, Sun Feb 29 18:35:00 PST 2004
+//    Added GetAnySpatialExtents method
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataAttributes
@@ -196,6 +199,7 @@ class PIPELINE_API avtDataAttributes
     bool                     GetCurrentDataExtents(double *);
     bool                     GetSpatialExtents(double *);
     bool                     GetCurrentSpatialExtents(double *);
+    bool                     GetAnySpatialExtents(double *);
 
     void                     SetLabels(const std::vector<std::string> &l);
     void                     GetLabels(std::vector<std::string> &l);
