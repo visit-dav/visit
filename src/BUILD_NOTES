@@ -349,94 +349,6 @@ We recommend using 3.3.2.  If you have any problems building or installing
 Qt, read the INSTALL file in the Qt distribution for more information.
 
 #
-# Build Qt 2.3.0
-#
-gunzip qt-x11-2.3.0.tar.gz
-tar xf qt-x11-2.3.0.tar
-cd qt-2.3.0
-setenv QTDIR `pwd`
-# Use the appropriate configure command based on the operating system on
-# which you are building Qt.
-./configure -platform aix-g++ -shared -qt-libpng
-./configure -platform irix-64 -shared -qt-libpng
-./configure -platform linux-g++ -shared -qt-libpng
-./configure -platform solaris-g++ -shared -qt-libpng
-./configure -platform tru64-g++ -shared -qt-libpng
-#
-# On aix systems you will need to make the following changes to
-# the file mkspecs/aix-g++/qmake.conf:
-# remove "/usr/X11R6/include" from QMAKE_INCDIR_X11
-# remove "/usr/X11R6/include" from QMAKE_INCDIR_OPENGL
-#
-make
-
-#
-# Install it in the visit directory under the qt directory.
-#
-mkdir $VISITDIR/qt
-mkdir $VISITDIR/qt/2.3.0
-mkdir $VISITDIR/qt/2.3.0/$VISITARCH
-mkdir $VISITDIR/qt/2.3.0/$VISITARCH/{bin,include,lib}
-cp bin/{designer,findtr,moc,qt20fix,qtrename140} $VISITDIR/qt/2.3.0/$VISITARCH/bin
-cd include; cp *.h $VISITDIR/qt/2.3.0/$VISITARCH/include
-cd ../lib;find . -print | cpio -pvmud $VISITDIR/qt/2.3.0/$VISITARCH/lib
-cd ../..
-#
-# On aix systems you will need to add an additional link to the lib
-# directory so that the loader can find the library.
-#
-# ln -s libqt.so.2.3.0 $VISITDIR/qt/2.3.0/$VISITARCH/lib/libqt.so
-#
-
-#
-# Build Qt 3.0.2
-#
-gunzip qt-x11-free-3.0.2.tar.gz
-tar xf qt-x11-free-3.0.2.tar
-cd qt-x11-free-3.0.2
-setenv QTDIR `pwd`
-# Use the appropriate configure command based on the operating system on
-# which you are building Qt.
-./configure -platform aix-g++ -shared -qt-libpng
-./configure -platform irix-64 -shared -qt-libpng
-./configure -platform linux-g++ -shared -qt-libpng
-./configure -platform solaris-g++ -shared -qt-libpng
-./configure -platform tru64-g++ -shared -qt-libpng
-#
-# On tru64 systems you will need to make the following changes to
-# the file mkspecs/tru64-g++/qmake.conf:
-# remove "/usr/X11R6/include" from QMAKE_INCDIR_X11
-# remove "/usr/X11R6/lib"     from QMAKE_LIBDIR_X11
-# remove "/usr/X11R6/include" from QMAKE_INCDIR_OPENGL
-# set QMAKE_LIBDIR_OPENGL to "/usr/shlib"
-#
-# On aix systems you will need to make the following changes to
-# the file mkspecs/aix-g++/qmake.conf:
-# remove "/usr/X11R6/include" from QMAKE_INCDIR_X11
-# remove "/usr/X11R6/include" from QMAKE_INCDIR_OPENGL
-#
-make
-
-#
-# Install it in the visit directory under the qt directory.
-#
-mkdir $VISITDIR/qt
-mkdir $VISITDIR/qt/3.0.2
-mkdir $VISITDIR/qt/3.0.2/$VISITARCH
-mkdir $VISITDIR/qt/2.3.0/$VISITARCH/{bin,include,lib}
-cp bin/{designer,findtr,moc,qt20fix,qtrename140} $VISITDIR/qt/3.0.2/$VISITARCH/bin
-cd include; cp *.h $VISITDIR/qt/3.0.2/$VISITARCH/include
-cp private/*.h $VISITDIR/qt/3.0.2/$VISITARCH/include/private
-cd ../lib;find . -print | cpio -pvmud $VISITDIR/qt/3.0.2/$VISITARCH/lib
-cd ../..
-#
-# On aix systems you will need to add an additional link to the lib
-# directory so that the loader can find the library.
-#
-# ln -s libqt.so.3.0.2  $VISITDIR/qt/3.0.2/$VISITARCH/lib/libqt.so
-#
-
-#
 # Build Qt 3.3.2
 #
 gunzip qt-x11-free-3.3.2.tar.gz
@@ -535,6 +447,94 @@ cd ../..
 # directory so that the loader can find the library.
 #
 # ln -s libqt.so.3.3.2 $VISITDIR/qt/3.3.2/$VISITARCH/lib/libqt.so
+#
+
+#
+# Build Qt 3.0.2
+#
+gunzip qt-x11-free-3.0.2.tar.gz
+tar xf qt-x11-free-3.0.2.tar
+cd qt-x11-free-3.0.2
+setenv QTDIR `pwd`
+# Use the appropriate configure command based on the operating system on
+# which you are building Qt.
+./configure -platform aix-g++ -shared -qt-libpng
+./configure -platform irix-64 -shared -qt-libpng
+./configure -platform linux-g++ -shared -qt-libpng
+./configure -platform solaris-g++ -shared -qt-libpng
+./configure -platform tru64-g++ -shared -qt-libpng
+#
+# On tru64 systems you will need to make the following changes to
+# the file mkspecs/tru64-g++/qmake.conf:
+# remove "/usr/X11R6/include" from QMAKE_INCDIR_X11
+# remove "/usr/X11R6/lib"     from QMAKE_LIBDIR_X11
+# remove "/usr/X11R6/include" from QMAKE_INCDIR_OPENGL
+# set QMAKE_LIBDIR_OPENGL to "/usr/shlib"
+#
+# On aix systems you will need to make the following changes to
+# the file mkspecs/aix-g++/qmake.conf:
+# remove "/usr/X11R6/include" from QMAKE_INCDIR_X11
+# remove "/usr/X11R6/include" from QMAKE_INCDIR_OPENGL
+#
+make
+
+#
+# Install it in the visit directory under the qt directory.
+#
+mkdir $VISITDIR/qt
+mkdir $VISITDIR/qt/3.0.2
+mkdir $VISITDIR/qt/3.0.2/$VISITARCH
+mkdir $VISITDIR/qt/3.0.2/$VISITARCH/{bin,include,lib}
+cp bin/{designer,findtr,moc,qt20fix,qtrename140} $VISITDIR/qt/3.0.2/$VISITARCH/bin
+cd include; cp *.h $VISITDIR/qt/3.0.2/$VISITARCH/include
+cp private/*.h $VISITDIR/qt/3.0.2/$VISITARCH/include/private
+cd ../lib;find . -print | cpio -pvmud $VISITDIR/qt/3.0.2/$VISITARCH/lib
+cd ../..
+#
+# On aix systems you will need to add an additional link to the lib
+# directory so that the loader can find the library.
+#
+# ln -s libqt.so.3.0.2  $VISITDIR/qt/3.0.2/$VISITARCH/lib/libqt.so
+#
+
+#
+# Build Qt 2.3.0
+#
+gunzip qt-x11-2.3.0.tar.gz
+tar xf qt-x11-2.3.0.tar
+cd qt-2.3.0
+setenv QTDIR `pwd`
+# Use the appropriate configure command based on the operating system on
+# which you are building Qt.
+./configure -platform aix-g++ -shared -qt-libpng
+./configure -platform irix-64 -shared -qt-libpng
+./configure -platform linux-g++ -shared -qt-libpng
+./configure -platform solaris-g++ -shared -qt-libpng
+./configure -platform tru64-g++ -shared -qt-libpng
+#
+# On aix systems you will need to make the following changes to
+# the file mkspecs/aix-g++/qmake.conf:
+# remove "/usr/X11R6/include" from QMAKE_INCDIR_X11
+# remove "/usr/X11R6/include" from QMAKE_INCDIR_OPENGL
+#
+make
+
+#
+# Install it in the visit directory under the qt directory.
+#
+mkdir $VISITDIR/qt
+mkdir $VISITDIR/qt/2.3.0
+mkdir $VISITDIR/qt/2.3.0/$VISITARCH
+mkdir $VISITDIR/qt/2.3.0/$VISITARCH/{bin,include,lib}
+cp bin/{designer,findtr,moc,qt20fix,qtrename140} $VISITDIR/qt/2.3.0/$VISITARCH/bin
+cd include; cp *.h $VISITDIR/qt/2.3.0/$VISITARCH/include
+cd ../lib;find . -print | cpio -pvmud $VISITDIR/qt/2.3.0/$VISITARCH/lib
+cd ../..
+#
+# On aix systems you will need to add an additional link to the lib
+# directory so that the loader can find the library.
+#
+# ln -s libqt.so.2.3.0 $VISITDIR/qt/2.3.0/$VISITARCH/lib/libqt.so
 #
 
 Silo

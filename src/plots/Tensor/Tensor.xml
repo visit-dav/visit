@@ -13,6 +13,12 @@
       <Field name="scale" label="Scale" type="double">
         0.250000
       </Field>
+      <Field name="scaleByMagnitude" label="Scale by magnitude" type="bool">
+        true
+      </Field>
+      <Field name="autoScale" label="Auto scale" type="bool">
+        true
+      </Field>
       <Field name="colorByEigenvalues" label="color by eigenvalues" type="bool">
         true
       </Field>

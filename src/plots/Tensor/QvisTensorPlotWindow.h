@@ -27,6 +27,10 @@ class QvisColorTableButton;
 // Programmer: Hank Childs
 // Creation:   September 23, 2003
 //
+// Modifications:
+//   Eric Brugger, Wed Nov 24 11:39:58 PST 2004
+//   Added scaleByMagnitude and autoScale.
+//
 // ****************************************************************************
 
 class QvisTensorPlotWindow : public QvisPostableWindowObserver
@@ -50,6 +54,8 @@ protected:
 private slots:
     void tensorColorChanged(const QColor &color);
     void processScaleText();
+    void scaleByMagnitudeToggled();
+    void autoScaleToggled();
     void reduceMethodChanged(int index);
     void processNTensorsText();
     void processStrideText();
@@ -66,6 +72,8 @@ private:
     QvisColorTableButton *colorTableButton;
     QGroupBox            *scaleGroupBox;    
     QLineEdit            *scaleLineEdit;
+    QCheckBox            *scaleByMagnitudeToggle;
+    QCheckBox            *autoScaleToggle;
     QGroupBox            *reduceGroupBox;
     QButtonGroup         *reduceButtonGroup;
     QLineEdit            *nTensorsLineEdit;

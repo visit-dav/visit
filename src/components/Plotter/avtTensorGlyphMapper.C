@@ -12,6 +12,8 @@
 #include <vtkTensorGlyph.h>
 #include <vtkVisItPolyDataNormals.h>
 
+#include <avtExtents.h>
+
 #include <BadIndexException.h>
 
 
@@ -30,6 +32,9 @@
 //    Hank Childs, Wed May  5 14:19:54 PDT 2004
 //    Added poly data normals.
 //
+//    Eric Brugger, Wed Nov 24 13:04:09 PST 2004
+//    Added scaleByMagnitude and autoScale.
+//
 // ****************************************************************************
 
 avtTensorGlyphMapper::avtTensorGlyphMapper(vtkPolyData *g)
@@ -39,6 +44,8 @@ avtTensorGlyphMapper::avtTensorGlyphMapper(vtkPolyData *g)
 
     colorByMag        = true;
     scale             = 0.2;
+    scaleByMagnitude  = true;
+    autoScale         = true;
     tensorFilter      = NULL;
     normalsFilter     = NULL;
     nTensorFilters    = 0;
@@ -107,6 +114,9 @@ avtTensorGlyphMapper::~avtTensorGlyphMapper()
 //    Hank Childs, Wed May  5 14:19:54 PDT 2004
 //    Added poly data normals.
 //
+//    Eric Brugger, Wed Nov 24 13:04:09 PST 2004
+//    Added scaleByMagnitude and autoScale.
+//
 // ****************************************************************************
 
 void
@@ -119,7 +129,10 @@ avtTensorGlyphMapper::CustomizeMappers(void)
             if (tensorFilter[i] != NULL)
             {
                 tensorFilter[i]->SetSource(glyph);
-                tensorFilter[i]->SetScaling(1);
+                if (scaleByMagnitude)
+                    tensorFilter[i]->SetScaling(1);
+                else
+                    tensorFilter[i]->SetScaling(0);
             }
             if (normalsFilter[i] != NULL)
             {
@@ -283,12 +296,48 @@ avtTensorGlyphMapper::InsertFilters(vtkDataSet *ds, int dom)
 //    Hank Childs, Fri May  7 07:38:31 PDT 2004
 //    Reset the default range so the colors update properly.
 //
+//    Eric Brugger, Wed Nov 24 13:04:09 PST 2004
+//    Added scaleByMagnitude and autoScale.
+//
 // ****************************************************************************
 
 void
 avtTensorGlyphMapper::SetScale(float s)
 {
     scale = s;
+
+    //
+    // If auto scale is enable, then set the scale based on the spatial
+    // extents and possibly the data extents.
+    //
+    if (autoScale)
+    {
+        avtDataset_p input = GetTypedInput();
+        if (*input != 0)
+        {
+            avtDataAttributes &atts=input->GetInfo().GetAttributes();
+            avtExtents *extents = atts.GetTrueSpatialExtents();
+            int nDims = extents->GetDimension();
+            double exts[6];
+            extents->CopyTo(exts);
+            double dist = 0.;
+            int i;
+            for (i = 0; i < nDims; i++)
+            {
+                dist += (exts[2*i+1] - exts[2*i]) * (exts[2*i+1] - exts[2*i]);
+            }
+            dist = sqrt(dist);
+
+            extents = atts.GetTrueDataExtents();
+            extents->CopyTo(exts);
+
+            if (scaleByMagnitude)
+                scale = (scale * dist * 0.2) / exts[1];
+            else
+                scale = scale * dist * 0.2;
+        }
+    }
+
     if (tensorFilter != NULL)
     {
         for (int i = 0 ; i < nTensorFilters ; i++)
@@ -301,6 +350,62 @@ avtTensorGlyphMapper::SetScale(float s)
     }
 
     SetDefaultRange();
+}
+
+
+// ****************************************************************************
+//  Method: avtTensorGlyphMapper::SetScaleByMagnitude
+//
+//  Purpose:
+//      Sets the scale by magnitude mode.
+//
+//  Arguments:
+//      val      The new scale by magnitude mode.
+//
+//  Programmer:  Eric Brugger
+//  Creation:    November 24, 2004
+//
+// ****************************************************************************
+
+void
+avtTensorGlyphMapper::SetScaleByMagnitude(bool val)
+{
+    scaleByMagnitude = val;
+
+    if (tensorFilter != NULL)
+    {
+        for (int i = 0 ; i < nTensorFilters ; i++)
+        {
+            if (tensorFilter[i] != NULL)
+            {
+                if (scaleByMagnitude)
+                    tensorFilter[i]->SetScaling(1);
+                else
+                    tensorFilter[i]->SetScaling(0);
+            }
+        }
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtTensorGlyphMapper::SetAutoScale
+//
+//  Purpose:
+//      Sets the auto scale mode.
+//
+//  Arguments:
+//      val      The new auto scale mode.
+//
+//  Programmer:  Eric Brugger
+//  Creation:    November 24, 2004
+//
+// ****************************************************************************
+
+void
+avtTensorGlyphMapper::SetAutoScale(bool val)
+{
+    autoScale = val;
 }
 
 
