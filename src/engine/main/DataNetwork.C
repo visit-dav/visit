@@ -36,12 +36,15 @@ DataNetwork::DataNetwork(void)
 //    Reflect that the terminal node has already been deleted by the time we
 //    get here.
 //
+//    Hank Childs, Sun Mar  7 16:03:33 PST 2004
+//    Do not clear the nodes before releasing the data -- we would then not
+//    release the data in those nodes.
+//
 // ****************************************************************************
 DataNetwork::~DataNetwork(void)
 {
     // The terminal node has already been freed by this point.
     terminalNode = NULL;
-    nodeList.clear();
 
     ReleaseData();
 }
