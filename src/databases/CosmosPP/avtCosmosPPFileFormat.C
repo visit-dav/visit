@@ -169,7 +169,7 @@ avtCosmosPPFileFormat::avtCosmosPPFileFormat(const char *fname)
         }
         else
         {
-            debug1 << "Found bad key = " << key << endl;
+            debug1 << "Found bad key = " << key.c_str() << endl;
             EXCEPTION1(InvalidDBTypeException, "Badly formed cosmos file.");
         }
     }

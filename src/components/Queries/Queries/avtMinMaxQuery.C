@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 #include <float.h>
-#include <strstream.h>
 
 #include <vtkCell.h>
 #include <vtkCellData.h>
@@ -699,11 +698,11 @@ avtMinMaxQuery::InfoToString(const MinMaxInfo &info)
     os.setf(ios::fixed);
     os.setf(ios::showpoint);
  
-    os << info.GetValue() << " (" << elementName << " " << elNum << " ";
+    os << info.GetValue() << " (" << elementName.c_str() << " " << elNum << " ";
 
 
     if (info.GetMatName() != "NO_MAT")
-        os << "for material " << info.GetMatName() << " ";
+        os << "for material " << info.GetMatName().c_str() << " ";
 
     if (!singleDomain)
     {
@@ -713,7 +712,7 @@ avtMinMaxQuery::InfoToString(const MinMaxInfo &info)
      
         if (domainName.size() > 0)
         { 
-            os << "in " << domainName << " " ;
+            os << "in " << domainName.c_str() << " " ;
         }
         else 
         { 

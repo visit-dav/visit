@@ -232,7 +232,7 @@ cd Mesa-5.0.2
 #    The additions above will cause the two modified libraries to be built
 #    as prebound dynamic libraries, which will help reduce VisIt's start
 #    time.
-# 3. Open src/Makefile.X11 and remove all of the source code files from
+# 3. Open src/mesa/Makefile.X11 and remove all of the source code files from
 #    the DRIVER_SOURCES variable so it is defined as:
 #    DRIVER_SOURCES = 
 #
@@ -291,14 +291,15 @@ cd VTK
 # Look for the following CMake keys and set these values:
 #
 # CMAKE_BUILD_TYPE:STRING = Release
-# CMAKE_CXXFLAGS_RELEASE = '-O2'
+# CMAKE_CXX_FLAGS_RELEASE:STRING = '-O2'
 # CMAKE_EXE_LINKER_FLAGS_RELEASE:STRING='-prebind'
 # CMAKE_MODULE_LINKER_FLAGS_RELEASE:STRING='-prebind'
 # CMAKE_SHARED_LINKER_FLAGS_RELASE:STRING='-prebind'
 # CMAKE_VERBOSE_MAKEFILE:BOOL=TRUE
-# VTK_USE_MANGLED_MESA:BOOL=OFF
+# VTK_USE_MANGLED_MESA:BOOL=ON
 #
-# Look for -flat_namespace and replace it with -twolevel_namespace
+# Look for -flat_namespace and replace it with -twolevel_namespace, delete
+# the -U flag and its argument.
 #
 ../cmake-1.8.1/bin/cmake .
 make
@@ -378,7 +379,7 @@ cp IO/*.h                         ../visit/vtk/IO
 cp Imaging/*.h                    ../visit/vtk/Imaging
 cp Rendering/*.h                  ../visit/vtk/Rendering
 cp MangleMesaInclude/*.h          ../visit/vtk/MangleMesaInclude
-cp bin/*.so                       ../visit/vtk/lib
+cp bin/*.dylib                    ../visit/vtk/lib
 cd ..
 
 The next offset after libvtkRendering.dylib, which has an offset of 0x21f6f000 and
@@ -419,8 +420,8 @@ ar -x ../libpython2.3.a
 echo "char **environ=0;" > environhack.c
 gcc -o environhack.o -c environhack.c
 gcc -dynamiclib -prebind -Wl,-seg1addr,0x222b3000,-install_name,@executable_path/../lib/libpython2.3.dylib,-compatibility_version,2.3.3,-current_version,2.3.3 -twolevel_namespace -o libpython2.3.dylib *.o -framework Carbon
-cp libpython2.3.dylib ../visit/python/lib/python2.3/config/libpython2.3.dylib
-cd ..
+cp libpython2.3.dylib ../../visit/python/lib/python2.3/config/libpython2.3.dylib
+cd ../..
 
 The next offset after libpython.dylib, which has an offset of 0x222b3000 and a library
 size of 3,311,968 (0x328960) bytes is:
@@ -599,9 +600,9 @@ More information about building VisIt follows after that.
 #
 # Configure VisIt
 #
-gunzip visit040517.tar.gz
-tar xf visit040517.tar
-cd visit040517/config-site
+gunzip visit040719.tar.gz
+tar xf visit040719.tar
+cd visit040719/config-site
 echo VISITHOME=`cat ../../visitpath` > `hostname`.conf
 cat Template.conf >> `hostname`.conf
 cd ..
@@ -620,8 +621,18 @@ it runs out of memory with the default -O2 optimization flag.
 
 cd databases/Silo
 vi Makefile
-# Change -O2 to -O1
+# Look for CXXFLAGS=$(CXXFLAGSORIG) and right after $(CXXFLAGSORIG), add -O1
+# so the Silo database reader can build. The default optimization level (-O2)
+# causes gcc to run out of memory on some MacOS X computers.
+
+# Change Silo version if you have a slightly old version of Silo.
+vi avtSiloWriter.h
+comment out #define SILO_VERSION_4_4
+
 cd ../..
+
 
 # Build VisIt
 make
+
+If you have any problems send e-mail to visit-help@llnl.gov.

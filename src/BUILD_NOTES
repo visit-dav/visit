@@ -570,10 +570,10 @@ configure script or can listed by the configure script by typing
   --with-exodus-lib[=<DIR>]       specify Exodus lib path
 
 The enable parallel option builds the parallel version of VisIt.  Parallel
-versions are supported on SGI and IBM AIX systems.  The disable scripting
-option builds VisIt without the Python scripting.  The enable buildall
-option builds all the VisIt plugins.  By default, only the most common
-plugins are built.
+versions are supported on SGI, IBM AIX, Tru64, and some Linux systems.  The
+disable scripting option builds VisIt without the Python scripting.  The
+enable buildall option builds all the VisIt plugins.  By default, only the
+most common plugins are built.
 
 The second group of options are used when building with support for reading
 SAF files.  The third group of options are used when building with support
