@@ -30,7 +30,7 @@
 #include <WindowAttributes.h>
 #include <DebugStream.h>
 #include <ViewerConnectionProgressDialog.h>
-#include <ViewerEngineChooser.h>
+#include <ViewerRemoteProcessChooser.h>
 #include <MaterialAttributes.h>
 
 #include <avtCallback.h>
@@ -409,6 +409,13 @@ ViewerEngineManager::GetEngineIndex(const char *hostName) const
 //    I moved some code into the base class and I made possible to launch
 //    the engine using a launcher program.
 //
+//    Jeremy Meredith, Thu Jun 26 10:46:04 PDT 2003
+//    Allowed the engine to share a batch job with the mdserver.  In this
+//    case, VCL gets launched in batch and the engine needs only add 
+//    the 'par' arguments and can skip the profile chooser (since the
+//    user chose one when launching the VCL).  Renamed ViewerEngineChooser
+//    to ViewerRemoteProcessChooser.
+//
 // ****************************************************************************
 
 void
@@ -433,12 +440,15 @@ ViewerEngineManager::CreateEngine(const char *hostName,
     //
     if(engineIndex < 0)
     {
-        EngineProxy *newEngine = 
-           ViewerEngineChooser::Instance()->GetNewEngine(clientAtts,hostName,
-                                                         skipChooser);
+        ViewerRemoteProcessChooser *chooser =
+                                        ViewerRemoteProcessChooser::Instance();
 
-        if (!newEngine)
+        if (! chooser->SelectProfile(clientAtts,hostName,skipChooser))
             return;
+
+        EngineProxy *newEngine = new EngineProxy;
+
+        chooser->AddProfileArguments(newEngine, !ShouldShareBatchJob(hostName));
 
         //
         // Add some arguments to the engine proxy before we try to
@@ -475,7 +485,7 @@ ViewerEngineManager::CreateEngine(const char *hostName,
             //
             // Launch the engine.
             //
-            if(HostIsLocalHost(hostName))
+            if (!ShouldShareBatchJob(hostName) && HostIsLocalHost(hostName))
                 newEngine->Create("localhost");
             else
             {
@@ -508,7 +518,7 @@ ViewerEngineManager::CreateEngine(const char *hostName,
         {
             // Delete the new engine since it could not launch anyway.
             delete newEngine;
-            ViewerEngineChooser::Instance()->ClearCache(hostName);
+            ViewerRemoteProcessChooser::Instance()->ClearCache(hostName);
 
             // Tell the user that the engine could not be launched.
             SNPRINTF(msg, 250, "VisIt could not launch a compute engine on host "
@@ -521,7 +531,7 @@ ViewerEngineManager::CreateEngine(const char *hostName,
             // Delete the new engine since talking to it could be bad since
             // it is a different version.
             delete newEngine;
-            ViewerEngineChooser::Instance()->ClearCache(hostName);
+            ViewerRemoteProcessChooser::Instance()->ClearCache(hostName);
 
             // Tell the user that the engine is a different version.
             SNPRINTF(msg, 250, "VisIt cannot use the compute engine on "
@@ -534,7 +544,7 @@ ViewerEngineManager::CreateEngine(const char *hostName,
             // Delete the new engine since talking to it could be bad since
             // it did not provide the right credentials.
             delete newEngine;
-            ViewerEngineChooser::Instance()->ClearCache(hostName);
+            ViewerRemoteProcessChooser::Instance()->ClearCache(hostName);
 
             // Tell the user that the engine is a different version.
             SNPRINTF(msg, 250, "VisIt cannot use the compute engine on host \"%s\""
@@ -546,7 +556,7 @@ ViewerEngineManager::CreateEngine(const char *hostName,
         {
             // Delete the new engine since it was not launched
             delete newEngine;
-            ViewerEngineChooser::Instance()->ClearCache(hostName);
+            ViewerRemoteProcessChooser::Instance()->ClearCache(hostName);
 
             // Tell the user that the engine was not launched
             SNPRINTF(msg, 250, "VisIt could not launch the compute engine on "
@@ -557,7 +567,7 @@ ViewerEngineManager::CreateEngine(const char *hostName,
         {
             // Delete the new engine since it was not launched
             delete newEngine;
-            ViewerEngineChooser::Instance()->ClearCache(hostName);
+            ViewerRemoteProcessChooser::Instance()->ClearCache(hostName);
 
             // Tell the user that the engine was not launched
             SNPRINTF(msg, 250, "The launch of the compute engine on "
@@ -657,6 +667,9 @@ ViewerEngineManager::CloseEngines()
 //   Jeremy Meredith, Wed Aug 14 17:27:00 PDT 2002
 //   Added code to clear the cache for the engine launcher.
 //
+//   Jeremy Meredith, Thu Jun 26 10:48:20 PDT 2003
+//   Renamed ViewerEngineChooser to ViewerRemoteProcessChooser.
+//
 // ****************************************************************************
 
 void
@@ -667,7 +680,7 @@ ViewerEngineManager::CloseEngine(const char *hostName)
 
     // Since we're closing the engine intentionally, let us change
     // the options the next time we launch an engine
-    ViewerEngineChooser::Instance()->ClearCache(realHostName);
+    ViewerRemoteProcessChooser::Instance()->ClearCache(realHostName);
 
     char message[200];
     int  index = GetEngineIndex(realHostName);

@@ -21,7 +21,10 @@ class RemoteProcess;
 // Creation:   Fri May 2 14:12:55 PST 2003
 //
 // Modifications:
-//   
+//    Jeremy Meredith, Tue Jun 17 11:55:51 PDT 2003
+//    Added parallel functions that were only needed for the engine but
+//    that are helpful to have in the base class.
+//
 // ****************************************************************************
 
 class PROXYBASE_API RemoteProxyBase
@@ -40,6 +43,11 @@ public:
 
     virtual bool Parallel() const;
     virtual std::string GetComponentName() const = 0;
+
+    virtual void SetNumProcessors(int)  { }
+    virtual void SetNumNodes(int)       { }
+    virtual void SetLoadBalancing(int)  { }
+
 protected:
     virtual void         SetupComponentRPCs() = 0;
     std::string          GetVisItString() const;

@@ -203,6 +203,9 @@
 #    Brad Whitlock, Fri May 2 15:49:25 PST 2003
 #    I added -lproxybase, -lvclproxy, and -lvclrpc to the list of libs.
 #
+#    Jeremy Meredith, Thu Jun 26 10:39:54 PDT 2003
+#    Renamed ViewerEngineChooser to ViewerRemoteProcessChooser.
+#
 ##############################################################################
 
 ##
@@ -253,7 +256,6 @@ SRC= \
     ViewerConfigManager.C \
     ViewerConnectionProgressDialog.C \
     ViewerEngineManager.C \
-    ViewerEngineChooser.C \
     ViewerExpressionList.C \
     ViewerFileServer.C \
     ViewerHostProfileSelector.C \
@@ -271,6 +273,7 @@ SRC= \
     ViewerPopupMenu.C \
     ViewerQuery.C \
     ViewerQueryManager.C \
+    ViewerRemoteProcessChooser.C \
     ViewerRPCObserver.C \
     ViewerServerManager.C \
     ViewerSubject.C \

@@ -53,7 +53,7 @@
 #include <ViewerExpressionList.h>
 #include <ViewerConfigManager.h>
 #include <ViewerEngineManager.h>
-#include <ViewerEngineChooser.h>
+#include <ViewerRemoteProcessChooser.h>
 #include <ViewerFileServer.h>
 #include <ViewerMessageBuffer.h>
 #include <ViewerOperatorFactory.h>
@@ -1387,6 +1387,9 @@ ViewerSubject::ProcessCommandLine1(int *argc, char ***argv)
 //    preshift, and geometry be real strings so the viewer does not crash
 //    on exit in some situations.
 //
+//    Jeremy Meredith, Thu Jun 26 10:52:32 PDT 2003
+//    Renamed ViewerEngineChooser to ViewerRemoteProcessChooser.
+//
 // ****************************************************************************
 
 void
@@ -1547,7 +1550,7 @@ ViewerSubject::ProcessCommandLine2(int *argc, char ***argv)
         {
             InitVTK::ForceMesa();
             ViewerWindow::SetNoWinMode(true);
-            ViewerEngineChooser::SetNoWinMode(true);
+            ViewerRemoteProcessChooser::SetNoWinMode(true);
             avtCallback::SetNowinMode(true);
             nowin = true;
         }

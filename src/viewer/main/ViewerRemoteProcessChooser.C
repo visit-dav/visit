@@ -1,10 +1,10 @@
-#include "ViewerEngineChooser.h"
+#include "ViewerRemoteProcessChooser.h"
 
 
 #include <HostProfileList.h>
-#include <EngineProxy.h>
 #include <ViewerHostProfileSelectorNoWin.h>
 #include <ViewerHostProfileSelectorWithWin.h>
+#include <RemoteProxyBase.h>
 
 #include <stdio.h>
 #include <snprintf.h>
@@ -14,11 +14,11 @@
 #include <string>
 using std::string;
 
-bool ViewerEngineChooser::nowin = false;
-ViewerEngineChooser *ViewerEngineChooser::instance = NULL;
+bool ViewerRemoteProcessChooser::nowin = false;
+ViewerRemoteProcessChooser *ViewerRemoteProcessChooser::instance = NULL;
 
 // ****************************************************************************
-//  Constructor:  ViewerEngineChooser::ViewerEngineChooser
+//  Constructor:  ViewerRemoteProcessChooser::ViewerRemoteProcessChooser
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    August 14, 2002
@@ -29,7 +29,7 @@ ViewerEngineChooser *ViewerEngineChooser::instance = NULL;
 //
 // ****************************************************************************
 
-ViewerEngineChooser::ViewerEngineChooser()
+ViewerRemoteProcessChooser::ViewerRemoteProcessChooser()
 {
     if (nowin)
         selector = new ViewerHostProfileSelectorNoWin();
@@ -38,7 +38,7 @@ ViewerEngineChooser::ViewerEngineChooser()
 }
 
 // ****************************************************************************
-//  Destructor:  ViewerEngineChooser::~ViewerEngineChooser
+//  Destructor:  ViewerRemoteProcessChooser::~ViewerRemoteProcessChooser
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    August 14, 2002
@@ -49,7 +49,7 @@ ViewerEngineChooser::ViewerEngineChooser()
 //
 // ****************************************************************************
 
-ViewerEngineChooser::~ViewerEngineChooser()
+ViewerRemoteProcessChooser::~ViewerRemoteProcessChooser()
 {
     if (selector)
         delete selector;
@@ -57,60 +57,62 @@ ViewerEngineChooser::~ViewerEngineChooser()
 
 
 // ****************************************************************************
-//  Method:  ViewerEngineChooserNoWin::GetNewEngine
+//  Method:  ViewerRemoteProcessChooserNoWin::SelectProfile
 //
 //  Purpose:
-//    Launches an engine on a host with the extra given args.
+//    Calls the chosen style of host profile selector.
 //
 //  Arguments:
-//    hostName    : the host name
-//    arguments   : the arguments
+//    hostProfileList : all host profiles
+//    hostName        : the host name
+//    skipChooser     : true if no window should appear
 //
 //  Programmer:  Jeremy Meredith
-//  Creation:    August 14, 2002
+//  Creation:    June 26, 2003
 //
 //  Modifications:
-//    Jeremy Meredith, Sat Aug 17 10:59:48 PDT 2002
-//    Added support for nowin mode.
-//
-//    Brad Whitlock, Wed Nov 27 13:39:50 PST 2002
-//    I added code to set certain parallel options into the EngineProxy
-//    so that they can be queried easily later.
-//
-//    Jeremy Meredith, Wed Dec 18 17:18:05 PST 2002
-//    Added skip option so that we completely avoid the chooser.
-//    Also added code to temporarily block socket signals to the viewer.
-//    Not doing so was breaking synchronization with the CLI through
-//    a race condition to grab the signals.
-//
-//    Kathleen Bonnell, Wed Feb  5 09:40:21 PST 2003  
-//    Moved host-profile-selection code to ViewerHostProfileSelector. 
-//    
-//    Jeremy Meredith, Fri Jan 24 15:23:54 PST 2003
-//    Added optional arguments to the parallel launcher program.
-//
 // ****************************************************************************
 
-EngineProxy *
-ViewerEngineChooser::GetNewEngine(HostProfileList *hostProfileList,
-                             const string &hostName, bool skipChooser)
+bool
+ViewerRemoteProcessChooser::SelectProfile(HostProfileList *hostProfileList,
+                                          const string &hostName,
+                                          bool skipChooser)
+{
+    // sets profile
+    return selector->SelectProfile(hostProfileList, hostName, skipChooser);
+}
+
+// ****************************************************************************
+//  Method:  ViewerRemoteProcessChooserNoWin::AddProfileArguments
+//
+//  Purpose:
+//    Adds the appropriate arguments to a remote proxy.
+//
+//  Arguments:
+//    proxy           : the remote process proxy
+//    addParallelArgs : true if this process is going to launch itself
+//                      in parallel, and false if the vcl has already
+//                      created a parallel job and we just need to
+//                      choose the parallel engine when needed
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    June 26, 2003
+//
+//  Modifications:
+// ****************************************************************************
+
+void
+ViewerRemoteProcessChooser::AddProfileArguments(RemoteProxyBase *proxy,
+                                                bool addParallelArgs)
 {
     int  i;
 
-    // sets profile
-    if (!selector->SelectProfile(hostProfileList, hostName, skipChooser))
-    {
-        return NULL;
-    }
-
     const HostProfile profile = selector->GetHostProfile();
-
-    EngineProxy *newEngine = new EngineProxy;
 
     //
     // Set the user's login name.
     //
-    newEngine->SetRemoteUserName(profile.GetUserName().c_str());
+    proxy->SetRemoteUserName(profile.GetUserName());
 
     //
     // Add the parallel arguments.
@@ -118,92 +120,125 @@ ViewerEngineChooser::GetNewEngine(HostProfileList *hostProfileList,
     if (profile.GetParallel())
     {
         char temp[10];
+        if (!addParallelArgs)
+        {
+            proxy->AddArgument("-par");
+        }
+
         SNPRINTF(temp, 10, "%d", profile.GetNumProcessors());
-        newEngine->AddArgument("-np");
-        newEngine->AddArgument(temp);
-        newEngine->SetNumProcessors(profile.GetNumProcessors());
+        if (addParallelArgs)
+        {
+            proxy->AddArgument("-np");
+            proxy->AddArgument(temp);
+        }
+        proxy->SetNumProcessors(profile.GetNumProcessors());
 
         if (profile.GetNumNodesSet() &&
             profile.GetNumNodes() > 0)
         {
             SNPRINTF(temp, 10, "%d", profile.GetNumNodes());
-            newEngine->AddArgument("-nn");
-            newEngine->AddArgument(temp);
-            newEngine->SetNumNodes(profile.GetNumNodes());
+            if (addParallelArgs)
+            {
+                proxy->AddArgument("-nn");
+                proxy->AddArgument(temp);
+            }
+            proxy->SetNumNodes(profile.GetNumNodes());
         }
 
         if (profile.GetPartitionSet() &&
             profile.GetPartition().length() > 0)
         {
-            newEngine->AddArgument("-p");
-            newEngine->AddArgument(profile.GetPartition().c_str());
+            if (addParallelArgs)
+            {
+                proxy->AddArgument("-p");
+                proxy->AddArgument(profile.GetPartition());
+            }
         }
 
         if (profile.GetBankSet() &&
             profile.GetBank().length() > 0)
         {
-            newEngine->AddArgument("-b");
-            newEngine->AddArgument(profile.GetBank().c_str());
+            if (addParallelArgs)
+            {
+                proxy->AddArgument("-b");
+                proxy->AddArgument(profile.GetBank());
+            }
         }
 
         if (profile.GetTimeLimitSet() &&
             profile.GetTimeLimit().length() > 0)
         {
-            newEngine->AddArgument("-t");
-            newEngine->AddArgument(profile.GetTimeLimit().c_str());
+            if (addParallelArgs)
+            {
+                proxy->AddArgument("-t");
+                proxy->AddArgument(profile.GetTimeLimit());
+            }
         }
 
         if (profile.GetLaunchMethodSet() &&
             profile.GetLaunchMethod().length() > 0)
         {
-            newEngine->AddArgument("-l");
-            newEngine->AddArgument(profile.GetLaunchMethod().c_str());
+            if (addParallelArgs)
+            {
+                proxy->AddArgument("-l");
+                proxy->AddArgument(profile.GetLaunchMethod());
+            }
         }
 
         if (profile.GetLaunchArgsSet() &&
             profile.GetLaunchArgs().length() > 0)
         {
-            newEngine->AddArgument("-la");
-            newEngine->AddArgument(profile.GetLaunchArgs().c_str());
+            if (addParallelArgs)
+            {
+                proxy->AddArgument("-la");
+                proxy->AddArgument(profile.GetLaunchArgs());
+            }
         }
 
 #if 0 // disabling dynamic load balancing for now
         if (profile.GetForceStatic())
         {
-            newEngine->AddArgument("-forcestatic");
-            newEngine->SetLoadBalancing(0);
+            if (addParallelArgs)
+            {
+                proxy->AddArgument("-forcestatic");
+            }
+            proxy->SetLoadBalancing(0);
         }
 
         if (profile.GetForceDynamic())
         {
-            newEngine->AddArgument("-forcedynamic");
-            newEngine->SetLoadBalancing(1);
+            if (addParallelArgs)
+            {
+                proxy->AddArgument("-forcedynamic");
+            }
+            proxy->SetLoadBalancing(1);
         }
 #else
         // force all static until speed issues are resolved
-        newEngine->AddArgument("-forcestatic");
-        newEngine->SetLoadBalancing(0);
+        if (addParallelArgs)
+        {
+            proxy->AddArgument("-forcestatic");
+        }
+        proxy->SetLoadBalancing(0);
 #endif
     }
 
     // Add the timeout argument
     char temp[10];
     SNPRINTF(temp, 10, "%d", profile.GetTimeout());
-    newEngine->AddArgument("-timeout");
-    newEngine->AddArgument(temp);
+    proxy->AddArgument("-timeout");
+    proxy->AddArgument(temp);
 
     //
     // Add any additional arguments specified in the profile
     //
     for (i = 0; i < profile.GetArguments().size(); ++i)
-        newEngine->AddArgument(profile.GetArguments()[i].c_str());
-
-    return newEngine;
+        proxy->AddArgument(profile.GetArguments()[i]);
 }
 
 
 // ****************************************************************************
-//  Method:  ViewerEngineChooser::ClearCache
+//  Method:  ViewerRemoteProcessChooser::ClearCache
 //
 //  Purpose:
 //    Erases previous settings for re-launching engines.
@@ -223,7 +258,7 @@ ViewerEngineChooser::GetNewEngine(HostProfileList *hostProfileList,
 // ****************************************************************************
 
 void
-ViewerEngineChooser::ClearCache(const std::string &hostName)
+ViewerRemoteProcessChooser::ClearCache(const std::string &hostName)
 {
     if (selector)
         selector->ClearCache(hostName);
@@ -231,7 +266,7 @@ ViewerEngineChooser::ClearCache(const std::string &hostName)
 
 
 // ****************************************************************************
-//  Method:  ViewerEngineChooser::Instance
+//  Method:  ViewerRemoteProcessChooser::Instance
 //
 //  Purpose:
 //    Gets (and creates on demand) the global instance of the dialog.
@@ -241,17 +276,17 @@ ViewerEngineChooser::ClearCache(const std::string &hostName)
 //
 // ****************************************************************************
 
-ViewerEngineChooser *
-ViewerEngineChooser::Instance()
+ViewerRemoteProcessChooser *
+ViewerRemoteProcessChooser::Instance()
 {
     if (!instance)
-        instance = new ViewerEngineChooser();
+        instance = new ViewerRemoteProcessChooser();
     return instance;
 }
 
 
 // ****************************************************************************
-//  Method:  ViewerEngineChooser::SetNoWinMode
+//  Method:  ViewerRemoteProcessChooser::SetNoWinMode
 //
 //  Purpose:
 //    Sets nowin mode.
@@ -265,7 +300,7 @@ ViewerEngineChooser::Instance()
 // ****************************************************************************
 
 void
-ViewerEngineChooser::SetNoWinMode(bool nw)
+ViewerRemoteProcessChooser::SetNoWinMode(bool nw)
 {
     nowin = nw;
 }

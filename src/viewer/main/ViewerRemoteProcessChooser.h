@@ -1,15 +1,15 @@
-#ifndef VIEWERENGINECHOOSER_H
-#define VIEWERENGINECHOOSER_H
+#ifndef VIEWERREMOTEPROCESSCHOOSER_H
+#define VIEWERREMOTEPROCESSCHOOSER_H
 #include <viewer_exports.h>
 
 #include <string>
 
 class HostProfileList;
-class EngineProxy;
+class RemoteProxyBase;
 class ViewerHostProfileSelector;
 
 // ****************************************************************************
-//  Class:  ViewerEngineChooser
+//  Class:  ViewerRemoteProcessChooser
 //
 //  Purpose:
 //    Picks a host profile and some parallel settings to launch the engine.
@@ -28,23 +28,30 @@ class ViewerHostProfileSelector;
 //    Moved host-profile selection code to ViewerHostProfileSelector. Added
 //    member selector. 
 //
+//    Jeremy Meredith, Thu Jun 26 10:54:37 PDT 2003
+//    Renamed to ViewerRemoteProcessChooser.  Split GetNewEngine into two
+//    functions (SelectProfile and AddProfileArguments) so that the caller
+//    could create a new proxy itself.  This disassociates this object
+//    from the Engine and lets it be used with the VCL (for example).
+//
 // ****************************************************************************
-class VIEWER_API ViewerEngineChooser 
+class VIEWER_API ViewerRemoteProcessChooser 
 {
   public:
-    ~ViewerEngineChooser();
+    ~ViewerRemoteProcessChooser();
 
-    static ViewerEngineChooser *Instance();
+    static ViewerRemoteProcessChooser *Instance();
     static void SetNoWinMode(bool nw);
-    EngineProxy *GetNewEngine(HostProfileList*, const std::string&, bool skip);
+    bool SelectProfile(HostProfileList*, const std::string&, bool skip);
+    void AddProfileArguments(RemoteProxyBase*, bool addParallelArgs);
     void ClearCache(const std::string&);
 
   private:
     static bool nowin;
-    static ViewerEngineChooser *instance;
+    static ViewerRemoteProcessChooser *instance;
 
     ViewerHostProfileSelector *selector;
-    ViewerEngineChooser();
+    ViewerRemoteProcessChooser();
 };
 
 #endif

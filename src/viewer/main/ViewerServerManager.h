@@ -21,7 +21,9 @@ class ViewerConnectionProgressDialog;
 // Creation:   Fri May 3 16:04:21 PST 2002
 //
 // Modifications:
-//   
+//    Jeremy Meredith, Thu Jun 26 10:50:36 PDT 2003
+//    Added ShouldShareBatchJob function.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerServerManager
@@ -40,6 +42,7 @@ public:
 
     static HostProfileList *GetClientAtts();
 protected:
+    static bool ShouldShareBatchJob(const std::string &host);
     static void AddArguments(RemoteProxyBase *component,
                       const stringVector &args);
     static void AddProfileArguments(RemoteProxyBase *component,

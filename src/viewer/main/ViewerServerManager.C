@@ -11,6 +11,7 @@
 #include <ViewerConnectionProgressDialog.h>
 #include <ViewerPasswordWindow.h>
 #include <ViewerSubject.h>
+#include <ViewerRemoteProcessChooser.h>
 
 #include <DebugStream.h>
 #include <avtCallback.h>
@@ -267,6 +268,41 @@ ViewerServerManager::AddProfileArguments(RemoteProxyBase *component,
 }
 
 // ****************************************************************************
+//  Method: ViewerServerManager::ShouldShareBatchJob
+//
+//  Purpose: 
+//    This method finds a host profile that matches the specified hostname
+//    and checks if the MDServer and Engine should share a single batch
+//    job.  (If so, then the launcher should start in batch.)
+//
+//  Arguments:
+//    host      : The host where the component will be run.
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   June 17, 2003
+//
+//  Modifications:
+//   
+// ****************************************************************************
+
+bool
+ViewerServerManager::ShouldShareBatchJob(const std::string &host)
+{
+    //
+    // Check for a host profile for the hostName. If one exists, check it.
+    //
+    const HostProfile *profile = clientAtts->FindMatchingProfileForHost(host);
+    if (profile != 0)
+    {
+        return profile->GetShareOneBatchJob();
+    }
+    else
+    {
+        return false;
+    }
+}
+
+// ****************************************************************************
 // Method: ViewerServerManager::AddArguments
 //
 // Purpose: 
@@ -404,6 +440,11 @@ ViewerServerManager::CloseLaunchers()
 //   Brad Whitlock, Tue Jun 10 14:21:38 PST 2003
 //   I made it use the visitPath if it is a valid value.
 //
+//   Jeremy Meredith, Thu Jun 26 10:51:14 PDT 2003
+//   Added ability for launcher to start a parallel batch job
+//   for itself, the mdserver, and the engine if they are told
+//   to share one batch job in the host profile.
+//
 // ****************************************************************************
 
 void
@@ -412,7 +453,18 @@ ViewerServerManager::StartLauncher(const std::string &host,
 {
     if(launchers.find(host) == launchers.end())
     {
-        // Create a new laucnher proxy and add the right arguments to it.
+        if (ShouldShareBatchJob(host))
+        {
+            ViewerRemoteProcessChooser *chooser =
+                ViewerRemoteProcessChooser::Instance();
+
+            chooser->ClearCache(host);
+
+            if (! chooser->SelectProfile(clientAtts,host,false))
+                return;
+        }
+
+        // Create a new launcher proxy and add the right arguments to it.
         LauncherProxy *newLauncher = new LauncherProxy;
         stringVector args;
         if(visitPath.size() > 0)
@@ -421,7 +473,18 @@ ViewerServerManager::StartLauncher(const std::string &host,
             args.push_back(visitPath);
         }
         AddArguments(newLauncher, args);
-        AddProfileArguments(newLauncher, host);
+
+        if (ShouldShareBatchJob(host))
+        {
+            ViewerRemoteProcessChooser *chooser =
+                ViewerRemoteProcessChooser::Instance();
+
+            chooser->AddProfileArguments(newLauncher, true);
+        }
+        else
+        {
+            AddProfileArguments(newLauncher, host);
+        }
 
         TRY
         {
