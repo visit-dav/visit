@@ -337,7 +337,8 @@ ViewerPlotList::HasActiveTimeSlider() const
 //
 // Modifications:
 //   Brad Whitlock, Fri Apr 2 14:43:29 PST 2004
-//   I added keyframing support.
+//   I added keyframing support and added conditionally compiled debugging
+//   statements.
 //
 // ****************************************************************************
 
@@ -370,7 +371,13 @@ ViewerPlotList::GetTimeSliderInformation(int &activeTS,
         StringIntMap::const_iterator pos =
             timeSliders.find(plots[index].plot->GetSource());
         if(pos != timeSliders.end())
+        {
+#ifdef debug_GetTimeSliderInformation
+            debug3 << "Adding plot " << index << "'s source:"
+                   << pos->first.c_str() << endl;
+#endif
             uniqueTSNames[pos->first] = pos->second;
+        }
     }
 
     //
@@ -402,7 +409,12 @@ ViewerPlotList::GetTimeSliderInformation(int &activeTS,
                 // sliders so we can add it.
                 StringIntMap::const_iterator ts = timeSliders.find(c.GetName());
                 if(ts != timeSliders.end())
+                {
+#ifdef debug_GetTimeSliderInformation
+                    debug3 << "Added correlation " << ts->first << endl;
+#endif
                     uniqueTSNames[ts->first] = ts->second;
+                }
             }
         }
     }
@@ -415,7 +427,12 @@ ViewerPlotList::GetTimeSliderInformation(int &activeTS,
         StringIntMap::const_iterator pos = uniqueTSNames.find(activeTimeSlider);
         StringIntMap::const_iterator pos2 = timeSliders.find(activeTimeSlider);
         if(pos == uniqueTSNames.end() && pos2 != timeSliders.end())
+        {
+#ifdef debug_GetTimeSliderInformation
+            debug3 << "Added active time slider: " << pos2->first << endl;
+#endif
             uniqueTSNames[pos2->first] = pos2->second;                
+        }
     }
 
     //
@@ -429,7 +446,12 @@ ViewerPlotList::GetTimeSliderInformation(int &activeTS,
     {
         StringIntMap::const_iterator pos = timeSliders.find(hostDatabaseName);
         if(pos != timeSliders.end())
-            uniqueTSNames[pos->first] = pos->second;        
+        {
+#ifdef debug_GetTimeSliderInformation
+            debug3 << "Added active source: " << pos->first << endl;
+#endif
+            uniqueTSNames[pos->first] = pos->second;
+        }
     }
 
     //
@@ -453,7 +475,8 @@ ViewerPlotList::GetTimeSliderInformation(int &activeTS,
     }
 
     // Print out the time slider list.
-#if 0
+#ifdef debug_GetTimeSliderInformation
+    debug3 << "*******\nActive time slider index: " << activeTS << endl;
     for(index = 0; index < tsNames.size(); ++index)
     {
         debug3 << "    " << tsNames[index]
@@ -530,6 +553,104 @@ ViewerPlotList::CreateTimeSlider(const std::string &newTimeSlider, int state)
 }
 
 // ****************************************************************************
+// Method: ViewerPlotList::ValidateTimeSlider
+//
+// Purpose: 
+//   Makes sure that we don't have a time slider if it is not appropriate to
+//   have one.
+//
+// Arguments:
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Apr 19 08:59:42 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerPlotList::ValidateTimeSlider()
+{
+    ViewerFileServer *fs = ViewerFileServer::Instance();
+    DatabaseCorrelationList *cL = fs->GetDatabaseCorrelationList();
+
+    if(HasActiveTimeSlider())
+    {
+        // There is an active time slider.
+        // If the active source is an MT database and it is not used in the
+        // active time slider's correlation, change the active time slider
+        // so we use the active source.
+        DatabaseCorrelation *tsCorrelation = cL->
+            FindCorrelation(activeTimeSlider);
+        if(tsCorrelation != 0)
+        {
+            //
+            // Get a list of the MT sources between the plot list and the
+            // active source.
+            //
+            int MTcount = 0;
+            bool hostDBIsMT = false;
+            if(cL->FindCorrelation(hostDatabaseName) != 0)
+            {
+                ++MTcount;
+                hostDBIsMT = true;
+            }
+
+            for(int i = 0; i < nPlots; ++i)
+            {
+                if(cL->FindCorrelation(plots[i].plot->GetSource()) != 0)
+                    ++MTcount;
+            }
+
+            if(MTcount == 0)
+            {
+                debug1 << "There were no MT databases so there can't be "
+                          "an active time slider." << endl;
+                activeTimeSlider = "";
+            }
+            else
+            {
+                // The active source is MT
+                if(hostDBIsMT)
+                {
+                    if(!tsCorrelation->UsesDatabase(hostDatabaseName))
+                    {
+                        debug1 << "The plot list was using a time slider "
+                                  "that was not compatible with the active "
+                                  "source: "
+                               << hostDatabaseName.c_str()
+                               << " so use the active source for the new "
+                                  "time slider." << endl;
+                        activeTimeSlider = hostDatabaseName;
+                    }
+                }
+                // else do nothing because even though the hostDB is ST
+                // there are other plots that are MT so don't change the
+                // time slider.
+            }
+        }
+    }
+    else
+    {
+        // If there is no time slider but our active source is MT then
+        // set the time slider to be the active source.
+        DatabaseCorrelation *srcCorrelation = cL->
+            FindCorrelation(hostDatabaseName);
+        if(srcCorrelation != 0)
+        {
+            if(TimeSliderExists(hostDatabaseName))
+                activeTimeSlider = hostDatabaseName;
+            else
+                CreateTimeSlider(hostDatabaseName, 0);
+        }
+    }
+}
+
+// ****************************************************************************
 // Method: ViewerPlotList::GetTimeSliderStates
 //
 // Purpose: 
@@ -602,17 +723,15 @@ ViewerPlotList::GetTimeSliderStates(const std::string &ts, int &state,
 // Creation:   April 16, 2004
 //
 // Modifications:
+//   Brad Whitlock, Mon Apr 19 08:27:20 PDT 2004
+//   Removed unnecessary coding.
 //
 // ****************************************************************************
 
 bool
 ViewerPlotList::TimeSliderExists(const std::string &ts) const
 {
-    ViewerFileServer *fs = ViewerFileServer::Instance();
-    DatabaseCorrelationList *cL = fs->GetDatabaseCorrelationList();
-
-    StringIntMap::const_iterator pos = timeSliders.find(ts);
-    return pos != timeSliders.end();
+    return timeSliders.find(ts) != timeSliders.end();
 }
 
 // ****************************************************************************
@@ -3072,6 +3191,10 @@ ViewerPlotList::DeletePlot(ViewerPlot *whichOne, bool doUpdate)
 //    call to set the opaque flag for mesh plots since it is now done when
 //    plots are added to the window.
 //
+//    Brad Whitlock, Mon Apr 19 08:30:55 PDT 2004
+//    I added code to make sure that we don't set the time slider to the
+//    active source unless the active source is an MT database.
+//
 // ****************************************************************************
 
 void
@@ -3129,7 +3252,8 @@ ViewerPlotList::DeleteActivePlots()
             DatabaseCorrelation *tsCorrelation = cL->FindCorrelation(
                 activeTimeSlider);
             if(tsCorrelation != 0 &&
-               !tsCorrelation->UsesDatabase(hostDatabaseName))
+               !tsCorrelation->UsesDatabase(hostDatabaseName) &&
+               cL->FindCorrelation(hostDatabaseName) != 0)
             {
                 SetActiveTimeSlider(hostDatabaseName);
 

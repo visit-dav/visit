@@ -5126,7 +5126,12 @@ ViewerWindowManager::SetActiveTimeSlider(const std::string &ts, int windowIndex)
 // Modifications:
 //   Eric Brugger, Fri Apr 16 18:43:42 PDT 2004
 //   I modified the logic concerning the creation of a new time slider.
-//   
+//
+//   Brad Whitlock, Mon Apr 19 08:46:00 PDT 2004
+//   I removed the code to update the window information. I moved it up
+//   a level so the caller of this method is now responsible for updating
+//   the window information.
+//
 // ****************************************************************************
 
 void
@@ -5198,9 +5203,6 @@ ViewerWindowManager::CreateDatabaseCorrelation(const std::string &name,
                 }
             }
 
-            UpdateWindowInformation(WINDOWINFO_TIMESLIDERS |
-                                    WINDOWINFO_ANIMATION);
-
             delete correlation;
         }
     }
@@ -5234,7 +5236,10 @@ ViewerWindowManager::CreateDatabaseCorrelation(const std::string &name,
 // Creation:   Mon Mar 29 11:23:35 PDT 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Apr 19 08:50:47 PDT 2004
+//   I removed the code to update the window information since it is already
+//   done by the caller and the update here caused 2 updates.
+//
 // ****************************************************************************
 
 void
@@ -5283,9 +5288,6 @@ ViewerWindowManager::AlterDatabaseCorrelation(const std::string &name,
                 }
 
                 delete newCorrelation;
-
-                UpdateWindowInformation(WINDOWINFO_TIMESLIDERS |
-                                        WINDOWINFO_ANIMATION);
             }
         }
     }

@@ -204,6 +204,9 @@ typedef struct
 //   Kathleen Bonnell, Tue Jan 13 08:48:14 PST 2004 
 //   Added BadNodeException.
 //
+//   Mark C. Miller, Mon Apr 19 11:41:07 PDT 2004
+//   Added PlotterException base class for plotter exceptions
+//
 
 static const exception_info exception_tree[] =
 {
@@ -236,7 +239,7 @@ static const exception_info exception_tree[] =
     {"IntervalTreeNotCalculatedException", "PipelineException"},
     {"InvalidCategoryException",           "PipelineException"},
     {"InvalidCellTypeException",           "PipelineException"},
-    {"InvalidColortableException",         "VisItException"},
+    {"InvalidColortableException",         "PlotterException"},
     {"InvalidDBTypeException",             "DatabaseException"},
     {"InvalidDimensionsException",         "PipelineException"},
     {"InvalidDirectoryException",          "VisItException"},

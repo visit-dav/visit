@@ -374,7 +374,7 @@ private:
     void InitializeWorkArea();
     void ProcessSpecialOpcodes(int opcode);
     void OpenDatabaseHelper(const std::string &db, int timeState,
-                            bool loadDefaultPlots);
+                            bool loadDefaultPlots, bool udpateWindowInfo);
 
     DataNode *CreateAttributesDataNode(const avtDefaultPlotMetaData *) const;
 
