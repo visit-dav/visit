@@ -537,6 +537,9 @@ dnl
 dnl    Brad Whitlock, Thu Jan 6 13:01:21 PST 2005
 dnl    Added support for creating a link to the HDF4 libraries on MacOS X.
 dnl
+dnl    Jeremy Meredith, Tue Feb 22 18:48:19 PST 2005
+dnl    Renamed "convert" to "visitconvert".
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -864,9 +867,9 @@ AC_SUBST(AVTPREP_PAR)
 AC_MSG_CHECKING(for convert)
 if test -d tools/convert; then
     AC_MSG_RESULT(found)
-    CONVERT_SER="$""(tmpbin)/convert_ser"
+    CONVERT_SER="$""(tmpbin)/visitconvert_ser"
     if test -n "$PARALLEL"; then
-        CONVERT_PAR="$""(tmpbin)/convert_par"
+        CONVERT_PAR="$""(tmpbin)/visitconvert_par"
     else
         CONVERT_PAR=""
     fi

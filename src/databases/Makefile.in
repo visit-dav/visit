@@ -135,6 +135,9 @@
 #   Hank Childs, Sun Feb 13 13:35:13 PST 2005
 #   Added SAR reader (SAR-> Specific Absorption Rate).
 #
+#   Jeremy Meredith, February 16, 2005
+#   Changed captilization of Tecplot.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -152,7 +155,7 @@ PDB=KullLite PDB
 SAF=SAF
 SAMPLES=Rect Hex
 REQUIRED=ANALYZE BOV CMAT Curve2D Dune EnSight Image Lines OVERFLOW \
- PLOT2D PLOT3D Point3D SAR STL Silo SimDB Spheral TecPlot Vista VTK WavefrontOBJ
+ PLOT2D PLOT3D Point3D SAR STL Silo SimDB Spheral Tecplot Vista VTK WavefrontOBJ
 VISUS=ViSUS
 
 OPTIONAL=

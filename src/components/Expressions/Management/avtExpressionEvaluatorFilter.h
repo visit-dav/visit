@@ -12,6 +12,7 @@
 
 #include <ExprPipelineState.h>
 
+class avtSourceFromAVTDataset;
 
 // ****************************************************************************
 //  Class: avtExpressionEvaluatorFilter

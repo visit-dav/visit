@@ -117,6 +117,9 @@
 //    Mark C. Miller, Mon Feb 14 20:27:12 PST 2005
 //    Added output of SRC make macro for .depend to work in plugin dirs
 //
+//    Jeremy Meredith, Tue Feb 22 18:43:25 PST 2005
+//    Removed the database writer from the mdserver plugin.
+//
 // ****************************************************************************
 
 class MakefileGeneratorPlugin
@@ -483,10 +486,6 @@ class MakefileGeneratorPlugin
             {
                 out << endl;
                 out << "MSPECIFICSRC=";
-            }
-            if (haswriter)
-            {
-                out << " avt" << name << "Writer.C";
             }
             if (custommfiles)
                 for (int i=0; i<mfiles.size(); i++)

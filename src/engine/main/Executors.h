@@ -146,7 +146,11 @@ RPCExecutor<KeepAliveRPC>::Execute(KeepAliveRPC *rpc)
 //    Jeremy Meredith, Tue Mar 23 14:41:33 PST 2004
 //    Added the file format as an argument to StartNetwork.
 //
+//    Brad Whitlock, Tue Feb 22 12:38:39 PDT 2005
+//    I changed the interface to StartNetwork.
+//
 // ****************************************************************************
+
 template<>
 void
 RPCExecutor<ReadRPC>::Execute(ReadRPC *rpc)
@@ -158,8 +162,11 @@ RPCExecutor<ReadRPC>::Execute(ReadRPC *rpc)
     TRY
     {
         DatabasePluginManager::Instance()->PluginAvailable(rpc->GetFormat());
-        netmgr->StartNetwork(rpc->GetFile(), rpc->GetFormat(),
-                             rpc->GetVar(), rpc->GetTime(),
+
+        netmgr->StartNetwork(rpc->GetFormat(),
+                             rpc->GetFile(), 
+                             rpc->GetVar(),
+                             rpc->GetTime(),
                              rpc->GetCSRAttributes(),
                              rpc->GetMaterialAttributes());
         rpc->SendReply();

@@ -5699,6 +5699,9 @@ ViewerWindowManager::GetDatabasesForWindows(const intVector &windowIds,
 //    Brad Whitlock, Fri Feb 4 08:17:31 PDT 2005
 //    Added code to tell the mdserver to close its database.
 //
+//    Brad Whitlock, Tue Feb 22 14:37:14 PST 2005
+//    Guarded against a NULL metadata pointer.
+//
 // ****************************************************************************
 
 void
@@ -5715,7 +5718,7 @@ ViewerWindowManager::CloseDatabase(const std::string &dbName)
 
     std::string sim = "";
     const avtDatabaseMetaData *md = fs->GetMetaData(host, db);
-    if (md->GetIsSimulation())
+    if (md != 0 && md->GetIsSimulation())
         sim = db;
 
     if(FileInUse(host, db))

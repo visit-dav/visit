@@ -41,11 +41,13 @@ enhancements and bug-fixes that were added to this release.</p>
 </ul>
 <p><b><font size="4">Bugs fixed in version 1.4.2</font></b></p>
 <ul>
+<li>Images printed by VisIt have horizontal bands that reduce their quality.</li>
 <li>VisIt's expression evaluator has a large memory leak.</li>
 <li>VisIt cannot read Boxlib files whose <i>Header</i> file is not located in a <i>plt*</i> directory.</li>
 <li>VisIt's compute engine sometimes crashes when reading Silo files that contain arbitrary polyhedra.</li>
 <li>VisIt's compute engine crashes when reading Enzo files and domain nesting is enabled.</li>
 <li>When VisIt's compute engine exits on the White machine, several <i>MPI was not finalized</i> messages are printed to the console. </li>
+<li>VisIt's viewer crashes when performing an action that regenerates a plot whose database has been reopened after it was actually deleted from the disk.</li>
 <li>Expressions are lost when reopening a database when there are multiple visualization windows.</li>
 <li>VisIt's OnionPeel operator cannot be applied to a FilledBoundary plot or to plots that have had material interface reconstruction applied.</li>
 <li>VisIt's Label plot can cause the compute engine to crash when processing multiple domains where some domains contain empty polygonal data objects.</li>

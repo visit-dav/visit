@@ -599,11 +599,16 @@ MatchesSubstring(const char *c1, const char *c2)
 //    Hank Childs, Tue Jan 18 13:19:28 PST 2005
 //    Added support for extended pathnames.  Also beefed up substring matching.
 //
+//    Jeremy Meredith, Tue Feb 22 13:27:06 PST 2005
+//    Made lineSize a const.  Compilers other than g++ (like xlC) choke on
+//    automatic array variable allocation of sizes that are non-const, even
+//    if they are provably known at compile time.
+//
 // ****************************************************************************
 
 void vtkVisItPLOT3DReader::CollectInfo(char *x_file, char *s_file)
 {
-  int lineSize = 1024;
+  const int lineSize = 1024;
   int fileFound = 1;
   char infoLine [lineSize];
   FILE * vp3dFp;
@@ -2426,6 +2431,11 @@ void vtkVisItPLOT3DReader::RemoveAllFunctions()
 //  Programmer:  Abel Gezahegne
 //  Creation:    Sept. 12, 2004
 //
+//  Modifications:
+//    Jeremy Meredith, Tue Feb 22 12:57:17 PST 2005
+//    Since 'output' is a float*, not a float*&, we cannot meaningfully
+//    allocate space for it inside this method.  I disallowed it.
+//
 // ****************************************************************************
 
 int vtkVisItPLOT3DReader::ReadNumbers( FILE *fp, unsigned int numbersToRead, 
@@ -2433,7 +2443,7 @@ int vtkVisItPLOT3DReader::ReadNumbers( FILE *fp, unsigned int numbersToRead,
 {
   if (output == NULL)
   {
-    output = new float[numbersToRead];
+    return 1;
   }
 
   if (this->FileType == ASCII && this->Compression == UNCOMPRESSED_ASCII)
@@ -2444,17 +2454,17 @@ int vtkVisItPLOT3DReader::ReadNumbers( FILE *fp, unsigned int numbersToRead,
     }
   }
  
-  else if (this->FileType = ASCII && this->Compression == COMPRESSED_ASCII)
+  else if (this->FileType == ASCII && this->Compression == COMPRESSED_ASCII)
   {
     float multiplier;
     float multiplicand;
     char garbage[1024];
     for (unsigned int i = 0; i < numbersToRead;)
     {
-      fscanf(fp,"%f%[^0-9.-]s",&multiplier,&garbage);
+      fscanf(fp,"%f%[^0-9.-]s",&multiplier,garbage);
       if (strchr(garbage,'*'))
       {
-        fscanf(fp,"%f%[^0-9.-]s",&multiplicand,&garbage);
+        fscanf(fp,"%f%[^0-9.-]s",&multiplicand,garbage);
         for (int j = 0; j < (int)multiplier; j++)
         {
           output[i++] = multiplicand;
@@ -2527,12 +2537,21 @@ int vtkVisItPLOT3DReader::ReadNumbers( FILE *fp, unsigned int numbersToRead,
 //  Programmer:  Abel Gezahegne
 //  Creation:    Sept. 12, 2004
 //
+//  Modifications:
+//    Jeremy Meredith, Tue Feb 22 12:57:17 PST 2005
+//    Check for a NULL output array.
+//
 // ****************************************************************************
 
 
 int vtkVisItPLOT3DReader::ReadNumbers( FILE *fp, unsigned int numbersToRead, 
                                         int * output)
 {
+  if (output == NULL)
+  {
+    return 1;
+  }
+
   if (this->FileType == ASCII && this->Compression == UNCOMPRESSED_ASCII)
   {
     for (unsigned int i = 0; i < numbersToRead; i++)
@@ -2547,10 +2566,10 @@ int vtkVisItPLOT3DReader::ReadNumbers( FILE *fp, unsigned int numbersToRead,
     char garbage[1024];
     for (unsigned int i = 0; i < numbersToRead;)
     {
-      fscanf(fp,"%d%[^0-9.-]s",&multiplier,&garbage);
+      fscanf(fp,"%d%[^0-9.-]s",&multiplier,garbage);
       if (strchr(garbage,'*'))
       {
-        fscanf(fp,"%d%[^0-9.-]s",&multiplicand,&garbage);
+        fscanf(fp,"%d%[^0-9.-]s",&multiplicand,garbage);
         for (int j = 0; j < (int)multiplier; j++)
         {
           output[i++] = multiplicand;
@@ -2599,6 +2618,10 @@ int vtkVisItPLOT3DReader::ReadNumbers( FILE *fp, unsigned int numbersToRead,
 //  Programmer:  Abel Gezahegne
 //  Creation:    Sept. 12, 2004
 //
+//  Modifications:
+//    Jeremy Meredith, Tue Feb  8 18:17:05 PST 2005
+//    Allocated numbersToSkip before reading into it.
+//
 // ****************************************************************************
 
 int vtkVisItPLOT3DReader::ComputeGridOffset(FILE *fp)
@@ -2643,6 +2666,7 @@ int vtkVisItPLOT3DReader::ComputeGridOffset(FILE *fp)
         {
           numberOfElements = 3*GridSizes[j-1];
         }
+        numbersToSkip = new int[numberOfElements];
         fseek(fp,(long)(GridOffsets[j-1]),SEEK_SET);
         ReadNumbers(fp,numberOfElements,numbersToSkip);
         GridOffsets[j] = ftell(fp);
@@ -2662,6 +2686,10 @@ int vtkVisItPLOT3DReader::ComputeGridOffset(FILE *fp)
 //
 //  Programmer:  Abel Gezahegne
 //  Creation:    Sept. 12, 2004
+//
+//  Modifications:
+//    Jeremy Meredith, Tue Feb  8 18:17:05 PST 2005
+//    Allocated numbersToSkip before reading into it.
 //
 // ****************************************************************************
 
@@ -2695,6 +2723,7 @@ int vtkVisItPLOT3DReader::ComputeSolutionOffset(FILE *fp)
         int numberOfElements;
         numberOfElements = 4 + 5*GridSizes[j-1];
         fseek(fp,(long)SolutionOffsets[j-1],SEEK_SET);
+        numbersToSkip = new float[numberOfElements];
         ReadNumbers(fp,numberOfElements,numbersToSkip);
         SolutionOffsets[j] = ftell(fp);
       }

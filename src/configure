@@ -2494,9 +2494,9 @@ echo $ECHO_N "checking for convert... $ECHO_C" >&6
 if test -d tools/convert; then
     echo "$as_me:$LINENO: result: found" >&5
 echo "${ECHO_T}found" >&6
-    CONVERT_SER="$""(tmpbin)/convert_ser"
+    CONVERT_SER="$""(tmpbin)/visitconvert_ser"
     if test -n "$PARALLEL"; then
-        CONVERT_PAR="$""(tmpbin)/convert_par"
+        CONVERT_PAR="$""(tmpbin)/visitconvert_par"
     else
         CONVERT_PAR=""
     fi

@@ -45,6 +45,11 @@ class avtDatabaseWriter;
 //    Hank Childs, Thu Feb 19 10:01:47 PST 2004
 //    Added GetFilenames.  Made GetDefaultExtensions not be pure virtual.
 //
+//    Jeremy Meredith, Tue Feb 22 18:36:54 PST 2005
+//    Moved GetWriter to the engine so the mdserver doesn't need it.
+//    Added the general plugin info method HasWriter so the mdserver
+//    can still check if it is supported by the given plugin.
+//
 // ****************************************************************************
 
 class PLUGIN_API GeneralDatabasePluginInfo
@@ -54,6 +59,7 @@ class PLUGIN_API GeneralDatabasePluginInfo
     virtual char *GetVersion() const = 0;
     virtual char *GetID() const = 0;
     virtual bool  EnabledByDefault() const { return true; }
+    virtual bool  HasWriter() const { return false; }
 };
 
 class PLUGIN_API CommonDatabasePluginInfo : public virtual GeneralDatabasePluginInfo
@@ -66,7 +72,6 @@ class PLUGIN_API CommonDatabasePluginInfo : public virtual GeneralDatabasePlugin
                                    { std::vector<std::string> rv; return rv; };
     virtual avtDatabase              *SetupDatabase(const char * const *list,
                                                     int nList, int nBlock) = 0;
-    virtual avtDatabaseWriter        *GetWriter(void) { return NULL; };
 };
 
 class PLUGIN_API MDServerDatabasePluginInfo : public virtual CommonDatabasePluginInfo
@@ -79,8 +84,7 @@ class PLUGIN_API MDServerDatabasePluginInfo : public virtual CommonDatabasePlugi
 class PLUGIN_API EngineDatabasePluginInfo : public virtual CommonDatabasePluginInfo
 {
   public:
-    // this makes compilers happy... remove if we ever have functions here
-    virtual void dummy() = 0;
+    virtual avtDatabaseWriter        *GetWriter(void) { return NULL; };
 };
 
 #endif

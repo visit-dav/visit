@@ -518,18 +518,18 @@ ColorAttribute::ColorAttribute(int red, int green, int blue, int alpha) :
 void
 ColorAttribute::SetRgb(int red, int green, int blue)
 {
-    color[0] = (int)red;
-    color[1] = (int)green;
-    color[2] = (int)blue;
+    color[0] = (unsigned char)red;
+    color[1] = (unsigned char)green;
+    color[2] = (unsigned char)blue;
 }
 
 void
 ColorAttribute::SetRgba(int red, int green, int blue, int alpha)
 {
-    color[0] = (int)red;
-    color[1] = (int)green;
-    color[2] = (int)blue;
-    color[3] = (int)alpha;
+    color[0] = (unsigned char)red;
+    color[1] = (unsigned char)green;
+    color[2] = (unsigned char)blue;
+    color[3] = (unsigned char)alpha;
 }
 
 void
@@ -544,25 +544,25 @@ ColorAttribute::GetRgba(double c[4]) const
 void
 ColorAttribute::SetRed(int red)
 {
-    color[0] = (char)(red & 255);
+    color[0] = (unsigned char)(red & 255);
 }
 
 void
 ColorAttribute::SetGreen(int green)
 {
-    color[1] = (char)(green & 255);
+    color[1] = (unsigned char)(green & 255);
 }
 
 void
 ColorAttribute::SetBlue(int blue)
 {
-    color[2] = (char)(blue & 255);
+    color[2] = (unsigned char)(blue & 255);
 }
 
 void
 ColorAttribute::SetAlpha(int alpha)
 {
-    color[3] = (char)(alpha & 255);
+    color[3] = (unsigned char)(alpha & 255);
 }
 
 int
@@ -591,9 +591,9 @@ ColorAttribute::Alpha() const
 
 void ColorAttribute::SetRgba2(double c[4])
 {
-    color[0] = (unsigned) (c[0] * 255.);
-    color[1] = (unsigned) (c[1] * 255.);
-    color[2] = (unsigned) (c[2] * 255.);
-    color[3] = (unsigned) (c[3] * 255.);
+    color[0] = (unsigned char) (c[0] * 255.);
+    color[1] = (unsigned char) (c[1] * 255.);
+    color[2] = (unsigned char) (c[2] * 255.);
+    color[3] = (unsigned char) (c[3] * 255.);
 }
 

@@ -23,11 +23,16 @@
 //    Hank Childs, Sat Sep 11 12:14:31 PDT 2004
 //    Initialized new data members for target chunks, total zones.
 //
+//    Jeremy Meredith, Wed Feb 16 15:01:40 PST 2005
+//    Initialized members to disable MIR and Expressions.
+//
 // ****************************************************************************
 
 avtDatabaseWriter::avtDatabaseWriter()
 {
     shouldAlwaysDoMIR = false;
+    shouldNeverDoMIR = false;
+    shouldNeverDoExpressions = false;
     hasMaterialsInProblem = false;
     mustGetMaterialsAdditionally = false;
 
@@ -133,6 +138,9 @@ avtDatabaseWriter::Write(const std::string &filename,
 //    Hank Childs, Wed Dec 22 11:25:07 PST 2004
 //    Enable expressions, since they now work inside of convert.
 //
+//    Jeremy Meredith, Wed Feb 16 15:01:40 PST 2005
+//    Added ability to disable MIR and Expressions.
+//
 // ****************************************************************************
 
 void
@@ -206,7 +214,7 @@ avtDatabaseWriter::Write(const std::string &filename,
         // operating on.  If there is more than one mesh, then we don't 
         // really know, so don't add expressions.
         //
-        if (md->GetNumMeshes() == 1)
+        if (md->GetNumMeshes() == 1 && !shouldNeverDoExpressions)
         {
             for (i = 0 ; i < md->GetNumberOfExpressions() ; i++)
             {
@@ -237,7 +245,8 @@ avtDatabaseWriter::Write(const std::string &filename,
         {
             hasMaterialsInProblem = true;
             mustGetMaterialsAdditionally = true;
-            if (shouldAlwaysDoMIR || !CanHandleMaterials())
+            if (!shouldNeverDoMIR &&
+                (shouldAlwaysDoMIR || !CanHandleMaterials()))
             {
                 ds->ForceMaterialInterfaceReconstructionOn();
                 mustGetMaterialsAdditionally = false;
