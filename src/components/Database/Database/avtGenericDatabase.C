@@ -1319,8 +1319,9 @@ avtGenericDatabase::GetScalarVariable(const char *varname, int ts, int domain,
 
         if (var != NULL)
         {
-            cache.CacheVTKObject(varname, avtVariableCache::SCALARS_NAME, ts,
-                                 domain, material, var);
+            if (Interface->CanCacheVariable(varname))
+                cache.CacheVTKObject(varname, avtVariableCache::SCALARS_NAME, ts,
+                                     domain, material, var);
 
             //
             // We need to decrement the reference count of the variable 
@@ -1393,8 +1394,9 @@ avtGenericDatabase::GetVectorVariable(const char *varname, int ts, int domain,
 
         if (var != NULL)
         {
-            cache.CacheVTKObject(varname, avtVariableCache::VECTORS_NAME, ts, 
-                                 domain, material, var);
+            if (Interface->CanCacheVariable(varname))
+                cache.CacheVTKObject(varname, avtVariableCache::VECTORS_NAME, ts, 
+                                     domain, material, var);
 
             //
             // We need to decrement the reference count of the variable 
@@ -1457,8 +1459,9 @@ avtGenericDatabase::GetTensorVariable(const char *varname, int ts, int domain,
 
         if (var != NULL)
         {
-            cache.CacheVTKObject(varname, avtVariableCache::TENSORS_NAME, ts, 
-                                 domain, material, var);
+            if (Interface->CanCacheVariable(varname))
+                cache.CacheVTKObject(varname, avtVariableCache::TENSORS_NAME, ts, 
+                                     domain, material, var);
 
             //
             // We need to decrement the reference count of the variable 
@@ -1522,8 +1525,9 @@ avtGenericDatabase::GetSymmetricTensorVariable(const char *varname, int ts,
 
         if (var != NULL)
         {
-            cache.CacheVTKObject(varname, avtVariableCache::TENSORS_NAME, ts, 
-                                 domain, material, var);
+            if (Interface->CanCacheVariable(varname))
+                cache.CacheVTKObject(varname, avtVariableCache::TENSORS_NAME, ts, 
+                                     domain, material, var);
 
             //
             // We need to decrement the reference count of the variable 
@@ -1634,8 +1638,9 @@ avtGenericDatabase::GetMesh(const char *meshname, int ts, int domain,
         AssociateBounds(mesh);
         ScaleMesh(mesh);
 
-        cache.CacheVTKObject(meshname, avtVariableCache::DATASET_NAME, ts,
-                             domain, material, mesh);
+        if (Interface->CanCacheVariable(meshname))
+            cache.CacheVTKObject(meshname, avtVariableCache::DATASET_NAME, ts,
+                                 domain, material, mesh);
 
         //
         // We need to decrement the reference count of the variable returned

@@ -76,6 +76,9 @@ class    avtVariableCache;
 //    Brad Whitlock, Wed May 14 09:22:02 PDT 2003
 //    I added an optional int argument to SetDatabaseMetaData.
 //
+//    Mark C. Miller, Wed Dec 10 10:31:52 PST 2003
+//    I added method CanCacheVariable()
+//
 // ****************************************************************************
 
 class DATABASE_API avtFileFormatInterface
@@ -95,8 +98,10 @@ class DATABASE_API avtFileFormatInterface
 
     virtual void            FreeUpResources(int, int) = 0;
 
-    bool                    HasInvariantMetaData(void) const;
-    bool                    HasInvariantSIL(void) const;
+    bool                    HasInvariantMetaData(void);
+    bool                    HasInvariantSIL(void);
+
+    bool                    CanCacheVariable(const char *);
 
     bool                    CanDoDynamicLoadBalancing(void);
     const char             *GetType(void);
