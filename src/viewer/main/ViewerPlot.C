@@ -3893,3 +3893,36 @@ ViewerPlot::GetEngineKey() const
     return engineKey;
 }
 
+// ****************************************************************************
+//  Method: ViewerPlot::GetVariableCentering
+//
+//  Purpose:
+//    Get the centering the plot's variable. 
+//
+//  Returns:  the variable's centering
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   April 2, 2004
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+const avtCentering
+ViewerPlot::GetVariableCentering() const
+{
+    avtCentering retval = AVT_UNKNOWN_CENT; 
+
+    if(readerList != NULL)
+    {
+        if(*(readerList[state]) != NULL)
+        {
+            avtDataAttributes &atts = readerList[state]->
+                GetInfo().GetAttributes();
+            retval = atts.GetCentering(variableName.c_str());
+        }
+    }
+
+    return retval;
+}
+

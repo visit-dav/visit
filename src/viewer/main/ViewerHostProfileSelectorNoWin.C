@@ -56,6 +56,11 @@ ViewerHostProfileSelectorNoWin::~ViewerHostProfileSelectorNoWin()
 //  Creation:    February 5, 2003 
 //
 //  Modifications:
+//    Jeremy Meredith, Fri Apr  2 14:30:11 PST 2004
+//    Added caching of the empty profile when we skip the chooser.  The reason
+//    this is useful is because I added a method to save the manual arguments
+//    with a cached profile, but this needed to work even if we skipped the
+//    chooser.
 //
 // ****************************************************************************
 
@@ -69,6 +74,8 @@ ViewerHostProfileSelectorNoWin::SelectProfile(
     if (skipChooser)
     {
         // do nothing; leave the profile completely blank
+        // Save it so we can cache the extra arguments, though
+        cachedProfile[hostName] = profile;
     }
     else if (cachedProfile.count(hostName))
     {

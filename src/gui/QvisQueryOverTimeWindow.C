@@ -73,30 +73,45 @@ QvisQueryOverTimeWindow::~QvisQueryOverTimeWindow()
 void
 QvisQueryOverTimeWindow::CreateWindowContents()
 {
-    QGridLayout *mainLayout = new QGridLayout(topLayout, 6,2,  10, "mainLayout");
-
-
     //
     // TimeType
     //
-    timeType = new QButtonGroup(central, "timeType");
-    timeType->setFrameStyle(QFrame::NoFrame);
-    QHBoxLayout *timeTypeLayout = new QHBoxLayout(timeType);
-    timeTypeLayout->setSpacing(10);
-    QRadioButton *timeTypeTimeTypeCycle = new QRadioButton("Cycle", timeType);
-    timeTypeLayout->addWidget(timeTypeTimeTypeCycle);
-    QRadioButton *timeTypeTimeTypeDTime = new QRadioButton("Time", timeType);
-    timeTypeLayout->addWidget(timeTypeTimeTypeDTime);
-    QRadioButton *timeTypeTimeTypeTimestep = new QRadioButton("Timestep", timeType);
-    timeTypeLayout->addWidget(timeTypeTimeTypeTimestep);
-    connect(timeType, SIGNAL(clicked(int)),
-            this, SLOT(timeTypeChanged(int)));
-    mainLayout->addMultiCellWidget(timeType, 0,0, 0,1);
+    QGroupBox *timeTypeBox = new QGroupBox(central, "timeTypeBox");
+    timeTypeBox->setTitle("X-Axis:");
+    topLayout->addWidget(timeTypeBox);
+   
+    QGridLayout *timeTypeBoxLayout = new QGridLayout(timeTypeBox, 3, 2);
+    timeTypeBoxLayout->setMargin(10);
+    timeTypeBoxLayout->setSpacing(5);
+    timeTypeBoxLayout->addRowSpacing(0, 10); 
+
+    timeType = new QButtonGroup();
+    connect(timeType, SIGNAL(clicked(int)), this, SLOT(timeTypeChanged(int)));
+
+    QHBoxLayout *timeTypeLayout = new QHBoxLayout();
+    //timeTypeLayout->setSpacing(10);
+
+
+    QRadioButton *cycle    = new QRadioButton("Cycle",    timeTypeBox);
+    QRadioButton *dtime    = new QRadioButton("Time",     timeTypeBox);
+    QRadioButton *timestep = new QRadioButton("Timestep", timeTypeBox);
+    timeType->insert(cycle);
+    timeType->insert(dtime);
+    timeType->insert(timestep);
+
+    timeTypeLayout->addWidget(cycle);
+    timeTypeLayout->addWidget(dtime);
+    timeTypeLayout->addWidget(timestep);
+
+    timeTypeBoxLayout->addLayout(timeTypeLayout, 1, 0);
+    //mainLayout->addMultiCellWidget(timeType, 0,0, 1,2);
+
+    QGridLayout *mainLayout = new QGridLayout(topLayout, 6,3,  10, "mainLayout");
 
     //
     // StartTime 
     //
-    startTimeFlag = new QCheckBox("Start", central, "startTimeFlag");
+    startTimeFlag = new QCheckBox("Starting timestep", central, "startTimeFlag");
     connect(startTimeFlag, SIGNAL(toggled(bool)),
             this, SLOT(startTimeFlagChanged(bool)));
     mainLayout->addWidget(startTimeFlag, 1,0);
@@ -109,7 +124,7 @@ QvisQueryOverTimeWindow::CreateWindowContents()
     //
     // EndTime 
     //
-    endTimeFlag = new QCheckBox("End  ", central, "endTimeFlag");
+    endTimeFlag = new QCheckBox("Ending timestep", central, "endTimeFlag");
     connect(endTimeFlag, SIGNAL(toggled(bool)),
             this, SLOT(endTimeFlagChanged(bool)));
     mainLayout->addWidget(endTimeFlag, 2,0);
@@ -196,7 +211,7 @@ QvisQueryOverTimeWindow::UpdateWindow(bool doAll)
             startTimeFlag->setChecked(atts->GetStartTimeFlag());
             break;
           case 2: //startTime
-            temp.sprintf("%g", atts->GetStartTime());
+            temp.sprintf("%d", atts->GetStartTime());
             startTime->setText(temp);
             break;
           case 3: //endTimeFlag
@@ -211,7 +226,7 @@ QvisQueryOverTimeWindow::UpdateWindow(bool doAll)
             endTimeFlag->setChecked(atts->GetEndTimeFlag());
             break;
           case 4: //endTime
-            temp.sprintf("%g", atts->GetEndTime());
+            temp.sprintf("%d", atts->GetEndTime());
             endTime->setText(temp);
             break;
           case 5: //stride
@@ -278,14 +293,14 @@ QvisQueryOverTimeWindow::GetCurrentValues(int which_widget)
         okay = !temp.isEmpty();
         if(okay)
         {
-            double val = temp.toDouble(&okay);
+            int val = temp.toInt(&okay);
             atts->SetStartTime(val);
         }
 
         if(!okay)
         {
             msg.sprintf("The value of startTime was invalid. "
-                "Resetting to the last good value of %g.",
+                "Resetting to the last good value of %d.",
                 atts->GetStartTime());
             Message(msg);
             atts->SetStartTime(atts->GetStartTime());
@@ -305,14 +320,14 @@ QvisQueryOverTimeWindow::GetCurrentValues(int which_widget)
         okay = !temp.isEmpty();
         if(okay)
         {
-            double val = temp.toDouble(&okay);
+            int val = temp.toInt(&okay);
             atts->SetEndTime(val);
         }
 
         if(!okay)
         {
             msg.sprintf("The value of endTime was invalid. "
-                "Resetting to the last good value of %g.",
+                "Resetting to the last good value of %d.",
                 atts->GetEndTime());
             Message(msg);
             atts->SetEndTime(atts->GetEndTime());

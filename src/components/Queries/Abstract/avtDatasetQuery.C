@@ -320,21 +320,34 @@ avtDatasetQuery::GetResultValue(const int i)
 //  Creation:   March 24, 2004 
 //
 //  Modifications:
+//    Kathleen Bonnell, Fri Apr  2 08:51:17 PST 2004
+//    Changed args. 
 //
 // ****************************************************************************
 
 void
-avtDatasetQuery::PerformQueryInTime(QueryAttributes *qA, 
-                                    const intVector &timeSteps)
+avtDatasetQuery::PerformQueryInTime(QueryAttributes *qA, const int startT ,
+                                    const int endT, const int stride,
+                                    const int timeType, doubleVector &times)
 {
     queryAtts = *qA;
-   
-    Init(timeSteps.size());
+  
+    int nFrames = (int) ceil((endT -startT)/stride) + 1; 
+
+    //
+    // Ensure that the specified endTime is included,
+    // regardless of the stride.
+    //
+    int actualEnd = startT + nFrames *stride;
+    if (actualEnd < endT)
+        actualEnd = endT + stride;
+
+    Init(nFrames);
 
     UpdateProgress(0, 0);
     doubleVector qRes;
 
-    int i;
+    int i, count = 0;
 
     //
     //  For now, each processor process all times, because they have been 
@@ -344,9 +357,12 @@ avtDatasetQuery::PerformQueryInTime(QueryAttributes *qA,
     avtDataObject_p origInput;
     avtDataObject_p input = GetInput();
     CopyTo(origInput, input);
-    for (i =  0; i < timeSteps.size(); i++)
+    for (i =  startT; i <= actualEnd; i+=stride)
     {
-        queryAtts.SetTimeStep(timeSteps[i]);
+        if (i <= endT)
+            queryAtts.SetTimeStep(i);
+        else 
+            queryAtts.SetTimeStep(endT);
 
         avtDataObject_p dob = ApplyFilters(origInput);
 
@@ -355,11 +371,34 @@ avtDatasetQuery::PerformQueryInTime(QueryAttributes *qA,
         //
         SetTypedInput(dob);
 
+        //
+        // Retrieve the correct time value that will be used for
+        // the x-axis.
+        //
+        double tval;  
+        switch(timeType)
+        {
+            case 0: // cycle
+                tval = (double) GetInput()->GetInfo().GetAttributes().GetCycle();
+                break;
+            case 1: // time
+                tval = GetInput()->GetInfo().GetAttributes().GetTime();
+                break;
+            case 2: // timestep
+            default: // timestep
+                if (i <= endT)
+                    tval = (double)i;
+                else 
+                    tval = (double)endT;
+                break;
+        }
+        times.push_back(tval);
+
         PreExecute();
         avtDataTree_p tree = GetInputDataTree();
         
         Execute(tree);
-        UpdateProgress(i , timeSteps.size());
+        UpdateProgress(count++ , nFrames);
         PostExecute();
       
         //

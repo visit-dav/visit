@@ -58,6 +58,9 @@ using std::pair;
 //    section of code, because if the user cancels the launch of the engine,
 //    it could otherwise get into an infinite loop.
 //
+//    Jeremy Meredith, Fri Apr  2 14:29:25 PST 2004
+//    Made restartArguments be saved on a per-host (per-enginekey) basis.
+//
 #define ENGINE_PROXY_RPC_BEGIN(rpcname)  \
     bool retval = false; \
     bool retry = false; \
@@ -73,7 +76,7 @@ using std::pair;
                        << "**** on " << ek.HostName() \
                        << ". Starting an engine on " \
                        << ek.HostName() << ".\n****" << endl; \
-                CreateEngine(ek, restartArguments, false, numRestarts); \
+                CreateEngine(ek, restartArguments[ek], false, numRestarts); \
                 retry = false; \
             } \
             else \
@@ -107,7 +110,7 @@ using std::pair;
                    retry = true; \
                    RemoveFailedEngine(ek); \
                    LaunchMessage(ek); \
-                   CreateEngine(ek, restartArguments,false,numRestarts); \
+                   CreateEngine(ek, restartArguments[ek],false,numRestarts); \
                    ++numAttempts; \
                 } \
                 else \
@@ -267,7 +270,7 @@ static void UpdatePlotAttsCallback(void*,const string&,int,AttributeSubject*);
 // ****************************************************************************
 
 ViewerEngineManager::ViewerEngineManager() : ViewerServerManager(),
-    SimpleObserver(), restartArguments()
+    SimpleObserver()
 {
     executing = false;
     if (numRestarts == -1)
@@ -468,6 +471,11 @@ ViewerEngineManager::EngineExists(const EngineKey &ek) const
 //    It now uses an EngineKey to specify the host, and it uses
 //    a map of Engines instead of an array.
 //
+//    Jeremy Meredith, Fri Apr  2 14:28:23 PST 2004
+//    Don't add the given arguments to "restartArguments"; instead, we cache
+//    them with the cached host profile so they get picked up under a more
+//    appropriate set of circumstances.
+//
 // ****************************************************************************
 
 bool
@@ -509,9 +517,10 @@ ViewerEngineManager::CreateEngine(const EngineKey &ek,
 
     //
     // Add some arguments to the engine proxy before we try to
-    // launch the engine.
+    // launch the engine.  Cache them if needed for an automatic launch.
     //
     AddArguments(newEngine, args);
+    chooser->AddRestartArgsToCachedProfile(ek.HostName(),  args);
 
     //
     // Set up the connection progress window.
@@ -519,11 +528,6 @@ ViewerEngineManager::CreateEngine(const EngineKey &ek,
     ViewerConnectionProgressDialog *dialog =
                        SetupConnectionProgressWindow(newEngine, ek.HostName());
 
-    //
-    // Copy the arguments into the restart arguments that are
-    // used to restart failed engines.
-    //
-    restartArguments = args;
 
     //
     // Send a status message.
@@ -660,6 +664,13 @@ ViewerEngineManager::CreateEngine(const EngineKey &ek,
 //  Programmer:  Jeremy Meredith
 //  Creation:    March 26, 2004
 //
+//  Modifications:
+//    Jeremy Meredith, Fri Apr  2 14:38:37 PST 2004
+//    Made restartArguments on a per-hostname (per-engine) basis.
+//    Note that we keep using restartArguments here (but not in CreateEngine)
+//    because this method never uses the chooser, so any extra arguments must
+//    go through the restartArguments instead of the chooser's profile cache.
+//
 // ****************************************************************************
 bool
 ViewerEngineManager::ConnectSim(const EngineKey &ek,
@@ -690,7 +701,7 @@ ViewerEngineManager::ConnectSim(const EngineKey &ek,
     // Copy the arguments into the restart arguments that are
     // used to restart failed engines.
     //
-    restartArguments = args;
+    restartArguments[ek] = args;
 
     //
     // Send a status message.
@@ -1085,6 +1096,9 @@ ViewerEngineManager::SendKeepAlives()
 //   Jeremy Meredith, Fri Mar 26 16:59:59 PST 2004
 //   Use a map of engines based on a key, and be aware of simulations.
 //
+//   Jeremy Meredith, Fri Apr  2 14:29:25 PST 2004
+//   Made restartArguments be saved on a per-host (per-enginekey) basis.
+//
 // ****************************************************************************
 
 EngineProxy *
@@ -1107,7 +1121,7 @@ ViewerEngineManager::GetEngine(const EngineKey &ek)
         }
 
         // Try to launch an engine.
-        CreateEngine(ek, restartArguments, false, numRestarts);
+        CreateEngine(ek, restartArguments[ek], false, numRestarts);
 
         // If no engine was launched, return.
         if (!EngineExists(ek))

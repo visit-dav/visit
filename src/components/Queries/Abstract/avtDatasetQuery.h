@@ -52,6 +52,9 @@ class vtkDataSet;
 //    Kathleen Bonnell, Thu Apr  1 19:02:38 PST 2004 
 //    Added method PerformQueryInTime.
 //
+//    Kathleen Bonnell, Fri Apr  2 08:51:17 PST 2004 
+//    Changed args to PerformQueryInTime.
+//
 // ****************************************************************************
 
 class QUERY_API avtDatasetQuery : public avtDataObjectQuery, 
@@ -64,7 +67,8 @@ class QUERY_API avtDatasetQuery : public avtDataObjectQuery,
 
     virtual void             PerformQuery(QueryAttributes *);
     virtual void             PerformQueryInTime(QueryAttributes*,
-                                 const intVector &);
+                                 const int, const int, const int,
+                                 const int, doubleVector &);
     virtual std::string      GetResultMessage(void) { return resMsg; };
     virtual void             SetResultMessage(const std::string &m) 
                                  { resMsg = m; }; 

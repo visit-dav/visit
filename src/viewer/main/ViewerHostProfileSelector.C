@@ -53,3 +53,28 @@ ViewerHostProfileSelector::ClearCache(const std::string &hostName)
 }
 
 
+// ****************************************************************************
+//  Method:  ViewerHostProfileSelector::AddRestartArgsToCachedProfile
+//
+//  Purpose:
+//    Modify a cached profile to include the given arguments.
+//
+//  Arguments:
+//    hostName   the host name of the remote engine
+//    args       the arguments to save
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    April  2, 2004
+//
+// ****************************************************************************
+void
+ViewerHostProfileSelector::AddRestartArgsToCachedProfile(
+                                          const std::string &hostName,
+                                          const std::vector<std::string> &args)
+{
+    if (cachedProfile.count(hostName))
+    {
+        std::vector<std::string> &a = cachedProfile[hostName].GetArguments();
+        a.insert(a.end(), args.begin(), args.end());
+    }
+}

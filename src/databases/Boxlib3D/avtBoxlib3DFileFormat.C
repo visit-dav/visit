@@ -31,6 +31,7 @@
 
 #include <vector>
 #include <string>
+#include <fstream.h>
 
 #include <ctype.h>
 #include <stdlib.h>
@@ -499,17 +500,19 @@ avtBoxlib3DFileFormat::GetMesh(int patch, const char *mesh_name)
 //    Do not assume that this routine is called only one time (we may call
 //    free up resources and then come back to this timestep).
 //
+//    Hank Childs, Fri Apr  2 06:45:03 PST 2004
+//    g++-3.0.4 does bogus parsing of doubles, so do it ourselves.
+//
 // ****************************************************************************
 
 void
 avtBoxlib3DFileFormat::ReadHeader(void)
 {
     ifstream in;
+    string double_tmp;
 
     string headerFilename = rootPath + timestepPath + "/Header";
-    
     in.open(headerFilename.c_str());
-    
     if (in.fail())
         EXCEPTION1(InvalidFilesException, headerFilename.c_str());
 
@@ -523,7 +526,6 @@ avtBoxlib3DFileFormat::ReadHeader(void)
     nVars = integer;
     varNames.resize(nVars);
     varCentering.resize(nVars);
-    
     EatUpWhiteSpace(in);
     int i;
     for (i = 0; i < nVars; ++i)
@@ -535,12 +537,12 @@ avtBoxlib3DFileFormat::ReadHeader(void)
     in >> integer;
     if (dimension != integer)
     {
-        EXCEPTION1(InvalidDBTypeException,"This reader only handles 3D files.");
+       EXCEPTION1(InvalidDBTypeException,"This reader only handles 3D files.");
     }
 
     // Read in time
-    double time;
-    in >> time;
+    in >> double_tmp;
+    double time = atof(double_tmp.c_str());
     metadata->SetTime(timestep, time);
     metadata->SetCycle(timestep, cycle);
 
@@ -560,9 +562,15 @@ avtBoxlib3DFileFormat::ReadHeader(void)
 
     // Read the problem size
     for (i = 0; i < dimension; ++i)
-        in >> probLo[i];
+    {
+        in >> double_tmp;
+        probLo[i] = atof(double_tmp.c_str());
+    }
     for (i = 0; i < dimension; ++i)
-        in >> probHi[i];
+    {
+        in >> double_tmp;
+        probHi[i] = atof(double_tmp.c_str());
+    }
 
     EatUpWhiteSpace(in);
 
@@ -580,7 +588,6 @@ avtBoxlib3DFileFormat::ReadHeader(void)
 
     // Read in the problem domain for this level
     in.getline(buf, 1024);
-    
     // Read in the levelsteps
     in.getline(buf, 1024);
 
@@ -591,18 +598,16 @@ avtBoxlib3DFileFormat::ReadHeader(void)
     deltaZ.clear();
     for (levI = 0; levI < nLevels; levI++)
     {
-        double dub;
-        in >> dub;
-        deltaX.push_back(dub);
-        in >> dub;
-        deltaY.push_back(dub);
-        in >> dub;
-        deltaZ.push_back(dub);
+        in >> double_tmp;
+        deltaX.push_back(atof(double_tmp.c_str()));
+        in >> double_tmp;
+        deltaY.push_back(atof(double_tmp.c_str()));
+        in >> double_tmp;
+        deltaZ.push_back(atof(double_tmp.c_str()));
     }
- 
+
     // Read in coord system;
     in >> integer;
-   
     // Read in width of boundary regions (ghost zones)
     in >> integer;
     if (integer)
@@ -610,7 +615,7 @@ avtBoxlib3DFileFormat::ReadHeader(void)
         avtCallback::IssueWarning(
                               "Reader does not currently support ghostzones.");
     }
-    
+
     // For each level
     xMin.clear();
     xMax.clear();
@@ -631,7 +636,8 @@ avtBoxlib3DFileFormat::ReadHeader(void)
         patchesPerLevel[levI] = myNPatch;
 
         // Read in the time (again)
-        in >> time;
+        in >> double_tmp;
+        time = atof(double_tmp.c_str());
 
         // Read in iLevelSteps
         in >> integer;
@@ -639,21 +645,20 @@ avtBoxlib3DFileFormat::ReadHeader(void)
         // For each patch, read the spatial extents.
         for (i = 0; i < myNPatch; ++i)
         {
-            double dub;
-            in >> dub;
-            xMin.push_back(dub);
-            in >> dub;
-            xMax.push_back(dub);
-            in >> dub;
-            yMin.push_back(dub);
-            in >> dub;
-            yMax.push_back(dub);
-            in >> dub;
-            zMin.push_back(dub);
-            in >> dub;
-            zMax.push_back(dub);
+            in >> double_tmp;
+            xMin.push_back(atof(double_tmp.c_str()));
+            in >> double_tmp;
+            xMax.push_back(atof(double_tmp.c_str()));
+            in >> double_tmp;
+            yMin.push_back(atof(double_tmp.c_str()));
+            in >> double_tmp;
+            yMax.push_back(atof(double_tmp.c_str()));
+            in >> double_tmp;
+            zMin.push_back(atof(double_tmp.c_str()));
+            in >> double_tmp;
+            zMax.push_back(atof(double_tmp.c_str()));
         }
-            
+
         EatUpWhiteSpace(in);
         // Read in the MultiFab files (Until we hit an int or eof)
         for (;;)
@@ -834,6 +839,9 @@ avtBoxlib3DFileFormat::GetDimensions(int *dims, double *lo, double *hi,
 //    Hank Childs, Tue Nov 18 20:44:48 PST 2003
 //    Removed problem size memory leak.
 //
+//    Hank Childs, Fri Apr  2 10:19:03 PST 2004
+//    Added code to sidestep bugginess with VisMF.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -863,6 +871,12 @@ avtBoxlib3DFileFormat::GetVar(int patch, const char *var_name)
     
     VisMF *vmf = GetVisMF(mfIndex);
     
+    // The VisMF memory management routines are buggy, so we need to do our
+    // own management.  Save what we have read so we can free it later.
+    clearlist.push_back(mfIndex);
+    clearlist.push_back(local_patch);
+    clearlist.push_back(compId);
+
     // Get the data (an FArrayBox)
     FArrayBox fab = vmf->GetFab(local_patch, compId);
 
@@ -902,7 +916,6 @@ avtBoxlib3DFileFormat::GetVar(int patch, const char *var_name)
     }
     
     fab.clear();
-    vmf->clear(local_patch, compId);
     return farr;
 }
 
@@ -931,6 +944,9 @@ avtBoxlib3DFileFormat::GetVar(int patch, const char *var_name)
 //
 //    Hank Childs, Tue Nov 18 20:44:48 PST 2003
 //    Removed problem size memory leak.
+//
+//    Hank Childs, Fri Apr  2 10:19:03 PST 2004
+//    Added code to sidestep bugginess with VisMF.
 //
 // ****************************************************************************
 
@@ -967,6 +983,12 @@ avtBoxlib3DFileFormat::GetVectorVar(int patch, const char *var_name)
         int varIndex = vectorComponents[vectIndex][i];
         int mfIndex = fabfileIndex[level][varIndex];
         int compId = componentIds[level][varIndex];
+
+        // The VisMF memory management routines are buggy, so we need to do our
+        // own management.  Save what we have read so we can free it later.
+        clearlist.push_back(mfIndex);
+        clearlist.push_back(local_patch);
+        clearlist.push_back(compId);
 
         VisMF *vmf = GetVisMF(mfIndex); 
         fab[i] = new FArrayBox(vmf->GetFab(local_patch, compId));
@@ -1020,7 +1042,6 @@ avtBoxlib3DFileFormat::GetVectorVar(int patch, const char *var_name)
     {
         fab[i]->clear();
         delete fab[i];
-        vmfList[i]->clear(local_patch, compIdsList[i]);
     }
 
     return farr;
@@ -1585,13 +1606,72 @@ avtBoxlib3DFileFormat::GetSpatialIntervalTree(DestructorFunction &df)
 //    Hank Childs, Thu Nov  6 09:49:33 PST 2003
 //    Removed all notion of time.
 //
+//    Hank Childs, Fri Apr  2 10:19:03 PST 2004
+//    Added code to sidestep bugginess with VisMF.
+//
 // ****************************************************************************
+
+static void
+SwapEntries(std::vector<int> &clearlist, int t, int s)
+{
+    int tmp;
+    tmp = clearlist[3*t];
+    clearlist[3*t] = clearlist[3*s];
+    clearlist[3*s] = tmp;
+    tmp = clearlist[3*t+1];
+    clearlist[3*t+1] = clearlist[3*s+1];
+    clearlist[3*s+1] = tmp;
+    tmp = clearlist[3*t+2];
+    clearlist[3*t+2] = clearlist[3*s+2];
+    clearlist[3*s+2] = tmp;
+}
+
 
 void
 avtBoxlib3DFileFormat::FreeUpResources()
 {
+    int   i, j;
+
     initializedReader = false;
     
+    //
+    // If we "clear" the same patch twice, it will cause a crash, so we have
+    // to sort out the duplicates (this can happen when we access a variable
+    // as a component of a vector and then later as a scalar).
+    //
+    int num_entries = clearlist.size() / 3;
+    for (i = 0 ; i < num_entries ; i++)
+    {
+        for (j = i+1 ; j < num_entries ; j++)
+        {
+            if (clearlist[3*i] > clearlist[3*j])
+                SwapEntries(clearlist, i, j);
+            else if (clearlist[3*i] == clearlist[3*j])
+                if (clearlist[3*i+1] > clearlist[3*j+1])
+                    SwapEntries(clearlist, i, j);
+                else if (clearlist[3*i+1] == clearlist[3*j+1])
+                    if (clearlist[3*i+2] > clearlist[3*j+2])
+                        SwapEntries(clearlist, i, j);
+        }
+    }
+
+    //
+    // Now call all the correct "clear"s on the VisMFs, being careful not
+    // to make an identical call to each VisMF.
+    //
+    for (i = 0 ; i < num_entries ; i++)
+    {
+        if (i > 0)
+        {
+            if ((clearlist[3*i] == clearlist[3*i-3]) &&
+                (clearlist[3*i+1] == clearlist[3*i-2]) &&
+                (clearlist[3*i+2] == clearlist[3*i-1]))
+                continue;
+        }
+        mfReaders[clearlist[3*i]]->clear(clearlist[3*i+1], clearlist[3*i+2]);
+    }
+    clearlist.clear();
+
     for (int j = 0; j < mfReaders.size(); j++)
     {
         if (mfReaders[j])

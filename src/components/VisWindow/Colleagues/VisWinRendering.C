@@ -681,6 +681,10 @@ VisWinRendering::Realize(void)
 //    Mark C. Miller, Wed Mar 31 17:47:20 PST 2004
 //    Added doViewportOnly arg and code to support getting only the viewport
 //
+//    Mark C. Miller, Fri Apr  2 09:54:10 PST 2004
+//    Fixed problem where used 2D view to control region selection for 
+//    window in CURVE mode
+//
 // ****************************************************************************
 
 avtImage_p
@@ -712,20 +716,36 @@ VisWinRendering::ScreenCapture(bool doViewportOnly, bool doCanvasZBufferToo)
     int r0 = 0;
     int w = renWin->GetSize()[0];
     int h = renWin->GetSize()[1];
-    if (doViewportOnly && (mediator.GetMode() == WINMODE_2D ||
-                           mediator.GetMode() == WINMODE_CURVE))
+    if (doViewportOnly)
     {
-        VisWindow *vw = mediator;
-        avtView2D v = vw->GetView2D();
+        bool haveViewport = false;
         double viewPort[4];
-        v.GetActualViewport(viewPort, w, h);
-        int neww = (int) ((viewPort[1] - viewPort[0]) * w + 0.5);
-        int newh = (int) ((viewPort[3] - viewPort[2]) * h + 0.5);
 
-        c0 = (int) (viewPort[0] * w + 0.5);
-        r0 = (int) (viewPort[2] * h + 0.5);
-        w = neww;
-        h = newh;
+        if (mediator.GetMode() == WINMODE_2D)
+        {
+            VisWindow *vw = mediator;
+            avtView2D v = vw->GetView2D();
+            v.GetActualViewport(viewPort, w, h);
+            haveViewport = true;
+        }
+        else if (mediator.GetMode() == WINMODE_CURVE)
+        {
+            VisWindow *vw = mediator;
+            avtViewCurve v = vw->GetViewCurve();
+            v.GetViewport(viewPort);
+            haveViewport = true;
+        }
+
+        if (haveViewport)
+        {
+            int neww = (int) ((viewPort[1] - viewPort[0]) * w + 0.5);
+            int newh = (int) ((viewPort[3] - viewPort[2]) * h + 0.5);
+
+            c0 = (int) (viewPort[0] * w + 0.5);
+            r0 = (int) (viewPort[2] * h + 0.5);
+            w = neww;
+            h = newh;
+        }
     }
 
     if (doCanvasZBufferToo)

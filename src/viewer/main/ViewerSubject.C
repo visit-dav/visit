@@ -3135,6 +3135,10 @@ ViewerSubject::CreateAttributesDataNode(const avtDefaultPlotMetaData *dp) const
 //    Added an engine key used to index (and restart) engines.
 //    Added support for connecting to running simulations.
 //
+//    Jeremy Meredith, Fri Apr  2 14:14:54 PST 2004
+//    Made it re-use command line arguments if we had some, as long as 
+//    we were in nowin mode.
+//
 // ****************************************************************************
 
 void
@@ -3244,10 +3248,18 @@ ViewerSubject::OpenDatabaseHelper(const std::string &entireDBName,
         }
         else
         {
-            success = ViewerEngineManager::Instance()->
-                                              CreateEngine(ek, noArgs,
-                                                           false,
-                                                           numEngineRestarts);
+            if (nowin)
+            {
+                success = ViewerEngineManager::Instance()->
+                                     CreateEngine(ek, engineParallelArguments,
+                                                  false, numEngineRestarts);
+            }
+            else
+            {
+                success = ViewerEngineManager::Instance()->
+                                          CreateEngine(ek, noArgs, false,
+                                                       numEngineRestarts);
+            }
         }
 
         if (success)
@@ -3839,6 +3851,10 @@ ViewerSubject::DeleteDatabaseCorrelation()
 //    Jeremy Meredith, Tue Mar 30 10:52:06 PST 2004
 //    Added an engine key used to index (and restart) engines.
 //
+//    Jeremy Meredith, Fri Apr  2 14:14:54 PST 2004
+//    Made it re-use command line arguments if we had some, as long as 
+//    we were in nowin mode and no explicit arguments were given.
+//
 // ****************************************************************************
 
 void
@@ -3853,9 +3869,21 @@ ViewerSubject::OpenComputeEngine()
     //
     // Perform the rpc.
     //
-    ViewerEngineManager::Instance()->CreateEngine(EngineKey(hostName,""),
-                                                  options, options.size() > 0,
-                                                  numEngineRestarts);
+    bool givenOptions = (options.size() > 0);
+    bool givenCLArgs  = (engineParallelArguments.size() > 0);
+
+    if (givenOptions)
+        ViewerEngineManager::Instance()->CreateEngine(EngineKey(hostName,""),
+                                                      options, true,
+                                                      numEngineRestarts);
+    else if (nowin && givenCLArgs)
+        ViewerEngineManager::Instance()->CreateEngine(EngineKey(hostName,""),
+                                                      engineParallelArguments,
+                                                      true, numEngineRestarts);
+    else
+        ViewerEngineManager::Instance()->CreateEngine(EngineKey(hostName,""),
+                                                      options, false,
+                                                      numEngineRestarts);
 }
 
 // ****************************************************************************
