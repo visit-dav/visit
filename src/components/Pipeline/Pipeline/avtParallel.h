@@ -13,6 +13,7 @@ PIPELINE_API int     PAR_Rank(void);
 PIPELINE_API int     PAR_Size(void);
 PIPELINE_API void    SumIntAcrossAllProcessors(int&);
 PIPELINE_API void    SumFloatAcrossAllProcessors(float&);
+PIPELINE_API void    SumFloatArrayAcrossAllProcessors(float *, float *, int);
 PIPELINE_API void    SumDoubleAcrossAllProcessors(double&);
 PIPELINE_API void    SumDoubleArrayAcrossAllProcessors(double *, double *,int);
 PIPELINE_API void    SumIntArrayAcrossAllProcessors(int *, int *, int);

@@ -206,6 +206,11 @@
 #    Jeremy Meredith, Thu Jun 26 10:39:54 PDT 2003
 #    Renamed ViewerEngineChooser to ViewerRemoteProcessChooser.
 #
+#    Hank Childs, Thu Jun 26 23:29:07 PDT 2003
+#    Link against the expressions library -- this is very unfortunate, but
+#    necessary for the way we have plots set up now.  The Histogram plot
+#    uses the histogram filter, which uses an expression.
+#
 ##############################################################################
 
 ##
@@ -223,7 +228,7 @@ VTK_LIBS=@VTK_LIBS@
 VTK_INCLUDE=@VTK_INCLUDES@
 LIBS=-L../../lib -L../../vtkqt -lengineproxy -lenginerpc -lviewerrpc \
      -lmdserverproxy -lmdserverrpc -lvclproxy -lvclrpc -ldbatts -lparser -lplugin -lviswindow \
-     -lavtmath_ser -lplotter -lpipeline_ser -lvisit_vtk -lvtkqt -lwinutil \
+     -lavtmath_ser -lexpressions_ser -lplotter -lpipeline_ser -lvisit_vtk -lvtkqt -lwinutil \
      @QT_LIBS@ -lproxybase -lmisc -lcomm -lstate -lutility -lavtexceptions \
      $(VTK_LIBS) $(X_LIBS) @LIBS@ @PTHREAD_LIB@
 

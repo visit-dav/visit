@@ -302,6 +302,37 @@ SumDoubleArrayAcrossAllProcessors(double *inArray, double *outArray,int nArray)
 
 
 // ****************************************************************************
+//  Function: SumFloatArrayAcrossAllProcessors
+//
+//  Purpose:
+//      Sums an array of floats across all processors.
+//
+//  Arguments:
+//      inArray    The input.
+//      outArray   The sums of the inArrays across all processors.
+//      nArray     The number of entries in inArray/outArray.
+//
+//  Programmer:    Hank Childs
+//  Creation:      June 26, 2002
+//
+// ****************************************************************************
+
+void
+SumFloatArrayAcrossAllProcessors(float *inArray, float *outArray, int nArray)
+{
+#ifdef PARALLEL
+    MPI_Allreduce(inArray, outArray, nArray, MPI_FLOAT, MPI_SUM,
+                  MPI_COMM_WORLD);
+#else
+    for (int i = 0 ; i < nArray ; i++)
+    {
+        outArray[i] = inArray[i];
+    }
+#endif
+}
+
+
+// ****************************************************************************
 //  Function: SumFloatAcrossAllProcessors
 //
 //  Purpose:
