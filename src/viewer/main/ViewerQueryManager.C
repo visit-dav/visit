@@ -834,12 +834,27 @@ ViewerQueryManager::GetQueryClientAtts()
 //    Catch NoEngine and LostConnection Exceptions, and retry the query
 //    after the queried plot re-executes. 
 //    
+//    Kathleen Bonnell, Fri Jul 11 10:16:34 PDT 2003 
+//    Verify query exists before sending request to engine. 
+// 
 // ****************************************************************************
 
 void         
 ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
                             const vector<string> &vars)
 {
+    queryClientAtts->SetResultsMessage("");
+    queryClientAtts->SetResultsValue(0.);
+    if (!queryTypes->QueryExists(qName, QueryList::DatabaseQuery))
+    {
+        // we've reset some values, notify clients
+        queryClientAtts->Notify();
+        string msg(qName);
+        msg += " is not a valid query name.\n";
+        Error(msg.c_str());
+        return;
+    }
+
     ViewerPlotList *olist = oWin->GetAnimation()->GetPlotList();
     int plotId = olist->GetPlotID();
     //
@@ -847,6 +862,7 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
     //
     if (plotId == -1)
     {
+        queryClientAtts->Notify();
         string msg(qName);
         msg += " requires an active non-hidden Plot.\n";
         msg += "Please select a plot and try again.\n";
@@ -877,6 +893,7 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
             }
             else
             {
+                queryClientAtts->Notify();
                 char message[500];
                 SNPRINTF(message, 500, "VisIt could not satisfy the query %s", 
                         qName.c_str());
@@ -943,6 +960,7 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
                          e.GetMessage().c_str());
 
             }
+            queryClientAtts->Notify();
             Error(message);
         }
         ENDTRY

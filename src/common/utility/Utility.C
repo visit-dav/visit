@@ -335,12 +335,14 @@ WildcardStringMatch(const char *p, const char *s)
 // Creation:   Mon Jul 7 15:08:02 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Jul 11 14:18:21 PST 2003
+//   Made it work on Windows.
+//
 // ****************************************************************************
 
 bool
 ReadAndProcessDirectory(const std::string &directory,
-    ProcessDirectoryCallback processOneFile, void *data,
+    ProcessDirectoryCallback *processOneFile, void *data,
     bool checkAccess)
 {
     bool retval = false;
@@ -359,7 +361,7 @@ ReadAndProcessDirectory(const std::string &directory,
             while(*ptr != 0)
             {
                 std::string drive(ptr);
-                processOneFile(data, drive, true, true, 0);
+                (*processOneFile)(data, drive, true, true, 0);
                 ptr += (drive.size() + 1);
                 retval = true;
             }
@@ -378,7 +380,11 @@ ReadAndProcessDirectory(const std::string &directory,
                 bool isDir = ((fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0) ||
                              (strcmp(fd.cFileName, "..") == 0);
                 long sz = ((fd.nFileSizeHigh * MAXDWORD) + fd.nFileSizeLow);
-                processOneFile(data, fd.cFileName, isDir, true, sz);
+                string fileName(directory);
+                if(directory.substr(directory.size() - 1) != "\\")
+                    fileName += "\\";
+                fileName += fd.cFileName;
+                (*processOneFile)(data, fileName, isDir, true, sz);
                 retval = true;
 
             } while(FindNextFile(dirHandle, &fd));
@@ -395,10 +401,14 @@ ReadAndProcessDirectory(const std::string &directory,
     {
         // Get the userId and the groups for that user so we can check the
         // file permissions.
-        uid_t uid = getuid();
         gid_t gids[100];
-        int ngids;
-        ngids = getgroups(100, gids);
+        int ngids = 0;
+        uid_t uid;
+        if(checkAccess)
+        {
+            uid = getuid();
+            ngids = getgroups(100, gids);
+        }
 
         // Process each directory entry.
         while ((ent = readdir(dir)) != NULL)
@@ -450,7 +460,7 @@ ReadAndProcessDirectory(const std::string &directory,
                 }
             }
 
-            processOneFile(data, fileName, isdir, (long)s.st_size, canaccess);
+            (*processOneFile)(data, fileName, isdir, (long)s.st_size, canaccess);
             retval = true;
         }
  

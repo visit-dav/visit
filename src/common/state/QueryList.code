@@ -20,3 +20,38 @@ QueryList::AddQuery(const std::string &name, QueryList::QueryType t,
     types.push_back((int)t);
     coordRep.push_back((int)rep);
 }
+
+
+Function: QueryExists
+Declaration: bool QueryExists(const std::string &name, QueryType t, CoordinateRepresentation rep = WorldSpace);
+Definition:
+// ****************************************************************************
+//  Method:  QueryExists
+//
+//  Purpose:
+//    Checks if a query matches the passed parameters. 
+//
+//  Programmer:  Kathlene Bonnell 
+//  Creation:    July 11, 2003 
+//
+// ****************************************************************************
+ 
+bool
+QueryList::QueryExists(const std::string &name, QueryList::QueryType t,
+    QueryList::CoordinateRepresentation rep)
+{
+    int i;
+    bool match = false;
+    for (i = 0; i < names.size(); i++)
+    {
+        if (name == names[i]) 
+        {
+            if (t == types[i] && rep == coordRep[i])
+            {
+                match = true;
+            }
+            break;
+        }
+    }
+    return match;
+}

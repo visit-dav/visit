@@ -37,6 +37,10 @@ class vtkDataSet;
 //    Made some methods visible/virtual to subclasses so they could override
 //    them. This was necessary so I could create the avtTwoPassDatasetQuery.
 //
+//    Kathleen Bonnell,  Fri Jul 11 16:17:12 PDT 2003
+//    Added value and Set/Get methods. Renamed Set/GetMessage to 
+//    Set/GetResultMessage
+//    
 // ****************************************************************************
 
 class QUERY_API avtDatasetQuery : public avtDataObjectQuery, 
@@ -48,8 +52,11 @@ class QUERY_API avtDatasetQuery : public avtDataObjectQuery,
 
 
     virtual void             PerformQuery(QueryAttributes *);
-    virtual std::string      GetMessage(void) { return msg; };
-    virtual void             SetMessage(const std::string &m) { msg = m; }; 
+    virtual std::string      GetResultMessage(void) { return resMsg; };
+    virtual void             SetResultMessage(const std::string &m) 
+                                 { resMsg = m; }; 
+    virtual double           GetResultValue(void) { return resValue; };
+    virtual void             SetResultValue(const double &d) { resValue = d; };
 
   protected:
 
@@ -66,7 +73,8 @@ class QUERY_API avtDatasetQuery : public avtDataObjectQuery,
 
   private:
     virtual void             Execute(avtDataTree_p);
-    std::string              msg;
+    std::string              resMsg;
+    double                   resValue;
 };
 
 

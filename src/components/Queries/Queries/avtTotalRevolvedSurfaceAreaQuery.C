@@ -17,6 +17,10 @@ using     std::string;
 //  Programmer: Hank Childs 
 //  Creation:   March 18, 2003 
 //
+//  Modifications:
+//    Kathleen Bonnell, Fri Jul 11 16:06:59 PDT 2003
+//    Set units_append.
+//
 // ****************************************************************************
 
 avtTotalRevolvedSurfaceAreaQuery::avtTotalRevolvedSurfaceAreaQuery() 
@@ -24,12 +28,14 @@ avtTotalRevolvedSurfaceAreaQuery::avtTotalRevolvedSurfaceAreaQuery()
 {
     string      varname = "revolved_surface_area";
     string      sum_type = "RevolvedSurfaceArea";    
+    string      units_append = "^2";    
 
     surface_area = new avtRevolvedSurfaceArea;
     surface_area->SetOutputVariableName(varname.c_str());
 
     SetVariableName(varname);
     SetSumType(sum_type);
+    SetUnitsAppend(units_append);
     SumGhostValues(false);
 }
 

@@ -150,6 +150,9 @@ avtDataObjectQuery::GetNFilters()
 //  Programmer:  Kathleen Bonnell 
 //  Creation:    October 22, 2002 
 //
+//  Kathleen Bonnell, Fri Jul 11 16:33:16 PDT 2003
+//  Retrieve units.
+//
 // ****************************************************************************
 
 void
@@ -160,6 +163,8 @@ avtDataObjectQuery::ChangedInput()
     // don't like the input.
     //
     VerifyInput(); 
+
+    units = GetInput()->GetInfo().GetAttributes().GetXUnits();
 }
 
 

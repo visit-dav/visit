@@ -13,5 +13,6 @@
     <Field name="types" type="intVector"> </Field>
     <Field name="coordRep" type="intVector"> </Field>
     <Function name="AddQuery" user="true"></Function>
+    <Function name="QueryExists" user="true"></Function>
   </Attribute>
 

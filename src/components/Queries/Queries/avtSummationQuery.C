@@ -80,6 +80,25 @@ avtSummationQuery::SetSumType(string &vn)
 
 
 // ****************************************************************************
+//  Method: avtSummationQuery::SetUnitsAppend
+//
+//  Purpose:
+//      Sets the value that should be appended to units.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   July 11, 2003 
+//
+// ****************************************************************************
+
+void
+avtSummationQuery::SetUnitsAppend(string &append)
+{
+    unitsAppend = append;
+}
+
+
+
+// ****************************************************************************
 //  Method: avtSummationQuery::SumGhostValues
 //
 //  Purpose:
@@ -157,6 +176,11 @@ avtSummationQuery::PreExecute(void)
 //  Programmer: Kathleen Bonnell
 //  Creation:   September 30, 2002
 //
+//  Modifications:
+//    Kathleen Bonnell, Fri Jul 11 16:11:10 PDT 2003
+//    Add units if they exist. Set the results value. Renamed 'SetMessage' to
+//    'SetResultMessage'.
+//
 // ****************************************************************************
 
 void
@@ -174,13 +198,19 @@ avtSummationQuery::PostExecute(void)
     str += " is ";
     SNPRINTF(buf, 1024,  "%f", sum);
     str += buf; 
+    if (!units.empty())
+    {
+        SNPRINTF(buf, 1024, " %s%s", units.c_str(), unitsAppend.c_str());
+        str += buf; 
+    }
   
     //
     //  Parent class uses this message to set the Results message
     //  in the Query Attributes that is sent back to the viewer.
     //  That is all that is required of this query.
     //
-    SetMessage(str);
+    SetResultMessage(str);
+    SetResultValue(sum);
 }
 
 

@@ -20,7 +20,7 @@ char UTILITY_API *CreateMessageStrings(char **, int *, int);
 int  UTILITY_API  LongestCommonPrefixLength(const char * const *, int);
 int  UTILITY_API  LongestCommonSuffixLength(const char * const *, int);
 bool UTILITY_API  ReadAndProcessDirectory(const std::string &,
-                                          ProcessDirectoryCallback,
+                                          ProcessDirectoryCallback *,
                                           void * = 0,
                                           bool = false);
 void UTILITY_API  WaitUntilFile(const char *);

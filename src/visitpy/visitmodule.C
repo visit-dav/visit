@@ -48,6 +48,7 @@
 #include <Plot.h>
 #include <PlotList.h>
 #include <PluginManagerAttributes.h>
+#include <QueryAttributes.h>
 #include <PrinterAttributes.h>
 #include <RenderingAttributes.h>
 #include <StatusAttributes.h>
@@ -4742,6 +4743,56 @@ visit_GetPickOutput(PyObject *self, PyObject *args)
 }
 
 // ****************************************************************************
+// Function: visit_GetQueryOutputString
+//
+// Purpose:
+//   Returns the query output as a string for the active window.
+//
+// Notes:      
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   July 11, 2003 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_GetQueryOutputString(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+    std::string queryOut;
+    QueryAttributes *qa = viewer->GetQueryAttributes();
+    queryOut = qa->GetResultsMessage();
+    return PyString_FromString(queryOut.c_str());
+}
+
+// ****************************************************************************
+// Function: visit_GetQueryOutputValue
+//
+// Purpose:
+//   Returns the query output value for the active window.
+//
+// Notes:      
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   July 11, 2003 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_GetQueryOutputValue(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+    QueryAttributes *qa = viewer->GetQueryAttributes();
+    PyObject *retval = PyFloat_FromDouble(qa->GetResultsValue());
+    return retval;
+}
+
+
+// ****************************************************************************
 // Function: ListCategoryHelper
 //
 // Purpose: 
@@ -6095,32 +6146,77 @@ visit_WriteConfigFile(PyObject *self, PyObject *args)
 }
 
 // ****************************************************************************
-// Function: visit_SurfaceArea
+// Function: visit_Query
 //
 // Purpose:
-//   Tells the viewer to do a surface area query.
+//   Tells the viewer to do a query.
 //
 // Notes:      
 //
-// Programmer: Hank Childs
-// Creation:   May 22, 2003
+// Programmer: Kathleen Bonnell 
+// Creation:   July 11, 2003 
+//
+// Modifications:
 //
 // ****************************************************************************
 
 STATIC PyObject *
-visit_SurfaceArea(PyObject *self, PyObject *args)
+visit_Query(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
 
+    char *queryName;
+    PyObject *tuple = NULL;
+    if (!PyArg_ParseTuple(args, "s|O", &queryName, &tuple))
+        return NULL;
+
+    // Check the tuple argument.
+    stringVector vars;
+    if (tuple != NULL)
+    {
+        if(PyTuple_Check(tuple))
+        {
+            int size = PyTuple_Size(tuple);
+            if(size > 0)
+            {
+                for(int i = 0; i < size; ++i)
+                {
+                    PyObject *item = PyTuple_GET_ITEM(tuple, i);
+                    if(PyString_Check(item))
+                        vars.push_back(PyString_AS_STRING(item));
+                }
+            }
+        }
+        else if(PyString_Check(tuple))
+        {
+            vars.push_back(PyString_AS_STRING(tuple));
+        }
+        else
+        {
+            vars.push_back("default");
+        }
+    }
+
     MUTEX_LOCK();
-        stringVector dummy;
-        viewer->DatabaseQuery("Surface area", dummy);
+        viewer->DatabaseQuery(queryName, vars);
+        if(logging)
+        {
+            fprintf(logFile, "Query(%s, (", queryName);
+            for(int i = 0; i < vars.size(); ++i)
+            {
+                fprintf(logFile, "\"%s\"", vars[i].c_str());
+                if(i < vars.size()-1)
+                    fprintf(logFile, ", ");
+            }
+            fprintf(logFile, "))\n");
+        }
     MUTEX_UNLOCK();
     int errorFlag = Synchronize();
 
     // Return the success value.
     return PyLong_FromLong(long(errorFlag == 0));
 }
+
 
 // ****************************************************************************
 // Function: visit_Pick
@@ -6601,6 +6697,10 @@ AddMethod(const char *methodName, PyObject *(cb)(PyObject *, PyObject *),
 //   Kathleen Bonnell, Wed Jun 25 13:27:59 PDT 2003 
 //   Added NodePick, ZonePick. (ZonePick == Pick).
 //
+//   Kathleen Bonnell, Fri Jul 11 15:53:04 PDT 2003 
+//   Replace SurfaceArea with generic Query.  Added GetQueryOutputString,
+//   GetQueryOutputValue. 
+//
 // ****************************************************************************
 
 static void
@@ -6675,6 +6775,8 @@ AddDefaultMethods()
     AddMethod("GetPickAttributes", visit_GetPickAttributes);
     AddMethod("GetPickOutput", visit_GetPickOutput);
     AddMethod("GetPipelineCachingMode", visit_GetPipelineCachingMode);
+    AddMethod("GetQueryOutputString", visit_GetQueryOutputString);
+    AddMethod("GetQueryOutputValue", visit_GetQueryOutputValue);
     AddMethod("GetRenderingAttributes", visit_GetRenderingAttributes);
     AddMethod("GetWindowInformation", visit_GetWindowInformation);
     AddMethod("HideActivePlots", visit_HideActivePlots);
@@ -6692,6 +6794,7 @@ AddDefaultMethods()
     AddMethod("Pick", visit_Pick);
     AddMethod("PrintWindow", visit_PrintWindow);
     AddMethod("PromoteOperator", visit_PromoteOperator);
+    AddMethod("Query", visit_Query);
     AddMethod("RecenterView", visit_RecenterView);
     AddMethod("RedrawWindow", visit_RedrawWindow);
     AddMethod("RemoveAllOperators", visit_RemoveAllOperators);
@@ -6730,7 +6833,6 @@ AddDefaultMethods()
     AddMethod("SetWindowArea",  visit_SetWindowArea);
     AddMethod("SetWindowLayout",  visit_SetWindowLayout);
     AddMethod("SetWindowMode",  visit_SetWindowMode);
-    AddMethod("SurfaceArea",  visit_SurfaceArea);
     AddMethod("ToggleBoundingBoxMode", visit_ToggleBoundingBoxMode);
     AddMethod("ToggleCameraViewMode", visit_ToggleCameraViewMode);
     AddMethod("ToggleFullFrameMode", visit_ToggleFullFrameMode);

@@ -32,12 +32,13 @@ class AttributeSubjectMap;
 class avtToolInterface;
 class LightList;
 
-typedef struct ExternalRenderRequestInfo {
-   std::vector<const char*>              pluginIDsList;
-   std::vector<std::string>              hostsList;
-   std::vector<int>                      plotIdsList;
-   std::vector<const AttributeSubject *> attsList;
-   WindowAttributes                      winAtts;
+struct ExternalRenderRequestInfo
+{
+    std::vector<const char*>              pluginIDsList;
+    stringVector                          hostsList;
+    intVector                             plotIdsList;
+    std::vector<const AttributeSubject *> attsList;
+    WindowAttributes                      winAtts;
 };
 
 // ****************************************************************************

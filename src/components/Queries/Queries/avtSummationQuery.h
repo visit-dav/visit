@@ -29,6 +29,9 @@ class vtkDataSet;
 //    Kathleen Bonnell, Fri Nov 15 09:07:36 PST 2002
 //    Add domain to Execute arguments.
 //
+//    Kathleen Bonnell, Fri Nov 15 09:07:36 PST 2002
+//    Add unitsAppend. 
+//
 // ****************************************************************************
 
 class QUERY_API avtSummationQuery : public avtDatasetQuery
@@ -39,6 +42,7 @@ class QUERY_API avtSummationQuery : public avtDatasetQuery
 
     virtual void                    SetVariableName(std::string &);
     void                            SetSumType(std::string &);
+    void                            SetUnitsAppend(std::string &);
 
     virtual const char             *GetType(void)
                                              { return "avtSummationQuery"; };
@@ -52,6 +56,7 @@ class QUERY_API avtSummationQuery : public avtDatasetQuery
     double                          sum;
     std::string                     variableName;
     std::string                     sumType;
+    std::string                     unitsAppend;
     bool                            sumGhostValues;
     bool                            sumOnlyPositiveValues;
     char                            descriptionBuffer[1024];

@@ -4,10 +4,10 @@
 
 namespace Init
 {
-    void MISC_API Initialize(int &argc, char *argv[], int r=0, int n=1, bool strip=true);
-    void MISC_API SetComponentName(const char *); 
-    const char * MISC_API GetExecutableName(); 
-    const char * MISC_API GetComponentName(); 
+    MISC_API void Initialize(int &argc, char *argv[], int r=0, int n=1, bool strip=true);
+    MISC_API void SetComponentName(const char *); 
+    MISC_API const char * GetExecutableName(); 
+    MISC_API const char * GetComponentName(); 
 }
 
 #endif
