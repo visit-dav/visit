@@ -22,6 +22,7 @@ class QSocketNotifier;
 class QTimer;
 class QvisAppearanceWindow;
 class QvisApplication;
+class QvisColorTableWindow;
 class QvisMainWindow;
 class QvisMessageWindow;
 class QvisOutputWindow;
@@ -217,6 +218,10 @@ class SplashScreen;
 //    Kathleen Bonnell, Wed Aug 18 09:44:09 PDT 2004
 //    Added Interactor window. 
 //
+//    Kathleen Bonnell, Fri Aug 20 15:45:47 PDT 2004 
+//    Made colorTableWindow a 'crucial' window, that gets created immediately, 
+//    so that color table name are available to other windows as needed. 
+//
 // ****************************************************************************
 
 class GUI_API QvisGUIApplication : public QObject, public ConfigManager, public GUIBase
@@ -301,7 +306,6 @@ private slots:
     void showEngineWindow();
     void showAnimationWindow();
     void showAnnotationWindow();
-    void showColorTableWindow();
     void showExpressionsWindow();
     void showSubsetWindow();
     void showViewWindow();
@@ -354,6 +358,7 @@ private:
     QvisAppearanceWindow         *appearanceWin;
     QvisPickWindow               *pickWin;
     QvisPreferencesWindow        *preferencesWin;
+    QvisColorTableWindow         *colorTableWin;
 
     // Contains pointers to all of the plot windows.
     WindowBaseVector             plotWindows;

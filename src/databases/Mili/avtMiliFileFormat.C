@@ -6,7 +6,7 @@
 
 #include <vector>
 #include <string>
-#include <fstream>
+#include <visitstream.h>
 #include <set>
 
 extern "C" {
@@ -716,6 +716,9 @@ avtMiliFileFormat::DecodeMultiMeshVarname(const string &varname,
 //    Hank Childs, Mon Oct 20 10:03:58 PDT 2003
 //    Made a new data member for storing times.  Populated that here.
 //
+//    Hank Childs, Wed Aug 18 16:17:52 PDT 2004
+//    Add some special handling for single domain families.
+//
 // ****************************************************************************
 
 void
@@ -727,6 +730,15 @@ avtMiliFileFormat::OpenDB(int dom)
         if (ndomains == 1)
         {
             rval = mc_open( famroot, fampath, "r", &(dbid[dom]) );
+            if ( rval != OK )
+            {
+                // Try putting in the domain number and see what happens...
+                // We need this because makemili accepts it and there are
+                // legacy .mili files that look like fam rather than fam000.
+                char rootname[255];
+                sprintf(rootname, "%s%.3d", famroot, dom);
+                rval = mc_open(rootname, fampath, "r", &(dbid[dom]) );
+            }
             if ( rval != OK )
                 EXCEPTION1(InvalidFilesException, famroot);
         }
@@ -1138,6 +1150,9 @@ avtMiliFileFormat::ValidateVariables(int dom)
 //    Akira Haddox, Tue Jul 22 09:21:39 PDT 2003
 //    Find number of materials from global mesh information.
 //
+//    Hank Childs, Fri Aug 20 15:31:30 PDT 2004
+//    Increment the material number here to match what the meta-data says.
+//
 // ****************************************************************************
 
 avtMaterial *
@@ -1176,7 +1191,7 @@ avtMiliFileFormat::ConstructMaterials(vector< vector<int *> > &mat_list,
     char str[32];
     for (i = 0; i < mat_names.size(); ++i)
     {
-        sprintf(str, "mat%d", i);
+        sprintf(str, "mat%d", i+1);
         mat_names[i] = str;
     }
 
@@ -1596,6 +1611,9 @@ avtMiliFileFormat::GetNTimesteps()
 //    Make the materials start at "1" and go up.  Also make the domain 
 //    decomposition say processor instead of block.
 //
+//    Hank Childs, Wed Aug 18 16:25:15 PDT 2004
+//    Added new expressions for displacement and position.
+//
 // ****************************************************************************
 
 void
@@ -1720,37 +1738,37 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         md->AddExpression(&pressure_expr);
 
         Expression stressx_expr;
-        stressx_expr.SetName("derived/stress_x");
+        stressx_expr.SetName("derived/stress/x");
         stressx_expr.SetDefinition("stress[0][0]");
         stressx_expr.SetType(Expression::ScalarMeshVar);
         md->AddExpression(&stressx_expr);
 
         Expression stressy_expr;
-        stressy_expr.SetName("derived/stress_y");
+        stressy_expr.SetName("derived/stress/y");
         stressy_expr.SetDefinition("stress[1][1]");
         stressy_expr.SetType(Expression::ScalarMeshVar);
         md->AddExpression(&stressy_expr);
 
         Expression stressz_expr;
-        stressz_expr.SetName("derived/stress_z");
+        stressz_expr.SetName("derived/stress/z");
         stressz_expr.SetDefinition("stress[2][2]");
         stressz_expr.SetType(Expression::ScalarMeshVar);
         md->AddExpression(&stressz_expr);
 
         Expression stressxy_expr;
-        stressxy_expr.SetName("derived/stress_xy");
+        stressxy_expr.SetName("derived/stress/xy");
         stressxy_expr.SetDefinition("stress[0][1]");
         stressxy_expr.SetType(Expression::ScalarMeshVar);
         md->AddExpression(&stressxy_expr);
 
         Expression stressxz_expr;
-        stressxz_expr.SetName("derived/stress_xz");
+        stressxz_expr.SetName("derived/stress/xz");
         stressxz_expr.SetDefinition("stress[0][2]");
         stressxz_expr.SetType(Expression::ScalarMeshVar);
         md->AddExpression(&stressxz_expr);
 
         Expression stressyz_expr;
-        stressyz_expr.SetName("derived/stress_yz");
+        stressyz_expr.SetName("derived/stress/yz");
         stressyz_expr.SetDefinition("stress[1][2]");
         stressyz_expr.SetType(Expression::ScalarMeshVar);
         md->AddExpression(&stressyz_expr);
@@ -1762,21 +1780,21 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         md->AddExpression(&seff_expr);
 
         Expression p_dev_stress1_expr;
-        p_dev_stress1_expr.SetName("derived/prin_dev_stress_1");
+        p_dev_stress1_expr.SetName("derived/prin_dev_stress/1");
         p_dev_stress1_expr.SetDefinition(
                                      "principal_deviatoric_tensor(stress)[0]");
         p_dev_stress1_expr.SetType(Expression::ScalarMeshVar);
         md->AddExpression(&p_dev_stress1_expr);
 
         Expression p_dev_stress2_expr;
-        p_dev_stress2_expr.SetName("derived/prin_dev_stress_2");
+        p_dev_stress2_expr.SetName("derived/prin_dev_stress/2");
         p_dev_stress2_expr.SetDefinition(
                                      "principal_deviatoric_tensor(stress)[1]");
         p_dev_stress2_expr.SetType(Expression::ScalarMeshVar);
         md->AddExpression(&p_dev_stress2_expr);
 
         Expression p_dev_stress3_expr;
-        p_dev_stress3_expr.SetName("derived/prin_dev_stress_3");
+        p_dev_stress3_expr.SetName("derived/prin_dev_stress/3");
         p_dev_stress3_expr.SetDefinition(
                                      "principal_deviatoric_tensor(stress)[2]");
         p_dev_stress3_expr.SetType(Expression::ScalarMeshVar);
@@ -1789,19 +1807,19 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         md->AddExpression(&maxshr_expr);
 
         Expression prin_stress1_expr;
-        prin_stress1_expr.SetName("derived/prin_stress_1");
+        prin_stress1_expr.SetName("derived/prin_stress/1");
         prin_stress1_expr.SetDefinition("principal_tensor(stress)[0]");
         prin_stress1_expr.SetType(Expression::ScalarMeshVar);
         md->AddExpression(&prin_stress1_expr);
 
         Expression prin_stress2_expr;
-        prin_stress2_expr.SetName("derived/prin_stress_2");
+        prin_stress2_expr.SetName("derived/prin_stress/2");
         prin_stress2_expr.SetDefinition("principal_tensor(stress)[1]");
         prin_stress2_expr.SetType(Expression::ScalarMeshVar);
         md->AddExpression(&prin_stress2_expr);
 
         Expression prin_stress3_expr;
-        prin_stress3_expr.SetName("derived/prin_stress_3");
+        prin_stress3_expr.SetName("derived/prin_stress/3");
         prin_stress3_expr.SetDefinition("principal_tensor(stress)[2]");
         prin_stress3_expr.SetType(Expression::ScalarMeshVar);
         md->AddExpression(&prin_stress3_expr);
@@ -1817,37 +1835,37 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         GetVariableIndex("strain");
 
         Expression strainx_expr;
-        strainx_expr.SetName("derived/strain_x");
+        strainx_expr.SetName("derived/strain/x");
         strainx_expr.SetDefinition("strain[0][0]");
         strainx_expr.SetType(Expression::ScalarMeshVar);
         md->AddExpression(&strainx_expr);
 
         Expression strainy_expr;
-        strainy_expr.SetName("derived/strain_y");
+        strainy_expr.SetName("derived/strain/y");
         strainy_expr.SetDefinition("strain[1][1]");
         strainy_expr.SetType(Expression::ScalarMeshVar);
         md->AddExpression(&strainy_expr);
 
         Expression strainz_expr;
-        strainz_expr.SetName("derived/strain_z");
+        strainz_expr.SetName("derived/strain/z");
         strainz_expr.SetDefinition("strain[2][2]");
         strainz_expr.SetType(Expression::ScalarMeshVar);
         md->AddExpression(&strainz_expr);
 
         Expression strainxy_expr;
-        strainxy_expr.SetName("derived/strain_xy");
+        strainxy_expr.SetName("derived/strain/xy");
         strainxy_expr.SetDefinition("strain[0][1]");
         strainxy_expr.SetType(Expression::ScalarMeshVar);
         md->AddExpression(&strainxy_expr);
 
         Expression strainxz_expr;
-        strainxz_expr.SetName("derived/strain_xz");
+        strainxz_expr.SetName("derived/strain/xz");
         strainxz_expr.SetDefinition("strain[0][2]");
         strainxz_expr.SetType(Expression::ScalarMeshVar);
         md->AddExpression(&strainxz_expr);
 
         Expression strainyz_expr;
-        strainyz_expr.SetName("derived/strain_yz");
+        strainyz_expr.SetName("derived/strain/yz");
         strainyz_expr.SetDefinition("strain[1][2]");
         strainyz_expr.SetType(Expression::ScalarMeshVar);
         md->AddExpression(&strainyz_expr);
@@ -1859,21 +1877,21 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         md->AddExpression(&seff_expr);
 
         Expression p_dev_strain1_expr;
-        p_dev_strain1_expr.SetName("derived/prin_dev_strain_1");
+        p_dev_strain1_expr.SetName("derived/prin_dev_strain/1");
         p_dev_strain1_expr.SetDefinition(
                                      "principal_deviatoric_tensor(strain)[0]");
         p_dev_strain1_expr.SetType(Expression::ScalarMeshVar);
         md->AddExpression(&p_dev_strain1_expr);
 
         Expression p_dev_strain2_expr;
-        p_dev_strain2_expr.SetName("derived/prin_dev_strain_2");
+        p_dev_strain2_expr.SetName("derived/prin_dev_strain/2");
         p_dev_strain2_expr.SetDefinition(
                                      "principal_deviatoric_tensor(strain)[1]");
         p_dev_strain2_expr.SetType(Expression::ScalarMeshVar);
         md->AddExpression(&p_dev_strain2_expr);
 
         Expression p_dev_strain3_expr;
-        p_dev_strain3_expr.SetName("derived/prin_dev_strain_3");
+        p_dev_strain3_expr.SetName("derived/prin_dev_strain/3");
         p_dev_strain3_expr.SetDefinition(
                                      "principal_deviatoric_tensor(strain)[2]");
         p_dev_strain3_expr.SetType(Expression::ScalarMeshVar);
@@ -1886,19 +1904,19 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         md->AddExpression(&maxshr_expr);
 
         Expression prin_strain1_expr;
-        prin_strain1_expr.SetName("derived/prin_strain_1");
+        prin_strain1_expr.SetName("derived/prin_strain/1");
         prin_strain1_expr.SetDefinition("principal_tensor(strain)[0]");
         prin_strain1_expr.SetType(Expression::ScalarMeshVar);
         md->AddExpression(&prin_strain1_expr);
 
         Expression prin_strain2_expr;
-        prin_strain2_expr.SetName("derived/prin_strain_2");
+        prin_strain2_expr.SetName("derived/prin_strain/2");
         prin_strain2_expr.SetDefinition("principal_tensor(strain)[1]");
         prin_strain2_expr.SetType(Expression::ScalarMeshVar);
         md->AddExpression(&prin_strain2_expr);
 
         Expression prin_strain3_expr;
-        prin_strain3_expr.SetName("derived/prin_strain_3");
+        prin_strain3_expr.SetName("derived/prin_strain/3");
         prin_strain3_expr.SetDefinition("principal_tensor(strain)[2]");
         prin_strain3_expr.SetType(Expression::ScalarMeshVar);
         md->AddExpression(&prin_strain3_expr);
@@ -1914,25 +1932,25 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         GetVariableIndex("nodvel");
 
         Expression velx_expr;
-        velx_expr.SetName("derived/velocity_x");
+        velx_expr.SetName("derived/velocity/x");
         velx_expr.SetDefinition("nodvel[0]");
         velx_expr.SetType(Expression::ScalarMeshVar);
         md->AddExpression(&velx_expr);
 
         Expression vely_expr;
-        vely_expr.SetName("derived/velocity_y");
+        vely_expr.SetName("derived/velocity/y");
         vely_expr.SetDefinition("nodvel[1]");
         vely_expr.SetType(Expression::ScalarMeshVar);
         md->AddExpression(&vely_expr);
 
         Expression velz_expr;
-        velz_expr.SetName("derived/velocity_z");
+        velz_expr.SetName("derived/velocity/z");
         velz_expr.SetDefinition("nodvel[2]");
         velz_expr.SetType(Expression::ScalarMeshVar);
         md->AddExpression(&velz_expr);
 
         Expression velmag_expr;
-        velmag_expr.SetName("derived/velocity_mag");
+        velmag_expr.SetName("derived/velocity/mag");
         velmag_expr.SetDefinition("magnitude(nodvel)");
         velmag_expr.SetType(Expression::ScalarMeshVar);
         md->AddExpression(&velmag_expr);
@@ -1948,25 +1966,25 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         GetVariableIndex("nodacc");
 
         Expression accx_expr;
-        accx_expr.SetName("derived/acceleration_x");
+        accx_expr.SetName("derived/acceleration/x");
         accx_expr.SetDefinition("nodacc[0]");
         accx_expr.SetType(Expression::ScalarMeshVar);
         md->AddExpression(&accx_expr);
 
         Expression accy_expr;
-        accy_expr.SetName("derived/acceleration_y");
+        accy_expr.SetName("derived/acceleration/y");
         accy_expr.SetDefinition("nodacc[1]");
         accy_expr.SetType(Expression::ScalarMeshVar);
         md->AddExpression(&accy_expr);
 
         Expression accz_expr;
-        accz_expr.SetName("derived/acceleration_z");
+        accz_expr.SetName("derived/acceleration/z");
         accz_expr.SetDefinition("nodacc[2]");
         accz_expr.SetType(Expression::ScalarMeshVar);
         md->AddExpression(&accz_expr);
 
         Expression accmag_expr;
-        accmag_expr.SetName("derived/acceleration_mag");
+        accmag_expr.SetName("derived/acceleration/mag");
         accmag_expr.SetDefinition("magnitude(nodacc)");
         accmag_expr.SetType(Expression::ScalarMeshVar);
         md->AddExpression(&accmag_expr);
@@ -1975,6 +1993,95 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     {
     }
     ENDTRY
+
+    TRY
+    {
+        // This call throw an exception if noddisp does not exist.
+        GetVariableIndex("noddisp");
+
+        Expression dispx_expr;
+        dispx_expr.SetName("derived/displacement/x");
+        dispx_expr.SetDefinition("noddisp[0]");
+        dispx_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&dispx_expr);
+
+        Expression dispy_expr;
+        dispy_expr.SetName("derived/displacement/y");
+        dispy_expr.SetDefinition("noddisp[1]");
+        dispy_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&dispy_expr);
+
+        Expression dispz_expr;
+        dispz_expr.SetName("derived/displacement/z");
+        dispz_expr.SetDefinition("noddisp[2]");
+        dispz_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&dispz_expr);
+
+        Expression dispmag_expr;
+        dispmag_expr.SetName("derived/displacement/mag");
+        dispmag_expr.SetDefinition("magnitude(noddisp)");
+        dispmag_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&dispmag_expr);
+    }
+    CATCH(InvalidVariableException)
+    {
+    }
+    ENDTRY
+
+    if (nmeshes == 1)
+    {
+        Expression posx_expr;
+        posx_expr.SetName("derived/nodpos/x");
+        posx_expr.SetDefinition("coord(mesh1)[0]");
+        posx_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&posx_expr);
+
+        Expression posy_expr;
+        posy_expr.SetName("derived/nodpos/y");
+        posy_expr.SetDefinition("coord(mesh1)[1]");
+        posy_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&posy_expr);
+
+        Expression posz_expr;
+        posz_expr.SetName("derived/nodpos/z");
+        posz_expr.SetDefinition("coord(mesh1)[2]");
+        posz_expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&posz_expr);
+    }
+    else
+    {
+        for (i = 0; i < nmeshes; ++i)
+        {
+            char meshname[32];
+            char expr_name[128];
+            char defn_name[128];
+            sprintf(meshname, "mesh%d", i + 1);
+
+            Expression posx_expr;
+            sprintf(expr_name, "derived/nodpos/%s/x", meshname);
+            sprintf(defn_name, "coord(%s)[0]", meshname);
+            posx_expr.SetName(expr_name);
+            posx_expr.SetDefinition(defn_name);
+            posx_expr.SetType(Expression::ScalarMeshVar);
+            md->AddExpression(&posx_expr);
+    
+            sprintf(expr_name, "derived/nodpos/%s/y", meshname);
+            sprintf(defn_name, "coord(%s)[1]", meshname);
+            Expression posy_expr;
+            posy_expr.SetName(expr_name);
+            posy_expr.SetDefinition(defn_name);
+            posy_expr.SetType(Expression::ScalarMeshVar);
+            md->AddExpression(&posy_expr);
+    
+            sprintf(expr_name, "derived/nodpos/%s/z", meshname);
+            sprintf(defn_name, "coord(%s)[2]", meshname);
+            Expression posz_expr;
+            posz_expr.SetName(expr_name);
+            posz_expr.SetDefinition(defn_name);
+            posz_expr.SetType(Expression::ScalarMeshVar);
+            md->AddExpression(&posz_expr);
+        }
+    }
 
     if (!readPartInfo && !avtDatabase::OnlyServeUpMetaData())
         ParseDynaPart();

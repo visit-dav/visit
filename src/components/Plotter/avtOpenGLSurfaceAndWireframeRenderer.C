@@ -24,7 +24,7 @@
 
 avtOpenGLSurfaceAndWireframeRenderer::avtOpenGLSurfaceAndWireframeRenderer()
 {
-    // Must be in the C file to work as a Windows DLL.
+  // Must be in the C file to work as a Windows DLL.
 }
 
 // ****************************************************************************
@@ -252,21 +252,25 @@ BeginPolyTriangleOrQuad(GLenum aGlFunction, GLenum &previousGlFunction,
 // ****************************************************************************
 
 static void 
-Draw01(vtkCellArray *aPrim, GLenum aGlFunction, int &, vtkPoints *p, 
-       vtkDataArray *, vtkUnsignedCharArray *, vtkDataArray *) 
+Draw01(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p, 
+       vtkDataArray *, vtkUnsignedCharArray *, vtkDataArray *)
 {
-    int j; 
-    int count = 0;
-    vtkIdType npts, *pts; 
+    int i, j; 
+    vtkIdType npts = 0; 
+
+    const float *vertices = p->GetPoint(0);
     GLenum previousGlFunction=GL_INVALID_VALUE;
 
-    for (aPrim->InitTraversal(); aPrim->GetNextCell(npts,pts); count++)
+    int nCells = aPrim->GetNumberOfCells();
+    vtkIdType *ids = aPrim->GetData()->GetPointer(0);
+    for (i = 0; i < nCells; i++)
     { 
+        npts = *ids++;
         BeginPolyTriangleOrQuad(aGlFunction, previousGlFunction, npts);
 
-        for (j = 0; j < npts; j++) 
+        for (j = 0; j < npts; j++, ids++) 
         {
-            glVertex3fv(p->GetPoint(pts[j]));
+            glVertex3fv(vertices + 3*(*ids));
         }
 
         if ((previousGlFunction != GL_TRIANGLES)  
@@ -275,7 +279,6 @@ Draw01(vtkCellArray *aPrim, GLenum aGlFunction, int &, vtkPoints *p,
         {
             glEnd();
         }
-    
     }
     if ((previousGlFunction == GL_TRIANGLES)
         || (previousGlFunction == GL_QUADS)
@@ -324,23 +327,29 @@ Draw01(vtkCellArray *aPrim, GLenum aGlFunction, int &, vtkPoints *p,
 // ****************************************************************************
 
 static void 
-DrawN013(vtkCellArray *aPrim, GLenum aGlFunction, int &, vtkPoints *p, 
-         vtkDataArray *n, vtkUnsignedCharArray *, vtkDataArray *) 
+DrawN013(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p, 
+         vtkDataArray *n, vtkUnsignedCharArray *, vtkDataArray *)
 {
-    int j;
-    vtkIdType npts, *pts;
-    int count = 0;
+    int i, j;
+    vtkIdType npts = 0;
 
     GLenum previousGlFunction=GL_INVALID_VALUE;
-  
-    for (aPrim->InitTraversal(); aPrim->GetNextCell(npts,pts); count++)
+
+    const float *normals  = n->GetTuple(0);
+    const float *vertices = p->GetPoint(0);
+ 
+    int nCells = aPrim->GetNumberOfCells();
+    vtkIdType *ids = aPrim->GetData()->GetPointer(0);
+ 
+    for (i = 0; i < nCells; i++)
     {
+        npts = *ids++;
         BeginPolyTriangleOrQuad(aGlFunction, previousGlFunction, npts);
     
-        for (j = 0; j < npts; j++) 
+        for (j = 0; j < npts; j++, ids++) 
         {
-            glNormal3fv(n->GetTuple3(pts[j]));
-            glVertex3fv(p->GetPoint(pts[j]));
+            glNormal3fv(normals  + 3*(*ids));
+            glVertex3fv(vertices + 3*(*ids));
         }
 
         if ((previousGlFunction != GL_TRIANGLES) 
@@ -350,6 +359,7 @@ DrawN013(vtkCellArray *aPrim, GLenum aGlFunction, int &, vtkPoints *p,
             glEnd();
         }
     }
+
     if ((previousGlFunction == GL_TRIANGLES)
         || (previousGlFunction == GL_QUADS)
         || (previousGlFunction == GL_POINTS))
@@ -397,25 +407,30 @@ DrawN013(vtkCellArray *aPrim, GLenum aGlFunction, int &, vtkPoints *p,
 // ****************************************************************************
 
 static void 
-DrawCN013(vtkCellArray *aPrim, GLenum aGlFunction, int &cellNum, vtkPoints *p, 
-          vtkDataArray *n, vtkUnsignedCharArray *, vtkDataArray *) 
+DrawCN013(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum, vtkPoints *p, 
+          vtkDataArray *n, vtkUnsignedCharArray *, vtkDataArray *)
 {
-    int j;
-    vtkIdType  npts, *pts;
-    int count = 0;
+    int i, j;
+    vtkIdType npts = 0;
   
     GLenum previousGlFunction=GL_INVALID_VALUE;
 
-    for (aPrim->InitTraversal(); aPrim->GetNextCell(npts,pts); 
-         count++, cellNum++)
+    const float *normals  = n->GetTuple(0);
+    const float *vertices = p->GetPoint(0);
+
+    int nCells = aPrim->GetNumberOfCells();
+    vtkIdType *ids = aPrim->GetData()->GetPointer(0);
+
+    for (i = 0; i < nCells; i++, cellNum++)
     { 
+        npts = *ids++;
         BeginPolyTriangleOrQuad(aGlFunction, previousGlFunction, npts);
     
-        glNormal3fv(n->GetTuple3(cellNum));
+        glNormal3fv(normals + 3*cellNum);
     
-        for (j = 0; j < npts; j++) 
+        for (j = 0; j < npts; j++, ids++) 
         {
-            glVertex3fv(p->GetPoint(pts[j]));
+            glVertex3fv(vertices + 3*(*ids));
         }
 
         if ((previousGlFunction != GL_TRIANGLES) 
@@ -472,23 +487,29 @@ DrawCN013(vtkCellArray *aPrim, GLenum aGlFunction, int &cellNum, vtkPoints *p,
 // ****************************************************************************
 
 static void 
-DrawS01(vtkCellArray *aPrim, GLenum aGlFunction, int &, vtkPoints *p, 
-        vtkDataArray *, vtkUnsignedCharArray *c, vtkDataArray *) 
+DrawS01(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p, 
+        vtkDataArray *, vtkUnsignedCharArray *c, vtkDataArray *)
 {
-    int j;
-    vtkIdType npts, *pts;
-    int count = 0;
-  
+    int i, j;
+    vtkIdType npts = 0;
+ 
+    const unsigned char *colors = c->GetPointer(0);
+    const float *vertices = p->GetPoint(0);
+
+    int nCells = aPrim->GetNumberOfCells();
+    vtkIdType *ids = aPrim->GetData()->GetPointer(0);
+
     GLenum previousGlFunction=GL_INVALID_VALUE;
 
-    for (aPrim->InitTraversal(); aPrim->GetNextCell(npts,pts); count++)
+    for (i = 0; i < nCells; i++)
     { 
+        npts = *ids++;
         BeginPolyTriangleOrQuad(aGlFunction, previousGlFunction, npts);
     
-        for (j = 0; j < npts; j++) 
+        for (j = 0; j < npts; j++, ids++) 
         {
-            glColor4ubv(c->GetPointer(4*pts[j]));
-            glVertex3fv(p->GetPoint(pts[j]));
+            glColor4ubv(colors   + 4*(*ids));
+            glVertex3fv(vertices + 3*(*ids));
         }
 
         if ((previousGlFunction != GL_TRIANGLES) 
@@ -498,6 +519,7 @@ DrawS01(vtkCellArray *aPrim, GLenum aGlFunction, int &, vtkPoints *p,
             glEnd();
         }
     }
+ 
     if ((previousGlFunction == GL_TRIANGLES)
         || (previousGlFunction == GL_QUADS)
         || (previousGlFunction == GL_POINTS))
@@ -545,24 +567,30 @@ DrawS01(vtkCellArray *aPrim, GLenum aGlFunction, int &, vtkPoints *p,
 // ****************************************************************************
 
 static void 
-DrawNS013(vtkCellArray *aPrim, GLenum aGlFunction, int &, vtkPoints *p, 
-          vtkDataArray *n, vtkUnsignedCharArray *c, vtkDataArray *) 
+DrawNS013(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p, 
+          vtkDataArray *n, vtkUnsignedCharArray *c, vtkDataArray *)
 {
-    int j;
-    vtkIdType npts, *pts;
-    int count = 0;
-  
+    int i, j;
+    vtkIdType npts = 0;
+
     GLenum previousGlFunction=GL_INVALID_VALUE;
 
-    for (aPrim->InitTraversal(); aPrim->GetNextCell(npts,pts); count++)
+    const float *normals = n->GetTuple(0);
+    const float *vertices = p->GetPoint(0);
+    const unsigned char *colors = c->GetPointer(0);
+
+    int nCells = aPrim->GetNumberOfCells();
+    vtkIdType *ids = aPrim->GetData()->GetPointer(0);
+    for (i = 0; i < nCells; i++)
     { 
+        npts = *ids++;
         BeginPolyTriangleOrQuad(aGlFunction, previousGlFunction, npts);
     
-        for (j = 0; j < npts; j++) 
+        for (j = 0; j < npts; j++, ids++) 
         {
-            glColor4ubv(c->GetPointer(4*pts[j]));
-            glNormal3fv(n->GetTuple3(pts[j]));
-            glVertex3fv(p->GetPoint(pts[j]));
+            glColor4ubv(colors   + 4*(*ids));
+            glNormal3fv(normals  + 3*(*ids));
+            glVertex3fv(vertices + 3*(*ids));
         }
 
         if ((previousGlFunction != GL_TRIANGLES) 
@@ -619,26 +647,31 @@ DrawNS013(vtkCellArray *aPrim, GLenum aGlFunction, int &, vtkPoints *p,
 // ****************************************************************************
 
 static void 
-DrawCNS013(vtkCellArray *aPrim, GLenum aGlFunction, int &cellNum, vtkPoints *p,
-           vtkDataArray *n, vtkUnsignedCharArray *c, vtkDataArray *) 
+DrawCNS013(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum, vtkPoints *p,
+           vtkDataArray *n, vtkUnsignedCharArray *c, vtkDataArray *)
 {
-    int j;
-    vtkIdType npts, *pts;
-    int count = 0;
+    int i, j;
+    vtkIdType npts = 0;
   
     GLenum previousGlFunction=GL_INVALID_VALUE;
 
-    for (aPrim->InitTraversal(); aPrim->GetNextCell(npts,pts); 
-         count++, cellNum++)
+    const float *normals = n->GetTuple(0);
+    const float *vertices = p->GetPoint(0);
+    const unsigned char *colors = c->GetPointer(0);
+
+    int nCells = aPrim->GetNumberOfCells();
+    vtkIdType *ids = aPrim->GetData()->GetPointer(0);
+    for (i = 0; i < nCells; i++, cellNum++)
     { 
+        npts = *ids++;
         BeginPolyTriangleOrQuad(aGlFunction, previousGlFunction, npts);
     
-        glNormal3fv(n->GetTuple3(cellNum));
+        glNormal3fv(normals + 3*cellNum);
     
-        for (j = 0; j < npts; j++) 
+        for (j = 0; j < npts; j++, ids++) 
         {
-            glColor4ubv(c->GetPointer(4*pts[j]));
-            glVertex3fv(p->GetPoint(pts[j]));
+            glColor4ubv(colors   + 4*(*ids));
+            glVertex3fv(vertices + 3*(*ids));
         }
 
         if ((previousGlFunction != GL_TRIANGLES) 
@@ -695,23 +728,28 @@ DrawCNS013(vtkCellArray *aPrim, GLenum aGlFunction, int &cellNum, vtkPoints *p,
 // ****************************************************************************
 
 static void 
-DrawT01(vtkCellArray *aPrim, GLenum aGlFunction, int &, vtkPoints *p, 
-        vtkDataArray *, vtkUnsignedCharArray *, vtkDataArray *t) 
+DrawT01(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p, 
+        vtkDataArray *, vtkUnsignedCharArray *, vtkDataArray *t)
 {
-    int j;
-    vtkIdType npts, *pts;
-    int count = 0;
-  
+    int i, j;
+    vtkIdType npts = 0;
+ 
     GLenum previousGlFunction=GL_INVALID_VALUE;
 
-    for (aPrim->InitTraversal(); aPrim->GetNextCell(npts,pts); count++)
+    const float *vertices = p->GetPoint(0);
+    const float *textures = t->GetTuple(0);
+
+    int nCells = aPrim->GetNumberOfCells();
+    vtkIdType *ids = aPrim->GetData()->GetPointer(0);
+    for (i = 0; i < nCells; i++)
     { 
+        npts = *ids++;
         BeginPolyTriangleOrQuad(aGlFunction, previousGlFunction, npts);
     
-        for (j = 0; j < npts; j++) 
+        for (j = 0; j < npts; j++, ids++) 
         {
-            glTexCoord2fv(t->GetTuple2(pts[j]));
-            glVertex3fv(p->GetPoint(pts[j]));
+            glTexCoord2fv(textures + 2*(*ids));
+            glVertex3fv(vertices   + 3*(*ids));
         }
 
         if ((previousGlFunction != GL_TRIANGLES) 
@@ -768,24 +806,31 @@ DrawT01(vtkCellArray *aPrim, GLenum aGlFunction, int &, vtkPoints *p,
 // ****************************************************************************
 
 static void 
-DrawNT013(vtkCellArray *aPrim, GLenum aGlFunction, int &, vtkPoints *p, 
-          vtkDataArray *n, vtkUnsignedCharArray *, vtkDataArray *t) 
+DrawNT013(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p, 
+          vtkDataArray *n, vtkUnsignedCharArray *, vtkDataArray *t)
 {
-    int j;
-    vtkIdType  npts, *pts;
-    int count = 0;
+    int i, j;
+    vtkIdType npts = 0;
   
     GLenum previousGlFunction=GL_INVALID_VALUE;
-  
-    for (aPrim->InitTraversal(); aPrim->GetNextCell(npts,pts); count++)
+
+    const float *textures = t->GetTuple(0);
+    const float *normals  = n->GetTuple(0);
+    const float *vertices = p->GetPoint(0);
+ 
+    int nCells = aPrim->GetNumberOfCells();
+    vtkIdType *ids = aPrim->GetData()->GetPointer(0);
+ 
+    for (i = 0; i < nCells; i++)
     { 
+        npts = *ids++;
         BeginPolyTriangleOrQuad(aGlFunction, previousGlFunction, npts);
     
-        for (j = 0; j < npts; j++) 
+        for (j = 0; j < npts; j++, ids++) 
         {
-            glTexCoord2fv(t->GetTuple2(pts[j]));
-            glNormal3fv(n->GetTuple3(pts[j]));
-            glVertex3fv(p->GetPoint(pts[j]));
+            glTexCoord2fv(textures + 2*(*ids));
+            glNormal3fv(normals    + 3*(*ids));
+            glVertex3fv(vertices   + 3*(*ids));
         }
 
         if ((previousGlFunction != GL_TRIANGLES) 
@@ -842,26 +887,31 @@ DrawNT013(vtkCellArray *aPrim, GLenum aGlFunction, int &, vtkPoints *p,
 // ****************************************************************************
 
 static void 
-DrawCNT013(vtkCellArray *aPrim, GLenum aGlFunction, int &cellNum, vtkPoints *p,
-           vtkDataArray *n, vtkUnsignedCharArray *, vtkDataArray *t) 
+DrawCNT013(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum, vtkPoints *p,
+           vtkDataArray *n, vtkUnsignedCharArray *, vtkDataArray *t)
 {
-    int j; 
-    vtkIdType npts, *pts;
-    int count = 0;
+    int i, j; 
+    vtkIdType npts = 0;
   
     GLenum previousGlFunction=GL_INVALID_VALUE;
 
-    for (aPrim->InitTraversal(); aPrim->GetNextCell(npts,pts); 
-         count++, cellNum++)
+    const float *normals  = n->GetTuple(0);
+    const float *textures = t->GetTuple(0);
+    const float *vertices = p->GetPoint(0);
+
+    int nCells = aPrim->GetNumberOfCells();
+    vtkIdType *ids = aPrim->GetData()->GetPointer(0);
+    for (i = 0; i < nCells; i++, cellNum++)
     { 
+        npts = *ids++;
         BeginPolyTriangleOrQuad(aGlFunction, previousGlFunction, npts);
     
-        glNormal3fv(n->GetTuple3(cellNum));
+        glNormal3fv(normals + 3*cellNum);
     
-        for (j = 0; j < npts; j++) 
+        for (j = 0; j < npts; j++, ids++) 
         {
-            glTexCoord2fv(t->GetTuple2(pts[j]));
-            glVertex3fv(p->GetPoint(pts[j]));
+            glTexCoord2fv(textures + 2*(*ids));
+            glVertex3fv(vertices   + 3*(*ids));
         }
 
         if ((previousGlFunction != GL_TRIANGLES) 
@@ -918,24 +968,31 @@ DrawCNT013(vtkCellArray *aPrim, GLenum aGlFunction, int &cellNum, vtkPoints *p,
 // ****************************************************************************
 
 static void 
-DrawST01(vtkCellArray *aPrim, GLenum aGlFunction, int &, vtkPoints *p, 
-         vtkDataArray *, vtkUnsignedCharArray *c, vtkDataArray *t) 
+DrawST01(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p, 
+         vtkDataArray *, vtkUnsignedCharArray *c, vtkDataArray *t)
 {
-    int j;
-    vtkIdType npts, *pts;
-    int count = 0;
+    int i, j;
+    vtkIdType npts = 0;
   
     GLenum previousGlFunction=GL_INVALID_VALUE;
 
-    for (aPrim->InitTraversal(); aPrim->GetNextCell(npts,pts); count++)
+    const unsigned char *colors = c->GetPointer(0);
+    const float *textures = t->GetTuple(0);
+    const float *vertices = p->GetPoint(0);
+
+    int nCells = aPrim->GetNumberOfCells();
+    vtkIdType *ids = aPrim->GetData()->GetPointer(0);
+
+    for (i = 0; i < nCells; i++)
     { 
+        npts = *ids++;
         BeginPolyTriangleOrQuad(aGlFunction, previousGlFunction, npts);
     
-        for (j = 0; j < npts; j++) 
+        for (j = 0; j < npts; j++, ids++) 
         {
-            glColor4ubv(c->GetPointer(4*pts[j]));
-            glTexCoord2fv(t->GetTuple2(pts[j]));
-            glVertex3fv(p->GetPoint(pts[j]));
+            glColor4ubv(colors     + 4*(*ids));
+            glTexCoord2fv(textures + 2*(*ids));
+            glVertex3fv(vertices   + 3*(*ids));
         }
 
         if ((previousGlFunction != GL_TRIANGLES) 
@@ -992,25 +1049,33 @@ DrawST01(vtkCellArray *aPrim, GLenum aGlFunction, int &, vtkPoints *p,
 // ****************************************************************************
 
 static void 
-DrawNST013(vtkCellArray *aPrim, GLenum aGlFunction, int &, vtkPoints *p, 
-           vtkDataArray *n, vtkUnsignedCharArray *c, vtkDataArray *t) 
+DrawNST013(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p, 
+           vtkDataArray *n, vtkUnsignedCharArray *c, vtkDataArray *t)
 {
-    int j;
-    vtkIdType npts, *pts;
-    int count = 0;
+    int i, j;
+    vtkIdType npts = 0;
   
     GLenum previousGlFunction=GL_INVALID_VALUE;
 
-    for (aPrim->InitTraversal(); aPrim->GetNextCell(npts,pts); count++)
+    const unsigned char *colors = c->GetPointer(0);
+    const float *textures = t->GetTuple(0);
+    const float *normals = n->GetTuple(0);
+    const float *vertices = p->GetPoint(0);
+
+    int nCells = aPrim->GetNumberOfCells();
+    vtkIdType *ids = aPrim->GetData()->GetPointer(0);
+
+    for (i = 0; i < nCells; i++)
     { 
+        npts = *ids++;
         BeginPolyTriangleOrQuad(aGlFunction, previousGlFunction, npts);
     
-        for (j = 0; j < npts; j++) 
+        for (j = 0; j < npts; j++, ids++) 
         {
-            glColor4ubv(c->GetPointer(4*pts[j]));
-            glTexCoord2fv(t->GetTuple2(pts[j]));
-            glNormal3fv(n->GetTuple3(pts[j]));
-            glVertex3fv(p->GetPoint(pts[j]));
+            glColor4ubv(colors     + 4*(*ids));
+            glTexCoord2fv(textures + 2*(*ids));
+            glNormal3fv(normals    + 3*(*ids));
+            glVertex3fv(vertices   + 3*(*ids));
         }
 
         if ((previousGlFunction != GL_TRIANGLES) 
@@ -1066,27 +1131,34 @@ DrawNST013(vtkCellArray *aPrim, GLenum aGlFunction, int &, vtkPoints *p,
 // ****************************************************************************
 
 static void 
-DrawCNST013(vtkCellArray *aPrim, GLenum aGlFunction, int &cellNum, 
-            vtkPoints *p, vtkDataArray *n, vtkUnsignedCharArray *c, vtkDataArray *t) 
+DrawCNST013(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum, 
+            vtkPoints *p, vtkDataArray *n, vtkUnsignedCharArray *c, vtkDataArray *t)
 {
-    int j;
-    vtkIdType npts, *pts;
-    int count = 0;
+    int i, j;
+    vtkIdType npts = 0;
   
     GLenum previousGlFunction=GL_INVALID_VALUE;
 
-    for (aPrim->InitTraversal(); aPrim->GetNextCell(npts,pts); 
-         count++, cellNum++)
+    const float *normals = n->GetTuple(0);
+    const unsigned char *colors = c->GetPointer(0);
+    const float *textures = t->GetTuple(0);
+    const float *vertices = p->GetPoint(0);
+
+    int nCells = aPrim->GetNumberOfCells();
+    vtkIdType *ids = aPrim->GetData()->GetPointer(0);
+
+    for (i = 0; i < nCells; i++, cellNum++)
     {
+        npts = *ids++;
         BeginPolyTriangleOrQuad(aGlFunction, previousGlFunction, npts);
     
-        glNormal3fv(n->GetTuple3(cellNum));
+        glNormal3fv(normals + 3*cellNum);
     
-        for (j = 0; j < npts; j++) 
+        for (j = 0; j < npts; j++, ids++) 
         {
-            glColor4ubv(c->GetPointer(4*pts[j]));
-            glTexCoord2fv(t->GetTuple2(pts[j]));
-            glVertex3fv(p->GetPoint(pts[j]));
+            glColor4ubv(colors     + 4*(*ids));
+            glTexCoord2fv(textures + 2*(*ids));
+            glVertex3fv(vertices   + 3*(*ids));
         }
 
         if ((previousGlFunction != GL_TRIANGLES) 
@@ -1143,24 +1215,28 @@ DrawCNST013(vtkCellArray *aPrim, GLenum aGlFunction, int &cellNum,
 // ****************************************************************************
 
 static void 
-DrawCS01(vtkCellArray *aPrim, GLenum aGlFunction, int &cellNum, vtkPoints *p, 
-         vtkDataArray *, vtkUnsignedCharArray *c, vtkDataArray *) 
+DrawCS01(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum, vtkPoints *p, 
+         vtkDataArray *, vtkUnsignedCharArray *c, vtkDataArray *)
 {
-    int j;
-    vtkIdType npts, *pts;
-    int count = 0;
+    int i, j;
+    vtkIdType npts = 0;
   
     GLenum previousGlFunction=GL_INVALID_VALUE;
 
-    for (aPrim->InitTraversal(); aPrim->GetNextCell(npts,pts); 
-         count++, cellNum++)
+    const unsigned char *colors = c->GetPointer(0);
+    const float *vertices = p->GetPoint(0);
+
+    int nCells = aPrim->GetNumberOfCells();
+    vtkIdType *ids = aPrim->GetData()->GetPointer(0); 
+    for (i = 0; i < nCells; i++, cellNum++)
     { 
+        npts = *ids++;
         BeginPolyTriangleOrQuad(aGlFunction, previousGlFunction, npts);
-        glColor4ubv(c->GetPointer(4*cellNum));
+        glColor4ubv(colors + 4*cellNum);
     
-        for (j = 0; j < npts; j++) 
+        for (j = 0; j < npts; j++, ids++) 
         {
-            glVertex3fv(p->GetPoint(pts[j]));
+            glVertex3fv(vertices + 3*(*ids));
         }
 
         if ((previousGlFunction != GL_TRIANGLES) 
@@ -1217,26 +1293,33 @@ DrawCS01(vtkCellArray *aPrim, GLenum aGlFunction, int &cellNum, vtkPoints *p,
 // ****************************************************************************
 
 static void 
-DrawNCS013(vtkCellArray *aPrim, GLenum aGlFunction, int &cellNum, vtkPoints *p,
-           vtkDataArray *n, vtkUnsignedCharArray *c, vtkDataArray *) 
+DrawNCS013(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum, vtkPoints *p,
+           vtkDataArray *n, vtkUnsignedCharArray *c, vtkDataArray *)
+           
 {
-    int j;
-    vtkIdType npts, *pts;
-    int count = 0;
+    int i, j;
+    vtkIdType npts = 0;
   
     GLenum previousGlFunction=GL_INVALID_VALUE;
 
-    for (aPrim->InitTraversal(); aPrim->GetNextCell(npts,pts); 
-         count++, cellNum++)
+    const unsigned char *colors = c->GetPointer(0);
+    const float *normals = n->GetTuple(0);
+    const float *vertices = p->GetPoint(0);
+
+    int nCells = aPrim->GetNumberOfCells();
+    vtkIdType *ids = aPrim->GetData()->GetPointer(0); 
+
+    for (i = 0; i < nCells; i++, cellNum++)
     { 
+        npts = *ids++;
         BeginPolyTriangleOrQuad(aGlFunction, previousGlFunction, npts);
     
-        glColor4ubv(c->GetPointer(4*cellNum));
+        glColor4ubv(colors + 4*cellNum);
     
-        for (j = 0; j < npts; j++) 
+        for (j = 0; j < npts; j++, ids++) 
         {
-            glNormal3fv(n->GetTuple3(pts[j]));
-            glVertex3fv(p->GetPoint(pts[j]));
+            glNormal3fv(normals  + 3*(*ids));
+            glVertex3fv(vertices + 3*(*ids));
         }
 
         if ((previousGlFunction != GL_TRIANGLES) 
@@ -1245,6 +1328,7 @@ DrawNCS013(vtkCellArray *aPrim, GLenum aGlFunction, int &cellNum, vtkPoints *p,
         {
             glEnd();
         }
+
     }
     if ((previousGlFunction == GL_TRIANGLES)
         || (previousGlFunction == GL_QUADS)
@@ -1293,26 +1377,33 @@ DrawNCS013(vtkCellArray *aPrim, GLenum aGlFunction, int &cellNum, vtkPoints *p,
 // ****************************************************************************
 
 static void 
-DrawCNCS013(vtkCellArray *aPrim, GLenum aGlFunction, int &cellNum, 
-            vtkPoints *p, vtkDataArray *n, vtkUnsignedCharArray *c, vtkDataArray *) 
+DrawCNCS013(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum, 
+            vtkPoints *p, vtkDataArray *n, vtkUnsignedCharArray *c, vtkDataArray *)
+            
 {
-    int j;
-    vtkIdType npts, *pts;
-    int count = 0;
+    int i, j;
+    vtkIdType npts = 0;
   
     GLenum previousGlFunction=GL_INVALID_VALUE;
+    
+    const unsigned char *colors = c->GetPointer(0);
+    const float *normals = n->GetTuple(0);
+    const float *vertices = p->GetPoint(0);
 
-    for (aPrim->InitTraversal(); aPrim->GetNextCell(npts,pts); 
-         count++, cellNum++)
+    int nCells = aPrim->GetNumberOfCells();
+    vtkIdType *ids = aPrim->GetData()->GetPointer(0);
+
+    for (i = 0; i < nCells; i++, cellNum++)
     { 
+        npts = *ids++;
         BeginPolyTriangleOrQuad(aGlFunction, previousGlFunction, npts);
     
-        glColor4ubv(c->GetPointer(4*cellNum));
-        glNormal3fv(n->GetTuple3(cellNum));
+        glColor4ubv(colors  + 4*cellNum);
+        glNormal3fv(normals + 3*cellNum);
     
-        for (j = 0; j < npts; j++) 
+        for (j = 0; j < npts; j++, ids++) 
         {
-            glVertex3fv(p->GetPoint(pts[j]));
+            glVertex3fv(vertices + 3*(*ids));
         }
 
         if ((previousGlFunction != GL_TRIANGLES) 
@@ -1321,6 +1412,7 @@ DrawCNCS013(vtkCellArray *aPrim, GLenum aGlFunction, int &cellNum,
         {
             glEnd();
         }
+
     }
     if ((previousGlFunction == GL_TRIANGLES)
         || (previousGlFunction == GL_QUADS)
@@ -1369,25 +1461,33 @@ DrawCNCS013(vtkCellArray *aPrim, GLenum aGlFunction, int &cellNum,
 // ****************************************************************************
 
 static void 
-DrawCST01(vtkCellArray *aPrim, GLenum aGlFunction, int &cellNum, vtkPoints *p, 
-          vtkDataArray *, vtkUnsignedCharArray *c, vtkDataArray *t) 
+DrawCST01(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum, vtkPoints *p, 
+          vtkDataArray *, vtkUnsignedCharArray *c, vtkDataArray *t)
+          
 {
-    int j;
-    vtkIdType npts, *pts;
-    int count = 0;
+    int i, j;
+    vtkIdType npts = 0;
   
     GLenum previousGlFunction=GL_INVALID_VALUE;
 
-    for (aPrim->InitTraversal(); aPrim->GetNextCell(npts,pts); 
-         count++, cellNum++)
+    const unsigned char *colors = c->GetPointer(0);
+    const float *textures = t->GetTuple(0);
+    const float *vertices = p->GetPoint(0);
+
+    int nCells = aPrim->GetNumberOfCells();
+    vtkIdType *ids = aPrim->GetData()->GetPointer(0);
+ 
+    for (i = 0; i < nCells; i++, cellNum++)
     { 
+        npts = *ids++;
         BeginPolyTriangleOrQuad(aGlFunction, previousGlFunction, npts);
-        glColor4ubv(c->GetPointer(4*cellNum));
+
+        glColor4ubv(colors + 4*cellNum);
     
-        for (j = 0; j < npts; j++) 
+        for (j = 0; j < npts; j++, ids++) 
         {
-            glTexCoord2fv(t->GetTuple2(pts[j]));
-            glVertex3fv(p->GetPoint(pts[j]));
+            glTexCoord2fv(textures + 2*(*ids));
+            glVertex3fv(vertices   + 3*(*ids));
         }
 
         if ((previousGlFunction != GL_TRIANGLES) 
@@ -1444,26 +1544,35 @@ DrawCST01(vtkCellArray *aPrim, GLenum aGlFunction, int &cellNum, vtkPoints *p,
 // ****************************************************************************
 
 static void 
-DrawNCST013(vtkCellArray *aPrim, GLenum aGlFunction, int &cellNum, 
-            vtkPoints *p, vtkDataArray *n, vtkUnsignedCharArray *c, vtkDataArray *t) 
+DrawNCST013(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum, 
+            vtkPoints *p, vtkDataArray *n, vtkUnsignedCharArray *c, vtkDataArray *t)
+            
 {
-    int j;
-    vtkIdType npts, *pts;
-    int count = 0;
+    int i, j;
+    vtkIdType npts = 0;
   
     GLenum previousGlFunction=GL_INVALID_VALUE;
 
-    for (aPrim->InitTraversal(); aPrim->GetNextCell(npts,pts); 
-         count++, cellNum++)
+    const unsigned char *colors = c->GetPointer(0);
+    const float *textures = t->GetTuple(0);
+    const float *normals = n->GetTuple(0);
+    const float *vertices = p->GetPoint(0);
+  
+    int nCells = aPrim->GetNumberOfCells();
+    vtkIdType *ids = aPrim->GetData()->GetPointer(0);
+
+    for (i = 0; i < nCells; i++, cellNum++)
     { 
+        npts = *ids++;
         BeginPolyTriangleOrQuad(aGlFunction, previousGlFunction, npts);
-        glColor4ubv(c->GetPointer(4*cellNum));
+
+        glColor4ubv(colors + 4*cellNum);
     
-        for (j = 0; j < npts; j++) 
+        for (j = 0; j < npts; j++, ids++) 
         {
-            glTexCoord2fv(t->GetTuple2(pts[j]));
-            glNormal3fv(n->GetTuple3(pts[j]));
-            glVertex3fv(p->GetPoint(pts[j]));
+            glTexCoord2fv(textures + 2*(*ids));
+            glNormal3fv(normals    + 3*(*ids));
+            glVertex3fv(vertices   + 3*(*ids));
         }
 
         if ((previousGlFunction != GL_TRIANGLES) 
@@ -1520,27 +1629,35 @@ DrawNCST013(vtkCellArray *aPrim, GLenum aGlFunction, int &cellNum,
 // ****************************************************************************
 
 static void 
-DrawCNCST013(vtkCellArray *aPrim, GLenum aGlFunction, int &cellNum, 
-             vtkPoints *p, vtkDataArray *n, vtkUnsignedCharArray *c, vtkDataArray *t) 
+DrawCNCST013(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum, 
+             vtkPoints *p, vtkDataArray *n, vtkUnsignedCharArray *c, vtkDataArray *t)
+             
 {
-    int j;
-    vtkIdType npts, *pts;
-    int count = 0;
+    int i, j;
+    vtkIdType npts = 0;
   
     GLenum previousGlFunction=GL_INVALID_VALUE;
 
-    for (aPrim->InitTraversal(); aPrim->GetNextCell(npts,pts); 
-         count++, cellNum++)
+    const unsigned char *colors = c->GetPointer(0);
+    const float *normals = n->GetTuple(0); 
+    const float *textures = t->GetTuple(0); 
+    const float *vertices = p->GetPoint(0); 
+
+    int nCells = aPrim->GetNumberOfCells();
+    vtkIdType *ids = aPrim->GetData()->GetPointer(0);
+ 
+    for (i = 0; i < nCells; i++, cellNum++)
     { 
+        npts = *ids++;
         BeginPolyTriangleOrQuad(aGlFunction, previousGlFunction, npts);
     
-        glColor4ubv(c->GetPointer(4*cellNum));
-        glNormal3fv(n->GetTuple3(cellNum));
+        glColor4ubv(colors  + 4*cellNum);
+        glNormal3fv(normals + 3*cellNum);
       
-        for (j = 0; j < npts; j++) 
+        for (j = 0; j < npts; j++, ids++) 
         {
-            glTexCoord2fv(t->GetTuple2(pts[j]));
-            glVertex3fv(p->GetPoint(pts[j]));
+            glTexCoord2fv(textures + 2*(*ids));
+            glVertex3fv(vertices   + 3*(*ids));
         }
 
         if ((previousGlFunction != GL_TRIANGLES) 
@@ -1597,26 +1714,28 @@ DrawCNCST013(vtkCellArray *aPrim, GLenum aGlFunction, int &cellNum,
 // ****************************************************************************
 
 static void 
-Draw3(vtkCellArray *aPrim, GLenum aGlFunction, int &, vtkPoints *p, 
-      vtkDataArray *, vtkUnsignedCharArray *, vtkDataArray *) 
+Draw3(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p, 
+      vtkDataArray *, vtkUnsignedCharArray *, vtkDataArray *)
+      
 {
-    int j;
-    vtkIdType npts, *pts;
-    int count = 0;
-    float polyNorm[3];
+    int i, j;
+    vtkIdType npts = 0;
   
     GLenum previousGlFunction=GL_INVALID_VALUE;
 
-    for (aPrim->InitTraversal(); aPrim->GetNextCell(npts,pts); count++)
-    {
+    const float *vertices = p->GetPoint(0); 
+
+    int nCells = aPrim->GetNumberOfCells();
+    vtkIdType *ids = aPrim->GetData()->GetPointer(0);
+ 
+    for (i = 0; i < nCells; i++)
+    { 
+        npts = *ids++;
         BeginPolyTriangleOrQuad(aGlFunction, previousGlFunction, npts);
     
-        vtkPolygon::ComputeNormal(p,npts,pts,polyNorm);
-        glNormal3fv(polyNorm);
-    
-        for (j = 0; j < npts; j++) 
+        for (j = 0; j < npts; j++, ids++) 
         {
-            glVertex3fv(p->GetPoint(pts[j]));
+            glVertex3fv(vertices + 3*(*ids));
         }
 
         if ((previousGlFunction != GL_TRIANGLES) 
@@ -1625,6 +1744,7 @@ Draw3(vtkCellArray *aPrim, GLenum aGlFunction, int &, vtkPoints *p,
         {
           glEnd();
         }
+
     }
     if ((previousGlFunction == GL_TRIANGLES)
         || (previousGlFunction == GL_QUADS)
@@ -1673,27 +1793,29 @@ Draw3(vtkCellArray *aPrim, GLenum aGlFunction, int &, vtkPoints *p,
 // ****************************************************************************
 
 static void 
-DrawS3(vtkCellArray *aPrim, GLenum aGlFunction, int &, vtkPoints *p, 
+DrawS3(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p, 
        vtkDataArray *, vtkUnsignedCharArray *c, vtkDataArray *) 
 {
-    int j;
-    vtkIdType npts, *pts;
-    int count = 0;
-    float polyNorm[3];
+    int i, j;
+    vtkIdType npts = 0;
   
     GLenum previousGlFunction=GL_INVALID_VALUE;
 
-    for (aPrim->InitTraversal(); aPrim->GetNextCell(npts,pts); count++)
+    const unsigned char *colors = c->GetPointer(0);
+    const float *vertices = p->GetPoint(0); 
+
+    int nCells = aPrim->GetNumberOfCells();
+    vtkIdType *ids = aPrim->GetData()->GetPointer(0);
+ 
+    for (i = 0; i < nCells; i++)
     { 
+        npts = *ids++;
         BeginPolyTriangleOrQuad(aGlFunction, previousGlFunction, npts);
     
-        vtkPolygon::ComputeNormal(p,npts,pts,polyNorm);
-
-        glNormal3fv(polyNorm);
-        for (j = 0; j < npts; j++) 
+        for (j = 0; j < npts; j++, ids++) 
         {
-            glColor4ubv(c->GetPointer(4*pts[j]));
-            glVertex3fv(p->GetPoint(pts[j]));
+            glColor4ubv(colors   + 4*(*ids));
+            glVertex3fv(vertices + 3*(*ids));
         }
 
         if ((previousGlFunction != GL_TRIANGLES) 
@@ -1702,6 +1824,7 @@ DrawS3(vtkCellArray *aPrim, GLenum aGlFunction, int &, vtkPoints *p,
         {
             glEnd();
         }
+
     }
     if ((previousGlFunction == GL_TRIANGLES)
         || (previousGlFunction == GL_QUADS)
@@ -1713,7 +1836,7 @@ DrawS3(vtkCellArray *aPrim, GLenum aGlFunction, int &, vtkPoints *p,
 
 
 // ****************************************************************************
-//  Method:  Draw
+//  Method:  DrawT3
 //
 //  Purpose:
 //    Draw with textures.  Normals are computed. 
@@ -1750,27 +1873,29 @@ DrawS3(vtkCellArray *aPrim, GLenum aGlFunction, int &, vtkPoints *p,
 // ****************************************************************************
 
 static void 
-DrawT3(vtkCellArray *aPrim, GLenum aGlFunction, int &, vtkPoints *p, 
+DrawT3(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p, 
        vtkDataArray *, vtkUnsignedCharArray *, vtkDataArray *t) 
 {
-    int j;
-    vtkIdType npts, *pts;
-    int count = 0;
-    float polyNorm[3];
+    int i, j;
+    vtkIdType npts = 0;
   
     GLenum previousGlFunction=GL_INVALID_VALUE;
 
-    for (aPrim->InitTraversal(); aPrim->GetNextCell(npts,pts); count++)
+    const float *textures = t->GetTuple(0); 
+    const float *vertices = p->GetPoint(0); 
+
+    int nCells = aPrim->GetNumberOfCells();
+    vtkIdType *ids = aPrim->GetData()->GetPointer(0);
+ 
+    for (i = 0; i < nCells; i++)
     { 
+        npts = *ids++;
         BeginPolyTriangleOrQuad(aGlFunction, previousGlFunction, npts);
     
-        vtkPolygon::ComputeNormal(p,npts,pts,polyNorm);
-        glNormal3fv(polyNorm);
-    
-        for (j = 0; j < npts; j++) 
+        for (j = 0; j < npts; j++, ids++) 
         {
-            glTexCoord2fv(t->GetTuple2(pts[j]));
-            glVertex3fv(p->GetPoint(pts[j]));
+            glTexCoord2fv(textures + 2*(*ids));
+            glVertex3fv(vertices   + 3*(*ids));
         }
 
         if ((previousGlFunction != GL_TRIANGLES) 
@@ -1828,28 +1953,31 @@ DrawT3(vtkCellArray *aPrim, GLenum aGlFunction, int &, vtkPoints *p,
 // ****************************************************************************
 
 static void 
-DrawST3(vtkCellArray *aPrim, GLenum aGlFunction, int &, vtkPoints *p, 
+DrawST3(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p, 
         vtkDataArray *, vtkUnsignedCharArray *c, vtkDataArray *t) 
 {
-    int j; 
-    vtkIdType npts, *pts;
-    int count = 0;
-    float polyNorm[3];
+    int i, j; 
+    vtkIdType npts = 0;
   
     GLenum previousGlFunction=GL_INVALID_VALUE;
 
-    for (aPrim->InitTraversal(); aPrim->GetNextCell(npts,pts); count++)
+    const unsigned char *colors = c->GetPointer(0);
+    const float *textures = t->GetTuple(0); 
+    const float *vertices = p->GetPoint(0); 
+
+    int nCells = aPrim->GetNumberOfCells();
+    vtkIdType *ids = aPrim->GetData()->GetPointer(0);
+
+    for (i = 0; i < nCells; i++)
     { 
+        npts = *ids++;
         BeginPolyTriangleOrQuad(aGlFunction, previousGlFunction, npts);
     
-        vtkPolygon::ComputeNormal(p,npts,pts,polyNorm);
-        glNormal3fv(polyNorm);
-    
-        for (j = 0; j < npts; j++) 
+        for (j = 0; j < npts; j++, ids++) 
         {
-            glColor4ubv(c->GetPointer(4*pts[j]));
-            glTexCoord2fv(t->GetTuple2(pts[j]));
-            glVertex3fv(p->GetPoint(pts[j]));
+            glColor4ubv(colors     + 4*(*ids));
+            glTexCoord2fv(textures + 2*(*ids));
+            glVertex3fv(vertices   + 3*(*ids));
         }
 
         if ((previousGlFunction != GL_TRIANGLES)
@@ -1906,28 +2034,30 @@ DrawST3(vtkCellArray *aPrim, GLenum aGlFunction, int &, vtkPoints *p,
 // ****************************************************************************
 
 static void 
-DrawCS3(vtkCellArray *aPrim, GLenum aGlFunction, int &cellNum, vtkPoints *p, 
+DrawCS3(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum, vtkPoints *p, 
         vtkDataArray *, vtkUnsignedCharArray *c, vtkDataArray *) 
 {
-    int j; 
-    vtkIdType npts, *pts;
-    int count = 0;
-    float polyNorm[3];
+    int i, j; 
+    vtkIdType npts = 0;
   
     GLenum previousGlFunction=GL_INVALID_VALUE;
 
-    for (aPrim->InitTraversal(); aPrim->GetNextCell(npts,pts); 
-         count++, cellNum++)
+    const unsigned char *colors = c->GetPointer(0);
+    const float *vertices = p->GetPoint(0); 
+
+    int nCells = aPrim->GetNumberOfCells();
+    vtkIdType *ids = aPrim->GetData()->GetPointer(0);
+ 
+    for (i = 0; i < nCells; i++, cellNum++)
     { 
+        npts = *ids++;
         BeginPolyTriangleOrQuad(aGlFunction, previousGlFunction, npts);
     
-        vtkPolygon::ComputeNormal(p,npts,pts,polyNorm);
-        glColor4ubv(c->GetPointer(4*cellNum));
-        glNormal3fv(polyNorm);
+        glColor4ubv(colors + 4*cellNum);
 
-        for (j = 0; j < npts; j++) 
+        for (j = 0; j < npts; j++, ids++) 
         {
-            glVertex3fv(p->GetPoint(pts[j]));
+            glVertex3fv(vertices + 3*(*ids));
         }
 
         if ((previousGlFunction != GL_TRIANGLES)
@@ -1936,6 +2066,7 @@ DrawCS3(vtkCellArray *aPrim, GLenum aGlFunction, int &cellNum, vtkPoints *p,
         {
             glEnd();
         }
+
     }
     if ((previousGlFunction == GL_TRIANGLES)
         || (previousGlFunction == GL_QUADS)
@@ -1984,29 +2115,32 @@ DrawCS3(vtkCellArray *aPrim, GLenum aGlFunction, int &cellNum, vtkPoints *p,
 // ****************************************************************************
 
 static void 
-DrawCST3(vtkCellArray *aPrim, GLenum aGlFunction, int &cellNum, vtkPoints *p, 
-         vtkDataArray *, vtkUnsignedCharArray *c, vtkDataArray *t) 
+DrawCST3(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum, vtkPoints *p, 
+         vtkDataArray *, vtkUnsignedCharArray *c, vtkDataArray *t)
 {
-    int j; 
-    vtkIdType npts, *pts;
-    int count = 0;
-    float polyNorm[3];
+    int i, j; 
+    vtkIdType npts = 0;
   
     GLenum previousGlFunction=GL_INVALID_VALUE;
 
-    for (aPrim->InitTraversal(); aPrim->GetNextCell(npts,pts); 
-         count++, cellNum++)
+    const unsigned char *colors = c->GetPointer(0);
+    const float *textures = t->GetTuple(0); 
+    const float *vertices = p->GetPoint(0); 
+
+    int nCells = aPrim->GetNumberOfCells();
+    vtkIdType *ids = aPrim->GetData()->GetPointer(0);
+ 
+    for (i = 0; i < nCells; i++, cellNum++)
     { 
+        npts = *ids++;
         BeginPolyTriangleOrQuad(aGlFunction, previousGlFunction, npts);
     
-        vtkPolygon::ComputeNormal(p,npts,pts,polyNorm);
-        glColor4ubv(c->GetPointer(4*cellNum));
-        glNormal3fv(polyNorm);
+        glColor4ubv(colors + 4*cellNum);
     
-        for (j = 0; j < npts; j++) 
+        for (j = 0; j < npts; j++, ids++) 
         {
-            glTexCoord2fv(t->GetTuple2(pts[j]));
-            glVertex3fv(p->GetPoint(pts[j]));
+            glTexCoord2fv(textures + 2*(*ids));
+            glVertex3fv(vertices   + 3*(*ids));
         }
 
         if ((previousGlFunction != GL_TRIANGLES) 
@@ -2064,44 +2198,26 @@ DrawCST3(vtkCellArray *aPrim, GLenum aGlFunction, int &cellNum, vtkPoints *p,
 // ****************************************************************************
 
 static void 
-Draw2(vtkCellArray *aPrim, GLenum aGlFunction, int &, vtkPoints *p, 
+Draw2(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p, 
       vtkDataArray *, vtkUnsignedCharArray *, vtkDataArray *) 
 {
-    int j;
-    vtkIdType npts, *pts;
-    vtkIdType idx[3];
-    int count = 0;
-    float polyNorm[3];
+    int i, j;
+    vtkIdType npts = 0;
   
     GLenum previousGlFunction=GL_INVALID_VALUE;
 
-    for (aPrim->InitTraversal(); aPrim->GetNextCell(npts,pts); count++)
+    const float *vertices = p->GetPoint(0); 
+
+    int nCells = aPrim->GetNumberOfCells();
+    vtkIdType *ids = aPrim->GetData()->GetPointer(0);
+    for (i = 0; i < nCells; i++)
     { 
+        npts = *ids++;
         BeginPolyTriangleOrQuad(aGlFunction, previousGlFunction, npts);
     
-        vtkTriangle::ComputeNormal(p,3,pts,polyNorm);
-    
-        for (j = 0; j < npts; j++) 
+        for (j = 0; j < npts; j++, ids++) 
         {
-            if ( j > 2)
-            {
-                if (j % 2)
-                {
-                    idx[0] = pts[j-2]; idx[1] = pts[j]; idx[2] = pts[j-1]; 
-                    vtkTriangle::ComputeNormal(p,3, idx, polyNorm);
-                }
-                else
-                {
-                    idx[0] = pts[j-2]; idx[1] = pts[j-1]; idx[2] = pts[j]; 
-                    vtkTriangle::ComputeNormal(p,3, idx, polyNorm);
-                }
-            }
-            else if ( j == 0 )
-            {
-                vtkTriangle::ComputeNormal(p,3, pts, polyNorm);
-            }
-            glNormal3fv(polyNorm);
-            glVertex3fv(p->GetPoint(pts[j]));
+            glVertex3fv(vertices + 3*(*ids));
         }
 
         if ((previousGlFunction != GL_TRIANGLES) 
@@ -2158,45 +2274,29 @@ Draw2(vtkCellArray *aPrim, GLenum aGlFunction, int &, vtkPoints *p,
 // ****************************************************************************
 
 static void 
-DrawS2(vtkCellArray *aPrim, GLenum aGlFunction, int &, vtkPoints *p, 
+DrawS2(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p, 
        vtkDataArray *, vtkUnsignedCharArray *c, vtkDataArray *)
 {
-    int j;
-    vtkIdType npts, *pts;
-    vtkIdType idx[3];
-    int count = 0;
-    float polyNorm[3];
+    int i, j;
+    vtkIdType npts = 0;
   
     GLenum previousGlFunction=GL_INVALID_VALUE;
 
-    for (aPrim->InitTraversal(); aPrim->GetNextCell(npts,pts); count++)
+    const unsigned char *colors = c->GetPointer(0);
+    const float *vertices = p->GetPoint(0); 
+
+    int nCells = aPrim->GetNumberOfCells();
+    vtkIdType *ids = aPrim->GetData()->GetPointer(0);
+ 
+    for (i = 0; i < nCells; i++)
     { 
+        npts = *ids++;
         BeginPolyTriangleOrQuad(aGlFunction, previousGlFunction, npts);
     
-        vtkTriangle::ComputeNormal(p,3,pts,polyNorm);
-    
-        for (j = 0; j < npts; j++) 
+        for (j = 0; j < npts; j++, ids++) 
         {
-            glColor4ubv(c->GetPointer(4*pts[j]));
-            if ( j > 2)
-            {
-                if (j % 2)
-                {
-                    idx[0] = pts[j-2]; idx[1] = pts[j]; idx[2] = pts[j-1]; 
-                    vtkTriangle::ComputeNormal(p,3, idx, polyNorm);
-                }
-                else
-                {
-                    idx[0] = pts[j-2]; idx[1] = pts[j-1]; idx[2] = pts[j]; 
-                    vtkTriangle::ComputeNormal(p,3, idx, polyNorm);
-                }
-            }
-            else if ( j == 0 )
-            {
-                vtkTriangle::ComputeNormal(p,3, pts, polyNorm);
-            }
-            glNormal3fv(polyNorm);
-            glVertex3fv(p->GetPoint(pts[j]));
+            glColor4ubv(colors   + 4*(*ids));
+            glVertex3fv(vertices + 3*(*ids));
         }
 
         if ((previousGlFunction != GL_TRIANGLES) 
@@ -2253,45 +2353,29 @@ DrawS2(vtkCellArray *aPrim, GLenum aGlFunction, int &, vtkPoints *p,
 // ****************************************************************************
 
 static void 
-DrawT2(vtkCellArray *aPrim, GLenum aGlFunction, int &, vtkPoints *p, 
-       vtkDataArray *, vtkUnsignedCharArray *, vtkDataArray *t) 
+DrawT2(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p, 
+       vtkDataArray *, vtkUnsignedCharArray *, vtkDataArray *t)
 {
-    int j;
-    vtkIdType npts, *pts;
-    vtkIdType idx[3];
-    int count = 0;
-    float polyNorm[3];
+    int i, j;
+    vtkIdType npts;
   
     GLenum previousGlFunction=GL_INVALID_VALUE;
 
-    for (aPrim->InitTraversal(); aPrim->GetNextCell(npts,pts); count++)
+    const float *textures = t->GetTuple(0); 
+    const float *vertices = p->GetPoint(0); 
+
+    int nCells = aPrim->GetNumberOfCells();
+    vtkIdType *ids = aPrim->GetData()->GetPointer(0);
+ 
+    for (i = 0; i < nCells; i++)
     { 
+        npts = *ids++;
         BeginPolyTriangleOrQuad(aGlFunction, previousGlFunction, npts);
     
-        vtkTriangle::ComputeNormal(p,3,pts,polyNorm);
-    
-        for (j = 0; j < npts; j++) 
+        for (j = 0; j < npts; j++, ids++) 
         {
-            glTexCoord2fv(t->GetTuple2(pts[j]));
-            if ( j > 2)
-            {
-                if (j % 2)
-                {
-                    idx[0] = pts[j-2]; idx[1] = pts[j]; idx[2] = pts[j-1]; 
-                    vtkTriangle::ComputeNormal(p,3, idx, polyNorm);
-                }
-                else
-                {
-                    idx[0] = pts[j-2]; idx[1] = pts[j-1]; idx[2] = pts[j]; 
-                    vtkTriangle::ComputeNormal(p,3, idx, polyNorm);
-                }
-            }
-            else if ( j == 0 )
-            {
-                vtkTriangle::ComputeNormal(p,3, pts, polyNorm);
-            }
-            glNormal3fv(polyNorm);
-            glVertex3fv(p->GetPoint(pts[j]));
+            glTexCoord2fv(textures + 2*(*ids));
+            glVertex3fv(vertices   + 3*(*ids));
         }
 
         if ((previousGlFunction != GL_TRIANGLES) 
@@ -2348,46 +2432,31 @@ DrawT2(vtkCellArray *aPrim, GLenum aGlFunction, int &, vtkPoints *p,
 // ****************************************************************************
 
 static void 
-DrawST2(vtkCellArray *aPrim, GLenum aGlFunction, int &, vtkPoints *p, 
+DrawST2(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &, vtkPoints *p, 
         vtkDataArray *, vtkUnsignedCharArray *c, vtkDataArray *t)
 {
-    int j;
-    vtkIdType npts, *pts;
-    vtkIdType idx[3];
-    int count = 0;
-    float polyNorm[3];
+    int i, j;
+    vtkIdType npts = 0;
   
     GLenum previousGlFunction=GL_INVALID_VALUE;
 
-    for (aPrim->InitTraversal(); aPrim->GetNextCell(npts,pts); count++)
+    const unsigned char *colors = c->GetPointer(0);
+    const float *textures = t->GetTuple(0); 
+    const float *vertices = p->GetPoint(0); 
+
+    int nCells = aPrim->GetNumberOfCells();
+    vtkIdType *ids = aPrim->GetData()->GetPointer(0);
+ 
+    for (i = 0; i < nCells; i++)
     { 
+        npts = *ids++;
         BeginPolyTriangleOrQuad(aGlFunction, previousGlFunction, npts);
     
-        vtkTriangle::ComputeNormal(p,3,pts,polyNorm);
-    
-        for (j = 0; j < npts; j++) 
+        for (j = 0; j < npts; j++, ids++) 
         {
-            glColor4ubv(c->GetPointer(4*pts[j]));
-            glTexCoord2fv(t->GetTuple2(pts[j]));
-            if ( j > 2)
-            {
-                if (j % 2)
-                {
-                    idx[0] = pts[j-2]; idx[1] = pts[j]; idx[2] = pts[j-1]; 
-                    vtkTriangle::ComputeNormal(p,3, idx, polyNorm);
-                }
-                else
-                {
-                    idx[0] = pts[j-2]; idx[1] = pts[j-1]; idx[2] = pts[j]; 
-                    vtkTriangle::ComputeNormal(p,3, idx, polyNorm);
-                }
-            }
-            else if ( j == 0 )
-            {
-                vtkTriangle::ComputeNormal(p,3, pts, polyNorm);
-            }
-            glNormal3fv(polyNorm);
-            glVertex3fv(p->GetPoint(pts[j]));
+            glColor4ubv(colors     + 4*(*ids));
+            glTexCoord2fv(textures + 2*(*ids));
+            glVertex3fv(vertices   + 3*(*ids));
         }
 
         if ((previousGlFunction != GL_TRIANGLES) 
@@ -2396,6 +2465,7 @@ DrawST2(vtkCellArray *aPrim, GLenum aGlFunction, int &, vtkPoints *p,
         {
             glEnd();
         }
+
     }
     if ((previousGlFunction == GL_TRIANGLES)
         || (previousGlFunction == GL_QUADS)
@@ -2444,46 +2514,30 @@ DrawST2(vtkCellArray *aPrim, GLenum aGlFunction, int &, vtkPoints *p,
 // ****************************************************************************
 
 static void 
-DrawCS2(vtkCellArray *aPrim, GLenum aGlFunction, int &cellNum, vtkPoints *p, 
+DrawCS2(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum, vtkPoints *p, 
         vtkDataArray *, vtkUnsignedCharArray *c, vtkDataArray *) 
 {
-    int j; 
-    vtkIdType npts, *pts;
-    vtkIdType idx[3];
-    int count = 0;
-    float polyNorm[3];
+    int i, j; 
+    vtkIdType npts = 0;
   
     GLenum previousGlFunction=GL_INVALID_VALUE;
 
-    for (aPrim->InitTraversal(); aPrim->GetNextCell(npts,pts); 
-         count++, cellNum++)
+    const unsigned char *colors = c->GetPointer(0);
+    const float *vertices = p->GetPoint(0); 
+
+    int nCells = aPrim->GetNumberOfCells();
+    vtkIdType *ids = aPrim->GetData()->GetPointer(0);
+ 
+    for (i = 0; i < nCells; i++, cellNum++)
     { 
+        npts = *ids++;
         BeginPolyTriangleOrQuad(aGlFunction, previousGlFunction, npts);
     
-        vtkTriangle::ComputeNormal(p,3,pts,polyNorm);
-        glColor4ubv(c->GetPointer(4*cellNum));
+        glColor4ubv(colors + 4*cellNum);
     
-        for (j = 0; j < npts; j++) 
+        for (j = 0; j < npts; j++, ids++) 
         {
-            if ( j > 2)
-            {
-                if (j % 2)
-                {
-                    idx[0] = pts[j-2]; idx[1] = pts[j]; idx[2] = pts[j-1]; 
-                    vtkTriangle::ComputeNormal(p,3, idx, polyNorm);
-                }
-                else
-                {
-                    idx[0] = pts[j-2]; idx[1] = pts[j-1]; idx[2] = pts[j]; 
-                    vtkTriangle::ComputeNormal(p,3, idx, polyNorm);
-                }
-            }
-            else if ( j == 0 )
-            {
-                vtkTriangle::ComputeNormal(p,3, pts, polyNorm);
-            }
-            glNormal3fv(polyNorm);
-            glVertex3fv(p->GetPoint(pts[j]));
+            glVertex3fv(vertices + 3*(*ids));
         }
 
         if ((previousGlFunction != GL_TRIANGLES) 
@@ -2492,6 +2546,7 @@ DrawCS2(vtkCellArray *aPrim, GLenum aGlFunction, int &cellNum, vtkPoints *p,
         {
             glEnd();
         }
+
     }
     if ((previousGlFunction == GL_TRIANGLES)
         || (previousGlFunction == GL_QUADS)
@@ -2540,47 +2595,32 @@ DrawCS2(vtkCellArray *aPrim, GLenum aGlFunction, int &cellNum, vtkPoints *p,
 // ****************************************************************************
 
 static void 
-DrawCST2(vtkCellArray *aPrim, GLenum aGlFunction, int &cellNum, vtkPoints *p, 
-         vtkDataArray *, vtkUnsignedCharArray *c, vtkDataArray *t) 
+DrawCST2(vtkCellArray *aPrim, GLenum aGlFunction, vtkIdType &cellNum, vtkPoints *p, 
+         vtkDataArray *, vtkUnsignedCharArray *c, vtkDataArray *t)
 {
-    int j;
-    vtkIdType npts, *pts;
-    vtkIdType idx[3];
-    int count = 0;
-    float polyNorm[3];
+    int i, j;
+    vtkIdType npts = 0;
   
     GLenum previousGlFunction=GL_INVALID_VALUE;
 
-    for (aPrim->InitTraversal(); aPrim->GetNextCell(npts,pts); 
-         count++, cellNum++)
+    const unsigned char *colors = c->GetPointer(0);
+    const float *textures = t->GetTuple(0); 
+    const float *vertices = p->GetPoint(0); 
+
+    int nCells = aPrim->GetNumberOfCells();
+    vtkIdType *ids = aPrim->GetData()->GetPointer(0);
+ 
+    for (i = 0; i < nCells; i++, cellNum++)
     { 
+        npts = *ids++;
         BeginPolyTriangleOrQuad(aGlFunction, previousGlFunction, npts);
     
-        vtkTriangle::ComputeNormal(p,3,pts,polyNorm);
-        glColor4ubv(c->GetPointer(4*cellNum));
+        glColor4ubv(colors + 4*cellNum);
 
-        for (j = 0; j < npts; j++) 
+        for (j = 0; j < npts; j++, ids++) 
         {
-            glTexCoord2fv(t->GetTuple2(pts[j]));
-            if ( j > 2)
-            {
-                if (j % 2)
-                {
-                    idx[0] = pts[j-2]; idx[1] = pts[j]; idx[2] = pts[j-1]; 
-                    vtkTriangle::ComputeNormal(p,3, idx, polyNorm);
-                }
-                else
-                {
-                    idx[0] = pts[j-2]; idx[1] = pts[j-1]; idx[2] = pts[j]; 
-                    vtkTriangle::ComputeNormal(p,3, idx, polyNorm);
-                }
-            }
-            else if ( j == 0 )
-            {
-                vtkTriangle::ComputeNormal(p,3, pts, polyNorm);
-            }
-            glNormal3fv(polyNorm);
-            glVertex3fv(p->GetPoint(pts[j]));
+            glTexCoord2fv(textures + 2*(*ids));
+            glVertex3fv(vertices   + 3*(*ids));
         }
 
         if ((previousGlFunction != GL_TRIANGLES) 
@@ -2589,6 +2629,7 @@ DrawCST2(vtkCellArray *aPrim, GLenum aGlFunction, int &cellNum, vtkPoints *p,
         {
             glEnd();
         }
+
     }
     if ((previousGlFunction == GL_TRIANGLES)
         || (previousGlFunction == GL_QUADS)
@@ -2637,52 +2678,39 @@ DrawCST2(vtkCellArray *aPrim, GLenum aGlFunction, int &cellNum, vtkPoints *p,
 // ****************************************************************************
 
 static void 
-DrawW(vtkCellArray *aPrim, GLenum, int &, vtkPoints *p, 
+DrawW(vtkCellArray *aPrim, GLenum, vtkIdType &, vtkPoints *p, 
       vtkDataArray *, vtkUnsignedCharArray *, vtkDataArray *) 
 {
-    int j;
-    vtkIdType npts, *pts;
-    vtkIdType idx[3];
-    int count = 0;
-    float polyNorm[3];
+    int i, j;
+    vtkIdType npts = 0;
 
-    for (aPrim->InitTraversal(); aPrim->GetNextCell(npts,pts); count++)
+    const float *vertices = p->GetPoint(0); 
+
+    int nCells = aPrim->GetNumberOfCells();
+    vtkIdType *ids = aPrim->GetData()->GetPointer(0);
+    vtkIdType *l1, *l2; 
+ 
+    for (i = 0; i < nCells; i++)
     { 
+        npts = *ids++;
+        l1 = ids;
+        l2 = ids + 1;
         // draw first line
         glBegin(GL_LINE_STRIP);
-        for (j = 0; j < npts; j += 2) 
+        for (j = 0; j < npts; j += 2, l1 +=2) 
         {
-            if ( j == 0 )
-            {
-                vtkTriangle::ComputeNormal(p,3, pts, polyNorm);
-            }
-            else
-            {
-                idx[0] = pts[j-2]; idx[1] = pts[j-1]; idx[2] = pts[j]; 
-                vtkTriangle::ComputeNormal(p,3, idx, polyNorm);
-            }
-            glNormal3fv(polyNorm);
-            glVertex3fv(p->GetPoint(pts[j]));
+            glVertex3fv(vertices + 3*(*l1));
         }
         glEnd();
       
         // draw second line
         glBegin(GL_LINE_STRIP);
-        for (j = 1; j < npts; j += 2) 
+        for (j = 1; j < npts; j += 2, l2 += 2) 
         {
-            if (j == 1)
-            {
-                vtkTriangle::ComputeNormal(p,3, pts, polyNorm);
-            }
-            else
-            {
-                idx[0] = pts[j-2]; idx[1] = pts[j]; idx[2] = pts[j-1]; 
-                vtkTriangle::ComputeNormal(p,3, idx, polyNorm);
-            }
-            glNormal3fv(polyNorm);
-            glVertex3fv(p->GetPoint(pts[j]));
+            glVertex3fv(vertices + 3*(*l2));
         }
         glEnd();
+        ids += npts;
     }
 }
 
@@ -2725,32 +2753,43 @@ DrawW(vtkCellArray *aPrim, GLenum, int &, vtkPoints *p,
 // ****************************************************************************
 
 static void 
-DrawNW(vtkCellArray *aPrim, GLenum, int &, vtkPoints *p, 
+DrawNW(vtkCellArray *aPrim, GLenum, vtkIdType &, vtkPoints *p, 
        vtkDataArray *n, vtkUnsignedCharArray *, vtkDataArray *) 
 {
-    int j;
-    vtkIdType npts, *pts;
-    int count = 0;
+    int i, j;
+    vtkIdType npts = 0;
   
-    for (aPrim->InitTraversal(); aPrim->GetNextCell(npts,pts); count++)
+    const float *normals = n->GetTuple(0); 
+    const float *vertices = p->GetPoint(0); 
+
+    int nCells = aPrim->GetNumberOfCells();
+    vtkIdType *ids = aPrim->GetData()->GetPointer(0);
+    vtkIdType *l1, *l2;
+ 
+    for (i = 0; i < nCells; i++)
     { 
+        npts = *ids++;
+        l1 = ids;
+        l2 = ids + 1;
+    
         // draw first line
         glBegin(GL_LINE_STRIP);
-        for (j = 0; j < npts; j += 2) 
+        for (j = 0; j < npts; j += 2, l1 += 2) 
         {
-            glNormal3fv(n->GetTuple3(pts[j]));
-            glVertex3fv(p->GetPoint(pts[j]));
+            glNormal3fv(normals  + 3*(*l1));
+            glVertex3fv(vertices + 3*(*l1));
         }
         glEnd();
     
         // draw second line
         glBegin(GL_LINE_STRIP);
-        for (j = 1; j < npts; j += 2) 
+        for (j = 1; j < npts; j += 2, l2 += 2) 
         {
-            glNormal3fv(n->GetTuple3(pts[j]));
-            glVertex3fv(p->GetPoint(pts[j]));
+            glNormal3fv(normals  + 3*(*l2));
+            glVertex3fv(vertices + 3*(*l2));
         }
         glEnd();
+        ids += npts;
     }
 }
 
@@ -2793,54 +2832,43 @@ DrawNW(vtkCellArray *aPrim, GLenum, int &, vtkPoints *p,
 // ****************************************************************************
 
 static void 
-DrawSW(vtkCellArray *aPrim, GLenum, int &, vtkPoints *p, 
+DrawSW(vtkCellArray *aPrim, GLenum, vtkIdType &, vtkPoints *p, 
        vtkDataArray *, vtkUnsignedCharArray *c, vtkDataArray *) 
 {
-    int j;
-    vtkIdType npts, *pts;
-    vtkIdType idx[3];
-    int count = 0;
-    float polyNorm[3];
+    int i, j;
+    vtkIdType npts = 0;
   
-    for (aPrim->InitTraversal(); aPrim->GetNextCell(npts,pts); count++)
+    const unsigned char *colors = c->GetPointer(0);
+    const float *vertices = p->GetPoint(0); 
+
+    int nCells = aPrim->GetNumberOfCells();
+    vtkIdType *ids = aPrim->GetData()->GetPointer(0);
+    vtkIdType *l1, *l2;
+ 
+    for (i = 0; i < nCells; i++) 
     { 
+        npts = *ids++;
+        l1 = ids;
+        l2 = ids + 1;
+ 
         // draw first line
         glBegin(GL_LINE_STRIP);
-        for (j = 0; j < npts; j += 2) 
+        for (j = 0; j < npts; j += 2, l1 += 2) 
         {
-            glColor4ubv(c->GetPointer(4*pts[j]));
-            if ( j == 0 )
-            {
-                vtkTriangle::ComputeNormal(p, 3, pts, polyNorm);
-            }
-            else
-            {
-                idx[0] = pts[j-2]; idx[1] = pts[j-1]; idx[2] = pts[j]; 
-                vtkTriangle::ComputeNormal(p,3, idx, polyNorm);
-            }
-            glNormal3fv(polyNorm);
-            glVertex3fv(p->GetPoint(pts[j]));
+            glColor4ubv(colors   + 4*(*l1));
+            glVertex3fv(vertices + 3*(*l1));
         }
         glEnd();
     
         // draw second line
         glBegin(GL_LINE_STRIP);
-        for (j = 1; j < npts; j += 2) 
+        for (j = 1; j < npts; j += 2, l2 += 2) 
         {
-            glColor4ubv(c->GetPointer(4*pts[j]));
-            if (j == 1)
-            {
-                vtkTriangle::ComputeNormal(p,3, pts, polyNorm);
-            }
-            else
-            {
-                idx[0] = pts[j-2]; idx[1] = pts[j]; idx[2] = pts[j-1]; 
-                vtkTriangle::ComputeNormal(p,3, idx, polyNorm);
-            }
-            glNormal3fv(polyNorm);
-            glVertex3fv(p->GetPoint(pts[j]));
+            glColor4ubv(colors   + 4*(*l2));
+            glVertex3fv(vertices + 3*(*l2));
         }
         glEnd();
+        ids += npts;
     }
 }
 
@@ -2883,34 +2911,46 @@ DrawSW(vtkCellArray *aPrim, GLenum, int &, vtkPoints *p,
 // ****************************************************************************
 
 static void 
-DrawNSW(vtkCellArray *aPrim, GLenum, int &, vtkPoints *p, vtkDataArray *n, 
-        vtkUnsignedCharArray *c, vtkDataArray *)
+DrawNSW(vtkCellArray *aPrim, GLenum, vtkIdType &, vtkPoints *p, vtkDataArray *n, 
+        vtkUnsignedCharArray *c, vtkDataArray *) 
 {
-    int j; 
-    vtkIdType npts, *pts;
-    int count = 0;
-  
-    for (aPrim->InitTraversal(); aPrim->GetNextCell(npts,pts); count++)
+    int i, j; 
+    vtkIdType npts = 0;
+ 
+    const unsigned char *colors = c->GetPointer(0);
+    const float *normals = n->GetTuple(0); 
+    const float *vertices = p->GetPoint(0); 
+
+    int nCells = aPrim->GetNumberOfCells();
+    vtkIdType *ids = aPrim->GetData()->GetPointer(0);
+    vtkIdType *l1, *l2;
+ 
+    for (i = 0; i < nCells; i++)
     { 
+        npts = *ids++;
+        l1 = ids;
+        l2 = ids + 1;
+ 
         // draw first line
         glBegin(GL_LINE_STRIP);
-        for (j = 0; j < npts; j += 2) 
+        for (j = 0; j < npts; j += 2, l1 += 2) 
         {
-            glColor4ubv(c->GetPointer(4*pts[j]));
-            glNormal3fv(n->GetTuple3(pts[j]));
-            glVertex3fv(p->GetPoint(pts[j]));
+            glColor4ubv(colors   + 4*(*l1));
+            glNormal3fv(normals  + 3*(*l1));
+            glVertex3fv(vertices + 3*(*l1));
         }
         glEnd();
     
         // draw second line
         glBegin(GL_LINE_STRIP);
-        for (j = 1; j < npts; j += 2) 
+        for (j = 1; j < npts; j += 2, l2 += 2) 
         {
-            glColor4ubv(c->GetPointer(4*pts[j]));
-            glNormal3fv(n->GetTuple3(pts[j]));
-            glVertex3fv(p->GetPoint(pts[j]));
+            glColor4ubv(colors   + 4*(*l2));
+            glNormal3fv(normals  + 3*(*l2));
+            glVertex3fv(vertices + 3*(*l2));
         }
         glEnd();
+        ids += npts; 
     }
 }
 
@@ -2953,56 +2993,44 @@ DrawNSW(vtkCellArray *aPrim, GLenum, int &, vtkPoints *p, vtkDataArray *n,
 // ****************************************************************************
 
 static void 
-DrawTW(vtkCellArray *aPrim, GLenum, int &, vtkPoints *p, vtkDataArray *, 
-       vtkUnsignedCharArray *, vtkDataArray *t) 
+DrawTW(vtkCellArray *aPrim, GLenum, vtkIdType &, vtkPoints *p, vtkDataArray *, 
+       vtkUnsignedCharArray *, vtkDataArray *t)
 {
-    int j; 
-    vtkIdType npts, *pts;
-    vtkIdType idx[3];
-    int count = 0;
-    float polyNorm[3];
-  
-    for (aPrim->InitTraversal(); aPrim->GetNextCell(npts,pts); count++)
+    int i, j; 
+    vtkIdType npts = 0;
+ 
+    const float *textures = t->GetTuple(0); 
+    const float *vertices = p->GetPoint(0); 
+
+    int nCells = aPrim->GetNumberOfCells();
+    vtkIdType *ids = aPrim->GetData()->GetPointer(0);
+    vtkIdType *l1, *l2;
+ 
+    for (i = 0; i < nCells; i++)
     { 
+        npts = *ids++;
+        l1 = ids;
+        l2 = ids + 1;
 
         // draw first line
         glBegin(GL_LINE_STRIP);
 
-        for (j = 0; j < npts; j += 2) 
+        for (j = 0; j < npts; j += 2, l1 += 2) 
         {
-            if ( j == 0 )
-            {
-                vtkTriangle::ComputeNormal(p,3, pts, polyNorm);
-            }
-            else
-            {
-                idx[0] = pts[j-2]; idx[1] = pts[j-1]; idx[2] = pts[j]; 
-                vtkTriangle::ComputeNormal(p,3, idx, polyNorm);
-            }
-            glNormal3fv(polyNorm);
-            glTexCoord2fv(t->GetTuple2(pts[j]));
-            glVertex3fv(p->GetPoint(pts[j]));
+            glTexCoord2fv(textures + 2*(*l1));
+            glVertex3fv(vertices   + 3*(*l1));
         }
         glEnd();
     
         // draw second line
         glBegin(GL_LINE_STRIP);
-        for (j = 1; j < npts; j += 2) 
+        for (j = 1; j < npts; j += 2, l2 += 2) 
         {
-            if (j == 1)
-            {
-                vtkTriangle::ComputeNormal(p,3, pts, polyNorm);
-            }
-            else
-            {
-                idx[0] = pts[j-2]; idx[1] = pts[j]; idx[2] = pts[j-1]; 
-                vtkTriangle::ComputeNormal(p,3, idx, polyNorm);
-            }
-            glNormal3fv(polyNorm);
-            glTexCoord2fv(t->GetTuple2(pts[j]));
-            glVertex3fv(p->GetPoint(pts[j]));
+            glTexCoord2fv(textures + 2*(*l2));
+            glVertex3fv(vertices   + 3*(*l2));
         }
         glEnd();
+        ids += npts; 
     }
 }
 
@@ -3045,33 +3073,45 @@ DrawTW(vtkCellArray *aPrim, GLenum, int &, vtkPoints *p, vtkDataArray *,
 // ****************************************************************************
 
 static void 
-DrawNTW(vtkCellArray *aPrim, GLenum, int &, vtkPoints *p, vtkDataArray *n, 
-        vtkUnsignedCharArray *, vtkDataArray *t) 
+DrawNTW(vtkCellArray *aPrim, GLenum, vtkIdType &, vtkPoints *p, vtkDataArray *n, 
+        vtkUnsignedCharArray *, vtkDataArray *t)
 {
-    int j; 
-    vtkIdType npts, *pts;
-    int count = 0;
+    int i, j; 
+    vtkIdType npts = 0;
   
-    for (aPrim->InitTraversal(); aPrim->GetNextCell(npts,pts); count++)
+    const float *normals = n->GetTuple(0); 
+    const float *textures = t->GetTuple(0); 
+    const float *vertices = p->GetPoint(0); 
+
+    int nCells = aPrim->GetNumberOfCells();
+    vtkIdType *ids = aPrim->GetData()->GetPointer(0);
+    vtkIdType *l1, *l2; 
+ 
+    for (i = 0; i < nCells; i++)
     { 
+        npts = *ids++;
+        l1 = ids;
+        l2 = ids + 1;
+    
         glBegin(GL_LINE_STRIP);
-        for (j = 0; j < npts; j += 2) 
+        for (j = 0; j < npts; j += 2, l1+= 2) 
         {
-            glNormal3fv(n->GetTuple3(pts[j]));
-            glTexCoord2fv(t->GetTuple2(pts[j]));
-            glVertex3fv(p->GetPoint(pts[j]));
+            glNormal3fv(normals    + 3*(*l1));
+            glTexCoord2fv(textures + 2*(*l1));
+            glVertex3fv(vertices   + 3*(*l1));
         }
         glEnd();
     
         // draw second line
         glBegin(GL_LINE_STRIP);
-        for (j = 1; j < npts; j += 2) 
+        for (j = 1; j < npts; j += 2, l2 += 2) 
         {
-            glNormal3fv(n->GetTuple3(pts[j]));
-            glTexCoord2fv(t->GetTuple2(pts[j]));
-            glVertex3fv(p->GetPoint(pts[j]));
+            glNormal3fv(normals    + 3*(*l2));
+            glTexCoord2fv(textures + 2*(*l2));
+            glVertex3fv(vertices   + 3*(*l2));
         }
         glEnd();
+        ids += npts; 
     }
 }
 
@@ -3115,56 +3155,46 @@ DrawNTW(vtkCellArray *aPrim, GLenum, int &, vtkPoints *p, vtkDataArray *n,
 // ****************************************************************************
 
 static void 
-DrawSTW(vtkCellArray *aPrim, GLenum, int &, vtkPoints *p, vtkDataArray *, 
+DrawSTW(vtkCellArray *aPrim, GLenum, vtkIdType &, vtkPoints *p, vtkDataArray *, 
         vtkUnsignedCharArray *c, vtkDataArray *t)
 {
-    int j; 
-    vtkIdType npts, *pts;
-    vtkIdType idx[3];
-    int count = 0;
-    float polyNorm[3];
+    int i, j; 
+    vtkIdType npts = 0;
   
-    for (aPrim->InitTraversal(); aPrim->GetNextCell(npts,pts); count++)
+    const unsigned char *colors = c->GetPointer(0);
+    const float *textures = t->GetTuple(0); 
+    const float *vertices = p->GetPoint(0); 
+
+    int nCells = aPrim->GetNumberOfCells();
+    vtkIdType *ids = aPrim->GetData()->GetPointer(0);
+    vtkIdType *l1, *l2;
+ 
+    for (i = 0; i < nCells; i++)
     { 
+        npts = *ids++;
+        l1 = ids;
+        l2 = ids + 1;
+ 
         // draw first line
         glBegin(GL_LINE_STRIP);
-        for (j = 0; j < npts; j += 2) 
+        for (j = 0; j < npts; j += 2, l1 += 2) 
         {
-            glColor4ubv(c->GetPointer(4*pts[j]));
-            if ( j == 0 )
-            {
-                vtkTriangle::ComputeNormal(p,3, pts, polyNorm);
-            }
-            else
-            {
-                idx[0] = pts[j-2]; idx[1] = pts[j-1]; idx[2] = pts[j]; 
-                vtkTriangle::ComputeNormal(p,3, idx, polyNorm);
-            }
-            glNormal3fv(polyNorm);
-            glTexCoord2fv(t->GetTuple2(pts[j]));
-            glVertex3fv(p->GetPoint(pts[j]));
+            glColor4ubv(colors     + 4*(*l1));
+            glTexCoord2fv(textures + 2*(*l1));
+            glVertex3fv(vertices   + 3*(*l1));
         }
         glEnd();
       
         // draw second line
         glBegin(GL_LINE_STRIP);
-        for (j = 1; j < npts; j += 2) 
+        for (j = 1; j < npts; j += 2, l2 += 2) 
         {
-            glColor4ubv(c->GetPointer(4*pts[j]));
-            if (j == 1)
-            {
-                vtkTriangle::ComputeNormal(p,3, pts, polyNorm);
-            }
-            else
-            {
-                idx[0] = pts[j-2]; idx[1] = pts[j]; idx[2] = pts[j-1]; 
-                vtkTriangle::ComputeNormal(p,3, idx, polyNorm);
-            }
-            glNormal3fv(polyNorm);
-            glTexCoord2fv(t->GetTuple2(pts[j]));
-            glVertex3fv(p->GetPoint(pts[j]));
+            glColor4ubv(colors     + 4*(*l2));
+            glTexCoord2fv(textures + 2*(*l2));
+            glVertex3fv(vertices   + 3*(*l2));
         }
         glEnd();
+        ids += npts; 
     }
 }
 
@@ -3208,36 +3238,49 @@ DrawSTW(vtkCellArray *aPrim, GLenum, int &, vtkPoints *p, vtkDataArray *,
 // ****************************************************************************
 
 static void 
-DrawNSTW(vtkCellArray *aPrim, GLenum, int &, vtkPoints *p, vtkDataArray *n, 
-         vtkUnsignedCharArray *c, vtkDataArray *t) 
+DrawNSTW(vtkCellArray *aPrim, GLenum, vtkIdType &, vtkPoints *p, vtkDataArray *n, 
+         vtkUnsignedCharArray *c, vtkDataArray *t)
 {
-    int j; 
-    vtkIdType npts, *pts;
-    int count = 0;
+    int i, j; 
+    vtkIdType npts = 0;
   
-    for (aPrim->InitTraversal(); aPrim->GetNextCell(npts,pts); count++)
+    const unsigned char *colors = c->GetPointer(0);
+    const float *normals = n->GetTuple(0); 
+    const float *textures = t->GetTuple(0); 
+    const float *vertices = p->GetPoint(0); 
+
+    int nCells = aPrim->GetNumberOfCells();
+    vtkIdType *ids = aPrim->GetData()->GetPointer(0);
+    vtkIdType *l1, *l2;
+ 
+    for (i = 0; i < nCells; i++)
     { 
+        npts = *ids++;
+        l1 = ids;
+        l2 = ids +1;
+ 
         // draw first line
         glBegin(GL_LINE_STRIP);
-        for (j = 0; j < npts; j += 2) 
+        for (j = 0; j < npts; j += 2, l1 += 2) 
         {
-            glColor4ubv(c->GetPointer(4*pts[j]));
-            glNormal3fv(n->GetTuple3(pts[j]));
-            glTexCoord2fv(t->GetTuple2(pts[j]));
-            glVertex3fv(p->GetPoint(pts[j]));
+            glColor4ubv(colors     + 4*(*l1));
+            glNormal3fv(normals    + 3*(*l1));
+            glTexCoord2fv(textures + 2*(*l1));
+            glVertex3fv(vertices   + 3*(*l1));
         }
         glEnd();
     
         // draw second line
         glBegin(GL_LINE_STRIP);
-        for (j = 1; j < npts; j += 2) 
+        for (j = 1; j < npts; j += 2, l2 += 2) 
         {
-            glColor4ubv(c->GetPointer(4*pts[j]));
-            glNormal3fv(n->GetTuple3(pts[j]));
-            glTexCoord2fv(t->GetTuple2(pts[j]));
-            glVertex3fv(p->GetPoint(pts[j]));
+            glColor4ubv(colors     + 4*(*l2));
+            glNormal3fv(normals    + 3*(*l2));
+            glTexCoord2fv(textures + 2*(*l2));
+            glVertex3fv(vertices   + 3*(*l2));
         }
         glEnd();
+        ids += npts;        
     }
 }
 
