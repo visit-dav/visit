@@ -201,6 +201,9 @@ typedef std::vector<QvisWindowBase *> WindowBaseVector;
 //    Brad Whitlock, Mon Jul 14 11:50:34 PDT 2003
 //    I added RestoreSession and SaveSession.
 //
+//    Brad Whitlock, Thu Jul 31 15:13:20 PST 2003
+//    Added a method to try and read from the viewer when called from a timer.
+//
 // ****************************************************************************
 
 class GUI_API QvisGUIApplication : public QObject, public ConfigManager, public GUIBase
@@ -243,7 +246,8 @@ private:
     static void SyncCallback(Subject *s, void *data);
 private slots:
     void HeavyInitialization();
-    void ReadFromViewer(int sock_id);
+    void ReadFromViewer(int);
+    void DelayedReadFromViewer();
     void SaveSettings();
     void ActivatePlotWindow(int index);
     void ActivateOperatorWindow(int index);

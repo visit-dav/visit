@@ -561,7 +561,8 @@ SILAttributes::SetFromNode(DataNode *parentNode)
     // Go through all of the children and construct a new
     // NamespaceAttributes for each one of them.
     children = searchNode->GetChildren();
-    for(int i = 0; i < searchNode->GetNumChildren(); ++i)
+    int i;
+    for(i = 0; i < searchNode->GetNumChildren(); ++i)
     {
         if(children[i]->GetKey() == std::string("NamespaceAttributes"))
         {
@@ -577,7 +578,7 @@ SILAttributes::SetFromNode(DataNode *parentNode)
     // Go through all of the children and construct a new
     // SILMatrixAttributes for each one of them.
     children = searchNode->GetChildren();
-    for(int i = 0; i < searchNode->GetNumChildren(); ++i)
+    for(i = 0; i < searchNode->GetNumChildren(); ++i)
     {
         if(children[i]->GetKey() == std::string("SILMatrixAttributes"))
         {

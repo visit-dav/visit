@@ -174,7 +174,7 @@ make -j 4 >> ../buildlog 2>&1
 clearcase_bin/visit-bin-dist >> ../buildlog 2>&1
 mv visit\$ver2.linux.tar.gz ..
 make distclean >> ../buildlog 2>&1
-env CXXFLAGS="-O2 -DFAKE_EXCEPTIONS" ./configure >> ../buildlog 2>&1
+env CXXFLAGS=-O2 ./configure --enable-fake-exceptions >> ../buildlog 2>&1
 make -j 4 >> ../buildlog 2>&1
 clearcase_bin/visit-bin-dist >> ../buildlog 2>&1
 mv visit\$ver2.linux.tar.gz ../visit\$ver2.linux_suse.tar.gz

@@ -2878,6 +2878,9 @@ QvisGUIApplication::LoadFile()
 //   Brad Whitlock, Mon Jul 28 14:41:10 PST 2003
 //   Made the e-mail address be visit-help@llnl.gov.
 //
+//   Brad Whitlock, Thu Jul 31 15:15:38 PST 2003
+//   Fixed a bug that prevented full initialization of the GUI on Windows.
+//
 // ****************************************************************************
 
 void
@@ -2907,7 +2910,35 @@ QvisGUIApplication::ReadFromViewer(int)
     {
         debug1 << "Reading from the viewer's socket is currently not allowed!"
                << endl;
+#if defined(_WIN32)
+        // If we ignore the socket read on Windows, we don't tend to keep
+        // getting the message so call this function again though the event
+        // loop using a timer.
+        QTimer::singleShot(10, this, SLOT(DelayedReadFromViewer()));
+#endif
     }
+}
+
+// ****************************************************************************
+// Method: QvisGUIApplication::DelayedReadFromViewer
+//
+// Purpose: 
+//   Tries to read from the viewer.
+//
+// Note:       This method is called from the event loop in response to having
+//             been scheduled earlier by a premature return from ReadFromViewer.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jul 31 15:16:30 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisGUIApplication::DelayedReadFromViewer()
+{
+     ReadFromViewer(0);
 }
 
 // ****************************************************************************

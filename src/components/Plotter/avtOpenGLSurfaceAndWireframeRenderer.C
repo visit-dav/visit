@@ -17,6 +17,10 @@
 #include <vtkRenderWindow.h>
 #include <vtkTriangle.h>
 
+// for HACK to deal with immediateModeRendering bug
+#include <Init.h>
+#define CERR if (!strcmp(Init::GetComponentName(),"engine")) cerr
+
 #include <DebugStream.h>
 
 
@@ -3457,6 +3461,14 @@ avtOpenGLSurfaceAndWireframeRenderer::SetupGraphicsLibrary2()
 void 
 avtOpenGLSurfaceAndWireframeRenderer::DrawSurface()
 {
+    CERR << "DrawSurface" << endl;
+    bool oldImmediateModeRendering = immediateModeRendering;
+
+    // HACK to deal with fact that immediateMode rendering settings
+    // not getting passed to this class
+    if (!strcmp(Init::GetComponentName(),"engine"))
+       immediateModeRendering = true;
+
     if (VTKRen == NULL)
     {
         debug1 << "Asked to draw surface when we don't have a renderer."
@@ -3518,6 +3530,9 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawSurface()
     {
         DrawSurface2();
     }
+
+    // undo the HACK
+    immediateModeRendering = oldImmediateModeRendering;
 }
 
 
@@ -3867,6 +3882,8 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawSurface2()
         glDisable(GL_POLYGON_OFFSET_FILL);
 #endif
     }
+
+    CERR << "draw funcs are " << (void*)draw0 << ", " << (void*)draw1 << ", " << (void*)draw2 << ", " << (void*)draw3 << endl;
 }
 
 
@@ -3893,6 +3910,14 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawSurface2()
 void
 avtOpenGLSurfaceAndWireframeRenderer::DrawEdges()
 {
+    CERR << "DrawEdges" << endl;
+    bool oldImmediateModeRendering = immediateModeRendering;
+
+    // HACK to deal with fact that immediateMode rendering settings
+    // not getting passed to this class
+    if (!strcmp(Init::GetComponentName(),"engine"))
+       immediateModeRendering = true;
+
     if (VTKRen == NULL)
     {
         debug1 << "Asked to draw edges when we don't have a renderer." << endl;
@@ -3956,6 +3981,9 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawEdges()
     {
         DrawEdges2();
     }
+
+    // undo the HACK
+    immediateModeRendering = oldImmediateModeRendering;
 }
 
 // ****************************************************************************

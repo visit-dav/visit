@@ -44,7 +44,7 @@ class MessageObserver implements SimpleObserver
         if(messageAtts == null)
             return;
 
-        if(messageAtts.GetSeverity() == MessageAttributes.MSG_ERROR)
+        if(messageAtts.GetSeverity() == MessageAttributes.SEVERITY_ERROR)
         {
             errorFlag = true;
             lastError = new String(messageAtts.GetText());
@@ -53,7 +53,7 @@ class MessageObserver implements SimpleObserver
         }
         else if(verbose)
         {
-            if(messageAtts.GetSeverity() == MessageAttributes.MSG_WARNING)
+            if(messageAtts.GetSeverity() == MessageAttributes.SEVERITY_WARNING)
                 System.out.println("VisIt: Warning - " + messageAtts.GetText());
             else
                 System.out.println("VisIt: Message - " + messageAtts.GetText());
