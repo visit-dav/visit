@@ -19,7 +19,9 @@ class DataNode;
 // Creation:   Thu Jul 3 17:49:53 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Nov 13 11:51:47 PDT 2003
+//   I changed how messages are passed out of Export.
+//
 // ****************************************************************************
 
 class STATE_API ColorTableManager : public ConfigManager
@@ -28,8 +30,9 @@ public:
     ColorTableManager();
     virtual ~ColorTableManager();
 
-    std::string       Export(const std::string &ctName,
-                             const ColorControlPointList &ccpl);
+    bool              Export(const std::string &ctName,
+                             const ColorControlPointList &ccpl,
+                             std::string &message);
     bool              ImportColorTables(ColorTableAttributes *cta);
 
     virtual void      WriteConfigFile(const char *filename);

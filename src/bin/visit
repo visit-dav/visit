@@ -278,6 +278,9 @@ $0 = shift @ARGV;
 #    Jeremy Meredith, Thu Nov  6 10:59:45 PST 2003
 #    Added fast pipe IP addresses for the SGI viz servers.
 #
+#    Jeremy Meredith, Thu Nov 13 12:01:20 PST 2003
+#    Added srun (SLURM) launcher support.
+#
 ###############################################################################
 
 
@@ -1071,6 +1074,23 @@ if ($procs_set or ($parallel and $parlaunch_set))
         push @parcmd, "-n",  $procs if $procs_set;
         push @parcmd, "-N",  $nodes if $nodes_set;
         push @parcmd, "-p",  $part  if $part_set;
+        push @parcmd, @visitcmd;
+
+        @printcmd = @parcmd;
+        if ($security_key_set) { push @parcmd, "-key", $security_key; }
+        chomp($printcmd[0] = `basename $printcmd[0]`);
+    }
+    # srun
+    elsif (substr($launch,0,4) eq "srun")
+    {
+        @parcmd = ("srun");
+	push @parcmd, @launchargs if $launchargs_set;
+        push @parcmd, "-n",  $procs if $procs_set;
+        push @parcmd, "-N",  $nodes if $nodes_set;
+        push @parcmd, "-J",  $name  if $name_set;
+        push @parcmd, "-p",  $part  if $part_set;
+        push @parcmd, "-t",  $time  if $time_set;
+        #push @parcmd, "-b";  # Could be used for "batch mode"
         push @parcmd, @visitcmd;
 
         @printcmd = @parcmd;

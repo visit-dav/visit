@@ -155,6 +155,9 @@ QvisHostProfileWindow::~QvisHostProfileWindow()
 //   ability to specify an SSH port.  Moved "shareMDServer" to a new
 //   advanced tab, on which these other options were also placed.
 //
+//   Jeremy Meredith, Thu Nov 13 16:02:47 PST 2003
+//   Added "srun" launcher.
+//
 // ****************************************************************************
 void
 QvisHostProfileWindow::CreateWindowContents()
@@ -287,6 +290,7 @@ QvisHostProfileWindow::CreateWindowContents()
     launchMethod->insertItem("psub/poe");
     launchMethod->insertItem("psub/prun");
     launchMethod->insertItem("prun");
+    launchMethod->insertItem("srun");
     launchMethod->insertItem("yod");
     launchMethod->insertItem("dmpirun");
     launchMethod->insertItem("bsub");
@@ -1081,6 +1085,10 @@ QvisHostProfileWindow::UpdateWindowSensitivity()
 //   parsed from the SSH_CLIENT (or related) environment variables.  Added
 //   ability to specify an SSH port.
 //
+//   Jeremy Meredith, Thu Nov 13 15:59:59 PST 2003
+//   Moved timeout to the right spot in the list.  Its placement moved
+//   other widgets out of their required orderings.
+//
 // ****************************************************************************
 bool
 QvisHostProfileWindow::GetCurrentValues(int which_widget)
@@ -1207,34 +1215,6 @@ QvisHostProfileWindow::GetCurrentValues(int which_widget)
     }
     widget++;
 
-    // Do the timeout
-    if(which_widget == widget || doAll)
-    {
-        bool okay = false;
-        temp = timeout->text();
-        temp = temp.stripWhiteSpace();
-        if(!temp.isEmpty())
-        {
-            int tOut = temp.toInt(&okay);
-            if(okay)
-            {
-                if (tOut != current.GetTimeout())
-                    needNotify = true;
-                current.SetTimeout(tOut);
-            }
-        }
- 
-        if(!okay)
-        {
-            needNotify = true;
-            msg.sprintf("An invalid timeout was specified,"
-                " reverting to %d minutes.",
-                current.GetTimeout());
-            Message(msg);
-        }
-    }
-    widget++;
-
     // Do the number of nodes
     if(current.GetParallel() && (which_widget == widget || doAll))
     {
@@ -1316,6 +1296,34 @@ QvisHostProfileWindow::GetCurrentValues(int which_widget)
         temp = launchArgs->displayText();
         temp = temp.stripWhiteSpace();
         current.SetLaunchArgs(std::string(temp.latin1()));
+    }
+    widget++;
+
+    // Do the timeout
+    if(which_widget == widget || doAll)
+    {
+        bool okay = false;
+        temp = timeout->text();
+        temp = temp.stripWhiteSpace();
+        if(!temp.isEmpty())
+        {
+            int tOut = temp.toInt(&okay);
+            if(okay)
+            {
+                if (tOut != current.GetTimeout())
+                    needNotify = true;
+                current.SetTimeout(tOut);
+            }
+        }
+ 
+        if(!okay)
+        {
+            needNotify = true;
+            msg.sprintf("An invalid timeout was specified,"
+                " reverting to %d minutes.",
+                current.GetTimeout());
+            Message(msg);
+        }
     }
     widget++;
 
@@ -2153,6 +2161,7 @@ QvisHostProfileWindow::processEngineArgumentsText()
     // Update the engine arguments.
     if(!GetCurrentValues(9))
         SetUpdate(false);
+
     Apply();
 }
 

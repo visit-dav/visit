@@ -419,6 +419,8 @@ public:
 
     void ChangeScalableRenderingMode(bool newMode);
     bool IsChangingScalableRenderingMode(bool toMode = false) const;
+    bool DisableExternalRenderRequests();
+    bool EnableExternalRenderRequests();
 
     // Rendering options.
     void SetAntialiasing(bool enabled);

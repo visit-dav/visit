@@ -8,6 +8,7 @@
 
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
+#include <vtkCellTypes.h>
 #include <vtkDisjointCubesFacelistFilter.h>
 #include <vtkGeometryFilter.h>
 #include <vtkPointData.h>
@@ -18,7 +19,6 @@
 #include <vtkStructuredGridFacelistFilter.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkUnstructuredGridFacelistFilter.h>
-#include <vtkUnsignedCharArray.h>
 #include <vtkUnsignedIntArray.h>
 #include <vtkVisItUtility.h>
 
@@ -591,10 +591,10 @@ avtFacelistFilter::TakeFacesForDisjointElementMesh(vtkDataSet *in_ds, int dom)
     // Make sure that we only have hexahedrons.
     //
     vtkUnstructuredGrid *ugrid = (vtkUnstructuredGrid *) in_ds;
-    vtkUnsignedCharArray *types = vtkUnsignedCharArray::New();
-    ugrid->GetListOfUniqueCellTypes(types);
-    int ntypes = types->GetNumberOfTuples();
-    int cell_type  = types->GetValue(0);
+    vtkCellTypes *types = vtkCellTypes::New();
+    ugrid->GetCellTypes(types);
+    int ntypes = types->GetNumberOfTypes();
+    int cell_type  = types->GetCellType(0);
     types->Delete();
     if (ntypes != 1 || cell_type != VTK_HEXAHEDRON)
     {

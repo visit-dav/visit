@@ -14,6 +14,12 @@
       ULTRA
       VTK
     </Enum>
+    <Enum name="CompressionType">
+      None
+      PackBits
+      Jpeg
+      Deflate
+    </Enum>
     <Field name="hostName" label="hostName" type="string">
       localhost
     </Field>
@@ -54,6 +60,9 @@
     </Field>
     <Field name="stereo" label="stereo" type="bool">
       false
+    </Field>
+    <Field name="compression" label="compression" type="enum" subtype="CompressionType">
+      PackBits
     </Field>
     <Function name="CurrentFormatIsImageFormat" user="true" member="true">
     </Function>

@@ -254,6 +254,10 @@ VisWinLegends::PositionLegends(vector<avtActor_p> &lst)
 //    Modified the routine to set the database information to NULL if
 //    mainDBInfoVisible is false.
 //
+//    Kathleen Bonnell, Thu Nov 13 12:26:00 PST 2003 
+//    Use a slightly larger width for the dbInfoActor if CreateDatabaseInfo
+//    indicates that 'Time' was included. 
+//
 // ****************************************************************************
 
 void
@@ -304,9 +308,20 @@ VisWinLegends::UpdateDBInfo(vector<avtActor_p> &lst)
         avtDataAttributes &atts = b->GetInfo().GetAttributes();
 
         char info[1024];
-        CreateDatabaseInfo(info, atts);
+        bool hasTime = CreateDatabaseInfo(info, atts);
         dbInfoActor->SetInput(info);
 
+        //
+        //  If we are adding time, we need a larger width
+        //
+        if (hasTime)
+        {
+            dbInfoActor->SetWidth(dbInfoWidth+0.03);
+        }
+        else 
+        {
+            dbInfoActor->SetWidth(dbInfoWidth);
+        }
         dbInfoActor->SetHeight(dbInfoHeight+0.04);
         float x = leftColumnPosition;
         float y = 0.98 - dbInfoHeight;
@@ -358,21 +373,32 @@ VisWinLegends::SetVisibility(bool db, bool legend)
 //  Purpose:
 //      Create the database information string.
 //
+//  Returns:
+//      True if 'Time' was included, false otherwise.
+//
 //  Programmer: Eric Brugger
 //  Creation:   July 14, 2003
 //
+//  Modifications:
+//    Kathleen Bonnell, Thu Nov 13 12:26:00 PST 2003
+//    Added bool return type to indicate whether or not 'Time' was included.
+//  
 // ****************************************************************************
 
-void
+bool
 VisWinLegends::CreateDatabaseInfo(char *info, avtDataAttributes &atts)
 {
+    bool hasTime = false;
     sprintf(info, "DB: %s\n", atts.GetFilename().c_str());
     if (atts.CycleIsAccurate())
     {
         sprintf(info+strlen(info), "Cycle: %-8d ", atts.GetCycle());
+
     }
     if (atts.TimeIsAccurate())
     {
         sprintf(info+strlen(info), "Time:%-10g", atts.GetTime());
+        hasTime = true;
     }
+    return hasTime;
 }

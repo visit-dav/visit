@@ -194,6 +194,9 @@
 #    building it on MacOS X since VTK already has a vtkCamera. I built
 #    our vtkCamera into VTK instead.
 #
+#    Kathleen Bonnell, Wed Nov 12 16:56:08 PST 2003 
+#    Remove vtkVisItQuad and vtkVisItTriangle, no longer needed. 
+#
 ##############################################################################
 
 ##
@@ -256,11 +259,9 @@ SRC=InitVTK.C \
     vtkVisItFeatureEdges.C \
     vtkVisItPLOT3DReader.C \
     vtkVisItPolyDataNormals.C \
-    vtkVisItQuad.C \
     vtkVisItSTLWriter.C \
     vtkVisItScalarTree.C \
     vtkVisItStreamLine.C \
-    vtkVisItTriangle.C \
     vtkVisItUtility.C \
     vtkVolumeFromVolume.C
 

@@ -42,15 +42,17 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdlib.h>
 #include <math.h>
 #include "vtkRubberBandMapper2D.h"
-#include "vtkObjectFactory.h"
+
+#include <vtkActor2D.h>
+#include <vtkCellArray.h>
+#include <vtkCoordinate.h>
+#include <vtkObjectFactory.h>
+#include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkProperty2D.h>
 #include <vtkScalarsToColors.h>
 #include <vtkViewport.h>
-#include <vtkActor2D.h>
-#include <vtkPointData.h>
-#include <vtkCellArray.h>
-#include <vtkCoordinate.h>
+#include <vtkWindow.h>
 
 #if defined(_WIN32)
 #include <windows.h>

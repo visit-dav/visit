@@ -2402,7 +2402,7 @@ echo "${ECHO_T}found" >&6
     VTK_DIR=$VTK
     VTK_INCROOT="$""(TOPDIR)/include/vtk"
     VTK_INCLUDES="-I$VTK_INCROOT -I$VTK_INCROOT/Common -I$VTK_INCROOT/Filtering -I$VTK_INCROOT/Graphics -I$VTK_INCROOT/Hybrid -I$VTK_INCROOT/IO -I$VTK_INCROOT/Imaging -I$VTK_INCROOT/Rendering"
-    VTK_LIBS="-lvtkCommon -lvtkFiltering -lvtkGraphics -lvtkHybrid -lvtkIO -lvtkImaging -lvtkRendering -lvtkzlib -lvtkexpat -lvtkjpeg -lvtkpng -lvtktiff -lvtkftgl -lvtkfreetype $GL_LIBS $MESA_LIBS"
+    VTK_LIBS="-lvtkCommon -lvtkDICOMParser -lvtkFiltering -lvtkGraphics -lvtkHybrid -lvtkIO -lvtkImaging -lvtkRendering -lvtkzlib -lvtkexpat -lvtkjpeg -lvtkpng -lvtktiff -lvtkftgl -lvtkfreetype $GL_LIBS $MESA_LIBS"
 
     # If we're on Darwin, we took VisIt's vtkCamera and built it into the VTK library so
     # we don't want to put it into the visit_vtk library or else we'll get duplicate
@@ -5916,8 +5916,8 @@ else
 fi;
 if test "$hdf5_specified" = "yes"; then
    if test "$withval" != "no"; then
-      HDF5_INCLUDE="`echo $withval |cut -f1 -d,`"
-      HDF5_LIB="`echo $withval |cut -f2 -d, -s`"
+      HDF5_INCLUDE="-I`echo $withval |cut -f1 -d,`"
+      HDF5_LIB="-L`echo $withval |cut -f2 -d, -s`"
    fi
 else
    if test "$DEFAULT_HDF5_INCLUDE" != "" ; then

@@ -19,8 +19,10 @@
 #include <QvisLineWidthWidget.h>
 #include <stdio.h>
 #include <string>
+#include <vector>
 
 using std::string;
+using std::vector;
 
 static const char * formatString = "%d (%d)";
 

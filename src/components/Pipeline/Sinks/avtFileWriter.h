@@ -20,6 +20,10 @@
 //  Programmer: Hank Childs
 //  Creation:   May 24, 2002
 //
+//  Modifications:
+//    Kathleen Bonnell, Thu Nov  6 07:44:38 PST 2003
+//    Add compression arg to Write method.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtFileWriter
@@ -31,7 +35,8 @@ class PIPELINE_API avtFileWriter
     void                   SetFormat(int);
     bool                   IsImageFormat(void);
 
-    void                   Write(const char *, avtDataObject_p, int,bool,bool);
+    void                   Write(const char *, avtDataObject_p, int, bool,
+                                 int, bool);
     void                   WriteImageDirectly(vtkImageWriter *, const char *,
                                             avtDataObject_p);
   

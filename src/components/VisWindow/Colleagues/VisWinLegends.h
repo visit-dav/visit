@@ -36,6 +36,9 @@ class     vtkTextActor;
 //    Eric Brugger, Wed Jul 16 09:47:15 PDT 2003
 //    Removed GetPosition.
 //
+//    Kathleen Bonnell, Thu Nov 13 12:21:25 PST 2003 
+//    Added bool return type to CreateDatabaseInfo. 
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinLegends : public VisWinColleague
@@ -65,7 +68,7 @@ class VISWINDOW_API VisWinLegends : public VisWinColleague
     void                          UpdateDBInfo(std::vector<avtActor_p> &);
 
   private:
-    static void                   CreateDatabaseInfo(char *,
+    static bool                   CreateDatabaseInfo(char *,
                                                      avtDataAttributes &);
 };
 

@@ -185,16 +185,19 @@ avtFileWriter::IsImageFormat(void)
 //    Hank Childs, Tue May 28 10:51:17 PDT 2002
 //    Added argument 'binary'.
 //
+//    Kathleen Bonnell, Wed Nov 12 16:59:24 PST 2003 
+//    Added argument 'compression'.
+//
 // ****************************************************************************
 
 void
 avtFileWriter::Write(const char *filename, avtDataObject_p dob, int quality,
-                     bool progressive, bool binary)
+                     bool progressive, int compression, bool binary)
 {
     if (IsImageFormat())
     {
         imgWriter->SetInput(dob);
-        imgWriter->Write(imgFormat, filename, quality, progressive);
+        imgWriter->Write(imgFormat, filename, quality, progressive, compression);
     }
     else
     {

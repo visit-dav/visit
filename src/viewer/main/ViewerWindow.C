@@ -4968,6 +4968,38 @@ ViewerWindow::IsChangingScalableRenderingMode(bool toMode) const
 }
 
 // ****************************************************************************
+// Method: ViewerWindow::DisableExternalRenderRequests
+//
+// Purpose: Temporarily disable external render requests
+//
+// Programmer: Mark C. Miller
+// Creation:   Mon Nov  3 17:08:14 PST 2003 
+//
+// ****************************************************************************
+
+bool
+ViewerWindow::DisableExternalRenderRequests()
+{
+   return visWindow->DisableExternalRenderRequests();
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::EnableExternalRenderRequests
+//
+// Purpose: Re-enable external render requests
+//
+// Programmer: Mark C. Miller
+// Creation:   Mon Nov  3 17:08:14 PST 2003 
+//
+// ****************************************************************************
+
+bool
+ViewerWindow::EnableExternalRenderRequests()
+{
+   return visWindow->EnableExternalRenderRequests();
+}
+
+// ****************************************************************************
 // Method: ViewerWindow::GetScalableRendering
 //
 // Purpose: 

@@ -50,6 +50,9 @@ class vtkImageWriter;
 //    Hank Childs, Fri May 24 10:51:28 PDT 2002
 //    Stop passing images as arguments, since SetInput is the approved route.
 //
+//    Kathleen Bonnell, Thu Nov  6 07:44:38 PST 2003
+//    Added compression arg to Write method.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtImageFileWriter : public avtOriginatingImageSink
@@ -59,7 +62,7 @@ class PIPELINE_API avtImageFileWriter : public avtOriginatingImageSink
     virtual           ~avtImageFileWriter() {;};
 
     void               Write(ImageFileFormat, const char *filename,
-                             int quality, bool progressive);
+                             int quality, bool progressive, int compression);
     void               Write(vtkImageWriter *writer, const char *filename);
 
     char              *CreateFilename(const char *base, bool family,

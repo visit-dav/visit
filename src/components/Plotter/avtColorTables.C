@@ -519,22 +519,26 @@ avtColorTables::SetColorTables(const ColorTableAttributes &atts)
 // Creation:   Thu Jul 3 18:28:45 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Nov 13 11:59:46 PDT 2003
+//   I changed how the messages are returned.
+//
 // ****************************************************************************
 
-std::string
-avtColorTables::ExportColorTable(const std::string &ctName)
+bool
+avtColorTables::ExportColorTable(const std::string &ctName,
+    std::string &message)
 {
     const ColorControlPointList *ccpl = ctAtts->GetColorControlPoints(ctName);
 
     if(ccpl != 0)
     {
         ColorTableManager exporter;
-        return exporter.Export(ctName, *ccpl);
+        return exporter.Export(ctName, *ccpl, message);
     }
 
-    return std::string("VisIt could not save the color table\"") + ctName +
-           std::string("\" because that color table does not exist.");
+    message = std::string("VisIt could not save the color table\"") + ctName +
+              std::string("\" because that color table does not exist.");
+    return false;
 }
 
 // ****************************************************************************

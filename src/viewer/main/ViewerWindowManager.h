@@ -352,6 +352,9 @@ class VIEWER_API ViewerWindowManager : public QObject
     void BeginEngineExecute();
     void EndEngineExecute();
 
+    void DisableExternalRenderRequestsAllWindows(std::vector<bool>& oldAble);
+    void EnableExternalRenderRequestsAllWindows(const std::vector<bool> oldAble);
+
     void ReplaceDatabase(const std::string &host,
                          const std::string &database,
                          int timeState,

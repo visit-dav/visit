@@ -89,6 +89,9 @@ QvisSaveWindow::~QvisSaveWindow()
 //   Hank Childs, Wed Oct 15 08:58:16 PDT 2003
 //   Added stereo button.
 //
+//   Kathleen Bonnell, Thu Nov 13 12:15:25 PST 2003 
+//   Added compression type combo box.
+//
 // ****************************************************************************
 
 void
@@ -99,7 +102,7 @@ QvisSaveWindow::CreateWindowContents()
     infoBox->setTitle("File information");
     topLayout->addWidget(infoBox);
 
-    QGridLayout *infoLayout = new QGridLayout(infoBox, 6, 2);
+    QGridLayout *infoLayout = new QGridLayout(infoBox, 7, 2);
     infoLayout->setMargin(10);
     infoLayout->setSpacing(5);
     infoLayout->addRowSpacing(0, 10);
@@ -152,6 +155,19 @@ QvisSaveWindow::CreateWindowContents()
     connect(progressiveCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(progressiveToggled(bool)));
     infoLayout->addWidget(progressiveCheckBox, 5, 1, Qt::AlignRight);
+
+    compressionTypeComboBox = new QComboBox(false, infoBox, "compressionTypeComboBox");
+    compressionTypeComboBox->insertItem("None");
+    compressionTypeComboBox->insertItem("PackBits");
+    compressionTypeComboBox->insertItem("JPEG");
+    compressionTypeComboBox->insertItem("Deflate");
+    //compressionTypeComboBox->insertItem("LZW");
+    connect(compressionTypeComboBox, SIGNAL(activated(int)),
+           this, SLOT(compressionTypeChanged(int)));
+    compressionTypeLabel = new QLabel(compressionTypeComboBox, "Compression type",
+                                     infoBox, "compressionLabel");
+    infoLayout->addWidget(compressionTypeLabel, 6, 0);
+    infoLayout->addWidget(compressionTypeComboBox, 6, 1);
 
     // Create a group box for the image resolution.
     resolutionBox = new QGroupBox(central, "resolutionBox");
@@ -260,6 +276,10 @@ QvisSaveWindow::CreateWindowContents()
 //   Hank Childs, Wed Oct 15 09:03:08 PDT 2003
 //   Only allow the stereo button to be enabled when we have an image format.
 //
+//   Kathleen Bonnell, Thu Nov 13 12:16:06 PST 2003 
+//   Only allow the compression type combo box to be enabled when we 
+//   have a tiff format.
+//
 // ****************************************************************************
 
 void
@@ -302,6 +322,10 @@ QvisSaveWindow::UpdateWindow(bool doAll)
                                       SaveWindowAttributes::JPEG);
             progressiveCheckBox->setEnabled(saveWindowAtts->GetFormat() ==
                                       SaveWindowAttributes::JPEG);
+            compressionTypeLabel->setEnabled(saveWindowAtts->GetFormat() ==
+                                      SaveWindowAttributes::TIFF);
+            compressionTypeComboBox->setEnabled(saveWindowAtts->GetFormat() ==
+                                      SaveWindowAttributes::TIFF);
             if (saveWindowAtts->GetFormat() 
                      == SaveWindowAttributes::VTK
                 || saveWindowAtts->GetFormat() 
@@ -367,6 +391,11 @@ QvisSaveWindow::UpdateWindow(bool doAll)
             stereoCheckBox->blockSignals(true);
             stereoCheckBox->setChecked(saveWindowAtts->GetStereo());
             stereoCheckBox->blockSignals(false);
+            break;
+        case 14: // tiffCompression
+            compressionTypeComboBox->blockSignals(true);
+            compressionTypeComboBox->setCurrentItem(saveWindowAtts->GetCompression());
+            compressionTypeComboBox->blockSignals(false);
             break;
         }
     } // end for
@@ -670,6 +699,13 @@ void
 QvisSaveWindow::fileFormatChanged(int index)
 {
     saveWindowAtts->SetFormat(SaveWindowAttributes::FileFormat(index));
+    Apply();
+}
+
+void
+QvisSaveWindow::compressionTypeChanged(int index)
+{
+    saveWindowAtts->SetCompression(SaveWindowAttributes::CompressionType(index));
     Apply();
 }
 

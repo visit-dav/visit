@@ -1377,6 +1377,7 @@ ViewerWindowManager::SaveWindow(int windowIndex)
             // Tell the writer to save the window on the viewer.
             fileWriter->Write(filename, dob,saveWindowClientAtts->GetQuality(),
                               saveWindowClientAtts->GetProgressive(),
+                              saveWindowClientAtts->GetCompression(),
                               saveWindowClientAtts->GetBinary());
 
             if (*dob2 != NULL)
@@ -1385,6 +1386,7 @@ ViewerWindowManager::SaveWindow(int windowIndex)
                 fileWriter->Write(filename2, 
                                   dob2,saveWindowClientAtts->GetQuality(),
                                   saveWindowClientAtts->GetProgressive(),
+                                  saveWindowClientAtts->GetCompression(),
                                   saveWindowClientAtts->GetBinary());
             }
         }
@@ -5733,6 +5735,61 @@ ViewerWindowManager::EndEngineExecute()
     {
         if(windows[windowIndex] != 0)
             windows[windowIndex]->SetPopupEnabled(true);
+    }
+}
+
+// ****************************************************************************
+// Method: ViewerWindowManager::DisableExternalRenderRequestsAllWindows
+//
+// Purpose: Temporarily disables external render requests in all windows.
+//
+// Arguments:
+//   oldAble: a vector of bools indicating the previous enabled state of each
+//   window's external render requests
+//
+// Programmer: Mark C. Miller
+// Creation:   November 11, 2003
+//   
+// ****************************************************************************
+
+void
+ViewerWindowManager::DisableExternalRenderRequestsAllWindows(
+    std::vector<bool>& oldAble)
+{
+    for (int windowIndex = 0; windowIndex < maxWindows; ++windowIndex)
+    {
+        if (windows[windowIndex] != 0)
+        {
+            oldAble.push_back(windows[windowIndex]->DisableExternalRenderRequests());
+        }
+    }
+}
+
+// ****************************************************************************
+// Method: ViewerWindowManager::EnableExternalRenderRequestsAllWindows
+//
+// Purpose: Re-enable external render requests in all windows.
+//
+// Arguments:
+//   oldAble: a vector of bools indicating the previous enabled state of each
+//   window's external render requests
+//
+// Programmer: Mark C. Miller
+// Creation:   November 11, 2003
+//   
+// ****************************************************************************
+
+void
+ViewerWindowManager::EnableExternalRenderRequestsAllWindows(
+    const std::vector<bool> oldAble)
+{
+    for (int windowIndex = 0; windowIndex < maxWindows; ++windowIndex)
+    {
+        if (windows[windowIndex] != 0)
+        {
+            if (oldAble[windowIndex])
+                windows[windowIndex]->EnableExternalRenderRequests();
+        }
     }
 }
 

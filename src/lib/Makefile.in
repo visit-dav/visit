@@ -66,6 +66,8 @@
 #    Fixed a shared library extension problem. I also made it create a link
 #    for Silo if we're on MacOS X.
 #
+#    Kathleen Bonnell, Wed Nov 12 17:20:03 PST 2003 
+#    Added new vtk libs: vtkDICOMParser.
 ##############################################################################
 
 @SET_MAKE@
@@ -73,6 +75,7 @@
 
 DISTRIB=README
 LIBVTKCOMMON=libvtkCommon.@SHLIB_LIBEXT@
+LIBVTKDICOM=libvtkDICOMParser.@SHLIB_LIBEXT@
 LIBVTKFILTERING=libvtkFiltering.@SHLIB_LIBEXT@
 LIBVTKGRAPHICS=libvtkGraphics.@SHLIB_LIBEXT@
 LIBVTKHYBRID=libvtkHybrid.@SHLIB_LIBEXT@
@@ -93,13 +96,18 @@ LIBSILO=libsilo.@SHLIB_LIBEXT@
 
 # The following targets were split up so that they would work properly
 # with the make on AIX systems.
-all: libvtkcommon libvtkfiltering libvtkgraphics libvtkhybrid libvtkio libvtkimaging \
-     libvtkrendering libvtkzlib libvtkpng libvtkjpeg libvtkexpat libvtktiff \
-     libvtkfreetype libvtkftgl libosmesa libmesagl libqt pythondir @CREATE_SILO_LINK@
+all: libvtkcommon libvtkdicom libvtkfiltering libvtkgraphics libvtkhybrid \
+     libvtkio libvtkimaging libvtkrendering libvtkzlib libvtkpng libvtkjpeg \
+     libvtkexpat libvtktiff libvtkfreetype libvtkftgl libosmesa libmesagl \
+     libqt pythondir @CREATE_SILO_LINK@
 
 libvtkcommon:
 	$(RM) $(LIBVTKCOMMON)
 	ln -s @VTK_DIR@/lib/$(LIBVTKCOMMON)   .
+
+libvtkdicom:
+	$(RM) $(LIBVTKDICOM)
+	ln -s @VTK_DIR@/lib/$(LIBVTKDICOM)   .
 
 libvtkfiltering:
 	$(RM) $(LIBVTKFILTERING)

@@ -27,6 +27,9 @@ class ColorTableAttributes;
 //   Brad Whitlock, Tue Jul 1 17:20:38 PST 2003
 //   I added methods to import and export color tables.
 //
+//   Brad Whitlock, Thu Nov 13 11:58:13 PDT 2003
+//   I changed how the message is passed out of ExportColorTable.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtColorTables
@@ -52,7 +55,8 @@ public:
     ColorTableAttributes   *GetColorTables() { return ctAtts; }
     void                    SetColorTables(const ColorTableAttributes &);
 
-    std::string          ExportColorTable(const std::string &ctName);
+    bool                 ExportColorTable(const std::string &ctName,
+                                          std::string &message);
     void                 ImportColorTables();
 protected:
     avtColorTables();

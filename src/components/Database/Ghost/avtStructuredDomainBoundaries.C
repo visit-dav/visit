@@ -223,6 +223,11 @@ BoundaryHelperFunctions<T>::FillBoundaryData(int      d1,
 //  Programmer:  Hank Childs
 //  Creation:    November 10, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Nov 13 08:56:18 PST 2003
+//    Removed unused variables.
+//
 // ****************************************************************************
 template <class T>
 void
@@ -250,10 +255,8 @@ BoundaryHelperFunctions<T>::FillRectilinearBoundaryData(int      d1,
         int bndindex = 0;
         for (int k=n2extents[4]; k<=n2extents[5]; k++)
         {
-            int realK = k - n2extents[4];
             for (int j=n2extents[2]; j<=n2extents[3]; j++)
             {
-                int realJ = j - n2extents[2];
                 for (int i=n2extents[0]; i<=n2extents[1]; i++)
                 {
                     int ptId = bi->TranslatedPointIndex(n2, n1, i, j, k);
@@ -2175,6 +2178,9 @@ avtStructuredDomainBoundaries::CreateGhostZones(vtkDataSet *outMesh,
 //    Hank Childs, Wed Nov 12 10:53:38 PST 2003
 //    Allowed for pre-existing ghost zones as well.
 //
+//    Hank Childs, Thu Nov 13 08:56:18 PST 2003
+//    Fixed stupid bug where arguments to CreateGhostZones were out of order.
+//
 // ****************************************************************************
 vector<vtkDataSet*>
 avtCurvilinearDomainBoundaries::ExchangeMesh(vector<int>         domainNum,
@@ -2225,7 +2231,7 @@ avtCurvilinearDomainBoundaries::ExchangeMesh(vector<int>         domainNum,
         // Set the remaining unset ones (reduced connectivity, etc.)
         bhf_float->FakeNonexistentBoundaryData(d1, newcoord, true, 3);
 
-        CreateGhostZones(mesh, outm, bi);
+        CreateGhostZones(outm, mesh, bi);
 
         out[d] = outm;
     }
