@@ -1232,7 +1232,7 @@ ViewerEngineManager::GetDataObjectReader(ViewerPlot *const plot,
         }
 
         // Tell the engine to generate the plot
-        engine->ReadDataObject(plot->GetDatabaseName(),
+        engine->ReadDataObject(md->GetFileFormat(), plot->GetDatabaseName(),
                                plot->GetVariableName(),
                                state, plot->GetSILRestriction(),
                                *GetMaterialClientAtts());

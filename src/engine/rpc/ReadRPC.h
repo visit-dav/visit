@@ -21,6 +21,9 @@
 //    Jeremy Meredith, Thu Oct 24 11:18:20 PDT 2002
 //    Added material interface reconstruction attributes.
 //
+//    Hank Childs, Tue Mar  9 14:27:31 PST 2004
+//    Added file format type.
+//
 // ****************************************************************************
 
 class ENGINE_RPC_API ReadRPC : public BlockingRPC
@@ -30,7 +33,8 @@ public:
     virtual ~ReadRPC();
 
     // Invokation method
-    void operator()(const std::string&, const std::string&, int time,
+    void operator()(const std::string &format, const std::string& filename,
+                    const std::string &var, int time,
                     const CompactSILRestrictionAttributes &,
                     const MaterialAttributes &);
 
@@ -38,6 +42,7 @@ public:
     virtual void SelectAll();
 
     // Property setting methods
+    void SetFormat(const std::string&);
     void SetFile(const std::string&);
     void SetVar(const std::string&);
     void SetTime(int);
@@ -47,12 +52,14 @@ public:
     // Property getting methods
     std::string GetVar()  const;
     std::string GetFile() const;
+    std::string GetFormat() const;
     int         GetTime() const;
     const CompactSILRestrictionAttributes &GetCSRAttributes() const;
     const MaterialAttributes &GetMaterialAttributes() const;
 
 private:
     std::string file;
+    std::string format;
     std::string var;
     int         time;
     CompactSILRestrictionAttributes silr_atts;
