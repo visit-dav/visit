@@ -67,6 +67,9 @@ import java.util.Vector;
 //   Kathleen Bonnell, Tue Jul  1 10:11:37 PDT 2003
 //   I added SetPickAttributes, SetGlobalLineoutAttributes. 
 //
+//   Brad Whitlock, Tue Jul 1 16:49:48 PST 2003
+//   I added a method to tell the viewer to export a colortable.
+//
 // ****************************************************************************
 
 public class ViewerProxy implements SimpleObserver
@@ -772,6 +775,14 @@ public class ViewerProxy implements SimpleObserver
     public boolean UpdateColorTable(String colorTableName)
     {
         rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_UPDATECOLORTABLERPC);
+        rpc.SetColorTableName(colorTableName);
+        rpc.Notify();
+        return synchronous ? Synchronize() : true;
+    }
+
+    public boolean ExportColorTable(String colorTableName)
+    {
+        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_EXPORTCOLORTABLERPC);
         rpc.SetColorTableName(colorTableName);
         rpc.Notify();
         return synchronous ? Synchronize() : true;

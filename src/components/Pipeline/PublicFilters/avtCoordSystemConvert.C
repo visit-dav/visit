@@ -6,9 +6,11 @@
 
 #include <vtkDataSet.h>
 #include <vtkFloatArray.h>
+#include <vtkMath.h>
 #include <vtkPoints.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
+#include <vtkUnstructuredGrid.h>
 
 #include <vtkVisItUtility.h>
 
@@ -19,7 +21,7 @@ static vtkDataSet *CreateNewDataset(vtkDataSet *in_ds, vtkPoints *newPts);
 static vtkDataSet *SphericalToCartesian(vtkDataSet *in_ds);
 static vtkDataSet *CylindricalToSpherical(vtkDataSet *in_ds);
 static vtkDataSet *CartesianToCylindrical(vtkDataSet *in_ds);
-
+static vtkDataSet *FixWraparounds(vtkDataSet *in_ds, int comp_idx);
 
 // ****************************************************************************
 //  Method: avtCoordSystemConvert constructor
@@ -106,6 +108,19 @@ avtCoordSystemConvert::ExecuteData(vtkDataSet *in_ds, int, std::string)
             break;
           }
         }
+    }
+
+    if (outputSys == SPHERICAL)
+    {
+        cur_ds = FixWraparounds(cur_ds, 0);
+        deleteList.push_back(cur_ds);
+        cur_ds = FixWraparounds(cur_ds, 1);
+        deleteList.push_back(cur_ds);
+    }
+    else if (outputSys == CYLINDRICAL)
+    {
+        cur_ds = FixWraparounds(cur_ds, 0);
+        deleteList.push_back(cur_ds);
     }
 
     ManageMemory(cur_ds);
@@ -357,6 +372,8 @@ CylindricalToSpherical(vtkDataSet *in_ds)
         float newpt[3];
         newpt[0] = pt[0];
         newpt[1] = atan2(pt[2], pt[1]);
+        if (newpt[1] < 0.)
+            newpt[1] = 2*vtkMath::Pi() + newpt[1];
         newpt[2] = sqrt(pt[1]*pt[1] + pt[2]*pt[2]);
         newPts->SetPoint(i, newpt);
     }
@@ -399,6 +416,8 @@ CartesianToCylindrical(vtkDataSet *in_ds)
         pts->GetPoint(i, pt);
         float newpt[3];
         newpt[0] = atan2(pt[1], pt[0]);
+        if (newpt[0] < 0.)
+            newpt[0] = 2*vtkMath::Pi() + newpt[0];
         newpt[1] = pt[2];
         newpt[2] = sqrt(pt[0]*pt[0] + pt[1]*pt[1]);
         newPts->SetPoint(i, newpt);
@@ -409,6 +428,114 @@ CartesianToCylindrical(vtkDataSet *in_ds)
     newPts->Delete();
 
     return rv;
+}
+
+
+// ****************************************************************************
+//  Function: FixWraparounds
+//
+//  Purpose:
+//      Locates cells where the dataset has been wrapped-around from 0 radians
+//      to 2*pi radians.
+//
+//  Programmer: Hank Childs
+//  Creation:   July 7, 2003
+//
+// ****************************************************************************
+
+static vtkDataSet *
+FixWraparounds(vtkDataSet *in_ds, int comp_idx)
+{
+    int   i, j;
+
+    if (in_ds->GetDataObjectType() != VTK_UNSTRUCTURED_GRID)
+    {
+        in_ds->Register(NULL);
+        return in_ds;
+    }
+
+    vtkUnstructuredGrid *ugrid = (vtkUnstructuredGrid *) in_ds;
+    vtkPoints *pts = ugrid->GetPoints();
+    int npts = pts->GetNumberOfPoints();
+
+    vtkPoints *new_pts = vtkPoints::New();
+    new_pts->SetNumberOfPoints(2*npts);
+    vtkUnstructuredGrid *new_grid = vtkUnstructuredGrid::New();
+    new_grid->SetPoints(new_pts);
+    vtkPointData *out_pd = new_grid->GetPointData();
+    vtkPointData *in_pd  = in_ds->GetPointData();
+    out_pd->CopyAllocate(in_pd, 2*npts);
+   
+    for (i = 0 ; i < npts ; i++)
+    {
+        float pt[3];
+        pts->GetPoint(i, pt);
+        new_pts->SetPoint(2*i, pt);
+        if (pt[comp_idx] > vtkMath::Pi())
+            pt[comp_idx] -= 2*vtkMath::Pi();
+        else
+            pt[comp_idx] += 2*vtkMath::Pi();
+        new_pts->SetPoint(2*i+1, pt);
+        out_pd->CopyData(in_pd, i, 2*i);
+        out_pd->CopyData(in_pd, i, 2*i+1);
+    }
+
+    int ncells = ugrid->GetNumberOfCells();
+    new_grid->Allocate(2*ncells*8);
+    vtkCellData *out_cd = new_grid->GetCellData();
+    vtkCellData *in_cd  = in_ds->GetCellData();
+    out_cd->CopyAllocate(in_cd, 2*ncells);
+   
+    float pi = vtkMath::Pi();
+    float twoPiCutoff = 2*vtkMath::Pi()*0.95;
+    float zeroPiCutoff = vtkMath::Pi()*0.1;
+    int cellCnt = 0;
+    for (i = 0 ; i < ncells ; i++)
+    {
+        vtkIdType *ids;
+        int cellNPts;
+        ugrid->GetCellPoints(i, cellNPts, ids);
+        bool closeToZero = false;
+        bool closeToTwoPi = false;
+        bool closeToLow[8];
+        for (j = 0 ; j < cellNPts ; j++)
+        {
+            float pt[3];
+            pts->GetPoint(ids[j], pt);
+            if (pt[comp_idx] > twoPiCutoff)
+                closeToTwoPi = true;
+            if (pt[comp_idx] < zeroPiCutoff)
+                closeToZero  = true;
+            closeToLow[j] = (pt[comp_idx] < pi ? false : true);
+        }
+        if (closeToTwoPi && closeToZero)
+        {
+            // Make two cells -- start with the one close to 0 radians.
+            vtkIdType low_ids[8];
+            for (j = 0 ; j < cellNPts ; j++)
+                low_ids[j] = (closeToLow[j] ? 2*ids[j] : 2*ids[j]+1);
+            new_grid->InsertNextCell(ugrid->GetCellType(i), cellNPts, low_ids);
+            out_cd->CopyData(in_cd, i, cellCnt++);
+            
+            vtkIdType hi_ids[8];
+            for (j = 0 ; j < cellNPts ; j++)
+                hi_ids[j] = (!closeToLow[j] ? 2*ids[j] : 2*ids[j]+1);
+            new_grid->InsertNextCell(ugrid->GetCellType(i), cellNPts, hi_ids);
+            out_cd->CopyData(in_cd, i, cellCnt++);
+        }
+        else
+        {
+            vtkIdType new_ids[8];
+            for (j = 0 ; j < cellNPts ; j++)
+                new_ids[j] = 2*ids[j];
+            new_grid->InsertNextCell(ugrid->GetCellType(i), cellNPts, new_ids);
+            out_cd->CopyData(in_cd, i, cellCnt++);
+        }
+    }
+    new_grid->Squeeze();
+    new_pts->Delete();
+
+    return new_grid;
 }
 
 

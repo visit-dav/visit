@@ -114,6 +114,7 @@
       SaveViewRPC
       SetGlobalLineoutAttributesRPC
       SetPickAttributesRPC
+      ExportColorTableRPC
       MaxRPC
     </Enum>
     <Field name="RPCType" label="RPCType" type="enum" subtype="ViewerRPCType">

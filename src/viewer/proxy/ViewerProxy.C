@@ -2993,6 +2993,37 @@ ViewerProxy::UpdateColorTable(const std::string &colorTableName)
 }
 
 // ****************************************************************************
+// Method: ViewerProxy::ExportColorTable
+//
+// Purpose: 
+//   Forces the viewer to export the named color table to a small XML file.
+//
+// Arguments:
+//   colorTableName : The name of the color table that's being exported.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jul 1 16:48:09 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerProxy::ExportColorTable(const std::string &colorTableName)
+{
+    //
+    // Set the RPC type and arguments.
+    //
+    viewerRPC->SetRPCType(ViewerRPC::ExportColorTableRPC);
+    viewerRPC->SetColorTableName(colorTableName);
+
+    //
+    // Issue the RPC.
+    //
+    viewerRPC->Notify();
+}
+
+// ****************************************************************************
 // Method: ViewerProxy::InvertBackgroundColor
 //
 // Purpose: 

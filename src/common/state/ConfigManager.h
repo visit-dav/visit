@@ -26,6 +26,9 @@
 //   Brad Whitlock, Thu Jul 3 16:14:04 PST 2003
 //   Rewrote the methods that read in the file.
 //
+//   Brad Whitlock, Thu Jul 3 17:43:47 PST 2003
+//   I added a convenience method to get the user's home .visit dir.
+//
 // ****************************************************************************
 
 class STATE_API ConfigManager
@@ -36,6 +39,8 @@ public:
 
     virtual void WriteConfigFile(const char *filename) = 0;
     virtual DataNode *ReadConfigFile(const char *filename) = 0;
+
+    std::string GetUserVisItDirectory() const;
 
     char *GetDefaultConfigFile(const char *filename = 0, const char *home = 0);
     char *GetSystemConfigFile(const char *filename = 0);

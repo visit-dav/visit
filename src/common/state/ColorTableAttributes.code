@@ -310,6 +310,9 @@ Definition:
 //   Brad Whitlock, Tue May 20 10:21:14 PDT 2003
 //   I made it saved out only what needs to be saved out.
 //
+//   Brad Whitlock, Mon Jul 7 16:51:05 PST 2003
+//   I prevented it from saving out colortables that are external.
+//
 // ****************************************************************************
 
 bool
@@ -320,19 +323,19 @@ ColorTableAttributes::CreateNode(DataNode *parentNode, bool)
 
     // Create a node for ColorTableAttributes.
     DataNode *node = new DataNode("ColorTableAttributes");
-    node->AddNode(new DataNode("Ntables", int(colorTables.size())));
     node->AddNode(new DataNode("activeContinuous", activeContinuous));
     node->AddNode(new DataNode("activeDiscrete", activeDiscrete));
 
     // Add each color table specially.
     char tmp[100];
     ColorControlPointList defaultObject;
+    int index = 0;
     for(int i = 0; i < colorTables.size(); ++i)    
     {
         const ColorControlPointList *ccpl = GetColorControlPoints(i);
-        if(ccpl)
+        if(ccpl && !ccpl->GetExternalFlag())
         {
-            SNPRINTF(tmp, 100, "table%02d", i);
+            SNPRINTF(tmp, 100, "table%02d", index++);
             DataNode *ctNode = new DataNode(tmp);
             // Add the color table attributes to the ctNode.
             ctNode->AddNode(new DataNode("ctName", names[i]));
@@ -357,6 +360,8 @@ ColorTableAttributes::CreateNode(DataNode *parentNode, bool)
             node->AddNode(ctNode);
         }
     }
+
+    node->AddNode(new DataNode("Ntables", index));
 
     // Add the node to the parent node.
     parentNode->AddNode(node);

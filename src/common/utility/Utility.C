@@ -15,6 +15,9 @@ using std::string;
 #include <windows.h>
 #else
 #include <unistd.h>
+#include <sys/types.h>
+#include <dirent.h>
+#include <sys/stat.h>
 #endif
 
 // ****************************************************************************
@@ -313,4 +316,147 @@ WildcardStringMatch(const char *p, const char *s)
     return false;
 }
 
+// ****************************************************************************
+// Function: ReadAndProcessDirectory
+//
+// Purpose: 
+//   Reads the list of files in the specified directory and calls a callback
+//   function on each file.
+//
+// Arguments:
+//   directory     : The directory to read.
+//   procesOneFile : Callback function to process one file.
+//   data          : Callback data.
+//   checkAccess   : Whether or not to check the file permissions.
+//
+// Returns:    True if successful; false otherwise.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Jul 7 15:08:02 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
 
+bool
+ReadAndProcessDirectory(const std::string &directory,
+    ProcessDirectoryCallback processOneFile, void *data,
+    bool checkAccess)
+{
+    bool retval = false;
+
+#if defined(_WIN32)
+    if(directory == "My Computer")
+    {
+        // Add the drives to the list.
+        char buf[200];
+        DWORD bufLen = 200;
+        DWORD slen = GetLogicalDriveStrings(200, buf);
+
+        if(slen > 0)
+        {
+            char *ptr = buf;
+            while(*ptr != 0)
+            {
+                std::string drive(ptr);
+                processOneFile(data, drive, true, true, 0);
+                ptr += (drive.size() + 1);
+                retval = true;
+            }
+        }
+    }
+    else
+    {
+        // Try and read the files in fullPath.
+        std::string searchPath(directory + std::string("\\*"));
+        WIN32_FIND_DATA fd;
+        HANDLE dirHandle = FindFirstFile(searchPath.c_str(), &fd);
+        if(dirHandle != INVALID_HANDLE_VALUE)
+        {
+            do
+            {
+                bool isDir = ((fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0) ||
+                             (strcmp(fd.cFileName, "..") == 0);
+                long sz = ((fd.nFileSizeHigh * MAXDWORD) + fd.nFileSizeLow);
+                processOneFile(data, fd.cFileName, isDir, true, sz);
+                retval = true;
+
+            } while(FindNextFile(dirHandle, &fd));
+            FindClose(dirHandle);
+        }
+    }
+#else
+    DIR     *dir;
+    dirent  *ent;
+
+    // If the directory cannot be opened, return an error code.
+    dir = opendir(directory.c_str());
+    if (dir)
+    {
+        // Get the userId and the groups for that user so we can check the
+        // file permissions.
+        uid_t uid = getuid();
+        gid_t gids[100];
+        int ngids;
+        ngids = getgroups(100, gids);
+
+        // Process each directory entry.
+        while ((ent = readdir(dir)) != NULL)
+        {
+            // Get information about the file.
+            struct stat s;
+            string fileName(directory);
+            if(directory.substr(directory.size() - 1, 1) != "/")
+                fileName += "/";
+            fileName += ent->d_name;
+            stat(fileName.c_str(), &s);
+
+            mode_t mode = s.st_mode;
+            bool isdir = S_ISDIR(mode);
+   
+            bool canaccess = checkAccess ? false : true;
+            if(checkAccess)
+            {
+                bool isuser  = (s.st_uid == uid);
+                bool isgroup = false;
+                for (int i=0; i<ngids && !isgroup; i++)
+                    if (s.st_gid == gids[i])
+                        isgroup=true;
+    
+                if (isdir)
+                {
+                    if ((mode & S_IROTH) &&
+                        (mode & S_IXOTH))
+                        canaccess=true;
+                    else if (isuser &&
+                             (mode & S_IRUSR) &&
+                             (mode & S_IXUSR))
+                        canaccess=true;
+                    else if (isgroup &&
+                             (mode & S_IRGRP) &&
+                             (mode & S_IXGRP))
+                        canaccess=true;
+                }
+                else
+                {
+                    if (mode & S_IROTH)
+                        canaccess=true;
+                    else if (isuser &&
+                             (mode & S_IRUSR))
+                        canaccess=true;
+                    else if (isgroup &&
+                             (mode & S_IRGRP))
+                        canaccess=true;
+                }
+            }
+
+            processOneFile(data, fileName, isdir, (long)s.st_size, canaccess);
+            retval = true;
+        }
+ 
+        closedir(dir);
+    }
+#endif
+
+    return retval;
+}

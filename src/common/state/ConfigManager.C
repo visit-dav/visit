@@ -7,6 +7,7 @@
 #include <sys/stat.h>
 #include <stdlib.h>
 #endif
+#include <visit-config.h>
 
 // ****************************************************************************
 // Method: ConfigManager::ConfigManager
@@ -1208,4 +1209,45 @@ char *
 ConfigManager::GetSystemConfigFile(const char *filename)
 {
     return GetDefaultConfigFile(filename, "VISITHOME");
+}
+
+// ****************************************************************************
+// Method: ConfigManager::GetUserVisItDirectory
+//
+// Purpose: 
+//   Returns the user's .visit directory or equivalent.
+//
+// Returns:    The directory where VisIt likes to put stuff.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jul 3 17:44:59 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+std::string
+ConfigManager::GetUserVisItDirectory() const
+{
+#if defined(_WIN32)
+    const char *home = getenv("VISITHOME");
+#else
+    const char *home = getenv("HOME");
+#endif
+
+    std::string homedir;
+
+    if(home != 0)
+    {
+#if defined(_WIN32)
+        homedir = std::string(home);
+#else
+        homedir = std::string(home) + "/.visit";
+#endif
+
+        if(homedir[homedir.size() - 1] != SLASH_CHAR)
+            homedir += SLASH_STRING;
+    }
+
+    return homedir;
 }

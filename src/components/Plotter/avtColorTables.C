@@ -2,6 +2,7 @@
 #include <ColorTableAttributes.h>
 #include <ColorControlPointList.h>
 #include <ColorControlPoint.h>
+#include <ColorTableManager.h>
 
 //
 // Static data that describes the eight default color tables.
@@ -501,5 +502,63 @@ void
 avtColorTables::SetColorTables(const ColorTableAttributes &atts)
 {
     *ctAtts = atts;
+}
+
+// ****************************************************************************
+// Method: avtColorTables::ExportColorTable
+//
+// Purpose: 
+//   Exports the specified color table to a file that can be shared.
+//
+// Arguments:
+//   ctName : The name of the color table to export.
+//
+// Returns:    A string indicating what happened.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jul 3 18:28:45 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+std::string
+avtColorTables::ExportColorTable(const std::string &ctName)
+{
+    const ColorControlPointList *ccpl = ctAtts->GetColorControlPoints(ctName);
+
+    if(ccpl != 0)
+    {
+        ColorTableManager exporter;
+        return exporter.Export(ctName, *ccpl);
+    }
+
+    return std::string("VisIt could not save the color table\"") + ctName +
+           std::string("\" because that color table does not exist.");
+}
+
+// ****************************************************************************
+// Method: avtColorTables::ImportColorTables
+//
+// Purpose: 
+//   Imports the color tables in the user's home .visit directory and adds
+//   them to the list of color tables.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jul 3 18:30:07 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtColorTables::ImportColorTables()
+{
+    //
+    // Create a color table manager to import the color tables and store
+    // them in the ctAtts.
+    //
+    ColorTableManager importer;
+    importer.ImportColorTables(ctAtts);
 }
 

@@ -45,6 +45,9 @@ class QvisColorGridWidget;
 //   I changed things so that discrete color tables can have an arbitrary
 //   number of colors.
 //
+//   Brad Whitlock, Tue Jul 1 16:37:41 PST 2003
+//   I added an Export button.
+//
 // ****************************************************************************
 
 class GUI_API QvisColorTableWindow : public QvisPostableWindowObserver
@@ -96,6 +99,7 @@ private slots:
     void equalSpacingToggled(bool val);
     void addColorTable();
     void deleteColorTable();
+    void exportColorTable();
     void highlightColorTable(int index);
 private:
     ColorTableAttributes     *colorAtts;
@@ -116,6 +120,7 @@ private:
     QGroupBox                *colorTableWidgetGroup;
     QPushButton              *newButton;
     QPushButton              *deleteButton;
+    QPushButton              *exportButton;
     QLineEdit                *nameLineEdit;
     QListBox                 *nameListBox;
 

@@ -213,6 +213,9 @@ avtSpheralFileFormat::RegisterVariableList(const char *primVar,
 //    Hank Childs, Mon Mar 17 13:23:27 PST 2003
 //    Support for reading cycles/times.
 //
+//    Hank Childs, Thu Jul  3 16:32:17 PDT 2003
+//    Stupid bug that screwed up 'single file' databases.
+//
 // ****************************************************************************
 
 void
@@ -274,7 +277,7 @@ avtSpheralFileFormat::ParseHeader(istream &ifile)
         read_domain.push_back(false);
         domain_files.push_back(rootfile);
     }
-    if (strstr(line, "!FileList") != 0)
+    else if (strstr(line, "!FileList") != 0)
     {
         if (nwords <= 1)
             EXCEPTION1(InvalidFilesException, rootfile.c_str());

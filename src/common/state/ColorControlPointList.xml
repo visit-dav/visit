@@ -4,5 +4,6 @@
     <Field name="smoothingFlag" type="bool">true</Field>
     <Field name="equalSpacingFlag" type="bool">false</Field>
     <Field name="discreteFlag" type="bool">false</Field>
+    <Field name="externalFlag" type="bool">false</Field>
     <Function name="GetColors" user="true" member="true"></Function>
   </Attribute>

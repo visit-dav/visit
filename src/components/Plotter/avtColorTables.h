@@ -24,6 +24,9 @@ class ColorTableAttributes;
 //   the implementation in favor of using the ColorTableAttributes state
 //   object.
 //
+//   Brad Whitlock, Tue Jul 1 17:20:38 PST 2003
+//   I added methods to import and export color tables.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtColorTables
@@ -48,6 +51,9 @@ public:
 
     ColorTableAttributes   *GetColorTables() { return ctAtts; }
     void                    SetColorTables(const ColorTableAttributes &);
+
+    std::string          ExportColorTable(const std::string &ctName);
+    void                 ImportColorTables();
 protected:
     avtColorTables();
     ~avtColorTables();

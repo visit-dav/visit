@@ -197,18 +197,21 @@ make
 #
 mkdir ../visit/vtk
 mkdir ../visit/vtk/{Common,Filtering,Graphics,Hybrid,IO,Imaging,Rendering,MangleMesaInclude,lib}
-cp vtkConfigure.h        ../visit/vtk
-cp vtkToolkits.h         ../visit/vtk
-cp vtk*Instantiator.h    ../visit/vtk
-cp Common/*.h            ../visit/vtk/Common
-cp Filtering/*.h         ../visit/vtk/Filtering
-cp Graphics/*.h          ../visit/vtk/Graphics
-cp Hybrid/*.h            ../visit/vtk/Hybrid
-cp IO/*.h                ../visit/vtk/IO
-cp Imaging/*.h           ../visit/vtk/Imaging
-cp Rendering/*.h         ../visit/vtk/Rendering
-cp MangleMesaInclude/*.h ../visit/vtk/MangleMesaInclude
-cp bin/*.so              ../visit/vtk/lib
+cp vtkConfigure.h                 ../visit/vtk
+cp vtkToolkits.h                  ../visit/vtk
+cp vtk*Instantiator.h             ../visit/vtk
+cp Utilities/zlib/zlib.h          ../visit/vtk
+cp Utilities/zlib/zconf.h         ../visit/vtk
+cp Utilities/zlib/zlibDllConfig.h ../visit/vtk
+cp Common/*.h                     ../visit/vtk/Common
+cp Filtering/*.h                  ../visit/vtk/Filtering
+cp Graphics/*.h                   ../visit/vtk/Graphics
+cp Hybrid/*.h                     ../visit/vtk/Hybrid
+cp IO/*.h                         ../visit/vtk/IO
+cp Imaging/*.h                    ../visit/vtk/Imaging
+cp Rendering/*.h                  ../visit/vtk/Rendering
+cp MangleMesaInclude/*.h          ../visit/vtk/MangleMesaInclude
+cp bin/*.so                       ../visit/vtk/lib
 cd ..
 
 #

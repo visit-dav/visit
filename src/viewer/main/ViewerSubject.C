@@ -683,6 +683,9 @@ ViewerSubject::~ViewerSubject()
 //    Added code to let other objects in the viewer process their new
 //    config settings.
 //
+//    Brad Whitlock, Tue Jul 1 17:19:05 PST 2003
+//    I added code to import color tables from external files.
+//
 // ****************************************************************************
 
 void
@@ -832,6 +835,12 @@ ViewerSubject::Connect(int *argc, char ***argv)
     // both the system and local settings.
     configMgr->ProcessConfigSettings(systemSettings);
     configMgr->ProcessConfigSettings(localSettings);
+
+    // Import external color tables.
+    if(!noconfig)
+        avtColorTables::Instance()->ImportColorTables();
+
+    // Send the user's config settings to the client.
     configMgr->Notify();
     delete systemSettings; systemSettings = 0;
 
@@ -3028,6 +3037,32 @@ ViewerSubject::UpdateColorTable()
 }
 
 // ****************************************************************************
+// Method: ViewerSubject::ExportColorTable
+//
+// Purpose: 
+//   Exports the specified color table.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jul 1 17:03:13 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerSubject::ExportColorTable()
+{
+    //
+    // Perform the rpc.
+    //
+    std::string msg = avtColorTables::Instance()->
+        ExportColorTable(viewerRPC.GetColorTableName());
+
+    // Tell the user what happened.
+    Message(msg.c_str());
+}
+
+// ****************************************************************************
 //  Method: ViewerSubject::WriteConfigFile
 //
 //  Purpose:
@@ -4116,6 +4151,9 @@ ViewerSubject::LaunchProgressCB(void *d, int stage)
 //    Kathleen Bonnell, Tue Jul  1 09:21:57 PDT 2003 
 //    Added SetPickAttributes. 
 //
+//    Brad Whitlock, Tue Jul 1 17:00:30 PST 2003
+//    Added ExportColorTable.
+//
 // ****************************************************************************
 
 void
@@ -4309,6 +4347,9 @@ ViewerSubject::HandleViewerRPC()
         break;
     case ViewerRPC::SetPickAttributesRPC:
         SetPickAttributes();
+        break;
+    case ViewerRPC::ExportColorTableRPC:
+        ExportColorTable();
         break;
     case ViewerRPC::MaxRPC:
         break;
