@@ -176,6 +176,10 @@ QvisVolumePlotWindow::~QvisVolumePlotWindow()
 //   Added settings for the renderer type, the gradient method, and
 //   the number of 3D textured slices.
 //
+//   Jeremy Meredith, Fri Mar 19 15:04:16 PST 2004
+//   I added a new callback for when the resample target slider
+//   is released.
+//
 // ****************************************************************************
 
 void
@@ -402,6 +406,8 @@ QvisVolumePlotWindow::CreateWindowContents()
     resampleTargetSlider = new QSlider(0,80,10,34, Qt::Horizontal,central,"resampleTargetSlider");
     connect(resampleTargetSlider, SIGNAL(valueChanged(int)),
             this, SLOT(resampleTargetSliderChanged(int)));
+    connect(resampleTargetSlider, SIGNAL(sliderReleased()),
+            this, SLOT(resampleTargetSliderReleased()));
     resampleAndOpacityLayout->addWidget(resampleLabel, 0, 0);
     resampleAndOpacityLayout->addWidget(resampleTarget, 0, 1);
     resampleAndOpacityLayout->addWidget(resampleTargetSlider, 0, 2);
@@ -1957,6 +1963,12 @@ QvisVolumePlotWindow::resampleTargetProcessText()
 //   normally don't set widget state outside the UpdateWindow method but
 //   this is an exception. This fixes auto update.
 //
+//   Jeremy Meredith, Fri Mar 19 15:02:54 PST 2004
+//   I removed the call to Apply from this function, and put it in a new
+//   callback for when the slider is released.  We don't want to notify
+//   the viewer while it is being changed, although we do want to display
+//   the target value.
+//
 // ****************************************************************************
 
 void
@@ -1972,7 +1984,27 @@ QvisVolumePlotWindow::resampleTargetSliderChanged(int val)
     QString tmp;
     tmp.sprintf("%d", ni);
     resampleTarget->setText(tmp);
+}
 
+// ****************************************************************************
+// Method:  QvisVolumePlotWindow::resampleTargetSliderReleased
+//
+// Purpose:
+//   Qt slot function, called when resampleTargetSlider is released.
+//
+// Arguments:
+//   none
+//
+// Programmer:  Jeremy Meredith
+// Creation:    March 19, 2004
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisVolumePlotWindow::resampleTargetSliderReleased()
+{
     Apply();
 }
 

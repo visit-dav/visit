@@ -4,6 +4,8 @@
 
 #include <avtDataAttributes.h>
 
+#include <algorithm>
+
 #include <avtDataObjectString.h>
 #include <avtDataObjectWriter.h>
 #include <avtExtents.h>
@@ -15,6 +17,7 @@
 
 using     std::string;
 using     std::vector;
+using     std::sort;
 
 
 // ****************************************************************************
@@ -1734,28 +1737,58 @@ avtDataAttributes::Read(char *input)
 //  Progammer: Kathleen Bonnell 
 //  Creation:  September 19, 2001 
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Mar 18 20:20:48 PST 2004
+//    Re-wrote to avoid a quadratic performance.
+//
 // ****************************************************************************
 
 void
 avtDataAttributes::MergeLabels(const vector<string> &l)
 {
-    bool found = false;
-    for (int i = 0; i < l.size(); i++)
+    if (labels.size() == l.size())
     {
-        for (int j = 0; j < labels.size(); j++)
-        {
-            if ( l[i] == labels[j] )
+        bool foundDifference = false;
+        for (int i = 0 ; i < labels.size() ; i++)
+            if (labels[i] != l[i])
             {
-                found = true;
+                foundDifference = true;
                 break;
             }
-        }
-        if (!found)
-        {
-            labels.push_back(l[i]);
-        }
-        found = false;
+        if (!foundDifference)
+            return;
     }
+
+    vector<string> list1 = l;
+    vector<string> list2 = labels;
+    sort(list1.begin(), list1.end());
+    sort(list2.begin(), list2.end());
+    int list1_counter = 0;
+    int list2_counter = 0;
+    vector<string> master_list;
+    while ((list1_counter < list1.size()) || (list2_counter < list2.size()))
+    {
+        if ((list1_counter < list1.size()) && (list2_counter < list2.size()))
+        {
+            if (list1[list1_counter] == list2[list2_counter])
+            {
+                master_list.push_back(list1[list1_counter]);
+                list1_counter++;
+                list2_counter++;
+            }
+            else if (list1[list1_counter] < list2[list2_counter])
+                master_list.push_back(list1[list1_counter++]);
+            else
+                master_list.push_back(list2[list2_counter++]);
+        }
+        else if (list1_counter < list1.size())
+            master_list.push_back(list1[list1_counter++]);
+        else
+            master_list.push_back(list2[list2_counter++]);
+    }
+
+    labels = master_list;
 }
 
 

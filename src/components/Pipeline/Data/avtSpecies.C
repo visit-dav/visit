@@ -212,6 +212,13 @@ avtSpecies::Initialize(const vector<int> ns,
 //  Programmer:  Jeremy Meredith
 //  Creation:    November 19, 2003
 //
+//  Modifications:
+//    Jeremy Meredith, Fri Mar 19 10:53:22 PST 2004
+//    I added a check to make sure there was a valid string for a species
+//    name in a material with only one species.  It seems reasonable for
+//    databases to not provide a name for the species in a material with
+//    only one, so I provided a default name.
+//
 // ****************************************************************************
 vector<CellSpecInfo>
 avtSpecies::ExtractCellSpecInfo(int c, int m, avtMaterial *mat)
@@ -247,7 +254,10 @@ avtSpecies::ExtractCellSpecInfo(int c, int m, avtMaterial *mat)
     if (specindex == 0)
     {
         // A zero indicates only one species in this material
-        info.push_back(CellSpecInfo(species[m][0], 1.0));
+        if (nSpecies[m] > 0)
+            info.push_back(CellSpecInfo(species[m][0], 1.0));
+        else
+            info.push_back(CellSpecInfo("(single species)", 1.0));
     }
     else if (specindex > 0)
     {

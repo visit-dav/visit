@@ -43,6 +43,10 @@
 //    Jeremy Meredith, Tue Nov  4 15:53:27 PST 2003
 //    Added sample avt files for database plugins.  Sample code by Hank Childs.
 //
+//    Jeremy Meredith, Fri Mar 19 13:43:20 PST 2004
+//    Changed MTSD format constructors to pass the correct version of 
+//    filename (file list) to the base MTSD constructor.
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -1292,7 +1296,7 @@ class AVTGeneratorPlugin
             c << "// ****************************************************************************" << endl;
             c << "" << endl;
             c << "avt"<<name<<"FileFormat::avt"<<name<<"FileFormat(const char *filename)" << endl;
-            c << "    : avtMTSDFileFormat(filename)" << endl;
+            c << "    : avtMTSDFileFormat(&filename, 1)" << endl;
             c << "{" << endl;
             c << "    // INITIALIZE DATA MEMBERS" << endl;
             c << "}" << endl;

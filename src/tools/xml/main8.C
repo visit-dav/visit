@@ -170,6 +170,9 @@ void ProcessFile(QString file);
 //    Brad Whitlock, Tue Dec 16 11:06:47 PDT 2003
 //    Added code to generate Windows project files.
 //
+//    Jeremy Meredith, Fri Mar 19 15:17:31 PST 2004
+//    Added code to clear enums in between input files.
+//
 // ****************************************************************************
 
 int main(int argc, char *argv[])
@@ -245,6 +248,8 @@ ProcessFile(QString file)
     QString    docType;
     Plugin    *plugin    = NULL;
     Attribute *attribute = NULL;
+
+    EnumType::enums.clear();
 
     FieldFactory  *fieldFactory = new FieldFactory;
     XMLParser     parser(fieldFactory, file);

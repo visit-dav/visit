@@ -230,20 +230,12 @@ void vtkVerticalScalarBarActor::SetVarRange(float *r)
 {
   this->varRange[0] = r[0];
   this->varRange[1] = r[1];
-  if (this->LookupTable != NULL)
-  {
-      this->LookupTable->SetTableRange(r[0], r[1]);
-  }
 }
 
 void vtkVerticalScalarBarActor::SetVarRange(float min, float max)
 {
   this->varRange[0] = min;
   this->varRange[1] = max;
-  if (this->LookupTable != NULL)
-  {
-      this->LookupTable->SetTableRange(min, max);
-  }
 }
 
 void vtkVerticalScalarBarActor::SetRange(float *r)
@@ -734,16 +726,17 @@ void vtkVerticalScalarBarActor::BuildColorBar(vtkViewport *viewport)
   // If we have a constant lookup table, then we still want the scalar bar
   // to appear with a rainbow color scheme.  We have to be careful not to
   // modify the existing LUT, or else display lists will be regenerated.
-  // So build a new one in that case.
+  // So build a new one in that case.  Make sure the colors are copied
+  // so that there is no difference in colors lf the bar between constant
+  // vars and non-constant vars.
   //
   vtkLookupTable *useMe = LookupTable;
   vtkLookupTable *tmp = vtkLookupTable::New();
   if ((tMax <= tMin) || ( ((tMax-tMin) < 1e-7) && (tMax > 1e-4)))
     {
     tMax = tMin+1.;
+    tmp->DeepCopy(useMe);
     tmp->SetRange(tMin, tMax);
-    tmp->SetHueRange(LookupTable->GetHueRange());
-    tmp->Build();
     useMe = tmp;
     }
   for (i=0; i<numColors; i++)

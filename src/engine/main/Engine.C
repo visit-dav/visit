@@ -49,6 +49,10 @@ using std::string;
 // Static data
 Engine *Engine::instance = NULL;
 
+// Static method
+static void WriteByteStreamToSocket(NonBlockingRPC *, Connection *,
+                                    avtDataObjectString &);
+
 #if defined(_WIN32)
 // Get around a macro problem
 #define GetMessageA GetMessage
@@ -705,6 +709,85 @@ Engine::AlarmHandler(int signal)
 }
 
 // ****************************************************************************
+//  Method: WriteByteStreamToSocket
+//
+//  Purpose:
+//      Writes a byte stream to a socket.
+//
+//  Programmer: Hank Childs
+//  Creation:   March 19, 2004
+//
+// ****************************************************************************
+
+static void
+WriteByteStreamToSocket(NonBlockingRPC *rpc, Connection *vtkConnection,
+                        avtDataObjectString &do_str)
+{
+    int totalSize = do_str.GetTotalLength();
+    rpc->SendReply(totalSize);
+    int writeData = visitTimer->StartTimer();
+    int nStrings = do_str.GetNStrings();
+    debug5 << "sending " << totalSize << " bytes to the viewer " << nStrings
+           << " from strings." << endl;
+
+    const int buff_size = 4096;
+    unsigned char buffer[buff_size];
+    int buff_cur = 0;
+    int strings_written = 0;
+    for (int i = 0 ; i < nStrings ; i++)
+    {
+        int size;
+        char *str;
+        do_str.GetString(i, str, size);
+
+        if ((buff_cur + size) < buff_size)
+        {
+            // Put this message into the buffer.
+            memcpy(buffer + buff_cur, str, size*sizeof(char));
+            buff_cur += size;
+        }
+        else
+        {
+            // We can't put this message into "buffer", because
+            // that would exceed buffer's size.  Write "buffer"
+            // first, or else we would be sending messages out of
+            // order.
+            vtkConnection->DirectWrite(buffer, long(buff_cur));
+            strings_written++;
+
+            buff_cur = 0;
+            if (size > buff_size)
+            {
+                // It's big. Just write this string directly.
+                vtkConnection->DirectWrite((const unsigned char *)str,
+                                           long(size));
+                strings_written++;
+            }
+            else
+            {
+                memcpy(buffer + buff_cur, str, size*sizeof(char));
+                buff_cur += size;
+            }
+        }
+        
+        // We have no more strings, so just write what we have.
+        if ((i == (nStrings-1)) && (buff_cur > 0))
+        {
+            vtkConnection->DirectWrite(buffer, long(buff_cur));
+            strings_written++;
+            buff_cur = 0;
+        }
+    }
+
+    debug5 << "Number of actual direct writes = " << strings_written << endl;
+
+    char info[124];
+    SNPRINTF(info, 124, "Writing %d bytes to socket", totalSize);     
+    visitTimer->StopTimer(writeData, info);
+}
+
+
+// ****************************************************************************
 // Function: WriteData
 //
 // Purpose:
@@ -811,6 +894,9 @@ Engine::AlarmHandler(int signal)
 //    Fix mis-spelling of cumulative (the function we were calling changed
 //    names).
 //
+//    Hank Childs, Fri Mar 19 21:20:12 PST 2004
+//    Use a helper routine (that's more efficient) to write to a socket.
+//
 // ****************************************************************************
 void
 Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer)
@@ -898,26 +984,7 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer)
     
             visitTimer->StopTimer(serializeData, "Serializing data for writer");
 
-            int totalSize = do_str.GetTotalLength();
-            int nStrings = do_str.GetNStrings();
-            debug5 << "sending " << totalSize << " bytes in "
-                   << nStrings << " DirectWrites to viewer" << endl;
-            rpc->SendReply(totalSize);
-            int writeData = visitTimer->StartTimer();
-            if (PAR_UIProcess())
-            {
-                for (int i = 0 ; i < nStrings ; i++)
-                {
-                    int size;
-                    char *str;
-                    do_str.GetString(i, str, size);
-                    vtkConnection->DirectWrite((const unsigned char *)str,
-                                               long(size));
-                }
-            }
-            char info[124];
-            SNPRINTF(info, 124, "Writing %d bytes to socket", totalSize);     
-            visitTimer->StopTimer(writeData, info);
+            WriteByteStreamToSocket(rpc, vtkConnection, do_str);
         }
         else
         {
@@ -969,18 +1036,7 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer)
                         "Transferring Data Set",
                         rpc->GetMaxStageNum());
 
-        int wholeSize = do_str.GetTotalLength();
-        int nStrings = do_str.GetNStrings();
-        debug5 << "sending " << wholeSize << " bytes in " << nStrings 
-               << " DirectWrites to viewer" << endl;
-        rpc->SendReply(wholeSize);
-        for (int i = 0 ; i < nStrings ; i++)
-        {
-            char *str;
-            int   size;
-            do_str.GetString(i, str, size);
-            vtkConnection->DirectWrite((const unsigned char *)str, long(size));
-        }
+        WriteByteStreamToSocket(rpc, vtkConnection, do_str);
     }
     else
     {

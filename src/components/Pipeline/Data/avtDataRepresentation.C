@@ -26,6 +26,12 @@ using std::string;
 
 
 //
+// Static members
+//
+bool          avtDataRepresentation::initializedNullDataset = false;
+vtkDataSet   *avtDataRepresentation::nullDataset = NULL;
+
+//
 // Function Prototypes
 //
 
@@ -83,22 +89,21 @@ avtDataRepresentation::avtDataRepresentation()
 //    Hank Childs, Thu Sep 27 16:43:27 PDT 2001
 //    Initialized datasetType.
 //
+//    Hank Childs, Wed Mar 17 19:21:22 PST 2004
+//    Make use of the null dataset to make sure we don't blow memory in SR-mode
+//
 // ****************************************************************************
 
 avtDataRepresentation::avtDataRepresentation(vtkDataSet *d, int dom, string s,
                                              bool dontCopyData)
 {
+    InitializeNullDataset();
+
     if (dontCopyData)
     {
-       // build the points object (not a vtkDataSet object)
-       vtkPoints           *dummyPoints = vtkPoints::New();
-       vtkUnstructuredGrid *dummyGrid   = vtkUnstructuredGrid::New();
-       dummyPoints->SetNumberOfPoints(0);
-       dummyGrid->SetPoints(dummyPoints);
-       asVTK = dummyGrid;
+       asVTK = nullDataset;
+       datasetType = DATASET_TYPE_NULL;
        asVTK->Register(NULL);
-       dummyPoints->Delete();
-       dummyGrid->Delete();
     }
     else
     {
@@ -398,36 +403,49 @@ avtDataRepresentation::GetNumberOfCells(int topoDim, bool polysOnly) const
 //    Hank Childs, Thu Sep 27 16:43:27 PDT 2001
 //    Added return value for dataset type.
 //
+//    Hank Childs, Wed Mar 17 19:21:22 PST 2004
+//    Make use of the null dataset to make sure we don't blow memory in SR-mode
+//
 // ****************************************************************************
 
 unsigned char *
 avtDataRepresentation::GetDataString(int &length, DataSetType &dst)
 {
+    InitializeNullDataset();
+
     if (asChar == NULL)
     {
         if (asVTK == NULL)
         {
             EXCEPTION0(NoInputException);
         }
-
-        dst = DatasetTypeForVTK(asVTK);
-        datasetType = dst;
-         
-        vtkDataSetWriter *writer = vtkDataSetWriter::New();
-        writer->SetInput(asVTK);
-        writer->SetWriteToOutputString(1);
-        writer->SetFileTypeToBinary();
-        writer->Write();
-        asCharLength = writer->GetOutputStringLength();
-        asChar = (unsigned char *) writer->RegisterAndGetOutputString();
-        originalString = (char *)asChar;
-        writer->Delete();
+        else if (asVTK == nullDataset)
+        {
+            dst = DATASET_TYPE_NULL;
+            asCharLength = 0;
+            asChar = NULL;
+        }
+        else
+        {
+            dst = DatasetTypeForVTK(asVTK);
+            datasetType = dst;
+             
+            vtkDataSetWriter *writer = vtkDataSetWriter::New();
+            writer->SetInput(asVTK);
+            writer->SetWriteToOutputString(1);
+            writer->SetFileTypeToBinary();
+            writer->Write();
+            asCharLength = writer->GetOutputStringLength();
+            asChar = (unsigned char *) writer->RegisterAndGetOutputString();
+            originalString = (char *)asChar;
+            writer->Delete();
+        }
     }
     else
     {
         dst = datasetType;
     }
-
+    
     length = asCharLength;
     return asChar;
 }
@@ -456,94 +474,144 @@ avtDataRepresentation::GetDataString(int &length, DataSetType &dst)
 //    Make use of new VTK method that avoids making an unnecessary copy of the
 //    data.
 //
+//    Hank Childs, Wed Mar 17 19:21:22 PST 2004
+//    Make use of the null dataset to make sure we don't blow memory in SR-mode
+//
 // ****************************************************************************
 
 vtkDataSet *
 avtDataRepresentation::GetDataVTK(void)
 {
+    InitializeNullDataset();
+
     if (asVTK == NULL)
     {
         if (asChar == NULL)
         {
             EXCEPTION0(NoInputException);
         }
-
-        vtkDataReader *reader = NULL;
-        vtkDataSetReader *dsreader = NULL;
-        bool readerIsAFrontEnd = false;
-
-        switch (datasetType)
+        else if (datasetType == DATASET_TYPE_NULL)
         {
-          case DATASET_TYPE_RECTILINEAR:
-          {
-            vtkRectilinearGridReader *r1 = vtkRectilinearGridReader::New();
-            reader = r1;
-            asVTK = r1->GetOutput();
-            readerIsAFrontEnd = false;
-            break;
-          }
-          case DATASET_TYPE_CURVILINEAR:
-          {
-            vtkStructuredGridReader *r1 = vtkStructuredGridReader::New();
-            reader = r1;
-            asVTK = r1->GetOutput();
-            readerIsAFrontEnd = false;
-            break;
-          }
-          case DATASET_TYPE_UNSTRUCTURED:
-          {
-            vtkUnstructuredGridReader *r1 = vtkUnstructuredGridReader::New();
-            reader = r1;
-            asVTK = r1->GetOutput();
-            readerIsAFrontEnd = false;
-            break;
-          }
-          case DATASET_TYPE_POLYDATA:
-          {
-            vtkPolyDataReader *r1 = vtkPolyDataReader::New();
-            reader = r1;
-            asVTK = r1->GetOutput();
-            readerIsAFrontEnd = false;
-            break;
-          }
-          default:
-          {
-            debug1 << "Entered the VTK DATASET READER case. "
-                   << "This should not happen." << endl;
-            dsreader = vtkDataSetReader::New();
-            reader = dsreader;
-            readerIsAFrontEnd = true;
-            break;
-          }
-        }
-        vtkCharArray *charArray = vtkCharArray::New();
-        int iOwnIt = 1;  // 1 means we own it -- you don't delete it.
-        charArray->SetArray((char *) asChar, asCharLength, iOwnIt);
-        reader->SetReadFromInputString(1);
-        reader->SetInputArray(charArray);
-
-        if (readerIsAFrontEnd)
-        {
-            //
-            // Readers that are a front end to other readers automatically
-            // do an Update when you get their output.  That is why we are
-            // waiting to get their output here (->after we set the string
-            // input).
-            //
-            asVTK = dsreader->GetOutput();
+            asVTK = nullDataset;
+            asVTK->Register(NULL);
         }
         else
         {
-            asVTK->Update();
-        }
+            vtkDataReader *reader = NULL;
+            vtkDataSetReader *dsreader = NULL;
+            bool readerIsAFrontEnd = false;
 
-        asVTK->Register(NULL);
-        asVTK->SetSource(NULL);
-        reader->Delete();
-        charArray->Delete();
+            switch (datasetType)
+            {
+              case DATASET_TYPE_RECTILINEAR:
+              {
+                vtkRectilinearGridReader *r1 = vtkRectilinearGridReader::New();
+                reader = r1;
+                asVTK = r1->GetOutput();
+                readerIsAFrontEnd = false;
+                break;
+              }
+              case DATASET_TYPE_CURVILINEAR:
+              {
+                vtkStructuredGridReader *r1 = vtkStructuredGridReader::New();
+                reader = r1;
+                asVTK = r1->GetOutput();
+                readerIsAFrontEnd = false;
+                break;
+              }
+              case DATASET_TYPE_UNSTRUCTURED:
+              {
+                vtkUnstructuredGridReader *r1 = 
+                                              vtkUnstructuredGridReader::New();
+                reader = r1;
+                asVTK = r1->GetOutput();
+                readerIsAFrontEnd = false;
+                break;
+              }
+              case DATASET_TYPE_POLYDATA:
+              {
+                vtkPolyDataReader *r1 = vtkPolyDataReader::New();
+                reader = r1;
+                asVTK = r1->GetOutput();
+                readerIsAFrontEnd = false;
+                break;
+              }
+              default:
+              {
+                debug1 << "Entered the VTK DATASET READER case. "
+                       << "This should not happen." << endl;
+                dsreader = vtkDataSetReader::New();
+                reader = dsreader;
+                readerIsAFrontEnd = true;
+                break;
+              }
+            }
+            vtkCharArray *charArray = vtkCharArray::New();
+            int iOwnIt = 1;  // 1 means we own it -- you don't delete it.
+            charArray->SetArray((char *) asChar, asCharLength, iOwnIt);
+            reader->SetReadFromInputString(1);
+            reader->SetInputArray(charArray);
+
+            if (readerIsAFrontEnd)
+            {
+                //
+                // Readers that are a front end to other readers automatically
+                // do an Update when you get their output.  That is why we are
+                // waiting to get their output here (->after we set the string
+                // input).
+                //
+                asVTK = dsreader->GetOutput();
+            }
+            else
+            {
+                asVTK->Update();
+            }
+
+            asVTK->Register(NULL);
+            asVTK->SetSource(NULL);
+            reader->Delete();
+            charArray->Delete();
+        }
     }
 
     return asVTK;
+}
+
+
+// ****************************************************************************
+//  Method: avtDataRepresentation::InitializeNullDataset
+//
+//  Purpose:
+//      The null dataset is used to represent that the contents of a tree
+//      are not present (because we are in scalable rendering mode).  Prior
+//      to using the null dataset (which is a singleton), each node of a tree
+//      got its own, personal null dataset.  In cases where there were 10,000
+//      domains, this was a large memory hit.  For this reason, all of the
+//      nodes now share this single null dataset.  The null dataset is a
+//      static to the avt data representation class.  It is important that
+//      any method that might reference the null dataset call this routine
+//      first.
+//
+//  Programmer: Hank Childs
+//  Creation:   March 17, 2004
+//
+// ****************************************************************************
+
+void
+avtDataRepresentation::InitializeNullDataset(void)
+{
+    if (initializedNullDataset)
+        return;
+
+    // build the points object (not a vtkDataSet object)
+    vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
+    vtkPoints           *dummyPoints = vtkPoints::New();
+    dummyPoints->SetNumberOfPoints(0);
+    ugrid->SetPoints(dummyPoints);
+    dummyPoints->Delete();
+
+    nullDataset = ugrid;
+    initializedNullDataset = true;
 }
 
 
@@ -561,11 +629,21 @@ avtDataRepresentation::GetDataVTK(void)
 //  Programmer: Hank Childs
 //  Creation:   September 27, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Wed Mar 17 19:51:05 PST 2004
+//    Account for the null dataset.
+//
 // ****************************************************************************
 
 DataSetType
-DatasetTypeForVTK(vtkDataSet *ds)
+avtDataRepresentation::DatasetTypeForVTK(vtkDataSet *ds)
 {
+    InitializeNullDataset();
+
+    if (ds == nullDataset)
+        return DATASET_TYPE_NULL;
+
     DataSetType rv = DATASET_TYPE_UNKNOWN;
 
     int vtktype = ds->GetDataObjectType();
