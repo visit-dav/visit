@@ -190,6 +190,9 @@ class avtDatabaseMetaData;
 //
 //    Mark C. Miller, Tue Oct 19 20:18:22 PDT 2004
 //    Added arg for last color table name to change to SetWinAnnotAtts
+//
+//    Mark C. Miller, Mon Dec 13 17:25:55 PST 2004
+//    Removed InRender, Begin/EndEngineRender
 // ****************************************************************************
 
 class VIEWER_API ViewerEngineManager : public ViewerServerManager,
@@ -225,7 +228,6 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
     void InterruptEngine(const EngineKey &ek);
     bool InExecute() const;
     void SendKeepAlives();
-    bool InRender() const;
 
     bool ExternalRender(const ExternalRenderRequestInfo& reqInfo,
                         bool& shouldTurnOfScalableRendering,
@@ -297,8 +299,6 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
     void LaunchMessage(const EngineKey &ek) const;
     void BeginEngineExecute();
     void EndEngineExecute();
-    void BeginEngineRender();
-    void EndEngineRender();
 
   private:
     typedef std::map<EngineKey, EngineInformation> EngineMap;
@@ -309,8 +309,6 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
     bool                       executing;
     int                        nEngines;
     EngineMap                  engines;
-
-    bool                       rendering;
 
     std::map<EngineKey,stringVector>  restartArguments;
 

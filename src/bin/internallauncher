@@ -47,6 +47,10 @@ $0 = shift @ARGV;
 #    IBM.  It keys off the OBJECT_MODE environment variable which is
 #    standard on AIX, apparently, for their entire build toolchain.
 #
+#    Jeremy Meredith, Mon Dec 13 13:36:23 PST 2004
+#    Made it look for makemovie.py in its actual location instead of
+#    assuming it was an executable.
+#
 ###############################################################################
 
 
@@ -649,8 +653,9 @@ if ($ver eq "")
 
     $archdir = $defaultarch;
 
-    $visitarchdir = "$visitdir";
-    $visitbindir  = "$visitdir/exe";
+    $visitarchdir   = "$visitdir";
+    $visitbindir    = "$visitdir/exe";
+    $visitscriptdir = "$visitdir/bin";
     if($os eq "darwin" and ($exe_name eq "gui" or $exe_name eq "viewer" or $exe_name eq "xmledit" or $exe_name eq "silex"))
     {
         $visitbindir = "$visitbindir/$exe_name.app/Contents/MacOS";
@@ -688,8 +693,9 @@ else # We're running a public version.
         exit 1;
     }
 
-    $visitarchdir = "$visitdir/$archdir";
-    $visitbindir  = "$visitdir/$archdir/bin";
+    $visitarchdir   = "$visitdir/$archdir";
+    $visitbindir    = "$visitdir/$archdir/bin";
+    $visitscriptdir = "$visitdir/$archdir/bin";
     if($os eq "darwin" and ($exe_name eq "gui" or $exe_name eq "viewer" or $exe_name eq "xmledit" or $exe_name eq "silex"))
     {
         $visitbindir = "$visitbindir/$exe_name.app/Contents/MacOS";
@@ -724,7 +730,7 @@ EOF
 # Add the movie script to the arguments.
 if($add_movie_args)
 {
-    push @visitargs, "-s", "$visitbindir/makemovie.py", "-nowin";
+    push @visitargs, "-s", "$visitscriptdir/makemovie.py", "-nowin";
 }
 
 

@@ -7269,6 +7269,36 @@ ViewerWindow::ShouldSendScalableRenderingModeChangeMessage(bool *newMode) const
 }
 
 // ****************************************************************************
+// Method: ViewerWindow::ClearExternalRenderRequest
+//
+// Purpose: 
+//    Clears stuff from an external render info object 
+//
+// Programmer: Mark C. Miller 
+// Creation:   Monday, December 13, 2004
+//
+// ****************************************************************************
+
+void
+ViewerWindow::ClearExternalRenderRequestInfo(ExternalRenderRequestInfo& info) const
+{
+    info.pluginIDsList.clear();
+    info.engineKeysList.clear();
+    info.plotIdsList.clear();
+    info.attsList.clear();
+    info.annotObjs.ClearAnnotationObjects();
+    info.extStr =
+        avtExtentType_ToString(AVT_UNKNOWN_EXTENT_TYPE);
+    info.visCues.ClearVisualCueInfos();
+    int i;
+    for (i = 0; i < 7; i++)
+        info.frameAndState[i] = 0;
+    for (i = 0; i < 6; i++)
+        info.viewExtents[i] = (i%2 ? 1.0 : 0.0);
+    info.lastChangedCtName = "";
+}
+
+// ****************************************************************************
 // Method: ViewerWindow::ClearLastExternalRenderRequest
 //
 // Purpose: 
@@ -7292,25 +7322,14 @@ ViewerWindow::ShouldSendScalableRenderingModeChangeMessage(bool *newMode) const
 //
 //    Mark C. Miller, Tue Oct 19 20:18:22 PDT 2004
 //    Added code to manage name of last color table to change
+//
+//    Mark C. Miller, Mon Dec 13 14:06:33 PST 2004
+//    Moved implementation to ClearExternalRenderRequestInfo
 // ****************************************************************************
-
 void
 ViewerWindow::ClearLastExternalRenderRequestInfo()
 {
-    lastExternalRenderRequest.pluginIDsList.clear();
-    lastExternalRenderRequest.engineKeysList.clear();
-    lastExternalRenderRequest.plotIdsList.clear();
-    lastExternalRenderRequest.attsList.clear();
-    lastExternalRenderRequest.annotObjs.ClearAnnotationObjects();
-    lastExternalRenderRequest.extStr =
-        avtExtentType_ToString(AVT_UNKNOWN_EXTENT_TYPE);
-    lastExternalRenderRequest.visCues.ClearVisualCueInfos();
-    int i;
-    for (i = 0; i < 7; i++)
-        lastExternalRenderRequest.frameAndState[i] = 0;
-    for (i = 0; i < 6; i++)
-        lastExternalRenderRequest.viewExtents[i] = (i%2 ? 1.0 : 0.0);
-    lastExternalRenderRequest.lastChangedCtName = "";
+    ClearExternalRenderRequestInfo(lastExternalRenderRequest);
 }
 
 // ****************************************************************************
@@ -7571,6 +7590,8 @@ void
 ViewerWindow::GetExternalRenderRequestInfo(
     ExternalRenderRequestInfo &theRequest) const
 {
+    ClearExternalRenderRequestInfo(theRequest);
+
     // get information about the plots, their hosts, ids, and attributes
     GetPlotList()->GetPlotAtts(theRequest.pluginIDsList,
                                theRequest.engineKeysList,
@@ -7820,6 +7841,7 @@ ViewerWindow::ExternalRenderAuto(avtDataObject_p& dob)
         {
             GetPlotList()->ClearActors();
             GetPlotList()->UpdateFrame();
+            GetExternalRenderRequestInfo(thisRequest);
         }
         trys++;
     }
