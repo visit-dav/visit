@@ -120,6 +120,10 @@ avtIsovolumeFilter::Equivalent(const AttributeGroup *a)
 //  Programmer: Jeremy Meredith
 //  Creation:   January 30, 2004
 //
+//  Modifications:
+//    Jeremy Meredith, Mon Feb  2 13:13:05 PST 2004
+//    Fixed memory leak.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -131,7 +135,7 @@ avtIsovolumeFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
     //
     // Get the scalar array we'll use for clipping; it must be nodal
     //
-    vtkDataSet *temporary = NULL;
+    vtkCellDataToPointData *cd2pd = NULL;
     if (in_ds->GetPointData()->GetScalars())
     {
         vtkDataArray *s = in_ds->GetPointData()->GetScalars();
@@ -147,17 +151,19 @@ avtIsovolumeFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
         temp_ds->CopyStructure(in_ds);
         temp_ds->GetCellData()->SetScalars(in_ds->GetCellData()->GetScalars());
 
-        vtkCellDataToPointData *cd2pd = vtkCellDataToPointData::New();
+        cd2pd = vtkCellDataToPointData::New();
         cd2pd->SetInput(temp_ds);
         cd2pd->Update();
-        temporary = cd2pd->GetOutput();
+
+        vtkDataSet *temporary = cd2pd->GetOutput();
 
         // Now tell the clipper about it....
         vtkDataArray *s = temporary->GetPointData()->GetScalars();
         clipper->SetClipScalars((float*)(s->GetVoidPointer(0)),
                                 atts.GetLbound(), atts.GetUbound());
 
-        // Wait until after the clipping is done to delete "temporary".
+        // Wait until after the clipping is done to delete 'cd2pd' (which
+        // will take 'temporary' with it)
         temp_ds->Delete();
     }
     else
@@ -209,10 +215,10 @@ avtIsovolumeFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
         out_ds->Delete();
 
     //
-    // Free the temporary dataset used to convert to point data
+    // Free the temporary filter used to convert to point data
     //
-    if (temporary)
-        temporary->Delete();
+    if (cd2pd)
+        cd2pd->Delete();
 
     return out_ds;
 }
