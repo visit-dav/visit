@@ -173,6 +173,9 @@
     <Field name="elementIsGlobal" label="elementIsGlobal" type="bool" internal="true">
       false
     </Field>
+    <Field name="displayPickLetter" label="displayPickLetter" type="bool" internal="false">
+      true
+    </Field>
     <Function name="PrintSelf" user="true" member="true">
     </Function>
     <Function name="CreateOutputString" user="true" member="true">

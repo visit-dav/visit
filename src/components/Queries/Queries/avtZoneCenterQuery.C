@@ -69,6 +69,9 @@ avtZoneCenterQuery::~avtZoneCenterQuery()
 //    Moved code that actually finds zone center to FindLocalCenter and
 //    FindGlobalCenter. 
 //
+//    Kathleen Bonnell, Tue Dec 28 14:52:22 PST 2004 
+//    Add 'global' to output string as necessary. 
+//
 // ****************************************************************************
 
 void
@@ -117,15 +120,19 @@ avtZoneCenterQuery::PerformQuery(QueryAttributes *qA)
         int dim = GetInput()->GetInfo().GetAttributes().GetSpatialDimension();
         if (singleDomain)
         {
+            string global;
+            if (qA->GetUseGlobalId())
+                global = "global";
             if (dim == 2)
             {
-                SNPRINTF(msg, 120, "The center of zone %d is (%g, %g).", 
-                         qA->GetElement(), coord[0], coord[1]);
+                SNPRINTF(msg, 120, "The center of %s zone %d is (%g, %g).", 
+                         global.c_str(), qA->GetElement(), coord[0], coord[1]);
             }
             else 
             {
-                SNPRINTF(msg, 120, "The center of zone %d is (%g, %g, %g).", 
-                         qA->GetElement(), coord[0], coord[1], coord[2]);
+                SNPRINTF(msg, 120, "The center of %s zone %d is (%g, %g, %g).", 
+                         global.c_str(), qA->GetElement(), 
+                         coord[0], coord[1], coord[2]);
             }
         }
         else

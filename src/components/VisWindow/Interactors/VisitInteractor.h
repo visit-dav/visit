@@ -68,6 +68,13 @@ typedef   void (*ViewCallback)(VisWindow *);
 //    Eric Brugger, Mon Nov 22 08:30:11 PST 2004
 //    I added ZoomCamera2D.
 //
+//    Eric Brugger, Tue Dec 28 13:30:15 PST 2004
+//    I moved RotateCamera, PanCamera and ZoomCamera from the FlyThrough
+//    class as RotateAboutCamera3D, PanCamera3D and DollyCameraAndFocus3D.
+//    I moved RotateCamera, PanCamera and ZoomCamera from the Navigate3D
+//    class as RotateAboutFocus3D, PanImage3D and ZoomImage3D.  I added
+//    DollyCameraTowardFocus3D.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisitInteractor : public vtkInteractorStyleTrackballCamera
@@ -119,6 +126,8 @@ class VISWINDOW_API VisitInteractor : public vtkInteractorStyleTrackballCamera
     bool                        rightButtonDown;
 
     float                       OldX, OldY;
+    float                       spinOldX, spinOldY;
+    int                         spinNewX, spinNewY;
     float                       Center[2];
     float                       MotionFactor;
 
@@ -133,6 +142,14 @@ class VISWINDOW_API VisitInteractor : public vtkInteractorStyleTrackballCamera
     void                        EndBoundingBox(void);
 
     void                        ZoomCamera2D(const int, const int);
+    void                        PanImage3D(const int, const int);
+    void                        PanCamera3D(const int, const int);
+    void                        ZoomImage3D(const int, const int);
+    void                        DollyCameraTowardFocus3D(const int, const int);
+    void                        DollyCameraAndFocus3D(const int, const int);
+    void                        RotateAboutFocus3D(const int, const int,
+                                    const bool);
+    void                        RotateAboutCamera3D(const int, const int);
 
     inline void                 VectorSet(double *, const double, const double,
                                     const double) const;

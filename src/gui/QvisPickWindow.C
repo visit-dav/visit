@@ -138,7 +138,10 @@ QvisPickWindow::~QvisPickWindow()
 //   variables to the pick variables.
 //
 //   Kathleen Bonnell, Wed Dec 15 08:20:11 PST 2004 
-//   Added 'useGlobalIds' checkbox. 
+//   Added 'displayGlobalIds' checkbox. 
+//
+//   Kathleen Bonnell, Tue Dec 28 16:23:43 PST 2004 
+//   Added 'displayPickLetter' checkbox. 
 //
 // ****************************************************************************
 
@@ -160,7 +163,7 @@ QvisPickWindow::CreateWindowContents()
         tabWidget->addTab(pages[i]," "); 
     }
 
-    QGridLayout *gLayout = new QGridLayout(topLayout, 10, 4);
+    QGridLayout *gLayout = new QGridLayout(topLayout, 11, 4);
     varsButton = new QvisVariableButton(true, false, true, -1,
         central, "varsButton");
     varsButton->setText("Variables");
@@ -206,12 +209,18 @@ QvisPickWindow::CreateWindowContents()
             this, SLOT(displayGlobalIdsToggled(bool)));
     gLayout->addMultiCellWidget(displayGlobalIds, 4, 4, 0, 1);
 
+    displayPickLetter = new QCheckBox("Display reference pick letter.", central, 
+                                  "displayPickLetter");
+    connect(displayPickLetter, SIGNAL(toggled(bool)),
+            this, SLOT(displayPickLetterToggled(bool)));
+    gLayout->addMultiCellWidget(displayPickLetter, 5, 5, 0, 1);
+
 
     // Node settings
     QGroupBox *nodeGroupBox = new QGroupBox(central, "nodeGroupBox");
     nodeGroupBox->setTitle("Display for Nodes:");
     nodeGroupBox->setMargin(10);
-    gLayout->addMultiCellWidget(nodeGroupBox, 5, 5, 0, 3);
+    gLayout->addMultiCellWidget(nodeGroupBox, 6, 6, 0, 3);
     QGridLayout *nLayout = new QGridLayout(nodeGroupBox, 3, 4);
     nLayout->setMargin(10);
     nLayout->setSpacing(10);
@@ -238,7 +247,7 @@ QvisPickWindow::CreateWindowContents()
     QGroupBox *zoneGroupBox = new QGroupBox(central, "zoneGroupBox");
     zoneGroupBox->setTitle("Display for Zones:");
     zoneGroupBox->setMargin(10);
-    gLayout->addMultiCellWidget(zoneGroupBox, 6, 6, 0, 3);
+    gLayout->addMultiCellWidget(zoneGroupBox, 7, 7, 0, 3);
     QGridLayout *zLayout = new QGridLayout(zoneGroupBox, 3, 4);
     zLayout->setMargin(10);
     zLayout->setSpacing(10);
@@ -262,19 +271,19 @@ QvisPickWindow::CreateWindowContents()
                                      "autoShowCheckBox");
     connect(autoShowCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(autoShowToggled(bool)));
-    gLayout->addMultiCellWidget(autoShowCheckBox, 7, 7, 0, 3);
+    gLayout->addMultiCellWidget(autoShowCheckBox, 8, 8, 0, 3);
 
     savePicksCheckBox = new QCheckBox("Don't clear this window", central,
                                      "savePicksCheckBox");
     connect(savePicksCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(savePicksToggled(bool)));
-    gLayout->addMultiCellWidget(savePicksCheckBox, 8, 8, 0, 3);
+    gLayout->addMultiCellWidget(savePicksCheckBox, 9, 9, 0, 3);
 
     timeCurveCheckBox = new QCheckBox("Create time curve with next pick.", central,
                                      "timeCurveCheckBox");
     connect(timeCurveCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(timeCurveToggled(bool)));
-    gLayout->addMultiCellWidget(timeCurveCheckBox, 9, 9, 0, 3);
+    gLayout->addMultiCellWidget(timeCurveCheckBox, 10, 10, 0, 3);
 }
 
 // ****************************************************************************
@@ -322,7 +331,10 @@ QvisPickWindow::CreateWindowContents()
 //   Added conciseOutput, showMeshName and showTimestep checkboxes. 
 //
 //   Kathleen Bonnell, Wed Dec 15 08:20:11 PST 2004 
-//   Added 'useGlobalIds'. 
+//   Added 'displayGlobalIds'. 
+//
+//   Kathleen Bonnell, Tue Dec 28 16:23:43 PST 2004 
+//   Added 'displayPickLetter'. 
 //
 // ****************************************************************************
 
@@ -478,7 +490,13 @@ QvisPickWindow::UpdateWindow(bool doAll)
         displayGlobalIds->blockSignals(true);
         displayGlobalIds->setChecked(pickAtts->GetDisplayGlobalIds());
         displayGlobalIds->blockSignals(false);
- 
+    }
+    // displayPickLetter
+    if (pickAtts->IsSelected(53) || doAll)
+    {
+        displayPickLetter->blockSignals(true);
+        displayPickLetter->setChecked(pickAtts->GetDisplayPickLetter());
+        displayPickLetter->blockSignals(false);
    }
 }
 
@@ -710,11 +728,16 @@ QvisPickWindow::SetFromNode(DataNode *parentNode, const int *borders)
 //   Kathleen Bonnell, Tue Jul  1 09:21:57 PDT 2003 
 //   Added call to viewer->SetPickAttributes.
 //
+//   Kathleen Bonnell, Tue Dec 28 16:17:23 PST 2004 
+//   Set pickAtts fulfilled flag to  false so that obervers won't think
+//   that a pick has been performed and the results should be displayed.
+//
 // ****************************************************************************
 
 void
 QvisPickWindow::Apply(bool ignore)
 {
+    pickAtts->SetFulfilled(false);
     if(AutoUpdate() || ignore)
     {
         // Get the current pick attributes and tell the other
@@ -1196,6 +1219,28 @@ void
 QvisPickWindow::displayGlobalIdsToggled(bool val)
 {
     pickAtts->SetDisplayGlobalIds(val);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisPickWindow::displayPickLetterToggled
+//
+// Purpose:
+//   This is a Qt slot function that sets the flag indicating whether
+//   or not the pick letter should be displayed. 
+//
+// Arguments:
+//   val : The state of the toggle button.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   December 15, 2004 
+//
+// ****************************************************************************
+ 
+void
+QvisPickWindow::displayPickLetterToggled(bool val)
+{
+    pickAtts->SetDisplayPickLetter(val);
     Apply();
 }
 

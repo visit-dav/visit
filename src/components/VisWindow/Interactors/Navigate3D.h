@@ -46,6 +46,10 @@ class VisWindowInteractorProxy;
 //    Eric Brugger, Tue Feb 10 09:08:06 PST 2004
 //    Removed the quaternion methods since they are in the matrix class.
 //
+//    Eric Brugger, Tue Dec 28 16:31:22 PST 2004
+//    Moved RotateCamera, PanCamera and ZoomCamera to the VisitInterator
+//    class as RotateAboutFocus3D, PanImage3D and ZoomImage3D.
+//
 // ****************************************************************************
 
 class VISWINDOW_API Navigate3D : public VisitInteractor
@@ -63,16 +67,9 @@ class VISWINDOW_API Navigate3D : public VisitInteractor
   protected:
     bool                ctrlOrShiftPushed;
     bool                shouldSpin;
-    float               spinOldX, spinOldY;
-    int                 spinNewX, spinNewY;
 
     void                EnableSpinMode(void);
     void                DisableSpinMode(void);
-
-  private:
-    void                RotateCamera(const int x, const int y);
-    void                PanCamera(const int x, const int y);
-    void                ZoomCamera(const int x, const int y);
 };
 
 #endif

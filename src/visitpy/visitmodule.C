@@ -7782,6 +7782,9 @@ visit_WriteConfigFile(PyObject *self, PyObject *args)
 //   Kathleen Bonnell, Tue Aug 24 15:31:56 PDT 2004 
 //   Changed arg1 default to 0 (is used to specify 'original' data). 
 //
+//   Kathleen Bonnell, Tue Dec 28 16:23:43 PST 2004 
+//   Support 'Global' in query name, to designate use of global id. 
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -7804,6 +7807,17 @@ visit_Query(PyObject *self, PyObject *args)
         PyErr_Clear();
     }
 
+    // Check for global flag. 
+    std::string qname(queryName);
+    bool doGlobal = false;
+    if (strncasecmp(queryName, "Global ", 7) == 0)
+    {
+        std::string::size_type pos1 = 0;
+        pos1 = qname.find_first_of(' ', pos1);
+        qname = qname.substr(pos1+1);
+        doGlobal = true;
+    }
+
     // Check the tuple argument.
     stringVector vars;
     GetStringVectorFromPyObject(tuple, vars);
@@ -7822,7 +7836,7 @@ visit_Query(PyObject *self, PyObject *args)
     }
 
     MUTEX_LOCK();
-        viewer->DatabaseQuery(queryName, vars, false, arg1, arg2);
+        viewer->DatabaseQuery(qname.c_str(), vars, false, arg1, arg2, doGlobal);
         if(logging)
         {
             fprintf(logFile, "Query(%s, (", queryName);

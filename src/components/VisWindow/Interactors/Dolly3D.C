@@ -1,8 +1,8 @@
 // ************************************************************************* //
-//                                Navigate3D.C                               //
+//                                 Dolly3D.C                                 //
 // ************************************************************************* //
 
-#include <Navigate3D.h>
+#include <Dolly3D.h>
 
 #include <avtVector.h>
 #include <avtMatrix.h>
@@ -14,57 +14,34 @@
 
 
 // ****************************************************************************
-//  Method: Navigate3D constructor
+//  Method: Dolly3D constructor
 //
-//  Programmer: Hank Childs
-//  Creation:   May 19, 2000
-//
-//  Modifications:
-//    Hank Childs, Wed May 29 10:35:19 PDT 2002
-//    Initialized shouldSpin.
+//  Programmer: Eric Brugger
+//  Creation:   December 27, 2004
 //
 // ****************************************************************************
 
-Navigate3D::Navigate3D(VisWindowInteractorProxy &v) : VisitInteractor(v)
+Dolly3D::Dolly3D(VisWindowInteractorProxy &v) : VisitInteractor(v)
 {
     ctrlOrShiftPushed = false;
     shouldSpin = false;
 }
 
 // ****************************************************************************
-//  Method: Navigate3D::OnTimer
+//  Method: Dolly3D::OnTimer
 //
 //  Purpose:
-//    Handles the timer event.  For Navigate3D, this means the user has
+//    Handles the timer event.  For Dolly, this means the user has
 //    pressed a mouse key and that it is time to sample the mouse position
 //    to see if the view should be panned, zoomed or rotated.
 //
 //  Programmer: Eric Brugger
-//  Creation:   August 10, 2001
-//
-//  Modifications:
-//    Hank Childs, Wed May 29 10:35:19 PDT 2002
-//    Added support for 'spin' mode.
-//
-//    Hank Childs, Wed May 29 14:15:51 PDT 2002
-//    If spin mode was set to be false while we are mid-spin, then honor that
-//    and stop spinning.
-//
-//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002 
-//    Retrieve the LastPosition from the renderWindowInteractor.  It is no
-//    longer a member of the parent class. 
-//
-//    Brad Whitlock, Wed Sep 10 16:05:08 PST 2003
-//    I added support for temporarily suspending spin mode.
-//
-//    Eric Brugger, Tue Dec 28 16:33:02 PST 2004
-//    I moved RotateCamera, PanCamera and ZoomCamera to the VisitInteractor
-//    class as RotateAboutFocus3D, PanImage3D and ZoomImage3D.
+//  Creation:   December 27, 2004
 //
 // ****************************************************************************
 
 void
-Navigate3D::OnTimer(void)
+Dolly3D::OnTimer(void)
 {
     vtkRenderWindowInteractor *rwi = Interactor;
 
@@ -75,19 +52,19 @@ Navigate3D::OnTimer(void)
     switch (State)
     {
       case VTKIS_ROTATE:
-        RotateAboutFocus3D(LastPos[0], LastPos[1], false);
+        RotateAboutFocus3D(LastPos[0], LastPos[1], true);
 
         rwi->CreateTimer(VTKI_TIMER_UPDATE);
         break;
 
       case VTKIS_PAN:
-        PanImage3D(LastPos[0], LastPos[1]);
+        PanCamera3D(LastPos[0], LastPos[1]);
 
         rwi->CreateTimer(VTKI_TIMER_UPDATE);
         break;
 
       case VTKIS_ZOOM:
-        ZoomImage3D(LastPos[0], LastPos[1]);
+        DollyCameraTowardFocus3D(LastPos[0], LastPos[1]);
 
         rwi->CreateTimer(VTKI_TIMER_UPDATE);
         break;
@@ -106,7 +83,7 @@ Navigate3D::OnTimer(void)
             {
                 OldX = spinOldX;
                 OldY = spinOldY;
-                RotateAboutFocus3D(spinNewX, spinNewY, false);
+                RotateAboutFocus3D(spinNewX, spinNewY, true);
                 rwi->CreateTimer(VTKI_TIMER_UPDATE);
             }
             else
@@ -125,34 +102,20 @@ Navigate3D::OnTimer(void)
 }
 
 // ****************************************************************************
-//  Method: Navigate3D::StartLeftButtonAction
+//  Method: Dolly3D::StartLeftButtonAction
 //
 //  Purpose:
-//    Handles the left button being pushed down.  For Navigate3D, this means
+//    Handles the left button being pushed down.  For Dolly, this means
 //    panning if the ctrl or shift is pushed, rotating otherwise.  Also,
 //    this should start bounding box mode.
 //
-//  Programmer: Hank Childs
-//  Creation:   May 19, 2000
-//
-//  Modifications:
-//    Hank Childs, Mon Mar 18 13:48:55 PST 2002
-//    Renamed from OnLeftButtonDown.
-//
-//    Hank Childs, Tue Mar 19 14:34:26 PST 2002
-//    Pushed code for starting bounding box into base class.
-//
-//    Hank Childs, Wed May 29 10:35:19 PDT 2002
-//    Added support for 'spin' mode.
-//
-//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002
-//    Removed arguments to match vtk's new interactor api, they are accessed
-//    directly through the Interactor now.  
+//  Programmer: Eric Brugger
+//  Creation:   December 27, 2004
 //
 // ****************************************************************************
 
 void
-Navigate3D::StartLeftButtonAction()
+Dolly3D::StartLeftButtonAction()
 {
     DisableSpinMode();
 
@@ -176,36 +139,20 @@ Navigate3D::StartLeftButtonAction()
 }
 
 // ****************************************************************************
-//  Method: Navigate3D::EndLeftButtonAction
+//  Method: Dolly3D::EndLeftButtonAction
 //
 //  Purpose:
-//    Handles the left button being released.  For Navigate3D, this means
+//    Handles the left button being released.  For Dolly, this means
 //    panning if the ctrl or shift button was held down while the left
 //    button was pushed, a rotation otherwise.
 //
-//  Programmer: Hank Childs
-//  Creation:   May 19, 2000
-//
-//  Modifications:
-//    Hank Childs, Mon Mar 18 13:48:55 PST 2002
-//    Renamed from OnLeftButtonUp.
-//
-//    Hank Childs, Tue Mar 19 14:34:26 PST 2002
-//    Pushed code for end bounding box into base class.
-//
-//    Hank Childs, Wed May 29 10:35:19 PDT 2002
-//    Added support for 'spin' mode.
-//
-//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002
-//    Removed arguments to match vtk's new interactor api. 
-//
-//    Eric Brugger, Thu Nov 20 15:24:48 PST 2003
-//    Added code to call the view callback.
+//  Programmer: Eric Brugger
+//  Creation:   December 27, 2004
 //
 // ****************************************************************************
 
 void
-Navigate3D::EndLeftButtonAction()
+Dolly3D::EndLeftButtonAction()
 {
     //
     // We must issue the proper end state for either pan or rotate depending
@@ -228,32 +175,19 @@ Navigate3D::EndLeftButtonAction()
 }
 
 // ****************************************************************************
-//  Method: Navigate3D::StartMiddleButtonAction
+//  Method: Dolly3D::StartMiddleButtonAction
 //
 //  Purpose:
-//    Handles the middle button being pushed down.  For Navigate3D, this 
+//    Handles the middle button being pushed down.  For Dolly, this 
 //    means zooming.
 //
-//  Programmer: Hank Childs
-//  Creation:   May 19, 2000
-//
-//  Modifications:
-//    Hank Childs, Mon Mar 18 13:48:55 PST 2002
-//    Renamed from OnMiddleButtonDown.
-//
-//    Hank Childs, Tue Mar 19 14:34:26 PST 2002
-//    Pushed code for starting bounding box into base class.
-//
-//    Hank Childs, Wed May 29 10:35:19 PDT 2002
-//    Added support for 'spin' mode.
-//
-//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002
-//    Removed arguments to match vtk's new interactor api.
+//  Programmer: Eric Brugger
+//  Creation:   December 27, 2004
 //
 // ****************************************************************************
 
 void
-Navigate3D::StartMiddleButtonAction()
+Dolly3D::StartMiddleButtonAction()
 {
     DisableSpinMode();
 
@@ -263,32 +197,19 @@ Navigate3D::StartMiddleButtonAction()
 }
 
 // ****************************************************************************
-//  Method: Navigate3D::EndMiddleButtonAction
+//  Method: Dolly3D::EndMiddleButtonAction
 //
 //  Purpose:
-//    Handles the middle button being released.  For Navigate3D, this means
+//    Handles the middle button being released.  For Dolly, this means
 //    ending a zoom.
 //
-//  Programmer: Hank Childs
-//  Creation:   May 19, 2000
-//
-//  Modifications:
-//    Hank Childs, Mon Mar 18 13:48:55 PST 2002
-//    Renamed from OnMiddleButtonUp.
-//
-//    Hank Childs, Tue Mar 19 14:34:26 PST 2002
-//    Pushed code for ending bounding box into base class.
-//
-//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002
-//    Removed arguments to match vtk's new interactor api.
-//
-//    Eric Brugger, Thu Nov 20 15:24:48 PST 2003
-//    Added code to call the view callback.
+//  Programmer: Eric Brugger
+//  Creation:   December 27, 2004
 //
 // ****************************************************************************
 
 void
-Navigate3D::EndMiddleButtonAction()
+Dolly3D::EndMiddleButtonAction()
 {
     EndZoom();
 
@@ -298,21 +219,19 @@ Navigate3D::EndMiddleButtonAction()
 }
 
 // ****************************************************************************
-//  Method: Navigate3D::EnableSpinMode
+//  Method: Dolly3D::EnableSpinMode
 //
 //  Purpose:
 //      Enables spin mode.  This will determine if spin mode is appropriate,
 //      and make the correct calls to start it, if so.
 //
-//  Programmer: Hank Childs
-//  Creation:   May 29, 2002
-//
-//  Modifications:
+//  Programmer: Eric Brugger
+//  Creation:   December 27, 2004
 //
 // ****************************************************************************
 
 void
-Navigate3D::EnableSpinMode(void)
+Dolly3D::EnableSpinMode(void)
 {
     VisWindow *vw = proxy;
     if (vw->GetSpinMode())
@@ -332,19 +251,19 @@ Navigate3D::EnableSpinMode(void)
 }
 
 // ****************************************************************************
-//  Method: Navigate3D::DisableSpinMode
+//  Method: Dolly3D::DisableSpinMode
 //
 //  Purpose:
 //      Disables spin mode if it is currently in action.  This may be called
 //      at any time, even if spin mode is not currently on or even enabled.
 //
-//  Programmer: Hank Childs
-//  Creation:   May 29, 2002
+//  Programmer: Eric Brugger
+//  Creation:   December 27, 2004
 //
 // ****************************************************************************
 
 void
-Navigate3D::DisableSpinMode(void)
+Dolly3D::DisableSpinMode(void)
 {
     if (shouldSpin)
     {

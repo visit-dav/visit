@@ -7543,6 +7543,9 @@ avtGenericDatabase::GetDomainName(const string &varName, const int ts,
 //    Added bool arg specifying whether the id is global or not, find
 //    local id if so.
 //
+//    Eric Brugger, Wed Dec 29 15:20:37 PST 2004
+//    I added a call to ActivateTimestep to handle changing time steps.
+//
 // ****************************************************************************
 
 bool
@@ -7550,6 +7553,8 @@ avtGenericDatabase::QueryCoords(const string &varName, const int dom,
        const int id, const int ts, float coord[3], const bool forZone,
        const bool useGlobalId)
 {
+    ActivateTimestep(ts);
+
     int currentid = id;
     if (useGlobalId)
     {

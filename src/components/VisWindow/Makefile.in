@@ -104,6 +104,9 @@
 #    Brad Whitlock, Tue Nov 2 11:33:30 PDT 2004
 #    I fixed some link issues on the Mac due to recent source changes.
 #
+#    Eric Brugger, Mon Dec 27 12:36:58 PST 2004
+#    Added Dolly3D.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -134,6 +137,7 @@ Colleagues_src= \
   Colleagues/avtText2DColleague.C \
   Colleagues/avtTimeSliderColleague.C
 Interactors_src= \
+  Interactors/Dolly3D.C \
   Interactors/FlyThrough.C \
   Interactors/Lineout2D.C \
   Interactors/Navigate2D.C \

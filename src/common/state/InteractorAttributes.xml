@@ -2,6 +2,7 @@
   <Attribute name="InteractorAttributes" purpose="This class contains attributes associated with the main window." persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h">
     <Enum name="NavigationMode">
       Trackball
+      Dolly
       Flythrough
     </Enum>
     <Field name="showGuidelines" label="showGuidelines" type="bool">

@@ -1909,6 +1909,9 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
 //   Save and restore the current pick type (certain types of pick may
 //   change it during execution). 
 //   
+//   Kathleen Bonnell, Tue Dec 28 14:36:44 PST 2004
+//   Allow pick letter to NOT be displayed. 
+//
 // ****************************************************************************
 
 void
@@ -1925,7 +1928,8 @@ ViewerQueryManager::Pick(PICK_POINT_INFO *ppi, const int dom, const int el)
         //
         // Add a pick point to the window
         //
-        if (pickAtts->GetPickPoint()[0] != FLT_MAX)
+        if (pickAtts->GetDisplayPickLetter() && 
+            pickAtts->GetPickPoint()[0] != FLT_MAX)
         {
             ViewerWindow *win = (ViewerWindow *)ppi->callbackData;
             win->ValidateQuery(pickAtts, NULL);
