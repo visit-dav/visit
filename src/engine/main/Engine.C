@@ -152,6 +152,22 @@ Engine::Initialize(int *argc, char **argv[])
 }
 
 // ****************************************************************************
+//  Method:  Engine::Finalize
+//
+//  Purpose:
+//      Do the finalization for the engine.
+//
+//  Programmer:  Hank Childs
+//  Creation:    June 1, 2004
+//
+// ****************************************************************************
+void
+Engine::Finalize(void)
+{
+    Init::Finalize();
+}
+
+// ****************************************************************************
 //  Method:  Engine::SetUpViewerInterface
 //
 //  Purpose:

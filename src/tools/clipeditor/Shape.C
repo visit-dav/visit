@@ -21,7 +21,7 @@
 #include "Font.h"
 #include "Transforms.h"
 
-#include "../../visit_vtk/vtkTriangulationTables.C"
+#include "../../visit_vtk/lightweight/vtkTriangulationTables.C"
 #include "DataSet.h"
 
 using std::vector;

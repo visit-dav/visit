@@ -21,7 +21,6 @@
 
 
 static void RemovePrependedDirs(const char *, char *); 
-static void Finalize(void);
 static char executableName[256];
 static char componentName[256];
 static ErrorFunction errorFunction = NULL;
@@ -127,6 +126,9 @@ NewHandler(void)
 //    Brad Whitlock, Wed Jun 18 11:15:22 PDT 2003
 //    I made it understand the -timing argument.
 //
+//    Hank Childs, Tue Jun  1 11:47:36 PDT 2004
+//    Removed atexit call, since that is buggy with gcc.
+//
 // ****************************************************************************
 
 void
@@ -229,9 +231,6 @@ Init::Initialize(int &argc, char *argv[], int r, int n, bool strip)
     wVersionRequested = MAKEWORD(2,2);
     WSAStartup(wVersionRequested, &wsaData);
 #endif
-
-    // Register a function to be called when the application quits.
-    atexit(Finalize);
 }
 
 // ****************************************************************************
@@ -343,7 +342,7 @@ Init::ComponentIssueError(const char *msg)
 
 
 // ****************************************************************************
-// Method: Finalize
+// Method: Init::Finalize
 //
 // Purpose: 
 //   Calls cleanup functions before the application exits.
@@ -355,10 +354,13 @@ Init::ComponentIssueError(const char *msg)
 //   Brad Whitlock, Wed Jun 18 11:14:50 PDT 2003
 //   Added code to dump timings.
 //
+//   Hank Childs, Tue Jun  1 11:47:36 PDT 2004
+//   Made the method be associated with the Init namespace.
+//
 // ****************************************************************************
 
-static void
-Finalize(void)
+void
+Init::Finalize(void)
 {
     // Dump timings.
     if(visitTimer)

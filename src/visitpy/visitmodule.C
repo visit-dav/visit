@@ -8366,18 +8366,21 @@ visit_GetQueryOverTimeAttributes(PyObject *self, PyObject *args)
 //   Kathleen Bonnell, Thu Apr  1 20:12:56 PST 2004
 //   New bool arg required by PointQuery. 
 //
+//   Kathleen Bonnell, Tue Jun  1 08:29:54 PDT 2004 
+//   Swapped order of dom/el in args list, and in call to PointQuery. 
+//
 // ****************************************************************************
 
 STATIC PyObject *
-visit_DomainPick(const char *type, int dom, int el, stringVector vars)
+visit_DomainPick(const char *type, int el, int dom, stringVector vars)
 {
     double pt[3] = {0., 0., 0};
 
     MUTEX_LOCK();
-        viewer->PointQuery(type, pt, vars, false, dom, el);
+        viewer->PointQuery(type, pt, vars, false, el, dom);
         if(logging)
         {
-            fprintf(logFile, "%s(%d, %d (", type, dom, el);
+            fprintf(logFile, "%s(%d, %d (", type, el, dom);
             for(int i = 0; i < vars.size(); ++i)
             {
                 fprintf(logFile, "\"%s\"", vars[i].c_str());
@@ -8408,6 +8411,9 @@ visit_DomainPick(const char *type, int dom, int el, stringVector vars)
 //   Brad Whitlock, Tue Mar 2 09:59:30 PDT 2004
 //   I made it use GetStringVectorFromPyObject. which is slightly more general.
 //
+//   Kathleen Bonnell, Tue Jun  1 08:29:54 PDT 2004 
+//   Swapped order of dom/zone in call to DomainPick. 
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -8432,7 +8438,7 @@ visit_PickByZone(PyObject *self, PyObject *args)
     GetStringVectorFromPyObject(tuple, vars);
 
     // Return the success value.
-    return visit_DomainPick(type, dom, zone, vars);
+    return visit_DomainPick(type, zone, dom, vars);
 }
 
 
@@ -8450,6 +8456,9 @@ visit_PickByZone(PyObject *self, PyObject *args)
 // Modifications:
 //   Brad Whitlock, Tue Mar 2 09:59:30 PDT 2004
 //   I made it use GetStringVectorFromPyObject. which is slightly more general.
+//
+//   Kathleen Bonnell, Tue Jun  1 08:29:54 PDT 2004 
+//   Swapped order of dom/node in call to DomainPick. 
 //
 // ****************************************************************************
 STATIC PyObject *
@@ -8474,7 +8483,7 @@ visit_PickByNode(PyObject *self, PyObject *args)
     GetStringVectorFromPyObject(tuple, vars);
 
     // Return the success value.
-    return visit_DomainPick(type, dom, node, vars);
+    return visit_DomainPick(type, node, dom, vars);
 }
 
 

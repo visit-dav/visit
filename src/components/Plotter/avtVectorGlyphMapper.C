@@ -263,6 +263,9 @@ avtVectorGlyphMapper::SetUpFilters(int nDoms)
 //    Hank Childs, Wed May  5 14:19:54 PDT 2004
 //    Added poly data normals.
 //
+//    Jeremy Meredith, Tue Jun  1 11:24:29 PDT 2004
+//    Only do the normals if in 3-space.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -287,9 +290,16 @@ avtVectorGlyphMapper::InsertFilters(vtkDataSet *ds, int dom)
     }
 
     glyphFilter[dom]->SetInput(ds);
-    normalsFilter[dom]->SetInput(glyphFilter[dom]->GetOutput());
 
-    return normalsFilter[dom]->GetOutput();
+    if (GetInput()->GetInfo().GetAttributes().GetSpatialDimension() == 3)
+    {
+        normalsFilter[dom]->SetInput(glyphFilter[dom]->GetOutput());
+        return normalsFilter[dom]->GetOutput();
+    }
+    else
+    {
+        return glyphFilter[dom]->GetOutput();
+    }
 }
 
 

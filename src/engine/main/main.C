@@ -196,6 +196,9 @@
 //    Moved most of the stuff in here into a new Engine.C class.  This main
 //    routine was re-written to take advantage of it.
 //
+//    Hank Childs, Tue Jun  1 13:58:57 PDT 2004
+//    Added call to Init::Finalize.
+//
 // ****************************************************************************
 
 int
@@ -227,12 +230,13 @@ main(int argc, char *argv[])
         debug1 << "The engine could not connect to the viewer." << endl;
     }
 
+    debug1 << "ENGINE exited." << endl;
+    engine->Finalize();
+
 #ifdef DEBUG_MEMORY_LEAKS
     delete engine;
     delete visitTimer;
 #endif
-
-    debug1 << "ENGINE exited." << endl;
 
 #ifdef PARALLEL
     PAR_Exit();

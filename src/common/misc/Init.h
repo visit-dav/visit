@@ -24,11 +24,15 @@ typedef void  (*ErrorFunction)(void *, const char *);
 //
 //  Modifications:
 //
+//    Hank Childs, Tue Jun  1 11:47:36 PDT 2004
+//    Added Finalize (should I have renamed this namespace?).
+//
 // ****************************************************************************
 
 namespace Init
 {
     MISC_API void Initialize(int &argc, char *argv[], int r=0, int n=1, bool strip=true);
+    MISC_API void Finalize();
     MISC_API void SetComponentName(const char *); 
     MISC_API const char * GetExecutableName(); 
     MISC_API const char * GetComponentName(); 

@@ -38,6 +38,9 @@
 //    Added setColorSpec(ManyColor) so that it will try to get a 24-bit
 //    visual for the GUI windows, even if 8-bit is the default.
 //
+//    Hank Childs, Tue Jun  1 14:07:05 PDT 2004
+//    Added call to finalize.
+//
 // ****************************************************************************
 
 int
@@ -73,5 +76,6 @@ main(int argc, char **argv)
     }
     ENDTRY
 
+    Init::Finalize();
     return retval;
 }

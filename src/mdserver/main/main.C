@@ -77,6 +77,9 @@ bool ProcessCommandLine(int argc, char *argv[]);
 //    Hank Childs, Thu Jan 22 17:46:08 PST 2004
 //    Use InitVTKNoGraphics instead of InitVTK to avoid VTK/GL dependencies.
 //
+//    Hank Childs, Tue Jun  1 13:49:48 PDT 2004
+//    Add call to finalize.
+//
 // ****************************************************************************
 
 int
@@ -119,8 +122,8 @@ main(int argc, char *argv[])
     }
     ENDTRY
 
-    visitTimer->DumpTimings();
     debug1 << "MDSERVER exited." << endl;
+    Init::Finalize();
     return retval;
 }
 

@@ -60,6 +60,9 @@ class Xfer;
 //    Added args to WriteData method to support checking if SR threshold is
 //    exceeded
 //
+//    Hank Childs, Tue Jun  1 14:02:44 PDT 2004
+//    Added Finalize method.
+//
 // ****************************************************************************
 
 class Engine
@@ -70,6 +73,7 @@ class Engine
 
     // Initialization routines
     void            Initialize(int *argc, char **argv[]);
+    void            Finalize(void);
     bool            ConnectViewer(int *argc, char **argv[]);
     void            SetUpViewerInterface(int *argc, char **argv[]);
 
