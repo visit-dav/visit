@@ -1552,6 +1552,10 @@ avtSILRestriction::GetSubsets(int ind, vector<int> &outsets) const
 //    Added code to test top-set names and return false if we think the SILs
 //    are for totally different meshes
 //
+//    Mark C. Miller, Fri Dec  3 00:32:57 PST 2004
+//    Fixed bug where loop variable, i, was being used to GetSILSet
+//    instead of leaves[i] and otherLeaves[i]
+//
 // ****************************************************************************
 
 bool
@@ -1586,8 +1590,8 @@ avtSILRestriction::SetFromCompatibleRestriction(avtSILRestriction_p silr)
         for(i = 0; i < leaves.size(); ++i)
         {
             compatible = true;
-            avtSILSet_p set1 = GetSILSet(i);
-            avtSILSet_p set2 = silr->GetSILSet(i);
+            avtSILSet_p set1 = GetSILSet(leaves[i]);
+            avtSILSet_p set2 = silr->GetSILSet(otherLeaves[i]);
             if ((set1->GetName() != set2->GetName()) ||
                 (set1->GetIdentifier() != set2->GetIdentifier()))
             {
