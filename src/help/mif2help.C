@@ -215,6 +215,10 @@ HelpMLFile::Open(const char *filename)
 //   Brad Whitlock, Mon Jun 21 16:43:16 PST 2004
 //   Added debugging output (commented out).
 //
+//   Eric Brugger, Wed Jun 23 09:09:47 PDT 2004
+//   Modified the usages of strings to use the c_str method when adding its
+//   contents to an iostream.
+//
 // ****************************************************************************
 
 bool
@@ -227,8 +231,8 @@ HelpMLFile::AddPage(const string &topic, const string &doc,
 
     if(allowAdds)
     {
-//        cout << "Adding HTML page: " << topic << endl;
-//        cout << "\tdoc=" << doc << endl;
+//        cout << "Adding HTML page: " << topic.c_str() << endl;
+//        cout << "\tdoc=" << doc.c_str() << endl;
 //        cout << "\tpage.size()=" << page.size() << endl;
 //        cout << "\tindentLevel=" << indentLevel << endl;
 
@@ -237,8 +241,8 @@ HelpMLFile::AddPage(const string &topic, const string &doc,
     }
     else
     {
-//        cerr << "Not allowing addition of HTML page: " << topic << endl;
-//        cerr << "\tdoc=" << doc << endl;
+//        cerr << "Not allowing addition of HTML page: " << topic.c_str() << endl;
+//        cerr << "\tdoc=" << doc.c_str() << endl;
 //        cerr << "\tpage.size()=" << page.size() << endl;
 //        cerr << "\tindentLevel=" << indentLevel << endl;
     }
@@ -1058,6 +1062,10 @@ MIF_To_HTML::WriteHTMLString(const char *str)
 //   I totally changed how we add to paragraphs and I added support for
 //   subscript and tables.
 //
+//   Eric Brugger, Wed Jun 23 09:09:47 PDT 2004
+//   Modified the usages of strings to use the c_str method when adding its
+//   contents to an iostream.
+//
 // ****************************************************************************
 
 void
@@ -1139,7 +1147,7 @@ MIF_To_HTML::EndTag(int state, const string &token)
             }
 //                    else
 //                    {
-//                        cout << "<!-- PGFTAG = \"" << pFormat << "\" -->" << endl;
+//                        cout << "<!-- PGFTAG = \"" << pFormat.c_str() << "\" -->" << endl;
 //                    }
         }
     }
@@ -1174,7 +1182,7 @@ MIF_To_HTML::EndTag(int state, const string &token)
             paragraphString += "<b>";
         }
 //                else
-//                    cout << "<!-- FTAG = \"" << token << "\" -->" << endl;
+//                    cout << "<!-- FTAG = \"" << token.c_str() << "\" -->" << endl;
     }
     else if(state == READ_FANGLE)
     {
@@ -1252,11 +1260,11 @@ MIF_To_HTML::EndTag(int state, const string &token)
         if(index != -1)
         {
             // Add the contents of the table to the file.
-            //cout << "Adding table " << tables[index]->name << endl;
+            //cout << "Adding table " << tables[index]->name.c_str() << endl;
             appendTables.push_back(tables[index]);
         }
         else
-            cerr << "Could not find table id=" << token << endl;
+            cerr << "Could not find table id=" << token.c_str() << endl;
     }
     else if(state == READ_TEXTFLOW)
     {
