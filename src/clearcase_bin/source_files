@@ -59,6 +59,9 @@
 #   Jeremy Meredith, Tue Aug 24 21:29:45 PDT 2004
 #   Added the simulation prototype.
 #
+#   Jeremy Meredith, Fri Dec 10 13:30:38 PST 2004
+#   Added the new exe directory.
+#
 
 withhelp=no
 
@@ -106,6 +109,7 @@ PATH="$PATH:./clearcase_bin"
     ./clearcase_bin/mkman --quiet --recursive --simple ./data
     ./clearcase_bin/mkman --quiet --recursive --simple ./include
     ./clearcase_bin/mkman --quiet --recursive --simple ./bin
+    ./clearcase_bin/mkman --quiet --recursive --simple ./exe
     ./clearcase_bin/mkman --quiet             --simple ./lib
     if [ $withhelp = yes ]; then
         ./clearcase_bin/mkman --quiet         --simple ./help

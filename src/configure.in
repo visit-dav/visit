@@ -527,6 +527,13 @@ dnl
 dnl    Jeremy Meredith, Wed Nov 24 11:40:55 PST 2004
 dnl    Refactored the expression parser into two separate libraries.
 dnl
+dnl    Jeremy Meredith, Thu Nov 11 12:38:16 PST 2004
+dnl    Made host-specific site configs come before OS-type site configs.  
+dnl    This lets us do host-type flags conditioned on what kind of compiler
+dnl    we are using.  Added support for xlC on AIX.  Put back some
+dnl    commented-out code to support strangeness on shared libraries on AIX
+dnl    if we decide we want to use it again.  
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -584,18 +591,6 @@ AC_MSG_RESULT($VERSION)
 AC_DEFINE_UNQUOTED(SLASH_CHAR,'/')
 AC_DEFINE_UNQUOTED(SLASH_STRING,"/")
 
-# Load the OS configuration file if present.
-UNAME="`uname 2>/dev/null`"
-SHORT_UNAME=`uname -s | tr A-Z a-z | tr -d 0-9`
-AC_MSG_CHECKING(for OS configuration file)
-site_conf=config-site/$UNAME.conf
-if test -r $site_conf; then
-    AC_MSG_RESULT($site_conf)
-    . $site_conf
-else
-    AC_MSG_RESULT(none found)
-fi
-
 # Load the site configuration file if present.
 # Also check for hostnames where the first field is a node name.
 AC_MSG_CHECKING(for site configuration file)
@@ -636,6 +631,18 @@ if test "$user_conf" != "none"; then
    . $user_conf
 else
    AC_MSG_RESULT([none specified])
+fi
+
+# Load the OS configuration file if present.
+UNAME="`uname 2>/dev/null`"
+SHORT_UNAME=`uname -s | tr A-Z a-z | tr -d 0-9`
+AC_MSG_CHECKING(for OS configuration file)
+site_conf=config-site/$UNAME.conf
+if test -r $site_conf; then
+    AC_MSG_RESULT($site_conf)
+    . $site_conf
+else
+    AC_MSG_RESULT(none found)
 fi
 
 #
@@ -1006,7 +1013,7 @@ if test "$UseGUI" = "yes"; then
         VIEWEROBJ="$""(VOBJ)"
         # The private source can go into the executable on all UNIX versions
         # except for MacOS X.
-        if test "$SHORT_UNAME" = "darwin"; then
+        if test "$SHORT_UNAME" = "darwin" ; then
             VIEWERLIB_SRC="$""(PUBLIC_SRC) $""(PRIVATE_SRC) $""(SRCMOC)"
             VIEWEREXE_SRC="$""(MAINSRC)"
         else
@@ -2582,11 +2589,54 @@ case $SHORT_UNAME in
     ;;
 
   aix)
-    # AIX used to be the weird one.  However, it is mostly normal finally.
-    # It should be noted that for AIX to find .so's as libraries, it requires
-    # "-Wl,-brtl" in the LDFLAGS.  This is handled in the AIX.conf file.
-    if test -z "$SHLIB_CREATEPROG"; then
-        SHLIB_CREATEPROG="$""(CXX) -Wl,-G -shared -o"
+    if test "$CXX" = "g++"; then
+        # AIX used to be the weird one.  It is mostly normal finally,
+        # as long as you use g++.  It should be noted that for AIX to find
+        # .so's as libraries, it requires "-Wl,-brtl" in the LDFLAGS.
+        # This is handled in the AIX.conf file.
+        if test -z "$SHLIB_CREATEPROG"; then
+            SHLIB_CREATEPROG="$""(CXX) -Wl,-G -shared -o"
+        fi
+    else # assume $CXX = xlC
+	# -G and -brtl are understood by the linker.
+        if test -z "$SHLIB_CREATEPROG"; then
+            SHLIB_CREATEPROG="$""(CXX) -G -brtl -o"
+        fi
+
+	# Here's the code to use .a's filled with .so's and fully
+        # resolving all shared library symbols as we go, a la
+        # MacOSX.  If we can get this to work, it could possibly
+        # launch faster.
+
+        dnl         if test -z "$SHLIB_CREATEPROG"; then
+        dnl             SHLIB_CREATEPROG="$""(CXX) -qmkshrobj -o"
+        dnl         fi
+        dnl         if test -z "$SHLIB_SOEXT" ; then SHLIB_SOEXT="so"; fi
+        dnl         if test -z "$SHLIB_LIBEXT"; then SHLIB_LIBEXT="a"; fi
+
+        dnl         SHLIB_LIBS="$""(LIBS)"
+        dnl         SHLIB_SERLIBS="$""(SERLIBS)"
+        dnl         SHLIB_PARLIBS="$""(PARLIBS)"
+
+        dnl         SHLIB_ILIBS="$""(ILIBS)"
+        dnl         SHLIB_GLIBS="$""(GLIBS)"
+        dnl         SHLIB_SLIBS="$""(SLIBS)"
+        dnl         SHLIB_VLIBS="$""(VLIBS)"
+        dnl         SHLIB_MLIBS="$""(MLIBS)"
+        dnl         SHLIB_ESERLIBS="$""(ESERLIBS)"
+        dnl         SHLIB_EPARLIBS="$""(EPARLIBS)"
+
+        dnl         SHLIB_POSTPROCESS="ar rc $""@ $""(LIBSHAREDTEMP)"
+        dnl         SHLIB_POSTPROCESS_SER="ar rc $""@ $""(LIBSHAREDTEMPSER)"
+        dnl         SHLIB_POSTPROCESS_PAR="ar rc $""@ $""(LIBSHAREDTEMPPAR)"
+
+        dnl         SHLIB_POSTPROCESS_ILIBS="ar rc $""(TOPDIR)/plugins/$""(PLUGINDIR)/libI$""(PLUGINNAME).a $""(IDSO)"
+        dnl         SHLIB_POSTPROCESS_GLIBS="ar rc $""(TOPDIR)/plugins/$""(PLUGINDIR)/libG$""(PLUGINNAME).a $""(GDSO)"
+        dnl         SHLIB_POSTPROCESS_SLIBS="ar rc $""(TOPDIR)/plugins/$""(PLUGINDIR)/libS$""(PLUGINNAME).a $""(SDSO)"
+        dnl         SHLIB_POSTPROCESS_VLIBS="ar rc $""(TOPDIR)/plugins/$""(PLUGINDIR)/libV$""(PLUGINNAME).a $""(VDSO)"
+        dnl         SHLIB_POSTPROCESS_MLIBS="ar rc $""(TOPDIR)/plugins/$""(PLUGINDIR)/libM$""(PLUGINNAME).a $""(MDSO)"
+        dnl         SHLIB_POSTPROCESS_ESERLIBS="ar rc $""(TOPDIR)/plugins/$""(PLUGINDIR)/libE$""(PLUGINNAME)_ser.a $""(ESERDSO)"
+        dnl         SHLIB_POSTPROCESS_EPARLIBS="ar rc $""(TOPDIR)/plugins/$""(PLUGINDIR)/libE$""(PLUGINNAME)_par.a $""(EPARDSO)"
     fi
     ;;
 
@@ -2832,7 +2882,7 @@ dnl since Makefiles are invoked at various levels in the source tree.
 dnl
 
 AC_SUBST(tmpbin)
-tmpbin="$""(TOPDIR)/bin"
+tmpbin="$""(TOPDIR)/exe"
 AC_SUBST(tmpinc)
 tmpinc="$""(TOPDIR)/include"
 AC_SUBST(tmplib)
@@ -3017,8 +3067,8 @@ AC_OUTPUT($STANDARD_FILES
 #
 (cd include   && ${MAKE-make})
 (cd lib       && ${MAKE-make})
-rm -f $TOPDIR/bin/xml2makefile
-(cd tools/xml && ${MAKE-make} $TOPDIR/bin/xml2makefile)
+rm -f $TOPDIR/exe/xml2makefile
+(cd tools/xml && ${MAKE-make} $TOPDIR/exe/xml2makefile)
 
 # If we 're on a Darwin system, make bundles for the gui and the viewer.
 if test "$SHORT_UNAME" = "darwin";  then

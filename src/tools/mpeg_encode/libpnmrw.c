@@ -33,6 +33,9 @@
 
 /* if don't have string.h, try strings.h */
 #include <string.h>
+#ifdef rindex
+#undef rindex
+#endif
 #define rindex(s,c) strrchr(s,c)
 
 

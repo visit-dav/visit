@@ -120,6 +120,12 @@
 #   Mark C. Miller, Tue Sep 28 19:57:42 PDT 2004
 #   Added ViSUS
 #
+#   Jeremy Meredith, Fri Dec 10 13:39:08 PST 2004
+#   Tools are now run directly instead of as an argument to visit.
+# 
+#   Jeremy Meredith, Wed Nov 17 11:24:23 PST 2004
+#   Added TecPlot.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -137,7 +143,7 @@ PDB=KullLite PDB
 SAF=SAF
 SAMPLES=Rect Hex
 REQUIRED=ANALYZE BOV Curve2D Dune EnSight Image Lines OVERFLOW \
- PLOT2D PLOT3D Point3D STL Silo SimDB Spheral Vista VTK WavefrontOBJ
+ PLOT2D PLOT3D Point3D STL Silo SimDB Spheral TecPlot Vista VTK WavefrontOBJ
 VISUS=ViSUS
 
 OPTIONAL=
@@ -157,7 +163,7 @@ message:
 
 
 dirmakefiles:
-	for dir in $(ALLSUBDIRS); do if test -d $$dir; then (cd $$dir && $(tmpbin)/visit -xml2makefile -noprint -clobber $${dir}.xml) || exit 1; fi; done
+	for dir in $(ALLSUBDIRS); do if test -d $$dir; then (cd $$dir && ../../bin/xml2makefile -noprint -clobber $${dir}.xml) || exit 1; fi; done
 
 clean:
 	-$(RM) $(LIB)
