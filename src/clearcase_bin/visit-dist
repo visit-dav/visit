@@ -68,6 +68,9 @@ $0 = shift @ARGV;
 #     Eric Brugger, Thu Nov 20 08:23:40 PST 2003
 #     Pass along -withhelp option to source_files command.
 #
+#     Mark C. Miller, Thu Jun  3 10:12:39 PDT 2004
+#     Added '-f' flag to the recursive chmod
+#
 
 require "newgetopt.pl";
 
@@ -144,7 +147,7 @@ EOF
     exit(-5);
 }
 
-$status = system("chmod -R u+w $dist");
+$status = system("chmod -Rf u+w $dist");
 $status /= 256;
 if ($status != 0)
 {

@@ -874,6 +874,11 @@ ViewerQueryManager::GetQueryClientAtts()
 //    Made arg1 be Element and arg2 Domain, to be consistent with Pick'
 //    default ordering (domain can be left out, so should be second arg). 
 //  
+//    Kathleen Bonnell, Thu Jun  3 14:40:47 PDT 2004 
+//    Split verification of query info into SingleInput and MultipleInput,
+//    added calls to DoSpatialExtentsQuery, VerifySingleInputQuery,
+//    and VerifyMultipleInputQuery.
+//   
 // ****************************************************************************
 
 void         
@@ -903,222 +908,73 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
         Error(msg.c_str());
         return;
     }
-    ViewerFileServer *fs = ViewerFileServer::Instance();
+
     ViewerPlotList *olist = oWin->GetPlotList();
-    string host, dbname;
     intVector plotIds;
-    EngineKey engineKey;
-    stringVector uniqueVars; 
-    stringVector tmp = vars;
-    intVector varTypes;
-    //
-    // Note: This needs to be an intVector of states that correspond to
-    //       the uniqueVars.
-    //
-    int state = -1;
-
-    TRY
+    olist->GetActivePlotIDs(plotIds);
+    if (plotIds.size() == 0)
     {
-        // Get a list of the active plots.
-        olist->GetActivePlotIDs(plotIds);
-
-        //
-        // Make sure the number of active plots jives with the expected number
-        // of inputs for the query.
-        //
-        if (plotIds.size() != numInputs)
-        {
-            if (plotIds.size() == 0)
-            {
-                queryClientAtts->Notify();
-                string msg(qName);
-                msg += " requires an active non-hidden Plot.\n";
-                msg += "Please select a plot and try again.\n";
-                Error(msg.c_str());
-                return;
-            }
-            else if (numInputs == 1)
-            {
-                //
-                // We have a convention of just using the first active plot
-                // when there are multiple active plots selected for a single
-                // input query.  BY CONVENTION, THIS IS NOT AN ERROR.
-                //
-                int firstPlot = plotIds[0];
-                plotIds.clear();
-                plotIds.push_back(firstPlot);
-            }
-            else
-            {
-                queryClientAtts->Notify();
-                string msg(qName);
-                char num[32];
-                SNPRINTF(num, 32, "%d", numInputs);
-                msg += " requires exactly ";
-                msg += num;
-                msg += " plots to be selected, realized, and drawn.";
-                msg += "   Please select them and try again.\n";
-                Error(msg.c_str());
-                return;
-            }
-        }
-
-        //
-        // Determine the host, database, and list of variables that will be 
-        // used for the query.
-        //
-        // Note by Brad: I think this section of code right here will require
-        //               a rewrite to make sure that when we use a plot as
-        //               input, it takes the state of the plot into account
-        //               so we can query between more than 1 time state in
-        //               a database. Variables that are in unique var list
-        //               at this point should probably use the same plot state
-        //               as the first selected plot. If we're doing a query
-        //               that takes no plot inputs then we need to use the
-        //               state for the current time slider, etc.
-        //
-        //               The bottom line is that the variable used in the query
-        //               needs to have: (database, var, state) information to
-        //               really be considered unique. Without all of that
-        //               information, I don't see how the query can really
-        //               get the right answer.
-        //
-        for (int i = 0 ; i < plotIds.size() ; i++)
-        {
-            int plotId = plotIds[i];
-            ViewerPlot *oplot = olist->GetPlot(plotId);
-            if (i != 0 && engineKey != oplot->GetEngineKey())
-            {
-                queryClientAtts->Notify();
-                Error("Multiple input queries require all their inputs "
-                      "to be on the same host.\n");
-                return;
-            }
-            if(state != -1 && state != oplot->GetState())
-            {
-                queryClientAtts->Notify();
-                Error("For now, multiple input queries require all "
-                      "their inputs to have the same time state.\n");
-                return;
-            }
-            host = oplot->GetHostName();
-            engineKey = oplot->GetEngineKey();
-            dbname = oplot->GetDatabaseName();
-            state = oplot->GetState();
-            const string &activeVar = oplot->GetVariableName();
-            GetUniqueVars(tmp, activeVar, uniqueVars);
-            tmp = uniqueVars;
-        }
-
-        //
-        // If the state was not determined by the above code, then there
-        // were no plots as input to the query. In that case, use the
-        // state for the current time slider if its correlation uses
-        // the host + dbname. If it does not use the host + dbname then
-        // try the time slider for host + dbname. If that does not
-        // work then use zero.
-        //
-        if (state < 0)
-        {
-            if(olist->HasActiveTimeSlider())
-            {
-                DatabaseCorrelationList *cL = fs->GetDatabaseCorrelationList();
-                string tsName(olist->GetActiveTimeSlider());
-                string dbName(fs->ComposeDatabaseName(host, dbname));
-                DatabaseCorrelation *c = cL->FindCorrelation(tsName);
-                int nStates;
-                if(c != 0)
-                {
-                    // Get the state for the active time slider.
-                    olist->GetTimeSliderStates(tsName, state, nStates);
-
-                    // Does the correlation for the active time slider use
-                    // the query database?
-                    int cts = c->GetCorrelatedTimeState(dbName, state);
-                    if(cts >= 0)
-                        state = cts;
-                }
-
-                // If we didn't have a correlation that uses the query
-                // database, try using the time slider for the query
-                // database if there is one. If there is not one, then
-                // we'll use state 0.
-                if(state < 0)
-                    olist->GetTimeSliderStates(dbName, state, nStates);
-            }
-
-            state = (state < 0) ? 0 : state;
-        }
-
-        if (queryTypes->AllowedVarsForQuery(qName) > 0)
-        {
-            //
-            // Get the var type for the specified state. This code will have
-            // to be modified to potentially use a different state for each
-            // dbname/var pair.
-            //
-            for (int j = 0; j < uniqueVars.size(); j++)
-            {
-                varTypes.push_back((int)
-                    fs->DetermineVarType(host, dbname, uniqueVars[j], state));
-            }
- 
-            int badVarType =  VerifyQueryVariables(qName, varTypes); 
-            if (badVarType != -1)
-            {
-                queryClientAtts->Notify();
-                string msg = "Cannot perform a " + qName  + " query on variable  ";
-                msg += uniqueVars[badVarType] + ".\n";
-                Error(msg.c_str());
-                return;
-            }
-        }
-    
-        if (qName == "SpatialExtents") 
-        {
-            //
-            // NO NEED TO GO TO THE ENGINE FOR THIS INFORMATION, AS
-            // IT IS AVAILABLE FROM THE PLOT
-            //
-            int plotId = plotIds[0];
-            ViewerPlot *oplot = olist->GetPlot(plotId);
-            int dim = oplot->GetSpatialDimension();
-            double *ext;
-            string s;
-            if (arg1 == 0) // We want original extents
-            {
-                ext = oplot->GetSpatialExtents(AVT_ORIGINAL_EXTENTS);
-                s = CreateExtentsString(ext, dim, "original");
-            }
-            else
-            {
-                ext = oplot->GetSpatialExtents(AVT_ACTUAL_EXTENTS);
-                s = CreateExtentsString(ext, dim, "actual");
-            }
-
-            queryClientAtts->SetResultsMessage(s);
-            queryClientAtts->SetResultsValues(ext, dim);
-            delete [] ext;
-            queryClientAtts->Notify();
-            Message(s.c_str());
-            return; 
-        }
-    }
-    CATCH2(VisItException, e)
-    {
-        //
-        // Add as much information to the message as we can,
-        // including query name, exception type and exception
-        // message.
-        //
-        string msg = qName + ":  (" + e.GetExceptionType() + ")\n" + 
-            e.GetMessage() + "\nThis is probably an internal Query error," +
-            " please contact a VisIt developer.\n";
         queryClientAtts->Notify();
+        string msg(qName);
+        msg += " requires an active non-hidden Plot.\n";
+        msg += "Please select a plot and try again.\n";
         Error(msg.c_str());
-        CATCH_RETURN(0);
+        return ;
     }
-    ENDTRY
+    if (qName == "SpatialExtents") 
+    {
+        //
+        // NO NEED TO GO TO THE ENGINE FOR THIS INFORMATION, AS
+        // IT IS AVAILABLE FROM THE PLOT
+        //
+        DoSpatialExtentsQuery(olist->GetPlot(plotIds[0]), arg1);
+        return;
+    }
+
+
+    QueryAttributes qa;
+
+    qa.SetName(qName);
+    // Right now, use of Element and DataType are mutually
+    // exclusive, and we don't necessarily have to know thich one
+    // the query will use, so go ahead and use arg1 to set both atts.
+    if (arg1) 
+        qa.SetDataType(QueryAttributes::ActualData);
+    else      
+        qa.SetDataType(QueryAttributes::OriginalData); 
+    qa.SetElement(arg1);
+    qa.SetDomain(arg2);
+    if (qName == "Variable by Zone") 
+        qa.SetElementType(QueryAttributes::Zone);
+    else if (qName == "Variable by Node")
+        qa.SetElementType(QueryAttributes::Node);
+
+    if (numInputs == 1)
+    {
+        //
+        // We have a convention of just using the first active plot
+        // when there are multiple active plots selected for a single
+        // input query.  BY CONVENTION, THIS IS NOT AN ERROR.
+        //
+        int firstPlot = plotIds[0];
+        plotIds.clear();  
+        plotIds.push_back(firstPlot);
+        if (!VerifySingleInputQuery(olist, firstPlot, qName, vars, qa))
+            return;
+    }
+    else 
+    {
+        if (!VerifyMultipleInputQuery(olist, numInputs, qName, vars, qa))
+            return;
+    }
+
+
+    //
+    //  Single input queries need only one engineKey, multiple input
+    //  queries currently require all inputs to be on same host,
+    //  so go ahead and grab engineKey from first active plot.
+    //
+    EngineKey engineKey = olist->GetPlot(plotIds[0])->GetEngineKey();
 
     bool retry; 
     int numAttempts = 0;
@@ -1132,39 +988,12 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
             int plotId = plotIds[i];
             ViewerPlot *oplot = olist->GetPlot(plotId);
             networkIds.push_back(oplot->GetNetworkID());
-            //
-            // Use the state for the first plot. This seems a little odd to
-            // me that we could be querying databases, that could be at
-            // different states, with a single state. Querying will probably
-            // need to be extended to pass a vector of plot states to
-            // make the query work for multiple plots.
-            //
-            if(state == -1)
-                state = oplot->GetState();
+            if (qa.GetTimeStep() == -1)
+                qa.SetTimeStep(oplot->GetState());
         }
 
         TRY
         { 
-            QueryAttributes qa;
-            qa.SetName(qName);
-            qa.SetVariables(uniqueVars);
-            qa.SetVarTypes(varTypes);
-            // Right now, use of Element and DataType are mutually
-            // exclusive, and we don't necessarily have to know thich one
-            // the query will use, so go ahead and use arg1 to set both
-            // atts.
-            if (arg1) 
-                qa.SetDataType(QueryAttributes::ActualData);
-            else      
-                qa.SetDataType(QueryAttributes::OriginalData); 
-            qa.SetElement(arg1);
-            qa.SetDomain(arg2);
-            qa.SetTimeStep(state);
-            if (qName == "Variable by Zone") 
-                qa.SetElementType(QueryAttributes::Zone);
-            else if (qName == "Variable by Node")
-                qa.SetElementType(QueryAttributes::Node);
-
             if (doTimeQuery)
             {
                 DoTimeQuery(oWin, &qa);
@@ -3573,4 +3402,301 @@ ViewerQueryManager::PickThroughTime(PICK_POINT_INFO *ppi, const int dom,
 
         DoTimeQuery(origWin, &qatts);
     }
+}
+
+
+// ****************************************************************************
+//  Method: ViewerQueryManager::VerifySingleInputQuery
+//
+//  Purpose:
+//    Verify that all necessary information for a single-input query is
+//    available. 
+//
+//  Arguments:
+//    plist      The plot list containing plots to be queried.
+//    plotId     The plot Id of the plot to be queried. 
+//    qName      The name of the query. 
+//    vars       The variable names on which the query will operate. 
+//    qa         The (modifiable) query attributes controlling the query.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   June 3, 2004 
+//
+//  Modifications:
+//  
+// ****************************************************************************
+
+bool         
+ViewerQueryManager::VerifySingleInputQuery(ViewerPlotList *plist, const int plotId,
+                            const string &qName, const stringVector &vars, 
+                            QueryAttributes &qa) 
+{
+    ViewerFileServer *fs = ViewerFileServer::Instance();
+    string host, dbname;
+    EngineKey engineKey;
+    stringVector uniqueVars;
+    stringVector tmp = vars;
+    intVector varTypes;
+    int state = -1;
+
+    TRY
+    {
+        //
+        // Determine the host, database, and list of variables that will be 
+        // used for the query.
+        //
+        ViewerPlot *oplot = plist->GetPlot(plotId);
+        host = oplot->GetHostName();
+        engineKey = oplot->GetEngineKey();
+        dbname = oplot->GetDatabaseName();
+        state = oplot->GetState();
+        const string &activeVar = oplot->GetVariableName();
+        GetUniqueVars(tmp, activeVar, uniqueVars);
+        tmp = uniqueVars;
+
+        //
+        // If the state was not determined by the above code, then there
+        // were no plots as input to the query. In that case, use the
+        // state for the current time slider if its correlation uses
+        // the host + dbname. If it does not use the host + dbname then
+        // try the time slider for host + dbname. If that does not
+        // work then use zero.
+        //
+        if (state < 0)
+        {
+            if(plist->HasActiveTimeSlider())
+            {
+                DatabaseCorrelationList *cL = fs->GetDatabaseCorrelationList();
+                string tsName(plist->GetActiveTimeSlider());
+                string dbName(fs->ComposeDatabaseName(host, dbname));
+                DatabaseCorrelation *c = cL->FindCorrelation(tsName);
+                int nStates;
+                if(c != 0)
+                {
+                    // Get the state for the active time slider.
+                    plist->GetTimeSliderStates(tsName, state, nStates);
+
+                    // Does the correlation for the active time slider use
+                    // the query database?
+                    int cts = c->GetCorrelatedTimeState(dbName, state);
+                    if(cts >= 0)
+                        state = cts;
+                }
+
+                // If we didn't have a correlation that uses the query
+                // database, try using the time slider for the query
+                // database if there is one. If there is not one, then
+                // we'll use state 0.
+                if(state < 0)
+                    plist->GetTimeSliderStates(dbName, state, nStates);
+            }
+
+            state = (state < 0) ? 0 : state;
+        }
+
+        if (queryTypes->AllowedVarsForQuery(qName) > 0)
+        {
+            //
+            // Get the var type for the specified state. This code will have
+            // to be modified to potentially use a different state for each
+            // dbname/var pair.
+            //
+            for (int j = 0; j < uniqueVars.size(); j++)
+            {
+                varTypes.push_back((int)
+                    fs->DetermineVarType(host, dbname, uniqueVars[j], state));
+            }
+ 
+            int badVarType =  VerifyQueryVariables(qName, varTypes); 
+            if (badVarType != -1)
+            {
+                queryClientAtts->Notify();
+                string msg = "Cannot perform a " + qName  + " query on variable  ";
+                msg += uniqueVars[badVarType] + ".\n";
+                Error(msg.c_str());
+                return false;
+            }
+        }
+        qa.SetVariables(uniqueVars);
+        qa.SetVarTypes(varTypes);
+        qa.SetTimeStep(state);
+        return true;
+    }
+    CATCH2(VisItException, e)
+    {
+        //
+        // Add as much information to the message as we can,
+        // including query name, exception type and exception
+        // message.
+        //
+        string msg = qName + ":  (" + e.GetExceptionType() + ")\n" + 
+            e.GetMessage() + "\nThis is probably an internal Query error," +
+            " please contact a VisIt developer.\n";
+        queryClientAtts->Notify();
+        Error(msg.c_str());
+        CATCH_RETURN2(2, false);
+    }
+    ENDTRY
+}
+
+
+// ****************************************************************************
+//  Method: ViewerQueryManager::VerifyMultipleInputQuery
+//
+//  Purpose:
+//    Verify that all necessary information for a multiple-input query is
+//    available. 
+//
+//  Arguments:
+//    plist      The plot list containing plots to be queried.
+//    numInputs  The number of inputs for the query. 
+//    qName      The name of the query. 
+//    <unused>   The variable names on which the query will operate. 
+//    <unused>   The (modifiable) query attributes controlling the query.
+//
+//  Returns:    True if no error condition, false otherwise.
+//
+//  Notes:  In the future, as more multiple-input queries are created,
+//          this section of code may need to account for variables,
+//          variable types, and/or plot state.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   June 3, 2004 
+//
+//  Modifications:
+//  
+// ****************************************************************************
+
+
+bool         
+ViewerQueryManager::VerifyMultipleInputQuery(ViewerPlotList *plist, 
+                            const int numInputs, const string &qName, 
+                            const stringVector &, QueryAttributes &)
+{
+    intVector plotIds;
+    EngineKey engineKey;
+
+    TRY
+    {
+        // Get a list of the active plots.
+        plist->GetActivePlotIDs(plotIds);
+
+        //
+        // Make sure the number of active plots jives with the expected number
+        // of inputs for the query.
+        //
+        if (plotIds.size() != numInputs)
+        {
+            queryClientAtts->Notify();
+            string msg(qName);
+            char num[32];
+            SNPRINTF(num, 32, "%d", numInputs);
+            msg += " requires exactly ";
+            msg += num;
+            msg += " plots to be selected, realized, and drawn.";
+            msg += "   Please select them and try again.\n";
+            Error(msg.c_str());
+            return false;
+        }
+
+        //
+        // Determine if the engineKeys for all inputs match. 
+        //
+        for (int i = 0 ; i < plotIds.size() ; i++)
+        {
+            int plotId = plotIds[i];
+            ViewerPlot *oplot = plist->GetPlot(plotId);
+            if (i != 0 && engineKey != oplot->GetEngineKey())
+            {
+                queryClientAtts->Notify();
+                Error("Multiple input queries require all their inputs "
+                      "to be on the same host.\n");
+                return false;
+            }
+            engineKey = oplot->GetEngineKey();
+        }
+        //
+        //  In future, use the passed queryAtts object to set 
+        //  anything specific to mulitple-input queries: vars,
+        //  state, etc.
+        //
+        return true;
+    }
+    CATCH2(VisItException, e)
+    {
+        //
+        // Add as much information to the message as we can,
+        // including query name, exception type and exception
+        // message.
+        //
+        string msg = qName + ":  (" + e.GetExceptionType() + ")\n" + 
+            e.GetMessage() + "\nThis is probably an internal Query error," +
+            " please contact a VisIt developer.\n";
+        queryClientAtts->Notify();
+        Error(msg.c_str());
+        CATCH_RETURN2(2, false);
+    }
+    ENDTRY
+}
+
+
+// ****************************************************************************
+//  Method: ViewerQueryManager::DoSpatialExtentsQuery
+//
+//  Purpose:
+//    Perform a spatial extents query on the specified plot.
+//
+//  Arguments:
+//    oplot      The plot to be queried. 
+//    actualData The type of extents to retrieve.
+//
+//  Notes:  code moved from DatabaseQuery method.
+
+//  Programmer: Kathleen Bonnell
+//  Creation:   June 3, 2004 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+ViewerQueryManager::DoSpatialExtentsQuery(ViewerPlot *oplot, bool actualData)
+{
+    TRY
+    {
+        int dim = oplot->GetSpatialDimension();
+        double *ext;
+        string s;
+        if (!actualData)
+        {
+            ext = oplot->GetSpatialExtents(AVT_ORIGINAL_EXTENTS);
+            s = CreateExtentsString(ext, dim, "original");
+        }
+        else
+        {
+            ext = oplot->GetSpatialExtents(AVT_ACTUAL_EXTENTS);
+            s = CreateExtentsString(ext, dim, "actual");
+        }
+
+        queryClientAtts->SetResultsMessage(s);
+        queryClientAtts->SetResultsValues(ext, dim);
+        delete [] ext;
+        queryClientAtts->Notify();
+        Message(s.c_str());
+    }
+    CATCH2(VisItException, e)
+    {
+        //
+        // Add as much information to the message as we can,
+        // including query name, exception type and exception
+        // message.
+        //
+        string msg = "SpatialExtents:  (" + e.GetExceptionType() + ")\n" + 
+            e.GetMessage() + "\nThis is probably an internal Query error," +
+            " please contact a VisIt developer.\n";
+        queryClientAtts->Notify();
+        Error(msg.c_str());
+        CATCH_RETURN(0);
+    }
+    ENDTRY
 }
