@@ -175,6 +175,10 @@ NetworkManager::~NetworkManager(void)
 //    Added code to clear the vis window and the list of plots currently in
 //    the window.
 //
+//    Mark C. Miller, Mon Sep 13 18:30:26 PDT 2004
+//    Protected call to clear viswin and plotsCurrentlyInWindow with test
+//    for emptiness
+//
 // ****************************************************************************
 void
 NetworkManager::ClearAllNetworks(void)
@@ -201,8 +205,11 @@ NetworkManager::ClearAllNetworks(void)
         globalCellCounts[i] = -1;
     }
 
-    viswin->ClearPlots();
-    plotsCurrentlyInWindow.clear();
+    if (!plotsCurrentlyInWindow.empty())
+    {
+        viswin->ClearPlots();
+        plotsCurrentlyInWindow.clear();
+    }
 }
 
 // ****************************************************************************
@@ -224,6 +231,10 @@ NetworkManager::ClearAllNetworks(void)
 //    Mark C. Miller, Wed Sep  8 17:06:25 PDT 2004
 //    Added code to clear the vis window and the list of plots currently in
 //    the window for the first plot id it encounters in this db
+//
+//    Mark C. Miller, Mon Sep 13 18:30:26 PDT 2004
+//    Moved code to delete the networkCache entry to after the clearning
+//    of the viswin.
 // ****************************************************************************
 void
 NetworkManager::ClearNetworksWithDatabase(const std::string &db)
@@ -244,9 +255,6 @@ NetworkManager::ClearNetworksWithDatabase(const std::string &db)
             {
                 if (ndb->GetFilename() == db)
                 {
-                    delete networkCache[i];
-                    networkCache[i] = NULL;
-                    globalCellCounts[i] = -1;
                     for (j = 0 ; j < plotsCurrentlyInWindow.size() ; j++)
                     {
                         if (plotsCurrentlyInWindow[j] == i)
@@ -256,6 +264,9 @@ NetworkManager::ClearNetworksWithDatabase(const std::string &db)
                             break;
                         }
                     }
+                    delete networkCache[i];
+                    networkCache[i] = NULL;
+                    globalCellCounts[i] = -1;
                 }
             }
         }
