@@ -2305,6 +2305,10 @@ NetworkManager::StopPickMode(void)
 //    Kathleen Bonnell, Tue Nov  2 10:18:16 PST 2004 
 //    Enusure that GlyphPick is sending the correct domain to Pick query. 
 //
+//    Kathleen Bonnell, Thu Nov  4 15:18:15 PST 2004
+//    Allow the 'PickQuery' portion to be skipped completely if no
+//    intersection was found. 
+//
 // ****************************************************************************
 
 void
@@ -2452,30 +2456,38 @@ NetworkManager::Pick(const int id, PickAttributes *pa)
             {
                 pQ = new avtPickByZoneQuery;
             }
-            if (queryInputAtts.HasInvTransform() &&
-                queryInputAtts.GetCanUseInvTransform())
+            if (skipLocate || pa->GetLocationSuccessful())
             {
-                pQ->SetInvTransform(queryInputAtts.GetInvTransform());
-            }
-            if (queryInputAtts.HasTransform() &&
-                queryInputAtts.GetCanUseTransform())
-            {
-                pQ->SetTransform(queryInputAtts.GetTransform());
-            }
+                if (queryInputAtts.HasInvTransform() &&
+                    queryInputAtts.GetCanUseInvTransform())
+                {
+                    pQ->SetInvTransform(queryInputAtts.GetInvTransform());
+                }
+                if (queryInputAtts.HasTransform() &&
+                    queryInputAtts.GetCanUseTransform())
+                {
+                    pQ->SetTransform(queryInputAtts.GetTransform());
+                }
             
-            if (*silr != NULL)
-            {
-                pQ->SetSILRestriction(silr->MakeAttributes());
-            }
-            pQ->SetNeedTransform(queryInputVal.GetPointsWereTransformed());
+                if (*silr != NULL)
+                {
+                    pQ->SetSILRestriction(silr->MakeAttributes());
+                }
+                pQ->SetNeedTransform(queryInputVal.GetPointsWereTransformed());
 
-            pQ->SetInput(networkCache[id]->GetNetDB()->GetOutput());
-            pQ->SetPickAtts(pa);
-            pQ->SetSkippedLocate(skipLocate);
-            int queryTimer = visitTimer->StartTimer();
-            pQ->PerformQuery(&qa); 
-            visitTimer->StopTimer(queryTimer, pQ->GetType());
-            *pa = *(pQ->GetPickAtts());
+                pQ->SetInput(networkCache[id]->GetNetDB()->GetOutput());
+                pQ->SetPickAtts(pa);
+                pQ->SetSkippedLocate(skipLocate);
+                int queryTimer = visitTimer->StartTimer();
+                pQ->PerformQuery(&qa); 
+                visitTimer->StopTimer(queryTimer, pQ->GetType());
+                *pa = *(pQ->GetPickAtts());
+            }
+            else
+            {
+                pa->SetError(true);
+                pa->SetErrorMessage("Chosen pick did not intersect surface."); 
+            }
 
             delete pQ;
 

@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 #include <database_exports.h>
+#include <avtDataSelection.h>
 #include <avtSTSDFileFormat.h>
 #include <vtkImageData.h>
 
@@ -21,6 +22,11 @@
 // 
 //  Programmer: Chris Wojtan
 //  Creation:   Thu Jun 3 09:50:31 PDT 2004
+//
+//  Modifications:
+//    Mark C. Miller, Thu Nov  4 17:00:40 PST 2004
+//    Added support for data selections. Eliminated xdim/ydim data members
+//    since they are known from vtkImageData object
 //
 // ****************************************************************************
 
@@ -56,6 +62,10 @@ class avtImageFileFormat : public avtSTSDFileFormat
     virtual vtkDataArray  *GetVar(const char *);
     virtual vtkDataArray  *GetVectorVar(const char *);
 
+    virtual void           RegisterDataSelections(
+                               const std::vector<avtDataSelection_p> &selList,
+                               std::vector<bool> *selectionsApplied);
+
   protected:
     // DATA MEMBERS
     std::string                          fname;
@@ -63,11 +73,14 @@ class avtImageFileFormat : public avtSTSDFileFormat
     std::vector<std::string>             cellvarnames;
     std::vector<std::vector<float> >     pointvars;
     std::vector<std::string>             pointvarnames;
-    unsigned int                         xdim;
-    unsigned int                         ydim;
     vtkImageData                         *image;
+    std::vector<avtDataSelection_p>      selList;
+    std::vector<bool>                    *selsApplied;
     bool                                 readInImage;
     void                                 ReadInImage(void);
+    bool                                 ProcessDataSelections(
+                                             int *xmin, int *xmax,
+                                             int *ymin, int *ymax);
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *);
 };
 

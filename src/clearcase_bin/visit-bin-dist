@@ -181,6 +181,9 @@
 #    Some help files were not being copied so I added commands to make sure
 #    they get copied.
 #
+#    Jeremy Meredith, Tue Nov  2 09:51:52 PST 2004
+#    Added command to copy private Qt headers.
+#
 #------------------------------------------------------------------------------
 
 set DataFiles = "TRUE"
@@ -728,6 +731,7 @@ mkdir $incdir/vtk/MangleMesaInclude
 mkdir $incdir/vtk/Rendering
 mkdir $incdir/python
 mkdir $incdir/qt
+mkdir $incdir/qt/private
 
 cp $VisItDir/include/*.h                        $incdir
 cp $VisItDir/include/make*                      $incdir
@@ -764,6 +768,7 @@ cp $VisItDir/include/qt/[a-pr-zA-Z]*.h          $incdir/qt
 cp $VisItDir/include/qt/q[a-l]*.h               $incdir/qt
 cp $VisItDir/include/qt/q[m-zA-Z]*.h            $incdir/qt
 cp $VisItDir/clearcase_bin/QTLICENSE.*          $incdir/qt
+cp $VisItDir/include/qt/private/*.h             $incdir/qt/private
 
 #
 # Copy the help files to the distribution.

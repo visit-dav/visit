@@ -127,6 +127,9 @@ class avtTransparencyActor;
 //    Added 4 functions for suspending and resuming opaque and
 //    translucent geometry.
 //
+//    Kathleen Bonnell, Thu Nov  4 16:46:31 PST 2004 
+//    Added MakeAllPickable, MakeAllUnPickable. 
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinPlots : public VisWinColleague
@@ -191,6 +194,9 @@ class VISWINDOW_API VisWinPlots : public VisWinColleague
     void                          SuspendTranslucentGeometry(void);
     void                          ResumeOpaqueGeometry(void);
     void                          ResumeTranslucentGeometry(void);
+
+    void                          MakeAllPickable(void);
+    void                          MakeAllUnPickable(void);
 
   protected:
     std::vector< avtActor_p >     plots;
