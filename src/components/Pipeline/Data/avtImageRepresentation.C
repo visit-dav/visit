@@ -647,8 +647,6 @@ void avtImageRepresentation::GetImageFromString(unsigned char *str,
 //  Programmer: Mark C. Miller 
 //  Creation:   25Feb03 
 //
-//
-//
 // ****************************************************************************
 
 void
@@ -677,4 +675,28 @@ avtImageRepresentation::GetSize(int *_rowSize, int *_colSize)
     int *imageDims = asVTK->GetDimensions();
     *_rowSize = imageDims[1]; // #rows is y-size
     *_colSize = imageDims[0]; // #cols is x-size
+}
+
+// ****************************************************************************
+//  Method: GetNumberOfCells 
+//
+//  Purpose: Return the number of cells (pixels) in the image 
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   19Aug03 
+//
+// ****************************************************************************
+
+int
+avtImageRepresentation::GetNumberOfCells(void) const
+{
+    if (asVTK == NULL)
+    {
+        if (asChar == NULL)
+        {
+            EXCEPTION0(NoInputException);
+        }
+        return -1;
+   }
+   return asVTK->GetNumberOfCells();
 }

@@ -330,6 +330,30 @@ avtDataRepresentation::Valid(void)
     return (asVTK != NULL || asChar != NULL ? true : false);
 }
 
+// ****************************************************************************
+//  Method: avtDataRepresentation::GetNumberOfCells
+//
+//  Purpose:
+//     Count number of cells in this object 
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   19Aug03 
+//
+// ****************************************************************************
+
+int
+avtDataRepresentation::GetNumberOfCells(void) const
+{
+   if (asVTK == NULL)
+   {
+      if (asChar == NULL)
+         EXCEPTION0(NoInputException);
+      return -1;
+   }
+   else
+      return (int) asVTK->GetNumberOfCells();
+}
+
 
 // ****************************************************************************
 //  Method: avtDataRepresentation::GetDataString

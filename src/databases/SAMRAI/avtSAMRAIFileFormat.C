@@ -3,7 +3,7 @@
 //
 //  Purpose:  Sample database which reads multi-domain multi-timestep files
 //
-//  Programmer:  Jeremy Meredith, Walter Herrera-Jimenez
+//  Programmer:  Walter Herrera Jimenez
 //  Creation:    July 7, 2003
 //
 // ****************************************************************************
@@ -35,7 +35,7 @@ using std::vector;
 using std::string;
 
 static string GetDirName(const char *path);
-static string GetNameLevel(const char *name_level_str, unsigned int &level);
+static string GetNameLevel(const char *name_level_str, unsigned int &level, char link);
 
 
 // ****************************************************************************
@@ -44,7 +44,7 @@ static string GetNameLevel(const char *name_level_str, unsigned int &level);
 //  Arguments:
 //    fname      the file name of the root metadata file
 //
-//  Programmer:  Walter Herrera-Jimenez
+//  Programmer:  Walter Herrera Jimenez
 //  Creation:    July 07, 2003
 //
 // ****************************************************************************
@@ -60,7 +60,15 @@ avtSAMRAIFileFormat::avtSAMRAIFileFormat(const char *fname)
     patch_extents = NULL;
     var_extents = NULL;
     var_names = NULL;
+    var_num_components = NULL;
+    patch_map = NULL;
+    child_array = NULL;
+    child_pointer_array = NULL;
+    parent_array = NULL;
+    parent_pointer_array = NULL;
+
     num_patches = 0;
+
 
     dir_name = GetDirName(fname);
     file_name = fname;
@@ -85,7 +93,7 @@ avtSAMRAIFileFormat::avtSAMRAIFileFormat(const char *fname)
 // ****************************************************************************
 //  Destructor:  avtSAMRAIFileFormat::~avtSAMRAIFileFormat
 //
-//  Programmer:  Jeremy Meredith
+//  Programmer:  Walter Herrera Jimenez
 //  Creation:    June 19, 2003
 //
 // ****************************************************************************
@@ -120,6 +128,24 @@ avtSAMRAIFileFormat::~avtSAMRAIFileFormat()
     if (var_names != NULL) delete[] var_names;
     var_names = NULL;
 
+    if (var_num_components != NULL) delete[] var_num_components;
+    var_num_components = NULL;
+
+    if (patch_map != NULL) delete[] patch_map;
+    patch_map = NULL;
+
+    if (child_array != NULL) delete[] child_array;
+    child_array = NULL;
+
+    if (child_pointer_array != NULL) delete[] child_pointer_array;
+    child_pointer_array = NULL;
+
+    if (parent_array != NULL) delete[] parent_array;
+    parent_array = NULL;
+
+    if (parent_pointer_array != NULL) delete[] parent_pointer_array;
+    parent_pointer_array = NULL;
+
     if (cached_patches != NULL) {
         for (int p=0; p<num_patches; p++) {
             if (cached_patches[p] != NULL )
@@ -147,7 +173,7 @@ avtSAMRAIFileFormat::~avtSAMRAIFileFormat()
 //    dom        the domain number
 //    mesh       the name of the mesh to read
 //
-//  Programmer:  Jeremy Meredith
+//  Programmer:  Walter Herrera Jimenez
 //  Creation:    June 19, 2003
 //
 // ****************************************************************************
@@ -155,7 +181,7 @@ vtkDataSet *
 avtSAMRAIFileFormat::GetMesh(int patch, const char *level_name)
 {
     unsigned level;
-    string name = GetNameLevel(level_name, level);
+    string name = GetNameLevel(level_name, level, '_');
     if (level >= num_levels)
     {
         EXCEPTION1(InvalidVariableException, level_name);
@@ -191,7 +217,7 @@ avtSAMRAIFileFormat::GetMesh(int patch, const char *level_name)
 //    dom        the domain number
 //    mesh       the name of the mesh to read
 //
-//  Programmer:  Jeremy Meredith, Walter Herrera Jimenez
+//  Programmer:  Walter Herrera Jimenez
 //  Creation:    July 11, 2003
 //
 // ****************************************************************************
@@ -203,7 +229,7 @@ avtSAMRAIFileFormat::ReadMesh(int patch, const char *level_name)
     // so the mesh is only read once for all time steps
 
     unsigned level;
-    string name = GetNameLevel(level_name, level);
+    string name = GetNameLevel(level_name, level, '_');
     if (level >= num_levels)
         EXCEPTION1(InvalidVariableException, level_name);
  
@@ -222,7 +248,7 @@ avtSAMRAIFileFormat::ReadMesh(int patch, const char *level_name)
         spacing[i] = dx[level * num_dim_problem + i];
     }
 
-    if (is_rectilinear) {
+    if (grid_type == "RECTILINEAR") {
         vtkFloatArray  *coords[3];
         for (int i = 0 ; i < 3 ; i++)
           {
@@ -247,7 +273,7 @@ avtSAMRAIFileFormat::ReadMesh(int patch, const char *level_name)
     
         return rGrid;
     }
-    else {
+    else if (grid_type == "ALE") {
         char var_name[100];
         sprintf(var_name, "Coords_%05d", level);
         vtkDataArray * array = GetVectorVar(patch, var_name);
@@ -268,7 +294,11 @@ avtSAMRAIFileFormat::ReadMesh(int patch, const char *level_name)
         array->Delete();
         return sGrid;
     }
+    else {
+        EXCEPTION1(InvalidVariableException, level_name);
+    }
 }
+
 
 // ****************************************************************************
 //  Method:  avtSAMRAIFileFormat::GetVar
@@ -293,7 +323,7 @@ vtkDataArray *
 avtSAMRAIFileFormat::GetVar(int patch, const char *visit_var_name)
 {
     unsigned int level;
-    string var_name = GetNameLevel(visit_var_name, level);    
+    string var_name = GetNameLevel(visit_var_name, level, '_');    
 
     if (level >= num_levels)
         EXCEPTION1(InvalidVariableException, visit_var_name);
@@ -314,8 +344,18 @@ avtSAMRAIFileFormat::GetVar(int patch, const char *visit_var_name)
     if (num_components != 1 )
         EXCEPTION1(InvalidVariableException, visit_var_name);
 
-    int extent = cell_centered == 1 ? 1 : 2;
     unsigned int offset = GetPatchOffset(level, patch);
+
+    for (int v = 0; v < num_vars; v++) {
+        if (var_names[v] == var_name) {
+            if (!var_extents[v][offset].data_is_defined) {
+                return NULL;
+            }
+            break;
+        }
+    }
+
+    int extent = cell_centered == 1 ? 1 : 2;
     int dim = num_dim_problem < 3 ? num_dim_problem: 3;
     int num_data_samples = 1;
     for (int i=0; i<dim; i++) {
@@ -328,7 +368,7 @@ avtSAMRAIFileFormat::GetVar(int patch, const char *visit_var_name)
             dir_name.c_str(), patch_map[offset].file_cluster_number);
 
     char variable[100];
-    sprintf(variable, "/processor.%05d/level.%05d/patch.%05d/%s.00",
+    sprintf(variable, "/processor.%05d/level.%05d/patch.%05d/%s",
             patch_map[offset].processor_number, level, patch, 
             var_name.c_str());
 
@@ -377,14 +417,13 @@ avtSAMRAIFileFormat::GetVectorVar(int patch,
                                   const char *visit_var_name)
 {
     unsigned int level;
-    string var_name = GetNameLevel(visit_var_name, level);    
+    string var_name = GetNameLevel(visit_var_name, level, '_');    
 
     if (level >= num_levels)
         EXCEPTION1(InvalidVariableException, visit_var_name);
 
     if (patch < 0 || patch >= num_patches_level[level])
         EXCEPTION1(InvalidVariableException, visit_var_name);
-
 
     std::map<std::string, var_t>::const_iterator cur_var;
     cur_var = var_names_num_components.find(var_name);
@@ -405,6 +444,18 @@ avtSAMRAIFileFormat::GetVectorVar(int patch,
                             patch_extents[offset].lower[i] + extent;
     }
 
+    char variable[100];
+    sprintf(variable, "%s.00", var_name.c_str());
+
+    for (int v = 0; v < num_vars; v++) {
+        if (var_names[v] == variable) {
+            if (!var_extents[v][offset].data_is_defined) {
+                return NULL;
+            }
+            break;
+        }
+    }
+
     char file[2048];   
     sprintf(file, "%sprocessor_cluster.%05d.samrai",
             dir_name.c_str(), patch_map[offset].file_cluster_number);
@@ -421,10 +472,15 @@ avtSAMRAIFileFormat::GetVectorVar(int patch,
         vectors->SetComponent(j, 2, 0);
     }
 
+
+//      vtkFloatArray *vectors = vtkFloatArray::New();
+//      vectors->SetNumberOfComponents(num_components);
+//      vectors->SetNumberOfTuples(num_data_samples);
+
+
     float *var_data = new float[num_data_samples];
 
     for (int i = 0 ; i < num_components ; i++) {
-        char variable[100];
         sprintf(variable, "/processor.%05d/level.%05d/patch.%05d/%s.%02d",
                 patch_map[offset].processor_number, level, patch, 
                 var_name.c_str(), i);
@@ -441,7 +497,6 @@ avtSAMRAIFileFormat::GetVectorVar(int patch,
             vectors->SetComponent(j, i, var_data[j]);
         }
     }
-
 
     delete[] var_data;
     H5Fclose(h5f_file);
@@ -471,7 +526,7 @@ avtSAMRAIFileFormat::GetAuxiliaryData(const char *var, int domain,
     void *rv = NULL;
     avtIntervalTree *itree = NULL;
 
-    name = GetNameLevel(var, level);    
+    name = GetNameLevel(var, level, '_');    
     if (level >= num_levels)
         EXCEPTION1(InvalidVariableException, var);
 
@@ -487,23 +542,30 @@ avtSAMRAIFileFormat::GetAuxiliaryData(const char *var, int domain,
         if (num_components == 1 ) {
           
             itree = new avtIntervalTree(num_patches_level[level], 1);
-            for (int patch = 0 ; patch < num_patches_level[level] ; patch++) {
-                char variable[100];
-                sprintf(variable, "%s.00", name.c_str());
+            for (int v = 0; v < num_vars; v++) {
+                if (var_names[v] == name) {
 
-                for (int v = 0; v < num_vars; v++) {
-                    if (var_names[v] == variable) {
-                        float range[2] = { var_extents[v]->min, 
-                                           var_extents[v]->max };
-                        itree->AddDomain(patch, range);
-                        break;
+                    for (int patch = 0 ; patch < num_patches_level[level] ; patch++) {
+                        unsigned offset = GetPatchOffset(level, patch);
+
+                        if (var_extents[v][offset].data_is_defined) {
+                            float range[2] = { var_extents[v][offset].min, 
+                                               var_extents[v][offset].max };
+                            itree->AddDomain(patch, range);
+                        }
+                        else {
+                           // if the varible does no have values, what will we add?
+                        }
                     }
+                    break;
                 }
             }
-        } else {
 
+        } else {
             itree = new avtIntervalTree(num_patches_level[level], 3);
             for (int patch = 0 ; patch < num_patches_level[level] ; patch++) {
+                bool data_defined = true;
+                unsigned int offset = GetPatchOffset(level, patch); 
                 float range[6] = { 0, 0, 0, 0, 0, 0 };
                 int dim = num_components <= 3 ? num_components : 3;
                 for (int i=0; i<dim; i++) {
@@ -512,15 +574,23 @@ avtSAMRAIFileFormat::GetAuxiliaryData(const char *var, int domain,
 
                     for (int v = 0; v < num_vars; v++) {
                         if (var_names[v] == variable) {
-                            range[i*2] = var_extents[v]->min; 
-                            range[i*2+1] = var_extents[v]->max;
-                            itree->AddDomain(patch, range);
+                            if (var_extents[v][offset].data_is_defined) {
+                                range[i*2] = var_extents[v][offset].min; 
+                                range[i*2+1] = var_extents[v][offset].max;
+                            }
+                            else {
+                                data_defined = false;
+                            }
                             break;
                         }
                     }
                 }
-
-                itree->AddDomain(patch, range);
+                if (data_defined) {
+                    itree->AddDomain(patch, range);
+                }
+                else {
+                  // if the varible does no have values, what do we add?
+                }
             }
 
         }
@@ -563,7 +633,7 @@ avtSAMRAIFileFormat::GetAuxiliaryData(const char *var, int domain,
 //  Arguments:
 //    md         The meta-data structure to populate
 //
-//  Programmer:  Jeremy Meredith
+//  Programmer:  Walter Herrera Jimenez
 //  Creation:    June 19, 2003
 //
 // ****************************************************************************
@@ -583,6 +653,11 @@ avtSAMRAIFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         mesh->hasSpatialExtents = false;
         md->Add(mesh);
 
+        //char domain_name[50];
+        //sprintf(domain_name, "domains(Level_%05d)", l);
+        //AddDefaultPlotToMetaData(md, "subset", domain_name);
+
+        int v=0;
         std::map<std::string, var_t>::const_iterator var_it;
         for (var_it = var_names_num_components.begin();
              var_it != var_names_num_components.end(); 
@@ -605,11 +680,16 @@ avtSAMRAIFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             else if ((*var_it).second.num_components <= 3) { // vector field
               if ( (*var_it).second.cell_centered == 1) {
                 AddVectorVarToMetaData(md, var_name, mesh_name, AVT_ZONECENT,
-                                       (*var_it).second.num_components);
+                                       //(*var_it).second.num_components);
+                                       3);
               } else {
                 AddVectorVarToMetaData(md, var_name, mesh_name, AVT_NODECENT,
-                                       (*var_it).second.num_components);
+                                       //(*var_it).second.num_components);
+                                       3);
               }
+            }
+            else {
+              EXCEPTION1(InvalidVariableException, (*var_it).first.c_str());
             }
         }
     }
@@ -624,270 +704,899 @@ avtSAMRAIFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //  Arguments:
 //    in         the open ifstream to read from
 //
-//  Programmer:  Walter Herrera-Jimenez
+//  Programmer:  Walter Herrera Jimenez
 //  Creation:    July 07, 2003
 //
 // ****************************************************************************
 void
-avtSAMRAIFileFormat::ReadMetaDataFile(hid_t &h5f_file)
+avtSAMRAIFileFormat::ReadMetaDataFile(hid_t &h5_file)
 {
-    // Dump number
-    //
-    hid_t h5d_dump_number = H5Dopen(h5f_file,"/BASIC_INFO/dump_number");
-    if (h5d_dump_number < 0)
+    ReadTimeStepNumber(h5_file);
+    ReadTime(h5_file);
+    ReadTimeOfDump(h5_file);
+
+    ReadGridType(h5_file);
+    ReadDataType(h5_file);
+  
+    ReadNumDimensions(h5_file);
+    ReadNumLevels(h5_file);
+
+    ReadXLO(h5_file);
+    ReadDX(h5_file);
+
+    ReadNumPatches(h5_file);
+    ReadNumPatchesLevel(h5_file);
+    ReadRatiosCoarserLevels(h5_file);
+
+    ReadNumClusters(h5_file);
+    ReadNumProcessors(h5_file);
+
+    ReadNumVariables(h5_file);
+    ReadVarCellCentered(h5_file);
+    ReadVarNames(h5_file);
+    ReadVarNumComponents(h5_file);
+
+    ReadVarExtents(h5_file);
+    ReadPatchExtents(h5_file);
+    ReadPatchMap(h5_file);
+
+    ReadChildArrayLength(h5_file);
+    ReadChildArray(h5_file);
+    ReadChildPointerArray(h5_file);
+    ReadParentArrayLength(h5_file);
+    ReadParentArray(h5_file);
+    ReadParentPointerArray(h5_file);
+}
+
+
+
+// ****************************************************************************
+//  Method:  ReadTime
+//
+//  Arguments:
+//    IN:  h5_file     the handle of the file to be read
+//
+//  Programmer:  Walter Herrera Jimenez
+//  Creation:    August  20, 2003
+//
+// ****************************************************************************
+void 
+avtSAMRAIFileFormat::ReadTime(hid_t &h5_file)
+{
+    hid_t h5_dataset = H5Dopen(h5_file, "/BASIC_INFO/time");
+    if (h5_dataset < 0)
         EXCEPTION1(InvalidFilesException, file_name.c_str());
-    H5Dread(h5d_dump_number, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, 
-            &dump_number);
-    H5Dclose(h5d_dump_number);    
 
-
-    // Number of dimensions of the problem 
-    //
-    hid_t h5d_dim_problem =H5Dopen(h5f_file,
-                                   "/BASIC_INFO/number_dimensions_of_problem");
-    if (h5d_dim_problem < 0)
-        EXCEPTION1(InvalidFilesException, file_name.c_str());
-    H5Dread(h5d_dim_problem, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, 
-            &num_dim_problem);
-    H5Dclose(h5d_dim_problem);    
-
-
-    // Lower spatial coordinate (origin)   
-    //
-    xlo = new double[num_dim_problem];
-    hid_t h5d_xlo = H5Dopen(h5f_file, "/BASIC_INFO/XLO");
-    if (h5d_xlo < 0)
-        EXCEPTION1(InvalidFilesException, file_name.c_str());
-    H5Dread(h5d_xlo, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, xlo);
-    H5Dclose(h5d_xlo);    
-
-
-    // Number of levels   
-    //
-    hid_t h5d_levels = H5Dopen(h5f_file, "/BASIC_INFO/number_levels");
-    if (h5d_levels < 0)
-        EXCEPTION1(InvalidFilesException, file_name.c_str());
-    H5Dread(h5d_levels, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, 
-            &num_levels);
-    H5Dclose(h5d_levels);    
-
-
-    // Width of a cell on each level   
-    //
-    dx = new double[num_levels * num_dim_problem];
-    hid_t h5d_dx = H5Dopen(h5f_file, "/BASIC_INFO/dx");
-    if (h5d_dx < 0)
-        EXCEPTION1(InvalidFilesException, file_name.c_str());
-    H5Dread(h5d_dx, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, dx);
-    H5Dclose(h5d_dx);    
-
-
-    // Number of patches at each level   
-    //
-    num_patches_level = new int[num_levels];
-    hid_t h5d_patches_level = H5Dopen(h5f_file,
-                                      "/BASIC_INFO/number_patches_at_level");
-    if (h5d_patches_level < 0)
-        EXCEPTION1(InvalidFilesException, file_name.c_str());
-    H5Dread(h5d_patches_level, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, 
-            num_patches_level);
-    H5Dclose(h5d_patches_level);    
-
-    num_patches = 0;
-    for (int l=0; l<num_levels; l++) {
-        num_patches += num_patches_level[l];
-    }
-
-
-    // Ratios to coarser levels   
-    //
-    ratios_coarser_levels = new int[num_levels * num_dim_problem];
-    hid_t h5d_ratios_levels = H5Dopen(h5f_file, 
-                                      "/BASIC_INFO/ratios_to_coarser_levels");
-    if (h5d_ratios_levels < 0)
-        EXCEPTION1(InvalidFilesException, file_name.c_str());
-    H5Dread(h5d_ratios_levels, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, 
-            H5P_DEFAULT, ratios_coarser_levels);
-    H5Dclose(h5d_ratios_levels);    
-
-
-    // Number of clusters   
-    //
-    hid_t h5d_clusters = H5Dopen(h5f_file, "/BASIC_INFO/number_file_clusters");
-    if (h5d_clusters < 0)
-        EXCEPTION1(InvalidFilesException, file_name.c_str());
-    H5Dread(h5d_clusters, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, 
-            &num_clusters);
-    H5Dclose(h5d_clusters);    
-
-
-    // Number of processors   
-    //
-    hid_t h5d_procs = H5Dopen(h5f_file, "/BASIC_INFO/number_processors");
-    if (h5d_procs < 0)
-        EXCEPTION1(InvalidFilesException, file_name.c_str());
-    H5Dread(h5d_procs, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, 
-            &num_procs);
-    H5Dclose(h5d_procs);    
-
-
-    // Number of variables   
-    //
-    hid_t h5d_vars = H5Dopen(h5f_file, "/BASIC_INFO/number_visit_variables");
-    if (h5d_vars < 0)
-        EXCEPTION1(InvalidFilesException, file_name.c_str());
-    H5Dread(h5d_vars, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, 
-            &num_vars);
-    H5Dclose(h5d_vars);    
-
-
-    // Cell centered of each variable   
-    //
-    var_cell_centered = new int[num_vars];
-    hid_t h5d_cell_centered = H5Dopen(h5f_file,
-                                      "/BASIC_INFO/var_cell_centered");
-    if (h5d_cell_centered < 0)
-        EXCEPTION1(InvalidFilesException, file_name.c_str());
-    H5Dread(h5d_cell_centered, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, 
-            var_cell_centered);
-    H5Dclose(h5d_cell_centered);    
-
-
-    // Time
-    //   
-    hid_t h5d_time = H5Dopen(h5f_file, "/BASIC_INFO/time");
-    if (h5d_time < 0)
-        EXCEPTION1(InvalidFilesException, file_name.c_str());
-    H5Dread(h5d_time, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, 
+    H5Dread(h5_dataset, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, 
             &time);
-    H5Dclose(h5d_time);    
+    H5Dclose(h5_dataset);        
+}
+
+
+// ****************************************************************************
+//  Method:  ReadTimeStepNumber
+//
+//  Arguments:
+//    IN:  h5_file     the handle of the file to be read
+//
+//  Programmer:  Walter Herrera Jimenez
+//  Creation:    August  20, 2003
+//
+// ****************************************************************************
+void 
+avtSAMRAIFileFormat::ReadTimeStepNumber(hid_t &h5_file)
+{
+    hid_t h5_dataset = H5Dopen(h5_file,"/BASIC_INFO/time_step_number");
+    if (h5_dataset < 0)
+        EXCEPTION1(InvalidFilesException, file_name.c_str());
+
+    H5Dread(h5_dataset, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, 
+            &time_step_number);
+    H5Dclose(h5_dataset);    
+}
+
+
+// ****************************************************************************
+//  Method:  ReadTimeOfDump
+//
+//  Arguments:
+//    IN:  h5_file     the handle of the file to be read
+//
+//  Programmer:  Walter Herrera Jimenez
+//  Creation:    August  20, 2003
+//
+// ****************************************************************************
+void 
+avtSAMRAIFileFormat::ReadTimeOfDump(hid_t &h5_file)
+{
+    hid_t h5_dataset = H5Dopen(h5_file, "/BASIC_INFO/time_of_dump");
+    if (h5_dataset < 0)
+        EXCEPTION1(InvalidFilesException, file_name.c_str());
+
+    hid_t h5_disk_datatype = H5Tcopy(h5_dataset);
+    int datatype_size = H5Tget_size(h5_disk_datatype);
+
+
+    hid_t h5_mem_datatype = H5Tcopy(H5T_C_S1);
+    H5Tset_size(h5_mem_datatype, datatype_size);  
+
+    char buffer[datatype_size];
+
+    H5Dread(h5_dataset, h5_mem_datatype, H5S_ALL,H5S_ALL, H5P_DEFAULT, buffer);
+
+    H5Tclose(h5_mem_datatype);
+    H5Tclose(h5_disk_datatype);
+    H5Dclose(h5_dataset);        
+
+    time_dump = buffer;
+}
+
+// ****************************************************************************
+//  Method:  ReadNumDimensions
+//
+//  Arguments:
+//    IN:  h5_file     the handle of the file to be read
+//
+//  Programmer:  Walter Herrera Jimenez
+//  Creation:    August  20, 2003
+//
+// ****************************************************************************
+void 
+avtSAMRAIFileFormat::ReadNumDimensions(hid_t &h5_file)
+{
+    hid_t h5_dataset = H5Dopen(h5_file,
+                               "/BASIC_INFO/number_dimensions_of_problem");
+    if (h5_dataset < 0)
+        EXCEPTION1(InvalidFilesException, file_name.c_str());
+
+    H5Dread(h5_dataset, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, 
+            &num_dim_problem);
+    H5Dclose(h5_dataset);    
+}
+
+
+// ****************************************************************************
+//  Method:  ReadXLO
+//
+//  Purpose:
+//    Read the lower coordinates of the grid
+//
+//  Arguments:
+//    IN:  h5_file     the handle of the file to be read
+//
+//  Programmer:  Walter Herrera Jimenez
+//  Creation:    August  20, 2003
+//
+// ****************************************************************************
+void 
+avtSAMRAIFileFormat::ReadXLO(hid_t &h5_file)
+{
+    hid_t h5_dataset = H5Dopen(h5_file, "/BASIC_INFO/XLO");
+    if (h5_dataset < 0)
+        EXCEPTION1(InvalidFilesException, file_name.c_str());
+
+    xlo = new double[num_dim_problem];
+
+    H5Dread(h5_dataset, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, xlo);
+    H5Dclose(h5_dataset);    
+}
+
+
+// ****************************************************************************
+//  Method:  ReadNumLevels
+//
+//  Arguments:
+//    IN:  h5_file     the handle of the file to be read
+//
+//  Programmer:  Walter Herrera Jimenez
+//  Creation:    August  20, 2003
+//
+// ****************************************************************************
+void 
+avtSAMRAIFileFormat::ReadNumLevels(hid_t &h5_file)
+{
+    hid_t h5_dataset = H5Dopen(h5_file, "/BASIC_INFO/number_levels");
+    if (h5_dataset < 0)
+        EXCEPTION1(InvalidFilesException, file_name.c_str());
+
+    H5Dread(h5_dataset, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, 
+            &num_levels);
+    H5Dclose(h5_dataset);    
+}
+
+
+// ****************************************************************************
+//  Method:  ReadDx
+//
+//  Purpose:
+//    Read the width of the cells on each level
+//
+//  Arguments:
+//    IN:  h5_file     the handle of the file to be read
+//
+//  Programmer:  Walter Herrera Jimenez
+//  Creation:    August  20, 2003
+//
+// ****************************************************************************
+void 
+avtSAMRAIFileFormat::ReadDX(hid_t &h5_file)
+{
+    hid_t h5_dataset = H5Dopen(h5_file, "/BASIC_INFO/dx");
+    if (h5_dataset < 0)
+        EXCEPTION1(InvalidFilesException, file_name.c_str());
+
+    dx = new double[num_levels * num_dim_problem];
+
+    H5Dread(h5_dataset, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, dx);
+    H5Dclose(h5_dataset);    
+}
+
+
+// ****************************************************************************
+//  Method:  ReadNumPatches
+//
+//  Purpose:
+//    Read the number of global patches
+//
+//  Arguments:
+//    IN:  h5_file     the handle of the file to be read
+//
+//  Programmer:  Walter Herrera Jimenez
+//  Creation:    August  20, 2003
+//
+// ****************************************************************************
+void 
+avtSAMRAIFileFormat::ReadNumPatches(hid_t &h5_file)
+{
+    hid_t h5_dataset = H5Dopen(h5_file, "/BASIC_INFO/number_global_patches");
+    if (h5_dataset < 0)
+        EXCEPTION1(InvalidFilesException, file_name.c_str());
+
+    H5Dread(h5_dataset, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, 
+            &num_patches);
+    H5Dclose(h5_dataset);    
+}
+
+
+// ****************************************************************************
+//  Method:  ReadNumPatchesLevel
+//
+//  Purpose:
+//    Read the number of patches on each level
+//
+//  Arguments:
+//    IN:  h5_file     the handle of the file to be read
+//
+//  Programmer:  Walter Herrera Jimenez
+//  Creation:    August  20, 2003
+//
+// ****************************************************************************
+void 
+avtSAMRAIFileFormat::ReadNumPatchesLevel(hid_t &h5_file)
+{
+    hid_t h5_dataset = H5Dopen(h5_file,"/BASIC_INFO/number_patches_at_level");
+    if (h5_dataset < 0)
+        EXCEPTION1(InvalidFilesException, file_name.c_str());
+
+    num_patches_level = new int[num_levels];
+
+    H5Dread(h5_dataset, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, 
+            num_patches_level);
+    H5Dclose(h5_dataset);    
+}
+
+
+// ****************************************************************************
+//  Method:  ReadRatiosCoarserLevels
+//
+//  Purpose:
+//    Read the ratios to coarser levels
+//
+//  Arguments:
+//    IN:  h5_file     the handle of the file to be read
+//
+//  Programmer:  Walter Herrera Jimenez
+//  Creation:    August  20, 2003
+//
+// ****************************************************************************
+void 
+avtSAMRAIFileFormat::ReadRatiosCoarserLevels(hid_t &h5_file)
+{
+    hid_t h5_dataset = H5Dopen(h5_file, 
+                               "/BASIC_INFO/ratios_to_coarser_levels");
+    if (h5_dataset < 0)
+        EXCEPTION1(InvalidFilesException, file_name.c_str());
+
+    ratios_coarser_levels = new int[num_levels * num_dim_problem];
+
+    H5Dread(h5_dataset, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, 
+            ratios_coarser_levels);
+    H5Dclose(h5_dataset);    
+}
+
+
+// ****************************************************************************
+//  Method:  ReadNumClusters
+//
+//  Purpose:
+//    Read the number of clusters
+//
+//  Arguments:
+//    IN:  h5_file     the handle of the file to be read
+//
+//  Programmer:  Walter Herrera Jimenez
+//  Creation:    August  20, 2003
+//
+// ****************************************************************************
+void 
+avtSAMRAIFileFormat::ReadNumClusters(hid_t &h5_file)
+{
+    hid_t h5_dataset = H5Dopen(h5_file, "/BASIC_INFO/number_file_clusters");
+    if (h5_dataset < 0)
+        EXCEPTION1(InvalidFilesException, file_name.c_str());
+
+    H5Dread(h5_dataset, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, 
+            &num_clusters);
+    H5Dclose(h5_dataset);    
+}
 
     
-    // Name of each variable   
-    //
-    hid_t h5d_var_names = H5Dopen(h5f_file, "/BASIC_INFO/var_names");
-    if (h5d_var_names < 0)
+// ****************************************************************************
+//  Method:  ReadNumProcessors
+//
+//  Purpose:
+//    Read the number of processors
+//
+//  Arguments:
+//    IN:  h5_file     the handle of the file to be read
+//
+//  Programmer:  Walter Herrera Jimenez
+//  Creation:    August  20, 2003
+//
+// ****************************************************************************
+void 
+avtSAMRAIFileFormat::ReadNumProcessors(hid_t &h5_file)
+{
+    hid_t h5_dataset = H5Dopen(h5_file, "/BASIC_INFO/number_processors");
+    if (h5_dataset < 0)
         EXCEPTION1(InvalidFilesException, file_name.c_str());
-    hid_t h5t_var_name = H5Tcopy(h5d_var_names);
-    int name_size = H5Tget_size(h5t_var_name);
-    char names_buffer[num_vars * name_size];
+
+    H5Dread(h5_dataset, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, 
+            &num_procs);
+    H5Dclose(h5_dataset);    
+}
+
+    
+// ****************************************************************************
+//  Method:  ReadNumVariables
+//
+//  Purpose:
+//    Read the number of variables
+//
+//  Arguments:
+//    IN:  h5_file     the handle of the file to be read
+//
+//  Programmer:  Walter Herrera Jimenez
+//  Creation:    August  20, 2003
+//
+// ****************************************************************************
+void 
+avtSAMRAIFileFormat::ReadNumVariables(hid_t &h5_file)
+{
+    hid_t h5_dataset = H5Dopen(h5_file, "/BASIC_INFO/number_visit_variables");
+    if (h5_dataset < 0)
+        EXCEPTION1(InvalidFilesException, file_name.c_str());
+
+    H5Dread(h5_dataset, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, 
+            &num_vars);
+    H5Dclose(h5_dataset);    
+}
+
+    
+// ****************************************************************************
+//  Method:  ReadVarCellCentered
+//
+//  Purpose:
+//    Read the cell centered flag for each variable
+//
+//  Arguments:
+//    IN:  h5_file     the handle of the file to be read
+//
+//  Programmer:  Walter Herrera Jimenez
+//  Creation:    August  20, 2003
+//
+// ****************************************************************************
+void 
+avtSAMRAIFileFormat::ReadVarCellCentered(hid_t &h5_file)
+{
+    hid_t h5_dataset = H5Dopen(h5_file,        "/BASIC_INFO/var_cell_centered");
+    if (h5_dataset < 0)
+        EXCEPTION1(InvalidFilesException, file_name.c_str());
+
+    var_cell_centered = new int[num_vars];
+
+    H5Dread(h5_dataset, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, 
+            var_cell_centered);
+    H5Dclose(h5_dataset);    
+}
+
+
+// ****************************************************************************
+//  Method:  ReadGridType
+//
+//  Purpose:
+//    Read the type of the grid
+//
+//  Arguments:
+//    IN:  h5_file     the handle of the file to be read
+//
+//  Programmer:  Walter Herrera Jimenez
+//  Creation:    August  20, 2003
+//
+// ****************************************************************************
+void 
+avtSAMRAIFileFormat::ReadGridType(hid_t &h5_file)
+{
+    hid_t h5_dataset = H5Dopen(h5_file, "/BASIC_INFO/grid_type");
+    if (h5_dataset < 0)
+        EXCEPTION1(InvalidFilesException, file_name.c_str());
+
+    hid_t h5_disk_datatype = H5Tcopy(h5_dataset);
+    int datatype_size = H5Tget_size(h5_disk_datatype);
+
+    hid_t h5_mem_datatype = H5Tcopy(H5T_C_S1);
+    H5Tset_size(h5_mem_datatype, datatype_size);  
+
+    char buffer[datatype_size];
+
+    H5Dread(h5_dataset, h5_mem_datatype, H5S_ALL,H5S_ALL, H5P_DEFAULT, buffer);
+
+    H5Tclose(h5_mem_datatype);
+    H5Tclose(h5_disk_datatype);
+    H5Dclose(h5_dataset);        
+
+    grid_type = buffer;
+}
+
+
+// ****************************************************************************
+//  Method:  ReadDataType
+//
+//  Purpose:
+//    Read the type of data of the variables
+//
+//  Arguments:
+//    IN:  h5_file     the handle of the file to be read
+//
+//  Programmer:  Walter Herrera Jimenez
+//  Creation:    August  20, 2003
+//
+// ****************************************************************************
+void 
+avtSAMRAIFileFormat::ReadDataType(hid_t &h5_file)
+{
+    hid_t h5_dataset = H5Dopen(h5_file, "/BASIC_INFO/data_type");
+    if (h5_dataset < 0)
+        EXCEPTION1(InvalidFilesException, file_name.c_str());
+
+    hid_t h5_disk_datatype = H5Tcopy(h5_dataset);
+    int datatype_size = H5Tget_size(h5_disk_datatype);
+
+    hid_t h5_mem_datatype = H5Tcopy(H5T_C_S1);
+    H5Tset_size(h5_mem_datatype, datatype_size);  
+
+    char buffer[datatype_size];
+
+    H5Dread(h5_dataset, h5_mem_datatype, H5S_ALL,H5S_ALL, H5P_DEFAULT, buffer);
+
+    H5Tclose(h5_mem_datatype);
+    H5Tclose(h5_disk_datatype);
+    H5Dclose(h5_dataset);        
+
+    data_type = buffer;
+}
+
+
+// ****************************************************************************
+//  Method:  ReadVarNames
+//
+//  Purpose:
+//    Read the name of the variables
+//
+//  Arguments:
+//    IN:  h5_file     the handle of the file to be read
+//
+//  Programmer:  Walter Herrera Jimenez
+//  Creation:    August  20, 2003
+//
+// ****************************************************************************
+void 
+avtSAMRAIFileFormat::ReadVarNames(hid_t &h5_file)
+{
+    hid_t h5_dataset = H5Dopen(h5_file, "/BASIC_INFO/var_names");
+    if (h5_dataset < 0)
+        EXCEPTION1(InvalidFilesException, file_name.c_str());
+
+    hid_t h5_disk_datatype = H5Tcopy(h5_dataset);
+    int datatype_size = H5Tget_size(h5_disk_datatype);
+
+    hid_t h5_mem_datatype = H5Tcopy(H5T_C_S1);
+    H5Tset_size(h5_mem_datatype, datatype_size);  
+
+    char buffer[num_vars * datatype_size];
     var_names = new std::string[num_vars];
 
-    H5Dread(h5d_var_names, h5t_var_name, H5S_ALL, H5S_ALL, H5P_DEFAULT, 
-            names_buffer);
-    H5Tclose(h5t_var_name);
-    H5Dclose(h5d_var_names);        
+    H5Dread(h5_dataset, h5_mem_datatype, H5S_ALL, H5S_ALL, H5P_DEFAULT, 
+            buffer);
 
-    is_rectilinear = true;
-    for (int v=0; v<num_vars; v++) {
-        unsigned level;
-        var_names[v] = &names_buffer[v * name_size];
-        string var_name = GetNameLevel(var_names[v].c_str(), level);
-        if (var_name == "Coords") {
-            is_rectilinear = false;
-        }
+    H5Tclose(h5_mem_datatype);
+    H5Tclose(h5_disk_datatype);
+    H5Dclose(h5_dataset);        
+
+    for (int v = 0; v < num_vars; v++) {
+      var_names[v] = &buffer[v * datatype_size];
     }
+}
 
 
-    // Num components of each variable   
-    //
-    var_num_components = new int[num_vars];
-    hid_t h5d_num_components = H5Dopen(h5f_file, 
-                                       "/BASIC_INFO/var_number_components");
-    if (h5d_num_components < 0)
+// ****************************************************************************
+//  Method:  ReadVarNumComponents
+//
+//  Purpose:
+//    Read the number of components of each variable
+//
+//  Arguments:
+//    IN:  h5_file     the handle of the file to be read
+//
+//  Programmer:  Walter Herrera Jimenez
+//  Creation:    August  20, 2003
+//
+// ****************************************************************************
+void 
+avtSAMRAIFileFormat::ReadVarNumComponents(hid_t &h5_file)
+{
+    hid_t h5_dataset = H5Dopen(h5_file, "/BASIC_INFO/var_number_components");
+    if (h5_dataset < 0)
         EXCEPTION1(InvalidFilesException, file_name.c_str());
-    H5Dread(h5d_num_components, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT,
-            var_num_components);
-    H5Dclose(h5d_num_components);    
 
-    for (int v=0; v<num_vars; v++) {
+    var_num_components = new int[num_vars];
+
+    H5Dread(h5_dataset, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, 
+            var_num_components);
+    H5Dclose(h5_dataset);    
+    
+    for (int v = 0; v < num_vars; v++) {
       unsigned level;
-      string var_name = GetNameLevel(var_names[v].c_str(), level);
+      string var_name = GetNameLevel(var_names[v].c_str(), level, '.');
       var_t var = { var_num_components[v], var_cell_centered[v] }; 
       var_names_num_components[var_name] = var;
     }
+}
 
-    
-    // Extents for each variable   
-    //
-    hid_t h5t_extents = H5Tcreate (H5T_COMPOUND, sizeof(var_extents_t));
-    H5Tinsert (h5t_extents,"min",HOFFSET(var_extents_t,min), H5T_NATIVE_FLOAT);
-    H5Tinsert (h5t_extents,"max",HOFFSET(var_extents_t,max), H5T_NATIVE_FLOAT);
 
+// ****************************************************************************
+//  Method:  ReadVarExtents
+//
+//  Purpose:
+//    Read the extents for each variable
+//
+//  Arguments:
+//    IN:  h5_file     the handle of the file to be read
+//
+//  Programmer:  Walter Herrera Jimenez
+//  Creation:    August  20, 2003
+//
+// ****************************************************************************
+void 
+avtSAMRAIFileFormat::ReadVarExtents(hid_t &h5_file)
+{
+    hid_t h5_mem_datatype = H5Tcreate (H5T_COMPOUND, sizeof(var_extents_t));
+    H5Tinsert (h5_mem_datatype, "data_is_defined", 
+               HOFFSET(var_extents_t,data_is_defined), H5T_NATIVE_CHAR);
+    H5Tinsert (h5_mem_datatype, "min", 
+               HOFFSET(var_extents_t,min), H5T_NATIVE_DOUBLE);
+    H5Tinsert (h5_mem_datatype, "max", 
+               HOFFSET(var_extents_t,max), H5T_NATIVE_DOUBLE);
+              
     var_extents = new (var_extents_t*)[num_vars];
-    for (int v=0; v<num_vars; v++) {
-        var_extents[v] = new var_extents_t[num_patches];
-   
-        char ds_name[50];
-        sprintf(ds_name,"/extents/%s-Extents",var_names[v].c_str());
+    for (int v = 0; v < num_vars; v++) {
+      var_extents[v] = new var_extents_t[num_patches];
+      
+      char ds_name[50];
+      sprintf(ds_name,"/extents/%s-Extents",var_names[v].c_str());
+      
+      hid_t h5_dataset = H5Dopen(h5_file, ds_name);
+      if (h5_dataset < 0)
+        EXCEPTION1(InvalidFilesException, file_name.c_str());
 
-        hid_t h5d_var_extents = H5Dopen(h5f_file, ds_name);
-        H5Dread(h5d_var_extents, h5t_extents, H5S_ALL, H5S_ALL, H5P_DEFAULT,
-                var_extents[v]);
-        H5Dclose(h5d_var_extents);    
-        
+      H5Dread(h5_dataset, h5_mem_datatype, H5S_ALL, H5S_ALL, H5P_DEFAULT, 
+              var_extents[v]);
+      H5Dclose(h5_dataset);    
     }
 
-    H5Tclose(h5t_extents);
+    H5Tclose(h5_mem_datatype);
+}
 
-    
-    // Spatial extents for each patch   
-    //
-    hid_t h5d_patch_extents = H5Dopen(h5f_file, "/extents/patch_extents");
-    if (h5d_patch_extents < 0)
+
+// ****************************************************************************
+//  Method:  ReadPatchExtents
+//
+//  Purpose:
+//    Read the spatial extents for each patch
+//
+//  Arguments:
+//    IN:  h5_file     the handle of the file to be read
+//
+//  Programmer:  Walter Herrera Jimenez
+//  Creation:    August  20, 2003
+//
+// ****************************************************************************
+void 
+avtSAMRAIFileFormat::ReadPatchExtents(hid_t &h5_file)
+{
+    hid_t h5_dataset = H5Dopen(h5_file, "/extents/patch_extents");
+    if (h5_dataset < 0)
         EXCEPTION1(InvalidFilesException, file_name.c_str());
-    hid_t h5t_patch_extent = H5Tcopy(h5d_patch_extents);
-    int patch_extent_size = H5Tget_size(h5t_patch_extent);
-    char extents_buffer[num_patches * patch_extent_size];
+
     patch_extents = new patch_extents_t[num_patches];
 
-    H5Dread(h5d_patch_extents, h5t_patch_extent, H5S_ALL, H5S_ALL, H5P_DEFAULT,
-            extents_buffer);
-    H5Dclose(h5d_patch_extents);        
+    hsize_t dim[] = {3};
+    hid_t h5_lower_datatype = H5Tarray_create(H5T_NATIVE_INT, 1, dim, NULL);
+    hid_t h5_upper_datatype = H5Tarray_create(H5T_NATIVE_INT, 1, dim, NULL);
+    hid_t h5_xlo_datatype = H5Tarray_create(H5T_NATIVE_DOUBLE, 1, dim, NULL);
+    hid_t h5_xup_datatype = H5Tarray_create(H5T_NATIVE_DOUBLE, 1, dim, NULL);
 
-    for (int p=0; p<num_patches; p++) {
-      int *lower = (int*)(&extents_buffer[p*patch_extent_size] + 
-                          H5Tget_member_offset(h5t_patch_extent, 0));
-      int *upper = (int*)(&extents_buffer[p*patch_extent_size] + 
-                          H5Tget_member_offset(h5t_patch_extent, 1));
-      float *xlo = (float*)(&extents_buffer[p*patch_extent_size] + 
-                            H5Tget_member_offset(h5t_patch_extent, 2));
-      float *xup = (float*)(&extents_buffer[p*patch_extent_size] + 
-                            H5Tget_member_offset(h5t_patch_extent, 3));
+    int size = H5Tget_size(h5_lower_datatype) + 
+               H5Tget_size(h5_upper_datatype) + 
+               H5Tget_size(h5_xlo_datatype) + 
+               H5Tget_size(h5_xup_datatype);
+    hid_t h5_datatype = H5Tcreate (H5T_COMPOUND, size);
 
-      for (int d=0; d<num_dim_problem; d++) {
-        patch_extents[p].lower.push_back(lower[d]);
-        patch_extents[p].upper.push_back(upper[d]);
-        patch_extents[p].xlo.push_back(xlo[d]);
-        patch_extents[p].xup.push_back(xup[d]);
-      }
-    }
+    /*
+    int offset_lower = HOFFSET(patch_extents_t, lower);
+    int offset_upper = HOFFSET(patch_extents_t, upper);
+    int offset_xlo   = HOFFSET(patch_extents_t, xlo);
+    int offset_xup   = HOFFSET(patch_extents_t, xup);
+    */
+    
+    int offset_lower = 0;
+    int offset_upper = H5Tget_size(h5_lower_datatype);
+    int offset_xlo   = offset_upper + H5Tget_size(h5_upper_datatype);
+    int offset_xup   = offset_xlo + H5Tget_size(h5_xlo_datatype);
+    
+    H5Tinsert(h5_datatype, "lower", offset_lower, h5_lower_datatype);
+    H5Tinsert(h5_datatype, "upper", offset_upper, h5_upper_datatype);
+    H5Tinsert(h5_datatype, "xlo", offset_xlo, h5_xlo_datatype);
+    H5Tinsert(h5_datatype, "xup", offset_xup, h5_xup_datatype);
 
-    H5Tclose(h5t_patch_extent);
+    H5Dread(h5_dataset, h5_datatype, H5S_ALL, H5S_ALL, H5P_DEFAULT, 
+            patch_extents);
+    H5Dclose(h5_dataset);       
+
+    H5Tclose(h5_lower_datatype);
+    H5Tclose(h5_upper_datatype);
+    H5Tclose(h5_xlo_datatype);
+    H5Tclose(h5_xup_datatype);
+    H5Tclose(h5_datatype);
+}
 
 
-    // Cluster, processor, level and number of patch for each patch   
-    //
-    hid_t h5t_patch_map = H5Tcreate (H5T_COMPOUND, sizeof(patch_map_t));
-    H5Tinsert (h5t_patch_map, "processor_number", 
+// ****************************************************************************
+//  Method:  ReadPatchMap
+//
+//  Purpose:
+//    Read the patch map: cluster, processor, level and local number of patch
+//    for each patch
+//
+//  Arguments:
+//    IN:  h5_file     the handle of the file to be read
+//
+//  Programmer:  Walter Herrera Jimenez
+//  Creation:    August  20, 2003
+//
+// ****************************************************************************
+void 
+avtSAMRAIFileFormat::ReadPatchMap(hid_t &h5_file)
+{
+    hid_t h5_dataset = H5Dopen(h5_file, "/extents/patch_map");
+    if (h5_dataset < 0)
+        EXCEPTION1(InvalidFilesException, file_name.c_str());
+
+    hid_t h5_datatype = H5Tcreate (H5T_COMPOUND, sizeof(patch_map_t));
+    H5Tinsert (h5_datatype, "processor_number", 
                HOFFSET(patch_map_t,processor_number), H5T_NATIVE_INT);
-    H5Tinsert (h5t_patch_map, "file_cluster_number", 
+    H5Tinsert (h5_datatype, "file_cluster_number", 
                HOFFSET(patch_map_t,file_cluster_number), H5T_NATIVE_INT);
-    H5Tinsert (h5t_patch_map, "level_number", 
+    H5Tinsert (h5_datatype, "level_number", 
                HOFFSET(patch_map_t,level_number), H5T_NATIVE_INT);
-    H5Tinsert (h5t_patch_map, "patch_number", 
+    H5Tinsert (h5_datatype, "patch_number", 
                HOFFSET(patch_map_t,patch_number), H5T_NATIVE_INT);
+
     patch_map = new patch_map_t[num_patches];
       
-    hid_t h5d_patch_map = H5Dopen(h5f_file, "/extents/patch_map");
-    if (h5d_patch_map < 0)
-        EXCEPTION1(InvalidFilesException, file_name.c_str());
-    H5Dread(h5d_patch_map, h5t_patch_map, H5S_ALL, H5S_ALL, H5P_DEFAULT, 
-            patch_map);
-    H5Dclose(h5d_patch_map);      
-    H5Tclose(h5t_patch_map);
-
+    H5Dread(h5_dataset, h5_datatype, H5S_ALL, H5S_ALL, H5P_DEFAULT, patch_map);
+    H5Dclose(h5_dataset);      
+    H5Tclose(h5_datatype);
 }
+
+
+// ****************************************************************************
+//  Method:  ReadChildArrayLength
+//
+//  Purpose:
+//    Read the length of the array of children of each patch
+//
+//  Arguments:
+//    IN:  h5_file     the handle of the file to be read
+//
+//  Programmer:  Walter Herrera Jimenez
+//  Creation:    August  20, 2003
+//
+// ****************************************************************************
+void 
+avtSAMRAIFileFormat::ReadChildArrayLength(hid_t &h5_file)
+{
+    hid_t h5_dataset = H5Dopen(h5_file, "/BASIC_INFO/child_array_length");
+    if (h5_dataset < 0)
+        EXCEPTION1(InvalidFilesException, file_name.c_str());
+
+    H5Dread(h5_dataset, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, 
+            &child_array_length);
+    H5Dclose(h5_dataset);    
+}
+
+
+// ****************************************************************************
+//  Method:  ReadChildArray
+//
+//  Purpose:
+//    Read the array of children of each patch
+//
+//  Arguments:
+//    IN:  h5_file     the handle of the file to be read
+//
+//  Programmer:  Walter Herrera Jimenez
+//  Creation:    August  20, 2003
+//
+// ****************************************************************************
+void 
+avtSAMRAIFileFormat::ReadChildArray(hid_t &h5_file)
+{
+    hid_t h5_dataset = H5Dopen(h5_file,        "/BASIC_INFO/child_array");
+    if (h5_dataset < 0)
+        EXCEPTION1(InvalidFilesException, file_name.c_str());
+
+    child_array = new int[child_array_length];
+
+    H5Dread(h5_dataset, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, 
+            child_array);
+    H5Dclose(h5_dataset);    
+}
+
+
+// ****************************************************************************
+//  Method:  ReadChildPointerArray
+//
+//  Purpose:
+//    Read the array of pointers to children of each patch
+//
+//  Arguments:
+//    IN:  h5_file     the handle of the file to be read
+//
+//  Programmer:  Walter Herrera Jimenez
+//  Creation:    August  20, 2003
+//
+// ****************************************************************************
+void 
+avtSAMRAIFileFormat::ReadChildPointerArray(hid_t &h5_file)
+{
+    hid_t h5_dataset = H5Dopen(h5_file, "/BASIC_INFO/child_pointer_array");
+    if (h5_dataset < 0)
+        EXCEPTION1(InvalidFilesException, file_name.c_str());
+
+    hid_t h5_datatype = H5Tcreate (H5T_COMPOUND, sizeof(child_t));
+    H5Tinsert (h5_datatype, "offset", 
+               HOFFSET(child_t,offset), H5T_NATIVE_INT);
+    H5Tinsert (h5_datatype, "number_children", 
+               HOFFSET(child_t,number_children), H5T_NATIVE_INT);
+
+    child_pointer_array = new child_t[num_patches];
+      
+    H5Dread(h5_dataset, h5_datatype, H5S_ALL, H5S_ALL, H5P_DEFAULT, 
+            child_pointer_array);
+    H5Dclose(h5_dataset);      
+    H5Tclose(h5_datatype);
+}
+
+
+// ****************************************************************************
+//  Method:  ReadParentArrayLength
+//
+//  Purpose:
+//    Read the length of the array of parents of each patch
+//
+//  Arguments:
+//    IN:  h5_file     the handle of the file to be read
+//
+//  Programmer:  Walter Herrera Jimenez
+//  Creation:    August  20, 2003
+//
+// ****************************************************************************
+void 
+avtSAMRAIFileFormat::ReadParentArrayLength(hid_t &h5_file)
+{
+    hid_t h5_dataset = H5Dopen(h5_file, "/BASIC_INFO/parent_array_length");
+    if (h5_dataset < 0)
+        EXCEPTION1(InvalidFilesException, file_name.c_str());
+
+    H5Dread(h5_dataset, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, 
+            &parent_array_length);
+    H5Dclose(h5_dataset);    
+}
+
+
+// ****************************************************************************
+//  Method:  ReadParentArray
+//
+//  Purpose:
+//    Read the array of parents of each patch
+//
+//  Arguments:
+//    IN:  h5_file     the handle of the file to be read
+//
+//  Programmer:  Walter Herrera Jimenez
+//  Creation:    August  20, 2003
+//
+// ****************************************************************************
+void 
+avtSAMRAIFileFormat::ReadParentArray(hid_t &h5_file)
+{
+    hid_t h5_dataset = H5Dopen(h5_file,        "/BASIC_INFO/parent_array");
+    if (h5_dataset < 0)
+        EXCEPTION1(InvalidFilesException, file_name.c_str());
+
+    parent_array = new int[parent_array_length];
+
+    H5Dread(h5_dataset, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, 
+            parent_array);
+    H5Dclose(h5_dataset);    
+}
+
+
+// ****************************************************************************
+//  Method:  ReadParentPointerArray
+//
+//  Purpose:
+//    Read the array of pointers to parents of each patch
+//
+//  Arguments:
+//    IN:  h5_file     the handle of the file to be read
+//
+//  Programmer:  Walter Herrera Jimenez
+//  Creation:    August  20, 2003
+//
+// ****************************************************************************
+void 
+avtSAMRAIFileFormat::ReadParentPointerArray(hid_t &h5_file)
+{
+    hid_t h5_dataset = H5Dopen(h5_file, "/BASIC_INFO/parent_pointer_array");
+    if (h5_dataset < 0)
+        EXCEPTION1(InvalidFilesException, file_name.c_str());
+
+    hid_t h5_datatype = H5Tcreate (H5T_COMPOUND, sizeof(parent_t));
+    H5Tinsert (h5_datatype, "offset", 
+               HOFFSET(parent_t,offset), H5T_NATIVE_INT);
+    H5Tinsert (h5_datatype, "number_parents", 
+               HOFFSET(parent_t,number_parents), H5T_NATIVE_INT);
+
+    parent_pointer_array = new parent_t[num_patches];      
+
+    H5Dread(h5_dataset, h5_datatype, H5S_ALL, H5S_ALL, H5P_DEFAULT, 
+            parent_pointer_array);
+    H5Dclose(h5_dataset);      
+    H5Tclose(h5_datatype);
+}
+
 
 // ****************************************************************************
 //  Method:  GetPatchOffset
@@ -968,19 +1677,19 @@ GetDirName(const char *path)
 //
 // ****************************************************************************
 string 
-GetNameLevel(const char *name_level_str, unsigned int &level)
+GetNameLevel(const char *name_level_str, unsigned int &level, char link)
 {
     int len = strlen(name_level_str);
     const char *last = name_level_str + (len-1);
-    while (*last != '.' && *last != '_' && last > name_level_str)
+    while (*last != link && last > name_level_str)
     {
         last--;
     }
 
-    if (*last != '.' && *last != '_')
+    if (*last != link)
     {
         level = 0;
-        return "";
+        return name_level_str;
     }
 
     char str[1024];

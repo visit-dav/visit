@@ -71,7 +71,6 @@ avtMapper::avtMapper()
     transparencyActor = NULL;
     transparencyIndex = -1;
     extRenderedImagesActor = NULL;
-    extRenderedImageId = -1;
     globalAmbient = 0.;
 }
 
@@ -843,7 +842,7 @@ avtMapper::SetTransparencyActor(avtTransparencyActor *act)
 //
 // ****************************************************************************
 
-int 
+void
 avtMapper::SetExternallyRenderedImagesActor(
     avtExternallyRenderedImagesActor *act)
 {
@@ -853,12 +852,11 @@ avtMapper::SetExternallyRenderedImagesActor(
         // This is our current ERI actor anyway.  No need to do
         // anything new.
         //
-        return extRenderedImageId;
+        return;
     }
 
     extRenderedImagesActor = act;
-    extRenderedImageId = extRenderedImagesActor->AddInput();
-    return extRenderedImageId;
+    return;
 
 }
 

@@ -42,7 +42,6 @@ avtExternallyRenderedImagesActor::avtExternallyRenderedImagesActor()
     myMapper->SetColorLevel(127);
     myActor               = vtkActor2D::New();
     myActor->SetMapper(myMapper);
-    lastMat               = vtkMatrix4x4::New();
     extRenderCallback     = NULL;
     extRenderCallbackArgs = NULL;
     makeExternalRenderRequests = false;
@@ -68,11 +67,6 @@ avtExternallyRenderedImagesActor::~avtExternallyRenderedImagesActor()
     {
         myMapper->Delete();
         myMapper = NULL;
-    }
-    if (lastMat != NULL)
-    {
-        lastMat->Delete();
-        lastMat= NULL;
     }
 }
 
@@ -129,28 +123,6 @@ avtExternallyRenderedImagesActor::DoExternalRender(avtDataObject_p &dob)
 
 
 // ****************************************************************************
-//  Method: avtExternallyRenderedImagesActor::AddInput
-//
-//  Purpose:
-//      Adds information for a plot object that is being externally rendered.
-//      This method may be called multiple times, once for each plot that is
-//      externally rendered. The integer returned from this method will serve
-//      as a handle (id) for the plot within the context of the ERI actor.
-//
-//  Programmer: Mark C. Miller 
-//  Creation:   January 9, 2003
-// ****************************************************************************
-
-int
-avtExternallyRenderedImagesActor::AddInput(void)
-{
-   int currentId = inputVisible.size();
-   inputVisible.push_back(true);
-   return currentId;
-}
-
-
-// ****************************************************************************
 //  Method: avtExternallyRenderedImagesActor::PrepareForRender
 //
 //  Purpose:
@@ -170,7 +142,7 @@ avtExternallyRenderedImagesActor::AddInput(void)
 // ****************************************************************************
  
 void
-avtExternallyRenderedImagesActor::PrepareForRender(vtkCamera *cam)
+avtExternallyRenderedImagesActor::PrepareForRender(void)
 {
    // return early if we're not supposed to be making external render requests
    if (!makeExternalRenderRequests)
@@ -203,103 +175,6 @@ avtExternallyRenderedImagesActor::PrepareForRender(vtkCamera *cam)
 
 }
 
-
-// ****************************************************************************
-//  Method: avtExternallyRenderedImagesActor::SetInputsVisibility
-//
-//  Purpose:
-//      Sets the visibility of the given input. This functionality enables us
-//      to hide correctly those plots that are being externally rendered. 
-//      Returns the input's old visibility state
-//
-//  Arguments:
-//      id      The id of the plot to hide within the context of the ERI actor
-//      vis     The visibility (true | false) to be assigned
-//
-//  Programmer: Mark C. Miller 
-//  Creation:   January 9, 2003 
-//
-// ****************************************************************************
-
-bool
-avtExternallyRenderedImagesActor::SetInputsVisibility(const int id, const bool mode)
-{
-    if (id >= inputVisible.size() || id < 0)
-    {
-        EXCEPTION2(BadIndexException, id, inputVisible.size());
-    }
-
-    bool oldMode = inputVisible[id];
-    inputVisible[id] = mode;
-    return oldMode;
-}
-
-// ****************************************************************************
-//  Method: avtExternallyRenderedImagesActor::GetInputsVisibility
-//
-//  Purpose:
-//      Gets the visibility of the given input.
-//
-//  Arguments:
-//      id      The id of the plot to hide within the context of the ERI actor
-//
-//  Programmer: Mark C. Miller 
-//  Creation:   February 4, 2003 
-//
-// ****************************************************************************
-
-bool
-avtExternallyRenderedImagesActor::GetInputsVisibility(const int id)
-{
-    if (id >= inputVisible.size() || id < 0)
-    {
-        EXCEPTION2(BadIndexException, id, inputVisible.size());
-    }
-
-    return inputVisible[id];
-}
-
-
-bool
-avtExternallyRenderedImagesActor::SetVisibility(const void *who)
-{
-   bool oldMode = GetVisibility();
-
-   if (visibilityWhenCalledBy.find(who) == visibilityWhenCalledBy.end())
-   {
-      EXCEPTION2(BadIndexException, 0, 0);
-   }
-   else
-   {
-      SetVisibility(visibilityWhenCalledBy[who]);
-      visibilityWhenCalledBy.erase(who);
-   }
-
-   return oldMode;
-}
-
-bool
-avtExternallyRenderedImagesActor::SetVisibility(const bool mode, const void *who)
-{
-   bool oldMode = GetVisibility();
-
-   if (who == NULL)
-      SetVisibility(mode);
-   else
-   {
-      if (visibilityWhenCalledBy.find(who) == visibilityWhenCalledBy.end())
-      {
-         visibilityWhenCalledBy[who] = oldMode;
-         SetVisibility(mode);
-      }
-      else
-      {
-         EXCEPTION2(BadIndexException, 0, 0);
-      }
-   }
-
-   return oldMode;
-}
 
 // ****************************************************************************
 //  Method: avtExternallyRenderedImagesActor::SetVisibility

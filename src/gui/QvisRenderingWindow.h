@@ -59,7 +59,6 @@ private slots:
     void stereoToggled(bool);
     void stereoTypeChanged(int);
     void renderNotifyToggled(bool);
-    void scalableRenderingToggled(bool);
     void scalableThresholdChanged(int);
 private:
     RenderingAttributes *renderAtts;
@@ -75,13 +74,13 @@ private:
     QRadioButton *interlace;
     QRadioButton *crystalEyes;
     QCheckBox    *renderNotifyToggle;
-    QCheckBox    *scalableRenderingToggle;
     QButtonGroup *scalableThreshold;
-    QRadioButton *scalrenAlways;
-    QRadioButton *scalrenBySize;
     QRadioButton *scalrenAuto;
+    QRadioButton *scalrenAlways;
+    QRadioButton *scalrenNever;
 
     // Labels to display renderer information.
+    QLabel       *scalrenUsingLabel;
     QLabel       *fpsMinLabel;
     QLabel       *fpsAvgLabel;
     QLabel       *fpsMaxLabel;

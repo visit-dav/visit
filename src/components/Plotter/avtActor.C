@@ -39,7 +39,6 @@ avtActor::avtActor()
     transparencyActor      = NULL;
     transparencyIndex      = -1;
     extRenderedImagesActor = NULL;
-    extRenderedImageId     = -1;
 }
 
 
@@ -598,7 +597,7 @@ avtActor::SetExternallyRenderedImagesActor(
    avtExternallyRenderedImagesActor *actor)
 {
     extRenderedImagesActor = actor;
-    extRenderedImageId = drawable->SetExternallyRenderedImagesActor(actor);
+    drawable->SetExternallyRenderedImagesActor(actor);
 }
 
 

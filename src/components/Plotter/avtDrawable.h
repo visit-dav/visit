@@ -69,7 +69,7 @@ class PLOTTER_API avtDrawable
     virtual void               VisibilityOn(void) = 0;
     virtual void               VisibilityOff(void) = 0;
     virtual int                SetTransparencyActor(avtTransparencyActor*) = 0;
-    virtual int                SetExternallyRenderedImagesActor(
+    virtual void               SetExternallyRenderedImagesActor(
                                    avtExternallyRenderedImagesActor*) = 0;
 
     virtual void               ShiftByVector(const float [3]) = 0;

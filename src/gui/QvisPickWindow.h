@@ -39,6 +39,9 @@ class PickAttributes;
 //   Kathleen Bonnell, Fri Dec 27 14:09:40 PST 2002   
 //   Added useNodeCoords checkbox.
 //
+//   Brad Whitlock, Wed Aug 27 08:35:44 PDT 2003
+//   Added the autoShow flag and CreateNode and SetFromNode methods.
+//
 // ****************************************************************************
 
 class GUI_API QvisPickWindow : public QvisPostableWindowObserver
@@ -50,6 +53,10 @@ public:
                     const char *shortName = 0,
                     QvisNotepadArea *notepad = 0);
     virtual ~QvisPickWindow();
+
+    virtual void CreateNode(DataNode *);
+    virtual void SetFromNode(DataNode *, const int *borders);
+
 public slots:
     virtual void apply();
 protected:
@@ -61,15 +68,19 @@ private slots:
     void variableProcessText();
     void useNodeCoordsToggled(bool val);
     void logicalCoordsToggled(bool val);
+    void autoShowToggled(bool);
 private:
     void UpdatePage(void);
     void ClearPages(void);
+
+    bool          autoShow;
 
     QTabWidget   *tabWidget;
     QVBox        *pages[MAX_PICK_TABS];
     QListBox     *infoLists[MAX_PICK_TABS];
     QCheckBox    *useNodeCoords;
     QCheckBox    *logicalCoords;
+    QCheckBox    *autoShowCheckBox;
 
     QLineEdit    *varsLineEdit;
     PickAttributes *pickAtts;

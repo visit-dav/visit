@@ -97,6 +97,7 @@ class PIPELINE_API avtDataTree
 
     avtDataTree_p            GetChild(int);
     avtDataRepresentation   &GetDataRepresentation(void); 
+    int                      GetNumberOfCells(void) const;
 
     vtkDataSet              *GetSingleLeaf(void);
     int                      GetNumberOfLeaves(void);

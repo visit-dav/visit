@@ -1049,8 +1049,13 @@ ViewerEngineManager::GetDataObjectReader(ViewerPlot *const plot,
         // MCM_FIX_ME
         ViewerWindowManager *vwm = ViewerWindowManager::Instance();
         ViewerWindow *w = vwm->GetActiveWindow();
-        const RenderingAttributes& renAtts = w->GetWindowAttributes().GetRenderAtts();
-        bool replyWithNullData = renAtts.GetScalableRendering();
+        bool replyWithNullData = w->GetScalableRendering();
+        if (w->IsTurningOffScalableRendering())
+        {
+           WindowAttributes winAtts = w->GetWindowAttributes();
+           AnnotationAttributes annotAtts = *(w->GetAnnotationAttributes());
+           engine->SetWinAnnotAtts(&winAtts,&annotAtts);
+        }
 
         //
         // Return the result.
@@ -1059,10 +1064,34 @@ ViewerEngineManager::GetDataObjectReader(ViewerPlot *const plot,
         {
 #ifdef VIEWER_MT
             retval = engine->Execute(replyWithNullData, 0, 0);
+
+            // deal with possibility that engine may decide to scalable render this output
+            if (!replyWithNullData && retval->InputIs(AVT_NULL_DATASET_MSG))
+            {
+               // ask for the engine's output as null data 'cause the avtDataObject in the current
+               // reader is just the message that it exceeded threshold
+               retval = engine->Execute(true, 0, 0);
+
+               // now, tell viewer to go into SR mode
+               w->SetScalableRendering(true,true);
+            }
 #else
             BeginEngineExecute();
+
             retval = engine->Execute(replyWithNullData, ViewerSubject::ProcessEventsCB,
                                      (void *)viewerSubject);
+
+            // deal with possibility that engine may decide to scalable render this output
+            if (!replyWithNullData && retval->InputIs(AVT_NULL_DATASET_MSG))
+            {
+               // ask for the engine's output as null data 'cause the avtDataObject in the current
+               // reader is just the message that it exceeded threshold
+               retval = engine->Execute(true, 0, 0);
+
+               // now, tell viewer to go into SR mode
+               w->SetScalableRendering(true,true);
+            }
+
             EndEngineExecute();
 #endif
         }

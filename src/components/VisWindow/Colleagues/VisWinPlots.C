@@ -903,7 +903,7 @@ VisWinPlots::UpdateView()
     // with its sorting algorithms.
     //
     transparencyActor->PrepareForRender(cam);
-    extRenderedImagesActor->PrepareForRender(cam);
+    extRenderedImagesActor->PrepareForRender();
 
     //
     // Pull the wireframe actors a little closer to the camera to make sure

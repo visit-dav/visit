@@ -1,5 +1,6 @@
 <?xml version="1.0"?>
-  <Attribute name="RenderingAttributes" purpose="This class contains special rendering attributes like antialiasing and stero settings." exportAPI="STATE_API" exportInclude="state_exports.h">
+  <Attribute name="RenderingAttributes" purpose="This class contains special rendering attributes like antialiasing and stero settings." exportAPI="STATE_API" exportInclude="state_exports.h" codefile="RenderingAttributes.code">
+    <Constant name="DEFAULT_SCALABLE_THRESHOLD" member="false"></Constant>
     <Enum name="GeometryRepresentation">
        Surfaces
        Wireframe
@@ -17,5 +18,5 @@
     <Field name="stereoType" type="enum" subtype="StereoTypes">CrystalEyes</Field>
     <Field name="notifyForEachRender" type="bool">false</Field>
     <Field name="scalableRendering" type="bool">false</Field>
-    <Field name="scalableThreshold" type="int">0</Field>
+    <Field name="scalableThreshold" type="int">2000000</Field>
   </Attribute>

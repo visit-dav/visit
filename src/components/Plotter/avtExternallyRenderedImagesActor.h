@@ -25,8 +25,8 @@ class     vtkRenderer;
 //  Purpose:
 //
 //      An avtExternallyRenderedImagesActor is an actor representing
-//      one or more images (plots) in a VisWindow that are rendered by
-//      some means outside of and unknown to the VisWindow. In theory,
+//      imagery to be included in a VisWindow but obtained (rendered)
+//      by some means outside of and unknown to the VisWindow. In theory,
 //      the image(s) could be rendered by anything including a process
 //      outside of VisIt such as another visualization tool. In
 //      practice, the most common use case will be one or more
@@ -34,63 +34,39 @@ class     vtkRenderer;
 //
 //      ERI is an abbreviation we use for Externally Rendered Images
 //      throughout all of the code having to do with the ERI actor.
-//      After implementation began, it became apparent that a slightly
-//      better name for this class would be
-//      avtExternallyRenderedPlotsActor as the abstraction is somewhat
-//      specific to visit's notion of a plot. For example, it is the
-//      information about a plot that the ERI actor must pass in the
-//      external render call back.
 //
-//      Ultimately, the ERI actor will live in harmony with all other
-//      plot actors and with multiple engines. This means engines may
-//      serve up Z-buffers so that multiple engine's images may be
-//      composited together or so that a mixture of real goemetry from
-//      some engines can be combined in the viewer's window with
-//      externally rendered images from elsewhere.
+//      The ERI actor simply sits as the last actor in the VTK rendering
+//      pipeline and waits to be activated during each render by VTK
+//      with a call to PrepareForRender().
 //
-//      However, in the initial implementation, the ERI actor will
-//      behave in sort of an all or nothing way. When it is in the
-//      scene, it will manage ALL plots via external rendering. Later,
-//      this restriction will be relaxed as more of an understanding
-//      of the proper behavior is determined.
+//      To fit, conceptually, within the abstraction of a VisWindow,
+//      the ERI actor is necessarily dumb, and rightly so. The only
+//      things it knows about is a callback function to retrieve
+//      the externally rendered image and that it can sometimes be made
+//      invisible and/or its external render requests temporarily
+//      disabled.
 //
-//      The ERI actor will be used in such a way that it will be
-//      notified of the beginning of a Render in the
-//      VisWindow. VisWinPlots notifies the ERI actor of this in its
-//      UpdateView method. When the ERI actor recieves the
-//      PrepareForRender request, it will issue the external render
-//      callback it was assigned by the VisWindow (which in the
-//      typical use case ultimately comes from the Viewer) causing the
-//      engine to render the plots, sending the image data back to the
-//      viewer and then populate the ERI actor's vtk actor with the
-//      rendered image. This will all happen at the START of
-//      rendering. Finally, when the vtkRenderer passes through all
-//      its actors to do all the rendering, the image data for the
-//      externally rendered images will already be in the vtk actor
-//      associated with the ERI actor.
+//      The callback function which is a VisCallbackWithDob MUST set 
+//      the avtDataObject_p it returns to deal with three key returns...
 //
-//      Each plot under the management of the ERI actor has an id within
-//      the context of the ERI actor. That id is really just an index into
-//      a list of booleans used to indicate the visibility of the associated
-//      plot. The AddInput method is used to add a plot to the list of
-//      plots managed by the ERI actor.
+//         a. It MUST NOT CHANGE the avtDataObject_p if nothing has
+//            changed from the last request. This is to deal with
+//            cases where the image data already in the ERI actor
+//            is the correct data to continue displaying.
+//         b. an avtDataObject_p that points to NULL if there is no
+//            image data to display. This is to deal with cases where
+//            there is simply nothing to render.
+//         c. an avtDataObject_p that points to non-NULL and is not
+//            the same avtDataObject_p as was passed into the callback.
+//            This is to deal with a new image.
 //
-//      The ERI actor is intended to be ready to handle external rendering
-//      whenever the need arises. For these reasons, it typically always has
-//      to be aware of other plots, etc. but doesn't always make external
-//      render requests on behalf of the plots it knows about. Consequently,
-//      the external rendering requests that the ERI actor emits can be
-//      enabled and disabled. Regardless, whether external rendering requests
-//      have been enabled or disabled, the ERI actor behaves the same in all
-//      other respects.
+//      The client which sets up the callback must deal with ALL OTHER
+//      ISSUES associated with rendering the right data for the image.
 //      
 //      The image concept supported by this actor also supports
 //      z-buffer data.  This is so because the image(s) associated
 //      with this actor may be combined in a scene where geometry is
-//      coming from other actors. In addition, multiple images may
-//      come from multiple sources and have to be z-buffer
-//      composited. That work should be handled by this actor.
-//      Presently, it is not implemented.
+//      coming from other actors.
 //
 //      It is expected that there is only ever one of these actors in
 //      a scene.  Like the avtTransparencyActor, this actor will
@@ -117,24 +93,12 @@ class PLOTTER_API avtExternallyRenderedImagesActor
     // and obtain the externally rendered image.
     void                 RegisterExternalRenderCallback(
                              VisCallbackWithDob *cb, void *data);
-    void                 DoExternalRender(avtDataObject_p &);
-
-    // Used to add a particular plot's actor to the list of plots' actors
-    // under the management of the ERI actor
-    int                  AddInput(void);
 
     // used to send essential information to ERIA so that it will have that
     // information when it receives a render request
-    void                 PrepareForRender(vtkCamera *);
-
-    // used to control the visibility of one of many plots' actors that are 
-    // under the management of the ERIA.
-    bool                 SetInputsVisibility(const int inputId, const bool mode);
-    bool                 GetInputsVisibility(const int inputId);
+    void                 PrepareForRender(void);
 
     // used to temporarily control visibility of ERIA while its in a window
-    bool                 SetVisibility(const void *who);
-    bool                 SetVisibility(const bool mode, const void *who);
     bool                 SetVisibility(const bool mode);
     bool                 GetVisibility();
 
@@ -144,23 +108,16 @@ class PLOTTER_API avtExternallyRenderedImagesActor
 
   private:
 
+    // used to invoke the external render request
+    void                 DoExternalRender(avtDataObject_p &);
+
     // used to indicate if the ERIA is active or not
     bool                 makeExternalRenderRequests;
-
-    // used to record each input's visibility
-    std::vector<bool>    inputVisible;
-
-    // used to manage caller's conditional visibility settings
-    std::map<const void*,bool> visibilityWhenCalledBy;
-
-    // used to indicate if the list of inputs has changed
-    bool                 inputModified;
 
     // the actor that gets added to a renderer for a vis window that handles
     // ALL externally rendered images in that vis window. 
     vtkActor2D          *myActor;
     vtkImageMapper      *myMapper;
-    vtkMatrix4x4        *lastMat;
     vtkImageData        *dummyImage;
 
     VisCallbackWithDob          *extRenderCallback;

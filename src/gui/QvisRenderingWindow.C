@@ -1,5 +1,6 @@
 #include <QvisRenderingWindow.h>
 #include <float.h>
+#include <limits.h>
 
 #include <qbuttongroup.h>
 #include <qcheckbox.h>
@@ -157,24 +158,20 @@ QvisRenderingWindow::CreateWindowContents()
     oLayout->addWidget(crystalEyes, 6, 3);
 
     // Create the scalable rendering widgets.
-    scalableRenderingToggle = new QCheckBox("Use scalable rendering", options,
-        "scalableRenderingToggle");
-    connect(scalableRenderingToggle, SIGNAL(toggled(bool)),
-            this, SLOT(scalableRenderingToggled(bool)));
-    oLayout->addMultiCellWidget(scalableRenderingToggle, 7, 7, 0, 3);
+    QLabel *scalrenLabel = new QLabel("Use scalable rendering", options,"scalrenLabel");
+    oLayout->addMultiCellWidget(scalrenLabel, 7, 7, 0, 3);
     scalableThreshold = new QButtonGroup(0, "scalableThreshold");
     connect(scalableThreshold, SIGNAL(clicked(int)),
             this, SLOT(scalableThresholdChanged(int)));
+    scalrenAuto = new QRadioButton("Auto", options, "auto");
+    scalableThreshold->insert(scalrenAuto);
+    oLayout->addWidget(scalrenAuto, 8, 1);
     scalrenAlways = new QRadioButton("Always", options, "always");
     scalableThreshold->insert(scalrenAlways);
-    oLayout->addWidget(scalrenAlways, 8, 1);
-    scalrenBySize = new QRadioButton("For big data", options, "size");
-    scalableThreshold->insert(scalrenBySize);
-    oLayout->addWidget(scalrenBySize, 8, 2);
-    scalrenAuto = new QRadioButton("For slow net", options, "auto");
-    scalableThreshold->insert(scalrenAuto);
-    oLayout->addWidget(scalrenAuto, 8, 3);
-//    scalableRenderingToggle->setEnabled(false);
+    oLayout->addWidget(scalrenAlways, 8, 2);
+    scalrenNever = new QRadioButton("Never", options, "never");
+    scalableThreshold->insert(scalrenNever);
+    oLayout->addWidget(scalrenNever, 8, 3);
 
     //
     // Create the renderer information group.
@@ -192,6 +189,14 @@ QvisRenderingWindow::CreateWindowContents()
     connect(renderNotifyToggle, SIGNAL(toggled(bool)),
             this, SLOT(renderNotifyToggled(bool)));
     vLayout->addWidget(renderNotifyToggle);
+    vLayout->addSpacing(5);
+
+    QGridLayout *scalrenLayout = new QGridLayout(vLayout, 2, 4);
+    scalrenLayout->setSpacing(5);
+    QLabel *scalrenLabel2 = new QLabel("Using Scalable Rendering: ", info, "scalrenLabel2");
+    scalrenLayout->addWidget(scalrenLabel2, 0, 0);
+    scalrenUsingLabel = new QLabel("N/A", info, "scalrenUsingLabel");
+    scalrenLayout->addWidget(scalrenUsingLabel, 0, 1);
     vLayout->addSpacing(5);
 
     QGridLayout *iLayout = new QGridLayout(vLayout, 2, 4);
@@ -336,17 +341,16 @@ QvisRenderingWindow::UpdateOptions(bool doAll)
             renderNotifyToggle->blockSignals(false);
             break;
         case 6: //scalableRendering
-            scalableRenderingToggle->blockSignals(true);
-            scalableRenderingToggle->setChecked(renderAtts->GetScalableRendering());
-            scalableRenderingToggle->blockSignals(false);
-            scalableThreshold->setEnabled(renderAtts->GetScalableRendering());
-            scalrenAlways->setEnabled(renderAtts->GetScalableRendering());
-            scalrenBySize->setEnabled(renderAtts->GetScalableRendering());
-            scalrenAuto->setEnabled(renderAtts->GetScalableRendering());
             break;
         case 7: //scalableThreshold
+            itmp = (int)renderAtts->GetScalableThreshold();
             scalableThreshold->blockSignals(true);
-            scalableThreshold->setButton((int)renderAtts->GetScalableThreshold());
+            if (itmp == 0)
+               scalableThreshold->setButton(1);
+            else if (itmp == INT_MAX)
+               scalableThreshold->setButton(2);
+            else
+               scalableThreshold->setButton(0);
             scalableThreshold->blockSignals(false);
             break;
         }
@@ -449,6 +453,10 @@ QvisRenderingWindow::UpdateInformation(bool doAll)
             break;
         }            
     }
+
+    // Now, handle the current status of scalable rendering
+    scalrenUsingLabel->setText(renderAtts->GetScalableRendering() ? "yes" : "no");
+
 }
 
 // ****************************************************************************
@@ -721,37 +729,14 @@ QvisRenderingWindow::renderNotifyToggled(bool val)
 }
 
 // ****************************************************************************
-// Method: QvisRenderingWindow::scalableRenderingToggled
-//
-// Purpose: 
-//   This Qt slot function is called when we change turn scalable rendering
-//   on/off.
-//
-// Arguments:
-//   val : The new stereo enabled mode.
-//
-// Programmer: Mark C. Miller
-// Creation:   Wed Nov 20 17:09:59 PST 2002
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisRenderingWindow::scalableRenderingToggled(bool val)
-{
-    renderAtts->SetScalableRendering(val);
-    Apply();
-}
-
-// ****************************************************************************
 // Method: QvisRenderingWindow::scalableThresholdChanged
 //
 // Purpose: 
 //   This Qt slot function is called when the scalable threshold changes.
 //
 // Arguments:
-//   val : The new scalable threshold.
+//   val : The new scalable threshold flag.
+//         0 = Auto, 1 = Always, 2 = Never
 //
 // Programmer: Mark C. Miller 
 // Creation:   Wed Nov 20 17:09:59 PST 2002 
@@ -763,7 +748,13 @@ QvisRenderingWindow::scalableRenderingToggled(bool val)
 void
 QvisRenderingWindow::scalableThresholdChanged(int val)
 {
-    renderAtts->SetScalableThreshold(val);
+    if (val == 0)
+       renderAtts->SetScalableThreshold(
+          RenderingAttributes::DEFAULT_SCALABLE_THRESHOLD);
+    else if (val == 1)
+       renderAtts->SetScalableThreshold(0);
+    else
+       renderAtts->SetScalableThreshold(INT_MAX);
     SetUpdate(false);
     Apply();
 }

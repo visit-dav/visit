@@ -160,6 +160,7 @@ ViewerWindow::ViewerWindow(int windowIndex)
     SetLightList(ViewerWindowManager::GetLightListDefaultAtts());
 
     // Set some default values.
+    turningOffScalableRendering = false;
     cameraView = false;
     maintainView = false;
     viewIsLocked = false;
@@ -4612,17 +4613,32 @@ ViewerWindow::SetScalableRendering(bool mode, bool update)
 
     visWindow->SetScalableRendering(mode);
 
+    // clear the info about last request
+    if (mode == false)
+    {
+       lastExternalRenderRequest.pluginIDsList.clear();
+       lastExternalRenderRequest.hostsList.clear();
+       lastExternalRenderRequest.plotIdsList.clear();
+       lastExternalRenderRequest.attsList.clear();
+    }
+
     //
     // Update the window
     //
     if(differentModes && update)
     {
+        if (!mode)
+           turningOffScalableRendering = true;
         DisableUpdates();
         animation->GetPlotList()->ClearPlots();
         animation->GetPlotList()->RealizePlots();
         if (updatesEnabled)
-            EnableUpdates();
+           EnableUpdates();
+        if (turningOffScalableRendering)
+           turningOffScalableRendering = false;
     }
+
+
 }
 
 // ****************************************************************************
@@ -4660,7 +4676,17 @@ ViewerWindow::GetScalableRendering() const
 void
 ViewerWindow::SetScalableThreshold(int threshold)
 {
-    visWindow->SetScalableThreshold(threshold);
+    int oldThreshold = GetScalableThreshold();
+
+    if (threshold != oldThreshold)
+    {
+       visWindow->SetScalableThreshold(threshold);
+
+       if (threshold == 0)
+          SetScalableRendering(true,true);
+       else if (threshold == INT_MAX)
+          SetScalableRendering(false,true);
+    }
 }
 
 // ****************************************************************************
@@ -5153,6 +5179,13 @@ ViewerWindow::ExternalRenderCallback(void *data, avtDataObject_p& dob)
     ExternalRenderRequestInfo &lastRequest = win->lastExternalRenderRequest;
     ExternalRenderRequestInfo thisRequest;
 
+    // if we aren't currently in scalable rendering mode, we have nothing to do
+    if (!win->GetScalableRendering())
+    {
+       dob = NULL;
+       return;
+    }
+
     // get all the plot's attributes in this window
     std::map<std::string,std::vector<int> > perEnginePlotIds;
     win->GetAnimation()->GetPlotList()->
@@ -5234,6 +5267,13 @@ ViewerWindow::ExternalRenderCallback(void *data, avtDataObject_p& dob)
        {
           eMgr->SetWinAnnotAtts(pos->first.c_str(), &thisRequest.winAtts, &thisRequest.annotAtts);
           avtDataObjectReader_p rdr = eMgr->GetDataObjectReader(sendZBuffer, pos->first.c_str(), pos->second);
+
+          if (rdr->InputIs(AVT_NULL_IMAGE_MSG))
+          {
+             dob = NULL;
+             win->SetScalableRendering(false, true); // we're in the middle of a render
+             return;
+          }
 
           // do some magic to update the network so we don't need the reader anymore
           avtDataObject_p tmpDob = rdr->GetOutput();

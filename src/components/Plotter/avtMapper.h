@@ -83,7 +83,7 @@ class PLOTTER_API avtMapper : public avtOriginatingDatasetSink
     bool                       GetImmediateModeRendering();
 
     int                        SetTransparencyActor(avtTransparencyActor *);
-    int                        SetExternallyRenderedImagesActor(
+    void                       SetExternallyRenderedImagesActor(
                                    avtExternallyRenderedImagesActor*);
 
   protected:
@@ -92,7 +92,6 @@ class PLOTTER_API avtMapper : public avtOriginatingDatasetSink
     avtTransparencyActor      *transparencyActor;
     int                        transparencyIndex;
     avtExternallyRenderedImagesActor *extRenderedImagesActor;
-    int                        extRenderedImageId; 
 
     vtkDataSetMapper         **mappers;
     int                        nMappers;

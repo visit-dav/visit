@@ -125,6 +125,7 @@ NetworkManager::ClearAllNetworks(void)
     for (i = 0; i < networkCache.size(); i++)
         delete networkCache[i];
     networkCache.clear();
+    globalCellCounts.clear();
 
 }
 
@@ -290,12 +291,15 @@ NetworkManager::StartNetwork(const string &filename, const string &var,
     //cerr << "NetworkManager::StartNetwork()" << endl;
 
     // Check to make sure that there is no existing network.
+    // MCM_FIX: in automatic SR mode, this logic won't work.
+#if 0
     if (workingNet != NULL)
     {
         char error[] = "Trying to create pipeline twice.";
         debug1 << error << endl;
         EXCEPTION1(ImproperUseException,error);
     }
+#endif
 
     // If the variable is an expression, we need to find a "real" variable
     // name to work with.
@@ -672,6 +676,7 @@ NetworkManager::EndNetwork(void)
     // Push the working net onto the network caches.
     workingNet->SetID(networkCache.size());
     networkCache.push_back(workingNet);
+    globalCellCounts.push_back(-1);
 
     return workingNet->GetID();
 }
@@ -772,6 +777,26 @@ NetworkManager::GetCurrentNetworkId(void)
 }
 
 // ****************************************************************************
+//  Method: NetworkManager::GetTotalGlobalCellCounts
+//
+//  Purpose:
+//      Gets the network id of the current network.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 9, 2002
+//
+// ****************************************************************************
+int
+NetworkManager::GetTotalGlobalCellCounts(void) const
+{
+   int i, sum = 0;
+   for (i = 0; i < globalCellCounts.size(); i++)
+      sum += globalCellCounts[i];
+   return sum;
+}
+
+
+// ****************************************************************************
 //  Method: NetworkManager::DoneWithNetwork
 //
 //  Purpose:
@@ -795,6 +820,7 @@ NetworkManager::DoneWithNetwork(int id)
     }
 
     networkCache[id]->ReleaseData();
+    globalCellCounts[id] = -1;
 
 }
 
@@ -894,7 +920,7 @@ NetworkManager::UpdatePlotAtts(int id, const AttributeGroup *atts)
 //
 // ****************************************************************************
 avtDataObjectWriter_p
-NetworkManager::GetOutput(bool respondWithNullData)
+NetworkManager::GetOutput(bool respondWithNullData, bool calledForRender)
 {
 
     // Is the network complete?
@@ -906,8 +932,12 @@ NetworkManager::GetOutput(bool respondWithNullData)
 
     TRY
     {
+        bool clearNetwork = true;
+
         // Hook up the network
         avtDataObject_p output = workingNet->GetOutput();
+        int netId = GetCurrentNetworkId();
+
 
         workingNet->GetPipelineSpec()->GetDataSpecification()->
             SetMayRequireZones(requireOriginalCells); 
@@ -915,6 +945,20 @@ NetworkManager::GetOutput(bool respondWithNullData)
         avtDataObjectWriter_p writer = workingNet->GetWriter(output,
                                           workingNet->GetPipelineSpec(),
                                           &windowAttributes);
+
+        // compute this network's cell count if we haven't already 
+        if (globalCellCounts[netId] == -1)
+        {
+           int localCellCount = writer->GetInput()->GetNumberOfCells();
+           int totalCellCount;
+#ifdef PARALLEL
+           MPI_Allreduce(&localCellCount, &totalCellCount, 1, MPI_INT, MPI_SUM,
+              MPI_COMM_WORLD);
+#else
+           totalCellCount = localCellCount; 
+#endif
+           globalCellCounts[netId] = totalCellCount;
+        }
 
         if (respondWithNullData)
         {
@@ -930,12 +974,29 @@ NetworkManager::GetOutput(bool respondWithNullData)
            writer = dummyDob->InstantiateWriter();
            writer->SetInput(dummyDob);
         }
+        else if (!calledForRender)
+        {
+           int  scalableThreshold = windowAttributes.GetRenderAtts().GetScalableThreshold();
 
+           if (GetTotalGlobalCellCounts() > scalableThreshold)
+           {
+              avtNullData_p nullData = new avtNullData(NULL,AVT_NULL_DATASET_MSG);
+              avtDataObject_p dummyDob;
+              CopyTo(dummyDob, nullData);
+              writer = dummyDob->InstantiateWriter();
+              writer->SetInput(dummyDob);
+              clearNetwork = false;
+           }
+
+        }
 
         // Zero out the workingNet.  Remember that we've already pushed it
         // onto the cache in EndNetwork.
-        workingNet = NULL;
-        workingNetnodeList.clear();
+        if (clearNetwork)
+        {
+           workingNet = NULL;
+           workingNetnodeList.clear();
+        }
 
         // return it
         CATCH_RETURN2(1, writer);
@@ -970,61 +1031,78 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer)
     TRY
     {
        avtDataObjectWriter_p writer;
+       int  scalableThreshold = windowAttributes.GetRenderAtts().GetScalableThreshold();
 
-       // put all the plot objects into the VisWindow
-       viswin->SetScalableRendering(false);
-       for (int i = 0; i < plotIds.size(); i++)
+       // scalable threshold test (the 0.5 is to add some hysteresus to avoid 
+       // the misfortune of oscillating switching of modes around the threshold)
+       if (GetTotalGlobalCellCounts() < 0.5 * scalableThreshold)
        {
-          // get the network output as we would normally
-          workingNet = NULL;
-          UseNetwork(plotIds[i]);
-          DataNetwork *workingNetSaved = workingNet;
-          avtDataObjectWriter_p tmpWriter = GetOutput(false);
-          avtDataObject_p dob = tmpWriter->GetInput();
 
-          // merge polygon info output across processors 
-          dob->GetInfo().ParallelMerge(tmpWriter);
+          avtNullData_p nullData = new avtNullData(NULL,AVT_NULL_IMAGE_MSG);
+          avtDataObject_p dummyDob;
+          CopyTo(dummyDob, nullData);
+          writer = dummyDob->InstantiateWriter();
+          writer->SetInput(dummyDob);
 
-          // get this plots object handle
-          avtPlot_p aPlot = workingNetSaved->GetPlot();
-
-          // set foreground and background colors of the plot
-          double color[3];
-          color[0] = windowAttributes.GetBackground()[0]/255.0,
-          color[1] = windowAttributes.GetBackground()[1]/255.0,
-          color[2] = windowAttributes.GetBackground()[2]/255.0,
-          aPlot->SetBackgroundColor(color);
-          color[0] = windowAttributes.GetForeground()[0]/255.0,
-          color[1] = windowAttributes.GetForeground()[1]/255.0,
-          color[2] = windowAttributes.GetForeground()[2]/255.0,
-          aPlot->SetForegroundColor(color);
-
-          // do the part of the execute we'd do in the viewer
-          avtActor_p anActor = aPlot->Execute(NULL, dob);
-
-          viswin->AddPlot(anActor);
        }
+       else
+       {
 
-       int numTriangles = viswin->GetNumTriangles();
-       debug1 << "Rendering " << numTriangles << " triangles. " 
-              << "Balanced speedup = " << RenderBalance(numTriangles)
-              << "x" << endl;
+          // put all the plot objects into the VisWindow
+          viswin->SetScalableRendering(false);
+          for (int i = 0; i < plotIds.size(); i++)
+          {
+             // get the network output as we would normally
+             workingNet = NULL;
+             UseNetwork(plotIds[i]);
+             DataNetwork *workingNetSaved = workingNet;
+             avtDataObjectWriter_p tmpWriter = GetOutput(false,true);
+             avtDataObject_p dob = tmpWriter->GetInput();
 
-       // render the image and capture it. Relies upon explicit render
-       avtImage_p theImage = viswin->ScreenCapture(true);
-       viswin->ClearPlots();
+             // merge polygon info output across processors 
+             dob->GetInfo().ParallelMerge(tmpWriter);
 
-       // do the parallel composite using a 1 stage pipeline
-       int imageRows, imageCols;
-       viswin->GetSize(imageCols, imageRows);
-       avtWholeImageCompositer imageCompositer;
-       imageCompositer.SetOutputImageSize(imageRows, imageCols);
-       imageCompositer.AddImageInput(theImage, 0, 0);
-       imageCompositer.SetShouldOutputZBuffer(getZBuffer);
-       imageCompositer.Execute();
-       avtDataObject_p compositedImageAsDataObject = imageCompositer.GetOutput();
-       writer = compositedImageAsDataObject->InstantiateWriter();
-       writer->SetInput(compositedImageAsDataObject);
+             // get this plots object handle
+             avtPlot_p aPlot = workingNetSaved->GetPlot();
+
+             // set foreground and background colors of the plot
+             double color[3];
+             color[0] = windowAttributes.GetBackground()[0]/255.0,
+             color[1] = windowAttributes.GetBackground()[1]/255.0,
+             color[2] = windowAttributes.GetBackground()[2]/255.0,
+             aPlot->SetBackgroundColor(color);
+             color[0] = windowAttributes.GetForeground()[0]/255.0,
+             color[1] = windowAttributes.GetForeground()[1]/255.0,
+             color[2] = windowAttributes.GetForeground()[2]/255.0,
+             aPlot->SetForegroundColor(color);
+
+             // do the part of the execute we'd do in the viewer
+             avtActor_p anActor = aPlot->Execute(NULL, dob);
+
+             viswin->AddPlot(anActor);
+          }
+
+          int numTriangles = viswin->GetNumTriangles();
+          debug1 << "Rendering " << numTriangles << " triangles. " 
+                 << "Balanced speedup = " << RenderBalance(numTriangles)
+                 << "x" << endl;
+
+          // render the image and capture it. Relies upon explicit render
+          avtImage_p theImage = viswin->ScreenCapture(true);
+          viswin->ClearPlots();
+
+          // do the parallel composite using a 1 stage pipeline
+          int imageRows, imageCols;
+          viswin->GetSize(imageCols, imageRows);
+          avtWholeImageCompositer imageCompositer;
+          imageCompositer.SetOutputImageSize(imageRows, imageCols);
+          imageCompositer.AddImageInput(theImage, 0, 0);
+          imageCompositer.SetShouldOutputZBuffer(getZBuffer);
+          imageCompositer.Execute();
+          avtDataObject_p compositedImageAsDataObject = imageCompositer.GetOutput();
+          writer = compositedImageAsDataObject->InstantiateWriter();
+          writer->SetInput(compositedImageAsDataObject);
+       }
 
        // return it
        CATCH_RETURN2(1, writer);

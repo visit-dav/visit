@@ -133,6 +133,7 @@ class NetworkManager
     void          UseNetwork(int);
     avtPlot_p     GetPlot(void);
     int           GetCurrentNetworkId(void);
+    int           GetTotalGlobalCellCounts(void) const;
     void          DoneWithNetwork(int);
 
     void          UpdatePlotAtts(int, const AttributeGroup *);
@@ -142,7 +143,8 @@ class NetworkManager
 
     void          SetLoadBalancer(LoadBalancer *lb) {loadBalancer = lb;};
 
-    avtDataObjectWriter_p GetOutput(bool);
+    avtDataObjectWriter_p GetOutput(bool respondWithNullData,
+                                    bool calledForRender);
     avtDataObjectWriter_p Render(intVector networkIds, bool getZBuffer);
  
     void          StartPickMode(void);
@@ -153,6 +155,7 @@ class NetworkManager
 
  private:
     std::vector<DataNetwork*>   networkCache;
+    std::vector<int>            globalCellCounts;
     std::deque<DataNetwork*>    networkMRU;
     std::vector<NetnodeDB*>     databaseCache;
     StringVectorMap             virtualDatabases;

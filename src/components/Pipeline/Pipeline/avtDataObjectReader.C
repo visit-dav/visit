@@ -2,6 +2,7 @@
 //                             avtDataObjectReader.C                         //
 // ************************************************************************* //
 
+#include <string>
 #include <avtDataObjectReader.h>
 
 #include <avtDataSetReader.h>
@@ -109,6 +110,30 @@ avtDataObjectReader::InputIsNullData(void)
     return nullDataInput;
 }
 
+
+// ****************************************************************************
+//  Method: avtDataObjectReader::InputIs
+//
+//  Purpose:
+//      Shows if the input type string is equal to given string 
+//
+//  Returns:    true if the input string and given string match 
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   January 8, 2003 
+//
+// ****************************************************************************
+
+bool
+avtDataObjectReader::InputIs(const char *givenStr)
+{
+    if (!haveInput)
+    {
+        EXCEPTION0(NoInputException);
+    }
+
+    return !strcmp(inputTypeStr.c_str(),givenStr); 
+}
 
 // ****************************************************************************
 //  Method: avtDataObjectReader::GetImageOutput
@@ -333,7 +358,9 @@ avtDataObjectReader::Read(int size, char *input)
 
         imageReader->GetOutput()->GetInfo().Copy(info);
     }
-    else if (strcmp(dataObjectType, "avtNullData") == 0)
+    else if ((strcmp(dataObjectType, "avtNullData") == 0) ||
+             (strcmp(dataObjectType, AVT_NULL_IMAGE_MSG) == 0) ||
+             (strcmp(dataObjectType, AVT_NULL_DATASET_MSG) == 0))
     {
         datasetInput  = false;
         imageInput    = false; 
@@ -352,6 +379,7 @@ avtDataObjectReader::Read(int size, char *input)
         EXCEPTION0(ImproperUseException);
     }
 
+    inputTypeStr = std::string(dataObjectType);
     delete [] dataObjectType;
 
     if (size != 0)
