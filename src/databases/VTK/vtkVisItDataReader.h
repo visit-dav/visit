@@ -29,7 +29,6 @@
 #ifndef __vtkVisItDataReader_h
 #define __vtkVisItDataReader_h
 
-#include <database_exports.h>
 #include "vtkSource.h"
 
 #define VTK_ASCII 1
@@ -43,7 +42,7 @@ class vtkFieldData;
 class vtkPointSet;
 class vtkRectilinearGrid;
 
-class DATABASE_API VTK_IO_EXPORT vtkVisItDataReader : public vtkSource
+class vtkVisItDataReader : public vtkSource
 {
 public:
   static vtkVisItDataReader *New();

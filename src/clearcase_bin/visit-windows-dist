@@ -29,6 +29,10 @@
 #   This allows me to use the UNIX config files but make them Windows friendly
 #   when creating the Windows distribution.
 #
+#   Brad Whitlock, Fri Mar 5 10:32:41 PDT 2004
+#   I changed the script so it copies the lite PDB header files into the new
+#   include directory before the old directory gets blown away.
+#
 #------------------------------------------------------------------------------
 
 if(`pwd` != "/data_vobs/VisIt") then
@@ -64,11 +68,6 @@ rm $VISITSRC.tar
 # and it creates a name conflict with the prep tool.
 rm -rf $VISITSRC/tools/mpeg_encode
 
-# Remove the $VISITSRC/include/visit directory since it's full of symlinks and Windows
-# will not honor them.
-echo "Removing old visit include directory..."
-rm -rf $VISITSRC/include/visit
-
 # Copy windowsbuild/VisItBuildInstructionsOnWindows.doc to $VisItDev
 cp $TOPDIR/windowsbuild/VisItBuildInstructionsOnWindows.doc .
 cp $TOPDIR/windowsbuild/BUILD_NOTES.txt .
@@ -77,10 +76,21 @@ cp $TOPDIR/windowsbuild/BUILD_NOTES.txt .
 cp -R $TOPDIR/windowsbuild/include .
 
 #
-# Move a bunch of the core header files to the new visit directory
+# Set up a new include directory.
 #
 echo "Creating new visit include directory..."
 mkdir include/VisIt
+# Copy the lite PDB headers from the include/visit directory before
+# blowing it away.
+cp $VISITSRC/include/visit/lite_pdb.h include/VisIt
+cp $VISITSRC/include/visit/lite_score.h include/VisIt
+# Remove the $VISITSRC/include/visit directory since it's full of symlinks and Windows
+# will not honor them.
+echo "Removing old visit include directory..."
+rm -rf $VISITSRC/include/visit
+#
+# Move a bunch of the core header files to the new visit directory
+#
 foreach srcdir (common components gui viewer engine mdserver launcher visitpy visit_vtk vtkqt)
     foreach srcfile (`find $VISITSRC/$srcdir -name "*.h"`)
         mv $srcfile include/VisIt

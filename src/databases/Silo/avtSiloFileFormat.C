@@ -200,6 +200,7 @@ avtSiloFileFormat::GetFile(int f)
         EXCEPTION1(InvalidFilesException, filenames[f]);
     }
 
+    UsedFile(f);
     return dbfiles[f];
 }
 

@@ -17,6 +17,7 @@
 #include <vtkVisItUtility.h>
 
 #include <avtCallback.h>
+#include <avtExpressionEvaluatorFilter.h>
 #include <avtMatrix.h>
 #include <avtTerminatingSource.h>
 #include <avtVector.h>
@@ -47,13 +48,19 @@ using     std::string;
 //    Kathleen Bonnell, Wed Jun 18 17:55:49 PDT 2003 
 //    Initialize ghostType. 
 //
+//    Kathleen Bonnell, Mon Mar  8 09:23:47 PST 2004 
+//    Initialize new mbmber, needTransform, singleDomain and eef. 
+//
 // ****************************************************************************
 
 avtPickQuery::avtPickQuery()
 {
     blockOrigin = cellOrigin = 0;
     invTransform = NULL;
+    needTransform = false;
     ghostType = AVT_NO_GHOSTS;
+    singleDomain = false;
+    eef = new avtExpressionEvaluatorFilter;
 }
 
 
@@ -67,11 +74,18 @@ avtPickQuery::avtPickQuery()
 //  Programmer: Hank Childs
 //  Creation:   February 5, 2004
 //
+//  Modifications:
+//    Kathleen Bonnell, Mon Mar  8 09:23:47 PST 2004
+//    Destruct eef.
 // ****************************************************************************
 
 avtPickQuery::~avtPickQuery()
 {
-    ;
+    if (eef != NULL)
+    {
+        delete eef;
+        eef = NULL;
+    }
 }
 
 
@@ -90,6 +104,24 @@ void
 avtPickQuery::SetPickAtts(const PickAttributes *pa)
 {
     pickAtts =  *pa;
+}
+
+
+// ****************************************************************************
+//  Method: avtPickQuery::SetTransform
+//
+//  Purpose:
+//      Sets the inverseTransform, used to return correct pick points. 
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   March 5, 2004 
+//
+// ****************************************************************************
+
+void
+avtPickQuery::SetTransform(const avtMatrix *m)
+{
+    invTransform =  m;
 }
 
 
@@ -127,26 +159,14 @@ avtPickQuery::GetPickAtts()
 //    If we are doing a PickByZone or PickByNode (indicated by 
 //    ppt[0] == FLT_MAX), get the correct domain number to use in the pipeline.
 //
+//    Kathleen Bonnell, Mon Mar  8 08:10:09 PST 2004 
+//    Moved code to ApplyFilters method. 
+// 
 // ****************************************************************************
 
 void
 avtPickQuery::PreExecute(void)
 {
-    avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
-    blockOrigin = atts.GetBlockOrigin();
-    cellOrigin = atts.GetCellOrigin();
-    ghostType = atts.GetContainsGhostZones();
-    pickAtts.SetDimension(atts.GetSpatialDimension());
-    if (pickAtts.GetPickPoint()[0] == FLT_MAX)
-    {
-        int dom = pickAtts.GetDomain() - blockOrigin;
-        pickAtts.SetDomain(dom < 0 ? 0 : dom);
-        if (pickAtts.GetPickType() == PickAttributes::Zone)
-        {
-            int  zone = pickAtts.GetElementNumber() - cellOrigin;
-            pickAtts.SetElementNumber(zone < 0 ? 0 : zone);
-        }
-    }
 }
 
 
@@ -295,6 +315,10 @@ avtPickQuery::PostExecute(void)
 //    Issued a warning via avtCallback when pick is unable to locate the
 //    zone contained by the pick point. 
 //
+//    Kathleen Bonnell, Mon Mar  8 08:10:09 PST 2004 
+//    Added another call to "RetrieveVarInfo" in case databse did not fill
+//    in all the information. 
+//
 // ****************************************************************************
 
 void
@@ -305,18 +329,12 @@ avtPickQuery::Execute(vtkDataSet *ds, const int dom)
         return;
     }
 
-    avtDataSpecification_p dspec = 
-        GetInput()->GetTerminatingSource()->GetFullDataSpecification();
-    int ts = dspec->GetTimestep();
-    pickAtts.SetTimeStep(ts);
-    intVector dlist;
-    dspec->GetSIL().GetDomainList(dlist);
-
     int foundElement = pickAtts.GetElementNumber();
     int type = ds->GetDataObjectType();
     bool needRealId = (ghostType == AVT_HAS_GHOSTS || foundElement == -1) &&
             (type == VTK_STRUCTURED_GRID || type == VTK_RECTILINEAR_GRID || 
              ds->GetFieldData()->GetArray("vtkOriginalDimensions") != NULL );
+
 
     if (foundElement == -1)
     {
@@ -398,9 +416,9 @@ avtPickQuery::Execute(vtkDataSet *ds, const int dom)
         }
         if (success)
         {
-            pickAtts.SetFulfilled(true);
             pickAtts.SetElementNumber(foundElement);
             RetrieveVarInfo(ds);
+            pickAtts.SetFulfilled(true);
         }
         else
         {
@@ -440,13 +458,14 @@ avtPickQuery::Execute(vtkDataSet *ds, const int dom)
     //
     //  Allow the database to add any missing information.
     // 
-    GetInput()->GetQueryableSource()->Query(&pickAtts);
+    src->Query(&pickAtts);
+    RetrieveVarInfo(ds); 
 
     //
     // Set the domain and zone of pickAtts in relation to the
     // blockOrigin and cellOrigin of the problem.  
     // 
-    if (dlist.size() == 1 && dspec->UsesAllDomains())
+    if (singleDomain)
     {
         //
         // Indicate that there was only one domain.
@@ -565,40 +584,54 @@ avtPickQuery::Execute(vtkDataSet *ds, const int dom)
 //    Kathleen Bonnell, Fri Jun 27 17:28:17 PDT 2003 
 //    Transform message not needed for node pick. 
 //    
+//    Kathleen Bonnell, Mon Mar  8 08:10:09 PST 2004
+//    Reworked to use ExpressionEvaluatorFilter and SILRestriction UseSet as
+//    passed down by the Engine. 
+//    
 // ****************************************************************************
 
 avtDataObject_p
 avtPickQuery::ApplyFilters(avtDataObject_p inData)
 {
+    src = inData->GetQueryableSource();
+
     avtDataAttributes &inAtts = inData->GetInfo().GetAttributes();
-    if (inAtts.HasTransform() && inAtts.GetCanUseTransform())
+    blockOrigin = inAtts.GetBlockOrigin();
+    cellOrigin = inAtts.GetCellOrigin();
+    ghostType = inAtts.GetContainsGhostZones();
+    pickAtts.SetDimension(inAtts.GetSpatialDimension());
+    if (pickAtts.GetPickPoint()[0] == FLT_MAX)
     {
-        invTransform = inAtts.GetTransform();
-        //
-        // Transform the point that will be used in locating the cell. 
-        //
-        float *cellPoint  = pickAtts.GetCellPoint();
-        if (invTransform != NULL)  
+        int dom = pickAtts.GetDomain() - blockOrigin;
+        pickAtts.SetDomain(dom < 0 ? 0 : dom);
+        if (pickAtts.GetPickType() == PickAttributes::Zone)
         {
-            //
-            // Transform the intersection point back to original space.
-            //
-            avtVector v1(cellPoint);
-            v1 = (*invTransform) * v1;
-            cellPoint[0] = v1.x;
-            cellPoint[1] = v1.y;
-            cellPoint[2] = v1.z;
-            //
-            // Reset the cell point to the transformed point.
-            //
-            pickAtts.SetCellPoint(cellPoint);
+            int  zone = pickAtts.GetElementNumber() - cellOrigin;
+            pickAtts.SetElementNumber(zone < 0 ? 0 : zone);
         }
     }
-    else
+
+    //
+    // Transform the point that will be used in locating the cell. 
+    //
+    float *cellPoint  = pickAtts.GetCellPoint();
+    if (invTransform != NULL)  
     {
-        invTransform = NULL;
+        //
+        // Transform the intersection point back to original space.
+        //
+        avtVector v1(cellPoint);
+        v1 = (*invTransform) * v1;
+        cellPoint[0] = v1.x;
+        cellPoint[1] = v1.y;
+        cellPoint[2] = v1.z;
+        //
+        // Reset the cell point to the transformed point.
+        //
+        pickAtts.SetCellPoint(cellPoint);
     }
-    if (inData->GetInfo().GetValidity().GetPointsWereTransformed() &&
+
+    if (needTransform &&
         (invTransform == NULL)) 
     {
         pickAtts.SetNeedTransformMessage(true);
@@ -607,7 +640,57 @@ avtPickQuery::ApplyFilters(avtDataObject_p inData)
     {
         pickAtts.SetNeedTransformMessage(false);
     }
-    return inData->GetQueryableSource()->GetOutput();
+
+    avtDataSpecification_p dspec = inData->GetTerminatingSource()
+        ->GetGeneralPipelineSpecification()->GetDataSpecification();
+
+    int ts = dspec->GetTimestep();
+    pickAtts.SetTimeStep(ts);
+    intVector dlist;
+    dspec->GetSIL().GetDomainList(dlist);
+    if (dlist.size() == 1 && dspec->UsesAllDomains())
+    {
+        singleDomain = true;
+    }
+    else 
+    {
+        singleDomain = false;
+    }
+    dlist.clear();
+    dlist.push_back(pickAtts.GetDomain());
+
+    avtPipelineSpecification_p pspec = 
+        inData->GetTerminatingSource()->GetGeneralPipelineSpecification();
+    stringVector vars = pickAtts.GetVariables();
+
+    pspec->SetDataSpecification(dspec);
+
+    pspec->GetDataSpecification()->GetRestriction()->TurnOnAll();
+    for (int i = 0; i < useSet.size(); i++)
+    {
+        if (useSet[i] == 0)
+            pspec->GetDataSpecification()->GetRestriction()->TurnOffSet(i);
+    }
+
+    if (!singleDomain)
+    {
+        pspec->GetDataSpecification()->GetRestriction()->RestrictDomains(dlist);
+    }
+
+    for (int i = 0; i < vars.size(); i++)
+    {
+        if (strcmp(pspec->GetDataSpecification()->GetVariable(), vars[i].c_str()) != 0)
+        {
+            if (!pspec->GetDataSpecification()->HasSecondaryVariable(vars[i].c_str()))
+                pspec->GetDataSpecification()->AddSecondaryVariable(vars[i].c_str());
+        }
+    }
+    avtDataObject_p temp;
+    CopyTo(temp, inData);
+    eef->SetInput(temp);
+    avtDataObject_p retObj = eef->GetOutput();
+    retObj->Update(pspec);
+    return retObj;
 }
 
 
@@ -1075,16 +1158,30 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds)
     bool zoneCent;
     bool foundData = true;
 
-    for (int varNum = 0; varNum < userVars.size(); varNum++)
+    int numVars;
+    if (pickAtts.GetFulfilled())
+        numVars = pickAtts.GetNumPickVarInfos();
+    else 
+        numVars = userVars.size();
+    for (int varNum = 0; varNum < numVars; varNum++)
     {
         stringVector names; 
         doubleVector vals; 
-        vName = userVars[varNum];
-        PickVarInfo varInfo;
+        PickVarInfo::Centering centering;
+        if (pickAtts.GetFulfilled())
+        {
+            if (pickAtts.GetPickVarInfo(varNum).HasInfo())
+                continue;
+            vName = pickAtts.GetPickVarInfo(varNum).GetVariableName();
+        }
+        else
+        {
+            vName = userVars[varNum];
+        }
         vtkDataArray *varArray = ds->GetPointData()->GetArray(vName.c_str());
         if (varArray != NULL) // nodal data
         {
-            varInfo.SetCentering(PickVarInfo::Nodal);
+            centering = PickVarInfo::Nodal;
             foundData = true;
             zoneCent = false;
         }
@@ -1093,7 +1190,7 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds)
             varArray = ds->GetCellData()->GetArray(vName.c_str());
             if (varArray != NULL) // zonal data
             {
-                varInfo.SetCentering(PickVarInfo::Zonal);
+                centering = PickVarInfo::Zonal;
                 foundData = true;
                 zoneCent = true;
             }
@@ -1148,14 +1245,42 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds)
                 }
             } 
         }  // foundData
-        varInfo.SetVariableName(vName);
-        if (!names.empty())
+
+        if (pickAtts.GetFulfilled())
         {
-            varInfo.SetNames(names);
-            varInfo.SetValues(vals);
-            delete [] temp; 
+            if (!names.empty())
+            {
+                pickAtts.GetPickVarInfo(varNum).SetNames(names);
+                pickAtts.GetPickVarInfo(varNum).SetValues(vals);
+                pickAtts.GetPickVarInfo(varNum).SetCentering(centering);
+                if (nComponents == 1)
+                    pickAtts.GetPickVarInfo(varNum).SetVariableType("scalar");
+                else if (nComponents == 3)
+                    pickAtts.GetPickVarInfo(varNum).SetVariableType("vector");
+                else if (nComponents == 9)
+                    pickAtts.GetPickVarInfo(varNum).SetVariableType("tensor");
+                delete [] temp; 
+            }
         }
-        pickAtts.AddPickVarInfo(varInfo);
+        else
+        {
+            PickVarInfo varInfo;
+            varInfo.SetVariableName(vName);
+            varInfo.SetCentering(centering);
+            if (!names.empty())
+            {
+                varInfo.SetNames(names);
+                varInfo.SetValues(vals);
+                delete [] temp; 
+                if (nComponents == 1)
+                    varInfo.SetVariableType("scalar");
+                else if (nComponents == 3)
+                    varInfo.SetVariableType("vector");
+                else if (nComponents == 9)
+                    varInfo.SetVariableType("tensor");
+            }
+            pickAtts.AddPickVarInfo(varInfo);
+        }
     } // for all vars  
 }
 

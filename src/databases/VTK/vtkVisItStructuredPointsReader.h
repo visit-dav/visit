@@ -31,13 +31,11 @@
 #ifndef __vtkVisItStructuredPointsReader_h
 #define __vtkVisItStructuredPointsReader_h
 
-#include <database_exports.h>
 #include "vtkVisItDataReader.h"
 
 class vtkStructuredPoints;
 
-class DATABASE_API VTK_IO_EXPORT vtkVisItStructuredPointsReader : 
-                                 public vtkVisItDataReader
+class vtkVisItStructuredPointsReader : public vtkVisItDataReader
 {
 public:
   static vtkVisItStructuredPointsReader *New();

@@ -898,6 +898,9 @@ PF3DFileFormat::GetVar(const char *varName)
             {
                 int j, k;
 
+#ifndef _WIN32
+// Disable on Windows for now...
+
                 //
                 // Create a definition for pointer that allows the PDB
                 // library to convert the data from the file.
@@ -905,7 +908,7 @@ PF3DFileFormat::GetVar(const char *varName)
                 char pointer_def[100];
                 sprintf(pointer_def, "float var[%d]", nExpectedCells);
                 PD_defstr(pdbPtr, "pointer", pointer_def, LAST);
-
+#endif
                 //
                 // Try to read the data from the PDB file.
                 //
@@ -966,7 +969,7 @@ PF3DFileFormat::GetVar(const char *varName)
                 else
                 {
                     debug4 << "PF3DFileFormat could NOT read " << fileVar
-                           << ". " << PD_err << endl;
+                           << ". " << PDBLIB_ERRORSTRING << endl;
                     scalars->Delete();
                     scalars = NULL;
                     delete [] data;
@@ -997,12 +1000,13 @@ PF3DFileFormat::GetVar(const char *varName)
 
             if(data != NULL && var != NULL)
             {
+#ifndef _WIN32
                 // Create a definition for pointer that allows the PDB
                 // library to convert the data from the file.
                 char pointer_def[100];
                 sprintf(pointer_def, "float var[%d]", nNodes*2);
                 PD_defstr(pdbPtr, "pointer", pointer_def, LAST);
-
+#endif
                 // Try to read the data from the PDB file.
                 if(PD_read(pdbPtr, fileVar, data) == TRUE)
                 {
@@ -1025,7 +1029,7 @@ PF3DFileFormat::GetVar(const char *varName)
                 else
                 {
                     debug4 << "PF3DFileFormat could NOT read " << fileVar
-                           << ". " << PD_err << endl;
+                           << ". " << PDBLIB_ERRORSTRING << endl;
                     scalars->Delete();
                     scalars = NULL;
                     delete [] data;

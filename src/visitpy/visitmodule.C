@@ -7402,6 +7402,9 @@ visit_PickByNode(PyObject *self, PyObject *args)
 //    Kathleen Bonnell, Tue Dec  2 07:34:48 PST 2003  
 //    Use new helper method ParseTupleForVars.
 //
+//    Kathleen Bonnell, Fri Mar  5 16:07:06 PST 2004 
+//    Set ApplyOperator (to all plots ) to false. 
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -7481,6 +7484,9 @@ visit_Lineout(PyObject *self, PyObject *args)
     ParseTupleForVars(tuple, vars);
 
     MUTEX_LOCK();
+        // Lineout should not be applied to more than one plot at a time. 
+        viewer->GetGlobalAttributes()->SetApplyOperator(false);
+        viewer->GetGlobalAttributes()->Notify();
         viewer->Lineout(p0, p1, vars, samples);
         if(logging)
         {

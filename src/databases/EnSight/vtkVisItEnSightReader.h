@@ -20,16 +20,13 @@
 #ifndef __vtkVisItEnSightReader_h
 #define __vtkVisItEnSightReader_h
 
-#include <database_exports.h>
-
 #include "vtkVisItGenericEnSightReader.h"
 
 class vtkDataSetCollection;
 class vtkIdList;
 class vtkVisItEnSightReaderCellIdsType;
 
-class DATABASE_API VTK_IO_EXPORT vtkVisItEnSightReader : 
-                                 public vtkVisItGenericEnSightReader
+class vtkVisItEnSightReader : public vtkVisItGenericEnSightReader
 {
 public:
   vtkTypeRevisionMacro(vtkVisItEnSightReader, vtkVisItGenericEnSightReader);

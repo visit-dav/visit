@@ -337,7 +337,8 @@ ViewerQueryManager::AddQuery(ViewerWindow *origWin, Line *lineAtts,
         varType != AVT_MATSPECIES) 
     {
         char message[100];
-        SNPRINTF(message, 100, "Lineout requires scalar variable.  %s is not scalar.", vname);
+        SNPRINTF(message, 100, "Lineout requires scalar variable.  "
+                 "%s is not scalar.", vname);
         Error(message);
         return;
     }
@@ -834,6 +835,9 @@ ViewerQueryManager::GetQueryClientAtts()
 //    Kathleen Bonnell, Tue Feb  3 17:43:12 PST 2004 
 //    Use arg1 to set queryAtts.CurrentPlotOnly var. 
 // 
+//    Kathleen Bonnell, Fri Mar  5 15:48:44 PST 2004 
+//    Only DetermineVarTypes if necessary, and added more TRY-CATCH blocks. 
+// 
 // ****************************************************************************
 
 void         
@@ -863,125 +867,149 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
         Error(msg.c_str());
         return;
     }
-
-    // Get a list of the active plots.
-    ViewerPlotList *olist = oWin->GetAnimation()->GetPlotList();
     std::vector<int> plotIds;
-    olist->GetActivePlotIDs(plotIds);
-    int t = oWin->GetAnimation()->GetFrameIndex();
-
-    //
-    // Make sure the number of active plots jives with the expected number
-    // of inputs for the query.
-    //
-    if (plotIds.size() != numInputs)
-    {
-        if (plotIds.size() == 0)
-        {
-            queryClientAtts->Notify();
-            string msg(qName);
-            msg += " requires an active non-hidden Plot.\n";
-            msg += "Please select a plot and try again.\n";
-            Error(msg.c_str());
-            return;
-        }
-        else if (numInputs == 1)
-        {
-            //
-            // We have a convention of just using the first active plot
-            // when there are multiple active plots selected for a single
-            // input query.  BY CONVENTION, THIS IS NOT AN ERROR.
-            //
-            int firstPlot = plotIds[0];
-            plotIds.clear();
-            plotIds.push_back(firstPlot);
-        }
-        else
-        {
-            queryClientAtts->Notify();
-            string msg(qName);
-            char num[32];
-            sprintf(num, "%d", numInputs);
-            msg += " requires exactly ";
-            msg += num;
-            msg += " plots to be selected, realized, and drawn.";
-            msg += "   Please select them and try again.\n";
-            Error(msg.c_str());
-            return;
-        }
-    }
-
-    stringVector uniqueVars; 
-    stringVector tmp = vars;
+    int t;
     const char *host = NULL;
     const char *dbname = NULL;
-    for (int i = 0 ; i < plotIds.size() ; i++)
-    {
-        int plotId = plotIds[i];
-        ViewerPlot *oplot = olist->GetPlot(plotId);
-        if (host != NULL && (strcmp(host, oplot->GetHostName()) != 0))
-        {
-            queryClientAtts->Notify();
-            string msg = "Multiple input queries require all their inputs ";
-            msg += "to be on the same host.\n";
-            Error(msg.c_str());
-            return;
-        }
-        host = oplot->GetHostName();
-        dbname = oplot->GetDatabaseName();
-        const char *activeVar = oplot->GetVariableName();
-        GetUniqueVars(tmp, activeVar, uniqueVars);
-        tmp = uniqueVars;
-    }
-
+    ViewerPlotList *olist = NULL; 
+    stringVector uniqueVars; 
+    stringVector tmp = vars;
     intVector varTypes;
-    for (int j = 0; j < uniqueVars.size(); j++)
+
+    TRY
     {
-        varTypes.push_back((int)DetermineVarType(host, dbname, uniqueVars[j].c_str()));
-    }
+        olist = oWin->GetAnimation()->GetPlotList();
+        // Get a list of the active plots.
+        olist->GetActivePlotIDs(plotIds);
+        t = oWin->GetAnimation()->GetFrameIndex();
+
+        //
+        // Make sure the number of active plots jives with the expected number
+        // of inputs for the query.
+        //
+        if (plotIds.size() != numInputs)
+        {
+            if (plotIds.size() == 0)
+            {
+                queryClientAtts->Notify();
+                string msg(qName);
+                msg += " requires an active non-hidden Plot.\n";
+                msg += "Please select a plot and try again.\n";
+                Error(msg.c_str());
+                return;
+            }
+            else if (numInputs == 1)
+            {
+                //
+                // We have a convention of just using the first active plot
+                // when there are multiple active plots selected for a single
+                // input query.  BY CONVENTION, THIS IS NOT AN ERROR.
+                //
+                int firstPlot = plotIds[0];
+                plotIds.clear();
+                plotIds.push_back(firstPlot);
+            }
+            else
+            {
+                queryClientAtts->Notify();
+                string msg(qName);
+                char num[32];
+                sprintf(num, "%d", numInputs);
+                msg += " requires exactly ";
+                msg += num;
+                msg += " plots to be selected, realized, and drawn.";
+                msg += "   Please select them and try again.\n";
+                Error(msg.c_str());
+                return;
+            }
+        }
+
+        for (int i = 0 ; i < plotIds.size() ; i++)
+        {
+            int plotId = plotIds[i];
+            ViewerPlot *oplot = olist->GetPlot(plotId);
+            if (host != NULL && (strcmp(host, oplot->GetHostName()) != 0))
+            {
+                queryClientAtts->Notify();
+                string msg = "Multiple input queries require all their inputs ";
+                msg += "to be on the same host.\n";
+                Error(msg.c_str());
+                return;
+            }
+            host = oplot->GetHostName();
+            dbname = oplot->GetDatabaseName();
+            const char *activeVar = oplot->GetVariableName();
+            GetUniqueVars(tmp, activeVar, uniqueVars);
+            tmp = uniqueVars;
+        }
+
+        if (queryTypes->AllowedVarsForQuery(qName) > 0)
+        {
+            for (int j = 0; j < uniqueVars.size(); j++)
+            {
+                varTypes.push_back((int)
+                    DetermineVarType(host, dbname, uniqueVars[j].c_str()));
+            }
  
-    int badVarType =  VerifyQueryVariables(qName, varTypes); 
-    if (badVarType != -1)
-    {
-        queryClientAtts->Notify();
-        string msg = "Cannot perform a " + qName  + " query on variable  ";
-        msg += uniqueVars[badVarType] + ".\n";
-        Error(msg.c_str());
-        return;
-    }
+            int badVarType =  VerifyQueryVariables(qName, varTypes); 
+            if (badVarType != -1)
+            {
+                queryClientAtts->Notify();
+                string msg = "Cannot perform a " + qName  + " query on variable  ";
+                msg += uniqueVars[badVarType] + ".\n";
+                Error(msg.c_str());
+                return;
+            }
+        }
     
+        if (strcmp(qName.c_str(), "SpatialExtents") == 0)
+        {
+            //
+            // NO NEED TO GO TO THE ENGINE FOR THIS INFORMATION, AS
+            // IT IS AVAILABLE FROM THE PLOT
+            //
+            int plotId = plotIds[0];
+            ViewerPlot *oplot = olist->GetPlot(plotId);
+            int dim = oplot->GetSpatialDimension(t);
+            double *ext;
+            string s;
+            if (arg1 == 0) // We want original extents
+            {
+                ext = oplot->GetSpatialExtents(t, AVT_ORIGINAL_EXTENTS);
+                s = CreateExtentsString(ext, dim, "original");
+            }
+            else
+            {
+                ext = oplot->GetSpatialExtents(t, AVT_ACTUAL_EXTENTS);
+                s = CreateExtentsString(ext, dim, "actual");
+            }
+
+            queryClientAtts->SetResultsMessage(s);
+            queryClientAtts->SetResultsValues(ext, dim);
+            delete [] ext;
+            queryClientAtts->Notify();
+            Message(s.c_str());
+            return; 
+        }
+    }
+    CATCH2(VisItException, e)
+    {
+        //
+        // Add as much information to the message as we can,
+        // including query name, exception type and exception
+        // message.
+        //
+        string msg = qName + ":  (" + e.GetExceptionType() + ")\n" + 
+            e.GetMessage() + "\nThis is probably an internal Query error," +
+            " please contact a VisIt developer.\n";
+        queryClientAtts->Notify();
+        Error(msg.c_str());
+        CATCH_RETURN(0);
+    }
+    ENDTRY
+
     bool retry; 
     int numAttempts = 0;
-
-    if (strcmp(qName.c_str(), "SpatialExtents") == 0)
-    {
-        //
-        // NO NEED TO GO TO THE ENGINE FOR THIS INFORMATION, AS
-        // IT IS AVAILABLE FROM THE PLOT
-        //
-        int plotId = plotIds[0];
-        ViewerPlot *oplot = olist->GetPlot(plotId);
-        int dim = oplot->GetSpatialDimension(t);
-        double *ext;
-        string s;
-        if (arg1 == 0) // We want original extents
-        {
-            ext = oplot->GetSpatialExtents(t, AVT_ORIGINAL_EXTENTS);
-            s = CreateExtentsString(ext, dim, "original");
-        }
-        else
-        {
-            ext = oplot->GetSpatialExtents(t, AVT_ACTUAL_EXTENTS);
-            s = CreateExtentsString(ext, dim, "actual");
-        }
-
-        queryClientAtts->SetResultsMessage(s);
-        queryClientAtts->SetResultsValues(ext, dim);
-        delete [] ext;
-        queryClientAtts->Notify();
-        Message(s.c_str());
-        return; 
-    }
 
     do
     {
@@ -1083,8 +1111,7 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
             else if (e.GetExceptionType() == "NonQueryableInputException")
             {
                 //
-                //  Create message for the gui that includes the plot name
-                //  and message.
+                //  Create message.
                 //
                 SNPRINTF(message, sizeof(message), "%s%s",
                          "The currently active plot is non-queryable.\n",
@@ -1094,7 +1121,7 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
             {
                 //
                 // Add as much information to the message as we can,
-                // including plot name, exception type and exception
+                // including query name, exception type and exception
                 // message.
                 //
                 SNPRINTF(message, sizeof(message), "%s:  (%s)\n%s", qName.c_str(),
@@ -1104,6 +1131,7 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
             }
             queryClientAtts->Notify();
             Error(message);
+            CATCH_RETURN(0);
         }
         ENDTRY
     } while (retry && numAttempts < 2);
@@ -2166,8 +2194,8 @@ ViewerQueryManager::DetermineVarType(const char *hName, const char *dbName, cons
     {
         ViewerFileServer *s = ViewerFileServer::Instance();
         avtDatabaseMetaData *md =
-            (avtDatabaseMetaData *) s->GetMetaData(string(hName),
-                                                   string(dbName));
+        (avtDatabaseMetaData *) s->GetMetaData(string(hName),
+                                               string(dbName));
         if (md != 0)
         {
             // 

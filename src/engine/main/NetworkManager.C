@@ -21,6 +21,7 @@
 #include <avtEulerianQuery.h>
 #include <avtAreaBetweenCurvesQuery.h>
 #include <avtCycleQuery.h>
+#include <avtFileWriter.h>
 #include <avtIntegrateQuery.h>
 #include <avtL2NormQuery.h>
 #include <avtL2NormBetweenCurvesQuery.h>
@@ -46,6 +47,7 @@
 #include <avtWeightedVariableSummationQuery.h>
 #include <avtWholeImageCompositer.h>
 #include <avtPlot.h>
+#include <CompactSILRestrictionAttributes.h>
 #include <VisWindow.h>
 #include <ParsingExprList.h>
 #include <EngineExprNode.h>
@@ -1344,7 +1346,32 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer)
 
           // render the image and capture it. Relies upon explicit render
           avtImage_p theImage = viswin->ScreenCapture(true);
+
+          // this call is here to reset any actor's scaling before we remove
+          // them from the VisWindow so they are back to the same state
+          // it is harmless if not in 2D mode and/or not in full frame mode
+          viswin->FullFrameOff();
+
           viswin->ClearPlots();
+
+#ifdef PARALLEL
+          if (dumpRenders)
+          {
+              static int numDumps = 0;
+              char tmpName[256];
+              avtFileWriter *fileWriter = new avtFileWriter();
+              avtDataObject_p tmpDob;
+              CopyTo(tmpDob, theImage);
+
+              sprintf(tmpName, "before_ImageCompositer_%03d_%03d.tif",
+                  PAR_Rank(), numDumps);
+              fileWriter->SetFormat(TIFF);
+              // '6' means LZW compression
+              fileWriter->Write(tmpName, tmpDob, 100, false, 6, false);
+
+              numDumps++;
+          }
+#endif
 
           // do the parallel composite using a 1 stage pipeline
           int imageRows, imageCols;
@@ -1357,6 +1384,26 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer)
           avtDataObject_p compositedImageAsDataObject = imageCompositer.GetOutput();
           writer = compositedImageAsDataObject->InstantiateWriter();
           writer->SetInput(compositedImageAsDataObject);
+
+#ifdef PARALLEL
+          if (dumpRenders && (PAR_Rank() == 0))
+#else
+          if (dumpRenders)
+#endif
+          {
+              static int numDumps = 0;
+              char tmpName[256];
+              avtFileWriter *fileWriter = new avtFileWriter();
+              avtDataObject_p tmpDob;
+
+              sprintf(tmpName, "after_ImageCompositer_%03d.tif", numDumps);
+              fileWriter->SetFormat(TIFF);
+              // '6' means LZW compression
+              fileWriter->Write(tmpName, compositedImageAsDataObject,
+                  100, false, 6, false);
+
+              numDumps++;
+          }
        }
 
        // return it
@@ -1670,7 +1717,12 @@ NetworkManager::StopPickMode(void)
 //    Hank Childs, Mon Jan  5 16:39:06 PST 2004
 //    Make sure the network hasn't already been cleared.
 //
+//    Kathleen bonnell, Mon Mar  8 08:01:48 PST 2004 
+//    Send the SILRestriction's UseSet to PickQuery if it is available. 
+//    Also send the Transform.
+//
 // ****************************************************************************
+
 void
 NetworkManager::Pick(const int id, PickAttributes *pa)
 {
@@ -1699,6 +1751,17 @@ NetworkManager::Pick(const int id, PickAttributes *pa)
     avtDataObject_p queryInput = 
         networkCache[id]->GetPlot()->GetIntermediateDataObject();
 
+    avtSILRestriction_p silr = networkCache[id]->GetDataSpec()->GetRestriction();
+    unsignedCharVector useSet;
+    if (*silr != NULL)
+    {
+        CompactSILRestrictionAttributes *silAtts = silr->MakeCompactAttributes();
+        if (silAtts != NULL)
+        {
+            useSet = silAtts->GetUseSet();
+        }
+    }
+
     if (*queryInput == NULL)
     {
         debug1 << "Could not retrieve query input." << endl;
@@ -1711,6 +1774,7 @@ NetworkManager::Pick(const int id, PickAttributes *pa)
     TRY
     {
         QueryAttributes qa;
+         
         if ((pa->GetPickType() == PickAttributes::Node) ||
             (pa->GetPickType() == PickAttributes::Zone))
         {
@@ -1725,7 +1789,15 @@ NetworkManager::Pick(const int id, PickAttributes *pa)
             }
 
             pQ = new avtPickQuery;
-            pQ->SetInput(queryInput);
+            pQ->SetInput(networkCache[id]->GetNetDB()->GetOutput());
+            pQ->SetUseSet(useSet);
+            if (queryInput->GetInfo().GetAttributes().HasTransform() &&
+                queryInput->GetInfo().GetAttributes().GetCanUseTransform())
+            {
+                pQ->SetTransform(queryInput->GetInfo().GetAttributes().GetTransform());
+            }
+            pQ->SetNeedTransform(
+                queryInput->GetInfo().GetValidity().GetPointsWereTransformed());
             pQ->SetPickAtts(pa);
             pQ->PerformQuery(&qa); 
             *pa = *(pQ->GetPickAtts());

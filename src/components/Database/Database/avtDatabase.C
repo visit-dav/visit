@@ -1076,6 +1076,9 @@ avtDatabase::GetFileListFromTextFile(const char *textfile,
 //    
 //    Kathleen Bonnell, Wed Dec 17 14:58:31 PST 2003 
 //    Added support for multiple types of coordinates to be returned. 
+//
+//    Kathleen Bonnell, Mon Mar  8 15:34:13 PST 2004 
+//    Allow vars that already have info to be skipped. 
 //    
 // ****************************************************************************
 
@@ -1173,6 +1176,15 @@ avtDatabase::Query(PickAttributes *pa)
         {
             vName = pa->GetActiveVariable();
         }
+        // 
+        // Skip any variables that already have info, unless they are scalar,
+        // because then MatFracs might be necessary.
+        // 
+        if (pa->GetPickVarInfo(varNum).HasInfo() &&
+            strcmp(pa->GetPickVarInfo(varNum).GetVariableType().c_str(), "scalar") != 0)
+        {
+            continue;
+        }
         bool success = false;
         TRY
         {
@@ -1211,10 +1223,6 @@ avtDatabase::Query(PickAttributes *pa)
                 case AVT_MATSPECIES : success = 
                    QuerySpecies(vName, foundDomain, matEl, ts, matIncEls, 
                                 pa->GetPickVarInfo(varNum), zonePick);
-                   // If this isnt the active variable, remove the 'sums'
-                   // so they won't be displayed, as they may not be correct. 
-                   if (vName != pa->GetActiveVariable()) 
-                       pa->GetPickVarInfo(varNum).GetValues().clear();
                    pa->GetPickVarInfo(varNum).SetVariableType("species");
                    break; 
                 case AVT_MESH : 

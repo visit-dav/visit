@@ -31,13 +31,11 @@
 #ifndef __vtkVisItRectilinearGridReader_h
 #define __vtkVisItRectilinearGridReader_h
 
-#include <database_exports.h>
 #include "vtkVisItDataReader.h"
 
 class vtkRectilinearGrid;
 
-class DATABASE_API VTK_IO_EXPORT vtkVisItRectilinearGridReader : 
-                                 public vtkVisItDataReader
+class vtkVisItRectilinearGridReader : public vtkVisItDataReader
 {
 public:
   static vtkVisItRectilinearGridReader *New();

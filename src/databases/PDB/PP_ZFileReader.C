@@ -613,7 +613,7 @@ PP_ZFileReader::PopulateMaterialNames()
     {
         debug4 << "Materials={";
         for(int i = 0; i < materialNames.size(); ++i)
-            debug4 << materialNames[i] << ", ";
+            debug4 << materialNames[i].c_str() << ", ";
         debug4 << "}" << endl;
     }
 
@@ -1410,7 +1410,9 @@ PP_ZFileReader::GetRayMesh(int state, const char *mesh)
 // Creation:   Mon Oct 6 17:50:51 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Mar 5 10:50:03 PDT 2004
+//   Fixed for Windows compiler.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -1497,7 +1499,7 @@ PP_ZFileReader::ConstructRayMesh(int state, bool is3d)
 
             int nrr, npts = 0;
             int nRays = mxp_data->nTotalElements / nCycles;
-            for(int nrr = 0; nrr < nRays; ++nrr)
+            for(nrr = 0; nrr < nRays; ++nrr)
                 npts += mxp[nrr];
 
             //
@@ -2518,7 +2520,11 @@ GetRotationMatrix(double angle, const double axis[3], vtkMatrix4x4 *mat)
     //
     // Now we can do the easy rotation around the z-axis.
     //
+#ifdef _WIN32
+    double angle_rad = (angle / 360. * 2. * 3.14159265358979323846);
+#else
     double angle_rad = (angle / 360. * 2. * M_PI);
+#endif
     vtkMatrix4x4 *rot3 = vtkMatrix4x4::New();
     rot3->Identity();
     double cos_angle = cos(angle_rad);

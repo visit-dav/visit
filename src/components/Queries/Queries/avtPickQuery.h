@@ -12,9 +12,9 @@
 #include <PickAttributes.h>
 #include <avtTypes.h>
 
+class avtExpressionEvaluatorFilter;
 class avtMatrix;
 class vtkDataSet;
-class vtkRectilinearGrid;
 
 
 // ****************************************************************************
@@ -49,6 +49,9 @@ class vtkRectilinearGrid;
 //    Moved inlined destructor definition to .C file because certain compilers
 //    have problems with them.
 //
+//    Kathleen Bonnell, Mon Mar  8 15:39:15 PST 2004 
+//    Added SetNeedTransform / SetTransform and setUseSet. 
+//    
 // ****************************************************************************
 
 class QUERY_API avtPickQuery : public avtDatasetQuery
@@ -65,6 +68,11 @@ class QUERY_API avtPickQuery : public avtDatasetQuery
 
     void                            SetPickAtts(const PickAttributes *pa);
     const PickAttributes *          GetPickAtts(void);
+    void                            SetTransform(const avtMatrix *m);
+    void                            SetNeedTransform(const bool b)
+                                        { needTransform = b; };
+    void                            SetUseSet(const unsignedCharVector &u)
+                                        { useSet = u; };
 
   protected:
     PickAttributes                  pickAtts;
@@ -72,6 +80,11 @@ class QUERY_API avtPickQuery : public avtDatasetQuery
     int                             blockOrigin;
     avtGhostType                    ghostType;
     const avtMatrix                *invTransform;
+    bool                            singleDomain;
+    bool                            needTransform;
+    avtQueryableSource             *src;
+    unsignedCharVector              useSet;
+    avtExpressionEvaluatorFilter   *eef;
 
     virtual void                    Execute(vtkDataSet *, const int);
     virtual void                    PreExecute(void);

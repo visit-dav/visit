@@ -34,7 +34,6 @@
 #ifndef __vtkVisItDataSetReader_h
 #define __vtkVisItDataSetReader_h
 
-#include <database_exports.h>
 #include "vtkVisItDataReader.h"
 
 class vtkDataSet;
@@ -44,8 +43,7 @@ class vtkStructuredGrid;
 class vtkStructuredPoints;
 class vtkUnstructuredGrid;
 
-class DATABASE_API VTK_IO_EXPORT vtkVisItDataSetReader : 
-                                 public vtkVisItDataReader
+class vtkVisItDataSetReader : public vtkVisItDataReader
 {
 public:
   static vtkVisItDataSetReader *New();

@@ -35,14 +35,12 @@
 #ifndef __vtkVisItEnSight6BinaryReader_h
 #define __vtkVisItEnSight6BinaryReader_h
 
-#include <database_exports.h>
 #include "vtkVisItEnSightReader.h"
 
 class vtkIdTypeArray;
 class vtkPoints;
 
-class DATABASE_API VTK_IO_EXPORT vtkVisItEnSight6BinaryReader : 
-                                 public vtkVisItEnSightReader
+class vtkVisItEnSight6BinaryReader : public vtkVisItEnSightReader
 {
 public:
   static vtkVisItEnSight6BinaryReader *New();

@@ -623,3 +623,24 @@ PickVarInfo::PrintSymmetricTensor(std::string &os,
     }
 }
 
+Function: HasInfo
+Declaration: bool HasInfo(void);
+Definition:
+
+// ****************************************************************************
+// Method: PickVarInfo::HasInfo
+//
+// Purpose: 
+//    Returns true if the info has been filled in, false otherwise.
+//
+// Programmer: Kathleen Bonnell
+// Creation:   March 2, 2004
+// ****************************************************************************
+
+bool
+PickVarInfo::HasInfo()
+{
+    return (!(names.empty() && mixNames.empty()));
+}
+        
+

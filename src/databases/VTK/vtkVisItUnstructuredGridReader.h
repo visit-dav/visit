@@ -31,13 +31,11 @@
 #ifndef __vtkVisItUnstructuredGridReader_h
 #define __vtkVisItUnstructuredGridReader_h
 
-#include <database_exports.h>
 #include "vtkVisItDataReader.h"
 
 class vtkUnstructuredGrid;
 
-class DATABASE_API VTK_IO_EXPORT vtkVisItUnstructuredGridReader : 
-                                 public vtkVisItDataReader
+class vtkVisItUnstructuredGridReader : public vtkVisItDataReader
 {
 public:
   static vtkVisItUnstructuredGridReader *New();

@@ -121,6 +121,9 @@ class VisWindow;
 //    ClearNetworksWithDatabase.  Also remove networkMRU since it is unused.
 //    Populating networkMRU could also lead to problems with dangling pointers.
 //
+//    Mark C. Miller, Thu Mar  4 12:07:04 PST 2004
+//    Added data member dumpRenders and method DumpRenders()
+//
 // ****************************************************************************
 class NetworkManager
 {
@@ -169,6 +172,8 @@ class NetworkManager
     void          Pick(const int, PickAttributes *);
     void          Query(const std::vector<int> &, QueryAttributes*);
 
+    void          DumpRenders(void) { dumpRenders = true; };
+
  private:
     void          AdjustWindowAttributes(void);
 
@@ -188,6 +193,8 @@ class NetworkManager
     WindowAttributes            windowAttributes;
     AnnotationAttributes        annotationAttributes;
     VisWindow                  *viswin;
+
+    bool                        dumpRenders;
 };
 
 #endif

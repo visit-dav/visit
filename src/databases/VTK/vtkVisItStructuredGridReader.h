@@ -31,13 +31,11 @@
 #ifndef __vtkVisItStructuredGridReader_h
 #define __vtkVisItStructuredGridReader_h
 
-#include <database_exports.h>
 #include "vtkVisItDataReader.h"
 
 class vtkStructuredGrid;
 
-class DATABASE_API VTK_IO_EXPORT vtkVisItStructuredGridReader : 
-                                 public vtkVisItDataReader
+class vtkVisItStructuredGridReader : public vtkVisItDataReader
 {
 public:
   static vtkVisItStructuredGridReader *New();
