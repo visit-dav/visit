@@ -773,6 +773,12 @@ static void *threaded_accept_callback(void *data)
 //   I fixed some bugs that prevented the routine from working with
 //   engines that were submitted to the batch system.
 //
+//   Hank Childs, Fri Sep 24 16:23:05 PDT 2004
+//   If the stacksize is too large on some machines, the pthread library will
+//   start behaving erratically -- specifically: it will report that it has
+//   successfully started a thread, but never call its start function.  So
+//   we will curb large sizes.  ['5422]
+//
 // ****************************************************************************
 
 int
@@ -804,6 +810,19 @@ RemoteProcess::MultiThreadedAcceptSocket()
     if(!init_thread_atts)
     {
         pthread_attr_init(&thread_atts);
+
+        size_t stack_size;
+        int sixty_four_MB = 67108864;
+        pthread_attr_getstacksize(&thread_atts, &stack_size);
+        if (stack_size > sixty_four_MB)
+        {
+            debug1 << "Users stack size set bigger than 64MB, which can "
+                   << "cause problems on some systems." << endl;
+            debug1 << "Resetting limit to 64MB" << endl;
+            debug1 << "Old stack size was " << stack_size << endl;
+            pthread_attr_setstacksize(&thread_atts, sixty_four_MB);
+        }
+
         init_thread_atts = true;
     }
     // Create the thread pthread style.

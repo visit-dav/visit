@@ -211,6 +211,10 @@ avtCurve2DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Hank Childs, Tue Apr  8 11:09:03 PDT 2003
 //    Do some of the work formerly done by the constructor.
 //
+//    Hank Childs, Thu Sep 23 14:54:07 PDT 2004
+//    Add support for files with extra whitespace and files that have no 
+//    headers.
+//
 // ****************************************************************************
 
 void
@@ -278,7 +282,8 @@ avtCurve2DFileFormat::ReadFile(void)
           }
           case WHITESPACE:
           {
-            breakpoint_following[breakpoint_following.size()-1] = true;
+            if (breakpoint_following.size() > 0)
+                breakpoint_following[breakpoint_following.size()-1] = true;
             break;
           }
           case INVALID_POINT:
@@ -339,6 +344,23 @@ avtCurve2DFileFormat::ReadFile(void)
         start = cutoff[i];
     }
 
+    //
+    // It is possible to have a file that has no header.  This should be
+    // interpreted as one curve.  Check for this, since we will later assume
+    // the number of curves and the number of curve names is the same.
+    //
+    if (curves.size() == 1 && curveNames.size() == 0)
+    {
+        curveNames.push_back("curve");
+    }
+
+    if (curves.size() != curveNames.size())
+    {
+        debug1 << "The number of curves does not match the number of curve "
+               << "names.  Cannot continue with this file." << endl;
+        EXCEPTION1(InvalidFilesException, filename.c_str());
+    }
+
     readFile = true;
 }
 
@@ -364,6 +386,9 @@ avtCurve2DFileFormat::ReadFile(void)
 //
 //    Brad Whitlock, Tue Jun 29 11:50:41 PDT 2004
 //    Fixed for Windows compiler.
+//
+//    Hank Childs, Thu Sep 23 14:54:07 PDT 2004
+//    Add support for Fortran-style scientific notation (5.05D-2).
 //
 // ****************************************************************************
 
@@ -412,6 +437,16 @@ avtCurve2DFileFormat::GetPoint(ifstream &ifile, float &x, float &y, string &ln)
         // We will infer that we have hit the end when we find a new token.
         // Just treat this as white space to make our parsing rules easier.
         return WHITESPACE;
+    }
+
+    //
+    // We are assuming that we a number.  Fortran-style scientific notation
+    // uses 'D' when we are used to seeing 'E'.  So just switch them out.
+    //
+    for (i = 0 ; i < len ; i++)
+    {
+        if (line[i] == 'D' || line[i] == 'd')
+            line[i] = 'E';
     }
 
     char *ystr = NULL;
