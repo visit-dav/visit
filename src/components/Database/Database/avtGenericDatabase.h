@@ -220,6 +220,14 @@ class     PickVarInfo;
 //    Kathleen Bonnell, Tue Jan 25 07:59:28 PST 2005 
 //    Added const char* arg to QueryCoords. 
 //
+//    Hank Childs, Sun Feb 27 11:20:39 PST 2005
+//    Added argument to CanDoDynamicLoadBalancing.
+//
+//    Hank Childs, Sat Mar  5 19:28:52 PST 2005
+//    Added argument to functions that typically do collective communication,
+//    indicating whether or not they can safely do collective communication
+//    (typically for error handling) or whether they should blow it off.
+//
 // ****************************************************************************
 
 class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
@@ -235,13 +243,14 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
                                          avtSourceFromDatabase *);
 
     virtual void               FreeUpResources(void);
-    virtual bool               CanDoDynamicLoadBalancing(void);
     virtual int                NumStagesForFetch(avtDataSpecification_p);
 
     virtual const char        *GetFilename(int);
 
     virtual bool               HasInvariantMetaData(void) const;
     virtual bool               HasInvariantSIL(void) const;
+    virtual bool               CanDoDynamicLoadBalancing(
+                                                       avtDataSpecification_p);
 
     virtual void               ActivateTimestep(int stateIndex);
 
@@ -329,7 +338,7 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
     bool                       CommunicateGhosts(avtGhostDataType,
                                     avtDatasetCollection &, intVector &,
                                     avtDataSpecification_p &,
-                                    avtSourceFromDatabase *);
+                                    avtSourceFromDatabase *, intVector &,bool);
     bool                       CommunicateGhostZonesFromDomainBoundaries(
                                     avtDomainBoundaries *,
                                     avtDatasetCollection &, intVector &, 
@@ -342,7 +351,7 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
     bool                     CommunicateGhostNodesFromDomainBoundariesFromFile(
                                     avtDatasetCollection &, intVector &, 
                                     avtDataSpecification_p &,
-                                    avtSourceFromDatabase *);
+                                    avtSourceFromDatabase *, intVector &);
     bool                       CommunicateGhostZonesFromGlobalNodeIds(
                                     avtDatasetCollection &, intVector &, 
                                     avtDataSpecification_p &,
@@ -354,7 +363,7 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
 
     bool                       ApplyGhostForDomainNesting(avtDatasetCollection &,
                                   intVector &, intVector &, 
-                                  avtDataSpecification_p &);
+                                  avtDataSpecification_p &, bool);
     void                       MaterialSelect(avtDatasetCollection &,
                                  intVector &, avtDataSpecification_p &,
                                  avtSourceFromDatabase *, bool);

@@ -28,6 +28,9 @@ class VisMF;
 //    to overcome current (overcome-able) infrastructure limitations with
 //    SILs changing in MTMD.  Also added true AMR capabilities.
 //
+//    Hank Childs, Sun Mar  6 16:21:15 PST 2005
+//    Add support for GeoDyne material names.
+//
 // ****************************************************************************
 
 class avtBoxlib3DFileFormat : public avtSTMDFileFormat
@@ -86,6 +89,7 @@ class avtBoxlib3DFileFormat : public avtSTMDFileFormat
     int                                     cycle;
     std::string                             timestepPath;
     bool                                    initializedReader;
+    bool                                    vf_names_for_materials;
     
     // Scalar vars listed in header.
     int                                     nVars;

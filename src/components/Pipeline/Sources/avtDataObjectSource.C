@@ -54,6 +54,24 @@ avtDataObjectSource::~avtDataObjectSource()
 
 
 // ****************************************************************************
+//  Method: avtDataObjectSource::ReleaseData
+//
+//  Purpose:
+//      Makes the output release any data that it has as a memory savings.
+//
+//  Programmer: Hank Childs
+//  Creation:   February 19, 2005
+//
+// ****************************************************************************
+
+void
+avtDataObjectSource::ReleaseData(void)
+{
+    GetOutput()->ReleaseData();
+}
+
+
+// ****************************************************************************
 //  Method: avtDataObjectSource::RegisterAbortCallback
 //
 //  Purpose:

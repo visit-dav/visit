@@ -776,6 +776,12 @@ avtIndexSelectFilter::PostExecute(void)
 //  Programmer: Hank Childs
 //  Creation:   September 10, 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Mar  4 08:12:25 PST 2005
+//    Do not set outputs of filters to NULL, since this will prevent them
+//    from re-executing correctly in DLB-mode.
+//
 // ****************************************************************************
 
 void
@@ -784,9 +790,9 @@ avtIndexSelectFilter::ReleaseData(void)
     avtPluginStreamer::ReleaseData();
 
     curvilinearFilter->SetInput(NULL);
-    curvilinearFilter->SetOutput(NULL);
+    curvilinearFilter->SetOutput(vtkStructuredGrid::New());
     rectilinearFilter->SetInput(NULL);
-    rectilinearFilter->SetOutput(NULL);
+    rectilinearFilter->SetOutput(vtkRectilinearGrid::New());
 }
 
 

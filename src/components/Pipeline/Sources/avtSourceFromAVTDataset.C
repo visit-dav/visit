@@ -85,6 +85,9 @@ avtSourceFromAVTDataset::~avtSourceFromAVTDataset()
 //    Hank Childs, Fri Nov 22 16:34:04 PST 2002
 //    Use the SIL restriction traverser.
 //
+//    Hank Childs, Wed Mar  2 10:09:31 PST 2005
+//    Do not assume tree is non-NULL.
+//
 // ****************************************************************************
 
 bool
@@ -98,7 +101,10 @@ avtSourceFromAVTDataset::FetchDataset(avtDataSpecification_p spec,
     {
         avtSILRestrictionTraverser trav(spec->GetRestriction());
         trav.GetDomainList(list);
-        outtree = tree->PruneTree(list);
+        if (*tree != NULL)
+            outtree = tree->PruneTree(list);
+        else
+            outtree = NULL;
     }
     else
     {
@@ -106,7 +112,10 @@ avtSourceFromAVTDataset::FetchDataset(avtDataSpecification_p spec,
         if (dataChunk >= 0)
         {
             list.push_back(dataChunk);
-            outtree = tree->PruneTree(list);
+            if (*tree != NULL)
+                outtree = tree->PruneTree(list);
+            else
+                outtree = NULL;
         }
         else
         {

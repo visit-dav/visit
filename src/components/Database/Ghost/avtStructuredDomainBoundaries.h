@@ -1,5 +1,10 @@
+// ************************************************************************* //
+//                       avtStructuredDomainBoundaries.h                     //
+// ************************************************************************* //
+
 #ifndef AVT_STRUCTURED_DOMAIN_BOUNDARIES_H
 #define AVT_STRUCTURED_DOMAIN_BOUNDARIES_H
+
 #include <database_exports.h>
 
 #include <avtDomainBoundaries.h>
@@ -167,6 +172,9 @@ class BoundaryHelperFunctions
 //    Kathleen Bonnell, Tue Feb  8 15:32:22 PST 2005 
 //    Added GetExtents. 
 //
+//    Hank Childs, Sun Feb 27 12:14:32 PST 2005
+//    Added RequiresCommunication.  Added new argument to CreateGhostNodes.
+//
 // ****************************************************************************
 
 class DATABASE_API avtStructuredDomainBoundaries :  public avtDomainBoundaries
@@ -209,8 +217,10 @@ class DATABASE_API avtStructuredDomainBoundaries :  public avtDomainBoundaries
                                         vector<avtMixedVariable*>    mixvars);
 
     virtual void                      CreateGhostNodes(vector<int>   domainNum,
-                                               vector<vtkDataSet*> meshes);
+                                                    vector<vtkDataSet*> meshes,
+                                                    vector<int> &);
 
+    virtual bool                      RequiresCommunication(avtGhostDataType);
     virtual bool                      ConfirmMesh(vector<int>      domainNum,
                                                vector<vtkDataSet*> meshes);
 

@@ -775,6 +775,31 @@ avtUnstructuredDomainBoundaries::ExchangeMixVar(vector<int>         domainNum,
 
 
 // ****************************************************************************
+//  Method: avtUnstructuredDomainBoundaries::RequiresCommunication
+//
+//  Purpose:
+//      Determines if this domain boundaries object will need to perform
+//      collective communication to create the type of ghost data requested.
+//
+//  Programmer: Hank Childs
+//  Creation:   February 27, 2005
+//
+// ****************************************************************************
+
+bool
+avtUnstructuredDomainBoundaries::RequiresCommunication(avtGhostDataType gtype)
+{
+    if (gtype == NO_GHOST_DATA)
+        return false;
+    else if (gtype == GHOST_NODE_DATA)
+        return false;
+
+    // (gtype == GHOST_ZONE_DATA)
+    return true;
+}
+
+
+// ****************************************************************************
 //  Method:  avtUnstructuredDomainBoundaries::ConfirmMesh
 //
 //  Purpose:
@@ -1635,11 +1660,15 @@ avtUnstructuredDomainBoundaries::CommunicateDataInformation(
 //    Hank Childs, Fri Aug 27 16:34:46 PDT 2004
 //    Rename ghost data arrays.
 //
+//    Hank Childs, Sun Feb 27 14:47:45 PST 2005
+//    Added argument allDomains.
+//
 // ****************************************************************************
 
 void
 avtUnstructuredDomainBoundaries::CreateGhostNodes(vector<int> domainNum,
-                                                  vector<vtkDataSet*> meshes)
+                                                  vector<vtkDataSet*> meshes,
+                                                  vector<int> &allDomains)
 {
     int  i, j;
 

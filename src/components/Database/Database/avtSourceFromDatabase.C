@@ -131,6 +131,9 @@ avtSourceFromDatabase::~avtSourceFromDatabase()
 //    Hank Childs, Fri Oct 17 21:56:36 PDT 2003
 //    Don't crash when NULL filenames are encountered.
 //
+//    Hank Childs, Sun Mar  6 11:15:11 PST 2005
+//    Add special support for NeedBoundarySurfaces in lieu of fix for '5723.
+//
 // ****************************************************************************
 
 bool
@@ -227,6 +230,13 @@ avtSourceFromDatabase::FetchDataset(avtDataSpecification_p spec,
         atts.SetFilename(string(greatest));
     }
 
+    // '5723 BEGIN
+    bool addBoundarySurf = false;
+    if (*lastSpec != NULL && lastSpec->NeedBoundarySurfaces() &&
+        strcmp(spec->GetVariable(), lastSpec->GetVariable()) == 0)
+        addBoundarySurf = true;
+    // '5723 END
+
     //
     // We can't just share a reference to that specification, because it might
     // change.  No good copy constructor for data specification, so make use
@@ -234,6 +244,11 @@ avtSourceFromDatabase::FetchDataset(avtDataSpecification_p spec,
     //
     lastSpec = new avtDataSpecification(spec, 0);
     lastSpec = spec;
+
+    // '5723 BEGIN
+    if (addBoundarySurf)
+        lastSpec->TurnBoundarySurfacesOn();
+    // '5723 END
 
     return rv;
 }
@@ -391,6 +406,9 @@ avtSourceFromDatabase::FetchSpeciesAuxiliaryData(const char *type, void *args,
 //    Hank Childs, Thu Sep 25 16:27:38 PDT 2003
 //    If a 'last spec' is available, use its variable.
 //
+//    Hank Childs, Sun Mar  6 11:15:11 PST 2005
+//    Add special support for NeedBoundarySurfaces in lieu of fix for '5723.
+//
 // ****************************************************************************
 
 avtDataSpecification_p
@@ -410,7 +428,16 @@ avtSourceFromDatabase::GetFullDataSpecification(void)
     string mesh = md->MeshForVar(variable);
     silr->SetTopSet(mesh.c_str());
 
-    return new avtDataSpecification(acting_var, timestep, silr);
+    avtDataSpecification_p rv =
+                          new avtDataSpecification(acting_var, timestep, silr);
+
+    // '5723 BEGIN
+    if (*lastSpec != NULL)
+        if (lastSpec->NeedBoundarySurfaces())
+            rv->TurnBoundarySurfacesOn();
+    // '5723 END
+
+    return rv;
 }
 
 
@@ -454,24 +481,6 @@ void
 avtSourceFromDatabase::DatabaseProgress(int cur, int tot, const char *desc)
 {
     UpdateProgress(cur, tot, "Reading from database", desc);
-}
-
-
-// ****************************************************************************
-//  Method: avtSourceFromDatabase::CanDoDynamicLoadBalancing
-//
-//  Purpose:
-//      Returns whether or not this source can do dynamic load balancing.
-//
-//  Programmer: Hank Childs
-//  Creation:   October 25, 2001
-//
-// ****************************************************************************
-
-bool
-avtSourceFromDatabase::CanDoDynamicLoadBalancing(void)
-{
-    return database->CanDoDynamicLoadBalancing();
 }
 
 
@@ -635,3 +644,27 @@ avtSourceFromDatabase::GetSIL(int timestate)
 {
     return database->GetSIL(timestate);
 }
+
+
+// ****************************************************************************
+//  Method: avtSourceFromDatabase::ReleaseData
+//
+//  Purpose:
+//      Releases the data associated with the input database.
+//
+//  Programmer: Hank Childs
+//  Creation:   February 27, 2005
+//
+// ****************************************************************************
+
+void
+avtSourceFromDatabase::ReleaseData(void)
+{
+    avtTerminatingDatasetSource::ReleaseData();
+    if (GetOutput()->GetInfo().GetValidity().GetIsThisDynamic())
+    {
+        database->FreeUpResources();
+    }
+}
+
+

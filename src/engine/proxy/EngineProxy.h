@@ -22,6 +22,7 @@
 #include <SetWinAnnotAttsRPC.h>
 #include <SILAttributes.h>
 #include <StartPickRPC.h>
+#include <StartQueryRPC.h>
 #include <UpdatePlotAttsRPC.h>
 #include <UseNetworkRPC.h>
 #include <ExpressionList.h>
@@ -217,6 +218,9 @@ class StatusAttributes;
 //    I added ExpressionList to the call to ReadDataObject so we can pass
 //    in the right list of expressions.
 //
+//    Hank Childs, Mon Feb 28 17:22:13 PST 2005
+//    Added StartQuery.
+//
 //    Kathleen Bonnell, Tue Mar  1 11:20:15 PST 2005 
 //    Added UpdateExpressions. 
 //
@@ -277,6 +281,7 @@ public:
     void                     Pick(const int, const PickAttributes *,
                                   PickAttributes &, const int);
     void                     StartPick(const bool, const bool, const int);
+    void                     StartQuery(const bool, const int);
 
     void                     SetWinAnnotAtts(const WindowAttributes*,
                                              const AnnotationAttributes*,
@@ -324,6 +329,7 @@ private:
     ExecuteRPC               executeRPC;
     PickRPC                  pickRPC;
     StartPickRPC             startPickRPC;
+    StartQueryRPC            startQueryRPC;
     ClearCacheRPC            clearCacheRPC;
     QueryRPC                 queryRPC;
     ReleaseDataRPC           releaseDataRPC;

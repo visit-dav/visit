@@ -57,6 +57,9 @@ $0 = shift @ARGV;
 #    Jeremy Meredith, Tue Feb 22 18:57:58 PST 2005
 #    Renamed convert to visitconvert because it is more unique.
 #
+#    Hank Childs, Sun Mar  6 08:56:30 PST 2005
+#    Added -allowdynamic to fullhelp listing.
+#
 ###############################################################################
 
 
@@ -184,6 +187,10 @@ $fullusage = "$usage
                              to processor 0, every Pth domain starting from the
                              second to processor 1, etc.
         -lb-random           Randomly assign domains to processors.
+        -allowdynamic        Dedicate one processor to spreading the work 
+                             dynamically among the other processors.  This mode
+                             has limitations in the types of queries it can 
+                             perform.  Under development.
 
     Advanced options
     ---------------------------------------------------------------------------

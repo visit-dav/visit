@@ -2058,6 +2058,32 @@ avtStructuredDomainBoundaries::ExchangeMixVar(vector<int>            domainNum,
     return out;
 }
 
+
+// ****************************************************************************
+//  Method: avtStructuredDomainBoundaries::RequiresCommunication
+//
+//  Purpose:
+//      Determines if this domain boundaries object will need to perform
+//      collective communication to create the type of ghost data requested.
+//
+//  Programmer: Hank Childs
+//  Creation:   February 27, 2005
+//
+// ****************************************************************************
+
+bool
+avtStructuredDomainBoundaries::RequiresCommunication(avtGhostDataType gtype)
+{
+    if (gtype == NO_GHOST_DATA)
+        return false;
+    else if (gtype == GHOST_NODE_DATA)
+        return false;
+
+    // (gtype == GHOST_ZONE_DATA)
+    return true;
+}
+
+
 // ****************************************************************************
 //  Method:  avtStructuredDomainBoundaries::ConfirmMesh
 //
@@ -2403,13 +2429,31 @@ avtRectilinearDomainBoundaries::ExchangeMesh(vector<int>        domainNum,
 //    Hank Childs, Fri Aug 27 16:16:52 PDT 2004
 //    Renamed ghost data array.
 //
+//    Hank Childs, Sun Feb 27 14:47:45 PST 2005
+//    Added argument allDomains.
+//
 // ****************************************************************************
 
 void
 avtStructuredDomainBoundaries::CreateGhostNodes(vector<int>         domainNum,
-                                                vector<vtkDataSet*> meshes)
+                                                vector<vtkDataSet*> meshes,
+                                                vector<int> &allDomains)
 {
     vector<int> domain2proc = CreateDomainToProcessorMap(domainNum);
+
+    //
+    // If we are doing DLB, we want to mark nodes as ghost, even if their
+    // neighboring domains are not being used on this iteration.  Do this by
+    // consulting the "allDomains" list.  Note that we can only play this
+    // trick because the rest of the routine does not care which domains 
+    // are on which processors -- only that we are using them.
+    //
+    for (int i = 0 ; i < allDomains.size() ; i++)
+    {
+        if (domain2proc[allDomains[i]] < 0)
+            domain2proc[allDomains[i]] = 0;
+    }
+
     CreateCurrentDomainBoundaryInformation(domain2proc);
 
     for (int i = 0 ; i < domainNum.size() ; i++)

@@ -213,6 +213,11 @@ typedef struct _EngineVisWinInfo
 //    to UpdateVisualCues. This enables processing of visual cues to be
 //    deferred until rendering time after plots have been added to the viswin
 //
+//    Hank Childs, Mon Feb 28 16:54:31 PST 2005
+//    Added Start/StopQueryMode.  This is because the results of certain
+//    execution modes (namely DLB) cannot be queried.  So when we do query,
+//    the viewer needs to clear plots, set this mode, and then re-execute.
+//
 // ****************************************************************************
 class NetworkManager
 {
@@ -273,6 +278,8 @@ class NetworkManager
  
     void          StartPickMode(const bool);
     void          StopPickMode(void);
+    void          StartQueryMode(void);
+    void          StopQueryMode(void);
 
     void          Pick(const int, const int, PickAttributes *);
     void          Query(const std::vector<int> &, QueryAttributes*);
@@ -302,6 +309,7 @@ class NetworkManager
     int                         uniqueNetworkId;
     bool                        requireOriginalCells;
     bool                        requireOriginalNodes;
+    bool                        inQueryMode;
     LoadBalancer               *loadBalancer;
 
     std::map<int, EngineVisWinInfo>   viswinMap;

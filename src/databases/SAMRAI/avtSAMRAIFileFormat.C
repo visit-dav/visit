@@ -124,6 +124,9 @@ avtSAMRAIFileFormat::FinalizeHDF5(void)
 //    Mark C. Miller, Mon Aug 23 14:17:55 PDT 2004
 //    Added initialization for h5files data member
 //
+//    Hank Childs, Sat Mar  5 11:46:24 PST 2005
+//    Initialize have_read_metadata_file.
+//
 // ****************************************************************************
 avtSAMRAIFileFormat::avtSAMRAIFileFormat(const char *fname)
     : avtSTMDFileFormat(&fname, 1)
@@ -188,6 +191,7 @@ avtSAMRAIFileFormat::avtSAMRAIFileFormat(const char *fname)
         h5files[i] = -1;
     }
 
+    have_read_metadata_file = false;
 }
 
 // ****************************************************************************
@@ -440,6 +444,33 @@ avtSAMRAIFileFormat::CloseFile(int f)
     }
 }
 
+
+// ****************************************************************************
+//  Method: avtSAMRAIFileFormat::ActivateTimestep
+//
+//  Purpose:
+//      This is called by the generic database to signal that this file format
+//      is going to be used soon.  It is important that each file format defer
+//      as much work as possible, since there can be many (one per timestep),
+//      and we won't need all their work at once, if at all.
+//
+//      In this case, we will have the SAMRAI file format prepare its nesting
+//      objects.
+//
+//  Programmer: Hank Childs
+//  Creation:   March 5, 2005
+//
+// ****************************************************************************
+
+void
+avtSAMRAIFileFormat::ActivateTimestep(void)
+{
+    // Make sure the domain nest info object exists
+    ReadMetaDataFile();
+    BuildDomainAuxiliaryInfo();
+}
+
+
 // ****************************************************************************
 //  Method:  avtSAMRAIFileFormat::RegisterVariableList
 //
@@ -514,13 +545,13 @@ avtSAMRAIFileFormat::CanCacheVariable(const char *var_name)
 //     Brad Whitlock, Fri Mar 5 10:19:32 PDT 2004
 //     Changed for Windows compiler.
 //
+//     Hank Childs, Sat Mar  5 10:35:11 PST 2005
+//     The domain nesting is now calculated in activate timestep.
+//
 // ****************************************************************************
 vtkDataSet *
 avtSAMRAIFileFormat::GetMesh(int patch, const char *)
 {
-    // Make sure the domain nest info object exists
-    BuildDomainAuxiliaryInfo();
-
     int ghostCode = GetGhostCodeForVar(active_visit_var_name.c_str());
 
     if (cached_patches[patch][ghostCode] != NULL)
@@ -2292,10 +2323,16 @@ avtSAMRAIFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Mark C. Miller, Mon Aug 23 14:17:55 PDT 2004
 //    Made it use OpenFile instead of H5Fopen & removed call to H5Fclose
 //
+//    Hank Childs, Sat Mar  5 11:47:52 PST 2005
+//    Make sure we don't read the information twice.
+//
 // ****************************************************************************
 void
 avtSAMRAIFileFormat::ReadMetaDataFile()
 {
+    if (have_read_metadata_file)
+        return;
+
     debug5 << "avtSAMRAIFileFormat::ReadMetaDataFile reading SAMRAI summary "
         "file, \"" << file_name.c_str() << "\"" << endl;
 
@@ -2366,6 +2403,8 @@ avtSAMRAIFileFormat::ReadMetaDataFile()
             }
         }
     }
+
+    have_read_metadata_file = true;
 }
 
 

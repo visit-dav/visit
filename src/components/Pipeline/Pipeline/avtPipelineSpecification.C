@@ -20,12 +20,16 @@
 //    Hank Childs, Wed Jun 20 17:18:19 PDT 2001
 //    Initialize nFilters.
 //
+//    Hank Childs, Thu Mar  3 16:36:50 PST 2005
+//    Don't share a reference to the data specification, because we may modify
+//    it.
+//
 // ****************************************************************************
 
 avtPipelineSpecification::avtPipelineSpecification(avtDataSpecification_p d,
                                                    int pi)
 {
-    data             = d;
+    data             = new avtDataSpecification(d);
     pipelineIndex    = pi;
     canDoDynamic     = true;
     useLoadBalancing = true;
@@ -60,13 +64,19 @@ avtPipelineSpecification::avtPipelineSpecification(
 //  Programmer:  Hank Childs
 //  Creation:    June 5, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Mar  3 16:36:50 PST 2005
+//    Don't share a reference to the data specification, because we may modify
+//    it.
+//
 // ****************************************************************************
 
 avtPipelineSpecification::avtPipelineSpecification(
                       avtPipelineSpecification_p ps, avtDataSpecification_p ds)
 {
     *this = **ps;
-    data  = ds;
+    data  = new avtDataSpecification(ds);
 }
 
 
@@ -99,12 +109,16 @@ avtPipelineSpecification::~avtPipelineSpecification()
 //    Hank Childs, Wed Jun 20 17:30:28 PDT 2001
 //    Add nFilters.
 //
+//    Hank Childs, Thu Mar  3 16:36:50 PST 2005
+//    Don't share a reference to the data specification, because we may modify
+//    it.
+//
 // ****************************************************************************
 
 avtPipelineSpecification &
 avtPipelineSpecification::operator=(avtPipelineSpecification &ps)
 {
-    data             = ps.data;
+    data             = new avtDataSpecification(ps.data);
     pipelineIndex    = ps.pipelineIndex;
     canDoDynamic     = ps.canDoDynamic;
     useLoadBalancing = ps.useLoadBalancing;

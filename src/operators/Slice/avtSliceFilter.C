@@ -311,6 +311,10 @@ avtSliceFilter::Equivalent(const AttributeGroup *a)
 //    Mark C. Miller, Tue Sep 28 19:32:50 PDT 2004
 //    Added code to populate a data selection for this operator
 //
+//    Hank Childs, Thu Mar  3 16:05:20 PST 2005
+//    Don't allow dynamic load balancing if we will need to communicate the
+//    point location.
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -381,11 +385,20 @@ avtSliceFilter::PerformRestriction(avtPipelineSpecification_p spec)
     }
 
     //
+    // If we need zone or node ids, we can't do dynamic load balancing.
+    //
+    if (atts.GetOriginType() == SliceAttributes::Zone ||
+        atts.GetOriginType() == SliceAttributes::Node)
+        rv->NoDynamicLoadBalancing();
+
+    //
     // Get the interval tree.
     //
     avtIntervalTree *it = GetMetaData()->GetSpatialExtents();
     if (it == NULL)
     {
+        if (atts.GetOriginType() == SliceAttributes::Percent)
+            rv->NoDynamicLoadBalancing();
         return rv;
     }
 
@@ -1006,6 +1019,9 @@ avtSliceFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
 //    Hank Childs, Mon Jun  9 09:20:43 PDT 2003
 //    Use the new vtkSlicer class.
 //
+//    Hank Childs, Thu Mar  3 17:41:30 PST 2005
+//    If we make the output's NULL, we will have problems with DLB.
+//
 // ****************************************************************************
 
 void
@@ -1014,9 +1030,9 @@ avtSliceFilter::ReleaseData(void)
     avtPluginStreamer::ReleaseData();
 
     slicer->SetInput(NULL);
-    slicer->SetOutput(NULL);
+    slicer->SetOutput(vtkPolyData::New());
     transform->SetInput(NULL);
-    transform->SetOutput(NULL);
+    transform->SetOutput(vtkPolyData::New());
     if (celllist != NULL)
     {
         delete [] celllist;

@@ -102,6 +102,9 @@
 #    Mark C. Miller, Tue Jan 18 12:44:34 PST 2005
 #    Removed 'scalable,parallel:lineout.py' from skip list. Last one, yeah!
 #
+#    Hank Childs, Sat Mar  5 12:33:28 PST 2005
+#    Add skips for dynamic load balancing mode.  Run the DLB mode every Sunday.
+#
 # ----------------------------------------------------------------------------
 
 # list of users who want email every night with the log file
@@ -228,12 +231,13 @@ curdate=`date +%Y-%m-%d-%p%I%M`
 #modes="serial parallel scalable"
 modes="serial parallel scalable,parallel"
 if test "`date +%A`" = "Sunday"; then
-    modes="serial,hdf5 parallel,hdf5 scalable,parallel,hdf5"
+    modes="serial,hdf5 parallel,hdf5 scalable,parallel,hdf5 dlb"
 fi
 
 # set list of tests/modes to skip
 #skipList="dummy_mode:tests/dummy_category/dummy_file.py"
-skipList=
+skipList="dlb:tests/databases/global_node_ids.py \
+          dlb:tests/queries/pick.py"
 
 # run the test(s)
 error=0

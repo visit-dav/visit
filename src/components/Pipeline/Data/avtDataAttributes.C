@@ -1926,6 +1926,9 @@ avtDataAttributes::Write(avtDataObjectString &str,
 //    Kathleen Bonnell, Thu Feb  3 09:27:22 PST 2005 
 //    Added mirOccurred.
 //
+//    Hank Childs, Thu Mar  3 16:20:49 PST 2005
+//    Clear the selectionsApplied array before pushing new entries back.
+//
 // ****************************************************************************
 
 int
@@ -2160,6 +2163,7 @@ avtDataAttributes::Read(char *input)
     int selectionsSize;
     memcpy(&selectionsSize, input, sizeof(int));
     input += sizeof(int); size += sizeof(int);
+    selectionsApplied.clear();
     for (i = 0; i < selectionsSize; i++)
     {
         int tmp;

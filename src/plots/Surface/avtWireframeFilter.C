@@ -180,6 +180,10 @@ avtWireframeFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
 //
 //  Modifications:
 //
+//    Hank Childs, Fri Mar  4 08:12:25 PST 2005
+//    Do not set outputs of filters to NULL, since this will prevent them
+//    from re-executing correctly in DLB-mode.
+//
 // ****************************************************************************
 
 void
@@ -188,16 +192,16 @@ avtWireframeFilter::ReleaseData(void)
     avtStreamer::ReleaseData();
 
     geoFilter->SetInput(NULL);
-    geoFilter->SetOutput(NULL);
+    geoFilter->SetOutput(vtkPolyData::New());
     geoFilter->SetLocator(NULL);
     int nInputs = appendFilter->GetNumberOfInputs();
     for (int i = nInputs-1 ; i >= 0 ; i--)
     {
         appendFilter->SetInputByNumber(i, NULL);
     }
-    appendFilter->SetOutput(NULL);
+    appendFilter->SetOutput(vtkPolyData::New());
     edgesFilter->SetInput(NULL);
-    edgesFilter->SetOutput(NULL);
+    edgesFilter->SetOutput(vtkPolyData::New());
     edgesFilter->SetLocator(NULL);
 }
 

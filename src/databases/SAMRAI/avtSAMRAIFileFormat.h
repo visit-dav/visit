@@ -50,6 +50,9 @@ class avtSpecies;
 //    Mark C. Miller, Thu Nov 18 18:04:01 PST 2004
 //    Added FreeUpResources
 // 
+//    Hank Childs, Sat Mar  5 10:35:11 PST 2005
+//    Added ActivateTimestep.
+//
 // ****************************************************************************
 
 class avtSAMRAIFileFormat : public avtSTMDFileFormat
@@ -82,7 +85,8 @@ class avtSAMRAIFileFormat : public avtSTMDFileFormat
 
     hid_t                 OpenFile(const char *fileName);
     void                  CloseFile(int f);
-    void                  FreeUpResources();
+    void                  FreeUpResources(void);
+    void                  ActivateTimestep(void);
 
   protected:
 
@@ -133,6 +137,7 @@ class avtSAMRAIFileFormat : public avtSTMDFileFormat
     vtkDataSet                 ***cached_patches;
     string                        file_name;
     string                        dir_name;
+    bool                          have_read_metadata_file;
 
     string                        grid_type;
 

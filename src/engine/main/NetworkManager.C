@@ -104,6 +104,9 @@ static void   DumpImage(avtImage_p, const char *fmt, bool allprocs=true);
 //    Mark C. Miller, Wed Jan  5 10:14:21 PST 2005
 //    Added call to NewVisWindow
 //
+//    Hank Childs, Mon Feb 28 16:56:20 PST 2005
+//    Initialize inQueryMode.
+//
 // ****************************************************************************
 NetworkManager::NetworkManager(void) : virtualDatabases()
 {
@@ -111,6 +114,7 @@ NetworkManager::NetworkManager(void) : virtualDatabases()
     loadBalancer = NULL;
     requireOriginalCells = false;
     requireOriginalNodes = false;
+    inQueryMode = false;
     uniqueNetworkId = 0;
     dumpRenders = false;
 
@@ -324,8 +328,11 @@ NetworkManager::ClearNetworksWithDatabase(const std::string &db)
 //    Hank Childs, Mon Mar 22 11:10:43 PST 2004
 //    Allow for the DB type to be explicitly specified.
 //
-//   Mark C. Miller, Tue Sep 28 19:57:42 PDT 2004
-//   Added code to pass avtDatabaseMetaData to LoadBalancer->AddDatabase
+//    Mark C. Miller, Tue Sep 28 19:57:42 PDT 2004
+//    Added code to pass avtDatabaseMetaData to LoadBalancer->AddDatabase
+//
+//    Hank Childs, Sun Feb 27 12:30:17 PST 2005
+//    Added avtDatabase argument to AddDatabase.
 //
 // ****************************************************************************
 
@@ -403,7 +410,7 @@ NetworkManager::GetDBFromCache(const string &filename, int time,
         netDB->SetDBInfo(filename, "", time);
         const   avtIOInformation & ioinfo = db->GetIOInformation(time);
         const   avtDatabaseMetaData *md = db->GetMetaData(time);
-        loadBalancer->AddDatabase(filename, ioinfo, md);
+        loadBalancer->AddDatabase(filename, db, ioinfo, md);
       
         // The code here should be:
         // CATCH_RETURN2(1, netDB);
@@ -634,6 +641,9 @@ NetworkManager::StartNetwork(const string &format,
 //   I changed the code so it an empty format string behaves as though no
 //   format was specified.
 //
+//   Hank Childs, Sun Feb 27 12:30:17 PST 2005
+//   Added avtDatabase argument to AddDatabase.
+//
 // ****************************************************************************
 
 void
@@ -771,7 +781,7 @@ NetworkManager::DefineDB(const string &dbName, const string &dbPath,
         // Add the database to the load balancer.
         const   avtIOInformation & ioinfo = db->GetIOInformation(time);
         const   avtDatabaseMetaData *md = db->GetMetaData(time);
-        loadBalancer->AddDatabase(dbName, ioinfo, md);
+        loadBalancer->AddDatabase(dbName, db, ioinfo, md);
     }
     CATCH(DatabaseException)
     {
@@ -1420,8 +1430,11 @@ NetworkManager::UpdatePlotAtts(int id, const AttributeGroup *atts)
 //    Mark C. Miller, Mon Aug 23 20:24:31 PDT 2004
 //    Added cellCountMultiplier arg and call to get and set it
 //
-//    Mark C. Miller, Tue Jan  4 10:23:19 PST 200
+//    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
 //    Modified to use viswinMap
+//
+//    Hank Childs, Sun Mar  6 07:29:34 PST 2005
+//    Turn off dynamic load balancing if we are in query mode.
 //
 // ****************************************************************************
 
@@ -1449,6 +1462,8 @@ NetworkManager::GetOutput(bool respondWithNullData, bool calledForRender,
             SetMayRequireZones(requireOriginalCells); 
         workingNet->GetPipelineSpec()->GetDataSpecification()->
             SetMayRequireNodes(requireOriginalNodes); 
+        if (inQueryMode)
+            workingNet->GetPipelineSpec()->NoDynamicLoadBalancing();
 
         avtDataObjectWriter_p writer = workingNet->GetWriter(output,
                                           workingNet->GetPipelineSpec(),
@@ -2458,7 +2473,7 @@ NetworkManager::SetAnnotationAttributes(const AnnotationAttributes &atts,
 }
 
 // ****************************************************************************
-//  Method:  NetworkManager::StartPick
+//  Method:  NetworkManager::StartPickMode
 //
 //  Purpose:
 //    Set the zone numbers flag in data specification so that original cell
@@ -2471,6 +2486,9 @@ NetworkManager::SetAnnotationAttributes(const AnnotationAttributes &atts,
 //    Kathleen Bonnell, Wed Jun  2 09:48:29 PDT 2004
 //    Added bool indicating whether to request originalCells or originalNodes.
 //
+//    Hank Childs, Thu Mar  3 09:15:00 PST 2005
+//    Modify inQueryMode.
+//
 // ****************************************************************************
 void
 NetworkManager::StartPickMode(const bool forZones)
@@ -2479,10 +2497,11 @@ NetworkManager::StartPickMode(const bool forZones)
         requireOriginalCells = true;
     else 
         requireOriginalNodes = true;
+    inQueryMode = true;
 }
 
 // ****************************************************************************
-//  Method:  Network::StopPick
+//  Method:  Network::StopPickMode
 //
 //  Purpose:
 //    Set the zone numbers flag in data specification so that original cell
@@ -2494,12 +2513,51 @@ NetworkManager::StartPickMode(const bool forZones)
 //  Modifications:
 //    Kathleen Bonnell, Wed Jun  2 09:48:29 PDT 2004
 //    Turn off requireOriginalNodes.
+//
+//    Hank Childs, Thu Mar  3 09:15:00 PST 2005
+//    Modify inQueryMode.
+//
 // ****************************************************************************
 void
 NetworkManager::StopPickMode(void)
 {
     requireOriginalCells = false;
     requireOriginalNodes = false;
+    inQueryMode = false;
+}
+
+// ****************************************************************************
+//  Method:  NetworkManager::StartQueryMode
+//
+//  Purpose:
+//      Notifies the network manager that we are in "query mode".  This means
+//      that certain optimizations cannot be performed, namely DLB.
+//
+//  Programmer:  Hank Childs
+//  Creation:    February 29, 2005
+//
+// ****************************************************************************
+void
+NetworkManager::StartQueryMode(void)
+{
+    inQueryMode = true;
+}
+
+// ****************************************************************************
+//  Method:  Network::StopQueryMode
+//
+//  Purpose:
+//      Notifies the network manager that we are out of "query mode".  This
+//      means that certain optimizations can now be performed, namely DLB.
+//
+//  Programmer:  Hank Childs
+//  Creation:    February 29, 2005
+//
+// ****************************************************************************
+void
+NetworkManager::StopQueryMode(void)
+{
+    inQueryMode = false;
 }
 
 // ****************************************************************************
@@ -2590,6 +2648,12 @@ NetworkManager::StopPickMode(void)
 //
 //    Kathleen Bonnell, Thu Feb  3 09:27:22 PST 2005 
 //    Set pickatts matSelected flag from info in avtDataAttributes. 
+//
+//    Hank Childs, Sun Mar  6 11:02:21 PST 2005
+//    Added even more obscure way of determining if plot used boundary
+//    surfaces, since original test for this no longer works due to changes in
+//    the way data specifications are managed inside pipeline specifications
+//    (they are now copied rather than shared, which was incorrect).
 //
 // ****************************************************************************
 
@@ -2693,8 +2757,27 @@ NetworkManager::Pick(const int id, const int winId, PickAttributes *pa)
     }
 
     avtDataValidity   &queryInputVal  = queryInput->GetInfo().GetValidity();
-    bool skipLocate = networkCache[id]->GetDataSpec()->NeedBoundarySurfaces() &&  
-                      queryInputAtts.GetSpatialDimension() == 2;
+    bool haveBoundarySurfaces = false;
+/* OLD IMPLEMENTATION
+    haveBoundarySurfaces = 
+                       networkCache[id]->GetDataSpec()->NeedBoundarySurfaces();
+ */
+
+/* NEW IMPLEMENTATION.  STILL HAS LOTS OF PROBLEMS.  NOTE ACCOMPANYING 
+   WORK-AROUND IN avtSourceFromDatabase::GetFullDataSpecification() SHOULD ALSO
+   BE IMPROVED WHEN THIS IS CLEANED UP.
+   
+   I BELIEVE AN APPROACH MORE CONSISTENT WITH HOW WE PASS INFORMATION WOULD
+   BE TO PUT THIS INFORMATION IN THE DATA ATTRIBUTES AND QUERY THAT.  BUT THAT
+   WON'T WORK RELIABLY UNTIL '5723 IS RESOLVED.
+ */
+    avtDataSpecification_p spec = 
+                 queryInput->GetTerminatingSource()->GetFullDataSpecification();
+    haveBoundarySurfaces = spec->NeedBoundarySurfaces();
+/* END NEW IMPLEMENTATION */
+   
+    bool skipLocate = haveBoundarySurfaces && 
+                      (queryInputAtts.GetSpatialDimension() == 2);
     avtLocateQuery *lQ = NULL;
     avtPickQuery *pQ = NULL;
     avtCurvePickQuery *cpQ = NULL;

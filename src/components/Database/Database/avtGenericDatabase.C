@@ -350,6 +350,12 @@ avtGenericDatabase::SetDatabaseMetaData(avtDatabaseMetaData *md, int timeState)
 //    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004 
 //    Changed 'vector<int>' to 'intVector' and 'vector<bool>' to 'boolVector'.
 //
+//    Hank Childs, Sun Feb 27 14:47:45 PST 2005
+//    Pass "allDomains" to CommunicateGhosts.
+//
+//    Hank Childs, Sat Mar  5 19:26:05 PST 2005
+//    Do not do collective communication if we are in DLB mode.
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -438,17 +444,22 @@ avtGenericDatabase::GetOutput(avtDataSpecification_p spec,
     }
     ENDTRY
 
+    avtDataValidity &validity = src->GetOutput()->GetInfo().GetValidity();
+    bool canDoCollectiveCommunication = !validity.GetIsThisDynamic();
 #ifdef PARALLEL
-    //
-    // If any processor decides to do material selection, they all should
-    // If any processor had an error, they all should return
-    //
-    int tmp[2], rtmp[2];
-    tmp[0] = (shouldDoMatSelect ? 1 : 0);
-    tmp[1] = (hadError ? 1 : 0);
-    MPI_Allreduce(tmp, rtmp, 2, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
-    shouldDoMatSelect = bool(rtmp[0]);
-    hadError = bool(rtmp[1]);
+    if (canDoCollectiveCommunication)
+    {
+        //
+        // If any processor decides to do material selection, they all should
+        // If any processor had an error, they all should return
+        //
+        int tmp[2], rtmp[2];
+        tmp[0] = (shouldDoMatSelect ? 1 : 0);
+        tmp[1] = (hadError ? 1 : 0);
+        MPI_Allreduce(tmp, rtmp, 2, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
+        shouldDoMatSelect = bool(rtmp[0]);
+        hadError = bool(rtmp[1]);
+    }
 #endif
 
     if (hadError)
@@ -524,7 +535,8 @@ avtGenericDatabase::GetOutput(avtDataSpecification_p spec,
     //
     // Apply ghosting when domains nest within other domains (AMR meshes)
     //
-    ApplyGhostForDomainNesting(datasetCollection, domains, allDomains, spec);
+    ApplyGhostForDomainNesting(datasetCollection, domains, allDomains, spec,
+                               canDoCollectiveCommunication);
 
     //
     // Communicates ghost zones if they are not present and we have domain
@@ -547,7 +559,8 @@ avtGenericDatabase::GetOutput(avtDataSpecification_p spec,
     if (canCreateGhostData && ghostDataIsNeeded)
     {
         didGhosts = CommunicateGhosts(ghostType, datasetCollection, domains, 
-                                      spec, src);
+                                      spec, src, allDomains, 
+                                      canDoCollectiveCommunication);
     }
 
     //
@@ -3321,13 +3334,62 @@ avtGenericDatabase::PrepareMaterialSelect(int dom, bool forceMIROn,
 //  Programmer: Hank Childs
 //  Creation:   October 25, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Sun Feb 27 11:20:39 PST 2005
+//    Added argument and significantly beefed up logic.
+//
 // ****************************************************************************
 
 bool
-avtGenericDatabase::CanDoDynamicLoadBalancing(void)
+avtGenericDatabase::CanDoDynamicLoadBalancing(avtDataSpecification_p dataspec)
 {
-    return Interface->CanDoDynamicLoadBalancing();
+    // 
+    // Make sure the plugin has registered any domain boundary information
+    // we need.
+    //
+    ActivateTimestep(dataspec->GetTimestep());
+
+    //
+    // If the plugin is doing collective communication, then we can't do DLB.
+    //
+    if (!Interface->CanDoDynamicLoadBalancing())
+        return false;
+
+    //
+    // It's possible that we can't create ghost zones, even if asked.  If
+    // this is the case, then there is no point in going further.
+    //
+    avtDatasetCollection emptyCollection(0);
+    intVector emptyDomainList;
+    avtDomainBoundaries *dbi = GetDomainBoundaryInformation(emptyCollection, 
+                                                    emptyDomainList, dataspec);
+    if (dbi == NULL)
+        return true;
+
+    //
+    // Check to see if we need to create ghost data.  If so, then we may need 
+    // to do cross-block communication, which will mean we can't do DLB.
+    //
+    avtSILRestrictionTraverser trav(dataspec->GetRestriction());
+    avtGhostDataType gtype = dataspec->GetDesiredGhostDataType();
+    if (gtype != GHOST_ZONE_DATA)
+    {
+        if (dataspec->MustDoMaterialInterfaceReconstruction())
+            gtype = GHOST_ZONE_DATA;
+        else
+        {
+            bool doMatSel = !trav.UsesAllMaterials();
+            if (doMatSel)
+                gtype = GHOST_ZONE_DATA;
+        }
+    }
+
+    bool reqParCom = dbi->RequiresCommunication(gtype);
+    bool canDoDLB = !reqParCom;
+    return canDoDLB;
 }
+
 
 // ****************************************************************************
 //  Method: avtGenericDatabase::HasInvariantMetaData
@@ -3833,12 +3895,19 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, intVector &domains,
 //    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004 
 //    Changed 'vector<int>' to 'intVector'.
 //
+//    Hank Childs, Sun Feb 27 14:47:45 PST 2005
+//    Added "allDomains" argument.
+//
+//    Hank Childs, Sun Mar  6 09:14:52 PST 2005
+//    Only do collective communication if we are not in DLB mode.
+//
 // ****************************************************************************
 
 bool
 avtGenericDatabase::CommunicateGhosts(avtGhostDataType ghostType, 
                       avtDatasetCollection &ds, intVector &doms,
-                      avtDataSpecification_p &spec, avtSourceFromDatabase *src)
+                      avtDataSpecification_p &spec, avtSourceFromDatabase *src,
+                      intVector &allDomains, bool canDoCollectiveCommunication)
 {
     int portion1 = visitTimer->StartTimer();
 
@@ -3857,10 +3926,13 @@ avtGenericDatabase::CommunicateGhosts(avtGhostDataType ghostType,
     if (md->GetContainsGhostZones(meshname) == AVT_HAS_GHOSTS)
         shouldStop = 1;
 #ifdef PARALLEL
-    int  parallelShouldStop;
-    MPI_Allreduce(&shouldStop, &parallelShouldStop, 1, MPI_INT, MPI_MAX,
-                  MPI_COMM_WORLD);
-    shouldStop = parallelShouldStop;
+    if (canDoCollectiveCommunication)
+    {
+        int  parallelShouldStop;
+        MPI_Allreduce(&shouldStop, &parallelShouldStop, 1, MPI_INT, MPI_MAX,
+                      MPI_COMM_WORLD);
+        shouldStop = parallelShouldStop;
+    }
 #endif
     if (shouldStop != 0)
         return false;
@@ -3868,11 +3940,14 @@ avtGenericDatabase::CommunicateGhosts(avtGhostDataType ghostType,
     avtDomainBoundaries *dbi = GetDomainBoundaryInformation(ds, doms, spec);
     bool hasDomainBoundaryInfo = (dbi != NULL);
 #ifdef PARALLEL
-    int hdbi = (hasDomainBoundaryInfo ? 1 : 0);
-    int phdbi;
-    MPI_Allreduce(&hdbi, &phdbi, 1, MPI_INT, MPI_MIN, MPI_COMM_WORLD);
-    if (phdbi < 1)
-        hasDomainBoundaryInfo = false;
+    if (canDoCollectiveCommunication)
+    {
+        int hdbi = (hasDomainBoundaryInfo ? 1 : 0);
+        int phdbi;
+        MPI_Allreduce(&hdbi, &phdbi, 1, MPI_INT, MPI_MIN, MPI_COMM_WORLD);
+        if (phdbi < 1)
+            hasDomainBoundaryInfo = false;
+    }
 #endif
 
     //
@@ -3888,12 +3963,15 @@ avtGenericDatabase::CommunicateGhosts(avtGhostDataType ghostType,
             haveGlobalNodeIdsForAtLeastOneDom = true;
     }
 #ifdef PARALLEL
-    int tmp1[2], tmp2[2];
-    tmp1[0] = (haveDomainWithoutGlobalNodeIds ? 1 : 0);
-    tmp1[1] = (haveGlobalNodeIdsForAtLeastOneDom ? 1 : 0);
-    MPI_Allreduce(tmp1, tmp2, 2, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
-    haveDomainWithoutGlobalNodeIds = (tmp2[0] == 1 ? true : false);
-    haveGlobalNodeIdsForAtLeastOneDom = (tmp2[1] == 1 ? true : false);
+    if (canDoCollectiveCommunication)
+    {
+        int tmp1[2], tmp2[2];
+        tmp1[0] = (haveDomainWithoutGlobalNodeIds ? 1 : 0);
+        tmp1[1] = (haveGlobalNodeIdsForAtLeastOneDom ? 1 : 0);
+        MPI_Allreduce(tmp1, tmp2, 2, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
+        haveDomainWithoutGlobalNodeIds = (tmp2[0] == 1 ? true : false);
+        haveGlobalNodeIdsForAtLeastOneDom = (tmp2[1] == 1 ? true : false);
+    }
 #endif
     bool canUseGlobalNodeIds = !haveDomainWithoutGlobalNodeIds &&
                                haveGlobalNodeIdsForAtLeastOneDom;
@@ -3913,7 +3991,7 @@ avtGenericDatabase::CommunicateGhosts(avtGhostDataType ghostType,
     {
         if (hasDomainBoundaryInfo)
             s = CommunicateGhostNodesFromDomainBoundariesFromFile(ds, doms,
-                                                                  spec, src);
+                                                       spec, src, allDomains);
         else if (canUseGlobalNodeIds)
             s = CommunicateGhostNodesFromGlobalNodeIds(ds, doms, spec, src);
     }
@@ -4028,6 +4106,10 @@ avtGenericDatabase::GetDomainBoundaryInformation(avtDatasetCollection &ds,
 //    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004 
 //    Changed 'vector<int>' to 'intVector'.
 //
+//    Hank Childs, Sun Mar  6 09:14:52 PST 2005
+//    Removed parallel error checking, since all of that error checking is
+//    already performed by the calling function.
+//
 // ****************************************************************************
 
 bool
@@ -4051,24 +4133,14 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundariesFromFile(
     const char *varname = spec->GetVariable();
     string meshname = md->MeshForVar(varname);
 
-    int shouldStop = 0;
     avtDomainBoundaries *dbi = GetDomainBoundaryInformation(ds, doms, spec);
 
     //
     // This method should never be called if the domain boundary information
-    // doesn't exist, but make sure just in case.
+    // doesn't exist, but make sure just in case.  If this does happen, we
+    // could get parallel deadlock.
     //
     if (dbi == NULL)
-        shouldStop = 1;
-
-#ifdef PARALLEL
-    int  parallelShouldStop;
-    MPI_Allreduce(&shouldStop, &parallelShouldStop, 1, MPI_INT, MPI_MAX,
-                  MPI_COMM_WORLD);
-    shouldStop = parallelShouldStop;
-#endif
-
-    if (shouldStop > 0)
     {
         debug1 << "Not applying ghost zones because the boundary "
                << "information does not apply to this mesh." << endl;
@@ -4550,10 +4622,11 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
 //      Creates ghost nodes using domain boundary information.
 //
 //  Arguments:
-//      ds        The dataset collection.
-//      doms      A list of domains.
-//      spec      A data specification.
-//      src       The source object.
+//      ds           The dataset collection.
+//      doms         A list of domains.
+//      spec         A data specification.
+//      src          The source object.
+//      allDomains   A list of all domains being used.  Important for DLB.
 //
 //  Programmer: Hank Childs
 //  Creation:   August 14, 2004
@@ -4562,12 +4635,20 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
 //    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004 
 //    Changed 'vector<int>' to 'intVector'.
 //
+//    Hank Childs, Sun Feb 27 14:47:45 PST 2005
+//    Added allDomains argument.
+//
+//    Hank Childs, Sun Mar  6 09:14:52 PST 2005
+//    Removed parallel error checking, since all of that error checking is
+//    already performed by the calling function.
+//
 // ****************************************************************************
 
 bool
 avtGenericDatabase::CommunicateGhostNodesFromDomainBoundariesFromFile(
                       avtDatasetCollection &ds, intVector &doms,
-                      avtDataSpecification_p &spec, avtSourceFromDatabase *src)
+                      avtDataSpecification_p &spec, avtSourceFromDatabase *src,
+                      intVector &allDomains)
 {
     //
     //  Setup
@@ -4585,24 +4666,14 @@ avtGenericDatabase::CommunicateGhostNodesFromDomainBoundariesFromFile(
     const char *varname = spec->GetVariable();
     string meshname = md->MeshForVar(varname);
 
-    int shouldStop = 0;
     avtDomainBoundaries *dbi = GetDomainBoundaryInformation(ds, doms, spec);
 
     //
     // This method should never be called if the domain boundary information
-    // doesn't exist, but make sure just in case.
+    // doesn't exist, but make sure just in case.  If this does happen, we
+    // could get parallel deadlock.
     //
     if (dbi == NULL)
-        shouldStop = 1;
-
-#ifdef PARALLEL
-    int  parallelShouldStop;
-    MPI_Allreduce(&shouldStop, &parallelShouldStop, 1, MPI_INT, MPI_MAX,
-                  MPI_COMM_WORLD);
-    shouldStop = parallelShouldStop;
-#endif
-
-    if (shouldStop > 0)
     {
         debug1 << "Not applying ghost nodes because the boundary "
                << "information does not apply to this mesh." << endl;
@@ -4612,7 +4683,7 @@ avtGenericDatabase::CommunicateGhostNodesFromDomainBoundariesFromFile(
     vector<vtkDataSet *> list;
     for (int i = 0 ; i < doms.size() ; i++)
         list.push_back(ds.GetDataset(i, 0));
-    dbi->CreateGhostNodes(doms, list);
+    dbi->CreateGhostNodes(doms, list, allDomains);
 
     src->DatabaseProgress(1, 0, progressString);
 
@@ -5457,11 +5528,15 @@ avtGenericDatabase::CommunicateGhostNodesFromGlobalNodeIds(
 //    Hank Childs, Thu Jan  6 16:47:50 PST 2005
 //    Added calls to confirm mesh.
 //
+//    Hank Childs, Sat Mar  5 19:26:05 PST 2005
+//    Added argument canDoCollectiveCommunication.
+//
 // ****************************************************************************
 
 bool
 avtGenericDatabase::ApplyGhostForDomainNesting(avtDatasetCollection &ds, 
-   intVector &doms, intVector &allDoms, avtDataSpecification_p &spec)
+   intVector &doms, intVector &allDoms, avtDataSpecification_p &spec, 
+   bool canDoCollectiveCommunication)
 {
     bool rv = false;
 
@@ -5497,10 +5572,13 @@ avtGenericDatabase::ApplyGhostForDomainNesting(avtDatasetCollection &ds,
         shouldStop = 1;
 
 #ifdef PARALLEL
-    int  parallelShouldStop;
-    MPI_Allreduce(&shouldStop, &parallelShouldStop, 1, MPI_INT, MPI_MAX,
-                  MPI_COMM_WORLD);
-    shouldStop = parallelShouldStop;
+    if (canDoCollectiveCommunication)
+    {
+        int  parallelShouldStop;
+        MPI_Allreduce(&shouldStop, &parallelShouldStop, 1, MPI_INT, MPI_MAX,
+                      MPI_COMM_WORLD);
+        shouldStop = parallelShouldStop;
+    }
 #endif
 
     if (!shouldStop)  

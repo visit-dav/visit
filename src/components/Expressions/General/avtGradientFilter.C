@@ -33,12 +33,14 @@
 //    Hank Childs, Sat Dec 13 10:57:57 PST 2003
 //    Added pd2cd.
 //
+//    Hank Childs, Fri Mar  4 08:21:04 PST 2005
+//    Removed centering conversion modules.
+//
 // ****************************************************************************
 
 avtGradientFilter::avtGradientFilter()
 {
-    cd2pd = vtkCellDataToPointData::New();
-    pd2cd = vtkPointDataToCellData::New();
+    ;
 }
 
 
@@ -53,43 +55,14 @@ avtGradientFilter::avtGradientFilter()
 //    Hank Childs, Sat Dec 13 10:57:57 PST 2003
 //    Added pd2cd.
 //
+//    Hank Childs, Fri Mar  4 08:21:04 PST 2005
+//    Removed centering conversion modules.
+//
 // ****************************************************************************
 
 avtGradientFilter::~avtGradientFilter()
 {
-    if (cd2pd != NULL)
-    {
-        cd2pd->Delete();
-        cd2pd = NULL;
-    }
-    if (pd2cd != NULL)
-    {
-        pd2cd->Delete();
-        pd2cd = NULL;
-    }
-}
-
-
-// ****************************************************************************
-//  Method: avtGradientFilter::ReleaseData
-//
-//  Purpose:
-//      Releases the data associated with the gradient filter.
-//
-//  Programmer: Hank Childs
-//  Creation:   December 13, 2003
-//
-// ****************************************************************************
-
-void
-avtGradientFilter::ReleaseData(void)
-{
-    avtSingleInputExpressionFilter::ReleaseData();
-
-   cd2pd->SetInput(NULL);
-   cd2pd->SetOutput(NULL);
-   pd2cd->SetInput(NULL);
-   pd2cd->SetOutput(NULL);
+    ;
 }
 
 
@@ -127,6 +100,9 @@ avtGradientFilter::ReleaseData(void)
 //    Optimize for rectilinear data.  Also allow the cell data to stay as
 //    cell data in the output.
 //
+//    Hank Childs, Fri Mar  4 08:21:04 PST 2005
+//    Create centering conversion modules if needed.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -148,17 +124,14 @@ avtGradientFilter::DeriveVariable(vtkDataSet *in_ds)
                                             " be found.");
         }
 
+        vtkCellDataToPointData *cd2pd = vtkCellDataToPointData::New();
         cd2pd->SetInput(in_ds);
-        
-        vtkDataSet *ds = (vtkDataSet*)in_ds->NewInstance();
-        cd2pd->SetOutput(ds);
-        ds->Update();
-        ds->SetSource(NULL);
+        cd2pd->Update();
 
-        scalarValues = ds->GetPointData()->GetScalars();
+        scalarValues = cd2pd->GetOutput()->GetPointData()->GetScalars();
         scalarValues->Register(NULL); // so we don't lose it
         recentered = true;
-        ds->Delete();
+        cd2pd->Delete();
     }
     
     int nPoints = in_ds->GetNumberOfPoints();
@@ -235,21 +208,19 @@ avtGradientFilter::DeriveVariable(vtkDataSet *in_ds)
         new_ds->CopyStructure(in_ds);
         new_ds->GetPointData()->SetVectors(results);
 
+        vtkPointDataToCellData *pd2cd = vtkPointDataToCellData::New();
         pd2cd->SetInput(new_ds);
+        pd2cd->Update();
         
-        vtkDataSet *ds = (vtkDataSet*)in_ds->NewInstance();
-        pd2cd->SetOutput(ds);
-        ds->Update();
-        ds->SetSource(NULL);
-
-        vtkDataArray *new_results = ds->GetCellData()->GetVectors();
+        vtkDataArray *new_results = pd2cd->GetOutput()->GetCellData()
+                                                                ->GetVectors();
         new_results->Register(NULL); // so we don't lose it
 
         results->Delete();
         results = new_results;
 
         new_ds->Delete();
-        ds->Delete();
+        pd2cd->Delete();
         scalarValues->Delete();
     }
 

@@ -377,6 +377,12 @@ avtThreeSliceFilter::RefashionDataObjectInfo(void)
 //  Programmer: Hank Childs
 //  Creation:   June 17, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Mar  4 08:12:25 PST 2005
+//    Do not set outputs of filters to NULL, since this will prevent them
+//    from re-executing correctly in DLB-mode.
+//
 // ****************************************************************************
 
 void
@@ -385,8 +391,8 @@ avtThreeSliceFilter::ReleaseData(void)
     avtPluginStreamer::ReleaseData();
 
     slicer->SetInput(NULL);
-    slicer->SetOutput(NULL);
-    merger->SetOutput(NULL);
+    slicer->SetOutput(vtkPolyData::New());
+    merger->SetOutput(vtkPolyData::New());
 }
 
 

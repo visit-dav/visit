@@ -560,13 +560,18 @@ avtBehavior::GetRenderOrder(bool antialiased)
 //    arrays weren't kept around, even if the data atts say we have them 
 //    Condense filter will have removed them. 
 //    
+//    Hank Childs, Thu Mar  3 08:59:29 PST 2005
+//    If we are doing DLB, then we need to re-execute.
+//
 // ****************************************************************************
 
 bool
 avtBehavior::RequiresReExecuteForQuery(const bool needInvT, const bool needZones)
 {
     bool retval = false;
-    if (info.GetAttributes().GetTopologicalDimension() == 0)
+    if (GetInfo().GetValidity().GetIsThisDynamic())
+        retval = true;
+    else if (info.GetAttributes().GetTopologicalDimension() == 0)
     {
         // 
         // Handle things differently for Vector plots and point meshes.

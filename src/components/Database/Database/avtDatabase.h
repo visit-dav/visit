@@ -205,6 +205,9 @@ typedef struct {
 //    Kathleen Bonnell, Tue Jan 25 07:59:28 PST 2005 
 //    Added const char* arg to QueryCoords. 
 //
+//    Hank Childs, Sun Feb 27 11:20:39 PST 2005
+//    Added argument to CanDoDynamicLoadBalancing.
+//
 // ****************************************************************************
 
 class DATABASE_API avtDatabase
@@ -230,9 +233,10 @@ class DATABASE_API avtDatabase
 
     virtual void                ClearCache(void);
     virtual void                FreeUpResources(void);
-    virtual bool                CanDoDynamicLoadBalancing(void);
     virtual bool                MetaDataIsInvariant(void);
     virtual bool                SILIsInvariant(void);
+    virtual bool                CanDoDynamicLoadBalancing(
+                                                       avtDataSpecification_p);
     virtual int                 NumStagesForFetch(avtDataSpecification_p);
 
     const avtIOInformation     &GetIOInformation(int stateIndex);

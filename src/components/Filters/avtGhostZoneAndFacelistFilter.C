@@ -287,6 +287,12 @@ avtGhostZoneAndFacelistFilter::RefashionDataObjectInfo(void)
 //  Programmer: Hank Childs
 //  Creation:   September 10, 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Sat Feb 19 14:55:03 PST 2005
+//    Set the inputs of the filters as NULL, since we may not want to release
+//    the data of their inputs.
+//
 // ****************************************************************************
 
 void
@@ -296,20 +302,12 @@ avtGhostZoneAndFacelistFilter::ReleaseData(void)
     if (ghostFilter != NULL)
     {
         ghostFilter->ReleaseData();
-        avtDataObject_p dob = ghostFilter->GetInput();
-        if (*dob != NULL)
-        {
-            dob->ReleaseData();
-        }
+        ghostFilter->SetInput(NULL);
     }
     if (faceFilter != NULL)
     {
         faceFilter->ReleaseData();
-        avtDataObject_p dob = faceFilter->GetInput();
-        if (*dob != NULL)
-        {
-            dob->ReleaseData();
-        }
+        faceFilter->SetInput(NULL);
     }
 }
 

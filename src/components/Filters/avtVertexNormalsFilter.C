@@ -105,6 +105,10 @@ avtVertexNormalsFilter::~avtVertexNormalsFilter()
 //    the final append filter removed *all* normals because some domains
 //    did not have any.
 //
+//    Hank Childs, Sat Feb 19 14:58:42 PST 2005
+//    Break all memory references.  I didn't think this was necessary, but
+//    the data wouldn't delete until I did this.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -152,7 +156,10 @@ avtVertexNormalsFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
     normals->Update();
 
     vtkPolyData *out_ds = normals->GetOutput();
+    out_ds->Register(NULL);
+    out_ds->SetSource(NULL);
     ManageMemory(out_ds);
+    out_ds->Delete();
     normals->Delete();
 
     return out_ds;

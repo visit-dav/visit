@@ -43,6 +43,9 @@ class     avtTerminatingSource;
 //    Moved inlined constructor and destructor definitions to .C files
 //    because certain compilers have problems with them.
 //
+//    Hank Childs, Sat Feb 19 14:39:06 PST 2005
+//    Moved ReleaseData from avtFilter to this class.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataObjectSource
@@ -57,6 +60,7 @@ class PIPELINE_API avtDataObjectSource
     virtual avtQueryableSource     *GetQueryableSource(void) = 0;
 
     virtual avtDataObject_p         GetOutput(void) = 0;
+    virtual void                    ReleaseData(void);
 
     static void                     RegisterAbortCallback(AbortCallback,void*);
     static void                     RegisterProgressCallback(ProgressCallback,

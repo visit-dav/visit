@@ -105,6 +105,9 @@ bool avtSiloFileFormat::madeGlobalSiloCalls = false;
 //    Hank Childs, Mon Apr  7 18:04:30 PDT 2003
 //    Do not make the global Silo calls repeatedly.
 //
+//    Hank Childs, Sat Mar  5 19:13:05 PST 2005
+//    Don't do dynamic load balancing where we are in parallel.
+//
 // ****************************************************************************
 
 avtSiloFileFormat::avtSiloFileFormat(const char *toc_name)
@@ -139,6 +142,10 @@ avtSiloFileFormat::avtSiloFileFormat(const char *toc_name)
     readGlobalInfo = false;
     groupInfo.haveGroups = false;
     hasDisjointElements = false;
+
+#ifdef PARALLEL
+    canDoDynamicLoadBalancing = false;
+#endif
 }
 
 

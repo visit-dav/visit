@@ -720,11 +720,16 @@ avtFacelistFilter::ConvertToPolys(vtkDataSet *in_ds, int tDim)
 //    Re-wrote function to only guide whether we should try to use facelists
 //    later on.  Blew away previous comments.
 //
+//    Hank Childs, Sat Feb 19 14:55:03 PST 2005
+//    Do not assume we have a valid input.
+//
 // ****************************************************************************
 
 void
 avtFacelistFilter::InitializeFilter(void)
 {
+    if (*(GetInput()) == NULL)
+        return;
     if (GetInput()->GetInfo().GetValidity().GetZonesPreserved())
     {
         useFacelists = true;
@@ -766,11 +771,16 @@ avtFacelistFilter::InitializeFilter(void)
 //    If we didn't apply the facelist filter, don't refashion the output's
 //    info.
 //
+//    Hank Childs, Sat Feb 19 14:55:03 PST 2005
+//    Do not assume we have a valid input.
+//
 // ****************************************************************************
 
 void
 avtFacelistFilter::RefashionDataObjectInfo(void)
 {
+    if (*(GetInput()) == NULL)
+        return;
     if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() == 3)
     {
         avtDataObject_p output = GetOutput();
@@ -789,6 +799,12 @@ avtFacelistFilter::RefashionDataObjectInfo(void)
 //  Programmer: Hank Childs
 //  Creation:   September 10, 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Mar  4 08:12:25 PST 2005
+//    Do not set outputs of filters to NULL, since this will prevent them
+//    from re-executing correctly in DLB-mode.
+//
 // ****************************************************************************
 
 void
@@ -797,11 +813,11 @@ avtFacelistFilter::ReleaseData(void)
     avtStreamer::ReleaseData();
 
     rf->SetInput(NULL);
-    rf->SetOutput(NULL);
+    rf->SetOutput(vtkPolyData::New());
     sf->SetInput(NULL);
-    sf->SetOutput(NULL);
+    sf->SetOutput(vtkPolyData::New());
     uf->SetInput(NULL);
-    uf->SetOutput(NULL);
+    uf->SetOutput(vtkPolyData::New());
 }
 
 

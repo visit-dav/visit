@@ -57,13 +57,15 @@
 //    Hank Childs, Sun Jan 30 13:55:21 PST 2005
 //    Change attribute type.
 //
+//    Hank Childs, Fri Mar  4 08:47:07 PST 2005
+//    Removed cd2pd.
+//
 // ****************************************************************************
 
 avtSurfaceFilter::avtSurfaceFilter(const AttributeGroup *a)
 {
     atts = *(SurfaceFilterAttributes*)a;
     filter       = vtkSurfaceFilter::New();
-    cd2pd        = vtkCellDataToPointData::New();
     stillNeedExtents = true;
     min = -1;
     max = -1;
@@ -86,13 +88,13 @@ avtSurfaceFilter::avtSurfaceFilter(const AttributeGroup *a)
 //    Kathleen Bonnell, Mon May 24 14:13:55 PDT 2004 
 //    Moved geoFilter, appendFilter and edgesFilter to avtWireframeFilter.
 //
+//    Hank Childs, Fri Mar  4 08:47:07 PST 2005
+//    Removed cd2pd.
+//
 // ****************************************************************************
 
 avtSurfaceFilter::~avtSurfaceFilter()
 {
-    cd2pd->Delete();
-    cd2pd = NULL;
-
     filter->Delete();
     filter = NULL;
 }
@@ -224,6 +226,9 @@ avtSurfaceFilter::Equivalent(const AttributeGroup *a)
 //    Hank Childs, Sun Jan 30 14:26:28 PST 2005
 //    Qualify which variable we want to know the centering of.
 //
+//    Hank Childs, Fri Mar  4 08:47:07 PST 2005
+//    Create cd2pd on an as-needed basis.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -237,6 +242,7 @@ avtSurfaceFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
     if (atts.GetVariable() != "default")
         varname = atts.GetVariable().c_str();
 
+    vtkCellDataToPointData *cd2pd = NULL;
     if (GetInput()->GetInfo().GetAttributes().GetCentering(varname) == 
                                                                   AVT_ZONECENT)
     {
@@ -244,6 +250,7 @@ avtSurfaceFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
         // The input is zone-centered, but this filter needs
         // node-centered data, so put it through a filter.
         //
+        cd2pd = vtkCellDataToPointData::New();
         if (atts.GetVariable() != "default")
         {
             vtkDataArray *tmp = inDS->GetCellData()->GetScalars();
@@ -339,6 +346,9 @@ avtSurfaceFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
     outScalars->Delete();
     if (atts.GetGenerateNodalOutput())
         outUG->GetPointData()->SetScalars(inScalars);
+
+    if (cd2pd != NULL)
+        cd2pd->Delete();
     return (vtkDataSet*) outUG;
 }
 
@@ -700,6 +710,10 @@ avtSurfaceFilter::CalculateScaleValues(double *de, double *se)
 //    Kathleen Bonnell, Mon May 24 14:13:55 PDT 2004 
 //    Moved geoFilter, appendFilter and edgesFilter to avtWireframeFilter.
 //
+//    Hank Childs, Fri Mar  4 08:12:25 PST 2005
+//    Do not set outputs of filters to NULL, since this will prevent them
+//    from re-executing correctly in DLB-mode.  Also removed cd2pd.
+//
 // ****************************************************************************
 
 void
@@ -708,10 +722,8 @@ avtSurfaceFilter::ReleaseData(void)
     avtStreamer::ReleaseData();
 
     filter->SetInput(NULL);
-    filter->SetOutput(NULL);
+    filter->SetOutput(vtkUnstructuredGrid::New());
     filter->SetinScalars(NULL);
-    cd2pd->SetInput(NULL);
-    cd2pd->SetOutput(NULL);
 }
 
 

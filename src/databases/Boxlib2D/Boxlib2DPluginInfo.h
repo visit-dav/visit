@@ -23,6 +23,9 @@ class avtDatabaseWriter;
 //
 //  Modifications:
 //
+//    Hank Childs, Sat Mar  5 18:16:30 PST 2005
+//    Re-added GetFilenames.
+//
 // ****************************************************************************
 
 class Boxlib2DGeneralPluginInfo : public virtual GeneralDatabasePluginInfo
@@ -39,6 +42,7 @@ class Boxlib2DCommonPluginInfo : public virtual CommonDatabasePluginInfo, public
 {
   public:
     virtual DatabaseType              GetDatabaseType();
+    virtual std::vector<std::string>  GetFilenames();
     virtual std::vector<std::string>  GetDefaultExtensions();
     virtual avtDatabase              *SetupDatabase(const char * const *list,
                                                     int nList, int nBlock);

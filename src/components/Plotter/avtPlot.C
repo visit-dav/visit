@@ -406,6 +406,9 @@ avtPlot::Execute(avtDataObject_p input, avtPipelineSpecification_p spec,
 //    Kathleen Bonnell, Fri Jan  7 13:00:32 PST 2005 
 //    Removed unnecessary TRY-CATCH block. 
 //
+//    Hank Childs, Wed Mar  2 11:11:59 PST 2005
+//    Pass a pipeline specification to the sink, not a data specification.
+//
 // ****************************************************************************
 
 avtDataObjectWriter_p
@@ -446,8 +449,7 @@ avtPlot::Execute(avtDataObject_p input, avtPipelineSpecification_p spec,
     // do any work with the writer.
     if (!combinedExecute)
     {
-       writer->SetPipelineIndex(spec->GetPipelineIndex());
-       writer->Execute(spec->GetDataSpecification());
+       writer->Execute(spec);
     }
 
     //
@@ -538,6 +540,13 @@ avtPlot::Execute(avtDataObjectReader_p reader)
 //    If plot is image based, then we should not add the drawable to the vis
 //    window.  Instead add a null data actor.
 //
+//    Hank Childs, Mon Feb 28 15:16:58 PST 2005
+//    Reset the guide function after it is set to NULL.  This is important
+//    for DLB with SR.
+//
+//    Hank Childs, Wed Mar  2 11:11:59 PST 2005
+//    Pass a pipeline specification to the sink, not a data specification.
+//
 // ****************************************************************************
 
 avtActor_p
@@ -584,11 +593,19 @@ avtPlot::Execute(avtDataObjectReader_p reader, avtDataObject_p dob)
            src = dob->GetTerminatingSource();
         else
            src = geo->GetTerminatingSource();
-        avtDataSpecification_p ds = src->GetFullDataSpecification();
-        mapper->SetPipelineIndex(0);
+        avtPipelineSpecification_p ds = 
+              new avtPipelineSpecification(src->GetFullDataSpecification(), 0);
+        GuideFunction foo;
+        void *args;
+        // Turn off the load balancer.
         if (*dob != NULL)
+        {
+           mapper->GetGuideFunction(foo,args);
            mapper->SetGuideFunction(NULL,NULL);
+        }
         mapper->Execute(ds);
+        if (*dob != NULL)
+           mapper->SetGuideFunction(foo,args);
 
         // We must call get extents after the execute.
         info.Copy(geometry->GetInfo());
@@ -598,7 +615,6 @@ avtPlot::Execute(avtDataObjectReader_p reader, avtDataObject_p dob)
         if (decoMapper != NULL)
         {
             decoMapper->SetInput(geo);
-            decoMapper->SetPipelineIndex(0);
             decoMapper->Execute(ds);
             decorations = decoMapper->GetDrawable();
         }
@@ -642,8 +658,8 @@ avtPlot::Execute(avtDataObjectReader_p reader, avtDataObject_p dob)
 
         // Before we get the drawable, we must do an update.
         avtTerminatingSource *src = geo->GetTerminatingSource();
-        avtDataSpecification_p ds = src->GetFullDataSpecification();
-        mapper->SetPipelineIndex(0);
+        avtPipelineSpecification_p ds = 
+              new avtPipelineSpecification(src->GetFullDataSpecification(), 0);
         mapper->Execute(ds);
 
         info.Copy(nullData->GetInfo());
@@ -653,7 +669,6 @@ avtPlot::Execute(avtDataObjectReader_p reader, avtDataObject_p dob)
         if (decoMapper != NULL)
         {
             decoMapper->SetInput(geo);
-            decoMapper->SetPipelineIndex(0);
             decoMapper->Execute(ds);
             decorations = decoMapper->GetDrawable();
         }
@@ -683,8 +698,8 @@ avtPlot::Execute(avtDataObjectReader_p reader, avtDataObject_p dob)
 
         // Before we get the drawable, we must do an update.
         avtTerminatingSource *src = geo->GetTerminatingSource();
-        avtDataSpecification_p ds = src->GetFullDataSpecification();
-        mapper->SetPipelineIndex(0);
+        avtPipelineSpecification_p ds = 
+              new avtPipelineSpecification(src->GetFullDataSpecification(), 0);
         GuideFunction foo;
         void *args;
         // Turn off the load balancer.

@@ -5,18 +5,14 @@
 #ifndef AVT_GRADIENT_FILTER_H
 #define AVT_GRADIENT_FILTER_H
 
-
 #include <avtSingleInputExpressionFilter.h>
 
 
 class     vtkCell;
-class     vtkCellDataToPointData;
 class     vtkDataArray;
 class     vtkDataSet;
 class     vtkIdList;
-class     vtkPointDataToCellData;
 class     vtkRectilinearGrid;
-class     vtkScalarData;
 
 
 // ****************************************************************************
@@ -35,6 +31,9 @@ class     vtkScalarData;
 //    Added support for rectilinear meshes.  Also don't force cell data to be
 //    point data in the output.  Added ReleaseData to avoid memory bloat.
 //
+//    Hank Childs, Fri Mar  4 08:21:04 PST 2005
+//    Removed data centering conversion modules.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtGradientFilter : public avtSingleInputExpressionFilter
@@ -47,8 +46,6 @@ class EXPRESSION_API avtGradientFilter : public avtSingleInputExpressionFilter
     virtual const char       *GetDescription(void)
                                { return "Calculating Gradient of Each Node"; };
 
-    virtual void              ReleaseData(void);
-
   protected:
     virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
     virtual int               GetVariableDimension() { return 3; }
@@ -60,9 +57,6 @@ class EXPRESSION_API avtGradientFilter : public avtSingleInputExpressionFilter
     float                     EvaluateValue(float, float, float, vtkDataSet *,
                                             vtkDataArray *,vtkIdList *,bool &);
     vtkDataArray             *RectilinearGradient(vtkRectilinearGrid *);
-
-    vtkCellDataToPointData   *cd2pd;
-    vtkPointDataToCellData   *pd2cd;
 };
 
 

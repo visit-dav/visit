@@ -10,6 +10,7 @@
 #include <deque>
 #include <set>
 
+#include <avtDatabase.h>
 #include <avtDatabaseMetaData.h>
 #include <avtOriginatingSink.h>
 #include <avtTerminatingSource.h>
@@ -47,43 +48,30 @@ void                   *LoadBalancer::abortCallbackArgs = NULL;
 ProgressCallback        LoadBalancer::progressCallback = NULL;
 void                   *LoadBalancer::progressCallbackArgs = NULL;
 
-bool                    LoadBalancer::forceStatic  = false;
-bool                    LoadBalancer::forceDynamic = false;
+bool                    LoadBalancer::allowDynamic = false;
 LoadBalanceScheme       LoadBalancer::scheme       =
                                        LOAD_BALANCE_CONTIGUOUS_BLOCKS_TOGETHER;
 
 // ****************************************************************************
-//  Method:  LoadBalancer::ForceStatic
+//  Method:  LoadBalancer::AllowDynamic
 //
 //  Purpose:
-//    Force static load balancing when possible.
+//    Allow dynamic load balancing when possible.
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    September 20, 2001
 //
-// ****************************************************************************
-
-void
-LoadBalancer::ForceStatic()
-{
-    LoadBalancer::forceStatic = true;
-}
-
-// ****************************************************************************
-//  Method:  LoadBalancer::ForceDynamic
+//  Modifications:
 //
-//  Purpose:
-//    Force dynamic load balancing when possible.
-//
-//  Programmer:  Jeremy Meredith
-//  Creation:    September 20, 2001
+//    Hank Childs, Sun Mar  6 08:42:50 PST 2005
+//    Renamed method to AllowDynamic from ForceDynamic.
 //
 // ****************************************************************************
 
 void
-LoadBalancer::ForceDynamic()
+LoadBalancer::AllowDynamic()
 {
-    LoadBalancer::forceDynamic = true;
+    LoadBalancer::allowDynamic = true;
 }
 
 // ****************************************************************************
@@ -229,6 +217,42 @@ LoadBalancer::LoadBalancer(int np, int r)
 //  Method: LoadBalancer::CheckDynamicLoadBalancing
 //
 //  Purpose:
+//      Takes in the pipeline index and reports whether or not it will be 
+//      dynamically load balanced.  It is assumed that the other flavor of
+//      check dynamic load balancing has been called and the results have been
+//      cached.
+//
+//  Arguments:
+//      index   A pipelineIndex.
+//
+//  Returns:    true if dynamic; false if static or none
+//
+//  Programmer: Hank Childs
+//  Creation:   February 27, 2005
+//
+// ****************************************************************************
+
+bool
+LoadBalancer::CheckDynamicLoadBalancing(int index)
+{
+    if (index > pipelineInfo.size())
+    {
+        EXCEPTION0(ImproperUseException);
+    }
+    LBInfo &lbinfo = pipelineInfo[index];
+    if (!lbinfo.haveInitializedDLB)
+    {
+        EXCEPTION0(ImproperUseException);
+    }
+
+    return lbinfo.doDLB;
+}
+
+
+// ****************************************************************************
+//  Method: LoadBalancer::CheckDynamicLoadBalancing
+//
+//  Purpose:
 //      Takes in the pipeline specification for the entire pipeline and
 //      determines whether or not it will be dynamically load balanced
 //
@@ -244,47 +268,78 @@ LoadBalancer::LoadBalancer(int np, int r)
 //    Jeremy Meredith, Fri Sep 21 14:39:58 PDT 2001
 //    Added checks for forcing static/dynamic load balancing.
 //
+//    Hank Childs, Sat Feb 19 14:27:03 PST 2005
+//    Allow for dynamic load balancing on serial engines.  Also allow for
+//    dynamic load balancing to take place if the command line has 
+//    "-allowdynamic".  Finally, cache our answer so that we don't make the
+//    same calculation repeatedly in DLB mode.
+//
 // ****************************************************************************
 
 bool
 LoadBalancer::CheckDynamicLoadBalancing(avtPipelineSpecification_p input)
 {
-#ifdef PARALLEL
+    //
+    // See if we have already have decided.  If so, just return our cached
+    // decision.
+    //
+    int index = input->GetPipelineIndex();
+    LBInfo &lbinfo = pipelineInfo[index];
+    if (lbinfo.haveInitializedDLB)
+        return lbinfo.doDLB;
+
+    //
+    // If the user has not explicitly asked for DLB, then don't do it.
+    //
+    if (!allowDynamic)
+    {
+        lbinfo.doDLB = false;
+        lbinfo.haveInitializedDLB = true;
+        return false;
+    }
+
+    //
+    // Some hard and fast rules:
+    //
+    // Pipeline index 0 is reserved for meta-data and inlined pipelines.  So
+    // no DLB for those.
+    //
+    // Cannot dynamic load balance some pipelines because of the filters
+    // in the pipeline.
+    //
+    // We cannot do dynamic load balancing if the database does not believe
+    // we can do dynamic load balancing (for example because we need ghost
+    // data communicated or materials reconstructed).
+    //
     avtDataSpecification_p data = input->GetDataSpecification();
-
-    // Some hard and fast rules
-
-    // Pipeline index 0 is reserved for meta-data.
-    // No load balancing for single processor engines.
-    // Also, cannot dynamic load balance some pipelines.
+    std::string dbname = lbinfo.db;
+    avtDatabase *db = dbMap[dbname];
     if (input->GetPipelineIndex() == 0 ||
-        nProcs <= 1                    ||
-        input->ShouldUseDynamicLoadBalancing() == false)
+        input->ShouldUseDynamicLoadBalancing() == false || 
+        db->CanDoDynamicLoadBalancing(data) == false)
     {
+        lbinfo.doDLB = false;
+        lbinfo.haveInitializedDLB = true;
         return false;
     }
 
-    // Check for forcing of static
-    if (forceStatic)
-        return false;
-
-    // Check for forcing of static
-    if (forceDynamic)
-        return true;
-
-    // Here's the heuristics for dynamic load balancing
-    // Also, make them use a minimum of 4 procs for dynamic load balancing
-    if (nProcs > 3)
+    //
+    // Don't do DLB if we have 2 or 3 procs.  It's not worth it.
+    //
+    if (nProcs == 2 || nProcs == 3)
     {
-        return true;
-    }
-    else
-    {
+        lbinfo.doDLB = false;
+        lbinfo.haveInitializedDLB = true;
         return false;
     }
-#else
-    return false;
-#endif
+
+    //
+    // The user has asked for DLB.  And nothing in the pipeline is prevent it.
+    // Do it!
+    //
+    lbinfo.doDLB = true;
+    lbinfo.haveInitializedDLB = true;
+    return true;
 }
 
 // ****************************************************************************
@@ -346,6 +401,13 @@ LoadBalancer::CheckDynamicLoadBalancing(avtPipelineSpecification_p input)
 //    Added the very trivial load balance scheme LOAD_BALANCE_DBPLUGIN_DYNAMIC
 //    where all processors are assigned the one and only block
 //
+//    Hank Childs, Sat Feb 19 14:27:03 PST 2005
+//    Allow for dynamic load balancing with serial engines.
+//
+//    Hank Childs, Sat Mar  5 18:53:28 PST 2005
+//    Take more care in setting up unique message tags.  These methods may be
+//    called a different number of times.  So use a static.
+//
 // ****************************************************************************
 
 avtDataSpecification_p
@@ -363,12 +425,41 @@ LoadBalancer::Reduce(avtPipelineSpecification_p input)
     }
 
     //
-    // No load balancing needed for single-processor engines
+    // Assess load balancing specially for serial engines.
     //
     if (nProcs <= 1)
     {
-        pipelineInfo[input->GetPipelineIndex()].complete = true;
-        return data;
+        bool doDynLB = CheckDynamicLoadBalancing(input);
+        if (!doDynLB)
+        {
+            pipelineInfo[input->GetPipelineIndex()].complete = true;
+            return data;
+        }
+        else
+        {
+            avtDataObjectSource::RegisterProgressCallback(NULL,NULL);
+            avtSILRestriction_p orig_silr   = data->GetRestriction();
+            avtSILRestriction_p silr        = new avtSILRestriction(orig_silr);
+            avtDataSpecification_p new_data =
+                                          new avtDataSpecification(data, silr);
+            avtSILRestrictionTraverser trav(silr);
+
+            vector<int> list;
+            trav.GetDomainList(list);
+        
+            if (pipelineInfo[input->GetPipelineIndex()].current < 0)
+                pipelineInfo[input->GetPipelineIndex()].current  = 0;
+            int domain = list[pipelineInfo[input->GetPipelineIndex()].current];
+            vector<int> domainList(1, domain);
+            new_data->GetRestriction()
+                                   ->RestrictDomainsForLoadBalance(domainList);
+            UpdateProgress(pipelineInfo[input->GetPipelineIndex()].current,
+                           list.size());
+            pipelineInfo[input->GetPipelineIndex()].current++;
+            if (pipelineInfo[input->GetPipelineIndex()].current == list.size())
+                pipelineInfo[input->GetPipelineIndex()].complete = true;
+            return new_data;
+        }
     }
 
 #ifdef PARALLEL
@@ -379,8 +470,8 @@ LoadBalancer::Reduce(avtPipelineSpecification_p input)
     avtSILRestrictionTraverser trav(silr);
 
     // set up MPI message tags
-    int lastDomDoneMsg = GetUniqueMessageTag();
-    int newDomToDoMsg = GetUniqueMessageTag();
+    static int lastDomDoneMsg = GetUniqueMessageTag();
+    static int newDomToDoMsg = GetUniqueMessageTag();
 
     // Can we do dynamic load balancing?
     if (! CheckDynamicLoadBalancing(input))
@@ -472,6 +563,7 @@ LoadBalancer::Reduce(avtPipelineSpecification_p input)
             // Allocate enough space to hold the completed domains
             ioInfo.domains.resize(nProcs);
             ioInfo.files.resize(nProcs);
+            bool validFileMap = (ioInfo.fileMap.size() != 0);
 
             // Get the list of domains to process
             vector<int> domainList;
@@ -537,7 +629,9 @@ LoadBalancer::Reduce(avtPipelineSpecification_p input)
                 {
                     for (i = incomplete.begin(); i != incomplete.end(); i++)
                     {
-                        int fileno = ioInfo.fileMap[*i];
+                        int fileno = 0;
+                        if (validFileMap)
+                            fileno = ioInfo.fileMap[*i];
                         if (ioInfo.files[processor].count(fileno) > 0)
                             break;
                     }
@@ -550,7 +644,9 @@ LoadBalancer::Reduce(avtPipelineSpecification_p input)
                     int minopen   = 999999999;
                     for (i = incomplete.begin(); i != incomplete.end(); i++)
                     {
-                        int fileno = ioInfo.fileMap[*i];
+                        int fileno = 0;
+                        if (validFileMap)
+                            fileno = ioInfo.fileMap[*i];
                         // count the number of processors which have
                         // this file opened
                         int nopen = 0;
@@ -578,7 +674,10 @@ LoadBalancer::Reduce(avtPipelineSpecification_p input)
                 incomplete.erase(i);
 
                 ioInfo.domains[processor].insert(domain);
-                ioInfo.files[processor].insert(ioInfo.fileMap[domain]);
+                if (validFileMap)
+                    ioInfo.files[processor].insert(ioInfo.fileMap[domain]);
+                else
+                    ioInfo.files[processor].insert(0);
 
                 // send the new domain number to that processor
                 debug5 << "LoadBalancer Master: sending domain " 
@@ -589,7 +688,7 @@ LoadBalancer::Reduce(avtPipelineSpecification_p input)
             // we're all done -- -2 means to abort, -1 means to send results
             int status = abort ? -2 : -1;
             for (int i=1; i<nProcs; i++)
-                MPI_Send(&status, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
+                MPI_Send(&status, 1, MPI_INT, i, newDomToDoMsg,MPI_COMM_WORLD);
 
             if (abort)
                 EXCEPTION0(AbortException);
@@ -629,12 +728,13 @@ LoadBalancer::Reduce(avtPipelineSpecification_p input)
             else
             {
                 vector<int> domainList(1, domain);
-                new_data->GetRestriction()->RestrictDomainsForLoadBalance(domainList);
+                new_data->GetRestriction()
+                                   ->RestrictDomainsForLoadBalance(domainList);
             }
         }
     }
 
-    // By intersecting with the original restricting, we will ensure that
+    // By intersecting with the original restriction, we will ensure that
     // we are catching restrictions beyond domains, like materials, etc.
     // See comments in SIL restriction code regarding 'FastIntersect'.
     new_data->GetRestriction()->FastIntersect(orig_silr);
@@ -673,12 +773,16 @@ LoadBalancer::Reduce(avtPipelineSpecification_p input)
 //    Added code to set the load balance scheme if the metadata indicates
 //    plugin can do its own decomposition
 //
+//    Hank Childs, Sun Feb 27 11:12:44 PST 2005
+//    Added avtDatabase argument.
+//
 // ****************************************************************************
 
 void
-LoadBalancer::AddDatabase(const string &db, const avtIOInformation &io,
-    const avtDatabaseMetaData *md)
+LoadBalancer::AddDatabase(const string &db, avtDatabase *db_ptr,
+                     const avtIOInformation &io, const avtDatabaseMetaData *md)
 {
+    dbMap[db] = db_ptr;
     ioMap[db].ioInfo = io;
     ioMap[db].fileMap.resize(io.GetNDomains());
 

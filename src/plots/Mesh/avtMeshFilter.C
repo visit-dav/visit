@@ -424,6 +424,10 @@ avtMeshFilter::PerformRestriction(avtPipelineSpecification_p spec)
 //    Removed featureEdges, hasn't been used in a long time.  
 //    Added extractEges. 
 //
+//    Hank Childs, Fri Mar  4 08:12:25 PST 2005
+//    Do not set outputs of filters to NULL, since this will prevent them
+//    from re-executing correctly in DLB-mode.
+//
 // ****************************************************************************
 
 void
@@ -432,11 +436,11 @@ avtMeshFilter::ReleaseData(void)
     avtDataTreeStreamer::ReleaseData();
 
     lineFilter->SetInput(NULL);
-    lineFilter->SetOutput(NULL);
+    lineFilter->SetOutput(vtkPolyData::New());
     geometryFilter->SetInput(NULL);
-    geometryFilter->SetOutput(NULL);
+    geometryFilter->SetOutput(vtkPolyData::New());
     extractEdges->SetInput(NULL);
-    extractEdges->SetOutput(NULL);
+    extractEdges->SetOutput(vtkPolyData::New());
 }
 
 

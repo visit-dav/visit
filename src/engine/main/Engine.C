@@ -244,6 +244,9 @@ Engine::Finalize(void)
 //    Jeremy Meredith, Wed Nov 24 11:42:40 PST 2004
 //    Renamed EngineExprNode to avtExprNode.
 //
+//    Hank Childs, Mon Feb 28 17:03:06 PST 2005
+//    Added StartQueryRPC.
+//
 // ****************************************************************************
 
 void
@@ -298,6 +301,7 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     updatePlotAttsRPC               = new UpdatePlotAttsRPC;
     pickRPC                         = new PickRPC;
     startPickRPC                    = new StartPickRPC;
+    startQueryRPC                   = new StartQueryRPC;
     executeRPC                      = new ExecuteRPC;
     clearCacheRPC                   = new ClearCacheRPC;
     queryRPC                        = new QueryRPC;
@@ -317,6 +321,7 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     xfer->Add(updatePlotAttsRPC);
     xfer->Add(pickRPC);
     xfer->Add(startPickRPC);
+    xfer->Add(startQueryRPC);
     xfer->Add(executeRPC);
     xfer->Add(clearCacheRPC);
     xfer->Add(queryRPC);
@@ -340,6 +345,7 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     rpcExecutors.push_back(new RPCExecutor<PrepareUpdatePlotAttsRPC>(&updatePlotAttsRPC->GetPrepareUpdatePlotAttsRPC()));
     rpcExecutors.push_back(new RPCExecutor<PickRPC>(pickRPC));
     rpcExecutors.push_back(new RPCExecutor<StartPickRPC>(startPickRPC));
+    rpcExecutors.push_back(new RPCExecutor<StartQueryRPC>(startQueryRPC));
     rpcExecutors.push_back(new RPCExecutor<ExecuteRPC>(executeRPC));
     rpcExecutors.push_back(new RPCExecutor<ClearCacheRPC>(clearCacheRPC));
     rpcExecutors.push_back(new RPCExecutor<QueryRPC>(queryRPC));
@@ -751,6 +757,9 @@ Engine::ProcessInput()
 //    Mark C. Miller, Thu Mar  4 12:07:04 PST 2004
 //    Told NetworkManager to dump rendered images
 //
+//    Hank Childs, Sun Mar  6 08:42:50 PST 2005
+//    Renamed -forcedynamic to -allowdynamic.  Removed -forcestatic argument.
+//
 // ****************************************************************************
 void
 Engine::ProcessCommandLine(int argc, char **argv)
@@ -758,10 +767,8 @@ Engine::ProcessCommandLine(int argc, char **argv)
     // process arguments.
     for (int i=1; i<argc; i++)
     {
-        if (strcmp(argv[i], "-forcestatic") == 0)
-            LoadBalancer::ForceStatic();
-        else if (strcmp(argv[i], "-forcedynamic") == 0)
-            LoadBalancer::ForceDynamic();
+        if (strcmp(argv[i], "-allowdynamic") == 0)
+            LoadBalancer::AllowDynamic();
         else if (strcmp(argv[i], "-timing") == 0)
             visitTimer->Enable();
         else if (strcmp(argv[i], "-timeout") == 0)
