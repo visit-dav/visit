@@ -10,7 +10,6 @@
 #include <vtkPolyData.h>
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
-#include <vtkWindowToImageFilter.h>
 
 #include <vtkQtRenderWindow.h>
 #include <vtkQtRenderWindowInteractor.h>
@@ -648,6 +647,10 @@ VisWinRendering::Realize(void)
 //    Added code to get zbuffer data including setting layers so that
 //    zbuffer data is obtained correctly
 //
+//    Hank Childs, Thu Jun 19 17:28:50 PDT 2003
+//    Stop using window-to-image filter, since it does not play well with
+//    the new camera modifications.
+//
 // ****************************************************************************
 
 avtImage_p
@@ -657,47 +660,55 @@ VisWinRendering::ScreenCapture(bool doCanvasZBufferToo)
     vtkRenderWindow *renWin = GetRenderWindow();
     bool extRequestMode = false;
 
-    //
-    // If we want zbuffer for the canvas, we need to take care that
-    // the canvas is rendered last 
-    //
     if (doCanvasZBufferToo)
     {
-       foreground->SetLayer(1);
-       canvas->SetLayer(0);
-
-       // Make sure the render window is up to date, particularly z buffer data
-       debug2 << "Forcing the render window to re-render to make sure it is "
-              << "up-to-date" << endl;
-       renWin->Render();
-
-       // get zbuffer data for the canvas
-       int w, h;
-       GetSize(w,h);
-       zb = renWin->GetZbufferData(0,0,w-1,h-1);
-
-       // temporarily disable external render requests
-       extRequestMode = mediator.DisableExternalRenderRequests();
+        //
+        // If we want zbuffer for the canvas, we need to take care that
+        // the canvas is rendered last 
+        //
+        foreground->SetLayer(1);
+        canvas->SetLayer(0);
     }
 
-    vtkWindowToImageFilter *w2if = vtkWindowToImageFilter::New();
-    w2if->SetInput(renWin);
-    vtkImageData *image = w2if->GetOutput();
+    //
+    // Make sure that the window is up-to-date.
+    //
+    renWin->Render();
+    int w, h;
+    w = renWin->GetSize()[0];
+    h = renWin->GetSize()[1];
 
-    avtSourceFromImage screenCaptureSource(image, zb);
+    if (doCanvasZBufferToo)
+    {
+        // get zbuffer data for the canvas
+        zb = renWin->GetZbufferData(0,0,w-1,h-1);
+
+        // temporarily disable external render requests
+        extRequestMode = mediator.DisableExternalRenderRequests();
+    }
+
+    //
+    // Read the pixels from the window and copy them over.  Sadly, it wasn't
+    // very easy to avoid copying the buffer.
+    //
+    int readFrontBuffer = 1;
+    unsigned char *pixels = renWin->GetPixelData(0,0,w-1,h-1,readFrontBuffer);
+
+    vtkImageData *image = avtImageRepresentation::NewImage(w, h);
+    unsigned char *img_pix = (unsigned char *)image->GetScalarPointer(0, 0, 0); 
+
+    memcpy(img_pix, pixels, 3*w*h);
+    delete [] pixels;
 
     //
     // Force some updates so we can let screenCaptureSource be destructed.
     // The img->Update forces the window to render, so we explicitly 
     // disable external render requests
     //
-    image->Update();
-    image->SetSource(NULL);
+    avtSourceFromImage screenCaptureSource(image, zb);
     avtImage_p img = screenCaptureSource.GetTypedOutput();
     img->Update(screenCaptureSource.GetGeneralPipelineSpecification());
     img->SetSource(NULL);
-
-    w2if->Delete();
 
     //
     // If we swapped the foreground & canvas layers to get the canvas' zbuffer,
@@ -710,7 +721,6 @@ VisWinRendering::ScreenCapture(bool doCanvasZBufferToo)
        if (extRequestMode)
           mediator.EnableExternalRenderRequests();
     }
-
 
     return img;
 }

@@ -205,6 +205,10 @@ avtViewInfo::SetViewFromCamera(vtkCamera *vtkcam)
 //    Eric Brugger, Fri Jun  6 15:30:49 PDT 2003
 //    I added image pan and image zoom.
 //
+//    Eric Brugger, Wed Jun 18 17:46:36 PDT 2003 
+//    I modified the call to SetWindowCenter since the meaning of its
+//    arguments changed.
+//
 // ****************************************************************************
 
 void
@@ -220,7 +224,7 @@ avtViewInfo::SetCameraFromView(vtkCamera *vtkcam) const
     vtkcam->SetFocalPoint(focus);
     vtkcam->SetPosition(camera);
     vtkcam->SetViewUp(viewUp);
-    vtkcam->SetWindowCenter(imagePan[0], imagePan[1]);
+    vtkcam->SetWindowCenter(2.0*imagePan[0], 2.0*imagePan[1]);
     vtkcam->SetFocalDisk(imageZoom);
 }
 

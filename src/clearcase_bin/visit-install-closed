@@ -183,7 +183,7 @@ fi
 rm -f tidalwave
 cat <<EOF > tidalwave
 #!/bin/sh
-cd /fc/san3/$user/tidalwave/visitbuild
+cd /fc/san1/$user/tidalwave/visitbuild
 if [ -d /usr/gapps/visit/$ver ]
 then
    ./visit-install -private -a -g bdiv -gw $ver irix6 /usr/gapps/visit > installlog 2>&1

@@ -215,12 +215,16 @@ avtPickQuery::PostExecute(void)
 //    cell Id retrieved from the array is valid.  This is designated by
 //    avtGhostType AVT_CREATED_GHOSTS.  GhostZones determined by the file
 //    format are designated by AVT_HAS_GHOSTS).
+//
+//    Kathleen Bonnell, Thu Jun 19 16:50:41 PDT 2003  
+//    Test for null ds. 
+//    
 // ****************************************************************************
 
 void
 avtPickQuery::Execute(vtkDataSet *ds, const int dom)
 {
-    if (dom != pickAtts.GetDomain() || pickAtts.GetFulfilled())
+    if (dom != pickAtts.GetDomain() || pickAtts.GetFulfilled() || ds == NULL)
     {
         return;
     }
@@ -504,11 +508,19 @@ avtPickQuery::Execute(vtkDataSet *ds, const int dom)
 //    Moved transformation of cellPoint to ApplyFilters method, so that
 //    the transformed point is available to RGridFindCell if necessary. 
 //    
+//    Kathleen Bonnell, Thu Jun 19 16:50:41 PDT 2003  
+//    Test for no cells in ds. 
+//    
 // ****************************************************************************
 
 int
 avtPickQuery::LocatorFindCell(vtkDataSet *ds)
 {
+    if (ds->GetNumberOfCells() == 0)
+    {
+        return -1;
+    }
+
     //
     // Use the picked point that has been moved towards the cell center.
     //

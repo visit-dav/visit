@@ -9,6 +9,7 @@
 #include <vtkDataSet.h>
 #include <vtkRenderer.h>
 #include <vtkMath.h>
+#include <vtkMatrix4x4.h>
 
 #include <ColorAttribute.h>
 
@@ -3218,6 +3219,10 @@ VisWindow::ProcessResizeEvent(void *data)
 //   calculated from the screen coordinates,  and passed to the viewer for
 //   handling by the engine. 
 // 
+//   Eric Brugger, Wed Jun 18 17:50:24 PDT 2003
+//   I modified the method so that pick worked properly with the new pan
+//   and zoom mechanism.
+//
 // ****************************************************************************
 
 void
@@ -3233,7 +3238,7 @@ VisWindow::Pick(int x, int y)
     float ray[3];
     float tF, tB; 
     float rayPt1[4], rayPt2[4];
-    float *displayCoords, *worldCoords;
+    float *displayCoords;
     double *clipRange;
     float rayLength;
     vtkRenderer *ren = GetCanvas();
@@ -3250,9 +3255,55 @@ VisWindow::Pick(int x, int y)
     ren->WorldToDisplay();
     displayCoords = ren->GetDisplayPoint();
 
+    //
+    // Transform the point from display to view coordinates.
+    //
+    double viewPoint[4];
+
     ren->SetDisplayPoint(x, y, displayCoords[2]);
-    ren->DisplayToWorld();
-    worldCoords = ren->GetWorldPoint();
+    ren->DisplayToView();
+    float *viewCoords = ren->GetViewPoint();
+
+    viewPoint[0] = viewCoords[0];
+    viewPoint[1] = viewCoords[1];
+    viewPoint[2] = viewCoords[2];
+    viewPoint[3] = 1.0;
+
+    // Compensate for window centering and scaling.
+    double *windowCenter = cam->GetWindowCenter();
+    double focalDisk = cam->GetFocalDisk();
+    float *aspect = ren->GetAspect();
+
+    viewPoint[0] = viewPoint[0] -
+        (aspect[0] - 1.) * windowCenter[0] * focalDisk;
+    viewPoint[1] = viewPoint[1] -
+        (aspect[1] - 1.) * windowCenter[1] * focalDisk;
+
+    //
+    // Transform the point from view to world coordinates.
+    //
+    double worldCoords[4];
+    vtkMatrix4x4 *mat = vtkMatrix4x4::New();
+ 
+    // get the perspective transformation from the active camera
+    mat->DeepCopy(cam->GetCompositePerspectiveTransformMatrix(1,0,1));
+ 
+    // use the inverse matrix
+    mat->Invert();
+ 
+    mat->MultiplyPoint(viewPoint, worldCoords);
+ 
+    // Get the transformed vector & set WorldPoint
+    // while we are at it try to keep w at one
+    if (worldCoords[3])
+    {
+        worldCoords[0] = worldCoords[0] / worldCoords[3];
+        worldCoords[1] = worldCoords[1] / worldCoords[3];
+        worldCoords[2] = worldCoords[2] / worldCoords[3];
+        worldCoords[3] = 1;
+    }
+    mat->Delete();
+
     if ( worldCoords[3] == 0.0 )
     {
         debug5 << "vtkCellPicker could not calculate pick ray."  << endl;
