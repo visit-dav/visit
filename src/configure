@@ -7944,7 +7944,7 @@ echo $ECHO_N "checking whether to use libsilo.a or libsiloh5.a... $ECHO_C" >&6
         saved_LIBS="$LIBS"
 	saved_SILO_LIB="$SILO_LIB"
 
-        SILO_LIB="-L$SILO_LIBDIR -lsiloh5 $HDF5_LIB"
+        SILO_LIB="-L$SILO_LIBDIR -lsiloh5 $HDF5_LIB $ZLIB_LIB"
         CPPFLAGS="$CPPFLAGS $SILO_INCLUDE $HDF5_INCLUDE $ZLIB_INCLUDE"
         LIBS="$SILO_LIB $LIBS"
 
@@ -8011,7 +8011,7 @@ echo $ECHO_N "checking whether libsilo.a depends on hdf5... $ECHO_C" >&6
         saved_LIBS="$LIBS"
 	saved_SILO_LIB="$SILO_LIB"
 
-        SILO_LIB="$SILO_LIB $HDF5_LIB"
+        SILO_LIB="$SILO_LIB $HDF5_LIB $ZLIB_LIB"
         CPPFLAGS="$CPPFLAGS $SILO_INCLUDE $HDF5_INCLUDE $ZLIB_INCLUDE"
         LIBS="$SILO_LIB $LIBS"
 

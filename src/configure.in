@@ -511,6 +511,10 @@ dnl
 dnl    Mark C. Miller, Tue Sep 28 19:32:50 PDT 2004
 dnl    Added ViSUS
 dnl
+dnl    Eric Brugger, Thu Sep 30 10:51:22 PDT 2004
+dnl    I corrected a bug that was causing the check for using siloh5 to fail
+dnl    if hdf5 was built with z lib support.
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -1848,7 +1852,7 @@ if test -n "$HDF5_LIB"; then
         saved_LIBS="$LIBS"
 	saved_SILO_LIB="$SILO_LIB"
 
-        SILO_LIB="-L$SILO_LIBDIR -lsiloh5 $HDF5_LIB"
+        SILO_LIB="-L$SILO_LIBDIR -lsiloh5 $HDF5_LIB $ZLIB_LIB"
         CPPFLAGS="$CPPFLAGS $SILO_INCLUDE $HDF5_INCLUDE $ZLIB_INCLUDE"
         LIBS="$SILO_LIB $LIBS"
 
@@ -1883,7 +1887,7 @@ if test -n "$HDF5_LIB"; then
         saved_LIBS="$LIBS"
 	saved_SILO_LIB="$SILO_LIB"
 
-        SILO_LIB="$SILO_LIB $HDF5_LIB"
+        SILO_LIB="$SILO_LIB $HDF5_LIB $ZLIB_LIB"
         CPPFLAGS="$CPPFLAGS $SILO_INCLUDE $HDF5_INCLUDE $ZLIB_INCLUDE"
         LIBS="$SILO_LIB $LIBS"
 
