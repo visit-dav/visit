@@ -307,6 +307,11 @@ CGetNumberOfZones(avtDataRepresentation &data, void *sum, bool &)
 //  Programmer: Hank Childs
 //  Creation:   July 27, 2004
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Jul 29 17:24:40 PDT 2004
+//    Copy over field data as well.
+//
 // ****************************************************************************
 
 void
@@ -325,6 +330,7 @@ CConvertUnstructuredGridToPolyData(avtDataRepresentation &data, void *, bool &)
         out_pd->SetPoints(ugrid->GetPoints());
         out_pd->GetPointData()->ShallowCopy(ugrid->GetPointData());
         out_pd->GetCellData()->ShallowCopy(ugrid->GetCellData());
+        out_pd->GetFieldData()->ShallowCopy(ugrid->GetFieldData());
         int ncells = ugrid->GetNumberOfCells();
         out_pd->Allocate(ncells);
         for (int i = 0 ; i < ncells ; i++)

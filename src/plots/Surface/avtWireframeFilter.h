@@ -1,5 +1,5 @@
 // ************************************************************************* //
-//                             avtWireframeFilter.h                            //
+//                           avtWireframeFilter.h                            //
 // ************************************************************************* //
 
 #ifndef AVT_WIREFRAME_FILTER_H
@@ -28,6 +28,9 @@ class vtkGeometryFilter;
 //
 //  Modifications:
 //
+//    Hank Childs, Fri Jul 30 12:09:16 PDT 2004
+//    Moved PostExecute to avtSurfaceFilter.
+//
 // ****************************************************************************
 
 class avtWireframeFilter : public avtStreamer
@@ -52,7 +55,6 @@ class avtWireframeFilter : public avtStreamer
     vtkUniqueFeatureEdges  *edgesFilter;
 
     virtual vtkDataSet     *ExecuteData(vtkDataSet *, int, std::string);
-    virtual void            PostExecute(void);
 };
 
 
