@@ -42,7 +42,7 @@ public:
     virtual void HasPlots(void);
     virtual void NoPlots(void);
     virtual void SetFrameAndState(int, int, int, int, int, int, int);
-    virtual void UpdatePlotList(vector<avtActor_p> &lst);
+    virtual void UpdatePlotList(std::vector<avtActor_p> &lst);
 private:
     bool ShouldBeAddedToRenderer() const;
     void SetText(const char *text);

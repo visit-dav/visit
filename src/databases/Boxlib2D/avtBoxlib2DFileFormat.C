@@ -1,10 +1,16 @@
+// ************************************************************************* //
+//                         avtBoxlib2DFileFormat.C                           //
+// ************************************************************************* //
+
+
 // **************************************************************************//
 //  Reader: Boxlib2D
 // 
-//  Current format for a .boxlib2D file:
-//   <relative or absolute path to plt directories>
-//   <number of cycles>
-//    <cycle0> <cycle1> <cycle2> ... 
+//  Current format for a .boxlib2D file is a bit bogus.  There is currently
+//  no mechanism for supporting MTMD with changing SILs.  So Boxlib is a STMD.
+//  This makes filenames a bit tough (you have to have one .boxlib3d file per
+//  timestep).  So the contents of a boxlib file are not used.  They just
+//  should be in the same directory as the Header file.
 // 
 //  Notes:                             
 //     There are certain assumptions that this reader currently makes that
@@ -15,13 +21,6 @@
 //      if a dataset is found to have ghost zones. This is due to lack
 //      of sample datasets, and should be removed once appropriate data
 //      is avaliable.
-//   -> The number of levels and patches are assumed to be uniform over
-//      each timestep (identified by the first timestep). This is until
-//      proper AMR support is in place to allow for such issues.
-//   -> The names and relative locations of the variable MultiFab files
-//      are assumed to be the same over all timesteps. The index into
-//      a file for a variable is assumed to be the same over all timesteps
-//      and over all levels.
 //
 //   Code is currently in place to check these assumptions where possible,
 //   and issue warnings or throw exceptions as appropriate.
@@ -38,9 +37,16 @@
 
 #include <vtkFloatArray.h>
 #include <vtkRectilinearGrid.h>
+#include <vtkUnsignedCharArray.h>
 
 #include <avtCallback.h>
+#include <avtDatabase.h>
 #include <avtDatabaseMetaData.h>
+#include <avtIntervalTree.h>
+#include <avtMaterial.h>
+#include <avtStructuredDomainBoundaries.h>
+#include <avtStructuredDomainNesting.h>
+#include <avtVariableCache.h>
 
 #include <BadDomainException.h>
 #include <BadIndexException.h>
@@ -50,13 +56,11 @@
 #include <InvalidDBTypeException.h>
 
 #include <VisMF.H>
-#include <FArrayBox.H>
 
 using std::vector;
 using std::string;
 
 static string GetDirName(const char *path);
-static string GetNameLevel(const char *name_level_str, int &level);
 static void   EatUpWhiteSpace(ifstream &in);
 static int    VSSearch(const vector<string> &, const string &); 
 
@@ -66,70 +70,86 @@ static int    VSSearch(const vector<string> &, const string &);
 //  Arguments:
 //    fname      the file name of the .boxlib file
 //
-//  Programmer:  Akira Haddox
-//  Creation:    July 25, 2003
+//  Programmer:  Hank Childs
+//  Creation:    December 10, 2003
 //
 // ****************************************************************************
 
 avtBoxlib2DFileFormat::avtBoxlib2DFileFormat(const char *fname)
-    : avtMTMDFileFormat(fname)
+    : avtSTMDFileFormat(&fname, 1)
 {
+    // The root path is the boxlib name.  This needs to change.
     rootPath = GetDirName(fname);
-    
-    //
-    // Open the .boxlib file and read in the cycles.
-    // 
-    ifstream in;
-    in.open(fname);
-    
-    if (in.fail())
-        EXCEPTION1(InvalidFilesException, fname);
-    
-    string pth;
-    in >> pth;
-    if (pth[0] == '/')
-        rootPath = pth;
-    else
-        rootPath = rootPath + pth;
-    if (rootPath[rootPath.length() - 1] != '/')
-        rootPath += "/";
 
-    in >> nTimesteps;
-    
-    cycles.resize(nTimesteps);
-    
-    int i;
-    for (i = 0; i < nTimesteps; ++i)
-        in >> cycles[i];
-
-    in.close();
-    //
-    // End reading .boxlib file.
-    //
-
-    //
-    // Populate with the paths to each timestep.
-    //
-    timestepPaths.reserve(nTimesteps);
-    for (i = 0; i < nTimesteps; ++i)
+    bool foundOne = false;
+    const char *cur = rootPath.c_str();
+    const char *last = NULL;
+    while (cur != NULL)
     {
-        char buf[1024];
-        sprintf(buf, "plt%04d", cycles[i]);
-        timestepPaths.push_back(buf); 
+        cur = strstr(cur, "plt");
+        if (cur != NULL) 
+        {
+            last = cur;
+            cur = cur+1;
+        }
+    }
+    if (last == NULL)
+    {
+        EXCEPTION1(InvalidFilesException, fname);
     }
 
-    patches.resize(nTimesteps);
-    readTimeHeader.resize(nTimesteps, false); 
-    
-    //
-    // Read in the first timestep, resizing most of our data arrays,
-    // and gathering essential information.
-    //
-    ReadTimeHeader(0, true);
+    cycle = atoi(last + strlen("plt"));
+    char tmp[32];
+    sprintf(tmp, "plt%04d", cycle);
+    //timestepPath = tmp;
+    static const char *t ="";
+    timestepPath = t;
 
-    mfReaders.resize(nTimesteps);
-    for (i = 0; i < nTimesteps; ++i)
-        mfReaders[i].resize(multifabFilenames.size(), NULL);
+    initializedReader = false;
+}
+
+
+// ****************************************************************************
+//  Destructor:  avtBoxlib2DFileFormat::~avtBoxlib2DFileFormat
+//
+//  Programmer:  Hank Childs
+//  Creation:    December 10, 2003
+//
+// ****************************************************************************
+
+avtBoxlib2DFileFormat::~avtBoxlib2DFileFormat()
+{
+    FreeUpResources();
+}
+
+
+// ****************************************************************************
+//  Method: avtBoxlib2DFileFormat::InitializeReader
+//
+//  Purpose:
+//      Initializes the reader.
+//
+//  Programmer: Hank Childs
+//  Creation:   December 10, 2003
+//
+// ****************************************************************************
+
+void
+avtBoxlib2DFileFormat::InitializeReader(void)
+{
+    int  i;
+
+    if (initializedReader)
+        return;
+
+    initializedReader = true;
+
+    //
+    // Read in the time header.  This will set up some of our arrays.
+    //
+    ReadHeader();
+
+    mfReaders.resize(multifabFilenames.size(), NULL);
     
     //
     // Now that we have the varNames and the multifabFilenames,
@@ -139,7 +159,7 @@ avtBoxlib2DFileFormat::avtBoxlib2DFileFormat(const char *fname)
     int level = 0;
     for (i = 0; i < multifabFilenames.size(); ++i)
     {
-        VisMF *vmf = GetVisMF(0, i);
+        VisMF *vmf = GetVisMF(i);
         int cnt = vmf->nComp();
 
         //
@@ -178,24 +198,70 @@ avtBoxlib2DFileFormat::avtBoxlib2DFileFormat(const char *fname)
             ++level;
         }
     } 
-    
+
     //
-    // Find possible vectors by combining scalars with {x,y} prefixes.
-    // 
-    nVectors = 0;
+    // varUsedElsewhere is used to denote scalar variables that we don't
+    // want to expose as scalar variables, since we are using them elsewhere.
+    //
+    varUsedElsewhere.clear();
+    for (i = 0 ; i < nVars ; i++)
+    {
+        varUsedElsewhere.push_back(false);
+    }
+
+    //
+    // Find any materials
+    //
+    nMaterials = 0;
     for (i = 0; i < nVars; ++i)
     {
+        int val = 0;
+        if (varNames[i].find("frac") == 0)
+        {
+            varUsedElsewhere[i] = true;
+            int val = atoi(varNames[i].c_str()+4);
+
+            if (val > nMaterials)
+                nMaterials = val;
+        }
+    }
+    
+    //
+    // Find possible vectors by combining scalars with {x,y} prefixes and
+    // suffixes.
+    // 
+    nVectors = 0;
+    vectorNames.clear();
+    for (i = 0; i < nVars; ++i)
+    {
+        int id2 = -1;
+        string needle = varNames[i];
+        bool startsWithFirst = false;
+        bool foundVector = false;
         if (varNames[i][0] == 'x')
         {
-            string needle = varNames[i];
             needle[0] = 'y';
-
-            int id2 = VSSearch(varNames, needle);
+            id2 = VSSearch(varNames, needle);
             if (id2 == -1)
                 continue;
             
-            needle[0] = 'z';
+            startsWithFirst = true;
+            foundVector = true;
+        }
+        int lastChar = strlen(needle.c_str())-1;
+        if (!foundVector && (varNames[i][lastChar] == 'x'))
+        {
+            needle[lastChar] = 'y';
+            id2 = VSSearch(varNames, needle);
+            if (id2 == -1)
+                continue;
             
+            startsWithFirst = false;
+            foundVector = true;
+        }
+
+        if (foundVector)
+        {
             // Ensure they're all the same type of centering.
             if (varCentering[i] == AVT_UNKNOWN_CENT)
                 continue;
@@ -204,29 +270,85 @@ avtBoxlib2DFileFormat::avtBoxlib2DFileFormat(const char *fname)
 
             int index = nVectors;
             ++nVectors;
-            vectorNames.push_back(needle.substr(1, needle.length() - 1));
+            if (startsWithFirst)
+                vectorNames.push_back(needle.substr(1, needle.length() - 1));
+            else
+                vectorNames.push_back(needle.substr(0, needle.length() - 1));
             vectorCentering.push_back(varCentering[i]);
 
             vectorComponents.resize(nVectors);
             vectorComponents[index].resize(dimension);
             vectorComponents[index][0] = i;
+            varUsedElsewhere[i]   = true;
             vectorComponents[index][1] = id2;
+            varUsedElsewhere[id2] = true;
         }
+    }
+
+    if (!avtDatabase::OnlyServeUpMetaData())
+    {
+        CalculateDomainNesting();
     }
 }
 
 
 // ****************************************************************************
-//  Destructor:  avtBoxlib2DFileFormat::~avtBoxlib2DFileFormat
+//  Method:  avtBoxlib2DFileFormat::GetGlobalPatchNumber
 //
-//  Programmer:  Akira Haddox
-//  Creation:    July 25, 2003
+//  Purpose:
+//      Gets the global patch number from the level and local patch number.
+//
+//  Programmer: Hank Childs
+//  Creation:   December 10, 2003
 //
 // ****************************************************************************
 
-avtBoxlib2DFileFormat::~avtBoxlib2DFileFormat()
+int
+avtBoxlib2DFileFormat::GetGlobalPatchNumber(int level, int local_patch) const
 {
-    FreeUpResources();
+    if (level < 0 || level >= nLevels)
+    {
+        EXCEPTION2(BadIndexException, level, nLevels);
+    }
+
+    int rv = 0;
+    for (int i = 0 ; i < level ; i++)
+    {
+        rv += patchesPerLevel[i];
+    }
+    rv += local_patch;
+
+    return rv;
+}
+
+
+// ****************************************************************************
+//  Method: avtBoxlib2DFileFormat::GetLevelAndLocalPatchNumber
+//
+//  Purpose:
+//      Gets the level and local patch number from the global patch number.
+//
+//  Programmer: Hank Childs
+//  Creation:   December 10, 2003
+//
+// ****************************************************************************
+
+void
+avtBoxlib2DFileFormat::GetLevelAndLocalPatchNumber(int global_patch,
+                                            int &level, int &local_patch) const
+{
+    int tmp = global_patch;
+    level = 0;
+    while (1)
+    {
+        if (tmp < patchesPerLevel[level])
+        {
+            break;
+        }
+        tmp -= patchesPerLevel[level];
+        level++;
+    }
+    local_patch = tmp;
 }
 
 
@@ -234,79 +356,70 @@ avtBoxlib2DFileFormat::~avtBoxlib2DFileFormat()
 //  Method:  avtBoxlib2DFileFormat::GetMesh
 //
 //  Purpose:
-//    Returns the mesh with the given name for the given time step and
-//    domain. 
+//    Returns the mesh with the given name for the given patch number.
 //
 //  Arguments:
-//    ts         the time step
 //    dom        the domain number
-//    level_name the name of the mesh to read
+//    mesh_name  The name of the mesh.
 //
-//  Programmer:  Akira Haddox
-//  Creation:    July 25, 2003
+//  Programmer:  Hank Childs
+//  Creation:    December 10, 2003
 //
 // ****************************************************************************
 
 vtkDataSet *
-avtBoxlib2DFileFormat::GetMesh(int ts, int patch, const char *level_name)
+avtBoxlib2DFileFormat::GetMesh(int patch, const char *mesh_name)
 {
-    int level;
-    string name = GetNameLevel(level_name, level);
+    if (strcmp(mesh_name, "Mesh") != 0)
+        EXCEPTION1(InvalidVariableException, mesh_name);
+
+    if (!initializedReader)
+        InitializeReader();
+
+    int level, local_patch;
+    GetLevelAndLocalPatchNumber(patch, level, local_patch);
+
     if (level >= nLevels)
     {
-        EXCEPTION1(InvalidVariableException, level_name);
+        EXCEPTION1(InvalidVariableException, mesh_name);
     }
 
-    if (patch >= patchesPerLevel[level])
+    if (local_patch >= patchesPerLevel[level])
     {
-        EXCEPTION2(BadDomainException, patch, patchesPerLevel[level]);
+        EXCEPTION2(BadDomainException, local_patch, patchesPerLevel[level]);
     }
 
-    //
-    // Read in the time header, which generates the mesh that we need.
-    //
-    if (!readTimeHeader[ts])
-        ReadTimeHeader(ts, false);
+    double lo[2], hi[2], delta[2];
+    lo[0] = xMin[patch];
+    lo[1] = yMin[patch];
+    hi[0] = xMax[patch];
+    hi[1] = yMax[patch];
+    delta[0] = deltaX[level];
+    delta[1] = deltaY[level];
 
-    // May be NULL, we don't support changing number of patches right now.
-    if (patches[ts][level][patch])
-        patches[ts][level][patch]->Register(NULL);
-    else
-        EXCEPTION1(InvalidDBTypeException, "Reader does not support changing number of patches over time.");
-    return patches[ts][level][patch];
+    return CreateGrid(lo, hi, delta);
 }
 
 
 // ****************************************************************************
-//  Method:  avtBoxlib2DFileFormat::ReadTimeHeader
+//  Method:  avtBoxlib2DFileFormat::ReadHeader
 //
 //  Purpose:
 //    Reads in the header information for a time step and generate
 //    meshes for all patches and levels from that information.
 //    Meshes are not generated if populate is set to true.
 //
-//  Arguments:
-//    ts         the time step
-//    populate   true if this is read is part of the constructor
-//
-//  Programmer:  Akira Haddox
-//  Creation:    July 25, 2003
-//
-//  Modifications:
-//
-//    Hank Childs, Mon Sep  8 16:04:01 PDT 2003
-//    While parsing header, a string was returned on the DECs when it was
-//    actually EOF, leading to a bad value in the multiFabFilenames.  I put
-//    in a check for this and ignored the string in this case.
+//  Programmer:  Hank Childs
+//  Creation:    December 10, 2003
 //
 // ****************************************************************************
 
 void
-avtBoxlib2DFileFormat::ReadTimeHeader(int ts, bool populate)
+avtBoxlib2DFileFormat::ReadHeader(void)
 {
     ifstream in;
 
-    string headerFilename = rootPath + timestepPaths[ts] + "/Header";
+    string headerFilename = rootPath + timestepPath + "/Header";
     
     in.open(headerFilename.c_str());
     
@@ -320,24 +433,20 @@ avtBoxlib2DFileFormat::ReadTimeHeader(int ts, bool populate)
     // Read in nVars
     in >> integer;
 
-    if (populate)
-    {
-        nVars = integer;
-        varNames.resize(nVars);
-        varCentering.resize(nVars);
-    }
+    nVars = integer;
+    varNames.resize(nVars);
+    varCentering.resize(nVars);
     
     EatUpWhiteSpace(in);
     int i;
     for (i = 0; i < nVars; ++i)
     {
         in.getline(buf, 1024); // Read in var names
-        if (populate)
-            varNames[i] = buf;
+        varNames[i] = buf;
     }
     // Read in dimension
     in >> integer;
-    if (populate && dimension != integer)
+    if (dimension != integer)
     {
         EXCEPTION1(InvalidDBTypeException,"This reader only handles 2D files.");
     }
@@ -345,38 +454,24 @@ avtBoxlib2DFileFormat::ReadTimeHeader(int ts, bool populate)
     // Read in time
     double time;
     in >> time;
-    if (!populate)
-        metadata->SetTime(ts, time);
+    metadata->SetTime(timestep, time);
+    metadata->SetCycle(timestep, cycle);
 
     // Read in number of levels for this timestep.
-    int lev;
-    in >> lev;
-    ++lev;
-    if (populate)
-    {
-        nLevels = lev;
-        patchesPerLevel.resize(nLevels);
-        for (i = 0; i < patches.size(); ++i)
-            patches[i].resize(nLevels);
+    in >> nLevels;
+    ++nLevels;
 
-        fabfileIndex.resize(nLevels);
-        componentIds.resize(nLevels);
+    patchesPerLevel.resize(nLevels);
+    fabfileIndex.resize(nLevels);
+    componentIds.resize(nLevels);
 
-        for (i = 0; i < nLevels; ++i)
-        {
-            fabfileIndex[i].resize(nVars);
-            componentIds[i].resize(nVars);
-        }
-    }
-    // Do a quick check that the levels haven't changed.
-    else if (lev != nLevels)
+    for (i = 0; i < nLevels; ++i)
     {
-        EXCEPTION1(InvalidDBTypeException, "Reader does not support changing number of levels over time.");
+        fabfileIndex[i].resize(nVars);
+        componentIds[i].resize(nVars);
     }
 
     // Read the problem size
-    float probLo[2];
-    float probHi[2];
     for (i = 0; i < dimension; ++i)
         in >> probLo[i];
     for (i = 0; i < dimension; ++i)
@@ -384,10 +479,10 @@ avtBoxlib2DFileFormat::ReadTimeHeader(int ts, bool populate)
 
     EatUpWhiteSpace(in);
 
-    // Read in the refinement ratio
+    // Read in the refinement ratio line.
     if (nLevels != 1)
         in.getline(buf, 1024);
-    
+
     // Read in the problem domain for this level
     in.getline(buf, 1024);
     
@@ -396,28 +491,43 @@ avtBoxlib2DFileFormat::ReadTimeHeader(int ts, bool populate)
 
     // For each level, read in the gridSpacing
     int levI;
-    vector<vector<double> > delta(lev);
-    for (levI = 0; levI < lev; ++levI)
+    deltaX.clear();
+    deltaY.clear();
+    for (levI = 0; levI < nLevels; levI++)
     {
-        delta[levI].resize(2);
-        for (i = 0; i < dimension; ++i)
-        {
-            in >> delta[levI][i];
-        }
+        double dub;
+        in >> dub;
+        deltaX.push_back(dub);
+        in >> dub;
+        deltaY.push_back(dub);
+    }
+
+    refinement_ratio.clear();
+    for (levI = 1 ; levI < nLevels ; levI++)
+    {
+        int tmp = (int) (deltaX[levI-1] / (deltaX[levI]*1.01));
+        tmp += 1;
+        refinement_ratio.push_back(tmp);
     }
  
     // Read in coord system;
     in >> integer;
    
-    // Read in width of boundry regions (ghost zones)
+    // Read in width of boundary regions (ghost zones)
     in >> integer;
     if (integer)
     {
-        avtCallback::IssueWarning("Reader does not currently support ghostzones.");
+        avtCallback::IssueWarning(
+                              "Reader does not currently support ghostzones.");
     }
     
     // For each level
-    for (levI = 0; levI < lev; ++levI)
+    xMin.clear();
+    xMax.clear();
+    yMin.clear();
+    yMax.clear();
+    multifabFilenames.clear();
+    for (levI = 0; levI < nLevels; levI++)
     {
         // Read in which level
         int myLevel;
@@ -426,18 +536,7 @@ avtBoxlib2DFileFormat::ReadTimeHeader(int ts, bool populate)
         // Read in the number of patches
         int myNPatch;
         in >> myNPatch;
-        if (populate)
-        {
-            patchesPerLevel[levI] = myNPatch;
-        }
-        // Do a quick check to make sure the patches haven't changed.
-        else if (myNPatch != patchesPerLevel[levI])
-        {
-            EXCEPTION1(InvalidDBTypeException, "Reader does not support changing number of patches over time.");
-        }
-
-        // Resize to the maximum number of patches, init to NULL
-        patches[ts][levI].resize(patchesPerLevel[levI], NULL);
+        patchesPerLevel[levI] = myNPatch;
 
         // Read in the time (again)
         in >> time;
@@ -445,20 +544,18 @@ avtBoxlib2DFileFormat::ReadTimeHeader(int ts, bool populate)
         // Read in iLevelSteps
         in >> integer;
 
-        // For each patch
+        // For each patch, read the spatial extents.
         for (i = 0; i < myNPatch; ++i)
         {
-            double lo[2];
-            double hi[2];
-
-            // Read the patch range
-            int j;
-            for (j = 0; j < dimension; ++j)
-                in >> lo[j] >> hi[j];
-
-            // Generate the mesh for this patch
-            if (!populate)
-                patches[ts][levI][i] = CreateGrid(lo, hi, &(delta[levI][0]));
+            double dub;
+            in >> dub;
+            xMin.push_back(dub);
+            in >> dub;
+            xMax.push_back(dub);
+            in >> dub;
+            yMin.push_back(dub);
+            in >> dub;
+            yMax.push_back(dub);
         }
             
         EatUpWhiteSpace(in);
@@ -473,9 +570,6 @@ avtBoxlib2DFileFormat::ReadTimeHeader(int ts, bool populate)
             multifabFilenames.push_back(buf);
         }
     }
-    
-    if (!populate)
-        readTimeHeader[ts] = true;
 }
 
 
@@ -485,40 +579,28 @@ avtBoxlib2DFileFormat::ReadTimeHeader(int ts, bool populate)
 //  Purpose:
 //    Create a rectilinear grid given bounds and a delta.
 //
-//  Arguments:
+//  Arguments
 //    lo        Lower bound
 //    hi        Upper bound
-//    delta     Step size in the xyz directions.
+//    delta     Step size in the xy directions.
 //
 //  Returns: The grid as a vtkDataSet.
 //
-//  Programmer:  Akira Haddox
-//  Creation:    July 28, 2003
+//  Programmer:  Hank Childs
+//  Creation:    December 10, 2003
 //
 // ****************************************************************************
 
 vtkDataSet *
 avtBoxlib2DFileFormat::CreateGrid(double lo[2], double hi[2], double delta[2]) 
+    const
 {
-    vtkRectilinearGrid *rg = vtkRectilinearGrid::New();
-
+    int i;
     int steps[3];
     steps[2] = 1;
-    
-    // Because we're reconstructing the dimensions from the deltas, we
-    // want to make sure that we don't accidently round down in integer
-    // conversion, so we add an appropriate little amount.
-    int i;
-    for (i = 0; i < dimension; ++i)
-    {
-        double epsilon = delta[i] / 8.0;
-        // This expands out to (hi - lo / delta) + epsilon,
-        // cast to an int.
-        steps[i] = (int) ((hi[i] - lo[i] + epsilon) / delta[i]);
-        
-        // Incriment by one for fencepost point at end.
-        ++(steps[i]);
-    }
+    vtkRectilinearGrid *rg = vtkRectilinearGrid::New();
+
+    GetDimensions(steps, lo, hi, delta);
 
     rg->SetDimensions(steps);
 
@@ -539,7 +621,7 @@ avtBoxlib2DFileFormat::CreateGrid(double lo[2], double hi[2], double delta[2])
         ptr[i] = (lo[1] + i * delta[1]);
 
     ptr = zcoord->GetPointer(0);
-    *ptr = 0.0;
+    *ptr = 0.;
 
     rg->SetXCoordinates(xcoord);
     rg->SetYCoordinates(ycoord);
@@ -554,6 +636,76 @@ avtBoxlib2DFileFormat::CreateGrid(double lo[2], double hi[2], double delta[2])
 
 
 // ****************************************************************************
+//  Method: avtBoxlib2DFileFormat::GetDimensions
+//
+//  Purpose:
+//      Determines the dimensions of a grid based on its extents and step.
+//
+//  Arguments:
+//      dims    The dimensions.  Output.
+//      level   The refinement level of the patch.
+//      patch   The global patch number.
+//
+//  Programmer: Hank Childs
+//  Creation:   December 10, 2003
+// 
+// ****************************************************************************
+
+void
+avtBoxlib2DFileFormat::GetDimensions(int *dims, int level, int patch) const
+{
+    double lo[3], hi[3], delta[3];
+    lo[0] = xMin[patch];
+    lo[1] = yMin[patch];
+    hi[0] = xMax[patch];
+    hi[1] = yMax[patch];
+    delta[0] = deltaX[level];
+    delta[1] = deltaY[level];
+
+    GetDimensions(dims, lo, hi, delta);
+}
+
+
+// ****************************************************************************
+//  Method: avtBoxlib2DFileFormat::GetDimensions
+//
+//  Purpose:
+//      Determines the dimensions of a grid based on its extents and step.
+//
+//  Arguments:
+//      dims    The dimensions.  Output.
+//      lo      The low extent.
+//      hi      The high extent.
+//      delta   The step.
+//
+//  Programmer: Hank Childs
+//  Creation:   December 10, 2003
+// 
+// ****************************************************************************
+
+void
+avtBoxlib2DFileFormat::GetDimensions(int *dims, double *lo, double *hi, 
+                                     double *delta) const
+{
+    //
+    // Because we're reconstructing the dimensions from the deltas, we
+    // want to make sure that we don't accidently round down in integer
+    // conversion, so we add an appropriate little amount.
+    //
+    for (int i = 0; i < dimension; ++i)
+    {
+        double epsilon = delta[i] / 8.0;
+        // This expands out to (hi - lo / delta) + epsilon,
+        // cast to an int.
+        dims[i] = (int) ((hi[i] - lo[i] + epsilon) / delta[i]);
+        
+        // Increment by one for fencepost point at end.
+        ++(dims[i]);
+    }
+}
+
+
+// ****************************************************************************
 //  Method:  avtBoxlib2DFileFormat::GetVar
 //
 //  Purpose:
@@ -561,28 +713,26 @@ avtBoxlib2DFileFormat::CreateGrid(double lo[2], double hi[2], double delta[2])
 //    domain.
 //
 //  Arguments:
-//    ts         the time step
 //    patch      the domain number
 //    name       the name of the variable to read
 //
-//  Programmer:  Akira Haddox
-//  Creation:    July 25, 2003
+//  Programmer:  Hank Childs
+//  Creation:    December 10, 2003
 //
 // ****************************************************************************
 
 vtkDataArray *
-avtBoxlib2DFileFormat::GetVar(int ts, int patch, const char *visit_var_name)
+avtBoxlib2DFileFormat::GetVar(int patch, const char *var_name)
 {
-    int level;
-    string var_name = GetNameLevel(visit_var_name, level);    
+    if (!initializedReader)
+        InitializeReader();
+
+    int level, local_patch;
+    GetLevelAndLocalPatchNumber(patch, level, local_patch);
 
     if (level >= nLevels)
-        EXCEPTION1(InvalidVariableException, visit_var_name);
-
-    if (!readTimeHeader[ts])
-        ReadTimeHeader(ts, false);
-    
-    if (patch >= patchesPerLevel[level])
+        EXCEPTION2(BadIndexException, level, nLevels);
+    if (local_patch >= patchesPerLevel[level])
         EXCEPTION2(BadDomainException, patch, patchesPerLevel[level]);
 
     int varIndex;
@@ -591,27 +741,18 @@ avtBoxlib2DFileFormat::GetVar(int ts, int patch, const char *visit_var_name)
             break;
 
     if (varIndex > varNames.size())
-        EXCEPTION1(InvalidVariableException, visit_var_name);
+        EXCEPTION1(InvalidVariableException, var_name);
     
-
-    vtkRectilinearGrid *rg = (vtkRectilinearGrid *)(patches[ts][level][patch]);
-    // If no patch, we need no array.
-    // Not sure if we need to do this check. This was here when
-    // we assumed that different timesteps could have different
-    // number of patches.
-    if (!rg)
-        return NULL;
-
     int mfIndex = fabfileIndex[level][varIndex];
     int compId = componentIds[level][varIndex];
     
-    VisMF *vmf = GetVisMF(ts, mfIndex);
+    VisMF *vmf = GetVisMF(mfIndex);
     
     // Get the data (an FArrayBox)
-    FArrayBox fab = vmf->GetFab(patch, compId);
+    FArrayBox fab = vmf->GetFab(local_patch, compId);
 
-    int dims[3];
-    rg->GetDimensions(dims);
+    int dims[2];
+    GetDimensions(dims, level, patch);
     
     // Cell based variable. Shift the dimensions.
     if (varCentering[varIndex] == AVT_ZONECENT)
@@ -625,26 +766,23 @@ avtBoxlib2DFileFormat::GetVar(int ts, int patch, const char *visit_var_name)
 
     float *fptr = farr->GetPointer(0);
     
-    // SLOW Implementation for now, but to get it working...
-    IntVect pos;
-
     // We need to index in the same box that the data is defined on,
     // so we need to offset all of our indexes by the lower box corner. 
-    const int * offset = fab.box().loVect();
-    
+    IntVect pos;
+    const int *offset = fab.box().loVect();
     int x, y;
-    for (y = 0; y < dims[1]; ++y)
+    for (y = 0; y < dims[1]; y++)
     {
-        for (x = 0; x < dims[0]; ++x)
+        pos[1] = y + offset[1];
+        for (x = 0; x < dims[0]; x++)
         {
             pos[0] = x + offset[0];
-            pos[1] = y + offset[1];
-            // Always index component 0, since this fab only
-            // holds one (not a multifab).
-            *(fptr++) = fab(pos, 0);
+            *(fptr++) = fab(pos);
         }
     }
     
+    fab.clear();
+    vmf->clear(local_patch, compId);
     return farr;
 }
 
@@ -660,62 +798,55 @@ avtBoxlib2DFileFormat::GetVar(int ts, int patch, const char *visit_var_name)
 //
 //  Arguments:
 //    patch                the patch number
-//    visit_var_name       the name of the variable to read
+//    var_name             the name of the variable to read
 //
-//  Programmer:  Akira Haddox
-//  Creation:    July 25, 2003
+//  Programmer:  Hank Childs
+//  Creation:    December 10, 2003
 //
 // ****************************************************************************
 
 vtkDataArray *
-avtBoxlib2DFileFormat::GetVectorVar(int ts, int patch, 
-                                  const char *visit_var_name)
+avtBoxlib2DFileFormat::GetVectorVar(int patch, const char *var_name)
 {
-    int level;
-    string var_name = GetNameLevel(visit_var_name, level);    
+    if (!initializedReader)
+        InitializeReader();
+
+    int level, local_patch;
+    GetLevelAndLocalPatchNumber(patch, level, local_patch);
 
     if (level >= nLevels)
-        EXCEPTION1(InvalidVariableException, visit_var_name);
-
-    if (!readTimeHeader[ts])
-        ReadTimeHeader(ts, false);
-
-    if (patch >= patchesPerLevel[level])
+        EXCEPTION2(BadIndexException, level, nLevels);
+    if (local_patch >= patchesPerLevel[level])
         EXCEPTION2(BadDomainException, patch, patchesPerLevel[level]);
 
     int vectIndex;
-    for (vectIndex = 0; vectIndex < nVectors; ++vectIndex)
+    for (vectIndex = 0; vectIndex < vectorNames.size(); ++vectIndex)
         if (vectorNames[vectIndex] == var_name)
             break;
 
     if (vectIndex > nVectors)
-        EXCEPTION1(InvalidVariableException, visit_var_name);
-
-
-    vtkRectilinearGrid *rg = (vtkRectilinearGrid *)(patches[ts][level][patch]);
-    // If no patch, we need no array.
-    // Not sure if we need to do this check. This was here when
-    // we assumed that different timesteps could have different
-    // number of patches.
-    if (!rg)
-        return NULL;
-
+        EXCEPTION1(InvalidVariableException, var_name);
+    
     // Get the data for the components (in FArrayBoxes).
     vector<FArrayBox *> fab(dimension);
     
     int i;
+    vector<int> compIdsList;
+    vector<VisMF *> vmfList;
     for (i = 0; i < dimension; ++i)
     {
         int varIndex = vectorComponents[vectIndex][i];
         int mfIndex = fabfileIndex[level][varIndex];
         int compId = componentIds[level][varIndex];
-        
-        VisMF *vmf = GetVisMF(ts, mfIndex); 
-        fab[i] = new FArrayBox(vmf->GetFab(patch, compId));
+
+        VisMF *vmf = GetVisMF(mfIndex); 
+        fab[i] = new FArrayBox(vmf->GetFab(local_patch, compId));
+        compIdsList.push_back(compId);
+        vmfList.push_back(vmf);
     }
     
-    int dims[3];
-    rg->GetDimensions(dims);
+    int dims[2];
+    GetDimensions(dims, level, patch);
     
     // Cell based variable.
     if (vectorCentering[vectIndex] == AVT_ZONECENT)
@@ -730,32 +861,33 @@ avtBoxlib2DFileFormat::GetVectorVar(int ts, int patch,
 
     float *fptr = farr->GetPointer(0);
     
-    // SLOW Implementation for now, but to get it working...
-    IntVect pos;
-
     // We need to index in the same box that the data is defined on,
     // so we need to offset all of our indexes by the lower box corner. 
     //
     // We also know the fabs are all defined on the same box, so we
     // only need one offset.
     const int * offset = fab[0]->box().loVect();
-
-    int x, y;
+    IntVect pos;
+    int x, y, z;
     for (y = 0; y < dims[1]; ++y)
     {
+        pos[1] = y + offset[1];
         for (x = 0; x < dims[0]; ++x)
         {
             pos[0] = x + offset[0];
-            pos[1] = y + offset[1];
 
-            *(fptr++) = (*(fab[0]))(pos, 0);
-            *(fptr++) = (*(fab[1]))(pos, 0);
-            *(fptr++) = 0;
+            *(fptr++) = (*(fab[0]))(pos);
+            *(fptr++) = (*(fab[1]))(pos);
+            *(fptr++) = 0.;
         }
     }
     
     for (i = 0; i < dimension; ++i)
+    {
+        fab[i]->clear();
         delete fab[i];
+        vmfList[i]->clear(local_patch, compIdsList[i]);
+    }
 
     return farr;
 }
@@ -774,62 +906,23 @@ avtBoxlib2DFileFormat::GetVectorVar(int ts, int patch,
 //
 //  Returns:    A pointer to the VisMF.
 //
-//  Programmer:  Akira Haddox
-//  Creation:    July 30, 2003
+//  Programmer:  Hank Childs
+//  Creation:    December 10, 2003
 //
 // ****************************************************************************
 
 VisMF *
-avtBoxlib2DFileFormat::GetVisMF(int ts, int index)
+avtBoxlib2DFileFormat::GetVisMF(int index)
 {
-    if (!mfReaders[ts][index])
+    if (!mfReaders[index])
     {
         char filename[1024];
         sprintf(filename, "%s%s/%s", rootPath.c_str(),
-                                     timestepPaths[ts].c_str(),
+                                     timestepPath.c_str(),
                                      multifabFilenames[index].c_str());
-        mfReaders[ts][index] = new VisMF(filename);
+        mfReaders[index] = new VisMF(filename);
     }
-    return mfReaders[ts][index];
-}
-
-
-// ****************************************************************************
-//  Method:  avtBoxlib2DFileFormat::GetCycles
-//
-//  Purpose:
-//    Returns the actual cycle numbers for each time step.
-//
-//  Arguments:
-//   out_cycles      the output vector of cycle numbers 
-//
-//  Programmer:  Akira Haddox
-//  Creation:    July 25, 2003
-//
-// ****************************************************************************
-
-void
-avtBoxlib2DFileFormat::GetCycles(vector<int> &out_cycles)
-{
-    out_cycles = cycles;
-}
-
-
-// ****************************************************************************
-//  Method:  avtBoxlib2DFileFormat::GetNTimesteps
-//
-//  Purpose:
-//    Returns the number of timesteps
-//
-//  Programmer:  Akira Haddox
-//  Creation:    July 25, 2003
-//
-// ****************************************************************************
-
-int
-avtBoxlib2DFileFormat::GetNTimesteps()
-{
-    return nTimesteps;
+    return mfReaders[index];
 }
 
 
@@ -842,47 +935,445 @@ avtBoxlib2DFileFormat::GetNTimesteps()
 //  Arguments:
 //    md         The meta-data structure to populate
 //
-//  Programmer:  Akira Haddox
-//  Creation:    July 25, 2003
+//  Programmer:  Hank Childs
+//  Creation:    December 10, 2003
 //
 // ****************************************************************************
 
 void
 avtBoxlib2DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 {
-    int i;
-    for (i = 0; i < nLevels; ++i)
+    if (!initializedReader)
+        InitializeReader();
+
+    int totalPatches = 0;
+    int level;
+    for (level = 0 ; level < nLevels ; level++)
+        totalPatches += patchesPerLevel[level];
+
+    char mesh_name[32] = "Mesh";
+    avtMeshMetaData *mesh = new avtMeshMetaData;
+    mesh->name = mesh_name;
+    mesh->meshType = AVT_RECTILINEAR_MESH;
+    mesh->numBlocks = totalPatches;
+    mesh->blockOrigin = 0;
+    mesh->spatialDimension = dimension;
+    mesh->topologicalDimension = dimension;
+    mesh->hasSpatialExtents = false;
+    mesh->blockTitle = "patches";
+    mesh->blockPieceName = "patch";
+    mesh->numGroups = nLevels;
+    mesh->groupTitle = "levels";
+    mesh->groupPieceName = "level";
+    vector<int> groupIds(totalPatches);
+    vector<string> blockPieceNames(totalPatches);
+    for (int i = 0 ; i < totalPatches ; i++)
     {
-        char mesh_name[32];
-        avtMeshMetaData *mesh = new avtMeshMetaData;
-        sprintf(mesh_name, "Level.%05d", i);
-        mesh->name = mesh_name;
-        mesh->meshType = AVT_RECTILINEAR_MESH;
-        mesh->numBlocks = patchesPerLevel[i];
-        mesh->blockOrigin = 0;
-        mesh->spatialDimension = dimension;
-        mesh->topologicalDimension = dimension;
-        mesh->hasSpatialExtents = false;
-        md->Add(mesh);
+        char tmpName[128];
+        int level, local_patch;
+        GetLevelAndLocalPatchNumber(i, level, local_patch);
+        groupIds[i] = level;
+        sprintf(tmpName, "level%d,patch%d", level, local_patch);
+        blockPieceNames[i] = tmpName;
+    }
+    mesh->blockNames = blockPieceNames;
+    md->Add(mesh);
+    md->AddGroupInformation(nLevels, totalPatches, groupIds);
 
-        int v;
-        for (v = 0; v < nVars; ++v)
+    int v;
+    for (v = 0; v < nVars; ++v)
+    {
+        if (varUsedElsewhere[v])
+            continue;
+        if (varCentering[v] == AVT_UNKNOWN_CENT)
+            continue;
+
+        char var_name[1024];
+        AddScalarVarToMetaData(md, varNames[v], mesh_name, 
+                               (avtCentering)varCentering[v]);
+    }
+
+    for (v = 0; v < nVectors; ++v)
+    {
+        char var_name[1024];
+        AddVectorVarToMetaData(md, vectorNames[v], mesh_name,
+                             (avtCentering)vectorCentering[v], dimension);
+    }
+
+    if (nMaterials)
+    {
+        vector<string> mnames(nMaterials);
+
+        string matname;
+        matname = "materials";
+        
+        char str[32];
+        for (int m = 0; m < nMaterials; ++m)
         {
-            char var_name[1024];
-            sprintf(var_name, "%s.%05d", varNames[v].c_str(), i);
-            if (varCentering[v] != AVT_UNKNOWN_CENT)
-                AddScalarVarToMetaData(md, var_name, mesh_name, 
-                                       (avtCentering)varCentering[v]);
+            sprintf(str, "mat%d", m);
+            mnames[m] = str;
         }
+        AddMaterialToMetaData(md, matname, mesh_name, nMaterials, mnames);
+    }
+}
 
-        for (v = 0; v < nVectors; ++v)
+
+// ****************************************************************************
+//  Method: avtBoxlib2DFileFormat::CalculateDomainNesting
+//
+//  Purpose:
+//      Calculates how the patches nest between levels.
+//
+//  Programmer: Hank Childs
+//  Creation:   December 10, 2003
+//
+// ****************************************************************************
+
+void
+avtBoxlib2DFileFormat::CalculateDomainNesting(void)
+{
+    int i;
+    int level;
+
+    //
+    // Calculate some info we will need in the rest of the routine.
+    //
+    int totalPatches = 0;
+    vector<int> levelStart;
+    vector<int> levelEnd;
+    for (level = 0 ; level < nLevels ; level++)
+    {
+
+        levelStart.push_back(totalPatches);
+        totalPatches += patchesPerLevel[level];
+        levelEnd.push_back(totalPatches);
+    }
+
+    //
+    // Now that we know the total number of patches, we can allocate the
+    // data structure we want to populate.
+    //
+    avtStructuredDomainNesting *dn = new avtStructuredDomainNesting(
+                                          totalPatches, nLevels);
+
+    //
+    // Calculate what the refinement ratio is from one level to the next.
+    //
+    vector<int> rr(2);
+    for (level = 0 ; level < nLevels ; level++)
+    {
+        if (level == 0)
         {
-            char var_name[1024];
-            sprintf(var_name, "%s.%05d", vectorNames[v].c_str(), i);
-            AddVectorVarToMetaData(md, var_name, mesh_name,
-                                 (avtCentering)varCentering[v], dimension);
+            rr[0] = 1;
+            rr[1] = 1;
+        }
+        else
+        {
+            rr[0] = refinement_ratio[level-1];
+            rr[1] = refinement_ratio[level-1];
+        }
+        dn->SetLevelRefinementRatios(level, rr);
+    }
+
+    //
+    // This multiplier will be needed to find out if patches are nested.
+    //
+    vector<int> multiplier(nLevels);
+    multiplier[nLevels-1] = 1;
+    for (level = nLevels-2 ; level >= 0 ; level--)
+    {
+        multiplier[level] = multiplier[level+1]*refinement_ratio[level];
+    }
+    
+    //
+    // Calculate the logical extents for each patch.  The indices will be
+    // in terms of the indices for the most finely refined level.  That way
+    // we can easily compare between the patches to see if they are nested.
+    //
+    vector<int> logIMin(totalPatches);
+    vector<int> logIMax(totalPatches);
+    vector<int> logJMin(totalPatches);
+    vector<int> logJMax(totalPatches);
+    level = 0;
+    avtRectilinearDomainBoundaries *rdb = new avtRectilinearDomainBoundaries;
+    rdb->SetNumDomains(totalPatches);
+    for (int patch = 0 ; patch < totalPatches ; patch++)
+    {
+        int my_level, local_patch;
+        GetLevelAndLocalPatchNumber(patch, my_level, local_patch);
+
+        double epsilonX = deltaX[my_level] / 8.0;
+        double epsilonY = deltaY[my_level] / 8.0;
+        logIMin[patch] = ((int) ((xMin[patch]-probLo[0]+epsilonX) 
+                           / deltaX[my_level])) * multiplier[my_level];
+        logIMax[patch] = ((int) ((xMax[patch]-probLo[0]+epsilonX) 
+                           / deltaX[my_level])) * multiplier[my_level];
+        logJMin[patch] = ((int) ((yMin[patch]-probLo[1]+epsilonY) 
+                           / deltaY[my_level])) * multiplier[my_level];
+        logJMax[patch] = ((int) ((yMax[patch]-probLo[1]+epsilonY) 
+                           / deltaY[my_level])) * multiplier[my_level];
+        int e[6];
+        e[0] = logIMin[patch] / multiplier[my_level];
+        e[1] = logIMax[patch] / multiplier[my_level];
+        e[2] = logJMin[patch] / multiplier[my_level];
+        e[3] = logJMax[patch] / multiplier[my_level];
+        e[4] = 0;
+        e[5] = 0;
+  
+        rdb->SetIndicesForAMRPatch(patch, my_level, e);
+    }
+    rdb->CalculateBoundaries();
+    void_ref_ptr vrdb = void_ref_ptr(rdb,
+                                   avtStructuredDomainBoundaries::Destruct);
+    cache->CacheVoidRef("any_mesh", AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION,
+                        timestep, -1, vrdb);
+
+    //
+    // Calculating the child patches really needs some better sorting than
+    // what I am doing here.  This is likely to become a bottleneck.
+    //
+    vector< vector<int> > childPatches(totalPatches);
+    for (level = nLevels-1 ; level > 0 ; level--) 
+    {
+        int prev_level = level-1;
+        int search_start  = levelStart[prev_level];
+        int search_end    = levelEnd[prev_level];
+        int patches_start = levelStart[level];
+        int patches_end   = levelEnd[level];
+        for (int patch = patches_start ; patch < patches_end ; patch++)
+        {
+            for (int candidate = search_start ; candidate < search_end ;
+                 candidate++)
+            {
+                if (logIMax[patch] < logIMin[candidate])
+                    continue;
+                if (logIMin[patch] >= logIMax[candidate])
+                    continue;
+                if (logJMax[patch] < logJMin[candidate])
+                    continue;
+                if (logJMin[patch] >= logJMax[candidate])
+                    continue;
+                childPatches[candidate].push_back(patch);
+           }
         }
     }
+
+    //
+    // Now that we know the extents for each patch and what its children are,
+    // tell the structured domain boundary that information.
+    //
+    for (int i = 0 ; i < totalPatches ; i++)
+    {
+        int my_level, local_patch;
+        GetLevelAndLocalPatchNumber(i, my_level, local_patch);
+
+        vector<int> logExts(6);
+        logExts[0] = logIMin[i] / multiplier[my_level];
+        logExts[3] = logIMax[i] / multiplier[my_level] - 1;
+        logExts[1] = logJMin[i] / multiplier[my_level];
+        logExts[4] = logJMax[i] / multiplier[my_level] - 1;
+        logExts[2] = 0;
+        logExts[5] = 0;
+
+        dn->SetNestingForDomain(i, my_level, childPatches[i], logExts);
+    }
+
+    //
+    // Register this structure with the generic database so that it knows
+    // to ghost out the right cells.
+    //
+    dn->SetNumDimensions(2);
+    void_ref_ptr vr = void_ref_ptr(dn, avtStructuredDomainNesting::Destruct);
+    cache->CacheVoidRef("any_mesh", AUXILIARY_DATA_DOMAIN_NESTING_INFORMATION,
+                        timestep, -1, vr);
+}
+
+
+// ****************************************************************************
+//  Method: avtBoxlib2DFileFormat::GetAuxiliaryData
+//
+//  Purpose:
+//      Gets the auxiliary data specified.
+//
+//  Arguments:
+//      var        The variable of interest.
+//      dom        The domain of interest.
+//      type       The type of auxiliary data.
+//      <unnamed>  The arguments for that type -- not used.
+//      df         Destructor function.
+//
+//  Returns:    The auxiliary data.
+//
+//  Programmer: Hank Childs
+//  Creation:   December 10, 2003
+//
+// ****************************************************************************
+ 
+void *
+avtBoxlib2DFileFormat::GetAuxiliaryData(const char *var, int dom, 
+                                        const char * type, void *,
+                                        DestructorFunction &df) 
+{
+    if (strcmp(type, AUXILIARY_DATA_MATERIAL) == 0)
+        return GetMaterial(var, dom, type, df);
+    else if (strcmp(type, AUXILIARY_DATA_SPATIAL_EXTENTS) == 0)
+        return GetSpatialIntervalTree(df);
+
+    return NULL;
+}
+
+
+// ****************************************************************************
+//  Method: avtBoxlib2DFileFormat::GetMaterial
+//
+//  Purpose:
+//      Gets an avtMaterial object for the specified patch
+//
+//  Notes:      This routine was largely taken from the old GetAuxiliaryData,
+//              written by Hank Childs.
+//
+//  Programmer: Hank Childs
+//  Creation:   December 10, 2003
+//
+// ****************************************************************************
+    
+void *
+avtBoxlib2DFileFormat::GetMaterial(const char *var, int patch, 
+                                   const char *type, DestructorFunction &df)
+{
+    if (!initializedReader)
+        InitializeReader();
+
+    int level, localPatch;
+    GetLevelAndLocalPatchNumber(patch, level, localPatch);
+    
+    if (level >= nLevels)
+        EXCEPTION2(BadIndexException, level, nLevels);
+
+    if (localPatch >= patchesPerLevel[level])
+        EXCEPTION2(BadDomainException, localPatch, patchesPerLevel[level]);
+
+    int i;
+    vector<string> mnames(nMaterials);
+    char str[32];
+    for (i = 0; i < nMaterials; ++i)
+    {
+        sprintf(str, "mat%d", i);
+        mnames[i] = str;
+    }
+    
+    int dims[3];
+    GetDimensions(dims, level, patch);
+    int nCells = (dims[0]-1)*(dims[1]-1);
+
+    vector<int> material_list(nCells);
+    vector<int> mix_mat;
+    vector<int> mix_next;
+    vector<int> mix_zone;
+    vector<float> mix_vf;
+
+    // Get the material fractions
+    vector<vtkFloatArray *> floatArrays(nMaterials);
+    vector<float *> mats(nMaterials);
+    for (i = 1; i <= nMaterials; ++i)
+    {
+        sprintf(str,"frac%d", i);
+        floatArrays[i - 1] = (vtkFloatArray *)(GetVar(patch, str));
+        mats[i - 1] = floatArrays[i - 1]->GetPointer(0);
+    }
+         
+    // Build the appropriate data structures
+    for (i = 0; i < nCells; ++i)
+    {
+        int j;
+
+        // First look for pure materials
+        bool pure = false;
+        for (j = 0; j < nMaterials; ++j)
+        {
+            if (mats[j][i] >= 1)
+            {
+                pure = true;
+                break;
+            }
+            else if (mats[j][i] > 0)
+                break;
+        }
+
+        if (pure)
+        {
+            material_list[i] = j;
+            continue;
+        }
+
+        // For unpure materials, we need to add entries to the tables.  
+        material_list[i] = -1 * (1 + mix_zone.size());
+        for (j = 0; j < nMaterials; ++j)
+        {
+            if (mats[j][i] <= 0)
+                continue;
+            // For each material that's present, add to the tables
+            mix_zone.push_back(i);
+            mix_mat.push_back(j);
+            mix_vf.push_back(mats[j][i]);
+            mix_next.push_back(mix_zone.size() + 1);
+        }
+
+        // When we're done, the last entry is a '0' in the mix_next
+        mix_next[mix_next.size() - 1] = 0;
+    }
+    
+    
+    int mixed_size = mix_zone.size();
+    avtMaterial * mat = new avtMaterial(nMaterials, mnames, nCells,
+                                        &(material_list[0]), mixed_size,
+                                        &(mix_mat[0]), &(mix_next[0]),
+                                        &(mix_zone[0]), &(mix_vf[0]));
+     
+    df = avtMaterial::Destruct;
+    return (void*) mat;
+}
+
+
+// ****************************************************************************
+//  Method: avtBoxlib2DFileFormat::GetSpatialIntervalTree
+//
+//  Purpose:
+//      Gets the spatial interval tree for all the patches.
+//
+//  Notes:      This routine was largely taken from the old GetAuxiliaryData,
+//              written by Hank Childs.
+//
+//  Programmer: Hank Childs
+//  Creation:   December 10, 2003
+//
+// ****************************************************************************
+    
+void *
+avtBoxlib2DFileFormat::GetSpatialIntervalTree(DestructorFunction &df)
+{
+    int totalPatches = 0;
+    for (int level = 0 ; level < nLevels ; level++)
+        totalPatches += patchesPerLevel[level];
+
+    avtIntervalTree *itree = new avtIntervalTree(totalPatches, dimension);
+
+    for (int patch = 0 ; patch < totalPatches ; patch++)
+    {
+        float bounds[6];
+        bounds[0] = xMin[patch];
+        bounds[1] = xMax[patch];
+        bounds[2] = yMin[patch];
+        bounds[3] = yMax[patch];
+        bounds[4] = 0.;
+        bounds[5] = 0.;
+        itree->AddDomain(patch, bounds);
+    }
+    itree->Calculate(true);
+
+    df = avtIntervalTree::Destruct;
+
+    return ((void *) itree);
 }
 
 
@@ -892,34 +1383,23 @@ avtBoxlib2DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //  Purpose:
 //    Release cached memory used by this reader.
 //
-//  Programmer:  Akira Haddox
-//  Creation:    July 30, 2003
+//  Programmer:  Hank Childs
+//  Creation:    December 10, 2003
 //
 // ****************************************************************************
 
 void
 avtBoxlib2DFileFormat::FreeUpResources()
 {
-    int i,j,k;
-    for (i = 0; i < patches.size(); ++i)
-        for (j = 0; j < patches[i].size(); ++j)
-            for (k = 0; k < patches[i][j].size(); ++k)
-                if (patches[i][j][k])
-                {
-                    patches[i][j][k]->Delete();
-                    patches[i][j][k] = NULL;
-                }
-
-    for (i = 0; i < nTimesteps; ++i)
+    initializedReader = false;
+    
+    for (int j = 0; j < mfReaders.size(); j++)
     {
-        readTimeHeader[i] = false;
-        int j;
-        for (j = 0; j < mfReaders[i].size(); ++j)
-            if (mfReaders[i][j])
-            {
-                delete mfReaders[i][j];
-                mfReaders[i][j] = NULL;
-            }
+        if (mfReaders[j])
+        {
+            delete mfReaders[j];
+            mfReaders[j] = NULL;
+        }
     }
 }
 
@@ -933,8 +1413,8 @@ avtBoxlib2DFileFormat::FreeUpResources()
 //  Arguments:
 //    path       the full path name
 //
-//  Programmer:  Jeremy Meredith
-//  Creation:    April  7, 2003
+//  Programmer:  Hank Childs
+//  Creation:    December 10, 2003
 //
 // ****************************************************************************
 
@@ -964,53 +1444,13 @@ GetDirName(const char *path)
 
 
 // ****************************************************************************
-//  Method:  GetNameLevel
-//
-//  Purpose:
-//    Returns the 'name' string and level number from a 'name.level' string
-//
-//  Arguments:
-//    IN:  name_level_str     the string with name and level data
-//    OUT: level              the level
-//
-//  Programmer:  Walter Herrera Jimenez
-//  Creation:    July  11, 2003
-//
-// ****************************************************************************
-
-string 
-GetNameLevel(const char *name_level_str, int &level)
-{
-    int len = strlen(name_level_str);
-    const char *last = name_level_str + (len-1);
-    while (*last != '.' && last > name_level_str)
-    {
-        last--;
-    }
-
-    if (*last != '.')
-    {
-        level = 0;
-        return "";
-    }
-
-    char str[1024];
-    strcpy(str, name_level_str);
-    str[last-name_level_str] = '\0';
-
-    level = strtol(last+1,NULL,0);
-    return str;
-}
-
-
-// ****************************************************************************
 //  Method:  EatUpWhiteSpace
 //
 //  Purpose:
 //    Read from the filestream to skip whitespace.
 //
-//  Programmer:  Akira Haddox
-//  Creation:    July  28, 2003
+//  Programmer:  Hank Childs
+//  Creation:    December 10, 2003
 //
 // ****************************************************************************
 
@@ -1035,8 +1475,8 @@ EatUpWhiteSpace(ifstream &in)
 //  Returns:
 //    The index of s, or -1 if not found.
 //    
-//  Programmer:  Akira Haddox
-//  Creation:    July  28, 2003
+//  Programmer:  Hank Childs
+//  Creation:    December 10, 2003
 //
 // ***************************************************************************
 
@@ -1048,3 +1488,5 @@ int VSSearch(const vector<string> &v, const string &s)
             return i;
     return -1;
 }
+
+

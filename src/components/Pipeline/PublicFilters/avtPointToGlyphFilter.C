@@ -383,6 +383,9 @@ avtPointToGlyphFilter::SetScaleByVariableEnabled(bool s)
 //    Hank Childs, Wed Mar 26 13:56:53 PST 2003
 //    Add early detection for the case where there are 0 input cells.
 //
+//    Hank Childs, Sat Dec 13 21:34:05 PST 2003
+//    Do a better job of handling nodal and zonal point data.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -463,11 +466,17 @@ avtPointToGlyphFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
     vtkPointData *in_pd  = ds->GetPointData();
     int npts = output->GetNumberOfPoints();
     out_pd->CopyAllocate(in_pd, npts);
-    for (int i = 0 ; i < npts ; i++)
+    int i;
+    for (i = 0 ; i < npts ; i++)
     {
         out_pd->CopyData(in_pd, ids->GetValue(i), i);
     }
-    output->GetPointData()->ShallowCopy(out_pd);
+    for (i = 0 ; i < out_pd->GetNumberOfArrays() ; i++)
+    {
+        vtkDataArray *arr = out_pd->GetArray(i);
+        output->GetPointData()->AddArray(arr);
+    }
+    output->GetPointData()->RemoveArray("InputPointIds");
     out_pd->Delete();
     ids->Delete();
 

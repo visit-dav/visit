@@ -29,6 +29,9 @@ ViewerConnectionProgressDialog *ViewerPasswordWindow::dialog = NULL;
 //    Brad Whitlock, Mon Apr 15 11:22:44 PDT 2002
 //    Added an ok button.
 //
+//    Jeremy Meredith. Tue Dec  9 15:16:52 PST 2003
+//    Added a cancel button, as well as supported Rejected functionality.
+//
 // ****************************************************************************
 
 ViewerPasswordWindow::ViewerPasswordWindow(QWidget *parent, const char *name)
@@ -52,6 +55,9 @@ ViewerPasswordWindow::ViewerPasswordWindow(QWidget *parent, const char *name)
     connect(okay, SIGNAL(clicked()), this, SLOT(accept()));
     l3->addWidget(okay);
     l3->addStretch(10);
+    QPushButton *cancel = new QPushButton("Cancel", this, "Cancel");
+    connect(cancel, SIGNAL(clicked()), this, SLOT(reject()));
+    l3->addWidget(cancel);
 
     setCaption("Enter password");
 }
@@ -101,6 +107,14 @@ ViewerPasswordWindow::~ViewerPasswordWindow()
 //    Jeremy Meredith, Mon May 19 17:37:36 PDT 2003
 //    Added code to allow a passphrase instead of just a password.
 //
+//    Jeremy Meredith, Tue Dec  9 15:01:09 PST 2003
+//    Made search for visit's "Running" message more specific; it turns
+//    out a similar message was output by some versions of SSH in 
+//    other circumstances.  Also check for NULL return values from 
+//    getPassword since these can now occur when the user cancels or
+//    closes the password window.  Also, changed the size of the read
+//    buffer to be more reasonable.
+//
 // ****************************************************************************
 
 void
@@ -109,7 +123,7 @@ ViewerPasswordWindow::authenticate(const char *username, const char *host,
 {
 #if !defined(_WIN32)
     int  timeout = 3000;
-    char *buffer = new char[100000];
+    char *buffer = new char[20000];
     char *pbuf   = buffer;
 
     for (;;)
@@ -139,6 +153,12 @@ ViewerPasswordWindow::authenticate(const char *username, const char *host,
             // Password needed. Prompt for it and write it to the FD.
             const char *passwd = instance->getPassword(username, host);
 
+            if (!passwd)
+            {
+                // User closed the window or hit cancel
+                EXCEPTION0(CouldNotConnectException);
+            }
+
             write(fd, passwd, strlen(passwd));
             write(fd, "\n", 1);
             pbuf = buffer;
@@ -152,6 +172,12 @@ ViewerPasswordWindow::authenticate(const char *username, const char *host,
             // Passphrase needed. Prompt for it and write it to the FD.
             const char *passphr = instance->getPassword(username, host, true);
 
+            if (!passphr)
+            {
+                // User closed the window or hit cancel
+                EXCEPTION0(CouldNotConnectException);
+            }
+
             write(fd, passphr, strlen(passphr));
             write(fd, "\n", 1);
             pbuf = buffer;
@@ -160,7 +186,7 @@ ViewerPasswordWindow::authenticate(const char *username, const char *host,
             // the connection progress dialog.
             timeout = 0;
         }
-        else if (strstr(buffer, "unning"))
+        else if (strstr(buffer, "Running: "))
         {
             // Success!  Just return.
             delete[] buffer;
@@ -211,6 +237,10 @@ ViewerPasswordWindow::authenticate(const char *username, const char *host,
 //   Jeremy Meredith, Mon May 19 17:37:52 PDT 2003
 //   Added code to allow a passphrase instead of just a password.
 //
+//   Jeremy Meredith, Tue Dec  9 15:18:00 PST 2003
+//   Make use of the exec() return value to allow both Accepted and Rejected
+//   behavior.
+//
 // ****************************************************************************
 
 const char *
@@ -247,11 +277,20 @@ ViewerPasswordWindow::getPassword(const char *username, const char *host,
 #if !defined(_WIN32)
     viewerSubject->BlockSocketSignals(true);
 #endif
-    instance->exec();
+    int status = instance->exec();
 #if !defined(_WIN32)
     viewerSubject->BlockSocketSignals(false);
 #endif
 
     // Return the password string.
-    return instance->passedit->text().latin1();
+    if (status == Accepted)
+    {
+        // Accepted; hit return or Okay.
+        return instance->passedit->text().latin1();
+    }
+    else
+    {
+        // Rejected or cancelled.  Return a NULL pointer as a sentinel.
+        return NULL;
+    }
 }

@@ -439,7 +439,7 @@ avtText2DColleague::NoPlots(void)
 // ****************************************************************************
 
 void
-avtText2DColleague::UpdatePlotList(vector<avtActor_p> &lst)
+avtText2DColleague::UpdatePlotList(std::vector<avtActor_p> &lst)
 {
     if(lst.size() > 0 && textFormatString != 0)
     {

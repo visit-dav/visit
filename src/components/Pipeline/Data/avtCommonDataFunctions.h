@@ -77,6 +77,7 @@ typedef struct
     bool        hasPointVars;
     bool        hasCellVars;
     bool        activeIsPoint;
+    int         activeVarDim;
 } SetActiveVariableArgs;
 
 typedef struct
