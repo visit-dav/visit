@@ -763,6 +763,9 @@ avtBoxlib2DFileFormat::GetDimensions(int *dims, double *lo, double *hi,
 //    Hank Childs, Fri Apr  2 10:19:03 PST 2004
 //    Added code to sidestep bugginess with VisMF.
 //
+//    Hank Childs, Wed Jul  7 16:15:36 PDT 2004
+//    Account for non 0-origin variables.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -800,6 +803,7 @@ avtBoxlib2DFileFormat::GetVar(int patch, const char *var_name)
 
     // Get the data (an FArrayBox)
     FArrayBox fab = vmf->GetFab(local_patch, compId);
+    const int *len = fab.length();
 
     int dims[2];
     GetDimensions(dims, level, patch);
@@ -810,6 +814,13 @@ avtBoxlib2DFileFormat::GetVar(int patch, const char *var_name)
         --dims[0];
         --dims[1];
     }
+    
+    int xorigin = 0;
+    int yorigin = 0;
+    if (dims[0] < len[0]-1)
+        xorigin = len[0]-1 - dims[0];
+    if (dims[1] < len[1]-1)
+        yorigin = len[1]-1 - dims[1];
     
     vtkFloatArray *farr = vtkFloatArray::New();
     farr->SetNumberOfTuples(dims[0] * dims[1]);
@@ -823,10 +834,10 @@ avtBoxlib2DFileFormat::GetVar(int patch, const char *var_name)
     int x, y;
     for (y = 0; y < dims[1]; y++)
     {
-        pos[1] = y + offset[1];
+        pos[1] = y + offset[1] + yorigin;
         for (x = 0; x < dims[0]; x++)
         {
-            pos[0] = x + offset[0];
+            pos[0] = x + offset[0] + xorigin;
             *(fptr++) = fab(pos);
         }
     }
@@ -857,6 +868,9 @@ avtBoxlib2DFileFormat::GetVar(int patch, const char *var_name)
 //    Hank Childs, Fri Apr  2 10:19:03 PST 2004
 //    Added code to sidestep bugginess with VisMF.
 //
+//    Hank Childs, Thu Jul  8 14:08:18 PDT 2004
+//    Account for non 0-origin variables.
+//    
 // ****************************************************************************
 
 vtkDataArray *
@@ -915,6 +929,15 @@ avtBoxlib2DFileFormat::GetVectorVar(int patch, const char *var_name)
         --dims[1];
     }
     
+    // Assume all the variables have the same origin.
+    int xorigin = 0;
+    int yorigin = 0;
+    const int *len = fab[0]->length();
+    if (dims[0] < len[0]-1)
+        xorigin = len[0]-1 - dims[0];
+    if (dims[1] < len[1]-1)
+        yorigin = len[1]-1 - dims[1];
+
     vtkFloatArray *farr = vtkFloatArray::New();
     farr->SetNumberOfComponents(3);
     farr->SetNumberOfTuples(dims[0] * dims[1]);
@@ -931,10 +954,10 @@ avtBoxlib2DFileFormat::GetVectorVar(int patch, const char *var_name)
     int x, y, z;
     for (y = 0; y < dims[1]; ++y)
     {
-        pos[1] = y + offset[1];
+        pos[1] = y + offset[1] + yorigin;
         for (x = 0; x < dims[0]; ++x)
         {
-            pos[0] = x + offset[0];
+            pos[0] = x + offset[0] + xorigin;
 
             *(fptr++) = (*(fab[0]))(pos);
             *(fptr++) = (*(fab[1]))(pos);

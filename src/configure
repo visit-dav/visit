@@ -17086,6 +17086,7 @@ fi
 #
 (cd include   && ${MAKE-make})
 (cd lib       && ${MAKE-make})
+rm -f $TOPDIR/bin/xml2makefile
 (cd tools/xml && ${MAKE-make} $TOPDIR/bin/xml2makefile)
 
 # If we 're on a Darwin system, make bundles for the gui and the viewer.

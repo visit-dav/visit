@@ -503,6 +503,9 @@ avtBoxlib3DFileFormat::GetMesh(int patch, const char *mesh_name)
 //    Hank Childs, Fri Apr  2 06:45:03 PST 2004
 //    g++-3.0.4 does bogus parsing of doubles, so do it ourselves.
 //
+//    Hank Childs, Wed Jul  7 11:28:30 PDT 2004
+//    LBNL refinement ratios are funky, so infer them at a separate spot.
+//
 // ****************************************************************************
 
 void
@@ -574,14 +577,6 @@ avtBoxlib3DFileFormat::ReadHeader(void)
 
     EatUpWhiteSpace(in);
 
-    // Read in the refinement ratio
-    refinement_ratio.clear();
-    for (i = 1 ; i < nLevels ; i++)
-    {
-        int rr;
-        in >> rr;
-        refinement_ratio.push_back(rr);
-    }
     // Now finish off the rest of the refinement ratio line.
     if (nLevels != 1)
         in.getline(buf, 1024);
@@ -604,6 +599,14 @@ avtBoxlib3DFileFormat::ReadHeader(void)
         deltaY.push_back(atof(double_tmp.c_str()));
         in >> double_tmp;
         deltaZ.push_back(atof(double_tmp.c_str()));
+    }
+
+    refinement_ratio.clear();
+    for (levI = 1 ; levI < nLevels ; levI++)
+    {
+        int tmp = (int) (deltaX[levI-1] / (deltaX[levI]*1.01));
+        tmp += 1;
+        refinement_ratio.push_back(tmp);
     }
 
     // Read in coord system;
@@ -842,6 +845,9 @@ avtBoxlib3DFileFormat::GetDimensions(int *dims, double *lo, double *hi,
 //    Hank Childs, Fri Apr  2 10:19:03 PST 2004
 //    Added code to sidestep bugginess with VisMF.
 //
+//    Hank Childs, Wed Jul  7 16:15:36 PDT 2004
+//    Account for non 0-origin variables.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -879,10 +885,11 @@ avtBoxlib3DFileFormat::GetVar(int patch, const char *var_name)
 
     // Get the data (an FArrayBox)
     FArrayBox fab = vmf->GetFab(local_patch, compId);
+    const int *len = fab.length();
 
     int dims[3];
     GetDimensions(dims, level, patch);
-    
+
     // Cell based variable. Shift the dimensions.
     if (varCentering[varIndex] == AVT_ZONECENT)
     {
@@ -890,6 +897,16 @@ avtBoxlib3DFileFormat::GetVar(int patch, const char *var_name)
         --dims[1];
         --dims[2];
     }
+    
+    int xorigin = 0;
+    int yorigin = 0;
+    int zorigin = 0;
+    if (dims[0] < len[0]-1)
+        xorigin = len[0]-1 - dims[0];
+    if (dims[1] < len[1]-1)
+        yorigin = len[1]-1 - dims[1];
+    if (dims[2] < len[2]-1)
+        zorigin = len[2]-1 - dims[2];
     
     vtkFloatArray *farr = vtkFloatArray::New();
     farr->SetNumberOfTuples(dims[0] * dims[1] * dims[2]);
@@ -903,13 +920,13 @@ avtBoxlib3DFileFormat::GetVar(int patch, const char *var_name)
     int x, y, z;
     for (z = 0; z < dims[2]; z++)
     {
-        pos[2] = z + offset[2];
+        pos[2] = z + offset[2] + zorigin;
         for (y = 0; y < dims[1]; y++)
         {
-            pos[1] = y + offset[1];
+            pos[1] = y + offset[1] + yorigin;
             for (x = 0; x < dims[0]; x++)
             {
-                pos[0] = x + offset[0];
+                pos[0] = x + offset[0] + xorigin;
                 *(fptr++) = fab(pos);
             }
         }
@@ -948,6 +965,9 @@ avtBoxlib3DFileFormat::GetVar(int patch, const char *var_name)
 //    Hank Childs, Fri Apr  2 10:19:03 PST 2004
 //    Added code to sidestep bugginess with VisMF.
 //
+//    Hank Childs, Thu Jul  8 14:08:18 PDT 2004
+//    Account for non 0-origin variables.
+//    
 // ****************************************************************************
 
 vtkDataArray *
@@ -1007,6 +1027,18 @@ avtBoxlib3DFileFormat::GetVectorVar(int patch, const char *var_name)
         --dims[2];
     }
     
+    // Assume all the variables have the same origin.
+    int xorigin = 0;
+    int yorigin = 0;
+    int zorigin = 0;
+    const int *len = fab[0]->length();
+    if (dims[0] < len[0]-1)
+        xorigin = len[0]-1 - dims[0];
+    if (dims[1] < len[1]-1)
+        yorigin = len[1]-1 - dims[1];
+    if (dims[2] < len[2]-1)
+        zorigin = len[2]-1 - dims[2];
+
     vtkFloatArray *farr = vtkFloatArray::New();
     farr->SetNumberOfComponents(3);
     farr->SetNumberOfTuples(dims[0] * dims[1] * dims[2]);
@@ -1023,13 +1055,13 @@ avtBoxlib3DFileFormat::GetVectorVar(int patch, const char *var_name)
     int x, y, z;
     for (z = 0; z < dims[2]; ++z)
     {
-        pos[2] = z + offset[2];
+        pos[2] = z + offset[2] + zorigin;
         for (y = 0; y < dims[1]; ++y)
         {
-            pos[1] = y + offset[1];
+            pos[1] = y + offset[1] + yorigin;
             for (x = 0; x < dims[0]; ++x)
             {
-                pos[0] = x + offset[0];
+                pos[0] = x + offset[0] + xorigin;
 
                 *(fptr++) = (*(fab[0]))(pos);
                 *(fptr++) = (*(fab[1]))(pos);

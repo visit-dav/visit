@@ -495,6 +495,10 @@ dnl
 dnl    Jeremy Meredith, Wed Jul  7 11:48:33 PDT 2004
 dnl    Made the VTK_LIGHTWEIGHT_LIBS include all VTK libraries under OSX.
 dnl
+dnl    Jeremy Meredith, Thu Jul  8 11:35:29 PDT 2004
+dnl    Remove xml2makefile before trying to build it to ensure it does get
+dnl    rebuilt even if your make program doesn't realize it is needed.
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -2849,6 +2853,7 @@ AC_OUTPUT($STANDARD_FILES
 #
 (cd include   && ${MAKE-make})
 (cd lib       && ${MAKE-make})
+rm -f $TOPDIR/bin/xml2makefile
 (cd tools/xml && ${MAKE-make} $TOPDIR/bin/xml2makefile)
 
 # If we 're on a Darwin system, make bundles for the gui and the viewer.
