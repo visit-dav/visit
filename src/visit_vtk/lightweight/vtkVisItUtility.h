@@ -7,6 +7,7 @@
 
 #include <visit_vtk_light_exports.h>
 
+class vtkCell;
 class vtkDataSet;
 class vtkPoints;
 class vtkRectilinearGrid;
@@ -34,6 +35,7 @@ namespace vtkVisItUtility
                                         const int cellId, 
                                         const bool forCell);
 
+    VISIT_VTK_LIGHT_API void       GetCellCenter(vtkCell* cell, float center[3]);
 }
 
 #endif

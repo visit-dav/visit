@@ -522,6 +522,9 @@ dnl    Mark C. Miller, Tue Oct  5 12:41:41 PDT 2004
 dnl    Fixed issues '--with-<lib>=' argument where '-I' and '-L' would be
 dnl    missing from final make variable names that were created
 dnl
+dnl    Jeremy Meredith, Mon Aug 30 16:55:36 PDT 2004
+dnl    Added parallel directory to visit_vtk.
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -2942,7 +2945,8 @@ TOOLS_FILES="tools/Makefile
 VISIT_VTK_FILES="visit_vtk/Makefile
                  visit_vtk/lightweight/Makefile
                  visit_vtk/full/Makefile
-                 visit_vtk/sl_io/Makefile"
+                 visit_vtk/sl_io/Makefile
+                 visit_vtk/parallel/Makefile"
 COMPONENT_FILES="components/Makefile
                  components/DBAtts/Makefile
                  components/Database/Makefile

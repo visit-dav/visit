@@ -180,6 +180,9 @@ avtLocateNodeQuery::Execute(vtkDataSet *ds, const int dom)
 //    Hank Childs, Fri Aug 27 16:02:58 PDT 2004
 //    Rename ghost data array.
 //
+//    Kathleen Bonnell, Thu Oct 21 18:02:50 PDT 2004 
+//    Correct test for whether a node is ghost or not. 
+//
 // ****************************************************************************
 
 int
@@ -194,7 +197,7 @@ avtLocateNodeQuery::RGridFindNode(vtkDataSet *ds, float &dist, float *isect)
         nodeId = ds->FindPoint(isect);
         vtkUnsignedCharArray *ghosts = (vtkUnsignedCharArray *)ds->
                      GetPointData()->GetArray("avtGhostZones");
-        if (ghosts && ghosts->GetComponent(nodeId, 0) == 1 )
+        if (ghosts && ghosts->GetValue(nodeId) > 0)
         {
             nodeId = -1;
         }

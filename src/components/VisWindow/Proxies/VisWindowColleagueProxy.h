@@ -73,6 +73,11 @@
 //
 //    Hank Childs, Mon May 10 08:31:01 PDT 2004
 //    Removed ImmediateMode rendering method.
+//
+//    Chris Wojtan, Mon Jul 26 16:21:08 PDT 2004
+//    Added 4 functions for suspending and resuming opaque and
+//    translucent geometry.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindowColleagueProxy : public VisWindowProtectionProxy
@@ -174,6 +179,19 @@ class VISWINDOW_API VisWindowColleagueProxy : public VisWindowProtectionProxy
     void                GetFrameAndState(int &a, int &b, int &c, int &d,
                                          int &e, int &f, int &g) const
                                   { ProxiedGetFrameAndState(a,b,c,d,e,f,g); };
+
+    void                SuspendOpaqueGeometry()
+                                  { ProxiedSuspendOpaqueGeometry(); };
+
+    void                SuspendTranslucentGeometry()
+                                  { ProxiedSuspendTranslucentGeometry(); };
+
+    void                ResumeOpaqueGeometry()
+                                  { ProxiedResumeOpaqueGeometry(); };
+
+    void                ResumeTranslucentGeometry()
+                                  { ProxiedResumeTranslucentGeometry(); };
+
 };
 
 

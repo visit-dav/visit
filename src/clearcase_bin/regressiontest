@@ -92,6 +92,10 @@
 #    Kathleen Bonnell, Thu Sep  2 16:45:02 PDT 2004 
 #    Removed queryMultiWindow.py from skipList for parallel and 
 #    scalable,parallel. 
+#
+#    Jeremy Meredith, Thu Oct 21 11:54:58 PDT 2004
+#    Removed reflect2.py from skip list for scalable,parallel.
+#
 # ----------------------------------------------------------------------------
 
 # list of users who want email every night with the log file
@@ -220,8 +224,7 @@ modes="serial parallel scalable,parallel"
 
 # set list of tests/modes to skip
 skipList="scalable,parallel:tests/hybrid/lineout.py \
-          scalable,parallel:tests/rendering/volume.py \
-          scalable,parallel:tests/operators/reflect2.py" 
+          scalable,parallel:tests/rendering/volume.py" 
 
 # run the test(s)
 error=0

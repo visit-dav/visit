@@ -30,6 +30,11 @@
 //    Mark C. Miller, Tue Oct 19 15:35:12 PDT 2004
 //    Turned into a base class
 //
+//    Jeremy Meredith, Mon Aug 30 16:14:13 PDT 2004
+//    I added the ability for the avtWholeImageCompositer to use an
+//    Allreduce in the event this is used as the end of the first stage
+//    in a two-pass compositing scheme.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtWholeImageCompositer : public avtImageCompositer
@@ -46,11 +51,13 @@ class AVTFILTERS_API avtWholeImageCompositer : public avtImageCompositer
       void                    SetBackground(unsigned char r,
                                             unsigned char g,
                                             unsigned char b);
+      void                    SetAllProcessorsNeedResult(bool);
 
       virtual void            Execute() = 0;
 
    protected:
 
+      bool                    allReduce;
       int                     chunkSize;
       unsigned char           bg_r;
       unsigned char           bg_g;
@@ -68,5 +75,10 @@ inline void avtWholeImageCompositer::SetBackground(unsigned char r,
                                                    unsigned char g,
                                                    unsigned char b)
 { bg_r = r; bg_g = g; bg_b = b; }
+
+inline void avtWholeImageCompositer::SetAllProcessorsNeedResult(bool all)
+{
+    allReduce = all;
+}
 
 #endif

@@ -71,6 +71,9 @@ avtPickByZoneQuery::~avtPickByZoneQuery()
 //    Removed 'needRealId' test, no longer needed (we are reporting ghost
 //    zones when ghostType == AVT_HAS_GHOSTS). 
 //
+//    Kathleen Bonnell, Wed Oct 20 17:10:21 PDT 2004 
+//    Use vtkVisItUtility method to compute cell center. 
+//
 // ****************************************************************************
 
 void
@@ -150,11 +153,8 @@ avtPickByZoneQuery::Execute(vtkDataSet *ds, const int dom)
     //
     // Use the cell center as the place to position the pick letter.
     //
-    vtkCell *cell = ds->GetCell(zoneid);
-    float parametricCenter[3], center[3];
-    float weights[28];
-    int subId = cell->GetParametricCenter(parametricCenter);
-    cell->EvaluateLocation(subId, parametricCenter, center, weights);
+    float center[3];
+    vtkVisItUtility::GetCellCenter(ds->GetCell(zoneid), center);
     pickAtts.SetCellPoint(center); 
     //
     // If the points of this dataset have been transformed, and we know the

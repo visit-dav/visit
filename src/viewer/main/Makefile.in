@@ -243,6 +243,9 @@
 #    Jeremy Meredith, Tue Aug 24 21:28:02 PDT 2004
 #    Added metadata and SIL observers.
 #
+#    Jeremy Meredith, Mon Aug 30 18:05:21 PDT 2004
+#    Added the serial version of the "parallel" visit_vtk directory.
+#
 ##############################################################################
 
 ##
@@ -260,9 +263,9 @@ VTK_LIBS=@VTK_LIBS@
 VTK_INCLUDE=@VTK_INCLUDES@
 LIBS=-L../../lib -L../../vtkqt -lengineproxy -lenginerpc -lviewerrpc \
      -lmdserverproxy -lmdserverrpc -lvclproxy -lvclrpc -ldbatts -lparser \
-     -lplugin -lqtviswindow -lviswindow \
-     -lavtmath_ser -lplotter -lavtfilters_ser -lavtwriter -lavtview \
-     -lpipeline_ser -lvisit_vtk -llightweight_visit_vtk -lvtkqt -lwinutil \
+     -lplugin -lqtviswindow -lviswindow -lavtmath_ser -lplotter \
+     -lavtfilters_ser -lavtwriter -lavtview -lpipeline_ser -lvisit_vtk \
+     -llightweight_visit_vtk -lparallel_visit_vtk_ser -lvtkqt -lwinutil \
      @QT_LIBS@ -lproxybase -lmisc -lcomm -lstate -lutility -lavtexceptions \
      $(VTK_LIBS) $(X_LIBS) @LIBS@ @PTHREAD_LIB@
 

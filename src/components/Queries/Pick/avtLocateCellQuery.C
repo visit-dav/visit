@@ -117,6 +117,9 @@ avtLocateCellQuery::~avtLocateCellQuery()
 //    Kathleen Bonnell, Tue Oct  5 14:02:31 PDT 2004 
 //    Terminate early if the ray doesn't intersect the dataset. 
 //
+//    Kathleen Bonnell, Wed Oct 20 17:10:21 PDT 2004 
+//    Use vtkVisItUtility method for computing cell center. 
+//
 // ****************************************************************************
 
 void
@@ -189,12 +192,7 @@ avtLocateCellQuery::Execute(vtkDataSet *ds, const int dom)
         //
         if (foundElement == -1 && dim == 3)
         {
-            vtkCell *cell = ds->GetCell(foundCell);
-            float parametricCenter[3];
-            float *weights = new float[cell->GetNumberOfPoints()];
-            int subId = cell->GetParametricCenter(parametricCenter);
-            cell->EvaluateLocation(subId, parametricCenter, isect, weights);
-            delete [] weights;
+            vtkVisItUtility::GetCellCenter(ds->GetCell(foundCell), isect);
         }
         pickAtts.SetCellPoint(isect);
         foundDomain = dom;
@@ -242,6 +240,9 @@ avtLocateCellQuery::Execute(vtkDataSet *ds, const int dom)
 //    Hank Childs, Fri Aug 27 16:02:58 PDT 2004
 //    Rename ghost data array.
 //
+//    Kathleen Bonnell, Thu Oct 21 18:02:50 PDT 2004 
+//    Correct test for whether a cell is ghost or not.
+//
 // ****************************************************************************
 
 int
@@ -256,7 +257,7 @@ avtLocateCellQuery::RGridFindCell(vtkDataSet *ds, float &dist, float *isect)
         cellId = rgrid->ComputeCellId(ijk);
         vtkUnsignedCharArray *ghosts = (vtkUnsignedCharArray *)ds->
                      GetCellData()->GetArray("avtGhostZones");
-        if (ghosts && ghosts->GetComponent(cellId, 0) == 1 )
+        if (ghosts && ghosts->GetValue(cellId) > 0)
         {
             cellId = -1;
         }

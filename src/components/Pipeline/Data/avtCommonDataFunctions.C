@@ -20,6 +20,7 @@
 #include <vtkUnsignedIntArray.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnstructuredGrid.h>
+#include <vtkVisItUtility.h>
 
 #include <avtCallback.h>
 #include <avtDataTree.h>
@@ -1129,6 +1130,10 @@ GetDataMajorEigenvalueRange(vtkDataSet *ds, double *exts, const char *vname)
 //    Kathleen Bonnell, Mon Mar 18 13:11:51 PST 2002 
 //    vtkScalars has been deprecated in VTK 4.0, use vtkDataArray instead.
 //
+//    Kathleen Bonnell, Wed Oct 20 17:06:12 PDT 2004 
+//    Replaced get-cell-center code with single call to 
+//    vtkVisItUtility::GetCellCenter.
+//
 // ****************************************************************************
 
 void
@@ -1196,14 +1201,8 @@ CFindMaximum(avtDataRepresentation &data, void *arg, bool &success)
             }
             else
             {
-                vtkCell *cell = ds->GetCell(ind);
-                float p[3];
-                float weights[8] // Assuming no more than 8 vertices in cell.
-                              = { 1., 1., 1., 1., 1., 1., 1., 1. };
-                int subId = 0; // This is used as an output value.
-                cell->GetParametricCenter(p);
                 float point[3];
-                cell->EvaluateLocation(subId, p, point, weights);
+                vtkVisItUtility::GetCellCenter(ds->GetCell(ind), point);
                 args->point[0] = point[0];
                 args->point[1] = point[1];
                 args->point[2] = point[2];
@@ -1236,6 +1235,10 @@ CFindMaximum(avtDataRepresentation &data, void *arg, bool &success)
 //  Modifications:
 //    Kathleen Bonnell, Mon Mar 18 13:11:51 PST 2002 
 //    vtkScalars has been deprecated in VTK 4.0, use vtkDataArray instead.
+//
+//    Kathleen Bonnell, Wed Oct 20 17:06:12 PDT 2004 
+//    Replaced get-cell-center code with single call to 
+//    vtkVisItUtility::GetCellCenter.
 //
 // ****************************************************************************
 
@@ -1304,14 +1307,8 @@ CFindMinimum(avtDataRepresentation &data, void *arg, bool &success)
             }
             else
             {
-                vtkCell *cell = ds->GetCell(ind);
-                float p[3];
-                float weights[8] // Assuming no more than 8 vertices in cell.
-                              = { 1., 1., 1., 1., 1., 1., 1., 1. };
-                int subId = 0; // This is used as an output value.
-                cell->GetParametricCenter(p);
                 float point[3];
-                cell->EvaluateLocation(subId, p, point, weights);
+                vtkVisItUtility::GetCellCenter(ds->GetCell(ind), point);
                 args->point[0] = point[0];
                 args->point[1] = point[1];
                 args->point[2] = point[2];
@@ -1345,6 +1342,10 @@ CFindMinimum(avtDataRepresentation &data, void *arg, bool &success)
 //
 //    Hank Childs, Wed Jun 18 10:55:48 PDT 2003
 //    Make use of original zones array if available.
+//
+//    Kathleen Bonnell, Wed Oct 20 17:06:12 PDT 2004 
+//    Replaced get-cell-center code with single call to 
+//    vtkVisItUtility::GetCellCenter.
 //
 // ****************************************************************************
 
@@ -1475,13 +1476,8 @@ CLocateZone(avtDataRepresentation &data, void *arg, bool &success)
     if (cell == NULL)
         return;
 
-    float p[3];
-    cell->GetParametricCenter(p);
-    float weights[8] // Assuming no more than 8 vertices in cell.
-                  = { 1., 1., 1., 1., 1., 1., 1., 1. };
-    int subId = 0; // This is used as an output value.
     float point[3];
-    cell->EvaluateLocation(subId, p, point, weights);
+    vtkVisItUtility::GetCellCenter(cell, point);
     args->point[0] = point[0];
     args->point[1] = point[1];
     args->point[2] = point[2];

@@ -903,3 +903,75 @@ VisWindowProtectionProxy::ProxiedGetFrameAndState(int &nFrames,
     viswin->GetFrameAndState(nFrames, startFrame, curFrame, endFrame,
                              startState, curState, endState);
 }
+
+
+// ****************************************************************************
+//  Method: VisWindowProtectionProxy::ProxiedSuspendOpaqueGeometry
+//
+//  Purpose:
+//    Make opaque geometry invisible
+//
+//  Programmer: Chris Wojtan
+//  Creation:   Mon Jul 26 16:07:57 PDT 2004
+//
+// ***************************************************************************
+
+void
+VisWindowProtectionProxy::ProxiedSuspendOpaqueGeometry()
+{
+    viswin->SuspendOpaqueGeometry();
+}
+
+
+// ****************************************************************************
+//  Method: VisWindowProtectionProxy::ProxiedSuspendTranslucentGeometry
+//
+//  Purpose:
+//    Make translucent geometry invisible
+//
+//  Programmer: Chris Wojtan
+//  Creation:   Mon Jul 26 16:08:05 PDT 2004
+//
+// ***************************************************************************
+
+void
+VisWindowProtectionProxy::ProxiedSuspendTranslucentGeometry()
+{
+    viswin->SuspendTranslucentGeometry();
+}
+
+
+// ****************************************************************************
+//  Method: VisWindowProtectionProxy::ProxiedResumeOpaqueGeometry
+//
+//  Purpose:
+//    Make opaque geometry visible again
+//
+//  Programmer: Chris Wojtan
+//  Creation:   Mon Jul 26 16:07:47 PDT 2004
+//
+// ***************************************************************************
+
+void
+VisWindowProtectionProxy::ProxiedResumeOpaqueGeometry()
+{
+    viswin->ResumeOpaqueGeometry();
+}
+
+
+// ****************************************************************************
+//  Method: VisWindowProtectionProxy::ProxiedResumeTranslucentGeometry
+//
+//  Purpose:
+//    Make translucent geometry visible again
+//
+//  Programmer: Chris Wojtan
+//  Creation:   Mon Jul 26 16:07:52 PDT 2004
+//
+// ***************************************************************************
+
+void
+VisWindowProtectionProxy::ProxiedResumeTranslucentGeometry()
+{
+    viswin->ResumeTranslucentGeometry();
+}

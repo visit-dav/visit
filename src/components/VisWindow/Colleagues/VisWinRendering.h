@@ -127,6 +127,18 @@ class VisWindowColleagueProxy;
 //    Added args to PostProcessScreenCapture for doing viewport only and
 //    keeping zbuffer
 //
+//    Chris Wojtan, Wed Jul 21 15:15:57 PDT 2004
+//    Added bool parameters for opaque and translucent rendering in
+//    ScreenCapture()
+//
+//    Chris Wojtan, Fri Jul 30 14:36:30 PDT 2004
+//    Added an input image to ScreenCapture() and a boolean
+//    indicating whether or not this pass is the first rendering pass
+//
+//    Jeremy Meredith, Tue Aug 31 15:42:42 PDT 2004
+//    Removed the last boolean on ScreenCapture since the image being NULL
+//    suffices for that test.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinRendering : public VisWinColleague
@@ -160,7 +172,10 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
     void                     GetCaptureRegion(int& r0, int& c0, int& w, int& h,
                                  bool doViewportOnly);
     avtImage_p               ScreenCapture(bool doViewportOnly = false,
-                                           bool doCanvasZBufferToo = false);
+                                           bool doCanvasZBufferToo = false,
+                                           bool doOpaque = true,
+                                           bool doTranslucent = true,
+                                           avtImage_p input = NULL);
     avtImage_p               PostProcessScreenCapture(avtImage_p capturedImage,
                                  bool doViewportOnly, bool keepZBuffer);
 

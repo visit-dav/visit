@@ -223,16 +223,28 @@ avtCurveComparisonQuery::Execute(void)
 //  Programmer:   Hank Childs
 //  Creation:     October 4, 2003
 //
+//  Modifications:
+//    Kathleen Bonnell, Thu Oct 14 17:19:01 PDT 2004
+//    This method assumes that there are no duplicate x-values in the
+//    passed array -- so call AverageYValsForDuplicateX to ensure that is
+//    the case.
+//
 // ****************************************************************************
 
 void 
-avtCurveComparisonQuery::PutOnSameXIntervals(int n1, const float *x1, 
-        const float *y1, int n2, const float *x2, const float *y2,
+avtCurveComparisonQuery::PutOnSameXIntervals(int on1, const float *ox1, 
+        const float *oy1, int on2, const float *ox2, const float *oy2,
         std::vector<float> &usedX, std::vector<float> &newCurve1Vals,
         std::vector<float> &newCurve2Vals)
 {
     int  i;
+    vector<float> x1, y1, x2, y2;
 
+    AverageYValsForDuplicateX(on1, ox1, oy1, x1, y1);
+    AverageYValsForDuplicateX(on2, ox2, oy2, x2, y2);
+   
+    int n1 = x1.size();
+    int n2 = x2.size();
     int  total_n_pts = n1 + n2;
 
     //
@@ -350,3 +362,56 @@ PointSorter(const void *p1, const void *p2)
 }
 
 
+// ****************************************************************************
+//  Method: avtCurveComparisonQuery::AverageYValsForDuplicateX
+//
+//  Purpose:
+//    If there are duplicate x-values, then average the y-values for all
+//    duplicates to create a unique x-values list with appropriate y-values.  
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   October 14, 2004
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtCurveComparisonQuery::AverageYValsForDuplicateX(int n, const float *x, 
+        const float *y, vector<float> &X, vector<float> &Y)
+{
+    int i, j, nDups = 1;
+    float sum;
+    for (i = 0; i < n ; i+= nDups) 
+    {
+        if (i < n-1)
+        {
+            if (x[i] != x[i+1])
+            {
+                X.push_back(x[i]);
+                Y.push_back(y[i]);
+                nDups = 1;
+            }
+            else 
+            {
+                sum = y[i];
+                nDups = 1;
+                for (j = i+1; j < n; j++)
+                {
+                    if (x[j] != x[i])
+                        break;
+                    sum += y[j];
+                    nDups++;
+                }
+                X.push_back(x[i]);
+                Y.push_back(sum/nDups);
+            }
+        }
+        else if (i == (n-1) && (x[i] != x[i-1]))
+        {
+            X.push_back(x[i]);
+            Y.push_back(y[i]);
+            nDups = 1;
+        }
+    }
+}

@@ -1608,12 +1608,25 @@ VisWindow::Realize(void)
 //    Mark C. Miller, Wed Mar 31 18:00:23 PST 2004
 //    Added doViewportOnly arg
 //
+//    Chris Wojtan, Wed Jul 21 15:14:30 PDT 2004
+//    Pass separate bools for opaque and translucent data
+//
+//    Chris Wojtan, Fri Jul 30 14:35:49 PDT 2004
+//    Pass in an image reference and a boolean indicating which rendering pass
+//
+//    Jeremy Meredith, Thu Oct 21 15:39:54 PDT 2004
+//    Removed the last boolean, as we really only needed to check if "input"
+//    was NULL.
+//
 // ****************************************************************************
 
 avtImage_p
-VisWindow::ScreenCapture(bool doViewportOnly, bool doZBufferToo)
+VisWindow::ScreenCapture(bool doViewportOnly, bool doZBufferToo,
+                         bool doOpaque, bool doTranslucent,
+                         avtImage_p input)
 {
-    return rendering->ScreenCapture(doViewportOnly, doZBufferToo);
+    return rendering->ScreenCapture(doViewportOnly, doZBufferToo,
+                                    doOpaque, doTranslucent, input);
 }
 
 // ****************************************************************************
@@ -1635,7 +1648,7 @@ VisWindow::ScreenCapture(bool doViewportOnly, bool doZBufferToo)
 
 avtImage_p
 VisWindow::PostProcessScreenCapture(avtImage_p capturedImage,
-    bool doViewportOnly, bool keepZBuffer)
+                                    bool doViewportOnly, bool keepZBuffer)
 {
     return rendering->PostProcessScreenCapture(capturedImage,
                                                doViewportOnly,
@@ -5341,4 +5354,75 @@ void
 VisWindow::SetPickTypeToNormal()
 {
     pickForIntersectionOnly = false;
+}
+
+
+// ****************************************************************************
+//  Method: VisWindow::SuspendOpaqueGeometry
+//
+//  Purpose:
+//    Make opaque geometry invisible
+//
+//  Programmer: Chris Wojtan
+//  Creation:   Mon Jul 26 15:43:16 PDT 2004
+//
+// ***************************************************************************
+
+void
+VisWindow::SuspendOpaqueGeometry()
+{
+    plots->SuspendOpaqueGeometry();
+}
+
+
+// ****************************************************************************
+//  Method: VisWindow::SuspendTranslucentGeometry
+//
+//  Purpose:
+//    Make translucent geometry invisible
+//
+//  Programmer: Chris Wojtan
+//  Creation:   Mon Jul 26 15:43:22 PDT 2004
+//
+// ***************************************************************************
+
+void
+VisWindow::SuspendTranslucentGeometry()
+{
+    plots->SuspendTranslucentGeometry();
+}
+
+
+// ****************************************************************************
+//  Method: VisWindow::ResumeOpaqueGeometry
+//
+//  Purpose:
+//    Make opaque geometry visible again
+//
+//  Programmer: Chris Wojtan
+//  Creation:   Mon Jul 26 15:43:04 PDT 2004
+//
+// ***************************************************************************
+
+void
+VisWindow::ResumeOpaqueGeometry()
+{
+    plots->ResumeOpaqueGeometry();
+}
+
+// ****************************************************************************
+//  Method: VisWinPlots::ResumeTranslucentGeometry
+//
+//  Purpose:
+//    Make tranlucent geometry visible again
+//
+//  Programmer: Chris Wojtan
+//  Creation:   Mon Jul 26 15:42:57 PDT 2004
+//
+// ***************************************************************************
+
+void
+VisWindow::ResumeTranslucentGeometry()
+{
+    plots->ResumeTranslucentGeometry();
 }

@@ -177,11 +177,16 @@ avtWholeImageCompositerNoZ::~avtWholeImageCompositerNoZ()
 //  Programmer: Mark C. Miller (modified from orig code by Kat Price)
 //  Creation:   February 18, 2003
 //
+//  Modifications:
+//    Jeremy Meredith, October 20, 2004
+//    Allowed for the use of an allreduce instead of a simple reduce.
+//
 // ****************************************************************************
 
 void
 avtWholeImageCompositerNoZ::Execute(void)
-{   int i, numRows, numCols;
+{
+    int i, numRows, numCols;
     unsigned char *iorgb, *riorgb;
     vtkImageData *mergedLocalImage, *mergedGlobalImage;
 
@@ -226,8 +231,8 @@ avtWholeImageCompositerNoZ::Execute(void)
 
     if (mpiRoot >= 0)
     {
-       // only root allocates output AVT imge
-       if (mpiRank == mpiRoot)
+       // only root allocates output AVT image (for a non-allreduce)
+       if (allReduce || mpiRank == mpiRoot)
        {
           mergedGlobalImage = avtImageRepresentation::NewImage(outCols, outRows);
           riorgb = (unsigned char *) mergedGlobalImage->GetScalarPointer(0, 0, 0);
@@ -243,7 +248,7 @@ avtWholeImageCompositerNoZ::Execute(void)
           mergedLocalImage->Delete();
        }
 
-       if (mpiRank == mpiRoot)
+       if (allReduce || mpiRank == mpiRoot)
        {
           {
              avtImageRepresentation theOutput(mergedGlobalImage);
@@ -278,7 +283,7 @@ avtWholeImageCompositerNoZ::Execute(void)
 }
 
 // ****************************************************************************
-// Function:     MergeBuffers
+// Function:     avtWholeImageCompositerNoZ::MergeBuffers
 //
 // Purpose:      Merge images represented by separate z and rgb buffers. 
 //               The merge is broken into chunks to help MPI to digest it and
@@ -292,12 +297,18 @@ avtWholeImageCompositerNoZ::Execute(void)
 //               one extr ZFPixel for this purpose.
 //   
 //
-// Programmer:   Mark C. Miller (plagerized from Kat Price's MeshTV version)
+// Programmer:   Mark C. Miller (plagiarized from Kat Price's MeshTV version)
 // Date:         04Mar03 
+//
+// Modifications:
+//    Jeremy Meredith, October 20, 2004
+//    Allowed for the use of an allreduce instead of a simple reduce.
+//
 // ****************************************************************************
 void
 avtWholeImageCompositerNoZ::MergeBuffers(int npixels, bool doParallel,
-   const unsigned char *inrgb, unsigned char *iorgb)
+                                         const unsigned char *inrgb,
+                                         unsigned char *iorgb)
 {
    int io;
    int chunk       = npixels < chunkSize ? npixels : chunkSize;
@@ -316,8 +327,22 @@ avtWholeImageCompositerNoZ::MergeBuffers(int npixels, bool doParallel,
 
 #ifdef PARALLEL
       if (doParallel)
-         MPI_Reduce((void*)&inrgb[3*io], &iorgb[3*io], len, avtWholeImageCompositerNoZ::mpiTypeZFPixel,
-            avtWholeImageCompositerNoZ::mpiOpMergeZFPixelBuffers, mpiRoot, mpiComm);
+      {
+          if (allReduce)
+          {
+              MPI_Allreduce((void*)&inrgb[3*io], &iorgb[3*io], len,
+                          avtWholeImageCompositerNoZ::mpiTypeZFPixel,
+                          avtWholeImageCompositerNoZ::mpiOpMergeZFPixelBuffers,
+                          mpiComm);
+          }
+          else
+          {
+              MPI_Reduce((void*)&inrgb[3*io], &iorgb[3*io], len,
+                         avtWholeImageCompositerNoZ::mpiTypeZFPixel,
+                         avtWholeImageCompositerNoZ::mpiOpMergeZFPixelBuffers,
+                         mpiRoot, mpiComm);
+          }
+      }
       else
          MergeZFPixelBuffers((void*)&inrgb[3*io], &iorgb[3*io], &len, NULL);
 #else

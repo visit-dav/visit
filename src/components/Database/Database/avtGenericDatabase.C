@@ -6377,6 +6377,10 @@ avtGenericDatabase::QueryMaterial(const std::string &varName, const int dom,
 //    Kathleen Bonnell, Wed Dec 17 15:04:57 PST 2003 
 //    Updated args list to include multiple types of Coordinates. 
 //    
+//    Kathleen Bonnell, Wed Oct 20 17:01:38 PDT 2004 
+//    Replaced get-cell-center code with single call to 
+//    vtkVisItUtility::GetCellCenter.
+//    
 // ****************************************************************************
 
 bool
@@ -6543,12 +6547,7 @@ avtGenericDatabase::QueryNodes(const std::string &varName, const int dom,
         }
         else if (ppt[0] == FLT_MAX)
         {
-            vtkCell *cell = ds->GetCell(zone);
-            float parametricCenter[3];
-            float *weights = new float[cell->GetNumberOfPoints()];
-            int subId = cell->GetParametricCenter(parametricCenter);
-            cell->EvaluateLocation(subId, parametricCenter, ppt, weights);
-            delete [] weights;
+            vtkVisItUtility::GetCellCenter(ds->GetCell(zone), ppt);
         }
         rv = true;
     }
@@ -6683,6 +6682,9 @@ avtGenericDatabase::QueryMesh(const std::string &varName, const int ts,
 //    Kathleen Bonnell, Thu Sep 23 17:48:37 PDT 2004 
 //    Added args to support ghost-zone retrieval if requested.
 //
+//    Kathleen Bonnell, Thu Oct 21 18:02:50 PDT 2004 
+//    Correctly test whether a zone is ghost or not. 
+//
 // ****************************************************************************
 
 bool
@@ -6782,7 +6784,7 @@ avtGenericDatabase::QueryZones(const string &varName, const int dom,
                 idptr = ids->GetPointer(0);
                 for (int i = 0;i < nCells; i++)
                 {
-                    if (ghosts && ghosts[idptr[i]] == 1)
+                    if (ghosts && ghosts[idptr[i]] > 0)
                     {
                         if (includeGhosts)
                         {
@@ -7408,6 +7410,10 @@ avtGenericDatabase::GetDomainName(const std::string &varName, const int ts,
 //    Hank Childs, Fri Aug 27 16:16:52 PDT 2004
 //    Rename ghost data arrays.
 //
+//    Kathleen Bonnell, Wed Oct 20 17:01:38 PDT 2004 
+//    Replaced get-cell-center code with single call to 
+//    vtkVisItUtility::GetCellCenter.
+//    
 // ****************************************************************************
 
 bool
@@ -7443,11 +7449,7 @@ avtGenericDatabase::QueryCoords(const string &varName, const int dom,
                            ijk[2] * (dims[0]-1) * (dims[1]-1);
                 }
             }
-            vtkCell *cell = ds->GetCell(zone);
-            float parametricCenter[3];
-            float weights[28];
-            int subId = cell->GetParametricCenter(parametricCenter);
-            cell->EvaluateLocation(subId, parametricCenter, coord, weights);
+            vtkVisItUtility::GetCellCenter(ds->GetCell(zone), coord);
             rv = true;
         }
         else 

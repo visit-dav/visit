@@ -6,6 +6,7 @@
 
 #include <float.h>
 
+#include <avtParallel.h>
 #include <vtkActor.h>
 #include <vtkAppendPolyData.h>
 #include <vtkAxisDepthSort.h>
@@ -22,7 +23,9 @@
 #include <vtkPolyDataMapper.h>
 #include <vtkProperty.h>
 #include <vtkRenderer.h>
+#include <vtkParallelImageSpaceRedistributor.h>
 
+#include <DebugStream.h>
 #include <BadIndexException.h>
 #include <TimingsManager.h>
 
@@ -46,6 +49,13 @@ using     std::vector;
 //    Jeremy Meredith, Fri Jul 26 14:30:40 PDT 2002
 //    Default perfect sorting to true.
 //
+//    Chris Wojtan, Wed Jul 7 10:17 PDT 2004
+//    Added parallel support
+//
+//    Jeremy Meredith, Thu Oct 21 12:16:38 PDT 2004
+//    Enhanced parallel support.  Made it use avtParallel code instead of
+//    ifdefs so we didn't have to build a parallel version of this library.
+//
 // ****************************************************************************
 
 avtTransparencyActor::avtTransparencyActor()
@@ -55,6 +65,8 @@ avtTransparencyActor::avtTransparencyActor()
     myMapper->ImmediateModeRenderingOn();
     myActor  = vtkActor::New();
     myActor->SetMapper(myMapper);
+    
+    parallelFilter = vtkParallelImageSpaceRedistributor::New();
 
     //
     // Tell the mapper that we are going to set up an RGBA field ourselves.
@@ -68,11 +80,22 @@ avtTransparencyActor::avtTransparencyActor()
 
     perfectSort = vtkDepthSortPolyData::New();
     perfectSort->SetDepthSortModeToBoundsCenter();
-    perfectSort->SetInput(appender->GetOutput());
+
+    if (PAR_Size() > 1)
+    {
+        parallelFilter->SetInput(appender->GetOutput());
+        perfectSort->SetInput(parallelFilter->GetOutput());
+    }
+    else
+    {
+        perfectSort->SetInput(appender->GetOutput());
+    }
+
     usePerfectSort = true;
     lastCamera = vtkMatrix4x4::New();
 
     inputModified = true;
+    renderingSuspended = false;
 }
 
 
@@ -89,6 +112,9 @@ avtTransparencyActor::avtTransparencyActor()
 //
 //    Hank Childs, Sun Jul 14 15:49:58 PDT 2002
 //    Use new VTK module to do all six sorts.
+//
+//    Chris Wojtan, Wed Jul 7 10:17 PDT 2004
+//    Added parallel support
 //
 // ****************************************************************************
 
@@ -123,6 +149,12 @@ avtTransparencyActor::~avtTransparencyActor()
     {
         lastCamera->Delete();
         lastCamera = NULL;
+    }
+
+    if(parallelFilter != NULL)
+    {
+        parallelFilter->Delete();
+        parallelFilter = NULL;
     }
 }
 
@@ -168,13 +200,18 @@ avtTransparencyActor::InputWasModified(int)
 //    Made it take a bool, since we can turn it on or off as a permanent
 //    mode of operation now.
 //
+//    Jeremy Meredith, Thu Oct 21 12:18:23 PDT 2004
+//    Call TransparenciesExist now because the logic has become more complex.
+//    Specifically, it may have needed an update, and it needed unification
+//    in parallel.
+//
 // ****************************************************************************
 
 bool
 avtTransparencyActor::UsePerfectSort(bool perfect)
 {
     usePerfectSort = perfect;
-    return (appender->GetNumberOfInputs() > 0);
+    return TransparenciesExist();
 }
 
 
@@ -422,12 +459,17 @@ avtTransparencyActor::VisibilityOff(void)
 //    Hank Childs, Wed May  7 13:50:00 PDT 2003
 //    Only turn on the actor conditionally.  This will prevent an error msg.
 //
+//    Jeremy Meredith, Thu Oct 21 12:18:23 PDT 2004
+//    Call TransparenciesExist now because the logic has become more complex.
+//    Specifically, it may have needed an update, and it needed unification
+//    in parallel.
+//
 // ****************************************************************************
 
 void
 avtTransparencyActor::VisibilityOn(void)
 {
-    if (appender->GetNumberOfInputs() > 0)
+    if (TransparenciesExist())
         myActor->SetVisibility(1);
 }
 
@@ -455,7 +497,16 @@ avtTransparencyActor::VisibilityOn(void)
 //    when they determine it is okay.
 //
 //    Chris Wojtan, Fri Jun 25 16:13 PDT 2004
-//    Ignore sorting and other unnecessary computation if the data is 2-dimensional
+//    Ignore sorting and other unnecessary computation if the data is
+//    2-dimensional
+//
+//    Chris Wojtan, Thurs Jul 8 16:18 PDT 2004
+//    Force recalculation if parallel rendering is enabled
+//
+//    Jeremy Meredith, Thu Oct 21 15:05:29 PDT 2004
+//    Use PAR_Size instead of an ifdef so we don't have to build a parallel
+//    library.  Disable axis sort in parallel because it's only slowing us
+//    down (never use it).  
 //
 // ****************************************************************************
 
@@ -463,8 +514,10 @@ void
 avtTransparencyActor::PrepareForRender(vtkCamera *cam)
 {
     // if this is a 2D plot, we don't need to sort anything
-    if(is2Dimensional)
+    if (is2Dimensional)
+    {
         return;
+    }
 
     //
     // Determine if our poly-data input is up-to-date.
@@ -485,6 +538,12 @@ avtTransparencyActor::PrepareForRender(vtkCamera *cam)
         }
     }
 
+    // If parallel transparency is enabled, we should recalculate the
+    // ordering each time to ensure that each processor handles its
+    // correct group of data.
+    if (PAR_Size() > 1)
+        needToRecalculate = true;
+
     //
     // The routine to set up our actual big actor is *long* -- push it off to
     // a subroutine.
@@ -494,7 +553,9 @@ avtTransparencyActor::PrepareForRender(vtkCamera *cam)
         SetUpActor();
     }
 
-    if (usePerfectSort)
+    // If we are in parallel, then an axis sort won't help us because it
+    // cannot also sort across processors, so we always need a perfect sort.
+    if (PAR_Size() > 1 || usePerfectSort)
     {
         perfectSort->SetCamera(cam);
         myMapper->SetInput(perfectSort->GetOutput());
@@ -570,12 +631,21 @@ avtTransparencyActor::PrepareForRender(vtkCamera *cam)
 //  Programmer: Hank Childs
 //  Creation:   July 7, 2002
 //
+//  Modifications:
+//    Chris Wojtan, Wed Jul 7 10:01 PDT 2004
+//    Pass renderer into parallel transparency filter.
+//
+//    Jeremy Meredith, Thu Oct 21 15:08:16 PDT 2004
+//    Use PAR_Size instead of an ifdef.
+//
 // ****************************************************************************
 
 void
 avtTransparencyActor::AddToRenderer(vtkRenderer *ren)
 {
     ren->AddActor(myActor);
+    if (PAR_Size() > 1)
+        parallelFilter->SetRenderer(ren);
 }
 
 
@@ -639,6 +709,13 @@ avtTransparencyActor::RemoveFromRenderer(vtkRenderer *ren)
 //    Hank Childs, Sun Jul 14 15:49:58 PDT 2002
 //    Use new VTK module to do all six axis sorts.
 //
+//    Jeremy Meredith, Thu Oct 21 15:11:19 PDT 2004
+//    Force a re-execution of the appender so all processors do the
+//    same thing in parallel.  Call TransparenciesExist now because
+//    the logic has become more complex.  Specifically, it may have
+//    needed an update, and it needed unification in parallel.  Honor
+//    the suspension of transparent rendering for two-pass mode.
+//
 // ****************************************************************************
 
 void
@@ -664,16 +741,27 @@ avtTransparencyActor::SetUpActor(void)
         }
     }
 
+    // Force the appender to update; this is needed in parallel SR mode
+    // because all processors need to re-execute the pipeline, and if
+    // not all processors have data then they might not re-execute.
+    // See VisIt00005467.
+    appender->Modified();
+
     //
     // If we don't have anything to render, don't have our actor draw.
     //
-    if (appender->GetNumberOfInputs() == 0)
+    if (!TransparenciesExist())
     {
         myActor->SetVisibility(0);
     }
     else
     {
-        myActor->SetVisibility(1);
+        //
+        // Just because we have geometry doesn't mean we will be
+        // rendering it, because in two-pass parallel SR mode we
+        // must disable transparent geometry for the first pass.
+        //
+        myActor->SetVisibility(renderingSuspended ? 0 : 1);
 
         //
         // If their actor has some special properties set up, try to preserve
@@ -707,12 +795,22 @@ avtTransparencyActor::SetUpActor(void)
 
         //
         // Sort all the data from all six axis directions.  This will prevent
-        // pauses as we cross between our view directions.
+        // pauses as we cross between our view directions.  Note that if we
+        // are in parallel, then we must be doing SR mode transparency and
+        // and Axis sort doesn't do us any good since it sorts only within
+        // a processor.
         //
-        int sorting = visitTimer->StartTimer();
-        axisSort->Update();
-        visitTimer->StopTimer(sorting, "Sorting triangles for transparency");
-        visitTimer->DumpTimings();
+        if (PAR_Size() > 1)
+        {
+            debug4 << "Skipping axis sorting because we are in parallel.\n";
+        }
+        else
+        {
+            int sorting = visitTimer->StartTimer();
+            axisSort->Update();
+            visitTimer->StopTimer(sorting,"Sorting triangles for transparency");
+            visitTimer->DumpTimings();
+        }
     }
 
     //
@@ -802,7 +900,7 @@ avtTransparencyActor::PrepareDataset(int input, int subinput)
     else
     {
         //
-        // We will be drawing this, so turn there's off.
+        // We will be drawing this, so turn theirs off.
         //
         actor->SetVisibility(0);
     }
@@ -1053,12 +1151,44 @@ avtTransparencyActor::ScaleByVector(const float vec[3])
 //  Programmer: Kathleen Bonnell 
 //  Creation:   December 3, 2003
 //
+//  Modifications:
+//    Jeremy Meredith and Hank Childs, Thu Oct 21 15:27:44 PDT 2004
+//    This method was not getting updated soon enough for calls to
+//    it to return the correct value.  We took the key pieces
+//    from PrepareDataset to get the right answer here, and I
+//    added code to enforce that all processors have the same answer.
+//
 // ****************************************************************************
 
 bool
 avtTransparencyActor::TransparenciesExist()
 {
-    return (appender->GetNumberOfInputs() > 0);
+    bool has_stuff = false;
+    int numActors = datasets.size();
+    for (int i = 0 ; i < numActors && !has_stuff ; i++)
+    {
+        if (useActor[i] && visibility[i] == true)
+        {
+            int numParts = datasets[i].size();
+            for (int j = 0 ; j < numParts && !has_stuff ; j++)
+            {
+                vtkDataSet       *in_ds  = datasets[i][j];
+                vtkActor         *actor  = actors[i][j];
+                vtkDataSetMapper *mapper = mappers[i][j];
+                if (in_ds && actor && mapper &&
+                    actor->GetProperty()->GetOpacity() > 0. &&
+                    actor->GetProperty()->GetOpacity() < 1.)
+                {
+                    has_stuff = true;
+                }
+            }
+        }
+    }
+
+    // We need all processors to agree!
+    has_stuff = UnifyMaximumValue(has_stuff);
+
+    return has_stuff;
 }
 
 
@@ -1085,7 +1215,17 @@ avtTransparencyActor::SetIs2Dimensional(bool val)
         // as the 2D dataset.
         //
         if (appender != NULL)
+        {
             appender->RemoveAllInputs();
+
+            // Note: with lineouts in SR mode, it can sometimes hang
+            // because one processor decides to re-execute despite having
+            // no inputs.  Let's just force what we think should be
+            // happening anyway, and force all processors to re-execute
+            // so they all go through the parallelFilter.  This is similar
+            // to VisIt00005467.
+            appender->Modified();
+        }
     }
 
     is2Dimensional = val;

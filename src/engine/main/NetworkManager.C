@@ -36,6 +36,7 @@
 #include <avtActualZoneCoordsQuery.h>
 #include <avtPickQuery.h>
 #include <avtNodePickQuery.h>
+#include <avtParallel.h>
 #include <avtPickByNodeQuery.h>
 #include <avtPickByZoneQuery.h>
 #include <avtZonePickQuery.h>
@@ -43,6 +44,7 @@
 #include <avtSourceFromAVTImage.h>
 #include <avtSourceFromImage.h>
 #include <avtSourceFromNullData.h>
+#include <avtTiledImageCompositor.h>
 #include <avtWholeImageCompositerWithZ.h>
 #include <avtWholeImageCompositerNoZ.h>
 #include <avtPlot.h>
@@ -57,7 +59,6 @@
 #include <PlotPluginInfo.h>
 #ifdef PARALLEL
 #include <mpi.h>
-#include <avtParallel.h>
 #include <parallel.h>
 #endif
 #include <TimingsManager.h>
@@ -66,6 +67,8 @@
 using std::set;
 
 static double RenderBalance(int numTrianglesIHave);
+static void   DumpImage(avtDataObject_p, const char *fmt, bool allprocs=true);
+static void   DumpImage(avtImage_p, const char *fmt, bool allprocs=true);
 
 // ****************************************************************************
 //  Method: NetworkManager default constructor
@@ -96,7 +99,6 @@ static double RenderBalance(int numTrianglesIHave);
 // ****************************************************************************
 NetworkManager::NetworkManager(void) : virtualDatabases()
 {
-    //cerr << "NetworkManager::NetworkManager(void)" << endl;
     workingNet = NULL;
     loadBalancer = NULL;
     requireOriginalCells = false;
@@ -138,7 +140,6 @@ NetworkManager::NetworkManager(void) : virtualDatabases()
 // ****************************************************************************
 NetworkManager::~NetworkManager(void)
 {
-    //cerr << "NetworkManager::~NetworkManager(void)" << endl;
     for (int i = 0; i < networkCache.size(); i++)
         if (networkCache[i] != NULL)
             delete networkCache[i];
@@ -331,8 +332,6 @@ NetnodeDB *
 NetworkManager::GetDBFromCache(const string &filename, int time,
                                const char *format)
 {
-    //cerr << "NetworkManager::GetDBFromCache()" << endl;
-
     // If we don't have a load balancer, we're dead.
     if (loadBalancer == NULL)
     {
@@ -538,8 +537,6 @@ NetworkManager::StartNetwork(const string &filename, const string &format,
                              const CompactSILRestrictionAttributes &atts,
                              const MaterialAttributes &matopts)
 {
-    //cerr << "NetworkManager::StartNetwork()" << endl;
-
     // If the variable is an expression, we need to find a "real" variable
     // name to work with.
     std::string leaf = var;
@@ -804,7 +801,6 @@ NetworkManager::AddFilter(const string &filtertype,
                           const AttributeGroup *atts,
                           const unsigned int nInputs)
 {
-    //cerr << "NetworkManager::AddFilter()" << endl;
     // Check that we have a network to work on.
     if (workingNet == NULL)
     {
@@ -920,7 +916,6 @@ NetworkManager::MakePlot(const string &id, const AttributeGroup *atts,
 int
 NetworkManager::EndNetwork(void)
 {
-    //cerr << "NetworkManager::EndNetwork(void)" << endl;
     // Checking to see if the network has been built successfully.
     if (workingNetnodeList.size() != 1)
     {
@@ -990,7 +985,6 @@ NetworkManager::CancelNetwork(void)
 void
 NetworkManager::UseNetwork(int id)
 {
-    //cerr << "NetworkManager::UseNetwork()" << endl;
     if (workingNet)
     {
         debug1 << "Internal error: UseNetwork called with an open network" 
@@ -1040,7 +1034,6 @@ NetworkManager::UseNetwork(int id)
 avtPlot_p
 NetworkManager::GetPlot(void)
 {
-    //cerr << "NetworkManager::GetPlot(void)" << endl;
     if (workingNet == NULL)
     {
         EXCEPTION0(ImproperUseException);
@@ -1062,7 +1055,6 @@ NetworkManager::GetPlot(void)
 int
 NetworkManager::GetCurrentNetworkId(void)
 {
-    //cerr << "NetworkManager::GetCurrentNetworkId(void)" << endl;
     if (workingNet == NULL)
     {
         EXCEPTION0(ImproperUseException);
@@ -1162,7 +1154,6 @@ NetworkManager::GetScalableThreshold(void) const
 void
 NetworkManager::DoneWithNetwork(int id)
 {
-    //cerr << "NetworkManager::DoneWithNetwork()" << endl;
     if (id >= networkCache.size())
     {
         debug1 << "Internal error: asked to reuse network ID (" << id
@@ -1216,7 +1207,6 @@ NetworkManager::DoneWithNetwork(int id)
 void
 NetworkManager::UpdatePlotAtts(int id, const AttributeGroup *atts)
 {
-    //cerr << "NetworkManager::UpdatePlotAtts()" << endl;
     if (id >= networkCache.size())
     {
         debug1 << "Internal error: asked to reuse network ID (" << id
@@ -1440,12 +1430,26 @@ NetworkManager::GetOutput(bool respondWithNullData, bool calledForRender,
 //    Mark C. Miller, Mon Aug 23 20:24:31 PDT 2004
 //    Added arg to GetOutput call
 //
+//    Chris Wojtan, Fri Jul 30 10:32:02 PDT 2004
+//    Switched from single pass rendering to 2 pass randering, in order to
+//    correctly draw plots with both opaque and translucent geometry
+//
+//    Chris Wojtan, Fri Jul 30 14:37:50 PDT 2004
+//    Load the output of the first rendering pass into the input of
+//    the second pass.
+//
 //    Mark C. Miller, Wed Oct  6 18:12:29 PDT 2004
 //    Changed bool arg for 3D annots to an integer mode
 //
 //    Mark C. Miller, Tue Oct 19 20:18:22 PDT 2004
 //    Added code to push color table name to plots
 //    Added code to use correct whole image compositor based upon window mode
+//
+//    Jeremy Meredith, Thu Oct 21 17:33:09 PDT 2004
+//    Finished the two-pass mode.  Cleaned things up a bit.
+//    Refactored image writing to new functions.  Wrote the tiled
+//    image compositor.
+//
 // ****************************************************************************
 avtDataObjectWriter_p
 NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode)
@@ -1627,34 +1631,40 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode)
                    << "Balanced speedup = " << RenderBalance(viswin->GetNumTriangles())
                    << "x" << endl;
 
+            //
+            // Determine if we need to go for two passes
+            //
+            bool two_pass_mode = false;
+#ifdef PARALLEL
+            if (viswin->GetWindowMode() == WINMODE_3D)
+            {
+                two_pass_mode = viswin->TransparenciesExist();
+                two_pass_mode = UnifyMaximumValue(two_pass_mode);
+            }
+#endif
+
             // render the image and capture it. Relies upon explicit render
             int t3 = visitTimer->StartTimer();
             bool viewportedMode = (annotMode != 1) || 
                                   (viswin->GetWindowMode() == WINMODE_2D) ||
                                   (viswin->GetWindowMode() == WINMODE_CURVE);
-            avtImage_p theImage = viswin->ScreenCapture(viewportedMode, true);
+
+
+            // ************************************************************
+            // FIRST PASS - Opaque only
+            // ************************************************************
+
+            avtImage_p theImage;
+            if (two_pass_mode)
+                theImage=viswin->ScreenCapture(viewportedMode,true,true,false);
+            else
+                theImage=viswin->ScreenCapture(viewportedMode,true);
+            
             visitTimer->StopTimer(t3, "Screen capture for SR");
 
             if (dumpRenders)
-            {
-                static int numDumps = 0;
-                char tmpName[256];
-                avtFileWriter *fileWriter = new avtFileWriter();
-                avtDataObject_p tmpDob;
-                CopyTo(tmpDob, theImage);
+                DumpImage(theImage, "before_ImageCompositer");
 
-#ifdef PARALLEL
-                sprintf(tmpName, "before_ImageCompositer_%03d_%03d.tif",
-                    PAR_Rank(), numDumps);
-#else
-                sprintf(tmpName, "before_ImageCompositer_%03d.tif", numDumps);
-#endif
-                fileWriter->SetFormat(TIFF);
-                int useLZW = 6;
-                fileWriter->Write(tmpName, tmpDob, 100, false, useLZW, false);
-
-                numDumps++;
-            }
 
             avtWholeImageCompositer *imageCompositer;
             if (viswin->GetWindowMode() == WINMODE_3D)
@@ -1683,12 +1693,57 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode)
             theImage->GetSize(&imageCols, &imageRows);
             imageCompositer->SetOutputImageSize(imageRows, imageCols);
             imageCompositer->AddImageInput(theImage, 0, 0);
+            imageCompositer->SetShouldOutputZBuffer(getZBuffer || two_pass_mode);
+            imageCompositer->SetAllProcessorsNeedResult(two_pass_mode);
 
             //
             // Do the parallel composite using a 1 stage pipeline
             //
             imageCompositer->Execute();
             avtDataObject_p compositedImageAsDataObject = imageCompositer->GetOutput();
+
+            // Dump the composited image when debugging.  Note that we only
+            // want all processors to dump it if we have done an Allreduce
+            // in the compositor, and this only happens in two pass mode.
+            if (dumpRenders)
+                DumpImage(compositedImageAsDataObject,
+                          "after_first_ImageCompositer", two_pass_mode);
+
+
+            // ************************************************************
+            // SECOND PASS - Translucent only
+            // ************************************************************
+
+            if (two_pass_mode)
+            {
+                int t1 = visitTimer->StartTimer();
+
+                avtImage_p theImage2;
+                theImage2=viswin->ScreenCapture(viewportedMode,true,false,true,
+                                            imageCompositer->GetTypedOutput());
+            
+                visitTimer->StopTimer(t1, "Second-pass screen capture for SR");
+
+                if (dumpRenders)
+                    DumpImage(theImage2, "before_second_ImageCompositer");
+
+                avtTiledImageCompositor imageCompositer2;
+
+                //
+                // Set up the input image size and add it to compositer's input
+                //
+                theImage2->GetSize(&imageCols, &imageRows);
+                imageCompositer2.SetOutputImageSize(imageRows, imageCols);
+                imageCompositer2.AddImageInput(theImage2, 0, 0);
+
+                //
+                // Do the parallel composite using a 1 stage pipeline
+                //
+                int t2 = visitTimer->StartTimer();
+                imageCompositer2.Execute();
+                compositedImageAsDataObject = imageCompositer2.GetOutput();
+                visitTimer->StopTimer(t2, "tiled image compositor execute");
+            }
 
             //
             // If the engine is doing more than just 3D attributes,
@@ -1703,34 +1758,21 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode)
                 avtImage_p compositedImage;
                 CopyTo(compositedImage, compositedImageAsDataObject);
                 avtImage_p postProcessedImage = 
-                    viswin->PostProcessScreenCapture(compositedImage, viewportedMode,
+                    viswin->PostProcessScreenCapture(compositedImage,
+                                                     viewportedMode,
                                                      getZBuffer);
                 CopyTo(compositedImageAsDataObject, postProcessedImage);
             }
             writer = compositedImageAsDataObject->InstantiateWriter();
             writer->SetInput(compositedImageAsDataObject);
 
-#ifdef PARALLEL
-            if (dumpRenders && (PAR_Rank() == 0))
-#else
+
             if (dumpRenders)
-#endif
-            {
-                static int numDumps = 0;
-                char tmpName[256];
-                avtFileWriter *fileWriter = new avtFileWriter();
-                avtDataObject_p tmpDob;
+                DumpImage(compositedImageAsDataObject,
+                          "after_ImageCompositer", false);
 
-                sprintf(tmpName, "after_ImageCompositer_%03d.tif", numDumps);
-                fileWriter->SetFormat(TIFF);
-                int useLZW = 6;
-                fileWriter->Write(tmpName, compositedImageAsDataObject,
-                    100, false, useLZW, false);
-
-                numDumps++;
-            }
         }
-
+        
         delete [] cellCounts;
 
         // return it
@@ -2051,7 +2093,6 @@ NetworkManager::SetAnnotationAttributes(const AnnotationAttributes &atts,
 void
 NetworkManager::StartPickMode(const bool forZones)
 {
-    //cerr << "NetworkManager::StartPickMode for Zones? " << forZones << endl;
     if (forZones)
         requireOriginalCells = true;
     else 
@@ -2075,7 +2116,6 @@ NetworkManager::StartPickMode(const bool forZones)
 void
 NetworkManager::StopPickMode(void)
 {
-    //cerr << "NetworkManager::StopPickMode(void)" << endl;
     requireOriginalCells = false;
     requireOriginalNodes = false;
 }
@@ -2684,4 +2724,68 @@ NetworkManager::AddQueryOverTimeFilter(QueryOverTimeAttributes *qA,
     
     workingNetnodeList.push_back(qfilt);
     workingNet->AddNode(qfilt);
+}
+
+// ****************************************************************************
+//  Function:  DumpImage
+//
+//  Purpose:
+//    Write an image for debugging purposes.
+//
+//  Arguments:
+//    img        the image
+//    fmt        the file format for the avtFileWriter
+//    allprocs   if false, only the first processor writes
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    October 21, 2004
+//
+// ****************************************************************************
+static void
+DumpImage(avtDataObject_p img, const char *fmt, bool allprocs)
+{
+    if (!allprocs && PAR_Rank() != 0)
+        return;
+
+    static int numDumps = 0;
+    char tmpName[256];
+    avtFileWriter *fileWriter = new avtFileWriter();
+
+#ifdef PARALLEL
+    if (allprocs)
+        sprintf(tmpName, "%s_%03d_%03d.tif", fmt, PAR_Rank(), numDumps);
+    else
+        sprintf(tmpName, "%s_%03d.tif", fmt, numDumps);
+#else
+    sprintf(tmpName, "%s_%03d.tif", fmt, numDumps);
+#endif
+
+    fileWriter->SetFormat(TIFF);
+    int useLZW = 6;
+    fileWriter->Write(tmpName, img, 100, false, useLZW, false);
+
+    numDumps++;
+}
+
+// ****************************************************************************
+//  Function:  DumpImage
+//
+//  Purpose:
+//    Write an image for debugging purposes.
+//
+//  Arguments:
+//    img        the image
+//    fmt        the file format for the avtFileWriter
+//    allprocs   if false, only the first processor writes
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    October 21, 2004
+//
+// ****************************************************************************
+static void
+DumpImage(avtImage_p img, const char *fmt, bool allprocs)
+{
+    avtDataObject_p tmpImage;
+    CopyTo(tmpImage, img);
+    DumpImage(tmpImage, fmt, allprocs);
 }

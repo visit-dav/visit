@@ -276,6 +276,21 @@ class VisitInteractor;
 //    Added doViewport and keepZbuffer args to PostProcessScreenCapture
 //    Added explicit bounds args to SetViewExtentsType
 //
+//    Chris Wojtan, Wed Jul 21 15:15:06 PDT 2004
+//    Added doOpaque and doTranslucent parameters to ScreenCapture()
+//
+//    Chris Wojtan, Mon Jul 26 16:22:34 PDT 2004
+//    Added 4 functions for suspending and resuming opaque and translucent geometry.
+//
+//    Chris Wojtan, Fri Jul 30 14:34:22 PDT 2004
+//    Added parameters to ScreenCapture() to determine whether or not
+//    to render only-opaque or only-transparent geometry.  Also added
+//    ability for ScreenCapture to have a starting image/zbuffer.
+//
+//    Jeremy Meredith, Tue Aug 31 15:28:54 PDT 2004
+//    Made TransparenciesExist public so we could avoid two-stage rendering
+//    if there was no transparent geometry.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindow
@@ -295,7 +310,10 @@ public:
 
     void                 Realize(void);
     avtImage_p           ScreenCapture(bool doViewportOnly = false,
-                                       bool doZBufferToo = false);
+                                       bool doZBufferToo = false,
+                                       bool doOpaque = true,
+                                       bool doTranslucent = true,
+                                       avtImage_p input = NULL);
     avtImage_p           PostProcessScreenCapture(avtImage_p capturedImage,
                                        bool doViewportOnly, bool keepZBuffer);
     avtDataset_p         GetAllDatasets(void);
@@ -467,6 +485,13 @@ public:
     void                 SetPickTypeToIntersection(void);
     void                 SetPickTypeToNormal(void);
 
+    void                 SuspendOpaqueGeometry();
+    void                 SuspendTranslucentGeometry();
+    void                 ResumeOpaqueGeometry();
+    void                 ResumeTranslucentGeometry();
+
+    bool                 TransparenciesExist(void);
+
 
 protected:
     VisWindowColleagueProxy            colleagueProxy;
@@ -572,7 +597,6 @@ protected:
     static void          ProcessResizeEvent(void *);
     void                 ReAddColleaguesToRenderWindow(void);
     void                 ReAddToolsToRenderWindow(void);
-    bool                 TransparenciesExist(void);
 };
 
 

@@ -72,6 +72,19 @@ class     avtTransparencyActor;
 //    Mark C. Miller, Tue May 11 20:21:24 PDT 2004
 //    Elminated externally rendered images actor dependence
 //
+//    Chris Wojtan, Fri Jul 23 13:57:50 PDT 2004
+//    Added isVisible variable and function to check whether this actor
+//    is supposed to be drawn to the screen
+//
+//    Chris Wojtan, Mon Jul 26 17:19:58 PDT 2004
+//    Added 4 methods to turn the opaque or tranlucent actors' visibility
+//    on or off.
+//
+//    Jeremy Meredith, Thu Oct 21 12:27:38 PDT 2004
+//    Removed the transparency visibility settings, because it is less
+//    error-prone (and easier and more efficient) to turn off the entire
+//    avtTransparencyActor at once.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtActor
@@ -116,12 +129,18 @@ class PLOTTER_API avtActor
 
     avtDataObject_p               GetDataObject(void);
 
+    bool                          IsVisible();
+
+    void                          OpaqueVisibilityOn();
+    void                          OpaqueVisibilityOff();
+
   protected:
     avtBehavior_p                 behavior;
     avtDrawable_p                 drawable;
     avtDrawable_p                 decorations;
     avtTransparencyActor         *transparencyActor;
     int                           transparencyIndex;
+    bool                          isVisible;
 
     vtkRenderer                  *renderer;
 };
