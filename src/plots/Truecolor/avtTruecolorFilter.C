@@ -56,6 +56,9 @@ avtTruecolorFilter::~avtTruecolorFilter()
 //     Chris Wojtan Mon Jun 21 15:44 PDT 2004
 //     Changed vector dimension from 3D to 4D
 //
+//     Hank Childs, Wed Nov 10 11:33:59 PST 2004
+//     Fix memory leak.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -85,6 +88,9 @@ avtTruecolorFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
     outDS->GetCellData()->SetActiveScalars("ucharColors");
 
     color_array->Delete();
+
+    ManageMemory(outDS);
+    outDS->Delete();
 
     return outDS;
 }

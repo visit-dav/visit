@@ -274,7 +274,8 @@ public:
                                              const double *viewExtents,
                                              std::string);
 
-    avtDataObjectReader_p    Render(bool, const intVector&, int);
+    avtDataObjectReader_p    Render(bool, const intVector&, int,
+                                 void (*waitCB)(void *), void *cbData);
 
     avtDataObjectReader_p    Execute(bool, void (*waitCB)(void *), void *cbData);
 

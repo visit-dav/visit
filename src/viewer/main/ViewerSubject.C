@@ -5890,6 +5890,16 @@ ViewerSubject::EnableSocketSignals()
 void
 ViewerSubject::ProcessRendererMessage()
 {
+    //
+    // If the engine manager is rendering, return early but tell the
+    // event loop to try to process the message again later.
+    //
+    if(ViewerEngineManager::Instance()->InRender())
+    {
+        QTimer::singleShot(400, this, SLOT(ProcessRendererMessage()));
+        return;
+    }
+
     char msg[512];
 
 #ifdef VIEWER_MT

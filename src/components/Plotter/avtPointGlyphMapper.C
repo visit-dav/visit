@@ -247,12 +247,17 @@ avtPointGlyphMapper::SetUpFilters(int nDoms)
 //
 //  Modifications:
 //
+//    Hank Childs, Wed Nov 10 11:27:23 PST 2004
+//    Do not glyphs points when our glyph type is "point".
+//
 // ****************************************************************************
 
 vtkDataSet *
 avtPointGlyphMapper::InsertFilters(vtkDataSet *ds, int dom)
 {
     if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() != 0)
+        return ds;
+    if (glyphType == 3)
         return ds;
 
     if (dom < 0 || dom >= nGlyphFilters)

@@ -778,7 +778,7 @@ EngineProxy::DefineVirtualDatabase(const std::string &fileFormat,
 
 avtDataObjectReader_p
 EngineProxy::Render(bool sendZBuffer, const intVector& networkIDs,
-    int annotMode)
+    int annotMode, void (*waitCB)(void *), void *cbData)
 {
 
     // Send a status message indicating that we're starting a scalable render 
@@ -805,6 +805,10 @@ EngineProxy::Render(bool sendZBuffer, const intVector& networkIDs,
             debug4 << "Warning: " << renderRPC.Message().c_str() << endl;
             Warning(renderRPC.Message().c_str());
         }
+
+        // If we passed a callback function, execute it.
+        if(waitCB)
+            waitCB(cbData);
     }
 
     // Check for abort
