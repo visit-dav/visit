@@ -32,6 +32,9 @@ vtkStandardNewMacro(vtkTimeSliderActor);
 // Creation:   Tue Oct 28 11:00:37 PDT 2003
 //
 // Modifications:
+//   Eric Brugger, Wed Aug 25 15:00:06 PDT 2004
+//   Modify the interpretation of Position2 to the more standard vtk
+//   interpretation where the coordinate is relative to Position.
 //   
 // ****************************************************************************
 
@@ -63,7 +66,7 @@ vtkTimeSliderActor::vtkTimeSliderActor() : vtkActor2D()
     this->SetPosition(DEFAULT_X_OFFSET, DEFAULT_Y_OFFSET);
     this->SetWidth(DEFAULT_WIDTH);
     this->SetHeight(DEFAULT_HEIGHT);
-    this->SetPosition2(DEFAULT_X_OFFSET+DEFAULT_WIDTH, DEFAULT_Y_OFFSET+DEFAULT_HEIGHT);
+    this->SetPosition2(DEFAULT_WIDTH, DEFAULT_HEIGHT);
 }
 
 // ****************************************************************************
@@ -181,13 +184,18 @@ vtkTimeSliderActor::AddEndCapCells(int center, vtkCellArray *polys)
 //   Brad Whitlock, Tue Dec 9 08:38:22 PDT 2003
 //   Fixed a bug that caused the end caps to become separated from the main bar.
 //
+//   Eric Brugger, Wed Aug 25 15:00:06 PDT 2004
+//   Modify the interpretation of Position2 to the more standard vtk
+//   interpretation where the coordinate is relative to Position.
+//
 // ****************************************************************************
 
 void
 vtkTimeSliderActor::CreateSlider(vtkViewport *viewport)
 {
     float BL[2] = {this->GetPosition()[0], this->GetPosition()[1]};
-    float TR[2] = {this->GetPosition2()[0], this->GetPosition2()[1]};
+    float TR[2] = {this->GetPosition()[0] + this->GetPosition2()[0],
+                   this->GetPosition()[1] + this->GetPosition2()[1]};
 
 #ifdef CREATE_POLYDATA_IN_SCREEN_SPACE
     viewport->NormalizedDisplayToDisplay(BL[0], BL[1]);

@@ -1484,6 +1484,10 @@ MDServerConnection::FileHasVisItExtension(const std::string &file) const
 //   extraSmartGrouping flag that does additional work to try and prevent
 //   certain Ale3D databases from being grouped into virtual databases.
 //
+//   Brad Whitlock, Fri Aug 27 17:39:32 PST 2004
+//   I fixed a bug that caused multiple virtual databases to get the
+//   definitions confused if they had similar names.
+//
 // ****************************************************************************
 
 void
@@ -1622,58 +1626,57 @@ MDServerConnection::GetFilteredFileList(GetFileListRPC::FileList &files,
     //
     // Now that we've assembled a list of filenames, go back and fix the
     // ones that had a pattern but had no successors and thus were only
-    // one file long.
+    // one file long. Note that we're traversing the files.names vector
+    // instead of the keys in the newVirtualFiles map so we are guaranteed
+    // to get the same filename ordering, which is important for the way
+    // we store the virtual file information in the files object.
     //
-    for(pos = newVirtualFiles.begin(); pos != newVirtualFiles.end(); ++pos)
+    if(newVirtualFiles.size() > 0)
     {
-        if(pos->second.files.size() == 1)
+        for(int fileIndex = 0; fileIndex < files.names.size(); ++fileIndex)
         {
-            // Change the name in the files list back to the original file name.
-            for(i = 0; i < files.names.size(); ++i)
+            // Look for the current filename in the new virtual files map. If the
+            // name is not in the list then it's not a virtual file.
+            pos = newVirtualFiles.find(files.names[fileIndex]);
+            if(pos == newVirtualFiles.end())
+                continue;
+        
+            if(pos->second.files.size() == 1)
             {
-                if(files.names[i] == pos->first.name)
-                {
-                    files.names[i] = pos->second.files[0];
-                    break;
-                }
+                // Change the name in the files list back to the original file name.
+                files.names[fileIndex] = pos->second.files[0];
             }
-        }
-        else
-        {
-            // Determine a good root name for the database.
-            std::string rootName(pos->first.name + " database");
-
-            // Change the name in the files list from the pattern name
-            // to the new root name. Also change the file type to VIRTUAL.
-            for(i = 0; i < files.names.size(); ++i)
+            else
             {
-                if(files.names[i] == pos->first.name)
-                {
-                    files.names[i] = rootName;
-                    files.types[i] = GetFileListRPC::VIRTUAL;
-                    break;
-                }
+                // Determine a good root name for the database.
+                std::string rootName(pos->first.name + " database");
+
+                // Change the name in the files list from the pattern name
+                // to the new root name. Also change the file type to VIRTUAL.
+                files.names[fileIndex] = rootName;
+                files.types[fileIndex] = GetFileListRPC::VIRTUAL;
+
+                // Add the timestep names to the file list's virtual files list.
+
+                for(i = 0; i < pos->second.files.size(); ++i)
+                    files.virtualNames.push_back(pos->second.files[i]);
+                files.numVirtualFiles.push_back(pos->second.files.size());
+
+                // Create a good path.
+                std::string path(currentWorkingDirectory);
+                if(path[path.size() - 1] != SLASH_CHAR)
+                    path += SLASH_STRING;
+
+                // Add the file to the virtual files map. Give the data from the
+                // new vector of filenames to the existing vector of filenames
+                // because swapping is cheaper than copying. Note that if the
+                // key does not exist in the virtualFiles map, calling
+                // its [] operator, as we are doing, automatically adds the key
+                // to the map.
+                std::string key(path + rootName);
+                virtualFiles[key].path = path;
+                virtualFiles[key].files.swap(pos->second.files);
             }
-
-            // Add the timestep names to the file list's virtual files list.
-            for(i = 0; i < pos->second.files.size(); ++i)
-                files.virtualNames.push_back(pos->second.files[i]);
-            files.numVirtualFiles.push_back(pos->second.files.size());
-
-            // Create a good path.
-            std::string path(currentWorkingDirectory);
-            if(path[path.size() - 1] != SLASH_CHAR)
-                path += SLASH_STRING;
-
-            // Add the file to the virtual files map. Give the data from the
-            // new vector of filenames to the existing vector of filenames
-            // because swapping is cheaper than copying. Note that if the
-            // key does not exist in the virtualFiles map, calling
-            // its [] operator, as we are doing, automatically adds the key
-            // to the map.
-            std::string key(path + rootName);
-            virtualFiles[key].path = path;
-            virtualFiles[key].files.swap(pos->second.files);
         }
     }
 }

@@ -30,6 +30,9 @@
 // Creation:   Thu Nov 6 14:25:58 PST 2003
 //
 // Modifications:
+//    Eric Brugger, Wed Aug 25 15:10:57 PDT 2004
+//    Modify the interpretation of the time slider's Position2 to the more
+//    standard vtk interpretation where the coordinate is relative to Position.
 //   
 // ****************************************************************************
 
@@ -50,8 +53,7 @@ avtTimeSliderColleague::avtTimeSliderColleague(VisWindowColleagueProxy &m) :
     GetSliderRect(DEFAULT_X, DEFAULT_Y, DEFAULT_WIDTH, DEFAULT_HEIGHT, rect);
     timeSlider = vtkTimeSliderActor::New();
     timeSlider->GetPositionCoordinate()->SetValue(rect[0], rect[1]);
-    timeSlider->GetPosition2Coordinate()->SetValue(rect[0] + rect[2],
-        rect[1] + rect[3]);
+    timeSlider->GetPosition2Coordinate()->SetValue(rect[2], rect[3]);
     timeSlider->SetStartColor(0.,1.,1.,1.);
     timeSlider->SetEndColor(1.,1.,1.,0.6);
 
@@ -223,6 +225,12 @@ avtTimeSliderColleague::ShouldBeAddedToRenderer() const
 // Creation:   Thu Nov 6 14:29:01 PST 2003
 //
 // Modifications:
+//    Eric Brugger, Wed Aug 25 15:10:57 PDT 2004
+//    Modify the interpretation of the time slider's Position2 to the more
+//    standard vtk interpretation where the coordinate is relative to Position.
+//    Remove a workaround where the text height and width were set when the
+//    text string was changed.  This doesn't seem to be necessary and it
+//    set the size incorrectly.
 //   
 // ****************************************************************************
 
@@ -290,7 +298,6 @@ avtTimeSliderColleague::SetOptions(const AnnotationObject &annot)
     //
     // Set the labels if the text vector is different
     //
-    bool textChanged = false;
     if(currentOptions.GetText() != annot.GetText())
     {
         const stringVector &text = annot.GetText();
@@ -298,10 +305,6 @@ avtTimeSliderColleague::SetOptions(const AnnotationObject &annot)
             SetText(text[0].c_str());
         else
             SetText("");
-        // Set the width to a size we don't want so we can update it later.
-        textActor->SetWidth(0.1);
-        textActor->SetHeight(0.1);
-        textChanged = true;
     }
 
     //
@@ -316,9 +319,8 @@ avtTimeSliderColleague::SetOptions(const AnnotationObject &annot)
         // Set the time slider's coordinates.
         float rect[4];
         GetSliderRect(p1[0], p1[1], p2[0], p2[1], rect);
-        timeSlider->GetPositionCoordinate()->SetValue(rect[0], rect[1], 0.f);
-        timeSlider->GetPosition2Coordinate()->SetValue(rect[0] + rect[2],
-            rect[1] + rect[3], 0.f);
+        timeSlider->GetPositionCoordinate()->SetValue(rect[0], rect[1]);
+        timeSlider->GetPosition2Coordinate()->SetValue(rect[2], rect[3]);
 
         // Set the text actor's coordinates.
         vtkCoordinate *pos = textActor->GetPositionCoordinate();
@@ -386,6 +388,9 @@ avtTimeSliderColleague::SetOptions(const AnnotationObject &annot)
 // Creation:   Thu Oct 30 14:13:21 PST 2003
 //
 // Modifications:
+//    Eric Brugger, Wed Aug 25 15:10:57 PDT 2004
+//    Modify the interpretation of the time slider's Position2 to the more
+//    standard vtk interpretation where the coordinate is relative to Position.
 //   
 // ****************************************************************************
 
@@ -397,12 +402,13 @@ avtTimeSliderColleague::GetOptions(AnnotationObject &annot)
     annot.SetActive(GetActive());
 
     const float *p1 = textActor->GetPosition();
-    const float *p2 = timeSlider->GetPosition2();
+    const float *p2 = textActor->GetPosition2();
+    const float *p3 = timeSlider->GetPosition2();
     annot.SetPosition(p1);
     // Store the width and height in position2.
     float p2wh[3];
-    p2wh[0] = p2[0] - p1[0];
-    p2wh[1] = p2[1] - p1[1];
+    p2wh[0] = p2[0];
+    p2wh[1] = p2[1] + p3[1];
     p2wh[2] = p2[2];
     annot.SetPosition2(p2wh);
 
@@ -694,6 +700,8 @@ avtTimeSliderColleague::GetTextRect(float x, float y, float width,
 // Creation:   Wed Dec 3 11:18:57 PDT 2003
 //
 // Modifications:
+//    Eric Brugger, Wed Aug 25 15:10:57 PDT 2004
+//    Correct the calculation of the height of the rectangle.
 //   
 // ****************************************************************************
 
@@ -704,6 +712,6 @@ avtTimeSliderColleague::GetSliderRect(float x, float y, float width,
     rect[0] = x;
     rect[1] = y + height - SliderHeight(height);
     rect[2] = width;
-    rect[3] = height - SliderHeight(height);
+    rect[3] = SliderHeight(height);
 }
 
