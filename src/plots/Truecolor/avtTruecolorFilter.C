@@ -51,17 +51,31 @@ avtTruecolorFilter::~avtTruecolorFilter()
 //  Programmer: Chris Wojtan
 //  Creation:   Monday, June 15 2004
 //
+//  Modifications:
+//
+//     Chris Wojtan Mon Jun 21 15:44 PDT 2004
+//     Changed vector dimension from 3D to 4D
+//
 // ****************************************************************************
 
 vtkDataSet *
 avtTruecolorFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
 {
+    // if we do not know the name of the data array to display, we cannot display it
+    if(variable_name == NULL)
+        return inDS;
+
     vtkDataSet *outDS = (vtkDataSet *) inDS->NewInstance();
     outDS->ShallowCopy(inDS);
 
-    // convert RGB vectors into a RGB unsigned char array
+    // convert RGB vectors into a RGBA unsigned char array
     // and use these data as colors
-    vtkDataArray *vecdata = inDS->GetCellData()->GetVectors();
+    vtkDataArray *vecdata = inDS->GetCellData()->GetArray(variable_name);
+    if(vecdata == NULL)
+        return inDS;
+    if(vecdata->GetNumberOfComponents() != 4)
+        return inDS;
+
     vtkUnsignedCharArray *color_array = vtkUnsignedCharArray::New();
     color_array->DeepCopy(vecdata);
 

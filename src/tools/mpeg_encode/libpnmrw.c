@@ -27,6 +27,7 @@
 /* #define MSDOS */
 #endif
 
+#include <errno.h>
 #include <stdio.h>
 #include "libpnmrw.h"
 
