@@ -3560,6 +3560,14 @@ QvisGUIApplication::GetVirtualDatabaseDefinitions(
 //   Added code to compare virtual file definitions before reopening the
 //   open database.
 //
+//   Brad Whitlock, Mon Feb 7 14:23:34 PST 2005
+//   I changed this mode of refreshing the selected files list so that it
+//   only adds new files to the selected files list. The previous behavior
+//   reread all directories and only kept files that match the filter. Doing
+//   so made it possible for files to disappear from the selected files list.
+//   The new method merges the old selected files list with the new, updated
+//   selected files list.
+//
 // ****************************************************************************
 
 void
@@ -3589,7 +3597,7 @@ QvisGUIApplication::RefreshFileList()
     //
     // Reread all of the directories that are in the applied file list.
     //
-    QualifiedFilenameVector refreshedFiles;
+    QualifiedFilenameVector refreshedFiles(fileServer->GetAppliedFileList());
     std::map<QualifiedFilename, bool>::const_iterator pos;
     for(pos = paths.begin(); pos != paths.end(); ++pos)
     {
@@ -3604,7 +3612,14 @@ QvisGUIApplication::RefreshFileList()
             // Filter the new list of files add them to the refreshed list.
             QualifiedFilenameVector newFiles(fileServer->GetFilteredFileList());
             for(i = 0; i < newFiles.size(); ++i)
-                refreshedFiles.push_back(newFiles[i]);
+            {
+                // Only add the file if it's not already in the list.
+                if(std::find(refreshedFiles.begin(), refreshedFiles.end(),
+                   newFiles[i]) == refreshedFiles.end())
+                {
+                    refreshedFiles.push_back(newFiles[i]);
+                }
+            }
         }
         CATCH(VisItException)
         {
