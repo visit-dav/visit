@@ -235,6 +235,13 @@ avtExodusFileFormat::GetCycles(vector<int> &cycles)
 //  Programmer: Hank Childs
 //  Creation:   April 17, 2004
 //
+//  Modifications:
+//
+//    Hank Childs, Wed Jul 14 07:35:25 PDT 2004
+//    Explicitly tell the reader to load the times -- it turns out that this
+//    is a costly operation and we should only do it when necessary -- hence
+//    we explicitly tell the reader when we want them.
+//
 // ****************************************************************************
 
 void
@@ -242,6 +249,8 @@ avtExodusFileFormat::GetTimes(vector<double> &times)
 {
     int nTimesteps = GetNTimesteps();
 
+    if (reader != NULL)
+        reader->LoadTimes();
     times.clear();
     for (int i = 0 ; i < nTimesteps ; i++)
     {
