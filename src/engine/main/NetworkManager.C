@@ -1583,6 +1583,9 @@ NetworkManager::GetOutput(bool respondWithNullData, bool calledForRender,
 //    Mark C. Miller, Tue Jan 18 12:44:34 PST 2005
 //    Added call to UpdateVisualCues
 //
+//    Mark C. Miller, Mon Jan 24 19:25:44 PST 2005
+//    Made all procs render 3D visual cues not just proc 0
+//
 // ****************************************************************************
 avtDataObjectWriter_p
 NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
@@ -2260,6 +2263,11 @@ NetworkManager::SetWindowAttributes(const WindowAttributes &atts,
 //  Programmer:  Mark C. Miller 
 //  Creation:    Tuesday, Janurary 18, 2005 
 //
+//  Modifications:
+//
+//    Mark C. Miller, Mon Jan 24 19:25:44 PST 2005
+//    Made all procs render 3D visual cues not just proc 0
+//
 // ****************************************************************************
 
 void
@@ -2280,28 +2288,24 @@ NetworkManager::UpdateVisualCues(int windowID)
     if (visualCuesNeedUpdate == false)
         return;
 
-#ifdef PARALLEL
-    if (PAR_Rank() == 0)
-#endif
+    viswin->ClearPickPoints();
+    viswin->ClearRefLines();
+    for (int i = 0; i < visualCueList.GetNumVisualCueInfos(); i++)
     {
-        viswin->ClearPickPoints();
-        viswin->ClearRefLines();
-        for (int i = 0; i < visualCueList.GetNumVisualCueInfos(); i++)
+        const VisualCueInfo& cue = visualCueList.GetVisualCueInfo(i);
+        switch (cue.GetCueType())
         {
-            const VisualCueInfo& cue = visualCueList.GetVisualCueInfo(i);
-            switch (cue.GetCueType())
-            {
-                case VisualCueInfo::PickPoint:
-                    viswin->QueryIsValid(&cue, NULL);
-                    break;
-                case VisualCueInfo::RefLine:
-                    viswin->QueryIsValid(NULL, &cue);
-                    break;
-                default:
-                    break;
-            }
+            case VisualCueInfo::PickPoint:
+                viswin->QueryIsValid(&cue, NULL);
+                break;
+            case VisualCueInfo::RefLine:
+                viswin->QueryIsValid(NULL, &cue);
+                break;
+            default:
+                break;
         }
     }
+
     visualCuesNeedUpdate = false;
 }
 
@@ -2344,6 +2348,9 @@ NetworkManager::UpdateVisualCues(int windowID)
 //
 //    Mark C. Miller, Tue Jan 18 12:44:34 PST 2005
 //    Moved code to modify visual cues to UpdateVisualCues
+//
+//    Mark C. Miller, Mon Jan 24 19:25:44 PST 2005
+//    Made all procs render 3D visual cues not just proc 0
 //
 // ****************************************************************************
 void
@@ -2413,12 +2420,13 @@ NetworkManager::SetAnnotationAttributes(const AnnotationAttributes &atts,
 
       viswin->SetAnnotationAtts(&newAtts);
 
-       // defer processing of visual cues until rendering time 
-       if (visCues != visualCueList)
-       {
-           visualCuesNeedUpdate = true;
-           visualCueList = visCues;
-       }
+   }
+
+   // defer processing of visual cues until rendering time 
+   if (visCues != visualCueList)
+   {
+       visualCuesNeedUpdate = true;
+       visualCueList = visCues;
    }
 
    annotationAttributes = atts;
