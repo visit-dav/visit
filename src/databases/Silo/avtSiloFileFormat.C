@@ -4,10 +4,12 @@
 
 #include <avtSiloFileFormat.h>
 
+#include <vtkCellArray.h>
 #include <vtkCellData.h>
 #include <vtkCellType.h>
 #include <vtkFloatArray.h>
 #include <vtkIdList.h>
+#include <vtkIdTypeArray.h>
 #include <vtkIntArray.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
@@ -144,18 +146,16 @@ avtSiloFileFormat::avtSiloFileFormat(const char *toc_name)
 //    Kathleen Bonnell, Wed Oct  1 17:08:51 PDT 2003 
 //    Call CloseFile so that files are unregistered. 
 //
+//    Hank Childs, Wed Jan 14 11:58:41 PST 2004
+//    Use CleanUpResources so there can be one routine that does all the clean
+//    up.
+//
 // ****************************************************************************
 
 avtSiloFileFormat::~avtSiloFileFormat()
 {
-    if (dbfiles != NULL)
-    {
-        for (int i = 0 ; i < MAX_FILES ; i++)
-        {
-            CloseFile(i);
-        }
-        delete [] dbfiles;
-    }
+    FreeUpResources();
+    delete [] dbfiles;
 }
 
 
@@ -413,16 +413,43 @@ avtSiloFileFormat::CloseFile(int f)
 //  Programmer: Hank Childs
 //  Creation:   February 23, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Wed Jan 14 11:58:41 PST 2004
+//    Clean up all the cached multi- Silo objects.
+//
 // ****************************************************************************
 
 void
 avtSiloFileFormat::FreeUpResources(void)
 {
+    int  i;
+
     debug4 << "Silo File Format instructed to free up resources." << endl;
-    for (int i = 0 ; i < nFiles ; i++)
+    for (i = 0 ; i < nFiles ; i++)
     {
         CloseFile(i);
     }
+
+    for (i = 0 ; i < multimeshes.size() ; i++)
+        DBFreeMultimesh(multimeshes[i]);
+    multimeshes.clear();
+    multimesh_name.clear();
+
+    for (i = 0 ; i < multivars.size() ; i++)
+        DBFreeMultivar(multivars[i]);
+    multivars.clear();
+    multivar_name.clear();
+
+    for (i = 0 ; i < multimats.size() ; i++)
+        DBFreeMultimat(multimats[i]);
+    multimats.clear();
+    multimat_name.clear();
+
+    for (i = 0 ; i < multimatspecies.size() ; i++)
+        DBFreeMultimatspecies(multimatspecies[i]);
+    multimatspecies.clear();
+    multimatspec_name.clear();
 }
 
 
@@ -644,6 +671,9 @@ avtSiloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Look for visit_defvars first.  Only if it does not exist, then look for
 //    meshtv_defvars.
 //
+//    Hank Childs, Wed Jan 14 11:19:24 PST 2004
+//    Use caching mechanism for DBGetMultiThing.
+//
 // ****************************************************************************
 
 void
@@ -825,7 +855,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
     //
     for (i = 0 ; i < nmultimesh ; i++)
     {
-        DBmultimesh *mm = DBGetMultimesh(dbfile, multimesh_names[i]);
+        DBmultimesh *mm = GetMultimesh(dirname, multimesh_names[i]);
         if (mm == NULL)
             EXCEPTION1(InvalidVariableException, multimesh_names[i]);
         RegisterDomainDirs(mm->meshnames, mm->nblocks, dirname);
@@ -979,7 +1009,6 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
             allSubMeshDirs[i].push_back(dir);
         }
 
-        DBFreeMultimesh(mm);
         delete [] name_w_dir;
     }
 
@@ -1146,7 +1175,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
     //
     for (i = 0 ; i < nmultivar ; i++)
     {
-        DBmultivar *mv = DBGetMultivar(dbfile, multivar_names[i]);
+        DBmultivar *mv = GetMultivar(dirname, multivar_names[i]);
         if (mv == NULL)
             EXCEPTION1(InvalidVariableException, multivar_names[i]);
         string meshname;
@@ -1245,8 +1274,6 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
             md->Add(vmd);
         }
         delete [] name_w_dir;
-
-        DBFreeMultivar(mv);
     }
 
     //
@@ -1427,7 +1454,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
     //
     for (i = 0 ; i < nmultimat ; i++)
     {
-        DBmultimat *mm = DBGetMultimat(dbfile, multimat_names[i]);
+        DBmultimat *mm = GetMultimat(dirname, multimat_names[i]);
         if (mm == NULL)
             EXCEPTION1(InvalidVariableException, multimat_names[i]);
         char *material = mm->matnames[0];
@@ -1503,7 +1530,6 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         md->Add(mmd);
 
         delete [] name_w_dir;
-        DBFreeMultimat(mm);
         DBFreeMaterial(mat);
     }
 
@@ -1558,7 +1584,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
     //
     for (i = 0 ; i < nmultimatspecies ; i++)
     {
-        DBmultimatspecies *ms = DBGetMultimatspecies(dbfile,
+        DBmultimatspecies *ms = GetMultimatspec(dirname,
                                                      multimatspecies_names[i]);
         if (ms == NULL)
             EXCEPTION1(InvalidVariableException, multimatspecies_names[i]);
@@ -1572,7 +1598,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
                                           multimatspecies_names[i], "matname");
 
         // get the multimesh for the multimat
-        DBmultimat *mm = DBGetMultimat(dbfile, multimatName);
+        DBmultimat *mm = GetMultimat(dirname, multimatName);
         if (mm == NULL)
             EXCEPTION1(InvalidVariableException, multimatspecies_names[i]);
         char *material = mm->matnames[0];
@@ -1644,9 +1670,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         md->Add(smd);
 
         delete [] name_w_dir;
-        DBFreeMultimat(mm);
         DBFreeMatspecies(spec);
-        DBFreeMultimatspecies(ms);
     }
 
     //
@@ -2590,6 +2614,9 @@ AddDefvars(const char *defvars, avtDatabaseMetaData *md)
 //    Allow for the case where a multi-var is only defined on a subset
 //    of its associated multimesh.
 //
+//    Hank Childs, Wed Jan 14 11:58:41 PST 2004
+//    Use the cached multi-var to prevent too many DBGetMultivar calls.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -2618,9 +2645,16 @@ avtSiloFileFormat::GetVar(int domain, const char *v)
     char *var = const_cast<char *>(v);
 
     //
-    // Start off by finding out what kind of var it is.
+    // Start off by finding out what kind of var it is.  Note: we have
+    // already cached the multivars.  See if we have a multivar in the
+    // cache already -- this could potentially save us a DBInqVarType call.
     //
-    int type = DBInqVarType(dbfile, var);
+    DBmultivar *mv = QueryMultivar("", var);
+    int type;
+    if (mv != NULL)
+        type = DB_MULTIVAR;
+    else
+        type = DBInqVarType(dbfile, var);
 
     //
     // Sort out the bad cases.
@@ -2634,18 +2668,17 @@ avtSiloFileFormat::GetVar(int domain, const char *v)
     char  *varLocation = NULL;
     if (type == DB_MULTIVAR)
     {
-        DBmultivar *mv = DBGetMultivar(dbfile, var);
+        if (mv == NULL)
+            mv = GetMultivar("", var);
         if (mv == NULL)
             EXCEPTION1(InvalidVariableException, var);
         if (localdomain < 0 || localdomain >= mv->nvars)
         {
-            DBFreeMultivar(mv);
             EXCEPTION2(BadDomainException, localdomain, mv->nvars);
         }
         type = mv->vartypes[localdomain];
         varLocation = new char[strlen(mv->varnames[localdomain])+1];
         strcpy(varLocation, mv->varnames[localdomain]);
-        DBFreeMultivar(mv);
     }
     else
     {
@@ -2725,6 +2758,9 @@ avtSiloFileFormat::GetVar(int domain, const char *v)
 //    Removed all defvar support -- it is now handled correctly at a different
 //    level.
 //
+//    Hank Childs, Wed Jan 14 12:04:19 PST 2004
+//    Remove redundant DBGetMultivar calls.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -2753,9 +2789,16 @@ avtSiloFileFormat::GetVectorVar(int domain, const char *v)
     char *var = const_cast<char *>(v);
 
     //
-    // Start off by finding out what kind of var it is.
+    // Start off by finding out what kind of var it is.  Note: we have
+    // already cached the multivars.  See if we have a multivar in the
+    // cache already -- this could potentially save us a DBInqVarType call.
     //
-    int type = DBInqVarType(dbfile, var);
+    DBmultivar *mv = QueryMultivar("", var);
+    int type;
+    if (mv != NULL)
+        type = DB_MULTIVAR;
+    else
+        type = DBInqVarType(dbfile, var);
 
     //
     // Sort out the bad cases.
@@ -2769,18 +2812,17 @@ avtSiloFileFormat::GetVectorVar(int domain, const char *v)
     char  *varLocation = NULL;
     if (type == DB_MULTIVAR)
     {
-        DBmultivar *mv = DBGetMultivar(dbfile, var);
+        if (mv == NULL)
+            mv = GetMultivar("", var);
         if (mv == NULL)
             EXCEPTION1(InvalidVariableException, var);
         if (localdomain < 0 || localdomain >= mv->nvars)
         {
-            DBFreeMultivar(mv);
             EXCEPTION2(BadDomainException, localdomain, mv->nvars);
         }
         type = mv->vartypes[localdomain];
         varLocation = new char[strlen(mv->varnames[localdomain])+1];
         strcpy(varLocation, mv->varnames[localdomain]);
-        DBFreeMultivar(mv);
     }
     else
     {
@@ -3008,6 +3050,9 @@ avtSiloFileFormat::GetPointVectorVar(DBfile *dbfile, const char *vname)
 //    Moved code from avtSiloTimeStep, made it work with Silo objects
 //    distributed across multiple files.
 //
+//    Hank Childs, Wed Jan 14 11:20:18 PST 2004
+//    Make use of cached multimeshes if available.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -3028,9 +3073,16 @@ avtSiloFileFormat::GetMesh(int domain, const char *m)
     char *mesh = const_cast<char *>(m);
 
     //
-    // Start off by finding out what kind of mesh it is.
+    // Start off by finding out what kind of mesh it is.  Note: we have
+    // already cached the multimeshes.  See if we have a multimesh in the
+    // cache already -- this could potentially save us a DBInqVarType call.
     //
-    int type = DBInqVarType(dbfile, mesh);
+    DBmultimesh *mm = QueryMultimesh("", mesh);
+    int type;
+    if (mm != NULL)
+        type = DB_MULTIMESH;
+    else
+        type = DBInqVarType(dbfile, mesh);
 
     //
     // Sort out the bad cases.
@@ -3044,18 +3096,17 @@ avtSiloFileFormat::GetMesh(int domain, const char *m)
     char  *meshLocation = NULL;
     if (type == DB_MULTIMESH)
     {
-        DBmultimesh *mm = DBGetMultimesh(dbfile, mesh);
+        if (mm == NULL)
+           mm = GetMultimesh("", mesh);
         if (mm == NULL)
             EXCEPTION1(InvalidVariableException, mesh);
         if (domain < 0 || domain >= mm->nblocks)
         {
-            DBFreeMultimesh(mm);
             EXCEPTION2(BadDomainException, domain, mm->nblocks);
         }
         type = mm->meshtypes[domain];
         meshLocation = new char[strlen(mm->meshnames[domain])+1];
         strcpy(meshLocation, mm->meshnames[domain]);
-        DBFreeMultimesh(mm);
     }
     else
     {
@@ -3446,6 +3497,9 @@ avtSiloFileFormat::GetPointVar(DBfile *dbfile, const char *vname)
 //    Hank Childs, Mon Dec  9 13:21:13 PST 2002
 //    Use the facelist's origin rather than the unstructured meshes.
 //
+//    Hank Childs, Wed Jan 14 13:40:33 PST 2004
+//    Sped up routine by minimizing cache misses.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -3473,27 +3527,31 @@ avtSiloFileFormat::GetUnstructuredMesh(DBfile *dbfile, const char *mn,
     vtkPoints            *points  = vtkPoints::New();
     points->SetNumberOfPoints(um->nnodes);
     float *pts = (float *) points->GetVoidPointer(0);
-    for (int i = 0 ; i < 3 ; i++)
+    int nnodes = um->nnodes;
+    bool dim3 = (um->coords[2] != NULL ? true : false);
+    float *tmp = pts;
+    const float *coords0 = um->coords[0];
+    const float *coords1 = um->coords[1];
+    if (dim3)
     {
-        float *tmp = pts + i;
-        if (um->coords[i] != NULL)
+        const float *coords2 = um->coords[2];
+        for (int i = 0 ; i < nnodes ; i++)
         {
-            for (int j = 0 ; j < um->nnodes ; j++)
-            {
-                *tmp = um->coords[i][j];
-                tmp += 3;
-            }
-        }
-        else
-        {
-            for (int j = 0 ; j < um->nnodes ; j++)
-            {
-                *tmp = 0.;
-                tmp += 3;
-            }
+            *tmp++ = *coords0++;
+            *tmp++ = *coords1++;
+            *tmp++ = *coords2++;
         }
     }
- 
+    else
+    {
+        for (int i = 0 ; i < nnodes ; i++)
+        {
+            *tmp++ = *coords0++;
+            *tmp++ = *coords1++;
+            *tmp++ = 0.;
+        }
+    }
+
     //
     // We already got the facelist read in free of charge.  Let's use it.
     // This is done before constructing the connectivity because this is used
@@ -3504,8 +3562,8 @@ avtSiloFileFormat::GetUnstructuredMesh(DBfile *dbfile, const char *mn,
     {
         DBfacelist *sfl = um->faces;
         fl = new avtFacelist(sfl->nodelist, sfl->lnodelist,
-                                 sfl->nshapes, sfl->shapecnt, sfl->shapesize,
-                                 sfl->zoneno, sfl->origin);
+                             sfl->nshapes, sfl->shapecnt, sfl->shapesize,
+                             sfl->zoneno, sfl->origin);
         void_ref_ptr vr = void_ref_ptr(fl, avtFacelist::Destruct);
         cache->CacheVoidRef(mesh, AUXILIARY_DATA_EXTERNAL_FACELIST, timestep, 
                             domain, vr);
@@ -3547,6 +3605,14 @@ avtSiloFileFormat::GetUnstructuredMesh(DBfile *dbfile, const char *mn,
 //  Programmer: Hank Childs
 //  Creation:   June 20, 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Wed Jan 14 07:07:01 PST 2004
+//    Re-wrote to eliminate virtual function calls in inner loops.
+//
+//    Hank Childs, Thu Jan 15 07:24:23 PST 2004
+//    Accounted for quads that are stored as hexahedrons.
+//
 // ****************************************************************************
 
 void
@@ -3559,72 +3625,149 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
     // Tell the ugrid how many cells it will have.
     //
     int  numCells = 0;
+    int  totalSize = 0;
     for (i = 0 ; i < zl->nshapes ; i++)
     {
         numCells += zl->shapecnt[i];
+        totalSize += zl->shapecnt[i] * (zl->shapesize[i]+1);
     }
-    ugrid->Allocate(numCells);
 
     //
     // Tell the ugrid what its zones are.
     //
     int *nodelist = zl->nodelist;
-    vtkIdList *nodes = vtkIdList::New();
 
+    vtkIdTypeArray *nlist = vtkIdTypeArray::New();
+    nlist->SetNumberOfValues(totalSize);
+    vtkIdType *nl = nlist->GetPointer(0);
+
+    vtkUnsignedCharArray *cellTypes = vtkUnsignedCharArray::New();
+    cellTypes->SetNumberOfValues(numCells);
+    unsigned char *ct = cellTypes->GetPointer(0);
+
+    vtkIntArray *cellLocations = vtkIntArray::New();
+    cellLocations->SetNumberOfValues(numCells);
+    int *cl = cellLocations->GetPointer(0);
+
+    int currentIndex = 0;
+    int totalValuesUsed = 0;
+    bool mustResize = false;
     for (i = 0 ; i < zl->nshapes ; i++)
     {
         int vtk_zonetype = SiloZoneTypeToVTKZoneType(zl->shapetype[i]);
+        int effective_vtk_zonetype = vtk_zonetype;
 
         if (vtk_zonetype < 0)
         {
             EXCEPTION1(InvalidZoneTypeException, zl->shapetype[i]);
         }
 
-        for (j = 0 ; j < zl->shapecnt[i] ; j++)
+        const int shapecnt = zl->shapecnt[i];
+        const int shapesize = zl->shapesize[i];
+
+        //
+        // Some users store out quads as hexahedrons -- they store quad
+        // (a,b,c,d) as hex (a,b,c,d,a,b,c,d).  Unfortunately, we have
+        // to detect this and account for it.  I think it is safe to 
+        // assume that if the first hex is that way, they all are.
+        // Similarly, if the first hex is not that way, none of them are.
+        //
+        if (vtk_zonetype == VTK_HEXAHEDRON)
         {
-            if (vtk_zonetype != VTK_WEDGE &&
-                vtk_zonetype != VTK_PYRAMID)
+            if (shapecnt > 0) // Make sure there is at least 1 hex.
             {
-                nodes->Reset();
-                for (int z = 0 ; z < zl->shapesize[i] ; z++)
+                if ((nodelist[0] == nodelist[4]) &&
+                    (nodelist[1] == nodelist[5]) &&
+                    (nodelist[2] == nodelist[6]) &&
+                    (nodelist[3] == nodelist[7]))
                 {
-                    nodes->InsertNextId(*(nodelist+z) - origin);
+                    vtk_zonetype = -1;
+                    effective_vtk_zonetype = VTK_QUAD;
+                    mustResize = true;
                 }
-                ugrid->InsertNextCell(vtk_zonetype, nodes);
+            }
+        }
+
+        for (j = 0 ; j < shapecnt ; j++)
+        {
+            *ct++ = effective_vtk_zonetype;
+            *cl++ = currentIndex;
+
+            if (vtk_zonetype != VTK_WEDGE &&
+                vtk_zonetype != VTK_PYRAMID &&
+                vtk_zonetype != -1)
+            {
+                *nl++ = shapesize;
+                for (k = 0 ; k < shapesize ; k++)
+                    *nl++ = *(nodelist+k) - origin;
             }
             else if (vtk_zonetype == VTK_WEDGE)
             {
+                *nl++ = 6;
+
                 vtkIdType vtk_wedge[6];
                 TranslateSiloWedgeToVTKWedge(nodelist, vtk_wedge);
-                for (k = 0 ; k < 6; k++)
+                for (k = 0 ; k < 6 ; k++)
                 {
-                    vtk_wedge[k] -= origin;
+                    *nl++ = vtk_wedge[k]-origin;
                 }
-                ugrid->InsertNextCell(vtk_zonetype,zl->shapesize[i],vtk_wedge);
             }
             else if (vtk_zonetype == VTK_PYRAMID)
             {
+                *nl++ = 5;
+
                 vtkIdType vtk_pyramid[5];
                 TranslateSiloPyramidToVTKPyramid(nodelist, vtk_pyramid);
-                for (k = 0 ; k < 5; k++)
+                for (k = 0 ; k < 5 ; k++)
                 {
-                    vtk_pyramid[k] -= origin;
+                    *nl++ = vtk_pyramid[k]-origin;
                 }
-                ugrid->InsertNextCell(vtk_zonetype, zl->shapesize[i], 
-                                      vtk_pyramid);
             }
-            nodelist += zl->shapesize[i];
+            else if (vtk_zonetype == -1)
+            {
+                *nl++ = 4;
+                for (k = 0 ; k < 4 ; k++)
+                    *nl++ = *(nodelist+k);
+            }
+
+            nodelist += shapesize;
+            currentIndex += shapesize+1;
         }
     }
-    nodes->Delete();
+
+    //
+    // This only comes up when somebody says they have hexahedrons, but they
+    // actually have quadrilaterals.  In that case, we have allocated too much
+    // memory and need to resize.  If we don't, VTK will get confused.
+    //
+    if (mustResize)
+    {
+        vtkIdTypeArray *nlist2 = vtkIdTypeArray::New();
+        vtkIdType *nl_orig = nlist->GetPointer(0);
+        int nvalues = nl-nl_orig;
+        nlist2->SetNumberOfValues(nvalues);
+        vtkIdType *nl2 = nlist2->GetPointer(0);
+        memcpy(nl2, nl_orig, nvalues*sizeof(vtkIdType));
+        nlist->Delete();
+        nlist = nlist2;
+    }
+
+    vtkCellArray *cells = vtkCellArray::New();
+    cells->SetCells(numCells, nlist);
+    nlist->Delete();
+
+    ugrid->SetCells(cellTypes, cellLocations, cells);
+    cellTypes->Delete();
+    cellLocations->Delete();
+    cells->Delete();
 
     //
     //  Tell the ugrid which of its zones are real (vtkGhostLevel = 0),
     //  which are ghost (vtkGhostLevel = 1), but only create the ghost
     //  zones array if ghost zones are actually present.
     //
-    int first = zl->min_index;  // where the real zones start
-    int last = zl->max_index;   // where the real zones end
+    const int first = zl->min_index;  // where the real zones start
+    const int last = zl->max_index;   // where the real zones end
 
     if (first == 0 && last == 0 )
     {
@@ -3642,45 +3785,44 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
     }
     else if (first != 0 || last != numCells -1)
     {
+        //
+        // We now know that ghost zones are present.
+        //
         debug5 << "Creating ghost zones, real zones are indexed"
                << " from " << first << " to " << last 
                << " of " << numCells << " Cells." << endl;
-        //
-        // Don't carry the baggage of this array unless ghost zones are present
-        //
 
-        vtkUnsignedCharArray *ghostZones = vtkUnsignedCharArray::New();
         //
         //  Give the array the proper name so that other vtk classes will
         //  recognize these as ghost levels.
         //
+        vtkUnsignedCharArray *ghostZones = vtkUnsignedCharArray::New();
         ghostZones->SetName("vtkGhostLevels");
-        ghostZones->Allocate(numCells);
-        int i;
+        ghostZones->SetNumberOfTuples(numCells);
+        unsigned char *tmp = ghostZones->GetPointer(0);
         for (i = 0; i < first; i++)
         {
             //
             //  ghostZones at the begining of the zone list
             //
-            ghostZones->InsertNextValue(1);
+            *tmp++ = 1;
         }
         for (i = first; i <= last; i++)
         {
             //
             // real zones
             //
-            ghostZones->InsertNextValue(0);
+            *tmp++ = 0;
         }
         for (i = last+1; i < numCells; i++)
         {
             //
             //  ghostZones at the end of the zone list
             //
-            ghostZones->InsertNextValue(1);
+            *tmp++ = 1;
         }
         ugrid->GetCellData()->AddArray(ghostZones);
         ghostZones->Delete();
-        ghostZones = NULL;
         ugrid->SetUpdateGhostLevel(0);
     }
 }
@@ -4086,6 +4228,9 @@ avtSiloFileFormat::CreateRectilinearMesh(DBquadmesh *qm)
 //    I modified the routine to take into account the major order of
 //    the variable being read.
 //
+//    Hank Childs, Wed Jan 14 13:40:33 PST 2004
+//    Marginal improvement in performance.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -4155,9 +4300,9 @@ avtSiloFileFormat::CreateCurvilinearMesh(DBquadmesh *qm)
                 {
                     for (i = 0; i < nx; i++)
                     {
-                        *tmp++ = coord0[k*nxy + j*nx + i];
-                        *tmp++ = coord1[k*nxy + j*nx + i];
-                        *tmp++ = coord2[k*nxy + j*nx + i];
+                        *tmp++ = *coord0++;
+                        *tmp++ = *coord1++;
+                        *tmp++ = *coord2++;
                     }
                 }
             }
@@ -4916,6 +5061,9 @@ avtSiloFileFormat::GetAuxiliaryData(const char *var, int domain,
 //    Moved code from avtSiloTimeStep, made it work with Silo objects
 //    distributed across multiple files.
 //
+//    Hank Childs, Wed Jan 14 12:04:19 PST 2004
+//    Avoid redundant DBGetMultimat calls.
+//
 // ****************************************************************************
 
 avtMaterial *
@@ -4933,7 +5081,18 @@ avtSiloFileFormat::GetMaterial(int dom, const char *mat)
     // Silo can't accept consts, so cast it away.
     //
     char *m = const_cast< char * >(mat);
-    int type = DBInqVarType(dbfile, m);
+
+    //
+    // Start off by finding out what kind of mat it is.  Note: we have
+    // already cached the multimats.  See if we have a multimat in the
+    // cache already -- this could potentially save us a DBInqVarType call.
+    //
+    DBmultimat *mm = QueryMultimat("", m);
+    int type;
+    if (mm != NULL)
+        type = DB_MULTIMAT;
+    else
+        type = DBInqVarType(dbfile, m);
 
     if (type != DB_MULTIMAT && type != DB_MATERIAL)
     {
@@ -4943,12 +5102,12 @@ avtSiloFileFormat::GetMaterial(int dom, const char *mat)
         return NULL;
     }
 
-    DBmultimat  *mm = NULL;
     char        *matname = NULL;
 
     if (type == DB_MULTIMAT)
     {
-        mm = DBGetMultimat(dbfile, m);
+        if (mm == NULL)
+            mm = GetMultimat("", m);
         if (mm == NULL)
             EXCEPTION1(InvalidVariableException, m);
         if (dom >= mm->nmats || dom < 0 )
@@ -4976,11 +5135,6 @@ avtSiloFileFormat::GetMaterial(int dom, const char *mat)
 
     avtMaterial *rv = CalcMaterial(domain_file, directory_mat);
 
-    if (mm != NULL)
-    {
-        DBFreeMultimat(mm);
-        mm = NULL;
-    }
     if (matname != NULL)
     {
         delete [] matname;
@@ -5026,7 +5180,18 @@ avtSiloFileFormat::GetSpecies(int dom, const char *spec)
     // Silo can't accept consts, so cast it away.
     //
     char *s = const_cast< char * >(spec);
-    int type = DBInqVarType(dbfile, s);
+
+    //
+    // Start off by finding out what kind of species it is.  Note: we have
+    // already cached the multispecies.  See if we have a multispecies in the
+    // cache already -- this could potentially save us a DBInqVarType call.
+    //
+    DBmultimatspecies *mm = QueryMultimatspec("", s);
+    int type;
+    if (mm != NULL)
+        type = DB_MULTIMATSPECIES;
+    else
+        type = DBInqVarType(dbfile, s);
 
     if (type != DB_MULTIMATSPECIES && type != DB_MATSPECIES)
     {
@@ -5041,7 +5206,8 @@ avtSiloFileFormat::GetSpecies(int dom, const char *spec)
 
     if (type == DB_MULTIMATSPECIES)
     {
-        ms = DBGetMultimatspecies(dbfile, s);
+        if (ms == NULL)
+            ms = GetMultimatspec("", s);
         if (ms == NULL)
             EXCEPTION1(InvalidVariableException, s);
         if (dom >= ms->nspec || dom < 0 )
@@ -5069,11 +5235,6 @@ avtSiloFileFormat::GetSpecies(int dom, const char *spec)
 
     avtSpecies *rv = CalcSpecies(domain_file, directory_spec);
 
-    if (ms != NULL)
-    {
-        DBFreeMultimatspecies(ms);
-        ms = NULL;
-    }
     if (specname != NULL)
     {
         delete [] specname;
@@ -5139,7 +5300,7 @@ avtSiloFileFormat::GetExternalFacelist(int dom, const char *mesh)
 
     if (type == DB_MULTIMESH)
     {
-        mm = DBGetMultimesh(dbfile, m);
+        mm = GetMultimesh("", m);
         if (mm == NULL)
             EXCEPTION1(InvalidFilesException, m);
         if (dom >= mm->nblocks || dom < 0 )
@@ -5148,7 +5309,6 @@ avtSiloFileFormat::GetExternalFacelist(int dom, const char *mesh)
         }
         if (mm->meshtypes[dom] != DB_UCDMESH)
         {
-            DBFreeMultimesh(mm);
             return NULL;
         }
         meshname = CXX_strdup(mm->meshnames[dom]);
@@ -5172,11 +5332,6 @@ avtSiloFileFormat::GetExternalFacelist(int dom, const char *mesh)
 
     avtFacelist *rv = CalcExternalFacelist(domain_file, directory_mesh);
 
-    if (mm != NULL)
-    {
-        DBFreeMultimesh(mm);
-        mm = NULL;
-    }
     if (meshname != NULL)
     {
         delete [] meshname;
@@ -5435,7 +5590,7 @@ avtSiloFileFormat::PopulateIOInformation(avtIOInformation &ioInfo)
 
     DBfile *dbfile  = OpenFile(tocIndex);
 
-    DBmultimesh *mm = DBGetMultimesh(dbfile, (char *) meshname.c_str());
+    DBmultimesh *mm = GetMultimesh("", meshname.c_str());
     if (mm == NULL)
         EXCEPTION1(InvalidFilesException, meshname.c_str());
 
@@ -5467,11 +5622,6 @@ avtSiloFileFormat::PopulateIOInformation(avtIOInformation &ioInfo)
 
     ioInfo.SetNDomains(mm->nblocks);
     ioInfo.AddHints(groups);
-
-    //
-    // Free up the memory we have used.
-    //
-    DBFreeMultimesh(mm);
 }
 
 
@@ -5554,6 +5704,298 @@ avtSiloFileFormat::RegisterDomainDirs(const char * const *dirlist, int nList,
             domainDirs.push_back(str);
         }
     }
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloFileFormat::QueryMultimesh
+//
+//  Purpose:
+//      Returns a multimesh from the cache.  Only returns a multimesh if
+//      we have called "GetMultimesh" on it before.  It is entirely possible
+//      that "QueryMultimesh" returns NULL and there *is* a multi-mesh.
+//
+//  Programmer: Hank Childs
+//  Creation:   January 14, 2004
+//
+// ****************************************************************************
+
+DBmultimesh *
+avtSiloFileFormat::QueryMultimesh(const char *path, const char *name)
+{
+    char combined_name[1024];
+    if ((path == NULL) || (strcmp(path, "") == 0) || (strcmp(path, "/") == 0))
+        strcpy(combined_name, name);
+    else
+        sprintf(combined_name, "%s/%s", path, name);
+       
+    //
+    // First, check to see if we have already gotten the multi-mesh.
+    //
+    for (int i = 0 ; i < multimeshes.size() ; i++)
+        if (multimesh_name[i] == combined_name)
+            return multimeshes[i];
+
+    return NULL;
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloFileFormat::GetMultimesh
+//
+//  Purpose:
+//      Gets a multimesh and caches it for later use.
+//
+//  Programmer: Hank Childs
+//  Creation:   January 14, 2004
+//
+// ****************************************************************************
+
+DBmultimesh *
+avtSiloFileFormat::GetMultimesh(const char *path, const char *name)
+{
+    //
+    // First, check to see if we have already gotten the multi-mesh.
+    //
+    DBmultimesh *qm = QueryMultimesh(path, name);
+    if (qm != NULL)
+        return qm;
+
+    char combined_name[1024];
+    if ((path == NULL) || (strcmp(path, "") == 0) || (strcmp(path, "/") == 0))
+        strcpy(combined_name, name);
+    else
+        sprintf(combined_name, "%s/%s", path, name);
+
+    //
+    // We haven't seen this multimesh before -- read it in.
+    //
+    DBfile *dbfile = OpenFile(tocIndex);
+    DBmultimesh *mm = DBGetMultimesh(dbfile, combined_name);
+
+    multimesh_name.push_back(combined_name);
+    multimeshes.push_back(mm);
+
+    return mm;
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloFileFormat::QueryMultivar
+//
+//  Purpose:
+//      Returns a multivar from the cache.  Only returns a multivar if
+//      we have called "GetMultivar" on it before.  It is entirely possible
+//      that "QueryMultivar" returns NULL and there *is* a multi-var.
+//
+//  Programmer: Hank Childs
+//  Creation:   January 14, 2004
+//
+// ****************************************************************************
+
+DBmultivar *
+avtSiloFileFormat::QueryMultivar(const char *path, const char *name)
+{
+    //
+    // First, check to see if we have already gotten the multi-var.
+    //
+    char combined_name[1024];
+    if ((path == NULL) || (strcmp(path, "") == 0) || (strcmp(path, "/") == 0))
+        strcpy(combined_name, name);
+    else
+        sprintf(combined_name, "%s/%s", path, name);
+
+    for (int i = 0 ; i < multivars.size() ; i++)
+        if (multivar_name[i] == combined_name)
+            return multivars[i];
+
+    return NULL;
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloFileFormat::GetMultivar
+//
+//  Purpose:
+//      Gets a multivar and caches it for later use.
+//
+//  Programmer: Hank Childs
+//  Creation:   January 14, 2004
+//
+// ****************************************************************************
+
+DBmultivar *
+avtSiloFileFormat::GetMultivar(const char *path, const char *name)
+{
+    //
+    // First, check to see if we have already gotten the multi-var.
+    //
+    DBmultivar *qm = QueryMultivar(path, name);
+    if (qm != NULL)
+        return qm;
+
+    char combined_name[1024];
+    if ((path == NULL) || (strcmp(path, "") == 0) || (strcmp(path, "/") == 0))
+        strcpy(combined_name, name);
+    else
+        sprintf(combined_name, "%s/%s", path, name);
+
+    //
+    // We haven't seen this multivar before -- read it in.
+    //
+    DBfile *dbfile = OpenFile(tocIndex);
+    DBmultivar *mm = DBGetMultivar(dbfile, combined_name);
+
+    multivar_name.push_back(combined_name);
+    multivars.push_back(mm);
+
+    return mm;
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloFileFormat::QueryMultimat
+//
+//  Purpose:
+//      Returns a multimat from the cache.  Only returns a multimat if
+//      we have called "GetMultimat" on it before.  It is entirely possible
+//      that "QueryMultimat" returns NULL and there *is* a multi-mat.
+//
+//  Programmer: Hank Childs
+//  Creation:   January 14, 2004
+//
+// ****************************************************************************
+
+DBmultimat *
+avtSiloFileFormat::QueryMultimat(const char *path, const char *name)
+{
+    //
+    // First, check to see if we have already gotten the multi-mat.
+    //
+    char combined_name[1024];
+    if ((path == NULL) || (strcmp(path, "") == 0) || (strcmp(path, "/") == 0))
+        strcpy(combined_name, name);
+    else
+        sprintf(combined_name, "%s/%s", path, name);
+
+    for (int i = 0 ; i < multimats.size() ; i++)
+        if (multimat_name[i] == combined_name)
+            return multimats[i];
+
+    return NULL;
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloFileFormat::GetMultimat
+//
+//  Purpose:
+//      Gets a multimat and caches it for later use.
+//
+//  Programmer: Hank Childs
+//  Creation:   January 14, 2004
+//
+// ****************************************************************************
+
+DBmultimat *
+avtSiloFileFormat::GetMultimat(const char *path, const char *name)
+{
+    //
+    // First, check to see if we have already gotten the multi-mat.
+    //
+    DBmultimat *qm = QueryMultimat(path, name);
+    if (qm != NULL)
+        return qm;
+
+    char combined_name[1024];
+    if ((path == NULL) || (strcmp(path, "") == 0) || (strcmp(path, "/") == 0))
+        strcpy(combined_name, name);
+    else
+        sprintf(combined_name, "%s/%s", path, name);
+
+    //
+    // We haven't seen this multimat before -- read it in.
+    //
+    DBfile *dbfile = OpenFile(tocIndex);
+    DBmultimat *mm = DBGetMultimat(dbfile, combined_name);
+
+    multimat_name.push_back(combined_name);
+    multimats.push_back(mm);
+
+    return mm;
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloFileFormat::QueryMultimatspec
+//
+//  Purpose:
+//      Returns a multimatspec from the cache.  Only returns a multimatspec if
+//      we have called "GetMultimatspec" on it before.  It is entirely possible
+//      that "QueryMultimatspec" returns NULL and there *is* a multi-matspec.
+//
+//  Programmer: Hank Childs
+//  Creation:   January 14, 2004
+//
+// ****************************************************************************
+
+DBmultimatspecies *
+avtSiloFileFormat::QueryMultimatspec(const char *path, const char *name)
+{
+    //
+    // First, check to see if we have already gotten the multi-matspec.
+    //
+    char combined_name[1024];
+    if ((path == NULL) || (strcmp(path, "") == 0) || (strcmp(path, "/") == 0))
+        strcpy(combined_name, name);
+    else
+        sprintf(combined_name, "%s/%s", path, name);
+
+    for (int i = 0 ; i < multimatspecies.size() ; i++)
+        if (multimatspec_name[i] == combined_name)
+            return multimatspecies[i];
+
+    return NULL;
+}
+
+
+// ****************************************************************************
+//  Method: avtSiloFileFormat::GetMultimatspec
+//
+//  Purpose:
+//      Gets a multimatspec and caches it for later use.
+//
+//  Programmer: Hank Childs
+//  Creation:   January 14, 2004
+//
+// ****************************************************************************
+
+DBmultimatspecies *
+avtSiloFileFormat::GetMultimatspec(const char *path, const char *name)
+{
+    //
+    // First, check to see if we have already gotten the multi-matspec.
+    //
+    DBmultimatspecies *qm = QueryMultimatspec(path, name);
+    if (qm != NULL)
+        return qm;
+
+    char combined_name[1024];
+    if ((path == NULL) || (strcmp(path, "") == 0) || (strcmp(path, "/") == 0))
+        strcpy(combined_name, name);
+    else
+        sprintf(combined_name, "%s/%s", path, name);
+
+    //
+    // We haven't seen this multimatspec before -- read it in.
+    //
+    DBfile *dbfile = OpenFile(tocIndex);
+    DBmultimatspecies *mm = DBGetMultimatspecies(dbfile, combined_name);
+
+    multimatspec_name.push_back(combined_name);
+    multimatspecies.push_back(mm);
+
+    return mm;
 }
 
 

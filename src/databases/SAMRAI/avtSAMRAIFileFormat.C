@@ -797,10 +797,10 @@ avtSAMRAIFileFormat::ReadVar(int patch,
         delete [] max_hdims;
 
         // create dataspace and selection to read directly into fbuf
-        hsize_t nvals = num_components * num_data_samples;
+        hsize_t nvals = num_alloc_comps * num_data_samples;
         hid_t memspace = H5Screate_simple(1, &nvals, &nvals);
         hssize_t start = i;
-        hsize_t stride = num_components;
+        hsize_t stride = num_alloc_comps;
         hsize_t count = num_data_samples;
         H5Sselect_hyperslab(memspace, H5S_SELECT_SET, &start, &stride, &count, NULL);
 

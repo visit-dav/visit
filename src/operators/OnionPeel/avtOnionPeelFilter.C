@@ -538,13 +538,17 @@ avtOnionPeelFilter::VerifyInput()
 //  Programmer: Kathleen Bonnell 
 //  Creation:   August 15, 2002 
 //
+//  Modificiations:
+//    Kathleen Bonnell, Thu Jan 15 09:15:10 PST 2004
+//    Grab the return value of UnifyMaximumValue so that this code
+//    will work correctly in parallel.
+//
 // ****************************************************************************
 
 void
 avtOnionPeelFilter::PostExecute()
 {
-    int success = (int) successfullyExecuted;
-    UnifyMaximumValue(success);
+    int success = UnifyMaximumValue((int) successfullyExecuted);
     //
     //  Throw exceptions if necessary.  Done here instead of execute,
     //  because Groups may have invalid execution in some domains, but valid
