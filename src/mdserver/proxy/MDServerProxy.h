@@ -96,6 +96,9 @@
 //    Hank Childs, Thu Jan 22 21:02:56 PST 2004
 //    Added LoadPluginsRPC.
 //
+//    Brad Whitlock, Thu Jul 29 12:26:38 PDT 2004
+//    Added another argument to GetFileList.
+//
 // ****************************************************************************
 
 class MDSERVER_PROXY_API MDServerProxy : public RemoteProxyBase
@@ -151,7 +154,8 @@ public:
     void                       CreateGroupList(const std::string &filename,
                                                const stringVector &groupList);
     std::string                GetDirectory();
-    const FileList            *GetFileList(const std::string &filter, bool);
+    const FileList            *GetFileList(const std::string &filter, bool,
+                                           bool=true);
     const avtDatabaseMetaData *GetMetaData(const std::string &, int=0);
     const SILAttributes       *GetSIL(const std::string &, int=0);
     std::string                ExpandPath(const std::string &);

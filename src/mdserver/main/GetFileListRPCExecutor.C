@@ -63,6 +63,9 @@ GetFileListRPCExecutor::~GetFileListRPCExecutor()
 //   Brad Whitlock, Tue Mar 25 11:00:46 PDT 2003
 //   I added support for automatic file grouping.
 //
+//   Brad Whitlock, Thu Jul 29 12:20:50 PDT 2004
+//   I added support for extra smart file grouping.
+//
 // ****************************************************************************
 
 void
@@ -79,7 +82,8 @@ GetFileListRPCExecutor::Update(Subject *s)
         {
             // Get the filtered file list.
             GetFileListRPC::FileList files;
-            parent->GetFilteredFileList(files, rpc->GetFilter());
+            parent->GetFilteredFileList(files, rpc->GetFilter(),
+                rpc->GetSmartFileGrouping());
 
             debug4 << "FILELIST=" << files << endl;
             debug4.flush();

@@ -26,7 +26,7 @@ class QvisLineWidthWidget;
 // Notes:      This class was automatically generated!
 
 // Programmer: xml2window
-// Creation:   Tue Oct 1 09:44:53 PDT 2002
+// Creation:   Tue Jul 27 09:36:53 PDT 2004
 //
 // Modifications:
 //   
@@ -49,15 +49,19 @@ class QvisLineoutWindow : public QvisOperatorWindow
   private slots:
     void point1ProcessText();
     void point2ProcessText();
+    void samplingOnChanged(bool val);
     void numberOfSamplePointsProcessText();
     void interactiveChanged(bool val);
     void reflineLabelsChanged(bool val);
   private:
     QLineEdit *point1;
     QLineEdit *point2;
+    QCheckBox *samplingOn;
     QLineEdit *numberOfSamplePoints;
     QCheckBox *interactive;
     QCheckBox *reflineLabels;
+    QLabel *numberOfSamplePointsLabel;
+    QLabel *reflineLabelsLabel;
 
     LineoutAttributes *atts;
 };

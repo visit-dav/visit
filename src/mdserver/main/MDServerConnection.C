@@ -1388,6 +1388,41 @@ MDServerConnection::GetPattern(const std::string &file, std::string &p) const
 }
 
 // ****************************************************************************
+// Method: MDServerConnection::FileHasVisItExtension
+//
+// Purpose: 
+//   Determines whether a file has the ".visit" extension.
+//
+// Arguments:
+//   file : The file we're checking for the extension.
+//
+// Returns:    True if the file ends with ".visit"; false otherwise.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jul 29 11:25:44 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+MDServerConnection::FileHasVisItExtension(const std::string &file) const
+{
+    bool retval = false;
+    if(file.size() >= 6)
+    {
+        std::string visitExt(file.substr(file.size() - 6));
+#if defined(_WIN32)
+        retval = (_stricmp(visitExt.c_str(), ".visit") == 0);
+#else
+        retval = (visitExt == ".visit");
+#endif
+    }
+
+    return retval;
+}
+
+// ****************************************************************************
 // Method: MDServerConnection::GetFilteredFileList
 //
 // Purpose: 
@@ -1415,11 +1450,16 @@ MDServerConnection::GetPattern(const std::string &file, std::string &p) const
 //   I added code to prevent VisIt from creating virtual databases that
 //   contain .visit files.
 //
+//   Brad Whitlock, Thu Jul 29 11:26:38 PDT 2004
+//   Moved some code into FileHasVisItExtension. I also added the
+//   extraSmartGrouping flag that does additional work to try and prevent
+//   certain Ale3D databases from being grouped into virtual databases.
+//
 // ****************************************************************************
 
 void
 MDServerConnection::GetFilteredFileList(GetFileListRPC::FileList &files,
-    const std::string &filter)
+    const std::string &filter, bool extraSmartGrouping)
 {
     //
     // If we have not yet read a file list, read it now.
@@ -1471,14 +1511,7 @@ MDServerConnection::GetFilteredFileList(GetFileListRPC::FileList &files,
                 //
                 // See if the filename is a .visit file.
                 //
-                std::string visitExt(names[i]);
-                if(names[i].length() > 6)
-                    visitExt = names[i].substr(names[i].length() - 6);
-#if defined(_WIN32)
-                bool notVisItFile = (_stricmp(visitExt.c_str(), ".visit") != 0);
-#else
-                bool notVisItFile = (visitExt != ".visit");
-#endif
+                bool notVisItFile = !FileHasVisItExtension(names[i]);
 
                 //
                 // If the file matches a pattern and it's not a .visit file
@@ -1486,6 +1519,34 @@ MDServerConnection::GetFilteredFileList(GetFileListRPC::FileList &files,
                 //
                 if(matchesPattern && notVisItFile)
                 {
+                    //
+                    // Try to not group certain ale3d files. Those files
+                    // are of the form: X, X.1, X.2, X.3, ... We only want
+                    // to group the X files and leave the X.1, X.2, X.3
+                    // files unrelated.
+                    //
+                    if(extraSmartGrouping &&
+                       pattern.substr(pattern.size() - 2) == ".*")
+                    {
+                        std::string pattern2;
+                        bool found2ndPattern = GetPattern(pattern, pattern2);
+                        if(found2ndPattern)
+                        {
+                            std::string basepattern(pattern2.substr(0,pattern2.size() - 2));
+                            pos = newVirtualFiles.find(basepattern);
+                            if(pos != newVirtualFiles.end())
+                            {
+                                // Add the filename to the list of
+                                // filtered files.
+                                files.names.push_back(names[i]);
+                                files.types.push_back(currentFileList.types[i]);
+                                files.sizes.push_back(currentFileList.sizes[i]);
+                                files.access.push_back(currentFileList.access[i]);
+                                continue;
+                            }
+                        }
+                    }
+
                     //
                     // Look for the pattern in the newVirtualFiles map.
                     //
@@ -1602,7 +1663,9 @@ MDServerConnection::GetFilteredFileList(GetFileListRPC::FileList &files,
 // Creation:   Fri May 9 16:58:40 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Jul 29 12:12:59 PDT 2004
+//   Now assumes extra smart file grouping when called from the cli.
+//
 // ****************************************************************************
 
 const MDServerConnection::VirtualFileInformationMap::iterator
@@ -1636,7 +1699,7 @@ MDServerConnection::GetVirtualFileDefinition(const std::string &file)
 
             // Get the filtered file list. This creates virtual files.
             GetFileListRPC::FileList f;
-            GetFilteredFileList(f, "*");
+            GetFilteredFileList(f, "*", true);
 
             // Change the path back to the old path.
             ChangeDirectory(oldPath);
@@ -1700,6 +1763,10 @@ MDServerConnection::GetVirtualFileDefinition(const std::string &file)
 //    greater than the end of the size of a virtual database. This can happen
 //    if we're trying to reopen a virtual database after files have disappeared.
 //
+//    Brad Whitlock, Thu Jul 29 11:19:37 PDT 2004
+//    I changed the test for determining whether a file is a .visit file
+//    so directories can contain ".visit".
+//
 // ****************************************************************************
 
 avtDatabase *
@@ -1716,7 +1783,7 @@ MDServerConnection::GetDatabase(string file, int timeState)
     file = ExpandPath(file);
 
     if (file != currentDatabaseName ||
-           (timeState != currentDatabaseTimeState && currentDatabaseHasInvariantMD))
+        (timeState != currentDatabaseTimeState && currentDatabaseHasInvariantMD))
     {
         string timerMessage(string("Time to open ") + file);
         int    timeid = visitTimer->StartTimer();
@@ -1824,7 +1891,7 @@ MDServerConnection::GetDatabase(string file, int timeState)
             }
             ENDTRY
         }
-        else if (strstr(fn, ".visit") != NULL)
+        else if (FileHasVisItExtension(file))
         {
             currentDatabase = avtDatabaseFactory::VisitFile(fn, timeState);
         }

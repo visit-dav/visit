@@ -6,10 +6,13 @@
 
 #include <float.h>
 
+#include <vtkCellData.h>
 #include <vtkDataSet.h>
 #include <vtkIdList.h>
 #include <vtkMath.h>
+#include <vtkPointData.h>
 #include <vtkPoints.h>
+#include <vtkUnsignedCharArray.h>
 #include <vtkVisItUtility.h>
 
 #include <avtExpressionEvaluatorFilter.h>
@@ -18,6 +21,8 @@
 #include <avtTerminatingSource.h>
 #include <avtVector.h>
 
+#include <DebugStream.h>
+#include <ImproperUseException.h>
 #include <PickVarInfo.h>
 
 using     std::string;
@@ -37,7 +42,10 @@ using     std::string;
 //    Initialize ghostType. 
 //
 //    Kathleen Bonnell, Mon Mar  8 09:23:47 PST 2004 
-//    Initialize new mbmber, needTransform, singleDomain and eef. 
+//    Initialize new member, needTransform, singleDomain and eef. 
+//
+//    Kathleen Bonnell, Thu Jul 29 17:10:48 PDT 2004 
+//    Initialize eef and src. 
 //
 // ****************************************************************************
 
@@ -48,6 +56,8 @@ avtPickQuery::avtPickQuery()
     needTransform = false;
     ghostType = AVT_NO_GHOSTS;
     singleDomain = false;
+    eef = new avtExpressionEvaluatorFilter;
+    src = NULL;
 }
 
 
@@ -64,10 +74,16 @@ avtPickQuery::avtPickQuery()
 //  Modifications:
 //    Kathleen Bonnell, Mon Mar  8 09:23:47 PST 2004
 //    Destruct eef.
+//
 // ****************************************************************************
 
 avtPickQuery::~avtPickQuery()
 {
+    if (eef != NULL)
+    {
+        delete eef;
+        eef = NULL;
+    }
 }
 
 
@@ -616,5 +632,427 @@ avtPickQuery::GetZoneCoords(vtkDataSet *ds, const int zoneId)
             pickAtts.SetBzoneCoords(zoneCoords);
         }
     }
+}
+
+
+// ****************************************************************************
+//  Method: avtPickQuery::RetrieveVarInfo
+//
+//  Purpose:
+//    Retrieves the variable information from the dataset and stores it
+//    in pickAtts.
+//
+//  Arguments:
+//    ds    The dataset to retrieve information from.
+//
+//  Programmer: Kathleen Bonnell  
+//  Creation:   March 31, 2004 
+//
+//  Modifications:
+//    Kathleen Bonnell, Thu May  6 17:46:59 PDT 2004
+//    Allow species and scalar vars to be looked at again if previously set.
+//    
+//    Kathleen Bonnell, Tue Jun  1 15:26:10 PDT 2004 
+//    Allow 'DomainZone' pick type to indicate a ZonePick.
+//    
+//    Kathleen Bonnell, Thu Jul 22 12:10:19 PDT 2004 
+//    Set PickVarInfo's treatAsASCII from DataAttributes' treatAsASCII. 
+//    
+// ****************************************************************************
+
+void
+avtPickQuery::RetrieveVarInfo(vtkDataSet* ds)
+{
+    bool treatAsASCII = false;
+    avtDataAttributes &data = GetInput()->GetInfo().GetAttributes();
+
+
+    int element = pickAtts.GetElementNumber();
+    stringVector userVars = pickAtts.GetVariables();
+    string vName;
+    char buff[80];
+    intVector incidentElements = pickAtts.GetIncidentElements();
+    double *temp;
+    double mag;
+    int nComponents;
+    bool zonePick = pickAtts.GetPickType() == PickAttributes::Zone ||
+                    pickAtts.GetPickType() == PickAttributes::DomainZone;
+    bool zoneCent;
+    bool foundData = true;
+
+    int numVars;
+    if (pickAtts.GetFulfilled())
+        numVars = pickAtts.GetNumPickVarInfos();
+    else 
+        numVars = userVars.size();
+    for (int varNum = 0; varNum < numVars; varNum++)
+    {
+        stringVector names; 
+        doubleVector vals; 
+        PickVarInfo::Centering centering;
+        if (pickAtts.GetFulfilled())
+        {
+            if (pickAtts.GetPickVarInfo(varNum).HasInfo() &&
+                pickAtts.GetPickVarInfo(varNum).GetVariableType() != "species" &&
+                pickAtts.GetPickVarInfo(varNum).GetVariableType() != "scalar") 
+                continue;
+
+            vName = pickAtts.GetPickVarInfo(varNum).GetVariableName();
+        }
+        else
+        {
+            vName = userVars[varNum];
+        }
+        TRY
+        {
+            treatAsASCII = data.GetTreatAsASCII(vName.c_str());
+        }
+        CATCH(ImproperUseException)
+        {
+            //
+            // We may be querying a Mesh var.
+            //
+            treatAsASCII = false;
+        }
+        ENDTRY
+
+        vtkDataArray *varArray = ds->GetPointData()->GetArray(vName.c_str());
+        if (varArray != NULL) // nodal data
+        {
+            centering = PickVarInfo::Nodal;
+            foundData = true;
+            zoneCent = false;
+        }
+        else
+        {
+            varArray = ds->GetCellData()->GetArray(vName.c_str());
+            if (varArray != NULL) // zonal data
+            {
+                centering = PickVarInfo::Zonal;
+                foundData = true;
+                zoneCent = true;
+            }
+            else 
+            {
+                foundData = false;
+            }
+        }
+        if (foundData)
+        {
+            nComponents = varArray->GetNumberOfComponents(); 
+            temp = new double[nComponents];
+            if (zoneCent != zonePick)
+            {
+                // data we want is associated with incidentElements
+                for (int k = 0; k < incidentElements.size(); k++)
+                {
+                    sprintf(buff, "(%d)", incidentElements[k]);
+                    names.push_back(buff);
+                    varArray->GetTuple(incidentElements[k], temp);
+                    mag = 0;
+                    for (int i = 0; i < nComponents; i++)
+                    {
+                        vals.push_back(temp[i]);
+                        if (nComponents > 1) // assume its a vector, get its mag.
+                            mag += (temp[i] * temp[i]);
+                    }     
+                    if (nComponents > 1)
+                    {
+                        mag = sqrt(mag);
+                        vals.push_back(mag); 
+                    }         
+                } // for all incidentElements
+            }
+            else  
+            {
+                // data we want is associated with element
+                sprintf(buff, "(%d)", element);
+                names.push_back(buff);
+                varArray->GetTuple(element, temp);
+                mag = 0.;
+                for (int i = 0; i < nComponents; i++)
+                {
+                    vals.push_back(temp[i]);
+                    if (nComponents > 1)
+                        mag +=  (temp[i] * temp[i]);
+                }
+                if (nComponents > 1) 
+                {
+                    mag = sqrt(mag);
+                    vals.push_back(mag);
+                }
+            } 
+        }  // foundData
+
+        if (pickAtts.GetFulfilled())
+        {
+            if (!names.empty())
+            {
+                pickAtts.GetPickVarInfo(varNum).SetNames(names);
+                pickAtts.GetPickVarInfo(varNum).SetValues(vals);
+                pickAtts.GetPickVarInfo(varNum).SetCentering(centering);
+                pickAtts.GetPickVarInfo(varNum).SetTreatAsASCII(treatAsASCII);
+                if (pickAtts.GetPickVarInfo(varNum).GetVariableType() != "species")
+                { 
+                    if (nComponents == 1)
+                        pickAtts.GetPickVarInfo(varNum).SetVariableType("scalar");
+                    else if (nComponents == 3)
+                        pickAtts.GetPickVarInfo(varNum).SetVariableType("vector");
+                    else if (nComponents == 9)
+                        pickAtts.GetPickVarInfo(varNum).SetVariableType("tensor");
+                } 
+                delete [] temp; 
+            }
+        }
+        else
+        {
+            PickVarInfo varInfo;
+            varInfo.SetVariableName(vName);
+            varInfo.SetCentering(centering);
+            varInfo.SetTreatAsASCII(treatAsASCII);
+            if (!names.empty())
+            {
+                varInfo.SetNames(names);
+                varInfo.SetValues(vals);
+                delete [] temp; 
+                if (nComponents == 1)
+                    varInfo.SetVariableType("scalar");
+                else if (nComponents == 3)
+                    varInfo.SetVariableType("vector");
+                else if (nComponents == 9)
+                    varInfo.SetVariableType("tensor");
+            }
+            pickAtts.AddPickVarInfo(varInfo);
+        }
+    } // for all vars  
+}
+
+
+// ****************************************************************************
+//  Method: avtPickQuery::RetrieveNodes
+//
+//  Purpose:
+//    Retrieves the nodes incident to the passed zone. 
+//    Stores them in pickAtts.
+//
+//  Arguments:
+//    ds    The dataset to retrieve information from.
+//    zone  The zone in question. 
+//
+//  Returns:
+//    True if node-retrieval was successful, false otherwise.
+//
+//  Notes:
+//    Will also set the node Coordinates if needed.
+//
+//  Programmer: Kathleen Bonnell  
+//  Creation:   June 27, 2003 
+//
+//  Modifications:
+//    Kathleen Bonnell, Wed Dec 17 15:06:34 PST 2003 
+//    Added logic to support multiple types of coordinates. 
+//
+// ****************************************************************************
+
+bool
+avtPickQuery::RetrieveNodes(vtkDataSet *ds, int zone)
+{
+    vtkIdList *ptIds = vtkIdList::New();
+    intVector nodes;
+    stringVector pnodeCoords;
+    stringVector dnodeCoords;
+    stringVector bnodeCoords;
+    float coord[3];
+    int ijk[3];
+    char buff[80];
+    int type = ds->GetDataObjectType();
+    bool success = true;
+    ds->GetCellPoints(zone, ptIds);
+
+    if (ptIds->GetNumberOfIds() == 0)
+    {
+        ptIds->Delete();
+        debug5 << "FoundZone contained no points!" << endl;
+        success = false;
+    }
+    else
+    {
+        for (int i = 0; i < ptIds->GetNumberOfIds(); i++)
+        {
+            nodes.push_back(ptIds->GetId(i));
+            if ((pickAtts.GetShowNodeDomainLogicalCoords() ||
+                pickAtts.GetShowNodeBlockLogicalCoords()) &&
+                (type == VTK_STRUCTURED_GRID || 
+                 type == VTK_RECTILINEAR_GRID))
+            {
+                if (pickAtts.GetShowNodeDomainLogicalCoords())
+                {
+                    vtkVisItUtility::GetLogicalIndices(ds, false, 
+                         ptIds->GetId(i), ijk, false);
+                    if (pickAtts.GetDimension() == 2)
+                    {
+                        sprintf(buff, "<%d, %d>", ijk[0], ijk[1]);
+                    }
+                    else 
+                    {
+                        sprintf(buff, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
+                    }
+                    dnodeCoords.push_back(buff);
+                }
+                if (pickAtts.GetShowNodeBlockLogicalCoords())
+                {
+                    vtkVisItUtility::GetLogicalIndices(ds, false, 
+                         ptIds->GetId(i), ijk, true);
+                    if (pickAtts.GetDimension() == 2)
+                    {
+                        sprintf(buff, "<%d, %d>", ijk[0], ijk[1]);
+                    }
+                    else 
+                    {
+                        sprintf(buff, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
+                    }
+                    bnodeCoords.push_back(buff);
+                }
+            }
+            if (pickAtts.GetShowNodePhysicalCoords())
+            {
+                ds->GetPoint(ptIds->GetId(i), coord); 
+                if (pickAtts.GetDimension() == 2)
+                {
+                    sprintf(buff, "<%g, %g>", coord[0], coord[1]);
+                }
+                else 
+                {
+                    sprintf(buff, "<%g, %g, %g>", coord[0], coord[1], coord[2]);
+                }
+                pnodeCoords.push_back(buff);
+            }
+        }
+        ptIds->Delete();
+
+        if (nodes.size() == 1) // point mesh
+        {
+            //
+            //  Set pick point to be the same as the cell
+            //  node for point mesh.
+            //
+            float pt[3];
+            ds->GetPoint(nodes[0], pt);
+            pickAtts.SetPickPoint(pt);
+        }
+        pickAtts.SetIncidentElements(nodes);
+        pickAtts.SetPnodeCoords(pnodeCoords);
+        pickAtts.SetDnodeCoords(dnodeCoords);
+        pickAtts.SetBnodeCoords(bnodeCoords);
+    }
+    return success;
+}
+
+
+// ****************************************************************************
+//  Method: avtPickQuery::RetrieveZones
+//
+//  Purpose:
+//    Retrieves the zones incident to the passed node. 
+//    Stores them in pickAtts. 
+//
+//  Arguments:
+//    ds    The dataset to retrieve information from.
+//    node  The node in question. 
+//
+//  Returns:
+//    True if zone-retrieval was successful, false otherwise.
+//
+//  Notes:
+//    This method will not return any zone designated as a ghost-zone.
+// 
+//  Programmer: Kathleen Bonnell  
+//  Creation:   June 27, 2003 
+//
+//  Modifications:
+//    Kathleen Bonnell, Tue Nov 18 14:14:05 PST 2003 
+//    Retrieve logical zone coordinates if specified by pick atts. 
+//    
+//    Kathleen Bonnell, Wed Dec 17 15:06:34 PST 2003 
+//    Added logic to support multiple types of coordinates. 
+//
+// ****************************************************************************
+
+bool
+avtPickQuery::RetrieveZones(vtkDataSet *ds, int foundNode)
+{
+    vtkIdList *cellIds = vtkIdList::New();
+    intVector zones;
+    stringVector dzoneCoords;
+    stringVector bzoneCoords;
+    ds->GetPointCells(foundNode, cellIds);
+    int nCells = cellIds->GetNumberOfIds();
+    int type = ds->GetDataObjectType();
+    int ijk[3];
+    char buff[80];
+    bool success = true;
+    vtkUnsignedCharArray *ghostArray; 
+    unsigned char *ghosts = NULL;
+    if (nCells == 0)
+    {
+        debug5 << "FoundNode has no incident cells!" << endl;
+        success = false;
+    }
+    else
+    {
+        ghostArray  = (vtkUnsignedCharArray *)ds->GetCellData()->
+            GetArray("vtkGhostLevels");
+        if (ghostArray)
+            ghosts = ghostArray->GetPointer(0);
+
+        vtkIdType *cells = cellIds->GetPointer(0);
+        for (int i = 0; i < nCells; i++)
+        {
+            if (ghosts && ghosts[cells[i]] == 1)
+               continue;
+            zones.push_back(cells[i]);
+            if ((pickAtts.GetShowZoneBlockLogicalCoords() ||
+                 pickAtts.GetShowZoneDomainLogicalCoords()) &&
+                (type == VTK_STRUCTURED_GRID || 
+                 type == VTK_RECTILINEAR_GRID))
+            {
+                if (pickAtts.GetShowZoneDomainLogicalCoords())
+                {
+                    vtkVisItUtility::GetLogicalIndices(ds, true, cells[i], ijk, 
+                      false);
+
+                    if (pickAtts.GetDimension() == 2)
+                    {
+                        sprintf(buff, "<%d, %d>", ijk[0], ijk[1]);
+                    }
+                    else 
+                    {
+                        sprintf(buff, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
+                    }
+                    dzoneCoords.push_back(buff);
+                }
+                if (pickAtts.GetShowZoneBlockLogicalCoords())
+                {
+                    vtkVisItUtility::GetLogicalIndices(ds, true, cells[i], ijk, 
+                      true);
+
+                    if (pickAtts.GetDimension() == 2)
+                    {
+                        sprintf(buff, "<%d, %d>", ijk[0], ijk[1]);
+                    }
+                    else 
+                    {
+                        sprintf(buff, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
+                    }
+                    bzoneCoords.push_back(buff);
+                }
+            }
+        }
+        pickAtts.SetIncidentElements(zones);
+        pickAtts.SetDzoneCoords(dzoneCoords);
+        pickAtts.SetBzoneCoords(bzoneCoords);
+    }
+    cellIds->Delete();
+    return success;
 }
 

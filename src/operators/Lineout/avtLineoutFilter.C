@@ -15,6 +15,16 @@
 #include <InvalidDimensionsException.h>
 #include <DebugStream.h>
 
+#include <vtkVisItCellLocator.h>
+#include <vtkPoints.h>
+#include <vtkIdList.h>
+#include <vtkMath.h>
+#include <vtkCellData.h>
+#include <vtkPointData.h>
+#include <vtkCellArray.h>
+#include <map>
+
+
 
 // ****************************************************************************
 //  Method: avtLineoutFilter constructor
@@ -112,39 +122,18 @@ avtLineoutFilter::Equivalent(const AttributeGroup *a)
 //    Set vtkLineoutFilter's UpdateGhostLevel, so that ghost levels can be 
 //    ignored.  Ensure output has points.
 //
+//    Kathleen Bonnell, Thu Jul 29 09:55:49 PDT 2004 
+//    Moved code to Sampling method, added call to NoSampling. 
+//
 // ****************************************************************************
 
 vtkDataSet *
 avtLineoutFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
 {
-    vtkLineoutFilter *filter = vtkLineoutFilter::New();
-    double *dpt = atts.GetPoint1();
-
-    float pt1[3] = {dpt[0], dpt[1], dpt[2]};
-    dpt = atts.GetPoint2();
-    float pt2[3] = {dpt[0], dpt[1], dpt[2]};
-
-    filter->SetInput(in_ds);
-    filter->SetPoint1(pt1);
-    filter->SetPoint2(pt2);
-    filter->SetNumberOfSamplePoints(atts.GetNumberOfSamplePoints());
-    filter->GetOutput()->SetUpdateGhostLevel(0);
-    vtkPolyData *outPolys = filter->GetOutput();
-    outPolys->Update();
-
-    vtkDataSet *rv = outPolys;
-    if (outPolys->GetNumberOfCells() == 0 ||
-        outPolys->GetNumberOfPoints() == 0)
-    {
-        debug5 << "vtkLineoutFilter returned empty DS for domain " 
-               << domain << "." << endl;
-        rv = NULL;
-    }
-
-    ManageMemory(rv);
-    filter->Delete();
-
-    return rv;
+    if (!atts.GetSamplingOn())
+        return NoSampling(in_ds, domain);
+    else 
+        return Sampling(in_ds, domain);
 }
 
 
@@ -292,4 +281,250 @@ avtLineoutFilter::PostExecute(void)
     avtDataset_p ds = GetTypedOutput();
     avtDatasetExaminer::GetSpatialExtents(ds, bounds);
     outAtts.GetCumulativeTrueSpatialExtents()->Set(bounds);
+}
+
+
+// ****************************************************************************
+//  Method: avtLineoutFilter::CreatePolys
+//
+//  Purpose:
+//    Creates a vtkPolyData (vertices) from  the passed information.
+//    The x-coordinate is determined using the distance of each point (pts)
+//    from the origin of the line (pt1).  The y-coordinate is determined by
+//    the scalar value at each intersected cell (cells).  If the scalars
+//    are point-centered, then they are averaged for each cell.
+//
+//  Arguments:
+//    ds        The input dataset.
+//    pt1       The origin of the line (used to calculate distances).
+//    pts       Intersection points along the line.
+//    cells     A list of intersected cells. 
+//
+//  Returns:    The output poly data.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   July 27, 2004 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+vtkPolyData *
+avtLineoutFilter::CreatePolys(vtkDataSet *ds, float *pt1, vtkPoints *pts, 
+                              vtkIdList *cells)
+{
+    vtkPolyData *polys = vtkPolyData::New();
+    bool pointData = true; 
+    vtkDataArray *scalars = ds->GetPointData()->GetScalars();
+    if (scalars == NULL)
+    {
+        pointData = false;
+        scalars = ds->GetCellData()->GetScalars();
+        if (scalars == NULL)
+        {
+            return polys;
+        }
+    }
+    int npts = pts->GetNumberOfPoints();
+    float currentPoint[3];
+    float newPoint[3] = {0., 0., 0.};
+    vtkPoints *outPts = vtkPoints::New();
+    polys->SetPoints(outPts);
+    outPts->Delete();
+    vtkIdList *ptIds = vtkIdList::New();
+    float sum = 0.;
+    int i, j;
+    float oldX = -1.;
+    bool requiresSort = false;
+    for (i = 0; i < npts; i++)
+    {
+        pts->GetPoint(i, currentPoint);
+        newPoint[0] = sqrt(vtkMath::Distance2BetweenPoints(pt1, currentPoint));
+        if (newPoint[0] < oldX)
+        {
+            requiresSort = true;
+        }
+        oldX = newPoint[0];
+        if (pointData)
+        {
+            sum = 0;
+            ds->GetCellPoints(cells->GetId(i), ptIds);
+            int numCellPts = ptIds->GetNumberOfIds();
+            for (j = 0; j < numCellPts; j++)
+                sum += scalars->GetTuple1(ptIds->GetId(j));
+            if (numCellPts > 0)
+               sum /= (float) numCellPts;
+
+            newPoint[1] = sum;
+        }
+        else 
+        {
+            newPoint[1] = scalars->GetTuple1(cells->GetId(i));
+        }
+        outPts->InsertNextPoint(newPoint);
+    }
+    ptIds->Delete();
+
+    vtkPoints *sortedPts;
+    if (requiresSort)
+    {
+        sortedPts = vtkPoints::New();
+        std::map <float, int> sortedIds;
+        float x;
+        for (i = 0; i < outPts->GetNumberOfPoints(); i++)
+        {
+            x = outPts->GetPoint(i)[0];
+            sortedIds.insert(std::map < float, int> ::value_type(x, i));
+        }
+        std::map <float, int>::iterator it;
+        for (it = sortedIds.begin(); it != sortedIds.end(); it++)
+        {
+            sortedPts->InsertNextPoint(outPts->GetPoint((*it).second));
+        }
+        polys->SetPoints(sortedPts);
+        sortedPts->Delete();
+    }
+    else
+    {
+        sortedPts = outPts;
+    }
+
+    vtkCellArray *verts = vtkCellArray::New();
+    polys->SetVerts(verts);
+    verts->Delete();
+
+    verts->InsertNextCell(sortedPts->GetNumberOfPoints());
+    for (i = 0; i < sortedPts->GetNumberOfPoints(); i++)
+    {
+        verts->InsertCellPoint(i);
+    }
+
+    return polys;
+}
+
+
+// ****************************************************************************
+//  Method: avtLineoutFilter::NoSampling
+//
+//  Purpose:
+//    Peforms a lineout by intersecting cells.  
+//
+//  Arguments:
+//    in_ds      The input dataset.
+//    domain     The domain number.
+//
+//  Returns:       The output dataset.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   July 27, 2004 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+vtkDataSet *
+avtLineoutFilter::NoSampling(vtkDataSet *in_ds, int domain)
+{
+    double *dpt = atts.GetPoint1();
+
+    float pt1[3] = {dpt[0], dpt[1], dpt[2]};
+    dpt = atts.GetPoint2();
+    float pt2[3] = {dpt[0], dpt[1], dpt[2]};
+
+    vtkVisItCellLocator *locator = vtkVisItCellLocator::New();
+    locator->SetDataSet(in_ds);
+    locator->BuildLocator();
+
+    vtkPoints *pts = vtkPoints::New();
+    vtkIdList *cells = vtkIdList::New();
+    vtkDataSet *rv = NULL;
+    int success = locator->IntersectWithLine(pt1, pt2, pts, cells);
+    if (success)
+    {
+        rv = CreatePolys(in_ds, pt1, pts, cells);
+        if (rv->GetNumberOfCells() == 0 ||
+            rv->GetNumberOfPoints() == 0)
+        {
+            debug5 << "vtkVisItCellLocator returned empty DS for domain " 
+                   << domain << "." << endl;
+            rv = NULL;
+        }
+    }
+    else
+    {
+        debug5 << "vtkVisItCellLocator returned empty DS for domain " 
+               << domain << "." << endl;
+    }
+
+    pts->Delete();
+    cells->Delete();
+    locator->Delete();
+
+    ManageMemory(rv);
+    return rv;
+}
+
+
+// ****************************************************************************
+//  Method: avtLineoutFilter::Sampling
+//
+//  Purpose:
+//    Executes the lineout using a sampling method. 
+//
+//  Arguments:
+//    in_ds      The input dataset.
+//    domain     The domain number.
+//
+//  Returns:       The output dataset.
+//
+//  Programmer: kbonnell -- generated by xml2info
+//  Creation:   Thu Apr 25 16:01:28 PST 2002
+//
+//  Modifications:
+//    Kathleen Bonnell, Fri Jul 12 17:28:31 PDT 2002 
+//    No longer send YScale to vtkLineoutFilter, it is not needed.
+//
+//    Hank Childs, Tue Sep 10 16:46:57 PDT 2002
+//    Re-work memory management.
+//
+//    Kathleen Bonnell, Tue Dec 23 10:18:06 PST 2003 
+//    Set vtkLineoutFilter's UpdateGhostLevel, so that ghost levels can be 
+//    ignored.  Ensure output has points.
+//
+//    Kathleen Bonnell, Tue Jul 27 10:18:14 PDT 2004
+//    Moved from 'ExecueData' method. 
+// 
+// ****************************************************************************
+
+vtkDataSet *
+avtLineoutFilter::Sampling(vtkDataSet *in_ds, int domain)
+{
+    vtkLineoutFilter *filter = vtkLineoutFilter::New();
+    double *dpt = atts.GetPoint1();
+
+    float pt1[3] = {dpt[0], dpt[1], dpt[2]};
+    dpt = atts.GetPoint2();
+    float pt2[3] = {dpt[0], dpt[1], dpt[2]};
+
+    filter->SetInput(in_ds);
+    filter->SetPoint1(pt1);
+    filter->SetPoint2(pt2);
+    filter->SetNumberOfSamplePoints(atts.GetNumberOfSamplePoints());
+    filter->GetOutput()->SetUpdateGhostLevel(0);
+    vtkPolyData *outPolys = filter->GetOutput();
+    outPolys->Update();
+
+    vtkDataSet *rv = outPolys;
+    if (outPolys->GetNumberOfCells() == 0 ||
+        outPolys->GetNumberOfPoints() == 0)
+    {
+        debug5 << "vtkLineoutFilter returned empty DS for domain " 
+               << domain << "." << endl;
+        rv = NULL;
+    }
+
+    ManageMemory(rv);
+    filter->Delete();
+
+    return rv;
 }

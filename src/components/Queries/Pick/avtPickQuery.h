@@ -6,13 +6,14 @@
 #define AVT_PICK_QUERY_H
 #include <query_exports.h>
 
-#include <avtVariableQuery.h>
+#include <avtDatasetQuery.h>
 
 #include <PickAttributes.h>
 #include <avtTypes.h>
 
 class avtMatrix;
 class vtkDataSet;
+class avtExpressionEvaluatorFilter;
 
 
 // ****************************************************************************
@@ -54,9 +55,13 @@ class vtkDataSet;
 //    Inherit from avtVariableQuery, moved common methods to parent class 
 //    (RetrieveNodes, RetrieveZones, RetrieveVarInfo). 
 //    
+//    Kathleen Bonnell, Thu Jul 29 17:10:48 PDT 2004 
+//    No longer inherit from avtVariableQuery, moved common methods back to
+//    this class: (RetrieveNodes, RetrieveZones, RetrieveVarInfo). 
+//
 // ****************************************************************************
 
-class QUERY_API avtPickQuery : public avtVariableQuery
+class QUERY_API avtPickQuery : public avtDatasetQuery
 {
   public:
                                     avtPickQuery();
@@ -67,6 +72,8 @@ class QUERY_API avtPickQuery : public avtVariableQuery
                                              { return "avtPickQuery"; };
     virtual const char             *GetDescription(void)
                                              { return "Picking"; };
+
+    virtual bool                    OriginalData(void) { return true; };
 
     void                            SetPickAtts(const PickAttributes *pa);
     const PickAttributes *          GetPickAtts(void);
@@ -83,15 +90,26 @@ class QUERY_API avtPickQuery : public avtVariableQuery
     bool                            singleDomain;
     bool                            needTransform;
 
-    virtual void                    VerifyInput();
+    // Query-specific code that needs to be defined.
+    virtual void                    VerifyInput(void);
     virtual void                    PreExecute(void);
     virtual void                    PostExecute(void);
-    virtual void                    Preparation(void){};
     virtual avtDataObject_p         ApplyFilters(avtDataObject_p);   
+
+    // Pick-specific code
+    virtual void                    Preparation(void){};
     bool                            DeterminePickedNode(vtkDataSet *, int &);
     void                            GetNodeCoords(vtkDataSet *, const int);
     void                            GetZoneCoords(vtkDataSet *, const int);
     void                            SetRealIds(vtkDataSet *);
+
+    void                            RetrieveVarInfo(vtkDataSet *);   
+    bool                            RetrieveNodes(vtkDataSet *, int);   
+    bool                            RetrieveZones(vtkDataSet *, int);   
+
+    PickAttributes                  pickAtts;
+    avtExpressionEvaluatorFilter   *eef;
+    avtQueryableSource             *src;
 };
 
 

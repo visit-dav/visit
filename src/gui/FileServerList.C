@@ -63,9 +63,12 @@ static const int FILE_CLOSE = 4;
 //   Jeremy Meredith, Wed Jul  7 17:04:03 PDT 2004
 //   I made the filter be global to all hosts.
 //
+//   Brad Whitlock, Thu Jul 29 13:41:07 PST 2004
+//   I added the notion of smart file grouping.
+//
 // ****************************************************************************
 
-FileServerList::FileServerList() : AttributeSubject("bbbbbibbb"), servers(),
+FileServerList::FileServerList() : AttributeSubject("bbbbbibbbb"), servers(),
     activeHost("localhost"), fileList(), appliedFileList(), openFile(),
     fileMetaData(), recentPaths()
 {
@@ -78,6 +81,7 @@ FileServerList::FileServerList() : AttributeSubject("bbbbbibbb"), servers(),
     useCurrentDirectoryFlag = true;
 #endif
     automaticFileGroupingFlag = true;
+    smartFileGroupingFlag = true;
     recentPathsFlag = false;
     connectingServer = false;
     filter = "*";
@@ -172,6 +176,9 @@ FileServerList::~FileServerList()
 //   Brad Whitlock, Mon Oct 13 10:01:38 PDT 2003
 //   I added recentPathsFlag.
 //
+//   Brad Whitlock, Thu Jul 29 13:41:33 PST 2004
+//   I added smartFileGroupingFlag.
+//
 // ****************************************************************************
 
 void
@@ -186,6 +193,7 @@ FileServerList::SelectAll()
     Select(6, (void *)&useCurrentDirectoryFlag);
     Select(7, (void *)&automaticFileGroupingFlag);
     Select(8, (void *)&recentPathsFlag);
+    Select(9, (void *)&smartFileGroupingFlag);
 }
 
 // *************************************************************************************
@@ -219,6 +227,9 @@ FileServerList::SelectAll()
 //   Jeremy Meredith, Wed Jul  7 17:04:03 PDT 2004
 //   I made the filter be global to all hosts.
 //
+//   Brad Whitlock, Thu Jul 29 13:42:24 PST 2004
+//   I added smartFileGroupingFlag.
+//
 // *************************************************************************************
 
 void
@@ -243,7 +254,7 @@ FileServerList::Initialize()
         {
             // Try to get the file list from the MD Server.
             fileList = *(info->second->server->GetFileList(filter,
-                automaticFileGroupingFlag));
+                automaticFileGroupingFlag, smartFileGroupingFlag));
             Select(3, (void *)&fileListFlag);
 
             // Copy virtual files from the fileList into the
@@ -384,6 +395,9 @@ FileServerList::Notify()
 //   Jeremy Meredith, Wed Jul  7 17:04:03 PDT 2004
 //   I made the filter be global to all hosts.
 //
+//   Brad Whitlock, Thu Jul 29 13:43:04 PST 2004
+//   I added smartFileGroupingFlag.
+//
 // ****************************************************************************
 
 void
@@ -420,7 +434,8 @@ FileServerList::SilentNotify()
                         // Get the file list from the MDServerProxy.
                         const MDServerProxy::FileList *fl =
                             info->server->GetFileList(filter,
-                                                      automaticFileGroupingFlag);
+                                                      automaticFileGroupingFlag,
+                                                      smartFileGroupingFlag);
                         // copy the file list into the local file list.
                         fileList = *fl;
                         Select(3, (void *)&fileListFlag);
@@ -437,7 +452,7 @@ FileServerList::SilentNotify()
                 }
 
                 if(pathFlag || (filterFlag && automaticFileGroupingFlag) ||
-                   IsSelected(7))
+                   IsSelected(7) || IsSelected(9))
                 {
                     TRY
                     {
@@ -451,7 +466,8 @@ FileServerList::SilentNotify()
                         // Copy the file list into the local file list.
                         const MDServerProxy::FileList *fl =
                             info->server->GetFileList(filter,
-                                                      automaticFileGroupingFlag);
+                                                      automaticFileGroupingFlag,
+                                                      smartFileGroupingFlag);
                         fileList = *fl;
                         Select(3, (void *)&fileListFlag);
 
@@ -1075,6 +1091,29 @@ FileServerList::SetAutomaticFileGrouping(bool val)
 {
     automaticFileGroupingFlag = val;
     Select(7, (void *)&automaticFileGroupingFlag);
+}
+
+// ****************************************************************************
+// Method: FileServerList::SetSmartFileGrouping
+//
+// Purpose: 
+//   Sets the flag that tells VisIt to use smart automatic file grouping.
+//
+// Arguments:
+//   val : The new value of the flag.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jul 29 13:45:25 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+FileServerList::SetSmartFileGrouping(bool val)
+{
+    smartFileGroupingFlag = val;
+    Select(9, (void *)&smartFileGroupingFlag);
 }
 
 // ****************************************************************************
@@ -1857,6 +1896,9 @@ FileServerList::GetVirtualFileDefinitionSize(const QualifiedFilename &name) cons
 //   Jeremy Meredith, Wed Jul  7 17:04:03 PDT 2004
 //   I made the filter be global to all hosts.
 //
+//   Brad Whitlock, Thu Jul 29 13:46:46 PST 2004
+//   I added smartFileGrouping.
+//
 // ****************************************************************************
 
 bool
@@ -1889,6 +1931,7 @@ FileServerList::CreateNode(DataNode *parentNode, bool, bool)
     fsNode->AddNode(new DataNode("filter", filter));
     fsNode->AddNode(new DataNode("useCurrentDir", useCurrentDirectoryFlag));
     fsNode->AddNode(new DataNode("automaticFileGrouping", automaticFileGroupingFlag));
+    fsNode->AddNode(new DataNode("smartFileGrouping", smartFileGroupingFlag));
 
     // Add nodes for the recent paths.
     DataNode *pathNode = new DataNode("recentpaths");
@@ -1946,6 +1989,9 @@ FileServerList::CreateNode(DataNode *parentNode, bool, bool)
 //   Jeremy Meredith, Wed Jul  7 17:04:03 PDT 2004
 //   I made the filter be global to all hosts.
 //
+//   Brad Whitlock, Thu Jul 29 13:47:20 PST 2004
+//   I added smartFileGrouping.
+//
 // ****************************************************************************
 
 void
@@ -1962,6 +2008,9 @@ FileServerList::SetFromNode(DataNode *parentNode)
 
     if((node = fsNode->GetNode("automaticFileGrouping")) != 0)
         SetAutomaticFileGrouping(node->AsBool());
+
+    if((node = fsNode->GetNode("smartFileGrouping")) != 0)
+        SetSmartFileGrouping(node->AsBool());
 
     // If we are not using the current directory, read the default host
     // and path from the default settings.
@@ -2201,6 +2250,12 @@ bool
 FileServerList::GetAutomaticFileGrouping() const
 {
     return automaticFileGroupingFlag;
+}
+
+bool
+FileServerList::GetSmartFileGrouping() const
+{
+    return smartFileGroupingFlag;
 }
 
 // ****************************************************************************

@@ -27,6 +27,9 @@
 //   I also added a new VIRTUAL file type. I also modified FileList so that
 //   it has methods to clear and sort itself.
 //
+//   Brad Whitlock, Thu Jul 29 12:15:30 PDT 2004
+//   I added a new flag to turn on extra smart file grouping.
+//
 // ****************************************************************************
 
 class MDSERVER_RPC_API GetFileListRPC : public BlockingRPC
@@ -63,17 +66,19 @@ public:
     virtual ~GetFileListRPC();
 
     // Invokation method
-    const FileList *operator()(const std::string &f, bool);
+    const FileList *operator()(const std::string &f, bool, bool=true);
 
     // Property selection methods
     virtual void SelectAll();
 
     const std::string &GetFilter() const;
     bool               GetAutomaticFileGrouping() const;
+    bool               GetSmartFileGrouping() const;
 private:
     FileList    fileList;
     std::string filter;
     bool        automaticFileGrouping;
+    bool        smartFileGrouping;
 };
 
 // Method to print the file list.

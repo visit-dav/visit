@@ -50,6 +50,7 @@
 
 #include <DebugStream.h>
 #include <ImproperUseException.h>
+#include <InvalidDBTypeException.h>
 #include <InvalidVariableException.h>
 #include <NoInputException.h>
 #include <TimingsManager.h>
@@ -2171,6 +2172,10 @@ avtGenericDatabase::AddOriginalNodesArray(vtkDataSet *ds, const int domain)
 //    Use the material object to determine the material indices, not meta-data
 //    from timestep 0.
 //
+//    Hank Childs, Wed Jul 28 15:28:23 PDT 2004
+//    Make sure that the material object and the dataset are sized 
+//    appropriately before starting to execute.
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -2194,6 +2199,12 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
     //
     vector<int> mindex;
     GetMaterialIndices(mat, mnames, mindex);
+
+    if (mat == NULL || ds == NULL || mat->GetNZones() !=ds->GetNumberOfCells())
+    {
+        EXCEPTION1(InvalidDBTypeException, "The material object and dataset "
+                                           "object are different sizes.");
+    }
 
     //
     // Make room for the "mixed" material (i.e. for clean-zones-only)
@@ -2424,12 +2435,23 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
 //    Brad Whitlock, Wed Apr 14 12:14:42 PDT 2004
 //    I fixed it for Windows.
 //
+//    Hank Childs, Wed Jul 28 15:27:45 PDT 2004
+//    Make sure material is valid before moving on.
+//
 // ****************************************************************************
 
 void
 avtGenericDatabase::GetMaterialIndices(avtMaterial *mat, vector<string> &mn,
                                        vector<int> &ml)
 {
+    if (mat == NULL)
+    {
+        debug1 << "ERROR: The file format returned a NULL material object."
+               << endl;
+        EXCEPTION1(InvalidDBTypeException, "\"Unable to sucessfully read "
+                                           "the material information.\"");
+    }
+
     const vector<string> &matlist = mat->GetCompleteMaterialList();
 
     int nstr = mn.size();

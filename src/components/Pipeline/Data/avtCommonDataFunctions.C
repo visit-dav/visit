@@ -16,8 +16,10 @@
 #include <vtkIntArray.h>
 #include <vtkMath.h>
 #include <vtkPointData.h>
+#include <vtkPolyData.h>
 #include <vtkUnsignedIntArray.h>
 #include <vtkUnsignedCharArray.h>
+#include <vtkUnstructuredGrid.h>
 
 #include <avtCallback.h>
 #include <avtDataTree.h>
@@ -284,6 +286,60 @@ CGetNumberOfZones(avtDataRepresentation &data, void *sum, bool &)
     }
     vtkDataSet *ds = data.GetDataVTK();
     *numCells += ds->GetNumberOfCells();
+}
+
+
+// ****************************************************************************
+//  Method: CConvertUnstructuredGridToPolyData
+//
+//  Purpose:
+//      Converts unstructured grids to poly data.
+//
+//  Arguments:
+//    data      The data from which to calculate number of cells.
+//    <unused>
+//    <unused> 
+//
+//  Notes:
+//      This method is designed to be used as the function parameter of
+//      avtDataTree::Iterate.
+//
+//  Programmer: Hank Childs
+//  Creation:   July 27, 2004
+//
+// ****************************************************************************
+
+void
+CConvertUnstructuredGridToPolyData(avtDataRepresentation &data, void *, bool &)
+{
+    if (!data.Valid())
+    {
+        return; // This is a problem, but no need to flag it for this...
+    }
+
+    vtkDataSet *ds = data.GetDataVTK();
+    if (ds->GetDataObjectType() == VTK_UNSTRUCTURED_GRID)
+    {
+        vtkUnstructuredGrid *ugrid = (vtkUnstructuredGrid *) ds;
+        vtkPolyData *out_pd = vtkPolyData::New();
+        out_pd->SetPoints(ugrid->GetPoints());
+        out_pd->GetPointData()->ShallowCopy(ugrid->GetPointData());
+        out_pd->GetCellData()->ShallowCopy(ugrid->GetCellData());
+        int ncells = ugrid->GetNumberOfCells();
+        out_pd->Allocate(ncells);
+        for (int i = 0 ; i < ncells ; i++)
+        {
+            int celltype = ugrid->GetCellType(i);
+            vtkIdType *pts;
+            int npts;
+            ugrid->GetCellPoints(i, npts, pts);
+            out_pd->InsertNextCell(celltype, npts, pts);
+        }
+        avtDataRepresentation new_data(out_pd, data.GetDomain(),
+                                       data.GetLabel());
+        data = new_data;
+        out_pd->Delete();
+    }
 }
 
 

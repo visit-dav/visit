@@ -9,6 +9,7 @@
 #include <vector>
 
 #include <Expression.h>
+#include <ParsingExprList.h>
 #include <PickAttributes.h>
 #include <PickVarInfo.h>
 #include <Utility.h>
@@ -623,6 +624,9 @@ avtDatabase::GetNewMetaData(int timeState)
 //    ('4214).  Also, if the meshes are in subdirectories, set them up so that
 //    the expressions code will recognize them ('4195).
 //
+//    Hank Childs, Thu Jul 29 09:30:43 PDT 2004
+//    Do not add MQE for nodes or edges.
+//
 // ****************************************************************************
 
 void
@@ -647,6 +651,10 @@ avtDatabase::AddMeshQualityExpressions(avtDatabaseMetaData *md)
             continue;
         }
 
+        int topoDim = mmd->topologicalDimension;
+        if (topoDim == 0 || topoDim == 1)
+            continue;
+
         const int nPairs = 20;
         MQExprTopoPair exprs[nPairs];
         exprs[0]  = MQExprTopoPair("area", 2);
@@ -670,7 +678,6 @@ avtDatabase::AddMeshQualityExpressions(avtDatabaseMetaData *md)
         exprs[18] = MQExprTopoPair("volume", 3);
         exprs[19] = MQExprTopoPair("warpage", 2);
 
-        int topoDim = mmd->topologicalDimension;
         string name = mmd->name;
         for (int i = 0 ; i < nPairs ; i++)
         {
@@ -1099,8 +1106,12 @@ avtDatabase::GetFileListFromTextFile(const char *textfile,
 //    Kathleen Bonnell, Fri May 28 18:26:09 PDT 2004 
 //    Account for pick type of DomainZone. 
 //    
-//    Kathleen Bonnell,Wed Jun  9 12:44:48 PDT 2004 
+//    Kathleen Bonnell, Wed Jun  9 12:44:48 PDT 2004 
 //    Added bool arg to QueryMesh. 
+//    
+//    Kathleen Bonnell, Thu Jul 29 08:34:18 PDT 2004 
+//    If a scalar var derived from an expression already has info, it 
+//    probably isn't a mixed var, so go ahead and skip it. 
 //    
 // ****************************************************************************
 
@@ -1208,11 +1219,23 @@ avtDatabase::Query(PickAttributes *pa)
         // Skip any variables that already have info, unless they are scalar,
         // because then MatFracs might be necessary.
         // 
-        if (pa->GetPickVarInfo(varNum).HasInfo() &&
-            strcmp(pa->GetPickVarInfo(varNum).GetVariableType().c_str(), "scalar") != 0)
+        if (pa->GetPickVarInfo(varNum).HasInfo() )
         {
-            continue;
+            if (pa->GetPickVarInfo(varNum).GetVariableType() == "scalar") 
+            {
+                //
+                // If an expression, skip it, otherwise it might be a
+                // mixed-var, so let the db add more info if available.
+                //
+                if (ParsingExprList::GetExpressionTree(vName) != NULL)
+                   continue;
+            }
+            else 
+            {
+                continue;
+            }
         }
+ 
         bool success = false;
         TRY
         {

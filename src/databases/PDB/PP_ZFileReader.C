@@ -665,6 +665,11 @@ PP_ZFileReader::InitializeVarStorage()
 //   Brad Whitlock, Fri Jul 23 14:41:02 PST 2004
 //   I added support for reading a database comment.
 //
+//   Brad Whitlock, Thu Jul 29 14:10:45 PST 2004
+//   I added code to prevent the Windows version from saying that it has
+//   a revolved mesh because it crashes on Windows and it's safer this way
+//   since it's probably not too important to fix at this time.
+//
 // ****************************************************************************
 
 void
@@ -707,12 +712,14 @@ PP_ZFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     mmd->cellOrigin = 1;
     md->Add(mmd);
 
+#if !defined(_WIN32)
     // Add a revolved mesh.
     mmd = new avtMeshMetaData(
         "revolved_mesh", 1, 0, cellOrigin, 3, 3, AVT_UNSTRUCTURED_MESH);
     mmd->hasSpatialExtents = false;
     mmd->cellOrigin = 1;
     md->Add(mmd);
+#endif
 
     // Determine the size of the problem.
     int problemSize = kmax * lmax * nCycles;
@@ -789,13 +796,14 @@ PP_ZFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                         logicalMeshVar, "logical_mesh", centering);
                     md->Add(smd);
 
+#if !defined(_WIN32)
                     // Add the variable over the revolved mesh.
                     std::string revolvedMeshVar(std::string("revolved_mesh/") +
                                                 newStr);
                     smd = new avtScalarMetaData(revolvedMeshVar,
                         "revolved_mesh", centering);
                     md->Add(smd);
-
+#endif
                     // Add the variable over the mesh to the metadata.
                     std::string meshVar(std::string("mesh/") + newStr);
                     smd = new avtScalarMetaData(meshVar, "mesh", centering);
@@ -825,9 +833,11 @@ PP_ZFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         avtMaterialMetaData *mmd = new avtMaterialMetaData("material",
             "mesh", materialNames.size(), materialNames);
         md->Add(mmd);
+#if !defined(_WIN32)
         mmd = new avtMaterialMetaData("material2",
             "revolved_mesh", materialNames.size(), materialNames);
         md->Add(mmd);
+#endif
 
         //
         // Look for evidence of mixed materials.

@@ -92,6 +92,9 @@ class Xfer;
 //    Brad Whitlock, Fri Mar 12 10:17:58 PDT 2004
 //    I added KeepAliveRPC.
 //
+//    Brad Whitlock, Thu Jul 29 11:29:12 PDT 2004
+//    I added FileHasVisItExtension.
+//
 // ****************************************************************************
 
 class MDServerConnection
@@ -150,7 +153,8 @@ public:
     int GetReadFileListReturnValue() const;
     GetFileListRPC::FileList *GetCurrentFileList();
     void GetFilteredFileList(GetFileListRPC::FileList &files,
-                             const std::string &filter);
+                             const std::string &filter,
+                             bool extraSmartGrouping);
     std::string ExpandPath(const std::string &path);
 private:
     std::string FilteredPath(const std::string &path) const;
@@ -162,6 +166,7 @@ private:
     bool GetPattern(const std::string &file, std::string &p) const;
     std::string ExpandPathHelper(const std::string &path,
                                  const std::string &workingDir) const;
+    bool FileHasVisItExtension(const std::string &file) const;
 private:
     ParentProcess              *parent;    
     Xfer                       *xfer;

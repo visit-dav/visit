@@ -22,7 +22,8 @@
 #include <avtTotalRevolvedVolumeQuery.h>
 #include <avtTotalSurfaceAreaQuery.h>
 #include <avtTotalVolumeQuery.h>
-#include <avtVariableQuery.h>
+#include <avtVariableByNodeQuery.h>
+#include <avtVariableByZoneQuery.h>
 #include <avtVariableSummationQuery.h>
 #include <avtWeightedVariableSummationQuery.h>
 #include <avtZoneCenterQuery.h>
@@ -123,6 +124,10 @@ avtQueryFactory::Instance()
 //    Kathleen Bonnell, Fri Jun 11 14:35:50 PDT 2004 
 //    Added NodeCoords query.
 //
+//    Kathleen Bonnell, Thu Jul 29 17:07:08 PDT 2004 
+//    Replaced avtVariableQuery with avtVariableByNodeQuery and
+//    avtVariableByZoneQuery.
+//
 // ****************************************************************************
 
 
@@ -196,11 +201,11 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
     }
     else if (qname == "Variable by Zone") 
     {
-        query = new avtVariableQuery();
+        query = new avtVariableByZoneQuery();
     }
     else if (qname == "Variable by Node")
     {
-        query = new avtVariableQuery();
+        query = new avtVariableByNodeQuery();
     }
     else if (qname == "MinMax")
     {

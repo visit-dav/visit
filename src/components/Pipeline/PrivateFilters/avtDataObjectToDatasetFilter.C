@@ -95,3 +95,29 @@ avtDataObjectToDatasetFilter::OutputSetActiveVariable(const char *varname)
 }
 
 
+// ****************************************************************************
+//  Method: avtDataObjectToDatasetFilter::PostExecute
+//
+//  Purpose:
+//      Walks through the data and determines if we have polygonal data stored
+//      as an unstructured grid.
+//
+//  Programmer: Hank Childs
+//  Creation:   July 27, 2004
+//
+// ****************************************************************************
+
+void
+avtDataObjectToDatasetFilter::PostExecute(void)
+{
+    avtDataAttributes &atts = GetOutput()->GetInfo().GetAttributes();
+    if ((atts.GetSpatialDimension()==3 && atts.GetTopologicalDimension()<3) ||
+        (atts.GetSpatialDimension()==2 && atts.GetTopologicalDimension()<2))
+    {
+        avtDataTree_p tree = GetDataTree();
+        bool dummy;
+        tree->Traverse(CConvertUnstructuredGridToPolyData, NULL, dummy);
+    }
+}
+
+

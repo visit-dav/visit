@@ -6,35 +6,13 @@
 #include <snprintf.h>
 #include <string.h>
 
+#include <avtDataObjectQuery.h>
 #include <avtQueryOverTimeFilter.h>
 #include <avtQueryFactory.h>
 
 #include <vtkCellArray.h>
 #include <vtkPoints.h>
 #include <vtkPolyData.h>
-
-// available queries
-#include <avtActualDataMinMaxQuery.h>
-#include <avtActualDataNumNodesQuery.h>
-#include <avtActualDataNumZonesQuery.h>
-#include <avtAreaBetweenCurvesQuery.h>
-#include <avtDataObjectQuery.h>
-#include <avtCompactnessQuery.h>
-#include <avtCycleQuery.h>
-#include <avtEulerianQuery.h>
-#include <avtIntegrateQuery.h>
-#include <avtL2NormQuery.h>
-#include <avtL2NormBetweenCurvesQuery.h>
-#include <avtOriginalDataMinMaxQuery.h>
-#include <avtOriginalDataNumNodesQuery.h>
-#include <avtOriginalDataNumZonesQuery.h>
-#include <avtTotalRevolvedSurfaceAreaQuery.h>
-#include <avtTotalRevolvedVolumeQuery.h>
-#include <avtTotalSurfaceAreaQuery.h>
-#include <avtTotalVolumeQuery.h>
-#include <avtVariableQuery.h>
-#include <avtVariableSummationQuery.h>
-#include <avtWeightedVariableSummationQuery.h>
 
 #include <avtCallback.h>
 #include <avtDatasetExaminer.h>

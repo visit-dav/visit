@@ -22,6 +22,9 @@
 //   I renamed the class to QvisPlotListBoxItem and made big changes to it
 //   to allow expanded display of plots.
 //
+//   Brad Whitlock, Wed Jul 28 17:37:15 PST 2004
+//   I added a method to return the prefix.
+//
 // ****************************************************************************
     
 class GUI_API QvisPlotListBoxItem : public QListBoxItem
@@ -66,6 +69,7 @@ public:
     int    activeOperatorIndex() const;
 
     const Plot &GetPlot() const { return plot; };
+    const QString &GetPrefix() const { return prefix; };
 protected:
     void paint(QPainter *);
 private:

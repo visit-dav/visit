@@ -2,6 +2,7 @@
 #define QVIS_PLOT_LIST_BOX_H
 #include <gui_exports.h>
 #include <qlistbox.h>
+#include <vectortypes.h>
 
 class PlotList;
 
@@ -30,6 +31,9 @@ class PlotList;
 //   Brad Whitlock, Fri Dec 5 16:22:48 PST 2003
 //   I added NeedToUpdateSelection.
 //
+//   Brad Whitlock, Wed Jul 28 17:33:21 PST 2004
+//   I added prefixes to arguments for NeedsToBeRegenerated.
+//
 // ****************************************************************************
 
 class GUI_API QvisPlotListBox : public QListBox
@@ -42,7 +46,7 @@ public:
     bool isExpanded(int) const;
     int  activeOperatorIndex(int) const;
 
-    bool NeedsToBeRegenerated(const PlotList *) const;
+    bool NeedsToBeRegenerated(const PlotList *, const stringVector &indices) const;
     bool NeedToUpdateSelection(const PlotList *) const;
 signals:
     void activateSubsetWindow();

@@ -10,12 +10,15 @@
 #include <KullFormatStructures.h>
 
 #include <avtSTMDFileFormat.h>
+
+#include <database_exports.h>
 #include <void_ref_ptr.h>
 
 struct s_PDBfile;
 typedef struct s_PDBfile PDBfile;
 class vtkDataSet;
 class vtkDataArray;
+class vtkUnstructuredGrid;
 
 
 // ****************************************************************************
@@ -33,9 +36,15 @@ class vtkDataArray;
 //    Added in for dealing with mixed materials, removed code
 //    that tried to deal with data variables.
 //    
+//    Hank Childs, Fri Jul 23 09:42:09 PDT 2004
+//    Extended format to support 2D meshes.
+//
+//    Hank Childs, Mon Jul 26 08:59:40 PDT 2004
+//    Add support for mesh tags.
+//
 // ****************************************************************************
 
-class avtKullLiteFileFormat : public avtSTMDFileFormat
+class DATABASE_API avtKullLiteFileFormat : public avtSTMDFileFormat
 {
   public:
                           avtKullLiteFileFormat(const char *);
@@ -56,7 +65,7 @@ class avtKullLiteFileFormat : public avtSTMDFileFormat
 
   protected:
     // Datasets stored by domain
-    vtkDataSet          **dataset;
+    vtkUnstructuredGrid          **dataset;
     std::vector<std::string>       my_filenames;
     
     std::vector<std::string>       m_names;
@@ -79,16 +88,41 @@ class avtKullLiteFileFormat : public avtSTMDFileFormat
     {   return str.substr(4, str.find_last_of('_') - 4);    }
 
     PDBfile *m_pdbFile;
-    pdb_mesh *m_kullmesh;
+    pdb_mesh3d *m_kullmesh3d;
+    pdb_mesh2d *m_kullmesh2d;
     pdb_taglist *m_tags;
    
+    std::vector<std::string> zone_tags;
+    std::vector<std::string> face_tags;
+    std::vector<std::string> edge_tags;
+    std::vector<std::string> node_tags;
+
     inline int ReadNumberRecvZones();
     
     static const char    *MESHNAME;
 
-    void          ReadInFile(int);
+    void          ReadInPrimaryMesh(int);
     void          ReadInMaterialNames();
     void          ReadInMaterialName(int);
+    bool          ReadMeshFromFile(void);
+    bool          GetMeshDimension(void);
+
+    bool          ClassifyAndAdd2DZone(pdb_mesh2d *, int, 
+                                       vtkUnstructuredGrid *);
+    bool          ClassifyAndAdd3DZone(pdb_mesh3d *, int, 
+                                       vtkUnstructuredGrid *);
+
+    vtkDataSet   *CreateMeshTags(const char *, int);
+    void          CreateNodeMeshTags(vtkUnstructuredGrid *, pdb_taglist *);
+    void          CreateEdgeMeshTags(vtkUnstructuredGrid *, pdb_taglist *,
+                                     pdb_mesh2d *);
+    void          CreateFaceMeshTags(vtkUnstructuredGrid *, pdb_taglist *,
+                                     pdb_mesh3d *);
+    void          CreateZoneMeshTags(vtkUnstructuredGrid *, pdb_taglist *,
+                                     vtkDataSet *);
+
+    void         *GetRealMaterial(int);
+    void         *GetMeshTagMaterial(const char *, int);
 
     void          Close();
 };

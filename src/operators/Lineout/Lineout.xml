@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Plugin name="Lineout" type="operator" label="Lineout" version="1.0" iconFile="Lineout.xpm">
+  <Plugin name="Lineout" type="operator" label="Lineout" version="1.0" enabled="true" mdspecificcode="false" iconFile="Lineout.xpm">
     <Attribute name="LineoutAttributes" purpose="Attributes for the Lineout operator " persistent="true" codefile="LineoutAttributes.code">
       <Field name="point1" label="Point 1" type="doubleArray" length="3">
         0.000000
@@ -11,7 +11,10 @@
         1.000000
         0.000000
       </Field>
-      <Field name="numberOfSamplePoints" label="Number of Sample Points " type="int">
+      <Field name="samplingOn" label="samplingOn" type="bool">
+        false
+      </Field>
+      <Field name="numberOfSamplePoints" label="Number of Sample Points " type="int" enabler="samplingOn:true">
         50
       </Field>
       <Field name="interactive" label="Interactive" type="bool">
@@ -21,7 +24,6 @@
         false
       </Field>
       <Field name="designator" label="Designator" type="string" internal="true">
-         
       </Field>
       <Function name="CopyAttributes" user="false" member="true">
       </Function>

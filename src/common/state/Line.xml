@@ -13,10 +13,10 @@
     <Field name="designator" label="designator" type="string">
     </Field>
     <Field name="color" label="color" type="color">
-         0
-         0
-         0
-         255
+      0
+      0
+      0
+      255
     </Field>
     <Field name="lineStyle" label="lineStyle" type="linestyle">
       0
@@ -33,7 +33,10 @@
     <Field name="varName" label="varName" type="string">
       default
     </Field>
-    <Field name="numSamples" label="numSamples" type="int">
+    <Field name="samplingOn" label="samplingOn" type="bool">
+      false
+    </Field>
+    <Field name="numSamples" label="numSamples" type="int" enabler="samplingOn:true">
       50
     </Field>
     <Function name="SetPoint1" user="true" member="true">

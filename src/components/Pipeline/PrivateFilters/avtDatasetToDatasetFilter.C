@@ -106,6 +106,9 @@ avtDatasetToDatasetFilter::PreExecute(void)
 //    Hank Childs, Wed Feb 25 14:51:00 PST 2004
 //    Remove the variables from the data attributes when done.
 //
+//    Hank Childs, Tue Jul 27 08:56:44 PDT 2004
+//    Call base class' PostExecute.
+//
 // ****************************************************************************
 
 void
@@ -147,6 +150,9 @@ avtDatasetToDatasetFilter::PostExecute(void)
                    << secondaryVarList[i] << " after execution." << endl;
         }
     }
+
+    avtDatasetToDataObjectFilter::PostExecute();
+    avtDataObjectToDatasetFilter::PostExecute();
 }
 
 

@@ -65,9 +65,12 @@ avtLocateNodeQuery::~avtLocateNodeQuery()
 //
 //  Modifications:
 //    Kathleen Bonnell, Thu Jun 17 14:05:22 PDT 2004
-//    Handle finding the NOde for mat-selected plots differently, as they
+//    Handle finding the Node for mat-selected plots differently, as they
 //    may have created new points in the mesh.
 //    
+//    Kathleen Bonnell, Thu Jul 29 08:34:18 PDT 2004 
+//    Make sure that node found for mat-slected plots is actually used! 
+//
 // ****************************************************************************
 
 void
@@ -102,7 +105,7 @@ avtLocateNodeQuery::Execute(vtkDataSet *ds, const int dom)
                 if (!pickAtts.GetMatSelected())
                     foundNode = DeterminePickedNode(ds, foundCell, isect);
                 else 
-                    foundNode = FindClosestPoint(ds, isect, origNode);
+                    foundNode = FindClosestPoint(ds, foundCell, isect, origNode);
             }
         }
     }
@@ -133,6 +136,11 @@ avtLocateNodeQuery::Execute(vtkDataSet *ds, const int dom)
                 foundElement = foundNode;
             }
         }
+        else if (origNode != -1)
+        {
+            foundElement = origNode; 
+        }
+   
         pickAtts.SetCellPoint(isect);
         pickAtts.SetNodePoint(vtkVisItUtility::GetPoints(ds)->GetPoint(foundNode));
         foundDomain = dom;
@@ -252,11 +260,15 @@ avtLocateNodeQuery::DeterminePickedNode(vtkDataSet *ds, int foundCell, float *pp
 //  Creation:   June 17, 2004 
 //
 //  Modifications:
+//    Kathleen Bonnell, Thu Jul 29 08:34:18 PDT 2004
+//    Test for coincident points, return the one that is part of the
+//    original intersected cell.
 //    
 // ****************************************************************************
 
 int
-avtLocateNodeQuery::FindClosestPoint(vtkDataSet *ds, float *isect, int &origNode)
+avtLocateNodeQuery::FindClosestPoint(vtkDataSet *ds, const int isectedCell,
+    float *isect, int &origNode)
 {
     vtkVisItPointLocator *locator = vtkVisItPointLocator::New();
     locator->SetDataSet(ds);
@@ -282,15 +294,59 @@ avtLocateNodeQuery::FindClosestPoint(vtkDataSet *ds, float *isect, int &origNode
         {
             int comp = origNodes->GetNumberOfComponents()-1;
             int oNode = -1;
-            for (int i = 0; i < ncp && oNode == -1; i++)
+            float dist, minDist = FLT_MAX;
+            intVector validOrigNodes;
+            intVector validClosestPoints;
+            vtkPoints *pts = vtkVisItUtility::GetPoints(ds);
+            for (int i = 0; i < ncp; i++)
             {
                 id = closestPoints->GetId(i);
                 oNode = (int)origNodes->GetComponent(id, comp);
+                if (oNode != -1)
+                {
+                    dist = vtkMath::Distance2BetweenPoints(isect, pts->GetPoint(id));
+                    if (dist <= minDist)
+                    {
+                        validOrigNodes.push_back(oNode);
+                        validClosestPoints.push_back(id);
+                        minDist = dist;
+                    } 
+                }
             }
-            if (oNode != -1)
-                origNode = oNode; 
+            if (validOrigNodes.size() > 0)
+            {
+                if (validOrigNodes.size() == 1)
+                {
+                    origNode = validOrigNodes[0];
+                }
+                else 
+                {
+                    oNode = -1;
+                    oNode = -1;
+                    // some close nodes are same distance, find the one
+                    // that belongs to the isected cell.
+                    vtkIdList *cellPts = vtkIdList::New();
+                    ds->GetCellPoints(isectedCell, cellPts);
+                    for (int j = 0; j < validOrigNodes.size(), oNode == -1; j++)
+                    {
+                        if (cellPts->IsId(validClosestPoints[j]) != -1)
+                        {
+                            oNode = validOrigNodes[j];
+                            id = validClosestPoints[j];
+                        }
+                    }
+                    cellPts->Delete();
+                    if (oNode != -1)
+                        origNode = oNode;
+                    else
+                        origNode = closestPoints->GetId(0);
+ 
+                }
+            }
             else
+            {
                 id = closestPoints->GetId(0);
+            }
         }
         else 
         {

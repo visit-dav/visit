@@ -79,6 +79,10 @@ class QvisRecentPathRemovalWindow;
 //   Brad Whitlock, Tue Jul 27 11:26:34 PDT 2004
 //   I replaced currentVirtualDatabaseDefinition with a map.
 //
+//   Brad Whitlock, Thu Jul 29 13:50:30 PST 2004
+//   I added smart file grouping support and I fixed a bug in how the hosts
+//   are added to the host combo box.
+//
 // ****************************************************************************
 
 class GUI_API QvisFileSelectionWindow : public QvisDelayedWindowSimpleObserver
@@ -99,7 +103,7 @@ protected:
     virtual void closeEvent(QCloseEvent *);
     virtual void UpdateWindow(bool doAll);
     void UpdateWindowFromFiles(bool doAll);
-    void UpdateWindowFromProfile(bool doAll);
+    void UpdateHostComboBox();
 private:
     // Utility functions.
     void UpdateDirectoryList(void);
@@ -138,7 +142,7 @@ private slots:
     void removeAllFiles();
     void refreshFiles();
     void currentDir(bool val);
-    void automaticFileGroupingChanged(bool val);
+    void fileGroupingChanged(int val);
 private:
     FileServerList  *fs;
     HostProfileList *profiles;
@@ -156,7 +160,7 @@ private:
     QPushButton     *refreshButton;
     QListBox        *selectedFileList;
     QCheckBox       *currentDirToggle;
-    QCheckBox       *automaticFileGroupingToggle;
+    QComboBox       *fileGroupingComboBox;
     QPushButton     *recentPathRemovalButton;
 
     QvisRecentPathRemovalWindow *recentPathsRemovalWindow;
@@ -167,6 +171,7 @@ private:
 
     QualifiedFilenameVector intermediateFileList;
     StringStringVectorMap   currentVirtualDatabaseDefinitions;
+    stringVector            invalidHosts;
 };
 
 #endif

@@ -163,6 +163,7 @@ public:
     void SetAppliedFileList(const QualifiedFilenameVector &newFiles);
     void SetUseCurrentDirectory(bool val);
     void SetAutomaticFileGrouping(bool val);
+    void SetSmartFileGrouping(bool val);
     void LoadPlugins();
     void SendKeepAlives();
 
@@ -185,6 +186,7 @@ public:
           QualifiedFilenameVector GetFilteredFileList();
     bool GetUseCurrentDirectory() const;
     bool GetAutomaticFileGrouping() const;
+    bool GetSmartFileGrouping() const;
 
     const stringVector &GetRecentPaths(const std::string &host) const;
     void AddPathToRecentList(const std::string &host, const std::string &path);
@@ -249,6 +251,7 @@ private:
     bool useCurrentDirectoryFlag;   // attribute 6
     bool automaticFileGroupingFlag; // attribute 7
     bool recentPathsFlag;           // attribute 8
+    bool smartFileGroupingFlag;     // attribute 9
 
     // Information about the open md servers.
     ServerMap   servers;

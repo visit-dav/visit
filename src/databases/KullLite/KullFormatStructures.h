@@ -6,6 +6,11 @@
 //    Author: Brian McCandless, PMesh Project
 //    Copyright 2001 Regents of University of California
 //
+//  Modifications:
+//
+//    Hank Childs, Mon Jul 26 09:03:27 PDT 2004
+//    Make a split between 2D and 3D meshes.
+//
 //============================================================================
 
 
@@ -19,7 +24,7 @@
     double x, y, z;
   };
   
-  struct pdb_mesh {
+  struct pdb_mesh3d {
     int       ndimensions;
     int       npnts;
     pdb_xyz * positions;
@@ -29,6 +34,21 @@
     int       nzones;
     int *     zoneToFacesIndex;
     int *     faceIndices;
+  };
+  
+  struct pdb_xy {
+    double x, y;
+  };
+
+  struct pdb_mesh2d {
+    int       ndimensions;
+    int       npnts;
+    pdb_xy  * positions;
+    int       nedges;
+    int *     nodeIndices;
+    int       nzones;
+    int *     zoneToEdgesIndex;
+    int *     edgeIndices;
   };
   
   struct pdb_comm {
