@@ -57,6 +57,9 @@ class ErrorHandler : public QXmlErrorHandler
 //    Brad Whitlock, Thu Mar 13 12:58:03 PDT 2003
 //    I added another argument to the Plugin constructor.
 //
+//    Hank Childs, Sat Sep 13 08:27:57 PDT 2003
+//    Added another argument to the constructor.
+//
 // ****************************************************************************
 
 void
@@ -71,7 +74,7 @@ XMLDocument::open(const QString &file)
     if (!test)
     {
         docType = "Plugin";
-        plugin = new Plugin("","","","","","", "");
+        plugin = new Plugin("","","","","","", "", "");
         attribute = new Attribute("","",QString(),"","");
         plugin->atts = attribute;
         return;
