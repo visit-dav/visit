@@ -681,6 +681,9 @@ avtGenericDatabase::GetScalarVarDataset(const char *varname, int ts,
 //    Hank Childs, Thu Aug 21 11:01:22 PDT 2003
 //    Allow for materials to be specified (then ignored).
 //
+//    Hank Childs, Sat Oct 18 10:09:40 PDT 2003
+//    Add support for tensors.
+//
 // ****************************************************************************
 
 void
@@ -707,7 +710,7 @@ avtGenericDatabase::AddSecondaryVariables(vtkDataSet *ds, int ts, int domain,
             continue;
 
         //
-        // Do some preparation.  Decide if we have a scalar or a vector and
+        // Do some preparation.  Decide the variable type and
         // if it is node centered or zone centered.
         //
         vtkDataSetAttributes *atts = NULL;
@@ -727,9 +730,40 @@ avtGenericDatabase::AddSecondaryVariables(vtkDataSet *ds, int ts, int domain,
             }
             break;
 
+          case AVT_SYMMETRIC_TENSOR_VAR:
+            {
+                const avtSymmetricTensorMetaData *vmd = 
+                                       GetMetaData(ts)->GetSymmTensor(varName);
+                if (vmd->centering == AVT_NODECENT)
+                {
+                    atts = ds->GetPointData();
+                }
+                else
+                {
+                    atts = ds->GetCellData();
+                }
+            }
+            break;
+
+          case AVT_TENSOR_VAR:
+            {
+                const avtTensorMetaData *vmd = 
+                                           GetMetaData(ts)->GetTensor(varName);
+                if (vmd->centering == AVT_NODECENT)
+                {
+                    atts = ds->GetPointData();
+                }
+                else
+                {
+                    atts = ds->GetCellData();
+                }
+            }
+            break;
+
           case AVT_VECTOR_VAR:
             {
-                const avtVectorMetaData *vmd=GetMetaData(ts)->GetVector(varName);
+                const avtVectorMetaData *vmd = 
+                                           GetMetaData(ts)->GetVector(varName);
                 if (vmd->centering == AVT_NODECENT)
                 {
                     atts = ds->GetPointData();
@@ -750,7 +784,7 @@ avtGenericDatabase::AddSecondaryVariables(vtkDataSet *ds, int ts, int domain,
         }
 
         //
-        // Okay, now get the scalars or vectors and add them to the dataset.
+        // Okay, now get the variable and add them to the dataset.
         //
         vtkDataArray *dat = NULL;
         switch (vt)
@@ -760,6 +794,12 @@ avtGenericDatabase::AddSecondaryVariables(vtkDataSet *ds, int ts, int domain,
             break;
           case AVT_VECTOR_VAR:
             dat = GetVectorVariable(varName, ts, domain, material);
+            break;
+          case AVT_TENSOR_VAR:
+            dat = GetTensorVariable(varName, ts, domain, material);
+            break;
+          case AVT_SYMMETRIC_TENSOR_VAR:
+            dat = GetSymmetricTensorVariable(varName, ts, domain, material);
             break;
           case AVT_MATSPECIES:
             dat = GetSpeciesVariable(varName, ts, domain, material, nzones);
