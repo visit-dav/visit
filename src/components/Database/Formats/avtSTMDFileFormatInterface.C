@@ -11,6 +11,7 @@
 #include <avtSTMDFileFormat.h>
 
 #include <BadIndexException.h>
+#include <DebugStream.h>
 
 
 using std::vector;
@@ -93,6 +94,12 @@ avtSTMDFileFormatInterface::~avtSTMDFileFormatInterface()
 //  Progrmamer: Hank Childs
 //  Creation:   February 22, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Dec  5 11:08:54 PST 2003
+//    Try to handle bad timesteps, since the viewer's state is out-of-whack
+//    and a fix cannot get in by 1.2.5.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -100,7 +107,11 @@ avtSTMDFileFormatInterface::GetMesh(int ts, int dom, const char *mesh)
 {
     if (ts < 0 || ts >= nTimesteps)
     {
-        EXCEPTION2(BadIndexException, 2, nTimesteps);
+        //EXCEPTION2(BadIndexException, ts, nTimesteps);
+        debug1 << "INTERNAL ERROR: bad timestep = " << ts << " out of "
+               << nTimesteps << ".  To avoid a crash, ignorning fix until "
+               << "state issues are resolved." << endl;
+        ts = nTimesteps-1;
     }
 
     return timesteps[ts]->GetMesh(dom, mesh);
@@ -127,6 +138,10 @@ avtSTMDFileFormatInterface::GetMesh(int ts, int dom, const char *mesh)
 //    Kathleen Bonnell, Fri Feb  8 11:03:49 PST 2002
 //    vtkScalars has been deprecated in VTK 4.0, use vtkDataArray instead.
 //
+//    Hank Childs, Fri Dec  5 11:08:54 PST 2003
+//    Try to handle bad timesteps, since the viewer's state is out-of-whack
+//    and a fix cannot get in by 1.2.5.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -134,7 +149,11 @@ avtSTMDFileFormatInterface::GetVar(int ts, int dom, const char *var)
 {
     if (ts < 0 || ts >= nTimesteps)
     {
-        EXCEPTION2(BadIndexException, 2, nTimesteps);
+        //EXCEPTION2(BadIndexException, ts, nTimesteps);
+        debug1 << "INTERNAL ERROR: bad timestep = " << ts << " out of "
+               << nTimesteps << ".  To avoid a crash, ignorning fix until "
+               << "state issues are resolved." << endl;
+        ts = nTimesteps-1;
     }
 
     return timesteps[ts]->GetVar(dom, var);
@@ -161,6 +180,10 @@ avtSTMDFileFormatInterface::GetVar(int ts, int dom, const char *var)
 //    Kathleen Bonnell, Fri Feb  8 11:03:49 PST 2002
 //    vtkVectors has been deprecated in VTK 4.0, use vtkDataArray instead.
 //
+//    Hank Childs, Fri Dec  5 11:08:54 PST 2003
+//    Try to handle bad timesteps, since the viewer's state is out-of-whack
+//    and a fix cannot get in by 1.2.5.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -168,7 +191,11 @@ avtSTMDFileFormatInterface::GetVectorVar(int ts, int dom, const char *var)
 {
     if (ts < 0 || ts >= nTimesteps)
     {
-        EXCEPTION2(BadIndexException, 2, nTimesteps);
+        //EXCEPTION2(BadIndexException, ts, nTimesteps);
+        debug1 << "INTERNAL ERROR: bad timestep = " << ts << " out of "
+               << nTimesteps << ".  To avoid a crash, ignorning fix until "
+               << "state issues are resolved." << endl;
+        ts = nTimesteps-1;
     }
 
     return timesteps[ts]->GetVectorVar(dom, var);
@@ -193,6 +220,12 @@ avtSTMDFileFormatInterface::GetVectorVar(int ts, int dom, const char *var)
 //  Programmer: Hank Childs
 //  Craetion:   February 22, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Dec  5 11:08:54 PST 2003
+//    Try to handle bad timesteps, since the viewer's state is out-of-whack
+//    and a fix cannot get in by 1.2.5.
+//
 // ****************************************************************************
 
 void *
@@ -202,7 +235,11 @@ avtSTMDFileFormatInterface::GetAuxiliaryData(const char *var, int ts, int dom,
 {
     if (ts < 0 || ts >= nTimesteps)
     {
-        EXCEPTION2(BadIndexException, 2, nTimesteps);
+        //EXCEPTION2(BadIndexException, ts, nTimesteps);
+        debug1 << "INTERNAL ERROR: bad timestep = " << ts << " out of "
+               << nTimesteps << ".  To avoid a crash, ignorning fix until "
+               << "state issues are resolved." << endl;
+        ts = nTimesteps-1;
     }
 
     return timesteps[ts]->GetAuxiliaryData(var, dom, type, args, df);
@@ -218,11 +255,26 @@ avtSTMDFileFormatInterface::GetAuxiliaryData(const char *var, int ts, int dom,
 //  Programmer: Hank Childs
 //  Creation:   March 12, 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Dec  5 11:08:54 PST 2003
+//    Try to handle bad timesteps, since the viewer's state is out-of-whack
+//    and a fix cannot get in by 1.2.5.
+//
 // ****************************************************************************
 
 const char *
 avtSTMDFileFormatInterface::GetFilename(int ts)
 {
+    if (ts < 0 || ts >= nTimesteps)
+    {
+        //EXCEPTION2(BadIndexException, ts, nTimesteps);
+        debug1 << "INTERNAL ERROR: bad timestep = " << ts << " out of "
+               << nTimesteps << ".  To avoid a crash, ignorning fix until "
+               << "state issues are resolved." << endl;
+        ts = nTimesteps-1;
+    }
+
     return timesteps[ts]->GetFilename();
 }
 
@@ -249,6 +301,10 @@ avtSTMDFileFormatInterface::GetFilename(int ts)
 //    Hank Childs, Tue Jul 29 21:39:39 PDT 2003
 //    Do not declare the cycle number accurate -- since we are still guessing.
 //
+//    Hank Childs, Fri Dec  5 11:08:54 PST 2003
+//    Try to handle bad timesteps, since the viewer's state is out-of-whack
+//    and a fix cannot get in by 1.2.5.
+//
 // ****************************************************************************
 
 void
@@ -260,7 +316,11 @@ avtSTMDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
     //
     if(timeState < 0 || timeState >= nTimesteps)
     {
-        EXCEPTION2(BadIndexException, timeState, nTimesteps);
+        //EXCEPTION2(BadIndexException, timeState, nTimesteps);
+        debug1 << "INTERNAL ERROR: bad timestep = " << timeState << " out of "
+               << nTimesteps << ".  To avoid a crash, ignorning fix until "
+               << "state issues are resolved." << endl;
+        timeState = nTimesteps-1;
     }
 
     //
@@ -329,6 +389,12 @@ avtSTMDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
 //  Programmer: Hank Childs
 //  Creation:   March 5, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Dec  5 11:08:54 PST 2003
+//    Try to handle bad timesteps, since the viewer's state is out-of-whack
+//    and a fix cannot get in by 1.2.5.
+//
 // ****************************************************************************
 
 void
@@ -345,7 +411,11 @@ avtSTMDFileFormatInterface::FreeUpResources(int ts, int)
     {
         if (ts < 0 || ts >= nTimesteps)
         {
-            EXCEPTION2(BadIndexException, 2, nTimesteps);
+            //EXCEPTION2(BadIndexException, ts, nTimesteps);
+            debug1 << "INTERNAL ERROR: bad timestep = " << ts << " out of "
+                   << nTimesteps << ".  To avoid a crash, ignorning fix until "
+                   << "state issues are resolved." << endl;
+            ts = nTimesteps-1;
         }
         timesteps[ts]->FreeUpResources();
     }

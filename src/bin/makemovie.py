@@ -1,7 +1,7 @@
 #
 # This script makes a movie given a state XML file.
 #
-import os, sys, thread
+import os, string, sys, thread
 
 ###############################################################################
 # Function: CommandInPath
@@ -208,6 +208,9 @@ def MovieClassSaveWindow():
 #   Brad Whitlock, Fri Oct 3 11:14:59 PDT 2003
 #   Added support for processing Python files.
 #
+#   Brad Whitlock, Fri Dec 5 12:23:19 PDT 2003
+#   Added support for automatically determining the movie file name.
+#
 ###############################################################################
 
 class MakeMovie:
@@ -347,6 +350,46 @@ class MakeMovie:
         pass #print str
 
     ###########################################################################
+    # Method: DetermineMovieBase
+    #
+    # Purpose:    This method tries to detect the movie base that should be
+    #             used to generate the movie.
+    #
+    # Programmer: Brad Whitlock
+    # Date:       Fri Dec 5 12:22:40 PDT 2003
+    #
+    # Modifications:
+    #
+    ###########################################################################
+
+    def DetermineMovieBase(self):
+        # Get the file name that we should use
+        if(self.usesStateFile == 0):
+            fileName = LongFileName(self.scriptFile)
+        else:
+            fileName = LongFileName(self.stateFile)
+
+        # Try and detect the extension
+        extensions = (".session", ".vses", ".VSES", ".VSE", ".py", ".PY")
+        extensionLocated = 0
+        for ext in extensions:
+            pos = string.rfind(fileName, ext)
+            if(pos != -1):
+                fileName = fileName[:pos]
+                extensionLocated = 1
+                break
+
+        # If we located an extension then try and look for a path separator.
+        if(extensionLocated == 1):
+            for separator in ("/", "\\"):
+                pos = string.rfind(fileName, separator)
+                if(pos != -1):
+                    fileName = fileName[pos+1:]
+                    break
+            # Set the movie base to fileName
+            self.movieBase = fileName
+
+    ###########################################################################
     # Method: ProcessArguments
     #
     # Purpose:    This method sets some of the object's attributes based on
@@ -362,10 +405,15 @@ class MakeMovie:
     #   Brad Whitlock, Fri Oct 3 11:25:33 PDT 2003
     #   Added support for -scriptfile.
     #
+    #   Brad Whitlock, Fri Dec 5 14:04:09 PST 2003
+    #   I made it set the movieBase from the session or script filename
+    #   if -output was not given.
+    #
     ###########################################################################
 
     def ProcessArguments(self):
         i = 0
+        outputSpecified = 0
         while(i < len(sys.argv)):
             if(sys.argv[i] == "-format"):
                 if((i+1) < len(sys.argv)):
@@ -445,6 +493,7 @@ class MakeMovie:
             elif(sys.argv[i] == "-output"):
                 if((i+1) < len(sys.argv)):
                     self.movieBase = sys.argv[i+1]
+                    outputSpecified = 1
                     i = i + 1
                 else:
                     self.PrintUsage()
@@ -469,6 +518,11 @@ class MakeMovie:
             self.PrintUsage()
             print "You must provide the -sessionfile or the -scriptfile option!"
             sys.exit(-1)
+
+        # If no movie output was specified, try and determine the output
+        # base name from the session file or the script file.
+        if(outputSpecified == 0):
+            self.DetermineMovieBase()
 
         # If the movie is just a set of frames, make sure that we use the
         # movie base name as the frame base.

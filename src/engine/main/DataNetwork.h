@@ -4,6 +4,7 @@
 #include <avtSILRestriction.h>
 #include <avtDataObject.h>
 #include <avtDataObjectWriter.h>
+#include <avtActor.h>
 #include <avtPlot.h>
 #include <Netnodes.h>
 #include <string>
@@ -70,6 +71,7 @@ public:
     int GetID(void) { return id; };
     Netnode* GetTerminalNode(void) { return terminalNode; };
     avtPlot_p GetPlot(void) { return plot; };
+    avtActor_p GetActor(avtDataObject_p dob, WindowAttributes *atts);
     void SetNetDB(NetnodeDB *d) { netdb = d; };
     NetnodeDB* GetNetDB(void) { return netdb; };
     avtSILRestriction_p GetSIL() {return silr;};
@@ -81,6 +83,9 @@ protected:
     std::vector<Netnode*>       nodeList;
     avtDataSpecification_p      dspec;
     avtDataObjectWriter_p       writer;
+    avtActor_p                  plotActor;
+    double                      bgColor[3];
+    double                      fgColor[3];
     avtPipelineSpecification_p  pspec;
     NetnodeDB*                  netdb;
     avtPlot_p                   plot;

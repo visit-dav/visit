@@ -715,6 +715,47 @@ visit_Close(PyObject *self, PyObject *args)
     return Py_None;
 }
 
+// ****************************************************************************
+// Function: LongFileName
+//
+// Purpose: 
+//   Converts a Windows short filename into a long filename.
+//
+// Arguments:
+//   shortName : The short Windows name of the file.
+//
+// Returns:    The long windows name of the file.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Dec 5 14:10:18 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_LongFileName(PyObject *self, PyObject *args)
+{
+    char *fileName = 0;
+    if(!PyArg_ParseTuple(args, "s", &fileName))
+        return NULL;
+
+#if defined(_WIN32)
+    char *buf = new char[1000];
+    PyObject *retval = 0;
+    if(GetLongPathName(fileName, buf, 1000) != 0)
+        retval = PyString_FromString(buf);
+    else
+        retval = PyString_FromString(fileName);
+    delete [] buf;
+    return retval;
+#else
+    return PyString_FromString(fileName);
+#endif
+}
+
 //
 // ViewerProxy methods.
 //
@@ -7698,6 +7739,9 @@ AddMethod(const char *methodName, PyObject *(cb)(PyObject *, PyObject *),
 //   Brad Whitlock, Wed Dec 3 17:25:06 PST 2003
 //   Added CreateAnnotationObject and GetAnnotationObject.
 //
+//   Brad Whitlock, Fri Dec 5 14:15:04 PST 2003
+//   Added LongFileName.
+//
 // ****************************************************************************
 
 static void
@@ -7717,6 +7761,7 @@ AddDefaultMethods()
     AddMethod("GetLastError", visit_GetLastError);
     AddMethod("SetDebugLevel", visit_SetDebugLevel);
     AddMethod("Version", visit_Version);
+    AddMethod("LongFileName", visit_LongFileName);
 
     //
     // Viewer proxy methods.
