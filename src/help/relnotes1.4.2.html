@@ -29,7 +29,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <li>VisIt now has better support for reading Plot3D files of the 2D, ASCII, multi-grid variety.</li>
 <li>VisIt now presents all unusual characters in variable names as underscores <i>"_"</i> so the expression parser will no longer get confused when a variable in the file contains a reserved character.</li>
 <li>VisIt can now read Enzo files that are written with HDF5.</li>
-<li>VisIt's convert program has been renamed to <i>visitconvert</i> so it does not conflict with other software that may be installed on a computer. The <i>visitconvert</i> program now has a Tecplot writer so it can be used to convert any format read by VisIt into Tecplot files.</li>
+<li>VisIt's convert program has been renamed to <i>visitconvert</i> so it does not conflict with other software that may be installed on a computer. The <i>visitconvert</i> program now has a Tecplot writer so it can be used to convert any format read by VisIt into Tecplot files.  The tool now also has options to avoid converting expressions and avoid performing interface reconstruction.</li>
 <li>It is now possible to set the time format string for the time slider annotation object.</li>
 <li>It is now possible for VisIt to generate a new lineout for plots when changing timesteps and have the new lineout join any old lineouts in a Curve window. The new options are available in the Global Lineout Options window, which can be opened by clicking on Controls->Lineout in the Main window's menu. The new options are available in the <i>Dynamic</i> lineout mode controls in the center of the window.</li>
 <li>When VisIt saves image files using the <i>family</i> toggle, which appends a number to the image file's base name, VisIt no longer clobbers files that are already in the directory to which files are being saved. </li>
@@ -90,6 +90,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <li>The <i>Save window</i> status message does not go away when a window cannot be saved in an object file format.</li>
 <li>The Lighting window resets the direction text field when changing light types.</li>
 <li>The Lighting window's brightness spin box does not work well when the plus/minus arrows are held down.</li>
+<li>The Enzo file format reader failed on files that had multiple root-level grids.</li>
 </ul>
 <p>Click the following link to view the release notes for the previous version
 of VisIt: <a href="relnotes1.4.1.html">VisIt 1.4.1 Release Notes</a>.</p>
