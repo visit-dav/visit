@@ -90,6 +90,9 @@
 #    Kathleen Bonnell, Mon Sep 16 14:28:09 PDT 2002 
 #    I added QueryRPC, ReleaseDataRPC.
 #
+#    Sean Ahern, Thu Nov 21 20:21:29 PST 2002
+#    Removed ApplyNamedFunctionRPC.
+#
 #    Brad Whitlock, Tue Dec 10 14:18:18 PST 2002
 #    I added OpenDatabaseRPC.
 #
@@ -114,7 +117,6 @@ CPPFLAGS=-I. @CPPFLAGS@
 ## Files...
 ##
 SRC= \
-    ApplyNamedFunctionRPC.C \
     ApplyOperatorRPC.C \
     ClearCacheRPC.C \
     DefineVirtualDatabaseRPC.C \

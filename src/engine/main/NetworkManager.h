@@ -97,6 +97,10 @@ class VisWindow;
 //    Brad Whitlock, Tue Dec 10 14:52:05 PST 2002
 //    Overloaded AddDB.
 //
+//    Sean Ahern, Mon Dec 23 11:23:13 PST 2002
+//    Rearranged the AddDB code into GetDBFromCache to reduce code
+//    duplication.  Renamed AddDB to StartNetwork.
+//
 //    Brad Whitlock, Tue Mar 25 13:43:10 PST 2003
 //    Added DefineDB.
 //
@@ -104,7 +108,6 @@ class VisWindow;
 //    Added method to set annotation attributes
 //
 // ****************************************************************************
-
 class NetworkManager
 {
    typedef std::map<std::string, stringVector> StringVectorMap;
@@ -113,20 +116,19 @@ class NetworkManager
                  ~NetworkManager(void);
     void          ClearAllNetworks(void);
 
-    void          AddDB(const std::string&, const std::string&, int,
-                        const CompactSILRestrictionAttributes &,
-                        const MaterialAttributes &);
-    void          AddDB(const std::string &, int);
+    NetnodeDB*    GetDBFromCache(const string &filename, int time);
+    void          StartNetwork(const std::string&, const std::string &,
+                               int,
+                               const CompactSILRestrictionAttributes &,
+                               const MaterialAttributes &);
     void          DefineDB(const std::string &, const std::string &,
                            const stringVector &, int);
-    void          AddNamedFunction(const std::string &name, const int nargs);
     void          AddFilter(const std::string&,
                             const AttributeGroup* = NULL,
                             const unsigned int ninputs = 1);
     void          MakePlot(const std::string&, const AttributeGroup* = NULL);
     int           EndNetwork(void);
-    void          SetFinalVariableName(const std::string&) {;}; // For now,
-                                                                // do nothing.
+    void          SetFinalVariableName(const std::string&);
 
     void          UseNetwork(int);
     avtPlot_p     GetPlot(void);

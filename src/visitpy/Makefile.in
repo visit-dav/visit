@@ -60,6 +60,9 @@
 #    Eric Brugger, Mon Nov 18 16:20:47 PST 2002
 #    I added keyframe options.
 #
+#    Sean Ahern, Wed Feb  5 16:38:11 PST 2003
+#    DBAtts uses the parser, so I included that library.
+#
 #    Kathleen Bonnell, Fri Jun  6 12:22:12 PDT 2003 
 #    Added pick options.
 #
@@ -74,30 +77,32 @@
 ##
 ## Files...
 ##
-SRC=PyAnnotationAttributes.C \
-PyHostProfile.C \
-PyKeyframeAttributes.C \
-PyMaterialAttributes.C \
-PyPickAttributes.C \
-PyPrinterAttributes.C \
-PyRenderingAttributes.C \
-PySaveWindowAttributes.C \
-PySILRestriction.C \
-PyViewAttributes.C \
-PyWindowInformation.C \
-visitmodule.C
+SRC= \
+    PyAnnotationAttributes.C \
+    PyHostProfile.C \
+    PyKeyframeAttributes.C \
+    PyMaterialAttributes.C \
+    PyPickAttributes.C \
+    PyPrinterAttributes.C \
+    PyRenderingAttributes.C \
+    PySaveWindowAttributes.C \
+    PySILRestriction.C \
+    PyViewAttributes.C \
+    PyWindowInformation.C \
+    visitmodule.C
 
-HDR=PyAnnotationAttributes.h \
-PyHostProfile.h \
-PyKeyframeAttributes.h \
-PyMaterialAttributes.h \
-PyPickAttributes.h \
-PyPrinterAttributes.h \
-PyRenderingAttributes.h \
-PySaveWindowAttributes.h \
-PySILRestriction.h \
-PyViewAttributes.h \
-PyWindowInformation.h
+HDR= \
+    PyAnnotationAttributes.h \
+    PyHostProfile.h \
+    PyKeyframeAttributes.h \
+    PyMaterialAttributes.h \
+    PyPickAttributes.h \
+    PyPrinterAttributes.h \
+    PyRenderingAttributes.h \
+    PySaveWindowAttributes.h \
+    PySILRestriction.h \
+    PyViewAttributes.h \
+    PyWindowInformation.h
 
 OBJ=$(SRC:.C=.o)
 LIB=visitmodule
@@ -108,7 +113,8 @@ CLI=$(tmpbin)/cli
 ## Override the certain variables with values from configure.
 ##
 LDFLAGS=-L../lib -L/usr/local/lib @PY_LDFLAGS@ @LDFLAGS@
-LIBS=@LIBS@ -lviewerproxy -lviewerrpc -lcomm -lmisc -lstate -lutility -lplugin -ldbatts -lavtexceptions @PY_LIB@
+LIBS=@LIBS@ -lviewerproxy -lviewerrpc -lcomm -lmisc -lstate -lutility \
+     -lplugin -ldbatts -lavtexceptions -lparser @PY_LIB@
 CXXFLAGS=@CXXFLAGS@ @PY_CXXFLAGS@ -I. -I../include/visit
 
 

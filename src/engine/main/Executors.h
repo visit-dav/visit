@@ -22,7 +22,6 @@
 #include <avtDataObjectQuery.h>
 
 
-#include <ApplyNamedFunctionRPC.h>
 #include <ApplyOperatorRPC.h>
 #include <ClearCacheRPC.h>
 #include <DefineVirtualDatabaseRPC.h>
@@ -102,6 +101,9 @@ RPCExecutor<QuitRPC>::Execute(QuitRPC *rpc)
 //    Jeremy Meredith, Thu Oct 24 16:15:11 PDT 2002
 //    Added material options.
 //
+//    Sean Ahern, Mon Dec 23 12:51:43 PST 2002
+//    Renamed AddDB to StartNetwork.
+//
 //    Jeremy Meredith, Thu Jul 10 11:37:48 PDT 2003
 //    Made the engine an object.
 //
@@ -116,8 +118,9 @@ RPCExecutor<ReadRPC>::Execute(ReadRPC *rpc)
     debug2 << "Executing ReadRPC" << endl;
     TRY
     {
-        netmgr->AddDB(rpc->GetFile(), rpc->GetVar(), rpc->GetTime(),
-                     rpc->GetCSRAttributes(), rpc->GetMaterialAttributes());
+        netmgr->StartNetwork(rpc->GetFile(), rpc->GetVar(), rpc->GetTime(),
+                             rpc->GetCSRAttributes(),
+                             rpc->GetMaterialAttributes());
         rpc->SendReply();
     }
     CATCH2(VisItException, e)
@@ -220,40 +223,6 @@ RPCExecutor<ApplyOperatorRPC>::Execute(ApplyOperatorRPC *rpc)
     TRY
     {
         netmgr->AddFilter(rpc->GetID().c_str(), rpc->GetAtts());
-        rpc->SendReply();
-    }
-    CATCH2(VisItException, e)
-    {
-        rpc->SendError(e.GetMessage(), e.GetExceptionType());
-    }
-    ENDTRY
-}
-
-// ****************************************************************************
-//  Method: RPCExecutor<ApplyNamedFunctionRPC>::Execute
-//
-//  Purpose:
-//      Execute an ApplyNamedFunctionRPC.
-//
-//  Programmer: Sean Ahern
-//  Creation:   Fri Apr 19 13:34:19 PDT 2002
-//
-//  Modifications:
-//    Jeremy Meredith, Thu Jul 10 11:37:48 PDT 2003
-//    Made the engine an object.
-//
-// ****************************************************************************
-template<>
-void
-RPCExecutor<ApplyNamedFunctionRPC>::Execute(ApplyNamedFunctionRPC *rpc)
-{
-    Engine         *engine = Engine::Instance();
-    NetworkManager *netmgr = engine->GetNetMgr();
-
-    debug2 << "Executing ApplyNamedFunctionRPC" << endl;
-    TRY
-    {
-        netmgr->AddNamedFunction(rpc->GetName(), rpc->GetNArgs());
         rpc->SendReply();
     }
     CATCH2(VisItException, e)
@@ -589,8 +558,15 @@ RPCExecutor<StartPickRPC>::Execute(StartPickRPC *rpc)
 //  Purpose:
 //      Execute a SetWinAnnotAttsRPC.
 //
-//  Programmer: Mark C. Miller 
-//  Creation:   15Jul03 
+//  Programmer: Jeremy Meredith
+//  Creation:   November  8, 2001
+//
+//  Modifications:
+//    Brad Whitlock, Mon Dec 2 13:46:49 PST 2002
+//    I added a method call to populate the color tables.
+//
+//    Jeremy Meredith, Thu Jul 10 11:37:48 PDT 2003
+//    Made the engine an object.
 //
 // ****************************************************************************
 template<>
@@ -899,6 +875,9 @@ RPCExecutor<ReleaseDataRPC>::Execute(ReleaseDataRPC *rpc)
 //    Jeremy Meredith, Tue Mar  4 13:07:17 PST 2003
 //    Removed the return reply since OpenDatabaseRPC is now non-blocking.
 //
+//    Sean Ahern, Mon Dec 23 11:24:18 PST 2002
+//    Changed AddDB to GetDBFromCache.
+//
 //    Jeremy Meredith, Thu Jul 10 11:37:48 PDT 2003
 //    Made the engine an object.
 //
@@ -913,7 +892,7 @@ RPCExecutor<OpenDatabaseRPC>::Execute(OpenDatabaseRPC *rpc)
     debug2 << "Executing OpenDatabaseRPC: db=" << rpc->GetDatabaseName().c_str()
            << ", time=" << rpc->GetTime() << endl;
 
-    netmgr->AddDB(rpc->GetDatabaseName(), rpc->GetTime());
+    netmgr->GetDBFromCache(rpc->GetDatabaseName(), rpc->GetTime());
 }
 
 // ****************************************************************************

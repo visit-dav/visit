@@ -23,7 +23,7 @@
 #include <SILRestrictionAttributes.h>
 #include <ViewerAnimation.h>
 #include <ViewerEngineManager.h>
-#include <ViewerExpressionList.h>
+#include <ParsingExprList.h>
 #include <ViewerFileServer.h>
 #include <ViewerMessaging.h>
 #include <ViewerOperator.h>
@@ -38,6 +38,7 @@
 #include <avtDatabaseMetaData.h>
 #include <avtPlot.h>
 #include <avtToolInterface.h>
+#include <ExprNode.h>
 
 #include <DebugStream.h>
 
@@ -398,9 +399,9 @@ ViewerPlotList::GetPlotHostDatabase(std::string &host, std::string &db) const
     //
     // Find the list of selected plots.
     //
-    for(int i = 0; i < nPlots; ++i)
+    for (int i = 0; i < nPlots; ++i)
     {
-        if(plots[i].active)
+        if (plots[i].active)
         {
             host = std::string(plots[i].plot->GetHostName());
             db = std::string(plots[i].plot->GetDatabaseName());
@@ -432,9 +433,9 @@ ViewerPlotList::GetPlotHostDatabase(std::string &host, std::string &db) const
 bool
 ViewerPlotList::FileInUse(const char *host, const char *database) const
 {
-    for(int i = 0; i < nPlots; ++i)
+    for (int i = 0; i < nPlots; ++i)
     {
-        if(strcmp(host, plots[i].plot->GetHostName()) == 0 &&
+        if (strcmp(host, plots[i].plot->GetHostName()) == 0 &&
            strcmp(database, plots[i].plot->GetDatabaseName()) == 0)
         {
             return true;
@@ -575,7 +576,7 @@ ViewerPlotList::AddPlot(int type, const std::string &var, bool replacePlots,
     //
     ViewerPlot *newPlot = NewPlot(type, hostName, databaseName, var,
                                   applyOperators);
-    if(newPlot == 0)
+    if (newPlot == 0)
     {
         Error("VisIt could not create the desired plot.");
         return -1;
@@ -976,7 +977,7 @@ ViewerPlotList::CopyFrom(const ViewerPlotList *pl)
     // Copy the plots from the input plot list (pl) to this plot list.
     //
     int plotsAdded = 0;
-    for(int i = 0; i < pl->GetNumPlots(); ++i)
+    for (int i = 0; i < pl->GetNumPlots(); ++i)
     {
          ViewerPlot *src = pl->GetPlot(i);
 
@@ -1000,7 +1001,7 @@ ViewerPlotList::CopyFrom(const ViewerPlotList *pl)
          }
          CATCH(VisItException)
          {
-            if(dest)
+            if (dest)
             {
                 delete dest;
                 dest = NULL;
@@ -1008,7 +1009,7 @@ ViewerPlotList::CopyFrom(const ViewerPlotList *pl)
          }
          ENDTRY
 
-         if(dest != NULL)
+         if (dest != NULL)
          {
              //
              // Apply the same plot attributes as the old plot.
@@ -1048,7 +1049,7 @@ ViewerPlotList::CopyFrom(const ViewerPlotList *pl)
     //
     // Update the client attributes.
     //
-    if(plotsAdded > 0)
+    if (plotsAdded > 0)
     {
         UpdatePlotList();
         UpdatePlotAtts();
@@ -1098,9 +1099,9 @@ ViewerPlotList::SimpleAddPlot(ViewerPlot *plot, bool replacePlots)
     // If we're replacing plots then we want to delete all of the
     // plots before adding a new plot.
     //
-    if(replacePlots)
+    if (replacePlots)
     {
-        for(i = 0; i < nPlots; ++i)
+        for (i = 0; i < nPlots; ++i)
         {
             delete plots[i].plot;
             plots[i].active = false;
@@ -1128,7 +1129,7 @@ ViewerPlotList::SimpleAddPlot(ViewerPlot *plot, bool replacePlots)
     //
     // Make all of the plots inactive except for the new plot.
     //
-    for(i = 0; i < nPlots; ++i)
+    for (i = 0; i < nPlots; ++i)
         plots[i].active = false;
 
     //
@@ -1213,7 +1214,7 @@ ViewerPlotList::NewPlot(int type, const std::string &host, const std::string &db
     }
     ENDTRY
 
-    if(*silr == 0)
+    if (*silr == 0)
     {
         char str[400];
         SNPRINTF(str, 400, "VisIt could not create a SIL restriction for %s. "
@@ -1245,7 +1246,7 @@ ViewerPlotList::NewPlot(int type, const std::string &host, const std::string &db
     }
     CATCH(VisItException)
     {
-        if(plot)
+        if (plot)
             delete plot;
         plot = 0;
     }
@@ -1254,7 +1255,7 @@ ViewerPlotList::NewPlot(int type, const std::string &host, const std::string &db
     //
     // Apply the same operators that are on the old plot to the new plot.
     //
-    if(plot && applyOperators && (nPlots > 0))
+    if (plot && applyOperators && (nPlots > 0))
     {
         for (int j = 0; j < plots[0].plot->GetNOperators(); ++j)
         {
@@ -1434,7 +1435,7 @@ ViewerPlotList::DeleteActivePlots()
     //
     // If there are any plots left, make the first plot active.
     //
-    if(nPlots > 0)
+    if (nPlots > 0)
     {
         plots[0].active = true;
     }
@@ -1581,7 +1582,7 @@ ViewerPlotList::SetPlotVar(const char *variable)
     //
     // Update the client SIL restriction attributes.
     // 
-    if(SILChanged)
+    if (SILChanged)
         UpdateSILRestrictionAtts();
 
     //
@@ -1647,7 +1648,7 @@ ViewerPlotList::SetPlotAtts(const int plotType)
     //
     // If plots were selected, update the frame.
     //
-    if(selectedCount > 0)
+    if (selectedCount > 0)
     {
         animation->UpdateFrame();
     }
@@ -1769,7 +1770,7 @@ ViewerPlotList::ReplaceDatabase(const std::string &host, const std::string &data
         bool sameHost = (host == plot->GetHostName());
         bool sameDB = (database == plot->GetDatabaseName());
         bool doReplace;
-        if(onlyReplaceSame)
+        if (onlyReplaceSame)
             doReplace = sameHost && sameDB;
         else
             doReplace = !(sameHost && sameDB);
@@ -1777,7 +1778,7 @@ ViewerPlotList::ReplaceDatabase(const std::string &host, const std::string &data
         //
         // Replace the database in the plot.
         //
-        if(doReplace)
+        if (doReplace)
         {
             //
             // Get a new SIL restriction for the plot.
@@ -1786,7 +1787,7 @@ ViewerPlotList::ReplaceDatabase(const std::string &host, const std::string &data
             {
                 avtSILRestriction_p silr = GetDefaultSILRestriction(host,
                     database, plot->GetVariableName());
-                if(*silr != 0)
+                if (*silr != 0)
                 {
                     //
                     // Try and set the new sil restriction from the old.
@@ -1800,7 +1801,7 @@ ViewerPlotList::ReplaceDatabase(const std::string &host, const std::string &data
                          // default SIL restriction have the same settings as
                          // the new SIL restriction.
                          //
-                         if(!defaultChanged)
+                         if (!defaultChanged)
                          {
                              defaultChanged = true;
                              std::string key(SILRestrictionKey(host, database, silr->GetTopSet()));
@@ -1864,7 +1865,7 @@ ViewerPlotList::ReplaceDatabase(const std::string &host, const std::string &data
     //
     // Update the SIL restriction attributes if necessary.
     //
-    if(updateSIL)
+    if (updateSIL)
         UpdateSILRestrictionAtts();
 
     //
@@ -1913,7 +1914,7 @@ ViewerPlotList::OverlayDatabase(const std::string &host, const std::string &data
     // which use the new data files.
     //
     int nInitialPlots = nPlots;
-    for(int i = 0; i < nInitialPlots; ++i)
+    for (int i = 0; i < nInitialPlots; ++i)
     {
         //
         // Create a new plot based on the old plot. Then copy the old plot's
@@ -1926,7 +1927,7 @@ ViewerPlotList::OverlayDatabase(const std::string &host, const std::string &data
         //
         // If the plot was created, add it to the plot list.
         //
-        if(newPlot)
+        if (newPlot)
         {
              //
              // Apply the same plot attributes as the old plot.
@@ -1992,8 +1993,13 @@ ViewerPlotList::OverlayDatabase(const std::string &host, const std::string &data
 //   valid if the variable is not an expression. This ensures that file
 //   replacement works properly.
 //
+//   Sean Ahern, Wed Dec 11 16:52:30 PST 2002
+//   Changed the interface for expressions to be easier.
+//
+//   Sean Ahern, Thu Mar  6 01:45:41 America/Los_Angeles 2003
+//   Added support to find the "real variable" from an expression.
+//
 // ****************************************************************************
-
 avtSILRestriction_p
 ViewerPlotList::GetDefaultSILRestriction(const std::string &host,
     const std::string &database, const std::string &var)
@@ -2007,58 +2013,66 @@ ViewerPlotList::GetDefaultSILRestriction(const std::string &host,
     // Get the SIL from the file server.
     //
     const avtSIL *sil = server->GetSIL(host, database);
-    if(sil == 0)
+    if (sil == 0)
     {
         SNPRINTF(str, 400, "VisIt could not read the SIL for %s.", database.c_str());
         Error(str);
         return silr;
     }
 
-    //
+    // Check if the variable is an expression.  If it is, walk down the
+    // parse tree until we have a "real" variable to work with.
+    string realvar = var;
+    ExprNode *tree = ParsingExprList::GetExpressionTree(realvar);
+    while (tree != NULL)
+    {
+        realvar = *tree->GetVarLeaves().begin();
+        tree = ParsingExprList::GetExpressionTree(realvar);
+    }
+
     // Figure out the top set for the SIL restriction. If there is more 
     // than one top set, we use the variable name to lookup the mesh name
     // and then we use that mesh name to set the appropriate top set.
+
     //
-    if(!ViewerExpressionList::Instance()->VariableIsExpression(var.c_str()))
+    // Try and read the metadata since we'll need it to get the mesh for
+    // the plot variable.
+    //
+
+    avtDatabaseMetaData *md =
+        (avtDatabaseMetaData *)server->GetMetaData(host, database);
+    if (md == 0)
+    {
+        SNPRINTF(str, 400, "VisIt could not read the MetaData for %s.", database.c_str());
+        Error(str);
+        return silr;
+    }
+
+    //
+    // Get the Mesh for the desired variable. We bother to do this because
+    // we need it to determine the top set for the variable if there is more
+    // than one top set. The reason we always do it is that it also determines
+    // if the given variable is valid for the specified database. If the
+    // variable is invalid, an InvalidVariableException is thrown.
+    //
+    std::string meshName(md->MeshForVar(realvar));
+
+    //
+    // If there is more than one top set, try and find the right one.
+    //
+    const std::vector<int> &wholes = sil->GetWholes();
+    if (wholes.size() > 1)
     {
         //
-        // Try and read the metadata since we'll need it to get the mesh for
-        // the plot variable.
+        // Look through the SIL's whole sets for a name that matches meshName.
         //
-        avtDatabaseMetaData *md = (avtDatabaseMetaData *)server->GetMetaData(host, database);
-        if(md == 0)
+        for (int i = 0; i < wholes.size(); ++i)
         {
-            SNPRINTF(str, 400, "VisIt could not read the MetaData for %s.", database.c_str());
-            Error(str);
-            return silr;
-        }
-
-        //
-        // Get the Mesh for the desired variable. We bother to do this because
-        // we need it to determine the top set for the variable if there is more
-        // than one top set. The reason we always do it is that it also determines
-        // if the given variable is valid for the specified database. If the
-        // variable is invalid, an InvalidVariableException is thrown.
-        //
-        std::string meshName(md->MeshForVar(var));
-
-        //
-        // If there is more than one top set, try and find the right one.
-        //
-        const std::vector<int> &wholes = sil->GetWholes();
-        if(wholes.size() > 1)
-        {
-            //
-            // Look through the SIL's whole sets for a name that matches meshName.
-            //
-            for(int i = 0; i < wholes.size(); ++i)
+            avtSILSet_p current = sil->GetSILSet(wholes[i]);
+            if (meshName == current->GetName())
             {
-                avtSILSet_p current = sil->GetSILSet(wholes[i]);
-                if(meshName == current->GetName())
-                {
-                    topSet = wholes[i];
-                    break;
-                }
+                topSet = wholes[i];
+                break;
             }
         }
     }
@@ -2069,7 +2083,7 @@ ViewerPlotList::GetDefaultSILRestriction(const std::string &host,
     //
     std::string key(SILRestrictionKey(host, database, topSet));
     SILRestrictionMap::iterator pos = SILRestrictions.find(key);
-    if(pos == SILRestrictions.end())
+    if (pos == SILRestrictions.end())
     {
         // Create a new SIL restriction that is based on the SIL and put it
         // in the default SIL restrictions.
@@ -2120,7 +2134,7 @@ ViewerPlotList::ClearDefaultSILRestrictions(const std::string &host,
     // Get the SIL from the file server.
     //
     const avtSIL *sil = server->GetSIL(host, database);
-    if(sil == 0)
+    if (sil == 0)
     {
         char str[400];
         SNPRINTF(str, 400, "VisIt could not read the SIL for %s.", database.c_str());
@@ -2134,11 +2148,11 @@ ViewerPlotList::ClearDefaultSILRestrictions(const std::string &host,
     // delete it.
     //
     const std::vector<int> &wholes = sil->GetWholes();
-    for(int i = 0; i < wholes.size(); ++i)
+    for (int i = 0; i < wholes.size(); ++i)
     {
         std::string key(SILRestrictionKey(host, database, wholes[i]));
         SILRestrictionMap::iterator pos = SILRestrictions.find(key);
-        if(pos != SILRestrictions.end())
+        if (pos != SILRestrictions.end())
             SILRestrictions.erase(pos);
     }
 }
@@ -2310,19 +2324,19 @@ ViewerPlotList::SetPlotSILRestriction(bool applyToAll)
     //
     int i, firstSelected = -1;
     std::vector<int> activePlots;
-    for(i = 0; i < nPlots; ++i)
+    for (i = 0; i < nPlots; ++i)
     {
-        if(plots[i].active)
+        if (plots[i].active)
         {
             activePlots.push_back(i);
-            if(firstSelected == -1)
+            if (firstSelected == -1)
                 firstSelected = activePlots.size() - 1;
         }
-        else if(applyToAll)
+        else if (applyToAll)
             activePlots.push_back(i);
     }
 
-    if(firstSelected < 0)
+    if (firstSelected < 0)
         firstSelected = 0;
 
     //
@@ -2330,7 +2344,7 @@ ViewerPlotList::SetPlotSILRestriction(bool applyToAll)
     // database as the first selected plot.
     //
     bool needsUpdate = false;
-    for(i = 0; i < activePlots.size(); ++i)
+    for (i = 0; i < activePlots.size(); ++i)
     {
         ViewerPlot *plot0 = plots[activePlots[firstSelected]].plot;
         ViewerPlot *ploti = plots[activePlots[i]].plot;
@@ -2339,7 +2353,7 @@ ViewerPlotList::SetPlotSILRestriction(bool applyToAll)
         bool sameTopSet = (plot0->GetSILRestriction()->GetTopSet() ==
                            ploti->GetSILRestriction()->GetTopSet());
 
-        if(sameDB && sameTopSet)
+        if (sameDB && sameTopSet)
         {
             //
             // Set a new SIL restriction into the plot.
@@ -2354,7 +2368,7 @@ ViewerPlotList::SetPlotSILRestriction(bool applyToAll)
         }
     }
 
-    if(needsUpdate)
+    if (needsUpdate)
     {
         //
         // Update the client attributes.
@@ -2418,15 +2432,15 @@ ViewerPlotList::AddOperator(const int type, bool applyToAll)
             plots[i].plot->AddOperator(type);
 
             // Update the new operator's client attributes.
-            if(notUpdatedClientAtts)
+            if (notUpdatedClientAtts)
             {
                 notUpdatedClientAtts = false;
 
                 // Look for the last operator of the specified type.
-                for(int j = plots[i].plot->GetNOperators() - 1; j >= 0; --j)
+                for (int j = plots[i].plot->GetNOperators() - 1; j >= 0; --j)
                 {
                     ViewerOperator *oper = plots[i].plot->GetOperator(j);
-                    if(oper->GetType() == type)
+                    if (oper->GetType() == type)
                     {
                         oper->SetClientAttsFromOperator();
                         // break out of the loop.
@@ -2728,7 +2742,7 @@ ViewerPlotList::ArePlotsUpToDate(const int frame) const
         // plot because this plot doesn't need to ruin it for the other plots
         // which may be defined at this frame.
         //
-        if(!plots[i].plot->IsInFrameRange(frame))
+        if (!plots[i].plot->IsInFrameRange(frame))
             continue;
 #ifdef VIEWER_MT
         //
@@ -3039,8 +3053,8 @@ ViewerPlotList::UpdateWindow(ViewerWindow *const window, const int frame,
         // If the reader or the actor is bad then mark the plot as bad. This
         // usually happens when a plot generated before the current plot has
         // had an error and the current plot has not been generated.
-        if(*(plots[i].plot->GetReader(frame)) == 0 ||
-           plots[i].plot->NoActorExists(frame))
+        if (*(plots[i].plot->GetReader(frame)) == 0 ||
+            plots[i].plot->NoActorExists(frame))
         {
             continue;
         }
@@ -3053,7 +3067,7 @@ ViewerPlotList::UpdateWindow(ViewerWindow *const window, const int frame,
 
             if (plotDimension != globalDimension)
             {
-                if(errorCount == 0)
+                if (errorCount == 0)
                 {
                     char message[200];
                     SNPRINTF(message, 200, "It is illegal to have a %d-d plot in a "
@@ -3108,9 +3122,9 @@ ViewerPlotList::UpdateWindow(ViewerWindow *const window, const int frame,
     //
     window->SetMergeViewLimits(false);
 
-    if(updatesEnabled)
+    if (updatesEnabled)
     {
-        if(immediateUpdate)
+        if (immediateUpdate)
         {
             //
             // Enable updates in the window now.
@@ -3148,7 +3162,7 @@ ViewerPlotList::UpdateColorTable(const char *ctName)
 {
     bool retval = false;
 
-    for(int i = 0; i < nPlots; i++)
+    for (int i = 0; i < nPlots; i++)
     {
         ViewerPlot *plot = plots[i].plot;
         retval |= plot->UpdateColorTable(ctName);
@@ -3179,7 +3193,7 @@ bool
 ViewerPlotList::SetBackgroundColor(const double *bg)
 {
     bool retval = false;
-    for(int i = 0; i < nPlots; i++)
+    for (int i = 0; i < nPlots; i++)
     {
         ViewerPlot *plot = plots[i].plot;
         retval |= plot->SetBackgroundColor(bg);
@@ -3210,7 +3224,7 @@ bool
 ViewerPlotList::SetForegroundColor(const double *fg)
 {
     bool retval = false;
-    for(int i = 0; i < nPlots; i++)
+    for (int i = 0; i < nPlots; i++)
     {
         ViewerPlot *plot = plots[i].plot;
         retval |= plot->SetForegroundColor(fg);
@@ -3560,13 +3574,13 @@ ViewerPlotList::UpdatePlotList() const
         plot.SetDatabaseKeyframes(databaseKeyframeIndices2);
 
         // Figure out the stage of completion that the plot is at.
-        if(plots[i].plot->GetErrorFlag())
+        if (plots[i].plot->GetErrorFlag())
         {
             plot.SetStateType(Plot::Error);
         }
         else
         {
-            if(plots[i].realized)
+            if (plots[i].realized)
             {
                 if(plots[i].plot->IsInFrameRange(animation->GetFrameIndex()) &&
                    plots[i].plot->NoActorExists(animation->GetFrameIndex()))
@@ -3582,7 +3596,7 @@ ViewerPlotList::UpdatePlotList() const
         plot.SetPlotVar(plots[i].plot->GetVariableName());
 
         // Set the operators that are applied to the plot
-        for(int op_index = 0; op_index < plots[i].plot->GetNOperators();
+        for (int op_index = 0; op_index < plots[i].plot->GetNOperators();
             ++op_index)
         {
             plot.AddOperator(plots[i].plot->GetOperator(op_index)->GetType());
@@ -3616,9 +3630,9 @@ ViewerPlotList::UpdateSILRestrictionAtts()
 {
     // Find the first selected plot.
     int index = -1;
-    for(int i = 0; i < nPlots; ++i)
+    for (int i = 0; i < nPlots; ++i)
     {
-        if(plots[i].active)
+        if (plots[i].active)
         {
             index = i;
             break;
@@ -3627,7 +3641,7 @@ ViewerPlotList::UpdateSILRestrictionAtts()
 
     // If a plot was active, put its SIL restriction into the
     // clientSILRestrictionAtts and send them to the client.
-    if(index > -1)
+    if (index > -1)
     {
         avtSILRestriction_p sr = plots[index].plot->GetSILRestriction();
         SILRestrictionAttributes *sra = sr->MakeAttributes();
@@ -3707,7 +3721,7 @@ ViewerPlotList::GetPlotLimits(int frame, int nDimensions, double *limits) const
         {
             double *plotExtents = plots[i].plot->GetSpatialExtents(frame);
 
-            if(plotExtents)
+            if (plotExtents)
             {
                 for (int j = 0; j < nDimensions; j++)
                 {
@@ -3739,7 +3753,7 @@ void
 ViewerPlotList::SetSpatialExtentsType(avtExtentType setype)
 {
     spatialExtentsType = setype;    
-    for(int i = 0; i < nPlots; i++)
+    for (int i = 0; i < nPlots; i++)
     {
         ViewerPlot *plot = plots[i].plot;
         plot->SetSpatialExtentsType(setype);
@@ -3783,7 +3797,7 @@ ViewerPlotList::HandleTool(const avtToolInterface &ti, bool applyToAll)
 
     for (int i = 0; i < nPlots; i++)
     {
-        if(plots[i].active || applyToAll)
+        if (plots[i].active || applyToAll)
         {
             if (keyframeMode)
                 val |= plots[i].plot->HandleTool(animation->GetFrameIndex(), ti);
@@ -3792,7 +3806,7 @@ ViewerPlotList::HandleTool(const avtToolInterface &ti, bool applyToAll)
         }
     }
 
-    if(val)
+    if (val)
     {
         //
         // Update the client attributes.
@@ -3833,7 +3847,7 @@ ViewerPlotList::InitializeTool(avtToolInterface &ti)
 
     for (int i = 0; i < nPlots && !retval; i++)
     {
-        if(plots[i].active)
+        if (plots[i].active)
             retval |= plots[i].plot->InitializeTool(ti);
     }
 

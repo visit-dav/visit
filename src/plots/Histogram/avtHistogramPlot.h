@@ -14,7 +14,6 @@
 
 class     avtHistogramFilter;
 class     avtUserDefinedMapper;
-class     avtExpressionFilter;
 class     vtkProperty;
 
 
@@ -49,7 +48,7 @@ class avtHistogramPlot : public avtLineDataPlot
     avtSurfaceAndWireframeRenderer_p renderer;
     avtUserDefinedMapper            *mapper;
     avtHistogramFilter              *HistogramFilter;
-    avtExpressionFilter             *amountFilter;
+    avtFilter                       *amountFilter;
     vtkProperty                     *property; 
     double                           fgColor[3];
 

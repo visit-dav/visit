@@ -40,6 +40,9 @@
 #   Sean Ahern, Mon Jun 10 16:40:29 PDT 2002
 #   Gutted while moving things to a central location.
 #
+#   Sean Ahern, Fri Oct  4 11:23:30 PDT 2002
+#   Moved the parser to its own library.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -49,7 +52,7 @@
 @MPI_CXX@
 
 # subdirectory `main' must be last.
-SUBDIRS=rpc parser proxy main
+SUBDIRS=rpc proxy main
 
 message:
 	@echo

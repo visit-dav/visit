@@ -1,0 +1,25 @@
+Function: operator[]
+Declaration: Expression *operator[](const char *);
+Definition:
+Expression*
+ExpressionList::operator[](const char *varname)
+{   
+    int found = -1;
+
+    // Check to see if there is an expression of this name.
+    std::string var(varname);
+    int i;
+    for (i = 0; i < GetNumExpressions(); i++)
+    {   
+        if (((Expression*)(expressions[i]))->GetName() == var)
+        {   
+            found = i;
+            break;
+        }
+    }
+
+    if (found == -1)
+        return (Expression*)NULL;
+    else
+        return dynamic_cast<Expression*>(expressions[found]);
+}

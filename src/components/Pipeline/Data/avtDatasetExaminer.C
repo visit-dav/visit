@@ -493,3 +493,46 @@ avtDatasetExaminer::FindNode(avtDataset_p &ds, int dom, int zone, double *pt)
 }
 
 
+// ****************************************************************************
+//  Method: avtDatasetExaminer::GetArray
+//
+//  Purpose:
+//      Locates an array for a domain.
+//
+//  Arguments:
+//      ds       A dataset.
+//      varname  The name of a variable.
+//      dom      A domain number.
+//      cent     The centering for the variable (output variable).
+//
+//  Returns:     The data array, NULL if it does not exist.
+//
+//  Programmer:  Hank Childs
+//  Creation:    July 29, 2003
+//
+// ****************************************************************************
+
+vtkDataArray *
+avtDatasetExaminer::GetArray(avtDataset_p &ds, const char *varname, int dom,
+                             avtCentering &cent)
+{
+    GetArrayArgs args;
+    bool  success = false;
+    args.arr = NULL;
+    args.domain = dom;
+    args.varname  = varname;
+    args.centering = AVT_UNKNOWN_CENT;
+    if ( *ds->dataTree != NULL )
+    {
+        ds->dataTree->Traverse(CGetArray, (void *) &args, success);
+    }
+
+    if (success)
+    {
+        cent = args.centering;
+    }
+
+    return args.arr;
+}
+
+

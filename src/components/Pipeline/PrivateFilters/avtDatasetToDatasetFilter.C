@@ -110,6 +110,8 @@ avtDatasetToDatasetFilter::PostExecute(void)
 {
     if (switchVariables)
     {
+        debug5 << GetType() << ":Setting output variable to be " << pipelineVariable
+               << " after execution." << endl;
         OutputSetActiveVariable(pipelineVariable);
         if (removeActiveVariableWhenDone)
         {

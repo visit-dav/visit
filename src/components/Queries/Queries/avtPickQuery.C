@@ -226,6 +226,9 @@ avtPickQuery::PostExecute(void)
 //    Kathleen Bonnell, Fri Jun 27 17:28:17 PDT 2003 
 //    Rework code to support node picking. 
 //    
+//    Hank Childs, Tue Jul 29 11:54:11 PDT 2003
+//    Use the queryable source rather than the terminating source.
+//
 // ****************************************************************************
 
 void
@@ -304,11 +307,10 @@ avtPickQuery::Execute(vtkDataSet *ds, const int dom)
         }
     } 
 
-
     //
     //  Allow the database to add any missing information.
     // 
-    GetInput()->GetTerminatingSource()->Query(&pickAtts);
+    GetInput()->GetQueryableSource()->Query(&pickAtts);
 
     //
     // Set the domain and zone of pickAtts in relation to the
@@ -578,7 +580,7 @@ avtPickQuery::ApplyFilters(avtDataObject_p inData)
     {
         pickAtts.SetNeedTransformMessage(false);
     }
-    return inData->GetTerminatingSource()->GetOutput();
+    return inData->GetQueryableSource()->GetOutput();
 }
 
 

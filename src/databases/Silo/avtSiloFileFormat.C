@@ -25,6 +25,7 @@
 #include <avtVariableCache.h>
 
 #include <Utility.h>
+#include <Expression.h>
 
 #include <BadDomainException.h>
 #include <BadIndexException.h>
@@ -2608,8 +2609,11 @@ avtSiloFileFormat::GetVectorDefvars(const char *d_str)
 //  Programmer: Hank Childs
 //  Creation:   September 4, 2002
 //
+//  Modifications:
+//      Sean Ahern, Fri Dec 13 17:31:21 PST 2002
+//      Changed how expressions are defined.
+//
 // ****************************************************************************
-
 void
 AddDefvars(const char *defvars, avtDatabaseMetaData *md)
 {
@@ -2668,38 +2672,30 @@ AddDefvars(const char *defvars, avtDatabaseMetaData *md)
         //
         char vartype_str[1024];
         GetWord(s, vartype_str);
-        avtVarType vartype = AVT_UNKNOWN_TYPE;
+        Expression::ExprType vartype = Expression::Unknown;
         if (strcmp(vartype_str, "mesh") == 0)
-        {
-            vartype = AVT_MESH;
-        }
+            vartype = Expression::Mesh;
         else if (strcmp(vartype_str, "scalar") == 0)
-        {
-            vartype = AVT_SCALAR_VAR;
-        }
+            vartype = Expression::ScalarMeshVar;
         else if (strcmp(vartype_str, "vector") == 0)
-        {
-            vartype = AVT_VECTOR_VAR;
-        }
+            vartype = Expression::VectorMeshVar;
         else if (strcmp(vartype_str, "material") == 0)
-        {
-            vartype = AVT_MATERIAL;
-        }
+            vartype = Expression::Material;
         else if (strcmp(vartype_str, "species") == 0)
-        {
-            vartype = AVT_MATSPECIES;
-        }
+            vartype = Expression::Species;
 
-        if (vartype == AVT_UNKNOWN_TYPE)
+        if (vartype == Expression::Unknown)
         {
-            debug5 << "Warning: unknown defvar type \"" << vartype << "\"."
+            debug5 << "Warning: unknown defvar type \"" << vartype_str << "\"."
                    << endl;
             continue;
         }
 
-        string name_str = name;
-        string defn_str = s;
-        md->AddExpression(name_str, defn_str, vartype);
+        Expression expr;
+            expr.SetName(name);
+            expr.SetDefinition(s);
+            expr.SetType(vartype);
+        md->AddExpression(&expr);
     }
 
     delete [] dv_tmp;

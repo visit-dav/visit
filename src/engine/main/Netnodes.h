@@ -39,19 +39,22 @@ public:
 //      Sean Ahern, Tue May 21 16:10:35 PDT 2002
 //      Made the destructor tell the avtDatabase to free its resources.
 //
+//      Hank Childs, Mon Jul 28 13:33:54 PDT 2003
+//      Do more initialization in the constructor.  Added necessary information
+//      for caching data objects.
+//
 // ****************************************************************************
 class NetnodeDB: public Netnode
 {
 public:
-    NetnodeDB(avtDatabase *_db) {db = _db;};
-    NetnodeDB(ref_ptr<avtDatabase> _db) {db = _db;};
+    NetnodeDB(avtDatabase *);
+    NetnodeDB(ref_ptr<avtDatabase>);
     ref_ptr<avtDatabase>    GetDatabase(void) { return db; };
     virtual ~NetnodeDB(void) {FreeUpResources();};
-    void SetDBSpec(std::string _filename, std::string _var, int _time)
+    void SetDBInfo(std::string _filename, std::string _var, int _time)
         { filename = _filename; var = _var; time = _time; };
     virtual avtDataObject_p GetOutput(void);
     std::string GetFilename(void) {return filename;};
-    std::string GetVar(void) {return var;};
     int GetTime(void) {return time;};
     ref_ptr<avtDatabase> GetDB(void) {return db;};
     void ReleaseData();
@@ -63,6 +66,8 @@ protected:
     std::string             filename;
     std::string             var;
     int                     time;
+    std::string             current_var;
+    int                     current_time;
 };
 
 // ****************************************************************************

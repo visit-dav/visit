@@ -4,6 +4,7 @@
 
 #ifndef AVT_FACADE_FILTER
 #define AVT_FACADE_FILTER
+
 #include <pipeline_exports.h>
 
 #include <avtFilter.h>
@@ -33,6 +34,7 @@ class PIPELINE_API avtFacadeFilter : virtual public avtFilter
     virtual avtDataObject_p        GetOutput(void);
 
     virtual avtTerminatingSource  *GetTerminatingSource(void);
+    virtual avtQueryableSource    *GetQueryableSource(void);
     virtual bool                   Update(avtPipelineSpecification_p);
 
   protected:

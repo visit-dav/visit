@@ -5,7 +5,8 @@
 #include <iostream.h>
 
 #include <avtDatabaseMetaData.h>
-
+#include <ParsingExprList.h>
+#include <ExprNode.h>
 #include <BadIndexException.h>
 #include <DebugStream.h>
 #include <InvalidVariableException.h>
@@ -1965,7 +1966,7 @@ avtCurveMetaData::Print(ostream &out, int indent) const
 // ****************************************************************************
 
 avtDatabaseMetaData::avtDatabaseMetaData()
-    : AttributeSubject("bddibss*i*i*i*d*a*a*a*a*a*a*s*s*i*")
+    : AttributeSubject("bddibss*i*i*i*d*a*a*a*a*a*a*a")
 {
     hasTemporalExtents = false;
     minTemporalExtents = 0.;
@@ -1995,6 +1996,9 @@ avtDatabaseMetaData::avtDatabaseMetaData()
 //    Hank Childs, Wed Sep  4 11:32:48 PDT 2002
 //    Copy over expressions.
 //
+//    Sean Ahern, Fri Dec 13 16:49:10 PST 2002
+//    Changed to use the ExpressionList state object.
+//
 //    Brad Whitlock, Tue Mar 25 14:29:26 PST 2003
 //    I added the isVirtualDatabase, timeStepPath, timeStepNames fields.
 //
@@ -2004,7 +2008,7 @@ avtDatabaseMetaData::avtDatabaseMetaData()
 // ****************************************************************************
 
 avtDatabaseMetaData::avtDatabaseMetaData(const avtDatabaseMetaData &rhs)
-    : AttributeSubject("bddibss*i*i*i*d*a*a*a*a*a*a*s*s*i*")
+    : AttributeSubject("bddibss*i*i*i*d*a*a*a*a*a*a*a")
 {
     hasTemporalExtents = rhs.hasTemporalExtents;
     minTemporalExtents = rhs.minTemporalExtents;
@@ -2017,9 +2021,7 @@ avtDatabaseMetaData::avtDatabaseMetaData(const avtDatabaseMetaData &rhs)
     cycles             = rhs.cycles;
     timesAreAccurate   = rhs.timesAreAccurate;
     times              = rhs.times;
-    expressionNames    = rhs.expressionNames;
-    expressionDefns    = rhs.expressionDefns;
-    expressionTypes    = rhs.expressionTypes;
+    exprList           = rhs.exprList;
 
     int i;
     for (i=0; i<rhs.meshes.size(); i++)
@@ -2057,6 +2059,9 @@ avtDatabaseMetaData::avtDatabaseMetaData(const avtDatabaseMetaData &rhs)
 //    Hank Childs, Wed Sep  4 11:32:48 PDT 2002
 //    Copy over expressions.
 //
+//    Sean Ahern, Fri Dec 13 16:50:00 PST 2002
+//    Changed to use the ExpressionList state object.
+//
 //    Brad Whitlock, Tue Mar 25 14:31:31 PST 2003
 //    I added the isVirtualDatabase, timeStepPath, timeStepNames fields.
 //
@@ -2078,9 +2083,7 @@ avtDatabaseMetaData::operator=(const avtDatabaseMetaData &rhs)
     cycles             = rhs.cycles;
     timesAreAccurate   = rhs.timesAreAccurate;
     times              = rhs.times;
-    expressionNames    = rhs.expressionNames;
-    expressionDefns    = rhs.expressionDefns;
-    expressionTypes    = rhs.expressionTypes;
+    exprList           = rhs.exprList;
 
     int i;
     for (i=0; i<meshes.size(); i++)
@@ -2734,11 +2737,23 @@ avtDatabaseMetaData::GetNDomains(std::string var)
 //    Hank Childs, Fri Aug  1 11:08:21 PDT 2003
 //    Add support for curves.
 //
+//
+//    Sean Ahern, Wed Feb  5 16:30:36 PST 2003
+//    Added support for expressions.
+//
 // ****************************************************************************
-
 avtVarType
 avtDatabaseMetaData::DetermineVarType(std::string var_in)
 {
+    // If the variable is an expression, we need to find a "real" variable
+    // name to work with.
+    ExprNode *tree = ParsingExprList::GetExpressionTree(var_in);
+    while (tree != NULL)
+    {
+        var_in = *tree->GetVarLeaves().begin();
+        tree = ParsingExprList::GetExpressionTree(var_in);
+    }
+
     std::string var; 
     if (!VarIsCompound(var_in))
     {
@@ -2828,17 +2843,38 @@ avtDatabaseMetaData::DetermineVarType(std::string var_in)
 //    Hank Childs, Fri Aug  1 21:35:00 PDT 2003
 //    Have curve plots return themselves.
 //
+//    Sean Ahern, Fri Dec 13 11:04:50 PST 2002
+//    Added expression support.
+//
 // ****************************************************************************
-
 std::string
 avtDatabaseMetaData::MeshForVar(std::string var)
 {
+    // Check if we even have a variable.
+    if (var == "")
+    {
+        debug1 << "avtDatabaseMetaData::MeshForVar: Null variable passed." << endl;
+        EXCEPTION1(InvalidVariableException, var);
+    }
+
+    // If the variable is an expression, we need to find a "real" variable
+    // name to work with.
+    ExprNode *tree = ParsingExprList::GetExpressionTree(var);
+    while (tree != NULL)
+    {
+        var = *tree->GetVarLeaves().begin();
+        tree = ParsingExprList::GetExpressionTree(var);
+    }
+
+    // If the variable is compound, parse out the variable name.
     if (VarIsCompound(var))
     {
         std::string meshName;
         ParseCompoundForMesh(var, meshName);
         return meshName;
     }
+
+    // Look through the meshes.
     std::vector<avtMeshMetaData *>::iterator mit;
     for (mit = meshes.begin() ; mit != meshes.end() ; mit++)
     {
@@ -2852,6 +2888,7 @@ avtDatabaseMetaData::MeshForVar(std::string var)
         }
     }
 
+    // Look through the vectors.
     std::vector<avtVectorMetaData *>::iterator vit;
     for (vit = vectors.begin() ; vit != vectors.end() ; vit++)
     {
@@ -2861,6 +2898,7 @@ avtDatabaseMetaData::MeshForVar(std::string var)
         }
     }
 
+    // Look through the scalars.
     std::vector<avtScalarMetaData *>::iterator sit;
     for (sit = scalars.begin() ; sit != scalars.end() ; sit++)
     {
@@ -2870,6 +2908,7 @@ avtDatabaseMetaData::MeshForVar(std::string var)
         }
     }
 
+    // Look through the materials.
     std::vector<avtMaterialMetaData *>::iterator mait;
     for (mait = materials.begin() ; mait != materials.end() ; mait++)
     {
@@ -2879,6 +2918,7 @@ avtDatabaseMetaData::MeshForVar(std::string var)
         }
     }
 
+    // Look through the species.
     std::vector<avtSpeciesMetaData *>::iterator spit;
     for (spit = species.begin() ; spit != species.end() ; spit++)
     {
@@ -2888,6 +2928,7 @@ avtDatabaseMetaData::MeshForVar(std::string var)
         }
     }
 
+    // Look through the curves.
     std::vector<avtCurveMetaData *>::iterator cit;
     for (cit = curves.begin() ; cit != curves.end() ; cit++)
     {
@@ -3098,6 +3139,12 @@ avtDatabaseMetaData::GetSpeciesOnMesh(std::string mesh)
 //    Hank Childs, Wed Sep  4 11:32:48 PDT 2002
 //    Print out information related to expressions.
 //
+//    Sean Ahern, Fri Dec 13 16:50:58 PST 2002
+//    Changed to use the ExprssionList state objects.
+//
+//    Sean Ahern, Mon Mar 17 23:48:43 America/Los_Angeles 2003
+//    Changed the names of expression types.
+//
 //    Brad Whitlock, Wed Apr 2 12:01:10 PDT 2003
 //    I made it print out the timestep names if it is a virtual database.
 //
@@ -3223,34 +3270,40 @@ avtDatabaseMetaData::Print(ostream &out, int indent) const
         out << endl;
     }
 
-    if (expressionNames.size() > 0)
+    if (exprList.GetNumExpressions() > 0)
     {
         Indent(out, indent);
         out << "Expressions:" << endl;
-        for (int i = 0 ; i < expressionNames.size() ; i++)
+        for (int i = 0 ; i < exprList.GetNumExpressions() ; i++)
         {
             Indent(out, indent+1);
             std::string vartype("unknown var type");
-            switch (expressionTypes[i])
+            switch (exprList[i].GetType())
             {
-              case AVT_MESH:
+              case Expression::Mesh:
                 vartype = "mesh";
                 break;
-              case AVT_SCALAR_VAR:
+              case Expression::ScalarMeshVar:
                 vartype = "scalar";
                 break;
-              case AVT_VECTOR_VAR:
+              case Expression::VectorMeshVar:
                 vartype = "vector";
                 break;
-              case AVT_MATERIAL:
+              case Expression::TensorMeshVar:
+                vartype = "tensor";
+                break;
+              case Expression::SymmetricTensorMeshVar:
+                vartype = "symmetrictensor";
+                break;
+              case Expression::Material:
                 vartype = "material";
                 break;
-              case AVT_MATSPECIES:
+              case Expression::Species:
                 vartype = "species";
                 break;
             }
-            out << expressionNames[i].c_str() << " (" << vartype.c_str() << "): \t"
-                << expressionDefns[i].c_str() << endl;
+            out << exprList[i].GetName() << " (" << vartype << "): \t"
+                << exprList[i].GetDefinition() << endl;
         }
     }
 }
@@ -3276,6 +3329,9 @@ avtDatabaseMetaData::Print(ostream &out, int indent) const
 //
 //   Hank Childs, Wed Sep  4 11:32:48 PDT 2002
 //   Add expressions.
+//
+//   Sean Ahern, Fri Dec 13 16:54:24 PST 2002
+//   Changed to use an ExpressionList state object.
 //
 //   Brad Whitlock, Tue Mar 25 14:43:31 PST 2003
 //   I added timestep names and timestep path.
@@ -3308,9 +3364,7 @@ avtDatabaseMetaData::SelectAll()
     Select(15, (void*)&species);
     Select(16, (void*)&curves);
 
-    Select(17, (void*)&expressionNames);
-    Select(18, (void*)&expressionDefns);
-    Select(19, (void*)&expressionTypes);
+    Select(17, (void*)&exprList);
 }
 
 // *******************************************************************
@@ -3824,12 +3878,9 @@ avtDatabaseMetaData::UnsetExtents(void)
 // ****************************************************************************
 
 void
-avtDatabaseMetaData::AddExpression(const std::string &name,
-    const std::string &defn, avtVarType v)
+avtDatabaseMetaData::AddExpression(Expression *expr)
 {
-    expressionNames.push_back(name);
-    expressionDefns.push_back(defn);
-    expressionTypes.push_back((int) v);
+    exprList.AddExpression(*expr);
 }
 
 
@@ -3844,17 +3895,10 @@ avtDatabaseMetaData::AddExpression(const std::string &name,
 //
 // ****************************************************************************
 
-void
-avtDatabaseMetaData::GetExpression(int expr, std::string &name,
-    std::string &defn, avtVarType &vartype)
+Expression *
+avtDatabaseMetaData::GetExpression(int expr)
 {
-    if (expr < 0 || expr >= expressionNames.size())
-    {
-        EXCEPTION2(BadIndexException, expr, expressionNames.size());
-    }
-    name = expressionNames[expr];
-    defn = expressionDefns[expr];
-    vartype = (avtVarType) expressionTypes[expr];
+    return &(exprList[expr]);
 }
 
 
@@ -3872,7 +3916,7 @@ avtDatabaseMetaData::GetExpression(int expr, std::string &name,
 int
 avtDatabaseMetaData::GetNumberOfExpressions(void)
 {
-    return expressionNames.size();
+    return exprList.GetNumExpressions();
 }
 
 

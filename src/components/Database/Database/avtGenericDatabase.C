@@ -649,6 +649,9 @@ avtGenericDatabase::GetScalarVarDataset(const char *varname, int ts,
 //    Hank Childs, Tue Sep 17 09:50:24 PDT 2002
 //    Add support for species variables.
 //
+//    Hank Childs, Fri Jul 25 10:49:56 PDT 2003
+//    Allow for meshes to be specified (then ignored).
+//
 // ****************************************************************************
 
 void
@@ -666,6 +669,13 @@ avtGenericDatabase::AddSecondaryVariables(vtkDataSet *ds, int ts, int domain,
         const char *varName = *(vars2nd[i]);
         avtDatabaseMetaData *md = GetMetaData();
         avtVarType vt = md->DetermineVarType(varName);
+
+        //
+        // They asked for the mesh as a secondary variable.  Just ignore this
+        // request -- it is likely from the expression code.
+        //
+        if (vt == AVT_MESH)
+            continue;
 
         //
         // Do some preparation.  Decide if we have a scalar or a vector and

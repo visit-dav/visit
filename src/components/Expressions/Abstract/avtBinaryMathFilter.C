@@ -71,7 +71,7 @@ avtBinaryMathFilter::DeriveVariable(vtkDataSet *in_ds)
     if (data2 == NULL)
     {
         EXCEPTION1(ExpressionException, 
-                   "The two variables have different centering.");
+                   "the two variables have different centering.");
     }
 
     //
@@ -88,5 +88,3 @@ avtBinaryMathFilter::DeriveVariable(vtkDataSet *in_ds)
 
     return dv;
 }
-
-

@@ -352,22 +352,22 @@ Xfer::Process()
     ReadPendingMessages();
 
     // While there are complete messages, read and process them.
-    while(bufferedInput.Size() > 0)
+    while (bufferedInput.Size() > 0)
     {
-        int curOpcode;
-        int curLength;
+        int     curOpcode;
+        int     curLength;
         bufferedInput.ReadInt(&curOpcode);
         bufferedInput.ReadInt(&curLength);
 
-        bool bytesNeedToBeSkipped = true;
-        if(curOpcode < subjectList.size())
+        bool    bytesNeedToBeSkipped = true;
+        if (curOpcode < subjectList.size())
         {
-            if(subjectList[curOpcode])
+            if (subjectList[curOpcode])
             {
                 debug5 << "Xfer::Process: Opcode=" << curOpcode
-                       << ", len=" << curLength
-                       << ", type="
-                       << subjectList[curOpcode]->TypeName().c_str() << endl;
+                    << ", len=" << curLength
+                    << ", type="
+                    << subjectList[curOpcode]->TypeName().c_str() << endl;
 
                 // Read the object into its local copy.
                 subjectList[curOpcode]->Read(bufferedInput);
@@ -380,13 +380,12 @@ Xfer::Process()
             }
         }
 
-        if(bytesNeedToBeSkipped)
+        if (bytesNeedToBeSkipped)
         {
             debug1 << "Xfer::Process: Opcode " << curOpcode
-                   << " is unknown! Skipping " << curLength << " bytes."
-                   << endl;
+                   << " is unknown! Skipping " << curLength << " bytes." << endl;
             unsigned char uchar;
-            for(int i = 0; i < curLength; ++i)
+            for (int i = 0; i < curLength; ++i)
                 bufferedInput.Read(&uchar);
         }
     }

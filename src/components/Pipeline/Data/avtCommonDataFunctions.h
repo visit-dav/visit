@@ -4,12 +4,17 @@
 
 #ifndef AVT_COMMON_DATA_FUNCTIONS_H
 #define AVT_COMMON_DATA_FUNCTIONS_H
+
 #include <pipeline_exports.h>
 
 #include <avtDataRepresentation.h>
+#include <avtTypes.h>
 
 #include <vector>
 #include <string>
+
+
+class     vtkDataArray;
 
 
 // ****************************************************************************
@@ -58,6 +63,7 @@ PIPELINE_API void CFindMaximum(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CFindMinimum(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CLocateZone(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CLocateNode(avtDataRepresentation &, void *, bool &);
+PIPELINE_API void CGetArray(avtDataRepresentation &, void *, bool &);
 
 PIPELINE_API void GetDataRange(vtkDataSet *, double *, int);
 PIPELINE_API void GetDataMagnitudeRange(vtkDataSet *, double *, int);
@@ -91,6 +97,13 @@ typedef struct
     double  point[3];
 }  LocateObjectArgs;
 
+typedef struct
+{
+    vtkDataArray   *arr;
+    int             domain;
+    const char     *varname;
+    avtCentering    centering;
+} GetArrayArgs;
 
 #endif
 

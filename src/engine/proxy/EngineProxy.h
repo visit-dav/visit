@@ -11,7 +11,6 @@
 #include <RenderRPC.h>
 #include <ExecuteRPC.h>
 #include <ApplyOperatorRPC.h>
-#include <ApplyNamedFunctionRPC.h>
 #include <ClearCacheRPC.h>
 #include <DefineVirtualDatabaseRPC.h>
 #include <MakePlotRPC.h>
@@ -24,6 +23,7 @@
 #include <StartPickRPC.h>
 #include <UpdatePlotAttsRPC.h>
 #include <UseNetworkRPC.h>
+#include <ExpressionList.h>
 
 #include <avtDataObjectReader.h>
 
@@ -136,6 +136,9 @@ class StatusAttributes;
 //    Jeremy Meredith, Thu Oct 24 16:03:39 PDT 2002
 //    Added material options to ReadDataObject.
 //
+//    Sean Ahern, Thu Nov 21 20:12:50 PST 2002
+//    Removed AddNamedFunction.
+//
 //    Brad Whitlock, Wed Nov 27 13:29:46 PST 2002
 //    I added methods to allow certain parallel options to be specified
 //    so the object can be queried for the values later.
@@ -224,7 +227,6 @@ protected:
 private:
     ReadRPC                  readRPC;
     ApplyOperatorRPC         applyOperatorRPC;
-    ApplyNamedFunctionRPC    applyNamedFunctionRPC;
     SetFinalVariableNameRPC  setFinalVariableNameRPC;
     MakePlotRPC              makePlotRPC;
     UseNetworkRPC            useNetworkRPC;
@@ -239,6 +241,7 @@ private:
     DefineVirtualDatabaseRPC defineVirtualDatabaseRPC;
     RenderRPC                renderRPC;
     SetWinAnnotAttsRPC       setWinAnnotAttsRPC;
+    ExpressionList           exprList;
 
     // For indicating status.
     StatusAttributes        *statusAtts;

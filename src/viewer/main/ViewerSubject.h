@@ -28,7 +28,6 @@ class QApplication;
 class QSocketNotifier;
 class StatusAttributes;
 class SyncAttributes;
-class ViewerExpressionList;
 class ViewerConfigManager;
 class ViewerMessageBuffer;
 class ViewerOperatorFactory;

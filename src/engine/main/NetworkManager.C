@@ -4,6 +4,7 @@
 #include <avtDatabaseFactory.h>
 #include <LoadBalancer.h>
 #include <MaterialAttributes.h>
+#include <avtExpressionEvaluatorFilter.h>
 #include <ImproperUseException.h>
 #include <DatabaseException.h>
 #include <NoInputException.h>
@@ -11,43 +12,8 @@
 #include <OperatorPluginManager.h>
 #include <OperatorPluginInfo.h>
 #include <PickAttributes.h>
-#include <avtBinaryAddFilter.h>
-#include <avtBinarySubtractFilter.h>
-#include <avtBinaryMultiplyFilter.h>
-#include <avtBinaryDivideFilter.h>
-#include <avtBinaryPowerFilter.h>
-#include <avtSinFilter.h>
-#include <avtArctanFilter.h>
-#include <avtArcsinFilter.h>
-#include <avtArccosFilter.h>
-#include <avtCosFilter.h>
-#include <avtDegreeToRadianFilter.h>
 #include <avtExtents.h>
-#include <avtGradientFilter.h>
-#include <avtMagnitudeFilter.h>
-#include <avtNeighborFilter.h>
-#include <avtNodeDegreeFilter.h>
 #include <avtNullData.h>
-#include <avtRadianToDegreeFilter.h>
-#include <avtRevolvedSurfaceArea.h>
-#include <avtRevolvedVolume.h>
-#include <avtTanFilter.h>
-#include <avtUnaryMinusFilter.h>
-#include <avtAbsValFilter.h>
-#include <avtNaturalLogFilter.h>
-#include <avtBase10LogFilter.h>
-#include <avtSquareRootFilter.h>
-#include <avtSquareFilter.h>
-#include <avtPolarCoordinatesFilter.h>
-#include <avtVectorCrossProductFilter.h>
-#include <avtVectorComponent1Filter.h>
-#include <avtVectorComponent2Filter.h>
-#include <avtVectorComponent3Filter.h>
-#include <avtMeshXCoordinateFilter.h>
-#include <avtMeshYCoordinateFilter.h>
-#include <avtMeshZCoordinateFilter.h>
-#include <avtProcessorIdFilter.h>
-#include <avtRandomFilter.h>
 #include <avtDataObjectQuery.h>
 #include <avtCompactnessQuery.h>
 #include <avtEulerianQuery.h>
@@ -63,9 +29,10 @@
 #include <avtVariableQuery.h>
 #include <avtWholeImageCompositer.h>
 #include <avtPlot.h>
-#include <avtDegreeFilter.h>
-#include <avtVMetrics.h>
 #include <VisWindow.h>
+#include <ParsingExprList.h>
+#include <EngineExprNode.h>
+#include <ParserInterface.h>
 #include <PlotPluginManager.h>
 #include <PlotPluginInfo.h>
 #ifdef PARALLEL
@@ -89,6 +56,7 @@ static double RenderBalance(int numTrianglesIHave);
 // ****************************************************************************
 NetworkManager::NetworkManager(void) : virtualDatabases()
 {
+    //cerr << "NetworkManager::NetworkManager(void)" << endl;
     workingNet = NULL;
     loadBalancer = NULL;
     requireOriginalCells = false;
@@ -122,6 +90,7 @@ NetworkManager::NetworkManager(void) : virtualDatabases()
 // ****************************************************************************
 NetworkManager::~NetworkManager(void)
 {
+    //cerr << "NetworkManager::~NetworkManager(void)" << endl;
     for (int i = 0; i < networkCache.size(); i++)
         delete networkCache[i];
 }
@@ -146,6 +115,7 @@ NetworkManager::~NetworkManager(void)
 void
 NetworkManager::ClearAllNetworks(void)
 {
+    //cerr << "NetworkManager::ClearAllNetworks(void)" << endl;
     int i;
 
     for (i = 0; i < databaseCache.size(); i++)
@@ -159,10 +129,96 @@ NetworkManager::ClearAllNetworks(void)
 }
 
 // ****************************************************************************
-//  Method: NetworkManager::AddDB
+//  Method: NetworkManager::GetDBFromCache
 //
 //  Purpose:
-//      Add a DB to a network.  Use the existing network, if one exists.
+//      Get a DB from the cache.  If it's not there already, create it and
+//      return it.
+//
+//  Programmer: Sean Ahern
+//  Creation:   Mon Dec 23 12:28:30 PST 2002
+//
+//  Modifications:
+//
+//    Brad Whitlock, Wed May 14 12:56:16 PDT 2003
+//    I made it get the metadata and the SIL if the time is greater than 0.
+//    This ensures that we pick up the metadata and SIL for the time state
+//    that we're intersted in.
+//
+// ****************************************************************************
+NetnodeDB *
+NetworkManager::GetDBFromCache(const string &filename, int time)
+{
+    //cerr << "NetworkManager::LoadDBCache()" << endl;
+
+    // If we don't have a load balancer, we're dead.
+    if (loadBalancer == NULL)
+    {
+        debug1 << "Internal error: A load balancer was never registered." << endl;
+        EXCEPTION0(ImproperUseException);
+    }
+
+    // Generate the list of matching databases.
+    std::vector<NetnodeDB*> databaseMatches;
+    for (int i = 0; i < databaseCache.size(); i++)
+    {
+        if (databaseCache[i]->GetFilename() == filename)
+            databaseMatches.push_back(databaseCache[i]);
+    }
+
+    // See if we have a match.
+    if (!databaseMatches.empty())
+    {
+        databaseMatches[0]->SetDBInfo(filename, "", time);
+        return databaseMatches[0];
+    }
+
+    // No match.  Load a new DB.
+    debug3 << "Loading new database" << endl;
+    TRY
+    {
+        avtDatabase *db = NULL;
+        NetnodeDB *netDB = NULL;
+        const char *filename_c = filename.c_str();
+        if (filename.substr(filename.length() - 6) == ".visit")
+            db = avtDatabaseFactory::VisitFile(filename_c);
+        else
+            db = avtDatabaseFactory::FileList(&filename_c, 1);
+
+        // If we want to open the file at a later timestep, get the
+        // metadata and the SIL so that it contains the right data.
+        if (time > 0)
+        {
+            debug2 << "NetworkManager::AddDB: We were instructed to open "
+                   << filename.c_str() << " at timestate=" << time
+                   << " so we're reading the MetaData and SIL early."
+                   << endl;
+            db->GetMetaData(time);
+            db->GetSIL(time);
+        }
+
+        netDB = new NetnodeDB(db);
+        databaseCache.push_back(netDB);
+
+        netDB->SetDBInfo(filename, "", time);
+        const   avtIOInformation & ioinfo = db->GetIOInformation();
+        loadBalancer->AddDatabase(filename, ioinfo);
+        return netDB;
+    }
+    CATCH(DatabaseException)
+    {
+        debug1 << "ERROR - could not create database " << filename.c_str()
+            << endl;
+        RETHROW;
+    }
+    ENDTRY
+}
+
+// ****************************************************************************
+//  Method: NetworkManager::StartNetwork
+//
+//  Purpose:
+//      Start building the pipeline.
 //
 //  Programmer: Jeremy Meredith
 //  Creation:   September 29, 2000
@@ -209,257 +265,91 @@ NetworkManager::ClearAllNetworks(void)
 //    Jeremy Meredith, Thu Oct 24 16:03:39 PDT 2002
 //    Added material options.
 //
-//    Brad Whitlock, Wed May 14 12:56:16 PDT 2003
-//    I made it get the metadata and the SIL if the time is greater than 0.
-//    This ensures that we pick up the metadata and SIL for the time state
-//    that we're intersted in.
+//    Sean Ahern, Mon Dec 23 12:38:17 PST 2002
+//    Changed this dramatically.  Broke out a good portion of the logic
+//    into GetDBFromCache.
+//
+//    Sean Ahern, Sat Mar  8 00:59:16 America/Los_Angeles 2003
+//    Cleaned up unnecessarily complicated code.
 //
 //    Jeremy Meredith, Wed Jul 30 10:45:45 PDT 2003
 //    Added the check for requiring full connectivity.
 //
 // ****************************************************************************
-
 void
-NetworkManager::AddDB(const string &filename, const string &var, int time,
-                      const CompactSILRestrictionAttributes &atts,
-                      const MaterialAttributes &matopts)
+NetworkManager::StartNetwork(const string &filename, const string &var,
+                             int time,
+                             const CompactSILRestrictionAttributes &atts,
+                             const MaterialAttributes &matopts)
 {
-    //
-    // We gotta have a load balancer
-    //
-    if (loadBalancer == NULL)
-    {
-        debug1 << "Internal error: A load balancer was never registered." <<
-            endl;
-        EXCEPTION0(ImproperUseException);
-    }
+    //cerr << "NetworkManager::StartNetwork()" << endl;
 
-    //
-    // If this is the first thing on the network, then we're starting a new
-    // network.
-    //
-    bool newNetwork = false;
-    if (workingNet == NULL)
+    // Check to make sure that there is no existing network.
+    if (workingNet != NULL)
     {
-        // Create a new network.
-        workingNet = new DataNetwork;
-        newNetwork = true;
-    }
-
-    //
-    // Figure out how to get a database
-    //
-
-    // Generate the list of matching databases.
-    std::vector<NetnodeDB*> databaseMatches;
-    for (int i = 0; i < databaseCache.size(); i++)
-    {
-        if (databaseCache[i]->GetFilename() == filename)
-            databaseMatches.push_back(databaseCache[i]);
-    }
-
-    // If this is not a new network, we better have matched a DB in the
-    // cache.  If we didn't, the user is trying to use different databases,
-    // something that we don't yet support.
-    if (!newNetwork && databaseMatches.empty())
-    {
-        char error[] = "Using more than one database in an expression is not supported.";
+        char error[] = "Trying to create pipeline twice.";
         debug1 << error << endl;
         EXCEPTION1(ImproperUseException,error);
     }
 
-    // Only if we have a new network do we need to load a new database.  If it's
-    // an existing network, we already have the database set.
-    if (newNetwork)
+    // If the variable is an expression, we need to find a "real" variable
+    // name to work with.
+    std::string leaf = var;
+    ExprNode *tree = ParsingExprList::GetExpressionTree(leaf);
+    while (tree != NULL)
     {
-        // databaseMatches now contains the matching databases.  If it's empty,
-        // we have to create a new database.
-        if (!databaseMatches.empty())
-        {
-            debug3 << "Using database in cache:"
-                   << " filename:" << databaseMatches[0]->GetFilename().c_str()
-                   << endl;
-
-            NetnodeDB *netDB =new NetnodeDB(databaseMatches[0]->GetDatabase());
-            workingNet->GetDBs().push_back(netDB);
-            workingNet->AddNode(netDB);
-
-            netDB->SetDBSpec(filename, var, time);
-            databaseCache.push_back(netDB);
-        }
-        else
-        {
-            debug3 << "Loading new database" << endl;
-            TRY
-            {
-                avtDatabase *db = NULL;
-                NetnodeDB *netDB = NULL;
-                const char *filename_c = filename.c_str();
-                if (filename.substr(filename.length() - 6) == ".visit")
-                    db = avtDatabaseFactory::VisitFile(filename_c);
-                else
-                    db = avtDatabaseFactory::FileList(&filename_c, 1);
-
-                // If we want to open the file at a later timestep, get the
-                // metadata and the SIL so that it contains the right data.
-                if(time > 0)
-                {
-                    debug2 << "NetworkManager::AddDB: We were instructed to open "
-                           << filename.c_str() << " at timestate=" << time
-                           << " so we're reading the MetaData and SIL early."
-                           << endl;
-                    db->GetMetaData(time);
-                    db->GetSIL(time);
-                }
-
-                netDB = new NetnodeDB(db);
-                workingNet->GetDBs().push_back(netDB);
-                workingNet->AddNode(netDB);
-                databaseCache.push_back(netDB);
-
-                netDB->SetDBSpec(filename, var, time);
-                const   avtIOInformation & ioinfo = db->GetIOInformation();
-                loadBalancer->AddDatabase(filename, ioinfo);
-            }
-            CATCH(DatabaseException)
-            {
-                debug1 << "ERROR - could not create database " << filename.c_str()
-                    << endl;
-                RETHROW;
-            }
-            ENDTRY
-        }
-
-        // Push the db onto the working list.
-        workingNetnodeList.push_back(workingNet->GetDBs().back());
+        leaf = *tree->GetVarLeaves().begin();
+        tree = ParsingExprList::GetExpressionTree(leaf);
     }
 
-    // Push the name onto the name stack.
+    // Start up the DataNetwork and add the database to it.
+    workingNet = new DataNetwork;
+    NetnodeDB *netDB = GetDBFromCache(filename, time);
+    workingNet->SetNetDB(netDB);
+    workingNet->AddNode(netDB);
+    netDB->SetDBInfo(filename, leaf, time);
+
+    // Put an ExpressionEvaluatorFilter right after the netDB to handle
+    // expressions that come up the pipe.
+    avtExpressionEvaluatorFilter *f = new avtExpressionEvaluatorFilter();
+    NetnodeFilter *filt = new NetnodeFilter(f, "ExpressionEvaluator");
+    filt->GetInputNodes().push_back(netDB);
+
+    // Push the ExpressionEvaluator onto the working list.
+    workingNetnodeList.push_back(filt);
+
+    // Push the variable name onto the name stack.
     nameStack.push_back(var);
     debug5 << "NetworkManager::AddDB: Adding " << var.c_str()
            << " to the name stack" << endl;
 
     // Set up the data spec.
-    if (newNetwork)
-    {
-        avtSILRestriction_p silr =
-            new avtSILRestriction(workingNet->GetDBs()[0]->GetDB()->GetSIL(), atts);
-        avtDataSpecification *dspec = new avtDataSpecification(var.c_str(), time, silr);
-        // Set up some options from the data specification
-        dspec->SetNeedMixedVariableReconstruction(matopts.GetForceMIR());
-        dspec->SetNeedSmoothMaterialInterfaces(matopts.GetSmoothing());
-        dspec->SetNeedCleanZonesOnly(matopts.GetCleanZonesOnly());
-        dspec->SetNeedValidFaceConnectivity(matopts.GetNeedValidConnectivity());
-        workingNet->SetDataSpec(dspec);
-    }
-    else
-    {
-        // Check if the dspec already knows about our variable.
-        avtDataSpecification_p dspec = workingNet->GetDataSpec();
-        bool found = false;
+    avtSILRestriction_p silr =
+        new avtSILRestriction(workingNet->GetNetDB()->GetDB()->GetSIL(), atts);
+    avtDataSpecification *dspec = new avtDataSpecification(var.c_str(), time, silr);
 
-        // First, check the normal variable.
-        if (strcmp(dspec->GetVariable(), var.c_str()) == 0)
-            found = true;
-        // Now check the secondary variables.
-        if (dspec->HasSecondaryVariable(var.c_str()))
-            found = true;
-        // If we didn't find it in the dspec, add it.
-        if (!found)
-            dspec->AddSecondaryVariable(var.c_str());
-    }
+    // Set up some options from the data specification
+    dspec->SetNeedMixedVariableReconstruction(matopts.GetForceMIR());
+    dspec->SetNeedSmoothMaterialInterfaces(matopts.GetSmoothing());
+    dspec->SetNeedCleanZonesOnly(matopts.GetCleanZonesOnly());
+    dspec->SetNeedValidFaceConnectivity(matopts.GetNeedValidConnectivity());
+    workingNet->SetDataSpec(dspec);
 
     // The plot starts out as NULL.
     workingNet->SetPlot(NULL);
 }
 
-// ****************************************************************************
-// Method: NetworkManager::AddDB
-//
-// Purpose: 
-//    Open a DB and add it to the database cache.
-//
-// Arguments:
-//    filename : The database filename.
-//    time     : The timestep that we want to examine.
-//
-// Note:       This code was adapted from the other AddDB method.
-//
-// Programmer: Brad Whitlock
-// Creation:   Tue Dec 10 15:02:22 PST 2002
-//
-// Modifications:
-//   Brad Whitlock, Wed May 14 12:56:16 PDT 2003
-//   I made it get the metadata and the SIL if the time is greater than 0.
-//   This ensures that we pick up the metadata and SIL for the time state
-//   that we're intersted in.
-//   
-// ****************************************************************************
 void
-NetworkManager::AddDB(const string &filename, int time)
+NetworkManager::SetFinalVariableName(const std::string &varname)
 {
-    //
-    // We gotta have a load balancer
-    //
-    if (loadBalancer == NULL)
-    {
-        debug1 << "Internal error: A load balancer was never registered."
-               << endl;
-        EXCEPTION0(ImproperUseException);
-    }
-
-    // Generate the list of matching databases.
-    std::vector<NetnodeDB*> databaseMatches;
-    for (int i = 0; i < databaseCache.size(); i++)
-    {
-        if (databaseCache[i]->GetFilename() == filename)
-            databaseMatches.push_back(databaseCache[i]);
-    }
-
-    // If no cached databases matched the filename, open a new database.
-    if (databaseMatches.empty())
-    {
-        debug3 << "Loading new database" << endl;
-        TRY
-        {
-            // Open the database
-            avtDatabase *db = NULL;
-            const char *filename_c = filename.c_str();
-            if (filename.substr(filename.length() - 6) == ".visit")
-                db = avtDatabaseFactory::VisitFile(filename_c);
-            else
-                db = avtDatabaseFactory::FileList(&filename_c, 1);
-
-            // If we want to open the file at a later timestep, get the
-            // metadata and the SIL so that it contains the right data.
-            if(time > 0)
-            {
-                debug2 << "NetworkManager::AddDB: We were instructed to open "
-                       << filename.c_str() << " at timestate=" << time
-                       << " so we're reading the MetaData and SIL early."
-                       << endl;
-                db->GetMetaData(time);
-                db->GetSIL(time);
-            }
-
-            // Create a netnode using the opened database and stick it in
-            // the database cache.
-            NetnodeDB *netDB = new NetnodeDB(db);
-            netDB->SetDBSpec(filename, "", time);
-            databaseCache.push_back(netDB);
-
-            // Add the database to the load balancer.
-            const   avtIOInformation & ioinfo = db->GetIOInformation();
-            loadBalancer->AddDatabase(filename, ioinfo);
-        }
-        CATCH(DatabaseException)
-        {
-            debug1 << "ERROR - could not create database " << filename.c_str()
-                   << endl;
-            RETHROW;
-        }
-        ENDTRY
-    }
+    //cerr << "NetworkManager::SetFinalVariableName()" << endl;
+#if 0
+    workingNet->
+        SetDataSpec(new
+                    avtDataSpecification(varname.c_str(),
+                                         workingNet->GetTime(),
+                                         workingNet->GetSIL()));
+#endif
 }
 
 // ****************************************************************************
@@ -597,7 +487,7 @@ NetworkManager::DefineDB(const string &dbName, const string &dbPath,
         // Create a netnode using the opened database and stick it in
         // the database cache.
         NetnodeDB *netDB = new NetnodeDB(db);
-        netDB->SetDBSpec(dbName, "", time);
+        netDB->SetDBInfo(dbName, "", time);
         databaseCache.push_back(netDB);
 
         // Add the database to the load balancer.
@@ -648,6 +538,7 @@ NetworkManager::AddFilter(const string &filtertype,
                           const AttributeGroup *atts,
                           const unsigned int nInputs)
 {
+    //cerr << "NetworkManager::AddFilter()" << endl;
     // Check that we have a network to work on.
     if (workingNet == NULL)
     {
@@ -669,7 +560,7 @@ NetworkManager::AddFilter(const string &filtertype,
     std::vector<Netnode*> &filtInputs = filt->GetInputNodes();
     for (int i = 0; i < nInputs; i++)
     {
-        // Pull a node off the working list, and push it onto the filter
+        // Pull a node off the working list and push it onto the filter
         // inputs.
         Netnode *n = workingNetnodeList.back();
         workingNetnodeList.pop_back();
@@ -678,266 +569,6 @@ NetworkManager::AddFilter(const string &filtertype,
     // Push the filter onto the working list.
     workingNetnodeList.push_back(filt);
     workingNet->AddNode(filt);
-}
-
-// ****************************************************************************
-//  Method: NetworkManager::AddNamedFunction
-//
-//  Purpose:
-//     Determines what filter to apply based on a function name and a
-//     number of arguments.
-//
-//  Programmer: Sean Ahern
-//  Creation:   Fri Apr 19 13:46:15 PDT 2002
-//
-//  Modifications:
-//    Hank Childs, Fri Jun  7 14:20:41 PDT 2002
-//    Added expression for degrees.
-//
-//    Brad Whitlock, Fri Jun 28 14:11:51 PST 2002
-//    Made it work on Windows.
-//
-//    Akira Haddox, Thu Aug 15 16:29:30 PDT 2002
-//    Added expressions for gradient, magnitude.
-//
-//    Akira Haddox Mon Aug 19 15:40:17 PDT 2002
-//    Added verdict mesh quality expressions.
-//
-//    Akira Haddox, Thu Aug 22 08:37:28 PDT 2002
-//    Added expressions for eulerian, neighbor, nodeDegree.
-//
-//    Hank Childs, Sun Sep  8 21:42:23 PDT 2002
-//    Added revolved volume.
-//
-//    Kathleen Bonnell, Fri Nov 15 17:05:43 PST 2002 
-//    Removed eulerian, it is now a query, not an expression
-//
-//    Hank Childs, Mon Nov 18 11:57:52 PST 2002
-//    Added degree to radian, radian to degree.
-//
-//    Hank Childs, Mon Nov 18 13:51:24 PST 2002
-//    Added polar coordinates, and vector component expressions.
-//
-//    Hank Childs, Fri Mar  7 09:43:21 PST 2003
-//    Added 'random' expression.
-//
-//    Hank Childs, Tue Mar 18 21:36:26 PST 2003
-//    Added revolved surface area.
-//
-// ****************************************************************************
-void
-NetworkManager::AddNamedFunction(const std::string &functionName, const int nargs)
-{
-    // Can we even add filters?
-    if (workingNet == NULL)
-    {
-        debug1 << "Trying to add a filter to a non-existent network." << endl;
-        EXCEPTION0(ImproperUseException);
-    }
-
-    // We know we can add a filter.  Figure out which one.
-    avtExpressionFilter *f = NULL;
-    if (nargs == 1)
-    {
-        avtSingleInputExpressionFilter *single = NULL;
-        if (functionName == "-")
-            single = new avtUnaryMinusFilter();
-        else if (functionName == "sin")
-            single = new avtSinFilter();
-        else if (functionName == "cos")
-            single = new avtCosFilter();
-        else if (functionName == "tan")
-            single = new avtTanFilter();
-        else if (functionName == "atan")
-            single = new avtArctanFilter();
-        else if (functionName == "asin")
-            single = new avtArcsinFilter();
-        else if (functionName == "acos")
-            single = new avtArccosFilter();
-        else if (functionName == "deg2rad")
-            single = new avtDegreeToRadianFilter();
-        else if (functionName == "rad2deg")
-            single = new avtRadianToDegreeFilter();
-        else if (functionName == "abs")
-            single = new avtAbsValFilter();
-        else if (functionName == "ln")
-            single = new avtNaturalLogFilter();
-        else if ((functionName == "log") || (functionName == "log10"))
-            single = new avtBase10LogFilter();
-        else if (functionName == "sqrt")
-            single = new avtSquareRootFilter();
-        else if ((functionName == "sq") || (functionName == "sqr"))
-            single = new avtSquareFilter();
-        else if (functionName == "degree")
-            single = new avtDegreeFilter();
-        else if (functionName == "polar")
-            single = new avtPolarCoordinatesFilter();
-        else if (functionName == "coord0" || functionName == "X")
-            single = new avtMeshXCoordinateFilter();
-        else if (functionName == "coord1" || functionName == "Y")
-            single = new avtMeshYCoordinateFilter();
-        else if (functionName == "coord2" || functionName == "Z")
-            single = new avtMeshZCoordinateFilter();
-        else if (functionName == "comp0")
-            single = new avtVectorComponent1Filter();
-        else if (functionName == "comp1")
-            single = new avtVectorComponent2Filter();
-        else if (functionName == "comp2")
-            single = new avtVectorComponent3Filter();
-        else if (functionName == "procid")
-            single = new avtProcessorIdFilter();
-        else if (functionName == "random")
-            single = new avtRandomFilter();
-        else if (functionName == "gradient")
-            single = new avtGradientFilter();
-        else if (functionName == "magnitude")
-            single = new avtMagnitudeFilter();
-        else if (functionName == "neighbor")
-            single = new avtNeighborFilter();
-        else if (functionName == "node_degree")
-            single = new avtNodeDegreeFilter();
-        // Begin Verdict Metrics
-        else if (functionName == "area")
-            single = new avtVMetricArea();
-        else if (functionName == "aspect")
-            single = new avtVMetricAspectRatio();
-        else if (functionName == "skew")
-            single = new avtVMetricSkew();
-        else if (functionName == "taper")
-            single = new avtVMetricTaper();
-        else if (functionName == "volume")
-            single = new avtVMetricVolume();
-        else if (functionName == "stretch")
-            single = new avtVMetricStretch();
-        else if (functionName == "diagonal")
-            single = new avtVMetricDiagonal();
-        else if (functionName == "dimension")
-            single = new avtVMetricDimension();
-        else if (functionName == "oddy")
-            single = new avtVMetricOddy();
-        else if (functionName == "condition")
-            single = new avtVMetricCondition();
-        else if (functionName == "jacobian")
-            single = new avtVMetricJacobian();
-        else if (functionName == "scaled_jacobian")
-            single = new avtVMetricScaledJacobian();
-        else if (functionName == "shear")
-            single = new avtVMetricShear();
-        else if (functionName == "shape")
-            single = new avtVMetricShape();
-        else if (functionName == "relative_size")
-            single = new avtVMetricRelativeSize();
-        else if (functionName == "shape_and_size")
-            single = new avtVMetricShapeAndSize();
-        else if (functionName == "aspect_gamma")
-            single = new avtVMetricAspectGamma();
-        else if (functionName == "warpage")
-            single = new avtVMetricWarpage();
-        else if (functionName == "largest_angle")
-            single = new avtVMetricLargestAngle();
-        else if (functionName == "smallest_angle")
-            single = new avtVMetricSmallestAngle();
-        else if (functionName == "revolved_volume")
-            single = new avtRevolvedVolume;
-        else if (functionName == "revolved_surface_area")
-            single = new avtRevolvedSurfaceArea;
-        else
-        {
-            std::string error;
-            error = std::string("NetworkManager::AddNamedFunction: "
-                                "Unknown function: \"") + 
-                    functionName + std::string("\".");
-            EXCEPTION1(VisItException, error);
-        }
-
-        // Set the variable the expression should process
-        string inputName = nameStack.back();
-        nameStack.pop_back();
-        debug5 << "NetworkManager::AddNamedFunction: Pulling "
-               << inputName.c_str() << " from the name stack" << endl;
-        single->AddInputVariableName(inputName.c_str());
-
-        // Set the variable the expression should output
-        string outputName = functionName + "(" + inputName + ")";
-        single->SetOutputVariableName(outputName.c_str());
-        nameStack.push_back(outputName);
-        debug5 << "NetworkManager::AddNamedFunction: Adding "
-               << outputName.c_str() << " to the name stack" << endl;
-
-        f = single;
-    }
-    else if (nargs == 2)
-    {
-        avtMultipleInputExpressionFilter *multiple = NULL;
-        if (functionName == "+")
-            multiple = new avtBinaryAddFilter();
-        else if (functionName == "-")
-            multiple = new avtBinarySubtractFilter();
-        else if (functionName == "*")
-            multiple = new avtBinaryMultiplyFilter();
-        else if (functionName == "/")
-            multiple = new avtBinaryDivideFilter();
-        else if (functionName == "^")
-            multiple = new avtBinaryPowerFilter();
-        else if (functionName == "cross")
-            multiple = new avtVectorCrossProductFilter();
-        else
-        {
-            std::string error;
-            error = std::string("NetworkManager::AddNamedFunction: "
-                                "Unknown function: \"")
-                    + functionName + std::string("\".");
-            EXCEPTION1(VisItException, error);
-        }
-
-        // Set the variables the expression should process
-        string inputName2 = nameStack.back();
-        nameStack.pop_back();
-        debug5 << "NetworkManager::AddNamedFunction: Pulling "
-               << inputName2.c_str() << " from the name stack" << endl;
-        string inputName1 = nameStack.back();
-        nameStack.pop_back();
-        debug5 << "NetworkManager::AddNamedFunction: Pulling "
-               << inputName1.c_str() << " from the name stack" << endl;
-        multiple->AddInputVariableName(inputName1.c_str());
-        multiple->AddInputVariableName(inputName2.c_str());
-
-        // Set the variable the expression should output
-        string outputName = inputName1 + functionName + inputName2;
-        multiple->SetOutputVariableName(outputName.c_str());
-        nameStack.push_back(outputName);
-        debug5 << "NetworkManager::AddNamedFunction: Adding "
-               << outputName.c_str() << " to the name stack" << endl;
-
-        f = multiple;
-    }
-    else
-    {
-        char num[20];
-        sprintf(num, "%d", nargs);
-        std::string error;
-        error = std::string("NetworkManager::AddNamedFunction: "
-                            "No filters named \"") + 
-                functionName + std::string("\" that support ") +
-                std::string(num) + std::string(" arguments.");
-        EXCEPTION1(VisItException, error);
-    }
-
-    NetnodeFilter *filt = new NetnodeFilter(f, functionName);
-    std::vector<Netnode*> &filtInputs = filt->GetInputNodes();
-
-#if 0
-    for(int i=0;i<nargs;i++)
-    {
-#endif
-        Netnode *n = workingNetnodeList.back();
-        workingNetnodeList.pop_back();
-        filtInputs.push_back(n);
-#if 0
-    }
-#endif
-
-    workingNetnodeList.push_back(filt);
 }
 
 // ****************************************************************************
@@ -971,6 +602,7 @@ NetworkManager::AddNamedFunction(const std::string &functionName, const int narg
 void
 NetworkManager::MakePlot(const string &id, const AttributeGroup *atts)
 {
+    //cerr << "NetworkManager::MakePlot()" << endl;
     if (workingNet == NULL)
     {
         debug1 << "Adding a plot to a non-existent network." << endl;
@@ -986,7 +618,8 @@ NetworkManager::MakePlot(const string &id, const AttributeGroup *atts)
     // Checking to see if the network has been built successfully.
     if (workingNetnodeList.size() != 1)
     {
-        debug1 << "Network still-in progress.  Filter required." << endl;
+        debug1 << "Network building still in progress.  Filter required to "
+               << "absorb" << workingNetnodeList.size() << " nodes."  << endl;
         EXCEPTION0(ImproperUseException);
     }
 
@@ -1011,6 +644,7 @@ NetworkManager::MakePlot(const string &id, const AttributeGroup *atts)
 int
 NetworkManager::EndNetwork(void)
 {
+    //cerr << "NetworkManager::EndNetwork(void)" << endl;
     // Checking to see if the network has been built successfully.
     if (workingNetnodeList.size() != 1)
     {
@@ -1022,7 +656,7 @@ NetworkManager::EndNetwork(void)
 
     // set the pipeline specification
     int pipelineIndex =
-        loadBalancer->AddPipeline(workingNet->GetDBs()[0]->GetFilename());
+        loadBalancer->AddPipeline(workingNet->GetNetDB()->GetFilename());
     avtPipelineSpecification_p pspec =
         new avtPipelineSpecification(workingNet->GetDataSpec(), pipelineIndex);
     workingNet->SetPipelineSpec(pspec);
@@ -1059,6 +693,7 @@ NetworkManager::EndNetwork(void)
 void
 NetworkManager::UseNetwork(int id)
 {
+    //cerr << "NetworkManager::UseNetwork()" << endl;
     if (workingNet)
     {
         debug1 << "Internal error: UseNetwork called with an open network" << endl;
@@ -1100,6 +735,7 @@ NetworkManager::UseNetwork(int id)
 avtPlot_p
 NetworkManager::GetPlot(void)
 {
+    //cerr << "NetworkManager::GetPlot(void)" << endl;
     if (workingNet == NULL)
     {
         EXCEPTION0(ImproperUseException);
@@ -1121,6 +757,7 @@ NetworkManager::GetPlot(void)
 int
 NetworkManager::GetCurrentNetworkId(void)
 {
+    //cerr << "NetworkManager::GetCurrentNetworkId(void)" << endl;
     if (workingNet == NULL)
     {
         EXCEPTION0(ImproperUseException);
@@ -1143,6 +780,7 @@ NetworkManager::GetCurrentNetworkId(void)
 void
 NetworkManager::DoneWithNetwork(int id)
 {
+    //cerr << "NetworkManager::DoneWithNetwork()" << endl;
     if (id >= networkCache.size())
     {
         debug1 << "Internal error: asked to reuse network ID (" << id
@@ -1172,6 +810,7 @@ NetworkManager::DoneWithNetwork(int id)
 void
 NetworkManager::UpdatePlotAtts(int id, const AttributeGroup *atts)
 {
+    //cerr << "NetworkManager::UpdatePlotAtts()" << endl;
     if (id >= networkCache.size())
     {
         debug1 << "Internal error: asked to reuse network ID (" << id
@@ -1425,6 +1064,7 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer)
 void
 NetworkManager::SetWindowAttributes(const WindowAttributes &atts)
 {
+    //cerr << "NetworkManager::SetWindowAttributes()" << endl;
     viswin->SetSize(atts.GetSize()[0], atts.GetSize()[1]);
 
 #if 0
@@ -1522,6 +1162,7 @@ NetworkManager::SetAnnotationAttributes(const AnnotationAttributes &atts)
 void
 NetworkManager::StartPickMode(void)
 {
+    //cerr << "NetworkManager::StartPickMode(void)" << endl;
     requireOriginalCells = true;
 }
 
@@ -1539,6 +1180,7 @@ NetworkManager::StartPickMode(void)
 void
 NetworkManager::StopPickMode(void)
 {
+    //cerr << "NetworkManager::StopPickMode(void)" << endl;
     requireOriginalCells = false;
 }
 
@@ -1571,6 +1213,7 @@ NetworkManager::StopPickMode(void)
 void
 NetworkManager::Pick(const int id, PickAttributes *pa)
 {
+    //cerr << "NetworkManager::Pick()" << endl;
     if (id >= networkCache.size())
     {
         debug1 << "Internal error:  asked to use network ID (" << id << ") >= "

@@ -226,6 +226,9 @@
 #    Kathleen Bonnell, Mon Feb 3 13:57:29 PST 2003  
 #    Added global lineout window.
 #
+#    Sean Ahern, Wed Feb  5 16:27:38 PST 2003
+#    DBAtts uses the parser, so we need to include the library here.
+#
 #    Eric Brugger, Thu Mar 13 11:24:46 PST 2003
 #    Added preferences window.
 #
@@ -251,8 +254,8 @@
 LIB=libgui
 
 LIBS=-lplugin @QT_LIBS@ -L../lib -lviewerproxy -lviewerrpc \
-     -lmdserverproxy -lmdserverrpc -ldbatts \
-     -lproxybase -lmisc -lstate -lcomm -lavtexceptions -lutility \
+     -lmdserverproxy -lmdserverrpc -ldbatts -lproxybase \
+     -lmisc -lstate -lcomm -lavtexceptions -lutility -lparser \
      -lwinutil $(X_LIBS) @LIBS@ @PTHREAD_LIB@
 
 LDFLAGS=@LDFLAGS@ @QT_LDFLAGS@

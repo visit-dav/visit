@@ -1,3 +1,7 @@
+// ************************************************************************* //
+//                                    Init.C                                 //
+// ************************************************************************* //
+
 #include <Init.h>
 
 #include <stdio.h>
@@ -20,6 +24,9 @@ static void RemovePrependedDirs(const char *, char *);
 static void Finalize(void);
 static char executableName[256];
 static char componentName[256];
+static ErrorFunction errorFunction = NULL;
+static void *errorFunctionArgs = NULL;
+
 
 // ****************************************************************************
 //  Function: striparg
@@ -273,6 +280,52 @@ Init::GetExecutableName(void)
 {
    return (const char *) executableName;
 }
+
+// ****************************************************************************
+//  Function: Init::ComponentRegisterErrorFunction
+//
+//  Purpose:
+//      Registers an error function.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 8, 2003
+//
+// ****************************************************************************
+
+void
+Init::ComponentRegisterErrorFunction(ErrorFunction ef, void *args)
+{
+    errorFunctionArgs = args;
+    errorFunction = ef;
+}
+
+
+// ****************************************************************************
+//  Function: Init::ComponentIssueError
+//
+//  Purpose:
+//      Issues an error message on that component.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 8, 2003
+//
+// ****************************************************************************
+
+void
+Init::ComponentIssueError(const char *msg)
+{
+    debug1 << "Error issued: " << msg << endl;
+    if (errorFunction != NULL)
+    {
+        errorFunction(errorFunctionArgs, msg);
+    }
+    else
+    {
+        debug1 << "Not able to issue error because no function was registered."
+               << endl;
+    }
+}
+
 
 // ****************************************************************************
 // Method: Finalize

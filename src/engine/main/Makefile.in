@@ -167,6 +167,12 @@
 #    Jeremy Meredith, Wed Dec 11 11:12:47 PST 2002
 #    Fixed typo in parallel libraries.
 #
+#    Sean Ahern, Thu Dec 12 11:30:13 PST 2002
+#    Added the EngineExpressionList.
+#
+#    Sean Ahern, Wed Feb  5 15:35:35 PST 2003
+#    Removed EngineExprList.
+#
 #    Jeremy Meredith, Thu Jul 10 14:59:45 PDT 2003
 #    Added a few source and header files for cleaning up Engine.C.
 #
@@ -186,13 +192,13 @@ CPPFLAGS= -I@tmpinc@ @ENGINE_CPPFLAGS@ @CPPFLAGS@ \
 SERLIBS=-L../../lib -lXext -lplugin -lviswindow -lavtmath_ser -lplotter \
         -ldatabase_ser -lquery_ser -lexpressions_ser -lpipeline_ser -lvisit_vtk \
 	-lvtkqt -lwinutil @QT_LIBS@ -lenginerpc -lutility -lmisc -lcomm -lstate \
-	-lengineparstate_ser -ldbatts -lavtexceptions @VTK_LIBS@ $(X_LIBS) \
+	-lengineparstate_ser -ldbatts -lavtexceptions -lparser @VTK_LIBS@ $(X_LIBS) \
 	@LIBS@ @PTHREAD_LIB@
 
 PARLIBS=-L../../lib -lXext -lplugin -lviswindow -lavtmath_ser -lplotter \
         -ldatabase_par -lquery_par -lexpressions_par -lpipeline_par -lvisit_vtk \
 	-lvtkqt @QT_LIBS@ -lwinutil -lenginerpc -lutility -lmisc -lcomm -lstate \
-	-lengineparstate_par -ldbatts -lavtexceptions @VTK_LIBS@ $(X_LIBS) \
+	-lengineparstate_par -ldbatts -lavtexceptions -lparser @VTK_LIBS@ $(X_LIBS) \
 	@LIBS@ @MPI_LIBS@ @PTHREAD_LIB@
 
 SERLIBDEP=../../lib/libplugin.so ../../lib/libplotter.so \
@@ -214,7 +220,16 @@ PARLIBDEP=../../lib/libplugin.so ../../lib/libplotter.so \
 ##
 ## Files...
 ##
-SRC=Netnodes.C DataNetwork.C NetworkManager.C Engine.C LoadBalancer.C main.C
+SRC= \
+    DataNetwork.C \
+    Engine.C \
+    EngineExprNode.C \
+    EngineExprNodeFactory.C \
+    LoadBalancer.C \
+    Netnodes.C \
+    NetworkManager.C \
+    main.C
+
 SEROBJ=$(SRC:.C=_ser.o)
 PAROBJ=$(SRC:.C=_par.o)
 

@@ -1,6 +1,7 @@
 #ifndef NETWORK_H
 #define NETWORK_H
 
+#include <avtSILRestriction.h>
 #include <avtDataObject.h>
 #include <avtDataObjectWriter.h>
 #include <avtPlot.h>
@@ -38,6 +39,9 @@
 //    Sean Ahern, Tue May 28 09:49:02 PDT 2002
 //    Made this a tree.
 //
+//    Sean Ahern, Mon Dec 23 13:09:50 PST 2002
+//    Okay, so it's not a tree.
+//
 // ****************************************************************************
 class DataNetwork
 {
@@ -53,6 +57,8 @@ public:
     void SetPipelineSpec(avtPipelineSpecification_p s) {pspec = s;};
     avtDataObject_p GetOutput(void) { return terminalNode->GetOutput(); };
     void SetDataSpec(avtDataSpecification_p s) {dspec = s;};
+    void SetSIL(avtSILRestriction_p &silr_) {silr = silr_;};
+    void SetTime(int time_) {time = time_;};
 
     void ReleaseData(void);
 
@@ -64,7 +70,10 @@ public:
     int GetID(void) { return id; };
     Netnode* GetTerminalNode(void) { return terminalNode; };
     avtPlot_p GetPlot(void) { return plot; };
-    std::deque<NetnodeDB*>& GetDBs() { return dbs; };
+    void SetNetDB(NetnodeDB *d) { netdb = d; };
+    NetnodeDB* GetNetDB(void) { return netdb; };
+    avtSILRestriction_p GetSIL() {return silr;};
+    int GetTime() {return time;};
 
 protected:
     int                         id;
@@ -73,9 +82,11 @@ protected:
     avtDataSpecification_p      dspec;
     avtDataObjectWriter_p       writer;
     avtPipelineSpecification_p  pspec;
-    std::deque<NetnodeDB*>      dbs;
+    NetnodeDB*                  netdb;
     avtPlot_p                   plot;
     std::string                 plottype;
+    avtSILRestriction_p         silr;
+    int                         time;
 };
 
 #endif

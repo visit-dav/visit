@@ -60,6 +60,7 @@ class PIPELINE_API avtFilter
     virtual bool                        Update(avtPipelineSpecification_p);
 
     virtual avtTerminatingSource       *GetTerminatingSource(void);
+    virtual avtQueryableSource         *GetQueryableSource(void);
     avtPipelineSpecification_p          GetGeneralPipelineSpecification(void);
     virtual void                        ReleaseData(void);
 

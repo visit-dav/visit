@@ -180,6 +180,9 @@ $0 = shift @ARGV;
 #    Sean Ahern, Thu Mar  6 00:57:10 PST 2003
 #    Added support for debugging VisIt components with totalview.
 #
+#    Sean Ahern, Wed Mar 19 00:32:29 America/Los_Angeles 2003
+#    Fixed gdb paths.
+#
 #    Jeremy Meredith, Wed Apr  9 12:52:53 PDT 2003
 #    Made the list of plugin types be in exactly one spot.  This way things
 #    like expression or query plugins will be easier to add.  Also improved
@@ -1098,6 +1101,7 @@ else
             print GDBFILE "directory $ENV{VISITHOME}/components/Exceptions/VisWindow\n";
             print GDBFILE "directory $ENV{VISITHOME}/components/Expressions/Abstract\n";
             print GDBFILE "directory $ENV{VISITHOME}/components/Expressions/General\n";
+            print GDBFILE "directory $ENV{VISITHOME}/components/Expressions/Management\n";
             print GDBFILE "directory $ENV{VISITHOME}/components/Expressions/Math\n";
             print GDBFILE "directory $ENV{VISITHOME}/components/Expressions/MeshQuality\n";
             print GDBFILE "directory $ENV{VISITHOME}/components/Math\n";
@@ -1124,7 +1128,7 @@ else
             print GDBFILE "directory $ENV{VISITHOME}/mdserver/proxy\n";
             print GDBFILE "directory $ENV{VISITHOME}/mdserver/rpc\n";
             print GDBFILE "directory $ENV{VISITHOME}/viewer/main\n";
-            print GDBFILE "directory $ENV{VISITHOME}/viewer/parser\n";
+            print GDBFILE "directory $ENV{VISITHOME}/common/parser\n";
             print GDBFILE "directory $ENV{VISITHOME}/viewer/proxy\n";
             print GDBFILE "directory $ENV{VISITHOME}/viewer/rpc\n";
             print GDBFILE "directory $ENV{VISITHOME}/visitpy\n";

@@ -40,14 +40,28 @@
 //    Kathleen Bonnell, Thu Jan  2 15:16:50 PST 2003 
 //    Replace MakeObject() with NewInstance() to match new vtk api. 
 //
+//    Sean Ahern, Tue Mar  4 18:43:51 America/Los_Angeles 2003
+//    If we don't have an active variable name, just use array 0.  There
+//    *has* to be one in the dataset.  Unfortunately, we don't know that
+//    it's array 0, but let's go with it for now.
+//
 // ****************************************************************************
 
 vtkDataArray *
 avtUnaryMathFilter::DeriveVariable(vtkDataSet *in_ds)
 {
-    vtkDataArray *cell_data = in_ds->GetCellData()->GetArray(activeVariable);
-    vtkDataArray *point_data = in_ds->GetPointData()->GetArray(activeVariable);
-    vtkDataArray *data = NULL;
+    vtkDataArray *cell_data, *point_data, *data;
+    if (activeVariable == NULL)
+    {
+        // HACK: We don't know what the default variable is, so just go for
+        // array 0.  It's probably right, but we don't know.  XXXX
+        cell_data = in_ds->GetCellData()->GetArray(0);
+        point_data = in_ds->GetPointData()->GetArray(0);
+    } else
+    {
+        cell_data = in_ds->GetCellData()->GetArray(activeVariable);
+        point_data = in_ds->GetPointData()->GetArray(activeVariable);
+    }
 
     if (cell_data != NULL)
     {
