@@ -2343,21 +2343,15 @@ VisWindow::UpdateView()
 //    Kathleen Bonnell, Fri May 10 15:38:14 PDT 2002   
 //    Added support for LINEOUT. 
 //
+//    Kathleen Bonnell, Fri Jun 27 16:30:26 PDT 2003  
+//    Removed calls to queries->SetQueryType, no longer necessary. 
+//
 // ****************************************************************************
 
 void
 VisWindow::SetInteractionMode(INTERACTION_MODE m)
 {
     interactions->SetInteractionMode(m);
-    switch (m)
-    {
-        case PICK    :  
-          queries->SetQueryType(QUERYTYPE_PICK); break;
-        case LINEOUT :  
-           queries->SetQueryType(QUERYTYPE_LINEOUT); break;
-        default      :  
-           queries->SetQueryType(QUERYTYPE_NONE); 
-    }
 }
 
 // ****************************************************************************
@@ -3461,6 +3455,9 @@ VisWindow::ClearPickPoints()
 //   Kathleen Bonnell, Fri Dec 20 09:48:48 PST 2002  
 //   Remove call to queries->GetNextDesignator.
 //
+//    Kathleen Bonnell, Fri Jun 27 16:30:26 PDT 2003 
+//    Removed call to queries->SetAttachmentPoint, queries->SetSecondaryPoint. 
+//
 // ****************************************************************************
 
 void
@@ -3508,10 +3505,6 @@ VisWindow::Lineout(int x1, int y1, int x2, int y2)
     {
         pt1[2] = pt2[2] = 0.;
     }
-
-    queries->SetAttachmentPoint(pt1[0], pt1[1], pt1[2]);
-    queries->SetSecondaryPoint(pt2[0], pt2[1], pt2[2]);
-
 
     double dpt1[3] = {pt1[0], pt1[1], pt1[2]};
     double dpt2[3] = {pt2[0], pt2[1], pt2[2]};
@@ -3639,24 +3632,6 @@ VisWindow::SetLineoutCB(VisCallback *cb, void *data)
 {
     performLineoutCallback= cb;
     loInfo = (LINE_OUT_INFO *)data;
-}
-
-
-// ****************************************************************************
-//  Method: VisWindow::GetQueryType
-//
-//  Purpose:
-//      Returns the VisWindow's current query mode.
-//
-//  Programmer: Kathleen Bonnell 
-//  Creation:   April 15, 2002 
-//
-// ****************************************************************************
-
-QUERY_TYPE
-VisWindow::GetQueryType() const
-{
-    return queries->GetQueryType();
 }
 
 

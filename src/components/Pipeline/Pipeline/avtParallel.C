@@ -220,6 +220,54 @@ Collect(float *buff, int size)
 
 
 // ****************************************************************************
+//  Function: Collect
+//
+//  Purpose:
+//      Takes the buffer from a specific processor and take the maximum entry
+//      in each buffer.  This variant is for ints.
+//
+//  Arguments:
+//      buff    The buffer.
+//      size    The length of the buffer.
+//
+//  Returns:    Whether or not the buffer is up-to-date for this processor.  It
+//              only reduces the data onto processor 0 (but this makes it
+//              convenient that derived types don't have to worry about MPI).
+//
+//  Programmer: Hank Childs
+//  Creation:   June 30, 2003
+//
+// ****************************************************************************
+
+/* ARGSUSED */
+bool
+Collect(int *buff, int size)
+{
+#ifdef PARALLEL
+
+    int *newbuff = new int[size];
+    MPI_Reduce(buff, newbuff, size, MPI_INT, MPI_MAX, 0, MPI_COMM_WORLD);
+    int rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    if (rank == 0)
+    {
+        for (int i = 0 ; i < size ; i++)
+        {
+            buff[i] = newbuff[i];
+        }
+    }
+
+    delete [] newbuff;
+
+    return (rank == 0 ? true : false);
+
+#else
+    return true;
+#endif
+}
+
+
+// ****************************************************************************
 //  Function: Barrier
 //
 //  Purpose:

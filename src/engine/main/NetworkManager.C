@@ -1512,6 +1512,9 @@ NetworkManager::StopPickMode(void)
 //    Make call to LocateCellQuery unconditional.  Put all code in 
 //    one try-catch block. 
 //    
+//    Kathleen Bonnell, Wed Jun 25 13:45:04 PDT 2003  
+//    Reflect new pickAtts naming convention:  ZoneNumber is now ElementNumber. 
+//
 // ****************************************************************************
 void
 NetworkManager::Pick(const int id, PickAttributes *pa)
@@ -1550,7 +1553,7 @@ NetworkManager::Pick(const int id, PickAttributes *pa)
         lcQ->SetInput(queryInput);
         lcQ->PerformQuery(&qa); 
         pa->SetDomain(qa.GetDomain());
-        pa->SetZoneNumber(qa.GetZone());
+        pa->SetElementNumber(qa.GetZone());
         pa->SetCellPoint(qa.GetCellPoint());
         pa->SetPickPoint(qa.GetWorldPoint());
         delete lcQ;

@@ -69,10 +69,15 @@ class PIPELINE_API avtRay
     inline void                   SetSample(const int &,
                                             const float[AVT_VARIABLE_LIMIT]);
     inline void                   SetSamples(const int &start, const int &end,
-                                           const float (*)[AVT_VARIABLE_LIMIT]);
+                                          const float (*)[AVT_VARIABLE_LIMIT]);
     inline void                   UpdateNumberOfRuns(int);
     bool                          GetSample(int, float [AVT_VARIABLE_LIMIT])
                                        const;
+    inline int                    GetNumberOfSamples(void) const
+                                                        { return numSamples; };
+    inline int                    GetFirstSample(void) const;
+    inline int                    GetLastSample(void) const;
+             
     static void                   SetArbitrator(avtSamplePointArbitrator *);
 
   protected:
@@ -262,6 +267,62 @@ avtRay::UpdateNumberOfRuns(int ind)
     // else it was valid on one end and not the other, so we have extended a
     // run -- this does not affect our counts.
     //
+}
+
+
+// ****************************************************************************
+//  Method: avtRay::GetFirstSample
+//
+//  Purpose:
+//      Gets the first valid sample.
+//
+//  Returns:    The index of the first valid sample, -1 if no valid samples.
+//
+//  Programmer: Hank Childs
+//  Creation:   June 30, 2003
+//
+// ****************************************************************************
+
+inline int
+avtRay::GetFirstSample(void) const
+{
+    if (numValidSamples <= 0)
+        return -1;
+
+    for (int i = 0 ; i < numSamples ; i++)
+        if (validSample[i])
+            return i;
+
+    // should never get here.
+    return -1;
+}
+
+
+// ****************************************************************************
+//  Method: avtRay::GetLasstSample
+//
+//  Purpose:
+//      Gets the last valid sample.
+//
+//  Returns:    The index of the last valid sample, -1 if no valid samples.
+//
+//  Programmer: Hank Childs
+//  Creation:   June 30, 2003
+//
+// ****************************************************************************
+
+inline int
+avtRay::GetLastSample(void) const
+{
+    if (numValidSamples <= 0)
+        return -1;
+
+    for (int i = numSamples-1 ; i >= 0 ; i--)
+        if (validSample[i])
+            return i;
+
+    // should never get here.
+    return -1;
 }
 
 

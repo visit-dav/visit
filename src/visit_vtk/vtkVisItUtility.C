@@ -126,6 +126,9 @@ vtkVisItUtility::GetPoints(vtkDataSet *inDS)
 //    Kathleen Bonnell, Wed Apr 16 16:25:18 PDT 2003  
 //    Improved logic to make it work correctly for cells and points.
 //
+//    Kathleen Bonnell, Wed Jun 25 13:27:59 PDT 2003 
+//    Fixed logic for determining 'base' for points. 
+//
 // ****************************************************************************
 
 void
@@ -168,12 +171,12 @@ vtkVisItUtility::GetLogicalIndices(vtkDataSet *ds, const bool forCell, const int
         dimY = (dims[1] == 0 ? 1 : dims[1]);
         if (realDims) 
         {
-            base[0] = realDims->GetValue(0)-1;
-            base[1] = realDims->GetValue(2)-1;
-            base[2] = realDims->GetValue(4)-1;
+            int *rd = realDims->GetPointer(0); 
+            base[0] = (rd[0] != 0 ? rd[0]-1 : rd[0]);
+            base[1] = (rd[2] != 0 ? rd[2]-1 : rd[2]);
+            base[2] = (rd[4] != 0 ? rd[4]-1 : rd[4]);
         }
     }
-
     ijk[0] = (ID % dimX)          - base[0];
     ijk[1] = ((ID / dimX) % dimY) - base[1];
     ijk[2] = (ID / (dimX * dimY)) - base[2];
@@ -182,7 +185,7 @@ vtkVisItUtility::GetLogicalIndices(vtkDataSet *ds, const bool forCell, const int
 
 
 // ****************************************************************************
-//  Function: CalculateRealCellID
+//  Function: CalculateRealID
 //
 //  Purpose:
 //      A routine that calculates a 'real' cellId from structured data.
@@ -191,6 +194,7 @@ vtkVisItUtility::GetLogicalIndices(vtkDataSet *ds, const bool forCell, const int
 //
 //  Arguments:
 //      cellId  The cellId in the ds.
+//      forCell True if a cell Id should be returned, false if  for point id. 
 //      ds      The dataset.
 //
 //  Returns:
@@ -204,10 +208,14 @@ vtkVisItUtility::GetLogicalIndices(vtkDataSet *ds, const bool forCell, const int
 //    Kathleen Bonnell, Fri Apr 18 14:01:41 PDT 2003 
 //    Fix calculation of c.
 //
+//    Kathleen Bonnell, Wed Jun 25 13:27:59 PDT 2003 
+//    Renamed to reflect that this method can return node id or cell id, based
+//    on the value of 'forCell' argument.
+//
 // ****************************************************************************
 
 int
-vtkVisItUtility::CalculateRealCellID(const int cellId, vtkDataSet *ds)
+vtkVisItUtility::CalculateRealID(const int cellId, const bool forCell, vtkDataSet *ds)
 {
     int retVal = cellId;
     int type = ds->GetDataObjectType();
@@ -220,13 +228,18 @@ vtkVisItUtility::CalculateRealCellID(const int cellId, vtkDataSet *ds)
         if (realDims != NULL)
         {
             int IJK[3] = { -1, -1, -1};
-            GetLogicalIndices(ds, true, cellId, IJK);
-            int nCellsI, nCellsJ; 
-            nCellsI = realDims->GetValue(1)- realDims->GetValue(0);
-            nCellsJ = realDims->GetValue(3)- realDims->GetValue(2);
+            GetLogicalIndices(ds, forCell, cellId, IJK);
+            int nElsI, nElsJ; 
+            nElsI = realDims->GetValue(1)- realDims->GetValue(0);
+            nElsJ = realDims->GetValue(3)- realDims->GetValue(2);
+            if (!forCell)
+            {
+                nElsI += 1;
+                nElsJ += 1;
+            }
             int c = IJK[0] +
-                    IJK[1] * nCellsI +  
-                    IJK[2] * nCellsI *nCellsJ;
+                    IJK[1] * nElsI +  
+                    IJK[2] * nElsI * nElsJ;
              retVal = c;
         }
     }

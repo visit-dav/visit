@@ -101,7 +101,7 @@
 all: message
 	for dir in $(SUBDIRS); do (cd $$dir && $(MAKE) $@) || exit 1; done
 
-OPTIONAL=Kerbel
+OPTIONAL=Kerbel Topology
 
 REQUIRED=Boundary Contour Curve FilledBoundary Histogram Mesh Pseudocolor \
          Streamline Subset Surface Vector Volume

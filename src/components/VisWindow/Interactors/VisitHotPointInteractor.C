@@ -184,6 +184,9 @@ VisitHotPointInteractor::SetNullInteractor()
 //   Kathleen Bonnell, Fri Dec 14 11:54:54 PST 2001
 //   Added LINEOUT.
 //   
+//   Kathleen Bonnell, Fri Jun 27 16:34:31 PDT 2003  
+//   Handle NodePick, ZonePick. 
+//   
 // ****************************************************************************
 
 void
@@ -204,7 +207,8 @@ VisitHotPointInteractor::Start2DMode(INTERACTION_MODE mode)
         }
         newInteractor = navigate2D;
         break;
-    case PICK:
+    case NODE_PICK:
+    case ZONE_PICK:
         if(pick2D == NULL)
         {
             pick2D = new Pick2D(proxy);
@@ -261,6 +265,9 @@ VisitHotPointInteractor::Start2DMode(INTERACTION_MODE mode)
 //   Handle LINEOUT mode.  There is no true 3d Lineout mode yet, but 3d
 //   lineout queries need to set the interactor, so use Navigate.
 //   
+//   Kathleen Bonnell, Fri Jun 27 16:34:31 PDT 2003  
+//   Handle NodePick, ZonePick. 
+//   
 // ****************************************************************************
 
 void
@@ -282,7 +289,8 @@ VisitHotPointInteractor::Start3DMode(INTERACTION_MODE mode)
         }
         newInteractor = navigate3D;
         break;
-    case PICK:
+    case ZONE_PICK: // fall-through
+    case NODE_PICK:
         if(pick3D == NULL)
         {
             pick3D = new Pick3D(proxy);
@@ -332,6 +340,8 @@ VisitHotPointInteractor::Start3DMode(INTERACTION_MODE mode)
 // Creation:   May 8, 2002 
 //
 // Modifications:
+//   Kathleen Bonnell, Fri Jun 27 16:34:31 PDT 2003  
+//   Handle NodePick, ZonePick. 
 //   
 // ****************************************************************************
 
@@ -361,8 +371,9 @@ VisitHotPointInteractor::StartCurveMode(INTERACTION_MODE mode)
         newInteractor = zoomCurve;
         break;
     case LINEOUT:
-    case PICK:
-        // These are onlly here to prevent compiler warning. 
+    case ZONE_PICK:
+    case NODE_PICK:
+        // These are only here to prevent compiler warning. 
         break;
     }
 

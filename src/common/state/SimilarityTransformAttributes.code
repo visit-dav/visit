@@ -1,0 +1,95 @@
+Function: CopyAttributes
+Declaration: virtual bool CopyAttributes(const AttributeGroup *);
+Definition:
+// ****************************************************************************
+// Method: SimilarityTransformAttributes::CopyAttributes
+//
+// Purpose: 
+//   CopyAttributes method for the SimilarityTransformAttributes class.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Oct 29 08:57:18 PDT 2002
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool
+SimilarityTransformAttributes::CopyAttributes(const AttributeGroup *atts)
+{
+    bool retval = false;
+
+    if(TypeName() == atts->TypeName())
+    {
+        // Call assignment operator.
+        const SimilarityTransformAttributes *tmp = (const SimilarityTransformAttributes *)atts;
+        *this = *tmp;
+        retval = true;
+    }
+    else if(atts->TypeName() == "BoxExtents")
+    {
+        const BoxExtents *tmp = (const BoxExtents *)atts;
+        const double *extents = tmp->GetExtents();
+        if(doTranslate)
+        {
+            SetTranslateX(extents[0]);
+            SetTranslateY(extents[2]);
+            SetTranslateZ(extents[4]);
+            retval = true;
+        }
+    }
+
+    return retval;
+}
+
+Function: CreateCompatible
+Declaration: virtual AttributeSubject *CreateCompatible(const std::string &) const;
+Definition:
+// ****************************************************************************
+// Method: SimilarityTransformAttributes::CreateCompatible
+//
+// Purpose: 
+//   Creates an object of the specified type initialized with the attributes
+//   from this object.
+//
+// Arguments:
+//   tname : The typename of the object that we want to create.
+//
+// Returns:    A new object of the type specified by tname or 0.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Oct 29 08:57:46 PDT 2002
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+AttributeSubject *
+SimilarityTransformAttributes::CreateCompatible(const std::string &tname) const
+{
+    AttributeSubject *retval = 0;
+
+    if(TypeName() == tname)
+    {
+        retval = new SimilarityTransformAttributes(*this);
+    }
+    else if(tname == "BoxExtents")
+    {
+        BoxExtents *b = new BoxExtents;
+        double extents[6];
+        extents[0] = translateX;
+        extents[1] = translateX + 1.;
+        extents[2] = translateY;
+        extents[3] = translateY + 1.;
+        extents[4] = translateZ;
+        extents[5] = translateZ + 1.;
+        b->SetExtents(extents);
+
+        retval = b;
+    }
+
+    return retval;
+}
+

@@ -216,6 +216,9 @@ class VisitInteractor;
 //    Kathleen Bonnell,  Fri Jun  6 15:51:07 PDT 2003 
 //    Added FullFrameOn/Off and GetFullFrameMode methods. 
 //
+//    Kathleen Bonnell,  Fri Jun 27 16:25:01 PDT 2003 
+//    Removed 'GetQueryType'.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindow
@@ -325,7 +328,6 @@ public:
     void                 ClearPickPoints();
     void                 ClearRefLines();
     void                 DrawRefLines(float pt1[3], float pt2[3]);
-    QUERY_TYPE           GetQueryType() const;
 
     void                 QueryIsValid(const PickAttributes *, const Line *);
     void                 UpdateQuery(const Line *);

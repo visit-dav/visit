@@ -673,6 +673,9 @@ ViewerSubject::~ViewerSubject()
 //    Brad Whitlock, Wed Mar 12 10:33:20 PDT 2003
 //    I added iconifyOpcode.
 //
+//    Kathleen Bonnell, Tue Jul  1 09:21:57 PDT 2003 
+//    Changed 'GetPickAtts' to 'GetPickClientAtts'.
+//
 // ****************************************************************************
 
 void
@@ -746,7 +749,7 @@ ViewerSubject::Connect(int *argc, char ***argv)
     xfer.Add(ViewerWindowManager::Instance()->GetView3DClientAtts());
     xfer.Add(ViewerWindowManager::Instance()->GetLightListClientAtts());
     xfer.Add(ViewerWindowManager::Instance()->GetAnimationClientAtts());
-    xfer.Add(ViewerQueryManager::Instance()->GetPickAtts());
+    xfer.Add(ViewerQueryManager::Instance()->GetPickClientAtts());
     xfer.Add(ViewerWindowManager::Instance()->GetPrinterClientAtts());
     xfer.Add(ViewerWindowManager::Instance()->GetWindowInformation());
     xfer.Add(ViewerWindowManager::Instance()->GetRenderingAttributes());
@@ -3993,6 +3996,9 @@ ViewerSubject::LaunchProgressCB(void *d, int stage)
 //    I removed ClearWindow, ClearAllWindows, ClearRefLines, ClearPickPoints
 //    since they are now actions.
 //
+//    Kathleen Bonnell, Tue Jul  1 09:21:57 PDT 2003 
+//    Added SetPickAttributes. 
+//
 // ****************************************************************************
 
 void
@@ -4184,6 +4190,9 @@ ViewerSubject::HandleViewerRPC()
     case ViewerRPC::SetGlobalLineoutAttributesRPC:
         SetGlobalLineoutAttributes();
         break;
+    case ViewerRPC::SetPickAttributesRPC:
+        SetPickAttributes();
+        break;
     case ViewerRPC::MaxRPC:
         break;
     default:
@@ -4359,4 +4368,22 @@ ViewerSubject::SetGlobalLineoutAttributes()
 {
     ViewerQueryManager *qM=ViewerQueryManager::Instance();
     qM->SetGlobalLineoutAttsFromClient();
+}
+
+
+// ****************************************************************************
+//  Method: ViewerSubject::SetPickAttributes
+//
+//  Purpose:
+//    Execute the SetPickAttributes RPC.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   June 30, 2003 
+//
+// ****************************************************************************
+
+void
+ViewerSubject::SetPickAttributes()
+{
+    ViewerQueryManager::Instance()->SetPickAttsFromClient();
 }

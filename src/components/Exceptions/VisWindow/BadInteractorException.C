@@ -18,6 +18,9 @@ using namespace std;
 //    Kathleen Bonnell, Fri Apr 26 11:17:45 PDT 2002
 //    Added LINEOUT.
 //
+//    Kathleen Bonnell, Fri Jun 27 16:43:23 PDT 2003 
+//    Pick renamed ZonePick, added NodePick. 
+//
 // ****************************************************************************
 
 BadInteractorException::BadInteractorException(INTERACTION_MODE mode)
@@ -31,8 +34,11 @@ BadInteractorException::BadInteractorException(INTERACTION_MODE mode)
       case ZOOM:
         modeS = "Zoom";
         break;
-      case PICK:
-        modeS = "Pick";
+      case ZONE_PICK:
+        modeS = "ZonePick";
+        break;
+      case NODE_PICK:
+        modeS = "NodePick";
         break;
       case LINEOUT:
         modeS = "Lineout";

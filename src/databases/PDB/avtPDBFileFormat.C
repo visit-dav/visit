@@ -33,40 +33,57 @@
 // Creation:   Wed Oct 23 14:36:30 PST 2002
 //
 // Modifications:
-//   
 //   Hank Childs, Mon Apr  7 18:44:46 PDT 2003
 //   Do not do so much work in the constructor.
 //
+//   Brad Whitlock, Mon Jun 30 11:04:17 PDT 2003
+//   I added some of the initialization work back in because we have to at
+//   least open the file in here or the reader will say that it can read a
+//   Silo .pdb file and then fail later when actually trying to read the Silo
+//   file and we DON'T want that.
+//
 // ****************************************************************************
 
-avtPDBFileFormat::avtPDBFileFormat(const char *dbFileName) :
-    avtSTSDFileFormat(dbFileName), factory()
+avtPDBFileFormat::avtPDBFileFormat(const char * const *names, int nNames,
+    bool openImmediately) :
+    avtMTSDFileFormat(names, nNames), factory()
 {
     initializedFactory = false;
-}
 
-// ****************************************************************************
-//  Method: avtPDBFileFormat::InitializeFactory
-//
-//  Purpose:
-//      Has the factory actually open the file.
-//
-//  Programmer: Hank Childs
-//  Creation:   April 7, 2003
-//
-// ****************************************************************************
-
-void
-avtPDBFileFormat::InitializeFactory(void)
-{
     //
     // Get the file. This will try to open the PDB file with various readers
     // and see if any of the readers can identify the format of the PDB file.
     // If no reader can identify the format, we throw an InvalidDBTypeException.
+    // We have to throw the exception from here so we can try to open the
+    // file with other database formats in avtDatabaseFactory::FileList.
     //
-    factory.Open(filename);
-    factory.GetReader()->GetTimeVaryingInformation(metadata);
+    if(openImmediately)
+        factory.Open(filenames[0]);
+}
 
+// ****************************************************************************
+// Method: avtPDBFileFormat::InitializeFactory
+//
+// Purpose:
+//   Has the factory actually open the file.
+//
+// Arguments:
+//   timeState : The time that we're interested in.
+//
+// Programmer: Hank Childs
+// Creation:   April 7, 2003
+//
+// Modifications:
+//   Brad Whitlock, Tue Apr 29 11:00:59 PDT 2003
+//   I added the timeState argument.
+//
+// ****************************************************************************
+
+void
+avtPDBFileFormat::InitializeFactory(int timeState)
+{
+    factory.Open(filenames[0]);
+    factory.GetReader()->GetTimeVaryingInformation(timeState, metadata);
     initializedFactory = true;
 }
 
@@ -128,10 +145,65 @@ avtPDBFileFormat::FreeUpResources(void)
 // ****************************************************************************
 
 void *
-avtPDBFileFormat::GetAuxiliaryData(const char *, const char *, void *,
+avtPDBFileFormat::GetAuxiliaryData(const char *, int, const char *, void *,
     DestructorFunction &)
 {
     return NULL;
+}
+
+// ****************************************************************************
+// Method: avtPDBFileFormat::GetCycles
+//
+// Purpose: 
+//   Reads the cycles.
+//
+// Arguments:
+//   cycles : the list of cycles.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Apr 29 13:32:42 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtPDBFileFormat::GetCycles(vector<int> &cycles)
+{
+    if (!initializedFactory)
+    {
+        InitializeFactory(0);
+    }
+
+    // Read the cycles.
+    factory.GetReader()->GetCycles(cycles);
+}
+
+// ****************************************************************************
+// Method: avtPDBFileFormat::GetNTimesteps
+//
+// Purpose: 
+//   Returns the number of timesteps in the database.
+//
+// Returns:    The number of timesteps.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Apr 29 13:41:05 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+int
+avtPDBFileFormat::GetNTimesteps()
+{
+    if (!initializedFactory)
+    {
+        InitializeFactory(0);
+    }
+
+    // Read the cycles.
+    return factory.GetReader()->GetNTimesteps();
 }
 
 // ****************************************************************************
@@ -141,7 +213,8 @@ avtPDBFileFormat::GetAuxiliaryData(const char *, const char *, void *,
 //   Gets the named mesh from the PDB file.
 //
 // Arguments:
-//   m : The name of the mesh.
+//   timeState : The timeState that we want.
+//   m         : The name of the mesh.
 //
 // Returns:    A dataset containing the mesh.
 //
@@ -149,23 +222,25 @@ avtPDBFileFormat::GetAuxiliaryData(const char *, const char *, void *,
 // Creation:   Wed Oct 23 14:38:17 PST 2002
 //
 // Modifications:
-//   
 //   Hank Childs, Mon Apr  7 18:44:46 PDT 2003
 //   Make sure the factory has been initialized.
+//
+//   Brad Whitlock, Tue Apr 29 10:59:03 PDT 2003
+//   Added timeState argument because the format is now MTSD.
 //
 // ****************************************************************************
 
 vtkDataSet *
-avtPDBFileFormat::GetMesh(const char *m)
+avtPDBFileFormat::GetMesh(int timeState, const char *m)
 {
-    debug5 << "Reading mesh " << m << endl;
+    debug5 << "Reading mesh " << m << " for state " << timeState << endl;
 
     if (!initializedFactory)
     {
-        InitializeFactory();
+        InitializeFactory(timeState);
     }
 
-    vtkDataSet *mesh = factory.GetReader()->GetMesh(m);
+    vtkDataSet *mesh = factory.GetReader()->GetMesh(timeState, m);
 
     return mesh;
 }
@@ -177,7 +252,8 @@ avtPDBFileFormat::GetMesh(const char *m)
 //   Gets the named scalar variable from the PDB file.
 //
 // Arguments:
-//   s : The name of the scalar variable.
+//   timeState : The timeState that we want.
+//   s         : The name of the scalar variable.
 //
 // Returns:    A data array containing the scalar.
 //
@@ -187,23 +263,25 @@ avtPDBFileFormat::GetMesh(const char *m)
 // Creation:   Wed Oct 23 14:39:00 PST 2002
 //
 // Modifications:
-//   
 //   Hank Childs, Mon Apr  7 18:44:46 PDT 2003
 //   Make sure the factory has been initialized.
+//
+//   Brad Whitlock, Tue Apr 29 10:59:03 PDT 2003
+//   Added timeState argument because the format is now MTSD.
 //
 // ****************************************************************************
 
 vtkDataArray *
-avtPDBFileFormat::GetVar(const char *s)
+avtPDBFileFormat::GetVar(int timeState, const char *s)
 {
-    debug5 << "Reading scalar " << s << endl;
+    debug5 << "Reading scalar " << s << " for state " << timeState << endl;
 
     if (!initializedFactory)
     {
-        InitializeFactory();
+        InitializeFactory(timeState);
     }
 
-    vtkDataArray *scalar = factory.GetReader()->GetVar(s);
+    vtkDataArray *scalar = factory.GetReader()->GetVar(timeState, s);
 
     return scalar;
 }
@@ -215,7 +293,8 @@ avtPDBFileFormat::GetVar(const char *s)
 //   Gets the named vector variable from the PDB file.
 //
 // Arguments:
-//   v : The name of the vector variable.
+//   timeState : The timeState that we want.
+//   v         : The name of the vector variable.
 //
 // Returns:    A data array containing the vector.
 //
@@ -225,23 +304,25 @@ avtPDBFileFormat::GetVar(const char *s)
 // Creation:   Wed Oct 23 14:39:00 PST 2002
 //
 // Modifications:
-//   
 //   Hank Childs, Mon Apr  7 18:44:46 PDT 2003
 //   Make sure the factory has been initialized.
+//
+//   Brad Whitlock, Tue Apr 29 10:59:03 PDT 2003
+//   Added timeState argument because the format is now MTSD.
 //
 // ****************************************************************************
 
 vtkDataArray *
-avtPDBFileFormat::GetVectorVar(const char *v)
+avtPDBFileFormat::GetVectorVar(int timeState, const char *v)
 {
-    debug5 << "Reading in vector " << v << endl;
+    debug5 << "Reading in vector " << v << " for state " << timeState << endl;
 
     if (!initializedFactory)
     {
-        InitializeFactory();
+        InitializeFactory(timeState);
     }
 
-    vtkDataArray *vec = factory.GetReader()->GetVectorVar(v);
+    vtkDataArray *vec = factory.GetReader()->GetVectorVar(timeState, v);
 
     return vec;
 }
@@ -259,7 +340,6 @@ avtPDBFileFormat::GetVectorVar(const char *v)
 // Creation:   Wed Oct 9 08:30:08 PDT 2002
 //
 // Modifications:
-//   
 //   Hank Childs, Mon Apr  7 18:44:46 PDT 2003
 //   Make sure the factory has been initialized.
 //
@@ -270,7 +350,7 @@ avtPDBFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 {
     if (!initializedFactory)
     {
-        InitializeFactory();
+        InitializeFactory(0);
     }
 
     factory.GetReader()->PopulateDatabaseMetaData(md);
@@ -293,7 +373,6 @@ avtPDBFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 // Creation:   Wed Oct 23 14:40:56 PST 2002
 //
 // Modifications:
-//   
 //   Hank Childs, Mon Apr  7 18:44:46 PDT 2003
 //   Make sure the factory has been initialized.
 //
@@ -304,7 +383,7 @@ avtPDBFileFormat::PopulateIOInformation(avtIOInformation &ioInfo)
 {
     if (!initializedFactory)
     {
-        InitializeFactory();
+        InitializeFactory(0);
     }
 
     int nMeshes = metadata->GetNumMeshes();

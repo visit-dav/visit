@@ -89,6 +89,9 @@ class   PickVarInfo;
 //    Jeremy Meredith, Wed Jun 11 16:39:27 PDT 2003
 //    Added an option argument to PopulateDataObjectInformation.
 //
+//    Kathleen Bonnell, Fri Jun 20 13:52:00 PDT 2003  
+//    Added QueryZones, added parameter to other Query methods.
+//
 // ****************************************************************************
 
 class DATABASE_API avtDatabase
@@ -142,15 +145,18 @@ class DATABASE_API avtDatabase
     virtual bool                QueryScalars(const std::string &, const int, 
                                              const int, const int,
                                              const std::vector<int> &,
-                                             PickVarInfo &) {return false; };
+                                             PickVarInfo &, const bool) 
+                                                  {return false; };
     virtual bool                QueryVectors(const std::string &, const int, 
                                              const int, const int,
                                              const std::vector<int> &,
-                                             PickVarInfo &) {return false; };
+                                             PickVarInfo &, const bool) 
+                                                  {return false; };
     virtual bool                QueryMaterial(const std::string &, const int, 
                                               const int, const int,
                                               const std::vector<int> &,
-                                              PickVarInfo &) {return false; };
+                                              PickVarInfo &, const bool) 
+                                                  {return false; };
     virtual bool                QueryNodes(const std::string &, const int, 
                                            const int, const int,
                                            std::vector<int> &, float [3],
@@ -159,6 +165,12 @@ class DATABASE_API avtDatabase
                                                {return false; };
     virtual bool                QueryMesh(const std::string &, const int, 
                                           PickVarInfo &) {return false; };
+
+    virtual bool                QueryZones(const std::string &, const int, int &, 
+                                           const int, std::vector<int> &, 
+                                           float [3], const int, const bool, 
+                                           const bool, std::vector<std::string> &)
+                                               { return false; } ;
 };
 
 

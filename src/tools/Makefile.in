@@ -59,9 +59,11 @@
 @VARIABLES@
 @DIRTARGETS@
 
+MILI=makemili
+
 OPTIONAL=avtprep classwriter doxygenate prep windowmaker
 
-SUBDIRS=annotations curv3dprep silex xml xmledit
+SUBDIRS=annotations curv3dprep @MILI@ silex xml xmledit
 
 message:
 	@echo

@@ -27,7 +27,8 @@
 #include <layout3x3.xpm>
 #include <layout4x4.xpm>
 #include <navigatemode.xpm>
-#include <pickmode.xpm>
+#include <nodepickmode.xpm>
+#include <zonepickmode.xpm>
 #include <zoommode.xpm>
 #include <lineoutmode.xpm>
 #include <VisWindowTypes.h>
@@ -927,6 +928,8 @@ InvertBackgroundAction::Execute()
 // Creation:   Fri Apr 4 15:46:18 PST 2003
 //
 // Modifications:
+//   Kathleen Bonnell, Wed Jun 25 13:41:23 PDT 2003
+//   Change Pick to ZonePick, added NodePick.
 //   
 // ****************************************************************************
 
@@ -940,14 +943,16 @@ SetWindowModeAction::SetWindowModeAction(ViewerWindow *win) :
     if (!win->GetNoWinMode())
     {
         AddChoice("Navigate", "Navigate mode", QPixmap(navigatemode_xpm));
-        AddChoice("Pick", "Pick mode", QPixmap(pickmode_xpm));
+        AddChoice("Zone Pick", "Zone Pick mode", QPixmap(zonepickmode_xpm));
+        AddChoice("Node Pick", "Node Pick mode", QPixmap(nodepickmode_xpm));
         AddChoice("Zoom", "Zoom mode", QPixmap(zoommode_xpm));
         AddChoice("Lineout", "Lineout mode", QPixmap(lineoutmode_xpm));
     }
     else 
     {
         AddChoice("Navigate");
-        AddChoice("Pick");
+        AddChoice("Node Pick");
+        AddChoice("Zone Pick");
         AddChoice("Zoom");
         AddChoice("Lineout");
     }
@@ -1024,6 +1029,9 @@ SetWindowModeAction::Enabled() const
 //   Brad Whitlock, Fri Apr 4 15:50:50 PST 2003
 //   I swapped the cases for pick and zoom so they work in curve windows.
 //
+//   Kathleen Bonnell, Wed Jun 25 13:41:23 PDT 2003 
+//   Added case for Node pick. 
+//
 // ****************************************************************************
 
 bool
@@ -1033,11 +1041,13 @@ SetWindowModeAction::ChoiceEnabled(int i) const
 
     if(i == 0)
         retval = true;
-    else if(i == 1)
+    else if(i == 1) // zone pick
         retval = !window->GetTypeIsCurve();
-    else if(i == 2)
+    else if(i == 2) // node pick
+        retval = !window->GetTypeIsCurve();
+    else if(i == 3) // zoom
         retval = true;
-    else if(i == 3)
+    else if(i == 4)
     {
         retval = (window->GetViewDimension() == 2 ) &&
                  !window->GetTypeIsCurve() && 

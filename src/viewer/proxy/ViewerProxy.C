@@ -4063,6 +4063,33 @@ ViewerProxy::Pick(int x, int y, const stringVector &vars)
 }
 
 // ****************************************************************************
+// Method: ViewerProxy::NodePick
+//
+// Purpose: 
+//   Tells the viewer to add a pick point at the specified screen location.
+//
+// Arguments:
+//   x,y  : The pick point location in screen coordinates.
+//   vars : The variables that we're querying.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   June 25, 2003 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerProxy::NodePick(int x, int y, const stringVector &vars)
+{
+    double pt[3];
+    pt[0] = (double)x;
+    pt[1] = (double)y;
+    pt[2] = 0.;
+    PointQuery("NodePick", pt, vars);
+}
+
+// ****************************************************************************
 // Method: ViewerProxy::Lineout
 //
 // Purpose: 
@@ -4111,6 +4138,34 @@ ViewerProxy::SetGlobalLineoutAttributes()
     // Set the rpc type.
     //
     viewerRPC->SetRPCType(ViewerRPC::SetGlobalLineoutAttributesRPC);
+
+    //
+    // Issue the RPC.
+    //
+    viewerRPC->Notify();
+}
+
+
+// ****************************************************************************
+//  Method: ViewerProxy::SetPickAttributes
+//
+//  Purpose:
+//    Applies the pick attributes.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   June 30, 2003 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+ViewerProxy::SetPickAttributes()
+{
+    //
+    // Set the rpc type.
+    //
+    viewerRPC->SetRPCType(ViewerRPC::SetPickAttributesRPC);
 
     //
     // Issue the RPC.

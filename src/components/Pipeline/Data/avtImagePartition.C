@@ -46,6 +46,9 @@ void          QuicksortTuple3(Tuple3 *, int);
 //    Hank Childs, Tue Jan  1 11:24:10 PST 2002
 //    Allow for scanlines to be adaptively assigned to the partitions.
 //
+//    Hank Childs, Tue Jul  1 21:13:38 PDT 2003
+//    Assume we are running in serial if it is not specified.
+//
 // ****************************************************************************
 
 avtImagePartition::avtImagePartition(int w, int h, int np, int tp)
@@ -61,7 +64,7 @@ avtImagePartition::avtImagePartition(int w, int h, int np, int tp)
 #ifdef PARALLEL
         MPI_Comm_size(MPI_COMM_WORLD, &numProcessors);
 #else
-        EXCEPTION0(ImproperUseException);
+        numProcessors = 1;
 #endif
     }
 
@@ -71,7 +74,7 @@ avtImagePartition::avtImagePartition(int w, int h, int np, int tp)
 #ifdef PARALLEL
         MPI_Comm_rank(MPI_COMM_WORLD, &thisProcessor);
 #else
-        EXCEPTION0(ImproperUseException);
+        thisProcessor = 0;
 #endif
     }
     thisPartition = thisProcessor;

@@ -15,9 +15,11 @@
 #include <vtkCellLocator.h>
 #include <vtkDataSet.h>
 #include <vtkFloatArray.h>
+#include <vtkMath.h>
 #include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
+#include <vtkUnsignedCharArray.h>
 #include <vtkUnsignedIntArray.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkUnstructuredGridBoundaryFilter.h>
@@ -3478,6 +3480,7 @@ avtGenericDatabase::NumStagesForFetch(avtDataSpecification_p spec)
 //    ts          The timestep to query.
 //    nodes       The nodes to query.
 //    varInfo     A place to store the results. 
+//    zonePick    Whether or not the pick was a zone pick.
 //
 //  Returns:
 //    True if data was successfully retrieved, false otherwise.
@@ -3490,15 +3493,19 @@ avtGenericDatabase::NumStagesForFetch(avtDataSpecification_p spec)
 //    Made filling of values contigent upon it not being filled already.
 //    Don't set variable name, it should be set already.
 //
+//    Kathleen Bonnell, Fri Jun 20 13:57:30 PDT 2003  
+//    Add support for node-pick. 
+//    
 // ****************************************************************************
 
 bool
 avtGenericDatabase::QueryScalars(const std::string &varName, const int dom, 
-                                 const int zone, const int ts, 
-                                 const std::vector<int> &nodes, 
-                                 PickVarInfo &varInfo)
+                                 const int element, const int ts, 
+                                 const std::vector<int> &incidentElements, 
+                                 PickVarInfo &varInfo, const bool zonePick)
 {
     bool rv = false;
+    int i;
     if (varInfo.GetValues().empty())
     {
         std::vector<double> vals;
@@ -3512,22 +3519,44 @@ avtGenericDatabase::QueryScalars(const std::string &varName, const int dom,
         }
         char temp[80];
         vtkDataArray *scalars = GetScalarVariable(varName.c_str(), ts, dom, "_all");
-        if (scalars && smd->centering == AVT_NODECENT)
+        if (scalars) 
         {
-            varInfo.SetCentering(PickVarInfo::Nodal);
-            for (int k = 0; k < nodes.size(); k++)
+            bool zoneCent, validCentering = true;
+            if (smd->centering == AVT_NODECENT)
             {
-                sprintf(temp, "(%d)", nodes[k]);
-                names.push_back(temp);
-                vals.push_back(scalars->GetTuple1(nodes[k]));
+                varInfo.SetCentering(PickVarInfo::Nodal);
+                zoneCent = false; 
             }
-        }
-        else if (scalars && smd->centering == AVT_ZONECENT)
-        {
-            varInfo.SetCentering(PickVarInfo::Zonal);
-            sprintf(temp, "(%d)", zone);
-            names.push_back(temp);
-            vals.push_back(scalars->GetTuple1(zone));
+            else if (smd->centering == AVT_ZONECENT)
+            {
+                varInfo.SetCentering(PickVarInfo::Zonal);
+                zoneCent = true; 
+            }
+            else 
+            {
+                validCentering = false; 
+            }
+
+            if (validCentering)
+            {
+                if (zoneCent != zonePick) 
+                {
+                    // the info we're after is associated with incidentElements
+                    for (i = 0; i < incidentElements.size(); i++)
+                    {
+                        sprintf(temp, "(%d)", incidentElements[i]);
+                        names.push_back(temp);
+                        vals.push_back(scalars->GetTuple1(incidentElements[i]));
+                    }
+                }
+                else 
+                {
+                    // the info we're after is associated with element
+                    sprintf(temp, "(%d)", element);
+                    names.push_back(temp);
+                    vals.push_back(scalars->GetTuple1(element));
+                }
+            }
         }
         if (!vals.empty())
         {
@@ -3539,28 +3568,82 @@ avtGenericDatabase::QueryScalars(const std::string &varName, const int dom,
         }
     }
 
+ 
     //
     //  If this is a mixed-var, then get the material values.
     //
     void_ref_ptr vr = cache.GetVoidRef(varName.c_str(), 
-                                  AUXILIARY_DATA_MIXED_VARIABLE, 
-                                  ts, dom); 
+                                AUXILIARY_DATA_MIXED_VARIABLE, 
+                                ts, dom); 
 
     if (*vr != NULL)
     {
         avtMixedVariable *mv = (avtMixedVariable*)(*vr);
         avtMaterial *mat = GetMaterial(dom, varName.c_str(), ts);
-        std::vector<CellMatInfo> matInfo = mat->ExtractCellMatInfo(zone);
+        std::vector<CellMatInfo> matInfo; 
         std::vector<std::string> mN;
         std::vector<double> mV;
+        std::vector<int> nMats;
+        int i, j, nMatsPerZone;
         bool mixed = false;
-        for (int i = 0; i < matInfo.size(); i++)
+        
+        if (zonePick)
         { 
-            if (matInfo[i].mix_index != -1)
+            // check that zones reported by pick are accurate for retrieving
+            // material var info
+            if (element < 0 || element >= mat->GetNZones())
             {
-                mixed |= true;
-                mN.push_back(matInfo[i].name);
-                mV.push_back(mv->GetBuffer()[matInfo[i].mix_index]);
+                debug5 << "CANNOT QUERY MATFRACS, ZONE IS OUT OF RANGE" << endl;
+                return rv;
+            }
+            matInfo = mat->ExtractCellMatInfo(element);
+            nMatsPerZone = 0;
+            for (int i = 0; i < matInfo.size(); i++)
+            { 
+                if (matInfo[i].mix_index != -1)
+                {
+                    mixed = true;
+                    mN.push_back(matInfo[i].name);
+                    mV.push_back(mv->GetBuffer()[matInfo[i].mix_index]);
+                    nMatsPerZone++;
+                }
+            }
+            nMats.push_back(nMatsPerZone);
+        }
+        else
+        {
+            // check that zones reported by pick are accurate for retrieving
+            // material var info
+            bool zonesInRange = true;
+            int nmatzones = mat->GetNZones();
+            for (i = 0; i < incidentElements.size(); i++)
+            {
+                if (incidentElements[i] < 0 || incidentElements[i] >= nmatzones)
+                {
+                    zonesInRange = false;
+                    break; 
+                }
+            }
+            if (!zonesInRange)
+            {
+                debug5 << "CANNOT QUERY MATFRACS ZONE IS OUT OF RANGE" << endl;
+                return rv;
+            }
+            for (j = 0; j < incidentElements.size(); j++)
+            {
+                nMatsPerZone = 0;
+                matInfo = mat->ExtractCellMatInfo(incidentElements[j]);
+                for (i = 0; i < matInfo.size(); i++)
+                { 
+                    if (matInfo[i].mix_index != -1)
+                    {
+                        mixed = true;
+                        mN.push_back(matInfo[i].name);
+                        mV.push_back(mv->GetBuffer()[matInfo[i].mix_index]);
+                        nMatsPerZone++;
+                    }
+                }
+                nMats.push_back(nMatsPerZone);
             }
         }
         if (mixed)
@@ -3568,9 +3651,11 @@ avtGenericDatabase::QueryScalars(const std::string &varName, const int dom,
             varInfo.SetMixVar(true);
             varInfo.SetMixNames(mN);
             varInfo.SetMixValues(mV);
+            varInfo.SetNumMatsPerZone(nMats);
         }
         rv = true;
     }
+
     // 
     // This is where we could allow the interface to add more information.
     // 
@@ -3603,13 +3688,16 @@ avtGenericDatabase::QueryScalars(const std::string &varName, const int dom,
 //    Made filling of values contigent upon it not being filled already.
 //    Don't set variable name, it should be set already.
 //
+//    Kathleen Bonnell, Fri Jun 20 13:57:30 PDT 2003  
+//    Add support for node-pick. 
+//    
 // ****************************************************************************
 
 bool
 avtGenericDatabase::QueryVectors(const std::string &varName, const int dom, 
-                                 const int zone, const int ts, 
-                                 const std::vector<int> &nodes, 
-                                 PickVarInfo &varInfo)
+                                 const int element, const int ts, 
+                                 const std::vector<int> &incidentElements, 
+                                 PickVarInfo &varInfo, const bool zonePick)
 {
     bool rv = false;
     if (varInfo.GetValues().empty())
@@ -3628,44 +3716,62 @@ avtGenericDatabase::QueryVectors(const std::string &varName, const int dom,
         int nComponents = 0;; 
         double *temp = NULL; 
         double mag = 0.;
-        if (vectors && vmd->centering == AVT_NODECENT)
+        if (vectors)
         {
-            nComponents = vectors->GetNumberOfComponents();
-            temp = new double[nComponents];
-            varInfo.SetCentering(PickVarInfo::Nodal);
-            for (int k = 0; k < nodes.size(); k++)
+            bool zoneCent, validCentering = true;
+            if (vmd->centering == AVT_NODECENT)
             {
-                sprintf(buff, "(%d)", nodes[k]); 
-                names.push_back(buff); 
-                vectors->GetTuple(nodes[k], temp);
-                mag = 0.;
-                for (int i = 0; i < nComponents; i++)
-                {
-                    vals.push_back(temp[i]);
-                    mag += (temp[i] * temp[i]); 
+                varInfo.SetCentering(PickVarInfo::Nodal);
+                zoneCent = false;
+            }
+            else if (vmd->centering == AVT_ZONECENT)
+            {
+                varInfo.SetCentering(PickVarInfo::Zonal);
+                zoneCent = true;
+            }
+            else 
+            {
+                validCentering = false;
+            }
+            if (validCentering)
+            {
+                nComponents = vectors->GetNumberOfComponents();
+                temp = new double[nComponents];
+                if (zonePick != zoneCent) 
+                { 
+                    // info we're after is associated with incidentElements
+                    for (int k = 0; k < incidentElements.size(); k++)
+                    {
+                        sprintf(buff, "(%d)", incidentElements[k]); 
+                        names.push_back(buff); 
+                        vectors->GetTuple(incidentElements[k], temp);
+                        mag = 0.;
+                        for (int i = 0; i < nComponents; i++)
+                        {
+                            vals.push_back(temp[i]);
+                            mag += (temp[i] * temp[i]); 
+                        }
+                        mag = sqrt(mag);
+                        vals.push_back(mag);
+                    }
                 }
-                mag = sqrt(mag);
-                vals.push_back(mag);
+                else 
+                {
+                    // info we're after is associated with element 
+                    sprintf(buff, "(%d)", element);
+                    names.push_back(buff); 
+                    vectors->GetTuple(element, temp);
+                    mag = 0.;
+                    for (int i = 0; i < nComponents; i++)
+                    {
+                        vals.push_back(temp[i]);
+                        mag +=  (temp[i] * temp[i]); 
+                    }
+                    mag = sqrt(mag);
+                    vals.push_back(mag);
+                }
+                delete [] temp;
             }
-            delete [] temp;
-        }
-        else if (vectors && vmd->centering == AVT_ZONECENT)
-        {
-            nComponents = vectors->GetNumberOfComponents();
-            temp = new double[nComponents];
-            varInfo.SetCentering(PickVarInfo::Zonal);
-            sprintf(buff, "(%d)", zone);
-            names.push_back(buff); 
-            vectors->GetTuple(zone, temp);
-            mag = 0.;
-            for (int i = 0; i < nComponents; i++)
-            {
-                vals.push_back(temp[i]);
-                mag +=  (temp[i] * temp[i]); 
-            }
-            mag = sqrt(mag);
-            vals.push_back(mag);
-            delete [] temp;
         }
         if (!vals.empty())
         {
@@ -3710,44 +3816,101 @@ avtGenericDatabase::QueryVectors(const std::string &varName, const int dom,
 //    Kathleen Bonnell, Fri Dec  6 12:10:04 PST 2002   
 //    Added test for zone out of range in regards to material zones. 
 //
+//    Kathleen Bonnell, Fri Jun 20 13:57:30 PDT 2003  
+//    Add support for node-pick. 
+//    
 // ****************************************************************************
 
 bool
-avtGenericDatabase::QueryMaterial(const std::string &varName, const int dom, const int zone, 
-                                 const int ts, const std::vector<int> &nodes, PickVarInfo &varInfo)
+avtGenericDatabase::QueryMaterial(const std::string &varName, const int dom, 
+                                  const int element, const int ts, 
+                                  const std::vector<int> &incidentElements, 
+                                  PickVarInfo &varInfo, const bool zonePick)
 {
     std::vector<double> volFracs;
     std::vector<std::string> matNames;
+    std::vector<std::string> zoneNames;
+    std::vector<int> nMats;
+    std::vector<CellMatInfo> matInfo; 
     avtMaterial *mat = GetMaterial(dom, varName.c_str(), ts);
+    int i, j;
     if (mat == NULL)
     {
         return false;
     }
-    if (zone < 0 || zone >= mat->GetNZones())
+
+    char buff[80];
+    int numMatsThisZone;
+    if (zonePick) // zone number is stored in element
     {
-        debug5 << "CANNOT QUERY MATERIALS ZONE IS OUT OF RANGE" << endl;
-        return false;
-    }
-    std::vector<CellMatInfo> matInfo = mat->ExtractCellMatInfo(zone);
-    for (int i = 0; i < matInfo.size(); i++)
-    {
-        if (matInfo[i].vf > 0.)
+        if (element < 0 || element >= mat->GetNZones())
         {
-            matNames.push_back(matInfo[i].name);
-            if (matInfo[i].vf < 1.)
+            debug5 << "CANNOT QUERY MATERIALS ZONE IS OUT OF RANGE" << endl;
+            return false;
+        }
+        numMatsThisZone = 0;
+        matInfo = mat->ExtractCellMatInfo(element);
+        for (i = 0; i < matInfo.size(); i++)
+        {
+            if (matInfo[i].vf > 0.)
             {
+                matNames.push_back(matInfo[i].name);
                 volFracs.push_back(matInfo[i].vf);
+                numMatsThisZone++;
             }
+        }
+        nMats.push_back(numMatsThisZone);
+    }
+    else // zones are stored in incidentElements.
+    {
+        bool zonesInRange = true;
+        int nmatzones = mat->GetNZones();
+        for (i = 0; i < incidentElements.size(); i++)
+        {
+            if (incidentElements[i] < 0 || incidentElements[i] >= nmatzones)
+            {
+                zonesInRange = false;
+                break; 
+            }
+        }
+        if (!zonesInRange)
+        {
+            debug5 << "CANNOT QUERY MATERIALS ZONE IS OUT OF RANGE" << endl;
+            return false;
+        }
+        for (j = 0; j < incidentElements.size(); j++)
+        {
+            numMatsThisZone = 0;
+            sprintf(buff, "(%d)", incidentElements[j]);
+            zoneNames.push_back(buff);
+            matInfo = mat->ExtractCellMatInfo(incidentElements[j]);
+            for (i = 0; i < matInfo.size(); i++)
+            {
+                if (matInfo[i].vf > 0.)
+                {
+                    matNames.push_back(matInfo[i].name);
+                    volFracs.push_back(matInfo[i].vf);
+                    numMatsThisZone++;
+                }
+            }
+            nMats.push_back(numMatsThisZone);
         }
     }
     varInfo.SetCentering(PickVarInfo::None);
-    varInfo.SetNames(matNames);
-    varInfo.SetValues(volFracs);
+    varInfo.SetVarIsMaterial(true);
+    varInfo.SetNames(zoneNames);
+    varInfo.SetMixNames(matNames);
+    varInfo.SetMixValues(volFracs);
+    varInfo.SetNumMatsPerZone(nMats);
 
     if (!matNames.empty())
         matNames.clear();
     if (!volFracs.empty())
         volFracs.clear();
+    if (!zoneNames.empty())
+        zoneNames.clear();
+    if (!nMats.empty())
+        nMats.clear();
 
     // 
     // This is where we could allow the interface to add more information.
@@ -3787,9 +3950,11 @@ avtGenericDatabase::QueryMaterial(const std::string &varName, const int dom, con
 // ****************************************************************************
 
 bool
-avtGenericDatabase::QueryNodes(const std::string &varName, const int dom, const int zone, 
-                               const int ts, std::vector<int> &nodes, float ppt[3],
-                               const int dim, const bool useNodeCoords, const bool logical,
+avtGenericDatabase::QueryNodes(const std::string &varName, const int dom, 
+                               const int zone, const int ts, 
+                               std::vector<int> &nodes, float ppt[3],
+                               const int dim, const bool useNodeCoords, 
+                               const bool logical, 
                                std::vector<std::string> &nCoords)
 {
     string meshName = GetMetaData()->MeshForVar(varName);
@@ -3805,36 +3970,36 @@ avtGenericDatabase::QueryNodes(const std::string &varName, const int dom, const 
         int type = ds->GetDataObjectType();
         for (int i = 0; i < ptIds->GetNumberOfIds(); i++)
         {
-           nodes.push_back(ptIds->GetId(i));
-           if (useNodeCoords)
-           {
-               if (logical && (type == VTK_RECTILINEAR_GRID ||
-                               type == VTK_STRUCTURED_GRID ))
-               {
-                   vtkVisItUtility::GetLogicalIndices(ds, false,  ptIds->GetId(i), ijk);
-                   if (dim == 2)
-                   {
-                       sprintf(buff, "<%d, %d>", ijk[0], ijk[1]);
-                   }
-                   else 
-                   {
-                       sprintf(buff, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
-                   }
-               }
-               else
-               {
-                   ds->GetPoint(ptIds->GetId(i), coord);
-                   if (dim == 2)
-                   {
-                       sprintf(buff, "<%g, %g>", coord[0], coord[1]);
-                   }
-                   else 
-                   {
-                       sprintf(buff, "<%g, %g, %g>", coord[0], coord[1], coord[2]);
-                   }
-               }
-               nCoords.push_back(buff);
-           }
+            nodes.push_back(ptIds->GetId(i));
+            if (useNodeCoords)
+            {
+                if (logical && (type == VTK_RECTILINEAR_GRID ||
+                                type == VTK_STRUCTURED_GRID ))
+                {
+                    vtkVisItUtility::GetLogicalIndices(ds, false,  ptIds->GetId(i), ijk);
+                    if (dim == 2)
+                    {
+                        sprintf(buff, "<%d, %d>", ijk[0], ijk[1]);
+                    }
+                    else 
+                    {
+                        sprintf(buff, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
+                    }
+                }
+                else
+                {
+                    ds->GetPoint(ptIds->GetId(i), coord);
+                    if (dim == 2)
+                    {
+                        sprintf(buff, "<%g, %g>", coord[0], coord[1]);
+                    }
+                    else 
+                    {
+                        sprintf(buff, "<%g, %g, %g>", coord[0], coord[1], coord[2]);
+                    }
+                }
+                nCoords.push_back(buff);
+            }
         }
         ptIds->Delete();
         if (nodes.size() == 1) // point mesh
@@ -3915,4 +4080,139 @@ avtGenericDatabase::QueryMesh(const std::string &varName, const int dom,
     return rv;
 }
 
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::QueryZones
+//
+//  Purpose:
+//    Queries the db regarding zones incident upon a specific node. 
+//
+//  Arguments:
+//    varName     The variable on which to retrieve data.
+//    dom         The domain to query.
+//    foundEl     IN:  zone that contains the picked point. 
+//                OUT: The node closest to the picked point.
+//    ts          The timestep to query.
+//    zones       A place to store the zones.
+//    ppt         IN:  The picked point. 
+//                OUT: The node coordinates. 
+//    dimension   The spatial dimension.
+//    useNodeCoords Whether or not to supply coordinates for the node.
+//    logical     Whether the node coords should be logical. 
+//    nodeCoords  A place to store the node coordinates.
+//
+//  Returns:
+//    True if data was successfully retrieved, false otherwise.
+//
+//  Programmer:   Kathleen Bonnell 
+//  Creation:     June 20, 2003 
+//
+// ****************************************************************************
+
+bool
+avtGenericDatabase::QueryZones(const string &varName, const int dom, 
+                               int &foundEl, const int ts, vector<int> &zones, 
+                               float ppt[3], const int dimension,
+                               const bool useNodeCoords, const bool logical, 
+                               vector<string> &nodeCoords)
+{
+    string meshName = GetMetaData()->MeshForVar(varName);
+    vtkDataSet *ds = GetMeshDataset(meshName.c_str(), ts, dom, "_all");
+    bool rv = false; 
+    if (ds)
+    {
+        vtkPoints *points = vtkVisItUtility::GetPoints(ds);
+        vtkIdList *ids = vtkIdList::New();
+        vtkIdType *idptr; 
+        vtkIdType minId = -1;
+        if (ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
+        {
+           // This method is faster for rectilinear grids than other types 
+           // It is also faster for RGrids than method below. 
+            minId = ds->FindPoint(ppt);
+        }
+        else
+        {
+            ds->GetCellPoints(foundEl, ids);
+            int numPts = ids->GetNumberOfIds();
+            float dist2;
+            float minDist2 = FLT_MAX;
+            idptr = ids->GetPointer(0);
+            for (int i = 0; i < numPts; i++)
+            {
+                dist2 = vtkMath::Distance2BetweenPoints(ppt, 
+                    points->GetPoint(idptr[i]));
+                if (dist2 < minDist2)
+                {
+                    minDist2 = dist2; 
+                    minId = idptr[i]; 
+                }
+            }
+        }
+
+        if ( minId != -1)
+        {
+            ppt[0] = points->GetPoint(minId)[0];
+            ppt[1] = points->GetPoint(minId)[1];
+            ppt[2] = points->GetPoint(minId)[2];
+
+            foundEl = minId;
+
+            if (useNodeCoords)
+            {
+                char buff[80];
+                int ijk[3];
+                float coord[3];
+                int type = ds->GetDataObjectType();
+                if (logical && (type == VTK_STRUCTURED_GRID || 
+                     type == VTK_RECTILINEAR_GRID))
+                {
+                    vtkVisItUtility::GetLogicalIndices(ds, false, minId, ijk);
+                    if (dimension == 2)
+                    {
+                        sprintf(buff, "<%d, %d>", ijk[0], ijk[1]);
+                    }
+                    else 
+                    {
+                        sprintf(buff, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
+                    }
+                }
+                else
+                {
+                    points->GetPoint(minId, coord); 
+                    if (dimension  == 2)
+                    {
+                        sprintf(buff, "<%g, %g>", coord[0], coord[1]);
+                    }
+                    else 
+                    {
+                        sprintf(buff, "<%g, %g, %g>", coord[0], coord[1], coord[2]);
+                    }
+                 }
+                 nodeCoords.push_back(buff);
+            }
+            ids->Reset();
+            ds->GetPointCells(minId, ids);
+            int nCells = ids->GetNumberOfIds();
+            if (nCells > 0)
+            {
+                vtkUnsignedCharArray *ghostArray = (vtkUnsignedCharArray*)
+                    ds->GetCellData()-> GetArray("vtkGhostLevels");   
+                unsigned char *ghosts = NULL;
+                if (ghostArray)
+                    ghosts = ghostArray->GetPointer(0);
+                idptr = ids->GetPointer(0);
+                for (int i = 0;i < nCells; i++)
+                {
+                    if (ghosts && ghosts[idptr[i]] == 1)
+                        continue;
+                    zones.push_back(idptr[i]);
+                }
+                rv = true;
+            }
+        } // found valid point
+        ids->Delete();
+    }
+    return rv;
+}
 

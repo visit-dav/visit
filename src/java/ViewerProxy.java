@@ -64,6 +64,9 @@ import java.util.Vector;
 //   I added a new OpenDatabase method that lets us open databases at late
 //   time states.
 //
+//   Kathleen Bonnell, Tue Jul  1 10:11:37 PDT 2003
+//   I added SetPickAttributes, SetGlobalLineoutAttributes. 
+//
 // ****************************************************************************
 
 public class ViewerProxy implements SimpleObserver
@@ -1116,6 +1119,20 @@ public class ViewerProxy implements SimpleObserver
     public boolean SetKeyframeAttributes()
     {
         rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETKEYFRAMEATTRIBUTESRPC);
+        rpc.Notify();
+        return synchronous ? Synchronize() : true;
+    }
+
+    public boolean SetGlobalLineoutAttributes()
+    {
+        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETGLOBALLINEOUTATTRIBUTESRPC);
+        rpc.Notify();
+        return synchronous ? Synchronize() : true;
+    }
+
+    public boolean SetPickAttributes()
+    {
+        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETPICKATTRIBUTESRPC);
         rpc.Notify();
         return synchronous ? Synchronize() : true;
     }

@@ -1,5 +1,11 @@
 // ************************************************************************* //
-//                             VisWindowTypes.h                              //
+//                             VisWindowTypes.h                              
+//
+//  Modifications:
+//    Kathleen Bonnell, Fri Jun 27 16:25:01 PDT 2003  
+//    For INTERACTION_MODE, renamed PICK to ZONE_PICK, added NODE_PICK.
+//    Removed QUERY_TYPE, no longer needed.
+//
 // ************************************************************************* //
 
 
@@ -11,17 +17,11 @@
 typedef enum
 {
     NAVIGATE         = 0,
-    PICK,           /* 1 */
-    ZOOM,           /* 2 */
-    LINEOUT         /* 3 */
+    ZONE_PICK,      /* 1 */
+    NODE_PICK,      /* 2 */
+    ZOOM,           /* 3 */
+    LINEOUT         /* 4 */
 }  INTERACTION_MODE;
-
-typedef enum
-{
-    QUERYTYPE_NONE      = 0,
-    QUERYTYPE_PICK,    /* 1 */
-    QUERYTYPE_LINEOUT  /* 2 */
-}  QUERY_TYPE;
 
 typedef enum
 {

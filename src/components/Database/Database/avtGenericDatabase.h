@@ -138,6 +138,9 @@ class     PickVarInfo;
 //    Hank Childs, Wed Jun 18 09:20:16 PDT 2003
 //    Added CreateOriginalNodes.
 //
+//    Kathleen Bonnell, Fri Jun 20 13:52:00 PDT 2003  
+//    Added QueryZones, added parameter to other Query methods.
+//
 // ****************************************************************************
 
 class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
@@ -240,21 +243,27 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
     virtual bool               QueryScalars(const std::string &, const int, 
                                             const int , const int ,
                                             const std::vector<int> &, 
-                                            PickVarInfo &);
+                                            PickVarInfo &, const bool);
     virtual bool               QueryVectors(const std::string &, const int, 
                                             const int , const int ,
                                             const std::vector<int> &, 
-                                            PickVarInfo &);
+                                            PickVarInfo &, const bool);
     virtual bool               QueryMaterial(const std::string &, const int, 
                                             const int , const int,
                                             const std::vector<int> &, 
-                                            PickVarInfo &);
+                                            PickVarInfo &, const bool);
     virtual bool               QueryNodes(const std::string &, const int, 
                                           const int, const int, std::vector<int> &, 
-                                          float [3], const int, const bool, const bool,  
+                                          float [3], const int, const bool, const bool,
                                           std::vector<std::string> &);
+
     virtual bool               QueryMesh(const std::string &, const int, 
                                          PickVarInfo &);
+
+    virtual bool               QueryZones(const std::string&, const int, int &,
+                                          const int, std::vector<int> &, 
+                                          float [3], const int, const bool, 
+                                          const bool, std::vector<std::string> &) ;
 };
 
 

@@ -1,148 +1,202 @@
 <?xml version="1.0"?>
-  <Attribute name="ViewerRPC" purpose="This class contains the attributes for controlling the viewer." codefile="ViewerRPC.code" exportAPI="VIEWER_RPC_API" exportInclude="viewerrpc_exports.h">
+  <Attribute name="ViewerRPC" purpose="This class contains the attributes for controlling the viewer." persistent="true" exportAPI="VIEWER_RPC_API" exportInclude="viewerrpc_exports.h" codefile="ViewerRPC.code">
     <Enum name="ViewerRPCType">
-    CloseRPC
-    AddWindowRPC
-    DeleteWindowRPC
-    SetWindowLayoutRPC
-    SetActiveWindowRPC
-    ClearWindowRPC
-    ClearAllWindowsRPC
-    OpenDatabaseRPC
-    ReOpenDatabaseRPC
-    ReplaceDatabaseRPC
-    OverlayDatabaseRPC
-    OpenComputeEngineRPC
-    CloseComputeEngineRPC
-    AnimationSetNFramesRPC
-    AnimationPlayRPC
-    AnimationReversePlayRPC
-    AnimationStopRPC
-    AnimationNextFrameRPC
-    AnimationPreviousFrameRPC
-    AnimationSetFrameRPC
-    AddPlotRPC
-    SetPlotFrameRangeRPC
-    DeletePlotKeyframeRPC
-    MovePlotKeyframeRPC
-    DeleteActivePlotsRPC
-    HideActivePlotsRPC
-    DrawPlotsRPC
-    DisableRedrawRPC
-    RedrawRPC
-    SetActivePlotsRPC
-    ChangeActivePlotsVarRPC
-    AddOperatorRPC
-    PromoteOperatorRPC
-    DemoteOperatorRPC
-    RemoveOperatorRPC
-    RemoveLastOperatorRPC
-    RemoveAllOperatorsRPC
-    SaveWindowRPC
-    SetDefaultPlotOptionsRPC
-    SetPlotOptionsRPC
-    SetDefaultOperatorOptionsRPC
-    SetOperatorOptionsRPC
-    WriteConfigFileRPC
-    ConnectToMetaDataServerRPC
-    IconifyAllWindowsRPC
-    DeIconifyAllWindowsRPC
-    ShowAllWindowsRPC
-    HideAllWindowsRPC
-    UpdateColorTableRPC
-    SetAnnotationAttributesRPC
-    SetDefaultAnnotationAttributesRPC
-    ResetAnnotationAttributesRPC
-    SetKeyframeAttributesRPC
-    SetPlotSILRestrictionRPC
-    SetView2DRPC
-    SetView3DRPC
-    ResetPlotOptionsRPC
-    ResetOperatorOptionsRPC
-    SetAppearanceRPC
-    ProcessExpressionsRPC
-    SetLightListRPC
-    SetDefaultLightListRPC
-    ResetLightListRPC
-    SetAnimationAttributesRPC
-    SetWindowAreaRPC
-    PrintWindowRPC
-    ResetViewRPC
-    RecenterViewRPC
-    ToggleMaintainViewModeRPC
-    ToggleBoundingBoxModeRPC
-    ToggleCameraViewModeRPC
-    TogglePerspectiveViewRPC
-    ToggleSpinModeRPC
-    ToggleLockTimeRPC
-    ToggleLockToolsRPC
-    ToggleLockViewModeRPC
-    ToggleFullFrameRPC
-    UndoViewRPC
-    InvertBackgroundRPC
-    ClearPickPointsRPC
-    SetWindowModeRPC
-    EnableToolRPC 
-    CopyViewToWindowRPC
-    CopyLightingToWindowRPC
-    CopyAnnotationsToWindowRPC
-    CopyPlotsToWindowRPC
-    ClearCacheRPC
-    SetViewExtentsTypeRPC
-    ClearRefLinesRPC
-    SetRenderingAttributesRPC
-    DatabaseQueryRPC
-    PointQueryRPC
-    LineQueryRPC
-    CloneWindowRPC
-    SetMaterialAttributesRPC
-    SetDefaultMaterialAttributesRPC
-    ResetMaterialAttributesRPC
-    SetPlotDatabaseStateRPC
-    DeletePlotDatabaseKeyframeRPC
-    MovePlotDatabaseKeyframeRPC
-    ClearViewKeyframesRPC
-    DeleteViewKeyframeRPC
-    MoveViewKeyframeRPC
-    SetViewKeyframeRPC
-    OpenMDServerRPC
-    EnableToolbarRPC
-    HideToolbarsRPC
-    HideToolbarsForAllWindowsRPC
-    ShowToolbarsRPC
-    ShowToolbarsForAllWindowsRPC
-    SaveViewRPC
-    SetGlobalLineoutAttributesRPC
-    MaxRPC
+      CloseRPC
+      AddWindowRPC
+      DeleteWindowRPC
+      SetWindowLayoutRPC
+      SetActiveWindowRPC
+      ClearWindowRPC
+      ClearAllWindowsRPC
+      OpenDatabaseRPC
+      ReOpenDatabaseRPC
+      ReplaceDatabaseRPC
+      OverlayDatabaseRPC
+      OpenComputeEngineRPC
+      CloseComputeEngineRPC
+      AnimationSetNFramesRPC
+      AnimationPlayRPC
+      AnimationReversePlayRPC
+      AnimationStopRPC
+      AnimationNextFrameRPC
+      AnimationPreviousFrameRPC
+      AnimationSetFrameRPC
+      AddPlotRPC
+      SetPlotFrameRangeRPC
+      DeletePlotKeyframeRPC
+      MovePlotKeyframeRPC
+      DeleteActivePlotsRPC
+      HideActivePlotsRPC
+      DrawPlotsRPC
+      DisableRedrawRPC
+      RedrawRPC
+      SetActivePlotsRPC
+      ChangeActivePlotsVarRPC
+      AddOperatorRPC
+      PromoteOperatorRPC
+      DemoteOperatorRPC
+      RemoveOperatorRPC
+      RemoveLastOperatorRPC
+      RemoveAllOperatorsRPC
+      SaveWindowRPC
+      SetDefaultPlotOptionsRPC
+      SetPlotOptionsRPC
+      SetDefaultOperatorOptionsRPC
+      SetOperatorOptionsRPC
+      WriteConfigFileRPC
+      ConnectToMetaDataServerRPC
+      IconifyAllWindowsRPC
+      DeIconifyAllWindowsRPC
+      ShowAllWindowsRPC
+      HideAllWindowsRPC
+      UpdateColorTableRPC
+      SetAnnotationAttributesRPC
+      SetDefaultAnnotationAttributesRPC
+      ResetAnnotationAttributesRPC
+      SetKeyframeAttributesRPC
+      SetPlotSILRestrictionRPC
+      SetView2DRPC
+      SetView3DRPC
+      ResetPlotOptionsRPC
+      ResetOperatorOptionsRPC
+      SetAppearanceRPC
+      ProcessExpressionsRPC
+      SetLightListRPC
+      SetDefaultLightListRPC
+      ResetLightListRPC
+      SetAnimationAttributesRPC
+      SetWindowAreaRPC
+      PrintWindowRPC
+      ResetViewRPC
+      RecenterViewRPC
+      ToggleMaintainViewModeRPC
+      ToggleBoundingBoxModeRPC
+      ToggleCameraViewModeRPC
+      TogglePerspectiveViewRPC
+      ToggleSpinModeRPC
+      ToggleLockTimeRPC
+      ToggleLockToolsRPC
+      ToggleLockViewModeRPC
+      ToggleFullFrameRPC
+      UndoViewRPC
+      InvertBackgroundRPC
+      ClearPickPointsRPC
+      SetWindowModeRPC
+      EnableToolRPC
+      CopyViewToWindowRPC
+      CopyLightingToWindowRPC
+      CopyAnnotationsToWindowRPC
+      CopyPlotsToWindowRPC
+      ClearCacheRPC
+      SetViewExtentsTypeRPC
+      ClearRefLinesRPC
+      SetRenderingAttributesRPC
+      DatabaseQueryRPC
+      PointQueryRPC
+      LineQueryRPC
+      CloneWindowRPC
+      SetMaterialAttributesRPC
+      SetDefaultMaterialAttributesRPC
+      ResetMaterialAttributesRPC
+      SetPlotDatabaseStateRPC
+      DeletePlotDatabaseKeyframeRPC
+      MovePlotDatabaseKeyframeRPC
+      ClearViewKeyframesRPC
+      DeleteViewKeyframeRPC
+      MoveViewKeyframeRPC
+      SetViewKeyframeRPC
+      OpenMDServerRPC
+      EnableToolbarRPC
+      HideToolbarsRPC
+      HideToolbarsForAllWindowsRPC
+      ShowToolbarsRPC
+      ShowToolbarsForAllWindowsRPC
+      SaveViewRPC
+      SetGlobalLineoutAttributesRPC
+      SetPickAttributesRPC
+      MaxRPC
     </Enum>
-
-    <Field name="RPCType"           type="enum" subtype="ViewerRPCType">CloseRPC</Field>
-    <Field name="windowLayout"      type="int">1</Field>
-    <Field name="windowId"          type="int">0</Field>
-    <Field name="windowMode"        type="int">0</Field>
-    <Field name="windowArea"        type="string"></Field>
-    <Field name="database"          type="string"></Field>
-    <Field name="programHost"       type="string"></Field>
-    <Field name="programOptions"    type="stringVector"></Field>
-    <Field name="nFrames"           type="int">0</Field>
-    <Field name="frameNumber"       type="int">0</Field>
-    <Field name="frameRange"        type="intArray" length="2">0 0</Field>
-    <Field name="frame"             type="int">0</Field>
-    <Field name="plotType"          type="int">0</Field>
-    <Field name="operatorType"      type="int">0</Field>
-    <Field name="variable"          type="string"></Field>
-    <Field name="activePlotIds"     type="intVector"></Field>
-    <Field name="activeOperatorIds" type="intVector"></Field>
-    <Field name="expandedPlotIds"   type="intVector"></Field>
-    <Field name="colorTableName"    type="string"></Field>
-    <Field name="queryName"         type="string"></Field>
-    <Field name="queryPoint1"       type="doubleArray" length="3">0. 0. 0.</Field>
-    <Field name="queryPoint2"       type="doubleArray" length="3">0. 0. 0.</Field>
-    <Field name="queryVariables"    type="stringVector"></Field>
-    <Field name="toolId"            type="int">0</Field>
-    <Field name="boolFlag"          type="bool">false</Field>
-    <Field name="intArg1"           type="int">0</Field>
-    <Field name="intArg2"           type="int">0</Field>
-    <Field name="intArg3"           type="int">0</Field>
-
+    <Field name="RPCType" label="RPCType" type="enum" subtype="ViewerRPCType">
+      CloseRPC
+    </Field>
+    <Field name="windowLayout" label="windowLayout" type="int">
+      1
+    </Field>
+    <Field name="windowId" label="windowId" type="int">
+      0
+    </Field>
+    <Field name="windowMode" label="windowMode" type="int">
+      0
+    </Field>
+    <Field name="windowArea" label="windowArea" type="string">
+    </Field>
+    <Field name="database" label="database" type="string">
+    </Field>
+    <Field name="programHost" label="programHost" type="string">
+    </Field>
+    <Field name="programOptions" label="programOptions" type="stringVector">
+    </Field>
+    <Field name="nFrames" label="nFrames" type="int">
+      0
+    </Field>
+    <Field name="frameNumber" label="frameNumber" type="int">
+      0
+    </Field>
+    <Field name="frameRange" label="frameRange" type="intArray" length="2">
+      0
+      0
+    </Field>
+    <Field name="frame" label="frame" type="int">
+      0
+    </Field>
+    <Field name="plotType" label="plotType" type="int">
+      0
+    </Field>
+    <Field name="operatorType" label="operatorType" type="int">
+      0
+    </Field>
+    <Field name="variable" label="variable" type="string">
+    </Field>
+    <Field name="activePlotIds" label="activePlotIds" type="intVector">
+    </Field>
+    <Field name="activeOperatorIds" label="activeOperatorIds" type="intVector">
+    </Field>
+    <Field name="expandedPlotIds" label="expandedPlotIds" type="intVector">
+    </Field>
+    <Field name="colorTableName" label="colorTableName" type="string">
+    </Field>
+    <Field name="queryName" label="queryName" type="string">
+    </Field>
+    <Field name="queryPoint1" label="queryPoint1" type="doubleArray" length="3">
+      0.000000
+      0.000000
+      0.000000
+    </Field>
+    <Field name="queryPoint2" label="queryPoint2" type="doubleArray" length="3">
+      0.000000
+      0.000000
+      0.000000
+    </Field>
+    <Field name="queryVariables" label="queryVariables" type="stringVector">
+    </Field>
+    <Field name="toolId" label="toolId" type="int">
+      0
+    </Field>
+    <Field name="boolFlag" label="boolFlag" type="bool">
+      false
+    </Field>
+    <Field name="intArg1" label="intArg1" type="int">
+      0
+    </Field>
+    <Field name="intArg2" label="intArg2" type="int">
+      0
+    </Field>
+    <Field name="intArg3" label="intArg3" type="int">
+      0
+    </Field>
+    <Function name="SetWindowArea" user="true" member="true">
+    </Function>
+    <Include file="source" quoted="false">
+      snprintf.h
+    </Include>
   </Attribute>

@@ -13,11 +13,14 @@ extern "C" {
 #include <mili.h>
 }
 
-#include <avtMTSDFileFormat.h>
+#include <avtMTMDFileFormat.h>
 #include <avtTypes.h>
 
+class avtMaterial;
+class vtkDataArray;
 class vtkUnstructuredGrid;
 
+using std::vector;
 
 // ****************************************************************************
 //  Class: avtMiliFileFormat
@@ -30,9 +33,14 @@ class vtkUnstructuredGrid;
 //  Programmer:  Hank Childs
 //  Creation:    April  11, 2003
 //
+//  Modifications:
+//    Akira Haddox, Fri May 23 08:30:01 PDT 2003
+//    Added in support for multiple meshes within a Mili database.
+//    Changed into a MTMD file format.
+//
 // ****************************************************************************
 
-class avtMiliFileFormat : public avtMTSDFileFormat
+class avtMiliFileFormat : public avtMTMDFileFormat
 {
   public:
                           avtMiliFileFormat(const char *);
@@ -40,41 +48,64 @@ class avtMiliFileFormat : public avtMTSDFileFormat
     
     virtual const char   *GetType(void) { return "Mili File Format"; };
     
-    virtual void          GetCycles(std::vector<int> &);
+    virtual void          GetCycles(vector<int> &);
     virtual int           GetNTimesteps(void);
  
-    virtual vtkDataSet   *GetMesh(int, const char *);
-    virtual vtkDataArray *GetVar(int, const char *);
-    virtual vtkDataArray *GetVectorVar(int, const char *);
+    virtual vtkDataSet   *GetMesh(int, int, const char *);
+    virtual vtkDataArray *GetVar(int, int, const char *);
+    virtual vtkDataArray *GetVectorVar(int, int, const char *);
 
     virtual void          PopulateDatabaseMetaData(avtDatabaseMetaData *);
 
+    virtual void         *GetAuxiliaryData(const char *var, int, int,
+                                           const char *type, void *args,
+                                           DestructorFunction &);
+
   protected:
-    Famid                 dbid;
+    char *famroot;
+    char *fampath;
+    
+    vector<Famid>    dbid;
     int                   ntimesteps;
+    int                   ndomains;
+    int                   nmeshes;
 
-    bool                  gottenGeneralInfo;
+    vector<bool>     validateVars;
+    vector<bool>     readMesh;
     int                   dims;
-    int                   nnodes;
-    int                   ncells;
-    vtkUnstructuredGrid  *connectivity;
 
-    std::vector< std::string >         sub_records;
-    std::vector< int >                 sub_record_ids;
+    vector<vector<int> >                   nnodes;
+    vector<vector<int> >                   ncells;
+    vector<vector<vtkUnstructuredGrid *> > connectivity;
 
-    std::vector< std::string >         element_group_name;
-    std::vector< int >                 connectivity_offset;
+    vector<vector< std::string > >         sub_records;
+    vector<vector< int > >                 sub_record_ids;
 
-    std::vector< std::string >         vars;
-    std::vector< avtCentering >        centering;
-    std::vector< std::vector<bool> >   vars_valid;
-    std::vector< avtVarType >          vartype;
+    vector<vector< std::string > >         element_group_name;
+    vector<vector< int > >                 connectivity_offset;
+    vector<vector< int > >                 group_mesh_associations;
 
-    void                  GetGeneralInfo(void);
-    void                  ConstructMaterials(std::vector< std::vector<int*> >&,
-                                            std::vector< std::vector<int> > &);
+    vector< std::string >         vars;
+    vector< avtCentering >        centering;
+    vector< vector< vector<bool> > >        vars_valid;
+    vector< avtVarType >          vartype;
+    vector< int >                 var_mesh_associations;
+
+    vector<int>                            nmaterials;
+    vector<vector< avtMaterial * > >       materials;
+
+    void                  ReadMesh(int dom);
+    void                  ValidateVariables(int dom);
+    avtMaterial *         ConstructMaterials(vector< vector<int*> >&,
+                                            vector< vector<int> > &);
     int                   GetVariableIndex(const char *);
-    void                  GetSizeInfoForGroup(const char *, int &, int &);
+    int                   GetVariableIndex(const char *, int mesh_id);
+    void                  GetSizeInfoForGroup(const char *, int &, int &, int);
+
+    void                  DecodeMultiMeshVarname(const std::string &, 
+                                                 std::string &, int &);
+
+    inline void           OpenDB(int dom);
 };
 
 

@@ -647,6 +647,11 @@ avtDatabase::GetFileListFromTextFile(const char *textfile,
 //    Hank Childs, Thu May  8 09:05:12 PDT 2003
 //    Include the correct file name for the query.
 //
+//    Kathleen Bonnell, Fri Jun 27 16:54:31 PDT 2003  
+//    Support NodePicking -- added call to QueryScalars.  Pass to Query
+//    methods whether or not this is a zone pick.  Reflect some name changes
+//    in pickAtts.
+//
 // ****************************************************************************
 
 void               
@@ -654,44 +659,64 @@ avtDatabase::Query(PickAttributes *pa)
 {
     int ts          = pa->GetTimeStep();
     int foundDomain = pa->GetDomain();
-    int foundZone   = pa->GetZoneNumber();
-    float *PPT, ppt[3];
-    std::vector<int> nodes  = pa->GetNodes();
+    int foundEl     = pa->GetElementNumber();
+    int zonePick    = pa->GetPickType() == PickAttributes::Zone;
+    float *PPT, *CPT, ppt[3], cpt[3];
+    std::vector<int> incEls  = pa->GetIncidentElements();
     std::vector<std::string> nodeCoords  = pa->GetNodeCoords();
-    vector<string> userVars = pa->GetUserSelectedVars();
+    vector<string> userVars = pa->GetVariables();
     std::string vName; 
 
     //
-    //  Filling the nodes is usually done by PickQuery,
+    //  Filling the incidentElements is usually done by PickQuery,
     //  but if matSelect has been applied, then the values from PickQuery
-    //  won't make sense.  Instead, retrieve the nodes here.
+    //  won't make sense.  Instead, retrieve the incidentElements here.
     //
-    if (nodes.empty())
+    if (incEls.empty())
     {
         PPT = pa->GetPickPoint();
         ppt[0] = PPT[0];
         ppt[1] = PPT[1];
         ppt[2] = PPT[2];
+        CPT = pa->GetCellPoint();
+        cpt[0] = CPT[0];
+        cpt[1] = CPT[1];
+        cpt[2] = CPT[2];
         vName = pa->GetActiveVariable();
-        QueryNodes(vName, foundDomain, foundZone, ts, nodes, ppt, pa->GetDimension(),
-                   pa->GetUseNodeCoords(), pa->GetLogicalCoords(), nodeCoords);
-        if (nodes.empty())
+        bool success; 
+
+        if (zonePick)
+        {
+            success = QueryNodes(vName, foundDomain, foundEl, ts, incEls, ppt, 
+                          pa->GetDimension(), pa->GetUseNodeCoords(), 
+                          pa->GetLogicalCoords(), nodeCoords);
+        }
+        else       
+        {
+            success = QueryZones(vName, foundDomain, foundEl, ts, incEls, cpt,
+                          pa->GetDimension(), pa->GetUseNodeCoords(), 
+                          pa->GetLogicalCoords(), nodeCoords);
+            if (success)
+                pa->SetElementNumber(foundEl);
+        }
+        if (success)
+        {
+            pa->SetFulfilled(true);
+            pa->SetIncidentElements(incEls);
+            pa->SetNodeCoords(nodeCoords);
+            pa->SetPickPoint(ppt);
+            pa->SetCellPoint(cpt);
+        }
+        else
         {
             pa->SetFulfilled(false);
             return;
         }
-        else
+        for (int j = 0; j < userVars.size(); j++)
         {
-            pa->SetNodes(nodes);
-            pa->SetNodeCoords(nodeCoords);
-            pa->SetFulfilled(true);
-            pa->SetPickPoint(ppt);
-            for (int j = 0; j < userVars.size(); j++)
-            {
-                PickVarInfo varInfo;
-                varInfo.SetVariableName(userVars[j]);
-                pa->AddPickVarInfo(varInfo); 
-            }
+            PickVarInfo varInfo;
+            varInfo.SetVariableName(userVars[j]);
+            pa->AddPickVarInfo(varInfo); 
         }
     }
 
@@ -710,16 +735,16 @@ avtDatabase::Query(PickAttributes *pa)
             switch(varType)
             {
                 case AVT_SCALAR_VAR : success = 
-                   QueryScalars(vName, foundDomain, foundZone, ts, nodes, 
-                                pa->GetPickVarInfo(varNum));
+                   QueryScalars(vName, foundDomain, foundEl, ts, incEls, 
+                                pa->GetPickVarInfo(varNum), zonePick);
                    break; 
                 case AVT_VECTOR_VAR : success = 
-                   QueryVectors(vName, foundDomain, foundZone, ts, nodes, 
-                                pa->GetPickVarInfo(varNum));
+                   QueryVectors(vName, foundDomain, foundEl, ts, incEls, 
+                                pa->GetPickVarInfo(varNum), zonePick);
                    break; 
                 case AVT_MATERIAL : success = 
-                   QueryMaterial(vName, foundDomain, foundZone, ts, nodes, 
-                                 pa->GetPickVarInfo(varNum));
+                   QueryMaterial(vName, foundDomain, foundEl, ts, incEls, 
+                                 pa->GetPickVarInfo(varNum), zonePick);
                    break; 
                 case AVT_MESH : success = 
                    QueryMesh(vName, foundDomain, pa->GetPickVarInfo(varNum));

@@ -52,6 +52,11 @@
 //    Kathleen Bonnell, Fri Jun  6 15:17:45 PDT 2003  
 //    Added FullFrameOn/Off methods. 
 //    
+//    Kathleen Bonnell, Wed Jun 25 14:30:39 PDT 2003 
+//    Removed type & its Set/Get methods.  Removed unused methods
+//    ClearQueries, ClearAllQueries. Removed attachmentPoint/secondaryPoint
+//    and their Set methods.
+//    
 // ****************************************************************************
 
 class VISWINDOW_API VisWinQuery : public VisWinColleague
@@ -66,19 +71,9 @@ class VISWINDOW_API VisWinQuery : public VisWinColleague
     virtual void                  SetForegroundColor(float, float, float);
     virtual void                  UpdateView(void);
 
-
-    void                          SetQueryType(QUERY_TYPE);
-    QUERY_TYPE                    GetQueryType(void) const;
-
-    void                          SetAttachmentPoint(float, float, float);
-    void                          SetSecondaryPoint(float, float, float);
-
     void                          QueryIsValid(const PickAttributes *, const Line *);
     void                          UpdateQuery(const Line *);
     void                          DeleteQuery(const Line *);
-
-    void                          ClearQueries(void);
-    void                          ClearAllQueries(void);
 
     void                          Lineout(const Line *);
     void                          ClearLineouts(void);
@@ -94,9 +89,6 @@ class VISWINDOW_API VisWinQuery : public VisWinColleague
     std::vector< avtLineoutActor_p >   lineOuts;
 
     bool                               hidden;
-    QUERY_TYPE                         type;
-    float                              attachmentPoint[3]; 
-    float                              secondaryPoint[3]; 
 };
 
 

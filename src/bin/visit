@@ -220,6 +220,9 @@ $0 = shift @ARGV;
 #    parallel launcher only when the number of processors was actually
 #    set.  I added support for "bsub" as a launcher.
 #
+#    Akira Haddox, Tue Jul  1 12:56:14 PDT 2003
+#    Added the makemili tool.
+#
 ###############################################################################
 
 
@@ -255,6 +258,7 @@ USAGE:  visit [arguments]
     Program arguments:
         -gui                 Run with the Graphical User Interface (default)
         -cli                 Run with the Command Line Interface
+        -makemili            Runs the .mili file generator
         -text2polys          Runs a utility which generators polygons from text
         -time_annotation     Creates graphical annotation for position in time.
         -silex               Run the Silo Explorer
@@ -397,6 +401,7 @@ while (scalar(@ARGV) > 0) {
     elsif ($arg eq "-xml2java")         { $exe_name = "xml2java"; }
     elsif ($arg eq "-xmltest")          { $exe_name = "xmltest"; }
     elsif ($arg eq "-xmledit")          { $exe_name = "xmledit"; }
+    elsif ($arg eq "-makemili" )        { $exe_name = "makemili"; }
     elsif ($arg eq "-silex" )           { $exe_name = "silex"; }
     elsif ($arg eq "-text2polys" )      { $exe_name = "text2polys"; }
     elsif ($arg eq "-time_annotation" ) { $exe_name = "time_annotation"; }
@@ -520,9 +525,21 @@ if ((($parallel) or ($launchengine)) and
     $time_set=0;
     $nodes_set=0;
 
-    # If we didn't specify a location for the engine, assume localhost.
-    push @visitargs, "-launchengine", "localhost"   if (!$launchengine);
-    push @visitargs, "-launchengine", $launchengine if ($launchengine);
+    #
+    # The makemili tool needs these parallel arguments, but to not
+    # confuse the script, we turn off the parallel flag. So we
+    # translate the executable name here.
+    #
+    if ($exe_name eq "makemili")
+    {
+        $exe_name .= "_par";
+    }
+    else
+    {
+        # If we didn't specify a location for the engine, assume localhost.
+        push @visitargs, "-launchengine", "localhost"   if (!$launchengine);
+        push @visitargs, "-launchengine", $launchengine if ($launchengine);
+    }
 }
 
 # -----------------------------------------------------------------------------
@@ -609,6 +626,12 @@ if (!$part_set && (substr($launch,0,4) eq "psub"))
 # -----------------------------------------------------------------------------
 #                             Determine versions
 # -----------------------------------------------------------------------------
+
+# If we still think the exe_name is makemili, we're not running in parallel.
+if ($exe_name eq "makemili")
+{
+    $exe_name .= "_ser" if (!$parallel);
+}
 
 # Determine the version number of the executable.
 if ($exe_name eq "engine")

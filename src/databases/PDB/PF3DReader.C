@@ -177,14 +177,16 @@ PF3DReader::ComputeKludgeOffset()
 // Creation:   Thu Oct 10 08:49:27 PDT 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Apr 29 13:46:31 PST 2003
+//   I added the timeState argument.
+//
 // ****************************************************************************
 
 void
-PF3DReader::GetTimeVaryingInformation(avtDatabaseMetaData *md)
+PF3DReader::GetTimeVaryingInformation(int timeState, avtDatabaseMetaData *md)
 {
-    md->SetCycle(0, cycle);
-    md->SetTime(0, dtime);
+    md->SetCycle(timeState, cycle);
+    md->SetTime(timeState, dtime);
 }
 
 // ****************************************************************************
@@ -200,7 +202,9 @@ PF3DReader::GetTimeVaryingInformation(avtDatabaseMetaData *md)
 // Creation:   Thu Oct 10 08:43:12 PDT 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Apr 29 13:47:52 PST 2003
+//   I added the timestate argument.
+//
 // ****************************************************************************
 
 void
@@ -281,19 +285,15 @@ PF3DReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                 md->Add(ti);
             }
 
-            // Only define these vectors if the file's ipol value if nonzero.
-            int ipol;
-            if(GetInteger("ipol", &ipol))
+            // Only define these vectors if the file's ipol value is nonzero.
+            if(ipol > 0)
             {
-                if(ipol > 0)
+                for(i = 0; i < 4; ++i)
                 {
-                    for(i = 0; i < 4; ++i)
-                    {
-                        sprintf(tn, "t%dps", i);
-                        avtScalarMetaData *ti = new avtScalarMetaData(tn,
-                            "light", AVT_NODECENT);
-                        md->Add(ti);
-                    }
+                    sprintf(tn, "t%dps", i);
+                    avtScalarMetaData *ti = new avtScalarMetaData(tn,
+                        "light", AVT_NODECENT);
+                    md->Add(ti);
                 }
             }
 #endif
@@ -301,6 +301,26 @@ PF3DReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     }
     else
         debug4 << "PF3DFile::PopulateDatabaseMetaData: Cannot query light!" << endl;
+}
+
+// ****************************************************************************
+// Method: PF3DReader::GetCycles
+//
+// Purpose: 
+//   Returns the list of cycles.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Apr 29 13:43:31 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+PF3DReader::GetCycles(std::vector<int> &cycles)
+{
+    cycles.clear();
+    cycles.push_back(cycle);
 }
 
 // ****************************************************************************
@@ -322,7 +342,7 @@ PF3DReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 // ****************************************************************************
 
 vtkDataSet *
-PF3DReader::GetMesh(const char *meshName)
+PF3DReader::GetMesh(int, const char *meshName)
 {
     int   dims[3], first[3], last[3];
     float extents[6];
@@ -593,7 +613,7 @@ PF3DReader::GetMeshInfo(const char *meshName, float extents[6],
 // ****************************************************************************
 
 vtkDataArray *
-PF3DReader::GetVar(const char *varName)
+PF3DReader::GetVar(int state, const char *varName)
 {
     char *fileVar = NULL;
     char *meshName = "fluid";
@@ -834,7 +854,7 @@ PF3DReader::GetVar(const char *varName)
 // ****************************************************************************
 
 vtkDataArray *
-PF3DReader::GetVectorVar(const char *varName)
+PF3DReader::GetVectorVar(int state, const char *varName)
 {
     char *fileVar = NULL;
     char *meshName = "fluid";

@@ -30,21 +30,21 @@ SiloReader::Identify()
 }
 
 vtkDataSet *
-SiloReader::GetMesh(const char *varName)
+SiloReader::GetMesh(int, const char *varName)
 {
     EXCEPTION1(InvalidVariableException, varName);
 //    return NULL;
 }
 
 vtkDataArray *
-SiloReader::GetVar(const char *varName)
+SiloReader::GetVar(int, const char *varName)
 {
     EXCEPTION1(InvalidVariableException, varName);
 //    return NULL;
 }
 
 vtkDataArray *
-SiloReader::GetVectorVar(const char *varName)
+SiloReader::GetVectorVar(int, const char *varName)
 {
     EXCEPTION1(InvalidVariableException, varName);
 //    return NULL;

@@ -421,6 +421,9 @@ dnl
 dnl    Hank Childs, Tue Jun 17 10:19:25 PDT 2003
 dnl    Remove BOV symbols.  Add ZLIB symbols.
 dnl
+dnl    Akira Haddox, Tue Jul  1 12:36:01 PDT 2003
+dnl    Added tools/makemili.
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -663,6 +666,26 @@ else
 fi
 AC_SUBST(AVTPREP_SER)
 AC_SUBST(AVTPREP_PAR)
+
+#
+# Check for the makemili directory
+#
+AC_MSG_CHECKING(for makemili)
+if test -d tools/makemili; then
+    AC_MSG_RESULT(found)
+    MAKEMILI_SER="$""(tmpbin)/makemili_ser"
+    if test -n "$PARALLEL"; then
+        MAKEMILI_PAR="$""(tmpbin)/makemili_par"
+    else
+        MAKEMILI_PAR=""
+    fi
+else
+    AC_MSG_RESULT(not found)
+    MAKEMILI_SER=""
+    MAKEMILI_PAR=""
+fi
+AC_SUBST(MAKEMILI_SER)
+AC_SUBST(MAKEMILI_PAR)
 
 #
 # Check for the engine directory
@@ -2366,7 +2389,8 @@ TOOLS_FILES="tools/Makefile
              tools/xmledit/Makefile
              tools/avtprep/Makefile
              tools/silex/Makefile
-             tools/curv3dprep/Makefile"
+             tools/curv3dprep/Makefile
+             tools/makemili/Makefile"
 VISIT_VTK_FILES="visit_vtk/Makefile"
 COMPONENT_FILES="components/Makefile
                  components/DBAtts/Makefile
