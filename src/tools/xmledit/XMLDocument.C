@@ -5,6 +5,14 @@
 #include <XMLParser.h>
 #include <Field.h>
 #include <qfile.h>
+#include <qmessagebox.h>
+
+#if !defined(_WIN32)
+#include <pwd.h>
+#include <dirent.h>
+#include <unistd.h>
+#include <sys/stat.h>
+#endif
 
 vector<EnumType*> EnumType::enums;
 
@@ -60,6 +68,13 @@ class ErrorHandler : public QXmlErrorHandler
 //    Hank Childs, Sat Sep 13 08:27:57 PDT 2003
 //    Added another argument to the constructor.
 //
+//    Jeremy Meredith, Mon Sep 22 17:19:11 PDT 2003
+//    Added check for writable xml/codefile files.
+//    Create an Attribute if one was not in the loaded file.
+//    Added a lot of error checks before writing a file, for example
+//    for required fields that were not filled in.
+//    Catch errors writing files and display the messages to the user.
+//
 // ****************************************************************************
 
 void
@@ -80,7 +95,10 @@ XMLDocument::open(const QString &file)
         return;
     }
     else
+    {
         test.close();
+    }
+
 
     try
     {
@@ -105,7 +123,31 @@ XMLDocument::open(const QString &file)
         if (docType == "Attribute")
             attribute = parser.attribute;
         else
+        {
+            if (!plugin->atts)
+            {
+                plugin->atts = new Attribute(QString(),QString(),QString(),QString(),QString());
+            }
             attribute = plugin->atts;
+        }
+
+#if !defined(_WIN32)
+        struct stat s;
+        stat(file.latin1(), &s);
+        if (!(s.st_mode & S_IWUSR))
+        {
+            QMessageBox::warning(0,"Warning","File is not writable.");
+        }
+        if (attribute && attribute->codeFile)
+        {
+            stat(attribute->codeFile->filename.latin1(), &s);
+            if (!(s.st_mode & S_IWUSR))
+            {
+                QMessageBox::warning(0,"Warning","Code file is not writable.");
+            }
+        }
+#endif
+
     }
     catch (const char *s)
     {
@@ -137,9 +179,84 @@ XMLDocument::save(const QString &file)
 {
     filename = file;
 
+    //
+    // Check for various errors before allowing a save
+    //
+
+    // Note: we're allowing unnamed attributes for databases right now
+    // since their attributes are ignored.
+    if (docType == "Attribute" || plugin->type != "database")
+    {
+        if (attribute->name.isEmpty())
+        {
+            QMessageBox::warning(0,"Error","You must name your attributes!");
+            return;
+        }
+    }
+
+    if (docType == "Plugin")
+    {
+        if (plugin->name.isEmpty())
+        {
+            QMessageBox::warning(0,"Error","You must name your plugin!");
+            return;
+        }
+        if (plugin->type.isEmpty())
+        {
+            QMessageBox::warning(0,"Error","You must specify a type for your plugin!");
+        }
+    }
+
+    if (attribute)
+    {
+        for (int i=0; i<attribute->fields.size(); i++)
+        {
+            if (attribute->fields[i]->enabler &&
+                attribute->fields[i]->enableval.empty())
+            {
+                
+                QMessageBox::warning(0,"Error",
+                    QString().sprintf("The enabler for field %s must have at least one value.",
+                                      attribute->fields[i]->name.latin1()));
+                return;
+            }
+        }
+    }
+
+    if (attribute && !attribute->codeFile)
+    {
+        if (!attribute->functions.empty())
+        {
+            QMessageBox::warning(0,"Error","You have created functions "
+                                 "but have not specified a code file!");
+            return;
+        }
+        if (!attribute->constants.empty())
+        {
+            QMessageBox::warning(0,"Error","You have created constants "
+                                 "but have not specified a code file!");
+            return;
+        }
+        if (!attribute->includes.empty())
+        {
+            QMessageBox::warning(0,"Error","You have specified includes "
+                                 "but have not specified a code file!");
+            return;
+        }
+        if (!attribute->codes.empty())
+        {
+            QMessageBox::warning(0,"Error","You have created code pieces "
+                                 "but have not specified a code file!");
+            return;
+        }
+    }
+
     ofstream out(file, ios::out);
     if (!out)
-        throw "Could not open xml file for saving\n";
+    {
+        QMessageBox::warning(0,"Error","Could not open xml file for saving!");
+        return;
+    }
 
     out << "<?xml version=\"1.0\"?>\n";
     if (docType == "Attribute")
@@ -157,5 +274,18 @@ XMLDocument::save(const QString &file)
             attribute->codeFile->filename = attribute->codeFile->filepath +
                                             attribute->codeFile->filename;
     }
-    attribute->SaveCodeFile();
+
+    try {
+        attribute->SaveCodeFile();
+    }
+    catch (const char *s)
+    {
+        QMessageBox::warning(0,"Error",s);
+        return;
+    }
+    catch (const QString &s)
+    {
+        QMessageBox::warning(0,"Error",s);
+        return;
+    }
 }

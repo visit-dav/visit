@@ -8,7 +8,7 @@
 #define FREE_ENTRY_LIST_SIZE 16384
 #define POOL_SIZE 256
 
-class ResampledMat;
+struct ResampledMat;
 
 // ****************************************************************************
 //  Class:  ZooMIR
@@ -24,6 +24,10 @@ class ResampledMat;
 //    Jeremy Meredith, Thu Sep 18 11:17:24 PDT 2003
 //    Implemented 2D MIR.  Moved Reconstruct3DMesh's code into
 //    ReconstructMesh and made both the 2D and 2D cases point to it.
+//
+//    Brad Whitlock, Tue Sep 23 09:44:40 PDT 2003
+//    Added friend access for EdgeHashTable so it can handle EdgeHashEntry
+//    objects on Windows.
 //
 // ****************************************************************************
 class MIR_API ZooMIR : public MIR
@@ -138,6 +142,7 @@ class MIR_API ZooMIR : public MIR
     };
 
     friend class CellReconstructor;
+    friend class EdgeHashTable;
 
   protected:
     int                                     origNPoints;

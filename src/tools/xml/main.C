@@ -110,6 +110,7 @@ Open(ofstream &file, const QString &name)
     return bool(file);
 }
 
+void ProcessFile(QString file);
 
 // ****************************************************************************
 //  Function:  main
@@ -155,6 +156,10 @@ Open(ofstream &file, const QString &name)
 //    I renamed the Parser class to XMLParser to make it build on Windows. I
 //    also changed some exception handling so giving non-plugin files to
 //    xml2info and xml2avt does not crash.
+//
+//    Jeremy Meredith, Tue Sep 23 17:02:38 PDT 2003
+//    Moved most of the functionality here into a separate function, and
+//    allow for multiple XML files on the command line.
 //
 // ****************************************************************************
 
@@ -217,9 +222,17 @@ int main(int argc, char *argv[])
     }
     testfile.close();
 
+    for (int f = 1 ; f < argc ; f++)
+    {
+        ProcessFile(argv[f]);
+    }
 
-    QString    file(argv[1]);
+    return 0;
+}
 
+void
+ProcessFile(QString file)
+{
     QString    docType;
     Plugin    *plugin    = NULL;
     Attribute *attribute = NULL;
@@ -551,6 +564,4 @@ int main(int argc, char *argv[])
         cerr << "ERROR: " << s << endl;
         exit(-1);
     }
-
-    return 0;
 }

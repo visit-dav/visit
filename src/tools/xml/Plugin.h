@@ -33,6 +33,9 @@
 //    Hank Childs, Tue Sep  9 10:04:41 PDT 2003
 //    Added a field to indicate whether or not there is a writer.
 //
+//    Jeremy Meredith, Tue Sep 23 16:17:41 PDT 2003
+//    Changed haswriter to be a bool.
+//
 // ****************************************************************************
 
 class Plugin
@@ -45,7 +48,8 @@ class Plugin
     QString vartype;
     QString dbtype;
     QString iconFile;
-    QString haswriter;
+
+    bool haswriter;
 
     vector<QString> cxxflags;
     vector<QString> ldflags;
@@ -72,7 +76,7 @@ class Plugin
 
     Attribute *atts;
   public:
-    Plugin(const QString &n,const QString &l,const QString &t,const QString &vt,const QString &dt,const QString &v, const QString &ifile, const QString &hw)
+    Plugin(const QString &n,const QString &l,const QString &t,const QString &vt,const QString &dt,const QString &v, const QString &ifile, bool hw)
         : name(n), type(t), label(l), version(v), vartype(vt), dbtype(dt), iconFile(ifile),haswriter(hw), atts(NULL)
     {
         customgfiles = false;
@@ -124,7 +128,7 @@ class Plugin
         else if (type == "database")
         {
             WriteTagAttr(out, "dbtype", dbtype);
-            WriteTagAttr(out, "haswriter", haswriter);
+            WriteTagAttr(out, "haswriter", Bool2Text(haswriter));
         }
         FinishOpenTag(out);
 

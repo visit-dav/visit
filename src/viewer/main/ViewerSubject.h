@@ -38,7 +38,7 @@ class ViewerWindow;
 class PluginManagerAttributes;
 class MaterialAttributes;
 class DataNode;
-class avtDefaultPlotMetaData;
+struct avtDefaultPlotMetaData;
 
 // ****************************************************************************
 //  Class: ViewerSubject

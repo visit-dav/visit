@@ -25,12 +25,17 @@
 //    Hank Childs, Fri Aug  1 11:21:18 PDT 2003
 //    Add support for curves.
 //
+//    Jeremy Meredith, Tue Sep 23 17:06:49 PDT 2003
+//    Added a checkbox for "haswriter".  Added support for tensor and
+//    symmetric tensor variable types.  Added support for the subset
+//    variable type.
+//
 // ****************************************************************************
 
 XMLEditPlugin::XMLEditPlugin(QWidget *p, const QString &n)
     : QFrame(p, n)
 {
-    QGridLayout *topLayout = new QGridLayout(this, 9,2, 5);
+    QGridLayout *topLayout = new QGridLayout(this, 11,2, 5);
     int row = 0;
 
     attpluginGroup = new QButtonGroup();
@@ -77,22 +82,38 @@ XMLEditPlugin::XMLEditPlugin(QWidget *p, const QString &n)
     topLayout->addWidget(iconFile, row, 1);
     row++;
 
+    hasWriter = new QCheckBox("File format can also write data", this);
+    hasWriter->setChecked(false);
+    connect(hasWriter, SIGNAL(toggled(bool)), this, SLOT(hasWriterChanged(bool)));
+    topLayout->addMultiCellWidget(hasWriter, row,row, 0,1);
+    row++;
+
     topLayout->addWidget(new QLabel("Variable types", this), row, 0);
 
-    QHBoxLayout *varTypeLayout = new QHBoxLayout();
-    varTypeMesh     = new QCheckBox("Mesh", this);
-    varTypeScalar   = new QCheckBox("Scalar", this);
-    varTypeVector   = new QCheckBox("Vector", this);
-    varTypeMaterial = new QCheckBox("Material", this);
-    varTypeSpecies  = new QCheckBox("Species", this);
-    varTypeCurve    = new QCheckBox("Curve", this);
-    varTypeLayout->addWidget(varTypeMesh);
-    varTypeLayout->addWidget(varTypeScalar);
-    varTypeLayout->addWidget(varTypeVector);
-    varTypeLayout->addWidget(varTypeMaterial);
-    varTypeLayout->addWidget(varTypeSpecies);
-    varTypeLayout->addWidget(varTypeCurve);
-    topLayout->addLayout(varTypeLayout, row, 1);
+    varTypeMesh            = new QCheckBox("Mesh", this);
+    varTypeScalar          = new QCheckBox("Scalar", this);
+    varTypeVector          = new QCheckBox("Vector", this);
+    varTypeMaterial        = new QCheckBox("Material", this);
+    varTypeSubset          = new QCheckBox("Subset", this);
+    varTypeSpecies         = new QCheckBox("Species", this);
+    varTypeCurve           = new QCheckBox("Curve", this);
+    varTypeTensor          = new QCheckBox("Tensor", this);
+    varTypeSymmetricTensor = new QCheckBox("Symmetric Tensor", this);
+
+    QHBoxLayout *varTypeLayout1 = new QHBoxLayout();
+    varTypeLayout1->addWidget(varTypeMesh);
+    varTypeLayout1->addWidget(varTypeScalar);
+    varTypeLayout1->addWidget(varTypeVector);
+    varTypeLayout1->addWidget(varTypeMaterial);
+    varTypeLayout1->addWidget(varTypeSubset);
+    topLayout->addLayout(varTypeLayout1, row, 1);
+    row++;
+    QHBoxLayout *varTypeLayout2 = new QHBoxLayout();
+    varTypeLayout2->addWidget(varTypeSpecies);
+    varTypeLayout2->addWidget(varTypeCurve);
+    varTypeLayout2->addWidget(varTypeTensor);
+    varTypeLayout2->addWidget(varTypeSymmetricTensor);
+    topLayout->addLayout(varTypeLayout2, row, 1);
     row++;
 
     dbType = new QComboBox(this);
@@ -138,9 +159,15 @@ XMLEditPlugin::XMLEditPlugin(QWidget *p, const QString &n)
             this, SLOT(varTypesChanged()));
     connect(varTypeMaterial, SIGNAL(clicked()),
             this, SLOT(varTypesChanged()));
+    connect(varTypeSubset, SIGNAL(clicked()),
+            this, SLOT(varTypesChanged()));
     connect(varTypeSpecies, SIGNAL(clicked()),
             this, SLOT(varTypesChanged()));
     connect(varTypeCurve, SIGNAL(clicked()),
+            this, SLOT(varTypesChanged()));
+    connect(varTypeTensor, SIGNAL(clicked()),
+            this, SLOT(varTypesChanged()));
+    connect(varTypeSymmetricTensor, SIGNAL(clicked()),
             this, SLOT(varTypesChanged()));
 }
 
@@ -177,8 +204,11 @@ XMLEditPlugin::UpdateWindowContents()
         varTypeScalar->setChecked(false);
         varTypeVector->setChecked(false);
         varTypeMaterial->setChecked(false);
+        varTypeSubset->setChecked(false);
         varTypeSpecies->setChecked(false);
         varTypeCurve->setChecked(false);
+        varTypeTensor->setChecked(false);
+        varTypeSymmetricTensor->setChecked(false);
 
         dbType->setCurrentItem(0);
         extensions->setText("");
@@ -198,10 +228,16 @@ XMLEditPlugin::UpdateWindowContents()
                     varTypeVector->setChecked(true);
                 else if (types[i] == "material")
                     varTypeMaterial->setChecked(true);
+                else if (types[i] == "subset")
+                    varTypeSubset->setChecked(true);
                 else if (types[i] == "species")
                     varTypeSpecies->setChecked(true);
                 else if (types[i] == "curve")
                     varTypeCurve->setChecked(true);
+                else if (types[i] == "tensor")
+                    varTypeTensor->setChecked(true);
+                else if (types[i] == "symmetrictensor")
+                    varTypeSymmetricTensor->setChecked(true);
             }
         }
         else if (xmldoc->plugin->type == "operator")
@@ -214,6 +250,7 @@ XMLEditPlugin::UpdateWindowContents()
         {
             iconFile->setText("");
             hasIcon->setChecked(false);
+            hasWriter->setChecked(xmldoc->plugin->haswriter);
 
             pluginType->setCurrentItem(3);
             extensions->setText(JoinValues(xmldoc->plugin->extensions, ' '));
@@ -232,6 +269,7 @@ XMLEditPlugin::UpdateWindowContents()
         {
             iconFile->setText("");
             hasIcon->setChecked(false);
+            hasWriter->setChecked(false);
             pluginType->setCurrentItem(0);
         }
     }
@@ -245,10 +283,14 @@ XMLEditPlugin::UpdateWindowContents()
         varTypeScalar->setChecked(false);
         varTypeVector->setChecked(false);
         varTypeMaterial->setChecked(false);
+        varTypeSubset->setChecked(false);
         varTypeSpecies->setChecked(false);
         varTypeCurve->setChecked(false);
+        varTypeTensor->setChecked(false);
+        varTypeSymmetricTensor->setChecked(false);
         hasIcon->setChecked(false);
         iconFile->setText("");
+        hasWriter->setChecked(false);
         pluginType->setCurrentItem(0);
         dbType->setCurrentItem(0);
         extensions->setText("");
@@ -293,11 +335,15 @@ XMLEditPlugin::UpdateWindowSensitivity()
     varTypeScalar->setEnabled(plot);
     varTypeVector->setEnabled(plot);
     varTypeMaterial->setEnabled(plot);
+    varTypeSubset->setEnabled(plot);
     varTypeSpecies->setEnabled(plot);
     varTypeCurve->setEnabled(plot);
+    varTypeTensor->setEnabled(plot);
+    varTypeSymmetricTensor->setEnabled(plot);
     dbType->setEnabled(db);
     extensions->setEnabled(db);
     hasIcon->setEnabled(op || plot);
+    hasWriter->setEnabled(db);
     bool val = (op || plot) && (xmldoc->plugin->iconFile.length() > 0);
     iconFile->setEnabled(val);
 }
@@ -335,12 +381,16 @@ XMLEditPlugin::BlockAllSignals(bool block)
     varTypeScalar->blockSignals(block);
     varTypeVector->blockSignals(block);
     varTypeMaterial->blockSignals(block);
+    varTypeSubset->blockSignals(block);
     varTypeSpecies->blockSignals(block);
     varTypeCurve->blockSignals(block);
+    varTypeTensor->blockSignals(block);
+    varTypeSymmetricTensor->blockSignals(block);
     dbType->blockSignals(block);
     extensions->blockSignals(block);
     hasIcon->blockSignals(block);
     iconFile->blockSignals(block);
+    hasWriter->blockSignals(block);
 }
 
 // ----------------------------------------------------------------------------
@@ -474,6 +524,27 @@ XMLEditPlugin::hasIconChanged(bool val)
 }
 
 // ****************************************************************************
+// Method: XMLEditPlugin::hasWriterChanged
+//
+// Programmer: Jeremy Meredith
+// Creation:   September 23, 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+XMLEditPlugin::hasWriterChanged(bool val)
+{
+    if (xmldoc->docType != "Plugin")
+        return;
+
+    xmldoc->plugin->haswriter = val;
+
+    UpdateWindowSensitivity();
+}
+
+// ****************************************************************************
 //  Method:  XMLEditPlugin::pluginTypeChanged
 //
 //  Programmer:  Jeremy Meredith
@@ -565,10 +636,16 @@ XMLEditPlugin::varTypesChanged()
         p->vartype += "vector,";
     if (varTypeMaterial->isChecked())
         p->vartype += "material,";
+    if (varTypeSubset->isChecked())
+        p->vartype += "subset,";
     if (varTypeSpecies->isChecked())
         p->vartype += "species,";
     if (varTypeCurve->isChecked())
         p->vartype += "curve,";
+    if (varTypeTensor->isChecked())
+        p->vartype += "tensor,";
+    if (varTypeSymmetricTensor->isChecked())
+        p->vartype += "symmetrictensor,";
     if (!p->vartype.isEmpty())
         p->vartype = p->vartype.left(p->vartype.length()-1);
 }

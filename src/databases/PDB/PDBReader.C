@@ -1,5 +1,11 @@
-#include <PDBReader.h>
 #include <DebugStream.h>
+
+// This header file is last because it includes "scstd.h" (indirectly
+// through "pdb.h"), which defines min and max, which conflict with
+// "limits.h" on tru64 and aix systems.  On tru64 systems the conflict
+// occurs with gcc-3.0.4 and on aix systems the conflict occurs with
+// gcc-3.1.
+#include <PDBReader.h>
 
 // ****************************************************************************
 //

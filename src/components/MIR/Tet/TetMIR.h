@@ -112,6 +112,9 @@ class avtSpecies;
 //    Jeremy Meredith, Mon Sep 15 09:51:19 PDT 2003
 //    Did some more refactoring.
 //
+//    Brad Whitlock, Tue Sep 23 09:37:43 PDT 2003
+//    Made ReconstructedCoord be a friend class so it builds on Windows.
+//
 // ****************************************************************************
 class MIR_API TetMIR : public MIR
 {
@@ -155,6 +158,8 @@ class MIR_API TetMIR : public MIR
     };
 
   private:
+    friend struct ReconstructedCoord;
+
     static float xGrid;
     static float yGrid;
     static float zGrid;

@@ -92,6 +92,10 @@ using std::vector;
 //    Brad Whitlock, Wed Jul 23 11:17:25 PDT 2003
 //    I added code to generate a NewInstance method.
 //
+//    Jeremy Meredith, Tue Sep 23 16:17:41 PDT 2003
+//    Changed haswriter to be a bool.
+//    Made attributes with multiple vector fields use a single counter.
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -1028,7 +1032,7 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual AttsGen
         c << "    // " << attType << " for each one of them." << endl;
                   
         c << "    children = searchNode->GetChildren();" << endl;
-        c << "    for(int i = 0; i < searchNode->GetNumChildren(); ++i)" << endl;
+        c << "    for(i = 0; i < searchNode->GetNumChildren(); ++i)" << endl;
         c << "    {" << endl;
         c << "        if(children[i]->GetKey() == std::string(\"" << attType << "\"))" << endl;
         c << "        {" << endl;
@@ -2143,6 +2147,7 @@ class AttsGeneratorAttribute
         c << "void" << endl;
         c << name << "::SetFromNode(DataNode *parentNode)" << endl;
         c << "{" << endl;
+        c << "    int i;" << endl;
         c << "    if(parentNode == 0)" << endl;
         c << "        return;" << endl << endl;
         c << "    DataNode *searchNode = parentNode->GetNode(\"" << name << "\");" << endl;
@@ -2437,7 +2442,7 @@ class AttsGeneratorPlugin
 
     AttsGeneratorAttribute *atts;
   public:
-    AttsGeneratorPlugin(const QString &n,const QString &l,const QString &t,const QString &vt,const QString &dt,const QString &v, const QString &, const QString &)
+    AttsGeneratorPlugin(const QString &n,const QString &l,const QString &t,const QString &vt,const QString &dt,const QString &v, const QString &, bool)
         : name(n), type(t), label(l), version(v), vartype(vt), dbtype(dt), atts(NULL)
     {
     }

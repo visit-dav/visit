@@ -36,6 +36,10 @@
 //    Kathleen Bonnell, Wed Oct 23 18:10:26 PDT 2002  
 //    Added new plot method ApplyRenderingTransformation. 
 //
+//    Jeremy Meredith, Mon Sep 22 14:58:36 PDT 2003
+//    Changed an instance where ApplyRenderingTransformation was called
+//    ApplyRenderingOperators.  Made haswriter be a bool.
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -92,7 +96,7 @@ class AVTGeneratorPlugin
 
     Attribute *atts;
   public:
-    AVTGeneratorPlugin(const QString &n,const QString &l,const QString &t,const QString &vt,const QString &dt,const QString &v,const QString &, const QString &)
+    AVTGeneratorPlugin(const QString &n,const QString &l,const QString &t,const QString &vt,const QString &dt,const QString &v,const QString &, bool)
         : name(n), type(t), label(l), version(v), vartype(vt), dbtype(dt), atts(NULL)
     {
     }
@@ -309,7 +313,7 @@ class AVTGeneratorPlugin
         c << "// ****************************************************************************" << endl;
         c << endl;
         c << "avtDataObject_p" << endl;
-        c << "avt"<<name<<"Plot::ApplyRenderingOperators(avtDataObject_p input)" << endl;
+        c << "avt"<<name<<"Plot::ApplyRenderingTransformation(avtDataObject_p input)" << endl;
         c << "{" << endl;
         c << "    "<<name<<"Filter->SetInput(input);" << endl;
         c << "    return "<<name<<"Filter->GetOutput();" << endl;

@@ -1,4 +1,3 @@
-#include <PP_ZFileReader.h>
 #include <MaterialEncoder.h>
 
 #include <InvalidVariableException.h>
@@ -17,6 +16,13 @@
 #include <avtMixedVariable.h>
 
 #include <DebugStream.h>
+
+// This header file is last because it includes "scstd.h" (indirectly
+// through "pdb.h"), which defines min and max, which conflict with
+// "limits.h" on tru64 and aix systems.  On tru64 systems the conflict
+// occurs with gcc-3.0.4 and on aix systems the conflict occurs with
+// gcc-3.1.
+#include <PP_ZFileReader.h>
 
 //
 // Make the revolved mesh be 40 zones in circumference.

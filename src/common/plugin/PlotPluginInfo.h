@@ -7,13 +7,15 @@
 #include <plugin_exports.h>
 #include <stdio.h>
 
-#define VAR_CATEGORY_MESH     0x01
-#define VAR_CATEGORY_SCALAR   0x02
-#define VAR_CATEGORY_MATERIAL 0x04
-#define VAR_CATEGORY_VECTOR   0x08
-#define VAR_CATEGORY_SUBSET   0x10
-#define VAR_CATEGORY_SPECIES  0x20
-#define VAR_CATEGORY_CURVE    0x40
+#define VAR_CATEGORY_MESH              0x0001
+#define VAR_CATEGORY_SCALAR            0x0002
+#define VAR_CATEGORY_MATERIAL          0x0004
+#define VAR_CATEGORY_VECTOR            0x0008
+#define VAR_CATEGORY_SUBSET            0x0010
+#define VAR_CATEGORY_SPECIES           0x0020
+#define VAR_CATEGORY_CURVE             0x0040
+#define VAR_CATEGORY_TENSOR            0x0080
+#define VAR_CATEGORY_SYMMETRIC_TENSOR  0x0100
 
 // Forward declarations.
 class AttributeSubject;
@@ -65,6 +67,9 @@ class avtPlot;
 //    Brad Whitlock, Wed Mar 12 14:14:57 PST 2003
 //    I added the XPMIconData method for GUI and Viewer plugins. I also added
 //    a GetVariableTypes for viewer plugins.
+//
+//    Jeremy Meredith, Tue Sep 23 17:08:20 PDT 2003
+//    Added tensor and symmetric tensor.
 //
 // ****************************************************************************
 

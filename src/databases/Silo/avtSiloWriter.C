@@ -4,7 +4,7 @@
 
 #include <avtSiloWriter.h>
 
-#include <vector.h>
+#include <vector>
 
 #include <vtkIntArray.h>
 #include <vtkPolyData.h>

@@ -65,6 +65,9 @@ inline char toupper(char c)
 //    Brad Whitlock, Thu Sep 11 11:24:28 PDT 2003
 //    I rewrote the code to set colors so it handles doubles and ints.
 //
+//    Jeremy Meredith, Tue Sep 23 17:09:31 PDT 2003
+//    Made haswriter be a bool.
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -1960,7 +1963,7 @@ class PythonGeneratorPlugin
   public:
     PythonGeneratorPlugin(const QString &n,const QString &l,const QString &t,
                           const QString &vt,const QString &dt,const QString &v,
-                          const QString &, const QString &) : name(n), type(t), 
+                          const QString &, bool) : name(n), type(t), 
                           label(l), version(v), varType(vt), dbtype(dt), atts(NULL)
     {
     }

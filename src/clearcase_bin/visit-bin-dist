@@ -130,6 +130,9 @@
 #    Hank Childs, Fri Sep 12 16:35:02 PDT 2003
 #    Added convert to the distribution.
 #
+#    Eric Brugger, Tue Sep 23 15:36:07 PDT 2003
+#    Added a missing endif.
+#
 #-----------------------------------------------------------------------
 
 set DataFiles = "TRUE"
@@ -498,6 +501,7 @@ cp $VisItDir/bin/time_annotation $bindir
 cp $VisItDir/bin/convert_ser $bindir
 if(-e $VisItDir/bin/convert_par) then
    cp $VisItDir/bin/convert_par $bindir/convert_par
+endif
 if(-e $VisItDir/bin/makemili_ser) then
    cp $VisItDir/bin/makemili_ser $bindir/makemili_ser
 endif
