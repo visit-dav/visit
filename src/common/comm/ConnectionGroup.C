@@ -8,6 +8,7 @@
 #include <strings.h>   // bzero by way of FD_ZERO
 #include <sys/time.h>
 #include <sys/types.h>
+#include <unistd.h>
 #endif
 
 // ****************************************************************************

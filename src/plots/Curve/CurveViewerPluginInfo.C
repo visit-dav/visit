@@ -5,6 +5,10 @@
 #include <CurvePluginInfo.h>
 #include <avtCurvePlot.h>
 
+#if defined(__APPLE__)
+#define GetViewerInfo Curve_GetViewerInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //

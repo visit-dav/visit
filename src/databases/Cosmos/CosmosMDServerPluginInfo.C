@@ -1,5 +1,9 @@
 #include <CosmosPluginInfo.h>
 
+#if defined(__APPLE__)
+#define GetMDServerInfo Cosmos_GetMDServerInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetMDServerInfo
 //

@@ -44,10 +44,14 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 =========================================================================*/
 #include "vtkExodusReader.h"
-#include "vtkIntArray.h"
-#include "vtkFloatArray.h"
-#include "vtkMath.h"
-#include "vtkObjectFactory.h"
+#include <vtkCell.h>
+#include <vtkCellData.h>
+#include <vtkIdList.h>
+#include <vtkIntArray.h>
+#include <vtkFloatArray.h>
+#include <vtkMath.h>
+#include <vtkObjectFactory.h>
+#include <vtkPointData.h>
 #include <vtkUnstructuredGrid.h>
 #include <ctype.h>
 #include "netcdf.h"

@@ -5,6 +5,14 @@
 #include <LineoutPluginInfo.h>
 #include <LineoutAttributes.h>
 
+#if defined(__APPLE__)
+#define GetViewerInfo Makefile.in_GetViewerInfo
+#endif
+
+#if defined(__APPLE__)
+#define GetViewerInfo Lineout_GetViewerInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //

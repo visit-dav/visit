@@ -5,6 +5,10 @@
 #include <SurfCompPrepPluginInfo.h>
 #include <avtSurfCompPrepFilter.h>
 
+#if defined(__APPLE__)
+#define GetEngineInfo SurfCompPrep_GetEngineInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //

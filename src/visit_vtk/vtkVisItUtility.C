@@ -4,6 +4,8 @@
 
 #include <vtkVisItUtility.h>
 
+#include <vtkFieldData.h>
+#include <vtkIntArray.h>
 #include <vtkPointSet.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>

@@ -6,6 +6,10 @@
 #include <RevolveAttributes.h>
 #include <QvisRevolveWindow.h>
 
+#if defined(__APPLE__)
+#define GetGUIInfo Revolve_GetGUIInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGUIInfo
 //

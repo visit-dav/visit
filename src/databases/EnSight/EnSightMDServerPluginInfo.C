@@ -1,5 +1,9 @@
 #include <EnSightPluginInfo.h>
 
+#if defined(__APPLE__)
+#define GetMDServerInfo EnSight_GetMDServerInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetMDServerInfo
 //

@@ -4,6 +4,10 @@
 #include <ThresholdPluginInfo.h>
 #include <PyThresholdAttributes.h>
 
+#if defined(__APPLE__)
+#define GetScriptingInfo Threshold_GetScriptingInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //

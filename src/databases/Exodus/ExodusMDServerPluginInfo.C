@@ -1,5 +1,9 @@
 #include <ExodusPluginInfo.h>
 
+#if defined(__APPLE__)
+#define GetMDServerInfo Exodus_GetMDServerInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetMDServerInfo
 //

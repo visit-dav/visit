@@ -6,7 +6,10 @@
 
 #include <vector>
 
+#include <vtkCell.h>
+#include <vtkCellData.h>
 #include <vtkIntArray.h>
+#include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>

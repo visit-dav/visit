@@ -1,5 +1,9 @@
 #include <EnSightPluginInfo.h>
 
+#if defined(__APPLE__)
+#define GetEngineInfo EnSight_GetEngineInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //

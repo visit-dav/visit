@@ -4,6 +4,10 @@
 #include <IndexSelectPluginInfo.h>
 #include <PyIndexSelectAttributes.h>
 
+#if defined(__APPLE__)
+#define GetScriptingInfo IndexSelect_GetScriptingInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //

@@ -1,4 +1,4 @@
-#                            Copyright 2000 - 2000
+#                            Copyright 2000 - 2003
 #                 The Regents of the University of California.
 #                             All rights reserved.
 # 
@@ -62,6 +62,10 @@
 #    Kathleen Bonnell, Thu Jan  2 09:06:57 PST 2003 
 #    Added two new vtk libs: vtkfreetype and vtkftgl.   
 #
+#    Brad Whitlock, Thu May 15 14:33:03 PST 2003
+#    Fixed a shared library extension problem. I also made it create a link
+#    for Silo if we're on MacOS X.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -85,12 +89,13 @@ LIBVTKFTGL=libvtkftgl.@SHLIB_LIBEXT@
 LIBMESAGL=libMesaGL.@SHLIB_LIBEXT@
 LIBOSMESA=libOSMesa.@SHLIB_LIBEXT@
 LIBQT=libqt.@SHLIB_LIBEXT@
+LIBSILO=libsilo.@SHLIB_LIBEXT@
 
 # The following targets were split up so that they would work properly
 # with the make on AIX systems.
 all: libvtkcommon libvtkfiltering libvtkgraphics libvtkhybrid libvtkio libvtkimaging \
      libvtkrendering libvtkzlib libvtkpng libvtkjpeg libvtkexpat libvtktiff \
-     libvtkfreetype libvtkftgl libosmesa libmesagl libqt pythondir
+     libvtkfreetype libvtkftgl libosmesa libmesagl libqt pythondir @CREATE_SILO_LINK@
 
 libvtkcommon:
 	$(RM) $(LIBVTKCOMMON)
@@ -164,10 +169,14 @@ libqt:
 
 pythondir:
 	if test -n "@PYDIR@"; then                                     \
-	    $(RM) python lib@PYVERSION@.so                          ;  \
+	    $(RM) python lib@PYVERSION@.@SHLIB_LIBEXT@              ;  \
 	    ln -s @PYDIR@ python                                    ;  \
-	    ln -s python/lib/@PYVERSION@/config/lib@PYVERSION@.so . ;  \
+	    ln -s python/lib/@PYVERSION@/config/lib@PYVERSION@.@SHLIB_LIBEXT@ . ;  \
 	fi
+
+create_silo_link:
+	$(RM) $(LIBSILO)
+	ln -s @SILO_LIBDIR@/$(LIBSILO) .
 
 clean distclean:
 	$(RM) \
@@ -188,7 +197,8 @@ clean distclean:
 	$(LIBPYTHON) \
 	$(LIBVTKEXPAT) \
 	$(LIBVTKGRAPHICS) \
-	$(LIBVTKRENDERING)
+	$(LIBVTKRENDERING) \
+	$(LIBSILO)
 
 install:
 install_bin:
@@ -199,5 +209,6 @@ install_dirs:
 .NO_WINK_IN: $(LIBVTKCOMMON) $(LIBVTKFILTERING) $(LIBVTKGRAPHICS) \
    $(LIBVTKHYBRID) $(LIBVTKIO) $(LIBVTKIMAGING) $(LIBVTKRENDERING) \
    $(LIBVTKZLIB) $(LIBVTKPNG) $(LIBVTKJPEG) $(LIBVTKEXPAT) $(LIBVTKTIFF) \
-   $(LIBVTKFREETYPE) $(LIBVTKFTGL)  $(LIBOSMESA) $(LIBMESAGL) $(LIBQT) $(LIBPYTHON)
+   $(LIBVTKFREETYPE) $(LIBVTKFTGL)  $(LIBOSMESA) $(LIBMESAGL) $(LIBQT) $(LIBPYTHON) \
+   $(LIBSILO)
 

@@ -1,5 +1,9 @@
 #include <Boxlib2DPluginInfo.h>
 
+#if defined(__APPLE__)
+#define GetMDServerInfo Boxlib2D_GetMDServerInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetMDServerInfo
 //

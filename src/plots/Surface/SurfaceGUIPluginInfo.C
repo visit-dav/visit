@@ -6,6 +6,10 @@
 #include <SurfaceAttributes.h>
 #include <QvisSurfacePlotWindow.h>
 
+#if defined(__APPLE__)
+#define GetGUIInfo Surface_GetGUIInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGUIInfo
 //

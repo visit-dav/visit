@@ -5,6 +5,10 @@
 #include <TensorPluginInfo.h>
 #include <avtTensorPlot.h>
 
+#if defined(__APPLE__)
+#define GetEngineInfo Tensor_GetEngineInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //

@@ -10,11 +10,13 @@
 //=========================================================================
 #include "vtkVerticalScalarBarActor.h"
 
+#include <vtkCellArray.h>
+#include <vtkCellData.h>
 #include <vtkObjectFactory.h>
+#include <vtkPolyData.h>
 #include <vtkTextProperty.h>
 #include <vtkViewport.h>
-#include <vtkPolyData.h>
-#include <limits.h>
+#include <vtkWindow.h>
 #include <limits.h>
 #include <float.h>
 
@@ -390,6 +392,8 @@ void vtkVerticalScalarBarActor::BuildRange(vtkViewport *viewport)
   rprop->SetFontFamily(this->FontFamily);
 
   this->RangeActor->SetProperty(this->GetProperty());
+
+
 }
 
 // ****************************************************************************

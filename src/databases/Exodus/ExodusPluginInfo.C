@@ -4,6 +4,10 @@
 
 #include <ExodusPluginInfo.h>
 
+#if defined(__APPLE__)
+#define GetGeneralInfo Exodus_GetGeneralInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGeneralInfo
 //

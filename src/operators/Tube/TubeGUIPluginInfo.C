@@ -6,6 +6,10 @@
 #include <TubeAttributes.h>
 #include <QvisTubeWindow.h>
 
+#if defined(__APPLE__)
+#define GetGUIInfo Tube_GetGUIInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGUIInfo
 //

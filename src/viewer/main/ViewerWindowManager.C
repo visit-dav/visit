@@ -1243,6 +1243,9 @@ ViewerWindowManager::RecenterView(int windowIndex)
 //    Hank Childs, Mon Feb 24 18:14:52 PST 2003
 //    Be more leery of NULL return types.
 //
+//    Hank Childs, Wed Oct 15 09:45:16 PDT 2003
+//    Added ability to save out images in stereo.
+//
 // ****************************************************************************
 
 void
@@ -1267,10 +1270,44 @@ ViewerWindowManager::SaveWindow(int windowIndex)
     }
     ENDTRY
 
-    // Ask the fileWriter to create a filename.
-    char *filename = fileWriter->CreateFilename(
-        saveWindowClientAtts->GetFileName().c_str(),
-        saveWindowClientAtts->GetFamily());
+    //
+    // We need to get a file name.  If we are in stereo, then we will need
+    // two file names.
+    //
+    char *filename = NULL;
+    char *filename2 = NULL;
+    if (saveWindowClientAtts->CurrentFormatIsImageFormat() &&
+        saveWindowClientAtts->GetStereo())
+    {
+        if (saveWindowClientAtts->GetFamily())
+        {
+            filename = fileWriter->CreateFilename(
+                                  saveWindowClientAtts->GetFileName().c_str(),
+                                  saveWindowClientAtts->GetFamily());
+            filename2 = fileWriter->CreateFilename(
+                                  saveWindowClientAtts->GetFileName().c_str(),
+                                  saveWindowClientAtts->GetFamily());
+        }
+        else
+        {
+            char left_prefix[1024];
+            sprintf(left_prefix, "left_%s", 
+                                  saveWindowClientAtts->GetFileName().c_str());
+            char right_prefix[1024];
+            sprintf(right_prefix, "right_%s", 
+                                  saveWindowClientAtts->GetFileName().c_str());
+            filename = fileWriter->CreateFilename(left_prefix,
+                                  saveWindowClientAtts->GetFamily());
+            filename2 = fileWriter->CreateFilename(right_prefix,
+                                  saveWindowClientAtts->GetFamily());
+        }
+    }
+    else
+    {
+        filename = fileWriter->CreateFilename(
+                              saveWindowClientAtts->GetFileName().c_str(),
+                              saveWindowClientAtts->GetFamily());
+    }
 
     //
     // Send a status message about starting to save the image and make the
@@ -1282,14 +1319,32 @@ ViewerWindowManager::SaveWindow(int windowIndex)
     Status(message, 6000000);
 
     avtDataObject_p dob = NULL;
-    if (fileWriter->IsImageFormat())
+    avtDataObject_p dob2 = NULL;
+    if (saveWindowClientAtts->CurrentFormatIsImageFormat())
     {
         avtImage_p image = NULL;
-        if(saveWindowClientAtts->GetSaveTiled())
+        avtImage_p image2 = NULL;
+        if (saveWindowClientAtts->GetSaveTiled())
         {
             // Create a tiled image.
             image = CreateTiledImage(saveWindowClientAtts->GetWidth(),
                                      saveWindowClientAtts->GetHeight());
+        }
+        else if (saveWindowClientAtts->GetStereo())
+        {
+            // Create the left eye.
+            image = CreateSingleImage(windowIndex,
+                                      saveWindowClientAtts->GetWidth(),
+                                      saveWindowClientAtts->GetHeight(),
+                                      saveWindowClientAtts->GetScreenCapture(),
+                                      true);
+
+            // Create the right eye.
+            image2 = CreateSingleImage(windowIndex,
+                                      saveWindowClientAtts->GetWidth(),
+                                      saveWindowClientAtts->GetHeight(),
+                                      saveWindowClientAtts->GetScreenCapture(),
+                                      false);
         }
         else
         {
@@ -1297,9 +1352,11 @@ ViewerWindowManager::SaveWindow(int windowIndex)
             image = CreateSingleImage(windowIndex,
                                       saveWindowClientAtts->GetWidth(),
                                       saveWindowClientAtts->GetHeight(),
-                                     saveWindowClientAtts->GetScreenCapture());
+                                      saveWindowClientAtts->GetScreenCapture(),
+                                      true);
         }
         CopyTo(dob, image);
+        CopyTo(dob2, image2);
     }
     else
     {
@@ -1321,6 +1378,15 @@ ViewerWindowManager::SaveWindow(int windowIndex)
             fileWriter->Write(filename, dob,saveWindowClientAtts->GetQuality(),
                               saveWindowClientAtts->GetProgressive(),
                               saveWindowClientAtts->GetBinary());
+
+            if (*dob2 != NULL)
+            {
+                // Tell the writer to save the window on the viewer.
+                fileWriter->Write(filename2, 
+                                  dob2,saveWindowClientAtts->GetQuality(),
+                                  saveWindowClientAtts->GetProgressive(),
+                                  saveWindowClientAtts->GetBinary());
+            }
         }
         CATCH2(VisItException, ve)
         {
@@ -1353,6 +1419,8 @@ ViewerWindowManager::SaveWindow(int windowIndex)
 
     // Delete the filename memory.
     delete [] filename;
+    if (filename2 != NULL)
+        delete [] filename2;
 }
 
 // ****************************************************************************
@@ -1366,23 +1434,33 @@ ViewerWindowManager::SaveWindow(int windowIndex)
 //    width          The desired width of the return image.
 //    height         The desired height of the return image.
 //    screenCapture  A flag indicating whether or not to do screen capture.
+//    leftEye        True if we want the left eye.
 //
 //  Returns:    An avtImage representation of the specified VisWindow.
 //
 //  Programmer: Brad Whitlock
 //  Creation:   Tue Feb 13 15:17:32 PST 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Wed Oct 15 10:30:33 PDT 2003
+//    Added stereo support.
+//
 // ****************************************************************************
 
 avtImage_p
 ViewerWindowManager::CreateSingleImage(int windowIndex,
-    int /*width*/, int /*height*/, bool /*screenCapture*/)
+    int /*width*/, int /*height*/, bool /*screenCapture*/, bool leftEye)
 {
     int        index = (windowIndex == -1) ? activeWindow : windowIndex;
     avtImage_p retval = NULL;
 
     if(windows[index] != 0)
     {
+        if (!leftEye)
+        {
+            windows[index]->ConvertFromLeftEyeToRightEye();
+        }
 #if 0
         if(screenCapture)
             retval = windows[index]->ScreenCapture();
@@ -1395,6 +1473,10 @@ ViewerWindowManager::CreateSingleImage(int windowIndex,
         // Just do screen capture since that is all we can do right now.
         retval = windows[index]->ScreenCapture();
 #endif
+        if (!leftEye)
+        {
+            windows[index]->ConvertFromRightEyeToLeftEye();
+        }
     }
 
     return retval;
@@ -1546,7 +1628,7 @@ ViewerWindowManager::PrintWindow(int windowIndex)
     //
     avtImage_p image = CreateSingleImage(windowIndex,
         saveWindowClientAtts->GetWidth(), saveWindowClientAtts->GetHeight(),
-        saveWindowClientAtts->GetScreenCapture());
+        saveWindowClientAtts->GetScreenCapture(), true);
 
     //
     // Tell the imageWriter to use our writer to write the image. In this
@@ -1735,6 +1817,9 @@ ViewerWindowManager::SetView2DFromClient()
 //    Eric Brugger, Wed Aug 20 13:22:14 PDT 2003
 //    I changed the call to UpdateViewAtts.
 //
+//    Hank Childs, Wed Oct 15 12:58:19 PDT 2003
+//    Copied over eye angle.
+//
 // ****************************************************************************
 
 void
@@ -1753,6 +1838,7 @@ ViewerWindowManager::SetView3DFromClient()
     view3d.viewUp[2] = view3DClientAtts->GetViewUp()[2];
     view3d.viewAngle = view3DClientAtts->GetViewAngle();
     view3d.parallelScale = view3DClientAtts->GetParallelScale();
+    view3d.eyeAngle = view3DClientAtts->GetEyeAngle();
     view3d.nearPlane = view3DClientAtts->GetNearPlane();
     view3d.farPlane = view3DClientAtts->GetFarPlane();
     view3d.imagePan[0] = view3DClientAtts->GetImagePan()[0];
@@ -5878,5 +5964,38 @@ ViewerWindowManager::SetFromNode(DataNode *parentNode)
             lineoutWindow = -1;
         else
             lineoutWindow = n;
+    }
+}
+
+// ****************************************************************************
+// Method: ViewerWindowManager::ReplaceDatabase
+//
+// Purpose: 
+//   Replaces the database in all windows.
+//
+// Arguments:
+//   host            : The host where the new database is found.
+//   database        : The database to use.
+//   onlyReplaceSame : If true, then file replacement is only done if the
+//                     new database is the same as the database in a plot.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Oct 15 14:03:35 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerWindowManager::ReplaceDatabase(const std::string &host,
+    const std::string &database, bool onlyReplaceSame)
+{
+    for(int i = 0; i < maxWindows; ++i)
+    {
+        if(windows[i] != 0)
+        {
+            windows[i]->GetAnimation()->GetPlotList()->
+                ReplaceDatabase(host, database, onlyReplaceSame);
+        }
     }
 }

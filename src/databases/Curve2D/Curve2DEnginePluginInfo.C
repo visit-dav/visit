@@ -1,5 +1,9 @@
 #include <Curve2DPluginInfo.h>
 
+#if defined(__APPLE__)
+#define GetEngineInfo Curve2D_GetEngineInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //

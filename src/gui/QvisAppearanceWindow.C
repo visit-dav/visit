@@ -9,6 +9,44 @@
 #include <AppearanceAttributes.h>
 #include <ViewerProxy.h>
 
+//
+// Tables of available styles.
+//
+static const char *styleNamesInMenu[] = {"Motif", "CDE", "Windows", "Platinum"
+#if QT_VERSION >= 230
+, "SGI"
+#endif
+#if QT_VERSION >= 300
+#ifdef Q_WS_MACX
+, "Aqua", "Macintosh"
+#endif
+#endif
+};
+
+static const char *styleNames[] = {"motif", "cde", "windows", "platinum"
+#if QT_VERSION >= 230
+, "sgi"
+#endif
+#if QT_VERSION >= 300
+#ifdef Q_WS_MACX
+, "aqua", "macintosh"
+#endif
+#endif
+};
+
+// Determine the number of styles.
+#if QT_VERSION >= 300
+#ifdef Q_WS_MACX
+static const int numStyleNames = 7;
+#else
+static const int numStyleNames = 5;
+#endif 
+#elif QT_VERSION >= 230
+static const int numStyleNames = 5; // account for sgi
+#else
+static const int numStyleNames = 4;
+#endif
+
 // ****************************************************************************
 // Method: QvisAppearanceWindow::QvisAppearanceWindow
 //
@@ -61,6 +99,9 @@ QvisAppearanceWindow::~QvisAppearanceWindow()
 //   Brad Whitlock, Tue Jan 29 13:16:20 PST 2002
 //   Added orientation combo box.
 //
+//   Brad Whitlock, Fri Aug 15 13:08:37 PST 2003
+//   I changed how the style menu is populated.
+//
 // ****************************************************************************
 
 void
@@ -86,13 +127,8 @@ QvisAppearanceWindow::CreateWindowContents()
 
     // Create the style combo box.
     styleComboBox = new QComboBox(central, "styleComboBox");
-    styleComboBox->insertItem("Motif", 0);
-    styleComboBox->insertItem("CDE", 1);
-    styleComboBox->insertItem("Windows", 2);
-    styleComboBox->insertItem("Platinum", 3);
-#if QT_VERSION >= 230
-    styleComboBox->insertItem("SGI", 4);
-#endif
+    for(int i = 0; i < numStyleNames; ++i)
+        styleComboBox->insertItem(styleNamesInMenu[i], i);
     connect(styleComboBox, SIGNAL(activated(int)),
             this, SLOT(styleChanged(int)));
     mainLayout->addWidget(styleComboBox, 2, 1, AlignLeft);
@@ -137,13 +173,16 @@ QvisAppearanceWindow::CreateWindowContents()
 //   Brad Whitlock, Tue Apr 1 09:15:14 PDT 2003
 //   I made it use QColor's parsing instead of sscanf.
 //
+//   Brad Whitlock, Fri Aug 15 13:10:28 PST 2003
+//   I changed how the styles are set.
+//
 // ****************************************************************************
 
 void
 QvisAppearanceWindow::UpdateWindow(bool doAll)
 {
     AppearanceAttributes *atts = (AppearanceAttributes *)subject;
-    int  styleIndex;
+    int  j;
 
     for(int i = 0; i < atts->NumAttributes(); ++i)
     {
@@ -174,22 +213,16 @@ QvisAppearanceWindow::UpdateWindow(bool doAll)
         case 2: // fontDescription
             break;
         case 3: // style
-            if(atts->GetStyle() == "cde")
-                styleIndex = 1;
-            else if(atts->GetStyle() == "windows")
-                styleIndex = 2;
-            else if(atts->GetStyle() == "platinum")
-                styleIndex = 3;
-#if QT_VERSION >= 230
-            else if(atts->GetStyle() == "sgi")
-                styleIndex = 4;
-#endif
-            else
-                styleIndex = 0;
-
-            styleComboBox->blockSignals(true);
-            styleComboBox->setCurrentItem(styleIndex);
-            styleComboBox->blockSignals(false);
+            for(j = 0; j < numStyleNames; ++j)
+            {
+                if(atts->GetStyle() == styleNames[j])
+                {
+                    styleComboBox->blockSignals(true);
+                    styleComboBox->setCurrentItem(j);
+                    styleComboBox->blockSignals(false);
+                    break;
+                }
+            }
             break;
         case 4: // orientation
             orientationComboBox->blockSignals(true);
@@ -376,33 +409,16 @@ QvisAppearanceWindow::foregroundChanged(const QColor &fg)
 // Creation:   Thu Sep 6 13:17:42 PST 2001
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Aug 15 13:11:13 PST 2003
+//   I made it use a table lookup.
+//
 // ****************************************************************************
 
 void
 QvisAppearanceWindow::styleChanged(int index)
 {
     AppearanceAttributes *atts = (AppearanceAttributes *)subject;
-    switch(index)
-    {
-    case 0:
-       atts->SetStyle("motif");
-       break;
-    case 1:
-       atts->SetStyle("cde");
-       break;
-    case 2:
-       atts->SetStyle("windows");
-       break;
-    case 3:
-       atts->SetStyle("platinum");
-       break;
-#if QT_VERSION >= 230
-    case 4:
-       atts->SetStyle("sgi");
-       break;
-#endif
-    }
+    atts->SetStyle(styleNames[index]);
     SetUpdate(false);
     Apply();
 }

@@ -9,6 +9,7 @@
 #include <set>
 #include <vector>
 
+#include <vtkCell.h>
 #include <vtkDataSet.h>
 #include <vtkGeometryFilter.h>
 #include <vtkPolyData.h>

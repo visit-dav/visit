@@ -5,6 +5,10 @@
 #include <InverseGhostZonePluginInfo.h>
 #include <avtInverseGhostZoneFilter.h>
 
+#if defined(__APPLE__)
+#define GetEngineInfo InverseGhostZone_GetEngineInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //

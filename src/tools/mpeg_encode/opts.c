@@ -37,9 +37,9 @@
 
 #include <stdio.h>
 #include <string.h>
-#include "opts.h"
-#include <malloc.h>
+#include <stdlib.h>
 #include <math.h>
+#include "opts.h"
 
 /*==============*
  * EXTERNALS    *

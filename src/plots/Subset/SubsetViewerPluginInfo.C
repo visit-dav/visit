@@ -4,6 +4,10 @@
 
 #include <SubsetPluginInfo.h>
 
+#if defined(__APPLE__)
+#define GetViewerInfo Subset_GetViewerInfo
+#endif
+
 #include <stdio.h>
 
 #include <ViewerFileServer.h>

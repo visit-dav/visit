@@ -5,6 +5,10 @@
 #include <ConnCompReducePluginInfo.h>
 #include <avtConnCompReduceFilter.h>
 
+#if defined(__APPLE__)
+#define GetEngineInfo ConnCompReduce_GetEngineInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //

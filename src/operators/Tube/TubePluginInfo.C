@@ -5,6 +5,10 @@
 #include <TubePluginInfo.h>
 #include <TubeAttributes.h>
 
+#if defined(__APPLE__)
+#define GetGeneralInfo Tube_GetGeneralInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGeneralInfo
 //

@@ -5,6 +5,10 @@
 #include <DecimatePluginInfo.h>
 #include <DecimateAttributes.h>
 
+#if defined(__APPLE__)
+#define GetGeneralInfo Decimate_GetGeneralInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGeneralInfo
 //

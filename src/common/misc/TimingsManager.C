@@ -354,6 +354,9 @@ TimingsManager::DumpTimings(ostream &out)
 //    Brad Whitlock, Thu Mar 14 12:24:23 PST 2002
 //    Made it work on Windows.
 //
+//    Brad Whitlock, Mon May 19 12:37:44 PDT 2003
+//    I made it work on MacOS X.
+//
 // ****************************************************************************
 
 void
@@ -362,6 +365,9 @@ SystemTimingsManager::PlatformStartTimer(void)
 #if defined(_WIN32)
     struct _timeb t;
     _ftime(&t);
+#elif defined(__APPLE__)
+    struct timeval t;
+    gettimeofday(&t, 0);
 #else
     struct timeb t;
     ftime(&t);
@@ -394,11 +400,24 @@ SystemTimingsManager::PlatformStartTimer(void)
 //    Brad Whitlock, Thu Mar 14 12:24:23 PST 2002
 //    Added a Windows implementation.
 //
+//    Brad Whitlock, Mon May 19 12:37:58 PDT 2003
+//    I made it work on MacOS X.
+//
 // ****************************************************************************
 
 double
 SystemTimingsManager::PlatformStopTimer(int index)
 {
+#if defined(__APPLE__)
+    struct timeval endTime;
+    gettimeofday(&endTime, 0);
+    struct timeval &startTime = values[index];
+    
+    double seconds = double(endTime.tv_sec - startTime.tv_sec) + 
+                     double(endTime.tv_usec - startTime.tv_usec) / 1000000.;
+                     
+    return seconds;
+#else
 #if defined(_WIN32)
     struct _timeb endTime;
     _ftime(&endTime);
@@ -424,6 +443,7 @@ SystemTimingsManager::PlatformStopTimer(int index)
     }
 
     return (ms/1000.);
+#endif
 }
 
 

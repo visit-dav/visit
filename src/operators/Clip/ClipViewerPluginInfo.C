@@ -5,6 +5,10 @@
 #include <ClipPluginInfo.h>
 #include <ClipAttributes.h>
 
+#if defined(__APPLE__)
+#define GetViewerInfo Clip_GetViewerInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //

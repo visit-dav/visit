@@ -5,6 +5,10 @@
 #include <OnionPeelPluginInfo.h>
 #include <OnionPeelAttributes.h>
 
+#if defined(__APPLE__)
+#define GetViewerInfo OnionPeel_GetViewerInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //

@@ -1,5 +1,9 @@
 #include <LinesPluginInfo.h>
 
+#if defined(__APPLE__)
+#define GetMDServerInfo Lines_GetMDServerInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetMDServerInfo
 //

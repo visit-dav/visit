@@ -115,12 +115,15 @@ VisWinRenderingWithWindow::GetWindowSize(int &w, int &h)
 //    Brad Whitlock, Wed Sep 25 11:07:21 PDT 2002
 //    I made the window hide itself on the Windows platform.
 //
+//    Brad Whitlock, Thu Sep 4 10:43:02 PDT 2003
+//    I made the window hide itself on MacOS X.
+//
 // ****************************************************************************
 
 void
 VisWinRenderingWithWindow::Iconify(void)
 {
-#if defined(Q_WS_WIN)
+#if defined(Q_WS_WIN) || defined(Q_WS_MACX)
     renWin->hide();
 #else
     if (! renWin->isMinimized())
@@ -225,12 +228,15 @@ VisWinRenderingWithWindow::Hide()
 //    Brad Whitlock, Wed Sep 25 11:08:26 PDT 2002
 //    I made the window show itself on the Windows platform.
 //
+//    Brad Whitlock, Thu Sep 4 10:43:38 PDT 2003
+//    I made the window show itself on MacOS X.
+//
 // ****************************************************************************
 
 void
 VisWinRenderingWithWindow::DeIconify(void)
 {
-#if defined(Q_WS_WIN)
+#if defined(Q_WS_WIN) || defined(Q_WS_MACX)
     renWin->show();
 #else
     renWin->showNormal();

@@ -4,6 +4,14 @@
 #include <RemoveCellsPluginInfo.h>
 #include <PyRemoveCellsAttributes.h>
 
+#if defined(__APPLE__)
+#define GetScriptingInfo Makefile_GetScriptingInfo
+#endif
+
+#if defined(__APPLE__)
+#define GetScriptingInfo RemoveCells_GetScriptingInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //

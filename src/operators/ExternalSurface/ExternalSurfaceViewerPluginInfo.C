@@ -5,6 +5,10 @@
 #include <ExternalSurfacePluginInfo.h>
 #include <ExternalSurfaceAttributes.h>
 
+#if defined(__APPLE__)
+#define GetViewerInfo ExternalSurface_GetViewerInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //

@@ -5,6 +5,10 @@
 #include <DecimatePluginInfo.h>
 #include <avtDecimateFilter.h>
 
+#if defined(__APPLE__)
+#define GetEngineInfo Decimate_GetEngineInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //

@@ -5,6 +5,7 @@
 #include <avtBinaryAddFilter.h>
 
 #include <vtkDataArray.h>
+#include <vtkDataArray.h>
 
 #include <ExpressionException.h>
 

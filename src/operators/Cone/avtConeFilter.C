@@ -7,16 +7,20 @@
 #include <math.h>
 #include <float.h>
 
+#include <vtkCell.h>
+#include <vtkCellData.h>
 #include <vtkClipPolyData.h>
 #include <vtkCone.h>
 #include <vtkCutter.h>
 #include <vtkFloatArray.h>
+#include <vtkIdList.h>
 #include <vtkImplicitBoolean.h>
 #include <vtkImplicitFunction.h>
 #include <vtkMath.h>
 #include <vtkMatrixToLinearTransform.h>
 #include <vtkObjectFactory.h>
 #include <vtkPlane.h>
+#include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkPolyDataToPolyDataFilter.h>
 #include <vtkRectilinearGrid.h>

@@ -4,6 +4,7 @@
 
 #include <avtSinFilter.h>
 
+#include <vtkDataArray.h>
 #include <vtkDataSet.h>
 
 

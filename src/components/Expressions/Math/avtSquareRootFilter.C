@@ -4,6 +4,7 @@
 
 #include <avtSquareRootFilter.h>
 
+#include <vtkDataArray.h>
 #include <vtkDataSet.h>
 
 

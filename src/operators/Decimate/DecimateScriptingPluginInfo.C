@@ -4,6 +4,10 @@
 #include <DecimatePluginInfo.h>
 #include <PyDecimateAttributes.h>
 
+#if defined(__APPLE__)
+#define GetScriptingInfo Decimate_GetScriptingInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //

@@ -37,8 +37,11 @@
 #   Hank Childs, Thu Aug 14 08:21:14 PDT 2003
 #   Added ExprGrammarNode.
 #
-#    Jeremy Meredith, Fri Aug 15 12:51:16 PDT 2003
-#    Added InvalidExpressionException and RecursiveExpressionException.
+#   Jeremy Meredith, Fri Aug 15 12:51:16 PDT 2003
+#   Added InvalidExpressionException and RecursiveExpressionException.
+#
+#   Brad Whitlock, Fri Aug 22 17:26:52 PST 2003
+#   Removed libraries that don't exist yet from LIBS.
 #
 ##############################################################################
 
@@ -88,8 +91,7 @@ CONFIGOBJ=${CONFIGSRC:.C=.o}
 TESTOBJ=$(TESTSRC:.C=.o)
 LIB=libparser
 NOT_DISTRIB=
-LIBS=-L../../lib -ldbatts -lplugin -lavtmath_ser -lmisc -lcomm -lstate \
-     -lutility -lavtexceptions -lnsl -lsocket
+LIBS=-L../../lib -lmisc
 
 ##
 ## Standard targets...

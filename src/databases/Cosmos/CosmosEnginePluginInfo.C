@@ -1,5 +1,9 @@
 #include <CosmosPluginInfo.h>
 
+#if defined(__APPLE__)
+#define GetEngineInfo Cosmos_GetEngineInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //

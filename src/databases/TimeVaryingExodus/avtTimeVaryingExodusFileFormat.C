@@ -7,7 +7,9 @@
 #include <algorithm>
 
 #include "vtkExodusReader.h"
+#include <vtkCellData.h>
 #include <vtkUnstructuredGrid.h>
+#include <vtkPointData.h>
 
 #include <avtDatabaseMetaData.h>
 #include <avtVariableCache.h>

@@ -1,5 +1,9 @@
 #include <SiloPluginInfo.h>
 
+#if defined(__APPLE__)
+#define GetMDServerInfo Silo_GetMDServerInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetMDServerInfo
 //

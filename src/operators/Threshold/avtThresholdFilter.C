@@ -4,6 +4,8 @@
 
 #include <avtThresholdFilter.h>
 
+#include <vtkCellData.h>
+#include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkThreshold.h>
 #include <vtkUnstructuredGrid.h>

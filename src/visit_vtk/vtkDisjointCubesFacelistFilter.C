@@ -3,7 +3,9 @@
 // ************************************************************************* //
 
 #include "vtkDisjointCubesFacelistFilter.h"
-#include "vtkObjectFactory.h"
+#include <vtkCellArray.h>
+#include <vtkCellData.h>
+#include <vtkObjectFactory.h>
 #include <vtkPolyData.h>
 #include <vtkUnstructuredGrid.h>
 

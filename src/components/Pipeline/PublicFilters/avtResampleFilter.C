@@ -7,6 +7,7 @@
 #include <avtResampleFilter.h>
 
 #include <vtkFloatArray.h>
+#include <vtkPointData.h>
 #include <vtkRectilinearGrid.h>
 
 #include <avtDatasetExaminer.h>

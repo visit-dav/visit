@@ -37,6 +37,9 @@
 #    Jeremy Meredith, Fri Jul 12 14:30:14 PDT 2002
 #    Unified include directories.  Changed moc location.
 #
+#    Brad Whitlock, Tue Sep 30 13:53:31 PST 2003
+#    I removed -lXext since it's not needed.
+#
 ##############################################################################
 
 
@@ -44,7 +47,7 @@
 # --------------------
 @SET_MAKE@
 @VARIABLES@
-LIBS=@QT_LIBS@ @SILO_LIB@ $(X_LIBS) @LIBS@ -lXext
+LIBS=@QT_LIBS@ @SILO_LIB@ $(X_LIBS) @LIBS@
 LDFLAGS=@QT_LDFLAGS@ @LDFLAGS@ 
 LIBDEP=
 CXXFLAGS=-I. @CXXFLAGS@ @QT_CXXFLAGS@ @SILO_INCLUDE@

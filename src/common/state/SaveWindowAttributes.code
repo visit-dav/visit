@@ -1,0 +1,36 @@
+Function: CurrentFormatIsImageFormat
+Declaration: bool CurrentFormatIsImageFormat(void);
+Definition:
+// ****************************************************************************
+//  Method: CurrentFormatIsImageFormat
+//
+//  Purpose:
+//      Determines if the current file format is image-based.
+//
+//  Programmer: Hank Childs
+//  Creation:   October 15, 2003
+//
+// ****************************************************************************
+
+bool
+SaveWindowAttributes::CurrentFormatIsImageFormat(void)
+{
+    FileFormat ff = GetFormat();
+    if (ff == BMP)
+        return true;
+    if (ff == JPEG)
+        return true;
+    if (ff == PNG)
+        return true;
+    if (ff == POSTSCRIPT)
+        return true;
+    if (ff == PPM)
+        return true;
+    if (ff == RGB)
+        return true;
+    if (ff == TIFF)
+        return true;
+
+    return false;
+}
+

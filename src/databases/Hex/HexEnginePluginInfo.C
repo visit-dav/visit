@@ -1,5 +1,9 @@
 #include <HexPluginInfo.h>
 
+#if defined(__APPLE__)
+#define GetEngineInfo Hex_GetEngineInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //

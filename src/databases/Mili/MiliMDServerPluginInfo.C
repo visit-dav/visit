@@ -1,5 +1,9 @@
 #include <MiliPluginInfo.h>
 
+#if defined(__APPLE__)
+#define GetMDServerInfo Mili_GetMDServerInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetMDServerInfo
 //

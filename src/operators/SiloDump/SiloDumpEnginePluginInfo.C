@@ -5,6 +5,10 @@
 #include <SiloDumpPluginInfo.h>
 #include <avtSiloDumpFilter.h>
 
+#if defined(__APPLE__)
+#define GetEngineInfo SiloDump_GetEngineInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //

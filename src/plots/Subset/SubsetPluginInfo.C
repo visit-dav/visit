@@ -5,6 +5,10 @@
 #include <SubsetPluginInfo.h>
 #include <SubsetAttributes.h>
 
+#if defined(__APPLE__)
+#define GetGeneralInfo Subset_GetGeneralInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGeneralInfo
 //

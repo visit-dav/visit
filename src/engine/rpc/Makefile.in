@@ -140,7 +140,7 @@ HDR=$(SRC:.C=.h)
 
 OBJ=$(SRC:.C=.o)
 LIB=libenginerpc
-LIBS=-lmisc -lstate -lrpc
+LIBS=-lmisc -lstate
 
 
 ##

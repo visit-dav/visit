@@ -5,6 +5,10 @@
 #include <CurvePluginInfo.h>
 #include <avtCurvePlot.h>
 
+#if defined(__APPLE__)
+#define GetEngineInfo Curve_GetEngineInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //

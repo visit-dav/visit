@@ -8,6 +8,7 @@
 #include <X11/Xlib.h>
 static Window GetParent(Display *dpy, Window win, Window *root_ret=NULL);
 #endif
+
 //
 // Static data
 //
@@ -73,6 +74,10 @@ WindowMetrics::Instance()
 //    Brad Whitlock, Thu Apr 18 12:04:45 PDT 2002
 //    We don't need to popup a window on MS Windows to determine the size
 //    of the borders, etc. I made the code reflect this.
+//
+//    Brad Whitlock, Wed Sep 3 11:32:07 PDT 2003
+//    I changed the non-X11 code so that it only sets the shift and preshift
+//    if we're on Windows. This way, MacOS X is unaffected.
 //
 // ****************************************************************************
 
@@ -153,8 +158,10 @@ WindowMetrics::WindowMetrics()
     //
     CalculateBorders(0, borderT, borderB, borderL, borderR);
 
+#if defined(Q_WS_WIN)
     preshiftX = shiftX = borderL;
     preshiftY = shiftY = borderT;
+#endif
 #endif
 }
 
@@ -164,7 +171,11 @@ WindowMetrics::WindowMetrics()
 //                           PLATFORM SPECIFIC CODE
 // ****************************************************************************
 // ****************************************************************************
-#ifndef Q_WS_X11
+#if defined(Q_WS_WIN)
+
+//
+// Win32 coding
+//
 
 // ****************************************************************************
 // Method: WindowMetrics::CalculateBorders
@@ -253,7 +264,107 @@ WindowMetrics::CalculateScreen(QWidget *win,
     screenH = r.bottom - r.top;
 }
 
-#else
+#elif defined(Q_WS_MACX)
+
+//
+// MacOS coding
+//
+
+// ****************************************************************************
+// Method: WindowMetrics::CalculateBorders
+//
+// Purpose: 
+//   Determines the size of the borders around the window.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Apr 18 12:25:51 PDT 2002
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+WindowMetrics::CalculateBorders(QWidget *, 
+    int &borderT, int &borderB, int &borderL, int &borderR)
+{
+#if 1
+    //cerr << "WindowMetrics::CalculateBorders: Mac version not implemented!" << endl;
+    borderT = 20;
+    borderB = 0;
+    borderL = 0;
+    borderR = 1;
+#endif
+}
+
+void
+WindowMetrics::WaitForWindowManagerToGrabWindow(QWidget *win)
+{
+    // nothing
+}
+
+void
+WindowMetrics::WaitForWindowManagerToMoveWindow(QWidget *win)
+{
+    // nothing
+}
+
+// ****************************************************************************
+// Method: WindowMetrics::CalculateTopLeft
+//
+// Purpose: 
+//    Calculates the topleft-most position of a given window.
+//
+// Arguments:
+//   w : The widget we're testing.
+//   X : The return X value.
+//   Y : The return Y value.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Apr 18 11:58:37 PDT 2002
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+WindowMetrics::CalculateTopLeft(QWidget *w, int &X, int &Y)
+{
+    X = w->x();
+    Y = w->y();
+}
+
+// ****************************************************************************
+//  Method:  WindowMetrics::CalculateScreen
+//
+//  Purpose:
+//    Calculates the screen size to avoid toolbars/panels.
+//
+//  Programmer:  Brad Whitlock
+//  Creation:    Thu Apr 18 11:54:57 PDT 2002
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+WindowMetrics::CalculateScreen(QWidget *win,
+                               int &screenX, int &screenY,
+                               int &screenW, int &screenH)
+{
+#if 1
+    //cerr << "WindowMetrics::CalculateScreen: Mac version not implemented!" << endl;
+    screenX = qApp->desktop()->x();
+    screenY = qApp->desktop()->y();
+    screenW = qApp->desktop()->width();
+    screenH = qApp->desktop()->height(); // - 100;
+#endif
+}
+
+#elif defined(Q_WS_X11)
+
+//
+// X11 coding
+//
 
 // ****************************************************************************
 // Method: CalculateBorders

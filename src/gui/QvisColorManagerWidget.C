@@ -3,6 +3,7 @@
 #include <qlayout.h>
 #include <qgrid.h>
 #include <qlabel.h>
+#include <qpixmap.h>
 #include <qscrollview.h>
 #include <qvbox.h>
 
@@ -23,7 +24,9 @@
 // Creation:   Fri Dec 8 16:29:46 PST 2000
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Aug 21 17:56:02 PST 2003
+//   I set the background pixmap of the viewport if we have a background pixmap.
+//
 // ****************************************************************************
 
 QvisColorManagerWidget::QvisColorManagerWidget(QWidget *parent,
@@ -35,7 +38,11 @@ QvisColorManagerWidget::QvisColorManagerWidget(QWidget *parent,
     scrollView = new QScrollView(this, "scrollView");
     scrollView->setVScrollBarMode(QScrollView::Auto);
     scrollView->setHScrollBarMode(QScrollView::Auto);
-    scrollView->viewport()->setBackgroundColor(colorGroup().background());
+    QPixmap *pix = colorGroup().brush(QColorGroup::Background).pixmap();
+    if(pix)
+        scrollView->viewport()->setBackgroundPixmap(*pix);
+    else
+        scrollView->viewport()->setBackgroundColor(colorGroup().background());
     topLayout->addWidget(scrollView);
 
     // Create the QGrid widget that will manage the layout of the buttons, etc.
@@ -570,13 +577,19 @@ QvisColorManagerWidget::opacity(const int index) const
 // Creation:   Thu Sep 6 15:27:53 PST 2001
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Aug 22 14:51:14 PST 2003
+//   I changed the method so it works better on MacOS X.
+//
 // ****************************************************************************
 
 void
 QvisColorManagerWidget::paletteChange(const QPalette &)
 {
-    scrollView->viewport()->setBackgroundColor(colorGroup().background());
+    QPixmap *pix = colorGroup().brush(QColorGroup::Background).pixmap();
+    if(pix)
+        scrollView->viewport()->setBackgroundPixmap(*pix);
+    else
+        scrollView->viewport()->setBackgroundColor(colorGroup().background());
 }
 
 // ****************************************************************************

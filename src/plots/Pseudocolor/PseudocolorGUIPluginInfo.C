@@ -6,6 +6,10 @@
 #include <PseudocolorAttributes.h>
 #include <QvisPseudocolorPlotWindow.h>
 
+#if defined(__APPLE__)
+#define GetGUIInfo Pseudocolor_GetGUIInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGUIInfo
 //

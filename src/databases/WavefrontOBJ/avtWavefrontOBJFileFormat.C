@@ -5,6 +5,7 @@
 #include <avtWavefrontOBJFileFormat.h>
 
 #include <vtkFloatArray.h>
+#include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkOBJReader.h>
 

@@ -6,6 +6,10 @@
 #include <StreamlineAttributes.h>
 #include <QvisStreamlinePlotWindow.h>
 
+#if defined(__APPLE__)
+#define GetGUIInfo Streamline_GetGUIInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGUIInfo
 //

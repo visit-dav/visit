@@ -1,5 +1,9 @@
 #include <PDBPluginInfo.h>
 
+#if defined(__APPLE__)
+#define GetMDServerInfo PDB_GetMDServerInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetMDServerInfo
 //

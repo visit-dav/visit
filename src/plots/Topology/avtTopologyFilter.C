@@ -6,11 +6,14 @@
 
 #include <math.h>
 
+#include <vtkCell.h>
+#include <vtkCellData.h>
 #include <vtkCellDataToPointData.h>
 #include <vtkContourFilter.h>
 #include <vtkDataSet.h>
 #include <vtkFloatArray.h>
 #include <vtkIdList.h>
+#include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
@@ -290,7 +293,7 @@ avtTopologyFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, std::string)
     // Now we contour the four variables to draw the lines.
     //
     
-    vtkDataSet *contourInput = (vtkDataSet *)in_ds->MakeObject();
+    vtkDataSet *contourInput = (vtkDataSet *)in_ds->NewInstance();
     contourInput->ShallowCopy(in_ds);
 
     // Make this variable? 

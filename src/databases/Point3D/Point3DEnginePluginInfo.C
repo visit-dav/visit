@@ -1,5 +1,9 @@
 #include <Point3DPluginInfo.h>
 
+#if defined(__APPLE__)
+#define GetEngineInfo Point3D_GetEngineInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //

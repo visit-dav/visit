@@ -5,6 +5,10 @@
 #include <VolumePluginInfo.h>
 #include <VolumeAttributes.h>
 
+#if defined(__APPLE__)
+#define GetGeneralInfo Volume_GetGeneralInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGeneralInfo
 //

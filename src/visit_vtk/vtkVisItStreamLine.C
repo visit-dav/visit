@@ -26,15 +26,18 @@
 
 =========================================================================*/
 #include "vtkVisItStreamLine.h"
-#include "vtkObjectFactory.h"
-#include "vtkPolyLine.h"
-#include "vtkPolyData.h"
-#include "vtkFloatArray.h"
-#include "vtkMath.h"
-#include "vtkFloatArray.h"
-#include "vtkInterpolatedVelocityField.h"
-#include "vtkInitialValueProblemSolver.h"
-#include "vtkMultiThreader.h"
+
+#include <vtkCellArray.h>
+#include <vtkFloatArray.h>
+#include <vtkGenericCell.h>
+#include <vtkInitialValueProblemSolver.h>
+#include <vtkInterpolatedVelocityField.h>
+#include <vtkMath.h>
+#include <vtkMultiThreader.h>
+#include <vtkObjectFactory.h>
+#include <vtkPointData.h>
+#include <vtkPolyData.h>
+#include <vtkPolyLine.h>
 
 
 vtkCxxRevisionMacro(vtkVisItStreamLine, "$Revision: 1.50 $");

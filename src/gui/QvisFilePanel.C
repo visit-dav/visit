@@ -1335,16 +1335,19 @@ QvisFilePanel::OpenFile(const QualifiedFilename &qf, int timeState, bool reOpen)
 //   I added a bool to OpenFile.
 //
 //   Brad Whitlock, Thu May 15 12:30:28 PDT 2003
-//   I added time state to ReplaceFile.
+//   I added time state to OpenFile.
+//
+//   Brad Whitlock, Wed Oct 15 15:26:31 PST 2003
+//   I made it possible to replace a file at a later time state.
 //
 // ****************************************************************************
 
 void
-QvisFilePanel::ReplaceFile(const QualifiedFilename &filename)
+QvisFilePanel::ReplaceFile(const QualifiedFilename &filename, int timeState)
 {
-    if(OpenFile(filename, 0, false))
+    if(OpenFile(filename, timeState, false))
     {
-        viewer->ReplaceDatabase(filename.FullName().c_str());
+        viewer->ReplaceDatabase(filename.FullName().c_str(), timeState);
     }
 }
 
@@ -1962,6 +1965,10 @@ QvisFilePanel::openFileDblClick(QListViewItem *item)
 //   Brad Whitlock, Fri Sep 5 16:52:28 PST 2003
 //   I let replace change time states so MeshTV users are happy.
 //
+//   Brad Whitlock, Wed Oct 15 16:18:40 PST 2003
+//   I added code to let replace open files at the selected time state instead
+//   of using time state 0.
+//
 // ****************************************************************************
 
 void
@@ -1981,8 +1988,13 @@ QvisFilePanel::replaceFile()
         }
         else
         {
+            // Make sure that we use a valid time state. Some file items
+            // have a time state of -1 if they are the parent item of several
+            // time step items.
+            int timeState = (fileItem->timeState < 0) ? 0 : fileItem->timeState;
+
             // Try and replace the file.
-            ReplaceFile(fileItem->file.FullName());
+            ReplaceFile(fileItem->file.FullName(), timeState);
         }
     }
 }

@@ -40,8 +40,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 =========================================================================*/
 #include "vtkUnstructuredGridRelevantPointsFilter.h"
-#include "vtkMergePoints.h"
-#include "vtkObjectFactory.h"
+#include <vtkCellData.h>
+#include <vtkIdList.h>
+#include <vtkMergePoints.h>
+#include <vtkObjectFactory.h>
+#include <vtkPointData.h>
 #include <vtkUnstructuredGrid.h>
 
 //------------------------------------------------------------------------------

@@ -4,6 +4,10 @@
 
 #include <TetradPluginInfo.h>
 
+#if defined(__APPLE__)
+#define GetGeneralInfo Tetrad_GetGeneralInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGeneralInfo
 //

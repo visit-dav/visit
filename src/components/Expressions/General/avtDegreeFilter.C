@@ -4,6 +4,7 @@
 
 #include <avtDegreeFilter.h>
 
+#include <vtkCell.h>
 #include <vtkDataSet.h>
 #include <vtkFloatArray.h>
 

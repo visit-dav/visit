@@ -5,6 +5,14 @@
 #include <RemoveCellsPluginInfo.h>
 #include <RemoveCellsAttributes.h>
 
+#if defined(__APPLE__)
+#define GetViewerInfo Makefile_GetViewerInfo
+#endif
+
+#if defined(__APPLE__)
+#define GetViewerInfo RemoveCells_GetViewerInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //

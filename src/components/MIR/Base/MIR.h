@@ -34,6 +34,9 @@ class avtSpecies;
 //    Jeremy Meredith, Mon Sep 15 09:48:43 PDT 2003
 //    Changed the way some functions were refactored from TetMIR.
 //
+//    Jeremy Meredith, Wed Oct 15 16:47:49 PDT 2003
+//    Added space for a material to get passed in to GetDataset.
+//
 // ****************************************************************************
 class MIR_API MIR
 {
@@ -57,7 +60,8 @@ class MIR_API MIR
     // material select everything -- all variables, the mesh, and the material
     // if requested.
     virtual vtkDataSet *GetDataset(std::vector<int>, vtkDataSet *, 
-                                   std::vector<avtMixedVariable *>, bool) = 0;
+                                   std::vector<avtMixedVariable *>, bool,
+                                   avtMaterial * = NULL) = 0;
 
     // for species selection
     static void SpeciesSelect(const std::vector<bool>&,

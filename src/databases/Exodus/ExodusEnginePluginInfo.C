@@ -1,5 +1,9 @@
 #include <ExodusPluginInfo.h>
 
+#if defined(__APPLE__)
+#define GetEngineInfo Exodus_GetEngineInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //

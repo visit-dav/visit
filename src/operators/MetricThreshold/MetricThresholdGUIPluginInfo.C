@@ -6,6 +6,10 @@
 #include <MetricThresholdAttributes.h>
 #include <QvisMetricThresholdWindow.h>
 
+#if defined(__APPLE__)
+#define GetGUIInfo MetricThreshold_GetGUIInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGUIInfo
 //

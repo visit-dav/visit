@@ -4,6 +4,10 @@
 #include <SubsetPluginInfo.h>
 #include <PySubsetAttributes.h>
 
+#if defined(__APPLE__)
+#define GetScriptingInfo Subset_GetScriptingInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //

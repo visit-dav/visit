@@ -39,6 +39,9 @@
 //    Jeremy Meredith, Fri Oct  4 16:48:26 PDT 2002
 //    Added number of current timings and indented output based on that value.
 //
+//    Brad Whitlock, Mon May 19 12:36:50 PDT 2003
+//    Added MacOS X code.
+//
 // ****************************************************************************
 
 class MISC_API TimingsManager
@@ -82,6 +85,8 @@ class MISC_API SystemTimingsManager : public TimingsManager
   protected:
 #if defined(_WIN32)
     std::vector<_timeb>        values;
+#elif defined(__APPLE__)
+    std::vector<timeval>       values;
 #else
     std::vector<timeb>         values;
 #endif

@@ -244,6 +244,9 @@ typedef struct {
 //    I implemented curve view as a first class view type.  I split the
 //    view attributes into 2d and 3d parts.
 //
+//    Brad Whitlock, Wed Oct 15 13:44:38 PST 2003
+//    Added ReplaceDatabase method.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerWindowManager : public QObject
@@ -346,6 +349,10 @@ class VIEWER_API ViewerWindowManager : public QObject
     void BeginEngineExecute();
     void EndEngineExecute();
 
+    void ReplaceDatabase(const std::string &host,
+                         const std::string &database,
+                         bool onlyReplaceSame);
+
     void CreateNode(DataNode *parentNode, bool detailed);
     void SetFromNode(DataNode *parentNode);
 
@@ -383,7 +390,7 @@ class VIEWER_API ViewerWindowManager : public QObject
   protected:
     ViewerWindowManager();
     avtImage_p CreateSingleImage(int windowIndex, int width, int height,
-                                 bool screenCapture);
+                                 bool screenCapture, bool leftEye);
     avtImage_p CreateTiledImage(int width, int height);
     avtDataset_p GetDataset(int windowIndex);
     static void ToolCallback(const avtToolInterface &);

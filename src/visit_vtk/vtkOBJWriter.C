@@ -3,10 +3,12 @@
 // Written by Hank Childs, May 27, 2002.
 
 #include "vtkOBJWriter.h"
-#include "vtkGeometryFilter.h"
-#include "vtkAssemblyNode.h"
-#include "vtkObjectFactory.h"
-#include "vtkFloatArray.h"
+#include <vtkAssemblyNode.h>
+#include <vtkCellArray.h>
+#include <vtkFloatArray.h>
+#include <vtkGeometryFilter.h>
+#include <vtkObjectFactory.h>
+#include <vtkPointData.h>
 
 vtkCxxRevisionMacro(vtkOBJWriter, "$Revision: 1.42 $");
 vtkStandardNewMacro(vtkOBJWriter);

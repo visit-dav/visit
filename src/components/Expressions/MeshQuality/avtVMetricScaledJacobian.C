@@ -4,6 +4,7 @@
 
 #include "avtVMetricScaledJacobian.h"
 
+#include <vtkCellType.h>
 #include <vtkDataSet.h>
 #include <vtkFloatArray.h>
 

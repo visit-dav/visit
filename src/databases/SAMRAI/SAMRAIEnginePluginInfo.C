@@ -1,5 +1,9 @@
 #include <SAMRAIPluginInfo.h>
 
+#if defined(__APPLE__)
+#define GetEngineInfo SAMRAI_GetEngineInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //

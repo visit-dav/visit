@@ -4,9 +4,11 @@
 
 #include <avtCoordSystemConvert.h>
 
+#include <vtkCellData.h>
 #include <vtkDataSet.h>
 #include <vtkFloatArray.h>
 #include <vtkMath.h>
+#include <vtkPointData.h>
 #include <vtkPoints.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
@@ -273,7 +275,7 @@ CreateNewDataset(vtkDataSet *in_ds, vtkPoints *newPts)
     if (dstype == VTK_STRUCTURED_GRID || dstype == VTK_POLY_DATA ||
         dstype == VTK_UNSTRUCTURED_GRID)
     {
-        vtkPointSet *rv2 = (vtkPointSet *) in_ds->MakeObject();
+        vtkPointSet *rv2 = (vtkPointSet *) in_ds->NewInstance();
         rv2->ShallowCopy(in_ds);
         rv2->SetPoints(newPts);
 

@@ -8,8 +8,10 @@
 #include <math.h>
 #include <float.h>
 
-#include <vtkDataArray.h>
+#include <vtkCellData.h>
 #include <vtkDataSet.h>
+#include <vtkPointData.h>
+#include <vtkUnsignedCharArray.h>
 #include <DebugStream.h>
 #include <avtExtents.h>
 

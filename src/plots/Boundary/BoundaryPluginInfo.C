@@ -5,6 +5,10 @@
 #include <BoundaryPluginInfo.h>
 #include <BoundaryAttributes.h>
 
+#if defined(__APPLE__)
+#define GetGeneralInfo Boundary_GetGeneralInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGeneralInfo
 //

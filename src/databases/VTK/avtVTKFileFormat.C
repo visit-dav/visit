@@ -4,8 +4,10 @@
 
 #include <avtVTKFileFormat.h>
 
+#include <vtkCellData.h>
 #include <vtkDataSet.h>
 #include <vtkDataSetReader.h>
+#include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkUnstructuredGrid.h>
 

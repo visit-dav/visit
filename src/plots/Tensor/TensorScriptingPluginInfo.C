@@ -4,6 +4,10 @@
 #include <TensorPluginInfo.h>
 #include <PyTensorAttributes.h>
 
+#if defined(__APPLE__)
+#define GetScriptingInfo Tensor_GetScriptingInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //

@@ -4,6 +4,14 @@
 #include <KerbelPluginInfo.h>
 #include <PyKerbelAttributes.h>
 
+#if defined(__APPLE__)
+#define GetScriptingInfo Makefile.in_GetScriptingInfo
+#endif
+
+#if defined(__APPLE__)
+#define GetScriptingInfo Kerbel_GetScriptingInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //

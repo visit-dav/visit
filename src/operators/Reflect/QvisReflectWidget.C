@@ -323,14 +323,16 @@ QvisReflectWidget::redrawScene(QPainter *painter)
 // Creation:   Mon Jun 23 16:57:31 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Aug 22 09:02:18 PDT 2003
+//   Changed how the background brush is selected so it works on MacOS X.
+//
 // ****************************************************************************
 
 void
 QvisReflectWidget::redrawScene2D(QPainter *painter)
 {
     // Fill in the background color.
-    painter->fillRect(rect(), QBrush(colorGroup().background()));
+    painter->fillRect(rect(), colorGroup().brush(QColorGroup::Background));
 
     //
     // Set up the camera.
@@ -514,13 +516,16 @@ QvisReflectWidget::setupCamera()
 //   Brad Whitlock, Wed Sep 10 08:44:35 PDT 2003
 //   I added the axis labels for the back view.
 //
+//   Brad Whitlock, Fri Aug 22 09:03:06 PDT 2003
+//   I changed how the brush is selected so it works on MacOS X.
+//
 // ****************************************************************************
 
 void
 QvisReflectWidget::setupAndDraw(QPainter *p)
 {
     // Fill in the background color.
-    p->fillRect(rect(), QBrush(colorGroup().background()));
+    p->fillRect(rect(), colorGroup().brush(QColorGroup::Background));
 
     renderer.set_light(1, M3D_LIGHT_EYE, 0.f,0.f,-35.f, 1.f, 1.f, 1.f);
     renderer.set_light(2, M3D_LIGHT_OFF, 0.f,0.f,-1.f, 0.f, 0.f, 0.f);

@@ -6,6 +6,10 @@
 #include <DecimateAttributes.h>
 #include <QvisDecimateWindow.h>
 
+#if defined(__APPLE__)
+#define GetGUIInfo Decimate_GetGUIInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGUIInfo
 //

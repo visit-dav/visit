@@ -4,6 +4,10 @@
 
 #include <WavefrontOBJPluginInfo.h>
 
+#if defined(__APPLE__)
+#define GetGeneralInfo WavefrontOBJ_GetGeneralInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGeneralInfo
 //

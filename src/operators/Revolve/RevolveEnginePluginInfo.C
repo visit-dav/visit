@@ -5,6 +5,10 @@
 #include <RevolvePluginInfo.h>
 #include <avtRevolveFilter.h>
 
+#if defined(__APPLE__)
+#define GetEngineInfo Revolve_GetEngineInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //

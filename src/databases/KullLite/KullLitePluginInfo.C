@@ -4,6 +4,10 @@
 
 #include <KullLitePluginInfo.h>
 
+#if defined(__APPLE__)
+#define GetGeneralInfo KullLite_GetGeneralInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGeneralInfo
 //

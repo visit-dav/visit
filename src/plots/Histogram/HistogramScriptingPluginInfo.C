@@ -4,6 +4,10 @@
 #include <HistogramPluginInfo.h>
 #include <PyHistogramAttributes.h>
 
+#if defined(__APPLE__)
+#define GetScriptingInfo Histogram_GetScriptingInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //

@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include <vtkCell.h>
 #include <vtkDataSet.h>
 #include <vtkFloatArray.h>
 

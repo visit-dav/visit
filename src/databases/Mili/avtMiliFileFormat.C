@@ -13,6 +13,8 @@ extern "C" {
 #include <mili_enum.h>
 }
 
+#include <vtkCellData.h>
+#include <vtkCellTypes.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkFloatArray.h>
 

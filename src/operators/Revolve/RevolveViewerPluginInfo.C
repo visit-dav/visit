@@ -5,6 +5,10 @@
 #include <RevolvePluginInfo.h>
 #include <RevolveAttributes.h>
 
+#if defined(__APPLE__)
+#define GetViewerInfo Revolve_GetViewerInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //

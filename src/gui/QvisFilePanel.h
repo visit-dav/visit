@@ -70,6 +70,9 @@ class ViewerProxy;
 //   Brad Whitlock, Mon Oct 13 15:30:20 PST 2003
 //   Changed so it supports displaying times as well as cycles.
 //
+//   Brad Whitlock, Wed Oct 15 15:18:43 PST 2003
+//   Added an optional timeState argument to ReplaceFile.
+//
 // ****************************************************************************
 
 class GUI_API QvisFilePanel : public QWidget, public SimpleObserver, public GUIBase
@@ -122,7 +125,7 @@ private:
     void UpdateTimeFieldText(int timeState);
     bool OpenFile(const QualifiedFilename &filename, int timeState,
                   bool reOpen);
-    void ReplaceFile(const QualifiedFilename &filename);
+    void ReplaceFile(const QualifiedFilename &filename, int timeState=0);
     void OverlayFile(const QualifiedFilename &filename);
     void ExpandDatabases();
     void ExpandDatabaseItem(QvisListViewFileItem *item);

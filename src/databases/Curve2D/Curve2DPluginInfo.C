@@ -4,6 +4,10 @@
 
 #include <Curve2DPluginInfo.h>
 
+#if defined(__APPLE__)
+#define GetGeneralInfo Curve2D_GetGeneralInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGeneralInfo
 //

@@ -12,11 +12,14 @@
 #include <mpi.h>
 #endif
 
+#include <vtkCellData.h>
 #include <vtkCellLocator.h>
 #include <vtkDataSet.h>
 #include <vtkFloatArray.h>
+#include <vtkIdList.h>
 #include <vtkIntArray.h>
 #include <vtkMath.h>
+#include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
@@ -1979,6 +1982,9 @@ avtGenericDatabase::AddOriginalNodesArray(vtkDataSet *ds, const int domain)
 //    Add 'vtkOriginalDimensions' field data to output, if input was
 //    structured (so Pick can return correct zone/node numbers).
 //
+//    Jeremy Meredith, Wed Oct 15 17:25:48 PDT 2003
+//    Added code to correctly handle clean-zones-only MIR.
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -2002,6 +2008,11 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
     //
     vector<int> mindex;
     GetMaterialIndices(var, mnames, mindex);
+
+    //
+    // Make room for the "mixed" material (i.e. for clean-zones-only)
+    //
+    mindex.push_back(mat->GetNMaterials());
 
     //
     // Determine the topological dimension.
@@ -2074,7 +2085,8 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
             setUpMaterialVariable = true;
         }
 
-        out_ds[d] = mir->GetDataset(selMats, ds, mvl, setUpMaterialVariable);
+        out_ds[d] = mir->GetDataset(selMats, ds, mvl, setUpMaterialVariable,
+                                    mat);
 
         if (out_ds != NULL && out_ds[d]->GetNumberOfCells() == 0)
         {
@@ -2132,13 +2144,16 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
         if (needInternalSurfaces)
         {
             labelStrings = labels;
+            // add the one for the "mixed material"
+            labelStrings.push_back("mixed");
         }
         else
         {
             //
             // Create a new label of the form "%d;%d;%s;...", which consists
             // of the number of materials, followed by pairs of material
-            // number and material name for each material.
+            // number and material name for each material.  Make sure the last
+            // one is for the "mixed material".
             //
             char   buff[32];
             string label;
@@ -2147,7 +2162,10 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
             for (int i = 0; i < numSelected; i++)
             {
                 sprintf(buff, "%d;", mindex[i]);
-                label += string(buff) + labels[i] + ";";
+                if (i == numSelected-1)
+                    label += string(buff) + "mixed;";
+                else
+                    label += string(buff) + labels[i] + ";";
             }
             labelStrings.push_back(label);
         }

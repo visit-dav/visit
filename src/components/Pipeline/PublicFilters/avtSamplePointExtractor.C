@@ -6,8 +6,11 @@
 
 #include <float.h>
 
+#include <vtkCellData.h>
 #include <vtkDataSet.h>
 #include <vtkHexahedron.h>
+#include <vtkPointData.h>
+#include <vtkPoints.h>
 #include <vtkPyramid.h>
 #include <vtkTetra.h>
 #include <vtkUnsignedCharArray.h>

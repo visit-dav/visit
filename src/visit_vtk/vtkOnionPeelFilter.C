@@ -14,9 +14,11 @@
 //========================================================================
 
 #include <vtkCell.h>
+#include <vtkCellData.h>
 #include <vtkIdList.h>
 #include <vtkObjectFactory.h>
 #include <vtkOnionPeelFilter.h>
+#include <vtkPointData.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
 #include <vtkUnstructuredGrid.h>

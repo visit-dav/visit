@@ -6,7 +6,10 @@
 
 #include <stdlib.h>
 
+#include <vtkCellData.h>
+#include <vtkGenericCell.h>
 #include <vtkObjectFactory.h>
+#include <vtkPointData.h>
 #include <vtkPolyData.h>
 
 static int CoordSorter(const void *, const void *);

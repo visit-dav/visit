@@ -923,6 +923,9 @@ QvisSpectrumBar::setOrientation(QvisSpectrumBar::ControlOrientation)
 //   Removed style coding. Made it use a single pixmap. Removed code to sort
 //   the control points to fix a bug that made paging expose incorrectly.
 //
+//   Brad Whitlock, Thu Aug 21 15:41:42 PST 2003
+//   I changed how the brush is created so the widget looks better on MacOS X.
+//
 // ****************************************************************************
 
 void
@@ -936,14 +939,20 @@ QvisSpectrumBar::drawControls()
         totalFill = true;
     }
 
+#ifdef Q_WS_MACX
+    QBrush brush(colorGroup().brush(QColorGroup::Background));
+#else
+    QBrush brush(colorGroup().brush(QColorGroup::Button));
+#endif
+
     // Create a painter and fill in the entire area with the background color.
     QPainter paint(pixmap);
     if(totalFill)
-        paint.fillRect(0, 0, width(), height(), colorGroup().background());
+        paint.fillRect(0, 0, width(), height(), brush);
     else
         paint.fillRect(controlsArea.x(), controlsArea.y(),
                        controlsArea.width(), controlsArea.height(),
-                       colorGroup().background());
+                       brush);
 
     // If we're not in editable mode, then we don't need to draw any
     // control points.
@@ -973,7 +982,11 @@ QvisSpectrumBar::drawControls()
         drawControlPoint(&paint,
                          colorGroup().light(),
                          colorGroup().dark(),
+#ifdef Q_WS_MACX
+                         colorGroup().brush(QColorGroup::Background),
+#else
                          colorGroup().button(),
+#endif
                          selectColor,
                          controlPointColor,
                          cpLocation.x(), cpLocation.y(),
@@ -1075,8 +1088,8 @@ QvisSpectrumBar::controlPointLocation(int index) const
 // ****************************************************************************
 
 void
-QvisSpectrumBar::drawControlPoint(QPainter *paint, const QColor &top,
-    const QColor &bottom, const QColor &fore, const QColor &sel,
+QvisSpectrumBar::drawControlPoint(QPainter *paint, const QBrush &top,
+    const QBrush &bottom, const QBrush &fore, const QColor &sel,
     const QColor &cpt, int x, int y, int w, int h, int shadow_thick,
     ControlOrientation orient, bool selected)
 {
@@ -1259,7 +1272,9 @@ QvisSpectrumBar::drawBox(QPainter *paint, const QRect &r,
 // Creation:   Wed Mar 13 09:37:51 PDT 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Aug 21 15:50:13 PST 2003
+//   I changed how the brush is created so the arrows look better on MacOS X.
+//
 // ****************************************************************************
 
 void
@@ -1388,7 +1403,11 @@ QvisSpectrumBar::drawArrow(QPainter *p, bool down, int x, int y, int w, int h,
     QBrush   saveBrush = p->brush();   // save current brush
     QWMatrix wxm = p->worldMatrix();
     QPen     pen(NoPen);
-    QBrush brush = g.brush(QColorGroup::Button);
+#ifdef Q_WS_MACX
+    QBrush   brush(g.brush(QColorGroup::Background));
+#else
+    QBrush   brush(g.brush(QColorGroup::Button));
+#endif
 
     p->setPen(pen);
     p->setBrush(brush);
@@ -1427,6 +1446,9 @@ QvisSpectrumBar::drawArrow(QPainter *p, bool down, int x, int y, int w, int h,
 //   Removed all dependencies on style objects and made it use a single
 //   pixmap.
 //
+//   Brad Whitlock, Thu Aug 21 15:42:50 PST 2003
+//   I changed how the brush is selected so the widget looks better on MacOS X.
+//
 // ****************************************************************************
 
 void
@@ -1440,10 +1462,16 @@ QvisSpectrumBar::drawSpectrum()
         totalFill = true;
     }
 
+#ifdef Q_WS_MACX
+    QBrush brush(colorGroup().brush(QColorGroup::Background));
+#else
+    QBrush brush(colorGroup().brush(QColorGroup::Button));
+#endif
+
     // Create a painter and fill in the entire area with the background color.
     QPainter paint(pixmap);
     if(totalFill)
-        paint.fillRect(0, 0, width(), height(), colorGroup().background());
+        paint.fillRect(0, 0, width(), height(), brush);
 
     // Get the area that we can draw the spectrum in.
     QRect area(spectrumArea.x() + 2, spectrumArea.y() + 2,

@@ -5,6 +5,10 @@
 #include <ConnCompReducePluginInfo.h>
 #include <ConnCompReduceAttributes.h>
 
+#if defined(__APPLE__)
+#define GetGeneralInfo ConnCompReduce_GetGeneralInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGeneralInfo
 //

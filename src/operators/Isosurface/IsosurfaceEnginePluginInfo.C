@@ -5,6 +5,10 @@
 #include <IsosurfacePluginInfo.h>
 #include <avtIsosurfaceFilter.h>
 
+#if defined(__APPLE__)
+#define GetEngineInfo Isosurface_GetEngineInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //

@@ -5,6 +5,10 @@
 #include <TubePluginInfo.h>
 #include <avtTubeFilter.h>
 
+#if defined(__APPLE__)
+#define GetEngineInfo Tube_GetEngineInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //

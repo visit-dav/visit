@@ -7,6 +7,8 @@
 #include <snprintf.h>
 #include <ViewerSubject.h>
 
+#if QT_VERSION < 300
+// If we're using less than Qt 3.0, include the style headers.
 #include <qmotifstyle.h>
 #include <qcdestyle.h>
 #include <qwindowsstyle.h>
@@ -14,6 +16,8 @@
 #if QT_VERSION >= 230
 #include <qsgistyle.h>
 #endif
+#endif
+
 #include <qtimer.h>
 
 #include <AnimationAttributes.h>
@@ -1349,7 +1353,9 @@ ViewerSubject::InitializeWorkArea()
 // Creation:   Wed Sep 5 10:22:57 PDT 2001
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Aug 15 13:18:41 PST 2003
+//   Added support for more styles in Qt 3.0 and beyond.
+//
 // ****************************************************************************
 
 void
@@ -1358,6 +1364,7 @@ ViewerSubject::CustomizeAppearance()
     //
     // Set the style and inform the widgets.
     //
+#if QT_VERSION < 300
     if (appearanceAtts->GetStyle() == "cde")
         mainApp->setStyle(new QCDEStyle);
     else if (appearanceAtts->GetStyle() == "windows")
@@ -1370,60 +1377,68 @@ ViewerSubject::CustomizeAppearance()
 #endif
     else
         mainApp->setStyle(new QMotifStyle);
+#else
+    // Set the style via the style name.
+    mainApp->setStyle(appearanceAtts->GetStyle().c_str());
+#endif
 
     //
     // Set the colors and inform the widgets.
     //
-    QColor bg(appearanceAtts->GetBackground().c_str());
-    QColor fg(appearanceAtts->GetForeground().c_str());
-    QColor btn(bg);
+    if(appearanceAtts->GetStyle() != "aqua" &&
+       appearanceAtts->GetStyle() != "macintosh")
+    {
+        QColor bg(appearanceAtts->GetBackground().c_str());
+        QColor fg(appearanceAtts->GetForeground().c_str());
+        QColor btn(bg);
 
-    // Put the converted RGB format color into the appearance attributes.
-    char tmp[20];
-    SNPRINTF(tmp, 20, "#%02x%02x%02x", bg.red(), bg.green(), bg.blue());
-    appearanceAtts->SetBackground(tmp);
-    SNPRINTF(tmp, 20, "#%02x%02x%02x", fg.red(), fg.green(), fg.blue());
-    appearanceAtts->SetForeground(tmp);
+        // Put the converted RGB format color into the appearance attributes.
+        char tmp[20];
+        SNPRINTF(tmp, 20, "#%02x%02x%02x", bg.red(), bg.green(), bg.blue());
+        appearanceAtts->SetBackground(tmp);
+        SNPRINTF(tmp, 20, "#%02x%02x%02x", fg.red(), fg.green(), fg.blue());
+        appearanceAtts->SetForeground(tmp);
 
-    int h,s,v;
-    fg.hsv(&h,&s,&v);
-    QColor base = Qt::white;
-    bool bright_mode = false;
-    if (v >= 255 - 50)
-    {
-        base = btn.dark(150);
-        bright_mode = TRUE;
-    }
+        int h,s,v;
+        fg.hsv(&h,&s,&v);
+        QColor base = Qt::white;
+        bool bright_mode = false;
+        if (v >= 255 - 50)
+        {
+            base = btn.dark(150);
+            bright_mode = TRUE;
+        }
 
-    QColorGroup cg(fg, btn, btn.light(),
-                   btn.dark(), btn.dark(150), fg, Qt::white, base, bg);
-    if (bright_mode)
-    {
-        cg.setColor(QColorGroup::HighlightedText, base );
-        cg.setColor(QColorGroup::Highlight, Qt::white );
+        QColorGroup cg(fg, btn, btn.light(),
+                       btn.dark(), btn.dark(150), fg, Qt::white, base, bg);
+        if (bright_mode)
+        {
+            cg.setColor(QColorGroup::HighlightedText, base );
+            cg.setColor(QColorGroup::Highlight, Qt::white );
+        }
+        else
+        {
+            cg.setColor(QColorGroup::HighlightedText, Qt::white );
+            cg.setColor(QColorGroup::Highlight, Qt::darkBlue );
+        }
+        QColor disabled((fg.red()+btn.red())/2,
+                        (fg.green()+btn.green())/2,
+                        (fg.blue()+btn.blue())/2);
+        QColorGroup dcg(disabled, btn, btn.light( 125 ), btn.dark(), btn.dark(150),
+                        disabled, Qt::white, Qt::white, bg );
+        if (bright_mode)
+        {
+            dcg.setColor(QColorGroup::HighlightedText, base);
+            dcg.setColor(QColorGroup::Highlight, Qt::white);
+        }
+        else
+        {
+            dcg.setColor(QColorGroup::HighlightedText, Qt::white);
+            dcg.setColor(QColorGroup::Highlight, Qt::darkBlue);
+        }
+        QPalette pal(cg, dcg, cg);
+        mainApp->setPalette(pal, true);
     }
-    else
-    {
-        cg.setColor(QColorGroup::HighlightedText, Qt::white );
-        cg.setColor(QColorGroup::Highlight, Qt::darkBlue );
-    }
-    QColor disabled((fg.red()+btn.red())/2,
-                    (fg.green()+btn.green())/2,
-                    (fg.blue()+btn.blue())/2);
-    QColorGroup dcg(disabled, btn, btn.light( 125 ), btn.dark(), btn.dark(150),
-                    disabled, Qt::white, Qt::white, bg );
-    if (bright_mode)
-    {
-        dcg.setColor(QColorGroup::HighlightedText, base);
-        dcg.setColor(QColorGroup::Highlight, Qt::white);
-    }
-    else
-    {
-        dcg.setColor(QColorGroup::HighlightedText, Qt::white);
-        dcg.setColor(QColorGroup::Highlight, Qt::darkBlue);
-    }
-    QPalette pal(cg, dcg, cg);
-    mainApp->setPalette(pal, true);
 }
 
 // ****************************************************************************
@@ -1546,6 +1561,9 @@ ViewerSubject::GetOperatorFactory() const
 //
 //    Jeremy Meredith, Fri Sep 26 12:50:57 PDT 2003
 //    Added defaultStereoToOn.
+//
+//    Brad Whitlock, Fri Aug 15 13:20:16 PST 2003
+//    Added support for MacOS X styles.
 //
 // ****************************************************************************
 
@@ -1679,6 +1697,12 @@ ViewerSubject::ProcessCommandLine(int *argc, char ***argv)
                strcmp(argv2[i + 1], "platinum") == 0
 #if QT_VERSION >= 230
                || strcmp(argv2[i + 1], "sgi") == 0
+#endif
+#if QT_VERSION >= 300
+#ifdef QT_WS_MACX
+               || strcmp(argv2[i + 1], "aqua") == 0
+               || strcmp(argv2[i + 1], "macintosh") == 0
+#endif
 #endif
                      )
             {
@@ -3128,6 +3152,13 @@ ViewerSubject::OpenDatabase()
 //   Kathleen Bonnell, Wed Jul 23 16:46:30 PDT 2003
 //   Removed view recentering.
 //
+//   Brad Whitlock, Wed Oct 15 14:24:26 PST 2003
+//   I made it call ViewerWindowManager's new ReplaceDatabase method so that
+//   when the file is reopened, we replace the old version of the database
+//   in all windows. This is primarily to let all windows know the new
+//   size of the database if it is virtual and more time states have been
+//   added.
+//
 // ****************************************************************************
 
 void
@@ -3159,7 +3190,6 @@ ViewerSubject::ReOpenDatabase()
     //
     ViewerWindowManager *wM = ViewerWindowManager::Instance();
     ViewerAnimation *animation = wM->GetActiveAnimation();
-    ViewerPlotList *plotList = animation->GetPlotList();
     OpenDatabaseHelper(hostDatabase, animation->GetFrameIndex(), 
                        false, false);
 
@@ -3170,9 +3200,11 @@ ViewerSubject::ReOpenDatabase()
     ViewerEngineManager::Instance()->ClearCache(host.c_str(), db.c_str());
  
     //
-    // Now perform the database replacement.
+    // Now perform the database replacement in all windows that use the
+    // specified database.
     //
-    plotList->ReplaceDatabase(host, db, true);
+    ViewerWindowManager::Instance()->ReplaceDatabase(host, db, true);
+
     wM->UpdateGlobalAtts();
 }
 
@@ -3202,15 +3234,22 @@ ViewerSubject::ReOpenDatabase()
 //   Brad Whitlock, Thu May 15 13:30:27 PST 2003
 //   I made it use OpenDatabaseHelper.
 //
+//   Brad Whitlock, Wed Oct 15 15:40:44 PST 2003
+//   I made it possible to replace a database at a later time state.
+//
 // ****************************************************************************
 
 void
 ViewerSubject::ReplaceDatabase()
 {
+    debug4 << "ReplaceDatabase: db=" << viewerRPC.GetDatabase().c_str()
+           << ", time=" << viewerRPC.GetIntArg1() << endl;
+
     //
     // First open the database.
     //
-    OpenDatabaseHelper(viewerRPC.GetDatabase(), 0, true, false);
+    OpenDatabaseHelper(viewerRPC.GetDatabase(), viewerRPC.GetIntArg1(),
+                       true, false);
 
     //
     // Now perform the database replacement.

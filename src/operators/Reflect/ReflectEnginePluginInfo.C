@@ -5,6 +5,10 @@
 #include <ReflectPluginInfo.h>
 #include <avtReflectFilter.h>
 
+#if defined(__APPLE__)
+#define GetEngineInfo Reflect_GetEngineInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //

@@ -4,6 +4,10 @@
 
 #include <BOVPluginInfo.h>
 
+#if defined(__APPLE__)
+#define GetGeneralInfo BOV_GetGeneralInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGeneralInfo
 //

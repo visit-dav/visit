@@ -4,7 +4,9 @@
 
 #include <avtSummationQuery.h>
 
+#include <vtkCellData.h>
 #include <vtkDataSet.h>
+#include <vtkPointData.h>
 #include <vtkUnsignedCharArray.h>
 
 #include <avtCallback.h>

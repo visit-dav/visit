@@ -5,10 +5,13 @@
 #include <avtStreamlineFilter.h>
 
 #include <vtkAppendPolyData.h>
+#include <vtkCellArray.h>
+#include <vtkCellData.h>
 #include <vtkDataSet.h>
 #include <vtkLineSource.h>
 #include <vtkPlaneSource.h>
 #include <vtkPoints.h>
+#include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkSphereSource.h>
 #include <vtkVisItStreamLine.h>

@@ -4,7 +4,12 @@
 
 #include <avtHistogramPlot.h>
 
+#include <vtkCell.h>
+#include <vtkCellData.h>
+#include <vtkPointData.h>
+#include <vtkPoints.h>
 #include <vtkProperty.h>
+#include <vtkUnsignedCharArray.h>
 
 #include <LineAttributes.h>
 

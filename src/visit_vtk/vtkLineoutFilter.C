@@ -1,11 +1,15 @@
-#include <vtkObjectFactory.h>
-#include <vtkLineoutFilter.h>
-#include <vtkPolyData.h>
+#include "vtkLineoutFilter.h"
+
+#include <vtkCellArray.h>
+#include <vtkCellData.h>
 #include <vtkCellDataToPointData.h>
-#include <vtkLineSource.h>
-#include <vtkProbeFilter.h>
-#include <vtkMath.h>
 #include <vtkIdTypeArray.h>
+#include <vtkLineSource.h>
+#include <vtkMath.h>
+#include <vtkObjectFactory.h>
+#include <vtkPointData.h>
+#include <vtkPolyData.h>
+#include <vtkProbeFilter.h>
 
 
 vtkStandardNewMacro(vtkLineoutFilter);

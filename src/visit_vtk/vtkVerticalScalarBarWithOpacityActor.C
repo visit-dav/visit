@@ -9,11 +9,15 @@
 //
 //=========================================================================
 #include "vtkVerticalScalarBarWithOpacityActor.h"
+
+#include <vtkCellArray.h>
+#include <vtkCellData.h>
+#include <vtkLookupTable.h>
 #include <vtkObjectFactory.h>
-#include <vtkViewport.h>
 #include <vtkPolyData.h>
 #include <vtkPolyDataMapper2D.h>
 #include <vtkTextMapper.h>
+#include <vtkViewport.h>
 #include <float.h>
 
 //------------------------------------------------------------------------------

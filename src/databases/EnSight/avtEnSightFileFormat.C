@@ -7,7 +7,9 @@
 #include <vector>
 #include <string>
 
+#include <vtkCellData.h>
 #include <vtkDataArray.h>
+#include <vtkPointData.h>
 #include <vtkStructuredGrid.h>
 #include <vtkEnSightReader.h>
 #include <vtkEnSightGoldBinaryReader.h>

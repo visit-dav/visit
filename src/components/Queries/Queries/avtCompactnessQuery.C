@@ -4,12 +4,14 @@
 
 #include <avtCompactnessQuery.h>
 
+#include <vtkCell.h>
+#include <vtkCellData.h>
 #include <vtkDataSet.h>
 #include <vtkDataSetRemoveGhostCells.h>
-#include <vtkVisItFeatureEdges.h>
 #include <vtkGeometryFilter.h>
 #include <vtkPolyData.h>
 #include <vtkUnsignedCharArray.h>
+#include <vtkVisItFeatureEdges.h>
 
 #ifdef PARALLEL
 #include <mpi.h>
@@ -461,6 +463,7 @@ avtCompactnessQuery::Execute1(vtkDataSet *ds, const int dom)
 //    Split part of the former Execute method into this method.
 //    Added new queries.
 //
+
 //    Jeremy Meredith, Wed Jul 23 13:31:16 PDT 2003
 //    Two things: 
 //    1.  Moved the boundary point calculation out of here so we are now

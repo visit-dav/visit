@@ -37,6 +37,9 @@
 #    Jeremy Meredith, Sun Nov 17 10:51:40 PST 2002
 #    Added distclean target.
 #
+#    Brad Whitlock, Fri Aug 15 15:27:30 PST 2003
+#    Removed -lXext.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -69,7 +72,7 @@ OBJ=$(SRC:.C=.o)
 MOCSRC=$(WIDGET:.h=_moc.C)
 MOCOBJ=$(WIDGET:.h=_moc.o)
 LDFLAGS=@QT_LDFLAGS@ @LDFLAGS@
-LIBS=@QT_LIBS@ $(X_LIBS) @LIBS@ -lXext
+LIBS=@QT_LIBS@ $(X_LIBS) @LIBS@
 CXXFLAGS=@CXXFLAGS@ @QT_CXXFLAGS@ -I. -I../xml
 
 .SUFFIXES: .C _moc.C _moc.o

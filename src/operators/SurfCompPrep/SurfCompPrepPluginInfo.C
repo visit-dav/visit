@@ -5,6 +5,10 @@
 #include <SurfCompPrepPluginInfo.h>
 #include <SurfCompPrepAttributes.h>
 
+#if defined(__APPLE__)
+#define GetGeneralInfo SurfCompPrep_GetGeneralInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGeneralInfo
 //

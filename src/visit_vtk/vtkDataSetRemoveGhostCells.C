@@ -40,15 +40,18 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 =========================================================================*/
 #include "vtkDataSetRemoveGhostCells.h"
-#include <vtkObjectFactory.h>
-#include <vtkFloatArray.h>
-#include <vtkUnsignedCharArray.h>
-#include <vtkRectilinearGrid.h>
-#include <vtkPolyData.h>
-#include <vtkUnstructuredGrid.h>
-#include <vtkStructuredGrid.h>
+
+#include <vtkCellData.h>
 #include <vtkExtractGrid.h>
 #include <vtkExtractRectilinearGrid.h>
+#include <vtkFloatArray.h>
+#include <vtkObjectFactory.h>
+#include <vtkPointData.h>
+#include <vtkPolyData.h>
+#include <vtkRectilinearGrid.h>
+#include <vtkStructuredGrid.h>
+#include <vtkUnsignedCharArray.h>
+#include <vtkUnstructuredGrid.h>
 
 //------------------------------------------------------------------------------
 // Modifications:

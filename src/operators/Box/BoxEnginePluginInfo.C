@@ -5,6 +5,10 @@
 #include <BoxPluginInfo.h>
 #include <avtBoxFilter.h>
 
+#if defined(__APPLE__)
+#define GetEngineInfo Box_GetEngineInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //

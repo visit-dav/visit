@@ -4,6 +4,10 @@
 
 #include <SpheralPluginInfo.h>
 
+#if defined(__APPLE__)
+#define GetGeneralInfo Spheral_GetGeneralInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGeneralInfo
 //

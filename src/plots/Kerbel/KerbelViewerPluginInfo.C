@@ -5,6 +5,14 @@
 #include <KerbelPluginInfo.h>
 #include <avtKerbelPlot.h>
 
+#if defined(__APPLE__)
+#define GetViewerInfo Makefile.in_GetViewerInfo
+#endif
+
+#if defined(__APPLE__)
+#define GetViewerInfo Kerbel_GetViewerInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //

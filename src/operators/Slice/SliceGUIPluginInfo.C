@@ -6,6 +6,10 @@
 #include <SliceAttributes.h>
 #include <QvisSliceWindow.h>
 
+#if defined(__APPLE__)
+#define GetGUIInfo Slice_GetGUIInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGUIInfo
 //

@@ -1,6 +1,7 @@
 #include "vtkRGBWriter.h"
-#include "vtkObjectFactory.h"
 #include <vtkImageData.h>
+#include <vtkObjectFactory.h>
+#include <vtkPointData.h>
 #include <string.h>
 
 typedef struct {

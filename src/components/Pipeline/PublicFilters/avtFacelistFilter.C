@@ -6,8 +6,11 @@
 
 #include <vector>
 
+#include <vtkCellArray.h>
+#include <vtkCellData.h>
 #include <vtkDisjointCubesFacelistFilter.h>
 #include <vtkGeometryFilter.h>
+#include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkRectilinearGridFacelistFilter.h>

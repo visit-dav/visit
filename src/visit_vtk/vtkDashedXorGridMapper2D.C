@@ -41,15 +41,24 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =========================================================================*/
 #include <stdlib.h>
 #include <math.h>
-#include "vtkDashedXorGridMapper2D.h"
-#include "vtkObjectFactory.h"
+#include <vtkDashedXorGridMapper2D.h>
+
+#include <vtkActor2D.h>
+#include <vtkCellArray.h>
+#include <vtkCellLinks.h>
+#include <vtkDataSet.h>
+#include <vtkObjectFactory.h>
+#include <vtkPointData.h>
 #include <vtkPolyData.h>
+#include <vtkPolyDataMapper2D.h>
 #include <vtkProperty2D.h>
 #include <vtkScalarsToColors.h>
 #include <vtkViewport.h>
 
 #if defined(_WIN32)
 #include <windows.h>
+#elif defined(__APPLE__)
+/*MAC_UNFINISHED*/
 #else
 #include <X11/Intrinsic.h>
 #endif
@@ -124,6 +133,21 @@ void vtkDashedXorGridMapper2D::RenderOverlay(vtkViewport* viewport, vtkActor2D* 
     // Set the line color
     float whitergb[] = {1.,1.,1.};
     SET_FOREGROUND_F(whitergb);
+#elif defined(__APPLE__)
+//
+// MacOS X coding and macros
+//
+
+/*MAC_UNFINISHED*/
+#define STORE_POINT(P, X, Y)
+#define SET_FOREGROUND_F(rgba)
+#define SET_FOREGROUND(rgba)
+#define DRAW_POLYGON(points, npts) 
+#define RESIZE_POINT_ARRAY(points, npts, currSize) 
+#define DRAW_XOR_LINE(x1, y1, x2, y2)
+#define FLUSH_AND_SYNC()
+int *points = new int[1024];
+
 #else
 //
 // X11 coding and macros

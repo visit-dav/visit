@@ -40,15 +40,19 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 =========================================================================*/
 #include "vtkUniqueFeatureEdges.h"
-#include "vtkMath.h"
-#include "vtkPolygon.h"
-#include "vtkFloatArray.h"
-#include "vtkMergePoints.h"
-#include "vtkUnsignedCharArray.h"
-#include "vtkTriangleStrip.h"
-#include "vtkObjectFactory.h"
-#include "vtkEdgeTable.h"
+
+#include <vtkCellArray.h>
+#include <vtkCellData.h>
+#include <vtkEdgeTable.h>
+#include <vtkFloatArray.h>
+#include <vtkMath.h>
+#include <vtkMergePoints.h>
+#include <vtkObjectFactory.h>
+#include <vtkPointData.h>
 #include <vtkPolyData.h>
+#include <vtkPolygon.h>
+#include <vtkTriangleStrip.h>
+#include <vtkUnsignedCharArray.h>
 
 //-------------------------------------------------------------------------
 vtkUniqueFeatureEdges* vtkUniqueFeatureEdges::New()

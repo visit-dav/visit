@@ -4,10 +4,10 @@
 
 #include <avtTensorFilter.h>
 
+#include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkTensorReduceFilter.h>
 #include <vtkVertexFilter.h>
-
 
 // ****************************************************************************
 //  Method: avtTensorFilter constructor

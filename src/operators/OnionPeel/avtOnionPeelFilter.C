@@ -4,6 +4,9 @@
 
 #include <avtOnionPeelFilter.h>
 
+#include <vtkCellData.h>
+#include <vtkFieldData.h>
+#include <vtkIntArray.h>
 #include <vtkOnionPeelFilter.h>
 #include <vtkDataSetRemoveGhostCells.h>
 #include <vtkUnstructuredGrid.h>

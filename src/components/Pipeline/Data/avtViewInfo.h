@@ -33,6 +33,9 @@ class vtkCamera;
 //   Eric Brugger, Fri Jun  6 15:29:28 PDT 2003
 //   I added image pan and image zoom.
 //
+//   Hank Childs, Wed Oct 15 13:09:03 PDT 2003
+//   Added eye angle.
+//
 // ****************************************************************************
 
 struct PIPELINE_API avtViewInfo
@@ -41,6 +44,7 @@ struct PIPELINE_API avtViewInfo
     double   focus[3];
     double   viewUp[3];
     double   viewAngle;
+    double   eyeAngle;
     double   parallelScale;
     bool     setScale;
     double   nearPlane;

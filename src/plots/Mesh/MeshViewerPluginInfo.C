@@ -5,6 +5,10 @@
 #include <MeshPluginInfo.h>
 #include <avtMeshPlot.h>
 
+#if defined(__APPLE__)
+#define GetViewerInfo Mesh_GetViewerInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //

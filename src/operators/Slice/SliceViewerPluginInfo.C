@@ -5,6 +5,10 @@
 #include <SlicePluginInfo.h>
 #include <SliceAttributes.h>
 
+#if defined(__APPLE__)
+#define GetViewerInfo Slice_GetViewerInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //

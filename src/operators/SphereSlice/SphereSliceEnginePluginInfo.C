@@ -5,6 +5,10 @@
 #include <SphereSlicePluginInfo.h>
 #include <avtSphereSliceFilter.h>
 
+#if defined(__APPLE__)
+#define GetEngineInfo SphereSlice_GetEngineInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //

@@ -5,6 +5,10 @@
 #include <MeshPluginInfo.h>
 #include <MeshAttributes.h>
 
+#if defined(__APPLE__)
+#define GetGeneralInfo Mesh_GetGeneralInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGeneralInfo
 //

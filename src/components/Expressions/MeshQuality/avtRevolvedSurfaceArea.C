@@ -7,10 +7,12 @@
 #include <float.h>
 #include <math.h>
 
+#include <vtkCell.h>
 #include <vtkDataSet.h>
-#include <vtkFloatArray.h>
 #include <vtkDataSetRemoveGhostCells.h>
+#include <vtkFloatArray.h>
 #include <vtkGeometryFilter.h>
+#include <vtkPoints.h>
 #include <vtkPolyData.h>
 #include <vtkVisItFeatureEdges.h>
 

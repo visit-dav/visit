@@ -4,6 +4,10 @@
 #include <FilledBoundaryPluginInfo.h>
 #include <PyFilledBoundaryAttributes.h>
 
+#if defined(__APPLE__)
+#define GetScriptingInfo FilledBoundary_GetScriptingInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //

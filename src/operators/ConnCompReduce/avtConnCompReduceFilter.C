@@ -6,7 +6,9 @@
 
 #include <vector>
 
+#include <vtkCellData.h>
 #include <vtkIdList.h>
+#include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkUnstructuredGrid.h>
 

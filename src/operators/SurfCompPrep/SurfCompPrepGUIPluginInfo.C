@@ -6,6 +6,10 @@
 #include <SurfCompPrepAttributes.h>
 #include <QvisSurfCompPrepWindow.h>
 
+#if defined(__APPLE__)
+#define GetGUIInfo SurfCompPrep_GetGUIInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGUIInfo
 //

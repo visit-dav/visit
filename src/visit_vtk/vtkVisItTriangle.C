@@ -4,8 +4,10 @@
 
 #include <vtkVisItTriangle.h>
 
+#include <vtkLine.h>
 #include <vtkObjectFactory.h>
 #include <vtkPlane.h>
+#include <vtkPoints.h>
 
 vtkCxxRevisionMacro(vtkVisItTriangle, "$Revision: 1.0 $");
 vtkStandardNewMacro(vtkVisItTriangle);

@@ -5,6 +5,10 @@
 #include <StreamlinePluginInfo.h>
 #include <avtStreamlinePlot.h>
 
+#if defined(__APPLE__)
+#define GetViewerInfo Streamline_GetViewerInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //

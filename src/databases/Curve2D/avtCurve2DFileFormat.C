@@ -7,6 +7,7 @@
 #include <vector>
 #include <string>
 
+#include <vtkCellArray.h>
 #include <vtkPolyData.h>
 
 #include <avtDatabaseMetaData.h>

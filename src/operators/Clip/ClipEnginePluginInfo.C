@@ -5,6 +5,10 @@
 #include <ClipPluginInfo.h>
 #include <avtClipFilter.h>
 
+#if defined(__APPLE__)
+#define GetEngineInfo Clip_GetEngineInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //

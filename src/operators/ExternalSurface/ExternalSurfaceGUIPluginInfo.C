@@ -6,6 +6,10 @@
 #include <ExternalSurfaceAttributes.h>
 #include <QvisExternalSurfaceWindow.h>
 
+#if defined(__APPLE__)
+#define GetGUIInfo ExternalSurface_GetGUIInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGUIInfo
 //

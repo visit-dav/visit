@@ -7,8 +7,12 @@
 #include <math.h>
 #include <float.h> // for FLT_MAX
 
-#include <vtkUnstructuredGrid.h>
+#include <vtkCell.h>
+#include <vtkCellData.h>
+#include <vtkIdList.h>
 #include <vtkMatrix4x4.h>
+#include <vtkPointData.h>
+#include <vtkUnstructuredGrid.h>
 
 #include <avtExtents.h>
 

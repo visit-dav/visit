@@ -6,6 +6,10 @@
 #include <BoxAttributes.h>
 #include <QvisBoxWindow.h>
 
+#if defined(__APPLE__)
+#define GetGUIInfo Box_GetGUIInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGUIInfo
 //

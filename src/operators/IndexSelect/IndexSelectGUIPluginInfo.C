@@ -6,6 +6,10 @@
 #include <IndexSelectAttributes.h>
 #include <QvisIndexSelectWindow.h>
 
+#if defined(__APPLE__)
+#define GetGUIInfo IndexSelect_GetGUIInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGUIInfo
 //

@@ -4,6 +4,10 @@
 #include <VectorPluginInfo.h>
 #include <PyVectorAttributes.h>
 
+#if defined(__APPLE__)
+#define GetScriptingInfo Vector_GetScriptingInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //

@@ -247,6 +247,9 @@
 #    Brad Whitlock, Fri Oct 10 14:56:47 PST 2003
 #    I added QvisRecentPathRemovalWindow.
 #
+#    Brad Whitlock, Thu Sep 4 10:16:28 PDT 2003
+#    I added QvisApplication.
+#
 ##############################################################################
 
 ##
@@ -282,6 +285,7 @@ HDRMOC = \
     QvisAnimationWindow.h \
     QvisAnnotationWindow.h \
     QvisAppearanceWindow.h \
+    QvisApplication.h \
     QvisCheckListManagerWidget.h \
     QvisColorButton.h \
     QvisColorGridWidget.h \

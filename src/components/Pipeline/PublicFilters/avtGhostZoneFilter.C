@@ -4,6 +4,7 @@
 
 #include <avtGhostZoneFilter.h>
 
+#include <vtkCellData.h>
 #include <vtkDataSet.h>
 #include <vtkDataSetRemoveGhostCells.h>
 

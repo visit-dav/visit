@@ -6,6 +6,10 @@
 #include <MeshAttributes.h>
 #include <QvisMeshPlotWindow.h>
 
+#if defined(__APPLE__)
+#define GetGUIInfo Mesh_GetGUIInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGUIInfo
 //

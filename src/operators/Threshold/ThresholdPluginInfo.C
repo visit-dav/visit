@@ -5,6 +5,10 @@
 #include <ThresholdPluginInfo.h>
 #include <ThresholdAttributes.h>
 
+#if defined(__APPLE__)
+#define GetGeneralInfo Threshold_GetGeneralInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGeneralInfo
 //

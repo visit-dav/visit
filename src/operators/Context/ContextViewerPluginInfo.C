@@ -5,6 +5,10 @@
 #include <ContextPluginInfo.h>
 #include <ContextAttributes.h>
 
+#if defined(__APPLE__)
+#define GetViewerInfo Context_GetViewerInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //

@@ -4,6 +4,10 @@
 #include <ContextPluginInfo.h>
 #include <PyContextAttributes.h>
 
+#if defined(__APPLE__)
+#define GetScriptingInfo Context_GetScriptingInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //

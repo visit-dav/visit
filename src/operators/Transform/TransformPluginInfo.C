@@ -5,6 +5,10 @@
 #include <TransformPluginInfo.h>
 #include <TransformAttributes.h>
 
+#if defined(__APPLE__)
+#define GetGeneralInfo Transform_GetGeneralInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGeneralInfo
 //

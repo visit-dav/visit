@@ -6,7 +6,9 @@
 
 #include <float.h>
 
+#include <vtkCellData.h>
 #include <vtkFloatArray.h>
+#include <vtkPointData.h>
 #include <vtkPoints.h>
 #include <vtkPolyData.h>
 

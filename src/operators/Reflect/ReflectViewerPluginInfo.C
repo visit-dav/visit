@@ -5,6 +5,10 @@
 #include <ReflectPluginInfo.h>
 #include <ReflectAttributes.h>
 
+#if defined(__APPLE__)
+#define GetViewerInfo Reflect_GetViewerInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //

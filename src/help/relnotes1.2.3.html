@@ -36,7 +36,9 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">Bugs fixed in version 1.2.3</font></b></p>
 <ul>
   <li>The "Clean zones only" toggle doesn't work with The FilledBoundary plot when using VisIt's newer material reconstruction interface algorithm.</li>
+  <li>VisIt doesn't update virtual databases for windows other than the active window.</li>
   <li>Lines from mesh plots go beyond the problem boundary.</li>
+  <li>Replace does not replace a database using the time state that you specify. It always uses time state zero.</li>
   <li>Reflecting a single domain plot in parallel on 2 processors crashes VisIt.</li>
   <li>VisIt hangs when you minimize the application as the File selection window is opening.</li>
   <li>VisIt's -o option to open files on the command line is not documented in the usage provided when you type: visit -help.</li>

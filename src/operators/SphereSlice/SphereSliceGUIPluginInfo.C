@@ -6,6 +6,10 @@
 #include <SphereSliceAttributes.h>
 #include <QvisSphereSliceWindow.h>
 
+#if defined(__APPLE__)
+#define GetGUIInfo SphereSlice_GetGUIInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGUIInfo
 //

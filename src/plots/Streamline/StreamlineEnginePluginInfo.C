@@ -5,6 +5,10 @@
 #include <StreamlinePluginInfo.h>
 #include <avtStreamlinePlot.h>
 
+#if defined(__APPLE__)
+#define GetEngineInfo Streamline_GetEngineInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //

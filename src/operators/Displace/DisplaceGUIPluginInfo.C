@@ -6,6 +6,10 @@
 #include <DisplaceAttributes.h>
 #include <QvisDisplaceWindow.h>
 
+#if defined(__APPLE__)
+#define GetGUIInfo Displace_GetGUIInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGUIInfo
 //

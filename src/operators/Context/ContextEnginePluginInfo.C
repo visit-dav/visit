@@ -5,6 +5,10 @@
 #include <ContextPluginInfo.h>
 #include <avtContextFilter.h>
 
+#if defined(__APPLE__)
+#define GetEngineInfo Context_GetEngineInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //

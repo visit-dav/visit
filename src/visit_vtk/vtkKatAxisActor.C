@@ -20,6 +20,7 @@ All rights reserved.
 #include <float.h>
 
 #include "vtkKatAxisActor.h"
+#include <vtkCellArray.h>
 #include <vtkObjectFactory.h>
 #include <vtkProperty.h>
 #include <vtkViewport.h>

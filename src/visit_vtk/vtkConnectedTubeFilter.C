@@ -1,11 +1,15 @@
 #include "vtkConnectedTubeFilter.h"
-#include "vtkCleanPolyData.h"
-#include "vtkTubeFilter.h"
-#include "vtkPolyLine.h"
-#include "vtkMath.h"
-#include "vtkObjectFactory.h"
-#include "vtkFloatArray.h"
+
+#include <vtkCellArray.h>
+#include <vtkCellData.h>
+#include <vtkCleanPolyData.h>
+#include <vtkFloatArray.h>
+#include <vtkMath.h>
+#include <vtkObjectFactory.h>
+#include <vtkPointData.h>
 #include <vtkPolyData.h>
+#include <vtkPolyLine.h>
+#include <vtkTubeFilter.h>
 
 // ----------------------------------------------------------------------------
 //                            class PointSequence

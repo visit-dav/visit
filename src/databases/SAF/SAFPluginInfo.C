@@ -4,6 +4,10 @@
 
 #include <SAFPluginInfo.h>
 
+#if defined(__APPLE__)
+#define GetGeneralInfo SAF_GetGeneralInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGeneralInfo
 //

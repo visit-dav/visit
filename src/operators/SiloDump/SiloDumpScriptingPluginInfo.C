@@ -4,6 +4,10 @@
 #include <SiloDumpPluginInfo.h>
 #include <PySiloDumpAttributes.h>
 
+#if defined(__APPLE__)
+#define GetScriptingInfo SiloDump_GetScriptingInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //

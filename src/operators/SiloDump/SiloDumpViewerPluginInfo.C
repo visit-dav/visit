@@ -5,6 +5,10 @@
 #include <SiloDumpPluginInfo.h>
 #include <SiloDumpAttributes.h>
 
+#if defined(__APPLE__)
+#define GetViewerInfo SiloDump_GetViewerInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //

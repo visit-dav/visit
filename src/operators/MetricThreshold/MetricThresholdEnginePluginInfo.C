@@ -5,6 +5,10 @@
 #include <MetricThresholdPluginInfo.h>
 #include <avtMetricThresholdFilter.h>
 
+#if defined(__APPLE__)
+#define GetEngineInfo MetricThreshold_GetEngineInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //

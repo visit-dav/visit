@@ -10,7 +10,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <termios.h>
-#ifndef TIOCGWINSZ
+#if !defined(TIOCGWINSZ) || defined(__APPLE__)
 #include <sys/ioctl.h>   // 44BSD requires this too
 #endif
 

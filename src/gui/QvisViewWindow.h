@@ -10,6 +10,7 @@ class QComboBox;
 class QGroupBox;
 class QLabel;
 class QLineEdit;
+class QSlider;
 class QTabWidget;
 class QVBox;
 class ViewCurveAttributes;
@@ -117,6 +118,8 @@ private slots:
     void perspectiveToggled(bool val);
     void viewButtonClicked(int index);
 
+    void processEyeAngleText();
+    void eyeAngleSliderChanged(int val);
     void copyViewFromCameraChecked(bool);
     void makeViewKeyframe();
 
@@ -133,6 +136,7 @@ private:
     void Zoom(double zoom);
     void Viewport(const double *viewport);
     void Window(const double *window);
+    void UpdateEyeAngleSliderFromAtts(void);
 
     ViewCurveAttributes *viewCurve;
     View2DAttributes    *view2d;
@@ -165,6 +169,8 @@ private:
     QLineEdit   *farLineEdit;
     QLineEdit   *imagePanLineEdit;
     QLineEdit   *imageZoomLineEdit;
+    QLineEdit   *eyeAngleLineEdit;
+    QSlider     *eyeAngleSlider;
     QCheckBox   *perspectiveToggle;
     QComboBox   *alignComboBox;
 

@@ -5,6 +5,14 @@
 #include <LineoutPluginInfo.h>
 #include <avtLineoutFilter.h>
 
+#if defined(__APPLE__)
+#define GetEngineInfo Makefile.in_GetEngineInfo
+#endif
+
+#if defined(__APPLE__)
+#define GetEngineInfo Lineout_GetEngineInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //

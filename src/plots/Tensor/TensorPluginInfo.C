@@ -5,6 +5,10 @@
 #include <TensorPluginInfo.h>
 #include <TensorAttributes.h>
 
+#if defined(__APPLE__)
+#define GetGeneralInfo Tensor_GetGeneralInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGeneralInfo
 //

@@ -40,11 +40,15 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 =========================================================================*/
 
-#include "vtkMath.h"
-#include "vtkMatrix4x4.h"
-#include "vtkObjectFactory.h"
 #include "vtkBackgroundActor.h"
+
+#include <vtkCellArray.h>
+#include <vtkMath.h>
+#include <vtkMatrix4x4.h>
+#include <vtkObjectFactory.h>
+#include <vtkPointData.h>
 #include <vtkViewport.h>
+
 
 // ***************************************************************************
 //  Modifications:

@@ -15,13 +15,12 @@
 // Long list of forward declarations.
 class DataNode;
 class ObserverToCallback;
-class QApplication;
 class QPrinter;
 class QSocketNotifier;
 class QvisAnimationWindow;
 class QvisAnnotationWindow;
 class QvisAppearanceWindow;
-class QvisArbitrarySliceWindow;
+class QvisApplication;
 class QvisColorTableWindow;
 class QvisExpressionsWindow;
 class QvisCommandLineWindow;
@@ -36,7 +35,6 @@ class QvisLightingWindow;
 class QvisMainWindow;
 class QvisMaterialWindow;
 class QvisMessageWindow;
-class QvisOnionPeelWindow;
 class QvisOutputWindow;
 class QvisPickWindow;
 class QvisPluginWindow;
@@ -204,6 +202,9 @@ typedef std::vector<QvisWindowBase *> WindowBaseVector;
 //    Brad Whitlock, Thu Jul 31 15:13:20 PST 2003
 //    Added a method to try and read from the viewer when called from a timer.
 //
+//    Brad Whitlock, Thu Sep 4 10:25:48 PDT 2003
+//    I made it use QvisApplication.
+//
 // ****************************************************************************
 
 class GUI_API QvisGUIApplication : public QObject, public ConfigManager, public GUIBase
@@ -272,7 +273,7 @@ private:
     MessageAttributes            message;
 
     // The Application
-    QApplication                 *mainApp;
+    QvisApplication              *mainApp;
 
     // A socket notifier to tell us when the viewer proxy has input.
     QSocketNotifier              *fromViewer;

@@ -29,6 +29,9 @@ class View3DAttributes;
 //    I replaced SetFromViewAttributes with SetFromView3DAttributes and
 //    SetToViewAttributes with SetToView3DAttributes.
 //
+//    Hank Childs, Wed Oct 15 13:05:33 PDT 2003
+//    Added eye angle.
+//
 // ****************************************************************************
 
 struct PIPELINE_API avtView3D
@@ -42,6 +45,7 @@ struct PIPELINE_API avtView3D
     double   farPlane;
     double   imagePan[2];
     double   imageZoom;
+    double   eyeAngle;
     bool     perspective;
 
   public:

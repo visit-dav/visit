@@ -5,6 +5,10 @@
 #include <ThreeSlicePluginInfo.h>
 #include <ThreeSliceAttributes.h>
 
+#if defined(__APPLE__)
+#define GetViewerInfo ThreeSlice_GetViewerInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //

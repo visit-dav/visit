@@ -5,6 +5,10 @@
 #include <ContextPluginInfo.h>
 #include <ContextAttributes.h>
 
+#if defined(__APPLE__)
+#define GetGeneralInfo Context_GetGeneralInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGeneralInfo
 //

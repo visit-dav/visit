@@ -1,5 +1,9 @@
 #include <Boxlib3DPluginInfo.h>
 
+#if defined(__APPLE__)
+#define GetMDServerInfo Boxlib3D_GetMDServerInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetMDServerInfo
 //

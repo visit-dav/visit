@@ -304,6 +304,9 @@ class Xfer;
 //    Kathleen Bonnell, Thu Sep 11 11:35:08 PDT 2003 
 //    Added optional bool arg to AddOperator.
 //
+//    Brad Whitlock, Wed Oct 15 15:37:20 PST 2003
+//    Added optional timeState to ReplaceDatabase.
+//
 // ****************************************************************************
 
 class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
@@ -346,7 +349,7 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
 
     void OpenDatabase(const std::string &database, int timeState = 0);
     void ReOpenDatabase(const std::string &database, bool forceClose = true);
-    void ReplaceDatabase(const std::string &database);
+    void ReplaceDatabase(const std::string &database, int timeState = 0);
     void OverlayDatabase(const std::string &database);
     void ClearCache(const std::string &hostName);
 

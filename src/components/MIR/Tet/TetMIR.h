@@ -115,6 +115,9 @@ class avtSpecies;
 //    Brad Whitlock, Tue Sep 23 09:37:43 PDT 2003
 //    Made ReconstructedCoord be a friend class so it builds on Windows.
 //
+//    Jeremy Meredith, Wed Oct 15 16:47:49 PDT 2003
+//    Added space for a material to get passed in to GetDataset.
+//
 // ****************************************************************************
 class MIR_API TetMIR : public MIR
 {
@@ -129,7 +132,8 @@ class MIR_API TetMIR : public MIR
     // material select everything -- all variables, the mesh, and the material
     // if requested.
     virtual vtkDataSet *GetDataset(std::vector<int>, vtkDataSet *, 
-                                   std::vector<avtMixedVariable *>, bool);
+                                   std::vector<avtMixedVariable *>, bool,
+                                   avtMaterial * = NULL);
 
     virtual bool SubdivisionOccurred()   { return !allClean; }
     virtual bool NotAllCellsSubdivided() { return someClean; }

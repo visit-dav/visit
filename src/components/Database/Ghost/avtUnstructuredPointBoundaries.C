@@ -1,4 +1,7 @@
 #include <avtUnstructuredPointBoundaries.h>
+
+#include <vtkCellType.h>
+#include <vtkIdList.h>
 #include <vtkUnstructuredGrid.h>
 
 #include <map>

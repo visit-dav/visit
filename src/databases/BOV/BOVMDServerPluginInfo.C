@@ -1,5 +1,9 @@
 #include <BOVPluginInfo.h>
 
+#if defined(__APPLE__)
+#define GetMDServerInfo BOV_GetMDServerInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetMDServerInfo
 //

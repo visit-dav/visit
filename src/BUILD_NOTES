@@ -44,6 +44,7 @@ operating systems.  It is suggested that you use the same compilers.
    Operating System          Compiler
    ================          ========
    AIX 5.1                   g++ 3.1
+   Darwin 6.5                g++ 3.1
    IRIX64 6.5                MIPSpro 7.3.1.1m and MIPSpro 7.3.1.2m
    Redhat Linux 7.1 and 7.2  g++ 2.96
    Solaris 7                 g++ 2.95.2
@@ -99,6 +100,7 @@ cd Mesa-5.0
 # directory.
 #
 #  make aix                  for IBM RS/6000
+#  make darwin               for Macintosh systems running MacOS X
 #  make irix6-n32-dso        for SGI systems with IRIX 6.x, make n32-bit DSOs
 #  make irix6-64-dso         for SGI systems with IRIX 6.x, make 64-bit DSOs
 #  make linux                for Linux systems, make shared .so libs

@@ -1,5 +1,9 @@
 #include <Curve2DPluginInfo.h>
 
+#if defined(__APPLE__)
+#define GetMDServerInfo Curve2D_GetMDServerInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetMDServerInfo
 //

@@ -4,6 +4,10 @@
 
 #include <PDBPluginInfo.h>
 
+#if defined(__APPLE__)
+#define GetGeneralInfo PDB_GetGeneralInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGeneralInfo
 //

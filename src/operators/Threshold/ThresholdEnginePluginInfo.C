@@ -5,6 +5,10 @@
 #include <ThresholdPluginInfo.h>
 #include <avtThresholdFilter.h>
 
+#if defined(__APPLE__)
+#define GetEngineInfo Threshold_GetEngineInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //

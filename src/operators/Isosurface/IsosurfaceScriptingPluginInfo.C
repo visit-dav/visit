@@ -4,6 +4,10 @@
 #include <IsosurfacePluginInfo.h>
 #include <PyIsosurfaceAttributes.h>
 
+#if defined(__APPLE__)
+#define GetScriptingInfo Isosurface_GetScriptingInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //

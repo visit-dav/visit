@@ -5,6 +5,10 @@
 #include <FilledBoundaryPluginInfo.h>
 #include <FilledBoundaryAttributes.h>
 
+#if defined(__APPLE__)
+#define GetGeneralInfo FilledBoundary_GetGeneralInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGeneralInfo
 //

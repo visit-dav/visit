@@ -95,8 +95,8 @@ protected:
     void   colorSelected(int index);
     void   deletePixmap();
     void   drawControls();
-    void   drawControlPoint(QPainter *paint, const QColor &top,
-                            const QColor &bottom, const QColor &fore,
+    void   drawControlPoint(QPainter *paint, const QBrush &top,
+                            const QBrush &bottom, const QBrush &fore,
                             const QColor &sel, const QColor &cpt, int x, int y,
                             int w, int h, int shadow_thick,
                             ControlOrientation orient,

@@ -5,6 +5,10 @@
 #include <ThreeSlicePluginInfo.h>
 #include <ThreeSliceAttributes.h>
 
+#if defined(__APPLE__)
+#define GetGeneralInfo ThreeSlice_GetGeneralInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGeneralInfo
 //

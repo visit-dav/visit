@@ -29,6 +29,9 @@ struct ResampledMat;
 //    Added friend access for EdgeHashTable so it can handle EdgeHashEntry
 //    objects on Windows.
 //
+//    Jeremy Meredith, Wed Oct 15 16:47:49 PDT 2003
+//    Added space for a material to get passed in to GetDataset.
+//
 // ****************************************************************************
 class MIR_API ZooMIR : public MIR
 {
@@ -44,7 +47,8 @@ class MIR_API ZooMIR : public MIR
     // material select everything -- all variables, the mesh, and the material
     // if requested.
     virtual vtkDataSet *GetDataset(std::vector<int>, vtkDataSet *, 
-                                   std::vector<avtMixedVariable *>, bool);
+                                   std::vector<avtMixedVariable *>, bool,
+                                   avtMaterial * = NULL);
 
     virtual bool SubdivisionOccurred()   {return !noMixedZones;}
     virtual bool NotAllCellsSubdivided() {return false; }

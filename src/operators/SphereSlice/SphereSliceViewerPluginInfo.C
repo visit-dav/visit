@@ -5,6 +5,10 @@
 #include <SphereSlicePluginInfo.h>
 #include <SphereSliceAttributes.h>
 
+#if defined(__APPLE__)
+#define GetViewerInfo SphereSlice_GetViewerInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //

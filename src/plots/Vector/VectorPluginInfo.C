@@ -5,6 +5,10 @@
 #include <VectorPluginInfo.h>
 #include <VectorAttributes.h>
 
+#if defined(__APPLE__)
+#define GetGeneralInfo Vector_GetGeneralInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGeneralInfo
 //

@@ -6,6 +6,10 @@
 #include <TransformAttributes.h>
 #include <QvisTransformWindow.h>
 
+#if defined(__APPLE__)
+#define GetGUIInfo Transform_GetGUIInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGUIInfo
 //

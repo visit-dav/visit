@@ -10,11 +10,13 @@
 #include <vtkAppendPolyData.h>
 #include <vtkAxisDepthSort.h>
 #include <vtkCamera.h>
+#include <vtkCellData.h>
 #include <vtkDataSet.h>
 #include <vtkDataSetMapper.h>
 #include <vtkDepthSortPolyData.h>
 #include <vtkGeometryFilter.h>
 #include <vtkMatrix4x4.h>
+#include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkPolyDataMapper.h>
 #include <vtkProperty.h>

@@ -5,6 +5,10 @@
 #include <SiloDumpPluginInfo.h>
 #include <SiloDumpAttributes.h>
 
+#if defined(__APPLE__)
+#define GetGeneralInfo SiloDump_GetGeneralInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGeneralInfo
 //

@@ -4,6 +4,10 @@
 #include <CurvePluginInfo.h>
 #include <PyCurveAttributes.h>
 
+#if defined(__APPLE__)
+#define GetScriptingInfo Curve_GetScriptingInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //

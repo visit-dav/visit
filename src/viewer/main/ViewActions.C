@@ -753,6 +753,9 @@ SaveViewAction::CreateNode(DataNode *parentNode)
 //   I made it clear out views before reading them back in so we don't get
 //   an ever-increasing number of views.
 //
+//   Hank Childs, Wed Oct 15 12:58:19 PDT 2003
+//   Copy over eye angle.
+//
 // ****************************************************************************
 
 void
@@ -863,6 +866,7 @@ SaveViewAction::SetFromNode(DataNode *parentNode)
 
                 v->viewAngle = viewAtts.GetViewAngle();
                 v->parallelScale = viewAtts.GetParallelScale();
+                v->eyeAngle = viewAtts.GetEyeAngle();
                 v->nearPlane = viewAtts.GetNearPlane();
                 v->farPlane = viewAtts.GetFarPlane();
                 v->imagePan[0] = viewAtts.GetImagePan()[0];

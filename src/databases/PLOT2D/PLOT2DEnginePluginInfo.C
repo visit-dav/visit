@@ -1,5 +1,9 @@
 #include <PLOT2DPluginInfo.h>
 
+#if defined(__APPLE__)
+#define GetEngineInfo PLOT2D_GetEngineInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //

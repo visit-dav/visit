@@ -1,5 +1,9 @@
 #include <TimeVaryingExodusPluginInfo.h>
 
+#if defined(__APPLE__)
+#define GetEngineInfo TimeVaryingExodus_GetEngineInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //

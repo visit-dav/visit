@@ -4,6 +4,8 @@
 
 #include <avtCondenseDatasetFilter.h>
 
+#include <vtkCellData.h>
+#include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkPolyDataRelevantPointsFilter.h>
 #include <vtkUnstructuredGrid.h>
@@ -90,7 +92,7 @@ avtCondenseDatasetFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
     //
     // Remove any variable that has "VTK" or "AVT" in its name.
     //
-    vtkDataSet *no_vars = (vtkDataSet *) in_ds->MakeObject();
+    vtkDataSet *no_vars = (vtkDataSet *) in_ds->NewInstance();
     no_vars->ShallowCopy(in_ds);
     for (i = no_vars->GetPointData()->GetNumberOfArrays()-1 ; i >= 0 ; i--)
     {

@@ -86,6 +86,9 @@ QvisSaveWindow::~QvisSaveWindow()
 //   Jeremy Meredith, Sat Apr 12 15:09:03 PDT 2003
 //   Added Ultra format.
 //
+//   Hank Childs, Wed Oct 15 08:58:16 PDT 2003
+//   Added stereo button.
+//
 // ****************************************************************************
 
 void
@@ -202,11 +205,21 @@ QvisSaveWindow::CreateWindowContents()
     toggleLayout->addStretch(10);
 
     // The binary toggle.
+    QHBoxLayout *toggleLayout2 = new QHBoxLayout(topLayout);
+    toggleLayout2->setSpacing(5);
+    toggleLayout2->addStretch(10);
     binaryCheckBox = new QCheckBox("Binary", central, "binaryCheckBox");
     connect(binaryCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(binaryToggled(bool)));
-    toggleLayout->addWidget(binaryCheckBox);
-    toggleLayout->addStretch(10);
+    toggleLayout2->addWidget(binaryCheckBox);
+    toggleLayout2->addStretch(10);
+
+    // The stereo toggle.
+    stereoCheckBox = new QCheckBox("Stereo", central, "stereoCheckBox");
+    connect(stereoCheckBox, SIGNAL(toggled(bool)),
+            this, SLOT(stereoToggled(bool)));
+    toggleLayout2->addWidget(stereoCheckBox);
+    toggleLayout2->addStretch(10);
 
 #if 1
     // Get rid of this code when saving images is fully implemented in the viewer.
@@ -243,6 +256,9 @@ QvisSaveWindow::CreateWindowContents()
 //
 //   Jeremy Meredith, Thu Jul 25 11:50:10 PDT 2002
 //   Made file format be a true enum.
+//
+//   Hank Childs, Wed Oct 15 09:03:08 PDT 2003
+//   Only allow the stereo button to be enabled when we have an image format.
 //
 // ****************************************************************************
 
@@ -297,6 +313,14 @@ QvisSaveWindow::UpdateWindow(bool doAll)
             {
                 binaryCheckBox->setEnabled(false);
             }
+            if (saveWindowAtts->CurrentFormatIsImageFormat())
+            {
+                stereoCheckBox->setEnabled(true);
+            }
+            else
+            {
+                stereoCheckBox->setEnabled(false);
+            }
             break;
         case 4: // maintain aspect
             maintainAspectCheckBox->blockSignals(true);
@@ -338,6 +362,11 @@ QvisSaveWindow::UpdateWindow(bool doAll)
             binaryCheckBox->blockSignals(true);
             binaryCheckBox->setChecked(saveWindowAtts->GetBinary());
             binaryCheckBox->blockSignals(false);
+            break;
+        case 13: // stereo
+            stereoCheckBox->blockSignals(true);
+            stereoCheckBox->setChecked(saveWindowAtts->GetStereo());
+            stereoCheckBox->blockSignals(false);
             break;
         }
     } // end for
@@ -588,6 +617,30 @@ void
 QvisSaveWindow::familyToggled(bool val)
 {
     saveWindowAtts->SetFamily(val);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisSaveWindow::stereoToggled
+//
+// Purpose: 
+//   This is a Qt slot function that sets the flag indicating whether
+//   or not to save the image in stereo.
+//
+// Arguments:
+//   val : The state of the toggle button.
+//
+// Programmer: Hank Childs
+// Creation:   October 15, 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisSaveWindow::stereoToggled(bool val)
+{
+    saveWindowAtts->SetStereo(val);
     Apply();
 }
 

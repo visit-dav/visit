@@ -4,6 +4,7 @@
 
 #include <avtBinaryDivideFilter.h>
 
+#include <vtkDataArray.h>
 #include <vtkDataSet.h>
 
 #include <ExpressionException.h>

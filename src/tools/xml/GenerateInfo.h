@@ -64,6 +64,11 @@
 //    Made haswriter be a bool.  Added a missing semicolon in the outpus.
 //    Added tensor and symmetric tensor variable types.
 //
+//    Brad Whitlock, Thu Aug 21 11:28:03 PDT 2003
+//    I added a macro definition that gets used on MacOS X that makes the
+//    plugin access function have the plugin name built into it so that we
+//    don't get multiply defined symbol errors when loading multiple plugins.
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -391,6 +396,12 @@ class InfoGeneratorPlugin
             h << "#endif" << endl;
         }
     }
+    void AddMacOSXMacro(ostream &c, const char *infoType)
+    {
+        c << "#if defined(__APPLE__)" << endl;
+        c << "#define Get" << infoType << "Info " << name << "_Get" << infoType << "Info" << endl;
+        c << "#endif" << endl << endl;
+    }
     void WriteInfoSource(ostream &c)
     {
         c << "// ************************************************************************* //" << endl;
@@ -401,6 +412,7 @@ class InfoGeneratorPlugin
         if (type!="database")
             c << "#include <"<<atts->name<<".h>" << endl;
         c << endl;
+        AddMacOSXMacro(c, "General");
         c << "// ****************************************************************************" << endl;
         c << "//  Function:  GetGeneralInfo" << endl;
         c << "//" << endl;
@@ -698,6 +710,7 @@ class InfoGeneratorPlugin
         else if (type=="plot")
             c << "#include <Qvis"<<name<<"PlotWindow.h>" << endl;
         c << endl;
+        AddMacOSXMacro(c, "GUI");
         c << "// ****************************************************************************" << endl;
         c << "//  Function:  GetGUIInfo" << endl;
         c << "//" << endl;
@@ -857,6 +870,7 @@ class InfoGeneratorPlugin
         else if (type=="plot")
             c << "#include <avt"<<name<<"Plot.h>" << endl;
         c << endl;
+        AddMacOSXMacro(c, "Viewer");
         c << "// ****************************************************************************" << endl;
         c << "//  Function:  GetViewerInfo" << endl;
         c << "//" << endl;
@@ -1123,6 +1137,7 @@ class InfoGeneratorPlugin
         {
             c << "#include <"<<name<<"PluginInfo.h>" << endl;
             c << "" << endl;
+            AddMacOSXMacro(c, "MDServer");
             c << "// ****************************************************************************" << endl;
             c << "//  Function:  GetMDServerInfo" << endl;
             c << "//" << endl;
@@ -1150,6 +1165,7 @@ class InfoGeneratorPlugin
         {
             c << "#include <"<<name<<"PluginInfo.h>" << endl;
             c << "" << endl;
+            AddMacOSXMacro(c, "Engine");
             c << "// ****************************************************************************" << endl;
             c << "//  Function:  GetEngineInfo" << endl;
             c << "//" << endl;
@@ -1182,6 +1198,7 @@ class InfoGeneratorPlugin
             else if (type=="plot")
                 c << "#include <avt"<<name<<"Plot.h>" << endl;
             c << endl;
+            AddMacOSXMacro(c, "Engine");
             c << "// ****************************************************************************" << endl;
             c << "//  Function:  GetEngineInfo" << endl;
             c << "//" << endl;
@@ -1250,6 +1267,7 @@ class InfoGeneratorPlugin
         c << "#include <"<<name<<"PluginInfo.h>" << endl;
         c << "#include <Py"<<atts->name<<".h>" << endl;
         c << "" << endl;
+        AddMacOSXMacro(c, "Scripting");
         c << "// ****************************************************************************" << endl;
         c << "//  Function:  GetScriptingInfo" << endl;
         c << "//" << endl;

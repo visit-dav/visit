@@ -4,6 +4,10 @@
 
 #include <LinesPluginInfo.h>
 
+#if defined(__APPLE__)
+#define GetGeneralInfo Lines_GetGeneralInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGeneralInfo
 //

@@ -365,7 +365,7 @@ HDR=    AnimationAttributes.h \
 
 OBJ=$(SRC:.C=.o)
 LIB=libstate
-LIBS=-lcomm
+LIBS=-lcomm -lutility
 NOT_DISTRIB=
 
 TSTPROG=test1 test2 test3

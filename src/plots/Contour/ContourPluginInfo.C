@@ -5,6 +5,10 @@
 #include <ContourPluginInfo.h>
 #include <ContourAttributes.h>
 
+#if defined(__APPLE__)
+#define GetGeneralInfo Contour_GetGeneralInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGeneralInfo
 //

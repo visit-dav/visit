@@ -8,7 +8,11 @@
 #include <silo.h>
 #include <vtkDataSet.h>
 #include <vtkSystemIncludes.h> // for vtkIdType
+#include <vtkCell.h>
+#include <vtkCellData.h>
 #include <vtkCellType.h>
+#include <vtkPointData.h>
+#include <vtkUnsignedCharArray.h>
 #include <algorithm>
 #include <string>
 using std::find;

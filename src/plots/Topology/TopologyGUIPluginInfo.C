@@ -6,6 +6,14 @@
 #include <TopologyAttributes.h>
 #include <QvisTopologyPlotWindow.h>
 
+#if defined(__APPLE__)
+#define GetGUIInfo Makefile_GetGUIInfo
+#endif
+
+#if defined(__APPLE__)
+#define GetGUIInfo Topology_GetGUIInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGUIInfo
 //

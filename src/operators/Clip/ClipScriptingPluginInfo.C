@@ -4,6 +4,10 @@
 #include <ClipPluginInfo.h>
 #include <PyClipAttributes.h>
 
+#if defined(__APPLE__)
+#define GetScriptingInfo Clip_GetScriptingInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //

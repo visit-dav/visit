@@ -6,6 +6,8 @@
 
 #include <vtkActor.h>
 #include <vtkCamera.h>
+#include <vtkCellArray.h>
+#include <vtkCellData.h>
 #include <vtkPolyData.h>
 #include <vtkPolyDataMapper.h>
 #include <vtkProperty.h>

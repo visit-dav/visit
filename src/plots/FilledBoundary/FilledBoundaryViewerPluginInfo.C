@@ -4,6 +4,10 @@
 
 #include <FilledBoundaryPluginInfo.h>
 
+#if defined(__APPLE__)
+#define GetViewerInfo FilledBoundary_GetViewerInfo
+#endif
+
 #include <stdio.h>
 
 #include <ViewerFileServer.h>
@@ -260,6 +264,10 @@ FilledBoundaryViewerPluginInfo::ResetPlotAtts(AttributeSubject *atts,
 //    Set colors, subsetNames for defaultAtts so that "Reset" won't zero
 //    out the colors in the gui.
 //
+//    Jeremy Meredith, Wed Oct 15 16:46:12 PDT 2003
+//    Modified it to add an extra slot for a "mixed material zone" color.
+//    This value is only used when the "Clean zones only" option is checked.
+//
 // ****************************************************************************
 
 void
@@ -422,6 +430,14 @@ FilledBoundaryViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
     }
 
     delete [] ca;
+
+    // Add a slot for the mixed-material-zone color
+    if (subT == AVT_MATERIAL_SUBSET)
+    {
+        sv.push_back("mixed");
+        cal.AddColorAttribute(ColorAttribute(255,255,255,255));
+    }
+
 
     // Set the boundary names and colors in the boundaryAtts.
     boundaryAtts->SetBoundaryNames(sv);

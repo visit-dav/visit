@@ -1,5 +1,9 @@
 #include <SAMRAIPluginInfo.h>
 
+#if defined(__APPLE__)
+#define GetMDServerInfo SAMRAI_GetMDServerInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetMDServerInfo
 //

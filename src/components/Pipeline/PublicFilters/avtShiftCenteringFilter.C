@@ -6,9 +6,11 @@
 
 #include <math.h>
 
+#include <vtkCellData.h>
 #include <vtkCellDataToPointData.h>
-#include <vtkPointDataToCellData.h>
 #include <vtkDataSet.h>
+#include <vtkPointData.h>
+#include <vtkPointDataToCellData.h>
 #include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>

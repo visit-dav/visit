@@ -685,7 +685,9 @@ m3d_tri_c::addToRenderer(m3d_renderer &renderer, unsigned char id) const
 // Creation:   Tue Mar 4 13:32:19 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Aug 22 08:57:56 PDT 2003
+//   Forced it to have a pen color so it draws correctly on MacOS X.
+//
 // ****************************************************************************
 
 void
@@ -697,11 +699,12 @@ m3d_tri_c::draw(m3d_renderer &renderer)
     tri.setPoint(1, v[1].x, v[1].y);
     tri.setPoint(2, v[2].x, v[2].y);
 
-    QBrush b(get_pixel_color(&c));
+    QColor triColor(get_pixel_color(&c));
+    QBrush b(triColor);
     b.setStyle(QBrush::SolidPattern);
     QPainter *p = painter(renderer);
     p->setBrush(b);
-    p->setPen(QPen::NoPen);
+    p->setPen(QPen(triColor));
     p->drawPolygon(tri, true);
     setDrawn(true);
 }
@@ -870,7 +873,9 @@ m3d_tri_n::addToRenderer(m3d_renderer &renderer, unsigned char id) const
 // Creation:   Tue Mar 4 13:35:10 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Aug 22 08:59:04 PDT 2003
+//   I made it have a pen color so it draws correctly on MacOS X.
+//
 // ****************************************************************************
 
 void
@@ -882,11 +887,12 @@ m3d_tri_n::draw(m3d_renderer &renderer)
     tri.setPoint(1, v[1].x, v[1].y);
     tri.setPoint(2, v[2].x, v[2].y);
 
-    QBrush b(get_pixel_color(&lit_color));
+    QColor triColor(get_pixel_color(&lit_color));
+    QBrush b(triColor);
     b.setStyle(QBrush::SolidPattern);
     QPainter *p = painter(renderer);
     p->setBrush(b);
-    p->setPen(QPen::NoPen);
+    p->setPen(QPen(triColor));
     p->drawPolygon(tri, true);
     setDrawn(true);
 }

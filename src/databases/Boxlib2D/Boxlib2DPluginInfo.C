@@ -4,6 +4,10 @@
 
 #include <Boxlib2DPluginInfo.h>
 
+#if defined(__APPLE__)
+#define GetGeneralInfo Boxlib2D_GetGeneralInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGeneralInfo
 //

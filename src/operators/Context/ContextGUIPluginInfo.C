@@ -6,6 +6,10 @@
 #include <ContextAttributes.h>
 #include <QvisContextWindow.h>
 
+#if defined(__APPLE__)
+#define GetGUIInfo Context_GetGUIInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGUIInfo
 //

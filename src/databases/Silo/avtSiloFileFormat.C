@@ -4,9 +4,12 @@
 
 #include <avtSiloFileFormat.h>
 
+#include <vtkCellData.h>
 #include <vtkCellType.h>
 #include <vtkFloatArray.h>
+#include <vtkIdList.h>
 #include <vtkIntArray.h>
+#include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
@@ -628,6 +631,14 @@ avtSiloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //
 //    Hank Childs, Fri Sep 12 14:48:33 PDT 2003
 //    Allow for '0' to be a valid material.
+//
+//    Jeremy Meredith, Wed Oct 15 17:04:33 PDT 2003
+//    Fixed up the multi-species check to "fail correctly" if the actual
+//    species object did not actually exist in the file.
+//    Also, added a workaround for a Silo bug where it will crash instead
+//    of returning NULL from DBGetMatspecies if you have registered a
+//    callback function.  This workaround should be removed if Silo gets
+//    fixed.
 //
 // ****************************************************************************
 
@@ -1569,9 +1580,10 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         DBfile *correctFile = dbfile;
         DetermineFileAndDirectory(species, correctFile, realvar);
 
-        DBmatspecies *spec = DBGetMatspecies(correctFile, realvar);
-        if (spec == NULL)
-            EXCEPTION1(InvalidVariableException, species);
+        DBmatspecies *spec = NULL;
+        DBShowErrors(DB_NONE, NULL);
+        spec = DBGetMatspecies(correctFile, realvar);
+        DBShowErrors(DB_ALL, ExceptionGenerator);
         if (spec == NULL)
         {
             debug1 << "Giving up on species \"" << multimatspecies_names[i]
@@ -1598,9 +1610,14 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
             }
         }
         char *name_w_dir = GenerateName(dirname, multimatspecies_names[i]);
-        avtSpeciesMetaData *smd = new avtSpeciesMetaData(name_w_dir,
-                                  meshname, spec->matname, spec->nmat,
-                                  numSpecies, speciesNames);
+        avtSpeciesMetaData *smd;
+        if (valid_var)
+            smd = new avtSpeciesMetaData(name_w_dir,
+                                         meshname, spec->matname, spec->nmat,
+                                         numSpecies, speciesNames);
+        else
+            smd = new avtSpeciesMetaData(name_w_dir, "", "", 0,
+                                         numSpecies, speciesNames);
         smd->validVariable = valid_var;
         md->Add(smd);
 

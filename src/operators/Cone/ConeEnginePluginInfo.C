@@ -5,6 +5,10 @@
 #include <ConePluginInfo.h>
 #include <avtConeFilter.h>
 
+#if defined(__APPLE__)
+#define GetEngineInfo Cone_GetEngineInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //

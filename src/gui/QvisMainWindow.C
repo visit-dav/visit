@@ -181,6 +181,9 @@
 //    Brad Whitlock, Wed Jul 30 16:50:12 PST 2003
 //    I made the main window re-emit a signal from the file panel.
 //
+//    Brad Whitlock, Fri Aug 15 15:05:24 PST 2003
+//    I passed a pointer to the menu bar to the plot manager widget.
+//
 //    Kathleen Bonnell, Tue Aug 26 13:47:34 PDT 2003 
 //    Changed 'Material' to 'Material Options'.
 //
@@ -295,7 +298,11 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     //
     winPopup = new QPopupMenu( this );
     menuBar()->insertItem( tr("&Windows"), winPopup );
-    winPopup->insertItem(QPixmap(newwindow_xpm), tr("Add"), this, SLOT(windowAdd()), CTRL+Key_Insert);
+    winPopup->insertItem(QPixmap(newwindow_xpm), tr("Add"), this, SLOT(windowAdd())
+#ifndef Q_WS_MACX
+                         , CTRL+Key_Insert
+#endif
+                        );
     winPopup->insertItem(copyIcon, tr("Clone"), this, SLOT(windowClone()));
     winPopup->insertItem(QPixmap(deletewindow_xpm), tr("Delete"), this, SLOT(windowDelete()), CTRL+Key_Delete);
     winPopup->insertItem( tr("Clear all"), this, SLOT(windowClearAll()));
@@ -404,14 +411,18 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     CreateGlobalArea(middleLayout);
 
     // Create the plot Manager.
-    plotManager = new QvisPlotManagerWidget(central, "plotManager");
+    plotManager = new QvisPlotManagerWidget(menuBar(), central, "plotManager");
     plotManager->ConnectPlotList(viewer->GetPlotList());
     plotManager->ConnectFileServer(fileServer);
     plotManager->ConnectGlobalAttributes(viewer->GetGlobalAttributes());
     plotManager->ConnectExpressionList(viewer->GetExpressionList());
     plotManager->ConnectPluginManagerAttributes(viewer->GetPluginManagerAttributes());
     plotManager->viewer = viewer;
+#ifdef Q_WS_MACX
+    topLayout->addWidget(plotManager, 200);
+#else
     topLayout->addWidget(plotManager, 150);
+#endif
 
     // Create the notepad widget. Use a big stretch factor so the
     // notpad widget will fill all the remaining space.
@@ -429,7 +440,7 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     statusBar()->setSizeGripEnabled(false);
     unreadOutputFlag = false;
 
-#if !defined(_WIN32)
+#ifdef Q_WS_X11
     // Move the window to a known position on the screen
     // so we can take some measurements later
     move(QPoint(100,100));
@@ -638,7 +649,7 @@ QvisMainWindow::Update(Subject *TheChangedSubject)
         QPaintEvent *pe = new QPaintEvent(statusBar()->visibleRect(), true);
         QApplication::sendEvent(statusBar(), pe);
         delete pe;
-#ifdef QT_WS_X11
+#ifdef Q_WS_X11
         QApplication::flushX();
 #endif
     }
@@ -685,7 +696,7 @@ QvisMainWindow::Update(Subject *TheChangedSubject)
         QPaintEvent *pe = new QPaintEvent(statusBar()->visibleRect(), true);
         QApplication::sendEvent(statusBar(), pe);
         delete pe;
-#ifdef QT_WS_X11
+#ifdef Q_WS_X11
         QApplication::flushX();
 #endif
     }

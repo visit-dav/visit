@@ -40,11 +40,16 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 =========================================================================*/
 
-#include "vtkObjectFactory.h"
 #include "vtkTensorReduceFilter.h"
-#include "vtkFloatArray.h"
+
+#include <vtkCell.h>
+#include <vtkCellData.h>
 #include <vtkDataSet.h>
+#include <vtkFloatArray.h>
+#include <vtkObjectFactory.h>
+#include <vtkPointData.h>
 #include <vtkPolyData.h>
+
 
 vtkStandardNewMacro(vtkTensorReduceFilter);
 

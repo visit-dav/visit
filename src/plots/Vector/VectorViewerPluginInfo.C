@@ -5,6 +5,10 @@
 #include <VectorPluginInfo.h>
 #include <avtVectorPlot.h>
 
+#if defined(__APPLE__)
+#define GetViewerInfo Vector_GetViewerInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetViewerInfo
 //

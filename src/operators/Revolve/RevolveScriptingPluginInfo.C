@@ -4,6 +4,10 @@
 #include <RevolvePluginInfo.h>
 #include <PyRevolveAttributes.h>
 
+#if defined(__APPLE__)
+#define GetScriptingInfo Revolve_GetScriptingInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //

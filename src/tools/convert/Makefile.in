@@ -1,4 +1,4 @@
-#                            Copyright 2000 - 2001
+#                            Copyright 2000 - 2003
 #                 The Regents of the University of California.
 #                             All rights reserved.
 # 
@@ -30,6 +30,10 @@
 # the University of  California,  and shall not  be  used for  advertising  or
 # product endorsement purposes.
 #
+# Modifications:
+#   Brad Whitlock, Tue Sep 30 13:41:00 PST 2003
+#   I removed -lXext since it is not needed.
+#
 ##############################################################################
 
 ##
@@ -42,8 +46,8 @@
 
 CPPFLAGS=-I. -I../../include -I../../include/visit
 
-SERLIBS=-L../../lib -lXext -ldatabase_ser -lpipeline_ser -lparser -lvisit_vtk -lutility -lmisc -lcomm -lstate -ldbatts -lavtmath_ser -lavtexceptions -lmir -lplugin @VTK_LIBS@ $(X_LIBS) @LIBS@ @PTHREAD_LIB@
-PARLIBS=-L../../lib -lXext -ldatabase_par -lpipeline_par -lparser -lvisit_vtk -lutility -lmisc -lcomm -lstate -ldbatts -lavtmath_par -lavtexceptions -lmir -lplugin @VTK_LIBS@ $(X_LIBS) @LIBS@ @MPI_LIBS@ @PTHREAD_LIB@
+SERLIBS=-L../../lib -ldatabase_ser -lpipeline_ser -lparser -lvisit_vtk -lutility -lmisc -lcomm -lstate -ldbatts -lavtmath_ser -lavtexceptions -lmir -lplugin @VTK_LIBS@ $(X_LIBS) @LIBS@ @PTHREAD_LIB@
+PARLIBS=-L../../lib -ldatabase_par -lpipeline_par -lparser -lvisit_vtk -lutility -lmisc -lcomm -lstate -ldbatts -lavtmath_par -lavtexceptions -lmir -lplugin @VTK_LIBS@ $(X_LIBS) @LIBS@ @MPI_LIBS@ @PTHREAD_LIB@
 LIBDEP=
 
 ##

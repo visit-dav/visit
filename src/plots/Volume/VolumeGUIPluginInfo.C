@@ -6,6 +6,10 @@
 #include <VolumeAttributes.h>
 #include <QvisVolumePlotWindow.h>
 
+#if defined(__APPLE__)
+#define GetGUIInfo Volume_GetGUIInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetGUIInfo
 //

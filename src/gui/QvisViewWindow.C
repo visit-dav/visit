@@ -12,6 +12,8 @@
 #include <qpushbutton.h>
 #include <qtabwidget.h>
 #include <qvbox.h>
+#include <qslider.h>
+#include <QNarrowLineEdit.h>
 
 #include <DataNode.h>
 #include <ViewCurveAttributes.h>
@@ -131,6 +133,9 @@ QvisViewWindow::~QvisViewWindow()
 //   Brad Whitlock, Thu Sep 11 09:32:01 PDT 2003
 //   I added buttons to reset and recenter the view.
 //
+//   Hank Childs, Wed Oct 15 15:04:14 PDT 2003
+//   Added eye angle slider.
+//
 // ****************************************************************************
 
 void
@@ -230,14 +235,14 @@ QvisViewWindow::CreateWindowContents()
     view3DGroup->setFrameStyle(QFrame::NoFrame);
 
     QVBoxLayout *internalLayout3d = new QVBoxLayout(view3DGroup);
-    QGridLayout *Layout3d = new QGridLayout(internalLayout3d, 11, 2);
+    QGridLayout *Layout3d = new QGridLayout(internalLayout3d, 12, 3);
     Layout3d->setSpacing(5);
 
     normalLineEdit = new QLineEdit(view3DGroup, "normalLineEdit");
     normalLineEdit->setMinimumWidth(MIN_LINEEDIT_WIDTH);
     connect(normalLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processNormalText()));
-    Layout3d->addWidget(normalLineEdit, 0, 1);
+    Layout3d->addMultiCellWidget(normalLineEdit, 0, 0, 1, 2);
     QLabel *normalLabel = new QLabel(normalLineEdit, "View normal",
                                      view3DGroup, "normalLabel");
     Layout3d->addWidget(normalLabel, 0, 0);
@@ -246,7 +251,7 @@ QvisViewWindow::CreateWindowContents()
     focusLineEdit->setMinimumWidth(MIN_LINEEDIT_WIDTH);
     connect(focusLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processFocusText()));
-    Layout3d->addWidget(focusLineEdit, 1, 1);
+    Layout3d->addMultiCellWidget(focusLineEdit, 1, 1, 1, 2);
     QLabel *focusLabel = new QLabel(focusLineEdit, "Focus",
                                      view3DGroup, "focusLabel");
     Layout3d->addWidget(focusLabel, 1, 0);
@@ -255,7 +260,7 @@ QvisViewWindow::CreateWindowContents()
     upvectorLineEdit->setMinimumWidth(MIN_LINEEDIT_WIDTH);
     connect(upvectorLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processUpVectorText()));
-    Layout3d->addWidget(upvectorLineEdit, 2, 1);
+    Layout3d->addMultiCellWidget(upvectorLineEdit, 2, 2, 1, 2);
     QLabel *upvectorLabel = new QLabel(upvectorLineEdit, "Up Vector",
                                        view3DGroup, "upvectorLabel");
     Layout3d->addWidget(upvectorLabel, 2, 0);
@@ -264,7 +269,7 @@ QvisViewWindow::CreateWindowContents()
     viewAngleLineEdit->setMinimumWidth(MIN_LINEEDIT_WIDTH);
     connect(viewAngleLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processViewAngleText()));
-    Layout3d->addWidget(viewAngleLineEdit, 3, 1);
+    Layout3d->addMultiCellWidget(viewAngleLineEdit, 3, 3, 1, 2);
     QLabel *viewAngleLabel = new QLabel(viewAngleLineEdit, "Angle of view",
                                   view3DGroup, "viewAngleLabel");
     Layout3d->addWidget(viewAngleLabel, 3, 0);
@@ -273,7 +278,7 @@ QvisViewWindow::CreateWindowContents()
     parallelScaleLineEdit->setMinimumWidth(MIN_LINEEDIT_WIDTH);
     connect(parallelScaleLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processParallelScaleText()));
-    Layout3d->addWidget(parallelScaleLineEdit, 4, 1);
+    Layout3d->addMultiCellWidget(parallelScaleLineEdit, 4, 4, 1, 2);
     QLabel *parallelScaleLabel = new QLabel(parallelScaleLineEdit, "Parallel scale",
                                   view3DGroup, "parallelScaleLabel");
     Layout3d->addWidget(parallelScaleLabel, 4, 0);
@@ -282,7 +287,7 @@ QvisViewWindow::CreateWindowContents()
     nearLineEdit->setMinimumWidth(MIN_LINEEDIT_WIDTH);
     connect(nearLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processNearText()));
-    Layout3d->addWidget(nearLineEdit, 5, 1);
+    Layout3d->addMultiCellWidget(nearLineEdit, 5, 5, 1, 2);
     QLabel *nearLabel = new QLabel(nearLineEdit, "Near clipping",
                                    view3DGroup, "nearLineEditLabel");
     Layout3d->addWidget(nearLabel, 5, 0);
@@ -291,7 +296,7 @@ QvisViewWindow::CreateWindowContents()
     farLineEdit->setMinimumWidth(MIN_LINEEDIT_WIDTH);
     connect(farLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processFarText()));
-    Layout3d->addWidget(farLineEdit, 6, 1);
+    Layout3d->addMultiCellWidget(farLineEdit, 6, 6, 1, 2);
     QLabel *farLabel = new QLabel(farLineEdit, "Far clipping",
                                   view3DGroup, "farLineEditLabel");
     Layout3d->addWidget(farLabel, 6, 0);
@@ -300,7 +305,7 @@ QvisViewWindow::CreateWindowContents()
     imagePanLineEdit->setMinimumWidth(MIN_LINEEDIT_WIDTH);
     connect(imagePanLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processImagePanText()));
-    Layout3d->addWidget(imagePanLineEdit, 7, 1);
+    Layout3d->addMultiCellWidget(imagePanLineEdit, 7, 7, 1, 2);
     QLabel *imagePanLabel = new QLabel(imagePanLineEdit, "Image pan",
                                   view3DGroup, "imagePanLineEditLabel");
     Layout3d->addWidget(imagePanLabel, 7, 0);
@@ -309,17 +314,31 @@ QvisViewWindow::CreateWindowContents()
     imageZoomLineEdit->setMinimumWidth(MIN_LINEEDIT_WIDTH);
     connect(imageZoomLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processImageZoomText()));
-    Layout3d->addWidget(imageZoomLineEdit, 8, 1);
+    Layout3d->addMultiCellWidget(imageZoomLineEdit, 8, 8, 1, 2);
     QLabel *imageZoomLabel = new QLabel(imageZoomLineEdit, "Image zoom",
                                   view3DGroup, "imageZoomLineEditLabel");
     Layout3d->addWidget(imageZoomLabel, 8, 0);
+
+    // portion for modifying the eye angle.
+    eyeAngleLineEdit = new QNarrowLineEdit(view3DGroup, "eyeAngleLineEdit");
+    connect(eyeAngleLineEdit, SIGNAL(returnPressed()), this,
+            SLOT(processEyeAngleText()));
+    QLabel *eyeAngleLabel = new QLabel(eyeAngleLineEdit, "Eye Angle (stereo)",
+                                  view3DGroup, "eyeAngleLabel");
+    eyeAngleSlider = new QSlider(0, 80, 10, 40, Qt::Horizontal,
+                                 view3DGroup, "eyeAngleSlider");
+    connect(eyeAngleSlider, SIGNAL(valueChanged(int)), this,
+            SLOT(eyeAngleSliderChanged(int)));
+    Layout3d->addWidget(eyeAngleLabel, 9, 0);
+    Layout3d->addWidget(eyeAngleLineEdit, 9, 1);
+    Layout3d->addWidget(eyeAngleSlider, 9, 2);
 
     // Create the check boxes
     perspectiveToggle = new QCheckBox("Perspective", view3DGroup,
         "perspectiveToggle");
     connect(perspectiveToggle, SIGNAL(toggled(bool)),
             this, SLOT(perspectiveToggled(bool)));
-    Layout3d->addWidget(perspectiveToggle, 9, 1);
+    Layout3d->addWidget(perspectiveToggle, 10, 1);
 
     // Add alignment options
     alignComboBox = new QComboBox(view3DGroup, "");
@@ -332,10 +351,10 @@ QvisViewWindow::CreateWindowContents()
     alignComboBox->insertItem("+Z", 6);
     connect(alignComboBox, SIGNAL(activated(int)),
             this, SLOT(viewButtonClicked(int)));
-    Layout3d->addWidget(alignComboBox, 10, 1);
+    Layout3d->addWidget(alignComboBox, 11, 1);
     QLabel *alignLabel = new QLabel(alignComboBox, "Align to axis",
         view3DGroup, "alignLabel");
-    Layout3d->addWidget(alignLabel, 10, 0);
+    Layout3d->addWidget(alignLabel, 11, 0);
 
     //
     // The advanced view options.
@@ -627,6 +646,9 @@ QvisViewWindow::Update2D(bool doAll)
 //   Eric Brugger, Wed Aug 20 14:04:21 PDT 2003
 //   I split the view attributes into 2d and 3d parts.
 //
+//   Hank Childs, Wed Oct 15 15:26:03 PDT 2003
+//   Added eye angle.
+//
 // ****************************************************************************
 
 void
@@ -691,7 +713,12 @@ QvisViewWindow::Update3D(bool doAll)
             temp.sprintf("%g", view3d->GetImageZoom());
             imageZoomLineEdit->setText(temp);
             break;
-        case 9: // perspective.
+        case 9: // eyeAngle
+            temp.sprintf("%g", view3d->GetEyeAngle());
+            eyeAngleLineEdit->setText(temp);
+            UpdateEyeAngleSliderFromAtts();
+            break;
+        case 10: // perspective.
             perspectiveToggle->blockSignals(true);
             perspectiveToggle->setChecked(view3d->GetPerspective());
             perspectiveToggle->blockSignals(false);
@@ -774,6 +801,59 @@ QvisViewWindow::UpdateGlobal(bool doAll)
             break;
         }
     }
+}
+
+// ****************************************************************************
+//  Method: QvisViewWindow::UpdateEyeAngleSliderFromAtts
+//
+//  Purpose:
+//      Puts the slider at the correct position based on the current eye angle.
+//
+//  Programmer: Hank Childs
+//  Creation:   October 15, 2003
+//
+// ****************************************************************************
+
+void
+QvisViewWindow::UpdateEyeAngleSliderFromAtts(void)
+{
+    float eyeAngle = view3d->GetEyeAngle();
+    int val = 0;
+    if (eyeAngle <= 0.5)
+        val = 0;
+    else if (eyeAngle >= 5.0)
+        val = 80;
+    else if (eyeAngle == 2.0)
+        val = 40;
+    else
+    {
+        //
+        // The relation between the slider and the eye angle is a parabola.
+        // Rather than solving the quadratic formula, just iterate over the
+        // the 80 possible values.
+        //
+        // We want 2.0 degrees to be the middle (40), 0 to be 0.5 degrees,
+        // and 80 to be 5 degrees.  So a parabola can fit this curve --
+        // y = (ax-b)^2 + c.  (y = degrees)
+        float a = 0.0217;
+        float b = -0.433;
+        float c = 0.3125;
+        for (int i = 0 ; i < 80 ; i++)
+        {
+            float tmp = a*i-b;
+            tmp *= tmp;
+            tmp += c;
+            if (eyeAngle < tmp)
+            {
+                val = i;
+                break;
+            }
+        }
+    }
+        
+    eyeAngleSlider->blockSignals(true);
+    eyeAngleSlider->setValue(val);
+    eyeAngleSlider->blockSignals(false);
 }
 
 // ****************************************************************************
@@ -1117,6 +1197,9 @@ QvisViewWindow::GetCurrentValues2d(int which_widget)
 //   I added controls for image pan and image zoom. I renamed camera
 //   to view normal in the view attributes.
 //
+//   Hank Childs, Wed Oct 15 15:26:03 PDT 2003
+//   Added eye angle.
+//
 // ****************************************************************************
 
 void
@@ -1370,6 +1453,33 @@ QvisViewWindow::GetCurrentValues3d(int which_widget)
                  view3d->GetImageZoom());
             Error(msg);
             view3d->SetImageZoom(view3d->GetImageZoom());
+        }
+    }
+
+    // Do the eye angle value.
+    if(which_widget == 13 || doAll)
+    {
+        temp = eyeAngleLineEdit->displayText().stripWhiteSpace();
+        okay = !temp.isEmpty();
+        if(okay)
+        {
+            double eyeAngle;
+            if(sscanf(temp.latin1(), "%lg", &eyeAngle) == 1)
+            {
+                view3d->SetEyeAngle(eyeAngle);
+                UpdateEyeAngleSliderFromAtts();
+            }
+            else
+                okay = false;
+        }
+
+        if(!okay)
+        {
+            msg.sprintf("The eye angle value was invalid. "
+                "Resetting to the last good value of %g.",
+                 view3d->GetEyeAngle());
+            Error(msg);
+            view3d->SetEyeAngle(view3d->GetEyeAngle());
         }
     }
 }
@@ -2081,6 +2191,46 @@ QvisViewWindow::processImageZoomText()
 {
     GetCurrentValues(9);
     Apply();    
+}
+
+void
+QvisViewWindow::processEyeAngleText()
+{
+    GetCurrentValues(13);
+    Apply();    
+}
+
+void
+QvisViewWindow::eyeAngleSliderChanged(int val)
+{
+    // We want 2.0 degrees to be the middle (40), 0 to be 0.5 degrees,
+    // and 80 to be 5 degrees.  So a parabola can fit this curve --
+    // y = (ax-b)^2 + c.  (y = degrees)
+    float a = 0.0217;
+    float b = -0.433;
+    float c = 0.3125;
+    float angle = 0.;
+    if (val == 80)
+        angle = 5.0;
+    else if (val == 40)
+        angle = 2.0;
+    else if (val == 0)
+        angle = 0.5;
+    else
+    {
+        angle = (a*val - b)*(a*val - b) + c;
+        // Only take most significant two digits.
+        int most = (int) (angle*100);
+        angle = ((float)most)/100.;
+    }
+    
+    view3d->SetEyeAngle(angle);
+ 
+    QString temp;
+    temp.sprintf("%g", view3d->GetEyeAngle());
+    eyeAngleLineEdit->setText(temp);
+    GetCurrentValues(13);
+    Apply();
 }
 
 void

@@ -42,7 +42,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =========================================================================*/
 #include <math.h>
 #include "vtkHankAxisActor2D.h"
-#include "vtkObjectFactory.h"
+#include <vtkCellArray.h>
+#include <vtkObjectFactory.h>
 #include <vtkPolyData.h>
 #include <vtkTextProperty.h>
 #include <vtkProperty2D.h>

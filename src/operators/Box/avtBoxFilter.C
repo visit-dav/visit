@@ -4,8 +4,12 @@
 
 #include <avtBoxFilter.h>
 
+#include <vtkCell.h>
+#include <vtkCellData.h>
 #include <vtkDataSetToUnstructuredGridFilter.h>
+#include <vtkIdList.h>
 #include <vtkObjectFactory.h>
+#include <vtkPointData.h>
 #include <vtkUnstructuredGrid.h>
 
 #include <avtExtents.h>

@@ -6,7 +6,9 @@
 #include <mpi.h>
 #endif
 
+#include <vtkCellData.h>
 #include <vtkFloatArray.h>
+#include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkUnsignedIntArray.h>

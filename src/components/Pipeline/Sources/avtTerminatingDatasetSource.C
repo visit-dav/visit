@@ -7,6 +7,8 @@
 #include <float.h>
 
 #include <vtkDataSet.h>
+#include <vtkDataArray.h>
+#include <vtkFieldData.h>
 
 #include <avtCommonDataFunctions.h>
 #include <avtDataAttributes.h>

@@ -1,4 +1,4 @@
-#                            Copyright 2000 - 2002
+#                            Copyright 2000 - 2003
 #                 The Regents of the University of California.
 #                             All rights reserved.
 #
@@ -179,6 +179,9 @@
 #    Jeremy Meredith, Wed Aug 20 09:51:28 PDT 2003
 #    I added the new mir library.
 #
+#    Brad Whitlock, Fri May 16 16:42:20 PST 2003
+#    I changed it so it works on MacOS X.
+#
 ##############################################################################
 
 ##
@@ -192,33 +195,33 @@
 CPPFLAGS= -I@tmpinc@ @ENGINE_CPPFLAGS@ @CPPFLAGS@ \
          -I. -I../../include/visit
 
-SERLIBS=-L../../lib -lXext -lplugin -lviswindow -lavtmath_ser -lplotter \
+SERLIBS=-L../../lib -lplugin -lviswindow -lavtmath_ser -lplotter \
         -ldatabase_ser -lmir -lquery_ser -lexpressions_ser -lpipeline_ser -lvisit_vtk \
 	-lvtkqt -lwinutil @QT_LIBS@ -lenginerpc -lutility -lmisc -lcomm -lstate \
 	-lengineparstate_ser -ldbatts -lavtexceptions -lparser @VTK_LIBS@ $(X_LIBS) \
 	@LIBS@ @PTHREAD_LIB@
 
-PARLIBS=-L../../lib -lXext -lplugin -lviswindow -lavtmath_ser -lplotter \
+PARLIBS=-L../../lib -lplugin -lviswindow -lavtmath_ser -lplotter \
         -ldatabase_par -lmir -lquery_par -lexpressions_par -lpipeline_par -lvisit_vtk \
 	-lvtkqt @QT_LIBS@ -lwinutil -lenginerpc -lutility -lmisc -lcomm -lstate \
 	-lengineparstate_par -ldbatts -lavtexceptions -lparser @VTK_LIBS@ $(X_LIBS) \
 	@LIBS@ @MPI_LIBS@ @PTHREAD_LIB@
 
-SERLIBDEP=../../lib/libplugin.so ../../lib/libplotter.so \
-          ../../lib/libdatabase_ser.so ../../lib/libpipeline_ser.so \
-          ../../lib/libvisit_vtk.so ../../lib/libenginerpc.so \
-          ../../lib/libutility.so ../../lib/libmisc.so \
-          ../../lib/libcomm.so ../../lib/libstate.so \
-          ../../lib/libengineparstate_ser.so ../../lib/libdbatts.so \
-          ../../lib/libavtexceptions.so ../../lib/libmir.so 
+SERLIBDEP=../../lib/libplugin.@SHLIB_LIBEXT@ ../../lib/libplotter.@SHLIB_LIBEXT@ \
+          ../../lib/libdatabase_ser.@SHLIB_LIBEXT@ ../../lib/libpipeline_ser.@SHLIB_LIBEXT@ \
+          ../../lib/libvisit_vtk.@SHLIB_LIBEXT@ ../../lib/libenginerpc.@SHLIB_LIBEXT@ \
+          ../../lib/libutility.@SHLIB_LIBEXT@ ../../lib/libmisc.@SHLIB_LIBEXT@ \
+          ../../lib/libcomm.@SHLIB_LIBEXT@ ../../lib/libstate.@SHLIB_LIBEXT@ \
+          ../../lib/libengineparstate_ser.@SHLIB_LIBEXT@ ../../lib/libdbatts.@SHLIB_LIBEXT@ \
+          ../../lib/libavtexceptions.@SHLIB_LIBEXT@ ../../lib/libmir.@SHLIB_LIBEXT@
 
-PARLIBDEP=../../lib/libplugin.so ../../lib/libplotter.so \
-          ../../lib/libdatabase_par.so ../../lib/libpipeline_par.so \
-          ../../lib/libvisit_vtk.so ../../lib/libenginerpc.so \
-          ../../lib/libutility.so ../../lib/libmisc.so \
-          ../../lib/libcomm.so ../../lib/libstate.so \
-          ../../lib/libengineparstate_par.so ../../lib/libdbatts.so \
-          ../../lib/libavtexceptions.so ../../lib/libmir.so 
+PARLIBDEP=../../lib/libplugin.@SHLIB_LIBEXT@ ../../lib/libplotter.@SHLIB_LIBEXT@ \
+          ../../lib/libdatabase_par.@SHLIB_LIBEXT@ ../../lib/libpipeline_par.@SHLIB_LIBEXT@ \
+          ../../lib/libvisit_vtk.@SHLIB_LIBEXT@ ../../lib/libenginerpc.@SHLIB_LIBEXT@ \
+          ../../lib/libutility.@SHLIB_LIBEXT@ ../../lib/libmisc.@SHLIB_LIBEXT@ \
+          ../../lib/libcomm.@SHLIB_LIBEXT@ ../../lib/libstate.@SHLIB_LIBEXT@ \
+          ../../lib/libengineparstate_par.@SHLIB_LIBEXT@ ../../lib/libdbatts.@SHLIB_LIBEXT@ \
+          ../../lib/libavtexceptions.@SHLIB_LIBEXT@ ../../lib/libmir.@SHLIB_LIBEXT@
 
 ##
 ## Files...

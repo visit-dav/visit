@@ -1,13 +1,43 @@
 <?xml version="1.0"?>
-  <Attribute name="View3DAttributes" purpose="This class contains the 3d view attributes." exportAPI="STATE_API" exportInclude="state_exports.h">
-    <Field name="viewNormal" type="doubleArray" length="3">0. 0. 1.</Field>
-    <Field name="focus" type="doubleArray" length="3">0. 0. 0.</Field>
-    <Field name="viewUp" type="doubleArray" length="3">0. 1. 0.</Field>
-    <Field name="viewAngle" type="double">30.</Field>
-    <Field name="parallelScale" type="double">1.</Field>
-    <Field name="nearPlane" type="double">0.001</Field>
-    <Field name="farPlane" type="double">100</Field>
-    <Field name="imagePan" type="doubleArray" length="2">0. 0.</Field>
-    <Field name="imageZoom" type="double">1.</Field>
-    <Field name="perspective" type="bool">true</Field>
+  <Attribute name="View3DAttributes" purpose="This class contains the 3d view attributes." persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h">
+    <Field name="viewNormal" label="viewNormal" type="doubleArray" length="3">
+      0.000000
+      0.000000
+      1.000000
+    </Field>
+    <Field name="focus" label="focus" type="doubleArray" length="3">
+      0.000000
+      0.000000
+      0.000000
+    </Field>
+    <Field name="viewUp" label="viewUp" type="doubleArray" length="3">
+      0.000000
+      1.000000
+      0.000000
+    </Field>
+    <Field name="viewAngle" label="viewAngle" type="double">
+      30.000000
+    </Field>
+    <Field name="parallelScale" label="parallelScale" type="double">
+      1.000000
+    </Field>
+    <Field name="nearPlane" label="nearPlane" type="double">
+      0.001000
+    </Field>
+    <Field name="farPlane" label="farPlane" type="double">
+      100.000000
+    </Field>
+    <Field name="imagePan" label="imagePan" type="doubleArray" length="2">
+      0.000000
+      0.000000
+    </Field>
+    <Field name="imageZoom" label="imageZoom" type="double">
+      1.000000
+    </Field>
+    <Field name="perspective" label="perspective" type="bool">
+      true
+    </Field>
+    <Field name="eyeAngle" label="eyeAngle" type="double">
+      2.000000
+    </Field>
   </Attribute>

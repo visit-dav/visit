@@ -4,6 +4,10 @@
 #include <TransformPluginInfo.h>
 #include <PyTransformAttributes.h>
 
+#if defined(__APPLE__)
+#define GetScriptingInfo Transform_GetScriptingInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //

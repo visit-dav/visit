@@ -5,6 +5,10 @@
 #include <ExternalSurfacePluginInfo.h>
 #include <avtExternalSurfaceFilter.h>
 
+#if defined(__APPLE__)
+#define GetEngineInfo ExternalSurface_GetEngineInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //

@@ -1,5 +1,9 @@
 #include <KullLitePluginInfo.h>
 
+#if defined(__APPLE__)
+#define GetEngineInfo KullLite_GetEngineInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //

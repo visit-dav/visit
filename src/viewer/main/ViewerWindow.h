@@ -405,6 +405,9 @@ public:
     void Compute2DScaleFactor(double &s, int &t);
     void GetScaleFactorAndType(double &s, int &t);
 
+    void ConvertFromLeftEyeToRightEye(void);
+    void ConvertFromRightEyeToLeftEye(void);
+
     void ScalePlots(const float [3]);
 
     // Rendering options.

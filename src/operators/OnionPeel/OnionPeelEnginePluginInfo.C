@@ -5,6 +5,10 @@
 #include <OnionPeelPluginInfo.h>
 #include <avtOnionPeelFilter.h>
 
+#if defined(__APPLE__)
+#define GetEngineInfo OnionPeel_GetEngineInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //

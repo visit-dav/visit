@@ -5,6 +5,10 @@
 #include <SubsetPluginInfo.h>
 #include <avtSubsetPlot.h>
 
+#if defined(__APPLE__)
+#define GetEngineInfo Subset_GetEngineInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetEngineInfo
 //

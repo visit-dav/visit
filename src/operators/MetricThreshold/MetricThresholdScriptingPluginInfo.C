@@ -4,6 +4,10 @@
 #include <MetricThresholdPluginInfo.h>
 #include <PyMetricThresholdAttributes.h>
 
+#if defined(__APPLE__)
+#define GetScriptingInfo MetricThreshold_GetScriptingInfo
+#endif
+
 // ****************************************************************************
 //  Function:  GetScriptingInfo
 //
