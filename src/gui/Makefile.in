@@ -273,6 +273,10 @@
 #    I added support for MacOS X frameworks so the gui can be prebound on
 #    MacOS X.
 #
+#    Brad Whitlock, Wed May 5 16:20:09 PST 2004
+#    I removed the command line window and interpreter classes since they
+#    have not been valid since before the intitial visit prototype.
+#
 ##############################################################################
 
 ##
@@ -318,7 +322,6 @@ HDRMOC = \
     QvisColorSelectionWidget.h \
     QvisColorTableButton.h \
     QvisColorTableWindow.h \
-    QvisCommandLineWindow.h \
     QvisDatabaseCorrelationListWindow.h \
     QvisDatabaseCorrelationWindow.h \
     QvisDelayedWindow.h \
@@ -378,7 +381,6 @@ HDR = ${HDRMOC} \
     ColorTableObserver.h \
     FileServerList.h \
     GUIBase.h \
-    Interpreter.h \
     KFBase.h \
     KFListViewItem.h \
     NameSimplifier.h \
@@ -396,7 +398,6 @@ SRC = \
     ColorTableObserver.C \
     FileServerList.C \
     GUIBase.C \
-    Interpreter.C \
     KFBase.C \
     KFListViewItem.C \
     NameSimplifier.C \
@@ -473,9 +474,6 @@ ${SRCMOC}:
 
 main.o: main.C QvisMainWindow.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c main.C
-
-Interpreter.o:
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c Interpreter.C
 
 ##
 ## Automatic dependency stuff

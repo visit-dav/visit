@@ -19,36 +19,14 @@ class ObserverToCallback;
 class QPrinter;
 class QSocketNotifier;
 class QTimer;
-class QvisAnimationWindow;
-class QvisAnnotationWindow;
 class QvisAppearanceWindow;
 class QvisApplication;
-class QvisColorTableWindow;
-class QvisDatabaseCorrelationListWindow;
-class QvisExpressionsWindow;
-class QvisCommandLineWindow;
-class QvisEngineWindow;
-class QvisFileInformationWindow;
-class QvisFileSelectionWindow;
-class QvisGlobalLineoutWindow;
-class QvisHelpWindow;
-class QvisHostProfileWindow;
-class QvisKeyframeWindow;
-class QvisLightingWindow;
 class QvisMainWindow;
-class QvisMaterialWindow;
 class QvisMessageWindow;
 class QvisOutputWindow;
 class QvisPickWindow;
 class QvisPluginWindow;
 class QvisPreferencesWindow;
-class QvisQueryWindow;
-class QvisQueryOverTimeWindow;
-class QvisRenderingWindow;
-class QvisSaveWindow;
-class QvisSubsetWindow;
-class QvisViewWindow;
-class QvisWindowBase;
 class SplashScreen;
 
 // ****************************************************************************
@@ -225,6 +203,10 @@ class SplashScreen;
 //    I added allowFileSelectionChange, which is an internal flag only used
 //    at startup.
 //
+//    Brad Whitlock, Wed May 5 16:02:04 PST 2004
+//    I added more support for not creating windows, etc before they are 
+//    really needed. This should help launch time.
+//
 // ****************************************************************************
 
 class GUI_API QvisGUIApplication : public QObject, public ConfigManager, public GUIBase
@@ -242,8 +224,17 @@ private:
     void CalculateViewerArea(int orientation, int &x, int &y,
                              int &width, int &height);
     void CreateMainWindow();
-    bool CreateWindows(int startPercent, int endPercent);
+    void SetupWindows();
+    QvisWindowBase *WindowFactory(int i);
+    QvisWindowBase *GetWindowPointer(int i);
+    QvisWindowBase *GetInitializedWindowPointer(int i);
+    void CreateInitiallyVisibleWindows(DataNode *node);
+    void ReadWindowSettings(QvisWindowBase *win, DataNode *node);
+
     void CreatePluginWindows();
+    void EnsurePlotWindowIsCreated(int i);
+    void EnsureOperatorWindowIsCreated(int i);
+
     void LaunchViewer();
     void InitializeFileServer(DataNode *);
     void LoadFile(bool addDefaultPlots);
@@ -289,8 +280,35 @@ private slots:
     void RestoreSession();
     void RestoreSessionFile(const QString &);
     void SaveSession();
+
+    // Slots to show windows.
+    void showFileSelectionWindow();
+    void showFileInformationWindow();
+    void showHostProfilesWindow();
+    void showSaveWindow();
+    void showEngineWindow();
+    void showAnimationWindow();
+    void showAnnotationWindow();
+    void showColorTableWindow();
+    void showExpressionsWindow();
+    void showSubsetWindow();
+    void showViewWindow();
+    void showKeyframeWindow();
+    void showLightingWindow();
+    void showGlobalLineoutWindow();
+    void showMaterialWindow();
+    void showHelpWindow();
+    void displayCopyright();
+    void displayReleaseNotes();
+    void showQueryWindow();
+    void showRenderingWindow();
+    void showCorrelationListWindow();
+    void showQueryOverTimeWindow();
+
 private:
+    static const char           *windowNames[];
     int                          completeInit;
+    int                          stagedInit;
     bool                         viewerIsAlive;
 
     MessageAttributes            message;
@@ -315,35 +333,14 @@ private:
     int    qt_argc;
     char **qt_argv;
 
-    // Windows.
+    // Crucial Windows.
     QvisMainWindow               *mainWin;
-    QvisColorTableWindow         *colorTableWin;
-    QvisDatabaseCorrelationListWindow *correlationListWin;
-    QvisExpressionsWindow        *exprWin;
-    QvisCommandLineWindow        *cliWin;
-    QvisFileSelectionWindow      *fileWin;
-    QvisFileInformationWindow    *fileInformationWin;
     QvisMessageWindow            *messageWin;
     QvisOutputWindow             *outputWin;
-    QvisHostProfileWindow        *hostWin;
-    QvisSaveWindow               *saveWin;
-    QvisEngineWindow             *engineWin;
-    QvisAnnotationWindow         *annotationWin;
-    QvisSubsetWindow             *subsetWin;
-    QvisViewWindow               *viewWin;
     QvisPluginWindow             *pluginWin;
     QvisAppearanceWindow         *appearanceWin;
-    QvisLightingWindow           *lightingWin;
-    QvisMaterialWindow           *materialWin;
     QvisPickWindow               *pickWin;
-    QvisAnimationWindow          *animationWin;
-    QvisKeyframeWindow           *keyframeWin;
-    QvisHelpWindow               *helpWin;
-    QvisQueryWindow              *queryWin;
     QvisPreferencesWindow        *preferencesWin;
-    QvisRenderingWindow          *renderingWin;
-    QvisGlobalLineoutWindow      *globalLineoutWin;
-    QvisQueryOverTimeWindow      *queryOverTimeWin;
 
     // Contains pointers to all of the plot windows.
     WindowBaseVector             plotWindows;
@@ -352,7 +349,7 @@ private:
     WindowBaseVector             operatorWindows;
 
     // Contains pointers to all of the other windows.
-    WindowBaseVector             otherWindows;
+    WindowBaseMap                otherWindows;
 
     // Options that can be set via the command line
     bool                         localOnly;

@@ -268,6 +268,11 @@ avtTensorGlyphMapper::InsertFilters(vtkDataSet *ds, int dom)
 //  Programmer:  Hank Childs 
 //  Creation:    September 23, 2003 
 //
+//  Modifications:
+//
+//    Hank Childs, Fri May  7 07:38:31 PDT 2004
+//    Reset the default range so the colors update properly.
+//
 // ****************************************************************************
 
 void
@@ -284,6 +289,8 @@ avtTensorGlyphMapper::SetScale(float s)
             }
         }
     }
+
+    SetDefaultRange();
 }
 
 
