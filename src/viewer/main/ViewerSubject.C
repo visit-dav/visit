@@ -5971,13 +5971,18 @@ ViewerSubject::LaunchProgressCB(void *d, int stage)
 // Creation:   Fri Mar 12 12:17:02 PDT 2004
 //
 // Modifications:
+//
+//   Mark C. Miller, Tue Jun 15 19:49:22 PDT 2004
+//   Added code to test if engine is also in render
 //   
 // ****************************************************************************
 
 void
 ViewerSubject::SendKeepAlives()
 {
-    if(launchingComponent || ViewerEngineManager::Instance()->InExecute())
+    if(launchingComponent ||
+       ViewerEngineManager::Instance()->InExecute() ||
+       ViewerEngineManager::Instance()->InRender())
     {
         // We're launching a component so we don't want to send keep alive
         // signals right now but try again in 20 seconds.

@@ -949,11 +949,16 @@ avtVistaFileFormat::GetAuxiliaryData(const char *var, int domain,
 //  Programmer: Mark C. Miller
 //  Creation:   April 27, 2004 
 //
+//  Modifications:
+//    Mark C. Miller, Mon Jun 14 17:45:59 PDT 2004
+//    Fixed bug where code assumed that if a material exists, a clean Vista
+//    node would also exist for it.
+//
 // ****************************************************************************
 avtMaterial *
 avtVistaFileFormat::GetMaterial(int domain, const char *var)
 {
-    int i;
+    int i,j;
     const Node *top = vTree->GetTop();
 
     //
@@ -971,15 +976,6 @@ avtVistaFileFormat::GetMaterial(int domain, const char *var)
     vector<MatZoneMap> matMap;
     for (i = 0; i < numMatNodes; i++)
     {
-        MatZoneMap mapEntry;
-
-        //
-        // Skip mixed entries as we deal with those in the attempt to get 
-        // mix information below 
-        //
-        if (StringHelpers::FindRE(matNodes[i]->text,"_mix$") >= 0)
-            continue;
-
         //
         // Get this material's number
         //
@@ -999,77 +995,107 @@ avtVistaFileFormat::GetMaterial(int domain, const char *var)
             matName = tempStr;
         }
 
-        mapEntry.matno = matNum;
-        mapEntry.name = matName;
+        //
+        // See if we've already started an entry in matMap for
+        // this material
+        //
+        int entryIndex = -1;
+        for (j = 0; j < matMap.size(); j++)
+        {
+            if ((matMap[j].matno == matNum) &&
+                (matMap[j].name == matName))
+            {
+                entryIndex = j;
+                break;
+            }
+        }
 
         //
-        // read the clean index set
+        // Set up the map entry we are working with
+        //
+        MatZoneMap mapEntry;
+        if (entryIndex == -1)
+        {
+            mapEntry.matno      = matNum;
+            mapEntry.name       = matName;
+            mapEntry.numClean   = 0;
+            mapEntry.cleanZones = 0;
+            mapEntry.numMixed   = 0;
+            mapEntry.mixedZones = 0;
+            mapEntry.volFracs   = 0;
+
+            entryIndex = matMap.size();
+            matMap.push_back(mapEntry);
+        }
+        else
+        {
+            mapEntry = matMap[entryIndex];
+        }
+
+        //
+        // read the index set
         //
         char fileName[1024];
         hsize_t dSize = 0;
-        int *cleanIndexSet= 0;
+        int *indexSet = 0;
         GetFileNameForRead(domain, fileName, sizeof(fileName));
         SNPRINTF(tempStr, sizeof(tempStr), "%s/Indexset", vTree->GetPathFromNode(matNodes[i])); 
-        ReadDataset(fileName, tempStr, 0, &dSize, (void**) &cleanIndexSet);
+        ReadDataset(fileName, tempStr, 0, &dSize, (void**) &indexSet);
         if (dSize != matNodes[i]->len)
         {
             EXCEPTION2(UnexpectedValueException, matNodes[i]->len, dSize);
         }
 
-        mapEntry.numClean = matNodes[i]->len;
-        mapEntry.cleanZones = cleanIndexSet;
+        //
+        // Is this iteration through the loop for a clean or mixed portion?
+        //
+        bool isMixed = false;
+        if (StringHelpers::FindRE(matNodes[i]->text,"_mix$") >= 0)
+            isMixed = true;
 
-        //
-        // Look for the mixed Vista node
-        //
-        SNPRINTF(tempStr, sizeof(tempStr), "%s_mix", vTree->GetPathFromNode(matNodes[i])); 
-        const Node *mixedNode = vTree->GetNodeFromPath(top, tempStr);
-        if (mixedNode)
+        if (isMixed)
         {
-
-            //
-            // read the mixed index set
-            //
-            dSize = 0;
-            int *mixedIndexSet= 0;
-            SNPRINTF(tempStr, sizeof(tempStr), "%s/Indexset", vTree->GetPathFromNode(mixedNode)); 
-            ReadDataset(fileName, tempStr, 0, &dSize, (void**) &mixedIndexSet);
-            if (dSize != mixedNode->len)
-            {
-                EXCEPTION2(UnexpectedValueException, mixedNode->len, dSize);
-            }
-
             //
             // read the volume fractions
             //
             dSize = 0;
             double *dvf = 0;
-            SNPRINTF(tempStr, sizeof(tempStr), "%s/Fields/vf", vTree->GetPathFromNode(mixedNode)); 
+            SNPRINTF(tempStr, sizeof(tempStr), "%s/Fields/vf", vTree->GetPathFromNode(matNodes[i])); 
             ReadDataset(fileName, tempStr, 0, &dSize, (void**) &dvf);
-            if (dSize != mixedNode->len)
+            if (dSize != matNodes[i]->len)
             {
-                EXCEPTION2(UnexpectedValueException, mixedNode->len, dSize);
+                EXCEPTION2(UnexpectedValueException, matNodes[i]->len, dSize);
             }
 
+            //
             // convert double to float
-            float *vf = new float[mixedNode->len];
+            //
+            float *vf = new float[matNodes[i]->len];
             int j;
-            for (j = 0; j < mixedNode->len; j++)
+            for (j = 0; j < matNodes[i]->len; j++)
                 vf[j] = dvf[j];
             delete [] dvf;
 
-            mapEntry.numMixed = mixedNode->len;
-            mapEntry.mixedZones = mixedIndexSet;
-            mapEntry.volFracs = vf;
+            //
+            // Populate mixed members of mapEntry
+            //
+            mapEntry.numMixed   = matNodes[i]->len;
+            mapEntry.mixedZones = indexSet;
+            mapEntry.volFracs   = vf;
         }
         else
         {
-            mapEntry.numMixed = 0;
-            mapEntry.mixedZones = 0; 
-            mapEntry.volFracs = 0;
+            //
+            // Populate clean members of mapEntry 
+            //
+            mapEntry.numClean   = matNodes[i]->len;
+            mapEntry.cleanZones = indexSet;
         }
 
-        matMap.push_back(mapEntry);
+        //
+        // Copy mapEntry contents to correct entry in map
+        //
+        matMap[entryIndex] = mapEntry;
     }
 
     //

@@ -6,13 +6,16 @@
 
 #include <vtkDataSet.h>
 #include <vtkIdList.h>
+#include <vtkIntArray.h>
 #include <vtkMath.h>
 #include <vtkPointData.h>
 #include <vtkPoints.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkUnsignedCharArray.h>
+#include <vtkVisItPointLocator.h>
 #include <vtkVisItUtility.h>
 
+#include <DebugStream.h>
 
 #include <math.h>
 #include <float.h>
@@ -61,6 +64,9 @@ avtLocateNodeQuery::~avtLocateNodeQuery()
 //  Creation:   May 18, 2004 
 //
 //  Modifications:
+//    Kathleen Bonnell, Thu Jun 17 14:05:22 PDT 2004
+//    Handle finding the NOde for mat-selected plots differently, as they
+//    may have created new points in the mesh.
 //    
 // ****************************************************************************
 
@@ -75,6 +81,7 @@ avtLocateNodeQuery::Execute(vtkDataSet *ds, const int dom)
 
     float dist, isect[3] = { 0., 0., 0.};
     int foundNode = -1;
+    int origNode = -1;
 
     // Find the cell, intersection point, and distance along the ray.
     //
@@ -82,7 +89,12 @@ avtLocateNodeQuery::Execute(vtkDataSet *ds, const int dom)
     {
         int foundCell = LocatorFindCell(ds, dist, isect); 
         if (foundCell != -1)
-            foundNode = DeterminePickedNode(ds, foundCell, isect);
+        {
+            if (!pickAtts.GetMatSelected())
+                foundNode = DeterminePickedNode(ds, foundCell, isect);
+            else 
+                foundNode = FindClosestPoint(ds, isect, origNode);
+        }
     }
     else
     {
@@ -94,19 +106,22 @@ avtLocateNodeQuery::Execute(vtkDataSet *ds, const int dom)
         minDist = dist;
 
         pickAtts.SetPickPoint(isect);
-        vtkDataArray *origNodes = 
+        if (!pickAtts.GetMatSelected())
+        {
+            vtkDataArray *origNodes = 
                  ds->GetPointData()->GetArray("avtOriginalNodeNumbers");
 
-        if (origNodes)
-        {
-            int comp = origNodes->GetNumberOfComponents() -1;
-            foundElement = (int) origNodes->GetComponent(foundNode, comp);
-        }
-        else if (GetInput()->GetInfo().GetValidity().GetZonesPreserved() &&
-                 GetInput()->GetInfo().GetAttributes().GetContainsGhostZones() 
-                    != AVT_CREATED_GHOSTS)
-        {
-            foundElement = foundNode;
+            if (origNodes)
+            {
+                int comp = origNodes->GetNumberOfComponents() -1;
+                foundElement = (int) origNodes->GetComponent(foundNode, comp);
+            }
+            else if (GetInput()->GetInfo().GetValidity().GetZonesPreserved() &&
+                     GetInput()->GetInfo().GetAttributes().GetContainsGhostZones() 
+                        != AVT_CREATED_GHOSTS)
+            {
+                foundElement = foundNode;
+            }
         }
         pickAtts.SetCellPoint(isect);
         pickAtts.SetNodePoint(vtkVisItUtility::GetPoints(ds)->GetPoint(foundNode));
@@ -211,3 +226,75 @@ avtLocateNodeQuery::DeterminePickedNode(vtkDataSet *ds, int foundCell, float *pp
    return minId;
 }
 
+
+// ****************************************************************************
+//  Method: avtLocateNodeQuery::FindClosestPoint
+//
+//  Purpose:
+//    Finds the closest node-point to the intersection point.  
+//
+//  Arguments:
+//    ds        The dataset to retrieve information from.
+//    isect       the intersection point.
+//    origNode  the original node Id, if any.
+//
+//  Programmer: Kathleen Bonnell  
+//  Creation:   June 17, 2004 
+//
+//  Modifications:
+//    
+// ****************************************************************************
+
+int
+avtLocateNodeQuery::FindClosestPoint(vtkDataSet *ds, float *isect, int &origNode)
+{
+    vtkVisItPointLocator *locator = vtkVisItPointLocator::New();
+    locator->SetDataSet(ds);
+    locator->SetIgnoreDisconnectedPoints(0);
+    locator->BuildLocator();
+
+    vtkIdList *closestPoints = vtkIdList::New();
+    //
+    //  Some of the nearest points may not be valid (e.g. created during
+    //  material interface reconstruction, so make sure we retrieve enough
+    //  information to get to a valid point.
+    //
+    locator->FindClosestNPoints(8, isect, closestPoints);
+
+    int id = -1;
+    int ncp = closestPoints->GetNumberOfIds();
+
+    if (ncp > 0)
+    {
+        vtkIntArray *origNodes = vtkIntArray::SafeDownCast(
+            ds->GetPointData()->GetArray("avtOriginalNodeNumbers"));
+        if (origNodes)
+        {
+            int comp = origNodes->GetNumberOfComponents()-1;
+            int oNode = -1;
+            for (int i = 0; i < ncp && oNode == -1; i++)
+            {
+                id = closestPoints->GetId(i);
+                oNode = (int)origNodes->GetComponent(id, comp);
+            }
+            if (oNode != -1)
+                origNode = oNode; 
+            else
+                id = closestPoints->GetId(0);
+        }
+        else 
+        {
+            //
+            // This method is called when MateriaSelection has taken place,
+            // so avtOriginalNodeNumbers should be here.
+            //
+            id = closestPoints->GetId(0);
+            debug5 << "avtLocateNodeQuery::FindClosestPoint could not find "
+                   << "avtOriginalNodeNumbers, possible error." << endl;
+        }
+    }
+
+    closestPoints->Delete();
+    locator->Delete();
+    return id;
+}

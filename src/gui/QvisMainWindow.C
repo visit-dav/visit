@@ -199,6 +199,10 @@
 //    I added support for putting reopen and close in an "Advanced"
 //    pullright menu.
 //
+//    Kathleen Bonnell, Thu Jun 17 13:50:58 PDT 2004 
+//    Changed QueryOverTime's accelerator key from CTL-T to CTL-SHIFT-Q
+//    so that it would not collide with the ColorTable's accelerator. 
+// 
 // ****************************************************************************
 
 QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
@@ -308,7 +312,7 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     id = ctrls->insertItem(tr("&Lineout . . ."), this, SIGNAL(activateGlobalLineoutWindow()), CTRL+SHIFT+Key_L );
     id = ctrls->insertItem(pickIcon, tr("&Pick . . ."), this, SIGNAL(activatePickWindow()), CTRL+Key_P );
     id = ctrls->insertItem(tr("&Query . . ."), this, SIGNAL(activateQueryWindow()), CTRL+Key_Q );
-    id = ctrls->insertItem(tr("Query over &time options . . ."), this, SIGNAL(activateQueryOverTimeWindow()), CTRL+Key_T );
+    id = ctrls->insertItem(tr("&Query over time options . . ."), this, SIGNAL(activateQueryOverTimeWindow()), CTRL+SHIFT+Key_Q );
     id = ctrls->insertItem(subsetIcon, tr("S&ubset . . ."), this, SIGNAL(activateSubsetWindow()), CTRL+Key_U);
     id = ctrls->insertItem(viewIcon, tr("&View . . ."), this, SIGNAL(activateViewWindow()), CTRL+Key_V);
 

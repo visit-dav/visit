@@ -14,7 +14,6 @@
 
 #include <vtkCell.h>
 #include <vtkCellData.h>
-#include <vtkCellLocator.h>
 #include <vtkDataSet.h>
 #include <vtkFloatArray.h>
 #include <vtkIdList.h>
@@ -5138,6 +5137,10 @@ avtGenericDatabase::QueryMesh(const std::string &varName, const int ts,
 //    Kathleen Bonnell, Wed Dec 17 15:04:57 PST 2003 
 //    Updated args list to include multiple types of Coordinates. 
 //    
+//    Kathleen Bonnell, Thu Jun 17 12:58:47 PDT 2004 
+//    Only search for the node if it hasn't already been discovered, 
+//    use the generic ds->GetPoint() method.
+//    
 // ****************************************************************************
 
 bool
@@ -5163,41 +5166,14 @@ avtGenericDatabase::QueryZones(const string &varName, const int dom,
         vtkPoints *points = vtkVisItUtility::GetPoints(ds);
         vtkIdList *ids = vtkIdList::New();
         vtkIdType *idptr; 
-        vtkIdType minId = -1;
+        vtkIdType minId = foundEl;
         float coord[3];
         int ijk[3];
         char buff[80];
         int type = ds->GetDataObjectType();
-        if (ppt[0] == FLT_MAX)
+        if (minId == -1)
         {
-            minId = foundEl;
-        }
-        else
-        {
-            if (type == VTK_RECTILINEAR_GRID)
-            {
-               // This method is faster for rectilinear grids than other types 
-               // It is also faster for RGrids than method below. 
-                minId = ds->FindPoint(ppt);
-            }
-            else
-            {
-                ds->GetCellPoints(foundEl, ids);
-                int numPts = ids->GetNumberOfIds();
-                float dist2;
-                float minDist2 = FLT_MAX;
-                idptr = ids->GetPointer(0);
-                for (int i = 0; i < numPts; i++)
-                {
-                    dist2 = vtkMath::Distance2BetweenPoints(ppt, 
-                        points->GetPoint(idptr[i]));
-                    if (dist2 < minDist2)
-                    {
-                        minDist2 = dist2; 
-                        minId = idptr[i]; 
-                    }
-                }
-            }
+            minId = ds->FindPoint(ppt);
         }
 
         if ( minId != -1)
@@ -5249,7 +5225,6 @@ avtGenericDatabase::QueryZones(const string &varName, const int dom,
                 }
                 pnodeCoords.push_back(buff);
             }
-            ids->Reset();
             ds->GetPointCells(minId, ids);
             int nCells = ids->GetNumberOfIds();
             if (nCells > 0)

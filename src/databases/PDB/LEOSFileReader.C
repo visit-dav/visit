@@ -1,13 +1,16 @@
 #include <InvalidVariableException.h>
 #include <UnexpectedValueException.h>
 
+#include <vtkCellArray.h>
 #include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
 #include <vtkPolyData.h>
+#include <vtkPoints.h>
 #include <vtkPointData.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
 
+#include <avtCallback.h>
 #include <avtDatabaseMetaData.h>
 
 #include <Utility.h>
@@ -35,7 +38,6 @@ static const int validChars[128] = {
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,  // 80 - 95
     0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,  // 96 - 111
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0}; //112 - 127 
-
 
 // ****************************************************************************
 // Function: RemoveSpaces
@@ -71,6 +73,10 @@ RemoveSpaces(const char *str)
 // Programmer: Mark C. Miller
 // Creation:   February 10, 2004 
 //
+// Modfiications
+//   Mark C. Miller, Thu Jun 17 23:07:34 PDT 2004
+//   Changed mapping of '/' from '|' to '.'
+//
 // ****************************************************************************
 static bool 
 FixMatName(char *matName, int maxLen)
@@ -92,7 +98,7 @@ FixMatName(char *matName, int maxLen)
         if (matName[i] == ')')
             matName[i] = ']';
         if (matName[i] == '/')
-            matName[i] = '|';
+            matName[i] = '.';
         if (validChars[matName[i]] == 0)
             matName[i] = 'X';
         if (matName[i] != ' ')
@@ -116,6 +122,46 @@ FixMatName(char *matName, int maxLen)
         matName[lastNonSpace+1] = 0;
 
     return true;
+}
+
+// ****************************************************************************
+// Function: IssueUnknownLEOSVariableWarning 
+//
+// Purpose: Issues warning that LEOS variable name encountered in 'contents'
+//          is not known in the plugin's current implementation.
+//
+// Programmer: Mark C. Miller
+// Creation:   June 17, 2004 
+//
+// ****************************************************************************
+void
+IssueUnknownLEOSVariableWarning(const char *matDirName, const char *matName,
+    const char *varName)
+{
+    char msg[2048];
+
+    static bool longMsgIssued = false;
+
+    const char *longMsgFmtStr = "The variable \"%s\" for material \"%s\" "
+        "in directory \"%s\" \nof this file was ignored. If you want to see "
+        "this variable, exit visit and restart it with \nthe environment "
+        "variable VISIT_LEOS_TRY_HARDER set to a value of 1 (or greater).";
+
+    const char *shortMsgFmtStr = "Also ignored \"%s\" for mat \"%s\" "
+        "in dir \"%s\"";
+
+    if (!longMsgIssued)
+    {
+        sprintf(msg, longMsgFmtStr, varName, matName, matDirName);
+        longMsgIssued = true;
+    }
+    else
+    {
+        sprintf(msg, shortMsgFmtStr, varName, matName, matDirName);
+    }
+
+    //if (!avtCallback::IssueWarning(msg))
+        cerr << msg << endl;
 }
 
 // ****************************************************************************
@@ -174,6 +220,9 @@ LEOSFileReader::~LEOSFileReader()
 // Programmer: Mark C. Miller
 // Creation:   February 10, 2004 
 //
+// Modifications:
+//   Added code to not display error message if we're already in try hard mode
+//
 // ****************************************************************************
 
 void
@@ -199,6 +248,12 @@ LEOSFileReader::ThrowInvalidVariableException(bool ignorable, const char *varCla
         "environment variable, VISIT_LEOS_TRY_HARDER, "
         "to a value of 2 and restart VisIt. It will take VisIt longer to load the "
         "LEOS database but this error will not appear.";
+
+    // if we're already at try hard level of 2, just throw an exception
+    if (tryHardLevel == 2)
+    {
+        EXCEPTION1(InvalidVariableException, fullVarName);
+    }
 
     // check if we've already issued an exception for this variable
     bool haveSeenBefore = true;
@@ -319,6 +374,10 @@ LEOSFileReader::SetMapEntry(eosVarInfo_t &info, int ndims,
 // Programmer: Mark C. Miller
 // Creation:   February 10, 2004 
 //
+// Modifications:
+//   Mark C. Miller Thu Jun 17 23:07:34 PDT 2004
+//   Added Ki and Vs to list
+//
 // ****************************************************************************
 
 
@@ -378,6 +437,12 @@ LEOSFileReader::BuildVarInfoMap()
 
     SetMapEntry(eosVarInfoMap["Zeff"] , 2, "table", "none",
         "rho", "g/cc", "numrho", "temp", "K", "numtemp");
+
+    SetMapEntry(eosVarInfoMap["Ki"] , 2, "table", "erg/cc",
+        "rho", "g/cc", "numrho", "temp", "K", "numtemp");
+
+    SetMapEntry(eosVarInfoMap["Vs"] , 2, "table", "erg/cc",
+        "rho", "g/cc", "numrho", "temp", "K", "numtemp");
 }
 
 // ****************************************************************************
@@ -403,17 +468,19 @@ LEOSFileReader::BuildVarInfoMap()
 //    I modified how mesh names were constructed to now prepend a directory 
 //    name.
 //
+//    Mark C. Miller, Thu Jun 17 23:07:34 PDT 2004
+//    Added code to correctly serve up 1D eos vars as curve objects 
+//
 // ****************************************************************************
 
 bool 
 LEOSFileReader::AddVariableAndMesh(avtDatabaseMetaData *md, const char *matDirName, 
     const char *matName, const char *matForm, const char *varDirName)
 {
-
     std::map<string, eosVarInfo_t>::const_iterator i;
     eosVarInfo_t varInfo;
 
-    // if the material formula isn't now known, read it
+    // if the material formula isn't now known and we should try hard, read it
     string materialFormula;
     if ((matForm == 0) && (tryHardLevel > 0))
     {
@@ -429,7 +496,7 @@ LEOSFileReader::AddVariableAndMesh(avtDatabaseMetaData *md, const char *matDirNa
         }
     }
 
-    // compute mesh and variable names to be served up to VisIt
+    // compute variable name to be served up to VisIt
     char *varName = CXX_strdup(varDirName);
     varName[strlen(varName)-1] = 0;
     string meshBaseName;
@@ -438,6 +505,17 @@ LEOSFileReader::AddVariableAndMesh(avtDatabaseMetaData *md, const char *matDirNa
     else
         meshBaseName = string(matName) + "_" + string(matForm);
     string mdVarName  = meshBaseName + '/' + string(varName);
+
+    // Make sure this visit variable name is unique
+    char ext = 'A';
+    while (matNameMap.find(mdVarName) != matNameMap.end())
+    {
+        mdVarName = meshBaseName + '_' + ext + '/' + string(varName);
+        ext++;
+    }
+    matNameMap[mdVarName] = mdVarName;
+
+    // set the name of the mesh based on the variable name, now, too
     string mdMeshName;
     mdMeshName = meshesDirName + mdVarName;
 
@@ -457,7 +535,7 @@ LEOSFileReader::AddVariableAndMesh(avtDatabaseMetaData *md, const char *matDirNa
         // try harder, add info about it to the eosVarInfoMap
         if (i == eosVarInfoMap.end())
         {
-            if (tryHardLevel > 1)
+            if (tryHardLevel > 0)
             {
                 ReadVariableInfo(matDirName, varDirName, varInfo);
                 eosVarInfoMap[varName] = varInfo; 
@@ -465,8 +543,9 @@ LEOSFileReader::AddVariableAndMesh(avtDatabaseMetaData *md, const char *matDirNa
             }
             else
             {
+                IssueUnknownLEOSVariableWarning(matDirName, matName, varName);
                 delete [] varName;
-                return false;
+                return true;
             }
         }
     }
@@ -474,19 +553,27 @@ LEOSFileReader::AddVariableAndMesh(avtDatabaseMetaData *md, const char *matDirNa
     // get this variable's information
     varInfo = i->second; 
 
-    // add the mesh
-    avtMeshMetaData *mmd = new avtMeshMetaData(mdMeshName, 1, 0, 0, varInfo.ndims,
-                                   varInfo.ndims, AVT_RECTILINEAR_MESH);
+    if (varInfo.ndims == 2)
+    {
+        // add the mesh
+        avtMeshMetaData *mmd = new avtMeshMetaData(mdMeshName, 1, 0, 0, varInfo.ndims,
+                                       varInfo.ndims, AVT_RECTILINEAR_MESH);
 
-    // we use a trick and include the axis lables in the units
-    mmd->xUnits = varInfo.xName + '[' + varInfo.xUnits + ']';
-    if ((varInfo.yName != "") && (varInfo.yUnits != ""))
-        mmd->yUnits = varInfo.yName + '[' + varInfo.yUnits + ']';
-    md->Add(mmd);
+        // we use a trick and include the axis lables in the units
+        mmd->xUnits = varInfo.xName + '[' + varInfo.xUnits + ']';
+        if ((varInfo.yName != "") && (varInfo.yUnits != ""))
+            mmd->yUnits = varInfo.yName + '[' + varInfo.yUnits + ']';
+        md->Add(mmd);
 
-    // add the variable on this mesh
-    avtScalarMetaData *smd = new avtScalarMetaData(mdVarName, mdMeshName, AVT_NODECENT);
-    md->Add(smd);
+        // add the variable on this mesh
+        avtScalarMetaData *smd = new avtScalarMetaData(mdVarName, mdMeshName, AVT_NODECENT);
+        md->Add(smd);
+    }
+    else
+    {
+        avtCurveMetaData *cmd = new avtCurveMetaData(mdVarName);
+        md->Add(cmd);
+    }
 
     // add an entry in the dir map for this variable 
     matDirMap[mdVarName] = matDirName;
@@ -690,6 +777,11 @@ LEOSFileReader::ReadMaterialInfo(const char *matDirName, string &matName,
 // Programmer: Mark C. Miller
 // Creation:   February 10, 2004 
 //
+// Modifications:
+//
+//   Mark C. Miller, Thu Jun 17 23:07:34 PDT 2004
+//   Added code to accomdate 1D variables that LEOS says are either Nx1 or 1xN
+//
 // ****************************************************************************
 
 bool
@@ -736,7 +828,7 @@ LEOSFileReader::ReadVariableInfo(const char *matDirName,
     varInfo.xName = string(tableDesc,0,n);
 
     // parse name of PDB symbol containing y data, if appropriate
-    if (tableDesc[n+tmpn] != 0)
+    if (varInfo.ndims == 2)
     {
         tableDesc = string(tableDesc,n+tmp.length(),string::npos);
         tmp = '('+varInfo.ySize+')';
@@ -761,13 +853,52 @@ LEOSFileReader::ReadVariableInfo(const char *matDirName,
     delete [] resultStr;
 
     // get yUnits 
-    if (varInfo.yName != "")
-    resultStr = 0;
-    sprintf(tmpStr,"/%s%sunits_%s", matDirName, varDirName, varInfo.yName.c_str());
-    if (!pdb->GetString(tmpStr, &resultStr))
-        return false;
-    varInfo.yUnits = RemoveSpaces(resultStr);
-    delete [] resultStr;
+    if (varInfo.ndims == 2)
+    {
+        resultStr = 0;
+        sprintf(tmpStr,"/%s%sunits_%s", matDirName, varDirName, varInfo.yName.c_str());
+        if (!pdb->GetString(tmpStr, &resultStr))
+            return false;
+        varInfo.yUnits = RemoveSpaces(resultStr);
+        delete [] resultStr;
+    }
+
+    //
+    // If the PDB symbol for either the xSize or ySize doesn't actually exist, then we
+    // really have a 1D variable. So, make any necessary adjustments
+    //
+    if (varInfo.ndims == 2)
+    {
+        //
+        // make sure the PDB symbol for the size in x exists and is greather than 1
+        //
+        int size = 0;;
+        sprintf(tmpStr,"/%s%s%s", matDirName, varDirName, varInfo.xSize.c_str());
+        if (!pdb->GetInteger(tmpStr, &size) || (size <= 1))
+        {
+            // reduce the dimension and copy everything from y to x
+            varInfo.ndims--;
+            varInfo.xSize = varInfo.ySize;
+            varInfo.xUnits = varInfo.yUnits;
+            varInfo.xName = varInfo.yName;
+        }
+
+        //
+        // make sure the PDB symbol for the size in y exists and is greather than 1
+        //
+        size = 0;
+        sprintf(tmpStr,"/%s%s%s", matDirName, varDirName, varInfo.ySize.c_str());
+        if (!pdb->GetInteger(tmpStr, &size) || (size <= 1))
+        {
+            // reduce the dimension and copy everything from x to y
+            varInfo.ndims--;
+            if (varInfo.ndims == 0)
+                return false;
+            varInfo.ySize = varInfo.xSize;
+            varInfo.yUnits = varInfo.xUnits;
+            varInfo.yName = varInfo.xName;
+        }
+    }
 
     return true;
 }
@@ -1002,7 +1133,98 @@ LEOSFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     // If we get here, we have to do it the hard way
     //
     ReadFileAndPopulateMetaData(md);
+}
 
+// ****************************************************************************
+// Method: LEOSFileReader::GetCurve
+//
+// Purpose: 
+//   Reads and assembles a curve.
+//
+// Programmer: Mark C. Miller
+// Creation:   June 17, 2004
+//
+// ****************************************************************************
+
+vtkDataSet *
+LEOSFileReader::GetCurve(const string matDirName, const string varName,
+    const eosVarInfo_t& varInfo)
+{
+    int i, size;
+    char tmpStr[256];
+    TypeEnum type;
+
+    // set name of PDB symbol containing size in X to read 
+    sprintf(tmpStr, "/%s%s/%s", matDirName.c_str(), varName.c_str(),
+        varInfo.xSize.c_str());
+
+    // read the size (of x coordinate array)
+    if (!pdb->GetInteger(tmpStr, &size))
+    {
+        EXCEPTION1(InvalidVariableException, varName.c_str());
+    }
+
+    // loop to read x, then y values
+    double *xvals;
+    double *yvals;
+    for (i = 0; i < 2; i++)
+    {
+        string dataName = (i == 0) ? varInfo.xName : varInfo.vName;
+
+        // set name of variable to read 
+        sprintf(tmpStr, "/%s%s/%s", matDirName.c_str(), varName.c_str(),
+            dataName.c_str());
+
+        // read the data
+        int nelems;
+        int *dims;
+        int ndims;
+        double *dbuf = (double *) pdb->ReadValues(tmpStr, &type, &nelems, &dims, &ndims);
+        delete [] dims;
+
+        if (ndims != 1)
+            EXCEPTION2(UnexpectedValueException, 1, ndims);
+        if (nelems != size)
+            EXCEPTION2(UnexpectedValueException, size, nelems);
+        if (type != DOUBLEARRAY_TYPE)
+            EXCEPTION2(UnexpectedValueException, DOUBLEARRAY_TYPE, type);
+
+        if (i == 0)
+            xvals = dbuf;
+        else
+            yvals = dbuf;
+    }
+
+    //
+    // Add all of the points to an array.
+    //
+    vtkPolyData *pd  = vtkPolyData::New();
+    vtkPoints   *pts = vtkPoints::New();
+    pd->SetPoints(pts);
+    pts->SetNumberOfPoints(size);
+    for (i = 0 ; i < size; i++)
+    {
+        pts->SetPoint(i, xvals[i], yvals[i], 0.0);
+    }
+ 
+    //
+    // Connect the points up with line segments.
+    //
+    vtkCellArray *line = vtkCellArray::New();
+    pd->SetLines(line);
+    for (i = 1 ; i < size; i++)
+    {
+        line->InsertNextCell(2);
+        line->InsertCellPoint(i-1);
+        line->InsertCellPoint(i);
+    }
+ 
+    pts->Delete();
+    line->Delete();
+    delete [] xvals;
+    delete [] yvals;
+
+    return pd;
 }
 
 // ****************************************************************************
@@ -1027,7 +1249,11 @@ LEOSFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //   Mark C. Miller, Wed Apr 14 10:51:23 PDT 2004
 //   Since I now prepend mesh names with a directory name, I added code to
 //   remove directory prepended here. I also added code to fix a problem
-//   where it would attempt to read the Ny dimensioin of a 1D variable.
+//   where it would attempt to read the Ny dimension of a 1D variable.
+//
+//   Mark C. Miller, Thu Jun 17 23:07:34 PDT 2004
+//   Fixed problem where z coordinate wasn't getting properly set
+//   Added support for curve objects
 //
 // ****************************************************************************
 
@@ -1037,14 +1263,37 @@ LEOSFileReader::GetMesh(int state, const char *var)
     debug4 << "LEOSFileReader::GetMesh: state=" << state
            << ", var=" << var << endl;
 
-    int size;
+    int i, size;
     char tmpStr[256];
     string::size_type n;
+
+    //
+    // If we arrive here asking for a variable whose name does not have
+    // the leading "meshes/", then it must be a curve that is being requested
+    //
+    bool isCurve = false;
+    int len = strlen(var);
+    if (len < sizeof(meshesDirName)-1)
+        isCurve = true;
+    else
+    {
+        for (i = 0; i < sizeof(meshesDirName)-1; i++)
+        {
+            if (var[i] != meshesDirName[i])
+            {
+                isCurve = true;
+                break;
+            }
+        }
+    }
 
     // strip of preceding "meshes/" from the beginning of the name
     // name and compute  the full variable name
     // (e.g. "mat/eos-var") and the variable name
-    strcpy(tmpStr, var + sizeof(meshesDirName)-1);
+    if (isCurve)
+        strcpy(tmpStr, var);
+    else
+        strcpy(tmpStr, var + sizeof(meshesDirName)-1);
     string fullVarName = tmpStr;
     n = fullVarName.find('/');
     string varName(fullVarName,n+1,string::npos);
@@ -1080,9 +1329,23 @@ LEOSFileReader::GetMesh(int state, const char *var)
     // we may have detected, but ignored, a problem with the info from the map
     //
 
+    //
+    // If the variable we've come here to read is 1D, then it is
+    // treated by VisIt as a curve. So read it as that and return
+    //
+    if (isCurve || (varInfoFromFile.ndims == 1))
+    {
+        if (!isCurve || (varInfoFromFile.ndims != 1))
+        {
+            EXCEPTION1(InvalidVariableException, var);
+        }
+
+        return GetCurve(matDirName, varName, varInfoFromFile);
+    }
+
     int dimensions[3];
     vtkFloatArray  *coords[3];
-    for (int i = 0 ; i < 3 ; i++)
+    for (i = 0 ; i < 3 ; i++)
     {
         size = 1;
         if (i == 0)
@@ -1125,9 +1388,11 @@ LEOSFileReader::GetMesh(int state, const char *var)
         // Default number of components for an array is 1.
         coords[i] = vtkFloatArray::New();
         coords[i]->SetNumberOfTuples(size);
+        if (size == 1)
+            coords[i]->SetComponent(0, 0, 0.0);
         dimensions[i] = size;
 
-        if (i < varInfoFromFile.ndims)
+        if ((size > 1) && (i < varInfoFromFile.ndims))
         {
             float *fbuf = (float*) coords[i]->GetVoidPointer(0);
 

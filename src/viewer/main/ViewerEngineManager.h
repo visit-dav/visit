@@ -171,6 +171,9 @@ class WindowAttributes;
 //    Mark C. Miller, Wed Jun  9 17:44:38 PDT 2004
 //    Added VisualCueList arg to SetWinAnnotAtts
 //
+//    Mark C. Miller, Tue Jun 15 19:49:22 PDT 2004
+//    Added 'rendering' bool data member and Begin/EndEngineRender() methods
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerEngineManager : public ViewerServerManager,
@@ -194,6 +197,7 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
     void InterruptEngine(const EngineKey &ek);
     bool InExecute() const;
     void SendKeepAlives();
+    bool InRender() const;
 
     bool ExternalRender(const ExternalRenderRequestInfo& reqInfo,
                         bool& shouldTurnOfScalableRendering,
@@ -260,6 +264,8 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
     void LaunchMessage(const EngineKey &ek) const;
     void BeginEngineExecute();
     void EndEngineExecute();
+    void BeginEngineRender();
+    void EndEngineRender();
 
   private:
     typedef std::map<EngineKey,EngineProxy*> EngineMap;
@@ -270,6 +276,8 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
     bool                       executing;
     int                        nEngines;
     EngineMap                  engines;
+
+    bool                       rendering;
 
     std::map<EngineKey,stringVector>  restartArguments;
 
