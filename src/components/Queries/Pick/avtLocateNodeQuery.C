@@ -71,6 +71,9 @@ avtLocateNodeQuery::~avtLocateNodeQuery()
 //    Kathleen Bonnell, Thu Jul 29 08:34:18 PDT 2004 
 //    Make sure that node found for mat-slected plots is actually used! 
 //
+//    Kathleen Bonnell, Wed Oct  6 10:43:10 PDT 2004
+//    Terminate early if the ray doesn't intersect the dataset. 
+//
 // ****************************************************************************
 
 void
@@ -81,6 +84,10 @@ avtLocateNodeQuery::Execute(vtkDataSet *ds, const int dom)
         return;
     }
 
+    if (!RayIntersectsDataSet(ds))
+    {
+        return;
+    }
 
     float dist, isect[3] = { 0., 0., 0.};
     int foundNode = -1;

@@ -2124,6 +2124,9 @@ NetworkManager::StopPickMode(void)
 //    Kathleen Bonnell, Mon Aug 30 17:51:56 PDT 2004 
 //    Send SkipLocate flag to pick query.
 //
+//    Kathleen Bonnell, Thu Oct  7 10:29:36 PDT 2004 
+//    Added timing code for each PerformQuery. 
+//
 // ****************************************************************************
 
 void
@@ -2192,7 +2195,9 @@ NetworkManager::Pick(const int id, PickAttributes *pa)
                     lQ = new avtLocateCellQuery;
                     lQ->SetInput(queryInput);
                     lQ->SetPickAtts(pa);
+                    int queryTimer = visitTimer->StartTimer();
                     lQ->PerformQuery(&qa); 
+                    visitTimer->StopTimer(queryTimer, lQ->GetType());
                     *pa = *(lQ->GetPickAtts());
                     delete lQ;
                 }
@@ -2205,7 +2210,9 @@ NetworkManager::Pick(const int id, PickAttributes *pa)
                     lQ = new avtLocateNodeQuery;
                     lQ->SetInput(queryInput);
                     lQ->SetPickAtts(pa);
+                    int queryTimer = visitTimer->StartTimer();
                     lQ->PerformQuery(&qa); 
+                    visitTimer->StopTimer(queryTimer, lQ->GetType());
                     *pa = *(lQ->GetPickAtts());
                     delete lQ;
                 }
@@ -2238,7 +2245,9 @@ NetworkManager::Pick(const int id, PickAttributes *pa)
             pQ->SetInput(networkCache[id]->GetNetDB()->GetOutput());
             pQ->SetPickAtts(pa);
             pQ->SetSkippedLocate(skipLocate);
+            int queryTimer = visitTimer->StartTimer();
             pQ->PerformQuery(&qa); 
+            visitTimer->StopTimer(queryTimer, pQ->GetType());
             *pa = *(pQ->GetPickAtts());
 
             delete pQ;
@@ -2254,7 +2263,9 @@ NetworkManager::Pick(const int id, PickAttributes *pa)
                 {
                     acq->SetInput(queryInput);
                     acq->SetPickAtts(pa);
+                    int queryTimer = visitTimer->StartTimer();
                     acq->PerformQuery(&qa);
+                    visitTimer->StopTimer(queryTimer, acq->GetType());
                     *pa = *(acq->GetPickAtts());
                     delete acq;
                 }
@@ -2265,10 +2276,13 @@ NetworkManager::Pick(const int id, PickAttributes *pa)
             cpQ = new avtCurvePickQuery;
             cpQ->SetInput(queryInput);
             cpQ->SetPickAtts(pa);
+            int queryTimer = visitTimer->StartTimer();
             cpQ->PerformQuery(&qa); 
+            visitTimer->StopTimer(queryTimer, cpQ->GetType());
             *pa = *(cpQ->GetPickAtts());
             delete cpQ;
         }
+        visitTimer->DumpTimings();
     }
     CATCHALL( ... )
     {
@@ -2344,6 +2358,9 @@ NetworkManager::Pick(const int id, PickAttributes *pa)
 //
 //    Kathleen Bonnell, Tue May  4 14:35:08 PDT 2004 
 //    Send the SILRestriction to query (insted of UseSet).
+//
+//    Kathleen Bonnell, Thu Oct  7 10:29:36 PDT 2004 
+//    Added timing code for each PerformQuery. 
 //
 // ****************************************************************************
 
@@ -2441,9 +2458,12 @@ NetworkManager::Query(const std::vector<int> &ids, QueryAttributes *qa)
                 queryInput = networkCache[ids[0]]->GetNetDB()->GetOutput();
 
             query->SetInput(queryInput);
+            int queryTimer = visitTimer->StartTimer();
             query->PerformQuery(qa);
+            visitTimer->StopTimer(queryTimer, query->GetType());
             delete query;
         }
+        visitTimer->DumpTimings();
     }
     CATCHALL( ... )
     {

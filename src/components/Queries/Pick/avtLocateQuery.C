@@ -302,3 +302,31 @@ avtLocateQuery::LocatorFindCell(vtkDataSet *ds, float &dist, float *isect)
         return -1;
 }
 
+
+// ****************************************************************************
+//  Method: avtLocateQuery::RayIntersectsDataSet
+//
+//  Purpose:
+//    Determines if the ray stored in PickAtts intersects the passed dataset. 
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   October 6, 2004
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+bool
+avtLocateQuery::RayIntersectsDataSet(vtkDataSet *ds)
+{
+    float *bnds = ds->GetBounds();
+    float *pt1 = pickAtts.GetRayPoint1();
+    float *pt2 = pickAtts.GetRayPoint2();
+    float dir[3];
+    for (int i = 0; i < 3; i++)
+    {
+        dir[i] = pt2[i] - pt1[i];
+    }
+    float dummy1[3], dummy2;
+    return (vtkBox::IntersectBox(bnds, pt1, dir, dummy1, dummy2));
+}

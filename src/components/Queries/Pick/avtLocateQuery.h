@@ -26,6 +26,9 @@ class vtkRectilinearGrid;
 //    Kathleen Bonnell, Fri Sep  3 10:10:28 PDT 2004
 //    Added VerifyInput.
 //
+//    Kathleen Bonnell, Wed Oct  6 10:48:23 PDT 2004 
+//    Added RayIntersectsDataSet.
+//
 // ****************************************************************************
 
 class QUERY_API avtLocateQuery : public avtDatasetQuery
@@ -37,6 +40,7 @@ class QUERY_API avtLocateQuery : public avtDatasetQuery
     void                            SetPickAtts(const PickAttributes *);
     const PickAttributes           *GetPickAtts(void);
 
+
   protected:
     PickAttributes                  pickAtts;
     int                             foundDomain;
@@ -46,6 +50,7 @@ class QUERY_API avtLocateQuery : public avtDatasetQuery
     virtual void                    PreExecute(void);
     virtual void                    PostExecute(void);
     virtual void                    VerifyInput(void);
+    bool                            RayIntersectsDataSet(vtkDataSet *);
     bool                            RGridIsect(vtkRectilinearGrid *, 
                                                float &dist, 
                                                float isect[3], 
