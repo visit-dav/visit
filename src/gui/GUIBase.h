@@ -44,6 +44,10 @@ class SimpleObserver;
 //   Brad Whitlock, Wed Oct 22 12:16:01 PDT 2003
 //   I added an addDefaultPlots argument to OpenDataFile.
 //
+//   Brad Whitlock, Mon Nov 3 10:44:14 PDT 2003
+//   Renamed OpenDataFile to SetOpenDataFile and removed its addDefaultPlots
+//   argument.
+//
 // ****************************************************************************
 
 class GUI_API GUIBase
@@ -69,11 +73,10 @@ protected:
     void SetWaitCursor();
     void RestoreCursor();
 
-    bool OpenDataFile(const QualifiedFilename &qf,
-                      int timeState,
-                      bool addDefaultPlots = true,
-                      SimpleObserver *sob = 0,
-                      bool reOpen = false);
+    bool SetOpenDataFile(const QualifiedFilename &qf,
+                         int timeState,
+                         SimpleObserver *sob = 0,
+                         bool reOpen = false);
 
 protected:
     static StatusSubject     *statusSubject;

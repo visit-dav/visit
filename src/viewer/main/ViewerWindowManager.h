@@ -247,6 +247,9 @@ typedef struct {
 //    Brad Whitlock, Wed Oct 15 13:44:38 PST 2003
 //    Added ReplaceDatabase method.
 //
+//    Brad Whitlock, Mon Nov 3 10:13:19 PDT 2003
+//    Added more arguments to the ReplaceDatabase method.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerWindowManager : public QObject
@@ -351,6 +354,8 @@ class VIEWER_API ViewerWindowManager : public QObject
 
     void ReplaceDatabase(const std::string &host,
                          const std::string &database,
+                         int timeState,
+                         bool setTimeState,
                          bool onlyReplaceSame);
 
     void CreateNode(DataNode *parentNode, bool detailed);

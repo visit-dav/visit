@@ -674,12 +674,18 @@ avtFilter::TrySpatialExtents(double *outexts)
 //  Programmer: Hank Childs
 //  Creation:   September 4, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Mon Nov  3 09:49:11 PST 2003
+//    Setting the extents with the output is a mistake -- the filter may even
+//    modify those extents.  They should be set with the input.
+//
 // ****************************************************************************
 
 void
-avtFilter::GetSpatialExtents(double *outexts)
+avtFilter::GetSpatialExtents(double *newexts)
 {
-    if (TrySpatialExtents(outexts))
+    if (TrySpatialExtents(newexts))
     {
          //
          // We had them lying around -- no parallel communication necessary.
@@ -688,16 +694,15 @@ avtFilter::GetSpatialExtents(double *outexts)
     }
 
     avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
-    atts.GetCumulativeTrueSpatialExtents()->CopyTo(outexts);
+    atts.GetCumulativeTrueSpatialExtents()->CopyTo(newexts);
 
-    UnifyMinMax(outexts, atts.GetSpatialDimension()*2);
+    UnifyMinMax(newexts, atts.GetSpatialDimension()*2);
 
     //
     // We now have determined the true spatial extents, so we may as well set
     // them back.
     //
-    GetOutput()->GetInfo().GetAttributes().GetTrueSpatialExtents()
-                                                                ->Set(outexts);
+    atts.GetTrueSpatialExtents()->Set(newexts);
 }
 
 
@@ -747,12 +752,18 @@ avtFilter::TryCurrentDataExtents(double *outexts)
 //  Programmer: Kathleen Bonnell 
 //  Creation:   October 2, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Mon Nov  3 09:49:11 PST 2003
+//    Setting the extents with the output is a mistake -- the filter may even
+//    modify those extents.  They should be set with the input.
+//
 // ****************************************************************************
 
 void
-avtFilter::GetCurrentDataExtents(double *outexts)
+avtFilter::GetCurrentDataExtents(double *newexts)
 {
-    if (TryCurrentDataExtents(outexts))
+    if (TryCurrentDataExtents(newexts))
     {
          //
          // We had them lying around -- no parallel communication necessary.
@@ -761,16 +772,15 @@ avtFilter::GetCurrentDataExtents(double *outexts)
     }
 
     avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
-    atts.GetCumulativeCurrentDataExtents()->CopyTo(outexts);
+    atts.GetCumulativeCurrentDataExtents()->CopyTo(newexts);
 
-    UnifyMinMax(outexts, atts.GetVariableDimension()*2);
+    UnifyMinMax(newexts, atts.GetVariableDimension()*2);
 
     //
     // We now have determined the current data extents, so we may as well set
     // them back.
     //
-    GetOutput()->GetInfo().GetAttributes().GetCurrentDataExtents()
-                                                               ->Set(outexts);
+    atts.GetCurrentDataExtents()->Set(newexts);
 }
 
 
