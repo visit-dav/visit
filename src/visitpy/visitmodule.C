@@ -1624,8 +1624,8 @@ visit_AddOperator(PyObject *self, PyObject *args)
             PyErr_Clear();
     }
 
-    // Find the plot index from the name. Throw a python exception if we are
-    // allowing python exceptions and the plot index is -1.
+    // Find the oper index from the name. Throw a python exception if we are
+    // allowing python exceptions and the operator index is -1.
     OperatorPluginManager *pluginManager = OperatorPluginManager::Instance();
     int operTypeIndex = -1;
     for(int i = 0; i < pluginManager->GetNEnabledPlugins(); ++i)
@@ -3766,6 +3766,9 @@ visit_EnableTool(PyObject *self, PyObject *args)
 //   Brad Whitlock, Thu Apr 17 17:22:58 PST 2003
 //   I made it print out the active operator index.
 //
+//   Jeremy Meredith, Tue Jun 17 17:41:04 PDT 2003
+//   Made it use the "enabled" plugin index instead the "all" index.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -3783,7 +3786,7 @@ visit_ListPlots(PyObject *self, PyObject *args)
     for(int i = 0; i < pl->GetNumPlots(); ++i)
     {
         const Plot &plot = pl->operator[](i);
-        std::string id(plugins->GetAllID(int(plot.GetPlotType())));
+        std::string id(plugins->GetEnabledID(int(plot.GetPlotType())));
         CommonPlotPluginInfo *info = plugins->GetCommonPluginInfo(id);
 
         if(info != 0)
@@ -3897,6 +3900,9 @@ visit_Expressions(PyObject *self, PyObject *args)
 //   Brad Whitlock, Fri Jul 26 12:31:21 PDT 2002
 //   I made it return a success value.
 //
+//   Jeremy Meredith, Tue Jun 17 17:41:04 PDT 2003
+//   Made it use the "enabled" plugin index instead the "all" index.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -3912,8 +3918,24 @@ visit_ResetOperatorOptions(PyObject *self, PyObject *args)
             PyErr_Clear();
     }
 
-    // Find the operator index from the name.
-    int operatorTypeIndex = OperatorPluginManager::Instance()->GetAllIndexFromName(operatorName);
+    // Find the plot index from the name. Throw a python exception if we are
+    // allowing python exceptions and the plot index is -1.
+    OperatorPluginManager *pluginManager = OperatorPluginManager::Instance();
+    int operatorTypeIndex = -1;
+    for(int i = 0; i < pluginManager->GetNEnabledPlugins(); ++i)
+    {
+        std::string id(pluginManager->GetEnabledID(i));
+        ScriptingOperatorPluginInfo *info=pluginManager->GetScriptingPluginInfo(id);
+        if(info == 0)
+            continue;
+
+        if(info->GetName() == std::string(operatorName))
+        {
+            operatorTypeIndex = i;
+            break;
+        }
+    }
+
     int errorFlag = 1;
 
     // If the plot type was not found, return.
@@ -3958,6 +3980,9 @@ visit_ResetOperatorOptions(PyObject *self, PyObject *args)
 //   Brad Whitlock, Fri Jul 26 12:32:15 PDT 2002
 //   I made it return a success value.
 //
+//   Jeremy Meredith, Tue Jun 17 17:41:04 PDT 2003
+//   Made it use the "enabled" plugin index instead the "all" index.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -3967,8 +3992,24 @@ visit_ResetPlotOptions(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "s", &plotName))
         return NULL;
 
-    // Find the plot index from the name.
-    int plotTypeIndex = PlotPluginManager::Instance()->GetAllIndexFromName(plotName);
+    // Find the plot index from the name. Throw a python exception if we are
+    // allowing python exceptions and the plot index is -1.
+    PlotPluginManager *pluginManager = PlotPluginManager::Instance();
+    int plotTypeIndex = -1;
+    for(int i = 0; i < pluginManager->GetNEnabledPlugins(); ++i)
+    {
+        std::string id(pluginManager->GetEnabledID(i));
+        ScriptingPlotPluginInfo *info=pluginManager->GetScriptingPluginInfo(id);
+        if(info == 0)
+            continue;
+
+        if(info->GetName() == std::string(plotName))
+        {
+            plotTypeIndex = i;
+            break;
+        }
+    }
+
     int errorFlag = 1;
 
     // If the plot type was not found, return.
@@ -4093,6 +4134,9 @@ visit_SetActivePlots(PyObject *self, PyObject *args)
 //   Brad Whitlock, Thu Apr 17 15:09:53 PST 2003
 //   I added an optional active operator index.
 //
+//   Jeremy Meredith, Tue Jun 17 17:41:04 PDT 2003
+//   Made it use the "enabled" plugin index instead the "all" index.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -4137,10 +4181,10 @@ visit_SetOperatorOptions(PyObject *self, PyObject *args)
     //
     int objPluginIndex = -1;
     OperatorPluginManager *pluginManager = OperatorPluginManager::Instance();
-    for(int i = 0; i < pluginManager->GetNAllPlugins(); ++i)
+    for(int i = 0; i < pluginManager->GetNEnabledPlugins(); ++i)
     {
         // Get a pointer to the scripting portion of the plot plugin information.
-        std::string id(pluginManager->GetAllID(i));
+        std::string id(pluginManager->GetEnabledID(i));
         ScriptingOperatorPluginInfo *info = pluginManager->GetScriptingPluginInfo(id);
 
         if(info->TypesMatch(obj))
@@ -4197,7 +4241,7 @@ visit_SetOperatorOptions(PyObject *self, PyObject *args)
 
         // Set the operator attributes.
         AttributeSubject *operAtts = viewer->GetOperatorAttributes(objPluginIndex);
-        std::string id(pluginManager->GetAllID(objPluginIndex));
+        std::string id(pluginManager->GetEnabledID(objPluginIndex));
         CommonOperatorPluginInfo *general = pluginManager->GetCommonPluginInfo(id);
         general->CopyAttributes(operAtts, ((AttributesObject *)obj)->data);
         operAtts->Notify();
@@ -4354,6 +4398,9 @@ visit_RemoveOperator(PyObject *self, PyObject *args)
 //   Brad Whitlock, Fri Jul 26 12:37:58 PDT 2002
 //   I made it return a success value.
 //
+//   Jeremy Meredith, Tue Jun 17 17:41:04 PDT 2003
+//   Made it use the "enabled" plugin index instead the "all" index.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -4377,10 +4424,10 @@ visit_SetDefaultOperatorOptions(PyObject *self, PyObject *args)
     //
     int objPluginIndex = -1;
     OperatorPluginManager *pluginManager = OperatorPluginManager::Instance();
-    for(int i = 0; i < pluginManager->GetNAllPlugins(); ++i)
+    for(int i = 0; i < pluginManager->GetNEnabledPlugins(); ++i)
     {
         // Get a pointer to the scripting portion of the plot plugin information.
-        std::string id(pluginManager->GetAllID(i));
+        std::string id(pluginManager->GetEnabledID(i));
         ScriptingOperatorPluginInfo *info = pluginManager->GetScriptingPluginInfo(id);
 
         if(info->TypesMatch(obj))
@@ -4403,7 +4450,7 @@ visit_SetDefaultOperatorOptions(PyObject *self, PyObject *args)
     if(viewer)
     {
         AttributeSubject *operAtts = viewer->GetOperatorAttributes(objPluginIndex);
-        std::string id(pluginManager->GetAllID(objPluginIndex));
+        std::string id(pluginManager->GetEnabledID(objPluginIndex));
         CommonOperatorPluginInfo *general = pluginManager->GetCommonPluginInfo(id);
         ScriptingOperatorPluginInfo *scripting = pluginManager->GetScriptingPluginInfo(id);
         general->CopyAttributes(operAtts, ((AttributesObject *)obj)->data);
@@ -4438,6 +4485,9 @@ visit_SetDefaultOperatorOptions(PyObject *self, PyObject *args)
 //   Brad Whitlock, Fri Jul 26 12:38:23 PDT 2002
 //   I made it return a success value.
 //
+//   Jeremy Meredith, Tue Jun 17 17:41:04 PDT 2003
+//   Made it use the "enabled" plugin index instead the "all" index.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -4461,10 +4511,10 @@ visit_SetDefaultPlotOptions(PyObject *self, PyObject *args)
     //
     int objPluginIndex = -1;
     PlotPluginManager *pluginManager = PlotPluginManager::Instance();
-    for(int i = 0; i < pluginManager->GetNAllPlugins(); ++i)
+    for(int i = 0; i < pluginManager->GetNEnabledPlugins(); ++i)
     {
         // Get a pointer to the scripting portion of the plot plugin information.
-        std::string id(pluginManager->GetAllID(i));
+        std::string id(pluginManager->GetEnabledID(i));
         ScriptingPlotPluginInfo *info = pluginManager->GetScriptingPluginInfo(id);
 
         if(info->TypesMatch(obj))
@@ -4487,7 +4537,7 @@ visit_SetDefaultPlotOptions(PyObject *self, PyObject *args)
     if(viewer)
     {
         AttributeSubject *plotAtts = viewer->GetPlotAttributes(objPluginIndex);
-        std::string id(pluginManager->GetAllID(objPluginIndex));
+        std::string id(pluginManager->GetEnabledID(objPluginIndex));
         CommonPlotPluginInfo *general = pluginManager->GetCommonPluginInfo(id);
         ScriptingPlotPluginInfo *scripting = pluginManager->GetScriptingPluginInfo(id);
         general->CopyAttributes(plotAtts, ((AttributesObject *)obj)->data);
@@ -4519,6 +4569,9 @@ visit_SetDefaultPlotOptions(PyObject *self, PyObject *args)
 //   Brad Whitlock, Fri Jul 26 12:40:07 PDT 2002
 //   I made it return a success value.
 //
+//   Jeremy Meredith, Tue Jun 17 17:41:04 PDT 2003
+//   Made it use the "enabled" plugin index instead the "all" index.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -4542,10 +4595,10 @@ visit_SetPlotOptions(PyObject *self, PyObject *args)
     //
     int objPluginIndex = -1;
     PlotPluginManager *pluginManager = PlotPluginManager::Instance();
-    for(int i = 0; i < pluginManager->GetNAllPlugins(); ++i)
+    for(int i = 0; i < pluginManager->GetNEnabledPlugins(); ++i)
     {
         // Get a pointer to the scripting portion of the plot plugin information.
-        std::string id(pluginManager->GetAllID(i));
+        std::string id(pluginManager->GetEnabledID(i));
         ScriptingPlotPluginInfo *info = pluginManager->GetScriptingPluginInfo(id);
 
         if(info->TypesMatch(obj))
@@ -4568,7 +4621,7 @@ visit_SetPlotOptions(PyObject *self, PyObject *args)
     if(viewer)
     {
         AttributeSubject *plotAtts = viewer->GetPlotAttributes(objPluginIndex);
-        std::string id(pluginManager->GetAllID(objPluginIndex));
+        std::string id(pluginManager->GetEnabledID(objPluginIndex));
         CommonPlotPluginInfo *general = pluginManager->GetCommonPluginInfo(id);
         general->CopyAttributes(plotAtts, ((AttributesObject *)obj)->data);
         plotAtts->Notify();
@@ -5484,6 +5537,9 @@ visit_NumPlotPlugins(PyObject *self, PyObject *args)
 //
 // Modifications:
 //   
+//   Jeremy Meredith, Tue Jun 17 17:41:04 PDT 2003
+//   Made it use the "enabled" plugin index instead the "all" index.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -5492,7 +5548,7 @@ visit_OperatorPlugins(PyObject *self, PyObject *args)
     OperatorPluginManager *plugins = OperatorPluginManager::Instance();
 
     // Allocate a tuple the with enough entries to hold the plugin name list.
-    PyObject *retval = PyTuple_New(plugins->GetNAllPlugins());
+    PyObject *retval = PyTuple_New(plugins->GetNEnabledPlugins());
 
     for(int i = 0; i < plugins->GetNEnabledPlugins(); ++i)
     {

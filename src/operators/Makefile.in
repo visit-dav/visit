@@ -130,6 +130,9 @@
 #    Eric Brugger, Thu Jan 16 08:18:06 PST 2003
 #    Renamed the Erase operator to Clip.
 #
+#    Akira Haddox, Thu Jun 12 15:50:34 PDT 2003
+#    Added the ThreeSlice operator.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -141,7 +144,7 @@ OPTIONAL=Context ConnCompReduce Decimate Displace ExternalSurface \
          InverseGhostZone MetricThreshold Revolve SiloDump Tube
 
 REQUIRED=Box Clip Cone IndexSelect Isosurface Lineout OnionPeel Reflect \
-	 Slice SphereSlice Threshold Transform
+	 Slice SphereSlice ThreeSlice Threshold Transform
 
 SUBDIRS=$(REQUIRED) @OPERATOR_OPTIONAL_DIRS@
 ALLSUBDIRS=$(REQUIRED) $(OPTIONAL)

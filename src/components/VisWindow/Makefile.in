@@ -83,6 +83,9 @@
 #    Brad Whitlock, Mon Oct 28 15:35:04 PST 2002
 #    Added the box tool.
 #
+#    Akira Haddox, Thu Jun 12 15:47:32 PDT 2003
+#    Added the point tool.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -129,10 +132,12 @@ Tools_src= \
   Tools/VisitBoxTool.C \
   Tools/VisitLineTool.C \
   Tools/VisitPlaneTool.C \
+  Tools/VisitPointTool.C \
   Tools/VisitSphereTool.C \
   Tools/avtBoxToolInterface.C \
   Tools/avtLineToolInterface.C \
   Tools/avtPlaneToolInterface.C \
+  Tools/avtPointToolInterface.C \
   Tools/avtSphereToolInterface.C \
   Tools/avtToolInterface.C
 VisWindow_src= \

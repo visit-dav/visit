@@ -268,6 +268,28 @@ PluginManager::GetEnabledID(int index) const
 }
 
 // ****************************************************************************
+//  Method: PluginManager::GetEnabledIndex
+//
+//  Purpose:
+//    Return the enabled-index of a loaded plugin.
+//
+//  Arguments:
+//    id     The id of a plugin.
+//
+//  Returns:    The index of a loaded plugin id.
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   June 17, 2003
+//
+// ****************************************************************************
+
+int
+PluginManager::GetEnabledIndex(const std::string &id)
+{
+    return loadedindexmap[id];
+}
+
+// ****************************************************************************
 //  Method: PluginManager::DisablePlugin
 //
 //  Purpose:

@@ -31,6 +31,9 @@
 //    which can attempt to load a plugin on demand before checking to see
 //    if it is loaded.
 //
+//    Jeremy Meredith, Tue Jun 17 19:08:21 PDT 2003
+//    Added GetEnabledIndex.
+//
 // ****************************************************************************
 
 class PLUGIN_API PluginManager
@@ -73,6 +76,7 @@ class PLUGIN_API PluginManager
 
     int                             GetNEnabledPlugins() const;
     std::string                     GetEnabledID(const int) const;
+    int                             GetEnabledIndex(const std::string &);
 
   protected:
                                     PluginManager(const std::string&);

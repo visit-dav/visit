@@ -1,0 +1,880 @@
+#include <math.h>
+#include <VisitPointTool.h>
+
+#include <vtkActor.h>
+#include <vtkCamera.h>
+#include <vtkPointSource.h>
+#include <vtkPolyData.h>
+#include <vtkPolyDataMapper.h>
+#include <vtkProperty.h>
+#include <vtkRenderer.h>
+#include <vtkTextActor.h>
+#include <vtkTextProperty.h>
+#include <avtVector.h>
+
+// ****************************************************************************
+// Method: VisitPointTool::VisitPointTool
+//
+// Purpose: 
+//   This is the constructor for the point tool.
+//
+// Arguments:
+//    p : A reference to the tool proxy.
+//
+// Programmer: Akira Haddox
+// Creation:   Mon Jun  9 09:21:40 PDT 2003
+//
+// ****************************************************************************
+
+VisitPointTool::VisitPointTool(VisWindowToolProxy &p) : VisitInteractiveTool(p),
+    Interface(p)
+{
+    window3D = false;
+    addedBbox = false;
+    addedGuide = false;
+    depthTranslate = false;
+
+    HotPoint h;
+    h.radius = 1./60.; // See what a good value is.
+    h.tool = this;
+
+    //
+    // Add the hotpoint
+    //
+    h.pt = avtVector(0., 0.,  0.);
+    h.callback = TranslateCallback;
+    hotPoints.push_back(h);
+
+    pointSource = NULL;
+    pointData = NULL;
+    pointActor = NULL;
+    pointMapper = NULL;
+    guideActor = NULL;
+    guideMapper = NULL;
+    guideData = NULL;
+
+    CreatePointActor();
+    CreateTextActors();
+    CreateGuide();
+}
+
+// ****************************************************************************
+// Method: VisitPointTool::~VisitPointTool
+//
+// Purpose: 
+//   This is the destructor for the point tool class.
+//
+// Programmer: Akira Haddox
+// Creation:   Mon Jun  9 09:23:01 PDT 2003
+//
+// ****************************************************************************
+
+VisitPointTool::~VisitPointTool()
+{
+    if(pointActor != NULL)
+    {
+        pointActor->Delete();
+        pointActor = NULL;
+    }
+
+    if(pointMapper != NULL)
+    {
+        pointMapper->Delete();
+        pointMapper = NULL;
+    }
+
+    if(pointData != NULL)
+    {
+        pointData->Delete();
+        pointData = NULL;
+    }
+
+    if(pointSource != NULL)
+    {
+        pointSource->Delete();
+        pointSource = NULL;
+    }
+
+    // Delete the text mappers and actors
+    DeleteTextActors();
+ 
+    // Delete the guide
+    DeleteGuide();
+}
+
+// ****************************************************************************
+// Method: VisitPointTool::Enable
+//
+// Purpose: 
+//   This method enables the tool.
+//
+// Programmer: Akira Haddox
+// Creation:   Mon Jun  9 09:21:40 PDT 2003
+//
+// ****************************************************************************
+
+void
+VisitPointTool::Enable()
+{
+    bool val = IsEnabled();
+    VisitInteractiveTool::Enable();
+
+    // Add the actors to the canvas.
+    if(!val)
+    {
+        UpdateTool();
+        proxy.GetCanvas()->AddActor(pointActor);
+        AddText();
+    }
+}
+
+// ****************************************************************************
+// Method: VisitPointTool::Disable
+//
+// Purpose: 
+//   This method disables the tool.
+//
+// Programmer: Akira Haddox
+// Creation:   Mon Jun  9 09:21:40 PDT 2003
+//
+// ****************************************************************************
+
+void
+VisitPointTool::Disable()
+{
+    bool val = IsEnabled();
+
+    VisitInteractiveTool::Disable();
+
+    // Remove the actors from the canvas if the tool was enabled.
+    if(val)
+    {
+        proxy.GetCanvas()->RemoveActor(pointActor);
+        RemoveText();
+    }
+}
+
+// ****************************************************************************
+// Method: VisitPointTool::IsAvailable
+//
+// Purpose: 
+//   Returns whether or not the tool is available for use.
+//
+// Returns:    Whether or not the tool is available for use.
+//
+// Note:       This may have to change later.
+//
+// Programmer: Akira Haddox
+// Creation:   Mon Jun  9 09:21:40 PDT 2003
+//
+// ****************************************************************************
+
+bool
+VisitPointTool::IsAvailable() const
+{
+    return proxy.HasPlots();
+}
+
+// ****************************************************************************
+// Method: VisitPointTool::Start2DMode
+//
+// Purpose: 
+//   This method switches the tool to 2D mode.
+//
+// Programmer: Akira Haddox
+// Creation:   Mon Jun  9 09:21:40 PDT 2003
+//
+// ****************************************************************************
+
+void
+VisitPointTool::Start2DMode()
+{
+    window3D = false;
+
+    // We're switching out of 3D. Set all the Z coordinates in the
+    // hotpoints to 0.
+    hotPoints[0].pt.z = 0.;
+}
+
+// ****************************************************************************
+// Method: VisitPointTool::Stop3DMode
+//
+// Purpose: 
+//   This method tells the tool that 3D mode is stopping.
+//
+// Programmer: Akira Haddox
+// Creation:   Mon Jun  9 09:21:40 PDT 2003
+//
+// ****************************************************************************
+
+void
+VisitPointTool::Stop3DMode()
+{
+    window3D = false;
+
+    // We're switching out of 3D. Set all the Z coordinates in the
+    // hotpoints to 0.
+    hotPoints[0].pt.z = 0.;
+}
+
+// ****************************************************************************
+// Method: VisitPointTool::Start3DMode
+//
+// Purpose: 
+//   Indicates that the window is switching to 3D.
+//
+// Programmer: Akira Haddox
+// Creation:   Mon Jun  9 09:21:40 PDT 2003
+//
+// ****************************************************************************
+
+void
+VisitPointTool::Start3DMode()
+{
+    window3D = true;
+}
+
+
+// ****************************************************************************
+// Method: VisitBoxTool::SetForegroundColor
+//
+// Purpose: 
+//   This method sets the tool's foreground color.
+//
+// Arguments:
+//   r : The red color component.
+//   g : The green color component.
+//   b : The blue color component.
+//
+// Programmer: Akira Haddox
+// Creation:   Mon Jun  9 10:26:34 PDT 2003
+//
+// ****************************************************************************
+
+void
+VisitPointTool::SetForegroundColor(float r, float g, float b)
+{
+    float color[3] = {r, g, b};
+
+    // Set the colors of the text actors.
+    pointTextActor->GetTextProperty()->SetColor(color);
+}
+
+
+// ****************************************************************************
+// Method: VisitPointTool::UpdateView
+//
+// Purpose: 
+//   Updates the position of the text based on the camera position.
+//
+// Programmer: Akira Haddox
+// Creation:   Mon Jun  9 09:21:40 PDT 2003
+//
+// ****************************************************************************
+
+void
+VisitPointTool::UpdateView()
+{
+    if(IsEnabled())
+    {
+        UpdateText();
+    }
+}
+
+// ****************************************************************************
+// Method: VisitPointTool::UpdateTool
+//
+// Purpose: 
+//   Repostions the tool using the attributes stored in the Interface.
+//
+// Programmer: Akira Haddox
+// Creation:   Mon Jun  9 09:21:40 PDT 2003
+//
+// ****************************************************************************
+
+void
+VisitPointTool::UpdateTool()
+{
+    hotPoints[0].pt = avtVector((double*)Interface.GetPoint());
+
+    UpdatePoint();
+    UpdateText();
+}
+
+// ****************************************************************************
+// Method: VisitPointTool::CreatePointActor
+//
+// Purpose: 
+//   Creates the plane actor.
+//
+// Programmer: Akira Haddox
+// Creation:   Mon Jun  9 09:21:40 PDT 2003
+//
+// ****************************************************************************
+
+void
+VisitPointTool::CreatePointActor()
+{
+    pointSource = vtkPointSource::New();
+    pointMapper = vtkPolyDataMapper::New();
+    UpdatePoint();
+
+    pointActor = vtkActor::New();
+    pointActor->GetProperty()->SetRepresentationToWireframe();
+    pointActor->SetMapper(pointMapper);
+}
+
+// ****************************************************************************
+// Method: VisitPointTool::UpdatePoint
+//
+// Purpose: 
+//   Updates the position of the point.
+//
+// Programmer: Akira Haddox
+// Creation:   Mon Jun  9 09:21:40 PDT 2003
+//
+// ****************************************************************************
+
+void
+VisitPointTool::UpdatePoint()
+{
+    avtVector p1(hotPoints[0].pt);
+    pointSource->SetCenter(p1.x, p1.y, p1.z);
+//    pointSource->SetRadius(1);
+    pointData = pointSource->GetOutput();
+    pointData->Register(NULL);
+
+    pointMapper->SetInput(pointData);
+}
+
+// ****************************************************************************
+// Method: VisitPointTool::CreateTextActors
+//
+// Purpose: 
+//   Create the text actors and mappers used to draw the point info.
+//
+// Programmer: Akira Haddox
+// Creation:   Mon Jun  9 09:21:40 PDT 2003
+//
+// ****************************************************************************
+
+void
+VisitPointTool::CreateTextActors()
+{
+    pointTextActor = vtkTextActor::New();
+    pointTextActor->ScaledTextOff();
+}
+
+// ****************************************************************************
+// Method: VisitPointTool::DeleteTextActors
+//
+// Purpose: 
+//   Deletes the text actors and mappers.
+//
+// Programmer: Akira Haddox
+// Creation:   Mon Jun  9 09:21:40 PDT 2003
+//
+// ****************************************************************************
+
+void
+VisitPointTool::DeleteTextActors()
+{
+    if (pointTextActor)
+    {
+        pointTextActor->Delete();
+        pointTextActor = NULL;
+    }
+}
+
+// ****************************************************************************
+// Method: VisitPointTool::AddText
+//
+// Purpose: 
+//   Adds the text actors to the foreground canvas.
+//
+// Programmer: Akira Haddox
+// Creation:   Mon Jun  9 09:21:40 PDT 2003
+//
+// ****************************************************************************
+
+void
+VisitPointTool::AddText()
+{
+#ifndef NO_ANNOTATIONS
+    proxy.GetForeground()->AddActor2D(pointTextActor);
+#endif
+}
+
+// ****************************************************************************
+// Method: VisitPointTool::RemoveText
+//
+// Purpose: 
+//   Removes the text actors from the foreground canvas.
+//
+// Programmer: Akira Haddox
+// Creation:   Mon Jun  9 09:21:40 PDT 2003
+//
+// ****************************************************************************
+
+void
+VisitPointTool::RemoveText()
+{
+#ifndef NO_ANNOTATIONS
+    proxy.GetForeground()->RemoveActor2D(pointTextActor);
+#endif
+}
+
+// ****************************************************************************
+// Method: VisitPointTool::UpdateText
+//
+// Purpose: 
+//   Updates the info that the text actors display.
+//
+// Programmer: Akira Haddox
+// Creation:   Mon Jun  9 09:21:40 PDT 2003
+//
+// ****************************************************************************
+
+void
+VisitPointTool::UpdateText()
+{
+    char str[100];
+    sprintf(str, "XYZ<%1.3g %1.3g %1.3g>", 
+            hotPoints[0].pt.x, hotPoints[0].pt.y, hotPoints[0].pt.z);
+    pointTextActor->SetInput(str);
+    avtVector originScreen = ComputeWorldToDisplay(hotPoints[0].pt);
+    float pt[3] = {originScreen.x, originScreen.y, 0.};
+    pointTextActor->GetPositionCoordinate()->SetValue(pt);
+}
+
+// ****************************************************************************
+// Method: VisitPointTool::CreateGuide
+//
+// Purpose: 
+//   Creates the guide actor and mapper. The guide is the 3D crosshairs that
+//   show where point endpoints are relative to the bounding box.
+//
+// Programmer: Akira Haddox
+// Creation:   Mon Jun  9 09:21:40 PDT 2003
+//
+// ****************************************************************************
+
+void
+VisitPointTool::CreateGuide()
+{
+    guideData = NULL;
+    guideMapper = vtkPolyDataMapper::New();
+    guideActor = vtkActor::New();
+    guideActor->GetProperty()->SetLineWidth(1.);
+    guideActor->GetProperty()->SetRepresentationToWireframe();
+    guideActor->SetMapper(guideMapper);
+}
+
+// ****************************************************************************
+// Method: VisitPointTool::DeleteGuide
+//
+// Purpose: 
+//   Deletes the guide.
+//
+// Programmer: Akira Haddox
+// Creation:   Mon Jun  9 09:21:40 PDT 2003
+//
+// ****************************************************************************
+
+void
+VisitPointTool::DeleteGuide()
+{
+    if(guideActor != NULL)
+    {
+        guideActor->Delete();
+        guideActor = NULL;
+    }
+
+    if(guideMapper != NULL)
+    {
+        guideMapper->Delete();
+        guideMapper = NULL;
+    }
+
+    if(guideData != NULL)
+    {
+        guideData->Delete();
+        guideData = NULL;
+    }
+}
+
+// ****************************************************************************
+// Method: VisitPlaneTool::AddGuide
+//
+// Purpose: 
+//   Updates the guide and adds its actor to the renderer.
+//
+// Programmer: Akira Haddox
+// Creation:   Mon Jun  9 09:21:40 PDT 2003
+//
+// ****************************************************************************
+
+void
+VisitPointTool::AddGuide()
+{
+    if(proxy.HasPlots() && window3D)
+    {
+        addedGuide = true;
+        UpdateGuide();
+        proxy.GetCanvas()->AddActor(guideActor);
+    }
+    else
+    {
+        addedGuide = false;
+    }
+}
+
+// ****************************************************************************
+// Method: VisitPointTool::RemoveGuide
+//
+// Purpose: 
+//   Removes the guide actor from the renderer.
+//
+// Programmer: Akira Haddox
+// Creation:   Mon Jun  9 09:21:40 PDT 2003
+//
+// ****************************************************************************
+
+void
+VisitPointTool::RemoveGuide()
+{
+    if (addedGuide)
+    {
+        proxy.GetCanvas()->RemoveActor(guideActor);
+    }
+    addedGuide = false;
+}
+
+// ****************************************************************************
+// Method: VisitPointTool::UpdateGuide
+//
+// Purpose: 
+//   Recreates the points in the guide.
+//
+// Programmer: Akira Haddox
+// Creation:   Mon Jun  9 09:21:40 PDT 2003
+//
+// ****************************************************************************
+
+void
+VisitPointTool::UpdateGuide()
+{
+    if(!addedGuide)
+        return;
+
+    if(guideData != NULL)
+        guideData->Delete();
+
+    // Use the max number of points an intersection will have.
+    int numPts = 9;
+    int numCells = 16;
+
+    vtkPoints *pts = vtkPoints::New();
+    pts->SetNumberOfPoints(numPts);
+    vtkCellArray *points = vtkCellArray::New();
+    points->Allocate(points->EstimateSize(numCells, 2)); 
+    vtkUnsignedCharArray *colors = vtkUnsignedCharArray::New();
+    colors->SetNumberOfComponents(3);
+    colors->SetNumberOfTuples(numCells);
+
+    // Store the colors and points in the polydata.
+    guideData = vtkPolyData::New();
+    guideData->Initialize();
+    guideData->SetPoints(pts);
+    guideData->SetLines(points);
+    guideData->GetCellData()->SetScalars(colors);
+    pts->Delete(); points->Delete(); colors->Delete();
+
+    //
+    // Figure out the guide points.
+    //
+    int nverts = 9;
+    avtVector verts[9];
+    GetGuidePoints(verts);
+
+    //
+    // Now that we have guide points, create a polydata from that.
+    //
+    float fg[3];
+    proxy.GetForegroundColor(fg);
+    unsigned char r = (unsigned char)(fg[0] * 255.);
+    unsigned char g = (unsigned char)(fg[1] * 255.);
+    unsigned char b = (unsigned char)(fg[2] * 255.);
+    int i, index;
+    for(i = 0, index = 0; i < nverts; ++i, index += 3)
+    {
+        // Add points to the vertex list.
+        float coord[3];
+        coord[0] = verts[i].x;
+        coord[1] = verts[i].y;
+        coord[2] = verts[i].z;
+        pts->SetPoint(i, coord);
+
+    }
+
+    for(i = 0, index = 0; i < numCells; ++i, index += 3)
+    {    
+        // Store the color.
+        unsigned char *rgb = colors->GetPointer(index);
+        rgb[0] = r;
+        rgb[1] = g;
+        rgb[2] = b;
+    }
+
+#define CREATEQUAD(A,B,C,D)     ptIds[0] = A; \
+    ptIds[1] = B; \
+    points->InsertNextCell(2, ptIds); \
+    ptIds[0] = B; \
+    ptIds[1] = C; \
+    points->InsertNextCell(2, ptIds); \
+    ptIds[0] = C; \
+    ptIds[1] = D; \
+    points->InsertNextCell(2, ptIds); \
+    ptIds[0] = D; \
+    ptIds[1] = A; \
+    points->InsertNextCell(2, ptIds);
+
+    // Add cells to the polydata.
+    vtkIdType ptIds[2];
+    CREATEQUAD(0,8,7,4);
+    CREATEQUAD(8,1,5,7);
+    CREATEQUAD(7,5,2,6);
+    CREATEQUAD(4,7,6,3);
+
+    // Set the mapper's input to be the new dataset.
+    guideMapper->SetInput(guideData);
+}
+
+// ****************************************************************************
+// Method: VisitPointTool::GetGuidePoints
+//
+// Purpose: 
+//   Returns which axis most faces the camera.
+//
+// Returns:    0 = X-axis, 1 = Y-axis, 2 = Z-axis
+//
+// Programmer: Akira Haddox
+// Creation:   Mon Jun  9 09:21:40 PDT 2003
+//
+// ****************************************************************************
+
+void
+VisitPointTool::GetGuidePoints(avtVector *pts)
+{
+    int axis = FacingAxis();
+
+    // Fill the return pts array.
+    float bounds[6];
+    proxy.GetBounds(bounds);
+    double xmin = bounds[0];
+    double xmax = bounds[1];
+    double ymin = bounds[2];
+    double ymax = bounds[3];
+    double zmin = bounds[4];
+    double zmax = bounds[5];
+
+    if(axis == 0 || axis == 1)
+    {
+        pts[0] = avtVector(hotPoints[0].pt.x, ymin, zmax);
+        pts[1] = avtVector(hotPoints[0].pt.x, ymin, zmin);
+        pts[2] = avtVector(hotPoints[0].pt.x, ymax, zmin);
+        pts[3] = avtVector(hotPoints[0].pt.x, ymax, zmax);
+        pts[4] = avtVector(hotPoints[0].pt.x, hotPoints[0].pt.y, zmax);
+        pts[5] = avtVector(hotPoints[0].pt.x, hotPoints[0].pt.y, zmin);
+        pts[6] = avtVector(hotPoints[0].pt.x, ymax, hotPoints[0].pt.z);
+        pts[7] = avtVector(hotPoints[0].pt.x, hotPoints[0].pt.y, hotPoints[0].pt.z);
+        pts[8] = avtVector(hotPoints[0].pt.x, ymin, hotPoints[0].pt.z);
+    }
+    else if(axis == 2 || axis == 3)
+    {
+        pts[0] = avtVector(xmin, hotPoints[0].pt.y, zmax);
+        pts[1] = avtVector(xmax, hotPoints[0].pt.y, zmax);
+        pts[2] = avtVector(xmax, hotPoints[0].pt.y, zmin);
+        pts[3] = avtVector(xmin, hotPoints[0].pt.y, zmin);
+        pts[4] = avtVector(xmin, hotPoints[0].pt.y, hotPoints[0].pt.z);
+        pts[5] = avtVector(xmax, hotPoints[0].pt.y, hotPoints[0].pt.z);
+        pts[6] = avtVector(hotPoints[0].pt.x, hotPoints[0].pt.y, zmin);
+        pts[7] = avtVector(hotPoints[0].pt.x, hotPoints[0].pt.y, hotPoints[0].pt.z);
+        pts[8] = avtVector(hotPoints[0].pt.x, hotPoints[0].pt.y, zmax);
+    }
+    else if(axis == 4 || axis == 5)
+    {
+        pts[0] = avtVector(xmin, ymin, hotPoints[0].pt.z);
+        pts[1] = avtVector(xmax, ymin, hotPoints[0].pt.z);
+        pts[2] = avtVector(xmax, ymax, hotPoints[0].pt.z);
+        pts[3] = avtVector(xmin, ymax, hotPoints[0].pt.z);
+        pts[4] = avtVector(xmin, hotPoints[0].pt.y, hotPoints[0].pt.z);
+        pts[5] = avtVector(xmax, hotPoints[0].pt.y, hotPoints[0].pt.z);
+        pts[6] = avtVector(hotPoints[0].pt.x, ymax, hotPoints[0].pt.z);
+        pts[7] = avtVector(hotPoints[0].pt.x, hotPoints[0].pt.y, hotPoints[0].pt.z);
+        pts[8] = avtVector(hotPoints[0].pt.x, ymin, hotPoints[0].pt.z);
+    }
+}
+
+// ****************************************************************************
+// Method: VisitPointTool::CallCallback
+//
+// Purpose: 
+//   Lets the outside world know that the tool has a new point.
+//
+// Programmer: Akira Haddox
+// Creation:   Mon Jun  9 09:21:40 PDT 2003
+//
+// ****************************************************************************
+
+void
+VisitPointTool::CallCallback()
+{
+    // Point 1
+    avtVector pt1(hotPoints[0].pt);
+
+    Interface.SetPoint(pt1.x, pt1.y, pt1.z);
+    Interface.ExecuteCallback();
+}
+
+// ****************************************************************************
+// Method: VisitPointTool::InitialActorSetup
+//
+// Purpose: 
+//   Makes the text actors active and starts bounding box mode.
+//
+// Programmer: Akira Haddox
+// Creation:   Mon Jun  9 09:21:40 PDT 2003
+//
+// ****************************************************************************
+
+void
+VisitPointTool::InitialActorSetup()
+{
+    // Enter bounding box mode if there are plots.
+    if(proxy.HasPlots() && window3D)
+    {
+        // Add the guide
+        AddGuide();
+
+        addedBbox = true;
+        proxy.StartBoundingBox();
+    }
+}
+
+// ****************************************************************************
+// Method: VisitPointTool::FinalActorSetup
+//
+// Purpose: 
+//   Removes certain actors from the renderer and ends bounding box mode.
+//
+// Programmer: Akira Haddox
+// Creation:   Mon Jun  9 09:21:40 PDT 2003
+//
+// ****************************************************************************
+
+void
+VisitPointTool::FinalActorSetup()
+{
+    RemoveGuide();
+
+    // End bounding box mode.
+    if(addedBbox)
+    {
+        proxy.EndBoundingBox();
+    }
+    addedBbox = false;
+}
+
+// ****************************************************************************
+//  Method:  VisitPointTool::Translate
+//
+//  Purpose:
+//    This is the handler method that is called when the translate hotpoint
+//    is active.
+//
+//  Arguments:
+//    e : The state of the hotpoint activity. (START, MIDDLE, END)
+//    x : The x location of the mouse in pixels.
+//    y : The y location of the mouse in pixels.
+//
+// Programmer: Akira Haddox
+// Creation:   Mon Jun  9 09:21:40 PDT 2003
+//
+// ****************************************************************************
+
+void
+VisitPointTool::Translate(CB_ENUM e, int ctrl, int shift, int x, int y, int)
+{
+    if(shift && window3D)
+        depthTranslate = true;
+
+    if(e == CB_START)
+    {
+        vtkRenderer *ren = proxy.GetCanvas();
+        vtkCamera *camera = ren->GetActiveCamera();
+        double ViewFocus[3];
+        camera->GetFocalPoint(ViewFocus);
+        ComputeWorldToDisplay(ViewFocus[0], ViewFocus[1],
+                              ViewFocus[2], ViewFocus);
+        // Store the focal depth.
+        focalDepth = ViewFocus[2];
+
+        if(depthTranslate)
+        {
+            depthTranslationDistance = ComputeDepthTranslationDistance();
+        }
+
+        // Make the right actors active.
+        InitialActorSetup();
+    }
+    else if(e == CB_MIDDLE)
+    {
+        avtVector newPoint = ComputeDisplayToWorld(avtVector(x,y,focalDepth));
+        //
+        // Have to recalculate the old mouse point since the viewport has
+        // moved, so we can't move it outside the loop
+        //
+        avtVector oldPoint = ComputeDisplayToWorld(avtVector(lastX,lastY,focalDepth));
+        avtVector motion(newPoint - oldPoint);
+
+        if(depthTranslate)
+            motion = depthTranslationDistance * double(y - lastY);
+
+        hotPoints[0].pt = (hotPoints[0].pt + motion);
+
+        // Update the point actor
+        UpdatePoint();
+
+        // Update the text actors.
+        UpdateText();
+
+        // Update the guide
+        UpdateGuide();
+
+        // Render the window
+        proxy.Render();
+    }
+    else
+    {
+        // Call the tool's callback.
+        CallCallback();
+
+        // Remove the right actors.
+        FinalActorSetup();
+
+        depthTranslate = false;
+    }
+}
+
+//
+// Static callback functions.
+//
+//
+void
+VisitPointTool::TranslateCallback(VisitInteractiveTool *it, CB_ENUM e,
+    int ctrl, int shift, int x, int y)
+{
+    VisitPointTool *lt = (VisitPointTool *)it;
+    lt->Translate(e, ctrl, shift, x, y, 0);
+}

@@ -144,6 +144,9 @@ AddOperatorAction::Setup()
 // Creation:   Mon Mar 17 09:21:25 PDT 2003
 //
 // Modifications:
+//    Jeremy Meredith, Tue Jun 17 18:17:55 PDT 2003
+//    Fixed a bug where disabling an operator would cause crashes when
+//    using unrelated operators; it was using AllID instead of EnabledID.
 //   
 // ****************************************************************************
 
@@ -156,7 +159,7 @@ AddOperatorAction::Execute(int)
     int type = args.GetOperatorType();
 
     OperatorPluginManager *opMgr = OperatorPluginManager::Instance();
-    std::string name(opMgr->GetPluginName(opMgr->GetAllID(type)));
+    std::string name(opMgr->GetPluginName(opMgr->GetEnabledID(type)));
     if (name == "Lineout")
     {
         ViewerQueryManager::Instance()->Lineout(window);

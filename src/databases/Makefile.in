@@ -76,6 +76,9 @@
 #   Eric Brugger, Mon Jun 16 12:57:17 PDT 2003
 #   Make the building of the BOV reader optional.
 #
+#   Hank Childs, Tue Jun 17 10:07:15 PDT 2003
+#   Do not require that HDF4 be available.  Modified BOV to depend on ZLIB.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -83,19 +86,20 @@
 all: message
 	for dir in $(SUBDIRS); do (cd $$dir && $(MAKE) $@) || exit 1; done
 
-BOV=BOV
+ZLIB=BOV
 EXODUS=Exodus TimeVaryingExodus
+HDF4=Cosmos
 HDF5=Tetrad
 MILI=Mili
 PDB=KullLite
 SAF=SAF
 SAMPLES=Rect Hex
-REQUIRED=Cosmos Curve2D EnSight Lines PLOT3D Point3D STL Silo Spheral VTK WavefrontOBJ
+REQUIRED=Curve2D EnSight Lines PLOT3D Point3D STL Silo Spheral VTK WavefrontOBJ
 
 OPTIONAL=
 
-SUBDIRS=$(REQUIRED) @DB_OPTIONAL_DIRS@ @BOV@ @EXODUS@ @SAF@ @HDF5@ @PDB@ @MILI@
-ALLSUBDIRS=$(REQUIRED) $(BOV) $(EXODUS) $(SAF) $(HDF5) $(MILI) $(PDB) $(SAMPLES)
+SUBDIRS=$(REQUIRED) @DB_OPTIONAL_DIRS@ @ZLIB@ @EXODUS@ @SAF@ @HDF4@ @HDF5@ @PDB@ @MILI@
+ALLSUBDIRS=$(REQUIRED) $(ZLIB) $(EXODUS) $(SAF) $(HDF4) $(HDF5) $(MILI) $(PDB) $(SAMPLES)
 
 message:
 	@echo
