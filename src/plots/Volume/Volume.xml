@@ -3,14 +3,14 @@
     <Files components="V">
       avtVolumeRenderer.C
       avtVolumeFilter.C
-      avtOpenGLVolumeRenderer.C
-      avtMesaVolumeRenderer.C
+      avtOpenGLSplattingVolumeRenderer.C
+      avtMesaSplattingVolumeRenderer.C
     </Files>
     <Files components="E">
       avtVolumeRenderer.C
       avtVolumeFilter.C
-      avtOpenGLVolumeRenderer.C
-      avtMesaVolumeRenderer.C
+      avtOpenGLSplattingVolumeRenderer.C
+      avtMesaSplattingVolumeRenderer.C
     </Files>
     <Attribute name="VolumeAttributes" purpose="This class contains the plot attributes for the volume plot." persistent="true" codefile="VolumeAttributes.code">
       <Field name="legendFlag" label="legendFlag" type="bool">
@@ -71,6 +71,8 @@
         500
       </Field>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
+      </Function>
+      <Function name="GradientWontChange" user="true" member="true">
       </Function>
       <Function name="GetTransferFunction" user="true" member="true">
       </Function>

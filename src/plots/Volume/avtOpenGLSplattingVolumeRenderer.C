@@ -1,8 +1,8 @@
 // ************************************************************************* //
-//                           avtOpenGLVolumeRenderer.C                       //
+//                      avtOpenGLSplattingVolumeRenderer.C                   //
 // ************************************************************************* //
 
-#include "avtOpenGLVolumeRenderer.h"
+#include "avtOpenGLSplattingVolumeRenderer.h"
 
 #if defined(_WIN32)
 #include <windows.h>
@@ -14,7 +14,8 @@
 #include <vtkCamera.h>
 #include <vtkMath.h>
 #include <vtkMatrix4x4.h>
-
+#include <vtkRenderer.h>
+#include <vtkRenderWindow.h>
 
 #ifndef MAX
 #define MAX(a,b) ((a) > (b) ? (a) : (b))
@@ -25,7 +26,64 @@
 
 
 // ****************************************************************************
-//  Method:  avtOpenGLVolumeRenderer::Render
+//  Method: avtOpenGLSplattingVolumeRenderer::avtOpenGLSplattingVolumeRenderer
+//
+//  Purpose:
+//    Initialize the texture memory and the OpenGL texture ID.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    September 30, 2003
+//
+// ****************************************************************************
+avtOpenGLSplattingVolumeRenderer::avtOpenGLSplattingVolumeRenderer()
+{
+    alphatex = NULL;
+    alphatexId = 0;
+}
+
+
+// ****************************************************************************
+//  Method: avtOpenGLSplattingVolumeRenderer::~avtOpenGLSplattingVolumeRenderer
+//
+//  Purpose:
+//    Destructor.  Free alphatex.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    September 30, 2003
+//
+// ****************************************************************************
+avtOpenGLSplattingVolumeRenderer::~avtOpenGLSplattingVolumeRenderer()
+{
+    delete[] alphatex;
+}
+
+// ****************************************************************************
+//  Method:  avtOpenGLSplattingVolumeRenderer::ReleaseGraphicsResources
+//
+//  Purpose:
+//    Delete the occupied texture memory.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    September 30, 2003
+//
+// ****************************************************************************
+void
+avtOpenGLSplattingVolumeRenderer::ReleaseGraphicsResources()
+{
+    VTKRen->GetRenderWindow()->MakeCurrent();
+    if (alphatexId == 0)
+    {
+        glDeleteTextures(1, &alphatexId);
+        alphatexId = 0;
+    }
+}
+
+
+// ****************************************************************************
+//  Method:  avtOpenGLSplattingVolumeRenderer::Render
 //
 //  Purpose:
 //    Render one image
@@ -56,10 +114,14 @@
 //    Hank Childs, Wed Apr 24 09:27:36 PDT 2002
 //    Transferred from to this class from avtVolumeRenderer.
 //
+//    Jeremy Meredith, Tue Sep 30 11:53:44 PDT 2003
+//    Added calls to make an opengl texture object so we don't have to
+//    keep sending it.  Only get values of gradient if we are doing lighting.
+//
 // ****************************************************************************
 
 void
-avtOpenGLVolumeRenderer::Render(vtkDataSet *ds)
+avtOpenGLSplattingVolumeRenderer::Render(vtkDataSet *ds)
 {
     // Create the texture for a gaussian splat
     const int GRIDSIZE=32;
@@ -78,6 +140,10 @@ avtOpenGLVolumeRenderer::Render(vtkDataSet *ds)
                 alphatex[i*GRIDSIZE+j] = gu*gv;
             }
         }
+        glGenTextures(1, &alphatexId);
+        glBindTexture(GL_TEXTURE_2D, alphatexId);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA,
+                     GRIDSIZE,GRIDSIZE,0, GL_ALPHA, GL_FLOAT, alphatex);
     }
 
     // Do other initialization
@@ -106,8 +172,7 @@ avtOpenGLVolumeRenderer::Render(vtkDataSet *ds)
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA,
-                 GRIDSIZE,GRIDSIZE,0, GL_ALPHA, GL_FLOAT, alphatex);
+    glBindTexture(GL_TEXTURE_2D, alphatexId);
     glEnable(GL_TEXTURE_2D);
 
     // set up parameters
@@ -320,15 +385,15 @@ avtOpenGLVolumeRenderer::Render(vtkDataSet *ds)
                 // get the point
                 float *p = grid->GetPoint(index);
 
-                float gi = gx[index];
-                float gj = gy[index];
-                float gk = gz[index];
-
                 // do shading
                 float brightness;
                 const bool shading = atts.GetLightingFlag();
                 if (shading)
                 {
+                    float gi = gx[index];
+                    float gj = gy[index];
+                    float gk = gz[index];
+
                     float grad[3] = {gi,gj,gk};
                     brightness = vtkMath::Dot(grad,light);
                     if (brightness<0) brightness *= -1;

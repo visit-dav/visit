@@ -10,8 +10,8 @@
 #include <float.h>
 
 #include <avtCallback.h>
-#include <avtOpenGLVolumeRenderer.h>
-#include <avtMesaVolumeRenderer.h>
+#include <avtOpenGLSplattingVolumeRenderer.h>
+#include <avtMesaSplattingVolumeRenderer.h>
 
 #include <ImproperUseException.h>
 
@@ -32,12 +32,15 @@ static int CalculateIndex(vtkRectilinearGrid*, const int,const int,const int);
 //  Programmer:  Jeremy Meredith
 //  Creation:    April  5, 2001
 //
+//  Modifications:
+//    Jeremy Meredith, Tue Sep 30 11:44:21 PDT 2003
+//    Pulled out the reference to alphatex.  It belonged in the subclass.
+//
 // ****************************************************************************
 avtVolumeRenderer::avtVolumeRenderer()
 {
     initialized = false;
 
-    alphatex = NULL;
     gx  = NULL;
     gy  = NULL;
     gz  = NULL;
@@ -51,10 +54,15 @@ avtVolumeRenderer::avtVolumeRenderer()
 //  Programmer:  Jeremy Meredith
 //  Creation:    April  5, 2001
 //
+//  Modifications:
+//    Jeremy Meredith, Tue Sep 30 11:44:21 PDT 2003
+//    Pulled out the reference to alphatex.  It belonged in the subclass.
+//    Added a call to ReleaseGraphicsResources.
+//
 // ****************************************************************************
 avtVolumeRenderer::~avtVolumeRenderer()
 {
-    delete[] alphatex;
+    ReleaseGraphicsResources();
     delete[] gx;
     delete[] gy;
     delete[] gz;
@@ -74,6 +82,10 @@ avtVolumeRenderer::~avtVolumeRenderer()
 //  Programmer: Hank Childs
 //  Creation:   April 24, 2002
 //
+//  Modifications:
+//    Jeremy Meredith, Tue Sep 30 11:47:16 PDT 2003
+//    Renamed the renderers to contain "Splatting" in their name.
+//
 // ****************************************************************************
  
 avtVolumeRenderer *
@@ -81,11 +93,11 @@ avtVolumeRenderer::New(void)
 {
     if (avtCallback::GetNowinMode())
     {
-        return new avtMesaVolumeRenderer;
+        return new avtMesaSplattingVolumeRenderer;
     }
     else
     { 
-        return new avtOpenGLVolumeRenderer;
+        return new avtOpenGLSplattingVolumeRenderer;
     }
 }
 
@@ -121,6 +133,10 @@ avtVolumeRenderer::New(void)
 //
 //    Kathleen Bonnell, Fri Feb  8 11:03:49 PST 2002
 //    vtkScalars has been deprecated in VTK 4.0, use vtkDataArray instead.
+//
+//    Jeremy Meredith, Tue Sep 30 11:47:41 PDT 2003
+//    Only calculate the gradient if lighting is enabled *and* if it does
+//    not already exist.  The SetAtts method will delete it if it is invalid.
 //
 // ****************************************************************************
 void
@@ -189,160 +205,164 @@ avtVolumeRenderer::Initialize(vtkDataSet *ds)
     osize=omax-omin;
 
     // calculate gradient
-    int nx=dims[0];
-    int ny=dims[1];
-    int nz=dims[2];
-    int nels=nx*ny*nz;
-    gx  = new float[nels];
-    gy  = new float[nels];
-    gz  = new float[nels];
-    gm  = new float[nels];
-    gmn = new float[nels];
-
-    vtkDataArray *xc = grid->GetXCoordinates();
-    vtkDataArray *yc = grid->GetYCoordinates();
-    vtkDataArray *zc = grid->GetZCoordinates();
-
-    // Some default values since they are not set from outside yet
-    const int ghost = 1;
-    const int style = 1;
-
-    float ghostval = (ghost == 1) ? omin-osize : omax+osize;
-    float maxmag = 0;
-    for (int i=0; i<nx; i++)
+    if (atts.GetLightingFlag() &&
+        !gx) // make sure the gradient was invalidated first
     {
-        for (int j=0; j<ny; j++)
+        int nx=dims[0];
+        int ny=dims[1];
+        int nz=dims[2];
+        int nels=nx*ny*nz;
+        gx  = new float[nels];
+        gy  = new float[nels];
+        gz  = new float[nels];
+        gm  = new float[nels];
+        gmn = new float[nels];
+
+        vtkDataArray *xc = grid->GetXCoordinates();
+        vtkDataArray *yc = grid->GetYCoordinates();
+        vtkDataArray *zc = grid->GetZCoordinates();
+
+        // Some default values since they are not set from outside yet
+        const int ghost = 1;
+        const int style = 0;
+
+        float ghostval = (ghost == 1) ? omin-osize : omax+osize;
+        float maxmag = 0;
+        for (int i=0; i<nx; i++)
         {
-            for (int k=0; k<nz; k++)
+            for (int j=0; j<ny; j++)
             {
-                int index = CalculateIndex(grid,i,j,k);
-
-                if (style==0) // centered differences
+                for (int k=0; k<nz; k++)
                 {
-                    if (ghost != 0)
+                    int index = CalculateIndex(grid,i,j,k);
+
+                    if (style==0) // centered differences
                     {
-                        if (i==0 || (i<nx-1 && opac->GetTuple1( CalculateIndex(grid,i-1,j  ,k  )) < -1e+37))
-                            gx[index] = (opac->GetTuple1(CalculateIndex(grid,i+1,j  ,k  )) - ghostval                                         )/(2*(xc->GetTuple1(i+1)-xc->GetTuple1(i)));
-                        else if (i==nx-1 || (i>0 && opac->GetTuple1(CalculateIndex(grid,i+1,j  ,k  )) < -1e+37))
-                            gx[index] = (ghostval                                          - opac->GetTuple1(CalculateIndex(grid,i-1,j  ,k  )))/(2*(xc->GetTuple1(i)-xc->GetTuple1(i-1)));
-                        else
-                            gx[index] = (opac->GetTuple1(CalculateIndex(grid,i+1,j  ,k  )) - opac->GetTuple1(CalculateIndex(grid,i-1,j  ,k  )))/(   xc->GetTuple1(i+1)-xc->GetTuple1(i-1));
-
-                        if (j==0 || (j<ny-1 && opac->GetTuple1(CalculateIndex(grid,i  ,j-1,k  )) < -1e+37))
-                            gy[index] = (opac->GetTuple1(CalculateIndex(grid,i  ,j+1,k  )) - ghostval                                         )/(2*(yc->GetTuple1(j+1)-yc->GetTuple1(j)));
-                        else if (j==ny-1 || (j>0 && opac->GetTuple1(CalculateIndex(grid,i  ,j+1,k  )) < -1e+37))
-                            gy[index] = (ghostval                                          - opac->GetTuple1(CalculateIndex(grid,i  ,j-1,k  )))/(2*(yc->GetTuple1(j)-yc->GetTuple1(j-1)));
-                        else
-                            gy[index] = (opac->GetTuple1(CalculateIndex(grid,i  ,j+1,k  )) - opac->GetTuple1(CalculateIndex(grid,i  ,j-1,k  )))/(   yc->GetTuple1(j+1)-yc->GetTuple1(j-1));
-
-                        if (k==0 || (k<nz-1 && opac->GetTuple1(CalculateIndex(grid,i  ,j ,k-1)) < -1e+37))
-                            gz[index] = (opac->GetTuple1(CalculateIndex(grid,i  ,j  ,k+1)) - ghostval                                         )/(2*(zc->GetTuple1(k+1)-zc->GetTuple1(k)));
-                        else if (k==nz-1 || (k>0 && opac->GetTuple1(CalculateIndex(grid,i  ,j ,k+1)) < -1e+37))
-                            gz[index] = (ghostval                                          - opac->GetTuple1(CalculateIndex(grid,i  ,j  ,k-1)))/(2*(zc->GetTuple1(k)-zc->GetTuple1(k-1)));
-                        else
-                            gz[index] = (opac->GetTuple1(CalculateIndex(grid,i  ,j  ,k+1)) - opac->GetTuple1(CalculateIndex(grid,i  ,j  ,k-1)))/(   zc->GetTuple1(k+1)-zc->GetTuple1(k-1));
-                    }
-                    else
-                    {
-                        if (i==0 || opac->GetTuple1(CalculateIndex(grid,i-1,j  ,k  )) < -1e+37)
-                            gx[index] = (opac->GetTuple1(CalculateIndex(grid,i+1,j  ,k  ))-opac->GetTuple1(CalculateIndex(grid,i  ,j  ,k  )))/(xc->GetTuple1(i+1)-xc->GetTuple1(i));
-                        else if (i==nx-1 || opac->GetTuple1(CalculateIndex(grid,i+1,j  ,k  )) < -1e+37)
-                            gx[index] = (opac->GetTuple1(CalculateIndex(grid,i  ,j  ,k  ))-opac->GetTuple1(CalculateIndex(grid,i-1,j  ,k  )))/(xc->GetTuple1(i)-xc->GetTuple1(i-1));
-                        else
-                            gx[index] = (opac->GetTuple1(CalculateIndex(grid,i+1,j  ,k  ))-opac->GetTuple1(CalculateIndex(grid,i-1,j  ,k  )))/(xc->GetTuple1(i+1)-xc->GetTuple1(i-1));
-
-                        if (j==0 || opac->GetTuple1(CalculateIndex(grid,i  ,j-1,k  )) < -1e+37)
-                            gy[index] = (opac->GetTuple1(CalculateIndex(grid,i  ,j+1,k  ))-opac->GetTuple1(CalculateIndex(grid,i  ,j  ,k  )))/(yc->GetTuple1(j+1)-yc->GetTuple1(j ));
-                        else if (j==ny-1 || opac->GetTuple1(CalculateIndex(grid,i  ,j+1,k  )) < -1e+37)
-                            gy[index] = (opac->GetTuple1(CalculateIndex(grid,i  ,j  ,k  ))-opac->GetTuple1(CalculateIndex(grid,i  ,j-1,k  )))/(yc->GetTuple1(j)-yc->GetTuple1(j-1));
-                        else
-                            gy[index] = (opac->GetTuple1(CalculateIndex(grid,i  ,j+1,k  ))-opac->GetTuple1(CalculateIndex(grid,i  ,j-1,k  )))/(yc->GetTuple1(j+1)-yc->GetTuple1(j-1));
-
-                        if (k==0 || opac->GetTuple1(CalculateIndex(grid,i  ,j ,k-1)) < -1e+37)
-                            gz[index] = (opac->GetTuple1(CalculateIndex(grid,i  ,j  ,k+1))-opac->GetTuple1(CalculateIndex(grid,i  ,j  ,k  )))/(zc->GetTuple1(k+1)-zc->GetTuple1(k));
-                        else if (k==nz-1 || opac->GetTuple1(CalculateIndex(grid,i  ,j ,k+1)) < -1e+37)
-                            gz[index] = (opac->GetTuple1(CalculateIndex(grid,i  ,j  ,k  ))-opac->GetTuple1(CalculateIndex(grid,i  ,j  ,k-1)))/(zc->GetTuple1(k)-zc->GetTuple1(k-1));
-                        else
-                            gz[index] = (opac->GetTuple1(CalculateIndex(grid,i  ,j  ,k+1))-opac->GetTuple1(CalculateIndex(grid,i  ,j  ,k-1)))/(zc->GetTuple1(k+1)-zc->GetTuple1(k-1));
-                    }
-                }
-                else // Sobel operator
-                {
-                    float Mx[3][3][3] = {{{-2, -3, -2}, {-3, -6, -3}, {-2, -3, -2}},
-                                         {{ 0,  0,  0}, { 0,  0,  0}, { 0,  0,  0}},
-                                         {{ 2,  3,  2}, { 3,  6,  3}, { 2,  3,  2}}};
-
-                    float My[3][3][3] = {{{-2, -3, -2}, { 0,  0,  0}, { 2,  3,  2}},
-                                         {{-3, -6, -3}, { 0,  0,  0}, { 3,  6,  3}},
-                                         {{-2, -3, -2}, { 0,  0,  0}, { 2,  3,  2}}};
-
-                    float Mz[3][3][3] = {{{-2,  0,  2}, {-3,  0,  3}, {-2,  0,  2}},
-                                         {{-3,  0,  3}, {-6,  0,  6}, {-3,  0,  3}},
-                                         {{-2,  0,  2}, {-3,  0,  3}, {-2,  0,  2}}};
-
-
-                    gx[index] = 0;
-                    gy[index] = 0;
-                    gz[index] = 0;
-                    for (int a=-1; a<=1; a++)
-                    {
-                        for (int b=-1; b<=1; b++)
+                        if (ghost != 0)
                         {
-                            for (int c=-1; c<=1; c++)
+                            if (i==0 || (i<nx-1 && opac->GetTuple1( CalculateIndex(grid,i-1,j  ,k  )) < -1e+37))
+                                gx[index] = (opac->GetTuple1(CalculateIndex(grid,i+1,j  ,k  )) - ghostval                                         )/(2*(xc->GetTuple1(i+1)-xc->GetTuple1(i)));
+                            else if (i==nx-1 || (i>0 && opac->GetTuple1(CalculateIndex(grid,i+1,j  ,k  )) < -1e+37))
+                                gx[index] = (ghostval                                          - opac->GetTuple1(CalculateIndex(grid,i-1,j  ,k  )))/(2*(xc->GetTuple1(i)-xc->GetTuple1(i-1)));
+                            else
+                                gx[index] = (opac->GetTuple1(CalculateIndex(grid,i+1,j  ,k  )) - opac->GetTuple1(CalculateIndex(grid,i-1,j  ,k  )))/(   xc->GetTuple1(i+1)-xc->GetTuple1(i-1));
+
+                            if (j==0 || (j<ny-1 && opac->GetTuple1(CalculateIndex(grid,i  ,j-1,k  )) < -1e+37))
+                                gy[index] = (opac->GetTuple1(CalculateIndex(grid,i  ,j+1,k  )) - ghostval                                         )/(2*(yc->GetTuple1(j+1)-yc->GetTuple1(j)));
+                            else if (j==ny-1 || (j>0 && opac->GetTuple1(CalculateIndex(grid,i  ,j+1,k  )) < -1e+37))
+                                gy[index] = (ghostval                                          - opac->GetTuple1(CalculateIndex(grid,i  ,j-1,k  )))/(2*(yc->GetTuple1(j)-yc->GetTuple1(j-1)));
+                            else
+                                gy[index] = (opac->GetTuple1(CalculateIndex(grid,i  ,j+1,k  )) - opac->GetTuple1(CalculateIndex(grid,i  ,j-1,k  )))/(   yc->GetTuple1(j+1)-yc->GetTuple1(j-1));
+
+                            if (k==0 || (k<nz-1 && opac->GetTuple1(CalculateIndex(grid,i  ,j ,k-1)) < -1e+37))
+                                gz[index] = (opac->GetTuple1(CalculateIndex(grid,i  ,j  ,k+1)) - ghostval                                         )/(2*(zc->GetTuple1(k+1)-zc->GetTuple1(k)));
+                            else if (k==nz-1 || (k>0 && opac->GetTuple1(CalculateIndex(grid,i  ,j ,k+1)) < -1e+37))
+                                gz[index] = (ghostval                                          - opac->GetTuple1(CalculateIndex(grid,i  ,j  ,k-1)))/(2*(zc->GetTuple1(k)-zc->GetTuple1(k-1)));
+                            else
+                                gz[index] = (opac->GetTuple1(CalculateIndex(grid,i  ,j  ,k+1)) - opac->GetTuple1(CalculateIndex(grid,i  ,j  ,k-1)))/(   zc->GetTuple1(k+1)-zc->GetTuple1(k-1));
+                        }
+                        else
+                        {
+                            if (i==0 || opac->GetTuple1(CalculateIndex(grid,i-1,j  ,k  )) < -1e+37)
+                                gx[index] = (opac->GetTuple1(CalculateIndex(grid,i+1,j  ,k  ))-opac->GetTuple1(CalculateIndex(grid,i  ,j  ,k  )))/(xc->GetTuple1(i+1)-xc->GetTuple1(i));
+                            else if (i==nx-1 || opac->GetTuple1(CalculateIndex(grid,i+1,j  ,k  )) < -1e+37)
+                                gx[index] = (opac->GetTuple1(CalculateIndex(grid,i  ,j  ,k  ))-opac->GetTuple1(CalculateIndex(grid,i-1,j  ,k  )))/(xc->GetTuple1(i)-xc->GetTuple1(i-1));
+                            else
+                                gx[index] = (opac->GetTuple1(CalculateIndex(grid,i+1,j  ,k  ))-opac->GetTuple1(CalculateIndex(grid,i-1,j  ,k  )))/(xc->GetTuple1(i+1)-xc->GetTuple1(i-1));
+
+                            if (j==0 || opac->GetTuple1(CalculateIndex(grid,i  ,j-1,k  )) < -1e+37)
+                                gy[index] = (opac->GetTuple1(CalculateIndex(grid,i  ,j+1,k  ))-opac->GetTuple1(CalculateIndex(grid,i  ,j  ,k  )))/(yc->GetTuple1(j+1)-yc->GetTuple1(j ));
+                            else if (j==ny-1 || opac->GetTuple1(CalculateIndex(grid,i  ,j+1,k  )) < -1e+37)
+                                gy[index] = (opac->GetTuple1(CalculateIndex(grid,i  ,j  ,k  ))-opac->GetTuple1(CalculateIndex(grid,i  ,j-1,k  )))/(yc->GetTuple1(j)-yc->GetTuple1(j-1));
+                            else
+                                gy[index] = (opac->GetTuple1(CalculateIndex(grid,i  ,j+1,k  ))-opac->GetTuple1(CalculateIndex(grid,i  ,j-1,k  )))/(yc->GetTuple1(j+1)-yc->GetTuple1(j-1));
+
+                            if (k==0 || opac->GetTuple1(CalculateIndex(grid,i  ,j ,k-1)) < -1e+37)
+                                gz[index] = (opac->GetTuple1(CalculateIndex(grid,i  ,j  ,k+1))-opac->GetTuple1(CalculateIndex(grid,i  ,j  ,k  )))/(zc->GetTuple1(k+1)-zc->GetTuple1(k));
+                            else if (k==nz-1 || opac->GetTuple1(CalculateIndex(grid,i  ,j ,k+1)) < -1e+37)
+                                gz[index] = (opac->GetTuple1(CalculateIndex(grid,i  ,j  ,k  ))-opac->GetTuple1(CalculateIndex(grid,i  ,j  ,k-1)))/(zc->GetTuple1(k)-zc->GetTuple1(k-1));
+                            else
+                                gz[index] = (opac->GetTuple1(CalculateIndex(grid,i  ,j  ,k+1))-opac->GetTuple1(CalculateIndex(grid,i  ,j  ,k-1)))/(zc->GetTuple1(k+1)-zc->GetTuple1(k-1));
+                        }
+                    }
+                    else // Sobel operator
+                    {
+                        float Mx[3][3][3] = {{{-2, -3, -2}, {-3, -6, -3}, {-2, -3, -2}},
+                                             {{ 0,  0,  0}, { 0,  0,  0}, { 0,  0,  0}},
+                                             {{ 2,  3,  2}, { 3,  6,  3}, { 2,  3,  2}}};
+
+                        float My[3][3][3] = {{{-2, -3, -2}, { 0,  0,  0}, { 2,  3,  2}},
+                                             {{-3, -6, -3}, { 0,  0,  0}, { 3,  6,  3}},
+                                             {{-2, -3, -2}, { 0,  0,  0}, { 2,  3,  2}}};
+
+                        float Mz[3][3][3] = {{{-2,  0,  2}, {-3,  0,  3}, {-2,  0,  2}},
+                                             {{-3,  0,  3}, {-6,  0,  6}, {-3,  0,  3}},
+                                             {{-2,  0,  2}, {-3,  0,  3}, {-2,  0,  2}}};
+
+
+                        gx[index] = 0;
+                        gy[index] = 0;
+                        gz[index] = 0;
+                        for (int a=-1; a<=1; a++)
+                        {
+                            for (int b=-1; b<=1; b++)
                             {
-                                float val;
+                                for (int c=-1; c<=1; c++)
+                                {
+                                    float val;
                                
-                                int ii = i+a;
-                                int jj = j+b;
-                                int kk = k+c;
+                                    int ii = i+a;
+                                    int jj = j+b;
+                                    int kk = k+c;
 
-                                if (ghost != 0 && 
-                                    (ii < 0 || ii > nx-1 ||
-                                     jj < 0 || jj > ny-1 ||
-                                     kk < 0 || kk > nz-1))
-                                {
-                                    val = ghostval;
-                                }
-                                else
-                                {
-                                    ii = MAX(0, MIN(nx-1, ii));
-                                    jj = MAX(0, MIN(ny-1, jj));
-                                    kk = MAX(0, MIN(nz-1, kk));
-                                    val = opac->GetTuple1(CalculateIndex(grid,ii,jj,kk));
-                                    if (val < -1e+37)
+                                    if (ghost != 0 && 
+                                        (ii < 0 || ii > nx-1 ||
+                                         jj < 0 || jj > ny-1 ||
+                                         kk < 0 || kk > nz-1))
+                                    {
                                         val = ghostval;
-                                }
+                                    }
+                                    else
+                                    {
+                                        ii = MAX(0, MIN(nx-1, ii));
+                                        jj = MAX(0, MIN(ny-1, jj));
+                                        kk = MAX(0, MIN(nz-1, kk));
+                                        val = opac->GetTuple1(CalculateIndex(grid,ii,jj,kk));
+                                        if (val < -1e+37)
+                                            val = ghostval;
+                                    }
 
-                                gx[index] += Mx[a+1][b+1][c+1] * val;
-                                gy[index] += My[a+1][b+1][c+1] * val;
-                                gz[index] += Mz[a+1][b+1][c+1] * val;
+                                    gx[index] += Mx[a+1][b+1][c+1] * val;
+                                    gy[index] += My[a+1][b+1][c+1] * val;
+                                    gz[index] += Mz[a+1][b+1][c+1] * val;
+                                }
                             }
                         }
                     }
-                }
 
-                // Normalize the computed gradient
-                float mag = sqrt(gx[index]*gx[index] +
-                                 gy[index]*gy[index] +
-                                 gz[index]*gz[index]);
-                gm[index] = mag;
-                gmn[index] = mag;
-                if (mag>0)
-                {
-                    gx[index] /= mag;
-                    gy[index] /= mag;
-                    gz[index] /= mag;
-                }
+                    // Normalize the computed gradient
+                    float mag = sqrt(gx[index]*gx[index] +
+                                     gy[index]*gy[index] +
+                                     gz[index]*gz[index]);
+                    gm[index] = mag;
+                    gmn[index] = mag;
+                    if (mag>0)
+                    {
+                        gx[index] /= mag;
+                        gy[index] /= mag;
+                        gz[index] /= mag;
+                    }
 
-                if (mag > maxmag)
-                    maxmag = mag;
+                    if (mag > maxmag)
+                        maxmag = mag;
+                }
             }
         }
-    }
-    if (maxmag > 0)
-    {
-        for (int n=0; n<nels; n++)
-            gmn[n] /= maxmag;
+        if (maxmag > 0)
+        {
+            for (int n=0; n<nels; n++)
+                gmn[n] /= maxmag;
+        }
     }
     opac->Delete();
     data->Delete();
@@ -363,41 +383,48 @@ avtVolumeRenderer::Initialize(vtkDataSet *ds)
 //  Creation:    April  5, 2001
 //
 //  Modifications:
-//
 //    Hank Childs, Wed Dec 12 11:15:56 PST 2001
 //    Re-initialize if the atts change, so new extents can be set.
+//
+//    Jeremy Meredith, Tue Sep 30 11:48:46 PDT 2003
+//    Make sure we need to invalidate the gradient before doing so.
 //
 // ****************************************************************************
 void
 avtVolumeRenderer::SetAtts(const AttributeGroup *a)
 {
+    bool invalidateGradient = 
+                   !(atts.GradientWontChange(*(const VolumeAttributes*)a));
     atts = *(const VolumeAttributes*)a;
 
     // Clean up memory.
-    if (gx != NULL)
+    if (invalidateGradient)
     {
-        delete[] gx;
-        gx = NULL;
-    }
-    if (gy != NULL)
-    {
-        delete[] gy;
-        gy = NULL;
-    }
-    if (gz != NULL)
-    {
-        delete[] gz;
-        gz = NULL;
-    }
-    if (gm != NULL)
-    {
-        delete[] gm;
-        gm = NULL;
-    }
-    if (gmn != NULL)
-    {
-        delete[] gmn;
-        gmn = NULL;
+        if (gx != NULL)
+        {
+            delete[] gx;
+            gx = NULL;
+        }
+        if (gy != NULL)
+        {
+            delete[] gy;
+            gy = NULL;
+        }
+        if (gz != NULL)
+        {
+            delete[] gz;
+            gz = NULL;
+        }
+        if (gm != NULL)
+        {
+            delete[] gm;
+            gm = NULL;
+        }
+        if (gmn != NULL)
+        {
+            delete[] gmn;
+            gmn = NULL;
+        }
     }
 
     initialized = false;
