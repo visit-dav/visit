@@ -111,6 +111,10 @@
 #    Mark C. Miller, Tue Mar 22 08:54:39 PST 2005
 #    Added cat of output from make clean in data dir to /dev/null
 #
+#    Jeremy Meredith, Thu Mar 31 18:25:45 PST 2005
+#    Made MPICH for Linux to the beginning of the path.  (Putting it at the
+#    beginning helps us avoid LAM.)
+#
 # ----------------------------------------------------------------------------
 
 # list of users who want email every night with the log file
@@ -180,7 +184,7 @@ fi
 umask 002
 DISPLAY=elysium:0
 export DISPLAY
-PATH=/home/visit/bin:/data_vobs/VisIt/clearcase_bin:/home/visit/clearcase_bin:/usr/atria/bin:/usr/security/bin:/sbin:/usr/sbin:/usr/bsd:/usr/local/bin:/usr/bin:/bin:/etc:/usr/bin/X11:/usr/local/X11:/usr/etc:/usr/lib:/usr/atria/bin:/usr/ccs/bin:/usr/SUNWspro/bin:/usr/gapps/mpich/1.2.4/SunOS/serial/default/debug/bin:.
+PATH=/misc/gapps/mpich/1.2.4/Linux/serial/64/debug/bin:/home/visit/bin:/data_vobs/VisIt/clearcase_bin:/home/visit/clearcase_bin:/usr/atria/bin:/usr/security/bin:/sbin:/usr/sbin:/usr/bsd:/usr/local/bin:/usr/bin:/bin:/etc:/usr/bin/X11:/usr/local/X11:/usr/etc:/usr/lib:/usr/atria/bin:/usr/ccs/bin:/usr/SUNWspro/bin:.
 export PATH
 
 # rebuild visit

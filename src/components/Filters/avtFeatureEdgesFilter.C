@@ -92,6 +92,9 @@ avtFeatureEdgesFilter::~avtFeatureEdgesFilter()
 //    the ghost zones ourselves to do what used to be done from within the
 //    feature edges filter.
 //
+//    Hank Childs, Thu Mar 31 11:16:23 PST 2005
+//    Fix problem with single cell case ['6105].
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -117,7 +120,7 @@ avtFeatureEdgesFilter::ExecuteData(vtkDataSet *inDS, int, string)
         // VTK doesn't do a good job with 1-cell feature edges, so just do it
         // ourselves.
         //
-        int  i;
+        int  i, j;
 
         vtkCell *cell = inDS->GetCell(0);
         vtkPolyData  *output = vtkPolyData::New();
@@ -131,8 +134,10 @@ avtFeatureEdgesFilter::ExecuteData(vtkDataSet *inDS, int, string)
         vtkPoints *pts = vtkPoints::New();
         pts->SetNumberOfPoints(npts);
         outPD->CopyAllocate(inPD, npts);
+        std::vector<int> origId(npts, -1);
         for (i = 0 ; i < npts ; i++)
         {
+             origId[i] = ids->GetId(i);
              outPD->CopyData(inPD, ids->GetId(i), i);
              float pt[3];
              inDS->GetPoint(ids->GetId(i), pt);
@@ -148,8 +153,18 @@ avtFeatureEdgesFilter::ExecuteData(vtkDataSet *inDS, int, string)
              vtkCell *edge = cell->GetEdge(i);
              vtkIdList *edge_ids = edge->GetPointIds();
              int line[2];
-             line[0] = edge_ids->GetId(0);
-             line[1] = edge_ids->GetId(1);
+             int origId0 = edge_ids->GetId(0);
+             int origId1 = edge_ids->GetId(1);
+             int newId0 = 0, newId1 = 0;
+             for (j = 0 ; j < npts ; j++)
+             {
+                 if (origId0 == origId[j])
+                     newId0 = j;
+                 if (origId1 == origId[j])
+                     newId1 = j;
+             }
+             line[0] = newId0;
+             line[1] = newId1;
              lines->InsertNextCell(2, line);
         }
 
