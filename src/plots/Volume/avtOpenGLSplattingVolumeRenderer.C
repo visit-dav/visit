@@ -331,7 +331,7 @@ avtOpenGLSplattingVolumeRenderer::Render(vtkRectilinearGrid *grid,
     float ambient = 0.0;
 
     // Find an ambient light
-    for (int i=0; i<lights.NumLights(); i++)
+    for (i=0; i<lights.NumLights(); i++)
     {
         const LightAttributes &l = lights.GetLight(i);
         if (l.GetEnabledFlag() && l.GetType()==LightAttributes::Ambient)
@@ -344,7 +344,7 @@ avtOpenGLSplattingVolumeRenderer::Render(vtkRectilinearGrid *grid,
     }
 
     // Find a directional (object or camera) light
-    for (int i=0; i<lights.NumLights(); i++)
+    for (i=0; i<lights.NumLights(); i++)
     {
         const LightAttributes &l = lights.GetLight(i);
         if (l.GetEnabledFlag() && l.GetType()!=LightAttributes::Ambient)

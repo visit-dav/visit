@@ -1,6 +1,6 @@
 #ifndef QUERY_RPC_H 
 #define QUERY_RPC_H 
-#include <vector.h>
+#include <vector>
 #include <engine_rpc_exports.h>
 #include <VisItRPC.h>
 #include <QueryAttributes.h>

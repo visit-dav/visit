@@ -781,14 +781,19 @@ avtSIL::MakeSILAttributes(void) const
 //    Hank Childs, Thu Nov 14 16:46:58 PST 2002
 //    Print out the SIL matrices as well.
 //
-//    Mark C. Miller, 23Sep03, Added additional perXXXInfo options
+//    Mark C. Miller, 23Sep03
+//    Added additional perXXXInfo options
+//
+//    Brad Whitlock, Mon Oct 20 15:20:37 PST 2003
+//    I made it work on Windows again.
 //
 // ****************************************************************************
+
 void
 avtSIL::Print(ostream &out) const
 {
-   std::vector< std::string > dummyInfo;
-   Print(out, dummyInfo, dummyInfo, dummyInfo);
+    std::vector< std::string > dummyInfo;
+    Print(out, dummyInfo, dummyInfo, dummyInfo);
 }
 
 void
@@ -802,9 +807,9 @@ avtSIL::Print(ostream &out,
 
     int nSets = sets.size();
     if (perSetInfo.size() == nSets)
-       useInfo = true; 
+        useInfo = true; 
     else
-       useInfo = false;
+        useInfo = false;
     for (i = 0 ; i < nSets ; i++)
     {
         if (isWhole[i])
@@ -815,31 +820,31 @@ avtSIL::Print(ostream &out,
         {
             out << "Subset ";
         }
-        out << i << " " << (useInfo?perSetInfo[i]:"") << endl;
+        out << i << " " << (useInfo ? perSetInfo[i].c_str() : "") << endl;
         avtSILSet_p s = sets[i];
         s->Print(out);
     }
 
     int nColls = collections.size();
     if (perCollInfo.size() == nColls)
-       useInfo = true; 
+        useInfo = true; 
     else
-       useInfo = false;
+        useInfo = false;
     for (i = 0 ; i < nColls ; i++)
     {
-        out << "Collection " << i << " " << (useInfo?perCollInfo[i]:"") << endl;
+        out << "Collection " << i << " " << (useInfo ? perCollInfo[i].c_str() : "") << endl;
         avtSILCollection_p c = collections[i];
         c->Print(out);
     }
 
     int nMats = matrices.size();
     if (perMatInfo.size() == nMats)
-       useInfo = true; 
+        useInfo = true; 
     else
-       useInfo = false;
+        useInfo = false;
     for (i = 0 ; i < nMats ; i++)
     {
-        out << "Matrix " << i << " " << (useInfo?perMatInfo[i]:"") << endl;
+        out << "Matrix " << i << " " << (useInfo ? perMatInfo[i].c_str() : "") << endl;
         avtSILMatrix_p m = matrices[i];
         m->Print(out);
     }

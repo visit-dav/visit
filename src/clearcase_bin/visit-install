@@ -56,6 +56,11 @@
 #    Brad Whitlock, Wed Oct 8 16:29:25 PST 2003
 #    Added support for clickable scripts in MacOS X.
 #
+#    Brad Whitlock, Tue Oct 21 14:07:33 PST 2003
+#    I made the command script files that we generate on MacOS X have
+#    execute file permissions so they can run when double-clicked in
+#    the Finder.
+#
 #-----------------------------------------------------------------------
 
 set Compress = COMPRESS
@@ -265,6 +270,8 @@ if("$os" == "darwin") then
             echo "$dir/bin/visit"       >> $dir/bin/$appscript.command
         endif
         echo "exit 0"               >> $dir/bin/$appscript.command
+        chgrp $group_ownership $dir/bin/$appscript.command
+        chmod $dir_permission  $dir/bin/$appscript.command
         @ i++
     end
 endif
