@@ -177,6 +177,9 @@
 //    Brad Whitlock, Mon Jul 14 11:47:34 PDT 2003
 //    I added menu options for saving and restoring the session.
 //
+//    Brad Whitlock, Wed Jul 30 16:50:12 PST 2003
+//    I made the main window re-emit a signal from the file panel.
+//
 // ****************************************************************************
 
 QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
@@ -387,6 +390,8 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     //
     QVBoxLayout *middleLayout = new QVBoxLayout(topLayout);
     QvisFilePanel *filePanel = new QvisFilePanel(central, "FilePanel");
+    connect(filePanel, SIGNAL(reopenOnNextFrame()),
+            this, SIGNAL(reopenOnNextFrame()));
     filePanel->ConnectFileServer(fileServer);
     filePanel->ConnectGlobalAttributes(viewer->GetGlobalAttributes());
     middleLayout->addWidget(filePanel);

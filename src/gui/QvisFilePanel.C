@@ -1378,14 +1378,30 @@ QvisFilePanel::play()
 // Creation:   Fri Sep 1 10:28:22 PDT 2000
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Jul 30 16:52:23 PST 2003
+//   I made it emit the new reopenOnNextFrame signal if we're on the last
+//   frame of the animation.
+//
 // ****************************************************************************
 
 void
 QvisFilePanel::nextFrame()
 {
-    // Tell the viewer to go to the next frame.
-    viewer->AnimationNextFrame();
+    //
+    // If we're not playing an animation and we're at the last frame in the
+    // animation, then try and reopen the current file to see if there are
+    // more timestates.
+    //
+    if(globalAtts->GetAnimationMode() == 2 &&
+       globalAtts->GetCurrentFrame() == globalAtts->GetNFrames() - 1)
+    {
+        emit reopenOnNextFrame();
+    }
+    else
+    {
+        // Tell the viewer to go to the next frame.
+        viewer->AnimationNextFrame();
+    }
 }
 
 // ****************************************************************************

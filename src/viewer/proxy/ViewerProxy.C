@@ -3101,7 +3101,8 @@ ViewerProxy::ExportEntireState(const std::string &filename)
 //   the named file.
 //
 // Arguments:
-//   filename : The name of the file to read for the state.
+//   filename   : The name of the file to read for the state.
+//   inVisItDir : Whether the session file is in the .visit directory.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Jul 9 11:58:23 PDT 2003
@@ -3111,10 +3112,11 @@ ViewerProxy::ExportEntireState(const std::string &filename)
 // ****************************************************************************
 
 void
-ViewerProxy::ImportEntireState(const std::string &filename)
+ViewerProxy::ImportEntireState(const std::string &filename, bool inVisItDir)
 {
     viewerRPC->SetRPCType(ViewerRPC::ImportEntireStateRPC);
     viewerRPC->SetVariable(filename);
+    viewerRPC->SetBoolFlag(inVisItDir);
     viewerRPC->Notify();
 }
 

@@ -20,7 +20,9 @@ class QCheckBox;
 // Creation:   October 24, 2002
 //
 // Modifications:
-//   
+//    Jeremy Meredith, Wed Jul 30 10:46:04 PDT 2003
+//    Added the toggle for forcing full connectivity.
+//
 // ****************************************************************************
 
 class QvisMaterialWindow : public QvisPostableWindowObserver
@@ -44,12 +46,14 @@ class QvisMaterialWindow : public QvisPostableWindowObserver
     void GetCurrentValues(int which_widget);
   private slots:
     void smoothingChanged(bool val);
+    void forceFullConnectivityChanged(bool val);
     void forceMIRChanged(bool val);
     void cleanZonesOnlyChanged(bool val);
   private:
     MaterialAttributes *atts;
 
     QCheckBox *smoothing;
+    QCheckBox *forceFullConnectivity;
     QCheckBox *forceMIR;
     QCheckBox *cleanZonesOnly;
 };

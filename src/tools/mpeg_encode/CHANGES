@@ -1,0 +1,180 @@
+Changes chronology
+------------------
+1.5b Release	August 1995
+	- added date to default USER_DATA string
+	- made prototypes happier
+	- renamed SPECIFICS_FILE to CDL_FILE
+	- fixed bit_rate param in constrained param setting (was too restrictive)
+	- fixed obscure P-block motion vector bug
+	- added a file name replication:
+	    foo.ppm  [1-10] will make 10 copies of foo.ppm
+	- generalized fopen calls to specify binary mode (MSDOG)
+	- generalized times calls into elapsed_time to handle different library routines
+	- fixed motion vector bug in bframes; skip block bug
+	- fixed minor bugs in parallel, mpeg, main, iframe, param, ....
+	- accepts extra whitespace at the end of lines in parameter files
+	- "PIXEL FULL" bug in B-frames fixed (caused ghosting)
+        - B-blocks "can I skip" rutine now looks at color too (more ghosting problems)
+        - switched from JPEG4 to JPEG5 (if they crash for you,
+                  do a -DJPEG4 for the encoder, and get jpeg4.tar.gz off our site)
+        - combine server (parallel) waits longer for files to exist (
+                         thanks to apian@ise.fhg.de)
+	- killing the parallel server kills the clients!!!! (apian@ise.fhg.de)
+
+1.5 Release	8 May 1995  Changes since version 1.3 release (to 1.5)
+= BUG FIXES
+	- removed SetBlocksPerSlice() from GOPStoMPEG
+	- don't access bb after freeing
+	- non-integer frame rates now work for all machines
+	- fixed parsing of -mv_histogram
+	- fixed numPadding bug (file name problem)
+	- fixed full pixel assertation bug
+        - corrected ASPECT_RATIO bug (was forced to 1)
+	- buffer size is now set correctly
+        - complains when file is too small
+	- fixed bug with non-ranged INPUT_FILE names
+	- forced MB at start/end of slice in P-frame bug fixed
+	- Actually evaluates the constrained parameter settings
+	- fixed a Cr/Cb mixup in bframe.c
+
+= NEW FEATURES
+	- rate control
+	- optional B search range different from P range
+	- can read images from stdin, allowing encoding on-the-fly
+        - Does Y files (no U or V)
+	- New way of specifying files `cmd`, like `ls jan-*-94`
+	- Can encode Abekas and Phillips style YUV formats
+	- gamma correction
+	- added -realquiet mode
+	- JMOVIE and JPEGv4 input format fully supported
+        - -float_dct uses the (slower) double precision floating point DCT 
+	- automatically identifies itself in (sequence header) userdata
+	- enforced [0][0] entry of Intra Q-table to be 8
+	- added Jim Boucher's resize code
+        - added -mse flag to print mean squared error on a per-block basis
+	- can specify Sequence header user data
+        - prints version number
+        - finds more skip blocks in GenBFrame
+	- can generate multiple sequence headers (every N GOPs)
+
+= SPEED IMPROVEMENTS
+
+
+= MAINTENANCE
+	- removed mpeg_jrevdct_sparse(), since it wasn't used
+	- added CompileTests();
+	- uses libpnmrw rather than entire pbmplus directory
+        - redid RCS
+        - reorganized [ipb]frame.c to make playing with rate controls easier
+
+= PORTABILITY
+	- added #ifdef's, #ifndef's LINUX'es to ease porting
+
+
+Changes from 1.2 to 1.3
+-----------------------
+= BUG FIXES
+	+ deletes frame files when done with them in parallel version
+	+ fixed bug in ComputeFrameTable
+	+ completion time estimation now is closer to actual time
+	+ modified ComputeSNR to avoid overflow of varOrig
+	+ fixed bug that caused I/P/B times on HP's to be wrong
+	+ fixed bug that made TwoLevel search out of the search window
+	+ fixed bug in -quiet 0
+	+ fixed memory leak when using PNM files
+	+ fixed bug:  crashed when CPU time was 0 (very rare)
+	+ fixed bug in -gop option
+	+ fixed bug in AppendFiles()
+
+= NEW FEATURES
+	+ added FORCE_ENCODE_LAST_FRAME option (allows encoding of all frames)
+	+ added PARALLEL_CHUNK_TAPER option
+	+ added -bit_rate_info option to show bit rate per frame
+	+ added -mv_histogram option to show motion vector histogram
+	+ custom quantization tables allowed
+	+ can specify frame rate, aspect ratio
+
+= SPEED IMPROVEMENTS
+	+ replaced most remaining binary multiplies/divides with shifts
+		(except those concerning negative numbers)
+
+= MAINTENANCE
+	+ got rid of & before array warning in block.c
+	+ got rid of references to srandom, random in pbmplus.h
+	+ undefine 'index' if defined as 'strchr' (since we use index as
+	  variable name)
+	+ modified frame type code to be more flexible
+
+= PORTABILITY
+	+ replaced all bzero() calls with memset() calls
+
+
+1.2 Release	20 October 1993
+
+Changes from 1.1 to 1.2
+-----------------------
+= BUG FIXES
+	+ allow comments in PPM files
+	+ first and last macroblocks in a slice may not be skipped macroblocks
+	+ fixed YUV bug:  should be able to handle dimensions which
+		aren't multiples of 16
+	+ fixed the separate I/O conversion for parallel NFS version
+	+ no_frame_summary can now be last option
+
+= NEW FEATURES
+	+ using DECODED frames as reference frames in parallel
+	  version now works
+	+ implemented multiple I/O Servers
+	+ FORCE_I_ALIGN added
+	+ reorganized Server structure slightly (only I/O Servers
+	  handle individual frame files on disk)
+	+ add option to allow exact division of frames per processor
+	  (PARALLEL_PERFECT)
+
+= SPEED IMPROVEMENTS
+	+ don't start Input server if not needed
+
+= MAINTENANCE
+	+ got rid of niceProcesses line in main.c
+	+ changed write() to SafeWrite() in parallel.c
+	+ commented stuff out after #endif's
+	+ fixed prototype warnings (eliminated non-4-byte args)
+
+
+1.1 Release	August 1993
+
+Changes from 1.0 to 1.1
+-----------------------
+= BUG FIXES
+	+ fixed bug in parallel Server code which didn't htonl() frame
+	  numbers correctly (so it didn't work on little-endian machines)
+	+ fixed bug -- B-frames were always getting just 1 slice
+	+ fixed listen() to use max connections allowed
+	+ fixed noparallel.c so it doesn't complain during non-parallel
+	  execution
+
+= NEW FEATURES
+	+ added level-2 p-search (exhaustive full, then half)
+	+ now prints signal-to-noise ratio
+	+ parallel code complains if absolute path not used for parameter
+	  file
+	+ changed single I/O server into separate Input and Output Servers
+	  (and have Output Server combine frames in parallel)
+
+= SPEED IMPROVEMENTS
+	+ slight improvement in Mpost_QuantZigBlock (.10 ms/call down to .08 ms
+	  on Sparc-10)
+	+ improvement in speed of BlockifyFrame (45.8 ms/call down to 21.2 ms)
+	+ improvement in ComputeMotionBlock (0.02 ms/call down to 0.01 ms)
+	+ improvement in ComputeMotionLumBlock (0.04 ms/call down to 0.02 ms)
+	+ improvement in LumAddMotionError (0.06 ms/call down to 0.05 ms)
+		(changed /2 to >>1)
+	
+= MAINTENANCE
+	+ removed most memory.h references (except jrevdct)
+	+ added CFLAGS lines in Makefile for SVR4.0 and SGI machines
+	+ removed mproto.h
+	+ got rid of printing connection times
+
+
+1.0 Release	July 1993

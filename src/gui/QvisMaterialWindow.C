@@ -74,13 +74,15 @@ QvisMaterialWindow::~QvisMaterialWindow()
 // Creation:   October 25, 2002
 //
 // Modifications:
+//    Jeremy Meredith, Wed Jul 30 10:46:51 PDT 2003
+//    Added a toggle for forcing full connectivity.
 //   
 // ****************************************************************************
 
 void
 QvisMaterialWindow::CreateWindowContents()
 {
-    QGridLayout *mainLayout = new QGridLayout(topLayout, 3,2,  10, "mainLayout");
+    QGridLayout *mainLayout = new QGridLayout(topLayout, 4,2,  10, "mainLayout");
 
 
     smoothing = new QCheckBox("Enable interface smoothing", central, "smoothing");
@@ -88,16 +90,21 @@ QvisMaterialWindow::CreateWindowContents()
             this, SLOT(smoothingChanged(bool)));
     mainLayout->addWidget(smoothing, 0,0);
 
+    forceFullConnectivity = new QCheckBox("Force full connectivity", central, "forceFullConnectivity");
+    connect(forceFullConnectivity, SIGNAL(toggled(bool)),
+            this, SLOT(forceFullConnectivityChanged(bool)));
+    mainLayout->addWidget(forceFullConnectivity, 1,0);
+
     forceMIR = new QCheckBox("Force interface reconstruction", central, "forceMIR");
     connect(forceMIR, SIGNAL(toggled(bool)),
             this, SLOT(forceMIRChanged(bool)));
-    mainLayout->addWidget(forceMIR, 1,0);
+    mainLayout->addWidget(forceMIR, 2,0);
 
     cleanZonesOnly = new QCheckBox("Clean zones only", central, "cleanZonesOnly");
     cleanZonesOnly->setEnabled(false);
     connect(cleanZonesOnly, SIGNAL(toggled(bool)),
             this, SLOT(cleanZonesOnlyChanged(bool)));
-    mainLayout->addWidget(cleanZonesOnly, 2,0);
+    mainLayout->addWidget(cleanZonesOnly, 3,0);
 }
 
 
@@ -111,6 +118,8 @@ QvisMaterialWindow::CreateWindowContents()
 // Creation:   October 24, 2002
 //
 // Modifications:
+//    Jeremy Meredith, Wed Jul 30 10:46:51 PDT 2003
+//    Added a toggle for forcing full connectivity.
 //   
 // ****************************************************************************
 
@@ -122,6 +131,7 @@ QvisMaterialWindow::UpdateWindow(bool doAll)
     smoothing->blockSignals(true);
     forceMIR->blockSignals(true);
     cleanZonesOnly->blockSignals(true);
+    forceFullConnectivity->blockSignals(true);
 
     for(int i = 0; i < atts->NumAttributes(); ++i)
     {
@@ -144,12 +154,16 @@ QvisMaterialWindow::UpdateWindow(bool doAll)
           case 2: //cleanZonesOnly
             cleanZonesOnly->setChecked(atts->GetCleanZonesOnly());
             break;
+          case 3: //needValidConnectivity
+            forceFullConnectivity->setChecked(atts->GetNeedValidConnectivity());
+            break;
         }
     }
 
     smoothing->blockSignals(false);
     forceMIR->blockSignals(false);
     cleanZonesOnly->blockSignals(false);
+    forceFullConnectivity->blockSignals(false);
 }
 
 
@@ -163,6 +177,8 @@ QvisMaterialWindow::UpdateWindow(bool doAll)
 // Creation:   Thu Oct 24 10:03:40 PDT 2002
 //
 // Modifications:
+//    Jeremy Meredith, Wed Jul 30 10:46:51 PDT 2003
+//    Added a toggle for forcing full connectivity.
 //   
 // ****************************************************************************
 
@@ -187,6 +203,12 @@ QvisMaterialWindow::GetCurrentValues(int which_widget)
     if(which_widget == 2 || doAll)
     {
         // Nothing for cleanZonesOnly
+    }
+
+    // Do forceFullConnectivity
+    if(which_widget == 3 || doAll)
+    {
+        // Nothing for forceFullConnectivity
     }
 
 }
@@ -303,6 +325,14 @@ void
 QvisMaterialWindow::forceMIRChanged(bool val)
 {
     atts->SetForceMIR(val);
+    Apply();
+}
+
+
+void
+QvisMaterialWindow::forceFullConnectivityChanged(bool val)
+{
+    atts->SetNeedValidConnectivity(val);
     Apply();
 }
 

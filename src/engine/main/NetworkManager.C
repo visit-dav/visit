@@ -214,6 +214,9 @@ NetworkManager::ClearAllNetworks(void)
 //    This ensures that we pick up the metadata and SIL for the time state
 //    that we're intersted in.
 //
+//    Jeremy Meredith, Wed Jul 30 10:45:45 PDT 2003
+//    Added the check for requiring full connectivity.
+//
 // ****************************************************************************
 
 void
@@ -346,6 +349,7 @@ NetworkManager::AddDB(const string &filename, const string &var, int time,
         dspec->SetNeedMixedVariableReconstruction(matopts.GetForceMIR());
         dspec->SetNeedSmoothMaterialInterfaces(matopts.GetSmoothing());
         dspec->SetNeedCleanZonesOnly(matopts.GetCleanZonesOnly());
+        dspec->SetNeedValidFaceConnectivity(matopts.GetNeedValidConnectivity());
         workingNet->SetDataSpec(dspec);
     }
     else

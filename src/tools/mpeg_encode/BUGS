@@ -1,0 +1,62 @@
+Known BUGS:
+
+1. <fixed>
+
+2. rate control and specifics files interact badly
+
+3. using REMOTE parallel execution:
+   `command` to find INPUT files does not work
+   SPECIFICS_FILE (CDL_FILE)
+   USER_DATA 
+     dont work (should send the files over the socket, but do not
+
+4. using any sort of parallel code:
+     REFERENCE_FRAME	DECODED
+   does not work
+
+5. Cannot use both STDIN and CDL_FILEs (ok, since it doesnt make sense...)
+
+6. <fixed>
+
+7. Patterns of BBI...  seem to cause problems for parallel encoding.  
+   I believe the bugs are fixed for sequential, but if you hit one, let us
+   know!
+
+8. Sometimes parallel encoding results in a zero size being written into
+   the stream.  To fix, specify SIZE of the actual size.
+
+8.1 (related? minor, anyway) in parallel is also writes the Quant matrix
+   even when it is the default one
+
+9. It is unclear (to us anyway) if we should generate Y's from 0..255 or 16..224
+
+10. <fixed>
+
+11. <fixed>
+
+12. reading JPEG from stdin, the encoder will sometimes stop before the end
+of the stream (if the images are smaller than half the buffer size).
+
+13. Sometimes INPUT_CONVERT * is not good (requires "cat *"), in a parallel
+case reported by a user it was needed.
+
+14. Parallel encoding often generates improper temporal_ref's...
+Reporting bugs:
+    If you find any bugs in this software, please send them to
+    mpeg-bugs@plateau.cs.berkeley.edu.  Since this software
+    is unsupported, we make no guarantees about how long it will
+    take to fix the bug, or if it will be fixed at all.  Bug fixes
+    will be cheerfully accepted.  Please include as much detailed
+    information as possible, including:
+
+	1) the version number of the program you are using (cf. VERSION)
+	2) the data file that caused the bug (if possible)
+	3) the OS version and machine type you ran the program on
+	4) the compiler used to compile the program
+
+
+
+
+
+
+

@@ -121,6 +121,9 @@
 #    Eric Brugger, Tue Jul 29 08:23:32 PDT 2003
 #    Added makemili to the distribution.
 #
+#    Brad Whitlock, Wed Jul 30 13:12:14 PST 2003
+#    Added mpeg_encode and makemovie.py to the distribution.
+#
 #-----------------------------------------------------------------------
 
 set DataFiles = "TRUE"
@@ -489,6 +492,9 @@ cp $VisItDir/bin/time_annotation $bindir
 if(-e $VisItDir/bin/makemili_ser) then
    cp $VisItDir/bin/makemili_ser $bindir/makemili_ser
 endif
+# Copy the MPEG encoder and the makemovie script.
+cp $VisItDir/bin/mpeg_encode   $bindir
+cp $VisItDir/bin/makemovie.py  $bindir
 
 #
 # Copy the VisIt libraries to the distribution.

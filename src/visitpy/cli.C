@@ -34,6 +34,10 @@ extern "C" int Py_Main(int, char **);
 //   Brad Whitlock, Tue Jul 15 12:59:22 PDT 2003
 //   I moved the code to run a script into the visit module.
 //
+//   Brad Whitlock, Mon Jul 28 16:51:22 PST 2003
+//   Added code to prevent -sessionfile, -format, -framestep, and -output
+//   from being passed on to the viewer.
+//
 // ****************************************************************************
 
 int
@@ -80,6 +84,28 @@ main(int argc, char *argv[])
         else if(strcmp(argv[i], "-verbose") == 0)
         {
             verbose = true;
+        }
+        else if(strcmp(argv[i], "-output") == 0)
+        {
+            // Skip the argument that comes along with -output. Note that
+            // the -output argument will be accessible in sys.argv but it
+            // is not passed along in the args that are sent to the viewer.
+            ++i;
+        }
+        else if(strcmp(argv[i], "-format") == 0)
+        {
+            // Skip the argument that comes along with -format.
+            ++i;
+        }
+        else if(strcmp(argv[i], "-framestep") == 0)
+        {
+            // Skip the argument that comes along with -framestep.
+            ++i;
+        }
+        else if(strcmp(argv[i], "-sessionfile") == 0)
+        {
+            // Skip the argument that comes along with -sessionfile.
+            ++i;
         }
         else
         {

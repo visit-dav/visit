@@ -9,4 +9,7 @@
     <Field name="cleanZonesOnly" label="Clean zones only" type="bool">
       false
     </Field>
+    <Field name="needValidConnectivity" label="Force perfect connectivity" type="bool">
+      false
+    </Field>
   </Attribute>

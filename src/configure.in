@@ -424,6 +424,12 @@ dnl
 dnl    Brad Whitlock, Thu Jun 19 13:10:18 PST 2003
 dnl    I removed the splashscreen.
 dnl
+dnl    Brad Whitlock, Tue Jul 29 15:51:29 PST 2003
+dnl    Added mpeg_encode to the tools directory.
+dnl
+dnl    Hank Childs, Wed Jul 30 18:05:32 PDT 2003
+dnl    Add support for fake exceptions.
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -528,6 +534,32 @@ fi
 # Check for platform specific flags.
 #
 AC_SUBST(PLATFORM_CPPFLAGS)
+
+#
+# Set up fake exceptions if requested.
+#
+AC_ARG_ENABLE(fake-exceptions,
+   [  --enable-fake-exceptions       do not make use of C++'s exception library ],
+   UseFakeExceptions=$enableval, UseFakeExceptions=not_specified)
+doFakeExceptions="no"
+if test "$UseFakeExceptions" = "yes" ; then
+  doFakeExceptions="yes"
+fi
+AC_MSG_CHECKING([whether or not to use fake exceptions])
+FAKE_EXCEPTIONS_BY_DEFAULT="xx$FAKE_EXCEPTIONS_BY_DEFAULT"
+if test "$FAKE_EXCEPTIONS_BY_DEFAULT" = "xxyes" ; then
+  if test "$UseFakeExceptions" = "not_specified" ; then
+     doFakeExceptions="yes"
+  fi
+fi
+if test "$doFakeExceptions" = "yes" ; then
+  AC_MSG_RESULT([yes])
+  CXXFLAGS="$CXXFLAGS -DFAKE_EXCEPTIONS"
+else
+  AC_MSG_RESULT([no])
+fi
+AC_SUBST(CXXFLAGS)
+
 
 #
 # Check to see if the parallel version is enabled.
@@ -2339,18 +2371,19 @@ COMMON_FILES="common/Makefile
               common/winutil/Makefile"
 TOOLS_FILES="tools/Makefile
              tools/annotations/Makefile
+             tools/avtprep/Makefile
+             tools/classwriter/Makefile
+             tools/curv3dprep/Makefile
              tools/doxygenate/Makefile
              tools/escan/Makefile
+             tools/makemili/Makefile
+             tools/mpeg_encode/Makefile
              tools/prep/Makefile
-             tools/classwriter/Makefile
+             tools/silex/Makefile
+             tools/surfcomp/Makefile
              tools/windowmaker/Makefile 
              tools/xml/Makefile
-             tools/xmledit/Makefile
-             tools/avtprep/Makefile
-             tools/silex/Makefile
-             tools/curv3dprep/Makefile
-             tools/makemili/Makefile
-             tools/surfcomp/Makefile"
+             tools/xmledit/Makefile"
 VISIT_VTK_FILES="visit_vtk/Makefile"
 COMPONENT_FILES="components/Makefile
                  components/DBAtts/Makefile

@@ -289,6 +289,9 @@ class Xfer;
 //    Added int args to DatabaseQuery.
 //    Added overloaded Pick and NodePick methods (accepting doubles).
 //
+//    Brad Whitlock, Wed Jul 30 14:44:34 PST 2003
+//    Added an extra argument to ImportEntireState.
+//
 // ****************************************************************************
 
 class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
@@ -438,7 +441,7 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
 
     void WriteConfigFile();
     void ExportEntireState(const std::string &filename);
-    void ImportEntireState(const std::string &filename);
+    void ImportEntireState(const std::string &filename, bool inVisItDir);
 
     // Methods for dealing with plot SIL restrictions.
     avtSILRestriction_p GetPlotSILRestriction() 

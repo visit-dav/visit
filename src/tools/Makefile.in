@@ -59,6 +59,9 @@
 #    Hank Childs, Wed Jul  2 09:22:45 PDT 2003
 #    Added surfcomp.
 #
+#    Brad Whitlock, Tue Jul 29 15:47:05 PST 2003
+#    Added mpeg_encode.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -69,7 +72,7 @@ MILI=makemili
 
 OPTIONAL=avtprep classwriter doxygenate prep windowmaker
 
-SUBDIRS=annotations curv3dprep @MILI@ silex surfcomp xml xmledit
+SUBDIRS=annotations curv3dprep @MILI@ mpeg_encode silex surfcomp xml xmledit
 
 message:
 	@echo

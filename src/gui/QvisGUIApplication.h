@@ -258,6 +258,7 @@ private slots:
     void SetPrinterOptions();
     void PrintWindow();
     void RefreshFileList();
+    void RefreshFileListAndNextFrame();
     void RestoreSession();
     void SaveSession();
 private:

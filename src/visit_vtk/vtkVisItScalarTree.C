@@ -53,6 +53,11 @@ vtkVisItScalarTree::Initialize()
     tree = NULL;
 }
 
+// ***************************************************************************
+// Modifications:
+//   Akira Haddox, Wed Jul 30 09:27:22 PDT 2003
+//   Fixed a bug in optimization for 2D structured / rectlinear grids.
+// ***************************************************************************
 
 void
 vtkVisItScalarTree::BuildTree()
@@ -86,10 +91,24 @@ vtkVisItScalarTree::BuildTree()
         ((vtkRectilinearGrid *)DataSet)->GetDimensions(pt_dims);
     else if (meshType == VTK_STRUCTURED_GRID)
         ((vtkStructuredGrid *)DataSet)->GetDimensions(pt_dims);
+
+    //
+    // Just to ensure we don't crash, 2D structured datasets
+    // not in the XY plane we'll not optimize for.
+    // 
+    if ((meshType == VTK_RECTILINEAR_GRID ||
+         meshType == VTK_STRUCTURED_GRID ) &&
+        (pt_dims[0] == 1 || pt_dims[1] == 1))
+    {
+        meshType = VTK_POLY_DATA;
+    }
+
+    bool structured2D = (pt_dims[2] == 1);
+
     int cell_dims[3];
-    cell_dims[0] = pt_dims[0]-1;
-    cell_dims[1] = pt_dims[1]-1;
-    cell_dims[2] = pt_dims[2]-1;
+    cell_dims[0] = pt_dims[0] - 1;
+    cell_dims[1] = pt_dims[1] - 1;
+    cell_dims[2] = pt_dims[2] - 1;
     int strideY = cell_dims[0];
     int strideZ = cell_dims[0]*cell_dims[1];
     int ptstrideY = pt_dims[0];
@@ -149,18 +168,36 @@ vtkVisItScalarTree::BuildTree()
             if (meshType == VTK_RECTILINEAR_GRID 
                  || meshType == VTK_STRUCTURED_GRID)
             {
-                int cellI = cellId % cell_dims[0];
-                int cellJ = (cellId/strideY) % cell_dims[1];
-                int cellK = (cellId/strideZ);
-                int j;
-                for (j = 0 ; j < 8 ; ++j)
+                if (structured2D)
                 {
-                    arr8[j] = (cellI + X_val[j]) +
-                              (cellJ + Y_val[j])*ptstrideY 
-                                + (cellK + Z_val[j])*ptstrideZ;
+                    int cellI = cellId % cell_dims[0];
+                    int cellJ = cellId / strideY;
+
+                    int j;
+                    for (j = 0 ; j < 4 ; ++j)
+                    {
+                        arr8[j] = (cellI + X_val[j]) +
+                                  (cellJ + Y_val[j]) * ptstrideY; 
+                    } 
+
+                    pts = arr8;
+                    npts = 4;
                 }
-                pts = arr8;
-                npts = 8;
+                else
+                {
+                    int cellI = cellId % cell_dims[0];
+                    int cellJ = (cellId/strideY) % cell_dims[1];
+                    int cellK = (cellId/strideZ);
+                    int j;
+                    for (j = 0 ; j < 8 ; ++j)
+                    {
+                        arr8[j] = (cellI + X_val[j]) +
+                                  (cellJ + Y_val[j])*ptstrideY 
+                                    + (cellK + Z_val[j])*ptstrideZ;
+                    }
+                    pts = arr8;
+                    npts = 8;
+                }
             } 
             else
             { 

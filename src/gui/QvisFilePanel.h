@@ -62,6 +62,9 @@ class ViewerProxy;
 //   Added method definitions for FileDisplayInformation since it didn't
 //   work the way I had it on SGI.
 //
+//   Brad Whitlock, Wed Jul 30 16:48:59 PST 2003
+//   Added reopenOnNextFrame signal.
+//
 // ****************************************************************************
 
 class GUI_API QvisFilePanel : public QWidget, public SimpleObserver, public GUIBase
@@ -103,6 +106,8 @@ public:
 
     bool HaveFileInformation(const QualifiedFilename &filename) const;
     void AddExpandedFile(const QualifiedFilename &filename);
+signals:
+    void reopenOnNextFrame();
 private:
     void UpdateFileList(bool doAll);
     void UpdateAnimationControls(bool doAll);

@@ -1,0 +1,65 @@
+This file describes how to install the Berkeley MPEG encoder.  Installation
+should be a quick and painless task.  Just do the following in order:
+
+    1)  The encoder uses jpeg code.  You don't have to use this if you don't
+	want.  The jpeg code is only useful if you have images stored in JPEG
+	format.  And even if you do, you don't have to use it (you can use
+	the INPUT_CONVERT option); but it's faster and better if you do use it.
+	Here's what you do:  cd into the jpeg/ directory and type 'make' there.
+	That should create libjpeg.a.  That's it.  (Well, if you dont have
+        gcc, you'll need to edit the Makefile there).  If you have problems
+	making it, or don't want to bother, you'll have to go into the Makefile
+	in THIS directory and change all the JPEG stuff.  Look for the comment
+	"JPEG STUFF" and make everything there = nothing, then do this:
+		MP_JPEG_OBJS = nojpeg.o
+		MP_JPEG_SRCS = nojpeg.c
+        Or, if you already have libjpeg.a (v4!), change
+		JPEG_LIB = -ljpeg
+		JPEG_LIB_DIR = -Ljpeg-lib-path
+        (and you can delete the jpeg subdir to save space)
+       If you have a lot of trouble compiling the jpeg directory,
+       run ./configure there.
+
+    2)  If your machine does not have UNIX sockets, then you cannot use
+    the parallel version of the encoder.  The default is to not
+    have a parallel version.  If you wish to run on several machines,
+    Edit the Makefile, changing MP_PARALLEL_OBJS and MP_PARALLEL_SRCS.
+    Instead of noparallel.c and noparallel.o, they should be parallel.c
+    and parallel.o.
+	
+    3)  We assume that right shift corresponds to signed division by 2 with
+    rounding towards minus infinity.  This is correct for typical "arithmetic
+    shift" instructions that shift in copies of the sign bit.  But some
+    C compilers implement >> with an unsigned shift.  For these machines you
+    must define RIGHT_SHIFT_IS_UNSIGNED.  To do so, add
+    -DRIGHT_SHIFT_IS_UNSIGNED to your CFLAGS line.
+
+    4)  Edit the Makefile.  Set CC accordingly.  Set CFLAGS
+    accordingly.  Some sample CFLAGS lines for several different
+    compilers/machines are given in the Makefile.  If long's on your
+    machine are 32 bits but int's are NOT 32 bits, then you must include
+    the -DLONG_32 option in your CFLAGS line.  If your system does not
+    have the netinet/in.h header, then you must add either -DFORCE_BIG_ENDIAN
+    or -DFORCE_LITTLE_ENDIAN to the CFLAGS line (which you use depends on
+    your machine).
+
+    5)  Set the LIBS lines appropriately.  For most machines you don't need
+    to change this.  However, for some machines you'll need to include
+    additional libraries to use sockets.
+
+    6)  If you are using a NON-ANSI compiler, then your CFLAGS should
+    include -DNON_ANSI_COMPILER
+
+    7)  Type 'make clean; make all'
+
+If all is well, you should get the executable file 'mpeg_encode.'  To
+test it, try 'make test.'  At the end of the test, it should say SUCCESS
+or FAILURE.  If it says FAILURE, please let us know!
+
+Note: if you get warnings about certain C library procedures not being
+defined before being called, that's not our fault.  Prototypes
+*should* exist in the appropriate system header files in /usr/include,
+but on some systems they don't.  None of this should affect the
+correctness of the program, but if you get tired of the warnings, you
+can probably stop them by setting PROTOFLAG = -DMISSING_PROTOTYPES in
+the Makefile.

@@ -1,0 +1,80 @@
+<html>
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>VisIt 1.2 Release Notes</title>
+</head>
+<body>
+<p align="center"><b><font size="6">VisIt 1.2 Release Notes</font></b></p>
+<p>Welcome to VisIt's release notes page. This page describes the important 
+enhancements and bug-fixes that were added to this release.</p>
+<p><b><font size="4">Features added in version 1.2</font></b></p>
+<ul>
+  <li>VisIt can be used to save MPEG, QuickTime, or streaming movies by running: visit -movie from the command line and providing the name of a session file that was exported from the GUI.</li>
+  <li>VisIt now starts up nearly twice as fast on some platforms.</li>
+  <li>You can now save your VisIt session to a session file that can be reloaded later. A session file saves all of VisIt's state so that you can pick up exactly where you left off with the same plots, operators, and GUI settings. Session files are, by default, saved in the ".visit" directory in your home directory. To save your session, choose the "Save session" option from the Main Window's File menu. If you want to restore a previous session, select "Restore session" and select a session file. </li>
+  <li>Databases with very large extents are now scaled down to reasonable sizes when they are read in.</li>
+  <li>The makemili utility is installed by default when it is available.</li>
+  <li>Opening databases is faster in parallel now since only the first process has to read in information from the root file.</li>
+  <li>VisIt has a new RemoveCells operator that removes cells from a plot according to a user-specified list of cells that should be removed.</li>
+  <li>The Subset plot's legend has been much improved so that it is more readable.</li>
+  <li>Queries are now accessible from VisIt's Python CLI.</li>
+  <li>Periods are now allows in variable names.</li>
+  <li>Config files are more readable.</li>
+  <li>Query output now has units if units are available.</li>
+  <li>VisIt now checks for new files in a virtual database when the nextframe animation button is clicked on the last frame of an animation.</li>
+</ul>
+<p><b><font size="4">Bugs fixed in version 1.2</font></b></p>
+<ul>
+  <li>Sliced Subset plots sometimes have gaps.</li>
+  <li>The Operators menu in the GUI is being grayed out too aggressively.</li>
+  <li>Starting the metadata server on Windows is slow.</li>
+  <li>No error message is issued when sourcing a script in the CLI.</li>
+  <li>Changing the number of colors in a continuous color table can crash the VisIt GUI.</li>
+  <li>Cloning a window that was in scalable rendering mode crashes the viewer.</li>
+  <li>Displays lists are built twice, leading to slower performance.</li>
+  <li>The viewer crashes under complicated circumstances.</li>
+  <li>Scalable rendering in distributed mode causes the viewer to crash.</li>
+  <li>Domains sometimes disappear.</li>
+  <li>Deleting a color table on the Windows platform crashes the viewer.</li>
+  <li>The generic database incorrectly caches material interface reconstruction leading to garbled datasets.</li>
+  <li>Selecting different plots in the GUI causes the engine to recalculate the plots in the compute engine of animation caching is off.</li>
+  <li>Pressing multiple buttons in the vis window can cause the viewer to crash.</li>
+  <li>Axis labels are off in space.</li>
+  <li>Compactness queries fail in parallel.</li>
+  <li>Rubberband lines for zooming are not drawn in the right place on the Windows platform.</li>
+  <li>Refreshing the file list resets the 2d view.</li>
+  <li>The viewer crashed when resizing a window when scalable rendering was on.</li>
+  <li>VisIt sometimes crashes when saving settings on Linux platform.</li>
+  <li>Mesh composed of triangles in 3d space is not supported.</li>
+  <li>Legend text disappears if the vis window is too small.</li>
+  <li>The RevolvedSurfaceArea query</li>
+  <li>Problem running in parallel when switching between multi-domain and single-domain databases.</li>
+  <li>Font size for database annotation increased.</li>
+  <li>Windows version of the CLI cannot save images in -nowin mode.</li>
+  <li>Plots add their legends to the window even when the global legend visibility flag is off.</li>
+  <li>The Cosmos database plugin now builds on IRIX.</li>
+  <li>Axis lables are drawn different sizes.</li>
+  <li>The Histogram plot behaves strangely when FullFrame mode is on in the vis window.</li>
+  <li>The Mesh plot does not have the right foreground or background colors when rendered by scalable rendering.</li>
+  <li>Changing the viewport on 2d plots undoes FullFrame mode.</li>
+  <li>Users should be directed to e-mail visit-help@llnl.gov.</li>
+  <li>Odd legend for near constant plot.</li>
+  <li>Zooming in too much with zoom interactor for 2d vis windows.</li>
+  <li>Remove -nread and -nwrite from the command line.</li>
+  <li>Distribute visit-config-open to users at LLNL.</li>
+  <li>Documentation change for binary dist script.</li>
+  <li>Splashscreen process started even when -nosplash is used.</li>
+  <li>Annotations get lost when zooming in too far.</li>
+  <li>Error message for bad expression should be displayed better.</li>
+  <li>The Splashscreen does not pop up after clicking "About..." in the GUI.</li>
+  <li>Database information shows up in the vis window even if it has been turned off.</li>
+</ul>
+<p>Click the following link to view the release notes for the previous version 
+of VisIt: <a href="relnotes1.1.6.html">VisIt 1.1.6 Release Notes</a>.</p>
+
+</body>
+
+</html>

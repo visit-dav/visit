@@ -1,0 +1,131 @@
+Notes
+-----
+
+Friday, 19 February
+	is it possible to read in the files in the order in which we'll
+	output them:  ipbbbb, pbbb, etc.
+	(this uses less memory)
+
+	but might files be given sequentially, rather than in a name
+	list?  (do we have random access guaranteed?)
+
+	...
+
+	need to DECODE I-frame so can get true motion vectors, right?	
+
+	should separate I-frame macroblock into procedure, since it
+	can be used in P-frame generation
+
+Monday, 22 February
+	motion vectors:  forward_f code is passed to genMBHead, but not
+	written there -- it's written in genPictHead.  Have to fix this!
+
+	fixed the motion vectors by working backwards from decoding
+
+Wednesday, 24 February
+	DCT:  can't just use y_blocks because in I-frames, this has been
+		DCT'd.
+
+	DCT:  is it set up just to work with positive numbers?!?!?!
+		if so, have trouble doing DCT for diffs
+		(SEE PAGE D-38!!!)
+
+Wednesday, 3 March
+	headers.c:  why is vbv_delay a 32-bit integer, when only 16 bits
+			are used?
+	COMPRESSION:  I-frames give a 12-to-1 compression rate for wally
+	ComputeDiff:	need to make it work with non-integers!!!!
+
+Thursday, 4 March
+	change program to allow input to be bunch of rgb frames
+
+
+prev motion vectors reset when:  SliceHeader
+				 when no forward motion vector
+				 when block is skipped
+				 beginning of new frame
+
+Wednesday, 10 March
+	should the program have any say in which frames should be I, B, P?
+	dependencies:
+		when get an I frame, can output the I frame, output all
+		previous B frames, delete the previous reference frame, and
+		save the I frame
+
+		when get a P frame, can output the P frame, then output all
+		previous B frames, delete the previous reference frame, and
+		save the P frame
+
+		when get a B frame, just save it (have to wait for future
+		reference frame)
+
+	so, need a linked list of B-frames, and a previousRefFrame, and a
+	currentFrame
+
+Monday, 15 March
+	assuming that skipped macroblocks at end of slice don't need some
+	end macroblock to be sent.
+
+
+I:  12:1 compression...P:  24:1 compression...B:  0:1 compression
+Elapsed times (s):  104.5 user, 1.5 system, 106.0 total
+PROCESSED:  191197 Bits per second
+I Frames:  669621 BPS....P Frames:  102940 BPS....B Frames: 0 BPS
+
+
+Monday, 22 March
+	Something slightly wrong with DCT coefficients -- getting blue
+	stuff in flower garden
+
+	Are the DC predicted values reset to 128 on skipped macroblocks?
+	Yes, they are!
+
+
+Tuesday, 23 March
+	skipped macroblocks have different meanings in B and P frames
+
+
+Monday, 5 April
+	Change q-scale for I-blocks inside of P-frames???
+
+Monday, 19 April
+	Does last block have to be transmitted (not skipped) for others to
+	be processed???
+		Tuesday -- Yes!
+
+
+Friday, 23 April
+	Need to take care of Forced Updating (page 46 of MPEG-1 doc)
+
+	DO THIS:  Make program SORT input file names, if
+			numeric
+
+Wednesday, 28 April
+	DO THIS:  Have option to take gif files and calls giftoppm
+		  appropriately
+
+
+Wednesday, 2 June
+	motion vector for chrominance is HALF normal motion!!!
+
+Friday, 18 June
+	ComputeSubSampled... is 0.03 ms per call, whereas ComputeMotionLum...
+	is 0.06 per call.  Should be 1/4, only 1/2.  See if you can do
+	somethinga about this
+
+	When dividing by 2, they usually mean // (where 0.5 becomes 1)
+	So notice the calculation of half-pixel motion and of B-frame motion
+
+Tuesday, 13 July
+	GOING TO ASSUME, for now, that all I, P frames need to be decoded
+	if referenceType == DECODED_FRAME (not true, but a safe bet)
+
+
+Thursday, 22 July
+	Endianness:
+		Big		Little
+		---		------
+		Sun, HP		DEC
+
+NEXT RELEASE:  DELETE ALL makedepend STUFF from MAKEFILE
+
