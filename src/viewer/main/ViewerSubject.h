@@ -305,7 +305,6 @@ private:
     // RPC handler methods.
     void Close();
     void ConnectToMetaDataServer();
-    void ClearAllWindows();
     void IconifyAllWindows();
     void DeIconifyAllWindows();
     void ShowAllWindows();
@@ -372,13 +371,10 @@ private slots:
     void ConnectWindow(ViewerWindow *win);
     void DisconnectWindow(ViewerWindow *win);
 
-    void ClearWindow(int windowIndex = -1);
     void ToggleMaintainViewMode(int windowIndex = -1);
     void ToggleCameraViewMode(int windowIndex = -1);
     void ToggleLockTime(int windowIndex = -1);
     void ToggleLockTools(int windowIndex = -1);
-    void ClearPickPoints(int windowIndex = -1);
-    void ClearRefLines(int windowIndex = -1);
 
     void CopyViewToWindow(int from, int to);
     void CopyLightingToWindow(int from, int to);

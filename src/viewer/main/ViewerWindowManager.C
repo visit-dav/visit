@@ -5166,39 +5166,6 @@ ViewerWindowManager::AnimationCallback()
     }
 }
 
-
-// ****************************************************************************
-// Method: ViewerWindowManager::ClearPickPoints
-//
-// Purpose:
-//   This is a Qt slot function that is called when the popup menu's invert
-//   button is clicked.
-//
-// Arguments:
-//   windowIndex  The index of the window that called this method.
-//
-// Programmer: Kathleen Bonnell
-// Creation:   November 27, 2001
-//
-// Modifications:
-//   Kathleen Bonnell, Fri Nov 15 09:07:36 PST 2002  
-//   Removed call to UpdatePickAtts, now handled by ViewerQueryManager.
-//
-// ****************************************************************************
-
-void
-ViewerWindowManager::ClearPickPoints(int windowIndex)
-{
-    if(windowIndex < -1 || windowIndex >= maxWindows)
-        return;
-
-    int index = (windowIndex == -1) ? activeWindow : windowIndex;
-    if(windows[index] != 0)
-    {
-        windows[index]->ClearPickPoints();
-    }
-}
-
 // ****************************************************************************
 // Method: ViewerWindowManager::GetPrinterClientAtts
 //
@@ -5248,33 +5215,6 @@ ViewerWindowManager::GetRenderingAttributes()
        renderAtts = new RenderingAttributes;
 
     return renderAtts;
-}
-
-// ****************************************************************************
-// Method: ViewerWindowManager::ClearRefLines
-//
-// Purpose:
-//   This is a Qt slot function that is delete button is clicked.
-//
-// Arguments:
-//   windowIndex  The index of the window that called this method.
-//
-// Programmer: Kathleen Bonnell
-// Creation:   January 14, 2002 
-//
-// ****************************************************************************
-
-void
-ViewerWindowManager::ClearRefLines(int windowIndex)
-{
-    if(windowIndex < -1 || windowIndex >= maxWindows)
-        return;
-
-    int index = (windowIndex == -1) ? activeWindow : windowIndex;
-    if(windows[index] != 0)
-    {
-        windows[index]->ClearRefLines();
-    }
 }
 
 // ****************************************************************************

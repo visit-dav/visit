@@ -126,6 +126,59 @@ public:
     virtual ~ClearAllWindowsAction(){}
 
     virtual void Execute();
+    virtual bool AllowInToolbar() const { return false; }
+};
+
+// ****************************************************************************
+// Class: ClearPickPointsAction
+//
+// Purpose:
+//   Handles clearing of pick points.
+//
+// Notes:      
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Jun 23 16:16:19 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+class VIEWER_API ClearPickPointsAction : public ViewerAction
+{
+public:
+    ClearPickPointsAction(ViewerWindow *win);
+    virtual ~ClearPickPointsAction() { };
+
+    virtual void Execute();
+    virtual bool Enabled() const;
+    virtual bool AllowInToolbar() const { return false; }
+};
+
+// ****************************************************************************
+// Class: ClearReferenceLinesAction
+//
+// Purpose:
+//   Clears reference lines.
+//
+// Notes:      
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Jun 23 16:16:39 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+class VIEWER_API ClearReferenceLinesAction : public ViewerAction
+{
+public:
+    ClearReferenceLinesAction(ViewerWindow *win);
+    virtual ~ClearReferenceLinesAction() { };
+
+    virtual void Execute();
+    virtual bool Enabled() const;
+    virtual bool AllowInToolbar() const { return false; }
 };
 
 // ****************************************************************************

@@ -2007,76 +2007,6 @@ ViewerSubject::CopyPlotsToWindow()
 }
 
 // ****************************************************************************
-//  Method: ViewerSubject::ClearAllWindows
-//
-//  Purpose:
-//    Execute the ClearAllWindows RPC.
-//
-//  Programmer: Eric Brugger
-//  Creation:   October 4, 2000
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-void
-ViewerSubject::ClearAllWindows()
-{
-    //
-    // Perform the rpc.
-    //
-    ViewerWindowManager::Instance()->ClearAllWindows();
-}
-
-// ****************************************************************************
-//  Method: ViewerSubject::ClearPickPoints
-//
-//  Purpose: 
-//    This is a Qt slot function that clears the pick points from 
-//    the specified window.
-//
-//  Arguments:
-//    windowIndex  The index of the window. 
-//
-//  Programmer: Kathleen Bonnell
-//  Creation:   November 27, 2001 
-//
-// ****************************************************************************
-
-void
-ViewerSubject::ClearPickPoints(int windowIndex)
-{
-    //
-    // Reset the window's view.
-    //
-    ViewerWindowManager::Instance()->ClearPickPoints(windowIndex);
-}
-
-// ****************************************************************************
-//  Method: ViewerSubject::ClearRefLines
-//
-//  Purpose: 
-//    This is a Qt slot function that clears the ref lines from 
-//    the specified window.
-//
-//  Arguments:
-//    windowIndex  The index of the window. 
-//
-//  Programmer: Kathleen Bonnell
-//  Creation:   April 25, 2002 
-//
-// ****************************************************************************
-
-void
-ViewerSubject::ClearRefLines(int windowIndex)
-{
-    //
-    // Reset the window's view.
-    //
-    ViewerWindowManager::Instance()->ClearRefLines(windowIndex);
-}
-
-// ****************************************************************************
 // Method: ViewerSubject::IconifyAllWindows
 //
 // Purpose: 
@@ -3371,30 +3301,6 @@ ViewerSubject::ProcessExpressions()
 }
 
 // ****************************************************************************
-//  Method: ViewerSubject::ClearWindow
-//
-//  Purpose:
-//    This is a Qt slot function that executes the ClearWindow RPC.
-//
-//  Programmer: Eric Brugger
-//  Creation:   August 22, 2000
-//
-//  Modifications:
-//    Brad Whitlock, Tue Nov 7 12:22:37 PDT 2000
-//    Modified to use ViewerWindowManager::ClearWindow.
-//
-// ****************************************************************************
-
-void
-ViewerSubject::ClearWindow(int windowIndex)
-{
-    //
-    // Perform the rpc.
-    //
-    ViewerWindowManager::Instance()->ClearWindow(windowIndex);
-}
-
-// ****************************************************************************
 //  Method: ViewerSubject::ToggleCameraViewMode
 //
 //  Purpose: 
@@ -4077,8 +3983,12 @@ ViewerSubject::LaunchProgressCB(void *d, int stage)
 //    I removed some RPC's related to plots and operators since they are now
 //    handled by actions.
 //
-//   Eric Brugger, Fri Apr 18 12:46:00 PDT 2003
-//   I replaced auto center view with maintain view.
+//    Eric Brugger, Fri Apr 18 12:46:00 PDT 2003
+//    I replaced auto center view with maintain view.
+//
+//    Brad Whitlock, Mon Jun 23 16:22:51 PST 2003
+//    I removed ClearWindow, ClearAllWindows, ClearRefLines, ClearPickPoints
+//    since they are now actions.
 //
 // ****************************************************************************
 
@@ -4099,12 +4009,6 @@ ViewerSubject::HandleViewerRPC()
     {
     case ViewerRPC::CloseRPC:
         Close();
-        break;
-    case ViewerRPC::ClearWindowRPC:
-        ClearWindow();
-        break;
-    case ViewerRPC::ClearAllWindowsRPC:
-        ClearAllWindows();
         break;
     case ViewerRPC::OpenDatabaseRPC:
         OpenDatabase();
@@ -4223,9 +4127,6 @@ ViewerSubject::HandleViewerRPC()
     case ViewerRPC::ToggleMaintainViewModeRPC:
         ToggleMaintainViewMode();
         break;
-    case ViewerRPC::ClearPickPointsRPC:
-        ClearPickPoints();
-        break;
     case ViewerRPC::ToggleCameraViewModeRPC:
         ToggleCameraViewMode();
         break;
@@ -4246,9 +4147,6 @@ ViewerSubject::HandleViewerRPC()
         break;
     case ViewerRPC::SetViewExtentsTypeRPC:
         SetViewExtentsType();
-        break;
-    case ViewerRPC::ClearRefLinesRPC:
-        ClearRefLines();
         break;
     case ViewerRPC::SetRenderingAttributesRPC:
         SetRenderingAttributes();

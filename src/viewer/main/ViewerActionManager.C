@@ -252,6 +252,9 @@ public:
 //   Kathleen Bonnell, Thu May 15 11:52:56 PDT 2003 
 //   Added ToggleFullFrameAction. 
 //
+//   Brad Whitlock, Mon Jun 23 16:33:39 PST 2003
+//   I added ClearPickPointsAction, ClearRefLinesAction.
+//
 // ****************************************************************************
 
 
@@ -276,7 +279,10 @@ ViewerActionManager::ViewerActionManager(ViewerWindow *win) : actionGroups()
     AddAction(new SetActiveWindowAction(win), ViewerRPC::SetActiveWindowRPC);
 
     AddAction(new ClearWindowAction(win), ViewerRPC::ClearWindowRPC);
-//    AddAction(new ClearAllWindowsAction(win), ViewerRPC::ClearAllWindowsRPC);
+    AddAction(new ClearAllWindowsAction(win), ViewerRPC::ClearAllWindowsRPC);
+    AddAction(new ClearPickPointsAction(win), ViewerRPC::ClearPickPointsRPC);
+    AddAction(new ClearReferenceLinesAction(win), ViewerRPC::ClearRefLinesRPC);
+
     AddAction(new InvertBackgroundAction(win), ViewerRPC::InvertBackgroundRPC);
     AddAction(new SetWindowLayoutAction(win), ViewerRPC::SetWindowLayoutRPC);
 
@@ -414,6 +420,10 @@ ViewerActionManager::EnableActions(ViewerWindowManagerAttributes *wma)
 //   Brad Whitlock, Tue Apr 1 10:39:12 PDT 2003
 //   I added HideToolbarForAllWindows to the Customize menu.
 //
+//   Brad Whitlock, Tue Jun 24 13:37:26 PST 2003
+//   I changed the code that adds actions to the general toolbar so that
+//   actions that are not supposed to be added to the toolbar are not added.
+//
 // ****************************************************************************
 
 void
@@ -483,8 +493,11 @@ ViewerActionManager::RealizeActionGroups()
                 AddActionGroup(newGroup);
                 win->GetToolbar()->AddAction(action->GetName(), action);
             }
-            else if(actionInNGroups[i] == 0)
+            else if(actionInNGroups[i] == 0 && action->AllowInToolbar())
+            {
+                debug1 << "Adding " << ViewerRPC::ViewerRPCType_ToString(ActionIndex(i)) << " to the general toolbar" << endl;
                 win->GetToolbar()->AddAction("general", action);
+            }
         }
     }
 

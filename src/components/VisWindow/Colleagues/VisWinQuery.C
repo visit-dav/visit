@@ -375,6 +375,10 @@ VisWinQuery::QueryIsValid(const PickAttributes *pa, const Line *lineAtts)
 //    Kathleen Bonnell, Fri Jun  6 15:17:45 PDT 2003  
 //    Added support for FullFrame mode. 
 //    
+//    Kathleen Bonnell, Tue Jun 24 18:26:44 PDT 2003 
+//    To resolve z-buffer issues in 2d, make sure the z-coord of the
+//    attachment point is moved towards the camera. 
+//    
 // ****************************************************************************
 
 void 
@@ -392,18 +396,10 @@ VisWinQuery::Pick(const PickAttributes *pa)
     }
     else
     {
-        //
-        // Due to numerical precision issues on different platforms, the
-        // calculated PickPoint in 2D does not always have z == 0.
-        // Force it so that the pick letters will always be displayed in 
-        // front of the plot.
-        //
-        attachmentPoint[2] = 0.;
         pp->SetMode3D(false);
     }
     
     pp->SetDesignator(pa->GetPickLetter().c_str());
-    pp->SetAttachmentPoint(attachmentPoint);
 
     float fg[3];
     mediator.GetForegroundColor(fg);
@@ -423,6 +419,14 @@ VisWinQuery::Pick(const PickAttributes *pa)
     projection[0] = distance*(pos[0] - foc[0]);
     projection[1] = distance*(pos[1] - foc[1]);
     projection[2] = distance*(pos[2] - foc[2]);
+
+    // avoid z-buffer issues in 2D
+    if (mediator.GetMode() == WINMODE_2D)
+    {
+        attachmentPoint[2] = projection[2];
+    }
+    pp->SetAttachmentPoint(attachmentPoint);
+
     pp->Shift(projection);
 
     if (mediator.GetFullFrameMode())
@@ -875,3 +879,5 @@ VisWinQuery::FullFrameOff()
         (*it2)->ResetPosition();
     }
 }
+
+

@@ -20,6 +20,7 @@
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
 #include <vtkUnstructuredGrid.h>
+#include <vtkVisItUtility.h>
 
 
 //======================================================================
@@ -412,6 +413,9 @@ vtkOnionPeelFilter::Execute()
 //   Kathleen Bonnell, Thu Aug 15 17:48:38 PDT 2002  
 //   Coding style update.
 //  
+//   Kathleen Bonnell, Tue Jun 24 14:19:49 PDT 2003 
+//   Allow for poly-data input, retrieve points via vtkVisItUtility::GetPoints. 
+//  
 //=======================================================================
 void 
 vtkOnionPeelFilter::GenerateOutputGrid()
@@ -427,7 +431,6 @@ vtkOnionPeelFilter::GenerateOutputGrid()
     vtkIdList           *cellPts    = vtkIdList::New();
     vtkPoints           *newGridPts = vtkPoints::New();
     int i, cellId, newCellId, totalCells;
-    float fpoint[3];
 
     if (this->RequestedLayer < this->cellOffsets->GetNumberOfIds() -1)
     {
@@ -440,23 +443,7 @@ vtkOnionPeelFilter::GenerateOutputGrid()
     output->Allocate(totalCells);
 
     // grab points from input so they can be passed along directly to ouput
-    switch(input->GetDataObjectType()) 
-    {
-        case VTK_STRUCTURED_GRID :
-            output->SetPoints(((vtkStructuredGrid*)input)->GetPoints());
-            break;
-        case VTK_UNSTRUCTURED_GRID :
-            output->SetPoints(((vtkUnstructuredGrid*)input)->GetPoints());
-            break;
-        case VTK_RECTILINEAR_GRID :
-            for (i = 0; i < input->GetNumberOfPoints(); i++) 
-            {
-                ((vtkRectilinearGrid*)input)->GetPoint(i, fpoint);
-                newGridPts->InsertNextPoint(fpoint);
-            }
-            output->SetPoints(newGridPts);
-            break;
-    }
+    output->SetPoints(vtkVisItUtility::GetPoints(input));
  
     outPD->PassData(inPD);
     outCD->CopyAllocate(inCD);

@@ -1,6 +1,7 @@
 #include <PyViewAttributes.h>
 #include <ObserverToCallback.h>
 #include <ColorAttribute.h>
+#include <iostream.h>
 
 // ****************************************************************************
 // Module: PyViewAttributes
@@ -740,6 +741,168 @@ ViewAttributes_print(PyObject *v, FILE *fp, int flags)
     return 0;
 }
 
+static PyObject *
+ViewAttributes_add(PyObject *v, PyObject *w)
+{
+    bool arg1isObject = PyViewAttributes_Check(v);
+    bool arg2isObject = PyViewAttributes_Check(w);
+    if(!arg1isObject || !arg2isObject)
+    {
+        cerr << "ViewAttributes_add: One or more arguments are not ViewAttributes!" << endl;
+        return NULL;
+    }
+
+    PyObject *retval = NewViewAttributes();
+    ViewAttributes *c = PyViewAttributes_FromPyObject(retval);
+    ViewAttributes *a = ((ViewAttributesObject *)v)->data;
+    ViewAttributes *b = ((ViewAttributesObject *)w)->data;
+
+    c->GetViewNormal()[0] = a->GetViewNormal()[0] + b->GetViewNormal()[0];
+    c->GetViewNormal()[1] = a->GetViewNormal()[1] + b->GetViewNormal()[1];
+    c->GetViewNormal()[2] = a->GetViewNormal()[2] + b->GetViewNormal()[2];
+
+    c->GetFocus()[0] = a->GetFocus()[0] + b->GetFocus()[0];
+    c->GetFocus()[1] = a->GetFocus()[1] + b->GetFocus()[1];
+    c->GetFocus()[2] = a->GetFocus()[2] + b->GetFocus()[2];
+
+    c->GetViewUp()[0] = a->GetViewUp()[0] + b->GetViewUp()[0];
+    c->GetViewUp()[1] = a->GetViewUp()[1] + b->GetViewUp()[1];
+    c->GetViewUp()[2] = a->GetViewUp()[2] + b->GetViewUp()[2];
+
+    c->SetViewAngle(a->GetViewAngle() + b->GetViewAngle());
+    c->SetSetScale(a->GetSetScale() | b->GetSetScale());
+    c->SetParallelScale(a->GetParallelScale() + b->GetParallelScale());
+    c->SetNearPlane(a->GetNearPlane() + b->GetNearPlane());
+    c->SetFarPlane(a->GetFarPlane() + b->GetFarPlane());
+    c->SetPerspective(a->GetPerspective() + b->GetPerspective());
+
+    c->GetWindowCoords()[0] = a->GetWindowCoords()[0] + b->GetWindowCoords()[0];
+    c->GetWindowCoords()[1] = a->GetWindowCoords()[1] + b->GetWindowCoords()[1];
+    c->GetWindowCoords()[2] = a->GetWindowCoords()[2] + b->GetWindowCoords()[2];
+    c->GetWindowCoords()[3] = a->GetWindowCoords()[3] + b->GetWindowCoords()[3];
+
+    c->GetViewportCoords()[0] = a->GetViewportCoords()[0] + b->GetViewportCoords()[0];
+    c->GetViewportCoords()[1] = a->GetViewportCoords()[1] + b->GetViewportCoords()[1];
+    c->GetViewportCoords()[2] = a->GetViewportCoords()[2] + b->GetViewportCoords()[2];
+    c->GetViewportCoords()[3] = a->GetViewportCoords()[3] + b->GetViewportCoords()[3];
+
+    return retval;
+}
+
+static PyObject *
+ViewAttributes_mul(PyObject *v, PyObject *w)
+{
+    PyObject *retval = NewViewAttributes();
+    ViewAttributes *c = PyViewAttributes_FromPyObject(retval);
+
+    ViewAttributes *a;
+    double val = 1.;
+    bool arg1isObject = PyViewAttributes_Check(v);
+    bool arg2isObject = PyViewAttributes_Check(w);
+
+    if(arg1isObject && arg2isObject)
+    {
+        return NULL;
+    }
+    else
+    {
+        PyObject *num;
+
+        if(arg1isObject)
+        {
+            a = ((ViewAttributesObject *)v)->data;
+            num = w;
+        }
+        else
+        {
+            a = ((ViewAttributesObject *)w)->data;
+            num = v;
+        }
+
+        if(PyFloat_Check(num))
+            val = PyFloat_AS_DOUBLE(num);
+        else if(PyInt_Check(num))
+            val = double(PyInt_AS_LONG(num));
+        else if(PyLong_Check(num))
+            val = PyLong_AsDouble(num);
+        else
+        {
+            cerr << "MUL: Expected numeric argument is not a number!" << endl;
+        }
+
+        c->GetViewNormal()[0] = a->GetViewNormal()[0] * val;
+        c->GetViewNormal()[1] = a->GetViewNormal()[1] * val;
+        c->GetViewNormal()[2] = a->GetViewNormal()[2] * val;
+
+        c->GetFocus()[0] = a->GetFocus()[0] * val;
+        c->GetFocus()[1] = a->GetFocus()[1] * val;
+        c->GetFocus()[2] = a->GetFocus()[2] * val;
+
+        c->GetViewUp()[0] = a->GetViewUp()[0] * val;
+        c->GetViewUp()[1] = a->GetViewUp()[1] * val;
+        c->GetViewUp()[2] = a->GetViewUp()[2] * val;
+
+        c->SetViewAngle(a->GetViewAngle() * val);
+        c->SetSetScale(a->GetSetScale());
+        c->SetParallelScale(a->GetParallelScale() * val);
+        c->SetNearPlane(a->GetNearPlane() * val);
+        c->SetFarPlane(a->GetFarPlane() * val);
+        c->SetPerspective(a->GetPerspective() * val);
+
+        c->GetWindowCoords()[0] = a->GetWindowCoords()[0] * val;
+        c->GetWindowCoords()[1] = a->GetWindowCoords()[1] * val;
+        c->GetWindowCoords()[2] = a->GetWindowCoords()[2] * val;
+        c->GetWindowCoords()[3] = a->GetWindowCoords()[3] * val;
+
+        c->GetViewportCoords()[0] = a->GetViewportCoords()[0] * val;
+        c->GetViewportCoords()[1] = a->GetViewportCoords()[1] * val;
+        c->GetViewportCoords()[2] = a->GetViewportCoords()[2] * val;
+        c->GetViewportCoords()[3] = a->GetViewportCoords()[3] * val;
+    }
+
+    return retval;
+}
+
+//
+// The type description structure
+//
+static PyNumberMethods ViewAttributes_as_number = {
+    (binaryfunc)ViewAttributes_add, /*nb_add*/
+    (binaryfunc)0, /*nb_subtract*/
+    (binaryfunc)ViewAttributes_mul, /*nb_multiply*/
+    (binaryfunc)0, /*nb_divide*/
+    (binaryfunc)0,    /*nb_remainder*/
+    (binaryfunc)0,    /*nb_divmod*/
+    (ternaryfunc)0,    /*nb_power*/
+    (unaryfunc)0,    /*nb_negative*/
+    (unaryfunc)0,    /*nb_positive*/
+    (unaryfunc)0,    /*nb_absolute*/
+    (inquiry)0,    /*nb_nonzero*/
+    (unaryfunc)0,    /*nb_invert*/
+    (binaryfunc)0,    /*nb_lshift*/
+    (binaryfunc)0,    /*nb_rshift*/
+    (binaryfunc)0,    /*nb_and*/
+    (binaryfunc)0,    /*nb_xor*/
+    (binaryfunc)0,    /*nb_or*/
+    0,            /*nb_coerce*/
+    (unaryfunc)0,    /*nb_int*/
+    (unaryfunc)0,    /*nb_long*/
+    (unaryfunc)0,    /*nb_float*/
+    (unaryfunc)0,    /*nb_oct*/
+    (unaryfunc)0,     /*nb_hex*/
+    0,            /*nb_inplace_add*/
+    0,            /*nb_inplace_subtract*/
+    0,            /*nb_inplace_multiply*/
+    0,            /*nb_inplace_divide*/
+    0,            /*nb_inplace_remainder*/
+    0,            /*nb_inplace_power*/
+    0,            /*nb_inplace_lshift*/
+    0,            /*nb_inplace_rshift*/
+    0,            /*nb_inplace_and*/
+    0,            /*nb_inplace_xor*/
+    0,            /*nb_inplace_or*/
+};
+
 //
 // The doc string for the class.
 //
@@ -770,7 +933,7 @@ static PyTypeObject ViewAttributesType =
     //
     // Type categories
     //
-    0,                                   // tp_as_number
+    &ViewAttributes_as_number,           // tp_as_number
     0,                                   // tp_as_sequence
     0,                                   // tp_as_mapping
     //
