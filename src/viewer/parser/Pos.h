@@ -14,6 +14,10 @@
 //  Programmer:  Jeremy Meredith
 //  Creation:    April  4, 2002
 //
+//  Modifications:
+//    Jeremy Meredith, Mon Jul 28 16:59:51 PDT 2003
+//    Added the GetText method.
+//
 // ****************************************************************************
 
 struct VIEWER_PARSER_API Pos
@@ -43,6 +47,17 @@ struct VIEWER_PARSER_API Pos
         for (i=p1; i<=p2; i++)
             o << '^';
         o << endl;
+    }
+    std::string GetText(const std::string &s) const
+    {
+        int i;
+        std::string msg = s + '\n';
+        for (i=0; i<p1; i++)
+            msg += ' ';
+        for (i=p1; i<=p2; i++)
+            msg += '^';
+        msg += '\n';
+        return msg;
     }
 };
 

@@ -2,6 +2,7 @@
 #define PARSEEXEPTION_H
 
 #include "Pos.h"
+#include <snprintf.h>
 class Rule;
 
 // ****************************************************************************
@@ -12,6 +13,10 @@ class Rule;
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    April  5, 2002
+//
+//  Modifications:
+//    Jeremy Meredith, Mon Jul 28 16:57:42 PDT 2003
+//    Added a little extra info to the syntax error messages.
 //
 // ****************************************************************************
 class ParseException
@@ -34,8 +39,13 @@ class LexicalException : public ParseException
 class SyntacticException : public ParseException
 {
   public:
-    SyntacticException(Pos p) : ParseException(p) { }
-    virtual const char *Message() { return "Parse error -- unexpected token:"; }
+    SyntacticException(Pos p, const std::string &s) : ParseException(p)
+    {
+        SNPRINTF(msg, 1024, "Parse error -- unexpected token (%s):", s.c_str());
+    }
+    virtual const char *Message() { return msg; }
+  private:
+    char msg[1024];
 };
 
 class UnexpectedEndException : public ParseException

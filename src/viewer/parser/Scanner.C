@@ -9,13 +9,22 @@ using std::deque;
 #include "Token.h"
 #include "ParseException.h"
 
+// ----------------------------------------------------------------------------
+//  Scanner modifications:
+//    Jeremy Meredith, Mon Jul 28 14:36:21 PDT 2003
+//    Allow dots in tokens that started with were clearly scanned as
+//    identifiers already.  For example, "alpha.1" will scan as a single
+//    identifier now, without the need for the "<>" notation.
+//
+// ----------------------------------------------------------------------------
+
 static const int StateTransition[13][8] = {
 //       Quo  Sgn  Sym  Eee  Alp  Dig  Dot  Spc
 /* 0*/ {  1,   3,   3,   4,   4,   5,   6,  12  },
 /* 1*/ {  2,   1,   1,   1,   1,   1,   1,   1  },
 /* 2*/ { -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1  },
 /* 3*/ { -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1  },
-/* 4*/ { -1,  -1,  -1,   4,   4,   4,  -1,  -1  },
+/* 4*/ { -1,  -1,  -1,   4,   4,   4,   4,  -1  },
 /* 5*/ { -1,  -1,  -1,  11,   4,   5,   7,  -1  },
 /* 6*/ { -1,  -1,  -1,  -1,  -1,   7,  -1,  -1  },
 /* 7*/ { -1,  -1,  -1,   8,  -1,   7,  -1,  -1  },
