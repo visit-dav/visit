@@ -1,9 +1,9 @@
 // ************************************************************************* //
-//                        avtRelevantPointsFilter.h                          //
+//                        avtCondenseDatasetFilter.h                         //
 // ************************************************************************* //
 
-#ifndef AVT_RELEVANT_POINTS_FILTER_H
-#define AVT_RELEVANT_POINTS_FILTER_H
+#ifndef AVT_CONDENSE_DATASET_FILTER_H
+#define AVT_CONDENSE_DATASET_FILTER_H
 
 #include <pipeline_exports.h>
 
@@ -16,10 +16,12 @@ class vtkDataSet;
 
 
 // ****************************************************************************
-//  Class: avtRelevantPointsFilter
+//  Class: avtCondenseDatasetFilter
 //
 //  Purpose:
-//
+//      Condenses the size of the dataset by removing irrelevant points and
+//      data arrays.
+//  
 //  Programmer: Kathleen Bonnell 
 //  Creation:   November 07, 2000
 //
@@ -31,15 +33,18 @@ class vtkDataSet;
 //    Hank Childs, Wed Jun  6 09:09:33 PDT 2001
 //    Removed CalcDomainList and Equivalent.
 //
+//    Hank Childs, Fri Jul 25 21:21:08 PDT 2003
+//    Renamed from avtRelevantPointsFilter.
+//
 // ****************************************************************************
 
-class PIPELINE_API avtRelevantPointsFilter : public avtStreamer
+class PIPELINE_API avtCondenseDatasetFilter : public avtStreamer
 {
   public:
-                         avtRelevantPointsFilter();
-    virtual             ~avtRelevantPointsFilter();
+                         avtCondenseDatasetFilter();
+    virtual             ~avtCondenseDatasetFilter();
 
-    virtual const char  *GetType(void) { return "avtRelevantPointsFilter"; };
+    virtual const char  *GetType(void) { return "avtCondenseDatasetFilter"; };
     virtual const char  *GetDescription(void) 
                              { return "Removing unneeded points"; };
 

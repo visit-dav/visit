@@ -66,6 +66,10 @@ class avtSIL;
 //    the metadata for any time state in the database. If it is some other
 //    value, it tells the mdserver to return metadata for a specific time state.
 //
+//    Brad Whitlock, Mon Jun 16 13:19:54 PST 2003
+//    I made the method to terminate connections be more general so other
+//    types of connections can be used.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerFileServer : public ViewerServerManager
@@ -115,10 +119,7 @@ public:
 protected:
     ViewerFileServer();
     ViewerFileServer(const ViewerFileServer&);
-    void TerminateConnectionRequest(const std::string &progHost,
-                                    const std::string &key,
-                                    int port, int nread, int nwrite,
-                                    int failCode);
+    void TerminateConnectionRequest(const stringVector &, int failCode);
 private:
     static ViewerFileServer *instance;
 

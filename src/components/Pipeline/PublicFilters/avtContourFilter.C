@@ -9,12 +9,11 @@
 #include <vector>
 
 #include <vtkCellDataToPointData.h>
-#include <vtkContourFilter.h>
-#include <vtkContourGrid.h>
+#include <vtkFloatArray.h>
 #include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
-#include <vtkStructuredGrid.h>
-#include <vtkUnstructuredGrid.h>
+#include <vtkVisItContourFilter.h>
+#include <vtkVisItScalarTree.h>
 
 #include <avtExtents.h>
 #include <avtIntervalTree.h>
@@ -24,13 +23,11 @@
 #include <ImproperUseException.h>
 #include <InvalidLimitsException.h>
 #include <NoDefaultVariableException.h>
+#include <TimingsManager.h>
 
 
 using std::vector;
 using std::string;
-
-
-void   ExecuteContourLevel(vtkPolyDataSource *, vtkDataSet *&);
 
 
 // ****************************************************************************
@@ -70,8 +67,7 @@ void   ExecuteContourLevel(vtkPolyDataSource *, vtkDataSet *&);
 avtContourFilter::avtContourFilter(const ContourOpAttributes &a)
 {
     atts   = a;
-    cf     = vtkContourFilter::New();
-    cg     = vtkContourGrid::New();
+    cf     = vtkVisItContourFilter::New();
     cd2pd  = vtkCellDataToPointData::New();
     stillNeedExtents = true;
     shouldCreateLabels = true;
@@ -134,11 +130,6 @@ avtContourFilter::~avtContourFilter()
     {
         cf->Delete();
         cf = NULL;
-    }
-    if (cg != NULL)
-    {
-        cg->Delete();
-        cg = NULL;
     }
     if (cd2pd != NULL)
     {
@@ -429,6 +420,9 @@ avtContourFilter::PreExecute(void)
 //    Make sure an iso-level can actually contribute triangles before
 //    contouring.
 //
+//    Hank Childs, Fri Jul 25 22:13:58 PDT 2003
+//    Made use of scalar tree and faster VisIt contouring module.
+//
 // ****************************************************************************
 
 avtDataTree_p 
@@ -452,6 +446,10 @@ avtContourFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string label)
     // 
     vtkDataSet *toBeContoured = (vtkDataSet *)in_ds->NewInstance();
 
+    //
+    // Contouring only works on nodal variables -- make sure that we have
+    // a nodal variable before progressing.
+    //
     vtkDataArray *cellVar = in_ds->GetCellData()->GetArray(contourVar);
     if (cellVar != NULL)
     {
@@ -486,79 +484,42 @@ avtContourFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string label)
     }
     toBeContoured->GetPointData()->SetActiveScalars(contourVar);
 
-    int  useScalarTree = (isoValues.size() > 1 ? 1 : 0);
-    cf->SetUseScalarTree(useScalarTree);
-    cg->SetUseScalarTree(useScalarTree);
+    vtkVisItScalarTree *tree = vtkVisItScalarTree::New();
+    tree->SetDataSet(toBeContoured);
+    int id0 = visitTimer->StartTimer();
+    tree->BuildTree();
+    visitTimer->StopTimer(id0, "Building scalar tree");
 
     //
-    // Establish what the valid range is for each isosurface.  We will
-    // use this to prevent unnecessary work later.
+    // Do the actual contouring.  Split each isolevel into its own dataset.
     //
-    vtkDataArray *dat = toBeContoured->GetPointData()->GetScalars();
-    float range[2] = { -FLT_MAX, +FLT_MAX };
-    if (dat != NULL)
-        dat->GetRange(range, 0);
-
     vtkDataSet **out_ds = new vtkDataSet*[isoValues.size()];
-    if (toBeContoured->GetDataObjectType() == VTK_UNSTRUCTURED_GRID)
+    cf->SetInput(toBeContoured);
+    vtkPolyData *output = cf->GetOutput();
+    for (i = 0 ; i < isoValues.size() ; i++)
     {
-        //
-        // The contour filter uses a contour grid for unstructured grids
-        // underneath the covers anyway, but the lifetime of the contour
-        // grid is only for the contour filter's Execute, which makes a Scalar
-        // Tree useless since we only Execute one isolevel at a time.
-        //
-        vtkUnstructuredGrid *ugrid = (vtkUnstructuredGrid *) toBeContoured;
-        cg->SetInput(ugrid);
+        std::vector<int> list;
+        int id1 = visitTimer->StartTimer();
+        tree->GetCellList(isoValues[i], list);
+        visitTimer->StopTimer(id1, "Getting cell list");
+        int id2 = visitTimer->StartTimer();
+        cf->SetIsovalue(isoValues[i]);
+        cf->SetCellList(&(list[0]), list.size());
 
-        //
-        // Set the filter's value from levels one at a time, generating
-        // new datasets for each. 
-        //
-        cg->SetNumberOfContours(1);
-        for (i = 0; i < isoValues.size(); i++)
+        output->Update();
+        if (output->GetNumberOfCells() == 0)
+            out_ds[i] = NULL;
+        else
         {
-            if (isoValues[i] < range[0] || isoValues[i] > range[1])
-            {
-                out_ds[i] = NULL;
-                continue;
-            }
-
-            //
-            // ContourFilters and ContourGrids cannot be typed to the same
-            // base type where we can still call SetValue, so do that here.
-            //
-            cg->SetValue(0, isoValues[i]);
-
-            ExecuteContourLevel(cg, out_ds[i]);
+            out_ds[i] = vtkPolyData::New();
+            out_ds[i]->ShallowCopy(output);
         }
+        visitTimer->StopTimer(id2, "Calculating isosurface");
     }
-    else
-    {
-        cf->SetInput(toBeContoured);
 
-        //
-        // Set the filter's value from levels one at a time, generating
-        // new datasets for each. 
-        //
-        cf->SetNumberOfContours(1);
-        for (i = 0; i < isoValues.size(); i++)
-        {
-            if (isoValues[i] < range[0] || isoValues[i] > range[1])
-            {
-                out_ds[i] = NULL;
-                continue;
-            }
-
-            //
-            // ContourFilters and ContourGrids cannot be typed to the same
-            // base type where we can still call SetValue, so do that here.
-            //
-            cf->SetValue(0, isoValues[i]);
-
-            ExecuteContourLevel(cf, out_ds[i]);
-        }
-    }
+    //
+    // Create the output in an AVT friendly fashion.
+    //
     avtDataTree_p outDT = NULL;
     if (shouldCreateLabels)
     {   
@@ -569,6 +530,9 @@ avtContourFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string label)
         outDT = new avtDataTree(isoValues.size(), out_ds, domain, label);
     }
 
+    //
+    // Clean up memory.
+    //
     for (i = 0; i < isoValues.size(); i++)
     {
         if (out_ds[i] != NULL) 
@@ -578,6 +542,7 @@ avtContourFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string label)
     }
     delete [] out_ds;
     toBeContoured->Delete();
+    tree->Delete();
 
     return outDT;
 }
@@ -615,53 +580,6 @@ avtContourFilter::RefashionDataObjectInfo(void)
         outAtts.SetCentering(AVT_NODECENT);
     }
     GetOutput()->GetInfo().GetValidity().InvalidateZones();
-}
-
-
-// ****************************************************************************
-//  Function: ExecuteContourLevel
-//
-//  Purpose:
-//      Once a the contour filter/contour grid has been set up, the forcing of
-//      the execution, copying of the output, and setting of the variable is
-//      all the same, so this one routine provides a single point of source.
-//
-//  Arguments:
-//      contour   A poly data source that does the contouring.
-//      output    Will contain a shallow copy of the output if appropriate.
-//      level     The index of the isolevel.
-//
-//  Programmer: Hank Childs
-//  Creation:   April 23, 2001
-//
-//  Modifications:
-//
-//    Kathleen Bonnell, Mon Sep 24 14:47:58 PDT 2001
-//    Removed code that sent level numbers to the scalar cell data for
-//    this vtkDataset.  That information is no longer necessary for coloring
-//    the plot.
-//
-// ****************************************************************************
-
-void
-ExecuteContourLevel(vtkPolyDataSource *contour, vtkDataSet *&output)
-{
-    //
-    // Force the contour filter/contour grid to execute.
-    //
-    contour->Update();
-
-    //
-    // Make a copy of the output.
-    //
-    output = vtkPolyData::New();
-    output->ShallowCopy(contour->GetOutput());
-
-    if (output->GetNumberOfCells() == 0)
-    {
-        output->Delete();
-        output = NULL;
-    }
 }
 
 
@@ -973,13 +891,8 @@ avtContourFilter::ReleaseData(void)
 {
     avtDataTreeStreamer::ReleaseData();
 
-    cg->SetInput(NULL);
-    cg->SetOutput(NULL);
-    cg->SetLocator(NULL);
     cf->SetInput(NULL);
     cf->SetOutput(NULL);
-    cf->SetLocator(NULL);
-    cf->SetScalarTree(NULL);
     cd2pd->SetInput(NULL);
     cd2pd->SetOutput(NULL);
 }

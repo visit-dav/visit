@@ -5,8 +5,6 @@
 #include <Init.h>
 #include <InitVTK.h>
 #include <avtDatabase.h>
-#include <DatabasePluginManager.h>
-#include <VisItException.h>
 
 // Prototypes.
 bool ProcessCommandLine(int argc, char *argv[]);
@@ -68,6 +66,9 @@ bool ProcessCommandLine(int argc, char *argv[]);
 //    Brad Whitlock, Fri Apr 18 15:04:08 PST 2003
 //    I made the ExecuteDebug method be called if -noconnect was given.
 //
+//    Brad Whitlock, Mon Jun 9 11:01:25 PDT 2003
+//    I moved plugin loading.
+//
 // ****************************************************************************
 
 int
@@ -77,6 +78,7 @@ main(int argc, char *argv[])
     Init::Initialize(argc, argv);
     Init::SetComponentName("mdserver");
     InitVTK::Initialize();
+    avtDatabase::SetOnlyServeUpMetaData(true);
 
     bool runApp = ProcessCommandLine(argc, argv);
 
@@ -86,10 +88,6 @@ main(int argc, char *argv[])
     {
         // Connect back to the process that launched the MDServer.
         MDServerApplication::Instance()->AddConnection(&argc, &argv);
-
-        avtDatabase::SetOnlyServeUpMetaData(true);
-        DatabasePluginManager::Initialize(DatabasePluginManager::MDServer, false);
-        DatabasePluginManager::Instance()->LoadPluginsNow();
 
         // Enter the program's main loop.
         if(runApp)

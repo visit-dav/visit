@@ -1,5 +1,5 @@
 #
-#                            Copyright 2000 - 2002
+#                            Copyright 2000 - 2003
 #                 The Regents of the University of California.
 #                             All rights reserved.
 # 
@@ -83,6 +83,9 @@
 #
 #    Brad Whitlock, Wed Apr 2 10:45:46 PDT 2003
 #    I added a test program called testcomm.
+#
+#    Brad Whitlock, Wed May 21 14:37:28 PST 2003
+#    I added PipeConnection.
 #
 ##############################################################################
 

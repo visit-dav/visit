@@ -9,43 +9,23 @@
 
 Copyright (c) 1993-2000 Ken Martin, Will Schroeder, Bill Lorensen 
 All rights reserved.
+  See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
 
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
- * Redistributions of source code must retain the above copyright notice,
-   this list of conditions and the following disclaimer.
-
- * Redistributions in binary form must reproduce the above copyright notice,
-   this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution.
-
- * Neither name of Ken Martin, Will Schroeder, or Bill Lorensen nor the names
-   of any contributors may be used to endorse or promote products derived
-   from this software without specific prior written permission.
-
- * Modified source versions must be plainly marked as such, and must not be
-   misrepresented as being the original software.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
-AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-ARE DISCLAIMED. IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE FOR
-ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
+     This software is distributed WITHOUT ANY WARRANTY; without even 
+     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+     PURPOSE.  See the above copyright notice for more information.
 =========================================================================*/
 
 #include <math.h>
 #include <float.h>
+
 #include "vtkKatAxisActor.h"
 #include <vtkObjectFactory.h>
 #include <vtkProperty.h>
 #include <vtkViewport.h>
+
+using std::string;
+using std::vector;
 
 // ****************************************************************
 // Modifications:
@@ -75,6 +55,10 @@ vtkCxxSetObjectMacro(vtkKatAxisActor, Camera, vtkCamera);
 //
 //   Kathleen Bonnell, Thu Aug  1 13:44:02 PDT 2002 
 //   Initialize new member ForceLabelReset. 
+
+//   Kathleen Bonnell, Fri Jul 25 14:37:32 PDT 2003 
+//   Removed mustAdjustValue, valueScaleFator, ForceLabelReset.
+//
 // ****************************************************************
 
 vtkKatAxisActor::vtkKatAxisActor()
@@ -138,8 +122,6 @@ vtkKatAxisActor::vtkKatAxisActor()
   //
   this->AxisPosition = VTK_AXIS_POS_MINMIN;
 
-  this->valueScaleFactor = 1.;
-  this->mustAdjustValue = false;
   this->LastLabelStart = 100000;
 
   this->LastAxisPosition = -1;
@@ -155,7 +137,6 @@ vtkKatAxisActor::vtkKatAxisActor()
   this->gridlinePts  = vtkPoints::New();
 
   this->AxisHasZeroLength = false;
-  this->ForceLabelReset = false;
 }
 
 
@@ -281,6 +262,10 @@ void vtkKatAxisActor::ReleaseGraphicsResources(vtkWindow *win)
 //
 //   Kathleen Bonnell, Wed Mar  6 13:48:48 PST 2002
 //   Call superclass's method in new VTK 4.0 way.
+//
+//   Kathleen Bonnell, Fri Jul 25 14:37:32 PDT 2003 
+//   Removed mustAdjustValue, valueScaleFator.
+//
 // ****************************************************************
 
 void vtkKatAxisActor::ShallowCopy(vtkProp *prop)
@@ -298,8 +283,6 @@ void vtkKatAxisActor::ShallowCopy(vtkProp *prop)
     this->SetTickVisibility(a->GetTickVisibility());
     this->SetLabelVisibility(a->GetLabelVisibility());
     this->SetTitleVisibility(a->GetTitleVisibility());
-    this->mustAdjustValue = a->mustAdjustValue;
-    this->valueScaleFactor = a->valueScaleFactor;
     }
 
   // Now do superclass
@@ -312,13 +295,17 @@ void vtkKatAxisActor::ShallowCopy(vtkProp *prop)
 // Modifications:
 //   Kathleen Bonnell, Thu May 16 10:13:56 PDT 2002 
 //   Don't render a zero-length axis. 
+//
+//   Kathleen Bonnell, Fri Jul 25 14:37:32 PDT 2003 
+//   Added bool argument to BuildAxis. 
+//
 // ****************************************************************
 
 int vtkKatAxisActor::RenderOpaqueGeometry(vtkViewport *viewport)
 {
   int i, renderedSomething=0;
 
-  this->BuildAxis(viewport);
+  this->BuildAxis(viewport, false);
 
   // Everything is built, just have to render
 
@@ -347,44 +334,6 @@ int vtkKatAxisActor::RenderOpaqueGeometry(vtkViewport *viewport)
 }
 
 
-// ****************************************************************
-// Render the axis, ticks, title, and labels.
-//
-// Modifications:
-//   Kathleen Bonnell, Thu May 16 10:13:56 PDT 2002 
-//   Don't render a zero-length axis. 
-// ****************************************************************
-
-int vtkKatAxisActor::RenderOverlay(vtkViewport *viewport)
-{
-  int i, renderedSomething=0;
-
-  // Everything is built, just have to render
-
-  if (!this->AxisHasZeroLength)
-    {
-    if (this->Title != NULL && this->Title[0] != 0 && this->TitleVisibility)
-      {
-      renderedSomething += this->TitleActor->RenderOverlay(viewport);
-      }
-
-    if (this->AxisVisibility || this->TickVisibility)
-      {
-      renderedSomething += this->AxisActor->RenderOverlay(viewport);
-      }
-    
-    if (this->LabelVisibility)
-      {
-      for (i=0; i<this->NumberOfLabelsBuilt; i++)
-        {
-        renderedSomething += this->LabelActors[i]->RenderOverlay(viewport);
-        }
-      }
-    }
-
-  return renderedSomething;
-}
-
 // **************************************************************************
 // Perform some initialization, determine which Axis type we are
 // and call the appropriate build method.
@@ -402,9 +351,17 @@ int vtkKatAxisActor::RenderOverlay(vtkViewport *viewport)
 //
 //   Kathleen Bonnell, Thu May 16 10:13:56 PDT 2002 
 //   Test for zero length axis. 
+//
+//   Kathleen Bonnell,  Fri Jul 25 14:37:32 PDT 2003
+//   Added bool argument that will allow all axis components to be built
+//   if set to true.  Removed call to AdjustTicksComputeRange (handled by
+//   vtkKatCubeAxesActor.  Remvoed call to Build?TypeAxis, added calls
+//   to BuildLabels, SetAxisPointsAndLines and BuildTitle, (which used to
+//   be handled in Build?TypeAxis). .
+//    
 // **************************************************************************
 
-void vtkKatAxisActor::BuildAxis(vtkViewport *viewport)
+void vtkKatAxisActor::BuildAxis(vtkViewport *viewport, bool force)
 {
   // We'll do our computation in world coordinates. First determine the
   // location of the endpoints.
@@ -425,7 +382,7 @@ void vtkKatAxisActor::BuildAxis(vtkViewport *viewport)
   }
   this->AxisHasZeroLength = false;
 
-  if (this->GetMTime()     < this->BuildTime.GetMTime() &&
+  if (!force && this->GetMTime() < this->BuildTime.GetMTime() &&
       viewport->GetMTime() < this->BuildTime.GetMTime())
     {
     return; //already built
@@ -433,28 +390,36 @@ void vtkKatAxisActor::BuildAxis(vtkViewport *viewport)
 
   vtkDebugMacro(<<"Rebuilding axis");
 
-  if (this->GetProperty()->GetMTime() > this->BuildTime.GetMTime())
+  if (force || this->GetProperty()->GetMTime() > this->BuildTime.GetMTime())
     {
     this->AxisActor->SetProperty(this->GetProperty());
     this->TitleActor->SetProperty(this->GetProperty());
     }
 
-  // Compute the location of tick marks and labels (if range has changed)
-  if (this->Range[0] != this->LastRange[0] ||
-      this->Range[1] != this->LastRange[1] )
-    {
-    this->AdjustTicksComputeRange(this->Range); 
-    }
-
   //
   // Generate the axis and tick marks.
   //
+  bool ticksRebuilt;
   if (this->AxisType == VTK_AXIS_TYPE_X)
-      this->BuildXTypeAxis(viewport, p1, p2, this->Range[1] - this->Range[0]);
+      ticksRebuilt = this->BuildTickPointsForXType(p1, p2, force);
   else if (this->AxisType == VTK_AXIS_TYPE_Y)
-      this->BuildYTypeAxis(viewport, p1, p2, this->Range[1] - this->Range[0]);
+      ticksRebuilt = this->BuildTickPointsForYType(p1, p2, force);
   else
-      this->BuildZTypeAxis(viewport, p1, p2, this->Range[1] - this->Range[0]);
+      ticksRebuilt = this->BuildTickPointsForZType(p1, p2, force);
+
+  bool tickVisChanged = this->TickVisibilityChanged();
+
+  if (force || ticksRebuilt || tickVisChanged)
+   {
+   SetAxisPointsAndLines();
+   }
+
+  this->BuildLabels(viewport, force);
+
+  if (this->Title != NULL && this->Title[0] != 0) 
+    {
+    this->BuildTitle(force);
+    }
 
   this->LastAxisPosition = this->AxisPosition;
   this->LastTickLocation = this->TickLocation;
@@ -462,148 +427,6 @@ void vtkKatAxisActor::BuildAxis(vtkViewport *viewport)
   this->LastRange[0] = this->Range[0];
   this->LastRange[1] = this->Range[1];
   this->BuildTime.Modified();
-}
-
-// **********************************************************************
-// Build an X-axis.  Determine end-points for ticks, create
-// the necessary lines.  Call methods to build labels and title.
-//
-// Modifications:
-//   Kathleen Bonnell, Wed Nov  7 17:45:20 PST 2001 
-//   Moved bulk of code to SetAxisPointsAndLines.
-//   Added logic so that sub-parts are not rebuilt every time the
-//   viewport changes. 
-//
-//   Kathleen Bonnell, Fri Nov 30 17:02:41 PST 2001
-//   Added test for modified Range before call to ScaleAndSetLabels. 
-//
-//   Kathleen Bonnell, Mon Dec  3 16:49:01 PST 2001
-//   Added test for modified Bounds before call to ScaleAndSetLabels. 
-// **********************************************************************
-void 
-vtkKatAxisActor::BuildXTypeAxis(vtkViewport *viewport, float p1[3], 
-                                float p2[3], float ext) 
-{
-  bool ticksRebuilt = BuildTickPointsForXType(p1, p2);
-  bool tickVisChanged = this->TickVisibilityChanged();
-  if (ticksRebuilt || tickVisChanged)
-   {
-   SetAxisPointsAndLines(p1, p2);
-   }
-
-  if (this->LabelVisibility)
-    {
-    if (this->BuildLabels(p2[0], ext) ||
-        this->BuildTime.GetMTime() <  this->BoundsTime.GetMTime() || 
-        this->AxisPosition != this->LastAxisPosition ||
-        this->LastRange[0] != this->Range[0] ||
-        this->LastRange[1] != this->Range[1])
-      {
-      this->ScaleAndSetLabels(viewport);
-      }
-    }
-
-  if (this->Title != NULL && this->Title[0] != 0 && this->TitleVisibility)
-    {
-    this->BuildTitle(p1, p2);
-    }
-}
-
-
-// **********************************************************************
-// Build a Y-axis.  Determine end-points for ticks, create
-// the necessary lines.  Call methods to build labels and title.
-//
-// Modifications:
-//   Kathleen Bonnell, Wed Nov  7 17:45:20 PST 2001 
-//   Moved bulk of code to SetAxisPointsAndLines.
-//   Added logic so that sub-parts are not rebuilt every time the
-//   viewport changes. 
-//
-//   Kathleen Bonnell, Fri Nov 30 17:02:41 PST 2001
-//   Added test for modified Range before call to ScaleAndSetLabels. 
-//
-//   Kathleen Bonnell, Mon Dec  3 16:49:01 PST 2001
-//   Added test for modified Bounds before call to ScaleAndSetLabels. 
-// **********************************************************************
-
-void 
-vtkKatAxisActor::BuildYTypeAxis(vtkViewport *viewport, float p1[3], 
-                                float p2[3], float ext) 
-{
-  bool ticksRebuilt = BuildTickPointsForYType(p1, p2);
-  bool tickVisChanged = this->TickVisibilityChanged();
-
-  if (ticksRebuilt || tickVisChanged)
-   {
-   SetAxisPointsAndLines(p1, p2);
-   }
-
-  if (this->LabelVisibility)
-    {
-    if (this->BuildLabels(p2[1], ext) ||
-        this->BuildTime.GetMTime() <  this->BoundsTime.GetMTime() || 
-        this->AxisPosition != this->LastAxisPosition ||
-        this->LastRange[0] != this->Range[0] ||
-        this->LastRange[1] != this->Range[1])
-      {
-      this->ScaleAndSetLabels(viewport);
-      }
-    }
-
-  // Now build the title
-  if (this->Title != NULL && this->Title[0] != 0 && this->TitleVisibility)
-    {
-    this->BuildTitle(p1, p2);
-    }
-}
-
-// **********************************************************************
-// Build a Z-axis.  Determine end-points for ticks, create
-// the necessary lines.  Call methods to build labels and title.
-//
-// Modifications:
-//   Kathleen Bonnell, Wed Nov  7 17:45:20 PST 2001 
-//   Moved bulk of code to SetAxisPointsAndLines.
-//   Added logic so that sub-parts are not rebuilt every time the
-//   viewport changes. 
-//
-//   Kathleen Bonnell, Fri Nov 30 17:02:41 PST 2001
-//   Added test for modified Range before call to ScaleAndSetLabels. 
-//
-//   Kathleen Bonnell, Mon Dec  3 16:49:01 PST 2001
-//   Added test for modified Bounds before call to ScaleAndSetLabels. 
-// **********************************************************************
-
-void 
-vtkKatAxisActor::BuildZTypeAxis(vtkViewport * viewport, float p1[3], 
-                                float p2[3], float ext) 
-{
-  bool ticksRebuilt = BuildTickPointsForZType(p1, p2);
-  bool tickVisChanged = this->TickVisibilityChanged();
-
-  if (ticksRebuilt || tickVisChanged)
-   {
-   SetAxisPointsAndLines(p1, p2);
-   }
-
-  if (this->LabelVisibility)
-    {
-    if (this->BuildLabels(p2[2], ext) || 
-        this->BuildTime.GetMTime() <  this->BoundsTime.GetMTime() || 
-        this->AxisPosition != this->LastAxisPosition ||
-        this->LastRange[0] != this->Range[0] ||
-        this->LastRange[1] != this->Range[1])
-      {
-      this->ScaleAndSetLabels(viewport); 
-      }
-    }
-
-  // Now build the title
-  if (this->Title != NULL && this->Title[0] != 0 && this->TitleVisibility)
-    {
-    this->BuildTitle(p1, p2);
-    } 
 }
 
 
@@ -625,64 +448,33 @@ vtkKatAxisActor::BuildZTypeAxis(vtkViewport * viewport, float p1[3],
 //
 //   Kathleen Bonnell, Thu May 16 10:13:56 PDT 2002 
 //   Use defined constant to limit number of labels.   
+//
+//   Kathleen Bonnell, Fri Jul 25 14:37:32 PDT 2003 
+//   Remvoed determination of label text, added call to 
+//   SetLabelPositions.
+//
 // ****************************************************************
 
-bool vtkKatAxisActor::BuildLabels(float lastVal, float extents)
+void
+vtkKatAxisActor::BuildLabels(vtkViewport *viewport, bool force)
 {
-  char string[512];
-  int labelCount = 0;
-  float val = this->MajorStart;
 
-  // figure out how many labels we need:
-  while (val <= lastVal && labelCount < VTK_MAX_LABELS)
+  if (!force && !this->LabelVisibility)
+      return;
+ 
+  for (int i = 0; i < this->NumberOfLabelsBuilt; i++)
     {
-    labelCount++;
-    val += this->DeltaMajor;
-    }
-
-  // do we really need to do more?
-  if (!this->ForceLabelReset && 
-      labelCount == this->NumberOfLabelsBuilt  &&
-      this->MajorStart == this->LastLabelStart &&
-      this->Range[0] == this->LastRange[0]     &&
-      this->Range[1] == this->LastRange[1] )
-    {
-    for (int i = 0; i < labelCount; i++)
-      {
-      this->LabelActors[i]->SetCamera(this->Camera);
-      this->LabelActors[i]->SetProperty(this->GetProperty());
-      }
-      return false;
-    }
-
-  // allocate storage for LabelVectors
-  this->SetNumberOfLabels(labelCount);
-  
-  val = this->MajorStart;
-  for (int i = 0; i < labelCount; i++)
-    {
-    if (fabs(val) < 0.01 && extents > 1)
-      {
-      // We just happened to fall at something near zero and the range is
-      // large, so set it to zero to avoid ugliness.
-      val = 0.;  
-      }
-    if (this->mustAdjustValue)
-      {
-      sprintf(string, this->LabelFormat, val * valueScaleFactor);
-      }
-    else
-      {
-      sprintf(string, this->LabelFormat, val);
-      }
-    this->LabelVectors[i]->SetText(string);
     this->LabelActors[i]->SetCamera(this->Camera);
     this->LabelActors[i]->SetProperty(this->GetProperty());
-    val += this->DeltaMajor;
     }
-  this->LastLabelStart = this->MajorStart;
-  this->LabelBuildTime.Modified();
-  return true;
+
+  if (force || this->BuildTime.GetMTime() <  this->BoundsTime.GetMTime() || 
+      this->AxisPosition != this->LastAxisPosition ||
+      this->LastRange[0] != this->Range[0] ||
+      this->LastRange[1] != this->Range[1])
+    {
+    this->SetLabelPositions(viewport, force);
+    }
 }
 
 int multiplierTable1[4] = { -1, -1, 1,  1};
@@ -704,11 +496,18 @@ int multiplierTable2[4] = { -1,  1, 1, -1};
 //   Removed MinScale as it allowed axes with very small ranges
 //   to have labels scaled too large for the dataset. 
 //
+//   Kathleen Bonnell, Fri Jul 18 09:09:31 PDT 2003 
+//   Renamed to SetLabelPosition.  Removed calculation of label
+//   scale factor, added check for no labels to early return test.
+//   
 // *******************************************************************
+
 void 
-vtkKatAxisActor::ScaleAndSetLabels(vtkViewport *viewport) 
+vtkKatAxisActor::SetLabelPositions(vtkViewport *viewport, bool force) 
 {
-  float target, scale = 1., length, maxLength = 0.;
+  if (!force || !this->LabelVisibility || this->NumberOfLabelsBuilt == 0) 
+      return;
+
   float bounds[6], center[3], tick[3], pos[3];
   int i, xmult, ymult;
 
@@ -729,21 +528,6 @@ vtkKatAxisActor::ScaleAndSetLabels(vtkViewport *viewport)
    }
 
   int ptIdx;
-  for (i = 0; i < this->NumberOfLabelsBuilt; i++)
-    {
-    ptIdx = 4*i + 1;
-    majorTickPts->GetPoint(ptIdx, tick);
-    //
-    // As the label actors are re-used, 'prime' the actor by setting its
-    // position to that of the corresponding tick, otherwise it 
-    // will use previously set position in determining length
-    //
-    this->LabelActors[i]->SetPosition(tick[0], tick[1], tick[2]);
-    this->LabelActors[i]->SetScale(1.);
-    length = this->LabelActors[i]->GetLength();
-    maxLength = (length > maxLength ? length : maxLength);
-    }
-
   //
   // xadjust & yadjust are used for positioning the label correctly
   // depending upon the 'orientation' of the axis as determined
@@ -754,31 +538,11 @@ vtkKatAxisActor::ScaleAndSetLabels(vtkViewport *viewport)
   float xadjust = (displayBounds[0] > displayBounds[1] ? -1 : 1);
   float yadjust = (displayBounds[2] > displayBounds[3] ? -1 : 1);
 
-  //
-  // Gather information about the bounding box, used in setting
-  // a target value for scaling.
-  //
-  float bWidth  = this->Bounds[1] - this->Bounds[0];
-  float bHeight = this->Bounds[3] - this->Bounds[2];
-
-  float bLength = sqrt (bWidth * bWidth + bHeight * bHeight);
-
-
-  //
-  // An arbitrary target that appears to work for our purposes.
-  //
-  target = bLength * 0.04;
-  if (maxLength != 0.) 
-    {
-    scale = target / maxLength;
-    }
-
   for (i=0; i < this->NumberOfLabelsBuilt; i++)
     {
     ptIdx = 4*i + 1;
     majorTickPts->GetPoint(ptIdx, tick);
 
-    this->LabelActors[i]->SetScale(scale);
     this->LabelActors[i]->GetBounds(bounds);
 
     float halfWidth  = (bounds[1] - bounds[0]) * 0.5;
@@ -792,6 +556,7 @@ vtkKatAxisActor::ScaleAndSetLabels(vtkViewport *viewport)
     this->LabelActors[i]->SetPosition(pos[0], pos[1], pos[2]);
     }
 }
+
 
 // **********************************************************************
 //  Determines scale and position for the Title.  Currently,
@@ -809,18 +574,28 @@ vtkKatAxisActor::ScaleAndSetLabels(vtkViewport *viewport)
 //    Removed MinScale as it allowed axes with very small ranges
 //    to have labels scaled too large for the dataset. 
 //
+//    Kathleen Bonnell, Fri Jul 25 14:37:32 PDT 2003 
+//    Added bool argument that allow the build to be forced, even if
+//    the title won't be visible. 
+//   
 // **********************************************************************
+
 void
-vtkKatAxisActor::BuildTitle(float p1[3], float p2[3])
+vtkKatAxisActor::BuildTitle(bool force)
 {
+  if (!force && !this->TitleVisibility)
+  {
+      return;
+  }
   float labBounds[6], titleBounds[6], center[3], pos[3];
   float labHeight, maxHeight = 0, labWidth, maxWidth = 0;
-  float scale, target, bWidth, bHeight, bLength;
-  float halfTitleWidth, halfTitleHeight, titleLength;
+  float halfTitleWidth, halfTitleHeight;
 
+  float *p1 = this->Point1Coordinate->GetValue();
+  float *p2 = this->Point2Coordinate->GetValue();
   int xmult, ymult;
 
-  if (this->LabelBuildTime.GetMTime() < this->BuildTime.GetMTime() &&
+  if (!force && this->LabelBuildTime.GetMTime() < this->BuildTime.GetMTime() &&
       this->BoundsTime.GetMTime() < this->BuildTime.GetMTime() &&
       this->AxisPosition == this->LastAxisPosition)
    {
@@ -854,33 +629,9 @@ vtkKatAxisActor::BuildTitle(float p1[3], float p2[3])
     labHeight = labBounds[3] - labBounds[2]; 
     maxHeight = (labHeight > maxHeight ? labHeight : maxHeight); 
     }
-
   this->TitleVector->SetText(this->Title);
   this->TitleActor->SetCamera(this->Camera);
-  this->TitleActor->SetScale(1.);
   this->TitleActor->SetPosition(p2[0], p2[1], p2[2]);
-  titleLength = this->TitleActor->GetLength();
-
-  //
-  // Target/scale use information about the bounding box,
-  // gather that here.
-  //
-  bWidth = this->Bounds[1] - this->Bounds[0];
-  bHeight = this->Bounds[3] - this->Bounds[2];
-  bLength = sqrt (bWidth * bWidth + bHeight * bHeight);
-
-  scale = 1.;
-
-  //
-  // An arbitrary target that appears to work for our purposes.
-  //
-  target = bLength * 0.10;
-  if (titleLength != 0.)
-    {
-    scale = target / titleLength;
-    }
-
-  this->TitleActor->SetScale(scale);
   this->TitleActor->GetBounds(titleBounds);
   halfTitleWidth  = (titleBounds[1] - titleBounds[0]) * 0.5; 
   halfTitleHeight = (titleBounds[3] - titleBounds[2]) * 0.5; 
@@ -945,101 +696,6 @@ inline float fsign(float value, float sign)
   return value;
 }
 
-// *******************************************************************
-// Method: vtkKatAxisActor::AdjustTicksComputeRange
-//
-// Purpose: Sets private members controlling the number and position
-//          of ticks.
-//   
-// Arguments:
-//   inRange   The range for this axis.
-//
-// Note:    The bulk of this method was taken from vtkHankAxisActor.C
-//          The original method was reduced to serve the purposes
-//          of this class.   
-//
-// Programmer: Kathleen Bonnell 
-// Creation:   29 August, 2001 
-//
-// *******************************************************************
-
-void 
-vtkKatAxisActor::AdjustTicksComputeRange(float inRange[2]) 
-{
-  double sortedRange[2], range;
-  double fxt, fnt, frac;
-  double div, major, minor;
-  double majorStart, minorStart; 
-  int numTicks;
-
-  sortedRange[0] = (double)(inRange[0] < inRange[1] ? inRange[0] : inRange[1]);
-  sortedRange[1] = (double)(inRange[0] > inRange[1] ? inRange[0] : inRange[1]);
-
-  range = sortedRange[1] - sortedRange[0];
-
-  // Find the integral points.
-  double pow10 = log10(range);
-
-  // Build in numerical tolerance
-  if (pow10 != 0.)
-    {
-    double eps = 10.0e-10;
-    pow10 = fsign((fabs(pow10) + eps), pow10);
-    }
-
-  // ffix move you in the wrong direction if pow10 is negative.
-  if (pow10 < 0.)
-    {
-    pow10 = pow10 - 1.;
-    }
-
-  fxt = pow(10.f, ffix(pow10));
-    
-  // Find the number of integral points in the interval.
-  fnt  = range/fxt;
-  fnt  = ffix(fnt);
-  frac = fnt;
-  numTicks = (frac <= 0.5 ? (int)ffix(fnt) : ((int)ffix(fnt) + 1));
-
-  div = 1.;
-  if (numTicks < 5)
-    {
-    div = 2.;
-    }
-  if (numTicks <= 2)
-    {
-    div = 5.;
-    }
-
-  // If there aren't enough major tick points in this decade, use the next
-  // decade.
-  major = fxt;
-  if (div != 1.)
-    {
-    major /= div;
-    }
-  minor = (fxt/div) / 10.;
-
-  // Figure out the first major and minor tick locations, relative to the
-  // start of the axis.
-  if (sortedRange[0] <= 0.)
-    {
-    majorStart = major*(ffix(sortedRange[0]*(1./major)) + 0.);
-    minorStart = minor*(ffix(sortedRange[0]*(1./minor)) + 0.);
-    }
-  else
-    {
-    majorStart = major*(ffix(sortedRange[0]*(1./major)) + 1.);
-    minorStart = minor*(ffix(sortedRange[0]*(1./minor)) + 1.);
-    }
-
-  this->MinorStart = minorStart; 
-  this->MajorStart = majorStart; 
-
-  this->DeltaMinor = minor; 
-  this->DeltaMajor = major; 
-}
-
 // ****************************************************************
 // Modifications:
 //   Kathleen Bonnell, Wed Mar  6 13:48:48 PST 2002
@@ -1077,87 +733,58 @@ void vtkKatAxisActor::PrintSelf(ostream& os, vtkIndent indent)
   this->Point2Coordinate->PrintSelf(os, indent.GetNextIndent());
 }
 
-// ****************************************************************
-// Modifications:
-//   Kathleen Bonnell, Thu Aug  1 13:44:02 PDT 2002 
-//   Set a flag that forces label values to be reset. 
-// ****************************************************************
-void
-vtkKatAxisActor::SetValueScaleFactor(const float scale)
-{
-    if (!this->mustAdjustValue || this->valueScaleFactor != scale)
-    {
-       this->ForceLabelReset = true;
-    }
-    else
-    {
-       this->ForceLabelReset = false;
-    }
-    this->mustAdjustValue = true;
-    this->valueScaleFactor = scale;
-}
-
-// ****************************************************************
-// Modifications:
-//   Kathleen Bonnell, Thu Aug  1 13:44:02 PDT 2002 
-//   Set a flag that forces label values to be reset. 
-// ****************************************************************
-void
-vtkKatAxisActor::UnSetValueScaleFactor()
-{
-    if (this->mustAdjustValue)
-    {
-       this->Modified();
-       this->ForceLabelReset = true;
-    }
-    else
-    {
-       this->ForceLabelReset = false;
-    }
-    this->mustAdjustValue = false;
-    this->valueScaleFactor = 1.0;
-}
-
 // **************************************************************************
-// Allocates memory (if necessary) for requested number of labels. 
+// Sets text string for label vectors.  Allocates memory if necessary. 
 //
 // Programmer:  Kathleen Bonnell
-// Creation:    November 7, 2001
+// Creation:    July 18, 2003
 // **************************************************************************
 void
-vtkKatAxisActor::SetNumberOfLabels(const int numLabels)
+vtkKatAxisActor::SetLabels(const vector<string> &labels)
 {
-  if (this->NumberOfLabelsBuilt == numLabels)
+  //
+  // If the number of labels has changed, re-allocate the correct
+  // amount of memory.
+  //
+  int i, numLabels = labels.size();
+  if (this->NumberOfLabelsBuilt != numLabels)
     {
-        return;
-    }
- 
-
-  if (this->LabelMappers != NULL)
-    {
-    for (int i=0; i < this->NumberOfLabelsBuilt; i++)
+    if (this->LabelMappers != NULL)
       {
-      this->LabelVectors[i]->Delete();
-      this->LabelMappers[i]->Delete();
-      this->LabelActors[i]->Delete();
+      for (i = 0; i < this->NumberOfLabelsBuilt; i++)
+        {
+        this->LabelVectors[i]->Delete();
+        this->LabelMappers[i]->Delete();
+        this->LabelActors[i]->Delete();
+        }
+      delete [] this->LabelVectors;
+      delete [] this->LabelMappers;
+      delete [] this->LabelActors;
       }
-    delete [] this->LabelVectors;
-    delete [] this->LabelMappers;
-    delete [] this->LabelActors;
+
+    this->LabelVectors = new vtkVectorText * [numLabels];
+    this->LabelMappers = new vtkPolyDataMapper * [numLabels];
+    this->LabelActors = new vtkFollower * [numLabels];
+
+    for (i = 0; i < labels.size(); i++)
+      {
+      this->LabelVectors[i] = vtkVectorText::New();
+      this->LabelMappers[i] = vtkPolyDataMapper::New();
+      this->LabelMappers[i]->SetInput(this->LabelVectors[i]->GetOutput());
+      this->LabelActors[i] = vtkFollower::New();
+      this->LabelActors[i]->SetMapper(this->LabelMappers[i]);
+      }
     }
 
-  this->LabelVectors = new vtkVectorText * [numLabels];
-  this->LabelMappers = new vtkPolyDataMapper * [numLabels];
-  this->LabelActors = new vtkFollower * [numLabels];
-  for ( int i=0; i < numLabels; i++)
+  //
+  // Set the label vector text. 
+  //
+  for (i = 0; i < numLabels; i++)
     {
-    this->LabelVectors[i] = vtkVectorText::New();
-    this->LabelMappers[i] = vtkPolyDataMapper::New();
-    this->LabelMappers[i]->SetInput(this->LabelVectors[i]->GetOutput());
-    this->LabelActors[i] = vtkFollower::New();
-    this->LabelActors[i]->SetMapper(this->LabelMappers[i]);
+    this->LabelVectors[i]->SetText(labels[i].c_str());
     }
   this->NumberOfLabelsBuilt = numLabels;
+  this->LabelBuildTime.Modified();
 }
 
 // **************************************************************************
@@ -1174,11 +801,13 @@ vtkKatAxisActor::SetNumberOfLabels(const int numLabels)
 //   Kathleen Bonnell, Thu May 16 10:13:56 PDT 2002 
 //   Use defined constant VTK_MAX_TICKS to prevent infinite loops. 
 // 
+//   Kathleen Bonnell, Fri Jul 25 14:37:32 PDT 2003 
+//   Allow a forced build, despite previous build time.
+//
 // **************************************************************************
-bool vtkKatAxisActor::BuildTickPointsForXType(float p1[3], float p2[3])
+bool vtkKatAxisActor::BuildTickPointsForXType(float p1[3], float p2[3], bool force)
 {
-
-  if ((this->AxisPosition == this->LastAxisPosition) &&
+  if (!force && (this->AxisPosition == this->LastAxisPosition) &&
       (this->TickLocation == this->LastTickLocation ) &&
       (this->BoundsTime.GetMTime() < this->BuildTime.GetMTime()))
     {
@@ -1322,10 +951,14 @@ bool vtkKatAxisActor::BuildTickPointsForXType(float p1[3], float p2[3])
 //
 //   Kathleen Bonnell, Thu May 16 10:13:56 PDT 2002 
 //   Use defined constant VTK_MAX_TICKS to prevent infinite loops. 
+//
+//   Kathleen Bonnell, Fri Jul 25 14:37:32 PDT 2003 
+//   Allow a forced build, despite previous build time.
+//
 // **************************************************************************
-bool vtkKatAxisActor::BuildTickPointsForYType(float p1[3], float p2[3])
+bool vtkKatAxisActor::BuildTickPointsForYType(float p1[3], float p2[3], bool force)
 {
-  if ((this->AxisPosition  == this->LastAxisPosition) &&
+  if (!force && (this->AxisPosition  == this->LastAxisPosition) &&
       (this->TickLocation == this->LastTickLocation) &&
       (this->BoundsTime.GetMTime() < this->BuildTime.GetMTime()))
     {
@@ -1473,11 +1106,15 @@ bool vtkKatAxisActor::BuildTickPointsForYType(float p1[3], float p2[3])
 //
 //   Kathleen Bonnell, Thu May 16 10:13:56 PDT 2002 
 //   Use defined constant VTK_MAX_TICKS to prevent infinite loops. 
+//
+//   Kathleen Bonnell, Fri Jul 25 14:37:32 PDT 2003 
+//   Allow a forced build, despite previous build time.
+//
 // **************************************************************************
 
-bool vtkKatAxisActor::BuildTickPointsForZType(float p1[3], float p2[3])
+bool vtkKatAxisActor::BuildTickPointsForZType(float p1[3], float p2[3], bool force)
 {
-  if ((this->AxisPosition  == this->LastAxisPosition) &&
+  if (!force && (this->AxisPosition  == this->LastAxisPosition) &&
       (this->TickLocation == this->LastTickLocation) &&
       (this->BoundsTime.GetMTime() < this->BuildTime.GetMTime()))
     {
@@ -1625,8 +1262,12 @@ bool vtkKatAxisActor::BuildTickPointsForZType(float p1[3], float p2[3])
 //   Kathleen Bonnell, Thu Jul 18 13:24:03 PDT 2002 
 //   Allow gridlines to be drawn when enabled, even if ticks are disabled. 
 //
+//   Kathleen Bonnell, Fri Jul 25 15:10:24 PDT 2003
+//   Removed arguments.
+//
 // **************************************************************************
-void vtkKatAxisActor::SetAxisPointsAndLines(float p1[3], float p2[3])
+void 
+vtkKatAxisActor::SetAxisPointsAndLines()
 {
   vtkPoints *pts = vtkPoints::New();
   vtkCellArray *lines = vtkCellArray::New();
@@ -1685,8 +1326,10 @@ void vtkKatAxisActor::SetAxisPointsAndLines(float p1[3], float p2[3])
 
   if (this->AxisVisibility)
     {
-    ptIds[0] = pts->InsertNextPoint(p1); //first axis point
-    ptIds[1] = pts->InsertNextPoint(p2); //last axis point
+    //first axis point
+    ptIds[0] = pts->InsertNextPoint(this->Point1Coordinate->GetValue()); 
+    //last axis point
+    ptIds[1] = pts->InsertNextPoint(this->Point2Coordinate->GetValue()); 
     lines->InsertNextCell(2, ptIds);
     }
 }
@@ -1756,3 +1399,110 @@ void vtkKatAxisActor::GetBounds(float b[6])
     for (int i = 0; i < 6; i++)
       b[i] = this->Bounds[i];
 }
+
+// *********************************************************************
+// Method:  vtkKatAxisActor::ComputeMaxLabelLength
+//
+// Purpose: Determines the maximum length that a label will occupy
+//          if placed at point 'center' and with a scale of 1. 
+//
+// Arguments:
+//   center    The position to use for the label actor 
+//
+// Returns:
+//   the maximum length of all the labels, 0 if there are no labels.
+//
+// Programmer:  Kathleen Bonnell
+// Creation:    July 18, 2003 
+//
+// *********************************************************************
+
+float
+vtkKatAxisActor::ComputeMaxLabelLength(const float center[3])
+{
+  float length, maxLength = 0.;
+  for (int i = 0; i < this->NumberOfLabelsBuilt; i++)
+    {
+    this->LabelActors[i]->SetCamera(this->Camera);
+    this->LabelActors[i]->SetProperty(this->GetProperty());
+    this->LabelActors[i]->SetPosition(center[0], center[1] , center[2]);
+    this->LabelActors[i]->SetScale(1.);
+    length = this->LabelActors[i]->GetLength();
+    maxLength = (length > maxLength ? length : maxLength); 
+    }
+  return maxLength;
+}
+
+
+// *********************************************************************
+// Method:  vtkKatAxisActor::ComputeTitleLength
+//
+// Purpose: Determines the length that the title will occupy
+//          if placed at point 'center' and with a scale of 1. 
+//
+// Arguments:
+//   center    The position to use for the title actor 
+//
+// Returns:
+//   the length of all the title, 
+//
+// Programmer:  Kathleen Bonnell
+// Creation:    July 25, 2003 
+//
+// *********************************************************************
+
+float
+vtkKatAxisActor::ComputeTitleLength(const float center[3])
+{
+  this->TitleVector->SetText(this->Title);
+  this->TitleActor->SetCamera(this->Camera);
+  this->TitleActor->SetProperty(this->GetProperty());
+  this->TitleActor->SetPosition(center[0], center[1] , center[2]);
+  this->TitleActor->SetScale(1.);
+  return this->TitleActor->GetLength();
+}
+
+
+// *********************************************************************
+// Method:  vtkKatAxisActor::SetLabelScale
+//
+// Purpose: Sets the scaling factor for label actors.
+//
+// Arguments:
+//   s      The scale factor to use.
+//
+// Programmer:  Kathleen Bonnell
+// Creation:    July 18, 2003 
+//
+// *********************************************************************
+
+void
+vtkKatAxisActor::SetLabelScale(const float s)
+{
+  for (int i=0; i < this->NumberOfLabelsBuilt; i++)
+    {
+    this->LabelActors[i]->SetScale(s);
+    }
+}
+
+
+// *********************************************************************
+// Method:  vtkKatAxisActor::SetTitleScale
+//
+// Purpose: Sets the scaling factor for the title actor.
+//
+// Arguments:
+//   s      The scale factor to use.
+//
+// Programmer:  Kathleen Bonnell
+// Creation:    July 18, 2003 
+//
+// *********************************************************************
+
+void
+vtkKatAxisActor::SetTitleScale(const float s)
+{
+    this->TitleActor->SetScale(s);
+}
+
+

@@ -150,6 +150,9 @@
 #    Added avtCoordSystemConvert, avtSamplePointToSurfaceFilter, and
 #    avtSimlarityTransformFilter.
 #
+#    Hank Childs, Fri Jul 25 21:17:45 PDT 2003
+#    Renamed avtRelevantPointsFilter to avtCondenseDatasetFilter.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -243,6 +246,7 @@ PrivateFilters_src= \
 
 PublicFilters_src= \
   PublicFilters/avtCompactTreeFilter.C \
+  PublicFilters/avtCondenseDatasetFilter.C \
   PublicFilters/avtContourFilter.C \
   PublicFilters/avtCoordSystemConvert.C \
   PublicFilters/avtCurrentExtentFilter.C \
@@ -255,7 +259,6 @@ PublicFilters_src= \
   PublicFilters/avtPointToGlyphFilter.C \
   PublicFilters/avtRayCompositer.C \
   PublicFilters/avtRayTracer.C \
-  PublicFilters/avtRelevantPointsFilter.C \
   PublicFilters/avtResampleFilter.C \
   PublicFilters/avtSamplePointCommunicator.C \
   PublicFilters/avtSamplePointExtractor.C \

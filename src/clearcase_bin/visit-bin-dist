@@ -115,6 +115,9 @@
 #    Eric Brugger, Tue Jul 22 08:31:45 PDT 2003
 #    Add visit-config-open and visit-config-closed to the distribution.
 #
+#    Brad Whitlock, Thu Jun 19 13:16:57 PST 2003
+#    Removed splashscreen from the distribution.
+#
 #-----------------------------------------------------------------------
 
 set DataFiles = "TRUE"
@@ -465,7 +468,6 @@ if(-e $VisItDir/bin/engine_par) then
 endif
 cp $VisItDir/bin/gui           $bindir/gui
 cp $VisItDir/bin/mdserver      $bindir/mdserver
-cp $VisItDir/bin/splashscreen  $bindir/splashscreen
 cp $VisItDir/bin/vcl           $bindir/vcl
 cp $VisItDir/bin/viewer        $bindir/viewer
 # copy qt's moc, too

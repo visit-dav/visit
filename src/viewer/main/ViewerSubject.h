@@ -274,7 +274,7 @@ class VIEWER_API ViewerSubject : public QObject
 {
     Q_OBJECT
 public:
-    ViewerSubject(int *argc, char ***argv);
+    ViewerSubject();
     ~ViewerSubject();
 
     void Connect(int *argc, char ***argv);
@@ -308,9 +308,22 @@ public:
     void CreateNode(DataNode *node, bool detailed);
     void SetFromNode(DataNode *node);
 private:
+    void ConnectXfer();
+    void ConnectObjectsAndHandlers();
+    void ConnectConfigManager();
+
+    void HeavyInitialization();
+    void InitializePluginManagers();
+    void LoadPlotPlugins();
+    void LoadOperatorPlugins();
+    void InformClientOfPlugins() const;
+    void ProcessConfigFileSettings();
+    void AddInitialWindows();
+    void LaunchEngineOnStartup();
+
     void ProcessEvents();
-    void ProcessCommandLine1(int *argc, char ***argv);
-    void ProcessCommandLine2(int *argc, char ***argv);
+    void ReadConfigFiles(int argc, char **argv);
+    void ProcessCommandLine(int *argc, char ***argv);
     void CustomizeAppearance();
     void InitializeWorkArea();
     void ProcessSpecialOpcodes(int opcode);
@@ -406,6 +419,8 @@ private:
     QSocketNotifier       *checkParent;
     QSocketNotifier       *checkRenderer;
     bool                   launchingComponent;
+    bool                   deferHeavyInitialization;
+    bool                   heavyInitializationDone;
     bool                   interruptionEnabled;
     std::string            launchEngineAtStartup;
     bool                   blockSocketSignals;

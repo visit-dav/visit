@@ -114,22 +114,26 @@ NewHandler(void)
 //    Jeremy Meredith, Wed Aug  7 13:17:01 PDT 2002
 //    Made it clamp the debug level to 0 through 5.
 //
-//    Brad Whitlock, Wed Jun 18 13:35:02 PST 2003
-//    I made the debug logs have pids by default on Windows.
+//    Brad Whitlock, Wed May 21 17:03:56 PST 2003
+//    I made it write the command line arguments to the debug logs.
+//
+//    Brad Whitlock, Wed Jun 18 11:15:22 PDT 2003
+//    I made it understand the -timing argument.
 //
 // ****************************************************************************
 
 void
 Init::Initialize(int &argc, char *argv[], int r, int n, bool strip)
 {
-    int debuglevel = 0;
+    int i, debuglevel = 0;
 #if defined(_WIN32)
     bool usePid = true;
 #else
     bool usePid = false;
 #endif
 
-    for (int i=1; i<argc; i++)
+    bool enableTimings = false;
+    for (i=1; i<argc; i++)
     {
         if (strcmp("-debug",argv[i]) == 0)
         {
@@ -162,6 +166,11 @@ Init::Initialize(int &argc, char *argv[], int r, int n, bool strip)
         {
             usePid = true;
         }
+        else if (strcmp("-timing",  argv[i]) == 0 ||
+                 strcmp("-timings", argv[i]) == 0)
+        {
+            enableTimings = true;
+        }
     }
 
     char progname_wo_dir[256];
@@ -189,8 +198,16 @@ Init::Initialize(int &argc, char *argv[], int r, int n, bool strip)
         strcpy(progname, progname2);
     }
 
+    // Initialize the debug streams and also add the command line arguments
+    // to the debug logs.
     DebugStream::Initialize(progname, debuglevel);
+    for(i = 0; i < argc; ++i)
+        debug1 << argv[i] << " ";
+    debug1 << endl;
+
     TimingsManager::Initialize(progname);
+    if(enableTimings)
+        visitTimer->Enable();
 
 #if !defined(_WIN32)
     set_new_handler(NewHandler);
@@ -267,12 +284,18 @@ Init::GetExecutableName(void)
 // Creation:   Tue Mar 19 16:12:37 PST 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Jun 18 11:14:50 PDT 2003
+//   Added code to dump timings.
+//
 // ****************************************************************************
 
 static void
 Finalize(void)
 {
+    // Dump timings.
+    if(visitTimer)
+        visitTimer->DumpTimings();
+
 #if defined(_WIN32)
     // Terminates use of the WS2_32.DLL, the Winsock DLL.
     WSACleanup();

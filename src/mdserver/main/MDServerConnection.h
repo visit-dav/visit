@@ -75,6 +75,9 @@ class Xfer;
 //    Brad Whitlock, Tue May 13 15:41:33 PST 2003
 //    I added a timeState to ReadMetaData and ReadSIL.
 //
+//    Brad Whitlock, Mon Jun 9 10:51:52 PDT 2003
+//    I added a method that lets us explicitly load plugins.
+//
 // ****************************************************************************
 
 class MDServerConnection
@@ -111,6 +114,7 @@ public:
     SILAttributes *GetCurrentSIL() const;
 
     void CloseDatabase();
+    void LoadPlugins();
 
     int  ChangeDirectory(const std::string &dir);
     const std::string &GetCurrentWorkingDirectory() const;
@@ -168,6 +172,7 @@ private:
 
     // Static members for all connections.
     static bool                       staticInit;
+    static bool                       pluginsLoaded;
     static std::string                currentDatabaseName;
     static avtDatabase               *currentDatabase;
     static int                        currentDatabaseTimeState;

@@ -27,6 +27,7 @@
 #include <ConnectRPC.h>
 #include <ConnectRPCExecutor.h>
 #include <DatabaseException.h>
+#include <DatabasePluginManager.h>
 #include <DebugStream.h>
 #include <ExpandPathRPC.h>
 #include <ExpandPathRPCExecutor.h>
@@ -44,6 +45,7 @@
 #include <QuitRPC.h>
 #include <QuitRPCExecutor.h>
 #include <SocketConnection.h>
+#include <TimingsManager.h>
 #include <Xfer.h>
 #include <RPCExecutor.h>
 #include <fstream.h>
@@ -111,6 +113,7 @@ RPCExecutor<CreateGroupListRPC>::Execute(CreateGroupListRPC *rpc)
 
 // Static members.
 bool            MDServerConnection::staticInit = false;
+bool            MDServerConnection::pluginsLoaded = false;
 avtDatabase    *MDServerConnection::currentDatabase;
 std::string     MDServerConnection::currentDatabaseName;
 int             MDServerConnection::currentDatabaseTimeState = 0;
@@ -171,6 +174,10 @@ MDServerConnection::VirtualFileInformationMap MDServerConnection::virtualFiles;
 
 MDServerConnection::MDServerConnection(int *argc, char **argv[])
 {
+    int total = visitTimer->StartTimer();
+    int timeid = visitTimer->StartTimer();
+    string connectStr("Connecting to client");
+
     // Initialize some static members.
     if(!staticInit)
     {
@@ -191,9 +198,11 @@ MDServerConnection::MDServerConnection(int *argc, char **argv[])
     TRY
     {
         parent->Connect(argc, argv, true);
+        visitTimer->StopTimer(timeid, connectStr);
     }
     CATCH(IncompatibleVersionException)
     {
+        visitTimer->StopTimer(timeid, connectStr);
         debug1 << "The mdserver connected to a client that has a different "
                << "version number than the mdserver itself."
                << endl;
@@ -201,6 +210,7 @@ MDServerConnection::MDServerConnection(int *argc, char **argv[])
     }
     CATCH(CouldNotConnectException)
     {
+        visitTimer->StopTimer(timeid, connectStr);
         debug1 << "The mdserver could not create a new connection." << endl;
         RETHROW;
     }
@@ -255,6 +265,8 @@ MDServerConnection::MDServerConnection(int *argc, char **argv[])
 
     // Get the current directory.
     ReadCWD();
+
+    visitTimer->StopTimer(total, connectStr + " and setup");
 }
 
 // ****************************************************************************
@@ -407,6 +419,31 @@ Connection *
 MDServerConnection::GetWriteConnection() const
 {
     return parent->GetWriteConnection();
+}
+
+// ****************************************************************************
+// Method: MDServerConnection::LoadPlugins
+//
+// Purpose: 
+//   Loads the plugins if they have not been loaded.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Jun 9 10:58:42 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+MDServerConnection::LoadPlugins()
+{
+    if(!pluginsLoaded)
+    {
+        debug2 << "Loading plugins!" << endl;
+        DatabasePluginManager::Initialize(DatabasePluginManager::MDServer, false);
+        DatabasePluginManager::Instance()->LoadPluginsNow();
+        pluginsLoaded = true;
+    }
 }
 
 // ****************************************************************************
@@ -1605,15 +1642,29 @@ MDServerConnection::GetVirtualFileDefinition(const std::string &file)
 //    Brad Whitlock, Tue Mar 25 10:41:01 PDT 2003
 //    I added support for virtual VisIt files.
 //
+//    Brad Whitlock, Mon Jun 9 11:00:12 PDT 2003
+//    I added code to make sure that plugins are loaded. I also added timing
+//    information.
+//
 // ****************************************************************************
 
 avtDatabase *
 MDServerConnection::GetDatabase(string file, int timeState)
 {
+    //
+    // Make sure that the plugins are loaded.
+    //
+    LoadPlugins();
+
+    //
+    // Expand the filename so it has the whole path.
+    //
     file = ExpandPath(file);
 
     if (file != currentDatabaseName || timeState != currentDatabaseTimeState)
     {
+        string timerMessage(string("Time to open ") + file);
+        int    timeid = visitTimer->StartTimer();
         debug2 << "MDServerConnection::GetDatabase: Need to get a new database"
                << ". file=" << file.c_str()
                << ", timeState=" << timeState << endl;
@@ -1657,6 +1708,8 @@ MDServerConnection::GetDatabase(string file, int timeState)
             }
             CATCH(VisItException)
             {
+                visitTimer->StopTimer(timeid, timerMessage);
+
                 // Free the memory that we used.
                 for(i = 0; i < fileNames.size(); ++i)
                     delete [] names[i];
@@ -1674,6 +1727,8 @@ MDServerConnection::GetDatabase(string file, int timeState)
         {
             currentDatabase = avtDatabaseFactory::FileList(&fn, 1);
         }
+
+        visitTimer->StopTimer(timeid, timerMessage);
     }
 
     return currentDatabase;

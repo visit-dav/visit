@@ -1,4 +1,3 @@
-#include <visit-config.h>   // To get splash screen
 #include <qapplication.h>
 #include <qlabel.h>
 #include <qcheckbox.h>
@@ -168,6 +167,9 @@
 //
 //    Brad Whitlock, Wed May 21 07:43:52 PDT 2003
 //    I added fullFrame mode to the Windows menu.
+//
+//    Brad Whitlock, Fri Jun 20 17:46:13 PST 2003
+//    I made the splashscreen available all the time.
 //
 //    Brad Whitlock, Mon Jun 23 10:09:51 PDT 2003
 //    I added a button to refresh the file list.
@@ -362,10 +364,7 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     QPopupMenu *help = new QPopupMenu( this );
     menuBar()->insertSeparator();
     menuBar()->insertItem( tr("&Help"), help);
-    id = help->insertItem( tr("About . . ."), this, SIGNAL(activateAboutWindow()));
-#ifndef SPLASHSCREEN
-    help->setItemEnabled(id, false);
-#endif
+    help->insertItem( tr("About . . ."), this, SIGNAL(activateAboutWindow()));
     help->insertItem( tr("Copyright . . ."), this, SIGNAL(activateCopyrightWindow()));
     help->insertItem( tr("Help . . ."), this, SIGNAL(activateHelpWindow()), Key_F1);
     help->insertItem( tr("Release notes . . ."), this, SIGNAL(activateReleaseNotesWindow()));

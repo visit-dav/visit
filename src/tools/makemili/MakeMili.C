@@ -76,6 +76,10 @@ int ndomains;
 //    of data are stored: global data only used by the master process, and
 //    collected data, which is potentially unique to each domain.
 //
+//  Modifications:
+//    Akira Haddox, Fri Jul 25 10:49:57 PDT 2003
+//    Added variable dimensionality.
+//
 // ***************************************************************************
 
 struct MiliInfo
@@ -91,6 +95,7 @@ struct MiliInfo
     vector<vector<int> >            varType;
     vector<vector<int> >            varCentering;
     vector<vector<string> >         varNames;
+    vector<vector<int> >            varDimension;
 };
 
 //
@@ -255,6 +260,10 @@ int GetNumDomains()
 //    Will abort program if failure to open family or read variables.
 //    Code based upon VisIt's avtMiliFileFormat.
 //
+//  Modifications:
+//    Akira Haddox, Fri Jul 25 10:49:57 PDT 2003
+//    Added variable dimensionality.
+//
 // ***************************************************************************
 
 void ReadDomain(int dom, MiliInfo &mi)
@@ -291,6 +300,7 @@ void ReadDomain(int dom, MiliInfo &mi)
     mi.varType.resize(nmeshes);
     mi.varCentering.resize(nmeshes);
     mi.varNames.resize(nmeshes);
+    mi.varDimension.resize(nmeshes);
     
     int mesh_id;
     for (mesh_id = 0; mesh_id < nmeshes; ++mesh_id)
@@ -438,6 +448,11 @@ void ReadDomain(int dom, MiliInfo &mi)
                      else
                          vartype = (AVT_UNKNOWN_TYPE);
                      mi.varType[mesh_id].push_back(vartype);
+
+                    if (vartype == AVT_SCALAR_VAR)
+                        mi.varDimension[mesh_id].push_back(1);
+                    else
+                        mi.varDimension[mesh_id].push_back(sv.vec_size);
                 }
             }
         }
@@ -465,6 +480,10 @@ void ReadDomain(int dom, MiliInfo &mi)
 //  Arguments:
 //    info      vector of MiliInfo to fill
 //
+//  Modifications:
+//    Akira Haddox, Fri Jul 25 10:49:57 PDT 2003
+//    Added variable dimensionality.
+//
 // ***************************************************************************
 
 void ReceiveInfo(vector<MiliInfo> &info)
@@ -485,6 +504,7 @@ void ReceiveInfo(vector<MiliInfo> &info)
         mi.varNames.resize(nm);
         mi.varType.resize(nm);
         mi.varCentering.resize(nm);
+        mi.varDimension.resize(nm);
 
         // Recv highest materials
         MPI_Recv(&(mi.highestMaterial[0]), nm, MPI_INT, p, 0, 
@@ -508,6 +528,14 @@ void ReceiveInfo(vector<MiliInfo> &info)
         {
             mi.varCentering[i].resize(numVars[i]);
             MPI_Recv(&(mi.varCentering[i][0]), numVars[i], MPI_INT, p, 0,
+                                                        MPI_COMM_WORLD, &st);
+        }
+
+        // Recv var dimensions
+        for (i = 0; i < nm; ++i)
+        {
+            mi.varDimension[i].resize(numVars[i]);
+            MPI_Recv(&(mi.varDimension[i][0]), numVars[i], MPI_INT, p, 0,
                                                         MPI_COMM_WORLD, &st);
         }
 
@@ -555,7 +583,13 @@ void ReceiveInfo(vector<MiliInfo> &info)
 //      for each mesh:
 //          variable centers    int[]       number of Meshes
 //      for each mesh:
+//          variable dimenion   int[]       number of Meshes
+//      for each mesh:
 //          variable names      char[]      maxLen
+//
+//  Modifications:
+//    Akira Haddox, Fri Jul 25 10:49:57 PDT 2003
+//    Added variable dimensionality.
 //
 // ***************************************************************************
 
@@ -589,7 +623,10 @@ void SendInfo(MiliInfo &mi)
     for (i = 0; i < nm; ++i)
         MPI_Send(&(mi.varCentering[i][0]), numVars[i], MPI_INT, 0, 0,
                                                              MPI_COMM_WORLD);
-
+    // Send the var dimension 
+    for (i = 0; i < nm; ++i)
+        MPI_Send(&(mi.varDimension[i][0]), numVars[i], MPI_INT, 0, 0,
+                                                             MPI_COMM_WORLD);
     int maxLen = 0;
     for (i = 0; i < nm; ++i)
     {
@@ -634,6 +671,10 @@ void SendInfo(MiliInfo &mi)
 //    it may be invalid. This ensures that when all the information is
 //    finally compiled, the information will come through.
 //
+//  Modifications:
+//    Akira Haddox, Fri Jul 25 10:49:57 PDT 2003
+//    Added variable dimensionality.
+//
 // ***************************************************************************
 
 void CompileInfo(const vector<MiliInfo> &info, MiliInfo &result)
@@ -648,6 +689,7 @@ void CompileInfo(const vector<MiliInfo> &info, MiliInfo &result)
     result.highestMaterial.resize(nm, -1);
     result.varType.resize(nm);
     result.varCentering.resize(nm);
+    result.varDimension.resize(nm);
     result.varNames.resize(nm);
    
     int i; 
@@ -669,6 +711,7 @@ void CompileInfo(const vector<MiliInfo> &info, MiliInfo &result)
                     result.varNames[m].push_back(vn);
                     result.varType[m].push_back(mi.varType[m][v]);
                     result.varCentering[m].push_back(mi.varCentering[m][v]);
+                    result.varDimension[m].push_back(mi.varDimension[m][v]);
                 } 
             }
         }
@@ -685,6 +728,10 @@ void CompileInfo(const vector<MiliInfo> &info, MiliInfo &result)
 //    o         the stream
 //    mi        the MiliInfo structure
 //    verbose   if true, makes it human readable (unsuitable for .mili file)
+//
+//  Modifications:
+//    Akira Haddox, Fri Jul 25 10:49:57 PDT 2003
+//    Added variable dimensionality.
 //
 // ***************************************************************************
 
@@ -711,12 +758,13 @@ void PrintInfo(ostream &o, const MiliInfo &mi, bool verbose)
         int nVar = mi.varNames[mesh].size();
         vp("Number of Variables: " );
         o << nVar << endl;
-        vp("\tType\tCenter\tName" << endl);
+        vp("\tType\tCenter\tDims\tName" << endl);
         int var;
         for (var = 0; var < mi.varNames[mesh].size(); ++var)
         {
             o << '\t' << mi.varType[mesh][var]  << '\t'
                       << mi.varCentering[mesh][var] << '\t'
+                      << mi.varDimension[mesh][var] << '\t'
                       << mi.varNames[mesh][var] << endl;
         }
         o << endl;
@@ -782,6 +830,9 @@ void FatalError(const string &s)
 //    Akira Haddox, Tue Jul 22 08:12:57 PDT 2003
 //    Added help on bad number of arguments.  
 //
+//    Akira Haddox, Fri Jul 25 11:21:38 PDT 2003
+//    Added check to find rootname, ignoring hyphen-ed arguments.
+//
 // ***************************************************************************
 
 int main(int argc, char* argv[])
@@ -793,7 +844,17 @@ int main(int argc, char* argv[])
     MPI_Comm_size(MPI_COMM_WORLD, &numProcesses);
 #endif 
 
-    if (argc != 2)
+    // Find first non-hyphened argument.
+    char * argument = NULL;
+    int argi;
+    for (argi = 1; argi < argc; ++argi)
+        if (argv[argi][0] != '-')
+        {
+            argument = argv[argi];
+            break;
+        }
+
+    if (argument == NULL)
     {
         if (myRank != 0)
             exit(-1);
@@ -808,7 +869,7 @@ int main(int argc, char* argv[])
         exit(-1);
     }
 
-    DetermineRootAndPath(argv[1]);
+    DetermineRootAndPath(argument);
     
     //
     // Master process needs to determine how many domains there are.

@@ -311,7 +311,7 @@ dnl    Sean Ahern, Mon Jun 10 16:20:48 PDT 2002
 dnl    Added make-targets-dir so that we can get rid of a lot of rules.
 dnl
 dnl    Jeremy Meredith, Fri Jul 12 14:35:08 PDT 2002
-dnl    Unified the include file locations to the root /include/* tree.
+dnl    Unified the include file locations to the root /include/ tree.
 dnl    This includes mesa, qt, vtk, and visit.  Also linked moc to our
 dnl    private bin directory and used it there.  Added makefiles for our
 dnl    root include and bin directories.  Added check for ios::noreplace.
@@ -420,6 +420,9 @@ dnl    Added tools/makemili.
 dnl
 dnl    Hank Childs, Wed Jul  2 09:50:00 PDT 2003
 dnl    Added tools/surfcomp.
+dnl
+dnl    Brad Whitlock, Thu Jun 19 13:10:18 PST 2003
+dnl    I removed the splashscreen.
 dnl
 dnl --------------------------------------------------------------------------
 
@@ -843,28 +846,6 @@ AC_SUBST(VISWINDOW)
 AC_SUBST(VIEWERLIB)
 AC_SUBST(VIEWEROBJ)
 AC_SUBST(ENGINEPROXYDIR)
-
-#
-# Check to see if the splash screen was enabled.
-#
-AC_MSG_CHECKING(if splash screen is enabled)
-AC_ARG_ENABLE(splashscreen,
-              [  --disable-splashscreen  build without splashscreen],
-              UseSplashScreen="$enable_splashscreen", UseSplashScreen=yes)
-if test "$UseSplashScreen" = "yes" && test "$enable_gui" = "yes"; then
-    AC_MSG_RESULT(yes)
-    enable_splashscreen=yes
-    SPLASHSCREEN="splashscreen"
-    SPLASHLIBS="-lsplashproxy -lsplashrpc"
-    AC_DEFINE(SPLASHSCREEN)
-else
-    AC_MSG_RESULT(no)
-    enable_splashscreen=no
-    SPLASHSCREEN=""
-    SPLASHLIBS=""
-fi
-AC_SUBST(SPLASHSCREEN)
-AC_SUBST(SPLASHLIBS)
 
 #
 # Check to see if we should disable annotations.
@@ -2320,16 +2301,6 @@ fi
 
 HELP_FILES="help/Makefile"
 
-if test "$enable_splashscreen" = "yes" ; then
-    SPLASH_FILES="
-               splashscreen/Makefile
-               splashscreen/rpc/Makefile
-               splashscreen/proxy/Makefile
-               splashscreen/main/Makefile"
-else
-    SPLASH_FILES=""
-fi
-
 if test -n "$VIEWER"; then
     VIEWER_FILES="viewer/Makefile
                   viewer/rpc/Makefile
@@ -2418,7 +2389,6 @@ LAUNCHER_FILES="launcher/Makefile
 AC_OUTPUT($STANDARD_FILES
           $GUI_FILES
           $HELP_FILES
-          $SPLASH_FILES
           $VIEWER_FILES
           $ENGINE_FILES
           $MDSERVER_FILES

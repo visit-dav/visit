@@ -238,6 +238,9 @@
 #    Brad Whitlock, Fri May 2 15:52:18 PST 2003
 #    I added libproxybase to the list of libs.
 #
+#    Brad Whitlock, Thu Jun 19 13:07:26 PST 2003
+#    I made the splashscreen part of the GUI.
+#
 ##############################################################################
 
 ##
@@ -248,7 +251,7 @@
 LIB=libgui
 
 LIBS=-lplugin @QT_LIBS@ -L../lib -lviewerproxy -lviewerrpc \
-     -lmdserverproxy -lmdserverrpc @SPLASHLIBS@ -ldbatts \
+     -lmdserverproxy -lmdserverrpc -ldbatts \
      -lproxybase -lmisc -lstate -lcomm -lavtexceptions -lutility \
      -lwinutil $(X_LIBS) @LIBS@ @PTHREAD_LIB@
 
@@ -326,7 +329,8 @@ HDRMOC = \
     QvisSubsetWindow.h \
     QvisVCRControl.h \
     QvisViewWindow.h \
-    QvisWindowBase.h
+    QvisWindowBase.h \
+    SplashScreen.h
 
 # Then, all of the rest of the header files
 HDR = ${HDRMOC} \

@@ -45,6 +45,9 @@ using std::ifstream;
 //    Akira Haddox, Tue Jul 22 15:34:40 PDT 2003
 //    Initialized setTimesteps.
 //
+//    Akira Haddox, Fri Jul 25 11:09:13 PDT 2003
+//    Added reading in of variable dimensions.
+//
 // ****************************************************************************
 
 avtMiliFileFormat::avtMiliFileFormat(const char *fname)
@@ -94,9 +97,9 @@ avtMiliFileFormat::avtMiliFileFormat(const char *fname)
         int v;
         for (v = 0; v < nVars; ++v)
         {
-            int type, center;
+            int type, center, v_dimension;
             string name;
-            in >> type >> center;
+            in >> type >> center >> v_dimension;
 
             // Strip out leading white space.
             while(isspace(in.peek()))
@@ -107,6 +110,7 @@ avtMiliFileFormat::avtMiliFileFormat(const char *fname)
             vars.push_back(name);
             centering.push_back(avtCentering(center));
             vartype.push_back(avtVarType(type));
+            var_dimension.push_back(v_dimension);
             var_mesh_associations.push_back(mesh_id);
         }
     }
@@ -1386,6 +1390,12 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         // Don't list the node position variable.
         //
         if (vars[i] == "nodpos")
+            continue;
+
+        //
+        // Don't list vectors whose dimension don't match the dataset's.
+        //
+        if (vartype[i] == AVT_VECTOR_VAR && var_dimension[i] != dims)
             continue;
         
         string *vname;

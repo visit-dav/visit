@@ -211,6 +211,9 @@ $0 = shift @ARGV;
 #    but since 1.0.  This should be removed when the oldest previous
 #    version anyone will want to run is 1.1.4.
 #
+#    Brad Whitlock, Thu Jun 19 13:22:25 PST 2003
+#    I removed splashscreen coding.
+#
 #    Jeremy Meredith, Thu Jun 26 10:05:12 PDT 2003
 #    Added support for LANL's Q machine:  I added a hack to update
 #    the user's paths.  I allowed the VCL to be launched in parallel.
@@ -405,7 +408,6 @@ while (scalar(@ARGV) > 0) {
     elsif ($arg eq "-viewer" )   { $exe_name = "viewer"; }
     elsif ($arg eq "-gui" )             { $exe_name = "gui"; }
     elsif ($arg eq "-cli" )             { $exe_name = "cli"; }
-    elsif ($arg eq "-splashscreen" )    { $exe_name = "splashscreen"; }
     elsif ($arg eq "-mdserver" )        { $exe_name = "mdserver"; }
     elsif ($arg eq "-engine" )          { $exe_name = "engine"; }
     elsif ($arg eq "-vcl" )             { $exe_name = "vcl"; }
@@ -1167,12 +1169,10 @@ else
     }
     else
     {
-        if ($exe_name ne "splashscreen")
-        {
-            @printcmd = ("$exe_name$ver", @visitargs);
-            chomp($printcmd[0] = `basename $printcmd[0]`);
-            print STDERR "Running: @printcmd\n";
-        }
+        @printcmd = ("$exe_name$ver", @visitargs);
+        chomp($printcmd[0] = `basename $printcmd[0]`);
+        print STDERR "Running: @printcmd\n";
+
         if ($security_key_set) { push @visitcmd, "-key", $security_key; }
         exec @visitcmd or die "Can't execute visit: $!\n";
     }
@@ -1185,12 +1185,10 @@ sub RunComponent {
    my $security_key = shift;
    my @visitcmd = shift;
 
-   if ($exe_name ne "splashscreen")
-   {
-       @printcmd = ("$exe_name$ver", @visitargs);
-       chomp($printcmd[0] = `basename $printcmd[0]`);
-       print STDERR "Running: @printcmd\n";
-   }
+   @printcmd = ("$exe_name$ver", @visitargs);
+   chomp($printcmd[0] = `basename $printcmd[0]`);
+   print STDERR "Running: @printcmd\n";
+
    if ($security_key_set) { push @visitcmd, "-key", $security_key; }
    exec @visitcmd or die "Can't execute visit: $!\n";
 }

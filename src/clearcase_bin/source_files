@@ -47,6 +47,9 @@
 #   Brad Whitlock, Mon May 5 09:40:21 PDT 2003
 #   Added launcher directory.
 #
+#   Brad Whitlock, Thu Jun 19 13:17:43 PST 2003
+#   Removed splashscreen directory.
+#
 
 if [ ! -d engine ]; then
    echo "invoke $0 from the root of the VisIt source tree" 2>&1
@@ -57,7 +60,6 @@ PATH="$PATH:./clearcase_bin"
 (
     ./clearcase_bin/mkman --quiet --norecursive --simple .
     ./clearcase_bin/mkman --quiet --norecursive --simple ./config-site
-    ./clearcase_bin/mkman --quiet --recursive --simple ./splashscreen
     ./clearcase_bin/mkman --quiet --recursive --simple ./common
     ./clearcase_bin/mkman --quiet --recursive --simple ./visit_vtk
     ./clearcase_bin/mkman --quiet --recursive --simple ./engine

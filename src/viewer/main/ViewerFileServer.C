@@ -863,44 +863,15 @@ ViewerFileServer::CloseServer(const std::string &host, bool close)
 //   I changed the code so it parses out the arguments that it needs from the
 //   argument vector.
 //
+//   Brad Whitlock, Mon Jun 16 13:06:43 PST 2003
+//   I made it capable of using pipes.
+//
 // ****************************************************************************
 
 void
 ViewerFileServer::ConnectServer(const std::string &mdServerHost,
     const stringVector &args)
 {
-    // Default values.
-    std::string progHost;
-    std::string key;
-    int port = -1;
-    int nread = -1;
-    int nwrite = -1;
-
-    // Parse the desired values out of args array.
-    for(int i = 0; i < args.size(); ++i)
-    {
-        if(args[i] == "-host" && (i+1) < args.size())
-        {
-            progHost = args[i+1]; ++i; 
-        }
-        else if(args[i] == "-key" && (i+1) < args.size())
-        {
-            key = args[i+1]; ++i; 
-        }
-        else if(args[i] == "-port" && (i+1) < args.size())
-        {
-            port = atol(args[i+1].c_str()); ++i; 
-        }
-        else if(args[i] == "-nread" && (i+1) < args.size())
-        {
-            nread = atol(args[i+1].c_str()); ++i; 
-        }
-        else if(args[i] == "-nwrite" && (i+1) < args.size())
-        {
-            nwrite = atol(args[i+1].c_str()); ++i; 
-        }
-    }
-
     // If a server exists, get the current directory to make sure it is
     // still alive.
     stringVector startArgs;
@@ -936,21 +907,21 @@ ViewerFileServer::ConnectServer(const std::string &mdServerHost,
         // Open a connection back to the process that initiated the request
         // and send it a reason to quit.
         debug1 << termString << "of incompatible versions." << endl;
-        TerminateConnectionRequest(progHost, key, port, nread, nwrite, 1);
+        TerminateConnectionRequest(args, 1);
     }
     CATCH(IncompatibleSecurityTokenException)
     {
         // Open a connection back to the process that initiated the request
         // and send it a reason to quit.
         debug1 << termString << "of incompatible security tokens." << endl;
-        TerminateConnectionRequest(progHost, key, port, nread, nwrite, 2);
+        TerminateConnectionRequest(args, 2);
     }
     CATCH(CouldNotConnectException)
     {
         // Open a connection back to the process that initiated the request
         // and send it a reason to quit.
         debug1 << termString << "we could not connect." << endl;
-        TerminateConnectionRequest(progHost, key, port, nread, nwrite, 3);
+        TerminateConnectionRequest(args, 3);
     }
     CATCH(CancelledConnectException)
     {
@@ -958,7 +929,7 @@ ViewerFileServer::ConnectServer(const std::string &mdServerHost,
         // and send it a reason to quit.
         debug1 << termString << "the connection was cancelled by the user."
                << endl;
-        TerminateConnectionRequest(progHost, key, port, nread, nwrite, 4);
+        TerminateConnectionRequest(args, 4);
     }
     ENDTRY
 
@@ -966,7 +937,7 @@ ViewerFileServer::ConnectServer(const std::string &mdServerHost,
     // to another program.
     if(servers.find(mdServerHost) != servers.end())
     {
-        servers[mdServerHost]->proxy->Connect(progHost, key, port, nread, nwrite);
+        servers[mdServerHost]->proxy->Connect(args);
     }
 }
 
@@ -997,36 +968,22 @@ ViewerFileServer::ConnectServer(const std::string &mdServerHost,
 //   Brad Whitlock, Thu Dec 26 15:46:38 PST 2002
 //   I added support for security checking.
 //
+//   Brad Whitlock, Mon Jun 16 13:36:38 PST 2003
+//   I simplified the code so it does not matter which sorts of connections
+//   are used.
+//
 // ****************************************************************************
 
 void
-ViewerFileServer::TerminateConnectionRequest(const std::string &progHost,
-    const std::string &key, int port, int nread, int nwrite, int failCode)
+ViewerFileServer::TerminateConnectionRequest(const stringVector &args, int failCode)
 {
-    int  argc = 11;
-    char **argv = new char *[12];
-    char h[200], p[20], nr[20], nw[20], k[30];
+    int  argc = args.size();
+    char **argv = new char *[args.size() + 1];
 
-    // Convert some ints/strings into char strings.
-    SNPRINTF(h, 200, "%s", progHost.c_str());
-    SNPRINTF(p,  20, "%d", port);
-    SNPRINTF(nr, 20, "%d", nread);
-    SNPRINTF(nw, 20, "%d", nwrite);
-    SNPRINTF(k,  30, "%s", key.c_str());
-
-    // Create the argv array.
-    argv[0] = "viewer";
-    argv[1] = "-host";
-    argv[2] = h;
-    argv[3] = "-port";
-    argv[4] = p;
-    argv[5] = "-nread";
-    argv[6] = nr;
-    argv[7] = "-nwrite";
-    argv[8] = nw;
-    argv[9] = "-key";
-    argv[10] = k;
-    argv[11] = NULL;
+    // Create an argv array out of the args string vector.
+    for(int i = 0; i < argc; ++i)
+        argv[i] = (char *)args[i].c_str();
+    argv[argc] = 0;
 
     // Try and connect back to the process that initiated the request and
     // send it a non-zero fail code so it will terminate the connection.

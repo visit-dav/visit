@@ -6,6 +6,7 @@
 
 #include <avtCallback.h>
 #include <avtCompactTreeFilter.h>
+#include <avtCondenseDatasetFilter.h>
 #include <avtCurrentExtentFilter.h>
 #include <avtDatasetToDatasetFilter.h>
 #include <avtDataObjectString.h>
@@ -15,7 +16,6 @@
 #include <avtGhostZoneAndFacelistFilter.h>
 #include <avtImageDrawable.h>
 #include <avtImageMapper.h>
-#include <avtRelevantPointsFilter.h>
 #include <avtSourceFromAVTDataset.h>
 #include <avtSourceFromDataset.h>
 #include <avtTerminatingSource.h>
@@ -80,7 +80,7 @@ avtPlot::avtPlot()
     needsRecalculation = true;
     behavior           = theater.GetBehavior();
     drawer             = NULL;
-    relevantPointsFilter       = new avtRelevantPointsFilter;
+    condenseDatasetFilter      = new avtCondenseDatasetFilter;
     ghostZoneAndFacelistFilter = new avtGhostZoneAndFacelistFilter;
     compactTreeFilter          = new avtCompactTreeFilter;
     currentExtentFilter        = new avtCurrentExtentFilter;
@@ -131,10 +131,10 @@ avtPlot::~avtPlot()
         delete drawer;
         drawer = NULL;
     }
-    if (relevantPointsFilter != NULL)
+    if (condenseDatasetFilter != NULL)
     {
-        delete relevantPointsFilter;
-        relevantPointsFilter = NULL;
+        delete condenseDatasetFilter;
+        condenseDatasetFilter = NULL;
     }
     if (ghostZoneAndFacelistFilter != NULL)
     {
@@ -613,6 +613,9 @@ avtPlot::CombinedExecute(avtDataObject_p input, avtPipelineSpecification_p spec,
 //    Added code to smooth after the facelist filter if the subclass
 //    requests it.
 //
+//    Hank Childs, Fri Jul 25 21:21:08 PDT 2003
+//    Rename relevantPointsFilter to condenseDatasetFilter.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -646,14 +649,8 @@ avtPlot::ReduceGeometry(avtDataObject_p curDS)
         rv = ghostZoneAndFacelistFilter->GetOutput();
     }
 
-    //
-    // Only send the points over that are used in rendering.
-    //
-    if (rv->GetInfo().GetAttributes().GetTopologicalDimension() != 0)
-    {
-        relevantPointsFilter->SetInput(rv);
-        rv = relevantPointsFilter->GetOutput();
-    }
+    condenseDatasetFilter->SetInput(rv);
+    rv = condenseDatasetFilter->GetOutput();
 
     //
     // Only smooth here if the derived plot type tells us to.
@@ -974,7 +971,7 @@ avtPlot::GetDecorationsMapper()
 void
 avtPlot::ReleaseData(void)
 {
-    relevantPointsFilter->ReleaseData();
+    condenseDatasetFilter->ReleaseData();
     ghostZoneAndFacelistFilter->ReleaseData();
     compactTreeFilter->ReleaseData();
     currentExtentFilter->ReleaseData();

@@ -2,15 +2,12 @@
 #define SPLASHSCREEN_H
 
 #include <qframe.h>
-#include <SimpleObserver.h>
 #include <vector>
 
 // Forward declarations.
 class QLabel;
 class QPushButton;
 class QProgressBar;
-class SplashScreenAttributes;
-class AppearanceAttributes;
 class QPainter;
 class QTimer;
 
@@ -29,27 +26,25 @@ class QTimer;
 //   Brad Whitlock, Thu Sep 6 16:35:18 PST 2001
 //   Modified the widget so it observes two subjects.
 //
+//   Brad Whitlock, Wed Jun 18 17:53:09 PST 2003
+//   I changed this class so it is a simple widget.
+//
 // ****************************************************************************
 
-class SplashScreen : public QFrame, public SimpleObserver
+class SplashScreen : public QFrame
 {
     Q_OBJECT
 public:
-    SplashScreen(const char *name = NULL, bool allowShow=true);
+    SplashScreen(bool cyclePictures = false, const char *name = 0);
     ~SplashScreen();
 
-    virtual void Update(Subject *);
-    virtual void SubjectRemoved(Subject *);
-
-    void ConnectSplashScreenAtts(SplashScreenAttributes *atts);
-    void ConnectAppearanceAtts(AppearanceAttributes *atts);
+    void Progress(const char *msg, int progress);
+    void SetDisplayAsSplashScreen(bool mode);
+    void About();
 public slots:
-    void hideSelf();
+    virtual void show();
+    virtual void hide();
     void nextPicture();
-protected:
-    void DropShadowText(QPainter*, int, int, QString);
-    void SetDisplayMode(bool);
-    void CustomizeAppearance();
 protected:
     QLabel                 *pictureLabel;
     std::vector<QPixmap>   pictures;
@@ -59,10 +54,6 @@ protected:
     QLabel                 *text;
     QProgressBar           *progress;
     QPushButton            *dismissButton;
-    bool                   allowShow;
-
-    SplashScreenAttributes *splashAtts;
-    AppearanceAttributes   *appearanceAtts;
 };
 
 #endif

@@ -176,7 +176,9 @@ Xfer::Remove(AttributeSubject *subject)
 // Creation:   Thu Jul 13 11:21:40 PDT 2000
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Jul 25 12:16:17 PDT 2003
+//   Added debug coding.
+//
 // ****************************************************************************
 
 void
@@ -189,7 +191,12 @@ Xfer::Update(Subject *TheChangedSubject)
 
     // Write out the subject's guido and message size.
     output->WriteInt(subject->GetGuido());
-    output->WriteInt(subject->CalculateMessageSize(*output));
+    int sz = subject->CalculateMessageSize(*output);
+    output->WriteInt(sz);
+
+    debug5 << "Xfer::Update: Sending: opcode=" << subject->GetGuido()
+           << ", len=" << sz
+           << ", name=" << subject->TypeName().c_str() << endl;
 
     // Write the things about the subject that have changed onto the
     // output connection and flush it out to make sure it's sent.
@@ -333,6 +340,10 @@ Xfer::ReadPendingMessages()
 //    Jeremy Meredith, Tue Mar  4 13:10:25 PST 2003
 //    Added length to the new buffer because MPIXfer needs it.
 //
+//    Brad Whitlock, Fri Jul 25 12:14:56 PDT 2003
+//    Added debug messages and added code to skip unknown opcodes so we
+//    don't hang as easily if the protocol gets messed up somehow.
+//
 // ****************************************************************************
 
 void
@@ -348,10 +359,16 @@ Xfer::Process()
         bufferedInput.ReadInt(&curOpcode);
         bufferedInput.ReadInt(&curLength);
 
+        bool bytesNeedToBeSkipped = true;
         if(curOpcode < subjectList.size())
         {
             if(subjectList[curOpcode])
             {
+                debug5 << "Xfer::Process: Opcode=" << curOpcode
+                       << ", len=" << curLength
+                       << ", type="
+                       << subjectList[curOpcode]->TypeName().c_str() << endl;
+
                 // Read the object into its local copy.
                 subjectList[curOpcode]->Read(bufferedInput);
 
@@ -359,7 +376,18 @@ Xfer::Process()
                 // it gets them while processing the Notify.
                 SetUpdate(false);
                 subjectList[curOpcode]->Notify();
+                bytesNeedToBeSkipped = false;
             }
+        }
+
+        if(bytesNeedToBeSkipped)
+        {
+            debug1 << "Xfer::Process: Opcode " << curOpcode
+                   << " is unknown! Skipping " << curLength << " bytes."
+                   << endl;
+            unsigned char uchar;
+            for(int i = 0; i < curLength; ++i)
+                bufferedInput.Read(&uchar);
         }
     }
 }
