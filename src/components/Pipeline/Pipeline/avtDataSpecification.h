@@ -108,6 +108,9 @@ typedef ref_ptr<avtDataSpecification> avtDataSpecification_p;
 //    Hank Childs, Tue Aug 10 13:47:48 PDT 2004
 //    Added maintainOriginalConnectivity.
 //
+//    Hank Childs, Thu Sep 23 09:23:01 PDT 2004
+//    Added support for global ids.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataSpecification
@@ -186,6 +189,20 @@ class PIPELINE_API avtDataSpecification
     void                         TurnNodeNumbersOff(void) 
                                      { needNodes = false; };
 
+    bool                         NeedGlobalZoneNumbers(void) 
+                                     { return needGlobalZones; };
+    void                         TurnGlobalZoneNumbersOn(void) 
+                                     { needGlobalZones = true; };
+    void                         TurnGlobalZoneNumbersOff(void) 
+                                     { needGlobalZones = false; };
+
+    bool                         NeedGlobalNodeNumbers(void) 
+                                     { return needGlobalNodes; };
+    void                         TurnGlobalNodeNumbersOn(void) 
+                                     { needGlobalNodes = true; };
+    void                         TurnGlobalNodeNumbersOff(void) 
+                                     { needGlobalNodes = false; };
+
     bool                         MayRequireZones(void) 
                                      { return mayRequireZones; };
     void                         SetMayRequireZones(bool val) 
@@ -255,6 +272,8 @@ class PIPELINE_API avtDataSpecification
 
     bool                         needZones;
     bool                         needNodes;
+    bool                         needGlobalZones;
+    bool                         needGlobalNodes;
     bool                         mayRequireZones;
     bool                         mayRequireNodes;
     bool                         mustDoMIR;

@@ -96,7 +96,12 @@ PickAttributes::PrintSelf(ostream &os)
     {
         os << "Zone " ;
         if (showZoneId)
-            os<< elementNumber << " ";
+        {
+            if (!elementIsGhost)
+                os<< elementNumber << " ";
+            else 
+                os<< elementNumber << "(ghost) ";
+        }
         if (showZoneDomainLogicalCoords && !dzoneCoords.empty())
         {
             os << "d" << dzoneCoords[0].c_str();
@@ -111,7 +116,12 @@ PickAttributes::PrintSelf(ostream &os)
     {
         os << "Node ";
         if (showNodeId)
-            os << elementNumber << " ";
+        {
+            if (!elementIsGhost)
+                os << elementNumber << " ";
+            else 
+                os << elementNumber << "(ghost) ";
+        }
         if (showNodePhysicalCoords && !pnodeCoords.empty())
         {
             os << pnodeCoords[0].c_str() ;
@@ -142,7 +152,12 @@ PickAttributes::PrintSelf(ostream &os)
         for (i = 0; i < incidentElements.size(); i++)
         {
             if (showId)
-                os << incidentElements[i] << "  ";
+            {
+                if (ghosts.size() > 0 && ghosts[i])
+                    os << incidentElements[i] << "(ghost)  ";
+                else 
+                    os << incidentElements[i] << "  ";
+            }
             if (pickType == Zone || pickType == DomainZone)
             {
                 if (showNodePhysicalCoords && !pnodeCoords.empty())
@@ -337,7 +352,10 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
             os += "Zone:  ";
         if (showZoneId)
         {
-            SNPRINTF(buff, 512, "%d", elementNumber);
+            if (!elementIsGhost)
+                SNPRINTF(buff, 512, "%d", elementNumber);
+            else 
+                SNPRINTF(buff, 512, "%d(ghost)", elementNumber);
             os += buff;
         }
         if (showZoneDomainLogicalCoords & !dzoneCoords.empty()) 
@@ -359,7 +377,10 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
             os += "Node:  ";
         if (showNodeId)
         {
-            SNPRINTF(buff, 512, "%d", elementNumber);
+            if (!elementIsGhost)
+                SNPRINTF(buff, 512, "%d", elementNumber);
+            else 
+                SNPRINTF(buff, 512, "%d(ghost)", elementNumber);
             os += buff;
         }
         if (showNodePhysicalCoords & !pnodeCoords.empty()) 
@@ -406,7 +427,10 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
         {
             if (showId)
             {
-                SNPRINTF(buff, 512, "%d  ", incidentElements[i]);
+                if (ghosts.size() > 0 && ghosts[i])
+                    SNPRINTF(buff, 512, "%d(ghost)  ", incidentElements[i]);
+                else 
+                    SNPRINTF(buff, 512, "%d  ", incidentElements[i]);
                 os += buff; 
             }
             if (pickType == Zone || pickType == DomainZone)
@@ -564,6 +588,12 @@ PickAttributes::PrepareForNewPick()
 
     blockPieceName = "";
     groupPieceName = "";
+
+    if (!ghosts.empty())
+        ghosts.clear();
+
+    includeGhosts = false;
+    elementIsGhost = false;
 }
 
 Function: SetFromNode
@@ -850,7 +880,10 @@ PickAttributes::CreateConciseOutputString(std::string &os, bool withLetter)
             os += "Zone: ";
         if (showZoneId)
         {
-            SNPRINTF(buff, 512, "%d ", elementNumber);
+            if (!elementIsGhost)
+                SNPRINTF(buff, 512, "%d ", elementNumber);
+            else 
+                SNPRINTF(buff, 512, "%d(ghost) ", elementNumber);
             os += buff;
         }
         if (showZoneDomainLogicalCoords & !dzoneCoords.empty()) 
@@ -870,7 +903,10 @@ PickAttributes::CreateConciseOutputString(std::string &os, bool withLetter)
             os += "Node: ";
         if (showNodeId)
         {
-            SNPRINTF(buff, 512, "%d ", elementNumber);
+            if (!elementIsGhost)
+                SNPRINTF(buff, 512, "%d ", elementNumber);
+            else 
+                SNPRINTF(buff, 512, "%d(ghost) ", elementNumber);
             os += buff;
         }
         if (showNodePhysicalCoords & !pnodeCoords.empty()) 
@@ -907,7 +943,10 @@ PickAttributes::CreateConciseOutputString(std::string &os, bool withLetter)
         {
             if (showId)
             {
-                SNPRINTF(buff, 512, "%d ", incidentElements[i]);
+                if (ghosts.size() > 0 && ghosts[i])
+                    SNPRINTF(buff, 512, "%d(ghost) ", incidentElements[i]);
+                else 
+                    SNPRINTF(buff, 512, "%d ", incidentElements[i]);
                 os += buff; 
             }
             if (pickType == Zone || pickType == DomainZone)

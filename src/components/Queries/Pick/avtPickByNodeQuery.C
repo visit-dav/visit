@@ -65,6 +65,10 @@ avtPickByNodeQuery::~avtPickByNodeQuery()
 //    Kathleen Bonnell, Thu Jul  8 16:42:05 PDT 2004
 //    Changed the way that nodeid is modified when accounting for ghost zones.
 //
+//    Kathleen Bonnell, Thu Sep 23 17:38:15 PDT 2004 
+//    Removed 'needRealId' test, no longer needed (we are reporting ghost
+//    zones when ghostType == AVT_HAS_GHOSTS). 
+//
 // ****************************************************************************
 
 void
@@ -83,20 +87,6 @@ avtPickByNodeQuery::Execute(vtkDataSet *ds, const int dom)
     {
         EXCEPTION2(BadNodeException, nodeid, maxEls);
     } 
-
-    int type = ds->GetDataObjectType();
-
-    bool needRealId = ghostType == AVT_HAS_GHOSTS &&
-            (type == VTK_STRUCTURED_GRID || type == VTK_RECTILINEAR_GRID || 
-             ds->GetFieldData()->GetArray("vtkOriginalDimensions") != NULL );
-
-    if (needRealId)
-    {
-        // Need to convert a nodeid that is Non-Ghost relative
-        // to a nodeid that is ghost-relative.
-        nodeid = vtkVisItUtility::NodeGhostIdFromNonGhost(ds, nodeid);
-        pickAtts.SetElementNumber(nodeid);
-    }
 
     if (!pickAtts.GetMatSelected() && ghostType != AVT_CREATED_GHOSTS)
     {
@@ -119,13 +109,6 @@ avtPickByNodeQuery::Execute(vtkDataSet *ds, const int dom)
             return; 
         }
     }
-
-    //
-    // If a material-var is requested it may need the real ids -- if
-    // ghost zones were not present when a material-var is requested.
-    //
-    if (needRealId && ghostType == AVT_CREATED_GHOSTS) 
-        SetRealIds(ds);
 
     //
     //  Allow the database to add any missing information.
@@ -159,19 +142,6 @@ avtPickByNodeQuery::Execute(vtkDataSet *ds, const int dom)
     else
     {
         pickAtts.SetDomain(dom+blockOrigin);
-    }
-
-    //
-    // The queryable source may have added more info, so call this again. 
-    //
-    if (needRealId)
-    {
-        SetRealIds(ds);
-        //
-        // Put the real ids in the correct spot for output.
-        //
-        pickAtts.SetElementNumber(pickAtts.GetRealElementNumber());
-        pickAtts.SetIncidentElements(pickAtts.GetRealIncidentElements());
     }
 
     //

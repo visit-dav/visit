@@ -1135,6 +1135,10 @@ avtDatabase::GetFileListFromTextFile(const char *textfile,
 //    If a scalar var derived from an expression already has info, it 
 //    probably isn't a mixed var, so go ahead and skip it. 
 //    
+//    Kathleen Bonnell, Thu Sep 23 17:48:37 PDT 2004 
+//    Added args to QueryZones and QueryNodes, to support ghost-element 
+//    retrieval if requested. 
+//
 // ****************************************************************************
 
 void               
@@ -1147,6 +1151,7 @@ avtDatabase::Query(PickAttributes *pa)
                       pa->GetPickType() == PickAttributes::DomainZone;
     float *PPT, *CPT, ppt[3], cpt[3];
     std::vector<int> incEls  = pa->GetIncidentElements();
+    std::vector<int> ghostEls  = pa->GetGhosts();
     std::vector<std::string> pnodeCoords  = pa->GetPnodeCoords();
     std::vector<std::string> dnodeCoords  = pa->GetDnodeCoords();
     std::vector<std::string> bnodeCoords  = pa->GetBnodeCoords();
@@ -1183,20 +1188,24 @@ avtDatabase::Query(PickAttributes *pa)
         bool physicalNodes = pa->GetShowNodePhysicalCoords();
         bool logicalDZones = pa->GetShowZoneDomainLogicalCoords(); 
         bool logicalBZones = pa->GetShowZoneBlockLogicalCoords();
+        bool includeGhosts = pa->GetIncludeGhosts();
+        bool elIsGhost     = pa->GetElementIsGhost();
 
         if (zonePick)
         {
-            success = QueryNodes(vName, foundDomain, foundEl, ts, incEls, ppt, 
+            success = QueryNodes(vName, foundDomain, foundEl, elIsGhost, ts, 
+                          incEls, ghostEls, includeGhosts, ppt, 
                           pa->GetDimension(), physicalNodes, logicalDNodes,
                           logicalBNodes, pnodeCoords, dnodeCoords, bnodeCoords,
                           logicalDZones, logicalBZones, dzoneCoords, bzoneCoords);
         }
         else       
         {
-            success = QueryZones(vName, foundDomain, foundEl, ts, incEls, cpt,
-                          pa->GetDimension(), physicalNodes, logicalDNodes,
-                          logicalBNodes, pnodeCoords, dnodeCoords, bnodeCoords,
-                          logicalDZones, logicalBZones, dzoneCoords, bzoneCoords);
+            success = QueryZones(vName, foundDomain, foundEl, elIsGhost, ts, 
+                          incEls, ghostEls, includeGhosts, cpt, pa->GetDimension(), 
+                          physicalNodes, logicalDNodes, logicalBNodes, pnodeCoords, 
+                          dnodeCoords, bnodeCoords, logicalDZones, logicalBZones, 
+                          dzoneCoords, bzoneCoords);
             if (success)
                 pa->SetElementNumber(foundEl);
         }
@@ -1204,6 +1213,8 @@ avtDatabase::Query(PickAttributes *pa)
         {
             pa->SetFulfilled(true);
             pa->SetIncidentElements(incEls);
+            pa->SetGhosts(ghostEls);
+            pa->SetElementIsGhost(elIsGhost);
             pa->SetPnodeCoords(pnodeCoords);
             pa->SetDnodeCoords(dnodeCoords);
             pa->SetBnodeCoords(bnodeCoords);

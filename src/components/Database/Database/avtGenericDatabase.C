@@ -256,6 +256,9 @@ avtGenericDatabase::SetDatabaseMetaData(avtDatabaseMetaData *md, int timeState)
 //    encounters an error during the read phase, they will are return
 //    together.
 //
+//    Hank Childs, Thu Sep 23 09:28:58 PDT 2004
+//    Add support for getting global ids.
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -275,7 +278,6 @@ avtGenericDatabase::GetOutput(avtDataSpecification_p spec,
     vector<int> domains, allDomains;
     trav.GetDomainList(domains);
     trav.GetDomainListAllProcs(allDomains);
-
 
     //
     // Set up a data tree for each of the domains.
@@ -395,6 +397,22 @@ avtGenericDatabase::GetOutput(avtDataSpecification_p spec,
         avtDatabaseMetaData *md = GetMetaData(timeStep);
         string meshname = md->MeshForVar(spec->GetVariable());
         GetMetaData(timeStep)->SetContainsOriginalCells(meshname, true);
+    }
+
+    //
+    // Add global node numbers if requested.
+    //
+    if (spec->NeedGlobalNodeNumbers())
+    {
+        CreateGlobalNodes(datasetCollection, domains, src, spec);
+    }
+
+    //
+    // Add zone numbers if requested.
+    //
+    if (spec->NeedGlobalZoneNumbers())
+    {
+        CreateGlobalZones(datasetCollection, domains, src, spec);
     }
 
     //
@@ -2628,6 +2646,11 @@ avtGenericDatabase::GetSpecies(int dom, const char *var, int ts)
 //  Programmer: Mark C. Miller 
 //  Creation:   August 5, 2004
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Sep 23 09:48:24 PDT 2004
+//    Name the global node ids array.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -2651,7 +2674,10 @@ avtGenericDatabase::GetGlobalNodeIds(int dom, const char *var, int ts)
     else if (gnodeIds.nList == 1)
     {
         md->SetContainsGlobalNodeIds(var, true);
-        return (vtkDataArray *) *(gnodeIds.list[0]);
+        vtkDataArray *arr = (vtkDataArray *) *(gnodeIds.list[0]);
+        if (arr != NULL)
+            arr->SetName("avtGlobalNodeNumbers");
+        return arr;
     }
     else
     {
@@ -2674,6 +2700,11 @@ avtGenericDatabase::GetGlobalNodeIds(int dom, const char *var, int ts)
 //
 //  Programmer: Mark C. Miller 
 //  Creation:   August 5, 2004
+//
+//  Modifications:
+//
+//    Hank Childs, Thu Sep 23 09:48:24 PDT 2004
+//    Name the global zone ids array.
 //
 // ****************************************************************************
 
@@ -2698,7 +2729,10 @@ avtGenericDatabase::GetGlobalZoneIds(int dom, const char *var, int ts)
     else if (gzoneIds.nList == 1)
     {
         md->SetContainsGlobalZoneIds(var, true);
-        return (vtkDataArray *) *(gzoneIds.list[0]);
+        vtkDataArray *arr = (vtkDataArray *) *(gzoneIds.list[0]);
+        if (arr != NULL)
+            arr->SetName("avtGlobalZoneNumbers");
+        return arr;
     }
     else
     {
@@ -5262,6 +5296,64 @@ avtGenericDatabase::MaterialSelect(avtDatasetCollection &ds,
 
 
 // ****************************************************************************
+//  Method: avtGenericDatabase::CreateGlobalZones
+//
+//  Purpose:
+//    Create global zones array. 
+//
+//  Programmer:   Hank Childs
+//  Creation:     September 23, 2004
+//
+// ****************************************************************************
+
+void
+avtGenericDatabase::CreateGlobalZones(avtDatasetCollection &ds, 
+                              vector<int> &domains, avtSourceFromDatabase *src,
+                              avtDataSpecification_p &spec)
+{
+    char  progressString[1024] = "Creating Global Zones Array";
+    src->DatabaseProgress(0, 0, progressString);
+    for (int i = 0 ; i < ds.GetNDomains() ; i++)
+    {
+        vtkDataArray *arr = GetGlobalZoneIds(domains[i], spec->GetVariable(),
+                                             spec->GetTimestep());
+        ds.GetDataset(i, 0)->GetCellData()->AddArray(arr);
+        src->DatabaseProgress(i, ds.GetNDomains(), progressString);
+    }
+    src->DatabaseProgress(1, 0, progressString);
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::CreateGlobalNodes
+//
+//  Purpose:
+//    Create global nodes array. 
+//
+//  Programmer:   Hank Childs 
+//  Creation:     September 23, 2004
+//
+// ****************************************************************************
+
+void
+avtGenericDatabase::CreateGlobalNodes(avtDatasetCollection &ds, 
+                              vector<int> &domains, avtSourceFromDatabase *src,
+                              avtDataSpecification_p &spec)
+{
+    char  progressString[1024] = "Creating Global Nodes Array";
+    src->DatabaseProgress(0, 0, progressString);
+    for (int i = 0 ; i < ds.GetNDomains() ; i++)
+    {
+        vtkDataArray *arr = GetGlobalNodeIds(domains[i], spec->GetVariable(),
+                                             spec->GetTimestep());
+        ds.GetDataset(i, 0)->GetPointData()->AddArray(arr);
+        src->DatabaseProgress(i, ds.GetNDomains(), progressString);
+    }
+    src->DatabaseProgress(1, 0, progressString);
+}
+
+
+// ****************************************************************************
 //  Method: avtGenericDatabase::CreateOriginalZones
 //
 //  Purpose:
@@ -6241,8 +6333,10 @@ avtGenericDatabase::QueryMaterial(const std::string &varName, const int dom,
 
 bool
 avtGenericDatabase::QueryNodes(const std::string &varName, const int dom, 
-                               const int zone, const int ts, 
-                               std::vector<int> &nodes, float ppt[3],
+                               const int zone, bool &zoneIsGhost, 
+                               const int ts, std::vector<int> &nodes, 
+                               std::vector<int> &ghostNodes, 
+                               const bool includeGhosts, float ppt[3],
                                const int dim, const bool physicalNodes, 
                                const bool logicalDNodes, const bool logicalBNodes,
                                std::vector<std::string> &pnCoords,
@@ -6263,6 +6357,23 @@ avtGenericDatabase::QueryNodes(const std::string &varName, const int dom,
         int ijk[3];
         char buff[80];
         int type = ds->GetDataObjectType();
+        unsigned char *gn = NULL;
+        unsigned char *gz = NULL;
+        if (includeGhosts)
+        {
+            vtkUnsignedCharArray *gzone = 
+               (vtkUnsignedCharArray*) ds->GetCellData()->GetArray("avtGhostZones");
+            if (gzone)
+            {
+                gz = gzone->GetPointer(0);
+                if (gz[zone])
+                    zoneIsGhost = true;
+            }
+            vtkUnsignedCharArray *gnode = 
+               (vtkUnsignedCharArray*) ds->GetPointData()->GetArray("avtGhostNodes");
+            if (gnode)
+                gn = gnode->GetPointer(0);
+        }
         if (logicalDZones && (type == VTK_RECTILINEAR_GRID ||
                              type == VTK_STRUCTURED_GRID ))
         {
@@ -6291,9 +6402,42 @@ avtGenericDatabase::QueryNodes(const std::string &varName, const int dom,
             }
             bzCoords.push_back(buff);
         }
+        vtkIdList *cells = vtkIdList::New();
+        int nGnodes = 0;
         for (int i = 0; i < ptIds->GetNumberOfIds(); i++)
         {
-            nodes.push_back(ptIds->GetId(i));
+            vtkIdType id = ptIds->GetId(i);
+            if (includeGhosts) 
+            {
+                if (gn && gn[id])
+                {
+                    ghostNodes.push_back(1);
+                    nGnodes++;
+                }
+                else if (gz)
+                {
+                    int nGhosts = 0;
+                    ds->GetPointCells(id, cells);
+                    for (int j = 0; j < cells->GetNumberOfIds(); j++)
+                    {
+                        nGhosts += (int)gz[cells->GetId(j)];
+                    }
+                    if (nGhosts > 0 && nGhosts == cells->GetNumberOfIds())
+                    {
+                        ghostNodes.push_back(1);
+                        nGnodes++;
+                    }
+                    else 
+                    {
+                        ghostNodes.push_back(0);
+                    }
+                }
+                else 
+                {
+                    ghostNodes.push_back(0);
+                }
+            }
+            nodes.push_back(id);
             if (logicalDNodes && (type == VTK_RECTILINEAR_GRID ||
                                  type == VTK_STRUCTURED_GRID ))
             {
@@ -6338,6 +6482,8 @@ avtGenericDatabase::QueryNodes(const std::string &varName, const int dom,
                 pnCoords.push_back(buff);
             }
         }
+        cells->Delete();
+        zoneIsGhost |= (nGnodes > 0 && nGnodes == ptIds->GetNumberOfIds());
         ptIds->Delete();
         if (nodes.size() == 1) // point mesh
         {
@@ -6486,11 +6632,16 @@ avtGenericDatabase::QueryMesh(const std::string &varName, const int ts,
 //    Hank Childs, Fri Aug 27 16:16:52 PDT 2004
 //    Rename ghost data arrays.
 //
+//    Kathleen Bonnell, Thu Sep 23 17:48:37 PDT 2004 
+//    Added args to support ghost-zone retrieval if requested.
+//
 // ****************************************************************************
 
 bool
 avtGenericDatabase::QueryZones(const string &varName, const int dom, 
-                               int &foundEl, const int ts, vector<int> &zones, 
+                               int &foundEl, bool &elIsGhost, 
+                               const int ts, vector<int> &zones, 
+                               vector<int> &ghostZ, bool includeGhosts,
                                float ppt[3], const int dimension,
                                const bool physicalNodes, 
                                const bool logicalDNodes, 
@@ -6579,11 +6730,24 @@ avtGenericDatabase::QueryZones(const string &varName, const int dom,
                 unsigned char *ghosts = NULL;
                 if (ghostArray)
                     ghosts = ghostArray->GetPointer(0);
+                int nGhosts = 0;
                 idptr = ids->GetPointer(0);
                 for (int i = 0;i < nCells; i++)
                 {
                     if (ghosts && ghosts[idptr[i]] == 1)
-                        continue;
+                    {
+                        if (includeGhosts)
+                        {
+                            ghostZ.push_back(1);
+                            nGhosts++;
+                        }
+                        else
+                            continue; 
+                    }
+                    else if (includeGhosts)
+                    {
+                        ghostZ.push_back(0);
+                    }
                     zones.push_back(idptr[i]);
 
                     if (logicalDZones && (type == VTK_STRUCTURED_GRID || 
@@ -6616,6 +6780,7 @@ avtGenericDatabase::QueryZones(const string &varName, const int dom,
                         }
                         bzoneCoords.push_back(buff);
                     }
+                    elIsGhost |= (nGhosts == nCells);
                 }
                 rv = true;
             }

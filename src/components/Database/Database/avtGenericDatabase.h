@@ -194,6 +194,13 @@ class     PickVarInfo;
 //    Hank Childs, Fri Aug 13 15:57:29 PDT 2004
 //    Beef up ghost data communication routines.
 //
+//    Hank Childs, Thu Sep 23 09:48:24 PDT 2004
+//    Add more methods for global node and zone ids.
+//
+//    Kathleen Bonnell, Thu Sep 23 17:48:37 PDT 2004 
+//    Added args to QueryZones and QueryNodes, to support ghost-element 
+//    indication. 
+//
 // ****************************************************************************
 
 class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
@@ -221,7 +228,7 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
 
     virtual bool               FindElementForPoint(const char *, const int, 
                                     const int, const char *, float[3], int &);
-    virtual void                GetDomainName(const std::string &, const int ts,
+    virtual void               GetDomainName(const std::string &, const int ts,
                                     const int dom, std::string &);
 
   protected:
@@ -341,6 +348,14 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
     void                       CreateOriginalNodes(avtDatasetCollection &,
                                                    std::vector<int> &, 
                                                    avtSourceFromDatabase *);
+    void                       CreateGlobalZones(avtDatasetCollection &,
+                                                   std::vector<int> &, 
+                                                   avtSourceFromDatabase *,
+                                                   avtDataSpecification_p &);
+    void                       CreateGlobalNodes(avtDatasetCollection &,
+                                                   std::vector<int> &, 
+                                                   avtSourceFromDatabase *,
+                                                   avtDataSpecification_p &);
     void                       CreateStructuredIndices(avtDatasetCollection &,
                                                        avtSourceFromDatabase*);
     void                       UpdateInternalState(int);
@@ -370,8 +385,9 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
                                             const std::vector<int> &, 
                                             PickVarInfo &, const bool);
     virtual bool               QueryNodes(const std::string &, const int, 
-                                          const int, const int, 
-                                          std::vector<int> &, float [3], 
+                                          const int, bool &, const int, 
+                                          std::vector<int> &, std::vector<int> &,
+                                          const bool, float [3], 
                                           const int, const bool, const bool,
                                           const bool, std::vector<std::string> &,
                                           std::vector<std::string> &,
@@ -384,7 +400,8 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
                                          std::string &, const bool);
 
     virtual bool               QueryZones(const std::string&, const int, int &,
-                                          const int, std::vector<int> &, 
+                                          bool &, const int, std::vector<int> &, 
+                                          std::vector<int> &, const bool,
                                           float [3], const int, const bool, 
                                           const bool, const bool, 
                                           std::vector<std::string> &,

@@ -68,6 +68,13 @@
 #    I changed the default for append to be true, and replaced the -a
 #    option with -r to make it false.
 #
+#    Eric Brugger, Thu Sep 23 13:41:22 PDT 2004
+#    I corrected a bug where the usage logging flag in the visit script
+#    doesn't get set when logging is enabled.  The sed command that made
+#    the substitution assumed a certain number of spaces in the line,
+#    which changed on a recent update.  The current sed command is more
+#    forgiving of extra whitespace.
+#
 #-----------------------------------------------------------------------
 
 set Compress = COMPRESS
@@ -237,7 +244,7 @@ endif
 if ($logging == false) then
    cp distribution/visit/bin/visit $dir/bin/visit+
 else
-   sed -e "s/logging      = 0/logging      = 1/" distribution/visit/bin/visit > $dir/bin/visit+
+   sed -e "s/logging[ \t]*= 0/logging        = 1/" distribution/visit/bin/visit > $dir/bin/visit+
 endif
 
 if (-e $dir/$version+)           rm -rf $dir/$version+

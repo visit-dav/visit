@@ -173,6 +173,10 @@ avtContourFilter::~avtContourFilter()
 //    Hank Childs, Wed Aug 11 08:53:57 PDT 2004
 //    Make sure that we request ghost zones.
 //
+//    Hank Childs, Wed Sep 22 16:40:06 PDT 2004
+//    Refine our ghost zone request a bit -- only request when we have a zonal
+//    quantity.
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -185,11 +189,23 @@ avtContourFilter::PerformRestriction(avtPipelineSpecification_p in_spec)
     if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() == 3)
         spec->GetDataSpecification()->SetNeedValidFaceConnectivity(true);
 
+    const char *varname = NULL;
+    if (atts.GetVariable() != "default")
+        varname = atts.GetVariable().c_str();
+    else 
+        varname = spec->GetDataSpecification()->GetVariable();
+
     //
     // We will need the ghost zones so that we can interpolate along domain
     // boundaries and get no cracks in our isosurface.
     //
-    spec->GetDataSpecification()->SetDesiredGhostDataType(GHOST_ZONE_DATA);
+    avtDataAttributes &in_atts = GetInput()->GetInfo().GetAttributes();
+    bool skipGhost = false;
+    if (in_atts.ValidVariable(varname) && 
+        in_atts.GetCentering(varname) == AVT_NODECENT)
+        skipGhost = true;
+    if (!skipGhost)
+        spec->GetDataSpecification()->SetDesiredGhostDataType(GHOST_ZONE_DATA);
 
     if (atts.GetContourMethod() == ContourOpAttributes::Level ||
         atts.GetContourMethod() == ContourOpAttributes::Percent)
@@ -200,12 +216,6 @@ avtContourFilter::PerformRestriction(avtPipelineSpecification_p in_spec)
         // are.
         //
         double extents[2]; 
-        const char *varname = NULL;
-        if (atts.GetVariable() != "default")
-            varname = atts.GetVariable().c_str();
-        else
-            varname = activeVariable;
-
         if (TryDataExtents(extents, varname))
         {
             SetIsoValues(extents[0], extents[1]);

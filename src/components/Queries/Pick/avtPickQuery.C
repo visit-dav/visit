@@ -417,80 +417,6 @@ avtPickQuery::DeterminePickedNode(vtkDataSet *ds, int &foundEl)
 
 
 // ****************************************************************************
-//  Method: avtPickQuery::SetRealIds
-//
-//  Purpose:
-//    Converts node/zone numbers to the 'correct' ids for the original mesh
-//    with no-ghost zones. 
-//
-//  Arguments:
-//    ds          The dataset to retrieve information from.
-//
-//  Programmer: Kathleen Bonnell  
-//  Creation:   June 27, 2003 
-//
-//  Modifications:
-//    Kathleen Bonnell, Thu Sep 18 07:38:32 PDT 2003
-//    Store the results in 'realElement' and 'realIncidentElements'.
-//    
-//    Kathleen Bonnell, Thu Nov 20 15:06:49 PST 2003 
-//    Swapped 'VarIsMaterial' with check of varType. 
-//
-//    Brad Whitlock, Thu Jul 29 17:25:40 PST 2004
-//    I made it use SNPRINTF.
-//
-// ****************************************************************************
-
-void
-avtPickQuery::SetRealIds(vtkDataSet *ds)
-{
-    int foundEl= pickAtts.GetElementNumber();
-    intVector incEls = pickAtts.GetIncidentElements();
-
-    int i, j; 
-    bool forCell = pickAtts.GetPickType() == PickAttributes::Zone || 
-                   pickAtts.GetPickType() == PickAttributes::DomainZone;
-    char fString[20], tmp[20];
-
-    stringVector elStrings;
-    foundEl = vtkVisItUtility::CalculateRealID(foundEl, forCell, ds);
-    SNPRINTF(fString, 20, "(%d)", foundEl);
-    for (i = 0; i < incEls.size(); i++)
-    {
-        incEls[i] = vtkVisItUtility::CalculateRealID(incEls[i], !forCell, ds);
-        SNPRINTF(tmp, 20, "(%d)", incEls[i]);
-        elStrings.push_back(tmp);
-    }
-
-    // need to change the zone/node names stored in all PickVarInfo
-    int numVars = pickAtts.GetNumPickVarInfos();
-    for (i = 0; i < numVars; i++)
-    {
-        if (pickAtts.GetPickVarInfo(i).GetVariableType() == "material")
-            continue;
-
-        stringVector &names = pickAtts.GetPickVarInfo(i).GetNames();
-        if (names.size() == 0) 
-            continue;
-        if (names.size() == incEls.size())
-        {
-            for (j = 0; j < names.size(); j++)
-            {
-                names[j] = elStrings[j]; 
-            }
-        }
-        else 
-        {
-            names[0] = fString;
-        }
-    }
-   
-    pickAtts.SetRealElementNumber(foundEl);
-    pickAtts.SetRealIncidentElements(incEls);
-}
-
- 
-// ****************************************************************************
 //  Method: avtPickQuery::GetNodeCoords
 //
 //  Purpose:
@@ -898,6 +824,9 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds, const int findElement,
 //    Brad Whitlock, Fri Jul 30 08:58:27 PDT 2004
 //    Made it use SNPRINTF.
 //
+//    Kathleen Bonnell, Thu Sep 23 17:38:15 PDT 2004 
+//    Added logic to search for ghost nodes, if ghostType == AVT_HAS_GHOSTS. 
+//
 // ****************************************************************************
 
 bool
@@ -914,6 +843,7 @@ avtPickQuery::RetrieveNodes(vtkDataSet *ds, int zone)
     int type = ds->GetDataObjectType();
     bool success = true;
     ds->GetCellPoints(zone, ptIds);
+    intVector ghostNodes;
 
     if (ptIds->GetNumberOfIds() == 0)
     {
@@ -923,9 +853,65 @@ avtPickQuery::RetrieveNodes(vtkDataSet *ds, int zone)
     }
     else
     {
+        unsigned char *gNodes = NULL; 
+        unsigned char *gZones = NULL; 
+        vtkIdList *cells;
+        bool findGhosts = (ghostType == AVT_HAS_GHOSTS &&
+                         ((ds->GetPointData()->GetArray("avtGhostNodes") != NULL) ||
+                          (ds->GetCellData()->GetArray("avtGhostZones") != NULL)));
+        pickAtts.SetIncludeGhosts(findGhosts);
+        if (findGhosts)
+        {
+            vtkUnsignedCharArray *gn = 
+               (vtkUnsignedCharArray*)ds->GetPointData()->GetArray("avtGhostNodes");
+            if (gn)
+            {
+                gNodes = gn->GetPointer(0);
+            }
+            vtkUnsignedCharArray *gz = (vtkUnsignedCharArray*)
+                ds->GetCellData()->GetArray("avtGhostZones");
+            if (gz)
+            {
+                gZones = gz->GetPointer(0);
+                cells = vtkIdList::New();
+            }
+        }
+        
+        int nGnodes = 0; 
         for (int i = 0; i < ptIds->GetNumberOfIds(); i++)
         {
-            nodes.push_back(ptIds->GetId(i));
+            vtkIdType ptId = ptIds->GetId(i);
+            nodes.push_back(ptId);
+            if (findGhosts)
+            {
+                if (gNodes && gNodes[ptId])
+                {
+                    ghostNodes.push_back(1);
+                    nGnodes++;
+                }
+                else if (gZones)
+                {
+                    ds->GetPointCells(ptId, cells);
+                    int nGhosts = 0;
+                    for (int j = 0; j < cells->GetNumberOfIds(); j++)
+                    {
+                        nGhosts += (int)gZones[cells->GetId(j)]; 
+                    }
+                    if (nGhosts > 0 && nGhosts == cells->GetNumberOfIds())
+                    {
+                        ghostNodes.push_back(1);
+                        nGnodes++;
+                    }
+                    else 
+                    {
+                        ghostNodes.push_back(0);
+                    }
+                }
+                else 
+                {
+                    ghostNodes.push_back(0);
+                }
+            }
             if ((pickAtts.GetShowNodeDomainLogicalCoords() ||
                 pickAtts.GetShowNodeBlockLogicalCoords()) &&
                 (type == VTK_STRUCTURED_GRID || 
@@ -974,7 +960,6 @@ avtPickQuery::RetrieveNodes(vtkDataSet *ds, int zone)
                 pnodeCoords.push_back(buff);
             }
         }
-        ptIds->Delete();
 
         if (nodes.size() == 1) // point mesh
         {
@@ -990,6 +975,10 @@ avtPickQuery::RetrieveNodes(vtkDataSet *ds, int zone)
         pickAtts.SetPnodeCoords(pnodeCoords);
         pickAtts.SetDnodeCoords(dnodeCoords);
         pickAtts.SetBnodeCoords(bnodeCoords);
+        pickAtts.SetGhosts(ghostNodes);
+        pickAtts.SetElementIsGhost((gZones && gZones[zone]) ||
+            (nGnodes > 0 && nGnodes == ptIds->GetNumberOfIds()));
+        ptIds->Delete();
     }
     return success;
 }
@@ -1029,6 +1018,9 @@ avtPickQuery::RetrieveNodes(vtkDataSet *ds, int zone)
 //    Hank Childs, Fri Aug 27 16:54:45 PDT 2004
 //    Rename ghost data array.
 //
+//    Kathleen Bonnell, Thu Sep 23 17:38:15 PDT 2004 
+//    Added logic to search for ghost zones, if ghostType == AVT_HAS_GHOSTS. 
+//
 // ****************************************************************************
 
 bool
@@ -1036,6 +1028,7 @@ avtPickQuery::RetrieveZones(vtkDataSet *ds, int foundNode)
 {
     vtkIdList *cellIds = vtkIdList::New();
     intVector zones;
+    intVector ghostZones;
     stringVector dzoneCoords;
     stringVector bzoneCoords;
     ds->GetPointCells(foundNode, cellIds);
@@ -1056,13 +1049,34 @@ avtPickQuery::RetrieveZones(vtkDataSet *ds, int foundNode)
         ghostArray  = (vtkUnsignedCharArray *)ds->GetCellData()->
             GetArray("avtGhostZones");
         if (ghostArray)
+        {
             ghosts = ghostArray->GetPointer(0);
+            if (ghostType == AVT_HAS_GHOSTS)
+            {
+                pickAtts.SetIncludeGhosts(true);
+            }
+        }
 
         vtkIdType *cells = cellIds->GetPointer(0);
+        int nGhosts = 0;
         for (int i = 0; i < nCells; i++)
         {
             if (ghosts && ghosts[cells[i]] == 1)
-               continue;
+            {
+                if (ghostType == AVT_HAS_GHOSTS)
+                {
+                    ghostZones.push_back(1); 
+                    nGhosts++;
+                }
+                else
+                {
+                    continue;
+                }
+            }
+            else if (ghostType == AVT_HAS_GHOSTS)
+            {
+                ghostZones.push_back(0);
+            }
             zones.push_back(cells[i]);
             if ((pickAtts.GetShowZoneBlockLogicalCoords() ||
                  pickAtts.GetShowZoneDomainLogicalCoords()) &&
@@ -1103,9 +1117,12 @@ avtPickQuery::RetrieveZones(vtkDataSet *ds, int foundNode)
                 }
             }
         }
+        if (nGhosts == nCells)
+            pickAtts.SetElementIsGhost(true);
         pickAtts.SetIncidentElements(zones);
         pickAtts.SetDzoneCoords(dzoneCoords);
         pickAtts.SetBzoneCoords(bzoneCoords);
+        pickAtts.SetGhosts(ghostZones);
     }
     cellIds->Delete();
     return success;

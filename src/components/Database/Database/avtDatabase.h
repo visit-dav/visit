@@ -178,6 +178,10 @@ typedef struct {
 //    Added ability to clear the metadata and SIL caches.  This was needed
 //    for simulations.
 //
+//    Kathleen Bonnell, Thu Sep 23 17:48:37 PDT 2004 
+//    Added args to QueryZones and QueryNodes, to support ghost-element 
+//    indication. 
+//
 // ****************************************************************************
 
 class DATABASE_API avtDatabase
@@ -297,8 +301,9 @@ class DATABASE_API avtDatabase
                                              PickVarInfo &, const bool) 
                                                   {return false; };
     virtual bool                QueryNodes(const std::string &, const int, 
-                                           const int, const int,
-                                           std::vector<int> &, float [3],
+                                           const int, bool &, const int,
+                                           std::vector<int> &, std::vector<int> &, 
+                                           const bool, float [3],
                                            const int, const bool, const bool,
                                            const bool, std::vector<std::string> &,
                                            std::vector<std::string> &,
@@ -310,8 +315,9 @@ class DATABASE_API avtDatabase
     virtual bool                QueryMesh(const std::string &, const int, const int, 
                                           std::string &, const bool) {return false; };
 
-    virtual bool                QueryZones(const std::string &,const int,int &,
-                                           const int, std::vector<int> &, 
+    virtual bool                QueryZones(const std::string &, const int,int &,
+                                           bool &, const int, std::vector<int> &, 
+                                           std::vector<int> &, const bool,
                                            float [3], const int, const bool, 
                                            const bool,  const bool, 
                                            std::vector<std::string> &,
