@@ -1,5 +1,6 @@
 #include <SplashScreen.h>
 #include <qapplication.h>
+#include <qfont.h>
 #include <qlabel.h>
 #include <qlayout.h>
 #include <qpushbutton.h>
@@ -67,6 +68,9 @@
 //    Brad Whitlock, Tue Apr 27 14:21:15 PST 2004
 //    I made it modal on MacOS X to fix a menu bug that I ran into.
 //
+//    Brad Whitlock, Tue Mar 8 16:07:36 PST 2005
+//    Added some code to draw the "Beta" marking back in.
+//
 // ****************************************************************************
 
 SplashScreen::SplashScreen(bool cyclePictures, const char *name) :
@@ -81,7 +85,8 @@ SplashScreen::SplashScreen(bool cyclePictures, const char *name) :
 
     // If the window manager is dumb enough to put decorations on this
     // window, at least put a reasonable title on it.
-    setCaption(QString("VisIt ") + VERSION);
+    QString ver(VERSION);
+    setCaption(QString("VisIt ") + ver);
 
     // Set up a box to put the picture in
     setFrameStyle(QFrame::Panel | QFrame::Raised);
@@ -115,6 +120,27 @@ SplashScreen::SplashScreen(bool cyclePictures, const char *name) :
     if(firstPicture == 3 || cyclePictures)
          pictures.push_back(QPixmap(VisIt4_xpm));
 #endif
+
+    // If we have a beta in the version number, draw "Beta" on the pictures.
+    if(ver.right(1) == "b")
+    {
+        for(int i = 0; i < pictures.size(); ++i)
+        {
+            QPainter painter(&pictures[i]);
+            double scale = 4.;
+            painter.scale(scale, scale);
+            QFont font("helvetica", 24, QFont::Bold, true);
+            font.setItalic(false);
+            int x = 10;
+            int y = pictures[i].height() - 10;
+            int offset = 4;
+            painter.setPen(black);
+            painter.drawText(int(x / scale), int(y / scale), "Beta");
+            painter.setPen(white);
+            painter.drawText(int((x - offset) / scale),
+                             int((y - offset) / scale), "Beta");
+        }
+    }
 
     // Set the picture on the window
     pictureLabel = new QLabel(this);
