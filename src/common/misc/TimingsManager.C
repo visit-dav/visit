@@ -3,7 +3,10 @@
 // ************************************************************************* //
 
 #include <TimingsManager.h>
+#include <snprintf.h>
 
+#include <map>
+#include <float.h>
 #include <fstream.h>
 #include <time.h>
 #include <stdio.h>
@@ -23,8 +26,70 @@ int ftime(struct timeb *);
 #endif
 #endif
 
+
 TimingsManager   *visitTimer = TimingsManager::Initialize("default");
 
+
+// ****************************************************************************
+//  Function:GetCurrentTimeInfo 
+//
+//  Programmer: Mark C. Miller
+//  Creation:   April 20, 2004 
+//
+// ****************************************************************************
+
+static void
+GetCurrentTimeInfo(struct TIMEINFO &timeInfo)
+{
+#if defined(_WIN32)
+    _ftime(&timeInfo);
+#elif defined(__APPLE__)
+    gettimeofday(&timeInfo, 0);
+#else
+    ftime(&timeInfo);
+#endif
+}
+
+// ****************************************************************************
+//  Method: TimingsManager::TimeSinceLastCall
+//
+//  Purpose:
+//      Computes time since last called with same key 
+// 
+//  Programmer: Mark C. Miller 
+//  Creation:   April 20, 2004 
+//
+// ****************************************************************************
+double
+TimingsManager::TimeSinceLastCall(const char *file, int line)
+{
+    static std::map<std::string, TIMEINFO> keyMap;
+
+    // a way to re-initilize this static function's static member if
+    // ever needed
+    if ((file == 0) && (line < 0))
+    {
+        keyMap.clear();
+        return 0.0;
+    }
+
+    struct TIMEINFO currentTime;
+    GetCurrentTimeInfo(currentTime);
+
+    char key[256];
+    SNPRINTF(key, sizeof(key), "%s#%d", file, line);
+    if (keyMap.find(key) == keyMap.end())
+    {
+        keyMap[key] = currentTime;
+        return DBL_MAX;
+    }
+    else
+    {
+        struct TIMEINFO lastTime = keyMap[key];
+        keyMap[key] = currentTime;
+        return DiffTime(lastTime, currentTime);
+    }
+}
 
 // ****************************************************************************
 //  Method: TimingsManager constructor
@@ -337,6 +402,55 @@ TimingsManager::DumpTimings(ostream &out)
     summaries.clear();
 }
 
+// ****************************************************************************
+//  Method: TimingsManager::DiffTime
+//
+//  Purpose:
+//      Compute the difference in time from platform specific time structures 
+//
+//  Returns:     The elapsed time in seconds as a double.
+//  
+//  Programmer:  Hank Childs 
+//  Creation:    March 10, 2001
+//
+//  Modifications:
+//
+//    Mark C. Miller, Tue Apr 20 21:12:05 PDT 2004
+//    Relocated from PlatformStopTimer
+//
+// ****************************************************************************
+double
+TimingsManager::DiffTime(const struct TIMEINFO &startTime,
+                         const struct TIMEINFO &endTime)
+{
+#if defined(__APPLE__)
+
+    double seconds = double(endTime.tv_sec - startTime.tv_sec) + 
+                     double(endTime.tv_usec - startTime.tv_usec) / 1000000.;
+                     
+    return seconds;
+
+#else
+
+    // 
+    // Figure out how many milliseconds between start and end times 
+    //
+    int ms = (int) difftime(endTime.time, startTime.time);
+    if (ms == 0)
+    {
+        ms = endTime.millitm - startTime.millitm;
+    }
+    else
+    {
+        ms =  ((ms - 1) * 1000);
+        ms += (1000 - startTime.millitm) + endTime.millitm;
+    }
+
+    return (ms/1000.);
+
+#endif
+}
+
 
 // ****************************************************************************
 //  Method: SystemTimingsManager::PlatformStartTimer
@@ -357,25 +471,18 @@ TimingsManager::DumpTimings(ostream &out)
 //    Brad Whitlock, Mon May 19 12:37:44 PDT 2003
 //    I made it work on MacOS X.
 //
+//    Mark C. Miller Wed Apr 21 12:42:13 PDT 2004
+//    I made it use GetCurrentTime
+//
 // ****************************************************************************
 
 void
 SystemTimingsManager::PlatformStartTimer(void)
 {
-#if defined(_WIN32)
-    struct _timeb t;
-    _ftime(&t);
-#elif defined(__APPLE__)
-    struct timeval t;
-    gettimeofday(&t, 0);
-#else
-    struct timeb t;
-    ftime(&t);
-#endif
-
+    struct TIMEINFO t;
+    GetCurrentTimeInfo(t);
     values.push_back(t);
 }
-
 
 // ****************************************************************************
 //  Method: SystemTimingsManager::PlatformStopTimer
@@ -403,49 +510,19 @@ SystemTimingsManager::PlatformStartTimer(void)
 //    Brad Whitlock, Mon May 19 12:37:58 PDT 2003
 //    I made it work on MacOS X.
 //
+//    Mark C. Miller, Tue Apr 20 21:12:05 PDT 2004
+//    Moved bulk of implementation to DiffTime so code could be shared
+//    with TOATimer
+//
 // ****************************************************************************
 
 double
 SystemTimingsManager::PlatformStopTimer(int index)
 {
-#if defined(__APPLE__)
-    struct timeval endTime;
-    gettimeofday(&endTime, 0);
-    struct timeval &startTime = values[index];
-    
-    double seconds = double(endTime.tv_sec - startTime.tv_sec) + 
-                     double(endTime.tv_usec - startTime.tv_usec) / 1000000.;
-                     
-    return seconds;
-#else
-#if defined(_WIN32)
-    struct _timeb endTime;
-    _ftime(&endTime);
-    struct _timeb &startTime = values[index];
-#else
-    struct timeb endTime;
-    ftime(&endTime);
-    struct timeb &startTime = values[index];
-#endif
-
-    // 
-    // Figure out how many milliseconds the rendering took.
-    //
-    int ms = (int) difftime(endTime.time, startTime.time);
-    if (ms == 0)
-    {
-        ms = endTime.millitm - startTime.millitm;
-    }
-    else
-    {
-        ms =  ((ms - 1) * 1000);
-        ms += (1000 - startTime.millitm) + endTime.millitm;
-    }
-
-    return (ms/1000.);
-#endif
+    struct TIMEINFO endTime;
+    GetCurrentTimeInfo(endTime);
+    return DiffTime(values[index], endTime);
 }
-
 
 // ****************************************************************************
 //  Method: MPITimingsManager::PlatformStartTimer
