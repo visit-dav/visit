@@ -27,6 +27,7 @@
 #include <ColorTableAttributes.h>
 #include <DatabaseCorrelation.h>
 #include <DatabaseCorrelationList.h>
+#include <EngineKey.h>
 #include <EngineList.h>
 #include <GlobalAttributes.h>
 #include <GlobalLineoutAttributes.h>
@@ -522,6 +523,8 @@ ViewerSubject::ConnectXfer()
 // Creation:   Tue Jun 17 14:56:26 PST 2003
 //
 // Modifications:
+//    Jeremy Meredith, Tue Mar 30 10:52:06 PST 2004
+//    Added an engine key used to index (and restart) engines.
 //   
 // ****************************************************************************
 
@@ -603,9 +606,10 @@ ViewerSubject::ConnectObjectsAndHandlers()
 
     //
     // Get the localhost name from the parent and give it to the
-    // ViewerEngineManager so it can use it when needed.
+    // ViewerEngineManager and EngineKey so it can use it when needed.
     //
     ViewerServerManager::SetLocalHost(parent.GetHostName());
+    EngineKey::SetLocalHost(parent.GetHostName());
 
     //
     // Set the default user name.
@@ -1176,6 +1180,11 @@ ViewerSubject::AddInitialWindows()
 //    Jeremy Meredith, Tue Mar 23 14:34:53 PST 2004
 //    Use the engineParallelArguments for this launch.
 //   
+//    Jeremy Meredith, Tue Mar 30 10:52:06 PST 2004
+//    Added an engine key used to start engines.  We know we will not be
+//    connecting to a running simulation at startup (right now), so we
+//    can safely call CreateEngine instead of ConnectSim.
+//
 // ****************************************************************************
 
 void
@@ -1187,9 +1196,9 @@ ViewerSubject::LaunchEngineOnStartup()
     if (launchEngineAtStartup != "")
     {
         stringVector noArgs;
-        ViewerEngineManager::Instance()->CreateEngine(launchEngineAtStartup.c_str(),
-                                                      engineParallelArguments,
-                                                      true, numEngineRestarts);
+        ViewerEngineManager::Instance()->
+                CreateEngine(EngineKey(launchEngineAtStartup,""),
+                             engineParallelArguments, true, numEngineRestarts);
     }
 }
 
@@ -3108,6 +3117,10 @@ ViewerSubject::CreateAttributesDataNode(const avtDefaultPlotMetaData *dp) const
 //    I added support for database correlations. I also prevented the default
 //    plot from being realized if the engine was not launched.
 //
+//    Jeremy Meredith, Tue Mar 30 10:52:06 PST 2004
+//    Added an engine key used to index (and restart) engines.
+//    Added support for connecting to running simulations.
+//
 // ****************************************************************************
 
 void
@@ -3187,12 +3200,41 @@ ViewerSubject::OpenDatabaseHelper(const std::string &entireDBName,
         plotList->UpdateExpressionList(false);
 
         //
+        // Determine the name of the simulation
+        //
+        std::string sim = "";
+        if (md->GetIsSimulation())
+            sim = db;
+
+        //
+        // Create an engine key, used to index and start engines
+        //
+        EngineKey ek(host, sim);
+
+        //
+        // Tell the plot list the new engine key
+        //
+        plotList->SetEngineKey(ek);
+
+        //
         // Create a compute engine to use with the database.
         //
         stringVector noArgs;
-        bool success = ViewerEngineManager::Instance()->
-                                        CreateEngine(host.c_str(), noArgs,
-                                                     false, numEngineRestarts);
+        bool success;
+        if (md->GetIsSimulation())
+        {
+            success = ViewerEngineManager::Instance()->
+                                                 ConnectSim(ek, noArgs,
+                                                            md->GetSimHost(),
+                                                            md->GetSimPort());
+        }
+        else
+        {
+            success = ViewerEngineManager::Instance()->
+                                              CreateEngine(ek, noArgs,
+                                                           false,
+                                                           numEngineRestarts);
+        }
 
         if (success)
         {
@@ -3203,8 +3245,7 @@ ViewerSubject::OpenDatabaseHelper(const std::string &entireDBName,
             ViewerEngineManager *eMgr = ViewerEngineManager::Instance();
             if(md->GetIsVirtualDatabase() && md->GetNumStates() > 1)
             {
-                eMgr->DefineVirtualDatabase(host.c_str(), 
-                                            md->GetFileFormat().c_str(),
+                eMgr->DefineVirtualDatabase(ek, md->GetFileFormat().c_str(),
                                             db.c_str(),
                                             md->GetTimeStepPath().c_str(),
                                             md->GetTimeStepNames(),
@@ -3212,7 +3253,7 @@ ViewerSubject::OpenDatabaseHelper(const std::string &entireDBName,
             }
             else
             {
-                eMgr->OpenDatabase(host.c_str(), md->GetFileFormat().c_str(),
+                eMgr->OpenDatabase(ek, md->GetFileFormat().c_str(),
                                    db.c_str(), timeState);
             }
         }
@@ -3323,8 +3364,16 @@ ViewerSubject::ActivateDatabase()
     //
     if(fs->IsDatabase(expandedDB))
     {
+        const avtDatabaseMetaData *md = fs->GetMetaData(host, db);
+        EngineKey newEngineKey;
+        if (md && md->GetIsSimulation())
+            newEngineKey = EngineKey(host, db);
+        else
+            newEngineKey = EngineKey(host, "");
+
+
         ViewerWindowManager::Instance()->GetActiveWindow()->
-            GetPlotList()->ActivateSource(expandedDB);
+            GetPlotList()->ActivateSource(expandedDB, newEngineKey);
     }
     else
     {
@@ -3398,6 +3447,9 @@ ViewerSubject::CheckForNewStates()
 //   Brad Whitlock, Fri Mar 19 16:20:40 PST 2004
 //   I added code to expand the database name and use time sliders and 
 //   database correlations to figure out where to open the database.
+//
+//   Jeremy Meredith, Tue Mar 30 10:52:06 PST 2004
+//   Added an engine key used to index (and restart) engines.
 //
 // ****************************************************************************
 
@@ -3474,6 +3526,15 @@ ViewerSubject::ReOpenDatabase()
     }
 
     //
+    // Get the flag to determine if this is a simulation before we
+    // clear the metadata from the file server.
+    //
+    bool isSim = false;
+    const avtDatabaseMetaData *md = fileServer->GetMetaData(host, db);
+    if (md && md->GetIsSimulation())
+        isSim = true;
+
+    //
     // Clear out any local information that we've cached about the file. We
     // have to do this after checking for the correlation because this call
     // will remove the correlation for the database.
@@ -3484,7 +3545,12 @@ ViewerSubject::ReOpenDatabase()
     // Tell the compute engine to clear any cached information about the
     // database so it forces the networks to re-execute.
     //
-    ViewerEngineManager::Instance()->ClearCache(host.c_str(), db.c_str());
+    if (isSim)
+        ViewerEngineManager::Instance()->ClearCache(EngineKey(host,db),
+                                                    db.c_str());
+    else
+        ViewerEngineManager::Instance()->ClearCache(EngineKey(host,""),
+                                                    db.c_str());
 
     //
     // Open the database.
@@ -3610,6 +3676,9 @@ ViewerSubject::ReplaceDatabase()
 //   Brad Whitlock, Tue Jan 27 16:56:46 PST 2004
 //   Changed for multiple time sliders.
 //
+//   Jeremy Meredith, Tue Mar 30 10:52:06 PST 2004
+//   Added an engine key used to index (and restart) engines.
+//
 // ****************************************************************************
 
 void
@@ -3625,7 +3694,8 @@ ViewerSubject::OverlayDatabase()
     //
     ViewerWindowManager *wM = ViewerWindowManager::Instance();
     ViewerPlotList *plotList = wM->GetActiveWindow()->GetPlotList();
-    plotList->OverlayDatabase(plotList->GetHostName(),
+    plotList->OverlayDatabase(plotList->GetEngineKey(),
+                              plotList->GetHostName(),
                               plotList->GetDatabaseName());
 
     //
@@ -3752,6 +3822,9 @@ ViewerSubject::DeleteDatabaseCorrelation()
 //    Jeremy Meredith, Thu Dec 19 12:13:58 PST 2002
 //    Added code to skip the engine profile chooser if options were specified.
 //
+//    Jeremy Meredith, Tue Mar 30 10:52:06 PST 2004
+//    Added an engine key used to index (and restart) engines.
+//
 // ****************************************************************************
 
 void
@@ -3760,14 +3833,14 @@ ViewerSubject::OpenComputeEngine()
     //
     // Get the rpc arguments.
     //
-    const char *hostName   = viewerRPC.GetProgramHost().c_str();
-    const stringVector &options = viewerRPC.GetProgramOptions();
+    const string       &hostName = viewerRPC.GetProgramHost();
+    const stringVector &options  = viewerRPC.GetProgramOptions();
 
     //
     // Perform the rpc.
     //
-    ViewerEngineManager::Instance()->CreateEngine(hostName, options,
-                                                  options.size() > 0,
+    ViewerEngineManager::Instance()->CreateEngine(EngineKey(hostName,""),
+                                                  options, options.size() > 0,
                                                   numEngineRestarts);
 }
 
@@ -3781,6 +3854,9 @@ ViewerSubject::OpenComputeEngine()
 // Creation:   Mon Apr 30 13:08:14 PST 2001
 //
 // Modifications:
+//    Jeremy Meredith, Tue Mar 30 10:52:06 PST 2004
+//    Added an engine key used to index (and restart) engines.
+//    This was needed for simulation support.
 //   
 // ****************************************************************************
 
@@ -3790,12 +3866,13 @@ ViewerSubject::CloseComputeEngine()
     //
     // Get the rpc arguments.
     //
-    const char *hostName = viewerRPC.GetProgramHost().c_str();
+    const string &hostName = viewerRPC.GetProgramHost();
+    const string &simName  = viewerRPC.GetProgramSim();
 
     //
     // Perform the RPC.
     //
-    ViewerEngineManager::Instance()->CloseEngine(hostName);
+    ViewerEngineManager::Instance()->CloseEngine(EngineKey(hostName, simName));
 }
 
 // ****************************************************************************
@@ -3832,6 +3909,9 @@ ViewerSubject::OpenMDServer()
 // Creation:   Tue Jul 30 14:20:23 PST 2002
 //
 // Modifications:
+//    Jeremy Meredith, Tue Mar 30 10:52:06 PST 2004
+//    Added an engine key used to index (and restart) engines.
+//    This was needed for simulation support.
 //   
 // ****************************************************************************
 
@@ -3841,12 +3921,13 @@ ViewerSubject::ClearCache()
     //
     // Get the rpc arguments.
     //
-    const char *hostName = viewerRPC.GetProgramHost().c_str();
+    const std::string &hostName = viewerRPC.GetProgramHost();
+    const std::string &simName  = viewerRPC.GetProgramSim();
 
     //
     // Perform the RPC.
     //
-    ViewerEngineManager::Instance()->ClearCache(hostName);
+    ViewerEngineManager::Instance()->ClearCache(EngineKey(hostName, simName));
 }
 
 // ****************************************************************************

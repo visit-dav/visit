@@ -114,10 +114,13 @@ avtDataObjectReader_p ViewerPlot::nullReader((avtDataObjectReader *)0);
 //    Brad Whitlock, Fri Mar 26 08:10:16 PDT 2004
 //    Changed to use more strings. I also passed in the initial plot state.
 //
+//    Jeremy Meredith, Tue Mar 30 10:39:20 PST 2004
+//    Added an engine key to map this plot to the engine used to create it.
+//
 // ****************************************************************************
 
-ViewerPlot::ViewerPlot(const int type_,
-    ViewerPlotPluginInfo *viewerPluginInfo_, const std::string &hostName_,
+ViewerPlot::ViewerPlot(const int type_,ViewerPlotPluginInfo *viewerPluginInfo_,
+    const EngineKey &ek_, const std::string &hostName_,
     const std::string &databaseName_, const std::string &variableName_,
     avtSILRestriction_p silr_, const int plotState, const int nStates)
 {
@@ -127,6 +130,7 @@ ViewerPlot::ViewerPlot(const int type_,
     type                = type_;
     viewerPluginInfo    = viewerPluginInfo_;
     isMesh = (strcmp(viewerPluginInfo->GetName(), "Mesh") == 0); 
+    engineKey           = ek_;
     hostName            = "";
     databaseName        = "";
     variableName        = "";
@@ -212,12 +216,16 @@ ViewerPlot::ViewerPlot(const int type_,
 //    Brad Whitlock, Fri Mar 26 08:13:23 PDT 2004
 //    Deleted code to delete host, db arrays since they are now strings.
 //
+//    Jeremy Meredith, Tue Mar 30 10:39:20 PST 2004
+//    Added an engine key to map this plot to the engine used to create it.
+//
 // ****************************************************************************
 
 ViewerPlot::~ViewerPlot()
 {
     if (networkID != -1)
-        ViewerEngineManager::Instance()->ReleaseData(hostName.c_str(), networkID);
+        ViewerEngineManager::Instance()->ReleaseData(engineKey,
+                                                     networkID);
 
     //
     // Delete the operators.
@@ -2696,6 +2704,9 @@ ViewerPlot::SetSpatialExtentsType(avtExtentType extsType)
 //    Brad Whitlock, Fri Mar 26 14:33:36 PST 2004
 //    Made it use strings.
 //
+//    Jeremy Meredith, Tue Mar 30 10:39:20 PST 2004
+//    Added an engine key to map this plot to the engine used to create it.
+//
 // ****************************************************************************
 
 bool
@@ -2705,12 +2716,13 @@ ViewerPlot::ExecuteEngineRPC()
     //  Release data on previous network.
     //
     if (networkID != -1)
-        ViewerEngineManager::Instance()->ReleaseData(hostName.c_str(), networkID);
+        ViewerEngineManager::Instance()->ReleaseData(engineKey,
+                                                     networkID);
 
     ViewerEngineManager *engineMgr = ViewerEngineManager::Instance();
     plotAtts->GetAtts(state, curPlotAtts);
-    bool successful = engineMgr->MakePlot(hostName.c_str(),
-        viewerPluginInfo->GetID(), curPlotAtts, &networkID);
+    bool successful = engineMgr->MakePlot(engineKey, viewerPluginInfo->GetID(),
+                                          curPlotAtts, &networkID);
     if(!successful)
     {
         networkID = -1;
@@ -3304,6 +3316,9 @@ ViewerPlot::GetExpanded() const
 //    Brad Whitlock, Sat Jan 31 22:45:06 PST 2004
 //    I removed the frame argument and made it use strings.
 //
+//    Jeremy Meredith, Tue Mar 30 10:39:20 PST 2004
+//    Added an engine key to map this plot to the engine used to create it.
+//
 // ****************************************************************************
 
 bool
@@ -3317,8 +3332,8 @@ ViewerPlot::StartPick()
     //  want to do this only if there are different engines for different
     //  plots.  But how to know from ViewerPlotList??
     //
-    if (ViewerEngineManager::Instance()->StartPick(hostName.c_str(), true,
-        networkID))
+    if (ViewerEngineManager::Instance()->StartPick(engineKey,
+                                                   true, networkID))
     {
         if (IsInFrameRange() && *plotList[state] != NULL)
         {
@@ -3353,6 +3368,9 @@ ViewerPlot::StartPick()
 //    Brad Whitlock, Fri Mar 26 14:35:45 PST 2004
 //    Changed to use strings.
 //
+//    Jeremy Meredith, Tue Mar 30 10:39:20 PST 2004
+//    Added an engine key to map this plot to the engine used to create it.
+//
 // ****************************************************************************
 
 void
@@ -3364,8 +3382,8 @@ ViewerPlot::StopPick()
     //  want to do this only if there are different engines for different
     //  plots.  But how to know from ViewerPlotList??
     //
-    if(!ViewerEngineManager::Instance()->StartPick(hostName.c_str(), false,
-       networkID))
+    if(!ViewerEngineManager::Instance()->StartPick(engineKey,
+                                                   false, networkID))
     {
         debug1 << "An error occurred when stopping the pick." << endl;
     }
@@ -3850,3 +3868,23 @@ ViewerPlot::IsMesh()
 {
     return isMesh;
 }
+
+// ****************************************************************************
+//  Method:  ViewerPlot::GetEngineKey
+//
+//  Purpose:
+//    Returns the engine key where this plot originated.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    March 29, 2004
+//
+// ****************************************************************************
+const EngineKey &
+ViewerPlot::GetEngineKey() const
+{
+    return engineKey;
+}
+

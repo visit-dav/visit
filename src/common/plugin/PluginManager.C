@@ -426,6 +426,9 @@ PluginManager::EnablePlugin(const string &id)
 //    Added code to prevent the same plugin from being in the list multiple
 //    times.
 //
+//    Jeremy Meredith, Thu Mar 25 14:05:21 PST 2004
+//    Use only the first plugin with the same name, independent of directory.
+//
 // ****************************************************************************
 
 void
@@ -460,7 +463,7 @@ PluginManager::GetPluginList(vector<pair<string,string> > &libs)
         // It is a valid library name so add it to the list.
         bool found = false;
         for(int j = 0; j < libs.size() && !found; ++j)
-            found = (libs[j] == files[i]);
+            found = (libs[j].second == files[i].second);
     
         if(!found)
             libs.push_back(files[i]);

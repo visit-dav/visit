@@ -3,12 +3,11 @@
 
 extern "C" {
 
-void *load_engine();
-int get_descriptor(void*);
-void initialize(void*, int argc, char *argv[]);
-void connect_to_viewer(void*, int argc, char *argv[]);
-void initialize(void*, int argc, char *argv[]);
-void process_input(void*);
+void *get_engine();
+int   get_descriptor(void*);
+void  initialize(void*, int argc, char *argv[]);
+void  connect_to_viewer(void*, int argc, char *argv[]);
+void  process_input(void*);
 
 }
 

@@ -9,6 +9,8 @@
 #include <SimpleObserver.h>
 #include <avtDataObjectReader.h>
 #include <vectortypes.h>
+#include <EngineKey.h>
+#include <map>
 
 // Forward declarations.
 class AttributeSubject;
@@ -20,12 +22,6 @@ class QueryAttributes;
 class ViewerPlot;
 class AnnotationAttributes;
 class WindowAttributes;
-
-typedef struct
-{
-    char         *hostName;
-    EngineProxy  *engine;
-} EngineListEntry;
 
 // ****************************************************************************
 //  Class: ViewerEngineManager
@@ -142,6 +138,9 @@ typedef struct
 //    Added new bool args to control annotations in SR mode on engine
 //    GetDataObject reader used in external rendering and ExternalRender
 //
+//    Jeremy Meredith, Thu Mar 25 15:56:48 PST 2004
+//    Use a map of engines based on a key, and be aware of simulations.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerEngineManager : public ViewerServerManager,
@@ -153,19 +152,21 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
 
     static ViewerEngineManager *Instance();
 
-    bool CreateEngine(const char *hostname,
+    bool CreateEngine(const EngineKey &ek,
                       const std::vector<std::string> &arguments,
                       bool  skipChooser=false,
                       int numRestarts=-1);
+    bool ConnectSim(const EngineKey &ek,
+                    const std::vector<std::string> &arguments,
+                    const std::string &simHost, int simPort);
     void CloseEngines();
-    void CloseEngine(const char *hostName);
-    void InterruptEngine(const char *hostName);
-    void InterruptEngine(int index);
+    void CloseEngine(const EngineKey &ek);
+    void InterruptEngine(const EngineKey &ek);
     bool InExecute() const;
     void SendKeepAlives();
 
     bool ExternalRender(std::vector<const char*> pluginIDsList,
-                        stringVector hostsList,
+                        std::vector<EngineKey> engineKeysList,
                         intVector plotIdsList,
                         std::vector<const AttributeSubject *> attsList,
                         WindowAttributes winAtts,
@@ -178,7 +179,7 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
     avtDataObjectReader_p UseDataObjectReader(ViewerPlot *const plot,
                                               bool turningOffScalableRendering);
     avtDataObjectReader_p GetDataObjectReader(bool sendZBuffer,
-                                              const char *hostName_,
+                                              const EngineKey &ek,
                                               intVector ids,
                                               bool doAllAnnotations);
     void GetImage(int index, avtDataObject_p &);
@@ -196,46 +197,49 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
     //
     // Engine RPCs
     //
-    bool OpenDatabase(const char *hostName_, const char *format, 
+    bool OpenDatabase( const EngineKey &ek, const char *format, 
                       const char *filename, int time=0);
-    bool DefineVirtualDatabase(const char *hostName_, const char *format,
+    bool DefineVirtualDatabase(const EngineKey &ek, const char *format,
                                const char *dbName, const char *path, 
                                const stringVector &files, int time=0);
-    bool ApplyOperator(const char *hostName_, const char *name,
+    bool ApplyOperator(const EngineKey &ek, const char *name,
                        const AttributeSubject *atts);
-    bool MakePlot(const char *hostName_, const char *name,
+    bool MakePlot(const EngineKey &ek, const char *name,
                   const AttributeSubject *atts, int *networkId);
-    bool UseNetwork(const char *hostName_, int id);
-    bool UpdatePlotAttributes(const char *hostName_, const char *name,
+    bool UseNetwork(const EngineKey &ek, int id);
+    bool UpdatePlotAttributes(const EngineKey &ek, const char *name,
                               int id, const AttributeSubject *atts);
-    bool Pick(const char *hostName_, const int nid,
+    bool Pick(const EngineKey &ek, const int nid,
               const PickAttributes *atts, PickAttributes &retAtts);
-    bool StartPick(const char *hostName_, const bool flag, const int nid);
-    bool SetWinAnnotAtts(const char *hostName_, const WindowAttributes *wa,
+    bool StartPick(const EngineKey &ek,
+                   const bool flag, const int nid);
+    bool SetWinAnnotAtts(const EngineKey &ek, const WindowAttributes *wa,
                          const AnnotationAttributes *aa);    
-    bool ClearCache(const char *hostName, const char *dbName = 0);
-    bool Query(const char *hostName_, const std::vector<int> &networkIds, 
+    bool ClearCache(const EngineKey &ek, const char *dbName = 0);
+    bool Query(const EngineKey &ek, const std::vector<int> &networkIds, 
                const QueryAttributes *atts, QueryAttributes &retAtts);
-    bool ReleaseData(const char *hostName_, int id);
+    bool ReleaseData(const EngineKey &ek, int id);
 
   protected:
     ViewerEngineManager();
-    void RemoveEngine(int engineIndex, bool close);
-    void RemoveFailedEngine(int engineIndex);
-    int  GetEngineIndex(const char *hostName) const;
+    void RemoveEngine(const EngineKey &ek, bool close);
+    void RemoveFailedEngine(const EngineKey &ek);
+    bool EngineExists(const EngineKey &ek) const;
     void UpdateEngineList();
-    EngineProxy *GetEngine(const char *hostname);
-    void LaunchMessage(const char *hostName) const;
+    EngineProxy *GetEngine(const EngineKey &ek);
+    void LaunchMessage(const EngineKey &ek) const;
     void BeginEngineExecute();
     void EndEngineExecute();
 
   private:
+    typedef std::map<EngineKey,EngineProxy*> EngineMap;
+
     static ViewerEngineManager *instance;
     static EngineList          *clientEngineAtts;
 
     bool                       executing;
     int                        nEngines;
-    EngineListEntry            **engines;
+    EngineMap                  engines;
     std::vector<std::string>   restartArguments;
 
     // Global engine computation attributes

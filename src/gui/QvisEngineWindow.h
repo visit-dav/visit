@@ -36,6 +36,9 @@ class StatusAttributes;
 //    Brad Whitlock, Wed Feb 25 09:22:29 PDT 2004
 //    I added a "Clear cache" button.
 //
+//    Jeremy Meredith, Tue Mar 30 09:32:41 PST 2004
+//    I added support for simulations.
+//
 // ****************************************************************************
 
 class GUI_API QvisEngineWindow : public QvisPostableWindowObserver
@@ -73,6 +76,7 @@ private:
     QString           activeEngine;
     EngineStatusMap   statusMap;
 
+    QLabel           *engineLabel;
     QComboBox        *engineCombo;
     QGroupBox        *engineInfo;
     QLabel           *engineNP;

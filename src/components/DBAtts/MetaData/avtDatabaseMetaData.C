@@ -3076,10 +3076,13 @@ avtDefaultPlotMetaData::Print(ostream &out, int indent) const
 //    Hank Childs, Fri Mar  5 11:21:06 PST 2004
 //    Added 's' for fileFormat.
 //
+//    Jeremy Meredith, Tue Mar 30 09:53:19 PST 2004
+//    Added simulation information.
+//
 // ****************************************************************************
 
 avtDatabaseMetaData::avtDatabaseMetaData()
-    : AttributeSubject("ssbddibss*i*i*i*d*a*a*a*a*a*a*a*a*a*aba*")
+    : AttributeSubject("ssbddibss*i*i*i*d*a*a*a*a*a*a*a*a*a*aba*bsi")
 {
     hasTemporalExtents          = false;
     minTemporalExtents          = 0.;
@@ -3087,6 +3090,9 @@ avtDatabaseMetaData::avtDatabaseMetaData()
     numStates                   = 0;
     isVirtualDatabase           = false;
     mustRepopulateOnStateChange = false;
+    isSimulation                = false;
+    simHost                     = "";
+    simPort                     = 0;
 }
 
 
@@ -3131,10 +3137,13 @@ avtDatabaseMetaData::avtDatabaseMetaData()
 //    Hank Childs, Fri Mar  5 11:21:06 PST 2004
 //    Copy over file format.
 //
+//    Jeremy Meredith, Tue Mar 30 09:53:19 PST 2004
+//    Added simulation information.
+//
 // ****************************************************************************
 
 avtDatabaseMetaData::avtDatabaseMetaData(const avtDatabaseMetaData &rhs)
-    : AttributeSubject("ssbddibss*i*i*i*d*a*a*a*a*a*a*a*a*a*aba*")
+    : AttributeSubject("ssbddibss*i*i*i*d*a*a*a*a*a*a*a*a*a*aba*bsi")
 {
     databaseName       = rhs.databaseName;
     fileFormat         = rhs.fileFormat;
@@ -3151,6 +3160,9 @@ avtDatabaseMetaData::avtDatabaseMetaData(const avtDatabaseMetaData &rhs)
     timesAreAccurate   = rhs.timesAreAccurate;
     times              = rhs.times;
     exprList           = rhs.exprList;
+    isSimulation       = rhs.isSimulation;
+    simHost            = rhs.simHost;
+    simPort            = rhs.simPort;
 
     int i;
     for (i=0; i<rhs.meshes.size(); i++)
@@ -3218,6 +3230,9 @@ avtDatabaseMetaData::avtDatabaseMetaData(const avtDatabaseMetaData &rhs)
 //    Hank Childs, Fri Mar  5 11:21:06 PST 2004
 //    Copy over file format.
 //
+//    Jeremy Meredith, Tue Mar 30 09:53:19 PST 2004
+//    Added simulation information.
+//
 // ****************************************************************************
 
 const avtDatabaseMetaData &
@@ -3238,6 +3253,9 @@ avtDatabaseMetaData::operator=(const avtDatabaseMetaData &rhs)
     timesAreAccurate   = rhs.timesAreAccurate;
     times              = rhs.times;
     exprList           = rhs.exprList;
+    isSimulation       = rhs.isSimulation;
+    simHost            = rhs.simHost;
+    simPort            = rhs.simPort;
 
     int i;
     for (i=0; i<meshes.size(); i++)
@@ -4802,6 +4820,9 @@ avtDatabaseMetaData::Print(ostream &out, int indent) const
 //   Hank Childs, Fri Mar  5 11:21:06 PST 2004
 //   Add file format.
 //
+//   Jeremy Meredith, Tue Mar 30 09:53:19 PST 2004
+//   Added simulation information.
+//
 // *******************************************************************
 
 void
@@ -4834,6 +4855,10 @@ avtDatabaseMetaData::SelectAll()
     Select(22, (void*)&exprList);
     Select(23, (void*)&mustRepopulateOnStateChange);
     Select(24, (void*)&sils);
+
+    Select(25, (void*)&isSimulation);
+    Select(26, (void*)&simHost);
+    Select(27, (void*)&simPort);
 }
 
 // *******************************************************************

@@ -7,6 +7,7 @@
 #include <viewer_exports.h>
 #include <avtTypes.h>
 #include <avtSILRestriction.h>
+#include <EngineKey.h>
 #include <string>
 #include <map>
 #include <vectortypes.h>
@@ -173,6 +174,9 @@ typedef std::map<std::string, int> StringIntMap;
 //    Brad Whitlock, Fri Jan 23 16:34:52 PST 2004
 //    I added support for multiple time sliders.
 //
+//    Jeremy Meredith, Thu Mar 25 17:19:11 PST 2004
+//    Added support for simulations.
+//
 // ****************************************************************************
 
 
@@ -216,13 +220,15 @@ public:
     void SetPlaybackMode(PlaybackMode);
     PlaybackMode GetPlaybackMode() const;
 
-    void ActivateSource(const std::string &database);
+    void ActivateSource(const std::string &database, const EngineKey &ek);
     void SetHostDatabaseName(const std::string &database);
     void SetDatabaseName(const std::string &database);
     int  CloseDatabase(const std::string &database);
+    void SetEngineKey(const EngineKey &ek);
     const std::string &GetHostDatabaseName() const;
     const std::string &GetDatabaseName() const;
     const std::string &GetHostName() const;
+    const EngineKey &GetEngineKey() const;
     bool GetPlotHostDatabase(std::string &h, std::string &d) const;
     bool FileInUse(const std::string &host,
                    const std::string &database) const;
@@ -255,7 +261,8 @@ public:
     void SetPlotOperatorAtts(const int operatorType, bool applyToAll = false);
     void ReplaceDatabase(const std::string &host, const std::string &database,
                          int timeState, bool setTimeState, bool onlyReplaceSame);
-    void OverlayDatabase(const std::string &host, const std::string &database);
+    void OverlayDatabase(const EngineKey &ek, const std::string &host,
+                         const std::string &database);
 
     void SetActivePlots(const intVector &activePlots,
                         const intVector &activeOperators,
@@ -275,10 +282,10 @@ public:
     bool UpdateColorTable(const char *ctName);
 
     void UpdatePlotAtts(bool=true) const;
-    void GetCurrentPlotAtts(std::vector<const char*>& pluginIDsList,
-                            std::vector<std::string>& hostsList,
-                            intVector& plotIdsList,
-                            std::vector<const AttributeSubject*>& attsList) const; 
+    void GetCurrentPlotAtts(std::vector<const char*> &pluginIDsList,
+                            std::vector<EngineKey> &engineKeysList,
+                            intVector &plotIdsList,
+                            std::vector<const AttributeSubject*> &attsList) const; 
     void UpdatePlotList() const;
     void UpdateSILRestrictionAtts();
     void InterruptUpdatePlotList();
@@ -324,9 +331,9 @@ public:
     bool        AskForCorrelationPermission(const stringVector &dbs) const;
     bool        AllowAutomaticCorrelation(const stringVector &dbs) const;
     DatabaseCorrelation *GetMostSuitableCorrelation(const std::string &, bool);
-    ViewerPlot *NewPlot(int type, const std::string &host,
-                        const std::string &db, const std::string &var,
-                        bool applyOperators);
+    ViewerPlot *NewPlot(int type, const EngineKey &ek,
+                        const std::string &host, const std::string &db,
+                        const std::string &var, bool applyOperators);
     int         SimpleAddPlot(ViewerPlot *plot, bool replacePlots);
     void        SetNextState(int nextState, int boundary);
     bool        UpdatePlotStates();
@@ -345,6 +352,7 @@ public:
     static int                       lastPlotId;
     ViewerWindow                    *window;
 
+    EngineKey              engineKey;
     std::string            hostDatabaseName;
     std::string            hostName;
     std::string            databaseName;

@@ -360,6 +360,10 @@ class DBATTS_API avtDatabaseMetaData : public AttributeSubject
     bool         isVirtualDatabase;
     bool         mustRepopulateOnStateChange;
 
+    bool         isSimulation;
+    std::string  simHost;
+    int          simPort;
+
     std::string  timeStepPath;
     stringVector timeStepNames;
     intVector    cycles;
@@ -400,6 +404,13 @@ public:
 
     void         SetIsVirtualDatabase(bool val) { isVirtualDatabase = val; };
     bool         GetIsVirtualDatabase() const { return isVirtualDatabase; };
+
+    void         SetIsSimulation(bool val) { isSimulation = val; }
+    bool         GetIsSimulation() const { return isSimulation; }
+    void         SetSimHost(const std::string &h) { simHost = h; }
+    std::string  GetSimHost() const { return simHost; }
+    void         SetSimPort(int p) { simPort = p; }
+    int          GetSimPort() const { return simPort; }
 
     const intVector &GetCycles() const { return cycles; };
     void         SetCycle(int, int);

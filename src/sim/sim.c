@@ -1,13 +1,21 @@
+#include <dlfcn.h>
+#include <errno.h>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <netinet/tcp.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/socket.h>
-#include <unistd.h>
-#include <signal.h>
-#include <sys/types.h>
-#include <time.h>
-#include <errno.h>
-#include <dlfcn.h>
 #include <string.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <time.h>
+#include <unistd.h>
+
+#define INITIAL_PORT_NUMBER 5600
+#define TRUE 1
+#define FALSE 0
 
 int consoleinputdescriptor = 0;
 int engineinputdescriptor = -1;
@@ -17,12 +25,59 @@ int quitflag = 0;
 
 int cycle = 0;
 
-void *(*v_loadengine)() = NULL;
+void *(*v_getengine)() = NULL;
 int   (*v_getdescriptor)(void*) = NULL;
 void  (*v_processinput)(void*) = NULL;
 void  (*v_initialize)(void*,int,char**) = NULL;
 void  (*v_connectviewer)(void*,int,char**) = NULL;
 void *v_engine = NULL;
+char  v_host[256] = "";
+char  v_port[256] = "";
+char  v_key[256] = "";
+
+char localhost[256];
+int listenPort;
+int listenSock;
+struct sockaddr_in sockin;
+
+int p_nx = 10;
+int p_ny = 10;
+int p_nz = 10;
+double *p_xcoords;
+double *p_ycoords;
+double *p_zcoords;
+double *p_zvalues;
+double *p_nvalues;
+
+void InitializeVariables()
+{
+    int i;
+    p_xcoords = malloc(sizeof(double) * p_nx);
+    p_ycoords = malloc(sizeof(double) * p_ny);
+    p_zcoords = malloc(sizeof(double) * p_nz);
+    p_zvalues = malloc(sizeof(double) * (p_nx-1)*(p_ny-1)*(p_nz-1));
+    p_nvalues = malloc(sizeof(double) * p_nx*p_ny*p_nz);
+    for (i=0; i<p_nx; i++)
+    {
+        p_xcoords[i] = i*2.0;
+    }
+    for (i=0; i<p_ny; i++)
+    {
+        p_ycoords[i] = i*1.5;
+    }
+    for (i=0; i<p_nz; i++)
+    {
+        p_zcoords[i] = i*1.0;
+    }
+    for (i=0; i<(p_nx-1)*(p_ny-1)*(p_nz-1); i++)
+    {
+        p_zvalues[i] = i*1.0;
+    }
+    for (i=0; i<p_nx*p_ny*p_nz; i++)
+    {
+        p_nvalues[i] = i*1.0;
+    }
+}
 
 void ControlCHandler(int sig)
 {
@@ -36,14 +91,21 @@ void ControlCHandler(int sig)
 
 void RunSingleCycle()
 {
-     time_t starttime = time(NULL);
-     while (time(NULL) == starttime)
-     {
-         // Wait
-     }
+    int i;
 
-     printf(" ... Finished cycle %d\n", cycle);
-     cycle++;
+    time_t starttime = time(NULL);
+    while (time(NULL) == starttime)
+    {
+        // Wait
+    }
+
+    for (i=0; i<p_nx; i++)
+    {
+        p_xcoords[i] = i * 2.0 + (i*i*0.1 * (double)(cycle));
+    }
+
+    printf(" ... Finished cycle %d\n", cycle);
+    cycle++;
 }
 
 void RunSimulation()
@@ -55,14 +117,46 @@ void RunSimulation()
     }
 }
 
-void ConnectToViewer()
-{
-    char v_host[256];
-    char v_port[256];
-    char v_key[256];
-    char *argv[10];
-    int nargs = 9;
+int   v_argc = 0;
+char *v_argv[100];
 
+void GetConnectionParameters(int desc)
+{
+#if 1
+    char buf[200] = "";
+    char *tbuf = buf;
+    char *ptr = buf;
+    int done = 0;
+    int n;
+
+    v_argc = 0;
+
+    while (!done)
+    {
+        char *tmp = strstr(tbuf, "\n");
+        while (!tmp)
+        {
+            n = recv(desc, ptr, 2000, 0);
+            ptr += n;
+            *ptr = 0;
+            tmp = strstr(tbuf, "\n");
+                
+        }
+
+        if (tbuf == tmp)
+        {
+            fprintf(stderr, "Got an empty string; stopping!\n");
+            break;
+        }
+
+        *tmp = 0;
+        v_argv[v_argc] = strdup(tbuf);
+        fprintf(stderr, "Got string: %s\n", v_argv[v_argc]);
+        v_argc++;
+        tbuf = tmp+1;
+    }
+    
+#else
     fprintf(stderr, "host: ");
     gets(v_host);
 
@@ -71,7 +165,17 @@ void ConnectToViewer()
 
     fprintf(stderr, "key : ");
     gets(v_key);
+#endif
+}
 
+void ConnectToViewer()
+{
+#if 1
+    v_initialize(v_engine, v_argc, v_argv);
+    v_connectviewer(v_engine, v_argc, v_argv);
+#else
+    char *argv[10];
+    int nargs = 9;
 
     argv[0] = strdup("engine");
     argv[1] = strdup("-host");
@@ -86,10 +190,123 @@ void ConnectToViewer()
 
     v_initialize(v_engine, nargs, argv);
     v_connectviewer(v_engine, nargs, argv);
+#endif
 }
+
+void GetLocalhostName()
+{
+    char localhostStr[256];
+    struct hostent *localhostEnt = NULL;
+    if (gethostname(localhostStr, 256) == -1)
+    {
+        // Couldn't get the hostname, it's probably invalid
+        fprintf(stderr,"couldn't get host name\n");
+        return;
+    }
+
+    localhostEnt = gethostbyname(localhostStr);
+    if (localhostEnt == NULL)
+    {
+        // Couldn't get the full host entry; it's probably invalid
+        fprintf(stderr,"couldn't get host name entry\n");
+        return;
+    }
+    sprintf(localhost, localhostEnt->h_name);
+}
+
+int StartListening()
+{
+    int portFound = FALSE;
+    int on = 1;
+
+    listenSock = socket(AF_INET, SOCK_STREAM, 0);
+    if (listenSock < 0)
+    {
+        // Cannot open a socket.
+        return FALSE;
+    }
+
+    //
+    // Look for a port that can be used.
+    //
+    sockin.sin_family = AF_INET;
+    sockin.sin_addr.s_addr = htonl(INADDR_ANY);
+    listenPort = INITIAL_PORT_NUMBER;
+    while (!portFound && listenPort < 32767)
+    {
+        sockin.sin_port = htons(listenPort);
+#if !defined(_WIN32)
+        setsockopt(listenSock, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
+#endif
+        if (bind(listenSock, (struct sockaddr *)&sockin, sizeof(sockin)) < 0)
+        {
+            listenPort++;
+        }
+        else
+        {
+            portFound = TRUE;
+        }
+    }
+    if (!portFound)
+    {
+        // Cannot find unused port.
+        return FALSE;
+    }
+
+    listen(listenSock, 5);
+
+    return TRUE;
+}
+
+int AcceptConnection()
+{
+    int desc = -1;
+    int opt = 1;
+
+    fprintf(stderr,"AcceptConnection\n");
+    // Wait for the socket to become available on the other side.
+    do
+    {
+#ifdef HAVE_SOCKLEN_T
+        socklen_t len;
+#else
+        int len;
+#endif
+        len = sizeof(struct sockaddr);
+        desc = accept(listenSock, (struct sockaddr *)&sockin, &len);
+    }
+    while (desc == -1 && errno == EINTR);
+
+    fprintf(stderr,"Finished Accept\n");
+
+    // Disable Nagle algorithm.
+#if defined(_WIN32)
+    setsockopt(desc, IPPROTO_TCP, TCP_NODELAY, (const char FAR*)&opt, sizeof(int));
+#else
+    setsockopt(desc, IPPROTO_TCP, TCP_NODELAY, &opt, sizeof(int));
+#endif
+
+    return desc;
+}
+
+void DumpSimFile()
+{
+    FILE *file = fopen("test.sim", "wt");
+
+    GetLocalhostName();
+    StartListening();
+    fprintf(file, "host %s\n", localhost);
+    fprintf(file, "port %d\n", listenPort);
+
+    fclose(file);
+}
+
 
 void OpenVisit()
 {
+    int socket;
+
+    /* load library */
     void *handle = dlopen("libewrap.so", RTLD_LAZY | RTLD_GLOBAL);
 
     if (!handle)
@@ -98,8 +315,15 @@ void OpenVisit()
         return;
     }
 
-    v_loadengine = dlsym(handle, "load_engine");
-    if (!v_loadengine) { fprintf(stderr, "couldn't find symbol: %s\n", dlerror()); return; }
+    /* dump sim file */
+    DumpSimFile();
+
+    /* wait for a connection */
+    socket = AcceptConnection();
+
+    /* get symbols */
+    v_getengine = dlsym(handle, "get_engine");
+    if (!v_getengine) { fprintf(stderr, "couldn't find symbol: %s\n", dlerror()); return; }
 
     v_getdescriptor = dlsym(handle, "get_descriptor");
     if (!v_getdescriptor) { fprintf(stderr, "couldn't find symbol: %s\n", dlerror()); return; }
@@ -113,10 +337,16 @@ void OpenVisit()
     v_connectviewer = dlsym(handle, "connect_to_viewer");
     if (!v_connectviewer) { fprintf(stderr, "couldn't find symbol: %s\n", dlerror()); return; }
 
-    v_engine = v_loadengine();
+    /* get the engine */
+    v_engine = v_getengine();
 
+    /* get the connection parameters */
+    GetConnectionParameters(socket);
+
+    /* connect to the viewer */
     ConnectToViewer();
 
+    /* get the socket for listening from the viewer */
     engineinputdescriptor = v_getdescriptor(v_engine);
 }
 
@@ -247,6 +477,10 @@ void AddVisItLibraryPaths(int argc, char *argv[])
         sprintf(buff, "LD_LIBRARY_PATH=.:../lib");
     putenv(buff);
 
+    buff = malloc(10000);
+    sprintf(buff, "VISITPLUGINDIR=.:../plugins");
+    putenv(buff);
+
     buff = strdup("VISIT_PATHS_SET=1");
     putenv(buff);
 
@@ -273,6 +507,7 @@ int main(int argc, char *argv[])
            "     run   :        run continuously\n"
            "     visit :        start visit engine\n\n");
 
+    InitializeVariables();
     MainLoop();
 
     return 0;

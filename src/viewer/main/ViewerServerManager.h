@@ -32,6 +32,9 @@ class ViewerConnectionProgressDialog;
 //    Brad Whitlock, Fri Mar 12 11:55:32 PDT 2004
 //    I added SendKeepAlivesToLaunchers.
 //
+//    Jeremy Meredith, Tue Mar 30 10:51:33 PST 2004
+//    Added support for simulations.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerServerManager
@@ -70,6 +73,9 @@ protected:
     static void OpenWithLauncher(const std::string &host,
                                  const stringVector &args, 
                                  void *data);
+    static void SimConnectThroughLauncher(const std::string &host,
+                                          const stringVector &args, 
+                                          void *data);
 
     const char *RealHostName(const char *hostName) const;
 

@@ -853,6 +853,9 @@ ViewerQueryManager::GetQueryClientAtts()
 //    ImproperUseException which can occur if engine has been closed prior
 //    to initiation of query.  
 //
+//    Jeremy Meredith, Tue Mar 30 10:39:20 PST 2004
+//    Added an engine key to map plots to the engine used to create them.
+//
 // ****************************************************************************
 
 void         
@@ -886,6 +889,7 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
     ViewerPlotList *olist = oWin->GetPlotList();
     std::string host, dbname;
     intVector plotIds;
+    EngineKey engineKey;
     stringVector uniqueVars; 
     stringVector tmp = vars;
     intVector varTypes;
@@ -965,7 +969,7 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
         {
             int plotId = plotIds[i];
             ViewerPlot *oplot = olist->GetPlot(plotId);
-            if (host != "" && host != oplot->GetHostName())
+            if (i != 0 && engineKey != oplot->GetEngineKey())
             {
                 queryClientAtts->Notify();
                 Error("Multiple input queries require all their inputs "
@@ -980,6 +984,8 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
                 return;
             }
             host = oplot->GetHostName();
+            engineKey = oplot->GetEngineKey();
+            cerr << "set engine key to "<<engineKey.HostName()<<","<<engineKey.SimName()<<endl;
             dbname = oplot->GetDatabaseName();
             state = oplot->GetState();
             const std::string &activeVar = oplot->GetVariableName();
@@ -1143,7 +1149,8 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
             else if (strcmp(qName.c_str(), "Variable by Node") == 0)
                 qa.SetElementType(QueryAttributes::Node);
 
-            if (eM->Query(host.c_str(), networkIds, &qa, qa))
+            cerr << "about to query, with engine key to "<<engineKey.HostName()<<","<<engineKey.SimName()<<endl;
+            if (eM->Query(engineKey, networkIds, &qa, qa))
             {
                 qa.SetVariables(vars);
                *queryClientAtts = qa;
@@ -1589,10 +1596,14 @@ ViewerQueryManager::ClearPickPoints()
 //    I made it use ViewerPlot::GetVarType because it knows the right time
 //    state for which to ask for metadata. Down here we don't know it as well.
 //
+//    Jeremy Meredith, Tue Mar 30 10:39:20 PST 2004
+//    Added an engine key to map plots to the engine used to create them.
+//
 // ****************************************************************************
 
 bool
-ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom, const int el)
+ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
+                                const int el)
 {
     bool retval = false;
 
@@ -1644,7 +1655,7 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom, const int e
         // Use the first plot.
         int plotId = plotIDs[0];
         ViewerPlot *plot = plist->GetPlot(plotId);
-        const std::string &host = plot->GetHostName();
+        const EngineKey   &engineKey = plot->GetEngineKey();
         const std::string &db = plot->GetDatabaseName();
         const std::string &activeVar = plot->GetVariableName();
         pickAtts->SetActiveVariable(activeVar);
@@ -1756,8 +1767,8 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom, const int e
             TRY
             {
                 PickAttributes pa = *pickAtts;
-                ViewerEngineManager::Instance()->Pick(host.c_str(), networkId, 
-                     &pa, pa);
+                ViewerEngineManager::Instance()->Pick(engineKey,
+                                                      networkId, &pa, pa);
                 if (pa.GetFulfilled())
                 {
                    *pickAtts = pa;

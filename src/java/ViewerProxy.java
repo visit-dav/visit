@@ -108,6 +108,10 @@ import java.util.Vector;
 //   Brad Whitlock, Thu Feb 26 13:38:26 PST 2004
 //   I added ClearCacheForAllEngines.
 //
+//   Jeremy Meredith, Tue Mar 30 17:36:24 PST 2004
+//   Added support for a simulation name in addition to simply a host name
+//   when specifying engines (i.e. ClearCache and CloseComputeEngine).
+//
 // ****************************************************************************
 
 public class ViewerProxy implements SimpleObserver
@@ -482,10 +486,11 @@ public class ViewerProxy implements SimpleObserver
         return synchronous ? Synchronize() : true;
     }
 
-    public boolean ClearCache(String hostName)
+    public boolean ClearCache(String hostName, String simName)
     {
         rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_CLEARCACHERPC);
         rpc.SetProgramHost(hostName);
+        rpc.SetProgramSim(simName);
         rpc.Notify();
         return synchronous ? Synchronize() : true;
     }
@@ -506,10 +511,11 @@ public class ViewerProxy implements SimpleObserver
         return synchronous ? Synchronize() : true;
     }
 
-    public boolean CloseComputeEngine(String hostName)
+    public boolean CloseComputeEngine(String hostName, String simName)
     {
         rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_CLOSECOMPUTEENGINERPC);
         rpc.SetProgramHost(hostName);
+        rpc.SetProgramSim(simName);
         rpc.Notify();
         return synchronous ? Synchronize() : true;
     }

@@ -2145,6 +2145,11 @@ QvisGUIApplication::CreatePluginWindows()
 //    Brad Whitlock, Fri Jan 30 14:46:54 PST 2004
 //    I added code to save whether the selected files list should be shown.
 //
+//    Jeremy Meredith, Tue Mar 30 12:26:59 PST 2004
+//    Added code to make sure we're not saving a simulation as a valid
+//    database name.  The actual plots won't get saved anyway, due to 
+//    ViewerPlotList::CreateNode.
+//
 // ****************************************************************************
 
 void
@@ -2184,6 +2189,11 @@ QvisGUIApplication::WriteConfigFile(const char *filename)
     for(int j = 0; j < pl->GetNumPlots(); ++j)
     {
         const Plot &p = pl->GetPlot(j);
+
+        // Make sure we're not saving a simulation as a valid database
+        if (p.GetIsFromSimulation())
+            continue;
+
         // Make sure we only add it if it's not already there.
         if(std::find(plotDatabases.begin(),
                      plotDatabases.end(),

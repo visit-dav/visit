@@ -6,6 +6,7 @@
 #define VIEWER_PLOT_FACTORY_H
 #include <viewer_exports.h>
 #include <avtSILRestriction.h>
+#include <EngineKey.h>
 
 class AttributeSubject;
 class ViewerPlot;
@@ -50,6 +51,10 @@ class ViewerPlotPluginInfo;
 //    I made it use strings in the constructor and I replaced frame0, frame1
 //    with the plotState argument.
 //
+//    Jeremy Meredith, Thu Mar 25 17:40:30 PST 2004
+//    Added support for simulations by adding an engine key to map a plot
+//    to the engine used to create it.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerPlotFactory
@@ -60,7 +65,8 @@ class VIEWER_API ViewerPlotFactory
 
     int GetNPlotTypes() const;
 
-    ViewerPlot *CreatePlot(const int type, const std::string &hostName,
+    ViewerPlot *CreatePlot(const int type, const EngineKey &ek,
+                           const std::string &hostName,
                            const std::string &databaseName,
                            const std::string &var,
                            avtSILRestriction_p silr,

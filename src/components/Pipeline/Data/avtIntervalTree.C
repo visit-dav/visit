@@ -675,6 +675,11 @@ avtIntervalTree::GetDomainsListFromRange(const float *min_vec,
 //  Programmer: Hank Childs
 //  Creation:   February 1, 2000
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Mar 30 08:15:46 PST 2004
+//    Add some numerical tolerances.
+//
 // ****************************************************************************
 
 bool
@@ -691,7 +696,7 @@ Intersects(const float *params, float solution, int block, int nDims,
 
     float  valAtMin  = EquationsValueAtPoint(params, block, 0, nDims,
                                              nodeExtents);
-    if (valAtMin == solution)
+    if (fabs(valAtMin-solution) < 1e-12)
     {
         //
         // It happens to be that at the minimum extents the value of the

@@ -244,6 +244,9 @@ ViewerQuery::StopObservingPlot()
 //    Brad Whitlock, Sat Jan 31 23:04:00 PST 2004
 //    I made it work without frame numbers.
 //
+//    Jeremy Meredith, Tue Mar 30 16:18:00 PST 2004
+//    Added code to set the engine key for the new plot list.
+//
 // ****************************************************************************
 
 void
@@ -282,6 +285,7 @@ ViewerQuery::CreateLineout(const bool fromDefault)
     }
 
     plotList->SetHostDatabaseName(hdbName);
+    plotList->SetEngineKey(originatingPlot->GetEngineKey());
  
     int pid = plotList->AddPlot(plotType, vName, replacePlots, false);
     resultsPlot = plotList->GetPlot(pid);

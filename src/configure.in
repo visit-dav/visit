@@ -474,6 +474,9 @@ dnl
 dnl    Brad Whitlock, Mon Mar 15 09:39:17 PDT 2004
 dnl    Fixed the pthreads test when PTHREAD_LIB is defined in the config-site.
 dnl
+dnl    Brad Whitlock, Tue Mar 30 09:05:27 PDT 2004
+dnl    Added PDB_EXEC to fix test suite.
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -1812,6 +1815,7 @@ AC_MSG_CHECKING(for PDB)
 PDB=""
 PDB_FLAGS=""
 PDB_LIBS=""
+PDB_EXEC=""
 AC_ARG_WITH(pdb,
 	    [  --with-pdb=INC,LIB      Location of PDB header and library],
            pdb_specified="yes",
@@ -1822,6 +1826,7 @@ if test "$pdb_specified" = "yes"; then
       PDB_FLAGS="-I`echo $withval |cut -f1 -d,`"
       PDB_LIBS="-L`echo $withval |cut -f2 -d, -s` -lpdb -lscore -lpml"
       PDB="$""(PDB)"
+      PDB_EXEC="$""(PDBEXEC)"
       AC_DEFINE(HAVE_PDB_PROPER)
       AC_MSG_RESULT(using PDB proper)
    fi
@@ -1829,11 +1834,13 @@ else
    PDB_FLAGS="$SILO_INCLUDE"
    PDB_LIBS="$SILO_LIB"
    PDB="$""(PDB)"
+   PDB_EXEC="$""(PDBEXEC)"
    AC_MSG_RESULT(using PDB lite)
 fi
 AC_SUBST(PDB)
 AC_SUBST(PDB_FLAGS)
 AC_SUBST(PDB_LIBS)
+AC_SUBST(PDB_EXEC)
 
 #
 # Look for Mili.

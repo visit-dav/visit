@@ -90,6 +90,10 @@
 //    Hank Childs, Fri Jan 23 08:54:53 PST 2004
 //    Do not link AVT code into Viewer Operators.
 //
+//    Jeremy Meredith, Tue Mar 30 10:13:46 PST 2004
+//    I added support for database plugins with only a mdserver or engine
+//    component.  This was critical for simulation support.
+//
 // ****************************************************************************
 
 class MakefileGeneratorPlugin
@@ -451,9 +455,18 @@ class MakefileGeneratorPlugin
         out << "## Standard targets..." << endl;
         out << "##" << endl;
         if (type!="database")
+        {
             out << "all: message $(IDSO) $(GUILIB) $(VIEWERLIB) $(ENGINELIBSER) $(ENGINELIBPAR) $(SCRIPTINGLIB) $(JAVACLASS)" << endl;
+        }
         else
-            out << "all: message $(IDSO) $(MDSERVERLIB) $(ENGINELIBSER) $(ENGINELIBPAR)" << endl;
+        {
+            if (noengineplugin)
+                out << "all: message $(IDSO) $(MDSERVERLIB)" << endl;
+            else if (onlyengineplugin)
+                out << "all: message $(IDSO) $(ENGINELIBSER) $(ENGINELIBPAR)" << endl;
+            else
+                out << "all: message $(IDSO) $(MDSERVERLIB) $(ENGINELIBSER) $(ENGINELIBPAR)" << endl;
+        }
         out << "" << endl;
         out << "clean:" << endl;
         out << "\t$(RM) $(IOBJ) $(COMMONOBJ)" << endl;
@@ -482,7 +495,12 @@ class MakefileGeneratorPlugin
         else if (type=="database")
         {
             out << "\t@echo \"****************************************************************************\"" << endl;
-            out << "\t@echo \"*** Building "<<label<<" Database Plugin\"" << endl;
+            if (noengineplugin)
+                out << "\t@echo \"*** Building "<<label<<" Database Plugin (no engine)\"" << endl;
+            else if (onlyengineplugin)
+                out << "\t@echo \"*** Building "<<label<<" Database Plugin (engine only)\"" << endl;
+            else
+                out << "\t@echo \"*** Building "<<label<<" Database Plugin\"" << endl;
             out << "\t@echo \"****************************************************************************\"" << endl;
         }
         out << "" << endl;

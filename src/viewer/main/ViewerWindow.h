@@ -12,6 +12,7 @@
 #include <avtView2D.h>
 #include <avtView3D.h>
 #include <avtViewCurve.h>
+#include <EngineKey.h>
 #include <VisCallback.h>
 #include <VisWindowTypes.h>
 #include <AnnotationAttributes.h>
@@ -38,7 +39,7 @@ class ViewerToolbar;
 struct ExternalRenderRequestInfo
 {
     std::vector<const char*>              pluginIDsList;
-    stringVector                          hostsList;
+    std::vector<EngineKey>                engineKeysList;
     intVector                             plotIdsList;
     std::vector<const AttributeSubject *> attsList;
     WindowAttributes                      winAtts;
@@ -287,6 +288,10 @@ struct ExternalRenderRequestInfo
 //    Refactored ExternalRenderCallback into methods support automatic
 //    and manual external rendering
 //
+//    Jeremy Meredith, Thu Mar 25 15:39:33 PST 2004
+//    Added an engine key used to index (and restart) engines.
+//    This replaces hostName in ExternalRenderRequestInfo.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerWindow
@@ -355,7 +360,7 @@ public:
     void InvertBackgroundColor();
     void CopyGeneralAttributes(const ViewerWindow *);
     WindowAttributes GetWindowAttributes() const;
-    bool SendWindowEnvironmentToEngine(const std::string &host);
+    bool SendWindowEnvironmentToEngine(const EngineKey &ek);
 
     void AddPlot(avtActor_p &);
     void ClearPlots();

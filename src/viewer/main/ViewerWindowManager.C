@@ -55,6 +55,7 @@
 #include <Line.h>
 
 #include <avtCallback.h>
+#include <avtDatabaseMetaData.h>
 #include <avtImage.h>
 #include <avtFileWriter.h>
 #include <avtToolInterface.h>
@@ -5317,7 +5318,11 @@ ViewerWindowManager::GetDatabasesForWindows(const intVector &windowIds,
 // Creation:   Fri Feb 27 12:52:19 PDT 2004
 //
 // Modifications:
-//   
+//    Jeremy Meredith, Tue Mar 30 11:04:04 PST 2004
+//    Added an engine key used to index (and restart) engines.
+//    I had to get the metadata before closing the database to determine
+//    which engine the file lives on.
+//
 // ****************************************************************************
 
 void
@@ -5331,6 +5336,11 @@ ViewerWindowManager::CloseDatabase(const std::string &dbName)
     ViewerFileServer *fs = ViewerFileServer::Instance();
     std::string expandedDB(dbName), host, db;
     fs->ExpandDatabaseName(expandedDB, host, db);
+
+    std::string sim = "";
+    const avtDatabaseMetaData *md = fs->GetMetaData(host, db);
+    if (md->GetIsSimulation())
+        sim = db;
 
     if(FileInUse(host, db))
     {
@@ -5378,7 +5388,8 @@ ViewerWindowManager::CloseDatabase(const std::string &dbName)
         // Tell the engine to clear any networks that involve the
         // database that we're closing.
         //
-        ViewerEngineManager::Instance()->ClearCache(host.c_str(), db.c_str());
+        ViewerEngineManager::Instance()->ClearCache(EngineKey(host, sim),
+                                                    db.c_str());
 
         SNPRINTF(tmp, 300, "VisIt closed \"%s\".", expandedDB.c_str());
         Message(tmp);        
