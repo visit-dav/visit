@@ -717,7 +717,7 @@ avtMinMaxQuery::CreateResultMessage(const int n)
 string 
 avtMinMaxQuery::InfoToString(const MinMaxInfo &info)
 {
-    std::strstream os;
+    ostrstream os;
     int elNum = info.GetElementNum();
 
     if (!nodeCentered)
@@ -764,8 +764,7 @@ avtMinMaxQuery::InfoToString(const MinMaxInfo &info)
         os << c[0] << ", " << c[1] << ", " << c[2];
     }
     os << ">)" << ends;
-    string str;
-    os >> str;
+    string str(os.str());
     return str;
 }
 
