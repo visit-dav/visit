@@ -1,70 +1,38 @@
+#include "Engine.h"
+#include "Executors.h"
+
 #if !defined(_WIN32)
 #include <strings.h>
 #include <unistd.h>      // for alarm()
 #endif
-#include <iostream.h>
 
-#include <ColorTableAttributes.h>
-#include <ParentProcess.h>
+#include <fstream.h>
+#include <iostream.h>
+#include <snprintf.h>
+
 #include <BufferConnection.h>
-#include <SocketConnection.h>
-#include <AbortException.h>
 #include <CouldNotConnectException.h>
 #include <DefineVirtualDatabaseRPC.h>
-#include <LostConnectionException.h>
 #include <IncompatibleVersionException.h>
-#include <QuitRPC.h>
-#include <ReadRPC.h>
-#include <RenderRPC.h>
-#include <ExecuteRPC.h>
-#include <ApplyOperatorRPC.h>
-#include <ApplyNamedFunctionRPC.h>
-#include <DefineVirtualDatabaseRPC.h>
-#include <ClearCacheRPC.h>
-#include <SetFinalVariableNameRPC.h>
-#include <UpdatePlotAttsRPC.h>
-#include <UseNetworkRPC.h>
-#include <OpenDatabaseRPC.h>
-#include <PickRPC.h>
-#include <QueryRPC.h>
-#include <ReleaseDataRPC.h>
-#include <StartPickRPC.h>
-#include <SetWindowAttsRPC.h>
-#include <MakePlotRPC.h>
-#include <RPCExecutor.h>
-#include <DebugStream.h>
 #include <Init.h>
 #include <InitVTK.h>
+#include <LoadBalancer.h>
+#include <LostConnectionException.h>
+#include <ParentProcess.h>
 #include <QueryAttributes.h>
+#include <SocketConnection.h>
 
-#include <avtStreamer.h>
-#include <avtCallback.h>
-#include <avtColorTables.h>
-#include <avtDataset.h>
 #include <avtDataObjectReader.h>
 #include <avtDataObjectString.h>
 #include <avtDataObjectWriter.h>
+#include <avtDataset.h>
 #include <avtFilter.h>
-#include <avtVariableMapper.h>
 #include <avtOriginatingSink.h>
 #include <avtPlot.h>
+#include <avtStreamer.h>
 #include <avtTerminatingSource.h>
-#include <avtDataObjectQuery.h>
-#include <DatabasePluginManager.h>
-#include <LoadBalancer.h>
-#include <NetworkManager.h>
-#include <PlotPluginManager.h>
-#include <PlotPluginInfo.h>
-#include <OperatorPluginManager.h>
-#include <OperatorPluginInfo.h>
-#include <VisItException.h>
-#include <TimingsManager.h>
-#include <ImproperUseException.h>
-#include <snprintf.h>
-
+#include <avtVariableMapper.h>
 #include <vtkDataSetWriter.h>
-
-#include <fstream.h>
 
 #include <string>
 using std::string;
@@ -75,33 +43,8 @@ using std::string;
 #include <Xfer.h>
 #endif
 
-// Prototypes.
-void DefineColorTables(const ColorTableAttributes &ct);
-void ProcessCommandLine(int argc, char *argv[]);
-bool EventLoop(Xfer &xfer, QuitRPC &quit);
-void WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &polyData);
-void ProcessInput(Xfer &xfer);
-bool EngineAbortCallback(void *);
-bool EngineAbortCallbackParallel(void *, bool);
-void EngineUpdateProgressCallback(void *, const char *, const char *, int,int);
-void EngineInitializeProgressCallback(void *, int);
-void EngineWarningCallback(void *, const char *);
-static void ResetTimeout(int timeout);
-static bool ConnectViewer(ParentProcess &viewer, int *argc, char **argv[]);
-
-#if !defined(_WIN32)
-static void AlarmHandler(int signal);
-#endif
-
-Connection *vtkConnection = 0;
-bool noFatalExceptions = true;
-static int timeout = 0;
-
-// The destination machine's type representation.
-TypeRepresentation destinationFormat;
-
-// Here's the network manager!
-NetworkManager *netmgr;
+// Static data
+Engine *Engine::instance = NULL;
 
 #if defined(_WIN32)
 // Get around a macro problem
@@ -111,1241 +54,250 @@ NetworkManager *netmgr;
 // Initial connection timeout of 5 minutes (300 seconds)
 #define INITIAL_CONNECTION_TIMEOUT 60
 
+
 // ****************************************************************************
-//  Method: RPCExecutor<QuitRPC>::Execute
+//  Constructor:  Engine::Engine
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    July 10, 2003
+//
+// ****************************************************************************
+Engine::Engine()
+{
+    vtkConnection = 0;
+    noFatalExceptions = true;
+    timeout = 0;
+    netmgr = NULL;
+    lb = NULL;
+}
+
+// ****************************************************************************
+//  Destructor:  Engine::~Engine
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    July 10, 2003
+//
+// ****************************************************************************
+Engine::~Engine()
+{
+    delete netmgr;
+    delete xfer;
+    delete lb;
+    for (int i=0; i<rpcExecutors.size(); i++)
+        delete rpcExecutors[i];
+}
+
+// ****************************************************************************
+//  Method:  Engine::Instance
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    July 10, 2003
+//
+// ****************************************************************************
+Engine *Engine::Instance()
+{
+    if (!instance)
+        instance = new Engine;
+    return instance;
+}
+
+// ****************************************************************************
+//  Method:  Engine::Initialize
 //
 //  Purpose:
-//      Execute a QuitRPC.
+//    Do all the initialization needed first.
 //
-//  Programmer: Jeremy Meredith
-//  Creation:   September 29, 2000
+//  Arguments:
+//    argc
+//    argv
 //
-//  Modifications:
+//  Note: Broken off from old main().  See main.C for comment history.
 //
-//    Hank Childs, Wed Jan  9 14:02:15 PST 2002
-//    Add a call to ClearAllNetworks when debugging memory leaks.
+//  Programmer:  Jeremy Meredith
+//  Creation:    July 10, 2003
 //
 // ****************************************************************************
-template<>
 void
-RPCExecutor<QuitRPC>::Execute(QuitRPC *rpc)
+Engine::Initialize(int *argc, char **argv[])
 {
-    debug2 << "Executing QuitRPC" << endl;
-    if (!rpc->GetQuit())
-        rpc->SendError();
-    else
-    {
-#ifdef DEBUG_MEMORY_LEAKS
-        netmgr->ClearAllNetworks();
-#endif
-        rpc->SendReply();
-    }
-}
-
-// ****************************************************************************
-//  Method: RPCExecutor<ReadRPC>::Execute
-//
-//  Purpose:
-//      Execute a ReadRPC.
-//
-//  Programmer: Jeremy Meredith
-//  Creation:   September 29, 2000
-//
-//  Modifications:
-//
-//    Kathleen Bonnell, Fri Apr 27 10:43:22 PDT 2001
-//    Added try-catch block.
-//
-//    Hank Childs, Wed Jun 13 10:35:57 PDT 2001
-//    Added SIL restriction when creating a network.
-//
-//    Brad Whitlock, Mon Oct 22 18:33:37 PST 2001
-//    Changed the exception keywords to macros.
-//
-//    Hank Childs, Fri Dec 14 17:39:36 PST 2001
-//    Use a more compact form of sil restriction.
-//
-//    Jeremy Meredith, Thu Oct 24 16:15:11 PDT 2002
-//    Added material options.
-//
-// ****************************************************************************
-template<>
-void
-RPCExecutor<ReadRPC>::Execute(ReadRPC *rpc)
-{
-    debug2 << "Executing ReadRPC" << endl;
-    TRY
-    {
-        netmgr->AddDB(rpc->GetFile(), rpc->GetVar(), rpc->GetTime(),
-                     rpc->GetCSRAttributes(), rpc->GetMaterialAttributes());
-        rpc->SendReply();
-    }
-    CATCH2(VisItException, e)
-    {
-        rpc->SendError(e.GetMessage(), e.GetExceptionType());
-    }
-    ENDTRY
-}
-
-// ****************************************************************************
-//  Method: RPCExecutor<PrepareOperatorRPC>::Execute
-//
-//  Purpose:
-//      Allocate space for the attributes for an ApplyOperatorRPC.
-//
-//  Programmer: Jeremy Meredith
-//  Creation:   March  4, 2001
-//
-//  Modifications:
-//    Kathleen Bonnell, Fri Apr 27 10:43:22 PDT 2001
-//    Added try-catch block.
-//
-//    Jeremy Meredith, Thu Jul 26 03:35:59 PDT 2001
-//    Added support for the new (real) operator plugin manager.
-//
-//    Jeremy Meredith, Fri Sep 28 13:39:51 PDT 2001
-//    Renamed GetName to GetID to reflect its new usage.
-//    Made use of plugin manager ability to key off of ids.
-//
-//    Brad Whitlock, Mon Oct 22 18:33:37 PST 2001
-//    Changed the exception keywords to macros.
-//
-//    Jeremy Meredith, Thu Nov 21 11:09:47 PST 2002
-//    Added check for non-existent operator.
-//
-//    Brad Whitlock, Thu Jan 16 11:20:31 PDT 2003
-//    I replaced the return in the TRY/CATCH block with CATCH_RETURN so
-//    fake exceptions work.
-//
-// ****************************************************************************
-template<>
-void
-RPCExecutor<PrepareOperatorRPC>::Execute(PrepareOperatorRPC *rpc)
-{
-    debug2 << "Executing PrepareOperatorRPC: " << rpc->GetID().c_str() << endl;
-    TRY 
-    {
-        string id = rpc->GetID().c_str();
-
-        if (!OperatorPluginManager::Instance()->PluginAvailable(id))
-        {
-            rpc->SendError("Requested operator does not exist for the engine",
-                           "VisItException");
-            CATCH_RETURN(1);
-        }
-
-        rpc->GetApplyOperatorRPC()->SetAtts(OperatorPluginManager::Instance()->
-            GetEnginePluginInfo(id)->AllocAttributes());
-        rpc->SendReply();
-    }
-    CATCH2(VisItException, e)
-    {
-        rpc->SendError(e.GetMessage(), e.GetExceptionType());
-    }
-    ENDTRY
-}
-
-
-// ****************************************************************************
-//  Method: RPCExecutor<ApplyOperatorRPC>::Execute
-//
-//  Purpose:
-//      Execute an ApplyOperatorRPC.
-//
-//  Programmer: Jeremy Meredith
-//  Creation:   March  2, 2001
-//
-//  Modifications:
-//    Kathleen Bonnell, Fri Apr 27 10:43:22 PDT 2001
-//    Added try-catch block.
-//
-//    Jeremy Meredith, Fri Sep 28 13:39:51 PDT 2001
-//    Renamed GetName to GetID to reflect its new usage.
-//
-// ****************************************************************************
-template<>
-void
-RPCExecutor<ApplyOperatorRPC>::Execute(ApplyOperatorRPC *rpc)
-{
-    debug2 << "Executing ApplyOperatorRPC: " << rpc->GetID().c_str() << endl;
-    TRY
-    {
-        netmgr->AddFilter(rpc->GetID().c_str(), rpc->GetAtts());
-        rpc->SendReply();
-    }
-    CATCH2(VisItException, e)
-    {
-        rpc->SendError(e.GetMessage(), e.GetExceptionType());
-    }
-    ENDTRY
-}
-
-// ****************************************************************************
-//  Method: RPCExecutor<ApplyNamedFunctionRPC>::Execute
-//
-//  Purpose:
-//      Execute an ApplyNamedFunctionRPC.
-//
-//  Programmer: Sean Ahern
-//  Creation:   Fri Apr 19 13:34:19 PDT 2002
-//
-//  Modifications:
-//
-// ****************************************************************************
-template<>
-void
-RPCExecutor<ApplyNamedFunctionRPC>::Execute(ApplyNamedFunctionRPC *rpc)
-{
-    debug2 << "Executing ApplyNamedFunctionRPC" << endl;
-    TRY
-    {
-        netmgr->AddNamedFunction(rpc->GetName(), rpc->GetNArgs());
-        rpc->SendReply();
-    }
-    CATCH2(VisItException, e)
-    {
-        rpc->SendError(e.GetMessage(), e.GetExceptionType());
-    }
-    ENDTRY
-}
-
-// ****************************************************************************
-//  Method: RPCExecutor<SetFinalVariableNameRPC>::Execute
-//
-//  Purpose:
-//      Execute a SetFinalVariableNameRPC.
-//
-//  Programmer: Sean Ahern
-//  Creation:   Thu Jun 13 16:18:38 PDT 2002
-//
-//  Modifications:
-//
-// ****************************************************************************
-template<>
-void
-RPCExecutor<SetFinalVariableNameRPC>::Execute(SetFinalVariableNameRPC *rpc)
-{
-    debug2 << "Executing SetFinalVariableNameRPC" << endl;
-    TRY
-    {
-        netmgr->SetFinalVariableName(rpc->GetName());
-        rpc->SendReply();
-    }
-    CATCH2(VisItException, e)
-    {
-        rpc->SendError(e.GetMessage(), e.GetExceptionType());
-    }
-    ENDTRY
-}
-
-// ****************************************************************************
-//  Method: RPCExecutor<PreparePlotPlotRPC>::Execute
-//
-//  Purpose:
-//      Allocate space for the attributes for a MakePlotRPC.
-//
-//  Programmer: Jeremy Meredith
-//  Creation:   March  4, 2001
-//
-//  Modifications:
-//    Jeremy Meredith, Tue Mar 20 12:05:50 PST 2001
-//    Made it use the new plugin manager.  For now we do a reverse lookup
-//    of the name to an index.
-//
-//    Kathleen Bonnell, Fri Apr 27 10:43:22 PDT 2001
-//    Added try-catch block.
-//
-//    Jeremy Meredith, Fri Sep 28 13:39:51 PDT 2001
-//    Renamed GetName to GetID to reflect its new usage.
-//    Made use of plugin manager ability to key off of ids.
-//
-//    Jeremy Meredith, Thu Nov 21 11:09:35 PST 2002
-//    Added check for non-existent plot.
-//
-//    Brad Whitlock, Thu Jan 16 11:25:22 PDT 2003
-//    I replaced the return from the TRY/CATCH block with CATCH_RETURN so
-//    fake exceptions work.
-//
-// ****************************************************************************
-template<>
-void
-RPCExecutor<PreparePlotRPC>::Execute(PreparePlotRPC *rpc)
-{
-    debug2 << "Executing PreparePlotRPC: " << rpc->GetID().c_str() << endl;
-    TRY
-    {
-        string id = rpc->GetID().c_str();
-
-        if (!PlotPluginManager::Instance()->PluginAvailable(id))
-        {
-            rpc->SendError("Requested plot does not exist for the engine",
-                           "VisItException");
-            CATCH_RETURN(1);
-        }
-
-        rpc->GetMakePlotRPC()->SetAtts(PlotPluginManager::Instance()->
-            GetEnginePluginInfo(id)->AllocAttributes());
-        rpc->SendReply();
-    }
-    CATCH2(VisItException, e)
-    {
-        rpc->SendError(e.GetMessage(), e.GetExceptionType());
-    }
-    ENDTRY
-}
-
-// ****************************************************************************
-//  Method: RPCExecutor<MakePlotRPC>::Execute
-//
-//  Purpose:
-//      Execute a MakePlotRPC.
-//
-//  Programmer: Jeremy Meredith
-//  Creation:   March  4, 2001
-//
-//  Modifications:
-//    Kathleen Bonnell, Fri Apr 27 10:43:22 PDT 2001
-//    Added try-catch block.
-//
-//    Jeremy Meredith, Fri Sep 28 13:39:51 PDT 2001
-//    Renamed GetName to GetID to reflect its new usage.
-//
-//    Brad Whitlock, Mon Oct 22 18:33:37 PST 2001
-//    Changed the exception keywords to macros.
-//
-// ****************************************************************************
-template<>
-void
-RPCExecutor<MakePlotRPC>::Execute(MakePlotRPC *rpc)
-{
-    debug2 << "Executing MakePlotRPC: " << rpc->GetID().c_str() << endl;
-    TRY 
-    {
-        netmgr->MakePlot(rpc->GetID().c_str(), rpc->GetAtts());
-        MakePlotRPC::NetworkID id(netmgr->EndNetwork());
-        rpc->SendReply(&id);
-    }
-    CATCH2(VisItException, e)
-    {
-        rpc->SendError(e.GetMessage(), e.GetExceptionType());
-    }
-    ENDTRY
-}
-
-// ****************************************************************************
-//  Method: RPCExecutor<UseNetworkRPC>::Execute
-//
-//  Purpose:
-//      Execute a UseNetworkRPC.
-//
-//  Programmer: Jeremy Meredith
-//  Creation:   November  7, 2001
-//
-//  Modifications:
-// ****************************************************************************
-template<>
-void
-RPCExecutor<UseNetworkRPC>::Execute(UseNetworkRPC *rpc)
-{
-    debug2 << "Executing UseNetworkRPC: " << rpc->GetID() << endl;
-    TRY 
-    {
-        netmgr->UseNetwork(rpc->GetID());
-        rpc->SendReply();
-    }
-    CATCH2(VisItException, e)
-    {
-        rpc->SendError(e.GetMessage(), e.GetExceptionType());
-    }
-    ENDTRY
-}
-
-// ****************************************************************************
-//  Method: RPCExecutor<PrepareUpdatePlotAttsRPC>::Execute
-//
-//  Purpose:
-//      Allocate space for the attributes for a UpdatePlotAttsRPC.
-//
-//  Programmer: Hank Childs
-//  Creation:   November 30, 2001
-//
-// ****************************************************************************
-template<>
-void
-RPCExecutor<PrepareUpdatePlotAttsRPC>::Execute(PrepareUpdatePlotAttsRPC *rpc)
-{
-    debug2 << "Executing PrepareUpdatePlotAttsRPC: " << rpc->GetID().c_str() << endl;
-    TRY
-    {
-        string id = rpc->GetID().c_str();
-
-        if (!PlotPluginManager::Instance()->PluginAvailable(id))
-        {
-            rpc->SendError("Requested plot does not exist for the engine",
-                           "VisItException");
-            CATCH_RETURN(1);
-        }
-
-        AttributeSubject *atts = PlotPluginManager::Instance()->
-                                 GetEnginePluginInfo(id)->AllocAttributes();
-        rpc->GetUpdatePlotAttsRPC()->SetAtts(atts);
-        rpc->SendReply();
-    }
-    CATCH2(VisItException, e)
-    {
-        rpc->SendError(e.GetMessage(), e.GetExceptionType());
-    }
-    ENDTRY
-}
-
-// ****************************************************************************
-//  Method: RPCExecutor<UpdatePlotAttsRPC>::Execute
-//
-//  Purpose:
-//      Execute a UpdatePlotAttsRPC.
-//
-//  Programmer: Hank Childs
-//  Creation:   November 30, 2001
-//
-// ****************************************************************************
-template<>
-void
-RPCExecutor<UpdatePlotAttsRPC>::Execute(UpdatePlotAttsRPC *rpc)
-{
-    debug2 << "Executing UpdatePlotAttsRPC: " << rpc->GetID().c_str() << endl;
-    TRY 
-    {
-        int plotIndex = rpc->GetPlotIndex();
-        const AttributeSubject *atts = rpc->GetAtts();
-        netmgr->UpdatePlotAtts(plotIndex, atts);
-        rpc->SendReply();
-    }
-    CATCH2(VisItException, e)
-    {
-        rpc->SendError(e.GetMessage(), e.GetExceptionType());
-    }
-    ENDTRY
-}
-
-// ****************************************************************************
-//  Method: RPCExecutor<PickRPC>::Execute
-//
-//  Purpose:
-//
-//  Programmer: Kathleen Bonnell 
-//  Creation:   November 20, 2001
-//
-// ****************************************************************************
-template<>
-void
-RPCExecutor<PickRPC>::Execute(PickRPC *rpc)
-{
-    debug2 << "Executing PickRPC: " << endl; 
-    TRY 
-    {
-        netmgr->Pick(rpc->GetNetId(), rpc->GetPickAtts());
-        rpc->SendReply(rpc->GetPickAtts());
-    }
-    CATCH2(VisItException, e)
-    {
-        rpc->SendError(e.GetMessage(), e.GetExceptionType());
-    }
-    ENDTRY
-}
-
-
-// ****************************************************************************
-//  Method: RPCExecutor<StartPickRPC>::Execute
-//
-//  Purpose:
-//
-//  Programmer: Kathleen Bonnell 
-//  Creation:   November 26, 2001
-//
-// ****************************************************************************
-template<>
-void
-RPCExecutor<StartPickRPC>::Execute(StartPickRPC *rpc)
-{
-    debug2 << "Executing StartPickRPC: " << endl; 
-
-    TRY 
-    {
-        if (rpc->GetStartFlag())
-            netmgr->StartPickMode();
-        else
-            netmgr->StopPickMode();
-        rpc->SendReply();
-    }
-    CATCH2(VisItException, e)
-    {
-        rpc->SendError(e.GetMessage(), e.GetExceptionType());
-    }
-    ENDTRY
-}
-
-// ****************************************************************************
-//  Method: RPCExecutor<SetWindowAttsRPC>::Execute
-//
-//  Purpose:
-//      Execute a SetWindowAttsRPC.
-//
-//  Programmer: Jeremy Meredith
-//  Creation:   November  8, 2001
-//
-//  Modifications:
-//    Brad Whitlock, Mon Dec 2 13:46:49 PST 2002
-//    I added a method call to populate the color tables.
-//
-// ****************************************************************************
-template<>
-void
-RPCExecutor<SetWindowAttsRPC>::Execute(SetWindowAttsRPC *rpc)
-{
-    debug2 << "Executing SetWindowAttsRPC "
-           << rpc->GetWindowAtts().GetSize()[0] << "x"
-           << rpc->GetWindowAtts().GetSize()[1] << endl;
-    TRY 
-    {
-        DefineColorTables(rpc->GetWindowAtts().GetColorTables());
-        netmgr->SetWindowAttributes(rpc->GetWindowAtts());
-        rpc->SendReply();
-    }
-    CATCH2(VisItException, e)
-    {
-        rpc->SendError(e.GetMessage(), e.GetExceptionType());
-    }
-    ENDTRY
-}
-
-
-// ****************************************************************************
-//  Method: RPCExecutor<ExecuteRPC>::Execute
-//
-//  Purpose:
-//      Execute an ExecuteRPC.
-//
-//  Programmer: Jeremy Meredith
-//  Creation:   September 29, 2000
-//
-//  Modifications:
-//    Kathleen Bonnell, Tue Nov  7 16:11:40 PST 2000
-//    Made netmgr add the relevant points filter.
-//
-//    Jeremy Meredith, Thu Mar  1 13:55:26 PST 2001
-//    Removed the facelist filter.  Plots now know how to add one themselves.
-//
-//    Brad Whitlock, Fri Mar 16 12:33:58 PDT 2001
-//    Added code that catches the ImproperUseException that can be output by
-//    NetworkManager::GetOutput and sets the global noFatalExceptions
-//    variable to false to terminate the event loops.
-//
-//    Brad Whitlock, Tue May 1 13:15:17 PST 2001
-//    Added code to send back an initial status.
-//
-//    Kathleen Bonnell, Tue May  1 16:57:02 PDT 2001 
-//    Added code to catch generic VisItExceptions and send error via rpc. 
-//
-//    Jeremy Meredith, Fri Jun 29 14:50:37 PDT 2001
-//    Added progress reporting.
-//
-//    Jeremy Meredith, Tue Jul  3 15:11:22 PDT 2001
-//    Added abort capability.
-//
-//    Hank Childs, Mon Aug 13 15:14:50 PDT 2001
-//    Changed location of progress/abort callbacks from avtFilter to
-//    avtDataObjectSource.
-//
-//    Jeremy Meredith, Thu Sep 20 01:00:59 PDT 2001
-//    Added registration of the progress callback with the LoadBalancer.
-//
-//    Hank Childs, Thu Oct 18 16:41:18 PDT 2001
-//    Register a warning callback.
-//
-//    Brad Whitlock, Mon Oct 22 18:33:37 PST 2001
-//    Changed the exception keywords to macros.
-//
-//    Eric Brugger, Mon Nov  5 13:50:49 PST 2001
-//    Modified to always compile the timing code.
-//
-//    Hank Childs, Wed Sep 11 09:35:59 PDT 2002
-//    Release the data from old networks.
-//
-//    Kathleen Bonnell, Mon Sep 30 14:38:33 PDT 2002 
-//    Removed call to DoneWithNetwork that releases data.  This is now
-//    handled by the ReleaseDataRPC. 
-//
-//    Hank Childs, Mon Dec  2 11:31:27 PST 2002
-//    Prevent UMR when the operation was interrupted or failed.
-//
-// ****************************************************************************
-template<>
-void
-RPCExecutor<ExecuteRPC>::Execute(ExecuteRPC *rpc)
-{
-    int gettingData = visitTimer->StartTimer();
-    int writingData = -1;
-
-    avtDataObjectSource::RegisterProgressCallback(EngineUpdateProgressCallback,
-                                        (void*)rpc);
-    LoadBalancer::RegisterProgressCallback(EngineUpdateProgressCallback,
-                                        (void*)rpc);
-    avtTerminatingSource::RegisterInitializeProgressCallback(
-                                       EngineInitializeProgressCallback,
-                                       (void*)rpc);
-    avtCallback::RegisterWarningCallback(EngineWarningCallback, (void*)rpc);
-
-    debug2 << "Executing ExecuteRPC with respondWithNullDataObject = " <<
-       rpc->GetRespondWithNull() << endl;
-    TRY
-    {
-        // Get the output of the network manager. This does the job of
-        // executing the network.
-        avtDataObjectWriter_p writer = netmgr->GetOutput(rpc->GetRespondWithNull());
-
-        visitTimer->StopTimer(gettingData, "Executing network");
-        writingData = visitTimer->StartTimer();
-
-        // Send the data back to the viewer.
-        WriteData(rpc, writer);
-    }
-    CATCH(ImproperUseException)
-    {
-        noFatalExceptions = false;
-    }
-    CATCH(AbortException)
-    {
-        rpc->SendAbort();
-    }
-    CATCH2(VisItException, e)
-    {
-        rpc->SendError(e.GetMessage(), e.GetExceptionType());
-    }
-    ENDTRY
-
-    avtDataObjectSource::RegisterProgressCallback(EngineUpdateProgressCallback,
-                                                  NULL);
-    LoadBalancer::RegisterProgressCallback(EngineUpdateProgressCallback,
-                                           NULL);
-    avtTerminatingSource::RegisterInitializeProgressCallback(
-                                       EngineInitializeProgressCallback, NULL);
-
-    if (writingData >= 0)
-    {
-        visitTimer->StopTimer(writingData, "Writing data to viewer");
-    }
-    visitTimer->DumpTimings();
-}
-
-// ****************************************************************************
-//  Method: RPCExecutor<ClearCacheRPC>::Execute
-//
-//  Purpose:
-//      Execute a ClearCacheRPC.
-//
-//  Notes:      At present, this RPC executor forces the network manager to
-//              clear all networks. This is not a good thing to do because
-//              it potentially wastes a lot of work. Someone more knowledgeable
-//              about the engine should make it clear the networks that use
-//              the specified database and make the engine re-open the
-//              database since it could have changed on disk if we're
-//              doing this RPC.
-//
-//  Programmer: Brad Whitlock
-//  Creation:   Tue Jul 30 13:10:26 PST 2002
-//
-//  Modifications:
-//
-// ****************************************************************************
-template<>
-void
-RPCExecutor<ClearCacheRPC>::Execute(ClearCacheRPC *rpc)
-{
-    debug2 << "Executing ClearCacheRPC: file = " 
-           << rpc->GetDatabaseName().c_str() << endl;
-    TRY 
-    {
-        if(rpc->GetClearAll())
-            netmgr->ClearAllNetworks();
-        else
-        {
-            // Fix me. Make it only clear info related to the specified db and
-            // also make it reopen the database.
-            netmgr->ClearAllNetworks();
-        }
-
-        rpc->SendReply();
-    }
-    CATCH2(VisItException, e)
-    {
-        rpc->SendError(e.GetMessage(), e.GetExceptionType());
-    }
-    ENDTRY
-}
-
- 
-// ****************************************************************************
-//  Method: RPCExecutor<QueryRPC>::Execute
-//
-//  Purpose:  Execute a query.
-//
-//  Programmer: Kathleen Bonnell
-//  Creation:   September 16, 2002
-//
-// ****************************************************************************
-template<>
-void
-RPCExecutor<QueryRPC>::Execute(QueryRPC *rpc)
-{
-    debug2 << "Executing QueryRPC: " << endl;
-
-    avtDataObjectQuery::RegisterProgressCallback(EngineUpdateProgressCallback,
-                                                  (void*) rpc);
-    avtDataObjectSource::RegisterProgressCallback(EngineUpdateProgressCallback,
-                                                  (void*) rpc);
-    LoadBalancer::RegisterProgressCallback(EngineUpdateProgressCallback,
-                                           (void*) rpc);
-    avtDataObjectQuery::RegisterInitializeProgressCallback(
-                                       EngineInitializeProgressCallback, 
-                                       (void*) rpc);
-
- 
-    TRY
-    {
-        netmgr->Query(rpc->GetNetworkId(), rpc->GetQueryAtts());
-        rpc->SendReply(rpc->GetQueryAtts());
-    }
-    CATCH2(VisItException, e)
-    {
-        rpc->SendError(e.GetMessage(), e.GetExceptionType());
-    }
-    ENDTRY
-
-    avtDataObjectQuery::RegisterProgressCallback(EngineUpdateProgressCallback,
-                                                  NULL);
-    avtDataObjectSource::RegisterProgressCallback(EngineUpdateProgressCallback,
-                                                  NULL);
-    LoadBalancer::RegisterProgressCallback(EngineUpdateProgressCallback,
-                                           NULL);
-    avtDataObjectQuery::RegisterInitializeProgressCallback(
-                                       EngineInitializeProgressCallback, 
-                                       NULL);
-}
-
-
-// ****************************************************************************
-//  Method: RPCExecutor<ReleaseDataRPC>::Execute
-//
-//  Purpose:
-//      Execute a ReleaseDataRPC.
-//
-//  Programmer: Kathleen Bonnell 
-//  Creation:   September 18, 2002 
-//
-//  Modifications:
-// ****************************************************************************
-template<>
-void
-RPCExecutor<ReleaseDataRPC>::Execute(ReleaseDataRPC *rpc)
-{
-    debug2 << "Executing ReleaseDataRPC: " << rpc->GetID() << endl;
-    TRY 
-    {
-        netmgr->DoneWithNetwork(rpc->GetID());
-        rpc->SendReply();
-    }
-    CATCH2(VisItException, e)
-    {
-        rpc->SendError(e.GetMessage(), e.GetExceptionType());
-    }
-    ENDTRY
-}
-
-
-// ****************************************************************************
-//  Method: RPCExecutor<OpenDatabaseRPC>::Execute
-//
-//  Purpose:
-//      Execute an OpenDatabaseRPC.
-//
-//  Programmer: Brad Whitlock
-//  Creation:   Tue Dec 10 14:34:01 PST 2002
-//
-//  Modifications:
-//    Jeremy Meredith, Tue Mar  4 13:07:17 PST 2003
-//    Removed the return reply since OpenDatabaseRPC is now non-blocking.
-//
-// ****************************************************************************
-template<>
-void
-RPCExecutor<OpenDatabaseRPC>::Execute(OpenDatabaseRPC *rpc)
-{
-    debug2 << "Executing OpenDatabaseRPC: db=" << rpc->GetDatabaseName().c_str()
-           << ", time=" << rpc->GetTime() << endl;
-
-    netmgr->AddDB(rpc->GetDatabaseName(), rpc->GetTime());
-}
-
-// ****************************************************************************
-//  Method: RPCExecutor<DefineVirtualDatabaseRPC>::Execute
-//
-//  Purpose:
-//      Execute a DefineVirtualDatabaseRPC.
-//
-//  Programmer: Brad Whitlock
-//  Creation:   Tue Mar 25 13:11:38 PST 2003
-//
-//  Modifications:
-//
-// ****************************************************************************
-template<>
-void
-RPCExecutor<DefineVirtualDatabaseRPC>::Execute(DefineVirtualDatabaseRPC *rpc)
-{
-    debug2 << "Executing DefineVirtualDatabaseRPC: "
-           << "db=" << rpc->GetDatabaseName().c_str()
-           << "path=" << rpc->GetDatabasePath().c_str()
-           << ", time=" << rpc->GetTime()
-           << endl;
-    for(int i = 0; i < rpc->GetDatabaseFiles().size(); ++i)
-        debug5 << "file["<<i<<"]="<<rpc->GetDatabaseFiles()[i].c_str() << endl;
-
-    netmgr->DefineDB(rpc->GetDatabaseName(), rpc->GetDatabasePath(),
-                     rpc->GetDatabaseFiles(), rpc->GetTime());
-}
-
-// ****************************************************************************
-//  Method: RPCExecutor<RenderRPC>::Execute
-//
-//  Purpose:
-//      Execute a RenderRPC.
-//
-//  Programmer: Mark C. Miller 
-//  Creation:   07Apr03 
-//
-// ****************************************************************************
-template<>
-void
-RPCExecutor<RenderRPC>::Execute(RenderRPC *rpc)
-{
-    debug2 << "Executing RenderRPC for the following plots" << endl;
-    debug2 << "   ";
-    for (int i = 0; i < rpc->GetIDs().size(); i++)
-       debug2 << rpc->GetIDs()[i] << ", ";
-    debug2 << endl;
-
-    avtDataObjectSource::RegisterProgressCallback(NULL, NULL);
-    LoadBalancer::RegisterProgressCallback(NULL, NULL);
-    avtTerminatingSource::RegisterInitializeProgressCallback(NULL, NULL);
-    avtCallback::RegisterWarningCallback(NULL, NULL);
-    TRY 
-    {
-        // do the render
-        avtDataObjectWriter_p writer = netmgr->Render(rpc->GetIDs(),rpc->GetSendZBuffer());
-
-        // Send the data back to the viewer.
-        WriteData(rpc, writer);
-    }
-    CATCH2(VisItException, e)
-    {
-        rpc->SendError(e.GetMessage(), e.GetExceptionType());
-    }
-    ENDTRY
-}
-
-// ****************************************************************************
-// Function: main
-//
-// Purpose:
-//   This is the main function for a simple "engine" that runs in
-//   parallel and gets state information from the viewer and prints
-//   the information that changed to the console.
-//
-// Notes:      
-//
-// Programmer: Brad Whitlock
-// Creation:   Wed Jul 12 15:20:19 PST 2000
-//
-// Modifications:
-//
-//    Jeremy Meredith, Wed Aug  9 14:41:24 PDT 2000
-//    Switched out plotAtts for plotRPC.
-//
-//    Jeremy Meredith, Wed Aug  9 14:41:24 PDT 2000
-//    Cleaned up the way RPCs are handled.
-//    Switched out quitAtts for quitRPC.
-//
-//    Jeremy Meredith, Thu Sep  7 13:06:10 PDT 2000
-//    Added the new RPC types for doing network-style computation.
-//
-//    Jeremy Meredith, Fri Sep 15 16:12:56 PDT 2000
-//    Added slice RPC, fixed a bug with the previous ones.
-//
-//    Jeremy Meredith, Thu Sep 21 22:15:06 PDT 2000
-//    Made it work in parallel again.
-//
-//    Kathleen Bonnell, Thu Oct 12 12:50:27 PDT 2000
-//    Added OnionPeelRPC.
-//
-//    Brad Whitlock, Fri Oct 6 11:42:56 PDT 2000
-//    Removed the SocketConnections. I also added code to set the
-//    destination format from the connection back to the viewer.
-//
-//    Hank Childs, Thu Oct 26 10:13:55 PDT 2000
-//    Added initialization of exceptions.
-//
-//    Jeremy Meredith, Fri Nov 17 16:15:04 PST 2000
-//    Removed initialization of exceptions and added general initialization.
-//
-//    Kathleen Bonnell, Fri Nov 17 16:33:40 PST 2000 
-//    Added MatPlotRPC.
-//
-//    Kathleen Bonnell, Fri Dec  1 14:51:50 PST 2000 
-//    Added FilledBoundaryRPC.
-//
-//    Jeremy Meredith, Tue Dec 12 13:50:03 PST 2000
-//    Added MaterialSelectRPC.
-//
-//    Hank Childs, Thu Jan 11 16:45:11 PST 2001
-//    Added RangeVolumePlotRPC, IsoSurfaceVolumePlotRPC.
-//
-//    Kathleen Bonnell, Thu Feb 22 15:08:32 PST 2001 
-//    Added ContourPlotRPC.
-//
-//    Jeremy Meredith, Sun Mar  4 16:50:49 PST 2001
-//    Ripped out all plot and operator RPCs.
-//    Created two new ones:  ApplyOperator and MakePlot.
-//    Added manual initialization of (a new) PluginManager.
-//
-//    Kathleen Bonnell, Thu Mar  8 09:01:10 PST 2001 
-//    Added registration of surface plot.
-//
-//    Brad Whitlock, Thu Mar 15 14:35:22 PST 2001
-//    Modified how input connections are supplied to the xfer object. Changed
-//    calls to the event loops.
-//
-//    Jeremy Meredith, Tue Mar 20 12:21:07 PST 2001
-//    Removed registration of all plots since we are using the new
-//    PlotPluginManager.
-//
-//    Hank Childs, Tue Apr 24 15:25:37 PDT 2001
-//    Added initialization of VTK modules.
-//
-//    Brad Whitlock, Wed Apr 25 17:09:37 PST 2001
-//    Added code to catch IncompatibleVersionException. The handlers set the
-//    noFatalExceptions variable to false which causes the engine to terminate.
-//
-//    Jeremy Meredith, Thu May 10 15:00:40 PDT 2001
-//    Added initialization of PlotPluginManager.
-//
-//    Kathleen Bonnell, Mon May  7 15:58:13 PDT 2001 
-//    Added registration of Erase operator. 
-//    
-//    Hank Childs, Sun Jun 17 18:06:53 PDT 2001
-//    Removed reference to avtLoadBalancer, initialized LoadBalancer.
-//
-//    Hank Childs, Wed Jun 20 18:15:44 PDT 2001
-//    Initialize avt filters.
-//
-//    Jeremy Meredith, Tue Jul  3 15:10:52 PDT 2001
-//    Added xfer parameter to EngineAbortCallback.
-//
-//    Hank Childs, Fri Jul 20 08:09:53 PDT 2001
-//    Remove MaterialSelect.
-//
-//    Jeremy Meredith, Tue Jul 24 14:09:27 PDT 2001
-//    Removed FacelistFilter.
-//
-//    Jeremy Meredith, Thu Jul 26 03:36:21 PDT 2001
-//    Added support for the new (real) operator plugin manager.
-//
-//    Hank Childs, Mon Aug 13 15:14:50 PDT 2001
-//    Changed location of progress/abort callbacks from avtFilter to
-//    avtDataObjectSource.
-//
-//    Jeremy Meredith, Thu Sep 20 01:00:59 PDT 2001
-//    Added registration of the progress callback with the LoadBalancer.
-//
-//    Jeremy Meredith, Fri Sep 21 14:45:14 PDT 2001
-//    Added registration of the abort callback with the LoadBalancer.
-//
-//    Jeremy Meredith, Fri Sep 28 13:41:27 PDT 2001
-//    Added load of plugins since they are not loaded anymore until
-//    explicity told to do so.
-//
-//    Brad Whitlock, Mon Oct 22 18:33:37 PST 2001
-//    Changed the exception keywords to macros.
-//
-//    Jeremy Meredith, Fri Nov  9 10:34:08 PST 2001
-//    Added UseNetworkRPC and SetWindowAttsRPC.
-//
-//    Hank Childs, Thu Nov 29 16:22:37 PST 2001
-//    Added UpdatePlotAttsRPC.
-//
-//    Kathleen Bonnell, Tue Nov 20 12:35:54 PST 2001 
-//    Added PickRPC StartPickRPC.
-//
-//    Jeremy Meredith, Wed Jan 16 10:09:45 PST 2002
-//    Do initialization of plugin managers with parallel flag.
-//
-//    Sean Ahern, Thu Mar 21 13:18:09 PST 2002
-//    Added ApplyUnaryOperatorRPC.
-//
-//    Sean Ahern, Fri Apr 19 14:02:34 PDT 2002
-//    Removed ApplyUnaryOperatorRPC.  Added ApplyNamedFunctionRPC.
-//
-//    Brad Whitlock, Tue Jul 30 13:13:42 PST 2002
-//    I added ClearCacheRPC.
-//
-//    Jeremy Meredith, Wed Aug 21 12:51:28 PDT 2002
-//    I renamed some plot/operator plugin manager methods for refactoring.
-//
-//    Jeremy Meredith, Thu Aug 22 14:31:44 PDT 2002
-//    Added database plugins.
-//
-//    Hank Childs, Mon Sep 30 14:26:55 PDT 2002
-//    Made the network manager be allocated off the heap.  That way we can
-//    control whether or not we decide to clean up the memory associated with
-//    it when we exit the program (it's faster not to).
-//
-//    Kathleen Bonnell, Mon Sep 16 14:28:09 PDT 2002  
-//    Added QueryRPC, ReleaseDataRPC.
-//
-//    Brad Whitlock, Mon Sep 30 09:02:35 PDT 2002
-//    The code to connect to the viewer became more complex so I moved it
-//    to a new function. I made the new function return a bool that tells
-//    whether or not the connection to the viewer was a success. The return
-//    value is used to jump over the initializing of a lot of objects so the
-//    engine can terminate faster.
-//
-//    Mark C. Miller, Mon Nov 11 14:45:16 PST 2002
-//    Added a call to ForceMesa during initialization.
-//
-//    Brad Whitlock, Tue Dec 10 14:33:13 PST 2002
-//    I added OpenDatabaseRPC.
-//
-//    Jeremy Meredith, Fri Feb 28 12:21:01 PST 2003
-//    Renamed LoadPlugins to LoadPluginsNow.   There is now a corresponding
-//    LoadPluginsOnDemand, and I made the Plot and Operator plugin managers
-//    use that method instead.  At the moment, all Database plugins need
-//    to be open for the avtDatabaseFactory to determine which one to use
-//    when opening a file, but I expect this to change shortly.
-//
-//    Brad Whitlock, Tue Mar 25 13:13:53 PST 2003
-//    I added a new rpc that lets us define virtual database files.
-//
-//    Jeremy Meredith, Wed May  7 15:49:53 PDT 2003
-//    Force static load balancing.... for now.
-//
-// ****************************************************************************
-
-int
-main(int argc, char *argv[])
-{
-    LoadBalancer::ForceStatic();
-
-    ParentProcess theViewer;
-
 #ifdef PARALLEL
-    MPIXfer xfer;
-
-    //
+    xfer = new MPIXfer;
     // Initialize for MPI and get the process rank & size.
     //
-    PAR_Init(argc, argv);
+    PAR_Init(*argc, *argv);
 
     //
     // Initialize error logging
     //
-    Init::Initialize(argc, argv, PAR_Rank(), PAR_Size());
-    Init::SetComponentName("engine");
-    debug1 << "ENGINE started\n";
-
-    //
-    // Connect to the viewer.
-    //
-    if(ConnectViewer(theViewer, &argc, &argv))
-    {
-        PlotPluginManager::Initialize(PlotPluginManager::Engine, true);
-        OperatorPluginManager::Initialize(OperatorPluginManager::Engine, true);
-        DatabasePluginManager::Initialize(DatabasePluginManager::Engine, true);
+    Init::Initialize(*argc, *argv, PAR_Rank(), PAR_Size());
 #else
-    Xfer xfer;
-
-    //
-    // Initialize error logging
-    //
-    Init::Initialize(argc, argv);
-    Init::SetComponentName("engine");
-    debug1 << "ENGINE started\n";
-
-    //
-    // Connect to the viewer.
-    //
-    if(ConnectViewer(theViewer, &argc, &argv))
-    {
-        //
-        // Initialize the plugin managers.
-        //
-        PlotPluginManager::Initialize(PlotPluginManager::Engine, false);
-        OperatorPluginManager::Initialize(OperatorPluginManager::Engine, false);
-        DatabasePluginManager::Initialize(DatabasePluginManager::Engine, false);
+    xfer = new Xfer;
+    Init::Initialize(*argc, *argv);
 #endif
-        InitVTK::Initialize();
-        InitVTK::ForceMesa();
-        avtCallback::SetNowinMode(true);
+    Init::SetComponentName("engine");
 
-        //
-        // Load plugins
-        //
-        PlotPluginManager::Instance()->LoadPluginsOnDemand();
-        OperatorPluginManager::Instance()->LoadPluginsOnDemand();
-        DatabasePluginManager::Instance()->LoadPluginsNow();
+    debug1 << "ENGINE started\n";
+}
 
-        vtkConnection = theViewer.GetReadConnection(1);
+// ****************************************************************************
+//  Method:  Engine::SetUpViewerInterface
+//
+//  Purpose:
+//    Do all the initialization needed after we connect to the viewer.
+//
+//  Arguments:
+//    argc
+//    argv
+//
+//  Note: Broken off from old main().  See main.C for comment history.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    July 10, 2003
+//
+// ****************************************************************************
+void
+Engine::SetUpViewerInterface(int *argc, char **argv[])
+{
+    //
+    // Initialize the plugin managers.
+    //
+#ifdef PARALLEL
+    PlotPluginManager::Initialize(PlotPluginManager::Engine, true);
+    OperatorPluginManager::Initialize(OperatorPluginManager::Engine, true);
+    DatabasePluginManager::Initialize(DatabasePluginManager::Engine, true);
+#else
+    PlotPluginManager::Initialize(PlotPluginManager::Engine, false);
+    OperatorPluginManager::Initialize(OperatorPluginManager::Engine, false);
+    DatabasePluginManager::Initialize(DatabasePluginManager::Engine, false);
+#endif
 
-        //
-        // Create the network manager.
-        //
-        netmgr = new NetworkManager;
+    InitVTK::Initialize();
+    InitVTK::ForceMesa();
+    avtCallback::SetNowinMode(true);
 
-        // Parse the command line.
-        ProcessCommandLine(argc, argv);
+    //
+    // Load plugins
+    //
+    PlotPluginManager::Instance()->LoadPluginsOnDemand();
+    OperatorPluginManager::Instance()->LoadPluginsOnDemand();
+    DatabasePluginManager::Instance()->LoadPluginsNow();
+
+    vtkConnection = theViewer.GetReadConnection(1);
+
+    //
+    // Create the network manager.
+    //
+    netmgr = new NetworkManager;
+
+    // Parse the command line.
+    ProcessCommandLine(*argc, *argv);
 
 #if !defined(_WIN32)
-        // Set up the alarm signal handler.
-        signal(SIGALRM, AlarmHandler);
+    // Set up the alarm signal handler.
+    signal(SIGALRM, Engine::AlarmHandler);
 #endif
 
-        // Create some RPC objects and make Xfer observe them.
-        QuitRPC                  quitRPC;
-        ReadRPC                  readRPC;
-        ApplyOperatorRPC         applyOperatorRPC;
-        ApplyNamedFunctionRPC    applyNamedFunctionRPC;
-        SetFinalVariableNameRPC  setFinalVariableNameRPC;
-        MakePlotRPC              makePlotRPC;
-        UseNetworkRPC            useNetworkRPC;
-        UpdatePlotAttsRPC        updatePlotAttsRPC;
-        SetWindowAttsRPC         setWindowAttsRPC;
-        PickRPC                  pickRPC;
-        StartPickRPC             startPickRPC;
-        ExecuteRPC               executeRPC;
-        ClearCacheRPC            clearCacheRPC;
-        QueryRPC                 queryRPC;
-        ReleaseDataRPC           releaseDataRPC;
-        OpenDatabaseRPC          openDatabaseRPC;
-        DefineVirtualDatabaseRPC defineVirtualDatabaseRPC;
-        RenderRPC                renderRPC;
+    // Create some RPC objects and make Xfer observe them.
+    quitRPC                         = new QuitRPC;
+    readRPC                         = new ReadRPC;
+    applyOperatorRPC                = new ApplyOperatorRPC;
+    applyNamedFunctionRPC           = new ApplyNamedFunctionRPC;
+    setFinalVariableNameRPC         = new SetFinalVariableNameRPC;
+    makePlotRPC                     = new MakePlotRPC;
+    useNetworkRPC                   = new UseNetworkRPC;
+    updatePlotAttsRPC               = new UpdatePlotAttsRPC;
+    setWindowAttsRPC                = new SetWindowAttsRPC;
+    pickRPC                         = new PickRPC;
+    startPickRPC                    = new StartPickRPC;
+    executeRPC                      = new ExecuteRPC;
+    clearCacheRPC                   = new ClearCacheRPC;
+    queryRPC                        = new QueryRPC;
+    releaseDataRPC                  = new ReleaseDataRPC;
+    openDatabaseRPC                 = new OpenDatabaseRPC;
+    defineVirtualDatabaseRPC        = new DefineVirtualDatabaseRPC;
+    renderRPC                       = new RenderRPC;
 
-        xfer.Add(&quitRPC);
-        xfer.Add(&readRPC);
-        xfer.Add(&applyOperatorRPC);
-        xfer.Add(&applyNamedFunctionRPC);
-        xfer.Add(&setFinalVariableNameRPC);
-        xfer.Add(&makePlotRPC);
-        xfer.Add(&useNetworkRPC);
-        xfer.Add(&updatePlotAttsRPC);
-        xfer.Add(&setWindowAttsRPC);
-        xfer.Add(&pickRPC);
-        xfer.Add(&startPickRPC);
-        xfer.Add(&executeRPC);
-        xfer.Add(&clearCacheRPC);
-        xfer.Add(&queryRPC);
-        xfer.Add(&releaseDataRPC);
-        xfer.Add(&openDatabaseRPC);
-        xfer.Add(&defineVirtualDatabaseRPC);
-        xfer.Add(&renderRPC);
+    xfer->Add(quitRPC);
+    xfer->Add(readRPC);
+    xfer->Add(applyOperatorRPC);
+    xfer->Add(applyNamedFunctionRPC);
+    xfer->Add(setFinalVariableNameRPC);
+    xfer->Add(makePlotRPC);
+    xfer->Add(useNetworkRPC);
+    xfer->Add(updatePlotAttsRPC);
+    xfer->Add(setWindowAttsRPC);
+    xfer->Add(pickRPC);
+    xfer->Add(startPickRPC);
+    xfer->Add(executeRPC);
+    xfer->Add(clearCacheRPC);
+    xfer->Add(queryRPC);
+    xfer->Add(releaseDataRPC);
+    xfer->Add(openDatabaseRPC);
+    xfer->Add(defineVirtualDatabaseRPC);
+    xfer->Add(renderRPC);
 
-        // Create an object to implement the RPCs
-        RPCExecutor<QuitRPC>                  quitExecutor(&quitRPC);
-        RPCExecutor<ReadRPC>                  readExecutor(&readRPC);
-        RPCExecutor<ApplyOperatorRPC>         applyOperatorExecutor(&applyOperatorRPC);
-        RPCExecutor<PrepareOperatorRPC>       prepareOperatorExecutor(&applyOperatorRPC.GetPrepareOperatorRPC());
-        RPCExecutor<ApplyNamedFunctionRPC>    applyNamedFunctionExecutor(&applyNamedFunctionRPC);
-        RPCExecutor<SetFinalVariableNameRPC>  setFinalVariableNameExecutor(&setFinalVariableNameRPC);
-        RPCExecutor<MakePlotRPC>              makePlotExecutor(&makePlotRPC);
-        RPCExecutor<PreparePlotRPC>           preparePlotExecutor(&makePlotRPC.GetPreparePlotRPC());
-        RPCExecutor<UseNetworkRPC>            useNetworkExecutor(&useNetworkRPC);
-        RPCExecutor<UpdatePlotAttsRPC>        updatePlotAttsExecutor(&updatePlotAttsRPC);
-        RPCExecutor<PrepareUpdatePlotAttsRPC> prepareUpdatePlotAttsExecutor(
-                               &updatePlotAttsRPC.GetPrepareUpdatePlotAttsRPC());
+    // Create an object to implement the RPCs
+    rpcExecutors.push_back(new RPCExecutor<QuitRPC>(quitRPC));
+    rpcExecutors.push_back(new RPCExecutor<ReadRPC>(readRPC));
+    rpcExecutors.push_back(new RPCExecutor<ApplyOperatorRPC>(applyOperatorRPC));
+    rpcExecutors.push_back(new RPCExecutor<PrepareOperatorRPC>(&applyOperatorRPC->GetPrepareOperatorRPC()));
+    rpcExecutors.push_back(new RPCExecutor<ApplyNamedFunctionRPC>(applyNamedFunctionRPC));
+    rpcExecutors.push_back(new RPCExecutor<SetFinalVariableNameRPC>(setFinalVariableNameRPC));
+    rpcExecutors.push_back(new RPCExecutor<MakePlotRPC>(makePlotRPC));
+    rpcExecutors.push_back(new RPCExecutor<PreparePlotRPC>(&makePlotRPC->GetPreparePlotRPC()));
+    rpcExecutors.push_back(new RPCExecutor<UseNetworkRPC>(useNetworkRPC));
+    rpcExecutors.push_back(new RPCExecutor<UpdatePlotAttsRPC>(updatePlotAttsRPC));
+    rpcExecutors.push_back(new RPCExecutor<PrepareUpdatePlotAttsRPC>(&updatePlotAttsRPC->GetPrepareUpdatePlotAttsRPC()));
+    rpcExecutors.push_back(new RPCExecutor<SetWindowAttsRPC>(setWindowAttsRPC));
+    rpcExecutors.push_back(new RPCExecutor<PickRPC>(pickRPC));
+    rpcExecutors.push_back(new RPCExecutor<StartPickRPC>(startPickRPC));
+    rpcExecutors.push_back(new RPCExecutor<ExecuteRPC>(executeRPC));
+    rpcExecutors.push_back(new RPCExecutor<ClearCacheRPC>(clearCacheRPC));
+    rpcExecutors.push_back(new RPCExecutor<QueryRPC>(queryRPC));
+    rpcExecutors.push_back(new RPCExecutor<ReleaseDataRPC>(releaseDataRPC));
+    rpcExecutors.push_back(new RPCExecutor<OpenDatabaseRPC>(openDatabaseRPC));
+    rpcExecutors.push_back(new RPCExecutor<DefineVirtualDatabaseRPC>(defineVirtualDatabaseRPC));
+    rpcExecutors.push_back(new RPCExecutor<RenderRPC>(renderRPC));
 
-        RPCExecutor<SetWindowAttsRPC>         setWindowAttsExecutor(&setWindowAttsRPC);
-        RPCExecutor<PickRPC>                  pickRPCExecutor(&pickRPC);
-        RPCExecutor<StartPickRPC>             startPickRPCExecutor(&startPickRPC);
-        RPCExecutor<ExecuteRPC>               executeExecutor(&executeRPC);
-        RPCExecutor<ClearCacheRPC>            clearCacheExecutor(&clearCacheRPC);
-        RPCExecutor<QueryRPC>                 queryExecutor(&queryRPC);
-        RPCExecutor<ReleaseDataRPC>           releaseDataExecutor(&releaseDataRPC);
-        RPCExecutor<OpenDatabaseRPC>          openDatabaseExecutor(&openDatabaseRPC);
-        RPCExecutor<DefineVirtualDatabaseRPC> defineVirtualDatabaseExecutor(&defineVirtualDatabaseRPC);
-        RPCExecutor<RenderRPC>                renderExecutor(&renderRPC);
-
-        //
-        // Hook up the viewer connections to Xfer
-        //
+    //
+    // Hook up the viewer connections to Xfer
+    //
 #ifdef PARALLEL
-        if(PAR_UIProcess())
-            xfer.SetInputConnection(theViewer.GetWriteConnection());
+    if (PAR_UIProcess())
+        xfer->SetInputConnection(theViewer.GetWriteConnection());
 #else
-        xfer.SetInputConnection(theViewer.GetWriteConnection());
+    xfer->SetInputConnection(theViewer.GetWriteConnection());
 #endif
-        xfer.SetOutputConnection(theViewer.GetReadConnection());
+    xfer->SetOutputConnection(theViewer.GetReadConnection());
 
-        //
-        // Set the global destination format. This only happens on the UI-Process
-        // when running in parallel since non-UI processes have no SocketConnections.
-        //
-        if(theViewer.GetReadConnection() != 0)
-            destinationFormat = theViewer.GetReadConnection()->GetDestinationFormat();
+    //
+    // Set the global destination format. This only happens on the UI-Process
+    // when running in parallel since non-UI processes have no SocketConnections.
+    //
+    if (theViewer.GetReadConnection() != 0)
+        destinationFormat = theViewer.GetReadConnection()->GetDestinationFormat();
 
-        //
-        // Create the network manager and the load balancer.
-        //
+    //
+    // Create the network manager and the load balancer.
+    //
 #ifdef PARALLEL
-        LoadBalancer lb(PAR_Size(), PAR_Rank());
+    lb = new LoadBalancer(PAR_Size(), PAR_Rank());
 #else
-        LoadBalancer lb(1, 0);
+    lb = new LoadBalancer(1, 0);
 #endif
-        netmgr->SetLoadBalancer(&lb);
+    netmgr->SetLoadBalancer(lb);
 
-        //
-        // Initialize some callback functions.
-        //
-        avtDataObjectSource::RegisterAbortCallback(EngineAbortCallback, &xfer);
-        avtDataObjectSource::RegisterProgressCallback(EngineUpdateProgressCallback,
-                                                      NULL);
-        LoadBalancer::RegisterAbortCallback(EngineAbortCallbackParallel, &xfer);
-        LoadBalancer::RegisterProgressCallback(EngineUpdateProgressCallback,
-                                               NULL);
-        avtTerminatingSource::RegisterInitializeProgressCallback(
-                                         EngineInitializeProgressCallback, NULL);
-
-        //
-        // Begin the engine's event processing loop.
-        //
-#ifdef PARALLEL
-        PAR_EventLoop(xfer, quitRPC);
-#else
-        EventLoop(xfer, quitRPC);
-#endif
-
-#ifdef DEBUG_MEMORY_LEAKS
-        delete visitTimer;
-        delete netmgr;
-#endif
-    }
-    else
-    {
-        debug1 << "The engine could not connect to the viewer." << endl;
-    }
-
-    debug1 << "ENGINE exited." << endl;
-#ifdef PARALLEL
-    PAR_Exit();
-#endif
-
-    return 0;
+    //
+    // Initialize some callback functions.
+    //
+    avtDataObjectSource::RegisterAbortCallback(Engine::EngineAbortCallback, xfer);
+    avtDataObjectSource::RegisterProgressCallback(Engine::EngineUpdateProgressCallback,
+                                                  NULL);
+    LoadBalancer::RegisterAbortCallback(Engine::EngineAbortCallbackParallel, xfer);
+    LoadBalancer::RegisterProgressCallback(Engine::EngineUpdateProgressCallback,
+                                           NULL);
+    avtTerminatingSource::RegisterInitializeProgressCallback(
+                                       Engine::EngineInitializeProgressCallback, NULL);
 }
 
 // ****************************************************************************
@@ -1363,19 +315,21 @@ main(int argc, char *argv[])
 // Creation:   Mon Sep 30 08:47:46 PDT 2002
 //
 // Modifications:
-//   
+//    Jeremy Meredith, Thu Jul 10 11:37:48 PDT 2003
+//    Made the engine an object.
+//
 // ****************************************************************************
 
 bool
-ConnectViewer(ParentProcess &viewer, int *argc, char **argv[])
+Engine::ConnectViewer(int *argc, char **argv[])
 {
     // Connect to the viewer.
     TRY
     {
 #ifdef PARALLEL
-        viewer.Connect(argc, argv, PAR_UIProcess());
+        theViewer.Connect(argc, argv, PAR_UIProcess());
 #else
-        viewer.Connect(argc, argv, true);
+        theViewer.Connect(argc, argv, true);
 #endif
     }
     CATCH(IncompatibleVersionException)
@@ -1440,39 +394,42 @@ ConnectViewer(ParentProcess &viewer, int *argc, char **argv[])
 //    Hank Childs, Tue Jun 24 18:02:01 PDT 2003
 //    Allow for timeouts during network executions.
 //
+//    Jeremy Meredith, Thu Jul 10 11:37:48 PDT 2003
+//    Made the engine an object.
+//
 // ****************************************************************************
 
 void
-PAR_EventLoop(MPIXfer &xfer, QuitRPC &quit)
+Engine::PAR_EventLoop()
 {
     PAR_StateBuffer  buf;
     BufferConnection conn;
 
-    if(PAR_UIProcess())
+    if (PAR_UIProcess())
     {
         // The master process executes the serial event loop since it
         // communicates with the viewer.
-        bool errFlag = EventLoop(xfer, quit);
+        bool errFlag = EventLoop();
 
         // If the errFlag is set, we exited the event loop because we lost
         // the connection to the viewer. We need to send a quit signal
         // to all other processes.
-        if(errFlag || !noFatalExceptions)
+        if (errFlag || !noFatalExceptions)
         {
-            quit.Write(conn);
-            xfer.SetInputConnection(&conn);
-            xfer.SetEnableReadHeader(false);
-            xfer.Process();
+            quitRPC->Write(conn);
+            xfer->SetInputConnection(&conn);
+            xfer->SetEnableReadHeader(false);
+            xfer->Process();
         }
     }
     else
     {
         // Set the xfer object's input connection to be the buffer connection
         // that was declared at the top of this routine.
-        xfer.SetInputConnection(&conn);
+        xfer->SetInputConnection(&conn);
 
         // Non-UI Process
-        while(!quit.GetQuit() && noFatalExceptions)
+        while(!quitRPC->GetQuit() && noFatalExceptions)
         {
             // Reset the alarm
             ResetTimeout(timeout * 60);
@@ -1488,7 +445,7 @@ PAR_EventLoop(MPIXfer &xfer, QuitRPC &quit)
             conn.Append((unsigned char *)buf.buffer, buf.nbytes);
 
             // Process the state information.
-            xfer.Process();
+            xfer->Process();
 
             ResetTimeout(timeout * 60);
         }
@@ -1531,15 +488,18 @@ PAR_EventLoop(MPIXfer &xfer, QuitRPC &quit)
 //    Hank Childs, Tue Jun 24 18:02:01 PDT 2003
 //    Allow for timeouts during network executions.
 //
+//    Jeremy Meredith, Thu Jul 10 11:37:48 PDT 2003
+//    Made the engine an object.
+//
 // ****************************************************************************
 
 bool
-EventLoop(Xfer &xfer, QuitRPC &quit)
+Engine::EventLoop()
 {
     bool errFlag = false;
 
     // The application's main loop
-    while(!quit.GetQuit() && noFatalExceptions)
+    while(!quitRPC->GetQuit() && noFatalExceptions)
     {
         // Reset the timeout alarm
         ResetTimeout(timeout * 60);
@@ -1548,7 +508,7 @@ EventLoop(Xfer &xfer, QuitRPC &quit)
         // Block until the connection needs to be read. Then process its
         // new input.
         //
-        if(xfer.GetInputConnection()->NeedsRead(true))
+        if (xfer->GetInputConnection()->NeedsRead(true))
         {
             TRY
             {
@@ -1557,14 +517,14 @@ EventLoop(Xfer &xfer, QuitRPC &quit)
                 ResetTimeout(num_seconds_in_half_hour);
 
                 // Process input.
-                ProcessInput(xfer);
+                ProcessInput();
 
                 ResetTimeout(timeout * 60);
             }
             CATCH(LostConnectionException)
             {
                 // Indicate that we want to quit the application.
-                quit.SetQuit(true);
+                quitRPC->SetQuit(true);
                 errFlag = true;
             }
             ENDTRY
@@ -1575,63 +535,69 @@ EventLoop(Xfer &xfer, QuitRPC &quit)
 }
 
 // ****************************************************************************
-// Function: ProcessInput
+//  Function: ProcessInput
 //
-// Purpose:
-//   Reads socket input from the viewer and adds it to the xfer object's
-//   input. After doing that, the xfer object is called upon to process its
-//   input.
+//  Purpose:
+//    Reads socket input from the viewer and adds it to the xfer object's
+//    input. After doing that, the xfer object is called upon to process its
+//    input.
 //
-// Notes:      
+//  Notes:      
 //
-// Programmer: Brad Whitlock
-// Creation:   Thu Mar 15 14:08:30 PST 2001
+//  Programmer: Brad Whitlock
+//  Creation:   Thu Mar 15 14:08:30 PST 2001
 //
-// Modifications:
-//   Brad Whitlock, Wed Mar 20 17:53:20 PST 2002
-//   I abstracted the read code.
+//  Modifications:
+//    Brad Whitlock, Wed Mar 20 17:53:20 PST 2002
+//    I abstracted the read code.
+//
+//    Jeremy Meredith, Thu Jul 10 11:37:48 PDT 2003
+//    Made the engine an object.
 //
 // ****************************************************************************
 
 void
-ProcessInput(Xfer &xfer)
+Engine::ProcessInput()
 {    
     // Try reading from the viewer.  
-    int amountRead = xfer.GetInputConnection()->Fill();
+    int amountRead = xfer->GetInputConnection()->Fill();
 
     // If we got input, process it. Otherwise, start counting errors.
-    if(amountRead > 0)
+    if (amountRead > 0)
     {
         // Process the new information.
-        xfer.Process();
+        xfer->Process();
     }
 }
 
 // ****************************************************************************
-// Function: ProcessCommandLine
+//  Function: ProcessCommandLine
 //
-// Purpose:
-//   Reads the command line arguments for the engine.
+//  Purpose:
+//    Reads the command line arguments for the engine.
 //
-// Programmer: Jeremy Meredith
-// Creation:   September 21, 2001
+//  Programmer: Jeremy Meredith
+//  Creation:   September 21, 2001
 //
-// Modifications:
-//   Eric Brugger, Wed Nov  7 12:40:56 PST 2001
-//   I added the command line argument -timing.
+//  Modifications:
+//    Eric Brugger, Wed Nov  7 12:40:56 PST 2001
+//    I added the command line argument -timing.
 //
-//   Sean Ahern, Thu Feb 21 16:12:43 PST 2002
-//   Added timeout support.
+//    Sean Ahern, Thu Feb 21 16:12:43 PST 2002
+//    Added timeout support.
 //
-//   Sean Ahern, Tue Dec  3 09:58:28 PST 2002
-//   Added -dump support for streamer debugging.
+//    Sean Ahern, Tue Dec  3 09:58:28 PST 2002
+//    Added -dump support for streamer debugging.
 //
-//   Hank Childs, Mon May 12 19:44:50 PDT 2003
-//   Add support for -lb-block, -lb-stride, and -lb-random.
+//    Hank Childs, Mon May 12 19:44:50 PDT 2003
+//    Add support for -lb-block, -lb-stride, and -lb-random.
+//
+//    Jeremy Meredith, Thu Jul 10 11:37:48 PDT 2003
+//    Made the engine an object.
 //
 // ****************************************************************************
 void
-ProcessCommandLine(int argc, char **argv)
+Engine::ProcessCommandLine(int argc, char **argv)
 {
     // process arguments.
     for (int i=1; i<argc; i++)
@@ -1667,28 +633,29 @@ ProcessCommandLine(int argc, char **argv)
 }
 
 // ****************************************************************************
-// Function: AlarmHandler
+//  Function: AlarmHandler
 //
-// Purpose:
-//   Gracefully exits the engine if an SIGALRM signal was received.
+//  Purpose:
+//    Gracefully exits the engine if an SIGALRM signal was received.
 //
-// Programmer: Sean Ahern
-// Creation:   Thu Feb 21 16:13:43 PST 2002
+//  Programmer: Sean Ahern
+//  Creation:   Thu Feb 21 16:13:43 PST 2002
 //
-// Modifications:
-//   Brad Whitlock, Tue Apr 9 13:46:32 PST 2002
-//   Disabled on Windows.
+//  Modifications:
+//    Brad Whitlock, Tue Apr 9 13:46:32 PST 2002
+//    Disabled on Windows.
+//
+//    Jeremy Meredith, Thu Jul 10 11:37:48 PDT 2003
+//    Made the engine an object.
 //
 // ****************************************************************************
-#if !defined(_WIN32)
 void
-AlarmHandler(int signal)
+Engine::AlarmHandler(int signal)
 {
     debug1 << "ENGINE exited due to an inactivity timeout of "
-           << timeout << " minutes." << endl;
+           << Engine::Instance()->timeout << " minutes." << endl;
     exit(0);
 }
-#endif
 
 // ****************************************************************************
 // Function: WriteData
@@ -1787,9 +754,12 @@ AlarmHandler(int signal)
 //    Kathleen Bonnell, Thu Jun 12 10:57:11 PDT 2003 
 //    Split timing code to time Serialization separately from write. 
 //    
+//    Jeremy Meredith, Thu Jul 10 11:37:48 PDT 2003
+//    Made the engine an object.
+//
 // ****************************************************************************
 void
-WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer)
+Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer)
 {
 #ifdef PARALLEL
     if (PAR_UIProcess())
@@ -1976,10 +946,13 @@ WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer)
 //    Brad Whitlock, Mon Mar 25 15:51:39 PST 2002
 //    Made it more general.
 //
+//    Jeremy Meredith, Thu Jul 10 11:37:48 PDT 2003
+//    Made the engine an object.
+//
 // ****************************************************************************
 
 bool
-EngineAbortCallbackParallel(void *data, bool informSlaves)
+Engine::EngineAbortCallbackParallel(void *data, bool informSlaves)
 {
     Xfer *xfer = (Xfer*)data;
     if (!xfer)
@@ -2006,7 +979,7 @@ EngineAbortCallbackParallel(void *data, bool informSlaves)
     //
     // Check to see if the connection has any input that should be read.
     //
-    if(xfer->GetInputConnection()->NeedsRead())
+    if (xfer->GetInputConnection()->NeedsRead())
     {
         xfer->GetInputConnection()->Fill();
     }
@@ -2034,10 +1007,14 @@ EngineAbortCallbackParallel(void *data, bool informSlaves)
 //  Programmer:  Jeremy Meredith
 //  Creation:    September 20, 2001
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Jul 10 11:37:48 PDT 2003
+//    Made the engine an object.
+//
 // ****************************************************************************
 
 bool
-EngineAbortCallback(void *data)
+Engine::EngineAbortCallback(void *data)
 {
     return EngineAbortCallbackParallel(data, true);
 }
@@ -2075,10 +1052,13 @@ EngineAbortCallback(void *data)
 //    Jeremy Meredith, Thu Sep 20 00:59:47 PDT 2001
 //    Changed the way stage-finish updates are sent to the client.
 //
+//    Jeremy Meredith, Thu Jul 10 11:37:48 PDT 2003
+//    Made the engine an object.
+//
 // ****************************************************************************
 
 void
-EngineUpdateProgressCallback(void *data, const char *type, const char *desc,
+Engine::EngineUpdateProgressCallback(void *data, const char *type, const char *desc,
                              int cur, int total)
 {
     NonBlockingRPC *rpc = (NonBlockingRPC*)data;
@@ -2137,10 +1117,13 @@ EngineUpdateProgressCallback(void *data, const char *type, const char *desc,
 //    Jeremy Meredith, Fri Jun 29 14:44:59 PDT 2001
 //    Added real status updates.
 //
+//    Jeremy Meredith, Thu Jul 10 11:37:48 PDT 2003
+//    Made the engine an object.
+//
 // ****************************************************************************
 
 void
-EngineInitializeProgressCallback(void *data, int nStages)
+Engine::EngineInitializeProgressCallback(void *data, int nStages)
 {
     NonBlockingRPC *rpc = (NonBlockingRPC*)data;
     if (!rpc)
@@ -2168,10 +1151,14 @@ EngineInitializeProgressCallback(void *data, int nStages)
 //  Programmer:   Hank Childs
 //  Creation:     October 18, 2001
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Jul 10 11:37:48 PDT 2003
+//    Made the engine an object.
+//
 // ****************************************************************************
 
 void
-EngineWarningCallback(void *data, const char *msg)
+Engine::EngineWarningCallback(void *data, const char *msg)
 {
     NonBlockingRPC *rpc = (NonBlockingRPC*)data;
     if (!rpc)
@@ -2194,38 +1181,16 @@ EngineWarningCallback(void *data, const char *msg)
 // Creation:   Tue Apr 9 13:41:29 PST 2002
 //
 // Modifications:
-//   
+//    Jeremy Meredith, Thu Jul 10 11:37:48 PDT 2003
+//    Made the engine an object.
+//
 // ****************************************************************************
 
 void
-ResetTimeout(int timeout)
+Engine::ResetTimeout(int timeout)
 {
 #if !defined(_WIN32)
     alarm(timeout);
 #endif    
-}
-
-// ****************************************************************************
-// Function: DefineColorTables
-//
-// Purpose: 
-//   Takes the contents of the color table attributes and creates matching
-//   color tables in avtColorTables which is used to color plots.
-//
-// Arguments:
-//   ctAtts : The color table attributes.
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon Dec 2 13:49:46 PST 2002
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-DefineColorTables(const ColorTableAttributes &ctAtts)
-{
-    avtColorTables *ct = avtColorTables::Instance();
-    ct->SetColorTables(ctAtts);
 }
 
