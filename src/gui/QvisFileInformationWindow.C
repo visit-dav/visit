@@ -2,7 +2,8 @@
 #include <strstrea.h>
 #else
 
-#if defined(GCC3_3_X86_64) || defined(__APPLE__)
+#if defined(__GNUC__) && __GNUC__ >= 3
+// gcc 3.x
 #include <strstream>
 using std::ostrstream;
 #else

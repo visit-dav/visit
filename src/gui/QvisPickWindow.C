@@ -1,7 +1,8 @@
 #include <stdio.h> // for sscanf
 #if !defined(_WIN32)
 
-#if defined(GCC3_3_X86_64) || defined(__APPLE__)
+#if defined(__GNUC__) && __GNUC__ >= 3
+// gcc 3.x
 #include <strstream>
 #else
 #include <strstream.h>
