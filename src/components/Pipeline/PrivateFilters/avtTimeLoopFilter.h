@@ -30,6 +30,8 @@
 //  Creation:   December 29, 2004 
 //
 //  Modifications:
+//    Kathleen Bonnell, Thu Jan 27 09:14:35 PST 2005
+//    Added SetStartTime, SetEndTime, SetStride and FinalizeTimeLoop.
 //  
 // ****************************************************************************
 
@@ -42,7 +44,16 @@ class PIPELINE_API avtTimeLoopFilter : virtual public avtFilter
     virtual bool                        Update(avtPipelineSpecification_p);
     virtual void                        ReleaseData(void);
 
-    void                                SetTimeLoop(int b, int e, int s);
+    void                                SetTimeLoop(int b, int e, int s)
+                                            { startTime = b; 
+                                              endTime = e; 
+                                              stride = s; };
+    void                                SetStartFrame(int b)
+                                            { startTime = b; };
+    void                                SetEndFrame(int e)
+                                            { endTime = e; };
+    void                                SetStride(int s)
+                                            { stride = s; };
 
   protected:
     intVector                           validTimes;
@@ -60,6 +71,7 @@ class PIPELINE_API avtTimeLoopFilter : virtual public avtFilter
     int                                 stride;
     int                                 nFrames;
     int                                 actualEnd;
+    void                                FinalizeTimeLoop(void);
 };
 
 
