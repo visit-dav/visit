@@ -354,7 +354,7 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
         {
             if (!elementIsGhost) 
             {
-                if (globalElement == -1) 
+                if (!displayGlobalIds || globalElement == -1) 
                     SNPRINTF(buff, 512, "%d", elementNumber);
                 else 
                     SNPRINTF(buff, 512, "%d (global)", globalElement);
@@ -384,7 +384,7 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
         {
             if (!elementIsGhost)
             {
-                if (globalElement == -1)
+                if (!displayGlobalIds || globalElement == -1)
                     SNPRINTF(buff, 512, "%d", elementNumber);
                 else 
                     SNPRINTF(buff, 512, "%d (global)", globalElement);

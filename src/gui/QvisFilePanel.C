@@ -21,6 +21,8 @@
 #include <GlobalAttributes.h>
 #include <KeyframeAttributes.h>
 #include <NameSimplifier.h>
+#include <Plot.h>
+#include <PlotList.h>
 #include <WindowInformation.h>
 #include <Utility.h>
 #include <ViewerProxy.h>
@@ -1562,6 +1564,9 @@ QvisFilePanel::DisplayVirtualDBInformation(const QualifiedFilename &file) const
 //   I changed it so it returns early if we're not allowing file
 //   selection changes.
 //
+//   Brad Whitlock, Mon Dec 20 16:19:23 PST 2004
+//   Added code to update the state of the Replace button.
+//
 // ****************************************************************************
 
 void
@@ -1710,6 +1715,9 @@ QvisFilePanel::UpdateFileSelection()
     // Restore signals.
     fileListView->blockSignals(false);
     blockSignals(false);
+
+    // Update the state of the Replace button.
+    UpdateReplaceButtonEnabledState();
 }
 
 // ****************************************************************************
@@ -1763,6 +1771,83 @@ QvisFilePanel::HighlightedItemIsInvalid() const
     }
 
     return currentItemInvalid;
+}
+
+// ****************************************************************************
+// Method: QvisFilePanel::UpdateReplaceButtonEnabledState
+//
+// Purpose: 
+//   This method updates the enabled state of the Replace button.
+//
+// Arguments:
+//
+// Returns:    True if the button was enabled; False otherwise.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Dec 20 16:17:55 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+QvisFilePanel::UpdateReplaceButtonEnabledState()
+{
+    bool enabled = false;
+    if(!fileServer->GetOpenFile().Empty())
+    {
+        QListViewItem *item = fileListView->currentItem();
+        if(item != 0)
+        {
+            QvisListViewFileItem *ci = (QvisListViewFileItem *)item;
+            bool differentFiles = fileServer->GetOpenFile() != ci->file;
+
+            stringVector defs(fileServer->GetVirtualFileDefinition(ci->file));
+            if(defs.size() > 1)
+            {
+                // Only allow the user to replace if they click on one of
+                // the real time states.
+                enabled = ci->timeState >= 0;
+            }
+            else
+            {
+                const avtDatabaseMetaData *md = fileServer->GetMetaData(ci->file);
+                if(md != 0)
+                {
+                    if(md->GetNumStates() > 1)
+                    {
+                        // Only allow the user to replace if they click on
+                        // one of the real time states.
+                        enabled = ci->timeState >= 0;
+                    }
+                    else
+                        enabled = differentFiles;
+                }
+                else
+                    enabled = differentFiles;
+            }
+
+            if(!enabled)
+            {
+                std::string highlightFile(ci->file.FullName());
+                PlotList *pl = viewer->GetPlotList();
+                for(int i = 0; i < pl->GetNumPlots(); ++i)
+                {
+                    const Plot &current = pl->operator[](i);
+                    if(highlightFile != current.GetDatabaseName())
+                    {
+                        enabled = true;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    replaceButton->setEnabled(enabled);
+    return enabled;
 }
 
 // ****************************************************************************
@@ -1862,6 +1947,9 @@ QvisFilePanel::ConnectWindowInformation(WindowInformation *wi)
 //   told the viewer to open the data file to here so file replacement would
 //   no longer do more work than is required.
 //
+//   Brad Whitlock, Mon Dec 20 16:20:49 PST 2004
+//   Changed how the Replace button is updated.
+//
 // ****************************************************************************
 
 bool
@@ -1882,11 +1970,8 @@ QvisFilePanel::OpenFile(const QualifiedFilename &qf, int timeState, bool reOpen)
         viewer->OpenDatabase(qf.FullName().c_str(), timeState, true);
     }
 
-    // Get a pointer to the file's metadata.
-    const avtDatabaseMetaData *md = fileServer->GetMetaData(qf);
-    int nTimeStates = md ? md->GetNumStates() : 1;
-
-    replaceButton->setEnabled(nTimeStates > 1);
+    // Update the Replace and Overlay buttons.
+    UpdateReplaceButtonEnabledState();
     overlayButton->setEnabled(false);
 
     return retval;
@@ -1921,6 +2006,9 @@ QvisFilePanel::OpenFile(const QualifiedFilename &qf, int timeState, bool reOpen)
 //   Brad Whitlock, Mon Nov 3 10:46:18 PDT 2003
 //   Rewrote so replace does not first tell the viewer to open the database.
 //
+//   Brad Whitlock, Mon Dec 20 16:21:30 PST 2004
+//   Changed how the Replace button's enabled state is set.
+//
 // ****************************************************************************
 
 void
@@ -1932,11 +2020,8 @@ QvisFilePanel::ReplaceFile(const QualifiedFilename &filename, int timeState)
     // Tell the viewer to replace the database.
     viewer->ReplaceDatabase(filename.FullName().c_str(), timeState);
 
-    // Get a pointer to the file's metadata.
-    const avtDatabaseMetaData *md = fileServer->GetMetaData(filename);
-    int nTimeStates = md ? md->GetNumStates() : 1;
-
-    replaceButton->setEnabled(nTimeStates > 1);
+    // Update the Replace and Overlay buttons.
+    UpdateReplaceButtonEnabledState();
     overlayButton->setEnabled(false);
 }
 
@@ -1967,6 +2052,9 @@ QvisFilePanel::ReplaceFile(const QualifiedFilename &filename, int timeState)
 //   I rewrote the routine so it no longer ends up telling the viewer to
 //   open the database before overlaying.
 //
+//   Brad Whitlock, Mon Dec 20 16:22:19 PST 2004
+//   Changed how the enabled state for the Replace button is set.
+//
 // ****************************************************************************
 
 void
@@ -1978,11 +2066,8 @@ QvisFilePanel::OverlayFile(const QualifiedFilename &filename)
     // Tell the viewer to replace the database.
     viewer->OverlayDatabase(filename.FullName().c_str());
 
-    // Get a pointer to the file's metadata.
-    const avtDatabaseMetaData *md = fileServer->GetMetaData(filename);
-    int nTimeStates = md ? md->GetNumStates() : 1;
-
-    replaceButton->setEnabled(nTimeStates > 1);
+    // Set the enabled state for the Replace and Overlay buttons.
+    UpdateReplaceButtonEnabledState();
     overlayButton->setEnabled(false);
 }
 
@@ -2612,6 +2697,10 @@ QvisFilePanel::fileExpanded(QListViewItem *item)
 //   I made the open button turn into the activate button if we highlighted
 //   a file that we've opened before that is not the currently open file.
 //
+//   Brad Whitlock, Mon Dec 20 12:13:42 PDT 2004
+//   I moved the code to update the enabled state of the replace button into
+//   its own method.
+//
 // ****************************************************************************
 
 void
@@ -2643,10 +2732,11 @@ QvisFilePanel::highlightFile(QListViewItem *item)
         openButton->setText("Open");
     openButton->setEnabled(true);
 
+    //
     // If the highlighted file is not the active file, then
     // enable the open, replace, overlay buttons.
-    bool enable = (fileServer->GetOpenFile() != fileItem->file);
-    replaceButton->setEnabled(enable || (fileItem->timeState >= 0));
+    //
+    bool enable = UpdateReplaceButtonEnabledState();
     overlayButton->setEnabled(enable);
 }
 

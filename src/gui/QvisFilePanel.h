@@ -99,6 +99,9 @@ class ViewerProxy;
 //   Brad Whitlock, Fri Aug 6 12:19:22 PDT 2004
 //   I added updateHeaderForLongName.
 //
+//   Brad Whitlock, Mon Dec 20 12:18:36 PDT 2004
+//   I added UpdateReplaceButtonEnabledState
+//
 // ****************************************************************************
 
 class GUI_API QvisFilePanel : public QWidget, public SimpleObserver, public GUIBase
@@ -156,6 +159,7 @@ private:
     void UpdateFileSelection();
     void UpdateTimeFieldText(int timeState);
     void UpdateAnimationControlsEnabledState();
+    bool UpdateReplaceButtonEnabledState();
 
     bool OpenFile(const QualifiedFilename &filename, int timeState,
                   bool reOpen);
