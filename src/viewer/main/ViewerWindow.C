@@ -3682,6 +3682,11 @@ ViewerWindow::RecenterView3d(const double *limits)
 //    I removed coding for handling degenerate views since this was now
 //    handled in avtViewCurve.
 //
+//    Eric Brugger, Thu Sep 16 10:17:28 PDT 2004
+//    I set all the flags indicating the view is valid if we successfully 
+//    reset the view.  I also set more flags indicating the view is invalid
+//    in the case were we don't reset the view just to be on the safe side.
+//
 // ****************************************************************************
 
 void
@@ -3702,8 +3707,17 @@ ViewerWindow::ResetViewCurve()
     if (boundingBoxCurve[0] == DBL_MAX && boundingBoxCurve[1] == -DBL_MAX)
     {
         boundingBoxValidCurve = false;
+        centeringValidCurve = false;
+        viewSetInCurve = false;
         return;
     }
+
+    //
+    // Mark the view as valid.
+    //
+    boundingBoxValidCurve = true;
+    centeringValidCurve = true;
+    viewSetInCurve = true;
 
     //
     // Set the window.
@@ -3763,6 +3777,11 @@ ViewerWindow::ResetViewCurve()
 //    Eric Brugger, Thu Oct 16 11:21:53 PDT 2003
 //    I moved the handling of full frame mode to VisWindow.
 //
+//    Eric Brugger, Thu Sep 16 10:17:28 PDT 2004
+//    I set all the flags indicating the view is valid if we successfully 
+//    reset the view.  I also set more flags indicating the view is invalid
+//    in the case were we don't reset the view just to be on the safe side.
+//
 // ****************************************************************************
 
 void
@@ -3783,8 +3802,17 @@ ViewerWindow::ResetView2d()
     if (boundingBox2d[0] == DBL_MAX && boundingBox2d[1] == -DBL_MAX)
     {
         boundingBoxValid2d = false;
+        centeringValid2d = false;
+        viewSetIn2d = false;
         return;
     }
+
+    //
+    // Mark the view as valid.
+    //
+    boundingBoxValid2d = true;
+    centeringValid2d = true;
+    viewSetIn2d = true;
 
     //
     // Set the window.
@@ -3858,6 +3886,11 @@ ViewerWindow::ResetView2d()
 //    I also added viewPartialSetIn3d to distinguish the view being set from
 //    a session file and from the client.
 //
+//    Eric Brugger, Thu Sep 16 10:17:28 PDT 2004
+//    I set all the flags indicating the view is valid if we successfully 
+//    reset the view.  I also set more flags indicating the view is invalid
+//    in the case were we don't reset the view just to be on the safe side.
+//
 // ****************************************************************************
 
 void
@@ -3878,10 +3911,19 @@ ViewerWindow::ResetView3d()
     if (boundingBox3d[0] == DBL_MAX && boundingBox3d[1] == -DBL_MAX)
     {
         boundingBoxValid3d = false;
+        centeringValid3d = false;
         viewSetIn3d = false;
         viewPartialSetIn3d = false;
         return;
     }
+
+    //
+    // Mark the view as valid.
+    //
+    boundingBoxValid3d = true;
+    centeringValid3d = true;
+    viewSetIn3d = true;
+    viewPartialSetIn3d = true;
 
     //
     // Set the scale.  They are choosen such that the object should fit
