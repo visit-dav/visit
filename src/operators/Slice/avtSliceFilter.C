@@ -1016,6 +1016,9 @@ avtSliceFilter::RefashionDataObjectInfo(void)
 //    Hank Childs, Wed Jun 18 19:28:01 PDT 2003
 //    Ensure that we don't affect the actual output.
 //
+//    Hank Childs, Mon May 24 16:11:41 PDT 2004
+//    Do a better job of getting the extents if we slice a plane.
+//
 // ****************************************************************************
 
 void
@@ -1028,6 +1031,33 @@ avtSliceFilter::ProjectExtents(double *b)
     transform->SetOutput(new_output);
     new_output->Delete();
     slicer->SetCellList(NULL, 0);
+
+    //
+    // It is possible that we are slicing a plane.  If so, put in a little
+    // fudge factor to make sure that the rgrid we set up will actually
+    // intersect the plane.
+    //
+    double x_dist = fabs(b[1] - b[0]);
+    double y_dist = fabs(b[3] - b[2]);
+    double z_dist = fabs(b[5] - b[4]);
+    double max_dist = x_dist;
+    max_dist = (y_dist > max_dist ? y_dist : max_dist);
+    max_dist = (z_dist > max_dist ? z_dist : max_dist);
+    if (b[0] == b[1])
+    {
+       b[0] -= 0.0001*max_dist;
+       b[1] += 0.0001*max_dist;
+    }
+    if (b[2] == b[3])
+    {
+       b[2] -= 0.0001*max_dist;
+       b[3] += 0.0001*max_dist;
+    }
+    if (b[4] == b[5])
+    {
+       b[4] -= 0.0001*max_dist;
+       b[5] += 0.0001*max_dist;
+    }
 
     SetPlaneOrientation(b);
 

@@ -349,6 +349,11 @@ avtThreeSliceFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
 //  Programmer: Akira Haddox
 //  Creation:   June 4, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Mon May 24 08:42:53 PDT 2004
+//    Allow normals to be calculated.
+//
 // ****************************************************************************
 
 void
@@ -360,7 +365,6 @@ avtThreeSliceFilter::RefashionDataObjectInfo(void)
    
     outAtts.SetTopologicalDimension(inAtts.GetTopologicalDimension()-1);
     outValidity.InvalidateZones();
-    outValidity.SetNormalsAreInappropriate(true);
 }
 
 
