@@ -1,4 +1,4 @@
-#                            Copyright 2000 - 2004
+#                            Copyright 2000 - 2005
 #                 The Regents of the University of California.
 #                             All rights reserved.
 # 
@@ -75,6 +75,9 @@
 #    Eric Brugger, Tue Oct  5 10:49:26 PDT 2004
 #    I replaced QTDIR with QT_LIB.
 #
+#    Brad Whitlock, Thu Jan 6 12:51:10 PDT 2005
+#    Added support for HDF4 on MacOS X.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -106,7 +109,7 @@ LIBSILO=libsilo.@SHLIB_LIBEXT@
 all: libvtkcommon libvtkdicom libvtkfiltering libvtkgraphics libvtkhybrid \
      libvtkio libvtkimaging libvtkrendering libvtkzlib libvtkpng libvtkjpeg \
      libvtkexpat libvtktiff libvtkfreetype libvtkftgl libosmesa libmesagl \
-     libqt pythondir @CREATE_SILO_LINK@ @CREATE_MILI_LINK@ @CREATE_HDF5_LINK@
+     libqt pythondir @CREATE_SILO_LINK@ @CREATE_MILI_LINK@ @CREATE_HDF4_LINK@ @CREATE_HDF5_LINK@ 
 
 libvtkcommon:
 	$(RM) $(LIBVTKCOMMON)
@@ -201,6 +204,12 @@ create_mili_link:
 create_hdf5_link:
 	$(RM) libhdf5.@SHLIB_LIBEXT@
 	ln -s @HDF5_LIB@ .
+
+create_hdf4_link:
+	$(RM) libdf.@SHLIB_LIBEXT@ libmfhdf.@SHLIB_LIBEXT@ libjpeg.@SHLIB_LIBEXT@
+	ln -s @HDF4_LIBDIR@/libdf.@SHLIB_LIBEXT@ .
+	ln -s @HDF4_LIBDIR@/libmfhdf.@SHLIB_LIBEXT@ .
+	ln -s $(LIBVTKJPEG) libjpeg.@SHLIB_LIBEXT@
 
 clean distclean:
 	$(RM) \

@@ -554,7 +554,11 @@ GetRotationMatrix(double angle, double axis[3], vtkMatrix4x4 *mat)
     //
     // Now we can do the easy rotation around the z-axis.
     //
+#if defined(_WIN32)
+    double angle_rad = (angle / 360. * 2. * 3.14159);
+#else
     double angle_rad = (angle / 360. * 2. * M_PI);
+#endif
     vtkMatrix4x4 *rot3 = vtkMatrix4x4::New();
     rot3->Identity();
     double cos_angle = cos(angle_rad);

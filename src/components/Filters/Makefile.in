@@ -1,4 +1,4 @@
-#                            Copyright 2001-2004
+#                            Copyright 2001-2005
 #                 The Regents of the University of California.
 #                             All rights reserved.
 # 
@@ -46,6 +46,9 @@
 #
 #    Hank Childs, Mon Nov 22 08:38:45 PST 2004
 #    Added avtMassVoxelExtractor.
+#
+#    Brad Whitlock, Tue Jan 4 18:14:57 PST 2005
+#    Added -lexpr so we can link on MacOS X.
 #
 ##############################################################################
 
@@ -96,7 +99,7 @@ CPPFLAGS=-I../../include @COMPONENT_CPPFLAGS@ @CPPFLAGS@
 SEROBJ=$(SRC:.C=.o)
 PAROBJ=$(SRC:.C=_par.o)
 LIB=libavtfilters
-COMMONLIBS=-ldbatts -lstate -lcomm -lmisc -lavtexceptions -lparser -lutility -lavtview -lvisit_vtk -llightweight_visit_vtk
+COMMONLIBS=-ldbatts -lstate -lcomm -lmisc -lavtexceptions -lexpr -lparser -lutility -lavtview -lvisit_vtk -llightweight_visit_vtk
 SERLIBS=$(COMMONLIBS) -lpipeline_ser -lavtmath_ser $(VTK_LIBS)
 PARLIBS=$(COMMONLIBS) -lpipeline_par -lavtmath_par $(VTK_LIBS)
 

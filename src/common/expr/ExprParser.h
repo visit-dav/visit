@@ -2,7 +2,7 @@
 #define EXPRPARSER_H
 #include <expr_exports.h>
 
-#include <Parser.h>
+#include <VisItParser.h>
 #include <ExprScanner.h>
 #include <string>
 #include <ExprNode.h>

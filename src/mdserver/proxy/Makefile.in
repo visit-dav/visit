@@ -1,4 +1,4 @@
-#                            Copyright 2000 - 2004
+#                            Copyright 2000 - 2005
 #                 The Regents of the University of California.
 #                             All rights reserved.
 # 
@@ -59,6 +59,9 @@
 #    Brad Whitlock, Fri Apr 23 10:03:33 PDT 2004
 #    I added more libraries to enable prebinding on MacOS X.
 #
+#    Brad Whitlock, Wed Jan 5 09:25:20 PDT 2005
+#    Added -lexpr for MacOS X.
+#
 ##############################################################################
 
 ##
@@ -76,7 +79,7 @@ SRC=MDServerProxy.C
 HDR=MDServerProxy.h
 OBJ=$(SRC:.C=.o)
 LIB=libmdserverproxy
-LIBS=-lmdserverrpc -lproxybase -ldbatts -lavtexceptions -lcomm -lmisc -lstate -lparser -lplugin -lutility 
+LIBS=-lmdserverrpc -lproxybase -ldbatts -lavtexceptions -lcomm -lmisc -lstate -lexpr -lparser -lplugin -lutility 
 
 
 

@@ -57,11 +57,6 @@ Engine *Engine::instance = NULL;
 static void WriteByteStreamToSocket(NonBlockingRPC *, Connection *,
                                     avtDataObjectString &);
 
-#if defined(_WIN32)
-// Get around a macro problem
-#define GetMessageA GetMessage
-#endif
-
 // Initial connection timeout of 5 minutes (300 seconds)
 #define INITIAL_CONNECTION_TIMEOUT 60
 

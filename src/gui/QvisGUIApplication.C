@@ -927,13 +927,18 @@ QvisGUIApplication::SyncCallback(Subject *s, void *data)
 //   Brad Whitlock, Mon Aug 30 08:54:17 PDT 2004
 //   Prevented an error message from being shown unintentionally.
 //
+//   Brad Whitlock, Fri Jan 7 16:34:32 PST 2005
+//   Changed the code so dismissing the splashscreen is the last thing done
+//   on MacOS X so we are more likely to get the GUI's menu and not the 
+//   viewer's menu.
+//
 // ****************************************************************************
 
 void
 QvisGUIApplication::FinalInitialization()
 {
     bool moreInit = true;
-
+    
     // Create time timers.
     if(initStage == 0)
         stagedInit = visitTimer->StartTimer();
@@ -986,8 +991,11 @@ QvisGUIApplication::FinalInitialization()
         visitTimer->StopTimer(timeid, "stage 3");
         break;
     case 4:
+#ifndef Q_WS_MACX
+        // If we're not on MacOS X, hide the splashscreen now.
         if(splash)
             splash->hide();
+#endif
         visitTimer->StopTimer(timeid, "stage 4 - Hiding splashscreen");
         break;
     case 5:
@@ -1023,12 +1031,20 @@ QvisGUIApplication::FinalInitialization()
 #endif
         allowSocketRead = true;
         visitTimer->StopTimer(timeid, "stage 8");
+#ifdef Q_WS_MACX
+        break;
+    case 9:
+        // On MacOS X, we hide the splashscreen last thing so we are very
+        // near 100% likely to get the GUI's menu in the main Mac menu.
+        if(splash)
+            splash->hide();
+        visitTimer->StopTimer(timeid, "stage 9 - Hiding splashscreen");
+#endif
         visitTimer->StopTimer(stagedInit, "FinalInitialization");
         visitTimer->StopTimer(completeInit, "VisIt to be ready");
-
         moreInit = false;
         ++initStage;
-        break;
+        break;        
     default:
         moreInit = false;
     }
@@ -4225,13 +4241,20 @@ QvisGUIApplication::AboutVisIt()
 //   screen gets drawn since this method is usually called outside the
 //   event loop.
 //
+//   Brad Whitlock, Fri Jan 7 16:36:32 PST 2005
+//   I added code to set the active window to the splashscreen so the focus
+//   stays on the splashscreen when we run on MacOS X.
+//
 // ****************************************************************************
 
 void
 QvisGUIApplication::SplashScreenProgress(const char *msg, int prog)
 {
     if(splash)
+    {
+        splash->setActiveWindow();
         splash->Progress(msg, prog);
+    }
 }
 
 // ****************************************************************************

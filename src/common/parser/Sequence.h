@@ -21,12 +21,15 @@ class Rule;
 //    Jeremy Meredith, Wed Nov  3 12:16:49 PST 2004
 //    Added prototypes before the friend declarations.
 //
+//    Brad Whitlock, Tue Jan 4 14:37:51 PST 2005
+//    Added API macros to the friend function declarations.
+//
 // ****************************************************************************
 
 // Some compilers (xlC) require prototypes before friend declarations
 class Sequence;
-Sequence operator+(const Symbol&, const Symbol&);
-Sequence operator+(const Sequence&, const Symbol&);
+PARSER_API Sequence operator+(const Symbol&, const Symbol&);
+PARSER_API Sequence operator+(const Sequence&, const Symbol&);
 
 class PARSER_API Sequence
 {
@@ -49,8 +52,8 @@ class PARSER_API Sequence
     Sequence      GetSubsequence(int pos) const;
     const Symbol *GetLastTerminal() const;
 
-    friend Sequence operator+(const Symbol&, const Symbol&);
-    friend Sequence operator+(const Sequence&, const Symbol&);
+    friend PARSER_API Sequence operator+(const Symbol&, const Symbol&);
+    friend PARSER_API Sequence operator+(const Sequence&, const Symbol&);
   protected:
     int len;
     std::vector<const Symbol*> symbols;

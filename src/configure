@@ -8251,6 +8251,7 @@ echo $ECHO_N "checking for HDF4... $ECHO_C" >&6
 HDF4=""
 HDF4_FLAGS=""
 HDF4_LIBS=""
+HDF4_LIBDIR=""
 
 # Check whether --with-hdf4 or --without-hdf4 was given.
 if test "${with_hdf4+set}" = set; then
@@ -8264,6 +8265,7 @@ if test "$hdf4_specified" = "yes"; then
    if test "$withval" != "no"; then
       HDF4_FLAGS="-I`echo $withval |cut -f1 -d,`"
       HDF4_LIBS="-L`echo $withval |cut -f2 -d, -s`"
+      HDF4_LIBDIR="`echo $withval |cut -f2 -d, -s`"
    fi
 else
    if test "$DEFAULT_HDF4_FLAGS" != "" ; then
@@ -8271,6 +8273,7 @@ else
    fi
    if test "$DEFAULT_HDF4_LIBS" != "" ; then
       HDF4_LIBS="-L$DEFAULT_HDF4_LIBS -lmfhdf -ldf -ljpeg -lz $HDF4_LIBS"
+      HDF4_LIBDIR="$DEFAULT_HDF4_LIBS"
    fi
 fi
 if test "$HDF4_LIBS" != "" ; then
@@ -9752,12 +9755,13 @@ fi
 
 #
 # This helps the Makefile in the lib directory make the right links
-# to Silo, Mili, and HDF5. It is only needed on MacOS X because on
+# to Silo, Mili, HDF4, and HDF5. It is only needed on MacOS X because on
 # other platforms, these libraries are statically linked into the
 # database plugins and on MacOS X they are dynamically linked.
 #
 CREATE_SILO_LINK=""
 CREATE_MILI_LINK=""
+CREATE_HDF4_LINK=""
 CREATE_HDF5_LINK=""
 case $SHORT_UNAME in
   darwin)
@@ -9767,11 +9771,15 @@ case $SHORT_UNAME in
     if test "$MILI_LIBS" != "" ; then
         CREATE_MILI_LINK="create_mili_link"
     fi
+    if test "$HDF4_LIBS" != "" ; then
+        CREATE_HDF4_LINK="create_hdf4_link"
+    fi
     if test "$HDF5_LIB" != "" ; then
         CREATE_HDF5_LINK="create_hdf5_link"
     fi
   ;;
 esac
+
 
 
 
@@ -16733,6 +16741,7 @@ s,@MILI_DIR@,$MILI_DIR,;t t
 s,@HDF4@,$HDF4,;t t
 s,@HDF4_FLAGS@,$HDF4_FLAGS,;t t
 s,@HDF4_LIBS@,$HDF4_LIBS,;t t
+s,@HDF4_LIBDIR@,$HDF4_LIBDIR,;t t
 s,@BOXLIB2D@,$BOXLIB2D,;t t
 s,@BOXLIB2D_INCLUDE@,$BOXLIB2D_INCLUDE,;t t
 s,@BOXLIB2D_LIBS@,$BOXLIB2D_LIBS,;t t
@@ -16800,6 +16809,7 @@ s,@ENGINEWRAPSER@,$ENGINEWRAPSER,;t t
 s,@ENGINEWRAPPAR@,$ENGINEWRAPPAR,;t t
 s,@CREATE_SILO_LINK@,$CREATE_SILO_LINK,;t t
 s,@CREATE_MILI_LINK@,$CREATE_MILI_LINK,;t t
+s,@CREATE_HDF4_LINK@,$CREATE_HDF4_LINK,;t t
 s,@CREATE_HDF5_LINK@,$CREATE_HDF5_LINK,;t t
 /@VARIABLES@/r $VARIABLES
 s,@VARIABLES@,,;t t

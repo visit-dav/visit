@@ -1,5 +1,5 @@
 #
-#                            Copyright 2000 - 2004
+#                            Copyright 2000 - 2005
 #                 The Regents of the University of California.
 #                             All rights reserved.
 # 
@@ -45,6 +45,9 @@
 #    Brad Whitlock, Thu Apr 22 15:07:26 PST 2004
 #    I moved winutil from common to the top level.
 #
+#    Brad Whitlock, Wed Jan 5 09:25:20 PDT 2005
+#    Added -lexpr for MacOS X.
+#
 ##############################################################################
 
 ##
@@ -68,7 +71,7 @@ OBJMOC=${SRCMOC:.C=.o}
 OBJ=$(SRC:.C=.o) ${OBJMOC}
 
 LIB=libwinutil
-LIBS=-lqt -ldbatts -lstate -lcomm -lmisc -lavtexceptions -lutility -lparser
+LIBS=-lqt -ldbatts -lstate -lcomm -lmisc -lavtexceptions -lutility -lexpr -lparser
 NOT_DISTRIB=
 
 ##

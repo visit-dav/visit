@@ -2184,7 +2184,7 @@ PP_ZFileReader::ReadMixvarAndCache(const std::string &varStr,
             VariableData *v = new VariableData(mixedVarWithSuffix);
             varStorage[mixedVar] = v;
             debug4 << mName << "Added an empty entry in varStorage for "
-                   << mixedVar << " since it was not already in the map."
+                   << mixedVar.c_str() << " since it was not already in the map."
                    << endl;
         }
 

@@ -108,6 +108,9 @@
 //    Added -lparallel_visit_vtk_{ser,par} to the link line for plot and operator
 //    plugins so they link again on MacOS X.
 //
+//    Brad Whitlock, Wed Jan 5 11:15:16 PDT 2005
+//    Added -lexpr everywhere -lparser is used so we can link again on MacOS X.
+//
 // ****************************************************************************
 
 class MakefileGeneratorPlugin
@@ -325,12 +328,12 @@ class MakefileGeneratorPlugin
             out << "ILIBS=" << endl;
             out << "GLIBS=-lgui -lmdserverproxy -lviewerproxy -lproxybase "
                    "-lmdserverrpc -lviewerrpc -lwinutil -ldbatts -lavtexceptions "
-                   "-lstate -lcomm -lmisc -lplugin -lparser -lutility "
+                   "-lstate -lcomm -lmisc -lplugin -lexpr -lparser -lutility "
                    "-lI$(PLUGINNAME) $(QT_LDFLAGS) $(QT_LIBS) $(X_LIBS)" << endl;
             out << "SLIBS=-lstate -lmisc -lcomm -lutility $(PY_LIB) -lI$(PLUGINNAME)" << endl;
             out << "VLIBS=-lpipeline_ser -lplotter -lavtfilters_ser "
                    "-lavtmath_ser -lavtview -ldbatts -lavtexceptions -lstate "
-                   "-lmisc -lcomm -lparser -lutility -lvisit_vtk "
+                   "-lmisc -lcomm -lexpr -lparser -lutility -lvisit_vtk "
                    "-llightweight_visit_vtk -lparallel_visit_vtk_ser ";
             //
             // HACK HACK HACK -- This should be a flag in the XML file instead
@@ -352,8 +355,8 @@ class MakefileGeneratorPlugin
 
             // Add the rest of the viewer operator libs
             out << "-lI$(PLUGINNAME) $(VTK_LIBS)" << endl;
-            out << "ESERLIBS=-lpipeline_ser -lplotter -lavtfilters_ser -lavtmath_ser -lavtview -ldbatts -lavtexceptions -lstate -lmisc -lcomm -lparser -lutility -lvisit_vtk -llightweight_visit_vtk -lparallel_visit_vtk_ser -lI$(PLUGINNAME) $(VTK_LIBS)" << endl;
-            out << "EPARLIBS=-lpipeline_par -lplotter -lavtfilters_par -lavtmath_par -lavtview -ldbatts -lavtexceptions -lstate -lmisc -lcomm -lparser -lutility -lvisit_vtk -llightweight_visit_vtk -lparallel_visit_vtk_par -lI$(PLUGINNAME) $(VTK_LIBS) $(SHLIB_MPI_LIBS)" << endl;
+            out << "ESERLIBS=-lpipeline_ser -lplotter -lavtfilters_ser -lavtmath_ser -lavtview -ldbatts -lavtexceptions -lstate -lmisc -lcomm -lexpr -lparser -lutility -lvisit_vtk -llightweight_visit_vtk -lparallel_visit_vtk_ser -lI$(PLUGINNAME) $(VTK_LIBS)" << endl;
+            out << "EPARLIBS=-lpipeline_par -lplotter -lavtfilters_par -lavtmath_par -lavtview -ldbatts -lavtexceptions -lstate -lmisc -lcomm -lexpr -lparser -lutility -lvisit_vtk -llightweight_visit_vtk -lparallel_visit_vtk_par -lI$(PLUGINNAME) $(VTK_LIBS) $(SHLIB_MPI_LIBS)" << endl;
             out << "" << endl;
             out << "IDSO="<<visitplugininstall<<"/operators/libI"<<name<<"Operator" << PLUGIN_EXTENSION << endl;
             out << "GDSO="<<visitplugininstall<<"/operators/libG"<<name<<"Operator" << PLUGIN_EXTENSION << endl;
@@ -424,11 +427,11 @@ class MakefileGeneratorPlugin
             out << endl;
             out << "" << endl;
             out << "ILIBS=" << endl;
-            out << "GLIBS=-lgui -lmdserverproxy -lviewerproxy -lproxybase -lmdserverrpc -lviewerrpc -lwinutil -ldbatts -lavtexceptions -lstate -lcomm -lmisc -lplugin -lparser -lutility -lI$(PLUGINNAME) $(QT_LDFLAGS) $(QT_LIBS) $(X_LIBS)" << endl;
+            out << "GLIBS=-lgui -lmdserverproxy -lviewerproxy -lproxybase -lmdserverrpc -lviewerrpc -lwinutil -ldbatts -lavtexceptions -lstate -lcomm -lmisc -lplugin -lexpr -lparser -lutility -lI$(PLUGINNAME) $(QT_LDFLAGS) $(QT_LIBS) $(X_LIBS)" << endl;
             out << "SLIBS=-lstate -lmisc -lcomm -lutility $(PY_LIB) -lI$(PLUGINNAME)" << endl;
-            out << "VLIBS=-lpipeline_ser -lplotter -lavtfilters_ser -lavtmath_ser -lavtview -ldbatts -lavtexceptions -lstate -lmisc -lcomm -lparser -lutility -lvisit_vtk -llightweight_visit_vtk -lparallel_visit_vtk_ser -lI$(PLUGINNAME) $(VTK_LIBS)" << endl;
-            out << "ESERLIBS=-lpipeline_ser -lplotter -lavtfilters_ser -lavtmath_ser -lavtview -ldbatts -lavtexceptions -lstate -lmisc -lcomm -lparser -lutility -lvisit_vtk -llightweight_visit_vtk -lparallel_visit_vtk_ser -lI$(PLUGINNAME) $(VTK_LIBS)" << endl;
-            out << "EPARLIBS=-lpipeline_par -lplotter -lavtfilters_par -lavtmath_par -lavtview -ldbatts -lavtexceptions -lstate -lmisc -lcomm -lparser -lutility -lvisit_vtk -llightweight_visit_vtk -lparallel_visit_vtk_par -lI$(PLUGINNAME) $(VTK_LIBS) $(SHLIB_MPI_LIBS)" << endl;
+            out << "VLIBS=-lpipeline_ser -lplotter -lavtfilters_ser -lavtmath_ser -lavtview -ldbatts -lavtexceptions -lstate -lmisc -lcomm -lexpr -lparser -lutility -lvisit_vtk -llightweight_visit_vtk -lparallel_visit_vtk_ser -lI$(PLUGINNAME) $(VTK_LIBS)" << endl;
+            out << "ESERLIBS=-lpipeline_ser -lplotter -lavtfilters_ser -lavtmath_ser -lavtview -ldbatts -lavtexceptions -lstate -lmisc -lcomm -lexpr -lparser -lutility -lvisit_vtk -llightweight_visit_vtk -lparallel_visit_vtk_ser -lI$(PLUGINNAME) $(VTK_LIBS)" << endl;
+            out << "EPARLIBS=-lpipeline_par -lplotter -lavtfilters_par -lavtmath_par -lavtview -ldbatts -lavtexceptions -lstate -lmisc -lcomm -lexpr -lparser -lutility -lvisit_vtk -llightweight_visit_vtk -lparallel_visit_vtk_par -lI$(PLUGINNAME) $(VTK_LIBS) $(SHLIB_MPI_LIBS)" << endl;
             out << "" << endl;
             out << "IDSO="<<visitplugininstall<<"/plots/libI"<<name<<"Plot" << PLUGIN_EXTENSION << endl;
             out << "GDSO="<<visitplugininstall<<"/plots/libG"<<name<<"Plot" << PLUGIN_EXTENSION << endl;
@@ -488,9 +491,9 @@ class MakefileGeneratorPlugin
             out << endl;
             out << "" << endl;
             out << "ILIBS=" << endl;
-            out << "MLIBS=-lpipeline_ser -ldatabase_ser -lmir -lavtmath_ser -ldbatts -lavtexceptions -lstate -lcomm -lmisc -lparser -lplugin -lutility -lvisit_vtk -llightweight_visit_vtk  -L../../plugins/databases -lI$(PLUGINNAME) $(VTK_LIBS)" << endl;
-            out << "ESERLIBS=-lpipeline_ser -ldatabase_ser -lmir -lavtmath_ser -ldbatts -lavtexceptions -lstate -lcomm -lmisc -lparser -lplugin -lutility -lvisit_vtk -llightweight_visit_vtk  -L../../plugins/databases -lI$(PLUGINNAME) $(VTK_LIBS)" << endl;
-            out << "EPARLIBS=-lpipeline_par -ldatabase_par -lmir -lavtmath_par -ldbatts -lavtexceptions -lstate -lcomm -lmisc -lparser -lplugin -lutility -lvisit_vtk -llightweight_visit_vtk  -L../../plugins/databases -lI$(PLUGINNAME) $(VTK_LIBS) $(SHLIB_MPI_LIBS)" << endl;
+            out << "MLIBS=-lpipeline_ser -ldatabase_ser -lmir -lavtmath_ser -ldbatts -lavtexceptions -lstate -lcomm -lmisc -lexpr -lparser -lplugin -lutility -lvisit_vtk -llightweight_visit_vtk  -L../../plugins/databases -lI$(PLUGINNAME) $(VTK_LIBS)" << endl;
+            out << "ESERLIBS=-lpipeline_ser -ldatabase_ser -lmir -lavtmath_ser -ldbatts -lavtexceptions -lstate -lcomm -lmisc -lexpr -lparser -lplugin -lutility -lvisit_vtk -llightweight_visit_vtk  -L../../plugins/databases -lI$(PLUGINNAME) $(VTK_LIBS)" << endl;
+            out << "EPARLIBS=-lpipeline_par -ldatabase_par -lmir -lavtmath_par -ldbatts -lavtexceptions -lstate -lcomm -lmisc -lexpr -lparser -lplugin -lutility -lvisit_vtk -llightweight_visit_vtk  -L../../plugins/databases -lI$(PLUGINNAME) $(VTK_LIBS) $(SHLIB_MPI_LIBS)" << endl;
             out << "" << endl;
             out << "IDSO="<<visitplugininstall<<"/databases/libI"<<name<<"Database" << PLUGIN_EXTENSION << endl;
             out << "MDSO="<<visitplugininstall<<"/databases/libM"<<name<<"Database" << PLUGIN_EXTENSION << endl;

@@ -21,6 +21,11 @@ import java.io.IOException;
 //   Brad Whitlock, Thu Dec 12 12:47:12 PDT 2002
 //   Added verbose flag to allow us to print trace information.
 //
+//   Brad Whitlock, Fri Jan 7 17:03:14 PST 2005
+//   Added support for inserting null entries into the subjects list so
+//   we can maintain the same object ordering as the viewer without
+//   having to write a state object if we don't want to.
+//
 // ****************************************************************************
 
 class Xfer implements SimpleObserver, Runnable
@@ -58,6 +63,16 @@ class Xfer implements SimpleObserver, Runnable
         subject.Attach(this);
         subjects[index] = subject;
         subject.SetAttributeId(index);
+    }
+
+    // This is a temporary method that lets us add an empty item
+    // into the subjects array so we have the same object ordering
+    // as the viewer without having to necessarily write a state
+    // object to do the job.
+    public void AddDummy()
+    {
+        subjects[nSubjects] = null;
+        ++nSubjects;
     }
 
     public void Remove(AttributeSubject subject)

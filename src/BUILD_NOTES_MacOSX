@@ -35,6 +35,7 @@ shell prompt.
     Optional Version  Description            For More Information
     ======== =======  ===========            ====================
     Mili     1.06     I/O library            (none)
+    HDF4     2.0      I/O library            http://hdf.ncsa.uiuc.edu/release4/obtain.html
 
 The public version of VisIt has been built with the above listed versions
 of the libraries, so it is known to work properly with those versions.  For
@@ -389,6 +390,15 @@ cp MangleMesaInclude/*.h          $VISITPATH/vtk/MangleMesaInclude
 cp bin/*.dylib                    $VISITPATH/vtk/lib
 cd ..
 
+#
+# Install the VTK JPEG library under the visit directory in case the
+# computer does not have a JPEG library.
+#
+mkdir $VISITPATH/jpeg $VISITPATH/jpeg/include $VISITPATH/jpeg/lib
+cp Utilities/jpeg/*.h             $VISITPATH/jpeg/include
+cp bin/libvtkjpeg.dylib           $VISITPATH/jpeg/lib/libjpeg.dylib
+
+
 The next offset after libvtkRendering.dylib, which has an offset of 0x21f6f000 and
 a library size of 3,260,676 (0x31c104) bytes is:
 
@@ -598,6 +608,51 @@ offset = offset + (0x1000 - offset % 0x1000)
 # Next offset
 offset = 0x227cd000
 
+==============================================================================
+Building HDF4 as a prebound dynamic library
+==============================================================================
+
+HDF4 is a data storage library that lets you write large volumes of data to 
+disk files and it is the predecessor of HDF5. Like most of the other libraries
+mentioned so far, HDF4 does not have a make target to produce a prebound, dynamic
+library. In fact, its make target for MacOS X produces a static library. Follow
+the instructions below for creating prebound dynamic libraries.
+
+# Unpack HDF4
+tar zxvf HDF4.2r0.tar.gz
+cd HDF4.2r0
+
+vi configure
+# Comment out lines 7147-7169 because the script exits with a failure to
+# calculate the size of int*. Insert, at line 7178, ac_cv_sizeof_intp=4
+# Save the file and exit.
+env CFLAGS="-O2 -fno-common" ./configure --with-jpeg=$VISITPATH/jpeg --disable-fortran
+make
+
+# Relink libdf and install it.
+cd hdf/src
+mkdir tmp
+cd tmp
+ar -x ../libdf.a
+gcc -dynamiclib -prebind -twolevel_namespace -o libdf.dylib *.o -L$VISITPATH/jpeg/lib -ljpeg -lz -Wl,-seg1addr,0x227cd000,-install_name,@executable_path/../lib/libdf.dylib,-compatibility_version,2.0,-current_version,2.0
+mkdir $VISITPATH/hdf4
+mkdir $VISITPATH/hdf4/lib
+mkdir $VISITPATH/hdf4/include
+mv libdf.dylib $VISITPATH/hdf4/lib
+
+# Relink libmfhdf and install it.
+cd ../../../mfhdf/libsrc
+mkdir tmp
+cd tmp
+ar -x ../libmfhdf.a
+gcc -dynamiclib -prebind -twolevel_namespace -o libmfhdf.dylib *.o L$VISITPATH/jpeg/lib -L$VISITPATH/hdf4/lib -ljpeg -ldf -Wl,-seg1addr,0x2286000,-install_name,@executable_path/../lib/libmfhdf.dylib,-compatibility_version,2.0,-current_version,2.0
+mv libmfhdf.dylib $VISITPATH/hdf4/lib
+cd ../../..
+
+# Install the HDF4 header files
+cp hdf/src/*.h      $VISITPATH/hdf4/include
+cp mfhdf/libsrc/*.h $VISITPATH/hdf4/include
+cd ..
 
 ===============================================================================
 Building VisIt with prebinding

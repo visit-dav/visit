@@ -1,4 +1,4 @@
-#                            Copyright 1991 - 2004
+#                            Copyright 1991 - 2005
 #                 The Regents of the University of California.
 #                             All rights reserved.
 # 
@@ -37,6 +37,9 @@
 #    Brad Whitlock, Thu Apr 22 16:58:36 PST 2004
 #    Added more files to LIBS so we can prebind on MacOS X.
 #
+#    Brad Whitlock, Wed Jan 5 09:25:20 PDT 2005
+#    Added -lexpr for MacOS X.
+#
 ##############################################################################
 
 ##
@@ -55,7 +58,7 @@ CPPFLAGS=-I../../include/visit @COMPONENT_CPPFLAGS@ @CPPFLAGS@
 
 OBJ=$(SRC:.C=.o)
 LIB=libavtwriter
-LIBS=-ldbatts -lpipeline_ser -lavtmath_ser -lavtexceptions -lvisit_vtk -llightweight_visit_vtk -lmisc -lstate -lcomm -lparser -lutility $(VTK_LIBS) $(X_LIBS)
+LIBS=-ldbatts -lpipeline_ser -lavtmath_ser -lavtexceptions -lvisit_vtk -llightweight_visit_vtk -lmisc -lstate -lcomm -lexpr -lparser -lutility $(VTK_LIBS) $(X_LIBS)
 
 ##
 ## Standard targets...

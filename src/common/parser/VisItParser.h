@@ -1,5 +1,5 @@
-#ifndef PARSER_H
-#define PARSER_H
+#ifndef VISIT_PARSER_H
+#define VISIT_PARSER_H
 #include <parser_exports.h>
 
 #include <vector>

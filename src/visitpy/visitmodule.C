@@ -7785,6 +7785,9 @@ visit_WriteConfigFile(PyObject *self, PyObject *args)
 //   Kathleen Bonnell, Tue Dec 28 16:23:43 PST 2004 
 //   Support 'Global' in query name, to designate use of global id. 
 //
+//   Brad Whitlock, Tue Jan 4 16:19:15 PST 2005
+//   strcasecmp does not exist on Windows so I made it use _strnicmp.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -7810,7 +7813,11 @@ visit_Query(PyObject *self, PyObject *args)
     // Check for global flag. 
     std::string qname(queryName);
     bool doGlobal = false;
+#if defined(_WIN32)
+    if (_strnicmp(queryName, "Global ", 7) == 0)
+#else
     if (strncasecmp(queryName, "Global ", 7) == 0)
+#endif
     {
         std::string::size_type pos1 = 0;
         pos1 = qname.find_first_of(' ', pos1);
