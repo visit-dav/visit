@@ -318,6 +318,10 @@ QvisFilePanel::Update(Subject *TheChangedSubject)
 //   Brad Whitlock, Mon Mar 31 15:09:51 PST 2003
 //   I added database pixmaps for virtual files.
 //
+//   Brad Whitlock, Fri Jun 20 14:08:30 PST 2003
+//   I fixed a bug that caused the GUI to hang when there were files from
+//   more than one host.
+//
 // ****************************************************************************
 
 void
@@ -353,16 +357,12 @@ QvisFilePanel::UpdateFileList(bool doAll)
         // host map. If it isn't, make sure that files from that host are
         // not expanded by default.
         FileDisplayInformationMap::iterator exfile;
-        for(exfile = displayInfo.begin(); exfile != displayInfo.end(); )
+        for(exfile = displayInfo.begin(); exfile != displayInfo.end(); ++exfile)
         {
             if(exfile->first.host.size() > 0 &&
                hostMap.find(exfile->first.host) == hostMap.end())
             {
                 RemoveExpandedFile(exfile->first);
-            }
-            else
-            {
-                ++exfile;
             }
         }
 

@@ -112,14 +112,21 @@ NewHandler(void)
 //    Jeremy Meredith, Wed Aug  7 13:17:01 PDT 2002
 //    Made it clamp the debug level to 0 through 5.
 //
+//    Brad Whitlock, Wed Jun 18 13:35:02 PST 2003
+//    I made the debug logs have pids by default on Windows.
+//
 // ****************************************************************************
 
 void
 Init::Initialize(int &argc, char *argv[], int r, int n, bool strip)
 {
     int debuglevel = 0;
-
+#if defined(_WIN32)
+    bool usePid = true;
+#else
     bool usePid = false;
+#endif
+
     for (int i=1; i<argc; i++)
     {
         if (strcmp("-debug",argv[i]) == 0)

@@ -1,6 +1,10 @@
 #include <AppearanceAttributes.h>
 #include <DataNode.h>
 
+#if defined(_WIN32)
+#include <windows.h>
+#endif
+
 // ****************************************************************************
 // Method: AppearanceAttributes::AppearanceAttributes
 //
@@ -16,13 +20,27 @@
 //   
 // ****************************************************************************
 
-AppearanceAttributes::AppearanceAttributes() : AttributeSubject("ssssi")
+AppearanceAttributes::AppearanceAttributes() : AttributeSubject("ssssi"),
+    background("#c0c0c0"), foreground("#000000"), 
+    fontDescription("-adobe-helvetica-bold-r-normal--14-140-75-75-p-82-iso8859-1"),
+    style("motif")
 {
-    background = "#c0c0c0";
-    foreground = "#000000";
-    fontDescription = "-adobe-helvetica-bold-r-normal--14-140-75-75-p-82-iso8859-1";
-    style = "motif";
     orientation = 0;
+#if defined(_WIN32)
+    char  tmp[20];
+    DWORD c;
+    unsigned char *cptr = (unsigned char *)&c;
+
+    c = GetSysColor(COLOR_BTNFACE);
+    sprintf(tmp, "#%02x%02x%02x", int(cptr[0]), int(cptr[1]), int(cptr[2]));
+    background = tmp;
+
+    c = GetSysColor(COLOR_WINDOWTEXT);
+    sprintf(tmp, "#%02x%02x%02x", int(cptr[0]), int(cptr[1]), int(cptr[2]));
+    foreground = tmp;
+
+    style = "windows";
+#endif
 }
 
 // ****************************************************************************

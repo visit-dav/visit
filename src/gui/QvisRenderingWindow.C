@@ -376,6 +376,7 @@ QvisRenderingWindow::UpdateInformation(bool doAll)
 {
     QString tmp;
     float fps;
+    int j;
 
     // Loop through all the attributes and do something for
     // each of them that changed. This function is only responsible
@@ -431,7 +432,7 @@ QvisRenderingWindow::UpdateInformation(bool doAll)
             approxNumTriangles->setText(tmp);
             break;
         case 11: //extents
-            for(int j = 0; j < 6; ++j)
+            for(j = 0; j < 6; ++j)
             {
                 double d = windowInfo->GetExtents()[j];
                 if(d == DBL_MAX || d == -DBL_MAX)

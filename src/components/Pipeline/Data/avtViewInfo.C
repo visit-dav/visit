@@ -120,6 +120,9 @@ avtViewInfo::operator==(const avtViewInfo &vi)
 
     if (imagePan[0] != vi.imagePan[0] || imagePan[1] != vi.imagePan[1] ||
         imageZoom != vi.imageZoom)
+    {
+        return false;
+    }
 
     return true;
 }

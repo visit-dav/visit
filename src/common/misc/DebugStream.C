@@ -431,20 +431,12 @@ DebugStream::~DebugStream()
 //    Jeremy Meredith, Fri Jun  1 17:25:01 PDT 2001
 //    Added setting of 'enabled' to true.
 //
-//    Brad Whitlock, Fri Apr 18 15:42:07 PST 2003
-//    I made the debug logs get the process id..
-//
 // ****************************************************************************
 void
 DebugStream::open(const char *progname)
 {
     char filename[256];
-#if defined(_WIN32)
-    DWORD id = GetCurrentProcessId();
-    sprintf(filename, "%s.%d.%d.log", progname, (unsigned int)id, level);
-#else
-    sprintf(filename, "%s.%d.%d.log", progname, (unsigned int)getpid(), level);
-#endif
+    sprintf(filename, "%s.%d.log", progname, level);
     buf.open(filename);
     enabled = true;
 }

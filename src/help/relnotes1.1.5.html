@@ -13,7 +13,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">Features added in version 1.1.5</font></b></p>
 <ul>
   <li>Databases can be reopened at the current timestep so variables that appear later in time are supported.</li>
-
+  <li>VisIt has a new point tool that can be used to select a new origin for the new ThreeSlice operator, which performs three orthogonal slices on 3D databases and leaves the resulting slices in 3D.
   <li>Panning and zooming is vastly improved so that it no longer moves the camera.</li>
   <li>The Boundary plot now has a button for filled vs. unfilled.</li>
   <li>Pipeline caching is now off by default.</li>
@@ -27,6 +27,8 @@ enhancements and bug-fixes that were added to this release.</p>
 </ul>
 <p><b><font size="4">Bugs fixed in version 1.1.5</font></b></p>
 <ul>
+  <li>VisIt sometimes crashes when plots and operators are disabled.</li>
+  <li>Pick returns bad values for databases that have ghost cells.</li>
   <li>Multifile databases in which a file is missing can hang the parallel compute engine.</li>
   <li>Host profiles for the ice machine have been added.</li>
   <li>Silo paths are not handled well on Windows.</li>
