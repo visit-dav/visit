@@ -16,5 +16,7 @@ PyObject       *PyPickAttributes_WrapPyObject(const PickAttributes *attr);
 void            PyPickAttributes_SetLogging(bool val);
 void            PyPickAttributes_SetDefaults(const PickAttributes *atts);
 
+PyObject       *PyPickAttributes_StringRepresentation(const PickAttributes *atts);
+
 #endif
 

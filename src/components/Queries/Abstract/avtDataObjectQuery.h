@@ -8,6 +8,7 @@
 #include <query_exports.h>
 
 #include <avtDataObjectSink.h>
+#include <vectortypes.h>
 
 
 class QueryAttributes;
@@ -42,6 +43,9 @@ typedef void (*ProgressCallback)(void *, const char *, const char *,int,int);
 //    Kathleen Bonnell, Tue Feb 10 15:00:32 PST 2004 
 //    Added OriginalData method. 
 //
+//    Kathleen Bonnell, Thu Apr  1 16:04:44 PST 2004
+//    Added PerformQueryInTime, SetTimeVarying, SetSILUseSet.
+//
 // ****************************************************************************
 
 class QUERY_API avtDataObjectQuery : public virtual avtDataObjectSink
@@ -55,6 +59,8 @@ class QUERY_API avtDataObjectQuery : public virtual avtDataObjectSink
 
     virtual bool                  OriginalData(void) { return false; };
     virtual void                  PerformQuery(QueryAttributes *) = 0;
+    virtual void                  PerformQueryInTime(QueryAttributes *,
+                                      const intVector &) {;};
     virtual std::string           GetResultMessage(void) = 0;
 
     static void                   RegisterInitializeProgressCallback(
@@ -63,6 +69,10 @@ class QUERY_API avtDataObjectQuery : public virtual avtDataObjectSink
     static void                   RegisterProgressCallback(ProgressCallback,
                                                            void *);
 
+    virtual void                  SetTimeVarying(bool val) { timeVarying = val;};
+
+    void                          SetSILUseSet(const unsignedCharVector &u)
+                                        { silUseSet = u; };
 
   protected:
     static InitializeProgressCallback
@@ -72,7 +82,7 @@ class QUERY_API avtDataObjectQuery : public virtual avtDataObjectSink
     static ProgressCallback       progressCallback;
     static void                  *progressCallbackArgs;
 
-    void                          Init(void);
+    void                          Init(const int ntimesteps = 1);
     virtual int                   GetNFilters();
 
     void                          UpdateProgress(int, int);
@@ -80,6 +90,8 @@ class QUERY_API avtDataObjectQuery : public virtual avtDataObjectSink
     virtual void                  VerifyInput(void);
 
     std::string                   units;
+    bool                          timeVarying;
+    unsignedCharVector            silUseSet;
 };
 
 

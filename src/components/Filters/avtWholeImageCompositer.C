@@ -58,17 +58,36 @@ MergeZFPixelBuffers(void *ibuf, void *iobuf, int *count, void *datatype)
             inout_zfpixels[i].g = in_zfpixels[i].g;
             inout_zfpixels[i].b = in_zfpixels[i].b;
         }
-        else if ((in_zfpixels[i].z == inout_zfpixels[i].z) &&
-                 (inout_zfpixels[i].r == local_bg_r) &&
-                 (inout_zfpixels[i].g == local_bg_g) &&
-                 (inout_zfpixels[i].b == local_bg_b))
+        else if (in_zfpixels[i].z == inout_zfpixels[i].z)
         {
-            inout_zfpixels[i].r = in_zfpixels[i].r;
-            inout_zfpixels[i].g = in_zfpixels[i].g;
-            inout_zfpixels[i].b = in_zfpixels[i].b;
+            if ((inout_zfpixels[i].r == local_bg_r) &&
+                (inout_zfpixels[i].g == local_bg_g) &&
+                (inout_zfpixels[i].b == local_bg_b))
+            {
+                // Since 'inout' is background color, take whatever
+                // is in 'in' even if it too is background color
+                inout_zfpixels[i].r = in_zfpixels[i].r;
+                inout_zfpixels[i].g = in_zfpixels[i].g;
+                inout_zfpixels[i].b = in_zfpixels[i].b;
+            }
+            else if ((in_zfpixels[i].r != local_bg_r) || 
+                     (in_zfpixels[i].g != local_bg_g) || 
+                     (in_zfpixels[i].b != local_bg_b))
+            {
+                // Neither 'inout' nor 'in' is the background color.
+                // So, average them.
+                float newr = (float)    in_zfpixels[i].r +
+                             (float) inout_zfpixels[i].r; 
+                float newg = (float)    in_zfpixels[i].g +
+                             (float) inout_zfpixels[i].g; 
+                float newb = (float)    in_zfpixels[i].b +
+                             (float) inout_zfpixels[i].b; 
+                inout_zfpixels[i].r = (unsigned char) (newr / 2.0); 
+                inout_zfpixels[i].g = (unsigned char) (newg / 2.0);
+                inout_zfpixels[i].b = (unsigned char) (newb / 2.0); 
+            }
         }
     }
- 
 }
 
 // declare initialize static data members

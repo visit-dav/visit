@@ -219,6 +219,9 @@
 #    Brad Whitlock, Thu Jan 22 14:06:37 PST 2004
 #    I added DatabaseCorrelation, and DatabaseCorrelationList.
 #
+#    Kathleen Bonnell, Wed Mar 31 15:46:46 PST 2004 
+#    Added QueryOverTimeAttributes.
+#
 ##############################################################################
 
 ##
@@ -286,6 +289,7 @@ SRC=    AnimationAttributes.C \
         PrinterAttributes.C \
         QueryAttributes.C \
         QueryList.C \
+        QueryOverTimeAttributes.C \
 	QuitRPC.C \
         RenderingAttributes.C \
         ResampleAttributes.C \

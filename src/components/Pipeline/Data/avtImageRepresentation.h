@@ -49,6 +49,8 @@ class PIPELINE_API avtImageRepresentation
 
     const avtImageRepresentation    &operator=(const avtImageRepresentation &);
 
+    void                 GetSize(int *rowSize, int *colSize) const;
+
     // these aren't const, because they might call GetImageFromString
     vtkImageData        *GetImageVTK(void);
     float               *GetZBuffer(void);

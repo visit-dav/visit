@@ -492,6 +492,7 @@ public:
 
     int          GetNDomains(std::string) const;
     avtVarType   DetermineVarType(std::string) const;
+    avtCentering GetVarCentering(std::string) const;
     avtSubsetType   DetermineSubsetType(const std::string &) const;
     std::string  MeshForVar(std::string) const;
     std::string  MaterialOnMesh(std::string) const;

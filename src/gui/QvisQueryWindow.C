@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <QvisQueryWindow.h>
 #include <qbuttongroup.h>
+#include <qcheckbox.h>
 #include <qgroupbox.h>
 #include <qlabel.h>
 #include <qlineedit.h>
@@ -100,6 +101,9 @@ QvisQueryWindow::~QvisQueryWindow()
 //   I added radio buttons to select between a database query and a 
 //   'current plot' query.  (Only appear if query requests them).
 //
+//   Kathleen Bonnell, Thu Apr  1 18:46:55 PST 2004 
+//   Added TimeQuery push button. 
+//
 // ****************************************************************************
 
 void
@@ -155,6 +159,18 @@ QvisQueryWindow::CreateWindowContents()
     dataOpts->insert(actualData);
     dataOpts->setButton(0);
     sLayout->addWidget(actualData, 6, 0);
+
+    // Add the time button to the argument panel.
+    gLayout->addStretch(10);
+    QHBoxLayout *tbLayout = new QHBoxLayout(gLayout);
+    tbLayout->addStretch(5);
+    timeQueryButton = new QPushButton("Time Curve", 
+                                      argPanel, "timeQueryButton");
+    connect(timeQueryButton, SIGNAL(clicked()),
+            this, SLOT(timeApply()));
+    tbLayout->addWidget(timeQueryButton);
+    tbLayout->addStretch(5);
+    gLayout->addSpacing(10);
 
     // Add the query button to the argument panel.
     gLayout->addStretch(10);
@@ -250,6 +266,9 @@ QvisQueryWindow::CreateEntireWindow()
 //   Kathleen Bonnell, Wed Sep 25 11:31:41 PDT 2002 
 //   QueryAtts can also be used to update the results.
 //   
+//   Kathleen Bonnell, Thu Apr  1 18:46:55 PST 2004 
+//   Call update for timeQueryButton.
+//   
 // ****************************************************************************
 
 void
@@ -263,7 +282,10 @@ QvisQueryWindow::UpdateWindow(bool doAll)
         UpdateResults(doAll);
 
     if(SelectedSubject() == plotList || doAll)
+    {
         UpdateQueryButton();
+        UpdateTimeQueryButton();
+    }
 }
 
 // ****************************************************************************
@@ -285,6 +307,27 @@ QvisQueryWindow::UpdateQueryButton()
     bool val = (queries->GetNames().size() > 0) &&
                (plotList->GetNumPlots() > 0);
     queryButton->setEnabled(val);
+}
+ 
+// ****************************************************************************
+// Method: QvisQueryWindow::UpdateTimeQueryButton
+//
+// Purpose: 
+//   Sets the enabled state for the time query button.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   April 1, 2004 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisQueryWindow::UpdateTimeQueryButton()
+{
+    bool val = (queries->GetNames().size() > 0) &&
+               (plotList->GetNumPlots() > 0);
+    timeQueryButton->setEnabled(val);
 }
 
 // ****************************************************************************
@@ -405,6 +448,9 @@ QvisQueryWindow::UpdateResults(bool)
 //   Reworked code to create panel based on specified window type for a 
 //   particular query.  Removed all references to specific query names. 
 // 
+//   Kathleen Bonnell, Thu Apr  1 18:46:55 PST 2004
+//   Added code to handle new time query capabilities.
+// 
 // ****************************************************************************
 
 void
@@ -412,7 +458,11 @@ QvisQueryWindow::UpdateArgumentPanel(int index)
 {
     const intVector &rep = queries->GetCoordRep();
     const intVector &winType = queries->GetWinType();
+    const intVector &timeQuery = queries->GetTimeQuery();
 
+    // reset a few defaults
+    dataOpts->setButton(0);
+    
     if(index < winType.size())
     {
         bool showWidgets[4] = {false, false, false, false};
@@ -421,6 +471,7 @@ QvisQueryWindow::UpdateArgumentPanel(int index)
         QueryList::WindowType winT = (QueryList::WindowType)winType[index];
         QueryList::CoordinateRepresentation r;
         r = (QueryList::CoordinateRepresentation)rep[index];
+        bool showTime = (bool)timeQuery[index];
       
         labels[0]->setText("Variables");
         textFields[0]->setText("default");
@@ -530,6 +581,11 @@ QvisQueryWindow::UpdateArgumentPanel(int index)
             coordLabel->show();
         else
             coordLabel->hide();
+
+        if (showTime)
+            timeQueryButton->show();
+        else 
+            timeQueryButton->hide();
     }
 }
 
@@ -631,10 +687,13 @@ QvisQueryWindow::ConnectPlotList(PlotList *pl)
 //   Removed references to specific query names.  Reworked code to
 //   utilize new WindowType ivar.
 //
+//   Kathleen Bonnell,  Thu Apr  1 18:46:55 PST 2004
+//   Added doTime arge to viewer query calls. 
+// 
 // ****************************************************************************
 
 void
-QvisQueryWindow::Apply(bool ignore)
+QvisQueryWindow::Apply(bool ignore, bool doTime)
 {
     if(AutoUpdate() || ignore)
     {
@@ -643,6 +702,7 @@ QvisQueryWindow::Apply(bool ignore)
         const intVector &types = queries->GetTypes();
         const intVector &rep = queries->GetCoordRep();
         const intVector &winType = queries->GetWinType();
+        const intVector &timeQuery = queries->GetTimeQuery();
         if(index >= 0 && index < types.size())
         {
             QueryList::QueryType t = (QueryList::QueryType)types[index];
@@ -650,7 +710,7 @@ QvisQueryWindow::Apply(bool ignore)
             bool noErrors = true;
             double p0[3] = {0., 0., 0.}, p1[3] = {0., 0., 0.};
             stringVector vars;
-
+ 
             // Gather the query parameters according to the type of
             // window we're using.
             if(winT == QueryList::Basic)
@@ -662,7 +722,7 @@ QvisQueryWindow::Apply(bool ignore)
                 {
                     if (t == QueryList::DatabaseQuery)
                     {
-                        viewer->DatabaseQuery(names[index], vars);
+                        viewer->DatabaseQuery(names[index], vars, doTime);
                     }
                     else 
                     {
@@ -698,11 +758,11 @@ QvisQueryWindow::Apply(bool ignore)
                 {
                     if (t == QueryList::DatabaseQuery)
                     {
-                        viewer->DatabaseQuery(names[index], vars, dom, el);
+                        viewer->DatabaseQuery(names[index], vars, doTime, dom, el);
                     }
                     else if (t == QueryList::PointQuery)
                     {
-                        viewer->PointQuery(names[index], p0, vars, dom, el);
+                        viewer->PointQuery(names[index], p0, vars, doTime, dom, el);
                     }
                     else 
                     {
@@ -722,7 +782,7 @@ QvisQueryWindow::Apply(bool ignore)
                 {
                     if (t == QueryList::PointQuery)
                     {
-                        viewer->PointQuery(names[index], p0, vars);
+                        viewer->PointQuery(names[index], p0, vars, doTime);
                     }
                     else 
                     {
@@ -773,7 +833,7 @@ QvisQueryWindow::Apply(bool ignore)
                 {
                     if (t == QueryList::DatabaseQuery)
                     {
-                        viewer->DatabaseQuery(names[index], vars, useActualData);
+                        viewer->DatabaseQuery(names[index], vars, doTime, useActualData);
                     }
                     else 
                     {
@@ -973,6 +1033,26 @@ void
 QvisQueryWindow::apply()
 {
     Apply(true);
+}
+
+// ****************************************************************************
+// Method: QvisQueryWindow::apply
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the TimeCurve button is 
+//   clicked.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   Thu Apr  1 18:42:52 PST 2004 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisQueryWindow::timeApply()
+{
+    Apply(true, true);
 }
 
 // ****************************************************************************

@@ -117,6 +117,9 @@ avtDataObjectReader_p ViewerPlot::nullReader((avtDataObjectReader *)0);
 //    Jeremy Meredith, Tue Mar 30 10:39:20 PST 2004
 //    Added an engine key to map this plot to the engine used to create it.
 //
+//    Kathleen Bonnell, Wed Mar 31 16:46:13 PST 2004 
+//    Added clonedNetworkId. 
+//
 // ****************************************************************************
 
 ViewerPlot::ViewerPlot(const int type_,ViewerPlotPluginInfo *viewerPluginInfo_,
@@ -189,6 +192,8 @@ ViewerPlot::ViewerPlot(const int type_,ViewerPlotPluginInfo *viewerPluginInfo_,
     SetFrameRange(frame0, frame1);
     SetSILRestriction(silr_);
     spatialExtentsType = AVT_ORIGINAL_EXTENTS;
+
+    clonedNetworkId = -1;
 }
 
 // ****************************************************************************

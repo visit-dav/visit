@@ -108,6 +108,9 @@ class WindowInformation;
 //   Added methods to set a flag indicating whether the selected files
 //   should be shown.
 //
+//   Kathleen Bonnell, Wed Mar 31 10:13:43 PST 2004
+//   Added method to activate queryOverTime widnow. 
+//
 // ****************************************************************************
 
 class GUI_API QvisMainWindow : public QvisWindowBase, public SimpleObserver
@@ -167,6 +170,7 @@ signals:
     void activateHelpWindow();
     void activateOutputWindow();
     void activateGlobalLineoutWindow();
+    void activateQueryOverTimeWindow();
 
     void saveSettings();
     void saveWindow();

@@ -69,13 +69,16 @@
 #   Kathleen Bonnell, Wed Feb 18 08:31:26 PST 2004
 #   Added avt*NumNodesQuery, avt*NumZonesQuery, 
 #   
+#   Kathleen Bonnell, Tue Mar 30 15:54:20 PST 2004 
+#   Added Misc subdir and avtQueryFactory, avtQueryOverTimeFilter sources. 
+#   
 ##############################################################################
 
 @SET_MAKE@
 @VARIABLES@
 
-SUBDIRS=Abstract Queries
-SRC=$(Abstract_src) $(Queries_src)
+SUBDIRS=Abstract Misc Queries
+SRC=$(Abstract_src) $(Misc_src) $(Queries_src)
 
 Abstract_src= \
  Abstract/avtCurveQuery.C \
@@ -85,6 +88,10 @@ Abstract_src= \
  Abstract/avtGeneralQuery.C \
  Abstract/avtMultipleInputQuery.C \
  Abstract/avtTwoPassDatasetQuery.C
+
+Misc_src= \
+ Misc/avtQueryFactory.C \
+ Misc/avtQueryOverTimeFilter.C 
 
 Queries_src= \
  Queries/avtActualDataMinMaxQuery.C  \

@@ -75,6 +75,9 @@
 #    Brad Whitlock, Fri Mar 19 08:49:00 PDT 2004
 #    I added PyGlobalAttributes.
 #
+#    Kathleen Bonnell, Tue Mar 30 16:32:39 PST 2004 
+#    I added PyQueryOverTimeAttributes.
+#
 ##############################################################################
 
 ##
@@ -94,6 +97,7 @@ SRC= \
     PyMaterialAttributes.C \
     PyPickAttributes.C \
     PyPrinterAttributes.C \
+    PyQueryOverTimeAttributes.C \
     PyRenderingAttributes.C \
     PySaveWindowAttributes.C \
     PySILRestriction.C \
@@ -114,6 +118,7 @@ HDR= \
     PyMaterialAttributes.h \
     PyPickAttributes.h \
     PyPrinterAttributes.h \
+    PyQueryOverTimeAttributes.h \
     PyRenderingAttributes.h \
     PySaveWindowAttributes.h \
     PySILRestriction.h \

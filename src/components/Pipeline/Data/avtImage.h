@@ -36,6 +36,9 @@
 //    Mark C. Miller, Wed Feb  4 19:47:30 PST 2004
 //    Added Instance, needed by avtDataObject->Clone
 //
+//    Mark C. Miller, Wed Mar 31 21:10:56 PST 2004
+//    Added GetSize method
+//
 // ****************************************************************************
 
 class PIPELINE_API avtImage : public avtDataObject
@@ -59,6 +62,7 @@ class PIPELINE_API avtImage : public avtDataObject
                              *InstantiateWriter(void);
     virtual void              ReleaseData(void);
     avtImageRepresentation   &GetImage(void);
+    virtual void              GetSize(int *width, int *height) const;
 
   protected:
     avtImageRepresentation    image;

@@ -43,25 +43,27 @@
 //    Sean Ahern, Mon Dec 23 13:09:50 PST 2002
 //    Okay, so it's not a tree.
 //
+//    Kathleen Bonnell, Wed Mar 31 16:53:03 PST 2004
+//    Made some methods virtual, so this class can be inherited from. 
+//
 // ****************************************************************************
 class DataNetwork
 {
 public:
-    DataNetwork(void);
-    ~DataNetwork(void);
+             DataNetwork(void);
+    virtual ~DataNetwork(void);
 
     void SetID(int _id) { id = _id; };
     void SetPlottype(const std::string &type) { plottype = type; };
-    void SetPlot(avtPlot *_plot) { plot = _plot; };
+    virtual void SetPlot(avtPlot *_plot) { plot = _plot; };
     void SetTerminalNode(Netnode* t) {terminalNode = t;};
     void AddNode(Netnode *n) { nodeList.push_back(n); };
     void SetPipelineSpec(avtPipelineSpecification_p s) {pspec = s;};
     avtDataObject_p GetOutput(void) { return terminalNode->GetOutput(); };
     void SetDataSpec(avtDataSpecification_p s) {dspec = s;};
-    void SetSIL(avtSILRestriction_p &silr_) {silr = silr_;};
     void SetTime(int time_) {time = time_;};
 
-    void ReleaseData(void);
+    virtual void ReleaseData(void);
 
     avtDataSpecification_p& GetDataSpec() {return dspec;};
     avtPipelineSpecification_p GetPipelineSpec() {return pspec;};
@@ -70,12 +72,13 @@ public:
                                     WindowAttributes *atts);
     int GetID(void) { return id; };
     Netnode* GetTerminalNode(void) { return terminalNode; };
-    avtPlot_p GetPlot(void) { return plot; };
+    virtual avtPlot_p GetPlot(void) { return plot; };
     avtActor_p GetActor(avtDataObject_p dob, WindowAttributes *atts);
     void SetNetDB(NetnodeDB *d) { netdb = d; };
     NetnodeDB* GetNetDB(void) { return netdb; };
-    avtSILRestriction_p GetSIL() {return silr;};
-    int GetTime() {return time;};
+    virtual int GetTime() {return time;};
+    std::string &GetPlottype(void) { return plottype; };
+    std::vector<Netnode*>       &GetNodeList(void) { return nodeList; }; 
 
 protected:
     int                         id;
@@ -90,7 +93,6 @@ protected:
     NetnodeDB*                  netdb;
     avtPlot_p                   plot;
     std::string                 plottype;
-    avtSILRestriction_p         silr;
     int                         time;
 };
 

@@ -6,6 +6,7 @@
 
 #include <string>
 #include <vector>
+#include <snprintf.h>
 
 #include <vtkHankAxisActor2D.h>
 #include <vtkProperty2D.h>
@@ -99,8 +100,8 @@ VisWinAxes::VisWinAxes(VisWindowColleagueProxy &p) : VisWinColleague(p)
 
     addedAxes = false;
 
-    sprintf(xTitle, "X-Axis");
-    sprintf(yTitle, "Y-Axis");
+    SNPRINTF(xTitle, 8,  "X-Axis");
+    SNPRINTF(yTitle, 8, "Y-Axis");
     unitsX[0] = '\0';
     unitsY[0] = '\0';
     powX = 0;
@@ -178,13 +179,14 @@ VisWinAxes::SetForegroundColor(float fr, float fg, float fb)
 //    Kathleen Bonnell, Wed May  8 14:06:50 PDT 2002  
 //    Set the titles here, since CurveMode uses different titles. 
 //
+//    Kathleen Bonnell, Wed Mar 31 16:20:39 PST 2004 
+//    Don't set title here, allow them to be over-ridden by user-set titles. 
+//
 // ****************************************************************************
 
 void
 VisWinAxes::Start2DMode(void)
 {
-    sprintf(xTitle, "X-Axis");
-    sprintf(yTitle, "Y-Axis");
     SetTitle();
     if (ShouldAddAxes())
     {
@@ -227,13 +229,15 @@ VisWinAxes::Stop2DMode(void)
 //  Programmer: Kathleen Bonnell 
 //  Creation:   May 8, 2002 
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed Mar 31 16:20:39 PST 2004 
+//    Don't set x/ytitle here, allow them to be over-ridden by user-set titles. 
+//
 // ****************************************************************************
 
 void
 VisWinAxes::StartCurveMode(void)
 {
-    sprintf(xTitle, "Distance");
-    sprintf(yTitle, "Value");
     SetTitle();
     if (ShouldAddAxes())
     {
@@ -529,6 +533,9 @@ VisWinAxes::UpdateView(void)
 //    Hank Childs, Wed Oct 15 21:44:19 PDT 2003
 //    Add labels.
 //
+//    Kathleen Bonnell, Tue Mar 23 08:57:31 PST 2004 
+//    Allow labels from DataAtts to be set for Curve window, too.
+//
 // ****************************************************************************
 
 void
@@ -561,19 +568,16 @@ VisWinAxes::UpdatePlotList(vector<avtActor_p> &list)
         }
     }
 
-    sprintf(unitsX, x.c_str());
-    sprintf(unitsY, y.c_str());
-    if (mediator.GetMode() == WINMODE_2D)
-    {
-        if (lx != "")
-            sprintf(xTitle, lx.c_str());
-        else
-            strcpy(xTitle, "X-Axis");
-        if (ly != "")
-            sprintf(yTitle, ly.c_str());
-        else
-            strcpy(yTitle, "Y-Axis");
-    }
+    SNPRINTF(unitsX, 256, x.c_str());
+    SNPRINTF(unitsY, 256, y.c_str());
+    if (lx != "")
+        SNPRINTF(xTitle, 256, lx.c_str());
+    else
+        strcpy(xTitle, "X-Axis");
+    if (ly != "")
+        SNPRINTF(yTitle, 256, ly.c_str());
+    else
+        strcpy(yTitle, "Y-Axis");
 
     SetTitle();
 }
@@ -728,7 +732,7 @@ VisWinAxes::AdjustRange(float min_x, float max_x, float min_y, float max_y)
     if (xAxisDigits != lastXAxisDigits)
     {
         char  format[16];
-        sprintf(format, "%%.%df", xAxisDigits);
+        SNPRINTF(format, 16, "%%.%df", xAxisDigits);
         xAxis->SetLabelFormat(format);
         lastXAxisDigits = xAxisDigits;
     }
@@ -742,7 +746,7 @@ VisWinAxes::AdjustRange(float min_x, float max_x, float min_y, float max_y)
     if (yAxisDigits != lastYAxisDigits)
     {
         char  format[16];
-        sprintf(format, "%%.%df", yAxisDigits);
+        SNPRINTF(format, 16, "%%.%df", yAxisDigits);
         yAxis->SetLabelFormat(format);
         lastYAxisDigits = yAxisDigits;
     }
@@ -1315,32 +1319,32 @@ VisWinAxes::SetTitle(void)
     if (powX == 0)
     {
         if (unitsX[0] == '\0')
-            sprintf(buffer, "%s", xTitle);
+            SNPRINTF(buffer, 1024, "%s", xTitle);
         else
-            sprintf(buffer, "%s (%s)", xTitle, unitsX);
+            SNPRINTF(buffer, 1024, "%s (%s)", xTitle, unitsX);
     }
     else
     {
         if (unitsX[0] == '\0')
-            sprintf(buffer, "%s (10e%d)", xTitle, powX);
+            SNPRINTF(buffer, 1024, "%s (10e%d)", xTitle, powX);
         else
-            sprintf(buffer, "%s (10e%d %s)", xTitle, powX, unitsX);
+            SNPRINTF(buffer, 1024, "%s (10e%d %s)", xTitle, powX, unitsX);
     }
     xAxis->SetTitle(buffer);
 
     if (powY == 0)
     {
         if (unitsY[0] == '\0')
-            sprintf(buffer, "%s", yTitle);
+            SNPRINTF(buffer, 1024, "%s", yTitle);
         else
-            sprintf(buffer, "%s\n (%s)", yTitle, unitsY);
+            SNPRINTF(buffer, 1024, "%s\n (%s)", yTitle, unitsY);
     }
     else
     {
         if (unitsY[0] == '\0')
-            sprintf(buffer, "%s\n (10e%d)", yTitle, powY);
+            SNPRINTF(buffer, 1024, "%s\n (10e%d)", yTitle, powY);
         else
-            sprintf(buffer, " %s\n(10e%d %s)", yTitle, powY, unitsY);
+            SNPRINTF(buffer, 1024, " %s\n(10e%d %s)", yTitle, powY, unitsY);
     }
     yAxis->SetTitle(buffer);
 }

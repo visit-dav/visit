@@ -19,6 +19,7 @@
 #include <DataNode.h>
 #include <DebugStream.h>
 #include <InvalidVariableException.h>
+#include <GlobalAttributes.h>
 #include <Line.h>
 #include <LineoutListItem.h>
 #include <LostConnectionException.h>
@@ -28,6 +29,7 @@
 #include <PlotPluginManager.h>
 #include <QueryAttributes.h>
 #include <QueryList.h>
+#include <QueryOverTimeAttributes.h>
 #include <ViewerActionManager.h>
 #include <ViewerEngineManager.h>
 #include <ParsingExprList.h>
@@ -77,6 +79,9 @@ PickAttributes *ViewerQueryManager::pickDefaultAtts=0;
 PickAttributes *ViewerQueryManager::pickClientAtts=0;
 GlobalLineoutAttributes *ViewerQueryManager::globalLineoutAtts=0;
 GlobalLineoutAttributes *ViewerQueryManager::globalLineoutClientAtts=0;
+QueryOverTimeAttributes *ViewerQueryManager::timeQueryAtts=0;
+QueryOverTimeAttributes *ViewerQueryManager::timeQueryDefaultAtts=0;
+QueryOverTimeAttributes *ViewerQueryManager::timeQueryClientAtts=0;
 
 void
 GetUniqueVars(const stringVector &vars, const string &activeVar, 
@@ -167,6 +172,7 @@ ViewerQueryManager::ViewerQueryManager()
     preparingPick = false;
     handlingCache = false;
     pickAtts = new PickAttributes();
+    timeQueryAtts = new QueryOverTimeAttributes();
 }
 
 
@@ -336,7 +342,7 @@ ViewerQueryManager::AddQuery(ViewerWindow *origWin, Line *lineAtts,
     // Is there a valid variable? 
     //
     ViewerPlot *oplot = origWin->GetPlotList()->GetPlot(plotId); 
-    std::string vname(lineAtts->GetVarName());
+    string vname(lineAtts->GetVarName());
     if (vname == "default")
         vname = oplot->GetVariableName();
     int varType = oplot->GetVarType(vname);
@@ -856,12 +862,15 @@ ViewerQueryManager::GetQueryClientAtts()
 //    Jeremy Meredith, Tue Mar 30 10:39:20 PST 2004
 //    Added an engine key to map plots to the engine used to create them.
 //
+//    Kathleen Bonnell, Thu Apr  1 19:13:59 PST 2004
+//    Added bool arg to support queries-over-time. 
+//
 // ****************************************************************************
 
 void         
 ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
-                            const stringVector &vars, const int arg1,
-                            const int arg2)
+                            const stringVector &vars, const bool doTimeQuery,
+                            const int arg1, const int arg2)
 {
     queryClientAtts->SetResultsMessage("");
     queryClientAtts->SetResultsValue(0.);
@@ -887,7 +896,7 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
     }
     ViewerFileServer *fs = ViewerFileServer::Instance();
     ViewerPlotList *olist = oWin->GetPlotList();
-    std::string host, dbname;
+    string host, dbname;
     intVector plotIds;
     EngineKey engineKey;
     stringVector uniqueVars; 
@@ -985,10 +994,9 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
             }
             host = oplot->GetHostName();
             engineKey = oplot->GetEngineKey();
-            cerr << "set engine key to "<<engineKey.HostName()<<","<<engineKey.SimName()<<endl;
             dbname = oplot->GetDatabaseName();
             state = oplot->GetState();
-            const std::string &activeVar = oplot->GetVariableName();
+            const string &activeVar = oplot->GetVariableName();
             GetUniqueVars(tmp, activeVar, uniqueVars);
             tmp = uniqueVars;
         }
@@ -1128,7 +1136,6 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
 
         TRY
         { 
-            ViewerEngineManager *eM = ViewerEngineManager::Instance();
             QueryAttributes qa;
             qa.SetName(qName);
             qa.SetVariables(uniqueVars);
@@ -1149,8 +1156,13 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
             else if (strcmp(qName.c_str(), "Variable by Node") == 0)
                 qa.SetElementType(QueryAttributes::Node);
 
-            cerr << "about to query, with engine key to "<<engineKey.HostName()<<","<<engineKey.SimName()<<endl;
-            if (eM->Query(engineKey, networkIds, &qa, qa))
+            if (doTimeQuery)
+            {
+                DoTimeQuery(oWin, &qa);
+                return;
+            }
+            if (ViewerEngineManager::Instance()->Query(engineKey, networkIds, 
+                   &qa, qa))
             {
                 qa.SetVariables(vars);
                *queryClientAtts = qa;
@@ -1861,12 +1873,19 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
 // Creation:   Tue Jan 6 09:59:18 PDT 2004
 //
 // Modifications:
+//   Kathleen Bonnell, Thu Apr  1 19:13:59 PST 2004
+//   Call PickThroughTime when necessary.
 //   
 // ****************************************************************************
 
 void
 ViewerQueryManager::Pick(PICK_POINT_INFO *ppi, const int dom, const int el)
 {
+    if (pickAtts->GetDoTimeCurve())
+    {
+        PickThroughTime(ppi, dom, el);
+        return;
+    }
     if(ComputePick(ppi, dom, el))
     {
         //
@@ -1878,7 +1897,7 @@ ViewerQueryManager::Pick(PICK_POINT_INFO *ppi, const int dom, const int el)
         //
         // Send pick attributes to the client.
         //
-        std::string msg;
+        string msg;
         pickAtts->CreateOutputString(msg);
         Message(msg.c_str()); 
         UpdatePickAtts();
@@ -2375,11 +2394,15 @@ ViewerQueryManager::HandlePickCache()
 //    Kathleen Bonnell, Wed Dec  3 13:11:34 PST 2003 
 //    Remove no-curve restrictions. 
 //   
+//    Kathleen Bonnell, Thu Apr  1 19:13:59 PST 2004
+//    Added bool arg to support queries-over-time. 
+//
 // ****************************************************************************
 
 void         
 ViewerQueryManager::PointQuery(const string &qName, const double *pt, 
-                    const stringVector &vars, const int arg1, const int arg2)
+                    const stringVector &vars, const int arg1, const int arg2,
+                    const bool doTime)
 {
     if ((strcmp(qName.c_str(), "ZonePick") == 0) ||
         (strcmp(qName.c_str(), "Pick") == 0))
@@ -2415,7 +2438,10 @@ ViewerQueryManager::PointQuery(const string &qName, const double *pt,
         ppi.rayPt1[1] = ppi.rayPt2[1] = pt[1];
         ppi.rayPt1[2] = ppi.rayPt2[2] = pt[2];
         ppi.validPick = true;
-        Pick(&ppi);
+        if (!doTime)
+            Pick(&ppi);
+         else
+            PickThroughTime(&ppi);
 
         win->SetInteractionMode(imode);
     }
@@ -2438,7 +2464,11 @@ ViewerQueryManager::PointQuery(const string &qName, const double *pt,
         ppi.rayPt1[1] = ppi.rayPt2[1] = pt[1];
         ppi.rayPt1[2] = ppi.rayPt2[2] = pt[2];
         ppi.validPick = true;
-        Pick(&ppi, arg1, arg2);
+
+        if (!doTime)
+            Pick(&ppi, arg1, arg2);
+        else
+            PickThroughTime(&ppi, arg1, arg2);
 
         win->SetInteractionMode(imode);
     }
@@ -2683,6 +2713,9 @@ GetUniqueVars(const stringVector &vars, const string &activeVar,
 //    Kathleen Bonnell, Fri Feb 20 08:48:50 PST 2004 
 //    Added NumNodes, NumZones. 
 //
+//    Kathleen Bonnell, Thu Apr  1 19:13:59 PST 2004
+//    Made some queries 'time' queries (can perform queries-over-time). 
+//   
 // ****************************************************************************
 
 void
@@ -2707,20 +2740,28 @@ ViewerQueryManager::InitializeQueryList()
                                    QueryList::WorldSpace, 2);
     queryTypes->AddQuery("Revolved volume", QueryList::DatabaseQuery);
     queryTypes->AddQuery("Revolved surface area", QueryList::DatabaseQuery);
-    queryTypes->AddQuery("Surface area", QueryList::DatabaseQuery);
-    queryTypes->AddQuery("Volume", QueryList::DatabaseQuery);
-    queryTypes->AddQuery("Variable Sum", QueryList::DatabaseQuery);
-    queryTypes->AddQuery("Weighted Variable Sum", QueryList::DatabaseQuery);
-    queryTypes->AddQuery("WorldPick", QueryList::PointQuery);
-    queryTypes->AddQuery("WorldNodePick", QueryList::PointQuery);
-    queryTypes->AddQuery("Variable by Zone", QueryList::DatabaseQuery);
+    queryTypes->AddTimeQuery("Surface area", QueryList::DatabaseQuery);
+    queryTypes->AddTimeQuery("Volume", QueryList::DatabaseQuery);
+    queryTypes->AddTimeQuery("Variable Sum", QueryList::DatabaseQuery);
+    queryTypes->AddTimeQuery("Weighted Variable Sum", QueryList::DatabaseQuery);
+    queryTypes->AddTimeQuery("WorldPick", QueryList::PointQuery);
+    queryTypes->AddTimeQuery("WorldNodePick", QueryList::PointQuery);
+    queryTypes->AddTimeQuery("Variable by Zone", QueryList::DatabaseQuery);
     queryTypes->SetWindowType("Variable by Zone", QueryList::DomainZone);
+    queryTypes->AddTimeQuery("Variable by Node", QueryList::DatabaseQuery);
+    queryTypes->SetWindowType("Variable by Node", QueryList::DomainNode);
 
     int MinMaxVars = QUERY_SCALAR_VAR | QUERY_TENSOR_VAR | QUERY_VECTOR_VAR | 
             QUERY_SYMMETRIC_TENSOR_VAR | QUERY_MATSPECIES_VAR | QUERY_CURVE_VAR;
     queryTypes->AddQuery("MinMax", QueryList::DatabaseQuery, 
                           QueryList::WorldSpace, 1, MinMaxVars); 
     queryTypes->SetWindowType("MinMax", QueryList::ActualData);
+    queryTypes->AddTimeQuery("Min", QueryList::DatabaseQuery, 
+                          QueryList::WorldSpace, 1, MinMaxVars); 
+    queryTypes->SetWindowType("Min", QueryList::ActualData);
+    queryTypes->AddTimeQuery("Max", QueryList::DatabaseQuery, 
+                          QueryList::WorldSpace, 1, MinMaxVars); 
+    queryTypes->SetWindowType("Max", QueryList::ActualData);
 
     queryTypes->AddQuery("SpatialExtents", QueryList::DatabaseQuery);
     queryTypes->SetWindowType("SpatialExtents", QueryList::ActualData);
@@ -2728,9 +2769,9 @@ ViewerQueryManager::InitializeQueryList()
     queryTypes->SetWindowType("NumNodes", QueryList::ActualData);
     queryTypes->AddQuery("NumZones", QueryList::DatabaseQuery);
     queryTypes->SetWindowType("NumZones", QueryList::ActualData);
-    queryTypes->AddQuery("PickByZone", QueryList::PointQuery);
+    queryTypes->AddTimeQuery("PickByZone", QueryList::PointQuery);
     queryTypes->SetWindowType("PickByZone", QueryList::DomainZone);
-    queryTypes->AddQuery("PickByNode", QueryList::PointQuery);
+    queryTypes->AddTimeQuery("PickByNode", QueryList::PointQuery);
     queryTypes->SetWindowType("PickByNode", QueryList::DomainNode);
 
     queryTypes->SelectAll();
@@ -2758,7 +2799,7 @@ ViewerQueryManager::InitializeQueryList()
 // ****************************************************************************
 
 int
-ViewerQueryManager::VerifyQueryVariables(const std::string &qName, 
+ViewerQueryManager::VerifyQueryVariables(const string &qName, 
      const intVector &varTypes)
 {
     int i, badIndex = -1;
@@ -2820,4 +2861,472 @@ CreateExtentsString(const double * extents, const int dim, const char *type)
     }
     string msg2 = msg;
     return msg2;
+}
+
+
+// ****************************************************************************
+//  Method: ViewerQueryManager::GetQueryOverTimeDefaultAtts
+//
+//  Purpose:
+//    Returns a pointer to the default query over time attributes.
+//
+//  Returns:    A pointer to the default query over timeattributes.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   March 24, 2004 
+//
+// ****************************************************************************
+
+QueryOverTimeAttributes *
+ViewerQueryManager::GetQueryOverTimeDefaultAtts()
+{
+    //
+    // If the attributes haven't been allocated then do so.
+    //
+    if (timeQueryDefaultAtts == 0)
+    {
+        timeQueryDefaultAtts = new QueryOverTimeAttributes;
+    }
+    return timeQueryDefaultAtts;
+}
+
+
+// ****************************************************************************
+//  Method: ViewerQueryManager::GetQueryOverTimeClientAtts
+//
+//  Purpose:
+//    Returns a pointer to the queryovertime client attributes.
+//
+//  Returns:    A pointer to the queryovertime client attributes.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   March 24, 2004 
+//
+// ****************************************************************************
+
+QueryOverTimeAttributes *
+ViewerQueryManager::GetQueryOverTimeClientAtts()
+{
+    //
+    // If the attributes haven't been allocated then do so.
+    //
+    if (timeQueryClientAtts == 0)
+    {
+        timeQueryClientAtts = new QueryOverTimeAttributes;
+    }
+    return timeQueryClientAtts;
+}
+
+
+// ****************************************************************************
+// Method: ViewerQueryManager::GetQueryOverTimeAtts
+//
+// Purpose: 
+//   Returns the time query attributes.
+//
+// Returns:    A pointer to the time query attributes.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   March 24, 2004 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+QueryOverTimeAttributes *
+ViewerQueryManager::GetQueryOverTimeAtts()
+{
+    if(timeQueryAtts == 0)
+        timeQueryAtts = new QueryOverTimeAttributes;
+
+    return timeQueryAtts;
+}
+
+
+// ****************************************************************************
+//  Method: ViewerQueryManager::SetClientQueryOverTimeAttsFromDefault
+//
+//  Purpose:
+//    Copies the default time query attributes into the client time query
+//     attributes. 
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   March 24, 2004 
+//
+// ****************************************************************************
+
+void
+ViewerQueryManager::SetClientQueryOverTimeAttsFromDefault()
+{
+    if (timeQueryDefaultAtts != 0 && timeQueryClientAtts != 0)
+    {
+        *timeQueryAtts = *timeQueryDefaultAtts;
+
+        *timeQueryClientAtts = *timeQueryDefaultAtts;
+         timeQueryClientAtts->Notify();
+    }
+}
+
+// ****************************************************************************
+//  Method: ViewerQueryManager::SetDefaultQueryOverTimeAttsFromClient
+//
+//  Purpose:
+//    Sets the default timeQueryAtts using the client time query attributes. 
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   March 24, 2004 
+//
+// ****************************************************************************
+
+void
+ViewerQueryManager::SetDefaultQueryOverTimeAttsFromClient()
+{
+    if (timeQueryDefaultAtts != 0 && timeQueryClientAtts != 0)
+    {
+        *timeQueryDefaultAtts = *timeQueryClientAtts;
+    }
+}
+
+// ****************************************************************************
+//  Method: ViewerQueryManager::SetQueryOverTimeAttsFromClient
+//
+//  Purpose:
+//    Sets the timeQueryAtts using the client time query attributes. 
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   March 24, 2004 
+//
+// ****************************************************************************
+
+void
+ViewerQueryManager::SetQueryOverTimeAttsFromClient()
+{
+    if (timeQueryAtts == 0)
+    {
+        timeQueryAtts = new QueryOverTimeAttributes;
+    }
+
+    *timeQueryAtts = *timeQueryClientAtts;
+}
+
+// ****************************************************************************
+//  Method: ViewerQueryManager::SetQueryOverTimeAttsFromDefault
+//
+//  Purpose:
+//    Sets the timeQueryAtts using the default time query attributes. 
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   March 24, 2004 
+//
+// ****************************************************************************
+
+void
+ViewerQueryManager::SetQueryOverTimeAttsFromDefault()
+{
+    if (timeQueryAtts == 0)
+    {
+        timeQueryAtts = new QueryOverTimeAttributes;
+    }
+
+    *timeQueryAtts = *timeQueryDefaultAtts;
+    UpdateQueryOverTimeAtts();
+}
+
+
+// ****************************************************************************
+//  Method: ViewerQueryManager::UpdateQueryOverTimeAtts
+//
+//  Purpose:
+//    Causes the timeQueryAtts to be sent to the client. 
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   March 24, 2004 
+//
+// ****************************************************************************
+
+void
+ViewerQueryManager::UpdateQueryOverTimeAtts()
+{
+    if (timeQueryClientAtts != 0 && timeQueryAtts != 0)
+    {
+        *timeQueryClientAtts = *timeQueryAtts;
+        timeQueryClientAtts->Notify();
+    }
+}
+
+
+// ***********************************************************************
+//  Method: ViewerQueryManager::DoTimeQuery 
+//
+//  Arguments:
+//    origWin   A pointer to the window that originated the query.
+//    queryAtts The query attributes to be used for the TimeQuery.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   March 22, 2004 
+//
+//  Modifications:
+//
+// ***********************************************************************
+
+void
+ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin, QueryAttributes *qA)
+{
+    if (!queryTypes->TimeQueryAvailable(qA->GetName()))
+    {
+        string msg = "Time history query is not available for " + 
+                      qA->GetName();
+        Error(msg.c_str());
+        return;
+    }
+    //
+    //  See if we can get a window in which to place the resulting curve.
+    //
+    ViewerWindow *resWin = NULL;
+
+    if (timeQueryAtts->GetCreateWindow())
+    {
+        resWin = ViewerWindowManager::Instance()->GetTimeQueryWindow();
+    }
+    else 
+    {
+        resWin = ViewerWindowManager::Instance()->GetWindow(
+                     timeQueryAtts->GetWindowId() -1);
+    }
+    if (resWin == NULL)
+    {
+        Error("Please choose a different window method for the time query");
+        return;
+    }
+    //
+    //  Grab information from the originating window.
+    //
+    ViewerPlotList *origList = origWin->GetPlotList();
+    intVector plotIDs;
+    origList->GetActivePlotIDs(plotIDs);
+    int origPlotID = (plotIDs.size() > 0 ? plotIDs[0] : -1);
+    ViewerPlot *origPlot = origList->GetPlot(origPlotID);
+    int nFrames = origPlot->GetEndFrame() - origPlot->GetBeginFrame() +1;
+
+    if (nFrames <= 1)
+    {
+        Error("Cannot create a time query curve with 1 timestate."); 
+        return;
+    }
+    string vName  = origPlot->GetVariableName();
+    string hdbName = origPlot->GetSource();
+    bool replacePlots = ViewerWindowManager::Instance()->
+                        GetClientAtts()->GetReplacePlots();
+
+    const avtDatabaseMetaData *md = origPlot->GetMetaData();
+
+    doubleVector qtimes;
+    if (md != 0)
+    {
+        if (qA->GetName() == "Variable by Zone")
+        {
+            if (md->GetVarCentering(vName) != AVT_ZONECENT)
+            {
+                string reason = "'Variable by Zone' through time requires a " ;
+                reason += "zone-centered variable, please try a "; 
+                reason += "'Variable by Node' query instead.";
+                Warning(reason.c_str()); 
+                return;
+            }
+        }
+        else if (qA->GetName() == "Variable by Node")
+        {
+            if (md->GetVarCentering(vName) != AVT_NODECENT)
+            {
+                string reason = "'Variable by Node' through time requires a "; 
+                reason += "node-centered variable, please try a ";
+                reason += "'Variable by Zone' query instead.";
+                Warning(reason.c_str()); 
+                return;
+            }
+        }
+
+
+        if (timeQueryAtts->GetTimeType() == QueryOverTimeAttributes::Cycle)
+        {
+            intVector cycles = md->GetCycles();
+            for (int z = 0; z < cycles.size(); z++)
+                qtimes.push_back((double)cycles[z]); 
+        }
+        else if (timeQueryAtts->GetTimeType() == QueryOverTimeAttributes::DTime)
+        {
+            qtimes = md->GetTimes();
+        }
+        else 
+        {
+            for (int z = 0; z < nFrames; z++)
+                qtimes.push_back((double)z); 
+        }
+    }
+    else 
+    {
+        for (int z = 0; z < nFrames; z++)
+            qtimes.push_back((double)z); 
+        timeQueryAtts->SetTimeType(QueryOverTimeAttributes::Timestep);
+    }
+
+    // 
+    // Create the actual times to be displayed in x-axis.
+    // 
+    int sf, ef, stride= timeQueryAtts->GetStride();
+    if (!timeQueryAtts->GetStartTimeFlag() && 
+        !timeQueryAtts->GetEndTimeFlag() && stride == 1)
+    {
+        sf = 0; 
+        ef = qtimes.size() -1; 
+        timeQueryAtts->SetTimeStates(qtimes);
+    }
+    else
+    {
+        doubleVector rqtimes;
+        sf = -1; ef = -1;
+        double startT = timeQueryAtts->GetStartTimeFlag() ? 
+                        timeQueryAtts->GetStartTime() : qtimes[0];
+        double endT   = timeQueryAtts->GetEndTimeFlag() ? 
+                        timeQueryAtts->GetEndTime() : qtimes[qtimes.size()-1];
+
+        // find start and end timesteps
+        for (int z = 0; z < qtimes.size(); z++)
+        {
+            if (qtimes[z] == startT )
+            {
+                sf = z;
+                break;
+            }
+        }
+        for (int z = qtimes.size()-1; z >= 0; z--)
+        {
+            if (qtimes[z] == endT )
+            {
+                ef = z;
+                break;
+            }
+        }
+        //
+        // Grab only those cycles/dtimes/timesteps that the user wants to see.
+        //
+        for (int z = 0; z < qtimes.size(); z+= stride)
+        {
+            if (qtimes[z] >= startT && qtimes[z] <= endT)
+            {
+                rqtimes.push_back(qtimes[z]);
+            }
+        }
+        if (rqtimes[rqtimes.size()-1] != endT)
+        {
+            rqtimes.push_back(endT);
+        }
+        timeQueryAtts->SetTimeStates(rqtimes);
+    }
+
+    // 
+    // Create a list of timesteps for the query. 
+    // 
+    intVector timeSteps;
+    for (int z = sf; z <=  ef; z += stride)
+    {
+       timeSteps.push_back(z); 
+    }
+    if (timeSteps[timeSteps.size()-1] != ef)
+        timeSteps.push_back(ef);
+
+    timeQueryAtts->SetTimeSteps(timeSteps);
+
+    int plotType = PlotPluginManager::Instance()->GetEnabledIndex("Curve_1.0");
+    ViewerPlotList *plotList =  resWin->GetPlotList();
+
+    plotList->SetHostDatabaseName(hdbName);
+    plotList->SetEngineKey(origPlot->GetEngineKey());
+
+    int pid = plotList->AddPlot(plotType, vName, replacePlots, false);
+    ViewerPlot *resultsPlot = plotList->GetPlot(pid);
+
+    // Make sure we will be using a cloned network
+    resultsPlot->SetCloneId(origPlot->GetNetworkID());
+    resultsPlot->SetSILRestriction(origPlot->GetSILRestriction()); 
+
+    timeQueryAtts->SetQueryAtts(*qA);
+
+    TRY
+    {
+        ViewerEngineManager::Instance()->CloneNetwork(
+            origPlot->GetEngineKey(), origPlot->GetNetworkID(), timeQueryAtts);
+        plotList->RealizePlots();
+    }
+    CATCH2(VisItException, e)
+    {
+        //
+        // Add as much information to the message as we can,
+        // including query name, exception type and exception
+        // message.
+        //
+        char message[256];
+        SNPRINTF(message, sizeof(message), "%s:  (%s)\n%s", qA->GetName().c_str(),
+                 e.GetExceptionType().c_str(),
+                 e.GetMessage().c_str());
+        Error(message);
+        return;
+    }
+    ENDTRY
+}
+
+
+void
+ViewerQueryManager::PickThroughTime(PICK_POINT_INFO * ppi, const int dom, const int el)
+{
+    ViewerWindow *origWin = (ViewerWindow *)ppi->callbackData;
+
+    ViewerPlotList *origList = origWin->GetPlotList();
+    intVector plotIDs;
+    origList->GetActivePlotIDs(plotIDs);
+    int origPlotID = (plotIDs.size() > 0 ? plotIDs[0] : -1);
+    ViewerPlot *origPlot = origList->GetPlot(origPlotID);
+    const avtDatabaseMetaData *md = origPlot->GetMetaData();
+    avtCentering cent = md->GetVarCentering(origPlot->GetVariableName());
+
+    if (pickAtts->GetPickType() == PickAttributes::Zone &&
+        cent != AVT_ZONECENT) 
+    {
+        string reason = "A Zone pick through time requires a zone-centered";
+        reason +=  " variable, try a Node pick.";
+        Warning(reason.c_str()); 
+        return;
+    }
+    else if (pickAtts->GetPickType() == PickAttributes::Node &&
+             cent != AVT_NODECENT) 
+    {
+        string reason = "A Node pick through time requires a node-centered" ;
+        reason += " variable, try a Zone pick.";
+        Warning(reason.c_str());
+        return;
+    }
+
+    int valid = ComputePick(ppi, dom, el);
+    if (valid)
+    {
+        QueryAttributes qatts;
+        qatts.SetDomain(pickAtts->GetDomain() >= 0 ? pickAtts->GetDomain() : 0);
+        qatts.SetElement(pickAtts->GetElementNumber());
+        qatts.SetDataType(QueryAttributes::OriginalData);
+        stringVector vars;
+        vars.push_back(pickAtts->GetActiveVariable());
+        qatts.SetVariables(vars);
+        if (pickAtts->GetPickType() == PickAttributes::Zone) 
+        {
+            qatts.SetName("Variable by Zone");
+            qatts.SetElementType(QueryAttributes::Zone);
+        }
+        else if (pickAtts->GetPickType() == PickAttributes::Node)
+        {
+            qatts.SetName("Variable by Node");
+            qatts.SetElementType(QueryAttributes::Node);
+        }
+
+        DoTimeQuery(origWin, &qatts);
+    }
 }

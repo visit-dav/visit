@@ -277,6 +277,12 @@ typedef struct {
 //    Added some methods to deal with time sliders and database correlations.
 //    I also added a method to close a database.
 //
+//    Kathleen Bonnell,  Fri Mar 19 07:26:27 PST 2004
+//    Added GetEmptyWindow and GetWindow methods. 
+//
+//    Kathleen Bonnell, Thu Apr  1 19:13:59 PST 2004
+//    Added GetTimeQueryWindow and ResetTimeQuery methods.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerWindowManager : public QObject
@@ -366,10 +372,14 @@ class VIEWER_API ViewerWindowManager : public QObject
     void SetViewExtentsType(avtExtentType, int windowIndex = -1);
     void UpdateColorTable(const char *ctName);
     void ResetLineoutDesignation(int windowIndex = -1); 
+    void ResetTimeQueryDesignation(int windowIndex = -1); 
     int             *GetWindowIndices(int *nwin) const;
     int              GetNumWindows() const;
     ViewerWindow    *GetActiveWindow() const;
     ViewerWindow    *GetLineoutWindow();
+    ViewerWindow    *GetTimeQueryWindow();
+    ViewerWindow    *GetEmptyWindow() ;
+    ViewerWindow    *GetWindow(int windowIndex) ;
     int              GetWindowLayout() const { return layout; };
     void UpdateActions();
     void HideToolbarsForAllWindows();
@@ -529,6 +539,7 @@ class VIEWER_API ViewerWindowManager : public QObject
     bool              windowsIconified;
 
     int               lineoutWindow;
+    int               timeQueryWindow;
 
     WindowLimits      **windowLimits;
 

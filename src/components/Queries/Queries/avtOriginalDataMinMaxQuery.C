@@ -19,10 +19,13 @@
 //  Creation:     February 10, 2004
 //
 //  Modifications:
+//    Kathleen Bonnell, Wed Mar 31 16:07:50 PST 2004
+//    Added optional args.
 //
 // ****************************************************************************
 
-avtOriginalDataMinMaxQuery::avtOriginalDataMinMaxQuery()
+avtOriginalDataMinMaxQuery::avtOriginalDataMinMaxQuery(bool min, bool max)
+    : avtMinMaxQuery(min, max)
 {
     eef = new avtExpressionEvaluatorFilter;
 }
@@ -65,6 +68,9 @@ avtOriginalDataMinMaxQuery::~avtOriginalDataMinMaxQuery()
 //    Kathleen Bonnell, Fri Feb 20 17:03:48 PST 2004
 //    Create new pipeline spec so that input can be load balanced.
 //
+//    Kathleen Bonnell, Wed Mar 31 16:07:50 PST 2004
+//    Added logic for time-varying case.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -72,11 +78,23 @@ avtOriginalDataMinMaxQuery::ApplyFilters(avtDataObject_p inData)
 {
     Preparation(inData);
 
-    avtDataSpecification_p dspec = inData->GetTerminatingSource()->
-        GetGeneralPipelineSpecification()->GetDataSpecification();
-    avtPipelineSpecification_p pspec = 
-        new avtPipelineSpecification(dspec, queryAtts.GetPipeIndex()); 
+    avtDataSpecification_p dspec;
+    if (!timeVarying)
+    {
+        dspec = inData->GetTerminatingSource()->
+            GetGeneralPipelineSpecification()->GetDataSpecification();
+    }
+    else 
+    {
+        avtDataSpecification_p oldSpec = inData->GetTerminatingSource()->
+            GetGeneralPipelineSpecification()->GetDataSpecification();
 
+        dspec = new avtDataSpecification(oldSpec->GetVariable(), 
+                                         queryAtts.GetTimeStep(), 
+                                         oldSpec->GetRestriction());
+    }
+    avtPipelineSpecification_p pspec =
+        new avtPipelineSpecification(dspec, queryAtts.GetPipeIndex()); 
     avtDataObject_p temp;
     CopyTo(temp, inData);
     eef->SetInput(temp);

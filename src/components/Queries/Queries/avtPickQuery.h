@@ -6,13 +6,12 @@
 #define AVT_PICK_QUERY_H
 #include <query_exports.h>
 
-#include <avtDatasetQuery.h>
+#include <avtVariableQuery.h>
 
 #include <string>
 #include <PickAttributes.h>
 #include <avtTypes.h>
 
-class avtExpressionEvaluatorFilter;
 class avtMatrix;
 class vtkDataSet;
 
@@ -52,9 +51,13 @@ class vtkDataSet;
 //    Kathleen Bonnell, Mon Mar  8 15:39:15 PST 2004 
 //    Added SetNeedTransform / SetTransform and setUseSet. 
 //    
+//    Kathleen Bonnell, Thu Apr  1 09:21:22 PST 2004 
+//    Inherit from avtVariableQuery, moved common methods to parent class 
+//    (RetrieveNodes, RetrieveZones, RetrieveVarInfo). 
+//    
 // ****************************************************************************
 
-class QUERY_API avtPickQuery : public avtDatasetQuery
+class QUERY_API avtPickQuery : public avtVariableQuery
 {
   public:
                                     avtPickQuery();
@@ -71,30 +74,22 @@ class QUERY_API avtPickQuery : public avtDatasetQuery
     void                            SetTransform(const avtMatrix *m);
     void                            SetNeedTransform(const bool b)
                                         { needTransform = b; };
-    void                            SetUseSet(const unsignedCharVector &u)
-                                        { useSet = u; };
 
   protected:
-    PickAttributes                  pickAtts;
     int                             cellOrigin;
     int                             blockOrigin;
     avtGhostType                    ghostType;
     const avtMatrix                *invTransform;
     bool                            singleDomain;
     bool                            needTransform;
-    avtQueryableSource             *src;
-    unsignedCharVector              useSet;
-    avtExpressionEvaluatorFilter   *eef;
 
+    virtual void                    VerifyInput();
     virtual void                    Execute(vtkDataSet *, const int);
     virtual void                    PreExecute(void);
     virtual void                    PostExecute(void);
     virtual avtDataObject_p         ApplyFilters(avtDataObject_p);   
-    bool                            RetrieveNodes(vtkDataSet *, int);
-    bool                            RetrieveZones(vtkDataSet *, int);
     bool                            DeterminePickedNode(vtkDataSet *, int &);
     void                            SetRealIds(vtkDataSet *);
-    void                            RetrieveVarInfo(vtkDataSet *);
 };
 
 

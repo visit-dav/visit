@@ -38,6 +38,9 @@ extern "C" int Py_Main(int, char **);
 //   Added code to prevent -sessionfile, -format, -framestep, and -output
 //   from being passed on to the viewer.
 //
+//   Hank Childs, Thu Apr  1 08:57:11 PST 2004
+//   Prevent -fps from being passed as well.
+//
 // ****************************************************************************
 
 int
@@ -105,6 +108,11 @@ main(int argc, char *argv[])
         else if(strcmp(argv[i], "-sessionfile") == 0)
         {
             // Skip the argument that comes along with -sessionfile.
+            ++i;
+        }
+        else if(strcmp(argv[i], "-fps") == 0)
+        {
+            // Skip the rate that comes along with -fps.
             ++i;
         }
         else

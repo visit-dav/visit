@@ -26,12 +26,16 @@ class avtCondenseDatasetFilter;
 //    Renamed from avtPlotMinMaxQuery. Moved definition of GetNFilters to
 //    source file.
 //
+//    Kathleen Bonnell, Wed Mar 31 16:07:50 PST 2004 
+//    Added arguments to constructor. 
+//
 // ****************************************************************************
 
 class QUERY_API avtActualDataMinMaxQuery : public avtMinMaxQuery
 {
   public:
-                              avtActualDataMinMaxQuery();
+                              avtActualDataMinMaxQuery(
+                                  bool m = true, bool x = true);
     virtual                  ~avtActualDataMinMaxQuery();
 
     virtual bool              OriginalData(void) { return false; };

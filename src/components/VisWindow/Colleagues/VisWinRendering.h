@@ -109,6 +109,9 @@ class VisWindowColleagueProxy;
 //    Brad Whitlock, Tue Mar 16 09:48:53 PDT 2004
 //    I added SetLargeIcons.
 //
+//    Mark C. Miller, Wed Mar 31 17:47:20 PST 2004
+//    Added doViewportOnly bool argument to ScreenCapture method
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinRendering : public VisWinColleague
@@ -138,7 +141,8 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
     virtual void             MotionEnd(void);
 
     void                     Realize(void);
-    avtImage_p               ScreenCapture(bool doCanvasZBufferToo = false);
+    avtImage_p               ScreenCapture(bool doViewportOnly = false,
+                                           bool doCanvasZBufferToo = false);
 
     void                     SetSize(int, int);
     void                     GetSize(int&, int&);

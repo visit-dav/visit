@@ -65,52 +65,103 @@ avtWeightedVariableSummationQuery::~avtWeightedVariableSummationQuery()
 //  Programmer: Hank Childs
 //  Creation:   February 3, 2004
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed Mar 31 16:20:39 PST 2004
+//    Added logic for time-varying case.
+//
 // ****************************************************************************
 
 avtDataObject_p
 avtWeightedVariableSummationQuery::ApplyFilters(avtDataObject_p inData)
 {
-    //
-    // Create an artificial pipeline.
-    //
-    avtDataset_p ds;
-    CopyTo(ds, inData);
-    avtSourceFromAVTDataset termsrc(ds);
-    avtDataObject_p dob = termsrc.GetOutput();
-
-    //
-    // Set up our base class so it is ready to sum.
-    //
-    avtDataSpecification_p dspec = GetInput()->GetTerminatingSource()
-                                     ->GetFullDataSpecification();
-    string varname = dspec->GetVariable();
-    SetSumType(varname);
-
-    int topo = GetInput()->GetInfo().GetAttributes().GetTopologicalDimension();
-    if (topo == 2)
+    if (!timeVarying)
     {
-        area->SetInput(dob);
-        dob = area->GetOutput();
+        //
+        // Create an artificial pipeline.
+        //
+        avtDataset_p ds;
+        CopyTo(ds, inData);
+        avtSourceFromAVTDataset termsrc(ds);
+        avtDataObject_p dob = termsrc.GetOutput();
+
+        //
+        // Set up our base class so it is ready to sum.
+        //
+        avtDataSpecification_p dspec = GetInput()->GetTerminatingSource()
+                                     ->GetFullDataSpecification();
+        string varname = dspec->GetVariable();
+        SetSumType(varname);
+
+        int topo = GetInput()->GetInfo().GetAttributes().GetTopologicalDimension();
+        if (topo == 2)
+        {
+            area->SetInput(dob);
+            dob = area->GetOutput();
+        }
+        else
+        {
+            volume->SetInput(dob);
+            dob = volume->GetOutput();
+        }
+
+        multiply->SetInput(dob);
+        multiply->ClearInputVariableNames();
+        multiply->AddInputVariableName("avt_weights");
+        multiply->AddInputVariableName(varname.c_str());
+
+        //
+        // Cause our artificial pipeline to execute.
+        //
+        avtPipelineSpecification_p pspec = inData->GetTerminatingSource()
+                                          ->GetGeneralPipelineSpecification();
+        multiply->GetOutput()->Update(pspec);
+
+        return multiply->GetOutput();
     }
     else
     {
-        volume->SetInput(dob);
-        dob = volume->GetOutput();
-    }
+        //
+        // Create an artificial pipeline.
+        //
+        avtDataset_p ds;
+        CopyTo(ds, inData);
+        avtSourceFromAVTDataset termsrc(ds);
+        avtDataObject_p dob = termsrc.GetOutput();
 
-    multiply->SetInput(dob);
-    multiply->ClearInputVariableNames();
-    multiply->AddInputVariableName("avt_weights");
-    multiply->AddInputVariableName(varname.c_str());
+        //
+        // Set up our base class so it is ready to sum.
+        //
+        avtDataSpecification_p dspec = GetInput()->GetTerminatingSource()
+                                     ->GetFullDataSpecification();
+        string varname = dspec->GetVariable();
+        SetSumType(varname);
 
-    //
-    // Cause our artificial pipeline to execute.
-    //
-    avtPipelineSpecification_p pspec = inData->GetTerminatingSource()
+        int topo = GetInput()->GetInfo().GetAttributes().GetTopologicalDimension();
+        if (topo == 2)
+        {
+            area->SetInput(dob);
+            dob = area->GetOutput();
+        }
+        else
+        {
+            volume->SetInput(dob);
+            dob = volume->GetOutput();
+        }
+
+        multiply->SetInput(dob);
+        multiply->ClearInputVariableNames();
+        multiply->AddInputVariableName("avt_weights");
+        multiply->AddInputVariableName(varname.c_str());
+
+        //
+        // Cause our artificial pipeline to execute.
+        //
+        avtPipelineSpecification_p pspec = inData->GetTerminatingSource()
                                           ->GetGeneralPipelineSpecification();
-    multiply->GetOutput()->Update(pspec);
+        multiply->GetOutput()->Update(pspec);
 
-    return multiply->GetOutput();
+        return multiply->GetOutput();
+    }
 }
 
 

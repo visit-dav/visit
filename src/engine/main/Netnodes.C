@@ -119,12 +119,19 @@ NetnodeDB::GetOutput(void)
 //  Programmer: Hank Childs
 //  Creation:   September 10, 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Apr  1 07:33:42 PST 2004
+//    Don't try to release the data if we don't have a variable -- this can
+//    happen if we never used the database, or if we are doing a re-open.
+//
 // ****************************************************************************
 
 void
 NetnodeDB::ReleaseData(void)
 {
-    GetOutput()->ReleaseData();
+    if (var != "" && var != "<unknown>")
+        GetOutput()->ReleaseData();
 }
 
 
@@ -172,4 +179,21 @@ NetnodeFilter::ReleaseData(void)
     // Release the data for my inputs.
     for (int i = 0; i < inputNodes.size(); i++)
         inputNodes[i]->ReleaseData();
+}
+
+// ****************************************************************************
+//  Method:  NetnodeTransition::Constructor
+//
+//  Purpose:
+//    Acts as a transition node between one network and its clone.
+//
+//  Programmer:  Kathleen Bonnell
+//  Creation:    March 18, 2004
+//
+// ****************************************************************************
+
+NetnodeTransition::NetnodeTransition(avtDataObject_p input) :
+    NetnodeFilter(NULL, "")
+{
+    output = input;
 }

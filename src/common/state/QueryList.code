@@ -29,6 +29,7 @@ QueryList::AddQuery(const std::string &name, QueryList::QueryType t,
     coordRep.push_back((int)rep);
     numInputs.push_back(number_input);
     allowedVarTypes.push_back(allowedVars);
+    timeQuery.push_back(0);
 
     //
     //  This will be set by user selecting a button, if WindowType is 
@@ -54,7 +55,6 @@ QueryList::AddQuery(const std::string &name, QueryList::QueryType t,
         winType.push_back((int)QueryList::DoublePoint);
     }
 }
-
 
 Function: QueryExists
 Declaration: bool QueryExists(const std::string &name, QueryType t, CoordinateRepresentation rep = WorldSpace);
@@ -200,3 +200,59 @@ QueryList::SetWindowType(const std::string &name, WindowType winT)
         }
     }
 }
+
+Function: AddTimeQuery
+Declaration: void AddTimeQuery(const std::string &name, QueryType t, CoordinateRepresentation rep = WorldSpace, int number_input = 1, int allowedVars = 0);
+Definition:
+// ****************************************************************************
+//  Method:  AddTimeQuery
+//
+//  Purpose:
+//    Adds a time query to the query list.
+//
+//  Programmer:  Kathleen Bonnell
+//  Creation:    March 22, 2004
+//
+//  Modifications:
+//
+// ****************************************************************************
+ 
+void
+QueryList::AddTimeQuery(const std::string &name, QueryList::QueryType t,
+    QueryList::CoordinateRepresentation rep, int number_input, int allowedVars)
+{
+    AddQuery(name, t, rep, number_input, allowedVars);
+
+    timeQuery[timeQuery.size()-1] = 1;
+}
+
+Function: TimeQueryAvailable
+Declaration:  bool TimeQueryAvailable(const std::string &name) ;
+Definition:
+// ****************************************************************************
+//  Method:  TimeQueryAvailable
+//
+//  Purpose:
+//    Checks if a query matches the passed parameters. 
+//
+//  Programmer:  Kathleen Bonnell 
+//  Creation:    March 23, 2004 
+//
+// ****************************************************************************
+ 
+bool
+QueryList::TimeQueryAvailable(const std::string &name)
+{
+    int i;
+    bool canDoTime = false;
+    for (i = 0; i < names.size(); i++)
+    {
+        if (name == names[i]) 
+        {
+            canDoTime = timeQuery[i];
+            break;
+        }
+    }
+    return canDoTime;
+}
+

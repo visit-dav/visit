@@ -171,6 +171,10 @@ class avtToolInterface;
 //    Added simulation support by using an engine key to map this plot
 //    to the engine used to create it.
 //
+//    Kathleen Bonnell, Wed Mar 31 16:46:13 PST 2004 
+//    Added clonedNetworkId, which when not -1 indicates that this plot 
+//    should use a cloned network instead of creating a new one. 
+//    
 // ****************************************************************************
 
 class VIEWER_API ViewerPlot
@@ -295,10 +299,16 @@ class VIEWER_API ViewerPlot
     void RegisterViewerPlotList(ViewerPlotList *vpl)
                                  { viewerPlotList = vpl; };
 
+    bool CloneNetwork(void) { return clonedNetworkId != -1; };
+    void SetCloneId(int id) { clonedNetworkId = id; } ;
+    int  GetCloneId(void) { return clonedNetworkId; } ;
+
+
+    const avtDatabaseMetaData *GetMetaData() const;
+                                 
   protected:
     bool MoveOperator(const int operatorIndex, bool promote);
     void SetActor(const avtActor_p actor);
-    const avtDatabaseMetaData *GetMetaData() const;
 
     int                     frame0, frame1;
 
@@ -345,6 +355,8 @@ class VIEWER_API ViewerPlot
 
     static avtActor_p             nullActor;
     static avtDataObjectReader_p  nullReader;
+
+    int                    clonedNetworkId;
 };
 
 #endif

@@ -266,6 +266,9 @@
 #    I added NameSimplifier, QvisDatabaseCorrelationListWindow, and
 #    QvisDatabaseCorrelationWindow.
 #
+#    Kathleen Bonnell, Wed Mar 31 10:22:47 PST 2004 
+#    Added QvisQueryOverTimeWindow.
+#
 ##############################################################################
 
 ##
@@ -347,6 +350,7 @@ HDRMOC = \
     QvisPostableWindowObserver.h \
     QvisPostableWindowSimpleObserver.h \
     QvisPreferencesWindow.h \
+    QvisQueryOverTimeWindow.h \
     QvisQueryWindow.h \
     QvisRecentPathRemovalWindow.h \
     QvisRenderingWindow.h \

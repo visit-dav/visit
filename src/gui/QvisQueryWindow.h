@@ -9,6 +9,7 @@ class QueryAttributes;
 class PickAttributes;
 class PlotList;
 class QButtonGroup;
+class QCheckBox;
 class QGroupBox;
 class QLabel;
 class QLineEdit;
@@ -42,6 +43,9 @@ class QueryList;
 //   Added a button to specify whether the query should apply to the current
 //   plot or the database. 
 //
+//   Kathleen Bonnell, Thu Apr  1 18:42:52 PST 2004
+//   Added button in support of creating queries over time.
+//
 // ****************************************************************************
 
 class GUI_API QvisQueryWindow : public QvisPostableWindowSimpleObserver
@@ -64,16 +68,18 @@ protected:
     virtual void CreateEntireWindow();
 private:
     void UpdateQueryButton();
+    void UpdateTimeQueryButton();
     void UpdateQueryList(bool doAll);
     void UpdateResults(bool doAll);
     void UpdateArgumentPanel(int index);
 
-    void Apply(bool ignore = false);
+    void Apply(bool ignore = false, bool doTime = false);
     bool GetPoint(int index, const QString &pname, int rep, double pt[3]);
     bool GetNumber(int index, int *num);
     bool GetVars(int index, stringVector &vars);
 private slots:
     void apply();
+    void timeApply();
     void handleText();
     void selectQuery();
     void clearResultText();
@@ -87,6 +93,7 @@ private:
     QLabel          *coordLabel;
     QListBox        *queryList;
     QPushButton     *queryButton;
+    QPushButton     *timeQueryButton;
     QMultiLineEdit  *resultText;
     QGroupBox       *argPanel;
     QLabel          *labels[4];

@@ -112,6 +112,9 @@ import java.util.Vector;
 //   Added support for a simulation name in addition to simply a host name
 //   when specifying engines (i.e. ClearCache and CloseComputeEngine).
 //
+//   Kathleen Bonnell, Wed Mar 31 07:35:25 PST 2004 
+//   Added support for QueryOverTimeAttributes.
+//
 // ****************************************************************************
 
 public class ViewerProxy implements SimpleObserver
@@ -163,6 +166,7 @@ public class ViewerProxy implements SimpleObserver
         queryAtts = new QueryAttributes();
         globalLineoutAtts = new GlobalLineoutAttributes();
         annotationObjectList = new AnnotationObjectList();
+        queryOverTimeAtts = new QueryOverTimeAttributes();
 
         // Create the plugin managers.
         plotPlugins = new PluginManager("plot");
@@ -1384,6 +1388,27 @@ public class ViewerProxy implements SimpleObserver
         return synchronous ? Synchronize() : true;
     }
 
+    public boolean SetQueryOverTimeAttributes()
+    {
+        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETQUERYOVERTIMEATTRIBUTESRPC);
+        rpc.Notify();
+        return synchronous ? Synchronize() : true;
+    }
+
+    public boolean SetDefaultQueryOverTimeAttributes()
+    {
+        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETDEFAULTQUERYOVERTIMEATTRIBUTESRPC);
+        rpc.Notify();
+        return synchronous ? Synchronize() : true;
+    }
+
+    public boolean ResetQueryOverTimeAttributes()
+    {
+        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_RESETQUERYOVERTIMEATTRIBUTESRPC);
+        rpc.Notify();
+        return synchronous ? Synchronize() : true;
+    }
+
     public boolean ShowToolbars(boolean forAllWindows)
     {
         if(forAllWindows)
@@ -1458,6 +1483,7 @@ public class ViewerProxy implements SimpleObserver
     public MaterialAttributes GetMaterialAttributes() { return materialAtts; }
     public GlobalLineoutAttributes GetGlobalLineoutAttributes() { return globalLineoutAtts; }
     public AnnotationObjectList GetAnnotationObjectList() { return annotationObjectList; }
+    public QueryOverTimeAttributes GetQueryOverTimeAttributes() { return queryOverTimeAtts; }
 
     public int GetPlotIndex(String plotName)
     {
@@ -1614,4 +1640,5 @@ public class ViewerProxy implements SimpleObserver
     private MaterialAttributes       materialAtts;
     private GlobalLineoutAttributes  globalLineoutAtts;
     private AnnotationObjectList     annotationObjectList;
+    private QueryOverTimeAttributes  queryOverTimeAtts;
 }

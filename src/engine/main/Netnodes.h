@@ -100,4 +100,30 @@ protected:
     std::vector<Netnode*>       inputNodes;
 };
 
+
+// ****************************************************************************
+//  Class: NetnodeTransition
+//
+//  Purpose:
+//      Class that identifies a transition in a Network.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   March 18, 2004
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+class NetnodeTransition: public NetnodeFilter
+{
+public:
+             NetnodeTransition(avtDataObject_p input);
+    virtual ~NetnodeTransition(void) {};
+    virtual avtDataObject_p GetOutput(void) { return output; };
+    void     ReleaseData() {;} ;
+
+protected:
+    avtDataObject_p             output;
+};
+
 #endif

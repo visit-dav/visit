@@ -192,6 +192,9 @@
 //    I added support for next generation file handling, including close
 //    and reopen menus.
 //
+//    Kathleen Bonnell, Wed Mar 31 10:13:43 PST 2004 
+//    I added query over time window.
+//
 // ****************************************************************************
 
 QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
@@ -300,6 +303,7 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     id = ctrls->insertItem(tr("&Lineout . . ."), this, SIGNAL(activateGlobalLineoutWindow()), CTRL+SHIFT+Key_L );
     id = ctrls->insertItem(pickIcon, tr("&Pick . . ."), this, SIGNAL(activatePickWindow()), CTRL+Key_P );
     id = ctrls->insertItem(tr("&Query . . ."), this, SIGNAL(activateQueryWindow()), CTRL+Key_Q );
+    id = ctrls->insertItem(tr("Query over &time options . . ."), this, SIGNAL(activateQueryOverTimeWindow()), CTRL+Key_T );
     id = ctrls->insertItem(subsetIcon, tr("S&ubset . . ."), this, SIGNAL(activateSubsetWindow()), CTRL+Key_U);
     id = ctrls->insertItem(viewIcon, tr("&View . . ."), this, SIGNAL(activateViewWindow()), CTRL+Key_V);
 

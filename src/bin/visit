@@ -313,6 +313,9 @@ $0 = shift @ARGV;
 #    I added support for a manual plugin installation destination.  Simply
 #    set the VISITPLUGININST environment variable before running xml2makefile.
 #
+#    Jeremy Meredith, Thu Apr  1 16:11:43 PST 2004
+#    Made the new parallel argument stuff backwards-compatible.
+#
 ###############################################################################
 
 
@@ -346,7 +349,7 @@ while ($tmpdir =~ s|(/\./)|/|) {}
 # compress out remaining /dir/.. forms
 while ($tmpdir =~ s|(/[^/]+/\.\.)||) {}
 
-# Note: the above ".."-compression is safe because we already determined we 
+# Note: the above ".."-compression is safe because we already determined we
 # had an absolute path, we know the substitution goes left-to-right, and
 # we cannot legally .. above the root of the directory tree.  If at some
 # point these assumptions change, we can use the following line instead,
@@ -697,13 +700,15 @@ if (($procs_set) and ($procs < 1))
     exit 1;
 }
 
+@engine_parallel_args = ();
+$had_to_strip_parallel_args = 0;
 if ((($parallel) or ($launchengine)) and
     ($exe_name ne "engine") and
     (($exe_name ne "vcl") or (!$parlaunch_set)))
 {
+    $had_to_strip_parallel_args = 1;
     # If we're trying to run in parallel, or we've been explicitly
     # told to launch an engine, add any parallel arguments back on
-    @engine_parallel_args = ();
     push @engine_parallel_args, "-par"                   if ($parallel && !$procs_set);
     push @engine_parallel_args, "-l",  $launch           if ($launch_set);
     push @engine_parallel_args, "-la", "@launchargs"     if ($launchargs_set);
@@ -713,12 +718,6 @@ if ((($parallel) or ($launchengine)) and
     push @engine_parallel_args, "-p",  $part             if ($part_set);
     push @engine_parallel_args, "-b",  $bank             if ($bank_set);
     push @engine_parallel_args, "-t",  $time             if ($time_set);
-
-    if (scalar(@engine_parallel_args) > 0)
-    {
-	$engine_arg_string = ";".join(';', @engine_parallel_args);
-	push @visitargs, "-engineargs", $engine_arg_string;
-    }
 
     # ... but don't confuse the script
     $parallel=0;
@@ -943,7 +942,7 @@ else
     if ($ver_set && ! grep /$ver/, @exeversions)
     {
         print STDERR "Version $ver of '$exe_name' does not exist.\n";
-	if ($exe_name eq "engine_par")
+        if ($exe_name eq "engine_par")
         {
             print STDERR "Note that the serial engine may still work.\n";
         }
@@ -969,14 +968,50 @@ else
         ($ver_major = $ver) =~ s/^(\d+)\.\d+$/$1/;
         ($ver_minor = $ver) =~ s/^\d+\.(\d+)$/$1/;
         ($ver_tiny  = 0);
+        ($ver_beta  = 0);
     }
     elsif (grep /^\d+\.\d+\.\d+$/, $ver)
     {
         ($ver_major = $ver) =~ s/^(\d+)\.\d+\.\d+$/$1/;
         ($ver_minor = $ver) =~ s/^\d+\.(\d+)\.\d+$/$1/;
         ($ver_tiny  = $ver) =~ s/^\d+\.\d+\.(\d+)$/$1/;
+        ($ver_beta  = 0);
+    }
+    elsif (grep /^\d+\.\d+b\d+$/, $ver)
+    {
+        ($ver_major = $ver) =~ s/^(\d+)\.\d+b\d+$/$1/;
+        ($ver_minor = $ver) =~ s/^\d+\.(\d+)b\d+$/$1/;
+        ($ver_tiny  = 0);
+        ($ver_beta  = $ver) =~ s/^\d+\.\d+b(\d+)$/$1/;
+    }
+    elsif (grep /^\d+\.\d+\.\d+b\d+$/, $ver)
+    {
+        ($ver_major = $ver) =~ s/^(\d+)\.\d+\.\d+b\d+$/$1/;
+        ($ver_minor = $ver) =~ s/^\d+\.(\d+)\.\d+b\d+$/$1/;
+        ($ver_tiny  = $ver) =~ s/^\d+\.\d+\.(\d+)b\d+$/$1/;
+        ($ver_beta  = $ver) =~ s/^\d+\.\d+\.\d+b(\d+)$/$1/;
     }
 }
+
+if ($had_to_strip_parallel_args)
+{
+    if ($ver_major == 1 and $ver_minor < 3)
+    {
+        if (scalar(@engine_parallel_args) > 0)
+        {
+            push @visitargs, @engine_parallel_args;
+        }
+    }
+    else
+    {
+        if (scalar(@engine_parallel_args) > 0)
+        {
+            $engine_arg_string = ";".join(';', @engine_parallel_args);
+            push @visitargs, "-engineargs", $engine_arg_string;
+        }
+    }
+}
+
 
 # Confirm we have found some version
 $msg = "";
@@ -1060,16 +1095,16 @@ if (!defined($ENV{VISITPLUGININST}))
     $shouldinstallprivate = $publicversion;
     foreach (@plugincategories)
     {
-	$shouldinstallprivate=1  if (! -w "$visitplugins/$_");
+        $shouldinstallprivate=1  if (! -w "$visitplugins/$_");
     }
 
     if ($shouldinstallprivate)
     {
-	$ENV{VISITPLUGININST}="$visitprivateplugins";
+        $ENV{VISITPLUGININST}="$visitprivateplugins";
     }
     else
     {
-	$ENV{VISITPLUGININST}="$visitplugins";
+        $ENV{VISITPLUGININST}="$visitplugins";
     }
 }
 
@@ -1116,7 +1151,7 @@ if ($procs_set or ($parallel and $parlaunch_set))
     if ($launch eq "mpirun")
     {
         @parcmd = ("mpirun");
-	push @parcmd, @launchargs if $launchargs_set;
+        push @parcmd, @launchargs if $launchargs_set;
         push @parcmd, "-np", $procs if $procs_set;
         push @parcmd, "-p",  $part  if $part_set;
         push @parcmd, @visitcmd;
@@ -1129,7 +1164,7 @@ if ($procs_set or ($parallel and $parlaunch_set))
     elsif ($launch eq "dmpirun")
     {
         @parcmd = ("dmpirun");
-	push @parcmd, @launchargs if $launchargs_set;
+        push @parcmd, @launchargs if $launchargs_set;
         push @parcmd, "-np", $procs if $procs_set;
         push @parcmd, "-p",  $part  if $part_set;
         push @parcmd, @visitcmd;
@@ -1142,7 +1177,7 @@ if ($procs_set or ($parallel and $parlaunch_set))
     elsif ($launch eq "poe")
     {
         @parcmd = @visitcmd;
-	push @parcmd, @launchargs if $launchargs_set;
+        push @parcmd, @launchargs if $launchargs_set;
         push @parcmd, "-procs",  $procs if $procs_set;
         push @parcmd, "-nodes",  $nodes if $nodes_set;
         push @parcmd, "-rmpool", $part  if $part_set;
@@ -1155,7 +1190,7 @@ if ($procs_set or ($parallel and $parlaunch_set))
     elsif ($launch eq "prun")
     {
         @parcmd = ("prun");
-	push @parcmd, @launchargs if $launchargs_set;
+        push @parcmd, @launchargs if $launchargs_set;
         push @parcmd, "-n",  $procs if $procs_set;
         push @parcmd, "-N",  $nodes if $nodes_set;
         push @parcmd, "-p",  $part  if $part_set;
@@ -1169,7 +1204,7 @@ if ($procs_set or ($parallel and $parlaunch_set))
     elsif (substr($launch,0,4) eq "srun")
     {
         @parcmd = ("srun");
-	push @parcmd, @launchargs if $launchargs_set;
+        push @parcmd, @launchargs if $launchargs_set;
         push @parcmd, "-n",  $procs if $procs_set;
         push @parcmd, "-N",  $nodes if $nodes_set;
         push @parcmd, "-J",  $name  if $name_set;
@@ -1197,7 +1232,7 @@ if ($procs_set or ($parallel and $parlaunch_set))
         }
         if ($security_key_set) { push @visitcmd, "-key", $security_key; }
         @parcmd = ("psub");
-	push @parcmd, @launchargs if $launchargs_set;
+        push @parcmd, @launchargs if $launchargs_set;
         push @parcmd, "-x";
         push @parcmd, "-g",  $procs if $procs_set;
         push @parcmd, "-ln", $nodes if $nodes_set;
@@ -1218,7 +1253,7 @@ if ($procs_set or ($parallel and $parlaunch_set))
         if ($security_key_set) { push @visitcmd, "-key", $security_key; }
         @parcmd = ("bsub");
         push @parcmd, "-I";
-	push @parcmd, @launchargs if $launchargs_set;
+        push @parcmd, @launchargs if $launchargs_set;
         push @parcmd, "-n",  $procs if $procs_set;
         push @parcmd, "-q",  $part  if $part_set;
         push @parcmd, "-W" , $time  if $time_set;
@@ -1231,7 +1266,7 @@ if ($procs_set or ($parallel and $parlaunch_set))
     elsif ($launch eq "yod")
     {
         @parcmd = ("/cougar/bin/yod");
-	push @parcmd, @launchargs if $launchargs_set;
+        push @parcmd, @launchargs if $launchargs_set;
         push @parcmd, "-sz", $procs if $procs_set;
         push @parcmd, @visitcmd;
 

@@ -48,6 +48,7 @@
 #include <RenderingAttributes.h>
 #include <SILRestrictionAttributes.h>
 #include <SyncAttributes.h>
+#include <QueryOverTimeAttributes.h>
 #include <WindowInformation.h>
 
 #include <QvisApplication.h>
@@ -79,6 +80,7 @@
 #include <QvisRenderingWindow.h>
 #include <QvisSaveWindow.h>
 #include <QvisSubsetWindow.h>
+#include <QvisQueryOverTimeWindow.h>
 #include <QvisViewWindow.h>
 
 #include <SplashScreen.h>
@@ -1654,13 +1656,16 @@ QvisGUIApplication::CreateMainWindow()
 //   a new preference window signal. I added the database correlation list
 //   window.
 //
+//   Kathleen Bonnell, Wed Mar 31 10:13:43 PST 2004 
+//   Added QueryOverTime window. 
+//
 // ****************************************************************************
 
 bool
 QvisGUIApplication::CreateWindows(int startPercent, int endPercent)
 {
     bool  done = false;
-    const int nWindows = 26;
+    const int nWindows = 27;
     float perWindow = float(endPercent - startPercent) / float(nWindows-1);
 #define PERCENT int(startPercent + (perWindow * windowInitStage))
 
@@ -1932,6 +1937,17 @@ QvisGUIApplication::CreateWindows(int startPercent, int endPercent)
         connect(mainWin, SIGNAL(activateCorrelationListWindow()),
                 correlationListWin, SLOT(show()));
         otherWindows.push_back(correlationListWin);
+
+        break;
+    case 26:
+        // Create the time query window.
+        SplashScreenProgress("Creating QueryOverTime window...", PERCENT);
+        queryOverTimeWin = new QvisQueryOverTimeWindow(
+             viewer->GetQueryOverTimeAttributes(),
+            "QueryOverTime", "QueryOverTime", mainWin->GetNotepad());
+        connect(mainWin, SIGNAL(activateQueryOverTimeWindow()),
+                queryOverTimeWin, SLOT(show()));
+        otherWindows.push_back(queryOverTimeWin);
 
         // Move this code to the new last case when one is added.
         done = true;

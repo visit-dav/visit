@@ -43,6 +43,7 @@ class QvisPickWindow;
 class QvisPluginWindow;
 class QvisPreferencesWindow;
 class QvisQueryWindow;
+class QvisQueryOverTimeWindow;
 class QvisRenderingWindow;
 class QvisSaveWindow;
 class QvisSubsetWindow;
@@ -217,6 +218,9 @@ class SplashScreen;
 //    Brad Whitlock, Fri Mar 12 13:39:25 PST 2004
 //    I added keepAliveTimer and a new slot function.
 //
+//    Kathleen Bonnell, Wed Mar 31 10:13:43 PST 2004
+//    Added QueryOverTime window. 
+//
 // ****************************************************************************
 
 class GUI_API QvisGUIApplication : public QObject, public ConfigManager, public GUIBase
@@ -335,6 +339,7 @@ private:
     QvisPreferencesWindow        *preferencesWin;
     QvisRenderingWindow          *renderingWin;
     QvisGlobalLineoutWindow      *globalLineoutWin;
+    QvisQueryOverTimeWindow      *queryOverTimeWin;
 
     // Contains pointers to all of the plot windows.
     WindowBaseVector             plotWindows;

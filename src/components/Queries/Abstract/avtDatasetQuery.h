@@ -49,6 +49,9 @@ class vtkDataSet;
 //    Moved inlined destructor definition to .C file because certain compilers
 //    have problems with them.
 //
+//    Kathleen Bonnell, Thu Apr  1 19:02:38 PST 2004 
+//    Added method PerformQueryInTime.
+//
 // ****************************************************************************
 
 class QUERY_API avtDatasetQuery : public avtDataObjectQuery, 
@@ -60,6 +63,8 @@ class QUERY_API avtDatasetQuery : public avtDataObjectQuery,
 
 
     virtual void             PerformQuery(QueryAttributes *);
+    virtual void             PerformQueryInTime(QueryAttributes*,
+                                 const intVector &);
     virtual std::string      GetResultMessage(void) { return resMsg; };
     virtual void             SetResultMessage(const std::string &m) 
                                  { resMsg = m; }; 

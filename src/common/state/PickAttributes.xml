@@ -119,6 +119,9 @@
     </Field>
     <Field name="invalidVars" label="invalidVars" type="stringVector" internal="true">
     </Field>
+    <Field name="doTimeCurve" label="doTimeCurve" type="bool">
+      false
+    </Field>
     <Function name="PrintSelf" user="true" member="true">
     </Function>
     <Function name="CreateOutputString" user="true" member="true">

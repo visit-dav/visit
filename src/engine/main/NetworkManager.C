@@ -1,5 +1,6 @@
 #include <NetworkManager.h>
 #include <DataNetwork.h>
+#include <ClonedDataNetwork.h>
 #include <DebugStream.h>
 #include <avtDatabaseFactory.h>
 #include <LoadBalancer.h>
@@ -17,36 +18,20 @@
 #include <avtNullData.h>
 #include <avtDatabaseMetaData.h>
 #include <avtDataObjectQuery.h>
-#include <avtCompactnessQuery.h>
-#include <avtEulerianQuery.h>
+#include <avtMultipleInputQuery.h>
 #include <avtAreaBetweenCurvesQuery.h>
-#include <avtCycleQuery.h>
 #include <avtFileWriter.h>
-#include <avtIntegrateQuery.h>
-#include <avtL2NormQuery.h>
 #include <avtL2NormBetweenCurvesQuery.h>
-#include <avtTimeQuery.h>
 #include <avtLocateCellQuery.h>
 #include <avtPickQuery.h>
 #include <avtCurvePickQuery.h>
-#include <avtOriginalDataMinMaxQuery.h>
-#include <avtOriginalDataNumNodesQuery.h>
-#include <avtOriginalDataNumZonesQuery.h>
-#include <avtActualDataMinMaxQuery.h>
-#include <avtActualDataNumNodesQuery.h>
-#include <avtActualDataNumZonesQuery.h>
 #include <avtSourceFromAVTImage.h>
 #include <avtSourceFromImage.h>
 #include <avtSourceFromNullData.h>
-#include <avtTotalSurfaceAreaQuery.h>
-#include <avtTotalVolumeQuery.h>
-#include <avtTotalRevolvedVolumeQuery.h>
-#include <avtTotalRevolvedSurfaceAreaQuery.h>
-#include <avtVariableQuery.h>
-#include <avtVariableSummationQuery.h>
-#include <avtWeightedVariableSummationQuery.h>
 #include <avtWholeImageCompositer.h>
 #include <avtPlot.h>
+#include <avtQueryOverTimeFilter.h>
+#include <avtQueryFactory.h>
 #include <CompactSILRestrictionAttributes.h>
 #include <VisWindow.h>
 #include <ParsingExprList.h>
@@ -840,7 +825,7 @@ NetworkManager::MakePlot(const string &id, const AttributeGroup *atts)
     if (workingNetnodeList.size() != 1)
     {
         debug1 << "Network building still in progress.  Filter required to "
-               << "absorb" << workingNetnodeList.size() << " nodes."  << endl;
+               << "absorb " << workingNetnodeList.size() << " nodes."  << endl;
         EXCEPTION0(ImproperUseException);
     }
 
@@ -1410,9 +1395,6 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, bool do3DAnnotsOnly)
               visitTimer->StopTimer(t2, "Setting up window contents");
           }
 
-
-          AdjustWindowAttributes();
-
           if (!do3DAnnotsOnly)
               SetAnnotationAttributes(annotationAttributes, false);
 
@@ -1423,7 +1405,10 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, bool do3DAnnotsOnly)
 
           // render the image and capture it. Relies upon explicit render
           int t3 = visitTimer->StartTimer();
-          avtImage_p theImage = viswin->ScreenCapture(true);
+          bool viewportedMode = do3DAnnotsOnly &&
+                                (viswin->GetWindowMode() == WINMODE_2D ||
+                                 viswin->GetWindowMode() == WINMODE_CURVE);
+          avtImage_p theImage = viswin->ScreenCapture(viewportedMode, true);
           visitTimer->StopTimer(t3, "Screen capture for SR");
 
           // this call is here to reset any actor's scaling before we remove
@@ -1431,7 +1416,6 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, bool do3DAnnotsOnly)
           // it is harmless if not in 2D mode and/or not in full frame mode
           viswin->FullFrameOff();
 
-#ifdef PARALLEL
           if (dumpRenders)
           {
               static int numDumps = 0;
@@ -1440,15 +1424,18 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, bool do3DAnnotsOnly)
               avtDataObject_p tmpDob;
               CopyTo(tmpDob, theImage);
 
+#ifdef PARALLEL
               sprintf(tmpName, "before_ImageCompositer_%03d_%03d.tif",
                   PAR_Rank(), numDumps);
+#else
+              sprintf(tmpName, "before_ImageCompositer_%03d.tif", numDumps);
+#endif
               fileWriter->SetFormat(TIFF);
-              // '6' means LZW compression
-              fileWriter->Write(tmpName, tmpDob, 100, false, 6, false);
+              int useLZW = 6;
+              fileWriter->Write(tmpName, tmpDob, 100, false, useLZW, false);
 
               numDumps++;
           }
-#endif
 
           avtWholeImageCompositer imageCompositer;
 
@@ -1465,7 +1452,7 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, bool do3DAnnotsOnly)
           // Set up the input image size and add it to compositer's input
           //
           int imageRows, imageCols;
-          viswin->GetSize(imageCols, imageRows);
+          theImage->GetSize(&imageCols, &imageRows);
           imageCompositer.SetOutputImageSize(imageRows, imageCols);
           imageCompositer.AddImageInput(theImage, 0, 0);
           imageCompositer.SetShouldOutputZBuffer(getZBuffer);
@@ -1491,9 +1478,9 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, bool do3DAnnotsOnly)
 
               sprintf(tmpName, "after_ImageCompositer_%03d.tif", numDumps);
               fileWriter->SetFormat(TIFF);
-              // '6' means LZW compression
+              int useLZW = 6;
               fileWriter->Write(tmpName, compositedImageAsDataObject,
-                  100, false, 6, false);
+                  100, false, useLZW, false);
 
               numDumps++;
           }
@@ -1624,85 +1611,6 @@ NetworkManager::SetWindowAttributes(const WindowAttributes &atts)
        viswin->SetImmediateModeRendering(!atts.GetRenderAtts().GetDisplayLists());
 
     windowAttributes = atts;
-}
-
-// ****************************************************************************
-//  Method:  NetworkManager::AdjustWindowAttributes
-//
-//  Purpose:
-//    Deals with adjustments of window attributes just prior to rendering.
-//    On the engine, we may need to change the view-port or image size to
-//    integrate correctly with the viewer. The intent is to make adjustments
-//    not only to the viswin object but also the windowAttributes object that
-//    maintains some of this knowledge and keep the two consistent.
-//
-//    This should really only be called once all the actors are in the
-//    viswindow but before we do the render.
-//
-//  Programmer:  Mark C. Miller 
-//  Creation:    Monday, January 26, 2004 
-//
-// ****************************************************************************
-void
-NetworkManager::AdjustWindowAttributes()
-{
-    // adjust window size, viewport, etc. if we're in 2D mode
-    WINDOW_MODE windowMode = viswin->GetWindowMode();
-
-    if (windowMode == WINMODE_2D)
-    {  avtView2D v = viswin->GetView2D();
-
-        // set window size to size of viewport, in pixels
-        double viewPort[4];
-        int oldRows, oldCols;
-        viswin->GetSize(oldCols, oldRows);
-        v.GetActualViewport(viewPort, oldCols, oldRows);
-
-        int newCols = (int) ((viewPort[1] - viewPort[0]) * oldCols + 0.5);
-        int newRows = (int) ((viewPort[3] - viewPort[2]) * oldRows + 0.5);
-        viswin->SetSize(newCols, newRows);
-        int newSize[2];
-        newSize[0] = newCols;
-        newSize[1] = newRows;
-        windowAttributes.SetSize(newSize);
-
-        // set viewport to [0,1,0,1]
-        View2DAttributes vAtts;
-        v.SetToView2DAttributes(&vAtts);
-        double viewportCoords[4] = {0.0, 1.0, 0.0, 1.0};
-        vAtts.SetViewportCoords(viewportCoords);
-        v.SetFromView2DAttributes(&vAtts);
-
-        viswin->SetView2D(v);
-        windowAttributes.SetView2D(vAtts);
-    }
-    else if (windowMode == WINMODE_CURVE)
-    {  avtViewCurve v = viswin->GetViewCurve();
-
-        // set window size to size of viewport, in pixels
-        double viewPort[4];
-        int oldRows, oldCols;
-        viswin->GetSize(oldCols, oldRows);
-        v.GetViewport(viewPort);
-
-        int newCols = (int) ((viewPort[1] - viewPort[0]) * oldCols + 0.5);
-        int newRows = (int) ((viewPort[3] - viewPort[2]) * oldRows + 0.5);
-        viswin->SetSize(newCols, newRows);
-        int newSize[2];
-        newSize[0] = newCols;
-        newSize[1] = newRows;
-        windowAttributes.SetSize(newSize);
-
-        // set viewport to [0,1,0,1]
-        ViewCurveAttributes vAtts;
-        v.SetToViewCurveAttributes(&vAtts);
-        double viewportCoords[4] = {0.0, 1.0, 0.0, 1.0};
-        vAtts.SetViewportCoords(viewportCoords);
-        v.SetFromViewCurveAttributes(&vAtts);
-
-        viswin->SetViewCurve(v);
-        windowAttributes.SetViewCurve(vAtts);
-    }
 }
 
 // ****************************************************************************
@@ -1898,7 +1806,7 @@ NetworkManager::Pick(const int id, PickAttributes *pa)
 
             pQ = new avtPickQuery;
             pQ->SetInput(networkCache[id]->GetNetDB()->GetOutput());
-            pQ->SetUseSet(useSet);
+            pQ->SetSILUseSet(useSet);
             if (queryInput->GetInfo().GetAttributes().HasTransform() &&
                 queryInput->GetInfo().GetAttributes().GetCanUseTransform())
             {
@@ -1989,7 +1897,12 @@ NetworkManager::Pick(const int id, PickAttributes *pa)
 //    Kathleen Bonnell, Tue Mar 23 18:00:29 PST 2004 
 //    Delay setting of PipeIndex until the networkIds have been verified. 
 //
+//    Kathleen Bonnell, Tue Mar 30 15:11:07 PST 2004 
+//    Moved instantiation of individual queries to avtQueryFactory. 
+//    Retrieve current SIL and send to query.
+//
 // ****************************************************************************
+
 void
 NetworkManager::Query(const std::vector<int> &ids, QueryAttributes *qa)
 {
@@ -2038,111 +1951,46 @@ NetworkManager::Query(const std::vector<int> &ids, QueryAttributes *qa)
 
     TRY
     {
-        if (strcmp(queryName.c_str(), "Surface area") == 0)
+
+        query = avtQueryFactory::Instance()->CreateQuery(qa);
+
+        if (query == NULL)
         {
-            query = new avtTotalSurfaceAreaQuery();
-        }
-        else if (strcmp(queryName.c_str(), "Volume") == 0)
-        {
-            query = new avtTotalVolumeQuery();
-        }
-        else if (strcmp(queryName.c_str(), "Revolved volume") == 0)
-        {
-            query = new avtTotalRevolvedVolumeQuery();
-        }
-        else if (strcmp(queryName.c_str(), "Revolved surface area") == 0)
-        {
-            query = new avtTotalRevolvedSurfaceAreaQuery();
-        }
-        else if (strcmp(queryName.c_str(), "Eulerian") == 0)
-        {
-            query = new avtEulerianQuery();
-        }
-        else if (strcmp(queryName.c_str(), "Compactness") == 0)
-        {
-            query = new avtCompactnessQuery();
-        }
-        else if (strcmp(queryName.c_str(), "Cycle") == 0)
-        {
-            query = new avtCycleQuery();
-        }
-        else if (strcmp(queryName.c_str(), "Integrate") == 0)
-        {
-            query = new avtIntegrateQuery();
-        }
-        else if (strcmp(queryName.c_str(), "Time") == 0)
-        {
-            query = new avtTimeQuery();
-        }
-        else if (strcmp(queryName.c_str(), "L2Norm") == 0)
-        {
-            query = new avtL2NormQuery();
-        }
-        else if (strcmp(queryName.c_str(), "L2Norm Between Curves") == 0)
-        {
-            avtL2NormBetweenCurvesQuery *q = new avtL2NormBetweenCurvesQuery();
-            q->SetNthInput(queryInputs[0], 0);
-            q->SetNthInput(queryInputs[1], 1);
-            query = q;
-        }
-        else if (strcmp(queryName.c_str(), "Area Between Curves") == 0)
-        {
-            avtAreaBetweenCurvesQuery *q = new avtAreaBetweenCurvesQuery();
-            q->SetNthInput(queryInputs[0], 0);
-            q->SetNthInput(queryInputs[1], 1);
-            query = q;
-        }
-        else if (strcmp(queryName.c_str(), "Variable Sum") == 0)
-        {
-            query = new avtVariableSummationQuery();
-        }
-        else if (strcmp(queryName.c_str(), "Weighted Variable Sum") == 0)
-        {
-            query = new avtWeightedVariableSummationQuery();
-        }
-        else if (strcmp(queryName.c_str(), "Variable by Zone") == 0)
-        {
-            query = new avtVariableQuery();
-        }
-        else if (strcmp(queryName.c_str(), "Variable by Node") == 0) 
-        {
-            query = new avtVariableQuery();
-        }
-        else if (strcmp(queryName.c_str(), "MinMax") == 0) 
-        {
-            if (qa->GetDataType() == QueryAttributes::ActualData)
+            //
+            // For now, multiple input queries need to be instantiated here.
+            //
+            if (queryName == "L2Norm Between Curves") 
+
             {
-                query = new avtActualDataMinMaxQuery();
+                avtL2NormBetweenCurvesQuery *q = new avtL2NormBetweenCurvesQuery();
+                q->SetNthInput(queryInputs[0], 0);
+                q->SetNthInput(queryInputs[1], 1);
+                query = q;
             }
-            else 
+            else if (queryName == "Area Between Curves") 
             {
-                query = new avtOriginalDataMinMaxQuery();
+                avtAreaBetweenCurvesQuery *q = new avtAreaBetweenCurvesQuery();
+                q->SetNthInput(queryInputs[0], 0);
+                q->SetNthInput(queryInputs[1], 1);
+                query = q;
             }
         }
-        else if (strcmp(queryName.c_str(), "NumZones") == 0) 
-        {
-            if (qa->GetDataType() == QueryAttributes::ActualData)
-            {
-                query = new avtActualDataNumZonesQuery();
-            }
-            else 
-            {
-                query = new avtOriginalDataNumZonesQuery();
-            }
-        }
-        else if (strcmp(queryName.c_str(), "NumNodes") == 0) 
-        {
-            if (qa->GetDataType() == QueryAttributes::ActualData)
-            {
-                query = new avtActualDataNumNodesQuery();
-            }
-            else 
-            {
-                query = new avtOriginalDataNumNodesQuery();
-            }
-        }
+
         if (query != NULL)
         {
+            avtSILRestriction_p silr = 
+               networkCache[ids[0]]->GetDataSpec()->GetRestriction();
+            if (*silr != NULL)
+            {
+                unsignedCharVector useSet;
+                CompactSILRestrictionAttributes *silAtts = 
+                    silr->MakeCompactAttributes();
+                if (silAtts != NULL)
+                    useSet = silAtts->GetUseSet();
+                query->SetSILUseSet(useSet);
+            }
+
+
             //
             // Use the plot's intermediate output as input to the query
             // unless the query requires original data, then use the
@@ -2213,4 +2061,143 @@ RenderBalance(int numTrianglesIHave)
 #endif
 
    return balance;
+}
+
+
+// ****************************************************************************
+//  Method:  Network::CloneNetwork
+//
+//  Purpose:
+//    Creates a clone of an existing network. 
+//
+//  Arguments:
+//    id         The network to clone.
+//
+//  Programmer:  Kathleen Bonnell
+//  Creation:    March 19, 2004
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+NetworkManager::CloneNetwork(const int id)
+{
+    //
+    // Ensure that it is possible to access the specified network.
+    //
+    if (workingNet != NULL)
+    {
+        string error = "Unable to clone an open network.";
+        debug1 << error.c_str() << endl;
+        EXCEPTION1(ImproperUseException,error);
+    }
+
+    if (id >= networkCache.size())
+    {
+        debug1 << "Internal error:  asked to clone network ID (" << id 
+               << ") >= num saved networks (" << networkCache.size() << ")" 
+               << endl;
+        EXCEPTION0(ImproperUseException);
+    }
+
+    if (networkCache[id] == NULL)
+    {
+        string error = "Asked to clone a network that has already been cleared.";
+        debug1 << error.c_str() << endl;
+        EXCEPTION1(ImproperUseException, error);
+    }
+
+    if (id != networkCache[id]->GetID())
+    {
+        
+        debug1 << "Internal error: network at position[" << id 
+               << "] does not have same id (" 
+               << networkCache[id]->GetID() << ")" << endl;
+        EXCEPTION0(ImproperUseException);
+    }
+
+    workingNet = new ClonedDataNetwork(networkCache[id]);
+
+    if (!workingNetnodeList.empty())
+        workingNetnodeList.clear();
+    workingNetnodeList.push_back(
+        workingNet->GetNodeList()[workingNet->GetNodeList().size() -1]);
+}
+
+
+// ****************************************************************************
+//  Method:  Network::AddQueryOverTimeFilter
+//
+//  Purpose:
+//    Adds a QueryOverTimeFilter node to the network. 
+//
+//  Arguments:
+//    qA         The atts that control the filter. 
+//
+//  Programmer:  Kathleen Bonnell
+//  Creation:    March 19, 2004
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+NetworkManager::AddQueryOverTimeFilter(const QueryOverTimeAttributes *qA)
+{
+    if (workingNet == NULL)
+    {
+        string error =  "Adding a filter to a non-existent network." ;
+        EXCEPTION1(ImproperUseException, error);
+    }
+
+    //
+    // Determine which input the filter should use.
+    //
+    avtDataObject_p input;
+    if (qA->GetQueryAtts().GetDataType() == QueryAttributes::OriginalData)
+    {
+        input = workingNet->GetNetDB()->GetOutput();
+    }
+    else 
+    {
+        input = workingNet->GetPlot()->GetIntermediateDataObject();
+    }
+
+    //    
+    // Pass down the current SILRestriction (via UseSet) in case the query 
+    // needs to make use of this information.
+    //    
+    unsignedCharVector useSet;
+    avtSILRestriction_p silr = workingNet->GetDataSpec()->GetRestriction();
+    if (*silr != NULL)
+    {
+        CompactSILRestrictionAttributes *silAtts = 
+            silr->MakeCompactAttributes();
+        if (silAtts != NULL)
+            useSet = silAtts->GetUseSet();
+    }
+   
+    // 
+    //  Create a transition node so that the new filter will receive
+    //  the correct input.
+    // 
+    NetnodeTransition *trans = new NetnodeTransition(input);
+    Netnode *n = workingNetnodeList.back();
+    workingNetnodeList.pop_back();
+    trans->GetInputNodes().push_back(n);
+    
+    workingNet->AddNode(trans);
+
+    // 
+    // Put a QueryOverTimeFilter right after the transition to handle 
+    // the query. 
+    // 
+    avtQueryOverTimeFilter *qf = new avtQueryOverTimeFilter(qA);
+    qf->SetSILUseSet(useSet);
+    NetnodeFilter *qfilt = new NetnodeFilter(qf, "QueryOverTime");
+    qfilt->GetInputNodes().push_back(trans);
+    
+    workingNetnodeList.push_back(qfilt);
+    workingNet->AddNode(qfilt);
 }

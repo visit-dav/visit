@@ -157,12 +157,18 @@ avtLineoutFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
 //  Programmer: Kathleen Bonnell 
 //  Creation:   April 25, 202 
 //
+//  Modifications:
+//    Kathleen Bonnell, Tue Mar 23 08:48:33 PST 2004
+//    Set X and Y axis labels.
+//
 // ****************************************************************************
 
 void
 avtLineoutFilter::RefashionDataObjectInfo(void)
 {
     GetOutput()->GetInfo().GetAttributes().SetTopologicalDimension(1);
+    GetOutput()->GetInfo().GetAttributes().SetXLabel("Distance");
+    GetOutput()->GetInfo().GetAttributes().SetYLabel("Value");
     GetOutput()->GetInfo().GetValidity().InvalidateZones();
     GetOutput()->GetInfo().GetValidity().InvalidateSpatialMetaData();
 }

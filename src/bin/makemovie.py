@@ -11,24 +11,20 @@ import os, string, sys, thread
 # Programmer: Brad Whitlock
 # Date:       Wed Dec 18 11:33:22 PDT 2002
 #
+# Modifications:
+# 
+#   Hank Childs, Thu Apr  1 09:33:16 PST 2004
+#   Simplified a bit (previous implementation was not portable).
+#
 ###############################################################################
 
 def CommandInPath(command):
     retval = 0
     if(sys.platform != "win32"):
         # Look for the command using the which command
-        cmd = "which %s" % command
-        f = os.popen(cmd)
-        lines = f.readlines()
-        f.close()
-        # Glue the lines together.
-        str = ""
-        for line in lines:
-            str = str + line
-        # See if the command could not be found
-        noFail1 = (str.find("no %s in" % command) == -1)
-        noFail2 = (str.find("Command not found") == -1)
-        if(noFail1 and noFail2):
+        cmd = "which %s > /dev/null" % command
+        rv = os.system(cmd)
+        if (rv == 0):
             retval = 1
     return retval
 
@@ -149,15 +145,20 @@ def removeFiles(format, nframes):
 # Programmer: Brad Whitlock
 # Date:       Wed Dec 18 11:33:22 PDT 2002
 #
+# Modifications:
+#
+#   Hank Childs, Thu Apr  1 07:48:41 PST 2004
+#   Added frames per second.
+#
 ###############################################################################
 
-def createQuickTimeFile(moviename, baseFormat, start, end, xres, yres):
+def createQuickTimeFile(moviename, baseFormat, start, end, xres, yres, fps):
     names = ""
     for i in range(start, end):
         filename = baseFormat % i
         names = names + " " + filename
     # Create the movie file.
-    command = "dmconvert -f qt -p video,comp=qt_mjpega,inrate=15,rate=15 %s %s" % (names, moviename)
+    command = "dmconvert -f qt -p video,comp=qt_mjpega,inrate=%d,rate=%d %s %s" % (fps, fps, names, moviename)
     #print command
     os.system(command)
 
@@ -170,6 +171,11 @@ def createQuickTimeFile(moviename, baseFormat, start, end, xres, yres):
 # Programmer: Brad Whitlock
 # Date:       Wed Dec 18 11:33:22 PDT 2002
 #
+# Modifications:
+#
+#   Hank Childs, Thu Apr  1 07:52:00 PST 2004
+#   Added frames per second.
+#
 ###############################################################################
 
 def EncodeQuickTimeMovieHelper(threadID, start, end, conversionargs):
@@ -178,9 +184,10 @@ def EncodeQuickTimeMovieHelper(threadID, start, end, conversionargs):
     baseFormat = conversionargs[1]
     xres = conversionargs[2]
     yres = conversionargs[3]
+    fps = conversionargs[4]
     # Create the name of the part of the movie and the names of the files to use.
     subMovieName = "%s.%d" % (moviename, threadID)
-    createQuickTimeFile(subMovieName, baseFormat, start, end, xres, yres)
+    createQuickTimeFile(subMovieName, baseFormat, start, end, xres, yres, fps)
 
 ###############################################################################
 # Function: MovieClassSaveWindow
@@ -226,6 +233,9 @@ class MakeMovie:
     #   Brad Whitlock, Fri Oct 3 11:14:50 PDT 2003
     #   Added support for processing Python files.
     #
+    #   Hank Childs, Wed Mar 31 08:44:34 PST 2004
+    #   Added frames per second.
+    #
     ###########################################################################
 
     def __init__(self):
@@ -255,6 +265,7 @@ class MakeMovie:
         self.xres = 512
         self.yres = 512
         self.tmpDir = os.curdir
+        self.fps = 10
 
         # Set the slash used in filenames based on the platform.
         self.slash = "/"
@@ -276,6 +287,9 @@ class MakeMovie:
     #
     #   Brad Whitlock, Fri Oct 3 11:16:12 PDT 2003
     #   Added -scriptfile.
+    #
+    #   Hank Childs, Wed Mar 31 08:44:34 PST 2004
+    #   Added -fps.
     #
     ###########################################################################
 
@@ -334,6 +348,9 @@ class MakeMovie:
         print ""
         print "    -output moviename  The output option lets you set the name of "
         print "                       your movie."
+        print ""
+        print "    -fps number        Sets the frames per second the movie should "
+        print "                       play at."
         print ""
 
     ###########################################################################
@@ -408,6 +425,9 @@ class MakeMovie:
     #   Brad Whitlock, Fri Dec 5 14:04:09 PST 2003
     #   I made it set the movieBase from the session or script filename
     #   if -output was not given.
+    #
+    #   Hank Childs, Wed Mar 31 08:44:34 PST 2004
+    #   Parse -fps.
     #
     ###########################################################################
 
@@ -498,6 +518,18 @@ class MakeMovie:
                 else:
                     self.PrintUsage()
                     sys.exit(-1)
+            elif(sys.argv[i] == "-fps"):
+                if((i+1) < len(sys.argv)):
+                    try:
+                        self.fps = int(sys.argv[i+1])
+                        if(self.fps < 1):
+                            self.frameStep = 10
+                    except ValueError:
+                        self.fps = 10
+                        print "A bad value was provided for frames per second.  Using 10."
+                    i = i + 1
+                else:
+                    self.PrintUsage()
             elif(sys.argv[i] == "-geometry"):
                 if((i+1) < len(sys.argv)):
                     geometry = sys.argv[i+1]
@@ -759,6 +791,9 @@ class MakeMovie:
     #   Hank Childs, Sat Mar 27 11:51:10 PST 2004
     #   Don't do such aggressive compression.
     #
+    #   Hank Childs, Wed Mar 31 08:50:48 PST 2004
+    #   Backed off compression even more.  Allow for fps to be set as well.
+    #
     ###########################################################################
 
     def EncodeMPEGMovie(self):
@@ -772,6 +807,29 @@ class MakeMovie:
             if(ext != ".mpeg"):
                 moviename = self.movieBase + ".mpeg"
 
+            # We can only drive the movie at 30 fps.  So if the user wants
+            # a movie at 10 fps, we have to pad frames.  Determine what that
+            # pad rate is.
+            pad_rate=-1
+            for i in range(1,31):
+               if (pad_rate < 0):
+                  if ((30./i) <= self.fps):
+                     pad_rate = i
+                     if ((30./i) != self.fps):
+                         print "Because of limitations in MPEG encoding, the "
+                         print "movie will be encoded at %f frames per second" %(30./i)
+
+            # Now create symbolic links to the images at that pad rate.
+            linkbase = self.frameBase+"link"
+            linkindex = 0
+            for i in range(self.numFrames):
+                imgname=self.frameBase+"%04d.ppm" %(i)
+                for j in range(pad_rate):
+                   linkname=self.tmpDir+"/"+linkbase+"%04d.ppm"%(linkindex)
+                   linkindex += 1
+                   os.symlink(imgname, linkname)
+            nframes=pad_rate*self.numFrames
+
             f = open(paramFile, "w")
             f.write("PATTERN             IBBPBBPBBPBBPBB\n")
             f.write("OUTPUT              %s\n" % moviename)
@@ -782,16 +840,16 @@ class MakeMovie:
             f.write("RANGE               10\n")
             f.write("PSEARCH_ALG         TWOLEVEL\n")
             f.write("BSEARCH_ALG         SIMPLE\n")
-            f.write("IQSCALE             2\n")
-            f.write("PQSCALE             2\n")
-            f.write("BQSCALE             2\n")
+            f.write("IQSCALE             1\n")
+            f.write("PQSCALE             1\n")
+            f.write("BQSCALE             1\n")
             f.write("REFERENCE_FRAME     DECODED\n")
             f.write("FORCE_ENCODE_LAST_FRAME\n")
             f.write("YUV_SIZE            %dx%d\n" % (self.xres, self.yres))
             f.write("INPUT_CONVERT       *\n")
             f.write("INPUT_DIR           %s\n" % self.tmpDir)
             f.write("INPUT\n")
-            f.write("%s*.ppm             [0000-%04d]\n" % (self.frameBase, self.numFrames-1))
+            f.write("%s*.ppm             [0000-%04d]\n" % (linkbase, nframes-1))
             f.write("END_INPUT\n")
             f.close();
 
@@ -800,7 +858,15 @@ class MakeMovie:
             r = os.system(command)
 
             # Remove the param file.
-            RemoveFile(paramFile);
+            #RemoveFile(paramFile);
+
+            # Remove the symbolic links.
+            linkindex = 0
+            for i in range(self.numFrames):
+                for j in range(pad_rate):
+                   linkname=self.tmpDir+"/"+linkbase+"%04d.ppm"%(linkindex)
+                   #RemoveFile(linkname)
+                   linkindex += 1
 
             retval = (r == 0)
         except IOError:
@@ -823,6 +889,11 @@ class MakeMovie:
     # Programmer: Brad Whitlock
     # Date:       Mon Jul 28 13:58:06 PST 2003
     #
+    # Modifications:
+    #
+    #   Hank Childs, Thu Apr  1 07:48:41 PST 2004
+    #   Set frames per second.
+    #
     ###########################################################################
 
     def EncodeQuickTimeMovie(self):
@@ -839,9 +910,10 @@ class MakeMovie:
             baseFormat  = "%s%s%s%%04d.%s" % (self.tmpDir, self.slash, self.frameBase, ext)
             xres = self.xres
             yres = self.yres
+            fps = self.fps
 
             # Create small quicktime movies
-            conversionargs = (moviename, baseFormat, xres, yres)
+            conversionargs = (moviename, baseFormat, xres, yres, fps)
             framesPerMovie = 50
             nframes = self.numFrames
             applyFunctionToNFrames(EncodeQuickTimeMovieHelper, framesPerMovie, nframes, conversionargs)
@@ -850,7 +922,7 @@ class MakeMovie:
             if(nSubMovies * framesPerMovie < nframes):
                 nSubMovies = nSubMovies + 1
             subMovieFormat = "%s.%%d" % moviename
-            createQuickTimeFile(moviename, subMovieFormat, 0, nSubMovies, xres, yres)
+            createQuickTimeFile(moviename, subMovieFormat, 0, nSubMovies, xres, yres, fps)
             # Delete the submovies.
             removeFiles(subMovieFormat, nSubMovies)
             retval = 1
@@ -870,6 +942,11 @@ class MakeMovie:
     # Programmer: Brad Whitlock
     # Date:       Mon Jul 28 13:58:06 PST 2003
     #
+    # Modifications:
+    #
+    #   Hank Childs, Thu Apr  1 07:45:06 PST 2004
+    #   Added frames per second.
+    #
     ###########################################################################
 
     def EncodeStreamingMovie(self):
@@ -887,7 +964,7 @@ class MakeMovie:
                 moviename = self.movieBase + ".sm"
 
             # Execute the img2sm command
-            command = "img2sm -rle -first 0 -last %d -form tiff %s %s" % (self.numFrames-1, format, moviename)
+            command = "img2sm -rle -FPS %d -first 0 -last %d -form tiff %s %s" % (self.fps, self.numFrames-1, format, moviename)
             self.Debug(command)
             os.system(command)
             retval = 1

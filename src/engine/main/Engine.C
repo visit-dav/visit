@@ -174,6 +174,9 @@ Engine::Initialize(int *argc, char **argv[])
 //    Brad Whitlock, Fri Mar 12 11:20:58 PDT 2004
 //    I added keepAliveRPC.
 //
+//    Kathleen Bonnell, Wed Mar 31 16:53:03 PST 2004 
+//    Added cloneNetworkRPC.
+//
 // ****************************************************************************
 
 void
@@ -236,6 +239,7 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     defineVirtualDatabaseRPC        = new DefineVirtualDatabaseRPC;
     renderRPC                       = new RenderRPC;
     setWinAnnotAttsRPC              = new SetWinAnnotAttsRPC;
+    cloneNetworkRPC                 = new CloneNetworkRPC;
 
     xfer->Add(quitRPC);
     xfer->Add(keepAliveRPC);
@@ -254,6 +258,7 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     xfer->Add(defineVirtualDatabaseRPC);
     xfer->Add(renderRPC);
     xfer->Add(setWinAnnotAttsRPC);
+    xfer->Add(cloneNetworkRPC);
 
     // Create an object to implement the RPCs
     rpcExecutors.push_back(new RPCExecutor<QuitRPC>(quitRPC));
@@ -276,6 +281,7 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     rpcExecutors.push_back(new RPCExecutor<DefineVirtualDatabaseRPC>(defineVirtualDatabaseRPC));
     rpcExecutors.push_back(new RPCExecutor<RenderRPC>(renderRPC));
     rpcExecutors.push_back(new RPCExecutor<SetWinAnnotAttsRPC>(setWinAnnotAttsRPC));
+    rpcExecutors.push_back(new RPCExecutor<CloneNetworkRPC>(cloneNetworkRPC));
 
     // Hook up the expression list as an observed object.
     ParserInterface *p = ParserInterface::MakeParser(new EngineExprNodeFactory());

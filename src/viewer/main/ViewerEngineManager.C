@@ -1429,6 +1429,10 @@ ViewerEngineManager::ExternalRender(vector<const char*> pluginIDsList,
 //    Jeremy Meredith, Fri Mar 26 16:59:59 PST 2004
 //    Use a map of engines based on a key, and be aware of simulations.
 //
+//    Kathleen Bonnell, Wed Mar 31 16:40:15 PST 2004 
+//    Only defineVirtualDatabase and ReadDataObject if plot isn't using a 
+//    cloned network.
+//
 // ****************************************************************************
 
 avtDataObjectReader_p
@@ -1448,27 +1452,34 @@ ViewerEngineManager::GetDataObjectReader(ViewerPlot *const plot)
 
     TRY
     {
-        int state = plot->GetState();
-
-        // Is the plot's database a virtual database? If it is, then we
-        // need define the virtual database on the engine.
-        ViewerFileServer *fileServer = ViewerFileServer::Instance();
-        const avtDatabaseMetaData *md =
-            fileServer->GetMetaData(plot->GetHostName(),
-                                    plot->GetDatabaseName());
-        if(md && md->GetIsVirtualDatabase())
+        // 
+        // Only do this if plot isn't using a cloned network.
+        // 
+        if (!plot->CloneNetwork())
         {
-            engine->DefineVirtualDatabase(md->GetFileFormat().c_str(),
-                                          plot->GetDatabaseName(),
-                                          md->GetTimeStepPath(),
-                                          md->GetTimeStepNames(), state);
-        }
+            int state = plot->GetState();
 
-        // Tell the engine to generate the plot
-        engine->ReadDataObject(md->GetFileFormat(), plot->GetDatabaseName(),
-                               plot->GetVariableName(),
-                               state, plot->GetSILRestriction(),
-                               *GetMaterialClientAtts());
+            // Is the plot's database a virtual database? If it is, then we
+            // need define the virtual database on the engine.
+            ViewerFileServer *fileServer = ViewerFileServer::Instance();
+            const avtDatabaseMetaData *md =
+                fileServer->GetMetaData(plot->GetHostName(),
+                                        plot->GetDatabaseName());
+            if(md && md->GetIsVirtualDatabase())
+            {
+                engine->DefineVirtualDatabase(md->GetFileFormat().c_str(),
+                                              plot->GetDatabaseName(),
+                                              md->GetTimeStepPath(),
+                                              md->GetTimeStepNames(), state);
+            }
+
+            // Tell the engine to generate the plot
+                engine->ReadDataObject(md->GetFileFormat(), 
+                                       plot->GetDatabaseName(),
+                                       plot->GetVariableName(),
+                                       state, plot->GetSILRestriction(),
+                                       *GetMaterialClientAtts());
+        }
 
         //
         // Apply any operators.
@@ -1504,11 +1515,13 @@ ViewerEngineManager::GetDataObjectReader(ViewerPlot *const plot)
 #ifdef VIEWER_MT
             retval = engine->Execute(replyWithNullData, 0, 0);
 
-            // deal with possibility that engine may decide to scalable render this output
+            // deal with possibility that engine may decide to scalable render
+            //  this output
             if (!replyWithNullData && retval->InputIs(AVT_NULL_DATASET_MSG))
             {
-               // ask for the engine's output as null data 'cause the avtDataObject in the current
-               // reader is just the message that it exceeded threshold
+               // ask for the engine's output as null data 'cause the 
+               // avtDataObject in the current reader is just the message that 
+               // it exceeded threshold
                retval = engine->Execute(true, 0, 0);
 
                // now, tell viewer to go into SR mode
@@ -1517,14 +1530,17 @@ ViewerEngineManager::GetDataObjectReader(ViewerPlot *const plot)
 #else
             BeginEngineExecute();
 
-            retval = engine->Execute(replyWithNullData, ViewerSubject::ProcessEventsCB,
+            retval = engine->Execute(replyWithNullData, 
+                                     ViewerSubject::ProcessEventsCB,
                                      (void *)viewerSubject);
 
-            // deal with possibility that engine may decide to scalable render this output
+            // deal with possibility that engine may decide to scalable render 
+            // this output
             if (!replyWithNullData && retval->InputIs(AVT_NULL_DATASET_MSG))
             {
-               // ask for the engine's output as null data 'cause the avtDataObject in the current
-               // reader is just the message that it exceeded threshold
+               // ask for the engine's output as null data 'cause the 
+               // avtDataObject in the current reader is just the message that 
+               //it exceeded threshold
                retval = engine->Execute(true, 0, 0);
 
                // now, tell viewer to go into SR mode
@@ -2620,3 +2636,28 @@ ViewerEngineManager::SetDefaultMaterialAttsFromClient()
         *materialDefaultAtts = *materialClientAtts;
     }
 }
+
+
+// ****************************************************************************
+// Method: ViewerEngineManager::CloneNetwork
+//
+// Purpose:
+//   Engine CloneNetwork RPC wrapped for safety.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   March 31, 2004 
+//
+// Modifications:
+//
+// ****************************************************************************
+ 
+bool
+ViewerEngineManager::CloneNetwork(const EngineKey &ek, int nid,
+                           const QueryOverTimeAttributes *qatts)
+{
+    ENGINE_PROXY_RPC_BEGIN("CloneNetwork");
+    engine->CloneNetwork(nid, qatts);
+    ENGINE_PROXY_RPC_END_NORESTART_RETHROW2;
+}
+
+

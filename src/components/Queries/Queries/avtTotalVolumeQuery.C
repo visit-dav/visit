@@ -108,25 +108,56 @@ avtTotalVolumeQuery::VerifyInput()
 //    Kathleen Bonnell, Fri Nov 15 09:07:36 PST 2002  
 //    Moved artificial pipeline creation from base class.
 //
+//    Kathleen Bonnell, Wed Mar 31 16:13:07 PST 2004 
+//    Added logic for time-varying case. 
+//
 // ****************************************************************************
 
 avtDataObject_p 
 avtTotalVolumeQuery::ApplyFilters(avtDataObject_p inData)
 {
-    avtPipelineSpecification_p pspec = 
-        inData->GetTerminatingSource()->GetGeneralPipelineSpecification();
+    if (!timeVarying)
+    {
+        avtPipelineSpecification_p pspec =
+            inData->GetTerminatingSource()->GetGeneralPipelineSpecification();
 
-    //
-    // Create an artificial pipeline.
-    //
-    avtDataset_p ds;
-    CopyTo(ds, inData);
-    avtSourceFromAVTDataset termsrc(ds);
-    avtDataObject_p dob = termsrc.GetOutput();
+        //
+        // Create an artificial pipeline.
+        //
+        avtDataset_p ds;
+        CopyTo(ds, inData);
+        avtSourceFromAVTDataset termsrc(ds);
+        avtDataObject_p dob = termsrc.GetOutput();
+        volume->SetInput(dob);
+        avtDataObject_p objOut = volume->GetOutput();
+        objOut->Update(pspec);
+        return objOut;
+    }
+    else
+    {
+        avtDataSpecification_p oldSpec = inData->GetTerminatingSource()->
+            GetGeneralPipelineSpecification()->GetDataSpecification();
 
-    volume->SetInput(dob);
-    avtDataObject_p objOut = volume->GetOutput();
-    objOut->Update(pspec);
-    return objOut;
+        avtDataSpecification_p newDS = new 
+            avtDataSpecification(oldSpec->GetVariable(), queryAtts.GetTimeStep(), 
+                                 oldSpec->GetRestriction());
+
+        newDS->GetRestriction()->TurnOnAll();
+        for (int i = 0; i < silUseSet.size(); i++)
+        {
+            if (silUseSet[i] == 0)
+                newDS->GetRestriction()->TurnOffSet(i);
+        }
+
+        avtPipelineSpecification_p pspec = 
+            new avtPipelineSpecification(newDS, queryAtts.GetPipeIndex());
+
+        avtDataObject_p dob;
+        CopyTo(dob, inData);
+        volume->SetInput(dob);
+        avtDataObject_p objOut = volume->GetOutput();
+        objOut->Update(pspec);
+        return objOut;
+    }
 }
 

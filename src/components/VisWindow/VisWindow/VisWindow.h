@@ -248,6 +248,9 @@ class VisitInteractor;
 //    Brad Whitlock, Tue Mar 16 09:50:32 PDT 2004
 //    I added a method to tell the toolbar to use larger icons.
 //
+//    Mark C. Miller, Wed Mar 31 18:00:23 PST 2004
+//    Added doViewportOnly arg to ScreenCapture method
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindow
@@ -265,7 +268,8 @@ public:
     void                 UnsetBounds(void);
 
     void                 Realize(void);
-    avtImage_p           ScreenCapture(bool doZBufferToo = false);
+    avtImage_p           ScreenCapture(bool doViewportOnly = false,
+                                       bool doZBufferToo = false);
     avtDataset_p         GetAllDatasets(void);
 
     void                 SetSize(int, int);

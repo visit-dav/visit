@@ -32,6 +32,8 @@
     </Field>
     <Field name="actualData" label="actualData" type="intVector">
     </Field>
+    <Field name="timeQuery" label="timeQuery" type="intVector">
+    </Field>
     <Function name="AddQuery" user="true" member="true">
     </Function>
     <Function name="QueryExists" user="true" member="true">
@@ -43,5 +45,9 @@
     <Function name="UseActualData" user="true" member="true">
     </Function>
     <Function name="SetWindowType" user="true" member="true">
+    </Function>
+    <Function name="AddTimeQuery" user="true" member="true">
+    </Function>
+    <Function name="TimeQueryAvailable" user="true" member="true">
     </Function>
   </Attribute>

@@ -146,6 +146,9 @@ extern ViewerSubject  *viewerSubject;
 //    Eric Brugger, Wed Aug 20 13:22:14 PDT 2003
 //    I added undoing of curve views.
 //
+//    Kathleen Bonnell, Thu Apr  1 19:13:59 PST 2004 
+//    Added timeQueryWindow. 
+//
 // ****************************************************************************
 
 ViewerWindowManager::ViewerWindowManager() : QObject()
@@ -224,6 +227,7 @@ ViewerWindowManager::ViewerWindowManager() : QObject()
     view3DStackTop = -1;
 
     lineoutWindow = -1;
+    timeQueryWindow = -1;
 }
 
 // ****************************************************************************
@@ -7333,6 +7337,9 @@ ViewerWindowManager::EnableExternalRenderRequestsAllWindows(
 //   Eric Brugger, Fri Dec  5 13:42:39 PST 2003
 //   Added writing of maintainView, cameraView and viewExtentsType.
 //
+//    Kathleen Bonnell, Thu Apr  1 19:13:59 PST 2004 
+//    Added timeQueryWindow. 
+//
 // ****************************************************************************
 
 void
@@ -7351,6 +7358,7 @@ ViewerWindowManager::CreateNode(DataNode *parentNode, bool detailed)
     {
         mgrNode->AddNode(new DataNode("activeWindow", activeWindow));
         mgrNode->AddNode(new DataNode("lineoutWindow", lineoutWindow));
+        mgrNode->AddNode(new DataNode("timeQueryWindow", timeQueryWindow));
     }
 
     //
@@ -7411,6 +7419,9 @@ ViewerWindowManager::CreateNode(DataNode *parentNode, bool detailed)
 //   Eric Brugger, Thu Dec 18 14:40:20 PST 2003
 //   Modified the routine to set the referenced flag for the active window
 //   to true.
+//
+//    Kathleen Bonnell, Thu Apr  1 19:13:59 PST 2004 
+//    Added timeQueryWindow. 
 //
 // ****************************************************************************
 
@@ -7642,4 +7653,193 @@ ViewerWindowManager::SetFromNode(DataNode *parentNode)
         else
             lineoutWindow = n;
     }
+
+    //
+    // Set the timeQuery window.
+    //
+    if((node = searchNode->GetNode("timeQueryWindow")) != 0)
+    {
+        int n = node->AsInt();
+        if (n < 0 || n >= maxWindows)
+            timeQueryWindow = -1;
+        else
+            timeQueryWindow = n;
+    }
 }
+
+
+// ****************************************************************************
+// Method: ViewerWindowManager::GetEmptyWindow
+//
+// Purpose:    
+//   Returns a pointer to an empy window. 
+//
+// Returns:
+//   The empty window, null if it couldn't be created.. 
+//
+// Programmer: Kathleen Bonnell
+// Creation:   March 19, 2004 
+//
+// Modifications:
+//
+// ****************************************************************************
+
+ViewerWindow *
+ViewerWindowManager::GetEmptyWindow() 
+{
+    //
+    //  Search for an open, empty window.  If none exists,
+    //  create one.
+    //
+    int       winIdx;
+    for (winIdx = 0; winIdx < maxWindows; winIdx++)
+    {
+        if (windows[winIdx] == 0)
+        {
+                winIdx = -1;
+                break;
+        }
+        if (windows[winIdx]->GetPlotList()->GetNumPlots() == 0)
+        {
+                break;
+        }
+    }
+    if (winIdx == -1)
+    {
+        winIdx = SimpleAddWindow();
+        if (winIdx == -1)
+        {
+            Error("The maximum number of windows are already being used.");
+            return NULL;
+        }
+        SetWindowAttributes(winIdx, false);
+    }
+    else if (winIdx >= maxWindows)
+    {
+        Error("The maximum number of windows are already being used.");
+        return NULL;
+    }
+    windows[winIdx]->SetInteractionMode(NAVIGATE);
+    referenced[winIdx] = true;
+    return windows[winIdx];
+}
+
+
+// ****************************************************************************
+// Method: ViewerWindowManager::GetWindow
+//
+// Purpose:    
+//   Returns a pointer to the window specified by windowIndex. 
+//
+// Arguments:
+//   windowIndex  The index of the window to return.
+//
+// Returns:
+//   The specified window, null if the index is invalid.
+//
+// Programmer: Kathleen Bonnell
+// Creation:   March 19, 2004 
+//
+// Modifications:
+//
+// ****************************************************************************
+
+ViewerWindow *
+ViewerWindowManager::GetWindow(int windowIndex)
+{
+    if(windowIndex < 0 || windowIndex >= maxWindows)
+        return NULL;
+
+    return windows[windowIndex];
+}
+
+
+// ****************************************************************************
+// Method: ViewerWindowManager::GetTimeQueryWindow
+//
+// Purpose:    
+//   Returns a pointer to a window that can be used for queries-through-time. 
+//   Adds a new window if necessary.
+//
+// Returns:
+//   The timequery window, null if it couldn't be created.. 
+//
+// Programmer: Kathleen Bonnell
+// Creation:   April 1, 2004 
+//
+// Modifications:
+//
+// ****************************************************************************
+
+ViewerWindow *
+ViewerWindowManager::GetTimeQueryWindow() 
+{
+    if (timeQueryWindow == -1)
+    {
+        //
+        //  Search for an open, empty window.  If none exists,
+        //  create one.
+        //
+        int       winIdx;
+        for (winIdx = 0; winIdx < maxWindows; winIdx++)
+        {
+            if (windows[winIdx] == 0)
+            {
+                winIdx = -1;
+                break;
+            }
+            if (windows[winIdx]->GetPlotList()->GetNumPlots() == 0)
+            {
+                break;
+            }
+        }
+        if (winIdx == -1)
+        {
+            timeQueryWindow = SimpleAddWindow();
+            SetWindowAttributes(timeQueryWindow, false);
+        }
+        else if (winIdx < maxWindows)
+        {
+            timeQueryWindow = winIdx;
+        }
+        else
+        {
+            Error("VisIt could not open a window for Lineout because the "
+                  "maximum number of windows was exceeded.");
+            return NULL;
+        }
+        windows[timeQueryWindow]->SetInteractionMode(NAVIGATE);
+        referenced[timeQueryWindow] = true;
+    }
+    return windows[timeQueryWindow];
+}
+
+
+// ****************************************************************************
+// Method: ViewerWindowManager::ResetTimeQueryDesignation
+//
+// Purpose:    Turns off the timequery designation for the active window
+//             if it was previously set.  This occurs if all the curve plots
+//             have been removed from the window, or the window has been deleted.
+//
+// Programmer: Kathleen Bonnell
+// Creation:   April 1, 2004 
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void ViewerWindowManager::ResetTimeQueryDesignation(int winIndex)
+{
+    if (timeQueryWindow == -1)
+    {
+        return;
+    }
+
+    if ((winIndex == -1 && activeWindow == timeQueryWindow) ||
+         winIndex == timeQueryWindow)
+    {
+        timeQueryWindow = -1;
+    }
+}
+

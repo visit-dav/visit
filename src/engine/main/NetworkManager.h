@@ -18,6 +18,7 @@ class Netnode;
 class NetnodeDB;
 class PickAttributes;
 class QueryAttributes;
+class QueryOverTimeAttributes;
 class MaterialAttributes;
 class VisWindow;
 
@@ -137,6 +138,9 @@ class VisWindow;
 //    Mark C. Miller, Mon Mar 29 14:27:10 PST 200
 //    Added bool for doing 3D annots only to Render method
 //
+//    Kathleen Bonnell, Wed Mar 31 17:23:01 PST 2004 
+//    Added CloneNetwork and AddQueryOverTimeFilter. 
+//
 // ****************************************************************************
 class NetworkManager
 {
@@ -190,8 +194,10 @@ class NetworkManager
 
     void          DumpRenders(void) { dumpRenders = true; };
 
+    void          CloneNetwork(const int id);
+    void          AddQueryOverTimeFilter(const QueryOverTimeAttributes *);
+
  private:
-    void          AdjustWindowAttributes(void);
 
     std::vector<DataNetwork*>   networkCache;
     std::vector<int>            globalCellCounts;
