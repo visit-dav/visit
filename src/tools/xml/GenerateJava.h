@@ -47,6 +47,10 @@ using std::vector;
 //    Jeremy Meredith, Wed Jul  7 17:08:03 PDT 2004
 //    Allow for mdserver-specific code in a plugin's source files.
 //
+//    Jeremy Meredith, Mon Sep  6 16:29:41 PDT 2004
+//    Check if a value's initializer is set before trying to
+//    write the initialization code.
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -851,7 +855,10 @@ class AttsGeneratorString : public virtual String , public virtual AttsGenerator
 
     virtual void WriteSourceSetDefault(ostream &c)
     {
-        c << "    " << name << " = new String(\"" << val << "\");" << endl;
+        if (valueSet)
+            c << "    " << name << " = new String(\"" << val << "\");" << endl;
+        else
+            c << "    " << name << " = new String(\"\");" << endl;
     }
 
     virtual void WriteSourceCopyCode(ostream &c)
@@ -1298,8 +1305,11 @@ class AttsGeneratorEnum : public virtual Enum , public virtual AttsGeneratorFiel
 
     virtual void WriteSourceSetDefault(ostream &c)
     {
-        QString constName(enumType->type + QString("_") + enumType->values[val]);
-        c << "    " << name << " = " << constName.upper() << ";" << endl;
+        if (valueSet)
+        {
+            QString constName(enumType->type + QString("_") + enumType->values[val]);
+            c << "    " << name << " = " << constName.upper() << ";" << endl;
+        }
     }
 
     virtual void WriteSourceWriteAtts(ostream &c, const QString &indent)

@@ -151,6 +151,9 @@
 #    Hank Childs, Thu May  6 09:59:30 PDT 2004
 #    Make the displace operator be required.
 #
+#    Jeremy Meredith, Fri Sep  3 09:47:23 PDT 2004
+#    Added project operator.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -162,8 +165,8 @@ OPTIONAL=Context ConnCompReduce Decimate ExternalSurface \
          MetricThreshold RemoveCells Revolve SiloDump SurfCompPrep Tube
 
 REQUIRED=Box Clip Cone Cylinder Displace IndexSelect InverseGhostZone \
-         Isosurface Isovolume Lineout OnionPeel Reflect Slice SphereSlice \
-         ThreeSlice Threshold Transform
+         Isosurface Isovolume Lineout OnionPeel Project Reflect Slice \
+         SphereSlice ThreeSlice Threshold Transform
 
 SUBDIRS=$(REQUIRED) @OPERATOR_OPTIONAL_DIRS@
 ALLSUBDIRS=$(REQUIRED) $(OPTIONAL)
