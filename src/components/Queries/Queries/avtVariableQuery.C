@@ -310,6 +310,9 @@ avtVariableQuery::PreExecute()
 //    Reworked code so that this query will always return the same results
 //    as Pick.  Also allow for time-varying query.
 //
+//    Hank Childs, Fri Apr  9 16:25:40 PDT 2004
+//    Minimize work done by creating new SIL.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -341,12 +344,14 @@ avtVariableQuery::ApplyFilters(avtDataObject_p inData)
                                  oldSpec->GetRestriction());
 
     }
+    dspec->GetRestriction()->SuspendCorrectnessChecking();
     dspec->GetRestriction()->TurnOnAll();
     for (i = 0; i < silUseSet.size(); i++)
     {
         if (silUseSet[i] == 0)
             dspec->GetRestriction()->TurnOffSet(i);
     }
+    dspec->GetRestriction()->EnableCorrectnessChecking();
 
     intVector dlist;
     dlist.push_back(searchDomain);

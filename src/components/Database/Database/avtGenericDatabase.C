@@ -2078,6 +2078,10 @@ avtGenericDatabase::AddOriginalNodesArray(vtkDataSet *ds, const int domain)
 //    Jeremy Meredith, Wed Oct 15 17:25:48 PDT 2003
 //    Added code to correctly handle clean-zones-only MIR.
 //
+//    Hank Childs, Fri Apr  9 09:15:25 PDT 2004
+//    Use the material object to determine the material indices, not meta-data
+//    from timestep 0.
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -2100,7 +2104,7 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
     // We need to have the material indices as well.
     //
     vector<int> mindex;
-    GetMaterialIndices(var, mnames, mindex);
+    GetMaterialIndices(mat, mnames, mindex);
 
     //
     // Make room for the "mixed" material (i.e. for clean-zones-only)
@@ -2316,35 +2320,33 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
 //      Gets a list of material indices based on a list of material names.
 //
 //  Arguments:
-//      var     The variable we want.
+//      mat     The material we should get the indices from.
 //      mn      The material names.
 //      ml      A place to put the material list.
 //
 //  Programmer: Hank Childs
 //  Creation:   October 5, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Apr  9 09:02:57 PDT 2004
+//    Use the avtMaterial for the correct timestep to get the indices.
+//
 // ****************************************************************************
 
 void
-avtGenericDatabase::GetMaterialIndices(const char *var, vector<string> &mn,
+avtGenericDatabase::GetMaterialIndices(avtMaterial *mat, vector<string> &mn,
                                        vector<int> &ml)
 {
-    // assume material composition is invariant with time, get at time 0
-    avtDatabaseMetaData *md = GetMetaData(0);
-    string meshname = md->MeshForVar(var);
-    string matname  = md->MaterialOnMesh(meshname);
-    const avtMaterialMetaData *mmd = md->GetMaterial(matname);
-    if (mmd == NULL)
-    {
-        EXCEPTION0(ImproperUseException);
-    }
+    const vector<string> &matlist = mat->GetCompleteMaterialList();
+
     int nstr = mn.size();
     for (int i = 0 ; i < nstr ; i++)
     {
         bool foundMatch = false;
-        for (int j = 0 ; j < mmd->numMaterials ; j++)
+        for (int j = 0 ; j < matlist.size() ; j++)
         {
-            if (mn[i] == mmd->materialNames[j])
+            if (mn[i] == matlist[j])
             {
                 ml.push_back(j);
                 foundMatch = true;
@@ -2353,7 +2355,10 @@ avtGenericDatabase::GetMaterialIndices(const char *var, vector<string> &mn,
         }
         if (!foundMatch)
         {
-            EXCEPTION0(ImproperUseException);
+            debug1 << "Was unable to match material " << mn[i] << " against "
+                   << "any material for this dataset.  It is likely that this "
+                   << "material exists at another timestep, but not at this "
+                   << "one." << endl;
         }
     }
 }

@@ -124,6 +124,9 @@ avtTotalSurfaceAreaQuery::VerifyInput()
 //    Kathleen Bonnell, Wed Mar 31 16:13:07 PST 2004 
 //    Added logic for time-varying case. 
 //
+//    Hank Childs, Fri Apr  9 16:25:40 PDT 2004
+//    Minimize work done by creating new SIL.
+//
 // ****************************************************************************
 
 avtDataObject_p 
@@ -160,12 +163,14 @@ avtTotalSurfaceAreaQuery::ApplyFilters(avtDataObject_p inData)
         avtPipelineSpecification_p pspec = 
             new avtPipelineSpecification(newDS, queryAtts.GetPipeIndex());
 
+        newDS->GetRestriction()->SuspendCorrectnessChecking();
         newDS->GetRestriction()->TurnOnAll();
         for (int i = 0; i < silUseSet.size(); i++)
         {
             if (silUseSet[i] == 0)
                 newDS->GetRestriction()->TurnOffSet(i);
         }
+        newDS->GetRestriction()->EnableCorrectnessChecking();
 
         avtDataObject_p dob;
         CopyTo(dob, inData);

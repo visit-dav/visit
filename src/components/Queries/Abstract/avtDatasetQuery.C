@@ -225,6 +225,9 @@ avtDatasetQuery::PostExecute()
 //    Kathleen Bonnell, Wed Mar 31 15:52:54 PST 2004
 //    Allow for time-varying case. 
 //
+//    Hank Childs, Fri Apr  9 16:25:40 PDT 2004
+//    Minimize work done by creating new SIL.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -247,12 +250,14 @@ avtDatasetQuery::ApplyFilters(avtDataObject_p dob)
 
         if (!OriginalData()) 
         {
+            newDS->GetRestriction()->SuspendCorrectnessChecking();
             newDS->GetRestriction()->TurnOnAll();
             for (int i = 0; i < silUseSet.size(); i++)
             {
                if (silUseSet[i] == 0)
                    newDS->GetRestriction()->TurnOffSet(i);
-           }
+            }
+            newDS->GetRestriction()->EnableCorrectnessChecking();
         }
         avtPipelineSpecification_p pspec = 
             new avtPipelineSpecification(newDS, queryAtts.GetPipeIndex());

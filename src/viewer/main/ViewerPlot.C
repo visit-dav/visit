@@ -4303,6 +4303,8 @@ ViewerPlot::GetVariableCentering() const
 //  Creation:   March 30, 2004
 //
 //  Modifications:
+//    Brad Whitlock, Fri Apr 9 09:05:37 PDT 2004
+//    Made it use cacheIndex.
 //
 // ****************************************************************************
 
@@ -4310,6 +4312,6 @@ void
 ViewerPlot::UpdateDataExtents()
 {
     dataExtents.clear();
-    plotList[state]->GetDataExtents(dataExtents);
+    plotList[cacheIndex]->GetDataExtents(dataExtents);
 }
 

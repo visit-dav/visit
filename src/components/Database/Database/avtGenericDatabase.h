@@ -175,6 +175,9 @@ class     PickVarInfo;
 //    Mark C. Miller, Tue Mar 16 14:40:19 PST 2004
 //    Added timestep argument to PopulateIOInformation
 //
+//    Hank Childs, Fri Apr  9 09:02:57 PDT 2004
+//    Calculate material indices directly from the material for that timestep.
+//
 // ****************************************************************************
 
 class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
@@ -266,7 +269,7 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
                                       int, bool, bool&, bool&, bool);
     avtMaterial               *GetMaterial(int, const char *, int);
     avtSpecies                *GetSpecies(int, const char *, int);
-    void                       GetMaterialIndices(const char *,
+    void                       GetMaterialIndices(avtMaterial *,
                                                   std::vector<std::string> &,
                                                   std::vector<int> &);
 

@@ -74,6 +74,9 @@ avtWeightedVariableSummationQuery::~avtWeightedVariableSummationQuery()
 //    Allow time varying data to access database, so it can consider more than
 //    one timestep.
 //
+//    Hank Childs, Fri Apr  9 16:25:40 PDT 2004
+//    Minimize work done by creating new SIL.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -137,12 +140,14 @@ avtWeightedVariableSummationQuery::ApplyFilters(avtDataObject_p inData)
                            avtDataSpecification(oldSpec->GetVariable(),
                            queryAtts.GetTimeStep(), oldSpec->GetRestriction());
 
+        newDS->GetRestriction()->SuspendCorrectnessChecking();
         newDS->GetRestriction()->TurnOnAll();
         for (int i = 0; i < silUseSet.size(); i++)
         {
             if (silUseSet[i] == 0)
                 newDS->GetRestriction()->TurnOffSet(i);
         }
+        newDS->GetRestriction()->EnableCorrectnessChecking();
 
         avtPipelineSpecification_p pspec =
             new avtPipelineSpecification(newDS, queryAtts.GetPipeIndex());
