@@ -380,6 +380,11 @@ avtSIL::AddSet(avtSILSet_p s)
 //  Programmer: Hank Childs
 //  Creation:   November 14, 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Wed Aug  6 22:22:31 PDT 2003
+//    Fix some bugs with multiple SIL matrices.
+//
 // ****************************************************************************
 
 void
@@ -387,8 +392,8 @@ avtSIL::ReAddMatrix(avtSILMatrix_p m)
 {
     haveAddedMatrices = true;
     m->SetSIL(this);
-    m->SetStartSet(sets.size());
-    m->SetStartCollection(collections.size());
+    m->SetStartSet(GetNumSets());
+    m->SetStartCollection(GetNumCollections());
     matrices.push_back(m);
 
     // Since we are re-adding the matrix, all of the sets already know 
@@ -405,6 +410,11 @@ avtSIL::ReAddMatrix(avtSILMatrix_p m)
 //  Programmer: Hank Childs
 //  Creation:   November 14, 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Wed Aug  6 22:22:31 PDT 2003
+//    Fix some bugs with multiple SIL matrices.
+//
 // ****************************************************************************
 
 void
@@ -412,12 +422,12 @@ avtSIL::AddMatrix(avtSILMatrix_p m)
 {
     int  i;
 
-    int coll_count = collections.size();
+    int coll_count = GetNumCollections();
     int matrix_index = matrices.size();
 
     m->SetSIL(this);
-    m->SetStartSet(sets.size());
-    m->SetStartCollection(coll_count);
+    m->SetStartSet(GetNumSets());
+    m->SetStartCollection(GetNumCollections());
     matrices.push_back(m);
 
     const vector<int> &set1 = m->GetSet1();
