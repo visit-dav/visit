@@ -3932,6 +3932,7 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawSurface2()
         glDisable(GL_POLYGON_OFFSET_FILL);
 #endif
     }
+
 }
 
 
@@ -4052,6 +4053,10 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawEdges()
 //
 //    Kathleen Bonnell, Thu Sep  2 16:15:35 PDT 2004 
 //    Added code to select the glFunction depending upon Representation.
+//
+//    Mark C. Miller, Thu Nov 18 21:25:36 PST 2004
+//    Made the code that sets glDepthRange conditionally compiled for Mesa
+//    only. It was causing problems in hardware
 //
 // ****************************************************************************
 
@@ -4230,13 +4235,15 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawEdges2()
     // a trick the VTK folks do in vtkPolyDataMapper, and adjust the
     // depth range of the scene using glDepthRange. We then undo this
     // adjustment when we exit this routine. In short, we move the
-    // maximum Z value toward the viewer 0.01% of the total range in Z.
+    // maximum Z value toward the viewer 0.02% of the total range in Z.
     //
+#ifdef AVT_MESA_SURFACE_AND_WIREFRAME_RENDERER_H
     double savedDepthRange[2];
     glGetDoublev(GL_DEPTH_RANGE, savedDepthRange);
     double dZ = savedDepthRange[1] - savedDepthRange[0];
-    double eps = dZ / 10000.0;
+    double eps = dZ / 5000.0;
     glDepthRange(savedDepthRange[0],savedDepthRange[1]-eps);
+#endif
 
     aPrim = input->GetVerts();
     aGlFunction = glFunction[0]; 
@@ -4281,7 +4288,9 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawEdges2()
     }
 
     glEnable(GL_LIGHTING);
+#ifdef AVT_MESA_SURFACE_AND_WIREFRAME_RENDERER_H
     glDepthRange(savedDepthRange[0],savedDepthRange[1]);
+#endif
 } // DrawEdges
 
 
