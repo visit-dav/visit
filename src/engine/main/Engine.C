@@ -834,12 +834,13 @@ Engine::AlarmHandler(int signal)
 {
     debug1 << "ENGINE exited due to an inactivity timeout of "
            << Engine::Instance()->timeout << " minutes." << endl;
+
+    Init::Finalize();
 #ifdef PARALLEL
     PAR_Exit();
-#else
-    exit(0);
 #endif
-    Init::Finalize();
+    exit(0);
+
 }
 
 // ****************************************************************************

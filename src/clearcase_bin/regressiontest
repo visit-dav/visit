@@ -105,6 +105,9 @@
 #    Hank Childs, Sat Mar  5 12:33:28 PST 2005
 #    Add skips for dynamic load balancing mode.  Run the DLB mode every Sunday.
 #
+#    Mark C. Miller Mon Mar 21 18:57:08 PST 2005
+#    Added skips for purify mode
+#
 # ----------------------------------------------------------------------------
 
 # list of users who want email every night with the log file
@@ -188,6 +191,7 @@ LD_LIBRARY_PATH=/usr/local/lib
 export LD_LIBRARY_PATH
 env CXXFLAGS="-g" ./configure --enable-parallel 1>> buildlog 2>&1
 rm -f plugins/*/*.so
+(cd data; clearmake clean)
 clearmake -J 2 1>> buildlog 2>&1
 error=$?
 
@@ -237,7 +241,9 @@ fi
 # set list of tests/modes to skip
 #skipList="dummy_mode:tests/dummy_category/dummy_file.py"
 skipList="dlb:tests/databases/global_node_ids.py \
-          dlb:tests/queries/pick.py"
+          dlb:tests/queries/pick.py \
+	  serial,purify:tests/databases/global_node_ids.py \
+	  serial,purify:tests/queries/pick.py"
 
 # run the test(s)
 error=0
