@@ -57,6 +57,9 @@
 //    ClearQueries, ClearAllQueries. Removed attachmentPoint/secondaryPoint
 //    and their Set methods.
 //    
+//    Kathleen Bonnell, Tue Jul  8 20:02:21 PDT 2003 
+//    Add method ReAddToWindow. 
+//    
 // ****************************************************************************
 
 class VISWINDOW_API VisWinQuery : public VisWinColleague
@@ -83,6 +86,7 @@ class VISWINDOW_API VisWinQuery : public VisWinColleague
 
     virtual void                  FullFrameOn(const double, const int);
     virtual void                  FullFrameOff(void);
+    virtual void                  ReAddToWindow(void);
 
   protected:
     std::vector< avtPickActor_p >      pickPoints;

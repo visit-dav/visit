@@ -84,6 +84,8 @@ avtBOVFileFormat::avtBOVFileFormat(const char *fname)
     dimensions[2] = 1.;
     var_brick_min = NULL;
     var_brick_max = NULL;
+    littleEndian = false;
+    hasBoundaries = false;
 
     ReadTOC();
 
@@ -222,24 +224,51 @@ avtBOVFileFormat::GetMesh(int dom, const char *meshname)
     // Create the VTK construct.
     //
     vtkRectilinearGrid *rv = vtkRectilinearGrid::New();
-    int dims[3] = { bricklet_size[0], bricklet_size[1], bricklet_size[2] };
-    rv->SetDimensions(dims);
 
     vtkFloatArray *x = vtkFloatArray::New();
-    x->SetNumberOfTuples(bricklet_size[0]);
-    for (i = 0 ; i < bricklet_size[0] ; i++)
-        x->SetTuple1(i, x_start + i * (x_stop-x_start) / (bricklet_size[0]-1));
+    int dx = bricklet_size[0];
+    if (hasBoundaries)
+    {
+        dx = bricklet_size[0]+2;
+        if (x_off == 0)
+            dx -= 1;
+        if (x_off >= nx-1)
+            dx -= 1;
+    }
+    x->SetNumberOfTuples(dx);
+    for (i = 0 ; i < dx ; i++)
+        x->SetTuple1(i, x_start + i * (x_stop-x_start) / (dx-1));
 
     vtkFloatArray *y = vtkFloatArray::New();
-    y->SetNumberOfTuples(bricklet_size[1]);
-    for (i = 0 ; i < bricklet_size[1] ; i++)
-        y->SetTuple1(i, y_start + i * (y_stop-y_start) / (bricklet_size[1]-1));
+    int dy = bricklet_size[1];
+    if (hasBoundaries)
+    {
+        dy = bricklet_size[1]+2;
+        if (y_off == 0)
+            dy -= 1;
+        if (y_off >= ny-1)
+            dy -= 1;
+    }
+    y->SetNumberOfTuples(dy);
+    for (i = 0 ; i < dy ; i++)
+        y->SetTuple1(i, y_start + i * (y_stop-y_start) / (dy-1));
 
     vtkFloatArray *z = vtkFloatArray::New();
-    z->SetNumberOfTuples(bricklet_size[2]);
-    for (i = 0 ; i < bricklet_size[2] ; i++)
-        z->SetTuple1(i, z_start + i * (z_stop-z_start) / (bricklet_size[2]-1));
+    int dz = bricklet_size[2];
+    if (hasBoundaries)
+    {
+        dz = bricklet_size[2]+2;
+        if (z_off == 0)
+            dz -= 1;
+        if (z_off >= nz-1)
+            dz -= 1;
+    }
+    z->SetNumberOfTuples(dz);
+    for (i = 0 ; i < dz ; i++)
+        z->SetTuple1(i, z_start + i * (z_stop-z_start) / (dz-1));
 
+    int dims[3] = { dx, dy, dz };
+    rv->SetDimensions(dims);
     rv->SetXCoordinates(x);
     rv->SetYCoordinates(y);
     rv->SetZCoordinates(z);
@@ -262,6 +291,21 @@ avtBOVFileFormat::GetMesh(int dom, const char *meshname)
 //
 // ****************************************************************************
 
+// FROM FConvert.C
+static int
+float32_Reverse_Endian(float val, unsigned char *outbuf)
+{
+    unsigned char *data = ((unsigned char *)&val) + 3;
+    unsigned char *out = outbuf;
+ 
+    *out++ = *data--;
+    *out++ = *data--;
+    *out++ = *data--;
+    *out = *data;
+ 
+    return 4;
+}
+
 vtkDataArray *
 avtBOVFileFormat::GetVar(int dom, const char *var)
 {
@@ -273,6 +317,10 @@ avtBOVFileFormat::GetVar(int dom, const char *var)
     int nx = full_size[0] / bricklet_size[0];
     int ny = full_size[1] / bricklet_size[1];
     int nz = full_size[2] / bricklet_size[2];
+
+    int x_off = dom % nx;
+    int y_off = (dom % (nx*ny)) / nx;
+    int z_off = dom / (nx*ny);
 
     int nbricks = nx*ny*nz;
 
@@ -292,11 +340,54 @@ avtBOVFileFormat::GetVar(int dom, const char *var)
         EXCEPTION1(InvalidFilesException, qual_filename);
     }
 
-    int nvals = bricklet_size[0] * bricklet_size[1] * bricklet_size[2];
     vtkFloatArray *rv = vtkFloatArray::New();
-    rv->SetNumberOfTuples(nvals);
-    float *buff = (float *) rv->GetVoidPointer(0);
-    gzread(f_handle, buff, nvals*sizeof(float));
+    if (hasBoundaries)
+    {
+        int dx = bricklet_size[0] + 2;
+        int x_start = (x_off == 0 ? 1 : 0);
+        int x_stop  = (x_off >= nx-1 ? dx-1 : dx);
+        int dy = bricklet_size[1] + 2;
+        int y_start = (y_off == 0 ? 1 : 0);
+        int y_stop  = (y_off >= ny-1 ? dy-1 : dy);
+        int dz = bricklet_size[2] + 2;
+        int z_start = (z_off == 0 ? 1 : 0);
+        int z_stop  = (z_off >= nz-1 ? dz-1 : dz);
+
+        int n_real_vals = (x_stop-x_start)*(y_stop-y_start)*(z_stop-z_start);
+        rv->SetNumberOfTuples(n_real_vals);
+        float *buff = (float *) rv->GetVoidPointer(0);
+
+        int total_vals = (dx*dy*dz);
+        float *buff2 = new float[total_vals];
+        gzread(f_handle, buff2, total_vals*sizeof(float));
+        int ptId = 0;
+        for (int i = z_start ; i < z_stop ; i++)
+            for (int j = y_start ; j < y_stop ; j++)
+                for (int k = x_start ; k < x_stop ; k++)
+                {
+                    int index = i*dx*dy + j*dx + k;
+                    buff[ptId++] = buff2[index];
+                }
+    }
+    else
+    {
+        int nvals = bricklet_size[0] * bricklet_size[1] * bricklet_size[2];
+        rv->SetNumberOfTuples(nvals);
+        float *buff = (float *) rv->GetVoidPointer(0);
+        gzread(f_handle, buff, nvals*sizeof(float));
+    }
+
+    if (littleEndian)
+    {
+        int nvals = rv->GetNumberOfTuples();
+        float *buff = (float *) rv->GetVoidPointer(0);
+        for (int i = 0 ; i < nvals ; i++)
+        {
+            float tmp;
+            float32_Reverse_Endian(buff[i], (unsigned char *) &tmp);
+            buff[i] = tmp;
+        }
+    }
 
     return rv;
 }
@@ -490,6 +581,20 @@ avtBOVFileFormat::ReadTOC(void)
                 delete [] varname;
             varname = new char[len+1];
             strcpy(varname, line);
+        }
+        else if (strcmp(line, "HAS_BOUNDARY:") == 0)
+        {
+            line += strlen("HAS_BOUNDARY:") + 1;
+            if (strcmp(line, "true") == 0)
+            {
+                hasBoundaries = true;
+            }
+        }
+        else if (strcmp(line, "DATA_ENDIAN:") == 0)
+        {
+            line += strlen("DATA_ENDIAN:") + 1;
+            if (strcmp(line, "LITTLE") == 0)
+                littleEndian = true;
         }
         else if (strcmp(line, "VARIABLE_MIN:") == 0)
         {

@@ -66,6 +66,11 @@
 #include <VisWindow.h>
 #include <PlotPluginManager.h>
 #include <PlotPluginInfo.h>
+#ifdef PARALLEL
+#include <mpi.h>
+#endif
+
+static double RenderBalance(int numTrianglesIHave);
 
 // ****************************************************************************
 //  Method: NetworkManager default constructor
@@ -1316,7 +1321,7 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer)
        avtDataObjectWriter_p writer;
 
        // put all the plot objects into the VisWindow
-       viswin->DisableUpdates();
+       viswin->SetScalableRendering(false);
        for (int i = 0; i < plotIds.size(); i++)
        {
           // get the network output as we would normally
@@ -1331,20 +1336,19 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer)
           viswin->AddPlot(anActor);
        }
 
-       debug5 << "Starting render of " << viswin->GetNumTriangles()
-              << " triangles" << endl;
+       int numTriangles = viswin->GetNumTriangles();
+       debug1 << "Rendering " << numTriangles << " triangles. " 
+              << "Balanced speedup = " << RenderBalance(numTriangles)
+              << "x" << endl;
 
-       // render the image and capture it
-       viswin->EnableUpdates();
+       // render the image and capture it. Relies upon explicit render
        avtImage_p theImage = viswin->ScreenCapture(true);
-       viswin->DisableUpdates();
        viswin->ClearPlots();
 
        // do the parallel composite using a 1 stage pipeline
        int imageRows, imageCols;
        viswin->GetSize(imageCols, imageRows);
        avtWholeImageCompositer imageCompositer;
-       //imageCompositer.SetChunkSize(1000);
        imageCompositer.SetOutputImageSize(imageRows, imageCols);
        imageCompositer.AddImageInput(theImage, 0, 0);
        imageCompositer.SetShouldOutputZBuffer(getZBuffer);
@@ -1435,6 +1439,9 @@ NetworkManager::SetWindowAttributes(const WindowAttributes &atts)
         const ViewAttributes& viewAtts = atts.GetView();
         avtView3D view3d;
         view3d.SetFromViewAttributes(&viewAtts);
+        view3d.imagePan[0] = viewAtts.GetImagePan()[0];
+        view3d.imagePan[1] = viewAtts.GetImagePan()[1];
+        view3d.imageZoom = viewAtts.GetImageZoom();
         viswin->SetView3D(view3d);
     }
 
@@ -1663,4 +1670,52 @@ NetworkManager::Query(const int id, QueryAttributes *qa)
         RETHROW;
     }
     ENDTRY
+}
+
+// ****************************************************************************
+//  Function:  RenderBalance 
+//
+//  Purpose: compute rendering balance of worst case (e.g. max triangle count
+//           over average triangle count. Valid result computed only at root.
+//
+//  Argument: number of triangles on calling processor
+//
+//  Programmer:  Mark C. Miller 
+//  Creation:    24May03 
+// ****************************************************************************
+static double
+RenderBalance(int numTrianglesIHave)
+{
+   double balance = 1.0;
+
+#ifdef PARALLEL
+   int rank, size, *triCounts;
+
+   balance = -1.0;
+   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+   MPI_Comm_size(MPI_COMM_WORLD, &size);
+   if (rank == 0)
+      triCounts = new int [size]; 
+   MPI_Gather(&numTrianglesIHave, 1, MPI_INT, triCounts, 1, MPI_INT, 0, MPI_COMM_WORLD);
+   if (rank == 0)
+   {  int i, maxTriangles, minTriangles, totTriangles, avgTriangles;
+      minTriangles = triCounts[0];
+      maxTriangles = minTriangles;
+      totTriangles = 0;
+      for (i = 0; i < size; i++)
+      {
+         if (triCounts[i] < minTriangles)
+            minTriangles = triCounts[i];
+         if (triCounts[i] > maxTriangles)
+            maxTriangles = triCounts[i];
+         totTriangles += triCounts[i];
+      }
+      avgTriangles = totTriangles / size;
+      if (avgTriangles > 0)
+         balance = (double) maxTriangles / (double) avgTriangles;
+      delete [] triCounts;
+   }
+#endif
+
+   return balance;
 }

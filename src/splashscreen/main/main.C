@@ -41,6 +41,7 @@ main(int argc, char **argv)
 #if defined(_WIN32)
     // Initialize error logging.
     Init::Initialize(argc, argv);
+    Init::SetComponentName("splashscreen");
 #endif
 
     TRY

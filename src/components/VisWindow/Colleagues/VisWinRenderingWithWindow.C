@@ -74,7 +74,7 @@ VisWinRenderingWithWindow::RealizeRenderWindow(void)
 }
 
 // ****************************************************************************
-// Method: VisWinRenderingWithWindow::GetSize
+// Method: VisWinRenderingWithWindow::GetWindowSize
 //
 // Purpose: 
 //   Return the size of the vtkQtRenderWindow instead of getting the size
@@ -89,11 +89,14 @@ VisWinRenderingWithWindow::RealizeRenderWindow(void)
 // Creation:   Wed May 21 12:13:25 PDT 2003
 //
 // Modifications:
+//
+//    Mark C. Miller, 07Jul03
+//    Renamed to GetWindowSize
 //   
 // ****************************************************************************
 
 void
-VisWinRenderingWithWindow::GetSize(int &w, int &h)
+VisWinRenderingWithWindow::GetWindowSize(int &w, int &h)
 {
     w = renWin->width();
     h = renWin->height();

@@ -85,12 +85,28 @@ avtDataRepresentation::avtDataRepresentation()
 //
 // ****************************************************************************
 
-avtDataRepresentation::avtDataRepresentation(vtkDataSet *d, int dom, string s)
+avtDataRepresentation::avtDataRepresentation(vtkDataSet *d, int dom, string s,
+                                             bool dontCopyData)
 {
-    asVTK        = d;
-    if (asVTK != NULL)
+    if (dontCopyData)
     {
-        asVTK->Register(NULL);
+       // build the points object (not a vtkDataSet object)
+       vtkPoints           *dummyPoints = vtkPoints::New();
+       vtkUnstructuredGrid *dummyGrid   = vtkUnstructuredGrid::New();
+       dummyPoints->SetNumberOfPoints(0);
+       dummyGrid->SetPoints(dummyPoints);
+       asVTK = dummyGrid;
+       asVTK->Register(NULL);
+       dummyPoints->Delete();
+       dummyGrid->Delete();
+    }
+    else
+    {
+       asVTK        = d;
+       if (asVTK != NULL)
+       {
+           asVTK->Register(NULL);
+       }
     }
     asChar       = NULL;
     asCharLength = 0;

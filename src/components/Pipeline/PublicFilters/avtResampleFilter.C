@@ -323,6 +323,9 @@ avtResampleFilter::BypassResample(void)
 //    Brad Whitlock, Thu Apr 4 14:49:01 PST 2002
 //    Changed CopyTo so it is an inline template function.
 //
+//    Hank Childs, Mon Jul  7 22:31:00 PDT 2003
+//    Copy over whether or not an error occurred in resampling.
+//
 // ****************************************************************************
 
 void
@@ -390,6 +393,13 @@ avtResampleFilter::ResampleInput(void)
     //
     avtSamplePoints_p samples = extractor.GetTypedOutput();
     samples->Update(GetGeneralPipelineSpecification());
+
+    if (samples->GetInfo().GetValidity().HasErrorOccurred())
+    {
+        GetOutput()->GetInfo().GetValidity().ErrorOccurred();
+        GetOutput()->GetInfo().GetValidity().SetErrorMessage(
+                          samples->GetInfo().GetValidity().GetErrorMessage());
+    }
 
     //
     // Create a rectilinear dataset that is stretched according to the 

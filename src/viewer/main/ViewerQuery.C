@@ -910,6 +910,10 @@ ViewerQuery::ReCreateLineout()
 //  Programmer: Kathleen Bonnell 
 //  Creation:   March 4, 2003
 //
+//  Modifications:
+//    Kathleen Bonnell, Tue Jul  8 20:27:53 PDT 2003 
+//    Added conversions between 3d and 2d.
+//
 // ****************************************************************************
 
 bool
@@ -957,16 +961,58 @@ ViewerQuery::UpdateLineFromSlice(PlaneAttributes *newPlaneAtts)
     avtVector u2, v2, w2;
     CreateBasis(P2N, P2Up, u2, v2, w2);
 
-    avtMatrix M1, M2, M3;
+    avtMatrix M1, M2, M3, C;
+    int spaceT = 0;
+    if (planeAtts->GetThreeSpace() && !newPlaneAtts->GetThreeSpace())
+    {
+        // convert 3d to 2d
+        avtVector zero(0., 0., 0.);
+        avtMatrix C1, C2;
+        C1.MakeFrameToCartesianConversion(u2, v2, w2, zero);
 
-    // Create conversion between Cartesian and plane1 frame.
-    M1.MakeCartesianToFrameConversion(u1, v1, w1, o1);
+        C1.Inverse();
+        C2.MakeScale(1, 1, 0);
 
-    // Create conversion between plane2 and Cartesian frame.
-    M2.MakeFrameToCartesianConversion(u2, v2, w2, o2);
+        C = C2 * C1;
+        spaceT = 1;
+    }
+    else if (!planeAtts->GetThreeSpace() && newPlaneAtts->GetThreeSpace())
+    {
+        // convert 2d to 3d
+        avtVector zero(0., 0., 0.);
+        avtMatrix C1, C2, C3;
+        C1.MakeFrameToCartesianConversion(u1, v1, w1, zero);
+        C2.MakeCartesianToFrameConversion(u1, v1, w1, zero);
+        avtVector zdim = C1 * o1;
+        zdim.x = 0; 
+        zdim.y = 0; 
+        zdim = C2 * zdim;
+        C3.MakeTranslate(zdim.x, zdim.y, zdim.z);
+        C = C3 * C1;
+        spaceT = 2;
+    }
 
-    // Create composition matrix.
-    M3 = M2 * M1;
+    if ((!planeAtts->FieldsEqual(0, newPlaneAtts)) ||
+        (!planeAtts->FieldsEqual(1, newPlaneAtts)) ||
+        (!planeAtts->FieldsEqual(2, newPlaneAtts))) 
+    {
+        // Create conversion between Cartesian and plane1 frame.
+        M1.MakeCartesianToFrameConversion(u1, v1, w1, o1);
+
+        // Create conversion between plane2 and Cartesian frame.
+        M2.MakeFrameToCartesianConversion(u2, v2, w2, o2);
+        // Create composition matrix.
+        switch (spaceT)
+        {
+            case 0 : M3 = M2 * M1;     break; // no dimensionality change
+            case 1 : M3 = C * M2 * M1; break; // converted from 3d to 2d
+            case 2 : M3 = M2 * M1 * C; break; // converted from 2d to 3d
+        }
+    }
+    else
+    {
+        M3 = C;
+    }
 
     // Convert points. 
     pt1 = M3 * pt1;
@@ -983,6 +1029,7 @@ ViewerQuery::UpdateLineFromSlice(PlaneAttributes *newPlaneAtts)
 
     // Update the refline. 
     originatingWindow->UpdateQuery(lineAtts);
+
     return true;
 }
 
@@ -1020,6 +1067,3 @@ CreateBasis(const avtVector &N, const avtVector &UP,
    }
    v = (w % u).normalized();
 }
-
-
-

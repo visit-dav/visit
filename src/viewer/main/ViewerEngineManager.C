@@ -1113,8 +1113,6 @@ ViewerEngineManager::GetDataObjectReader(ViewerPlot *const plot,
 //      of the plots specified in the list of plotIds
 //
 //  Arguments:
-//      plot    The plot for which to create the data set.
-//      frame   The frame for which to create the data set.
 //
 //  Returns:    A pointer to the avt data object reader.
 //

@@ -5,5 +5,7 @@
     <Field name="upAxis" type="doubleArray" length="3"> 0. 1. 0. </Field>
     <Field name="haveRadius" type="bool">false</Field>
     <Field name="radius" type="double" >1 </Field>
+    <Field name="threeSpace" label="threeSpace" type="bool" internal="true"> false 
+    </Field>
   </Attribute>
 

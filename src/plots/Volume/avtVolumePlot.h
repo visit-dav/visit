@@ -65,6 +65,7 @@ avtVolumePlot : public avtVolumeDataPlot
 
     // This is a hack to do software rendering.
     void                SetId(const std::string &);
+    virtual bool        CanCacheWriterExternally(void) { return false; }
 
   protected:
     VolumeAttributes         atts;

@@ -45,6 +45,7 @@ main(int argc, char *argv[])
 
     // Initialize error logging.
     Init::Initialize(argc, argv);
+    Init::SetComponentName("mdserver");
 
     MDServerProxy *mdserver = new MDServerProxy();
     if(argc > 1)

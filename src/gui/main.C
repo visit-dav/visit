@@ -52,6 +52,7 @@ main(int argc, char **argv)
     {
         // Initialize error logging.
         Init::Initialize(argc, argv, 0, 1, false);
+        Init::SetComponentName("gui");
         // Load plugins.
         PlotPluginManager::Initialize(PlotPluginManager::GUI);
         OperatorPluginManager::Initialize(OperatorPluginManager::GUI);

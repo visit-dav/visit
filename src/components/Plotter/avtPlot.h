@@ -162,6 +162,7 @@ class PLOTTER_API avtPlot
     avtDataObject_p            GetIntermediateDataObject(void) 
                                   { return intermediateDataObject; };
     virtual avtMapper         *GetMapper(void) = 0;
+    virtual bool               CanCacheWriterExternally(void) { return true; } 
 
   protected:
     bool                       needsRecalculation;

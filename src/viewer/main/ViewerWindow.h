@@ -27,9 +27,18 @@ class ViewerPopupMenu;
 class ViewerToolbar;
 class AnimationAttributes;
 class AnnotationAttributes;
+class AttributeSubject;
 class AttributeSubjectMap;
 class avtToolInterface;
 class LightList;
+
+typedef struct ExternalRenderRequestInfo {
+   std::vector<const char*>              pluginIDsList;
+   std::vector<std::string>              hostsList;
+   std::vector<int>                      plotIdsList;
+   std::vector<const AttributeSubject *> attsList;
+   WindowAttributes                      winAtts;
+};
 
 // ****************************************************************************
 //  Class: ViewerWindow
@@ -234,6 +243,9 @@ class LightList;
 //    Brad Whitlock, Mon Jun 30 13:03:48 PST 2003
 //    Added CreateNode, SetFromNode.
 //
+//    Mark C. Miller, 07Jul03
+//    Added GetWindowSize method
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerWindow
@@ -254,6 +266,7 @@ public:
 
     void SetSize(const int width, const int height);
     void GetSize(int &width, int &height);
+    void GetWindowSize(int &width, int &height);
     void SetLocation(const int x, const int y);
     void GetLocation(int &x, int &y);
     void SetTitle(const char *title);
@@ -395,7 +408,7 @@ public:
     int  GetNumTriangles() const;
     void SetNotifyForEachRender(bool val);
     bool GetNotifyForEachRender() const;
-    void SetScalableRendering(bool mode);
+    void SetScalableRendering(bool mode, bool update = false);
     bool GetScalableRendering() const;
     void SetScalableThreshold(int threshold);
     int  GetScalableThreshold() const;
@@ -433,6 +446,8 @@ private:
     ViewAttributes      *curView;
     AttributeSubjectMap *view2DAtts;
     AttributeSubjectMap *view3DAtts;
+
+    ExternalRenderRequestInfo lastExternalRenderRequest;
 
     bool            cameraView;
     bool            maintainView;

@@ -215,6 +215,9 @@ avtVolumeFilter::GetOutput(void)
 //    Kathleen Bonnell, Wed Oct 23 13:27:56 PDT 2002  
 //    Set queryable to false for the image and dataset object's validity. 
 //
+//    Hank Childs, Mon Jul  7 22:24:26 PDT 2003
+//    If an error occurred, pass that message on.
+//
 // ****************************************************************************
 
 void
@@ -449,6 +452,13 @@ avtVolumeFilter::Execute(void)
         dob->SetSource(NULL);
         avtDataObject *dobp = *dob;
         dataset->Copy(dobp);
+        if (dob->GetInfo().GetValidity().HasErrorOccurred())
+        {
+            dataset->GetInfo().GetValidity().ErrorOccurred();
+            dataset->GetInfo().GetValidity().SetErrorMessage(
+                               dob->GetInfo().GetValidity().GetErrorMessage());
+        }
+            
         dataset->GetInfo().GetValidity().SetQueryable(false);
     }
 }
@@ -470,6 +480,9 @@ avtVolumeFilter::Execute(void)
 //  Modifications:
 //    Eric Brugger, Tue Jun 10 15:59:11 PDT 2003
 //    I renamed camera to view normal in the view attributes.
+//
+//    Hank Childs, Tue Jul  8 22:43:39 PDT 2003
+//    Copy over image zoom, pan.
 //
 // ****************************************************************************
 
@@ -494,6 +507,9 @@ CreateViewInfoFromViewAttributes(avtViewInfo &vi, const ViewAttributes &view)
     view3d.nearPlane = view.GetNearPlane();
     view3d.farPlane = view.GetFarPlane();
     view3d.perspective = view.GetPerspective();
+    view3d.imagePan[0] = view.GetImagePan()[0];
+    view3d.imagePan[1] = view.GetImagePan()[1];
+    view3d.imageZoom = view.GetImageZoom();
 
     //
     // Now View3D can be converted directly into avtViewInfo.

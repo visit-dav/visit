@@ -75,6 +75,7 @@ main(int argc, char *argv[])
 {
     // Initialize error logging
     Init::Initialize(argc, argv);
+    Init::SetComponentName("mdserver");
     InitVTK::Initialize();
 
     bool runApp = ProcessCommandLine(argc, argv);

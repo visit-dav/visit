@@ -18,6 +18,8 @@
 
 static void RemovePrependedDirs(const char *, char *); 
 static void Finalize(void);
+static char executableName[256];
+static char componentName[256];
 
 // ****************************************************************************
 //  Function: striparg
@@ -164,6 +166,8 @@ Init::Initialize(int &argc, char *argv[], int r, int n, bool strip)
 
     char progname_wo_dir[256];
     RemovePrependedDirs(argv[0], progname_wo_dir);
+    strcpy(executableName, progname_wo_dir);
+    strcpy(componentName, progname_wo_dir);
     char progname[256];
     if (n > 1)
     {
@@ -204,6 +208,53 @@ Init::Initialize(int &argc, char *argv[], int r, int n, bool strip)
 
     // Register a function to be called when the application quits.
     atexit(Finalize);
+}
+
+// ****************************************************************************
+//  Function: Init::SetComponentName
+//
+//  Purpose: Sets the name of the component
+//
+// ****************************************************************************
+
+void
+Init::SetComponentName(const char *cname)
+{
+   int len;
+
+   if (cname != 0 && (len = strlen(cname) > 0))
+   {
+      len = len < sizeof(componentName) ? len : sizeof(componentName) - 1;
+      strncpy(componentName, cname, len);
+      componentName[len]='\0';
+   }
+}
+
+// ****************************************************************************
+//  Function: Init::GetComponentName
+//
+//  Purpose: Gets the name of the component. Defaults to name of the
+//  executable of it was not set.
+//
+// ****************************************************************************
+
+const char *
+Init::GetComponentName(void)
+{
+   return (const char *) componentName;
+}
+
+// ****************************************************************************
+//  Function: Init::GetExecutableName
+//
+//  Purpose: Gets the name of the executable 
+//
+// ****************************************************************************
+
+const char *
+Init::GetExecutableName(void)
+{
+   return (const char *) executableName;
 }
 
 // ****************************************************************************

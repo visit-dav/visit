@@ -409,12 +409,25 @@ LoadBalancer::Reduce(avtPipelineSpecification_p input)
         }
         else if (scheme == LOAD_BALANCE_RANDOM_ASSIGNMENT)
         {
-            srand(0); // Set the seed to be the same on all procs.
-            for (int j = 0 ; j < list.size() ; j++)
+            // all procs randomly jumble the list of domain ids
+            // all procs compute same jumbled list due to same seed
+            // [ which won't be true on a heterogeneous platform ]
+            int j;
+            vector<int> jumbledList = list;
+            srand(0xDeadBeef);
+            for (j = 0 ; j < list.size() * 5; j++)
             {
-                int proc = rand() % nProcs;
-                if (proc == rank)
-                    mylist.push_back(list[j]);
+               int i1 = rand() % list.size();
+               int i2 = rand() % list.size();
+               int tmp = jumbledList[i1];
+               jumbledList[i1] = jumbledList[i2];
+               jumbledList[i2] = tmp;
+            }
+            // now, do round-robin assignment from the jumbled list
+            for (j = 0 ; j < list.size() ; j++)
+            {
+                if (j % nProcs == rank)
+                    mylist.push_back(jumbledList[j]);
             }
         }
 

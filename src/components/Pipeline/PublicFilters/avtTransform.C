@@ -16,6 +16,7 @@
 #include <avtExtents.h>
 
 #include <DebugStream.h>
+#include <VisItException.h>
 
 
 static bool   IsIdentity(vtkMatrix4x4 *);
@@ -162,6 +163,9 @@ void vtkVisItMatrixToHomogeneousTransform::TransformPointsNormalsVectors(vtkPoin
 //    Hank Childs, Tue Sep 10 15:22:38 PDT 2002
 //    Perform all memory management from within this routine.
 //
+//    Hank Childs, Mon Jul  7 22:31:00 PDT 2003
+//    Throw an exception for unknown data types.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -198,7 +202,7 @@ avtTransform::ExecuteData(vtkDataSet *in_ds, int, std::string)
 
       default:
         debug1 << "Improper input to transform." << endl;
-        transform->SetInput(vtkUnstructuredGrid::New());
+        EXCEPTION1(VisItException, "Cannot process unknown data type.");
         break;
     }
 

@@ -81,7 +81,7 @@ avtVolumePlot::avtVolumePlot() : avtVolumeDataPlot()
     // Remove this HACK when the software rendering route from the viewer
     // to the engine gets better.
     //
-    id = "unknown";
+    id = "Volume_1.1";
 }
 
 // ****************************************************************************

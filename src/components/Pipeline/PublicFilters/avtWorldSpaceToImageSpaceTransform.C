@@ -139,6 +139,9 @@ avtWorldSpaceToImageSpaceTransform::~avtWorldSpaceToImageSpaceTransform()
 //    Hank Childs, Mon Nov 26 18:33:16 PST 2001
 //    Made use of aspect ratio.
 //
+//    Hank Childs, Mon Jul  7 22:32:37 PDT 2003
+//    Add support for image pan and zoom.
+//
 // ****************************************************************************
 
 void
@@ -168,6 +171,17 @@ avtWorldSpaceToImageSpaceTransform::CalculateTransform(const avtViewInfo &view,
     scaletrans->SetElement(2, 2, scale[2]);
 
     //
+    // Now take in the zoom and pan portions.  These are both image space
+    // operations.
+    //
+    vtkMatrix4x4 *imageZoomAndPan = vtkMatrix4x4::New();
+    imageZoomAndPan->Identity();
+    imageZoomAndPan->SetElement(0, 0, view.imageZoom);
+    imageZoomAndPan->SetElement(1, 1, view.imageZoom);
+    imageZoomAndPan->SetElement(0, 3, 2*view.imagePan[0]*view.imageZoom);
+    imageZoomAndPan->SetElement(1, 3, 2*view.imagePan[1]*view.imageZoom);
+
+    //
     // World space is a left-handed coordinate system.  Image space (as used
     // in the sample point extractor) is a right-handed coordinate system.
     // This is because large X is at the right and large Y is at the top.
@@ -185,15 +199,20 @@ avtWorldSpaceToImageSpaceTransform::CalculateTransform(const avtViewInfo &view,
     // them so I am sure everything will work.
     //
     vtkMatrix4x4 *tmp = vtkMatrix4x4::New();
+    vtkMatrix4x4 *tmp2 = vtkMatrix4x4::New();
     viewtrans->Transpose();
+    imageZoomAndPan->Transpose();
     vtkMatrix4x4::Multiply4x4(viewtrans, scaletrans, tmp);
-    vtkMatrix4x4::Multiply4x4(tmp, reflectTrans, trans);
+    vtkMatrix4x4::Multiply4x4(tmp, imageZoomAndPan, tmp2);
+    vtkMatrix4x4::Multiply4x4(tmp2, reflectTrans, trans);
     trans->Transpose();
 
     viewtrans->Delete();
     scaletrans->Delete();
+    imageZoomAndPan->Delete();
     reflectTrans->Delete();
     tmp->Delete();
+    tmp2->Delete();
 }
 
 
