@@ -196,6 +196,9 @@ typedef std::vector<QvisWindowBase *> WindowBaseVector;
 //    Brad Whitlock, Mon May 5 14:02:12 PST 2003
 //    I changed the interface to StartMDServer.
 //
+//    Brad Whitlock, Mon Jun 23 11:42:54 PDT 2003
+//    I added RefreshFileList.
+//
 // ****************************************************************************
 
 class GUI_API QvisGUIApplication : public QObject, public ConfigManager, public GUIBase
@@ -205,6 +208,7 @@ public:
     QvisGUIApplication(int &argc, char **argv);
     ~QvisGUIApplication();
     int Exec();
+
 private:
     void AddViewerArguments(int argc, char **argv);
     void AddViewerSpaceArguments(int orientation);
@@ -245,6 +249,7 @@ private slots:
     void SaveWindow();
     void SetPrinterOptions();
     void PrintWindow();
+    void RefreshFileList();
 private:
     bool                         viewerIsAlive;
 

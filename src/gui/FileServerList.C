@@ -263,6 +263,50 @@ FileServerList::Initialize()
 //   GetFileListException can be thrown.
 //
 // Programmer: Brad Whitlock
+// Creation:   Mon Jun 23 11:39:11 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+FileServerList::Notify()
+{
+    //
+    // Do a silent notify, which does the real work but does not tell the
+    // observers that anything happened.
+    //
+    SilentNotify();
+
+    //
+    // Call the base class's Notify method to tell the observers about
+    // new information.
+    //
+    AttributeSubject::Notify();
+
+    // Reset the flags for future operations.
+    hostFlag = pathFlag = filterFlag = false;
+    fileListFlag = appliedFileListFlag = false;
+    fileAction = FILE_NOACTION;
+}
+
+// ****************************************************************************
+// Method: FileServerList::SilentNotify
+//
+// Purpose: 
+//   Does some RPC calls to talk to the MetaData server. This can
+//   update the file list. The subject's observers are then called
+//   to respond to the changes in the file list. It's done this way
+//   because of the potentially high cost of RPC's and the observers
+//   should not have to worry where their file list came from.
+//
+// Notes:
+//   This routine can throw exceptions. When SetPath was called before
+//   this routine, GetFileListException or ChangeDirectoryException
+//   can be thrown. When SetHost is called before this routine,
+//   GetFileListException can be thrown.
+//
+// Programmer: Brad Whitlock
 // Creation:   Mon Aug 21 14:21:02 PST 2000
 //
 // Modifications:
@@ -308,10 +352,13 @@ FileServerList::Initialize()
 //   Brad Whitlock, Mon Mar 24 14:26:40 PST 2003
 //   I passed the filter to the server's GetFileList rpc.
 //
+//   Brad Whitlock, Mon Jun 23 11:37:03 PDT 2003
+//   I renamed the method and removed some code.
+//
 // ****************************************************************************
 
 void
-FileServerList::Notify()
+FileServerList::SilentNotify()
 {
     // Return if there is no mdserver associated with the active host.
     ServerMap::iterator pos;
@@ -459,14 +506,6 @@ FileServerList::Notify()
         }
         ENDTRY
     } while(tryAgain);
-
-    // Call the base class's Notify method.
-    AttributeSubject::Notify();
-
-    // Reset the flags for future operations.
-    hostFlag = pathFlag = filterFlag = false;
-    fileListFlag = appliedFileListFlag = false;
-    fileAction = FILE_NOACTION;
 }
 
 // ****************************************************************************

@@ -90,6 +90,9 @@ class WindowInformation;
 //   Brad Whitlock, Wed May 21 07:42:22 PDT 2003
 //   I added fullFrame.
 //
+//   Brad Whitlock, Mon Jun 23 10:14:54 PDT 2003
+//   I added refreshFileList.
+//
 // ****************************************************************************
 
 class GUI_API QvisMainWindow : public QvisWindowBase, public SimpleObserver
@@ -152,6 +155,7 @@ signals:
     void saveMovie();
     void printWindow();
 
+    void refreshFileList();
 public slots:
     void unreadOutput(bool);
 protected:

@@ -1615,6 +1615,9 @@ ViewerPlotList::SetPlotVar(const char *variable)
 //    Eric Brugger, Mon Nov 18 07:50:16 PST 2002
 //    I added support for keyframing.
 //
+//    Jeremy Meredith, Mon Jun 23 16:17:42 PDT 2003
+//    Changed GetAllID to GetEnabledID.
+//
 // ****************************************************************************
 
 void
@@ -1650,11 +1653,11 @@ ViewerPlotList::SetPlotAtts(const int plotType)
         PlotPluginManager *pMgr = PlotPluginManager::Instance();
         std::string msg;
         msg = std::string("VisIt cannot set the ") + 
-              pMgr->GetPluginName(pMgr->GetAllID(plotType)) + 
+              pMgr->GetPluginName(pMgr->GetEnabledID(plotType)) + 
               std::string(" plot attributes since no"
                           " plots of that type are selected."
                           " Please select a ") +
-              pMgr->GetPluginName(pMgr->GetAllID(plotType)) + 
+              pMgr->GetPluginName(pMgr->GetEnabledID(plotType)) + 
               std::string(" plot before trying to modify its plot"
                           " attributes.");
 

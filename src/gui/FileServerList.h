@@ -96,6 +96,10 @@ class MessageAttributes;
 //   Brad Whitlock, Tue May 20 14:56:58 PST 2003
 //   Changed CreateNode interface.
 //
+//   Brad Whitlock, Mon Jun 23 11:31:14 PDT 2003
+//   Added SilentNotify so we can execute several RPCs without having to
+//   tell the observers each time we do something.
+//
 // ****************************************************************************
 
 class GUI_API FileServerList : public AttributeSubject
@@ -115,6 +119,7 @@ public:
     FileServerList();
     virtual ~FileServerList();
     virtual void Notify();
+    void SilentNotify();
     void Initialize();
 
     virtual bool CreateNode(DataNode *, bool);
