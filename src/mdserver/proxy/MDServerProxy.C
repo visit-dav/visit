@@ -471,7 +471,13 @@ MDServerProxy::ExpandPath(const std::string &p)
 void
 MDServerProxy::CloseDatabase()
 {
-    closeDatabaseRPC();
+    closeDatabaseRPC("");
+}
+
+void
+MDServerProxy::CloseDatabase(const std::string &db)
+{
+    closeDatabaseRPC(db);
 }
 
 // ****************************************************************************

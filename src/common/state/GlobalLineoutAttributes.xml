@@ -1,5 +1,13 @@
 <?xml version="1.0"?>
   <Attribute name="GlobalLineoutAttributes" purpose="This file contains global attributes controlling Lineouts." persistent="false" exportAPI="STATE_API" exportInclude="state_exports.h">
+    <Enum name="CurveOptions">
+      UpdateCurve
+      CreateCurve
+    </Enum>
+    <Enum name="ColorOptions">
+      RepeatColor
+      CreateColor
+    </Enum>
     <Field name="Dynamic" label="Dynamic" type="bool">
       false
     </Field>
@@ -17,5 +25,11 @@
     </Field>
     <Field name="createReflineLabels" label="createReflineLabels" type="bool">
       false
+    </Field>
+    <Field name="curveOption" label="curveOption" type="enum" subtype="CurveOptions" enabler="Dynamic:true">
+      UpdateCurve
+    </Field>
+    <Field name="colorOption" label="colorOption" type="enum" subtype="ColorOptions" enable="curveOption:CreateCurve">
+      RepeatColor
     </Field>
   </Attribute>

@@ -158,6 +158,10 @@ typedef struct {
 //    Kathleen Bonnell, Wed Dec 15 17:16:17 PST 2004 
 //    Added bool arg to DatabaseQuery and PointQuery. 
 //
+//    Kathleen Bonnell, Fri Feb  4 07:10:27 PST 2005 
+//    Added SetLineoutsFollowTime, SetLineoutsTimeSlider. Made 
+//    SetDynamicLinenout private, and GetColor public. 
+//
 // ****************************************************************************
     
 class VIEWER_API ViewerQueryManager 
@@ -237,7 +241,6 @@ class VIEWER_API ViewerQueryManager
 
 
     void            SetGlobalLineoutAttsFromClient();
-    void            SetDynamicLineout(bool);
 
     void            StartPickMode(const bool, const bool);
     void            StopPickMode();
@@ -255,10 +258,10 @@ class VIEWER_API ViewerQueryManager
     void            FinishLineout();
 
     void            FinishLineQuery();
+    ColorAttribute  GetColor();
 
   protected:
                     ViewerQueryManager();
-    ColorAttribute  GetColor();
 
   private:
     void            AddQuery(ViewerWindow *origwin, Line *lineAtts,
@@ -278,6 +281,9 @@ class VIEWER_API ViewerQueryManager
 
     void            DoTimeQuery(ViewerWindow *origWin, QueryAttributes *qA);
     void            ResetLineoutCache();
+    void            SetDynamicLineout(bool);
+    void            SetLineoutsFollowTime(bool);
+    void            SetLineoutsTimeSlider(bool);
 
     void            HandlePickCache();
     bool            initialPick;

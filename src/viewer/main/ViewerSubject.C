@@ -3243,15 +3243,22 @@ ViewerSubject::CreateAttributesDataNode(const avtDefaultPlotMetaData *dp) const
 //    metadata and SIL atts from the corresponding engine proxy, and have
 //    those observers call callbacks when they get new information.
 //
+//    Brad Whitlock, Thu Feb 3 10:34:17 PDT 2005
+//    Added a little more code to validate the timeState so if it's out of
+//    range, we update the time slider to a valid value and we tell the
+//    compute engine a valid time state at which to open the database. I also
+//    made the routine return the time state in case it needs to be used
+//    by the caller.
+//
 // ****************************************************************************
 
-void
+int
 ViewerSubject::OpenDatabaseHelper(const std::string &entireDBName,
     int timeState, bool addDefaultPlots, bool updateWindowInfo)
 {
     int  i;
-
-    debug1 << "Opening database " << entireDBName.c_str()
+    const char *mName = "ViewerSubject::OpenDatabaseHelper: ";
+    debug1 << mName << "Opening database " << entireDBName.c_str()
            << ", timeState=" << timeState << endl;
 
     //
@@ -3270,7 +3277,8 @@ ViewerSubject::OpenDatabaseHelper(const std::string &entireDBName,
 
     //
     // Get the number of time states and set that information into the
-    // active animation.
+    // active animation. The mdserver will clamp the time state that it
+    // uses to open the database if timeState is out of range at this point.
     //
     const avtDatabaseMetaData *md = fs->GetMetaDataForState(host, db, timeState);
     if (md != NULL)
@@ -3280,6 +3288,7 @@ ViewerSubject::OpenDatabaseHelper(const std::string &entireDBName,
         // add it to the list of database correlations so we have a trivial
         // correlation for this database.
         //
+        bool nStatesDecreased = false;
         if(md->GetNumStates() > 1)
         {
             //
@@ -3288,8 +3297,25 @@ ViewerSubject::OpenDatabaseHelper(const std::string &entireDBName,
             //
             const std::string &correlationName = plotList->GetHostDatabaseName();
 
-            debug3 << "Correlation for " << hdb.c_str() << " is "
+            debug3 << mName << "Correlation for " << hdb.c_str() << " is "
                    << correlationName.c_str() << endl;
+
+            //
+            // In the case where we're reopening a database that now has
+            // fewer time states, clamp the timeState value to be in the new
+            // range of time states so we set the time slider to a valid
+            // value and we use a valid time state when telling the compute
+            // engine to open the database.
+            //
+            if(timeState > md->GetNumStates() - 1)
+            {
+                debug3 << mName << "There are " << md->GetNumStates()
+                       << " time states in the database but timeState was "
+                       << "set to "<< timeState <<". Clamping timeState to ";
+                timeState = md->GetNumStates() - 1;
+                debug3 << timeState << "." << endl;
+                nStatesDecreased = true;
+            }
 
             //
             // Tell the window manager to create the correlation. We could
@@ -3302,6 +3328,14 @@ ViewerSubject::OpenDatabaseHelper(const std::string &entireDBName,
             wM->CreateDatabaseCorrelation(correlationName, dbs, 0,
                 timeSliderState, md->GetNumStates());
         }
+        else if(timeState > 0)
+        {
+            debug3 << mName << "There is only 1 time state in the database "
+                   << "but timeState was set to "<< timeState <<". Clamping "
+                   << "timeState to 0.";
+            timeState = 0;
+            nStatesDecreased = true;
+        }
 
         //
         // Make sure that it is appropriate to have the time slider that
@@ -3309,6 +3343,10 @@ ViewerSubject::OpenDatabaseHelper(const std::string &entireDBName,
         //
         if(!wM->GetActiveWindow()->GetTimeLock())
             plotList->ValidateTimeSlider();
+
+        // Alter the time slider for the database that we opened.
+        if(nStatesDecreased)
+            wM->AlterTimeSlider(hdb);
 
         //
         // Update the global atts since that has the list of sources.
@@ -3320,7 +3358,7 @@ ViewerSubject::OpenDatabaseHelper(const std::string &entireDBName,
         // slider and time slider states when the new database was opened, send
         // back the source, time sliders, and animation information.
         //
-        if(updateWindowInfo)
+        if(updateWindowInfo || nStatesDecreased)
         {
             wM->UpdateWindowInformation(WINDOWINFO_SOURCE |
                 WINDOWINFO_TIMESLIDERS | WINDOWINFO_ANIMATION);
@@ -3478,6 +3516,8 @@ ViewerSubject::OpenDatabaseHelper(const std::string &entireDBName,
                    << host.c_str() << ":" << db.c_str() << endl;
         }
     }
+
+    return timeState;
 }
 
 // ****************************************************************************
@@ -3733,7 +3773,7 @@ ViewerSubject::ReOpenDatabase()
     // Clear out any local information that we've cached about the file. We
     // have to do this after checking for the correlation because this call
     // will remove the correlation for the database.  Do not clear the
-    // metadata if it is a simulation, because we lose all of our current
+    // metadata if it is a simulation because we lose all of our current
     // information by doing so (since the mdserver has almost no information).
     // If it is a simulation, we will get updated metadata indirectly when
     // we open the database again, regardless of if we clear the cached one.
@@ -3755,10 +3795,12 @@ ViewerSubject::ReOpenDatabase()
     ViewerEngineManager::Instance()->ClearCache(key, db.c_str());
 
     //
-    // Open the database.
+    // Open the database. Since reopening a file can result in a different
+    // number of time states (potentially fewer), use the time state returned
+    // by OpenDatabaseHelper for the replace operation.
     //
-    OpenDatabaseHelper(hostDatabase, reOpenState, false, true);
- 
+    reOpenState = OpenDatabaseHelper(hostDatabase, reOpenState, false, true);
+
     //
     // Now perform the database replacement in all windows that use the
     // specified database.
@@ -3819,6 +3861,10 @@ ViewerSubject::ReOpenDatabase()
 //   Brad Whitlock, Mon May 3 13:21:19 PST 2004
 //   I made it use the plot list's engine key in the call to ReplaceDatabase.
 //
+//   Brad Whitlock, Thu Feb 3 11:07:53 PDT 2005
+//   I made the time state used for file replacement be the value that is now
+//   returned from OpenDatabaseHelper.
+//
 // ****************************************************************************
 
 void
@@ -3842,8 +3888,9 @@ ViewerSubject::ReplaceDatabase()
     //
     // First open the database.
     //
-    OpenDatabaseHelper(viewerRPC.GetDatabase(), viewerRPC.GetIntArg1(),
-                       false, false);
+    int timeState = viewerRPC.GetIntArg1();
+    timeState = OpenDatabaseHelper(viewerRPC.GetDatabase(), timeState,
+                                   false, false);
 
     //
     // Now perform the database replacement.
@@ -3851,7 +3898,7 @@ ViewerSubject::ReplaceDatabase()
     ViewerPlotList *plotList = win->GetPlotList();
     plotList->ReplaceDatabase(plotList->GetEngineKey(),
                               plotList->GetDatabaseName(),
-                              viewerRPC.GetIntArg1(),
+                              timeState,
                               true,
                               false);
 

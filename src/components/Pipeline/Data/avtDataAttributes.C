@@ -78,6 +78,9 @@ using     std::sort;
 //    Kathleen Bonnell, Thu Jan 27 09:14:35 PST 2005 
 //    Initialize numStates.
 //
+//    Kathleen Bonnell, Thu Feb  3 09:27:22 PST 2005 
+//    Initialize mirOccurred.
+//
 // ****************************************************************************
 
 avtDataAttributes::avtDataAttributes()
@@ -126,6 +129,7 @@ avtDataAttributes::avtDataAttributes()
     windowMode = WINMODE_NONE;
 
     numStates = 1;
+    mirOccurred = false;
 }
 
 
@@ -280,6 +284,9 @@ avtDataAttributes::DestructSelf(void)
 //
 //    Kathleen Bonnell, Thu Jan 27 09:14:35 PST 2005 
 //    Added numStates.
+//
+//    Kathleen Bonnell, Thu Feb  3 09:27:22 PST 2005 
+//    Added mirOccurred.
 //
 // ****************************************************************************
 
@@ -470,6 +477,8 @@ avtDataAttributes::Print(ostream &out)
     out << endl;
 
     out << "Num states: " << numStates << endl;
+    if (mirOccurred)
+        out << "Material Interace Reconstruction occurred: " << endl;
 
 }
 
@@ -551,6 +560,9 @@ avtDataAttributes::Print(ostream &out)
 //    Kathleen Bonnell, Thu Jan 27 09:14:35 PST 2005 
 //    Added numStates.
 //
+//    Kathleen Bonnell, Thu Feb  3 09:27:22 PST 2005 
+//    Added mirOccurred.
+//
 // ****************************************************************************
 
 void
@@ -628,6 +640,7 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
     windowMode = di.windowMode;
     selectionsApplied = di.selectionsApplied;
     numStates = di.numStates;
+    mirOccurred = di.mirOccurred;
 }
 
 
@@ -707,6 +720,9 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
 //
 //    Kathleen Bonnell, Thu Jan 27 09:14:35 PST 2005 
 //    Added numStates.
+//
+//    Kathleen Bonnell, Thu Feb  3 09:27:22 PST 2005 
+//    Added mirOccurred.
 //
 // ****************************************************************************
 
@@ -885,6 +901,7 @@ avtDataAttributes::Merge(const avtDataAttributes &da,
     MergeTransform(da.transform);
     canUseInvTransform &= da.canUseInvTransform;
     canUseTransform &= da.canUseTransform;
+    mirOccurred |= da.mirOccurred;
 }
 
 
@@ -1719,6 +1736,9 @@ avtDataAttributes::SetTime(double d)
 //    Kathleen Bonnell, Thu Jan 27 09:14:35 PST 2005 
 //    Added numStates.
 //
+//    Kathleen Bonnell, Thu Feb  3 09:27:22 PST 2005 
+//    Added mirOccurred.
+//
 // ****************************************************************************
 
 void
@@ -1727,7 +1747,7 @@ avtDataAttributes::Write(avtDataObjectString &str,
 {
     int   i;
 
-    int numVals = 20 + 3*variables.size();
+    int numVals = 21 + 3*variables.size();
     int *vals = new int[numVals];
     vals[0] = topologicalDimension;
     vals[1] = spatialDimension;
@@ -1747,13 +1767,14 @@ avtDataAttributes::Write(avtDataObjectString &str,
     vals[15] = (canUseCumulativeAsTrueOrCurrent ? 1 : 0);
     vals[16] = windowMode;
     vals[17] = numStates;
-    vals[18] = activeVariable;
-    vals[19] = variables.size();
+    vals[18] = mirOccurred;
+    vals[19] = activeVariable;
+    vals[20] = variables.size();
     for (i = 0 ; i < variables.size() ; i++)
     {
-        vals[20+3*i]   = variables[i].dimension;
-        vals[20+3*i+1] = variables[i].centering;
-        vals[20+3*i+2] = (variables[i].treatAsASCII ? 1 : 0);
+        vals[21+3*i]   = variables[i].dimension;
+        vals[21+3*i+1] = variables[i].centering;
+        vals[21+3*i+2] = (variables[i].treatAsASCII ? 1 : 0);
     }
     wrtr->WriteInt(str, vals, numVals);
     wrtr->WriteDouble(str, dtime);
@@ -1902,6 +1923,9 @@ avtDataAttributes::Write(avtDataObjectString &str,
 //    Kathleen Bonnell, Thu Jan 27 09:14:35 PST 2005 
 //    Added numStates.
 //
+//    Kathleen Bonnell, Thu Feb  3 09:27:22 PST 2005 
+//    Added mirOccurred.
+//
 // ****************************************************************************
 
 int
@@ -1983,6 +2007,10 @@ avtDataAttributes::Read(char *input)
     memcpy(&tmp, input, sizeof(int));
     input += sizeof(int); size += sizeof(int);
     numStates = tmp;
+
+    memcpy(&tmp, input, sizeof(int));
+    input += sizeof(int); size += sizeof(int);
+    mirOccurred = (tmp != 0 ? true : false);
 
     memcpy(&tmp, input, sizeof(int));
     input += sizeof(int); size += sizeof(int);

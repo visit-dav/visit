@@ -2564,8 +2564,11 @@ NetworkManager::StopPickMode(void)
 //    TopologicalDimension, because during SR mode the DataAtts may get
 //    overwritten with incorrect values. 
 //
-//    Mark C. Miller, Tue Jan  4 10:23:19 PST 200
+//    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
 //    Modified to use specific window id
+//
+//    Kathleen Bonnell, Thu Feb  3 09:27:22 PST 2005 
+//    Set pickatts matSelected flag from info in avtDataAttributes. 
 //
 // ****************************************************************************
 
@@ -2606,6 +2609,7 @@ NetworkManager::Pick(const int id, const int winId, PickAttributes *pa)
     }
 
     avtDataAttributes &queryInputAtts = queryInput->GetInfo().GetAttributes();
+    pa->SetMatSelected(queryInputAtts.MIROccurred() || pa->GetMatSelected());
     if (pa->GetRequiresGlyphPick())
     {
         if (networkCache[id]->ActorIsNull())

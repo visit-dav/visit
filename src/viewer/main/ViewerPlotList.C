@@ -270,6 +270,25 @@ ViewerPlotList::GetClientSILRestrictionAtts()
 }
 
 // ****************************************************************************
+// Method: ViewerPlotList::NotActivePlotList
+//
+// Purpose: 
+//   Returns true if this plot list does not belong to the active window.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Feb 2 15:56:27 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+ViewerPlotList::NotActivePlotList() const
+{
+    return this != ViewerWindowManager::Instance()->GetActiveWindow()->GetPlotList();
+}
+
+// ****************************************************************************
 // Method: ViewerPlotList::GetActiveTimeSlider
 //
 // Purpose: 
@@ -1110,6 +1129,9 @@ ViewerPlotList::UpdatePlotStates()
 //   Brad Whitlock, Thu Apr 8 15:44:16 PST 2004
 //   I added support for keyframing.
 //
+//   Kathleen Bonnell, Thu Feb  3 16:03:32 PST 2005 
+//   Don't clear a plot's actors if it does not follow time. 
+//
 // ****************************************************************************
 
 bool
@@ -1218,7 +1240,7 @@ ViewerPlotList::UpdateSinglePlotState(ViewerPlot *plot)
             // pipeline caching then clear the plot's actor before setting
             // the new state.
             //
-            if (different && !pipelineCaching)
+            if (plot->FollowsTime() && different && !pipelineCaching)
                 plot->ClearCurrentActor();
 
             // Set the new state.
@@ -1389,17 +1411,20 @@ ViewerPlotList::GetPlaybackMode() const
 //   Updates the time slider if the database correlation changed.
 //
 // Arguments:
-//   ts : The name of the time slider to change.
+//   ts             : The name of the time slider to change.
+//   updatesAllowed : Whether the window should be updated.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Mar 22 15:54:15 PST 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Feb 3 14:32:37 PST 2005
+//   Added updatesAllowed method so we don't have to update right away.
+//
 // ****************************************************************************
 
-void
-ViewerPlotList::AlterTimeSlider(const std::string &ts)
+bool
+ViewerPlotList::AlterTimeSlider(const std::string &ts, bool updatesAllowed)
 {
     // Make sure that the time slider's state is within the bounds for its
     // correlation. If the time slider's correlation has multiple databases,
@@ -1425,8 +1450,11 @@ ViewerPlotList::AlterTimeSlider(const std::string &ts)
     // Update the frame because we had to change the state for the active
     // time slider because it was beyond the length of the correlation.
     //
-    if(activeTimeSlider == ts)
-        UpdateFrame();    
+    bool retval = (activeTimeSlider == ts);
+    if(updatesAllowed && retval)
+        UpdateFrame();
+
+    return retval;
 }
 
 // ****************************************************************************
@@ -3969,7 +3997,9 @@ ViewerPlotList::ActivateSource(const std::string &source, const EngineKey &ek)
 // Creation:   Mon Mar 22 15:38:12 PST 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Feb 4 11:30:13 PDT 2005
+//   Added code to delete the time slider.
+//
 // ****************************************************************************
 
 int
@@ -4007,8 +4037,12 @@ ViewerPlotList::CloseDatabase(const std::string &dbName)
     //
     if(HasActiveTimeSlider() && dbName == activeTimeSlider)
     {
-        DatabaseCorrelation *correlation = 0;
+        // Delete the time slider for the database that we're closing.
+        StringIntMap::iterator pos = timeSliders.find(dbName);
+        if(pos != timeSliders.end())
+            timeSliders.erase(pos);
 
+        DatabaseCorrelation *correlation = 0;
         if(newDB != "")
             correlation = GetMostSuitableCorrelation(newDB, false);
 
@@ -5915,6 +5949,10 @@ ViewerPlotList::SetForegroundColor(const double *fg)
 //    Brad Whitlock, Mon Apr 5 11:48:07 PDT 2004
 //    I made keyframing work again after I broke it.
 //
+//    Brad Whitlock, Wed Feb 2 15:57:27 PST 2005
+//    I made it use the new NotActivePlotList so the check to see if the plot
+//    list belongs to the active window is more isolated.
+//
 // ****************************************************************************
 
 void
@@ -5923,8 +5961,11 @@ ViewerPlotList::UpdatePlotAtts(bool updateThoseNotRepresented) const
     //
     // Return if this isn't the active plot list.
     //
-    if (this != ViewerWindowManager::Instance()->GetActiveWindow()->GetPlotList())
+    if (NotActivePlotList())
     {
+        debug4 << "Returning from ViewerPlotList::UpdatePlotAtts "
+               << "because the plot list does not belong to the active window."
+               << endl;
         return;
     }
 
@@ -6179,6 +6220,10 @@ ViewerPlotList::GetPlotAtts(
 //    Brad Whitlock, Mon Apr 5 09:56:35 PDT 2004
 //    I moved much of the code into ViewerPlot.
 //
+//    Brad Whitlock, Wed Feb 2 15:58:03 PST 2005
+//    I made it use the new NotActivePlotList method to determine whether the
+//    plot list belongs to the active window so the check is more isolated.
+//
 // ****************************************************************************
 
 void
@@ -6192,8 +6237,11 @@ ViewerPlotList::UpdatePlotList() const
     //
     // Return if this isn't the active animation.
     //
-    if (this != ViewerWindowManager::Instance()->GetActiveWindow()->GetPlotList())
+    if (NotActivePlotList())
     {
+        debug4 << "Returning from ViewerPlotList::UpdatePlotList "
+               << "because the plot list does not belong to the active window."
+               << endl;
         return;
     }
 
@@ -6243,11 +6291,24 @@ ViewerPlotList::UpdatePlotList() const
 //  Programmer: Brad Whitlock
 //  Creation:   Thu Jun 21 14:09:00 PST 2001
 //
+//  Modifications:
+//    Brad Whitlock, Wed Feb 2 15:58:51 PST 2005
+//    I added code to prevent the sil restriction from being sent to the
+//    client unless the plot list belongs to the active window.
+//
 // ****************************************************************************
 
 void
 ViewerPlotList::UpdateSILRestrictionAtts()
 {
+    if (NotActivePlotList())
+    {
+        debug4 << "Returning from ViewerPlotList::UpdateSILRestrictionAtts "
+               << "because the plot list does not belong to the active window."
+               << endl;
+        return;
+    }
+
     // Find the first selected plot.
     int index = -1;
     for (int i = 0; i < nPlots; ++i)
@@ -6301,11 +6362,23 @@ ViewerPlotList::UpdateSILRestrictionAtts()
 //   Brad Whitlock, Wed Mar 17 11:47:38 PDT 2004
 //   I changed how it determines the state to use for the metadata.
 //
+//   Brad Whitlock, Wed Feb 2 15:58:51 PST 2005
+//   I added code to prevent the sil restriction from being sent to the
+//   client unless the plot list belongs to the active window.
+//
 // ****************************************************************************
 
 void
 ViewerPlotList::UpdateExpressionList(bool considerPlots, bool update)
 {
+    if (NotActivePlotList())
+    {
+        debug4 << "Returning from ViewerPlotList::UpdateExpressionList "
+               << "because the plot list does not belong to the active window."
+               << endl;
+        return;
+    }
+
     ExpressionList *exprList = ParsingExprList::Instance()->GetList();
 
     //
@@ -6409,12 +6482,24 @@ ViewerPlotList::UpdateExpressionList(bool considerPlots, bool update)
 //   Brad Whitlock, Fri Mar 26 14:50:24 PST 2004
 //   I made it use GetMetaDataForState.
 //
+//   Brad Whitlock, Wed Feb 2 15:58:51 PST 2005
+//   I added code to prevent the sil restriction from being sent to the
+//   client unless the plot list belongs to the active window.
+//
 // ****************************************************************************
 
 void
 ViewerPlotList::UpdateExpressionListUsingDB(const std::string &host,
     const std::string &db, int t) const
 {
+    if (NotActivePlotList())
+    {
+        debug4 << "Returning from ViewerPlotList::UpdateExpressionListUsingDB "
+               << "because the plot list does not belong to the active window."
+               << endl;
+        return;
+    }
+
     ExpressionList *exprList = ParsingExprList::Instance()->GetList();
 
     //

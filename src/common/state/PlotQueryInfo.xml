@@ -11,6 +11,9 @@
       RemoveOperator
       RemoveAll
       RemoveLast
+      CacheIndex
     </Enum>
     <Field name="changeType" type="enum" subtype="ChangeType">None</Field>
+    <Field name="oldFrameIndex" type="int" >0</Field>
+    <Field name="newFrameIndex" type="int" >0</Field>
   </Attribute>

@@ -1226,6 +1226,9 @@ avtDatabase::GetFileListFromTextFile(const char *textfile,
 //    Kathleen Bonnell, Wed Dec 15 17:35:53 PST 2004 
 //    Added call to 'LocalIdForGlobal'.
 //
+//    Kathleen Bonnell, Thu Feb  3 09:27:22 PST 2005 
+//    Determine var type for Expressions from ParsingExprList. 
+//
 // ****************************************************************************
 
 void               
@@ -1376,7 +1379,18 @@ avtDatabase::Query(PickAttributes *pa)
         bool success = false;
         TRY
         {
-            avtVarType varType = GetMetaData(ts)->DetermineVarType(vName);
+            avtVarType varType;
+            ExprNode *tree = ParsingExprList::GetExpressionTree(vName);
+            if (tree != NULL)
+            {
+                varType = ParsingExprList::GetAVTType
+                          (ParsingExprList::GetExpression(vName)->GetType());
+            }
+            else
+            {
+                varType = GetMetaData(ts)->DetermineVarType(vName);
+            }
+ 
             int matEl = (pa->GetRealElementNumber() != -1 ? 
                          pa->GetRealElementNumber() : foundEl);
             intVector matIncEls = (pa->GetRealIncidentElements().size() > 0 ? 

@@ -99,6 +99,10 @@ class Xfer;
 //    Handle errors through exceptions instead of error codes.   This allows
 //    real error messages to make it to the user.
 //
+//    Brad Whitlock, Fri Feb 4 08:31:57 PDT 2005
+//    Added a database argument to CloseDatabase and added the
+//    SetFileGroupingOptions method.
+//
 // ****************************************************************************
 
 class MDServerConnection
@@ -148,7 +152,7 @@ public:
     void ReadSIL(std::string file, int timeState);
     SILAttributes *GetCurrentSIL() const;
 
-    void CloseDatabase();
+    void CloseDatabase(const std::string &db);
     void LoadPlugins();
 
     int  ChangeDirectory(const std::string &dir);
@@ -156,16 +160,15 @@ public:
 
     int GetReadFileListReturnValue() const;
     GetFileListRPC::FileList *GetCurrentFileList();
-    void GetFilteredFileList(GetFileListRPC::FileList &files,
-                             const std::string &filter,
-                             bool extraSmartGrouping);
+    void GetFilteredFileList(GetFileListRPC::FileList &files);
+    void SetFileGroupingOptions(const std::string &, bool);
     std::string ExpandPath(const std::string &path);
 private:
     std::string FilteredPath(const std::string &path) const;
     void        ReadCWD();
     void        ReadFileList();
 
-    bool FileMatchesFilterList(const std::string &, const stringVector &) const;
+    bool FileMatchesFilterList(const std::string &) const;
     bool FileMatchesFilter(const char *filter, const char *str, int &j) const;
     bool GetPattern(const std::string &file, std::string &p) const;
     std::string ExpandPathHelper(const std::string &path,
@@ -210,6 +213,8 @@ private:
     GetFileListRPC::FileList   currentFileList;
     int                        readFileListReturnValue;
     bool                       validFileList;
+    stringVector               filterList;
+    bool                       extraSmartFileGrouping;
 
     // Static members for all connections.
     static bool                       staticInit;

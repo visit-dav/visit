@@ -443,6 +443,10 @@ ViewerQueryManager::AddQuery(ViewerWindow *origWin, Line *lineAtts,
 //   Kathleen Bonnell, Thu Mar  6 15:21:45 PST 2003  
 //   Reworked to reflect that lineout queries stored in LineoutList.
 //
+//   Kathleen Bonnell, Fri Feb  4 07:10:27 PST 2005 
+//   Tell the lineouts whether or not to follow time, and whether or not to
+//   use a time slider. 
+//
 // ****************************************************************************
 
 void
@@ -451,6 +455,7 @@ ViewerQueryManager::SimpleAddQuery(ViewerQuery_p query, ViewerPlot *oplot,
 {
     int i, index = -1;
 
+    GlobalLineoutAttributes *gla = GetGlobalLineoutAtts();
     //
     //  Determine the correct list.
     //
@@ -502,7 +507,7 @@ ViewerQueryManager::SimpleAddQuery(ViewerQuery_p query, ViewerPlot *oplot,
         //
         // Observe the originating plot if necessary. 
         //
-        if (GetGlobalLineoutAtts()->GetDynamic())
+        if (gla->GetDynamic())
         {
             lineoutList[index]->ObserveOriginatingPlot();
         }
@@ -513,6 +518,24 @@ ViewerQueryManager::SimpleAddQuery(ViewerQuery_p query, ViewerPlot *oplot,
     // Add the query to the correct list.
     //
     lineoutList[index]->AddQuery(query);
+
+    //
+    // Set the on/off state of the time slider 
+    //
+    lineoutList[index]->SetTimeSlider(gla->GetDynamic());
+
+    //
+    // Tell it whether or not to follow time.
+    //
+    if (gla->GetDynamic() && 
+        gla->GetCurveOption() == GlobalLineoutAttributes::CreateCurve)
+    {
+        lineoutList[index]->SetLineoutsFollowTime(false);
+    }
+    else
+    {
+        lineoutList[index]->SetLineoutsFollowTime(true);
+    }
 }
 
 
@@ -2308,6 +2331,11 @@ ViewerQueryManager::SetDynamicLineout(bool newMode)
 //  Programmer: Kathleen Bonnell
 //  Creation:   January 13, 2003 
 //
+//  Modifications:
+//   Kathleen Bonnell, Fri Feb  4 07:10:27 PST 2005 
+//   Use new GlobalLineout atts to set flags for lineouts, for following time, 
+//   and using a time slider. 
+//
 // ****************************************************************************
 
 void
@@ -2320,9 +2348,19 @@ ViewerQueryManager::SetGlobalLineoutAttsFromClient()
 
     if (globalLineoutClientAtts != 0)
     {
-        if (globalLineoutAtts->GetDynamic() != globalLineoutClientAtts->GetDynamic())
+        bool goingDynamic = globalLineoutClientAtts->GetDynamic();
+        bool creatingCurve = globalLineoutClientAtts->GetCurveOption() ==
+                             GlobalLineoutAttributes::CreateCurve;
+        if (globalLineoutAtts->GetDynamic() != goingDynamic)
         {
-            SetDynamicLineout(globalLineoutClientAtts->GetDynamic());
+            SetDynamicLineout(goingDynamic);
+            SetLineoutsTimeSlider(goingDynamic);
+            SetLineoutsFollowTime(!(goingDynamic && creatingCurve));
+        }
+        else if (globalLineoutAtts->GetCurveOption() !=
+            globalLineoutClientAtts->GetCurveOption())
+        {
+            SetLineoutsFollowTime(!(goingDynamic && creatingCurve));
         }
         *globalLineoutAtts = *globalLineoutClientAtts;
     }
@@ -4069,5 +4107,55 @@ void
 ViewerQueryManager::ResetLineoutColor()
 {
     colorIndex     = 0;
+}
+
+
+// ****************************************************************************
+//  Method: ViewerQueryManager::SetLineoutsFollowTime
+//
+//  Purpose:
+//    Tells the lineout lists to follow/not follow time.
+//    based on the passed value. 
+//
+//  Arguments:
+//    followTime   True if lineout's resplot should follow time. 
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   February 3, 2005 
+//
+// ****************************************************************************
+
+void
+ViewerQueryManager::SetLineoutsFollowTime(bool followTime)
+{
+    for (int i = 0; i < nLineouts; ++i)
+    {
+        lineoutList[i]->SetLineoutsFollowTime(followTime);
+    }
+}
+
+
+// ****************************************************************************
+//  Method: ViewerQueryManager::SetLineoutsTimeSlider
+//
+//  Purpose:
+//    Tells the lineout lists to turn on/off the time slider for the
+//    reswin's plot list. 
+//
+//  Arguments:
+//    removeTimeSlider   True if time slider should be removed, false otherwise.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   Februrary 3, 2005 
+//
+// ****************************************************************************
+
+void
+ViewerQueryManager::SetLineoutsTimeSlider(bool removeTimeSlider)
+{
+    for (int i = 0; i < nLineouts; ++i)
+    {
+        lineoutList[i]->SetTimeSlider(removeTimeSlider);
+    }
 }
 

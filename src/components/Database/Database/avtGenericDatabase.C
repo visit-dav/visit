@@ -5374,6 +5374,9 @@ avtGenericDatabase::ApplyGhostForDomainNesting(avtDatasetCollection &ds,
 //    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004 
 //    Changed 'vector<int>' to 'intVector'.
 //
+//    Kathleen Bonnell, Thu Feb  3 09:27:22 PST 2005 
+//    Set MIROccurred flag in avtDataAttributes. 
+//
 // ****************************************************************************
 
 void
@@ -5456,6 +5459,7 @@ avtGenericDatabase::MaterialSelect(avtDatasetCollection &ds,
         src->DatabaseProgress(i, ds.GetNDomains(), progressString);
     }
     src->DatabaseProgress(1, 0, progressString);
+    src->GetOutput()->GetInfo().GetAttributes().SetMIROccurred(true);
     src->GetOutput()->GetInfo().GetValidity().SetSubdivisionOccurred(
                                                         subdivisionOccurred);
     src->GetOutput()->GetInfo().GetValidity().SetNotAllCellsSubdivided(
@@ -5620,6 +5624,11 @@ avtGenericDatabase::CreateOriginalNodes(avtDatasetCollection &ds,
 //  Programmer:   Hank Childs 
 //  Creation:     September 30, 2002
 //
+//  Modifications:
+//    Brad Whitlock, Thu Feb 3 11:46:47 PDT 2005
+//    Added a check for NULL meshes since a case popped up where some of the
+//    return meshes were NULL.
+//
 // ****************************************************************************
 
 void
@@ -5631,6 +5640,11 @@ avtGenericDatabase::CreateStructuredIndices(avtDatasetCollection &dsc,
     for (int i = 0 ; i < dsc.GetNDomains() ; i++)
     {
         vtkDataSet *ds = dsc.GetDataset(i, 0);
+        if(ds == NULL)
+        {
+            debug1 << "Requested structured indices for NULL mesh." << endl;
+            continue;
+        }
         int dstype = ds->GetDataObjectType();
         int dims[3];
         if (dstype == VTK_RECTILINEAR_GRID)

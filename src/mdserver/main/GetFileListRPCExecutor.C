@@ -66,6 +66,9 @@ GetFileListRPCExecutor::~GetFileListRPCExecutor()
 //   Brad Whitlock, Thu Jul 29 12:20:50 PDT 2004
 //   I added support for extra smart file grouping.
 //
+//   Brad Whitlock, Fri Feb 4 15:17:39 PST 2005
+//   I changed how the file grouping settings are passed to the connection.
+//
 // ****************************************************************************
 
 void
@@ -82,8 +85,9 @@ GetFileListRPCExecutor::Update(Subject *s)
         {
             // Get the filtered file list.
             GetFileListRPC::FileList files;
-            parent->GetFilteredFileList(files, rpc->GetFilter(),
+            parent->SetFileGroupingOptions(rpc->GetFilter(),
                 rpc->GetSmartFileGrouping());
+            parent->GetFilteredFileList(files);
 
             debug4 << "FILELIST=" << files << endl;
             debug4.flush();
