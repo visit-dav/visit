@@ -190,6 +190,10 @@ avtSiloFileFormat::ActivateTimestep(void)
 //  Programmer: Mark C. Miller 
 //  Creation:   February 10, 2004
 //
+//  Modifications:
+//    Mark C. Miller, Tue Mar  9 08:44:23 PST 2004
+//    Added missing call to UsedFile
+//
 // ****************************************************************************
 
 DBfile *
@@ -328,11 +332,17 @@ avtSiloFileFormat::ReadGlobalInformation(DBfile *dbfile)
 //  Programmer: Hank Childs
 //  Creation:   March 11, 2002
 //
+//  Modifications:
+//    Added check for null metadata pointer and early return
+//
 // ****************************************************************************
 
 void
 avtSiloFileFormat::GetTimeVaryingInformation(DBfile *dbfile)
 {
+    if (metadata == 0)
+        return;
+
     //
     // Read out the cycle number and time.
     //

@@ -190,6 +190,7 @@ then
    ./visit-install -private -a -c closed -g visit -gw -l $ver sunos5 /usr/gapps/visit > installlog 2>&1
 else
    ./visit-install -private -c closed -g visit -gw -l $ver sunos5 /usr/gapps/visit > installlog 2>&1
+fi
 rm -f resultlog
 echo "        install of visit on sunset"          > resultlog 2>&1
 echo "       ----------------------------"         >> resultlog 2>&1

@@ -1292,6 +1292,10 @@ avtSILRestriction::GetLeafSets(int ind, vector<int> &leaves)
 //    Added better support for creating a compatible SIL when the two SILs
 //    are not identical in structure -- mainly for time-varying SILs
 //
+//    Mark C. Miller, Tue Mar 16 18:23:11 PST 2004
+//    Added code to test top-set names and return false if we think the SILs
+//    are for totally different meshes
+//
 // ****************************************************************************
 
 bool
@@ -1301,6 +1305,14 @@ avtSILRestriction::SetFromCompatibleRestriction(avtSILRestriction_p silr)
     int i;
     vector<int> leaves;
     vector<int> otherLeaves;
+
+    //
+    // if we think these are different meshes, do nothing & return false
+    //
+    string topName = GetSILSet(GetTopSet())->GetName();
+    string otherTopName = silr->GetSILSet(silr->GetTopSet())->GetName();
+    if (topName != otherTopName)
+        return false;
 
     //
     // Get the leaf sets for each SIL restriction.

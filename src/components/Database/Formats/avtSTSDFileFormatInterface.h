@@ -10,6 +10,7 @@
 #include <avtFileFormatInterface.h>
 #include <avtSTSDFileFormat.h>
 
+class avtIOInformation;
 
 // ****************************************************************************
 //  Class: avtSTSDFileFormatInterface
@@ -66,6 +67,8 @@ class DATABASE_API avtSTSDFileFormatInterface : public avtFileFormatInterface
     virtual void            FreeUpResources(int, int);
 
     virtual void            ActivateTimestep(int ts);
+
+    virtual void            PopulateIOInformation(int ts, avtIOInformation& ioInfo);
 
   protected:
     avtSTSDFileFormat    ***timesteps;

@@ -1829,12 +1829,16 @@ avtGenericDatabase::PopulateSIL(avtSIL *sil, int timeState)
 //  Programmer: Hank Childs
 //  Creation:   May 11, 2001
 //
+//  Modifications:
+//    Mark C. Miller, Tue Mar 16 14:40:19 PST 2004
+//    Added timestep argument
+//
 // ****************************************************************************
 
 void
-avtGenericDatabase::PopulateIOInformation(avtIOInformation &ioInfo)
+avtGenericDatabase::PopulateIOInformation(int ts, avtIOInformation &ioInfo)
 {
-    Interface->PopulateIOInformation(ioInfo);
+    Interface->PopulateIOInformation(ts, ioInfo);
 }
 
 // ****************************************************************************
@@ -2801,6 +2805,22 @@ avtGenericDatabase::HasInvariantSIL(void) const
     return Interface->HasInvariantSIL();
 }
 
+// ****************************************************************************
+//  Method: avtGenericDatabase::ActivateTimestep
+//
+//  Purpose: Provide collective entry-point into database for preparing to
+//  read a possibly new timestep
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   March 16, 2004 
+//
+// ****************************************************************************
+
+void
+avtGenericDatabase::ActivateTimestep(int stateIndex)
+{
+    Interface->ActivateTimestep(stateIndex);
+}
 
 // ****************************************************************************
 //  Method: avtGenericDatabase::ReadDataset
@@ -2855,6 +2875,10 @@ avtGenericDatabase::HasInvariantSIL(void) const
 //
 //    Mark C. Miller, Mon Feb 23 20:38:47 PST 2004
 //    Made call to ActivateTimestep accept the timestep as an argument
+//
+//    Mark C. Miller, Tue Mar 16 10:10:02 PST 2004
+//    Made call to ActivateTimestep call this class' implementation instead
+//    of referring to it through 'Interface->' explicitly
 //    
 // ****************************************************************************
 
@@ -2908,7 +2932,7 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, vector<int> &domains,
     // Some file formats may need to engage in global communication when
     // changing time-steps. Provide that opportunity here 
     //
-    Interface->ActivateTimestep(ts);
+    ActivateTimestep(ts);
 
     //
     // Iterate through each of the domains and do material selection as we go.

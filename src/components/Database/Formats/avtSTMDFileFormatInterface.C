@@ -421,7 +421,6 @@ avtSTMDFileFormatInterface::FreeUpResources(int ts, int)
     }
 }
 
-
 // ****************************************************************************
 //  Method: avtSTMDFileFormatInterface::ActivateTimestep
 //
@@ -446,4 +445,28 @@ avtSTMDFileFormatInterface::ActivateTimestep(int ts)
         ts = nTimesteps-1;
     }
     timesteps[ts]->ActivateTimestep();
+}
+
+// ****************************************************************************
+//  Method: avtSTMDFileFormatInterface::PopulateIOInformation
+//
+//  Purpose: Populate information regarding domain's assignment to files 
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   March 16, 2004 
+//
+// ****************************************************************************
+
+void
+avtSTMDFileFormatInterface::PopulateIOInformation(int ts, avtIOInformation& ioInfo)
+{
+    if (ts < 0 || ts >= nTimesteps)
+    {
+        //EXCEPTION2(BadIndexException, ts, nTimesteps);
+        debug1 << "INTERNAL ERROR: bad timestep = " << ts << " out of "
+               << nTimesteps << ".  To avoid a crash, ignorning fix until "
+               << "state issues are resolved." << endl;
+        ts = nTimesteps-1;
+    }
+    timesteps[ts]->PopulateIOInformation(ioInfo);
 }

@@ -270,3 +270,19 @@ avtMTMDFileFormatInterface::ActivateTimestep(int ts)
 {
     format->ActivateTimestep(ts);
 }
+
+// ****************************************************************************
+//  Method: avtMTMDFileFormatInterface::PopulateIOInformation
+//
+//  Purpose: Populate information regarding domain's assignment to files 
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   March 16, 2004 
+//
+// ****************************************************************************
+
+void
+avtMTMDFileFormatInterface::PopulateIOInformation(int ts, avtIOInformation& ioInfo)
+{
+    format->PopulateIOInformation(ts, ioInfo);
+}

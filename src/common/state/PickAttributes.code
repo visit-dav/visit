@@ -199,6 +199,9 @@ Definition:
 //   Kathleen Bonnell, Wed Dec 17 15:19:46 PST 2003 
 //   Support multiple types of coordinates. 
 //   
+//   Kathleen Bonnell, Tue Mar 16 16:02:05 PST 2004 
+//   Create message regarding invalid variables. 
+//   
 // ****************************************************************************
 void
 PickAttributes::CreateOutputString(std::string &os, bool withLetter)
@@ -419,6 +422,15 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
         os += iv;
         os += "\n";
     }
+    if (invalidVars.size() > 0)
+    {
+        os += "The following variables are invalid, and Pick ignored them:\n";
+        for (i = 0; i < invalidVars.size(); i++)
+        {
+            os += "  " + invalidVars[i];
+        }
+        os += "\n";
+    }
 }
 
 Function: PrepareForNewPick
@@ -446,6 +458,9 @@ Definition:
 //   
 //   Kathleen Bonnell, Wed Dec 17 15:19:46 PST 2003 
 //   Support new types of coordinates. 
+//   
+//   Kathleen Bonnell, Tue Mar 16 16:02:05 PST 2004
+//   Clear invalidVars. 
 //   
 // ****************************************************************************
 
@@ -489,6 +504,9 @@ PickAttributes::PrepareForNewPick()
         plotBounds[i] = 0.;
 
     ClearPickVarInfos();
+
+    if (!invalidVars.empty())
+        invalidVars.clear();
 }
 
 Function: SetFromNode

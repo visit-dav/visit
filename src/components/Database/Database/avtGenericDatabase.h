@@ -172,6 +172,9 @@ class     PickVarInfo;
 //    Kathleen Bonnell, Mon Dec 22 14:39:30 PST 2003 
 //    Add 'GetDomainName'. 
 //
+//    Mark C. Miller, Tue Mar 16 14:40:19 PST 2004
+//    Added timestep argument to PopulateIOInformation
+//
 // ****************************************************************************
 
 class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
@@ -195,6 +198,8 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
     virtual bool               HasInvariantMetaData(void) const;
     virtual bool               HasInvariantSIL(void) const;
 
+    virtual void               ActivateTimestep(int stateIndex);
+
     virtual bool               FindElementForPoint(const char *, const int, 
                                     const int, const char *, float[3], int &);
     virtual void                GetDomainName(const std::string &, const int ts,
@@ -207,7 +212,7 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
     int                        lastTimestep;
 
     virtual void               PopulateSIL(avtSIL *, int=0);
-    virtual void               PopulateIOInformation(avtIOInformation &);
+    virtual void               PopulateIOInformation(int ts, avtIOInformation &);
     virtual void               SetDatabaseMetaData(avtDatabaseMetaData *,int=0);
 
     vtkDataSet                *GetDataset(const char *, int, int, const char *,

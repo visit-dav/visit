@@ -80,6 +80,9 @@ void CheckPermissions(const char *);
 //    Hank Childs, Fri Mar  5 11:25:47 PST 2004
 //    Set the file format type with the database meta data.
 //
+//    Mark C. Miller, Tue Mar 16 09:38:19 PST 2004
+//    Just prior to calls to GetMetaData, added calls to ActivateTimestep.
+//
 // ****************************************************************************
 
 avtDatabase *
@@ -195,6 +198,7 @@ avtDatabaseFactory::FileList(const char * const * filelist, int filelistN,
                 //
                 if (rv != NULL)
                 {
+                    rv->ActivateTimestep(timestep);
                     avtDatabaseMetaData *md = rv->GetMetaData(timestep);
                     md->SetFileFormat(info->GetID());
                 }
@@ -228,6 +232,7 @@ avtDatabaseFactory::FileList(const char * const * filelist, int filelistN,
             //
             if (rv != NULL)
             {
+                rv->ActivateTimestep(timestep);
                 avtDatabaseMetaData *md = rv->GetMetaData(timestep);
                 md->SetFileFormat(info->GetID());
             }

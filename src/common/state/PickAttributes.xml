@@ -117,6 +117,8 @@
     </Field>
     <Field name="varInfo" label="varInfo" type="attVector" subtype="PickVarInfo" internal="true">
     </Field>
+    <Field name="invalidVars" label="invalidVars" type="stringVector" internal="true">
+    </Field>
     <Function name="PrintSelf" user="true" member="true">
     </Function>
     <Function name="CreateOutputString" user="true" member="true">

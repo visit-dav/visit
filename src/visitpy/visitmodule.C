@@ -1205,6 +1205,10 @@ visit_DeIconifyAllWindows(PyObject *self, PyObject *args)
 //   I made the function return a value that indicates the success of the
 //   OpenDatabase operation.
 //
+//   Mark C. Miller, Wed Mar 17 10:15:11 PST 2004
+//   Added support for optional second argument indicating the time index
+//   to open the database at.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -1213,12 +1217,18 @@ visit_OpenDatabase(PyObject *self, PyObject *args)
     ENSURE_VIEWER_EXISTS();
 
     char *fileName;
+    int timeIndex = 0;
     if (!PyArg_ParseTuple(args, "s", &fileName))
-       return NULL;
+    {
+        if(!PyArg_ParseTuple(args, "si", &fileName, &timeIndex))
+            return NULL;
+        else
+            PyErr_Clear();
+    }
 
     // Open the database.
     MUTEX_LOCK();
-        viewer->OpenDatabase(fileName);
+        viewer->OpenDatabase(fileName, timeIndex);
         if(logging)
             fprintf(logFile, "OpenDatabase(\"%s\")\n", fileName);
     MUTEX_UNLOCK();
@@ -1229,7 +1239,7 @@ visit_OpenDatabase(PyObject *self, PyObject *args)
     {
         // Go to the first time step.
         MUTEX_LOCK();
-            viewer->AnimationSetFrame(0);
+            viewer->AnimationSetFrame(timeIndex);
         MUTEX_UNLOCK();
         errorFlag = Synchronize();
     }

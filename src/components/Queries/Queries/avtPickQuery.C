@@ -181,6 +181,10 @@ avtPickQuery::PreExecute(void)
 //  Programmer: Kathleen Bonnell
 //  Creation:   November 15, 2002
 //
+//  Modifications:
+//    Kathleen Bonnell, Tue Mar 16 15:55:18 PST 2004
+//    Remove any "mesh" PickVarInfo's, as they are unnecessary
+//
 // ****************************************************************************
 
 void
@@ -234,6 +238,20 @@ avtPickQuery::PostExecute(void)
         }
     }
 #endif
+
+    //
+    // Remove any "mesh" PickVarInfo's, as they are unnecessary
+    //
+    for (int i = pickAtts.GetNumPickVarInfos()-1; i >= 0; i--)
+    {
+        if (strcmp(pickAtts.GetPickVarInfo(i).GetVariableType().c_str(),
+                   "mesh") == 0)
+        {
+            pickAtts.RemovePickVarInfo(i);
+        }
+    }
+
+
 }
 
 
