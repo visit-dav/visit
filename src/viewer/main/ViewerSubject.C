@@ -2488,11 +2488,17 @@ ViewerSubject::DeIconifyAllWindows()
 // Creation:   Tue Apr 16 12:33:19 PDT 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Jul 29 16:43:31 PST 2004
+//   I added a call to HeavyInitialization so the viewer gets initialized
+//   when called with the -defer argument by clients that should not use it
+//   (cli, java).
+//
 // ****************************************************************************
 void
 ViewerSubject::ShowAllWindows()
 {
+    HeavyInitialization();
+
     // Perform the rpc.
     ViewerWindowManager::Instance()->ShowAllWindows();
 }

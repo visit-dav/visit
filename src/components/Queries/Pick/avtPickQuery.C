@@ -5,6 +5,7 @@
 #include <avtPickQuery.h>
 
 #include <float.h>
+#include <snprintf.h>
 
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
@@ -416,7 +417,10 @@ avtPickQuery::DeterminePickedNode(vtkDataSet *ds, int &foundEl)
 //    
 //    Kathleen Bonnell, Thu Nov 20 15:06:49 PST 2003 
 //    Swapped 'VarIsMaterial' with check of varType. 
-//    
+//
+//    Brad Whitlock, Thu Jul 29 17:25:40 PST 2004
+//    I made it use SNPRINTF.
+//
 // ****************************************************************************
 
 void
@@ -432,11 +436,11 @@ avtPickQuery::SetRealIds(vtkDataSet *ds)
 
     stringVector elStrings;
     foundEl = vtkVisItUtility::CalculateRealID(foundEl, forCell, ds);
-    sprintf(fString, "(%d)", foundEl);
+    SNPRINTF(fString, 20, "(%d)", foundEl);
     for (i = 0; i < incEls.size(); i++)
     {
         incEls[i] = vtkVisItUtility::CalculateRealID(incEls[i], !forCell, ds);
-        sprintf(tmp, "(%d)", incEls[i]);
+        SNPRINTF(tmp, 20, "(%d)", incEls[i]);
         elStrings.push_back(tmp);
     }
 
@@ -499,7 +503,9 @@ avtPickQuery::VerifyInput()
 //  Creation:   May 10, 2004 
 //
 //  Modifications:
-//    
+//    Brad Whitlock, Thu Jul 29 17:26:26 PST 2004
+//    I made it use SNPRINTF.
+//
 // ****************************************************************************
 
 void
@@ -527,11 +533,11 @@ avtPickQuery::GetNodeCoords(vtkDataSet *ds, const int nodeId)
               false);
            if (pickAtts.GetDimension() == 2)
            {
-               sprintf(buff, "<%d, %d>", ijk[0], ijk[1]);
+               SNPRINTF(buff, 80, "<%d, %d>", ijk[0], ijk[1]);
            }
            else 
            {
-               sprintf(buff, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
+               SNPRINTF(buff, 80, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
            }
            nodeCoords.push_back(buff);
            pickAtts.SetDnodeCoords(nodeCoords);
@@ -543,11 +549,11 @@ avtPickQuery::GetNodeCoords(vtkDataSet *ds, const int nodeId)
                true);
            if (pickAtts.GetDimension() == 2)
            {
-               sprintf(buff, "<%d, %d>", ijk[0], ijk[1]);
+               SNPRINTF(buff, 80, "<%d, %d>", ijk[0], ijk[1]);
            }
            else 
            {
-               sprintf(buff, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
+               SNPRINTF(buff, 80, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
            }
            nodeCoords.push_back(buff);
            pickAtts.SetBnodeCoords(nodeCoords);
@@ -558,11 +564,11 @@ avtPickQuery::GetNodeCoords(vtkDataSet *ds, const int nodeId)
        nodeCoords.clear();
        if (pickAtts.GetDimension() == 2)
        {
-           sprintf(buff, "<%g, %g>", coord[0], coord[1]);
+           SNPRINTF(buff, 80, "<%g, %g>", coord[0], coord[1]);
        }
        else 
        {
-           sprintf(buff, "<%g, %g, %g>", coord[0], coord[1], coord[2]);
+           SNPRINTF(buff, 80, "<%g, %g, %g>", coord[0], coord[1], coord[2]);
        }
        nodeCoords.push_back(buff);
        pickAtts.SetPnodeCoords(nodeCoords);
@@ -584,7 +590,10 @@ avtPickQuery::GetNodeCoords(vtkDataSet *ds, const int nodeId)
 //  Creation:   May 10, 2004 
 //
 //  Modifications:
-//    
+//    Brad Whitlock, Thu Jul 29 17:23:14 PST 2004
+//    I made it use the cell origin for the zonal domain logical coordinates.
+//    I also made it use SNPRINTF.
+//
 // ****************************************************************************
 
 void
@@ -606,11 +615,15 @@ avtPickQuery::GetZoneCoords(vtkDataSet *ds, const int zoneId)
                         ijk, false);
             if (pickAtts.GetDimension() == 2)
             {
-                sprintf(buff, "<%d, %d>", ijk[0], ijk[1]);
+                SNPRINTF(buff, 80, "<%d, %d>", ijk[0] + cellOrigin,
+                         ijk[1] + cellOrigin);
             }
             else 
             {
-                sprintf(buff, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
+                SNPRINTF(buff, 80, "<%d, %d, %d>",
+                         ijk[0] + cellOrigin,
+                         ijk[1] + cellOrigin,
+                         ijk[2] + cellOrigin);
             }
             zoneCoords.push_back(buff);
             pickAtts.SetDzoneCoords(zoneCoords);
@@ -622,11 +635,11 @@ avtPickQuery::GetZoneCoords(vtkDataSet *ds, const int zoneId)
                         ijk, true);
             if (pickAtts.GetDimension() == 2)
             {
-                sprintf(buff, "<%d, %d>", ijk[0], ijk[1]);
+                SNPRINTF(buff, 80, "<%d, %d>", ijk[0], ijk[1]);
             }
             else 
             {
-                sprintf(buff, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
+                SNPRINTF(buff, 80, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
             }
             zoneCoords.push_back(buff);
             pickAtts.SetBzoneCoords(zoneCoords);
@@ -746,7 +759,7 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds)
                 // data we want is associated with incidentElements
                 for (int k = 0; k < incidentElements.size(); k++)
                 {
-                    sprintf(buff, "(%d)", incidentElements[k]);
+                    SNPRINTF(buff, 80, "(%d)", incidentElements[k]);
                     names.push_back(buff);
                     varArray->GetTuple(incidentElements[k], temp);
                     mag = 0;
@@ -766,7 +779,7 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds)
             else  
             {
                 // data we want is associated with element
-                sprintf(buff, "(%d)", element);
+                SNPRINTF(buff, 80, "(%d)", element);
                 names.push_back(buff);
                 varArray->GetTuple(element, temp);
                 mag = 0.;
@@ -852,6 +865,9 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds)
 //    Kathleen Bonnell, Wed Dec 17 15:06:34 PST 2003 
 //    Added logic to support multiple types of coordinates. 
 //
+//    Brad Whitlock, Fri Jul 30 08:58:27 PDT 2004
+//    Made it use SNPRINTF.
+//
 // ****************************************************************************
 
 bool
@@ -891,11 +907,11 @@ avtPickQuery::RetrieveNodes(vtkDataSet *ds, int zone)
                          ptIds->GetId(i), ijk, false);
                     if (pickAtts.GetDimension() == 2)
                     {
-                        sprintf(buff, "<%d, %d>", ijk[0], ijk[1]);
+                        SNPRINTF(buff, 80, "<%d, %d>", ijk[0], ijk[1]);
                     }
                     else 
                     {
-                        sprintf(buff, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
+                        SNPRINTF(buff, 80, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
                     }
                     dnodeCoords.push_back(buff);
                 }
@@ -905,11 +921,11 @@ avtPickQuery::RetrieveNodes(vtkDataSet *ds, int zone)
                          ptIds->GetId(i), ijk, true);
                     if (pickAtts.GetDimension() == 2)
                     {
-                        sprintf(buff, "<%d, %d>", ijk[0], ijk[1]);
+                        SNPRINTF(buff, 80, "<%d, %d>", ijk[0], ijk[1]);
                     }
                     else 
                     {
-                        sprintf(buff, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
+                        SNPRINTF(buff, 80, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
                     }
                     bnodeCoords.push_back(buff);
                 }
@@ -919,11 +935,11 @@ avtPickQuery::RetrieveNodes(vtkDataSet *ds, int zone)
                 ds->GetPoint(ptIds->GetId(i), coord); 
                 if (pickAtts.GetDimension() == 2)
                 {
-                    sprintf(buff, "<%g, %g>", coord[0], coord[1]);
+                    SNPRINTF(buff, 80, "<%g, %g>", coord[0], coord[1]);
                 }
                 else 
                 {
-                    sprintf(buff, "<%g, %g, %g>", coord[0], coord[1], coord[2]);
+                    SNPRINTF(buff, 80, "<%g, %g, %g>", coord[0], coord[1], coord[2]);
                 }
                 pnodeCoords.push_back(buff);
             }
@@ -976,6 +992,10 @@ avtPickQuery::RetrieveNodes(vtkDataSet *ds, int zone)
 //    Kathleen Bonnell, Wed Dec 17 15:06:34 PST 2003 
 //    Added logic to support multiple types of coordinates. 
 //
+//    Brad Whitlock, Fri Jul 30 09:00:37 PDT 2004
+//    I made it use the cell origin for the domain logical indices and I
+//    changed sprintf to SNPRINTF.
+//
 // ****************************************************************************
 
 bool
@@ -1023,11 +1043,13 @@ avtPickQuery::RetrieveZones(vtkDataSet *ds, int foundNode)
 
                     if (pickAtts.GetDimension() == 2)
                     {
-                        sprintf(buff, "<%d, %d>", ijk[0], ijk[1]);
+                        SNPRINTF(buff, 80, "<%d, %d>", ijk[0] + cellOrigin,
+                                 ijk[1] + cellOrigin);
                     }
                     else 
                     {
-                        sprintf(buff, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
+                        SNPRINTF(buff, 80, "<%d, %d, %d>", ijk[0] + cellOrigin,
+                                 ijk[1] + cellOrigin, ijk[2] + cellOrigin);
                     }
                     dzoneCoords.push_back(buff);
                 }
@@ -1038,11 +1060,11 @@ avtPickQuery::RetrieveZones(vtkDataSet *ds, int foundNode)
 
                     if (pickAtts.GetDimension() == 2)
                     {
-                        sprintf(buff, "<%d, %d>", ijk[0], ijk[1]);
+                        SNPRINTF(buff, 80, "<%d, %d>", ijk[0], ijk[1]);
                     }
                     else 
                     {
-                        sprintf(buff, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
+                        SNPRINTF(buff, 80, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
                     }
                     bzoneCoords.push_back(buff);
                 }

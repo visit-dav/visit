@@ -9,6 +9,7 @@ class QComboBox;
 class QGroupBox;
 class QLabel;
 class QLineEdit;
+class QPushButton;
 class QSlider;
 class SaveWindowAttributes;
 
@@ -37,6 +38,9 @@ class SaveWindowAttributes;
 //   Kathleen Bonnell, Thu Nov 13 12:14:30 PST 2003 
 //   Added combo box for compression type. 
 //
+//   Brad Whitlock, Fri Jul 30 15:14:44 PST 2004
+//   Added save path and a slot to save the image.
+//
 // ****************************************************************************
 
 class GUI_API QvisSaveWindow : public QvisPostableWindowObserver
@@ -55,7 +59,8 @@ protected:
     void GetCurrentValues(int which_widget);
     void Apply(bool ignore = false);
 protected slots:
-    void processHostText();
+    void outputToCurrentDirectoryToggled(bool);
+    void processOutputDirectoryText();
     void processFilenameText();
     void familyToggled(bool);
     void stereoToggled(bool);
@@ -69,8 +74,13 @@ protected slots:
     void screenCaptureToggled(bool);
     void saveTiledToggled(bool);
     void compressionTypeChanged(int);
+    void saveWindow();
+    void selectOutputDirectory();
 private:
-    QLineEdit           *hostLineEdit;
+    QCheckBox           *outputToCurrentDirectoryCheckBox;
+    QLabel              *outputDirectoryLabel;
+    QLineEdit           *outputDirectoryLineEdit;
+    QPushButton         *outputDirectorySelectButton;
     QLineEdit           *filenameLineEdit;
     QCheckBox           *familyCheckBox;
     QCheckBox           *stereoCheckBox;

@@ -78,6 +78,9 @@ inline char toupper(char c)
 //    Jeremy Meredith, Wed Jul  7 17:08:03 PDT 2004
 //    Allow for mdserver-specific code in a plugin's source files.
 //
+//    Brad Whitlock, Fri Jul 30 16:29:12 PST 2004
+//    Fixed the size of a buffer used by SNPRINTF when writing out enum code.
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -1662,7 +1665,7 @@ class PythonGeneratorEnum : public virtual Enum , public virtual PythonGenerator
             else
                 c << "else" << endl;
             c << "        {" << endl;
-            c << "             SNPRINTF(tmpStr, 10000, \"" << name << " = " << enumType->values[i] << "  # %s\\n\", " << name << "_names);" << endl;
+            c << "             SNPRINTF(tmpStr, 1000, \"" << name << " = " << enumType->values[i] << "  # %s\\n\", " << name << "_names);" << endl;
             c << "             str += tmpStr;" << endl;
             c << "        }" << endl;
         }

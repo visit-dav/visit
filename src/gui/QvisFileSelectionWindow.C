@@ -345,6 +345,10 @@ QvisFileSelectionWindow::~QvisFileSelectionWindow()
 //   Brad Whitlock, Thu Jul 29 13:50:53 PST 2004
 //   I added support for smart file grouping.
 //
+//   Brad Whitlock, Fri Jul 30 12:01:32 PDT 2004
+//   I hooked up some more signals and slots so pressing the Enter key will
+//   let you select files and navigate directories.
+//
 // ****************************************************************************
 
 void
@@ -448,12 +452,14 @@ QvisFileSelectionWindow::CreateWindowContents()
     //
     // Create the directory list.
     //
-    QVBox *directoryVBox = new QVBox(listSplitter, "directoryVBox");    
+    QVBox *directoryVBox = new QVBox(listSplitter, "directoryVBox");
     new QLabel("Directories", directoryVBox, "directoryLabel");
     directoryList = new QListBox(directoryVBox, "directoryList");
     int minColumnWidth = fontMetrics().width("X");
     directoryList->setMinimumWidth(minColumnWidth * 20);
     connect(directoryList, SIGNAL(doubleClicked(QListBoxItem *)),
+            this, SLOT(changeDirectory(QListBoxItem *)));
+    connect(directoryList, SIGNAL(returnPressed(QListBoxItem *)),
             this, SLOT(changeDirectory(QListBoxItem *)));
 
     //
@@ -466,6 +472,8 @@ QvisFileSelectionWindow::CreateWindowContents()
     fileList->setMinimumWidth(minColumnWidth * 20);
     connect(fileList, SIGNAL(doubleClicked(QListBoxItem *)),
             this, SLOT(selectFileDblClick(QListBoxItem *)));
+    connect(fileList, SIGNAL(returnPressed(QListBoxItem *)),
+            this, SLOT(selectFileReturnPressed(QListBoxItem *)));
     connect(fileList, SIGNAL(selectionChanged()),
             this, SLOT(selectFileChanged()));
 
@@ -499,6 +507,8 @@ QvisFileSelectionWindow::CreateWindowContents()
     selectedFileList->setMinimumWidth(minColumnWidth * 30);
     connect(selectedFileList, SIGNAL(selectionChanged()),
             this, SLOT(selectedFileSelectChanged()));
+    connect(selectedFileList, SIGNAL(returnPressed(QListBoxItem *)),
+            this, SLOT(removeSelectedFiles(QListBoxItem *)));
 
     // Create the Ok button
     QHBoxLayout *buttonLayout = new QHBoxLayout(topLayout);
@@ -2213,6 +2223,26 @@ QvisFileSelectionWindow::selectFile()
 }
 
 // ****************************************************************************
+// Method: QvisFileSelectionWindow::selectFileReturnPressed
+//
+// Purpose: 
+//   This method lets us select multiple files from the file list into the
+//   selected file list by hitting the Enter key.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jul 30 11:03:49 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisFileSelectionWindow::selectFileReturnPressed(QListBoxItem *)
+{
+    selectFile();
+}
+
+// ****************************************************************************
 // Method: QvisFileSelectionWindow::selectAllFiles
 //
 // Purpose: 
@@ -2300,6 +2330,26 @@ QvisFileSelectionWindow::removeFile()
 }
 
 // ****************************************************************************
+// Method: QvisFileSelectionWindow::removeSelectedFiles
+//
+// Purpose: 
+//   This method lets us remove files from the selected files list by hitting
+//   the Enter key.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jul 30 11:05:05 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisFileSelectionWindow::removeSelectedFiles(QListBoxItem *)
+{
+    removeFile();
+}
+
+// ****************************************************************************
 // Method: QvisFileSelectionWindow::removeAllFiles
 //
 // Purpose: 
@@ -2327,7 +2377,7 @@ QvisFileSelectionWindow::removeAllFiles()
 }
 
 // ****************************************************************************
-// Method: QvisFileSelectionWindow::selectFile
+// Method: QvisFileSelectionWindow::groupFiles
 //
 // Purpose: 
 //   This is a Qt slot function that groups all of the highlighted files

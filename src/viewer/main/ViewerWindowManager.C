@@ -1367,6 +1367,10 @@ ViewerWindowManager::ChooseCenterOfRotation(int windowIndex,
 //    Brad Whitlock, Thu Jul 15 16:27:15 PST 2004
 //    I made it send a different message for tiled images.
 //
+//    Brad Whitlock, Fri Jul 30 16:23:09 PST 2004
+//    I added code to figure out the basename for the filenames when an
+//    output directory is specified.
+//
 // ****************************************************************************
 
 void
@@ -1392,6 +1396,48 @@ ViewerWindowManager::SaveWindow(int windowIndex)
     ENDTRY
 
     //
+    // Figure out a candidate for the base filename. This involves
+    // gluing the output directory on when necessary.
+    //
+    std::string fileBase;
+    if(saveWindowClientAtts->GetOutputToCurrentDirectory())
+    {
+        fileBase = saveWindowClientAtts->GetFileName();
+    }
+    else
+    {
+        fileBase = saveWindowClientAtts->GetOutputDirectory();
+        if(fileBase.size() > 0)
+        {
+            std::string f(saveWindowClientAtts->GetFileName());
+            if(f.size() == 0) 
+            {
+                f = "visit";
+                Warning("The specified filename was empty. VisIt will "
+                        "use the name \"visit\" as the base for the files "
+                        "to be saved.");
+            }
+
+            if(fileBase[fileBase.size() - 1] == SLASH_CHAR)
+            {
+                if(f[0] == SLASH_CHAR)
+                    fileBase = fileBase.substr(0,fileBase.size()-1) + f;
+                else
+                    fileBase += f;
+            }
+            else
+            {
+                if(f[0] == SLASH_CHAR)
+                    fileBase += f;
+                else
+                    fileBase = fileBase + std::string(SLASH_STRING) + f;
+            }
+        }
+        else
+            fileBase = saveWindowClientAtts->GetFileName();
+    }
+
+    //
     // We need to get a file name.  If we are in stereo, then we will need
     // two file names.
     //
@@ -1402,11 +1448,9 @@ ViewerWindowManager::SaveWindow(int windowIndex)
     {
         if (saveWindowClientAtts->GetFamily())
         {
-            filename = fileWriter->CreateFilename(
-                                  saveWindowClientAtts->GetFileName().c_str(),
+            filename = fileWriter->CreateFilename(fileBase.c_str(),
                                   saveWindowClientAtts->GetFamily());
-            filename2 = fileWriter->CreateFilename(
-                                  saveWindowClientAtts->GetFileName().c_str(),
+            filename2 = fileWriter->CreateFilename(fileBase.c_str(),
                                   saveWindowClientAtts->GetFamily());
         }
         else
@@ -1414,7 +1458,7 @@ ViewerWindowManager::SaveWindow(int windowIndex)
             //
             // Find everything up until the last slash.
             //
-            const char *fname = saveWindowClientAtts->GetFileName().c_str();
+            const char *fname = fileBase.c_str();
             const char *tmp = fname, *last = NULL;
             while (tmp != NULL)
             {
@@ -1469,8 +1513,7 @@ ViewerWindowManager::SaveWindow(int windowIndex)
     }
     else
     {
-        filename = fileWriter->CreateFilename(
-                              saveWindowClientAtts->GetFileName().c_str(),
+        filename = fileWriter->CreateFilename(fileBase.c_str(),
                               saveWindowClientAtts->GetFamily());
     }
 
@@ -1558,45 +1601,30 @@ ViewerWindowManager::SaveWindow(int windowIndex)
     bool savedWindow = true;
     if (*dob != NULL)
     {
-#if 0
-        if(saveWindowClientAtts->GetHostName() == "localhost")
+        TRY
         {
-#endif
-            TRY
+            // Tell the writer to save the window on the viewer.
+            fileWriter->Write(filename, dob,saveWindowClientAtts->GetQuality(),
+                              saveWindowClientAtts->GetProgressive(),
+                              saveWindowClientAtts->GetCompression(),
+                              saveWindowClientAtts->GetBinary());
+
+            if (*dob2 != NULL)
             {
                 // Tell the writer to save the window on the viewer.
-                fileWriter->Write(filename, dob,saveWindowClientAtts->GetQuality(),
+                fileWriter->Write(filename2, 
+                                  dob2,saveWindowClientAtts->GetQuality(),
                                   saveWindowClientAtts->GetProgressive(),
                                   saveWindowClientAtts->GetCompression(),
                                   saveWindowClientAtts->GetBinary());
-    
-                if (*dob2 != NULL)
-                {
-                    // Tell the writer to save the window on the viewer.
-                    fileWriter->Write(filename2, 
-                                      dob2,saveWindowClientAtts->GetQuality(),
-                                      saveWindowClientAtts->GetProgressive(),
-                                      saveWindowClientAtts->GetCompression(),
-                                      saveWindowClientAtts->GetBinary());
-                }
             }
-            CATCH2(VisItException, ve)
-            {
-                Warning(ve.Message().c_str());
-                savedWindow = false;
-            }
-            ENDTRY
-#if 0
         }
-        else
+        CATCH2(VisItException, ve)
         {
-            // Make the Engine manager send the image back to the appropriate
-            // engine so the image can be written to disk there.
-            ViewerEngineManager::Instance()->WriteDataObject(
-                saveWindowClientAtts->GetHostName(), filename, dob,
-                saveWindowClientAtts->GetFormat());
+            Warning(ve.Message().c_str());
+            savedWindow = false;
         }
-#endif
+        ENDTRY
     }
     else
     {

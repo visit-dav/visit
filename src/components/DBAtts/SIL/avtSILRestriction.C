@@ -631,6 +631,68 @@ avtSILRestriction::TurnOffSet(int ind)
 
 
 // ****************************************************************************
+// Method: avtSILRestriction::ReverseSet
+//
+// Purpose: 
+//   Reverses the on/off state all of the sets under the specified state.
+//
+// Arguments:
+//   ind ; The index of the set whose selection we're going to reverse.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jul 30 14:52:58 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtSILRestriction::ReverseSet(int ind)
+{
+    // Get all of the leaf sets under the specified set.
+    intVector leaves;
+    GetLeafSets(ind, leaves);
+
+    // Reverse the selection of all of the subsets.
+    if(leaves.size() == 0)
+    {
+        SetState state = (SetState)useSet[ind];
+        if(state == AllUsed ||
+           state == AllUsedOtherProc)
+        {
+            TurnOffSet(ind);
+        }
+        else if(state == NoneUsed)
+        {
+            TurnOnSet(ind);
+        }
+    }
+    else
+    {
+        for(int i = 0; i < leaves.size(); ++i)
+        {
+            int setId = leaves[i];
+            SetState state = (SetState)useSet[setId];
+            if(state == AllUsed ||
+                state == AllUsedOtherProc)
+            {
+                TurnOffSet(setId);
+            }
+            else if(state == NoneUsed)
+            {
+                TurnOnSet(setId);
+            }
+        }
+    }
+
+    if (!suspendCorrectnessChecking)
+    {
+        EnsureRestrictionCorrectness(topSet);
+    }
+}
+
+
+// ****************************************************************************
 //  Method: avtSILRestriction::TurnBoolSet
 //
 //  Purpose:

@@ -83,6 +83,10 @@ class QvisRecentPathRemovalWindow;
 //   I added smart file grouping support and I fixed a bug in how the hosts
 //   are added to the host combo box.
 //
+//   Brad Whitlock, Fri Jul 30 10:59:14 PDT 2004
+//   I added a new slot function so we can select multiple files by hitting
+//   the return key in the file list.
+//
 // ****************************************************************************
 
 class GUI_API QvisFileSelectionWindow : public QvisDelayedWindowSimpleObserver
@@ -136,10 +140,12 @@ private slots:
     void selectFile();
     void selectFileDblClick(QListBoxItem *item);
     void selectFileChanged();
+    void selectFileReturnPressed(QListBoxItem *);
     void selectedFileSelectChanged();
     void selectAllFiles();
     void removeFile();
     void removeAllFiles();
+    void removeSelectedFiles(QListBoxItem *);
     void refreshFiles();
     void currentDir(bool val);
     void fileGroupingChanged(int val);
