@@ -4,14 +4,35 @@
 
 #include <vtkVolumeFromVolume.h>
 
-#include <vtkIdList.h>
+#include <vtkCellArray.h>
 #include <vtkCellData.h>
 #include <vtkCellType.h>
 #include <vtkIdList.h>
+#include <vtkIntArray.h>
 #include <vtkPointData.h>
 #include <vtkUnstructuredGrid.h>
+#include <vtkUnsignedCharArray.h>
 
 using std::vector;
+
+// ****************************************************************************
+//  Method: vtkVolumeFromVolume constructor
+//
+//  Programmer: Hank Childs
+//  Creation:   October 21, 2004
+//
+// ****************************************************************************
+
+vtkVolumeFromVolume::vtkVolumeFromVolume(int nPts, int ptSizeGuess)
+    : vtkDataSetFromVolume(nPts, ptSizeGuess), nshapes(6)
+{
+    shapes[0] = &hexes;
+    shapes[1] = &wedges;
+    shapes[2] = &pyramids;
+    shapes[3] = &tets;
+    shapes[4] = &quads;
+    shapes[5] = &tris;
+}
 
 vtkVolumeFromVolume::CentroidPointList::CentroidPointList()
 {
@@ -176,6 +197,14 @@ vtkVolumeFromVolume::HexList::~HexList()
 {
 }
  
+// ****************************************************************************
+//  Modifications:
+//
+//    Hank Childs, Thu Oct 21 15:32:07 PDT 2004
+//    Fix bug where we run out of memory.
+//
+// ****************************************************************************
+
 void
 vtkVolumeFromVolume::HexList::AddHex(int cellId,
                                      int v1, int v2, int v3, int v4,
@@ -183,7 +212,7 @@ vtkVolumeFromVolume::HexList::AddHex(int cellId,
 {
     if (currentShape >= shapesPerList)
     {
-        if (currentList >= listSize+1)
+        if ((currentList+1) >= listSize)
         {
             int **tmpList = new int*[2*listSize];
             for (int i = 0 ; i < listSize ; i++)
@@ -223,6 +252,14 @@ vtkVolumeFromVolume::WedgeList::~WedgeList()
 {
 }
  
+// ****************************************************************************
+//  Modifications:
+//
+//    Hank Childs, Thu Oct 21 15:32:07 PDT 2004
+//    Fix bug where we run out of memory.
+//
+// ****************************************************************************
+
 void
 vtkVolumeFromVolume::WedgeList::AddWedge(int cellId,
                                          int v1, int v2, int v3,
@@ -230,7 +267,7 @@ vtkVolumeFromVolume::WedgeList::AddWedge(int cellId,
 {
     if (currentShape >= shapesPerList)
     {
-        if (currentList >= listSize+1)
+        if ((currentList+1) >= listSize)
         {
             int **tmpList = new int*[2*listSize];
             for (int i = 0 ; i < listSize ; i++)
@@ -268,13 +305,21 @@ vtkVolumeFromVolume::PyramidList::~PyramidList()
 {
 }
  
+// ****************************************************************************
+//  Modifications:
+//
+//    Hank Childs, Thu Oct 21 15:32:07 PDT 2004
+//    Fix bug where we run out of memory.
+//
+// ****************************************************************************
+
 void
 vtkVolumeFromVolume::PyramidList::AddPyramid(int cellId, int v1, int v2,
                                              int v3, int v4, int v5)
 {
     if (currentShape >= shapesPerList)
     {
-        if (currentList >= listSize+1)
+        if ((currentList+1) >= listSize)
         {
             int **tmpList = new int*[2*listSize];
             for (int i = 0 ; i < listSize ; i++)
@@ -311,12 +356,20 @@ vtkVolumeFromVolume::TetList::~TetList()
 {
 }
  
+// ****************************************************************************
+//  Modifications:
+//
+//    Hank Childs, Thu Oct 21 15:32:07 PDT 2004
+//    Fix bug where we run out of memory.
+//
+// ****************************************************************************
+
 void
 vtkVolumeFromVolume::TetList::AddTet(int cellId, int v1,int v2,int v3,int v4)
 {
     if (currentShape >= shapesPerList)
     {
-        if (currentList >= listSize+1)
+        if ((currentList+1) >= listSize)
         {
             int **tmpList = new int*[2*listSize];
             for (int i = 0 ; i < listSize ; i++)
@@ -352,12 +405,20 @@ vtkVolumeFromVolume::QuadList::~QuadList()
 {
 }
  
+// ****************************************************************************
+//  Modifications:
+//
+//    Hank Childs, Thu Oct 21 15:32:07 PDT 2004
+//    Fix bug where we run out of memory.
+//
+// ****************************************************************************
+
 void
 vtkVolumeFromVolume::QuadList::AddQuad(int cellId, int v1,int v2,int v3,int v4)
 {
     if (currentShape >= shapesPerList)
     {
-        if (currentList >= listSize+1)
+        if ((currentList+1) >= listSize)
         {
             int **tmpList = new int*[2*listSize];
             for (int i = 0 ; i < listSize ; i++)
@@ -393,12 +454,20 @@ vtkVolumeFromVolume::TriList::~TriList()
 {
 }
  
+// ****************************************************************************
+//  Modifications:
+//
+//    Hank Childs, Thu Oct 21 15:32:07 PDT 2004
+//    Fix bug where we run out of memory.
+//
+// ****************************************************************************
+
 void
 vtkVolumeFromVolume::TriList::AddTri(int cellId, int v1,int v2,int v3)
 {
     if (currentShape >= shapesPerList)
     {
-        if (currentList >= listSize+1)
+        if ((currentList+1) >= listSize)
         {
             int **tmpList = new int*[2*listSize];
             for (int i = 0 ; i < listSize ; i++)
@@ -424,11 +493,15 @@ vtkVolumeFromVolume::TriList::AddTri(int cellId, int v1,int v2,int v3)
 }
 
 
-
 // ****************************************************************************
 //  Modifications:
 //    Jeremy Meredith, Mon Feb 16 19:11:34 PST 2004
 //    Added polygonal cell support.
+//
+//    Hank Childs, Thu Oct 21 07:52:31 PDT 2004
+//    Instead of duplicating code, just call a common function.
+//    (Moved whole routine to new ConstructDataSet method with 
+//     CommonPointsStructure in signature).
 //
 // ****************************************************************************
 void
@@ -436,28 +509,138 @@ vtkVolumeFromVolume::ConstructDataSet(vtkPointData *inPD, vtkCellData *inCD,
                                       vtkUnstructuredGrid *output,
                                       float *pts_ptr)
 {
-    int   i, j;
+    CommonPointsStructure cps;
+    cps.hasPtsList = true;
+    cps.pts_ptr = pts_ptr;
+    ConstructDataSet(inPD, inCD, output, cps);
+}
+
+
+// ****************************************************************************
+//  Modifications:
+//    Jeremy Meredith, Mon Feb 16 19:11:34 PST 2004
+//    Added polygonal cell support.
+//
+//    Hank Childs, Thu Oct 21 07:52:31 PDT 2004
+//    Instead of duplicating code, just call a common function.
+//    (Moved whole routine to new ConstructDataSet method with 
+//     CommonPointsStructure in signature).
+//
+// ****************************************************************************
+void
+vtkVolumeFromVolume::ConstructDataSet(vtkPointData *inPD, vtkCellData *inCD,
+                                      vtkUnstructuredGrid *output,
+                                      int *dims, float *X, float *Y, float *Z)
+{
+    CommonPointsStructure cps;
+    cps.hasPtsList = false;
+    cps.dims = dims;
+    cps.X = X;
+    cps.Y = Y;
+    cps.Z = Z;
+    ConstructDataSet(inPD, inCD, output, cps);
+}
+
+
+// ****************************************************************************
+//  Method: vtkVolumeFromVolume::ConstructDataSet
+//
+//  Purpose:
+//      Constructs the output dataset.
+//
+//  Notes:  The code for this function use to be located in the two functions
+//          written by Jeremy Meredith.  I unified them here and made some
+//          additional enhancements.
+//
+//  Programmer: Hank Childs
+//  Creation:   October 21, 2004
+//
+//  Modifications:
+//
+//    Hank Childs, Thu Oct 21 07:23:55 PDT 2004
+//    Only create points in the output that will actually be referenced.  Also
+//    generalized the shape list to reduce code.
+//
+// ****************************************************************************
+
+void
+vtkVolumeFromVolume::ConstructDataSet(vtkPointData *inPD, vtkCellData *inCD,
+                                      vtkUnstructuredGrid *output,
+                                      CommonPointsStructure &cps)
+{
+    int   i, j, k, l;
 
     vtkPointData *outPD = output->GetPointData();
     vtkCellData  *outCD = output->GetCellData();
 
     //
+    // If the isovolume only affects a small part of the dataset, we can save
+    // on memory by only bringing over the points from the original dataset
+    // that are used with the output.  Determine which points those are here.
+    //
+    int *ptLookup = new int[numPrevPts];
+    for (i = 0 ; i < numPrevPts ; i++)
+        ptLookup[i] = -1;
+    int numUsed = 0;
+    for (i = 0 ; i < nshapes ; i++)
+    {
+        int nlists = shapes[i]->GetNumberOfLists();
+        int npts_per_shape = shapes[i]->GetShapeSize();
+        for (j = 0 ; j < nlists ; j++)
+        {
+            const int *list;
+            int listSize = shapes[i]->GetList(j, list);
+            for (k = 0 ; k < listSize ; k++)
+            {
+                list++; // skip the cell id entry
+                for (l = 0 ; l < npts_per_shape ; l++)
+                {
+                    int pt = *list;
+                    list++;
+                    if (pt >= 0 && pt < numPrevPts)
+                        if (ptLookup[pt] == -1)
+                            ptLookup[pt] = numUsed++;
+                }
+            }
+        }
+    }
+
+    //
     // Set up the output points and its point data.
     //
     vtkPoints *outPts = vtkPoints::New();
-    int centroidStart = numPrevPts + pt_list.GetTotalNumberOfPoints();
+    int centroidStart = numUsed + pt_list.GetTotalNumberOfPoints();
     int nOutPts = centroidStart + centroid_list.GetTotalNumberOfPoints();
     outPts->SetNumberOfPoints(nOutPts);
     outPD->CopyAllocate(inPD, nOutPts);
 
-    int ptIdx = 0;
+    //
+    // Copy over all the points from the input that are actually used in the
+    // output.
+    //
     for (i = 0 ; i < numPrevPts ; i++)
     {
-        outPts->SetPoint(ptIdx, &pts_ptr[3*i]);
-        outPD->CopyData(inPD, i, ptIdx);
-        ptIdx++;
-    }
+        if (ptLookup[i] == -1)
+            continue;
 
+        if (cps.hasPtsList)
+            outPts->SetPoint(ptLookup[i], cps.pts_ptr + 3*i);
+        else
+        {
+            int I = i % cps.dims[0];
+            int J = (i / cps.dims[0]) % cps.dims[1];
+            int K = i / (cps.dims[0]*cps.dims[1]);
+            outPts->SetPoint(ptLookup[i], cps.X[I], cps.Y[J], cps.Z[K]);
+        }
+
+        outPD->CopyData(inPD, i, ptLookup[i]);
+    }
+    int ptIdx = numUsed;
+
+    //
+    // Now construct all the points that are along edges and new and add 
+    // them to the points list.
+    //
     int nLists = pt_list.GetNumberOfLists();
     for (i = 0 ; i < nLists ; i++)
     {
@@ -467,28 +650,59 @@ vtkVolumeFromVolume::ConstructDataSet(vtkPointData *inPD, vtkCellData *inCD,
         {
             const PointEntry &pe = pe_list[j];
             float pt[3];
-            int idx1 = pe.ptIds[0]*3;
-            int idx2 = pe.ptIds[1]*3;
+            int idx1 = pe.ptIds[0];
+            int idx2 = pe.ptIds[1];
+
+            // Construct the original points -- this will depend on whether
+            // or not we started with a rectilinear grid or a point set.
+            float *pt1 = NULL;
+            float *pt2 = NULL;
+            float pt1_storage[3];
+            float pt2_storage[3];
+            if (cps.hasPtsList)
+            {
+                pt1 = cps.pts_ptr + 3*idx1;
+                pt2 = cps.pts_ptr + 3*idx2;
+            }
+            else
+            {
+                pt1 = pt1_storage;
+                pt2 = pt2_storage;
+                int I = idx1 % cps.dims[0];
+                int J = (idx1 / cps.dims[0]) % cps.dims[1];
+                int K = idx1 / (cps.dims[0]*cps.dims[1]);
+                pt1[0] = cps.X[I];
+                pt1[1] = cps.Y[J];
+                pt1[2] = cps.Z[K];
+                I = idx2 % cps.dims[0];
+                J = (idx2 / cps.dims[0]) % cps.dims[1];
+                K = idx2 / (cps.dims[0]*cps.dims[1]);
+                pt2[0] = cps.X[I];
+                pt2[1] = cps.Y[J];
+                pt2[2] = cps.Z[K];
+            }
+
+            // Now that we have the original points, calculate the new one.
             float p  = pe.percent;
             float bp = 1. - p;
-            pt[0] = pts_ptr[idx1]*p + pts_ptr[idx2]*bp;
-            idx1++; idx2++;
-            pt[1] = pts_ptr[idx1]*p + pts_ptr[idx2]*bp;
-            idx1++; idx2++;
-            pt[2] = pts_ptr[idx1]*p + pts_ptr[idx2]*bp;
-            idx1++; idx2++;
+            pt[0] = pt1[0]*p + pt2[0]*bp;
+            pt[1] = pt1[1]*p + pt2[1]*bp;
+            pt[2] = pt1[2]*p + pt2[2]*bp;
             outPts->SetPoint(ptIdx, pt);
             outPD->InterpolateEdge(inPD, ptIdx, pe.ptIds[0], pe.ptIds[1], bp);
             ptIdx++;
         }
     }
 
+    // 
+    // Now construct the new "centroid" points and add them to the points list.
+    //
     nLists = centroid_list.GetNumberOfLists();
+    vtkIdList *idList = vtkIdList::New();
     for (i = 0 ; i < nLists ; i++)
     {
         const CentroidPointEntry *ce_list = NULL;
         int nPts = centroid_list.GetList(i, ce_list);
-        vtkIdList *idList = vtkIdList::New();
         for (j = 0 ; j < nPts ; j++)
         {
             const CentroidPointEntry &ce = ce_list[j];
@@ -496,28 +710,38 @@ vtkVolumeFromVolume::ConstructDataSet(vtkPointData *inPD, vtkCellData *inCD,
             float pts[8][3];
             float weights[8];
             float pt[3] = {0., 0., 0.};
+            float weight_factor = 1. / ce.nPts;
             for (int k = 0 ; k < ce.nPts ; k++)
             {
-                idList->SetId(k, ce.ptIds[k]);
-                weights[k] = 1.0 / float(ce.nPts);
-                int id = (ce.ptIds[k]<0) ? ((centroidStart-1)-ce.ptIds[k])
-                                                                 : ce.ptIds[k];
+                weights[k] = 1.0 * weight_factor;
+                int id = 0;
+                if (ce.ptIds[k] < 0)
+                    id = centroidStart-1 - ce.ptIds[k];
+                else if (ce.ptIds[k] >= numPrevPts)
+                    id = numUsed + (ce.ptIds[k] - numPrevPts);
+                else
+                    id = ptLookup[ce.ptIds[k]];
+                idList->SetId(k, id);
                 outPts->GetPoint(id, pts[k]);
                 pt[0] += pts[k][0];
                 pt[1] += pts[k][1];
                 pt[2] += pts[k][2];
             }
-            pt[0] /= float(ce.nPts);
-            pt[1] /= float(ce.nPts);
-            pt[2] /= float(ce.nPts);
+            pt[0] *= weight_factor;
+            pt[1] *= weight_factor;
+            pt[2] *= weight_factor;
 
             outPts->SetPoint(ptIdx, pt);
             outPD->InterpolatePoint(outPD, ptIdx, idList, weights);
             ptIdx++;
         }
-        idList->Delete();
     }
+    idList->Delete();
 
+    //
+    // We are finally done constructing the points list.  Set it with our
+    // output and clean up memory.
+    //
     output->SetPoints(outPts);
     outPts->Delete();
 
@@ -527,137 +751,75 @@ vtkVolumeFromVolume::ConstructDataSet(vtkPointData *inPD, vtkCellData *inCD,
     int cellId = 0;
     int nlists;
 
-    int ntets     = tets.GetTotalNumberOfShapes();
-    int npyramids = pyramids.GetTotalNumberOfShapes();
-    int nwedges   = wedges.GetTotalNumberOfShapes();
-    int nhexes    = hexes.GetTotalNumberOfShapes();
-    int nshapes   = ntets + npyramids + nwedges + nhexes;
+    int ncells = 0;
+    int conn_size = 0;
+    for (i = 0 ; i < nshapes ; i++)
+    {
+        int ns = shapes[i]->GetTotalNumberOfShapes();
+        ncells += ns;
+        conn_size += (shapes[i]->GetShapeSize()+1)*ns;
+    }
 
-    output->Allocate(ntets*(4+1) +
-                     npyramids*(5+1) +
-                     nwedges*(6+1) +
-                     nhexes*(8+1));
-    outCD->CopyAllocate(inCD, nshapes);
+    outCD->CopyAllocate(inCD, ncells);
 
-    nlists = tets.GetNumberOfLists();
-    for (i = 0 ; i < nlists ; i++)
+    vtkIdTypeArray *nlist = vtkIdTypeArray::New();
+    nlist->SetNumberOfValues(conn_size);
+    vtkIdType *nl = nlist->GetPointer(0);
+
+    vtkUnsignedCharArray *cellTypes = vtkUnsignedCharArray::New();
+    cellTypes->SetNumberOfValues(ncells);
+    unsigned char *ct = cellTypes->GetPointer(0);
+
+    vtkIntArray *cellLocations = vtkIntArray::New();
+    cellLocations->SetNumberOfValues(ncells);
+    int *cl = cellLocations->GetPointer(0);
+
+    vtkIdType ids[1024]; // 8 (for hex) should be max, but...
+    int current_index = 0;
+    for (i = 0 ; i < nshapes ; i++)
     {
         const int *list;
-        int listSize = tets.GetList(i, list);
-        for (j = 0 ; j < listSize ; j++)
+        nlists = shapes[i]->GetNumberOfLists();
+        int shapesize = shapes[i]->GetShapeSize();
+        int vtk_type = shapes[i]->GetVTKType();
+        for (j = 0 ; j < nlists ; j++)
         {
-            outCD->CopyData(inCD, list[0], cellId);
-            vtkIdType tet[4];
-            tet[0] = (list[1] < 0) ? (centroidStart-1 - list[1]) : (list[1]);
-            tet[1] = (list[2] < 0) ? (centroidStart-1 - list[2]) : (list[2]);
-            tet[2] = (list[3] < 0) ? (centroidStart-1 - list[3]) : (list[3]);
-            tet[3] = (list[4] < 0) ? (centroidStart-1 - list[4]) : (list[4]);
-            output->InsertNextCell(VTK_TETRA, 4, tet);
-            list += 5;
-            cellId++;
+            int listSize = shapes[i]->GetList(j, list);
+            for (k = 0 ; k < listSize ; k++)
+            {
+                outCD->CopyData(inCD, list[0], cellId);
+                for (l = 0 ; l < shapesize ; l++)
+                {
+                    if (list[l+1] < 0)
+                        ids[l] = centroidStart-1 - list[l+1];
+                    else if (list[l+1] >= numPrevPts)
+                        ids[l] = numUsed + (list[l+1] - numPrevPts);
+                    else
+                        ids[l] = ptLookup[list[l+1]];
+                }
+                list += shapesize+1;
+                *nl++ = shapesize;
+                *cl++ = current_index;
+                *ct++ = vtk_type;
+                for (l = 0 ; l < shapesize ; l++)
+                    *nl++ = ids[l];
+                current_index += shapesize+1;
+                //output->InsertNextCell(vtk_type, shapesize, ids);
+                cellId++;
+            }
         }
     }
 
-    nlists = pyramids.GetNumberOfLists();
-    for (i = 0 ; i < nlists ; i++)
-    {
-        const int *list;
-        int listSize = pyramids.GetList(i, list);
-        for (j = 0 ; j < listSize ; j++)
-        {
-            outCD->CopyData(inCD, list[0], cellId);
-            vtkIdType pyramid[5];
-            pyramid[0] = (list[1] < 0) ? (centroidStart-1 - list[1]) : (list[1]);
-            pyramid[1] = (list[2] < 0) ? (centroidStart-1 - list[2]) : (list[2]);
-            pyramid[2] = (list[3] < 0) ? (centroidStart-1 - list[3]) : (list[3]);
-            pyramid[3] = (list[4] < 0) ? (centroidStart-1 - list[4]) : (list[4]);
-            pyramid[4] = (list[5] < 0) ? (centroidStart-1 - list[5]) : (list[5]);
-            output->InsertNextCell(VTK_PYRAMID, 5, pyramid);
-            list += 6;
-            cellId++;
-        }
-    }
+    vtkCellArray *cells = vtkCellArray::New();
+    cells->SetCells(ncells, nlist);
+    nlist->Delete();
 
-    nlists = wedges.GetNumberOfLists();
-    for (i = 0 ; i < nlists ; i++)
-    {
-        const int *list;
-        int listSize = wedges.GetList(i, list);
-        for (j = 0 ; j < listSize ; j++)
-        {
-            outCD->CopyData(inCD, list[0], cellId);
-            vtkIdType wedge[6];
-            wedge[0] = (list[1] < 0) ? (centroidStart-1 - list[1]) : (list[1]);
-            wedge[1] = (list[2] < 0) ? (centroidStart-1 - list[2]) : (list[2]);
-            wedge[2] = (list[3] < 0) ? (centroidStart-1 - list[3]) : (list[3]);
-            wedge[3] = (list[4] < 0) ? (centroidStart-1 - list[4]) : (list[4]);
-            wedge[4] = (list[5] < 0) ? (centroidStart-1 - list[5]) : (list[5]);
-            wedge[5] = (list[6] < 0) ? (centroidStart-1 - list[6]) : (list[6]);
-            output->InsertNextCell(VTK_WEDGE, 6, wedge);
-            list += 7;
-            cellId++;
-        }
-    }
+    output->SetCells(cellTypes, cellLocations, cells);
+    cellTypes->Delete();
+    cellLocations->Delete();
+    cells->Delete();
 
-    nlists = hexes.GetNumberOfLists();
-    for (i = 0 ; i < nlists ; i++)
-    {
-        const int *list;
-        int listSize = hexes.GetList(i, list);
-        for (j = 0 ; j < listSize ; j++)
-        {
-            outCD->CopyData(inCD, list[0], cellId);
-            vtkIdType hex[8];
-            hex[0] = (list[1] < 0) ? (centroidStart-1 - list[1]) : (list[1]);
-            hex[1] = (list[2] < 0) ? (centroidStart-1 - list[2]) : (list[2]);
-            hex[2] = (list[3] < 0) ? (centroidStart-1 - list[3]) : (list[3]);
-            hex[3] = (list[4] < 0) ? (centroidStart-1 - list[4]) : (list[4]);
-            hex[4] = (list[5] < 0) ? (centroidStart-1 - list[5]) : (list[5]);
-            hex[5] = (list[6] < 0) ? (centroidStart-1 - list[6]) : (list[6]);
-            hex[6] = (list[7] < 0) ? (centroidStart-1 - list[7]) : (list[7]);
-            hex[7] = (list[8] < 0) ? (centroidStart-1 - list[8]) : (list[8]);
-            output->InsertNextCell(VTK_HEXAHEDRON, 8, hex);
-            list += 9;
-            cellId++;
-        }
-    }
-
-    nlists = quads.GetNumberOfLists();
-    for (i = 0 ; i < nlists ; i++)
-    {
-        const int *list;
-        int listSize = quads.GetList(i, list);
-        for (j = 0 ; j < listSize ; j++)
-        {
-            outCD->CopyData(inCD, list[0], cellId);
-            vtkIdType quad[4];
-            quad[0] = (list[1] < 0) ? (centroidStart-1 - list[1]) : (list[1]);
-            quad[1] = (list[2] < 0) ? (centroidStart-1 - list[2]) : (list[2]);
-            quad[2] = (list[3] < 0) ? (centroidStart-1 - list[3]) : (list[3]);
-            quad[3] = (list[4] < 0) ? (centroidStart-1 - list[4]) : (list[4]);
-            output->InsertNextCell(VTK_QUAD, 4, quad);
-            list += 5;
-            cellId++;
-        }
-    }
-
-    nlists = tris.GetNumberOfLists();
-    for (i = 0 ; i < nlists ; i++)
-    {
-        const int *list;
-        int listSize = tris.GetList(i, list);
-        for (j = 0 ; j < listSize ; j++)
-        {
-            outCD->CopyData(inCD, list[0], cellId);
-            vtkIdType tri[3];
-            tri[0] = (list[1] < 0) ? (centroidStart-1 - list[1]) : (list[1]);
-            tri[1] = (list[2] < 0) ? (centroidStart-1 - list[2]) : (list[2]);
-            tri[2] = (list[3] < 0) ? (centroidStart-1 - list[3]) : (list[3]);
-            output->InsertNextCell(VTK_TRIANGLE, 3, tri);
-            list += 4;
-            cellId++;
-        }
-    }
+    delete [] ptLookup;
 }
 
 
@@ -673,236 +835,3 @@ inline void GetPoint(float *pt, const float *X, const float *Y,
 }
 
 
-// ****************************************************************************
-//  Modifications:
-//    Jeremy Meredith, Mon Feb 16 19:11:34 PST 2004
-//    Added polygonal cell support.
-//
-// ****************************************************************************
-void
-vtkVolumeFromVolume::ConstructDataSet(vtkPointData *inPD, vtkCellData *inCD,
-                                      vtkUnstructuredGrid *output,
-                                      int *dims, float *X, float *Y, float *Z)
-{
-    int   i, j;
-
-    vtkPointData *outPD = output->GetPointData();
-    vtkCellData  *outCD = output->GetCellData();
-
-    //
-    // Set up the output points and its point data.
-    //
-    vtkPoints *outPts = vtkPoints::New();
-    int centroidStart = numPrevPts + pt_list.GetTotalNumberOfPoints();
-    int nOutPts = centroidStart + centroid_list.GetTotalNumberOfPoints();
-    outPts->SetNumberOfPoints(nOutPts);
-    outPD->CopyAllocate(inPD, nOutPts);
-
-    int ptIdx = 0;
-    for (i = 0 ; i < numPrevPts ; i++)
-    {
-        float pt[3];
-        GetPoint(pt, X, Y, Z, dims, i);
-        outPts->SetPoint(ptIdx, pt);
-        outPD->CopyData(inPD, i, ptIdx);
-        ptIdx++;
-    }
-
-    int nLists = pt_list.GetNumberOfLists();
-    for (i = 0 ; i < nLists ; i++)
-    {
-        const PointEntry *pe_list = NULL;
-        int nPts = pt_list.GetList(i, pe_list);
-        for (j = 0 ; j < nPts ; j++)
-        {
-            const PointEntry &pe = pe_list[j];
-            float pt[3], pt1[3], pt2[3];
-            GetPoint(pt1, X, Y, Z, dims, pe.ptIds[0]);
-            GetPoint(pt2, X, Y, Z, dims, pe.ptIds[1]);
-            float p  = pe.percent;
-            float bp = 1. - p;
-            pt[0] = pt1[0]*p + pt2[0]*bp;
-            pt[1] = pt1[1]*p + pt2[1]*bp;
-            pt[2] = pt1[2]*p + pt2[2]*bp;
-            outPts->SetPoint(ptIdx, pt);
-            outPD->InterpolateEdge(inPD, ptIdx, pe.ptIds[0], pe.ptIds[1], bp);
-            ptIdx++;
-        }
-    }
-
-    nLists = centroid_list.GetNumberOfLists();
-    for (i = 0 ; i < nLists ; i++)
-    {
-        const CentroidPointEntry *ce_list = NULL;
-        int nPts = centroid_list.GetList(i, ce_list);
-        vtkIdList *idList = vtkIdList::New();
-        for (j = 0 ; j < nPts ; j++)
-        {
-            const CentroidPointEntry &ce = ce_list[j];
-            idList->SetNumberOfIds(ce.nPts);
-            float pts[8][3];
-            float weights[8];
-            float pt[3] = {0., 0., 0.};
-            for (int k = 0 ; k < ce.nPts ; k++)
-            {
-                idList->SetId(k, ce.ptIds[k]);
-                weights[k] = 1.0 / float(ce.nPts);
-                int id = (ce.ptIds[k]<0) ? ((centroidStart-1)-ce.ptIds[k])
-                                                                 : ce.ptIds[k];
-                outPts->GetPoint(id, pts[k]);
-                pt[0] += pts[k][0];
-                pt[1] += pts[k][1];
-                pt[2] += pts[k][2];
-            }
-            pt[0] /= float(ce.nPts);
-            pt[1] /= float(ce.nPts);
-            pt[2] /= float(ce.nPts);
-
-            outPts->SetPoint(ptIdx, pt);
-            outPD->InterpolatePoint(outPD, ptIdx, idList, weights);
-            ptIdx++;
-        }
-        idList->Delete();
-    }
-
-    output->SetPoints(outPts);
-    outPts->Delete();
-
-    //
-    // Now set up the shapes and the cell data.
-    //
-    int cellId = 0;
-    int nlists;
-
-    int ntets     = tets.GetTotalNumberOfShapes();
-    int npyramids = pyramids.GetTotalNumberOfShapes();
-    int nwedges   = wedges.GetTotalNumberOfShapes();
-    int nhexes    = hexes.GetTotalNumberOfShapes();
-    int nshapes   = ntets + npyramids + nwedges + nhexes;
-
-    output->Allocate(ntets*(4+1) +
-                     npyramids*(5+1) +
-                     nwedges*(6+1) +
-                     nhexes*(8+1));
-    outCD->CopyAllocate(inCD, nshapes);
-
-    nlists = tets.GetNumberOfLists();
-    for (i = 0 ; i < nlists ; i++)
-    {
-        const int *list;
-        int listSize = tets.GetList(i, list);
-        for (j = 0 ; j < listSize ; j++)
-        {
-            outCD->CopyData(inCD, list[0], cellId);
-            vtkIdType tet[4];
-            tet[0] = (list[1] < 0) ? (centroidStart-1 - list[1]) : (list[1]);
-            tet[1] = (list[2] < 0) ? (centroidStart-1 - list[2]) : (list[2]);
-            tet[2] = (list[3] < 0) ? (centroidStart-1 - list[3]) : (list[3]);
-            tet[3] = (list[4] < 0) ? (centroidStart-1 - list[4]) : (list[4]);
-            output->InsertNextCell(VTK_TETRA, 4, tet);
-            list += 5;
-            cellId++;
-        }
-    }
-
-    nlists = pyramids.GetNumberOfLists();
-    for (i = 0 ; i < nlists ; i++)
-    {
-        const int *list;
-        int listSize = pyramids.GetList(i, list);
-        for (j = 0 ; j < listSize ; j++)
-        {
-            outCD->CopyData(inCD, list[0], cellId);
-            vtkIdType pyramid[5];
-            pyramid[0] = (list[1] < 0) ? (centroidStart-1 - list[1]) : (list[1]);
-            pyramid[1] = (list[2] < 0) ? (centroidStart-1 - list[2]) : (list[2]);
-            pyramid[2] = (list[3] < 0) ? (centroidStart-1 - list[3]) : (list[3]);
-            pyramid[3] = (list[4] < 0) ? (centroidStart-1 - list[4]) : (list[4]);
-            pyramid[4] = (list[5] < 0) ? (centroidStart-1 - list[5]) : (list[5]);
-            output->InsertNextCell(VTK_PYRAMID, 5, pyramid);
-            list += 6;
-            cellId++;
-        }
-    }
-
-    nlists = wedges.GetNumberOfLists();
-    for (i = 0 ; i < nlists ; i++)
-    {
-        const int *list;
-        int listSize = wedges.GetList(i, list);
-        for (j = 0 ; j < listSize ; j++)
-        {
-            outCD->CopyData(inCD, list[0], cellId);
-            vtkIdType wedge[6];
-            wedge[0] = (list[1] < 0) ? (centroidStart-1 - list[1]) : (list[1]);
-            wedge[1] = (list[2] < 0) ? (centroidStart-1 - list[2]) : (list[2]);
-            wedge[2] = (list[3] < 0) ? (centroidStart-1 - list[3]) : (list[3]);
-            wedge[3] = (list[4] < 0) ? (centroidStart-1 - list[4]) : (list[4]);
-            wedge[4] = (list[5] < 0) ? (centroidStart-1 - list[5]) : (list[5]);
-            wedge[5] = (list[6] < 0) ? (centroidStart-1 - list[6]) : (list[6]);
-            output->InsertNextCell(VTK_WEDGE, 6, wedge);
-            list += 7;
-            cellId++;
-        }
-    }
-
-    nlists = hexes.GetNumberOfLists();
-    for (i = 0 ; i < nlists ; i++)
-    {
-        const int *list;
-        int listSize = hexes.GetList(i, list);
-        for (j = 0 ; j < listSize ; j++)
-        {
-            outCD->CopyData(inCD, list[0], cellId);
-            vtkIdType hex[8];
-            hex[0] = (list[1] < 0) ? (centroidStart-1 - list[1]) : (list[1]);
-            hex[1] = (list[2] < 0) ? (centroidStart-1 - list[2]) : (list[2]);
-            hex[2] = (list[3] < 0) ? (centroidStart-1 - list[3]) : (list[3]);
-            hex[3] = (list[4] < 0) ? (centroidStart-1 - list[4]) : (list[4]);
-            hex[4] = (list[5] < 0) ? (centroidStart-1 - list[5]) : (list[5]);
-            hex[5] = (list[6] < 0) ? (centroidStart-1 - list[6]) : (list[6]);
-            hex[6] = (list[7] < 0) ? (centroidStart-1 - list[7]) : (list[7]);
-            hex[7] = (list[8] < 0) ? (centroidStart-1 - list[8]) : (list[8]);
-            output->InsertNextCell(VTK_HEXAHEDRON, 8, hex);
-            list += 9;
-            cellId++;
-        }
-    }
-
-    nlists = quads.GetNumberOfLists();
-    for (i = 0 ; i < nlists ; i++)
-    {
-        const int *list;
-        int listSize = quads.GetList(i, list);
-        for (j = 0 ; j < listSize ; j++)
-        {
-            outCD->CopyData(inCD, list[0], cellId);
-            vtkIdType quad[4];
-            quad[0] = (list[1] < 0) ? (centroidStart-1 - list[1]) : (list[1]);
-            quad[1] = (list[2] < 0) ? (centroidStart-1 - list[2]) : (list[2]);
-            quad[2] = (list[3] < 0) ? (centroidStart-1 - list[3]) : (list[3]);
-            quad[3] = (list[4] < 0) ? (centroidStart-1 - list[4]) : (list[4]);
-            output->InsertNextCell(VTK_QUAD, 4, quad);
-            list += 5;
-            cellId++;
-        }
-    }
-
-    nlists = tris.GetNumberOfLists();
-    for (i = 0 ; i < nlists ; i++)
-    {
-        const int *list;
-        int listSize = tris.GetList(i, list);
-        for (j = 0 ; j < listSize ; j++)
-        {
-            outCD->CopyData(inCD, list[0], cellId);
-            vtkIdType tri[3];
-            tri[0] = (list[1] < 0) ? (centroidStart-1 - list[1]) : (list[1]);
-            tri[1] = (list[2] < 0) ? (centroidStart-1 - list[2]) : (list[2]);
-            tri[2] = (list[3] < 0) ? (centroidStart-1 - list[3]) : (list[3]);
-            output->InsertNextCell(VTK_TRIANGLE, 3, tri);
-            list += 4;
-            cellId++;
-        }
-    }
-}

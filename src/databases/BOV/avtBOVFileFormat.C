@@ -632,6 +632,10 @@ avtBOVFileFormat::GetAuxiliaryData(const char *var, int domain,
 //    Hank Childs, Sat Sep 11 16:15:20 PDT 2004
 //    Create domain boundary information.
 //
+//    Hank Childs, Thu Oct 21 11:51:28 PDT 2004
+//    Have domain boundary information reflect the differing mesh sizes that
+//    come with different centerings.
+//
 // ****************************************************************************
 
 void
@@ -672,12 +676,13 @@ avtBOVFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             int y_off = (i % (nx*ny)) / nx;
             int x_off = i % nx;
             int extents[6];
-            extents[0] = x_off * (bricklet_size[0]-1);
-            extents[1]  = (x_off+1) * (bricklet_size[0]-1);
-            extents[2] = y_off * (bricklet_size[1]-1);
-            extents[3]  = (y_off+1) * (bricklet_size[1]-1);
-            extents[4] = z_off * (bricklet_size[2]-1);
-            extents[5]  = (z_off+1) * (bricklet_size[2]-1);
+            int correction = (nodalCentering ? 1 : 0);
+            extents[0] = x_off * (bricklet_size[0]-correction);
+            extents[1]  = (x_off+1) * (bricklet_size[0]-correction);
+            extents[2] = y_off * (bricklet_size[1]-correction);
+            extents[3]  = (y_off+1) * (bricklet_size[1]-correction);
+            extents[4] = z_off * (bricklet_size[2]-correction);
+            extents[5]  = (z_off+1) * (bricklet_size[2]-correction);
             rdb->SetIndicesForRectGrid(i, extents);
         }
         rdb->CalculateBoundaries();

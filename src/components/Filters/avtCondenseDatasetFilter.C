@@ -96,6 +96,11 @@ avtCondenseDatasetFilter::~avtCondenseDatasetFilter()
 //    Allow execution of relevant points filter to be forced, bypassing
 //    heurisitic. 
 //
+//    Kathleen Bonnell, Tue Oct 12 16:06:20 PDT 2004
+//    Allow avtOriginalNodeNumbers and avtOriginalCellNumbers to be kept
+//    around, independent of the value of keepAVTandVTK.  Needed by pick for
+//    Vector Plots and Point Meshes.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -110,6 +115,8 @@ avtCondenseDatasetFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
     no_vars->ShallowCopy(in_ds);
     if (!keepAVTandVTK)
     {
+        bool keepNodeZone = 
+            GetInput()->GetInfo().GetAttributes().GetKeepNodeZoneArrays();
         for (i = no_vars->GetPointData()->GetNumberOfArrays()-1 ; i >= 0 ; i--)
         {
             vtkDataArray *arr = no_vars->GetPointData()->GetArray(i);
@@ -119,7 +126,14 @@ avtCondenseDatasetFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
             if (strstr(name, "vtk") != NULL)
                 no_vars->GetPointData()->RemoveArray(name);
             else if (strstr(name, "avt") != NULL)
-                no_vars->GetPointData()->RemoveArray(name);
+            {
+                if (keepNodeZone && 
+                    ((strcmp(name, "avtOriginalNodeNumbers") == 0) ||
+                     (strcmp(name, "avtOriginalCellNumbers") == 0)))
+                    continue;
+                else
+                    no_vars->GetPointData()->RemoveArray(name);
+            }
         }
         for (i = no_vars->GetCellData()->GetNumberOfArrays()-1 ; i >= 0 ; i--)
         {
@@ -130,7 +144,14 @@ avtCondenseDatasetFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
             if (strstr(name, "vtk") != NULL)
                 no_vars->GetCellData()->RemoveArray(name);
             else if (strstr(name, "avt") != NULL)
-                no_vars->GetCellData()->RemoveArray(name);
+            {
+                if (keepNodeZone && 
+                    ((strcmp(name, "avtOriginalNodeNumbers") == 0) ||
+                     (strcmp(name, "avtOriginalCellNumbers") == 0)))
+                    continue;
+                else
+                    no_vars->GetCellData()->RemoveArray(name);
+            }
         }
     }
  

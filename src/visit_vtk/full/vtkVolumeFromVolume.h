@@ -6,6 +6,7 @@
 #define VTK_VOLUME_FROM_VOLUME_H
 
 #include <vtkDataSetFromVolume.h>
+#include <vtkCellType.h>
 
 #include <vector>
 
@@ -35,6 +36,10 @@ class vtkUnstructuredGrid;
 //    Added 2D shape support.  This might seem weird, but there may be 
 //    some 2D shapes in a volumetric setting.
 //
+//    Hank Childs, Thu Oct 21 07:23:55 PDT 2004
+//    Added new data members shapes and nshapes.  Also added 
+//    GetNumberOfPointsPerShape method to ShapeList.
+//
 // ****************************************************************************
 
 class vtkVolumeFromVolume : public vtkDataSetFromVolume
@@ -45,6 +50,8 @@ class ShapeList
   public:
                    ShapeList(int size);
     virtual       ~ShapeList();
+    virtual int    GetVTKType(void) const = 0;
+    int            GetShapeSize(void) const { return shapeSize; };
     int            GetTotalNumberOfShapes(void) const;
     int            GetNumberOfLists(void) const;
     int            GetList(int, const int *&) const;
@@ -62,6 +69,7 @@ class HexList : public ShapeList
   public:
                    HexList();
     virtual       ~HexList();
+    virtual int    GetVTKType(void) const { return VTK_HEXAHEDRON; };
     void           AddHex(int, int, int, int, int, int, int, int, int);
 };
 
@@ -70,6 +78,7 @@ class WedgeList : public ShapeList
   public:
                    WedgeList();
     virtual       ~WedgeList();
+    virtual int    GetVTKType(void) const { return VTK_WEDGE; };
     void           AddWedge(int, int, int, int, int, int, int);
 };
 
@@ -78,6 +87,7 @@ class PyramidList : public ShapeList
   public:
                    PyramidList();
     virtual       ~PyramidList();
+    virtual int    GetVTKType(void) const { return VTK_PYRAMID; };
     void           AddPyramid(int, int, int, int, int, int);
 };
 
@@ -86,6 +96,7 @@ class TetList : public ShapeList
   public:
                    TetList();
     virtual       ~TetList();
+    virtual int    GetVTKType(void) const { return VTK_TETRA; };
     void           AddTet(int, int, int, int, int);
 };
 
@@ -94,6 +105,7 @@ class QuadList : public ShapeList
   public:
                    QuadList();
     virtual       ~QuadList();
+    virtual int    GetVTKType(void) const { return VTK_QUAD; };
     void           AddQuad(int, int, int, int, int);
 };
 
@@ -102,6 +114,7 @@ class TriList : public ShapeList
   public:
                    TriList();
     virtual       ~TriList();
+    virtual int    GetVTKType(void) const { return VTK_TRIANGLE; };
     void           AddTri(int, int, int, int);
 };
 
@@ -132,12 +145,19 @@ class CentroidPointList
     int                    pointsPerList;
 };
 
+typedef struct
+{
+   bool   hasPtsList;
+   float *pts_ptr;
+   int   *dims;
+   float *X;
+   float *Y;
+   float *Z;
+} CommonPointsStructure;
 
 
   public:
-                      vtkVolumeFromVolume(int nPts, int ptSizeGuess)
-                           : vtkDataSetFromVolume(nPts, ptSizeGuess)
-                           { ; };
+                      vtkVolumeFromVolume(int nPts, int ptSizeGuess);
     virtual          ~vtkVolumeFromVolume() { ; };
 
     void              ConstructDataSet(vtkPointData *, vtkCellData *,
@@ -172,6 +192,13 @@ class CentroidPointList
     TetList            tets;
     QuadList           quads;
     TriList            tris;
+
+    ShapeList         *shapes[6];
+    const int          nshapes;
+
+    void               ConstructDataSet(vtkPointData *, vtkCellData *,
+                                        vtkUnstructuredGrid *, 
+                                        CommonPointsStructure &);
 };
 
 

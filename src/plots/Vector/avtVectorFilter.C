@@ -34,6 +34,9 @@ using std::string;
 //    Hank Childs, Thu Aug 30 17:30:48 PDT 2001
 //    Added vertex filter.
 //
+//    Kathleen Bonnell, Tue Oct 12 16:18:37 PDT 2004 
+//    Added keepNodeZone. 
+//
 // ****************************************************************************
 
 avtVectorFilter::avtVectorFilter(bool us, int red)
@@ -58,6 +61,7 @@ avtVectorFilter::avtVectorFilter(bool us, int red)
     {
         reduce->SetNumberOfElements(nVectors);
     }
+    keepNodeZone = false;
 }
 
 
@@ -244,6 +248,10 @@ avtVectorFilter::ExecuteData(vtkDataSet *inDS, int, string)
 //    Hank Childs, Wed Apr  9 13:53:09 PDT 2003
 //    Do not calculate normals of these points.
 //
+//    Kathleen Bonnell, Tue Oct 12 16:02:33 PDT 2004 
+//    Set whether or not we want to specify that node and zone arrays be
+//    kept around through to the renderer.  (Needed by pick).
+//
 // ****************************************************************************
 
 void
@@ -252,6 +260,7 @@ avtVectorFilter::RefashionDataObjectInfo(void)
     GetOutput()->GetInfo().GetValidity().InvalidateZones();
     GetOutput()->GetInfo().GetAttributes().SetTopologicalDimension(0);
     GetOutput()->GetInfo().GetValidity().SetNormalsAreInappropriate(true);
+    GetOutput()->GetInfo().GetAttributes().SetKeepNodeZoneArrays(keepNodeZone);
 }
 
 
@@ -309,6 +318,11 @@ avtVectorFilter::SetMagVarName(const string &mname)
 //  Programmer: Kathleen Bonnell 
 //  Creation:   August 9, 2004 
 //
+//  Modifications:
+//    Kathleen Bonnell, Tue Oct 12 16:02:33 PDT 2004 
+//    Store whether or not we want to specify that node and zone arrays be
+//    kept around through to the renderer.  (Needed by pick).
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -335,6 +349,25 @@ avtVectorFilter::PerformRestriction(avtPipelineSpecification_p pspec)
                 ds->GetTimestep(), ds->GetRestriction());
     nds->AddSecondaryVariable(magVarName.c_str());
     rv = new avtPipelineSpecification(pspec, nds);
+    
+
+    avtDataAttributes &data = GetInput()->GetInfo().GetAttributes();
+    if (pspec->GetDataSpecification()->MayRequireZones())
+    {
+        keepNodeZone = true;
+        if (data.GetCentering() == AVT_NODECENT)
+        {
+            rv->GetDataSpecification()->TurnNodeNumbersOn();
+        }
+        else if (data.GetCentering() == AVT_ZONECENT)
+        {
+            rv->GetDataSpecification()->TurnZoneNumbersOn();
+        }
+    }
+    else
+    {
+        keepNodeZone = false;
+    }
 
     return rv;
 }

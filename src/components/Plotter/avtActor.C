@@ -846,3 +846,44 @@ avtActor::OpaqueVisibilityOff()
     drawable->VisibilityOff();
 }
 
+// ****************************************************************************
+//  Method: avtActor::MakePickable
+//
+//  Purpose:
+//    Tells the drawable to make its vtkActors pickable. 
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   September 27, 2004 
+//
+// ****************************************************************************
+
+void
+avtActor::MakePickable()
+{
+    if (*(drawable) != NULL)
+    {
+        drawable->MakePickable();
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtActor::MakeUnPickable
+//
+//  Purpose:
+//    Tells the drawable to make its vtkActors unpickable. 
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   September 27, 2004 
+//
+// ****************************************************************************
+
+void
+avtActor::MakeUnPickable()
+{
+    if (*(drawable) != NULL)
+    {
+        drawable->MakeUnPickable();
+    }
+}
+

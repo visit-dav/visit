@@ -291,6 +291,9 @@ class VisitInteractor;
 //    Made TransparenciesExist public so we could avoid two-stage rendering
 //    if there was no transparent geometry.
 //
+//    Kathleen Bonnell, Mon Oct 11 16:08:18 PDT 2004 
+//    Added GlyphPick method.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindow
@@ -491,6 +494,9 @@ public:
     void                 ResumeTranslucentGeometry();
 
     bool                 TransparenciesExist(void);
+
+    void                 GlyphPick(const float*, const float*, int&, int&, 
+                                   bool&, const bool = false);
 
 
 protected:

@@ -5,12 +5,13 @@
 #include <avtVectorGlyphMapper.h>
 
 #include <vtkActor.h>
-#include <vtkGlyph3D.h>
-#include <vtkPolyData.h>
-#include <vtkProperty.h>
 #include <vtkDataSetMapper.h>
 #include <vtkLookupTable.h>
+#include <vtkPolyData.h>
+#include <vtkProperty.h>
+#include <vtkVisItGlyph3D.h>
 #include <vtkVisItPolyDataNormals.h>
+
 #include <BadIndexException.h>
 
 
@@ -211,6 +212,9 @@ avtVectorGlyphMapper::CustomizeMappers(void)
 //    Hank Childs, Wed May  5 14:19:54 PDT 2004
 //    Added poly data normals.
 //
+//    Kathleen Bonnell, Tue Oct 12 16:18:37 PDT 2004
+//    Use VisIt's version of vtkGlyph3D. 
+//
 // ****************************************************************************
 
 void
@@ -240,7 +244,7 @@ avtVectorGlyphMapper::SetUpFilters(int nDoms)
     }
 
     nGlyphFilters     = nDoms;
-    glyphFilter       = new vtkGlyph3D*[nGlyphFilters];
+    glyphFilter       = new vtkVisItGlyph3D*[nGlyphFilters];
     normalsFilter      = new vtkVisItPolyDataNormals*[nGlyphFilters];
     for (int i = 0 ; i < nGlyphFilters ; i++)
     {
@@ -277,6 +281,9 @@ avtVectorGlyphMapper::SetUpFilters(int nDoms)
 //    Jeremy Meredith, Tue Jun  1 11:24:29 PDT 2004
 //    Only do the normals if in 3-space.
 //
+//    Kathleen Bonnell, Tue Oct 12 16:18:37 PDT 2004
+//    Use VisIt's version of vtkGlyph3D. 
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -293,7 +300,7 @@ avtVectorGlyphMapper::InsertFilters(vtkDataSet *ds, int dom)
         // We don't have to initialize the filter now, since it will be done
         // in customize mappers later.
         //
-        glyphFilter[dom] = vtkGlyph3D::New();
+        glyphFilter[dom] = vtkVisItGlyph3D::New();
     }
     if (normalsFilter[dom] == NULL)
     {

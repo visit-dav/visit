@@ -555,13 +555,28 @@ avtBehavior::GetRenderOrder(bool antialiased)
 //    transformed, and the presence of either the needed transform or
 //    Original Nodes/Zones array. 
 //    
+//    Kathleen Bonnell, Tue Oct 12 15:58:56 PDT 2004 
+//    Handle Vector Plots and Point meshes differently -- if the Node or Zone 
+//    arrays weren't kept around, even if the data atts say we have them 
+//    Condense filter will have removed them. 
+//    
 // ****************************************************************************
 
 bool
 avtBehavior::RequiresReExecuteForQuery(const bool needInvT, const bool needZones)
 {
     bool retval = false;
-    if (info.GetValidity().GetPointsWereTransformed())
+    if (info.GetAttributes().GetTopologicalDimension() == 0)
+    {
+        // 
+        // Handle things differently for Vector plots and point meshes.
+        // 
+        bool zonesAvailable = info.GetAttributes().GetContainsOriginalCells();
+        bool nodesAvailable = info.GetAttributes().GetContainsOriginalNodes();
+        bool keptNodeZone = info.GetAttributes().GetKeepNodeZoneArrays();
+        retval = (!keptNodeZone || (!nodesAvailable && !zonesAvailable));
+    }
+    else if (info.GetValidity().GetPointsWereTransformed())
     {
         bool invXformAvailable  = info.GetAttributes().HasInvTransform() &&
                               info.GetAttributes().GetCanUseInvTransform();

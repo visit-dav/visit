@@ -19,6 +19,7 @@
 
 #include <vtkCell.h>
 #include <vtkDataSet.h>
+#include <vtkCellData.h>
 #include <vtkFloatArray.h>
 #include <vtkIdList.h>
 #include <vtkIdTypeArray.h>
@@ -88,6 +89,10 @@ vtkVisItGlyph3D::~vtkVisItGlyph3D()
 //    Hank Childs, Fri Aug 27 15:15:20 PDT 2004
 //    Renamed ghost data arrays.
 //
+//    Kathleen Bonnell, Tue Oct 12 16:42:16 PDT 2004 
+//    Ensure that avtOriginalCellNumbers and avtOriginalNodeNumbers arrays
+//    get copied to output (if they exist in input). 
+//
 //*****************************************************************************
 void vtkVisItGlyph3D::Execute()
 {
@@ -101,7 +106,7 @@ void vtkVisItGlyph3D::Execute()
   vtkDataArray *inVectors_forScaling = NULL;
   int requestedGhostLevel;
   unsigned char* inGhostLevels=0;
-  vtkDataArray *inNormals, *sourceNormals = NULL;
+  vtkDataArray *inNormals = NULL, *sourceNormals = NULL;
   vtkIdType numPts, numSourcePts, numSourceCells, inPtId, i;
   int index;
   vtkPoints *sourcePts = NULL;
@@ -120,7 +125,14 @@ void vtkVisItGlyph3D::Execute()
   float scalex,scaley,scalez, den;
   vtkPolyData *output = this->GetOutput();
   vtkPointData *outputPD = output->GetPointData();
+  vtkCellData *outputCD = output->GetCellData();
   vtkDataSet *input = this->GetInput();
+
+  vtkDataArray *inOrigNodes = NULL;
+  vtkDataArray *inOrigCells = NULL;
+  vtkDataArray *outOrigNodes = NULL;
+  vtkDataArray *outOrigCells = NULL;
+
   int numberOfSources = this->GetNumberOfSources();
   vtkPolyData *defaultSource = NULL;
   vtkIdTypeArray *pointIds=0;
@@ -144,6 +156,9 @@ void vtkVisItGlyph3D::Execute()
   inScalars_forColoring = pd->GetArray(this->ScalarsForColoring);
   inScalars_forScaling  = pd->GetArray(this->ScalarsForScaling);
   inVectors_forColoring = pd->GetArray(this->VectorsForColoring);
+
+  inOrigNodes = pd->GetArray("avtOriginalNodeNumbers");
+  inOrigCells = pd->GetArray("avtOriginalCellNumbers");
 
   vtkDataArray* temp = 0;
   if (pd)
@@ -342,6 +357,20 @@ void vtkVisItGlyph3D::Execute()
     newNormals->Allocate(3*numPts*numSourcePts);
     newNormals->SetName("Normals");
     }
+  if ( inOrigNodes )
+    {
+    outOrigNodes = inOrigNodes->NewInstance();
+    outOrigNodes->SetNumberOfComponents(inOrigNodes->GetNumberOfComponents());
+    outOrigNodes->Allocate(inOrigNodes->GetNumberOfComponents()*numSourceCells*numPts);
+    outOrigNodes->SetName(inOrigNodes->GetName());
+    }
+  if ( inOrigCells )
+    {
+    outOrigCells = inOrigCells->NewInstance();
+    outOrigCells->SetNumberOfComponents(inOrigCells->GetNumberOfComponents());
+    outOrigCells->Allocate(inOrigCells->GetNumberOfComponents()*numSourceCells*numPts);
+    outOrigCells->SetName(inOrigCells->GetName());
+    }
 
   // Setting up for calls to PolyData::InsertNextCell()
   if (this->IndexMode != VTK_INDEXING_OFF )
@@ -481,7 +510,18 @@ void vtkVisItGlyph3D::Execute()
     
     // Now begin copying/transforming glyph
     trans->Identity();
-    
+   
+    float *inNode = NULL; 
+    float *inCell = NULL; 
+    if (inOrigNodes)
+    {
+        inNode = inOrigNodes->GetTuple(inPtId);
+    }
+    if (inOrigCells)
+    {
+        inCell = inOrigCells->GetTuple(inPtId);
+    }
+
     // Copy all topology (transformation independent)
     for (cellId=0; cellId < numSourceCells; cellId++)
       {
@@ -493,6 +533,14 @@ void vtkVisItGlyph3D::Execute()
         pts->InsertId(i,cellPts->GetId(i) + ptIncr);
         }
       output->InsertNextCell(cell->GetCellType(),pts);
+      if (outOrigNodes)
+        {
+        outOrigNodes->InsertNextTuple(inNode);
+        }
+      if (outOrigCells)
+        {
+        outOrigCells->InsertNextTuple(inCell);
+        }
       }
     
     // translate Source to Input point
@@ -649,6 +697,16 @@ void vtkVisItGlyph3D::Execute()
     {
     outputPD->SetNormals(newNormals);
     newNormals->Delete();
+    }
+  if (outOrigNodes)
+    {
+    outputCD->AddArray(outOrigNodes);
+    outOrigNodes->Delete();
+    }
+  if (outOrigCells)
+    {
+    outputCD->AddArray(outOrigCells);
+    outOrigCells->Delete();
     }
 
   output->Squeeze();

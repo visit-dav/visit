@@ -533,6 +533,9 @@ Definition:
 //   Mark C. Miller, Tue Aug 24 19:37:14 PDT 2004
 //   Added code to reset blockPieceName and groupPieceName
 //
+//   Kathleen Bonnell, Thu Oct 21 15:17:05 PDT 2004 
+//   Reset requiresPickGlyph. 
+//
 // ****************************************************************************
 
 void
@@ -594,6 +597,7 @@ PickAttributes::PrepareForNewPick()
 
     includeGhosts = false;
     elementIsGhost = false;
+    requiresGlyphPick = false;
 }
 
 Function: SetFromNode

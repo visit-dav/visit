@@ -120,7 +120,6 @@ NetworkManager::NetworkManager(void) : virtualDatabases()
     viswin->SetAnnotationAtts(&annotationAttributes);
 
     viswin->DisableUpdates();
-
 }
 
 // ****************************************************************************
@@ -1450,13 +1449,16 @@ NetworkManager::GetOutput(bool respondWithNullData, bool calledForRender,
 //    Refactored image writing to new functions.  Wrote the tiled
 //    image compositor.
 //
+//    Jeremy Meredith, Fri Oct 22 13:55:47 PDT 2004
+//    Forced the second pass to turn off gradient backgrounds before rendering.
+//    It was causing erasing of the first-pass results.
+//
 // ****************************************************************************
 avtDataObjectWriter_p
 NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode)
 {
     int i;
     DataNetwork *origWorkingNet = workingNet;
-
 
     TRY
     {
@@ -1670,7 +1672,8 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode)
             if (viswin->GetWindowMode() == WINMODE_3D)
             {
                 imageCompositer = new avtWholeImageCompositerWithZ();
-                imageCompositer->SetShouldOutputZBuffer(getZBuffer);
+                imageCompositer->SetShouldOutputZBuffer(getZBuffer ||
+                                                        two_pass_mode);
             }
             else
             {
@@ -1693,7 +1696,6 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode)
             theImage->GetSize(&imageCols, &imageRows);
             imageCompositer->SetOutputImageSize(imageRows, imageCols);
             imageCompositer->AddImageInput(theImage, 0, 0);
-            imageCompositer->SetShouldOutputZBuffer(getZBuffer || two_pass_mode);
             imageCompositer->SetAllProcessorsNeedResult(two_pass_mode);
 
             //
@@ -1718,9 +1720,22 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode)
             {
                 int t1 = visitTimer->StartTimer();
 
+                //
+                // We have to disable any gradient background before
+                // rendering, as those will overwrite the first pass
+                //
+                int bm = viswin->GetBackgroundMode();
+                viswin->SetBackgroundMode(0);
+
+                //
+                // Do the screen capture
+                //
                 avtImage_p theImage2;
                 theImage2=viswin->ScreenCapture(viewportedMode,true,false,true,
                                             imageCompositer->GetTypedOutput());
+
+                // Restore the background mode for next time
+                viswin->SetBackgroundMode(bm);
             
                 visitTimer->StopTimer(t1, "Second-pass screen capture for SR");
 
@@ -2185,6 +2200,9 @@ NetworkManager::StopPickMode(void)
 //    Kathleen Bonnell, Thu Oct  7 10:29:36 PDT 2004 
 //    Added timing code for each PerformQuery. 
 //
+//    Kathleen Bonnell, Thu Oct 21 15:55:46 PDT 2004 
+//    Added support for picking on glyphed data. 
+//
 // ****************************************************************************
 
 void
@@ -2221,6 +2239,55 @@ NetworkManager::Pick(const int id, PickAttributes *pa)
     {
         debug1 << "Could not retrieve query input." << endl;
         EXCEPTION0(NoInputException);
+    }
+
+    if (pa->GetRequiresGlyphPick())
+    {
+        if (networkCache[id]->ActorIsNull())
+        {
+            //
+            // GlyphPick requires the vtkActors to be populated, so render now,
+            // but only the plot we are interested in, the only important arg
+            // is the plot id (network id).
+            //
+            intVector pids;
+            pids.push_back(id);
+            Render(pids, false, 0);
+        }
+        intVector domElFC;
+        if (PAR_UIProcess())
+        {
+            networkCache[id]->GetActor(NULL)->MakePickable();
+            int d = -1, e=-1;
+            bool fc = true;
+            //
+            // Retrieve the necessary information from the renderer on the 
+            // VisWindow. 
+            //
+            viswin->GlyphPick(pa->GetRayPoint1(), pa->GetRayPoint2(), d, e, fc, false);
+            domElFC.push_back(d);
+            domElFC.push_back(e);
+            domElFC.push_back((int)fc);
+        }
+        BroadcastIntVector(domElFC, PAR_Rank());
+        if (domElFC[0] != -1 && domElFC[1] != -1)
+        {
+            pa->SetDomain(domElFC[0]);
+            pa->SetElementNumber(domElFC[1]);
+            float dummyPt[3] = { FLT_MAX, 0., 0.};
+            pa->SetPickPoint(dummyPt);
+            pa->SetCellPoint(dummyPt);
+            if (domElFC[2])
+                pa->SetPickType(PickAttributes::DomainZone);
+            else 
+                pa->SetPickType(PickAttributes::DomainNode);
+        }
+        else
+        {
+            debug5 << "VisWin GlyphPick failed" << endl;
+            networkCache[id]->GetActor(NULL)->MakeUnPickable();
+            return;
+        }
     }
 
     avtDataAttributes &queryInputAtts = queryInput->GetInfo().GetAttributes();
@@ -2353,6 +2420,10 @@ NetworkManager::Pick(const int id, PickAttributes *pa)
         RETHROW;
     }
     ENDTRY
+    if (pa->GetRequiresGlyphPick())
+    {
+        networkCache[id]->GetActor(NULL)->MakeUnPickable();
+    }
 }
 
 // ****************************************************************************

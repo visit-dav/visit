@@ -11,12 +11,12 @@ commands needed to build the libraries and VisIt from this file into your
 shell prompt.
 
 
-    Library  Version  Description            For More information
+    Library  Version  Description            For More Information
     =======  =======  ===========            ====================
     Mesa     5.0      3-D Graphics Library   http://www.mesa3d.org/
     Python   2.1.2    Scripting Language     http://www.python.org
     Qt       3.3.2    GUI Toolkit            http://www.trolltech.com
-    Silo     4.4      File I/O library       http://www.llnl.gov/bdiv/meshtv
+    Silo     4.4.1    File I/O library       http://www.llnl.gov/bdiv/meshtv
     VTK      20031028 Visualization Toolkit  http://www.kitware.com
 
 
@@ -28,16 +28,23 @@ version of Mesa.  The distribution provided has already been set up to build
 a mangled version so no additional work is required if you use it.  For VTK,
 you must use the October 28, 2003 distribution provided. The version of Qt
 used to build VisIt must be greater than or equal to 2.3.0. VisIt is also
-compatible with Qt version 3.
+compatible with Qt versions 3.0.2 or later.
 
 VisIt also contains many database readers which are also built on external
 libraries.  If you want to make use of these readers you will also need to
 build and install those libraries prior to building VisIt.
 
 
-    Library  Version  Description            For More information
+    Library  Version  Description            For More Information
     =======  =======  ===========            ====================
+    Boxlib   ???      An AMR I/O library     ???
+    HDF5     1.6.0    File I/O library       http://hdf.ncsa.uiuc.edu/HDF5/
     Mili     1.06     File I/O library       (none)
+
+Most of the third party libraries necessary to build VisIt are available for
+download from ftp://ftp.llnl.gov/pub/visit/3rd_party.  It is suggested that
+you start there and then go to the "For More Information" web sites for
+any remaining libraries.
 
 
 Building VisIt
@@ -53,7 +60,7 @@ operating systems.  It is suggested that you use the same compilers.
 
    Operating System          Compiler
    ================          ========
-   AIX 5.1                   g++ 3.2.3
+   AIX 5.1                   g++ 3.1
    IRIX64 6.5                MIPSpro 7.3.1.2m and MIPSpro 7.4
    Linux 7.1 and 7.2         g++ 2.96 or g++ 3.2.3
    Solaris 7                 g++ 2.95.2 or g++ 3.2
@@ -65,7 +72,7 @@ compile VisIt or will generate bad code.
    Operating System          Compiler
    ================          ========
    Linux 7.1 and 7.2         g++ 3.3 -> 3.3.3
-   AIX 5.1                   g++ 3.3 -> 3.3.3
+   AIX 5.1                   g++ 3.2.3 -> 3.3.3
 
 It is essential that you build all the dependent packages and VisIt using
 the same c++ compiler or you will encounter linking problems because different
@@ -538,8 +545,8 @@ Silo is one of the file formats supported by VisIt.  Follow the directions
 listed below to build Silo.  If you have any problems building or installing
 Silo, read the BUILD_NOTES file in the Silo distribution for more information.
 
-On itanium (ia64) systems, the -fpic flag is needed.  You can replace
-CFLAGS=-O2 with CFLAGS="-fpic -O2" in the configure command below.
+On itanium (ia64) systems, the -fPIC flag is needed.  You can replace
+CFLAGS=-O2 with CFLAGS="-fPIC -O2" in the configure command below.
 
 On irix systems, if you want to build a 64 bit version you can replace
 CFLAGS=-O2 with CFLAGS="-64 -O2" in the configure command below.
@@ -547,8 +554,8 @@ CFLAGS=-O2 with CFLAGS="-64 -O2" in the configure command below.
 #
 # Build Silo
 #
-sh silo040308.sh
-cd silo040308
+sh silo041018.sh
+cd silo041018
 env CFLAGS=-O2 ./configure --without-readline --without-hdf5 --without-exodus
 make
 
@@ -556,12 +563,12 @@ make
 # Install it in the visit directory under the silo directory.
 #
 mkdir $VISITDIR/silo
-mkdir $VISITDIR/silo/4.4
-mkdir $VISITDIR/silo/4.4/$VISITARCH
-mkdir $VISITDIR/silo/4.4/$VISITARCH/{include,lib}
-cp silo/silo/silo.{h,inc}   $VISITDIR/silo/4.4/$VISITARCH/include
-cp silo/sdx/sdx.{h,inc}     $VISITDIR/silo/4.4/$VISITARCH/include
-cp lib/libsilo.a            $VISITDIR/silo/4.4/$VISITARCH/lib
+mkdir $VISITDIR/silo/4.4.1
+mkdir $VISITDIR/silo/4.4.1/$VISITARCH
+mkdir $VISITDIR/silo/4.4.1/$VISITARCH/{include,lib}
+cp silo/silo/silo.{h,inc}   $VISITDIR/silo/4.4.1/$VISITARCH/include
+cp silo/sdx/sdx.{h,inc}     $VISITDIR/silo/4.4.1/$VISITARCH/include
+cp lib/libsilo.a            $VISITDIR/silo/4.4.1/$VISITARCH/lib
 cd ..
 
 
@@ -576,13 +583,13 @@ directions listed below to build Python.  If you have any problems building
 or installing Python, read the README file in the Python distribution for more
 information.
 
-On itanium (ia64) systems, the -fpic flag is needed.  To add this flag to
+On itanium (ia64) systems, the -fPIC flag is needed.  To add this flag to
 python's build, do the following:  (1) Follow the commands below until the
 configure step.  Execute configure as given.  (2) Look at the Makefile and
 find the value of the variable OPT.  (3) Re-execute configure with OPT
-specified through the env command, with -fpic added to OPT.  For example:
+specified through the env command, with -fPIC added to OPT.  For example:
 
-env OPT="-fpic -O2" ./configure --prefix=$VISITDIR/python/$VISITARCH
+env OPT="-fPIC -O2" ./configure --prefix=$VISITDIR/python/$VISITARCH
 
 where the "-O2" was the value of OPT in the makefile.  (4) Continue with
 the commands below as given.
@@ -659,6 +666,117 @@ cp src/libmili.a   $VISITDIR/mili/1.06/$VISITARCH
 cp src/libgahl.a   $VISITDIR/mili/1.06/$VISITARCH
 cd ..
 
+#
+# Build HDF5.
+#
+gunzip hdf5-1.6.0.tar.gz
+tar xf hdf5-1.6.0.tar
+cd hdf5-1.6.0
+
+HDF5 will by default want to use the vendor supplied compiler so you will
+probably need to specify the compiler.  This can be done by preceding the
+configure command with "env CC=compiler_name".
+
+On Linux systems you will need to add -fPIC to the compile flags.  This
+can done by preceding the configure command with "env CFLAGS=-fPIC".
+
+./configure --disable-shared -prefix=$VISITDIR/hdf5/1.6.0/$VISITARCH
+make
+
+#
+# Install it in the visit directory under the hdf5 directory.
+#
+mkdir $VISITDIR/hdf5
+mkdir $VISITDIR/hdf5/1.6.0
+mkdir $VISITDIR/hdf5/1.6.0/$VISITARCH
+make install
+cd ..
+
+#
+# Build Boxlib.
+#
+gunzip boxlib.tar.gz
+tar xf boxlib.tar
+cd CCSEApps/BoxLib
+
+Boxlib does not work on Solaris or Irix systems.  We had to modify boxlib
+to use it with VisIt so you will need to contact us for the source code if
+you wish to build it.
+
+On Itanium systems you will need to modify FPC.cpp and whereever you see
+a reference to "__i486__", you will need to add an appropriate reference to
+"__ia64__".
+
+On Linux systems you will also need to add -fPIC to the compile flags.
+This can done by adding the line "CXXFLAGS += -fPIC" near the top of the
+file GNUmakefile.
+
+On systems using MPI 2.0 (altix), you will need to change the following 3
+lines
+
+typedef int MPI_Op;
+typedef int MPI_Comm;
+typedef int MPI_Datatype;
+
+to
+
+typedef unsigned int MPI_Op;
+typedef unsigned int MPI_Comm;
+typedef unsigned int MPI_Datatype;
+
+in the file ccse-mpi.H.
+
+#
+# Boxlib builds either a 2d or 3d version and VisIt needs both, so you will
+# need to build the 3d version, install it and then build the 2d version and
+# install it.
+#
+# You will need to modify GNUmakefile to set the compiler.  Typically, this
+# will involve replacing "KCC" with the name of your c++ compiler in the
+# line "COMP      = KCC".
+#
+
+#
+# Start off by building the 3d version.
+#
+make -f GNUmakefile
+
+#
+# Install the 3d version in the visit directory under the boxlib directory.
+#
+mkdir $VISITDIR/boxlib
+mkdir $VISITDIR/boxlib/$VISITARCH
+mkdir $VISITDIR/boxlib/$VISITARCH/{include,lib}
+mkdir $VISITDIR/boxlib/$VISITARCH/include/{2D,3D}
+cp libbox3d*.a $VISITDIR/boxlib/$VISITARCH/lib/libbox3D.a
+
+#
+# Now build the 2d version.
+#
+make clean
+
+#
+# You will need to modify the GNUmakefile to set the dimension to 2.  This
+# will involve replacing "3" with "2" in the line "DIM       = 3".
+#
+make -f GNUmakefile
+
+#
+# Install the 2d version in the visit directory under the boxlib directory.
+#
+cp libbox2d*.a $VISITDIR/boxlib/$VISITARCH/lib/libbox2D.a
+
+#
+# Install the header files.
+#
+cp Boxlib2D.h.tar $VISITDIR/boxlib/$VISITARCH/include/2D
+cp Boxlib3D.h.tar $VISITDIR/boxlib/$VISITARCH/include/3D
+cd $VISITDIR/boxlib/$VISITARCH/include/2D
+tar xf Boxlib2D.h.tar
+cd $VISITDIR/boxlib/$VISITARCH/include/3D
+tar xf Boxlib3D.h.tar
+cd $VISITDIR
+cd ..
 
 VisIt
 ======
@@ -669,7 +787,7 @@ configure that tests your system for various libraries and programs required
 to build VisIt.  Follow the directions listed below to build VisIt.
 More information about building VisIt follows after that.
 
-Note: for Itanium (ia64) systems, add the -fpic flag to the CXXFLAGS in the
+Note: for Itanium (ia64) systems, add the -fPIC flag to the CXXFLAGS in the
 env command for configure.
 
 #
@@ -689,6 +807,7 @@ clearcase_bin/visit-bin-dist
 clearcase_bin/visit-install 1.3.5 aix $VISITDIR
 clearcase_bin/visit-install 1.3.5 irix6 $VISITDIR
 clearcase_bin/visit-install 1.3.5 linux $VISITDIR
+clearcase_bin/visit-install 1.3.5 linux-ia64 $VISITDIR
 clearcase_bin/visit-install 1.3.5 osf1 $VISITDIR
 clearcase_bin/visit-install 1.3.5 sunos5 $VISITDIR
 

@@ -320,7 +320,7 @@ class ViewerToolbar;
 //    Kathleen Bonnell, Wed Aug 18 09:39:29 PDT 2004 
 //    Added SetInteracotrAtts, GetInteractorAtts, CopyInteractorAtts.
 //
-//    Kathleen Bonnell, hu Sep  2 13:55:05 PDT 2004
+//    Kathleen Bonnell, Thu Sep  2 13:55:05 PDT 2004
 //    Added bool arg to SetPickFunction, to indicate if pick shoul be
 //    performed normally or as intersection-only. 
 //
@@ -329,6 +329,10 @@ class ViewerToolbar;
 //
 //    Mark C. Miller, Tue Oct 19 20:18:22 PDT 2004
 //    Added data member for name of last color table to change
+//
+//    Kathleen Bonnell, Tue Oct 12 16:31:46 PDT 2004
+//    Added GlyphPick method. 
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerWindow
@@ -543,6 +547,9 @@ public:
     void SetInteractorAtts(const InteractorAttributes *);
     const InteractorAttributes *GetInteractorAtts() const;
     void CopyInteractorAtts(const ViewerWindow *);
+
+    void GlyphPick(const float pt3[3], const float pt2[3], 
+                   int &dom, int &elNum, bool &forCell);
 
 private:
     void RecenterViewCurve(const double *limits);

@@ -74,13 +74,21 @@ vtkSurfaceFromVolume::TriangleList::GetTotalNumberOfTriangles(void) const
 }
  
  
+// ****************************************************************************
+//  Modifications:
+//
+//    Hank Childs, Thu Oct 21 15:32:07 PDT 2004
+//    Fix bug when we get low on memory.
+//
+// ****************************************************************************
+
 void
 vtkSurfaceFromVolume::TriangleList::AddTriangle(int cellId, int v1, int v2,
                                                 int v3)
 {
     if (currentTriangle >= trianglesPerList)
     {
-        if (currentList >= listSize+1)
+        if ((currentList+1) >= listSize)
         {
             int **tmpList = new int*[2*listSize];
             for (int i = 0 ; i < listSize ; i++)

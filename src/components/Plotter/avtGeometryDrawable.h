@@ -57,6 +57,9 @@ class     ColorAttribute;
 //    Mark C. Miller, Tue May 11 20:21:24 PDT 2004
 //    Removed SetExternallyRenderedImagesActor method
 //
+//    Kathleen Bonnell, Mon Sep 27 10:21:15 PDT 2004 
+//    Added MakePickable and MakeUnPickable. 
+//
 // ****************************************************************************
 
 class PLOTTER_API avtGeometryDrawable : public avtDrawable
@@ -91,6 +94,9 @@ class PLOTTER_API avtGeometryDrawable : public avtDrawable
                                                       const ColorAttribute&);
 
     virtual avtDataObject_p     GetDataObject(void);
+
+    virtual void                MakePickable(void);
+    virtual void                MakeUnPickable(void);
 
   protected:
     int                         nActors;

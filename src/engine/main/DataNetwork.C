@@ -3,6 +3,7 @@
 #include <avtActor.h>
 #include <avtPlot.h>
 #include <DebugStream.h>
+#include <ImproperUseException.h>
 #include <WindowAttributes.h>
 
 using std::string;
@@ -94,18 +95,30 @@ DataNetwork::GetWriter(avtDataObject_p dob, avtPipelineSpecification_p pspec,
 //     Mark C. Miller, Thu May 27 11:05:15 PDT 2004
 //     Removed window attributes argument and dependencies
 //
+//     Kathleen Bonnell,  Thu Oct 21 15:55:46 PDT 2004
+//     Allow dob arg to be NULL, but test for it and throw Exception when
+//     necessary. 
+//
 // ****************************************************************************
 avtActor_p
 DataNetwork::GetActor(avtDataObject_p dob)
 {
-    if (*plotActor == NULL)
+    if (*plotActor == NULL) 
     {
-        // do the part of the execute we'd do in the viewer
-        plotActor = GetPlot()->Execute(NULL, dob);
-   }
+        if (*dob != NULL)
+        {
+            // do the part of the execute we'd do in the viewer
+            plotActor = GetPlot()->Execute(NULL, dob);
+        }
+        else 
+        {
+            debug1 << "Attempting to retrieve a plot's actor with "
+                   << "no input." << endl;
+            EXCEPTION0(ImproperUseException);
+        }
+    }
 
    return plotActor;
-
 }
 
 

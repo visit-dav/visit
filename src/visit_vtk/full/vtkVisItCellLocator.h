@@ -98,6 +98,12 @@ public:
   vtkGetMacro(IgnoreGhosts,int);
   vtkBooleanMacro(IgnoreGhosts,int);
 
+  // Description:
+  // Boolean controls whether ghost cells are ignored. 
+  vtkSetMacro(IgnoreLines,int);
+  vtkGetMacro(IgnoreLines,int);
+  vtkBooleanMacro(IgnoreLines,int);
+
 
   // Description:
   // Bounds to use when building search structure.  Useful if the
@@ -265,6 +271,7 @@ protected:
   unsigned char QueryNumber;
   int CacheCellBounds;
   int IgnoreGhosts;
+  int IgnoreLines;
 //BTX - begin tcl exclude
   float (*CellBounds)[6];
 //ETX - end tcl exclude

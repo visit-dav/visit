@@ -118,6 +118,7 @@ vtkVisItCellLocator::vtkVisItCellLocator()
   this->CacheCellBounds = 0;
   this->CellBounds = NULL;
   this->IgnoreGhosts = 0;
+  this->IgnoreLines = 0;
 
   this->OctantBounds[0] = 0.;
   this->OctantBounds[1] = 0.;
@@ -660,6 +661,9 @@ int vtkVisItCellLocator::IntersectWithLine(float a0[3], float a1[3],
                 // intersect with line call
                 this->DataSet->GetCell(cId, cell);
                 
+                if (IgnoreLines && cell->GetCellType() == VTK_LINE)     
+                  continue;
+
                 if (CellIntersectWithLine(cell, a0, a1, tempT, tempX, pc, tempId))
                   {
                   if (!this->IsInOctantBounds(tempX))
@@ -3213,7 +3217,10 @@ int vtkVisItCellLocator::IntersectWithLine(float a0[3], float a1[3],
                 // now, do the expensive GetCell call and the expensive
                 // intersect with line call
                 this->DataSet->GetCell(cId, cell);
-                
+            
+                if (IgnoreLines && cell->GetCellType() == VTK_LINE)     
+                  continue;
+
                 if (CellIntersectWithLine(cell, a0, a1, tempT, tempX, pc, tempId))
                   {
                   cells->InsertNextId(cId);
