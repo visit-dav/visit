@@ -5464,6 +5464,8 @@ VisWindow::ResumeTranslucentGeometry()
 // Creation:   October 11, 2004 
 //
 // Modifications:
+//   Kathleen Bonnell, Tue Nov  2 10:18:16 PST 2004
+//   Added support for full-frame mode.
 //
 // ****************************************************************************
 
@@ -5481,8 +5483,17 @@ VisWindow::GlyphPick(const float *rp1, const float *rp2, int &dom,
     int i, cell = -1;
     float *bnds = NULL;
     float dir[3];
+    float r1[3] = {rp1[0], rp1[1], rp1[2]};
+    float r2[3] = {rp2[0], rp2[1], rp2[2]};
+    if (GetFullFrameMode())
+    {
+       int *size = rendering->GetFirstRenderer()->GetSize(); 
+       double scale = view2D.GetScaleFactor(size);
+       r1[1] /= scale;
+       r2[1] /= scale;
+    }
     for (i = 0; i < 3; i++)
-        dir[i] = rp2[i] - rp1[i];
+        dir[i] = r2[i] - r1[i];
     float dummy1[3], dummy2;
     vtkActorCollection *actors = GetCanvas()->GetActors();
     vtkActor *actor = NULL;
@@ -5503,8 +5514,7 @@ VisWindow::GlyphPick(const float *rp1, const float *rp2, int &dom,
                 continue;
             }
             bnds = ds->GetBounds();
-            if (vtkBox::IntersectBox(bnds, const_cast<float*>(rp1), 
-                                     dir, dummy1, dummy2))
+            if (vtkBox::IntersectBox(bnds, r1, dir, dummy1, dummy2))
             {
                 if (ds->GetNumberOfPoints() == 0)
                     continue;
@@ -5517,12 +5527,12 @@ VisWindow::GlyphPick(const float *rp1, const float *rp2, int &dom,
                 float isect[3] = {0., 0., 0.};
                 int subId = 0, success = 0;
                 vtkIdType foundCell; 
-                if (rp1[0] == rp2[0] &&
-                    rp1[1] == rp2[1] &&
-                    rp1[2] == rp2[2])
+                if (r1[0] == r2[0] &&
+                    r1[1] == r2[1] &&
+                    r1[2] == r2[2])
                 { /* WORLD COORD LOCATE */
-                    cellLocator->FindClosestPoint(const_cast<float*>(rp1), 
-                                            ptLine, foundCell, subId, dist);
+                    cellLocator->FindClosestPoint(r1, ptLine, foundCell,
+                                                  subId, dist);
                     if (foundCell >= 0 && dist >= 0)
                     {
                         success = 1;
@@ -5530,9 +5540,7 @@ VisWindow::GlyphPick(const float *rp1, const float *rp2, int &dom,
                 }
                 else 
                 { /* RAY-INTERSECT LOCATE */
-                    success = cellLocator->IntersectWithLine(
-                                  const_cast<float*>(rp1), 
-                                  const_cast<float*>(rp2), 
+                    success = cellLocator->IntersectWithLine(r1, r2, 
                                   dist, isect, pcoords, subId, foundCell);
                 }
                 cellLocator->Delete();

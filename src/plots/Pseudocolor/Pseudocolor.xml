@@ -1,8 +1,10 @@
 <?xml version="1.0"?>
   <Plugin name="Pseudocolor" type="plot" label="Pseudocolor" version="1.0" enabled="true" vartype="scalar,species" iconFile="Pseudocolor.xpm">
     <Files components="V">
+      avtPseudocolorFilter.C
     </Files>
     <Files components="E">
+      avtPseudocolorFilter.C
     </Files>
     <Attribute name="PseudocolorAttributes" purpose="Attributes for the pseudocolor plot" persistent="true" codefile="Pseudocolor.code">
       <Enum name="Centering">

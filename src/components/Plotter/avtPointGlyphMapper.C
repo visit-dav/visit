@@ -94,13 +94,48 @@ avtPointGlyphMapper::~avtPointGlyphMapper()
 //  Creation:   August 19, 2004
 //
 //  Modifications:
+//    Kathleen Bonnell, Tue Nov  2 10:18:16 PST 2004
+//    avtVariableMapper::CustomizeMappers assumes a valid scalar variable
+//    for determining data extents, so don't call it when we aren't coloring
+//    by a scalar.  Copied non-data-extents related code from parent class
+//    to here.
 //
 // ****************************************************************************
 
 void
 avtPointGlyphMapper::CustomizeMappers(void)
 {
-    avtVariableMapper::CustomizeMappers();
+    if (colorByScalar)
+    {
+        avtVariableMapper::CustomizeMappers();
+    }
+    else     
+    {
+        if (lighting)
+        {
+            TurnLightingOn();
+        }
+        else
+        {
+            TurnLightingOff();
+        }
+
+        SetOpacity(opacity);
+
+        for (int i = 0; i < nMappers; i++)
+        {
+            if (mappers[i] != NULL)
+            {
+                mappers[i]->SetLookupTable(lut);
+            }
+            if (actors[i] != NULL)
+            {
+                vtkProperty *prop = actors[i]->GetProperty();
+                prop->SetLineStipplePattern(LineStyle2StipplePattern(lineStyle));
+                prop->SetLineWidth(LineWidth2Int(lineWidth));
+            }
+        }
+    }
 
     if (glyphFilter != NULL)
     {
@@ -732,10 +767,14 @@ avtPointGlyphMapper::ColorByScalarOn(const string &sn)
 //  Programmer:   Kathleen Bonnell
 //  Creation:     August 19, 2004 
 //
+//  Modifications:
+//    Kathleen Bonnell, Tue Nov  2 10:18:16 PST 2004
+//    Change argument type from unsigned char to float.
+//
 // ****************************************************************************
 
 void
-avtPointGlyphMapper::ColorByScalarOff(const unsigned char col[3])
+avtPointGlyphMapper::ColorByScalarOff(const float col[3])
 {
     glyphColor[0] = col[0];
     glyphColor[1] = col[1];
@@ -749,10 +788,7 @@ avtPointGlyphMapper::ColorByScalarOff(const unsigned char col[3])
             if (actors[i] != NULL)
             {
                 vtkProperty *prop = actors[i]->GetProperty();
-                float r = ((float) glyphColor[0]) / 255.;
-                float g = ((float) glyphColor[1]) / 255.;
-                float b = ((float) glyphColor[2]) / 255.;
-                prop->SetColor(r, g, b);
+                prop->SetColor(glyphColor);
             }
         }
     }
@@ -767,5 +803,55 @@ avtPointGlyphMapper::ColorByScalarOff(const unsigned char col[3])
             }
         }
     }
+}
+
+
+// ****************************************************************************
+//  Method: avtPointGlyphMapper::ColorByScalarOff
+//
+//  Purpose:
+//    Tells the glyph mapper to color all of the glyphs the same color.
+//
+//  Arguments:
+//    col         The new color.
+//
+//  Programmer:   Kathleen Bonnell
+//  Creation:     November 2, 2004 
+//
+// ****************************************************************************
+
+void
+avtPointGlyphMapper::ColorByScalarOff(const unsigned char col[3])
+{
+    float fc[3];
+    fc[0] = (float)col[0] / 255.;
+    fc[1] = (float)col[1] / 255.;
+    fc[2] = (float)col[2] / 255.;
+    ColorByScalarOff(fc);
+}
+
+
+// ****************************************************************************
+//  Method: avtPointGlyphMapper::ColorByScalarOff
+//
+//  Purpose:
+//    Tells the glyph mapper to color all of the glyphs the same color.
+//
+//  Arguments:
+//    col         The new color.
+//
+//  Programmer:   Kathleen Bonnell
+//  Creation:     November 2, 2004 
+//
+// ****************************************************************************
+
+void
+avtPointGlyphMapper::ColorByScalarOff(const double col[3])
+{
+    float fc[3];
+    fc[0] = (float)col[0];
+    fc[1] = (float)col[1];
+    fc[2] = (float)col[2];
+    ColorByScalarOff(fc);
 }
 

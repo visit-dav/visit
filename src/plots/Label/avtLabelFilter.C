@@ -546,6 +546,9 @@ avtLabelFilter::FindClosestVector(const float *vert) const
 //
 // Modifications:
 //   
+//   Hank Childs, Tue Nov  2 05:16:53 PST 2004
+//   Do not delete memory we don't own.
+//
 // ****************************************************************************
 
 avtLabelFilter::QuantizationRetval
@@ -650,7 +653,6 @@ avtLabelFilter::CreateQuantizedNormalsFromPointNormals(vtkDataSet *outDS,
         // Remove the vectors array since we've created the quantized
         // vectors array.
         outDS->GetPointData()->RemoveArray("Normals");
-        normals->Delete();
     }
 
     return retval;
@@ -676,6 +678,9 @@ avtLabelFilter::CreateQuantizedNormalsFromPointNormals(vtkDataSet *outDS,
 //
 // Modifications:
 //   
+//   Hank Childs, Tue Nov  2 05:16:53 PST 2004
+//   Do not delete memory we don't own.
+//
 // ****************************************************************************
 
 avtLabelFilter::QuantizationRetval
@@ -794,7 +799,6 @@ avtLabelFilter::CreateQuantizedNormalsFromCellNormals(vtkDataSet *outDS,
         // Remove the vectors array since we've created the quantized
         // vectors array.
         outDS->GetCellData()->RemoveArray("Normals");
-        normals->Delete();
     }
 
     return retval;

@@ -35,6 +35,9 @@ class vtkDataSet;
 //    Kathleen Bonnell, Thu Feb  5 10:34:16 PST 2004 
 //    Added vtkExtractEdges, removed vtkUniqueFeatureEdges.
 //
+//    Kathleen Bonnell, Tue Nov  2 10:41:33 PST 2004 
+//    Added keepNodeZone. 
+//
 // ****************************************************************************
 
 class avtMeshFilter : public avtDataTreeStreamer
@@ -51,6 +54,7 @@ class avtMeshFilter : public avtDataTreeStreamer
   protected:
 
     MeshAttributes             atts;
+    bool                       keepNodeZone;
 
     vtkGeometryFilter         *geometryFilter;
     vtkExtractEdges           *extractEdges;

@@ -234,6 +234,37 @@ avtMatrix::CreateView(const avtVector &from,
 }
 
 void
+avtMatrix::MakeRotation(const avtVector &from, 
+                        const avtVector &at, 
+                        const avtVector &world_up)
+{
+    avtVector new_z = (from - at).normalized();
+    avtVector new_x = (world_up % new_z).normalized();
+    avtVector new_y = (new_z % new_x).normalized();
+
+    MakeIdentity();
+        
+    m[0][0] = new_x.x;
+    m[0][1] = new_y.x;
+    m[0][2] = new_z.x;
+    m[1][0] = new_x.y;
+    m[1][1] = new_y.y;
+    m[1][2] = new_z.y;
+    m[2][0] = new_x.z;
+    m[2][1] = new_y.z;
+    m[2][2] = new_z.z;
+}
+avtMatrix
+avtMatrix::CreateRotation(const avtVector &from, 
+                     const avtVector &at, 
+                     const avtVector &world_up)
+{
+    avtMatrix M;
+    M.MakeRotation(from, at, world_up);
+    return M;
+}
+
+void
 avtMatrix::MakeRBT(const avtVector &from, 
                      const avtVector &at, 
                      const avtVector &world_up)

@@ -152,6 +152,10 @@ class     AttributeSubject;
 //    Kathleen Bonnell, Tue Aug 24 16:12:03 PDT 2004 
 //    Added avtMeshType arg to SetOpaqueMeshIsAppropriate. 
 //
+//    Kathleen Bonnell, Tue Nov  2 10:18:16 PST 2004 
+//    Added meshType as a member of this class, removed MeshType arg from
+//    SetOpaqueMeshIsAppropriate. 
+//
 // ****************************************************************************
 
 class PLOTTER_API avtPlot
@@ -183,6 +187,7 @@ class PLOTTER_API avtPlot
 
     void                       SetVarName(const char *name);
     void                       SetVarUnits(const char *units);
+    void                       SetMeshType(const avtMeshType);
 
     bool                       NeedsRecalculation(void);
 
@@ -204,7 +209,7 @@ class PLOTTER_API avtPlot
     virtual avtMapper         *GetMapper(void) = 0;
     virtual bool               CanCacheWriterExternally(void) { return true; } 
     virtual const AttributeSubject 
-                              *SetOpaqueMeshIsAppropriate(bool, avtMeshType)
+                              *SetOpaqueMeshIsAppropriate(bool)
                                    { return NULL; };
     float                      GetCellCountMultiplierForSRThreshold() const;
 
@@ -223,6 +228,7 @@ class PLOTTER_API avtPlot
     avtSILRestriction_p        silr;
     char                      *varname;
     char                      *varunits;
+    avtMeshType                meshType;
     vector<double>             dataExtents;
     float                      cellCountMultiplierForSRThreshold;
 

@@ -25,6 +25,10 @@ class avtVector;
 //    Added the optional argument lhs (left handed coordinate system) to
 //    MakeTrackball and CreateTrackball.
 //
+//    Hank Childs, Mon Nov  1 11:17:25 PST 2004
+//    I added [Make|Create]Rotation, which were originally coded by Jeremy
+//    Meredith for me to help with shadows (and I am checking in).
+//
 // ****************************************************************************
 
 class MATH_API avtMatrix
@@ -59,6 +63,7 @@ class MATH_API avtMatrix
     void   MakeTranslate(double, double, double);
     void   MakeTranslate(const avtVector&);
     void   MakeRBT(const avtVector&, const avtVector&, const avtVector&);
+    void   MakeRotation(const avtVector&, const avtVector&, const avtVector&);
     void   MakeScale(double,double,double);
     void   MakeScale(double);
     void   MakePerspectiveProjection(double,double, double, double);
@@ -79,6 +84,7 @@ class MATH_API avtMatrix
     static avtMatrix CreateTranslate(double, double, double);
     static avtMatrix CreateTranslate(const avtVector&);
     static avtMatrix CreateRBT(const avtVector&, const avtVector&, const avtVector&);
+    static avtMatrix CreateRotation(const avtVector&, const avtVector&, const avtVector&);
     static avtMatrix CreateScale(double,double,double);
     static avtMatrix CreateScale(double);
     static avtMatrix CreatePerspectiveProjection(double,double, double, double);

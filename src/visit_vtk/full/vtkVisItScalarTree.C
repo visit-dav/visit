@@ -41,10 +41,20 @@ vtkVisItScalarTree::vtkVisItScalarTree()
     tree = NULL;
 }
 
+// ****************************************************************************
+//  Modifications:
+//
+//    Hank Childs, Mon Nov  1 09:55:59 PST 2004
+//    Fixed memory leak.
+//
+// ****************************************************************************
+
 vtkVisItScalarTree::~vtkVisItScalarTree()
 {
     if (tree)
         delete[] tree;
+    if (DataSet != NULL)
+        DataSet->UnRegister(this);
 }
 
 void

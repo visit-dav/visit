@@ -2298,6 +2298,9 @@ NetworkManager::StopPickMode(void)
 //    Kathleen Bonnell, Thu Oct 21 15:55:46 PDT 2004 
 //    Added support for picking on glyphed data. 
 //
+//    Kathleen Bonnell, Tue Nov  2 10:18:16 PST 2004 
+//    Enusure that GlyphPick is sending the correct domain to Pick query. 
+//
 // ****************************************************************************
 
 void
@@ -2336,6 +2339,7 @@ NetworkManager::Pick(const int id, PickAttributes *pa)
         EXCEPTION0(NoInputException);
     }
 
+    avtDataAttributes &queryInputAtts = queryInput->GetInfo().GetAttributes();
     if (pa->GetRequiresGlyphPick())
     {
         if (networkCache[id]->ActorIsNull())
@@ -2360,7 +2364,7 @@ NetworkManager::Pick(const int id, PickAttributes *pa)
             // VisWindow. 
             //
             viswin->GlyphPick(pa->GetRayPoint1(), pa->GetRayPoint2(), d, e, fc, false);
-            domElFC.push_back(d);
+            domElFC.push_back(d + queryInputAtts.GetBlockOrigin());
             domElFC.push_back(e);
             domElFC.push_back((int)fc);
         }
@@ -2385,7 +2389,6 @@ NetworkManager::Pick(const int id, PickAttributes *pa)
         }
     }
 
-    avtDataAttributes &queryInputAtts = queryInput->GetInfo().GetAttributes();
     avtDataValidity   &queryInputVal  = queryInput->GetInfo().GetValidity();
     bool skipLocate = queryInputAtts.GetTopologicalDimension() == 1 &&
                       queryInputAtts.GetSpatialDimension() == 2;

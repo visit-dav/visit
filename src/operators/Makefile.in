@@ -154,6 +154,9 @@
 #    Jeremy Meredith, Fri Sep  3 09:47:23 PDT 2004
 #    Added project operator.
 #
+#    Hank Childs, Tue Nov  2 09:52:49 PST 2004
+#    Added SubdivideQuads operator.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -162,7 +165,8 @@ all: message
 	for dir in $(SUBDIRS); do (cd $$dir && $(MAKE) $@) || exit 1; done
 
 OPTIONAL=Context ConnCompReduce Decimate ExternalSurface \
-         MetricThreshold RemoveCells Revolve SiloDump SurfCompPrep Tube
+         MetricThreshold RemoveCells Revolve SiloDump SubdivideQuads \
+         SurfCompPrep Tube
 
 REQUIRED=Box Clip Cone Cylinder Displace IndexSelect InverseGhostZone \
          Isosurface Isovolume Lineout OnionPeel Project Reflect Slice \

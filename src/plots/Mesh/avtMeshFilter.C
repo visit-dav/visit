@@ -30,6 +30,9 @@
 //    Removed featureEdges, hasn't been used in a long time.  
 //    Added extractEges. 
 //
+//    Kathleen Bonnell, Tue Nov  2 10:37:14 PST 2004 
+//    Added keepNodeZone. 
+//
 // ****************************************************************************
 
 avtMeshFilter::avtMeshFilter(const MeshAttributes &a)
@@ -38,6 +41,7 @@ avtMeshFilter::avtMeshFilter(const MeshAttributes &a)
     lineFilter     = vtkLinesFromOriginalCells::New();
     geometryFilter = vtkGeometryFilter::New();
     extractEdges = vtkExtractEdges::New();
+    keepNodeZone = false; 
 }
 
 
@@ -148,11 +152,20 @@ avtMeshFilter::~avtMeshFilter()
 //    Hank Childs, Fri Aug 27 15:24:09 PDT 2004
 //    Renamed ghost data array.
 //
+//    Kathleen Bonnell, Tue Nov  2 10:37:14 PST 2004 
+//    No need to process this data if topological dimension is 0 (point mesh). 
+//
 // ****************************************************************************
 
 avtDataTree_p
 avtMeshFilter::ExecuteDataTree(vtkDataSet *inDS, int dom, string lab)
 {
+    avtDataAttributes &datts = GetInput()->GetInfo().GetAttributes();
+    int topoDim = datts.GetTopologicalDimension();
+
+    if (topoDim == 0) 
+        return new avtDataTree(inDS, dom, lab);
+
     vtkPolyData *outDS = vtkPolyData::New();
     vtkPolyData *opaquePolys = vtkPolyData::New();
 
@@ -212,8 +225,6 @@ avtMeshFilter::ExecuteDataTree(vtkDataSet *inDS, int dom, string lab)
 
     if (revisedInput2->GetDataObjectType() == VTK_POLY_DATA) 
     {
-        avtDataAttributes &datts = GetInput()->GetInfo().GetAttributes();
-        int topoDim = datts.GetTopologicalDimension();
         //
         // Make extra sure that we really have surfaces.
         //
@@ -230,14 +241,6 @@ avtMeshFilter::ExecuteDataTree(vtkDataSet *inDS, int dom, string lab)
             lineFilter->SetInput((vtkPolyData*)revisedInput2);
             lineFilter->SetOutput(outDS);
             lineFilter->Update();
-        }
-        else if (topoDim == 0)
-        { 
-            outDS->Delete();
-            outDS = (vtkPolyData*)revisedInput2;
-            outDS->Register(NULL);
-            debug5 << "MeshFilter not making a point mesh go through the line "
-                   << "filter." << endl;
         }
         else
         {
@@ -323,6 +326,10 @@ avtMeshFilter::ExecuteDataTree(vtkDataSet *inDS, int dom, string lab)
 //    Hank Childs, Wed Oct  9 16:13:32 PDT 2002
 //    Do not calculate normals after the mesh plot.
 //
+//    Kathleen Bonnell, Tue Nov  2 10:41:33 PST 2004 
+//    Set KeepNodeZoneArrays, and don't set TopologicalDimension to 1 if 
+//    original topo dim was 0. 
+//
 // ****************************************************************************
 
 void
@@ -336,7 +343,9 @@ avtMeshFilter::RefashionDataObjectInfo(void)
     // and thus other plots will possibly obscure the mesh lines, making
     // them appear less-than solid.
     //
-    GetOutput()->GetInfo().GetAttributes().SetTopologicalDimension(1);
+    GetOutput()->GetInfo().GetAttributes().SetKeepNodeZoneArrays(keepNodeZone);
+    if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() != 0)
+        GetOutput()->GetInfo().GetAttributes().SetTopologicalDimension(1);
     GetOutput()->GetInfo().GetValidity().InvalidateZones();
     GetOutput()->GetInfo().GetValidity().SetNormalsAreInappropriate(true);
 }
@@ -352,6 +361,10 @@ avtMeshFilter::RefashionDataObjectInfo(void)
 //  Programmer: Kathleen Bonnell
 //  Creation:   March 25, 2002
 //
+//  Modifications:
+//    Kathleen Bonnell, Tue Nov  2 10:37:14 PST 2004
+//    Handle point meshes differently.
+//
 // ****************************************************************************
  
 avtPipelineSpecification_p
@@ -359,6 +372,36 @@ avtMeshFilter::PerformRestriction(avtPipelineSpecification_p spec)
 {
     avtPipelineSpecification_p rv = new avtPipelineSpecification(spec);
     rv->GetDataSpecification()->TurnZoneNumbersOn();
+  
+    if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() == 0)
+    {
+        string pointVar = atts.GetPointSizeVar();
+        avtDataSpecification_p dspec = spec->GetDataSpecification();
+
+        //
+        // Find out if we REALLY need to add the secondary variable.
+        //
+        if (atts.GetPointSizeVarEnabled() && 
+            pointVar != "default" &&
+            pointVar != "\0" &&
+            pointVar != dspec->GetVariable() &&
+            !dspec->HasSecondaryVariable(pointVar.c_str()))
+        {
+            rv->GetDataSpecification()->AddSecondaryVariable(pointVar.c_str());
+        }
+
+        avtDataAttributes &data = GetInput()->GetInfo().GetAttributes();
+        if (spec->GetDataSpecification()->MayRequireZones())
+        {
+            keepNodeZone = true;
+            rv->GetDataSpecification()->TurnNodeNumbersOn();
+        }
+        else
+        {
+            keepNodeZone = false;
+        }
+    }
+
     return rv;
 }
 

@@ -11,6 +11,7 @@
 #include <avtShiftCenteringFilter.h>
 #include <avtVariableLegend.h>
 #include <avtPointGlyphMapper.h>
+#include <avtPseudocolorFilter.h>
 
 #include <DebugStream.h>
 #include <InvalidLimitsException.h>
@@ -42,6 +43,9 @@
 //    Kathleen Bonnell, Thu Aug 19 15:29:46 PDT 2004 
 //    Replaced varMapper and glyphPoints with glyphMapper. 
 //
+//    Kathleen Bonnell, Tue Nov  2 11:02:15 PST 2004 
+//    Added pcfilter.
+//
 // ****************************************************************************
 
 avtPseudocolorPlot::avtPseudocolorPlot()
@@ -56,6 +60,7 @@ avtPseudocolorPlot::avtPseudocolorPlot()
     avtLUT  = new avtLookupTable;
 
     filter = NULL;
+    pcfilter = NULL;
 
     //
     // This is to allow the legend to reference counted so the behavior can
@@ -84,6 +89,9 @@ avtPseudocolorPlot::avtPseudocolorPlot()
 //    Kathleen Bonnell, Thu Aug 19 15:29:46 PDT 2004 
 //    No longer using glyphPoints, replaced varMapper with glyphMapepr.
 //
+//    Kathleen Bonnell, Tue Nov  2 11:02:15 PST 2004 
+//    Added pcfilter. 
+//
 // ****************************************************************************
 
 avtPseudocolorPlot::~avtPseudocolorPlot()
@@ -92,6 +100,12 @@ avtPseudocolorPlot::~avtPseudocolorPlot()
     {
         delete filter;
         filter = NULL;
+    }
+
+    if (pcfilter != NULL)
+    {
+        delete pcfilter;
+        pcfilter = NULL;
     }
 
     if (avtLUT != NULL)
@@ -196,6 +210,9 @@ avtPseudocolorPlot::GetMapper(void)
 //    Do not consider the centering of the current dataset if we are asked to
 //    shift the centering.
 //
+//    Kathleen Bonnell, Tue Nov  2 11:02:15 PST 2004 
+//    Added pcfilter for point meshes.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -217,6 +234,16 @@ avtPseudocolorPlot::ApplyOperators(avtDataObject_p input)
         filter = new avtShiftCenteringFilter(atts.GetCentering());
         filter->SetInput(dob);
         dob = filter->GetOutput();
+    }
+    if (input->GetInfo().GetAttributes().GetTopologicalDimension() == 0)
+    {
+        if (pcfilter != NULL)
+        {
+            delete pcfilter;
+        }
+        pcfilter = new avtPseudocolorFilter();
+        pcfilter->SetInput(dob);
+        dob = pcfilter->GetOutput();
     }
 
     return dob;
@@ -582,6 +609,9 @@ avtPseudocolorPlot::SetScaling(int mode, double skew)
 //    Kathleen Bonnell, Thu Aug 19 15:29:46 PDT 2004
 //    Replaced varMapper with glyphMapper.
 //
+//    Hank Childs, Fri Oct 29 10:00:15 PDT 2004
+//    Turn off specular lighting as well.
+//
 // ****************************************************************************
 
 void
@@ -590,10 +620,12 @@ avtPseudocolorPlot::SetLighting(bool lightingOn)
     if (lightingOn)
     {
         glyphMapper->TurnLightingOn();
+        glyphMapper->SetSpecularIsInappropriate(false);
     }
     else
     {
         glyphMapper->TurnLightingOff();
+        glyphMapper->SetSpecularIsInappropriate(true);
     }
 }
 
@@ -808,6 +840,9 @@ avtPseudocolorPlot::SetLegendRanges()
 //    Kathleen Bonnell, Thu Aug 19 15:29:46 PDT 2004
 //    Removed glyphPoints.
 //
+//    Kathleen Bonnell, Tue Nov  2 11:02:15 PST 2004 
+//    Added pcfilter. 
+//
 // ****************************************************************************
  
 void
@@ -818,6 +853,10 @@ avtPseudocolorPlot::ReleaseData(void)
     if (filter != NULL)
     {
         filter->ReleaseData();
+    }
+    if (pcfilter != NULL)
+    {
+        pcfilter->ReleaseData();
     }
 }
 

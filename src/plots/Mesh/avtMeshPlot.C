@@ -10,11 +10,11 @@
 #include <MeshAttributes.h>
 
 #include <avtMeshFilter.h>
-#include <avtPointToGlyphFilter.h>
+#include <avtPointGlyphMapper.h>
+#include <avtSmoothPolyDataFilter.h>
 #include <avtSurfaceAndWireframeRenderer.h>
 #include <avtUserDefinedMapper.h>
 #include <avtVariableLegend.h>
-#include <avtSmoothPolyDataFilter.h>
 
 #include <DebugStream.h>
 
@@ -72,6 +72,9 @@
 //    Kathleen Bonnell, Thu Aug 28 10:03:42 PDT 2003 
 //    Initialize opaqueMeshIsAppropriate. 
 //
+//    Kathleen Bonnell, Tue Nov  2 10:41:33 PST 2004
+//    Initialize glyphMapper, remove glyphPoints.
+//
 // ****************************************************************************
 
 avtMeshPlot::avtMeshPlot()
@@ -80,11 +83,13 @@ avtMeshPlot::avtMeshPlot()
     smooth             = new avtSmoothPolyDataFilter();
     ghostAndFaceFilter = new avtGhostZoneAndFacelistFilter;
     ghostAndFaceFilter->SetUseFaceFilter(true);
-    glyphPoints = new avtPointToGlyphFilter;
     renderer = avtSurfaceAndWireframeRenderer::New();
     avtCustomRenderer_p cr;
     CopyTo(cr, renderer);
     mapper = new avtUserDefinedMapper(cr);
+
+    glyphMapper = new avtPointGlyphMapper;
+
     
     property = vtkProperty::New();
     property->SetAmbient(1.);
@@ -160,6 +165,9 @@ avtMeshPlot::avtMeshPlot()
 //    Jeremy Meredith, Tue Dec 10 10:00:09 PST 2002
 //    Added poly data smooth filter.
 //
+//    Kathleen Bonnell, Tue Nov  2 10:41:33 PST 2004
+//    Added glyphMapper, removed glyphPoints. 
+//
 // ****************************************************************************
 
 avtMeshPlot::~avtMeshPlot()
@@ -173,11 +181,6 @@ avtMeshPlot::~avtMeshPlot()
     {
         delete ghostAndFaceFilter;
         ghostAndFaceFilter = NULL;
-    }
-    if (glyphPoints != NULL)
-    {
-        delete glyphPoints;
-        glyphPoints = NULL;
     }
     if (mapper != NULL)
     {
@@ -193,6 +196,11 @@ avtMeshPlot::~avtMeshPlot()
     {
         delete smooth;
         smooth = NULL;
+    }
+    if (glyphMapper != NULL)
+    {
+        delete glyphMapper;
+        glyphMapper = NULL;
     }
 
     //
@@ -288,6 +296,9 @@ avtMeshPlot::SetCellCountMultiplierForSRThreshold(const avtDataObject_p dob)
 //    Kathleen Bonnell, Thu Feb  5 13:15:08 PST 2004 
 //    Added spatialDim in call to atts.ChangesRequireRecalculation.
 //
+//    Kathleen Bonnell, Tue Nov  2 10:41:33 PST 2004 
+//    Set up glyphMapper. 
+//
 // ****************************************************************************
 
 void
@@ -309,10 +320,12 @@ avtMeshPlot::SetAtts(const AttributeGroup *a)
     if (atts.GetForegroundFlag())
     {
         SetMeshColor(fgColor);
+        glyphMapper->ColorByScalarOff(fgColor);
     }
     else 
     {
         SetMeshColor(atts.GetMeshColor().GetColor());
+        glyphMapper->ColorByScalarOff(atts.GetMeshColor().GetColor());
     }
     SetPointSize(atts.GetPointSize());
     SetRenderOpaque();
@@ -325,6 +338,29 @@ avtMeshPlot::SetAtts(const AttributeGroup *a)
         SetOpaqueColor(atts.GetOpaqueColor().GetColor());
     }
     SetLegend(atts.GetLegendFlag());
+
+
+    //
+    // Setup glyphMapper
+    //
+    glyphMapper->SetScale(atts.GetPointSize());
+    if (atts.GetPointSizeVarEnabled())
+    {
+        if (atts.GetPointSizeVar() != "default" &&
+            atts.GetPointSizeVar() != "") 
+        {
+            glyphMapper->DataScalingOn(atts.GetPointSizeVar());
+        }
+        else 
+        {
+            glyphMapper->DataScalingOff();
+        }
+    }
+    else
+    {
+        glyphMapper->DataScalingOff();
+    }
+    glyphMapper->SetGlyphType((int)atts.GetPointType());
 }
 
 
@@ -642,12 +678,19 @@ avtMeshPlot::SetRenderOpaque()
 //  Programmer: Kathleen Bonnell
 //  Creation:   March 21, 2001 
 //
+//  Modifications:
+//    Kathleen Bonnell, Tue Nov  2 10:41:33 PST 2004
+//    Return glyphMapper when mesh type is point mesh.
+//
 // ****************************************************************************
 
 avtMapper *
 avtMeshPlot::GetMapper(void)
 {
-    return mapper;
+    if (meshType != AVT_POINT_MESH)
+        return mapper;
+    else 
+        return glyphMapper;
 }
 
 
@@ -725,6 +768,9 @@ avtMeshPlot::ApplyOperators(avtDataObject_p input)
 //    Kathleen Bonnell, Thu Feb  5 11:06:01 PST 2004 
 //    Don't use facelist filter if user wants to see internal zones. 
 //
+//    Kathleen Bonnell, Tue Nov  2 10:41:33 PST 2004 
+//    Remove glyphPoints filter, glyphing now done by avtPointGlyphMapper.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -732,23 +778,7 @@ avtMeshPlot::ApplyRenderingTransformation(avtDataObject_p input)
 {
     avtDataObject_p dob = input;
     
-    if (dob->GetInfo().GetAttributes().GetTopologicalDimension() == 0)
-    {
-        glyphPoints->SetPointSize(atts.GetPointSize());
-        glyphPoints->SetScaleByVariableEnabled(atts.GetPointSizeVarEnabled());
-        if (atts.GetPointSizeVarEnabled())
-        {
-            glyphPoints->SetScaleVariable(atts.GetPointSizeVar());
-        }
-        else
-        {
-            glyphPoints->SetScaleVariable("default");
-        }
-        glyphPoints->SetInput(dob);
-        glyphPoints->SetGlyphType((int) atts.GetPointType());
-        dob = glyphPoints->GetOutput();
-    }
-    else// if (dob->GetInfo().GetAttributes().GetTopologicalDimension() > 0)
+    if (dob->GetInfo().GetAttributes().GetTopologicalDimension() > 0)
     {
         // Turn off facelist filter is user wants to see internal zones in 3d.
         if (atts.GetShowInternal() && 
@@ -1003,6 +1033,10 @@ avtMeshPlot::Equivalent(const AttributeGroup *a)
 //  Programmer: Hank Childs
 //  Creation:   September 12, 2002
 //
+//  Modifications:
+//    Kathleen Bonnell, Tue Nov  2 10:58:26 PST 2004
+//    Removed glyphPoints.
+//
 // ****************************************************************************
  
 void
@@ -1017,10 +1051,6 @@ avtMeshPlot::ReleaseData(void)
     if (ghostAndFaceFilter != NULL)
     {
         ghostAndFaceFilter->ReleaseData();
-    }
-    if (glyphPoints != NULL)
-    {
-        glyphPoints->ReleaseData();
     }
 }
 
@@ -1047,13 +1077,16 @@ avtMeshPlot::ReleaseData(void)
 //    Kathleen Bonnell, Tue Aug 24 16:12:03 PDT 2004 
 //    Exclude point mesh from auto-opaque mode. 
 //
+//    Kathleen Bonnell, Tue Nov  2 10:41:33 PST 2004 
+//    Removed avtMeshType arg, now available as data member of avtPlot. 
+//
 // ****************************************************************************
 
 const AttributeSubject *
-avtMeshPlot::SetOpaqueMeshIsAppropriate(bool val, avtMeshType mt)
+avtMeshPlot::SetOpaqueMeshIsAppropriate(bool val)
 {
     if ((atts.GetOpaqueMode() == MeshAttributes::Auto) &&
-       (val != atts.GetOpaqueMeshIsAppropriate() && mt != AVT_POINT_MESH))
+       (val != atts.GetOpaqueMeshIsAppropriate() && meshType != AVT_POINT_MESH))
     {
         atts.SetOpaqueMeshIsAppropriate(val);
         return &atts;

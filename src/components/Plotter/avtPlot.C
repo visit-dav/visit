@@ -79,6 +79,9 @@
 //    Mark C. Miller, Mon Aug 23 20:24:31 PDT 2004
 //    Added cellCountMultiplierForSRThreshold
 //
+//    Kathleen Bonnell, Tue Nov  2 10:18:16 PST 2004 
+//    Initialize meshType. 
+//
 // ****************************************************************************
 
 avtPlot::avtPlot()
@@ -98,6 +101,7 @@ avtPlot::avtPlot()
     index                  = -1;
     intermediateDataObject = NULL;
     cellCountMultiplierForSRThreshold = 0.0; // an invalid value
+    meshType = AVT_UNKNOWN_MESH;
 }
 
 
@@ -1165,3 +1169,27 @@ avtPlot::GetCellCountMultiplierForSRThreshold() const
 
     return cellCountMultiplierForSRThreshold;
 }
+
+
+// ****************************************************************************
+//  Method: avtPlot::SetMeshType
+//
+//  Purpose:
+//    Sets the mesh type for the plot.
+//
+//  Arguments:
+//    mt         The mesh type of the plot.
+//
+//  Programmer:  Kathleen Bonnell 
+//  Creation:    November 2, 2004 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtPlot::SetMeshType(const avtMeshType mt)
+{
+    meshType = mt;
+}
+

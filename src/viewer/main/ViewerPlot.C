@@ -1137,6 +1137,9 @@ ViewerPlot::GetMetaData() const
 //    constructor, so the first time anyone tried to change variables, it
 //    ignored their request to change important things like subset names.
 //
+//    Kathleen Bonnell, Tue Nov  2 11:13:15 PST 2004 
+//    Added call to set the avtPlot's mesh type. 
+// 
 // ****************************************************************************
 
 bool
@@ -1256,6 +1259,7 @@ ViewerPlot::SetVariableName(const std::string &name)
     {
         if (*plotList[i] != 0)
         {
+            plotList[i]->SetMeshType(GetMeshType());
             plotList[i]->SetVarName(variableName.c_str());
         }
     }
@@ -2496,6 +2500,9 @@ ViewerPlot::GetReader() const
 //    Brad Whitlock, Thu Jul 22 14:41:22 PST 2004
 //    Added code to set the actor's units if applicable.
 //
+//    Kathleen Bonnell, Tue Nov  2 11:13:15 PST 2004 
+//    Added call to set the avtPlot's mesh type. 
+// 
 // ****************************************************************************
 
 void
@@ -2671,6 +2678,7 @@ ViewerPlot::CreateActor(bool createNew,
     }
 
     plotList[cacheIndex]->SetAtts(curPlotAtts);
+    plotList[cacheIndex]->SetMeshType(GetMeshType());
     plotList[cacheIndex]->SetVarName(variableName.c_str());
     plotList[cacheIndex]->SetBackgroundColor(bgColor);
     plotList[cacheIndex]->SetForegroundColor(fgColor);
@@ -2893,6 +2901,39 @@ ViewerPlot::TransmuteActor(bool turningOffScalableRendering)
     bool dummyBool;
     CreateActor(false, turningOffScalableRendering, dummyBool);
 } 
+
+
+// ****************************************************************************
+//  Method: ViewerPlot::GetBlockOrigin
+//
+//  Purpose:
+//    Get the block origin for the plot.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   October 29, 2004 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+int
+ViewerPlot::GetBlockOrigin() const
+{
+    int retval = 0;
+
+    if(readerList != NULL)
+    {
+        if(*(readerList[cacheIndex]) != NULL)
+        {
+            avtDataAttributes &atts = readerList[cacheIndex]->
+                GetInfo().GetAttributes();
+            retval = atts.GetBlockOrigin();
+        }
+    }
+
+    return retval;
+}
+
 
 // ****************************************************************************
 //  Method: ViewerPlot::GetSpatialDimension
@@ -4326,6 +4367,10 @@ ViewerPlot::InitializePlot(Plot &plot) const
 //   Kathleen Bonnell, Tue Aug 24 16:19:00 PDT 2004 
 //   Send MeshType as arg to SetOpaqueMeshIsAppropriate. 
 //
+//   Kathleen Bonnell, Tue Nov  2 11:13:15 PST 2004 
+//   Removed MeshType arg from SetOpaqueMeshIsAppropriate.  (MeshType is now
+//   sent to the avtPlot.)
+//
 // ****************************************************************************
 
 void
@@ -4336,7 +4381,7 @@ ViewerPlot::SetOpaqueMeshIsAppropriate(bool val)
         if(*plotList[cacheIndex] != 0)
         {
             const AttributeSubject *atts = plotList[cacheIndex]->
-                SetOpaqueMeshIsAppropriate(val, GetMeshType());
+                SetOpaqueMeshIsAppropriate(val);
             if(atts != 0)
             {
                 // Set the attributes into the avtPlot.
@@ -4473,6 +4518,10 @@ ViewerPlot::GetWindowId() const
 //  Programmer: Kathleen Bonnell 
 //  Creation:   August 24, 2004
 //
+//  Modifications:
+//    Kathleen Bonnell, Tue Nov  2 11:13:15 PST 2004
+//    Return unknown mesh type if MeshMetaData is NULL.
+//
 // ****************************************************************************
 
 avtMeshType
@@ -4480,5 +4529,9 @@ ViewerPlot::GetMeshType() const
 {
     const avtDatabaseMetaData *md = GetMetaData();
     string meshName = md->MeshForVar(variableName);
-    return md->GetMesh(meshName)->meshType;
+    const avtMeshMetaData *mmd = md->GetMesh(meshName);
+    if (mmd)
+        return mmd->meshType;
+    else 
+        return AVT_UNKNOWN_MESH;
 }
