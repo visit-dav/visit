@@ -496,7 +496,10 @@ PP_ZFileReader::GetTimeVaryingInformation(int state, avtDatabaseMetaData *md)
 // Creation:   Tue Aug 12 13:46:52 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Mar 3 15:06:20 PST 2004
+//   I fixed a bug that could cause gaps in the material range when we have
+//   to read the ireg array to determine the list of materials.
+//
 // ****************************************************************************
 
 bool
@@ -519,7 +522,6 @@ PP_ZFileReader::PopulateMaterialNames()
             sprintf(tmp, "%d", i + 1);
             materialNames.push_back(tmp);
         }
-        haveMaterials = true;
     }
     else if(varStorage.find("ireg") != varStorage.end())
     {
@@ -555,31 +557,44 @@ PP_ZFileReader::PopulateMaterialNames()
                 // Look through the list of material numbers and use it
                 // to add to the material names vector.
                 //
+                int maxMat = -1;
                 for(i = 1; i < MAX_MATERIALS; ++i)
                 {
                     if(mats[i])
+                        maxMat = (i > maxMat) ? i : maxMat;
+                }
+
+                if(maxMat > -1)
+                {
+                    debug4 << "We found materials by inspecting the ireg "
+                              "array." << endl;
+
+                    // Add all of the materials in the range [1,maxMat].
+                    bool gaps = false;
+                    for(i = 1; i <= maxMat; ++i)
                     {
                         char tmp[20];
                         sprintf(tmp, "%d", i);
                         materialNames.push_back(tmp);
+
+                        // See if there are gapps in the range [1,maxMat].
+                        gaps |= mats[i];
+                    }
+
+                    if(gaps)
+                    {
+                        // There were gaps. Print a message to the logs.
+                        debug4 << "Unfortunately, there were gaps in the "
+                                  "material list read from ireg. VisIt will "
+                                  "add materials to cover the gaps so the "
+                                  "SIL will be more likely to match the next "
+                                  "time step as we change time states."
+                               << endl;
                     }
                 }
+
                 delete [] mats;
 #undef MAX_MATERIALS
-
-                //
-                // If we have material names, return that we have materials.
-                //
-                if(materialNames.size() > 0)
-                {
-                    debug4 << "We found materials by inspecting the ireg "
-                              "array." << endl;
-                    debug4 << "Materials={";
-                    for(i = 0; i < materialNames.size(); ++i)
-                        debug4 << materialNames[i] << ", ";
-                    debug4 << "}" << endl;
-                    haveMaterials = true;
-                }
             }
         }
         CATCH(InvalidVariableException)
@@ -588,6 +603,18 @@ PP_ZFileReader::PopulateMaterialNames()
                       "database has no materials." << endl;
         }
         ENDTRY
+    }
+
+    //
+    // If we have material names, return that we have materials.
+    //
+    haveMaterials = (materialNames.size() > 0);
+    if(haveMaterials)
+    {
+        debug4 << "Materials={";
+        for(int i = 0; i < materialNames.size(); ++i)
+            debug4 << materialNames[i] << ", ";
+        debug4 << "}" << endl;
     }
 
     return haveMaterials;

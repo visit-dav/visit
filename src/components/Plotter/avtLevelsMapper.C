@@ -293,58 +293,6 @@ avtLevelsMapper::SetPointSize(float s)
 }
 
 
-
-// ****************************************************************************
-//  Method: avtVariableMapper::GetNodeDataRange
-//
-//  Purpose:
-//      Gets the node-centered range of the levels mapper, 
-//      taking into account artificial limits.
-//
-//  Arguments:
-//      rmin          The minimum in the range.
-//      rmax          The maximum in the range.
-//
-//  Programmer: Kathleen Bonnell 
-//  Creation:   March 20, 2001 
-//
-//  Modifications:
-//
-//    Kathleen Bonnell, Wed Mar 28 17:18:05 PST 2001
-//    Changed name to reflect retrieval of Node-centered data extents.
-//
-//    Hank Childs, Fri Sep  7 18:30:33 PDT 2001
-//    Use doubles instead of floats for getting extents.
-//
-//    Hank Childs, Fri Mar 15 18:23:21 PST 2002
-//    Account for dataset examiner.
-//
-// ****************************************************************************
-
-void
-avtLevelsMapper::GetNodeDataRange(float &rmin, float &rmax)
-{
-    if (mappers == NULL)
-    {
-        //
-        // We have been asked for the range before the input has been set.
-        //
-        rmin = 0.;
-        rmax = 0.;
-        return;
-    }
-
-    double de[2];
-
-    // we want the point data range
-    avtDataset_p input = GetTypedInput();
-    avtDatasetExaminer::GetNodeCenteredDataExtents(input, de);
-
-    rmin = (float) de[0];
-    rmax = (float) de[1];
-}
-
-
 // ****************************************************************************
 //  Method: avtVariableMapper::GetOriginalDataRange
 //

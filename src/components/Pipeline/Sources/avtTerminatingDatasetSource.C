@@ -91,6 +91,10 @@ avtTerminatingDatasetSource::~avtTerminatingDatasetSource()
 //    Hank Childs, Fri Jan  9 10:10:05 PST 2004
 //    Change the arugments to the dataset verifier.
 //
+//    Hank Childs, Wed Feb 25 15:40:49 PST 2004
+//    No longer determine extents, since that is done when the dataset is
+//    populated (through MergeExtents).
+//
 // ****************************************************************************
 
 bool
@@ -100,42 +104,8 @@ avtTerminatingDatasetSource::FetchData(avtDataSpecification_p spec)
     rv = FetchDataset(spec, GetDataTree());
     avtDataTree_p tree = GetDataTree();
 
-    int   i;
-    bool foundExtents = false;
-    avtDataAttributes &atts = GetOutput()->GetInfo().GetAttributes();
-
     if (!ArtificialPipeline())
     {
-        //
-        // Get the spatial extents and merge them back in.
-        //
-        double se[6];
-        for (i = 0 ; i < 3 ; i++)
-        {
-            se[2*i + 0] = +DBL_MAX;
-            se[2*i + 1] = -DBL_MAX;
-        }
-        tree->Traverse(CGetSpatialExtents, se, foundExtents);
-        if (foundExtents)
-        {
-            atts.GetCumulativeTrueSpatialExtents()->Merge(se);
-        }
-    
-        //
-        // Get the data extents and merge them back in.
-        //
-        double de[6];
-        for (i = 0 ; i < 3 ; i++)
-        {
-            de[2*i + 0] = +DBL_MAX;
-            de[2*i + 1] = -DBL_MAX;
-        }
-        tree->Traverse(CGetDataExtents, de, foundExtents);
-        if (foundExtents)
-        {
-            atts.GetCumulativeTrueDataExtents()->Merge(de);
-        }
-
         int nleaves = 0;
         vtkDataSet **ds = tree->GetAllLeaves(nleaves);
         vector<int> domains;
@@ -177,6 +147,9 @@ avtTerminatingDatasetSource::FetchData(avtDataSpecification_p spec)
 //    Hank Childs, Tue Jul 29 16:33:57 PDT 2003
 //    Make use of cached bounds.
 //
+//    Hank Childs, Tue Feb 24 14:38:47 PST 2004
+//    Account for multiple variables.
+//
 // ****************************************************************************
 
 void
@@ -210,18 +183,32 @@ avtTerminatingDatasetSource::MergeExtents(vtkDataSet *ds)
     dbounds[5] = bounds[5];
     atts.GetCumulativeTrueSpatialExtents()->Merge(dbounds);
 
-    int dim = GetOutput()->GetInfo().GetAttributes().GetVariableDimension();
-    if (dim == 2)
+    int nvars = atts.GetNumberOfVariables();
+    for (int i = 0 ; i < nvars ; i++)
     {
-        // VTK will treat 2D vectors as 3D, so overallocate a little.
-        dim = 3;
+        const char *vname = atts.GetVariableName(i).c_str();
+        if (atts.GetTrueDataExtents(vname)->HasExtents())
+        {
+            //
+            // There is no point in walking through the data and determining
+            // what the cumulative extents are -- we know them already.
+            //
+            continue;
+        }
+
+        int dim = atts.GetVariableDimension(vname);
+        if (dim == 2)
+        {
+            // VTK will treat 2D vectors as 3D, so overallocate a little.
+            dim = 3;
+        }
+        double *dextents = new double[2*dim];
+        GetDataRange(ds, dextents, vname);
+
+        atts.GetCumulativeTrueDataExtents(vname)->Merge(dextents);
+    
+        delete [] dextents;
     }
-    double *dextents = new double[2*dim];
-    GetDataRange(ds, dextents, dim);
-
-    atts.GetCumulativeTrueDataExtents()->Merge(dextents);
-
-    delete [] dextents;
 }
 
 

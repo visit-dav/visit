@@ -30,6 +30,10 @@
 //    Moved inlined constructor and destructor definitions to .C files
 //    because certain compilers have problems with them.
 //
+//    Hank Childs, Thu Feb 26 09:48:39 PST 2004
+//    Decide whether or not to do point normals internally to this filter
+//    (removed interface so that this could be decided externally).
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtVertexNormalsFilter : public avtStreamer
@@ -42,10 +46,7 @@ class AVTFILTERS_API avtVertexNormalsFilter : public avtStreamer
     virtual const char  *GetDescription(void) 
                              { return "Calculating normals"; };
 
-    void SetPointNormals(bool pn) { pointNormals = pn; }
-
   protected:
-    bool pointNormals;
     virtual vtkDataSet  *ExecuteData(vtkDataSet *, int, std::string);
 };
 

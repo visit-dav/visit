@@ -219,13 +219,15 @@ PP_Z_MTSD_FileFormat::SetOwnsPDBFile(bool val)
 // Creation:   Tue Sep 16 17:41:30 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Mar 3 15:22:41 PST 2004
+//   Made it return Flash.
+//
 // ****************************************************************************
 
 const char *
 PP_Z_MTSD_FileFormat::GetType()
 {
-    return "PP_Z MTSD File Format";
+    return "Flash File Format";
 }
 
 // ****************************************************************************

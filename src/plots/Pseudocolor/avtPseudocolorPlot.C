@@ -189,6 +189,10 @@ avtPseudocolorPlot::GetMapper(void)
 //    output of this method (used as query input), would still have topo dim
 //    of 0 for point meshes, and thus be possibly unquery-able. 
 //
+//    Hank Childs, Wed Feb 25 15:48:23 PST 2004
+//    Do not consider the centering of the current dataset if we are asked to
+//    shift the centering.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -196,13 +200,12 @@ avtPseudocolorPlot::ApplyOperators(avtDataObject_p input)
 {
     avtDataObject_p dob = input; 
 
-    avtCentering centering = input->GetInfo().GetAttributes().GetCentering();
-    if ((atts.GetCentering() == 1 && centering == AVT_ZONECENT) ||
-        (atts.GetCentering() == 2 && centering == AVT_NODECENT))                                 
+    if ((atts.GetCentering() == 1) || (atts.GetCentering() == 2))
     {
         //
-        //  User requested a centering mode different than the data.
-        //  Send input through the centering filter. 
+        // It was requested that we shift centering.  If we asked for zonal
+        // data and the data is already zonal, then this will effectively
+        // be a no-op.
         //
         if (filter != NULL)
         {

@@ -76,7 +76,6 @@ class PLOTTER_API avtLevelsMapper : public avtMapper
     void                      SetLineWidth(_LineWidth lw);
     void                      SetLineStyle(_LineStyle ls);
     void                      SetPointSize(float);
-    void                      GetNodeDataRange(float &, float &);
     void                      GetOriginalDataRange(double &, double &);
 
     void                      SetColors(const ColorAttributeList &c);

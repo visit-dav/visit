@@ -70,23 +70,22 @@ avtMultipleInputExpressionFilter::AddInputVariableName(const char *var)
 //  Programmer: Hank Childs
 //  Creation:   August 15, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Wed Feb 25 14:44:19 PST 2004
+//    Updated to account for multiple variables in data attributes.
+//
 // ****************************************************************************
 
 bool
 avtMultipleInputExpressionFilter::IsPointVariable(void)
 {
-    if (varnames.size() == 0)
-        return avtExpressionFilter::IsPointVariable();
-
-    avtDataset_p input = GetTypedInput();
-    avtCentering cent = avtDatasetExaminer::
-                             GetVariableCentering(input, varnames[0]);
-
-    if (cent != AVT_UNKNOWN_CENT)
+    avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
+    if (atts.ValidVariable(varnames[0]))
     {
-        return (cent == AVT_NODECENT);
+        return (atts.GetCentering(varnames[0]) != AVT_ZONECENT);
     }
-
+   
     return avtExpressionFilter::IsPointVariable();
 }
 

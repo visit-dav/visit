@@ -172,18 +172,20 @@ avtNeighborFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 //  Programmer: Akira Haddox
 //  Creation:   June 27, 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Feb 20 15:51:54 PST 2004
+//    Have base class do more of the work in setting up output.
+//
 // ****************************************************************************
  
 void
 avtNeighborFilter::RefashionDataObjectInfo(void)
 {
-    // It's a scalar node variable
-    avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
-    outAtts.SetVariableName(variableName);
-    outAtts.SetVariableDimension(1);
-    outAtts.SetCentering(AVT_NODECENT);
+    avtSingleInputExpressionFilter::RefashionDataObjectInfo();
 
     // And we're now dealing with vertexes
+    avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
     outAtts.SetTopologicalDimension(0);
     GetOutput()->GetInfo().GetValidity().InvalidateZones();
 }

@@ -247,16 +247,16 @@ fi
 rm -f sc
 cat <<EOF > sc
 #!/bin/sh
-if test ! -d /nfs/tmp2/$user ; then
-   mkdir /nfs/tmp2/$user
+if test ! -d /nfs/tmp3/$user ; then
+   mkdir /nfs/tmp3/$user
 fi
-if test ! -d /nfs/tmp2/$user/sc ; then
-   mkdir /nfs/tmp2/$user/sc
+if test ! -d /nfs/tmp3/$user/sc ; then
+   mkdir /nfs/tmp3/$user/sc
 fi
-rm -rf /nfs/tmp2/$user/sc/visitbuild
-mkdir /nfs/tmp2/$user/sc/visitbuild
-mv sc_$dist.tar.gz /nfs/tmp2/$user/sc/visitbuild/$dist.tar.gz
-cd /nfs/tmp2/$user/sc/visitbuild
+rm -rf /nfs/tmp3/$user/sc/visitbuild
+mkdir /nfs/tmp3/$user/sc/visitbuild
+mv sc_$dist.tar.gz /nfs/tmp3/$user/sc/visitbuild/$dist.tar.gz
+cd /nfs/tmp3/$user/sc/visitbuild
 gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist
 ver=\`cat VERSION\`

@@ -164,6 +164,9 @@ avtContourFilter::~avtContourFilter()
 //    Hank Childs, Wed Jul 30 09:04:28 PDT 2003
 //    Do not claim we need face connectivity if we are in 2D.
 //
+//    Hank Childs, Mon Mar  1 07:56:53 PST 2004
+//    Give a better hint about what variable we are working on.
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -187,9 +190,10 @@ avtContourFilter::PerformRestriction(avtPipelineSpecification_p in_spec)
         double extents[6]; // 6 is just in case.
         const char *varname = NULL;
         if (atts.GetVariable() != "default")
-        {
             varname = atts.GetVariable().c_str();
-        }
+        else
+            varname = activeVariable;
+
         if (TryDataExtents(extents, varname))
         {
             SetIsoValues(extents[0], extents[1]);
@@ -572,6 +576,9 @@ avtContourFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string label)
 //    Hank Childs, Thu Oct 10 13:05:49 PDT 2002 
 //    Do not assume that output is node-centered.
 //
+//    Hank Childs, Thu Feb 26 09:05:34 PST 2004
+//    Do a better job of handling multiple variables.
+//
 // ****************************************************************************
 
 void
@@ -581,10 +588,25 @@ avtContourFilter::RefashionDataObjectInfo(void)
     avtDataAttributes &inAtts  = GetInput()->GetInfo().GetAttributes();
    
     outAtts.SetTopologicalDimension(inAtts.GetTopologicalDimension()-1);
+
+    const char *var_to_modify = NULL;
     if (atts.GetVariable() == "default")
     {
-        outAtts.SetCentering(AVT_NODECENT);
+        if (inAtts.ValidActiveVariable())
+        {
+            var_to_modify = inAtts.GetVariableName().c_str();
+        }
     }
+    else
+    {
+        var_to_modify = atts.GetVariable().c_str();
+    }
+    if (var_to_modify != NULL)
+    {
+        if (outAtts.ValidVariable(var_to_modify))
+            outAtts.SetCentering(AVT_NODECENT, var_to_modify);
+    }
+
     GetOutput()->GetInfo().GetValidity().InvalidateZones();
 }
 

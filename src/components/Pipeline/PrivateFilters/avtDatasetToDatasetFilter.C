@@ -103,6 +103,9 @@ avtDatasetToDatasetFilter::PreExecute(void)
 //    Sean Ahern, Wed Jun 26 18:46:27 PDT 2002
 //    When appropriate, remove the secondary variables when done.
 //
+//    Hank Childs, Wed Feb 25 14:51:00 PST 2004
+//    Remove the variables from the data attributes when done.
+//
 // ****************************************************************************
 
 void
@@ -120,6 +123,8 @@ avtDatasetToDatasetFilter::PostExecute(void)
             avtDataTree_p tree = GetDataTree();
             bool    success;
             tree->Traverse(CRemoveVariable, (void *)activeVariable, success);
+            GetOutput()->GetInfo().GetAttributes(). 
+                                                RemoveVariable(activeVariable);
         }
     }
 
@@ -134,6 +139,8 @@ avtDatasetToDatasetFilter::PostExecute(void)
             bool    success;
             tree->Traverse(CRemoveVariable, (void *)secondaryVarList[i],
                            success);
+            GetOutput()->GetInfo().GetAttributes(). 
+                                           RemoveVariable(secondaryVarList[i]);
         } else
         {
             debug5 << GetType() << ": Leaving secondary variable "

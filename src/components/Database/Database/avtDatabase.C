@@ -236,7 +236,12 @@ avtDatabase::GetOutput(const char *var, int ts)
 //    Hank Childs, Tue Sep 23 23:03:07 PDT 2003
 //    Add support for tensors.
 //
-//    Mark C. Miller, 30Sep03, added timeStep argument
+//    Mark C. Miller, 30Sep03
+//    Added timeStep argument
+//
+//    Hank Childs, Mon Feb 23 07:49:51 PST 2004
+//    Update for new data attribute interface.  Now add variables for each of
+//    the secondary variables in data specification.
 //
 // ****************************************************************************
 
@@ -246,6 +251,8 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
                                            int ts,
                                            avtDataSpecification *spec)
 {
+    int   i, j;
+
     int timerHandle = visitTimer->StartTimer();
 
     avtDataAttributes &atts     = dob->GetInfo().GetAttributes();
@@ -283,89 +290,116 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
         }
     }
     
-    const avtScalarMetaData *smd = GetMetaData(ts)->GetScalar(var);
-    if (smd != NULL)
+    //
+    // We want to add information to the data attributes for each of the 
+    // variables.  Make a big list of the primary and secondary variables.
+    //
+    vector<const char *> var_list;
+    var_list.push_back(var);
+    if (spec != NULL)
     {
-        atts.SetVariableDimension(1);
-        atts.SetVariableName(var);
-        atts.SetCentering(smd->centering);
-
-        //
-        // Note that we are using the spatial extents as both the spatial 
-        // extents and as the global spatial extents (the spatial extents 
-        // across all timesteps).
-        //
-        if (smd->hasDataExtents)
+        const std::vector<CharStrRef> &secondaryVariables 
+                                               = spec->GetSecondaryVariables();
+        for (i = 0 ; i < secondaryVariables.size() ; i++)
         {
-            double extents[2];
-            extents[0] = smd->minDataExtents;
-            extents[1] = smd->maxDataExtents;
-
-            atts.GetTrueDataExtents()->Set(extents);
+            var_list.push_back(*(secondaryVariables[i]));
         }
     }
 
-    const avtVectorMetaData *vmd = GetMetaData(ts)->GetVector(var);
-    if (vmd != NULL)
+    //
+    // Now iterate through our variable list and add information about each
+    // variable as we go.
+    //
+    for (i = 0 ; i < var_list.size() ; i++)
     {
-        atts.SetVariableDimension(vmd->varDim);
-        atts.SetVariableName(var);
-        atts.SetCentering(vmd->centering);
-
-        //
-        // Note that we are using the spatial extents as both the spatial 
-        // extents and as the global spatial extents (the spatial extents 
-        // across all timesteps).
-        //
-        if (vmd->hasDataExtents)
+        const avtScalarMetaData *smd = GetMetaData(ts)->GetScalar(var_list[i]);
+        if (smd != NULL)
         {
-            double *extents = new double[2*vmd->varDim];
-            for (int i = 0 ; i < vmd->varDim ; i++)
+            atts.AddVariable(var_list[i]);
+            atts.SetVariableDimension(1, var_list[i]);
+            atts.SetCentering(smd->centering, var_list[i]);
+    
+            //
+            // Note that we are using the spatial extents as both the spatial 
+            // extents and as the global spatial extents (the spatial extents 
+            // across all timesteps).
+            //
+            if (smd->hasDataExtents)
             {
-                extents[2*i  ] = vmd->minDataExtents[i];
-                extents[2*i+1] = vmd->maxDataExtents[i];
+                double extents[2];
+                extents[0] = smd->minDataExtents;
+                extents[1] = smd->maxDataExtents;
+    
+                atts.GetTrueDataExtents(var_list[i])->Set(extents);
             }
+        }
+    
+        const avtVectorMetaData *vmd = GetMetaData(ts)->GetVector(var_list[i]);
+        if (vmd != NULL)
+        {
+            atts.AddVariable(var_list[i]);
+            atts.SetVariableDimension(vmd->varDim, var_list[i]);
+            atts.SetCentering(vmd->centering, var_list[i]);
+    
+            //
+            // Note that we are using the spatial extents as both the spatial 
+            // extents and as the global spatial extents (the spatial extents 
+            // across all timesteps).
+            //
+            if (vmd->hasDataExtents)
+            {
+                double *extents = new double[2*vmd->varDim];
+                for (j = 0 ; j < vmd->varDim ; j++)
+                {
+                    extents[2*j  ] = vmd->minDataExtents[j];
+                    extents[2*j+1] = vmd->maxDataExtents[j];
+                }
+    
+                atts.GetTrueDataExtents(var_list[i])->Set(extents);
+    
+                delete [] extents;
+            }
+        }
+    
+        const avtTensorMetaData *tmd = GetMetaData(ts)->GetTensor(var_list[i]);
+        if (tmd != NULL)
+        {
+            atts.AddVariable(var_list[i]);
+            atts.SetVariableDimension(9, var_list[i]);
+            atts.SetCentering(tmd->centering, var_list[i]);
+        }
+    
+        const avtSymmetricTensorMetaData *stmd = 
+                                   GetMetaData(ts)->GetSymmTensor(var_list[i]);
+        if (stmd != NULL)
+        {
+            atts.AddVariable(var_list[i]);
+            atts.SetVariableDimension(9, var_list[i]);
+            atts.SetCentering(stmd->centering, var_list[i]);
+        }
 
-            atts.GetTrueDataExtents()->Set(extents);
+        const avtSpeciesMetaData *spmd = 
+                                      GetMetaData(ts)->GetSpecies(var_list[i]);
+        if (spmd != NULL)
+        {
+            atts.AddVariable(var_list[i]);
+            atts.SetVariableDimension(1, var_list[i]);
+            atts.SetCentering(AVT_ZONECENT, var_list[i]);
+            double extents[2];
+            extents[0] = 0.;
+            extents[1] = 1.;
+            atts.GetEffectiveDataExtents(var_list[i])->Set(extents);
+            atts.GetTrueDataExtents(var_list[i])->Set(extents);
+        }
 
-            delete [] extents;
+        const avtCurveMetaData *cmd = GetMetaData(ts)->GetCurve(var_list[i]);
+        if (cmd != NULL)
+        {
+            atts.SetTopologicalDimension(1);
+            atts.SetSpatialDimension(2);
         }
     }
-
-    const avtTensorMetaData *tmd = GetMetaData(ts)->GetTensor(var);
-    if (tmd != NULL)
-    {
-        atts.SetVariableDimension(9);
-        atts.SetVariableName(var);
-        atts.SetCentering(tmd->centering);
-    }
-
-    const avtSymmetricTensorMetaData *stmd = GetMetaData(ts)->GetSymmTensor(var);
-    if (stmd != NULL)
-    {
-        atts.SetVariableDimension(9);
-        atts.SetVariableName(var);
-        atts.SetCentering(stmd->centering);
-    }
-
-    const avtSpeciesMetaData *spmd = GetMetaData(ts)->GetSpecies(var);
-    if (spmd != NULL)
-    {
-        atts.SetVariableDimension(1);
-        atts.SetCentering(AVT_ZONECENT);
-        atts.SetVariableName(var);
-        double extents[2];
-        extents[0] = 0.;
-        extents[1] = 1.;
-        atts.GetEffectiveDataExtents()->Set(extents);
-    }
-
-    const avtCurveMetaData *cmd = GetMetaData(ts)->GetCurve(var);
-    if (cmd != NULL)
-    {
-        atts.SetTopologicalDimension(1);
-        atts.SetSpatialDimension(2);
-    }
+    atts.SetActiveVariable(var);
 
     //
     // SPECIAL CASE:

@@ -5,6 +5,7 @@
 #include <avtExtents.h>
 
 #include <float.h>
+#include <iostream.h>
 
 #include <avtDataObjectString.h>
 #include <avtDataObjectWriter.h>
@@ -66,6 +67,36 @@ avtExtents::~avtExtents()
         delete [] extents;
         extents = NULL;
     }
+}
+
+
+// ****************************************************************************
+//  Method: avtExtents::Print
+//
+//  Purpose:
+//      Prints this object.
+//
+//  Programmer: Hank Childs
+//  Creation:   February 25, 2004
+//
+// ****************************************************************************
+
+void
+avtExtents::Print(ostream &out)
+{
+    out << "Extents (dim = " << dimension << ") = ";
+    if (extents == NULL)
+        out << "Not set";
+    else
+    {
+        for (int i = 0 ; i < dimension ; i++)
+        {
+             out << "{" << extents[2*i] << ", " << extents[2*i+1] << "}";
+             if (i < dimension-1)
+                 out << ", ";
+        }
+    }
+    out << endl;
 }
 
 

@@ -200,6 +200,9 @@ avtExpressionFilter::PostExecute(void)
 //    Fix some odd centering cases that can come up when a variable can get
 //    misidentified.
 //
+//    Hank Childs, Wed Feb 25 14:48:31 PST 2004
+//    Make sure that the extents get associated with the correct variable.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -314,7 +317,7 @@ avtExpressionFilter::ExecuteData(vtkDataSet *in_ds, int index,
             }
         }
         GetOutput()->GetInfo().GetAttributes().
-                                   GetCumulativeTrueDataExtents()->Merge(exts);
+                 GetCumulativeTrueDataExtents(outputVariableName)->Merge(exts);
     }
 
     //
@@ -343,13 +346,17 @@ avtExpressionFilter::ExecuteData(vtkDataSet *in_ds, int index,
 //    Modified to set the centering of the variable to cell or point
 //    based on IsPointVariable().
 //
+//    Hank Childs, Fri Feb 20 15:08:58 PST 2004
+//    Account for data attributes using multiple variables.
+//
 // ****************************************************************************
  
 void
 avtExpressionFilter::RefashionDataObjectInfo(void)
 {
     avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
-    outAtts.SetVariableName(outputVariableName);
+    outAtts.AddVariable(outputVariableName);
+    outAtts.SetActiveVariable(outputVariableName);
     outAtts.SetVariableDimension(GetVariableDimension());
     outAtts.SetCentering(IsPointVariable()?AVT_NODECENT:AVT_ZONECENT);
 }
@@ -397,13 +404,24 @@ avtExpressionFilter::PerformRestriction(avtPipelineSpecification_p spec)
 //  Programmer: Akira Haddox 
 //  Creation:   August 19, 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Wed Feb 25 14:43:17 PST 2004
+//    Modify logic slightly since, with multiple variable changes, there
+//    may not be any variables to ask for their centering.
+//
 // ****************************************************************************
 
 bool
 avtExpressionFilter::IsPointVariable()
 {
-    return (GetInput()->GetInfo().GetAttributes().GetCentering()
-            == AVT_NODECENT);
+    avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
+    if (atts.ValidActiveVariable())
+    {
+        return (atts.GetCentering() != AVT_ZONECENT);
+    }
+
+    return true;
 }
 
 

@@ -179,7 +179,7 @@ PP_Z_STSD_FileFormat::SetOwnsPDBFile(bool val)
 const char *
 PP_Z_STSD_FileFormat::GetType()
 {
-    return "PPZ STSD File Format";
+    return "Z File Format";
 }
 
 void

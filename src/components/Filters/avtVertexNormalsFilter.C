@@ -20,11 +20,17 @@
 //  Programmer: Hank Childs
 //  Creation:   February 5, 2004
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Feb 26 09:55:59 PST 2004
+//    Removed pointNormals variable.  Whether or not to do point normals is
+//    now decided dynamically.
+//
 // ****************************************************************************
 
 avtVertexNormalsFilter::avtVertexNormalsFilter()
 {
-    pointNormals = false;
+    ;
 }
 
 
@@ -87,13 +93,17 @@ avtVertexNormalsFilter::~avtVertexNormalsFilter()
 //    Made it use the new VisIt poly data normals filter.  Allowed
 //    cell normals as well as just point normals.
 //
+//    Hank Childs, Thu Feb 26 09:50:37 PST 2004
+//    Decide what type of normals (point, cell) to do from inside this filter.
+//
 // ****************************************************************************
 
 vtkDataSet *
 avtVertexNormalsFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 {
-    if (GetInput()->GetInfo().GetAttributes().GetSpatialDimension() != 3 ||
-        GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() != 2)
+    avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
+
+    if (atts.GetSpatialDimension() != 3 || atts.GetTopologicalDimension() != 2)
     {
         return in_ds;
     }
@@ -120,6 +130,13 @@ avtVertexNormalsFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
         return in_ds;
     }
 
+    bool pointNormals = true;
+    if (atts.ValidActiveVariable())
+    {
+        avtCentering cent = atts.GetCentering();
+        if (cent == AVT_ZONECENT)
+            pointNormals = false;
+    }
     vtkVisItPolyDataNormals *normals = vtkVisItPolyDataNormals::New();
     normals->SetInput(pd);
     normals->SetFeatureAngle(45.);

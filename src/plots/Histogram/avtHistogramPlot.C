@@ -9660,16 +9660,22 @@ avtExprFilterNoNamespaceConflict::ExecuteData(vtkDataSet *in_ds, int, std::strin
 //  Creation:   June 7, 2002
 //
 //  Modifications:
+//
 //      Akira Haddox, Mon Aug 19 16:41:12 PDT 2002
 //      Modified to set the centering of the variable to cell or point
 //      based on IsPointVariable().
+//
+//      Hank childs, Mon Feb 23 16:10:19 PST 2004
+//      Meet new data attributes interface.
+//
 // ****************************************************************************
  
 void
 avtExprFilterNoNamespaceConflict::RefashionDataObjectInfo(void)
 {
     avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
-    outAtts.SetVariableName(outputVariableName);
+    outAtts.AddVariable(outputVariableName);
+    outAtts.SetActiveVariable(outputVariableName);
     outAtts.SetVariableDimension(GetVariableDimension());
     outAtts.SetCentering(IsPointVariable()?AVT_NODECENT:AVT_ZONECENT);
 }

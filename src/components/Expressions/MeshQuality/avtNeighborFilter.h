@@ -4,10 +4,13 @@
 
 #ifndef AVT_NEIGHBOR_FILTER_H
 #define AVT_NEIGHBOR_FILTER_H
+
 #include <expression_exports.h>
+
 #include <avtSingleInputExpressionFilter.h>
 
 class     vtkDataArray;
+
 
 // ****************************************************************************
 //  Class: avtNeighborFilter
@@ -19,6 +22,11 @@ class     vtkDataArray;
 //
 //  Programmer: Akira Haddox
 //  Creation:   June 27, 2002
+//
+//  Modifications:
+//
+//    Hank Childs, Fri Feb 20 15:51:54 PST 2004
+//    Re-define GetVariableDimension.
 //
 // ****************************************************************************
 
@@ -44,6 +52,7 @@ class EXPRESSION_API avtNeighborFilter : public avtSingleInputExpressionFilter
     virtual void             RefashionDataObjectInfo(void);
 
     virtual bool             IsPointVariable()     { return true; };
+    virtual int              GetVariableDimension()   { return 1; };
 };
 
 #endif
