@@ -22,6 +22,8 @@ typedef void  (*ErrorFunction)(void *, const char *);
 //  Programmer: "Hank Childs"    (Added documentation)
 //  Creation:   August 8, 2003   (Added documentation)
 //
+//  Modifications:
+//
 // ****************************************************************************
 
 namespace Init
@@ -33,7 +35,7 @@ namespace Init
     MISC_API bool  IsComponent(const char *);
     MISC_API void ComponentIssueError(const char *);
     MISC_API void ComponentRegisterErrorFunction(ErrorFunction, void *);
-    MISC_API const char *const CatchAllMeshName = "for active plot";
+    const char *const CatchAllMeshName = "for active plot";
 }
 
 #endif

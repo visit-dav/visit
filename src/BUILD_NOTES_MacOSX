@@ -139,6 +139,25 @@ otool -hv libfoo.dylib
 otool -hvL libfoo.dylib
 
 ==============================================================================
+Support libraries
+==============================================================================
+
+Most of the instructions in this document are for building the various support
+libraries that VisIt depends on as prebound dynamic libraries. Few of the
+libraries that VisIt uses actually have support in their make system for
+producing prebound dynamic libraries so it is imperative that you follow the
+directions or VisIt will not be prebound. Remember that you can always use the
+otool command to check whether a library or executable is prebound.
+
+Before building VisIt or any of its support libraries, you need to create a
+"visit" directory in which the support libraries will be installed. We also create
+file that contains the path so we can use that in some of the instructions
+later on.
+
+mkdir visit
+echo `pwd`/visit > visitpath
+
+==============================================================================
 Building Qt as a set of prebound dynamic libraries
 ==============================================================================
 
@@ -522,6 +541,7 @@ Building HDF5 as a prebound dynamic library
 ===============================================================================
 
 tar zxvf hdf5-1.6.0.tar.gz
+cd hdf5-1.6.0
 env CFLAGS="-O2 -fPIC" ./configure
 make
 
@@ -570,8 +590,29 @@ offset = offset + (0x1000 - offset % 0x1000)
 # Next offset
 offset = 0x2562a000
 
+VisIt uses GNU's autoconf system to provide platform independence when
+building VisIt in a UNIX environment. Autoconf creates a script called
+configure that tests your system for various libraries and programs required
+to build VisIt.  Follow the directions listed below to build VisIt.
+More information about building VisIt follows after that.
+
+#
 # Configure VisIt
+#
+gunzip visit040517.tar.gz
+tar xf visit040517.tar
+cd visit040517/config-site
+echo VISITHOME=`cat ../../visitpath` > `hostname`.conf
+cat Template.conf >> `hostname`.conf
+cd ..
 env CXXFLAGS="-O2" ./configure
+
+#
+# If VisIt failed to configure properly, check the contents of the
+# `hostname`.conf file to make sure that it points to the libraries that
+# you build. You can look at whitestar.conf, which is a configuration file
+# for another MacOS X computer, if you want an example file that works.
+#
 
 # Change the Silo optimization level.
 The Silo database reader plugin fails to build on MacOS X with GCC3.3 because

@@ -1841,7 +1841,6 @@ static void vtkOpenGLDrawCS3(vtkCellArray *aPrim, GLenum aGlFunction,
   vtkIdType *pts = 0;
   vtkIdType npts = 0;
   int count = 0;
-  float polyNorm[3];
   
   GLenum previousGlFunction=GL_INVALID_VALUE;
 

@@ -128,6 +128,9 @@ avtDatabaseFactory::SetDefaultFormat(const char *f)
 //    Hank Childs, Sun May  9 11:41:45 PDT 2004
 //    Use the user-settable default format, rather than a hard-coded "Silo".
 //
+//    Brad Whitlock, Thu May 27 18:12:45 PST 2004
+//    I fixed a bug that I introduced into the Windows extension comparison.
+//
 // ****************************************************************************
 
 avtDatabase *
@@ -223,7 +226,7 @@ avtDatabaseFactory::FileList(const char * const * filelist, int filelistN,
         //
         vector<string> extensions = info->GetDefaultExtensions();
         int nextensions = extensions.size();
-        for (j=0; j<nextensions; j++)
+        for (j=0; j<nextensions && !foundMatch; j++)
         {
             string ext = extensions[j];
             if (ext[0] != '.')

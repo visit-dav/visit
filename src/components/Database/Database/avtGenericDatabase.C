@@ -5838,6 +5838,10 @@ avtGenericDatabase::GetDomainName(const std::string &varName, const int ts,
 //  Programmer: Kathleen Bonnell
 //  Creation:   May 25, 2004 
 //
+//  Modifications:
+//    Kathleen Bonnell, Thu May 27 17:46:25 PDT 2004
+//    Take ghost zones into account.
+//
 // ****************************************************************************
 
 bool
@@ -5849,7 +5853,29 @@ avtGenericDatabase::QueryZoneCenter(const string &varName, const int dom,
     bool rv = false; 
     if (ds)
     {
-        vtkCell *cell = ds->GetCell(zoneId);
+        int zone = zoneId;
+        if (ds->GetDataObjectType() == VTK_RECTILINEAR_GRID ||
+            ds->GetDataObjectType() == VTK_STRUCTURED_GRID) 
+        {
+            if (ds->GetCellData()->GetArray("vtkGhostLevels") != NULL) 
+            {
+                int dims[3], ijk[3] = {0, 0, 0};
+                vtkVisItUtility::GetDimensions(ds, dims);
+                vtkVisItUtility::GetLogicalIndices(ds, true, zoneId, ijk, false, false);
+                vtkIntArray *realDims = 
+                    (vtkIntArray*)ds->GetFieldData()->GetArray("avtRealDims");
+                if (realDims != NULL)
+                {
+                    ijk[0] += realDims->GetValue(0);
+                    ijk[1] += realDims->GetValue(2);
+                    ijk[2] += realDims->GetValue(4);
+                }
+                zone = ijk[0] + 
+                       ijk[1] * (dims[0]-1) +
+                       ijk[2] * (dims[0]-1) * (dims[1]-1);
+            }
+        }
+        vtkCell *cell = ds->GetCell(zone);
         float parametricCenter[3];
         float weights[28];
         int subId = cell->GetParametricCenter(parametricCenter);
