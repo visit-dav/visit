@@ -18,6 +18,7 @@
 class     vtkUnstructuredGrid;
 
 class     avtFacelist;
+class     avtIntervalTree;
 class     avtMaterial;
 class     avtSpecies;
 
@@ -88,6 +89,9 @@ typedef struct
 //    Mark C. Miller, Mon Aug  9 19:12:24 PDT 2004
 //    Added methods to get global node and zone ids
 //    Added method to allocate and determine meshame for a ucd mesh
+//
+//    Mark C. Miller, Thu Oct 14 15:18:31 PDT 2004
+//    Added GetSpatialExtents and GetDataExtents
 //
 // ****************************************************************************
 
@@ -187,6 +191,9 @@ class avtSiloFileFormat : public avtSTMDFileFormat
     avtSpecies           *CalcSpecies(DBfile *, char *);
     vtkDataArray         *GetGlobalNodeIds(int, const char *);
     vtkDataArray         *GetGlobalZoneIds(int, const char *);
+    
+    avtIntervalTree      *GetSpatialExtents(const char *);
+    avtIntervalTree      *GetDataExtents(const char *);
 
     void                  GetQuadGhostZones(DBquadmesh *, vtkDataSet *);
     void                  VerifyQuadmesh(DBquadmesh *, const char *);

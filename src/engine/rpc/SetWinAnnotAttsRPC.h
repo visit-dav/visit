@@ -41,6 +41,9 @@ using std::vector;
 //
 //    Mark C. Miller, Wed Oct  6 18:36:47 PDT 2004
 //    Added array of view extents
+//
+//    Mark C. Miller, Tue Oct 19 19:44:00 PDT 2004
+//    Added string for color table name
 // ****************************************************************************
 class ENGINE_RPC_API SetWinAnnotAttsRPC : public BlockingRPC
 {
@@ -55,7 +58,8 @@ public:
                     const string,
                     const VisualCueList*,
                     const int*,
-                    const double*);
+                    const double*,
+                    const string);
 
     // Property selection methods
     virtual void SelectAll();
@@ -68,6 +72,7 @@ public:
     void SetVisualCueList(const VisualCueList*);
     void SetFrameAndState(const int*);
     void SetViewExtents(const double*);
+    void SetChangedCtName(const string);
 
     // Property getting methods
     const WindowAttributes &GetWindowAtts() const;
@@ -77,6 +82,7 @@ public:
     const VisualCueList &GetVisualCueList() const;
     const int* GetFrameAndState() const;
     const double *GetViewExtents() const;
+    const string &GetChangedCtName() const;
 
 private:
     WindowAttributes win;
@@ -86,6 +92,7 @@ private:
     VisualCueList cuelist;
     int fands[7];
     double vexts[6];
+    string ctname;
 };
 
 #endif

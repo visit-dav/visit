@@ -187,6 +187,9 @@ class avtDatabaseMetaData;
 //
 //    Mark C. Miller, Wed Oct  6 18:12:29 PDT 2004
 //    Added arg for view extents in SetWinAnnotAtts
+//
+//    Mark C. Miller, Tue Oct 19 20:18:22 PDT 2004
+//    Added arg for last color table name to change to SetWinAnnotAtts
 // ****************************************************************************
 
 class VIEWER_API ViewerEngineManager : public ViewerServerManager,
@@ -273,7 +276,8 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
                          const std::string extStr,
                          const VisualCueList *visCues,
                          const int *frameAndState,
-                         const double *viewExtents);
+                         const double *viewExtents,
+                         const std::string ctName);
     bool ClearCache(const EngineKey &ek, const char *dbName = 0);
     bool Query(const EngineKey &ek, const std::vector<int> &networkIds, 
                const QueryAttributes *atts, QueryAttributes &retAtts);

@@ -43,7 +43,8 @@
 #include <avtSourceFromAVTImage.h>
 #include <avtSourceFromImage.h>
 #include <avtSourceFromNullData.h>
-#include <avtWholeImageCompositer.h>
+#include <avtWholeImageCompositerWithZ.h>
+#include <avtWholeImageCompositerNoZ.h>
 #include <avtPlot.h>
 #include <avtQueryOverTimeFilter.h>
 #include <avtQueryFactory.h>
@@ -1441,6 +1442,10 @@ NetworkManager::GetOutput(bool respondWithNullData, bool calledForRender,
 //
 //    Mark C. Miller, Wed Oct  6 18:12:29 PDT 2004
 //    Changed bool arg for 3D annots to an integer mode
+//
+//    Mark C. Miller, Tue Oct 19 20:18:22 PDT 2004
+//    Added code to push color table name to plots
+//    Added code to use correct whole image compositor based upon window mode
 // ****************************************************************************
 avtDataObjectWriter_p
 NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode)
@@ -1605,6 +1610,8 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode)
                     UseNetwork(plotIds[i]);
                     workingNet->GetPlot()->SetBackgroundColor(bg);
                     workingNet->GetPlot()->SetForegroundColor(fg);
+                    if (changedCtName != "")
+                        workingNet->GetPlot()->SetColorTable(changedCtName.c_str());
                     workingNet = NULL;
                 }
             }
@@ -1649,7 +1656,16 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode)
                 numDumps++;
             }
 
-            avtWholeImageCompositer imageCompositer;
+            avtWholeImageCompositer *imageCompositer;
+            if (viswin->GetWindowMode() == WINMODE_3D)
+            {
+                imageCompositer = new avtWholeImageCompositerWithZ();
+                imageCompositer->SetShouldOutputZBuffer(getZBuffer);
+            }
+            else
+            {
+                imageCompositer = new avtWholeImageCompositerNoZ();
+            }
 
             //
             // Set the compositer's background color
@@ -1658,22 +1674,21 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode)
             unsigned char bg_r = (unsigned char) (fbg[0] * 255.0);
             unsigned char bg_g = (unsigned char) (fbg[1] * 255.0);
             unsigned char bg_b = (unsigned char) (fbg[2] * 255.0);
-            imageCompositer.SetBackground(bg_r, bg_g, bg_b);
+            imageCompositer->SetBackground(bg_r, bg_g, bg_b);
 
             //
             // Set up the input image size and add it to compositer's input
             //
             int imageRows, imageCols;
             theImage->GetSize(&imageCols, &imageRows);
-            imageCompositer.SetOutputImageSize(imageRows, imageCols);
-            imageCompositer.SetShouldOutputZBuffer(getZBuffer);
-            imageCompositer.AddImageInput(theImage, 0, 0);
+            imageCompositer->SetOutputImageSize(imageRows, imageCols);
+            imageCompositer->AddImageInput(theImage, 0, 0);
 
             //
             // Do the parallel composite using a 1 stage pipeline
             //
-            imageCompositer.Execute();
-            avtDataObject_p compositedImageAsDataObject = imageCompositer.GetOutput();
+            imageCompositer->Execute();
+            avtDataObject_p compositedImageAsDataObject = imageCompositer->GetOutput();
 
             //
             // If the engine is doing more than just 3D attributes,
@@ -1786,11 +1801,13 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode)
 void
 NetworkManager::SetWindowAttributes(const WindowAttributes &atts,
                                     const std::string& extstr,
-                                    const double *vexts)
+                                    const double *vexts,
+                                    const std::string& ctName)
 {
 
     // do nothing if nothing changed
-    if ((windowAttributes == atts) && (extentTypeString == extstr))
+    if ((windowAttributes == atts) && (extentTypeString == extstr) &&
+        (changedCtName == ctName))
     {
         bool extsAreDifferent = false;
         static float curexts[6];
@@ -1894,6 +1911,7 @@ NetworkManager::SetWindowAttributes(const WindowAttributes &atts,
 
     windowAttributes = atts;
     extentTypeString = extstr;
+    changedCtName    = ctName;
 
 }
 

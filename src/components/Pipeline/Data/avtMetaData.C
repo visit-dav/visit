@@ -71,14 +71,17 @@ avtMetaData::~avtMetaData()
 //    Hank Childs, Tue Jun  5 08:16:49 PDT 2001
 //    Removed reference to domain lists.
 //
+//    Mark C. Miller, Mon Oct 18 13:02:37 PDT 2004
+//    Added optional var arg
+//
 // ****************************************************************************
 
 avtIntervalTree *
-avtMetaData::GetDataExtents(void)
+avtMetaData::GetDataExtents(const char *var)
 {
     VoidRefList list;
     avtPipelineSpecification_p spec = GetPipelineSpecification();
-    source->GetVariableAuxiliaryData(AUXILIARY_DATA_DATA_EXTENTS, NULL,
+    source->GetVariableAuxiliaryData(AUXILIARY_DATA_DATA_EXTENTS, (void*) var,
                                      spec, list);
     if (list.nList == 0)
     {
@@ -112,14 +115,17 @@ avtMetaData::GetDataExtents(void)
 //    Hank Childs, Tue Jun  5 08:16:49 PDT 2001
 //    Removed reference to domain lists.
 //
+//    Mark C. Miller, Mon Oct 18 13:02:37 PDT 2004
+//    Added optional var arg
+//
 // ****************************************************************************
 
 avtIntervalTree *
-avtMetaData::GetSpatialExtents(void)
+avtMetaData::GetSpatialExtents(const char *var)
 {
     VoidRefList list;
     avtPipelineSpecification_p spec = GetPipelineSpecification();
-    source->GetMeshAuxiliaryData(AUXILIARY_DATA_SPATIAL_EXTENTS, NULL,
+    source->GetMeshAuxiliaryData(AUXILIARY_DATA_SPATIAL_EXTENTS, (void*) var,
                                      spec, list);
     if (list.nList == 0)
     {

@@ -20,7 +20,6 @@
 #include <avtExtents.h>
 #include <avtIOInformation.h>
 #include <avtIntervalTree.h>
-#include <avtMetaData.h>
 #include <avtSIL.h>
 
 #include <InvalidVariableException.h>
@@ -270,6 +269,11 @@ avtDatabase::GetOutput(const char *var, int ts)
 //    Mark C. Miller, Tue Sep 28 19:32:50 PDT 2004
 //    Added argument for data selections that have been applied as well
 //    as code to populate data attributes
+//
+//    Mark C. Miller, Tue Oct 19 14:08:56 PDT 2004
+//    Changed 'spec' arg to ref_ptr. Added code to attempt to get spatial/data
+//    extents trees and set true extents from those if available
+//
 // ****************************************************************************
 
 void
@@ -277,7 +281,7 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
                                            const char *var,
                                            int ts,
                                            const vector<bool> &selectionsApplied,
-                                           avtDataSpecification *spec)
+                                           avtDataSpecification_p spec)
 {
     int   i;
 
@@ -288,6 +292,7 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
 
     string mesh = GetMetaData(ts)->MeshForVar(var);
     const avtMeshMetaData *mmd = GetMetaData(ts)->GetMesh(mesh);
+    bool haveSetTrueSpatialExtents = false;
     if (mmd != NULL)
     {
         atts.SetCellOrigin(mmd->cellOrigin);
@@ -321,6 +326,34 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
                 extents[2*i+1] = mmd->maxSpatialExtents[i];
             }
             atts.GetTrueSpatialExtents()->Set(extents);
+            haveSetTrueSpatialExtents = true;
+        }
+    }
+
+    //
+    // If we haven't set spatial extents, try using a data tree
+    //
+    if (haveSetTrueSpatialExtents == false)
+    {
+        VoidRefList list;
+
+        if (*spec != NULL)
+        {
+            avtDataSpecification_p tmp_spec = new avtDataSpecification(spec, -1);
+            GetAuxiliaryData(tmp_spec, list, AUXILIARY_DATA_SPATIAL_EXTENTS,
+                (void *) mesh.c_str());
+        }
+
+        if (list.nList == 1 && *(list.list[0]) != NULL)
+        {
+            avtIntervalTree *tree = (avtIntervalTree *) *(list.list[0]);
+            float extents[6];
+            tree->GetExtents(extents);
+            double dextents[6];
+            for (int i = 0; i < 6; i++)
+                dextents[i] = extents[i];
+            atts.GetTrueSpatialExtents()->Set(dextents);
+            haveSetTrueSpatialExtents = true;
         }
     }
     
@@ -330,7 +363,7 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
     //
     vector<const char *> var_list;
     var_list.push_back(var);
-    if (spec != NULL)
+    if (*spec != NULL)
     {
         const std::vector<CharStrRef> &secondaryVariables 
                                                = spec->GetSecondaryVariables();
@@ -346,6 +379,7 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
     //
     for (i = 0 ; i < var_list.size() ; i++)
     {
+        bool haveSetTrueDataExtents = false;
         const avtScalarMetaData *smd = GetMetaData(ts)->GetScalar(var_list[i]);
         if (smd != NULL)
         {
@@ -368,6 +402,7 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
                 extents[1] = smd->maxDataExtents;
     
                 atts.GetTrueDataExtents(var_list[i])->Set(extents);
+                haveSetTrueDataExtents = true;
             }
         }
     
@@ -392,6 +427,34 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
                 extents[0] = vmd->minDataExtents;
                 extents[1] = vmd->maxDataExtents;
                 atts.GetTrueDataExtents(var_list[i])->Set(extents);
+                haveSetTrueDataExtents = true;
+            }
+        }
+
+        //
+        // If we haven't set data extents, try using a data tree
+        //
+        if (haveSetTrueDataExtents == false)
+        {
+            VoidRefList list;
+
+            if (*spec != NULL)
+            {
+                avtDataSpecification_p tmp_spec = new avtDataSpecification(spec, -1);
+                GetAuxiliaryData(tmp_spec, list, AUXILIARY_DATA_DATA_EXTENTS,
+                    (void *) var_list[i]);
+            }
+
+            if (list.nList == 1 && *(list.list[0]) != NULL)
+            {
+                avtIntervalTree *tree = (avtIntervalTree *) *(list.list[0]);
+                float extents[2];
+                tree->GetExtents(extents);
+                double dextents[2];
+                for (int j = 0; j < 2; j++)
+                    dextents[j] = extents[j];
+                atts.GetTrueDataExtents(var_list[i])->Set(dextents);
+                haveSetTrueDataExtents = true;
             }
         }
     
@@ -452,7 +515,7 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
     // an unfilled boundary.  The way this is handles (by directly
     // checking a data specification) needs to change.
     //
-    if (spec && spec->NeedBoundarySurfaces())
+    if (*spec && spec->NeedBoundarySurfaces())
         atts.SetTopologicalDimension(atts.GetTopologicalDimension() - 1);
 
     char str[1024];

@@ -23,6 +23,7 @@
 #include <avtDatabaseMetaData.h>
 #include <avtFacelist.h>
 #include <avtGhostData.h>
+#include <avtIntervalTree.h>
 #include <avtIOInformation.h>
 #include <avtMaterial.h>
 #include <avtSpecies.h>
@@ -5337,6 +5338,9 @@ avtSiloFileFormat::GetComponent(DBfile *dbfile, char *var, char *compname)
 //    Mark C. Miller, August 9, 2004
 //    Added code to read global node and zone ids 
 //
+//    Mark C. Miller, Mon Oct 18 13:02:37 PDT 2004
+//    Added support for data/spatial extents
+//
 // ****************************************************************************
 
 void *
@@ -5368,6 +5372,16 @@ avtSiloFileFormat::GetAuxiliaryData(const char *var, int domain,
     {
         rv = (void *) GetGlobalZoneIds(domain, var);
         df = avtVariableCache::DestructVTKObject;
+    }
+    else if (strcmp(type, AUXILIARY_DATA_SPATIAL_EXTENTS) == 0)
+    {
+        rv = (void *) GetSpatialExtents(var);
+        df = avtIntervalTree::Destruct;
+    }
+    else if (strcmp(type, AUXILIARY_DATA_DATA_EXTENTS) == 0)
+    {
+        rv = (void *) GetDataExtents(var);
+        df = avtIntervalTree::Destruct;
     }
 
     //
@@ -5735,14 +5749,12 @@ avtSiloFileFormat::GetExternalFacelist(int dom, const char *mesh)
 //  Purpose:
 //      Gets the global node ids from the Silo file
 //
-//  Arguments:
-//      dom     The domain of the mesh.
-//      mesh    The mesh we want a face list for.
-//
-//  Returns:    The global node id information.
-//
 //  Programmer: Mark C. Miller
 //  Creation:   August 4, 2004 
+//
+//  Modifications:
+//    Mark C. Miller, Thu Oct 14 15:18:31 PDT 2004
+//    Uncommented the data read mask
 //
 // ****************************************************************************
 
@@ -5769,7 +5781,7 @@ avtSiloFileFormat::GetGlobalNodeIds(int dom, const char *mesh)
     // We want to get just the global node ids.  So we need to get the ReadMask,
     // set it to read global node ids, then set it back.
     long mask = DBGetDataReadMask();
-    //DBSetDataReadMask(DBUMGlobNodeNo); waiting for a Silo update
+    DBSetDataReadMask(DBUMGlobNodeNo);
     DBucdmesh *um = DBGetUcdmesh(domain_file, directory_mesh);
     if (um == NULL)
         EXCEPTION1(InvalidVariableException, mesh);
@@ -5804,14 +5816,12 @@ avtSiloFileFormat::GetGlobalNodeIds(int dom, const char *mesh)
 //  Purpose:
 //      Gets the global zone ids from the Silo file
 //
-//  Arguments:
-//      dom     The domain of the mesh.
-//      mesh    The mesh we want a face list for.
-//
-//  Returns:    The global zone id information.
-//
 //  Programmer: Mark C. Miller
 //  Creation:   August 9, 2004
+//
+//  Modifications:
+//    Mark C. Miller, Thu Oct 14 15:18:31 PDT 2004
+//    Uncommented the data read mask
 //
 // ****************************************************************************
 
@@ -5838,7 +5848,7 @@ avtSiloFileFormat::GetGlobalZoneIds(int dom, const char *mesh)
     // We want to get just the global node ids.  So we need to get the ReadMask,
     // set it to read global node ids, then set it back.
     long mask = DBGetDataReadMask();
-    //DBSetDataReadMask(DBUMZonelist|DBZonelistGlobZoneNo); waiting for a Silo update
+    DBSetDataReadMask(DBUMZonelist|DBZonelistGlobZoneNo);
     DBucdmesh *um = DBGetUcdmesh(domain_file, directory_mesh);
     if (um == NULL)
         EXCEPTION1(InvalidVariableException, mesh);
@@ -5865,6 +5875,137 @@ avtSiloFileFormat::GetGlobalZoneIds(int dom, const char *mesh)
     delete [] meshname;
 
     return rv;
+}
+
+// ****************************************************************************
+//  Method: avtSiloFileFormat::GetSpatialExtents
+//
+//  Purpose:
+//      Gets the sptial extents from a multimesh, if they exist in the file 
+//
+//  Programmer: Mark C. Miller
+//  Creation:   October 14, 2004 
+//
+// ****************************************************************************
+
+avtIntervalTree *
+avtSiloFileFormat::GetSpatialExtents(const char *meshName)
+{
+    debug5 << "Getting spatial extents for \"" << meshName << "\"" << endl;
+    debug5 << "Reading in from toc " << filenames[tocIndex] << endl;
+
+    //
+    // Get the file handle, throw an exception if it hasn't already been opened
+    //
+    DBfile *dbfile = GetFile(tocIndex);
+
+    //
+    // It's ridiculous, but Silo does not have all of the `const's in their
+    // library, so let's cast it away.
+    //
+    char *mesh = const_cast<char *>(meshName);
+
+    //
+    // Start off by finding out what kind of mesh it is.  Note: we have
+    // already cached the multimeshes.  See if we have a multimesh in the
+    // cache already -- this could potentially save us a DBInqVarType call.
+    //
+    DBmultimesh *mm = QueryMultimesh("", mesh);
+    if (mm == NULL)
+        mm = GetMultimesh("", mesh);
+
+    // if this mesh doesn't exist or doesn't have extents, return nothing
+    if (mm == NULL || mm->extents == NULL)
+        return NULL;
+
+    int ndims = mm->extentssize / 2; 
+    avtIntervalTree *itree = new avtIntervalTree(mm->nblocks, ndims);
+
+    for (int i = 0; i < mm->nblocks; i++)
+    {
+        float range[6] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+        int esize = mm->extentssize;
+
+        // silo stores all the mins before all the maxs
+        for (int j = 0; j < ndims; j++)
+        {
+            range[j*2  ] = mm->extents[i*esize + j];
+            range[j*2+1] = mm->extents[i*esize + j + ndims];
+        }
+
+        itree->AddDomain(i, range);
+    }
+
+    itree->Calculate(true);
+
+    return itree;
+
+}
+
+// ****************************************************************************
+//  Method: avtSiloFileFormat::GetDataExtents
+//
+//  Purpose:
+//      Gets the data extents from a multivar, if they exist in the file 
+//
+//  Programmer: Mark C. Miller
+//  Creation:   October 14, 2004 
+//
+// ****************************************************************************
+
+avtIntervalTree *
+avtSiloFileFormat::GetDataExtents(const char *varName)
+{
+    debug5 << "Getting data extents for \"" << varName << "\"" << endl;
+    debug5 << "Reading in from toc " << filenames[tocIndex] << endl;
+
+    //
+    // Get the file handle, throw an exception if it hasn't already been opened
+    //
+    DBfile *dbfile = GetFile(tocIndex);
+
+    //
+    // It's ridiculous, but Silo does not have all of the `const's in their
+    // library, so let's cast it away.
+    //
+    char *var = const_cast<char *>(varName);
+
+    //
+    // Start off by finding out what kind of mesh it is.  Note: we have
+    // already cached the multimeshes.  See if we have a multimesh in the
+    // cache already -- this could potentially save us a DBInqVarType call.
+    //
+    DBmultivar *mv = QueryMultivar("", var);
+    if (mv == NULL)
+        mv = GetMultivar("", var);
+
+    // if this mesh doesn't exist or doesn't have extents, return nothing
+    if (mv == NULL || mv->extents == NULL)
+        return NULL;
+
+    int ncomps = mv->extentssize / 2; 
+    int esize = mv->extentssize;
+    avtIntervalTree *itree = new avtIntervalTree(mv->nvars, ncomps);
+    float *range = new float[esize];
+
+    for (int i = 0; i < mv->nvars; i++)
+    {
+        // silo stores all the mins before all the maxs
+        for (int j = 0; j < ncomps; j++)
+        {
+            range[j*2  ] = mv->extents[i*esize + j];
+            range[j*2+1] = mv->extents[i*esize + j + ncomps];
+        }
+
+        itree->AddDomain(i, range);
+    }
+
+    delete [] range;
+
+    itree->Calculate(true);
+
+    return itree;
+
 }
 
 // ****************************************************************************

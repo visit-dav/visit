@@ -29,9 +29,12 @@
 //
 //    Mark C. Miller, Wed Oct  6 18:12:29 PDT 2004
 //    Added view extents double vector 
+//
+//    Mark C. Miller, Tue Oct 19 19:44:00 PDT 2004
+//    Added string for color table name
 // ****************************************************************************
 
-SetWinAnnotAttsRPC::SetWinAnnotAttsRPC() : BlockingRPC("aaasaID")
+SetWinAnnotAttsRPC::SetWinAnnotAttsRPC() : BlockingRPC("aaasaIDs")
 {
 }
 
@@ -81,6 +84,9 @@ SetWinAnnotAttsRPC::~SetWinAnnotAttsRPC()
 //
 //    Mark C. Miller, Wed Oct  6 18:12:29 PDT 2004
 //    Added view extents double vector
+//
+//    Mark C. Miller, Tue Oct 19 19:44:00 PDT 2004
+//    Added string for color table name
 // ****************************************************************************
 
 void
@@ -90,7 +96,8 @@ SetWinAnnotAttsRPC::operator()(const WindowAttributes *winAtts,
                                const string extStr,
                                const VisualCueList *cueList,
                                const int *frameAndState,
-                               const double *viewExtents)
+                               const double *viewExtents,
+                               const string ctName)
 {
     if (winAtts)
        SetWindowAtts(winAtts);
@@ -113,8 +120,11 @@ SetWinAnnotAttsRPC::operator()(const WindowAttributes *winAtts,
     if (viewExtents)
        SetViewExtents(viewExtents);
 
+    if (ctName.size())
+       SetChangedCtName(ctName);
+
     if (winAtts || annotAtts || aoList || extStr.size() || cueList ||
-        frameAndState || viewExtents)
+        frameAndState || viewExtents || ctName.size())
        Execute();
 }
 
@@ -142,6 +152,9 @@ SetWinAnnotAttsRPC::operator()(const WindowAttributes *winAtts,
 //
 //    Mark C. Miller, Wed Oct  6 18:12:29 PDT 2004
 //    Added view extents double vector
+//
+//    Mark C. Miller, Tue Oct 19 19:44:00 PDT 2004
+//    Added string for color table name
 // ****************************************************************************
 
 void
@@ -154,6 +167,7 @@ SetWinAnnotAttsRPC::SelectAll()
     Select(4, (void*)&cuelist);
     Select(5, (void*)fands, sizeof(fands)/sizeof(fands[0]));
     Select(6, (void*)vexts, sizeof(vexts)/sizeof(vexts[0]));
+    Select(7, (void*)&ctname);
 }
 
 
@@ -289,6 +303,21 @@ SetWinAnnotAttsRPC::SetViewExtents(const double *viewExtents)
 }
 
 // ****************************************************************************
+//  Method: SetWinAnnotAttsRPC::SetChangedCtName
+//
+//  Programmer: Mark C. Miller
+//  Creation:   October 19, 2004 
+//
+// ****************************************************************************
+
+void
+SetWinAnnotAttsRPC::SetChangedCtName(const string ctname_)
+{
+    ctname = ctname_;
+    Select(7, (void*)&ctname);
+}
+
+// ****************************************************************************
 //  Method: SetWinAnnotAttsRPC::GetWindowAtts
 //
 //  Purpose: 
@@ -396,4 +425,18 @@ const double*
 SetWinAnnotAttsRPC::GetViewExtents() const
 {
     return vexts;
+}
+
+// ****************************************************************************
+//  Method: SetWinAnnotAttsRPC::GetChangedCtName
+//
+//  Programmer: Mark C. Miller
+//  Creation:   October 19, 2004 
+//
+// ****************************************************************************
+
+const string&
+SetWinAnnotAttsRPC::GetChangedCtName() const
+{
+    return ctname;
 }

@@ -206,6 +206,9 @@ class StatusAttributes;
 //    Mark C. Miller, Wed Oct  6 18:12:29 PDT 2004
 //    Added explicit view extents to SetWinAnnotAtts
 //    Changed bool arg for 3D annotations to an integer mode in Render
+//
+//    Mark C. Miller, Tue Oct 19 19:51:43 PDT 2004
+//    Added arg to SetWinAnnotAtts for changed color table name
 // ****************************************************************************
 
 class ENGINE_PROXY_API EngineProxy : public RemoteProxyBase
@@ -268,7 +271,8 @@ public:
                                              std::string,
                                              const VisualCueList*,
                                              const int *frameAndState,
-                                             const double *viewExtents);
+                                             const double *viewExtents,
+                                             std::string);
 
     avtDataObjectReader_p    Render(bool, const intVector&, int);
 

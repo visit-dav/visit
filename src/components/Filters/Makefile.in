@@ -63,7 +63,8 @@ avtResampleFilter.C avtSamplePointCommunicator.C avtSamplePointExtractor.C \
 avtSamplePointToSurfaceFilter.C avtShiftCenteringFilter.C \
 avtSimilarityTransformFilter.C avtSmoothPolyDataFilter.C \
 avtSummationFilter.C avtTransform.C avtVertexNormalsFilter.C \
-avtWholeImageCompositer.C avtWorldSpaceToImageSpaceTransform.C
+avtWholeImageCompositerWithZ.C avtWholeImageCompositerNoZ.C \
+avtWorldSpaceToImageSpaceTransform.C
 
 CPPFLAGS=@COMPONENT_CPPFLAGS@ @CPPFLAGS@
 

@@ -4,7 +4,9 @@
 
 #ifndef AVT_WHOLE_IMAGE_COMPOSITER_H
 #define AVT_WHOLE_IMAGE_COMPOSITER_H
+
 #include <filters_exports.h>
+
 #ifdef PARALLEL
 #include <mpi.h>
 #endif
@@ -14,27 +16,30 @@
 // ****************************************************************************
 //  Class: avtWholeImageCompositer
 //
-//  Purpose:
-//      An image compositor based largely on MeshTV's image compositer.
-//      The key limitation of this image compositer is that it assumes that
-//      every piece of image to be composited has origin 0,0 and size of the
-//      intended output image. That is, every piece being composited is a
+//  Purpose: Base class for whole image compositors. That is a compositor in
+//      which every piece of image to be composited has origin 0,0 and size
+//      of the intended output image. Every piece being composited is a
 //      whole image. All the algorithms for chunking and message passing
 //      depend on this being the case.
 //
 //  Programmer: Mark C. Miller 
 //  Creation:   February 12, 2003
 //
+//  Modifications:
+//
+//    Mark C. Miller, Tue Oct 19 15:35:12 PDT 2004
+//    Turned into a base class
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtWholeImageCompositer : public avtImageCompositer
 {
    public:
-                              avtWholeImageCompositer();
-      virtual                ~avtWholeImageCompositer();
+                              avtWholeImageCompositer() {
+                                  chunkSize = 1000000;
+                                  bg_r = 255; bg_g = 255; bg_b = 255; };
 
-      const char             *GetType(void);
-      const char             *GetDescription(void);
+      virtual                ~avtWholeImageCompositer() {};
 
       void                    SetChunkSize(const int chunkSize);
       int                     GetChunkSize() const;
@@ -42,37 +47,16 @@ class AVTFILTERS_API avtWholeImageCompositer : public avtImageCompositer
                                             unsigned char g,
                                             unsigned char b);
 
-      void                    Execute();
+      virtual void            Execute() = 0;
 
-   private:
-
-      friend void             MergeBuffers(avtWholeImageCompositer *thisObj,
-                                 int npixels, bool doParallel,
-                                 const float *inz, const unsigned char *inrgb,
-                                 float *ioz, unsigned char *iorgb);
-
-      static int              objectCount;
+   protected:
 
       int                     chunkSize;
       unsigned char           bg_r;
       unsigned char           bg_g;
       unsigned char           bg_b;
 
-      static void             InitializeMPIStuff();
-      static void             FinalizeMPIStuff();
-
-#ifdef PARALLEL
-      static MPI_Datatype     mpiTypeZFPixel;
-      static MPI_Op           mpiOpMergeZFPixelBuffers;
-#endif
-
 };
-
-inline const char* avtWholeImageCompositer::GetType()
-{ return "avtWholeImageCompositer";}
-
-inline const char* avtWholeImageCompositer::GetDescription()
-{ return "performing whole-image composite"; }
 
 inline void avtWholeImageCompositer::SetChunkSize(const int _chunkSize)
 { chunkSize = _chunkSize; }

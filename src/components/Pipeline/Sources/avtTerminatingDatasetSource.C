@@ -153,6 +153,10 @@ avtTerminatingDatasetSource::FetchData(avtDataSpecification_p spec)
 //    Kathleen Bonnell, Thu Mar 11 10:07:35 PST 2004 
 //    DataExtents now always have only 2 components. 
 //
+//    Mark C. Miller, Tue Oct 19 14:08:56 PDT 2004
+//    Added check for existence of true spatial extents before attempting to
+//    merge cummulative
+//
 // ****************************************************************************
 
 void
@@ -165,26 +169,29 @@ avtTerminatingDatasetSource::MergeExtents(vtkDataSet *ds)
 
     avtDataAttributes &atts = GetOutput()->GetInfo().GetAttributes();
 
-    float bounds[6];
-    if (ds->GetFieldData()->GetArray("avtOriginalBounds") != NULL)
+    if (atts.GetTrueSpatialExtents()->HasExtents() == false)
     {
-        vtkDataArray *arr = ds->GetFieldData()->GetArray("avtOriginalBounds");
-        for (int i = 0 ; i < 6 ; i++)
-            bounds[i] = arr->GetTuple1(i);
-    }
-    else
-    {
-        ds->GetBounds(bounds);
-    }
+        float bounds[6];
+        if (ds->GetFieldData()->GetArray("avtOriginalBounds") != NULL)
+        {
+            vtkDataArray *arr = ds->GetFieldData()->GetArray("avtOriginalBounds");
+            for (int i = 0 ; i < 6 ; i++)
+                bounds[i] = arr->GetTuple1(i);
+        }
+        else
+        {
+            ds->GetBounds(bounds);
+        }
 
-    double dbounds[6];
-    dbounds[0] = bounds[0];
-    dbounds[1] = bounds[1];
-    dbounds[2] = bounds[2];
-    dbounds[3] = bounds[3];
-    dbounds[4] = bounds[4];
-    dbounds[5] = bounds[5];
-    atts.GetCumulativeTrueSpatialExtents()->Merge(dbounds);
+        double dbounds[6];
+        dbounds[0] = bounds[0];
+        dbounds[1] = bounds[1];
+        dbounds[2] = bounds[2];
+        dbounds[3] = bounds[3];
+        dbounds[4] = bounds[4];
+        dbounds[5] = bounds[5];
+        atts.GetCumulativeTrueSpatialExtents()->Merge(dbounds);
+    }
 
     int nvars = atts.GetNumberOfVariables();
     double dextents[2];
