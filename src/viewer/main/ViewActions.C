@@ -661,7 +661,11 @@ SaveViewAction::ChoiceEnabled(int i) const
 //   I modified the routine to write a ViewCurveAttribute when writing a curve
 //   view.  I split the view attributes into 2d and 3d parts.  I added code
 //   to delete any existing views before adding the new ones.
-//   
+//
+//   Brad Whitlock, Thu Oct 23 14:24:10 PST 2003
+//   I removed inappropriate code that deleted the views before trying to
+//   save them.
+//
 // ****************************************************************************
 
 bool
@@ -669,9 +673,6 @@ SaveViewAction::CreateNode(DataNode *parentNode)
 {
     if(parentNode == 0)
         return false;
-
-    // Delete any existing views.
-    DeleteViews();
 
     DataNode *saveviewNode = new DataNode("SaveViewAction");
     bool haveViews = false;

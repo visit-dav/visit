@@ -9,6 +9,7 @@
 #include <Lineout2D.h>
 #include <Navigate2D.h>
 #include <Navigate3D.h>
+#include <NavigateCurve.h>
 #include <NullInteractor.h>
 #include <Pick2D.h>
 #include <Pick3D.h>
@@ -34,6 +35,9 @@
 //   Kathleen Bonnell, Wed May  8 10:34:52 PDT 2002  
 //   Added Lineout2D, ZoomCurve.
 //   
+//   Eric Brugger, Thu Oct 23 15:12:04 PDT 2003
+//   Added navigateCurve.
+//
 // ****************************************************************************
 
 VisitHotPointInteractor::VisitHotPointInteractor(VisWindowInteractorProxy &v) :
@@ -42,6 +46,7 @@ VisitHotPointInteractor::VisitHotPointInteractor(VisWindowInteractorProxy &v) :
     lineout2D         = NULL;
     navigate2D        = NULL;
     navigate3D        = NULL;
+    navigateCurve     = NULL;
     pick2D            = NULL;
     pick3D            = NULL;
     zoom2D            = NULL;
@@ -67,6 +72,9 @@ VisitHotPointInteractor::VisitHotPointInteractor(VisWindowInteractorProxy &v) :
 //   Kathleen Bonnell, Wed May  8 10:34:52 PDT 2002  
 //   Added lineout2D, zoomCurve.
 // 
+//   Eric Brugger, Wed Oct 15 17:36:06 PDT 2003
+//   Added navigateCurve.
+//
 // ****************************************************************************
 
 VisitHotPointInteractor::~VisitHotPointInteractor()
@@ -85,6 +93,11 @@ VisitHotPointInteractor::~VisitHotPointInteractor()
     {
         navigate3D->Delete();
         navigate3D = NULL;
+    }
+    if(navigateCurve != NULL)
+    {
+        navigateCurve->Delete();
+        navigateCurve = NULL;
     }
     if(nullInteractor != NULL)
     {
@@ -332,9 +345,7 @@ VisitHotPointInteractor::Start3DMode(INTERACTION_MODE mode)
 //   mode : The new interaction mode.
 //
 // Note:       
-//   Only two interaction mode are valid in CurveMode:  Navigate and Zoom.
-//   Uses Navigate2D because nothing special needs to be done for Curve.
-//   Uses ZoomCurve because it has methods dependent upon avtViewCurve.
+//   Only two interaction modes are valid in CurveMode:  Navigate and Zoom.
 //
 // Programmer: Kathleen Bonnell 
 // Creation:   May 8, 2002 
@@ -343,6 +354,9 @@ VisitHotPointInteractor::Start3DMode(INTERACTION_MODE mode)
 //   Kathleen Bonnell, Fri Jun 27 16:34:31 PDT 2003  
 //   Handle NodePick, ZonePick. 
 //   
+//   Eric Brugger, Wed Oct 15 17:36:06 PDT 2003
+//   Change navigate mode to use the NavigateCurve interactor.
+//
 // ****************************************************************************
 
 void
@@ -357,11 +371,11 @@ VisitHotPointInteractor::StartCurveMode(INTERACTION_MODE mode)
     switch(mode)
     {
     case NAVIGATE:
-        if(navigate2D == NULL)
+        if(navigateCurve == NULL)
         {
-            navigate2D = new Navigate2D(proxy);
+            navigateCurve = new NavigateCurve(proxy);
         }
-        newInteractor = navigate2D;
+        newInteractor = navigateCurve;
         break;
     case ZOOM:
         if(zoomCurve == NULL)

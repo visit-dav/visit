@@ -205,6 +205,9 @@ typedef std::vector<QvisWindowBase *> WindowBaseVector;
 //    Brad Whitlock, Thu Sep 4 10:25:48 PDT 2003
 //    I made it use QvisApplication.
 //
+//    Brad Whitlock, Wed Oct 22 12:10:42 PDT 2003
+//    Added addDefaultPlots to the LoadFile method.
+//
 // ****************************************************************************
 
 class GUI_API QvisGUIApplication : public QObject, public ConfigManager, public GUIBase
@@ -226,7 +229,7 @@ private:
     void CreatePluginWindows();
     void LaunchViewer();
     void InitializeFileServer(DataNode *);
-    void LoadFile();
+    void LoadFile(bool addDefaultPlots);
     void MoveAndResizeMainWindow(int orientation);
     void ProcessArguments(int &argc, char **argv);
     virtual DataNode *ReadConfigFile(const char *filename);

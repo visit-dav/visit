@@ -2040,6 +2040,10 @@ VisWindow::ResetView(void)
 //    Allow FullFrameOn to be called when scale factor changes, not just
 //    when full-frame turned on for first time. 
 //    
+//    Eric Brugger, Thu Oct 16 09:26:49 PDT 2003
+//    Modified to match changes in avtView2D made to handle full frame
+//    mode properly.
+//
 // ****************************************************************************
 
 void
@@ -2051,15 +2055,11 @@ VisWindow::SetView2D(const avtView2D &v)
     //
     // Determine if full-frame mode has changed. 
     //
-    int fframe = 0;
+    bool fullFrameChanged = false;
 
-    if (v.axisScaleFactor != view2D.axisScaleFactor)
-    {
-        fframe = 1;
-        if (v.axisScaleFactor == 0. && view2D.axisScaleFactor > 0.)
-        {
-            fframe = 2; 
-        }
+    if (v.fullFrame != view2D.fullFrame)
+    { 
+        fullFrameChanged = true;
     }
 
     //
@@ -2068,15 +2068,15 @@ VisWindow::SetView2D(const avtView2D &v)
     //
     view2D = v;
 
+    UpdateView();
+
     //
     // Tell colleagues that full-frame mode has changed, if necessary. 
     //
-    if (fframe == 1)
-        FullFrameOn(v.axisScaleFactor, v.axisScaleType);
-    else if (fframe == 2)
+    if (fullFrameChanged && !view2D.fullFrame)
+    {
         FullFrameOff();
-
-    UpdateView();
+    }
 }
 
 
@@ -2100,20 +2100,15 @@ VisWindow::SetView2D(const avtView2D &v)
 //    Undo setting of the viewport.  The viewport in the view2D is different
 //    from the viewport in viewportLeft, viewportRight, ...
 //
+//    Eric Brugger, Thu Oct 16 09:26:49 PDT 2003
+//    Modified to match changes in avtView2D made to handle full frame
+//    mode properly.
+//
 // ****************************************************************************
 
 const avtView2D &
 VisWindow::GetView2D(void)
 {
-    //
-    // In the future this should propably be done by the VisWinView
-    // colleague.
-    //
-    if (mode == WINMODE_2D)
-    {
-        view2D.SetViewFromViewInfo(view->GetViewInfo());
-    }
-
     return view2D;
 }
 
@@ -2370,6 +2365,10 @@ VisWindow::Render(void)
 //    to avtViewCurve::SetViewInfoFromView so that it can handle non-square
 //    windows.
 //
+//    Eric Brugger, Thu Oct 16 09:26:49 PDT 2003
+//    Modified to match changes in avtView2D and avtViewCurve made to handle
+//    full frame mode properly.
+//
 // ****************************************************************************
 
 void
@@ -2382,14 +2381,21 @@ VisWindow::UpdateView()
 
         int *size=rendering->GetFirstRenderer()->GetSize();
 
-        view2D.SetViewportFromView(viewport, size[0], size[1]);
+        view2D.GetActualViewport(viewport, size[0], size[1]);
         if (viewport[0] != viewportLeft || viewport[1] != viewportRight ||
             viewport[2] != viewportBottom || viewport[3] != viewportTop)
         {
             SetViewport(viewport[0], viewport[2], viewport[1], viewport[3]);
         }
-        view2D.SetViewInfoFromView(viewInfo);
+
+        view2D.SetViewInfoFromView(viewInfo, size);
         view->SetViewInfo(viewInfo);
+
+        if (view2D.fullFrame)
+        {
+            FullFrameOff();
+            FullFrameOn(view2D.GetScaleFactor(size), 1);
+        }
     }
     else if (mode == WINMODE_3D)
     {
@@ -2400,29 +2406,24 @@ VisWindow::UpdateView()
     }
     else if (mode == WINMODE_CURVE)
     {
-        double    viewport[4];
         avtViewInfo viewInfo;
 
         int *size=rendering->GetFirstRenderer()->GetSize();
 
-        viewCurve.SetViewportFromView(viewport, size[0], size[1]);
-        if (viewport[0] != viewportLeft || viewport[1] != viewportRight ||
-            viewport[2] != viewportBottom || viewport[3] != viewportTop)
+        if (viewCurve.viewport[0] != viewportLeft ||
+            viewCurve.viewport[1] != viewportRight ||
+            viewCurve.viewport[2] != viewportBottom ||
+            viewCurve.viewport[3] != viewportTop)
         {
-            SetViewport(viewport[0], viewport[2], viewport[1], viewport[3]);
+            SetViewport(viewCurve.viewport[0], viewCurve.viewport[2],
+                        viewCurve.viewport[1], viewCurve.viewport[3]);
         }
-
-        float vec[3];
-        vec[0] = 1.;
-        vec[1] = ((viewCurve.domain[1] - viewCurve.domain[0]) /
-                  (viewCurve.range[1] - viewCurve.range[0])) *
-                 ((viewport[3] - viewport[2]) / (viewport[1] - viewport[0])) *
-                 ((double) size[1] / (double) size[0]) ;
-        vec[2] = 1.;
-        plots->ScalePlots(vec);
 
         viewCurve.SetViewInfoFromView(viewInfo, size);
         view->SetViewInfo(viewInfo);
+
+        FullFrameOff();
+        FullFrameOn(viewCurve.GetScaleFactor(size), 1);
     }
 }
 
@@ -3792,6 +3793,10 @@ VisWindow::QueryIsValid(const PickAttributes *pa, const Line *lineAtts)
 //    I modified the routine to calculate the scale in the curve case
 //    from the domain and range.
 //
+//    Eric Brugger, Thu Oct 16 09:26:49 PDT 2003
+//    Modified to match changes in avtView2D and avtViewCurve made to handle
+//    full frame mode properly.
+//
 // ****************************************************************************
 
 void
@@ -3799,24 +3804,21 @@ VisWindow::GetScaleFactorAndType(double &s, int &t)
 {
     if (mode == WINMODE_2D)
     {
-        s = view2D.axisScaleFactor;
-        t = view2D.axisScaleType; 
+        int *size=rendering->GetFirstRenderer()->GetSize();
+
+        s = view2D.GetScaleFactor(size);
     }
     else if (mode == WINMODE_CURVE)
     {
         int *size=rendering->GetFirstRenderer()->GetSize();
 
-        s = ((viewCurve.domain[1] - viewCurve.domain[0]) /
-             (viewCurve.range[1]  - viewCurve.range[0])) *
-            ((viewportTop - viewportBottom) / (viewportRight - viewportLeft)) *
-            ((double) size[1] / (double) size[0]);
-        t = 1; // y_axis
+        s = viewCurve.GetScaleFactor(size);
     }
     else // this really doesn't apply, set scale to 0. 
     {
         s = 0.; // no scaling will happen.
-        t = 1; // y_axis (default)
     }
+    t = 1; // y_axis
 }
 
 
@@ -4468,12 +4470,17 @@ VisWindow::FullFrameOn(const double scale, const int type)
 //  Programmer: Kathleen Bonnell
 //  Creation:   June 6, 2003 
 //
+//  Modifications:
+//    Eric Brugger, Thu Oct 16 09:26:49 PDT 2003
+//    Modified to match changes in avtView2D made to handle full frame
+//    mode properly.
+//
 // ****************************************************************************
 
 bool
 VisWindow::GetFullFrameMode()
 {
-    if (mode == WINMODE_2D && view2D.axisScaleFactor > 0.)
+    if (mode == WINMODE_2D && view2D.fullFrame)
         return true;
     else 
         return false; 

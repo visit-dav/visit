@@ -1296,13 +1296,16 @@ QvisFilePanel::ConnectGlobalAttributes(GlobalAttributes *ga)
 //   I added code that lets the replace button be active if there's more than
 //   one state in the database.
 //
+//   Brad Whitlock, Wed Oct 22 12:18:23 PDT 2003
+//   I added the addDefaultPlots flag to OpenDataFile.
+//
 // ****************************************************************************
 
 bool
 QvisFilePanel::OpenFile(const QualifiedFilename &qf, int timeState, bool reOpen)
 {
     // Try and open the data file.
-    bool retval = OpenDataFile(qf, timeState, this, reOpen);
+    bool retval = OpenDataFile(qf, timeState, true, this, reOpen);
 
     // Get a pointer to the file's metadata.
     const avtDatabaseMetaData *md = fileServer->GetMetaData(qf);

@@ -1,8 +1,8 @@
 // ************************************************************************* //
-//                                Navigate2D.C                               //
+//                              NavigateCurve.C                              //
 // ************************************************************************* //
 
-#include <Navigate2D.h>
+#include <NavigateCurve.h>
 
 #include <VisWindow.h>
 #include <VisWindowInteractorProxy.h>
@@ -10,34 +10,34 @@
 #include <vtkRenderWindowInteractor.h>
 
 // ****************************************************************************
-//  Method: Navigate2D constructor
+//  Method: NavigateCurve constructor
 //
-//  Programmer: Hank Childs
-//  Creation:   May 19, 2000
+//  Programmer: Eric Brugger
+//  Creation:   October 15, 2003
 //
 // ****************************************************************************
 
-Navigate2D::Navigate2D(VisWindowInteractorProxy &v) : VisitInteractor(v)
+NavigateCurve::NavigateCurve(VisWindowInteractorProxy &v) : VisitInteractor(v)
 {
     ;
 }
 
 
 // ****************************************************************************
-//  Method: Navigate2D::OnTimer
+//  Method: NavigateCurve::OnTimer
 //
 //  Purpose:
-//    Handles the timer event.  For Navigate2D, this means the user has
+//    Handles the timer event.  For NavigateCurve, this means the user has
 //    pressed a mouse key and that it is time to sample the mouse position
 //    to see if the view should be panned or zoomed.
 //
 //  Programmer: Eric Brugger
-//  Creation:   October 10, 2003
+//  Creation:   October 15, 2003
 //
 // ****************************************************************************
 
 void
-Navigate2D::OnTimer(void)
+NavigateCurve::OnTimer(void)
 {
     vtkRenderWindowInteractor *rwi = Interactor;
 
@@ -65,124 +65,94 @@ Navigate2D::OnTimer(void)
 
 
 // ****************************************************************************
-//  Method: Navigate2D::StartLeftButtonAction
+//  Method: NavigateCurve::StartLeftButtonAction
 //
 //  Purpose:
-//    Handles the left button being pushed down.  For Navigate2D, this means
-//     panning.
+//    Handles the left button being pushed down.  For NavigateCurve, this means
+//    panning.
 //
-//  Programmer: Hank Childs
-//  Creation:   May 19, 2000
-//
-//  Modifications:
-//    Hank Childs, Mon Mar 18 13:48:55 PST 2002
-//    Renamed from OnLeftButtonDown.
-//
-//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002
-//    Removed arguments to match vtk's new interactor api.
+//  Programmer: Eric Brugger
+//  Creation:   October 15, 2003
 //
 // ****************************************************************************
 
 void
-Navigate2D::StartLeftButtonAction()
+NavigateCurve::StartLeftButtonAction()
 {
     StartPan();
 }
 
 
 // ****************************************************************************
-//  Method: Navigate2D::EndLeftButtonAction
+//  Method: NavigateCurve::EndLeftButtonAction
 //
 //  Purpose:
-//    Handles the left button being released.  For Navigate2D, this means
+//    Handles the left button being released.  For NavigateCurve, this means
 //    panning.
 //
-//  Programmer: Hank Childs
-//  Creation:   May 19, 2000
-//
-//  Modifications:
-//    Hank Childs, Mon Mar 18 13:48:55 PST 2002
-//    Renamed from OnLeftButtonUp.
-//
-//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002
-//    Removed arguments to match vtk's new interactor api.
+//  Programmer: Eric Brugger
+//  Creation:   October 15, 2003
 //
 // ****************************************************************************
 
 void
-Navigate2D::EndLeftButtonAction()
+NavigateCurve::EndLeftButtonAction()
 {
     EndPan();
 }
 
 
 // ****************************************************************************
-//  Method: Navigate2D::StartMiddleButtonAction
+//  Method: NavigateCurve::StartMiddleButtonAction
 //
 //  Purpose:
-//    Handles the middle button being pushed down.  For Navigate2D, this 
+//    Handles the middle button being pushed down.  For NavigateCurve, this 
 //    means zooming.
 //
-//  Programmer: Hank Childs
-//  Creation:   May 19, 2000
-//
-//  Modifications:
-//    Hank Childs, Mon Mar 18 13:48:55 PST 2002
-//    Renamed from OnMiddleButtonDown.
-//
-//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002
-//    Removed arguments to match vtk's new interactor api.  Zoom no longer 
-//    implemented by parent class, Dolly performs same function. 
+//  Programmer: Eric Brugger
+//  Creation:   October 15, 2003
 //
 // ****************************************************************************
 
 void
-Navigate2D::StartMiddleButtonAction()
+NavigateCurve::StartMiddleButtonAction()
 {
     StartDolly();
 }
 
 
 // ****************************************************************************
-//  Method: Navigate2D::EndMiddleButtonAction
+//  Method: NavigateCurve::EndMiddleButtonAction
 //
 //  Purpose:
-//    Handles the middle button being released.  For Navigate2D, this means
+//    Handles the middle button being released.  For NavigateCurve, this means
 //    zooming.
 //
-//  Programmer: Hank Childs
-//  Creation:   May 19, 2000
-//
-//  Modifications:
-//    Hank Childs, Mon Mar 18 13:48:55 PST 2002
-//    Renamed from OnMiddleButtonUp.
-//
-//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002
-//    Removed arguments to match vtk's new interactor api.  Zoom no longer 
-//    implemented by parent class, Dolly performs same function. 
+//  Programmer: Eric Brugger
+//  Creation:   October 15, 2003
 //
 // ****************************************************************************
 
 void
-Navigate2D::EndMiddleButtonAction()
+NavigateCurve::EndMiddleButtonAction()
 {
     EndDolly();
 }
 
 
 // ****************************************************************************
-//  Method: Navigate2D::PanCamera
+//  Method: NavigateCurve::PanCamera
 //
 //  Purpose:
 //    Handle panning the camera.
 //
 //  Programmer: Eric Brugger
-//  Creation:   October 10, 2003
+//  Creation:   October 15, 2003
 //
 // ****************************************************************************
 
 void
-Navigate2D::PanCamera(const int x, const int y)
+NavigateCurve::PanCamera(const int x, const int y)
 {
     vtkRenderWindowInteractor *rwi = Interactor;
 
@@ -200,26 +170,25 @@ Navigate2D::PanCamera(const int x, const int y)
         //
         VisWindow *vw = proxy;
 
-        double    viewport[4];
         double    pan[2];
 
-        avtView2D newView2D = vw->GetView2D();
+        avtViewCurve newViewCurve = vw->GetViewCurve();
 
-        newView2D.GetActualViewport(viewport, size[0], size[1]);
-        
         pan[0] = (double)(x - OldX) /
-                 ((viewport[1] - viewport[0]) * (double)(size[0])) *
-                 (newView2D.window[1] - newView2D.window[0]);
+                 ((newViewCurve.viewport[1] - newViewCurve.viewport[0]) *
+                  (double)(size[0])) *
+                 (newViewCurve.domain[1] - newViewCurve.domain[0]);
         pan[1] = (double)(y - OldY) /
-                 ((viewport[3] - viewport[2]) * (double)(size[1])) *
-                 (newView2D.window[3] - newView2D.window[2]);
+                 ((newViewCurve.viewport[3] - newViewCurve.viewport[2]) *
+                  (double)(size[1])) *
+                 (newViewCurve.range[1] - newViewCurve.range[0]);
 
-        newView2D.window[0] -= pan[0];
-        newView2D.window[1] -= pan[0];
-        newView2D.window[2] -= pan[1];
-        newView2D.window[3] -= pan[1];
+        newViewCurve.domain[0] -= pan[0];
+        newViewCurve.domain[1] -= pan[0];
+        newViewCurve.range[0]  -= pan[1];
+        newViewCurve.range[1]  -= pan[1];
 
-        vw->SetView2D(newView2D);
+        vw->SetViewCurve(newViewCurve);
 
         OldX = x;
         OldY = y;
@@ -228,18 +197,18 @@ Navigate2D::PanCamera(const int x, const int y)
 }
 
 // ****************************************************************************
-//  Method: Navigate2D::ZoomCamera
+//  Method: NavigateCurve::ZoomCamera
 //
 //  Purpose:
 //    Handle zooming the camera.
 //
 //  Programmer: Eric Brugger
-//  Creation:   October 10, 2003
+//  Creation:   October 15, 2003
 //
 // ****************************************************************************
 
 void
-Navigate2D::ZoomCamera(const int x, const int y)
+NavigateCurve::ZoomCamera(const int x, const int y)
 {
     vtkRenderWindowInteractor *rwi = Interactor;
 
@@ -257,19 +226,19 @@ Navigate2D::ZoomCamera(const int x, const int y)
         //
         VisWindow *vw = proxy;
 
-        avtView2D newView2D = vw->GetView2D();
+        avtViewCurve newViewCurve = vw->GetViewCurve();
 
         double dX = ((1. / zoomFactor) - 1.) *
-                    ((newView2D.window[1] - newView2D.window[0]) / 2.);
+                    ((newViewCurve.domain[1] - newViewCurve.domain[0]) / 2.);
         double dY = ((1. / zoomFactor) - 1.) *
-                    ((newView2D.window[3] - newView2D.window[2]) / 2.);
+                    ((newViewCurve.range[1] - newViewCurve.range[0]) / 2.);
 
-        newView2D.window[0] -= dX;
-        newView2D.window[1] += dX;
-        newView2D.window[2] -= dY;
-        newView2D.window[3] += dY;
+        newViewCurve.domain[0] -= dX;
+        newViewCurve.domain[1] += dX;
+        newViewCurve.range[0]  -= dY;
+        newViewCurve.range[1]  += dY;
 
-        vw->SetView2D(newView2D);
+        vw->SetViewCurve(newViewCurve);
 
         OldX = x;
         OldY = y;

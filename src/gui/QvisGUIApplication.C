@@ -709,7 +709,10 @@ QvisGUIApplication::SyncCallback(Subject *s, void *data)
 // Creation:   Wed Jun 18 15:56:39 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Oct 22 12:13:04 PDT 2003
+//   I passed a flag to LoadFile that lets it add default plots when the file
+//   is opened.
+//
 // ****************************************************************************
 
 void
@@ -758,7 +761,7 @@ QvisGUIApplication::FinalInitialization()
         break;
     case 3:
         // Load the initial data file.
-        LoadFile();
+        LoadFile(true);
 
         // Show that we're ready.
         SplashScreenProgress("VisIt is ready.", 100);
@@ -2256,6 +2259,9 @@ QvisGUIApplication::ReadConfigFile(const char *filename)
 //   I changed how we restore sessions so that we first try to open
 //   all of the files that are in the session.
 //
+//   Brad Whitlock, Wed Oct 22 12:12:11 PDT 2003
+//   I prevented default plots from being added as we load files.
+//
 // ****************************************************************************
 
 void
@@ -2302,7 +2308,7 @@ QvisGUIApplication::RestoreSession()
                         {
                             loadFile = QualifiedFilename(db[i]);
                             if(!fileServer->HaveOpenedFile(loadFile))
-                                LoadFile();
+                                LoadFile(false);
                         }
                     }
                 }
@@ -2863,10 +2869,13 @@ QvisGUIApplication::RefreshFileListAndNextFrame()
 //   multiple times and the names of each file that we've opened will be
 //   in the list.
 //
+//   Brad Whitlock, Wed Oct 22 12:11:18 PDT 2003
+//   Added a flag that determines whether default plots can be added.
+//
 // ****************************************************************************
 
 void
-QvisGUIApplication::LoadFile()
+QvisGUIApplication::LoadFile(bool addDefaultPlots)
 {
     if(!loadFile.Empty())
     {
@@ -2945,7 +2954,7 @@ QvisGUIApplication::LoadFile()
             viewer->ShowAllWindows();
 
             // Try and open the data file for plotting.
-            OpenDataFile(loadFile, timeState);
+            OpenDataFile(loadFile, timeState, addDefaultPlots);
         }
         CATCH2(BadHostException, bhe)
         {

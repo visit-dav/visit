@@ -307,6 +307,9 @@ class Xfer;
 //    Brad Whitlock, Wed Oct 15 15:37:20 PST 2003
 //    Added optional timeState to ReplaceDatabase.
 //
+//    Brad Whitlock, Wed Oct 22 12:21:40 PDT 2003
+//    Added optional argument to OpenDatabase.
+//
 // ****************************************************************************
 
 class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
@@ -347,7 +350,8 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
     void ConnectToMetaDataServer(const std::string &hostName, const stringVector &argv);
     void OpenMDServer(const std::string &hostName, const stringVector &argv);
 
-    void OpenDatabase(const std::string &database, int timeState = 0);
+    void OpenDatabase(const std::string &database, int timeState = 0,
+                      bool addDefaultPlots = true);
     void ReOpenDatabase(const std::string &database, bool forceClose = true);
     void ReplaceDatabase(const std::string &database, int timeState = 0);
     void OverlayDatabase(const std::string &database);

@@ -29,31 +29,35 @@ class View2DAttributes;
 //    I replaced SetFromViewAttributes with SetFromView2DAttributes and
 //    SetToViewAttributes with SetToView2DAttributes.
 //
+//    Eric Brugger, Wed Oct  8 16:43:28 PDT 2003
+//    I replaced axisScaleFactor and axisScaleType with fullFrame.  I
+//    deleted SetViewFromViewInfo.  I added window size arguments to
+//    SetViewFromViewInfo.  I renamed SetViewportFromView to GetActualViewport.
+//    I added GetScaleFactor.  I deleted ScaleWindow and ReverseScaleWindow.
+//
 // ****************************************************************************
 
 struct PIPELINE_API avtView2D
 {
     double   viewport[4];
     double   window[4];
-    double   axisScaleFactor;
-    int      axisScaleType; // 0 == x, 1 == y
+    bool     fullFrame;
 
   public:
                     avtView2D();
     avtView2D     & operator=(const avtView2D &);
     bool            operator==(const avtView2D &);
     void            SetToDefault(void);
-    void            SetViewFromViewInfo(const avtViewInfo &);
-    void            SetViewInfoFromView(avtViewInfo &) const;
-    void            SetViewportFromView(double *, const int, const int) const;
+    void            SetViewInfoFromView(avtViewInfo &, int *) const;
+
+    void            GetActualViewport(double *, const int, const int) const;
+    double          GetScaleFactor(int *) const;
 
     void            SetFromView2DAttributes(const View2DAttributes *);
     void            SetToView2DAttributes(View2DAttributes *) const;
 
   protected:
     void            GetValidWindow(double *) const;
-    void            ScaleWindow(double *) const;
-    void            ReverseScaleWindow(double *) const;
 };
 
 

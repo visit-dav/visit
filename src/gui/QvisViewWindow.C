@@ -136,6 +136,9 @@ QvisViewWindow::~QvisViewWindow()
 //   Hank Childs, Wed Oct 15 15:04:14 PDT 2003
 //   Added eye angle slider.
 //
+//   Eric Brugger, Thu Oct 16 12:22:54 PDT 2003
+//   I added full frame mode to the 2D view tab.
+//
 // ****************************************************************************
 
 void
@@ -203,7 +206,7 @@ QvisViewWindow::CreateWindowContents()
 
     QVBoxLayout *internalLayout2d = new QVBoxLayout(view2DGroup);
     internalLayout2d->addSpacing(10);
-    QGridLayout *Layout2d = new QGridLayout(internalLayout2d, 2, 2);
+    QGridLayout *Layout2d = new QGridLayout(internalLayout2d, 3, 2);
     Layout2d->setSpacing(5);
 
     viewportLineEdit = new QLineEdit(view2DGroup, "viewportLineEdit");
@@ -222,6 +225,12 @@ QvisViewWindow::CreateWindowContents()
                                      view2DGroup, "windowLabel");
     Layout2d->addWidget(windowLabel, 1, 0);
     internalLayout2d->addStretch(10);
+
+    fullFrameToggle = new QCheckBox("Full frame", view2DGroup,
+        "fullFrameToggle");
+    connect(fullFrameToggle, SIGNAL(toggled(bool)),
+            this, SLOT(fullFrameToggled(bool)));
+    Layout2d->addWidget(fullFrameToggle, 2, 1);
 
     //
     // Add the simple controls for the 3d view.
@@ -590,6 +599,9 @@ QvisViewWindow::UpdateCurve(bool doAll)
 //   Eric Brugger, Wed Aug 20 14:04:21 PDT 2003
 //   I split the view attributes into 2d and 3d parts.
 //
+//   Eric Brugger, Thu Oct 16 12:22:54 PDT 2003
+//   I added full frame mode to the 2D view tab.
+//
 // ****************************************************************************
 
 void
@@ -619,6 +631,11 @@ QvisViewWindow::Update2D(bool doAll)
             viewportLineEdit->setText(temp);
             break;
           }
+        case 2: // fullframe.
+            fullFrameToggle->blockSignals(true);
+            fullFrameToggle->setChecked(view2d->GetFullFrame());
+            fullFrameToggle->blockSignals(false);
+            break;
         }
     }
 }
@@ -2124,6 +2141,14 @@ QvisViewWindow::processWindowText()
 {
     GetCurrentValues(1);
     Apply();    
+}
+
+void
+QvisViewWindow::fullFrameToggled(bool val)
+{
+    view2d->SetFullFrame(val);
+    SetUpdate(false);
+    Apply();
 }
 
 //

@@ -1277,7 +1277,10 @@ ViewerProxy::ConnectToMetaDataServer(const std::string &hostName,
 //    Open a database.
 //
 //  Arguments:
-//    database  The name of the database to open.
+//    database        : The name of the database to open.
+//    timeState       : The timestate that we want to open.
+//    addDefaultPlots : Whether we want to allow the viewer to add default
+//                      plots.
 //
 //  Programmer: Eric Brugger
 //  Creation:   August 17, 2000
@@ -1286,10 +1289,15 @@ ViewerProxy::ConnectToMetaDataServer(const std::string &hostName,
 //    Brad Whitlock, Thu May 15 13:03:57 PST 2003
 //    I made it possible to open a database at a later time state.
 //
+//    Brad Whitlock, Wed Oct 22 12:22:44 PDT 2003
+//    I made it possible to tell the viewer that we don't want to add default
+//    plots even if the database has them.
+//   
 // ****************************************************************************
 
 void
-ViewerProxy::OpenDatabase(const std::string &database, int timeState)
+ViewerProxy::OpenDatabase(const std::string &database, int timeState,
+    bool addDefaultPlots)
 {
     //
     // Set the rpc type and arguments.
@@ -1297,6 +1305,7 @@ ViewerProxy::OpenDatabase(const std::string &database, int timeState)
     viewerRPC->SetRPCType(ViewerRPC::OpenDatabaseRPC);
     viewerRPC->SetDatabase(database);
     viewerRPC->SetIntArg1(timeState);
+    viewerRPC->SetBoolFlag(addDefaultPlots);
 
     //
     // Issue the RPC.

@@ -83,6 +83,9 @@ import java.util.Vector;
 //   Brad Whitlock, Wed Oct 15 15:39:02 PST 2003
 //   I added a timeState argument to the ReplaceDatabase method.
 //
+//   Brad Whitlock, Wed Oct 22 12:25:43 PDT 2003
+//   I added another overloaded OpenDatabase method.
+//
 // ****************************************************************************
 
 public class ViewerProxy implements SimpleObserver
@@ -393,6 +396,7 @@ public class ViewerProxy implements SimpleObserver
         rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_OPENDATABASERPC);
         rpc.SetDatabase(database);
         rpc.SetIntArg1(0);
+        rpc.SetBoolFlag(true);
         rpc.Notify();
         return synchronous ? Synchronize() : true;
     }
@@ -402,6 +406,18 @@ public class ViewerProxy implements SimpleObserver
         rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_OPENDATABASERPC);
         rpc.SetDatabase(database);
         rpc.SetIntArg1(timeState);
+        rpc.SetBoolFlag(true);
+        rpc.Notify();
+        return synchronous ? Synchronize() : true;
+    }
+
+    public boolean OpenDatabase(String database, int timeState,
+                                boolean addDefaultPlots)
+    {
+        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_OPENDATABASERPC);
+        rpc.SetDatabase(database);
+        rpc.SetIntArg1(timeState);
+        rpc.SetBoolFlag(addDefaultPlots);
         rpc.Notify();
         return synchronous ? Synchronize() : true;
     }

@@ -2495,11 +2495,14 @@ ViewerSubject::RedrawWindow()
 //    I prevented the addition of default plots if the plot list already
 //    contains plots from the new database.
 //
+//    Brad Whitlock, Wed Oct 22 12:27:30 PDT 2003
+//    I made the method actually use the addDefaultPlots argument.
+//
 // ****************************************************************************
 
 void
 ViewerSubject::OpenDatabaseHelper(const std::string &entireDBName,
-    int timeState, bool updateNFrames, bool loadDefaultPlots)
+    int timeState, bool updateNFrames, bool addDefaultPlots)
 {
     int  i;
 
@@ -2587,7 +2590,8 @@ ViewerSubject::OpenDatabaseHelper(const std::string &entireDBName,
         // Create default plots if there are no plots from the database
         // already in the plot list.
         //
-        if(!plotList->FileInUse(host.c_str(), db.c_str()))
+        if(addDefaultPlots &&
+           !plotList->FileInUse(host.c_str(), db.c_str()))
         {
             DataNode *adn = NULL;
             bool defaultPlotsAdded = false;
@@ -3113,14 +3117,16 @@ ViewerSubject::CreateAttributesDataNode(const avtDefaultPlotMetaData *dp) const
 // Creation:   Thu May 15 13:33:17 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Oct 22 12:28:57 PDT 2003
+//   I made it possible for default plots to not be added.
+//
 // ****************************************************************************
 
 void
 ViewerSubject::OpenDatabase()
 {
     OpenDatabaseHelper(viewerRPC.GetDatabase(), viewerRPC.GetIntArg1(),
-                       true, true);
+                       true, viewerRPC.GetBoolFlag());
 }
 
 // ****************************************************************************

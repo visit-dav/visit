@@ -9,6 +9,7 @@ struct HotPoint;
 class Lineout2D;
 class Navigate2D;
 class Navigate3D;
+class NavigateCurve;
 class NullInteractor;
 class Pick2D;
 class Pick3D;
@@ -40,6 +41,9 @@ class ZoomCurve;
 //    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002
 //    Removed arguments from all ButtonAction methods and OnMouseMove, 
 //    in order to match vtk's new interactor api.  Added SetInteractor method.
+//
+//    Eric Brugger, Wed Oct 15 17:32:48 PDT 2003
+//    Added NavigateCurve interactor.
 //
 // ****************************************************************************
 
@@ -78,6 +82,7 @@ private:
     Lineout2D        *lineout2D;
     Navigate3D       *navigate3D;
     Navigate2D       *navigate2D;
+    NavigateCurve    *navigateCurve;
     NullInteractor   *nullInteractor;
     Pick2D           *pick2D;
     Pick3D           *pick3D;

@@ -533,6 +533,10 @@ avtFilledBoundaryPlot::CustomizeBehavior(void)
 //    Eric Brugger, Wed Jul 16 10:29:53 PDT 2003
 //    Modified to work with the new way legends are managed.
 //
+//    Brad Whitlock, Thu Oct 23 14:57:44 PST 2003
+//    I fixed it so the global plot opacity affects the plot when the plot
+//    is colored using a single color.
+//
 // ****************************************************************************
 
 void 
@@ -557,17 +561,12 @@ avtFilledBoundaryPlot::SetColors()
 
     if (atts.GetColorType() == FilledBoundaryAttributes::ColorBySingleColor)
     {
-        const ColorAttribute ca = atts.GetSingleColor();
-        unsigned char colors[4];
+        ColorAttribute ca(atts.GetSingleColor());
+        ca.SetAlpha((unsigned char)(float(ca.Alpha()) * atts.GetOpacity()));
         ColorAttributeList cal;
         cal.AddColorAttribute(ca);
 
-        colors[0] = ca.Red();
-        colors[1] = ca.Green();
-        colors[2] = ca.Blue();
-        colors[3] = (unsigned char)(ca.Alpha() * atts.GetOpacity());
-
-        avtLUT->SetLUTColorsWithOpacity(colors, 1);
+        avtLUT->SetLUTColorsWithOpacity(ca.GetColor(), 1);
         levelsMapper->SetColors(cal);
         // 
         //  Send an empty color map, rather than one where all

@@ -651,6 +651,9 @@ Zoom2D::DrawGuideLine(int x1, int y1, int x2, int y2)
 //    Copy newView2D from current View2D to preserve fields which are
 //    not being overwritten here. 
 // 
+//    Eric Brugger, Thu Oct  9 17:03:59 PDT 2003
+//    Modified to handle full frame properly.
+//
 // ****************************************************************************
 
 void
@@ -710,12 +713,27 @@ Zoom2D::ZoomCamera(void)
     //
     VisWindow *vw = proxy;
 
+    double s = 1.;
+
     avtView2D newView2D = vw->GetView2D();
+
+    //
+    // Handle full frame mode.
+    //
+    if (newView2D.fullFrame)
+    {
+        int       size[2];
+
+        vtkRenderWindowInteractor *rwi = Interactor;
+        rwi->GetSize(size);
+
+        s = newView2D.GetScaleFactor(size);
+    }
 
     newView2D.window[0] = leftX;
     newView2D.window[1] = rightX;
-    newView2D.window[2] = bottomY;
-    newView2D.window[3] = topY;
+    newView2D.window[2] = bottomY / s;
+    newView2D.window[3] = topY / s;
 
     vw->SetView2D(newView2D);
 
