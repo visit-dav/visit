@@ -33,6 +33,11 @@ avtStructuredDomainNesting::Destruct(void *p)
 //  Programmer:  Mark C. Miller 
 //  Creation:    October 13, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Nov 18 22:56:02 PST 2003
+//    Clean up memory leak.
+//
 // ****************************************************************************
 bool
 avtStructuredDomainNesting::ApplyGhost(vector<int> domainList,
@@ -180,6 +185,7 @@ avtStructuredDomainNesting::ApplyGhost(vector<int> domainList,
 
         ghostArray->SetName("vtkGhostLevels");
         meshes[i]->GetCellData()->AddArray(ghostArray);
+        ghostArray->Delete();
     }
 
     return didGhost;

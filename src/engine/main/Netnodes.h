@@ -43,6 +43,9 @@ public:
 //      Do more initialization in the constructor.  Added necessary information
 //      for caching data objects.
 //
+//      Hank Childs, Tue Nov 18 14:11:33 PST 2003
+//      Put SetDBInfo into the .C file, since it now does more work.
+//
 // ****************************************************************************
 class NetnodeDB: public Netnode
 {
@@ -51,8 +54,7 @@ public:
     NetnodeDB(ref_ptr<avtDatabase>);
     ref_ptr<avtDatabase>    GetDatabase(void) { return db; };
     virtual ~NetnodeDB(void) {FreeUpResources();};
-    void SetDBInfo(std::string _filename, std::string _var, int _time)
-        { filename = _filename; var = _var; time = _time; };
+    void SetDBInfo(std::string _filename, std::string _var, int _time);
     virtual avtDataObject_p GetOutput(void);
     std::string GetFilename(void) {return filename;};
     int GetTime(void) {return time;};

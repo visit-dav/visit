@@ -3653,6 +3653,11 @@ avtGenericDatabase::CommunicateGhosts(avtDatasetCollection &ds,
 //  Programmer:   Mark C. Miller
 //  Creation:     October 13, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Mon Nov 17 17:45:39 PST 2003
+//    Clean up memory leak.
+//
 // ****************************************************************************
 
 bool
@@ -3674,7 +3679,6 @@ avtGenericDatabase::ApplyGhostForDomainNesting(avtDatasetCollection &ds,
         for (i = 0 ; i < doms.size() ; i++)
         {
             list.push_back(ds.GetDataset(i, 0));
-            list[i]->Register(NULL);
         }
 
         rv = dn->ApplyGhost(doms, allDoms, list);

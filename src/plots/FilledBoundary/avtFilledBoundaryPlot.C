@@ -1,5 +1,5 @@
 // ************************************************************************* //
-//                            avtFilledBoundaryPlot.C                              //
+//                            avtFilledBoundaryPlot.C                        //
 // ************************************************************************* //
 
 #include <avtFilledBoundaryPlot.h>
@@ -700,6 +700,11 @@ avtFilledBoundaryPlot::SetColors()
 //
 //  Note:  taken almost verbatim from the Subset plot
 //
+//  Modifications:
+//
+//    Hank Childs, Mon Nov 17 13:19:34 PST 2003
+//    Release data from smooth filter.
+//
 // ****************************************************************************
  
 void
@@ -726,6 +731,10 @@ avtFilledBoundaryPlot::ReleaseData(void)
     if (sub != NULL)
     {
         sub->ReleaseData();
+    }
+    if (smooth != NULL)
+    {
+        smooth->ReleaseData();
     }
 }
 

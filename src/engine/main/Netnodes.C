@@ -45,6 +45,38 @@ NetnodeDB::NetnodeDB(ref_ptr<avtDatabase> db_in)
     current_time = -1;
 }
 
+
+// ****************************************************************************
+//  Method: NetnodeDB::SetDBInfo
+//
+//  Purpose:
+//      Sets the information about the database.
+//
+//  Notes:      This was previously an inlined function.  Creation date is
+//              for when the function was defined as a non-inlined function.
+//
+//  Programmer: Hank Childs
+//  Creation:   November 18, 2003
+//
+// ****************************************************************************
+
+void
+NetnodeDB::SetDBInfo(std::string _filename, std::string _var, int _time)
+{
+    if ((time != _time) || (filename != _filename) || (var != _var))
+    {
+        if (*output != NULL)
+        {
+            output->ReleaseData();
+        }
+    }
+
+    time = _time;
+    filename = _filename;
+    var = _var;
+}
+
+
 // ****************************************************************************
 //  Method: NetnodeDB::GetOutput
 //

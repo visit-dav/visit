@@ -785,6 +785,11 @@ avtSubsetPlot::SetColors()
 //  Programmer: Hank Childs
 //  Creation:   September 12, 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Mon Nov 17 13:19:34 PST 2003
+//    Release data with smooth filter.
+//
 // ****************************************************************************
  
 void
@@ -811,6 +816,10 @@ avtSubsetPlot::ReleaseData(void)
     if (sub != NULL)
     {
         sub->ReleaseData();
+    }
+    if (smooth != NULL)
+    {
+        smooth->ReleaseData();
     }
 }
 
