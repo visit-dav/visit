@@ -635,6 +635,8 @@ ViewerSubject::InformClientOfPlugins() const
 // Creation:   Tue Jun 17 15:09:28 PST 2003
 //
 // Modifications:
+//   Kathleen Bonnell, Mon Sep 15 13:09:19 PDT 2003
+//   Tell ViewerQueryManager to initialize the query list after plugins load.
 //   
 // ****************************************************************************
 
@@ -652,6 +654,7 @@ ViewerSubject::HeavyInitialization()
         LoadOperatorPlugins();
         InformClientOfPlugins();
 
+        ViewerQueryManager::Instance()->InitializeQueryList();
         //
         // Process the config file settings.
         //

@@ -15,6 +15,7 @@
 #include <vtkCellLocator.h>
 #include <vtkDataSet.h>
 #include <vtkFloatArray.h>
+#include <vtkIntArray.h>
 #include <vtkMath.h>
 #include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
@@ -4046,6 +4047,9 @@ avtGenericDatabase::QueryMaterial(const std::string &varName, const int dom,
 //    Added useNodeCoords && nodeCoords arguments.  Fill in nodeCoords as
 //    needed.
 //
+//    Kathleen Bonnell, Tue Sep 16 13:33:30 PDT 2003 
+//    Use "base_index" if available when creating logical coords. 
+//    
 // ****************************************************************************
 
 bool
@@ -4067,6 +4071,14 @@ avtGenericDatabase::QueryNodes(const std::string &varName, const int dom,
         int ijk[3];
         char buff[80];
         int type = ds->GetDataObjectType();
+        vtkIntArray *bi = (vtkIntArray*)ds->GetFieldData()->GetArray("base_index");
+        int base[3] = {0, 0, 0};
+        if (bi)
+        {
+            base[0] = bi->GetValue(0);
+            base[1] = bi->GetValue(1);
+            base[2] = bi->GetValue(2);
+        }
         for (int i = 0; i < ptIds->GetNumberOfIds(); i++)
         {
             nodes.push_back(ptIds->GetId(i));
@@ -4075,7 +4087,10 @@ avtGenericDatabase::QueryNodes(const std::string &varName, const int dom,
                 if (logical && (type == VTK_RECTILINEAR_GRID ||
                                 type == VTK_STRUCTURED_GRID ))
                 {
-                    vtkVisItUtility::GetLogicalIndices(ds, false,  ptIds->GetId(i), ijk);
+                    vtkVisItUtility::GetLogicalIndices(ds, false, ptIds->GetId(i), ijk);
+                    ijk[0] += base[0];
+                    ijk[1] += base[1];
+                    ijk[2] += base[2];
                     if (dim == 2)
                     {
                         sprintf(buff, "<%d, %d>", ijk[0], ijk[1]);
@@ -4210,6 +4225,10 @@ avtGenericDatabase::QueryMesh(const std::string &varName, const int dom,
 //  Programmer:   Kathleen Bonnell 
 //  Creation:     June 20, 2003 
 //
+//  Modifications:
+//    Kathleen Bonnell, Tue Sep 16 13:33:30 PDT 2003 
+//    Use "base_index" if available when creating logical coords. 
+//    
 // ****************************************************************************
 
 bool
@@ -4228,6 +4247,14 @@ avtGenericDatabase::QueryZones(const string &varName, const int dom,
         vtkIdList *ids = vtkIdList::New();
         vtkIdType *idptr; 
         vtkIdType minId = -1;
+        vtkIntArray *bi = (vtkIntArray*)ds->GetFieldData()->GetArray("base_index"); 
+        int base[3] = {0, 0, 0};
+        if (bi)
+        {
+            base[0] = bi->GetValue(0);
+            base[1] = bi->GetValue(1);
+            base[2] = bi->GetValue(2);
+        }
         if (ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
         {
            // This method is faster for rectilinear grids than other types 
@@ -4271,6 +4298,9 @@ avtGenericDatabase::QueryZones(const string &varName, const int dom,
                      type == VTK_RECTILINEAR_GRID))
                 {
                     vtkVisItUtility::GetLogicalIndices(ds, false, minId, ijk);
+                    ijk[0] += base[0];
+                    ijk[1] += base[1];
+                    ijk[2] += base[2];
                     if (dimension == 2)
                     {
                         sprintf(buff, "<%d, %d>", ijk[0], ijk[1]);

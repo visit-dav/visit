@@ -650,6 +650,10 @@ QvisFilePanel::UpdateTimeFieldText(int timeState)
 //   I changed how we iterate though the items and I moved most of the
 //   code to a new method.
 //
+//   Brad Whitlock, Wed Sep 17 18:18:50 PST 2003
+//   Fixed a small bug with how the cycles are displayed when we have a
+//   virtual file that does not have all of the cycle numbers.
+//
 // ****************************************************************************
 
 void
@@ -699,14 +703,15 @@ QvisFilePanel::ExpandDatabases()
                     for(int j = 0; j < maxts; ++j, ++it)
                     {
                          QString label;
+                         int cycle = (j < md->GetCycles().size()) ? md->GetCycles()[j] : j;
                          if(md->GetIsVirtualDatabase())
                          {
                              QualifiedFilename name(md->GetTimeStepNames()[j]);
                              label.sprintf("%s cycle %04d", name.filename.c_str(),
-                                 md->GetCycles()[j]);
+                                 cycle);
                          }
                          else
-                             label.sprintf("cycle %04d", md->GetCycles()[j]);
+                             label.sprintf("cycle %04d", cycle);
 
                          // Reset the label so that it shows the right values.
                          it.current()->setText(0, label);
@@ -737,7 +742,10 @@ QvisFilePanel::ExpandDatabases()
 // Creation:   Thu May 15 09:46:37 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Sep 17 18:20:07 PST 2003
+//   I corrected an error with how the cycle is displayed for virtual files
+//   that don't know all of the cycles.
+//
 // ****************************************************************************
 
 void
@@ -762,14 +770,15 @@ QvisFilePanel::ExpandDatabaseItem(QvisListViewFileItem *item)
             for(int i = 0; i < md->GetNumStates(); ++i)
             {
                 QString label;
+                int cycle = (i < md->GetCycles().size()) ? md->GetCycles()[i] : i;
                 if(md->GetIsVirtualDatabase())
                 {
                     QualifiedFilename name(md->GetTimeStepNames()[i]);
                     label.sprintf("%s cycle %04d", name.filename.c_str(),
-                        md->GetCycles()[i]);
+                        cycle);
                 }
                 else
-                    label.sprintf("cycle %04d", md->GetCycles()[i]);
+                    label.sprintf("cycle %04d", cycle);
                 QvisListViewFileItem *fi = new QvisListViewFileItem(
                     item, label, fileServer->GetOpenFile(),
                     QvisListViewFileItem::FILE_NODE, i);

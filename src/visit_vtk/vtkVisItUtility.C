@@ -129,6 +129,9 @@ vtkVisItUtility::GetPoints(vtkDataSet *inDS)
 //    Kathleen Bonnell, Wed Jun 25 13:27:59 PDT 2003 
 //    Fixed logic for determining 'base' for points. 
 //
+//    Kathleen Bonnell, Tue Sep 16 13:33:30 PDT 2003 
+//    Once again, redo logic for determining indices for a node. 
+//
 // ****************************************************************************
 
 void
@@ -153,30 +156,24 @@ vtkVisItUtility::GetLogicalIndices(vtkDataSet *ds, const bool forCell, const int
     }
 
     vtkIntArray *realDims = (vtkIntArray*)ds->GetFieldData()->GetArray("avtRealDims");
+    if (realDims)
+    {
+        base[0] = realDims->GetValue(0);
+        base[1] = realDims->GetValue(2);
+        base[2] = realDims->GetValue(4);
+    }
 
     if (forCell)
     {
         dimX = (dims[0]-1 > 0 ? dims[0]-1 : 1);
         dimY = (dims[1]-1 > 0 ? dims[1]-1 : 1);
-        if (realDims)
-        {
-            base[0] = realDims->GetValue(0);
-            base[1] = realDims->GetValue(2);
-            base[2] = realDims->GetValue(4);
-        }
     }
     else
     {
         dimX = (dims[0] == 0 ? 1 : dims[0]);
         dimY = (dims[1] == 0 ? 1 : dims[1]);
-        if (realDims) 
-        {
-            int *rd = realDims->GetPointer(0); 
-            base[0] = (rd[0] != 0 ? rd[0]-1 : rd[0]);
-            base[1] = (rd[2] != 0 ? rd[2]-1 : rd[2]);
-            base[2] = (rd[4] != 0 ? rd[4]-1 : rd[4]);
-        }
     }
+
     ijk[0] = (ID % dimX)          - base[0];
     ijk[1] = ((ID / dimX) % dimY) - base[1];
     ijk[2] = (ID / (dimX * dimY)) - base[2];
@@ -240,7 +237,7 @@ vtkVisItUtility::CalculateRealID(const int cellId, const bool forCell, vtkDataSe
             int c = IJK[0] +
                     IJK[1] * nElsI +  
                     IJK[2] * nElsI * nElsJ;
-             retVal = c;
+            retVal = c;
         }
     }
     return retVal;

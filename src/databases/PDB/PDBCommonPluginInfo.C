@@ -1,7 +1,7 @@
 #include <PDBPluginInfo.h>
-#include <avtPDBFileFormat.h>
-#include <avtMTSDFileFormatInterface.h>
+#include <avtFileFormatInterface.h>
 #include <avtGenericDatabase.h>
+#include <avtPDBFileFormat.h>
 #include <VisItException.h>
 
 // ****************************************************************************
@@ -63,59 +63,39 @@ PDBCommonPluginInfo::GetDefaultExtensions()
 //    avtPDBFileFormat's constructor can throw an exception if we're not
 //    opening a supported flavor of PDB.
 //
+//    Brad Whitlock, Tue Sep 16 11:42:56 PDT 2003
+//    I rewrote this method so the plugin can have internal file formats
+//    that have varying file format interfaces.
+//
 // ****************************************************************************
 
 avtDatabase *
 PDBCommonPluginInfo::SetupDatabase(const char *const *list,
-                                   int nList, int)
+                                   int nList, int nBlock)
 {
-    int i;
     avtDatabase *db = 0;
-    avtMTSDFileFormat **ffl = 0;
-    avtMTSDFileFormatInterface *inter = 0;
 
-    // Try and create the file format readers.
-    TRY
-    {
-        ffl = new avtMTSDFileFormat*[nList];
-        for(i = 0; i < nList; ++i)
-            ffl[i] = 0;
+    //
+    // Create a file format interface based on information in the files.
+    //
+    avtFileFormatInterface *inter = CreateFileFormatInterface(list, nList, nBlock);
 
-        for(i = 0; i < nList; ++i)
-            ffl[i] = new avtPDBFileFormat(list + i, 1, i == 0);
-    }
-    CATCH(VisItException)
+    // If we created a file format interface, try creating a database.
+    if(inter)
     {
-        for(i = 0; i < nList; ++i)
-            delete ffl[i];
-        delete [] ffl;
-        RETHROW;
+        // Try and create the database using the interface that was created.
+        TRY
+        {
+            db = new avtGenericDatabase(inter);
+        }
+        CATCH(VisItException)
+        {
+            delete inter;
+            delete db;
+            RETHROW;
+        }
+        ENDTRY
     }
-    ENDTRY
-
-    // Try and create the file format interface.
-    TRY
-    {
-        inter = new avtMTSDFileFormatInterface(ffl, nList);
-    }
-    CATCH(VisItException)
-    {
-        delete inter;
-        RETHROW;
-    }
-    ENDTRY
-
-    // Try and create the database
-    TRY
-    {
-        db = new avtGenericDatabase(inter);
-    }
-    CATCH(VisItException)
-    {
-        delete db;
-        RETHROW;
-    }
-    ENDTRY
 
     return db;
 }

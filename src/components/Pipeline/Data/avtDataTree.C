@@ -1311,12 +1311,23 @@ avtDataTree::GetAllLabels(vector<string> &labels)
 //  Programmer: Kathleen Bonnell 
 //  Creation:   November 1, 2001 
 //
+//  Modifications:
+//    Kathleen Bonnell, Tue Sep 16 13:21:42 PDT 2003
+//    Not all 'empty' trees have been created from the default 'empty' 
+//    constructor, some have been passed an empty 'child' tree.  Account
+//    for that in this test.
+//
 // ****************************************************************************
 
 bool
 avtDataTree::IsEmpty()
 {
-    return (nChildren == 1 && *children[0] == NULL);
+    bool empty = (nChildren == 1 && *children[0] == NULL);
+    if (!empty && nChildren == 1)
+    {
+        empty = children[0]->IsEmpty();
+    }
+    return empty;
 }
 
 

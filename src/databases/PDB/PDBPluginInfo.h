@@ -8,6 +8,7 @@
 #include <database_plugin_exports.h>
 
 class avtDatabase;
+class avtFileFormatInterface;
 
 // ****************************************************************************
 //  Class: PDBDatabasePluginInfo
@@ -21,7 +22,7 @@ class avtDatabase;
 //  Creation:   Tue Apr 29 14:06:11 PST 2003
 //
 //  Modifications:
-//
+// 
 // ****************************************************************************
 
 class PDBGeneralPluginInfo : public virtual GeneralDatabasePluginInfo

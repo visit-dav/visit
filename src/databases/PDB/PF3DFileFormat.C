@@ -1,38 +1,130 @@
-#include <PF3DReader.h>
-#include <math.h>
-
+#include <PF3DFileFormat.h>
+#include <InvalidVariableException.h>
+#include <DebugStream.h>
+#include <avtSTSDFileFormatInterface.h>
 #include <avtDatabaseMetaData.h>
-#include <avtTypes.h>
 
-#include <vtkDataSet.h>
-#include <vtkDataArray.h>
 #include <vtkFloatArray.h>
+#include <vtkIdList.h>
 #include <vtkIntArray.h>
 #include <vtkRectilinearGrid.h>
+#include <vtkUnsignedCharArray.h>
 
-#include <DebugStream.h>
-
-#include <InvalidVariableException.h>
 
 // ****************************************************************************
-// Method: PF3DReader::PF3DReader
+// Method: PF3DFileFormat::CreateInterface
 //
 // Purpose: 
-//   Constructor for the PF3DReader class.
+//   Creates file format objects for all of the files and returns a file format
+//   interface that works for the PF3D file format.
 //
 // Arguments:
-//   p : The PDBFile object pointer.
+//   pdb : A pointer to a PDBFileFormatObject, which has opened the first file
+//         in the filenames list.
+//   filenames : The list of filenames.
+//   nList     : The number of filenames.
+//   nBlock    : The number of filenames that make up a single time step.
+//
+// Returns:    A file format interface.
+//
+// Note:       
 //
 // Programmer: Brad Whitlock
-// Creation:   Thu Oct 10 08:28:54 PDT 2002
+// Creation:   Tue Sep 16 11:35:20 PDT 2003
 //
 // Modifications:
-//   Brad Whitlock, Thu Aug 7 16:55:27 PST 2003
-//   I added the variable cache pointer.
-//
+//   
 // ****************************************************************************
 
-PF3DReader::PF3DReader(PDBfile *p, avtVariableCache *c) : PDBReader(p,c)
+avtFileFormatInterface *
+PF3DFileFormat::CreateInterface(PDBFileObject *pdb, const char *const *filenames,
+    int nList, int nBlock)
+{
+    avtFileFormatInterface *inter = 0;
+
+    // Create a PF3D file that uses the pdb file but does not own it.
+    PF3DFileFormat *ff = new PF3DFileFormat(pdb);
+
+    // If the file format is a PF3D file then
+    if(ff->Identify())
+    {
+        //
+        // Create an array of STMD file formats since that's what the PF3D
+        // file format is.
+        //
+        int i, j;
+        avtSTSDFileFormat ***ffl = new avtSTSDFileFormat**[nList];
+        for (i = 0 ; i < nList ; i++)
+            ffl[i] = 0;
+        int nTimestep = nList / nBlock;
+        TRY
+        {
+            for (i = 0 ; i < nTimestep ; i++)
+            {
+                ffl[i] = new avtSTSDFileFormat*[nBlock];
+                for (j = 0 ; j < nBlock ; j++)
+                    ffl[i][j] = 0;
+                for (j = 0 ; j < nBlock ; j++)
+                {
+                    if(i == 0 && j == 0)
+                        ffl[i][j] = ff;
+                    else
+                        ffl[i][j] = new PF3DFileFormat(filenames[i*nBlock + j]);
+                }
+            }
+
+            //
+            // Try to create a file format interface compatible with the PF3D
+            // file format.
+            //
+            inter = new avtSTSDFileFormatInterface(ffl, nTimestep, nBlock);
+        }
+        CATCH(VisItException)
+        {
+            for (i = 0 ; i < nTimestep ; i++)
+            {
+                if(ffl[i])
+                {
+                    for (j = 0 ; j < nBlock ; j++)
+                         delete ffl[i][j];
+                    delete [] ffl[i];
+                }
+            }
+            delete [] ffl;
+            RETHROW;
+        }
+        ENDTRY
+
+        //
+        // Since at this point, we successfully created a file format interface, we
+        // can let the first file format keep the PDB file object.
+        //
+        ff->SetOwnsPDBFile(true);
+    }
+    else
+        delete ff;
+
+    return inter;
+}
+
+// ****************************************************************************
+// Method: PF3DFileFormat::PF3DFileFormat
+//
+// Purpose: 
+//   Constructor for the PF3DFileFormat class.
+//
+// Arguments:
+//   filename : The name of the file to open.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Sep 16 11:38:00 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+PF3DFileFormat::PF3DFileFormat(const char *filename) : PDBReader(filename),
+    avtSTSDFileFormat(filename)
 {
     dx = dy = dz = 0.;
     lx = ly = lz = 0.;
@@ -47,24 +139,55 @@ PF3DReader::PF3DReader(PDBfile *p, avtVariableCache *c) : PDBReader(p,c)
 }
 
 // ****************************************************************************
-// Method: PF3DReader::~PF3DReader
+// Method: PF3DFileFormat::PF3DFileFormat
 //
 // Purpose: 
-//   Destructor for the PF3DReader class.
+//   Constructor for the PF3DFileFormat class.
+//
+// Arguments:
+//   p : The open PDBFileObject that this object will use.
 //
 // Programmer: Brad Whitlock
-// Creation:   Thu Oct 10 08:29:21 PDT 2002
+// Creation:   Tue Sep 16 11:38:00 PDT 2003
 //
 // Modifications:
 //   
 // ****************************************************************************
 
-PF3DReader::~PF3DReader()
+PF3DFileFormat::PF3DFileFormat(PDBFileObject *p) : PDBReader(p),
+    avtSTSDFileFormat(p->GetName().c_str())
+{
+    dx = dy = dz = 0.;
+    lx = ly = lz = 0.;
+    nx = ny = nz = 0;
+    nxg0 = nyg0 = nzg0 = 0;
+    nxg1 = nyg1 = nzg1 = 0;
+    ipol = 0;
+    cycle = 0;
+    dtime = 0.;
+    domain = 0;
+    nDomains = 1;
+}
+
+// ****************************************************************************
+// Method: PF3DFileFormat::~PF3DFileFormat
+//
+// Purpose: 
+//   Destructor for the PF3DFileFormat class.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Sep 16 11:39:47 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+PF3DFileFormat::~PF3DFileFormat()
 {
 }
 
 // ****************************************************************************
-// Method: PF3DReader::Identify
+// Method: PF3DFileFormat::IdentifyFormat
 //
 // Purpose: 
 //   Tests the file to see if it is really PF3D.
@@ -79,39 +202,39 @@ PF3DReader::~PF3DReader()
 // ****************************************************************************
 
 bool
-PF3DReader::Identify()
+PF3DFileFormat::IdentifyFormat()
 {
     //
     // Look for a few items that tell us that the file came from pF3d.
     //
     bool validFile = true;
-    validFile &= SymbolExists("PF3D_VERSION_MAJOR");
-    validFile &= SymbolExists("PF3D_VERSION_MINOR");
+    validFile &= pdb->SymbolExists("PF3D_VERSION_MAJOR");
+    validFile &= pdb->SymbolExists("PF3D_VERSION_MINOR");
 
     //
     // Try and read in some necessary values.
     //
     if(validFile)
     {
-        validFile &= GetDouble("lx", &lx);
-        validFile &= GetDouble("ly", &ly);
-        validFile &= GetDouble("lz", &lz);
-        validFile &= GetDouble("dx", &dx);
-        validFile &= GetDouble("dy", &dy);
-        validFile &= GetDouble("dz", &dz);
-        validFile &= GetInteger("nx", &nx);
-        validFile &= GetInteger("ny", &ny);
-        validFile &= GetInteger("nz", &nz);
-        validFile &= GetInteger("nxl", &nxl);
-        validFile &= GetInteger("nyl", &nyl);
-        validFile &= GetInteger("nzl", &nzl);
+        validFile &= pdb->GetDouble("lx", &lx);
+        validFile &= pdb->GetDouble("ly", &ly);
+        validFile &= pdb->GetDouble("lz", &lz);
+        validFile &= pdb->GetDouble("dx", &dx);
+        validFile &= pdb->GetDouble("dy", &dy);
+        validFile &= pdb->GetDouble("dz", &dz);
+        validFile &= pdb->GetInteger("nx", &nx);
+        validFile &= pdb->GetInteger("ny", &ny);
+        validFile &= pdb->GetInteger("nz", &nz);
+        validFile &= pdb->GetInteger("nxl", &nxl);
+        validFile &= pdb->GetInteger("nyl", &nyl);
+        validFile &= pdb->GetInteger("nzl", &nzl);
 
-        validFile &= GetInteger("nxg0", &nxg0);
-        validFile &= GetInteger("nyg0", &nyg0);
-        validFile &= GetInteger("nzg0", &nzg0);
-        validFile &= GetInteger("nxg1", &nxg1);
-        validFile &= GetInteger("nyg1", &nyg1);
-        validFile &= GetInteger("nzg1", &nzg1);
+        validFile &= pdb->GetInteger("nxg0", &nxg0);
+        validFile &= pdb->GetInteger("nyg0", &nyg0);
+        validFile &= pdb->GetInteger("nzg0", &nzg0);
+        validFile &= pdb->GetInteger("nxg1", &nxg1);
+        validFile &= pdb->GetInteger("nyg1", &nyg1);
+        validFile &= pdb->GetInteger("nzg1", &nzg1);
 
         debug4 << "nx=" << nx << ", ny=" << ny << ", nz=" << nz << endl;
         debug4 << "nxg0=" << nxg0 << ", nyg0=" << nyg0 << ", nzg0=" << nzg0 << endl;
@@ -123,72 +246,54 @@ PF3DReader::Identify()
         //
         // Read in other values that are nice but we can live without.
         //
-        //GetInteger("cycle", &cycle);
-        //GetDouble("dtime", &dtime);
-        GetInteger("ipol", &ipol);
-        GetInteger("mp_rank", &domain);
-        GetInteger("mp_size", &nDomains);
-
-        //
-        // This is a temporary hack for determining the offset to the
-        // rho array.
-        //
-        ComputeKludgeOffset();
+        pdb->GetInteger("ipol", &ipol);
+        pdb->GetInteger("mp_rank", &domain);
+        pdb->GetInteger("mp_size", &nDomains);
     }
 
     return validFile;
 }
 
+// ****************************************************************************
+// Method: PF3DFileFormat::GetCycle
 //
-// This method should go away when we can successfully PD_read their files.
+// Purpose: 
+//   Returns the cycle number for the file.
 //
+// Returns:    The cycle number.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Sep 17 09:24:01 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
 
-void
-PF3DReader::ComputeKludgeOffset()
+int
+PF3DFileFormat::GetCycle()
 {
-//    kludgeOffset = 27; // Looks okay? for s2 database.
-//    kludgeOffset = 10; // Looks perfect for 5901 database.
- 
-    kludgeOffset = 0;
-#if 1
-    defstr *dp = PD_inquire_host_type(pdb, (char *)"mesh");
-    if(dp != NULL)
-    {
-         memdes *member = dp->members;
-         while(member != NULL)
-         {
-             ++kludgeOffset;
-             member = member->next;
-         }
-    }
-#endif
-    debug4 << "KLUDGEOFFSET = " << kludgeOffset << endl;
+    return cycle;
 }
 
 // ****************************************************************************
-// Method: PF3DReader::GetTimeVaryingInformation
+// Method: PF3DFileFormat::GetType
 //
 // Purpose: 
-//   Reads time varying information when the file is opened.
+//   Return the name of the file format.
 //
-// Arguments:
-//   timestep : The timestep.
-//   md       : The metadata that we're going to populate.
+// Returns:    The name of the file format.
 //
 // Programmer: Brad Whitlock
-// Creation:   Thu Oct 10 08:49:27 PDT 2002
+// Creation:   Tue Sep 16 14:59:44 PST 2003
 //
 // Modifications:
-//   Brad Whitlock, Tue Apr 29 13:46:31 PST 2003
-//   I added the timeState argument.
-//
+//   
 // ****************************************************************************
 
-void
-PF3DReader::GetTimeVaryingInformation(int timeState, avtDatabaseMetaData *md)
+const char *
+PF3DFileFormat::GetType()
 {
-    md->SetCycle(timeState, cycle);
-    md->SetTime(timeState, dtime);
+    return "PF3D File Format";
 }
 
 // ****************************************************************************
@@ -207,13 +312,15 @@ PF3DReader::GetTimeVaryingInformation(int timeState, avtDatabaseMetaData *md)
 //   Brad Whitlock, Tue Apr 29 13:47:52 PST 2003
 //   I added the timestate argument.
 //
+//   Brad Whitlock, Tue Sep 16 15:10:08 PST 2003
+//   Refactored into the PF3DFileFormat class.
+//
 // ****************************************************************************
 
 void
-PF3DReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
+PF3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 {
     avtMeshType mt = AVT_RECTILINEAR_MESH;
-    syment *ep = NULL;
     int   ndims = 3;
     int   cellOrigin = 1;
     int   dims[3], first[3], last[3];
@@ -223,12 +330,18 @@ PF3DReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     //
     // Check for the hydro mesh (fluid).
     //
-    if((ep = PD_inquire_entry(pdb, "fluid", 0, NULL)) != NULL)
+    TypeEnum    t = NO_TYPE;
+    std::string typeString;
+    int nTotalElements = 0;
+    int *dimensions = 0;
+    int nDims = 0;
+
+    if(pdb->SymbolExists("fluid", &t, typeString, &nTotalElements, &dimensions, &nDims))
     {
         debug4 << "PF3DFile::PopulateDatabaseMetaData: var=fluid"
-               << ", type=" << PD_entry_type(ep) << endl;
+               << ", type=" << typeString.c_str() << endl;
 
-        if(strcmp(PD_entry_type(ep), "mesh") == 0)
+        if(t == OBJECT_TYPE && typeString == "mesh")
         {
             // Add the hydro mesh to the metadata.
             GetMeshInfo("fluid", extents, dims, ghostPresent, first, last);
@@ -255,6 +368,7 @@ PF3DReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             md->Add(v);
 #endif
         }
+        delete [] dimensions;
     }
     else
         debug4 << "PF3DFile::PopulateDatabaseMetaData: Cannot query fluid!" << endl;
@@ -262,14 +376,14 @@ PF3DReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     //
     // Check for the light mesh (light).
     //
-    if((ep = PD_inquire_entry(pdb, "light", 0, NULL)) != NULL)
+    if(pdb->SymbolExists("light", &t, typeString, &nTotalElements, &dimensions, &nDims))
     {
         int i;
         char tn[10];
         debug4 << "PF3DFile::PopulateDatabaseMetaData: var=light"
-               << ", type=" << PD_entry_type(ep) << endl;
+               << ", type=" << typeString.c_str() << endl;
 
-        if(strcmp(PD_entry_type(ep), "light_mesh") == 0)
+        if(t == OBJECT_TYPE && typeString == "light_mesh")
         {
             // Add the light mesh to the metadata.
             GetMeshInfo("light", extents, dims, ghostPresent, first, last);
@@ -300,33 +414,15 @@ PF3DReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             }
 #endif
         }
+
+        delete [] dimensions;
     }
     else
         debug4 << "PF3DFile::PopulateDatabaseMetaData: Cannot query light!" << endl;
 }
 
 // ****************************************************************************
-// Method: PF3DReader::GetCycles
-//
-// Purpose: 
-//   Returns the list of cycles.
-//
-// Programmer: Brad Whitlock
-// Creation:   Tue Apr 29 13:43:31 PST 2003
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-PF3DReader::GetCycles(std::vector<int> &cycles)
-{
-    cycles.clear();
-    cycles.push_back(cycle);
-}
-
-// ****************************************************************************
-// Method: PF3DReader::GetMesh
+// Method: PF3DFileFormat::GetMesh
 //
 // Purpose: 
 //   Gets the named mesh and returns it as a vtkDataSet.
@@ -344,7 +440,7 @@ PF3DReader::GetCycles(std::vector<int> &cycles)
 // ****************************************************************************
 
 vtkDataSet *
-PF3DReader::GetMesh(int, const char *meshName)
+PF3DFileFormat::GetMesh(const char *meshName)
 {
     int   dims[3], first[3], last[3];
     float extents[6];
@@ -470,7 +566,7 @@ PF3DReader::GetMesh(int, const char *meshName)
 }
 
 // ****************************************************************************
-// Method: PF3DReader::GetMeshInfo
+// Method: PF3DFileFormat::GetMeshInfo
 //
 // Purpose: 
 //   Gets information about the mesh when given a mesh name.
@@ -489,7 +585,7 @@ PF3DReader::GetMesh(int, const char *meshName)
 // ****************************************************************************
 
 void
-PF3DReader::GetMeshInfo(const char *meshName, float extents[6],
+PF3DFileFormat::GetMeshInfo(const char *meshName, float extents[6],
     int nodeDims[3], bool &ghostPresent, int first[3], int last[3])
 {
     bool edge[6];
@@ -595,7 +691,7 @@ PF3DReader::GetMeshInfo(const char *meshName, float extents[6],
 }
 
 // ****************************************************************************
-// Method: PF3DReader::GetVar
+// Method: PF3DFileFormat::GetVar
 //
 // Purpose: 
 //   Returns the named scalar variable.
@@ -615,11 +711,14 @@ PF3DReader::GetMeshInfo(const char *meshName, float extents[6],
 // ****************************************************************************
 
 vtkDataArray *
-PF3DReader::GetVar(int state, const char *varName)
+PF3DFileFormat::GetVar(const char *varName)
 {
     char *fileVar = NULL;
     char *meshName = "fluid";
     vtkFloatArray *retval = NULL;
+#if 0
+// THIS NEEDS TO BE PORTED SO IT USES THE NEW CLASS HIERARCHY.
+
 
     //
     // Determine the file variable and the mesh.
@@ -754,7 +853,7 @@ PF3DReader::GetVar(int state, const char *varName)
                 }
                 else
                 {
-                    debug4 << "PF3DReader could NOT read " << fileVar
+                    debug4 << "PF3DFileFormat could NOT read " << fileVar
                            << ". " << PD_err << endl;
                     scalars->Delete();
                     scalars = NULL;
@@ -765,7 +864,7 @@ PF3DReader::GetVar(int state, const char *varName)
             }
             else
             {
-                debug4 << "PF3DReader could not allocate " << nCells
+                debug4 << "PF3DFileFormat could not allocate " << nCells
                        << " floats!" << endl;
                 scalars->Delete();
                 scalars = NULL;
@@ -813,7 +912,7 @@ PF3DReader::GetVar(int state, const char *varName)
                 }
                 else
                 {
-                    debug4 << "PF3DReader could NOT read " << fileVar
+                    debug4 << "PF3DFileFormat could NOT read " << fileVar
                            << ". " << PD_err << endl;
                     scalars->Delete();
                     scalars = NULL;
@@ -824,120 +923,13 @@ PF3DReader::GetVar(int state, const char *varName)
             }
             else
             {
-                debug4 << "PF3DReader could not allocate " << nNodes*2
+                debug4 << "PF3DFileFormat could not allocate " << nNodes*2
                        << " floats!" << endl;
                 scalars->Delete();
                 scalars = NULL;
             }
         }
     }
-
-    return retval;
-}
-
-// ****************************************************************************
-// Method: PF3DReader::GetVectorVar
-//
-// Purpose: 
-//   Returns the named vector variable.
-//
-// Arguments:
-//   varName : The variable name.
-//
-// Returns:    A vtkDataArray containing the variable's data.
-//
-// Note:       THIS HAS NEVER BEEN USED!
-//
-// Programmer: Brad Whitlock
-// Creation:   Thu Oct 10 08:53:09 PDT 2002
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-vtkDataArray *
-PF3DReader::GetVectorVar(int state, const char *varName)
-{
-    char *fileVar = NULL;
-    char *meshName = "fluid";
-    vtkFloatArray *retval = NULL;
-
-    //
-    // Determine the file variable and the mesh.
-    //
-    if(strcmp(varName, "s") == 0)
-        fileVar = "fluid.s";
-    else if(strcmp(varName, "v") == 0)
-        fileVar = "fluid.v";
-
-    if(fileVar == NULL)
-    {
-        EXCEPTION1(InvalidVariableException, varName);
-    }
-    else
-    {
-        float extents[6];
-        int   nodeDims[3], first[3], last[3];
-        bool  ghostPresent;
-        GetMeshInfo(meshName, extents, nodeDims, ghostPresent, first, last);
-
-        debug4 << "PF3DReader asked for vector variable: " << fileVar << endl;
-        debug4 << "PF3DReader::GetVectorVar: 0: nodeDims={"
-               << nodeDims[0] << ", "
-               << nodeDims[1] << ", "
-               << nodeDims[2] << "}" << endl;
-
-        // The variables are nodal so figure out the number of nodes and
-        // the number of bytes that we'll need.
-        int nNodes = nodeDims[0]*nodeDims[1]*nodeDims[2];
-        vtkFloatArray *vectors = vtkFloatArray::New();
-
-        vectors->SetNumberOfTuples(nNodes);
-        vectors->SetNumberOfComponents(3);
-        float *data = new float[nNodes*3];
-        if(data != NULL)
-        {
-            // Create a definition for pointer that allows the PDB
-            // library to convert the data from the file.
-            char pointer_def[100];
-            sprintf(pointer_def, "float var[%d]", nNodes*3);
-            PD_defstr(pdb, "pointer", pointer_def, LAST);
-
-            // Try to read the data from the PDB file.
-            if(PD_read(pdb, fileVar, data) == TRUE)
-            {
-                float *data2 = data;
-                for(int i = 0; i < nNodes; ++i)
-                {
-                    float a = *data2++;
-                    float b = *data2++;
-                    float c = *data2++;
-                    vectors->SetTuple3(i, a, b, c);
-                }
-                // Delete the data array.
-                delete [] data;
-                // Set the return value.
-                retval = vectors;
-            }
-            else
-            {
-                debug4 << "PF3DReader could NOT read " << fileVar
-                       << ". " << PD_err << endl;
-                vectors->Delete();
-                vectors = NULL;
-                delete [] data;
-
-                EXCEPTION1(InvalidVariableException, varName);
-            }
-        }
-        else
-        {
-            debug4 << "PF3DReader could not allocate " << nNodes*3
-                   << " floats!" << endl;
-            vectors->Delete();
-            vectors = NULL;
-        }
-    }
-
+#endif
     return retval;
 }

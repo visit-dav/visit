@@ -135,11 +135,21 @@ avtLabeledCurveMapper::SetUpFilters(int nInputs)
 //  Programmer: Kathleen Bonnell
 //  Creation:   July 12, 2002
 //
+//  Modifications:
+//    Kathleen Bonnell, Mon Sep 15 13:33:52 PDT 2003
+//    Don't assume input contains cells and/or points.
+//
 // ****************************************************************************
 
 void
 avtLabeledCurveMapper::SetDatasetInput(vtkDataSet *ds, int inNum)
 {
+    if (ds == NULL || ds->GetNumberOfPoints() == 0 ||
+        ds->GetNumberOfCells() == 0)
+    {
+        return;
+    }
+
     if (inNum < 0 || inNum >= nFilters)
     {
         EXCEPTION2(BadIndexException, inNum, nFilters);
