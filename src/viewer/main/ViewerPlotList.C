@@ -1631,6 +1631,7 @@ ViewerPlotList::TransmutePlots(int frame, bool turningOffScalableRendering)
     for (i = 0; i < nPlots; i++)
     {
         if (plots[i].realized &&
+           !plots[i].hidden &&
             plots[i].plot->IsInFrameRange(frame) &&
            !plots[i].plot->GetErrorFlag())
         {
