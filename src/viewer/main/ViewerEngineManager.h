@@ -123,6 +123,9 @@ typedef struct
 //    Removed 'numRestarts' data member. Made numRestarts argument to
 //    CreateEngine default to -1 (e.g. unknown)
 //
+//    Brad Whitlock, Thu Feb 26 13:00:16 PST 2004
+//    I added ClearCacheForMultipleEngines.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerEngineManager : public ViewerServerManager,
@@ -162,6 +165,7 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
                                               intVector ids);
     void GetImage(int index, avtDataObject_p &);
     void UpdatePlotAttributes(const std::string &,int index,AttributeSubject*);
+    void ClearCacheForAllEngines();
 
     static EngineList *GetEngineList();
 

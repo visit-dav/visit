@@ -9,6 +9,7 @@ class QComboBox;
 class QLineEdit;
 class QSpinBox;
 class QButtonGroup;
+class SILRestrictionAttributes;
 
 // ****************************************************************************
 // Class: QvisOnionPeelWindow
@@ -17,11 +18,13 @@ class QButtonGroup;
 //   Defines QvisOnionPeelWindow class.
 //
 // Notes:      This class was automatically generated!
-
+//
 // Programmer: xml2window
 // Creation:   Thu Aug 8 14:29:46 PST 2002
 //
 // Modifications:
+//   Kathleen Bonnell, Thu Feb 26 13:19:40 PST 2004
+//   Added silUseSet and silAtts.
 //   
 // ****************************************************************************
 
@@ -58,10 +61,12 @@ class QvisOnionPeelWindow : public QvisOperatorWindow
     QSpinBox *requestedLayer;
 
     OnionPeelAttributes *atts;
+    SILRestrictionAttributes *silAtts;
     QString defaultItem;
     int silTopSet;
     int silNumSets;
     int silNumCollections;
+    unsignedCharVector silUseSet;
 };
 
 

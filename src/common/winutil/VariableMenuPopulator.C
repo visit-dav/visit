@@ -24,11 +24,15 @@ using std::map;
 //   Brad Whitlock, Tue Sep 2 09:56:54 PDT 2003
 //   I added materialVars.
 //
+//   Brad Whitlock, Tue Feb 24 15:50:54 PST 2004
+//   I added cachedDBName and cachedExpressionList.
+//
 // ****************************************************************************
 
-VariableMenuPopulator::VariableMenuPopulator() : meshVars(), scalarVars(),
-    materialVars(), vectorVars(), subsetVars(), speciesVars(), curveVars(),
-    tensorVars(), symmTensorVars()
+VariableMenuPopulator::VariableMenuPopulator() :
+    cachedDBName(), cachedExpressionList(),
+    meshVars(), scalarVars(), materialVars(), vectorVars(), subsetVars(),
+    speciesVars(), curveVars(), tensorVars(), symmTensorVars()
 {
 }
 
@@ -47,6 +51,26 @@ VariableMenuPopulator::VariableMenuPopulator() : meshVars(), scalarVars(),
 
 VariableMenuPopulator::~VariableMenuPopulator()
 {
+}
+
+// ****************************************************************************
+// Method: VariableMenuPopulator::ClearDatabaseName
+//
+// Purpose: 
+//   Clears out the database name that is used to determine whether the
+//   list of variables needs to be regenerated.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Feb 26 08:43:58 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+VariableMenuPopulator::ClearDatabaseName()
+{
+    cachedDBName = "";
 }
 
 // ****************************************************************************
@@ -94,14 +118,37 @@ VariableMenuPopulator::~VariableMenuPopulator()
 //   how expressions are added to the list so that expressions from the
 //   expression list and expressions from metadata are added separately.
 //
+//   Brad Whitlock, Tue Feb 24 15:49:58 PST 2004
+//   I added code to check the name of the database that we're using against
+//   the name of the database that we've used before.
+//
 // ****************************************************************************
 
-void
-VariableMenuPopulator::PopulateVariableLists(const avtDatabaseMetaData *md,
-    const avtSIL *sil, const ExpressionList *exprList)
+bool
+VariableMenuPopulator::PopulateVariableLists(const std::string &dbName,
+    const avtDatabaseMetaData *md, const avtSIL *sil,
+    const ExpressionList *exprList)
 {
     if(md == 0 || sil == 0 || exprList == 0)
-        return;
+        return false;
+
+    //
+    // If the database name is the same and the expression list is the
+    // same then return false, indicating that no updates are required.
+    //
+    bool expressionsSame = *exprList == cachedExpressionList;
+    bool variableMetaData = md->GetMustRepopulateOnStateChange();
+    if(dbName == cachedDBName && expressionsSame && !variableMetaData)
+        return false;
+
+    //
+    // Save the database name and the expression list so we can check them
+    // again later so we can get out of this routine early if they are the
+    // same.
+    //
+    cachedDBName = dbName;
+    if(!expressionsSame)
+        cachedExpressionList = *exprList;
 
     // Clear out the variable maps.
     meshVars.clear();
@@ -238,6 +285,8 @@ VariableMenuPopulator::PopulateVariableLists(const avtDatabaseMetaData *md,
         if(!expr.GetHidden())
             AddExpression(expr);
     }
+
+    return true;
 }
 
 // ****************************************************************************

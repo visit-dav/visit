@@ -292,6 +292,9 @@ struct avtDefaultPlotMetaData;
 //    I added the processingFromParent member. I also changed some methods
 //    that deal with processing input to be public slots.
 //
+//    Brad Whitlock, Thu Feb 26 13:32:43 PST 2004
+//    Added ClearCacheForAllEngines.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerSubject : public QObject
@@ -374,6 +377,7 @@ private:
     void InterruptComputeEngine();
     void OpenMDServer();
     void ClearCache();
+    void ClearCacheForAllEngines();
 
     void SetDefaultPlotOptions();
     void ResetPlotOptions();

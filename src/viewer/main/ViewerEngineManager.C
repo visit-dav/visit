@@ -1743,6 +1743,26 @@ ViewerEngineManager::ClearCache(const char *hostName_, const char *dbName)
 }
 
 // ****************************************************************************
+// Method: ViewerEngineManager::ClearCacheForAllEngines
+//
+// Purpose: 
+//   Tells all engines to clear their caches.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Feb 26 13:03:46 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerEngineManager::ClearCacheForAllEngines()
+{
+    for(int i = 0; i < nEngines; ++i)
+        ClearCache(engines[i]->hostName);
+}
+
+// ****************************************************************************
 // Method: ViewerEngineManager::GetEngineList
 //
 // Purpose: 

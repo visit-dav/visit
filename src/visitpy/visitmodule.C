@@ -2562,6 +2562,36 @@ visit_ClearCache(PyObject *self, PyObject *args)
 }
 
 // ****************************************************************************
+// Function: visit_ClearCacheForAllEngines
+//
+// Purpose:
+//   Tells the viewer to clear the cache for all compute engines.
+//
+// Notes:      
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Feb 26 13:39:52 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_ClearCacheForAllEngines(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    MUTEX_LOCK();
+        viewer->ClearCacheForAllEngines();
+        if(logging)
+            fprintf(logFile, "ClearCacheForAllEngines()\n");
+    MUTEX_UNLOCK();
+
+    // Return the success value.
+    return IntReturnValue(Synchronize());
+}
+
+// ****************************************************************************
 // Function: visit_ClearPickPoints
 //
 // Purpose:
@@ -7945,6 +7975,9 @@ AddMethod(const char *methodName, PyObject *(cb)(PyObject *, PyObject *),
 //   Brad Whitlock, Tue Dec 30 10:58:07 PDT 2003
 //   Added SetCenterOfRotation and ChooseCenterOfRotation.
 //
+//   Brad Whitlock, Thu Feb 26 13:40:40 PST 2004
+//   Added ClearCacheForAllEngines.
+//
 // ****************************************************************************
 
 static void
@@ -7981,6 +8014,7 @@ AddDefaultMethods()
     AddMethod("ChooseCenterOfRotation",  visit_ChooseCenterOfRotation);
     AddMethod("ClearAllWindows", visit_ClearAllWindows);
     AddMethod("ClearCache", visit_ClearCache);
+    AddMethod("ClearCacheForAllEngines", visit_ClearCacheForAllEngines);
     AddMethod("ClearPickPoints", visit_ClearPickPoints);
     AddMethod("ClearReferenceLines", visit_ClearReferenceLines);
     AddMethod("ClearViewKeyframes", visit_ClearViewKeyframes);

@@ -89,6 +89,7 @@
       CopyAnnotationsToWindowRPC
       CopyPlotsToWindowRPC
       ClearCacheRPC
+      ClearCacheForAllEnginesRPC
       SetViewExtentsTypeRPC
       ClearRefLinesRPC
       SetRenderingAttributesRPC

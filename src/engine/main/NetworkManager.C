@@ -144,11 +144,14 @@ NetworkManager::~NetworkManager(void)
 //    Don't clear out the vectors, so this can be consistent with how the
 //    ClearNetworksWithDatabase works.
 //
+//    Brad Whitlock, Thu Feb 26 11:58:58 PDT 2004
+//    I replaced the commented out cerr with debug3.
+//
 // ****************************************************************************
 void
 NetworkManager::ClearAllNetworks(void)
 {
-    //cerr << "NetworkManager::ClearAllNetworks(void)" << endl;
+    debug3 << "NetworkManager::ClearAllNetworks(void)" << endl;
     int i;
 
     for (i = 0; i < databaseCache.size(); i++)
@@ -183,11 +186,15 @@ NetworkManager::ClearAllNetworks(void)
 //  Programmer: Hank Childs
 //  Creation:   January 5, 2004
 //
+//  Modifications:
+//    Brad Whitlock, Thu Feb 26 11:58:58 PDT 2004
+//    I replaced the commented out cerr with debug3.
+//
 // ****************************************************************************
 void
 NetworkManager::ClearNetworksWithDatabase(const std::string &db)
 {
-    //cerr << "NetworkManager::ClearNetworksWithDatabase()" << endl;
+    debug3 << "NetworkManager::ClearNetworksWithDatabase()" << endl;
     int i;
 
     // 

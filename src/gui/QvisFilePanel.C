@@ -2704,6 +2704,9 @@ FileTree::Add(const QualifiedFilename &fileName, char separator_)
 //   Brad Whitlock, Mon Aug 26 16:47:24 PST 2002
 //   I changed the code so it can use different separators.
 //
+//   Brad Whitlock, Tue Feb 24 15:43:28 PST 2004
+//   I fixed the code so single filenames are again shown without the path.
+//
 // ****************************************************************************
 
 void
@@ -2721,9 +2724,10 @@ FileTree::Reduce()
     // Try and reduce the root to see if we can get rid of a single top-level
     // directory. Do not reduce the root if it only has one child in it since
     // it has to be a file.
-    if(root->Size() > 2)
+    int rootSize = root->Size();
+    if(rootSize > 2)
         root->Reduce();
-    else if(root->Size() == 1)
+    else if(rootSize <= 2)
     {
         // The root has only one child and it must be a file. Since it has
         // been reduced, strip the path from it so it will match what happens

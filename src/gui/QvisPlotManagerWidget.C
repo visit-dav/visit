@@ -36,6 +36,8 @@
 #define REMOVE_LAST_OPERATOR_ID   1000
 #define REMOVE_ALL_OPERATORS_ID   1001
 
+#define VARIABLE_CUTOFF           100
+
 using std::string;
 using std::vector;
 
@@ -91,13 +93,20 @@ using std::vector;
 //   Brad Whitlock, Fri Aug 15 15:07:59 PST 2003
 //   I added a QMenuBar argument to the constructor.
 //
+//   Brad Whitlock, Tue Feb 24 16:27:15 PST 2004
+//   I added varMenuPopulator and a few other new members.
+//
 // ****************************************************************************
 
 QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,
     QWidget *parent, const char *name) : QWidget(parent, name), GUIBase(),
-    SimpleObserver(), menuPopulator(), plotPlugins()
+    SimpleObserver(), menuPopulator(), varMenuPopulator(), plotPlugins()
 {
     pluginsLoaded = false;
+    updatePlotVariableMenuEnabledState = false;
+    updateOperatorMenuEnabledState = false;
+    updateVariableMenuEnabledState = false;
+    maxVarCount = 0;
 
     topLayout = new QGridLayout(this, 4, 4);
     topLayout->setSpacing(5);
@@ -388,14 +397,13 @@ QvisPlotManagerWidget::Update(Subject *TheChangedSubject)
     // Get whether or not we are allowed to modify things.
     bool canChange = !globalAtts->GetExecuting();
 
-    // Enable the plot and operator attributes menus.
-    bool havePlots = plotAttsMenu->count() > 0;
-    plotMenuBar->setItemEnabled(plotAttsMenuId, pluginsLoaded && canChange &&
-                                havePlots);
-    bool haveOperators = operatorAttsMenu->count() > 0;
-    plotMenuBar->setItemEnabled(operatorAttsMenuId, pluginsLoaded &&
-                                canChange && haveOperators);
-    plotMenuBar->update();
+    //
+    // Initialize the class members that are used in various methods to tell
+    // us whether updating the menu enabled state is required.
+    //
+    this->updatePlotVariableMenuEnabledState = false;
+    this->updateOperatorMenuEnabledState = false;
+    this->updateVariableMenuEnabledState = false;
 
     if(TheChangedSubject == plotList)
     {
@@ -436,12 +444,29 @@ QvisPlotManagerWidget::Update(Subject *TheChangedSubject)
                 fileServer->CloseFile();
                 fileServer->Notify();
 
+                // We closed the file but we don't want to notify this object
+                // so we need to clear out the menu populators.
+                menuPopulator.ClearDatabaseName();
+                varMenuPopulator.ClearDatabaseName();
+
                 UpdatePlotVariableMenu();
                 UpdateVariableMenu();
             }
         }
         else if(fileServer->FileChanged())
         {
+            //
+            // If the file changed and we closed it, we probably did a reopen
+            // so we should clear the cached database name so the next time
+            // that the menu populators are asked to populate their variables
+            // they will do it instead of returning early.
+            //
+            if(fileServer->ClosedFile())
+            {
+                menuPopulator.ClearDatabaseName();
+                varMenuPopulator.ClearDatabaseName();
+            }
+
             UpdatePlotVariableMenu();
         }
     }
@@ -465,20 +490,21 @@ QvisPlotManagerWidget::Update(Subject *TheChangedSubject)
         UpdateHideDeleteDrawButtonsEnabledState();
         applyOperatorToggle->setEnabled(canChange);
 
-        bool havePlots = (plotAttsMenu->count() > 0);
-        bool haveOperators = (operatorAttsMenu->count() > 0);
-
-        plotMenuBar->setItemEnabled(plotAttsMenuId, canChange && havePlots);
-        plotMenuBar->setItemEnabled(operatorAttsMenuId, canChange && haveOperators);
-        plotMenuBar->setItemEnabled(varMenuId, (varMenu->count() > 0) && canChange);
-
-        // Update the first two menu items' enabled state.
-        UpdatePlotAndOperatorMenuEnabledState();
+        //
+        // When the globalAtts change, we might have to update the
+        // enabled state for the entire plot and operator menu bar.
+        //
+        this->updatePlotVariableMenuEnabledState = true;
+        this->updateOperatorMenuEnabledState = true;
+        this->updateVariableMenuEnabledState = true;
     }
     else if(TheChangedSubject == pluginAtts)
     {
         // do nothing yet -- JSM 9/5/01
     }
+
+    // Update the enabled state for the menu bar.
+    UpdatePlotAndOperatorMenuEnabledState();
 }
 
 // ****************************************************************************
@@ -511,6 +537,9 @@ QvisPlotManagerWidget::Update(Subject *TheChangedSubject)
 //   Brad Whitlock, Fri Dec 5 16:24:36 PST 2003
 //   I separated the logic to regenerate the plot list and just change its
 //   selections so it's not so hard to select multiple items
+//
+//   Brad Whitlock, Thu Feb 26 11:17:22 PDT 2004
+//   I changed how the plot and operator menu's enabled state is set.
 //
 // ****************************************************************************
 
@@ -566,6 +595,17 @@ QvisPlotManagerWidget::UpdatePlotList()
         } // end for
         plotListBox->blockSignals(false);        
     }
+
+    // If there are no variables, clear out the variable menu.
+    if(plotList->GetNumPlots() == 0 && varMenu->count() > 0)
+        varMenu->clear();
+
+    //
+    // The operator menu can be disabled if there are no plots. Same with
+    // the variable list so we check them both.
+    //
+    this->updateOperatorMenuEnabledState = true;
+    this->updateVariableMenuEnabledState = true;
 
     // Set the enabled states for the hide, delete, and draw buttons.
     UpdateHideDeleteDrawButtonsEnabledState();
@@ -782,7 +822,10 @@ QvisPlotManagerWidget::EnablePluginMenus()
 //   fileServer and puts the results in some class variables.
 //
 // Arguments:
-//   filename : The file for which to get metadata.
+//   populator : The menu populator that we want to update.
+//   filename  : The file for which to get metadata.
+//
+// Returns:    True if an updates is needed; false otherwise.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Sep 14 14:28:43 PST 2000
@@ -791,16 +834,21 @@ QvisPlotManagerWidget::EnablePluginMenus()
 //   Brad Whitlock, Mon Mar 17 15:44:44 PST 2003
 //   I made it use a menu populator.
 //
+//   Brad Whitlock, Tue Feb 24 16:25:25 PST 2004
+//   I added the populator argument and I made the method return bool.
+//
 // ****************************************************************************
 
-void
-QvisPlotManagerWidget::PopulateVariableLists(const QualifiedFilename &filename)
+bool
+QvisPlotManagerWidget::PopulateVariableLists(VariableMenuPopulator &populator,
+    const QualifiedFilename &filename)
 {
     // Get a pointer to the specified file's metadata object.
     const avtDatabaseMetaData *md = fileServer->GetMetaData(filename);
     const avtSIL *sil = fileServer->GetSIL(filename);
-
-    menuPopulator.PopulateVariableLists(md, sil, exprList);
+    
+    return populator.PopulateVariableLists(filename.FullName(),
+                                           md, sil, exprList);
 }
 
 // ****************************************************************************
@@ -850,26 +898,42 @@ QvisPlotManagerWidget::PopulateVariableLists(const QualifiedFilename &filename)
 //   Hank Childs, Fri Aug  1 21:30:30 PDT 2003
 //   Re-enable Curve plots, since they now require Curve variables.
 //
+//   Brad Whitlock, Tue Feb 24 16:06:46 PST 2004
+//   I improved the code to it does not update the variable menus each time.
+// 
 // ****************************************************************************
 
 void
 QvisPlotManagerWidget::UpdatePlotVariableMenu()
 {
-    // Update the metadata to use the current file.
-    PopulateVariableLists(fileServer->GetOpenFile());
+    //
+    // Update the menu populator so it uses the current file. If it changed
+    // then needsUpdate will be true and we need to update the variable menu.
+    //
+    bool needsUpdate = PopulateVariableLists(menuPopulator,
+        fileServer->GetOpenFile());
 
     // Update the various menus
-    for(int i = 0; i < plotPlugins.size(); ++i)
+    if(needsUpdate)
     {
-        int varCount = menuPopulator.UpdateSingleVariableMenu(
-            plotPlugins[i].varMenu, this, plotPlugins[i].varTypes, false);
-        bool hasEntries = (varCount > 0);
+        this->maxVarCount = 0;
+        for(int i = 0; i < plotPlugins.size(); ++i)
+        {
+            int varCount = menuPopulator.UpdateSingleVariableMenu(
+                plotPlugins[i].varMenu, this, plotPlugins[i].varTypes, false);
+            this->maxVarCount = (varCount > this->maxVarCount) ? varCount : this->maxVarCount;
+            bool hasEntries = (varCount > 0);
+            // If the menu has a different enabled state, set it now.
+            if(hasEntries != plotMenu->isItemEnabled(i))
+                plotMenu->setItemEnabled(i, hasEntries);
+        }
 
-        plotMenu->setItemEnabled(i, hasEntries);
+        //
+        // Set the flag to indicate that we need to update the enabled
+        // state for the plot variable menu.
+        //
+        this->updatePlotVariableMenuEnabledState = true;
     }
-
-    // Set the enabled state of the Plot and Operator menus.
-    UpdatePlotAndOperatorMenuEnabledState();
 }
 
 // ****************************************************************************
@@ -888,16 +952,27 @@ QvisPlotManagerWidget::UpdatePlotVariableMenu()
 // Creation:   Mon Jul 28 17:49:35 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Feb 26 08:09:07 PDT 2004
+//   I made this method be the central place where the menu enabled state is
+//   set instead of doing it all over the place. This allows me to set the
+//   menu state consistently without code duplication.
+//
 // ****************************************************************************
 
 void
-QvisPlotManagerWidget::UpdatePlotAndOperatorMenuEnabledState() const
+QvisPlotManagerWidget::UpdatePlotAndOperatorMenuEnabledState()
 {
-    bool plotMenuEnabled = false;
-    bool operatorMenuEnabled = false;
+    //
+    // These values will be used to set the enabled state for the items in
+    // the plot and operator menu.
+    //
+    bool plotMenuEnabled = plotMenuBar->isItemEnabled(plotMenuId);
+    bool plotAttsMenuEnabled = plotMenuBar->isItemEnabled(plotAttsMenuId);
+    bool operatorMenuEnabled = plotMenuBar->isItemEnabled(operatorMenuId);
+    bool operatorAttsMenuEnabled = plotMenuBar->isItemEnabled(operatorAttsMenuId);
+    bool varMenuEnabled = plotMenuBar->isItemEnabled(varMenuId);
 
-    if(pluginsLoaded && !globalAtts->GetExecuting())
+    if(pluginsLoaded)
     {
         // Look through the menus for the available plots to see how many
         // are enabled. If any are enabled, then consider that we may want
@@ -919,14 +994,74 @@ QvisPlotManagerWidget::UpdatePlotAndOperatorMenuEnabledState() const
                           somePlotMenusEnabled &&
                           haveOpenFile;
         operatorMenuEnabled = haveAvailableOperators &&
-                              someOperatorMenusEnabled &&
-                              haveOpenFile;
+                              (plotList->GetNumPlots() > 0) &&
+                              someOperatorMenusEnabled;
+        varMenuEnabled = (varMenu->count() > 0);
     }
 
-    // Set the enabled state of the Plot and Operator menus.
-    plotMenuBar->setItemEnabled(plotMenuId, plotMenuEnabled);
-    plotMenuBar->setItemEnabled(operatorMenuId, operatorMenuEnabled);
-    plotMenuBar->update();
+    //
+    // If the number of variables is less than the cutoff then we want to
+    // disable the menus when the viewer is executing. If the number of
+    // variables is too large then we don't want to change the menu enabled
+    // states because it is too expensive.
+    //
+    if(this->maxVarCount < VARIABLE_CUTOFF)
+    {
+        plotMenuEnabled &= !globalAtts->GetExecuting();
+        operatorMenuEnabled &= !globalAtts->GetExecuting();
+        varMenuEnabled &= !globalAtts->GetExecuting();
+        plotAttsMenuEnabled = !globalAtts->GetExecuting();
+        operatorAttsMenuEnabled = !globalAtts->GetExecuting();
+    }
+
+    //
+    // Check each menu that we want to update to see if we need to update.
+    //
+    bool needUpdate = false;
+    bool different = false;
+    if(this->updatePlotVariableMenuEnabledState)
+    {
+        different = plotMenuBar->isItemEnabled(plotMenuId) != plotMenuEnabled;
+        if(different)
+            plotMenuBar->setItemEnabled(plotMenuId, plotMenuEnabled);
+        needUpdate |= different;
+    }
+
+    if(this->updateOperatorMenuEnabledState)
+    {
+        different = plotMenuBar->isItemEnabled(operatorMenuId) != operatorMenuEnabled;
+        if(different)
+            plotMenuBar->setItemEnabled(operatorMenuId, operatorMenuEnabled);
+        needUpdate |= different;
+    }
+
+    if(this->updateVariableMenuEnabledState)
+    {
+        different = plotMenuBar->isItemEnabled(varMenuId) != varMenuEnabled;
+        if(different)
+            plotMenuBar->setItemEnabled(varMenuId, varMenuEnabled);
+        needUpdate |= different;
+    }
+
+    different = plotMenuBar->isItemEnabled(operatorAttsMenuId) != operatorAttsMenuEnabled;
+    if(different)
+    {
+        plotMenuBar->setItemEnabled(operatorAttsMenuId, operatorAttsMenuEnabled);
+        needUpdate |= different;
+    }
+
+    different = plotMenuBar->isItemEnabled(plotAttsMenuId) != plotAttsMenuEnabled;
+    if(different)
+    {
+        plotMenuBar->setItemEnabled(plotAttsMenuId, plotAttsMenuEnabled);
+        needUpdate |= different;
+    }
+
+    //
+    // If we updated a menu's enabled state, update the menu bar.
+    //
+    if(needUpdate)
+        plotMenuBar->update();
 }
 
 // ****************************************************************************
@@ -958,6 +1093,9 @@ QvisPlotManagerWidget::UpdatePlotAndOperatorMenuEnabledState() const
 //   Brad Whitlock, Mon Mar 17 15:46:30 PST 2003
 //   I made it use a menu populator.
 //
+//   Brad Whitlock, Tue Feb 24 16:20:36 PST 2004
+//   I made it use a separate menu populator.
+//
 // ****************************************************************************
 
 void
@@ -965,9 +1103,6 @@ QvisPlotManagerWidget::UpdateVariableMenu()
 {
     // Update the variable lists using the type of the first plot as the
     // kind of variable that is displayed.
-    varMenu->clear();
-    int varCount = 0;
-    bool first = true;
     for(int i = 0; i < plotList->GetNumPlots(); ++i)
     {
         // Create a constant reference to the current plot.
@@ -975,29 +1110,31 @@ QvisPlotManagerWidget::UpdateVariableMenu()
 
         if(current.GetActiveFlag())
         {
-            // If this is the first active plot, put its variables
-            // in the variable lists.
-            if(first)
-            {
-                PopulateVariableLists(current.GetDatabaseName());
-                first = false;
-                varMenu->setPlotType(current.GetPlotType());
-            }
+            // Set the plot type for the variable menu.
+            varMenu->setPlotType(current.GetPlotType());
 
-            // Set the variable list based on the first active plot.
-            varCount = menuPopulator.UpdateSingleVariableMenu(varMenu,
-                this, plotPlugins[current.GetPlotType()].varTypes, true);
+            //
+            // Update the variable menu's menu populator and if an update
+            // is needed, update the menu.
+            //
+            if(PopulateVariableLists(varMenuPopulator,
+                                     current.GetDatabaseName()) ||
+               varMenu->count() == 0)
+            {
+                // Set the variable list based on the first active plot.
+                int varCount = varMenuPopulator.UpdateSingleVariableMenu(varMenu,
+                    this, plotPlugins[current.GetPlotType()].varTypes, true);
+                //
+                // Set the flag that indicates that we need to update the
+                // enabled state for the variables menu.
+                //
+                this->updateVariableMenuEnabledState |= (varCount > 0);
+            }
 
             // Get out of the for loop.
             break;
         }
     }
-    
-    // Set the enabled state of the varMenu based on how many variables
-    // are in it.
-    bool canChange = !globalAtts->GetExecuting();
-    plotMenuBar->setItemEnabled(varMenuId, (varCount > 0) && canChange);
-    plotMenuBar->update();
 }
 
 // ****************************************************************************

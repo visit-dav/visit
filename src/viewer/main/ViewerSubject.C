@@ -3504,6 +3504,28 @@ ViewerSubject::ClearCache()
 }
 
 // ****************************************************************************
+// Method: ViewerSubject::ClearCacheForAllEngines.
+//
+// Purpose: 
+//   Execute the ClearCache RPC on all engines.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Feb 26 13:33:59 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerSubject::ClearCacheForAllEngines()
+{
+    //
+    // Perform the RPC.
+    //
+    ViewerEngineManager::Instance()->ClearCacheForAllEngines();
+}
+
+// ****************************************************************************
 //  Method: ViewerSubject::SetDefaultPlotOptions
 //
 //  Purpose:
@@ -5402,6 +5424,9 @@ ViewerSubject::LaunchProgressCB(void *d, int stage)
 //    Kathleen Bonnell, Wed Dec 17 14:45:22 PST 2003 
 //    Added ResetPickLetterRPC, SetDefaultPickAttributesRPC.
 //
+//    Brad Whitlock, Thu Feb 26 13:32:43 PST 2004
+//    Added ClearCacheForAllEngines.
+//
 // ****************************************************************************
 
 void
@@ -5558,6 +5583,9 @@ ViewerSubject::HandleViewerRPC()
         break;
     case ViewerRPC::ClearCacheRPC:
         ClearCache();
+        break;
+    case ViewerRPC::ClearCacheForAllEnginesRPC:
+        ClearCacheForAllEngines();
         break;
     case ViewerRPC::SetViewExtentsTypeRPC:
         SetViewExtentsType();
