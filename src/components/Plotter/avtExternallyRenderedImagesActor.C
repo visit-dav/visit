@@ -8,6 +8,7 @@
 #include <avtDataObjectWriter.h>
 #include <avtExternallyRenderedImagesActor.h>
 #include <avtImage.h>
+#include <avtNullData.h>
 #include <avtTerminatingSource.h>
 
 #include <float.h>
@@ -20,7 +21,7 @@
 #include <vtkRenderer.h>
 #include <vtkTIFFReader.h>
 
-#include <BadIndexException.h>
+#include <ImproperUseException.h>
 #include <DebugStream.h>
 #include <TimingsManager.h>
 
@@ -39,6 +40,8 @@ avtExternallyRenderedImagesActor::avtExternallyRenderedImagesActor()
 {
     myMapper              = vtkImageMapper::New();
     dummyImage            = vtkImageData::New();
+    lastNonDummyImage     = NULL;
+    myMapper->SetInput(dummyImage);
     myMapper->SetColorWindow(255);
     myMapper->SetColorLevel(127);
     myActor               = vtkActor2D::New();
@@ -68,6 +71,11 @@ avtExternallyRenderedImagesActor::~avtExternallyRenderedImagesActor()
     {
         myMapper->Delete();
         myMapper = NULL;
+    }
+    if (lastNonDummyImage != NULL)
+    {
+        lastNonDummyImage->Delete();
+        lastNonDummyImage = NULL;
     }
 }
 
@@ -154,26 +162,49 @@ avtExternallyRenderedImagesActor::PrepareForRender(void)
       return;
 
    // issue the external rendering callback
-   // we play a trick with initialization of dob to create a useful
-   // NULL-like pointer that we can distinguish from NULL itself
-   int n = 2;
-   avtDataObject_p dob = ref_ptr<avtDataObject>((avtDataObject*)1,&n);
+   // we use the dummyData 'value' to detect if dob was updated by the
+   // DoExternalRender call
+   avtNullData_p dummyData = new avtNullData(NULL);
+   avtDataObject_p dummyDob;
+   CopyTo(dummyDob, dummyData);
+
+   avtDataObject_p dob = dummyDob; 
    DoExternalRender(dob);
 
-   if ((*dob != NULL) && (*dob != (avtDataObject*)1) && !strcmp(dob->GetType(),"avtImage"))
+   if ((*dob != *dummyDob) && (*dob != NULL))
    {
-      // we know this is really an avtImage object, so make one from it
+
+      // make sure we've recieved an image and not something else
+      if (strcmp(dob->GetType(),"avtImage") != 0)
+      {
+          EXCEPTION1(ImproperUseException, "Expected avtImage object"); 
+      }
+
+      // put up the new image 
       avtImage_p img;
       CopyTo(img, dob);
       avtImageRepresentation& imgRep = img->GetImage();
       myMapper->SetInput(imgRep.GetImageVTK());
+
+      // update the last non dummy image
+      if (lastNonDummyImage != NULL)
+      {
+          lastNonDummyImage->Delete();
+          lastNonDummyImage = NULL;
+      }
+      lastNonDummyImage = imgRep.GetImageVTK();
+      lastNonDummyImage->Register(NULL);
    }
    else
    {
+      // if we got back nothing, put up the dummy (blank) image
       if (*dob == NULL)
          myMapper->SetInput(dummyImage);
-   }
 
+      // if we got 'no-change' put up the last non dummy image
+      if (*dob == *dummyDob)
+         myMapper->SetInput(lastNonDummyImage);
+   }
 }
 
 
@@ -242,8 +273,7 @@ avtExternallyRenderedImagesActor::DisableExternalRenderRequests(void)
    bool oldMode = makeExternalRenderRequests;
    makeExternalRenderRequests = false;
    SetVisibility(false);
-   myMapper->SetInput(dummyImage);
-   return oldMode ? false : true;
+   return oldMode; 
 }
 
 // ****************************************************************************

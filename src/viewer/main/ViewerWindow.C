@@ -5509,6 +5509,7 @@ ViewerWindow::SendScalableRenderingModeChangeMessage(bool newMode)
 // Creation:   Mon Nov  3 15:48:33 PST 2003
 //
 // ****************************************************************************
+
 void
 ViewerWindow::ClearLastExternalRenderRequest()
 {
@@ -5516,6 +5517,87 @@ ViewerWindow::ClearLastExternalRenderRequest()
     lastExternalRenderRequest.hostsList.clear();
     lastExternalRenderRequest.plotIdsList.clear();
     lastExternalRenderRequest.attsList.clear();
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::UpdateLastExternalRenderRequest
+//
+// Purpose: 
+//    Updates the last external render request info 
+//
+// Programmer: Mark C. Miller 
+// Creation:   November 10, 2003 
+//
+// ****************************************************************************
+
+void
+ViewerWindow::UpdateLastExternalRenderRequest(
+    const ExternalRenderRequestInfo &newRequest)
+{
+    lastExternalRenderRequest = newRequest;
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::CanSkipExternalRender
+//
+// Purpose: 
+//    checks to see if anything in the external render request has really
+//    changed sucn that the image needs to be re-rendered and returns false
+//    if not, true otherwise.
+//
+// Programmer: Mark C. Miller 
+// Creation:   November 10, 2003 
+//
+// ****************************************************************************
+
+bool
+ViewerWindow::CanSkipExternalRender(const ExternalRenderRequestInfo& thisRequest) const
+{
+    const ExternalRenderRequestInfo& lastRequest = lastExternalRenderRequest;
+
+    if (thisRequest.winAtts != lastRequest.winAtts)
+        return false;
+
+    if (thisRequest.annotAtts != lastRequest.annotAtts)
+        return false;
+
+    if ((thisRequest.plotIdsList.size() != 0) &&
+        (thisRequest.plotIdsList.size() != lastRequest.plotIdsList.size()))
+        return false;
+
+    for (int i = 0; i < thisRequest.plotIdsList.size(); i++)
+    {
+        // search for index of current plot in last list
+        int indexOfPlotInLastList = -1;
+        for (int j = 0; j < lastRequest.plotIdsList.size(); j++)
+        {
+            if (lastRequest.plotIdsList[j] == thisRequest.plotIdsList[i])
+            {
+                indexOfPlotInLastList = j;
+                break;
+            }
+        }
+
+        if (indexOfPlotInLastList == -1)
+            return false;
+        else
+        {
+            // compare plugin ids
+            if (thisRequest.pluginIDsList[i] != lastRequest.pluginIDsList[indexOfPlotInLastList])
+                return false;
+
+            // compare host names
+            if (thisRequest.hostsList[i] != lastRequest.hostsList[indexOfPlotInLastList])
+                return false;
+
+            // compare plot attributes
+            if (!thisRequest.attsList[i]->EqualTo(lastRequest.attsList[indexOfPlotInLastList]))
+                return false;
+
+        }
+    }
+
+    return true;
 }
 
 // Only place where ViewerWindow should need to talk to ViewerEngineManager
@@ -5541,13 +5623,7 @@ ViewerWindow::ClearLastExternalRenderRequest()
 void
 ViewerWindow::ExternalRenderCallback(void *data, avtDataObject_p& dob)
 {
-    static const char *me = "ViewerWindow::ExternalRenderCallback";
-
-    debug2 << "Entering " << me << endl; 
-
     ViewerWindow *win = (ViewerWindow *)data;
-    ViewerEngineManager *eMgr = ViewerEngineManager::Instance();
-    ExternalRenderRequestInfo &lastRequest = win->lastExternalRenderRequest;
     ExternalRenderRequestInfo thisRequest;
 
     // if we aren't currently in scalable rendering mode, we have nothing to do
@@ -5567,131 +5643,66 @@ ViewerWindow::ExternalRenderCallback(void *data, avtDataObject_p& dob)
     thisRequest.winAtts = win->GetWindowAttributes();
     thisRequest.annotAtts = *(win->GetAnnotationAttributes());
 
-    // see if anything has really changed, release data where necessary
-    bool canSkipExternalRender = true;
+    // see if we can skip the external render because nothing has changed 
+    bool canSkip = win->CanSkipExternalRender(thisRequest);
+
+    // ok, we actually have to do a render
+    if (!canSkip && (thisRequest.plotIdsList.size() > 0))
     {
-       if (thisRequest.winAtts != lastRequest.winAtts)
-          canSkipExternalRender = false;
+        ViewerEngineManager *eMgr = ViewerEngineManager::Instance();
+        bool shouldTurnOffScalableRendering = false;
+        std::vector<avtImage_p> imgList;
 
-       if (thisRequest.annotAtts != lastRequest.annotAtts)
-          canSkipExternalRender = false;
+        // let the engine manager do the render
+        bool requestSuccess = eMgr->ExternalRender(thisRequest.pluginIDsList,
+                                                  thisRequest.hostsList,
+                                                  thisRequest.plotIdsList,
+                                                  thisRequest.attsList,
+                                                  thisRequest.winAtts,
+                                                  thisRequest.annotAtts,
+                                                  shouldTurnOffScalableRendering,
+                                                  imgList);
 
-       if ((thisRequest.plotIdsList.size() != 0) &&
-           (thisRequest.plotIdsList.size() != lastRequest.plotIdsList.size()))
-          canSkipExternalRender = false;
+        // return noting if the request failed
+        if (!requestSuccess)
+        {
+            dob = NULL;
+            return;
+        }
 
-       // we don't break early so we can build a list of plots to release data on
-       for (int i = 0; i < thisRequest.plotIdsList.size(); i++)
-       {
-          // search for index of current plot in last list
-          int indexOfPlotInLastList = -1;
-          for (int j = 0; j < lastRequest.plotIdsList.size(); j++)
-          {
-             if (lastRequest.plotIdsList[j] == thisRequest.plotIdsList[i])
-             {
-                indexOfPlotInLastList = j;
-                break;
-             }
-          }
+        // send an SR mode change message, if necessary
+        if (shouldTurnOffScalableRendering)
+        {
+            win->SendScalableRenderingModeChangeMessage(false);
+            dob = NULL;
+            return;
+        }
 
-          if (indexOfPlotInLastList == -1)
-             canSkipExternalRender = false;
-          else
-          {
-             bool shouldReleasePlot = false;
+        // composite images from different engines as necessary
+        if (imgList.size() > 1)
+        {
+            avtWholeImageCompositer imageCompositer;
+            int numRows = thisRequest.winAtts.GetSize()[1];
+            int numCols = thisRequest.winAtts.GetSize()[0];
 
-             // compare plugin ids
-             if (thisRequest.pluginIDsList[i] != lastRequest.pluginIDsList[indexOfPlotInLastList])
-                shouldReleasePlot = true;
+            imageCompositer.SetOutputImageSize(numRows, numCols);
+            for (int i = 0; i < imgList.size(); i++)
+                imageCompositer.AddImageInput(imgList[i], 0, 0);
+            imageCompositer.Execute();
+            dob = imageCompositer.GetOutput();
+        }
+        else
+            CopyTo(dob, imgList[0]);
 
-             // compare host names
-             if (thisRequest.hostsList[i] != lastRequest.hostsList[indexOfPlotInLastList])
-                shouldReleasePlot = true;
-
-             // compare plot attributes
-             if (!thisRequest.attsList[i]->EqualTo(lastRequest.attsList[indexOfPlotInLastList]))
-                shouldReleasePlot = true;
-
-             if (shouldReleasePlot)
-             {
-                eMgr->ReleaseData(lastRequest.hostsList[indexOfPlotInLastList].c_str(),
-                                     indexOfPlotInLastList);
-                canSkipExternalRender = false;
-             }
-          }
-       }
-    }
-
-    if (!canSkipExternalRender && (thisRequest.plotIdsList.size() > 0))
-    {
-       // send per-plot RPCs (which engine handled by ViewerEngineManager)
-       for (int i = 0; i < thisRequest.plotIdsList.size(); i++)
-       {
-          eMgr->UpdatePlotAttributes(thisRequest.hostsList[i].c_str(),thisRequest.pluginIDsList[i],
-                   thisRequest.plotIdsList[i],thisRequest.attsList[i]);
-          perEnginePlotIds[thisRequest.hostsList[i]].push_back(thisRequest.plotIdsList[i]);
-       }
-
-       int numEnginesToRender = perEnginePlotIds.size();
-       bool sendZBuffer = numEnginesToRender > 1 ? true : false;
-
-       // send per-engine rpcs
-       std::vector<avtImage_p> imgList;
-       std::map<std::string,std::vector<int> >::iterator pos;
-       for (pos = perEnginePlotIds.begin(); pos != perEnginePlotIds.end(); pos++)
-       {
-          eMgr->SetWinAnnotAtts(pos->first.c_str(), &thisRequest.winAtts, &thisRequest.annotAtts);
-          avtDataObjectReader_p rdr = eMgr->GetDataObjectReader(sendZBuffer, pos->first.c_str(), pos->second);
-
-          if (rdr->InputIs(AVT_NULL_IMAGE_MSG))
-          {
-             dob = NULL;
-             win->SendScalableRenderingModeChangeMessage(false);
-             return;
-          }
-
-          // do some magic to update the network so we don't need the reader anymore
-          avtDataObject_p tmpDob = rdr->GetOutput();
-          avtPipelineSpecification_p spec = 
-             tmpDob->GetTerminatingSource()->GetGeneralPipelineSpecification();
-          tmpDob->Update(spec);
-
-          // put the resultant image in a list
-          avtImage_p img;
-          CopyTo(img,tmpDob);
-          imgList.push_back(img);
-       }
-
-       // composite images from different engines as necessary
-       if (numEnginesToRender > 1)
-       {
-          debug2 << me << ": doing composite from " << imgList.size() << " engines" << endl;
-          avtWholeImageCompositer imageCompositer;
-          imageCompositer.SetOutputImageSize(thisRequest.winAtts.GetSize()[1], thisRequest.winAtts.GetSize()[0]);
-          for (int i = 0; i < imgList.size(); i++)
-             imageCompositer.AddImageInput(imgList[i], 0, 0);
-          imageCompositer.Execute();
-          dob = imageCompositer.GetOutput();
-       }
-       else
-          CopyTo(dob, imgList[0]);
     }
     else
     {
        if (thisRequest.plotIdsList.size() == 0)
-          dob = NULL;
+           dob = NULL;
     }
 
-    // update last request info only if this request had something
-    if (thisRequest.plotIdsList.size() != 0)
-    {
-       win->lastExternalRenderRequest.pluginIDsList = thisRequest.pluginIDsList;
-       win->lastExternalRenderRequest.hostsList     = thisRequest.hostsList;
-       win->lastExternalRenderRequest.plotIdsList   = thisRequest.plotIdsList;
-       win->lastExternalRenderRequest.attsList      = thisRequest.attsList;
-       win->lastExternalRenderRequest.winAtts       = thisRequest.winAtts;
-       win->lastExternalRenderRequest.annotAtts     = thisRequest.annotAtts;
-    }
+    // only update last request if this request wasn't empty
+    if (thisRequest.plotIdsList.size() > 0)
+        win->UpdateLastExternalRenderRequest(thisRequest);
 
-    debug2 << "Leaving " << me << endl;
 }

@@ -140,6 +140,15 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
     void InterruptEngine(int index);
     bool InExecute() const;
 
+    bool ExternalRender(std::vector<const char*> pluginIDsList,
+                        stringVector hostsList,
+                        intVector plotIdsList,
+                        std::vector<const AttributeSubject *> attsList,
+                        WindowAttributes winAtts,
+                        AnnotationAttributes annotAtts,
+                        bool& shouldTurnOfScalableRendering,
+                        std::vector<avtImage_p>& imgList);
+
     avtDataObjectReader_p GetDataObjectReader(ViewerPlot *const plot,
                                               const int frame);
     avtDataObjectReader_p UseDataObjectReader(ViewerPlot *const plot,

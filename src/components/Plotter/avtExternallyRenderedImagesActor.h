@@ -119,6 +119,7 @@ class PLOTTER_API avtExternallyRenderedImagesActor
     vtkActor2D          *myActor;
     vtkImageMapper      *myMapper;
     vtkImageData        *dummyImage;
+    vtkImageData        *lastNonDummyImage;
 
     VisCallbackWithDob          *extRenderCallback;
     void                        *extRenderCallbackArgs;

@@ -261,6 +261,10 @@ struct ExternalRenderRequestInfo
 //    Eric Brugger, Thu Oct  9 11:06:16 PDT 2003
 //    I deleted Compute2DScaleFactor.  I deleted fullFrame.
 //
+//    Mark C. Miller, Tue Nov 11 18:15:41 PST 2003
+//    Introduced several new methods to refactored
+//    ExternalRenderRequestCallback
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerWindow
@@ -445,7 +449,12 @@ private:
     void UpdateViewCurve(const double *limits);
     void UpdateView2d(const double *limits);
     void UpdateView3d(const double *limits);
+
     void ClearLastExternalRenderRequest();
+    void UpdateLastExternalRenderRequest(
+             const ExternalRenderRequestInfo& newRequest);
+    bool CanSkipExternalRender(
+             const ExternalRenderRequestInfo& thisRequest) const;
 
     static void ShowCallback(void *);
     static void HideCallback(void *);
