@@ -330,6 +330,11 @@ avtMeshFilter::PerformRestriction(avtPipelineSpecification_p spec)
 //  Programmer: Hank Childs
 //  Creation:   September 10, 2002
 //
+//  Modifications:
+//
+//    Akira Haddox, Wed May 28 14:56:01 PDT 2003
+//    LineFilter no longer has a Locator, call removed.
+//
 // ****************************************************************************
 
 void
@@ -339,7 +344,6 @@ avtMeshFilter::ReleaseData(void)
 
     lineFilter->SetInput(NULL);
     lineFilter->SetOutput(NULL);
-    lineFilter->SetLocator(NULL);
     geometryFilter->SetInput(NULL);
     geometryFilter->SetOutput(NULL);
     featureEdges->SetInput(NULL);
