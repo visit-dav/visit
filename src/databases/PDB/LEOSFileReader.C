@@ -258,31 +258,17 @@ LEOSFileReader::ValidateVariableInfoAssumptions(eosVarInfo_t &mapInfo,
 }
 
 // ****************************************************************************
-// Method: BuildVarInfoMap
+// Method: SetMapEntry 
 //
-// Purpose: 
-//   Builds a mapping of an equation-of-state (eos) variable name to meta data
-//   about that variable. This is essentially a set of assumptions about LEOS
-//   eos variables that enable us to quickly open an LEOS file. Without this
-//   information, we can't take the shortcuts to PopulateDatabaseMetaData 
-//   quickly. Nonetheless, when we later go to read a variable, if we find that
-//   the assumptions made here are wrong, we'll detect that and throw an 
-//   exception.
-//
-//   If we later encounter eos variables that are not in this list, upon the
-//   first encounter of the new variable, we'll assume what we learn about it
-//   is true for this new variable ON ALL MATERIALS it is defined and append
-//   to this list.
-//
-//   The reason for the funny look to this code and SET_MAP_ENTRY is that it
-//   evolved from using initializer structs and macros.
+// Purpose:  Useful method for setting contents of an eos variable map entry
 //
 // Programmer: Mark C. Miller
 // Creation:   February 10, 2004 
 //
 // ****************************************************************************
 
-void SET_MAP_ENTRY(LEOSFileReader::eosVarInfo_t &info, int ndims,
+void
+LEOSFileReader::SetMapEntry(eosVarInfo_t &info, int ndims,
     string vName, string vUnits,
     string xName, string xUnits, string xSize,
     string yName, string yUnits, string ySize)
@@ -298,61 +284,84 @@ void SET_MAP_ENTRY(LEOSFileReader::eosVarInfo_t &info, int ndims,
     info.ySize = ySize;
 }
 
+// ****************************************************************************
+// Method: BuildVarInfoMap 
+//
+// Purpose: 
+//   Builds a mapping of an equation-of-state (eos) variable name to meta data
+//   about that variable. This is essentially a set of assumptions about LEOS
+//   eos variables that enable us to quickly open an LEOS file. Without this
+//   information, we can't take the shortcuts to PopulateDatabaseMetaData 
+//   quickly. Nonetheless, when we later go to read a variable, if we find that
+//   the assumptions made here are wrong, we'll detect that and throw an 
+//   exception.
+//
+//   If we later encounter eos variables that are not in this list, upon the
+//   first encounter of the new variable, we'll assume what we learn about it
+//   is true for this new variable ON ALL MATERIALS it is defined and append
+//   to this list.
+//
+// Programmer: Mark C. Miller
+// Creation:   February 10, 2004 
+//
+// ****************************************************************************
+
+
 void
 LEOSFileReader::BuildVarInfoMap()
 {
-    SET_MAP_ENTRY(eosVarInfoMap["Cs"  ] , 2, "table", "cm/s",
+    SetMapEntry(eosVarInfoMap["Cs"  ] , 2, "table", "cm/s",
         "rho", "g/cc", "numrho", "temp", "K", "numtemp");
 
-    SET_MAP_ENTRY(eosVarInfoMap["E2p" ] , 2, "table", "erg/g",
+    SetMapEntry(eosVarInfoMap["E2p" ] , 2, "table", "erg/g",
         "rho", "g/cc", "numrho", "temp", "K", "numtemp");
 
-    SET_MAP_ENTRY(eosVarInfoMap["Ec"  ] , 1, "table", "erg/g",
+    SetMapEntry(eosVarInfoMap["Ec"  ] , 1, "table", "erg/g",
         "rho", "g/cc", "numrho", ""    , "" , "numtemp");
 
-    SET_MAP_ENTRY(eosVarInfoMap["Ecp" ] , 2, "table", "erg/electron",
+    SetMapEntry(eosVarInfoMap["Ecp" ] , 2, "table", "erg/electron",
         "rho", "g/cc", "numrho", "temp", "K", "numtemp");
 
-    SET_MAP_ENTRY(eosVarInfoMap["Ee"  ] , 2, "table", "erg/g",
+    SetMapEntry(eosVarInfoMap["Ee"  ] , 2, "table", "erg/g",
         "rho", "g/cc", "numrho", "temp", "K", "numtemp");
 
-    SET_MAP_ENTRY(eosVarInfoMap["Ei"  ] , 2, "table", "erg/g",
+    SetMapEntry(eosVarInfoMap["Ei"  ] , 2, "table", "erg/g",
         "rho", "g/cc", "numrho", "temp", "K", "numtemp");
 
-    SET_MAP_ENTRY(eosVarInfoMap["Et"  ] , 2, "table", "erg/g",
+    SetMapEntry(eosVarInfoMap["Et"  ] , 2, "table", "erg/g",
         "rho", "g/cc", "numrho", "temp", "K", "numtemp");
 
-    SET_MAP_ENTRY(eosVarInfoMap["Kp"  ] , 2, "table", "cm2/g",
+    SetMapEntry(eosVarInfoMap["Kp"  ] , 2, "table", "cm2/g",
         "rho", "g/cc", "numrho", "temp", "K", "numtemp");
 
-    SET_MAP_ENTRY(eosVarInfoMap["Kr"  ] , 2, "table", "cm2/g",
+    SetMapEntry(eosVarInfoMap["Kr"  ] , 2, "table", "cm2/g",
         "rho", "g/cc", "numrho", "temp", "K", "numtemp");
 
-    SET_MAP_ENTRY(eosVarInfoMap["P2p" ] , 2, "table", "erg/cc",
+    SetMapEntry(eosVarInfoMap["P2p" ] , 2, "table", "erg/cc",
         "rho", "g/cc", "numrho", "temp", "K", "numtemp");
 
-    SET_MAP_ENTRY(eosVarInfoMap["Pc"  ] , 1, "table", "erg/cc",
+    SetMapEntry(eosVarInfoMap["Pc"  ] , 1, "table", "erg/cc",
         "rho", "g/cc", "numrho", ""    , "" , "numtemp");
 
-    SET_MAP_ENTRY(eosVarInfoMap["Pe"  ] , 2, "table", "erg/cc",
+    SetMapEntry(eosVarInfoMap["Pe"  ] , 2, "table", "erg/cc",
         "rho", "g/cc", "numrho", "temp", "K", "numtemp");
 
-    SET_MAP_ENTRY(eosVarInfoMap["Pi"  ] , 2, "table", "erg/cc",
+    SetMapEntry(eosVarInfoMap["Pi"  ] , 2, "table", "erg/cc",
         "rho", "g/cc", "numrho", "temp", "K", "numtemp");
 
-    SET_MAP_ENTRY(eosVarInfoMap["Pt"  ] , 2, "table", "erg/cc",
+    SetMapEntry(eosVarInfoMap["Pt"  ] , 2, "table", "erg/cc",
         "rho", "g/cc", "numrho", "temp", "K", "numtemp");
 
-    SET_MAP_ENTRY(eosVarInfoMap["S2p" ] , 2, "table", "erg/g-K",
+    SetMapEntry(eosVarInfoMap["S2p" ] , 2, "table", "erg/g-K",
         "rho", "g/cc", "numrho", "temp", "K", "numtemp");
 
-    SET_MAP_ENTRY(eosVarInfoMap["St"  ] , 2, "table", "erg/g-K",
+    SetMapEntry(eosVarInfoMap["St"  ] , 2, "table", "erg/g-K",
         "rho", "g/cc", "numrho", "temp", "K", "numtemp");
 
-    SET_MAP_ENTRY(eosVarInfoMap["Tm"  ] , 1, "table", "K",
+    SetMapEntry(eosVarInfoMap["Tm"  ] , 1, "table", "K",
         "rho", "g/cc", "numrho", ""    , "" , "numtemp");
 
-    SET_MAP_ENTRY(eosVarInfoMap["Zeff"] , 2, "table", "none",
+    SetMapEntry(eosVarInfoMap["Zeff"] , 2, "table", "none",
         "rho", "g/cc", "numrho", "temp", "K", "numtemp");
 }
 

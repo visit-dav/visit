@@ -55,6 +55,12 @@ protected:
         string ySize;  // name of PDB symbol containing size in y
     } eosVarInfo_t ;
 
+    // useful method to populate eos variable info map
+    static void   SetMapEntry(eosVarInfo_t &info, int ndims,
+                      string vName, string vUnits,
+                      string xName, string xUnits, string xSize,
+                      string yName, string yUnits, string ySize);
+
     virtual bool  IdentifyFormat();
 
     void          BuildVarInfoMap(void);
