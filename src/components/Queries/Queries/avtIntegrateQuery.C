@@ -4,6 +4,8 @@
 
 #include <avtIntegrateQuery.h>
 
+#include <stdio.h>
+
 
 // ****************************************************************************
 //  Method: avtIntegrateQuery::CurveQuery

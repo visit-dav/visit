@@ -4,6 +4,8 @@
 
 #include <avtL2NormQuery.h>
 
+#include <stdio.h>
+
 
 // ****************************************************************************
 //  Method: avtL2NormQuery::avtL2NormQuery

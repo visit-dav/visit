@@ -20,6 +20,38 @@
 #include <avtCallback.h>
 #include <avtDatabaseMetaData.h>
 
+//
+// Functions for converting ViewerAnimation::PlaybackMode to/from string.
+//
+
+static const char *PlaybackMode_strings[] = {
+"Looping", "PlayOnce", "Swing"
+};
+
+std::string
+PlaybackMode_ToString(ViewerAnimation::PlaybackMode t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 3) index = 0;
+    return PlaybackMode_strings[index];
+}
+
+bool
+PlaybackMode_FromString(const std::string &s,
+    ViewerAnimation::PlaybackMode &val)
+{
+    val = ViewerAnimation::Looping;
+    for(int i = 0; i < 3; ++i)
+    {
+        if(s == PlaybackMode_strings[i])
+        {
+            val = (ViewerAnimation::PlaybackMode)i;
+            return true;
+        }
+    }
+    return false;
+}
+
 // ****************************************************************************
 //  Method: ViewerAnimation constructor
 //
@@ -32,6 +64,9 @@
 //
 //    Eric Brugger, Wed Nov 21 10:47:42 PST 2001
 //    I added the pipelineCaching mode.
+//
+//    Brad Whitlock, Mon Oct 6 16:58:11 PST 2003
+//    I added playbackMode.
 //
 // ****************************************************************************
 
@@ -49,6 +84,7 @@ ViewerAnimation::ViewerAnimation()
     mode = StopMode;
 
     pipelineCaching = false;
+    playbackMode = Looping;
 }
 
 // ****************************************************************************
@@ -87,7 +123,9 @@ ViewerAnimation::~ViewerAnimation()
 // Creation:   Wed Feb 12 11:00:52 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Oct 6 16:58:35 PST 2003
+//   I added playbackMode.
+//
 // ****************************************************************************
 
 void
@@ -102,6 +140,7 @@ ViewerAnimation::CopyFrom(const ViewerAnimation *anim, bool copyplots)
 
         mode = StopMode;
         pipelineCaching = anim->pipelineCaching;
+        playbackMode = anim->playbackMode;
 
         if(copyplots)
             plotList->CopyFrom(anim->GetPlotList());
@@ -275,12 +314,47 @@ ViewerAnimation::GetFrameIndex() const
 //    Eric Brugger, Fri Nov 15 16:17:08 PST 2002
 //    I modified the routine to call SetFrameIndex with the new frame number.
 //
+//    Brad Whitlock, Mon Oct 6 16:55:14 PST 2003
+//    I added support for different animation playback modes.
+//
 // ****************************************************************************
 
 void
 ViewerAnimation::NextFrame()
 {
-    SetFrameIndex((curFrame + 1) % nFrames);
+    int nextFrameIndex = (curFrame + 1) % nFrames;
+
+    switch(playbackMode)
+    {
+    case Looping:
+        // Move to the next frame.
+        SetFrameIndex(nextFrameIndex);
+        break;
+    case PlayOnce:
+        // If we're playing then make sure we stop on the last frame.
+        if(mode == PlayMode)
+        {
+            if(nextFrameIndex == 0)
+                Stop(true);
+            else
+                SetFrameIndex(nextFrameIndex);
+        }
+        else
+            SetFrameIndex(nextFrameIndex);
+        break;
+    case Swing:
+        // If we're playing then make sure that we reverse the play direction
+        // on the last frame.
+        if(mode == PlayMode)
+        {
+            if(nextFrameIndex == 0)
+                mode = ReversePlayMode;
+            else
+                SetFrameIndex(nextFrameIndex);
+        }
+        else
+            SetFrameIndex(nextFrameIndex);
+    }
 }
 
 // ****************************************************************************
@@ -299,12 +373,48 @@ ViewerAnimation::NextFrame()
 //    Eric Brugger, Fri Nov 15 16:17:08 PST 2002
 //    I modified the routine to call SetFrameIndex with the new frame number.
 //
+//    Brad Whitlock, Mon Oct 6 16:56:44 PST 2003
+//    I made it possible for the animation to stop once it reaches the start
+//    of the animation.
+//
 // ****************************************************************************
 
 void
 ViewerAnimation::PrevFrame()
 {
-    SetFrameIndex((curFrame + nFrames - 1) % nFrames);
+    int prevFrameIndex = (curFrame + nFrames - 1) % nFrames;
+
+    switch(playbackMode)
+    {
+    case Looping:
+        // Move to the previous frame.
+        SetFrameIndex(prevFrameIndex);
+        break;
+    case PlayOnce:
+        // If we're playing then make sure we stop on the first frame.
+        if(mode == ReversePlayMode)
+        {
+            if(prevFrameIndex == nFrames-1)
+                Stop(true);
+            else
+                SetFrameIndex(prevFrameIndex);
+        }
+        else
+            SetFrameIndex(prevFrameIndex);
+        break;
+    case Swing:
+        // If we're playing then make sure that we reverse the play direction
+        // on the first frame.
+        if(mode == ReversePlayMode)
+        {
+            if(prevFrameIndex == nFrames-1)
+                mode = PlayMode;
+            else
+                SetFrameIndex(prevFrameIndex);
+        }
+        else
+            SetFrameIndex(prevFrameIndex);
+    }
 }
 
 // ****************************************************************************
@@ -785,6 +895,52 @@ ViewerAnimation::GetPipelineCaching() const
     return pipelineCaching;
 }
 
+
+// ****************************************************************************
+// Method: ViewerAnimation::SetPlaybackMode
+//
+// Purpose: 
+//   Sets whether the animation playback mode.
+//
+// Arguments:
+//   val : The new playback mode.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Oct 6 17:00:07 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerAnimation::SetPlaybackMode(ViewerAnimation::PlaybackMode val)
+{
+    playbackMode = val;
+}
+
+
+// ****************************************************************************
+// Method: ViewerAnimation::GetPlaybackMode
+//
+// Purpose: 
+//   Returns the animation's playback mode.
+//
+// Returns:    The animation's playback mode.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Oct 6 17:00:38 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+ViewerAnimation::PlaybackMode
+ViewerAnimation::GetPlaybackMode() const
+{
+    return playbackMode;
+}
+
+
 // ****************************************************************************
 //  Method:  ViewerPlotList::SetWindowAtts
 //
@@ -843,7 +999,9 @@ ViewerAnimation::SetWindowAtts(const char *hostName)
 // Creation:   Wed Jul 16 13:09:04 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Oct 6 17:02:10 PST 2003
+//   I added playbackMode.
+//
 // ****************************************************************************
 
 void
@@ -861,6 +1019,8 @@ ViewerAnimation::CreateNode(DataNode *parentNode)
     animationNode->AddNode(new DataNode("nFrames", nFrames));
     animationNode->AddNode(new DataNode("curFrame", curFrame));
     animationNode->AddNode(new DataNode("pipelineCaching", pipelineCaching));
+    animationNode->AddNode(new DataNode("playbackMode",
+        PlaybackMode_ToString(playbackMode)));
 
     //
     // Let the plot list save its information.
@@ -881,7 +1041,9 @@ ViewerAnimation::CreateNode(DataNode *parentNode)
 // Creation:   Wed Jul 16 13:10:51 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Oct 6 17:02:37 PST 2003
+//   I added support for playbackMode.
+//
 // ****************************************************************************
 
 bool
@@ -909,6 +1071,22 @@ ViewerAnimation::SetFromNode(DataNode *parentNode)
         SetFrameIndex(node->AsInt());
     if((node = animationNode->GetNode("pipelineCaching")) != 0)
         SetPipelineCaching(node->AsBool());
+    if((node = animationNode->GetNode("playbackMode")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 3)
+                SetPlaybackMode(PlaybackMode(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            PlaybackMode value;
+            if(PlaybackMode_FromString(node->AsString(), value))
+                SetPlaybackMode(value);
+        }
+    }
 
     //
     // Let the plot list read in its values.

@@ -2452,13 +2452,25 @@ ViewerWindow::UpdateCameraView()
 //
 //  Programmer: Eric Brugger
 //  Creation:   November 21, 2001 
-//   
+//
+//  Modifications:
+//    Brad Whitlock, Tue Oct 7 11:32:18 PDT 2003
+//    Added playbackMode.
+//
 // ****************************************************************************
 
 void
 ViewerWindow::SetAnimationAttributes(const AnimationAttributes *atts)
 {
+    // Set the pipeline caching flag.
     animation->SetPipelineCaching(atts->GetPipelineCachingMode());
+    // Set the animation's playback style.
+    if(atts->GetPlaybackMode() == AnimationAttributes::Looping)
+        animation->SetPlaybackMode(ViewerAnimation::Looping);
+    else if(atts->GetPlaybackMode() == AnimationAttributes::PlayOnce)
+        animation->SetPlaybackMode(ViewerAnimation::PlayOnce);
+    else if(atts->GetPlaybackMode() == AnimationAttributes::Swing)
+        animation->SetPlaybackMode(ViewerAnimation::Swing);
 }
 
 // ****************************************************************************
@@ -2473,6 +2485,10 @@ ViewerWindow::SetAnimationAttributes(const AnimationAttributes *atts)
 // Programmer: Eric Brugger
 // Creation:   November 21, 2001
 //
+// Modifications:
+//   Brad Whitlock, Tue Oct 7 11:31:16 PDT 2003
+//   Added playbackMode.
+//
 // ****************************************************************************
 
 static AnimationAttributes animationAttributes;
@@ -2480,8 +2496,16 @@ static AnimationAttributes animationAttributes;
 const AnimationAttributes *
 ViewerWindow::GetAnimationAttributes() const
 {
+    // Set the caching mode.
     animationAttributes.SetPipelineCachingMode(
         animation->GetPipelineCaching());
+    // Set the playback mode.
+    if(animation->GetPlaybackMode() == ViewerAnimation::Looping)
+        animationAttributes.SetPlaybackMode(AnimationAttributes::Looping);
+    else if(animation->GetPlaybackMode() == ViewerAnimation::PlayOnce)
+        animationAttributes.SetPlaybackMode(AnimationAttributes::PlayOnce);
+    else if(animation->GetPlaybackMode() == ViewerAnimation::Swing)
+        animationAttributes.SetPlaybackMode(AnimationAttributes::Swing);
 
     return &animationAttributes;
 }

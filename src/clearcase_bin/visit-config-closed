@@ -496,7 +496,7 @@
             </Object>
             <Object name="HostProfile" childObjects="0">
                 <Field name="profileName" type="string">serial</Field>
-                <Field name="host" type="string">sc1.llnl.gov sc2.llnl.gov</Field>
+                <Field name="host" type="string">sc1.llnl.gov sc2.llnl.gov sc39.llnl.gov sc40.llnl.gov</Field>
                 <Field name="hostAliases" type="string">sc#.llnl.gov sc##.llnl.gov</Field>
                 <Field name="timeout" type="int">240</Field>
                 <Field name="numProcessors" type="int">1</Field>
@@ -518,7 +518,7 @@
             </Object>
             <Object name="HostProfile" childObjects="0">
                 <Field name="profileName" type="string">parallel</Field>
-                <Field name="host" type="string">sc1.llnl.gov sc2.llnl.gov</Field>
+                <Field name="host" type="string">sc1.llnl.gov sc2.llnl.gov sc39.llnl.gov sc40.llnl.gov</Field>
                 <Field name="hostAliases" type="string">sc#.llnl.gov sc##.llnl.gov</Field>
                 <Field name="timeout" type="int">240</Field>
                 <Field name="numProcessors" type="int">2</Field>

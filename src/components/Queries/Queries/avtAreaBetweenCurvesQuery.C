@@ -4,6 +4,8 @@
 
 #include <avtAreaBetweenCurvesQuery.h>
 
+#include <stdio.h>
+
 
 // ****************************************************************************
 //  Method: avtAreaBetweenCurvesQuery::avtAreaBetweenCurvesQuery

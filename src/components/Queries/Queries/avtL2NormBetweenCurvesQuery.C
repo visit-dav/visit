@@ -4,6 +4,8 @@
 
 #include <avtL2NormBetweenCurvesQuery.h>
 
+#include <stdio.h>
+
 
 // ****************************************************************************
 //  Method: avtL2NormBetweenCurvesQuery::avtL2NormBetweenCurvesQuery

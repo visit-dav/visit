@@ -73,6 +73,9 @@ class ViewerWindow;
 //    Hank Childs, Tue Sep 16 10:19:53 PDT 2003
 //    Added bogus implementations of GetTimeIndex and GetNTimes
 //
+//    Brad Whitlock, Mon Oct 6 16:52:33 PST 2003
+//    Added support for different kinds of animation playback.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerAnimation
@@ -82,6 +85,7 @@ class VIEWER_API ViewerAnimation
     ~ViewerAnimation();
 
     typedef enum {PlayMode, StopMode, ReversePlayMode} AnimationMode;
+    typedef enum {Looping, PlayOnce, Swing} PlaybackMode;
 
     void CopyFrom(const ViewerAnimation *, bool=true);
 
@@ -124,6 +128,8 @@ class VIEWER_API ViewerAnimation
 
     void SetPipelineCaching(const bool mode);
     bool GetPipelineCaching() const;
+    void SetPlaybackMode(PlaybackMode val);
+    PlaybackMode GetPlaybackMode() const;
 
     bool SetWindowAtts(const char *hostName);
 
@@ -143,5 +149,6 @@ class VIEWER_API ViewerAnimation
     AnimationMode   mode;
 
     bool            pipelineCaching;
+    PlaybackMode    playbackMode;
 };
 #endif
