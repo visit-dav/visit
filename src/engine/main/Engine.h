@@ -56,6 +56,10 @@ class Xfer;
 //    Kathleen Bonnell, Wed Mar 31 16:53:03 PST 2004
 //    Added CloneNetworkRPC.
 //
+//    Mark C. Miller, Mon May 24 18:36:13 PDT 2004
+//    Added args to WriteData method to support checking if SR threshold is
+//    exceeded
+//
 // ****************************************************************************
 
 class Engine
@@ -81,7 +85,11 @@ class Engine
     void            ProcessInput();
 
     // Method to write data back to the viewer
-    void            WriteData(NonBlockingRPC *, avtDataObjectWriter_p &);
+    void            WriteData(NonBlockingRPC *, avtDataObjectWriter_p &,
+                        bool respondWithNull=false, int scalableThresold=-1,
+                        bool *scalableThresholdExceeded=0,
+                        int currentTotalGlobalCellCount=0,
+                        int* currentNetworkGlobalCellCount=0);
     void            SendKeepAliveReply();
 
     // Tell the engine whether or not fatal exceptions have occurred

@@ -4999,6 +4999,8 @@ ViewerWindow::GetWindowAttributes() const
 //    Mark C. Miller, Wed Apr 14 16:41:32 PDT 2004
 //    Added code to get and pass extents type string to SetWinAnnotAtts
 //   
+//    Mark C. Miller, Tue May 25 20:44:10 PDT 2004
+//    Added code to pass annotation object list
 // ****************************************************************************
 
 bool
@@ -5006,10 +5008,13 @@ ViewerWindow::SendWindowEnvironmentToEngine(const EngineKey &ek)
 {
     WindowAttributes winAtts(GetWindowAttributes());
     AnnotationAttributes annotAtts(*GetAnnotationAttributes());
+    AnnotationObjectList annotObjs;
+    UpdateAnnotationObjectList(annotObjs);
     string extStr(avtExtentType_ToString(GetViewExtentsType())); 
     return ViewerEngineManager::Instance()->SetWinAnnotAtts(ek,
                                                             &winAtts,
                                                             &annotAtts,
+                                                            &annotObjs,
                                                             extStr);
 }
 
@@ -6912,6 +6917,9 @@ ViewerWindow::ClearLastExternalRenderRequestInfo()
 //   Mark C. Miller, Wed Apr 14 16:41:32 PDT 2004
 //   Added code to update the extents type string
 //
+//   Mark C. Miller, Tue May 25 20:44:10 PDT 2004
+//   Added code to set annotation object list
+//
 // ****************************************************************************
 
 void
@@ -6941,6 +6949,7 @@ ViewerWindow::UpdateLastExternalRenderRequestInfo(
     lastExternalRenderRequest.plotIdsList   = newRequest.plotIdsList;
     lastExternalRenderRequest.winAtts       = newRequest.winAtts;
     lastExternalRenderRequest.annotAtts     = newRequest.annotAtts;
+    lastExternalRenderRequest.annotObjs     = newRequest.annotObjs;
     lastExternalRenderRequest.extStr        = newRequest.extStr;
 
 }
@@ -7062,6 +7071,9 @@ ViewerWindow::CanSkipExternalRender(const ExternalRenderRequestInfo& thisRequest
 //    Mark C. Miller, Wed Apr 14 16:41:32 PDT 2004
 //    Added code to get the extents type string
 //
+//    Mark C. Miller, Tue May 25 20:44:10 PDT 2004
+//    Added code to set annotation object list
+//
 // ****************************************************************************
 
 void
@@ -7077,6 +7089,9 @@ ViewerWindow::GetExternalRenderRequestInfo(
     // get information about this window's attributes
     theRequest.winAtts = GetWindowAttributes();
     theRequest.annotAtts = *GetAnnotationAttributes();
+    AnnotationObjectList aolist;
+    UpdateAnnotationObjectList(aolist);
+    theRequest.annotObjs = aolist;
     theRequest.extStr = avtExtentType_ToString(GetViewExtentsType());
 }
 
@@ -7097,6 +7112,10 @@ ViewerWindow::GetExternalRenderRequestInfo(
 //
 //    Mark C. Miller, Wed Apr 14 16:41:32 PDT 2004
 //    Added argument for extents type string in call to ExternalRender
+//
+//    Mark C. Miller, Tue May 25 20:44:10 PDT 2004
+//    Replaced long list of args relating to external render request with
+//    single struct in call to eMgr->ExternalRender
 //
 // ****************************************************************************
 bool
@@ -7119,13 +7138,7 @@ ViewerWindow::ExternalRender(const ExternalRenderRequestInfo& thisRequest,
     TRY
     {
         // let the engine manager do the render
-        success = eMgr->ExternalRender(thisRequest.pluginIDsList,
-                                       thisRequest.engineKeysList,
-                                       thisRequest.plotIdsList,
-                                       thisRequest.attsList,
-                                       thisRequest.winAtts,
-                                       thisRequest.annotAtts,
-                                       thisRequest.extStr,
+        success = eMgr->ExternalRender(thisRequest,
                                        shouldTurnOffScalableRendering,
                                        doAllAnnotations,
                                        imgList);

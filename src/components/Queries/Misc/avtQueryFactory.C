@@ -24,6 +24,7 @@
 #include <avtVariableQuery.h>
 #include <avtVariableSummationQuery.h>
 #include <avtWeightedVariableSummationQuery.h>
+#include <avtZoneCenterQuery.h>
 
 
 #include <QueryAttributes.h>
@@ -114,6 +115,9 @@ avtQueryFactory::Instance()
 //
 //    Hank Childs, Tue Apr 13 12:50:51 PDT 2004
 //    Allow for surface area to have multiple aliases.
+//
+//    Kathleen Bonnell, Tue May 25 16:16:25 PDT 2004 
+//    Added Zone center query.
 //
 // ****************************************************************************
 
@@ -248,6 +252,10 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
         {
             query = new avtOriginalDataNumNodesQuery();
         }
+    }
+    else if (qname == "Zone Center")
+    {
+        query = new avtZoneCenterQuery();
     }
     return query;
 }

@@ -699,6 +699,9 @@ QvisQueryWindow::ConnectPlotList(PlotList *pl)
 //   Kathleen Bonnell, Thu Apr 22 15:31:24 PDT 2004
 //   Added useActualData to basic DatabaseQuery call. 
 // 
+//   Kathleen Bonnell, Tue May 25 16:09:15 PDT 2004 
+//   Switch order of dom and el in viewerProxy call.  
+// 
 // ****************************************************************************
 
 void
@@ -767,11 +770,11 @@ QvisQueryWindow::Apply(bool ignore, bool doTime)
                 {
                     if (t == QueryList::DatabaseQuery)
                     {
-                        viewer->DatabaseQuery(names[index], vars, doTime, dom, el);
+                        viewer->DatabaseQuery(names[index], vars, doTime, el, dom);
                     }
                     else if (t == QueryList::PointQuery)
                     {
-                        viewer->PointQuery(names[index], p0, vars, doTime, dom, el);
+                        viewer->PointQuery(names[index], p0, vars, doTime, el, dom);
                     }
                     else 
                     {

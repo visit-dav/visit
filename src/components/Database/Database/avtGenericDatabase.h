@@ -178,6 +178,9 @@ class     PickVarInfo;
 //    Hank Childs, Fri Apr  9 09:02:57 PDT 2004
 //    Calculate material indices directly from the material for that timestep.
 //
+//    Kathleen Bonnell, Tue May 25 16:16:25 PDT 2004 
+//    Add QueryZoneCenter. 
+//
 // ****************************************************************************
 
 class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
@@ -347,6 +350,8 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
                                           const bool, const bool, 
                                           std::vector<std::string> &,
                                           std::vector<std::string> &); 
+    virtual bool               QueryZoneCenter(const std::string &, const int,
+                                               const int, const int, float[3]);
 
     void                       AssociateBounds(vtkDataSet *);
     void                       ScaleMesh(vtkDataSet *);

@@ -16,8 +16,11 @@
 #include <VisCallback.h>
 #include <VisWindowTypes.h>
 #include <AnnotationAttributes.h>
+#include <AnnotationObjectList.h>
 #include <WindowAttributes.h>
 #include <vectortypes.h>
+
+#include <ExternalRenderRequestInfo.h>
 
 class AnimationAttributes;
 class AnnotationObjectList;
@@ -35,17 +38,6 @@ class ViewerActionManager;
 class ViewerPlotList;
 class ViewerPopupMenu;
 class ViewerToolbar;
-
-struct ExternalRenderRequestInfo
-{
-    std::vector<const char*>              pluginIDsList;
-    std::vector<EngineKey>                engineKeysList;
-    intVector                             plotIdsList;
-    std::vector<const AttributeSubject *> attsList;
-    WindowAttributes                      winAtts;
-    AnnotationAttributes                  annotAtts;
-    std::string                           extStr;
-};
 
 // ****************************************************************************
 //  Class: ViewerWindow

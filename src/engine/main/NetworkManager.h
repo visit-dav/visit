@@ -4,6 +4,7 @@
 #include <avtDataObjectWriter.h>
 #include <avtPlot.h>
 #include <AnnotationAttributes.h>
+#include <AnnotationObjectList.h>
 #include <WindowAttributes.h>
 #include <vectortypes.h>
 #include <string>
@@ -154,6 +155,13 @@ class VisWindow;
 //    Mark C. Miller, Tue May 11 20:21:24 PDT 2004
 //    Add GetScalableThreshold method
 //
+//    Mark C. Miller, Mon May 24 18:36:13 PDT 2004
+//    Added SetGlobalCellCount method
+//
+//    Mark C. Miller, Tue May 25 20:44:10 PDT 2004
+//    Added annotationObjectList data member
+//    Added arg for annotation object list to SetAnnotationAttributes
+//
 // ****************************************************************************
 class NetworkManager
 {
@@ -185,6 +193,7 @@ class NetworkManager
     avtPlot_p     GetPlot(void);
     int           GetCurrentNetworkId(void);
     int           GetTotalGlobalCellCounts(void) const;
+    void          SetGlobalCellCount(int netId, int cellCount);
     int           GetScalableThreshold(void) const;
     void          DoneWithNetwork(int);
 
@@ -193,6 +202,7 @@ class NetworkManager
     void          SetWindowAttributes(const WindowAttributes&,
                                       const std::string&);
     void          SetAnnotationAttributes(const AnnotationAttributes&,
+                                          const AnnotationObjectList&,
                                           bool do3DAnnotsOnly = true);
 
     void          SetLoadBalancer(LoadBalancer *lb) {loadBalancer = lb;};
@@ -231,6 +241,7 @@ class NetworkManager
     LoadBalancer               *loadBalancer;
     WindowAttributes            windowAttributes;
     AnnotationAttributes        annotationAttributes;
+    AnnotationObjectList        annotationObjectList;
     std::string                 extentTypeString;
     VisWindow                  *viswin;
     std::vector<int>            plotsCurrentlyInWindow;

@@ -30,6 +30,14 @@ class vtkProperty;
 class vtkRenderWindow;
 class vtkOpenGLRenderer;
 
+// ****************************************************************************
+//  Modifications:
+//  
+//    Hank Childs, Tue May 25 10:04:36 PDT 2004
+//    Break display lists up into smaller display lists.
+//
+// ****************************************************************************
+
 class VTK_RENDERING_EXPORT vtkVisItOpenGLPolyDataMapper : public vtkPolyDataMapper
 {
 public:
@@ -55,7 +63,12 @@ protected:
   vtkVisItOpenGLPolyDataMapper();
   ~vtkVisItOpenGLPolyDataMapper();
 
-  int ListId;
+  int ListStart;
+  int CurrentList;
+  int nLists;
+  bool doingDisplayLists;
+  int  primsInCurrentList;
+
 private:
   vtkVisItOpenGLPolyDataMapper(const vtkVisItOpenGLPolyDataMapper&);  // Not implemented.
   void operator=(const vtkVisItOpenGLPolyDataMapper&);  // Not implemented.

@@ -647,3 +647,25 @@ avtExpressionEvaluatorFilter::GetDomainName(const std::string &var, const int ts
     GetInput()->GetQueryableSource()->GetDomainName(var, ts, dom, domName);
 }
 
+
+// ****************************************************************************
+//  Method: avtExpressionEvaluatorFilter::QueryZoneCenter
+//
+//  Purpose:
+//      Passes this request on to the queryable source. 
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   May 25, 2004 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+bool
+avtExpressionEvaluatorFilter::QueryZoneCenter(const std::string &var, 
+    const int dom, const int zone, const int ts, float c[3])
+{
+    return GetInput()->GetQueryableSource()->
+        QueryZoneCenter(var, dom, zone, ts, c);
+}
+

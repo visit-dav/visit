@@ -14,8 +14,10 @@
 #include <avtPluginFilter.h>
 #include <OperatorPluginManager.h>
 #include <OperatorPluginInfo.h>
+#include <AnnotationObjectList.h>
 #include <PickAttributes.h>
 #include <avtCallback.h>
+#include <avtColorTables.h>
 #include <avtExtents.h>
 #include <avtNullData.h>
 #include <avtDatabaseMetaData.h>
@@ -72,6 +74,9 @@ static double RenderBalance(int numTrianglesIHave);
 //    Mark C. Miller, Thu Apr 29 16:15:25 PDT 2004
 //    Added missing initialization of dumpRenders
 //
+//    Mark C. Miller, Tue May 25 20:44:10 PDT 2004
+//    Removed unnecessary scope. Set annotationAttributes data member
+//
 // ****************************************************************************
 NetworkManager::NetworkManager(void) : virtualDatabases()
 {
@@ -83,19 +88,20 @@ NetworkManager::NetworkManager(void) : virtualDatabases()
     dumpRenders = false;
 
     // stuff to support scalable rendering
-    {
-       viswin = new VisWindow();
-       AnnotationAttributes newAtts = *(viswin->GetAnnotationAtts());
-       newAtts.SetUserInfoFlag(false);
-       newAtts.SetDatabaseInfoFlag(false);
-       newAtts.SetLegendInfoFlag(false);
-       newAtts.SetTriadFlag(false);
-       newAtts.SetBboxFlag(false);
-       newAtts.SetAxesFlag(false);
-       newAtts.SetAxesFlag2D(false);
-       viswin->SetAnnotationAtts(&newAtts);
-       viswin->DisableUpdates();
-    }
+    viswin = new VisWindow();
+
+    annotationAttributes = *(viswin->GetAnnotationAtts());
+    annotationAttributes.SetUserInfoFlag(false);
+    annotationAttributes.SetDatabaseInfoFlag(false);
+    annotationAttributes.SetLegendInfoFlag(false);
+    annotationAttributes.SetTriadFlag(false);
+    annotationAttributes.SetBboxFlag(false);
+    annotationAttributes.SetAxesFlag(false);
+    annotationAttributes.SetAxesFlag2D(false);
+    viswin->SetAnnotationAtts(&annotationAttributes);
+
+    viswin->DisableUpdates();
+
 }
 
 // ****************************************************************************
@@ -1040,6 +1046,22 @@ NetworkManager::GetTotalGlobalCellCounts(void) const
 }
 
 // ****************************************************************************
+//  Method: NetworkManager::SetGlobalCellCount
+//
+//  Purpose:
+//      Sets the global (over all processors) cell count for the given network 
+//
+//  Programmer: Mark C. Miller
+//  Creation:   May 24, 2004 
+//
+// ****************************************************************************
+void
+NetworkManager::SetGlobalCellCount(int netId, int cellCount)
+{
+   globalCellCounts[netId] = cellCount;
+}
+
+// ****************************************************************************
 //  Method: NetworkManager::GetScalableThreshold
 //
 //  Purpose: Get the effective scalable threshold
@@ -1226,6 +1248,10 @@ NetworkManager::UpdatePlotAtts(int id, const AttributeGroup *atts)
 //    Mark C. Miller, Tue May 11 20:21:24 PDT 2004
 //    Modifed to use local GetScalableThreshold method
 //
+//    Mark C. Miller, Mon May 24 18:36:13 PDT 2004
+//    Removed MPI_Allreduce. Moved code to check for scalable threshold being
+//    exceeded to Engine::WriteData
+//
 // ****************************************************************************
 avtDataObjectWriter_p
 NetworkManager::GetOutput(bool respondWithNullData, bool calledForRender)
@@ -1240,12 +1266,8 @@ NetworkManager::GetOutput(bool respondWithNullData, bool calledForRender)
 
     TRY
     {
-        bool clearNetwork = true;
-
         // Hook up the network
         avtDataObject_p output = workingNet->GetOutput();
-        int netId = GetCurrentNetworkId();
-
 
         workingNet->GetPipelineSpec()->GetDataSpecification()->
             SetMayRequireZones(requireOriginalCells); 
@@ -1253,25 +1275,6 @@ NetworkManager::GetOutput(bool respondWithNullData, bool calledForRender)
         avtDataObjectWriter_p writer = workingNet->GetWriter(output,
                                           workingNet->GetPipelineSpec(),
                                           &windowAttributes);
-
-        int scalableThreshold = GetScalableThreshold(); 
-
-        // compute this network's cell count if we haven't already 
-        if (globalCellCounts[netId] == -1)
-        {
-           bool polysOnly = true;
-           if (scalableThreshold == 0)
-               polysOnly = false;
-           int localCellCount = writer->GetInput()->GetNumberOfCells(polysOnly);
-           int totalCellCount;
-#ifdef PARALLEL
-           MPI_Allreduce(&localCellCount, &totalCellCount, 1, MPI_INT, MPI_SUM,
-              MPI_COMM_WORLD);
-#else
-           totalCellCount = localCellCount; 
-#endif
-           globalCellCounts[netId] = totalCellCount;
-        }
 
         if (respondWithNullData)
         {
@@ -1287,33 +1290,11 @@ NetworkManager::GetOutput(bool respondWithNullData, bool calledForRender)
            writer = dummyDob->InstantiateWriter();
            writer->SetInput(dummyDob);
         }
-        else if (!calledForRender)
-        {
-
-#ifdef PARALLEL
-           if ((PAR_Size() > 1) && (GetTotalGlobalCellCounts() > scalableThreshold))
-           {
-               debug5 << "Cell count has exceeded SR threshold. Sending the "
-                         "AVT_NULL_DATASET_MSG data object message" << endl;
-
-               avtNullData_p nullData = new avtNullData(NULL,AVT_NULL_DATASET_MSG);
-               avtDataObject_p dummyDob;
-               CopyTo(dummyDob, nullData);
-               writer = dummyDob->InstantiateWriter();
-               writer->SetInput(dummyDob);
-               clearNetwork = false;
-           }
-#endif
-
-        }
 
         // Zero out the workingNet.  Remember that we've already pushed it
         // onto the cache in EndNetwork.
-        if (clearNetwork)
-        {
-           workingNet = NULL;
-           workingNetnodeList.clear();
-        }
+        workingNet = NULL;
+        workingNetnodeList.clear();
 
         // return it
         CATCH_RETURN2(1, writer);
@@ -1362,6 +1343,9 @@ NetworkManager::GetOutput(bool respondWithNullData, bool calledForRender)
 //
 //    Mark C. Miller, Tue May 11 20:21:24 PDT 2004
 //    Added call to local GetScalableThreshold method
+//
+//    Mark C. Miller, Tue May 25 20:44:10 PDT 2004
+//    Added code to pass annotationObjectList in SetAnnotationAttributes
 // ****************************************************************************
 avtDataObjectWriter_p
 NetworkManager::Render(intVector plotIds, bool getZBuffer, bool do3DAnnotsOnly)
@@ -1454,7 +1438,8 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, bool do3DAnnotsOnly)
           }
 
           if (!do3DAnnotsOnly)
-              SetAnnotationAttributes(annotationAttributes, false);
+              SetAnnotationAttributes(annotationAttributes,
+                                      annotationObjectList, false);
 
           int numTriangles = viswin->GetNumTriangles();
           debug1 << "Rendering " << numTriangles << " triangles. " 
@@ -1594,6 +1579,9 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, bool do3DAnnotsOnly)
 //    Do not turn on display lists on the engine, since they will just eat up
 //    extra memory.
 //
+//    Mark C. Miller, Tue May 25 16:42:09 PDT 2004
+//    Added code to set the color tables
+//
 // ****************************************************************************
 void
 NetworkManager::SetWindowAttributes(const WindowAttributes &atts,
@@ -1630,6 +1618,11 @@ NetworkManager::SetWindowAttributes(const WindowAttributes &atts,
     avtView3D view3D;
     view3D.SetFromView3DAttributes(&view3DAtts);
     viswin->SetView3D(view3D);
+
+    //
+    // Set the color tables
+    //
+    avtColorTables::Instance()->SetColorTables(atts.GetColorTables());
 
     //
     // Set the lights.
@@ -1694,10 +1687,12 @@ NetworkManager::SetWindowAttributes(const WindowAttributes &atts,
 //    Mark C. Miller, Mon Mar 29 14:36:46 PST 2004
 //    Added bool arg for 3D annotations only
 //
+//    Mark C. Miller, Tue May 25 20:44:10 PDT 2004
+//    Added arg for annotation object list
 // ****************************************************************************
 void
 NetworkManager::SetAnnotationAttributes(const AnnotationAttributes &atts,
-    bool do3DAnnotsOnly)
+    const AnnotationObjectList &aolist, bool do3DAnnotsOnly)
 {
 #ifdef PARALLEL
    if (PAR_Rank() == 0)
@@ -1716,9 +1711,19 @@ NetworkManager::SetAnnotationAttributes(const AnnotationAttributes &atts,
       }
 
       viswin->SetAnnotationAtts(&newAtts);
+
+      if (do3DAnnotsOnly)
+          viswin->DeleteAllAnnotationObjects();
+      else
+      {
+          viswin->DeleteAllAnnotationObjects();
+          viswin->CreateAnnotationObjectsFromList(aolist);
+      }
+
    }
 
    annotationAttributes = atts;
+   annotationObjectList = aolist;
 }
 
 // ****************************************************************************

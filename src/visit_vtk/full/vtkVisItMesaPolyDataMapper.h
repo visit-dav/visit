@@ -31,6 +31,14 @@ class vtkRenderWindow;
 class vtkMesaRenderer;
 class vtkTimerLog;
 
+// ****************************************************************************
+//  Modifications:
+//  
+//    Hank Childs, Tue May 25 10:04:36 PDT 2004
+//    Break display lists up into smaller display lists.
+//
+// ****************************************************************************
+
 class VTK_RENDERING_EXPORT vtkVisItMesaPolyDataMapper : public vtkPolyDataMapper
 {
 public:
@@ -56,7 +64,12 @@ protected:
   vtkVisItMesaPolyDataMapper();
   ~vtkVisItMesaPolyDataMapper();
 
-  int ListId;
+  int ListStart;
+  int CurrentList;
+  int nLists;
+  bool doingDisplayLists;
+  int  primsInCurrentList;
+
   vtkRenderWindow *RenderWindow;   // RenderWindow used for the previous render
 private:
   vtkVisItMesaPolyDataMapper(const vtkVisItMesaPolyDataMapper&);  // Not implemented.

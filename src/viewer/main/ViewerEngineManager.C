@@ -1235,24 +1235,34 @@ ViewerEngineManager::LaunchMessage(const EngineKey &ek)  const
 //   Mark C. Miller, Wed Apr 21 12:42:13 PDT 2004
 //   I added a pre-check overall all engines to make sure all exist
 //   I used engine proxy directly instead of calling other methods in VEM
+//
+//   Mark C. Miller, Tue May 25 16:42:09 PDT 2004
+//   Re-arranged so that window and annotation att RPCs are sent to engine
+//   before the plot attribute rpcs.
+//
+//   Mark C. Miller, Tue May 25 20:44:10 PDT 2004
+//   Compressed args relating to ExternalRenderRequest info to a single
+//   struct arg. Added support for passing annotation object list
 // ****************************************************************************
 
 bool
-ViewerEngineManager::ExternalRender(vector<const char*> pluginIDsList,
-                                    vector<EngineKey> engineKeysList,
-                                    intVector plotIdsList,
-                                    vector<const AttributeSubject *> attsList,
-                                    WindowAttributes winAtts,
-                                    AnnotationAttributes annotAtts,
-                                    string extStr,
+ViewerEngineManager::ExternalRender(const ExternalRenderRequestInfo& reqInfo,
                                     bool& shouldTurnOffScalableRendering,
                                     bool doAllAnnotations,
                                     vector<avtImage_p>& imgList)
 {
+    // break-out individual members of the request info
+    const vector<const char*>& pluginIDsList         = reqInfo.pluginIDsList;
+    const vector<EngineKey>& engineKeysList          = reqInfo.engineKeysList;
+    const vector<int>& plotIdsList                   = reqInfo.plotIdsList;
+    const vector<const AttributeSubject *>& attsList = reqInfo.attsList;
+    const WindowAttributes& winAtts                  = reqInfo.winAtts;
+    const AnnotationAttributes& annotAtts            = reqInfo.annotAtts;
+    const AnnotationObjectList& annotObjs            = reqInfo.annotObjs;
+    const string& extStr                             = reqInfo.extStr;
+
     bool retval = true;
     EngineKey ek;
-
-    // container for per-engine vector of plot ids 
     map<EngineKey,vector<int> > perEnginePlotIds;
 
     // make a pass over list of plots to make sure all associated engines exist
@@ -1264,6 +1274,25 @@ ViewerEngineManager::ExternalRender(vector<const char*> pluginIDsList,
 
     TRY
     {
+        // build list of per-engine plot ids
+        for (int i = 0; i < plotIdsList.size(); i++)
+        {
+            ek = engineKeysList[i];
+            perEnginePlotIds[ek].push_back(plotIdsList[i]);
+        }
+
+        int numEnginesToRender = perEnginePlotIds.size();
+        bool sendZBuffer = numEnginesToRender > 1 ? true : false;
+
+        // send RPCs to set window and annotation attributes
+        std::map<EngineKey, intVector>::iterator pos;
+        for (pos = perEnginePlotIds.begin();
+             pos != perEnginePlotIds.end(); pos++)
+        {
+            ek = pos->first;
+            engines[ek]->SetWinAnnotAtts(&winAtts, &annotAtts, &annotObjs, extStr);
+        }
+
         // send per-plot RPCs
         for (int i = 0; i < plotIdsList.size(); i++)
         {
@@ -1271,20 +1300,13 @@ ViewerEngineManager::ExternalRender(vector<const char*> pluginIDsList,
             engines[ek]->UpdatePlotAttributes(pluginIDsList[i],
                                               plotIdsList[i],
                                               attsList[i]);
-            perEnginePlotIds[ek].push_back(plotIdsList[i]);
         }
 
-        int numEnginesToRender = perEnginePlotIds.size();
-        bool sendZBuffer = numEnginesToRender > 1 ? true : false;
-
-        // send per-engine RPCs 
-        std::map<EngineKey, intVector>::iterator pos;
+        // send per-engine render RPCs 
         for (pos = perEnginePlotIds.begin(); pos != perEnginePlotIds.end();
                                                                          pos++)
         {
             ek = pos->first;
-
-            engines[ek]->SetWinAnnotAtts(&winAtts, &annotAtts, extStr);
 
             avtDataObjectReader_p rdr =
                 engines[ek]->Render(sendZBuffer, pos->second, !doAllAnnotations,
@@ -1460,6 +1482,9 @@ ViewerEngineManager::ExternalRender(vector<const char*> pluginIDsList,
 //    Mark C. Miller, Tue Apr 27 14:41:35 PDT 2004
 //    Added code to pass ViewerSubject callbacks in Execute calls
 //
+//    Mark C. Miller, Tue May 25 20:44:10 PDT 2004
+//    Added code to pass annotation object list to SetWinAnnotAtts
+//
 // ****************************************************************************
 
 avtDataObjectReader_p
@@ -1531,8 +1556,10 @@ ViewerEngineManager::GetDataObjectReader(ViewerPlot *const plot)
         {
            WindowAttributes winAtts = w->GetWindowAttributes();
            AnnotationAttributes annotAtts = *(w->GetAnnotationAttributes());
+           AnnotationObjectList annotObjs;
+           w->UpdateAnnotationObjectList(annotObjs);
            string extStr = avtExtentType_ToString(w->GetViewExtentsType());
-           engine->SetWinAnnotAtts(&winAtts,&annotAtts,extStr);
+           engine->SetWinAnnotAtts(&winAtts,&annotAtts,&annotObjs,extStr);
         }
 
         //
@@ -2018,16 +2045,20 @@ ViewerEngineManager::StartPick(const EngineKey &ek,
 //    Mark C. Miller, Wed Apr 14 16:41:32 PDT 2004
 //    Added extents type string argument
 //
+//    Mark C. Miller, Tue May 25 20:44:10 PDT 2004
+//    Added AnnotationObjectList arg
+//
 // ****************************************************************************
 
 bool
 ViewerEngineManager::SetWinAnnotAtts(const EngineKey &ek,
                                      const WindowAttributes *wa,
                                      const AnnotationAttributes *aa,
+                                     const AnnotationObjectList *ao,
                                      const string extstr)
 {
     ENGINE_PROXY_RPC_BEGIN("SetWinAnnotAtts");
-    engine->SetWinAnnotAtts(wa,aa,extstr);
+    engine->SetWinAnnotAtts(wa,aa,ao,extstr);
     ENGINE_PROXY_RPC_END;
 }
 
@@ -2392,6 +2423,9 @@ ViewerEngineManager::Update(Subject *TheChangedSubject)
 //    Mark C. Miller, Wed Apr 14 16:41:32 PDT 2004
 //    Added code to pass extents type string to SetWinAnnotAtts
 //
+//    Mark C. Miller, Tue May 25 20:44:10 PDT 2004
+//    Added code to pass annotation object list to SetWinAnnotAtts
+//
 // ****************************************************************************
 
 void
@@ -2405,10 +2439,12 @@ ViewerEngineManager::GetImage(int index, avtDataObject_p &dob)
     ViewerWindow *w = vwm->GetActiveWindow();
     WindowAttributes winAtts = w->GetWindowAttributes();
     AnnotationAttributes annotAtts = *(w->GetAnnotationAttributes());
+    AnnotationObjectList annotObjs;
+    w->UpdateAnnotationObjectList(annotObjs);
     string extStr = avtExtentType_ToString(w->GetViewExtentsType());
 
     // send to the engine
-    engine->SetWinAnnotAtts(&winAtts,&annotAtts,extStr);
+    engine->SetWinAnnotAtts(&winAtts,&annotAtts,&annotObjs,extStr);
     
     engine->UseNetwork(index);
 #ifdef VIEWER_MT

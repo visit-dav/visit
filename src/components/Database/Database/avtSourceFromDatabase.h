@@ -63,6 +63,9 @@ class  PickAttributes;
 //    Kathleen Bonnell, Mon Dec 22 14:39:30 PST 2003
 //    Add GetDomainName method. 
 //
+//    Kathleen Bonnell, Tue May 25 16:16:25 PDT 2004 
+//    Add QueryZoneCenter method. 
+//
 // ****************************************************************************
 
 class DATABASE_API avtSourceFromDatabase : public avtTerminatingDatasetSource
@@ -85,6 +88,8 @@ class DATABASE_API avtSourceFromDatabase : public avtTerminatingDatasetSource
     void                InvalidateZones(void);
     void                DatabaseProgress(int, int, const char *);
     virtual void        Query(PickAttributes *);
+    virtual bool        QueryZoneCenter(const std::string &, const int, const int,
+                                        const int, float[3]);
     virtual bool        FindElementForPoint(const char *, const int, 
                             const int, const char *, float[3], int &);
     virtual void        GetDomainName(const std::string &, const int, 
