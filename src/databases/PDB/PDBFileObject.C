@@ -134,6 +134,34 @@ PDBFileObject::~PDBFileObject()
 }
 
 // ****************************************************************************
+// Method: PDBFileObject::Destruct
+//
+// Purpose: 
+//   Static destruct function that is used by the variable cache to delete
+//   an instance of PDBFileObject.
+//
+// Arguments:
+//   ptr : A pointer to the object to delete.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Jul 12 10:26:00 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+PDBFileObject::Destruct(void *ptr)
+{
+    if(ptr != 0)
+    {
+        PDBFileObject *obj = (PDBFileObject *)ptr;
+        debug4 << "PDBFileObject::Destruct: file=" << obj->GetName().c_str() << endl;
+        delete obj;
+    }
+}
+
+// ****************************************************************************
 // Method: PDBFileObject::IsOpen
 //
 // Purpose: 
@@ -720,7 +748,9 @@ PDBFileObject::SymbolExists(const char *name)
 // Creation:   Fri Aug 8 11:12:52 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Jun 22 11:32:48 PDT 2004
+//   I made "string" be a synonym for "char".
+//
 // ****************************************************************************
 
 bool
@@ -801,7 +831,8 @@ PDBFileObject::SymbolExists(const char *name, TypeEnum *t,
             // variable.
             //
             retval = true;
-            if(strcmp(PD_entry_type(ep), "char") == 0)
+            if(strcmp(PD_entry_type(ep), "char") == 0 ||
+               strcmp(PD_entry_type(ep), "string") == 0)
                 *t = (length > 1) ? CHARARRAY_TYPE : CHAR_TYPE;
             else if(strcmp(PD_entry_type(ep), "int") == 0 ||
                     strcmp(PD_entry_type(ep), "integer") == 0)

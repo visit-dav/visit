@@ -37,7 +37,9 @@ typedef enum {NO_TYPE, CHAR_TYPE, INTEGER_TYPE, FLOAT_TYPE, DOUBLE_TYPE,
 // Creation:   Tue Sep 16 09:00:58 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Jul 12 10:24:09 PDT 2004
+//   Added a static Destruct function.
+//
 // ****************************************************************************
 
 class PDBFileObject
@@ -62,6 +64,7 @@ public:
     bool SymbolExists(const char *, TypeEnum *, std::string &, int *, int **, int*);
     void *ReadValues(const char *, TypeEnum *, int *, int **, int*, int=0);
 
+    static void Destruct(void *ptr);
 private:
     bool AutoOpen();
 

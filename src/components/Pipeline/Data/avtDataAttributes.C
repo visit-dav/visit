@@ -14,7 +14,6 @@
 #include <ImproperUseException.h>
 #include <InvalidMergeException.h>
 
-
 using     std::string;
 using     std::vector;
 using     std::sort;
@@ -249,6 +248,9 @@ avtDataAttributes::DestructSelf(void)
 //    Kathleen Bonnell, Thu Jul 22 12:10:19 PDT 2004 
 //    Print VarInfo's treatAsASCII. 
 //
+//    Brad Whitlock, Wed Jul 21 15:25:11 PST 2004
+//    Added variable units.
+//
 // ****************************************************************************
 
 void
@@ -374,6 +376,8 @@ avtDataAttributes::Print(ostream &out)
     for (int i = 0 ; i < variables.size() ; i++)
     {
         out << "Variable = " << variables[i].varname.c_str() << endl;
+        if(variables[i].varunits != "")
+            out << "Units = " << variables[i].varunits.c_str() << endl;
         out << "Dimension = " << variables[i].dimension << endl;
         switch (variables[i].centering)
         {
@@ -483,6 +487,9 @@ avtDataAttributes::Print(ostream &out)
 //    Kathleen Bonnell, Thu Jul 22 12:10:19 PDT 2004 
 //    Copy varinfo's treatAsASCII.
 //
+//    Brad Whitlock, Tue Jul 20 14:02:32 PST 2004
+//    Copied variable units.
+//
 // ****************************************************************************
 
 void
@@ -530,7 +537,7 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
     for (int i = 0 ; i < di.variables.size() ; i++)
     {
         const char *vname = di.variables[i].varname.c_str();
-        AddVariable(vname);
+        AddVariable(vname, di.variables[i].varunits);
         SetVariableDimension(di.variables[i].dimension, vname);
         SetCentering(di.variables[i].centering, vname);
         SetTreatAsASCII(di.variables[i].treatAsASCII, vname);
@@ -1537,6 +1544,9 @@ avtDataAttributes::SetTime(double d)
 //    Kathleen Bonnell, Thu Jul 22 12:10:19 PDT 2004 
 //    Write treatAsASCII. 
 //
+//    Brad Whitlock, Tue Jul 20 14:13:37 PST 2004
+//    Added units.
+//
 // ****************************************************************************
 
 void
@@ -1580,10 +1590,22 @@ avtDataAttributes::Write(avtDataObjectString &str,
 
     for (i = 0 ; i < variables.size() ; i++)
     {
+        // Write the variable name
         wrtr->WriteInt(str, variables[i].varname.size());
         str.Append((char *) variables[i].varname.c_str(),
                    variables[i].varname.size(),
                    avtDataObjectString::DATA_OBJECT_STRING_SHOULD_MAKE_COPY);
+
+        // Write the units name.
+        int unitlen = variables[i].varunits.size();
+        wrtr->WriteInt(str, unitlen);
+        if(unitlen > 0)
+        {
+            str.Append((char *) variables[i].varunits.c_str(),
+                        unitlen,
+                        avtDataObjectString::DATA_OBJECT_STRING_SHOULD_MAKE_COPY);
+        }
+
         variables[i].trueData->Write(str, wrtr);
         variables[i].cumulativeTrueData->Write(str, wrtr);
         variables[i].effectiveData->Write(str, wrtr);
@@ -1677,6 +1699,9 @@ avtDataAttributes::Write(avtDataObjectString &str,
 //
 //    Kathleen Bonnell, Thu Jul 22 12:10:19 PDT 2004 
 //    Read treatAsASCII. 
+//
+//    Brad Whitlock, Tue Jul 20 14:03:19 PST 2004
+//    Added units.
 //
 // ****************************************************************************
 
@@ -1786,13 +1811,34 @@ avtDataAttributes::Read(char *input)
 
     for (i = 0 ; i < numVars ; i++)
     {
+        // Get the name of the variable
         int varname_length;
         memcpy(&varname_length, input, sizeof(int));
         input += sizeof(int); size += sizeof(int);
         string varname(input, varname_length);
         size += varname_length;
         input += varname_length;
-        AddVariable(varname.c_str());
+
+        // Get the length of the name of the units.
+        int unit_length;
+        memcpy(&unit_length, input, sizeof(int));
+        input += sizeof(int); size += sizeof(int);
+
+        // Add the variable.
+        if(unit_length > 0)
+        {
+            string units(input, unit_length);
+            AddVariable(varname, units);
+        }
+        else
+            AddVariable(varname);
+
+        // Adjust the size and input pointer in accordance with the
+        // size of the units that we had. We do it here in case
+        // we didn't have any units.
+        size += unit_length;
+        input += unit_length;
+
         SetCentering(centerings[i], varname.c_str());
         SetVariableDimension(varDims[i], varname.c_str());
         SetTreatAsASCII(ascii[i], varname.c_str());
@@ -2211,6 +2257,64 @@ avtDataAttributes::GetVariableName(int index) const
     return variables[index].varname;
 }
 
+// ****************************************************************************
+// Method: avtDataAttributes::GetVariableUnits
+//
+// Purpose: 
+//   Returns the active variable's units.
+//
+// Returns:    A reference to the active variable's units.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jul 20 16:36:00 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+const std::string &
+avtDataAttributes::GetVariableUnits(void) const
+{
+    if (activeVariable < 0)
+    {
+        string reason = "Attempting to retrieve non-existent"
+                        " active variable.\n";
+        EXCEPTION1(ImproperUseException, reason);
+    }
+
+    return variables[activeVariable].varunits;
+}
+
+// ****************************************************************************
+// Method: avtDataAttributes::GetVariableUnits
+//
+// Purpose: 
+//   Returns the units for the variable at an index.
+//
+// Arguments:
+//   index : The index of the variable whose units we want.
+//
+// Returns:    A reference to the variable units.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jul 20 12:22:22 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+const std::string &
+avtDataAttributes::GetVariableUnits(int index) const
+{
+    if (index < 0 || index >= variables.size())
+    {
+        EXCEPTION2(BadIndexException, index, variables.size());
+    }
+
+    return variables[index].varunits;
+}
 
 // ****************************************************************************
 //  Method: avtDataAttributes::GetNumberOfVariables
@@ -2268,10 +2372,19 @@ avtDataAttributes::SetActiveVariable(const char *v)
 //    Kathleen Bonnell, Thu Jul 22 12:10:19 PDT 2004
 //    Initialize treatAsASCII.
 //
+//    Brad Whitlock, Tue Jul 20 12:24:28 PDT 2004
+//    Added the units argument so units can be passed in if they are known.
+//
 // ****************************************************************************
 
 void
 avtDataAttributes::AddVariable(const std::string &s)
+{
+    AddVariable(s, "");
+}
+
+void
+avtDataAttributes::AddVariable(const std::string &s, const std::string &units)
 {
     for (int i = 0 ; i < variables.size() ; i++)
     {
@@ -2286,6 +2399,7 @@ avtDataAttributes::AddVariable(const std::string &s)
 
     VarInfo new_var;
     new_var.varname = s;
+    new_var.varunits = units;
     new_var.dimension = -1;
     new_var.centering = AVT_UNKNOWN_CENT;
     new_var.treatAsASCII = false;
@@ -2296,7 +2410,6 @@ avtDataAttributes::AddVariable(const std::string &s)
     new_var.cumulativeCurrentData = NULL;
     variables.push_back(new_var);
 }
-
 
 // ****************************************************************************
 //  Method: avtDataAttributes::ValidVariable

@@ -11,6 +11,7 @@
 #include <avtExtents.h>
 #include <avtMetaData.h>
 #include <avtIntervalTree.h>
+#include <ImproperUseException.h>
 #include <InvalidDimensionsException.h>
 #include <DebugStream.h>
 
@@ -161,6 +162,9 @@ avtLineoutFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
 //    Kathleen Bonnell, Tue Mar 23 08:48:33 PST 2004
 //    Set X and Y axis labels.
 //
+//    Brad Whitlock, Thu Jul 22 17:20:05 PST 2004
+//    Set the Y units.
+//
 // ****************************************************************************
 
 void
@@ -171,6 +175,18 @@ avtLineoutFilter::RefashionDataObjectInfo(void)
     GetOutput()->GetInfo().GetAttributes().SetYLabel("Value");
     GetOutput()->GetInfo().GetValidity().InvalidateZones();
     GetOutput()->GetInfo().GetValidity().InvalidateSpatialMetaData();
+
+    TRY
+    {
+        std::string units(GetInput()->GetInfo().GetAttributes().GetVariableUnits());
+        if(units != "")
+            GetOutput()->GetInfo().GetAttributes().SetYUnits(units);
+    }
+    CATCH(ImproperUseException)
+    {
+        ; // ignore
+    }
+    ENDTRY
 }
 
 

@@ -45,6 +45,10 @@
 #include <GlobalLineoutAttributes.h>
 #include <VisItException.h>
 
+#include <ViewerSubject.h>
+extern ViewerSubject *viewerSubject;
+
+
 // File wide modifications:
 //   Brad Whitlock, Tue Jan 27 16:41:32 PST 2004
 //   I removed all instances of ViewerAnimation.
@@ -1129,6 +1133,10 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
 //    window can be retrieved/created.  Save resWin's Id in lineoutCache
 //    for use during Finish routine.
 //
+//    Kathleen Bonnell, Mon Jul 26 17:45:12 PDT 2004
+//    Suspend socket signals in the viewer so that Lineout does not cause 
+//    synchronization events to be processed before we are ready for them. 
+//
 // ****************************************************************************
 
 void         
@@ -1138,6 +1146,7 @@ ViewerQueryManager::StartLineQuery(const char *qName, const double *pt1,
 {
     if (strcmp(qName, "Lineout") == 0)
     {
+        viewerSubject->BlockSocketSignals(true);
         //
         // Can we get a lineout window? 
         //
@@ -1975,12 +1984,17 @@ ViewerQueryManager::GetColor()
 //   Renamed to 'StartLineout'.   Attempt to get Lineout window.  Save off
 //   information to lineoutCache for use during FinishLineout.
 // 
+//    Kathleen Bonnell, Mon Jul 26 17:45:12 PDT 2004
+//    Suspend socket signals in the viewer so that Lineout does not cause 
+//    synchronization events to be processed before we are ready for them. 
+//
 // ****************************************************************************
 
 void
 ViewerQueryManager::StartLineout(ViewerWindow *win, bool fromDefault)
 {
-   if(operatorFactory == 0)
+    viewerSubject->BlockSocketSignals(true);
+    if(operatorFactory == 0)
         return;
 
     if (win->GetWindowMode() == WINMODE_CURVE)
@@ -2443,11 +2457,16 @@ ViewerQueryManager::PointQuery(const string &qName, const double *pt,
 //   window can be retrieved/created. Save resWin's id in lineoutCache for
 //   use later by Finish routine.
 //
+//    Kathleen Bonnell, Mon Jul 26 17:45:12 PDT 2004
+//    Suspend socket signals in the viewer so that Lineout does not cause 
+//    synchronization events to be processed before we are ready for them. 
+//
 // ****************************************************************************
 
 void
 ViewerQueryManager::StartLineout(ViewerWindow *origWin, Line *lineAtts)
 {
+    viewerSubject->BlockSocketSignals(true);
     //
     // Can we get a lineout window? 
     //
@@ -3790,6 +3809,9 @@ ViewerQueryManager::ResetLineoutCache()
 //  Creation:   July 9, 2004 
 //
 //  Modifications:
+//    Kathleen Bonnell, Mon Jul 26 17:45:12 PDT 2004
+//    Resume socket signals in the viewer so that synchronization events 
+//    can be processed. 
 //
 // ****************************************************************************
 
@@ -3801,6 +3823,7 @@ ViewerQueryManager::FinishLineout()
         AddQuery(lineoutCache.origWin, &lineoutCache.line, lineoutCache.fromDefault);
         ResetLineoutCache();  
     }
+    viewerSubject->BlockSocketSignals(false);
 }
 
 
@@ -3815,6 +3838,9 @@ ViewerQueryManager::FinishLineout()
 //  Creation:   July 9, 2004 
 //
 //  Modifications:
+//    Kathleen Bonnell, Mon Jul 26 17:45:12 PDT 2004
+//    Resume socket signals in the viewer so that synchronization events 
+//    can be processed. 
 //
 // ****************************************************************************
 
@@ -3830,4 +3856,5 @@ ViewerQueryManager::FinishLineQuery()
         }
         ResetLineoutCache();  
     }
+    viewerSubject->BlockSocketSignals(false);
 }

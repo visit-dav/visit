@@ -24,6 +24,7 @@
 #include <avtDatasetExaminer.h>
 #include <avtExtents.h>
 
+#include <ImproperUseException.h>
 #include <InvalidDimensionsException.h>
 #include <InvalidLimitsException.h>
 #include <DebugStream.h>
@@ -346,6 +347,10 @@ avtSurfaceFilter::SkewTheValue(const double val)
 //    Kathleen Bonnell, Thu May  6 17:51:15 PDT 2004
 //    Invalidate zones so that pick will function properly. 
 //
+//    Brad Whitlock, Thu Jul 22 16:16:58 PST 2004
+//    Changed the Z-axis's units so they match the variable's units if
+//    the variable has any units.
+//
 // ****************************************************************************
 
 void
@@ -368,6 +373,20 @@ avtSurfaceFilter::RefashionDataObjectInfo(void)
         double tform[16] = {1.,0.,0.,0.,0.,1.,0.,0.,0.,0.,0.,0.,0.,0.,0.,1.};
         da.SetInvTransform(tform);
     }
+
+    //
+    // Set the Z-axis's units to match the variable units.
+    // 
+    TRY
+    {
+        if(da.GetVariableUnits() != "")
+            da.SetZUnits(da.GetVariableUnits());
+    }
+    CATCH(ImproperUseException)
+    {
+        ; // nothing.
+    }
+    ENDTRY
 }
 
 

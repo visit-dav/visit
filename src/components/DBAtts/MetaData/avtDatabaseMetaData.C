@@ -47,10 +47,13 @@ inline void   Indent(ostream &, int);
 //    Hank Childs, Sun Jun 27 11:50:34 PDT 2004
 //    Initialized containsGlobalNodeIds.
 //
+//    Brad Whitlock, Fri Jul 23 12:24:38 PDT 2004
+//    Added xLabel, yLabel, zLabel.
+//
 // ****************************************************************************
 
 avtMeshMetaData::avtMeshMetaData()
-    : AttributeSubject("sssiiiiiibFFs*ii*ssbsssibbbb")
+    : AttributeSubject("sssiiiiiibFFs*ii*ssbssssssibbbb")
 {
     blockTitle = "domains";
     blockPieceName = "domain";
@@ -70,6 +73,9 @@ avtMeshMetaData::avtMeshMetaData()
     containsOriginalNodes = false;
     containsGlobalNodeIds = false;
     validVariable = true;
+    xLabel = "X-Axis";
+    yLabel = "Y-Axis";
+    zLabel = "Z-Axis";
 }
 
 // ****************************************************************************
@@ -116,11 +122,14 @@ avtMeshMetaData::avtMeshMetaData()
 //    Hank Childs, Sun Jun 27 11:50:34 PDT 2004
 //    Initialized containsGlobalNodeIds.
 //
+//    Brad Whitlock, Fri Jul 23 12:25:03 PDT 2004
+//    Added xLabel, yLabel, zLabel.
+//
 // ****************************************************************************
 
 avtMeshMetaData::avtMeshMetaData(const float *extents, std::string s, int nb,
                                  int bo, int co,int sd, int td, avtMeshType mt)
-    : AttributeSubject("sssiiiiiibFFs*ii*ssbsssibbbb")
+    : AttributeSubject("sssiiiiiibFFs*ii*ssbssssssibbbb")
 {
     name                 = s;
     numBlocks            = nb;
@@ -141,6 +150,9 @@ avtMeshMetaData::avtMeshMetaData(const float *extents, std::string s, int nb,
     containsOriginalNodes   = false; 
     containsGlobalNodeIds   = false; 
     validVariable        = true;
+    xLabel = "X-Axis";
+    yLabel = "Y-Axis";
+    zLabel = "Z-Axis";
 }
 
 
@@ -187,11 +199,14 @@ avtMeshMetaData::avtMeshMetaData(const float *extents, std::string s, int nb,
 //    Hank Childs, Sun Jun 27 11:50:34 PDT 2004
 //    Initialized containsGlobalNodeIds.
 //
+//    Brad Whitlock, Fri Jul 23 12:25:22 PDT 2004
+//    Added xLabel, yLabel, zLabel.
+//
 // ****************************************************************************
 
 avtMeshMetaData::avtMeshMetaData(std::string s, int nb, int bo, int co, int sd,
                                  int td, avtMeshType mt)
-    : AttributeSubject("sssiiiiiibFFs*ii*ssbsssibbbb")
+    : AttributeSubject("sssiiiiiibFFs*ii*ssbssssssibbbb")
 {
     name                 = s;
     numBlocks            = nb;
@@ -213,6 +228,10 @@ avtMeshMetaData::avtMeshMetaData(std::string s, int nb, int bo, int co, int sd,
     containsOriginalNodes = false;
     containsGlobalNodeIds = false;
     validVariable        = true;
+
+    xLabel = "X-Axis";
+    yLabel = "Y-Axis";
+    zLabel = "Z-Axis";
 }
 
 
@@ -260,10 +279,13 @@ avtMeshMetaData::avtMeshMetaData(std::string s, int nb, int bo, int co, int sd,
 //    Hank Childs, Sun Jun 27 11:50:34 PDT 2004
 //    Initialized containsGlobalNodeIds.
 //
+//    Brad Whitlock, Fri Jul 23 12:27:29 PDT 2004
+//    Added xLabel, yLabel, and zLabel.
+//
 // ****************************************************************************
 
 avtMeshMetaData::avtMeshMetaData(const avtMeshMetaData &rhs)
-    : AttributeSubject("sssiiiiiibFFs*ii*ssbsssibbbb")
+    : AttributeSubject("sssiiiiiibFFs*ii*ssbssssssibbbb")
 {
     name                     = rhs.name;
     numBlocks                = rhs.numBlocks;
@@ -293,6 +315,9 @@ avtMeshMetaData::avtMeshMetaData(const avtMeshMetaData &rhs)
     xUnits                   = rhs.xUnits;
     yUnits                   = rhs.yUnits;
     zUnits                   = rhs.zUnits;
+    xLabel                   = rhs.xLabel;
+    yLabel                   = rhs.yLabel;
+    zLabel                   = rhs.zLabel;
     validVariable            = rhs.validVariable;
 }
 
@@ -355,6 +380,9 @@ avtMeshMetaData::~avtMeshMetaData()
 //    Hank Childs, Sun Jun 27 11:50:34 PDT 2004
 //    Copied containsGlobalNodeIds.
 //
+//    Brad Whitlock, Fri Jul 23 12:28:00 PDT 2004
+//    Added xLabel, yLabel, and zLabel.
+//
 // ****************************************************************************
 
 const avtMeshMetaData &
@@ -388,6 +416,9 @@ avtMeshMetaData::operator=(const avtMeshMetaData &rhs)
     xUnits                   = rhs.xUnits;
     yUnits                   = rhs.yUnits;
     zUnits                   = rhs.zUnits;
+    xLabel                   = rhs.xLabel;
+    yLabel                   = rhs.yLabel;
+    zLabel                   = rhs.zLabel;
     validVariable            = rhs.validVariable;
 
     return *this;
@@ -432,6 +463,9 @@ avtMeshMetaData::operator=(const avtMeshMetaData &rhs)
 //    Hank Childs, Sun Jun 27 11:50:34 PDT 2004
 //    Add containsGlobalNodeIds.
 //
+//    Brad Whitlock, Fri Jul 23 12:23:53 PDT 2004
+//    Added xLabel, yLabel, zLabel.
+//
 // ****************************************************************************
 
 void
@@ -458,11 +492,14 @@ avtMeshMetaData::SelectAll()
     Select(18, (void*)&xUnits);
     Select(19, (void*)&yUnits);
     Select(20, (void*)&zUnits);
-    Select(21, (void*)&containsGhostZones);
-    Select(22, (void*)&containsOriginalCells);
-    Select(23, (void*)&containsOriginalNodes);
-    Select(23, (void*)&containsGlobalNodeIds);
-    Select(24, (void*)&validVariable);
+    Select(21, (void*)&xLabel);
+    Select(22, (void*)&yLabel);
+    Select(23, (void*)&zLabel);
+    Select(24, (void*)&containsGhostZones);
+    Select(25, (void*)&containsOriginalCells);
+    Select(26, (void*)&containsOriginalNodes);
+    Select(27, (void*)&containsGlobalNodeIds);
+    Select(28, (void*)&validVariable);
 }
 
 
@@ -551,6 +588,9 @@ avtMeshMetaData::SetExtents(const float *extents)
 //
 //    Kathleen Bonnell, Fri May 28 18:16:48 PDT 2004 
 //    Added containsOriginalNodes. 
+//
+//    Brad Whitlock, Fri Jul 23 12:28:21 PDT 2004
+//    Added xLabel, yLabel, and zLabel.
 //
 // ****************************************************************************
 
@@ -676,6 +716,11 @@ avtMeshMetaData::Print(ostream &out, int indent) const
         << "\", y: \"" << yUnits.c_str()
         << "\", z: \"" << zUnits.c_str() << "\"." << endl;
 
+    Indent(out, indent);
+    out << "Labels =  x: \"" << xLabel.c_str()
+        << "\", y: \"" << yLabel.c_str()
+        << "\", z: \"" << zLabel.c_str() << "\"." << endl;
+
     if (!validVariable)
     {
         Indent(out, indent);
@@ -693,20 +738,23 @@ avtMeshMetaData::Print(ostream &out, int indent) const
 //  Creation:   August 31, 2000
 //
 //  Modifications:
-//
 //    Hank Childs, Mon Dec  9 17:04:39 PST 2002
 //    Initialized validVariable.
 //
 //    Kathleen Bonnell, Thu Jul 22 12:10:19 PDT 2004 
 //    Initialized treatAsASCII.
 //
+//    Brad Whitlock, Tue Jul 20 13:43:53 PST 2004
+//    Added units.
+//
 // ****************************************************************************
 
 avtScalarMetaData::avtScalarMetaData()
-    : AttributeSubject("ssibffbb")
+    : AttributeSubject("ssibffbbbs")
 {
     validVariable = true;
     treatAsASCII = false;
+    hasUnits = false;
 }
    
 
@@ -722,9 +770,11 @@ avtScalarMetaData::avtScalarMetaData()
 //  Creation:   August 25, 2000
 //
 //  Modifications:
-//
 //    Hank Childs, Mon Dec  9 17:04:39 PST 2002
 //    Initialized validVariable.
+//
+//    Brad Whitlock, Tue Jul 20 13:44:42 PST 2004
+//    Added units.
 //
 //    Kathleen Bonnell, Thu Jul 22 12:10:19 PDT 2004 
 //    Initialized treatAsASCII.
@@ -733,7 +783,7 @@ avtScalarMetaData::avtScalarMetaData()
 
 avtScalarMetaData::avtScalarMetaData(std::string n, std::string mn, 
                                      avtCentering c)
-    : AttributeSubject("ssibffbb")
+    : AttributeSubject("ssibffbbbs")
 {
     name           = n;
     meshName       = mn;
@@ -741,6 +791,7 @@ avtScalarMetaData::avtScalarMetaData(std::string n, std::string mn,
     hasDataExtents = false;
     validVariable  = true;
     treatAsASCII   = false;
+    hasUnits       = false;
 }
    
 
@@ -758,9 +809,11 @@ avtScalarMetaData::avtScalarMetaData(std::string n, std::string mn,
 //  Creation:   August 25, 2000
 //
 //  Modifications:
-//
 //    Hank Childs, Mon Dec  9 17:04:39 PST 2002
 //    Initialized validVariable.
+//
+//    Brad Whitlock, Tue Jul 20 13:45:12 PST 2004
+//    Added units.
 //
 //    Kathleen Bonnell, Thu Jul 22 12:10:19 PDT 2004 
 //    Initialized treatAsASCII.
@@ -769,13 +822,14 @@ avtScalarMetaData::avtScalarMetaData(std::string n, std::string mn,
 
 avtScalarMetaData::avtScalarMetaData(std::string n, std::string mn,
                                      avtCentering c, float min, float max)
-    : AttributeSubject("ssibffbb")
+    : AttributeSubject("ssibffbbbs")
 {
     name           = n;
     meshName       = mn;
     centering      = c;
     validVariable  = true;
     treatAsASCII   = false;
+    hasUnits       = false;
 
     float  extents[2] = { min, max };
     SetExtents(extents);
@@ -792,9 +846,11 @@ avtScalarMetaData::avtScalarMetaData(std::string n, std::string mn,
 //  Creation:   August 31, 2000
 //
 //  Modifications:
-//
 //    Hank Childs, Mon Dec  9 17:04:39 PST 2002
 //    Initialized validVariable.
+//
+//    Brad Whitlock, Tue Jul 20 13:45:41 PST 2004
+//    Added units.
 //
 //    Kathleen Bonnell, Thu Jul 22 12:10:19 PDT 2004 
 //    Initialized treatAsASCII.
@@ -812,6 +868,8 @@ avtScalarMetaData::avtScalarMetaData(const avtScalarMetaData &rhs)
     maxDataExtents = rhs.maxDataExtents;
     validVariable  = rhs.validVariable;
     treatAsASCII   = rhs.treatAsASCII;
+    hasUnits       = rhs.hasUnits;
+    units          = rhs.units;
 }
 
 
@@ -840,9 +898,11 @@ avtScalarMetaData::~avtScalarMetaData()
 //  Creation:   August 31, 2000
 //
 //  Modifications:
-//
 //    Hank Childs, Mon Dec  9 17:04:39 PST 2002
 //    Copied validVariable.
+//
+//    Brad Whitlock, Tue Jul 20 13:45:53 PST 2004
+//    Added units.
 //
 //    Kathleen Bonnell, Thu Jul 22 12:10:19 PDT 2004 
 //    Copied treatAsASCII.
@@ -860,6 +920,9 @@ avtScalarMetaData::operator=(const avtScalarMetaData &rhs)
     maxDataExtents = rhs.maxDataExtents;
     validVariable  = rhs.validVariable;
     treatAsASCII   = rhs.treatAsASCII;
+    hasUnits       = rhs.hasUnits;
+    units          = rhs.units;
+
     return *this;
 }
 
@@ -876,6 +939,10 @@ avtScalarMetaData::operator=(const avtScalarMetaData &rhs)
 //    Kathleen Bonnell, Thu Jul 22 12:10:19 PDT 2004 
 //    Added treatAsASCII.
 //
+//  Modifications:
+//    Brad Whitlock, Tue Jul 20 13:46:24 PST 2004
+//    Added units.
+//
 // ****************************************************************************
 
 void
@@ -889,6 +956,8 @@ avtScalarMetaData::SelectAll()
     Select(5, (void*)&maxDataExtents);
     Select(6, (void*)&validVariable);
     Select(7, (void*)&treatAsASCII);
+    Select(8, (void*)&hasUnits);
+    Select(9, (void*)&units);
 }
 
 
@@ -941,12 +1010,14 @@ avtScalarMetaData::SetExtents(const float *extents)
 //  Creation:    August 28, 2000
 //
 //  Modifications:
-//
 //    Hank Childs, Mon Dec  9 17:04:39 PST 2002
 //    Print out validVariable.
 //
 //    Kathleen Bonnell, Thu Jul 22 12:10:19 PDT 2004 
 //    Print out treatAsASCII.
+//
+//    Brad Whitlock, Tue Jul 20 13:47:04 PST 2004
+//    Added units.
 //
 // ****************************************************************************
 
@@ -977,6 +1048,12 @@ avtScalarMetaData::Print(ostream &out, int indent) const
         break;
     }
     out << endl;
+
+    if(hasUnits)
+    {
+        Indent(out, indent);
+        out << "Units are: " << units.c_str() << endl;
+    }
 
     if (hasDataExtents)
     {
@@ -1012,17 +1089,20 @@ avtScalarMetaData::Print(ostream &out, int indent) const
 //  Creation:   August 31, 2000
 //
 //  Modifications:
-//
 //    Hank Childs, Mon Dec  9 17:04:39 PST 2002
 //    Initialized validVariable.
+//
+//    Brad Whitlock, Tue Jul 20 13:48:13 PST 2004
+//    Added units.
 //
 // ****************************************************************************
 
 avtVectorMetaData::avtVectorMetaData()
-    : AttributeSubject("ssiibffb")
+    : AttributeSubject("ssiibffbbs")
 {
     varDim = 0;
     validVariable = true;
+    hasUnits = false;
 }
 
 
@@ -1039,15 +1119,17 @@ avtVectorMetaData::avtVectorMetaData()
 //  Creation:   August 25, 2000
 //
 //  Modifications:
-//
 //    Hank Childs, Mon Dec  9 17:04:39 PST 2002
 //    Initialized validVariable.
+//
+//    Brad Whitlock, Tue Jul 20 13:48:31 PST 2004
+//    Added units.
 //
 // ****************************************************************************
 
 avtVectorMetaData::avtVectorMetaData(std::string n, std::string mn, 
                                      avtCentering c, int vd)
-    : AttributeSubject("ssiibffb")
+    : AttributeSubject("ssiibffbbs")
 {
     name           = n;
     meshName       = mn;
@@ -1055,6 +1137,7 @@ avtVectorMetaData::avtVectorMetaData(std::string n, std::string mn,
     varDim         = vd;
     hasDataExtents = false;
     validVariable  = true;
+    hasUnits       = false;
 }
 
 
@@ -1072,22 +1155,25 @@ avtVectorMetaData::avtVectorMetaData(std::string n, std::string mn,
 //  Creation:   August 25, 2000
 //
 //  Modifications:
-//
 //    Hank Childs, Mon Dec  9 17:04:39 PST 2002
 //    Initialized validVariable.
+//
+//    Brad Whitlock, Tue Jul 20 13:48:55 PST 2004
+//    Added units.
 //
 // ****************************************************************************
 
 avtVectorMetaData::avtVectorMetaData(std::string n, std::string mn,
                                      avtCentering c, int vd,
                                      const float *extents)
-    : AttributeSubject("ssiibffb")
+    : AttributeSubject("ssiibffbbs")
 {
     name           = n;
     meshName       = mn;
     centering      = c;
     varDim         = vd;
     validVariable  = true;
+    hasUnits       = false;
     SetExtents(extents);
 }
 
@@ -1102,17 +1188,19 @@ avtVectorMetaData::avtVectorMetaData(std::string n, std::string mn,
 //  Creation:   August 31, 2000
 //
 //  Modifications:
-//
 //    Hank Childs, Mon Dec  9 17:04:39 PST 2002
 //    Copied validVariable.
 //
 //    Hank Childs, Sat Sep 20 08:32:38 PDT 2003
 //    Copy over varDim.
 //
+//    Brad Whitlock, Tue Jul 20 13:49:44 PST 2004
+//    Added units.
+//
 // ****************************************************************************
 
 avtVectorMetaData::avtVectorMetaData(const avtVectorMetaData &rhs)
-    : AttributeSubject("ssiibffb")
+    : AttributeSubject("ssiibffbbs")
 {
     name           = rhs.name;
     meshName       = rhs.meshName;
@@ -1122,6 +1210,8 @@ avtVectorMetaData::avtVectorMetaData(const avtVectorMetaData &rhs)
     minDataExtents = rhs.minDataExtents; // safe on a std::vector<float>
     maxDataExtents = rhs.maxDataExtents; // safe on a std::vector<float>
     validVariable  = rhs.validVariable;
+    hasUnits       = rhs.hasUnits;
+    units          = rhs.units;
 }
 
 
@@ -1149,12 +1239,14 @@ avtVectorMetaData::~avtVectorMetaData()
 //  Creation:   August 31, 2000
 //
 //  Modifications:
-//
 //    Hank Childs, Mon Dec  9 17:04:39 PST 2002
 //    Copied validVariable.
 //
 //    Hank Childs, Sat Sep 20 08:32:38 PDT 2003
 //    Copy over varDim.
+//
+//    Brad Whitlock, Tue Jul 20 13:50:00 PST 2004
+//    Added units.
 //
 // ****************************************************************************
 
@@ -1169,6 +1261,8 @@ avtVectorMetaData::operator=(const avtVectorMetaData &rhs)
     minDataExtents = rhs.minDataExtents; // safe on a std::vector<float>
     maxDataExtents = rhs.maxDataExtents; // safe on a std::vector<float>
     validVariable  = rhs.validVariable;
+    hasUnits       = rhs.hasUnits;
+    units          = rhs.units;
     return *this;
 }
 
@@ -1182,9 +1276,11 @@ avtVectorMetaData::operator=(const avtVectorMetaData &rhs)
 //  Creation:   August 31, 2000
 //
 //  Modifications:
-//
 //    Hank Childs, Mon Dec  9 17:04:39 PST 2002
 //    Added validVariable.
+//
+//    Brad Whitlock, Tue Jul 20 13:50:55 PST 2004
+//    Added units.
 //
 // ****************************************************************************
 
@@ -1199,6 +1295,8 @@ avtVectorMetaData::SelectAll()
     Select(5, (void*)&minDataExtents);
     Select(6, (void*)&maxDataExtents);
     Select(7, (void*)&validVariable);
+    Select(8, (void*)&hasUnits);
+    Select(9, (void*)&units);
 }
 
 
@@ -1254,9 +1352,11 @@ avtVectorMetaData::SetExtents(const float *extents)
 //  Creation:    August 28, 2000
 //
 //  Modifications:
-//
 //    Hank Childs, Mon Dec  9 17:04:39 PST 2002
 //    Added validVariable.
+//
+//    Brad Whitlock, Tue Jul 20 13:51:08 PST 2004
+//    Added units.
 //
 // ****************************************************************************
 
@@ -1288,6 +1388,12 @@ avtVectorMetaData::Print(ostream &out, int indent) const
     }
     out << endl;
 
+    if(hasUnits)
+    {
+        Indent(out, indent);
+        out << "Units are: " << units.c_str() << endl;
+    }
+
     Indent(out, indent);
     out << "Variable Dimension = " << varDim << endl;
     if (hasDataExtents)
@@ -1317,13 +1423,18 @@ avtVectorMetaData::Print(ostream &out, int indent) const
 //  Programmer: Hank Childs
 //  Creation:   September 20, 2003
 //
+//  Modifications:
+//    Brad Whitlock, Tue Jul 20 13:52:11 PST 2004
+//    Added units.
+//
 // ****************************************************************************
 
 avtTensorMetaData::avtTensorMetaData()
-    : AttributeSubject("ssiib")
+    : AttributeSubject("ssiibbs")
 {
     dim = 0;
     validVariable = true;
+    hasUnits = false;
 }
 
 
@@ -1339,17 +1450,22 @@ avtTensorMetaData::avtTensorMetaData()
 //  Programmer: Hank Childs
 //  Creation:   September 20, 2003
 //
+//  Modifications:
+//    Brad Whitlock, Tue Jul 20 13:52:39 PST 2004
+//    Added units.
+//
 // ****************************************************************************
 
 avtTensorMetaData::avtTensorMetaData(std::string n, std::string mn, 
                                      avtCentering c, int vd)
-    : AttributeSubject("ssiib")
+    : AttributeSubject("ssiibbs")
 {
     name           = n;
     meshName       = mn;
     centering      = c;
     dim            = vd;
     validVariable  = true;
+    hasUnits       = false;
 }
 
 
@@ -1362,16 +1478,22 @@ avtTensorMetaData::avtTensorMetaData(std::string n, std::string mn,
 //  Programmer: Hank Childs
 //  Creation:   September 20, 2003
 //
+//  Modifications:
+//    Brad Whitlock, Tue Jul 20 13:53:00 PST 2004
+//    Added units.
+//
 // ****************************************************************************
 
 avtTensorMetaData::avtTensorMetaData(const avtTensorMetaData &rhs)
-    : AttributeSubject("ssiib")
+    : AttributeSubject("ssiibbs")
 {
     name           = rhs.name;
     meshName       = rhs.meshName;
     centering      = rhs.centering;
     dim            = rhs.dim;
     validVariable  = rhs.validVariable;
+    hasUnits       = rhs.hasUnits;
+    units          = rhs.units;
 }
 
 
@@ -1396,6 +1518,10 @@ avtTensorMetaData::~avtTensorMetaData()
 //  Programmer: Hank Childs
 //  Creation:   September 20, 2003
 //
+//  Modifications:
+//    Brad Whitlock, Tue Jul 20 13:53:37 PST 2004
+//    Added units.
+//
 // ****************************************************************************
 
 const avtTensorMetaData &
@@ -1406,6 +1532,8 @@ avtTensorMetaData::operator=(const avtTensorMetaData &rhs)
     centering      = rhs.centering;
     dim            = rhs.dim;
     validVariable  = rhs.validVariable;
+    hasUnits       = rhs.hasUnits;
+    units          = rhs.units;
     return *this;
 }
 
@@ -1415,6 +1543,10 @@ avtTensorMetaData::operator=(const avtTensorMetaData &rhs)
 //
 //  Programmer: Hank Childs
 //  Creation:   September 20, 2003
+//
+//  Modifications:
+//    Brad Whitlock, Tue Jul 20 13:54:24 PST 2004
+//    Added units.
 //
 // ****************************************************************************
 
@@ -1426,6 +1558,8 @@ avtTensorMetaData::SelectAll()
     Select(2, (void*)&centering);
     Select(3, (void*)&dim);
     Select(4, (void*)&validVariable);
+    Select(5, (void*)&hasUnits);
+    Select(6, (void*)&units);
 }
 
 
@@ -1441,6 +1575,10 @@ avtTensorMetaData::SelectAll()
 //
 //  Programmer:  Hank Childs
 //  Creation:    September 20, 2003
+//
+//  Modifications:
+//    Brad Whitlock, Tue Jul 20 13:54:42 PST 2004
+//    Added units.
 //
 // ****************************************************************************
 
@@ -1472,6 +1610,12 @@ avtTensorMetaData::Print(ostream &out, int indent) const
     }
     out << endl;
 
+    if(hasUnits)
+    {
+        Indent(out, indent);
+        out << "Units are: " << units.c_str() << endl;
+    }
+
     Indent(out, indent);
     out << "Variable Dimension = " << dim << endl;
 
@@ -1489,13 +1633,18 @@ avtTensorMetaData::Print(ostream &out, int indent) const
 //  Programmer: Hank Childs
 //  Creation:   September 20, 2003
 //
+//  Modifications:
+//    Brad Whitlock, Tue Jul 20 13:55:20 PST 2004
+//    Added units.
+//
 // ****************************************************************************
 
 avtSymmetricTensorMetaData::avtSymmetricTensorMetaData()
-    : AttributeSubject("ssiib")
+    : AttributeSubject("ssiibbs")
 {
     dim = 0;
     validVariable = true;
+    hasUnits = false;
 }
 
 
@@ -1511,6 +1660,10 @@ avtSymmetricTensorMetaData::avtSymmetricTensorMetaData()
 //  Programmer: Hank Childs
 //  Creation:   September 20, 2003
 //
+//  Modifications:
+//    Brad Whitlock, Tue Jul 20 13:55:43 PST 2004
+//    Added units.
+//
 // ****************************************************************************
 
 avtSymmetricTensorMetaData::avtSymmetricTensorMetaData(std::string n,
@@ -1522,6 +1675,7 @@ avtSymmetricTensorMetaData::avtSymmetricTensorMetaData(std::string n,
     centering      = c;
     dim            = vd;
     validVariable  = true;
+    hasUnits       = false;
 }
 
 
@@ -1534,17 +1688,23 @@ avtSymmetricTensorMetaData::avtSymmetricTensorMetaData(std::string n,
 //  Programmer: Hank Childs
 //  Creation:   September 20, 2003
 //
+//  Modifications:
+//    Brad Whitlock, Tue Jul 20 13:56:22 PST 2004
+//    Added units.
+//
 // ****************************************************************************
 
 avtSymmetricTensorMetaData::avtSymmetricTensorMetaData(
                                          const avtSymmetricTensorMetaData &rhs)
-    : AttributeSubject("ssiib")
+    : AttributeSubject("ssiibbs")
 {
     name           = rhs.name;
     meshName       = rhs.meshName;
     centering      = rhs.centering;
     dim            = rhs.dim;
     validVariable  = rhs.validVariable;
+    hasUnits       = rhs.hasUnits;
+    units          = rhs.units;
 }
 
 
@@ -1569,6 +1729,10 @@ avtSymmetricTensorMetaData::~avtSymmetricTensorMetaData()
 //  Programmer: Hank Childs
 //  Creation:   September 20, 2003
 //
+//  Modifications:
+//    Brad Whitlock, Tue Jul 20 13:56:57 PST 2004
+//    Added units.
+//
 // ****************************************************************************
 
 const avtSymmetricTensorMetaData &
@@ -1579,6 +1743,8 @@ avtSymmetricTensorMetaData::operator=(const avtSymmetricTensorMetaData &rhs)
     centering      = rhs.centering;
     dim            = rhs.dim;
     validVariable  = rhs.validVariable;
+    hasUnits       = rhs.hasUnits;
+    units          = rhs.units;
     return *this;
 }
 
@@ -1588,6 +1754,10 @@ avtSymmetricTensorMetaData::operator=(const avtSymmetricTensorMetaData &rhs)
 //
 //  Programmer: Hank Childs
 //  Creation:   September 20, 2003
+//
+//  Modifications:
+//    Brad Whitlock, Tue Jul 20 13:57:26 PST 2004
+//    Added units.
 //
 // ****************************************************************************
 
@@ -1599,6 +1769,8 @@ avtSymmetricTensorMetaData::SelectAll()
     Select(2, (void*)&centering);
     Select(3, (void*)&dim);
     Select(4, (void*)&validVariable);
+    Select(5, (void*)&hasUnits);
+    Select(6, (void*)&units);
 }
 
 
@@ -1614,6 +1786,10 @@ avtSymmetricTensorMetaData::SelectAll()
 //
 //  Programmer:  Hank Childs
 //  Creation:    September 20, 2003
+//
+//  Modifications:
+//    Brad Whitlock, Tue Jul 20 13:57:53 PST 2004
+//    Added units.
 //
 // ****************************************************************************
 
@@ -1644,6 +1820,12 @@ avtSymmetricTensorMetaData::Print(ostream &out, int indent) const
         break;
     }
     out << endl;
+
+    if(hasUnits)
+    {
+        Indent(out, indent);
+        out << "Units are: " << units.c_str() << endl;
+    }
 
     Indent(out, indent);
     out << "Variable Dimension = " << dim << endl;
@@ -2255,11 +2437,17 @@ avtSpeciesMetaData::Print(ostream &out, int indent) const
 //  Programmer: Hank Childs
 //  Creation:   August 1, 2003
 //
+// Modifications:
+//    Brad Whitlock, Fri Jul 23 12:50:27 PDT 2004
+//    Added labels and units.
+//
 // ****************************************************************************
 
 avtCurveMetaData::avtCurveMetaData()
-    : AttributeSubject("sb")
+    : AttributeSubject("sssssb")
 {
+    xLabel        = "X-Axis";
+    yLabel        = "Y-Axis";
     validVariable = true;
 }
 
@@ -2273,12 +2461,18 @@ avtCurveMetaData::avtCurveMetaData()
 //  Programmer: Hank Childs
 //  Creation:   August 1, 2003
 //
+//  Modifications:
+//    Brad Whitlock, Fri Jul 23 12:50:27 PDT 2004
+//    Added labels and units.
+//
 // ****************************************************************************
 
 avtCurveMetaData::avtCurveMetaData(std::string n)
-    : AttributeSubject("sb")
+    : AttributeSubject("sssssb")
 {
-    name         = n;
+    name          = n;
+    xLabel        = "X-Axis";
+    yLabel        = "Y-Axis";
     validVariable = true;
 }
 
@@ -2292,12 +2486,20 @@ avtCurveMetaData::avtCurveMetaData(std::string n)
 //  Programmer: Hank Childs
 //  Creation:   August 1, 2003
 //
+//  Modifications:
+//    Brad Whitlock, Fri Jul 23 12:50:27 PDT 2004
+//    Added labels and units.
+//
 // ****************************************************************************
 
 avtCurveMetaData::avtCurveMetaData(const avtCurveMetaData &rhs)
-    : AttributeSubject("sb")
+    : AttributeSubject("sssssb")
 {
     name          = rhs.name;
+    xUnits        = rhs.xUnits;
+    xLabel        = rhs.xLabel;
+    yUnits        = rhs.yUnits;
+    yLabel        = rhs.yLabel;
     validVariable = rhs.validVariable;
 }
 
@@ -2324,12 +2526,20 @@ avtCurveMetaData::~avtCurveMetaData()
 //  Programmer: Hank Childs
 //  Creation:   August 1, 2003
 //
+//  Modifications:
+//    Brad Whitlock, Fri Jul 23 12:52:46 PDT 2004
+//    Added units and label.
+//
 // ****************************************************************************
 
 const avtCurveMetaData &
 avtCurveMetaData::operator=(const avtCurveMetaData &rhs)
 {
     name          = rhs.name;
+    xUnits        = rhs.xUnits;
+    xLabel        = rhs.xLabel;
+    yUnits        = rhs.yUnits;
+    yLabel        = rhs.yLabel;
     validVariable = rhs.validVariable;
 
     return *this;
@@ -2342,13 +2552,21 @@ avtCurveMetaData::operator=(const avtCurveMetaData &rhs)
 //  Programmer: Hank Childs
 //  Creation:   August 1, 2003
 //
+//  Modifications:
+//    Brad Whitlock, Fri Jul 23 12:53:36 PDT 2004
+//    Added labels and units.
+//
 // ****************************************************************************
 
 void
 avtCurveMetaData::SelectAll()
 {
     Select(0, (void*)&name);
-    Select(1, (void*)&validVariable);
+    Select(1, (void*)&xUnits);
+    Select(2, (void*)&xLabel);
+    Select(3, (void*)&yUnits);
+    Select(4, (void*)&yLabel);
+    Select(5, (void*)&validVariable);
 }
 
 
@@ -2365,6 +2583,10 @@ avtCurveMetaData::SelectAll()
 //  Programmer: Hank Childs
 //  Creation:   August 1, 2003
 //
+//  Modifications:
+//    Brad Whitlock, Fri Jul 23 12:54:53 PDT 2004
+//    Added labels and units.
+//
 // ****************************************************************************
 
 void
@@ -2373,6 +2595,12 @@ avtCurveMetaData::Print(ostream &out, int indent) const
     Indent(out, indent);
     out << "Name = " << name.c_str() << endl;
 
+    Indent(out, indent);
+    out << "Units = x:" << xUnits.c_str() << ", y:" << yUnits.c_str() << endl;
+
+    Indent(out, indent);
+    out << "Labels = x:" << xLabel.c_str() << ", y:" << yLabel.c_str() << endl;
+    
     if (!validVariable)
     {
         Indent(out, indent);
@@ -3169,10 +3397,13 @@ avtDefaultPlotMetaData::Print(ostream &out, int indent) const
 //    Mark C. Miller, Tue Mar 30 14:36:17 PST 2004
 //    Added bool for catch-all mesh
 //
+//    Brad Whitlock, Fri Jul 23 12:33:17 PDT 2004
+//    Added database comment.
+//
 // ****************************************************************************
 
 avtDatabaseMetaData::avtDatabaseMetaData()
-    : AttributeSubject("ssbddibss*i*i*i*d*a*a*a*a*a*a*a*a*a*aba*bsib")
+    : AttributeSubject("sssbddibss*i*i*i*d*a*a*a*a*a*a*a*a*a*aba*bsib")
 {
     hasTemporalExtents          = false;
     minTemporalExtents          = 0.;
@@ -3234,13 +3465,17 @@ avtDatabaseMetaData::avtDatabaseMetaData()
 //    Mark C. Miller, Tue Mar 30 14:36:17 PST 2004
 //    Added bool for catch-all mesh
 //
+//    Brad Whitlock, Fri Jul 23 12:35:54 PDT 2004
+//    Added databaseComment.
+//
 // ****************************************************************************
 
 avtDatabaseMetaData::avtDatabaseMetaData(const avtDatabaseMetaData &rhs)
-    : AttributeSubject("ssbddibss*i*i*i*d*a*a*a*a*a*a*a*a*a*aba*bsib")
+    : AttributeSubject("sssbddibss*i*i*i*d*a*a*a*a*a*a*a*a*a*aba*bsib")
 {
     databaseName       = rhs.databaseName;
     fileFormat         = rhs.fileFormat;
+    databaseComment    = rhs.databaseComment;
     hasTemporalExtents = rhs.hasTemporalExtents;
     minTemporalExtents = rhs.minTemporalExtents;
     maxTemporalExtents = rhs.maxTemporalExtents;
@@ -3331,6 +3566,9 @@ avtDatabaseMetaData::avtDatabaseMetaData(const avtDatabaseMetaData &rhs)
 //    Mark C. Miller, Tue Mar 30 14:36:17 PST 2004
 //    Added bool for catch-all mesh
 //
+//    Brad Whitlock, Fri Jul 23 12:36:47 PDT 2004
+//    Added databaseComment.
+//
 // ****************************************************************************
 
 const avtDatabaseMetaData &
@@ -3338,6 +3576,7 @@ avtDatabaseMetaData::operator=(const avtDatabaseMetaData &rhs)
 {
     databaseName       = rhs.databaseName;
     fileFormat         = rhs.fileFormat;
+    databaseComment    = rhs.databaseComment;
     hasTemporalExtents = rhs.hasTemporalExtents;
     minTemporalExtents = rhs.minTemporalExtents;
     maxTemporalExtents = rhs.maxTemporalExtents;
@@ -4668,6 +4907,9 @@ avtDatabaseMetaData::GetSpeciesOnMesh(std::string mesh) const
 //    Jeremy Meredith, Wed Jul 21 14:23:12 PDT 2004
 //    Removed the exclamation point from unknown.
 //
+//    Brad Whitlock, Fri Jul 23 12:37:57 PDT 2004
+//    Added databaseComment.
+//
 // ****************************************************************************
 
 void
@@ -4675,6 +4917,9 @@ avtDatabaseMetaData::Print(ostream &out, int indent) const
 {
     Indent(out, indent);
     out << "Database: " << databaseName.c_str() << endl;
+
+    Indent(out, indent);
+    out << "Database comment: " << databaseComment.c_str() << endl;
 
     Indent(out, indent);
     out << "File format: " << fileFormat.c_str() << endl;
@@ -4931,6 +5176,9 @@ avtDatabaseMetaData::Print(ostream &out, int indent) const
 //   Jeremy Meredith, Tue Mar 30 09:53:19 PST 2004
 //   Added simulation information.
 //
+//   Brad Whitlock, Fri Jul 23 12:38:24 PDT 2004
+//   Added database comment.
+//
 // *******************************************************************
 
 void
@@ -4938,36 +5186,37 @@ avtDatabaseMetaData::SelectAll()
 {
     Select(0, (void*)&databaseName);
     Select(1, (void*)&fileFormat);
-    Select(2, (void*)&hasTemporalExtents);
-    Select(3, (void*)&minTemporalExtents);
-    Select(4, (void*)&maxTemporalExtents);
-    Select(5, (void*)&numStates);
-    Select(6, (void*)&isVirtualDatabase);
+    Select(2, (void*)&databaseComment);
+    Select(3, (void*)&hasTemporalExtents);
+    Select(4, (void*)&minTemporalExtents);
+    Select(5, (void*)&maxTemporalExtents);
+    Select(6, (void*)&numStates);
+    Select(7, (void*)&isVirtualDatabase);
 
-    Select(7, (void*)&timeStepPath);
-    Select(8, (void*)&timeStepNames);
-    Select(9, (void*)&cyclesAreAccurate);
-    Select(10, (void*)&cycles);
-    Select(11, (void*)&timesAreAccurate);
-    Select(12, (void*)&times);
+    Select(8, (void*)&timeStepPath);
+    Select(9, (void*)&timeStepNames);
+    Select(10, (void*)&cyclesAreAccurate);
+    Select(11, (void*)&cycles);
+    Select(12, (void*)&timesAreAccurate);
+    Select(13, (void*)&times);
 
-    Select(13, (void*)&meshes);
-    Select(14, (void*)&scalars);
-    Select(15, (void*)&vectors);
-    Select(16, (void*)&tensors);
-    Select(17, (void*)&symm_tensors);
-    Select(18, (void*)&materials);
-    Select(19, (void*)&species);
-    Select(20, (void*)&curves);
-    Select(21, (void*)&defaultPlots);
-    Select(22, (void*)&exprList);
-    Select(23, (void*)&mustRepopulateOnStateChange);
-    Select(24, (void*)&sils);
+    Select(14, (void*)&meshes);
+    Select(15, (void*)&scalars);
+    Select(16, (void*)&vectors);
+    Select(17, (void*)&tensors);
+    Select(18, (void*)&symm_tensors);
+    Select(19, (void*)&materials);
+    Select(20, (void*)&species);
+    Select(21, (void*)&curves);
+    Select(22, (void*)&defaultPlots);
+    Select(23, (void*)&exprList);
+    Select(24, (void*)&mustRepopulateOnStateChange);
+    Select(25, (void*)&sils);
 
-    Select(25, (void*)&isSimulation);
-    Select(26, (void*)&simHost);
-    Select(27, (void*)&simPort);
-    Select(28, (void*)&useCatchAllMesh);
+    Select(26, (void*)&isSimulation);
+    Select(27, (void*)&simHost);
+    Select(28, (void*)&simPort);
+    Select(29, (void*)&useCatchAllMesh);
 }
 
 // *******************************************************************
@@ -5006,6 +5255,9 @@ avtDatabaseMetaData::SelectAll()
 //   Hank Childs, Fri Mar  5 15:54:24 PST 2004
 //   Update for indexing change due to file format types being added.
 //
+//   Brad Whitlock, Fri Jul 23 12:40:24 PDT 2004
+//   updated indexing for databaseComment.
+//
 // *******************************************************************
 
 AttributeGroup *
@@ -5013,25 +5265,25 @@ avtDatabaseMetaData::CreateSubAttributeGroup(int n)
 {
     switch (n)
     {
-      case 13:
-        return new avtMeshMetaData;
       case 14:
-        return new avtScalarMetaData;
+        return new avtMeshMetaData;
       case 15:
-        return new avtVectorMetaData;
+        return new avtScalarMetaData;
       case 16:
-        return new avtTensorMetaData;
+        return new avtVectorMetaData;
       case 17:
-        return new avtSymmetricTensorMetaData;
+        return new avtTensorMetaData;
       case 18:
-        return new avtMaterialMetaData;
+        return new avtSymmetricTensorMetaData;
       case 19:
-        return new avtSpeciesMetaData;
+        return new avtMaterialMetaData;
       case 20:
-        return new avtCurveMetaData;
+        return new avtSpeciesMetaData;
       case 21:
+        return new avtCurveMetaData;
+      case 22:
         return new avtDefaultPlotMetaData;
-      case 24:
+      case 25:
         return new avtSILMetaData;
       default:
         return NULL;

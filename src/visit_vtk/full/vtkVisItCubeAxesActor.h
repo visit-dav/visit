@@ -262,6 +262,10 @@ protected:
   char *ZTitle;
   char *ZUnits;
 
+  char *ActualXLabel;
+  char *ActualYLabel;
+  char *ActualZLabel;
+
   int TickLocation;
 
   int XAxisVisibility;
@@ -297,6 +301,10 @@ protected:
 private:
   vtkVisItCubeAxesActor(const vtkVisItCubeAxesActor&);
   void operator=(const vtkVisItCubeAxesActor&);
+
+  vtkSetStringMacro(ActualXLabel);
+  vtkSetStringMacro(ActualYLabel);
+  vtkSetStringMacro(ActualZLabel);
 
   vtkTimeStamp BuildTime;
   int lastXPow;

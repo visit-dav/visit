@@ -49,6 +49,10 @@ struct DBATTS_API avtMeshMetaData : public AttributeSubject
     std::string   yUnits;
     std::string   zUnits;
 
+    std::string   xLabel;
+    std::string   yLabel;
+    std::string   zLabel;
+
     bool          validVariable;
 
 public:
@@ -82,6 +86,8 @@ struct DBATTS_API avtScalarMetaData : public AttributeSubject
     bool          validVariable;
     bool          treatAsASCII;
 
+    bool          hasUnits;
+    std::string   units;
 public:
     avtScalarMetaData();
     avtScalarMetaData(std::string, std::string, avtCentering);
@@ -112,6 +118,8 @@ struct DBATTS_API avtVectorMetaData : public AttributeSubject
 
     bool                 validVariable;
 
+    bool                 hasUnits;
+    std::string          units;
 public:
     avtVectorMetaData();
     avtVectorMetaData(std::string, std::string, avtCentering, int);
@@ -136,7 +144,8 @@ struct DBATTS_API avtTensorMetaData : public AttributeSubject
     int           dim;
     avtCentering  centering;
     bool          validVariable;
-
+    bool          hasUnits;
+    std::string   units;
 public:
     avtTensorMetaData();
     avtTensorMetaData(std::string, std::string, avtCentering, int);
@@ -159,6 +168,8 @@ struct DBATTS_API avtSymmetricTensorMetaData : public AttributeSubject
 
     bool          validVariable;
 
+    bool          hasUnits;
+    std::string   units;
 public:
     avtSymmetricTensorMetaData();
     avtSymmetricTensorMetaData(std::string, std::string, avtCentering, int);
@@ -242,8 +253,11 @@ protected:
 struct DBATTS_API avtCurveMetaData : public AttributeSubject
 {
     std::string                          name;
+    std::string                          xUnits;
+    std::string                          xLabel;
+    std::string                          yUnits;
+    std::string                          yLabel;
     bool                                 validVariable;
-
 public:
     avtCurveMetaData();
     avtCurveMetaData(std::string);
@@ -378,6 +392,7 @@ class DBATTS_API avtDatabaseMetaData : public AttributeSubject
 
     std::string  databaseName;
     std::string  fileFormat;
+    std::string  databaseComment;
 
     ExpressionList exprList;
 
@@ -446,6 +461,10 @@ public:
     const std::string &GetTimeStepPath() const { return timeStepPath; };
     void         SetTimeStepNames(const stringVector &tsn);
     const stringVector &GetTimeStepNames() const { return timeStepNames; };
+
+    void         SetDatabaseComment(const std::string &comment)
+                     { databaseComment = comment; };
+    const std::string &GetDatabaseComment() const { return databaseComment; };
 
     void         Add(avtMeshMetaData *);
     void         Add(avtScalarMetaData *);

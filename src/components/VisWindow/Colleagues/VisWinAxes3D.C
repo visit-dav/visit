@@ -377,6 +377,10 @@ VisWinAxes3D::UpdateView()
 //  Programmer: Hank Childs
 //  Creation:   September 27, 2002
 //
+//  Modifications:
+//    Brad Whitlock, Fri Jul 23 17:59:43 PST 2004
+//    I added support for setting the axis titles based on the x,y,z labels.
+//
 // ****************************************************************************
 
 void
@@ -384,6 +388,8 @@ VisWinAxes3D::UpdatePlotList(vector<avtActor_p> &list)
 {
     int nActors = list.size();
     string x, y, z;
+    string xt, yt, zt;
+
     for (int i = 0 ; i < nActors ; i++)
     {
         avtDataAttributes &atts = 
@@ -391,22 +397,28 @@ VisWinAxes3D::UpdatePlotList(vector<avtActor_p> &list)
 
         // Last one in is the winner.
         if (atts.GetXUnits() != "")
-        {
             x = atts.GetXUnits();
-        }
         if (atts.GetYUnits() != "")
-        {
             y = atts.GetYUnits();
-        }
         if (atts.GetZUnits() != "")
-        {
             z = atts.GetZUnits();
-        }
+
+        // Last one in is the winner.
+        if (atts.GetXLabel() != "")
+            xt = atts.GetXLabel();
+        if (atts.GetYLabel() != "")
+            yt = atts.GetYLabel();
+        if (atts.GetZLabel() != "")
+            zt = atts.GetZLabel();
     }
 
     axes->SetXUnits(x.c_str());
     axes->SetYUnits(y.c_str());
     axes->SetZUnits(z.c_str());
+
+    axes->SetXTitle(xt.c_str());
+    axes->SetYTitle(yt.c_str());
+    axes->SetZTitle(zt.c_str());
 }
 
 

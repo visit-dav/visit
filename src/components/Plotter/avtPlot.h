@@ -139,6 +139,9 @@ class     AttributeSubject;
 //    Kathleen Bonnell, Tue Jun  1 15:08:30 PDT 2004 
 //    Added bool args to RequiresReExecuteForQuery. 
 //
+//    Brad Whitlock, Tue Jul 20 16:10:25 PST 2004
+//    Added variable units.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtPlot
@@ -169,6 +172,7 @@ class PLOTTER_API avtPlot
     virtual void               GetDataExtents(std::vector<double> &);
 
     void                       SetVarName(const char *name);
+    void                       SetVarUnits(const char *units);
 
     bool                       NeedsRecalculation(void);
 
@@ -207,6 +211,7 @@ class PLOTTER_API avtPlot
     avtSmoothPolyDataFilter   *smooth;
     avtSILRestriction_p        silr;
     char                      *varname;
+    char                      *varunits;
     vector<double>             dataExtents;
 
     avtDataObjectWriter_p      Execute(avtDataObject_p,
