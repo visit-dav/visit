@@ -149,11 +149,25 @@ VisitHotPointInteractor::~VisitHotPointInteractor()
 //
 // Modifications:
 //
+//   Hank Childs, Tue Jul 20 10:54:45 PDT 2004
+//   If the current interactor has buttons depressed, allow it to finish
+//   gracefully.
+//
 // ****************************************************************************
 
 void
 VisitHotPointInteractor::SetInteractor(VisitInteractor *newInteractor)
 {
+    if (currentInteractor != NULL)
+    {
+        if (currentInteractor->LeftButtonIsDown())
+            currentInteractor->EndLeftButtonAction();
+        if (currentInteractor->RightButtonIsDown())
+            currentInteractor->EndRightButtonAction();
+        if (currentInteractor->MiddleButtonIsDown())
+            currentInteractor->EndMiddleButtonAction();
+    }
+
     newInteractor->SetInteractor(Interactor);
     currentInteractor = newInteractor;
     hotPointMode = false;
@@ -611,7 +625,9 @@ VisitHotPointInteractor::EndLeftButtonAction()
         hotPointMode = false;
     }
     else
+    {
         currentInteractor->OnLeftButtonUp();
+    }
 
     // Tell the other colleagues that motion is ending.
     MotionEnd();

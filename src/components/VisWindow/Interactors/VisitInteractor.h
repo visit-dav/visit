@@ -62,6 +62,9 @@ typedef   void (*ViewCallback)(VisWindow *);
 //    OnMouseMove, and PrepTrackball.  Added members that were part of old
 //    parent class, but are not in the new: OldX/Y, Center, MotionFactor.
 //
+//    Hank Childs, Tue Jul 20 10:54:45 PDT 2004
+//    Add methods to check on whether buttons are depressed.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisitInteractor : public vtkInteractorStyleTrackballCamera
@@ -95,6 +98,13 @@ class VISWINDOW_API VisitInteractor : public vtkInteractorStyleTrackballCamera
     virtual void                EndRightButtonAction();
 
     virtual void                SetInteractor(vtkRenderWindowInteractor *);
+
+    virtual bool                LeftButtonIsDown(void)
+                                                  { return leftButtonDown; };
+    virtual bool                MiddleButtonIsDown(void)
+                                                  { return middleButtonDown; };
+    virtual bool                RightButtonIsDown(void)
+                                                  { return rightButtonDown; };
 
   protected:
     VisWindowInteractorProxy   &proxy;
