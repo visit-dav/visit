@@ -39,6 +39,9 @@ typedef void (*OverrideRenderCallback)(void *, avtDataObject_p &);
 //    Kathleen Bonnell, Tue Aug 13 15:15:37 PDT 2002  
 //    Added methods in support of lighting.
 //
+//    Kathleen Bonnell, Mon Aug  4 11:14:22 PDT 2003 
+//    Added member and methods in support of immediate mode rendering.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtCustomRenderer
@@ -58,6 +61,11 @@ class PLOTTER_API avtCustomRenderer
     virtual void            GlobalLightingOff(void);
     virtual void            GlobalSetAmbientCoefficient(const float); 
 
+    virtual void            ImmediateModeRenderingOn(void); 
+    virtual void            ImmediateModeRenderingOff(void);
+    virtual void            SetImmediateModeRendering(bool);
+    virtual bool            GetImmediateModeRendering(void);
+
     void                    RegisterOverrideRenderCallback(
                                                OverrideRenderCallback, void *);
     void                    SetVTKRenderer(vtkRenderer *r);
@@ -66,6 +74,7 @@ class PLOTTER_API avtCustomRenderer
     avtViewInfo             view;
     float                   varmin, varmax;
     vtkRenderer            *VTKRen;
+    bool                    immediateModeRendering;
 
     virtual void            Render(vtkDataSet *) = 0;
 

@@ -303,3 +303,84 @@ vtkUserDefinedMapperBridge::Render(vtkRenderer *r, vtkActor *)
 }
 
 
+// ****************************************************************************
+//  Method: vtkUserDefinedMapperBridge::ImmediateModeRenderingOn
+//
+//  Purpose:
+//    Tells the renderer to turn on immediate mode rendering.   
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   August 4, 2003 
+//
+// ****************************************************************************
+
+void
+vtkUserDefinedMapperBridge::ImmediateModeRenderingOn()
+{
+    ren->ImmediateModeRenderingOn();
+}
+
+
+// ****************************************************************************
+//  Method: vtkUserDefinedMapperBridge::ImmediateModeRenderingOff
+//
+//  Purpose:
+//    Tells the renderer to turn off immediate mode rendering.   
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   August 4, 2003 
+//
+// ****************************************************************************
+
+void
+vtkUserDefinedMapperBridge::ImmediateModeRenderingOff()
+{
+    ren->ImmediateModeRenderingOff();
+}
+
+
+// ****************************************************************************
+//  Method: vtkUserDefinedMapperBridge::SetImmediateModeRendering
+//
+//  Purpose:
+//    Tells the renderer to turn on/off  immediate mode rendering based on
+//    the passed mode.
+//
+//  Arguments:
+//    mode      Whether immediate mode rendering should be on or off. 
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   August 4, 2003 
+//
+// ****************************************************************************
+
+void
+vtkUserDefinedMapperBridge::SetImmediateModeRendering(int mode)
+{
+    if (mode)
+        ren->ImmediateModeRenderingOn();
+    else
+        ren->ImmediateModeRenderingOff();
+}
+
+
+// ****************************************************************************
+//  Method: vtkUserDefinedMapperBridge::GetImmediateModeRendering
+//
+//  Purpose:
+//    Retrieve the value of immediat mode rendering from the renderer.
+//
+//  Returns:
+//    True if immediate mode rendering is on, false otherwise. 
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   August 4, 2003 
+//
+// ****************************************************************************
+
+int
+vtkUserDefinedMapperBridge::GetImmediateModeRendering()
+{
+    return ren->GetImmediateModeRendering();
+}
+

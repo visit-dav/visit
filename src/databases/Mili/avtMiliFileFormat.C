@@ -671,6 +671,9 @@ avtMiliFileFormat::GetSizeInfoForGroup(const char *group_name, int &offset,
 //    Akira Haddox, Tue Jul 22 09:21:39 PDT 2003
 //    Changed ConstructMaterials call to match new signature.
 //
+//    Akira Haddox, Thu Aug  7 10:07:40 PDT 2003
+//    Fixed beam support.
+//
 // ****************************************************************************
 
 void
@@ -786,7 +789,6 @@ avtMiliFileFormat::ReadMesh(int dom)
             {
                 int *conn = conn_list[i][j];
                 int nelems = list_size[i][j];
-                int *newconn;
                 for (k = 0 ; k < nelems ; k++)
                 {
                     switch (elem_sclasses[i])
@@ -794,14 +796,12 @@ avtMiliFileFormat::ReadMesh(int dom)
                       case M_TRUSS:
                         connectivity[dom][mesh_id]->InsertNextCell(VTK_LINE,
                                                  conn_count[i], conn);
-                        break;
                       case M_BEAM:
-                        newconn = new int[2];
-                        newconn[0] = conn[0];
-                        newconn[1] = conn[1];
-                        delete[] conn;
+                        // Beams are lines that have a third point to define
+                        // the normal. Since we don't need to visualize it,
+                        // we just drop the normal point.
                         connectivity[dom][mesh_id]->InsertNextCell(VTK_LINE,
-                                                 conn_count[i], newconn);
+                                                 2, conn);
                         break;
                       case M_TRI:
                         connectivity[dom][mesh_id]->InsertNextCell(VTK_TRIANGLE,

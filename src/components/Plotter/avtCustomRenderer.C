@@ -19,6 +19,10 @@
 //  Programmer: Hank Childs
 //  Creation:   November 20, 2001
 //
+//  Modifications:
+//    Kathleen Bonnell, Mon Aug  4 11:14:22 PDT 2003
+//    Initialize imemdiateModeRendering.
+//
 // ****************************************************************************
 
 avtCustomRenderer::avtCustomRenderer()
@@ -26,6 +30,7 @@ avtCustomRenderer::avtCustomRenderer()
     overrideRenderCallback     = NULL;
     overrideRenderCallbackArgs = NULL;
     VTKRen = NULL;
+    immediateModeRendering = false;
 }
 
 
@@ -220,3 +225,83 @@ avtCustomRenderer::GlobalSetAmbientCoefficient(const float)
 {
     ;
 }
+
+
+// ****************************************************************************
+// Method: avtCustomRenderer::ImmediateModeRenderingOn
+//
+// Purpose:
+//   Turns on immediate rendering mode. 
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   August 4, 2003 
+//
+// ****************************************************************************
+
+void
+avtCustomRenderer::ImmediateModeRenderingOn()
+{
+    immediateModeRendering = true;    
+}
+
+
+// ****************************************************************************
+// Method: avtCustomRenderer::SetImmediateModeRendering
+//
+// Purpose:
+//   Turns on/off immediate rendering mode based on the passed value.
+//
+// Arguments:
+//   mode      The new value for immediate mode rendering. 
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   August 4, 2003 
+//
+// ****************************************************************************
+
+void
+avtCustomRenderer::SetImmediateModeRendering(bool mode)
+{
+    immediateModeRendering = mode;
+}
+
+
+// ****************************************************************************
+// Method: avtCustomRenderer::GetImmediateModeRendering
+//
+// Purpose:
+//   Returns the value of immediateModeRendering. 
+//
+// Returns:
+//   True if immediateModeRendering is on, false otherwise. 
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   August 4, 2003 
+//
+// ****************************************************************************
+
+bool
+avtCustomRenderer::GetImmediateModeRendering()
+{
+    return immediateModeRendering;
+}
+
+
+// ****************************************************************************
+// Method: avtCustomRenderer::ImmediateModeRenderingOff
+//
+// Purpose:
+//   Turns off immediate rendering mode. 
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   August 4, 2003
+//
+// ****************************************************************************
+
+void
+avtCustomRenderer::ImmediateModeRenderingOff()
+{
+    immediateModeRendering = false;    
+}
+
+

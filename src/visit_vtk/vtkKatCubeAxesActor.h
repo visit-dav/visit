@@ -298,7 +298,9 @@ private:
   void operator=(const vtkKatCubeAxesActor&);
 
   vtkTimeStamp BuildTime;
-  int lastPow;
+  int lastXPow;
+  int lastYPow;
+  int lastZPow;
   int lastXAxisDigits;
   int lastYAxisDigits;
   int lastZAxisDigits;
@@ -314,9 +316,12 @@ private:
   int   numAxesY;
   int   numAxesZ;
 
-  float valueScaleFactor;
-  bool mustAdjustValue;
-  bool ForceLabelReset;
+  bool mustAdjustXValue;
+  bool mustAdjustYValue;
+  bool mustAdjustZValue;
+  bool ForceXLabelReset;
+  bool ForceYLabelReset;
+  bool ForceZLabelReset;
 
   // various helper methods
   void  TransformBounds(vtkViewport *viewport, const float bounds[6], 
@@ -328,8 +333,6 @@ private:
   bool  ComputeTickSize(float bounds[6]);
   void  AdjustValues(const float bounds[6]);
   void  AdjustRange(const float bounds[6]);
-  void  SetValueScaleFactor(float scale);
-  void  UnSetValueScaleFactor();
   void  BuildAxes(vtkViewport *);
   void  DetermineRenderAxes(vtkViewport *);
   void  SetNonDependentAttributes(void);
