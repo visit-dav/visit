@@ -71,10 +71,14 @@ $0 = shift @ARGV;
 #     Mark C. Miller, Thu Jun  3 10:12:39 PDT 2004
 #     Added '-f' flag to the recursive chmod
 #
+#     Mark C. Miller, Mon Nov 29 18:52:41 PST 2004
+#     Added -withtest option and code to add relevant test
+#     files to list of files
+#
 
 require "newgetopt.pl";
 
-$USAGE = "USAGE: $0 dist_file [-withhelp]\n";
+$USAGE = "USAGE: $0 dist_file [-withhelp] [-withtest]\n";
 
 if (! -d "engine")
 {
@@ -84,7 +88,7 @@ if (! -d "engine")
 }
 
 # Parse the argument list.
-&NGetOpt("withhelp");
+&NGetOpt("withhelp","withtest");
 
 # If we wanted help files then create them now.
 if($opt_withhelp)
@@ -120,6 +124,12 @@ if ($dist eq ".")
 
 print "Getting the list of files to package up...\n";
 @files = `$filelist`;
+if ($opt_withtest)
+{
+    system("( cd test/baseline ; mkcksums )");
+    push @files, `find ./test -name 'baseline' -prune -o -print`;
+    push @files, "./test/baseline/cksums.txt ";
+}
 grep(chop,@files);
 
 open(FILELIST,">/tmp/visit-dist$$") || die "Can't create file \"/tmp/visit-dist$$\": $!\n";

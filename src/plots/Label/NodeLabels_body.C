@@ -47,16 +47,25 @@
         if(data->GetNumberOfComponents() == 1)
         {
 debug3 << "Labelling nodes with scalar data" << endl;
-            for(vtkIdType id = 0; id < npts; ++id)
+            if(treatAsASCII)
             {
-                //
-                // Figure out where the point vert[] projects to on the screen.
-                //
-                // const float *vert = p->GetPoint(id);
-                BEGIN_LABEL
-                    float scalarVal = data->GetTuple1(id);
-                    CREATE_LABEL(labelString, MAX_LABEL_SIZE, "%g", scalarVal);
-                END_LABEL
+                for(vtkIdType id = 0; id < npts; ++id)
+                {
+                    BEGIN_LABEL
+                        unsigned char scalarVal = (unsigned char)data->GetTuple1(id);
+                        CREATE_LABEL(labelString, MAX_LABEL_SIZE, "%c", scalarVal);
+                    END_LABEL
+                }
+            }
+            else
+            {
+                for(vtkIdType id = 0; id < npts; ++id)
+                {
+                    BEGIN_LABEL
+                        float scalarVal = data->GetTuple1(id);
+                        CREATE_LABEL(labelString, MAX_LABEL_SIZE, "%g", scalarVal);
+                    END_LABEL
+                }
             }
         }
         else if(data->GetNumberOfComponents() == 2)

@@ -375,7 +375,10 @@ QvisLabelPlotWindow::UpdateWindow(bool doAll)
 // Creation:   Thu Oct 21 18:18:16 PST 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Nov 29 15:27:08 PST 2004
+//   Added code to get the values from the numberOfLabelsSpinBox and
+//   textHeightSpinBox so it is not necessary to hit the Enter key.
+//
 // ****************************************************************************
 
 void
@@ -384,8 +387,57 @@ QvisLabelPlotWindow::GetCurrentValues(int which_widget)
     bool okay, doAll = (which_widget == -1);
     QString msg, temp;
 
-    // Do singleNodeIndex
+    // Do numberOfLabelsSpinBox
     if(which_widget == 0 || doAll)
+    {
+        temp = numberOfLabelsSpinBox->text().simplifyWhiteSpace();
+        okay = !temp.isEmpty();
+        if(okay)
+        {
+            int val = temp.toInt(&okay);
+            labelAtts->SetNumberOfLabels(val);
+        }
+
+        if(!okay)
+        {
+            msg.sprintf("The value entered for the number of labels was invalid. "
+                "Resetting to the last good value of %d.",
+                labelAtts->GetNumberOfLabels());
+            Message(msg);
+            labelAtts->SetNumberOfLabels(labelAtts->GetNumberOfLabels());
+        }
+    }
+
+    // Do textHeightSpinBox
+    if(which_widget == 1 || doAll)
+    {
+        temp = textHeightSpinBox->text();
+        int plen = (temp.find(textHeightSpinBox->prefix()) != -1) ? 
+            textHeightSpinBox->prefix().length() : 0;
+        int slen = (temp.find(textHeightSpinBox->suffix()) != -1) ? 
+            textHeightSpinBox->suffix().length() : 0;
+        temp = temp.mid(plen, temp.length() - plen - slen);
+        temp.simplifyWhiteSpace();
+        okay = !temp.isEmpty();
+        if(okay)
+        {
+            int ival = temp.toInt(&okay);
+            float val = float(ival) * 0.01f;
+            labelAtts->SetTextHeight(val);
+        }
+
+        if(!okay)
+        {
+            msg.sprintf("The value entered for the number of labels was invalid. "
+                "Resetting to the last good value of %d.",
+                int(labelAtts->GetTextHeight() * 100.));
+            Message(msg);
+            labelAtts->SetTextHeight(labelAtts->GetTextHeight());
+        }
+    }
+
+    // Do singleNodeIndex
+    if(which_widget == 2 || doAll)
     {
         temp = singleNodeLineEdit->displayText().simplifyWhiteSpace();
         okay = !temp.isEmpty();
@@ -406,7 +458,7 @@ QvisLabelPlotWindow::GetCurrentValues(int which_widget)
     }
 
     // Do singleCellIndex
-    if(which_widget == 1 || doAll)
+    if(which_widget == 3 || doAll)
     {
         temp = singleCellLineEdit->displayText().simplifyWhiteSpace();
         okay = !temp.isEmpty();
@@ -427,7 +479,7 @@ QvisLabelPlotWindow::GetCurrentValues(int which_widget)
     }
 
     // Do textLabel
-    if(which_widget == 2 || doAll)
+    if(which_widget == 4 || doAll)
     {
         temp = markerTextLineEdit->displayText();
         okay = !temp.isEmpty();
@@ -663,7 +715,7 @@ QvisLabelPlotWindow::showSingleNodeToggled(bool val)
 void
 QvisLabelPlotWindow::singleNodeProcessText()
 {
-    GetCurrentValues(0);
+    GetCurrentValues(2);
     Apply();
 }
 
@@ -679,14 +731,14 @@ QvisLabelPlotWindow::showSingleCellToggled(bool val)
 void
 QvisLabelPlotWindow::singleCellProcessText()
 {
-    GetCurrentValues(1);
+    GetCurrentValues(3);
     Apply();
 }
 
 void
 QvisLabelPlotWindow::markerProcessText()
 {
-    GetCurrentValues(2);
+    GetCurrentValues(4);
     Apply();
 }
 
