@@ -16,5 +16,7 @@ PyObject       *PyTransformAttributes_WrapPyObject(const TransformAttributes *at
 void            PyTransformAttributes_SetLogging(bool val);
 void            PyTransformAttributes_SetDefaults(const TransformAttributes *atts);
 
+PyObject       *PyTransformAttributes_StringRepresentation(const TransformAttributes *atts);
+
 #endif
 

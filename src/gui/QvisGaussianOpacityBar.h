@@ -16,6 +16,8 @@ class QPixmap;
 //  Creation:    January 30, 2001
 //
 //  Modifications:
+//    Jeremy Meredith, Mon Feb  7 10:37:27 PST 2005
+//    Removed mouseReleased because it was already in the base class.
 //
 // ****************************************************************************
 
@@ -36,9 +38,6 @@ class GUI_API QvisGaussianOpacityBar : public QvisAbstractOpacityBar
     void          mouseReleaseEvent(QMouseEvent*);
     void          paintToPixmap(int,int);
     void          drawControlPoints();
-
-  signals:
-    void          mouseReleased();
 
   private:
     enum Mode     {modeNone, modeX, modeH, modeW, modeWR, modeWL, modeB};

@@ -11,6 +11,8 @@
 #include <qvbox.h>
 #include <qbuttongroup.h>
 #include <qradiobutton.h>
+#include <qtabwidget.h>
+#include <qvgroupbox.h>
 #include <QvisColorTableButton.h>
 #include <QvisOpacitySlider.h>
 #include <QvisColorButton.h>
@@ -72,41 +74,53 @@ QvisTransformWindow::~QvisTransformWindow()
 //    Made it use my new QNarrowLineEdit for some of the text fields so the
 //    default window width is thinner.
 //
+//    Jeremy Meredith, Fri Feb  4 17:48:04 PST 2005
+//    Added support for coordinate transforms.
+//
 // ****************************************************************************
 void
 QvisTransformWindow::CreateWindowContents()
 {
-    QGridLayout *mainLayout = new QGridLayout(topLayout, 9,7,  10, "mainLayout");
+    transformTypeTabs = new QTabWidget(central, "transformTypeTabs");
+    topLayout->addWidget(transformTypeTabs);
+
+    // ----------------------------------------------------------------------
+    // First page
+    // ----------------------------------------------------------------------
+    firstPage = new QFrame(central, "firstPage");
+    transformTypeTabs->addTab(firstPage, "Arbitrary");
+
+    QGridLayout *mainLayout = new QGridLayout(firstPage, 9,7, 10, 10, "mainLayout");
     mainLayout->addColSpacing(0, 15);
 
     // ---------------
-    doRotate = new QCheckBox("Rotate", central, "doRotate");
+    doRotate = new QCheckBox("Rotate", firstPage, "doRotate");
     connect(doRotate, SIGNAL(toggled(bool)),
             this, SLOT(doRotateChanged(bool)));
     mainLayout->addMultiCellWidget(doRotate, 0,0, 0,2);
 
-    rotateOriginLabel = new QLabel("Origin", central, "rotateOriginLabel");
+    rotateOriginLabel = new QLabel("Origin", firstPage, "rotateOriginLabel");
     mainLayout->addWidget(rotateOriginLabel,1,1, Qt::AlignRight);
-    rotateOrigin = new QLineEdit(central, "rotateOrigin");
+    rotateOrigin = new QLineEdit(firstPage, "rotateOrigin");
     connect(rotateOrigin, SIGNAL(returnPressed()),
             this, SLOT(rotateOriginProcessText()));
     mainLayout->addMultiCellWidget(rotateOrigin, 1,1, 2,6);
 
-    rotateAxisLabel = new QLabel("Axis", central, "rotateAxisLabel");
+    rotateAxisLabel = new QLabel("Axis", firstPage, "rotateAxisLabel");
     mainLayout->addWidget(rotateAxisLabel,2,1, Qt::AlignRight);
-    rotateAxis = new QLineEdit(central, "rotateAxis");
+    rotateAxis = new QLineEdit(firstPage, "rotateAxis");
     connect(rotateAxis, SIGNAL(returnPressed()),
             this, SLOT(rotateAxisProcessText()));
     mainLayout->addMultiCellWidget(rotateAxis, 2,2 ,2,6);
 
-    rotateAmountLabel = new QLabel("Amount", central, "rotateAmountLabel");
+    rotateAmountLabel = new QLabel("Amount", firstPage, "rotateAmountLabel");
     mainLayout->addWidget(rotateAmountLabel,3,1, Qt::AlignRight);
-    rotateAmount = new QNarrowLineEdit(central, "rotateAmount");
+    rotateAmount = new QNarrowLineEdit(firstPage, "rotateAmount");
     connect(rotateAmount, SIGNAL(returnPressed()),
             this, SLOT(rotateAmountProcessText()));
     mainLayout->addMultiCellWidget(rotateAmount, 3,3, 2,3);
 
-    rotateType = new QButtonGroup(central, "rotateType");
+    rotateType = new QButtonGroup(firstPage, "rotateType");
     rotateType->setFrameStyle(QFrame::NoFrame);
     QHBoxLayout *rotateTypeLayout = new QHBoxLayout(rotateType);
     rotateTypeLayout->setSpacing(10);
@@ -119,66 +133,113 @@ QvisTransformWindow::CreateWindowContents()
     mainLayout->addMultiCellWidget(rotateType, 3,3, 4,6);
 
     // ---------------
-    doScale = new QCheckBox("Scale", central, "doScale");
+    doScale = new QCheckBox("Scale", firstPage, "doScale");
     connect(doScale, SIGNAL(toggled(bool)),
             this, SLOT(doScaleChanged(bool)));
     mainLayout->addMultiCellWidget(doScale, 4,4, 0,2);
 
-    scaleOriginLabel = new QLabel("Origin", central, "scaleOriginLabel");
+    scaleOriginLabel = new QLabel("Origin", firstPage, "scaleOriginLabel");
     mainLayout->addWidget(scaleOriginLabel,5,1, Qt::AlignRight);
-    scaleOrigin = new QLineEdit(central, "scaleOrigin");
+    scaleOrigin = new QLineEdit(firstPage, "scaleOrigin");
     connect(scaleOrigin, SIGNAL(returnPressed()),
             this, SLOT(scaleOriginProcessText()));
     mainLayout->addMultiCellWidget(scaleOrigin, 5,5, 2,6);
 
-    scaleXLabel = new QLabel("X", central, "scaleXLabel");
+    scaleXLabel = new QLabel("X", firstPage, "scaleXLabel");
     mainLayout->addWidget(scaleXLabel,6,1, Qt::AlignRight);
-    scaleX = new QNarrowLineEdit(central, "scaleX");
+    scaleX = new QNarrowLineEdit(firstPage, "scaleX");
     connect(scaleX, SIGNAL(returnPressed()),
             this, SLOT(scaleXProcessText()));
     mainLayout->addWidget(scaleX, 6,2);
 
-    scaleYLabel = new QLabel("Y", central, "scaleYLabel");
+    scaleYLabel = new QLabel("Y", firstPage, "scaleYLabel");
     mainLayout->addWidget(scaleYLabel,6,3, Qt::AlignRight);
-    scaleY = new QNarrowLineEdit(central, "scaleY");
+    scaleY = new QNarrowLineEdit(firstPage, "scaleY");
     connect(scaleY, SIGNAL(returnPressed()),
             this, SLOT(scaleYProcessText()));
     mainLayout->addWidget(scaleY, 6,4);
 
-    scaleZLabel = new QLabel("Z", central, "scaleZLabel");
+    scaleZLabel = new QLabel("Z", firstPage, "scaleZLabel");
     mainLayout->addWidget(scaleZLabel,6,5, Qt::AlignRight);
-    scaleZ = new QNarrowLineEdit(central, "scaleZ");
+    scaleZ = new QNarrowLineEdit(firstPage, "scaleZ");
     connect(scaleZ, SIGNAL(returnPressed()),
             this, SLOT(scaleZProcessText()));
     mainLayout->addWidget(scaleZ, 6,6);
 
     // ---------------
-    doTranslate = new QCheckBox("Translate", central, "doTranslate");
+    doTranslate = new QCheckBox("Translate", firstPage, "doTranslate");
     connect(doTranslate, SIGNAL(toggled(bool)),
             this, SLOT(doTranslateChanged(bool)));
     mainLayout->addMultiCellWidget(doTranslate, 7,7, 0,2);
 
-    translateXLabel = new QLabel("X", central, "translateXLabel");
+    translateXLabel = new QLabel("X", firstPage, "translateXLabel");
     mainLayout->addWidget(translateXLabel,8,1, Qt::AlignRight);
-    translateX = new QNarrowLineEdit(central, "translateX");
+    translateX = new QNarrowLineEdit(firstPage, "translateX");
     connect(translateX, SIGNAL(returnPressed()),
             this, SLOT(translateXProcessText()));
     mainLayout->addWidget(translateX, 8,2);
 
-    translateYLabel = new QLabel("Y", central, "translateYLabel");
+    translateYLabel = new QLabel("Y", firstPage, "translateYLabel");
     mainLayout->addWidget(translateYLabel,8,3, Qt::AlignRight);
-    translateY = new QNarrowLineEdit(central, "translateY");
+    translateY = new QNarrowLineEdit(firstPage, "translateY");
     connect(translateY, SIGNAL(returnPressed()),
             this, SLOT(translateYProcessText()));
     mainLayout->addWidget(translateY, 8,4);
 
-    translateZLabel = new QLabel("Z", central, "translateZLabel");
+    translateZLabel = new QLabel("Z", firstPage, "translateZLabel");
     mainLayout->addWidget(translateZLabel,8,5, Qt::AlignRight);
-    translateZ = new QNarrowLineEdit(central, "translateZ");
+    translateZ = new QNarrowLineEdit(firstPage, "translateZ");
     connect(translateZ, SIGNAL(returnPressed()),
             this, SLOT(translateZProcessText()));
     mainLayout->addWidget(translateZ, 8,6);
 
+    // ----------------------------------------------------------------------
+    // Second page
+    // ----------------------------------------------------------------------
+    secondPage = new QFrame(central, "secondPage");
+    transformTypeTabs->addTab(secondPage, "Coordinate");
+
+    QVBoxLayout *secondPageLayout = new QVBoxLayout(secondPage, 10, 10, "secondPageLayout");
+
+    QVGroupBox *inputFrame = new QVGroupBox("Input coordinates", secondPage, "inputFrame");
+    secondPageLayout->addWidget(inputFrame);
+    inputFrame->setFrameStyle(QFrame::Box | QFrame::Sunken );
+
+    inputCoord = new QButtonGroup(inputFrame, "inputCoord");
+    inputCoord->setFrameStyle(QFrame::NoFrame);
+    QVBoxLayout *inputCoordLayout = new QVBoxLayout(inputCoord,0,0);
+    inputCoordLayout->setSpacing(10);
+    QRadioButton *iCart = new QRadioButton("Cartesian", inputCoord);
+    inputCoordLayout->addWidget(iCart);
+    QRadioButton *iCyl  = new QRadioButton("Cylindrical", inputCoord);
+    inputCoordLayout->addWidget(iCyl);
+    QRadioButton *iSph  = new QRadioButton("Spherical", inputCoord);
+    inputCoordLayout->addWidget(iSph);
+
+    QVGroupBox *outputFrame = new QVGroupBox("Output coordinates", secondPage, "outputFrame");
+    secondPageLayout->addWidget(outputFrame);
+    outputFrame->setFrameStyle(QFrame::Box | QFrame::Sunken );
+
+    outputCoord = new QButtonGroup(outputFrame, "outputCoord");
+    outputCoord->setFrameStyle(QFrame::NoFrame);
+    QVBoxLayout *outputCoordLayout = new QVBoxLayout(outputCoord,0,0);
+    outputCoordLayout->setSpacing(10);
+    QRadioButton *oCart = new QRadioButton("Cartesian", outputCoord);
+    outputCoordLayout->addWidget(oCart);
+    QRadioButton *oCyl  = new QRadioButton("Cylindrical", outputCoord);
+    outputCoordLayout->addWidget(oCyl);
+    QRadioButton *oSph  = new QRadioButton("Spherical", outputCoord);
+    outputCoordLayout->addWidget(oSph);
+
+    secondPageLayout->addStretch(100);
+
+    connect(inputCoord, SIGNAL(clicked(int)),
+            this, SLOT(inputCoordChanged(int)));
+    connect(outputCoord, SIGNAL(clicked(int)),
+            this, SLOT(outputCoordChanged(int)));
+
+    connect(transformTypeTabs, SIGNAL(currentChanged(QWidget*)),
+            this, SLOT(pageTurned(QWidget*)));
 }
 
 // ****************************************************************************
@@ -194,6 +255,9 @@ QvisTransformWindow::CreateWindowContents()
 //    Jeremy Meredith, Tue Nov 16 11:39:53 PST 2004
 //    Replaced simple QString::sprintf's with a setNum because there seems
 //    to be a bug causing numbers to be incremented by .00001.  See '5263.
+//
+//    Jeremy Meredith, Fri Feb  4 17:48:04 PST 2005
+//    Added support for coordinate transforms.
 //
 // ****************************************************************************
 void
@@ -328,6 +392,22 @@ QvisTransformWindow::UpdateWindow(bool doAll)
           case 13: //translateZ
             temp.setNum(atts->GetTranslateZ());
             translateZ->setText(temp);
+            break;
+          case 14: // transformType
+            if (atts->GetTransformType() == TransformAttributes::Similarity)
+            {
+                transformTypeTabs->showPage(firstPage);
+            }
+            else
+            {
+                transformTypeTabs->showPage(secondPage);
+            }
+            break;
+          case 15: // inputCoordSys
+            inputCoord->setButton(atts->GetInputCoordSys());
+            break;
+          case 16: // outputCoordSys
+            outputCoord->setButton(atts->GetOutputCoordSys());
             break;
         }
     }
@@ -726,3 +806,29 @@ QvisTransformWindow::translateZProcessText()
     GetCurrentValues(13);
     Apply();
 }
+
+void
+QvisTransformWindow::pageTurned(QWidget *page)
+{
+    if (page == firstPage)
+    {
+        atts->SetTransformType(TransformAttributes::Similarity);
+        Apply();
+    }
+    else if (page == secondPage)
+    {
+        atts->SetTransformType(TransformAttributes::Coordinate);
+        Apply();
+    }
+}
+
+void QvisTransformWindow::inputCoordChanged(int v)
+{
+    atts->SetInputCoordSys(TransformAttributes::CoordinateSystem(v));
+}
+
+void QvisTransformWindow::outputCoordChanged(int v)
+{
+    atts->SetOutputCoordSys(TransformAttributes::CoordinateSystem(v));
+}
+
