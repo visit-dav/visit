@@ -6,7 +6,7 @@
 
 #include <avtDatasetExaminer.h>
 #include <avtParallel.h>
-
+#include <snprintf.h>
 
 // ****************************************************************************
 //  Method: avtNumZonesQuery constructor
@@ -47,6 +47,8 @@ avtNumZonesQuery::~avtNumZonesQuery()
 //  Creation:   February 18, 2004 
 //
 //  Modifications:
+//    Brad Whitlock, Mon Feb 23 12:11:02 PDT 2004
+//    I made it use SNPRINTF to get it to build on Linux.
 //    
 // ****************************************************************************
 
@@ -65,16 +67,16 @@ avtNumZonesQuery::PerformQuery(QueryAttributes *qA)
 
     avtDataset_p input = GetTypedInput();
     int totalZones [2] = {0, 0};
-    char msg[1024];
+    char msg[200];
 
     if (gt != AVT_HAS_GHOSTS)
     {
         totalZones[0] = avtDatasetExaminer::GetNumberOfZones(input);
         SumIntAcrossAllProcessors(totalZones[0]);
         if (OriginalData())
-            sprintf(msg, "The original number of zones is %d.", totalZones[0]);
+            SNPRINTF(msg, 200, "The original number of zones is %d.", totalZones[0]);
         else 
-            sprintf(msg, "The actual number of zones is %d.", totalZones[0]);
+            SNPRINTF(msg, 200, "The actual number of zones is %d.", totalZones[0]);
         qA->SetResultsValue((double)totalZones[0]);
     }
     else 
@@ -84,12 +86,12 @@ avtNumZonesQuery::PerformQuery(QueryAttributes *qA)
         SumIntArrayAcrossAllProcessors(totalZones, summedTZ, 2);
         if (OriginalData())
         {
-            sprintf(msg, "The original number of zones is %d.\n" 
+            SNPRINTF(msg, 200, "The original number of zones is %d.\n" 
               "The number of ghost zones is %d.", summedTZ[0], summedTZ[1]);
         }
         else 
         {
-            sprintf(msg, "The actual number of zones is %d.\n" 
+            SNPRINTF(msg, 200, "The actual number of zones is %d.\n" 
               "The number of ghost zones is %d.", summedTZ[0], summedTZ[1]);
         }
         double results[2] = {(double) summedTZ[0], (double) summedTZ[1]};
