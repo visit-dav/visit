@@ -3096,6 +3096,9 @@ ViewerQueryManager::UpdateQueryOverTimeAtts()
 //    Modify the way centering-consistency-checks are performed, so
 //    that Material vars will get evaluated correctly.  
 //
+//    Kathleen Bonnell, Wed Apr 28 11:11:28 PDT 2004 
+//    Added retry capability if engine is dead. 
+//    
 // ***********************************************************************
 
 void
@@ -3250,46 +3253,92 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin, QueryAttributes *qA)
     int pid = plotList->AddPlot(plotType, vName, replacePlots, false);
     ViewerPlot *resultsPlot = plotList->GetPlot(pid);
 
-    // Make sure we will be using a cloned network
-    resultsPlot->SetCloneId(origPlot->GetNetworkID());
-    resultsPlot->SetSILRestriction(origPlot->GetSILRestriction()); 
-
     timeQueryAtts->SetQueryAtts(*qA);
+    bool retry = false;
+    int numAttempts = 0;
 
-    TRY
+    EngineKey engineKey =  origPlot->GetEngineKey();
+
+    do
     {
-        ViewerEngineManager::Instance()->CloneNetwork(
-            origPlot->GetEngineKey(), origPlot->GetNetworkID(), timeQueryAtts);
-        plotList->RealizePlots();
-        // 
-        // If there was an error, the bad curve plot should not be left
-        // around muddying up the waters.
-        // 
-        if (resultsPlot->GetErrorFlag())
-            plotList->DeletePlot(resultsPlot, false);
+        retry = false;
 
-    }
-    CATCH2(VisItException, e)
-    {
-        // 
-        // If there was an error, the bad curve plot should not be left
-        // around muddying up the waters.
-        // 
-        plotList->DeletePlot(resultsPlot, false);
+        // Make sure we will be using a cloned network
+        resultsPlot->SetCloneId(origPlot->GetNetworkID());
+        resultsPlot->SetSILRestriction(origPlot->GetSILRestriction()); 
+        TRY
+        {
+            ViewerEngineManager::Instance()->CloneNetwork(engineKey,
+                origPlot->GetNetworkID(), timeQueryAtts);
+            plotList->RealizePlots();
+            // 
+            // If there was an error, the bad curve plot should not be left
+            // around muddying up the waters.
+            // 
+            if (resultsPlot->GetErrorFlag())
+                plotList->DeletePlot(resultsPlot, false);
+        }
+        CATCH2(VisItException, e)
+        {
+            char message[2048];
+            if (e.GetExceptionType() == "LostConnectionException" ||
+                e.GetExceptionType() == "NoEngineException" ||
+                e.GetExceptionType() == "ImproperUseException" )
+            {
+                //
+                // Queries access the cached network used by the queried plot.
+                // Simply relaunching the engine does not work, as no network
+                // is created. This situation requires re-execution of the 
+                // plot that is being queried.
+                //
+                origPlot->ClearCurrentActor();
+                origList->UpdateFrame(); 
+                retry = true;
+                numAttempts++; 
+            }
+            else if (e.GetExceptionType() == "InvalidDimensionsException")
+            {
+                //
+                //  Create message for the gui that includes the query name
+                //  and message.
+                //
+                SNPRINTF(message, sizeof(message), "%s:  %s", qName.c_str(),
+                         e.GetMessage().c_str());
+            }
+            else if (e.GetExceptionType() == "NonQueryableInputException")
+            {
+                //
+                //  Create message.
+                //
+                SNPRINTF(message, sizeof(message), "%s%s",
+                         "The currently active plot is non-queryable.\n",
+                         "Please select a different plot and try again.");
+            }
+            else
+            {
+                //
+                // Add as much information to the message as we can,
+                // including query name, exception type and exception
+                // message.
+                //
+                SNPRINTF(message, sizeof(message), "%s:  (%s)\n%s", qName.c_str(),
+                         e.GetExceptionType().c_str(),
+                         e.GetMessage().c_str());
 
-        //
-        // Add as much information to the message as we can,
-        // including query name, exception type and exception
-        // message.
-        //
-        char message[256];
-        SNPRINTF(message, sizeof(message), "%s:  (%s)\n%s", qName.c_str(),
-                 e.GetExceptionType().c_str(),
-                 e.GetMessage().c_str());
-        Error(message);
-        return;
-    }
-    ENDTRY
+            }
+            ClearStatus(engineKey.ID().c_str());
+            if (!retry)
+            {
+                // 
+                // If there was an error, the bad curve plot should not be left
+                // around muddying up the waters.
+                // 
+                plotList->DeletePlot(resultsPlot, false);
+                CATCH_RETURN(0);
+            }
+        }
+        ENDTRY
+    } while (retry && numAttempts < 2);
 
     //
     // Update the actions so the menus and the toolbars have the right state.

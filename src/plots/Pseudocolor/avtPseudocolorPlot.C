@@ -310,12 +310,16 @@ avtPseudocolorPlot::ApplyRenderingTransformation(avtDataObject_p input)
 //    Kathleen Bonnell, Mon Sep 29 13:07:50 PDT 2003 
 //    Set AntialiasedRenderOrder. 
 //
+//    Kathleen Bonnell, Wed Apr 28 17:37:47 PDT 2004 
+//    Chagned 'SetLegendRanges' to 'SetLimitsMode', as the legend ranges are
+//    dependent upon values set in SetLimitsMode. 
+//
 // ****************************************************************************
 
 void
 avtPseudocolorPlot::CustomizeBehavior()
 {
-    SetLegendRanges();
+    SetLimitsMode(atts.GetLimitsMode());
 
     if (atts.GetOpacity() < 1.)
     {

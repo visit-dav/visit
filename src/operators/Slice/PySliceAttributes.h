@@ -16,5 +16,7 @@ PyObject       *PySliceAttributes_WrapPyObject(const SliceAttributes *attr);
 void            PySliceAttributes_SetLogging(bool val);
 void            PySliceAttributes_SetDefaults(const SliceAttributes *atts);
 
+PyObject       *PySliceAttributes_StringRepresentation(const SliceAttributes *atts);
+
 #endif
 
