@@ -109,7 +109,10 @@ class WindowInformation;
 //   should be shown.
 //
 //   Kathleen Bonnell, Wed Mar 31 10:13:43 PST 2004
-//   Added method to activate queryOverTime widnow. 
+//   Added method to activate queryOverTime window. 
+//
+//   Brad Whitlock, Mon Apr 5 15:20:29 PST 2004
+//   Added support for reopen and close coming up under an advanced menu.
 //
 // ****************************************************************************
 
@@ -231,7 +234,7 @@ private slots:
     void lockView();
 private:
     void CreateGlobalArea(QLayout *tl);
-    void UpdateFileMenu(QPopupMenu *, int);
+    void UpdateFileMenuPopup(QPopupMenu *, int);
     void UpdateGlobalArea(bool doAll);
     void UpdateWindowList(bool doList);
     void UpdateWindowMenu(bool updateWindowNums);
@@ -253,10 +256,13 @@ private:
     QCheckBox                 *autoUpdateCheckBox;
 
     QPopupMenu                *filePopup;
+    QPopupMenu                *fileAdvancedPopup;
+    int                        fileAdvancedPopupId;
     QPopupMenu                *reopenPopup;
     int                        reopenPopupId;
     QPopupMenu                *closePopup;
     int                        closePopupId;
+    bool                       advancedMenuShowing;
 
     QPopupMenu                *winPopup;
     QPopupMenu                *layoutPopup;

@@ -195,6 +195,10 @@
 //    Kathleen Bonnell, Wed Mar 31 10:13:43 PST 2004 
 //    I added query over time window.
 //
+//    Brad Whitlock, Mon Apr 5 15:28:04 PST 2004
+//    I added support for putting reopen and close in an "Advanced"
+//    pullright menu.
+//
 // ****************************************************************************
 
 QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
@@ -253,19 +257,24 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     menuBar()->insertItem( tr("&File"), filePopup );
     filePopup->insertItem(openIcon, tr("Select &file . . ."), this, SIGNAL(activateFileWindow()), CTRL+Key_F );
 
+    // Advanced pull-right menu.
+    fileAdvancedPopup = new QPopupMenu(filePopup, "fileAdvancedPopup");
+    fileAdvancedPopupId = filePopup->insertItem(tr("Advanced file options"), fileAdvancedPopup);
+    advancedMenuShowing = true;
+
     // ReOpen pull-right menu.
-    reopenPopup = new QPopupMenu(filePopup, "reopenPopup");
+    reopenPopup = new QPopupMenu(fileAdvancedPopup, "reopenPopup");
     connect(reopenPopup, SIGNAL(activated(int)),
             this, SLOT(reopenFile(int)));
-    reopenPopupId = filePopup->insertItem(tr("ReOpen file"), reopenPopup);
-    filePopup->setItemEnabled(reopenPopupId, false);
+    reopenPopupId = fileAdvancedPopup->insertItem(tr("ReOpen file"), reopenPopup);
+    fileAdvancedPopup->setItemEnabled(reopenPopupId, false);
 
     // Close pull-right menu
-    closePopup = new QPopupMenu(filePopup, "closePopup");
+    closePopup = new QPopupMenu(fileAdvancedPopup, "closePopup");
     connect(closePopup, SIGNAL(activated(int)),
             this, SLOT(closeFile(int)));
-    closePopupId = filePopup->insertItem(tr("Close file"), closePopup);
-    filePopup->setItemEnabled(closePopupId, false);
+    closePopupId = fileAdvancedPopup->insertItem(tr("Close file"), closePopup);
+    fileAdvancedPopup->setItemEnabled(closePopupId, false);
 
     filePopup->insertItem( tr("Refresh file list"), this, SIGNAL(refreshFileList()), CTRL+Key_R);
     filePopup->insertItem( tr("File &information . . ."), this, SIGNAL(activateFileInformationWindow()), CTRL+Key_I);
@@ -825,6 +834,9 @@ QvisMainWindow::Update(Subject *TheChangedSubject)
 //   I updated the code due to changes in GlobalAttributes. I also added code
 //   to set the contents of the source list.
 //
+//   Brad Whitlock, Mon Apr 5 16:19:18 PST 2004
+//   Renamed a method.
+//
 // ****************************************************************************
 
 void
@@ -844,8 +856,8 @@ QvisMainWindow::UpdateGlobalArea(bool doAll)
         switch(i)
         {
         case 0: // sources
-            UpdateFileMenu(reopenPopup, reopenPopupId);
-            UpdateFileMenu(closePopup, closePopupId);
+            UpdateFileMenuPopup(reopenPopup, reopenPopupId);
+            UpdateFileMenuPopup(closePopup, closePopupId);
             break;
         case 1: // windows
             UpdateWindowList(true);
@@ -900,7 +912,7 @@ QvisMainWindow::UpdateGlobalArea(bool doAll)
 }
 
 // ****************************************************************************
-// Method: QvisMainWindow::UpdateFileMenu
+// Method: QvisMainWindow::UpdateFileMenuPopup
 //
 // Purpose: 
 //   Updates the contents of the specified file menu.
@@ -913,11 +925,13 @@ QvisMainWindow::UpdateGlobalArea(bool doAll)
 // Creation:   Fri Feb 27 10:49:30 PDT 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Apr 5 15:33:39 PST 2004
+//   I renamed the method.
+//
 // ****************************************************************************
 
 void
-QvisMainWindow::UpdateFileMenu(QPopupMenu *m, int menuId)
+QvisMainWindow::UpdateFileMenuPopup(QPopupMenu *m, int menuId)
 {
     stringVector simpleNames;
     const stringVector &sources = globalAtts->GetSources();
@@ -938,8 +952,12 @@ QvisMainWindow::UpdateFileMenu(QPopupMenu *m, int menuId)
     // Set the menu's enabled state.
     //
     bool menuEnabled = (m->count() > 0);
-    if(filePopup->isItemEnabled(menuId) != menuEnabled)
-        filePopup->setItemEnabled(menuId, menuEnabled);
+    if(m->parent()->inherits("QPopupMenu"))
+    {
+        QPopupMenu *p = (QPopupMenu *)m->parent();
+        if(p->isItemEnabled(menuId) != menuEnabled)
+            p->setItemEnabled(menuId, menuEnabled);
+    }
 }
 
 // ****************************************************************************
@@ -1660,7 +1678,10 @@ QvisMainWindow::GetTimeStateFormat() const
 // Creation:   Fri Jan 30 14:36:47 PST 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Apr 5 15:50:24 PST 2004
+//   Added support for menus that hide depending on if the selected files
+//   are showing.
+//
 // ****************************************************************************
 
 void
@@ -1668,6 +1689,71 @@ QvisMainWindow::SetShowSelectedFiles(bool val)
 {
     filePanel->SetShowSelectedFiles(val);
     plotManager->SetSourceVisible(!val);
+
+    if(val)
+    {
+        if(!advancedMenuShowing)
+        {
+            // Show selected files. Put reopen, close in an advanced menu.
+            filePopup->removeItem(reopenPopupId);
+            filePopup->removeItem(closePopupId);
+
+            fileAdvancedPopup = new QPopupMenu(filePopup, "fileAdvancedPopup");
+            fileAdvancedPopupId = filePopup->insertItem(tr("Advanced file options"),
+                                  fileAdvancedPopup, -1, 1);
+
+            // ReOpen pull-right menu.
+            reopenPopup = new QPopupMenu(fileAdvancedPopup, "reopenPopup");
+            connect(reopenPopup, SIGNAL(activated(int)),
+                    this, SLOT(reopenFile(int)));
+            reopenPopupId = fileAdvancedPopup->insertItem(tr("ReOpen file"), reopenPopup);
+            fileAdvancedPopup->setItemEnabled(reopenPopupId, false);
+
+            // Close pull-right menu
+            closePopup = new QPopupMenu(fileAdvancedPopup, "closePopup");
+            connect(closePopup, SIGNAL(activated(int)),
+                    this, SLOT(closeFile(int)));
+            closePopupId = fileAdvancedPopup->insertItem(tr("Close file"), closePopup);
+            fileAdvancedPopup->setItemEnabled(closePopupId, false);
+            advancedMenuShowing = true;
+
+            //
+            // Update the new visible menus with the active sources.
+            //
+            UpdateFileMenuPopup(reopenPopup, reopenPopupId);
+            UpdateFileMenuPopup(closePopup, closePopupId);
+        }
+    }
+    else
+    {
+        if(advancedMenuShowing)
+        {
+            // No selected files. Put reopen and close in the file menu.
+            filePopup->removeItem(fileAdvancedPopupId);
+            fileAdvancedPopupId = -1;
+
+            // ReOpen pull-right menu.
+            reopenPopup = new QPopupMenu(filePopup, "reopenPopup");
+            connect(reopenPopup, SIGNAL(activated(int)),
+                    this, SLOT(reopenFile(int)));
+            reopenPopupId = filePopup->insertItem(tr("ReOpen file"), reopenPopup, -1, 1);
+            filePopup->setItemEnabled(reopenPopupId, false);
+
+            // Close pull-right menu
+            closePopup = new QPopupMenu(filePopup, "closePopup");
+            connect(closePopup, SIGNAL(activated(int)),
+                    this, SLOT(closeFile(int)));
+            closePopupId = filePopup->insertItem(tr("Close file"), closePopup, -1, 2);
+            filePopup->setItemEnabled(closePopupId, false);
+            advancedMenuShowing = false;
+
+            //
+            // Update the new visible menus with the active sources.
+            //
+            UpdateFileMenuPopup(reopenPopup, reopenPopupId);
+            UpdateFileMenuPopup(closePopup, closePopupId);
+        }
+    }
 }
 
 // ****************************************************************************

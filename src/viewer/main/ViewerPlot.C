@@ -813,6 +813,10 @@ ViewerPlot::GetMetaData() const
 //    Brad Whitlock, Fri Mar 26 08:14:28 PDT 2004
 //    I made it use ViewerPlot::GetMetaData and strings.
 //
+//    Hank Childs, Mon Apr  5 20:41:54 PDT 2004
+//    If you are changing the SIL, make a copy, because you might be changing
+//    a SIL that is referenced elsewhere.  ['4716]
+//
 // ****************************************************************************
 
 bool
@@ -864,15 +868,18 @@ ViewerPlot::SetVariableName(const std::string &name)
                     // old variable. Set the top set in the SIL restriction.
                     //
                     avtSILSet_p current = silr->GetSILSet(silr->GetTopSet());
-                    if(meshName != current->GetName())
+                    if (meshName != current->GetName())
                     {
+                        avtSILRestriction_p new_sil = 
+                                                   new avtSILRestriction(silr);
                         int topSet = 0;
-                        for(int i = 0; i < silr->GetWholes().size(); ++i)
+                        for (int i = 0; i < new_sil->GetWholes().size(); i++)
                         {
-                            current = silr->GetSILSet(silr->GetWholes()[i]);
+                            current = 
+                                   new_sil->GetSILSet(new_sil->GetWholes()[i]);
                             if(meshName == current->GetName())
                             {
-                                topSet = silr->GetWholes()[i];
+                                topSet = new_sil->GetWholes()[i];
                                 break;
                             }
                         }
@@ -882,9 +889,10 @@ ViewerPlot::SetVariableName(const std::string &name)
                         // ClearActors(). Note that we must select all sets
                         // under the new top set.
                         //
-                        silr->SetTopSet(topSet);
-                        silr->TurnOffAll();
-                        silr->TurnOnSet(topSet);
+                        new_sil->SetTopSet(topSet);
+                        new_sil->TurnOffAll();
+                        new_sil->TurnOnSet(topSet);
+                        silr = new_sil;
 
                         //
                         // Set a flag to return that indicates the SIL
@@ -1213,6 +1221,7 @@ ViewerPlot::MoveDatabaseKeyframe(int oldFrame, int newFrame)
 //
 //    Hank Childs, Fri Nov 22 17:08:31 PST 2002
 //    Use a SIL traverser to determine if the restrictions are equal.
+//
 //    Eric Brugger, Tue Nov 26 10:59:42 PST 2002
 //    I added keyframing support.
 //
@@ -1222,7 +1231,7 @@ void
 ViewerPlot::SetSILRestriction(avtSILRestriction_p s)
 {
     //
-    // Assign the new SIL resitriction to the plot.
+    // Assign the new SIL restriction to the plot.
     //
     silr = s;
 

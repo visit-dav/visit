@@ -53,6 +53,7 @@
 #include <StatusAttributes.h>
 #include <SyncAttributes.h>
 #include <QueryOverTimeAttributes.h>
+#include <Utility.h>
 
 #include <ViewerActionManager.h>
 #include <ViewerConnectionProgressDialog.h>
@@ -109,8 +110,6 @@ ViewerSubject  *viewerSubject=0;
 using std::string;
 
 // Static method to split a string using a given delimiter
-static vector<string> SplitValues(const string &buff, char delim);
-
 
 // ****************************************************************************
 //  Method: ViewerSubject constructor
@@ -6441,46 +6440,6 @@ ViewerSubject::SetDefaultPickAttributes()
 {
     ViewerQueryManager::Instance()->SetDefaultPickAttsFromClient();
 }
-
-// ****************************************************************************
-//  Function:  SplitValues
-//
-//  Purpose:
-//    Separate a string into a vector of strings using a single char delimiter.
-//
-//  Arguments:
-//    buff       the string to split
-//    delim      the single-character delimiter
-//
-//  Programmer:  Jeremy Meredith
-//  Creation:    March 23, 2004
-//
-// ****************************************************************************
-static vector<string>
-SplitValues(const string &buff, char delim)
-{
-    vector<string> output;
-    
-    string tmp="";
-    for (int i=0; i<buff.length(); i++)
-    {
-        if (buff[i] == delim)
-        {
-            if (!tmp.empty())
-                output.push_back(tmp);
-            tmp = "";
-        }
-        else
-        {
-            tmp += buff[i];
-        }
-    }
-    if (!tmp.empty())
-        output.push_back(tmp);
-
-    return output;
-}
-
 
 // ****************************************************************************
 //  Method: ViewerSubject::SetQueryOverTimeAttributes
