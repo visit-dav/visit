@@ -63,6 +63,9 @@ $0 = shift @ARGV;
 #    Hank Childs, Mon Mar 28 10:00:15 PST 2005
 #    Added more timings options to -fullhelp.
 #
+#    Jeremy Meredith, Fri Apr  1 16:05:49 PST 2005
+#    Added valgrind to -fullhelp, and unlimited the errors it will report.
+#
 ###############################################################################
 
 
@@ -246,6 +249,7 @@ $fullusage = "$usage
         -break <funcname>    Add the specified breakpoint in gdb.
         -xterm               Run gdb in an xterm window.
         -totalview <comp>    Run totalview on the given component.
+        -valgrind <comp>     Run valgrind on the given component.
         -numrestarts <#>     Number of attempts to restart a failed engine.
 ";
 
@@ -1066,7 +1070,7 @@ else
         # Note: could use --tool=addrcheck because it uses much less memory
         #       and runs twice as fast, but it doesn't catch UMRs
         # Note: could add --leak-check=yes to either tool
-        @debugcmd = ("valgrind", "--tool=memcheck", "--num-callers=32", "$visitbindir/$exe_name", @visitargs);
+        @debugcmd = ("valgrind", "--tool=memcheck", "--error-limit=no", "--num-callers=32", "$visitbindir/$exe_name", @visitargs);
         if ($security_key_set) { push @debugcmd, "-key", $security_key; }
         print STDERR "Running: @debugcmd\n";
         exec @debugcmd or die "Could not execute $exe_name under valgrind\n";

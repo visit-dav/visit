@@ -95,7 +95,7 @@ DatabaseCorrelation::SetNumStates(int nStates)
             for(int j = 0; j < maxStates; ++j)
             {
                 float t = float(j) / float(maxStates - 1);
-                int state = int(t * databaseNStates[i]);
+                int state = int(t * databaseNStates[i] + 0.5);
                 newIndices.push_back(state);
             }
         }
@@ -152,7 +152,9 @@ Definition:
 // Creation:   Sat Jan 31 19:56:11 PST 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Apr 1 15:17:08 PST 2005
+//   Fixed a rounding problem.
+//
 // ****************************************************************************
 
 void
@@ -234,7 +236,7 @@ DatabaseCorrelation::AddDatabase(const std::string &database, int nStates,
             for(int j = 0; j < maxStates; ++j)
             {
                 float t = float(j) / float(maxStates - 1);
-                int state = int(t * (databaseNStates[i] - 1));
+                int state = int(t * (databaseNStates[i] - 1) + 0.5);
                 indices.push_back(state);
             }
         }
