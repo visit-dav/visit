@@ -439,11 +439,16 @@ avtContourFilter::PreExecute(void)
 //    Hank Childs, Fri Jul 25 22:13:58 PDT 2003
 //    Made use of scalar tree and faster VisIt contouring module.
 //
+//    Hank Childs, Tue May 11 06:47:24 PDT 2004
+//    Fix a bug that assumed that we would always have *something* to contour.
+//
 // ****************************************************************************
 
 avtDataTree_p 
 avtContourFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string label)
 {
+    int tt1 = visitTimer->StartTimer();
+
     int   i;
     char *contourVar = (activeVariable != NULL ? activeVariable 
                                                : pipelineVariable);
@@ -466,6 +471,7 @@ avtContourFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string label)
     // Contouring only works on nodal variables -- make sure that we have
     // a nodal variable before progressing.
     //
+    int t3 = visitTimer->StartTimer();
     vtkDataArray *cellVar = in_ds->GetCellData()->GetArray(contourVar);
     if (cellVar != NULL)
     {
@@ -499,6 +505,7 @@ avtContourFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string label)
         toBeContoured->ShallowCopy(in_ds);
     }
     toBeContoured->GetPointData()->SetActiveScalars(contourVar);
+    visitTimer->StopTimer(t3, "Recentering");
 
     vtkVisItScalarTree *tree = vtkVisItScalarTree::New();
     tree->SetDataSet(toBeContoured);
@@ -520,7 +527,13 @@ avtContourFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string label)
         visitTimer->StopTimer(id1, "Getting cell list");
         int id2 = visitTimer->StartTimer();
         cf->SetIsovalue(isoValues[i]);
-        cf->SetCellList(&(list[0]), list.size());
+        int *list2 = NULL;
+        int emptylist[1] = { 0 };
+        if (list.size() <= 0)
+            list2 = emptylist;
+        else
+            list2 = &(list[0]);
+        cf->SetCellList(list2, list.size());
 
         output->Update();
         if (output->GetNumberOfCells() == 0)
@@ -560,6 +573,7 @@ avtContourFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string label)
     toBeContoured->Delete();
     tree->Delete();
 
+    visitTimer->StopTimer(tt1, "avtContourFilter::ExecuteData");
     return outDT;
 }
 
