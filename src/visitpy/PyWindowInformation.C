@@ -647,7 +647,7 @@ WindowInformation_GetLastRenderMax(PyObject *self, PyObject *args)
 }
 
 static PyObject *
-WindowInformation_SetNumTriangles(PyObject *self, PyObject *args)
+WindowInformation_SetNumPrimitives(PyObject *self, PyObject *args)
 {
     WindowInformationObject *obj = (WindowInformationObject *)self;
 
@@ -655,18 +655,18 @@ WindowInformation_SetNumTriangles(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "i", &ival))
         return NULL;
 
-    // Set the numTriangles in the object.
-    obj->data->SetNumTriangles(ival);
+    // Set the numPrimitives in the object.
+    obj->data->SetNumPrimitives(ival);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 static PyObject *
-WindowInformation_GetNumTriangles(PyObject *self, PyObject *args)
+WindowInformation_GetNumPrimitives(PyObject *self, PyObject *args)
 {
     WindowInformationObject *obj = (WindowInformationObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetNumTriangles()));
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetNumPrimitives()));
     return retval;
 }
 
@@ -770,8 +770,8 @@ static struct PyMethodDef WindowInformation_methods[] = {
     {"GetLastRenderAvg", WindowInformation_GetLastRenderAvg, METH_VARARGS},
     {"SetLastRenderMax", WindowInformation_SetLastRenderMax, METH_VARARGS},
     {"GetLastRenderMax", WindowInformation_GetLastRenderMax, METH_VARARGS},
-    {"SetNumTriangles", WindowInformation_SetNumTriangles, METH_VARARGS},
-    {"GetNumTriangles", WindowInformation_GetNumTriangles, METH_VARARGS},
+    {"SetNumPrimitives", WindowInformation_SetNumPrimitives, METH_VARARGS},
+    {"GetNumPrimitives", WindowInformation_GetNumPrimitives, METH_VARARGS},
     {"SetExtents", WindowInformation_SetExtents, METH_VARARGS},
     {"GetExtents", WindowInformation_GetExtents, METH_VARARGS},
     {NULL, NULL}
@@ -842,8 +842,8 @@ WindowInformation_getattr(PyObject *self, char *name)
         return WindowInformation_GetLastRenderAvg(self, NULL);
     if(strcmp(name, "lastRenderMax") == 0)
         return WindowInformation_GetLastRenderMax(self, NULL);
-    if(strcmp(name, "numTriangles") == 0)
-        return WindowInformation_GetNumTriangles(self, NULL);
+    if(strcmp(name, "numPrimitives") == 0)
+        return WindowInformation_GetNumPrimitives(self, NULL);
     if(strcmp(name, "extents") == 0)
         return WindowInformation_GetExtents(self, NULL);
 
@@ -902,8 +902,8 @@ WindowInformation_setattr(PyObject *self, char *name, PyObject *args)
         retval = (WindowInformation_SetLastRenderAvg(self, tuple) != NULL);
     else if(strcmp(name, "lastRenderMax") == 0)
         retval = (WindowInformation_SetLastRenderMax(self, tuple) != NULL);
-    else if(strcmp(name, "numTriangles") == 0)
-        retval = (WindowInformation_SetNumTriangles(self, tuple) != NULL);
+    else if(strcmp(name, "numPrimitives") == 0)
+        retval = (WindowInformation_SetNumPrimitives(self, tuple) != NULL);
     else if(strcmp(name, "extents") == 0)
         retval = (WindowInformation_SetExtents(self, tuple) != NULL);
 
@@ -991,7 +991,7 @@ WindowInformation_print(PyObject *v, FILE *fp, int flags)
     fprintf(fp, "lastRenderMin = %g\n", obj->data->GetLastRenderMin());
     fprintf(fp, "lastRenderAvg = %g\n", obj->data->GetLastRenderAvg());
     fprintf(fp, "lastRenderMax = %g\n", obj->data->GetLastRenderMax());
-    fprintf(fp, "numTriangles = %d\n", obj->data->GetNumTriangles());
+    fprintf(fp, "numPrimitives = %d\n", obj->data->GetNumPrimitives());
     {   const double *extents = obj->data->GetExtents();
         fprintf(fp, "extents = (");
         for(int i = 0; i < 6; ++i)
@@ -1124,7 +1124,7 @@ PyWindowInformation_StringRepresentation(const WindowInformation *atts)
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "lastRenderMax = %g\n", atts->GetLastRenderMax());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "numTriangles = %d\n", atts->GetNumTriangles());
+    SNPRINTF(tmpStr, 1000, "numPrimitives = %d\n", atts->GetNumPrimitives());
     str += tmpStr;
     {   const double *extents = atts->GetExtents();
         SNPRINTF(tmpStr, 1000, "extents = (");

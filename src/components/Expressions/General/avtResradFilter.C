@@ -89,6 +89,10 @@ avtResradFilter::PreExecute(void)
 //  Programmer: Hank Childs
 //  Creation:   January 20, 2005
 //
+//  Modifications:
+//    Brad Whitlock, Thu Feb 24 16:17:28 PST 2005
+//    Fixed i redefinition for win32.
+//
 // ****************************************************************************
 
 void
@@ -106,7 +110,7 @@ avtResradFilter::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
     // will return with an error condition.
     //
     int nvals = out->GetNumberOfTuples();
-    for (int i = 0 ; i < nvals ; i++)
+    for (i = 0 ; i < nvals ; i++)
          newvar[i] = var[i];
 
     if (cur_mesh->GetDataObjectType() != VTK_RECTILINEAR_GRID)

@@ -5,6 +5,13 @@
 #include <ElevatePluginInfo.h>
 #include <ElevateAttributes.h>
 
+#include <visit-config.h>
+#if defined(__APPLE__)
+extern "C" const char *ElevateVisItPluginVersion = VERSION;
+#else
+extern "C" const char *VisItPluginVersion = VERSION;
+#endif
+
 #if defined(__APPLE__)
 #define GetGeneralInfo Elevate_GetGeneralInfo
 #endif

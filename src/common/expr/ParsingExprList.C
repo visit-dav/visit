@@ -303,7 +303,14 @@ ParsingExprList::GetExpressionTree(Expression *expr)
 //  Programmer:  Jeremy Meredith
 //  Creation:    January  9, 2005
 //
+//  Modifications:
+//    Brad Whitlock, Thu Feb 24 16:07:13 PST 2005
+//    I made it iterate over varLeaves as a set instead of first creating
+//    a vector of strings because the vector constructor was not taking
+//    the set container's iterators successfully on MSVC 6.0.
+//
 // ****************************************************************************
+
 static string
 GetRealVariableHelper(const string &var, set<string> expandedVars)
 {
@@ -338,14 +345,17 @@ GetRealVariableHelper(const string &var, set<string> expandedVars)
     if (varLeaves.empty())
         return "";
 
-    // Turn it into a vector for easy walking
-    const vector<string> leaves(varLeaves.begin(), varLeaves.end());
-    int nLeaves = leaves.size();
-
     // For each leaf, look for a real variable
-    for (int leaf = 0; leaf < nLeaves; leaf++)
+#if defined(_WIN32) && defined(USING_MSVC6)
+    // Don't use const iterator on win32 MSVC 6.
+    for (std::set<std::string>::iterator it = varLeaves.begin();
+         it != varLeaves.end(); ++it)
+#else
+    for (std::set<std::string>::const_iterator it = varLeaves.begin();
+         it != varLeaves.end(); ++it)
+#endif
     {
-        string realvar = GetRealVariableHelper(leaves[leaf], expandedVars);
+        string realvar = GetRealVariableHelper(*it, expandedVars);
 
         // If we found a real variable, return it!
         if (!realvar.empty())

@@ -5,6 +5,13 @@
 #include <ThreeSlicePluginInfo.h>
 #include <ThreeSliceAttributes.h>
 
+#include <visit-config.h>
+#if defined(__APPLE__)
+extern "C" const char *ThreeSliceVisItPluginVersion = VERSION;
+#else
+extern "C" const char *VisItPluginVersion = VERSION;
+#endif
+
 #if defined(__APPLE__)
 #define GetGeneralInfo ThreeSlice_GetGeneralInfo
 #endif

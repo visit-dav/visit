@@ -4858,7 +4858,7 @@ VisWindow::GetSpecularColor()
 }
 
 // ****************************************************************************
-// Method: VisWindow::GetNumTriangles
+// Method: VisWindow::GetNumPrimitives
 //
 // Purpose: 
 //   Gets the approximate number of triangles that were rendered.
@@ -4867,13 +4867,16 @@ VisWindow::GetSpecularColor()
 // Creation:   Mon Sep 23 14:12:15 PST 2002
 //
 // Modifications:
+//
+//   Mark C. Miller, Thu Mar  3 17:38:36 PST 2005
+//   Changed name from GetNumTriangles to GetNumPrimitives
 //   
 // ****************************************************************************
 
 int
-VisWindow::GetNumTriangles() const
+VisWindow::GetNumPrimitives() const
 {
-    return rendering->GetNumTriangles();
+    return rendering->GetNumPrimitives();
 }
 
 // ****************************************************************************

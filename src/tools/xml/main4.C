@@ -193,6 +193,10 @@ void ProcessFile(QString file);
 //    uses visit-config.h, but xml2makefile ensures it picks up the
 //    visit-config.h from the same version as the plugin tools used.
 //
+//    Brad Whitlock, Thu Mar 3 09:01:29 PDT 2005
+//    I removed the code to write a version file since the version is now
+//    stored in the common plugin info to make it easier for us on Windows.
+//
 // ****************************************************************************
 
 int main(int argc, char *argv[])
@@ -505,13 +509,6 @@ ProcessFile(QString file)
         {
             plugin->WriteMakefile(out);
             out.close();
-        }
-
-        ofstream out2;
-        if (Open(out2, plugin->name+"PluginVersion.C"))
-        {
-            plugin->WriteVersionFile(out2);
-            out2.close();
         }
 #endif
 #ifdef GENERATE_AVT

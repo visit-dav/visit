@@ -477,7 +477,17 @@ TimeSliderObject_SetText(PyObject *self, PyObject *args)
 
     // Set the text in the object.
 /*CUSTOM*/
-    stringVector s; s.push_back(str);
+    stringVector s(obj->data->GetText());
+    if(s.size() > 1)
+    {
+        s[0] = str;
+    }
+    else
+    {
+        s.clear();
+        s.push_back(str);
+        s.push_back("%%g");
+    }
     obj->data->SetText(s);
     UpdateAnnotationHelper(obj->data);
 
@@ -492,6 +502,45 @@ TimeSliderObject_GetText(PyObject *self, PyObject *args)
 /*CUSTOM*/
     const stringVector &s = obj->data->GetText();
     PyObject *retval = PyString_FromString(s.size() > 0 ? s[0].c_str(): "");
+    return retval;
+}
+
+static PyObject *
+TimeSliderObject_SetTimeFormatString(PyObject *self, PyObject *args)
+{
+    TimeSliderObjectObject *obj = (TimeSliderObjectObject *)self;
+
+    char *str;
+    if(!PyArg_ParseTuple(args, "s", &str))
+        return NULL;
+
+    // Set the text in the object.
+/*CUSTOM*/
+    stringVector s(obj->data->GetText());
+    if(s.size() > 1)
+    {
+        s[1] = str;
+    }
+    else
+    {
+        s.clear();
+        s.push_back("");
+        s.push_back(str);
+    }
+    obj->data->SetText(s);
+    UpdateAnnotationHelper(obj->data);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+static PyObject *
+TimeSliderObject_GetTimeFormatString(PyObject *self, PyObject *args)
+{
+    TimeSliderObjectObject *obj = (TimeSliderObjectObject *)self;
+/*CUSTOM*/
+    const stringVector &s = obj->data->GetText();
+    PyObject *retval = PyString_FromString(s.size() > 1 ? s[1].c_str(): "%%g");
     return retval;
 }
 
@@ -671,6 +720,8 @@ static struct PyMethodDef TimeSliderObject_methods[] = {
     {"GetText", TimeSliderObject_GetText, METH_VARARGS},
     {"SetTimeDisplay", TimeSliderObject_SetTimeDisplay, METH_VARARGS},
     {"GetTimeDisplay", TimeSliderObject_GetTimeDisplay, METH_VARARGS},
+    {"SetTimeFormatString", TimeSliderObject_SetTimeFormatString, METH_VARARGS},
+    {"GetTimeFormatString", TimeSliderObject_GetTimeFormatString, METH_VARARGS},
     {"SetPercentComplete", TimeSliderObject_SetPercentComplete, METH_VARARGS},
     {"GetPercentComplete", TimeSliderObject_GetPercentComplete, METH_VARARGS},
     {"SetRounded", TimeSliderObject_SetRounded, METH_VARARGS},
@@ -726,6 +777,8 @@ TimeSliderObject_getattr(PyObject *self, char *name)
         return TimeSliderObject_GetText(self, NULL);
     if(strcmp(name, "timeDisplay") == 0)
         return TimeSliderObject_GetTimeDisplay(self, NULL);
+    if(strcmp(name, "timeFormatString") == 0)
+        return TimeSliderObject_GetTimeFormatString(self, NULL);
     if(strcmp(name, "AllFrames") == 0)
         return PyInt_FromLong(0);
     else if(strcmp(name, "FramesForPlot") == 0)
@@ -777,6 +830,8 @@ TimeSliderObject_setattr(PyObject *self, char *name, PyObject *args)
         retval = (TimeSliderObject_SetText(self, tuple) != NULL);
     else if(strcmp(name, "timeDisplay") == 0)
         retval = (TimeSliderObject_SetTimeDisplay(self, tuple) != NULL);
+    else if(strcmp(name, "timeFormatString") == 0)
+        retval = (TimeSliderObject_SetTimeFormatString(self, tuple) != NULL);
     else if(strcmp(name, "percentComplete") == 0)
         retval = (TimeSliderObject_SetPercentComplete(self, tuple) != NULL);
     else if(strcmp(name, "rounded") == 0)
@@ -830,6 +885,7 @@ TimeSliderObject_print(PyObject *v, FILE *fp, int flags)
 /*CUSTOM*/
     const stringVector &s = obj->data->GetText();
     fprintf(fp, "text = \"%s\"\n", s.size() > 0 ? s[0].c_str() : "");
+    fprintf(fp, "timeFormatString = \"%s\"\n", s.size() > 1 ? s[1].c_str() : "%%g");
 
 /*CUSTOM*/
     int timeDisplay = ((obj->data->GetIntAttribute1() >> 2) & 3);

@@ -155,6 +155,10 @@ avtMeshFilter::~avtMeshFilter()
 //    Kathleen Bonnell, Tue Nov  2 10:37:14 PST 2004 
 //    No need to process this data if topological dimension is 0 (point mesh). 
 //
+//    Kathleen Bonnell, Mon Mar  7 17:38:36 PST 2005
+//    Hack to accept non-poly-data input -- until time allows for fixing
+//    vtkLinesFromOriginalCells to work with non-poly-data. 
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -171,6 +175,7 @@ avtMeshFilter::ExecuteDataTree(vtkDataSet *inDS, int dom, string lab)
 
     vtkDataSet *revisedInput = NULL; 
     vtkDataSet *revisedInput2 = NULL; 
+    vtkDataSet *revisedInput3 = NULL; 
 
     avtDataValidity &v = GetInput()->GetInfo().GetValidity();
     if (!v.GetUsingAllData() && 
@@ -218,17 +223,39 @@ avtMeshFilter::ExecuteDataTree(vtkDataSet *inDS, int dom, string lab)
     }
     else
     {
-        revisedInput2 = inDS;
+        revisedInput2 = revisedInput;
         revisedInput2->Register(NULL);
     }
 
 
-    if (revisedInput2->GetDataObjectType() == VTK_POLY_DATA) 
+    //
+    //  HACK, the correct way is to have a different filter
+    //  than vtLinesFromOriginalCells to generate the mesh lines
+    //  for Non polyData input.  Remove this hack until '6068
+    //  is resolved.
+    //
+    if (revisedInput2->GetDataObjectType() != VTK_POLY_DATA)
+    {
+        revisedInput3 = vtkPolyData::New();
+        vtkGeometryFilter *geo = vtkGeometryFilter::New();
+        geo->SetInput(revisedInput2);
+        geo->SetOutput((vtkPolyData*)revisedInput3);
+        geo->Update();
+        geo->Delete();
+    }
+    else
+    {
+        revisedInput3 = revisedInput2;
+        revisedInput3->Register(NULL);
+    }
+
+
+    if (revisedInput3->GetDataObjectType() == VTK_POLY_DATA) 
     {
         //
         // Make extra sure that we really have surfaces.
         //
-        vtkPolyData *pd = (vtkPolyData *) revisedInput2;
+        vtkPolyData *pd = (vtkPolyData *) revisedInput3;
         if (pd->GetPolys()->GetNumberOfCells() == 0 &&
             pd->GetStrips()->GetNumberOfCells() == 0 &&
             pd->GetVerts()->GetNumberOfCells() == 0)
@@ -238,14 +265,14 @@ avtMeshFilter::ExecuteDataTree(vtkDataSet *inDS, int dom, string lab)
 
         if (topoDim == 2)
         {
-            lineFilter->SetInput((vtkPolyData*)revisedInput2);
+            lineFilter->SetInput((vtkPolyData*)revisedInput3);
             lineFilter->SetOutput(outDS);
             lineFilter->Update();
         }
         else
         {
             outDS->Delete();
-            outDS = (vtkPolyData*)revisedInput2;
+            outDS = (vtkPolyData*)revisedInput3;
             outDS->Register(NULL); // We will remove this later.
             debug5 << "MeshFilter not making a line mesh go through the line "
                    << "filter." << endl;
@@ -298,6 +325,7 @@ avtMeshFilter::ExecuteDataTree(vtkDataSet *inDS, int dom, string lab)
     opaquePolys->Delete();
     revisedInput->Delete();
     revisedInput2->Delete();
+    revisedInput3->Delete();
     return rv;
 }
 

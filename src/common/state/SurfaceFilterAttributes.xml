@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Attribute name="SurfaceFilterAttributes" purpose="Attributes for the surface filter" persistent="true">
+  <Attribute name="SurfaceFilterAttributes" purpose="Attributes for the surface filter" persistent="true" exportAPI="STATE_API">
     <Enum name="Scaling">
       Linear
       Log

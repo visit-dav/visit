@@ -4,8 +4,8 @@
 
 // Functions to send messages
 VIEWER_API void Error(const char *message);
-void Warning(const char *message);
-void Message(const char *message);
+VIEWER_API void Warning(const char *message);
+VIEWER_API void Message(const char *message);
 
 // Functions to send status
 void Status(const char *message);

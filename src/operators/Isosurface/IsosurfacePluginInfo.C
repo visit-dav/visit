@@ -5,6 +5,13 @@
 #include <IsosurfacePluginInfo.h>
 #include <IsosurfaceAttributes.h>
 
+#include <visit-config.h>
+#if defined(__APPLE__)
+extern "C" const char *IsosurfaceVisItPluginVersion = VERSION;
+#else
+extern "C" const char *VisItPluginVersion = VERSION;
+#endif
+
 #if defined(__APPLE__)
 #define GetGeneralInfo Isosurface_GetGeneralInfo
 #endif

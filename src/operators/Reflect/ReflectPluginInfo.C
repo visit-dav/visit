@@ -5,6 +5,13 @@
 #include <ReflectPluginInfo.h>
 #include <ReflectAttributes.h>
 
+#include <visit-config.h>
+#if defined(__APPLE__)
+extern "C" const char *ReflectVisItPluginVersion = VERSION;
+#else
+extern "C" const char *VisItPluginVersion = VERSION;
+#endif
+
 #if defined(__APPLE__)
 #define GetGeneralInfo Reflect_GetGeneralInfo
 #endif

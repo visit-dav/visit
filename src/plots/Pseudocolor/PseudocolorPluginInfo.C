@@ -5,6 +5,13 @@
 #include <PseudocolorPluginInfo.h>
 #include <PseudocolorAttributes.h>
 
+#include <visit-config.h>
+#if defined(__APPLE__)
+extern "C" const char *PseudocolorVisItPluginVersion = VERSION;
+#else
+extern "C" const char *VisItPluginVersion = VERSION;
+#endif
+
 #if defined(__APPLE__)
 #define GetGeneralInfo Pseudocolor_GetGeneralInfo
 #endif

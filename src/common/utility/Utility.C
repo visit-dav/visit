@@ -819,19 +819,21 @@ GetUserVisItDirectory()
 // Functions to get at VisIt data stored in the Windows registry.
 //
 int
-ReadKeyFromRoot(HKEY which_root, const char *key, char **keyval)
+ReadKeyFromRoot(HKEY which_root, const char *ver, const char *key,
+    char **keyval)
 {
     int  readSuccess = 0;
     char regkey[100];
     HKEY hkey;
 
     /* Try and read the key from the system registry. */
-    sprintf(regkey, "VISIT%s", VERSION);
+    sprintf(regkey, "VISIT%s", ver);
     *keyval = (char *)malloc(500);
     if(RegOpenKeyEx(which_root, regkey, 0, KEY_QUERY_VALUE, &hkey) == ERROR_SUCCESS)
     {
         DWORD keyType, strSize = 500;
-        if(RegQueryValueEx(hkey, key, NULL, &keyType, *keyval, &strSize) == ERROR_SUCCESS)
+        if(RegQueryValueEx(hkey, key, NULL, &keyType,
+           (unsigned char *)*keyval, &strSize) == ERROR_SUCCESS)
         {
             readSuccess = 1;
         }
@@ -843,29 +845,31 @@ ReadKeyFromRoot(HKEY which_root, const char *key, char **keyval)
 }
 
 int
-ReadKey(const char *key, char **keyval)
+ReadKey(const char *ver, const char *key, char **keyval)
 {
     int retval = 0;
 
-    if((retval = ReadKeyFromRoot(HKEY_CLASSES_ROOT, key, keyval)) == 0)
-        retval = ReadKeyFromRoot(HKEY_CURRENT_USER, key, keyval);
+    if((retval = ReadKeyFromRoot(HKEY_CLASSES_ROOT, ver, key, keyval)) == 0)
+        retval = ReadKeyFromRoot(HKEY_CURRENT_USER, ver, key, keyval);
     
     return retval;     
 }
 
 int
-WriteKeyToRoot(HKEY which_root, const char *key, const char *keyval)
+WriteKeyToRoot(HKEY which_root, const char *ver, const char *key,
+    const char *keyval)
 {
     int  writeSuccess = 0;
     char regkey[100];
     HKEY hkey;
 
     /* Try and read the key from the system registry. */
-    sprintf(regkey, "VISIT%s", VERSION);
+    sprintf(regkey, "VISIT%s", ver);
     if(RegOpenKeyEx(which_root, regkey, 0, KEY_QUERY_VALUE, &hkey) == ERROR_SUCCESS)
     {
         DWORD strSize = strlen(keyval);
-        if(RegSetValueEx(hkey, key, NULL, REG_SZ, keyval, strSize) == ERROR_SUCCESS)
+        if(RegSetValueEx(hkey, key, NULL, REG_SZ,
+           (const unsigned char *)keyval, strSize) == ERROR_SUCCESS)
         {
             writeSuccess = 1;
         }
@@ -877,12 +881,12 @@ WriteKeyToRoot(HKEY which_root, const char *key, const char *keyval)
 }
 
 int
-WriteKey(const char *key, const char *keyval)
+WriteKey(const char *ver, const char *key, const char *keyval)
 {
     int retval = 0;
 
-    if((retval = WriteKeyToRoot(HKEY_CLASSES_ROOT, key, keyval)) == 0)
-        retval = WriteKeyToRoot(HKEY_CURRENT_USER, key, keyval);
+    if((retval = WriteKeyToRoot(HKEY_CLASSES_ROOT, ver, key, keyval)) == 0)
+        retval = WriteKeyToRoot(HKEY_CURRENT_USER, ver, key, keyval);
 
     return retval;
 }
@@ -903,7 +907,9 @@ WriteKey(const char *key, const char *keyval)
 // Creation:   Wed Feb 16 09:55:53 PDT 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Mar 2 11:59:15 PDT 2005
+//   Changed interface to ReadKey.
+//
 // ****************************************************************************
 
 int
@@ -913,7 +919,7 @@ ConfigStateGetRunCount(ConfigStateEnum &code)
 #if defined(_WIN32)
     // Get the number of startups from the registry.
     char *rc = 0;
-    if(ReadKey("VISITRC", &rc) == 1)
+    if(ReadKey(VERSION, "VISITRC", &rc) == 1)
     {
         if(sscanf(rc, "%d", &nStartups) == 1)
         { 
@@ -962,7 +968,9 @@ ConfigStateGetRunCount(ConfigStateEnum &code)
 // Creation:   Wed Feb 16 09:56:54 PDT 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Mar 2 11:58:53 PDT 2005
+//   Changed interface to WriteKey.
+//
 // ****************************************************************************
 
 void
@@ -979,8 +987,8 @@ ConfigStateIncrementRunCount(ConfigStateEnum &code)
     }
 
     char keyval[100];
-    SNPRINTF(keyval, "%d", nStartups+1);
-    if(WriteKey("VISITRC", keyval) == 1)
+    SNPRINTF(keyval, 100, "%d", nStartups+1);
+    if(WriteKey(VERSION, "VISITRC", keyval) == 1)
         code = firstTime ? CONFIGSTATE_FIRSTTIME : CONFIGSTATE_SUCCESS;
     else
         code = CONFIGSTATE_IOERROR;
@@ -1053,7 +1061,8 @@ ExpandUserPath(const std::string &path)
         if(i == 1)
         {
             // User just specified '~', get the current user name.
-            GetUserName(username, 256);
+            DWORD s = 256;
+            GetUserName(username, &s);
         }
 
         // Append the rest of the path to the home directory.
@@ -1093,4 +1102,62 @@ ExpandUserPath(const std::string &path)
     }
 
     return newPath;
+}
+
+// ****************************************************************************
+// Method: GetVisItInstallationDirectory
+//
+// Purpose: 
+//   Returns the directory where VisIt was installed.
+//
+// Arguments:
+//   version : The version for which we want information. Only used on Windows.
+//
+// Returns:    The directory where VisIt is installed.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Mar 2 12:08:57 PDT 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+std::string
+GetVisItInstallationDirectory()
+{
+    return GetVisItInstallationDirectory(VERSION);
+}
+
+std::string
+GetVisItInstallationDirectory(const char *version)
+{
+#if defined(_WIN32)
+    // Get the installation dir for the specified from the registry.
+    char *visitHome = 0;
+    std::string installDir("C:\\");
+    if(ReadKey(version, "VISITHOME", &visitHome) == 1)
+    {
+        installDir = visitHome;
+        delete [] visitHome;
+    }
+    return installDir;
+#else
+    // Get the installation dir for the version that's running. They all use
+    // the same "visit" script so it's okay to do this.
+    std::string installDir("/usr/local/visit");
+    const char *idir = getenv("VISITHOME");
+    if(idir != 0)
+    {
+        // The directory often has a "/bin" on the end. Strip it off.
+        std::string home(idir);
+        int lastSlash = home.rfind("/");
+        if(lastSlash != -1)
+            installDir = home.substr(lastSlash);
+        else
+            installDir = idir;
+    }
+    return installDir;
+#endif
 }

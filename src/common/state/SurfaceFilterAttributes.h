@@ -1,5 +1,6 @@
 #ifndef SURFACEFILTERATTRIBUTES_H
 #define SURFACEFILTERATTRIBUTES_H
+#include <state_exports.h>
 #include <string>
 #include <AttributeSubject.h>
 
@@ -18,7 +19,7 @@
 //   
 // ****************************************************************************
 
-class SurfaceFilterAttributes : public AttributeSubject
+class STATE_API SurfaceFilterAttributes : public AttributeSubject
 {
 public:
     enum Scaling

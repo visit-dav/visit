@@ -4,6 +4,13 @@
 
 #include <TFTPluginInfo.h>
 
+#include <visit-config.h>
+#if defined(__APPLE__)
+extern "C" const char *TFTVisItPluginVersion = VERSION;
+#else
+extern "C" const char *VisItPluginVersion = VERSION;
+#endif
+
 #if defined(__APPLE__)
 #define GetGeneralInfo TFT_GetGeneralInfo
 #endif

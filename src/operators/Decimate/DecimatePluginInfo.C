@@ -5,6 +5,13 @@
 #include <DecimatePluginInfo.h>
 #include <DecimateAttributes.h>
 
+#include <visit-config.h>
+#if defined(__APPLE__)
+extern "C" const char *DecimateVisItPluginVersion = VERSION;
+#else
+extern "C" const char *VisItPluginVersion = VERSION;
+#endif
+
 #if defined(__APPLE__)
 #define GetGeneralInfo Decimate_GetGeneralInfo
 #endif

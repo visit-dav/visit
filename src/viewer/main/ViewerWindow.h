@@ -336,6 +336,9 @@ class ViewerToolbar;
 //    Hank Childs, Sun Oct 24 13:39:57 PDT 2004
 //    Added shading.
 //
+//    Mark C. Miller, Fri Mar  4 13:05:02 PST 2005
+//    Changed GetNumTriangles to GetNumPrimitives
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerWindow
@@ -529,7 +532,7 @@ public:
     int  GetDisplayListMode(void) const;
     void SetSurfaceRepresentation(int rep);
     int  GetSurfaceRepresentation() const;
-    int  GetNumTriangles() const;
+    int  GetNumPrimitives() const;
     int  GetNumberOfCells(bool polysOnly = false) const; 
     void SetNotifyForEachRender(bool val);
     bool GetNotifyForEachRender() const;

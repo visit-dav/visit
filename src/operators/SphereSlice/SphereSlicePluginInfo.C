@@ -5,6 +5,13 @@
 #include <SphereSlicePluginInfo.h>
 #include <SphereSliceAttributes.h>
 
+#include <visit-config.h>
+#if defined(__APPLE__)
+extern "C" const char *SphereSliceVisItPluginVersion = VERSION;
+#else
+extern "C" const char *VisItPluginVersion = VERSION;
+#endif
+
 #if defined(__APPLE__)
 #define GetGeneralInfo SphereSlice_GetGeneralInfo
 #endif

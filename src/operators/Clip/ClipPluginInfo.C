@@ -5,6 +5,13 @@
 #include <ClipPluginInfo.h>
 #include <ClipAttributes.h>
 
+#include <visit-config.h>
+#if defined(__APPLE__)
+extern "C" const char *ClipVisItPluginVersion = VERSION;
+#else
+extern "C" const char *VisItPluginVersion = VERSION;
+#endif
+
 #if defined(__APPLE__)
 #define GetGeneralInfo Clip_GetGeneralInfo
 #endif

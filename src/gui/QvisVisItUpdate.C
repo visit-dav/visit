@@ -26,11 +26,9 @@
 #ifdef DEBUGGING
 #define CURRENT_VERSION "1.3.4"
 #define VISITARCHHOME   "/home/whitlocb/visitinstall/1.4.1/sun4-sunos5-sparc"
-#define VISITHOME       "/home/whitlocb/visitinstall/1.4.1"
 #else
 #define CURRENT_VERSION VERSION
 #define VISITARCHHOME   getenv("VISITARCHHOME")
-#define VISITHOME       getenv("VISITHOME")
 #endif
 
 //
@@ -102,15 +100,17 @@ QvisVisItUpdate::QvisVisItUpdate(QObject *parent, const char *name) :
 // Creation:   Tue Feb 15 12:23:13 PDT 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Mar 2 11:13:28 PDT 2005
+//   I made it use QvisFtp.
+//
 // ****************************************************************************
 
 QvisVisItUpdate::~QvisVisItUpdate()
 {
     if(ftp)
     {
-        if(ftp->state() != QFtp::Unconnected)
-        ftp->close();
+        if(ftp->State() != QvisFtp::Unconnected)
+            ftp->Close();
     }
 }
 
@@ -124,6 +124,8 @@ QvisVisItUpdate::~QvisVisItUpdate()
 // Creation:   Tue Feb 15 12:23:38 PDT 2005
 //
 // Modifications:
+//   Brad Whitlock, Wed Mar 2 11:13:28 PDT 2005
+//   I made it use QvisFtp.
 //   
 // ****************************************************************************
 
@@ -143,7 +145,7 @@ QvisVisItUpdate::provideLogin()
     password.sprintf("visit_update_%s_%s_%d", CURRENT_VERSION,
         platform, nStartups);
 
-    ftp->login("anonymous", password);
+    ftp->Login("anonymous", password);
 }
 
 // ****************************************************************************
@@ -256,29 +258,15 @@ QvisVisItUpdate::getRequiredFiles()
 // Creation:   Tue Feb 15 12:26:07 PDT 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Mar 2 12:12:43 PDT 2005
+//   I made it use a new Utility.C function: GetVisItInstallationDirectory.
+//
 // ****************************************************************************
 
 QString
 QvisVisItUpdate::getInstallationDir() const
 {
-#if defined(_WIN32)
-    // Get the installation dir for the latestVersion from the registry.
-#else
-    QString installDir("/usr/local/visit");
-    const char *idir = VISITHOME;
-    if(idir != 0)
-    {
-        QString home(idir);
-        int lastSlash = home.findRev('/');
-        if(lastSlash != -1)
-            installDir = home.left(lastSlash);
-        else
-            installDir = idir;
-    }
-#endif
-
-    return installDir;
+    return QString(GetVisItInstallationDirectory(latestVersion.latin1()).c_str());
 }
 
 // ****************************************************************************
@@ -402,7 +390,9 @@ QvisVisItUpdate::cleanUp()
 // Creation:   Tue Feb 15 12:48:42 PDT 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Mar 2 11:09:39 PDT 2005
+//   I made it use QvisFtp.
+//
 // ****************************************************************************
 
 void
@@ -472,16 +462,16 @@ QvisVisItUpdate::startUpdate()
 
     if(ftp == 0)
     {
-        ftp = new QFtp(this);
-        connect( ftp, SIGNAL(commandStarted(int)),
+        ftp = new QvisFtp(this);
+        connect( ftp, SIGNAL(CommandStarted()),
             SLOT(ftp_commandStarted()) );
-        connect( ftp, SIGNAL(commandFinished(int,bool)),
+        connect( ftp, SIGNAL(CommandFinished()),
             SLOT(ftp_commandFinished()) );
-        connect( ftp, SIGNAL(done(bool)),
+        connect( ftp, SIGNAL(Done()),
             SLOT(ftp_done(bool)) );
-        connect( ftp, SIGNAL(stateChanged(int)),
+        connect( ftp, SIGNAL(StateChanged(int)),
             SLOT(ftp_stateChanged(int)) );
-        connect( ftp, SIGNAL(listInfo(const QUrlInfo &)),
+        connect( ftp, SIGNAL(ListInfo(const QUrlInfo &)),
             SLOT(ftp_listInfo(const QUrlInfo &)) );
     }
 
@@ -500,7 +490,9 @@ QvisVisItUpdate::startUpdate()
 // Creation:   Tue Feb 15 12:34:27 PDT 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Mar 2 11:10:08 PDT 2005
+//   I made it use QvisFtp.
+//
 // ****************************************************************************
 
 void
@@ -511,32 +503,32 @@ QvisVisItUpdate::initiateStage()
     switch(stage)
     {
     case STAGE_CONNECT:
-         ftp->connectToHost("ftp.llnl.gov", 21);
+         ftp->ConnectToHost("ftp.llnl.gov", 21);
          break;
     case STAGE_LOGIN:
          provideLogin();
          break;
     case STAGE_DETERMINE_VERSION:
-         ftp->list("/pub/visit");
+         ftp->List("/pub/visit");
          break;
     case STAGE_GET_FILES_FOR_VERSION:
-         ftp->list(latestDirectory());
+         ftp->List(latestDirectory());
          break;
     case STAGE_GET_FILES:
-         connect(ftp, SIGNAL(dataTransferProgress(int,int)),
+         connect(ftp, SIGNAL(DataTransferProgress(int,int)),
              this, SLOT(ftp_reportDownloadProgress(int,int)));
          getRequiredFiles();
          break;
     case STAGE_INSTALL:
-         disconnect(ftp, SIGNAL(dataTransferProgress(int,int)),
+         disconnect(ftp, SIGNAL(DataTransferProgress(int,int)),
                 this, SLOT(ftp_reportDownloadProgress(int,int)));
          installVisIt();
          break;
     case STAGE_CLEAN_UP:
     case STAGE_ERROR:
          cleanUp();
-         if(ftp->state() != QFtp::Unconnected)
-             ftp->close();
+         if(ftp->State() != QvisFtp::Unconnected)
+             ftp->Close();
          break;
     }
 
@@ -577,7 +569,9 @@ QvisVisItUpdate::nextStage()
 // Creation:   Tue Feb 15 12:36:11 PDT 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Mar 2 11:13:55 PDT 2005
+//   I made it use QvisFtp.
+//
 // ****************************************************************************
 
 void
@@ -607,7 +601,7 @@ QvisVisItUpdate::initiateDownload()
         }
         files += localName;
 
-        ftp->get(remoteName, file);
+        ftp->Get(remoteName, file);
     }
     else
         nextStage();
@@ -640,7 +634,10 @@ QvisVisItUpdate::readInstallerStderr()
 // Creation:   Tue Feb 15 12:41:28 PDT 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Mar 2 11:31:03 PDT 2005
+//   Added a check to make sure that the new executable is available before
+//   emitting installationComplete in case the user aborted the installation.
+//
 // ****************************************************************************
 
 void
@@ -658,10 +655,26 @@ QvisVisItUpdate::emitInstallationComplete()
 
     // Now that cleanup is done, finalize the installation process.
 #if defined(_WIN32)
-    emit installationComplete(getInstallationDir() + "\\visit.exe");
+    QString visitDir(getInstallationDir() + "\\");
+    QString filename("visit.exe");
 #else
-    emit installationComplete(getInstallationDir() + "/bin/visit");
+    QString visitDir(getInstallationDir() + "/bin/");
+    QString filename("visit");
 #endif
+
+    // Make sure that the VisIt executable exists
+    QDir dir(visitDir);
+    if(dir.exists() && dir.isReadable() && dir.exists(filename))
+    {
+        emit installationComplete(visitDir + filename);
+    }
+    else
+    {
+        QString err("The new version of VisIt could not be located in ");
+        err += visitDir;
+        err += filename;
+        Error(err);
+    }
 }
 
 // ****************************************************************************
@@ -727,7 +740,9 @@ QvisVisItUpdate::ftp_commandStarted()
 // Creation:   Tue Feb 15 12:39:15 PDT 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Mar 2 11:17:24 PDT 2005
+//   I made it use QvisFtp.
+//
 // ****************************************************************************
 
 void
@@ -736,8 +751,7 @@ QvisVisItUpdate::ftp_commandFinished()
     debug1 << "ftp_commandFinished: stage=" << stage << endl;
     QApplication::restoreOverrideCursor();
 
-    // What does this do?
-    delete ftp->currentDevice();
+    ftp->DeleteCurrentDevice();
 
     if(stage == STAGE_CONNECT || stage == STAGE_LOGIN)
     {
@@ -809,7 +823,9 @@ QvisVisItUpdate::ftp_commandFinished()
 // Creation:   Tue Feb 15 12:47:58 PDT 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Mar 2 11:10:40 PDT 2005
+//   I made it use QvisFtp.
+//
 // ****************************************************************************
 
 void
@@ -819,14 +835,14 @@ QvisVisItUpdate::ftp_done(bool error)
     {
         QString msg("VisIt could not complete the update.\n");
         msg += "FTP Error: ";
-        msg += ftp->errorString();
+        msg += ftp->ErrorString();
         Error(msg);
 
         // If we are connected, but not logged in, it is not meaningful to stay
         // connected to the server since the error is a really fatal one (login
         // failed).
-        if(ftp->state() == QFtp::Connected)
-            ftp->close();
+        if(ftp->State() == QvisFtp::Connected)
+            ftp->Close();
         stage = STAGE_ERROR;
     }
 }
@@ -835,24 +851,24 @@ void
 QvisVisItUpdate::ftp_stateChanged(int state)
 {
 #if 0
-    switch((QFtp::State)state)
+    switch((QvisFtp::State)state)
     {
-    case QFtp::Unconnected:
+    case QvisFtp::Unconnected:
         qDebug("Unconnected");
         break;
-    case QFtp::HostLookup:
+    case QvisFtp::HostLookup:
         qDebug("Host lookup");
         break;
-    case QFtp::Connecting:
+    case QvisFtp::Connecting:
         qDebug("Connecting");
         break;
-    case QFtp::Connected:
+    case QvisFtp::Connected:
         qDebug("Connected");
         break;
-    case QFtp::LoggedIn:
+    case QvisFtp::LoggedIn:
         qDebug("Logged in");
         break;
-    case QFtp::Closing:
+    case QvisFtp::Closing:
         qDebug("Closing");
         break;
     }

@@ -118,6 +118,9 @@ QvisRenderingWindow::~QvisRenderingWindow()
 //   Hank Childs, Sun Oct 24 07:36:18 PDT 2004
 //   Added shadow options.
 //
+//   Mark C. Miller, Fri Mar  4 13:05:02 PST 2005
+//   Changed approxNumTriangles to approxNumPrimitives
+//
 // ****************************************************************************
 
 void
@@ -308,10 +311,10 @@ QvisRenderingWindow::CreateWindowContents()
     fpsMaxLabel = new QLabel("0.", info, "fpsMaxLabel");
     iLayout->addWidget(fpsMaxLabel, 0, 3);
 
-    QLabel *ntri = new QLabel("Approximate triangle count:", info, "ntri");
+    QLabel *ntri = new QLabel("Approximate polygon count:", info, "ntri");
     iLayout->addWidget(ntri, 1, 0);
-    approxNumTriangles = new QLabel("0.", info, "approxNumTriangles");
-    iLayout->addWidget(approxNumTriangles, 1, 1);
+    approxNumPrimitives = new QLabel("0.", info, "approxNumPrimitives");
+    iLayout->addWidget(approxNumPrimitives, 1, 1);
     vLayout->addSpacing(5);
 
     QGridLayout *eLayout = new QGridLayout(vLayout, 3, 3);
@@ -553,6 +556,9 @@ QvisRenderingWindow::UpdateOptions(bool doAll)
 //   Mark C. Miller, Wed Jan  5 16:23:01 PST 2005
 //   Fixed problem with case lables not matching Select statements
 //
+//   Mark C. Miller, Fri Mar  4 13:05:02 PST 2005
+//   Changed GetNumTriangles to GetNumPrimitives
+//
 // ****************************************************************************
 
 void
@@ -623,9 +629,9 @@ QvisRenderingWindow::UpdateInformation(bool doAll)
             tmp.sprintf("%1.3g", fps);
             fpsMinLabel->setText(tmp);
             break;
-        case 21: //numTriangles
-            tmp.sprintf("%d", windowInfo->GetNumTriangles());
-            approxNumTriangles->setText(tmp);
+        case 21: //numPrimitives
+            tmp.sprintf("%d", windowInfo->GetNumPrimitives());
+            approxNumPrimitives->setText(tmp);
             break;
         case 22: //extents
             for(j = 0; j < 6; ++j)

@@ -5,6 +5,13 @@
 #include <ProjectPluginInfo.h>
 #include <ProjectAttributes.h>
 
+#include <visit-config.h>
+#if defined(__APPLE__)
+extern "C" const char *ProjectVisItPluginVersion = VERSION;
+#else
+extern "C" const char *VisItPluginVersion = VERSION;
+#endif
+
 #if defined(__APPLE__)
 #define GetGeneralInfo Project_GetGeneralInfo
 #endif

@@ -5,6 +5,13 @@
 #include <CurvePluginInfo.h>
 #include <CurveAttributes.h>
 
+#include <visit-config.h>
+#if defined(__APPLE__)
+extern "C" const char *CurveVisItPluginVersion = VERSION;
+#else
+extern "C" const char *VisItPluginVersion = VERSION;
+#endif
+
 #if defined(__APPLE__)
 #define GetGeneralInfo Curve_GetGeneralInfo
 #endif

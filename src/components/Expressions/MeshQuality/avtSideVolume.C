@@ -101,6 +101,10 @@ avtSideVolume::DeriveVariable(vtkDataSet *in_ds)
 //  Programmer: Hank Childs
 //  Creation:   January 20, 2005
 //
+//  Modifications:
+//    Brad Whitlock, Thu Feb 24 16:16:05 PST 2005
+//    Fixed i redefinition for win32.
+//
 // ****************************************************************************
  
 double
@@ -176,7 +180,7 @@ avtSideVolume::GetZoneVolume(vtkCell *cell)
     // edges.
     //
     double rv = +FLT_MAX;
-    for (int i = 0 ; i < nFaces ; i++)
+    for (i = 0 ; i < nFaces ; i++)
     {
         vtkCell *face = cell->GetFace(i);
         vtkPoints *pts = face->GetPoints();

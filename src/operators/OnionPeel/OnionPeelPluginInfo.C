@@ -5,6 +5,13 @@
 #include <OnionPeelPluginInfo.h>
 #include <OnionPeelAttributes.h>
 
+#include <visit-config.h>
+#if defined(__APPLE__)
+extern "C" const char *OnionPeelVisItPluginVersion = VERSION;
+#else
+extern "C" const char *VisItPluginVersion = VERSION;
+#endif
+
 #if defined(__APPLE__)
 #define GetGeneralInfo OnionPeel_GetGeneralInfo
 #endif

@@ -4,6 +4,13 @@
 
 #include <PLOT3DPluginInfo.h>
 
+#include <visit-config.h>
+#if defined(__APPLE__)
+extern "C" const char *PLOT3DVisItPluginVersion = VERSION;
+#else
+extern "C" const char *VisItPluginVersion = VERSION;
+#endif
+
 #if defined(__APPLE__)
 #define GetGeneralInfo PLOT3D_GetGeneralInfo
 #endif

@@ -5,6 +5,13 @@
 #include <ConnCompReducePluginInfo.h>
 #include <ConnCompReduceAttributes.h>
 
+#include <visit-config.h>
+#if defined(__APPLE__)
+extern "C" const char *ConnCompReduceVisItPluginVersion = VERSION;
+#else
+extern "C" const char *VisItPluginVersion = VERSION;
+#endif
+
 #if defined(__APPLE__)
 #define GetGeneralInfo ConnCompReduce_GetGeneralInfo
 #endif

@@ -139,6 +139,9 @@ class VisWindowColleagueProxy;
 //    Removed the last boolean on ScreenCapture since the image being NULL
 //    suffices for that test.
 //
+//    Mark C. Miller, Fri Mar  4 13:05:02 PST 2005
+//    Changed name of GetNumTriangles to GetNumPrimitives
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinRendering : public VisWinColleague
@@ -230,7 +233,7 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
                                  { return specularPower; };
     const ColorAttribute    &GetSpecularColor() const
                                  { return specularColor; };
-    int                      GetNumTriangles() const;
+    int                      GetNumPrimitives() const;
     void                     SetNotifyForEachRender(bool val)
                                  { notifyForEachRender = val; };
     bool                     GetNotifyForEachRender() const

@@ -59,7 +59,7 @@
     <Field name="lastRenderMax" label="lastRenderMax" type="float">
       0.000000
     </Field>
-    <Field name="numTriangles" label="numTriangles" type="int">
+    <Field name="numPrimitives" label="numPrimitives" type="int">
       0
     </Field>
     <Field name="extents" label="extents" type="doubleArray" length="6">

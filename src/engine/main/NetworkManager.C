@@ -1292,12 +1292,11 @@ NetworkManager::DoneWithNetwork(int id)
         networkCache[id] = NULL;
         globalCellCounts[id] = -1;
 
-        // delete VisWindow after networks
+        // mark this VisWindow for deletion 
         if (!otherNetsUseThisWindow && thisNetworksWinID) // never delete window 0
         {
-            debug1 << "Deleting VisWindow for id=" << thisNetworksWinID << endl;
-            delete viswinMap[thisNetworksWinID].viswin;
-            viswinMap.erase(thisNetworksWinID);
+            debug1 << "Marking VisWindow for Deletion id=" << thisNetworksWinID << endl;
+            viswinMap[thisNetworksWinID].markedForDeletion = true;
         }
 
     }
@@ -1622,6 +1621,9 @@ NetworkManager::GetOutput(bool respondWithNullData, bool calledForRender,
 //    Mark C. Miller, Mon Jan 24 19:25:44 PST 2005
 //    Made all procs render 3D visual cues not just proc 0
 //
+//    Mark C. Miller, Mon Mar  7 12:06:08 PST 2005
+//    Changed calls from GetNumTriangles to GetNumPrimitives.
+//
 // ****************************************************************************
 avtDataObjectWriter_p
 NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
@@ -1638,6 +1640,7 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
     }
 
     EngineVisWinInfo &viswinInfo = viswinMap[windowID];
+    viswinInfo.markedForDeletion = false;
     VisWindow *viswin = viswinInfo.viswin;
     WindowAttributes &windowAttributes = viswinInfo.windowAttributes;
     std::string &changedCtName = viswinInfo.changedCtName;
@@ -1830,9 +1833,9 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
                                     annotationObjectList, visualCueList,
                                     frameAndState, windowID, annotMode);
 
-            debug5 << "Rendering " << viswin->GetNumTriangles() 
-                   << " triangles.  Balanced speedup = " 
-                   << RenderBalance(viswin->GetNumTriangles()) << "x" << endl;
+            debug5 << "Rendering " << viswin->GetNumPrimitives() 
+                   << " primitives.  Balanced speedup = " 
+                   << RenderBalance(viswin->GetNumPrimitives()) << "x" << endl;
 
             //
             // Determine if we need to go for two passes
@@ -2172,6 +2175,7 @@ NetworkManager::SetWindowAttributes(const WindowAttributes &atts,
         NewVisWindow(windowID);
 
     EngineVisWinInfo &viswinInfo = viswinMap[windowID];
+    viswinInfo.markedForDeletion = false;
     VisWindow *viswin = viswinInfo.viswin;
     WindowAttributes &windowAttributes = viswinInfo.windowAttributes;
     std::string &extentTypeString = viswinInfo.extentTypeString;
@@ -2317,6 +2321,7 @@ NetworkManager::UpdateVisualCues(int windowID)
     }
 
     EngineVisWinInfo &viswinInfo = viswinMap[windowID];
+    viswinInfo.markedForDeletion = false;
     VisWindow *viswin = viswinInfo.viswin;
     bool &visualCuesNeedUpdate = viswinInfo.visualCuesNeedUpdate;
     VisualCueList &visualCueList = viswinInfo.visualCueList;
@@ -2399,6 +2404,7 @@ NetworkManager::SetAnnotationAttributes(const AnnotationAttributes &atts,
         NewVisWindow(windowID);
 
     EngineVisWinInfo &viswinInfo = viswinMap[windowID];
+    viswinInfo.markedForDeletion = false;
     VisWindow *viswin = viswinInfo.viswin;
     AnnotationAttributes &annotationAttributes = viswinInfo.annotationAttributes;
     AnnotationObjectList &annotationObjectList = viswinInfo.annotationObjectList;
@@ -3304,15 +3310,36 @@ NetworkManager::AddQueryOverTimeFilter(QueryOverTimeAttributes *qA,
 //    Mark C. Miller, Tue Jan 18 12:44:34 PST 2005
 //    Added initialization of visualCuesNeedUpdate
 //
+//    Mark C. Miller, Mon Mar  7 13:41:45 PST 2005
+//    Made it also delete any VisWindows marked for deletion
+//
 // ****************************************************************************
 
 void
 NetworkManager::NewVisWindow(int winID)
 {
-    debug1 << "Creating new VisWindow for window id =" << winID << endl;
+    //
+    // Delete any VisWindow objects that are marked for deletion
+    //
+    std::vector<int> idsToDelete;
+    std::map<int, EngineVisWinInfo>::iterator it;
+    for (it = viswinMap.begin(); it != viswinMap.end(); it++)
+    {
+        if (it->second.markedForDeletion)
+            idsToDelete.push_back(it->first);
+    }
+    for (int i = 0; i < idsToDelete.size(); i++)
+    {
+        debug1 << "Deleting VisWindow for id=" << idsToDelete[i] << endl;
+        delete viswinMap[idsToDelete[i]].viswin;
+        viswinMap.erase(idsToDelete[i]);
+    }
+
+    debug1 << "Creating new VisWindow for id=" << winID << endl;
 
     viswinMap[winID].viswin = new VisWindow();
     viswinMap[winID].visualCuesNeedUpdate = false;
+    viswinMap[winID].markedForDeletion = false;
 
     AnnotationAttributes &annotAtts = viswinMap[winID].annotationAttributes;
 
