@@ -3,10 +3,10 @@
 #include <qlayout.h>
 #include <qpushbutton.h>
 #include <qlineedit.h> 
-#include <qslider.h>
 #include <qtimer.h>
 
 #include <QvisFilePanel.h>
+#include <QvisAnimationSlider.h>
 #include <QvisVCRControl.h>
 #include <QvisListViewFileItem.h>
 
@@ -151,6 +151,9 @@ const int FileTree::FileTreeNode::DATABASE_NODE = 3;
 //   Brad Whitlock, Mon Oct 13 15:24:56 PST 2003
 //   Initialized timeStateFormat.
 //
+//   Brad Whitlock, Tue Dec 30 14:32:32 PST 2003
+//   I made it use QvisAnimationSlider.
+//
 // ****************************************************************************
 
 QvisFilePanel::QvisFilePanel(QWidget *parent, const char *name) :
@@ -198,15 +201,15 @@ QvisFilePanel::QvisFilePanel(QWidget *parent, const char *name) :
     // Create the animation position slider bar
     QHBoxLayout *animationLayout = new QHBoxLayout(topLayout);
     topLayout->setStretchFactor(animationLayout, 10);
-    animationPosition = new QSlider(Qt::Horizontal, this, "animationPosition");
+    animationPosition = new QvisAnimationSlider(Qt::Horizontal, this, "animationPosition");
     animationPosition->setEnabled(false);
     connect(animationPosition, SIGNAL(sliderPressed()),
             this, SLOT(sliderStart()));
     connect(animationPosition, SIGNAL(sliderMoved(int)),
             this, SLOT(sliderMove(int)));
-    connect(animationPosition, SIGNAL(sliderReleased()),
+    connect(animationPosition, SIGNAL(sliderWasReleased()),
             this, SLOT(sliderEnd()));
-    connect(animationPosition, SIGNAL(valueChanged(int)),
+    connect(animationPosition, SIGNAL(sliderValueChanged(int)),
             this, SLOT(sliderChange(int)));
     animationLayout->addWidget(animationPosition, 1000);
 
@@ -235,7 +238,6 @@ QvisFilePanel::QvisFilePanel(QWidget *parent, const char *name) :
 
     // Initialize the attached subjects
     globalAtts = NULL;
-    sliderDown = false;
 }
 
 // ****************************************************************************
@@ -633,12 +635,16 @@ QvisFilePanel::UpdateFileList(bool doAll)
 //   .visit files). This also allows the selected files list to show the active
 //   time state for the database.
 //
+//   Brad Whitlock, Tue Dec 30 14:31:03 PST 2003
+//   I made it use the animation slider instead of sliderDown.
+//
 // ****************************************************************************
 
 void
 QvisFilePanel::UpdateAnimationControls(bool doAll)
 {
-    if(fileServer == 0 || globalAtts == 0 || sliderDown)
+    if(fileServer == 0 || globalAtts == 0 ||
+       (animationPosition != 0 && animationPosition->sliderIsDown()))
         return;
 
     // currentFile changed.  Update the file server.
@@ -2314,12 +2320,14 @@ QvisFilePanel::overlayFile()
 //   I seperated the concepts of state and frame, since they are no longer
 //   equivalent with keyframe support.
 //   
+//   Brad Whitlock, Tue Dec 30 14:32:02 PST 2003
+//   I removed sliderDown.
+//
 // ****************************************************************************
 
 void
 QvisFilePanel::sliderStart()
 {
-    sliderDown = true;
     sliderVal = globalAtts->GetCurrentFrame();
 }
 
@@ -2377,8 +2385,6 @@ QvisFilePanel::sliderMove(int val)
 void
 QvisFilePanel::sliderEnd()
 {
-    sliderDown = false;
-
     // Set the new frame.
     AnimationSetFrame(sliderVal, false);
 }
@@ -2409,12 +2415,15 @@ QvisFilePanel::sliderEnd()
 //   set the current frame in the global atts. The viewer now sends back the
 //   current frame but it didn't used to a long time ago.
 //
+//   Brad Whitlock, Tue Dec 30 14:31:03 PST 2003
+//   I made it use the animation slider instead of sliderDown.
+//
 // ****************************************************************************
 
 void
 QvisFilePanel::sliderChange(int val)
 {
-    if(sliderDown)
+    if(animationPosition->sliderIsDown())
         return;
 
     // Set the new frame.

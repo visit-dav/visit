@@ -77,6 +77,10 @@ avtDatasetFileWriter::avtDatasetFileWriter()
 //    Jeremy Meredith, Sat Apr 12 14:37:40 PDT 2003
 //    Added the ULTRA file format.
 //
+//    Jeremy Meredith, Tue Dec 30 09:13:08 PST 2003
+//    Removed the Curve format and had the curve format write ULTRA files
+//    instead.  Renamed ULTRA to curve internally.
+//
 // ****************************************************************************
 
 void
@@ -86,7 +90,7 @@ avtDatasetFileWriter::Write(DatasetFileFormat format, const char *filename,
     switch (format)
     {
       case CURVE:
-        WriteCurveFamily(filename);
+        WriteCurveFile(filename);
         break;
       case OBJ:
         WriteOBJFamily(filename);
@@ -95,7 +99,7 @@ avtDatasetFileWriter::Write(DatasetFileFormat format, const char *filename,
         WriteSTLFile(filename, binary);
         break;
       case ULTRA:
-        WriteULTRAFile(filename);
+        WriteCurveFile(filename);
         break;
       case VTK:
         WriteVTKFamily(filename, binary);
@@ -105,135 +109,6 @@ avtDatasetFileWriter::Write(DatasetFileFormat format, const char *filename,
         // Don't know what type to write out.
         debug1 << "Cannot handle format of type " << format << endl;
         EXCEPTION0(ImproperUseException);
-    }
-}
-
-
-// ****************************************************************************
-//  Method: avtDatasetFileWriter::WriteCurveFamily
-//
-//  Purpose:
-//      Writes out the input as a curve file.  This will walk through an
-//      avtDataset and write out the curves one at a time into a file.
-//
-//  Programmer: Hank Childs
-//  Creation:   May 28, 2002
-//
-// ****************************************************************************
-
-void
-avtDatasetFileWriter::WriteCurveFamily(const char *filename)
-{
-    ofstream ofile(filename);
-
-    avtDataTree_p dt = GetInputDataTree();
-    vector<string> namesUsed;
-    WriteCurveTree(dt, ofile, namesUsed);
-}
-
-
-// ****************************************************************************
-//  Method: avtDatasetFileWriter::WriteCurveTree
-//
-//  Purpose:
-//      Parses through an avtDataTree and writes out the curves one at a time.
-//
-//  Programmer: Hank Childs
-//  Creation:   May 28, 2002
-//
-// ****************************************************************************
-
-void
-avtDatasetFileWriter::WriteCurveTree(avtDataTree_p dt, ofstream &ofile,
-                                     vector<string> &namesUsed)
-{
-    if (*dt == NULL)
-    {
-        return;
-    }
-
-    if (dt->HasData())
-    {
-        avtDataRepresentation &rep = dt->GetDataRepresentation();
-        const char *label = NULL;
-        if (rep.GetLabel() != "")
-        {
-            label = rep.GetLabel().c_str();
-        }
-        char *uniqueName = GenerateName(label, "curve", namesUsed);
-        vtkDataSet *ds = rep.GetDataVTK();
-        WriteCurveFile(ofile, ds, uniqueName);
-        namesUsed.push_back(uniqueName);
-        delete [] uniqueName;
-    }
-    else
-    {
-        for (int i = 0 ; i < dt->GetNChildren() ; i++)
-        {
-            if (dt->ChildIsPresent(i))
-            {
-                WriteCurveTree(dt->GetChild(i), ofile, namesUsed);
-            }
-        }
-    }
-}
-
-
-// ****************************************************************************
-//  Method: avtDatasetFileWriter::WriteCurveFile
-//
-//  Purpose:
-//      Writes out a single curve into an open file.
-//
-//  Programmer: Hank Childs
-//  Creation:   May 28, 2002
-//
-//  Modifications:
-//
-//    Hank Childs, Thu Apr  3 10:05:16 PST 2003
-//    Modified to join up dis-continuous line segments.
-//
-// ****************************************************************************
-
-void
-avtDatasetFileWriter::WriteCurveFile(ofstream &ofile, vtkDataSet *ds,
-                                     const char *name)
-{
-    if (ds->GetDataObjectType() != VTK_POLY_DATA)
-    {
-        EXCEPTION0(NoCurveException);
-    }
-    vtkPolyData *pd = (vtkPolyData *) ds;
-
-    vtkCellArray *lines = pd->GetLines();
-    int numCells = lines->GetNumberOfCells();
-
-    if (numCells == 0 && pd->GetPolys()->GetNumberOfCells() > 0)
-    {
-        EXCEPTION0(NoCurveException);
-    }
-
-    std::vector< std::vector<int> >  line_segments;
-    SortLineSegments(pd, line_segments);
-
-    //
-    // Print out our header.
-    //
-    ofile << "# " << name << endl;
-
-    vtkPoints *pts = pd->GetPoints();
-    for (int i = 0 ; i < line_segments.size() ; i++)
-    {
-        for (int j = 0 ; j < line_segments[i].size() ; j++)
-        {
-            float *pt = pts->GetPoint(line_segments[i][j]);
-            ofile << pt[0] << " " << pt[1] << endl;
-        }
-
-        // Designate that we have a new series of line segments that should
-        // still be considered part of the same curve.  This is done with
-        // a blank line.
-        ofile << endl;
     }
 }
 
@@ -654,23 +529,25 @@ avtDatasetFileWriter::WriteSTLFile(const char *filename, bool binary)
 
 
 // ****************************************************************************
-//  Method: avtDatasetFileWriter::WriteULTRAFile
+//  Method: avtDatasetFileWriter::WriteCurveFile
 //
 //  Purpose:
-//      Writes out the input as an ULTRA file.  This throws out all the
-//      information except for the line segments.
+//      Writes out the input as an ULTRA style curve file.  This throws out
+//      all the information except for the line segments.
 //
-//  Note:  Much of this was stolen from WriteCurveFile.
+//  Note:  Much of this was stolen from the now non-existent WriteCurveFile.
 //
 //  Programmer: Jeremy Meredith
 //  Creation:   April 12, 2003
 //
 //  Modifications:
+//    Jeremy Meredith, Tue Dec 30 09:14:08 PST 2003
+//    Removed the Curve writer and renamed this one to Curve.
 //
 // ****************************************************************************
 
 void
-avtDatasetFileWriter::WriteULTRAFile(const char *filename)
+avtDatasetFileWriter::WriteCurveFile(const char *filename)
 {
     // We want it all in a single output file
     vtkDataSet *ds = GetSingleDataset();

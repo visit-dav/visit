@@ -38,6 +38,9 @@ typedef enum
 //    Jeremy Meredith, Sat Apr 12 15:09:28 PDT 2003
 //    Added the Ultra file format.
 //
+//    Jeremy Meredith, Tue Dec 30 09:16:12 PST 2003
+//    Removed the obsolete Curve file format.  Renamed ULTRA to Curve.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDatasetFileWriter : public avtOriginatingDatasetSink
@@ -57,12 +60,7 @@ class PIPELINE_API avtDatasetFileWriter : public avtOriginatingDatasetSink
 
     void               WriteSTLFile(const char *, bool);
 
-    void               WriteULTRAFile(const char *);
-
-    void               WriteCurveFamily(const char *);
-    void               WriteCurveTree(avtDataTree_p, ofstream &,
-                                      std::vector<std::string> &);
-    void               WriteCurveFile(ofstream &, vtkDataSet *, const char *);
+    void               WriteCurveFile(const char *);
 
     void               WriteVTKFamily(const char *, bool);
     int                WriteVTKTree(avtDataTree_p, int, const char *, bool);
