@@ -930,6 +930,9 @@ InvertBackgroundAction::Execute()
 //   Kathleen Bonnell, Wed Jun 25 13:41:23 PDT 2003
 //   Change Pick to ZonePick, added NodePick.
 //   
+//   Kathleen Bonnell, Thu Jul  8 12:52:46 PDT 2004 
+//   Change order of ZonePick and NodePick for NoWin mode.
+//   
 // ****************************************************************************
 
 SetWindowModeAction::SetWindowModeAction(ViewerWindow *win) :
@@ -950,8 +953,8 @@ SetWindowModeAction::SetWindowModeAction(ViewerWindow *win) :
     else 
     {
         AddChoice("Navigate");
-        AddChoice("Node Pick");
         AddChoice("Zone Pick");
+        AddChoice("Node Pick");
         AddChoice("Zoom");
         AddChoice("Lineout");
     }

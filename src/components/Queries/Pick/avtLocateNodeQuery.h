@@ -23,6 +23,9 @@
 //    Kathleen Bonnell, Thu Jun 17 12:58:47 PDT 2004
 //    Added FindClosestPoint.
 //
+//    Kathleen Bonnell, Wed Jul  7 14:59:49 PDT 2004 
+//    Added FindClosestPointOnLine.
+//
 // ****************************************************************************
 
 class QUERY_API avtLocateNodeQuery : public avtLocateQuery
@@ -41,6 +44,10 @@ class QUERY_API avtLocateNodeQuery : public avtLocateQuery
     int                             RGridFindNode(vtkDataSet *, float&, float*);
     int                             DeterminePickedNode(vtkDataSet *, int, float*);
     int                             FindClosestPoint(vtkDataSet *, float*, int &);
+    int                             FindClosestPointOnLine(vtkDataSet *, 
+                                                           float &,
+                                                           float [3]);
+ 
 };
 
 

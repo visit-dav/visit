@@ -82,18 +82,28 @@ avtLocateNodeQuery::Execute(vtkDataSet *ds, const int dom)
     float dist, isect[3] = { 0., 0., 0.};
     int foundNode = -1;
     int origNode = -1;
+    int topodim = GetInput()->GetInfo().GetAttributes().GetTopologicalDimension();
+    int spatdim = GetInput()->GetInfo().GetAttributes().GetSpatialDimension();
 
     // Find the cell, intersection point, and distance along the ray.
     //
     if (ds->GetDataObjectType() != VTK_RECTILINEAR_GRID)
     {
-        int foundCell = LocatorFindCell(ds, dist, isect); 
-        if (foundCell != -1)
+        if (topodim == 1 && spatdim == 2) // LINES
         {
-            if (!pickAtts.GetMatSelected())
-                foundNode = DeterminePickedNode(ds, foundCell, isect);
-            else 
-                foundNode = FindClosestPoint(ds, isect, origNode);
+            dist = minDist;
+            foundNode = FindClosestPointOnLine(ds, dist, isect);
+        }
+        else
+        {
+            int foundCell = LocatorFindCell(ds, dist, isect); 
+            if (foundCell != -1)
+            {
+                if (!pickAtts.GetMatSelected())
+                    foundNode = DeterminePickedNode(ds, foundCell, isect);
+                else 
+                    foundNode = FindClosestPoint(ds, isect, origNode);
+            }
         }
     }
     else
@@ -298,3 +308,57 @@ avtLocateNodeQuery::FindClosestPoint(vtkDataSet *ds, float *isect, int &origNode
     locator->Delete();
     return id;
 }
+
+
+
+// ****************************************************************************
+//  Method: avtLocateQuery::FindClosestPointOnLine
+//
+//  Purpose:
+//    Uses a locator to find the closest point to the given point. 
+//
+//  Arguments:
+//    ds      The dataset to query.
+//    minDist The current minimum distance.
+//
+//  Returns:
+//    The id of the closest point (-1 if none found).
+//
+//  Programmer: Kathleen Bonnell  
+//  Creation:   June 10, 2004 
+//
+//  Modifications:
+//    
+// ****************************************************************************
+
+int
+avtLocateNodeQuery::FindClosestPointOnLine(vtkDataSet *ds, float &minDist, 
+                                           float isect[3])
+{
+    if (ds->GetNumberOfPoints() == 0)
+    {
+        return -1;
+    }
+    float *rayPt1 = pickAtts.GetRayPoint1();
+
+    vtkVisItPointLocator *pointLocator = vtkVisItPointLocator::New(); 
+    pointLocator->SetDataSet(ds);
+    pointLocator->IgnoreDisconnectedPointsOn();
+    pointLocator->BuildLocator();
+
+    vtkIdType foundPoint = -1; 
+    float pt[3] = {rayPt1[0], rayPt1[1], 0.};
+    float dist, rad = minDist;
+    foundPoint = pointLocator->FindClosestPointWithinRadius(rad, pt, dist);
+
+    if (foundPoint >= 0 && dist < minDist)
+    {
+        vtkVisItUtility::GetPoints(ds)->GetPoint(foundPoint, isect);
+        minDist = dist;
+    }
+
+    pointLocator->Delete();
+    return foundPoint;
+}
+
+

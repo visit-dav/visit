@@ -61,6 +61,8 @@ avtPickByZoneQuery::~avtPickByZoneQuery()
 //  Creation:   May 10, 2004 
 //
 //  Modifications:
+//    Kathleen Bonnell, Thu Jul  8 16:42:05 PDT 2004
+//    Changed the way that zoneid is modified when accounting for ghost zones.
 //
 // ****************************************************************************
 
@@ -72,42 +74,31 @@ avtPickByZoneQuery::Execute(vtkDataSet *ds, const int dom)
         return;
     }
 
-    int zoneNumber = pickAtts.GetElementNumber();
+    int zoneid = pickAtts.GetElementNumber();
+    int maxEls = ds->GetNumberOfCells();
+    if (zoneid < 0 || zoneid >= maxEls)
+    {
+        EXCEPTION2(BadCellException, zoneid+cellOrigin, maxEls+cellOrigin);
+    }
+
+
     int type = ds->GetDataObjectType();
     bool needRealId = ghostType == AVT_HAS_GHOSTS  &&
             (type == VTK_STRUCTURED_GRID || type == VTK_RECTILINEAR_GRID || 
              ds->GetFieldData()->GetArray("vtkOriginalDimensions") != NULL );
 
-
-    int maxEls = ds->GetNumberOfCells();
-    if (zoneNumber < 0 || zoneNumber >= maxEls)
+    if (needRealId)
     {
-        EXCEPTION2(BadCellException, zoneNumber+cellOrigin, maxEls+cellOrigin);
+        // Need to convert a zoneid that is Non-Ghost relative
+        // to a zoneid that is ghost-relative.
+        zoneid = vtkVisItUtility::ZoneGhostIdFromNonGhost(ds, zoneid);
+        pickAtts.SetElementNumber(zoneid);
     }
 
     if (!pickAtts.GetMatSelected() && ghostType != AVT_CREATED_GHOSTS)
     {
-        if (needRealId)
-        {
-            int dims[3], ijk[3] = {0, 0, 0};
-            vtkVisItUtility::GetDimensions(ds, dims);
-            vtkVisItUtility::GetLogicalIndices(ds, true, zoneNumber, ijk, 
-                                               false, false);
-            vtkIntArray *realDims =
-                (vtkIntArray*)ds->GetFieldData()->GetArray("avtRealDims");
-            if (realDims != NULL)
-            {
-                ijk[0] += realDims->GetValue(0);
-                ijk[1] += realDims->GetValue(2);
-                ijk[2] += realDims->GetValue(4);
-            }
-            zoneNumber = ijk[0] +
-                         ijk[1] * (dims[0]-1) +
-                         ijk[2] * (dims[0]-1) * (dims[1]-1);
-            pickAtts.SetElementNumber(zoneNumber);
-        }
-        GetZoneCoords(ds, zoneNumber);
-        if (RetrieveNodes(ds, zoneNumber))
+        GetZoneCoords(ds, zoneid);
+        if (RetrieveNodes(ds, zoneid))
         {
             RetrieveVarInfo(ds);
             pickAtts.SetFulfilled(true);
@@ -175,7 +166,7 @@ avtPickByZoneQuery::Execute(vtkDataSet *ds, const int dom)
     //
     // Use the cell center as the place to position the pick letter.
     //
-    vtkCell *cell = ds->GetCell(zoneNumber);
+    vtkCell *cell = ds->GetCell(zoneid);
     float parametricCenter[3], center[3];
     float weights[28];
     int subId = cell->GetParametricCenter(parametricCenter);
@@ -215,7 +206,7 @@ avtPickByZoneQuery::Execute(vtkDataSet *ds, const int dom)
             // locator code that it should use the RealElementNumber in
             // determining zone location.
             //
-            pickAtts.SetRealElementNumber(zoneNumber);
+            pickAtts.SetRealElementNumber(zoneid);
         }
     }
     else 

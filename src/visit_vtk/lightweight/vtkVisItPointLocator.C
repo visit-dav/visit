@@ -926,6 +926,10 @@ void vtkVisItPointLocator::FindPointsWithinRadius(float R, const float x[3],
 //  subject to the constraints of levels and NumberOfPointsPerBucket.
 //  The result is directly addressable and of uniform subdivision.
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed Jul  7 15:05:31 PDT 2004
+//    Test for valid idx before using it to index into HashTable.
+//
 void vtkVisItPointLocator::BuildLocator()
 {
   float *bounds;
@@ -1037,6 +1041,11 @@ void vtkVisItPointLocator::BuildLocator()
       }
 
     idx = ijk[0] + ijk[1]*ndivs[0] + ijk[2]*product;
+    if (idx < 0 || idx >= this->NumberOfBuckets)
+      {
+      vtkDebugMacro(<<"BuildLocator encountered bad idx: " << idx );
+      continue;
+      }
     bucket = this->HashTable[idx];
     if ( ! bucket )
       {

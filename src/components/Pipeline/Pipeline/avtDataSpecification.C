@@ -854,6 +854,56 @@ avtDataSpecification::VariablesAreTheSame(const avtDataSpecification &ds)
 
 
 // ****************************************************************************
+//  Method:  avtDataSpecification::GetSecondaryVariablesWithoutDuplicates
+//
+//  Purpose:
+//    Return the list of secondary variables, removing duplicates of the
+//    primary variable and not allowing duplicates within the secondary
+//    variables.
+//
+//  Arguments:
+//    none.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    July  9, 2004
+//
+// ****************************************************************************
+
+vector<CharStrRef>
+avtDataSpecification::GetSecondaryVariablesWithoutDuplicates(void)
+{
+    vector<CharStrRef> newList;
+    for (int i = 0 ; i < secondaryVariables.size() ; i++)
+    {
+        bool duplicate = false;
+
+        // don't allow duplicates of the primary variable
+        if (variable && strcmp(db_variable, *(secondaryVariables[i])) == 0)
+        {
+            duplicate = true;
+        }
+
+        // don't allow duplicates of other secondary variables; just take
+        // the first instance of it
+        for (int j = 0 ; j < i && !duplicate; j++)
+        {
+            if (strcmp(*(secondaryVariables[i]),*(secondaryVariables[j])) == 0)
+            {
+                duplicate = true;
+            }
+        }
+
+        // add it to the list if it wasn't a duplicate
+        if (!duplicate)
+        {
+            newList.push_back(secondaryVariables[i]);
+        }
+    }
+
+    return newList;
+}
+
+// ****************************************************************************
 //  Method: avtSILSpecification::GetDomainList
 //
 //  Purpose:

@@ -281,10 +281,9 @@ vtkVisItUtility::CalculateRealID(const int cellId, const bool forCell, vtkDataSe
                 nElsI += 1;
                 nElsJ += 1;
             }
-            int c = IJK[0] +
-                    IJK[1] * nElsI +  
-                    IJK[2] * nElsI * nElsJ;
-            retVal = c;
+            retVal = IJK[0] +
+                     IJK[1] * nElsI +  
+                     IJK[2] * nElsI * nElsJ;
         }
     }
     return retVal;
@@ -396,6 +395,9 @@ vtkVisItUtility::ComputeStructuredCoordinates(vtkRectilinearGrid *rgrid,
 //    be ignored.  In case there are physically adjacent but non-logically-
 //    connected cells, find 8 closest points instead of 1.
 //
+//    Kathleen Bonnell, Wed Jul  7 15:02:03 PDT 2004 
+//    Delete objects before early return, to prevent memory leaks.
+//
 // ****************************************************************************
 
 int
@@ -447,6 +449,9 @@ vtkVisItUtility::FindCell(vtkDataSet *ds, float x[3])
         locator->FindClosestNPoints(8, x, closestPoints);
         if (closestPoints->GetNumberOfIds() == 0)
         {
+            locator->Delete();
+            closestPoints->Delete();
+            delete [] weights;
             return -1;
         }
        
@@ -555,4 +560,122 @@ vtkVisItUtility::GetDimensions(vtkDataSet *ds, int dims[3])
             dims[2] = vtkDims->GetValue(2);
         }
     }
+}
+
+
+// ****************************************************************************
+//  Function: CalculateGhostIdFromNonGhost
+//
+//  Purpose:
+//    A routine that calculates a node or cell id in relation to the 
+//    with-ghost-zone dataset, from an id that corresponds to the same
+//    dataset without ghost-zones.
+//
+//  Arguments:
+//    id    The cellId in the ds.
+//      forCell True if a cell Id should be returned, false if  for point id. 
+//      ds      The dataset.
+//
+//  Returns:
+//    If the passed dataset is not structured, simply returns the passed id.
+//    Otherwise returns the id corresponding to with-ghost-zone data.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   July 8, 2004 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+int
+vtkVisItUtility::CalculateGhostIdFromNonGhost(vtkDataSet *ds, const int id,
+                                              const bool forCell)
+{
+    int retVal = id;
+    int type = ds->GetDataObjectType();
+
+    if (type == VTK_STRUCTURED_GRID ||
+        type == VTK_RECTILINEAR_GRID ||
+        ds->GetFieldData()->GetArray("vtkOriginalDimensions") != NULL) 
+    {
+        int dimX, dimY, dims[3]; 
+        int ijk[3] = { -1, -1, -1};
+        GetDimensions(ds, dims);
+        if (dims[0] == -1 || dims[1] == -1 || dims[2] == -1)
+        {
+            return id;
+        }
+        vtkIntArray *realDims = 
+            (vtkIntArray*)ds->GetFieldData()->GetArray("avtRealDims");
+        if (realDims != NULL)
+        {
+            dimX = realDims->GetValue(1) - realDims->GetValue(0);
+            dimY = realDims->GetValue(3) - realDims->GetValue(2);
+            if (!forCell)
+            {
+                dimX++;
+                dimY++;
+            }
+        }
+        else 
+        {
+            if (forCell)
+            {
+                dimX = (dims[0]-1 > 0 ? dims[0]-1 : 1);
+                dimY = (dims[1]-1 > 0 ? dims[1]-1 : 1);
+            }
+            else
+            {
+                dimX = (dims[0] == 0 ? 1 : dims[0]);
+                dimY = (dims[1] == 0 ? 1 : dims[1]);
+            }
+        }
+        if (dims[2] == 1)
+        {
+            ijk[0] = (id % dimX);
+            ijk[1] = (id / dimX);
+            ijk[2] = 0;
+        }
+        else 
+        {
+            ijk[0] = (id % dimX);          
+            ijk[1] = ((id / dimX) % dimY);
+            ijk[2] = (id / (dimX * dimY));
+        }
+
+        ijk[0] = ijk[0] < 0 ? 0 : ijk[0];
+        ijk[1] = ijk[1] < 0 ? 0 : ijk[1];
+        ijk[2] = ijk[2] < 0 ? 0 : ijk[2];
+
+        if (realDims != NULL)
+        {
+            ijk[0] += realDims->GetValue(0);
+            ijk[1] += realDims->GetValue(2);
+            ijk[2] += realDims->GetValue(4);
+        }
+
+        int nElsI = dims[0];
+        int nElsJ = dims[1];
+        if (forCell)
+        {
+            nElsI -= 1;
+            nElsJ -= 1;
+        }
+        retVal = ijk[0] +
+                 ijk[1] * nElsI +  
+                 ijk[2] * nElsI * nElsJ;
+    }
+    return retVal;
+}
+
+int
+vtkVisItUtility::NodeGhostIdFromNonGhost(vtkDataSet *ds, const int node)
+{
+    return CalculateGhostIdFromNonGhost(ds, node, false);
+}
+
+int
+vtkVisItUtility::ZoneGhostIdFromNonGhost(vtkDataSet *ds, const int zone)
+{
+    return CalculateGhostIdFromNonGhost(ds, zone, true);
 }

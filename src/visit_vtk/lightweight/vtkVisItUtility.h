@@ -25,6 +25,15 @@ namespace vtkVisItUtility
                                               float x[3], int ijk[3]);
     VISIT_VTK_LIGHT_API int         FindCell(vtkDataSet *, float pt[3]);
     VISIT_VTK_LIGHT_API void        GetDimensions(vtkDataSet *, int[3]);
+    VISIT_VTK_LIGHT_API int         NodeGhostIdFromNonGhost(vtkDataSet *ds,
+                                        const int);
+    VISIT_VTK_LIGHT_API int         ZoneGhostIdFromNonGhost(vtkDataSet *ds,
+                                        const int);
+    VISIT_VTK_LIGHT_API int         CalculateGhostIdFromNonGhost(
+                                        vtkDataSet *ds,
+                                        const int cellId, 
+                                        const bool forCell);
+
 }
 
 #endif

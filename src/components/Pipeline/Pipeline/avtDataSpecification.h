@@ -101,6 +101,9 @@ typedef ref_ptr<avtDataSpecification> avtDataSpecification_p;
 //    Kathleen Bonnell, Mon Jun 28 08:05:38 PDT 2004
 //    Added SetTimestep method.
 //
+//    Jeremy Meredith, Fri Jul  9 16:49:24 PDT 2004
+//    Added GetSecondaryVariablesWithoutDuplicates.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataSpecification
@@ -137,6 +140,7 @@ class PIPELINE_API avtDataSpecification
     const std::vector<CharStrRef> &
                                  GetSecondaryVariables(void)
                                        { return secondaryVariables; };
+    std::vector<CharStrRef>      GetSecondaryVariablesWithoutDuplicates(void);
 
     bool                         MustDoMaterialInterfaceReconstruction(void) 
                                      { return mustDoMIR; };

@@ -1685,6 +1685,10 @@ avtGenericDatabase::GetSymmetricTensorVariable(const char *varname, int ts,
 //    Hank Childs, Sun Jun 27 10:47:38 PDT 2004
 //    Copy over more information about ghosts or global indexing.
 //
+//    Hank Childs, Fri Jul  9 14:24:21 PDT 2004
+//    No longer scale the mesh, since the camera and lighting now both handle
+//    large and small problems better.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -1725,7 +1729,6 @@ avtGenericDatabase::GetMesh(const char *meshname, int ts, int domain,
         mesh->Update();
 
         AssociateBounds(mesh);
-        ScaleMesh(mesh);
 
         if (Interface->CanCacheVariable(meshname))
         {
@@ -2977,6 +2980,12 @@ avtGenericDatabase::ActivateTimestep(int stateIndex)
 //    Kathleen Bonnell, Fri May 28 18:31:15 PDT 2004 
 //    Initialize ContainsOriginalNodes in the MetaData. 
 //
+//    Jeremy Meredith, Fri Jul  9 17:32:38 PDT 2004
+//    It is possible to get multiple secondary variables in the data
+//    specification and cause all sorts of problems (see '4798). I added a
+//    method to get the secondary variable list without duplicating either the
+//    primary variable or other secondary variables, and made use of it here.
+//
 // ****************************************************************************
 
 void
@@ -3000,7 +3009,8 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, vector<int> &domains,
     // Set up some things we will want for later.
     //
     const char *var = spec->GetVariable();
-    const vector<CharStrRef> &vars2nd = spec->GetSecondaryVariables();
+    const vector<CharStrRef> &vars2nd = 
+                               spec->GetSecondaryVariablesWithoutDuplicates();
     avtSILRestriction_p silr = spec->GetRestriction();
 
     char  progressString[1024];
@@ -3307,6 +3317,12 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, vector<int> &domains,
 //    Hank Childs, Sun Jun 27 11:02:42 PDT 2004
 //    Add support for identifying ghost nodes using global indexing.
 //
+//    Jeremy Meredith, Fri Jul  9 17:32:38 PDT 2004
+//    It is possible to get multiple secondary variables in the data
+//    specification and cause all sorts of problems (see '4798). I added a
+//    method to get the secondary variable list without duplicating either the
+//    primary variable or other secondary variables, and made use of it here.
+//
 // ****************************************************************************
 
 bool
@@ -3560,7 +3576,8 @@ avtGenericDatabase::CommunicateGhosts(avtDatasetCollection &ds,
         //
         // Exchange secondary variables.
         //
-        const vector<CharStrRef> &var2nd = spec->GetSecondaryVariables();
+        const vector<CharStrRef> &var2nd = 
+                               spec->GetSecondaryVariablesWithoutDuplicates();
         avtDatabaseMetaData *metadata = GetMetaData(ts);
         for (i = 0 ; i < var2nd.size() ; i++)
         {
