@@ -35,6 +35,9 @@ class QSpinBox;
 //   Brad Whitlock, Wed Mar 26 08:08:12 PDT 2003
 //   I added a brightness text field.
 //
+//   Brad Whitlock, Wed Feb 23 17:57:53 PST 2005
+//   Added another slot to handle setting the brightness.
+//
 // ****************************************************************************
 
 class GUI_API QvisLightingWindow : public QvisPostableWindowObserver
@@ -59,6 +62,7 @@ private slots:
 
     void activeLightComboBoxChanged(int);
     void brightnessChanged(int);
+    void brightnessChanged2(int);
     void enableToggled(bool);
     void lightMoved(double x, double y, double z);
     void lightTypeComboBoxChanged(int);

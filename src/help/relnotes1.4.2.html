@@ -29,9 +29,11 @@ enhancements and bug-fixes that were added to this release.</p>
 <li>VisIt now has better support for reading Plot3D files of the 2D, ASCII, multi-grid variety.</li>
 <li>VisIt now presents all unusual characters in variable names as underscores <i>"_"</i> so the expression parser will no longer get confused when a variable in the file contains a reserved character.</li>
 <li>VisIt can now read Enzo files that are written with HDF5.</li>
+<li>VisIt's convert program has been renamed to <i>visitconvert</i> so it does not conflict with other software that may be installed on a computer. The <i>visitconvert</i> program now has a Tecplot writer so it can be used to convert any format read by VisIt into Tecplot files.</li>
 <li>It is now possible to set the time format string for the time slider annotation object.</li>
 <li>It is now possible for VisIt to generate a new lineout for plots when changing timesteps and have the new lineout join any old lineouts in a Curve window. The new options are available in the Global Lineout Options window, which can be opened by clicking on Controls->Lineout in the Main window's menu. The new options are available in the <i>Dynamic</i> lineout mode controls in the center of the window.</li>
 <li>When VisIt saves image files using the <i>family</i> toggle, which appends a number to the image file's base name, VisIt no longer clobbers files that are already in the directory to which files are being saved. </li>
+<li>VisIt can now read the TFT curve file format used at Sandia.</li>
 <li>Materials read from Boxlib files are now indexed starting at 1.</li>
 <li>VisIt's database plugin XML code generation tool now generates skeleton code that shows how to define default expressions in the database plugin.</li>
 <li>VisIt's Query window now correctly grays out the <i>Domain</i> option when query parameters are set using <i>Use Global Zone</i>.</li>
@@ -56,6 +58,8 @@ enhancements and bug-fixes that were added to this release.</p>
 <li>Reflecting a plot that was projected to 2D does not work.</li>
 <li>VisIt lies about saving an image to a specified directory.</li>
 <li>Visualization windows inexplicably go blank on Linux when using a certain graphics driver.</li>
+<li>The view is incorrect after restoring a session file whose plots were not realized.</li>
+<li>Closing a database prompts you to open an engine if you've closed the compute engine that processed the file to be closed.</li>
 <li>No warning is issued during a query involving global node ids when global node ids are not present.</li>
 <li>VisIt's viewer crashes when executing certain queries on the White machine. The crash, now corrected, was due to a flaw in some exception handling code.</li>
 <li>VisIt's Surface plot causes massive memory leaks in the viewer.</li>
@@ -83,6 +87,9 @@ enhancements and bug-fixes that were added to this release.</p>
 <li>Opening a new database can make existing plots fail during regeneration if the existing plots relied on a database expression that is not present in the new database.</li>
 <li>The plot variable menus can sometimes show database expressions from the wrong database.</li>
 <li>The SaveSession function in VisIt's Python interface can not resolve "~" in directory names.</li>
+<li>The <i>Save window</i> status message does not go away when a window cannot be saved in an object file format.</li>
+<li>The Lighting window resets the direction text field when changing light types.</li>
+<li>The Lighting window's brightness spin box does not work well when the plus/minus arrows are held down.</li>
 </ul>
 <p>Click the following link to view the release notes for the previous version
 of VisIt: <a href="relnotes1.4.1.html">VisIt 1.4.1 Release Notes</a>.</p>

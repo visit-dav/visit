@@ -67,12 +67,16 @@ void avtEnzoFileFormat::Grid::Print()
 //  Programmer:  Jeremy Meredith
 //  Creation:    January  3, 2005
 //
+//  Modifications:
+//    Jeremy Meredith, Wed Feb 23 15:18:48 PST 2005
+//    May have multiple root grids; identify by parentID==0, not by ID==1.
+//
 // ****************************************************************************
 void avtEnzoFileFormat::Grid::DetermineExtentsInParent(vector<Grid> &grids)
 {
-    Grid &p = grids[parentID];
-    if (ID != 1)
+    if (parentID != 0)
     {
+        Grid &p = grids[parentID];
         minLogicalExtentsInParent[0] = int(.5 + double(p.zdims[0]) * (minSpatialExtents[0] - p.minSpatialExtents[0])/(p.maxSpatialExtents[0] - p.minSpatialExtents[0]));
         minLogicalExtentsInParent[1] = int(.5 + double(p.zdims[1]) * (minSpatialExtents[1] - p.minSpatialExtents[1])/(p.maxSpatialExtents[1] - p.minSpatialExtents[1]));
         minLogicalExtentsInParent[2] = int(.5 + double(p.zdims[2]) * (minSpatialExtents[2] - p.minSpatialExtents[2])/(p.maxSpatialExtents[2] - p.minSpatialExtents[2]));
@@ -112,14 +116,18 @@ void avtEnzoFileFormat::Grid::DetermineExtentsInParent(vector<Grid> &grids)
 //  Programmer:  Jeremy Meredith
 //  Creation:    January  3, 2005
 //
+//  Modifications:
+//    Jeremy Meredith, Wed Feb 23 15:18:48 PST 2005
+//    May have multiple root grids; identify by parentID==0, not by ID==1.
+//
 // ****************************************************************************
 void
 avtEnzoFileFormat::Grid::DetermineExtentsGlobally(int numLevels,
                                                   vector<Grid> &grids)
 {
-    Grid &p = grids[parentID];
-    if (ID != 1)
+    if (parentID != 0)
     {
+        Grid &p = grids[parentID];
         minLogicalExtentsGlobally[0] = int((p.minLogicalExtentsGlobally[0] + minLogicalExtentsInParent[0])*refinementRatio[0]);
         minLogicalExtentsGlobally[1] = int((p.minLogicalExtentsGlobally[1] + minLogicalExtentsInParent[1])*refinementRatio[1]);
         minLogicalExtentsGlobally[2] = int((p.minLogicalExtentsGlobally[2] + minLogicalExtentsInParent[2])*refinementRatio[2]);
@@ -610,6 +618,9 @@ avtEnzoFileFormat::FreeUpResources(void)
 //    Hank Childs, Thu Jan 13 15:31:08 PST 2005
 //    Generate domain nesting object.
 //
+//    Jeremy Meredith, February 23, 2005
+//    May have more than one root-level grid.  Unify extents over all of them.
+//
 // ****************************************************************************
 
 void
@@ -628,12 +639,25 @@ avtEnzoFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     mesh->topologicalDimension = 3;
     mesh->spatialDimension = 3;
     mesh->hasSpatialExtents = true;
+
     mesh->minSpatialExtents[0] = grids[1].minSpatialExtents[0];
     mesh->minSpatialExtents[1] = grids[1].minSpatialExtents[1];
     mesh->minSpatialExtents[2] = grids[1].minSpatialExtents[2];
     mesh->maxSpatialExtents[0] = grids[1].maxSpatialExtents[0];
     mesh->maxSpatialExtents[1] = grids[1].maxSpatialExtents[1];
     mesh->maxSpatialExtents[2] = grids[1].maxSpatialExtents[2];
+    // now loop over all level zero grids
+    for (int g = 2 ; grids[g].parentID == 0 ; g++)
+    {
+        for (int j = 0 ; j < 3 ; j++)
+        {
+            if (grids[g].minSpatialExtents[j] < mesh->minSpatialExtents[j])
+                mesh->minSpatialExtents[j] = grids[g].minSpatialExtents[j];
+            if (grids[g].maxSpatialExtents[j] > mesh->maxSpatialExtents[j])
+                mesh->maxSpatialExtents[j] = grids[g].maxSpatialExtents[j];
+        }
+    }
+
     // spoof a group/domain mesh
     mesh->numBlocks = numGrids;
     mesh->blockTitle = "Grids";

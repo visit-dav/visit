@@ -67,6 +67,25 @@ using std::pair;
 //    Brad Whitlock, Wed Aug 4 17:33:08 PST 2004
 //    Changed EngineMap.
 //
+//    Brad Whitlock, Wed Feb 23 16:47:36 PST 2005
+//    Added ENGINE_PROXY_RPC_BEGIN_NOSTART that does not try to launch
+//    a compute engine before checking for its existence.
+
+#define ENGINE_PROXY_RPC_BEGIN_NOSTART(rpcname) \
+    bool retval = false; \
+    bool retry = false; \
+    int  numAttempts = 0; \
+    do \
+    { \
+        if (EngineExists(ek)) \
+        { \
+            TRY \
+            { \
+                EngineProxy *engine = engines[ek].proxy; \
+                debug3 << "Calling " << rpcname << " RPC on " \
+                       << ek.HostName().c_str() << "'s engine." << endl;
+
+
 #define ENGINE_PROXY_RPC_BEGIN(rpcname)  \
     bool retval = false; \
     bool retry = false; \
@@ -98,6 +117,7 @@ using std::pair;
                 EngineProxy *engine = engines[ek].proxy; \
                 debug3 << "Calling " << rpcname << " RPC on " \
                        << ek.HostName().c_str() << "'s engine." << endl;
+
 
 #define ENGINE_PROXY_RPC_END  \
                 retval = true; \
@@ -2195,13 +2215,17 @@ ViewerEngineManager::SetWinAnnotAtts(const EngineKey &ek,
 //    Jeremy Meredith, Fri Mar 26 16:59:59 PST 2004
 //    Use a map of engines based on a key, and be aware of simulations.
 //
+//    Brad Whitlock, Wed Feb 23 16:43:42 PST 2005
+//    I made it use a new macro that does not start an engine if none exists
+//    because a fresh engine would not need its cache cleared anyway.
+//
 // ****************************************************************************
 
 bool
 ViewerEngineManager::ClearCache(const EngineKey &ek,
                                 const char *dbName)
 {
-    ENGINE_PROXY_RPC_BEGIN("ClearCache");
+    ENGINE_PROXY_RPC_BEGIN_NOSTART("ClearCache");
     if (dbName == 0)
         engine->ClearCache();
     else
