@@ -158,6 +158,25 @@ avtSiloFileFormat::~avtSiloFileFormat()
     delete [] dbfiles;
 }
 
+// ****************************************************************************
+//  Method: avtSiloFileFormat::ActivateTimestep
+//
+//  Purpose: Provides a guarenteed collective entry point for operations
+//    that may involve collective parallel communication. Each of the GetMesh,
+//    GetVar, etc. calls in this file can, in turn, call OpenFile. However,
+//    if the file hasn't been opened with a previous call, here, those calls
+//    can lead to strange failures because not all processors make calls
+//    to GetMesh, GetVar, etc. All processors do call this method.
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   February 9, 2004 
+//
+// ****************************************************************************
+void
+avtSiloFileFormat::ActivateTimestep(void)
+{
+    OpenFile(tocIndex);
+}
 
 // ****************************************************************************
 //  Method: avtSiloFileFormat::OpenFile
@@ -3650,7 +3669,6 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
     int *cl = cellLocations->GetPointer(0);
 
     int currentIndex = 0;
-    int totalValuesUsed = 0;
     bool mustResize = false;
     for (i = 0 ; i < zl->nshapes ; i++)
     {
@@ -5587,8 +5605,6 @@ avtSiloFileFormat::PopulateIOInformation(avtIOInformation &ioInfo)
     // it is okay to be wrong if our assumption is not true.
     //
     string meshname = metadata->GetMesh(0)->name;
-
-    DBfile *dbfile  = OpenFile(tocIndex);
 
     DBmultimesh *mm = GetMultimesh("", meshname.c_str());
     if (mm == NULL)

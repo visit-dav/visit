@@ -75,6 +75,9 @@ typedef struct
 //    Hank Childs, Thu Aug 14 09:15:55 PDT 2003
 //    Remove vector defvars support (it is now handled correctly).
 //
+//    Mark C. Miller, Mon Feb  9 16:10:16 PST 2004
+//    Added interface method, ActivateTimestep
+//
 // ****************************************************************************
 
 class avtSiloFileFormat : public avtSTMDFileFormat
@@ -100,6 +103,8 @@ class avtSiloFileFormat : public avtSTMDFileFormat
 
     virtual void          PopulateDatabaseMetaData(avtDatabaseMetaData *);
     virtual void          PopulateIOInformation(avtIOInformation &);
+
+    void                  ActivateTimestep(void);
 
   protected:
     DBfile              **dbfiles;

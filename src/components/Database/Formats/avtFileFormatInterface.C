@@ -305,3 +305,25 @@ avtFileFormatInterface::CanCacheVariable(const char *var_name)
 
     return true;
 }
+
+// ****************************************************************************
+//  Method: avtFileFormatInterface::ActivateTimestep
+//
+//  Purpose: Provide a guarenteed collective entry point to a file format
+//  to prepare for a change in timestep
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   February 9, 2004 
+//
+// ****************************************************************************
+
+void
+avtFileFormatInterface::ActivateTimestep(void)
+{
+    int nFormats = GetNumberOfFileFormats();
+    for (int i = 0 ; i < nFormats ; i++)
+    {
+        avtFileFormat *ff = GetFormat(i);
+        ff->ActivateTimestep();
+    }
+}
