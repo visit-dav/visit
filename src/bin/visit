@@ -223,6 +223,10 @@ $0 = shift @ARGV;
 #    Akira Haddox, Tue Jul  1 12:56:14 PDT 2003
 #    Added the makemili tool.
 #
+#    Jeremy Meredith, Thu Jul  3 15:10:36 PDT 2003
+#    Added doc for "-nopty".  Made it stricter about when it will
+#    allow non-private plugin installs.
+#
 ###############################################################################
 
 
@@ -286,6 +290,7 @@ USAGE:  visit [arguments]
         -noint               Disable interruption capability
         -numrestarts <#>     Number of attempts to restart a failed engine
                                 (default is 2)
+        -nopty               Run without PTYs.
 
     Window arguments:
         -small               Use a smaller desktop area/window size
@@ -649,8 +654,9 @@ if ($exe_name eq "engine")
     }
 }
 
-# If a directory was specified or the executable exists in a first-level bin
-# directory, then don't bother looking for versions to use.
+# If the executable exists in a first-level "bin" directory,
+# then don't bother looking for versions to use; this is a
+# development executable.
 if (-e "$visitdir/bin/$exe_name" ||
     -e "$visitdir/bin/mdserver")
 {
@@ -675,6 +681,7 @@ if (-e "$visitdir/bin/$exe_name" ||
 }
 else
 {
+    # We're running a public version.
     @exe = <$visitdir/*/$archdir/bin/$exe_name>;
     @exeversions = map {m|^$visitdir/(.*?)/|; $_ = $1;} @exe;
     $current_version = readlink("$visitdir/current");
@@ -803,17 +810,16 @@ elsif (!grep /$visitprivateplugins/, $ENV{VISITPLUGINDIR})
 }
 
 
-# If we are using a public version and any public plugin directory is
+# If we are using a public version, or if any main plugin directory is
 # not writeable, then we should default to a private plugin installation.
 $ENV{VISITPLUGININSTPUB}="$visitplugins";
 $ENV{VISITPLUGININSTPRI}="$visitprivateplugins";
 
-$shouldinstallprivate = 0;
+$shouldinstallprivate = $publicversion;
 foreach (@plugincategories)
 {
     $shouldinstallprivate=1  if (! -w "$visitplugins/$_");
 }
-$shouldinstallprivate &= $publicversion;
 
 if ($shouldinstallprivate)
 {

@@ -3,6 +3,7 @@
 #include <state_exports.h>
 #include <stdio.h>
 #include <DataNode.h>
+#include <string>
 
 // ****************************************************************************
 // Class: ConfigManager
@@ -21,6 +22,9 @@
 //
 //   Brad Whitlock, Tue Feb 19 12:29:17 PDT 2002
 //   Added a method to get the name of the system config file.
+//
+//   Brad Whitlock, Thu Jul 3 16:14:04 PST 2003
+//   Rewrote the methods that read in the file.
 //
 // ****************************************************************************
 
@@ -43,18 +47,18 @@ protected:
     void WriteBack(DataNode *root);
 
     // Functions to read in the tree.
-    void ReadObject(DataNode *);
+    bool ReadObject(DataNode *);
+    bool ReadObjectHelper(DataNode *, bool &);
     char ReadChar();
     void PutBackChar(char c);
-    void ReadField(DataNode *);
-    DataNode *ReadFieldData(const char *, NodeTypeEnum, int);
     void FinishTag();
-    int  ReadLength();
-    NodeTypeEnum ReadType();
-    void ReadName(char *);
-    int  ReadTag();
-    char **ReadStringList(int *length);
-    void FreeStringList(char **strlist, int len);
+    bool ReadField(DataNode *parentNode, const std::string &tagName,
+                   NodeTypeEnum tagType, int tagLength);
+    DataNode *ReadFieldData(const std::string &tagName, NodeTypeEnum tagType,
+                            int tagLength);
+    bool ReadTag(std::string &tagName, NodeTypeEnum &tagType,
+                   int &tagLength, bool &tagIsReturnTag);
+    stringVector ReadStringVector(char termChar);
 
     // File attributes used in reading.
     bool  putback;

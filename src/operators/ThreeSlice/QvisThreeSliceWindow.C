@@ -28,7 +28,7 @@ using std::string;
 //   Constructor
 //
 // Programmer: xml2window
-// Creation:   Mon Jun 9 13:18:31 PST 2003
+// Creation:   Wed Jul 2 15:36:50 PST 2003
 //
 // Modifications:
 //   
@@ -52,7 +52,7 @@ QvisThreeSliceWindow::QvisThreeSliceWindow(const int type,
 //   Destructor
 //
 // Programmer: xml2window
-// Creation:   Mon Jun 9 13:18:31 PST 2003
+// Creation:   Wed Jul 2 15:36:50 PST 2003
 //
 // Modifications:
 //   
@@ -70,7 +70,7 @@ QvisThreeSliceWindow::~QvisThreeSliceWindow()
 //   Creates the widgets for the window.
 //
 // Programmer: xml2window
-// Creation:   Mon Jun 9 13:18:31 PST 2003
+// Creation:   Wed Jul 2 15:36:50 PST 2003
 //
 // Modifications:
 //   
@@ -79,7 +79,7 @@ QvisThreeSliceWindow::~QvisThreeSliceWindow()
 void
 QvisThreeSliceWindow::CreateWindowContents()
 {
-    QGridLayout *mainLayout = new QGridLayout(topLayout, 3,2,  10, "mainLayout");
+    QGridLayout *mainLayout = new QGridLayout(topLayout, 4,2,  10, "mainLayout");
 
 
     mainLayout->addWidget(new QLabel("x", central, "xLabel"),0,0);
@@ -100,6 +100,11 @@ QvisThreeSliceWindow::CreateWindowContents()
             this, SLOT(zProcessText()));
     mainLayout->addWidget(z, 2,1);
 
+    interactive = new QCheckBox("Interactive", central, "interactive");
+    connect(interactive, SIGNAL(toggled(bool)),
+            this, SLOT(interactiveChanged(bool)));
+    mainLayout->addWidget(interactive, 3,0);
+
 }
 
 
@@ -110,7 +115,7 @@ QvisThreeSliceWindow::CreateWindowContents()
 //   Updates the widgets in the window when the subject changes.
 //
 // Programmer: xml2window
-// Creation:   Mon Jun 9 13:18:31 PST 2003
+// Creation:   Wed Jul 2 15:36:50 PST 2003
 //
 // Modifications:
 //   
@@ -153,6 +158,9 @@ QvisThreeSliceWindow::UpdateWindow(bool doAll)
             temp.sprintf("%g", atts->GetZ());
             z->setText(temp);
             break;
+          case 3: //interactive
+            interactive->setChecked(atts->GetInteractive());
+            break;
         }
     }
 }
@@ -165,7 +173,7 @@ QvisThreeSliceWindow::UpdateWindow(bool doAll)
 //   Gets values from certain widgets and stores them in the subject.
 //
 // Programmer: xml2window
-// Creation:   Mon Jun 9 13:18:31 PST 2003
+// Creation:   Wed Jul 2 15:36:50 PST 2003
 //
 // Modifications:
 //   
@@ -240,6 +248,12 @@ QvisThreeSliceWindow::GetCurrentValues(int which_widget)
         }
     }
 
+    // Do interactive
+    if(which_widget == 3 || doAll)
+    {
+        // Nothing for interactive
+    }
+
 }
 
 
@@ -268,6 +282,14 @@ void
 QvisThreeSliceWindow::zProcessText()
 {
     GetCurrentValues(2);
+    Apply();
+}
+
+
+void
+QvisThreeSliceWindow::interactiveChanged(bool val)
+{
+    atts->SetInteractive(val);
     Apply();
 }
 

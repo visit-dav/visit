@@ -6,6 +6,7 @@
 #include <vector>
 #include <vectortypes.h>
 
+class DataNode;
 class ViewerActionBase;
 class ViewerWindow;
 class ViewerWindowManagerAttributes;
@@ -27,6 +28,9 @@ typedef ViewerRPC::ViewerRPCType ActionIndex;
 // Modifications:
 //   Brad Whitlock, Tue Feb 25 10:24:00 PDT 2003
 //   I added the UpdateActionConstruction method.
+//
+//   Brad Whitlock, Mon Jun 30 13:35:21 PST 2003
+//   I added CreateNode and SetFromNode.
 //
 // ****************************************************************************
 
@@ -65,6 +69,9 @@ public:
     bool GetActionGroupEnabled(int index) const;
     bool GetActionGroupHasToolbar(int index) const;
     stringVector GetActionGroupNames(bool=true) const;
+
+    void CreateNode(DataNode *parentNode);
+    void SetFromNode(DataNode *parentNode);
 private:
     ViewerActionBase *GetAction(ActionIndex) const;
     int         GetNumberOfActionGroupMemberships(ActionIndex index) const;

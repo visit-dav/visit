@@ -63,6 +63,9 @@ class Connection;
 //    Brad Whitlock, Mon May 5 13:24:47 PST 2003
 //    I refactored the code a little to simplify handling of command lines.
 //
+//    Jeremy Meredith, Thu Jul  3 14:49:23 PDT 2003
+//    Added ability to disable ptys.
+//
 // ****************************************************************************
 
 class COMM_API RemoteProcess
@@ -83,6 +86,7 @@ public:
     void SetProgressCallback(bool (*)(void *, int), void *);
 
     static void SetAuthenticationCallback(void (*)(const char *, const char *, int));    
+    static void DisablePTY();
 protected:
     bool StartMakingConnection(const std::string &rHost, int numRead,
                                int numWrite);
@@ -121,6 +125,7 @@ private:
     void                    *progressCallbackData;
 
     static void            (*getAuthentication)(const char *, const char *, int);
+    static bool              disablePTY;
 };
 
 #endif

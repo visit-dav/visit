@@ -208,6 +208,9 @@ using std::string;
 //    Brad Whitlock, Fri May 16 14:53:17 PST 2003
 //    I added support for named config files.
 //
+//    Brad Whitlock, Mon Jun 30 12:30:18 PDT 2003
+//    I passed this pointer to ViewerConfigManager's constructor.
+//
 // ****************************************************************************
 
 ViewerSubject::ViewerSubject(int *argc, char ***argv) : borders(), shift(),
@@ -263,7 +266,7 @@ ViewerSubject::ViewerSubject(int *argc, char ***argv) : borders(), shift(),
     // Read the config file and setup the appearance attributes. Note that
     // we call the routine to process the config file settings here because
     // it only has to update the appearance attributes.
-    configMgr = new ViewerConfigManager;
+    configMgr = new ViewerConfigManager(this);
     char *configFile = configMgr->GetSystemConfigFile();
     if (noconfig)
         systemSettings = NULL;
@@ -676,6 +679,10 @@ ViewerSubject::~ViewerSubject()
 //    Kathleen Bonnell, Tue Jul  1 09:21:57 PDT 2003 
 //    Changed 'GetPickAtts' to 'GetPickClientAtts'.
 //
+//    Brad Whitlock, Wed Jul 2 12:27:25 PDT 2003
+//    Added code to let other objects in the viewer process their new
+//    config settings.
+//
 // ****************************************************************************
 
 void
@@ -827,7 +834,10 @@ ViewerSubject::Connect(int *argc, char ***argv)
     configMgr->ProcessConfigSettings(localSettings);
     configMgr->Notify();
     delete systemSettings; systemSettings = 0;
-    delete localSettings;  localSettings = 0;
+
+    // Let other viewer objects set their properties from the local settings.
+    if(localSettings)
+        QTimer::singleShot(300, this, SLOT(DelayedProcessSettings()));
 
     // Add the appearanceAtts *after* the config settings have been read. This
     // prevents overwriting the attributes and sending them to the client.
@@ -954,6 +964,45 @@ ViewerSubject::Execute()
     ENDTRY
 
     return retval;
+}
+
+// ****************************************************************************
+// Method: ViewerSubject::DelayedProcessSettings
+//
+// Purpose: 
+//   Lets the various viewer objects from ViewerSubject on down process
+//   settings using the localSettings DataNode.
+//
+// Note:       This is a Qt slot function that is called once the program
+//             enters the event loop.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jul 2 12:24:07 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerSubject::DelayedProcessSettings()
+{
+    if(localSettings != 0)
+    {
+        // Get the VisIt node.
+        DataNode *visitRoot = localSettings->GetNode("VisIt");
+        if(visitRoot == 0)
+            return;
+ 
+        // Get the viewer node.
+        DataNode *viewerNode = visitRoot->GetNode("VIEWER");
+        if(viewerNode == 0)
+            return;
+
+        // Try and set up everything from within the event loop.
+        SetFromNode(viewerNode);
+
+        delete localSettings;  localSettings = 0;
+    }
 }
 
 // ****************************************************************************
@@ -1393,6 +1442,11 @@ ViewerSubject::ProcessCommandLine1(int *argc, char ***argv)
 //    Jeremy Meredith, Thu Jun 26 10:52:32 PDT 2003
 //    Renamed ViewerEngineChooser to ViewerRemoteProcessChooser.
 //
+//    Jeremy Meredith, Thu Jul  3 15:00:10 PDT 2003
+//    Added -nopty to disable PTYs.  Added this functionality implicitly
+//    to -nowin mode as well, as we use PTYs to capture text for windowing
+//    but with -nowin we cannot open windows.
+//
 // ****************************************************************************
 
 void
@@ -1555,7 +1609,12 @@ ViewerSubject::ProcessCommandLine2(int *argc, char ***argv)
             ViewerWindow::SetNoWinMode(true);
             ViewerRemoteProcessChooser::SetNoWinMode(true);
             avtCallback::SetNowinMode(true);
+            RemoteProcess::DisablePTY();
             nowin = true;
+        }
+        else if (strcmp(argv2[i], "-nopty") == 0)
+        {
+            RemoteProcess::DisablePTY();
         }
         else if (strcmp(argv2[i], "-stereo") == 0)
         {
@@ -1884,6 +1943,64 @@ ViewerSubject::ClearStatus(const char *sender)
     statusAtts->SetCurrentStageName("");
     statusAtts->SetMaxStage(0);
     statusAtts->Notify();
+}
+
+// ****************************************************************************
+// Method: ViewerSubject::CreateNode
+//
+// Purpose: 
+//   Saves the viewer's state to a DataNode object.
+//
+// Arguments:
+//   parentNode : The node to which the state is added.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Jun 30 12:32:00 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerSubject::CreateNode(DataNode *parentNode)
+{
+    if(parentNode == 0)
+        return;
+
+    DataNode *vsNode = new DataNode("ViewerSubject");
+    parentNode->AddNode(vsNode);
+
+    ViewerWindowManager::Instance()->CreateNode(vsNode);
+}
+
+// ****************************************************************************
+// Method: ViewerSubject::SetFromNode
+//
+// Purpose: 
+//   Sets the viewer's state from a DataNode object.
+//
+// Arguments:
+//   parentNode : The DataNode object to use to set the state.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Jun 30 12:36:00 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerSubject::SetFromNode(DataNode *parentNode)
+{
+    if(parentNode == 0)
+        return;
+
+    DataNode *searchNode = parentNode->GetNode("ViewerSubject");
+    if(searchNode == 0)
+        return;
+
+    // Let the other objects set themselves up using data from searchNode.
+    ViewerWindowManager::Instance()->SetFromNode(searchNode);
 }
 
 // ****************************************************************************

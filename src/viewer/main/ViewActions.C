@@ -11,6 +11,9 @@
 #include <avtView2D.h>
 #include <avtView3D.h>
 
+#include <DataNode.h>
+#include <DebugStream.h>
+
 #include <qaction.h>
 #include <qapplication.h>
 #include <qiconset.h>
@@ -194,6 +197,7 @@ ToggleFullFrameAction::Toggled() const
 
 ///////////////////////////////////////////////////////////////////////////////
 
+const int SaveViewAction::MAX_SAVED_VIEWS = 15;
 const int SaveViewAction::VIEWCurve = 1;
 const int SaveViewAction::VIEW2D = 2;
 const int SaveViewAction::VIEW3D = 3;
@@ -370,80 +374,47 @@ SaveViewAction::Execute(int val)
 // Creation:   Thu Feb 27 15:13:47 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Jul 1 14:50:11 PST 2003
+//   I moved some code into AddNewView.
+//
 // ****************************************************************************
 
 void
 SaveViewAction::SaveCurrentView()
 {
-    if(views.size() < 15)
+    if(views.size() < MAX_SAVED_VIEWS)
     {
-        //
-        // Save the view.
-        //
+        void *saveView;
+        int vt;
+
+        // Create storage for the view based on the window type and dimension.
         if(window->GetTypeIsCurve())
         {
             avtViewCurve *v = new avtViewCurve;
             *v = window->GetViewCurve();
-    
-            ViewInfo tmp;
-            tmp.viewType = VIEWCurve;
-            tmp.view = (void *)v;
-            views.push_back(tmp);
+            vt = VIEWCurve;
+            saveView = (void *)v;
         }
         else if(window->GetViewDimension() == 3)
         {
             avtView3D *v = new avtView3D;
             *v = window->GetView3D();
-    
-            ViewInfo tmp;
-            tmp.viewType = VIEW3D;
-            tmp.view = (void *)v;
-            views.push_back(tmp);
+            vt = VIEW3D;
+            saveView = (void *)v;
         }
         else
         {
             avtView2D *v = new avtView2D;
             *v = window->GetView2D();
-    
-            ViewInfo tmp;
-            tmp.viewType = VIEW2D;
-            tmp.view = (void *)v;
-            views.push_back(tmp);
-        }
- 
-        //
-        // Add the view to the action so that it is available in the toolbar.
-        //
-        char tmp[20];
-        SNPRINTF(tmp, 20, "Use saved view %d", views.size());
-
-        if (!window->GetNoWinMode())
-        {
-            //
-            // Create a pixmap from the blank camera pixmap that we can
-            // draw on.
-            //
-            QPixmap icon(blankcamera_xpm);
-            QPainter paint(&icon);
-            QString str;
-            str.sprintf("%d", views.size());
-            paint.setPen(QColor(0,255,0));
-            QFont f(QApplication::font());
-            f.setBold(true);
-            f.setPixelSize(28);
-            paint.setFont(f);
-            int x = icon.width();
-            int y = icon.height();
-            paint.drawText(icon.width() - x, 0, x, y, Qt::AlignCenter, str);
-
-            AddChoice(tmp, tmp, icon);
-        }
-        else
-        {
-            AddChoice(tmp);
+            vt = VIEW2D;
+            saveView = (void *)v;
         }
 
+        // Add the new view to the list of saved views and make a new
+        // icon as necessary.
+        AddNewView(saveView, vt);
+
+        // Update the menus and the toolbar.
         UpdateConstruction();
     }
     else
@@ -451,6 +422,68 @@ SaveViewAction::SaveCurrentView()
         // We only have this limit because I made ViewerMultipleActions
         // capable of containing a finite number of actions.
         Warning("You cannot save more than 15 views.");
+    }
+}
+
+// ****************************************************************************
+// Method: SaveViewAction::AddNewView
+//
+// Purpose: 
+//   Saves the view in the views vector and creates a new choice for the user
+//   in the menus.
+//
+// Arguments:
+//   v  : A void pointer to the view.
+//   vt : The type of view.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jul 1 14:51:22 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+SaveViewAction::AddNewView(void *v, int vt)
+{
+    //
+    // Save the view.
+    //
+    ViewInfo info;
+    info.view = (void *)v;
+    info.viewType = vt;
+    views.push_back(info);
+
+    //
+    // Add the view to the action so that it is available in the toolbar.
+    //
+    char tmp[20];
+    SNPRINTF(tmp, 20, "Use saved view %d", views.size());
+
+    if (!window->GetNoWinMode())
+    {
+        //
+        // Create a pixmap from the blank camera pixmap that we can
+        // draw on.
+        //
+        QPixmap icon(blankcamera_xpm);
+        QPainter paint(&icon);
+        QString str;
+        str.sprintf("%d", views.size());
+        paint.setPen(QColor(0,255,0));
+        QFont f(QApplication::font());
+        f.setBold(true);
+        f.setPixelSize(28);
+        paint.setFont(f);
+        int x = icon.width();
+        int y = icon.height();
+        paint.drawText(icon.width() - x, 0, x, y, Qt::AlignCenter, str);
+
+        AddChoice(tmp, tmp, icon);
+    }
+    else
+    {
+        AddChoice(tmp);
     }
 }
 
@@ -572,4 +605,152 @@ SaveViewAction::ChoiceEnabled(int i) const
         retval = (views.size() < 15);
 
     return retval;
+}
+
+// ****************************************************************************
+// Method: SaveViewAction::CreateNode
+//
+// Purpose: 
+//   Lets the action save its views for use in a future session.
+//
+// Arguments:
+//   parentNode : The node to which we're adding.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jul 1 14:26:23 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+SaveViewAction::CreateNode(DataNode *parentNode)
+{
+    if(parentNode == 0)
+        return false;
+
+    DataNode *saveviewNode = new DataNode("SaveViewAction");
+    bool haveViews = false;
+
+    // Add a node for each view that is not the default view.
+    intVector viewTypes;
+    for(int i = 0; i < views.size(); ++i)
+    {
+        ViewAttributes viewAtts;
+
+        if(views[i].viewType == VIEWCurve)
+        {
+            avtViewCurve *v = (avtViewCurve *)views[i].view;
+            v->SetToViewAttributes(&viewAtts);
+        }
+        else if(views[i].viewType == VIEW2D)
+        {
+            avtView2D *v = (avtView2D *)views[i].view;
+            v->SetToViewAttributes(&viewAtts);
+        }
+        else if(views[i].viewType == VIEW3D)
+        {
+            avtView3D *v = (avtView3D *)views[i].view;
+            v->SetToViewAttributes(&viewAtts);
+        }
+
+        if(viewAtts.CreateNode(saveviewNode, false))
+        {
+            haveViews = true;
+            viewTypes.push_back(views[i].viewType);
+        }
+    }
+
+    if(haveViews)
+    {
+        saveviewNode->AddNode(new DataNode("viewTypes", viewTypes));
+        parentNode->AddNode(saveviewNode);
+    }
+    else
+        delete saveviewNode;
+
+    return haveViews;
+}
+
+// ****************************************************************************
+// Method: SaveViewAction::SetFromNode
+//
+// Purpose: 
+//   Reads in the saved views from the config.
+//
+// Arguments:
+//   parentNode : The node that we're looking at for the config.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jul 1 14:58:58 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+SaveViewAction::SetFromNode(DataNode *parentNode)
+{
+    if(parentNode == 0)
+        return;
+
+    DataNode *saveviewNode = parentNode->GetNode("SaveViewAction");
+    if(saveviewNode == 0)
+        return;
+
+    DataNode *viewTypesNode = saveviewNode->GetNode("viewTypes");
+    if(viewTypesNode == 0)
+        return;
+
+    const intVector &viewTypes = viewTypesNode->AsIntVector();
+    DataNode **views = saveviewNode->GetChildren();
+    int index = 0;
+    bool addedViews = false;
+    for(int i = 0; i < saveviewNode->GetNumChildren(); ++i)
+    {
+        if(views[i]->GetKey() == "ViewAttributes")
+        {
+            // Read the view from the config node.
+            ViewAttributes viewAtts;
+            viewAtts.SetFromNode(views[i]);
+
+            // Use the information to create the appropriate view type.
+            void *viewPtr = 0;
+            if(viewTypes[index] == VIEWCurve)
+            {
+                avtViewCurve *v = new avtViewCurve;
+                v->SetFromViewAttributes(&viewAtts);
+                viewPtr = (void *)v;
+            }
+            else if(viewTypes[index] == VIEW2D)
+            {
+                avtView2D *v = new avtView2D;
+                v->SetFromViewAttributes(&viewAtts);
+                viewPtr = (void *)v;
+            }
+            else if(viewTypes[index] == VIEW3D)
+            {
+                avtView3D *v = new avtView3D;
+                v->SetFromViewAttributes(&viewAtts);
+                viewPtr = (void *)v;
+            }
+
+            // If we created a new view, add it to the saved views.
+            if(viewPtr)
+            {
+                AddNewView(viewPtr, viewTypes[index]);
+                addedViews = true;
+            }
+
+            ++index;
+        }
+    }
+
+    // If we added some views, update the menus.
+    if(addedViews)
+        UpdateConstruction();
 }

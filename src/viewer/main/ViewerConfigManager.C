@@ -3,6 +3,7 @@
 
 // For the state objects we're going to save out/read in.
 #include <AttributeSubject.h>
+#include <ViewerSubject.h>
 
 // ****************************************************************************
 //  Method: ViewerConfigManager::ViewerConfigManager
@@ -27,10 +28,14 @@
 //    Brad Whitlock, Tue Feb 19 13:06:06 PST 2002
 //    Removed the configSettings member.
 //
+//    Brad Whitlock, Mon Jun 30 12:25:34 PDT 2003
+//    I made it require a pointer to its parent ViewerSubject.
+//
 // ****************************************************************************
 
-ViewerConfigManager::ViewerConfigManager() : ConfigManager()
+ViewerConfigManager::ViewerConfigManager(ViewerSubject *vs) : ConfigManager()
 {
+    parent = vs;
 }
 
 // ****************************************************************************
@@ -90,6 +95,9 @@ ViewerConfigManager::~ViewerConfigManager()
 //    Brad Whitlock, Tue May 20 14:05:32 PST 2003
 //    I added a flag to CreateNode.
 //
+//    Brad Whitlock, Mon Jun 30 12:26:41 PDT 2003
+//    I let the parent ViewerSubject add its data to the data node.
+//
 // ****************************************************************************
 
 void
@@ -113,6 +121,9 @@ ViewerConfigManager::WriteConfigFile(const char *filename)
     {
         (*pos)->CreateNode(viewerNode, false);
     }
+
+    // Let the parent write its data.
+    parent->CreateNode(viewerNode);
 
     // Try to open the output file.
     if((fp = fopen(filename, "wb")) == 0)

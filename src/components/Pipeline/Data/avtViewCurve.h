@@ -7,6 +7,7 @@
 #include <pipeline_exports.h>
 
 struct avtViewInfo;
+class ViewAttributes;
 
 // ****************************************************************************
 //  Class: avtViewCurve
@@ -33,6 +34,9 @@ struct PIPELINE_API avtViewCurve
     void            SetViewFromViewInfo(const avtViewInfo &);
     void            SetViewInfoFromView(avtViewInfo &) const;
     void            SetViewportFromView(double *, const int, const int) const;
+
+    void            SetFromViewAttributes(const ViewAttributes *);
+    void            SetToViewAttributes(ViewAttributes *) const;
 };
 
 

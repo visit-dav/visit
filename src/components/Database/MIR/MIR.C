@@ -75,19 +75,20 @@ static FaceHash* CreateFaceHash(MIR::MIRConnectivity &, int,
 static EdgeHash* CreateEdgeHash(MIR::MIRConnectivity &, int,
                                 unsigned int (*)(Edge&));
 static ZoneCleanList *CreateZoneCleanList(MIR::MIRConnectivity &, int,
-                                    avtMaterial *, int, NodeList*, int&, int&);
+                              avtMaterial *, int, int*, NodeList*, int&, int&);
 
-static void      SubsampleVFsAndCreateNodeList(MIR::MIRConnectivity &, int,
-                                 avtMaterial*, NodeList*&,FaceHash*,EdgeHash*);
-static void      ExtractCellVFs(int, int, const int *, int, int, float *,
+static void SubsampleVFsAndCreateNodeList(MIR::MIRConnectivity &, int,
+                              avtMaterial*,int*,NodeList*,FaceHash*,EdgeHash*);
+static void ExtractCellVFs(int, int, const int *, int, int, float *,
                                 NodeList*, FaceHash*, EdgeHash*,
                                 vector<float>&,
                                 vector<float>*,
                                 vector<float>*,
                                 vector<float>*);
-static void      SetUpCoords(vtkDataSet *, vector<MIR::ReconstructedCoord> &);
-static void      AddFaces(int, const int *, FaceHash *, int);
-static void      AddEdges(int, const int *, EdgeHash *, int);
+static void SetUpCoords(vtkDataSet *, vector<MIR::ReconstructedCoord> &);
+static void AddFaces(int, const int *, FaceHash *, int, int=0, int* =NULL, float* =NULL);
+static void AddEdges(int, const int *, EdgeHash *, int, int=0, int* =NULL, float* =NULL);
+static void AddNodes(int, const int *, NodeList *, int, int=0, int* =NULL, float* =NULL);
 
 // ----------------------------------------------------------------------------
 //                             Class Methods
@@ -570,6 +571,13 @@ MIR::Destruct(void *p)
 //    Jeremy Meredith, Fri Jun 13 16:56:43 PDT 2003
 //    Added clean zones only.
 //
+//    Jeremy Meredith, Wed Jul  2 17:16:52 PDT 2003
+//    Made it extract the max material count for each zone (i.e. real+fake)
+//    and use it in the "is really clean" determination.  The reason is that
+//    even if one material is dominant at all nodes of a "clean" cell, the
+//    cell may still need to be split in many cases where there are more than
+//    three materials in an adjacent zone.
+//
 // ****************************************************************************
 bool
 MIR::Reconstruct3DMesh(vtkDataSet *mesh, avtMaterial *mat_orig)
@@ -656,18 +664,20 @@ MIR::Reconstruct3DMesh(vtkDataSet *mesh, avtMaterial *mat_orig)
     }
 
     // extract zonal v.f.s to nodes, faces, edges
-    // and create the nodes' zonecnt/vf list
-    NodeList      *node_list = NULL;
+    // create the nodes' zonecnt/vf list
+    // get the (max) material count for each zone, including faked ones
+    int           *mat_cnt   = new int[nCells];
+    NodeList      *node_list = new NodeList(nPoints, ZoneCntAndVF(0,nmat));
     int timerHandle4 = visitTimer->StartTimer();
-    SubsampleVFsAndCreateNodeList(conn, nPoints, mat, node_list, face_hash, 
-                                  edge_hash);
+    SubsampleVFsAndCreateNodeList(conn, nPoints, mat, mat_cnt,
+                                  node_list, face_hash, edge_hash);
     visitTimer->StopTimer(timerHandle4, "MIR: Subsampling VFs and creating node list");
 
     // count whether each zone is *truly* clean
     int timerHandle5 = visitTimer->StartTimer();
     ZoneCleanList *real_clean_zones = NULL;
-    real_clean_zones = CreateZoneCleanList(conn, nPoints, mat, nmat, node_list,
-                                           nrealclean, nrealmixed);
+    real_clean_zones = CreateZoneCleanList(conn, nPoints, mat, nmat, mat_cnt,
+                                           node_list, nrealclean, nrealmixed);
     visitTimer->StopTimer(timerHandle5, "MIR: Creating zone clean list");
 
     // create the grid for the coordinate hash table
@@ -748,6 +758,7 @@ MIR::Reconstruct3DMesh(vtkDataSet *mesh, avtMaterial *mat_orig)
     node_list->clear();
     delete   node_list;
     delete   mat;
+    delete[] mat_cnt;
 
     visitTimer->StopTimer(timerHandle, "MIR: Reconstructing mixed mesh");
     visitTimer->DumpTimings();
@@ -838,6 +849,13 @@ MIR::Reconstruct3DMesh(vtkDataSet *mesh, avtMaterial *mat_orig)
 //    Jeremy Meredith, Fri Jun 13 16:56:43 PDT 2003
 //    Added clean zones only.
 //
+//    Jeremy Meredith, Wed Jul  2 17:18:10 PDT 2003
+//    Made it extract the max material count for each zone (i.e. real+fake)
+//    and use it in the "is really clean" determination.  The reason is that
+//    even if one material is dominant at all nodes of a "clean" cell, the
+//    cell may still need to be split in many cases where there are more than
+//    three materials in an adjacent zone.
+//
 // ****************************************************************************
 bool
 MIR::Reconstruct2DMesh(vtkDataSet *mesh, avtMaterial *mat_orig)
@@ -914,18 +932,20 @@ MIR::Reconstruct2DMesh(vtkDataSet *mesh, avtMaterial *mat_orig)
     }
 
     // extract zonal v.f.s to nodes, faces, edges
-    // and create the nodes' zonecnt/vf list
-    NodeList      *node_list = NULL;
+    // create the nodes' zonecnt/vf list
+    // get the (max) material count for each zone, including faked ones
+    int           *mat_cnt   = new int[nCells];
+    NodeList      *node_list = new NodeList(nPoints, ZoneCntAndVF(0,nmat));
     int timerHandle4 = visitTimer->StartTimer();
-    SubsampleVFsAndCreateNodeList(conn, nPoints, mat, node_list, NULL,
-                                  edge_hash);
+    SubsampleVFsAndCreateNodeList(conn, nPoints, mat, mat_cnt,
+                                  node_list, NULL, edge_hash);
     visitTimer->StopTimer(timerHandle4, "MIR: Subsampling VFs and creating node list");
 
     // count whether each zone is *truly* clean
     int timerHandle5 = visitTimer->StartTimer();
     ZoneCleanList *real_clean_zones = NULL;
-    real_clean_zones = CreateZoneCleanList(conn, nPoints, mat, nmat, node_list,
-                                           nrealclean, nrealmixed);
+    real_clean_zones = CreateZoneCleanList(conn, nPoints, mat, nmat, mat_cnt,
+                                           node_list, nrealclean, nrealmixed);
     visitTimer->StopTimer(timerHandle5, "MIR: Creating zone clean list");
 
     // create the grid for the coordinate hash table
@@ -1000,6 +1020,7 @@ MIR::Reconstruct2DMesh(vtkDataSet *mesh, avtMaterial *mat_orig)
     node_list->clear();
     delete   node_list;
     delete   mat;
+    delete[] mat_cnt;
 
     visitTimer->StopTimer(timerHandle, "MIR: Reconstructing mixed mesh");
     visitTimer->DumpTimings();
@@ -2810,15 +2831,27 @@ CreateFaceHash(MIR::MIRConnectivity &conn, int nmat,
 //
 //  Arguments:
 //      celltype    The type of the cell as a VTK enumerated type.
-//      c_ptr       The connectivity list for the cell.
+//      cellids     The connectivity list for the cell.
 //      face_hash   The hash to add the faces to.
+//      nmat        The max number of materials
+//      nRealMat    The number of materials that exist in this cell
+//      materials   The material numbers that exist in this cell
+//      vf          The volume fractions of the mats that exist in this cell
+//
+//  Notes:  This routine assumes that the face hash is populated for
+//          the first time before volume fractions are being subsampled.
 //
 //  Programmer:  Hank Childs
 //  Creation:    October 7, 2002
 //
+//  Modifications:
+//    Jeremy Meredith, Wed Dec 18 12:17:30 PST 2002
+//    Added subsampling of volume fractions and fixed some assumptions.
+//
 // ****************************************************************************
 static void
-AddFaces(int celltype, const int *c_ptr, FaceHash *face_hash, int nmat)
+AddFaces(int celltype, const int *cellids, FaceHash *face_hash, int nmat,
+         int nRealMat, int *materials, float *vf)
 {
     static int hexfaces[6][4] = { {0,4,7,3}, {1,2,6,5}, {0,1,5,4}, {3,7,6,2},
                            {0,3,2,1}, {4,5,6,7} };
@@ -2859,27 +2892,55 @@ AddFaces(int celltype, const int *c_ptr, FaceHash *face_hash, int nmat)
     int ids[4];
     for (f=0; f<ntrifaces; f++)
     {
-        ids[0] = c_ptr[trifaces[f][0]];
-        ids[1] = c_ptr[trifaces[f][1]];
-        ids[2] = c_ptr[trifaces[f][2]];
+        ids[0] = cellids[trifaces[f][0]];
+        ids[1] = cellids[trifaces[f][1]];
+        ids[2] = cellids[trifaces[f][2]];
         Face face(3, ids);
         if (face_hash->Find(face))
-            face_hash->Get().zonecnt++;
+        {
+            ZoneCntAndVF &F = face_hash->Get();
+            F.zonecnt++;
+            for (int m=0; m<nRealMat; m++)
+            {
+                F.vf[materials[m]] += vf[m];
+            }
+        }
         else
-            face_hash->Insert(ZoneCntAndVF(1,nmat));
+        {
+            ZoneCntAndVF F(1,nmat);
+            for (int m=0; m<nRealMat; m++)
+            {
+                F.vf[materials[m]] = vf[m];
+            }
+            face_hash->Insert(F);
+        }
     }
 
     for (f=0; f<nquadfaces; f++)
     {
-        ids[0] = c_ptr[quadfaces[f][0]];
-        ids[1] = c_ptr[quadfaces[f][1]];
-        ids[2] = c_ptr[quadfaces[f][2]];
-        ids[3] = c_ptr[quadfaces[f][3]];
+        ids[0] = cellids[quadfaces[f][0]];
+        ids[1] = cellids[quadfaces[f][1]];
+        ids[2] = cellids[quadfaces[f][2]];
+        ids[3] = cellids[quadfaces[f][3]];
         Face face(4, ids);
         if (face_hash->Find(face))
-            face_hash->Get().zonecnt++;
+        {
+            ZoneCntAndVF &F = face_hash->Get();
+            F.zonecnt++;
+            for (int m=0; m<nRealMat; m++)
+            {
+                F.vf[materials[m]] += vf[m];
+            }
+        }
         else
-            face_hash->Insert(ZoneCntAndVF(1,nmat));
+        {
+            ZoneCntAndVF F(1,nmat);
+            for (int m=0; m<nRealMat; m++)
+            {
+                F.vf[materials[m]] = vf[m];
+            }
+            face_hash->Insert(F);
+        }
     }
 }
 
@@ -2931,15 +2992,27 @@ CreateEdgeHash(MIR::MIRConnectivity &conn, int nmat,
 //
 //  Arguments:
 //      celltype    The type of the cell as a VTK enumerated type.
-//      c_ptr       The connectivity list for the cell.
-//      face_hash   The hash to add the faces to.
+//      cellids     The connectivity list for the cell.
+//      edge_hash   The hash to add the edges to.
+//      nmat        The max number of materials
+//      nRealMat    The number of materials that exist in this cell
+//      materials   The material numbers that exist in this cell
+//      vf          The volume fractions of the mats that exist in this cell
+//
+//  Notes:  This routine assumes that the edge hash is populated for
+//          the first time before volume fractions are being subsampled.
 //
 //  Programmer:  Hank Childs
 //  Creation:    October 7, 2002
 //
+//  Modifications:
+//    Jeremy Meredith, Wed Dec 18 12:17:30 PST 2002
+//    Added subsampling of volume fractions and fixed some assumptions.
+//
 // ****************************************************************************
 static void
-AddEdges(int celltype, const int *c_ptr, EdgeHash *edge_hash, int nmat)
+AddEdges(int celltype, const int *cellids, EdgeHash *edge_hash, int nmat,
+         int nRealMat, int *materials, float *vf)
 {
     static int tetra_edges[6][2] = { {0,1}, {1,2}, {2,0}, {0,3}, {1,3}, {2,3}};
     static int pyramid_edges[8][2] = { {0,1}, {1,2}, {2,3}, {3,0}, {0,4}, 
@@ -2984,16 +3057,60 @@ AddEdges(int celltype, const int *c_ptr, EdgeHash *edge_hash, int nmat)
     int ids[2];
     for (int e=0; e<nEdges; e++)
     {
-        ids[0] = c_ptr[edgelist[e][0]];
-        ids[1] = c_ptr[edgelist[e][1]];
+        ids[0] = cellids[edgelist[e][0]];
+        ids[1] = cellids[edgelist[e][1]];
         Edge edge(ids);
         if (edge_hash->Find(edge))
         {
-            edge_hash->Get().zonecnt++;
+            ZoneCntAndVF &E = edge_hash->Get();
+            E.zonecnt++;
+            for (int m=0; m<nRealMat; m++)
+            {
+                E.vf[materials[m]] += vf[m];
+            }
         }
         else
         {
-            edge_hash->Insert(ZoneCntAndVF(1,nmat));
+            ZoneCntAndVF E(1,nmat);
+            for (int m=0; m<nRealMat; m++)
+            {
+                E.vf[materials[m]] = vf[m];
+            }
+            edge_hash->Insert(E);
+        }
+    }
+}
+
+// ****************************************************************************
+//  Method:  AddNodes
+//
+//  Purpose:
+//      Adds all of the vfs for a specific cell to the node list.
+//
+//  Arguments:
+//      nPts        The number of points in the cell.
+//      cellids     The connectivity list for the cell.
+//      node_list   The list to add the nodes to.
+//      nmat        The max number of materials
+//      nRealMat    The number of materials that exist in this cell
+//      materials   The material numbers that exist in this cell
+//      vf          The volume fractions of the mats that exist in this cell
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    July  3, 2003
+//
+// ****************************************************************************
+static void
+AddNodes(int nPts, const int *cellids, NodeList *node_list, int nmat,
+         int nRealMat, int *materials, float *vf)
+{
+    for (int n=0; n<nPts; n++)
+    {
+        ZoneCntAndVF &N = (*node_list)[cellids[n]];
+        N.zonecnt++;
+        for (int m=0; m<nRealMat; m++)
+        {
+            N.vf[materials[m]] += vf[m];
         }
     }
 }
@@ -3031,10 +3148,17 @@ AddEdges(int celltype, const int *c_ptr, EdgeHash *edge_hash, int nmat)
 //    Hank Childs, Tue Oct  8 14:45:46 PDT 2002
 //    Remove costly VTK calls.
 //
+//    Jeremy Meredith, July  2, 2003
+//    Made use of mat_cnt when determining if a zone is "really clean".
+//    The reason is that if there are more than two materials in an adjacent
+//    zone, we may still need to split clean zones that don't fit the
+//    "one material dominant at all nodes" criterion.
+//
 // ****************************************************************************
 ZoneCleanList *
 CreateZoneCleanList(MIR::MIRConnectivity &conn, int nPts, avtMaterial *mat, 
-               int nmat, NodeList *node_list, int &nrealclean, int &nrealmixed)
+                    int nmat, int *mat_cnt, NodeList *node_list,
+                    int &nrealclean, int &nrealmixed)
 {
     nrealclean = 0;
     nrealmixed = 0;
@@ -3059,7 +3183,7 @@ CreateZoneCleanList(MIR::MIRConnectivity &conn, int nPts, avtMaterial *mat,
         int        nPts = *c_ptr;
         const int *ids  = c_ptr+1;
 
-        bool       real_clean = true;
+        bool       real_clean = mat_cnt[c] < 3;
         for (int n=0; n<nPts && real_clean; n++)
         {
             int   id = ids[n];
@@ -3094,7 +3218,7 @@ CreateZoneCleanList(MIR::MIRConnectivity &conn, int nPts, avtMaterial *mat,
 }
 
 // ****************************************************************************
-//  Method:  SubsampleVFs
+//  Method:  SubsampleVFsAndCreateNodeList
 //
 //  Purpose:
 //    Using the zonal vf's, average them to the nodes, faces, and edges.
@@ -3126,12 +3250,18 @@ CreateZoneCleanList(MIR::MIRConnectivity &conn, int nPts, avtMaterial *mat,
 //    Hank Childs, Mon Oct  7 17:05:48 PDT 2002
 //    Remove costly VTK calls.
 //
+//    Jeremy Meredith, July  2, 2003
+//    Restructured to clean some things up and to fix support for faces
+//    and edges.  Added code to extract the number of how many materials
+//    have nonzero volume fractions at any of the cells nodes into mat_cnt.
+//
 // ****************************************************************************
 static void
 SubsampleVFsAndCreateNodeList(MIR::MIRConnectivity      &conn,
                               int                        npts,
                               avtMaterial               *mat,
-                              NodeList                 *&node_list,
+                              int                       *mat_cnt,
+                              NodeList                  *node_list,
                               FaceHash                  *face_hash,
                               EdgeHash                  *edge_hash)
 {
@@ -3147,23 +3277,20 @@ SubsampleVFsAndCreateNodeList(MIR::MIRConnectivity      &conn,
     int         *materials       = new int[nMat];
     float       *volumeFractions = new float[nMat];
 
-    node_list =  new NodeList(npts, ZoneCntAndVF(0,nMat));
-
+    //
+    // Go through each cell, extract the materials from the avtMaterial,
+    // and subsample the zone volume fractions to the nodes and the faces.
+    //
     const int *c_ptr = conn.connectivity;
-    for (int c=0; c<nCells; c++)
+    int c;
+    for (c=0; c<nCells; c++)
     {
         int        nPts = *c_ptr;
         const int *ids  = c_ptr+1;
 
-        for (int n=0; n<nPts; n++)
-        {
-            int id = ids[n];
-            (*node_list)[id].zonecnt++;
-        }
-
         //
         // Create a list of materials and their corresponding volume
-        // fractions for the cell.
+        // fractions for the cell for the materials actually used.
         //
         int matno = matlist[c];
 
@@ -3187,30 +3314,30 @@ SubsampleVFsAndCreateNodeList(MIR::MIRConnectivity      &conn,
             volumeFractions[0] = 1.;
         }
 
-        for (int i=0; i<nRealMat; i++)
+        // sample to the nodes
+        AddNodes(nPts, ids, node_list, nMat,
+                 nRealMat, materials, volumeFractions);
+
+        // sample to the faces
+        if (face_hash)
         {
-            int   m  = materials[i];
-            float vf = volumeFractions[i];
+            AddFaces(conn.celltype[c], ids, face_hash, nMat,
+                     nRealMat, materials, volumeFractions);
+        }
 
-            for (int n=0; n<nPts; n++)
-            {
-                int id = ids[n];
-                (*node_list)[id].vf[m] += vf;
-            }
-
-            if (face_hash)
-            {
-                AddFaces(conn.celltype[c], ids, face_hash, nMat);
-            }
-
-            if (edge_hash)
-            {
-                AddEdges(conn.celltype[c], ids, edge_hash, nMat);
-            }
+        // sample to the edges
+        if (edge_hash)
+        {
+            AddEdges(conn.celltype[c], ids, edge_hash, nMat,
+                     nRealMat, materials, volumeFractions);
         }
         c_ptr += *c_ptr+1;
     }
 
+
+    //
+    // Divide by the number of incident zones to renormalize the averaged vf
+    //
     for (int n=0; n<npts; n++)
     {
         for (int m=0; m<nMat; m++)
@@ -3237,6 +3364,31 @@ SubsampleVFsAndCreateNodeList(MIR::MIRConnectivity      &conn,
                 e->vf[m] /= e->zonecnt;
             e = edge_hash->GetNextValidValue();
         }
+    }
+
+    //
+    // Go through each cell and determine how many non-zero material
+    // fractions it has at any node.
+    //
+    c_ptr = conn.connectivity;
+    for (c=0; c<nCells; c++)
+    {
+        int        nPts = *c_ptr;
+        const int *ids  = c_ptr+1;
+
+        mat_cnt[c] = 0;
+        for (int m=0; m<nMat; m++)
+        {
+            for (int n=0; n<nPts; n++)
+            {
+                if ((*node_list)[ids[n]].vf[m] > 0)
+                {
+                    mat_cnt[c]++;
+                    break;
+                }
+            }
+        }
+        c_ptr += *c_ptr+1;
     }
 
     delete [] materials;

@@ -7,6 +7,7 @@
 #include <math.h>
 
 #include <avtViewInfo.h>
+#include <ViewAttributes.h>
 
 //
 // Local macros.
@@ -255,4 +256,72 @@ avtView3D::SetViewInfoFromView(avtViewInfo &viewInfo) const
     viewInfo.imagePan[0] = imagePan[0];
     viewInfo.imagePan[1] = imagePan[1];
     viewInfo.imageZoom   = imageZoom;
+}
+
+// ****************************************************************************
+// Method: avtView3D::SetFromViewAttributes
+//
+// Purpose: 
+//   Sets the avtView3D from a ViewAttributes object.
+//
+// Arguments:
+//   viewAtts : The ViewAttributes to use.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jul 1 14:00:50 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtView3D::SetFromViewAttributes(const ViewAttributes *viewAtts)
+{
+    for(int i = 0; i < 3; ++i)
+    {
+        normal[i] = viewAtts->GetViewNormal()[i];
+        focus[i]  = viewAtts->GetFocus()[i];
+        viewUp[i] = viewAtts->GetViewUp()[i];
+    }
+
+    viewAngle = viewAtts->GetViewAngle();
+    parallelScale = viewAtts->GetParallelScale();
+    nearPlane = viewAtts->GetNearPlane();
+    farPlane = viewAtts->GetFarPlane();
+    imagePan[0] = viewAtts->GetImagePan()[0];
+    imagePan[1] = viewAtts->GetImagePan()[1];
+    imageZoom = viewAtts->GetImageZoom();
+    perspective = viewAtts->GetPerspective();
+}
+
+// ****************************************************************************
+// Method: avtView3D::SetToViewAttributes
+//
+// Purpose: 
+//   Sets a ViewAttributes from the avtView3D.
+//
+// Arguments:
+//   viewAtts : The ViewAttributes object to set.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jul 1 14:01:23 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtView3D::SetToViewAttributes(ViewAttributes *viewAtts) const
+{
+    viewAtts->SetViewNormal(normal);
+    viewAtts->SetFocus(focus);
+    viewAtts->SetViewUp(viewUp);
+    viewAtts->SetViewAngle(viewAngle);
+    viewAtts->SetParallelScale(parallelScale);
+    viewAtts->SetSetScale(true);
+    viewAtts->SetNearPlane(nearPlane);
+    viewAtts->SetFarPlane(farPlane);
+    viewAtts->SetImagePan(imagePan);
+    viewAtts->SetImageZoom(imageZoom);
+    viewAtts->SetPerspective(perspective);
 }

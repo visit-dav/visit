@@ -517,6 +517,9 @@ QvisFilePanel::UpdateFileList(bool doAll)
 //   Brad Whitlock, Thu May 15 13:19:13 PST 2003
 //   I changed the call to FileServer::OpenFile.
 //
+//   Brad Whitlock, Wed Jul 2 15:58:47 PST 2003
+//   I added exception handling code for when the metadata cannot be read.
+//
 // ****************************************************************************
 
 void
@@ -537,8 +540,16 @@ QvisFilePanel::UpdateAnimationControls(bool doAll)
         {
             QualifiedFilename qf(globalAtts->GetCurrentFile());
 
-            fileServer->OpenFile(qf, globalAtts->GetCurrentState());
-            fileServer->Notify();
+            TRY
+            {
+                fileServer->OpenFile(qf, globalAtts->GetCurrentState());
+                fileServer->Notify();
+            }
+            CATCH(GetMetaDataException)
+            {
+                ; // Usually, the filename was bad.
+            }
+            ENDTRY
         }
     }
 

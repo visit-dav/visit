@@ -162,6 +162,9 @@
 #    Jeremy Meredith, Thu Jun 12 09:00:25 PDT 2003
 #    Added vtkUnstructuredGridBoundaryFilter.
 #
+#    Akira Haddox, Thu Jul  3 13:42:53 PDT 2003
+#    Added vtkDashedXorGridMapper2D.C
+#
 ##############################################################################
 
 ##
@@ -178,6 +181,7 @@ SRC=InitVTK.C \
     vtkBackgroundActor.C \
     vtkCamera.C \
     vtkConnectedTubeFilter.C \
+    vtkDashedXorGridMapper2D.C \
     vtkDataSetRemoveGhostCells.C \
     vtkDebugStream.C \
     vtkHankAxisActor2D.C \
@@ -221,6 +225,7 @@ HDR=InitVTK.h \
     vtkBackgroundActor.h \
     vtkCamera.h \
     vtkConnectedTubeFilter.h \
+    vtkDashedXorGridMapper2D.h \
     vtkDataSetRemoveGhostCells.h \
     vtkDebugStream.h \
     vtkHankAxisActor2D.h \

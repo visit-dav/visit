@@ -30,6 +30,9 @@
 //
 //    Kathleen Bonnell, Thu Nov 15 12:24:45 PST 2001 
 //    Change ids from int to vtkIdType to match VTK 4.0 API. 
+//
+//    Akira Haddox, Thu Jul  3 14:15:48 PDT 2003
+//    Added initialization of shift and controlKeyDown.
 //    
 // ****************************************************************************
 
@@ -37,6 +40,7 @@ ZoomInteractor::ZoomInteractor(VisWindowInteractorProxy &vw)
     : VisitInteractor(vw)
 {
     rubberBandMode  = false;
+    shiftKeyDown = controlKeyDown = false;
 
     //
     // Create the poly data that will map the rubber band onto the screen.
@@ -139,12 +143,18 @@ ZoomInteractor::SetCanvasViewport(void)
 //    Hank Childs, Tue Aug  1 15:37:11 PDT 2000
 //    Moved SetCanvasViewport to be before ForceCoordsToViewport.
 //
+//    Akira Haddox, Thu Jul  3 14:17:48 PDT 2003
+//    Set shift and controlKeyDown based on interactor information.
+//
 // ****************************************************************************
 
 void
 ZoomInteractor::StartRubberBand(int x, int y)
 {
     rubberBandMode = true;
+
+    shiftKeyDown = Interactor->GetShiftKey();
+    controlKeyDown = Interactor->GetControlKey();
 
     //
     // Add the rubber band actors to the background.  We do this since the
@@ -200,6 +210,10 @@ ZoomInteractor::StartRubberBand(int x, int y)
 //    Kathleen Bonnell, Fri Dec 13 16:41:12 PST 2002 
 //    Removed arguments to comply with vtks' new interactor interface.
 //    Values are now accessed via the RenderWindowInteractor.
+//
+//    Akira Haddox, Thu Jul  3 14:17:48 PDT 2003
+//    Force a square rubber band when shift key is down.
+//
 // ****************************************************************************
 
 void
@@ -210,6 +224,68 @@ ZoomInteractor::OnMouseMove()
     {
         Interactor->GetEventPosition(x, y);
         ForceCoordsToViewport(x, y);
+
+        //
+        // If the shift key is down, lock the coordinates so that we form
+        // a square.
+        //
+        if (shiftKeyDown)
+        {
+            int deltaX = x - anchorX;
+            int deltaY = y - anchorY;
+            
+            int absDeltaX = abs(deltaX);
+            int absDeltaY = abs(deltaY);
+            
+            if (absDeltaX > absDeltaY)
+            {
+                // x stays the same, adjust y
+                if (deltaY < 0)
+                    y = anchorY - absDeltaX;
+                else
+                    y = anchorY + absDeltaX;
+            }
+            else
+            {
+                // y stays the same, adjust x
+                if (deltaX < 0)
+                    x = anchorX - absDeltaY;
+                else
+                    x = anchorX + absDeltaY;
+            }
+
+            // We now have a square, but it might be outside our bounds.
+            // We force the coordinates again, since we take the larger
+            // dimension to expand the square on, and we might have
+            // expanded outside the box.
+            // If these coordinates change, then we need to make it a box
+            // again.
+            //
+            int oldX = x;
+            int oldY = y;
+            ForceCoordsToViewport(x, y);
+            oldX = abs(x-oldX);
+            oldY = abs(y-oldY);
+
+            // if x was forced, adjust y
+            if (oldX)
+            {
+                if (deltaY < 0)
+                    y += oldX;
+                else
+                    y -= oldX;
+            }
+
+            // if y was forced, adjust x
+            if (oldY)
+            {
+                if (deltaX < 0)
+                    x += oldY;
+                else
+                    x -= oldY;
+            }
+        }
+
         UpdateRubberBand(anchorX, anchorY, lastX, lastY, x, y);
         lastX = x;
         lastY = y;

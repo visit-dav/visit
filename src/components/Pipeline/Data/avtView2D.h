@@ -7,6 +7,7 @@
 #include <pipeline_exports.h>
 
 struct avtViewInfo;
+class ViewAttributes;
 
 // ****************************************************************************
 //  Class: avtView2D
@@ -38,6 +39,9 @@ struct PIPELINE_API avtView2D
     void            SetViewFromViewInfo(const avtViewInfo &);
     void            SetViewInfoFromView(avtViewInfo &) const;
     void            SetViewportFromView(double *, const int, const int) const;
+
+    void            SetFromViewAttributes(const ViewAttributes *);
+    void            SetToViewAttributes(ViewAttributes *) const;
 
   protected:
     void            GetValidWindow(double *) const;

@@ -20,6 +20,7 @@ using std::string;
 #include <AnimationAttributes.h>
 #include <AnnotationAttributes.h> 
 #include <AttributeSubjectMap.h>
+#include <DataNode.h>
 #include <LightList.h> 
 #include <Line.h>
 #include <LineoutInfo.h>
@@ -3910,6 +3911,10 @@ ViewerWindow::CreateToolbar(const std::string &name)
 //   I renamed camera to view normal in the view attributes.  I added
 //   image pan and image zoom to the 3d view attributes.
 //
+//   Brad Whitlock, Tue Jul 1 14:07:52 PST 2003
+//   I used new convenience methods for setting the viewAtts with the avt
+//   view objects.
+//
 // ****************************************************************************
 
 WindowAttributes
@@ -3926,30 +3931,18 @@ ViewerWindow::GetWindowAttributes() const
         if (!GetTypeIsCurve())
         {
             const avtView2D &view2d = GetView2D();
-            viewAtts.SetWindowCoords(view2d.window);
-            viewAtts.SetViewportCoords(view2d.viewport);
+            view2d.SetToViewAttributes(&viewAtts);
         }
         else 
         {
             const avtViewCurve &viewCurve = GetViewCurve();
-            viewAtts.SetWindowCoords(viewCurve.window);
-            viewAtts.SetViewportCoords(viewCurve.viewport);
+            viewCurve.SetToViewAttributes(&viewAtts);
         }
     }
     else
     {
         const avtView3D &view3d = GetView3D();
-        viewAtts.SetViewNormal(view3d.normal);
-        viewAtts.SetFocus(view3d.focus);
-        viewAtts.SetViewUp(view3d.viewUp);
-        viewAtts.SetViewAngle(view3d.viewAngle);
-        viewAtts.SetParallelScale(view3d.parallelScale);
-        viewAtts.SetSetScale(true);
-        viewAtts.SetNearPlane(view3d.nearPlane);
-        viewAtts.SetFarPlane(view3d.farPlane);
-        viewAtts.SetImagePan(view3d.imagePan);
-        viewAtts.SetImageZoom(view3d.imageZoom);
-        viewAtts.SetPerspective(view3d.perspective);
+        view3d.SetToViewAttributes(&viewAtts);
     }
     winAtts.SetView(viewAtts);
 
@@ -4675,6 +4668,78 @@ ViewerWindow::SetPopupEnabled(bool val)
 {
     popupMenu->SetEnabled(val);
 }
+
+// ****************************************************************************
+// Method: ViewerWindow::CreateNode
+//
+// Purpose: 
+//   Lets the window save its information to a config file's DataNode.
+//
+// Arguments:
+//   parentNode : The node to which we're saving information.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Jun 30 13:10:30 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerWindow::CreateNode(DataNode *parentNode)
+{
+    if(parentNode == 0)
+        return;
+
+    DataNode *windowNode = new DataNode("ViewerWindow");
+    parentNode->AddNode(windowNode);
+
+    //
+    // Add information specific to the ViewerWindow.
+    //
+
+    //
+    // Let other objects add their information.
+    //
+    actionMgr->CreateNode(windowNode);
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::SetFromNode
+//
+// Purpose: 
+//   Lets the window reset its values from a config file.
+//
+// Arguments:
+//   parentNode : The config file information DataNode pointer.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Jun 30 13:11:52 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerWindow::SetFromNode(DataNode *parentNode)
+{
+    if(parentNode == 0)
+        return;
+
+    DataNode *windowNode = parentNode->GetNode("ViewerWindow");
+    if(windowNode == 0)
+        return;
+
+    //
+    // Get information specific to ViewerWindow.
+    //
+
+    //
+    // Let other objects get their information.
+    //
+    actionMgr->SetFromNode(windowNode);
+}
+
 
 // Only place where ViewerWindow should need to talk to ViewerEngineManager
 #include <ViewerEngineManager.h>
