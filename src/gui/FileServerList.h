@@ -114,6 +114,9 @@ class MessageAttributes;
 //   Mark C. Miller, Wed Oct  8 17:20:23 PDT 2003
 //   Added GetMetaDataFromMDServer method
 //
+//   Brad Whitlock, Fri Oct 10 16:04:21 PST 2003
+//   Added a method to clear out the recent paths.
+//
 // ****************************************************************************
 
 class GUI_API FileServerList : public AttributeSubject
@@ -156,7 +159,6 @@ public:
 
     const std::string &GetHost() const;
     const std::string &GetPath() const;
-    const stringVector &GetRecentPaths(const std::string &host) const;
           std::string GetHomePath();
           std::string ExpandPath(const std::string &p);
           stringVector GetRecentHosts() const;
@@ -166,6 +168,11 @@ public:
           QualifiedFilenameVector GetFilteredFileList();
     bool GetUseCurrentDirectory() const;
     bool GetAutomaticFileGrouping() const;
+
+    const stringVector &GetRecentPaths(const std::string &host) const;
+    void AddPathToRecentList(const std::string &host, const std::string &path);
+    void ClearRecentPathList();
+
     const QualifiedFilename &GetOpenFile();
     int GetOpenFileTimeState() const;
     const avtDatabaseMetaData *GetMetaDataFromMDServer(const QualifiedFilename &f,
@@ -193,6 +200,7 @@ public:
     bool FileListChanged() const;
     bool AppliedFileListChanged() const;
     bool FileChanged() const;
+    bool RecentPathsChanged() const;
     bool OpenedFile() const;
     bool ReplacedFile() const;
     bool OverlayedFile() const;
@@ -208,7 +216,6 @@ private:
     void ParseFilterString(const std::string &, stringVector &);
     bool FileMatchesFilterList(const std::string &, const stringVector &);
     bool FileMatchesFilter(const char *filter, const char *str, int &index);
-    void AddPathToRecentList(const std::string &host, const std::string &path);
     void Error(const char *message);
     void Warning(const char *message);
     std::string EncodePath(const std::string &path);
@@ -223,6 +230,7 @@ private:
     int  fileAction;                // attribute 5
     bool useCurrentDirectoryFlag;   // attribute 6
     bool automaticFileGroupingFlag; // attribute 7
+    bool recentPathsFlag;           // attribute 8
 
     // Information about the open md servers.
     ServerMap   servers;

@@ -1,5 +1,6 @@
 #include <qapplication.h>
 #include <qcheckbox.h>
+#include <qevent.h>
 #include <qcombobox.h>
 #include <qlineedit.h>
 #include <qlayout.h>
@@ -12,6 +13,7 @@
 #include <qvbox.h>
 
 #include <QvisFileSelectionWindow.h>
+#include <QvisRecentPathRemovalWindow.h>
 #include <FileServerList.h>
 #include <BadHostException.h>
 #include <ChangeDirectoryException.h>
@@ -238,6 +240,9 @@ private:
 //   so the GUI does not get into a hung state. Hopefully this won't cause
 //   other problems.
 //
+//   Brad Whitlock, Fri Oct 10 15:05:15 PST 2003
+//   I added the recentPathsRemoval window.
+//
 // ****************************************************************************
 
 QvisFileSelectionWindow::QvisFileSelectionWindow(const char *winCaption) :
@@ -249,6 +254,8 @@ QvisFileSelectionWindow::QvisFileSelectionWindow(const char *winCaption) :
     computerPixmap = 0;
     folderPixmap = 0;
     databasePixmap = 0;
+
+    recentPathsRemovalWindow = 0;
 
     // Set the progress callback that we want to use while we
     // connect to the mdserver.
@@ -327,6 +334,9 @@ QvisFileSelectionWindow::~QvisFileSelectionWindow()
 //   Brad Whitlock, Tue Apr 22 15:26:51 PST 2003
 //   I made the Ok button also be on the right.
 //
+//   Brad Whitlock, Fri Oct 10 15:08:00 PST 2003
+//   I added a pushbutton to activate the path removal window.
+//
 // ****************************************************************************
 
 void
@@ -403,6 +413,15 @@ QvisFileSelectionWindow::CreateWindowContents()
     connect(automaticFileGroupingToggle, SIGNAL(toggled(bool)),
             this, SLOT(automaticFileGroupingChanged(bool)));
     toggleLayout->addWidget(automaticFileGroupingToggle);
+
+    // Create a window we can activate to remove recent paths.
+    recentPathsRemovalWindow = new QvisRecentPathRemovalWindow(fileServer,
+       "Remove recent paths");
+    recentPathRemovalButton = new QPushButton("Remove paths . . .", central,
+        "recentPathRemovalButton");
+    connect(recentPathRemovalButton, SIGNAL(clicked()),
+            recentPathsRemovalWindow, SLOT(show()));
+    toggleLayout->addWidget(recentPathRemovalButton);
 
     // Add a grid layout for the file and directory lists.
     topLayout->addSpacing(10);
@@ -550,6 +569,9 @@ QvisFileSelectionWindow::UpdateWindow(bool doAll)
 //   I added code to catch an exception that has not come up here until
 //   recently.
 //
+//   Brad Whitlock, Mon Oct 13 10:00:17 PDT 2003
+//   I made it update the path combo box when the recent path list changes.
+//
 // ****************************************************************************
 
 void
@@ -575,7 +597,7 @@ QvisFileSelectionWindow::UpdateWindowFromFiles(bool doAll)
     }
 
     // If the path flag is set, update the path combo box.
-    if(fileServer->PathChanged() || doAll)
+    if(fileServer->PathChanged() || fileServer->RecentPathsChanged() || doAll)
     {
         TRY
         {
@@ -1592,11 +1614,17 @@ QvisFileSelectionWindow::setEnabled(bool val)
 //   I added code to reopen the database on the viewer if the open file is
 //   a virtual database.
 //
+//   Brad Whitlock, Mon Oct 13 11:25:26 PDT 2003
+//   Added code to hide the recent paths removal window.
+//
 // ****************************************************************************
 
 void
 QvisFileSelectionWindow::okClicked()
 {
+    // Hide the remove path window.
+    recentPathsRemovalWindow->hide();
+
     // Hide the window.
     hide();
 
@@ -1640,6 +1668,9 @@ QvisFileSelectionWindow::okClicked()
 //   Brad Whitlock, Thu May 9 17:08:17 PST 2002
 //   Made it use the base class's fileServer pointer.
 //
+//   Brad Whitlock, Fri Oct 10 16:46:16 PST 2003
+//   Forced it to hide the recentPathsRemovalWindow.
+//
 // ****************************************************************************
 
 void
@@ -1649,6 +1680,9 @@ QvisFileSelectionWindow::cancelClicked()
     // and update the window.
     intermediateFileList = fileServer->GetAppliedFileList();
     UpdateSelectedFileList();
+
+    // Hide the remove path window.
+    recentPathsRemovalWindow->hide();
 
     // Hide the window.
     hide();
@@ -2260,6 +2294,51 @@ QvisFileSelectionWindow::show()
 }
 
 // ****************************************************************************
+// Method: QvisFileSelectionWindow::showMinimized
+//
+// Purpose: 
+//   Iconifies the window.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Oct 10 16:50:12 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisFileSelectionWindow::showMinimized()
+{
+    QvisDelayedWindowSimpleObserver::showMinimized();
+    if(recentPathsRemovalWindow && recentPathsRemovalWindow->isVisible())
+        recentPathsRemovalWindow->showMinimized();
+}
+
+// ****************************************************************************
+// Method: QvisFileSelectionWindow::showNormal
+//
+// Purpose: 
+//   De-iconifies the window.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Oct 10 16:50:12 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisFileSelectionWindow::showNormal()
+{
+    QvisDelayedWindowSimpleObserver::showNormal();
+    if(recentPathsRemovalWindow && recentPathsRemovalWindow->isVisible())
+    {
+        recentPathsRemovalWindow->showNormal();
+        recentPathsRemovalWindow->raise();
+    }
+}
+
+// ****************************************************************************
 // Method: QvisFileSelectionWindow::currentDir
 //
 // Purpose: 
@@ -2304,4 +2383,30 @@ QvisFileSelectionWindow::automaticFileGroupingChanged(bool val)
 {
     fileServer->SetAutomaticFileGrouping(val);
     fileServer->Notify();
+}
+
+// ****************************************************************************
+// Method: QvisFileSelectionWindow::closeEvent
+//
+// Purpose: 
+//   Closes the window and also makes sure that the recentPathRemoval window
+//   gets closed if it is open.
+//
+// Arguments:
+//   e : The close event to handle.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Oct 13 11:39:34 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisFileSelectionWindow::closeEvent(QCloseEvent *e)
+{
+    if(recentPathsRemovalWindow && recentPathsRemovalWindow->isVisible())
+        recentPathsRemovalWindow->hide();
+    
+    QvisDelayedWindowSimpleObserver::closeEvent(e);
 }

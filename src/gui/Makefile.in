@@ -244,6 +244,9 @@
 #    Brad Whitlock, Thu Jun 19 13:07:26 PST 2003
 #    I made the splashscreen part of the GUI.
 #
+#    Brad Whitlock, Fri Oct 10 14:56:47 PST 2003
+#    I added QvisRecentPathRemovalWindow.
+#
 ##############################################################################
 
 ##
@@ -323,6 +326,7 @@ HDRMOC = \
     QvisPostableWindowSimpleObserver.h \
     QvisPreferencesWindow.h \
     QvisQueryWindow.h \
+    QvisRecentPathRemovalWindow.h \
     QvisRenderingWindow.h \
     QvisSaveWindow.h \
     QvisScribbleOpacityBar.h \

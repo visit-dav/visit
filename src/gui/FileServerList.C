@@ -54,9 +54,12 @@ static const int FILE_CLOSE = 4;
 //   Brad Whitlock, Thu Mar 27 09:19:05 PDT 2003
 //   I initialized automaticFileGroupingFlag.
 //
+//   Brad Whitlock, Mon Oct 13 10:01:07 PDT 2003
+//   I initialized recentPathsFlag.
+//
 // ****************************************************************************
 
-FileServerList::FileServerList() : AttributeSubject("bbbbbibb"), servers(),
+FileServerList::FileServerList() : AttributeSubject("bbbbbibbb"), servers(),
     activeHost("localhost"), fileList(), appliedFileList(), openFile(),
     fileMetaData(), recentPaths()
 {
@@ -69,6 +72,7 @@ FileServerList::FileServerList() : AttributeSubject("bbbbbibb"), servers(),
     useCurrentDirectoryFlag = true;
 #endif
     automaticFileGroupingFlag = true;
+    recentPathsFlag = false;
 
     // Initialize some callback functions.
     connectCallback = 0;
@@ -157,6 +161,9 @@ FileServerList::~FileServerList()
 //   Brad Whitlock, Thu Mar 27 09:19:54 PDT 2003
 //   I added automaticFileGroupingFlag.
 //
+//   Brad Whitlock, Mon Oct 13 10:01:38 PDT 2003
+//   I added recentPathsFlag.
+//
 // ****************************************************************************
 
 void
@@ -170,6 +177,7 @@ FileServerList::SelectAll()
     Select(5, (void *)&fileAction);
     Select(6, (void *)&useCurrentDirectoryFlag);
     Select(7, (void *)&automaticFileGroupingFlag);
+    Select(8, (void *)&recentPathsFlag);
 }
 
 // *************************************************************************************
@@ -266,10 +274,12 @@ FileServerList::Initialize()
 // Creation:   Mon Jun 23 11:39:11 PDT 2003
 //
 // Modifications:
-//   
 //   Brad Whitlock, Fri Jun 20 17:34:08 PST 2003
 //   I added code to prevent the mdserver's CloseDatabase method from
 //   being called if we have no open file.
+//
+//   Brad Whitlock, Mon Oct 13 11:12:44 PDT 2003
+//   Added recentPathsFlag.
 //
 // ****************************************************************************
 
@@ -291,6 +301,7 @@ FileServerList::Notify()
     // Reset the flags for future operations.
     hostFlag = pathFlag = filterFlag = false;
     fileListFlag = appliedFileListFlag = false;
+    recentPathsFlag = false;
     fileAction = FILE_NOACTION;
 }
 
@@ -1628,6 +1639,9 @@ FileServerList::FileMatchesFilter(const char *filter, const char *str, int &j)
 //   Brad Whitlock, Tue Apr 22 13:59:48 PST 2003
 //   I fixed a crash on Windows.
 //
+//   Brad Whitlock, Mon Oct 13 10:03:21 PDT 2003
+//   I added the recentPathsFlag.
+//
 // ****************************************************************************
 
 void
@@ -1651,6 +1665,7 @@ FileServerList::AddPathToRecentList(const std::string &host,
         if(!exists)
         {
             pos->second.push_back(path);
+            Select(8, (void *)&recentPathsFlag);
         }
     }
     else
@@ -1658,7 +1673,28 @@ FileServerList::AddPathToRecentList(const std::string &host,
         stringVector tmp;
         tmp.push_back(path);
         recentPaths[host] = tmp;
+        Select(8, (void *)&recentPathsFlag);
     }
+}
+
+// ****************************************************************************
+// Method: FileServerList::ClearRecentPathList
+//
+// Purpose: 
+//   Clears out the recent path list.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Oct 10 16:06:54 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+FileServerList::ClearRecentPathList()
+{
+    recentPaths.clear();
+    Select(8, (void *)&recentPathsFlag);
 }
 
 // ****************************************************************************
@@ -1684,7 +1720,6 @@ FileServerList::DefineVirtualFiles()
         pos != fileList.virtualFiles.end(); ++pos)
     {
         QualifiedFilename name(activeHost, servers[activeHost]->path, pos->first);
-
         virtualFiles[name.FullName()] = pos->second;
     }
 }
@@ -1916,6 +1951,12 @@ bool
 FileServerList::ClosedFile() const
 {
     return (IsSelected(5) && (fileAction == FILE_CLOSE));
+}
+
+bool
+FileServerList::RecentPathsChanged() const
+{
+    return IsSelected(8);
 }
 
 //
