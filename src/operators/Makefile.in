@@ -136,6 +136,9 @@
 #    Hank Childs, Tue Jul  1 21:02:24 PDT 2003
 #    Added SurfCompPrep.
 #
+#    Akira Haddox, Mon Jul 21 09:58:22 PDT 2003
+#    Added RemoveCells.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -144,7 +147,8 @@ all: message
 	for dir in $(SUBDIRS); do (cd $$dir && $(MAKE) $@) || exit 1; done
 
 OPTIONAL=Context ConnCompReduce Decimate Displace ExternalSurface \
-         InverseGhostZone MetricThreshold Revolve SiloDump SurfCompPrep Tube
+         InverseGhostZone MetricThreshold RemoveCells Revolve SiloDump \
+         SurfCompPrep Tube
 
 REQUIRED=Box Clip Cone IndexSelect Isosurface Lineout OnionPeel Reflect \
 	 Slice SphereSlice ThreeSlice Threshold Transform

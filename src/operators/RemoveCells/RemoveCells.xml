@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+  <Plugin name="RemoveCells" type="operator" label="RemoveCells" version="1.0" iconFile="RemoveCells.xpm">
+    <Attribute name="RemoveCellsAttributes" purpose="This class contains attributes for the RemoveCells operator." persistent="true">
+      <Field name="cell" label="cell" type="int">
+        0
+      </Field>
+      <Field name="domain" label="domain" type="int">
+        0
+      </Field>
+      <Field name="cellList" label="cellList" type="intVector">
+      </Field>
+      <Field name="domainList" label="domainList" type="intVector">
+      </Field>
+    </Attribute>
+  </Plugin>
