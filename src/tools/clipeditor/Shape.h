@@ -8,6 +8,9 @@
 //    Jeremy Meredith, Thu Sep 18 11:29:12 PDT 2003
 //    Added Quad and Triangle shapes.
 //
+//    Jeremy Meredith, Thu Jun 24 10:38:05 PDT 2004
+//    Added Voxel and Pixel shapes.
+//
 // ----------------------------------------------------------------------------
 
 #ifndef SHAPE_H
@@ -22,11 +25,13 @@ struct DataSet;
 enum ShapeType
 {
     ST_HEX,
+    ST_VOXEL,
     ST_WEDGE,
     ST_PYRAMID,
     ST_TET,
     ST_QUAD,
     ST_TRIANGLE,
+    ST_PIXEL,
     ST_POINT
 };
 
@@ -85,10 +90,12 @@ struct Shape
     void Invert();
     int  CheckCopyOf(Shape*);
     void MakeCopyOf(Shape *s, HexTransform &xform);
+    void MakeCopyOf(Shape *s, VoxTransform &xform);
     void MakeCopyOf(Shape *s, WedgeTransform &xform);
     void MakeCopyOf(Shape *s, PyramidTransform &xform);
     void MakeCopyOf(Shape *s, TetTransform &xform);
     void MakeCopyOf(Shape *s, QuadTransform &xform);
+    void MakeCopyOf(Shape *s, PixelTransform &xform);
     void MakeCopyOf(Shape *s, TriTransform &xform);
 
     DataSet *dataset;

@@ -117,6 +117,12 @@ avtSTLFileFormat::ReadInDataset(void)
 //  Programmer: Hank Childs
 //  Creation:   May 24, 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Jun 24 10:23:18 PDT 2004
+//    Make sure to increment the reference count, since the caller will believe
+//    that it owns the returned dataset.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -134,6 +140,7 @@ avtSTLFileFormat::GetMesh(const char *mesh)
         ReadInDataset();
     }
 
+    dataset->Register(NULL);
     return dataset;
 }
 

@@ -64,6 +64,11 @@ MIRConnectivity::~MIRConnectivity()
 //    Brad Whitlock, Tue Sep 23 09:41:14 PDT 2003
 //    Made it build on Windows.
 //
+//    Jeremy Meredith, Wed Jun 23 15:31:07 PDT 2004
+//    Added true voxel cases.  Doing a translation here forced us to do
+//    more translations later.  It is both easier and faster to get the
+//    shape type correct.
+//
 // ****************************************************************************
 
 void
@@ -112,13 +117,13 @@ MIRConnectivity::SetUpConnectivity(vtkDataSet *ds)
                         *c++ = 8;
                         *c++ = zOff + yOff + i;
                         *c++ = zOff + yOff + i+1;
-                        *c++ = zOff + yOff1 + i+1;
                         *c++ = zOff + yOff1 + i;
+                        *c++ = zOff + yOff1 + i+1;
                         *c++ = zOff1 + yOff + i;
                         *c++ = zOff1 + yOff + i+1;
-                        *c++ = zOff1 + yOff1 + i+1;
                         *c++ = zOff1 + yOff1 + i;
-                        celltype[cell_idx++] = VTK_HEXAHEDRON;
+                        *c++ = zOff1 + yOff1 + i+1;
+                        celltype[cell_idx++] = VTK_VOXEL;
                     }
                 }
             }
@@ -141,9 +146,9 @@ MIRConnectivity::SetUpConnectivity(vtkDataSet *ds)
                     *c++ = 4;
                     *c++ = yOff + i;
                     *c++ = yOff + i+1;
-                    *c++ = yOff1 + i+1;
                     *c++ = yOff1 + i;
-                    celltype[cell_idx++] = VTK_QUAD;
+                    *c++ = yOff1 + i+1;
+                    celltype[cell_idx++] = VTK_PIXEL;
                 }
             }
         }

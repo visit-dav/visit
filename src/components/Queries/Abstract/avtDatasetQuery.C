@@ -3,13 +3,17 @@
 // ************************************************************************* //
 
 #include <avtDatasetQuery.h>
+
+#include <avtSourceFromAVTDataset.h>
+
 #include <vtkDataSet.h>
 
-#include <DebugStream.h>
 #include <BadIndexException.h>
-#include <ImproperUseException.h>
-#include <NoInputException.h>
-#include <avtSourceFromAVTDataset.h>
+#include <DebugStream.h>
+
+#ifdef PARALLEL
+#include <mpi.h>
+#endif
 
 
 // ****************************************************************************
@@ -124,6 +128,7 @@ avtDatasetQuery::PerformQuery(QueryAttributes *qA)
 //  Creation:   November 15, 2002 
 //
 // ****************************************************************************
+
 void
 avtDatasetQuery::Execute(avtDataTree_p inDT)
 {
@@ -308,7 +313,16 @@ avtDatasetQuery::GetResultValue(const int i)
 //
 //  Arguments:
 //    qA         The attributes controlling this query.
-//    timeSteps  The timespeps for this query.
+//    startT     The starting timestep.
+//    endT       The ending timestep.
+//    stride     The stride between timesteps.
+//    timeType   Indicates which type of time (cyle, time, timestep) to be
+//               returned in 'times.' (used for X-axis values).
+//    times      A place to store the 'time'.
+//    skippedTimeSteps    A place to store timesteps where an error 
+//                        was encountered. 
+//    errorMessage    A place to store a message concerning the type of error 
+//                        encountered. 
 //
 //  Programmer: Kathleen Bonnell 
 //  Creation:   March 24, 2004 
@@ -320,12 +334,19 @@ avtDatasetQuery::GetResultValue(const int i)
 //    Kathleen Bonnell, Thu May  6 13:43:01 PDT 2004 
 //    Ensure that last time step doesn't get repreated. 
 //
+//    Kathleen Bonnell, Thu Jun 24 07:47:56 PDT 2004
+//    Added intVector and string arguments, to indicate error conditions.
+//    Added TRY-CATCH, and a test for Error in avtDataValidity.  Skip
+//    the timestep in those cases and indicate in the args. 
+//
 // ****************************************************************************
 
 void
 avtDatasetQuery::PerformQueryInTime(QueryAttributes *qA, const int startT ,
                                     const int endT, const int stride,
-                                    const int timeType, doubleVector &times)
+                                    const int timeType, doubleVector &times,
+                                    intVector &skippedTimeSteps,
+                                    string &errorMessage)
 {
     queryAtts = *qA;
     int nFrames = (int) ceil((((float)endT -startT))/(float)stride) + 1; 
@@ -353,6 +374,7 @@ avtDatasetQuery::PerformQueryInTime(QueryAttributes *qA, const int startT ,
     avtDataObject_p origInput;
     avtDataObject_p input = GetInput();
     CopyTo(origInput, input);
+    avtDataObject_p dob;
     for (i =  startT; i < actualEnd; i+=stride)
     {
         if (i < endT)
@@ -360,7 +382,45 @@ avtDatasetQuery::PerformQueryInTime(QueryAttributes *qA, const int startT ,
         else 
             queryAtts.SetTimeStep(endT);
 
-        avtDataObject_p dob = ApplyFilters(origInput);
+        bool inError = false;
+        TRY
+        {
+            dob = ApplyFilters(origInput);
+            if (dob->GetInfo().GetValidity().HasErrorOccurred())
+            {
+                // If there was some kind of problem, we want to
+                // skip this timestep, but also note where the problem
+                // occurred. 
+                origInput->GetInfo().GetValidity().ResetErrorOccurred(); 
+                
+                dob->GetInfo().GetValidity().ResetErrorOccurred(); 
+                errorMessage = dob->GetInfo().GetValidity().GetErrorMessage();
+                inError = true;
+            }
+        }
+        CATCH2(VisItException, e)
+        {
+            errorMessage = e.GetMessage();
+            inError = true;
+        }
+        ENDTRY
+
+#ifdef PARALLEL
+        //
+        // If any processor experienced a problem at this timestep,
+        // they all should skip further processing. 
+        //
+        int hadError = (inError ? 1 : 0);
+        int collectiveHadError;;
+        MPI_Allreduce(&hadError, &collectiveHadError, 1, MPI_INT, 
+                      MPI_MAX, MPI_COMM_WORLD);
+        inError = bool(collectiveHadError);
+#endif
+        if (inError)
+        {
+            skippedTimeSteps.push_back(queryAtts.GetTimeStep());
+            continue; 
+        }
 
         //
         // Reset the input so that we have access to the data tree. 

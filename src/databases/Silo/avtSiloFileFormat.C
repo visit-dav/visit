@@ -3720,6 +3720,10 @@ avtSiloFileFormat::GetUnstructuredMesh(DBfile *dbfile, const char *mn,
 //    Hank Childs, Thu Jan 15 07:24:23 PST 2004
 //    Accounted for quads that are stored as hexahedrons.
 //
+//    Hank Childs, Thu Jun 24 09:15:03 PDT 2004
+//    Make sure the cell locations for quads that are stored as hexahedrons
+//    is correct.
+//
 // ****************************************************************************
 
 void
@@ -3760,16 +3764,17 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
     bool mustResize = false;
     for (i = 0 ; i < zl->nshapes ; i++)
     {
+        const int shapecnt = zl->shapecnt[i];
+        const int shapesize = zl->shapesize[i];
+
         int vtk_zonetype = SiloZoneTypeToVTKZoneType(zl->shapetype[i]);
         int effective_vtk_zonetype = vtk_zonetype;
+        int effective_shapesize = shapesize;
 
         if (vtk_zonetype < 0)
         {
             EXCEPTION1(InvalidZoneTypeException, zl->shapetype[i]);
         }
-
-        const int shapecnt = zl->shapecnt[i];
-        const int shapesize = zl->shapesize[i];
 
         //
         // Some users store out quads as hexahedrons -- they store quad
@@ -3789,6 +3794,7 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
                 {
                     vtk_zonetype = -1;
                     effective_vtk_zonetype = VTK_QUAD;
+                    effective_shapesize = 4;
                     mustResize = true;
                 }
             }
@@ -3837,7 +3843,7 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
             }
 
             nodelist += shapesize;
-            currentIndex += shapesize+1;
+            currentIndex += effective_shapesize+1;
         }
     }
 

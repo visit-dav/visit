@@ -508,7 +508,7 @@ QvisHostProfileWindow::UpdateWindow(bool doAll)
 //
 //   Jeremy Meredith, Wed Feb 27 11:14:57 PST 2002
 //   Made it pull the old host name from the widget before
-//   clearing the text.  (Oops! :)
+//   clearing the text.
 //
 // ****************************************************************************
 
@@ -2295,6 +2295,9 @@ QvisHostProfileWindow::activateProfile(QListBoxItem *item)
 //   Changed to a different style callback since the hostname in the
 //   tab is only a shortened version of the ones in the profiles.
 //
+//   Jeremy Meredith, Thu Jun 24 10:09:40 PDT 2004
+//   Forced an update of the profile list to fix a bug.  ('5083)
+//
 // ****************************************************************************
 
 void
@@ -2316,6 +2319,12 @@ QvisHostProfileWindow::pageTurned(QWidget *tab)
     {
         // Get the current attributes in case they were changed.
         GetCurrentValues(-1);
+
+        // If the user has changed the host name but never hit apply
+        // or return, then a dismiss/show of this window causes a
+        // pageTurned event but can leave the tab names out of date;
+        // force an update here.
+        UpdateProfileList();
 
         // Cast the subject pointer to something useful.
         HostProfileList *profiles = (HostProfileList *)subject;

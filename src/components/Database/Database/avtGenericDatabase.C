@@ -237,6 +237,9 @@ avtGenericDatabase::SetDatabaseMetaData(avtDatabaseMetaData *md, int timeState)
 //    Add OriginalNodesArray whenever MatSelect will be performed,
 //    to ensure that pick will operate correctly.  
 //
+//    Kathleen Bonnell, Wed Jun 23 17:04:23 PDT 2004 
+//    Add TRY-CATCH, so that no process skips the parallel communication. 
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -264,45 +267,66 @@ avtGenericDatabase::GetOutput(avtDataSpecification_p spec,
     int                    nDomains = domains.size();
     avtDatasetCollection   datasetCollection(nDomains);
 
-    //
-    // This is the primary routine that reads things in from disk.
-    //
-    ReadDataset(datasetCollection, domains, spec, src);
-
-    //
-    // Now that we have read things in from disk, verify that the dataset
-    // is valid, since routines like the MIR downstream will assume they are.
-    //
-    avtDatasetVerifier verifier;
-    vtkDataSet **ds_list = new vtkDataSet*[nDomains];
-    int i;
-    for (i = 0 ; i < nDomains ; i++)
-    {
-        ds_list[i] = datasetCollection.GetDataset(i, 0);
-    }
-    verifier.VerifyDatasets(nDomains, ds_list, domains);
-    delete [] ds_list;
-
-    //
-    // Do species selection if appropriate.
-    //
-    vector<bool> speciesList;
-    if (trav.GetSpecies(speciesList))
-    {
-        SpeciesSelect(datasetCollection, domains, speciesList, spec, src);
-    }
-
-
-    //
-    //  HACK!!! Pick requires original cells array whenever MaterialSelection
-    //  has occurred.  Rather than incur the expense of re-execution at StartPick,
-    //  always send the array when MatSelected, until a better solution is derived.
-    // 
     bool shouldDoMatSelect = false;
-    for (i = 0 ; i < datasetCollection.GetNDomains() ; i++)
+    bool hadError = false;
+    TRY
     {
-        shouldDoMatSelect = shouldDoMatSelect || datasetCollection.needsMatSelect[i];
+        //
+        // This is the primary routine that reads things in from disk.
+        //
+        ReadDataset(datasetCollection, domains, spec, src);
+
+        //
+        // Now that we have read things in from disk, verify that the dataset
+        // is valid, since routines like the MIR downstream will assume they are.
+        //
+        avtDatasetVerifier verifier;
+        vtkDataSet **ds_list = new vtkDataSet*[nDomains];
+        int i;
+        for (i = 0 ; i < nDomains ; i++)
+        {
+            ds_list[i] = datasetCollection.GetDataset(i, 0);
+        }
+        verifier.VerifyDatasets(nDomains, ds_list, domains);
+        delete [] ds_list;
+
+        //
+        // Do species selection if appropriate.
+        //
+        vector<bool> speciesList;
+        if (trav.GetSpecies(speciesList))
+        {
+            SpeciesSelect(datasetCollection, domains, speciesList, spec, src);
+        }
+
+
+        //
+        //  HACK!!! Pick requires original cells array whenever 
+        //  MaterialSelection has occurred.  Rather than incur the expense of 
+        //  re-execution at StartPick, always send the array when MatSelected,
+        //  until a better solution is derived.
+        // 
+        for (i = 0 ; i < datasetCollection.GetNDomains() ; i++)
+        {
+            shouldDoMatSelect = shouldDoMatSelect || 
+                                datasetCollection.needsMatSelect[i];
+        }
     }
+    CATCH2(VisItException, e)
+    {
+        //
+        //  Only set an error condition, the early exit from this method
+        //  is after the parallel communication.  There may be a better
+        //  way to handle this.
+        //
+        hadError = true;
+        debug1 << "Catching the exception at the generic database level." << endl;
+        avtDataValidity &v = src->GetOutput()->GetInfo().GetValidity();
+        v.ErrorOccurred();
+        string tmp = e.GetMessage(); // Otherwise there is a const problem.
+        v.SetErrorMessage(tmp);
+    }
+    ENDTRY
 
 #ifdef PARALLEL
     //
@@ -314,6 +338,12 @@ avtGenericDatabase::GetOutput(avtDataSpecification_p spec,
                   1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
     shouldDoMatSelect = bool(shouldDoMatSelectAsIntCollective);
 #endif
+
+    if (hadError)
+    {
+        avtDataTree_p rv = new avtDataTree();
+        return rv;
+    }
 
     if (shouldDoMatSelect)
     {

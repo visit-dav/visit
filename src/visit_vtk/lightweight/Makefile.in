@@ -41,6 +41,9 @@
 #    Kathleen Bonnell, Fri Apr 16 13:36:21 PDT 2004 
 #    Added vtkVisItPointLocator. 
 #
+#    Jeremy Meredith, Wed Jun 23 15:36:29 PDT 2004
+#    Added voxel and pixel cases.
+#
 ##############################################################################
 
 ##
@@ -54,11 +57,13 @@
 ##
 SRC=InitVTKNoGraphics.C \
     ClipCasesHex.C \
+    ClipCasesPix.C \
     ClipCasesPyr.C \
     ClipCasesQua.C \
     ClipCasesTet.C \
     ClipCasesTri.C \
     ClipCasesWdg.C \
+    ClipCasesVox.C \
     vtkDataSetFromVolume.C \
     vtkDebugStream.C \
     vtkTriangulationTables.C \

@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Plugin name="FilledBoundary" type="plot" label="Filled Boundary" version="1.0" enabled="true" vartype="subset" iconFile="FilledBoundary.xpm">
+  <Plugin name="FilledBoundary" type="plot" label="Filled Boundary" version="1.0" enabled="true" vartype="material" iconFile="FilledBoundary.xpm">
     <Attribute name="FilledBoundaryAttributes" purpose="This class contains the plot attributes for the filled boundary plot." persistent="true" codefile="FilledBoundaryAttributes.code">
       <Enum name="Boundary_Type">
         Domain

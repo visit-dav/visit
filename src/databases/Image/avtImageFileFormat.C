@@ -5,7 +5,7 @@
 #include <avtImageFileFormat.h>
 
 #include <string>
-#include <iostream>
+#include <iostream.h>
 
 #include <vtkFloatArray.h>
 #include <vtkRectilinearGrid.h>
@@ -29,9 +29,7 @@
 #include <vtkCellData.h>
 #include <vector>
 using     std::vector;
-
 using     std::string;
-using namespace std;
 
 // ****************************************************************************
 //  Method: avtImage constructor

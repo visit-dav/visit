@@ -4,6 +4,8 @@
 
 #include <float.h>
 #include <snprintf.h>
+#include <string.h>
+#include <strstream.h>
 
 #include <avtQueryOverTimeFilter.h>
 #include <avtQueryFactory.h>
@@ -36,12 +38,13 @@
 #include <avtWeightedVariableSummationQuery.h>
 
 #include <avtCallback.h>
-#include <avtExtents.h>
 #include <avtDatasetExaminer.h>
+#include <avtExtents.h>
+
 #include <VisItException.h>
 #include <DebugStream.h>
 
-
+using std::string;
 //
 // Function Prototypes
 //
@@ -117,6 +120,11 @@ avtQueryOverTimeFilter::Create(const AttributeGroup *atts)
 //    Kathleen Bonnell, Tue May  4 14:21:37 PDT 2004 
 //    Replaced query->SetSILUseSet with query->SetSILRestriction. 
 //
+//    Kathleen Bonnell, Thu Jun 24 07:54:44 PDT 2004 
+//    Pass storage for skippedTimesteps and error message to the query.
+//    Check for skippedTimeSteps and issue a Warning message.
+//    Changed CATCH to CATCHALL.  Reset avtDataValidity before processing.
+//
 // ****************************************************************************
 
 void
@@ -146,13 +154,22 @@ avtQueryOverTimeFilter::Execute(void)
     int endTime = atts.GetEndTime();
     int stride = atts.GetStride();
     int timeType = (int) atts.GetTimeType();  // 0 = cycle, 1 = time, 2 = timestep
+    intVector skippedTimes;
+    string eM;
+ 
+    //
+    // Make sure that out Output doesn't have any error settings hanging around
+    // from the CloneNetwork process that don't pertain to this execution:
+    //
+    GetOutput()->GetInfo().GetValidity().ResetErrorOccurred();
+
 
     TRY
     {
         query->PerformQueryInTime(&qatts, startTime, endTime, stride, 
-                                  timeType, times);
+                                  timeType, times, skippedTimes, eM);
     }
-    CATCH( ... )
+    CATCHALL( ... )
     {
         avtDataTree_p dummy = new avtDataTree();
         SetOutputDataTree(dummy);
@@ -173,9 +190,23 @@ avtQueryOverTimeFilter::Execute(void)
                << results.size() << ") does not equal number "
                << "of timesteps (" << times.size() << ")." << endl;
         avtCallback::IssueWarning(
-            "QueryOverTime error, number of results does not equal "
+            "\nQueryOverTime error, number of results does not equal "
             "number of timestates.  Curve being created may be missing "
             "some values.  Please contact a VisIt developer."); 
+    }
+    if (skippedTimes.size() != 0)
+    {
+        ostrstream osm;
+        osm << "\nQueryOverTime ( " << qatts.GetName()  << ") experienced\n"
+            << "problems with the following timesteps and \n"
+            << "skipped them while generating the curve:\n   ";
+
+        for (int j = 0; j < skippedTimes.size(); j++)
+            osm << skippedTimes[j] << " ";
+        osm << "\nLast message received: " << eM << endl;
+        string errorMessage = osm.str();                   
+        debug5 << errorMessage.c_str() << endl;
+        avtCallback::IssueWarning(errorMessage.c_str());
     }
 
     SetOutputDataTree(tree);

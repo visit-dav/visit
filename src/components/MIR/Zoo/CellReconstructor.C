@@ -75,6 +75,9 @@ CellReconstructor::~CellReconstructor()
 //    as it was blatantly wrong.  The faster way was using matsAtCellOneAway, 
 //    but it needed to be using matsAtCellOrig.
 //
+//    Jeremy Meredith, Thu Jun 24 10:38:05 PDT 2004
+//    Added Voxel and Pixel input shapes.
+//
 // ****************************************************************************
 void
 CellReconstructor::ReconstructCell(int cellid_, int celltype_,
@@ -248,6 +251,12 @@ CellReconstructor::ReconstructCell(int cellid_, int celltype_,
                     numOutput  = numClipShapesHex[lookup_case];
                     vertices_from_edges = hexVerticesFromEdges;
                     break;
+                  case VTK_VOXEL:
+                    startIndex = startClipShapesVox[lookup_case];
+                    splitCase  = &clipShapesVox[startIndex];
+                    numOutput  = numClipShapesVox[lookup_case];
+                    vertices_from_edges = voxVerticesFromEdges;
+                    break;
                   case VTK_TRIANGLE:
                     startIndex = startClipShapesTri[lookup_case];
                     splitCase  = &clipShapesTri[startIndex];
@@ -259,6 +268,12 @@ CellReconstructor::ReconstructCell(int cellid_, int celltype_,
                     splitCase  = &clipShapesQua[startIndex];
                     numOutput  = numClipShapesQua[lookup_case];
                     vertices_from_edges = quadVerticesFromEdges;
+                    break;
+                  case VTK_PIXEL:
+                    startIndex = startClipShapesPix[lookup_case];
+                    splitCase  = &clipShapesPix[startIndex];
+                    numOutput  = numClipShapesPix[lookup_case];
+                    vertices_from_edges = pixelVerticesFromEdges;
                     break;
                 }
 

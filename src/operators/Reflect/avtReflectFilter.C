@@ -6,6 +6,8 @@
 
 #include <float.h>
 
+#include <vtkCellData.h>
+#include <vtkPointData.h>
 #include <vtkPointSet.h>
 #include <vtkRectilinearGrid.h>
 
@@ -17,6 +19,8 @@
 #include <ImproperUseException.h>
 
 using   std::string;
+
+static void ReflectVectorData(vtkDataSet *in_ds, int dim);
 
 
 // ****************************************************************************
@@ -410,6 +414,11 @@ avtReflectFilter::ExecuteDataTree(vtkDataSet *in_ds, int dom, string str)
 //  Programmer: Hank Childs
 //  Creation:   March 7, 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Jun 24 12:53:47 PDT 2004
+//    Reflect vector data as well.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -433,6 +442,8 @@ avtReflectFilter::Reflect(vtkDataSet *ds, int dim)
         debug1 << "Unknown data type for reflect filter = " << dstype << endl;
         break;
     }
+
+    ReflectVectorData(rv, dim);
 
     return rv;
 }
@@ -596,6 +607,140 @@ avtReflectFilter::ReflectPointSet(vtkPointSet *ds, int dim)
     outPts->Delete();
 
     return out;
+}
+
+
+// ****************************************************************************
+//  Function: ReflectVectorData
+//
+//  Purpose:
+//      Reflects the vector data.
+//
+//  Programmer: Hank Childs
+//  Creation:   June 24, 2004
+//
+// ****************************************************************************
+
+static void
+ReflectVectorData(vtkDataSet *ds, int dim)
+{
+    if (dim == 0)
+    {
+        // No reflection.
+        return;
+    }
+
+    int   i, j;
+
+    // First identify which variables are vectors.  Point vectors only.
+    std::vector<vtkDataArray *> pt_vectors;
+    vtkPointData *pd = ds->GetPointData();
+    for (i = 0 ; i < pd->GetNumberOfArrays() ; i++)
+    {
+        vtkDataArray *da = pd->GetArray(i);
+        if (da->GetNumberOfComponents() == 3)
+        {
+            if (da->GetDataType() != VTK_FLOAT)
+                continue;
+            pt_vectors.push_back(da);
+        }
+    }
+    
+    // Now reverse the orientation of the vectors based on the axis of
+    // reflection.  Point vectors only.
+    std::vector<vtkDataArray *> new_pt_vectors;
+    for (i = 0 ; i < pt_vectors.size() ; i++)
+    {
+        vtkDataArray *da = pt_vectors[i]->NewInstance();
+        da->DeepCopy(pt_vectors[i]);
+        da->SetName(pt_vectors[i]->GetName());
+        const int ntups = da->GetNumberOfTuples();
+        float *ptr = (float *) da->GetVoidPointer(0);
+        for (j = 0 ; j < ntups ; j++)
+        {
+            if (dim & 1)
+                *ptr *= -1.;
+            ptr++;
+            if (dim & 2)
+                *ptr *= -1.;
+            ptr++;
+            if (dim & 4)
+                *ptr *= -1.;
+            ptr++;
+        }
+        new_pt_vectors.push_back(da);
+    }
+
+    // Now replace all of the original vectors with our new ones.
+    for (i = 0 ; i < new_pt_vectors.size() ; i++)
+    {
+        bool isActiveVector = false;
+        vtkDataArray *da = pd->GetVectors();
+        if (da != NULL)
+           if (strcmp(da->GetName(), new_pt_vectors[i]->GetName()) == 0)
+               isActiveVector = true;
+        pd->RemoveArray(new_pt_vectors[i]->GetName());
+        if (isActiveVector)
+            pd->SetVectors(new_pt_vectors[i]);
+        else
+            pd->AddArray(new_pt_vectors[i]);
+        new_pt_vectors[i]->Delete();
+    }
+
+    // First identify which variables are vectors.  Now the cell vectors
+    std::vector<vtkDataArray *> cell_vectors;
+    vtkCellData *cd = ds->GetCellData();
+    for (i = 0 ; i < cd->GetNumberOfArrays() ; i++)
+    {
+        vtkDataArray *da = cd->GetArray(i);
+        if (da->GetNumberOfComponents() == 3)
+        {
+            if (da->GetDataType() != VTK_FLOAT)
+                continue;
+            cell_vectors.push_back(da);
+        }
+    }
+    
+    // Now reverse the orientation of the vectors based on the axis of
+    // reflection.  Cell vectors only.
+    std::vector<vtkDataArray *> new_cell_vectors;
+    for (i = 0 ; i < cell_vectors.size() ; i++)
+    {
+        vtkDataArray *da = cell_vectors[i]->NewInstance();
+        da->DeepCopy(cell_vectors[i]);
+        da->SetName(cell_vectors[i]->GetName());
+        const int ntups = da->GetNumberOfTuples();
+        float *ptr = (float *) da->GetVoidPointer(0);
+        for (j = 0 ; j < ntups ; j++)
+        {
+            if (dim & 1)
+                *ptr *= -1.;
+            ptr++;
+            if (dim & 2)
+                *ptr *= -1.;
+            ptr++;
+            if (dim & 4)
+                *ptr *= -1.;
+            ptr++;
+        }
+        new_cell_vectors.push_back(da);
+    }
+
+    // Now replace all of the original vectors with our new ones.
+    for (i = 0 ; i < new_cell_vectors.size() ; i++)
+    {
+        bool isActiveVector = false;
+        vtkDataArray *da = cd->GetVectors();
+        if (da != NULL)
+           if (strcmp(da->GetName(), new_cell_vectors[i]->GetName()) == 0)
+               isActiveVector = true;
+        cd->RemoveArray(new_cell_vectors[i]->GetName());
+        if (isActiveVector)
+            cd->SetVectors(new_cell_vectors[i]);
+        else
+            cd->AddArray(new_cell_vectors[i]);
+        new_cell_vectors[i]->Delete();
+    }
 }
 
 

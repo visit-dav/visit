@@ -25,7 +25,12 @@ extern VISIT_VTK_LIGHT_API int hexTriangulationTable[256][16];
 extern VISIT_VTK_LIGHT_API int hexVerticesFromEdges[12][2];
 extern VISIT_VTK_LIGHT_API int hexQuadFaces[6][4];
 
+extern VISIT_VTK_LIGHT_API int voxTriangulationTable[256][16];
+extern VISIT_VTK_LIGHT_API int voxVerticesFromEdges[12][2];
+extern VISIT_VTK_LIGHT_API int voxQuadFaces[6][4];
+
 extern VISIT_VTK_LIGHT_API int triVerticesFromEdges[3][2];
 extern VISIT_VTK_LIGHT_API int quadVerticesFromEdges[4][2];
+extern VISIT_VTK_LIGHT_API int pixelVerticesFromEdges[4][2];
 
 #endif

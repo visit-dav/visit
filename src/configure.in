@@ -484,6 +484,10 @@ dnl
 dnl    Brad Whitlock, Thu May 20 18:58:29 PST 2004
 dnl    Fixed a bug that made configure report the wrong Qt version.
 dnl
+dnl    Jeremy Meredith, Tue Jun 22 09:45:01 PDT 2004
+dnl    Have it build optimized if no CXXFLAGS were specified through
+dnl    the environment variable.
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -504,6 +508,15 @@ else
 fi
 TOPDIR=`$pwd`
 AC_SUBST(TOPDIR)
+
+dnl
+dnl Make note if no CXXFLAGS have yet been specified; we won't like the
+dnl defaults that configure chooses and this lets us override them easily
+dnl
+emptycxxflags="no"
+if test -z $CXXFLAGS; then
+    emptycxxflags="yes"
+fi
 
 ### Init the tflops_override variable.
 tflops_override=no
@@ -1133,6 +1146,17 @@ case $withval in
 esac
 AC_SUBST(DB_OPTIONAL_DIRS)
 
+dnl
+dnl Make note if no CXXFLAGS have STILL yet been specified; this is the
+dnl same check as for emptycxxflags above, except it is possible that a
+dnl config-site file added some, in which case we need to append, not
+dnl replace, the cxxflags.
+dnl
+defaultcxxflags="no"
+if test -z "$CXXFLAGS"; then
+    defaultcxxflags="yes"
+fi
+
 # Check for programs.
 # We shouldn't depend on too many!
 AC_PROG_CXX
@@ -1145,6 +1169,18 @@ AC_PROG_MAKE_SET
 AC_PROG_RANLIB
 AC_CHECK_PROG(MAKEDEPEND,makedepend,makedepend)
 AC_ISC_POSIX
+
+dnl
+dnl If they didn't specify any CXXFLAGS through an environment variable,
+dnl then we should choose optimized for them.
+dnl
+if test $emptycxxflags = "yes"; then
+    if test $defaultcxxflags = "yes"; then
+        CXXFLAGS="-O2"
+    else
+        CXXFLAGS="-O2 $CXXFLAGS"
+    fi
+fi
 
 # Check to see if we're running clearmake.
 # If we are, set the build verbosity to 0 so that output won't mess up the rest
