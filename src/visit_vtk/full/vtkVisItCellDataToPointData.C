@@ -36,6 +36,14 @@ vtkVisItCellDataToPointData::vtkVisItCellDataToPointData()
 
 #define VTK_MAX_CELLS_PER_POINT 4096
 
+// **************************************************************************** 
+//  Modifications:
+//
+//    Hank Childs, Wed Mar  9 16:23:01 PST 2005
+//    Fix minor UMR.
+//
+// **************************************************************************** 
+
 void vtkVisItCellDataToPointData::Execute()
 {
   vtkIdType cellId, ptId, i, j, k, l, m;
@@ -74,7 +82,7 @@ void vtkVisItCellDataToPointData::Execute()
   outPD->CopyAllocate(inPD,numPts);
 
   bool canFastTrackStructured = false;
-  int dims[3];
+  int dims[3] = { 0, 0, 0 };
   if (input->GetDataObjectType() == VTK_RECTILINEAR_GRID)
   {
     ((vtkRectilinearGrid *) input)->GetDimensions(dims);

@@ -81,6 +81,9 @@ static const char   *GetOriginalVariableName(const avtDatabaseMetaData *,
 //    Hank Childs, Thu Sep 20 14:19:34 PDT 2001
 //    Give the formats a chance to put stuff in the cache.
 //
+//    Hank Childs, Fri Mar 11 11:24:25 PST 2005
+//    Initialize non-cachable references.
+//
 // ****************************************************************************
 
 avtGenericDatabase::avtGenericDatabase(avtFileFormatInterface *inter)
@@ -88,6 +91,8 @@ avtGenericDatabase::avtGenericDatabase(avtFileFormatInterface *inter)
     Interface = inter;
     Interface->SetCache(&cache);
     lastTimestep = -1;
+    nonCachableVariableReference = NULL;
+    nonCachableMeshReference = NULL;
 }
 
 
@@ -646,7 +651,11 @@ avtGenericDatabase::UpdateInternalState(int ts)
 //
 //  Modifications:
 //
+//    Hank Childs, Fri Mar 11 11:24:25 PST 2005
+//    Free up the memory references to non-cachable variables.
+//
 // ****************************************************************************
+
 void
 avtGenericDatabase::FreeUpResources(void)
 {
@@ -654,6 +663,66 @@ avtGenericDatabase::FreeUpResources(void)
            << "memory)" << endl;
     Interface->FreeUpResources(-1, -1);
     cache.ClearTimestep(lastTimestep);
+    ManageMemoryForNonCachableVar(NULL);
+    ManageMemoryForNonCachableMesh(NULL);
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::ManageMemoryForNonCachableVar
+//
+//  Purpose:
+//      Some variables are non-cachable.  But we own their memory and want
+//      to do bookkeeping right away.  This is a spot where you can register
+//      a variable and it will be kept until the method is called again.
+//      It is assumed that by this time the variable has been associated with
+//      a data set that now owns it.
+//
+//  Programmer: Hank Childs
+//  Creation:   March 11, 2005
+//
+// ****************************************************************************
+
+void
+avtGenericDatabase::ManageMemoryForNonCachableVar(vtkDataArray *v)
+{
+    if (nonCachableVariableReference != NULL)
+    {
+        nonCachableVariableReference->Delete();
+        nonCachableVariableReference = NULL;
+    }
+    nonCachableVariableReference = v;
+    if (nonCachableVariableReference != NULL)
+        nonCachableVariableReference->Register(NULL);
+}
+ 
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::ManageMemoryForNonCachableMesh
+//
+//  Purpose:
+//      Some meshes are non-cachable.  But we own their memory and want
+//      to do bookkeeping right away.  This is a spot where you can register
+//      a mesh and it will be kept until the method is called again.
+//      It is assumed that by this time the variable has been associated with
+//      a data set that now owns it.
+//
+//  Programmer: Hank Childs
+//  Creation:   March 11, 2005
+//
+// ****************************************************************************
+
+void
+avtGenericDatabase::ManageMemoryForNonCachableMesh(vtkDataSet *v)
+{
+    if (nonCachableMeshReference != NULL)
+    {
+        nonCachableMeshReference->Delete();
+        nonCachableMeshReference = NULL;
+    }
+    nonCachableMeshReference = v;
+    if (nonCachableMeshReference != NULL)
+        nonCachableMeshReference->Register(NULL);
 }
 
 
@@ -1553,6 +1622,9 @@ avtGenericDatabase::GetSpeciesVariable(const char *specname, int ts,
 //    Hank Childs, Tue Feb 15 07:21:10 PST 2005
 //    Make translations when we have hidden characters.
 //
+//    Hank Childs, Fri Mar 11 11:24:25 PST 2005
+//    Fix memory leak.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -1600,15 +1672,17 @@ avtGenericDatabase::GetScalarVariable(const char *varname, int ts, int domain,
             {
                 cache.CacheVTKObject(varname, avtVariableCache::SCALARS_NAME,
                                      ts, domain, material, var);
-
-                //
-                // We need to decrement the reference count of the variable 
-                // returned from FetchVar, but we could not do it previously 
-                // because it would knock the count down to 0 and delete it.
-                // Since we have cached it, we can do it now.
-                //
-                var->Delete();
             }
+            else
+                ManageMemoryForNonCachableVar(var);
+
+            //
+            // We need to decrement the reference count of the variable 
+            // returned from FetchVar, but we could not do it previously 
+            // because it would knock the count down to 0 and delete it.
+            // Since we have cached it, we can do it now.
+            //
+            var->Delete();
         }
     }
 
@@ -1647,6 +1721,9 @@ avtGenericDatabase::GetScalarVariable(const char *varname, int ts, int domain,
 //
 //    Hank Childs, Tue Feb 15 07:21:10 PST 2005
 //    Make translations when we have hidden characters.
+//
+//    Hank Childs, Fri Mar 11 11:24:25 PST 2005
+//    Fix memory leak.
 //
 // ****************************************************************************
 
@@ -1694,15 +1771,17 @@ avtGenericDatabase::GetVectorVariable(const char *varname, int ts, int domain,
             {
                 cache.CacheVTKObject(varname, avtVariableCache::VECTORS_NAME,
                                      ts, domain, material, var);
-
-                //
-                // We need to decrement the reference count of the variable 
-                // returned from FetchVar, but we could not do it previously 
-                // because it would knock the count down to 0 and delete it.
-                // Since we have cached it, we can do it now.
-                //
-                var->Delete();
             }
+            else
+                ManageMemoryForNonCachableVar(var);
+
+            //
+            // We need to decrement the reference count of the variable 
+            // returned from FetchVar, but we could not do it previously 
+            // because it would knock the count down to 0 and delete it.
+            // Since we have cached it, we can do it now.
+            //
+            var->Delete();
         }
     }
 
@@ -1732,6 +1811,9 @@ avtGenericDatabase::GetVectorVariable(const char *varname, int ts, int domain,
 //
 //    Hank Childs, Tue Feb 15 07:21:10 PST 2005
 //    Make translations when we have hidden characters.
+//
+//    Hank Childs, Fri Mar 11 11:24:25 PST 2005
+//    Fix memory leak.
 //
 // ****************************************************************************
 
@@ -1780,15 +1862,17 @@ avtGenericDatabase::GetTensorVariable(const char *varname, int ts, int domain,
             {
                 cache.CacheVTKObject(varname, avtVariableCache::TENSORS_NAME,
                                      ts, domain, material, var);
-
-                //
-                // We need to decrement the reference count of the variable 
-                // returned from FetchVar, but we could not do it previously 
-                // because it would knock the count down to 0 and delete it.
-                // Since we have cached it, we can do it now.
-                //
-                var->Delete();
             }
+            else
+                ManageMemoryForNonCachableVar(var);
+
+            //
+            // We need to decrement the reference count of the variable 
+            // returned from FetchVar, but we could not do it previously 
+            // because it would knock the count down to 0 and delete it.
+            // Since we have cached it, we can do it now.
+            //
+            var->Delete();
         }
     }
 
@@ -1818,6 +1902,9 @@ avtGenericDatabase::GetTensorVariable(const char *varname, int ts, int domain,
 //
 //    Hank Childs, Tue Feb 15 07:21:10 PST 2005
 //    Make translations when we have hidden characters.
+//
+//    Hank Childs, Fri Mar 11 11:24:25 PST 2005
+//    Fix memory leak.
 //
 // ****************************************************************************
 
@@ -1868,15 +1955,17 @@ avtGenericDatabase::GetSymmetricTensorVariable(const char *varname, int ts,
             {
                 cache.CacheVTKObject(varname, avtVariableCache::TENSORS_NAME,
                                      ts, domain, material, var);
-
-                //
-                // We need to decrement the reference count of the variable 
-                // returned from FetchVar, but we could not do it previously 
-                // because it would knock the count down to 0 and delete it.
-                // Since we have cached it, we can do it now.
-                //
-                var->Delete();
             }
+            else
+                ManageMemoryForNonCachableVar(var);
+
+            //
+            // We need to decrement the reference count of the variable 
+            // returned from FetchVar, but we could not do it previously 
+            // because it would knock the count down to 0 and delete it.
+            // Since we have cached it, we can do it now.
+            //
+            var->Delete();
         }
     }
 
@@ -2021,15 +2110,17 @@ avtGenericDatabase::GetMesh(const char *meshname, int ts, int domain,
         {
             cache.CacheVTKObject(meshname, avtVariableCache::DATASET_NAME, ts,
                                  domain, material, mesh);
-
-            //
-            // We need to decrement the reference count of the variable returned
-            // from FetchMesh, but we could not do it previously because it
-            // would knock the count down to 0 and delete it.  Since we have
-            // cached it, we can do it now.
-            //
-            mesh->Delete();
         }
+        else
+            ManageMemoryForNonCachableMesh(mesh);
+
+        //
+        // We need to decrement the reference count of the variable returned
+        // from FetchMesh, but we could not do it previously because it
+        // would knock the count down to 0 and delete it.  Since we have
+        // cached it, we can do it now.
+        //
+        mesh->Delete();
     }
 
     //
@@ -2497,6 +2588,9 @@ avtGenericDatabase::AddOriginalNodesArray(vtkDataSet *ds, const int domain)
 //    Changed 'vector<int>' to 'intVector', and 'vector<string>' to 
 //    'stringVector'.
 //
+//    Hank Childs, Thu Mar 10 16:48:19 PST 2005
+//    Fix memory leak with boundary plots.
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -2629,6 +2723,7 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
             vtkDataSet *in_ds = out_ds[d];
 
             bf->SetInput((vtkUnstructuredGrid*)in_ds);
+            in_ds->Delete();
             out_ds[d] = bf->GetOutput();
             bf->Update();
 
@@ -4172,6 +4267,9 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundariesFromFile(
 //    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004 
 //    Changed 'vector<int>' to 'intVector'.
 //
+//    Hank Childs, Sun Mar 13 10:47:59 PST 2005
+//    Fix memory leak.
+//
 // ****************************************************************************
 
 bool
@@ -4514,6 +4612,7 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
 
         for (i = 0 ; i < doms.size() ; i++)
             ds.SetMaterial(i, newMatList[i]);
+        ds.MaterialsShouldBeFreed();
 
         // mixvars
         if (nummixvars > 0)
@@ -6841,6 +6940,9 @@ avtGenericDatabase::QueryMaterial(const string &varName, const int dom,
 //    Changed 'std::vector<int>' to 'intVector', and 'std::vector<std::string>'
 //    to 'stringVector'.
 //    
+//    Hank Childs, Sun Mar 13 13:42:04 PST 2005
+//    Fix memory leak.
+//
 // ****************************************************************************
 
 bool
@@ -7007,6 +7109,7 @@ avtGenericDatabase::QueryNodes(const string &varName, const int dom,
             vtkVisItUtility::GetCellCenter(ds->GetCell(zone), ppt);
         }
         rv = true;
+        ds->Delete();
     }
     return rv;
 }
@@ -7149,6 +7252,9 @@ avtGenericDatabase::QueryMesh(const string &varName, const int ts,
 //    Changed 'std::vector<int>' to 'intVector', and 
 //    'std::vector<std::string>'.
 //    
+//    Hank Childs, Thu Mar 10 10:23:02 PST 2005
+//    Removed memory leak.
+//
 // ****************************************************************************
 
 bool
@@ -7173,7 +7279,6 @@ avtGenericDatabase::QueryZones(const string &varName, const int dom,
     bool rv = false; 
     if (ds)
     {
-        vtkPoints *points = vtkVisItUtility::GetPoints(ds);
         vtkIdList *ids = vtkIdList::New();
         vtkIdType *idptr; 
         vtkIdType minId = foundEl;
@@ -7188,9 +7293,9 @@ avtGenericDatabase::QueryZones(const string &varName, const int dom,
 
         if ( minId != -1)
         {
-            ppt[0] = points->GetPoint(minId)[0];
-            ppt[1] = points->GetPoint(minId)[1];
-            ppt[2] = points->GetPoint(minId)[2];
+            ppt[0] = ds->GetPoint(minId)[0];
+            ppt[1] = ds->GetPoint(minId)[1];
+            ppt[2] = ds->GetPoint(minId)[2];
 
             foundEl = minId;
 
@@ -7224,7 +7329,7 @@ avtGenericDatabase::QueryZones(const string &varName, const int dom,
             }
             if (physicalNodes)
             {
-                points->GetPoint(minId, coord); 
+                ds->GetPoint(minId, coord); 
                 if (dimension  == 2)
                 {
                     sprintf(buff, "<%g, %g>", coord[0], coord[1]);
@@ -7300,6 +7405,7 @@ avtGenericDatabase::QueryZones(const string &varName, const int dom,
             }
         } // found valid point
         ids->Delete();
+        ds->Delete();
     }
     return rv;
 }
@@ -7570,6 +7676,9 @@ avtGenericDatabase::ScaleMesh(vtkDataSet *ds)
 //    first and then the variable. This is so plugin can handle things
 //    like removal of arb-poly zones correctly.
 //
+//    Hank Childs, Thu Mar 10 17:33:17 PST 2005
+//    Fix memory leak.
+//
 // ****************************************************************************
 
 bool
@@ -7595,6 +7704,7 @@ avtGenericDatabase::QuerySpecies(const string &varName, const int dom,
     vtkDataSet *mesh = GetMesh(meshname.c_str(), ts, dom, matName.c_str());
     vtkDataArray *species = GetSpeciesVariable(varName.c_str(), ts, dom, 
                                 matName.c_str(), mesh->GetNumberOfCells());
+    mesh->Delete();
     avtMaterial *mat = GetMaterial(dom, matName.c_str(), ts);
     avtSpecies *spec = GetSpecies(dom, varName.c_str(), ts);
 
@@ -7778,6 +7888,9 @@ avtGenericDatabase::QuerySpecies(const string &varName, const int dom,
 //    Kathleen Bonnell, Mon Apr 19 15:49:05 PDT 2004 
 //    Ensure that the timestep being queried is the active one.
 //    
+//    Hank Childs, Thu Mar 10 17:33:17 PST 2005
+//    Fix memory leak.
+//
 // ****************************************************************************
 
 bool                
@@ -7798,6 +7911,7 @@ avtGenericDatabase::FindElementForPoint(const char *var, const int ts,
     {
         elNum = vtkVisItUtility::FindCell(ds, pt);
     }
+    ds->Delete();
 
     return  (elNum != -1);
 }
@@ -7900,6 +8014,9 @@ avtGenericDatabase::GetDomainName(const string &varName, const int ts,
 //    Added const char* arg to QueryCoords for meshName, use the meshname
 //    to determine where the coords should come from.
 //
+//    Hank Childs, Thu Mar 10 10:23:02 PST 2005
+//    Fix memory leak.
+//
 // ****************************************************************************
 
 bool
@@ -7986,12 +8103,13 @@ avtGenericDatabase::QueryCoords(const string &varName, const int dom,
                            ijk[2] * (dims[0]) * (dims[1]);
                 }
             }
-            float *pt = vtkVisItUtility::GetPoints(ds)->GetPoint(node);
+            float *pt = ds->GetPoint(node);
             coord[0] = pt[0] ;
             coord[1] = pt[1] ;
             coord[2] = pt[2] ;
             rv = true;
         }
+        ds->Delete();
     }
     return rv;
 }

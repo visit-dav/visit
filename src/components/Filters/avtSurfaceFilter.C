@@ -229,6 +229,9 @@ avtSurfaceFilter::Equivalent(const AttributeGroup *a)
 //    Hank Childs, Fri Mar  4 08:47:07 PST 2005
 //    Create cd2pd on an as-needed basis.
 //
+//    Hank Childs, Wed Mar  9 15:45:44 PST 2005
+//    Fix memory leak.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -349,6 +352,10 @@ avtSurfaceFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
 
     if (cd2pd != NULL)
         cd2pd->Delete();
+
+    ManageMemory(outUG);
+    outUG->Delete();
+
     return (vtkDataSet*) outUG;
 }
 
@@ -714,6 +721,9 @@ avtSurfaceFilter::CalculateScaleValues(double *de, double *se)
 //    Do not set outputs of filters to NULL, since this will prevent them
 //    from re-executing correctly in DLB-mode.  Also removed cd2pd.
 //
+//    Hank Childs, Fri Mar 11 07:37:05 PST 2005
+//    Fix non-problem size leak introduced with last fix.
+//
 // ****************************************************************************
 
 void
@@ -722,7 +732,9 @@ avtSurfaceFilter::ReleaseData(void)
     avtStreamer::ReleaseData();
 
     filter->SetInput(NULL);
-    filter->SetOutput(vtkUnstructuredGrid::New());
+    vtkUnstructuredGrid *u = vtkUnstructuredGrid::New();
+    filter->SetOutput(u);
+    u->Delete();
     filter->SetinScalars(NULL);
 }
 

@@ -37,6 +37,9 @@ class     avtMixedVariable;
 //    Brad Whitlock, Mon Jul 15 16:27:25 PST 2002
 //    Added API.
 //
+//    Hank Childs, Sun Mar 13 10:41:17 PST 2005
+//    Fixed problem with memory leak.
+//
 // ****************************************************************************
 
 struct DATABASE_API avtDatasetCollection
@@ -61,17 +64,19 @@ struct DATABASE_API avtDatasetCollection
     avtDataTree_p                           AssembleDataTree(
                                                            std::vector<int> &);
  
-    void                                    SetMaterial(int i,
-                                                        avtMaterial *mat)
+    void                                    SetMaterial(int i,avtMaterial *mat)
                                                 { materials[i] = mat; };
     avtMaterial                            *GetMaterial(int i)
                                                 { return materials[i]; };
+    void                                    MaterialsShouldBeFreed(void)
+                                              {materialsShouldBeFreed = true;};
  
-    void                                    SetSpecies(int i,
-                                                       avtSpecies *spec)
+    void                                    SetSpecies(int i, avtSpecies *spec)
                                                 { species[i] = spec; };
     avtSpecies                             *GetSpecies(int i)
                                                 { return species[i]; };
+    void                                    SpeciesShouldBeFreed(void)
+                                              {speciesShouldBeFreed = true;};
  
     void                                    AddMixVar(int i, void_ref_ptr mix);
     void_ref_ptr                            GetMixVar(int i, std::string);
@@ -85,6 +90,8 @@ struct DATABASE_API avtDatasetCollection
     avtMaterial                           **materials;
     avtSpecies                            **species;
     std::vector<void_ref_ptr>              *mixvars;
+    bool                                    materialsShouldBeFreed;
+    bool                                    speciesShouldBeFreed;
 };
 
 

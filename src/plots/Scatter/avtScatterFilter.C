@@ -369,6 +369,15 @@ debug4 << "avtScatterFilter::ExecuteData: var2Name = " << var2Name.c_str() << en
     return outDS;
 }
 
+
+// ****************************************************************************
+//  Modifications:
+//
+//    Hank Childs, Sun Mar 13 11:38:06 PST 2005
+//    Fix memory leak.
+//
+// ****************************************************************************
+
 vtkDataSet *
 avtScatterFilter::PointMeshFromVariables(DataInput *d1,
     DataInput *d2, DataInput *d3)
@@ -802,6 +811,9 @@ avtScatterFilter::PointMeshFromVariables(DataInput *d1,
     }
 #endif
 
+    ManageMemory(outDS);
+    outDS->Delete();
+
     return outDS;
 }
 
@@ -907,6 +919,7 @@ avtScatterFilter::CountSpatialDimensions() const
 
     return (dims > 3) ? 3 : dims;
 }
+
 
 vtkDataArray *
 avtScatterFilter::Recenter(vtkDataSet *ds, vtkDataArray *arr, 

@@ -76,6 +76,10 @@ vtkVisItScalarTree::Initialize()
 //   Hank Childs, Mon Aug  9 08:39:04 PDT 2004
 //   Fix UMR.
 //
+//   Hank Childs, Wed Mar  9 07:28:55 PST 2005
+//   Fix additional memory issues.  Tree created in slightly different manner
+//   now.
+//
 // ***************************************************************************
 
 void
@@ -174,84 +178,78 @@ vtkVisItScalarTree::BuildTree()
     //
     // First, fill up the leaves of the tree.
     //
-    
     leafOffset = treeSize - (int)pow((double)BranchingFactor, levels);
-    int cellId = 0;
     vtkIdList *lst = vtkIdList::New();
-    while (cellId < nCells)
+    for (int t = 0 ; t < treeSize ; t++)
     {
-        ScalarRange &leaf = tree[leafOffset + (cellId / bucketSize)];
-
+        ScalarRange &leaf = tree[t];
         leaf.min = VTK_LARGE_FLOAT;
         leaf.max = -VTK_LARGE_FLOAT;
+    }
 
-        int i;
-        for (i = 0; i < bucketSize && cellId < nCells; ++i)
+    // Now find the min/max for each bucket.
+    for (int cellId = 0 ; cellId < nCells ; cellId++)
+    {
+        int *pts;
+        int npts;
+        int arr8[8];
+        
+        // Get the points
+        if (meshType==VTK_RECTILINEAR_GRID || meshType==VTK_STRUCTURED_GRID)
         {
-            int *pts;
-            int npts;
-            int arr8[8];
-            
-            // Get the points
-            if (meshType == VTK_RECTILINEAR_GRID 
-                 || meshType == VTK_STRUCTURED_GRID)
+            if (structured2D)
             {
-                if (structured2D)
-                {
-                    int cellI = cellId % cell_dims[0];
-                    int cellJ = cellId / strideY;
+                int cellI = cellId % cell_dims[0];
+                int cellJ = cellId / strideY;
 
-                    int j;
-                    for (j = 0 ; j < 4 ; ++j)
-                    {
-                        arr8[j] = (cellI + X_val[j]) +
-                                  (cellJ + Y_val[j]) * ptstrideY; 
-                    } 
-
-                    pts = arr8;
-                    npts = 4;
-                }
-                else
+                int j;
+                for (j = 0 ; j < 4 ; ++j)
                 {
-                    int cellI = cellId % cell_dims[0];
-                    int cellJ = (cellId/strideY) % cell_dims[1];
-                    int cellK = (cellId/strideZ);
-                    int j;
-                    for (j = 0 ; j < 8 ; ++j)
-                    {
-                        arr8[j] = (cellI + X_val[j]) +
-                                  (cellJ + Y_val[j])*ptstrideY 
-                                    + (cellK + Z_val[j])*ptstrideZ;
-                    }
-                    pts = arr8;
-                    npts = 8;
-                }
-            } 
+                    arr8[j] = (cellI + X_val[j]) +
+                              (cellJ + Y_val[j]) * ptstrideY; 
+                } 
+
+                pts = arr8;
+                npts = 4;
+            }
             else
-            { 
-                DataSet->GetCellPoints(cellId, lst);
-                npts = lst->GetNumberOfIds();
-                pts = lst->GetPointer(0);
-            }
-            
-            int p;
-            for (p = 0; p < npts; ++p)
             {
-                float val = scalars[pts[p]];
-                if (val < leaf.min)
-                    leaf.min = val;
-                if (val > leaf.max)
-                    leaf.max = val;
+                int cellI = cellId % cell_dims[0];
+                int cellJ = (cellId/strideY) % cell_dims[1];
+                int cellK = (cellId/strideZ);
+                int j;
+                for (j = 0 ; j < 8 ; ++j)
+                {
+                    arr8[j] = (cellI + X_val[j]) +
+                              (cellJ + Y_val[j])*ptstrideY 
+                                + (cellK + Z_val[j])*ptstrideZ;
+                }
+                pts = arr8;
+                npts = 8;
             }
+        } 
+        else
+        { 
+            DataSet->GetCellPoints(cellId, lst);
+            npts = lst->GetNumberOfIds();
+            pts = lst->GetPointer(0);
+        }
             
-            ++cellId;
+        ScalarRange &leaf = tree[leafOffset + (cellId / bucketSize)];
+        for (int p = 0; p < npts; ++p)
+        {
+            float val = scalars[pts[p]];
+            if (val < leaf.min)
+                leaf.min = val;
+            if (val > leaf.max)
+                leaf.max = val;
         }
     }
     lst->Delete();
 
 
     //
-    // Now propegate up the changes to the branches of the tree.
+    // Now propagate up the changes to the branches of the tree.
     //
     int lev;
     for (lev = levels - 1; lev >= 0; --lev)
@@ -262,29 +260,25 @@ vtkVisItScalarTree::BuildTree()
         int offset;
         offset = (int)((pow((double)BranchingFactor, lev) - 1) /
                  (BranchingFactor - 1));
+
+        int len = (int)pow((double)BranchingFactor, lev);
+
+
         int cRow;
         cRow = (int)((pow((double)BranchingFactor, lev + 1) - 1)
                          / (BranchingFactor - 1));
         
-        int len = (int)pow((double)BranchingFactor, lev);
-
         int i;
         for (i = 0; i < len; ++i)
         {
             ScalarRange *parent = &tree[offset + i];
-            ScalarRange *child = &(tree[cRow + i * BranchingFactor]);
-            
-            parent->min = child->min;
-            parent->max = child->max;
-            ++child;
-            int j;
-            for (j = 0; j < 4; ++j)
+            for (int j = 0 ; j < BranchingFactor ; j++)
             {
+                ScalarRange *child = &(tree[cRow + i * BranchingFactor + j]);
                 if (child->min < parent->min)
                     parent->min = child->min;
                 if (child->max > parent->max)
                     parent->max = child->max;
-                ++child;
             }
         }
     }

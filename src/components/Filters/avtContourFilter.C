@@ -987,6 +987,9 @@ avtContourFilter::CreateLabels()
 //    Hank Childs, Sun Mar  6 08:18:53 PST 2005
 //    Removed cd2pd.
 //
+//    Hank Childs, Fri Mar 11 07:37:05 PST 2005
+//    Fix non-problem size leak introduced with last fix.
+//
 // ****************************************************************************
 
 void
@@ -995,7 +998,9 @@ avtContourFilter::ReleaseData(void)
     avtDataTreeStreamer::ReleaseData();
 
     cf->SetInput(NULL);
-    cf->SetOutput(vtkPolyData::New());
+    vtkPolyData *p = vtkPolyData::New();
+    cf->SetOutput(p);
+    p->Delete();
 }
 
 

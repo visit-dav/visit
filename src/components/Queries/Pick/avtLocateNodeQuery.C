@@ -13,7 +13,6 @@
 #include <vtkRectilinearGrid.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkVisItPointLocator.h>
-#include <vtkVisItUtility.h>
 
 #include <DebugStream.h>
 
@@ -77,6 +76,9 @@ avtLocateNodeQuery::~avtLocateNodeQuery()
 //    Kathleen Bonnell, Tue Nov 30 09:25:28 PST 2004
 //    Set foundElement = foundNode when MatSelected and No subdivision 
 //    occurred, or when not MatSelected and Points not transformed. 
+//
+//    Hank Childs, Thu Mar 10 10:27:57 PST 2005
+//    Fix memory leak.
 //
 // ****************************************************************************
 
@@ -170,7 +172,7 @@ avtLocateNodeQuery::Execute(vtkDataSet *ds, const int dom)
         // valid, so don't set it.
    
         pickAtts.SetCellPoint(isect);
-        pickAtts.SetNodePoint(vtkVisItUtility::GetPoints(ds)->GetPoint(foundNode));
+        pickAtts.SetNodePoint(ds->GetPoint(foundNode));
         foundDomain = dom;
     } // if node was found
 }
@@ -246,13 +248,15 @@ avtLocateNodeQuery::RGridFindNode(vtkDataSet *ds, float &dist, float *isect)
 //
 //  Modifications:
 //    
+//    Hank Childs, Thu Mar 10 10:27:57 PST 2005
+//    Fix memory leak.
+//
 // ****************************************************************************
 
 int
 avtLocateNodeQuery::DeterminePickedNode(vtkDataSet *ds, int foundCell, float *ppoint)
 {
    vtkIdType minId = -1; 
-   vtkPoints *points = vtkVisItUtility::GetPoints(ds);
 
    vtkIdList *ptIds = vtkIdList::New();
    vtkIdType id;
@@ -265,7 +269,7 @@ avtLocateNodeQuery::DeterminePickedNode(vtkDataSet *ds, int foundCell, float *pp
    {
         id = ptIds->GetId(i);
 
-        dist2 = vtkMath::Distance2BetweenPoints(ppoint, points->GetPoint(id));
+        dist2 = vtkMath::Distance2BetweenPoints(ppoint, ds->GetPoint(id));
         if (dist2 < minDist2)
         {
                minDist2 = dist2; 
@@ -392,6 +396,9 @@ avtLocateNodeQuery::FindClosestPoint(vtkDataSet *ds, const int isectedCell,
 //
 //  Modifications:
 //    
+//    Hank Childs, Thu Mar 10 10:27:57 PST 2005
+//    Fix memory leak.
+//
 // ****************************************************************************
 
 int
@@ -416,7 +423,7 @@ avtLocateNodeQuery::FindClosestPointOnLine(vtkDataSet *ds, float &minDist,
 
     if (foundPoint >= 0 && dist < minDist)
     {
-        vtkVisItUtility::GetPoints(ds)->GetPoint(foundPoint, isect);
+        ds->GetPoint(foundPoint, isect);
         minDist = dist;
     }
 

@@ -8,7 +8,6 @@
 #include <vtkIdList.h>
 #include <vtkPoints.h>
 #include <vtkPointLocator.h>
-#include <vtkVisItUtility.h>
 #include <avtTerminatingSource.h>
 
 
@@ -106,6 +105,9 @@ avtCurvePickQuery::PostExecute(void)
 //  Creation:   December 2, 2003
 //
 //  Modifications:
+//
+//    Hank Childs, Thu Mar 10 10:30:35 PST 2005
+//    Fix memory leak.
 //    
 // ****************************************************************************
 
@@ -132,11 +134,10 @@ avtCurvePickQuery::Execute(vtkDataSet *ds, const int dom)
 
     if (pointId != -1)
     {
-        vtkPoints *points = vtkVisItUtility::GetPoints(ds);
         float *p;
         if (pickAtts.GetPickType() == PickAttributes::CurveNode)
         {
-            p = points->GetPoint(pointId);
+            p = ds->GetPoint(pointId);
             pt1[0] = p[0];
             pt1[1] = p[1];
             pt1[2] = p[2];
@@ -145,11 +146,11 @@ avtCurvePickQuery::Execute(vtkDataSet *ds, const int dom)
         {
             vtkIdList *ptIds = vtkIdList::New();
             ds->GetCellPoints(pointId, ptIds);
-            p = points->GetPoint(ptIds->GetId(0));
+            p = ds->GetPoint(ptIds->GetId(0));
             pt1[0] = p[0];
             pt1[1] = p[1];
             pt1[2] = p[2];
-            p = points->GetPoint(ptIds->GetId(1));
+            p = ds->GetPoint(ptIds->GetId(1));
             pt2[0] = p[0];
             pt2[1] = p[1];
             pt2[2] = p[2];

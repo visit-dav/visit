@@ -103,6 +103,9 @@ avtGradientFilter::~avtGradientFilter()
 //    Hank Childs, Fri Mar  4 08:21:04 PST 2005
 //    Create centering conversion modules if needed.
 //
+//    Hank Childs, Fri Mar 11 16:01:21 PST 2005
+//    Fix memory leak.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -199,6 +202,7 @@ avtGradientFilter::DeriveVariable(vtkDataSet *in_ds)
                                          nodeValue, in_ds, scalarValues,
                                          neighborCellIds);
 
+        neighborCellIds->Delete();
         results->SetTuple3(nodeId, xComponent, yComponent, zComponent);
     }
     

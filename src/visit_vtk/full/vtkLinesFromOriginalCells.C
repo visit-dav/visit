@@ -10,7 +10,6 @@
 #include <vtkVisItUtility.h>
 #include <vtkPolyData.h>
 #include <vtkUnsignedIntArray.h>
-#include <vtkVisItUtility.h>
 
 
 //------------------------------------------------------------------------------
@@ -64,6 +63,9 @@ vtkLinesFromOriginalCells::~vtkLinesFromOriginalCells()
 //    Removed the Locator calls (time consuming relic from vtkExtractLines).
 //    Replaced some vtk calls with direct access calls for speed.
 //
+//    Hank Childs, Thu Mar 10 09:48:47 PST 2005
+//    Fix memory leak.
+//
 // ****************************************************************************
 
 void vtkLinesFromOriginalCells::Execute()
@@ -73,7 +75,9 @@ void vtkLinesFromOriginalCells::Execute()
   vtkPolyData  *output = this->GetOutput();
   vtkCellData  *outCD  = output->GetCellData();
 
-  output->SetPoints(vtkVisItUtility::GetPoints(input));
+  vtkPoints *pts2 = vtkVisItUtility::GetPoints(input);
+  output->SetPoints(pts2);
+  pts2->Delete();
   output->GetPointData()->ShallowCopy(input->GetPointData());
 
   vtkCellArray *newLines;

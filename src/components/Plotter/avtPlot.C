@@ -547,6 +547,9 @@ avtPlot::Execute(avtDataObjectReader_p reader)
 //    Hank Childs, Wed Mar  2 11:11:59 PST 2005
 //    Pass a pipeline specification to the sink, not a data specification.
 //
+//    Hank Childs, Sun Mar 13 11:13:01 PST 2005
+//    Fix memory leak.
+//
 // ****************************************************************************
 
 avtActor_p
@@ -647,6 +650,7 @@ avtPlot::Execute(avtDataObjectReader_p reader, avtDataObject_p dob)
         // create some bogus geometry data
         vtkPolyData *emptyPolyData = vtkPolyData::New();
         avtSourceFromDataset emptySource((vtkDataSet**)&emptyPolyData,1);
+        emptyPolyData->Delete();
         avtDataObject_p geo = emptySource.GetOutput();
 
         // although we're creating bogus geometry data here, we still need
@@ -687,6 +691,7 @@ avtPlot::Execute(avtDataObjectReader_p reader, avtDataObject_p dob)
         // create some bogus geometry data
         vtkPolyData *emptyPolyData = vtkPolyData::New();
         avtSourceFromDataset emptySource((vtkDataSet**)&emptyPolyData,1);
+        emptyPolyData->Delete();
         avtDataObject_p geo = emptySource.GetOutput();
 
         // although we're creating bogus geometry data here, we still need

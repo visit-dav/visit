@@ -23,15 +23,38 @@ typedef struct
 vtkStandardNewMacro(vtkAxisDepthSort);
 
 
+// ****************************************************************************
+//  Modifications:
+//
+//    Hank Childs, Fri Mar 11 08:26:34 PST 2005
+//    Fix memory leak.
+//
+// ****************************************************************************
+
 vtkAxisDepthSort::vtkAxisDepthSort()
 {
     SetNumberOfOutputs(6);
     // Base class does 0.
-    vtkSource::SetNthOutput(1, vtkPolyData::New());
-    vtkSource::SetNthOutput(2, vtkPolyData::New());
-    vtkSource::SetNthOutput(3, vtkPolyData::New());
-    vtkSource::SetNthOutput(4, vtkPolyData::New());
-    vtkSource::SetNthOutput(5, vtkPolyData::New());
+
+    vtkPolyData *p = vtkPolyData::New();
+    vtkSource::SetNthOutput(1, p);
+    p->Delete();
+
+    p = vtkPolyData::New();
+    vtkSource::SetNthOutput(2, p);
+    p->Delete();
+
+    p = vtkPolyData::New();
+    vtkSource::SetNthOutput(3, p);
+    p->Delete();
+
+    p = vtkPolyData::New();
+    vtkSource::SetNthOutput(4, p);
+    p->Delete();
+
+    p = vtkPolyData::New();
+    vtkSource::SetNthOutput(5, p);
+    p->Delete();
 }
 
 

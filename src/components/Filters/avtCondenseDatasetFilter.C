@@ -274,6 +274,9 @@ avtCondenseDatasetFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 //    Do not set outputs of filters to NULL, since this will prevent them
 //    from re-executing correctly in DLB-mode.
 //
+//    Hank Childs, Fri Mar 11 07:37:05 PST 2005
+//    Fix non-problem size leak introduced with last fix.
+//
 // ****************************************************************************
 
 void
@@ -282,9 +285,14 @@ avtCondenseDatasetFilter::ReleaseData(void)
     avtStreamer::ReleaseData();
 
     rpfPD->SetInput(NULL);
-    rpfPD->SetOutput(vtkPolyData::New());
+    vtkPolyData *p = vtkPolyData::New();
+    rpfPD->SetOutput(p);
+    p->Delete();
+
     rpfUG->SetInput(NULL);
-    rpfUG->SetOutput(vtkUnstructuredGrid::New());
+    vtkUnstructuredGrid *u = vtkUnstructuredGrid::New();
+    rpfUG->SetOutput(u);
+    u->Delete();
 }
 
 

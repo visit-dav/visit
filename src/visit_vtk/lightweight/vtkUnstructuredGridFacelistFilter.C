@@ -1103,6 +1103,11 @@ Tri::AddInRemainingTriangle(Quad *q, int node_0)
 //  Programmer: Hank Childs
 //  Creation:   October 21, 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Wed Mar  9 07:14:49 PST 2005
+//    Initialize face_type.
+//
 // ****************************************************************************
 
 HashEntry::HashEntry()
@@ -1110,6 +1115,7 @@ HashEntry::HashEntry()
     point_index = -1;
     last_good_entry = 0;
     extension = NULL;
+    face_type = 0;
 }
 
 

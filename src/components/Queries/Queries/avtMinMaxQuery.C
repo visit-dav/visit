@@ -203,6 +203,9 @@ avtMinMaxQuery::PreExecute()
 //    Kathleen Bonnell, Fri Jan  7 15:15:32 PST 2005 
 //    Fix memory leak -- delete cellIds. 
 //
+//    Hank Childs, Thu Mar 10 11:53:28 PST 2005
+//    Fix memory leak.
+//
 // ****************************************************************************
 
 void 
@@ -216,6 +219,7 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
     vtkUnsignedCharArray *ghosts = 
            (vtkUnsignedCharArray*)ds->GetCellData()->GetArray("avtGhostZones");
     vtkDataArray *data = NULL;
+    bool shouldDeleteData = false;
     string var = queryAtts.GetVariables()[0];
     int varType = queryAtts.GetVarTypes()[0];
     int ts = queryAtts.GetTimeStep();
@@ -241,6 +245,7 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
     else if (varType == QueryAttributes::Curve) 
     {
         data = vtkVisItUtility::GetPoints(ds)->GetData();
+        shouldDeleteData = true;
         nodeCentered = true;
         elementName = "node";
     }
@@ -250,6 +255,7 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
         //  This allows Lineouts to be queried for minMax.
         //
         data = vtkVisItUtility::GetPoints(ds)->GetData();
+        shouldDeleteData = true;
         nodeCentered = true;
         elementName = "node";
         scalarCurve = true;
@@ -458,6 +464,9 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
         if (haveMax2)
             FinalizeZoneCoord(ds, origCells, maxInfo2, zonesPreserved);
     }
+
+    if (shouldDeleteData)
+        data->Delete();
 }
 
 

@@ -57,6 +57,12 @@ vtkStandardNewMacro(vtkUnstructuredGridRelevantPointsFilter);
 
 
 //------------------------------------------------------------------------------
+// Modifications:
+//
+//   Hank Childs, Sun Mar 13 14:12:38 PST 2005
+//   Fix memory leak.
+//
+//------------------------------------------------------------------------------
 void vtkUnstructuredGridRelevantPointsFilter::Execute()
 {
   vtkUnstructuredGrid  *input  = this->GetInput();
@@ -140,6 +146,7 @@ void vtkUnstructuredGridRelevantPointsFilter::Execute()
   newPts->Delete();
   oldIds->Delete();
   newIds->Delete();
+  cellIds->Delete();
   delete [] pointMap;
 }
 

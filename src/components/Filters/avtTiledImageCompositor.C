@@ -73,6 +73,11 @@ avtTiledImageCompositor::~avtTiledImageCompositor()
 //  Programmer: Jeremy Meredith
 //  Creation:   August 30, 2004
 //
+//  Modifications:
+//
+//    Hank Childs, Sun Mar 13 11:19:18 PST 2005
+//    Fix memory leak.
+//
 // ****************************************************************************
 
 void
@@ -141,6 +146,8 @@ avtTiledImageCompositor::Execute(void)
     SetOutputImage(theOutput);
 
     // Free the memory (yes, it is safe not to check for NULL in C++)
+    if (outputImageData != NULL)
+        outputImageData->Delete();
     delete[] pixelSizes;
     delete[] displacements;
 #else

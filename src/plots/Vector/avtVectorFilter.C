@@ -37,13 +37,13 @@ using std::string;
 //    Kathleen Bonnell, Tue Oct 12 16:18:37 PDT 2004 
 //    Added keepNodeZone. 
 //
+//    Hank Childs, Fri Mar 11 15:01:22 PST 2005
+//    Instantiate VTK filters on the fly.  Makes memory issues easier.
+//
 // ****************************************************************************
 
 avtVectorFilter::avtVectorFilter(bool us, int red)
 {
-    reduce = vtkVectorReduceFilter::New();
-    vertex = vtkVertexFilter::New();
-
     if (us)
     {
         SetStride(red);
@@ -53,14 +53,6 @@ avtVectorFilter::avtVectorFilter(bool us, int red)
         SetNVectors(red);
     }
 
-    if (useStride)
-    {
-        reduce->SetStride(stride);
-    }
-    else
-    {
-        reduce->SetNumberOfElements(nVectors);
-    }
     keepNodeZone = false;
 }
 
@@ -76,18 +68,14 @@ avtVectorFilter::avtVectorFilter(bool us, int red)
 //    Hank Childs, Thu Aug 30 17:30:48 PDT 2001
 //    Added vertex filter.
 //
+//    Hank Childs, Fri Mar 11 15:01:22 PST 2005
+//    Instantiate VTK filters on the fly.  Makes memory issues easier.
+//
 // ****************************************************************************
 
 avtVectorFilter::~avtVectorFilter()
 {
-    if (reduce != NULL)
-    {
-        reduce->Delete();
-    }
-    if (vertex != NULL)
-    {
-        vertex->Delete();
-    }
+    ;
 }
 
 
@@ -100,6 +88,11 @@ avtVectorFilter::~avtVectorFilter()
 //  Programmer: Hank Childs
 //  Creation:   March 23, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Mar 11 15:01:22 PST 2005
+//    Instantiate VTK filters on the fly.  Makes memory issues easier.
+//
 // ****************************************************************************
 
 void
@@ -108,7 +101,6 @@ avtVectorFilter::SetStride(int s)
     useStride = true;
     stride    = s;
     nVectors  = -1;
-    reduce->SetStride(stride);
 }
 
 
@@ -121,6 +113,11 @@ avtVectorFilter::SetStride(int s)
 //  Programmer: Hank Childs
 //  Creation:   March 23, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Mar 11 15:01:22 PST 2005
+//    Instantiate VTK filters on the fly.  Makes memory issues easier.
+//
 // ****************************************************************************
 
 void
@@ -129,7 +126,6 @@ avtVectorFilter::SetNVectors(int n)
     useStride = false;
     stride    = -1;
     nVectors  = n;
-    reduce->SetNumberOfElements(nVectors);
 }
 
 
@@ -205,12 +201,20 @@ avtVectorFilter::Equivalent(bool us, int red)
 //    Hank Childs, Wed Sep 11 08:53:50 PDT 2002
 //    Fixed memory leak.
 //
+//    Hank Childs, Fri Mar 11 15:01:22 PST 2005
+//    Instantiate VTK filters on the fly.  Makes memory issues easier.
+//
 // ****************************************************************************
 
 vtkDataSet *
 avtVectorFilter::ExecuteData(vtkDataSet *inDS, int, string)
 {
-    vtkPolyData *outPD = vtkPolyData::New();
+    vtkVectorReduceFilter *reduce = vtkVectorReduceFilter::New();
+    vtkVertexFilter       *vertex = vtkVertexFilter::New();
+    if (useStride)
+        reduce->SetStride(stride);
+    else
+        reduce->SetNumberOfElements(nVectors);
 
     if (inDS->GetPointData()->GetVectors() != NULL)
     {
@@ -223,10 +227,12 @@ avtVectorFilter::ExecuteData(vtkDataSet *inDS, int, string)
 
     vertex->SetInput(inDS);
     reduce->SetInput(vertex->GetOutput());
-    reduce->SetOutput(outPD);
-    outPD->Delete();
-    outPD->Update();
 
+    vtkPolyData *outPD = reduce->GetOutput();
+    outPD->Update();
+    ManageMemory(outPD);
+    vertex->Delete();
+    reduce->Delete();
     return outPD;
 }
 
@@ -261,35 +267,6 @@ avtVectorFilter::RefashionDataObjectInfo(void)
     GetOutput()->GetInfo().GetAttributes().SetTopologicalDimension(0);
     GetOutput()->GetInfo().GetValidity().SetNormalsAreInappropriate(true);
     GetOutput()->GetInfo().GetAttributes().SetKeepNodeZoneArrays(keepNodeZone);
-}
-
-
-// ****************************************************************************
-//  Method: avtVectorFilter::ReleaseData
-//
-//  Purpose:
-//      Releases all problem size data associated with this filter.
-//
-//  Programmer: Hank Childs
-//  Creation:   September 10, 2002
-//
-//  Modifications:
-//
-//    Hank Childs, Fri Mar  4 08:12:25 PST 2005
-//    Do not set outputs of filters to NULL, since this will prevent them
-//    from re-executing correctly in DLB-mode.
-//
-// ****************************************************************************
-
-void
-avtVectorFilter::ReleaseData(void)
-{
-    avtStreamer::ReleaseData();
-
-    reduce->SetInput(NULL);
-    reduce->SetOutput(vtkPolyData::New());
-    vertex->SetInput(NULL);
-    vertex->SetOutput(vtkPolyData::New());
 }
 
 

@@ -442,6 +442,9 @@ avtStreamlineFilter::SetPointDensity(int den)
 //    Do not set outputs of filters to NULL, since this will prevent them
 //    from re-executing correctly in DLB-mode.
 //
+//    Hank Childs, Fri Mar 11 07:37:05 PST 2005
+//    Fix non-problem size leak introduced with last fix.
+//
 // ****************************************************************************
 
 void
@@ -452,17 +455,23 @@ avtStreamlineFilter::ReleaseData(void)
     if(streamline != 0)
     {
         streamline->SetInput(NULL);
-        streamline->SetOutput(vtkPolyData::New());
+        vtkPolyData *p = vtkPolyData::New();
+        streamline->SetOutput(p);
+        p->Delete();
     }
     if(tubes != 0)
     {
         tubes->SetInput(NULL);
-        tubes->SetOutput(vtkPolyData::New());
+        vtkPolyData *p = vtkPolyData::New();
+        tubes->SetOutput(p);
+        p->Delete();
     }
     if(ribbons != 0)
     {
         ribbons->SetInput(NULL);
-        ribbons->SetOutput(vtkPolyData::New());
+        vtkPolyData *p = vtkPolyData::New();
+        ribbons->SetOutput(p);
+        p->Delete();
     }
 }
 

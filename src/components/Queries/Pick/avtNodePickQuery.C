@@ -12,7 +12,6 @@
 #include <vtkPointData.h>
 #include <vtkPoints.h>
 #include <vtkUnsignedCharArray.h>
-#include <vtkVisItUtility.h>
 
 #include <avtMatrix.h>
 #include <avtParallel.h>
@@ -89,6 +88,9 @@ avtNodePickQuery::~avtNodePickQuery()
 //    Kathleen Bonnell, Mon Dec  6 14:30:39 PST 2004 
 //    Added special logic for when locate was skipped. 
 //
+//    Hank Childs, Thu Mar 10 10:35:37 PST 2005
+//    Fix memory leak.
+//
 // ****************************************************************************
 
 void
@@ -132,7 +134,7 @@ avtNodePickQuery::Execute(vtkDataSet *ds, const int dom)
         }
 
         float dist = vtkMath::Distance2BetweenPoints(pickAtts.GetPickPoint(), 
-                          vtkVisItUtility::GetPoints(ds)->GetPoint(pickedNode)); 
+                          ds->GetPoint(pickedNode)); 
         if (dist < minDist)
         {
             minDist = dist;
@@ -143,7 +145,7 @@ avtNodePickQuery::Execute(vtkDataSet *ds, const int dom)
             return;
         }
     }
-    pickAtts.SetCellPoint(vtkVisItUtility::GetPoints(ds)->GetPoint(pickedNode)); 
+    pickAtts.SetCellPoint(ds->GetPoint(pickedNode)); 
 
 
     if (!pickAtts.GetMatSelected())

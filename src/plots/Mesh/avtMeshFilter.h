@@ -38,6 +38,10 @@ class vtkDataSet;
 //    Kathleen Bonnell, Tue Nov  2 10:41:33 PST 2004 
 //    Added keepNodeZone. 
 //
+//    Hank Childs, Thu Mar 10 09:13:03 PST 2005
+//    Removed data member filters to simplify memory management.  Also removed
+//    ReleaseData.
+//
 // ****************************************************************************
 
 class avtMeshFilter : public avtDataTreeStreamer
@@ -49,16 +53,10 @@ class avtMeshFilter : public avtDataTreeStreamer
     virtual const char        *GetType(void)  { return "avtMeshFilter"; };
     virtual const char        *GetDescription(void)  
                                    { return "Constructing mesh"; };
-    virtual void               ReleaseData(void);
 
   protected:
-
     MeshAttributes             atts;
     bool                       keepNodeZone;
-
-    vtkGeometryFilter         *geometryFilter;
-    vtkExtractEdges           *extractEdges;
-    vtkLinesFromOriginalCells *lineFilter;
 
     virtual avtDataTree_p      ExecuteDataTree(vtkDataSet *, int, string);
     virtual void               RefashionDataObjectInfo(void);

@@ -394,6 +394,9 @@ avtPickQuery::ApplyFilters(avtDataObject_p inData)
 //    Kathleen Bonnell, Mon May 10 08:52:53 PDT 2004 
 //    Moved coordinate-getting code to GetNodeCoords. 
 //    
+//    Hank Childs, Thu Mar 10 11:03:37 PST 2005
+//    Fix memory leak.
+//
 // ****************************************************************************
 
 bool
@@ -401,7 +404,6 @@ avtPickQuery::DeterminePickedNode(vtkDataSet *ds, int &foundEl)
 {
    float *ppoint = pickAtts.GetPickPoint();
    vtkIdType minId = -1; 
-   vtkPoints *points = vtkVisItUtility::GetPoints(ds);
 
    if (ppoint[0] == FLT_MAX)
       return true;
@@ -425,8 +427,7 @@ avtPickQuery::DeterminePickedNode(vtkDataSet *ds, int &foundEl)
        for (int i = 0; i < numPts; i++)
        {
            id = ptIds->GetId(i);
-           dist2 = vtkMath::Distance2BetweenPoints(ppoint, 
-                   points->GetPoint(id));
+           dist2 = vtkMath::Distance2BetweenPoints(ppoint, ds->GetPoint(id));
            if (dist2 < minDist2)
            {
                minDist2 = dist2; 
@@ -439,7 +440,7 @@ avtPickQuery::DeterminePickedNode(vtkDataSet *ds, int &foundEl)
    if ( minId == -1)
        return false;
    
-   pickAtts.SetCellPoint(points->GetPoint(minId));
+   pickAtts.SetCellPoint(ds->GetPoint(minId));
 
    // change the foundEl (a zone) to the min pt id (node)
    foundEl = minId;
@@ -465,6 +466,9 @@ avtPickQuery::DeterminePickedNode(vtkDataSet *ds, int &foundEl)
 //    Brad Whitlock, Thu Jul 29 17:26:26 PST 2004
 //    I made it use SNPRINTF.
 //
+//    Hank Childs, Thu Mar 10 11:03:37 PST 2005
+//    Fix memory leak.
+//
 // ****************************************************************************
 
 void
@@ -473,10 +477,9 @@ avtPickQuery::GetNodeCoords(vtkDataSet *ds, const int nodeId)
    char buff[80];
    float coord[3];
    int type = ds->GetDataObjectType();
-   vtkPoints *points = vtkVisItUtility::GetPoints(ds);
    stringVector nodeCoords;
 
-   points->GetPoint(nodeId, coord); 
+   ds->GetPoint(nodeId, coord); 
 
 
    if ((pickAtts.GetShowNodeDomainLogicalCoords() ||

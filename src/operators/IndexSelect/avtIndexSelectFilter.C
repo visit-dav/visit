@@ -782,6 +782,9 @@ avtIndexSelectFilter::PostExecute(void)
 //    Do not set outputs of filters to NULL, since this will prevent them
 //    from re-executing correctly in DLB-mode.
 //
+//    Hank Childs, Fri Mar 11 07:37:05 PST 2005
+//    Fix non-problem size leak introduced with last fix.
+//
 // ****************************************************************************
 
 void
@@ -790,9 +793,14 @@ avtIndexSelectFilter::ReleaseData(void)
     avtPluginStreamer::ReleaseData();
 
     curvilinearFilter->SetInput(NULL);
-    curvilinearFilter->SetOutput(vtkStructuredGrid::New());
+    vtkStructuredGrid *s = vtkStructuredGrid::New();
+    curvilinearFilter->SetOutput(s);
+    s->Delete();
+
     rectilinearFilter->SetInput(NULL);
-    rectilinearFilter->SetOutput(vtkRectilinearGrid::New());
+    vtkRectilinearGrid *r = vtkRectilinearGrid::New();
+    rectilinearFilter->SetOutput(r);
+    r->Delete();
 }
 
 

@@ -157,6 +157,11 @@ avtTerminatingDatasetSource::FetchData(avtDataSpecification_p spec)
 //    Added check for existence of true spatial extents before attempting to
 //    merge cummulative
 //
+//    Hank Childs, Fri Mar 11 08:16:49 PST 2005
+//    Initialize 6 values for vectors, even though we only use 2, since that
+//    fixes a UMR in avtExtents, where it copies 6 values due to legacy reasons
+//    (but still only uses 2).
+//
 // ****************************************************************************
 
 void
@@ -194,7 +199,11 @@ avtTerminatingDatasetSource::MergeExtents(vtkDataSet *ds)
     }
 
     int nvars = atts.GetNumberOfVariables();
-    double dextents[2];
+    // We will probably use only 2 of the 6.  But this avoids a UMR where
+    // the avtExtents object copies 6 values for vectors (even though it only
+    // uses the first 2 -- but that's a bigger battle.)
+    double dextents[6] = 
+                   { FLT_MAX, -FLT_MAX, FLT_MAX, -FLT_MAX, FLT_MAX, -FLT_MAX };
     for (int i = 0 ; i < nvars ; i++)
     {
         const char *vname = atts.GetVariableName(i).c_str();

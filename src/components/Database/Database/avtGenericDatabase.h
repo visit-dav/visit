@@ -228,6 +228,9 @@ class     PickVarInfo;
 //    indicating whether or not they can safely do collective communication
 //    (typically for error handling) or whether they should blow it off.
 //
+//    Hank Childs, Fri Mar 11 11:21:57 PST 2005
+//    Fix memory leak with non-cachable variables.
+//
 // ****************************************************************************
 
 class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
@@ -262,6 +265,8 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
   protected:
     avtFileFormatInterface    *Interface;
     avtVariableCache           cache;
+    vtkDataArray              *nonCachableVariableReference;
+    vtkDataSet                *nonCachableMeshReference;
 
     int                        lastTimestep;
 
@@ -446,6 +451,9 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
 
     void                       AssociateBounds(vtkDataSet *);
     void                       ScaleMesh(vtkDataSet *);
+
+    void                       ManageMemoryForNonCachableVar(vtkDataArray *);
+    void                       ManageMemoryForNonCachableMesh(vtkDataSet *);
 };
 
 
