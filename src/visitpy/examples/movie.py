@@ -8,11 +8,17 @@
 # Programmer: Hank Childs
 # Creation:   April 24, 2003
 #
+# Modifications:
+#
+#   Hank Childs, Wed Jun 25 09:30:59 PDT 2003
+#   Previously referring to different versions of wave.visit.  Now only refer
+#   to one.
+#
 # *****************************************************************************
 
 import os
 import sys
-if(not os.path.isfile("../../data/wave.visit")):
+if(not os.path.isfile("/usr/gapps/visit/data/wave.visit")):
     print "This script requires the file wave.visit to be built in the data directory"
     sys.exit()
 

@@ -651,6 +651,9 @@ VisWinRendering::Realize(void)
 //    Stop using window-to-image filter, since it does not play well with
 //    the new camera modifications.
 //
+//    Hank Childs, Wed Jun 25 09:30:59 PDT 2003
+//    Fix memory leak.
+//
 // ****************************************************************************
 
 avtImage_p
@@ -706,6 +709,7 @@ VisWinRendering::ScreenCapture(bool doCanvasZBufferToo)
     // disable external render requests
     //
     avtSourceFromImage screenCaptureSource(image, zb);
+    image->Delete();
     avtImage_p img = screenCaptureSource.GetTypedOutput();
     img->Update(screenCaptureSource.GetGeneralPipelineSpecification());
     img->SetSource(NULL);

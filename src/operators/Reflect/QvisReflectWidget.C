@@ -50,6 +50,7 @@ const float axes_size = 10.;
 //
 bool QvisReflectWidget::sharedElementsCreated = false;
 m3d_complex_element QvisReflectWidget::axes;
+m3d_complex_element QvisReflectWidget::axes2D;
 m3d_complex_element QvisReflectWidget::onCube;
 m3d_complex_element QvisReflectWidget::offCube;
 m3d_complex_element QvisReflectWidget::onSphere;
@@ -70,7 +71,9 @@ m3d_complex_element QvisReflectWidget::arrow;
 // Creation:   Tue Mar 11 09:47:38 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Jun 23 16:50:18 PST 2003
+//   I initialized the mode2D member.
+//
 // ****************************************************************************
 
 QvisReflectWidget::QvisReflectWidget(QWidget *parent, const char *name) : 
@@ -78,6 +81,7 @@ QvisReflectWidget::QvisReflectWidget(QWidget *parent, const char *name) :
 {
     pixmap = 0;
     rendererCreated = false;
+    mode2D = true;
 
     for(int i = 0; i < 8; ++i)
         octantOn[i] = false;
@@ -155,6 +159,54 @@ QvisReflectWidget::sizePolicy() const
 }
 
 // ****************************************************************************
+// Method: QvisReflectWidget::setMode2D
+//
+// Purpose: 
+//   Sets the 2d mode.
+//
+// Arguments:
+//   val : The new 2d mode.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Jun 23 16:51:40 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisReflectWidget::setMode2D(bool val)
+{
+    if(mode2D != val)
+    {
+        mode2D = val;
+        deleteBackingPixmap();
+        update();
+    }
+}
+
+// ****************************************************************************
+// Method: QvisReflectWidget::getMode2D
+//
+// Purpose: 
+//   Returns the 2d mode.
+//
+// Returns:    The 2d mode.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Jun 23 16:51:49 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+QvisReflectWidget::getMode2D() const
+{
+    return mode2D;
+}
+
+// ****************************************************************************
 // Method: QvisReflectWidget::createSharedElements
 //
 // Purpose: 
@@ -164,7 +216,9 @@ QvisReflectWidget::sizePolicy() const
 // Creation:   Tue Mar 11 09:52:39 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Jun 24 16:32:45 PST 2003
+//   I added a call to initializeAxes2D.
+//
 // ****************************************************************************
 
 void
@@ -173,6 +227,7 @@ QvisReflectWidget::createSharedElements()
     if(!sharedElementsCreated)
     {
         initializeAxes();
+        initializeAxes2D();
         initializeSphere(onSphere, SPHERE_ON_XDIM, SPHERE_ON_YDIM,
                          SPHERE_ON_RAD, 1., 0., 1.);
         initializeSphere(offSphere, SPHERE_OFF_XDIM, SPHERE_OFF_YDIM,
@@ -229,7 +284,10 @@ QvisReflectWidget::deleteBackingPixmap()
 // Creation:   Tue Mar 11 09:53:56 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Jun 23 16:56:48 PST 2003
+//   I split out the code that draws 3d into its own method and added code
+//   to draw the 2d scene too.
+//
 // ****************************************************************************
 
 void
@@ -246,6 +304,142 @@ QvisReflectWidget::redrawScene(QPainter *painter)
         rendererCreated = true;
     }
 
+    if(mode2D)
+        redrawScene2D(painter);
+    else
+        redrawScene3D(painter);
+}
+
+// ****************************************************************************
+// Method: QvisReflectWidget::redrawScene2D
+//
+// Purpose: 
+//   Redraws the reflection widget in its 2d mode.
+//
+// Arguments:
+//   painter : The painter to use to draw the widget.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Jun 23 16:57:31 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisReflectWidget::redrawScene2D(QPainter *painter)
+{
+    // Fill in the background color.
+    painter->fillRect(rect(), QBrush(colorGroup().background()));
+
+    //
+    // Set up the camera.
+    //
+    vector3 camera = vec_create(0, 0, 35.);
+    matrix4 view = m3du_create_view_matrix(
+            camera,
+            vec_create(0,0,0),
+            vec_create(0,1,0));
+    renderer.set_view_matrix(view);
+    renderer.set_view_reference_point(camera);
+
+    // Set up the lights.
+    renderer.set_light(1, M3D_LIGHT_AMB, 0., 0., 0., 0.1f, 0.1f, 0.1f);
+    renderer.set_light(2, M3D_LIGHT_EYE, -35.f, -35.f, -50.f, 0.7f, 0.7f, 0.7f);
+    renderer.begin_scene(painter);
+    renderer.set_world_matrix(m3du_create_identity_matrix());
+
+    // Draw the reference axes
+    axes2D.addToRenderer(renderer);
+
+    // Draw the on/off actors.
+    drawOnOffActors(4, 1.2f);
+
+    // Render the scene
+    renderer.end_scene();
+
+    // Draw the Axis labels.
+    int h = fontMetrics().height();
+    vector3 x0 = renderer.transform_world_point(vec_create(-axes_size, 0, axes_size));
+    vector3 x1 = renderer.transform_world_point(vec_create(axes_size, 0, axes_size));
+    vector3 y0 = renderer.transform_world_point(vec_create(0, axes_size, axes_size));
+    vector3 y1 = renderer.transform_world_point(vec_create(0, -axes_size, axes_size));
+    painter->setPen(colorGroup().foreground());
+    const char *x = "+X";
+    painter->drawText(x0.x, x0.y + h, "-X");
+    painter->drawText(x1.x - fontMetrics().width(x), x1.y + h, x);
+    painter->drawText(y0.x + 5, y0.y + h, "+Y");
+    painter->drawText(y1.x + 5, y1.y, "-Y");
+}
+
+// ****************************************************************************
+// Method: QvisReflectWidget::drawOnOffActors
+//
+// Purpose: 
+//   Draws the on/off actors (the cubes, sphere).
+//
+// Arguments:
+//   n     : Number of things to draw.
+//   scale : How big to draw everything.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jun 24 17:39:47 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisReflectWidget::drawOnOffActors(int n, float scale)
+{
+    // Draw the cubes or spheres.
+    for(int i = 0; i < n; ++i)
+    {
+        if(i == originOctant)
+        {
+            if(octantOn[i])
+            {
+                ScaleTranslateFromOriginToOctant(i, scale);
+                onSphere.addToRenderer(renderer, i);
+            }
+            else
+            {
+                ScaleTranslateFromOriginToOctant(i, scale);
+                offSphere.addToRenderer(renderer, i);
+            }
+        }
+        else if(octantOn[i])
+        {
+            ScaleTranslateFromOriginToOctant(i, scale);
+            onCube.addToRenderer(renderer, i);
+        }
+        else
+        {
+            ScaleTranslateFromOriginToOctant(i, scale);
+            offCube.addToRenderer(renderer, i);
+        }
+    }
+}
+
+// ****************************************************************************
+// Method: QvisReflectWidget::redrawScene3D
+//
+// Purpose: 
+//   Redraws the scene in its 3d mode.
+//
+// Arguments:
+//   painter : The painter used to redraw the scene.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Jun 23 16:58:09 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisReflectWidget::redrawScene3D(QPainter *painter)
+{
     setupCamera();
 
     // This redraws the show!
@@ -314,7 +508,9 @@ QvisReflectWidget::setupCamera()
 // Creation:   Tue Mar 11 09:57:09 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Jun 24 14:34:02 PST 2003
+//   I made it use drawOnOffActors.
+//
 // ****************************************************************************
 
 void
@@ -324,6 +520,7 @@ QvisReflectWidget::setupAndDraw(QPainter *p)
     p->fillRect(rect(), QBrush(colorGroup().background()));
 
     renderer.set_light(1, M3D_LIGHT_EYE, 0.f,0.f,-35.f, 1.f, 1.f, 1.f);
+    renderer.set_light(2, M3D_LIGHT_OFF, 0.f,0.f,-1.f, 0.f, 0.f, 0.f);
     renderer.begin_scene(p);
     renderer.set_world_matrix(m3du_create_identity_matrix());
 
@@ -331,32 +528,7 @@ QvisReflectWidget::setupAndDraw(QPainter *p)
     axes.addToRenderer(renderer);
 
     // Draw the cubes or spheres.
-    for(int i = 0; i < 8; ++i)
-    {
-        if(i == originOctant)
-        {
-            if(octantOn[i])
-            {
-                TranslateFromOriginToOctant(i);
-                onSphere.addToRenderer(renderer, i);
-            }
-            else
-            {
-                TranslateFromOriginToOctant(i);
-                offSphere.addToRenderer(renderer, i);
-            }
-        }
-        else if(octantOn[i])
-        {
-            TranslateFromOriginToOctant(i);
-            onCube.addToRenderer(renderer, i);
-        }
-        else
-        {
-            TranslateFromOriginToOctant(i);
-            offCube.addToRenderer(renderer, i);
-        }
-    }
+    drawOnOffActors(8, 1.f);
 
     // If we're not switching cameras, add the arrow to the scene.
     if(!switchingCameras)
@@ -414,7 +586,7 @@ QvisReflectWidget::setupAndDraw(QPainter *p)
 }
 
 // ****************************************************************************
-// Method: QvisReflectWidget::TranslateFromOriginToOctant
+// Method: QvisReflectWidget::ScaleTranslateFromOriginToOctant
 //
 // Purpose: 
 //   Sets the world matrix so that the origin is translated to the center
@@ -427,40 +599,48 @@ QvisReflectWidget::setupAndDraw(QPainter *p)
 // Creation:   Tue Mar 11 10:25:52 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Jun 24 14:29:45 PST 2003
+//   I renamed the method and let it also scale the matrix.
+//
 // ****************************************************************************
 
 void
-QvisReflectWidget::TranslateFromOriginToOctant(int octant)
+QvisReflectWidget::ScaleTranslateFromOriginToOctant(int octant, float s)
 {
+    matrix4 scale = m3du_create_scaling_matrix(s,s,s);
+    matrix4 translate;
+
     // Translate from the origin to the center of the specified octant.
     switch(octant)
     {
     case 0:
-        renderer.set_world_matrix(m3du_create_translation_matrix(5,5,5));
+        translate = m3du_create_translation_matrix(5,5,5);
         break;
     case 1:
-        renderer.set_world_matrix(m3du_create_translation_matrix(-5,5,5));
+        translate = m3du_create_translation_matrix(-5,5,5);
         break;
     case 2:
-        renderer.set_world_matrix(m3du_create_translation_matrix(-5,-5,5));
+        translate = m3du_create_translation_matrix(-5,-5,5);
         break;
     case 3:
-        renderer.set_world_matrix(m3du_create_translation_matrix(5,-5,5));
+        translate = m3du_create_translation_matrix(5,-5,5);
         break;
     case 4:
-        renderer.set_world_matrix(m3du_create_translation_matrix(5,5,-5));
+        translate = m3du_create_translation_matrix(5,5,-5);
         break;
     case 5:
-        renderer.set_world_matrix(m3du_create_translation_matrix(-5,5,-5));
+        translate = m3du_create_translation_matrix(-5,5,-5);
         break;
     case 6:
-        renderer.set_world_matrix(m3du_create_translation_matrix(-5,-5,-5));
+        translate = m3du_create_translation_matrix(-5,-5,-5);
         break;
     case 7:
-        renderer.set_world_matrix(m3du_create_translation_matrix(5,-5,-5));
+        translate = m3du_create_translation_matrix(5,-5,-5);
         break;
     }
+
+    // Set the transform
+    renderer.set_world_matrix(mtx_mult(scale, translate));
 }
 
 // ****************************************************************************
@@ -543,7 +723,10 @@ QvisReflectWidget::setOriginalOctant(int octant)
 // Creation:   Tue Mar 11 10:28:25 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Jun 23 17:00:31 PST 2003
+//   I added code to handle mouse release events differently when the window
+//   is in 2d mode.
+//
 // ****************************************************************************
 
 void
@@ -562,7 +745,7 @@ QvisReflectWidget::mouseReleaseEvent(QMouseEvent *e)
         // Tell others about the new selections.
         emit valueChanged(octantOn);
     }
-    else if (!switchingCameras && id == ARROW_ID)
+    else if (!mode2D && !switchingCameras && id == ARROW_ID)
     {
         // We clicked on the arrow. Start changing cameras.
         if(activeCamera == 1)
@@ -680,6 +863,38 @@ QvisReflectWidget::resizeEvent(QResizeEvent *e)
 {
     deleteBackingPixmap();
     renderer.resize(e->size().width(), e->size().height());
+}
+
+// ****************************************************************************
+// Method: QvisReflectWidget::initializeAxes2D
+//
+// Purpose: 
+//   Initializes the 2D axes elements.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jun 24 17:05:22 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisReflectWidget::initializeAxes2D()
+{
+    float s = axes_size;
+
+    color r = {1., 0., 0.};
+    axes2D.set_default_color(r);
+    axes2D.set_default_line_style(DOT_LINE);
+    axes2D.add_line_c(-s, 0, s,  0, 0, s);
+    axes2D.set_default_line_style(SOLID_LINE);
+    axes2D.add_line_c(0, 0, s,  s, 0, s);
+
+    color g = {0., 1., 0.};
+    axes2D.set_default_color(g);
+    axes2D.add_line_c(0, s, s,  0, 0, s);
+    axes2D.set_default_line_style(DOT_LINE);
+    axes2D.add_line_c( 0, 0, s, 0, -s, s);
 }
 
 // ****************************************************************************

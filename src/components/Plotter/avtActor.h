@@ -66,7 +66,7 @@ class PLOTTER_API avtActor
 {
   public:
                                   avtActor();
-    virtual                      ~avtActor() {;};
+    virtual                      ~avtActor();
 
     void                          SetBehavior(avtBehavior_p);
     avtBehavior_p                 GetBehavior(void) { return behavior; };

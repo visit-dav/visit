@@ -30,6 +30,9 @@ class QvisReflectWidget;
 //    Brad Whitlock, Mon Mar 3 11:40:37 PDT 2003
 //    I spruced up the window.
 //
+//    Brad Whitlock, Wed Jun 25 09:22:58 PDT 2003
+//    I added a 2D view of the window.
+//
 // ****************************************************************************
 
 class QvisReflectWindow : public QvisOperatorWindow
@@ -46,6 +49,7 @@ class QvisReflectWindow : public QvisOperatorWindow
   protected:
     void UpdateWindow(bool doAll);
     virtual void GetCurrentValues(int which_widget);
+    void UpdateOctantMenuContents();
   private slots:
     void octantChanged(int val);
     void xBoundaryChanged(int val);
@@ -55,21 +59,28 @@ class QvisReflectWindow : public QvisOperatorWindow
     void specifiedYProcessText();
     void specifiedZProcessText();
     void selectOctants(bool *octants);
+    void selectMode(int);
   private:
-    QComboBox     *octant;
+    bool               userSetMode;
+    bool               mode2D;
+
+    QButtonGroup      *modeButtons;
+    QLabel            *originalDataLabel;
+    QComboBox         *octant;
+    QLabel            *reflectionLabel;
     QvisReflectWidget *reflect;
-    QButtonGroup  *xBound;
-    QRadioButton  *xUseData;
-    QRadioButton  *xSpecify;
-    QLineEdit     *specifiedX;
-    QButtonGroup  *yBound;
-    QRadioButton  *yUseData;
-    QRadioButton  *ySpecify;
-    QLineEdit     *specifiedY;
-    QButtonGroup  *zBound;
-    QRadioButton  *zUseData;
-    QRadioButton  *zSpecify;
-    QLineEdit     *specifiedZ;
+    QButtonGroup      *xBound;
+    QRadioButton      *xUseData;
+    QRadioButton      *xSpecify;
+    QLineEdit         *specifiedX;
+    QButtonGroup      *yBound;
+    QRadioButton      *yUseData;
+    QRadioButton      *ySpecify;
+    QLineEdit         *specifiedY;
+    QButtonGroup      *zBound;
+    QRadioButton      *zUseData;
+    QRadioButton      *zSpecify;
+    QLineEdit         *specifiedZ;
 
     ReflectAttributes *atts;
 };
