@@ -64,6 +64,7 @@ PIPELINE_API void CFindMinimum(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CLocateZone(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CLocateNode(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CGetArray(avtDataRepresentation &, void *, bool &);
+PIPELINE_API void CGetVariableCentering(avtDataRepresentation &, void *, bool &);
 
 PIPELINE_API void GetDataRange(vtkDataSet *, double *, int);
 PIPELINE_API void GetDataMagnitudeRange(vtkDataSet *, double *, int);

@@ -37,6 +37,9 @@
 #   Hank Childs, Thu Aug 14 08:21:14 PDT 2003
 #   Added ExprGrammarNode.
 #
+#    Jeremy Meredith, Fri Aug 15 12:51:16 PDT 2003
+#    Added InvalidExpressionException and RecursiveExpressionException.
+#
 ##############################################################################
 
 ##
@@ -61,10 +64,12 @@ COMMONSRC = \
     ExprGrammarNode.C \
     ExprNode.C \
     ExprParser.C \
+    InvalidExpressionException.C \
     Grammar.C \
     ParserBase.C \
     ParserInterface.C \
     ParsingExprList.C \
+    RecursiveExpressionException.C \
     Rule.C \
     Scanner.C \
     Sequence.C \

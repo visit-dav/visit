@@ -1,5 +1,5 @@
 // ********************************************************************** //
-//                             avtMultipleInputExpressionFilter.h           //
+//                        avtMultipleInputExpressionFilter.h              //
 // ********************************************************************** //
 
 #ifndef AVT_MULTIPLE_INPUT_EXPRESSION_FILTER_H
@@ -8,7 +8,6 @@
 #include <expression_exports.h>
 #include <avtExpressionFilter.h>
 
-class     vtkDataArray;
 
 // ****************************************************************************
 //  Class: avtMultipleInputExpressionFilter
@@ -21,7 +20,8 @@ class     vtkDataArray;
 //
 // ****************************************************************************
 
-class EXPRESSION_API avtMultipleInputExpressionFilter : public avtExpressionFilter
+class EXPRESSION_API avtMultipleInputExpressionFilter 
+    : public avtExpressionFilter
 {
   public:
                               avtMultipleInputExpressionFilter() {}
@@ -29,12 +29,14 @@ class EXPRESSION_API avtMultipleInputExpressionFilter : public avtExpressionFilt
 
     virtual void              AddInputVariableName(const char *var);
 
-    virtual const char       *GetType(void) { return "avtMultipleInputExpressionFilter"; }
+    virtual const char       *GetType(void)
+                                 { return "avtMultipleInputExpressionFilter"; }
     virtual const char       *GetDescription(void) = 0;
 
   protected:
-    virtual vtkDataArray     *DeriveVariable(vtkDataSet *) = 0;
     std::vector<char *>       varnames;
+
+    virtual bool              IsPointVariable(void);
 };
 
 #endif

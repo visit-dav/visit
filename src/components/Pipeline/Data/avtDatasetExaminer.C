@@ -536,3 +536,39 @@ avtDatasetExaminer::GetArray(avtDataset_p &ds, const char *varname, int dom,
 }
 
 
+// ****************************************************************************
+//  Method: avtDatasetExaminer::GetVariableCentering
+//
+//  Purpose:
+//      Locates an array for a domain.
+//
+//  Arguments:
+//      ds       A dataset.
+//      varname  The name of a variable.
+//      dom      A domain number.
+//      cent     The centering for the variable (output variable).
+//
+//  Returns:     The data array, NULL if it does not exist.
+//
+//  Programmer:  Hank Childs
+//  Creation:    July 29, 2003
+//
+// ****************************************************************************
+
+avtCentering
+avtDatasetExaminer::GetVariableCentering(avtDataset_p &ds, const char *varname)
+{
+    GetArrayArgs args;
+    bool  success = false;
+    args.arr = NULL;
+    args.domain = -1;
+    args.varname  = varname;
+    args.centering = AVT_UNKNOWN_CENT;
+    if ( *ds->dataTree != NULL )
+    {
+        ds->dataTree->Traverse(CGetVariableCentering, (void *) &args, success);
+    }
+
+    return args.centering;
+}
+

@@ -9,11 +9,12 @@
 #include <Colors.h>
 #include <ExprGrammar.h>
 #include <Init.h>
+#include <InvalidExpressionException.h>
 #include <ParseException.h>
 #include <vector>
 using std::vector;
 
-ExprParser::ErrorMessageTarget ExprParser::errorMessageTarget = EMT_VIEWER;
+ExprParser::ErrorMessageTarget ExprParser::errorMessageTarget = EMT_EXCEPTION;
 
 class DummyNode : public ExprGrammarNode
 {
@@ -420,6 +421,9 @@ ExprParser::ApplyRule(const Symbol &sym, const Rule *rule,
 //    Hank Childs, Fri Aug  8 08:13:21 PDT 2003
 //    Have error messages be issued in a way that it is indepent of component.
 //
+//    Jeremy Meredith, Fri Aug 15 12:49:01 PDT 2003
+//    Added the EMT_EXCEPTION type, and renamed EMT_VIEWER to EMT_COMPONENT.
+//
 // ****************************************************************************
 ExprNode*
 ExprParser::Parse(const std::string &s)
@@ -456,12 +460,18 @@ ExprParser::Parse(const std::string &s)
         SNPRINTF(error, 1024, "%s\n%s",
                  e.Message(), e.GetPos().GetText(text).c_str());
 
-        if (errorMessageTarget == EMT_VIEWER)
+        if (errorMessageTarget == EMT_COMPONENT)
         {
             Init::ComponentIssueError(error);
         }
         else if (errorMessageTarget == EMT_CONSOLE)
+        {
             cerr << error;
+        }
+        else if (errorMessageTarget == EMT_EXCEPTION)
+        {
+            EXCEPTION1(InvalidExpressionException, error);
+        }
 
         return NULL;
     }

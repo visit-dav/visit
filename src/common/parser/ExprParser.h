@@ -25,6 +25,9 @@
 //    Add the ability to set the error reporting message target to 
 //    the console, the viewer error message mechanism, or neither.
 //
+//    Jeremy Meredith, Fri Aug 15 09:25:04 PDT 2003
+//    Renamed EMT_VIEWER to EMT_COMPONENT and added EMT_EXCEPTION.
+//
 // ****************************************************************************
 
 class PARSER_API ExprParser : public ParserBase
@@ -37,7 +40,8 @@ class PARSER_API ExprParser : public ParserBase
     {
         EMT_NONE,
         EMT_CONSOLE,
-        EMT_VIEWER
+        EMT_COMPONENT,
+        EMT_EXCEPTION
     };
     static void SetErrorMessageTarget(const ErrorMessageTarget emt)
     {

@@ -18,6 +18,9 @@ class Rule;
 //    Jeremy Meredith, Mon Jul 28 16:57:42 PDT 2003
 //    Added a little extra info to the syntax error messages.
 //
+//    Jeremy Meredith, Fri Aug 15 12:49:53 PDT 2003
+//    Changed the error messages to be a little friendlier.
+//
 // ****************************************************************************
 class ParseException
 {
@@ -33,7 +36,7 @@ class LexicalException : public ParseException
 {
   public:
     LexicalException(Pos p) : ParseException(p) { }
-    virtual const char *Message() { return "Scanner error -- unexpected character:"; }
+    virtual const char *Message() { return "The text scanner encountered an unexpected character:"; }
 };
 
 class SyntacticException : public ParseException
@@ -41,7 +44,7 @@ class SyntacticException : public ParseException
   public:
     SyntacticException(Pos p, const std::string &s) : ParseException(p)
     {
-        SNPRINTF(msg, 1024, "Parse error -- unexpected token (%s):", s.c_str());
+        SNPRINTF(msg, 1024, "The expression parser encountered an unexpected token (%s):", s.c_str());
     }
     virtual const char *Message() { return msg; }
   private:
@@ -52,7 +55,7 @@ class UnexpectedEndException : public ParseException
 {
   public:
     UnexpectedEndException(Pos p) : ParseException(p) { }
-    virtual const char *Message() { return "Error -- unexpected end of input:"; }
+    virtual const char *Message() { return "The parser expected more stuff after the end of the expression:"; }
 };
 
 class SemanticException : public ParseException

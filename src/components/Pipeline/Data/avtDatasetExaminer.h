@@ -46,6 +46,7 @@ class PIPELINE_API avtDatasetExaminer
     static bool               FindNode(avtDataset_p &, int, int, double *);
     static vtkDataArray      *GetArray(avtDataset_p &, const char *, int,
                                        avtCentering &);
+    static avtCentering       GetVariableCentering(avtDataset_p&, const char*);
 };
 
 
