@@ -33,6 +33,9 @@ class vtkTextActor;
 //   Kathleen Bonnell, Wed May 28 16:09:47 PDT 2003 
 //   Add method ReAddToWindow.
 //
+//   Brad Whitlock, Tue Jul 13 14:12:33 PST 2004
+//   Added new handlers for the new hotpoints.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisitBoxTool : public VisitInteractiveTool
@@ -62,14 +65,20 @@ class VISWINDOW_API VisitBoxTool : public VisitInteractiveTool
     // Callback functions for the tool's hot points.
     static void TranslateCallback(VisitInteractiveTool *, CB_ENUM,
                                   int, int, int, int);
-    static void ResizeCallback1(VisitInteractiveTool *, CB_ENUM,
-                                int, int, int, int);
-    static void ResizeCallback2(VisitInteractiveTool *, CB_ENUM,
-                                int, int, int, int);
-    static void ResizeCallback3(VisitInteractiveTool *, CB_ENUM,
-                                int, int, int, int);
-    static void ResizeCallback4(VisitInteractiveTool *, CB_ENUM,
-                                int, int, int, int);
+    static void ResizeCallback(VisitInteractiveTool *, CB_ENUM,
+                               int, int, int, int);
+    static void XMINCallback(VisitInteractiveTool *, CB_ENUM,
+                             int, int, int, int);
+    static void XMAXCallback(VisitInteractiveTool *, CB_ENUM,
+                             int, int, int, int);
+    static void YMINCallback(VisitInteractiveTool *, CB_ENUM,
+                             int, int, int, int);
+    static void YMAXCallback(VisitInteractiveTool *, CB_ENUM,
+                             int, int, int, int);
+    static void ZMINCallback(VisitInteractiveTool *, CB_ENUM,
+                             int, int, int, int);
+    static void ZMAXCallback(VisitInteractiveTool *, CB_ENUM,
+                             int, int, int, int);
 
     virtual void CallCallback();
     void Translate(CB_ENUM, int, int, int, int);
@@ -82,6 +91,7 @@ class VISWINDOW_API VisitBoxTool : public VisitInteractiveTool
     void AddText();
     void RemoveText();
     void UpdateText();
+    void GetHotPointLabel(int index, char *str);
 
     void CreateOutline();
     void DeleteOutline();
@@ -105,7 +115,7 @@ class VISWINDOW_API VisitBoxTool : public VisitInteractiveTool
     vtkTextActor       *outlineTextActor[4];
 
     vtkTextActor       *originTextActor;
-    vtkTextActor       *cornerTextActor[4];
+    vtkTextActor       *labelTextActor[7];
 
     avtBoxToolInterface Interface;
 
