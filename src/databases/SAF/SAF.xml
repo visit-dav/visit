@@ -1,6 +1,9 @@
 <?xml version="1.0"?>
   <Plugin name="SAF" label="SAF" type="database" dbtype="Custom" version="1.0">
     <Extensions> saf </Extensions>
+    <Files components="M,E">
+      avtSAFDatabase.C
+    </Files>
     <CXXFLAGS> $(ZLIB_INCLUDE) $(HDF5_INCLUDE) $(VBT_INCLUDE) $(SAF_INCLUDE) </CXXFLAGS>
     <LIBS>     $(SAF_LIB) $(VBT_LIB) $(HDF5_LIB) $(ZLIB_LIB) </LIBS>
   </Plugin>

@@ -12,8 +12,6 @@ QueryAttributes::Reset()
         variables.push_back("default");
     }
     worldPoint[0] = worldPoint[1] = worldPoint[2] = 0.;
-    rayPoint1[0] = rayPoint1[1] = rayPoint1[2] = 0.;
-    rayPoint2[0] = rayPoint2[1] = rayPoint2[2] = 0.;
     domain = -1;
     element = -1;
     elementType = Zone;
@@ -36,14 +34,10 @@ QueryAttributes::PrintSelf(ostream &os)
     os << "World point: <" << worldPoint[0] << ", " << worldPoint[1] 
        << ", " << worldPoint[2] << ">\n"; 
     os << "Domain:      " << domain << "\n";
-    os << "Element:        " << element << "\n";
+    os << "Element:        " << element << ")\n";
     if (elementType == Zone)
     os << "Element type is Zone " << endl;
     else
-    os << "Element type is Nod " << endl;
-    os << "Ray point 1: <" << rayPoint1[0] << ", " << rayPoint1[1] 
-       << ", " << rayPoint1[2] << ">\n"; 
-    os << "Ray point 2: <" << rayPoint2[0] << ", " << rayPoint2[1] 
-       << ", " << rayPoint2[2] << ">\n"; 
+    os << "Element type is Node " << endl;
 }
 

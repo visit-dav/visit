@@ -95,6 +95,9 @@ avtLocateCellQuery::PreExecute(void)
 //    minimum distance will pass it's information to the queryAtts. 
 //    Removed "message" code, as the messaging is handled in the Viewer.
 //
+//    Kathleen Bonnell, Tue Nov  4 08:18:54 PST 2003 
+//    Use pickAtts instead of queryAtts. 
+//    
 // ****************************************************************************
 
 void
@@ -102,8 +105,8 @@ avtLocateCellQuery::PostExecute(void)
 {
     if (ThisProcessorHasMinimumValue(minDist))
     {
-        queryAtts.SetDomain(foundDomain);
-        queryAtts.SetElement(foundZone);
+        pickAtts.SetDomain(foundDomain);
+        pickAtts.SetElementNumber(foundZone);
     }
 }
 
@@ -146,6 +149,9 @@ avtLocateCellQuery::PostExecute(void)
 //    Kathleen Bonnell, Fri Oct 10 11:45:24 PDT 2003 
 //    Determine the picked node if in 'NodePick' mode. 
 //    
+//    Kathleen Bonnell, Tue Nov  4 08:18:54 PST 2003 
+//    Use pickAtts instead of queryAtts. 
+//    
 // ****************************************************************************
 
 void
@@ -174,8 +180,8 @@ avtLocateCellQuery::Execute(vtkDataSet *ds, const int dom)
     {
         minDist = dist;
 
-        queryAtts.SetWorldPoint(isect);
-        if (queryAtts.GetElementType() == QueryAttributes::Node)
+        pickAtts.SetPickPoint(isect);
+        if (pickAtts.GetPickType() == PickAttributes::Node)
             DeterminePickedNode(ds, foundCell, isect);
 
         vtkDataArray *origCells = 
@@ -195,7 +201,7 @@ avtLocateCellQuery::Execute(vtkDataSet *ds, const int dom)
         }
         //
         // There is no need to 'fudge' the intersection point unless 
-        // avtPickQuery will be using it to find the Zone number and 
+        // avtLocateCellQuery will be using it to find the Zone number and 
         // we are in 3D.
         //
         if (foundZone == -1 && dim == 3)
@@ -207,7 +213,7 @@ avtLocateCellQuery::Execute(vtkDataSet *ds, const int dom)
             cell->EvaluateLocation(subId, parametricCenter, isect, weights);
             delete [] weights;
         }
-        queryAtts.SetCellPoint(isect);
+        pickAtts.SetCellPoint(isect);
         foundDomain = dom;
     } // if cell was found
 }
@@ -249,6 +255,10 @@ avtLocateCellQuery::Execute(vtkDataSet *ds, const int dom)
 //    Kathleen Bonnell, Wed Jul 23 15:51:45 PDT 2003 
 //    Added logic for World pick (indicated by rayPoint1 == rayPoint2). 
 //    
+//    Kathleen Bonnell, Tue Nov  4 15:00:04 PST 2003 
+//    Use pickAtts insteead of queryAtts.
+//    Specify the bounds for cellLocator to use when doing spatial decomp. 
+//    
 // ****************************************************************************
 
 int
@@ -258,12 +268,20 @@ avtLocateCellQuery::LocatorFindCell(vtkDataSet *ds, float &dist, float *isect)
     {
         return -1;
     }
-    float *rayPt1 = queryAtts.GetRayPoint1();
-    float *rayPt2 = queryAtts.GetRayPoint2();
+    float *rayPt1 = pickAtts.GetRayPoint1();
+    float *rayPt2 = pickAtts.GetRayPoint2();
 
     vtkVisItCellLocator *cellLocator = vtkVisItCellLocator::New(); 
     cellLocator->SetIgnoreGhosts(true);
     cellLocator->SetDataSet(ds);
+    //
+    // Cells may have been removed, and unused points may still exist,
+    // giving the dataset larger bounds than just the cell bounds, so
+    // tell the locator to use the actual bounds retrieved from the
+    // plot that originated this query.  The locator will use these
+    // bounds only if they are smaller than the dataset bounds.
+    //
+    cellLocator->SetUserBounds(pickAtts.GetPlotBounds());
     cellLocator->BuildLocator();
 
     float pcoords[3], ptLine[3];
@@ -325,6 +343,9 @@ avtLocateCellQuery::LocatorFindCell(vtkDataSet *ds, float &dist, float *isect)
 //    Kathleen Bonnell, Wed Jul 23 15:51:45 PDT 2003 
 //    Added logic for World pick (indicated by rayPoint1 == rayPoint2). 
 //    
+//    Kathleen Bonnell, Tue Nov  4 08:18:54 PST 2003 
+//    Use pickAtts instead of queryAtts. 
+//    
 // ****************************************************************************
 
 int
@@ -334,8 +355,8 @@ avtLocateCellQuery::RGridFindCell(vtkDataSet *ds, float &dist, float *isect)
 
     int i, cellId = -1;
     float t, dsBounds[6], rayDir[3];
-    float *rayPt1 = queryAtts.GetRayPoint1();
-    float *rayPt2 = queryAtts.GetRayPoint2();
+    float *rayPt1 = pickAtts.GetRayPoint1();
+    float *rayPt2 = pickAtts.GetRayPoint2();
     int ijk[3], success = 0;
 
  
@@ -401,6 +422,8 @@ avtLocateCellQuery::RGridFindCell(vtkDataSet *ds, float &dist, float *isect)
 //  Creation:   June 27, 2003 
 //
 //  Modifications:
+//    Kathleen Bonnell, Tue Nov  4 08:18:54 PST 2003
+//    Use pickAtts instead of queryAtts.
 //    
 // ****************************************************************************
 
@@ -444,7 +467,41 @@ avtLocateCellQuery::DeterminePickedNode(vtkDataSet *ds, int foundEl, float *ppoi
    }
 
    if ( minId != -1)
-       queryAtts.SetNodePoint(points->GetPoint(minId));
+       pickAtts.SetNodePoint(points->GetPoint(minId));
 }
 
+
+// ****************************************************************************
+//  Method: avtLocateCellQuery::SetPickAtts
+//
+//  Purpose:
+//      Sets the pickAtts to the passed values. 
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   November 4, 2003
+//
+// ****************************************************************************
+
+void
+avtLocateCellQuery::SetPickAtts(const PickAttributes *pa)
+{
+    pickAtts =  *pa;
+}
+
+
+// ****************************************************************************
+//  Method: avtLocateCellQuery::GetPickAtts
+//
+//  Purpose:
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   November 4, 2003
+//
+// ****************************************************************************
+
+const PickAttributes *
+avtLocateCellQuery::GetPickAtts() 
+{
+    return &pickAtts; 
+}
 

@@ -15,6 +15,7 @@
 #include <AbortException.h>
 #include <CompactSILRestrictionAttributes.h>
 #include <DataNode.h>
+#include <ImproperUseException.h>
 #include <InvalidVariableException.h>
 #include <PickAttributes.h>
 #include <Plot.h>
@@ -2075,6 +2076,9 @@ ViewerPlotList::OverlayDatabase(const std::string &host, const std::string &data
 //   Jeremy Meredith, Wed Oct 29 12:31:52 PST 2003
 //   Added code to make sure varLeaves was non-empty before accessing it.
 //
+//   Jeremy Meredith, Fri Oct 31 13:06:08 PST 2003
+//   Made the error message for no-real-variables more informative.
+//
 // ****************************************************************************
 avtSILRestriction_p
 ViewerPlotList::GetDefaultSILRestriction(const std::string &host,
@@ -2113,7 +2117,8 @@ ViewerPlotList::GetDefaultSILRestriction(const std::string &host,
         const set<string> &varLeaves = tree->GetVarLeaves();
         if (varLeaves.empty())
         {
-            EXCEPTION1(InvalidVariableException, "");
+            EXCEPTION1(ImproperUseException,
+                       "After parsing, expression has no real variables.");
         }
         realvar = *varLeaves.begin();
         if (expandedVars.count(realvar))

@@ -7,6 +7,7 @@
 #include <query_exports.h>
 
 #include <avtDatasetQuery.h>
+#include <PickAttributes.h>
 
 #include <string>
 
@@ -40,6 +41,9 @@ class vtkDataSet;
 //    Kathleen Bonnell, Fri Oct 10 11:45:24 PDT 2003
 //    Added DeterminePickedNode. 
 //
+//    Kathleen Bonnell, Tue Nov  4 08:18:54 PST 2003 
+//    Added  SetPickAtts, GetPickAtts, and PickAttributes data member.
+//
 // ****************************************************************************
 
 class QUERY_API avtLocateCellQuery : public avtDatasetQuery
@@ -53,7 +57,11 @@ class QUERY_API avtLocateCellQuery : public avtDatasetQuery
     virtual const char             *GetDescription(void)
                                              { return "Locating cell."; };
 
+    void                            SetPickAtts(const PickAttributes *);
+    const PickAttributes           *GetPickAtts(void);
+
   protected:
+    PickAttributes                  pickAtts;
     int                             foundDomain;
     int                             foundZone;
     float                           minDist;

@@ -354,6 +354,9 @@ NetworkManager::GetDBFromCache(const string &filename, int time)
 //    Jeremy Meredith, Thu Oct 30 16:09:32 PST 2003
 //    Added code to make sure varLeaves was non-empty before accessing it.
 //
+//    Jeremy Meredith, Fri Oct 31 13:05:26 PST 2003
+//    Made the error message for no-real-variables more informative.
+//
 // ****************************************************************************
 void
 NetworkManager::StartNetwork(const string &filename, const string &var,
@@ -383,7 +386,8 @@ NetworkManager::StartNetwork(const string &filename, const string &var,
         const set<string> &varLeaves = tree->GetVarLeaves();
         if (varLeaves.empty())
         {
-            EXCEPTION1(InvalidVariableException, "");
+            EXCEPTION1(ImproperUseException,
+                       "After parsing, expression has no real variables.");
         }
         leaf = *varLeaves.begin();
         tree = ParsingExprList::GetExpressionTree(leaf);
@@ -747,6 +751,23 @@ NetworkManager::EndNetwork(void)
     globalCellCounts.push_back(-1);
 
     return workingNet->GetID();
+}
+
+// ****************************************************************************
+//  Method:  NetworkManager::CancelNetwork
+//
+//  Purpose:
+//    Terminates the current network in case of an error.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November  6, 2003
+//
+// ****************************************************************************
+void
+NetworkManager::CancelNetwork(void)
+{
+    workingNet = NULL;
+    workingNetnodeList.clear();
 }
 
 // ****************************************************************************
@@ -1371,6 +1392,11 @@ NetworkManager::StopPickMode(void)
 //    Kathleen Bonnell, Fri Oct 10 10:44:52 PDT 2003 
 //    Set ElementType in QueryAtts, SetNodePoint in PickAtts from QueryAtts.
 //
+//    Kathleen Bonnell, Wed Nov  5 17:04:53 PST 2003 
+//    avtLocateCellQuery now uses PickAtts internally instead of QueryAtts.
+//    QueryAtts are created only to fulfill the api requirements of the
+//    PerformQuery method.
+//
 // ****************************************************************************
 void
 NetworkManager::Pick(const int id, PickAttributes *pa)
@@ -1404,19 +1430,10 @@ NetworkManager::Pick(const int id, PickAttributes *pa)
     TRY
     {
         QueryAttributes qa;
-        qa.SetRayPoint1(pa->GetRayPoint1());
-        qa.SetRayPoint2(pa->GetRayPoint2());
-        if (pa->GetPickType() == PickAttributes::Zone)
-            qa.SetElementType(QueryAttributes::Zone);
-        else
-            qa.SetElementType(QueryAttributes::Node);
         lcQ->SetInput(queryInput);
+        lcQ->SetPickAtts(pa);
         lcQ->PerformQuery(&qa); 
-        pa->SetDomain(qa.GetDomain());
-        pa->SetElementNumber(qa.GetElement());
-        pa->SetCellPoint(qa.GetCellPoint());
-        pa->SetPickPoint(qa.GetWorldPoint());
-        pa->SetNodePoint(qa.GetNodePoint());
+        *pa = *(lcQ->GetPickAtts());
         delete lcQ;
 
         pQ->SetInput(queryInput);

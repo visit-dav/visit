@@ -3,5 +3,5 @@
     <Extensions> pdb r0000 </Extensions>
     <CXXFLAGS> $(PDB_FLAGS) </CXXFLAGS>
     <LIBS>     $(PDB_LIBS)  </LIBS>
-    <Files components="E,M">MaterialEncoder.C PDBFileObject.C PDBReader.C PF3DFileFormat.C PP_ZFileReader.C PP_Z_STSD_FileFormat.C PP_Z_MTSD_FileFormat.C</Files>
+    <Files components="E,M">avtPDBFileFormat.C MaterialEncoder.C PDBFileObject.C PDBReader.C PF3DFileFormat.C PP_ZFileReader.C PP_Z_STSD_FileFormat.C PP_Z_MTSD_FileFormat.C</Files>
   </Plugin>

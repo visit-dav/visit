@@ -583,7 +583,7 @@
             <Object name="HostProfile" childObjects="0">
                 <Field name="profileName" type="string">serial</Field>
                 <Field name="host" type="string">white.llnl.gov</Field>
-                <Field name="hostAliases" type="string">white###.asci.llnl.gov</Field>
+                <Field name="hostAliases" type="string">white.asci.llnl.gov white###.asci.llnl.gov</Field>
                 <Field name="timeout" type="int">240</Field>
                 <Field name="numProcessors" type="int">1</Field>
                 <Field name="numNodesSet" type="bool">false</Field>
@@ -605,7 +605,7 @@
             <Object name="HostProfile" childObjects="0">
                 <Field name="profileName" type="string">parallel pbatch</Field>
                 <Field name="host" type="string">white.llnl.gov</Field>
-                <Field name="hostAliases" type="string">white###.asci.llnl.gov</Field>
+                <Field name="hostAliases" type="string">white.asci.llnl.gov white###.asci.llnl.gov</Field>
                 <Field name="timeout" type="int">240</Field>
                 <Field name="numProcessors" type="int">32</Field>
                 <Field name="numNodesSet" type="bool">true</Field>
@@ -627,7 +627,7 @@
             <Object name="HostProfile" childObjects="0">
                 <Field name="profileName" type="string">parallel views batch</Field>
                 <Field name="host" type="string">white.llnl.gov</Field>
-                <Field name="hostAliases" type="string">white###.asci.llnl.gov</Field>
+                <Field name="hostAliases" type="string">white.asci.llnl.gov white###.asci.llnl.gov</Field>
                 <Field name="timeout" type="int">240</Field>
                 <Field name="numProcessors" type="int">32</Field>
                 <Field name="numNodesSet" type="bool">true</Field>
@@ -649,7 +649,7 @@
             <Object name="HostProfile" childObjects="0">
                 <Field name="profileName" type="string">parallel views interactive</Field>
                 <Field name="host" type="string">white.llnl.gov</Field>
-                <Field name="hostAliases" type="string">white###.asci.llnl.gov</Field>
+                <Field name="hostAliases" type="string">white.asci.llnl.gov white###.asci.llnl.gov</Field>
                 <Field name="timeout" type="int">240</Field>
                 <Field name="numProcessors" type="int">32</Field>
                 <Field name="numNodesSet" type="bool">true</Field>

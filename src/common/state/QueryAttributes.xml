@@ -22,31 +22,11 @@
     <Field name="element" label="element" type="int">
       -1
     </Field>
-    <Field name="rayPoint1" label="rayPoint1" type="floatArray" length="3">
-      0.000000
-      0.000000
-      0.000000
-    </Field>
-    <Field name="rayPoint2" label="rayPoint2" type="floatArray" length="3">
-      0.000000
-      0.000000
-      0.000000
-    </Field>
-    <Field name="cellPoint" label="cellPoint" type="floatArray" length="3">
-      0.000000
-      0.000000
-      0.000000
-    </Field>
     <Field name="resultsValue" label="resultsValue" type="double">
       0.000000
     </Field>
     <Field name="elementType" label="elementType" type="enum" subtype="ElementType">
       Zone
-    </Field>
-    <Field name="nodePoint" label="nodePoint" type="floatArray" length="3">
-      0.000000
-      0.000000
-      0.000000
     </Field>
     <Function name="Reset" user="true" member="true">
     </Function>
