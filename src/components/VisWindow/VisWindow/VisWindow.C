@@ -2225,22 +2225,15 @@ VisWindow::SetViewCurve(const avtViewCurve &v)
 //    Modified the routine to pass the window size to SetViewFromViewInfo
 //    so that it could handle non-square windows.
 //
+//    Eric Brugger, Tue Nov 18 11:11:09 PST 2003
+//    Modify the method to just return the internally stored avtViewCurve
+//    without first updating it from the vtk view state.
+//
 // ****************************************************************************
 
 const avtViewCurve &
 VisWindow::GetViewCurve(void)
 {
-    //
-    // In the future this should propably be done by the VisWinView
-    // colleague.
-    //
-    int *size=rendering->GetFirstRenderer()->GetSize();
-
-    if (mode == WINMODE_CURVE)
-    {
-        viewCurve.SetViewFromViewInfo(view->GetViewInfo(), size);
-    }
-
     return viewCurve;
 }
 

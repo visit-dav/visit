@@ -155,6 +155,10 @@ class     PickVarInfo;
 //
 //    Mark C. Miller, 30Sep03, Added support for time varying MD/SIL
 //
+//    Kathleen Bonnell, Tue Nov 18 14:07:13 PST 2003
+//    Add bool and string vector args to QueryNodes, QueryZones, in support
+//    of logical zone coords.
+//
 // ****************************************************************************
 
 class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
@@ -293,7 +297,8 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
                                           const int, const int, 
                                           std::vector<int> &, float [3], 
                                           const int, const bool, const bool,
-                                          std::vector<std::string> &);
+                                          std::vector<std::string> &,
+                                          const bool, std::vector<std::string> &);
 
     virtual bool               QueryMesh(const std::string &, const int, const int, 
                                          std::string &);
@@ -301,8 +306,8 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
     virtual bool               QueryZones(const std::string&, const int, int &,
                                           const int, std::vector<int> &, 
                                           float [3], const int, const bool, 
-                                          const bool, 
-                                          std::vector<std::string> &) ;
+                                          const bool, std::vector<std::string> &,
+                                          const bool, std::vector<std::string> &);
     void                       AssociateBounds(vtkDataSet *);
     void                       ScaleMesh(vtkDataSet *);
 };

@@ -4276,7 +4276,6 @@ avtGenericDatabase::QueryScalars(const std::string &varName, const int dom,
         }
         rv = true;
     }
-
     // 
     // This is where we could allow the interface to add more information.
     // 
@@ -4761,15 +4760,17 @@ avtGenericDatabase::QueryMaterial(const std::string &varName, const int dom,
 //    Queries the db regarding material var info for a specific cell or nodes.  
 //
 //  Arguments:
-//    varName     The variable on which to retrieve data.
-//    dom         The domain to query.
-//    zone        The zone to query.
-//    ts          The timestep to query.
-//    nodes       A place to store the nodes.
-//    ppt         A place to store the 'real' picked point for point meshes.
+//    varName       The variable on which to retrieve data.
+//    dom           The domain to query.
+//    zone          The zone to query.
+//    ts            The timestep to query.
+//    nodes         A place to store the nodes.
+//    ppt           A place to store the 'real' picked point for point meshes.
 //    useNodeCoords Whether or not to fill in the node coordinates.
-//    logical     Whether or not to use logical indices for the node coordinates.
-//    nCoords     A place to store the node coordinates.
+//    logicalNodes  Whether or not to use logical indices for the node coordinates.
+//    nCoords       A place to store the node coordinates.
+//    logicalZones  Whether or not to fill in the zone coordinates.
+//    zCoords       A place to store the zone coordinates.
 //
 //  Returns:
 //    True if data was successfully retrieved, false otherwise.
@@ -4785,6 +4786,9 @@ avtGenericDatabase::QueryMaterial(const std::string &varName, const int dom,
 //    Kathleen Bonnell, Tue Sep 16 13:33:30 PDT 2003 
 //    Use "base_index" if available when creating logical coords. 
 //    
+//    Kathleen Bonnell, Tue Nov 18 14:07:13 PST 2003 
+//    Added support for logical zone coords. 
+//    
 // ****************************************************************************
 
 bool
@@ -4792,8 +4796,10 @@ avtGenericDatabase::QueryNodes(const std::string &varName, const int dom,
                                const int zone, const int ts, 
                                std::vector<int> &nodes, float ppt[3],
                                const int dim, const bool useNodeCoords, 
-                               const bool logical, 
-                               std::vector<std::string> &nCoords)
+                               const bool logicalNodes, 
+                               std::vector<std::string> &nCoords,
+                               const bool logicalZones, 
+                               std::vector<std::string> &zCoords)
 {
     string meshName = GetMetaData(ts)->MeshForVar(varName);
     vtkDataSet *ds = GetMeshDataset(meshName.c_str(), ts, dom, "_all");
@@ -4814,13 +4820,30 @@ avtGenericDatabase::QueryNodes(const std::string &varName, const int dom,
             base[1] = bi->GetValue(1);
             base[2] = bi->GetValue(2);
         }
+        if (logicalZones && (type == VTK_RECTILINEAR_GRID ||
+                             type == VTK_STRUCTURED_GRID ))
+        {
+            vtkVisItUtility::GetLogicalIndices(ds, true, zone, ijk);
+            ijk[0] += base[0];
+            ijk[1] += base[1];
+            ijk[2] += base[2];
+            if (dim == 2)
+            {
+                sprintf(buff, "<%d, %d>", ijk[0], ijk[1]);
+            }
+            else 
+            {
+                sprintf(buff, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
+            }
+            zCoords.push_back(buff);
+        }
         for (int i = 0; i < ptIds->GetNumberOfIds(); i++)
         {
             nodes.push_back(ptIds->GetId(i));
             if (useNodeCoords)
             {
-                if (logical && (type == VTK_RECTILINEAR_GRID ||
-                                type == VTK_STRUCTURED_GRID ))
+                if (logicalNodes && (type == VTK_RECTILINEAR_GRID ||
+                                     type == VTK_STRUCTURED_GRID ))
                 {
                     vtkVisItUtility::GetLogicalIndices(ds, false, ptIds->GetId(i), ijk);
                     ijk[0] += base[0];
@@ -4941,18 +4964,20 @@ avtGenericDatabase::QueryMesh(const std::string &varName, const int ts,
 //    Queries the db regarding zones incident upon a specific node. 
 //
 //  Arguments:
-//    varName     The variable on which to retrieve data.
-//    dom         The domain to query.
-//    foundEl     IN:  zone that contains the picked point. 
-//                OUT: The node closest to the picked point.
-//    ts          The timestep to query.
-//    zones       A place to store the zones.
-//    ppt         IN:  The picked point. 
-//                OUT: The node coordinates. 
-//    dimension   The spatial dimension.
+//    varName       The variable on which to retrieve data.
+//    dom           The domain to query.
+//    foundEl       IN:  zone that contains the picked point. 
+//                  OUT: The node closest to the picked point.
+//    ts            The timestep to query.
+//    zones         A place to store the zones.
+//    ppt           IN:  The picked point. 
+//                  OUT: The node coordinates. 
+//    dimension     The spatial dimension.
 //    useNodeCoords Whether or not to supply coordinates for the node.
-//    logical     Whether the node coords should be logical. 
-//    nodeCoords  A place to store the node coordinates.
+//    logicalNodes  Whether the node coords should be logical. 
+//    nodeCoords    A place to store the node coordinates.
+//    logicalZones  Whether or not to supply coordinates for the zone. 
+//    zoneCoords    A place to store the zone coordinates.
 //
 //  Returns:
 //    True if data was successfully retrieved, false otherwise.
@@ -4964,14 +4989,20 @@ avtGenericDatabase::QueryMesh(const std::string &varName, const int ts,
 //    Kathleen Bonnell, Tue Sep 16 13:33:30 PDT 2003 
 //    Use "base_index" if available when creating logical coords. 
 //    
+//    Kathleen Bonnell, Tue Nov 18 14:07:13 PST 2003 
+//    Added support for logical zone coords. 
+//    
 // ****************************************************************************
 
 bool
 avtGenericDatabase::QueryZones(const string &varName, const int dom, 
                                int &foundEl, const int ts, vector<int> &zones, 
                                float ppt[3], const int dimension,
-                               const bool useNodeCoords, const bool logical, 
-                               vector<string> &nodeCoords)
+                               const bool useNodeCoords, 
+                               const bool logicalNodes, 
+                               vector<string> &nodeCoords,
+                               const bool logicalZones, 
+                               vector<string> &zoneCoords)
 {
     string meshName = GetMetaData(ts)->MeshForVar(varName);
     vtkDataSet *ds = GetMeshDataset(meshName.c_str(), ts, dom, "_all");
@@ -4982,6 +5013,10 @@ avtGenericDatabase::QueryZones(const string &varName, const int dom,
         vtkIdList *ids = vtkIdList::New();
         vtkIdType *idptr; 
         vtkIdType minId = -1;
+        float coord[3];
+        int ijk[3];
+        char buff[80];
+        int type = ds->GetDataObjectType();
         vtkIntArray *bi = (vtkIntArray*)ds->GetFieldData()->GetArray("base_index"); 
         int base[3] = {0, 0, 0};
         if (bi)
@@ -4990,7 +5025,7 @@ avtGenericDatabase::QueryZones(const string &varName, const int dom,
             base[1] = bi->GetValue(1);
             base[2] = bi->GetValue(2);
         }
-        if (ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
+        if (type == VTK_RECTILINEAR_GRID)
         {
            // This method is faster for rectilinear grids than other types 
            // It is also faster for RGrids than method below. 
@@ -5025,11 +5060,7 @@ avtGenericDatabase::QueryZones(const string &varName, const int dom,
 
             if (useNodeCoords)
             {
-                char buff[80];
-                int ijk[3];
-                float coord[3];
-                int type = ds->GetDataObjectType();
-                if (logical && (type == VTK_STRUCTURED_GRID || 
+                if (logicalNodes && (type == VTK_STRUCTURED_GRID || 
                      type == VTK_RECTILINEAR_GRID))
                 {
                     vtkVisItUtility::GetLogicalIndices(ds, false, minId, ijk);
@@ -5075,6 +5106,24 @@ avtGenericDatabase::QueryZones(const string &varName, const int dom,
                     if (ghosts && ghosts[idptr[i]] == 1)
                         continue;
                     zones.push_back(idptr[i]);
+
+                    if (logicalZones && (type == VTK_STRUCTURED_GRID || 
+                         type == VTK_RECTILINEAR_GRID))
+                    {
+                        vtkVisItUtility::GetLogicalIndices(ds, true, idptr[i], ijk);
+                        ijk[0] += base[0];
+                        ijk[1] += base[1];
+                        ijk[2] += base[2];
+                        if (dimension == 2)
+                        {
+                            sprintf(buff, "<%d, %d>", ijk[0], ijk[1]);
+                        }
+                        else 
+                        {
+                            sprintf(buff, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
+                        }
+                        zoneCoords.push_back(buff);
+                    }
                 }
                 rv = true;
             }

@@ -6,7 +6,7 @@
 #include <avtSpecies.h>
 
 #include <BadDomainException.h>
-
+#include <avtMaterial.h>
 
 using namespace std;
 
@@ -195,6 +195,74 @@ avtSpecies::Initialize(const vector<int> ns,
     {
         species_mf[i]  = smf[i];
     }
+}
+
+
+// ****************************************************************************
+//  Method:  avtSpecies::ExtractCellSpecInfo
+//
+//  Purpose:
+//    Returns the species info for a material in a cell
+//
+//  Arguments:
+//    c    the cell number
+//    m    the material number
+//    m    the avtMaterial object
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November 19, 2003
+//
+// ****************************************************************************
+vector<CellSpecInfo>
+avtSpecies::ExtractCellSpecInfo(int c, int m, avtMaterial *mat)
+{
+    const int         *matlist        = mat->GetMatlist();
+    const int         *mixmat         = mat->GetMixMat();
+    const int         *mixnext        = mat->GetMixNext();
+
+    //
+    // Get the index into the species mass fraction data array
+    //
+
+    // initialize to a value valid for clean zones
+    int specindex = speclist[c];
+
+    // if it's a mixed zone, find the right index for the queried material
+    if (matlist[c] < 0)
+    {
+        int mixindex = -matlist[c] - 1;
+        while (mixindex >= 0)
+        {
+            if (mixmat[mixindex] == m)
+            {
+                specindex = mix_speclist[mixindex];
+                break;
+            }
+            mixindex = mixnext[mixindex] - 1;
+        }
+    }
+
+    vector<CellSpecInfo> info;
+
+    if (specindex == 0)
+    {
+        // A zero indicates only one species in this material
+        info.push_back(CellSpecInfo(species[m][0], 1.0));
+    }
+    else if (specindex > 0)
+    {
+        for (int j=0 ; j<nSpecies[m] ; j++)
+        {
+            info.push_back(CellSpecInfo(species[m][j],
+                                        species_mf[specindex + j - 1]));
+        }
+    }
+    else
+    {
+        // speclist was < 0; an error occurred; don't return anything
+    }
+
+    return info;
 }
 
 

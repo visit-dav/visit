@@ -1302,6 +1302,9 @@ avtStructuredDomainBoundaries::Finish(int domain)
 //  Creation:    November  7, 2003
 //
 //  Modifications:
+//    Jeremy Meredith, Wed Nov 19 12:20:52 PST 2003
+//    Added code to get all processors to agree on one data type.
+//    This was causing problems with more procs than domains.
 //
 // ****************************************************************************
 vector<vtkDataArray*>
@@ -1309,10 +1312,18 @@ avtStructuredDomainBoundaries::ExchangeScalar(vector<int>           domainNum,
                                               bool                  isPointData,
                                               vector<vtkDataArray*> scalars)
 {
-    if (scalars.empty())
+    int dataType = (scalars.empty() ? -1 : scalars[0]->GetDataType());
+
+#ifdef PARALLEL
+    // Let's get them all to agree on one data type.
+    int myDataType = myDataType;
+    MPI_Allreduce(&myDataType, &dataType, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
+#endif
+
+    if (dataType < 0)
         return scalars;
 
-    switch (scalars[0]->GetDataType())
+    switch (dataType)
     {
       case VTK_FLOAT:
         return ExchangeFloatScalar(domainNum, isPointData, scalars);

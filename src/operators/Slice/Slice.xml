@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Plugin name="Slice" type="operator" label="Slice" version="1.0" iconFile="Slice.xpm">
+  <Plugin name="Slice" type="operator" label="Slice" version="1.0" enabled="true" iconFile="Slice.xpm">
     <Attribute name="SliceAttributes" purpose="This class contains attributes for the arbitrary slice." persistent="true" codefile="SliceAttributes.code">
       <Enum name="AxisType">
         XAxis
@@ -23,8 +23,10 @@
         0.000000
       </Field>
       <Field name="originIntercept" label="originIntercept" type="double" enabler="originType:Intercept">
+        0.000000
       </Field>
       <Field name="originPercent" label="originPercent" type="double" enabler="originType:Percent">
+        0.000000
       </Field>
       <Field name="originZone" label="originZone" type="int" enabler="originType:Zone">
         0

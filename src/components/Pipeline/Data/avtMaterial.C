@@ -658,6 +658,12 @@ avtMaterial::ExtractCellMatInfo(int c, float *zone_vf, int *mix_index) const
 //  Programmer:  Jeremy Meredith
 //  Creation:    June 24, 2002
 //
+//  Modifications:
+//    Jeremy Meredith, Wed Nov 19 14:42:09 PST 2003
+//    Added "material number" to CellMatInfo.  This is more for internal
+//    use than for displaying; for example, if one were to try to extract
+//    species information for each material in this cell.
+//
 // ****************************************************************************
 vector<CellMatInfo>
 avtMaterial::ExtractCellMatInfo(int c) const
@@ -671,6 +677,7 @@ avtMaterial::ExtractCellMatInfo(int c) const
         while (mixix >= 0)
         {
             info.push_back(CellMatInfo(materials[mix_mat[mixix]],
+                                       mix_mat[mixix],
                                        mix_vf[mixix],
                                        mixix));
 
@@ -679,7 +686,7 @@ avtMaterial::ExtractCellMatInfo(int c) const
     }
     else
     {
-        info.push_back(CellMatInfo(materials[matlist[c]], 1.0));
+        info.push_back(CellMatInfo(materials[matlist[c]], matlist[c], 1.0));
     }
 
     return info;

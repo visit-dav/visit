@@ -926,6 +926,9 @@ avtDatabase::GetFileListFromTextFile(const char *textfile,
 //    Re-add code that makes QueryMaterial use 'real' elements when available. 
 //    (was accidentally removed).
 //    
+//    Kathleen Bonnell, Tue Nov 18 14:07:13 PST 2003 
+//    Added support for ZoneCoords. 
+//    
 // ****************************************************************************
 
 void               
@@ -938,6 +941,7 @@ avtDatabase::Query(PickAttributes *pa)
     float *PPT, *CPT, ppt[3], cpt[3];
     std::vector<int> incEls  = pa->GetIncidentElements();
     std::vector<std::string> nodeCoords  = pa->GetNodeCoords();
+    std::vector<std::string> zoneCoords  = pa->GetZoneCoords();
     vector<string> userVars = pa->GetVariables();
     std::string vName; 
 
@@ -963,13 +967,15 @@ avtDatabase::Query(PickAttributes *pa)
         {
             success = QueryNodes(vName, foundDomain, foundEl, ts, incEls, ppt, 
                           pa->GetDimension(), pa->GetUseNodeCoords(), 
-                          pa->GetLogicalCoords(), nodeCoords);
+                          pa->GetLogicalCoords(), nodeCoords,
+                          pa->GetLogicalZone(), zoneCoords);
         }
         else       
         {
             success = QueryZones(vName, foundDomain, foundEl, ts, incEls, cpt,
                           pa->GetDimension(), pa->GetUseNodeCoords(), 
-                          pa->GetLogicalCoords(), nodeCoords);
+                          pa->GetLogicalCoords(), nodeCoords,
+                          pa->GetLogicalZone(), zoneCoords);
             if (success)
                 pa->SetElementNumber(foundEl);
         }
@@ -978,6 +984,7 @@ avtDatabase::Query(PickAttributes *pa)
             pa->SetFulfilled(true);
             pa->SetIncidentElements(incEls);
             pa->SetNodeCoords(nodeCoords);
+            pa->SetZoneCoords(zoneCoords);
             pa->SetPickPoint(ppt);
             pa->SetCellPoint(cpt);
         }

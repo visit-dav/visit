@@ -159,6 +159,10 @@ typedef std::map<std::string, avtSILRestriction_p> SILRestrictionMap;
 //    Added method to TransmutePlots() to support smooth transitions into
 //    and out of scalable rendering.
 //
+//    Mark C. Miller Wed Nov 19 13:28:08 PST 2003
+//    Added method to FindCompatiblePlot() to support pushing time
+//    varying SIL to client as necessary.
+//
 // ****************************************************************************
 
 
@@ -203,6 +207,8 @@ class VIEWER_API ViewerPlotList
     void ClearPlots();
     void TransmutePlots(int frame, bool turningOffScalableRendering);
     void DeleteActivePlots();
+
+    int  FindCompatiblePlot(ViewerPlot *);
 
     void DeletePlot(ViewerPlot *, bool);
     void HideActivePlots();

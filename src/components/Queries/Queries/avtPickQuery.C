@@ -243,6 +243,9 @@ avtPickQuery::PostExecute(void)
 //    Added code to set the PickPoint (pickLetter's display position) 
 //    from the NodePoint when appropriate. 
 //
+//    Kathleen Bonnell, Tue Nov 18 14:14:05 PST 2003 
+//    Retrieve logical zone coordinates if specified by pick atts. 
+// 
 // ****************************************************************************
 
 void
@@ -297,6 +300,26 @@ avtPickQuery::Execute(vtkDataSet *ds, const int dom)
         bool success = false;
         if (pickAtts.GetPickType() == PickAttributes::Zone)
         {
+            int type = ds->GetDataObjectType();
+            if (pickAtts.GetLogicalZone() &&
+                (type == VTK_STRUCTURED_GRID || 
+                 type == VTK_RECTILINEAR_GRID))
+            {
+                char buff[80];
+                int ijk[3];
+                stringVector zoneCoords;
+                vtkVisItUtility::GetLogicalIndices(ds, true, foundElement, ijk);
+                if (pickAtts.GetDimension() == 2)
+                {
+                    sprintf(buff, "<%d, %d>", ijk[0], ijk[1]);
+                }
+                else 
+                {
+                    sprintf(buff, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
+                }
+                zoneCoords.push_back(buff);
+                pickAtts.SetZoneCoords(zoneCoords);
+            }
             success = RetrieveNodes(ds, foundElement);
         }
         else if (pickAtts.GetPickType() == PickAttributes::Node)
@@ -728,6 +751,8 @@ avtPickQuery::RetrieveNodes(vtkDataSet *ds, int zone)
 //  Creation:   June 27, 2003 
 //
 //  Modifications:
+//    Kathleen Bonnell, Tue Nov 18 14:14:05 PST 2003 
+//    Retrieve logical zone coordinates if specified by pick atts. 
 //    
 // ****************************************************************************
 
@@ -736,8 +761,12 @@ avtPickQuery::RetrieveZones(vtkDataSet *ds, int foundNode)
 {
     vtkIdList *cellIds = vtkIdList::New();
     intVector zones;
+    stringVector zoneCoords;
     ds->GetPointCells(foundNode, cellIds);
     int nCells = cellIds->GetNumberOfIds();
+    int type = ds->GetDataObjectType();
+    int ijk[3];
+    char buff[80];
     bool success = true;
     vtkUnsignedCharArray *ghostArray; 
     unsigned char *ghosts = NULL;
@@ -759,8 +788,24 @@ avtPickQuery::RetrieveZones(vtkDataSet *ds, int foundNode)
             if (ghosts && ghosts[cells[i]] == 1)
                continue;
             zones.push_back(cells[i]);
+            if (pickAtts.GetLogicalZone() &&
+                (type == VTK_STRUCTURED_GRID || 
+                 type == VTK_RECTILINEAR_GRID))
+            {
+                vtkVisItUtility::GetLogicalIndices(ds, true, cells[i], ijk);
+                if (pickAtts.GetDimension() == 2)
+                {
+                    sprintf(buff, "<%d, %d>", ijk[0], ijk[1]);
+                }
+                else 
+                {
+                    sprintf(buff, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
+                }
+                zoneCoords.push_back(buff);
+            }
         }
         pickAtts.SetIncidentElements(zones);
+        pickAtts.SetZoneCoords(zoneCoords);
     }
     cellIds->Delete();
     return success;
