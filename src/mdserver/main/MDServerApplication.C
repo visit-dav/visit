@@ -11,6 +11,7 @@
 #include <MDServerApplication.h>
 #include <MDServerConnection.h>
 #include <LostConnectionException.h>
+#include <Utility.h>
 
 // Static member.
 MDServerApplication *MDServerApplication::instance = NULL;
@@ -122,12 +123,39 @@ MDServerApplication::AlarmHandler(int signal)
 // Creation:   Fri Nov 17 17:21:15 PST 2000
 //
 // Modifications:
+//    Jeremy Meredith, Wed Dec 31 11:49:51 PST 2003
+//    Added code to only trust the first client host seen.  This is to
+//    fix issues with -guesshost when running through a NAT firewall.
+//    See '4287 and '4288 for more details.
 //
 // ****************************************************************************
 
 void
 MDServerApplication::AddConnection(int *argc, char **argv[])
 {
+    if (clientHost == "")
+    {
+        for (int i=0; i<*argc; i++)
+        {
+            if (!strcmp((*argv)[i], "-host"))
+            {
+                clientHost = (*argv)[i+1];
+                break;
+            }
+        }
+    }
+    else
+    {
+        for (int i=0; i<*argc; i++)
+        {
+            if (!strcmp((*argv)[i], "-host"))
+            {
+                (*argv)[i+1] = CXX_strdup(clientHost.c_str());
+                break;
+            }
+        }
+    }
+
     MDServerConnection *newConnection = new MDServerConnection(argc, argv);
     clients.push_back(newConnection);
 

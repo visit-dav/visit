@@ -163,6 +163,9 @@ typedef std::map<std::string, avtSILRestriction_p> SILRestrictionMap;
 //    Added method to FindCompatiblePlot() to support pushing time
 //    varying SIL to client as necessary.
 //
+//    Brad Whitlock, Wed Dec 31 14:09:37 PST 2003
+//    I added UpdateExpressionListUsingDB.
+//
 // ****************************************************************************
 
 
@@ -253,6 +256,8 @@ class VIEWER_API ViewerPlotList
     void UpdateSILRestrictionAtts();
     void InterruptUpdatePlotList();
     void UpdateExpressionList(bool considerPlots);
+    void UpdateExpressionListUsingDB(const std::string &host,
+                                     const std::string &db, int ts) const;
 
     void GetPlotLimits(int frame, int nDimensions, double *limits) const;
     void SetSpatialExtentsType(avtExtentType);

@@ -5742,6 +5742,10 @@ ViewerWindow::CreateNode(DataNode *parentNode, bool detailed)
 //   Brad Whitlock, Fri Dec 19 15:27:49 PST 2003
 //   Added boundingBoxNavigate.
 //
+//   Brad Whitlock, Wed Dec 31 14:11:50 PST 2003
+//   I added code to delete plots before reading the new plots so we don't
+//   have the window redrawing the old plots with the new view.
+//
 // ****************************************************************************
 
 void
@@ -5755,6 +5759,31 @@ ViewerWindow::SetFromNode(DataNode *parentNode)
     DataNode *windowNode = parentNode->GetNode("ViewerWindow");
     if(windowNode == 0)
         return;
+    //
+    // Reset the view centering flags.
+    //
+    boundingBoxValidCurve = false;
+    haveRenderedInCurve = false;
+    viewModifiedCurve = false;
+    boundingBoxValid2d = false;
+    haveRenderedIn2d = false;
+    viewModified2d = false;
+    boundingBoxValid3d = false;
+    haveRenderedIn3d = false;
+    mergeViewLimits = false;
+    centeringValidCurve = false;
+    centeringValid2d = false;
+    centeringValid3d = false;
+
+    //
+    // Delete the plots first and update the frame so when we set the 
+    // view, etc no updates can happen.
+    //
+    intVector plots, tmp;
+    for(int j = 0; j < animation->GetPlotList()->GetNumPlots(); ++j)
+        plots.push_back(j);
+    animation->GetPlotList()->SetActivePlots(plots, tmp, tmp, false);
+    animation->GetPlotList()->DeleteActivePlots();
 
     //
     // Read in the animation.

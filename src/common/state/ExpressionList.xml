@@ -4,4 +4,6 @@
     </Field>
     <Function name="operator[]" user="true" member="true">
     </Function>
+    <Function name="CreateNode" user="false" member="true">
+    </Function>
   </Attribute>

@@ -1,6 +1,7 @@
 #ifndef MDSERVER_APPLICATION_H
 #define MDSERVER_APPLICATION_H
 #include <vector>
+#include <string>
 
 class MDServerConnection;
 
@@ -23,6 +24,10 @@ class MDServerConnection;
 //   Brad Whitlock, Fri Apr 18 14:57:17 PST 2003
 //   I added a debug method that reads the file list and quits.
 //
+//   Jeremy Meredith, Wed Dec 31 14:12:12 PST 2003
+//   Added code to keep track of the client host.  This lets us guess
+//   host names better.
+//
 // ****************************************************************************
 
 class MDServerApplication
@@ -42,6 +47,7 @@ private:
     void DisconnectDeadConnections(const std::vector<int> &deadList);
 private:
     static MDServerApplication *instance;
+    std::string                 clientHost;
     MDServerConnectionVector    clients;
     bool                        keepGoing;
     long                        timeout;
