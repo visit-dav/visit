@@ -338,17 +338,14 @@ QvisSubsetWindow::AddListView(bool visible)
     entry.layout->setMargin(5);
     entry.lv = new QvisSubsetListView(entry.frame, tmp.latin1());
     if(listViews.size() > 0)
-    {
         entry.lv->setSelectionMode(QListView::Extended);
-        connect(entry.lv, SIGNAL(selectionChanged()),
-                this, SLOT(listviewSelectionChanged()));
-    }
-
     entry.layout->addMultiCellWidget(entry.lv, 0, 0, 0, 1);
     connect(entry.lv, SIGNAL(clicked(QListViewItem *)),
             this, SLOT(listviewClicked(QListViewItem *)));
     connect(entry.lv, SIGNAL(checked(QvisSubsetListViewItem *)),
             this, SLOT(listviewChecked(QvisSubsetListViewItem *)));
+    connect(entry.lv, SIGNAL(selectionChanged()),
+            this, SLOT(listviewSelectionChanged()));
     entry.lv->addColumn("");
     entry.lv->setColumnWidthMode(0, QListView::Manual);
     if(!visible)
@@ -1300,7 +1297,9 @@ QvisSubsetWindow::setSelectedSetsButtonAction(int actionIndex)
 // Creation:   Fri Aug 6 17:22:41 PST 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Aug 9 08:40:11 PDT 2004
+//   I made the selected sets buttons disabled if no roots are selected.
+//
 // ****************************************************************************
 
 void
@@ -1308,7 +1307,7 @@ QvisSubsetWindow::listviewSelectionChanged()
 {
     int lvIndex = GetListViewIndex(sender());
 
-    if(lvIndex > 0)
+    if(lvIndex >= 0)
     {
         //
         // See if there are any root level items selected.
@@ -1353,5 +1352,13 @@ QvisSubsetWindow::listviewSelectionChanged()
             if(selectionChanged)
                 listViews[lvIndex].lv->update();
         }
+
+        //
+        // Only enable the selected sets buttons if there are root sets
+        // highlighted.
+        //
+        listViews[lvIndex].selectedSetsLabel->setEnabled(rootsSelected);
+        listViews[lvIndex].selectedSetsButton->setEnabled(rootsSelected);
+        listViews[lvIndex].selectedSetsActionButton->setEnabled(rootsSelected);
     } 
 }

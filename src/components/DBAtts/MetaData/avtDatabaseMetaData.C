@@ -50,10 +50,13 @@ inline void   Indent(ostream &, int);
 //    Brad Whitlock, Fri Jul 23 12:24:38 PDT 2004
 //    Added xLabel, yLabel, zLabel.
 //
+//    Mark C. Miller, August 9, 2004
+//    Added containsGlobalZoneIds data member
+//
 // ****************************************************************************
 
 avtMeshMetaData::avtMeshMetaData()
-    : AttributeSubject("sssiiiiiibFFs*ii*ssbssssssibbbb")
+    : AttributeSubject("sssiiiiiibFFs*ii*ssbssssssibbbbb")
 {
     blockTitle = "domains";
     blockPieceName = "domain";
@@ -72,6 +75,7 @@ avtMeshMetaData::avtMeshMetaData()
     containsOriginalCells = false;
     containsOriginalNodes = false;
     containsGlobalNodeIds = false;
+    containsGlobalZoneIds = false;
     validVariable = true;
     xLabel = "X-Axis";
     yLabel = "Y-Axis";
@@ -125,11 +129,14 @@ avtMeshMetaData::avtMeshMetaData()
 //    Brad Whitlock, Fri Jul 23 12:25:03 PDT 2004
 //    Added xLabel, yLabel, zLabel.
 //
+//    Mark C. Miller, August 9, 2004
+//    Added containsGlobalZoneIds data member
+//
 // ****************************************************************************
 
 avtMeshMetaData::avtMeshMetaData(const float *extents, std::string s, int nb,
                                  int bo, int co,int sd, int td, avtMeshType mt)
-    : AttributeSubject("sssiiiiiibFFs*ii*ssbssssssibbbb")
+    : AttributeSubject("sssiiiiiibFFs*ii*ssbssssssibbbbb")
 {
     name                 = s;
     numBlocks            = nb;
@@ -149,6 +156,7 @@ avtMeshMetaData::avtMeshMetaData(const float *extents, std::string s, int nb,
     containsOriginalCells   = false; 
     containsOriginalNodes   = false; 
     containsGlobalNodeIds   = false; 
+    containsGlobalZoneIds   = false; 
     validVariable        = true;
     xLabel = "X-Axis";
     yLabel = "Y-Axis";
@@ -202,11 +210,14 @@ avtMeshMetaData::avtMeshMetaData(const float *extents, std::string s, int nb,
 //    Brad Whitlock, Fri Jul 23 12:25:22 PDT 2004
 //    Added xLabel, yLabel, zLabel.
 //
+//    Mark C. Miller, August 9, 2004
+//    Added containsGlobalZoneIds data member
+//
 // ****************************************************************************
 
 avtMeshMetaData::avtMeshMetaData(std::string s, int nb, int bo, int co, int sd,
                                  int td, avtMeshType mt)
-    : AttributeSubject("sssiiiiiibFFs*ii*ssbssssssibbbb")
+    : AttributeSubject("sssiiiiiibFFs*ii*ssbssssssibbbbb")
 {
     name                 = s;
     numBlocks            = nb;
@@ -227,6 +238,7 @@ avtMeshMetaData::avtMeshMetaData(std::string s, int nb, int bo, int co, int sd,
     containsOriginalCells = false;
     containsOriginalNodes = false;
     containsGlobalNodeIds = false;
+    containsGlobalZoneIds = false;
     validVariable        = true;
 
     xLabel = "X-Axis";
@@ -282,10 +294,13 @@ avtMeshMetaData::avtMeshMetaData(std::string s, int nb, int bo, int co, int sd,
 //    Brad Whitlock, Fri Jul 23 12:27:29 PDT 2004
 //    Added xLabel, yLabel, and zLabel.
 //
+//    Mark C. Miller, August 9, 2004
+//    Added containsGlobalZoneIds data member
+//
 // ****************************************************************************
 
 avtMeshMetaData::avtMeshMetaData(const avtMeshMetaData &rhs)
-    : AttributeSubject("sssiiiiiibFFs*ii*ssbssssssibbbb")
+    : AttributeSubject("sssiiiiiibFFs*ii*ssbssssssibbbbb")
 {
     name                     = rhs.name;
     numBlocks                = rhs.numBlocks;
@@ -312,6 +327,7 @@ avtMeshMetaData::avtMeshMetaData(const avtMeshMetaData &rhs)
     containsOriginalCells    = rhs.containsOriginalCells;
     containsOriginalNodes    = rhs.containsOriginalNodes;
     containsGlobalNodeIds    = rhs.containsGlobalNodeIds;
+    containsGlobalZoneIds    = rhs.containsGlobalZoneIds;
     xUnits                   = rhs.xUnits;
     yUnits                   = rhs.yUnits;
     zUnits                   = rhs.zUnits;
@@ -383,6 +399,9 @@ avtMeshMetaData::~avtMeshMetaData()
 //    Brad Whitlock, Fri Jul 23 12:28:00 PDT 2004
 //    Added xLabel, yLabel, and zLabel.
 //
+//    Mark C. Miller, August 9, 2004
+//    Added containsGlobalZoneIds data member
+//
 // ****************************************************************************
 
 const avtMeshMetaData &
@@ -413,6 +432,7 @@ avtMeshMetaData::operator=(const avtMeshMetaData &rhs)
     containsOriginalCells    = rhs.containsOriginalCells;
     containsOriginalNodes    = rhs.containsOriginalNodes;
     containsGlobalNodeIds    = rhs.containsGlobalNodeIds;
+    containsGlobalZoneIds    = rhs.containsGlobalZoneIds;
     xUnits                   = rhs.xUnits;
     yUnits                   = rhs.yUnits;
     zUnits                   = rhs.zUnits;
@@ -466,6 +486,9 @@ avtMeshMetaData::operator=(const avtMeshMetaData &rhs)
 //    Brad Whitlock, Fri Jul 23 12:23:53 PDT 2004
 //    Added xLabel, yLabel, zLabel.
 //
+//    Mark C. Miller, August 9, 2004
+//    Added containsGlobalZoneIds data member
+//
 // ****************************************************************************
 
 void
@@ -500,6 +523,7 @@ avtMeshMetaData::SelectAll()
     Select(26, (void*)&containsOriginalNodes);
     Select(27, (void*)&containsGlobalNodeIds);
     Select(28, (void*)&validVariable);
+    Select(29, (void*)&containsGlobalZoneIds);
 }
 
 
@@ -5865,6 +5889,56 @@ avtDatabaseMetaData::SetContainsOriginalNodes(std::string name, bool val)
         if (meshes[i]->name == name)
         {
             meshes[i]->containsOriginalNodes = val;
+            return;
+        }
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtDatabaseMetaData::SetContainsGlobalNodeIds
+//
+//  Purpose:
+//      Sets whether a particular mesh has global node ids array. 
+//
+//  Programmer:  Mark C. Miller 
+//  Creation:    August 9, 2004 
+//
+// ****************************************************************************
+
+void
+avtDatabaseMetaData::SetContainsGlobalNodeIds(std::string name, bool val)
+{
+    for (int i = 0 ; i < GetNumMeshes() ; i++)
+    {
+        if (meshes[i]->name == name)
+        {
+            meshes[i]->containsGlobalNodeIds = val;
+            return;
+        }
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtDatabaseMetaData::SetContainsGlobalZoneIds
+//
+//  Purpose:
+//      Sets whether a particular mesh has global zone ids array. 
+//
+//  Programmer:  Mark C. Miller 
+//  Creation:    August 9, 2004 
+//
+// ****************************************************************************
+
+void
+avtDatabaseMetaData::SetContainsGlobalZoneIds(std::string name, bool val)
+{
+    for (int i = 0 ; i < GetNumMeshes() ; i++)
+    {
+        if (meshes[i]->name == name)
+        {
+            meshes[i]->containsGlobalZoneIds = val;
             return;
         }
     }

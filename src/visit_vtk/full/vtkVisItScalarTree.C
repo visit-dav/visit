@@ -63,12 +63,22 @@ vtkVisItScalarTree::Initialize()
 //   Eric Brugger, Tue Jul 27 07:59:13 PDT 2004
 //   Add several casts to fix compile errors.
 //
+//   Hank Childs, Mon Aug  9 08:39:04 PDT 2004
+//   Fix UMR.
+//
 // ***************************************************************************
 
 void
 vtkVisItScalarTree::BuildTree()
 {
-    if (!DataSet || (nCells = DataSet->GetNumberOfCells()) < 1)
+    if (!DataSet)
+    {
+        vtkErrorMacro( << "No data to build tree with");
+        return;
+    }
+
+    nCells = DataSet->GetNumberOfCells();
+    if (nCells < 1)
     {
         vtkErrorMacro( << "No data to build tree with");
         return;
@@ -92,7 +102,7 @@ vtkVisItScalarTree::BuildTree()
     //
     int meshType = DataSet->GetDataObjectType();
     
-    int pt_dims[3];
+    int pt_dims[3] = { 1, 1, 1 };
     if (meshType == VTK_RECTILINEAR_GRID)
         ((vtkRectilinearGrid *)DataSet)->GetDimensions(pt_dims);
     else if (meshType == VTK_STRUCTURED_GRID)
@@ -109,9 +119,11 @@ vtkVisItScalarTree::BuildTree()
         meshType = VTK_POLY_DATA;
     }
 
-    bool structured2D = (pt_dims[2] == 1);
+    bool structured2D = false;
+    if (meshType == VTK_RECTILINEAR_GRID || meshType == VTK_STRUCTURED_GRID)
+        structured2D = (pt_dims[2] == 1);
 
-    int cell_dims[3];
+    int cell_dims[3] = { 0, 0, 0 };
     cell_dims[0] = pt_dims[0] - 1;
     cell_dims[1] = pt_dims[1] - 1;
     cell_dims[2] = pt_dims[2] - 1;
@@ -123,7 +135,6 @@ vtkVisItScalarTree::BuildTree()
     const int Y_val[8] = { 0, 0, 1, 1, 0, 0, 1, 1 };
     const int Z_val[8] = { 0, 0, 0, 0, 1, 1, 1, 1 };
 
-    
     if (tree)
         delete[] tree;
     

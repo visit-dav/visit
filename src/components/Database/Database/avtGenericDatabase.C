@@ -1690,6 +1690,11 @@ avtGenericDatabase::GetSymmetricTensorVariable(const char *varname, int ts,
 //    No longer scale the mesh, since the camera and lighting now both handle
 //    large and small problems better.
 //
+//    Mark C. Miller, Mon Aug  9 19:12:24 PDT 2004
+//    Removed code to pass along 'avtGlobalNodeIds' and 'ElementGlobalIds'
+//    point and cell data arrays. That information is now obtained through
+//    the GetAuxiliaryData interface.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -1771,16 +1776,6 @@ avtGenericDatabase::GetMesh(const char *meshname, int ts, int domain,
         rv->GetPointData()->AddArray(
             mesh->GetPointData()->GetArray("vtkGhostNodes"));
         GetMetaData(ts)->SetContainsGhostZones(meshname, AVT_HAS_GHOSTS);
-    }
-    if (mesh->GetCellData()->GetArray("avtGlobalZoneId"))
-    {
-        rv->GetCellData()->AddArray(
-            mesh->GetCellData()->GetArray("avtGlobalZoneId"));
-    }
-    if (mesh->GetPointData()->GetArray("avtGlobalNodeId"))
-    {
-        rv->GetPointData()->AddArray(
-            mesh->GetPointData()->GetArray("avtGlobalNodeId"));
     }
     rv->GetFieldData()->ShallowCopy(mesh->GetFieldData());
 
@@ -2571,6 +2566,99 @@ avtGenericDatabase::GetSpecies(int dom, const char *var, int ts)
     return rv;
 }
 
+// ****************************************************************************
+//  Method: avtGenericDatabase::GetGlobalNodeIds
+//
+//  Purpose:
+//      Gets a global node numbers for a specific domain and a variable.
+//      This handles going through the auxiliary data mechanism and caching
+//      issues.
+//
+//  Arguments:
+//      dom     The domain we want the species for.
+//      var     A variable (could be vector, scalar, mesh, mat, or species).
+//      ts      The timestep of interest.
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   August 5, 2004
+//
+// ****************************************************************************
+
+vtkDataArray *
+avtGenericDatabase::GetGlobalNodeIds(int dom, const char *var, int ts)
+{
+    avtDatabaseMetaData *md = GetMetaData(ts);
+
+    //
+    // Identify the mesh we want global node ids for
+    //
+    string meshname = md->MeshForVar(var);
+
+    avtDataSpecification_p dspec = new avtDataSpecification(meshname.c_str(),
+                                                            ts, dom);
+    VoidRefList gnodeIds;
+    GetAuxiliaryData(dspec, gnodeIds, AUXILIARY_DATA_GLOBAL_NODE_IDS, NULL);
+    if (gnodeIds.nList > 1)
+    {
+        EXCEPTION0(ImproperUseException);
+    }
+    else if (gnodeIds.nList == 1)
+    {
+        return (vtkDataArray *) *(gnodeIds.list[0]);
+        md->SetContainsGlobalNodeIds(var, true);
+    }
+    else
+    {
+        return NULL;
+    }
+}
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::GetGlobalZoneIds
+//
+//  Purpose:
+//      Gets a global zone numbers for a specific domain and a variable.
+//      This handles going through the auxiliary data mechanism and caching
+//      issues.
+//
+//  Arguments:
+//      dom     The domain we want the species for.
+//      var     A variable (could be vector, scalar, mesh, mat, or species).
+//      ts      The timestep of interest.
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   August 5, 2004
+//
+// ****************************************************************************
+
+vtkDataArray *
+avtGenericDatabase::GetGlobalZoneIds(int dom, const char *var, int ts)
+{
+    avtDatabaseMetaData *md = GetMetaData(ts);
+
+    //
+    // Identify the mesh we want global node ids for
+    //
+    string meshname = md->MeshForVar(var);
+
+    avtDataSpecification_p dspec = new avtDataSpecification(meshname.c_str(),
+                                                            ts, dom);
+    VoidRefList gzoneIds;
+    GetAuxiliaryData(dspec, gzoneIds, AUXILIARY_DATA_GLOBAL_ZONE_IDS, NULL);
+    if (gzoneIds.nList > 1)
+    {
+        EXCEPTION0(ImproperUseException);
+    }
+    else if (gzoneIds.nList == 1)
+    {
+        md->SetContainsGlobalZoneIds(var, true);
+        return (vtkDataArray *) *(gzoneIds.list[0]);
+    }
+    else
+    {
+        return NULL;
+    }
+}
 
 // ****************************************************************************
 //  Method: avtGenericDatabase::SpeciesSelect
@@ -3345,6 +3433,11 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, vector<int> &domains,
 //    method to get the secondary variable list without duplicating either the
 //    primary variable or other secondary variables, and made use of it here.
 //
+//    Mark C. Miller, Mon Aug  9 19:12:24 PDT 2004
+//    Removed avtMeshMetadata local variable.
+//    Changed logic for testing existence of global node ids to attempt to
+//    Get global node ids and if they exist, use them.
+//    
 // ****************************************************************************
 
 bool
@@ -3361,7 +3454,6 @@ avtGenericDatabase::CommunicateGhosts(avtDatasetCollection &ds,
     avtDatabaseMetaData *md = GetMetaData(ts);
     avtVarType type = md->DetermineVarType(varname);
     std::string meshname = md->MeshForVar(varname);
-    const avtMeshMetaData *mmd = md->GetMesh(meshname);
 
     void_ref_ptr vr = cache.GetVoidRef("any_mesh",
                                    AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION,
@@ -3836,19 +3928,19 @@ avtGenericDatabase::CommunicateGhosts(avtDatasetCollection &ds,
         visitTimer->StopTimer(timerHandle, "Creating ghost zones");
     }
 
-    if ((mmd != NULL) && mmd->containsGlobalNodeIds)
+    //
+    // Make sure that we actually have the node ids.
+    //
+    bool haveGlobalNodeIds = true;
+    for (i = 0 ; i < doms.size() ; i++)
     {
-        //
-        // Make sure that we actually have the node ids.
-        //
-        bool haveGlobalNodeIds = true;
-        for (i = 0 ; i < doms.size() ; i++)
-        {
-            vtkDataSet *d = ds.GetDataset(i, 0);   
-            if (d->GetPointData()->GetArray("avtGlobalNodeId") == NULL)
-                haveGlobalNodeIds = false;
-        }
-        int  shouldStop = (haveGlobalNodeIds ? 0 : 1);
+        if (GetGlobalNodeIds(doms[i], meshname.c_str(), ts) == NULL)
+            haveGlobalNodeIds = false;
+    }
+    int  shouldStop = (haveGlobalNodeIds ? 0 : 1);
+
+    if (haveGlobalNodeIds)
+    {
 
 #ifdef PARALLEL
         int  parallelShouldStop;
@@ -3872,8 +3964,7 @@ avtGenericDatabase::CommunicateGhosts(avtDatasetCollection &ds,
         int maxId = -1;
         for (i = 0 ; i < doms.size() ; i++)
         {
-            vtkDataSet *d = ds.GetDataset(i, 0);
-            vtkDataArray *gni = d->GetPointData()->GetArray("avtGlobalNodeId");
+            vtkDataArray *gni = GetGlobalNodeIds(doms[i], meshname.c_str(), ts);
             vtkIntArray *int_gni = (vtkIntArray *) gni;
             int *ptr = int_gni->GetPointer(0);
             int nvals = int_gni->GetNumberOfTuples();
@@ -3916,8 +4007,7 @@ avtGenericDatabase::CommunicateGhosts(avtDatasetCollection &ds,
         vector< vector <int> > ids_for_proc(num_procs);
         for (i = 0 ; i < doms.size() ; i++)
         {
-            vtkDataSet *d = ds.GetDataset(i, 0);
-            vtkDataArray *gni = d->GetPointData()->GetArray("avtGlobalNodeId");
+            vtkDataArray *gni = GetGlobalNodeIds(doms[i], meshname.c_str(), ts); 
             vtkIntArray *int_gni = (vtkIntArray *) gni;
             int *ptr = int_gni->GetPointer(0);
             int nvals = int_gni->GetNumberOfTuples();
@@ -4035,7 +4125,7 @@ avtGenericDatabase::CommunicateGhosts(avtDatasetCollection &ds,
         for (i = 0 ; i < doms.size() ; i++)
         {
             vtkDataSet *d = ds.GetDataset(i, 0);
-            vtkDataArray *gni = d->GetPointData()->GetArray("avtGlobalNodeId");
+            vtkDataArray *gni = GetGlobalNodeIds(doms[i], meshname.c_str(), ts); 
             vtkIntArray *int_gni = (vtkIntArray *) gni;
             int *ptr = int_gni->GetPointer(0);
             int nvals = int_gni->GetNumberOfTuples();

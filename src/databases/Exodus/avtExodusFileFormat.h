@@ -37,6 +37,9 @@ class     avtVariableCache;
 //    Make materials go throw the standard generic database path.  Also add
 //    support for registering file lists.
 //
+//    Mark C. Miller, Mon Aug  9 19:12:24 PDT 2004
+//    Added a ReadMesh mehtod
+//
 // ****************************************************************************
 
 class avtExodusFileFormat : public avtMTSDFileFormat
@@ -85,6 +88,7 @@ class avtExodusFileFormat : public avtMTSDFileFormat
     void                        LoadVariable(vtkExodusReader *, const char *);
     vtkDataSet                 *ForceRead(const char *);
     void                        ReadInFile(void);
+    vtkDataSet                 *ReadMesh(int, const char *, bool);
 };
 
 

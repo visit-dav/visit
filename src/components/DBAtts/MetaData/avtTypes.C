@@ -15,6 +15,8 @@ const char *AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION
                                                = "DOMAIN_BOUNDARY_INFORMATION";
 const char *AUXILIARY_DATA_DOMAIN_NESTING_INFORMATION 
                                                = "DOMAIN_NESTING_INFORMATION";
+const char * AUXILIARY_DATA_GLOBAL_NODE_IDS = "GLOBAL_NODE_IDS";
+const char * AUXILIARY_DATA_GLOBAL_ZONE_IDS = "GLOBAL_ZONE_IDS";
 
 static const char *avtExtentType_strings[] = { "AVT_ORIGINAL_EXTENTS",
     "AVT_ACTUAL_EXTENTS", "AVT_SPECIFIED_EXTENTS", "AVT_UNKNOWN_EXTENT_TYPE"};

@@ -3741,6 +3741,9 @@ avtSiloFileFormat::GetPointVar(DBfile *dbfile, const char *vname)
 //    Hank Childs, Wed Jan 14 13:40:33 PST 2004
 //    Sped up routine by minimizing cache misses.
 //
+//    Mark C. Miller, August 9, 2004
+//    Added code to read and cache optional global node and zone ids
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -3811,6 +3814,32 @@ avtSiloFileFormat::GetUnstructuredMesh(DBfile *dbfile, const char *mn,
     }
 
     //
+    // If we have global node ids, set them up and cache 'em
+    //
+    if (um->gnodeno != NULL)
+    {
+        //
+        // Create a vtkInt array whose contents are the actual gnodeno data
+        //
+        vtkIntArray *arr = vtkIntArray::New();
+        arr->SetArray(um->gnodeno, nnodes, 0);
+        arr->SetNumberOfComponents(1);
+
+        //
+        // Since vtkIntArray now owns the data, we remove it from um
+        //
+        um->gnodeno = NULL;
+
+        //
+        // Cache this VTK object but in the VoidRefCache, not the VTK cache
+        // so that it can be obtained through the GetAuxiliaryData call
+        //
+        void_ref_ptr vr = void_ref_ptr(arr, avtVariableCache::DestructVTKObject);
+        cache->CacheVoidRef(mesh, AUXILIARY_DATA_GLOBAL_NODE_IDS, timestep, 
+                            domain, vr);
+    }
+
+    //
     // Some ucdmeshes uses facelists instead of zonelists.  I think this is
     // freakish behavior and should not be supported, but if there are files
     // this way then we have to honor that.
@@ -3822,6 +3851,30 @@ avtSiloFileFormat::GetUnstructuredMesh(DBfile *dbfile, const char *mn,
         ugrid->SetPoints(points);
         ReadInConnectivity(ugrid, um->zones, um->origin);
         rv = ugrid;
+
+        if (um->zones->gzoneno != NULL)
+        {
+            //
+            // Create a vtkInt array whose contents are the actual gzoneno data
+            //
+            vtkIntArray *arr = vtkIntArray::New();
+            arr->SetArray(um->zones->gzoneno, um->zones->nzones, 0);
+            arr->SetNumberOfComponents(1);
+
+            //
+            // Since vtkIntArray now owns the data, we remove it from um
+            //
+            um->zones->gzoneno = NULL;
+
+            //
+            // Cache this VTK object but in the VoidRefCache, not the VTK cache
+            // so that it can be obtained through the GetAuxiliaryData call
+            //
+            void_ref_ptr vr = void_ref_ptr(arr, avtVariableCache::DestructVTKObject);
+            cache->CacheVoidRef(mesh, AUXILIARY_DATA_GLOBAL_ZONE_IDS, timestep, 
+                                domain, vr);
+        }
+
     }
     else if (fl != NULL)
     {
@@ -5265,6 +5318,9 @@ avtSiloFileFormat::GetComponent(DBfile *dbfile, char *var, char *compname)
 //    Hank Childs, Wed Sep 25 08:49:34 PDT 2002
 //    Add destructor functions.
 //
+//    Mark C. Miller, August 9, 2004
+//    Added code to read global node and zone ids 
+//
 // ****************************************************************************
 
 void *
@@ -5286,6 +5342,16 @@ avtSiloFileFormat::GetAuxiliaryData(const char *var, int domain,
     {
         rv = (void *) GetExternalFacelist(domain, var);
         df = avtFacelist::Destruct;
+    }
+    else if (strcmp(type, AUXILIARY_DATA_GLOBAL_NODE_IDS) == 0)
+    {
+        rv = (void *) GetGlobalNodeIds(domain, var);
+        df = avtVariableCache::DestructVTKObject;
+    }
+    else if (strcmp(type, AUXILIARY_DATA_GLOBAL_ZONE_IDS) == 0)
+    {
+        rv = (void *) GetGlobalZoneIds(domain, var);
+        df = avtVariableCache::DestructVTKObject;
     }
 
     //
@@ -5515,38 +5581,26 @@ avtSiloFileFormat::GetSpecies(int dom, const char *spec)
 
 
 // ****************************************************************************
-//  Method: avtSiloFileFormat::GetExternalFacelist
+//  Method: avtSiloFileFormat::AllocAndDetermineMeshnameForUcdmesh
 //
 //  Purpose:
-//      Gets the facelist from the Silo file and converts it into an
-//      avtFacelist.
+//      Allocate space for and determine the real mesh name for a ucd mesh,
+//      which may be a multimesh 
 //
 //  Arguments:
 //      dom     The domain of the mesh.
-//      mesh    The mesh we want a face list for.
+//      mesh    The mesh we want the real name for 
 //
-//  Returns:    The facelist information.
+//  Returns:    The real mesh name 
 //
-//  Programmer: Hank Childs
-//  Creation:   October 27, 2000
-//
-//  Modifications:
-//
-//    Hank Childs, Wed Feb 28 10:49:17 PST 2001
-//    Moved code from avtSiloTimeStep, made it work with Silo objects
-//    distributed across multiple files.
-//
-//    Mark C. Miller, Mon Feb 23 12:02:24 PST 2004
-//    Changed call to OpenFile() to GetFile()
+//  Programmer: Mark C. Miller 
+//  Creation:   August 4, 2004
 //
 // ****************************************************************************
 
-avtFacelist *
-avtSiloFileFormat::GetExternalFacelist(int dom, const char *mesh)
+char *
+avtSiloFileFormat::AllocAndDetermineMeshnameForUcdmesh(int dom, const char *mesh)
 {
-    debug5 << "Reading in domain " << dom << ", facelist " << mesh << endl;
-    debug5 << "Reading in from toc " << filenames[tocIndex] << endl;
-
     //
     // Get the file handle, throw an exception if it hasn't already been opened
     //
@@ -5594,6 +5648,52 @@ avtSiloFileFormat::GetExternalFacelist(int dom, const char *mesh)
         meshname = CXX_strdup(mesh);
     }
 
+    return meshname;
+}
+
+// ****************************************************************************
+//  Method: avtSiloFileFormat::GetExternalFacelist
+//
+//  Purpose:
+//      Gets the facelist from the Silo file and converts it into an
+//      avtFacelist.
+//
+//  Arguments:
+//      dom     The domain of the mesh.
+//      mesh    The mesh we want a face list for.
+//
+//  Returns:    The facelist information.
+//
+//  Programmer: Hank Childs
+//  Creation:   October 27, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Wed Feb 28 10:49:17 PST 2001
+//    Moved code from avtSiloTimeStep, made it work with Silo objects
+//    distributed across multiple files.
+//
+//    Mark C. Miller, Mon Feb 23 12:02:24 PST 2004
+//    Changed call to OpenFile() to GetFile()
+//
+//    Mark C. Miller, August 9, 2004
+//    Moved code common to several auxiliary data 'Get' methods to 
+//    AllocAndDetermineMeshnameForUcdmesh
+//
+// ****************************************************************************
+
+avtFacelist *
+avtSiloFileFormat::GetExternalFacelist(int dom, const char *mesh)
+{
+    debug5 << "Reading in domain " << dom << ", facelist " << mesh << endl;
+    debug5 << "Reading in from toc " << filenames[tocIndex] << endl;
+
+    DBfile *dbfile = GetFile(tocIndex);
+
+    char *meshname = AllocAndDetermineMeshnameForUcdmesh(dom, mesh);
+    if (meshname == NULL)
+        return NULL;
+
     //
     // Some Silo objects are distributed across several files,
     // so handle that here.  
@@ -5613,6 +5713,143 @@ avtSiloFileFormat::GetExternalFacelist(int dom, const char *mesh)
     return rv;
 }
 
+// ****************************************************************************
+//  Method: avtSiloFileFormat::GetGlobalNodeIds
+//
+//  Purpose:
+//      Gets the global node ids from the Silo file
+//
+//  Arguments:
+//      dom     The domain of the mesh.
+//      mesh    The mesh we want a face list for.
+//
+//  Returns:    The global node id information.
+//
+//  Programmer: Mark C. Miller
+//  Creation:   August 4, 2004 
+//
+// ****************************************************************************
+
+vtkDataArray *
+avtSiloFileFormat::GetGlobalNodeIds(int dom, const char *mesh)
+{
+    debug5 << "Reading in domain " << dom << ", global node ids for " << mesh << endl;
+    debug5 << "Reading in from toc " << filenames[tocIndex] << endl;
+
+    DBfile *dbfile = GetFile(tocIndex);
+
+    char *meshname = AllocAndDetermineMeshnameForUcdmesh(dom, mesh);
+    if (meshname == NULL)
+        return NULL;
+
+    //
+    // Some Silo objects are distributed across several files,
+    // so handle that here.  
+    //
+    DBfile *domain_file = dbfile;
+    char   *directory_mesh = NULL;
+    DetermineFileAndDirectory(meshname, domain_file, directory_mesh);
+
+    // We want to get just the global node ids.  So we need to get the ReadMask,
+    // set it to read global node ids, then set it back.
+    long mask = DBGetDataReadMask();
+    //DBSetDataReadMask(DBUMGlobNodeNo); waiting for a Silo update
+    DBucdmesh *um = DBGetUcdmesh(domain_file, directory_mesh);
+    if (um == NULL)
+        EXCEPTION1(InvalidVariableException, mesh);
+    DBSetDataReadMask(mask);
+
+    vtkIntArray *rv = NULL;
+    if (um->gnodeno != NULL)
+    {
+        //
+        // Create a vtkInt array whose contents are the actual gnodeno data
+        //
+        rv = vtkIntArray::New();
+        rv->SetArray(um->gnodeno, um->nnodes, 0);
+        rv->SetNumberOfComponents(1);
+
+        //
+        // Since vtkIntArray now owns the data, we remove it from um
+        //
+        um->gnodeno = NULL;
+    }
+
+    DBFreeUcdmesh(um);
+
+    delete [] meshname;
+
+    return rv;
+}
+
+// ****************************************************************************
+//  Method: avtSiloFileFormat::GetGlobalZoneIds
+//
+//  Purpose:
+//      Gets the global zone ids from the Silo file
+//
+//  Arguments:
+//      dom     The domain of the mesh.
+//      mesh    The mesh we want a face list for.
+//
+//  Returns:    The global zone id information.
+//
+//  Programmer: Mark C. Miller
+//  Creation:   August 9, 2004
+//
+// ****************************************************************************
+
+vtkDataArray *
+avtSiloFileFormat::GetGlobalZoneIds(int dom, const char *mesh)
+{
+    debug5 << "Reading in domain " << dom << ", global zone ids for " << mesh << endl;
+    debug5 << "Reading in from toc " << filenames[tocIndex] << endl;
+
+    DBfile *dbfile = GetFile(tocIndex);
+
+    char *meshname = AllocAndDetermineMeshnameForUcdmesh(dom, mesh);
+    if (meshname == NULL)
+        return NULL;
+
+    //
+    // Some Silo objects are distributed across several files,
+    // so handle that here.  
+    //
+    DBfile *domain_file = dbfile;
+    char   *directory_mesh = NULL;
+    DetermineFileAndDirectory(meshname, domain_file, directory_mesh);
+
+    // We want to get just the global node ids.  So we need to get the ReadMask,
+    // set it to read global node ids, then set it back.
+    long mask = DBGetDataReadMask();
+    //DBSetDataReadMask(DBUMZonelist|DBZonelistGlobZoneNo); waiting for a Silo update
+    DBucdmesh *um = DBGetUcdmesh(domain_file, directory_mesh);
+    if (um == NULL)
+        EXCEPTION1(InvalidVariableException, mesh);
+    DBSetDataReadMask(mask);
+
+    vtkIntArray *rv = NULL;
+    if (um->zones->gzoneno != NULL)
+    {
+        //
+        // Create a vtkInt array whose contents are the actual gnodeno data
+        //
+        rv = vtkIntArray::New();
+        rv->SetArray(um->zones->gzoneno, um->zones->nzones, 0);
+        rv->SetNumberOfComponents(1);
+
+        //
+        // Since vtkIntArray now owns the data, we remove it from um
+        //
+        um->zones->gzoneno = NULL;
+    }
+
+    DBFreeUcdmesh(um);
+
+    delete [] meshname;
+
+    return rv;
+}
 
 // ****************************************************************************
 //  Method: avtSiloFileFormat::CalcMaterial
@@ -5818,7 +6055,6 @@ avtSiloFileFormat::CalcExternalFacelist(DBfile *dbfile, char *mesh)
 
     return rv;
 }
-
 
 // ****************************************************************************
 //  Method: avtSiloFileFormat::PopulateIOInformation

@@ -3716,6 +3716,10 @@ ViewerPlotList::SetPlotVar(const std::string &variable)
 //    Brad Whitlock, Tue Feb 3 22:56:48 PST 2004
 //    I changed how the plot atts get set.
 //
+//    Kathleen Bonnell, Mon Aug  9 15:08:14 PDT 2004 
+//    If no ACTIVE plot matches the plot type, but there is ONE plot of the
+//    given type, go ahead and set that plot's attributes.
+//
 // ****************************************************************************
 
 void
@@ -3723,23 +3727,48 @@ ViewerPlotList::SetPlotAtts(const int plotType)
 {
     //
     // Loop through the list setting the plot attributes from the client
-    // for any plots that are active and match the type.
+    // for any plots that are active and/or match the type.
+    // If any are active, we will set those; if there is only one that
+    // that matches, we will set that one, otherwise we will set a
+    // warning.
     //
-    int selectedCount = 0;
-    for (int i = 0; i < nPlots; i++)
+    int i;
+    intVector matchingPlots;
+    intVector selectedPlots;
+    for (i = 0; i < nPlots; i++)
     {
-        if (plots[i].active == true && plots[i].plot->GetType() == plotType)
+        if (plots[i].plot->GetType() == plotType)
         {
-            plots[i].plot->SetPlotAttsFromClient();
-            ++selectedCount;
+            matchingPlots.push_back(i);
+            if (plots[i].active)
+            {
+                selectedPlots.push_back(i);
+            }
         }
     }
 
     //
     // If plots were selected, update the frame.
     //
-    if (selectedCount > 0)
+    if (selectedPlots.size() > 0)
     {
+        for (i = 0; i < selectedPlots.size(); i++)
+        {
+            plots[selectedPlots[i]].plot->SetPlotAttsFromClient();
+        }
+        //
+        // If we're in keyframing mode then send the plot list since
+        // to the client because it contains the keyframe indices.
+        //
+        if(GetKeyframeMode())
+            UpdatePlotList();
+
+        // Update the frame.
+        UpdateFrame();
+    }
+    else if (matchingPlots.size() == 1) 
+    {
+        plots[matchingPlots[0]].plot->SetPlotAttsFromClient();
         //
         // If we're in keyframing mode then send the plot list since
         // to the client because it contains the keyframe indices.

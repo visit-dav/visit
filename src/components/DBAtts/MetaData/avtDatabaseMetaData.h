@@ -16,6 +16,11 @@
 
 //----------------------------------------------------------------------------
 //  Class: avtMeshMetaData
+//
+//  Modifications:
+//
+//    Mark C. Miller, August 9, 2004
+//    Added containsGlobalZoneIds data member
 //----------------------------------------------------------------------------
 struct DBATTS_API avtMeshMetaData : public AttributeSubject
 {
@@ -40,6 +45,7 @@ struct DBATTS_API avtMeshMetaData : public AttributeSubject
     bool          containsOriginalCells;
     bool          containsOriginalNodes;
     bool          containsGlobalNodeIds;
+    bool          containsGlobalZoneIds;
 
     bool          hasSpatialExtents;
     float         minSpatialExtents[3];
@@ -518,6 +524,8 @@ public:
     void         SetContainsGhostZones(std::string name, avtGhostType);
     void         SetContainsOriginalCells(std::string name, bool);
     void         SetContainsOriginalNodes(std::string name, bool);
+    void         SetContainsGlobalNodeIds(std::string name, bool);
+    void         SetContainsGlobalZoneIds(std::string name, bool);
     void         AddGroupInformation(int nGroups, int nBlocks,
                                      intVector &blockIds);
     void         UnsetExtents();

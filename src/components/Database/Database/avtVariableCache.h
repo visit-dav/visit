@@ -76,6 +76,11 @@ class DATABASE_API avtVariableCache
 
     void                   Print(ostream &);
 
+    // Special destructor function to permit us to spoof VTK objects
+    // in the VoidRef cache so that the Auxiliary data interface can 
+    // return vtkDataArrays (e.g. global node/zone ids)
+    static void            DestructVTKObject(void *vtkObj);
+
   protected:
 
     class OneDomain
