@@ -176,6 +176,11 @@ static void RotateAroundY(const avtView3D&, double, avtView3D&);
 //    Eric Brugger, Mon Mar 29 15:34:50 PST 2004
 //    I added maintainData.
 //
+//    Eric Brugger, Thu Apr 22 15:18:37 PDT 2004
+//    I renamed the haveRenderedIn* flags to viewSetIn*, since it was
+//    more accurate.  I also added viewPartialSetIn3d to distinguish the
+//    view being set from a session file and from the client.
+//
 //    Mark C. Miller, Tue Apr 27 14:41:35 PDT 2004
 //    Removed preparingToChangeScalableRenderingMode
 //
@@ -208,13 +213,14 @@ ViewerWindow::ViewerWindow(int windowIndex)
     viewIsLocked = false;
     windowMode = WINMODE_NONE;
     boundingBoxValidCurve = false;
-    haveRenderedInCurve = false;
+    viewSetInCurve = false;
     viewModifiedCurve = false;
     boundingBoxValid2d = false;
-    haveRenderedIn2d = false;
+    viewSetIn2d = false;
     viewModified2d = false;
     boundingBoxValid3d = false;
-    haveRenderedIn3d = false;
+    viewSetIn3d = false;
+    viewPartialSetIn3d = false;
     mergeViewLimits = false;
     plotExtentsType = AVT_ORIGINAL_EXTENTS;
     timeLocked = false;
@@ -1262,6 +1268,10 @@ ViewerWindow::GetViewKeyframeIndices(int &nKeyframes) const
 //    Eric Brugger, Wed Aug 20 11:15:07 PDT 2003
 //    I added a curve view.
 //
+//    Eric Brugger, Fri Apr 23 12:56:25 PDT 2004
+//    I removed the resetting of the boundingBoxValid flags to avoid
+//    problems with setting the view for subsequent plots.
+//
 // ****************************************************************************
 
 void
@@ -1270,9 +1280,6 @@ ViewerWindow::SetViewExtentsType(avtExtentType viewType)
     visWindow->SetViewExtentsType(viewType);
     if (viewType != plotExtentsType)
     {
-        boundingBoxValidCurve = false;
-        boundingBoxValid2d = false;
-        boundingBoxValid3d = false;
         plotExtentsType = viewType;
         GetPlotList()->SetSpatialExtentsType(plotExtentsType);
     }
@@ -2296,6 +2303,10 @@ ViewerWindow::UpdateView(const WINDOW_MODE mode, const double *limits)
 //    Eric Brugger, Wed Aug 20 11:15:07 PDT 2003
 //    I added a curve view.
 //
+//    Eric Brugger, Thu Apr 22 15:18:37 PDT 2004
+//    I renamed haveRenderedInCurve to viewSetInCurve, since it was more
+//    accurate.
+//
 // ****************************************************************************
 
 void
@@ -2303,7 +2314,7 @@ ViewerWindow::SetViewCurve(const avtViewCurve &v)
 {
     visWindow->SetViewCurve(v);
 
-    haveRenderedInCurve = true;
+    viewSetInCurve = true;
 
     viewModifiedCurve = true;
 }
@@ -2332,6 +2343,9 @@ ViewerWindow::SetViewCurve(const avtViewCurve &v)
 //    Eric Brugger, Fri Apr 18 12:21:13 PDT 2003
 //    I modified the routine to set the viewModified2d flag.
 //
+//    Eric Brugger, Thu Apr 22 15:18:37 PDT 2004
+//    I renamed haveRenderedIn2d to viewSetIn2d, since it was more accurate.
+//
 // ****************************************************************************
 
 void
@@ -2339,7 +2353,7 @@ ViewerWindow::SetView2D(const avtView2D &v)
 {
     visWindow->SetView2D(v);
 
-    haveRenderedIn2d = true;
+    viewSetIn2d = true;
 
     viewModified2d = true;
 }
@@ -2365,6 +2379,9 @@ ViewerWindow::SetView2D(const avtView2D &v)
 //    I modified the routine to set the haveRenderedIn3d flag so that the
 //    view will not get clobbered when the first image is rendered.
 //
+//    Eric Brugger, Thu Apr 22 15:18:37 PDT 2004
+//    I renamed haveRenderedIn3d to viewSetIn3d, since it was more accurate.
+//
 // ****************************************************************************
 
 void
@@ -2372,7 +2389,7 @@ ViewerWindow::SetView3D(const avtView3D &v)
 {
     visWindow->SetView3D(v);
 
-    haveRenderedIn3d = true;
+    viewPartialSetIn3d = true;
 }
 
 // ****************************************************************************
@@ -2473,6 +2490,11 @@ ViewerWindow::GetView3D() const
 //    Brad Whitlock, Tue Dec 30 17:06:39 PST 2003
 //    I added code to copy the view keyframes.
 //
+//    Eric Brugger, Thu Apr 22 15:18:37 PDT 2004
+//    I renamed the haveRenderedIn* flags to viewSetIn*, since it was
+//    more accurate.  I also added viewPartialSetIn3d to distinguish the
+//    view being set from a session file and from the client.
+//
 // ****************************************************************************
 
 void
@@ -2497,15 +2519,16 @@ ViewerWindow::CopyViewAttributes(const ViewerWindow *source)
     //
     boundingBoxValidCurve = source->boundingBoxValidCurve;
     centeringValidCurve   = source->centeringValidCurve;
-    haveRenderedInCurve   = source->haveRenderedInCurve;
+    viewSetInCurve        = source->viewSetInCurve;
     viewModifiedCurve     = source->viewModifiedCurve;
     boundingBoxValid2d    = source->boundingBoxValid2d;
     centeringValid2d      = source->centeringValid2d;
-    haveRenderedIn2d      = source->haveRenderedIn2d;
+    viewSetIn2d           = source->viewSetIn2d;
     viewModified2d        = source->viewModified2d;
     boundingBoxValid3d    = source->boundingBoxValid3d;
     centeringValid3d      = source->centeringValid3d;
-    haveRenderedIn3d      = source->haveRenderedIn3d;
+    viewSetIn3d           = source->viewSetIn3d;
+    viewPartialSetIn3d    = source->viewPartialSetIn3d;
 
     int       i;
     for (i = 0; i < 4; i++)
@@ -3466,26 +3489,47 @@ ViewerWindow::RecenterView2d(const double *limits)
 //    Eric Brugger, Tue Feb 10 09:59:15 PST 2004
 //    I modified the routine to also reset the center of rotation.
 //
+//    Eric Brugger, Fri Apr 23 13:12:27 PDT 2004
+//    I added coding to reset the focus in the case where the window had
+//    no plots and the bounding box was valid.
+//    
 // ****************************************************************************
 
 void
 ViewerWindow::RecenterView3d(const double *limits)
 {
     //
+    // Get the current view.
+    //
+    avtView3D view3D=visWindow->GetView3D();
+
+    //
     // If the plot limits are invalid then there are no plots so mark the
-    // bounding box as invalid so that the view is set from scratch the
-    // next time it is updated.
+    // centering as invalid so that the view is set using only the next
+    // plots limits.  If the bounding box is valid then reset the focus
+    // so that the next time the view is set it will be centered on the
+    // new bounding box.
     //
     if (limits[0] == DBL_MAX && limits[1] == -DBL_MAX)
     {
         centeringValid3d = false;
+        if (boundingBoxValid3d)
+        {
+            //
+            // Calculate the new focal point.
+            //
+            view3D.focus[0] = (boundingBox3d[1] + boundingBox3d[0]) / 2.;
+            view3D.focus[1] = (boundingBox3d[3] + boundingBox3d[2]) / 2.;
+            view3D.focus[2] = (boundingBox3d[5] + boundingBox3d[4]) / 2.;
+
+            //
+            // Update the view.
+            //
+            visWindow->SetView3D(view3D);
+        }
+
         return;
     }
-
-    //
-    // Get the current view.
-    //
-    avtView3D view3D=visWindow->GetView3D();
 
     //
     // Determine the zoom factor.
@@ -3756,6 +3800,11 @@ ViewerWindow::ResetView2d()
 //    Eric Brugger, Tue Feb 10 09:59:15 PST 2004
 //    I modified the routine to also reset the center of rotation.
 //
+//    Eric Brugger, Thu Apr 22 15:18:37 PDT 2004
+//    I renamed haveRenderedIn3d to viewSetIn3d, since it was more accurate.
+//    I also added viewPartialSetIn3d to distinguish the view being set from
+//    a session file and from the client.
+//
 // ****************************************************************************
 
 void
@@ -3776,7 +3825,8 @@ ViewerWindow::ResetView3d()
     if (boundingBox3d[0] == DBL_MAX && boundingBox3d[1] == -DBL_MAX)
     {
         boundingBoxValid3d = false;
-        haveRenderedIn3d = false;
+        viewSetIn3d = false;
+        viewPartialSetIn3d = false;
         return;
     }
 
@@ -4041,6 +4091,10 @@ ViewerWindow::SetInitialView3d()
 //    Eric Brugger, Wed Aug 20 11:15:07 PDT 2003
 //    I added a curve view.
 //
+//    Eric Brugger, Thu Apr 22 15:18:37 PDT 2004
+//    I renamed haveRenderedInCurve to viewSetInCurve, since it was more
+//    accurate.
+//
 // ****************************************************************************
 
 void
@@ -4058,7 +4112,7 @@ ViewerWindow::UpdateViewCurve(const double *limits)
         boundingBoxValidCurve = true;
         centeringValidCurve   = true;
 
-        if (!haveRenderedInCurve)
+        if (!viewSetInCurve)
         {
             ResetViewCurve();
         }
@@ -4115,7 +4169,7 @@ ViewerWindow::UpdateViewCurve(const double *limits)
         visWindow->UpdateView();
     }
 
-    haveRenderedInCurve = true;
+    viewSetInCurve = true;
 }
 
 // ****************************************************************************
@@ -4151,6 +4205,9 @@ ViewerWindow::UpdateViewCurve(const double *limits)
 //    I modified the routine to calculate the merged limits in a scratch
 //    array instead of using a boundingBox2d which messed things up.
 //
+//    Eric Brugger, Thu Apr 22 15:18:37 PDT 2004
+//    I renamed haveRenderedIn2d to viewSetIn2d, since it was more accurate.
+//
 // ****************************************************************************
 
 void
@@ -4168,7 +4225,7 @@ ViewerWindow::UpdateView2d(const double *limits)
         boundingBoxValid2d = true;
         centeringValid2d   = true;
 
-        if (!haveRenderedIn2d)
+        if (!viewSetIn2d)
         {
             ResetView2d();
         }
@@ -4211,7 +4268,7 @@ ViewerWindow::UpdateView2d(const double *limits)
         ViewerWindowManager::Instance()->UpdateViewAtts();
     }
 
-    haveRenderedIn2d = true;
+    viewSetIn2d = true;
 }
 
 // ****************************************************************************
@@ -4253,6 +4310,11 @@ ViewerWindow::UpdateView2d(const double *limits)
 //    a reset with no plots so that coordinate extent parameters are reset
 //    but rotations and image pans and zooms are preserved.
 //
+//    Eric Brugger, Thu Apr 22 15:18:37 PDT 2004
+//    I renamed haveRenderedIn3d to viewSetIn3d, since it was more accurate.
+//    I also added viewPartialSetIn3d to distinguish the view being set from
+//    a session file and from the client.
+//
 // ****************************************************************************
 
 void
@@ -4270,13 +4332,16 @@ ViewerWindow::UpdateView3d(const double *limits)
         boundingBoxValid3d = true;
         centeringValid3d   = true;
 
-        if (!haveRenderedIn3d)
+        if (!viewSetIn3d)
         {
-            ResetView3d();
-        }
-        else
-        {
-            SetInitialView3d();
+            if (!viewPartialSetIn3d)
+            {
+                ResetView3d();
+            }
+            else
+            {
+                SetInitialView3d();
+            }
         }
 
         ViewerWindowManager::Instance()->UpdateViewAtts();
@@ -4321,7 +4386,8 @@ ViewerWindow::UpdateView3d(const double *limits)
         ViewerWindowManager::Instance()->UpdateViewAtts();
     }
 
-    haveRenderedIn3d = true;
+    viewSetIn3d = true;
+    viewPartialSetIn3d = true;
 }
 
 // ****************************************************************************
@@ -6167,8 +6233,9 @@ ViewerWindow::CreateNode(DataNode *parentNode, bool detailed)
         //
         // Save out important rendering attributes.
         //
+        windowNode->AddNode(new DataNode("scalableAutoThreshold", GetScalableAutoThreshold()));
+        windowNode->AddNode(new DataNode("scalableActivationMode", GetScalableActivationMode()));
         windowNode->AddNode(new DataNode("scalableRendering", GetScalableRendering()));
-        windowNode->AddNode(new DataNode("scalableThreshold", GetScalableThreshold()));
         windowNode->AddNode(new DataNode("notifyForEachRender", GetNotifyForEachRender()));
         windowNode->AddNode(new DataNode("surfaceRepresentation", GetSurfaceRepresentation()));
         windowNode->AddNode(new DataNode("displayListMode", GetDisplayListMode()));
@@ -6280,6 +6347,11 @@ ViewerWindow::CreateNode(DataNode *parentNode, bool detailed)
 //   Brad Whitlock, Wed Apr 7 13:53:24 PST 2004
 //   Added code to translate keyframing information for old config files.
 //
+//    Eric Brugger, Thu Apr 22 15:18:37 PDT 2004
+//    I renamed the haveRenderedIn* flags to viewSetIn*, since it was
+//    more accurate.  I also added viewPartialSetIn3d to distinguish the
+//    view being set from a session file and from the client.
+//
 //   Mark C. Miller, Tue May 11 20:21:24 PDT 2004
 //   Modified scalable rendering controls to use activation mode and auto
 //   threshold
@@ -6301,13 +6373,14 @@ ViewerWindow::SetFromNode(DataNode *parentNode)
     // Reset the view centering flags.
     //
     boundingBoxValidCurve = false;
-    haveRenderedInCurve = false;
+    viewSetInCurve = false;
     viewModifiedCurve = false;
     boundingBoxValid2d = false;
-    haveRenderedIn2d = false;
+    viewSetIn2d = false;
     viewModified2d = false;
     boundingBoxValid3d = false;
-    haveRenderedIn3d = false;
+    viewSetIn3d = false;
+    viewPartialSetIn3d = false;
     mergeViewLimits = false;
     centeringValidCurve = false;
     centeringValid2d = false;
@@ -6454,6 +6527,7 @@ ViewerWindow::SetFromNode(DataNode *parentNode)
         view3dAtts.SetFromNode(windowNode);
         view3d.SetFromView3DAttributes(&view3dAtts);
         SetView3D(view3d);
+        viewSetIn3d = true;
     }
     if((node = windowNode->GetNode("boundingBoxMode")) != 0)
         SetBoundingBoxMode(node->AsBool());

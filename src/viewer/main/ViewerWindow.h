@@ -299,6 +299,11 @@ struct ExternalRenderRequestInfo
 //    Mark C. Miller, Wed Apr 14 16:41:32 PDT 2004
 //    Added data member for extents type string to render request info
 //
+//    Eric Brugger, Wed Apr 21 15:19:01 PDT 2004
+//    Replaced haveRenderedInCurve with viewSetInCurve, haveRenderedIn2d
+//    with viewSetIn2d and haveRenderedIn3d with viewSetIn3d.  Added
+//    viewPartialSetIn3d.
+//
 //    Mark C. Miller, Tue Apr 27 14:41:35 PDT 2004
 //    Removed preparingToChangeScalableRenderingMode
 //
@@ -589,17 +594,18 @@ private:
 
     double          boundingBoxCurve[4];
     bool            boundingBoxValidCurve;
-    bool            haveRenderedInCurve;
+    bool            viewSetInCurve;
     bool            viewModifiedCurve;
 
     double          boundingBox2d[4];
     bool            boundingBoxValid2d;
-    bool            haveRenderedIn2d;
+    bool            viewSetIn2d;
     bool            viewModified2d;
 
     double          boundingBox3d[6];
     bool            boundingBoxValid3d;
-    bool            haveRenderedIn3d;
+    bool            viewSetIn3d;
+    bool            viewPartialSetIn3d;
 
     bool            centeringValidCurve;
     bool            centeringValid2d;
