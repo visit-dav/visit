@@ -143,6 +143,9 @@ EngineProxy::~EngineProxy()
 //    Mark C. Miller, Tue Mar  8 17:59:40 PST 2005
 //    Added ProcInfoRPC
 //
+//    Jeremy Meredith, Mon Apr  4 16:01:21 PDT 2005
+//    Added simulationCommandRPC.
+//
 // ****************************************************************************
 void
 EngineProxy::SetupComponentRPCs()
@@ -168,6 +171,7 @@ EngineProxy::SetupComponentRPCs()
     xfer.Add(&setWinAnnotAttsRPC);
     xfer.Add(&cloneNetworkRPC);
     xfer.Add(&procInfoRPC);
+    xfer.Add(&simulationCommandRPC);
 
     //
     // Add other state objects to the transfer object
@@ -1399,4 +1403,47 @@ EngineProxy::UpdateExpressions(const ExpressionList &expressions)
         exprList = expressions;
         exprList.Notify();
     }
+}
+
+
+// ****************************************************************************
+//  Method:  EngineProxy::ExecuteSimulationControlCommand
+//
+//  Purpose:
+//    Execute a simulation control command that accepts no arguments.
+//
+//  Arguments:
+//    cmd        the command string to execute
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    March 18, 2005
+//
+// ****************************************************************************
+
+void
+EngineProxy::ExecuteSimulationControlCommand(const std::string &cmd)
+{
+    simulationCommandRPC(cmd, 0,0,"");
+}
+
+// ****************************************************************************
+//  Method:  EngineProxy::ExecuteSimulationControlCommand
+//
+//  Purpose:
+//    Execute a simulation control command that takes a string argument.
+//
+//  Arguments:
+//    cmd        the command string to execute
+//    arg        a string argument to the command
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    March 21, 2005
+//
+// ****************************************************************************
+
+void
+EngineProxy::ExecuteSimulationControlCommand(const std::string &cmd,
+                                             const std::string &arg)
+{
+    simulationCommandRPC(cmd, 0,0,arg);
 }

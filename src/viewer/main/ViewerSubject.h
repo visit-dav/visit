@@ -342,6 +342,9 @@ struct avtDefaultPlotMetaData;
 //    Brad Whitlock, Fri Mar 18 16:37:51 PST 2005
 //    I removed ToggleLockTime.
 //
+//    Jeremy Meredith, Mon Apr  4 17:36:13 PDT 2005
+//    Added SendSimulationCommand.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerSubject : public QObject
@@ -431,6 +434,8 @@ private:
     void OpenMDServer();
     void ClearCache();
     void ClearCacheForAllEngines();
+
+    void SendSimulationCommand();
 
     void SetDefaultPlotOptions();
     void ResetPlotOptions();

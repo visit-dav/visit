@@ -22,6 +22,7 @@ class StartQueryRPC;
 class UpdatePlotAttsRPC;
 class UseNetworkRPC;
 class ProcInfoRPC;
+class SimulationCommandRPC;
 
 // Other classes
 class avtDatabaseMetaData;
@@ -92,6 +93,9 @@ class ProcessAttributes;
 //    Hank Childs, Tue Mar 22 09:37:58 PST 2005
 //    Remove unused data members that date back to old expression calls.
 //
+//    Jeremy Meredith, Mon Apr  4 15:59:49 PDT 2005
+//    Added methods to control a simulation from VisIt.
+//
 // ****************************************************************************
 
 class Engine
@@ -110,7 +114,11 @@ class Engine
     void            PopulateSimulationMetaData(const std::string &db,
                                                const std::string &fmt);
     void            SimulationTimeStepChanged();
-    static void     Disconnect();
+    void            SetSimulationCommandCallback(void(*)(const char*,
+                                                       int,float,const char*));
+    void            ExecuteSimulationCommand(const std::string&,
+                                             int,float,const std::string&);
+    static void     DisconnectSimulation();
 
     // Two event loops
     bool            EventLoop();
@@ -214,12 +222,15 @@ class Engine
     SetWinAnnotAttsRPC       *setWinAnnotAttsRPC;
     CloneNetworkRPC          *cloneNetworkRPC;
     ProcInfoRPC              *procInfoRPC;
+    SimulationCommandRPC     *simulationCommandRPC;
 
-    // The metadata, filename, format for a simulation
+    // The metadata, filename, format, control data for a simulation
     std::string               filename;
     std::string               format;
     avtDatabaseMetaData      *metaData;
     SILAttributes            *silAtts;
+    void                    (*simulationCommandCallback)(const char*,
+                                                        int,float,const char*);
 
     // unix process attributes
     ProcessAttributes        *procAtts;

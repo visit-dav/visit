@@ -3110,3 +3110,29 @@ ViewerEngineManager::UpdateExpressionsFromPlot(const ViewerPlot *plot)
         EXCEPTION0(NoEngineException);
 }
 
+// ****************************************************************************
+//  Method:  ViewerEngineManager::SendSimulationCommand
+//
+//  Purpose:
+//    Allow sending a command to the engine.
+//
+//  Arguments:
+//    ek         the engine key
+//    command    the command string
+//    argument   the argument to the command
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    April  4, 2005
+//
+// ****************************************************************************
+void
+ViewerEngineManager::SendSimulationCommand(const EngineKey &ek,
+                                           const std::string &command,
+                                           const std::string &argument)
+{
+    if (EngineExists(ek))
+        engines[ek].proxy->ExecuteSimulationControlCommand(command, argument);
+    else
+        EXCEPTION0(NoEngineException);
+}
+

@@ -39,6 +39,7 @@
 #include <ReleaseDataRPC.h>
 #include <RenderRPC.h>
 #include <SetWinAnnotAttsRPC.h>
+#include <SimulationCommandRPC.h>
 #include <StartPickRPC.h>
 #include <StartQueryRPC.h>
 #include <UpdatePlotAttsRPC.h>
@@ -1302,6 +1303,38 @@ RPCExecutor<CloneNetworkRPC>::Execute(CloneNetworkRPC *rpc)
     CATCH2(VisItException, e)
     {
         netmgr->CancelNetwork();
+        rpc->SendError(e.Message(), e.GetExceptionType());
+    }
+    ENDTRY
+}
+
+// ****************************************************************************
+//  Method:  RPCExecutor<SimulationCommandRPC>::Execute
+//
+//  Purpose:
+//    Execute a simulation command.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    March 18, 2005
+//
+// ****************************************************************************
+template<>
+void
+RPCExecutor<SimulationCommandRPC>::Execute(SimulationCommandRPC *rpc)
+{
+    Engine *engine = Engine::Instance();
+    debug2 << "Executing SimulationCommandRPC: " << rpc->GetCommand() << endl;
+
+    TRY
+    {
+        engine->ExecuteSimulationCommand(rpc->GetCommand(),
+                                         rpc->GetIntData(),
+                                         rpc->GetFloatData(),
+                                         rpc->GetStringData());
+        rpc->SendReply();
+    }
+    CATCH2(VisItException, e)
+    {
         rpc->SendError(e.Message(), e.GetExceptionType());
     }
     ENDTRY

@@ -114,6 +114,9 @@
 #    Hank Childs, Mon Feb 28 17:11:48 PST 2005
 #    Added StartQueryRPC.
 #
+#    Jeremy Meredith, Fri Mar 18 09:18:47 PST 2005
+#    Added SimulationCommandRPC.
+#
 ###############################################################################
 
 ##
@@ -143,6 +146,7 @@ SRC= \
     ReleaseDataRPC.C \
     RenderRPC.C \
     SetWinAnnotAttsRPC.C \
+    SimulationCommandRPC.C \
     StartPickRPC.C \
     StartQueryRPC.C \
     UpdatePlotAttsRPC.C \

@@ -19,6 +19,10 @@
 //    Jeremy Meredith, Thu Mar 17 12:59:15 PST 2005
 //    Changed it to use float values.
 //
+//    Jeremy Meredith, Mon Apr  4 16:44:29 PDT 2005
+//    Split command parsing out into a separate function.
+//    Added more options to the sim file dumping.
+//
 // ****************************************************************************
 
 
@@ -34,7 +38,7 @@
 #include <string.h> // for strdup (may go away)
 #include <unistd.h> // for execv (may go away)
 #include <math.h>
-
+#include <time.h>
 
 #ifdef PARALLEL
 #include <mpi.h>
@@ -150,6 +154,55 @@ void FakeConsoleCommand(char *str)
 #endif
 }
 
+void ProcessCommand(const char *cmd)
+{
+#ifdef PARALLEL
+    char buff[10000];
+    if (par_rank == 0)
+        strcpy(buff, cmd);
+    MPI_Bcast(buff, 10000, MPI_CHAR, 0, MPI_COMM_WORLD);
+    cmd = buff;
+#endif
+
+    if (!strcmp(cmd, "quit"))
+    {
+        quitflag = 1;
+    }
+    else if (!strcmp(cmd, "step"))
+    {
+        RunSingleCycle();
+    }
+    else if (!strcmp(cmd, "run"))
+    {
+        RunSimulation();
+    }
+    else if (!strcmp(cmd, "halt"))
+    {
+        printf("execution paused....\n");
+        StopSimulation();
+    }
+    else if (!strcmp(cmd, "visit_disconnect"))
+    {
+        VisItDisconnect();
+    }
+    else if (!strcmp(cmd, "visit_connect"))
+    {
+        VisItAttemptToCompleteConnection();
+    }
+    else if (!strcmp(cmd, "visit_process"))
+    {
+        VisItProcessEngineCommand();
+    }
+    else if (!strcmp(cmd, ""))
+    {
+        // Do nothing on blank input.
+    }
+    else
+    {
+        fprintf(stderr, "Error: unknown command '%s'\n", cmd);
+    }
+}
+
 void ProcessConsoleCommand()
 {
     // Read A Command
@@ -168,52 +221,22 @@ void ProcessConsoleCommand()
             buff[strlen(buff)-1] = '\0';
     }
 
-#ifdef PARALLEL
-    MPI_Bcast(buff, 10000, MPI_CHAR, 0, MPI_COMM_WORLD);
-#endif
-
-    if (!strcmp(buff, "quit"))
-    {
-        quitflag = 1;
-    }
-    else if (!strcmp(buff, "step"))
-    {
-        RunSingleCycle();
-    }
-    else if (!strcmp(buff, "run"))
-    {
-        RunSimulation();
-    }
-    else if (!strcmp(buff, "stop"))
-    {
-        printf("execution paused....\n");
-        StopSimulation();
-    }
-    else if (!strcmp(buff, "visit_disconnect"))
-    {
-        VisItDisconnect();
-    }
-    else if (!strcmp(buff, "visit_connect"))
-    {
-        VisItAttemptToCompleteConnection();
-    }
-    else if (!strcmp(buff, "visit_process"))
-    {
-        VisItProcessEngineCommand();
-    }
-    else if (!strcmp(buff, ""))
-    {
-        // Do nothing on blank input.
-    }
-    else
-    {
-        fprintf(stderr, "Error: unknown command '%s'\n", buff);
-    }
+    ProcessCommand(buff);
 }
 
 void SlaveProcessCallback()
 {
     FakeConsoleCommand("visit_process");
+}
+
+void ControlCommandCallback(const char *cmd,
+                            int int_data,
+                            float float_data,
+                            const char *string_data)
+{
+    fprintf(stderr, "ControlCommandCallback(cmd=%s)\n",cmd);
+    // Ignore int/float/string_data
+    ProcessCommand(cmd);
 }
 
 void MainLoop()
@@ -294,6 +317,7 @@ void MainLoop()
                     VisItAttemptToCompleteConnection();
                     engineinputdescriptor = VisItGetEngineSocket();
                     VisItSetSlaveProcessCallback(SlaveProcessCallback);
+                    VisItSetCommandCallback(ControlCommandCallback);
                 }
                 else if (FD_ISSET(consoleinputdescriptor, &readSet))
                 {
@@ -348,7 +372,10 @@ int main(int argc, char *argv[])
 
     if (par_rank == 0)
     {
-        VisItInitializeSocketAndDumpSimFile("proto");
+        VisItInitializeSocketAndDumpSimFile("proto",
+                                            "Prototype Simulation",
+                                            "/no/useful/path",
+                                            NULL);
         listenSock = VisItGetListenSocket();
 
         printf("\n          >>> STARTING SIMULATION PROTOTYPE <<<\n\n\n");
@@ -356,7 +383,8 @@ int main(int argc, char *argv[])
         printf("Known Commands:\n"
                "     quit  :        exit code\n"
                "     step  :        run for one cycle\n"
-               "     run   :        run continuously\n");
+               "     run   :        run continuously\n"
+               "     halt  :        stop running\n");
     }
 
     InitializeVariables();

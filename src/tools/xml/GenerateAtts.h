@@ -116,6 +116,9 @@ using std::vector;
 //    Brad Whitlock, Wed Dec 8 15:48:10 PST 2004
 //    Added support for variable names as a type.
 //
+//    Jeremy Meredith, Mon Apr  4 16:45:55 PDT 2005
+//    Fixed capitalization for the att-vector helper methods.
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -1113,7 +1116,7 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual AttsGen
 
         // Write the Add method.
         methodName = "Add";
-        methodName += s;
+        methodName += AttType;
         WriteMethodComment(c, classname, methodName, purpose);
         c << "void" << endl;
         c << classname << "::" << methodName << "(const " << s << " &obj)" << endl;
@@ -1127,7 +1130,7 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual AttsGen
 
         // Write the Clear method
         methodName = "Clear";
-        methodName += s;
+        methodName += AttType;
         methodName += "s";
         WriteMethodComment(c, classname, methodName, purpose);
         c << "void" << endl;
@@ -1145,7 +1148,7 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual AttsGen
 
         // Write the Remove method
         methodName = "Remove";
-        methodName += s;
+        methodName += AttType;
         WriteMethodComment(c, classname, methodName, purpose);
         c << "void" << endl;
         c << classname << "::" << methodName << "(int index)" << endl;
@@ -1169,7 +1172,7 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual AttsGen
 
         // Write the GetNum method
         methodName = "GetNum";
-        methodName += s;
+        methodName += AttType;
         methodName += "s";
         WriteMethodComment(c, classname, methodName, purpose);
         c << "int" << endl;
@@ -1180,7 +1183,7 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual AttsGen
 
         // Write the Get method
         methodName = "Get";
-        methodName += s;
+        methodName += AttType;
         WriteMethodComment(c, classname, methodName, purpose);
         c << s << " &" << endl;
         c << classname << "::" << methodName << "(int i)" << endl;
@@ -1190,7 +1193,7 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual AttsGen
 
         // Write the const Get method
         methodName = "Get";
-        methodName += s;
+        methodName += AttType;
         WriteMethodComment(c, classname, methodName, purpose);
         c << "const " << s << " &" << endl;
         c << classname << "::" << methodName << "(int i) const" << endl;

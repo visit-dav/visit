@@ -49,6 +49,9 @@ class   vtkObject;
 //    Brad Whitlock, Sat Apr 2 00:50:39 PDT 2005
 //    Added label support.
 //
+//    Mark C. Miller, Tue Apr  5 10:30:16 PDT 2005
+//    Added native cache
+//
 // ****************************************************************************
 
 class DATABASE_API avtVariableCache
@@ -63,6 +66,11 @@ class DATABASE_API avtVariableCache
     static const char     *SYMMETRIC_TENSORS_NAME;
     static const char     *LABELS_NAME;
     static const char     *DATASET_NAME;
+    static const char     *NATIVE_SCALARS_NAME;
+    static const char     *NATIVE_VECTORS_NAME;
+    static const char     *NATIVE_TENSORS_NAME;
+    static const char     *NATIVE_SYMMETRIC_TENSORS_NAME;
+    static const char     *NATIVE_DATASET_NAME;
 
     vtkObject             *GetVTKObject(const char *name, const char *type,
                                         int ts, int domain, const char *mat);

@@ -80,6 +80,9 @@ const int INTERRUPT_MESSAGE_TAG = GetUniqueStaticMessageTag();
 //    Hank Childs, Mon Mar 21 11:24:06 PST 2005
 //    Initialize all of the data members.
 //
+//    Jeremy Meredith, Mon Apr  4 15:58:23 PDT 2005
+//    Added simulationCommandCallback.
+//
 // ****************************************************************************
 Engine::Engine()
 {
@@ -89,6 +92,7 @@ Engine::Engine()
     netmgr = NULL;
     lb = NULL;
     procAtts = NULL;
+    simulationCommandCallback = NULL;
     metaData = NULL;
     silAtts = NULL;
     
@@ -312,6 +316,9 @@ Engine::Finalize(void)
 //    Mark C. Miller, Tue Mar  8 17:59:40 PST 2005
 //    Added procInfoRPC 
 //
+//    Jeremy Meredith, Mon Apr  4 15:58:48 PDT 2005
+//    Added simulationCommandRPC.
+//
 // ****************************************************************************
 
 void
@@ -377,6 +384,7 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     setWinAnnotAttsRPC              = new SetWinAnnotAttsRPC;
     cloneNetworkRPC                 = new CloneNetworkRPC;
     procInfoRPC                     = new ProcInfoRPC;
+    simulationCommandRPC            = new SimulationCommandRPC;
 
     xfer->Add(quitRPC);
     xfer->Add(keepAliveRPC);
@@ -398,6 +406,7 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     xfer->Add(setWinAnnotAttsRPC);
     xfer->Add(cloneNetworkRPC);
     xfer->Add(procInfoRPC);
+    xfer->Add(simulationCommandRPC);
 
     // Create an object to implement the RPCs
     rpcExecutors.push_back(new RPCExecutor<QuitRPC>(quitRPC));
@@ -423,6 +432,7 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     rpcExecutors.push_back(new RPCExecutor<SetWinAnnotAttsRPC>(setWinAnnotAttsRPC));
     rpcExecutors.push_back(new RPCExecutor<CloneNetworkRPC>(cloneNetworkRPC));
     rpcExecutors.push_back(new RPCExecutor<ProcInfoRPC>(procInfoRPC));
+    rpcExecutors.push_back(new RPCExecutor<SimulationCommandRPC>(simulationCommandRPC));
 
     // Hook up the expression list as an observed object.
     Parser *p = new ExprParser(new avtExprNodeFactory());
@@ -1684,7 +1694,7 @@ Engine::EngineUpdateProgressCallback(void *data, const char *type, const char *d
     }
     else
     {
-        rpc->SendStatus(100. * float(cur)/float(total),
+        rpc->SendStatus(int(100. * float(cur)/float(total)),
                         rpc->GetCurStageNum(),
                         desc ? desc : type,
                         rpc->GetMaxStageNum());
@@ -1875,10 +1885,56 @@ Engine::SimulationTimeStepChanged()
 //
 // ****************************************************************************
 void
-Engine::Disconnect()
+Engine::DisconnectSimulation()
 {
     delete instance;
     instance = NULL;
+}
+
+// ****************************************************************************
+//  Method:  Engine::SetSimulationCommandCallback
+//
+//  Purpose:
+//    Set the callback to control a simulation.
+//
+//  Arguments:
+//    sc         the control command callback
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    March 18, 2005
+//
+// ****************************************************************************
+void
+Engine::SetSimulationCommandCallback(void (*scc)(const char*,
+                                                 int,float,const char*))
+{
+    simulationCommandCallback = scc;
+}
+
+// ****************************************************************************
+//  Method:  Engine::SetSimulationCommandCallback
+//
+//  Purpose:
+//    Set the callback to control a simulation.
+//
+//  Arguments:
+//    sc         the control command callback
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    March 18, 2005
+//
+// ****************************************************************************
+void
+Engine::ExecuteSimulationCommand(const std::string &command,
+                                 int int_data,
+                                 float float_data,
+                                 const std::string &string_data)
+{
+    if (!simulationCommandCallback)
+        return;
+
+    simulationCommandCallback(command.c_str(),
+                              int_data,float_data,string_data.c_str());
 }
 
 // ****************************************************************************

@@ -8,8 +8,13 @@
 
 #include <ImproperUseException.h>
 
+#include <vtkSystemIncludes.h>
+
+#include <vector>
+#include <map>
 
 using     std::vector;
+using     std::map;
 
 
 // ****************************************************************************
@@ -77,6 +82,9 @@ using     std::vector;
 //    Hank Childs, Thu Sep 23 09:23:01 PDT 2004
 //    Added needGlobalZones and needGlobalNodes.
 //
+//    Mark C. Miller, Tue Apr  5 10:30:16 PDT 2005
+//    Added admissibleDataTypes and needNativePrecision
+//
 // ****************************************************************************
 
 avtDataSpecification::avtDataSpecification(const char *var, int ts,
@@ -100,6 +108,9 @@ avtDataSpecification::avtDataSpecification(const char *var, int ts,
     useNewMIRAlgorithm = false;
     desiredGhostDataType = NO_GHOST_DATA;
     maintainOriginalConnectivity = false;
+    needNativePrecision = false;
+
+    InitAdmissibleDataTypes();
 
     timestep  = ts;
 
@@ -179,6 +190,9 @@ avtDataSpecification::avtDataSpecification(const char *var, int ts,
 //    Hank Childs, Thu Sep 23 09:23:01 PDT 2004
 //    Added needGlobalZones and needGlobalNodes.
 //
+//    Mark C. Miller, Tue Apr  5 10:30:16 PDT 2005
+//    Added admissibleDataTypes and needNativePrecision
+//
 // ****************************************************************************
 
 avtDataSpecification::avtDataSpecification(const char *var, int ts, int ch)
@@ -201,6 +215,9 @@ avtDataSpecification::avtDataSpecification(const char *var, int ts, int ch)
     useNewMIRAlgorithm = false;
     desiredGhostDataType = NO_GHOST_DATA;
     maintainOriginalConnectivity = false;
+    needNativePrecision = false;
+
+    InitAdmissibleDataTypes();
 
     timestep  = ts;
 
@@ -412,6 +429,9 @@ avtDataSpecification::avtDataSpecification(avtDataSpecification_p spec)
 //    Mark C. Miller, Tue Sep 28 19:57:42 PDT 2004
 //    Added data selection list
 //
+//    Mark C. Miller, Tue Apr  5 10:30:16 PDT 2005
+//    Added admissibleDataTypes and needNativePrecision
+//
 // ****************************************************************************
 
 avtDataSpecification &
@@ -462,6 +482,8 @@ avtDataSpecification::operator=(const avtDataSpecification &spec)
     useNewMIRAlgorithm              = spec.useNewMIRAlgorithm;
     desiredGhostDataType            = spec.desiredGhostDataType;
     maintainOriginalConnectivity    = spec.maintainOriginalConnectivity;
+    needNativePrecision             = spec.needNativePrecision;
+    admissibleDataTypes             = spec.admissibleDataTypes;
 
     secondaryVariables = spec.secondaryVariables;
 
@@ -542,6 +564,9 @@ avtDataSpecification::operator=(const avtDataSpecification &spec)
 //
 //    Mark C. Miller, Tue Sep 28 19:57:42 PDT 2004
 //    Added data selection list
+//
+//    Mark C. Miller, Tue Apr  5 10:30:16 PDT 2005
+//    Added admissibleDataTypes and needNativePrecision
 //
 // ****************************************************************************
 
@@ -660,6 +685,10 @@ avtDataSpecification::operator==(const avtDataSpecification &ds)
         return false;
     }
 
+    if (needNativePrecision != ds.needNativePrecision)
+    {
+        return false;
+    }
 
     if (secondaryVariables.size() != ds.secondaryVariables.size())
     {
@@ -685,6 +714,9 @@ avtDataSpecification::operator==(const avtDataSpecification &ds)
         if (*selList[i] != *(ds.selList[i]))
             return false;
     }
+
+    if (admissibleDataTypes != ds.admissibleDataTypes)
+        return false;
 
     return true;
 }
@@ -1028,6 +1060,110 @@ const std::vector<avtDataSelection_p>
 avtDataSpecification::GetAllDataSelections() const
 {
     return selList;
+}
+
+
+// ****************************************************************************
+//  Method: avtDataSpecification::InitAdmissibleDataTypes
+//
+//  Purpose: Initialize admissible data types to all true
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   March 23, 2005 
+//
+// ****************************************************************************
+
+void
+avtDataSpecification::InitAdmissibleDataTypes()
+{
+    admissibleDataTypes.clear();
+    admissibleDataTypes[VTK_BIT]            = true;
+    admissibleDataTypes[VTK_CHAR]           = true;
+    admissibleDataTypes[VTK_UNSIGNED_CHAR]  = true;
+    admissibleDataTypes[VTK_SHORT]          = true;
+    admissibleDataTypes[VTK_UNSIGNED_SHORT] = true;
+    admissibleDataTypes[VTK_INT]            = true;
+    admissibleDataTypes[VTK_UNSIGNED_INT]   = true;
+    admissibleDataTypes[VTK_LONG]           = true;
+    admissibleDataTypes[VTK_UNSIGNED_LONG]  = true;
+    admissibleDataTypes[VTK_FLOAT]          = true;
+    admissibleDataTypes[VTK_DOUBLE]         = true;
+    admissibleDataTypes[VTK_ID_TYPE]        = true;
+}
+
+// ****************************************************************************
+//  Method: avtDataSpecification::UpdateAdmissibleDataTypes
+//
+//  Purpose: Merges a set of admissible types into the current list of
+//  admissible types
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   March 23, 2005 
+//
+// ****************************************************************************
+
+void
+avtDataSpecification::UpdateAdmissibleDataTypes(vector<int> admissibleTypes)
+{
+    map<int,bool>::iterator it;
+    for (it = admissibleDataTypes.begin();
+         it != admissibleDataTypes.end(); it++)
+    {
+        bool isAnAdmissibleType = false;
+        for (int i = 0; i < admissibleTypes.size(); i++)
+        {
+            if (admissibleTypes[i] == it->first)
+            {
+                isAnAdmissibleType = true;
+                break;
+            }
+        }
+        if (isAnAdmissibleType == false)
+            it->second = false;
+    }
+}
+
+// ****************************************************************************
+//  Method: avtDataSpecification::IsAdmissibleDataType
+//
+//  Purpose: Return bool indicating if the given type is admissible 
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   March 23, 2005 
+//
+// ****************************************************************************
+
+bool
+avtDataSpecification::IsAdmissibleDataType(int theType) const
+{
+    map<int,bool>::const_iterator fit =
+        admissibleDataTypes.find(theType);
+    if (fit != admissibleDataTypes.end())
+        return fit->second;
+    return false;
+}
+
+// ****************************************************************************
+//  Method: avtDataSpecification::GetAdmissibleDataTypes
+//
+//  Purpose: Return vector of admissible data types 
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   March 23, 2005 
+//
+// ****************************************************************************
+vector<int>
+avtDataSpecification::GetAdmissibleDataTypes() const
+{
+    vector<int> admissibleTypes;
+    map<int,bool>::const_iterator it;
+    for (it = admissibleDataTypes.begin();
+         it != admissibleDataTypes.end(); it++)
+    {
+        if (it->second)
+            admissibleTypes.push_back(it->first);
+    }
+    return admissibleTypes;
 }
 
 // ****************************************************************************

@@ -9,6 +9,7 @@
 
 #include <avtSTMDFileFormat.h>
 #include <VisItDataInterface_V1.h>
+#include <avtSimulationInformation.h>
 
 #include <vector>
 
@@ -40,9 +41,7 @@ class avtSimV1FileFormat : public avtSTMDFileFormat
     virtual vtkDataArray  *GetVectorVar(int, const char *);
 
   protected:
-    std::string            host;
-    int                    port;
-
+    avtSimulationInformation simInfo;
     VisIt_SimulationCallback cb;
 
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *);

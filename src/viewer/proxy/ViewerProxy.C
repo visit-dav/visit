@@ -5341,6 +5341,79 @@ ViewerProxy::SetInteractorAttributes()
 }
 
 // ****************************************************************************
+//  Method:  ViewerProxy::SendSimulationCommand
+//
+//  Purpose:
+//    Send a command to the simulation that has no arguments.
+//
+//  Arguments:
+//    hostName   the host for the simulation
+//    simName    the sim filename for the simulation
+//    command    the string for the command
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    April  4, 2005
+//
+// ****************************************************************************
+void
+ViewerProxy::SendSimulationCommand(const std::string &hostName,
+                                   const std::string &simName,
+                                   const std::string &command)
+{
+    //
+    // Set the rpc type and arguments
+    //
+    viewerRPC->SetRPCType(ViewerRPC::SendSimulationCommandRPC);
+    viewerRPC->SetProgramHost(hostName);
+    viewerRPC->SetProgramSim(simName);
+    viewerRPC->SetStringArg1(command);
+    viewerRPC->SetStringArg2("");
+
+    //
+    // Issue the RPC.
+    //
+    viewerRPC->Notify();
+}
+
+
+// ****************************************************************************
+//  Method:  ViewerProxy::SendSimulationCommand
+//
+//  Purpose:
+//    Send a command to the simulation that has a single string argument.
+//
+//  Arguments:
+//    hostName   the host for the simulation
+//    simName    the sim filename for the simulation
+//    command    the string for the command
+//    argument   a string argument for the command
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    April  4, 2005
+//
+// ****************************************************************************
+void
+ViewerProxy::SendSimulationCommand(const std::string &hostName,
+                                   const std::string &simName,
+                                   const std::string &command,
+                                   const std::string &argument)
+{
+    //
+    // Set the rpc type and arguments
+    //
+    viewerRPC->SetRPCType(ViewerRPC::SendSimulationCommandRPC);
+    viewerRPC->SetProgramHost(hostName);
+    viewerRPC->SetProgramSim(simName);
+    viewerRPC->SetStringArg1(command);
+    viewerRPC->SetStringArg2(argument);
+
+    //
+    // Issue the RPC.
+    //
+    viewerRPC->Notify();
+}
+
+// ****************************************************************************
 //  Method: ViewerProxy::QueryProcessAttributes
 //
 //  Purpose: Gets unix process information

@@ -89,6 +89,7 @@
 #include <QvisQueryWindow.h>
 #include <QvisRenderingWindow.h>
 #include <QvisSaveWindow.h>
+#include <QvisSimulationWindow.h>
 #include <QvisSubsetWindow.h>
 #include <QvisQueryOverTimeWindow.h>
 #include <QvisVariableButton.h>
@@ -146,6 +147,7 @@
 #define WINDOW_CORRELATION      24  
 #define WINDOW_TIMEQUERY        25
 #define WINDOW_INTERACTOR       26
+#define WINDOW_SIMULATION       27
 
 const char *QvisGUIApplication::windowNames[] = {
 "File selection",
@@ -174,7 +176,8 @@ const char *QvisGUIApplication::windowNames[] = {
 "Rendering options",
 "Database correlation list",
 "QueryOverTime",
-"Interactors"
+"Interactors",
+"Simulations"
 };
 
 // Some internal prototypes.
@@ -1892,6 +1895,9 @@ QvisGUIApplication::CreateMainWindow()
 //   window to the variable button so all variable buttons can open the
 //   expression window.
 //
+//   Jeremy Meredith, Mon Apr  4 16:06:50 PDT 2005
+//   Added the Simulations window.
+//
 // ****************************************************************************
 
 void
@@ -1997,6 +2003,8 @@ QvisGUIApplication::SetupWindows()
              this, SLOT(showQueryOverTimeWindow()));
      connect(mainWin, SIGNAL(activateInteractorWindow()),
              this, SLOT(showInteractorWindow()));
+     connect(mainWin, SIGNAL(activateSimulationWindow()),
+             this, SLOT(showSimulationWindow()));
 }
 
 // ****************************************************************************
@@ -2019,6 +2027,9 @@ QvisGUIApplication::SetupWindows()
 //   Kathleen Bonnell, Wed Aug 18 09:44:09 PDT 2004 
 //   Added InteractorWindow. 
 //   
+//   Jeremy Meredith, Mon Apr  4 16:07:10 PDT 2005
+//   Added the Simulations window.
+//
 // ****************************************************************************
 
 QvisWindowBase *
@@ -2194,6 +2205,17 @@ QvisGUIApplication::WindowFactory(int i)
         // Create the time query window.
         win = new QvisInteractorWindow(viewer->GetInteractorAttributes(),
             windowNames[i], "Interactor", mainWin->GetNotepad());
+        break;
+    case WINDOW_SIMULATION:
+        // Create the simulation window.
+        { QvisSimulationWindow *swin =
+                     new QvisSimulationWindow(viewer->GetEngineList(),
+                                              windowNames[i], "Simulations",
+                                              mainWin->GetNotepad());
+          swin->ConnectStatusAttributes(viewer->GetStatusAttributes());
+          swin->SetNewMetaData(fileServer->GetMetaData());
+          win = swin;
+        }
         break;
     }
 
@@ -4745,6 +4767,10 @@ QvisGUIApplication::UpdateMetaDataAttributes(Subject *subj, void *data)
 //  Programmer:  Jeremy Meredith
 //  Creation:    August 25, 2004
 //
+//  Modifications:
+//    Jeremy Meredith, Mon Apr  4 16:07:27 PDT 2005
+//    Added an update of the simulation window.
+//
 // ****************************************************************************
 
 void
@@ -4776,6 +4802,15 @@ QvisGUIApplication::HandleMetaDataUpdate()
         QvisFileInformationWindow *fileInfoWin = (QvisFileInformationWindow*)
             otherWindows[fileInfoWinName];
         fileInfoWin->Update(fileServer);
+    }
+
+    // Simulation Window
+    string simWinName = windowNames[WINDOW_SIMULATION];
+    if (otherWindows.count(simWinName))
+    {
+        QvisSimulationWindow *simWin =
+            (QvisSimulationWindow*)otherWindows[simWinName];
+        simWin->SetNewMetaData(fileServer->GetMetaData());
     }
 }
 
@@ -5116,3 +5151,4 @@ void QvisGUIApplication::showRenderingWindow()       { GetInitializedWindowPoint
 void QvisGUIApplication::showCorrelationListWindow() { GetInitializedWindowPointer(WINDOW_CORRELATION)->show(); }
 void QvisGUIApplication::showQueryOverTimeWindow()   { GetInitializedWindowPointer(WINDOW_TIMEQUERY)->show(); }
 void QvisGUIApplication::showInteractorWindow()      { GetInitializedWindowPointer(WINDOW_INTERACTOR)->show(); }
+void QvisGUIApplication::showSimulationWindow()      { GetInitializedWindowPointer(WINDOW_SIMULATION)->show(); }

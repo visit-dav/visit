@@ -9,6 +9,7 @@
 
 #include <avtDatabaseMetaData.h>
 #include <avtSimulationInformation.h>
+#include <avtSimulationCommandSpecification.h>
 
 #include <InvalidFilesException.h>
 
@@ -43,25 +44,57 @@ avtSimV1FileFormat::avtSimV1FileFormat(const char *filename)
 #ifdef MDSERVER
     ifstream in(filename);
 
-    char buff[256];
-    in >> buff;
-    if (string(buff) != "host")
-    {
-        EXCEPTION2(InvalidFilesException,filename,
-                   "expected the first keyword to be 'host'");
-    }
-    in >> buff;
-    host = buff;
+    simInfo.SetHost("");
+    simInfo.SetPort(-1);
+    simInfo.SetSecurityKey("");
 
-    in >> buff;
-    if (string(buff) != "port")
+    char buff[256];
+    while (in >> buff)
     {
-        EXCEPTION2(InvalidFilesException,filename,
-                   "expected the second keyword to be 'port'");
+        if (strcasecmp(buff, "host")==0)
+        {
+            in >> buff;
+            simInfo.SetHost(buff);
+        }
+        else if (strcasecmp(buff, "port")==0)
+        {
+            int port;
+            in >> port;
+            simInfo.SetPort(port);
+        }
+        else if (strcasecmp(buff, "key")==0)
+        {
+            in >> buff;
+            simInfo.SetSecurityKey(buff);
+        }
+        else
+        {
+            in.get(); // assume one delimiter character
+
+            char val[2048];
+            in.getline(val, 2048);
+            simInfo.GetOtherNames().push_back(buff);
+            simInfo.GetOtherValues().push_back(val);
+        }
     }
-    in >> port;
 
     in.close();
+
+    if (simInfo.GetHost()=="")
+    {
+        EXCEPTION2(InvalidFilesException,filename,
+                   "Did not find 'host' in the file.");
+    }
+    if (simInfo.GetSecurityKey()=="")
+    {
+        EXCEPTION2(InvalidFilesException,filename,
+                   "Did not find 'key' in the file.");
+    }
+    if (simInfo.GetPort()==-1)
+    {
+        EXCEPTION2(InvalidFilesException,filename,
+                   "Did not find 'port' in the file.");
+    }
 #else // ENGINE
     cb = visitCallbacks;
 #endif
@@ -104,23 +137,20 @@ avtSimV1FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 {
     md->SetIsSimulation(true);
 #ifdef MDSERVER
-    avtSimulationInformation simInfo;
-    simInfo.SetHost(host);
-    simInfo.SetPort(port);
     md->SetSimInfo(simInfo);
 #else
 
     if (!cb.GetMetaData)
+    {
         return;
+    }
 
     VisIt_SimulationMetaData *vsmd = cb.GetMetaData();
     for (int m=0; m<vsmd->numMeshes; m++)
     {
         VisIt_MeshMetaData *mmd = &vsmd->meshes[m];
         avtMeshMetaData *mesh = new avtMeshMetaData;
-        cerr << "mmd->name="<<((void*)mmd->name)<<"="<<mmd->name<<endl;
         mesh->name = mmd->name;
-        cerr << "mesh->name="<<mesh->name<<endl;
 
         switch (mmd->meshType)
         {
@@ -196,6 +226,37 @@ avtSimV1FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     }
 
     md->Print(cout);
+
+    for (int c=0; c<vsmd->numCommands; c++)
+    {
+        VisIt_SimulationControlCommand *scc = &vsmd->commands[c];
+        avtSimulationCommandSpecification::CommandArgumentType t;
+        switch (scc->argType)
+        {
+          case VISIT_CMDARG_NONE:
+            t = avtSimulationCommandSpecification::CmdArgNone;
+            break;
+          case VISIT_CMDARG_INT:
+            t = avtSimulationCommandSpecification::CmdArgInt;
+            break;
+          case VISIT_CMDARG_FLOAT:
+            t = avtSimulationCommandSpecification::CmdArgFloat;
+            break;
+          case VISIT_CMDARG_STRING:
+            t = avtSimulationCommandSpecification::CmdArgString;
+            break;
+          default:
+            EXCEPTION1(ImproperUseException,
+                       "Invalid command argument type in "
+                       "VisIt_SimulationControlCommand.");
+        }
+        avtSimulationInformation simInfo = md->GetSimInfo();
+        avtSimulationCommandSpecification *scs = new avtSimulationCommandSpecification;
+        scs->SetName(scc->name);
+        scs->SetArgumentType(t);
+        simInfo.AddAvtSimulationCommandSpecification(*scs);
+        md->SetSimInfo(simInfo);
+    }
 
     // DO THE MATERIALS, EXPRESSIONS, CURVES, ETC.
 #endif
@@ -278,7 +339,8 @@ avtSimV1FileFormat::GetMesh(int domain, const char *meshname)
         }
         break;
       default:
-        cerr << "ERROR\n";
+        EXCEPTION1(ImproperUseException,
+                   "Only curvilinear meshes are currently supported.\n");
         break;
     }
 

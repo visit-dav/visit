@@ -35,6 +35,18 @@ extern "C"
 #define VISIT_VARTYPE_CURVE               7
 #define VISIT_VARTYPE_UNKNOWN             8
 
+/* Command Argument Type */
+#define VISIT_CMDARG_NONE                 0
+#define VISIT_CMDARG_INT                  1
+#define VISIT_CMDARG_FLOAT                2
+#define VISIT_CMDARG_STRING               3
+
+typedef struct VisIt_SimulationControlCommand
+{
+    const char *name;
+    int         argType;   /* CMDARG */
+} VisIt_SimulationControlCommand;
+
 typedef struct VisIt_MeshMetaData
 {
     const char *name;
@@ -103,6 +115,9 @@ typedef struct VisIt_SimulationMetaData
     VisIt_MaterialMetaData   *materials;
     VisIt_CurveMetaData      *curves;
     VisIt_ExpressionMetaData *expressions;
+
+    int numCommands;
+    VisIt_SimulationControlCommand *commands;
 } VisIt_SimulationMetaData;
 
 typedef struct VisIt_CurvilinearMesh

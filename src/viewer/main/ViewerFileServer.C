@@ -2527,6 +2527,11 @@ ViewerFileServer::GetAllExpressions(ExpressionList &newList,
 //  Programmer:  Jeremy Meredith
 //  Creation:    August 25, 2004
 //
+//  Modifications:
+//    Jeremy Meredith, Mon Apr  4 17:11:27 PDT 2005
+//    Simulation commands are part of the simulation info, but unlike the
+//    other siminfo stuff, the new ones should be accepted.
+//
 // ****************************************************************************
 void
 ViewerFileServer::SetSimulationMetaData(const std::string &host,
@@ -2548,6 +2553,14 @@ ViewerFileServer::SetSimulationMetaData(const std::string &host,
         if(name == dbName)
         {
             avtSimulationInformation simInfo = pos->second->GetSimInfo();
+
+            simInfo.ClearAvtSimulationCommandSpecifications();
+            for (int i=0; i<md.GetSimInfo().GetNumAvtSimulationCommandSpecifications(); i++)
+            {
+                simInfo.AddAvtSimulationCommandSpecification(
+                      md.GetSimInfo().GetAvtSimulationCommandSpecification(i));
+            }
+
             *(pos->second) = md;
             pos->second->SetIsSimulation(true);
             pos->second->SetSimInfo(simInfo);

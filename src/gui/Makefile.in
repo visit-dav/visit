@@ -299,6 +299,9 @@
 #    Brad Whitlock, Wed Mar 2 10:41:52 PDT 2005
 #    Added QvisFtp so we can have FTP on pre 3.1 versions of Qt.
 #
+#    Jeremy Meredith, Mon Mar 21 12:57:07 PST 2005
+#    Added QvisSimulationWindow.
+#
 ##############################################################################
 
 ##
@@ -387,6 +390,7 @@ HDRMOC = \
     QvisScreenPositionEdit.h \
     QvisScreenPositioner.h \
     QvisScribbleOpacityBar.h \
+    QvisSimulationWindow.h \
     QvisSpectrumBar.h \
     QvisSubsetListView.h \
     QvisSubsetWindow.h \

@@ -1,7 +1,9 @@
 #ifndef VISIT_ENGINE_H
 #define VISIT_ENGINE_H
 
+#ifdef __cplusplus
 extern "C" {
+#endif
 
 // ****************************************************************************
 //  Library:  VisItEngine
@@ -16,6 +18,9 @@ extern "C" {
 //    Jeremy Meredith, Mon Nov  1 17:19:02 PST 2004
 //    Added parallel simulation support.
 //
+//    Jeremy Meredith, Fri Mar 18 08:28:33 PST 2005
+//    Added simulation control support.
+//
 // ****************************************************************************
 
 void   *get_engine();
@@ -26,7 +31,10 @@ int     process_input(void*);
 void    time_step_changed(void*);
 void    disconnect();
 void    set_slave_process_callback(void(*)());
+void    set_command_callback(void*,void(*)(const char*,int,float,const char*));
 
+#ifdef __cplusplus
 }
+#endif
 
 #endif

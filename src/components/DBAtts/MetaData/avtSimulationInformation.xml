@@ -5,4 +5,12 @@
     <Field name="port" label="port" type="int">
       0
     </Field>
+    <Field name="securityKey" label="securityKey" type="string">
+    </Field>
+    <Field name="otherNames" label="otherNames" type="stringVector">
+    </Field>
+    <Field name="otherValues" label="otherValues" type="stringVector">
+    </Field>
+    <Field name="commands" label="commands" type="attVector" subtype="avtSimulationCommandSpecification">
+    </Field>
   </Attribute>
