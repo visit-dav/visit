@@ -511,6 +511,9 @@ QvisReflectWidget::setupCamera()
 //   Brad Whitlock, Tue Jun 24 14:34:02 PST 2003
 //   I made it use drawOnOffActors.
 //
+//   Brad Whitlock, Wed Sep 10 08:44:35 PDT 2003
+//   I added the axis labels for the back view.
+//
 // ****************************************************************************
 
 void
@@ -581,6 +584,14 @@ QvisReflectWidget::setupAndDraw(QPainter *p)
         {
             const char *txt = "Back view";
             p->drawText(square.x() + 5, square.y() + square.height() - 5, txt);
+
+            vector3 p0 = renderer.transform_world_point(vec_create(-axes_size, 0, 0));
+            vector3 p1 = renderer.transform_world_point(vec_create(0, axes_size, 0));
+            vector3 p2 = renderer.transform_world_point(vec_create(0, 0, -axes_size));
+
+            p->drawText(p0.x + 5, p0.y + 5, "-X");
+            p->drawText(p1.x, p1.y - 5, "+Y");
+            p->drawText(p2.x - 20, p2.y + 5, "-Z");
         }
     }
 }

@@ -135,6 +135,9 @@ QvisPostableWindow::CreateNode(DataNode *parentNode)
 //   Brad Whitlock, Fri Sep 5 15:56:07 PST 2003
 //   Added code to read in the postWhenShown flag.
 //
+//   Brad Whitlock, Wed Sep 10 09:19:32 PDT 2003
+//   Added a method to make sure that the window fits on the screen.
+//
 // ****************************************************************************
 
 void
@@ -186,6 +189,9 @@ QvisPostableWindow::SetFromNode(DataNode *parentNode, const int *borders)
         h = node->AsInt();
         wh_set = true;
     }
+
+    // Make sure that the window will fit on the screen.
+    FitToScreen(x, y, w, h);
 
     // Set the window geometry.
     if(wh_set && xy_set)

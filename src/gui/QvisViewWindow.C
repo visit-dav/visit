@@ -128,6 +128,9 @@ QvisViewWindow::~QvisViewWindow()
 //   Eric Brugger, Wed Aug 20 14:04:21 PDT 2003
 //   I added support for curve views.
 //
+//   Brad Whitlock, Thu Sep 11 09:32:01 PDT 2003
+//   I added buttons to reset and recenter the view.
+//
 // ****************************************************************************
 
 void
@@ -347,7 +350,7 @@ QvisViewWindow::CreateWindowContents()
 
     QVBoxLayout *advInternalLayout = new QVBoxLayout(advancedGroup);
     advInternalLayout->addSpacing(10);
-    QGridLayout *advLayout = new QGridLayout(advInternalLayout, 5, 2);
+    QGridLayout *advLayout = new QGridLayout(advInternalLayout, 5, 3);
     advLayout->setSpacing(5);
     advLayout->setColStretch(1, 10);
 
@@ -356,7 +359,7 @@ QvisViewWindow::CreateWindowContents()
     extentComboBox->insertItem("Actual spatial extents", 1);
     connect(extentComboBox, SIGNAL(activated(int)),
             this, SLOT(extentTypeChanged(int)));
-    advLayout->addWidget(extentComboBox, 0, 1);
+    advLayout->addMultiCellWidget(extentComboBox, 0, 0, 1, 2);
     QLabel *l = new QLabel(extentComboBox, "View based on",
         advancedGroup, "extentsLabel");
     advLayout->addWidget(l, 0, 0);
@@ -367,23 +370,35 @@ QvisViewWindow::CreateWindowContents()
             this, SLOT(lockedViewChecked(bool)));
     advLayout->addWidget(lockedViewToggle, 1, 0);
 
+    QPushButton *resetViewButton = new QPushButton("Reset view",
+        advancedGroup, "resetViewButton");
+    connect(resetViewButton, SIGNAL(clicked()),
+            this, SLOT(resetView()));
+    advLayout->addWidget(resetViewButton, 2, 0);
+
+    QPushButton *recenterButton = new QPushButton("Recenter view",
+        advancedGroup, "recenterButton");
+    connect(recenterButton, SIGNAL(clicked()),
+            this, SLOT(recenterView()));
+    advLayout->addWidget(recenterButton, 2, 1);
+
     QPushButton *undoButton = new QPushButton("Undo view",
         advancedGroup, "undoButton");
     connect(undoButton, SIGNAL(clicked()),
             this, SLOT(undoView()));
-    advLayout->addWidget(undoButton, 2, 0);
+    advLayout->addWidget(undoButton, 2, 2);
 
     copyViewFromCameraToggle = new QCheckBox("Copy view from camera",
                                     advancedGroup, "copyViewFromCameraToggle");
     connect(copyViewFromCameraToggle, SIGNAL(toggled(bool)),
             this, SLOT(copyViewFromCameraChecked(bool)));
-    advLayout->addMultiCellWidget(copyViewFromCameraToggle, 3,3, 0,1);
+    advLayout->addMultiCellWidget(copyViewFromCameraToggle, 3,3, 0,2);
 
     makeViewKeyframeButton = new QPushButton("Make camera keyframe from view",
                                      advancedGroup, "makeViewKeyframeButton");
     connect(makeViewKeyframeButton, SIGNAL(clicked()),
             this, SLOT(makeViewKeyframe()));
-    advLayout->addMultiCellWidget(makeViewKeyframeButton, 4,4, 0,1);
+    advLayout->addMultiCellWidget(makeViewKeyframeButton, 4,4, 0,2);
 
     advInternalLayout->addStretch(10);
 
@@ -2209,6 +2224,44 @@ void
 QvisViewWindow::extentTypeChanged(int val)
 {
     viewer->SetViewExtentsType(val);
+}
+
+// ****************************************************************************
+// Method: QvisViewWindow::resetView
+//
+// Purpose: 
+//   This Qt slot function tells the viewer to reset the view.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Sep 11 09:34:07 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisViewWindow::resetView()
+{
+    viewer->ResetView();
+}
+
+// ****************************************************************************
+// Method: QvisViewWindow::recenterView
+//
+// Purpose: 
+//   This Qt slot function tells the viewer to recenter the view.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Sep 11 09:34:07 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisViewWindow::recenterView()
+{
+    viewer->RecenterView();
 }
 
 // ****************************************************************************

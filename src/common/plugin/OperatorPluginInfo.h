@@ -41,6 +41,9 @@ class ViewerPlot;
 //    Brad Whitlock, Thu Apr 10 13:14:52 PST 2003
 //    I added Removeable, Moveable, and AllowsSubsequentOperators.
 //
+//    Kathleen Bonnell, Thu Sep 11 10:18:54 PDT 2003
+//    I added a bool argument to InitializeOperatorAtts. 
+//
 // ****************************************************************************
 
 class PLUGIN_API GeneralOperatorPluginInfo
@@ -77,7 +80,8 @@ class PLUGIN_API ViewerOperatorPluginInfo : public virtual CommonOperatorPluginI
     virtual void GetClientAtts(AttributeSubject *atts) = 0;
 
     virtual void InitializeOperatorAtts(AttributeSubject *atts,
-                                        const ViewerPlot *plot) = 0;
+                                        const ViewerPlot *plot,
+                                        const bool fromDefault) = 0;
     virtual const char **XPMIconData() const { return 0; }
     virtual bool Removeable() const { return true; }
     virtual bool Moveable() const { return true; }

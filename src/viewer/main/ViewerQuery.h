@@ -47,13 +47,19 @@ class avtVector;
 //    Added methods GetOriginatingWindow, GetOriginatingPlot, SendVisualCue, 
 //    ReCreateLineout, UpdateLineFromSlice, Start/StopObservingPlot. 
 //
+//    Kathleen Bonnell, Thu Sep 11 12:04:26 PDT 2003 
+//    Added optional bool arg to constructor and CreateLineout, indicates
+//    whether Lineout should initialize itself with its default atts or
+//    its client atts. 
+//
 // ****************************************************************************
 
 
 class VIEWER_API ViewerQuery : public SimpleObserver
 {
   public:
-                     ViewerQuery(ViewerWindow *, ViewerWindow *, Line *);
+                     ViewerQuery(ViewerWindow *, ViewerWindow *, Line *,
+                                 const bool fromDefault = true);
                     ~ViewerQuery();
 
     bool             MatchResultsPlot(ViewerPlot *vp) const; 
@@ -86,7 +92,7 @@ class VIEWER_API ViewerQuery : public SimpleObserver
     bool             UpdateLineFromSlice(PlaneAttributes *);
 
   private:
-    void             CreateLineout();
+    void             CreateLineout(const bool fromDefault = true);
     void             StartObservingPlot();
     void             StopObservingPlot();
 

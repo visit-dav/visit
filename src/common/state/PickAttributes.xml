@@ -69,6 +69,8 @@
     <Field name="pickType" label="pickType" type="enum" subtype="PickType" internal="true">
       Zone
     </Field>
+    <Field name="meshInfo" label="MeshInfo" type="string" internal="true">
+    </Field>
     <Function name="PrintSelf" user="true" member="true">
     </Function>
     <Function name="CreateOutputString" user="true" member="true">

@@ -301,6 +301,9 @@ class Xfer;
 //    Brad Whitlock, Fri Aug 29 11:20:32 PDT 2003
 //    Added HideToolbars and ShowToolbars.
 //
+//    Kathleen Bonnell, Thu Sep 11 11:35:08 PDT 2003 
+//    Added optional bool arg to AddOperator.
+//
 // ****************************************************************************
 
 class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
@@ -375,7 +378,7 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
                         const intVector &expandedPlots);
     void ChangeActivePlotsVar(const std::string &var);
 
-    void AddOperator(int oper);
+    void AddOperator(int oper, const bool fromDefault = true);
     void PromoteOperator(int operatorId);
     void DemoteOperator(int operatorId);
     void RemoveOperator(int operatorId);

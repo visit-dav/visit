@@ -2624,11 +2624,15 @@ ViewerWindow::CopyLightList(const ViewerWindow *source)
 //    Brad Whitlock, Tue Feb 4 15:41:51 PST 2003
 //    I removed UpdateMenu.
 //
+//    Brad Whitlock, Thu Sep 11 08:55:25 PDT 2003
+//    I added code to suspend spin mode.
+//
 // ****************************************************************************
 
 void
 ViewerWindow::ShowMenu()
 {
+    visWindow->SetSpinModeSuspended(true);
     popupMenu->ShowMenu();
 }
 
@@ -2641,12 +2645,17 @@ ViewerWindow::ShowMenu()
 //  Programmer: Brad Whitlock
 //  Creation:   Tue Nov 7 11:22:30 PDT 2000
 //
+//  Modifications:
+//    Brad Whitlock, Thu Sep 11 08:55:45 PDT 2003
+//    I added code to turn of spin mode suspend.
+//
 // ****************************************************************************
 
 void
 ViewerWindow::HideMenu()
 {
     popupMenu->HideMenu();
+    visWindow->SetSpinModeSuspended(false);
 }
 
 // ****************************************************************************

@@ -26,6 +26,9 @@ class DataNode;
 //   Brad Whitlock, Fri Mar 21 10:30:05 PDT 2003
 //   I added ProcessOldVersions.
 //
+//   Brad Whitlock, Wed Sep 10 09:28:22 PDT 2003
+//   I added FitToScreen.
+//
 // *******************************************************************
 
 class GUI_API QvisWindowBase : public QMainWindow, public GUIBase
@@ -45,6 +48,8 @@ public:
 public slots:
     virtual void show();
 protected:
+    void FitToScreen(int &x, int &y, int &w, int &h) const;
+
     bool saveWindowDefaults;
 };
 

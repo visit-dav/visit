@@ -149,6 +149,9 @@ AddOperatorAction::Setup()
 //    Fixed a bug where disabling an operator would cause crashes when
 //    using unrelated operators; it was using AllID instead of EnabledID.
 //   
+//    Kathleen Bonnell, Thu Sep 11 11:35:08 PDT 2003
+//    Added 'from Default' to 'AddOperator'. 
+//    
 // ****************************************************************************
 
 void
@@ -158,12 +161,13 @@ AddOperatorAction::Execute(int)
     // Get the rpc arguments.
     //
     int type = args.GetOperatorType();
+    bool fromDefault = args.GetBoolFlag();
 
     OperatorPluginManager *opMgr = OperatorPluginManager::Instance();
     std::string name(opMgr->GetPluginName(opMgr->GetEnabledID(type)));
     if (name == "Lineout")
     {
-        ViewerQueryManager::Instance()->Lineout(window);
+        ViewerQueryManager::Instance()->Lineout(window, fromDefault);
     }
     else
     {
@@ -171,7 +175,7 @@ AddOperatorAction::Execute(int)
         // Add the operator to the window's plot list.
         //
         bool applyToAll = windowMgr->GetClientAtts()->GetApplyOperator();
-        window->GetAnimation()->GetPlotList()->AddOperator(type, applyToAll);
+        window->GetAnimation()->GetPlotList()->AddOperator(type, applyToAll, fromDefault);
     }
 }
 

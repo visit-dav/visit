@@ -1940,6 +1940,47 @@ VisWindow::GetSpinMode() const
 
 
 // ****************************************************************************
+//  Method: VisWindow::SetSpinModeSuspended
+//
+//  Purpose:
+//      Sets the VisWindow's spin mode suspension flag.
+//
+//  Programmer: Brad Whitlock
+//  Creation:   Wed Sep 10 16:02:22 PST 2003
+//
+// ****************************************************************************
+
+void
+VisWindow::SetSpinModeSuspended(bool mode)
+{
+    if(mode != interactions->GetSpinModeSuspended())
+    {
+        interactions->SetSpinModeSuspended(mode);
+    }
+}
+
+
+// ****************************************************************************
+//  Method: VisWindow::GetSpinModeSuspended
+//
+//  Purpose:
+//      Gets whether spin mode is suspended.
+//
+//  Returns:    true if spin mode is suspended, false otherwise.
+//
+//  Programmer: Brad Whitlock
+//  Creation:   Wed Sep 10 16:01:57 PST 2003
+//
+// ****************************************************************************
+
+bool
+VisWindow::GetSpinModeSuspended() const
+{
+    return interactions->GetSpinModeSuspended();
+}
+
+
+// ****************************************************************************
 //  Method: VisWindow::ResetView
 //
 //  Purpose:

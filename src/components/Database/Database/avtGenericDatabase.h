@@ -144,6 +144,9 @@ class     PickVarInfo;
 //    Hank Childs, Tue Jul 29 15:59:56 PDT 2003
 //    Added AssociateBounds and ScaleMesh.
 //
+//    Kathleen Bonnell, Tue Sep  9 16:51:10 PDT 2003 
+//    Changed PickVarInfo argument in QueryMesh to std::string.
+//
 // ****************************************************************************
 
 class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
@@ -261,7 +264,7 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
                                           std::vector<std::string> &);
 
     virtual bool               QueryMesh(const std::string &, const int, 
-                                         PickVarInfo &);
+                                         std::string &);
 
     virtual bool               QueryZones(const std::string&, const int, int &,
                                           const int, std::vector<int> &, 

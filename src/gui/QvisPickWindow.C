@@ -53,6 +53,9 @@ using std::vector;
 //   Brad Whitlock, Tue Sep 9 09:30:01 PDT 2003
 //   I made nextPage and lastLetter be members.
 //
+//   Kathleen Bonnell, Wed Sep 10 08:02:02 PDT 2003 
+//   Added savePicks flag.
+//
 // ****************************************************************************
 
 QvisPickWindow::QvisPickWindow(PickAttributes *subj, const char *caption, 
@@ -64,6 +67,7 @@ QvisPickWindow::QvisPickWindow(PickAttributes *subj, const char *caption,
     pickAtts = subj;
     autoShow = true;
     nextPage = 0;
+    savePicks = false;
 }
 
 // ****************************************************************************
@@ -111,6 +115,9 @@ QvisPickWindow::~QvisPickWindow()
 //   Brad Whitlock, Wed Aug 27 08:38:55 PDT 2003
 //   I added a checkbox to set autoShow mode.
 //
+//   Kathleen Bonnell, Wed Sep 10 08:02:02 PDT 2003 
+//   Added  savePicks checkbox.
+//
 // ****************************************************************************
 
 void
@@ -131,7 +138,7 @@ QvisPickWindow::CreateWindowContents()
         tabWidget->addTab(pages[i]," "); 
     }
 
-    QGridLayout *gLayout = new QGridLayout(topLayout, 3, 4);
+    QGridLayout *gLayout = new QGridLayout(topLayout, 4, 4);
     varsLineEdit = new QLineEdit(central, "varsLineEdit");
     varsLineEdit->setText("default"); 
     connect(varsLineEdit, SIGNAL(returnPressed()),
@@ -157,6 +164,12 @@ QvisPickWindow::CreateWindowContents()
     connect(autoShowCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(autoShowToggled(bool)));
     gLayout->addMultiCellWidget(autoShowCheckBox, 2, 2, 0, 3);
+
+    savePicksCheckBox = new QCheckBox("Don't clear this window", central,
+                                     "savePicksCheckBox");
+    connect(savePicksCheckBox, SIGNAL(toggled(bool)),
+            this, SLOT(savePicksToggled(bool)));
+    gLayout->addMultiCellWidget(savePicksCheckBox, 3, 3, 0, 3);
 }
 
 // ****************************************************************************
@@ -188,6 +201,9 @@ QvisPickWindow::CreateWindowContents()
 //   Brad Whitlock, Wed Aug 27 08:37:57 PDT 2003
 //   Made the window show itself if autoShow mode is on.
 //
+//   Kathleen Bonnell, Wed Sep 10 08:02:02 PDT 2003
+//   Don't clear the window if savePicks is checked. 
+//
 // ****************************************************************************
 
 void
@@ -201,6 +217,10 @@ QvisPickWindow::UpdateWindow(bool doAll)
     autoShowCheckBox->setChecked(autoShow);
     autoShowCheckBox->blockSignals(false);
 
+    savePicksCheckBox->blockSignals(true);
+    savePicksCheckBox->setChecked(savePicks);
+    savePicksCheckBox->blockSignals(false);
+
     //
     //  If pick letter changes, it indicates we need to updated the
     //  information in a tab-page.  If pick letter changes, we assume
@@ -208,9 +228,11 @@ QvisPickWindow::UpdateWindow(bool doAll)
     //
     if (pickAtts->IsSelected(2) || pickAtts->IsSelected(0) || doAll)
     {
+        bool clearWindow = (savePicks ? false : 
+                            pickAtts->GetClearWindow());
         // If autoShow mode is on, make sure that the window is showing.
         if(!doAll && autoShow && !isPosted &&
-           !pickAtts->GetClearWindow() && pickAtts->GetFulfilled())
+           !clearWindow && pickAtts->GetFulfilled())
         {
             show();
         }
@@ -246,34 +268,6 @@ QvisPickWindow::UpdateWindow(bool doAll)
     }
 }
 
-// ****************************************************************************
-// Method: QvisPickWindow::AddInformation
-//
-// Purpose: 
-//   Adds information to a display string and calculates the maximum width
-//   of the string.
-//
-// Arguments:
-//   displayString : The display string.
-//   info          : The information string to add to the display string.
-//   len           : A variable to return the max length of the string.
-//
-// Programmer: Brad Whitlock
-// Creation:   Tue Sep 9 09:26:42 PDT 2003
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisPickWindow::AddInformation(QString &displayString, const QString &info,
-    int &len) const
-{
-    int w = fontMetrics().width(info);
-    len = (len > w) ? len : w;
-    displayString += info;
-    displayString += "\n";
-}
 
 // ****************************************************************************
 // Method: QvisPickWindow::UpdatePage
@@ -314,6 +308,13 @@ QvisPickWindow::AddInformation(QString &displayString, const QString &info,
 //   Brad Whitlock, Tue Sep 9 09:07:17 PDT 2003
 //   I made the infoLists be QMultiLineEdits instead of QListBoxes.
 //
+//   Kathleen Bonnell, Wed Sep 10 08:02:02 PDT 2003 
+//   Don't clear window if savePicks is checked. 
+//   Removed code that printed all the pickAtts info separately.  Code was here
+//   because "\n" did not play well with QListBox.  Any time PickAttributes 
+//   changed, this code had to be updated as well.  Now simply use 
+//   pickAtts->CreateOutputString.
+//   
 // ****************************************************************************
 
 void
@@ -321,156 +322,30 @@ QvisPickWindow::UpdatePage()
 {
     QString pickLetter(pickAtts->GetPickLetter().c_str());
 
-    if (pickAtts->GetClearWindow())
+    if (!savePicks && pickAtts->GetClearWindow())
     {
         nextPage = 0;
         ClearPages();
     }
     else if (lastLetter != pickLetter && pickAtts->GetFulfilled())
     {
-        QString temp, temp2, displayString, indent("     ");
-        int maxLen = 0;
+        QString temp; 
+        std::string displayString;
 
         // Change the tab heading.
         lastLetter = pickLetter;
-        temp2.sprintf(" %s ", pickAtts->GetPickLetter().c_str());
-        tabWidget->changeTab(pages[nextPage], temp2);
-
-        string fileName;
-        const string &dBaseName = pickAtts->GetDatabaseName();
-        int pos = dBaseName.find_last_of('/');
-        if (pos >= dBaseName.size())
-            fileName = dBaseName;
-        else
-            fileName = dBaseName.substr(pos+1);
-
-        if (pickAtts->GetDomain() == -1)
-        {
-            temp2.sprintf("%s   timestep %d",
-                fileName.c_str(), pickAtts->GetTimeStep());
-        }
-        else 
-        {
-            temp2.sprintf("%s   timestep %d  domain %d",
-                fileName.c_str(), 
-                pickAtts->GetTimeStep(),
-                pickAtts->GetDomain());
-        }
-        AddInformation(displayString, temp2, maxLen);
-
-        if (pickAtts->GetDimension() == 2)
-        {
-            if (!pickAtts->GetNeedTransformMessage())
-            {
-                temp2.sprintf("Point:  <%f, %f>",
-                    pickAtts->GetCellPoint()[0],
-                    pickAtts->GetCellPoint()[1]);
-                AddInformation(displayString, temp2, maxLen);
-            }
-            else 
-            {
-                temp2.sprintf("Point:  (in transformed space)");
-                AddInformation(displayString, temp2, maxLen);
-                temp2.sprintf("        <%f, %f>",
-                    pickAtts->GetCellPoint()[0],
-                    pickAtts->GetCellPoint()[1]);
-                AddInformation(displayString, temp2, maxLen);
-            }
-        }
-        else 
-        {
-            if (!pickAtts->GetNeedTransformMessage())
-            {
-                temp2.sprintf("Point:  <%f, %f, %f>",
-                    pickAtts->GetCellPoint()[0],
-                    pickAtts->GetCellPoint()[1],
-                    pickAtts->GetCellPoint()[2]);
-                AddInformation(displayString, temp2, maxLen);
-            }
-            else 
-            {
-                temp2.sprintf("Point:  (in transformed space)");
-                AddInformation(displayString, temp2, maxLen);
-                temp2.sprintf("        <%f, %f, %f>",
-                    pickAtts->GetCellPoint()[0],
-                    pickAtts->GetCellPoint()[1],
-                    pickAtts->GetCellPoint()[2]);
-                AddInformation(displayString, temp2, maxLen);
-            }
-        }
-        const stringVector &nodeCoords = pickAtts->GetNodeCoords();
-        bool useCoords = pickAtts->GetUseNodeCoords() && !nodeCoords.empty();
-
-        bool zonePick = (pickAtts->GetPickType() == PickAttributes::Zone);
-        if (zonePick)
-        {
-            temp2.sprintf("Zone:  %i", pickAtts->GetElementNumber());
-        }
-        else 
-        {
-            if (!useCoords)
-            {
-                temp2.sprintf("Node:  %i", pickAtts->GetElementNumber());
-            }
-            else 
-            {
-                temp2.sprintf("Node:  %i  %s", 
-                               pickAtts->GetElementNumber(),
-                               nodeCoords[0].c_str()); 
-            }
-        }
-        AddInformation(displayString, temp2, maxLen);
-
-        const intVector &incEls = pickAtts->GetIncidentElements();
-        if (zonePick)
-        {
-            temp.sprintf("Nodes:  ");
-        }
-        else 
-        {
-            temp.sprintf("Incident zones:  ");
-        }
-        if (useCoords && zonePick)
-        {
-            AddInformation(displayString, temp, maxLen);
-            temp = indent;
-        }
-        int i;
-        for (i = 0; i < incEls.size(); i++)
-        {
-            temp2.sprintf("%d  ", incEls[i]);
-            temp += temp2;
-            if (useCoords && zonePick)
-            {
-                temp2.sprintf("%s", nodeCoords[i].c_str());
-                temp += temp2;
-                AddInformation(displayString, temp, maxLen);
-                temp = indent;
-            }
-        }
-        if (!(useCoords && zonePick))
-        {
-            AddInformation(displayString, temp, maxLen);
-        }
+        temp.sprintf(" %s ", pickAtts->GetPickLetter().c_str());
+        tabWidget->changeTab(pages[nextPage], temp);
 
         //
-        //  Add information about the variables.
+        // Get the output string without the letter, as it is
+        // displayed in the tab.
         //
-        int numVars = pickAtts->GetNumPickVarInfos();
-        for (i = 0; i < numVars; i++)
-        {
-            stringVector vi;
-            pickAtts->GetPickVarInfo(i).CreateOutputStrings(vi);
-            for (int j = 0; j < vi.size(); j++)
-            {
-                AddInformation(displayString, vi[j].c_str(), maxLen);
-            }
-        }
+        pickAtts->CreateOutputString(displayString, false);
 
         // Make the tab display the string.
         infoLists[nextPage]->clear();
-        infoLists[nextPage]->setMinimumWidth(maxLen);
-        infoLists[nextPage]->insertLine(displayString);
+        infoLists[nextPage]->insertLine(displayString.c_str());
         infoLists[nextPage]->setCursorPosition(0, 0);
 
         // Show the tab.
@@ -543,6 +418,8 @@ QvisPickWindow::GetCurrentValues(int which_widget)
 // Creation:   Wed Aug 27 08:51:48 PDT 2003
 //
 // Modifications:
+//   Kathleen Bonnell, Wed Sep 10 08:02:02 PDT 2003
+//   Added a node for savePicks.
 //   
 // ****************************************************************************
 
@@ -557,7 +434,10 @@ QvisPickWindow::CreateNode(DataNode *parentNode)
     {
         DataNode *node = parentNode->GetNode(caption().latin1());
         if(node)
+        {
             node->AddNode(new DataNode("autoShow", autoShow));
+            node->AddNode(new DataNode("savePicks", savePicks));
+        }
     }
 }
 
@@ -575,6 +455,8 @@ QvisPickWindow::CreateNode(DataNode *parentNode)
 // Creation:   Wed Aug 27 08:54:55 PDT 2003
 //
 // Modifications:
+//   Kathleen Bonnell, Wed Sep 10 08:02:02 PDT 2003
+//   Added a node for savePicks.
 //   
 // ****************************************************************************
 
@@ -591,6 +473,8 @@ QvisPickWindow::SetFromNode(DataNode *parentNode, const int *borders)
     DataNode *node;
     if((node = winNode->GetNode("autoShow")) != 0)
         autoShow = node->AsBool();
+    if((node = winNode->GetNode("savePicks")) != 0)
+        savePicks = node->AsBool();
 }
 
 // ****************************************************************************
@@ -748,4 +632,28 @@ void
 QvisPickWindow::autoShowToggled(bool val)
 {
     autoShow = val;
+}
+
+
+// ****************************************************************************
+// Method: QvisPickWindow::savePicksToggled
+//
+// Purpose: 
+//   This is a Qt slot function that sets the internal savePicks flag when the
+//   savePicks checkbox is toggled.
+//
+// Arguments:
+//   val : The new savePicks value.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   September 9, 2003 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisPickWindow::savePicksToggled(bool val)
+{
+    savePicks = val;
 }

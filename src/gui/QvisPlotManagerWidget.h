@@ -111,6 +111,9 @@ typedef std::vector<PluginEntry> PluginEntryVector;
 //   Brad Whitlock, Mon Jul 28 17:21:17 PST 2003
 //   Added UpdatePlotAndOperatorMenuEnabledState.
 //
+//   Brad Whitlock, Wed Sep 10 09:07:02 PDT 2003
+//   Added UpdateHideDeleteDrawButtonsEnabledState.
+//
 // ****************************************************************************
 
 class GUI_API QvisPlotManagerWidget : public QWidget, public GUIBase,
@@ -145,7 +148,7 @@ private:
     void UpdatePlotVariableMenu();
     void UpdateVariableMenu();
     void UpdatePlotAndOperatorMenuEnabledState() const;
-
+    void UpdateHideDeleteDrawButtonsEnabledState() const;
 private slots:
     void setActivePlots();
     void hidePlots();

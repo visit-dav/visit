@@ -145,6 +145,10 @@ typedef std::map<std::string, avtSILRestriction_p> SILRestrictionMap;
 //    Kathleen Bonnell, Thu Aug 28 10:03:42 PDT 2003
 //    Added CanMeshPlotBeOpaque.
 //
+//    Kathleen Bonnell, Thu Sep 11 11:47:16 PDT 2003 
+//    Added optional bool argument to AddOperator, indicates whether the
+//    operator should be initialized from its Default or Client atts. 
+//
 // ****************************************************************************
 
 
@@ -206,7 +210,8 @@ class VIEWER_API ViewerPlotList
 
     void SetPlotSILRestriction(bool applyToAll = false);
 
-    void AddOperator(const int type, bool applyToAll = false);
+    void AddOperator(const int type, bool applyToAll = false, 
+                     const bool fromDefault = true);
     void PromoteOperator(const int operatorId, bool applyTpAll = false);
     void DemoteOperator(const int operatorId, bool applyTpAll = false);
     void RemoveOperator(const int operatorId, bool applyTpAll = false);

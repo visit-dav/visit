@@ -1,5 +1,6 @@
 #include <QvisWindowBase.h>
 #include <DataNode.h>
+#include <qapplication.h>
 
 static QWidget *parentOfEveryWindow = 0;
 
@@ -156,7 +157,9 @@ QvisWindowBase::CreateNode(DataNode *parentNode)
 // Creation:   Tue Oct 3 15:41:34 PST 2000
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Sep 10 09:19:32 PDT 2003
+//   Added a method to make sure that the window fits on the screen.
+//
 // ****************************************************************************
 
 void
@@ -197,6 +200,9 @@ QvisWindowBase::SetFromNode(DataNode *parentNode, const int *borders)
         wh_set = true;
     }
 
+    // Make sure that the window will fit on the screen.
+    FitToScreen(x, y, w, h);
+
     // Set the window geometry.
     if(wh_set && xy_set)
         setGeometry(x, y, w, h);
@@ -210,6 +216,52 @@ QvisWindowBase::SetFromNode(DataNode *parentNode, const int *borders)
     {
         if(node->AsBool())
             show();
+    }
+}
+
+// ****************************************************************************
+// Method: QvisWindowBase::FitToScreen
+//
+// Purpose: 
+//   Makes sure that the window will fit on the screen.
+//
+// Arguments:
+//   x : The x location of the window.
+//   y : The y location of the window.
+//   w : The window's width.
+//   h : The window's height.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Sep 10 09:27:07 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisWindowBase::FitToScreen(int &x, int &y, int &w, int &h) const
+{
+    const int screenW = qApp->desktop()->width();
+    const int screenH = qApp->desktop()->height();
+
+    if(x + w > screenW)
+    {
+        x -= ((x + w) - screenW);
+        if(x < 0)
+        {
+            w += x;
+            x = 0;
+        }
+    }
+
+    if(y + h > screenH)
+    {
+        y -= ((y + h) - screenH);
+        if(y < 0)
+        {
+            h += y;
+            y = 0;
+        }
     }
 }
 

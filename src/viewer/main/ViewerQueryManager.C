@@ -296,10 +296,15 @@ ViewerQueryManager::SetOperatorFactory(ViewerOperatorFactory *factory)
 //    Eric Brugger, Wed Aug 20 11:05:54 PDT 2003
 //    I removed a call to UpdateScaleFactor since it no longer exists.
 //
+//    Kathleen Bonnell, Thu Sep 11 12:04:26 PDT 2003 
+//    Added optional bool arg that indicates if lineout should be initialized
+//    with its default atts or its client atts.
+//
 // ****************************************************************************
 
 void
-ViewerQueryManager::AddQuery(ViewerWindow *origWin, Line *lineAtts)
+ViewerQueryManager::AddQuery(ViewerWindow *origWin, Line *lineAtts,
+                             const bool fromDefault)
 {
     int plotId = origWin->GetAnimation()->GetPlotList()->GetPlotID(); 
     //
@@ -346,7 +351,7 @@ ViewerQueryManager::AddQuery(ViewerWindow *origWin, Line *lineAtts)
     lineAtts->SetDesignator(designator);
 
 
-    ViewerQuery_p newQuery = new ViewerQuery(origWin, resWin, lineAtts);
+    ViewerQuery_p newQuery = new ViewerQuery(origWin, resWin, lineAtts, fromDefault);
     if(*newQuery == NULL)
     {
         Error("VisIt could not create the desired plot.");
@@ -1480,10 +1485,14 @@ ViewerQueryManager::Lineout(ViewerWindow *win, const double pt1[3],
 //   Replaced references to GetTypeIsCurve and GetViewDimension with
 //   GetWindowMode.
 //
+//   Kathleen Bonnell, Thu Sep 11 12:04:26 PDT 2003 
+//   Added optional bool arg that indicates if lineout should be initialized
+//   from its default or its client atts.
+//   
 // ****************************************************************************
 
 void
-ViewerQueryManager::Lineout(ViewerWindow *win)
+ViewerQueryManager::Lineout(ViewerWindow *win, const bool fromDefault)
 {
     if(operatorFactory == 0)
         return;
@@ -1495,7 +1504,11 @@ ViewerQueryManager::Lineout(ViewerWindow *win)
     else
     {
         int type = OperatorPluginManager::Instance()->GetEnabledIndex("Lineout_1.0"); 
-        AttributeSubject *atts = operatorFactory->GetDefaultAtts(type);
+        AttributeSubject *atts;
+        if (fromDefault)
+           atts = operatorFactory->GetDefaultAtts(type);
+        else 
+           atts = operatorFactory->GetClientAtts(type);
         Line *line = (Line*)atts->CreateCompatible("Line");
         double *pt1 = line->GetPoint1();
         double *pt2 = line->GetPoint2();
@@ -1508,7 +1521,7 @@ ViewerQueryManager::Lineout(ViewerWindow *win)
         }
         else
         {
-            AddQuery(win, line);
+            AddQuery(win, line, fromDefault);
         }
         delete line;
     }

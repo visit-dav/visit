@@ -1196,10 +1196,14 @@ ViewerPlot::SetErrorFlag(bool val)
 //    Brad Whitlock, Thu Jul 17 10:05:04 PDT 2003
 //    I made it return the index of the new operator in the operators array.
 //
+//    Kathleen Bonnell, Thu Sep 11 11:50:02 PDT 2003 
+//    Added optional bool arg, indicates whether the operator
+//    should be initialized from its default or client atts. 
+//
 // ****************************************************************************
 
 int
-ViewerPlot::AddOperator(const int type)
+ViewerPlot::AddOperator(const int type, const bool fromDefault)
 {
     if (nOperators > 0)
     {
@@ -1217,7 +1221,7 @@ ViewerPlot::AddOperator(const int type)
     // Create the operator.
     //
     ViewerOperator *oper =
-        viewerSubject->GetOperatorFactory()->CreateOperator(type,this);
+        viewerSubject->GetOperatorFactory()->CreateOperator(type,this,fromDefault);
 
     //
     // Expand the list of operators if necessary.

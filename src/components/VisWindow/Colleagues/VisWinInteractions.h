@@ -43,6 +43,9 @@ class VisitHotPointInteractor;
 //     Kathleen Bonnell, Wed May  8 14:06:50 PDT 2002
 //     Add support for curve mode. 
 //
+//     Brad Whitlock, Wed Sep 10 15:27:35 PST 2003
+//     Added support for temporarily suspending spin mode.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinInteractions : public VisWinColleague
@@ -58,6 +61,8 @@ class VISWINDOW_API VisWinInteractions : public VisWinColleague
     bool                     GetBoundingBoxMode() const;
     void                     SetSpinMode(bool);
     bool                     GetSpinMode() const;
+    void                     SetSpinModeSuspended(bool);
+    bool                     GetSpinModeSuspended() const;
 
     virtual void             Start2DMode();
     virtual void             Stop2DMode();
@@ -73,6 +78,7 @@ class VISWINDOW_API VisWinInteractions : public VisWinColleague
     INTERACTION_MODE         mode;
     bool                     bboxMode;
     bool                     spinMode;
+    bool                     spinModeSuspended;
     VisitHotPointInteractor *hotPointInteractor;
 };
 

@@ -2463,10 +2463,14 @@ ViewerPlotList::SetPlotSILRestriction(bool applyToAll)
 //    Brad Whitlock, Tue Feb 26 16:04:28 PST 2002
 //    Added a new argument that lets us apply the operator to all plots.
 //
+//    Kathleen Bonnell, Thu Sep 11 11:47:16 PDT 2003 
+//    Added optional bool argument, indicates whether the operator should be 
+//    initialized from its Default or Client atts. 
+//
 // ****************************************************************************
 
 void
-ViewerPlotList::AddOperator(const int type, bool applyToAll)
+ViewerPlotList::AddOperator(const int type, bool applyToAll, const bool fromDefault)
 {
     //
     // Loop through the list adding the operator to the active plots.
@@ -2477,7 +2481,7 @@ ViewerPlotList::AddOperator(const int type, bool applyToAll)
     {
         if (plots[i].active || applyToAll)
         {
-            plots[i].plot->AddOperator(type);
+            plots[i].plot->AddOperator(type, fromDefault);
 
             // Update the new operator's client attributes.
             if (notUpdatedClientAtts)

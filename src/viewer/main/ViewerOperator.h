@@ -62,14 +62,17 @@ class avtPluginFilter;
 //    Brad Whitlock, Wed Jul 16 17:08:10 PST 2003
 //    Added GetPluginID, CreateNode, SetFromNode.
 //
+//    Kathleen Bonnell, Thu Sep 11 11:37:51 PDT 2003
+//    Added fromDefault arg to constructor.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerOperator
 {
   public:
-    ViewerOperator(const int type_,
+    ViewerOperator(const int type_, 
                    ViewerOperatorPluginInfo *viewerPluginInfo_,
-                   ViewerPlot *plot_);
+                   ViewerPlot *plot_, const bool fromDefault);
     virtual ~ViewerOperator();
 
     int  GetType() const;

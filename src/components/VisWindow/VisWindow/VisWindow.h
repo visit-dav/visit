@@ -225,6 +225,9 @@ class VisitInteractor;
 //    Eric Brugger, Wed Aug 20 10:06:56 PDT 2003
 //    Removed GetTypeIsCurve and SetTypeIsCurve.  Added GetWindowMode.
 //
+//    Brad Whitlock, Wed Sep 10 16:00:51 PST 2003
+//    Added GetSpinModeSuspended and SetSpinModeSuspended.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindow
@@ -295,6 +298,8 @@ public:
     bool                 GetBoundingBoxMode() const;
     void                 SetSpinMode(bool);
     bool                 GetSpinMode() const;
+    void                 SetSpinModeSuspended(bool);
+    bool                 GetSpinModeSuspended() const;
     void                 SetViewExtentsType(avtExtentType);
 
     void                 ResetView(void);
