@@ -120,6 +120,10 @@ class MessageAttributes;
 //   Brad Whitlock, Thu Dec 18 11:33:32 PDT 2003
 //   I changed the CreateNode interface.
 //
+//   Brad Whitlock, Mon Dec 29 11:37:22 PDT 2003
+//   I added GetVirtualFileDefinitionSize so it is cheaper to ask for the
+//   size of a virtual database definition.
+//
 // ****************************************************************************
 
 class GUI_API FileServerList : public AttributeSubject
@@ -192,6 +196,7 @@ public:
     int GetFileIndex(const QualifiedFilename &fileName);
     QualifiedFilename QualifiedName(const std::string &fileName);
     stringVector GetVirtualFileDefinition(const QualifiedFilename &) const;
+    int GetVirtualFileDefinitionSize(const QualifiedFilename &) const;
 
     void SetConnectCallback(ConnectCallback *cb, void *data);
     void SetProgressCallback(bool (*cb)(void *, int), void *data);

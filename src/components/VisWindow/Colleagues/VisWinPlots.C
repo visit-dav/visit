@@ -893,6 +893,11 @@ VisWinPlots::Stop3DMode(void)
 //    Mark C. Miller, Thu Dec 19 11:38:05 PST 2002
 //    Added support for externally rendered image actor
 //
+//    Eric Brugger, Wed Dec 24 10:07:33 PST 2003
+//    Added code to adaptively reduce the amount the actor is moved toward
+//    the camera as the image is zoomed by dividing the offset by the image
+//    zoom.
+//
 // ****************************************************************************
 
 void
@@ -914,12 +919,14 @@ VisWinPlots::UpdateView()
     //
     float distance = 0.003;
     float pos[3], foc[3];
+    double imageZoom;
     cam->GetPosition(pos);
     cam->GetFocalPoint(foc);
+    imageZoom = cam->GetFocalDisk();
     float projection[3];
-    projection[0] = distance*(pos[0] - foc[0]);
-    projection[1] = distance*(pos[1] - foc[1]);
-    projection[2] = distance*(pos[2] - foc[2]);
+    projection[0] = distance * (pos[0] - foc[0]) / imageZoom;
+    projection[1] = distance * (pos[1] - foc[1]) / imageZoom;
+    projection[2] = distance * (pos[2] - foc[2]) / imageZoom;
 
     ShiftPlots(projection);
     UpdateScaleFactor();

@@ -76,6 +76,11 @@ class ViewerProxy;
 //   Brad Whitlock, Fri Oct 24 14:40:58 PST 2003
 //   Added an internal AnimationSetFrame method.
 //
+//   Brad Whitlock, Fri Dec 19 17:00:07 PST 2003
+//   I added a slot to help me update the file list in case we encounter
+//   virtual files that have been added but have multiple time states
+//   in each file. I also added some internal convenience methods.
+//
 // ****************************************************************************
 
 class GUI_API QvisFilePanel : public QWidget, public SimpleObserver, public GUIBase
@@ -132,14 +137,17 @@ private:
     void OverlayFile(const QualifiedFilename &filename);
     void ExpandDatabases();
     void ExpandDatabaseItem(QvisListViewFileItem *item);
+    void ExpandDatabaseItemUsingMetaData(QvisListViewFileItem *item);
+    void ExpandDatabaseItemUsingVirtualDBDefinition(QvisListViewFileItem *item);
     void RemoveExpandedFile(const QualifiedFilename &filename);
     void SetFileExpanded(const QualifiedFilename &filename, bool);
     bool FileIsExpanded(const QualifiedFilename &filename);
     bool FileShowsCorrectData(const QualifiedFilename &filename);
     void SetFileShowsCorrectData(const QualifiedFilename &filename, bool);
-    QString CreateItemLabel(const avtDatabaseMetaData *md, int ts);
+    QString CreateItemLabel(const avtDatabaseMetaData *md, int ts, bool);
     QString FormattedCycleString(const int cycle) const;
     QString FormattedTimeString(const double d, bool accurate) const;
+    bool DisplayVirtualDBInformation(const QualifiedFilename &file) const;
     void AnimationSetFrame(int, bool);
 private slots:
     void prevFrame();
@@ -161,6 +169,7 @@ private slots:
     void replaceFile();
     void overlayFile();
     void updateHeaderWidth();
+    void internalUpdateFileList();
 private:
     QListView        *fileListView;
     QPushButton      *openButton;

@@ -863,21 +863,41 @@ FileServerList::SetFilter(const std::string &filter)
 //   This makes sure that we get new metadata for the virtual file in case
 //   its contents changed.
 //
+//   Brad Whitlock, Mon Dec 29 13:17:00 PST 2003
+//   I added code to open and get new metadata for virtual databases that
+//   have more time states than files so they are displayed correctly in the
+//   file panel.
+//
 // ****************************************************************************
 
 void
 FileServerList::SetAppliedFileList(const QualifiedFilenameVector &newFiles)
 {
+    QualifiedFilename oldOpenFile(openFile);
+
     // Remove the metadata and SIL for any virtual files.
     for(int i = 0; i < appliedFileList.size(); ++i)
     {
         if(appliedFileList[i].IsVirtual())
         {
+            //
+            // If the virtual database has more time states than files, make sure
+            // we reopen it.
+            //
+            bool forceReopen = false;
+            const avtDatabaseMetaData *md = GetMetaData(appliedFileList[i]);
+            if(md != 0 &&
+               (md->GetNumStates() != GetVirtualFileDefinitionSize(appliedFileList[i])))
+            {
+                forceReopen = true;
+            }
+
+            // Free the metadata and SIL for the file.
             ClearFile(appliedFileList[i]);
 
             // If the file happens to be the open file, reopen it so we
             // get new cached metadata for later.
-            if(openFile == appliedFileList[i])
+            if(openFile == appliedFileList[i] || forceReopen)
             {
                 TRY
                 {
@@ -890,6 +910,22 @@ FileServerList::SetAppliedFileList(const QualifiedFilenameVector &newFiles)
                 ENDTRY
             }
         }
+    }
+
+    //
+    // If we opened a file other than the open file so we could get its
+    // metadata, we need to restore the open file.
+    //
+    if(oldOpenFile != openFile)
+    {
+        TRY
+        {
+            OpenFile(oldOpenFile, 0);
+        }
+        CATCH(VisItException)
+        {
+        }
+        ENDTRY
     }
 
     // Set the file action to none.
@@ -1753,6 +1789,29 @@ FileServerList::GetVirtualFileDefinition(const QualifiedFilename &name) const
 
     stringVector retval;
     return retval;
+}
+
+// ****************************************************************************
+// Method: FileServerList::GetVirtualFileDefinitionSize
+//
+// Purpose: 
+//   Returns the size of the virtual file definition.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Dec 29 11:15:20 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+int
+FileServerList::GetVirtualFileDefinitionSize(const QualifiedFilename &name) const
+{
+    StringStringVectorMap::const_iterator pos = virtualFiles.find(name.FullName());
+    if(pos != virtualFiles.end())
+        return pos->second.size();
+
+    return 0;
 }
 
 // ****************************************************************************
