@@ -18,6 +18,7 @@
 #include <BadHostException.h>
 #include <ChangeDirectoryException.h>
 #include <CouldNotConnectException.h>
+#include <DebugStream.h>
 #include <GetFileListException.h>
 #include <HostProfileList.h>
 #include <HostProfile.h>
@@ -243,10 +244,14 @@ private:
 //   Brad Whitlock, Fri Oct 10 15:05:15 PST 2003
 //   I added the recentPathsRemoval window.
 //
+//   Brad Whitlock, Tue Dec 2 16:31:02 PST 2003
+//   Initialized currentVirtualDatabaseDefinition.
+//
 // ****************************************************************************
 
 QvisFileSelectionWindow::QvisFileSelectionWindow(const char *winCaption) :
-    QvisDelayedWindowSimpleObserver(winCaption), intermediateFileList()
+    QvisDelayedWindowSimpleObserver(winCaption), intermediateFileList(),
+    currentVirtualDatabaseDefinition()
 {
     fs = 0;
     profiles = 0;
@@ -1628,6 +1633,10 @@ QvisFileSelectionWindow::setEnabled(bool val)
 //   Brad Whitlock, Mon Oct 13 11:25:26 PDT 2003
 //   Added code to hide the recent paths removal window.
 //
+//   Brad Whitlock, Tue Dec 2 16:27:02 PST 2003
+//   I added code to make sure that the virtual database definition is
+//   different before deciding to reopen it on the viewer.
+//
 // ****************************************************************************
 
 void
@@ -1654,8 +1663,31 @@ QvisFileSelectionWindow::okClicked()
         if(intermediateFileList[i].IsVirtual() &&
            fileServer->GetOpenFile() == intermediateFileList[i])
         {
-            viewer->ReOpenDatabase(intermediateFileList[i].FullName().c_str(),
-                                   false);
+            //
+            // Get the virtual file definition and compare it to the
+            // definition that we obtained when we brought up the window.
+            //
+            stringVector dbDef =
+                fileServer->GetVirtualFileDefinition(intermediateFileList[i]);
+            if(dbDef == currentVirtualDatabaseDefinition)
+            {
+                debug1 << "QvisFileSelectionWindow::okClicked: The virtual "
+                       << "database definition for "
+                       << intermediateFileList[i].FullName().c_str()
+                       << " did not change. No reopen is required."
+                       << endl;
+            }
+            else
+            {
+                debug1 << "QvisFileSelectionWindow::okClicked: The virtual "
+                       << "database definition for "
+                       << intermediateFileList[i].FullName().c_str()
+                       << " changed! Reopen is required."
+                       << endl;
+
+                viewer->ReOpenDatabase(
+                    intermediateFileList[i].FullName().c_str(), false);
+            }
             break;
         }
     }
@@ -2300,6 +2332,17 @@ QvisFileSelectionWindow::refreshFiles()
 void
 QvisFileSelectionWindow::show()
 {
+    //
+    // Get the virtual file definition for the currently open file. We have to
+    // do this so we can compare the virtual file definition before we do
+    // anything with the definition after we've done something in order to
+    // prevent reopening the virtual database any more often than we need to
+    // reopen it. Files that are not virtual return an empty definition.
+    //
+    currentVirtualDatabaseDefinition =
+        fileServer->GetVirtualFileDefinition(fileServer->GetOpenFile());
+
+    // Show the window.
     QvisDelayedWindowSimpleObserver::show();
     refreshFiles();
 }

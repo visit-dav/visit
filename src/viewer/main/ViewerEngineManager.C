@@ -970,53 +970,105 @@ ViewerEngineManager::ExternalRender(std::vector<const char*> pluginIDsList,
                                     bool& shouldTurnOffScalableRendering,
                                     std::vector<avtImage_p>& imgList)
 {
+    bool retval = true;
+    int engineIndex;
+
     // container for per-engine vector of plot ids 
     std::map<std::string,std::vector<int> > perEnginePlotIds;
 
-    // send per-plot RPCs
-    for (int i = 0; i < plotIdsList.size(); i++)
+    TRY
     {
-        if (!UpdatePlotAttributes(hostsList[i].c_str(),pluginIDsList[i],
-                                  plotIdsList[i],attsList[i]))
-            return false;
-        perEnginePlotIds[hostsList[i]].push_back(plotIdsList[i]);
-    }
-
-    int numEnginesToRender = perEnginePlotIds.size();
-    bool sendZBuffer = numEnginesToRender > 1 ? true : false;
-
-    // send per-engine RPCs 
-    std::map<std::string,std::vector<int> >::iterator pos;
-    for (pos = perEnginePlotIds.begin(); pos != perEnginePlotIds.end(); pos++)
-    {
-        if (!SetWinAnnotAtts(pos->first.c_str(), &winAtts, &annotAtts))
-            return false;
-        avtDataObjectReader_p rdr = GetDataObjectReader(sendZBuffer, pos->first.c_str(), pos->second);
-
-        if (*rdr == NULL)
-            return false;
-
-        // check to see if engine decided that SR mode is no longer necessary
-        if (rdr->InputIs(AVT_NULL_IMAGE_MSG))
+        // send per-plot RPCs
+        for (int i = 0; i < plotIdsList.size(); i++)
         {
-           shouldTurnOffScalableRendering = true;
-           break;
+            if (!UpdatePlotAttributes(hostsList[i].c_str(),pluginIDsList[i],
+                                      plotIdsList[i],attsList[i]))
+            {
+                retval = false;
+                char msg[200];
+                SNPRINTF(msg,200,"Unsuccessful attempt to update plot attributes "
+                    "for plot ID %d, (%d of %d)",
+                    plotIdsList[i], i, plotIdsList.size());
+                EXCEPTION1(VisItException, msg); 
+            }
+            perEnginePlotIds[hostsList[i]].push_back(plotIdsList[i]);
         }
 
-        // do some magic to update the network so we don't need the reader anymore
-        avtDataObject_p tmpDob = rdr->GetOutput();
-        avtPipelineSpecification_p spec = 
-            tmpDob->GetTerminatingSource()->GetGeneralPipelineSpecification();
-        tmpDob->Update(spec);
+        int numEnginesToRender = perEnginePlotIds.size();
+        bool sendZBuffer = numEnginesToRender > 1 ? true : false;
 
-        // put the resultant image in the returned list
-        avtImage_p img;
-        CopyTo(img,tmpDob);
-        imgList.push_back(img);
+        // send per-engine RPCs 
+        std::map<std::string,std::vector<int> >::iterator pos;
+        for (pos = perEnginePlotIds.begin(); pos != perEnginePlotIds.end(); pos++)
+        {
+            int engineIndex = GetEngineIndex(pos->first.c_str());
+
+            if (!SetWinAnnotAtts(pos->first.c_str(), &winAtts, &annotAtts))
+            {
+                retval = false;
+                char msg[200];
+                SNPRINTF(msg,200,"Unsuccessful attempt to update window attributes "
+                    "for engine %s", pos->first.c_str());
+                EXCEPTION1(VisItException, msg); 
+            }
+
+            avtDataObjectReader_p rdr = GetDataObjectReader(sendZBuffer, pos->first.c_str(), pos->second);
+
+            if (*rdr == NULL)
+            {
+                retval = false;
+                char msg[200];
+                SNPRINTF(msg,200,"obtained null data reader for rendered image "
+                    "for engine %s", pos->first.c_str());
+                EXCEPTION1(VisItException, msg); 
+            }
+
+            // check to see if engine decided that SR mode is no longer necessary
+            if (rdr->InputIs(AVT_NULL_IMAGE_MSG))
+            {
+               shouldTurnOffScalableRendering = true;
+               break;
+            }
+
+            // do some magic to update the network so we don't need the reader anymore
+            avtDataObject_p tmpDob = rdr->GetOutput();
+            avtPipelineSpecification_p spec = 
+                tmpDob->GetTerminatingSource()->GetGeneralPipelineSpecification();
+            tmpDob->Update(spec);
+
+            // put the resultant image in the returned list
+            avtImage_p img;
+            CopyTo(img,tmpDob);
+            imgList.push_back(img);
+        }
+
     }
+    CATCH(LostConnectionException)
+    {
+#ifndef VIEWER_MT
+        EndEngineExecute();
+#endif
+        // Remove the specified engine from the list of engines.
+        RemoveFailedEngine(engineIndex);
+        UpdateEngineList();
+    }
+    CATCH(VisItException)
+    {
+#ifndef VIEWER_MT
+        EndEngineExecute();
+#endif
+        // Send a message to the client to clear the status for the
+        // engine that had troubles.
+        ClearStatus(engines[engineIndex]->hostName);
 
-    return true;
+        //
+        //  Let calling method handle this exception. 
+        //
+        RETHROW;
+    }
+    ENDTRY
 
+    return retval;
 }
 
 // ****************************************************************************

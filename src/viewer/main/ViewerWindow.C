@@ -37,6 +37,7 @@ using std::string;
 #include <ViewerToolbar.h>
 #include <ViewerSubject.h>
 #include <ViewerWindowManager.h> 
+#include <VisItException.h>
 #include <VisWindow.h>
 
 #include <DebugStream.h>
@@ -5845,63 +5846,89 @@ ViewerWindow::ExternalRenderCallback(void *data, avtDataObject_p& dob)
     // see if we can skip the external render because nothing has changed 
     bool canSkip = win->CanSkipExternalRender(thisRequest);
 
-    // ok, we actually have to do a render
-    if (!canSkip && (thisRequest.plotIdsList.size() > 0))
+    TRY
     {
-        ViewerEngineManager *eMgr = ViewerEngineManager::Instance();
-        bool shouldTurnOffScalableRendering = false;
-        std::vector<avtImage_p> imgList;
-
-        // let the engine manager do the render
-        bool requestSuccess = eMgr->ExternalRender(thisRequest.pluginIDsList,
-                                                  thisRequest.hostsList,
-                                                  thisRequest.plotIdsList,
-                                                  thisRequest.attsList,
-                                                  thisRequest.winAtts,
-                                                  thisRequest.annotAtts,
-                                                  shouldTurnOffScalableRendering,
-                                                  imgList);
-
-        // return noting if the request failed
-        if (!requestSuccess)
+        // ok, we actually have to do a render
+        if (!canSkip && (thisRequest.plotIdsList.size() > 0))
         {
-            dob = NULL;
-            return;
-        }
+            ViewerEngineManager *eMgr = ViewerEngineManager::Instance();
+            bool shouldTurnOffScalableRendering = false;
+            std::vector<avtImage_p> imgList;
 
-        // send an SR mode change message, if necessary
-        if (shouldTurnOffScalableRendering)
-        {
-            win->SendScalableRenderingModeChangeMessage(false);
-            dob = NULL;
-            return;
-        }
+            // let the engine manager do the render
+            bool requestSuccess = eMgr->ExternalRender(thisRequest.pluginIDsList,
+                                                      thisRequest.hostsList,
+                                                      thisRequest.plotIdsList,
+                                                      thisRequest.attsList,
+                                                      thisRequest.winAtts,
+                                                      thisRequest.annotAtts,
+                                                      shouldTurnOffScalableRendering,
+                                                      imgList);
 
-        // composite images from different engines as necessary
-        if (imgList.size() > 1)
-        {
-            avtWholeImageCompositer imageCompositer;
-            int numRows = thisRequest.winAtts.GetSize()[1];
-            int numCols = thisRequest.winAtts.GetSize()[0];
+            // return noting if the request failed
+            if (!requestSuccess)
+            {
+                dob = NULL;
+                return;
+            }
 
-            imageCompositer.SetOutputImageSize(numRows, numCols);
-            for (int i = 0; i < imgList.size(); i++)
-                imageCompositer.AddImageInput(imgList[i], 0, 0);
-            imageCompositer.Execute();
-            dob = imageCompositer.GetOutput();
+            // send an SR mode change message, if necessary
+            if (shouldTurnOffScalableRendering)
+            {
+                win->SendScalableRenderingModeChangeMessage(false);
+                dob = NULL;
+                return;
+            }
+
+            // composite images from different engines as necessary
+            if (imgList.size() > 1)
+            {
+                avtWholeImageCompositer imageCompositer;
+                int numRows = thisRequest.winAtts.GetSize()[1];
+                int numCols = thisRequest.winAtts.GetSize()[0];
+
+                imageCompositer.SetOutputImageSize(numRows, numCols);
+                for (int i = 0; i < imgList.size(); i++)
+                    imageCompositer.AddImageInput(imgList[i], 0, 0);
+                imageCompositer.Execute();
+                dob = imageCompositer.GetOutput();
+            }
+            else
+                CopyTo(dob, imgList[0]);
+
         }
         else
-            CopyTo(dob, imgList[0]);
+        {
+           if (thisRequest.plotIdsList.size() == 0)
+               dob = NULL;
+        }
+
+        // only update last request if this request wasn't empty
+        if (thisRequest.plotIdsList.size() > 0)
+            win->UpdateLastExternalRenderRequest(thisRequest);
 
     }
-    else
+    CATCH2(VisItException, e)
     {
-       if (thisRequest.plotIdsList.size() == 0)
-           dob = NULL;
-    }
+        char message[500];
+        //
+        // Add as much information to the message as we can,
+        // including plot name, exception type and exception 
+        // message.
+        // 
+        SNPRINTF(message, 500, "%s:  (%s)\n%s", 
+            "Scalable Render Request Failed",
+            e.GetExceptionType().c_str(),
+            e.GetMessage().c_str());
 
-    // only update last request if this request wasn't empty
-    if (thisRequest.plotIdsList.size() > 0)
-        win->UpdateLastExternalRenderRequest(thisRequest);
+        Error(message);
+
+        // Indicate that all plots in this window are in error
+        win->GetAnimation()->GetPlotList()->SetErrorFlagAllPlots(true);
+
+        // finally, make sure we return a "blank" image 
+        dob = NULL;
+    }
+    ENDTRY
 
 }

@@ -30,6 +30,7 @@ namespace Init
     MISC_API void SetComponentName(const char *); 
     MISC_API const char * GetExecutableName(); 
     MISC_API const char * GetComponentName(); 
+    MISC_API bool  IsComponent(const char *);
     MISC_API void ComponentIssueError(const char *);
     MISC_API void ComponentRegisterErrorFunction(ErrorFunction, void *);
 }

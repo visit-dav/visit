@@ -2836,15 +2836,19 @@ QvisGUIApplication::InitializeFileServer(DataNode *guiNode)
 // Creation:   Mon Jun 23 10:43:58 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Dec 2 16:47:35 PST 2003
+//   Added code to compare virtual file definitions before reopening the
+//   open database.
+//
 // ****************************************************************************
 
 void
 QvisGUIApplication::RefreshFileList()
 {
-    // Save the current host and path.
-    std::string oldHost(fileServer->GetHost());
-    std::string oldPath(fileServer->GetPath());
+    // Save the current host and path and virtual file definition.
+    std::string  oldHost(fileServer->GetHost());
+    std::string  oldPath(fileServer->GetPath());
+    stringVector dbDef(fileServer->GetVirtualFileDefinition(fileServer->GetOpenFile()));
 
     //
     // Create a list of hosts,paths for which we must get a new list of files.
@@ -2903,9 +2907,20 @@ QvisGUIApplication::RefreshFileList()
     //
     for(i = 0; i < refreshedFiles.size(); ++i)
     {
-        if(refreshedFiles[i].IsVirtual() && refreshedFiles[i] == fileServer->GetOpenFile())
+        if(refreshedFiles[i].IsVirtual() &&
+           refreshedFiles[i] == fileServer->GetOpenFile())
         {
-            viewer->ReOpenDatabase(refreshedFiles[i].FullName().c_str(), false);
+            // Get the new virtual file definiton.
+            stringVector newDef(
+                fileServer->GetVirtualFileDefinition(fileServer->GetOpenFile()));
+
+            // If the virtual file definitions are different then reopen the
+            // database on the viewer so that plots are reexecuted.
+            if(dbDef != newDef)
+            {
+                viewer->ReOpenDatabase(refreshedFiles[i].FullName().c_str(),
+                                       false);
+            }
             break;
         }
     }

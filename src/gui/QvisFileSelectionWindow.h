@@ -72,6 +72,9 @@ class QvisRecentPathRemovalWindow;
 //   Brad Whitlock, Fri Oct 10 14:43:31 PST 2003
 //   I added a push button to open a window to remove recent paths.
 //
+//   Brad Whitlock, Tue Dec 2 16:30:37 PST 2003
+//   I added currentVirtualDatabaseDefinition.
+//
 // ****************************************************************************
 
 class GUI_API QvisFileSelectionWindow : public QvisDelayedWindowSimpleObserver
@@ -158,6 +161,7 @@ private:
     QPixmap         *databasePixmap;
 
     QualifiedFilenameVector intermediateFileList;
+    stringVector            currentVirtualDatabaseDefinition;
 };
 
 #endif

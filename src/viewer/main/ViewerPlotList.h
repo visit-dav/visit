@@ -213,6 +213,7 @@ class VIEWER_API ViewerPlotList
     void DeletePlot(ViewerPlot *, bool);
     void HideActivePlots();
     void RealizePlots();
+    void SetErrorFlagAllPlots(bool errorFlag);
     void SetPlotVar(const char *variable);
     void SetPlotAtts(const int plotType);
     void SetPlotOperatorAtts(const int operatorType, bool applyToAll = false);

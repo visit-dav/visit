@@ -1040,7 +1040,7 @@ NetworkManager::GetOutput(bool respondWithNullData, bool calledForRender)
         // compute this network's cell count if we haven't already 
         if (globalCellCounts[netId] == -1)
         {
-           bool polysOnly = false;
+           bool polysOnly = true;
            int localCellCount = writer->GetInput()->GetNumberOfCells(polysOnly);
            int totalCellCount;
 #ifdef PARALLEL

@@ -269,6 +269,21 @@ Init::GetComponentName(void)
 }
 
 // ****************************************************************************
+//  Function: Init::IsComponent
+//
+//  Purpose: Tests name of component against name passed as argument 
+//
+// ****************************************************************************
+bool
+Init::IsComponent(const char *compName)
+{
+   if (strcmp(compName, Init::GetComponentName()) == 0)
+       return true;
+   else
+       return false;
+}
+
+// ****************************************************************************
 //  Function: Init::GetExecutableName
 //
 //  Purpose: Gets the name of the executable 
