@@ -183,7 +183,7 @@ avtSAMRAIFileFormat::avtSAMRAIFileFormat(const char *fname)
     spec_var_names = 0;
 
     h5files = new hid_t[MAX_FILES];
-    for (int i = 0 ; i < MAX_FILES ; i++)
+    for (i = 0 ; i < MAX_FILES ; i++)
     {
         h5files[i] = -1;
     }
@@ -608,8 +608,8 @@ avtSAMRAIFileFormat::ReadMesh(int patch)
     }
  
     // compute logical size in each dimension of this patch
-    int dimensions[] = {1, 1, 1};
-    for (int i=0; i<dim; i++) {
+    int i, dimensions[] = {1, 1, 1};
+    for (i=0; i<dim; i++) {
         dimensions[i] = patch_extents[patch].upper[i] -
                         patch_extents[patch].lower[i] + 2 +
                         2 * num_ghosts[i];
@@ -621,7 +621,6 @@ avtSAMRAIFileFormat::ReadMesh(int patch)
         // compute physical origin and cell-spacing
         float spacing[] = {0, 0, 0};
         float origin[] = {0, 0, 0};
-        int i;
         for (i=0; i<dim; i++) {
             spacing[i] = dx[level * 3 + i];
             origin[i] = patch_extents[patch].xlo[i] - 
@@ -736,9 +735,9 @@ avtSAMRAIFileFormat::ReadMesh(int patch)
     //
     vtkIntArray *arr = vtkIntArray::New();
     arr->SetNumberOfTuples(3);
-    for (int i=0; i<dim; i++)
+    for (i=0; i<dim; i++)
        arr->SetValue(i, patch_extents[patch].lower[i] - num_ghosts[i]);
-    for (int i=dim; i<3; i++)
+    for (i=dim; i<3; i++)
        arr->SetValue(i, 0);
     arr->SetName("base_index");
     retval->GetFieldData()->AddArray(arr);
@@ -1974,7 +1973,7 @@ avtSAMRAIFileFormat::GetAuxiliaryData(const char *var, int patch,
 //  Method:  avtSAMRAIFileFormat::PopulateIOInformation
 //
 //  Purpose:
-//    Popolates IO Information Hints
+//    Populates IO Information Hints
 //
 //  Programmer:  Mark C. Miller 
 //  Creation:    August 19. 2004 
@@ -2004,7 +2003,8 @@ avtSAMRAIFileFormat::PopulateIOInformation(avtIOInformation &ioInfo)
     // create an initial vector for each file cluster
     //
     vector< vector<int> > groups;
-    for (int i = 0; i < num_clusters; i++)
+    int i;
+    for (i = 0; i < num_clusters; i++)
     {
         vector<int> dummy;
         groups.push_back(dummy);
@@ -2013,7 +2013,7 @@ avtSAMRAIFileFormat::PopulateIOInformation(avtIOInformation &ioInfo)
     //
     // use the patch map and stick each patch into its respective cluster group
     //
-    for (int i = 0; i < num_patches; i++)
+    for (i = 0; i < num_patches; i++)
     {
         int clusterNum = patch_map[i].file_cluster_number;
         groups[clusterNum].push_back(i);

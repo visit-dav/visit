@@ -1222,6 +1222,9 @@ ConfigManager::ReadField(DataNode *parentNode, const std::string &tagName,
 //   I changed how the config file names are determined on Windows so
 //   they can be opened in Notepad by double-clicking.
 //
+//   Brad Whitlock, Fri Sep 24 13:46:10 PST 2004
+//   I fixed a memory overwrite on Windows.
+//
 // ****************************************************************************
 
 char *
@@ -1269,7 +1272,7 @@ ConfigManager::GetDefaultConfigFile(const char *filename, const char *home)
     }
     else
     {
-        retval = new char[filenameLength + 1];
+        retval = new char[filenameLength + 1 + 4];
         sprintf(retval, "%s.ini", configFileName);
     }
 #else

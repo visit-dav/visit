@@ -330,6 +330,9 @@ $0 = shift @ARGV;
 #    Added help for "-timing".  Added the "-env" option.  Added 
 #    "-h" and "--help" as valid arguments to priunt the help text.
 #
+#    Brad Whitlock, Fri Sep 24 11:03:03 PDT 2004
+#    I made the xml2projectfile program be an option.
+#
 ###############################################################################
 
 
@@ -392,6 +395,7 @@ USAGE:  visit [arguments]
         -xml2avt             Run the XML plugin AVT generator
         -xml2info            Run the XML plugin dynamic info generator
         -xml2makefile        Run the XML plugin Makefile generator
+        -xml2projectfile     Run the XML plugin Windows project file generator
         -xml2python          Run the XML plugin Pthon generator
         -xml2window          Run the XML plugin GUI window generator
         -xml2java            Run the XML plugin Java generator
@@ -545,6 +549,7 @@ while (scalar(@ARGV) > 0) {
     elsif ($arg eq "-xml2avt")          { $exe_name = "xml2avt"; }
     elsif ($arg eq "-xml2info")         { $exe_name = "xml2info"; }
     elsif ($arg eq "-xml2makefile")     { $exe_name = "xml2makefile"; }
+    elsif ($arg eq "-xml2projectfile")  { $exe_name = "xml2projectfile"; }
     elsif ($arg eq "-xml2plugin")       { $exe_name = "xml2plugin"; }
     elsif ($arg eq "-xml2python")       { $exe_name = "xml2python"; }
     elsif ($arg eq "-xml2window")       { $exe_name = "xml2window"; }

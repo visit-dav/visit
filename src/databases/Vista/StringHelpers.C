@@ -1,7 +1,11 @@
 #include <StringHelpers.h>
 
 #include <sys/types.h>
+#if defined(_WIN32)
+#include <win32-regex.h>
+#else
 #include <regex.h>
+#endif
 #include <stdlib.h>
 #include <string>
 #include <vector>

@@ -3521,6 +3521,9 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, vector<int> &domains,
 //    Hank Childs, Sat Aug 14 06:41:00 PDT 2004
 //    Allow for ghost nodes to be created.  Put real work in subroutines.
 //
+//    Brad Whitlock, Thu Sep 16 11:04:57 PDT 2004
+//    Removed a stray semicolon.
+//
 // ****************************************************************************
 
 bool
@@ -3621,7 +3624,7 @@ avtGenericDatabase::CommunicateGhosts(avtGhostDataType ghostType,
     visitTimer->StopTimer(portion2, "Time to actually communicate ghost data");
     
     bool madeGhosts = s;
-    if (madeGhosts);
+    if (madeGhosts)
     {
         // 
         // This will tell everything downstream that we have created ghost

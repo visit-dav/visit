@@ -36,6 +36,11 @@
 //    Jeremy Meredith, Wed Aug 25 11:57:08 PDT 2004
 //    Added the concept of an engine-only or everything-but-the-engine plugin.
 //
+//    Brad Whitlock, Wed Sep 22 16:11:54 PST 2004
+//    I fixed a bug with how some database plugins were named. I also fixed
+//    some minor errors that caused confusing build failures when building
+//    in Debug mode with MSVC6.0.
+//
 // ****************************************************************************
 
 class ProjectFileGeneratorPlugin
@@ -560,11 +565,15 @@ protected:
         out << "# PROP Intermediate_Dir \"Debug\"" << endl;
         out << "# PROP Ignore_Export_Lib 0" << endl;
         out << "# PROP Target_Dir \"\"" << endl;
-        out << "# ADD BASE CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /D \"WIN32\" /D \"_DEBUG\" /D \"_WINDOWS\" /D \"_MBCS\" /D \"_USRDLL\" /YX /FD /GZ /c" << endl;
-        out << "# ADD CPP /nologo /G6 /MDd /W3 /Gm /GX /ZI /Od /I \"..\\..\\visit\\" << pluginType << "\\" << name << "\" /D \"WIN32\" /D \"_DEBUG\" /D \"_WINDOWS\" /D \"_MBCS\" /D \"_USRDLL\" /D \"USING_MSVC6\" ";
+        QString debugDef("/D \"_DEBUG\" ");
+        if(pluginComponent == 'S')
+            debugDef = "";
+        out << "# ADD BASE CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /D \"WIN32\" " << debugDef<< "/D \"_WINDOWS\" /D \"_MBCS\" /D \"_USRDLL\" /YX /FD /GZ /c" << endl;
+        out << "# ADD CPP /nologo /G6 /MDd /W3 /Gm /GX /ZI /Od /I \"..\\..\\visit\\" << pluginType << "\\" << name << "\" /D \"WIN32\" " << debugDef << "/D \"_WINDOWS\" /D \"_MBCS\" /D \"_USRDLL\" /D \"USING_MSVC6\" ";
         if(exports != "")
-            out << "/D \"" << exports << "\" " << endl;
-        out << "/D \"GENERAL_PLUGIN_EXPORTS\" /YX /FD /GZ /TP /c" << endl;
+            out << "/D \"" << exports << "\" ";
+        out << "/D \"GENERAL_PLUGIN_EXPORTS\" ";
+        out << "/YX /FD /GZ /TP /c" << endl;
         out << "# ADD BASE MTL /nologo /D \"_DEBUG\" /mktyplib203 /win32" << endl;
         out << "# ADD MTL /nologo /D \"_DEBUG\" /mktyplib203 /win32" << endl;
         out << "# ADD BASE RSC /l 0x409 /d \"_DEBUG\"" << endl;
@@ -1759,7 +1768,7 @@ protected:
         out << "\t\t\t<Tool" << endl;
         out << "\t\t\t\tName=\"VCLinkerTool\"" << endl;
         out << "\t\t\t\tAdditionalDependencies=\"odbc32.lib odbccp32.lib state.lib misc.lib plugin.lib pipeline_ser.lib dbatts.lib database_ser.lib avtexceptions.lib vtkCommon.lib\"" << endl;
-        out << "\t\t\t\tOutputFile=\"..\\..\\bin\\MSVC7.Net\\Release\\databases\\lib" << name << pluginType << ".dll\"" << endl;
+        out << "\t\t\t\tOutputFile=\"..\\..\\bin\\MSVC7.Net\\Release\\databases\\lib" << pluginType << name << "Database.dll\"" << endl;
         out << "\t\t\t\tLinkIncremental=\"1\"" << endl;
         out << "\t\t\t\tSuppressStartupBanner=\"TRUE\"" << endl;
         out << "\t\t\t\tProgramDatabaseFile=\".\\Release\\" << name << pluginType << "\\" << name << pluginType << ".pdb\"" << endl;
@@ -1825,7 +1834,7 @@ protected:
         out << "\t\t\t<Tool" << endl;
         out << "\t\t\t\tName=\"VCLinkerTool\"" << endl;
         out << "\t\t\t\tAdditionalDependencies=\"odbc32.lib odbccp32.lib state.lib misc.lib plugin.lib pipeline_ser.lib dbatts.lib database_ser.lib avtexceptions.lib vtkCommon.lib\"" << endl;
-        out << "\t\t\t\tOutputFile=\"..\\..\\bin\\MSVC7.Net\\Debug\\databases\\lib" << name << pluginType << ".dll\"" << endl;
+        out << "\t\t\t\tOutputFile=\"..\\..\\bin\\MSVC7.Net\\Debug\\databases\\lib" << pluginType << name << "Database.dll\"" << endl;
         out << "\t\t\t\tLinkIncremental=\"1\"" << endl;
         out << "\t\t\t\tSuppressStartupBanner=\"TRUE\"" << endl;
         out << "\t\t\t\tGenerateDebugInformation=\"TRUE\"" << endl;

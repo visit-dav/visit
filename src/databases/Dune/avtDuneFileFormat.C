@@ -16,10 +16,51 @@ using std::getline;
 #include <avtDatabase.h>
 #include <avtDatabaseMetaData.h>
 #include <Expression.h>
+#include <DebugStream.h>
 
 #include <InvalidFilesException.h>
 #include <InvalidVariableException.h>
 
+#if defined(_WIN32) && defined(USING_MSVC6)
+//
+// Don't use std::getline because it requires the STL version of the input
+// stream libraries, which we're not using with MSVC 6.0.
+//
+ifstream &
+getline(ifstream &in, string &buffer)
+{
+    char tmp[4096];
+    in.getline(tmp, 4096);
+    buffer = tmp;
+    return in;
+}
+
+void
+READ_STRING(ifstream &in, std::string &buffer)
+{
+    bool keepReading = true;
+    char tmp[4096];
+    int index = 0;
+    do
+    {
+        in.get(tmp[index]);
+        if(index < 4096 && tmp[index] != ' ')
+            ++index;
+        else
+            keepReading = false;
+    } while (keepReading);
+    tmp[index] = '\0';
+    debug4 << "READ_STRING=" << buffer.c_str() << endl;
+    buffer = tmp;
+}
+
+#else
+//
+// Regular case. Use the code as it was originally written.
+//
+using std::getline;
+#define READ_STRING(I, S) (I) >> (S)
+#endif
 
 // ****************************************************************************
 //  Method: avtDune constructor
@@ -130,7 +171,7 @@ avtDuneFileFormat::avtDuneFileFormat(const char *filename)
                 if (buffer.find(massD) != string::npos) {
                     spart = string_substr(buffer, massD, rparen, needSpace);
                     if (density.find(lastMatname) != density.end()) {
-                        cerr << "already have a " << lastMatname << endl;
+                        cerr << "already have a " << lastMatname.c_str() << endl;
                     }
                     density[lastMatname] = fortranDoubleToCDouble(spart);
                 }
@@ -204,7 +245,7 @@ avtDuneFileFormat::avtDuneFileFormat(const char *filename)
                 if (buffer.find(massD) != string::npos) {
                     spart = string_substr(buffer, massD, rparen, needSpace);
                     if (density.find(lastMatname) != density.end()) {
-                        cerr << "already have a " << lastMatname << endl;
+                        debug4 << "already have a " << lastMatname.c_str() << endl;
                     }
                     density[lastMatname] = fortranDoubleToCDouble(spart);
                 }
@@ -256,13 +297,13 @@ avtDuneFileFormat::avtDuneFileFormat(const char *filename)
     }
 
     if (!matInfo.empty()) {
-        for (map<string, struct matInfoStruct>::iterator cur = matInfo.begin();
+        for (std::map<string, struct matInfoStruct>::iterator cur = matInfo.begin();
              cur != matInfo.end();
              ++cur) {
             if ((*cur).second.massDensity == -1) {
                 if (density.find((*cur).second.name) == density.end()) {
-                    cerr << "can't find a density for "
-                         << (*cur).second.name << endl;
+                    debug4 << "can't find a density for "
+                           << (*cur).second.name.c_str() << endl;
                 }
                 else {
                     (*cur).second.massDensity = density[(*cur).second.name];
@@ -428,7 +469,8 @@ avtDuneFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     //
     // Here's the call that tells the meta-data object that we have a var:
     //
-    for (int i = 0; i < svarname.size(); i++) {
+    int i;
+    for (i = 0; i < svarname.size(); i++) {
         AddScalarVarToMetaData(md, svarname[i], mesh_for_this_var, cent);
     }
     //
@@ -451,7 +493,7 @@ avtDuneFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     //
     // Here's the call that tells the meta-data object that we have a var:
     //
-    for (int i = 0; i < vvarname.size(); i++) {
+    for (i = 0; i < vvarname.size(); i++) {
         AddVectorVarToMetaData(md, vvarname[i], mesh_for_this_var, cent,
                                vector_dim);
     }
@@ -547,11 +589,12 @@ avtDuneFileFormat::GetMesh(int timestate, const char *meshname)
     vtkpoints->SetNumberOfPoints(nparticles);
     float *pts = (float *) vtkpoints->GetVoidPointer(0);
     
-    for (int i = 0; i < coordinates.size(); i++) {
+    int i;
+    for (i = 0; i < coordinates.size(); i++) {
         pts[i] = coordinates[i];
     }
 
-    for (int i = 0; i < nparticles; i++) {
+    for (i = 0; i < nparticles; i++) {
         vtkIdType part[3] = {i, i, i};
         dataset->InsertNextCell(VTK_VERTEX, 3, part);
     }
@@ -698,9 +741,10 @@ avtDuneFileFormat::GetVectorVar(int timestate, const char *varname)
 
     for (int i = 0 ; i < ntuples ; i++)
     {
-         for (int j = 0 ; j < ncomps ; j++)
+         int j;
+         for (j = 0 ; j < ncomps ; j++)
               one_entry[j] = data[i*3 + j];
-         for (int j = ncomps ; j < ucomps ; j++)
+         for (j = ncomps ; j < ucomps ; j++)
               one_entry[j] = 0.;
          rv->SetTuple(i, one_entry); 
     }
@@ -790,12 +834,13 @@ avtDuneFileFormat::ReadDuneData(const int timestate) {
 
     const int fields = 11;
     string    fragment[fields];
+    int i,j;
 
     switch (ftype) {
         case TECPLOT:
-            for (int i = 0; i < nparticles; i++) {
-                for (int j = 0; j < fields; j++) {
-                    ifile >> fragment[j];
+            for (i = 0; i < nparticles; i++) {
+                for (j = 0; j < fields; j++) {
+                    READ_STRING(ifile, fragment[j]);
 
                     if (fragment[j].length()) {
                          bool more = true;
@@ -820,7 +865,7 @@ avtDuneFileFormat::ReadDuneData(const int timestate) {
                //impulseTime[i] = atof(fragment[14].c_str());
                impulseTime[i] = 0.0;
                mass[i] = 4./3. * pi * pow(radius[i], 3);
-               for (int j = 0; j < 3; j++) {
+               for (j = 0; j < 3; j++) {
                     coordinates[i*3 + j] = atof(fragment[2 + j].c_str());
                     velocities[i*3 + j] = atof(fragment[5 + j].c_str());
                     angularVelocities[i*3 + j] = atof(fragment[8 + j].c_str());
@@ -855,7 +900,7 @@ avtDuneFileFormat::ReadDuneData(const int timestate) {
                 if (buffer.find(tag) != string::npos) {
                    spart = string_substr(buffer, tag, quote, noSpace);
                     struct matInfoStruct matTemp;
-                    map<string, struct matInfoStruct>::iterator cur = matInfo.find(spart);
+                    std::map<string, struct matInfoStruct>::iterator cur = matInfo.find(spart);
                     if (cur != matInfo.end()) {
                         rho = (*cur).second.massDensity;
                     }
@@ -865,7 +910,7 @@ avtDuneFileFormat::ReadDuneData(const int timestate) {
                    mass[np] = rho * 4.0/3.0 * pi * pow(radius[np], 3.0);
                 }
                 if (buffer.find(x) != string::npos) {
-                    for (int i = 0; i < 3; i++) {
+                    for (i = 0; i < 3; i++) {
                         if (i == 0) {
                             bcp = buffer.find(x) + x.length() + 1;
                         }
@@ -884,7 +929,7 @@ avtDuneFileFormat::ReadDuneData(const int timestate) {
                 }
                 if (buffer.find(v) != string::npos &&
                     buffer.find(vi) == string::npos) {
-                    for (int i = 0; i < 3; i++) {
+                    for (i = 0; i < 3; i++) {
                         if (i == 0) {
                             bcp = buffer.find(v) + v.length() + 1;
                         }
@@ -902,7 +947,7 @@ avtDuneFileFormat::ReadDuneData(const int timestate) {
                     }
                 }
                 if (buffer.find(w) != string::npos) {
-                    for (int i = 0; i < 3; i++) {
+                    for (i = 0; i < 3; i++) {
                         if (i == 0) {
                             bcp = buffer.find(w) + w.length() + 1;
                         }
@@ -931,7 +976,7 @@ avtDuneFileFormat::ReadDuneData(const int timestate) {
                         getline(ifile, buffer);
                     }
                     if (buffer.find(vi) != string::npos) {
-                        for (int i = 0; i < 3; i++) {
+                        for (i = 0; i < 3; i++) {
                             if (i == 0) {
                                 bcp = buffer.find(vi) + vi.length() + 1;
                             }
@@ -956,8 +1001,8 @@ avtDuneFileFormat::ReadDuneData(const int timestate) {
             EXCEPTION1(InvalidFilesException, fname.c_str());
     }
 
-    for (int i = 0; i < nparticles; i++) {
-        for (int j = 0; j < 3; j++) {
+    for (i = 0; i < nparticles; i++) {
+        for (j = 0; j < 3; j++) {
             totalVelocities[i*3 + j] = velocities[i*3 + j] + 
                                        angularVelocities[i*3 + j] +
                                        impulseVelocities[i*3 + j];

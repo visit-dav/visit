@@ -279,7 +279,7 @@ avtVistaDiabloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     if (pieceGroups.size() > 1)
     {
         cerr << "WARNING!!! Found more than one candidate group of domains" << endl;
-        cerr << "           Using group named \"" << groupNames[0] << "\"" << endl;
+        cerr << "           Using group named \"" << groupNames[0].c_str() << "\"" << endl;
 
         // rebuild the list of pieceNodes using only the group we've chosen
         delete [] pieceNodes;
@@ -573,7 +573,7 @@ avtVistaDiabloFileFormat::GetMesh(int domain, const char *meshname)
     const double *coords0 = coords[0];
     const double *coords1 = coords[1];
     const double *coords2 = coords[2];
-    for (int i = 0 ; i < numNodes; i++)
+    for (i = 0 ; i < numNodes; i++)
     {
         *tmp++ = *coords0++;
         *tmp++ = *coords1++;
