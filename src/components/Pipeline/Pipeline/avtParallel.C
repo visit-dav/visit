@@ -21,7 +21,13 @@ using std::vector;
 // handle for user-defined reduction operator for min/max in single reduce
 #ifdef PARALLEL
 static MPI_Op AVT_MPI_MINMAX = MPI_OP_NULL;
+static int mpiTagUpperBound = 32767;
 #endif
+
+// Minimum value for use in GetUniqueMessageTag
+// So that certain other tags can be hard-coded with values < MIN_TAG_VALUE
+// if they should be needed prior to MPI_Init
+#define MIN_TAG_VALUE 100
 
 // Variables to hold process size information
 static int   par_rank = 0, par_size = 1;
@@ -67,6 +73,10 @@ PAR_Exit(void)
 //    Made the mpi coding conditional on PARALLEL.  Removed the call to
 //    PAR_CreateTypes.
 //
+//    Kathleen Bonnell, Wed Sep  8 15:08:00 PDT 2004
+//    Retrieve MPI_TAG_UB value and use it to set mpiTagUpperBound.  Use
+//    32767 if unsuccessful. 
+//
 // ****************************************************************************
 
 void
@@ -80,6 +90,21 @@ PAR_Init (int &argc, char **&argv)
     //
     MPI_Comm_rank (MPI_COMM_WORLD, &par_rank);
     MPI_Comm_size (MPI_COMM_WORLD, &par_size);
+
+    int success = 0;
+    // MPI_Attr_get requires void *
+    void *value; 
+    MPI_Attr_get(MPI_COMM_WORLD, MPI_TAG_UB, &value, &success);
+    if (success)
+    {
+        mpiTagUpperBound = *(int*)value;
+    }
+    else
+    {
+        // Cannot use debug logs here, because they haven't been initialized.
+        cerr << "Unable to get value for MPI_TAG_UB, assuming 32767." << endl;
+        mpiTagUpperBound = 32767; 
+    }
 #endif
 }
 
@@ -936,18 +961,61 @@ bool GetListToRootProc(std::vector<std::string> &vars, int total)
 //  Programmer: Mark C. Miller 
 //  Creation:   June 9, 2004 
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed Sep  8 15:08:00 PDT 2004
+//    Use mpiTagUpperBound instead of MPI_TAG_UB (which was being used 
+//    incorrectly).  Also use MIN_TAG_VALUE.
+//
 // ****************************************************************************
 
 int GetUniqueMessageTag()
 {
-    static int retval = 0;
+    static int retval = MIN_TAG_VALUE;
 #ifdef PARALLEL
-    if (retval == MPI_TAG_UB)
-        retval = 0;
+    if (retval == mpiTagUpperBound)
+    {
+        retval = MIN_TAG_VALUE;
+        debug5 << "Unique message tags have wrapped back to "
+               << MIN_TAG_VALUE << " from " << mpiTagUpperBound << endl;
+    }
     else
         retval++;
 #endif
     return retval;
+}
+
+
+// ****************************************************************************
+//  Function: GetUniqueStaticMessageTag
+//
+//  Purpose: Returns a suitable, unique message tag to be used in MPI_Send/Recv 
+//           Calls. This is to be used for tags that must be initialized 
+//           before PAR_Init is called -- e.g. for static message tags.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   September 9, 2004 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+int GetUniqueStaticMessageTag()
+{
+    static int rv = 0; 
+#ifdef PARALLEL
+    //
+    //  Cannot go beyond the starting value for normal UniqueMessageTags
+    //
+    if (rv == MIN_TAG_VALUE -1) 
+    {
+        rv = 0;
+        debug1 << "Static Unique message tags have wrapped back to zero "
+               << "from " << MIN_TAG_VALUE -1 << endl; 
+    }
+    else
+        rv++;
+#endif
+    return rv;
 }
 
 

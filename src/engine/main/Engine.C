@@ -67,7 +67,7 @@ static void WriteByteStreamToSocket(NonBlockingRPC *, Connection *,
 
 // message tag for interrupt messages used in static abort callback function
 #ifdef PARALLEL
-const int INTERRUPT_MESSAGE_TAG = GetUniqueMessageTag();
+const int INTERRUPT_MESSAGE_TAG = GetUniqueStaticMessageTag();
 #endif
 
 // ****************************************************************************

@@ -22,6 +22,8 @@
 
 #include <ViewerProxy.h>
 
+using std::string;
+
 // ****************************************************************************
 // Method: QvisQueryWindow::QvisQueryWindow
 //
@@ -539,7 +541,7 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
     int index = -1;
     for (int i = 0; i < names.size(); i++)
     {
-        if (qname == names[i])
+        if (string(qname.latin1()) == names[i])
         {
             index = i;
             break;
