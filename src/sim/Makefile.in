@@ -1,0 +1,58 @@
+@SET_MAKE@
+@VARIABLES@
+
+SIMSER=sim
+SIMPAR=psim
+SIMSRC=sim.c simulation.c
+SIMSEROBJ=$(SIMSRC:.c=.o)
+SIMPAROBJ=$(SIMSRC:.c=_par.o)
+
+CC=/usr/local/gnu/gcc-3.2/bin/gcc
+LD=/usr/local/gnu/gcc-3.2/bin/gcc
+
+CFLAGS=-g -I. -I../include/visit -Wimplicit-function-declaration -I/usr/gapps/mpich/1.2.4/SunOS/serial/default/optim/include
+LDFLAGS=-L../lib -L/usr/X11R6/lib
+#LIBS=-ldl -lsocket -lnsl
+#LIBS=-ldl -lpthread
+PARLIBS=-L/usr/gapps/mpich/1.2.4/SunOS/serial/default/optim/lib -lmpich -lrt -lthread
+
+all: dirmakefiles  $(SIMSER)
+	cd simplugin && $(MAKE)
+
+parallel: all $(SIMPAR)
+
+.SUFFIXES: _ser.o _par.o .C .c .o .so _ser.so _par.so
+
+.c.o:
+	$(CC) $(CFLAGS) -c $< -o $@
+
+.C.o:
+	$(CXX) $(CFLAGS) -c $< -o $@
+
+.c_par.o:
+	$(CC) $(CFLAGS) -DPARALLEL -c $<  -o $@
+
+.C_par.o:
+	$(CXX) $(CFLAGS) -DPARALLEL -c $<  -o $@
+
+$(SIMSER): $(SIMSEROBJ)
+	$(LD) --export-dynamic $(LDFLAGS) $(SIMSEROBJ) $(LIBS) -o $@
+
+$(SIMPAR): $(SIMPAROBJ)
+	$(LD) --export-dynamic $(LDFLAGS) $(SIMPAROBJ) $(LIBS) $(PARLIBS) -o $@
+
+$(SIMSER).pure: $(SIMSEROBJ)
+	purify $(LD) $(LDFLAGS) $(SIMSEROBJ) $(LIBS) -o $@
+
+
+dirmakefiles: simplugin/Makefile
+
+simplugin/Makefile:
+	cd simplugin && env VISITPLUGININST=.. ../../bin/visit -xml2makefile -clobber -noprint SimDB.xml
+
+clean: dirmakefiles
+	rm -f $(SIMSEROBJ) $(SIMSER) $(SIMSER).pure
+	rm -f $(SIMPAROBJ) $(SIMPAR)
+	cd simplugin && $(MAKE) clean
+
+.SUFFIXES: .C

@@ -64,6 +64,7 @@
 #include <ViewerRemoteProcessChooser.h>
 #include <ViewerFileServer.h>
 #include <ViewerMessageBuffer.h>
+#include <ViewerMetaDataObserver.h>
 #include <ViewerOperatorFactory.h>
 #include <ViewerPasswordWindow.h>
 #include <ViewerPlotFactory.h>
@@ -72,6 +73,7 @@
 #include <ViewerQueryManager.h>
 #include <ViewerRPCObserver.h>
 #include <ViewerServerManager.h>
+#include <ViewerSILAttsObserver.h>
 #include <ViewerWindow.h>
 #include <ViewerWindowManager.h>
 #include <ViewerWindowManagerAttributes.h>
@@ -89,6 +91,7 @@
 #include <avtCallback.h>
 #include <avtColorTables.h>
 #include <avtDatabaseMetaData.h>
+#include <avtSimulationInformation.h>
 
 #if !defined(_WIN32)
 #include <strings.h>
@@ -132,6 +135,9 @@ using std::string;
 //
 //    Brad Whitlock, Fri Mar 12 12:12:59 PDT 2004
 //    Added keepAliveTimer.
+//
+//    Jeremy Meredith, Wed Aug 25 10:32:18 PDT 2004
+//    Added metadata and SIL attributes (needed for simulations).
 //
 // ****************************************************************************
 
@@ -200,6 +206,8 @@ ViewerSubject::ViewerSubject() : parent(), xfer(), viewerRPC(),
     statusAtts = 0;
     appearanceAtts = 0;
     syncAtts = 0;
+    metaData = 0;
+    silAtts = 0;
 
     //
     // Set some flags related to viewer windows.
@@ -236,6 +244,8 @@ ViewerSubject::ViewerSubject() : parent(), xfer(), viewerRPC(),
 //  Creation:   August 9, 2000
 //
 //  Modifications:
+//    Jeremy Meredith, Wed Aug 25 10:32:18 PDT 2004
+//    Added metadata and SIL attributes (needed for simulations).
 //
 // ****************************************************************************
 
@@ -253,6 +263,8 @@ ViewerSubject::~ViewerSubject()
     delete syncAtts;
     delete syncObserver;
     delete configFileName;
+    delete metaData;
+    delete silAtts;
 
 #ifdef VIEWER_MT
     if(messagePipe[0] != -1)
@@ -296,6 +308,9 @@ ViewerSubject::~ViewerSubject()
 //    before processing the config files. We get away with this because
 //    the cli does not defer initialization.
 //
+//    Jeremy Meredith, Wed Aug 25 10:32:18 PDT 2004
+//    Added metadata and SIL attributes (needed for simulations).
+//
 // ****************************************************************************
 
 void
@@ -323,6 +338,9 @@ ViewerSubject::Connect(int *argc, char ***argv)
     // Create the plugin attributes
     pluginAtts = new PluginManagerAttributes;
     messageBuffer = new ViewerMessageBuffer;
+    // Create the metadata and sil attributes
+    metaData = new avtDatabaseMetaData;
+    silAtts = new SILAttributes;
 
     //
     // Read the config files.
@@ -502,6 +520,9 @@ ViewerSubject::ReadConfigFiles(int argc, char **argv)
 //   Kathleen Bonnell, Wed Aug 18 09:25:33 PDT 2004 
 //   Added ViewerWindowManger's InteractorAtts to xfer.
 //
+//   Jeremy Meredith, Wed Aug 25 10:32:18 PDT 2004
+//   Added metadata and SIL attributes (needed for simulations).
+//
 // ****************************************************************************
 
 void
@@ -549,6 +570,8 @@ ViewerSubject::ConnectXfer()
     xfer.Add(ViewerWindowManager::GetAnnotationObjectList());
     xfer.Add(ViewerQueryManager::Instance()->GetQueryOverTimeClientAtts());
     xfer.Add(ViewerWindowManager::Instance()->GetInteractorClientAtts());
+    xfer.Add(metaData);
+    xfer.Add(silAtts);
 
     //
     // Set up special opcodes and their handler.
@@ -614,6 +637,7 @@ ViewerSubject::ConnectObjectsAndHandlers()
     }
 #endif
 
+    //
     // Create an observer for the viewerRPC object. The RPC's are actually
     // handled by the ViewerSubject by a slot function.
     //
@@ -3215,6 +3239,13 @@ ViewerSubject::CreateAttributesDataNode(const avtDefaultPlotMetaData *dp) const
 //    active time slider so it can reset the active time slider if it no
 //    longer makes sense to have one.
 //
+//    Jeremy Meredith, Wed Aug 25 10:34:53 PDT 2004
+//    Made simulations connect the write socket from the engine to a new
+//    socket notifier, which signals a method to read and process data from
+//    the engine.  Hook up a new metadata and SIL atts observer to the 
+//    metadata and SIL atts from the corresponding engine proxy, and have
+//    those observers call callbacks when they get new information.
+//
 // ****************************************************************************
 
 void
@@ -3327,10 +3358,42 @@ ViewerSubject::OpenDatabaseHelper(const std::string &entireDBName,
         bool success;
         if (md->GetIsSimulation())
         {
-            success = ViewerEngineManager::Instance()->
-                                                 ConnectSim(ek, noArgs,
-                                                            md->GetSimHost(),
-                                                            md->GetSimPort());
+            ViewerEngineManager *vem = ViewerEngineManager::Instance();
+            success = vem->ConnectSim(ek, noArgs,
+                                      md->GetSimInfo().GetHost(),
+                                      md->GetSimInfo().GetPort());
+
+            if (success)
+            {
+                int sock = vem->GetWriteSocket(ek);
+                QSocketNotifier *sn = new QSocketNotifier(sock,
+                                                        QSocketNotifier::Read);
+
+                simulationSocketToKey[sock] = ek;
+
+                connect(sn, SIGNAL(activated(int)),
+                        this, SLOT(ReadFromSimulationAndProcess(int)));
+
+                engineKeyToNotifier[ek] = sn;
+
+                engineMetaDataObserver[ek] = new ViewerMetaDataObserver(
+                                   vem->GetSimulationMetaData(ek), host, db);
+                connect(engineMetaDataObserver[ek],
+                        SIGNAL(metaDataUpdated(const std::string&,const std::string&,
+                                              const avtDatabaseMetaData*)),
+                        this,
+                        SLOT(HandleMetaDataUpdated(const std::string&,const std::string&,
+                                                 const avtDatabaseMetaData*)));
+
+                engineSILAttsObserver[ek] = new ViewerSILAttsObserver(
+                                   vem->GetSimulationSILAtts(ek), host, db);
+                connect(engineSILAttsObserver[ek],
+                        SIGNAL(silAttsUpdated(const std::string&,const std::string&,
+                                              const SILAttributes*)),
+                        this,
+                        SLOT(HandleSILAttsUpdated(const std::string&,const std::string&,
+                                                  const SILAttributes*)));
+            }
         }
         else
         {
@@ -3582,6 +3645,10 @@ ViewerSubject::CheckForNewStates()
 //   Brad Whitlock, Mon May 3 13:00:21 PST 2004
 //   I made it pass an engine key to replacedatabase.
 //
+//   Jeremy Meredith, Wed Aug 25 10:39:25 PDT 2004
+//   Made it use the generic integer argument for forceClose so as to not be
+//   misleading.
+//
 // ****************************************************************************
 
 void
@@ -3591,7 +3658,7 @@ ViewerSubject::ReOpenDatabase()
     // Get the rpc arguments.
     //
     std::string hostDatabase(viewerRPC.GetDatabase());
-    bool forceClose = (viewerRPC.GetWindowLayout() == 1);
+    bool forceClose = (viewerRPC.GetIntArg1() == 1);
 
     //
     // Expand the filename.
@@ -3668,9 +3735,14 @@ ViewerSubject::ReOpenDatabase()
     //
     // Clear out any local information that we've cached about the file. We
     // have to do this after checking for the correlation because this call
-    // will remove the correlation for the database.
+    // will remove the correlation for the database.  Do not clear the
+    // metadata if it is a simulation, because we lose all of our current
+    // information by doing so (since the mdserver has almost no information).
+    // If it is a simulation, we will get updated metadata indirectly when
+    // we open the database again, regardless of if we clear the cached one.
     //
-    fileServer->ClearFile(hostDatabase);
+    if (!isSim)
+        fileServer->ClearFile(hostDatabase);
 
     //
     // Tell the compute engine to clear any cached information about the
@@ -5610,6 +5682,12 @@ ViewerSubject::ReadFromParentAndCheckForInterruption()
 //    it from doing anything if it is called via indirect recursion since that
 //    is bad for this function.
 //
+//    Brad Whitlock, Mon Aug 23 17:08:27 PST 2004
+//    I changed this routine so it is called when blockSocketSignals is true
+//    but in that case, it reschedules itself to run later. This fixes a
+//    problem on Windows where the socket notifier did not keep notifying
+//    that the socket had input even though we did not read it.
+//
 // ****************************************************************************
 
 void
@@ -5619,13 +5697,20 @@ ViewerSubject::ProcessFromParent()
     {
         debug1 << "The viewer engine manager is busy processing a request "
                   "so we should not process input from the client. Let's "
-                  "reschedule this method to run again later" << endl;
+                  "reschedule this method to run again later." << endl;
         QTimer::singleShot(200, this, SLOT(ProcessFromParent()));
     }
     else if(processingFromParent)
     {
         debug1 << "The viewer tried to recursively enter "
                   "ViewerSubject::ProcessFromParent!" << endl;
+    }
+    else if(blockSocketSignals)
+    {
+        debug1 << "The viewer is set to ignore input from the client at this "
+                  "time. Let's reschedule this method to run again later."
+               << endl;
+        QTimer::singleShot(200, this, SLOT(ProcessFromParent()));
     }
     else
     {
@@ -5689,6 +5774,11 @@ ViewerSubject::ProcessFromParent()
 //    Xfer::Process directly so we can get some protection from this method
 //    getting called in the middle of an engine execute.
 //
+//    Brad Whitlock, Mon Aug 23 17:10:02 PST 2004
+//    I added conditional compilation for the code that causes the method to
+//    return early without reading the input from the client. Now the code to
+//    ignore the client is in the ProcessFromParent method.
+//
 // ****************************************************************************
 
 void
@@ -5696,11 +5786,6 @@ ViewerSubject::ReadFromParentAndProcess(int)
 {
     TRY
     {
-        if (blockSocketSignals)
-        {
-            CATCH_RETURN(1);
-        }
-
         int amountRead = xfer.GetInputConnection()->Fill();
 
         //
@@ -6821,3 +6906,110 @@ ViewerSubject::ResetInteractorAttributes()
     wM->SetInteractorAttsFromDefault();
 }
 
+
+// ****************************************************************************
+//  Method:  ViewerSubject::ReadFromSimulationAndProcess
+//
+//  Purpose:
+//    Callback from QSocketNotifier connected to the write socket
+//    from a simulation-engine.  Reads what the simulation is sending
+//    and processes it.
+//
+//  Arguments:
+//    socket     the write socket for the notification
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    August 25, 2004
+//
+// ****************************************************************************
+void
+ViewerSubject::ReadFromSimulationAndProcess(int socket)
+{
+    if (simulationSocketToKey.count(socket) <= 0)
+        return;
+
+    ViewerEngineManager *vem = ViewerEngineManager::Instance();
+
+    EngineKey ek = simulationSocketToKey[socket];
+
+    TRY
+    {
+       vem->ReadDataAndProcess(ek);
+    }
+    CATCH2(LostConnectionException, lce)
+    {
+        ViewerWindowManager::Instance()->ResetNetworkIds(ek);
+        ViewerEngineManager::Instance()->CloseEngine(ek);
+        delete engineMetaDataObserver[ek];
+        delete engineSILAttsObserver[ek];
+        delete engineKeyToNotifier[ek];
+        engineMetaDataObserver.erase(ek);
+        engineSILAttsObserver.erase(ek);
+        engineKeyToNotifier.erase(ek);
+    }
+    ENDTRY
+}
+
+
+// ****************************************************************************
+//  Method:  ViewerSubject::HandleMetaDataUpdated
+//
+//  Purpose:
+//    This is the callback for when the metadata is updated by a simulation.
+//    The only task it really needs to do is poke the new one into the
+//    ViewerFileServer and send the new one on to other observers (i.e.
+//    the gui).
+//
+//  Arguments:
+//    host,file     the attributes for the simulation
+//    md            the new, updated metadata
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    August 25, 2004
+//
+// ****************************************************************************
+void
+ViewerSubject::HandleMetaDataUpdated(const string &host,
+                                     const string &file,
+                                     const avtDatabaseMetaData *md)
+{
+    // Handle MetaData updates
+    ViewerFileServer *fs = ViewerFileServer::Instance();
+
+    *metaData = *md;
+    fs->SetSimulationMetaData(host, file, *metaData);
+    metaData->SelectAll();
+    metaData->Notify();
+}
+
+
+// ****************************************************************************
+//  Method:  ViewerSubject::HandleSILAttsUpdated
+//
+//  Purpose:
+//    This is the callback for when the SIL atts are updated by a simulation.
+//    The only task it really needs to do is poke the new one into the
+//    ViewerFileServer and send the new one on to other observers (i.e.
+//    the gui).
+//
+//  Arguments:
+//    host,file     the attributes for the simulation
+//    sa            the new, updated SILAttributes
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    August 25, 2004
+//
+// ****************************************************************************
+void
+ViewerSubject::HandleSILAttsUpdated(const string &host,
+                                    const string &file,
+                                    const SILAttributes *sa)
+{
+    // Handle SIL updates
+    ViewerFileServer *fs = ViewerFileServer::Instance();
+
+    *silAtts = *sa;
+    fs->SetSimulationSILAtts(host, file, *silAtts);
+    silAtts->SelectAll();
+    silAtts->Notify();
+}

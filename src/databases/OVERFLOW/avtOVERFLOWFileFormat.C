@@ -20,6 +20,7 @@
 #include <InvalidVariableException.h>
 #include <InvalidFilesException.h>
 #include <visit-config.h>
+#include <snprintf.h>
 
 using std::string;
 using std::map;
@@ -182,20 +183,25 @@ avtOVERFLOWFileFormat::InitializeFile()
 //  Programmer:  Jeremy Meredith
 //  Creation:    July 21, 2004
 //
+//  Modifications:
+//    Brad Whitlock, Wed Aug 11 17:49:12 PST 2004
+//    Made it compile on Windows.
+//
 // ****************************************************************************
+
 void
 avtOVERFLOWFileFormat::ReadGridHeader()
 {
     // The first record is the number of domains
-    const char *ndomsbuffer = read_fortran_record(gridin);
-    char *ptr = (char*)ndomsbuffer;
+    char *ndomsbuffer = read_fortran_record(gridin);
+    char *ptr = ndomsbuffer;
 
     ndomains = parse_int(ptr);
     delete[] ndomsbuffer;
 
     // The next one contains ndomains triplets of nx,ny,nz sizes
-    const char *dimsbuffer = read_fortran_record(gridin);
-    ptr = (char*)dimsbuffer;
+    char *dimsbuffer = read_fortran_record(gridin);
+    ptr = dimsbuffer;
 
     nx = new int[ndomains];
     ny = new int[ndomains];
@@ -234,21 +240,27 @@ avtOVERFLOWFileFormat::ReadGridHeader()
 //  Programmer:  Jeremy Meredith
 //  Creation:    July 21, 2004
 //
+//  Modifications:
+//    Brad Whitlock, Wed Aug 11 17:49:12 PST 2004
+//    Made it compile on Windows.
+//
 // ****************************************************************************
+
 void
 avtOVERFLOWFileFormat::ReadSolHeader()
 {
     // The first record is the number of domains, just
     // like the grid file.
-    const char *ndomsbuffer = read_fortran_record(solin);
+    char *ndomsbuffer = read_fortran_record(solin);
     delete[] ndomsbuffer;
 
     // Then we've got all the dims, just like the grid file, 
     // except that after all the dims come NQ and NQC, which we need.
-    const char *dimsbuffer = read_fortran_record(solin);
-    char *ptr = (char*)dimsbuffer;
+    char *dimsbuffer = read_fortran_record(solin);
+    char *ptr = dimsbuffer;
 
-    for (int i=0; i<ndomains; i++)
+    int i;
+    for (i=0; i<ndomains; i++)
     {
         ptr += 12;
     }
@@ -270,8 +282,8 @@ avtOVERFLOWFileFormat::ReadSolHeader()
     //
     // Read global variables
     //
-    const char *varbuff = read_fortran_record(solin);
-    char *varbuffptr = (char*)varbuff;
+    char *varbuff = read_fortran_record(solin);
+    char *varbuffptr = varbuff;
     varmap["FSMACH"] = parse_float(varbuffptr);
     varmap["ALPHA"] = parse_float(varbuffptr);
     varmap["REY"] = parse_float(varbuffptr);
@@ -283,10 +295,10 @@ avtOVERFLOWFileFormat::ReadSolHeader()
     varmap["HTINF"] = parse_float(varbuffptr);
     varmap["HT1"] = parse_float(varbuffptr);
     varmap["HT2"] = parse_float(varbuffptr);
-    for (int i=0; i<nspec; i++)
+    for (i=0; i<nspec; i++)
     {
         char rgas[1024];
-        snprintf(rgas, 1024, "RGAS%d", i+1);
+        SNPRINTF(rgas, 1024, "RGAS%d", i+1);
         varmap[rgas] = parse_float(varbuffptr);
     }
     varmap["FSMACH"] = parse_float(varbuffptr);
@@ -475,6 +487,10 @@ avtOVERFLOWFileFormat::FreeUpResources(void)
 //  Programmer: Jeremy Meredith
 //  Creation:   July 21, 2004
 //
+//  Modifications:
+//    Brad Whitlock, Wed Aug 11 17:56:42 PST 2004
+//    Made it build on Windows.
+//
 // ****************************************************************************
 
 void
@@ -511,7 +527,7 @@ avtOVERFLOWFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     for (int i=0; i<nq; i++)
     {
         char name[1024];
-        snprintf(name, 1024, "Q%d", i+1);
+        SNPRINTF(name, 1024, "Q%d", i+1);
         AddScalarVarToMetaData(md, name, "mesh", AVT_NODECENT);
     }
     AddScalarVarToMetaData(md, "gn", "mesh", AVT_NODECENT);
@@ -519,7 +535,7 @@ avtOVERFLOWFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     //
     // The "global" variables work well as expressions with no type
     //
-    for (map<string,float>::iterator it=varmap.begin(); it!=varmap.end(); it++)
+    for (std::map<string,float>::iterator it=varmap.begin(); it!=varmap.end(); it++)
     {
         Expression exp;
         exp.SetName(it->first);
@@ -793,8 +809,14 @@ int avtOVERFLOWFileFormat::read_int(ifstream &in)
 //  Programmer:  Jeremy Meredith
 //  Creation:    July 21, 2004
 //
+//  Modifications:
+//    Brad Whitlock, Wed Aug 11 17:52:07 PST 2004
+//    I removed the const from the return pointer since the output is
+//    usually deleted with the delete[] operator.
+//
 // ****************************************************************************
-const char *avtOVERFLOWFileFormat::read_fortran_record(ifstream &in)
+
+char *avtOVERFLOWFileFormat::read_fortran_record(ifstream &in)
 {
     int len = read_int(in);
 

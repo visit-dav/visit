@@ -80,6 +80,11 @@ void vtkSlicer::Execute()
     }
 }
 
+// Modifications:
+//   Brad Whitlock, Thu Aug 12 14:51:27 PST 2004
+//   Added float casts to the pow() arguments so it builds on MSVC7.Net.
+//
+///////////////////////////////////////////////////////////////////////////////
 
 void
 vtkSlicer::StructuredGridExecute(void)
@@ -102,8 +107,8 @@ vtkSlicer::StructuredGridExecute(void)
     vtkPolyData       *output = GetOutput();
 
     int ptSizeGuess = (this->CellList == NULL
-                         ? (int) pow(nCells, 0.6667) * 5 + 100
-                         : ptSizeGuess = CellListSize*5 + 100);
+                         ? (int) pow(float(nCells), 0.6667f) * 5 + 100
+                         : CellListSize*5 + 100);
 
     vtkSurfaceFromVolume sfv(ptSizeGuess);
 
@@ -176,6 +181,12 @@ vtkSlicer::StructuredGridExecute(void)
     sfv.ConstructPolyData(inPD, inCD, output, pts_ptr);
 }
 
+// Modifications:
+//   Brad Whitlock, Thu Aug 12 14:51:27 PST 2004
+//   Added float casts to the pow() arguments so it builds on MSVC7.Net.
+//
+///////////////////////////////////////////////////////////////////////////////
+
 void vtkSlicer::RectilinearGridExecute(void)
 {
     int  i, j;
@@ -198,8 +209,8 @@ void vtkSlicer::RectilinearGridExecute(void)
     vtkPolyData  *output = GetOutput();
 
     int ptSizeGuess = (this->CellList == NULL
-                         ? (int) pow(nCells, 0.6667) * 5 + 100
-                         : ptSizeGuess = CellListSize*5 + 100);
+                         ? (int) pow(float(nCells), 0.6667f) * 5 + 100
+                         : CellListSize*5 + 100);
 
     vtkSurfaceFromVolume sfv(ptSizeGuess);
 
@@ -277,6 +288,9 @@ void vtkSlicer::RectilinearGridExecute(void)
 //    Hank Childs, Tue Mar 30 07:07:42 PST 2004
 //    Add support for slicing vertices.
 //
+//    Brad Whitlock, Thu Aug 12 14:51:27 PST 2004
+//    Added float casts to the pow() arguments so it builds on MSVC7.Net.
+//
 // ****************************************************************************
 
 void vtkSlicer::UnstructuredGridExecute(void)
@@ -302,8 +316,8 @@ void vtkSlicer::UnstructuredGridExecute(void)
     vtkPolyData       *output = GetOutput();
 
     int ptSizeGuess = (this->CellList == NULL
-                         ? (int) pow(nCells, 0.6667) * 5 + 100
-                         : ptSizeGuess = CellListSize*5 + 100);
+                         ? (int) pow(float(nCells), 0.6667f) * 5 + 100
+                         : CellListSize*5 + 100);
 
     vtkSurfaceFromVolume sfv(ptSizeGuess);
 

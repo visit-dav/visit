@@ -29,10 +29,12 @@
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
 #include <vtkFloatArray.h>
+#include <vtkIntArray.h>
 #include <vtkPoints.h>
 
 #include <avtDatabaseMetaData.h>
 #include <avtIntervalTree.h>
+#include <avtIOInformation.h>
 #include <avtMaterial.h>
 #include <avtSpecies.h>
 #include <avtStructuredDomainBoundaries.h>
@@ -118,6 +120,9 @@ avtSAMRAIFileFormat::FinalizeHDF5(void)
 //    Mark C. Miller, Thu Jan 29 11:21:41 PST 2004
 //    Added initialization for var_max_ghost data member
 //
+//    Mark C. Miller, Mon Aug 23 14:17:55 PDT 2004
+//    Added initialization for h5files data member
+//
 // ****************************************************************************
 avtSAMRAIFileFormat::avtSAMRAIFileFormat(const char *fname)
     : avtSTMDFileFormat(&fname, 1)
@@ -176,6 +181,12 @@ avtSAMRAIFileFormat::avtSAMRAIFileFormat(const char *fname)
     num_spec_vars = 0;
     spec_var_names = 0;
 
+    h5files = new hid_t[MAX_FILES];
+    for (int i = 0 ; i < MAX_FILES ; i++)
+    {
+        h5files[i] = -1;
+    }
+
 }
 
 // ****************************************************************************
@@ -183,6 +194,11 @@ avtSAMRAIFileFormat::avtSAMRAIFileFormat(const char *fname)
 //
 //  Programmer:  Walter Herrera Jimenez
 //  Creation:    June 19, 2003
+//
+//  Modifications:
+//
+//    Mark C. Miller, Mon Aug 23 14:17:55 PDT 2004
+//    Added deletion of h5files data member
 //
 // ****************************************************************************
 avtSAMRAIFileFormat::~avtSAMRAIFileFormat()
@@ -298,10 +314,108 @@ avtSAMRAIFileFormat::~avtSAMRAIFileFormat()
     }
     cached_patches = 0;
 
+    SAFE_DELETE(h5files);
+
     // handle HDF5 library termination on descrution of last instance
     avtSAMRAIFileFormat::objcnt--;
     if (avtSAMRAIFileFormat::objcnt == 0)
         FinalizeHDF5();
+}
+
+// ****************************************************************************
+//  Method:  avtSAMRAIFileFormat::OpenFile
+//
+//  Purpose:
+//    Opens and registers or uses a named file and sets knowledge of the file
+//    in the file format 
+//
+//  Programmer:  Mark C. Miller 
+//  Creation:    August 19, 2004 
+//
+// ****************************************************************************
+hid_t
+avtSAMRAIFileFormat::OpenFile(const char *fileName)
+{
+    //
+    // See if we've seen this file name already
+    //
+    int fileIndex = -1;
+    for (int i = 0 ; i < nFiles ; i++)
+    {
+        if (strcmp(filenames[i], fileName) == 0)
+        {
+            fileIndex = i;
+            break;
+        }
+    }
+ 
+    if (fileIndex == -1)
+    {
+        //
+        // We have asked for a previously unseen file.  Add it to the list and
+        // continue.  AddFile will automatically take care of overflow issues.
+        //
+        fileIndex = AddFile(fileName);
+    }
+
+    //
+    // Make sure this is in range.
+    //
+    if (fileIndex < 0 || fileIndex >= nFiles)
+    {
+        EXCEPTION2(BadIndexException, fileIndex, nFiles);
+    }
+ 
+    //
+    // Check to see if the file is already open.
+    //
+    if (h5files[fileIndex] >= 0)
+    {
+        UsedFile(fileIndex);
+        return h5files[fileIndex];
+    }
+ 
+    debug4 << "Opening HDF5 file " << filenames[fileIndex] << endl;
+ 
+    //
+    // Open the HDF5 file.
+    //
+    h5files[fileIndex] = H5Fopen(filenames[fileIndex], H5F_ACC_RDONLY, H5P_DEFAULT);
+                        
+    //
+    // Check to see if we got a valid handle.
+    //
+    if (h5files[fileIndex] < 0)
+    {
+        EXCEPTION1(InvalidFilesException, filenames[fileIndex]);
+    }
+ 
+    RegisterFile(fileIndex);
+ 
+    return h5files[fileIndex];
+}
+
+// ****************************************************************************
+//  Method: avtSAMRAIlFileFormat::CloseFile
+//
+//  Purpose:
+//      Implements the AVT interface's CloseFile method 
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   August 19, 2004
+//
+// ****************************************************************************
+ 
+void
+avtSAMRAIFileFormat::CloseFile(int f)
+{
+    if (h5files[f] >= 0)
+    {
+        debug4 << "Closing HDF5 file " << filenames[f] << endl;
+        H5Fclose(h5files[f]);
+        UnregisterFile(f);
+        h5files[f] = -1;
+    }
 }
 
 // ****************************************************************************
@@ -430,6 +544,9 @@ avtSAMRAIFileFormat::GetMesh(int patch, const char *)
 //
 //    Brad Whitlock, Fri Mar 5 10:19:32 PDT 2004
 //    Changed for Windows compiler.
+//
+//    Mark C. Miller, Tue Aug 24 20:11:52 PDT 2004
+//    Added code to set up the magic 'base_index' array
 //
 // ****************************************************************************
 vtkDataSet *
@@ -606,6 +723,20 @@ avtSAMRAIFileFormat::ReadMesh(int patch)
             100*nghost/ncells << "% of cells" << endl;
     }
 
+    //
+    // Emulate VisIt's notion of a block-structured grid by setting
+    // the 'base_index' magic data array for this vtk grid
+    //
+    vtkIntArray *arr = vtkIntArray::New();
+    arr->SetNumberOfTuples(3);
+    for (int i=0; i<dim; i++)
+       arr->SetValue(i, patch_extents[patch].lower[i] - num_ghosts[i]);
+    for (int i=dim; i<3; i++)
+       arr->SetValue(i, 0);
+    arr->SetName("base_index");
+    retval->GetFieldData()->AddArray(arr);
+    arr->Delete();
+
     return retval;
 
 }
@@ -686,6 +817,10 @@ avtSAMRAIFileFormat::GetVectorVar(int patch, const char *visit_var_name)
 //    Re-factored code having to do with guessing variable type to avtTypes
 //    function GuessVarTypeFromNumDimsAndComps
 //
+//    Mark C. Miller, Mon Aug 23 14:17:55 PDT 2004
+//    Made it use OpenFile instead of H5Fopen directly. Removed call to
+//    H5Fclose
+//
 // ****************************************************************************
 vtkDataArray *
 avtSAMRAIFileFormat::ReadVar(int patch, 
@@ -736,7 +871,7 @@ avtSAMRAIFileFormat::ReadVar(int patch,
     char file[2048];   
     sprintf(file, "%sprocessor_cluster.%05d.samrai",
             dir_name.c_str(), patch_map[patch].file_cluster_number);
-    hid_t h5f_file = H5Fopen(file, H5F_ACC_RDONLY, H5P_DEFAULT); 
+    hid_t h5f_file = OpenFile(file);
     if (h5f_file < 0)
     {
         EXCEPTION1(InvalidFilesException, file);
@@ -827,8 +962,6 @@ avtSAMRAIFileFormat::ReadVar(int patch,
         H5Sclose(memspace);
     }
 
-    H5Fclose(h5f_file);
-
     // fill in 0's when necessary
     if (num_alloc_comps != num_components)
     {
@@ -863,6 +996,9 @@ avtSAMRAIFileFormat::ReadVar(int patch,
 //
 //    Brad Whitlock, Fri Mar 5 10:19:32 PDT 2004
 //    Changed for Windows compiler.
+//
+//    Mark C. Miller, Mon Aug 23 14:17:55 PDT 2004
+//    Made it use OpenFile instead of H5Fopen and removed call to H5Fclose
 //
 // ****************************************************************************
 float *
@@ -928,7 +1064,7 @@ avtSAMRAIFileFormat::ReadMatSpecFractions(int patch, string mat_name,
             mat_name.c_str(), spec_name.c_str());
     }
 
-    hid_t h5f_file = H5Fopen(file, H5F_ACC_RDONLY, H5P_DEFAULT); 
+    hid_t h5f_file = OpenFile(file);
     if (h5f_file < 0)
     {
         EXCEPTION1(InvalidFilesException, file);
@@ -963,7 +1099,6 @@ avtSAMRAIFileFormat::ReadMatSpecFractions(int patch, string mat_name,
             buffer);
 
     H5Dclose(h5d_variable);      
-    H5Fclose(h5f_file);
 
     return buffer;
 }
@@ -1829,6 +1964,59 @@ avtSAMRAIFileFormat::GetAuxiliaryData(const char *var, int patch,
 
 
 // ****************************************************************************
+//  Method:  avtSAMRAIFileFormat::PopulateIOInformation
+//
+//  Purpose:
+//    Popolates IO Information Hints
+//
+//  Programmer:  Mark C. Miller 
+//  Creation:    August 19. 2004 
+//
+// ****************************************************************************
+
+void
+avtSAMRAIFileFormat::PopulateIOInformation(avtIOInformation &ioInfo)
+{
+    if (num_patches <= 1)
+    {
+        debug5 << "No need to do I/O optimization because there is only "
+               << "one patch" << endl;
+        ioInfo.SetNDomains(1);
+        return;
+    }
+
+    if (num_clusters <= 1)
+    {
+        debug5 << "No need to do I/O optimization because there is only "
+               << "one file for all patches" << endl;
+        ioInfo.SetNDomains(num_patches);
+        return;
+    }
+
+    //
+    // create an initial vector for each file cluster
+    //
+    vector< vector<int> > groups;
+    for (int i = 0; i < num_clusters; i++)
+    {
+        vector<int> dummy;
+        groups.push_back(dummy);
+    }
+
+    //
+    // use the patch map and stick each patch into its respective cluster group
+    //
+    for (int i = 0; i < num_patches; i++)
+    {
+        int clusterNum = patch_map[i].file_cluster_number;
+        groups[clusterNum].push_back(i);
+    }
+
+    ioInfo.SetNDomains(num_patches);
+    ioInfo.AddHints(groups);
+}
+
+// ****************************************************************************
 //  Method:  avtSAMRAIFileFormat::PopulateDatabaseMetaData
 //
 //  Purpose:
@@ -1846,6 +2034,9 @@ avtSAMRAIFileFormat::GetAuxiliaryData(const char *var, int patch,
 //    Back out undocumented changes made by Mark Miller with adding material
 //    numbers to material names.
 //
+//    Mark C. Miller, Mon Aug 23 14:17:55 PDT 2004
+//    Added code to set cycle/time info
+//
 // ****************************************************************************
 
 void
@@ -1859,6 +2050,14 @@ avtSAMRAIFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         static const char *mesh_name = "amr_mesh";
 
         ReadMetaDataFile();
+
+        //
+        // Set cycle/time info
+        //
+        md->SetCycle(timestep, time_step_number);
+        md->SetCycleIsAccurate(true, timestep);
+        md->SetTime(timestep, time);
+        md->SetTimeIsAccurate(true, timestep);
 
         avtMeshMetaData *mesh = new avtMeshMetaData;
         mesh->name = mesh_name;
@@ -2052,6 +2251,9 @@ avtSAMRAIFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Brad Whitlock, Fri Mar 5 10:19:32 PDT 2004
 //    Changed for Windows compiler.
 //
+//    Mark C. Miller, Mon Aug 23 14:17:55 PDT 2004
+//    Made it use OpenFile instead of H5Fopen & removed call to H5Fclose
+//
 // ****************************************************************************
 void
 avtSAMRAIFileFormat::ReadMetaDataFile()
@@ -2059,7 +2261,7 @@ avtSAMRAIFileFormat::ReadMetaDataFile()
     debug5 << "avtSAMRAIFileFormat::ReadMetaDataFile reading SAMRAI summary "
         "file, \"" << file_name.c_str() << "\"" << endl;
 
-    hid_t h5_file = H5Fopen(file_name.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT); 
+    hid_t h5_file = OpenFile(file_name.c_str());
 
     if (h5_file < 0)
     {
@@ -2109,8 +2311,6 @@ avtSAMRAIFileFormat::ReadMetaDataFile()
         ReadMaterialInfo(h5_file);
 
         ReadSpeciesInfo(h5_file);
-
-        H5Fclose(h5_file);
 
         cached_patches = new vtkDataSet**[num_patches];
         for (int p=0; p<num_patches; p++)

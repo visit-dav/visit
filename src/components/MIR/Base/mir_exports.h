@@ -7,7 +7,7 @@
 #else
 #define MIR_API __declspec(dllimport)
 #endif
-#ifdef USING_MSVC6
+#if defined(USING_MSVC6) || defined(USING_MSVC7)
 // Turn off warning about possible loss of data
 #pragma warning(disable:4244)
 // Turn off warning about inheritance via dominance

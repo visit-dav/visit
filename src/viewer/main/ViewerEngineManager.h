@@ -26,6 +26,7 @@ class ViewerPlot;
 class AnnotationAttributes;
 class AnnotationObjectList;
 class WindowAttributes;
+class avtDatabaseMetaData;
 
 // ****************************************************************************
 //  Class: ViewerEngineManager
@@ -181,6 +182,9 @@ class WindowAttributes;
 //    I changed the definition of EngineMap so it contains EngineInformation
 //    objects, which contain a HostProfile.
 //
+//    Jeremy Meredith, Wed Aug 25 11:35:19 PDT 2004
+//    Added methods needed by for simulation-engines.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerEngineManager : public ViewerServerManager,
@@ -201,9 +205,16 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
                       const std::vector<std::string> &arguments,
                       bool  skipChooser=false,
                       int numRestarts=-1);
+
     bool ConnectSim(const EngineKey &ek,
                     const std::vector<std::string> &arguments,
                     const std::string &simHost, int simPort);
+
+    int                  GetWriteSocket(const EngineKey &ek);
+    void                 ReadDataAndProcess(const EngineKey &ek);
+    avtDatabaseMetaData *GetSimulationMetaData(const EngineKey &ek);
+    SILAttributes       *GetSimulationSILAtts(const EngineKey &ek);
+
     void CloseEngines();
     void CloseEngine(const EngineKey &ek);
     void InterruptEngine(const EngineKey &ek);

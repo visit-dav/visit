@@ -133,6 +133,11 @@ class MessageAttributes;
 //   Jeremy Meredith, Wed Jul  7 17:03:33 PDT 2004
 //   Made the selection filter global to all hosts.
 //
+//   Jeremy Meredith, Wed Aug 25 10:50:42 PDT 2004
+//   Added methods for databases that return complete metadata only from
+//   the engine (not the mdserver) to place the correct metadata her.
+//   This is used for simulations.
+//
 // ****************************************************************************
 
 class GUI_API FileServerList : public AttributeSubject
@@ -212,6 +217,10 @@ public:
 
     void SetConnectCallback(ConnectCallback *cb, void *data);
     void SetProgressCallback(bool (*cb)(void *, int), void *data);
+
+    // Used to poke metadata into here if the mdserver has incomplete metadata
+    void SetOpenFileMetaData(const avtDatabaseMetaData*);
+    void SetOpenFileSIL(const avtSIL*);
 
     // Convenience functions to determine if a component is selected.
     bool HostChanged() const;

@@ -21,7 +21,6 @@
 #include <CompactSILRestrictionAttributes.h>
 #include <DatabaseAttributes.h>
 #include <OperatorPluginManager.h>
-#include <PickAttributes.h>
 #include <Plot.h>
 #include <PlotPluginInfo.h>
 #include <PlotQueryInfo.h>
@@ -4324,6 +4323,9 @@ ViewerPlot::InitializePlot(Plot &plot) const
 //   Brad Whitlock, Mon Apr 5 09:30:08 PDT 2004
 //   I rewrote it since I changed how it is called.
 //
+//   Kathleen Bonnell, Tue Aug 24 16:19:00 PDT 2004 
+//   Send MeshType as arg to SetOpaqueMeshIsAppropriate. 
+//
 // ****************************************************************************
 
 void
@@ -4333,7 +4335,8 @@ ViewerPlot::SetOpaqueMeshIsAppropriate(bool val)
     {
         if(*plotList[cacheIndex] != 0)
         {
-            const AttributeSubject *atts = plotList[cacheIndex]->SetOpaqueMeshIsAppropriate(val);
+            const AttributeSubject *atts = plotList[cacheIndex]->
+                SetOpaqueMeshIsAppropriate(val, GetMeshType());
             if(atts != 0)
             {
                 // Set the attributes into the avtPlot.
@@ -4459,4 +4462,23 @@ ViewerPlot::GetWindowId() const
         EXCEPTION0(ImproperUseException);
 
     return viewerPlotList->GetWindowId();
+}
+
+
+// ****************************************************************************
+//  Method: ViewerPlot::GetMeshType
+//
+//  Purpose: Return the mesh type for this plot. 
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   August 24, 2004
+//
+// ****************************************************************************
+
+avtMeshType
+ViewerPlot::GetMeshType() const
+{
+    const avtDatabaseMetaData *md = GetMetaData();
+    string meshName = md->MeshForVar(variableName);
+    return md->GetMesh(meshName)->meshType;
 }

@@ -175,7 +175,11 @@ vtkVisItClipper::Execute()
 //    Made it support 2d cases as well.  Changed it to a single cutoff
 //    for scalars to make the math more robust.
 //
+//    Brad Whitlock, Thu Aug 12 14:48:46 PST 2004
+//    Added float casts to pow() arguments so it builds on MSVC7.Net.
+//
 // ****************************************************************************
+
 void
 vtkVisItClipper::StructuredGridExecute(void)
 {
@@ -193,8 +197,8 @@ vtkVisItClipper::StructuredGridExecute(void)
     vtkUnstructuredGrid *output = (vtkUnstructuredGrid*)GetOutput();
 
     int ptSizeGuess = (CellList == NULL
-                         ? (int) pow(nCells, 0.6667) * 5 + 100
-                         : ptSizeGuess = CellListSize*5 + 100);
+                         ? (int) pow(float(nCells), 0.6667f) * 5 + 100
+                         : CellListSize*5 + 100);
 
     vtkVolumeFromVolume vfv(sg->GetNumberOfPoints(), ptSizeGuess);
 
@@ -429,7 +433,11 @@ vtkVisItClipper::StructuredGridExecute(void)
 //    Made it support 2d cases as well.  Changed it to a single cutoff
 //    for scalars to make the math more robust.
 //
+//    Brad Whitlock, Thu Aug 12 14:49:24 PST 2004
+//    Added float casts to the pow() arguments so it builds on MSVC7.Net.
+//
 // ****************************************************************************
+
 void vtkVisItClipper::RectilinearGridExecute(void)
 {
     int  i, j;
@@ -448,8 +456,8 @@ void vtkVisItClipper::RectilinearGridExecute(void)
     vtkUnstructuredGrid *output = (vtkUnstructuredGrid*)GetOutput();
 
     int ptSizeGuess = (CellList == NULL
-                         ? (int) pow(nCells, 0.6667) * 5 + 100
-                         : ptSizeGuess = CellListSize*5 + 100);
+                         ? (int) pow(float(nCells), 0.6667f) * 5 + 100
+                         : CellListSize*5 + 100);
 
     vtkVolumeFromVolume vfv(rg->GetNumberOfPoints(), ptSizeGuess);
 
@@ -710,8 +718,8 @@ void vtkVisItClipper::UnstructuredGridExecute(void)
     vtkUnstructuredGrid *output = (vtkUnstructuredGrid*)GetOutput();
 
     int ptSizeGuess = (CellList == NULL
-                         ? (int) pow(nCells, 0.6667) * 5 + 100
-                         : ptSizeGuess = CellListSize*5 + 100);
+                         ? (int) pow(float(nCells), 0.6667f) * 5 + 100
+                         : CellListSize*5 + 100);
 
     vtkVolumeFromVolume vfv(ug->GetNumberOfPoints(), ptSizeGuess);
 
@@ -1044,8 +1052,8 @@ void vtkVisItClipper::PolyDataExecute(void)
     vtkUnstructuredGrid *output = (vtkUnstructuredGrid*)GetOutput();
 
     int ptSizeGuess = (CellList == NULL
-                         ? (int) pow(nCells, 0.6667) * 5 + 100
-                         : ptSizeGuess = CellListSize*5 + 100);
+                         ? (int) pow(float(nCells), 0.6667f) * 5 + 100
+                         : CellListSize*5 + 100);
 
     vtkVolumeFromVolume vfv(pd->GetNumberOfPoints(), ptSizeGuess);
 

@@ -875,3 +875,50 @@ avtPseudocolorPlot::EnhanceSpecification(avtPipelineSpecification_p spec)
     return rv;
 }
 
+// ****************************************************************************
+//  Method: avtPlot::SetCellCountMultiplierForSRThreshold
+//
+//  Purpose: 
+//    Set this plot's cell count multiplier for SR threshold. 
+//    If not a point-var (topoDim == 0), returns 1.0 because no glyphing will
+//    take place.  Otherwise uses the maximum polys that could be created
+//    based on spatial dimension.
+// 
+//  Arguments:
+//    dob       The current input, used to determine correct topological
+//              and spatial dimenions. 
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   August 24, 2004 
+//
+// ****************************************************************************
+
+void
+avtPseudocolorPlot::SetCellCountMultiplierForSRThreshold(
+                                   const avtDataObject_p dob)
+{
+    if (dob->GetInfo().GetAttributes().GetTopologicalDimension() > 0)
+    {
+        // Not a point var, no multiplier.
+        cellCountMultiplierForSRThreshold = 1.0; 
+    }
+    else 
+    {
+        //
+        // Actual polygon count can change on-the-fly based on point type,
+        // and does not require re-execution of the engine (where the
+        // cell count is important, and queried from.) 
+        // Using the current polgyon count doesn't make sense,
+        // the default point-type is 'Point' which does not do any
+        // glyhing.  If we return 1, then we may never switch into SR
+        // mode even when necessary (if user changes type to icosahedron
+        // in 3D, which adds 20 polys per point). 
+        // Always using the maximum may be overkill, but it seems best
+        // under the circumstances.
+        //
+        if (dob->GetInfo().GetAttributes().GetSpatialDimension() == 3)
+            cellCountMultiplierForSRThreshold = 20.0;
+        else 
+            cellCountMultiplierForSRThreshold = 12.0;
+    }
+}

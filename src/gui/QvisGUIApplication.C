@@ -354,6 +354,9 @@ LongFileName(const char *shortName)
 //   Brad Whitlock, Fri Apr 9 14:09:03 PST 2004
 //   I added allowFileSelectionChange.
 //
+//   Jeremy Meredith, Wed Aug 25 10:54:58 PDT 2004
+//   Add observers for the new SIL and metadata attributes of the viewer proxy.
+//
 // ****************************************************************************
 
 QvisGUIApplication::QvisGUIApplication(int &argc, char **argv) :
@@ -472,6 +475,14 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv) :
     //
     syncObserver = new ObserverToCallback(viewer->GetSyncAttributes(),
          QvisGUIApplication::SyncCallback, this);
+
+    //
+    // Create an observer for the meta data attributes.
+    //
+    metaDataObserver = new ObserverToCallback(viewer->GetDatabaseMetaData(),
+         QvisGUIApplication::UpdateMetaDataAttributes, this);
+    SILObserver = new ObserverToCallback(viewer->GetSILAtts(),
+         QvisGUIApplication::UpdateMetaDataAttributes, this);
 
     //
     // Start the heavy duty initialization from within the event loop.
@@ -4380,6 +4391,77 @@ QvisGUIApplication::UpdatePrinterAttributes(Subject *subj, void *data)
     PrinterAttributes *p = (PrinterAttributes *)subj;
     QPrinter *printer = (QPrinter *)data;
     PrinterAttributesToQPrinter(p, printer);
+}
+
+
+// ****************************************************************************
+//  Method:  QvisGUIApplication::UpdateMetaDataAttributes
+//
+//  Purpose:
+//    Callback for when metadata or SIL atts are changed.
+//
+//  Arguments:
+//    subj       the new metadata attributes
+//    data       the QvisGUIApplication instance
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    August 25, 2004
+//
+// ****************************************************************************
+
+void
+QvisGUIApplication::UpdateMetaDataAttributes(Subject *subj, void *data)
+{
+    //avtDatabaseMetaData *p = (avtDatabaseMetaData*)subj;
+    QvisGUIApplication *guiapp = (QvisGUIApplication *)data;
+    guiapp->HandleMetaDataUpdate();
+}
+
+// ****************************************************************************
+//  Method:  QvisGUIApplication::HandleMetaDataUpdate
+//
+//  Purpose:
+//    Handle manual updates for when metadata and SIL atts change for the
+//    active plot.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    August 25, 2004
+//
+// ****************************************************************************
+
+void
+QvisGUIApplication::HandleMetaDataUpdate()
+{
+    // Poke the metadata into the file server
+    fileServer->SetOpenFileMetaData(viewer->GetDatabaseMetaData());
+
+    // Poke the SIL into the file server
+    avtSIL *sil = new avtSIL(*viewer->GetSILAtts());
+    fileServer->SetOpenFileSIL(sil);
+    delete sil;
+
+    //
+    // Update what needs updating
+    //
+    // NOTE:  this is a bit too manual right now.  We may need to either
+    // force updating of more places soon, or have more things observe
+    // the updating metadata and be aware when it has changed.
+    //
+
+    // Plot Manager Widget
+    mainWin->GetPlotManager()->Update(fileServer);
+
+    // File Information Window
+    string fileInfoWinName = windowNames[WINDOW_FILE_INFORMATION];
+    if (otherWindows.count(fileInfoWinName))
+    {
+        QvisFileInformationWindow *fileInfoWin = (QvisFileInformationWindow*)
+            otherWindows[fileInfoWinName];
+        fileInfoWin->Update(fileServer);
+    }
 }
 
 //

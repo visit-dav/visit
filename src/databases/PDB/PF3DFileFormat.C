@@ -291,7 +291,7 @@ PF3DFileFormat::ReadStringVector(const char *name, stringVector &output)
             }
             ++input;
             output.push_back(word);
-            debug4 << "\"" << word << "\"" << endl;
+            debug4 << "\"" << word.c_str() << "\"" << endl;
         }
         debug4 << "}" << endl;
         delete [] buf;

@@ -266,6 +266,9 @@ RemoteProxyBase::AddArgument(const std::string &arg)
 //    Moved this method from ViewerRemoteProcessChooser and changed the code
 //    a little.
 //
+//    Brad Whitlock, Tue Aug 10 17:16:55 PST 2004
+//    Undefined a macro on Windows because it interferes with HostProfile.
+//
 // ****************************************************************************
 
 void
@@ -277,6 +280,9 @@ RemoteProxyBase::AddProfileArguments(const HostProfile &profile,
     //
     // Set the user's login name.
     //
+#if defined(_WIN32) && defined(GetUserName)
+#undef GetUserName
+#endif
     SetRemoteUserName(profile.GetUserName());
 
     //

@@ -206,6 +206,9 @@
 //    Kathleen Bonnell, Wed Aug 18 09:44:09 PDT 2004 
 //    Added Interactors window.
 //
+//    Jeremy Meredith, Wed Aug 25 09:52:06 PDT 2004
+//    Connect the viewer proxy's database metadata to the plotmanager.
+//
 // ****************************************************************************
 
 QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
@@ -458,6 +461,7 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     plotManager->ConnectExpressionList(viewer->GetExpressionList());
     plotManager->ConnectPluginManagerAttributes(viewer->GetPluginManagerAttributes());
     plotManager->ConnectWindowInformation(viewer->GetWindowInformation());
+    plotManager->ConnectDatabaseMetaData(viewer->GetDatabaseMetaData());
     plotManager->viewer = viewer;
 #ifdef Q_WS_MACX
     topLayout->addWidget(plotManager, 200);

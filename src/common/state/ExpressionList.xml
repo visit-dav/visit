@@ -6,4 +6,6 @@
     </Function>
     <Function name="CreateNode" user="false" member="true">
     </Function>
+    <Function name="GetAllVarNames" user="true" member="true">
+    </Function>
   </Attribute>

@@ -20,7 +20,6 @@
 #include <DataNode.h>
 #include <ImproperUseException.h>
 #include <InvalidVariableException.h>
-#include <PickAttributes.h>
 #include <Plot.h>
 #include <PlotList.h>
 #include <PlotPluginManager.h>
@@ -7742,6 +7741,9 @@ ViewerPlotList::SetFromNode(DataNode *parentNode)
 //   Kathleen Bonnell, Thu Aug 12 16:20:02 PDT 2004
 //   Made whether or not the plot has been realized be part of the criteria.
 //   
+//   Kathleen Bonnell, Tue Aug 24 16:21:54 PDT 2004
+//   Made whether or not the plot is a PointMesh be part of the criteria. 
+//   
 // ****************************************************************************
 
 void
@@ -7752,7 +7754,8 @@ ViewerPlotList::CanMeshPlotBeOpaque()
     for (i = 0; i < nPlots && canBeOpaque; ++i)
     {
         if (plots[i].plot->IsInRange() && plots[i].realized && 
-            !plots[i].hidden && !plots[i].plot->IsMesh())
+            !plots[i].hidden && (!plots[i].plot->IsMesh() ||
+             plots[i].plot->GetMeshType() == AVT_POINT_MESH))
             canBeOpaque = false;
     }
 

@@ -222,6 +222,10 @@ class SplashScreen;
 //    Made colorTableWindow a 'crucial' window, that gets created immediately, 
 //    so that color table name are available to other windows as needed. 
 //
+//    Jeremy Meredith, Wed Aug 25 11:11:39 PDT 2004
+//    Added methods to observe updating metadata coming from the viewer.
+//    This is used by simulations who send the metadata from the engine.
+//
 // ****************************************************************************
 
 class GUI_API QvisGUIApplication : public QObject, public ConfigManager, public GUIBase
@@ -266,6 +270,7 @@ private:
     void WritePluginWindowConfigs(DataNode *parentNode);
     void Synchronize(int tag);
     void HandleSynchronize(int val);
+    void HandleMetaDataUpdate();
 
     void GetVirtualDatabaseDefinitions(StringStringVectorMap &defs);
 
@@ -274,6 +279,7 @@ private:
                               const stringVector &args, void *data);
     static void UpdatePrinterAttributes(Subject *subj, void *data);
     static void SyncCallback(Subject *s, void *data);
+    static void UpdateMetaDataAttributes(Subject *subj, void *data);
 private slots:
     void HeavyInitialization();
     void ReadFromViewer(int);
@@ -342,6 +348,10 @@ private:
 
     QPrinter                     *printer;
     ObserverToCallback           *printerObserver;
+
+    // Handle metadata updates
+    ObserverToCallback           *metaDataObserver;
+    ObserverToCallback           *SILObserver;
 
     SplashScreen                 *splash;
     bool                          showSplash;

@@ -5785,7 +5785,7 @@ ViewerWindowManager::CheckForNewStates(const std::string &hostDatabase)
             debug4 << mName << "Current time steps for " << hDB.c_str()
                    << ": " << endl;
             for(i = 0; i < originalTSNames.size(); ++i)
-                debug4 << originalTSNames[i] << ", " << endl;
+                debug4 << originalTSNames[i].c_str() << ", " << endl;
             debug4 << endl;
 
             //
@@ -5823,9 +5823,10 @@ ViewerWindowManager::CheckForNewStates(const std::string &hostDatabase)
                 int newNStates = md->GetNumStates();
                 stringVector newTSNames(md->GetTimeStepNames());
 
-                debug4 << mName << "New time steps for " << hDB << ": " << endl;
+                debug4 << mName << "New time steps for " << hDB.c_str()
+                       << ": " << endl;
                 for(i = 0; i < newTSNames.size(); ++i)
-                    debug4 << newTSNames[i] << ", " << endl;
+                    debug4 << newTSNames[i].c_str() << ", " << endl;
                 debug4 << endl;
 
                 //

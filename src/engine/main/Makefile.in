@@ -206,6 +206,9 @@
 #    Jeremy Meredith, Wed Jul  7 12:12:52 PDT 2004
 #    I changed _ser.o to simply be .o.
 #
+#    Jeremy Meredith, Wed Aug 11 13:22:47 PDT 2004
+#    Added the engine wrapper library.
+#
 ##############################################################################
 
 ##
@@ -268,20 +271,25 @@ SRC= \
 
 MAINSRC=main.C
 
+LIBRARYSRC=VisItEngine.C
+
 SEROBJ=$(SRC:.C=.o)
 PAROBJ=$(SRC:.C=_par.o)
 
 MAINSEROBJ=$(MAINSRC:.C=.o)
 MAINPAROBJ=$(MAINSRC:.C=_par.o)
 
+LIBRARYSEROBJ=$(LIBRARYSRC:.C=.o)
+LIBRARYPAROBJ=$(LIBRARYSRC:.C=_par.o)
+
 ##
 ## Standard targets...
 ##
-all: @ENGINE_SER@ @ENGINE_PAR@
+all: @ENGINE_SER@ @ENGINE_PAR@ $(ENGINEWRAPSER) $(ENGINEWRAPPAR)
 
 clean:
-	$(RM) $(SEROBJ) $(LIBSHAREDSER) @ENGINE_SER@
-	$(RM) $(PAROBJ) $(LIBSHAREDPAR) @ENGINE_PAR@
+	$(RM) $(SEROBJ) $(LIBSHAREDSER) @ENGINE_SER@ $(ENGINEWRAPSER)
+	$(RM) $(PAROBJ) $(LIBSHAREDPAR) @ENGINE_PAR@ $(ENGINEWRAPPAR)
 
 ##
 ## Other targets...
@@ -291,6 +299,12 @@ clean:
 
 @ENGINE_PAR@ or_no_par: $(PARLIBDEP) $(PAROBJ) $(MAINPAROBJ) $(LIBSHAREDPAR)
 	$(CXX) -o $@ $(LDFLAGS) $(MAINPAROBJ) -lengine_par $(PARLIBS)
+
+$(ENGINEWRAPSER) or_no_ser_wrapper: $(SERLIBDEP) $(SEROBJ) $(LIBRARYSEROBJ) $(LIBSHAREDSER)
+	@SHLIB_CREATEPROG@ $@ $(LDFLAGS) $(LIBRARYSEROBJ) -lengine_ser $(SERLIBS)
+
+$(ENGINEWRAPPAR) or_no_par_wrapper: $(PARLIBDEP) $(PAROBJ) $(LIBRARYPAROBJ) $(LIBSHAREDPAR)
+	@SHLIB_CREATEPROG@ $@ $(LDFLAGS) $(LIBRARYPAROBJ) -lengine_par $(PARLIBS)
 
 purify: $(SERLIBDEP) $(SEROBJ)
 	purify -chain-length=64	$(CXX) -o @ENGINE_SER@ $(LDFLAGS) $(MAINSEROBJ) -lengine_ser $(SERLIBS)

@@ -16,6 +16,7 @@
 #include <VisItException.h>
 #include <Xfer.h>
 
+#include <avtDatabaseMetaData.h>
 #include <AnimationAttributes.h>
 #include <AnnotationAttributes.h>
 #include <AnnotationObjectList.h>
@@ -159,6 +160,9 @@
 //    Kathleen Bonnell, Wed Aug 18 09:28:51 PDT 2004
 //    Added interactorAtts.
 //
+//    Jeremy Meredith, Wed Aug 25 10:32:18 PDT 2004
+//    Added metadata and SIL attributes (needed for simulations).
+//
 // ****************************************************************************
 
 ViewerProxy::ViewerProxy() : SimpleObserver(), argv()
@@ -198,6 +202,8 @@ ViewerProxy::ViewerProxy() : SimpleObserver(), argv()
     annotationObjectList = new AnnotationObjectList;
     queryOverTimeAtts    = new QueryOverTimeAttributes;
     interactorAtts       = new InteractorAttributes;
+    metaData             = new avtDatabaseMetaData;
+    silAtts              = new SILAttributes;
 
     // Make the proxy observe the SIL restriction attributes.
     silRestrictionAtts->Attach(this);
@@ -333,6 +339,9 @@ ViewerProxy::ViewerProxy() : SimpleObserver(), argv()
 //    Kathleen Bonnell, Wed Aug 18 09:28:51 PDT 2004
 //    Added interactorAtts.
 //
+//    Jeremy Meredith, Wed Aug 25 10:32:18 PDT 2004
+//    Added metadata and SIL attributes (needed for simulations).
+//
 // ****************************************************************************
 
 ViewerProxy::~ViewerProxy()
@@ -378,6 +387,8 @@ ViewerProxy::~ViewerProxy()
     delete annotationObjectList;
     delete queryOverTimeAtts;
     delete interactorAtts;
+    delete metaData;
+    delete silAtts;
 
     //
     // Delete the plot attribute state objects.
@@ -745,6 +756,9 @@ ViewerProxy::AddArgument(const std::string &arg)
 //    Kathleen Bonnell, Wed Aug 18 09:28:51 PDT 2004
 //    Added interactorAtts.
 //
+//    Jeremy Meredith, Wed Aug 25 10:32:18 PDT 2004
+//    Added metadata and SIL attributes (needed for simulations).
+//
 // ****************************************************************************
 
 void
@@ -819,6 +833,8 @@ ViewerProxy::Create()
     xfer->Add(annotationObjectList);
     xfer->Add(queryOverTimeAtts);
     xfer->Add(interactorAtts);
+    xfer->Add(metaData);
+    xfer->Add(silAtts);
 
     xfer->ListObjects();
 
@@ -1471,6 +1487,10 @@ ViewerProxy::CheckForNewStates(const std::string &database)
 //  Programmer: Brad Whitlock
 //  Creation:   Mon Jul 29 15:16:37 PST 2002
 //
+//  Modifications:
+//    Jeremy Meredith, Wed Aug 25 10:33:09 PDT 2004
+//    Made it use the generic integer argument so as to not be misleading.
+//
 // ****************************************************************************
 
 void
@@ -1481,8 +1501,8 @@ ViewerProxy::ReOpenDatabase(const std::string &database, bool forceClose)
     //
     viewerRPC->SetRPCType(ViewerRPC::ReOpenDatabaseRPC);
     viewerRPC->SetDatabase(database);
-    // Store the flag in the window layout.
-    viewerRPC->SetWindowLayout(forceClose ? 1 : 0);
+    // Store the flag in the generic integer argument
+    viewerRPC->SetIntArg1(forceClose ? 1 : 0);
 
     //
     // Issue the RPC.

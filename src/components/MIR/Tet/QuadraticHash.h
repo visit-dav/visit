@@ -1,7 +1,7 @@
 #ifndef QUADRATIC_HASH_H
 #define QUADRATIC_HASH_H
-#include <mir_exports.h>
 #include <visitstream.h>
+
 // ****************************************************************************
 //  Template Class: QuadraticHash
 //
@@ -20,7 +20,7 @@
 //
 // ****************************************************************************
 template <class K, class V = K>
-class MIR_API QuadraticHash
+class QuadraticHash
 {
  public:
     QuadraticHash(int size_, unsigned int (*hashfunc_)(K&));

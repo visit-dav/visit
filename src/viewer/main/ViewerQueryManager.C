@@ -89,7 +89,8 @@ QueryOverTimeAttributes *ViewerQueryManager::timeQueryClientAtts=0;
 
 void
 GetUniqueVars(const stringVector &vars, const string &activeVar, 
-              stringVector &uniqueVars);
+              stringVector &uniqueVars,
+              const avtDatabaseMetaData *md = NULL);
 string
 CreateExtentsString(const double * extents, const int dim, const char *type);
 
@@ -1530,6 +1531,16 @@ ViewerQueryManager::ClearPickPoints()
 //    InverseTransform or Transform.   Determine if all materials are used
 //    by plot being picked.
 //
+//    Mark C. Miller, Tue Aug 24 20:11:52 PDT 2004
+//    Added code to set pick attributes' block/group piece names
+//
+//    Kathleen Bonnell, Tue Aug 24 14:59:16 PDT 2004 
+//    Send MetaData to GetUniqueVars, so that all vars defined on mesh
+//    can be retrieved if requested. 
+//
+//    Kathleen Bonnell, Wed Aug 25 18:13:21 PDT 2004 
+//    Ensure that MeshMetaData is not null before attempting to dereference. 
+//
 // ****************************************************************************
 
 bool
@@ -1537,7 +1548,6 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
                                 const int el)
 {
     bool retval = false;
-
 
     //
     //  Keep local copy, due to caching issues.
@@ -1597,6 +1607,14 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
         const std::string &db = plot->GetDatabaseName();
         const std::string &activeVar = plot->GetVariableName();
         pickAtts->SetActiveVariable(activeVar);
+        const avtDatabaseMetaData *md = plot->GetMetaData();
+        std::string meshForVar = md->MeshForVar(activeVar);
+        const avtMeshMetaData *mmd = md->GetMesh(meshForVar);
+        if (mmd != NULL)
+        {
+            pickAtts->SetBlockPieceName(mmd->blockPieceName);
+            pickAtts->SetGroupPieceName(mmd->groupPieceName);
+        }
 
         avtSILRestrictionTraverser trav(plot->GetSILRestriction());
         bool usesAllMaterials = trav.UsesAllMaterials();
@@ -1621,7 +1639,7 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
         //
         stringVector userVars = pickAtts->GetVariables();
         stringVector uniqueVars; 
-        GetUniqueVars(userVars, activeVar, uniqueVars);
+        GetUniqueVars(userVars, activeVar, uniqueVars, plot->GetMetaData());
         stringVector validVars;
         stringVector invalidVars;
         for (int i = 0; i < uniqueVars.size(); i++)
@@ -2639,27 +2657,53 @@ ViewerQueryManager::SetFromNode(DataNode *parentNode)
 //  Creation:   July 23, 2003. 
 //
 //  Modifications:
-//    
+//    Kathleen Bonnell, Tue Aug 24 14:59:16 PDT 2004
+//    If one of the vars is 'all', reteive all variables defined on Mesh,
+//    and all expression vars, too, and add them to the list.
+// 
 // ****************************************************************************
 
 void
 GetUniqueVars(const stringVector &vars, const string &activeVar, 
-              stringVector &uniqueVars)
+              stringVector &uniqueVars, const avtDatabaseMetaData *md)
 {
     if (vars.size() == 0)
     {
         uniqueVars.push_back(activeVar);
         return;
     }
+    int i, j;
     set<string> uniqueVarsSet;
-    for (int i = 0; i < vars.size(); i++)
+    for (i = 0; i < vars.size(); i++)
     {
         string v = vars[i];
         if (v == "default")
         {
             v = activeVar;
         }
-        if (uniqueVarsSet.count(v) == 0)
+        if ((v == "all" || v == "All") && md != NULL)
+        {
+            stringVector dbVars = md->GetAllVariableNames(activeVar);
+            const ExpressionList *exprList = ParsingExprList::Instance()->GetList();
+            stringVector exprVars = exprList->GetAllVarNames(md->GetDatabaseName());
+            for (j = 0; j < dbVars.size(); j++)
+            {
+                if (uniqueVarsSet.count(dbVars[j]) == 0) 
+                {
+                    uniqueVars.push_back(dbVars[j]);
+                    uniqueVarsSet.insert(dbVars[j]); 
+                }
+            }
+            for (j = 0; j < exprVars.size(); j++)
+            {
+                if (uniqueVarsSet.count(exprVars[j]) == 0) 
+                {
+                    uniqueVars.push_back(exprVars[j]);
+                    uniqueVarsSet.insert(exprVars[j]); 
+                }
+            }
+        }
+        else if (uniqueVarsSet.count(v) == 0)
         {
             uniqueVars.push_back(v);
             uniqueVarsSet.insert(v); 

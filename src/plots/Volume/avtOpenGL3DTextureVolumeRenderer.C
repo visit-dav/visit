@@ -24,6 +24,7 @@
 #include <avtViewInfo.h>
 #include <avtCallback.h>
 #include <LightList.h>
+#include <DebugStream.h>
 
 #include <float.h>
 
@@ -32,6 +33,11 @@
 #endif
 #ifndef MIN
 #define MIN(a,b) ((a) < (b) ? (a) : (b))
+#endif
+
+#if defined(_WIN32) && !defined(avtOpenGL3DTextureVolumeRenderer)
+// On Windows, we have to access glTexImage3D as an OpenGL extension.
+static PFNGLTEXIMAGE3DEXTPROC glTexImage3D_ptr = 0;
 #endif
 
 
@@ -44,11 +50,26 @@
 //  Programmer:  Jeremy Meredith
 //  Creation:    September 30, 2003
 //
+//  Modifications:
+//    Brad Whitlock, Fri Aug 20 16:52:18 PST 2004
+//    Added support for looking up glTexImage3D extension on Windows.
+//
 // ****************************************************************************
+
 avtOpenGL3DTextureVolumeRenderer::avtOpenGL3DTextureVolumeRenderer()
 {
     volumetex = NULL;
     volumetexId = 0;
+
+#if defined(_WIN32) && !defined(avtOpenGL3DTextureVolumeRenderer)
+    // On Windows, glTexImage3D is an OpenGL extension. We have to look
+    // up the function pointer.
+    if(glTexImage3D_ptr == 0)
+        glTexImage3D_ptr = (PFNGLTEXIMAGE3DEXTPROC)wglGetProcAddress("glTexImage3D");
+
+    if(glTexImage3D_ptr == 0)
+        debug1 << "The glTexImage3D function was not located." << endl;
+#endif
 }
 
 
@@ -112,7 +133,12 @@ avtOpenGL3DTextureVolumeRenderer::~avtOpenGL3DTextureVolumeRenderer()
 //    Add several casts and change a double constant to a float constant
 //    to fix compile errors.
 //
+//    Brad Whitlock, Thu Aug 12 14:38:43 PST 2004
+//    I removed the ifdef that prevented the code from building on Windows
+//    and moved it into visit-config.h. I also added Windows-specific code.
+//
 // ****************************************************************************
+
 void
 avtOpenGL3DTextureVolumeRenderer::Render(vtkRectilinearGrid *grid,
                                          vtkDataArray *data,
@@ -124,10 +150,17 @@ avtOpenGL3DTextureVolumeRenderer::Render(vtkRectilinearGrid *grid,
                                          float *gx, float *gy, float *gz,
                                          float *gmn)
 {
-//
-// The VC++ 6.0 compiler's OpenGL does not have 3D texturing!
-//
-#if !defined(_WIN32) && (defined(HAVE_GL_TEX_IMAGE_3D) || defined(avtOpenGL3DTextureVolumeRenderer))
+#if defined(_WIN32) && !defined(avtOpenGL3DTextureVolumeRenderer)
+    // Make sure that the glTexImage3D pointer is valid before doing
+    // anything in this routine.
+    if(glTexImage3D_ptr == 0)
+    {
+        debug1 << "avtOpenGL3DTextureVolumeRenderer::Render: returning because glTexImage3D_ptr == 0." << endl;
+        return;
+    }
+#endif
+
+#if defined(HAVE_GL_TEX_IMAGE_3D) || defined(avtOpenGL3DTextureVolumeRenderer)
 
     // Get the transfer function
     int ncolors=256;
@@ -318,8 +351,15 @@ avtOpenGL3DTextureVolumeRenderer::Render(vtkRectilinearGrid *grid,
         //glPixelStorei(GL_UNPACK_ALIGNMENT,1);
         glGenTextures(1, &volumetexId);
         glBindTexture(GL_TEXTURE_3D, volumetexId);
+
+#if defined(_WIN32) && !defined(avtOpenGL3DTextureVolumeRenderer)
+        // On Windows, we have to access glTexImage3D via a function pointer.
+        glTexImage3D_ptr(GL_TEXTURE_3D, 0, GL_RGBA, newnx, newny, newnz,
+                         0, GL_RGBA, GL_UNSIGNED_BYTE, volumetex);
+#else
         glTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA, newnx, newny, newnz,
                      0, GL_RGBA, GL_UNSIGNED_BYTE, volumetex);
+#endif
     }
 
     //

@@ -136,6 +136,9 @@ VariableMenuPopulator::ClearDatabaseName()
 //   Brad Whitlock, Thu Aug 5 14:42:13 PST 2004
 //   I made it use VariableList instead of StringBoolMap.
 //
+//   Jeremy Meredith, Tue Aug 24 16:18:19 PDT 2004
+//   Force an update if it is metadata from a simulation.
+//
 // ****************************************************************************
 
 bool
@@ -149,9 +152,12 @@ VariableMenuPopulator::PopulateVariableLists(const std::string &dbName,
     //
     // If the database name is the same and the expression list is the
     // same then return false, indicating that no updates are required.
+    // If this is a simulation, then the variable list might change at
+    // any time, so treat that as equivalent to MustRepopulateOnStateChange.
     //
     bool expressionsSame = *exprList == cachedExpressionList;
-    bool variableMetaData = md->GetMustRepopulateOnStateChange();
+    bool variableMetaData = md->GetMustRepopulateOnStateChange() ||
+                            md->GetIsSimulation();
     if(dbName == cachedDBName && expressionsSame && !variableMetaData)
         return false;
 

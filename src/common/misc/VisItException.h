@@ -14,6 +14,13 @@
 
 #include <misc_exports.h>
 
+#if defined(_WIN32) && defined(GetMessage)
+// The windows.h header file defines GetMessage to be GetMessageA, which
+// interferes with us calling VisItException::GetMessage. Make sure that
+// GetMessage is not defined.
+#undef GetMessage
+#endif
+
 #ifdef FAKE_EXCEPTIONS
 #define VISIT_THROW_NOTHING
 #else

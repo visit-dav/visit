@@ -26,6 +26,7 @@ class ViewerPlotList;
 class ViewerWindow;
 class avtToolInterface;
 class PickAttributes;
+class avtDatabaseMetaData;
 
 typedef std::map<std::string, avtSILRestriction_p> SILRestrictionMap;
 typedef std::map<std::string, int> StringIntMap;

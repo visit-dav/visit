@@ -300,6 +300,12 @@ avtDatasetCollection::ReplaceMixVar(int dom, void_ref_ptr mix)
 //  Programmer:   Hank Childs
 //  Creation:     October 26, 2001
 //
+//  Modifications:
+//    Brad Whitlock, Thu Aug 19 16:35:48 PST 2004
+//    Made it use a different constructor if the size of the labels array
+//    is zero as part of a fix to prevent VisIt from crashing on Windows using
+//    the new compiler. I have no idea how it was working elsewhere.
+//
 // ****************************************************************************
  
 avtDataTree_p
@@ -309,8 +315,15 @@ avtDatasetCollection::AssembleDataTree(std::vector<int> &domains)
     {
         if (*avtds[i] == NULL)
         {
-            avtds[i] = new avtDataTree(numMats[i], vtkds[i], domains[i],
-                                       labels[i]);
+            if(labels[i].size() > 0)
+            {
+                avtds[i] = new avtDataTree(numMats[i], vtkds[i], domains[i],
+                                           labels[i]);
+            }
+            else
+            {
+                avtds[i] = new avtDataTree(numMats[i], vtkds[i], domains[i]);
+            }
         }
     }
  

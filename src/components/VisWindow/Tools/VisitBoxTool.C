@@ -902,6 +902,9 @@ VisitBoxTool:: GetBoundingBoxOutline(int a, avtVector *verts, bool giveMin)
 //   Brad Whitlock, Tue Jul 13 14:45:22 PST 2004
 //   Moved some code into GetHotPointLabel.
 //
+//   Brad Whitlock, Thu Aug 12 17:42:02 PST 2004
+//   I fixed a potential error.
+//
 // ****************************************************************************
 
 void
@@ -944,18 +947,16 @@ VisitBoxTool::UpdateOutline()
     else
     {
         int  nverts = 4;
-        int  plane[6];
-        bool planeFlag[6];
+        int  plane[2];
+        bool planeFlag[2];
         avtVector verts[4];
 
-        int ahp;
         if(activeHotPoint == 1 || activeHotPoint == 2)
             plane[0] = plane[1] = 1;
         else if(activeHotPoint == 3 || activeHotPoint == 4)
             plane[0] = plane[1] = 2;
         else
             plane[0] = plane[1] = 3;
-        plane[0] = ahp; plane[1] = ahp;
         planeFlag[0] = true; planeFlag[1] = false;
 
         for(int j = 0; j < 2; ++j)

@@ -263,9 +263,13 @@ avtDataTree::avtDataTree(int n, vtkDataSet **ds, int ind)
 //  Creation:   June 6, 2001
 //
 //  Modifications:
-// 
 //    Kathleen Bonnell, Wed Sep 19 13:45:33 PDT 2001
 //    Added labels to the argument list.
+//
+//    Brad Whitlock, Thu Aug 19 16:27:38 PST 2004
+//    Added a check that makes sure that the number of labels is at least as
+//    large as n so we don't have memory problems if the labels array violates
+//    this method's assumptions.
 //
 // ****************************************************************************
 
@@ -274,6 +278,13 @@ avtDataTree::avtDataTree(int n, vtkDataSet **ds, int ind, vector<string> &l)
     if (ds == NULL || n == 0)
     {
         EXCEPTION0(NoInputException);
+    }
+    // This code should be called *always* to ensure we don't walk off the
+    // end of the vector since this method assumes that the length of the
+    // l label vector is at least the size of n.
+    if(l.size() < n)
+    {
+        EXCEPTION1(ImproperUseException, "The are fewer labels than expected!");
     }
     nChildren = n;
     children = new avtDataTree_p [nChildren];

@@ -7712,6 +7712,9 @@ visit_WriteConfigFile(PyObject *self, PyObject *args)
 //   Kathleen Bonnell, Thu Apr 22 15:28:31 PDT 2004 
 //   Changed arg1 default to 1 (is used to specify 'actual' data). 
 //
+//   Kathleen Bonnell, Tue Aug 24 15:31:56 PDT 2004 
+//   Changed arg1 default to 0 (is used to specify 'original' data). 
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -7720,7 +7723,7 @@ visit_Query(PyObject *self, PyObject *args)
     ENSURE_VIEWER_EXISTS();
 
     char *queryName;
-    int arg1 = 1, arg2 = 0;
+    int arg1 = 0, arg2 = 0;
     PyObject *tuple = NULL;
     if (!PyArg_ParseTuple(args, "sii|O", &queryName, &arg1, &arg2, &tuple))
     {

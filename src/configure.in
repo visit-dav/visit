@@ -502,6 +502,12 @@ dnl
 dnl    Eric Brugger, Mon Jul 26 15:44:24 PDT 2004
 dnl    Replaced fstream.h with fstream.
 dnl
+dnl    Brad Whitlock, Wed Aug 11 15:04:49 PST 2004
+dnl    I changed the build offset for MacOS X.
+dnl
+dnl    Jeremy Meredith, Tue Aug 24 21:26:15 PDT 2004
+dnl    Added engine wrapper library and simulation prototype.
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -879,6 +885,7 @@ if test -d engine; then
     else
         ENGINE_PAR=""
         ENGINELIBPAR=""
+        ENGINEWRAPPAR=""
     fi
     if test -z "$VTK"; then
         AC_MSG_ERROR([engine is here, but no VTK library was specified. 
@@ -2584,7 +2591,7 @@ case $SHORT_UNAME in
     PREBIND_LIBS="$""(PREBIND_LIBS)"
     # Create the address.txt file with the initial offset for the VisIt libraries.
     rm -f address.txt linkedit.log
-    echo "0x2562a000" > address.txt
+    echo "0x22f8f000" > address.txt
     ;;
 esac
 # Set up the defaults
@@ -2641,6 +2648,18 @@ AC_SUBST(SHLIB_TMPDIR)
 AC_SUBST(PREBIND_LIBS)
 
 AC_DEFINE_UNQUOTED(PLUGIN_EXTENSION, ".${SHLIB_SOEXT}" )
+
+#
+# Now that we know about shared libraries, specify the engine wrapper library
+#
+if test -d engine; then
+    ENGINEWRAPSER="$""(libdir)/libvisitengine_ser.${SHLIB_SOEXT}"
+    if test -n "$PARALLEL"; then
+        ENGINEWRAPPAR="$""(libdir)/libvisitengine_par.${SHLIB_SOEXT}"
+    fi
+fi
+AC_SUBST(ENGINEWRAPSER)
+AC_SUBST(ENGINEWRAPPAR)
 
 #
 # This helps the Makefile in the lib directory make the right links
@@ -2891,6 +2910,7 @@ OPERATOR_FILES="operators/Makefile"
 DATABASE_FILES="databases/Makefile"
 
 DATA_FILES="data/Makefile"
+SIMULATION_PROTOTYPE_FILES="sim/Makefile"
 
 if test "$enable_scripting" = "yes"; then
     VISITPY_FILES="visitpy/Makefile"
@@ -2927,6 +2947,7 @@ AC_OUTPUT($STANDARD_FILES
           $DATABASE_FILES
           $DATA_FILES
           $VISITPY_FILES
+          $SIMULATION_PROTOTYPE_FILES
           $JAVA_FILES,
           echo timestamp > include/stamp-h)
 

@@ -2960,3 +2960,93 @@ ViewerEngineManager::CreateNode(DataNode *parentNode) const
 }
 
 
+// ****************************************************************************
+//  Method:  ViewerEngineManager::GetWriteSocket
+//
+//  Purpose:
+//    Gets the socket the engine uses to send data to the viewer.
+//
+//  Arguments:
+//    ek         the key that identifies the engine
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    August 25, 2004
+//
+// ****************************************************************************
+
+int
+ViewerEngineManager::GetWriteSocket(const EngineKey &ek)
+{
+    if (EngineExists(ek))
+        return engines[ek].proxy->GetWriteSocket();
+    else
+        return -1;
+}
+
+// ****************************************************************************
+//  Method:  ViewerEngineManager::ReadDataAndProcess
+//
+//  Purpose:
+//    Read from an engine (if it exists) and process the data.
+//
+//  Arguments:
+//    ek         the key that identifies the engine
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    August 25, 2004
+//
+// ****************************************************************************
+
+void
+ViewerEngineManager::ReadDataAndProcess(const EngineKey &ek)
+{
+    if (EngineExists(ek))
+        engines[ek].proxy->ReadDataAndProcess();
+}
+
+// ****************************************************************************
+//  Method:  ViewerEngineManager::GetSimulationMetaData
+//
+//  Purpose:
+//    Get the metadata object for the simulation.
+//
+//  Arguments:
+//    ek         the key that identifies the engine
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    August 25, 2004
+//
+// ****************************************************************************
+
+avtDatabaseMetaData *
+ViewerEngineManager::GetSimulationMetaData(const EngineKey &ek)
+{
+    if (EngineExists(ek))
+        return engines[ek].proxy->GetSimulationMetaData();
+    else
+        EXCEPTION0(NoEngineException);
+}
+
+// ****************************************************************************
+//  Method:  ViewerEngineManager::GetSimulationSILAtts
+//
+//  Purpose:
+//    Get the SILAttributes for the simulation.
+//
+//  Arguments:
+//    ek         the key that identifies the engine
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    August 25, 2004
+//
+// ****************************************************************************
+
+SILAttributes *
+ViewerEngineManager::GetSimulationSILAtts(const EngineKey &ek)
+{
+    if (EngineExists(ek))
+        return engines[ek].proxy->GetSimulationSILAtts();
+    else
+        EXCEPTION0(NoEngineException);
+}
+

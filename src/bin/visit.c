@@ -367,6 +367,9 @@ ReadKey(const char *key, char **keyval)
  *   found. In that case, it now tries to look up VISITDEVDIR. Finally,
  *   if that is not found then it resorts to using
  *
+ *   Brad Whitlock, Mon Aug 16 09:22:53 PDT 2004
+ *   Added binary locations for MSVC7.Net versions of VisIt.
+ *
  *****************************************************************************/
 
 char *
@@ -393,10 +396,19 @@ AddEnvironment(int useShortFileName)
 
         if(haveVISITDEVDIR)
         {
+#ifdef USING_MSVC6
 #if defined(_DEBUG)
             static const char *configDir = "\\bin\\Debug";
 #else
             static const char *configDir = "\\bin\\Release";
+#endif
+#else
+            /* The location of the binaries are different for MSVC7.Net */
+#if defined(_DEBUG)
+            static const char *configDir = "\\bin\\MSVC7.Net\\Debug";
+#else
+            static const char *configDir = "\\bin\\MSVC7.Net\\Release";
+#endif
 #endif
             visitpath = (char *)malloc(strlen(visitdevdir) + strlen(configDir) + 1);
             sprintf(visitpath, "%s%s", visitdevdir, configDir);
@@ -404,10 +416,19 @@ AddEnvironment(int useShortFileName)
         else
         {
             char tmpdir[512];
+#ifdef USING_MSVC6
 #if defined(_DEBUG)
             sprintf(tmpdir, "C:\\VisItDev%s\\bin\\Debug", VERSION);
 #else
             sprintf(tmpdir, "C:\\VisItDev%s\\bin\\Release", VERSION);
+#endif
+#else
+            /* The location of the binaries are different for MSVC7.Net */
+#if defined(_DEBUG)
+            sprintf(tmpdir, "C:\\VisItDev%s\\bin\\MSVC7.Net\\Debug", VERSION);
+#else
+            sprintf(tmpdir, "C:\\VisItDev%s\\bin\\MSVC7.Net\\Release", VERSION);
+#endif
 #endif
             visitpath = (char *)malloc(strlen(tmpdir) + 1);
             strcpy(visitpath, tmpdir);

@@ -11,7 +11,6 @@
 
 #include <avtSTMDFileFormat.h>
 
-#include <database_exports.h>
 #include <void_ref_ptr.h>
 
 struct s_PDBfile;
@@ -44,7 +43,7 @@ class vtkUnstructuredGrid;
 //
 // ****************************************************************************
 
-class DATABASE_API avtKullLiteFileFormat : public avtSTMDFileFormat
+class avtKullLiteFileFormat : public avtSTMDFileFormat
 {
   public:
                           avtKullLiteFileFormat(const char *);

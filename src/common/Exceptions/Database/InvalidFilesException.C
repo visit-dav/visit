@@ -53,6 +53,31 @@ InvalidFilesException::InvalidFilesException(const char *filename)
 //  Method: InvalidFilesException constructor
 //
 //  Arguments:
+//      filename    The name of an invalid file.
+//      message     A more informative message than the default one.
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   August 11, 2004
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+InvalidFilesException::InvalidFilesException(const std::string &filename,
+                                             const std::string &message)
+{
+    char str[2048];
+    sprintf(str, "The database had an error opening %s: %s", filename.c_str(),
+            message.c_str());
+
+    msg = str;
+}
+
+
+// ****************************************************************************
+//  Method: InvalidFilesException constructor
+//
+//  Arguments:
 //      list     A list of filenames.
 //      listN    The number of files in list.
 //

@@ -1,3 +1,21 @@
+Initialization: outputToCurrentDirectory
+#if defined(_WIN32)
+    outputToCurrentDirectory = false;
+#else
+    outputToCurrentDirectory = true;
+#endif
+
+Initialization: outputDirectory
+#if defined(_WIN32)
+    const char *visitHome = getenv("VISITHOME");
+    if(visitHome != 0)
+        outputDirectory = std::string(visitHome) + "\\My images";
+    else
+        outputDirectory = ".";
+#else
+    outputDirectory = ".";
+#endif
+
 Function: CurrentFormatIsImageFormat
 Declaration: bool CurrentFormatIsImageFormat(void);
 Definition:

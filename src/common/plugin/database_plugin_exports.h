@@ -3,7 +3,7 @@
 
 #if defined(_WIN32)
 
-#ifdef USING_MSVC6
+#if defined(USING_MSVC6) || defined(USING_MSVC7)
 // Disable inheritance by dominance warning message.
 #pragma warning(disable:4250)
 // Disable DLL interface warning.

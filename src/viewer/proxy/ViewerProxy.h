@@ -9,6 +9,7 @@
 #include <avtSILRestriction.h>
 #include <vectortypes.h>
 
+class avtDatabaseMetaData;
 class AnimationAttributes;
 class AnnotationAttributes;
 class AnnotationObjectList;
@@ -38,6 +39,7 @@ class QueryList;
 class RenderingAttributes;
 class RemoteProcess;
 class SaveWindowAttributes;
+class SILAttributes;
 class StatusAttributes;
 class SyncAttributes;
 class ViewCurveAttributes;
@@ -348,6 +350,9 @@ class Xfer;
 //    Kathleen Bonnell, Wed Aug 18 09:28:51 PDT 2004 
 //    Added interactorAtts.
 //
+//    Jeremy Meredith, Thu Apr 22 14:02:52 PDT 2004
+//    Added metaData and GetDatabaseMetaData.  Added silAtts and GetSILAtts.
+//
 // ****************************************************************************
 
 class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
@@ -632,9 +637,12 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
                                     {return globalLineoutAtts;};
     AnnotationObjectList       *GetAnnotationObjectList() const
                                     {return annotationObjectList; };
-
     QueryOverTimeAttributes    *GetQueryOverTimeAttributes() const 
                                     {return queryOverTimeAtts;};
+    avtDatabaseMetaData        *GetDatabaseMetaData() const
+                                    {return metaData; }
+    SILAttributes              *GetSILAtts() const
+                                    {return silAtts; }
   protected:
     virtual void Update(Subject *subj);
   private:
@@ -680,6 +688,8 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
     GlobalLineoutAttributes    *globalLineoutAtts;
     AnnotationObjectList       *annotationObjectList;
     QueryOverTimeAttributes    *queryOverTimeAtts;
+    avtDatabaseMetaData        *metaData;
+    SILAttributes              *silAtts;
 
     AttributeSubject           **plotAtts;
     AttributeSubject           **operatorAtts;

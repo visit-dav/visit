@@ -864,6 +864,25 @@ avtDatabase::GetSIL(int timeState)
 }
 
 // ****************************************************************************
+//  Method: avtDatabase::ClearMetaDataAndSILCache
+//
+//  Purpose:
+//      Clears the cached metadata and SILs.  This is needed for simulations
+//      which are single-time but that one time step *changes*.
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   August 24, 2004
+//
+// ****************************************************************************
+
+void
+avtDatabase::ClearMetaDataAndSILCache(void)
+{
+    metadata.clear();
+    sil.clear();
+}
+
+// ****************************************************************************
 //  Method: avtDatabase::ClearCache
 //
 //  Purpose:

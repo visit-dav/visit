@@ -125,6 +125,9 @@ ParseCharacters(const QString &buff)
 //    Jeremy Meredith, Wed Jul  7 17:08:03 PDT 2004
 //    Allow for mdserver-specific code in a plugin's source files.
 //
+//    Jeremy Meredith, Wed Aug 25 11:50:14 PDT 2004
+//    Added the concept of an engine-only or everything-but-the-engine plugin.
+//
 // ****************************************************************************
 
 class XMLParser : public QXmlDefaultHandler
@@ -215,9 +218,13 @@ class XMLParser : public QXmlDefaultHandler
             QString iconFile  = atts.value("iconFile");
             QString enabled   = atts.value("enabled");
             QString mdspecific= atts.value("mdspecificcode");
+            QString onlyengine= atts.value("onlyengine");
+            QString noengine  = atts.value("noengine");
             currentPlugin = new Plugin(name, label, type, vartype,
                                        dbtype, version, iconFile, 
-                                       haswriter.isNull() ? false : Text2Bool(haswriter));
+                                       haswriter.isNull() ? false : Text2Bool(haswriter),
+                                       onlyengine.isNull() ? false : Text2Bool(onlyengine),
+                                       noengine.isNull() ? false : Text2Bool(noengine));
             if (!enabled.isNull())
             {
                 currentPlugin->enabledByDefault = Text2Bool(enabled);

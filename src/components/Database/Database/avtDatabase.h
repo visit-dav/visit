@@ -167,12 +167,16 @@ typedef struct {
 //    Kathleen Bonnell, Tue May 25 16:16:25 PDT 2004 
 //    Added virtual QueryZoneCenter, defined here so derived types don't
 //    have to. 
-
+//
 //    Kathleen Bonnell, Wed Jun  9 12:44:48 PDT 2004 
 //    Added bool arg to QueryMesh. 
 //
 //    Kathleen Bonnell, Thu Jun 10 18:15:11 PDT 2004
 //    Rename QueryZoneCenter to QueryCoords, added bool arg. 
+//
+//    Jeremy Meredith, Tue Aug 24 17:58:07 PDT 2004
+//    Added ability to clear the metadata and SIL caches.  This was needed
+//    for simulations.
 //
 // ****************************************************************************
 
@@ -229,6 +233,8 @@ class DATABASE_API avtDatabase
                                       { fileFormat = ff; };
     const std::string          &GetFileFormat(void) const 
                                       { return fileFormat; };
+
+    void                        ClearMetaDataAndSILCache();
 
   protected:
     std::list<CachedMDEntry>               metadata;

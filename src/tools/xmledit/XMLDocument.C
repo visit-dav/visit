@@ -75,6 +75,10 @@ class ErrorHandler : public QXmlErrorHandler
 //    for required fields that were not filled in.
 //    Catch errors writing files and display the messages to the user.
 //
+//    Jeremy Meredith, Wed Aug 25 11:57:08 PDT 2004
+//    Added the "no-engine" and "engine-only" options to the plugin
+//    constructor.
+//
 // ****************************************************************************
 
 void
@@ -89,7 +93,7 @@ XMLDocument::open(const QString &file)
     if (!test)
     {
         docType = "Plugin";
-        plugin = new Plugin("","","","","","", "", "");
+        plugin = new Plugin("","","","","","", "", false, false, false);
         attribute = new Attribute("","",QString(),"","");
         plugin->atts = attribute;
         return;

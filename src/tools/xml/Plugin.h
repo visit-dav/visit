@@ -43,6 +43,9 @@
 //    Jeremy Meredith, Wed Jul  7 17:08:03 PDT 2004
 //    Allow for mdserver-specific code in a plugin's source files.
 //
+//    Jeremy Meredith, Wed Aug 25 11:50:14 PDT 2004
+//    Added the concept of an engine-only or everything-but-the-engine plugin.
+//
 // ****************************************************************************
 
 class Plugin
@@ -59,6 +62,8 @@ class Plugin
     bool haswriter;
     bool enabledByDefault;
     bool has_MDS_specific_code;
+    bool onlyEnginePlugin;
+    bool noEnginePlugin;
 
     vector<QString> cxxflags;
     vector<QString> ldflags;
@@ -85,8 +90,8 @@ class Plugin
 
     Attribute *atts;
   public:
-    Plugin(const QString &n,const QString &l,const QString &t,const QString &vt,const QString &dt,const QString &v, const QString &ifile, bool hw)
-        : name(n), type(t), label(l), version(v), vartype(vt), dbtype(dt), iconFile(ifile),haswriter(hw), atts(NULL)
+    Plugin(const QString &n,const QString &l,const QString &t,const QString &vt,const QString &dt,const QString &v, const QString &ifile, bool hw, bool onlyengine, bool noengine)
+        : name(n), type(t), label(l), version(v), vartype(vt), dbtype(dt), iconFile(ifile), haswriter(hw), onlyEnginePlugin(onlyengine), noEnginePlugin(noengine), atts(NULL)
     {
         enabledByDefault = true;
         has_MDS_specific_code = false;
@@ -138,6 +143,8 @@ class Plugin
         WriteTagAttr(out, "version", version);
         WriteTagAttr(out, "enabled", Bool2Text(enabledByDefault));
         WriteTagAttr(out, "mdspecificcode", Bool2Text(has_MDS_specific_code));
+        WriteTagAttr(out, "onlyengine", Bool2Text(has_MDS_specific_code));
+        WriteTagAttr(out, "noengine", Bool2Text(has_MDS_specific_code));
 
         if (type == "plot")
         {

@@ -2549,6 +2549,7 @@ echo "${ECHO_T}found" >&6
     else
         ENGINE_PAR=""
         ENGINELIBPAR=""
+        ENGINEWRAPPAR=""
     fi
     if test -z "$VTK"; then
         { { echo "$as_me:$LINENO: error: engine is here, but no VTK library was specified.
@@ -9610,7 +9611,7 @@ case $SHORT_UNAME in
     PREBIND_LIBS="$""(PREBIND_LIBS)"
     # Create the address.txt file with the initial offset for the VisIt libraries.
     rm -f address.txt linkedit.log
-    echo "0x2562a000" > address.txt
+    echo "0x22f8f000" > address.txt
     ;;
 esac
 # Set up the defaults
@@ -9669,6 +9670,18 @@ if test -z "$PREBIND_LIBS"         ; then PREBIND_LIBS=""; fi
 cat >>confdefs.h <<_ACEOF
 #define PLUGIN_EXTENSION ".${SHLIB_SOEXT}"
 _ACEOF
+
+
+#
+# Now that we know about shared libraries, specify the engine wrapper library
+#
+if test -d engine; then
+    ENGINEWRAPSER="$""(libdir)/libvisitengine_ser.${SHLIB_SOEXT}"
+    if test -n "$PARALLEL"; then
+        ENGINEWRAPPAR="$""(libdir)/libvisitengine_par.${SHLIB_SOEXT}"
+    fi
+fi
+
 
 
 #
@@ -15954,6 +15967,7 @@ OPERATOR_FILES="operators/Makefile"
 DATABASE_FILES="databases/Makefile"
 
 DATA_FILES="data/Makefile"
+SIMULATION_PROTOTYPE_FILES="sim/Makefile"
 
 if test "$enable_scripting" = "yes"; then
     VISITPY_FILES="visitpy/Makefile"
@@ -15972,7 +15986,7 @@ LAUNCHER_FILES="launcher/Makefile
                 launcher/proxy/Makefile
                 launcher/main/Makefile"
 
-ac_config_files="$ac_config_files $STANDARD_FILES $GUI_FILES $HELP_FILES $WINUTIL_FILES $VIEWER_FILES $ENGINE_FILES $MDSERVER_FILES $LAUNCHER_FILES $COMMON_FILES $TOOLS_FILES $VISIT_VTK_FILES $VTKQT_FILES $COMPONENT_FILES $PLOT_FILES $OPERATOR_FILES $DATABASE_FILES $DATA_FILES $VISITPY_FILES $JAVA_FILES"
+ac_config_files="$ac_config_files $STANDARD_FILES $GUI_FILES $HELP_FILES $WINUTIL_FILES $VIEWER_FILES $ENGINE_FILES $MDSERVER_FILES $LAUNCHER_FILES $COMMON_FILES $TOOLS_FILES $VISIT_VTK_FILES $VTKQT_FILES $COMPONENT_FILES $PLOT_FILES $OPERATOR_FILES $DATABASE_FILES $DATA_FILES $VISITPY_FILES $SIMULATION_PROTOTYPE_FILES $JAVA_FILES"
 ac_config_commands="$ac_config_commands default"
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -16465,6 +16479,7 @@ do
   "$DATABASE_FILES" ) CONFIG_FILES="$CONFIG_FILES $DATABASE_FILES" ;;
   "$DATA_FILES" ) CONFIG_FILES="$CONFIG_FILES $DATA_FILES" ;;
   "$VISITPY_FILES" ) CONFIG_FILES="$CONFIG_FILES $VISITPY_FILES" ;;
+  "$SIMULATION_PROTOTYPE_FILES" ) CONFIG_FILES="$CONFIG_FILES $SIMULATION_PROTOTYPE_FILES" ;;
   "$JAVA_FILES" ) CONFIG_FILES="$CONFIG_FILES $JAVA_FILES" ;;
   "default" ) CONFIG_COMMANDS="$CONFIG_COMMANDS default" ;;
   "include/visit-config.h" ) CONFIG_HEADERS="$CONFIG_HEADERS include/visit-config.h" ;;
@@ -16708,6 +16723,8 @@ s,@SHLIB_POSTPROCESS_SER@,$SHLIB_POSTPROCESS_SER,;t t
 s,@SHLIB_POSTPROCESS_PAR@,$SHLIB_POSTPROCESS_PAR,;t t
 s,@SHLIB_TMPDIR@,$SHLIB_TMPDIR,;t t
 s,@PREBIND_LIBS@,$PREBIND_LIBS,;t t
+s,@ENGINEWRAPSER@,$ENGINEWRAPSER,;t t
+s,@ENGINEWRAPPAR@,$ENGINEWRAPPAR,;t t
 s,@CREATE_SILO_LINK@,$CREATE_SILO_LINK,;t t
 s,@CREATE_MILI_LINK@,$CREATE_MILI_LINK,;t t
 s,@CREATE_HDF5_LINK@,$CREATE_HDF5_LINK,;t t

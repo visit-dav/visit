@@ -114,6 +114,9 @@
 #   Jeremy Meredith, Mon Aug 23 14:54:51 PDT 2004
 #   Added the Dune plugin.
 #
+#   Jeremy Meredith, Wed Aug 25 11:56:21 PDT 2004
+#   Added SimDB, needed for simulation support.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -131,7 +134,7 @@ PDB=KullLite PDB
 SAF=SAF
 SAMPLES=Rect Hex
 REQUIRED=ANALYZE BOV Curve2D Dune EnSight Image Lines OVERFLOW \
- PLOT2D PLOT3D Point3D STL Silo Spheral Vista VTK WavefrontOBJ
+ PLOT2D PLOT3D Point3D STL Silo SimDB Spheral Vista VTK WavefrontOBJ
 
 OPTIONAL=
 

@@ -240,6 +240,9 @@
 #    Brad Whitlock, Fri Apr 9 09:09:28 PDT 2004
 #    Moved moc files into viewer proper.
 #
+#    Jeremy Meredith, Tue Aug 24 21:28:02 PDT 2004
+#    Added metadata and SIL observers.
+#
 ##############################################################################
 
 ##
@@ -301,6 +304,7 @@ PRIVATE_SRC=\
     ViewerHostProfileSelectorNoWin.C \
     ViewerHostProfileSelectorWithWin.C \
     ViewerMessageBuffer.C \
+    ViewerMetaDataObserver.C \
     ViewerMultipleAction.C \
     ViewerOperatorFactory.C \
     ViewerPasswordWindow.C \
@@ -312,6 +316,7 @@ PRIVATE_SRC=\
     ViewerRemoteProcessChooser.C \
     ViewerRPCObserver.C \
     ViewerServerManager.C \
+    ViewerSILAttsObserver.C \
     ViewerToggleAction.C \
     ViewerToolbar.C \
     ViewerWindow.C \
@@ -327,9 +332,11 @@ HDRMOC = \
     ViewerActionBase.h \
     ViewerConnectionProgressDialog.h \
     ViewerHostProfileSelectorWithWin.h \
+    ViewerMetaDataObserver.h \
     ViewerMultipleAction.h \
     ViewerPasswordWindow.h \
     ViewerRPCObserver.h \
+    ViewerSILAttsObserver.h \
     ViewerSubject.h \
     ViewerWindowManager.h
 

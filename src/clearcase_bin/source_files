@@ -56,6 +56,9 @@
 #   Brad Whitlock, Fri Apr 23 12:25:56 PDT 2004
 #   Added winutil to the top level.
 #
+#   Jeremy Meredith, Tue Aug 24 21:29:45 PDT 2004
+#   Added the simulation prototype.
+#
 
 withhelp=no
 
@@ -99,6 +102,7 @@ PATH="$PATH:./clearcase_bin"
     ./clearcase_bin/mkman --quiet --recursive --simple ./visitpy
     ./clearcase_bin/mkman --quiet --recursive --simple ./java
     ./clearcase_bin/mkman --quiet --recursive --simple ./tools
+    ./clearcase_bin/mkman --quiet --recursive --simple ./sim
     ./clearcase_bin/mkman --quiet --recursive --simple ./data
     ./clearcase_bin/mkman --quiet --recursive --simple ./include
     ./clearcase_bin/mkman --quiet --recursive --simple ./bin

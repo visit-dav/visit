@@ -29,6 +29,13 @@
 //    also fixed a bunch of bugs with the project files generated for
 //    mdserver and engine plugins.
 //
+//    Brad Whitlock, Thu Aug 12 17:43:51 PST 2004
+//    I added code to generate MSVC7.Net project files in addition to the
+//    regular version 6.0 project files.
+//
+//    Jeremy Meredith, Wed Aug 25 11:57:08 PDT 2004
+//    Added the concept of an engine-only or everything-but-the-engine plugin.
+//
 // ****************************************************************************
 
 class ProjectFileGeneratorPlugin
@@ -43,6 +50,8 @@ class ProjectFileGeneratorPlugin
     bool    haswriter;
     bool    enabledByDefault;
     bool    has_MDS_specific_code;
+    bool    onlyEnginePlugin;
+    bool    noEnginePlugin;
 
     vector<QString> cxxflags;
     vector<QString> ldflags;
@@ -69,8 +78,8 @@ class ProjectFileGeneratorPlugin
 
     Attribute *atts;
   public:
-    ProjectFileGeneratorPlugin(const QString &n,const QString &l,const QString &t,const QString &vt,const QString &dt,const QString &v, const QString&w, bool hw)
-        : name(n), type(t), label(l), version(v), vartype(vt), dbtype(dt), haswriter(hw), atts(NULL)
+    ProjectFileGeneratorPlugin(const QString &n,const QString &l,const QString &t,const QString &vt,const QString &dt,const QString &v, const QString&w, bool hw, bool onlyengine, bool noengine)
+        : name(n), type(t), label(l), version(v), vartype(vt), dbtype(dt), haswriter(hw), onlyEnginePlugin(onlyengine), noEnginePlugin(noengine), atts(NULL)
     {
         enabledByDefault = true;
         customgfiles = false;
@@ -106,6 +115,7 @@ class ProjectFileGeneratorPlugin
             defaultefiles.push_back(filter);
         }
     }
+
     void Print(ostream &out)
     {
         out << "Plugin: "<<name<<" (\""<<label<<"\", type="<<type<<") -- version "<<version<< endl;
@@ -198,7 +208,7 @@ protected:
             addTo.push_back(addFrom[i]);
     }
 
-    void WriteProject_TOP_LEVEL(ostream &out)
+    void WriteProject_TOP_LEVEL_Version6(ostream &out)
     {
         out << "# Microsoft Developer Studio Project File - Name=\"" << name << "\" - Package Owner=<4>" << endl;
         out << "# Microsoft Developer Studio Generated Build File, Format Version 6.00" << endl;
@@ -265,7 +275,76 @@ protected:
         out << "# End Project" << endl;
     }
 
-    void WriteProjectWorkspace(ostream &out, const vector<QString> &projects)
+    void WriteProject_TOP_LEVEL_Version7(ostream &out)
+    {
+        out << "<?xml version=\"1.0\" encoding=\"Windows-1252\"?>" << endl;
+        out << "<VisualStudioProject" << endl;
+        out << "\tProjectType=\"Visual C++\"" << endl;
+        out << "\tVersion=\"7.10\"" << endl;
+        out << "\tName=\"" << name << "\"" << endl;
+        out << "\tSccProjectName=\"\"" << endl;
+        out << "\tSccLocalPath=\"\"" << endl;
+        out << "\tKeyword=\"MakeFileProj\">" << endl;
+        out << "\t<Platforms>" << endl;
+        out << "\t\t<Platform" << endl;
+        out << "\t\t\tName=\"Win32\"/>" << endl;
+        out << "\t</Platforms>" << endl;
+        out << "\t<Configurations>" << endl;
+        out << "\t\t<Configuration" << endl;
+        out << "\t\t\tName=\"Debug|Win32\"" << endl;
+        out << "\t\t\tOutputDirectory=\".\\Debug\"" << endl;
+        out << "\t\t\tIntermediateDirectory=\".\\Debug\"" << endl;
+        out << "\t\t\tConfigurationType=\"10\"" << endl;
+        out << "\t\t\tUseOfMFC=\"0\"" << endl;
+        out << "\t\t\tATLMinimizesCRunTimeLibraryUsage=\"FALSE\">" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCCustomBuildTool\"/>" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCMIDLTool\"" << endl;
+        out << "\t\t\t\tTypeLibraryName=\".\\Debug\\" << name << ".tlb\"" << endl;
+        out << "\t\t\t\tHeaderFileName=\"\"/>" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCPostBuildEventTool\"/>" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCPreBuildEventTool\"/>" << endl;
+        out << "\t\t</Configuration>" << endl;
+        out << "\t\t<Configuration" << endl;
+        out << "\t\t\tName=\"Release|Win32\"" << endl;
+        out << "\t\t\tOutputDirectory=\".\\Release\"" << endl;
+        out << "\t\t\tIntermediateDirectory=\".\\Release\"" << endl;
+        out << "\t\t\tConfigurationType=\"10\"" << endl;
+        out << "\t\t\tUseOfMFC=\"0\"" << endl;
+        out << "\t\t\tATLMinimizesCRunTimeLibraryUsage=\"FALSE\">" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCCustomBuildTool\"/>" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCMIDLTool\"" << endl;
+        out << "\t\t\t\tTypeLibraryName=\".\\Release\\" << name << ".tlb\"" << endl;
+        out << "\t\t\t\tHeaderFileName=\"\"/>" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCPostBuildEventTool\"/>" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCPreBuildEventTool\"/>" << endl;
+        out << "\t\t</Configuration>" << endl;
+        out << "\t</Configurations>" << endl;
+        out << "\t<References>" << endl;
+        out << "\t</References>" << endl;
+        out << "\t<Files>" << endl;
+        out << "\t</Files>" << endl;
+        out << "\t<Globals>" << endl;
+        out << "\t</Globals>" << endl;
+        out << "</VisualStudioProject>" << endl;
+    }
+
+    void WriteProject_TOP_LEVEL(ostream &out, bool version7)
+    {
+        if(version7)
+            WriteProject_TOP_LEVEL_Version7(out);
+        else
+            WriteProject_TOP_LEVEL_Version6(out);
+    }
+
+    void WriteProjectWorkspace_Version6(ostream &out, const vector<QString> &projects)
     {
         out << "Microsoft Developer Studio Workspace File, Format Version 6.00" << endl;
         out << "# WARNING: DO NOT EDIT OR DELETE THIS WORKSPACE FILE!" << endl;
@@ -282,7 +361,7 @@ protected:
         out << "{{{" << endl;
 
         int i;
-        for(i = 0; i < projects.size(); ++i)
+        for(i = 1; i < projects.size(); ++i)
         {
             out << "    Begin Project Dependency" << endl;
             out << "    Project_Dep_Name " << projects[i] << endl;
@@ -292,7 +371,7 @@ protected:
         out << "}}}" << endl;
         out << "" << endl;
 
-        for(i = 0; i < projects.size(); ++i)
+        for(i = 1; i < projects.size(); ++i)
         {
             out << "###############################################################################" << endl;
             out << "" << endl;
@@ -324,10 +403,85 @@ protected:
         out << "" << endl;
     }
 
-    void WriteProjectHelper(ostream &out, const QString &pluginType, char pluginComponent,
+    QString CreateKey() const
+    {
+        const char *digits = "0123456789ABCDEF";
+        QString s("------------------------------------");
+        for(int i = 0; i < s.length(); ++i)
+        {
+            if(i == 8 || i == 13 || i == 18 || i == 23)
+                continue;
+            else
+            {
+                int v = rand() % 16;
+                s[i] = digits[v];
+            }
+        }
+
+        return QString("{") + s + QString("}");
+    }
+
+    void WriteProjectWorkspace_Version7(ostream &out, const vector<QString> &projects)
+    {
+        QString solutionKey("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}");
+        vector<QString> keys;
+
+        int i;
+        for(i = 0; i < projects.size(); ++i)
+            keys.push_back(CreateKey());
+
+        out << "Microsoft Visual Studio Solution File, Format Version 8.00" << endl;
+        out << "Project(\"" << solutionKey << "\") = \"" << projects[0] << "\", \"" << projects[0] << ".vcproj\", \"" << keys[0] << "\"" << endl;
+        out << "\tProjectSection(ProjectDependencies) = postProject" << endl;
+        for(i = 1; i < keys.size(); ++i)
+            out << "\t\t" << keys[i] << " = " << keys[i] << endl;
+
+        out << "\tEndProjectSection" << endl;
+        out << "EndProject" << endl;
+
+        for(i = 1; i < keys.size(); ++i)
+        {
+            out << "Project(\"" << solutionKey << "\") = \"" << projects[i] << "\", \"" << projects[i] << ".vcproj\", \"" << keys[i] << "\"" << endl;
+            out << "\tProjectSection(ProjectDependencies) = postProject" << endl;
+            out << "\tEndProjectSection" << endl;
+            out << "EndProject" << endl;
+        }
+
+        out << "Global" << endl;
+        out << "\tGlobalSection(SolutionConfiguration) = preSolution" << endl;
+        out << "\t\tDebug = Debug" << endl;
+        out << "\t\tRelease = Release" << endl;
+        out << "\tEndGlobalSection" << endl;
+        out << "\tGlobalSection(ProjectConfiguration) = postSolution" << endl;
+    
+        for(i = 0; i < keys.size(); ++i)
+        {
+            out << "\t\t" << keys[i] << ".Debug.ActiveCfg = Debug|Win32" << endl;
+            out << "\t\t" << keys[i] << ".Debug.Build.0 = Debug|Win32" << endl;
+            out << "\t\t" << keys[i] << ".Release.ActiveCfg = Release|Win32" << endl;
+            out << "\t\t" << keys[i] << ".Release.Build.0 = Release|Win32" << endl;
+        }
+
+        out << "\tEndGlobalSection" << endl;
+        out << "\tGlobalSection(ExtensibilityGlobals) = postSolution" << endl;
+        out << "\tEndGlobalSection" << endl;
+        out << "\tGlobalSection(ExtensibilityAddIns) = postSolution" << endl;
+        out << "\tEndGlobalSection" << endl;
+        out << "EndGlobal" << endl;
+    }
+
+    void WriteProjectWorkspace(ostream &out, const vector<QString> &projects, bool version7)
+    {
+        if(version7)
+            WriteProjectWorkspace_Version7(out, projects);
+        else
+            WriteProjectWorkspace_Version6(out, projects);
+    }
+
+    void WriteProjectHelper_Version6(ostream &out, const QString &pluginType, char pluginComponent,
         const QString &exports, const QString &libs, const vector<QString> &srcFiles)
     {
-        char *suffix = (pluginComponent == 'E') ? "_ser" : "";
+        const char *suffix = (pluginComponent == 'E') ? "_ser" : "";
 
         out << "# Microsoft Developer Studio Project File - Name=\"" << name << pluginComponent << "\" - Package Owner=<4>" << endl;
         out << "# Microsoft Developer Studio Generated Build File, Format Version 6.00" << endl;
@@ -443,20 +597,257 @@ protected:
         out << "# End Project" << endl;
     }
 
+    void WriteProjectHelper_Version7(ostream &out, const QString &pluginType, char pluginComponent,
+        const QString &exports, const QString &libs, const vector<QString> &srcFiles)
+    {
+        const char *suffix = (pluginComponent == 'E') ? "_ser" : "";
+
+        QString pType("Operator");
+        if(pluginType == "plots")
+            pType = "Plot";
+
+        out << "<?xml version=\"1.0\" encoding=\"Windows-1252\"?>" << endl;
+        out << "<VisualStudioProject" << endl;
+        out << "\tProjectType=\"Visual C++\"" << endl;
+        out << "\tVersion=\"7.10\"" << endl;
+        out << "\tName=\"" << name << pluginComponent << "\"" << endl;
+        out << "\tRootNamespace=\"" << name << pluginComponent << "\"" << endl;
+        out << "\tSccProjectName=\"\"" << endl;
+        out << "\tSccLocalPath=\"\">" << endl;
+        out << "\t<Platforms>" << endl;
+        out << "\t\t<Platform" << endl;
+        out << "\t\t\tName=\"Win32\"/>" << endl;
+        out << "\t</Platforms>" << endl;
+        out << "\t<Configurations>" << endl;
+        out << "\t\t<Configuration" << endl;
+        out << "\t\t\tName=\"Release|Win32\"" << endl;
+        out << "\t\t\tOutputDirectory=\".\\Release\\" << name << pluginComponent << "\\\"" << endl;
+        out << "\t\t\tIntermediateDirectory=\".\\Release\\" << name << pluginComponent << "\\\"" << endl;
+        out << "\t\t\tConfigurationType=\"2\"" << endl;
+        out << "\t\t\tUseOfMFC=\"0\"" << endl;
+        out << "\t\t\tATLMinimizesCRunTimeLibraryUsage=\"FALSE\"" << endl;
+        out << "\t\t\tCharacterSet=\"2\">" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCCLCompilerTool\"" << endl;
+        out << "\t\t\t\tOptimization=\"2\"" << endl;
+        out << "\t\t\t\tInlineFunctionExpansion=\"1\"" << endl;
+        out << "\t\t\t\tOptimizeForProcessor=\"2\"" << endl;
+        out << "\t\t\t\tEnableEnhancedInstructionSet=\"1\"" << endl;
+        out << "\t\t\t\tAdditionalIncludeDirectories=\"%QTDIR%\\include;..\\..\\visit\\" << pluginType << "\\" << name << ";..\\..\\include\\VisIt;..\\..\\include\\vtk;..\\..\\include\\vtk\\MSVC7.Net;..\\..\\include\\mesa;..\\..\\include\\Python-2.3.4;..\\..\\include\\zlib\"" << endl;
+        out << "\t\t\t\tPreprocessorDefinitions=\"WIN32;NDEBUG;_WINDOWS;_USRDLL;USING_MSVC7;GENERAL_PLUGIN_EXPORTS";
+        if (exports != "")
+            out << ";" << exports;
+        out << "\"" << endl;
+        out << "\t\t\t\tStringPooling=\"TRUE\"" << endl;
+        out << "\t\t\t\tRuntimeLibrary=\"2\"" << endl;
+        out << "\t\t\t\tEnableFunctionLevelLinking=\"TRUE\"" << endl;
+        out << "\t\t\t\tUsePrecompiledHeader=\"2\"" << endl;
+        out << "\t\t\t\tPrecompiledHeaderFile=\".\\Release\\" << name << pluginComponent << "\\" << name << pluginComponent << ".pch\"" << endl;
+        out << "\t\t\t\tAssemblerListingLocation=\".\\Release\\" << name << pluginComponent << "\\\"" << endl;
+        out << "\t\t\t\tObjectFile=\".\\Release\\" << name << pluginComponent << "\\\"" << endl;
+        out << "\t\t\t\tProgramDataBaseFileName=\".\\Release\\" << name << pluginComponent << "\\\"" << endl;
+        out << "\t\t\t\tWarningLevel=\"3\"" << endl;
+        out << "\t\t\t\tSuppressStartupBanner=\"TRUE\"/>" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCCustomBuildTool\"/>" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCLinkerTool\"" << endl;
+        out << "\t\t\t\tAdditionalDependencies=\"odbc32.lib odbccp32.lib " << libs << "\"" << endl;
+        out << "\t\t\t\tOutputFile=\"..\\..\\bin\\MSVC7.Net\\Release\\" << pluginType << "\\lib" << pluginComponent << name << pType << suffix << ".dll\"" << endl;
+        out << "\t\t\t\tLinkIncremental=\"1\"" << endl;
+        out << "\t\t\t\tSuppressStartupBanner=\"TRUE\"" << endl;
+        out << "\t\t\t\tProgramDatabaseFile=\".\\Release\\" << name << pluginComponent << "\\" << name << pluginComponent << ".pdb\"" << endl;
+        out << "\t\t\t\tAdditionalLibraryDirectories=\"%QTDIR%\\lib;..\\..\\lib\\MSVC7.Net\\Release\"" << endl;
+        out << "\t\t\t\tImportLibrary=\".\\Release\\" << name << pluginComponent << "\\lib" << pluginComponent << name << pType << suffix << ".lib\"" << endl;
+        out << "\t\t\t\tTargetMachine=\"1\"/>" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCMIDLTool\"" << endl;
+        out << "\t\t\t\tPreprocessorDefinitions=\"NDEBUG\"" << endl;
+        out << "\t\t\t\tMkTypLibCompatible=\"TRUE\"" << endl;
+        out << "\t\t\t\tSuppressStartupBanner=\"TRUE\"" << endl;
+        out << "\t\t\t\tTargetEnvironment=\"1\"" << endl;
+        out << "\t\t\t\tTypeLibraryName=\".\\Release\\" << name << pluginComponent << "\\lib" << pluginComponent << name << pType << suffix << ".tlb\"" << endl;
+        out << "\t\t\t\tHeaderFileName=\"\"/>" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCPostBuildEventTool\"/>" << endl;
+
+        if(pluginComponent == 'G')
+        {
+            QString winType("PlotWindow");
+            if(pluginType == "operators")
+                winType = "Window";
+            out << "\t\t\t<Tool" << endl;
+            out << "\t\t\t\tName=\"VCPreBuildEventTool\"" << endl;
+            out << "\t\t\t\tCommandLine=\"%QTDIR%\\bin\\moc.exe ..\\..\\visit\\" << pluginType << "\\" << name << "\\Qvis" << name << winType << ".h -o ..\\..\\visit\\" << pluginType << "\\" << name << "\\Qvis" << name << winType << "_moc.C\"/>" << endl;
+        }
+        else
+        {
+            out << "\t\t\t<Tool" << endl;
+            out << "\t\t\t\tName=\"VCPreBuildEventTool\"/>" << endl;
+        }
+
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCPreLinkEventTool\"/>" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCResourceCompilerTool\"" << endl;
+        out << "\t\t\t\tPreprocessorDefinitions=\"NDEBUG\"" << endl;
+        out << "\t\t\t\tCulture=\"1033\"/>" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCWebServiceProxyGeneratorTool\"/>" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCXMLDataGeneratorTool\"/>" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCWebDeploymentTool\"/>" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCManagedWrapperGeneratorTool\"/>" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCAuxiliaryManagedWrapperGeneratorTool\"/>" << endl;
+        out << "\t\t</Configuration>" << endl;
+        out << "\t\t<Configuration" << endl;
+        out << "\t\t\tName=\"Debug|Win32\"" << endl;
+        out << "\t\t\tOutputDirectory=\".\\Debug\\" << name << pluginComponent << "\\\"" << endl;
+        out << "\t\t\tIntermediateDirectory=\".\\Debug\\" << name << pluginComponent << "\\\"" << endl;
+        out << "\t\t\tConfigurationType=\"2\"" << endl;
+        out << "\t\t\tUseOfMFC=\"0\"" << endl;
+        out << "\t\t\tATLMinimizesCRunTimeLibraryUsage=\"FALSE\"" << endl;
+        out << "\t\t\tCharacterSet=\"2\">" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCCLCompilerTool\"" << endl;
+        out << "\t\t\t\tOptimization=\"0\"" << endl;
+        out << "\t\t\t\tOptimizeForProcessor=\"2\"" << endl;
+        out << "\t\t\t\tEnableEnhancedInstructionSet=\"1\"" << endl;
+        out << "\t\t\t\tAdditionalIncludeDirectories=\"%QTDIR%\\include;..\\..\\visit\\" << pluginType << "\\" << name << ";..\\..\\include\\VisIt;..\\..\\include\\vtk;..\\..\\include\\vtk\\MSVC7.Net;..\\..\\include\\mesa;..\\..\\include\\Python-2.3.4;..\\..\\include\\zlib\"" << endl;
+        out << "\t\t\t\tPreprocessorDefinitions=\"WIN32;_DEBUG;_WINDOWS;_USRDLL;USING_MSVC7;GENERAL_PLUGIN_EXPORTS";
+        if (exports != "")
+            out << ";" << exports;
+        out << "\"" << endl;
+        out << "\t\t\t\tBasicRuntimeChecks=\"3\"" << endl;
+        out << "\t\t\t\tRuntimeLibrary=\"3\"" << endl;
+        out << "\t\t\t\tUsePrecompiledHeader=\"2\"" << endl;
+        out << "\t\t\t\tEnableFunctionLevelLinking=\"TRUE\"" << endl;
+        out << "\t\t\t\tPrecompiledHeaderFile=\".\\Debug\\" << name << pluginComponent << "\\" << name << pluginComponent<< ".pch\"" << endl;
+        out << "\t\t\t\tAssemblerListingLocation=\".\\Debug\\" << name << pluginComponent << "\\\"" << endl;
+        out << "\t\t\t\tObjectFile=\".\\Debug\\" << name << pluginComponent << "\\\"" << endl;
+        out << "\t\t\t\tProgramDataBaseFileName=\".\\Debug\\" << name << pluginComponent << "\\\"" << endl;
+        out << "\t\t\t\tSuppressStartupBanner=\"TRUE\"" << endl;
+        out << "\t\t\t\tDebugInformationFormat=\"4\"/>" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCCustomBuildTool\"/>" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCLinkerTool\"" << endl;
+        out << "\t\t\t\tAdditionalDependencies=\"odbc32.lib odbccp32.lib " << libs << "\"" << endl;
+        out << "\t\t\t\tOutputFile=\"..\\..\\bin\\MSVC7.Net\\Debug\\" << pluginType << "\\lib" << pluginComponent << name << pType << suffix << ".dll\"" << endl;
+        out << "\t\t\t\tLinkIncremental=\"1\"" << endl;
+        out << "\t\t\t\tSuppressStartupBanner=\"TRUE\"" << endl;
+        out << "\t\t\t\tGenerateDebugInformation=\"TRUE\"" << endl;
+        out << "\t\t\t\tProgramDatabaseFile=\".\\Debug\\" << name << pluginComponent << "\\" << name << pluginComponent << ".pdb\"" << endl;
+        out << "\t\t\t\tAdditionalLibraryDirectories=\"%QTDIR%\\lib;..\\..\\lib\\MSVC7.Net\\Debug\"" << endl;
+        out << "\t\t\t\tImportLibrary=\".\\Debug\\" << name << pluginComponent << "\\lib" << pluginComponent << name << pType << suffix << ".lib\"" << endl;
+        out << "\t\t\t\tTargetMachine=\"1\"/>" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCMIDLTool\"" << endl;
+        out << "\t\t\t\tPreprocessorDefinitions=\"_DEBUG\"" << endl;
+        out << "\t\t\t\tMkTypLibCompatible=\"TRUE\"" << endl;
+        out << "\t\t\t\tSuppressStartupBanner=\"TRUE\"" << endl;
+        out << "\t\t\t\tTargetEnvironment=\"1\"" << endl;
+        out << "\t\t\t\tTypeLibraryName=\".\\Debug\\" << name << pluginComponent << "\\lib" << pluginComponent << name << pType << suffix << ".tlb\"" << endl;
+        out << "\t\t\t\tHeaderFileName=\"\"/>" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCPostBuildEventTool\"/>" << endl;
+
+        if(pluginComponent == 'G')
+        {
+            QString winType("PlotWindow");
+            if(pluginType == "operators")
+                winType = "Window";
+            out << "\t\t\t<Tool" << endl;
+            out << "\t\t\t\tName=\"VCPreBuildEventTool\"" << endl;
+            out << "\t\t\t\tCommandLine=\"%QTDIR%\\bin\\moc.exe ..\\..\\visit\\" << pluginType << "\\" << name << "\\Qvis" << name << winType << ".h -o ..\\..\\visit\\" << pluginType << "\\" << name << "\\Qvis" << name << winType << "_moc.C\"/>" << endl;
+        }
+        else
+        {
+            out << "\t\t\t<Tool" << endl;
+            out << "\t\t\t\tName=\"VCPreBuildEventTool\"/>" << endl;
+        }
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCPreLinkEventTool\"/>" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCResourceCompilerTool\"" << endl;
+        out << "\t\t\t\tPreprocessorDefinitions=\"_DEBUG\"" << endl;
+        out << "\t\t\t\tCulture=\"1033\"/>" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCWebServiceProxyGeneratorTool\"/>" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCXMLDataGeneratorTool\"/>" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCWebDeploymentTool\"/>" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCManagedWrapperGeneratorTool\"/>" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCAuxiliaryManagedWrapperGeneratorTool\"/>" << endl;
+        out << "\t\t</Configuration>" << endl;
+        out << "\t</Configurations>" << endl;
+        out << "\t<References>" << endl;
+        out << "\t</References>" << endl;
+        out << "\t<Files>" << endl;
+        out << "\t\t<Filter" << endl;
+        out << "\t\t\tName=\"Source Files\"" << endl;
+        out << "\t\t\tFilter=\"cpp;c;cxx;rc;def;r;odl;idl;hpj;bat\">" << endl;
+    
+        for(int i = 0; i < srcFiles.size(); ++i)
+        {
+            out << "\t\t\t<File" << endl;
+            out << "\t\t\t\tRelativePath=\"..\\..\\visit\\" << pluginType << "\\" << name << "\\" << srcFiles[i] << "\">" << endl;
+            out << "\t\t\t\t<FileConfiguration" << endl;
+            out << "\t\t\t\t\tName=\"Debug|Win32\">" << endl;
+            out << "\t\t\t\t\t<Tool" << endl;
+            out << "\t\t\t\t\t\tName=\"VCCLCompilerTool\"" << endl;
+            out << "\t\t\t\t\t\tOptimization=\"0\"" << endl;
+            out << "\t\t\t\t\t\tPreprocessorDefinitions=\"$(Inherit)\"" << endl;
+            out << "\t\t\t\t\t\tBasicRuntimeChecks=\"3\"" << endl;
+            out << "\t\t\t\t\t\tCompileAs=\"2\"/>" << endl;
+            out << "\t\t\t\t</FileConfiguration>" << endl;
+            out << "\t\t\t\t<FileConfiguration" << endl;
+            out << "\t\t\t\t\tName=\"Release|Win32\">" << endl;
+            out << "\t\t\t\t\t<Tool" << endl;
+            out << "\t\t\t\t\t\tName=\"VCCLCompilerTool\"" << endl;
+            out << "\t\t\t\t\t\tOptimization=\"2\"" << endl;
+            out << "\t\t\t\t\t\tPreprocessorDefinitions=\"$(Inherit)\"" << endl;
+            out << "\t\t\t\t\t\tCompileAs=\"2\"/>" << endl;
+            out << "\t\t\t\t</FileConfiguration>" << endl;
+            out << "\t\t\t</File>" << endl;
+        }
+    
+        out << "\t\t</Filter>" << endl;
+        out << "\t</Files>" << endl;
+        out << "\t<Globals>" << endl;
+        out << "\t</Globals>" << endl;
+        out << "</VisualStudioProject>" << endl;
+    }
+
+    void WriteProjectHelper(ostream &out, const QString &pluginType, char pluginComponent,
+        const QString &exports, const QString &libs, const vector<QString> &srcFiles, bool version7)
+    {
+        if(version7)
+            WriteProjectHelper_Version7(out, pluginType, pluginComponent, exports, libs, srcFiles);
+        else
+            WriteProjectHelper_Version6(out, pluginType, pluginComponent, exports, libs, srcFiles);
+    }
+
     /***************************************************************************
      ************************ BEGIN PLOT PROJECT CODING ************************
      **************************************************************************/
 
-    void WritePlotProject_I(ostream &out)
+    void WritePlotProject_I(ostream &out, bool version7)
     {
         vector<QString> srcFiles;
         srcFiles.push_back(name + "PluginInfo.C");
 
         WriteProjectHelper(out, "plots", 'I', "",
-            "plugin.lib", srcFiles);
+            "plugin.lib", srcFiles, version7);
     }
 
-    void WritePlotProject_E(ostream &out)
+    void WritePlotProject_E(ostream &out, bool version7)
     {
         vector<QString> srcFiles;
         srcFiles.push_back(name + "PluginInfo.C");
@@ -472,10 +863,11 @@ protected:
             AddElements(srcFiles, defaultefiles);
 
         WriteProjectHelper(out, "plots", 'E', "ENGINE_PLUGIN_EXPORTS",
-            "state.lib misc.lib plugin.lib plotter.lib pipeline_ser.lib avtfilters.lib avtexceptions.lib viewer.lib dbatts.lib visit_vtk.lib vtkCommon.lib vtkGraphics.lib vtkFiltering.lib", srcFiles);
+            "state.lib misc.lib plugin.lib plotter.lib pipeline_ser.lib avtfilters.lib avtexceptions.lib viewer.lib dbatts.lib visit_vtk.lib vtkCommon.lib vtkGraphics.lib vtkFiltering.lib",
+            srcFiles, version7);
     }
 
-    void WritePlotProject_G(ostream &out)
+    void WritePlotProject_G(ostream &out, bool version7)
     {
         vector<QString> srcFiles;
         srcFiles.push_back(name + "PluginInfo.C");
@@ -512,10 +904,11 @@ protected:
             AddElements(srcFiles, defaultgfiles);
 
         WriteProjectHelper(out, "plots", 'G', "GUI_PLUGIN_EXPORTS",
-            "state.lib misc.lib plugin.lib gui.lib viewerproxy.lib viewerrpc.lib qt-mt302.lib", srcFiles);
+            "state.lib misc.lib plugin.lib gui.lib viewerproxy.lib viewerrpc.lib qt-mt302.lib",
+            srcFiles, version7);
     }
 
-    void WritePlotProject_S(ostream &out)
+    void WritePlotProject_S(ostream &out, bool version7)
     {
         vector<QString> srcFiles;
         srcFiles.push_back(name + "PluginInfo.C");
@@ -530,10 +923,10 @@ protected:
             AddElements(srcFiles, defaultsfiles);
 
         WriteProjectHelper(out, "plots", 'S', "SCRIPTING_PLUGIN_EXPORTS",
-            "state.lib misc.lib plugin.lib", srcFiles);
+            "state.lib misc.lib plugin.lib", srcFiles, version7);
     }
 
-    void WritePlotProject_V(ostream &out)
+    void WritePlotProject_V(ostream &out, bool version7)
     {
         vector<QString> srcFiles;
         srcFiles.push_back(name + "PluginInfo.C");
@@ -548,19 +941,30 @@ protected:
             AddElements(srcFiles, defaultvfiles);
 
         WriteProjectHelper(out, "plots", 'V', "VIEWER_PLUGIN_EXPORTS",
-            "state.lib misc.lib plugin.lib plotter.lib pipeline_ser.lib avtfilters.lib avtexceptions.lib viewer.lib dbatts.lib visit_vtk.lib vtkCommon.lib vtkGraphics.lib vtkFiltering.lib", srcFiles);
+            "state.lib misc.lib plugin.lib plotter.lib pipeline_ser.lib avtfilters.lib avtexceptions.lib viewer.lib dbatts.lib visit_vtk.lib vtkCommon.lib vtkGraphics.lib vtkFiltering.lib",
+            srcFiles, version7);
     }
 
-    void WritePlotProjects(bool (*openCB)(ofstream &, const QString &))
+    void WritePlotProjects(bool (*openCB)(ofstream &, const QString &), bool version7)
     {
-        QString projectDir(ProjectDir() + QString("projects\\plots\\"));
-        QString IProject(projectDir + name + "I.dsp");
-        QString EProject(projectDir + name + "E.dsp");
-        QString GProject(projectDir + name + "G.dsp");
-        QString SProject(projectDir + name + "S.dsp");
-        QString VProject(projectDir + name + "V.dsp");
-        QString pluginTopProject(projectDir + name + ".dsp");
-        QString workspace(projectDir + name + ".dsw");
+        QString projectExtension(".dsp");
+        QString workSpaceExtension(".dsw");
+        QString projectDir(ProjectDir());
+        if(version7)
+        {
+            projectDir += QString("projects-MSVC7.Net\\plots\\");
+            projectExtension = ".vcproj";
+            workSpaceExtension = ".sln";
+        }
+        else
+            projectDir += QString("projects\\plots\\");
+        QString IProject(projectDir + (name + "I") + projectExtension);
+        QString EProject(projectDir + (name + "E") + projectExtension);
+        QString GProject(projectDir + (name + "G") + projectExtension);
+        QString SProject(projectDir + (name + "S") + projectExtension);
+        QString VProject(projectDir + (name + "V") + projectExtension);
+        QString pluginTopProject(projectDir + name + projectExtension);
+        QString workspace(projectDir + name + workSpaceExtension);
 
         cout << "Plot projects saved to " << projectDir << endl;
 
@@ -568,42 +972,42 @@ protected:
         ofstream out;
         if(openCB(out, IProject))
         {
-            WritePlotProject_I(out);
+            WritePlotProject_I(out, version7);
             out.close();
         }
 
         // Write the E project
         if(openCB(out, EProject))
         {
-            WritePlotProject_E(out);
+            WritePlotProject_E(out, version7);
             out.close();
         }
 
         // Write the G project
         if(openCB(out, GProject))
         {
-            WritePlotProject_G(out);
+            WritePlotProject_G(out, version7);
             out.close();
         }
 
         // Write the S project
         if(openCB(out, SProject))
         {
-            WritePlotProject_S(out);
+            WritePlotProject_S(out, version7);
             out.close();
         }
 
         // Write the V project
         if(openCB(out, VProject))
         {
-            WritePlotProject_V(out);
+            WritePlotProject_V(out, version7);
             out.close();
         }
 
         // Write the top level project
         if(openCB(out, pluginTopProject))
         {
-            WriteProject_TOP_LEVEL(out);
+            WriteProject_TOP_LEVEL(out, version7);
             out.close();
         }
 
@@ -611,12 +1015,13 @@ protected:
         if(openCB(out, workspace))
         {
             vector<QString> projects;
+            projects.push_back(name);
             projects.push_back(name + "I");
             projects.push_back(name + "E");
             projects.push_back(name + "G");
             projects.push_back(name + "S");
             projects.push_back(name + "V");
-            WriteProjectWorkspace(out, projects);
+            WriteProjectWorkspace(out, projects, version7);
         }
     }
 
@@ -628,16 +1033,16 @@ protected:
      ********************** BEGIN OPERATOR PROJECT CODING **********************
      **************************************************************************/
 
-    void WriteOperatorProject_I(ostream &out)
+    void WriteOperatorProject_I(ostream &out, bool version7)
     {
         vector<QString> srcFiles;
         srcFiles.push_back(name + "PluginInfo.C");
 
         WriteProjectHelper(out, "operators", 'I', "",
-            "plugin.lib", srcFiles);
+            "plugin.lib", srcFiles, version7);
     }
 
-    void WriteOperatorProject_E(ostream &out)
+    void WriteOperatorProject_E(ostream &out, bool version7)
     {
         vector<QString> srcFiles;
         srcFiles.push_back(name + "PluginInfo.C");
@@ -652,10 +1057,11 @@ protected:
             AddElements(srcFiles, defaultefiles);
 
         WriteProjectHelper(out, "operators", 'E', "ENGINE_PLUGIN_EXPORTS",
-            "state.lib misc.lib plugin.lib plotter.lib pipeline_ser.lib avtexceptions.lib viewer.lib dbatts.lib visit_vtk.lib vtkCommon.lib vtkGraphics.lib vtkFiltering.lib", srcFiles);
+            "state.lib misc.lib plugin.lib plotter.lib avtfilters.lib pipeline_ser.lib avtexceptions.lib viewer.lib dbatts.lib visit_vtk.lib vtkCommon.lib vtkGraphics.lib vtkFiltering.lib",
+            srcFiles, version7);
     }
 
-    void WriteOperatorProject_G(ostream &out)
+    void WriteOperatorProject_G(ostream &out, bool version7)
     {
         vector<QString> srcFiles;
         srcFiles.push_back(name + "PluginInfo.C");
@@ -694,10 +1100,11 @@ protected:
             AddElements(srcFiles, defaultgfiles);
 
         WriteProjectHelper(out, "operators", 'G', "GUI_PLUGIN_EXPORTS",
-            "state.lib misc.lib plugin.lib gui.lib viewerproxy.lib viewerrpc.lib qt-mt302.lib", srcFiles);
+            "state.lib misc.lib plugin.lib gui.lib viewerproxy.lib viewerrpc.lib qt-mt302.lib",
+            srcFiles, version7);
     }
 
-    void WriteOperatorProject_S(ostream &out)
+    void WriteOperatorProject_S(ostream &out, bool version7)
     {
         vector<QString> srcFiles;
         srcFiles.push_back(name + "PluginInfo.C");
@@ -712,10 +1119,10 @@ protected:
             AddElements(srcFiles, defaultsfiles);
 
         WriteProjectHelper(out, "operators", 'S', "SCRIPTING_PLUGIN_EXPORTS",
-            "state.lib misc.lib plugin.lib", srcFiles);
+            "state.lib misc.lib plugin.lib", srcFiles, version7);
     }
 
-    void WriteOperatorProject_V(ostream &out)
+    void WriteOperatorProject_V(ostream &out, bool version7)
     {
         vector<QString> srcFiles;
         srcFiles.push_back(name + "PluginInfo.C");
@@ -729,19 +1136,30 @@ protected:
             AddElements(srcFiles, defaultvfiles);
 
         WriteProjectHelper(out, "operators", 'V', "VIEWER_PLUGIN_EXPORTS",
-            "state.lib misc.lib plugin.lib Operatorter.lib pipeline_ser.lib avtexceptions.lib viewer.lib dbatts.lib visit_vtk.lib vtkCommon.lib vtkGraphics.lib vtkFiltering.lib", srcFiles);
+            "state.lib misc.lib plugin.lib plotter.lib avtfilters.lib pipeline_ser.lib avtexceptions.lib viewer.lib dbatts.lib visit_vtk.lib vtkCommon.lib vtkGraphics.lib vtkFiltering.lib",
+            srcFiles, version7);
     }
 
-    void WriteOperatorProjects(bool (*openCB)(ofstream &, const QString &))
+    void WriteOperatorProjects(bool (*openCB)(ofstream &, const QString &), bool version7)
     {
-        QString projectDir(ProjectDir() + QString("projects\\operators\\"));
-        QString IProject(projectDir + name + "I.dsp");
-        QString EProject(projectDir + name + "E.dsp");
-        QString GProject(projectDir + name + "G.dsp");
-        QString SProject(projectDir + name + "S.dsp");
-        QString VProject(projectDir + name + "V.dsp");
-        QString pluginTopProject(projectDir + name + ".dsp");
-        QString workspace(projectDir + name + ".dsw");
+        QString projectExtension(".dsp");
+        QString workSpaceExtension(".dsw");
+        QString projectDir(ProjectDir());
+        if(version7)
+        {
+            projectDir += QString("projects-MSVC7.Net\\operators\\");
+            projectExtension = ".vcproj";
+            workSpaceExtension = ".sln";
+        }
+        else
+            projectDir += QString("projects\\operators\\");
+        QString IProject(projectDir + (name + "I") + projectExtension);
+        QString EProject(projectDir + (name + "E") + projectExtension);
+        QString GProject(projectDir + (name + "G") + projectExtension);
+        QString SProject(projectDir + (name + "S") + projectExtension);
+        QString VProject(projectDir + (name + "V") + projectExtension);
+        QString pluginTopProject(projectDir + name + projectExtension);
+        QString workspace(projectDir + name + workSpaceExtension);
 
         cout << "Operator projects saved to " << projectDir << endl;
 
@@ -749,42 +1167,42 @@ protected:
         ofstream out;
         if(openCB(out, IProject))
         {
-            WriteOperatorProject_I(out);
+            WriteOperatorProject_I(out, version7);
             out.close();
         }
 
         // Write the E project
         if(openCB(out, EProject))
         {
-            WriteOperatorProject_E(out);
+            WriteOperatorProject_E(out, version7);
             out.close();
         }
 
         // Write the G project
         if(openCB(out, GProject))
         {
-            WriteOperatorProject_G(out);
+            WriteOperatorProject_G(out, version7);
             out.close();
         }
 
         // Write the S project
         if(openCB(out, SProject))
         {
-            WriteOperatorProject_S(out);
+            WriteOperatorProject_S(out, version7);
             out.close();
         }
 
         // Write the V project
         if(openCB(out, VProject))
         {
-            WriteOperatorProject_V(out);
+            WriteOperatorProject_V(out, version7);
             out.close();
         }
 
         // Write the top level project
         if(openCB(out, pluginTopProject))
         {
-            WriteProject_TOP_LEVEL(out);
+            WriteProject_TOP_LEVEL(out, version7);
             out.close();
         }
 
@@ -792,12 +1210,13 @@ protected:
         if(openCB(out, workspace))
         {
             vector<QString> projects;
+            projects.push_back(name);
             projects.push_back(name + "I");
             projects.push_back(name + "E");
             projects.push_back(name + "G");
             projects.push_back(name + "S");
             projects.push_back(name + "V");
-            WriteProjectWorkspace(out, projects);
+            WriteProjectWorkspace(out, projects, version7);
         }
     }
 
@@ -809,7 +1228,7 @@ protected:
      ********************** BEGIN DATABASE PROJECT CODING **********************
      **************************************************************************/
 
-    void WriteDatabaseProject_EM_Helper(ostream &out, char pluginType, const vector<QString> &srcFiles)
+    void WriteDatabaseProject_EM_Helper_Version6(ostream &out, char pluginType, const vector<QString> &srcFiles)
     {
         char *pluginDefs = "/D \"MDSERVER_PLUGIN_EXPORTS\" /D \"MDSERVER\"";
         char *pluginSuffix = "";
@@ -928,7 +1347,205 @@ protected:
         out << "# End Project\n";
     }
 
-    void WriteDatabaseProject_E(ostream &out)
+    void WriteDatabaseProject_EM_Helper_Version7(ostream &out, char pluginType, const vector<QString> &srcFiles)
+    {
+        char *pluginDefs = "";
+        char *pluginSuffix = "Database";
+
+        pluginDefs = "GENERAL_PLUGIN_EXPORTS;MDSERVER_PLUGIN_EXPORTS;MDSERVER";
+        if(pluginType == 'E')
+        {
+            pluginDefs = "GENERAL_PLUGIN_EXPORTS;ENGINE_PLUGIN_EXPORTS";
+            pluginSuffix = "Database_ser";
+        }
+
+        out << "<?xml version=\"1.0\" encoding=\"Windows-1252\"?>" << endl;
+        out << "<VisualStudioProject" << endl;
+        out << "\tProjectType=\"Visual C++\"" << endl;
+        out << "\tVersion=\"7.10\"" << endl;
+        out << "\tName=\"" << name << pluginType << "\"" << endl;
+        out << "\tRootNamespace=\"" << name << pluginType << "\"" << endl;
+        out << "\tSccProjectName=\"\"" << endl;
+        out << "\tSccLocalPath=\"\">" << endl;
+        out << "\t<Platforms>" << endl;
+        out << "\t\t<Platform" << endl;
+        out << "\t\t\tName=\"Win32\"/>" << endl;
+        out << "\t</Platforms>" << endl;
+        out << "\t<Configurations>" << endl;
+        out << "\t\t<Configuration" << endl;
+        out << "\t\t\tName=\"Release|Win32\"" << endl;
+        out << "\t\t\tOutputDirectory=\".\\Release\\" << name << pluginType << "\\\"" << endl;
+        out << "\t\t\tIntermediateDirectory=\".\\Release\\" << name << pluginType << "\\\"" << endl;
+        out << "\t\t\tConfigurationType=\"2\"" << endl;
+        out << "\t\t\tUseOfMFC=\"0\"" << endl;
+        out << "\t\t\tATLMinimizesCRunTimeLibraryUsage=\"FALSE\"" << endl;
+        out << "\t\t\tCharacterSet=\"2\">" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCCLCompilerTool\"" << endl;
+        out << "\t\t\t\tOptimization=\"2\"" << endl;
+        out << "\t\t\t\tInlineFunctionExpansion=\"1\"" << endl;
+        out << "\t\t\t\tOptimizeForProcessor=\"2\"" << endl;
+        out << "\t\t\t\tEnableEnhancedInstructionSet=\"1\"" << endl;
+        out << "\t\t\t\tAdditionalIncludeDirectories=\"..\\..\\visit\\databases\\" << name << ";..\\..\\include\\VisIt;..\\..\\include\\vtk;..\\..\\include\\vtk\\MSVC7.Net;..\\..\\include\\silo;..\\..\\include\\zlib\"" << endl;
+        out << "\t\t\t\tPreprocessorDefinitions=\"WIN32;NDEBUG;_WINDOWS;_USRDLL;USING_MSVC7;" << pluginDefs << "\"" << endl;
+        out << "\t\t\t\tStringPooling=\"TRUE\"" << endl;
+        out << "\t\t\t\tRuntimeLibrary=\"2\"" << endl;
+        out << "\t\t\t\tEnableFunctionLevelLinking=\"TRUE\"" << endl;
+        out << "\t\t\t\tUsePrecompiledHeader=\"2\"" << endl;
+        out << "\t\t\t\tPrecompiledHeaderFile=\".\\Release\\" << name << pluginType << "\\" << name << pluginType << ".pch\"" << endl;
+        out << "\t\t\t\tAssemblerListingLocation=\".\\Release\\" << name << pluginType << "\\\"" << endl;
+        out << "\t\t\t\tObjectFile=\".\\Release\\" << name << pluginType << "\\\"" << endl;
+        out << "\t\t\t\tProgramDataBaseFileName=\".\\Release\\" << name << pluginType << "\\\"" << endl;
+        out << "\t\t\t\tWarningLevel=\"3\"" << endl;
+        out << "\t\t\t\tSuppressStartupBanner=\"TRUE\"/>" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCCustomBuildTool\"/>" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCLinkerTool\"" << endl;
+        out << "\t\t\t\tAdditionalDependencies=\"odbc32.lib odbccp32.lib state.lib misc.lib plugin.lib utility.lib pipeline_ser.lib dbatts.lib database_ser.lib avtexceptions.lib vtkCommon.lib\"" << endl;
+        out << "\t\t\t\tOutputFile=\"..\\..\\bin\\MSVC7.Net\\Release\\databases\\lib" << pluginType << name << pluginSuffix << ".dll\"" << endl;
+        out << "\t\t\t\tLinkIncremental=\"1\"" << endl;
+        out << "\t\t\t\tSuppressStartupBanner=\"TRUE\"" << endl;
+        out << "\t\t\t\tProgramDatabaseFile=\".\\Release\\" << name << pluginType << "\\" << name << pluginType << ".pdb\"" << endl;
+        out << "\t\t\t\tAdditionalLibraryDirectories=\"..\\..\\lib\\MSVC7.Net\\Release\"" << endl;
+        out << "\t\t\t\tImportLibrary=\".\\Release\\" << name << pluginType << "\\lib" << pluginType << name << pluginSuffix << ".lib\"" << endl;
+        out << "\t\t\t\tTargetMachine=\"1\"/>" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCMIDLTool\"" << endl;
+        out << "\t\t\t\tPreprocessorDefinitions=\"NDEBUG\"" << endl;
+        out << "\t\t\t\tMkTypLibCompatible=\"TRUE\"" << endl;
+        out << "\t\t\t\tSuppressStartupBanner=\"TRUE\"" << endl;
+        out << "\t\t\t\tTargetEnvironment=\"1\"" << endl;
+        out << "\t\t\t\tTypeLibraryName=\".\\Release\\" << name << pluginType << "\\lib" << pluginType << name << pluginSuffix << ".tlb\"" << endl;
+        out << "\t\t\t\tHeaderFileName=\"\"/>" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCPostBuildEventTool\"/>" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCPreBuildEventTool\"/>" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCPreLinkEventTool\"/>" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCResourceCompilerTool\"" << endl;
+        out << "\t\t\t\tPreprocessorDefinitions=\"NDEBUG\"" << endl;
+        out << "\t\t\t\tCulture=\"1033\"/>" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCWebServiceProxyGeneratorTool\"/>" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCXMLDataGeneratorTool\"/>" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCWebDeploymentTool\"/>" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCManagedWrapperGeneratorTool\"/>" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCAuxiliaryManagedWrapperGeneratorTool\"/>" << endl;
+        out << "\t\t</Configuration>" << endl;
+        out << "\t\t<Configuration" << endl;
+        out << "\t\t\tName=\"Debug|Win32\"" << endl;
+        out << "\t\t\tOutputDirectory=\".\\Debug\\" << name << pluginType << "\\\"" << endl;
+        out << "\t\t\tIntermediateDirectory=\".\\Debug\\" << name << pluginType << "\\\"" << endl;
+        out << "\t\t\tConfigurationType=\"2\"" << endl;
+        out << "\t\t\tUseOfMFC=\"0\"" << endl;
+        out << "\t\t\tATLMinimizesCRunTimeLibraryUsage=\"FALSE\"" << endl;
+        out << "\t\t\tCharacterSet=\"2\">" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCCLCompilerTool\"" << endl;
+        out << "\t\t\t\tOptimization=\"0\"" << endl;
+        out << "\t\t\t\tOptimizeForProcessor=\"2\"" << endl;
+        out << "\t\t\t\tEnableEnhancedInstructionSet=\"1\"" << endl;
+        out << "\t\t\t\tAdditionalIncludeDirectories=\"..\\..\\visit\\databases\\" << name << ";..\\..\\include\\VisIt;..\\..\\include\\vtk;..\\..\\include\\vtk\\MSVC7.Net;..\\..\\include\\silo;..\\..\\include\\zlib\"" << endl;
+        out << "\t\t\t\tPreprocessorDefinitions=\"WIN32;_DEBUG;_WINDOWS;_USRDLL;USING_MSVC7;" << pluginDefs << "\"" << endl;;
+        out << "\t\t\t\tBasicRuntimeChecks=\"3\"" << endl;
+        out << "\t\t\t\tRuntimeLibrary=\"3\"" << endl;
+        out << "\t\t\t\tUsePrecompiledHeader=\"2\"" << endl;
+        out << "\t\t\t\tEnableFunctionLevelLinking=\"TRUE\"" << endl;
+        out << "\t\t\t\tPrecompiledHeaderFile=\".\\Debug\\" << name << pluginType << "\\" << name << pluginType<< ".pch\"" << endl;
+        out << "\t\t\t\tAssemblerListingLocation=\".\\Debug\\" << name << pluginType << "\\\"" << endl;
+        out << "\t\t\t\tObjectFile=\".\\Debug\\" << name << pluginType << "\\\"" << endl;
+        out << "\t\t\t\tProgramDataBaseFileName=\".\\Debug\\" << name << pluginType << "\\\"" << endl;
+        out << "\t\t\t\tSuppressStartupBanner=\"TRUE\"" << endl;
+        out << "\t\t\t\tDebugInformationFormat=\"4\"/>" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCCustomBuildTool\"/>" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCLinkerTool\"" << endl;
+        out << "\t\t\t\tAdditionalDependencies=\"odbc32.lib odbccp32.lib state.lib misc.lib plugin.lib utility.lib pipeline_ser.lib dbatts.lib database_ser.lib avtexceptions.lib vtkCommon.lib\"" << endl;
+        out << "\t\t\t\tOutputFile=\"..\\..\\bin\\MSVC7.Net\\Debug\\databases\\lib" << pluginType << name << pluginSuffix << ".dll\"" << endl;
+        out << "\t\t\t\tLinkIncremental=\"1\"" << endl;
+        out << "\t\t\t\tSuppressStartupBanner=\"TRUE\"" << endl;
+        out << "\t\t\t\tGenerateDebugInformation=\"TRUE\"" << endl;
+        out << "\t\t\t\tProgramDatabaseFile=\".\\Debug\\" << name << pluginType << "\\" << name << pluginType << ".pdb\"" << endl;
+        out << "\t\t\t\tAdditionalLibraryDirectories=\"..\\..\\lib\\MSVC7.Net\\Debug\"" << endl;
+        out << "\t\t\t\tImportLibrary=\".\\Debug\\" << name << pluginType << "\\lib" << pluginType << name << pluginSuffix << ".lib\"" << endl;
+        out << "\t\t\t\tTargetMachine=\"1\"/>" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCMIDLTool\"" << endl;
+        out << "\t\t\t\tPreprocessorDefinitions=\"_DEBUG\"" << endl;
+        out << "\t\t\t\tMkTypLibCompatible=\"TRUE\"" << endl;
+        out << "\t\t\t\tSuppressStartupBanner=\"TRUE\"" << endl;
+        out << "\t\t\t\tTargetEnvironment=\"1\"" << endl;
+        out << "\t\t\t\tTypeLibraryName=\".\\Debug\\" << name << pluginType << "\\lib" << pluginType << name << pluginSuffix << ".tlb\"" << endl;
+        out << "\t\t\t\tHeaderFileName=\"\"/>" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCPostBuildEventTool\"/>" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCPreBuildEventTool\"/>" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCPreLinkEventTool\"/>" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCResourceCompilerTool\"" << endl;
+        out << "\t\t\t\tPreprocessorDefinitions=\"_DEBUG\"" << endl;
+        out << "\t\t\t\tCulture=\"1033\"/>" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCWebServiceProxyGeneratorTool\"/>" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCXMLDataGeneratorTool\"/>" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCWebDeploymentTool\"/>" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCManagedWrapperGeneratorTool\"/>" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCAuxiliaryManagedWrapperGeneratorTool\"/>" << endl;
+        out << "\t\t</Configuration>" << endl;
+        out << "\t</Configurations>" << endl;
+        out << "\t<References>" << endl;
+        out << "\t</References>" << endl;
+        out << "\t<Files>" << endl;
+        out << "\t\t<Filter" << endl;
+        out << "\t\t\tName=\"Source Files\"" << endl;
+        out << "\t\t\tFilter=\"cpp;c;cxx;rc;def;r;odl;idl;hpj;bat\">" << endl;
+    
+        for(int i = 0; i < srcFiles.size(); ++i)
+        {
+            out << "\t\t\t<File" << endl;
+            out << "\t\t\t\tRelativePath=\"..\\..\\visit\\databases\\" << name << "\\" << srcFiles[i] << "\">" << endl;
+            out << "\t\t\t\t<FileConfiguration" << endl;
+            out << "\t\t\t\t\tName=\"Debug|Win32\">" << endl;
+            out << "\t\t\t\t\t<Tool" << endl;
+            out << "\t\t\t\t\t\tName=\"VCCLCompilerTool\"" << endl;
+            out << "\t\t\t\t\t\tOptimization=\"0\"" << endl;
+            out << "\t\t\t\t\t\tPreprocessorDefinitions=\"$(Inherit)\"" << endl;
+            out << "\t\t\t\t\t\tBasicRuntimeChecks=\"3\"" << endl;
+            out << "\t\t\t\t\t\tCompileAs=\"2\"/>" << endl;
+            out << "\t\t\t\t</FileConfiguration>" << endl;
+            out << "\t\t\t\t<FileConfiguration" << endl;
+            out << "\t\t\t\t\tName=\"Release|Win32\">" << endl;
+            out << "\t\t\t\t\t<Tool" << endl;
+            out << "\t\t\t\t\t\tName=\"VCCLCompilerTool\"" << endl;
+            out << "\t\t\t\t\t\tOptimization=\"2\"" << endl;
+            out << "\t\t\t\t\t\tPreprocessorDefinitions=\"$(Inherit)\"" << endl;
+            out << "\t\t\t\t\t\tCompileAs=\"2\"/>" << endl;
+            out << "\t\t\t\t</FileConfiguration>" << endl;
+            out << "\t\t\t</File>" << endl;
+        }
+    
+        out << "\t\t</Filter>" << endl;
+        out << "\t</Files>" << endl;
+        out << "\t<Globals>" << endl;
+        out << "\t</Globals>" << endl;
+        out << "</VisualStudioProject>" << endl;
+    }
+
+    void WriteDatabaseProject_E(ostream &out, bool version7)
     {
         vector<QString> srcFiles;
 
@@ -952,10 +1569,13 @@ protected:
         }
 
         // Write the project file
-        WriteDatabaseProject_EM_Helper(out, 'E', srcFiles);
+        if(version7)
+            WriteDatabaseProject_EM_Helper_Version7(out, 'E', srcFiles);
+        else
+            WriteDatabaseProject_EM_Helper_Version6(out, 'E', srcFiles);
     }
 
-    void WriteDatabaseProject_M(ostream &out)
+    void WriteDatabaseProject_M(ostream &out, bool version7)
     {
         vector<QString> srcFiles;
 
@@ -979,10 +1599,13 @@ protected:
         }
 
         // Write the project file
-        WriteDatabaseProject_EM_Helper(out, 'M', srcFiles);
+        if(version7)
+            WriteDatabaseProject_EM_Helper_Version7(out, 'M', srcFiles);
+        else
+            WriteDatabaseProject_EM_Helper_Version6(out, 'M', srcFiles);
     }
 
-    void WriteDatabaseProject_I(ostream &out)
+    void WriteDatabaseProject_I_Version6(ostream &out)
     {
         out << "# Microsoft Developer Studio Project File - Name=\"" << name << "I\" - Package Owner=<4>\n";
         out << "# Microsoft Developer Studio Generated Build File, Format Version 6.00\n";
@@ -1089,14 +1712,217 @@ protected:
         out << "# End Project\n";
     }
 
-    void WriteDatabaseProjects(bool (*openCB)(ofstream &, const QString &))
+    void WriteDatabaseProject_I_Version7(ostream &out)
     {
-        QString projectDir(ProjectDir() + QString("projects\\databases\\"));
-        QString IProject(projectDir + name + "I.dsp");
-        QString EProject(projectDir + name + "E.dsp");
-        QString MProject(projectDir + name + "M.dsp");
-        QString pluginTopProject(projectDir + name + ".dsp");
-        QString workspace(projectDir + name + ".dsw");
+        const char pluginType = 'I';
+        out << "<?xml version=\"1.0\" encoding=\"Windows-1252\"?>" << endl;
+        out << "<VisualStudioProject" << endl;
+        out << "\tProjectType=\"Visual C++\"" << endl;
+        out << "\tVersion=\"7.10\"" << endl;
+        out << "\tName=\"" << name << pluginType << "\"" << endl;
+        out << "\tRootNamespace=\"" << name << pluginType << "\"" << endl;
+        out << "\tSccProjectName=\"\"" << endl;
+        out << "\tSccLocalPath=\"\">" << endl;
+        out << "\t<Platforms>" << endl;
+        out << "\t\t<Platform" << endl;
+        out << "\t\t\tName=\"Win32\"/>" << endl;
+        out << "\t</Platforms>" << endl;
+        out << "\t<Configurations>" << endl;
+        out << "\t\t<Configuration" << endl;
+        out << "\t\t\tName=\"Release|Win32\"" << endl;
+        out << "\t\t\tOutputDirectory=\".\\Release\\" << name << pluginType << "\\\"" << endl;
+        out << "\t\t\tIntermediateDirectory=\".\\Release\\" << name << pluginType << "\\\"" << endl;
+        out << "\t\t\tConfigurationType=\"2\"" << endl;
+        out << "\t\t\tUseOfMFC=\"0\"" << endl;
+        out << "\t\t\tATLMinimizesCRunTimeLibraryUsage=\"FALSE\"" << endl;
+        out << "\t\t\tCharacterSet=\"2\">" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCCLCompilerTool\"" << endl;
+        out << "\t\t\t\tOptimization=\"2\"" << endl;
+        out << "\t\t\t\tInlineFunctionExpansion=\"1\"" << endl;
+        out << "\t\t\t\tOptimizeForProcessor=\"2\"" << endl;
+        out << "\t\t\t\tEnableEnhancedInstructionSet=\"1\"" << endl;
+        out << "\t\t\t\tAdditionalIncludeDirectories=\"..\\..\\visit\\databases\\" << name << ";..\\..\\include\\VisIt;..\\..\\include\\vtk;..\\..\\include\\vtk\\MSVC7.Net;..\\..\\include\\silo;..\\..\\include\\zlib\"" << endl;
+        out << "\t\t\t\tPreprocessorDefinitions=\"WIN32;NDEBUG;_WINDOWS;_USRDLL;USING_MSVC7;GENERAL_PLUGIN_EXPORTS\"" << endl;
+        out << "\t\t\t\tStringPooling=\"TRUE\"" << endl;
+        out << "\t\t\t\tRuntimeLibrary=\"2\"" << endl;
+        out << "\t\t\t\tEnableFunctionLevelLinking=\"TRUE\"" << endl;
+        out << "\t\t\t\tUsePrecompiledHeader=\"2\"" << endl;
+        out << "\t\t\t\tPrecompiledHeaderFile=\".\\Release\\" << name << pluginType << "\\" << name << pluginType << ".pch\"" << endl;
+        out << "\t\t\t\tAssemblerListingLocation=\".\\Release\\" << name << pluginType << "\\\"" << endl;
+        out << "\t\t\t\tObjectFile=\".\\Release\\" << name << pluginType << "\\\"" << endl;
+        out << "\t\t\t\tProgramDataBaseFileName=\".\\Release\\" << name << pluginType << "\\\"" << endl;
+        out << "\t\t\t\tWarningLevel=\"3\"" << endl;
+        out << "\t\t\t\tSuppressStartupBanner=\"TRUE\"/>" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCCustomBuildTool\"/>" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCLinkerTool\"" << endl;
+        out << "\t\t\t\tAdditionalDependencies=\"odbc32.lib odbccp32.lib state.lib misc.lib plugin.lib pipeline_ser.lib dbatts.lib database_ser.lib avtexceptions.lib vtkCommon.lib\"" << endl;
+        out << "\t\t\t\tOutputFile=\"..\\..\\bin\\MSVC7.Net\\Release\\databases\\lib" << name << pluginType << ".dll\"" << endl;
+        out << "\t\t\t\tLinkIncremental=\"1\"" << endl;
+        out << "\t\t\t\tSuppressStartupBanner=\"TRUE\"" << endl;
+        out << "\t\t\t\tProgramDatabaseFile=\".\\Release\\" << name << pluginType << "\\" << name << pluginType << ".pdb\"" << endl;
+        out << "\t\t\t\tAdditionalLibraryDirectories=\"..\\..\\lib\\MSVC7.Net\\Release\"" << endl;
+        out << "\t\t\t\tImportLibrary=\".\\Release\\" << name << pluginType << "\\" << name << pluginType << ".lib\"" << endl;
+        out << "\t\t\t\tTargetMachine=\"1\"/>" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCMIDLTool\"" << endl;
+        out << "\t\t\t\tPreprocessorDefinitions=\"NDEBUG\"" << endl;
+        out << "\t\t\t\tMkTypLibCompatible=\"TRUE\"" << endl;
+        out << "\t\t\t\tSuppressStartupBanner=\"TRUE\"" << endl;
+        out << "\t\t\t\tTargetEnvironment=\"1\"" << endl;
+        out << "\t\t\t\tTypeLibraryName=\".\\Release\\" << name << pluginType << "\\" << name << pluginType << ".tlb\"" << endl;
+        out << "\t\t\t\tHeaderFileName=\"\"/>" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCPostBuildEventTool\"/>" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCPreBuildEventTool\"/>" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCPreLinkEventTool\"/>" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCResourceCompilerTool\"" << endl;
+        out << "\t\t\t\tPreprocessorDefinitions=\"NDEBUG\"" << endl;
+        out << "\t\t\t\tCulture=\"1033\"/>" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCWebServiceProxyGeneratorTool\"/>" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCXMLDataGeneratorTool\"/>" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCWebDeploymentTool\"/>" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCManagedWrapperGeneratorTool\"/>" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCAuxiliaryManagedWrapperGeneratorTool\"/>" << endl;
+        out << "\t\t</Configuration>" << endl;
+        out << "\t\t<Configuration" << endl;
+        out << "\t\t\tName=\"Debug|Win32\"" << endl;
+        out << "\t\t\tOutputDirectory=\".\\Debug\\" << name << pluginType << "\\\"" << endl;
+        out << "\t\t\tIntermediateDirectory=\".\\Debug\\" << name << pluginType << "\\\"" << endl;
+        out << "\t\t\tConfigurationType=\"2\"" << endl;
+        out << "\t\t\tUseOfMFC=\"0\"" << endl;
+        out << "\t\t\tATLMinimizesCRunTimeLibraryUsage=\"FALSE\"" << endl;
+        out << "\t\t\tCharacterSet=\"2\">" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCCLCompilerTool\"" << endl;
+        out << "\t\t\t\tOptimization=\"0\"" << endl;
+        out << "\t\t\t\tOptimizeForProcessor=\"2\"" << endl;
+        out << "\t\t\t\tEnableEnhancedInstructionSet=\"1\"" << endl;
+        out << "\t\t\t\tAdditionalIncludeDirectories=\"..\\..\\visit\\databases\\" << name << ";..\\..\\include\\VisIt;..\\..\\include\\vtk;..\\..\\include\\vtk\\MSVC7.Net;..\\..\\include\\silo;..\\..\\include\\zlib\"" << endl;
+        out << "\t\t\t\tPreprocessorDefinitions=\"WIN32;_DEBUG;_WINDOWS;_USRDLL;USING_MSVC7;GENERAL_PLUGIN_EXPORTS\"" << endl;;
+        out << "\t\t\t\tBasicRuntimeChecks=\"3\"" << endl;
+        out << "\t\t\t\tRuntimeLibrary=\"3\"" << endl;
+        out << "\t\t\t\tUsePrecompiledHeader=\"2\"" << endl;
+        out << "\t\t\t\tEnableFunctionLevelLinking=\"TRUE\"" << endl;
+        out << "\t\t\t\tPrecompiledHeaderFile=\".\\Debug\\" << name << pluginType << "\\" << name << pluginType<< ".pch\"" << endl;
+        out << "\t\t\t\tAssemblerListingLocation=\".\\Debug\\" << name << pluginType << "\\\"" << endl;
+        out << "\t\t\t\tObjectFile=\".\\Debug\\" << name << pluginType << "\\\"" << endl;
+        out << "\t\t\t\tProgramDataBaseFileName=\".\\Debug\\" << name << pluginType << "\\\"" << endl;
+        out << "\t\t\t\tSuppressStartupBanner=\"TRUE\"" << endl;
+        out << "\t\t\t\tDebugInformationFormat=\"4\"/>" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCCustomBuildTool\"/>" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCLinkerTool\"" << endl;
+        out << "\t\t\t\tAdditionalDependencies=\"odbc32.lib odbccp32.lib state.lib misc.lib plugin.lib pipeline_ser.lib dbatts.lib database_ser.lib avtexceptions.lib vtkCommon.lib\"" << endl;
+        out << "\t\t\t\tOutputFile=\"..\\..\\bin\\MSVC7.Net\\Debug\\databases\\lib" << name << pluginType << ".dll\"" << endl;
+        out << "\t\t\t\tLinkIncremental=\"1\"" << endl;
+        out << "\t\t\t\tSuppressStartupBanner=\"TRUE\"" << endl;
+        out << "\t\t\t\tGenerateDebugInformation=\"TRUE\"" << endl;
+        out << "\t\t\t\tProgramDatabaseFile=\".\\Debug\\" << name << pluginType << "\\" << name << pluginType << ".pdb\"" << endl;
+        out << "\t\t\t\tAdditionalLibraryDirectories=\"..\\..\\lib\\MSVC7.Net\\Debug\"" << endl;
+        out << "\t\t\t\tImportLibrary=\".\\Debug\\" << name << pluginType << "\\" << name << pluginType << ".lib\"" << endl;
+        out << "\t\t\t\tTargetMachine=\"1\"/>" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCMIDLTool\"" << endl;
+        out << "\t\t\t\tPreprocessorDefinitions=\"_DEBUG\"" << endl;
+        out << "\t\t\t\tMkTypLibCompatible=\"TRUE\"" << endl;
+        out << "\t\t\t\tSuppressStartupBanner=\"TRUE\"" << endl;
+        out << "\t\t\t\tTargetEnvironment=\"1\"" << endl;
+        out << "\t\t\t\tTypeLibraryName=\".\\Debug\\" << name << pluginType << "\\" << name << pluginType << ".tlb\"" << endl;
+        out << "\t\t\t\tHeaderFileName=\"\"/>" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCPostBuildEventTool\"/>" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCPreBuildEventTool\"/>" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCPreLinkEventTool\"/>" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCResourceCompilerTool\"" << endl;
+        out << "\t\t\t\tPreprocessorDefinitions=\"_DEBUG\"" << endl;
+        out << "\t\t\t\tCulture=\"1033\"/>" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCWebServiceProxyGeneratorTool\"/>" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCXMLDataGeneratorTool\"/>" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCWebDeploymentTool\"/>" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCManagedWrapperGeneratorTool\"/>" << endl;
+        out << "\t\t\t<Tool" << endl;
+        out << "\t\t\t\tName=\"VCAuxiliaryManagedWrapperGeneratorTool\"/>" << endl;
+        out << "\t\t</Configuration>" << endl;
+        out << "\t</Configurations>" << endl;
+        out << "\t<References>" << endl;
+        out << "\t</References>" << endl;
+        out << "\t<Files>" << endl;
+        out << "\t\t<Filter" << endl;
+        out << "\t\t\tName=\"Source Files\"" << endl;
+        out << "\t\t\tFilter=\"cpp;c;cxx;rc;def;r;odl;idl;hpj;bat\">" << endl;
+    
+        vector<QString> srcFiles;
+        srcFiles.push_back(name + "PluginInfo.C");
+
+        for(int i = 0; i < srcFiles.size(); ++i)
+        {
+            out << "\t\t\t<File" << endl;
+            out << "\t\t\t\tRelativePath=\"..\\..\\visit\\databases\\" << name << "\\" << srcFiles[i] << "\">" << endl;
+            out << "\t\t\t\t<FileConfiguration" << endl;
+            out << "\t\t\t\t\tName=\"Debug|Win32\">" << endl;
+            out << "\t\t\t\t\t<Tool" << endl;
+            out << "\t\t\t\t\t\tName=\"VCCLCompilerTool\"" << endl;
+            out << "\t\t\t\t\t\tOptimization=\"0\"" << endl;
+            out << "\t\t\t\t\t\tPreprocessorDefinitions=\"$(Inherit)\"" << endl;
+            out << "\t\t\t\t\t\tBasicRuntimeChecks=\"3\"" << endl;
+            out << "\t\t\t\t\t\tCompileAs=\"2\"/>" << endl;
+            out << "\t\t\t\t</FileConfiguration>" << endl;
+            out << "\t\t\t\t<FileConfiguration" << endl;
+            out << "\t\t\t\t\tName=\"Release|Win32\">" << endl;
+            out << "\t\t\t\t\t<Tool" << endl;
+            out << "\t\t\t\t\t\tName=\"VCCLCompilerTool\"" << endl;
+            out << "\t\t\t\t\t\tOptimization=\"2\"" << endl;
+            out << "\t\t\t\t\t\tPreprocessorDefinitions=\"$(Inherit)\"" << endl;
+            out << "\t\t\t\t\t\tCompileAs=\"2\"/>" << endl;
+            out << "\t\t\t\t</FileConfiguration>" << endl;
+            out << "\t\t\t</File>" << endl;
+        }
+    
+        out << "\t\t</Filter>" << endl;
+        out << "\t</Files>" << endl;
+        out << "\t<Globals>" << endl;
+        out << "\t</Globals>" << endl;
+        out << "</VisualStudioProject>" << endl;
+
+    }
+
+    void WriteDatabaseProjects(bool (*openCB)(ofstream &, const QString &), bool version7)
+    {
+        QString projectExtension(".dsp");
+        QString workSpaceExtension(".dsw");
+        QString projectDir(ProjectDir());
+        if(version7)
+        {
+            projectDir += QString("projects-MSVC7.Net\\databases\\");
+            projectExtension = ".vcproj";
+            workSpaceExtension = ".sln";
+        }
+        else
+            projectDir += QString("projects\\databases\\");
+        QString IProject(projectDir + (name + "I") + projectExtension);
+        QString EProject(projectDir + (name + "E") + projectExtension);
+        QString MProject(projectDir + (name + "M") + projectExtension);
+        QString pluginTopProject(projectDir + name + projectExtension);
+        QString workspace(projectDir + name + workSpaceExtension);
 
         cout << "Database projects saved to " << projectDir << endl;
 
@@ -1104,28 +1930,31 @@ protected:
         ofstream out;
         if(openCB(out, IProject))
         {
-            WriteDatabaseProject_I(out);
+            if(version7)
+                WriteDatabaseProject_I_Version7(out);
+            else
+                WriteDatabaseProject_I_Version6(out);
             out.close();
         }
 
         // Write the E project
         if(openCB(out, EProject))
         {
-            WriteDatabaseProject_E(out);
+            WriteDatabaseProject_E(out, version7);
             out.close();
         }
 
         // Write the M project
         if(openCB(out, MProject))
         {
-            WriteDatabaseProject_M(out);
+            WriteDatabaseProject_M(out, version7);
             out.close();
         }
 
         // Write the top level project
         if(openCB(out, pluginTopProject))
         {
-            WriteProject_TOP_LEVEL(out);
+            WriteProject_TOP_LEVEL(out, version7);
             out.close();
         }
 
@@ -1133,10 +1962,11 @@ protected:
         if(openCB(out, workspace))
         {
             vector<QString> projects;
+            projects.push_back(name);
             projects.push_back(name + "I");
             projects.push_back(name + "E");
             projects.push_back(name + "M");
-            WriteProjectWorkspace(out, projects);
+            WriteProjectWorkspace(out, projects, version7);
         }
     }
 
@@ -1145,19 +1975,19 @@ protected:
      **************************************************************************/
 public:
 
-    void WriteProjectFiles(bool (*openCB)(ofstream &, const QString &))
+    void WriteProjectFiles(bool (*openCB)(ofstream &, const QString &), bool version7)
     {
         if (type == "operator")
         {
-            WriteOperatorProjects(openCB);
+            WriteOperatorProjects(openCB, version7);
         }
         else if (type == "plot")
         {
-            WritePlotProjects(openCB);
+            WritePlotProjects(openCB, version7);
         }
         else if (type == "database")
         {
-            WriteDatabaseProjects(openCB);
+            WriteDatabaseProjects(openCB, version7);
         }
     }
 };

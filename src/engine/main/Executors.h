@@ -1036,6 +1036,9 @@ RPCExecutor<ReleaseDataRPC>::Execute(ReleaseDataRPC *rpc)
 //    Hank Childs, Mon Mar 22 11:16:47 PST 2004
 //    Specify the file format type explicitly.
 //
+//    Jeremy Meredith, Wed Aug 25 12:01:15 PDT 2004
+//    Send metadata to the client if we are a simulation.
+//
 // ****************************************************************************
 template<>
 void
@@ -1050,6 +1053,9 @@ RPCExecutor<OpenDatabaseRPC>::Execute(OpenDatabaseRPC *rpc)
 
     netmgr->GetDBFromCache(rpc->GetDatabaseName(), rpc->GetTime(),
                            rpc->GetFileFormat().c_str());
+
+    engine->PopulateSimulationMetaData(rpc->GetDatabaseName(),
+                                       rpc->GetFileFormat());
 }
 
 // ****************************************************************************

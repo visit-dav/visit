@@ -85,11 +85,18 @@ avtMinMaxQuery::avtMinMaxQuery(bool domin, bool domax)
 //  Creation:     October 27, 2003 
 //
 //  Modifications:
+//    Kathleen Bonnell, Tue Aug 24 15:31:56 PDT 2004
+//    Delete invTransform.
 //
 // ****************************************************************************
 
 avtMinMaxQuery::~avtMinMaxQuery()
 {
+    if (invTransform != NULL)
+    {
+        delete invTransform;
+        invTransform = NULL;
+    }
 }
 
 
@@ -549,6 +556,9 @@ avtMinMaxQuery::PostExecute(void)
 //    Kathleen Bonnell, Tue Jun  1 15:26:10 PDT 2004
 //    avtDataAttributes now carries two transforms, use the InvTransform.
 //
+//    Kathleen Bonnell, Tue Aug 24 15:31:56 PDT 2004 
+//    Allocate storage for invTransform. 
+//
 // ****************************************************************************
 
 void
@@ -569,7 +579,7 @@ avtMinMaxQuery::Preparation(avtDataObject_p inData)
     avtDataAttributes &inAtts = inData->GetInfo().GetAttributes();
     if (inAtts.HasInvTransform() && inAtts.GetCanUseInvTransform())
     {
-        invTransform = inAtts.GetInvTransform();
+        invTransform = new avtMatrix(*(inAtts.GetInvTransform()));
     }
     else 
     {
@@ -736,7 +746,7 @@ avtMinMaxQuery::InfoToString(const MinMaxInfo &info)
     { 
         os << c[0];
     }
-    else if (dimension == 2)
+    else if (dimension == 2 && !invTransform)
     {
         os << c[0] << ", " << c[1];
     }

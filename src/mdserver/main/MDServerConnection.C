@@ -46,6 +46,7 @@
 #include <LoadPluginsRPCExecutor.h>
 #include <CouldNotConnectException.h>
 #include <IncompatibleVersionException.h>
+#include <InvalidFilesException.h>
 #include <ParentProcess.h>
 #include <QuitRPC.h>
 #include <QuitRPCExecutor.h>
@@ -520,9 +521,13 @@ MDServerConnection::LoadPlugins()
 //   Brad Whitlock, Tue May 13 15:42:59 PST 2003
 //   I added timeState.
 //
+//   Jeremy Meredith, Wed Aug 25 11:41:54 PDT 2004
+//   Handle errors through exceptions instead of error codes.   This allows
+//   real error messages to make it to the user.
+//
 // ****************************************************************************
 
-int
+void
 MDServerConnection::ReadMetaData(std::string file, int timeState)
 {
     currentMetaData = NULL;
@@ -539,33 +544,43 @@ MDServerConnection::ReadMetaData(std::string file, int timeState)
     {
         currentMetaData = db->GetMetaData(ts);
     }
+    else
+    {
+        EXCEPTION1(InvalidFilesException, file.c_str());
+    }
+
+    //
+    // If we didn't get metadata, then the file was somehow invalid
+    //
+    if (!currentMetaData)
+    {
+        char message[1024];
+        sprintf(message, "The %s file format was unable to retrieve metadata "
+                "for this file.", db->GetFileFormat().c_str());
+        EXCEPTION2(InvalidFilesException, file.c_str(), message);
+    }
 
     //
     // If we have metadata for the file then set whether or not the file is a
     // virtual file.
     //
-    if(currentMetaData)
+    VirtualFileInformationMap::iterator pos = virtualFiles.find(ExpandPath(file));
+    if(pos != virtualFiles.end())
     {
-        VirtualFileInformationMap::iterator pos = virtualFiles.find(ExpandPath(file));
-        if(pos != virtualFiles.end())
-        {
-            currentMetaData->SetIsVirtualDatabase(true);
-            currentMetaData->SetTimeStepPath(pos->second.path);
-            currentMetaData->SetTimeStepNames(pos->second.files);
-        }
-        else
-        {
-            currentMetaData->SetIsVirtualDatabase(false);
-            stringVector names;
-            names.push_back(file);
-            currentMetaData->SetTimeStepPath("");
-            currentMetaData->SetTimeStepNames(names);
-        }
-
-        currentDatabaseHasInvariantMD = ! currentMetaData->GetMustRepopulateOnStateChange();
+        currentMetaData->SetIsVirtualDatabase(true);
+        currentMetaData->SetTimeStepPath(pos->second.path);
+        currentMetaData->SetTimeStepNames(pos->second.files);
+    }
+    else
+    {
+        currentMetaData->SetIsVirtualDatabase(false);
+        stringVector names;
+        names.push_back(file);
+        currentMetaData->SetTimeStepPath("");
+        currentMetaData->SetTimeStepNames(names);
     }
 
-    return (currentMetaData == NULL ? -1 : 0);
+    currentDatabaseHasInvariantMD = ! currentMetaData->GetMustRepopulateOnStateChange();
 }
 
 // ****************************************************************************
@@ -623,9 +638,13 @@ MDServerConnection::GetCurrentMetaData() const
 //   Brad Whitlock, Thu Oct 9 14:35:00 PST 2003
 //   Fixed memory leak.
 //
+//   Jeremy Meredith, Wed Aug 25 11:41:54 PDT 2004
+//   Handle errors through exceptions instead of error codes.   This allows
+//   real error messages to make it to the user.
+//
 // ****************************************************************************
 
-int
+void
 MDServerConnection::ReadSIL(std::string file, int timeState)
 {
     if(currentSIL != NULL)
@@ -652,8 +671,18 @@ MDServerConnection::ReadSIL(std::string file, int timeState)
 
         currentSIL = s->MakeSILAttributes();
     }
+    else
+    {
+        EXCEPTION1(InvalidFilesException, file.c_str());
+    }
 
-    return (currentSIL == NULL ? -1 : 0);
+    if (!currentSIL)
+    {
+        char message[1024];
+        sprintf(message, "The %s file format was unable to retrieve the SIL "
+                "for this file.", db->GetFileFormat().c_str());
+        EXCEPTION2(InvalidFilesException, file.c_str(), message);
+    }
 }
 
 // ****************************************************************************

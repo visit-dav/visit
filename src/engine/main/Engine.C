@@ -22,10 +22,13 @@
 #include <InitVTK.h>
 #include <LoadBalancer.h>
 #include <LostConnectionException.h>
+#include <Netnodes.h>
 #include <ParentProcess.h>
 #include <QueryAttributes.h>
+#include <SILAttributes.h>
 #include <SocketConnection.h>
 
+#include <avtDatabaseMetaData.h>
 #include <avtDataObjectReader.h>
 #include <avtDataObjectString.h>
 #include <avtDataObjectWriter.h>
@@ -214,6 +217,9 @@ Engine::Finalize(void)
 //    Kathleen Bonnell, Wed Mar 31 16:53:03 PST 2004 
 //    Added cloneNetworkRPC.
 //
+//    Jeremy Meredith, Wed Aug 25 10:09:14 PDT 2004
+//    Added ability to send metadata and SIL atts back to the viewer.
+//
 // ****************************************************************************
 
 void
@@ -324,6 +330,13 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     ParserInterface *p = ParserInterface::MakeParser(new EngineExprNodeFactory());
     ParsingExprList *l = new ParsingExprList(p);
     xfer->Add(l->GetList());
+
+    // Hook up metadata and SIL to be send back to the viewer.
+    // This is intended to only be used for simulations.
+    metaData = new avtDatabaseMetaData;
+    silAtts = new SILAttributes;
+    xfer->Add(metaData);
+    xfer->Add(silAtts);
 
     //
     // Hook up the viewer connections to Xfer
@@ -1580,3 +1593,97 @@ Engine::ResetTimeout(int timeout)
 #endif    
 }
 
+
+
+// ****************************************************************************
+//  Method:  Engine::PopulateSimulationMetaData
+//
+//  Purpose:
+//    If this is a simulation acting as an engine, we need to send
+//    current metadata (including a SIL) to the viewer.  This method
+//    does that.
+//
+//  Arguments:
+//    db,fmt:    filename and format needed to retrieve the database
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    August 24, 2004
+//
+// ****************************************************************************
+void
+Engine::PopulateSimulationMetaData(const std::string &db,
+                                   const std::string &fmt)
+{
+    filename = db;
+    format   = fmt;
+
+    // Get the database
+    ref_ptr<avtDatabase> database = 
+                 netmgr->GetDBFromCache(filename,0,format.c_str())->GetDB();
+
+    // Get the metadata
+    *metaData = *database->GetMetaData(0);
+
+    // Abort if this isn't a simulation
+    if (!metaData->GetIsSimulation())
+        return;
+
+    // Get the SIL
+    SILAttributes *tmp = database->GetSIL(0)->MakeSILAttributes();
+    *silAtts = *tmp;
+    delete tmp;
+
+    // Send the metadata and SIL to the viewer
+    metaData->Notify();
+    silAtts->SelectAll();
+    silAtts->Notify();
+}
+
+// ****************************************************************************
+//  Method:  Engine::SimulationTimeStepChanged
+//
+//  Purpose:
+//    If this is a simulation acting as an engine, call this on a
+//    timestep change.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    August 24, 2004
+//
+// ****************************************************************************
+void
+Engine::SimulationTimeStepChanged()
+{
+    // Get the database
+    ref_ptr<avtDatabase> database = 
+                 netmgr->GetDBFromCache(filename,0,format.c_str())->GetDB();
+
+    // Clear the old metadata and problem-sized data
+    database->ClearMetaDataAndSILCache();
+    database->FreeUpResources();
+
+    // Send new metadata to the viewer
+    PopulateSimulationMetaData(filename, format);
+}
+
+// ****************************************************************************
+//  Method:  Engine::Disconnect
+//
+//  Purpose:
+//    Intended to disconnect the simulation from VisIt.
+//
+//  Arguments:
+//    Close connections and free the engine.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    August 24, 2004
+//
+// ****************************************************************************
+void
+Engine::Disconnect()
+{
+    delete instance;
+    instance = NULL;
+}

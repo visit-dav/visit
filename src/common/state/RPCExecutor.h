@@ -1,6 +1,5 @@
 #ifndef RPC_EXECUTOR_H
 #define RPC_EXECUTOR_H
-#include <state_exports.h>
 #include <Observer.h>
 
 
@@ -19,7 +18,7 @@
 //
 // ****************************************************************************
 template <class T>
-class STATE_API RPCExecutor : public Observer
+class RPCExecutor : public Observer
 {
 public:
     RPCExecutor(Subject *s) : Observer(s)

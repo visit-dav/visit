@@ -560,6 +560,14 @@ SumDoubleAcrossAllProcessors(double &value)
 //    Kathleen Bonnell, Mon Apr  7 16:20:20 PDT 2003    
 //    Changed theBestMin from bool to double so this method will
 //    work properly. 
+//
+//    Mark C. Miller, Thu Aug 19 15:58:19 PDT 2004 
+//    Fixed memory leak for allValues by re-implementing using more-efficient
+//    MPI_Allreduce and the MINLOC operator. Where before the processor of
+//    maximum rank with minimum value would return true, now the processor of
+//    minimum rank with minimum value will return true. Otherwise, behavior
+//    is identical. And, now there is no need to allocate an array of size
+//    numProcs or do an expensive Allgather.
 //    
 // ****************************************************************************
 
@@ -569,29 +577,11 @@ ThisProcessorHasMinimumValue(double min)
 #ifdef PARALLEL
     int rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    int nProcs;
-    MPI_Comm_size(MPI_COMM_WORLD, &nProcs);
-    double *allValues = new double[nProcs];
-    MPI_Allgather(&min, 1, MPI_DOUBLE, allValues, 1, MPI_DOUBLE,
-                  MPI_COMM_WORLD);
-    double theBestMin = min;
-    int  theCurrentWinner = rank;
-    for (int i = 0 ; i < nProcs ; i++)
-    {
-        //
-        // A bit tricky here -- if many processors have the same minimum, then
-        // doing < rather than '<=' could cause some of them to believe that
-        // they are the winner arbitrarily.  Would be correct, but not in the
-        // spirit of the routine (we want all the processors to believe that
-        // one single processor has the best minimum).
-        //
-        if (allValues[i] <= theBestMin)
-        {
-            theBestMin = allValues[i];
-            theCurrentWinner = i;
-        }
-    }
-    return (theCurrentWinner == rank ? true : false);
+    struct { double val; int rank; } tmp, rtmp;
+    tmp.val = min;
+    tmp.rank = rank;
+    MPI_Allreduce(&tmp, &rtmp, 1, MPI_DOUBLE_INT, MPI_MINLOC, MPI_COMM_WORLD);
+    return (rtmp.rank == rank ? true : false);
 #else
     return true;
 #endif
@@ -615,6 +605,14 @@ ThisProcessorHasMinimumValue(double min)
 //
 //  Modifications:
 //    
+//    Mark C. Miller, Thu Aug 19 15:58:19 PDT 2004
+//    Fixed memory leak for allValues by re-implementing using more-efficient
+//    MPI_Allreduce and the MAXLOC operator. Where before the processor of
+//    maximum rank with minimum value would return true, now the processor of
+//    minimum rank with minimum value will return true. Otherwise, behavior
+//    is identical. And, now there is no need to allocate an array of size
+//    numProcs or do an expensive Allgather.
+//
 // ****************************************************************************
 
 bool
@@ -623,29 +621,11 @@ ThisProcessorHasMaximumValue(double max)
 #ifdef PARALLEL
     int rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    int nProcs;
-    MPI_Comm_size(MPI_COMM_WORLD, &nProcs);
-    double *allValues = new double[nProcs];
-    MPI_Allgather(&max, 1, MPI_DOUBLE, allValues, 1, MPI_DOUBLE,
-                  MPI_COMM_WORLD);
-    double theBestMax = max;
-    int  theCurrentWinner = rank;
-    for (int i = 0 ; i < nProcs ; i++)
-    {
-        //
-        // A bit tricky here -- if many processors have the same maximum, then
-        // doing > rather than '>=' could cause some of them to believe that
-        // they are the winner arbitrarily.  Would be correct, but not in the
-        // spirit of the routine (we want all the processors to believe that
-        // one single processor has the best maximum).
-        //
-        if (allValues[i] >= theBestMax)
-        {
-            theBestMax = allValues[i];
-            theCurrentWinner = i;
-        }
-    }
-    return (theCurrentWinner == rank ? true : false);
+    struct { double val; int rank; } tmp, rtmp;
+    tmp.val = max;
+    tmp.rank = rank;
+    MPI_Allreduce(&tmp, &rtmp, 1, MPI_DOUBLE_INT, MPI_MAXLOC, MPI_COMM_WORLD);
+    return (rtmp.rank == rank ? true : false);
 #else
     return true;
 #endif

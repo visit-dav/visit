@@ -48,12 +48,13 @@ class avtSimDBFileFormat : public avtSTMDFileFormat
     virtual const char    *GetType(void)   { return "SimDB"; };
     virtual void           FreeUpResources(void); 
 
+    virtual int            GetCycle();
     virtual vtkDataSet    *GetMesh(int, const char *);
     virtual vtkDataArray  *GetVar(int, const char *);
     virtual vtkDataArray  *GetVectorVar(int, const char *);
 
   protected:
-    string                 host;
+    std::string            host;
     int                    port;
 
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *);

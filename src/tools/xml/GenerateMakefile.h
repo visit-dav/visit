@@ -100,6 +100,10 @@
 //    Jeremy Meredith, Wed Jul  7 17:08:03 PDT 2004
 //    Allow for mdserver-specific code in a plugin's source files.
 //
+//    Jeremy Meredith, Wed Aug 25 11:50:14 PDT 2004
+//    Added the concept of an engine-only or everything-but-the-engine plugin.
+//    This used to be an argument to main, but now it is part of the XML file.
+//
 // ****************************************************************************
 
 class MakefileGeneratorPlugin
@@ -114,6 +118,8 @@ class MakefileGeneratorPlugin
     bool    haswriter;
     bool    enabledByDefault;
     bool    has_MDS_specific_code;
+    bool    onlyEnginePlugin;
+    bool    noEnginePlugin;
 
     vector<QString> cxxflags;
     vector<QString> ldflags;
@@ -140,8 +146,11 @@ class MakefileGeneratorPlugin
 
     Attribute *atts;
   public:
-    MakefileGeneratorPlugin(const QString &n,const QString &l,const QString &t,const QString &vt,const QString &dt,const QString &v, const QString&w, bool hw)
-        : name(n), type(t), label(l), version(v), vartype(vt), dbtype(dt), haswriter(hw), atts(NULL)
+    MakefileGeneratorPlugin(const QString &n,const QString &l,const QString &t,
+                            const QString &vt,const QString &dt,
+                            const QString &v, const QString&w, bool hw,
+                            bool onlyengine, bool noengine)
+        : name(n), type(t), label(l), version(v), vartype(vt), dbtype(dt), haswriter(hw), onlyEnginePlugin(onlyengine), noEnginePlugin(noengine), atts(NULL)
     {
         enabledByDefault = true;
         has_MDS_specific_code = false;
@@ -511,9 +520,9 @@ class MakefileGeneratorPlugin
         }
         else
         {
-            if (noengineplugin)
+            if (noEnginePlugin)
                 out << "all: message $(IDSO) $(MDSERVERLIB)" << endl;
-            else if (onlyengineplugin)
+            else if (onlyEnginePlugin)
                 out << "all: message $(IDSO) $(ENGINELIBSER) $(ENGINELIBPAR)" << endl;
             else
                 out << "all: message $(IDSO) $(MDSERVERLIB) $(ENGINELIBSER) $(ENGINELIBPAR)" << endl;
@@ -546,9 +555,9 @@ class MakefileGeneratorPlugin
         else if (type=="database")
         {
             out << "\t@echo \"****************************************************************************\"" << endl;
-            if (noengineplugin)
+            if (noEnginePlugin)
                 out << "\t@echo \"*** Building "<<label<<" Database Plugin (no engine)\"" << endl;
-            else if (onlyengineplugin)
+            else if (onlyEnginePlugin)
                 out << "\t@echo \"*** Building "<<label<<" Database Plugin (engine only)\"" << endl;
             else
                 out << "\t@echo \"*** Building "<<label<<" Database Plugin\"" << endl;

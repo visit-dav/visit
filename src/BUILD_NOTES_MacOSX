@@ -29,10 +29,10 @@ shell prompt.
     Qt       3.3.1    GUI Toolkit            http://www.trolltech.com
     Silo     4.4      File I/O library       http://www.llnl.gov/bdiv/meshtv
     VTK      20031028 Visualization Toolkit  http://www.kitware.com
-
+    HDF5     1.6.0    I/O library            http://hdf.ncsa.uiuc.edu/HDF5/
+    
     Optional Version  Description            For More information
     ======== =======  ===========            ====================
-    HDF5     1.6.0    I/O library            http://hdf.ncsa.uiuc.edu/HDF5/
     Mili     1.06     I/O library            (none)
 
 The public version of VisIt has been built with the above listed versions
@@ -156,6 +156,7 @@ later on.
 
 mkdir visit
 echo `pwd`/visit > visitpath
+set VISITPATH="`pwd`/visit"
 
 ==============================================================================
 Building Qt as a set of prebound dynamic libraries
@@ -180,16 +181,16 @@ rm ../lib/libqt*
 make
 
 # Install Qt
-mkdir ../visit/qt
-mkdir ../visit/qt/bin
-mkdir ../visit/qt/include
-mkdir ../visit/qt/include/private
-mkdir ../visit/qt/lib
-cp bin/{designer,findtr,moc,qt20fix,qtrename140} ../visit/qt/bin
-cd include; cp *.h ../../visit/qt/include
-cp private/*.h ../../visit/qt/include/private
+mkdir $VISITPATH/qt
+mkdir $VISITPATH/qt/bin
+mkdir $VISITPATH/qt/include
+mkdir $VISITPATH/qt/include/private
+mkdir $VISITPATH/qt/lib
+cp bin/{designer,findtr,moc,qt20fix,qtrename140} $VISITPATH/qt/bin
+cd include; cp *.h $VISITPATH/qt/include
+cp private/*.h $VISITPATH/qt/include/private
 cd ../lib
-cp libqt-mt.3.3.1.dylib ../../visit/qt/lib/libqt.dylib
+cp libqt-mt.3.3.1.dylib $VISITPATH/qt/lib/libqt.dylib
 cd ../..
 
 ==============================================================================
@@ -250,11 +251,11 @@ make darwin
 #
 # Install Mesa
 #
-mkdir ../visit/mesa
-mkdir ../visit/mesa/{include,lib}
-mkdir ../visit/mesa/include/GL
-cp include/GL/*.h ../visit/mesa/include/GL
-cp lib/*.dylib ../visit/mesa/lib
+mkdir $VISITPATH/mesa
+mkdir $VISITPATH/mesa/{include,lib}
+mkdir $VISITPATH/mesa/include/GL
+cp include/GL/*.h $VISITPATH/mesa/include/GL
+cp lib/*.dylib $VISITPATH/mesa/lib
 cd ..
 
 ==============================================================================
@@ -362,24 +363,24 @@ Note: Be sure that you use a different offset for each library or prebinding wil
 #
 # Install VTK in the visit directory under the vtk directory.
 #
-mkdir ../visit/vtk
-mkdir ../visit/vtk/{Common,Filtering,Graphics,Hybrid,IO,Imaging,Rendering,MangleMesaInclude,lib}
-cp vtkConfigure.h                 ../visit/vtk
-cp vtkToolkits.h                  ../visit/vtk
-cp vtk*Instantiator.h             ../visit/vtk
-cp Utilities/zlib/zlib.h          ../visit/vtk
-cp Utilities/zlib/zconf.h         ../visit/vtk
-cp Utilities/zlib/zlibDllConfig.h ../visit/vtk
-cp Utilities/tiff/*.h             ../visit/vtk
-cp Common/*.h                     ../visit/vtk/Common
-cp Filtering/*.h                  ../visit/vtk/Filtering
-cp Graphics/*.h                   ../visit/vtk/Graphics
-cp Hybrid/*.h                     ../visit/vtk/Hybrid
-cp IO/*.h                         ../visit/vtk/IO
-cp Imaging/*.h                    ../visit/vtk/Imaging
-cp Rendering/*.h                  ../visit/vtk/Rendering
-cp MangleMesaInclude/*.h          ../visit/vtk/MangleMesaInclude
-cp bin/*.dylib                    ../visit/vtk/lib
+mkdir $VISITPATH/vtk
+mkdir $VISITPATH/vtk/{Common,Filtering,Graphics,Hybrid,IO,Imaging,Rendering,MangleMesaInclude,lib}
+cp vtkConfigure.h                 $VISITPATH/vtk
+cp vtkToolkits.h                  $VISITPATH/vtk
+cp vtk*Instantiator.h             $VISITPATH/vtk
+cp Utilities/zlib/zlib.h          $VISITPATH/vtk
+cp Utilities/zlib/zconf.h         $VISITPATH/vtk
+cp Utilities/zlib/zlibDllConfig.h $VISITPATH/vtk
+cp Utilities/tiff/*.h             $VISITPATH/vtk
+cp Common/*.h                     $VISITPATH/vtk/Common
+cp Filtering/*.h                  $VISITPATH/vtk/Filtering
+cp Graphics/*.h                   $VISITPATH/vtk/Graphics
+cp Hybrid/*.h                     $VISITPATH/vtk/Hybrid
+cp IO/*.h                         $VISITPATH/vtk/IO
+cp Imaging/*.h                    $VISITPATH/vtk/Imaging
+cp Rendering/*.h                  $VISITPATH/vtk/Rendering
+cp MangleMesaInclude/*.h          $VISITPATH/vtk/MangleMesaInclude
+cp bin/*.dylib                    $VISITPATH/vtk/lib
 cd ..
 
 The next offset after libvtkRendering.dylib, which has an offset of 0x21f6f000 and
@@ -411,6 +412,8 @@ tar zxvf Python-2.3.3.tgz
 cd Python-2.3.3
 env OPT="-O3 -Wall -Wstrict-prototypes -fno-common -fPIC" ./configure --prefix=`cat ../visitpath`/python
 make
+
+# Install Python
 make install
 
 # Now that Python is built, we need to create a shared library version.
@@ -420,7 +423,7 @@ ar -x ../libpython2.3.a
 echo "char **environ=0;" > environhack.c
 gcc -o environhack.o -c environhack.c
 gcc -dynamiclib -prebind -Wl,-seg1addr,0x222b3000,-install_name,@executable_path/../lib/libpython2.3.dylib,-compatibility_version,2.3.3,-current_version,2.3.3 -twolevel_namespace -o libpython2.3.dylib *.o -framework Carbon
-cp libpython2.3.dylib ../../visit/python/lib/python2.3/config/libpython2.3.dylib
+cp libpython2.3.dylib $VISITPATH/python/lib/python2.3/config/libpython2.3.dylib
 cd ../..
 
 The next offset after libpython.dylib, which has an offset of 0x222b3000 and a library
@@ -434,6 +437,48 @@ offset = offset + (0x1000 - offset % 0x1000)
 offset = 0x22605000
 
 ===============================================================================
+Building HDF5 as a prebound dynamic library
+===============================================================================
+
+HDF5 is a data storage library that allows you to efficiently write large
+volumes of structured storage to a disk file. VisIt can technically be built
+without support for HDF5 so it is an optional, but recommended, package. Though
+it is optional, we build it before the Silo library because the Silo library
+should be built with support for HDF5 when possible. If you don't want to build
+HDF5, you can skip this section but you will have to take care that you do not
+attempt to build Silo with support for HDF5.
+
+tar zxvf hdf5-1.6.0.tar.gz
+cd hdf5-1.6.0
+env CFLAGS="-O2 -fPIC" ./configure
+make
+
+# The HDF5 libraries get built, even as dylib shared libraries. That's
+# not quite good enough though since we want to set the beginning 
+# address of the library and make it be prebound. We'll build our own
+# version of the library using the prebuilt sources.
+cd src
+gcc -dynamiclib -prebind -twolevel_namespace -Wl,-seg1addr,0x22605000,-install_name,@executable_path/../lib/libhdf5.dylib,-compatibility_version,1.6,-current_version,1.6 -o libhdf5.dylib *.lo -lz
+
+# Install HDF5
+mkdir $VISITPATH/hdf5
+mkdir $VISITPATH/hdf5/include
+mkdir $VISITPATH/hdf5/lib
+cp libhdf5.dylib $VISITPATH/hdf5/lib
+cp *.h $VISITPATH/hdf5/include
+cd ../..
+
+The next offset after libhdf5.dylib, which has an offset of 0x22605000 and
+a library size of 1,055,884 (0x101c8c) bytes is:
+
+# Next offset
+offset = 0x22605000 + int(float(0x101c8c) * 1.05)
+# Align the offset to 0x1000 byte boundaries
+offset = offset + (0x1000 - offset % 0x1000)
+# Next offset
+offset = 0x22714000
+
+===============================================================================
 Building Silo as a prebound dynamic library
 ===============================================================================
 
@@ -443,10 +488,20 @@ listed below to build Silo.  If you have any problems building or installing
 Silo, read the INSTALL_NOTES file in the SILO distribution for more
 information.
 
+Note that these instructions assume that Silo will be built with HDF5 support.
+If you don't want to build Silo with HDF5 support, replace the --with-hdf5=...
+with --without-hdf5. The library segment offsets used assume that Silo will be
+built with support for HDF5. If you choose to disable HDF5 support, the
+offsets will not be affected since the HDF5 version of the Silo library
+should be larger.
+
 # Build silo source into an archive library
 sh silo020325.sh
 cd silo020325
-env CFLAGS="-O2 -fno-common -fPIC" ./configure --disable-sdx --without-readline --without-hdf5 --without-exodus
+# Set the values of some helper variables (tcsh)
+set HDF5INCLUDE=$VISITDIR/hdf5/include
+set HDF5LIB=$VISITDIR/hdf5/lib
+env CFLAGS="-O2 -fno-common -fPIC" ./configure --disable-sdx --without-readline --without-exodus --with-hdf5=$HDF5INCLUDE,$HDF5LIB
 make
 
 # Turn the archive library into a prebound dynamic library
@@ -455,29 +510,29 @@ cd lib
 mkdir tmplib
 cd tmplib
 ar -x ../libsilo.a
-gcc -dynamiclib -prebind -twolevel_namespace -Wl,-seg1addr,0x22605000,-install_name,@executable_path/../lib/libsilo.dylib,-compatibility_version,4.3.2,-current_version,4.3.2 -o ../libsilo.dylib *.o
+gcc -dynamiclib -prebind -twolevel_namespace -Wl,-seg1addr,0x22714000,-install_name,@executable_path/../lib/libsilo.dylib,-compatibility_version,4.3.2,-current_version,4.3.2 -o ../libsilo.dylib *.o -L$HDF5LIB -lhdf5
 cd ..
 
 # Install Silo
-mkdir ../visit/silo
-mkdir ../visit/silo/include
-mkdir ../visit/silo/lib
-cp silo/silo/silo.h   ../visit/silo/include
-cp silo/silo/silo.inc ../visit/silo/include
-cp silo/sdx/sdx.h     ../visit/silo/include
-cp silo/sdx/sdx.inc   ../visit/silo/include
-cp lib/libsilo.dylib  ../visit/silo/lib
+mkdir $VISITDIR/silo
+mkdir $VISITDIR/silo/include
+mkdir $VISITDIR/silo/lib
+cp silo/silo/silo.h   $VISITDIR/silo/include
+cp silo/silo/silo.inc $VISITDIR/silo/include
+cp silo/sdx/sdx.h     $VISITDIR/silo/include
+cp silo/sdx/sdx.inc   $VISITDIR/silo/include
+cp lib/libsilo.dylib  $VISITDIR/silo/lib
 cd ..
 
-The next offset after libpython.dylib, which has an offset of 0x22605000 and a library
-size of 453,352 (0x6eae8) bytes is:
+The next offset after libsilo.dylib, which has an offset of 0x22714000 and a library
+size of 595,036 (0x9145c) bytes is:
 
 # Next offset
-offset = 0x22605000 + int(float(0x6eae8) * 1.05)
+offset = 0x22714000 + int(float(0x9145c) * 1.05)
 # Align the offset to 0x1000 byte boundaries
 offset = offset + (0x1000 - offset % 0x1000)
 # Next offset
-offset = 0x2267a000
+offset = 0x227ad000
 
 ===============================================================================
 Building Mili as a prebound dynamic library
@@ -499,8 +554,8 @@ the Mili's src directory
 
 CC=gcc
 CFLAGS = -I. -O2 -fno-common -fPIC
-MILI_LDFLAGS=-Wl,-seg1addr,0x2267d000 -L. -lgahl
-GAHL_LDFLAGS=-Wl,-seg1addr,0x2267a000
+MILI_LDFLAGS=-Wl,-seg1addr,0x227b0000 -L. -lgahl
+GAHL_LDFLAGS=-Wl,-seg1addr,0x227ad000
 LDFLAGS=-dynamiclib -prebind -twolevel_namespace -Wl,-install_name,@executable_path/../lib/$@
 .SUFFIXES : .o .c
 MILI_SRC=mili.c direc.c param.c io.c util.c dep.c svar.c srec.c mesh_u.c wrap_c.c io_mem.c eprtf.c sarray.c
@@ -521,58 +576,22 @@ Now that you're in Mili's source directory and you have a Makefile,
 type: make
 
 # Install Mili
-mkdir ../../visit/mili
-cp *.dylib ../../visit/mili
-cp mili.h ../../visit/mili
-cp mili_enum.h ../../visit/mili
+mkdir $VISITPATH/mili
+cp *.dylib $VISITPATH/mili
+cp mili.h $VISITPATH/mili
+cp mili_enum.h $VISITPATH/mili
 cd ../..
 
-The next offset after libmili.dylib, which has an offset of 0x2267d000 and
+The next offset after libmili.dylib, which has an offset of 0x227b0000 and
 a library size of 109,556 (0x1abf4) bytes is:
 
 # Next offset
-offset = 0x2267d000 + int(float(0x1abf4) * 1.05)
+offset = 0x227b0000 + int(float(0x1abf4) * 1.05)
 # Align the offset to 0x1000 byte boundaries
 offset = offset + (0x1000 - offset % 0x1000)
 # Next offset
-offset = 0x2269a000
+offset = 0x227cd000
 
-===============================================================================
-Building HDF5 as a prebound dynamic library
-===============================================================================
-
-tar zxvf hdf5-1.6.0.tar.gz
-cd hdf5-1.6.0
-env CFLAGS="-O2 -fPIC" ./configure
-make
-
-# The HDF5 libraries get built, even as dylib shared libraries. That's
-# not quite good enough though since we want to set the beginning 
-# address of the library and make it be prebound. We'll build our own
-# version of the library using the prebuilt sources. Note that the
-# segment offset used for HDF5 does not exactly correspond to the offset
-# computed after making Mili. I had to add 60000 to the offset because
-# libtool said that Silo and HDF5 were overlapping.
-cd src
-gcc -dynamiclib -prebind -twolevel_namespace, -Wl,-seg1addr,0x226a9000,-install_name,@executable_path/../lib/libhdf5.dylib,-compatibility_version,1.6,-current_version,1.6 -o libhdf5.dylib *.lo -lz
-
-# Install HDF5
-mkdir ../../visit/hdf5
-mkdir ../../visit/hdf5/include
-mkdir ../../visit/hdf5/lib
-cp libhdf5.dylib ../../visit/hdf5/lib
-cp *.h ../../visit/hdf5/include
-cd ../..
-
-The next offset after libhdf5.dylib, which has an offset of 0x226a9000 and
-a library size of 1,055,884 (0x101c8c) bytes is:
-
-# Next offset
-offset = 0x226a9000 + int(float(0x101c8c) * 1.05)
-# Align the offset to 0x1000 byte boundaries
-offset = offset + (0x1000 - offset % 0x1000)
-# Next offset
-offset = 0x227b8000
 
 ===============================================================================
 Building VisIt with prebinding
@@ -580,16 +599,18 @@ Building VisIt with prebinding
 
 Since we may want to add other libraries to our list of prebound
 dynamic libraries, for database reader plugins, etc, we should 
-reserve a memory range after the Silo library. Suppose all other
-libraries that we want can fit in 50Mb. The starting address for
-the VisIt libraries would then be: 0x2267a000 + 50Mb
+reserve a memory range after the Python library. Suppose all other
+libraries that we want can fit in 10Mb. If that assumption becomes invalid,
+we can recalculate the offset for the VisIt libraries. The starting address
+for the VisIt libraries using the current assumptions would then be:
+0x22605000 + 10Mb
 
 # Next offset
-offset = 0x2267a000 + 0x2faf080
+offset = 0x22605000 + 0x2faf080
 # Align the offset to 0x1000 byte boundaries
 offset = offset + (0x1000 - offset % 0x1000)
 # Next offset
-offset = 0x2562a000
+offset = 0x22f8f000
 
 VisIt uses GNU's autoconf system to provide platform independence when
 building VisIt in a UNIX environment. Autoconf creates a script called
@@ -598,11 +619,25 @@ to build VisIt.  Follow the directions listed below to build VisIt.
 More information about building VisIt follows after that.
 
 #
+# HDF5 and Silo
+#
+If you built the Silo library with support for HDF5 using the instructions in
+this document then you will need to modify VisIt's configure script somewhat so
+programs that require the silo library also get linked with the HDF5 library.
+On most other platforms, the Silo library is a static archive with the HDF5
+symbols linked into it. These build instructions for MacOS X build Silo as a
+dynamic, prebound library using a dynamic HDF5 library.
+
+vi configure
+replace -lsilo with: -lsilo -lhdf5
+save and quit
+
+#
 # Configure VisIt
 #
-gunzip visit040719.tar.gz
-tar xf visit040719.tar
-cd visit040719/config-site
+gunzip visit040816.tar.gz
+tar xf visit040816.tar
+cd visit040816/config-site
 echo VISITHOME=`cat ../../visitpath` > `hostname`.conf
 cat Template.conf >> `hostname`.conf
 cd ..
@@ -625,9 +660,6 @@ vi Makefile
 # so the Silo database reader can build. The default optimization level (-O2)
 # causes gcc to run out of memory on some MacOS X computers.
 
-# Change Silo version if you have a slightly old version of Silo.
-vi avtSiloWriter.h
-comment out #define SILO_VERSION_4_4
 
 cd ../..
 
