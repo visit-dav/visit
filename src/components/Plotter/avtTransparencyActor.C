@@ -60,6 +60,9 @@ using     std::vector;
 //    Passed rank and size into the image space redistributor so that
 //    library could be built on MacOS X.
 //
+//    Kathleen Bonnell, Tue Jan 11 16:06:33 PST 2005 
+//    Initialize is2Dimensional.
+//
 // ****************************************************************************
 
 avtTransparencyActor::avtTransparencyActor()
@@ -101,6 +104,7 @@ avtTransparencyActor::avtTransparencyActor()
 
     inputModified = true;
     renderingSuspended = false;
+    is2Dimensional = false;
 }
 
 

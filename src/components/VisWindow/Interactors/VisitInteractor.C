@@ -29,6 +29,9 @@ ViewCallback   VisitInteractor::viewCallback     = NULL;
 //    Initialized new data members Center, MotionFactor and OldX/OldY. 
 //    Added call to UseTimersOn().
 //
+//    Kathleen Bonnell, Tue Jan 11 16:06:33 PST 2005 
+//    Initialized spinOldX, spinOldY, spinNewX, spinNewY. 
+//
 // ****************************************************************************
 
 VisitInteractor::VisitInteractor(VisWindowInteractorProxy &p) : proxy(p)
@@ -44,6 +47,11 @@ VisitInteractor::VisitInteractor(VisWindowInteractorProxy &p) : proxy(p)
     OldX = OldY = 0.0;
     Center[0] = Center[1] = 0.0;
     MotionFactor = 10.0;
+
+    spinOldX = 0.f;
+    spinOldY = 0.f;
+    spinNewX = 0;
+    spinNewY = 0;
 }
 
 // ****************************************************************************

@@ -122,6 +122,9 @@ QvisQueryWindow::~QvisQueryWindow()
 //   Kathleen Bonnell, Wed Dec 15 17:16:17 PST 2004 
 //   Added useGlobal checkbox. 
 //
+//   Kathleen Bonnell, Tue Jan 11 16:16:48 PST 2005 
+//   Connect useGlobal to its slot.
+//
 // ****************************************************************************
 
 void
@@ -183,6 +186,7 @@ QvisQueryWindow::CreateWindowContents()
     }
    
     useGlobal = new QCheckBox("Use Global Id", argPanel, "useGlobal");
+    connect(useGlobal, SIGNAL(toggled(bool)), this, SLOT(useGlobalToggled(bool)));
     useGlobal->hide();
     sLayout->addMultiCellWidget(useGlobal, 4, 4, 0, 1);
   
@@ -539,6 +543,10 @@ QvisQueryWindow::UpdateResults(bool)
 //   Kathleen Bonnell, Wed Dec 15 17:16:17 PST 2004 
 //   Added logic to handle useGlobal checkbox. 
 //
+//   Kathleen Bonnell, Tue Jan 11 16:16:48 PST 2005 
+//   Enabled state of labels[0] and textFields[0] may change if useGlobal is
+//   toggled, so reset the state to true here. 
+//
 // ****************************************************************************
 
 void
@@ -560,6 +568,8 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
     // reset a few defaults
     dataOpts->setButton(0);
     useGlobal->setChecked(0);
+    labels[0]->setEnabled(true);
+    textFields[0]->setEnabled(true);
     
     if(index >= 0 && index < winType.size())
     {
@@ -1259,4 +1269,27 @@ void
 QvisQueryWindow::displayModeChanged(int)
 {
     UpdateQueryList(); 
+}
+
+
+// ****************************************************************************
+// Method: QvisQueryWindow::useGlobalToggled
+//
+// Purpose: 
+//   A slot function called when the useGlobal checkbox is toggled. 
+//   Sets the 'enabled' state of the label and textfield correpsonding
+//   to 'Domain'.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   January 11, 2005 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisQueryWindow::useGlobalToggled(bool val)
+{
+    labels[0]->setEnabled(!val);
+    textFields[0]->setEnabled(!val);
 }

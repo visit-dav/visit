@@ -89,11 +89,16 @@ EngineProxy::EngineProxy() : RemoteProxyBase("-engine")
 //    Brad Whitlock, Fri May 2 15:33:21 PST 2003
 //    I removed some members since they are now deleted in the base class.
 //
+//    Kathleen Bonnell, Tue Jan 11 16:06:33 PST 2005 
+//    Delete metaData and silAtts.
+//
 // ****************************************************************************
 
 EngineProxy::~EngineProxy()
 {
     delete statusAtts;
+    delete metaData;
+    delete silAtts;
 }
 
 // ****************************************************************************

@@ -102,6 +102,9 @@ avtSurfaceAndWireframeRenderer::avtSurfaceAndWireframeRenderer()
 //    Kathleen Bonnell, Fri Sep 28 9:45:49 PDT 2001
 //    Colors never instantiaed with New(), don't use Delete() 
 //
+//    Kathleen Bonnell, Tue Jan 11 16:06:33 PST 2005 
+//    Fix memory leak -- use UnRegister with Colors. 
+//
 // ****************************************************************************
 
 avtSurfaceAndWireframeRenderer::~avtSurfaceAndWireframeRenderer()
@@ -112,7 +115,11 @@ avtSurfaceAndWireframeRenderer::~avtSurfaceAndWireframeRenderer()
         input->Delete();
         input = NULL;
     }
-    Colors = NULL;
+    if (Colors)
+    {
+        Colors->UnRegister(NULL); 
+        Colors = NULL;
+    }
     if (prop != NULL)
     {
         prop->Delete();
@@ -377,6 +384,9 @@ avtSurfaceAndWireframeRenderer::Render(vtkDataSet *ds)
 //    Kathleen Bonnell, Fri Feb  8 11:03:49 PST 2002
 //    GetActiveScalars() no longer part of VTK 4.0 api.
 //
+//    Kathleen Bonnell, Tue Jan 11 16:06:33 PST 2005 
+//    Fix memory leak -- use Register and UnRegister with Colors. 
+//
 // ****************************************************************************
 
 void
@@ -387,7 +397,13 @@ avtSurfaceAndWireframeRenderer::SetColors()
     {
         return ;
     }
-    
+
+    if (Colors)
+    {
+        Colors->UnRegister(NULL);
+        Colors = NULL;
+    }
+   
     vtkDataArray *scalars = input->GetPointData()->GetScalars();
     if (!scalars)
     {
@@ -422,6 +438,8 @@ avtSurfaceAndWireframeRenderer::SetColors()
         }
 
         Colors = LUT->MapScalars(scalars, VTK_COLOR_MODE_DEFAULT, 0);
+        Colors->Register(NULL);
+        Colors->Delete();
     }
     else //scalars not present or we don't want to use them.
     {
@@ -431,7 +449,7 @@ avtSurfaceAndWireframeRenderer::SetColors()
         //  value stored via vtkProperty::SetColor, or the value
         //  stored via vtkProperty::SetEdgeColor. 
         //
-        Colors = NULL;
+        //Colors = NULL;
     }
 }
 

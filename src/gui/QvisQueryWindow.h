@@ -58,6 +58,9 @@ class QueryList;
 //   Kathleen Bonnell, Wed Dec 15 17:16:17 PST 2004 
 //   Added 'useGlobal' checkbox.
 //
+//   Kathleen Bonnell, Tue Jan 11 16:16:48 PST 2005 
+//   Added slot 'useGlobalToggled'.
+//
 // ****************************************************************************
 
 class GUI_API QvisQueryWindow : public QvisPostableWindowSimpleObserver
@@ -96,6 +99,7 @@ private slots:
     void selectQuery();
     void clearResultText();
     void displayModeChanged(int);
+    void useGlobalToggled(bool);
 
 private:
     QueryList       *queries;

@@ -31,6 +31,8 @@ extern ViewerSubject *viewerSubject;
 //  Creation:    February 5, 2003 
 //
 //  Modifications:
+//   Kathleen Bonnell, Tue Jan 11 16:14:14 PST 2005
+//   Set minimum for numNodes spinbox to 1.
 //
 // ****************************************************************************
 
@@ -66,7 +68,7 @@ ViewerHostProfileSelectorWithWin::ViewerHostProfileSelectorWithWin(QWidget *pare
     layout->addMultiCellWidget(numProcs,      1,1, 1,1);
 
     numNodesLabel = new QLabel("Num nodes", this, "numNodesLabel");
-    numNodes = new QSpinBox(0, 99999, 1, this, "numNodes");
+    numNodes = new QSpinBox(1, 99999, 1, this, "numNodes");
     layout->addMultiCellWidget(numNodesLabel, 1,1, 2,2);
     layout->addMultiCellWidget(numNodes,      1,1, 3,3);
 

@@ -161,6 +161,9 @@ QvisHostProfileWindow::~QvisHostProfileWindow()
 //   Jeremy Meredith, Thu Nov 20 16:29:54 PST 2003
 //   Adding psub/srun option.
 //
+//   Kathleen Bonnell, Tue Jan 11 16:14:14 PST 2005 
+//   Set minimum for numNodes spinbox to 1. 
+//
 // ****************************************************************************
 void
 QvisHostProfileWindow::CreateWindowContents()
@@ -356,7 +359,7 @@ QvisHostProfileWindow::CreateWindowContents()
     parLayout->addMultiCellWidget(numProcessors, prow, prow, 2, 3);
     prow++;
 
-    numNodes = new QSpinBox(0, 99999, 1, parGroup, "numNodes");
+    numNodes = new QSpinBox(1, 99999, 1, parGroup, "numNodes");
     connect(numNodes, SIGNAL(valueChanged(int)),
             this, SLOT(numNodesChanged(int)));
     numNodesCheckBox = new QCheckBox("Default number of nodes",

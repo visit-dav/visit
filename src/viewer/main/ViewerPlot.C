@@ -131,6 +131,9 @@ vector<double> ViewerPlot::nullDataExtents;
 //    Brad Whitlock, Thu Apr 8 15:27:48 PST 2004
 //    Added support for keyframing back in.
 //
+//    Kathleen Bonnell, Tue Jan 11 16:16:48 PST 2005
+//    Initialize 'isLabel'. 
+//
 // ****************************************************************************
 
 ViewerPlot::ViewerPlot(const int type_,ViewerPlotPluginInfo *viewerPluginInfo_,
@@ -155,6 +158,7 @@ ViewerPlot::ViewerPlot(const int type_,ViewerPlotPluginInfo *viewerPluginInfo_,
     type                = type_;
     viewerPluginInfo    = viewerPluginInfo_;
     isMesh = (strcmp(viewerPluginInfo->GetName(), "Mesh") == 0); 
+    isLabel = (strcmp(viewerPluginInfo->GetName(), "Label") == 0); 
     followsTime         = true;
     expandedFlag        = false;
     errorFlag           = false;
@@ -364,6 +368,8 @@ ViewerPlot::operator = (const ViewerPlot &obj)
 // Creation:   Fri Apr 2 10:53:56 PDT 2004
 //
 // Modifications:
+//    Kathleen Bonnell, Tue Jan 11 16:16:48 PST 2005
+//    Initialize 'isLabel'. 
 //   
 // ****************************************************************************
 
@@ -391,6 +397,7 @@ ViewerPlot::CopyHelper(const ViewerPlot &obj)
     type                = obj.type;
     viewerPluginInfo    = obj.viewerPluginInfo;
     isMesh              = obj.isMesh;
+    isLabel             = obj.isLabel;
     followsTime         = obj.followsTime;
     errorFlag           = false;
     networkID           = -1;
@@ -4424,6 +4431,30 @@ ViewerPlot::IsMesh()
 {
     return isMesh;
 }
+
+
+// ****************************************************************************
+// Method: ViewerPlot::IsLabel
+//
+// Purpose: 
+//   Returns whether or not the plot type is Label Plot.
+//
+// Returns:
+//   true if this is a label plot, false otherwise.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   January 11, 2005 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+ViewerPlot::IsLabel()
+{
+    return isLabel;
+}
+
 
 // ****************************************************************************
 //  Method:  ViewerPlot::GetEngineKey
