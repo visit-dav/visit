@@ -46,23 +46,27 @@
 #    I modified the script so that existing distributions would be
 #    consistent as much as possible while being updated.
 #
+#    Eric Brugger, Mon Jul 21 17:53:22 PDT 2003
+#    I added the ability to install a configuration file.
+#
 #-----------------------------------------------------------------------
 
 set Compress = COMPRESS
 
 if ($#argv < 3) then
-   echo "Usage: visit-install [-a] [-beta | -private] [-g group] [-gw] version platform directory"
+   echo "Usage: visit-install [-a] [-beta | -private] [-c config] [-g group] [-gw] version platform directory"
    exit (1)
 endif
 
 if ($#argv >= 9) then
-   echo "Usage: visit-install [-a] [-beta | -private] [-g group] [-gw] version platform directory"
+   echo "Usage: visit-install [-a] [-beta | -private] [-c config] [-g group] [-gw] version platform directory"
    exit (1)
 endif
 
 set append = false
 set beta = false
 set private = false
+set config = prompt
 set group_ownership = none
 set dir_permission = 755
 set file_permission = 644
@@ -92,6 +96,11 @@ while ($option_found == true)
          set private = true
          shift
          breaksw
+      case -c:
+         set config = $2
+         shift
+         shift
+         breaksw
       default:
          set option_found = false
          breaksw
@@ -108,6 +117,41 @@ if ($beta == true && $private == true) then
    exit (1)
 endif
 
+while ($config == prompt)
+   echo "Choose a system configuration file.  A system configuration"
+   echo "file contains profiles that make it easy to access VisIt on"
+   echo "remote computers."
+   echo ""
+   echo "   1) No system configuration"
+   echo "   2) LLNL open network"
+   echo "   3) LLNL closed network"
+   echo ""
+   echo "(1,2,3):"
+
+   set config = $<
+   switch ($config)
+      case 1:
+         set config = none
+         breaksw
+      case 2:
+         set config = open
+         breaksw
+      case 3:
+         set config = closed
+         breaksw
+      default:
+         set config = prompt
+         breaksw
+   endsw
+end
+echo "config=$config"
+
+exit (1)
+
+if ($config != none && $config != open && $config != closed) then
+   echo "Illegal configuration option, choices are none, open and closed."
+   exit (1)
+endif
 
 set version = $1;
 set base = `echo visit$version | tr "." "_"`
@@ -188,6 +232,16 @@ find . -print | cpio -pmud $dir/$version+
 cd ../../..
 
 cp distribution/visit/data/* $dir/data
+
+#
+# Set the link for the configuration file.
+#
+rm -f $dir/.visit/config
+if ($config == open) then
+   ln -s visit-config-open $dir/.visit/config
+else if ($config == closed) then
+   ln -s visit-config-closed $dir/.visit/config
+endif
 
 #
 # Set the permissions properly

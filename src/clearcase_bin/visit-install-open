@@ -172,15 +172,6 @@ then
    exit
 fi
 
-#
-# Check that the visit open configuration file is present.
-#
-if [ ! -e visit-config-open ]
-then
-   echo "visit-config-open is missing."
-   exit
-fi
-
 ver2=`echo $ver | tr "." "_"`
 ver=`echo $ver2 | tr "_" "."`
 
@@ -190,7 +181,7 @@ ver=`echo $ver2 | tr "_" "."`
 rm -f kickit
 cat <<EOF > kickit
 #!/bin/sh
-./visit-install -private -g visit -gw $ver linux /usr/gapps/visit > installlog 2>&1
+./visit-install -private -c open -g visit -gw $ver linux /usr/gapps/visit > installlog 2>&1
 rm -f resultlog
 echo "        install of visit on kickit"          > resultlog 2>&1
 echo "       ----------------------------"         >> resultlog 2>&1
@@ -221,9 +212,9 @@ cat <<EOF > sunspot
 #!/bin/sh
 if [ -d /usr/gapps/visit/$ver ]
 then
-   ./visit-install -private -a -g visit -gw $ver sunos5 /usr/gapps/visit > installlog 2>&1
+   ./visit-install -private -a -c open -g visit -gw $ver sunos5 /usr/gapps/visit > installlog 2>&1
 else
-   ./visit-install -private -g visit -gw $ver sunos5 /usr/gapps/visit > installlog 2>&1
+   ./visit-install -private -c open -g visit -gw $ver sunos5 /usr/gapps/visit > installlog 2>&1
 fi
 rm -f resultlog
 echo "        install of visit on sunspot"         > resultlog 2>&1
@@ -255,16 +246,10 @@ cat <<EOF > hyper
 #!/bin/sh
 if [ -d /usr/gapps/visit/$ver ]
 then
-   ./visit-install $verflag -a -g visit -gw $ver irix6 /usr/gapps/visit > installlog 2>&1
+   ./visit-install $verflag -a -c open -g visit -gw $ver irix6 /usr/gapps/visit > installlog 2>&1
 else
-   ./visit-install $verflag -g visit -gw $ver irix6 /usr/gapps/visit > installlog 2>&1
+   ./visit-install $verflag -c open -g visit -gw $ver irix6 /usr/gapps/visit > installlog 2>&1
 fi
-mkdir /usr/gapps/visit/$ver/.visit
-chmod 775 /usr/gapps/visit/$ver/.visit
-chgrp visit /usr/gapps/visit/$ver/.visit
-cp visit-config-open /usr/gapps/visit/$ver/.visit/config
-chmod 664 /usr/gapps/visit/$ver/.visit/config
-chgrp visit /usr/gapps/visit/$ver/.visit/config
 rm -f resultlog
 echo "        install of visit on hyper"           > resultlog 2>&1
 echo "       ---------------------------"          >> resultlog 2>&1
@@ -283,7 +268,6 @@ then
       scp visit$ver2.irix6.tar.gz kickit:
       scp visit-install kickit:
       scp hyper kickit:hyper_install
-      scp visit-config-open kickit:
       ssh kickit "chmod 750 hyper_install;./hyper_install"
    fi
 fi
@@ -294,7 +278,7 @@ fi
 rm -f gps
 cat <<EOF > gps
 #!/bin/sh
-./visit-install -private -g visit -gw $ver osf1 /usr/gapps/visit > installlog 2>&1
+./visit-install -private -c open -g visit -gw $ver osf1 /usr/gapps/visit > installlog 2>&1
 rm -f resultlog
 echo "        install of visit on gps"             > resultlog 2>&1
 echo "       -------------------------"            >> resultlog 2>&1
@@ -325,9 +309,9 @@ cat <<EOF > riptide
 #!/bin/sh
 if [ -d /usr/gapps/visit/$ver ]
 then
-   ./visit-install -private -a -g visit -gw $ver irix6 /usr/gapps/visit > installlog 2>&1
+   ./visit-install -private -a -c open -g visit -gw $ver irix6 /usr/gapps/visit > installlog 2>&1
 else
-   ./visit-install -private -g visit -gw $ver irix6 /usr/gapps/visit > installlog 2>&1
+   ./visit-install -private -c open -g visit -gw $ver irix6 /usr/gapps/visit > installlog 2>&1
 fi
 rm -f resultlog
 echo "        install of visit on riptide"         > resultlog 2>&1
@@ -359,9 +343,9 @@ cat <<EOF > frost
 #!/bin/sh
 if [ -d /usr/gapps/visit/$ver ]
 then
-   ./visit-install -private -a -g visit -gw $ver aix /usr/gapps/visit > installlog 2>&1
+   ./visit-install -private -a -c open -g visit -gw $ver aix /usr/gapps/visit > installlog 2>&1
 else
-   ./visit-install -private -g visit -gw $ver aix /usr/gapps/visit > installlog 2>&1
+   ./visit-install -private -c open -g visit -gw $ver aix /usr/gapps/visit > installlog 2>&1
 fi
 rm -f resultlog
 echo "        install of visit on frost"           > resultlog 2>&1
@@ -393,16 +377,10 @@ cat <<EOF > pengra
 #!/bin/sh
 if [ -d /usr/gapps/visit/$ver ]
 then
-   ./visit-install $verflag -a -g visit -gw $ver linux /usr/gapps/visit > installlog 2>&1
+   ./visit-install $verflag -a -c open -g visit -gw $ver linux /usr/gapps/visit > installlog 2>&1
 else
-   ./visit-install $verflag -g visit -gw $ver linux /usr/gapps/visit > installlog 2>&1
+   ./visit-install $verflag -c open -g visit -gw $ver linux /usr/gapps/visit > installlog 2>&1
 fi
-mkdir /usr/gapps/visit/$ver/.visit
-chmod 775 /usr/gapps/visit/$ver/.visit
-chgrp visit /usr/gapps/visit/$ver/.visit
-cp visit-config-open /usr/gapps/visit/$ver/.visit/config
-chmod 664 /usr/gapps/visit/$ver/.visit/config
-chgrp visit /usr/gapps/visit/$ver/.visit/config
 rm -f resultlog
 echo "        install of visit on pengra"          > resultlog 2>&1
 echo "       ----------------------------"         >> resultlog 2>&1
@@ -420,7 +398,6 @@ then
       scp visit$ver2.linux.tar.gz gps15:
       scp visit-install gps15:
       scp pengra gps15:pengra_install
-      scp visit-config-open gps15:
       ssh gps15 "chmod 750 pengra_install;./pengra_install"
    fi
 fi
