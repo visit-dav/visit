@@ -2,6 +2,7 @@
 #include <qapplication.h>
 #include <windows.h>
 #include <stdlib.h>
+#include <io.h>
 
 // Include the header file for the remote command SSH library.
 #include <RemoteCommand.h>
@@ -46,6 +47,9 @@ graphicalGetPassword(const char *host, int *okay)
 // Modifications:
 //   Brad Whitlock, Fri Oct 10 14:24:27 PST 2003
 //   Added the -p argument.
+//
+//   Brad Whitlock, Tue Dec 21 16:17:12 PST 2004
+//   Added code to close stdin so we don't gobble up input typed into the CLI.
 //
 // ****************************************************************************
 
@@ -140,6 +144,9 @@ main(int argc, char *argv[])
         qDebug("    -D              Prints command line arguments.");
         return -1;
     }
+
+    // Close stdin so we don't try and intercept input from the CLI.
+    _close(0);
 
     // Run the command on the remote machine.
     RunRemoteCommand(username, host, port, commands, command_count,

@@ -34,6 +34,9 @@ struct RGBA
 //    Hank Childs, Mon Feb 19 09:01:31 PST 2001
 //    Made opacity a float instead of an unsigned char.
 //
+//    Hank Childs, Tue Dec 21 16:38:33 PST 2004
+//    Add support for attenuation.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtOpacityMap
@@ -43,8 +46,8 @@ class PIPELINE_API avtOpacityMap
     virtual                     ~avtOpacityMap();
 
     const RGBA                  *GetTable(void) { return table; };
-    void                         SetTable(unsigned char *, int);
-    void                         SetTable(RGBA *, int);
+    void                         SetTable(unsigned char *, int, double = 1.);
+    void                         SetTable(RGBA *, int, double = 1.);
     const RGBA                  &GetOpacity(double);
 
     void                         AddRange(double lo, double hi, RGBA &rgba);

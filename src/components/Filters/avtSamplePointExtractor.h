@@ -74,10 +74,16 @@ class AVTFILTERS_API avtSamplePointExtractor
     void                      SendCellsMode(bool);
     void                      SetRectilinearGridsAreInWorldSpace(bool, 
                                                    const avtViewInfo &,double);
+    void                      RestrictToTile(int, int, int, int);
+    void                      StopTiling(void) { shouldDoTiling = false; };
 
   protected:
     int                       width, height, depth;
     int                       currentNode, totalNodes;
+
+    bool                      shouldDoTiling;
+    int                       width_min, width_max;
+    int                       height_min, height_max;
 
     avtHexahedronExtractor   *hexExtractor;
     avtMassVoxelExtractor    *massVoxelExtractor;

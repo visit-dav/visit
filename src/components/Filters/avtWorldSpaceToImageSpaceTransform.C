@@ -151,6 +151,10 @@ avtWorldSpaceToImageSpaceTransform::~avtWorldSpaceToImageSpaceTransform()
 //    Hank Childs, Mon Jul  7 22:32:37 PDT 2003
 //    Add support for image pan and zoom.
 //
+//    Hank Childs, Mon Dec 20 11:19:49 PST 2004
+//    No longer reflect across the X-axis.  It was a mistake to do this in
+//    the first place.
+//
 // ****************************************************************************
 
 void
@@ -191,37 +195,21 @@ avtWorldSpaceToImageSpaceTransform::CalculateTransform(const avtViewInfo &view,
     imageZoomAndPan->SetElement(1, 3, 2*view.imagePan[1]*view.imageZoom);
 
     //
-    // World space is a left-handed coordinate system.  Image space (as used
-    // in the sample point extractor) is a right-handed coordinate system.
-    // This is because large X is at the right and large Y is at the top.
-    // The z-buffer has the closest points at z=0, so Z is going away from the
-    // screen ===> left handed coordinate system.  If we reflect across X,
-    // we will really have transformed it into image space.
-    //
-    vtkMatrix4x4 *reflectTrans = vtkMatrix4x4::New();
-    reflectTrans->Identity();
-    reflectTrans->SetElement(0, 0, -1.);
-
-    //
     // Right multiplying the matrices in the order you want them to applied
     // "makes sense" to me, so I am going to jump through hoops by Transposing
     // them so I am sure everything will work.
     //
     vtkMatrix4x4 *tmp = vtkMatrix4x4::New();
-    vtkMatrix4x4 *tmp2 = vtkMatrix4x4::New();
     viewtrans->Transpose();
     imageZoomAndPan->Transpose();
     vtkMatrix4x4::Multiply4x4(viewtrans, scaletrans, tmp);
-    vtkMatrix4x4::Multiply4x4(tmp, imageZoomAndPan, tmp2);
-    vtkMatrix4x4::Multiply4x4(tmp2, reflectTrans, trans);
+    vtkMatrix4x4::Multiply4x4(tmp, imageZoomAndPan, trans);
     trans->Transpose();
 
     viewtrans->Delete();
     scaletrans->Delete();
     imageZoomAndPan->Delete();
-    reflectTrans->Delete();
     tmp->Delete();
-    tmp2->Delete();
 }
 
 

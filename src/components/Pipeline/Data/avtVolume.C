@@ -79,9 +79,38 @@ avtVolume::avtVolume(int sw, int sh, int sd, int nv)
 //  Programmer: Hank Childs
 //  Creation:   November 29, 2000
 //
+//  Modifications:
+//
+//    Hank Childs, Sat Dec 11 11:22:33 PST 2004
+//    Offload some of the destruction work to ResetSamples.
+//
 // ****************************************************************************
 
 avtVolume::~avtVolume()
+{
+    ResetSamples();
+    delete [] rays;
+
+    if (gradients != NULL)
+    {
+        delete gradients;
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtVolume::ResetSamples
+//
+//  Purpose:
+//      Clears out all of the samples in this object.
+//
+//  Programmer: Hank Childs
+//  Creation:   December 10, 2004
+//
+// ****************************************************************************
+
+void
+avtVolume::ResetSamples(void)
 {
     if (rays != NULL)
     {
@@ -94,17 +123,13 @@ avtVolume::~avtVolume()
                     if (rays[i][j] != NULL)
                     {
                         delete rays[i][j];
+                        rays[i][j] = NULL;
                     }
                 }
                 delete [] rays[i];
+                rays[i] = NULL;
             }
         }
-        delete [] rays;
-    }
-
-    if (gradients != NULL)
-    {
-        delete gradients;
     }
 }
 
@@ -206,8 +231,7 @@ avtVolume::GetPixels(avtRayFunction *rayfoo,unsigned char *data,float *zbuffer)
                     // value will also be sent along in case there is an opaque
                     // image in the input.
                     //
-                    int w = restrictedMaxWidth - j; // Flop the width index
-                                                    // to account for VTK.
+                    int w = j-restrictedMinWidth;
                     int h = i-restrictedMinHeight;
                     int index = h*fullwidth + w;
                     unsigned char rgb[3];
@@ -229,7 +253,7 @@ avtVolume::GetPixels(avtRayFunction *rayfoo,unsigned char *data,float *zbuffer)
                 }
                 if (progressCallback != NULL)
                 {
-                    int w = restrictedMaxWidth - j; // Flop the width index
+                    int w = j-restrictedMinWidth;
                     int h = i-restrictedMinHeight;
                     int index = h*fullwidth + w;
                     if ((10*index)/numRays > currentTenth)

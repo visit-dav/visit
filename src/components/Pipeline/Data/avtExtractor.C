@@ -105,6 +105,9 @@ avtExtractor::~avtExtractor()
 //    Hank Childs, Tue Feb 26 11:29:26 PST 2002
 //    Pick up another case for numerical errors.
 //
+//    Hank Childs, Tue Dec 21 11:30:28 PST 2004
+//    Change test for 'out of frustum' to accomodate tiling.
+//
 // ****************************************************************************
 
 void
@@ -138,7 +141,9 @@ avtExtractor::ExtractTriangle(int xi, const float const_y[3],
     // We could be out of the region we are interested in finding sample
     // points for, so lets make an explicit check.
     //
-    if (y[0] > FRUSTUM_MAX_Y || y[2] < FRUSTUM_MIN_Y)
+    float smallest_y = YFromIndex(restrictedMinHeight);
+    float biggest_y = YFromIndex(restrictedMaxHeight);
+    if (y[0] > biggest_y || y[2] < smallest_y)
     {
         return;
     }
@@ -159,7 +164,7 @@ avtExtractor::ExtractTriangle(int xi, const float const_y[3],
     //
     y_top    = SnapYBottom(y[2]);
     y_bottom = SnapYTop(y[1]);
-    if (y_bottom <= y_top && y[2] != y[1])
+    if (y_bottom <= y_top && y[2] != y[1] && y[1] < biggest_y)
     {
         double z_slope_12 = (z[1] - z[2]) / fabs((y[2] - y[1]));
         double z_slope_02 = (z[0] - z[2]) / fabs((y[2] - y[0]));
@@ -212,7 +217,7 @@ avtExtractor::ExtractTriangle(int xi, const float const_y[3],
     //
     y_top    = SnapYBottom(y[1]);
     y_bottom = SnapYTop(y[0]);
-    if (y_bottom <= y_top && y[0] != y[1])
+    if (y_bottom <= y_top && y[0] != y[1] && y[1] > smallest_y)
     {
         double z_slope_01 = (z[1] - z[0]) / fabs((y[1] - y[0]));
         double z_slope_02 = (z[2] - z[0]) / fabs((y[0] - y[2]));
@@ -486,6 +491,11 @@ avtExtractor::SendCellsMode(bool mode)
 //  Programmer:  Hank Childs
 //  Creation:    January 27, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Dec 21 11:30:28 PST 2004
+//    Change test for 'out of frustum' to accomodate tiling.
+//
 // ****************************************************************************
 
 int
@@ -530,8 +540,12 @@ avtExtractor::ConstructBounds(const float (*pts)[3], int npts)
     // We can get snapped to the frustum if we are outside it, so explicitly
     // check for this.
     //
-    if (fmaxx < FRUSTUM_MIN_X || fminx > FRUSTUM_MAX_X ||
-        fmaxy < FRUSTUM_MIN_Y || fminy > FRUSTUM_MAX_Y ||
+    float smallest_x = XFromIndex(restrictedMinWidth);
+    float biggest_x = XFromIndex(restrictedMaxWidth);
+    float smallest_y = YFromIndex(restrictedMinHeight);
+    float biggest_y = YFromIndex(restrictedMaxHeight);
+    if (fmaxx < smallest_x || fminx > biggest_x ||
+        fmaxy < smallest_y || fminy > biggest_y ||
         fmaxz < FRUSTUM_MIN_Z || fminz > FRUSTUM_MAX_Z)
     {
         return 0;
@@ -548,6 +562,13 @@ avtExtractor::ConstructBounds(const float (*pts)[3], int npts)
     maxy = SnapYBottom(fmaxy);
     minz = SnapZBack(fminz);
     maxz = SnapZFront(fmaxz);
+
+    if (minx > maxx)
+        return 0;
+    if (miny > maxy)
+        return 0;
+    if (minz > maxz)
+        return 0;
 
     //
     // Return the number of samples in the bounding box.
@@ -572,6 +593,11 @@ avtExtractor::ConstructBounds(const float (*pts)[3], int npts)
 //  Programmer: Hank Childs
 //  Creation:   January 23, 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Dec 21 11:30:28 PST 2004
+//    Change test for 'out of frustum' to accomodate tiling.
+//
 // ****************************************************************************
 
 void
@@ -590,11 +616,14 @@ avtExtractor::ContributeSmallCell(const float (*pts)[3],
     // rare cases when we are resampling onto a very small rectilinear grid
     // (often for the preview method -- hardware accelerated).
     //
-
     for (int i = 0 ; i < npts ; i++)
     {
-        if (pts[i][0] < FRUSTUM_MIN_X || pts[i][0] > FRUSTUM_MAX_X ||
-            pts[i][1] < FRUSTUM_MIN_Y || pts[i][1] > FRUSTUM_MAX_Y ||
+        float smallest_x = XFromIndex(restrictedMinWidth);
+        float biggest_x = XFromIndex(restrictedMaxWidth);
+        float smallest_y = YFromIndex(restrictedMinHeight);
+        float biggest_y = YFromIndex(restrictedMaxHeight);
+        if (pts[i][0] < smallest_x || pts[i][0] > biggest_x ||
+            pts[i][1] < smallest_y || pts[i][1] > biggest_y ||
             pts[i][2] < FRUSTUM_MIN_Z || pts[i][2] > FRUSTUM_MAX_Z)
         {
             continue;

@@ -4,6 +4,7 @@
 #include <qcheckbox.h>
 #include <qcombobox.h>
 #include <qgroupbox.h>
+#include <qgrid.h>
 #include <qhgroupbox.h>
 #include <qvgroupbox.h>
 #include <qlabel.h>
@@ -89,13 +90,17 @@ QvisClipWindow::~QvisClipWindow()
 //   Changed plane*Status from groupButton to checkable QVGroupBox.  Modified
 //   connect statements accordingly.
 //
+//   Brad Whitlock, Tue Dec 21 09:13:49 PDT 2004
+//   Moved code into CreatePlaneGroup so it would be easier to add Qt
+//   version-specific coding so we can still use versions older than 3.2. I
+//   also changed how the Inverse buttons are created so they are more in 
+//   line with how we create other check boxes.
+//
 // ****************************************************************************
 
 void
 QvisClipWindow::CreateWindowContents()
 {
-    QLabel *tempLabel;
-
     tabWidget = new QTabWidget(central, "tabWidget");
     connect(tabWidget, SIGNAL(currentChanged(QWidget *)),
             this, SLOT(tabWidgetChanged(QWidget *)));
@@ -107,140 +112,147 @@ QvisClipWindow::CreateWindowContents()
     planeBox = new QVBox(central, "planeBox");
     tabWidget->addTab(planeBox, "Plane(s)");
     planeBox->setMargin(10);
+    planeBox->setSpacing(5);
 
     // Plane1 Group
-    plane1Status = new QVGroupBox(planeBox, "p1GBox");
-    plane1Status->setTitle("Plane 1");
-    plane1Status->setCheckable(true);
-    connect(plane1Status, SIGNAL(toggled(bool)),
-            this, SLOT(plane1StatusToggled(bool)));
-
-    // Plane1 Origin 
-    QHBox *p1OrigBox = new QHBox(plane1Status, "p1OrigBox");
-    p1OrigBox->setMargin(5);
-    p1OrigBox->setSpacing(10);
-
-    tempLabel = new QLabel("Origin", p1OrigBox, "plane1OriginLabel");
-    plane1Origin = new QLineEdit(p1OrigBox, "plane1Origin");
-    connect(plane1Origin, SIGNAL(returnPressed()),
-            this, SLOT(processPlane1Origin()));
-
-    // Plane1 Normal 
-    QHBox *p1NormBox = new QHBox(plane1Status, "p1NormBox");
-    p1NormBox->setMargin(5);
-    p1NormBox->setSpacing(10);
-    tempLabel = new QLabel("Normal", p1NormBox, "plane1NormalLabel");
-    plane1Normal = new QLineEdit(p1NormBox, "plane1Normal");
-    connect(plane1Normal, SIGNAL(returnPressed()),
-            this, SLOT(processPlane1Normal()));
+    CreatePlaneGroup(planeBox, (QWidget **)&plane1Status,
+#if QT_VERSION < 0x030200
+        (QWidget **)&plane1Group,
+#endif
+        (QWidget **)&plane1Origin, (QWidget **)&plane1Normal,
+        SLOT(plane1StatusToggled(bool)),
+        SLOT(processPlane1Origin()),
+        SLOT(processPlane1Normal()), 1);
 
     // Plane2 Group
-    plane2Status = new QVGroupBox(planeBox, "p2GBox");
-    plane2Status->setTitle("Plane 2");
-    plane2Status->setCheckable(true);
-    plane2Status->setMargin(5);
-    connect(plane2Status, SIGNAL(toggled(bool)),
-            this, SLOT(plane2StatusToggled(bool)));
-
-    // Plane2 Origin 
-    QHBox *p2OrigBox = new QHBox(plane2Status, "p2OrigBox");
-    p2OrigBox->setMargin(5);
-    p2OrigBox->setSpacing(10);
-
-    tempLabel = new QLabel("Origin", p2OrigBox, "plane2OriginLabel");
-    plane2Origin = new QLineEdit(p2OrigBox, "plane2Origin");
-    connect(plane2Origin, SIGNAL(returnPressed()),
-            this, SLOT(processPlane2Origin()));
-
-    // Plane2 Normal 
-    QHBox *p2NormBox = new QHBox(plane2Status, "p2NormBox");
-    p2NormBox->setMargin(5);
-    p2NormBox->setSpacing(10);
-    tempLabel = new QLabel("Normal", p2NormBox, "plane2NormalLabel");
-    plane2Normal = new QLineEdit(p2NormBox, "plane2Normal");
-    connect(plane2Normal, SIGNAL(returnPressed()),
-            this, SLOT(processPlane2Normal()));
-
+    CreatePlaneGroup(planeBox, (QWidget **)&plane2Status,
+#if QT_VERSION < 0x030200
+        (QWidget **)&plane2Group,
+#endif
+        (QWidget **)&plane2Origin, (QWidget **)&plane2Normal,
+        SLOT(plane2StatusToggled(bool)),
+        SLOT(processPlane2Origin()),
+        SLOT(processPlane2Normal()), 2);
 
     // Plane3 Group
-    plane3Status = new QVGroupBox(planeBox, "p3GBox");
-    plane3Status->setTitle("Plane 3");
-    plane3Status->setCheckable(true);
-    connect(plane3Status, SIGNAL(toggled(bool)),
-            this, SLOT(plane3StatusToggled(bool)));
-
-    // Plane3 Origin 
-    QHBox *p3OrigBox = new QHBox(plane3Status, "p3OrigBox");
-    p3OrigBox->setMargin(5);
-    p3OrigBox->setSpacing(10);
-
-    tempLabel = new QLabel("Origin", p3OrigBox, "plane3OriginLabel");
-    plane3Origin = new QLineEdit(p3OrigBox, "plane3Origin");
-    connect(plane3Origin, SIGNAL(returnPressed()),
-            this, SLOT(processPlane3Origin()));
-
-    // Plane3 Normal 
-    QHBox *p3NormBox = new QHBox(plane3Status, "p3NormBox");
-    p3NormBox->setMargin(5);
-    p3NormBox->setSpacing(10);
-    tempLabel = new QLabel("Normal", p3NormBox, "plane3NormalLabel");
-    plane3Normal = new QLineEdit(p3NormBox, "plane3Normal");
-    connect(plane3Normal, SIGNAL(returnPressed()),
-            this, SLOT(processPlane3Normal()));
-    p3NormBox->setStretchFactor(plane3Normal, 20);
+    CreatePlaneGroup(planeBox, (QWidget **)&plane3Status,
+#if QT_VERSION < 0x030200
+        (QWidget **)&plane3Group,
+#endif
+        (QWidget **)&plane3Origin, (QWidget **)&plane3Normal,
+        SLOT(plane3StatusToggled(bool)),
+        SLOT(processPlane3Origin()),
+        SLOT(processPlane3Normal()), 3);
 
     // Plane Inverse
-    QHBox *planeInvBox = new QHBox(planeBox, "planeInvBox");
-    planeInvBox->setMargin(5);
-    planeInvBox->setSpacing(5);
-
-    tempLabel = new QLabel("Inverse ", planeInvBox, "pInvLabel");
-    planeInverse = new QCheckBox(planeInvBox, "planeInverse");
+    planeInverse = new QCheckBox("Inverse", planeBox, "planeInverse");
+    planeInverse->setChecked(false);
     connect(planeInverse, SIGNAL(toggled(bool)),
             this, SLOT(planeInverseToggled(bool)));
-    planeInverse->setChecked(false);
-    planeInvBox->setStretchFactor(planeInverse, 20);
-
 
     // 
     // Sphere tab
     // 
-    sphereBox = new QVBox(central, "sphereBox");
-    tabWidget->addTab(sphereBox, "Sphere");
+    QVBox *vertBox = new QVBox(central, "vertBox");
+    sphereBox = new QGrid(2, Qt::Horizontal, vertBox, "sphereBox");
+    sphereBox->setMargin(10);
+    sphereBox->setSpacing(10);
+    tabWidget->addTab(vertBox, "Sphere");
 
-    // Sphere Center 
-    QHBox *centerBox = new QHBox(sphereBox, "centerBox");
-    centerBox->setMargin(10);
-    centerBox->setSpacing(10);
-
-    tempLabel = new QLabel("Center", centerBox, "centerLabel");
-    centerLineEdit = new QLineEdit(centerBox, "center");
+    // Sphere center
+    new QLabel("Center", sphereBox, "centerLabel");
+    centerLineEdit = new QLineEdit(sphereBox, "center");
     connect(centerLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processCenterText()));
 
     // Sphere Radius 
-    QHBox *radiusBox = new QHBox(sphereBox, "radiusBox");
-    radiusBox->setMargin(10);
-    radiusBox->setSpacing(10);
-    tempLabel = new QLabel("Radius", radiusBox, "radiusLabel");
-    radiusLineEdit = new QLineEdit(radiusBox, "radius");
+    new QLabel("Radius", sphereBox, "radiusLabel");
+    radiusLineEdit = new QLineEdit(sphereBox, "radius");
     connect(radiusLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processRadiusText()));
 
     // Sphere Inverse
-    QHBox *sphereInvBox = new QHBox(sphereBox, "sphereInvBox");
-    sphereInvBox->setMargin(10);
-    sphereInvBox->setSpacing(5);
-
-    tempLabel = new QLabel("Inverse ", sphereInvBox, "sInvLabel");
-    sphereInverse = new QCheckBox(sphereInvBox, "sphereInverse");
+    sphereInverse = new QCheckBox("Inverse", sphereBox, "sphereInverse");
+    sphereInverse->setChecked(false);
     connect(sphereInverse, SIGNAL(toggled(bool)),
             this, SLOT(sphereInverseToggled(bool)));
-    sphereInverse->setChecked(false);
-    sphereInvBox->setStretchFactor(sphereInverse, 20);
 
-    QHBox *sphereDummy = new QHBox(sphereBox, "sphereDummy");
-    sphereBox->setStretchFactor(sphereDummy, 20);
+    QHBox *sphereDummy = new QHBox(vertBox, "sphereDummy");
+    vertBox->setStretchFactor(sphereDummy, 20);
+}
+
+// ****************************************************************************
+// Method: QvisClipWindow::CreatePlaneGroup
+//
+// Purpose: 
+//   Create a group of widgets in a group box. The widgets are used to 
+//   control a plane.
+//
+// Arguments:
+//   parent            : The widgets' parent widget.
+//   planeStatus       : pointer to the plane status widget that we created.
+//   pg                : pointer to the plane group widget that we created.
+//   planeOrigin       : pointer to the plane origin widget that we created.
+//   planeNormal       : pointer to the plane normal widget that we created.
+//   statusToggledSlot : slot to call when plane status changes.
+//   planeOriginSlot   : slot to call when plane origin changes.
+//   planeNormalSlot   : slot to call when plane normal changes.
+//   index             : The number to use in the title.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Dec 21 09:47:49 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisClipWindow::CreatePlaneGroup(QWidget *parent, QWidget **planeStatus,
+#if QT_VERSION < 0x030200
+    QWidget **pg,
+#endif
+    QWidget **planeOrigin, QWidget **planeNormal,
+    const char *statusToggledSlot,
+    const char *planeOriginSlot,
+    const char *planeNormalSlot, int index)
+{
+    QString title; title.sprintf("Plane %d", index);
+    QString n; n.sprintf("plane%d", index);
+#define N(s) QString(s).latin1()
+
+    QVGroupBox *planeGroup;
+#if QT_VERSION >= 0x030200
+    planeGroup = new QVGroupBox(parent, N(n + "GBox"));
+    planeGroup->setTitle(title);
+    planeGroup->setCheckable(true);
+    planeGroup->setColumns(2);
+    *planeStatus = planeGroup;
+    connect(planeGroup, SIGNAL(toggled(bool)),
+            this, statusToggledSlot);
+#else
+    QCheckBox *c = new QCheckBox(title, parent, N(n+"checkbox"));
+    *planeStatus = c;
+    connect(c, SIGNAL(toggled(bool)),
+            this, statusToggledSlot);
+    planeGroup = new QVGroupBox(title, parent, N(n + "GBox"));
+    planeGroup->setTitle(title);
+    planeGroup->setColumns(2);
+    *pg = planeGroup;
+#endif
+
+    // Plane origin
+    new QLabel("Origin", planeGroup, N(n+"OriginLabel"));
+    QLineEdit *origin = new QLineEdit(planeGroup, N(n+"Origin"));
+    *planeOrigin = origin;
+    connect(origin, SIGNAL(returnPressed()),
+            this, planeOriginSlot);
+
+    // Plane normal 
+    new QLabel("Normal", planeGroup, N(n+"NormalLabel"));
+    QLineEdit *normal = new QLineEdit(planeGroup, N(n+"Normal"));
+    *planeNormal = normal;
+    connect(normal, SIGNAL(returnPressed()),
+            this, planeNormalSlot); 
 }
 
 // ****************************************************************************
@@ -276,6 +288,9 @@ QvisClipWindow::CreateWindowContents()
 //   Kathleen Bonnell, Mon Dec  6 14:35:14 PST 2004 
 //   plane*Status widgets are now QVGroupBoxes, modify set method calls
 //   accordingly. 
+//
+//   Brad Whitlock, Tue Dec 21 09:54:20 PDT 2004
+//   I added code to block signals for checkboxes.
 //
 // ****************************************************************************
 
@@ -343,13 +358,19 @@ QvisClipWindow::UpdateWindow(bool doAll)
             tabWidget->blockSignals(false);
             break;
         case 1: // plane1Status
+            plane1Status->blockSignals(true);
             plane1Status->setChecked(clipAtts->GetPlane1Status());
+            plane1Status->blockSignals(false);
             break;
         case 2: // plane2Status
+            plane2Status->blockSignals(true);
             plane2Status->setChecked(clipAtts->GetPlane2Status());
+            plane2Status->blockSignals(false);
             break;
         case 3: // plane3Status
+            plane3Status->blockSignals(true);
             plane3Status->setChecked(clipAtts->GetPlane3Status());
+            plane3Status->blockSignals(false);
             break;
         case 4: // plane1Origin
             dptr = clipAtts->GetPlane1Origin();
@@ -382,7 +403,9 @@ QvisClipWindow::UpdateWindow(bool doAll)
             plane3Normal->setText(temp);
             break;
         case 10: // planeInverse
+            planeInverse->blockSignals(true);
             planeInverse->setChecked(clipAtts->GetPlaneInverse());
+            planeInverse->blockSignals(false);
             break;
         case 11: // center
             dptr = clipAtts->GetCenter();
@@ -395,10 +418,19 @@ QvisClipWindow::UpdateWindow(bool doAll)
             radiusLineEdit->setText(temp);
             break;
         case 13: // sphereInverse
+            sphereInverse->blockSignals(true);
             sphereInverse->setChecked(clipAtts->GetSphereInverse());
+            sphereInverse->blockSignals(false);
             break;
         }
-   } // end for
+    } // end for
+
+#if QT_VERSION < 0x030200
+    // Set the enabled state for the plane groups if Qt version < 3.2.
+    plane1Group->setEnabled(clipAtts->GetPlane1Status());
+    plane2Group->setEnabled(clipAtts->GetPlane2Status());
+    plane3Group->setEnabled(clipAtts->GetPlane3Status());
+#endif
 }
 
 // ****************************************************************************

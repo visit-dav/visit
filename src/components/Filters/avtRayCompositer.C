@@ -400,24 +400,25 @@ avtRayCompositer::Execute(void)
     avtVolume *volume = GetTypedInput()->GetVolume();
 
     //
+    // Determine the size of the screen.
+    //
+    int  height = volume->GetRestrictedVolumeHeight();
+    int  width  = volume->GetRestrictedVolumeWidth();
+
+    //
     // This is a test to determine if there is nothing in the partition we
     // are supposed to composite -- since we don't have access to the 
     // partition, this is a bit of a hack and assumes how the partitioning
     // is done.
     // 
-    if (volume->GetRestrictedMinHeight() >= volume->GetVolumeHeight())
+    if (volume->GetRestrictedMinHeight() >= volume->GetVolumeHeight() ||
+        height <= 0 || width <= 0)
     {
         SetOutputImage(NULL);
         return;
     }
 
     volume->SetProgressCallback(RCPixelProgressCallback, this);
-
-    //
-    // Determine the size of the screen.
-    //
-    int  height = volume->GetRestrictedVolumeHeight();
-    int  width  = volume->GetRestrictedVolumeWidth();
 
     //
     // Create an image that we can place each pixel into.
@@ -485,7 +486,7 @@ avtRayCompositer::Execute(void)
             for (int j = 0 ; j < height ; j++)
             {
                  int index = j*width + i;
-                 int opaqueImageIndex = (j+minH)*width + (i+minW);
+                 int opaqueImageIndex = (j+minH)*fullWidth + (i+minW);
                  zbuffer[index] = opaqueImageZB[opaqueImageIndex];
                  if (zbuffer[index] != 1.)
                  {

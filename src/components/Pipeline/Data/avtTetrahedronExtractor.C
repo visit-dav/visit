@@ -112,6 +112,10 @@ avtTetrahedronExtractor::~avtTetrahedronExtractor()
 //    Hank Childs, Wed Jan 23 11:05:37 PST 2002
 //    Turned on contribution of small cells.
 //
+//    Hank Childs, Tue Dec 21 15:53:29 PST 2004
+//    Added an optimization for tiling where we only iterate over x-slices
+//    within the tile.
+//
 // ****************************************************************************
 
 void
@@ -134,7 +138,9 @@ avtTetrahedronExtractor::Extract(const avtTetrahedron &tet)
     //
     // minx and maxx are calculated in ConstructBounds.
     //
-    for (int xi = minx ; xi <= maxx ; xi++)
+    int minx_iter = (minx < restrictedMinWidth ? restrictedMinWidth : minx);
+    int maxx_iter = (maxx > restrictedMaxWidth ? restrictedMaxWidth : maxx);
+    for (int xi = minx_iter ; xi <= maxx_iter ; xi++)
     {
         float x = XFromIndex(xi);
 

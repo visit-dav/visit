@@ -49,6 +49,9 @@ void          QuicksortTuple3(Tuple3 *, int);
 //    Hank Childs, Tue Jul  1 21:13:38 PDT 2003
 //    Assume we are running in serial if it is not specified.
 //
+//    Hank Childs, Fri Dec 10 10:49:43 PST 2004
+//    Initialize shouldDoTiling.
+//
 // ****************************************************************************
 
 avtImagePartition::avtImagePartition(int w, int h, int np, int tp)
@@ -100,6 +103,7 @@ avtImagePartition::avtImagePartition(int w, int h, int np, int tp)
     }
 
     establishedPartitionBoundaries = false;
+    shouldDoTiling = false;
 }
 
 
@@ -141,6 +145,28 @@ avtImagePartition::~avtImagePartition()
         delete [] partitionStopsOnScanline;
         partitionStopsOnScanline = NULL;
     }
+}
+
+
+// ****************************************************************************
+//  Method: avtImagePartition::RestrictToTile
+//
+//  Purpose:
+//      Restricts the set of pixels that are being partitioned.
+//
+//  Programmer: Hank Childs
+//  Creation:   December 10, 2004
+//
+// ****************************************************************************
+
+void
+avtImagePartition::RestrictToTile(int wmin, int wmax, int hmin, int hmax)
+{
+    shouldDoTiling = true;
+    tile_width_min  = wmin;
+    tile_width_max  = wmax;
+    tile_height_min = hmin;
+    tile_height_max = hmax;
 }
 
 
@@ -192,6 +218,9 @@ avtImagePartition::GetThisPartition(int &minW, int &maxW, int &minH, int &maxH)
 //    Hank Childs, Tue Jan  1 11:39:20 PST 2002
 //    Reflect that partitions are no longer necessarily even distributed.
 //
+//    Hank Childs, Fri Dec 10 10:49:43 PST 2004
+//    Account for tiling.
+//
 // ****************************************************************************
 
 void
@@ -200,6 +229,11 @@ avtImagePartition::GetPartition(int part, int &minW, int &maxW, int &minH,
 {
     minW = 0;
     maxW = width-1;
+    if (shouldDoTiling)
+    {
+        minW = tile_width_min;
+        maxW = tile_width_max-1;
+    }
 
     minH = partitionStartsOnScanline[part];
     maxH = partitionStopsOnScanline[part];
@@ -230,12 +264,18 @@ avtImagePartition::GetPartition(int part, int &minW, int &maxW, int &minH,
 //    Account for problems with overflows when counting total number of
 //    samples.
 //
+//    Hank Childs, Fri Dec 10 11:07:07 PST 2004
+//    Account for tiles.
+//
 // ****************************************************************************
 
 void
 avtImagePartition::EstablishPartitionBoundaries(int *samples)
 {
     int   i;
+
+    int first_scanline = (shouldDoTiling ? tile_height_min : 0);
+    int last_scanline = (shouldDoTiling ? tile_height_max : height);
 
     //
     // Find out how many samples there are in each scanline across all procs.
@@ -247,7 +287,7 @@ avtImagePartition::EstablishPartitionBoundaries(int *samples)
     // Find out how many total samples there are and what the target is.
     //
     int totalSamples = 0;
-    for (i = 0 ; i < height ; i++)
+    for (i = first_scanline ; i < last_scanline ; i++)
     {
         //
         // There has been some problems with overflows when we have lots of
@@ -274,8 +314,8 @@ avtImagePartition::EstablishPartitionBoundaries(int *samples)
 
     int currentPartition = 0;
     int amountForCurrentPartition = 0;
-    partitionStartsOnScanline[currentPartition] = 0;
-    for (i = 0 ; i < height ; i++)
+    partitionStartsOnScanline[currentPartition] = first_scanline;
+    for (i = first_scanline ; i < last_scanline ; i++)
     {
         if (amountForCurrentPartition + allSamples[i] > tooHigh)
         {
@@ -298,7 +338,7 @@ avtImagePartition::EstablishPartitionBoundaries(int *samples)
         stpAssignments[i] = currentPartition;
         amountForCurrentPartition += allSamples[i];
     }
-    partitionStopsOnScanline[currentPartition] = height-1;
+    partitionStopsOnScanline[currentPartition] = last_scanline-1;
     currentPartition++;
 
     //
@@ -307,8 +347,8 @@ avtImagePartition::EstablishPartitionBoundaries(int *samples)
     //
     while (currentPartition < numProcessors)
     {
-        partitionStartsOnScanline[currentPartition] = height;
-        partitionStopsOnScanline[currentPartition]  = height;
+        partitionStartsOnScanline[currentPartition] = last_scanline+1;
+        partitionStopsOnScanline[currentPartition]  = last_scanline;
         currentPartition++;
     }
 
@@ -346,7 +386,6 @@ avtImagePartition::EstablishPartitionBoundaries(int *samples)
 //
 // ****************************************************************************
 
-/* ARGSUSED */
 void
 avtImagePartition::DetermineAssignments(int *amount)
 {

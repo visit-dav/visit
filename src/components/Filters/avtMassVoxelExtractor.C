@@ -251,6 +251,13 @@ avtMassVoxelExtractor::SetGridsAreInWorldSpace(bool val, const avtViewInfo &v,
 //  Programmer: Hank Childs
 //  Creation:   November 19, 2004
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Dec 10 10:36:40 PST 2004
+//    Use the "restricted" screen space.  This will normally be the whole
+//    screen space, but if we are tiling, then it will correspond to only
+//    the tile.
+//
 // ****************************************************************************
 
 void
@@ -271,10 +278,10 @@ avtMassVoxelExtractor::ExtractWorldSpaceGrid(vtkRectilinearGrid *rgrid)
     int height_min[max_ranges];
     int height_max[max_ranges];
     int curRange = 0;
-    width_min[curRange] = 0;
-    width_max[curRange] = width;
-    height_min[curRange] = 0;
-    height_max[curRange] = height;
+    width_min[curRange] = restrictedMinWidth;
+    width_max[curRange] = restrictedMaxWidth+1;
+    height_min[curRange] = restrictedMinHeight;
+    height_max[curRange] = restrictedMaxHeight+1;
     curRange++;
 
     while (curRange > 0)
@@ -440,8 +447,7 @@ avtMassVoxelExtractor::GetSegment(int w, int h, float *origin, float *terminus)
     // easiest place to fix it.  I haven't tracked down where it is, but it
     // would appear to a problem with the interface from our images to VTK's.
     //
-    //view[0] = (w - width/2.)/(width/2.);
-    view[0] = (width/2. - w)/(width/2.);
+    view[0] = (w - width/2.)/(width/2.);
     view[1] = (h - height/2.)/(height/2.);
     view[2] = cur_clip_range[0];
     view[3] = 1.;
@@ -453,7 +459,7 @@ avtMassVoxelExtractor::GetSegment(int w, int h, float *origin, float *terminus)
         origin[2] /= origin[3];
     }
 
-    view[0] = (width/2. - w)/(width/2.);
+    view[0] = (w - width/2.)/(width/2.);
     view[1] = (h - height/2.)/(height/2.);
     view[2] = cur_clip_range[1];
     view[3] = 1.;
@@ -512,16 +518,16 @@ avtMassVoxelExtractor::FrustumIntersectsGrid(int w_min, int w_max, int h_min,
     // subtleties with putting the arguments in the right order.
     //
     float normal[3];
-    FindPlaneNormal(bl_start, ul_start, bl_end, normal);
+    FindPlaneNormal(bl_start, bl_end, ul_start, normal);
     if (!GridOnPlusSideOfPlane(bl_start, normal))
         return false;
-    FindPlaneNormal(bl_start, br_end, br_start, normal);
+    FindPlaneNormal(bl_start, br_start, br_end, normal);
     if (!GridOnPlusSideOfPlane(bl_start, normal))
         return false;
-    FindPlaneNormal(ur_start, ur_end, ul_start, normal);
+    FindPlaneNormal(ur_start, ul_start, ur_end, normal);
     if (!GridOnPlusSideOfPlane(ur_start, normal))
         return false;
-    FindPlaneNormal(ur_start, br_start, ur_end, normal);
+    FindPlaneNormal(ur_start, ur_end, br_start, normal);
     if (!GridOnPlusSideOfPlane(ur_start, normal))
         return false;
 

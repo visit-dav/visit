@@ -60,7 +60,7 @@ QvisScatterPlotWizard::QvisScatterPlotWizard(AttributeSubject *s,
 
     CreateYesNoPage(&page2, &scatter2, &bg2,
         "Would you like to choose a variable to use\n"
-        "as the Scatter plot's Z coordinate?.",
+        "as the Scatter plot's Z coordinate?",
         SLOT(decideZ(int)), true, true, false);
     addPage(page2, "Choose Z coordinate");
     setHelpEnabled(page2, false);
@@ -74,7 +74,7 @@ QvisScatterPlotWizard::QvisScatterPlotWizard(AttributeSubject *s,
 
     CreateYesNoPage(&page4, &scatter4, &bg4,
         "Would you like to choose a variable to use\n"
-        "as the Scatter plot's color?.",
+        "as the Scatter plot's color?",
         SLOT(decideColor(int)), false, true /* depends on selectZCoord */, true);
     addPage(page4, "Choose color variable");
     setHelpEnabled(page4, false);

@@ -105,6 +105,9 @@ avtSamplePointCommunicator::SetImagePartition(avtImagePartition *ip)
 //    Hank Childs, Tue Dec 18 08:24:00 PST 2001
 //    Changed location of calls to free memory to reduce size of peak memory.
 //
+//    Hank Childs, Sat Dec 11 11:27:16 PST 2004
+//    Add support multiple executions that come about because of tiling.
+//
 // ****************************************************************************
 
 void
@@ -215,8 +218,14 @@ avtSamplePointCommunicator::Execute(void)
                                      outMaxHeight);
     int nv = GetTypedInput()->GetNumberOfVariables();
     nv = UnifyMaximumValue(nv);
-    GetTypedOutput()->SetNumberOfVariables(nv);
-    GetTypedOutput()->SetVolume(volumeWidth, volumeHeight, volumeDepth);
+    if (GetTypedOutput()->GetVolume() == NULL)
+    {
+        GetTypedOutput()->SetNumberOfVariables(nv);
+        GetTypedOutput()->SetVolume(volumeWidth, volumeHeight, volumeDepth);
+    }
+    else
+        GetTypedOutput()->GetVolume()->ResetSamples();
+
     avtVolume *outvolume = GetTypedOutput()->GetVolume();
     outvolume->Restrict(outMinWidth, outMaxWidth, outMinHeight, outMaxHeight);
 

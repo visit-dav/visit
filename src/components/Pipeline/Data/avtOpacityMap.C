@@ -151,11 +151,20 @@ avtOpacityMap::SetIntermediateVars(void)
 //    Hank Childs, Mon Feb 19 09:01:31 PST 2001
 //    Made opacity a float instead of an unsigned char.
 //
+//    Hank Childs, Tue Dec 21 16:39:22 PST 2004
+//    Add support for attenuation.
+//
 // ****************************************************************************
 
 void
-avtOpacityMap::SetTable(unsigned char *arr, int te)
+avtOpacityMap::SetTable(unsigned char *arr, int te, double attenuation)
 {
+    if (attenuation < 0. || attenuation > 1.)
+    {
+        debug1 << "Bad attenuation value " << attenuation << endl;
+        EXCEPTION0(ImproperUseException);
+    }
+
     if (table != NULL)
     {
         delete [] table;
@@ -168,7 +177,7 @@ avtOpacityMap::SetTable(unsigned char *arr, int te)
         table[i].R = arr[i*4];
         table[i].G = arr[i*4+1];
         table[i].B = arr[i*4+2];
-        table[i].A = (float) arr[i*4+3] / 255.;
+        table[i].A = ((float) arr[i*4+3] / 255.) * attenuation;
     }
 
     //
@@ -193,11 +202,22 @@ avtOpacityMap::SetTable(unsigned char *arr, int te)
 //  Programmer: Hank Childs
 //  Creation:   February 19, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Dec 21 16:39:22 PST 2004
+//    Add support for attenuation.
+//
 // ****************************************************************************
 
 void
-avtOpacityMap::SetTable(RGBA *arr, int te)
+avtOpacityMap::SetTable(RGBA *arr, int te, double attenuation)
 {
+    if (attenuation < 0. || attenuation > 1.)
+    {
+        debug1 << "Bad attenuation value " << attenuation << endl;
+        EXCEPTION0(ImproperUseException);
+    }
+
     if (table != NULL)
     {
         delete [] table;
@@ -210,7 +230,7 @@ avtOpacityMap::SetTable(RGBA *arr, int te)
         table[i].R = arr[i].R;
         table[i].G = arr[i].G;
         table[i].B = arr[i].B;
-        table[i].A = arr[i].A;
+        table[i].A = arr[i].A * attenuation;
         if (table[i].A < 0. || table[i].A > 1.)
         {
             debug1 << "Bad value " << table[i].A << endl;

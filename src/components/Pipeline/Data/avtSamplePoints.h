@@ -52,6 +52,7 @@ class PIPELINE_API  avtSamplePoints : public avtDataObject
     avtVolume                  *GetVolume(void)  { return volume; };
 
     avtCellList                *GetCellList(void);
+    void                        ResetCellList(void);
 
     virtual const char         *GetType(void)  { return "avtSamplePoints"; };
 

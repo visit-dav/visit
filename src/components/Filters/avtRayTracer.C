@@ -1,10 +1,12 @@
 // ************************************************************************* //
-//                             avtRayTracer.h                                //
+//                             avtRayTracer.C                                //
 // ************************************************************************* //
 
 #include <avtRayTracer.h>
 
 #include <vector>
+
+#include <visit-config.h>
 
 #include <avtCommonDataFunctions.h>
 #include <avtDataset.h>
@@ -223,6 +225,9 @@ avtRayTracer::SetGradientBackgroundColors(const float bg1[3],
 //    Hank Childs, Thu Dec  2 09:26:28 PST 2004
 //    No longer tighten clipping planes ['5699].
 //
+//    Hank Childs, Thu Dec  9 17:15:44 PST 2004
+//    Cast rays in tiles for big images ['1948].
+//
 // ****************************************************************************
 
 void
@@ -267,12 +272,6 @@ avtRayTracer::Execute(void)
 
 #ifdef PARALLEL
     //
-    // Create an image partition that will be passed around between parallel
-    // modules in an effort to minimize communication.
-    //
-    avtImagePartition imagePartition(screen[0], screen[1]);
-
-    //
     // Tell the sample point extractor that we would like to send cells
     // instead of sample points when appropriate.
     //
@@ -295,7 +294,6 @@ avtRayTracer::Execute(void)
     // Communicate the samples to the other processors.
     //
     avtSamplePointCommunicator sampleCommunicator;
-    sampleCommunicator.SetImagePartition(&imagePartition);
     sampleCommunicator.SetInput(extractor.GetOutput());
 
     samples = sampleCommunicator.GetOutput();
@@ -320,7 +318,6 @@ avtRayTracer::Execute(void)
     // Communicate the screen to the root processor.
     //
     avtImageCommunicator imageCommunicator;
-    imageCommunicator.SetImagePartition(&imagePartition);
     avtDataObject_p dob;
     CopyTo(dob, image);
     imageCommunicator.SetInput(dob);
@@ -328,9 +325,65 @@ avtRayTracer::Execute(void)
 #endif
 
     //
-    // Force an update so everything will be current.
+    // Update the pipeline several times, once for each tile.
+    // The tiles are important to make sure that we never need too much
+    // memory.
     //
-    image->Update(GetGeneralPipelineSpecification());
+    VISIT_LONG_LONG numSamps = screen[0]*screen[1]*samplesPerRay;
+    int sampLimitPerProc = 25000000; // 25M
+    numSamps /= PAR_Size();
+    int numTiles = numSamps/sampLimitPerProc;
+    int numDivisions = (int) sqrt(numTiles);
+    if (numDivisions < 1)
+        numDivisions = 1;
+    int IStep = screen[0] / numDivisions;
+    int JStep = screen[1] / numDivisions;
+    avtImage_p whole_image;
+    if (PAR_Rank() == 0)
+    {
+        whole_image = new avtImage(this);
+        whole_image->GetImage() = avtImageRepresentation::NewImage(screen[0], 
+                                                                   screen[1]);
+    }
+    for (int i = 0 ; i < numDivisions ; i++)
+        for (int j = 0 ; j < numDivisions ; j++)
+        {
+            int IStart = i*IStep;
+            int IEnd = (i == (numDivisions-1) ? screen[0] : (i+1)*IStep);
+            int JStart = j*JStep;
+            int JEnd = (j == (numDivisions-1) ? screen[1] : (j+1)*JStep);
+    
+#ifdef PARALLEL
+            //
+            // Create an image partition that will be passed around between
+            // parallel modules in an effort to minimize communication.
+            //
+            avtImagePartition imagePartition(screen[0], screen[1]);
+            imagePartition.RestrictToTile(IStart, IEnd, JStart, JEnd);
+            sampleCommunicator.SetImagePartition(&imagePartition);
+            imageCommunicator.SetImagePartition(&imagePartition);
+#endif
+            extractor.RestrictToTile(IStart, IEnd, JStart, JEnd);
+            image->Update(GetGeneralPipelineSpecification());
+            if (PAR_Rank() == 0)
+            {
+                unsigned char *whole_rgb = 
+                                        whole_image->GetImage().GetRGBBuffer();
+                unsigned char *tile = image->GetImage().GetRGBBuffer();
+   
+                for (int jj = JStart ; jj < JEnd ; jj++)
+                    for (int ii = IStart ; ii < IEnd ; ii++)
+                    {
+                        int index = screen[0]*jj + ii;
+                        int index2 = (IEnd-IStart)*(jj-JStart) + (ii-IStart);
+                        whole_rgb[3*index+0] = tile[3*index2+0];
+                        whole_rgb[3*index+1] = tile[3*index2+1];
+                        whole_rgb[3*index+2] = tile[3*index2+2];
+                    }
+            }
+        }
+    if (PAR_Rank() == 0)
+        image->Copy(*whole_image);
 
     //
     // Make our output image look the same as the ray compositer's.

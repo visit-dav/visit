@@ -5720,6 +5720,15 @@ ViewerSubject::ReadFromParentAndCheckForInterruption()
 //    Re-ordered else clauses so that if(blockSocketSignals) comes before
 //    if(processingFromParent).
 //
+//    Brad Whitlock, Tue Dec 21 15:04:30 PST 2004
+//    I added code to reschedule the method to run again later in the event
+//    that it gets here "recursively". What was happening was that the
+//    OpenComputeEngine from the CLI sometimes was processed independently
+//    of the Sync that was followed and while processing the OpenComputeEngine
+//    RPC, we got here again from the connection progress dialog. We were not
+//    rescheduling the method to run again and were losing the sync. When the
+//    sync was not being sent back to the CLI, it hung. VisIt00005692.
+//
 // ****************************************************************************
 
 void
@@ -5742,7 +5751,10 @@ ViewerSubject::ProcessFromParent()
     else if(processingFromParent)
     {
         debug1 << "The viewer tried to recursively enter "
-                  "ViewerSubject::ProcessFromParent!" << endl;
+                  "ViewerSubject::ProcessFromParent! Let's return from this "
+                  "level and reschedule this method to run again later."
+               << endl;
+        QTimer::singleShot(200, this, SLOT(ProcessFromParent()));
     }
     else
     {
@@ -6143,6 +6155,12 @@ ViewerSubject::EndLaunchProgress()
 //   Prevented the hasPendingEvents method call from being made on MacOS X
 //   since it was causing the Viewer to block waiting for events.
 //
+//   Brad Whitlock, Tue Dec 21 15:02:28 PST 2004
+//   I removed the hasPendingEvents call altogether because it was preventing
+//   the connection progress dialog's buttons from updating on their timer.
+//   It should be safe to do this because the dialog's timer is constantly
+//   generating new events to process.
+//
 // ****************************************************************************
 
 bool
@@ -6169,10 +6187,7 @@ ViewerSubject::LaunchProgressCB(void *d, int stage)
     {
         if (windowsShowing)
         {
-#if QT_VERSION >= 300 && !defined(Q_WS_MACX)
-            if (qApp->hasPendingEvents())
-#endif
-                qApp->processOneEvent();
+            qApp->processOneEvent();
             retval = !dialog->getCancelled();
         }
     }
