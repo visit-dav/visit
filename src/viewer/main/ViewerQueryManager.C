@@ -13,6 +13,7 @@
 #include <avtColorTables.h>
 #include <avtDatabaseMetaData.h>
 #include <avtToolInterface.h>
+#include <avtSILRestrictionTraverser.h>
 #include <avtTypes.h>
 #include <DatabaseCorrelation.h>
 #include <DatabaseCorrelationList.h>
@@ -952,7 +953,7 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
                 queryClientAtts->Notify();
                 string msg(qName);
                 char num[32];
-                sprintf(num, "%d", numInputs);
+                SNPRINTF(num, 32, "%d", numInputs);
                 msg += " requires exactly ";
                 msg += num;
                 msg += " plots to be selected, realized, and drawn.";
@@ -1073,7 +1074,7 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
             }
         }
     
-        if (strcmp(qName.c_str(), "SpatialExtents") == 0)
+        if (qName == "SpatialExtents") 
         {
             //
             // NO NEED TO GO TO THE ENGINE FOR THIS INFORMATION, AS
@@ -1159,9 +1160,9 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
             qa.SetElement(arg1);
             qa.SetDomain(arg2);
             qa.SetTimeStep(state);
-            if (strcmp(qName.c_str(), "Variable by Zone") == 0)
+            if (qName == "Variable by Zone") 
                 qa.SetElementType(QueryAttributes::Zone);
-            else if (strcmp(qName.c_str(), "Variable by Node") == 0)
+            else if (qName == "Variable by Node")
                 qa.SetElementType(QueryAttributes::Node);
 
             if (doTimeQuery)
@@ -1624,6 +1625,11 @@ ViewerQueryManager::ClearPickPoints()
 //    Changed Message to Warning for pick failure, utilize new pic atts 
 //    error message. 
 //
+//    Kathleen Bonnell, Wed Jun  2 10:00:35 PDT 2004 
+//    Determine whether this pick needs Original Zones or Nodes, and
+//    InverseTransform or Transform.   Determine if all materials are used
+//    by plot being picked.
+//
 // ****************************************************************************
 
 bool
@@ -1648,7 +1654,14 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
         preparingPick = true;
         ViewerWindow *win = (ViewerWindow *)pd.callbackData;
         ViewerPlotList *plist = win->GetPlotList();
-        plist->StartPick();
+        int pickType = pickAtts->GetPickType();
+    
+        bool needZones = (pickType == PickAttributes::Zone ||
+                          pickType == PickAttributes::DomainZone);
+        bool needInvTrans = (pickType == PickAttributes::Node ||
+                             pickType == PickAttributes::Zone);
+
+        plist->StartPick(needZones, needInvTrans);
         initialPick = false;
         preparingPick = false;
     }
@@ -1685,6 +1698,8 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
         const std::string &activeVar = plot->GetVariableName();
         pickAtts->SetActiveVariable(activeVar);
 
+        avtSILRestrictionTraverser trav(plot->GetSILRestriction());
+        bool usesAllMaterials = trav.UsesAllMaterials();
         //
         // Retrieve plot's actual extents. 
         //
@@ -1717,6 +1732,8 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
                 invalidVars.push_back(uniqueVars[i]);
         }
         pickAtts->SetVariables(validVars);
+        pickAtts->SetMatSelected(!usesAllMaterials || 
+                                 plot->GetVarType() == AVT_MATERIAL);
         pickAtts->SetPickLetter(designator);
         pickAtts->SetTimeStep(plot->GetState());
         pickAtts->SetDatabaseName(db);
@@ -1725,7 +1742,7 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
             if (dom != -1 && el != -1)
             {
                 // doing a PickByNode or PickByZone
-                if (pickAtts->GetPickType() == PickAttributes::Zone)
+                if (pickAtts->GetPickType() == PickAttributes::DomainZone)
                     pickAtts->SetPickType(PickAttributes::CurveZone);
                 else 
                     pickAtts->SetPickType(PickAttributes::CurveNode);
@@ -1862,6 +1879,13 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
             }
             ENDTRY
         } while (retry && numAttempts < 2);
+        if (numAttempts == 2 && !pickCache.empty())
+        {
+            // If Exceptions were encountered too many times, don't attempt
+            // to process any more picks. 
+            pickCache.clear();
+            handlingCache = false;
+        }
     }
     else
     {
@@ -1893,6 +1917,9 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
 //   Kathleen Bonnell, Thu Apr  1 19:13:59 PST 2004
 //   Call PickThroughTime when necessary.
 //   
+//   Kathleen Bonnell, Wed Jun  2 10:00:35 PDT 2004 
+//   Only add a pick letter if a valid position could be determined. 
+//   
 // ****************************************************************************
 
 void
@@ -1908,14 +1935,38 @@ ViewerQueryManager::Pick(PICK_POINT_INFO *ppi, const int dom, const int el)
         //
         // Add a pick point to the window
         //
-        ViewerWindow *win = (ViewerWindow *)ppi->callbackData;
-        win->ValidateQuery(pickAtts, NULL);
+        if (pickAtts->GetPickPoint()[0] != FLT_MAX)
+        {
+            ViewerWindow *win = (ViewerWindow *)ppi->callbackData;
+            win->ValidateQuery(pickAtts, NULL);
+        } // else no valid position could be determined, data was transfored
 
         //
         // Send pick attributes to the client.
         //
         string msg;
         pickAtts->CreateOutputString(msg);
+        if ( pickAtts->GetPickPoint()[0] == FLT_MAX &&
+             pickAtts->GetPickType() != PickAttributes::CurveNode &&
+             pickAtts->GetPickType() != PickAttributes::CurveZone)
+        {
+            string append;
+            if (pickAtts->GetPickType() == PickAttributes::Zone  ||
+                pickAtts->GetPickType() == PickAttributes::DomainZone) 
+            {
+                append = "Mesh was transformed and chosen zone is not " 
+                       "part of transformed mesh.\nNo pick letter will " 
+                       "be displayed.";
+            }
+            else 
+            {
+                append = "Mesh was transformed and chosen node is not " 
+                       "part of transformed mesh.\nNo pick letter will " 
+                       "be displayed.";
+            }
+            msg += append;
+        }
+  
         Message(msg.c_str()); 
         UpdatePickAtts();
 
@@ -2318,6 +2369,11 @@ ViewerQueryManager::SetGlobalLineoutAttsFromClient()
 //    Kathleen Bonnell, Fri Jun 27 15:54:30 PDT 2003
 //    Handle changes from one pick mode to another.
 // 
+//    Kathleen Bonnell, Wed Jun  2 10:00:35 PDT 2004
+//    Allow 'initialPick' to be true when pick mode changes from a zone-type
+//    to a node-type or vice-versa, as each type has different requirements
+//    for re-execution of picked plot.
+//
 // ****************************************************************************
 
 void
@@ -2325,6 +2381,17 @@ ViewerQueryManager::StartPickMode(const bool firstEntry, const bool zonePick)
 {
     if (firstEntry)
         initialPick = true;
+    else
+    {
+        int ptype = pickAtts->GetPickType();
+        bool isZone = (ptype == PickAttributes::Zone ||
+                      ptype == PickAttributes::DomainZone ||
+                      ptype == PickAttributes::CurveZone );
+        if (isZone != zonePick)
+        {
+            initialPick = true;
+        }
+    }
 
     if (zonePick)
         pickAtts->SetPickType(PickAttributes::Zone);
@@ -2421,30 +2488,28 @@ ViewerQueryManager::PointQuery(const string &qName, const double *pt,
                     const stringVector &vars, const int arg1, const int arg2,
                     const bool doTime)
 {
-    if ((strcmp(qName.c_str(), "ZonePick") == 0) ||
-        (strcmp(qName.c_str(), "Pick") == 0))
+    if (qName == "ZonePick" || qName == "Pick")
     {
         if (!vars.empty())
             pickAtts->SetVariables(vars);
         ViewerWindow *win = ViewerWindowManager::Instance()->GetActiveWindow();
         win->Pick((int)pt[0], (int)pt[1], ZONE_PICK);
     }
-    else if (strcmp(qName.c_str(), "NodePick") == 0)
+    else if (qName == "NodePick") 
     {
         if (!vars.empty())
             pickAtts->SetVariables(vars);
         ViewerWindow *win = ViewerWindowManager::Instance()->GetActiveWindow();
         win->Pick((int)pt[0], (int)pt[1], NODE_PICK);
     }
-    else if ((strcmp(qName.c_str(), "WorldPick") == 0) ||
-             (strcmp(qName.c_str(), "WorldNodePick") == 0))
+    else if (qName == "WorldPick" || qName == "WorldNodePick")
     {
         ViewerWindow *win = ViewerWindowManager::Instance()->GetActiveWindow();
         if (!vars.empty())
             pickAtts->SetVariables(vars);
 
         INTERACTION_MODE imode  = win->GetInteractionMode();
-        if (strcmp(qName.c_str(), "WorldPick") == 0)
+        if (qName == "WorldPick")
             win->SetInteractionMode(ZONE_PICK);
         else
             win->SetInteractionMode(NODE_PICK);
@@ -2462,19 +2527,23 @@ ViewerQueryManager::PointQuery(const string &qName, const double *pt,
 
         win->SetInteractionMode(imode);
     }
-    else if ((strcmp(qName.c_str(), "PickByZone") == 0) ||
-             (strcmp(qName.c_str(), "PickByNode") == 0))
+    else if (qName == "PickByZone"  || qName == "PickByNode") 
     {
         ViewerWindow *win = ViewerWindowManager::Instance()->GetActiveWindow();
         if (!vars.empty())
             pickAtts->SetVariables(vars);
 
         INTERACTION_MODE imode  = win->GetInteractionMode();
-        if (strcmp(qName.c_str(), "PickByZone") == 0)
+        if (qName == "PickByZone") 
+        {
             win->SetInteractionMode(ZONE_PICK);
+            pickAtts->SetPickType(PickAttributes::DomainZone);
+        }
         else
+        {
             win->SetInteractionMode(NODE_PICK);
-
+            pickAtts->SetPickType(PickAttributes::DomainNode);
+        }
         PICK_POINT_INFO ppi;
         ppi.callbackData = win;
         ppi.rayPt1[0] = ppi.rayPt2[0] = pt[0];
@@ -3393,6 +3462,9 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin, QueryAttributes *qA)
 //    Modify the way centering-consistency-checks are performed, so
 //    that Material vars will get evaluated correctly.  
 //
+//    Kathleen Bonnell, Wed Jun  2 10:00:35 PDT 2004 
+//    Support new pick types. 
+//
 // ****************************************************************************
 
 void
@@ -3426,7 +3498,7 @@ ViewerQueryManager::PickThroughTime(PICK_POINT_INFO *ppi, const int dom,
     bool issueWarning = false;
     if (varType == AVT_MATERIAL) 
     {
-        if (type != PickAttributes::Zone)
+        if (type != PickAttributes::Zone && type != PickAttributes::DomainZone)
             issueWarning = true;
     }
     else if (varType != AVT_MESH && varType != AVT_UNKNOWN_TYPE &&
@@ -3437,11 +3509,15 @@ ViewerQueryManager::PickThroughTime(PICK_POINT_INFO *ppi, const int dom,
             avtCentering centering = origPlot->GetVariableCentering();
             if (centering == AVT_ZONECENT || centering == AVT_NODECENT)
             {
-                if (type == PickAttributes::Zone && centering != AVT_ZONECENT)
+                if ((type == PickAttributes::Zone || 
+                     type == PickAttributes::DomainZone) && 
+                    centering != AVT_ZONECENT)
                 {
                     issueWarning = true;
                 }
-                else if (type == PickAttributes::Node && centering != AVT_NODECENT)
+                else if ((type == PickAttributes::Node || 
+                          type == PickAttributes::DomainNode) && 
+                         centering != AVT_NODECENT)
                 {
                     issueWarning = true;
                 }
@@ -3456,7 +3532,7 @@ ViewerQueryManager::PickThroughTime(PICK_POINT_INFO *ppi, const int dom,
     }
     if (issueWarning)
     {
-        if (type == PickAttributes::Zone) 
+        if (type == PickAttributes::Zone || type == PickAttributes::DomainZone) 
         {
             Warning("The centering of the pick-through-time (zone) does "
                     "not match the centering of the plot's current "
@@ -3464,7 +3540,7 @@ ViewerQueryManager::PickThroughTime(PICK_POINT_INFO *ppi, const int dom,
                     "appropriately centered Pick");
             return;
         }
-        else if (type == PickAttributes::Node)
+        else if (type == PickAttributes::Node || type == PickAttributes::DomainNode)
         {
             Warning("The centering of the pick-through-time (node) does "
                     "not match the centering of the plot's current "
@@ -3484,12 +3560,12 @@ ViewerQueryManager::PickThroughTime(PICK_POINT_INFO *ppi, const int dom,
         stringVector vars;
         vars.push_back(pvarName);
         qatts.SetVariables(vars);
-        if (type == PickAttributes::Zone) 
+        if (type == PickAttributes::Zone || type == PickAttributes::DomainZone) 
         {
             qatts.SetName("Variable by Zone");
             qatts.SetElementType(QueryAttributes::Zone);
         }
-        else if (type == PickAttributes::Node)
+        else if (type == PickAttributes::Node || type == PickAttributes::DomainNode)
         {
             qatts.SetName("Variable by Node");
             qatts.SetElementType(QueryAttributes::Node);

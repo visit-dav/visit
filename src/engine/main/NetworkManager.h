@@ -162,6 +162,9 @@ class VisWindow;
 //    Added annotationObjectList data member
 //    Added arg for annotation object list to SetAnnotationAttributes
 //
+//    Kathleen Bonnell, Wed Jun  2 09:48:29 PDT 2004 
+//    Added bool arg to StartPick.  Added requireOriginalNodes. 
+//
 // ****************************************************************************
 class NetworkManager
 {
@@ -212,7 +215,7 @@ class NetworkManager
     avtDataObjectWriter_p Render(intVector networkIds, bool getZBuffer,
                                  bool do3DAnnotsOnly);
  
-    void          StartPickMode(void);
+    void          StartPickMode(const bool);
     void          StopPickMode(void);
 
     void          Pick(const int, PickAttributes *);
@@ -238,6 +241,7 @@ class NetworkManager
 
     int                         uniqueNetworkId;
     bool                        requireOriginalCells;
+    bool                        requireOriginalNodes;
     LoadBalancer               *loadBalancer;
     WindowAttributes            windowAttributes;
     AnnotationAttributes        annotationAttributes;

@@ -617,10 +617,16 @@ vtkVisItPolyDataNormals::ExecutePointWithSplitting()
 //    Calculate the normals here because VTK can't do it without
 //    under/overflow on small/big vectors.
 //
+//    Hank Childs, Wed Jun  2 07:35:27 PDT 2004
+//    Make sure there is one normal for every primitive, not just one normal
+//    for every polygon.
+//
 // ****************************************************************************
 void
 vtkVisItPolyDataNormals::ExecuteCell()
 {
+    int  i;
+
     // Get all the input and output objects we'll need to reference
     vtkPolyData  *input = GetInput();
     vtkPolyData *output = GetOutput();
@@ -628,9 +634,7 @@ vtkVisItPolyDataNormals::ExecuteCell()
 
     vtkPoints    *inPts = input->GetPoints();
 
-    vtkCellArray *inCA  = input->GetPolys();
-    int nCells  = inCA->GetNumberOfCells();
-    vtkIdType *connPtr = inCA->GetPointer();
+    int nCells  = input->GetNumberOfCells();
 
     // Create the normals array
     vtkFloatArray *newNormals;
@@ -640,7 +644,22 @@ vtkVisItPolyDataNormals::ExecuteCell()
     newNormals->SetName("Normals");
     float *newNormalPtr = (float*)newNormals->GetVoidPointer(0);
 
-    for (int i = 0 ; i < nCells ; i++)
+    // The verts and lines come before the polys.  So add normals for them.
+    int numPrimitivesWithoutNormals = 0;
+    numPrimitivesWithoutNormals += input->GetVerts()->GetNumberOfCells();
+    numPrimitivesWithoutNormals += input->GetLines()->GetNumberOfCells();
+    for (i = 0 ; i < numPrimitivesWithoutNormals ; i++)
+    {
+        newNormalPtr[0] = 0.;
+        newNormalPtr[1] = 0.;
+        newNormalPtr[2] = 1.;
+        newNormalPtr += 3;
+    }
+
+    vtkCellArray *inCA  = input->GetPolys();
+    vtkIdType *connPtr = inCA->GetPointer();
+    int nPolys = inCA->GetNumberOfCells();
+    for (int i = 0 ; i < nPolys ; i++)
     {
         //
         // Technically, we can always use only the first three vertices, but
@@ -693,16 +712,17 @@ vtkVisItPolyDataNormals::ExecuteCell()
 
         if (length != 0)
         {
-            newNormalPtr[i*3+0] = nx/length;
-            newNormalPtr[i*3+1] = ny/length;
-            newNormalPtr[i*3+2] = nz/length;
+            newNormalPtr[0] = nx/length;
+            newNormalPtr[1] = ny/length;
+            newNormalPtr[2] = nz/length;
         }
         else
         {
-            newNormalPtr[i*3+0] = 0;
-            newNormalPtr[i*3+1] = 0;
-            newNormalPtr[i*3+2] = 1;
+            newNormalPtr[0] = 0;
+            newNormalPtr[1] = 0;
+            newNormalPtr[2] = 1;
         }
+        newNormalPtr += 3;
 
         //
         // Step through connectivity
@@ -710,6 +730,17 @@ vtkVisItPolyDataNormals::ExecuteCell()
         connPtr += nVerts;
     }
         
+    // The triangle strips come after the polys.  So add normals for them.
+    numPrimitivesWithoutNormals = 0;
+    numPrimitivesWithoutNormals += input->GetStrips()->GetNumberOfCells();
+    for (i = 0 ; i < numPrimitivesWithoutNormals ; i++)
+    {
+        newNormalPtr[0] = 0.;
+        newNormalPtr[1] = 0.;
+        newNormalPtr[2] = 1.;
+        newNormalPtr += 3;
+    }
+
     output->GetCellData()->SetNormals(newNormals);
     newNormals->Delete();
 }

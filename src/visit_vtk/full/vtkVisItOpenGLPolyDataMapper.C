@@ -539,6 +539,9 @@ static void vtkOpenGLDrawN013(vtkCellArray *aPrim, GLenum aGlFunction,
 //   Hank Childs, Tue May 25 10:51:06 PDT 2004
 //   Break display lists into smaller chunks.
 //
+//   Hank Childs, Tue Jun  1 16:47:49 PDT 2004
+//   Index using the cellNum argument.
+//
 static void vtkOpenGLDrawCN013(vtkCellArray *aPrim, GLenum aGlFunction,
                                vtkIdType &cellNum, vtkPoints *p, 
                                vtkDataArray *n, vtkUnsignedCharArray *, 
@@ -559,12 +562,12 @@ static void vtkOpenGLDrawCN013(vtkCellArray *aPrim, GLenum aGlFunction,
 
   int ncells = aPrim->GetNumberOfCells();
   vtkIdType *ids = aPrim->GetData()->GetPointer(0);
-  for (int i = 0 ; i < ncells ; i++, count++)
+  for (int i = 0 ; i < ncells ; i++, count++, cellNum++)
     {
     int npts = *ids++;
     vtkOpenGLBeginPolyTriangleOrQuad( aGlFunction, previousGlFunction, npts );
     
-    glNormal3fv(normal + 3*i);
+    glNormal3fv(normal + 3*cellNum);
     
     for (j = 0; j < npts; j++) 
       {
@@ -750,6 +753,9 @@ static void vtkOpenGLDrawNS013(vtkCellArray *aPrim, GLenum aGlFunction,
 //   Hank Childs, Tue May 25 10:51:06 PDT 2004
 //   Break display lists into smaller chunks.
 //
+//   Hank Childs, Tue Jun  1 16:47:49 PDT 2004
+//   Index using the cellNum argument.
+//
 
 static void vtkOpenGLDrawCNS013(vtkCellArray *aPrim, GLenum aGlFunction,
                                 vtkIdType &cellNum, vtkPoints *p, 
@@ -773,12 +779,12 @@ static void vtkOpenGLDrawCNS013(vtkCellArray *aPrim, GLenum aGlFunction,
   int ncells = aPrim->GetNumberOfCells();
   vtkIdType *ids = aPrim->GetData()->GetPointer(0);
 
-  for (int i = 0 ; i < ncells ; i++, count++)
+  for (int i = 0 ; i < ncells ; i++, count++, cellNum++)
     {
     int npts = *ids++;
     vtkOpenGLBeginPolyTriangleOrQuad( aGlFunction, previousGlFunction, npts );
     
-    glNormal3fv(normal + 3*i);
+    glNormal3fv(normal + 3*cellNum);
     
     for (j = 0; j < npts; j++) 
       {
@@ -1228,6 +1234,9 @@ static void vtkOpenGLDrawCS01(vtkCellArray *aPrim, GLenum aGlFunction,
 //   Hank Childs, Tue May 25 10:51:06 PDT 2004
 //   Break display lists into smaller chunks.
 //
+//   Hank Childs, Tue Jun  1 16:47:49 PDT 2004
+//   Index using the cellNum argument.
+//
 static void vtkOpenGLDrawNCS013(vtkCellArray *aPrim, GLenum aGlFunction,
                                 vtkIdType &cellNum, vtkPoints *p, 
                                 vtkDataArray *n, vtkUnsignedCharArray *c, 
@@ -1249,13 +1258,13 @@ static void vtkOpenGLDrawNCS013(vtkCellArray *aPrim, GLenum aGlFunction,
 
   int ncells = aPrim->GetNumberOfCells();
   vtkIdType *ids = aPrim->GetData()->GetPointer(0);
-  for (int i = 0 ; i < ncells ; i++, count++)
+  for (int i = 0 ; i < ncells ; i++, count++, cellNum++)
     {
     int npts = *ids++;
     vtkOpenGLBeginPolyTriangleOrQuad( aGlFunction, previousGlFunction, 
                                       npts );
     
-    glColor4ubv(colors + 4*i);
+    glColor4ubv(colors + 4*cellNum);
     
     for (j = 0; j < npts; j++) 
       {
@@ -1307,6 +1316,9 @@ static void vtkOpenGLDrawNCS013(vtkCellArray *aPrim, GLenum aGlFunction,
 //   Hank Childs, Tue May 25 10:51:06 PDT 2004
 //   Break display lists into smaller chunks.
 //
+//   Hank Childs, Tue Jun  1 16:47:49 PDT 2004
+//   Index using the cellNum argument.
+//
 static void vtkOpenGLDrawCNCS013(vtkCellArray *aPrim, GLenum aGlFunction,
                                  vtkIdType &cellNum, vtkPoints *p, 
                                  vtkDataArray *n, vtkUnsignedCharArray *c, 
@@ -1329,14 +1341,14 @@ static void vtkOpenGLDrawCNCS013(vtkCellArray *aPrim, GLenum aGlFunction,
   int ncells = aPrim->GetNumberOfCells();
   vtkIdType *ids = aPrim->GetData()->GetPointer(0);
 
-  for (int i = 0 ; i < ncells ; i++, count++)
+  for (int i = 0 ; i < ncells ; i++, count++, cellNum++)
     {
     int npts = *ids++;
     vtkOpenGLBeginPolyTriangleOrQuad( aGlFunction, previousGlFunction, 
                                       npts );
     
-    glColor4ubv(colors + 4*i);
-    glNormal3fv(normal + 3*i);
+    glColor4ubv(colors + 4*cellNum);
+    glNormal3fv(normal + 3*cellNum);
     
     for (j = 0; j < npts; j++) 
       {
@@ -1830,6 +1842,9 @@ static void vtkOpenGLDrawST3(vtkCellArray *aPrim, GLenum aGlFunction,
 //   Hank Childs, Tue May 25 10:51:06 PDT 2004
 //   Break display lists into smaller chunks.
 //
+//   Hank Childs, Tue Jun  1 16:47:49 PDT 2004
+//   Index using the cellNum argument.
+//
 static void vtkOpenGLDrawCS3(vtkCellArray *aPrim, GLenum aGlFunction,
                              vtkIdType &cellNum, vtkPoints *p, vtkDataArray *, 
                              vtkUnsignedCharArray *c, vtkDataArray *, 
@@ -1849,12 +1864,12 @@ static void vtkOpenGLDrawCS3(vtkCellArray *aPrim, GLenum aGlFunction,
 
   int ncells = aPrim->GetNumberOfCells();
   vtkIdType *ids = aPrim->GetData()->GetPointer(0);
-  for (int i = 0 ; i < ncells ; i++, count++)
+  for (int i = 0 ; i < ncells ; i++, count++, cellNum++)
     {
     int npts = *ids++;
     vtkOpenGLBeginPolyTriangleOrQuad( aGlFunction, previousGlFunction, npts );
     
-    glColor4ubv(colors + 4*i);
+    glColor4ubv(colors + 4*cellNum);
     for (j = 0; j < npts; j++) 
       {
       glVertex3fv(vertices + 3*(*ids));
@@ -2930,6 +2945,9 @@ static void vtkOpenGLDrawNSTW(vtkCellArray *aPrim, GLenum,
 //     one big display list into groups of smaller display lists, since that
 //     is a big performance win with graphics hardware.
 //
+//     Hank Childs, Wed Jun  2 07:31:33 PDT 2004
+//     Put in a check to make sure that the normals array is of proper size.
+//
 // ****************************************************************************
 
 int vtkVisItOpenGLPolyDataMapper::Draw(vtkRenderer *aren, vtkActor *act)
@@ -3044,9 +3062,16 @@ int vtkVisItOpenGLPolyDataMapper::Draw(vtkRenderer *aren, vtkActor *act)
     }
 
   n = input->GetPointData()->GetNormals();
+
+  // Make sure we have a normal for every point.
+  if (n != NULL)
+    {
+    if (n->GetNumberOfTuples() != input->GetNumberOfPoints())
+        n = NULL;
+    }
   if (interpolation == VTK_FLAT)
     {
-    n = 0;
+    n = NULL;
     }
   
   cellNormals = 0;
@@ -3054,6 +3079,13 @@ int vtkVisItOpenGLPolyDataMapper::Draw(vtkRenderer *aren, vtkActor *act)
     {
     cellNormals = 1;
     n = input->GetCellData()->GetNormals();
+
+    // Make sure we have a normal for every cell.
+    if (n->GetNumberOfTuples() != input->GetNumberOfCells())
+      {
+      n = NULL;
+      cellNormals = 0;
+      }
     }
   
   // if we are doing vertex colors then set lmcolor to adjust 

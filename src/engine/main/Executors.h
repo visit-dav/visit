@@ -588,6 +588,9 @@ RPCExecutor<PickRPC>::Execute(PickRPC *rpc)
 //    Jeremy Meredith, Thu Jul 10 11:37:48 PDT 2003
 //    Made the engine an object.
 //
+//    Kathleen Bonnell, Wed Jun  2 09:48:29 PDT 2004 
+//    Added ForZones flag to rpc and call to StartPickMode. 
+//
 // ****************************************************************************
 template<>
 void
@@ -601,7 +604,7 @@ RPCExecutor<StartPickRPC>::Execute(StartPickRPC *rpc)
     TRY 
     {
         if (rpc->GetStartFlag())
-            netmgr->StartPickMode();
+            netmgr->StartPickMode(rpc->GetForZones());
         else
             netmgr->StopPickMode();
         rpc->SendReply();

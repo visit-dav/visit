@@ -4,6 +4,7 @@
  
 #include <avtSurfacePlot.h>
 #include <avtSurfaceFilter.h>
+#include <avtWireframeFilter.h>
 #include <avtSurfaceAndWireframeRenderer.h>
 
 #include <InvalidDimensionsException.h>
@@ -44,10 +45,13 @@
 //    Reflect that our renderer is now reference counted.
 //
 //    Hank Childs, Thu Sep 12 14:01:37 PDT 2002          
-//    Initialize filter.
+//    Initialize surfaceFilter.
 //
 //    Eric Brugger, Wed Jul 16 11:22:08 PDT 2003
 //    Modified to work with the new way legends are managed.
+//
+//    Kathleen Bonnell, Mon May 24 14:13:55 PDT 2004
+//    Added avtWireframeFilter.
 //
 // ****************************************************************************
 
@@ -77,7 +81,8 @@ avtSurfacePlot::avtSurfacePlot()
     renderer->SurfaceLinesOff();
     renderer->EdgePolysOff();
 
-    filter = NULL;
+    surfaceFilter = NULL;
+    wireFilter = NULL;
 }
 
 
@@ -96,7 +101,10 @@ avtSurfacePlot::avtSurfacePlot()
 //    Do not delete the renderer, because it is now reference counted.
 //
 //    Hank Childs, Thu Sep 12 14:01:37 PDT 2002          
-//    Delete surface filter.
+//    Delete surface surfaceFilter.
+//
+//    Kathleen Bonnell, Mon May 24 14:13:55 PDT 2004
+//    Added avtWireframeFilter.
 //
 // ****************************************************************************
 
@@ -117,10 +125,15 @@ avtSurfacePlot::~avtSurfacePlot()
         delete avtLUT;
         avtLUT = NULL;
     }
-    if (filter != NULL)
+    if (surfaceFilter != NULL)
     {
-        delete filter;
-        filter = NULL;
+        delete surfaceFilter;
+        surfaceFilter = NULL;
+    }
+    if (wireFilter != NULL)
+    {
+        delete wireFilter;
+        wireFilter = NULL;
     }
 
     //
@@ -177,7 +190,7 @@ avtSurfacePlot::GetMapper(void)
 //  Arguments:
 //      input   The input data object.
 //
-//  Returns:    The data object after the surface filter is applied.
+//  Returns:    The data object after the surfaceFilter is applied.
 //
 //  Programmer: Kathleen Bonnell
 //  Creation:   March 05, 2001
@@ -195,39 +208,48 @@ avtSurfacePlot::GetMapper(void)
 avtDataObject_p
 avtSurfacePlot::ApplyOperators(avtDataObject_p input)
 {
-    if (filter != NULL)
+    if (surfaceFilter != NULL)
     {
-        delete filter;
+        delete surfaceFilter;
     }
-    filter = new avtSurfaceFilter((const AttributeGroup *)&atts);
+    surfaceFilter = new avtSurfaceFilter((const AttributeGroup *)&atts);
 
-    filter->SetInput(input);
-    return filter->GetOutput();
+    surfaceFilter->SetInput(input);
+    return surfaceFilter->GetOutput();
 }
 
 // ****************************************************************************
 //  Method: avtSurfacePlot::ApplyRenderingTransformation
 //
 //  Purpose:
-//      Applies the rendering transformation associated with a surface plot -- 
-//      none. 
+//    Applies the rendering transformation associated with a surface plot -- 
+//    avtWireframeFilter. 
 //
 //  Arguments:
-//      input   The input data object.
+//    input   The input data object.
 //
-//  Returns:    The input data object. 
+//  Returns:    The data object after the wireframeFilter is applied. 
 // 
 //  Programmer:  Kathleen Bonnell
 //  Creation:    October 22, 2002
 //
 //  Modifications:
+//    Kathleen Bonnell, Mon May 24 14:13:55 PDT 2004
+//    Added avtWireframeFilter.
 //
 // ****************************************************************************
 
 avtDataObject_p
 avtSurfacePlot::ApplyRenderingTransformation(avtDataObject_p input)
 {
-    return input;
+    if (wireFilter != NULL)
+    {
+        delete wireFilter;
+    }
+    wireFilter = new avtWireframeFilter((const AttributeGroup *)&atts);
+
+    wireFilter->SetInput(input);
+    return wireFilter->GetOutput();
 }
 
 
@@ -855,6 +877,10 @@ avtSurfacePlot::SetLimitsMode(int mode)
 //  Programmer: Hank Childs
 //  Creation:   September 12, 2002
 //
+//  Modifications:
+//    Kathleen Bonnell, Mon May 24 14:13:55 PDT 2004
+//    Added avtWireframeFilter.
+//
 // ****************************************************************************
  
 void
@@ -862,9 +888,13 @@ avtSurfacePlot::ReleaseData(void)
 {
     avtSurfaceDataPlot::ReleaseData();
  
-    if (filter != NULL)
+    if (surfaceFilter != NULL)
     {
-        filter->ReleaseData();
+        surfaceFilter->ReleaseData();
+    }
+    if (wireFilter != NULL)
+    {
+        wireFilter->ReleaseData();
     }
 }
 

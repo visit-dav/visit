@@ -67,12 +67,16 @@ using     std::vector;
 //    Hank Childs, Thu Sep 25 08:28:28 PDT 2003
 //    Set the db variable.
 //
+//    Kathleen Bonnell, Tue Jun  1 15:08:30 PDT 2004 
+//    Initialize mayRequireNodes. 
+//
 // ****************************************************************************
 
 avtDataSpecification::avtDataSpecification(const char *var, int ts,
                                            avtSILRestriction_p s)
 {
     mayRequireZones = false;
+    mayRequireNodes = false;
     needZones = false;
     needNodes = false;
     useGhostZones = true;
@@ -155,11 +159,15 @@ avtDataSpecification::avtDataSpecification(const char *var, int ts,
 //    Hank Childs, Thu Sep 25 08:28:28 PDT 2003
 //    Set the db variable.
 //
+//    Kathleen Bonnell, Tue Jun  1 15:08:30 PDT 2004 
+//    Initialize mayRequireNodes. 
+//
 // ****************************************************************************
 
 avtDataSpecification::avtDataSpecification(const char *var, int ts, int ch)
 {
     mayRequireZones = false;
+    mayRequireNodes = false;
     needZones = false;
     needNodes = false;
     mustDoMIR = false;
@@ -371,6 +379,9 @@ avtDataSpecification::avtDataSpecification(avtDataSpecification_p spec)
 //    Hank Childs, Thu Sep 25 08:28:28 PDT 2003
 //    Handle db_variable.
 //
+//    Kathleen Bonnell, Tue Jun  1 15:08:30 PDT 2004 
+//    Added mayRequireNodes. 
+//
 // ****************************************************************************
 
 avtDataSpecification &
@@ -404,6 +415,7 @@ avtDataSpecification::operator=(const avtDataSpecification &spec)
     }
 
     mayRequireZones                 = spec.mayRequireZones;
+    mayRequireNodes                 = spec.mayRequireNodes;
     mustDoMIR                       = spec.mustDoMIR;
     useGhostZones                   = spec.useGhostZones;
     needZones                       = spec.needZones;
@@ -483,6 +495,9 @@ avtDataSpecification::operator=(const avtDataSpecification &spec)
 //    Hank Childs, Thu Sep 25 08:28:28 PDT 2003
 //    Compare db_variable.
 //
+//    Kathleen Bonnell, Tue Jun  1 15:08:30 PDT 2004 
+//    Added mayRequireNodes. 
+//
 // ****************************************************************************
 
 bool
@@ -526,6 +541,11 @@ avtDataSpecification::operator==(const avtDataSpecification &ds)
     }
 
     if (mayRequireZones != ds.mayRequireZones)
+    {
+        return false;
+    }
+
+    if (mayRequireNodes != ds.mayRequireNodes)
     {
         return false;
     }

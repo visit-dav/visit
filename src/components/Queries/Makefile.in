@@ -79,13 +79,16 @@
 #   Kathleen Bonnell, Tue May 25 16:16:25 PDT 2004 
 #   Added avtZoneCenterQuery. 
 #
+#   Kathleen Bonnell, Wed Jun  2 08:09:10 PDT 2004 
+#   Added Pick subdir, moved PickQueries into this dir.  Added new picks.
+#
 ##############################################################################
 
 @SET_MAKE@
 @VARIABLES@
 
-SUBDIRS=Abstract Misc Queries
-SRC=$(Abstract_src) $(Misc_src) $(Queries_src)
+SUBDIRS=Abstract Misc Pick Queries
+SRC=$(Abstract_src) $(Misc_src) $(Pick_src) $(Queries_src)
 
 Abstract_src= \
  Abstract/avtCurveQuery.C \
@@ -100,17 +103,29 @@ Misc_src= \
  Misc/avtQueryFactory.C \
  Misc/avtQueryOverTimeFilter.C 
 
+Pick_src= \
+ Pick/avtActualCoordsQuery.C  \
+ Pick/avtActualNodeCoordsQuery.C  \
+ Pick/avtActualZoneCoordsQuery.C  \
+ Pick/avtCurvePickQuery.C  \
+ Pick/avtLocateCellQuery.C  \
+ Pick/avtLocateNodeQuery.C  \
+ Pick/avtLocateQuery.C  \
+ Pick/avtNodePickQuery.C  \
+ Pick/avtPickByNodeQuery.C  \
+ Pick/avtPickByZoneQuery.C \
+ Pick/avtPickQuery.C  \
+ Pick/avtZonePickQuery.C
+
 Queries_src= \
  Queries/avtActualDataMinMaxQuery.C  \
  Queries/avtActualDataNumNodesQuery.C  \
  Queries/avtActualDataNumZonesQuery.C  \
  Queries/avtAreaBetweenCurvesQuery.C  \
  Queries/avtCompactnessQuery.C  \
- Queries/avtCurvePickQuery.C  \
  Queries/avtCycleQuery.C  \
  Queries/avtEulerianQuery.C \
  Queries/avtIntegrateQuery.C  \
- Queries/avtLocateCellQuery.C  \
  Queries/avtL2NormQuery.C  \
  Queries/avtL2NormBetweenCurvesQuery.C  \
  Queries/avtMinMaxQuery.C  \
@@ -119,7 +134,6 @@ Queries_src= \
  Queries/avtOriginalDataMinMaxQuery.C  \
  Queries/avtOriginalDataNumNodesQuery.C  \
  Queries/avtOriginalDataNumZonesQuery.C  \
- Queries/avtPickQuery.C  \
  Queries/avtSummationQuery.C  \
  Queries/avtTimeQuery.C  \
  Queries/avtTotalRevolvedSurfaceAreaQuery.C \

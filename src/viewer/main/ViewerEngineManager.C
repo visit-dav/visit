@@ -2018,14 +2018,17 @@ ViewerEngineManager::Pick(const EngineKey &ek,
 //    Jeremy Meredith, Fri Mar 26 16:59:59 PST 2004
 //    Use a map of engines based on a key, and be aware of simulations.
 //
+//    Kathleen Bonnell, Tue Jun  1 17:57:52 PDT 2004 
+//    Added forZones arg. 
+//
 // ****************************************************************************
 
 bool
-ViewerEngineManager::StartPick(const EngineKey &ek,
+ViewerEngineManager::StartPick(const EngineKey &ek, const bool forZones,
                                const bool flag, const int nid)
 {
     ENGINE_PROXY_RPC_BEGIN("StartPick");
-    engine->StartPick(flag, nid);
+    engine->StartPick(forZones, flag, nid);
     ENGINE_PROXY_RPC_END;
 }
 

@@ -165,6 +165,9 @@ class WindowAttributes;
 //    Removed several args from ExternalRender method
 //    Added AnnotationObjectList arg to SetWinAnnotAtts
 //
+//    Kathleen Bonnell, Tue Jun  1 17:57:52 PDT 2004 
+//    Added bool arg to StartPick method. 
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerEngineManager : public ViewerServerManager,
@@ -230,7 +233,7 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
                               int id, const AttributeSubject *atts);
     bool Pick(const EngineKey &ek, const int nid,
               const PickAttributes *atts, PickAttributes &retAtts);
-    bool StartPick(const EngineKey &ek,
+    bool StartPick(const EngineKey &ek, const bool forZones,
                    const bool flag, const int nid);
     bool SetWinAnnotAtts(const EngineKey &ek, const WindowAttributes *wa,
                          const AnnotationAttributes *aa,

@@ -784,3 +784,59 @@ avtSILRestrictionTraverser::UsesSetData(int setId) const
 }
 
 
+ 
+// ****************************************************************************
+//  Method: avtSILRestrictionTraverser::UsesAllMaterials
+//
+//  Purpose:
+//    Determines if all materials are used. 
+//
+//  Returns:    True if all materials are selected or there are no materials, 
+//              false otherwise.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   May 12, 2004 
+//
+//  Modifications:
+//
+// ****************************************************************************
+ 
+bool
+avtSILRestrictionTraverser::UsesAllMaterials()
+{
+    if (preparedForMaterialSearches && materialListForChunk.size() == 0)
+    {
+        // no materials
+        return true;
+    }
+ 
+    int  i, j;
+    avtSILSet_p set = silr->GetSILSet(silr->topSet);
+    const vector<int> &mapsOut = set->GetMapsOut();
+ 
+    //
+    // Identify the collection that has role "material"
+    //
+    const vector<unsigned char> &useSet = silr->useSet;
+    bool  allUsed = true;
+    for (i = 0 ; i < mapsOut.size() && allUsed; i++)
+    {
+        avtSILCollection_p coll = silr->GetSILCollection(mapsOut[i]);
+        if (coll->GetRole() == SIL_MATERIAL)
+        {
+            //
+            // Now that we have found the material collection, look at each
+            // of the material subsets and determine if it is on or off.
+            //
+            const vector<int> &setList = coll->GetSubsetList();
+            for (j = 0 ; j < setList.size() && allUsed; j++)
+            {
+                allUsed = (useSet[setList[j]] != NoneUsed); 
+            }
+        }
+    }
+ 
+    return allUsed;
+}
+
+

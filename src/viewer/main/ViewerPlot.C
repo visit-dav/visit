@@ -3659,10 +3659,13 @@ ViewerPlot::GetExpanded() const
 //    Brad Whitlock, Mon Apr 5 14:07:54 PST 2004
 //    Changed to use new indexing.
 //
+//    Kathleen Bonnell, Tue Jun  1 17:57:52 PDT 2004 
+//    Added bool args. 
+//
 // ****************************************************************************
 
 bool
-ViewerPlot::StartPick()
+ViewerPlot::StartPick(const bool needZones, const bool needInvTransform)
 {
     bool needsUpdate = false;
 
@@ -3672,12 +3675,13 @@ ViewerPlot::StartPick()
     //  want to do this only if there are different engines for different
     //  plots.  But how to know from ViewerPlotList??
     //
-    if (ViewerEngineManager::Instance()->StartPick(engineKey,
+    if (ViewerEngineManager::Instance()->StartPick(engineKey, needZones,
                                                    true, networkID))
     {
         if (IsInRange() && *plotList[cacheIndex] != NULL)
         {
-            needsUpdate |= (*plotList[cacheIndex])->RequiresReExecuteForQuery();
+            needsUpdate |= (*plotList[cacheIndex])->
+                           RequiresReExecuteForQuery(needInvTransform, needZones);
         }
         if (needsUpdate)
         {
@@ -3722,7 +3726,7 @@ ViewerPlot::StopPick()
     //  want to do this only if there are different engines for different
     //  plots.  But how to know from ViewerPlotList??
     //
-    if(!ViewerEngineManager::Instance()->StartPick(engineKey,
+    if(!ViewerEngineManager::Instance()->StartPick(engineKey, false,
                                                    false, networkID))
     {
         debug1 << "An error occurred when stopping the pick." << endl;

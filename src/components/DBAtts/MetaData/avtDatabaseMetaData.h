@@ -38,6 +38,7 @@ struct DBATTS_API avtMeshMetaData : public AttributeSubject
     bool          disjointElements;      // A mesh of disjoint cubes, etc.
     avtGhostType  containsGhostZones;
     bool          containsOriginalCells;
+    bool          containsOriginalNodes;
 
     bool          hasSpatialExtents;
     float         minSpatialExtents[3];
@@ -489,6 +490,7 @@ public:
     void         SetBlocksForMesh(int index, int nBlocks);
     void         SetContainsGhostZones(std::string name, avtGhostType);
     void         SetContainsOriginalCells(std::string name, bool);
+    void         SetContainsOriginalNodes(std::string name, bool);
     void         AddGroupInformation(int nGroups, int nBlocks,
                                      intVector &blockIds);
     void         UnsetExtents();

@@ -23,6 +23,10 @@
 //  Programmer: Hank Childs
 //  Creation:   November 22, 2002
 //
+//  Modifications:
+//    Kathleen Bonnell, Tue Jun  1 17:00:17 PDT 2004
+//    Added method 'UsesAllMaterials'.
+//
 // ****************************************************************************
 
 class DBATTS_API avtSILRestrictionTraverser
@@ -43,6 +47,7 @@ class DBATTS_API avtSILRestrictionTraverser
     const std::vector<std::string> &
                                GetMaterials(int, bool &);
     bool                       GetSpecies(std::vector<bool> &);
+    bool                       UsesAllMaterials(void);
 
 
   protected:

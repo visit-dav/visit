@@ -521,6 +521,11 @@ avtConeFilter::SetUpCone(void)
 //  Programmer: Hank Childs (Jeremy Meredith)
 //  Creation:   May 31, 2002
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed Jun  2 09:37:42 PDT 2004
+//    Make the transform use right-handed coords, similar to recent changes
+//    made to slice filter.
+//
 // ****************************************************************************
 
 void
@@ -566,10 +571,10 @@ avtConeFilter::SetUpProjection(void)
     // cross product to find the third element of the basis.
     //
     float  third[3];
-    vtkMath::Cross(normal, upaxis, third);
+    vtkMath::Cross(upaxis, normal, third);
 
     // Make sure the up axis is orthogonal to third and normal
-    vtkMath::Cross(third, normal, upaxis);
+    vtkMath::Cross(normal, third, upaxis);
 
     //
     // Because it is easier to find the Frame-to-Cartesian-Frame conversion
@@ -589,14 +594,13 @@ avtConeFilter::SetUpProjection(void)
     ftcf->SetElement(2, 1, normal[1]);
     ftcf->SetElement(2, 2, normal[2]);
     ftcf->SetElement(2, 3, 0.);
-    ftcf->SetElement(3, 0, origin[0]);
-    ftcf->SetElement(3, 1, origin[1]);
-    ftcf->SetElement(3, 2, origin[2]);
+    ftcf->SetElement(3, 0, 0.);
+    ftcf->SetElement(3, 1, 0.);
+    ftcf->SetElement(3, 2, 0.);
     ftcf->SetElement(3, 3, 1.);
 
     vtkMatrix4x4 *cftf = vtkMatrix4x4::New();
     vtkMatrix4x4::Invert(ftcf, cftf);
-    ftcf->Delete();
 
     vtkMatrix4x4 *projTo2D = vtkMatrix4x4::New();
     projTo2D->Identity();
@@ -604,7 +608,6 @@ avtConeFilter::SetUpProjection(void)
 
     vtkMatrix4x4 *result = vtkMatrix4x4::New();
     vtkMatrix4x4::Multiply4x4(cftf, projTo2D, result);
-    cftf->Delete();
     projTo2D->Delete();
  
     //
@@ -621,6 +624,15 @@ avtConeFilter::SetUpProjection(void)
     transform = vtkTransformPolyDataFilter::New();
     transform->SetTransform(mtlt);
     mtlt->Delete();
+
+    float zdim[3];
+    ftcf->MultiplyPoint(origin, zdim);
+    zdim[0] = 0;
+    zdim[1] = 0;
+    cftf->MultiplyPoint(zdim, zdim);
+    
+    cftf->Delete();
+    ftcf->Delete();
 }
 
 
@@ -788,6 +800,9 @@ avtConeFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 //    Indicate that any transforms in the pipeline cannot be used in 
 //    conjunction with this filter for Flattened, or R-theta Reps.
 //
+//    Kathleen Bonnell, Wed Jun  2 09:37:42 PDT 2004
+//    Set CanUseInvTransform to false.  for Flattened or R-theta.
+//
 // ****************************************************************************
 
 void
@@ -822,6 +837,7 @@ avtConeFilter::RefashionDataObjectInfo(void)
         outAtts.SetSpatialDimension(2);
         outValidity.InvalidateSpatialMetaData();
         outValidity.SetPointsWereTransformed(true);
+        outAtts.SetCanUseInvTransform(false);
         outAtts.SetCanUseTransform(false);
  
         double b[6];
@@ -866,6 +882,7 @@ avtConeFilter::RefashionDataObjectInfo(void)
         outAtts.SetSpatialDimension(2);
         outValidity.InvalidateSpatialMetaData();
         outValidity.SetPointsWereTransformed(true);
+        outAtts.SetCanUseInvTransform(false);
         outAtts.SetCanUseTransform(false);
  
         double b[6];
@@ -1200,6 +1217,10 @@ PolarExtents(double *b, vtkTransformPolyDataFilter *trans, vtkCutter *cutter,
 //  Programmer: Kathleen Bonnell 
 //  Creation:   May 20, 2003 
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed Jun  2 09:21:46 PDT 2004
+//    Turn on node numbers when appropriate.
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -1207,10 +1228,16 @@ avtConeFilter::PerformRestriction(avtPipelineSpecification_p spec)
 {
     avtPipelineSpecification_p rv = new avtPipelineSpecification(spec);
 
-    if ((atts.GetRepresentation() == ConeAttributes::Flattened) &&
-        (rv->GetDataSpecification()->MayRequireZones()))
+    if (atts.GetRepresentation() == ConeAttributes::Flattened)
     {
-        rv->GetDataSpecification()->TurnZoneNumbersOn();
+        if (rv->GetDataSpecification()->MayRequireZones())
+        {
+            rv->GetDataSpecification()->TurnZoneNumbersOn();
+        }
+        if (rv->GetDataSpecification()->MayRequireNodes())
+        {
+            rv->GetDataSpecification()->TurnNodeNumbersOn();
+        }
     }
     return rv;
 }

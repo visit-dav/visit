@@ -24,6 +24,9 @@ Definition:
 //   Kathleen Bonnell, Wed Dec 17 15:19:46 PST 2003 
 //   Support multiple types of coordinates. 
 //   
+//   Kathleen Bonnell, Tue Jun  1 16:44:44 PDT 2004 
+//   Support new pick types 'DomainNode', 'DomainZone'. 
+//   
 // ****************************************************************************
 void
 PickAttributes::PrintSelf(ostream &os)
@@ -86,7 +89,7 @@ PickAttributes::PrintSelf(ostream &os)
                << cellPoint[2] << ">\n";
         }
     }
-    if (pickType == Zone)
+    if (pickType == Zone || pickType == DomainZone)
     {
         os << "Zone " ;
         if (showZoneId)
@@ -101,7 +104,7 @@ PickAttributes::PrintSelf(ostream &os)
         }
         os << "\n";
     }
-    else if (pickType == Node)
+    else if (pickType == Node || pickType == DomainNode)
     {
         os << "Node ";
         if (showNodeId)
@@ -123,12 +126,12 @@ PickAttributes::PrintSelf(ostream &os)
     if (displayIncidentElements)
     {
         bool showId;
-        if (pickType == Zone)
+        if (pickType == Zone || pickType == DomainZone)
         {
             os << "Incident Nodes " ; 
             showId = showNodeId;
         }
-        else if (pickType == Node)
+        else if (pickType == Node || pickType == DomainNode)
         {
             os << "Incident Zones " ; 
             showId = showZoneId;
@@ -137,7 +140,7 @@ PickAttributes::PrintSelf(ostream &os)
         {
             if (showId)
                 os << incidentElements[i] << "  ";
-            if (pickType == Zone)
+            if (pickType == Zone || pickType == DomainZone)
             {
                 if (showNodePhysicalCoords && !pnodeCoords.empty())
                     os << " " << pnodeCoords[i].c_str() << "\n";
@@ -146,7 +149,7 @@ PickAttributes::PrintSelf(ostream &os)
                 if (showNodeBlockLogicalCoords && !bnodeCoords.empty())
                     os << " block " << bnodeCoords[i].c_str() << "\n";
             }
-            else if (pickType == Node)
+            else if (pickType == Node || pickType == DomainNode)
             {
                 if (showZoneDomainLogicalCoords && !dzoneCoords.empty())
                     os << " domain " << dzoneCoords[i].c_str() << "\n";
@@ -204,6 +207,9 @@ Definition:
 //   
 //   Kathleen Bonnell, Tue Mar 16 16:02:05 PST 2004 
 //   Create message regarding invalid variables. 
+//   
+//   Kathleen Bonnell, Tue Jun  1 16:44:44 PDT 2004 
+//   Support new pick types 'DomainNode', 'DomainZone'. 
 //   
 // ****************************************************************************
 void
@@ -299,7 +305,7 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
     bool showNodeCoords = (showNodePhysicalCoords && !pnodeCoords.empty())||
                           (showNodeDomainLogicalCoords && !dnodeCoords.empty())|| 
                           (showNodeBlockLogicalCoords && !bnodeCoords.empty());
-    if (pickType == Zone)
+    if (pickType == Zone || pickType == DomainZone)
     {
         if (showZoneId || showZoneCoords)
             os += "Zone:  ";
@@ -321,7 +327,7 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
         if (showZoneId || showZoneCoords)
             os += "\n";
     }
-    else if (pickType == Node)
+    else if (pickType == Node || pickType == DomainNode)
     {
         if (showNodeId || showNodeCoords)
             os += "Node:  ";
@@ -351,7 +357,7 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
     if (displayIncidentElements)
     {
         bool showId;
-        if (pickType == Zone)
+        if (pickType == Zone || pickType == DomainZone)
         {
             os += "Incident Nodes:  " ; 
             if (showNodeCoords)
@@ -360,7 +366,7 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
             }
             showId = showNodeId;
         }
-        else if (pickType == Node)
+        else if (pickType == Node || pickType == DomainNode)
         {
             os += "Incident zones:  " ; 
             if (showZoneCoords)
@@ -377,7 +383,7 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
                 SNPRINTF(buff, 512, "%d  ", incidentElements[i]);
                 os += buff; 
             }
-            if (pickType == Zone)
+            if (pickType == Zone || pickType == DomainZone)
             {
                 if (showNodePhysicalCoords & !pnodeCoords.empty()) 
                 {
@@ -399,7 +405,7 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
                     os += "\n    "; 
                 }
             }
-            else if (pickType == Node)
+            else if (pickType == Node || pickType == DomainNode)
             {
                 if (showZoneDomainLogicalCoords & !dzoneCoords.empty()) 
                 {
@@ -471,6 +477,9 @@ Definition:
 //   Kathleen Bonnell, Tue Mar 16 16:02:05 PST 2004
 //   Clear invalidVars. 
 //   
+//   Kathleen Bonnell, Tue Jun  1 16:44:44 PDT 2004 
+//   Reset matSelected and needActualCoords. 
+//   
 // ****************************************************************************
 
 void
@@ -519,6 +528,10 @@ PickAttributes::PrepareForNewPick()
 
     errorMessage = "";
     error = false;
+
+    matSelected = false;
+
+    needActualCoords = false;
 }
 
 Function: SetFromNode

@@ -74,6 +74,9 @@ static void      FindCells(float *x, float *y, float *z, int nx, int ny,
 //    Hank Childs, Mon Jun  9 09:20:43 PDT 2003
 //    Use the new vtkSlicer class.
 //
+//    Kathleen Bonnell, Wed Jun  2 09:11:01 PDT 2004 
+//    Added origTrans. 
+//
 // ****************************************************************************
 
 avtSliceFilter::avtSliceFilter()
@@ -82,6 +85,7 @@ avtSliceFilter::avtSliceFilter()
     transform = vtkTransformPolyDataFilter::New();
     celllist = NULL;
     invTrans = vtkMatrix4x4::New();
+    origTrans = vtkMatrix4x4::New();
     cachedOrigin[0] = 0.;
     cachedOrigin[1] = 0.;
     cachedOrigin[2] = 0.;
@@ -115,6 +119,9 @@ avtSliceFilter::avtSliceFilter()
 //    Hank Childs, Mon Jun  9 09:20:43 PDT 2003
 //    Use the new vtkSlicer class.
 //
+//    Kathleen Bonnell, Wed Jun  2 09:11:01 PDT 2004 
+//    Added origTrans. 
+//
 // ****************************************************************************
 
 avtSliceFilter::~avtSliceFilter()
@@ -138,6 +145,11 @@ avtSliceFilter::~avtSliceFilter()
     {
         invTrans->Delete();
         invTrans= NULL;
+    }
+    if (origTrans!= NULL)
+    {
+        origTrans->Delete();
+        origTrans= NULL;
     }
 }
 
@@ -282,6 +294,9 @@ avtSliceFilter::Equivalent(const AttributeGroup *a)
 //    Make sure that the info about the origin is up-to-date before eliminating
 //    domains from potential calculation.
 //
+//    Kathleen Bonnell, Wed Jun  2 09:11:01 PDT 2004 
+//    Turn on node numbers when appropriate. 
+// 
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -292,6 +307,10 @@ avtSliceFilter::PerformRestriction(avtPipelineSpecification_p spec)
     if (atts.GetProject2d() && rv->GetDataSpecification()->MayRequireZones())
     {
         rv->GetDataSpecification()->TurnZoneNumbersOn();
+    }
+    if (atts.GetProject2d() && rv->GetDataSpecification()->MayRequireNodes())
+    {
+        rv->GetDataSpecification()->TurnNodeNumbersOn();
     }
 
     if (atts.GetOriginType() == SliceAttributes::Zone)
@@ -397,6 +416,9 @@ avtSliceFilter::PreExecute(void)
 //    slice.  Modified the calculation of invTransform to conform to other
 //    changes (with help from Jeremy).
 // 
+//    Kathleen Bonnell, Wed Jun  2 09:11:01 PDT 2004 
+//    Added origTrans. 
+//
 // ****************************************************************************
 
 void
@@ -502,6 +524,7 @@ avtSliceFilter::SetUpProjection(void)
     //
     vtkMatrix4x4 *result_transposed = vtkMatrix4x4::New();
     vtkMatrix4x4::Transpose(result, result_transposed);
+    origTrans->DeepCopy(result_transposed); 
     result->Delete();
 
     vtkMatrixToLinearTransform *mtlt = vtkMatrixToLinearTransform::New();
@@ -937,6 +960,7 @@ avtSliceFilter::RefashionDataObjectInfo(void)
         outValidity.SetNormalsAreInappropriate(true);
 
     outValidity.InvalidateZones();
+
     if (atts.GetProject2d())
     {
         outAtts.SetSpatialDimension(2);
@@ -1441,6 +1465,9 @@ PlaneIntersectsCube(float plane[4], float bounds[6])
 //    Hank Childs, Wed Jun 18 19:06:23 PDT 2003
 //    Project the extents here, since the origin is now determined.
 //
+//    Kathleen Bonnell, Wed Jun  2 09:11:01 PDT 2004 
+//    Added origTrans. 
+//
 // ****************************************************************************
 
 void
@@ -1448,10 +1475,12 @@ avtSliceFilter::PostExecute()
 {
     if (atts.GetProject2d())
     {
-        avtDataAttributes &inAtts      = GetInput()->GetInfo().GetAttributes();
-        avtDataAttributes &outAtts     =GetOutput()->GetInfo().GetAttributes();
+        avtDataAttributes &inAtts     =  GetInput()->GetInfo().GetAttributes();
+        avtDataAttributes &outAtts    = GetOutput()->GetInfo().GetAttributes();
 
-        GetOutput()->GetInfo().GetAttributes().SetTransform((*invTrans)[0]);
+        GetOutput()->GetInfo().GetAttributes().SetInvTransform((*invTrans)[0]);
+        GetOutput()->GetInfo().GetAttributes().SetTransform((*origTrans)[0]);
+
         double b[6];
  
         if (inAtts.GetTrueSpatialExtents()->HasExtents())

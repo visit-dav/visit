@@ -6639,17 +6639,20 @@ ViewerPlotList::ClearPipelines()
 //    Brad Whitlock, Sat Jan 31 22:49:22 PST 2004
 //    I removed the frame argument.
 //
+//    Kathleen Bonnell, Tue Jun  1 17:57:52 PDT 2004 
+//    Added bool args needZones and needInvTransform.
+//
 // ****************************************************************************
 
 void 
-ViewerPlotList::StartPick()
+ViewerPlotList::StartPick(const bool needZones, const bool needInvTransform)
 {
     bool needsUpdate = false;
     for (int i = 0; i < nPlots; ++i)
     {
         if (plots[i].active && !plots[i].hidden)
         {
-            needsUpdate |= plots[i].plot->StartPick();
+            needsUpdate |= plots[i].plot->StartPick(needZones, needInvTransform);
         }
     }
     if (needsUpdate)

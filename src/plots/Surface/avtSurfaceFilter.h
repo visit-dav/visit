@@ -13,9 +13,6 @@
 class vtkDataSet;
 class vtkSurfaceFilter;
 class vtkCellDataToPointData;
-class vtkAppendPolyData;
-class vtkUniqueFeatureEdges;
-class vtkGeometryFilter;
 
 
 // ****************************************************************************
@@ -53,6 +50,10 @@ class vtkGeometryFilter;
 //    Mark C. Miller, Tue Mar  2 17:55:30 PST 2004
 //    Removed zValMin, zValMax
 //
+//    Kathleen Bonnell, Mon May 24 14:13:55 PDT 2004 
+//    Moved geofilter, appendFilter and edgesFilter to avtWireframeFilter. 
+//    Removed PostExecute. 
+//
 // ****************************************************************************
 
 class avtSurfaceFilter : public avtStreamer
@@ -74,9 +75,6 @@ class avtSurfaceFilter : public avtStreamer
     SurfaceAttributes       atts;
     vtkSurfaceFilter       *filter;
     vtkCellDataToPointData *cd2pd;
-    vtkGeometryFilter      *geoFilter;
-    vtkAppendPolyData      *appendFilter;
-    vtkUniqueFeatureEdges  *edgesFilter;
     double                  min;
     double                  max;
     double                  Ms;
@@ -90,7 +88,6 @@ class avtSurfaceFilter : public avtStreamer
     virtual void            RefashionDataObjectInfo(void);
     virtual void            VerifyInput(void);
     virtual void            PreExecute(void);
-    virtual void            PostExecute(void);
     virtual avtPipelineSpecification_p
                             PerformRestriction(avtPipelineSpecification_p);
 };

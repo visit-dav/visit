@@ -268,6 +268,9 @@ avtReflectFilter::PostExecute(void)
 //    Completely removed the code turning off zone numbers.  Why set a flag
 //    to false if it is already false?  False is the default setting.
 //
+//    Kathleen Bonnell, Wed Jun  2 09:21:46 PDT 2004 
+//    Turn on node numbers when required. 
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -290,6 +293,10 @@ avtReflectFilter::PerformRestriction(avtPipelineSpecification_p spec)
     {
         ns->GetDataSpecification()->TurnZoneNumbersOn();
     }
+    if (spec->GetDataSpecification()->MayRequireNodes())
+    {
+        ns->GetDataSpecification()->TurnNodeNumbersOn();
+    }
 
     return ns;
 }
@@ -306,6 +313,10 @@ avtReflectFilter::PerformRestriction(avtPipelineSpecification_p spec)
 //  Modifications:
 //    Kathleen Bonnell, Mon Apr 14 09:57:39 PDT 2003
 //    Set CanUseTransform to false.
+//
+//    Kathleen Bonnell, Wed Jun  2 09:21:46 PDT 2004 
+//    Set CanUseInvTransform to false.
+// 
 // ****************************************************************************
  
 void
@@ -316,6 +327,7 @@ avtReflectFilter::RefashionDataObjectInfo(void)
     //
     // This filter invalidates any transform matrix in the pipeline.
     //
+    GetOutput()->GetInfo().GetAttributes().SetCanUseInvTransform(false);
     GetOutput()->GetInfo().GetAttributes().SetCanUseTransform(false);
 }
 

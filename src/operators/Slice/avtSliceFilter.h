@@ -67,6 +67,9 @@ class avtPointAttribute;
 //    Removed "point" for now.  The slice window has changed, and dynamically
 //    resolved attributes will work differently soon.
 //
+//    Kathleen Bonnell, Wed Jun  2 09:11:01 PDT 2004
+//    Store transform matrix for possible use later in the pipeline. 
+//
 // ****************************************************************************
 
 class avtSliceFilter : public avtPluginStreamer
@@ -93,6 +96,7 @@ class avtSliceFilter : public avtPluginStreamer
     vtkTransformPolyDataFilter   *transform;
     int                          *celllist;
     vtkMatrix4x4                 *invTrans;
+    vtkMatrix4x4                 *origTrans;
 
     virtual avtPipelineSpecification_p
                             PerformRestriction(avtPipelineSpecification_p);

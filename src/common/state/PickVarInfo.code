@@ -145,6 +145,9 @@ Definition:
 //   Kathleen Bonnell, Wed Dec 17 15:19:46 PST 2003 
 //   Added arg 'type' indicating the type of pick that generated this info. 
 // 
+//   Kathleen Bonnell, Tue Jun  1 16:42:46 PDT 2004
+//   Added DomainNode and DomainZone as pick types.
+// 
 // ****************************************************************************
 void
 PickVarInfo::CreateOutputString(std::string &os, const std::string &type)
@@ -159,11 +162,11 @@ PickVarInfo::CreateOutputString(std::string &os, const std::string &type)
     switch (centering)
     {
         case Nodal:  os += "<nodal> " ; 
-                     if (strcmp(type.c_str(), "Node") == 0)
+                     if (type == "Node" || type == "DomainNode")
                          centeringsMatch = true;
                      break;
         case Zonal:  os += "<zonal> " ; 
-                     if (strcmp(type.c_str(), "Zone") == 0)
+                     if (type == "Zone" || type == "DomainZone") 
                          centeringsMatch = true;
                      break;
         case None :  os += "\n";         break;

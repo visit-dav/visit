@@ -188,6 +188,9 @@ class avtToolInterface;
 //    Added actorHasNoData arg. to CreateActor. Eliminated default values for
 //    other args to CreateActor
 //
+//    Kathleen Bonnell, Tue Jun  1 17:57:52 PDT 2004 
+//    Added bool args to StartPick. 
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerPlot
@@ -310,7 +313,7 @@ class VIEWER_API ViewerPlot
 
     bool HandleTool(const avtToolInterface &ti);
     bool InitializeTool(avtToolInterface &ti);
-    bool StartPick();
+    bool StartPick(const bool, const bool);
     void StopPick();
     void ResetNetworkIds(const EngineKey &key);
 

@@ -17,6 +17,7 @@ class     vtkProperty;
 
 class     avtLookupTable;
 class     avtSurfaceFilter;
+class     avtWireframeFilter;
 class     avtUserDefinedMapper;
 class     avtVariableLegend;
 
@@ -63,6 +64,9 @@ class     avtVariableLegend;
 //    Kathleen Bonnell, Tue Oct 22 08:33:26 PDT 2002
 //    Added ApplyRenderingTransformation. 
 //    
+//    Kathleen Bonnell, Mon May 24 14:13:55 PDT 2004 
+//    Added avtWireframeFilter.
+//    
 // ****************************************************************************
 
 class avtSurfacePlot : public avtSurfaceDataPlot
@@ -96,7 +100,8 @@ class avtSurfacePlot : public avtSurfaceDataPlot
     avtVariableLegend              *varLegend;
     avtLegend_p                     varLegendRefPtr;
     avtLookupTable                 *avtLUT;
-    avtSurfaceFilter               *filter;
+    avtSurfaceFilter               *surfaceFilter;
+    avtWireframeFilter             *wireFilter;
     vtkProperty                    *property;
     SurfaceAttributes               atts;
     bool                            colorsInitialized;
