@@ -439,6 +439,9 @@ dnl
 dnl    Akira Haddox, Wed Aug 20 10:45:41 PDT 2003
 dnl    Added support for Boxlib3D.
 dnl
+dnl    Hank Childs, Tue Sep  9 07:36:21 PDT 2003
+dnl    Added tools/convert.
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -708,6 +711,27 @@ fi
 AC_SUBST(AVTPREP_SER)
 AC_SUBST(AVTPREP_PAR)
 
+#
+# Check for the convert directory
+#
+AC_MSG_CHECKING(for convert)
+if test -d tools/convert; then
+    AC_MSG_RESULT(found)
+    CONVERT_SER="$""(tmpbin)/convert_ser"
+    if test -n "$PARALLEL"; then
+        CONVERT_PAR="$""(tmpbin)/convert_par"
+    else
+        CONVERT_PAR=""
+    fi
+else
+    AC_MSG_RESULT(not found)
+    CONVERT_SER=""
+    CONVERT_PAR=""
+fi
+AC_SUBST(CONVERT_SER)
+AC_SUBST(CONVERT_PAR)
+
+#
 #
 # Check for the makemili directory
 #
@@ -2463,6 +2487,7 @@ TOOLS_FILES="tools/Makefile
              tools/annotations/Makefile
              tools/avtprep/Makefile
              tools/clipeditor/Makefile
+             tools/convert/Makefile
              tools/curv3dprep/Makefile
              tools/doxygenate/Makefile
              tools/escan/Makefile

@@ -71,6 +71,9 @@
 //    Jeremy Meredith, Mon May  5 14:39:41 PDT 2003
 //    Fixed MOC dependencies.
 //
+//    Hank Childs, Tue Sep  9 10:04:41 PDT 2003
+//    Added support for file writers.
+//
 // ****************************************************************************
 
 class MakefileGeneratorPlugin
@@ -82,6 +85,7 @@ class MakefileGeneratorPlugin
     QString version;
     QString vartype;
     QString dbtype;
+    QString haswriter;
 
     vector<QString> cxxflags;
     vector<QString> ldflags;
@@ -108,8 +112,8 @@ class MakefileGeneratorPlugin
 
     Attribute *atts;
   public:
-    MakefileGeneratorPlugin(const QString &n,const QString &l,const QString &t,const QString &vt,const QString &dt,const QString &v, const QString &)
-        : name(n), type(t), label(l), version(v), vartype(vt), dbtype(dt), atts(NULL)
+    MakefileGeneratorPlugin(const QString &n,const QString &l,const QString &t,const QString &vt,const QString &dt,const QString &v, const QString&w, const QString &hw)
+        : name(n), type(t), label(l), version(v), vartype(vt), dbtype(dt), haswriter(hw), atts(NULL)
     {
         customgfiles = false;
         customsfiles = false;
@@ -352,6 +356,10 @@ class MakefileGeneratorPlugin
             {
                 out << " avt"<<name<<"FileFormat.C";
             }
+            if (haswriter == "yes")
+            {
+                out << " avt" << name << "Writer.C";
+            }
             if (custommfiles)
                 for (int i=0; i<mfiles.size(); i++)
                     out << " " << mfiles[i];
@@ -367,6 +375,10 @@ class MakefileGeneratorPlugin
             else
             {
                 out << " avt"<<name<<"FileFormat.C";
+            }
+            if (haswriter == "yes")
+            {
+                out << " avt" << name << "Writer.C";
             }
             if (customefiles)
                 for (int i=0; i<efiles.size(); i++)

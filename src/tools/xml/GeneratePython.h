@@ -1942,8 +1942,8 @@ class PythonGeneratorPlugin
   public:
     PythonGeneratorPlugin(const QString &n,const QString &l,const QString &t,
                           const QString &vt,const QString &dt,const QString &v,
-                          const QString &) : name(n), type(t), label(l), version(v),
-                          varType(vt), dbtype(dt), atts(NULL)
+                          const QString &, const QString &) : name(n), type(t), 
+                          label(l), version(v), varType(vt), dbtype(dt), atts(NULL)
     {
     }
     void Print(ostream &out)

@@ -2398,6 +2398,30 @@ fi
 
 
 #
+# Check for the convert directory
+#
+echo "$as_me:$LINENO: checking for convert" >&5
+echo $ECHO_N "checking for convert... $ECHO_C" >&6
+if test -d tools/convert; then
+    echo "$as_me:$LINENO: result: found" >&5
+echo "${ECHO_T}found" >&6
+    CONVERT_SER="$""(tmpbin)/convert_ser"
+    if test -n "$PARALLEL"; then
+        CONVERT_PAR="$""(tmpbin)/convert_par"
+    else
+        CONVERT_PAR=""
+    fi
+else
+    echo "$as_me:$LINENO: result: not found" >&5
+echo "${ECHO_T}not found" >&6
+    CONVERT_SER=""
+    CONVERT_PAR=""
+fi
+
+
+
+#
+#
 # Check for the makemili directory
 #
 echo "$as_me:$LINENO: checking for makemili" >&5
@@ -15484,6 +15508,7 @@ TOOLS_FILES="tools/Makefile
              tools/annotations/Makefile
              tools/avtprep/Makefile
              tools/clipeditor/Makefile
+             tools/convert/Makefile
              tools/curv3dprep/Makefile
              tools/doxygenate/Makefile
              tools/escan/Makefile
@@ -16134,6 +16159,8 @@ s,@VTK_INCLUDES@,$VTK_INCLUDES,;t t
 s,@VTK_LIBS@,$VTK_LIBS,;t t
 s,@AVTPREP_SER@,$AVTPREP_SER,;t t
 s,@AVTPREP_PAR@,$AVTPREP_PAR,;t t
+s,@CONVERT_SER@,$CONVERT_SER,;t t
+s,@CONVERT_PAR@,$CONVERT_PAR,;t t
 s,@MAKEMILI_SER@,$MAKEMILI_SER,;t t
 s,@MAKEMILI_PAR@,$MAKEMILI_PAR,;t t
 s,@ENGINE_SER@,$ENGINE_SER,;t t

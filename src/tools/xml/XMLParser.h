@@ -113,6 +113,9 @@ ParseCharacters(const QString &buff)
 //    Stopped adding the class scope to the enum enabler values.
 //    It is now added only before use in GenerateWindow.
 //
+//    Hank Childs, Tue Sep  9 10:04:41 PDT 2003
+//    Added support for file writers.
+//
 // ****************************************************************************
 
 class XMLParser : public QXmlDefaultHandler
@@ -198,9 +201,10 @@ class XMLParser : public QXmlDefaultHandler
             QString type      = atts.value("type");
             QString vartype   = atts.value("vartype");
             QString dbtype    = atts.value("dbtype");
+            QString haswriter = atts.value("haswriter");
             QString version   = atts.value("version");
             QString iconFile  = atts.value("iconFile");
-            currentPlugin = new Plugin(name, label, type, vartype, dbtype, version, iconFile);
+            currentPlugin = new Plugin(name, label, type, vartype, dbtype, version, iconFile, haswriter);
         }
         else if (tag == "Attribute")
         {

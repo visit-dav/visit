@@ -2437,7 +2437,7 @@ class AttsGeneratorPlugin
 
     AttsGeneratorAttribute *atts;
   public:
-    AttsGeneratorPlugin(const QString &n,const QString &l,const QString &t,const QString &vt,const QString &dt,const QString &v, const QString &)
+    AttsGeneratorPlugin(const QString &n,const QString &l,const QString &t,const QString &vt,const QString &dt,const QString &v, const QString &, const QString &)
         : name(n), type(t), label(l), version(v), vartype(vt), dbtype(dt), atts(NULL)
     {
     }

@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Plugin name="Silo" label="Silo" type="database" dbtype="STMD" version="1.0">
+  <Plugin name="Silo" label="Silo" type="database" dbtype="STMD" version="1.0" haswriter="yes">
     <Extensions> silo pdb </Extensions>
     <CXXFLAGS> $(SILO_INCLUDE) </CXXFLAGS>
     <LIBS>     $(SILO_LIB)     </LIBS>

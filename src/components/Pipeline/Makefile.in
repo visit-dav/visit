@@ -153,6 +153,9 @@
 #    Hank Childs, Fri Jul 25 21:17:45 PDT 2003
 #    Renamed avtRelevantPointsFilter to avtCondenseDatasetFilter.
 #
+#    Hank Childs, Wed Sep 10 07:56:10 PDT 2003
+#    Added avtDatabaseWriter.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -274,6 +277,7 @@ PublicFilters_src= \
 
 Sinks_src= \
   Sinks/avtDataObjectSink.C \
+  Sinks/avtDatabaseWriter.C \
   Sinks/avtDatasetSink.C \
   Sinks/avtDatasetFileWriter.C \
   Sinks/avtFileWriter.C \

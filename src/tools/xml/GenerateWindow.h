@@ -1587,7 +1587,7 @@ class WindowGeneratorPlugin
 
     WindowGeneratorAttribute *atts;
   public:
-    WindowGeneratorPlugin(const QString &n,const QString &l,const QString &t,const QString &vt,const QString &dt,const QString &v, const QString &)
+    WindowGeneratorPlugin(const QString &n,const QString &l,const QString &t,const QString &vt,const QString &dt,const QString &v, const QString &, const QString &)
         : name(n), type(t), label(l), version(v), vartype(vt), dbtype(dt), atts(NULL)
     {
         if (type == "plot")

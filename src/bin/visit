@@ -255,6 +255,9 @@ $0 = shift @ARGV;
 #    I corrected a bug in the logic that decided if the vcl should be
 #    launched in the batch system.  The fix was actually made by Jeremy.
 #
+#    Hank Childs, Tue Sep  9 08:35:42 PDT 2003
+#    Add 'convert' program.
+#
 ###############################################################################
 
 
@@ -290,6 +293,7 @@ USAGE:  visit [arguments]
     Program arguments:
         -gui                 Run with the Graphical User Interface (default)
         -cli                 Run with the Command Line Interface
+        -convert             Converts files from format A to format B
         -makemili            Runs the .mili file generator
         -surfcomp            Runs the surface-compare tool.
         -text2polys          Runs a utility which generators polygons from text
@@ -440,6 +444,7 @@ while (scalar(@ARGV) > 0) {
     elsif ($arg eq "-xmltest")          { $exe_name = "xmltest"; }
     elsif ($arg eq "-xmledit")          { $exe_name = "xmledit"; }
     elsif ($arg eq "-makemili" )        { $exe_name = "makemili"; }
+    elsif ($arg eq "-convert" )         { $exe_name = "convert"; }
     elsif ($arg eq "-silex" )           { $exe_name = "silex"; }
     elsif ($arg eq "-surfcomp" )        { $exe_name = "surfcomp"; }
     elsif ($arg eq "-text2polys" )      { $exe_name = "text2polys"; }
@@ -590,11 +595,11 @@ if ((($parallel) or ($launchengine)) and
     $nodes_set=0;
 
     #
-    # The makemili tool needs these parallel arguments, but to not
+    # The makemili and convert tool needs these parallel arguments, but to not
     # confuse the script, we turn off the parallel flag. So we
     # translate the executable name here.
     #
-    if ($exe_name eq "makemili")
+    if (($exe_name eq "makemili") or ($exe_name eq "convert"))
     {
         $exe_name .= "_par";
     }
@@ -691,8 +696,9 @@ if (!$part_set && (substr($launch,0,4) eq "psub"))
 #                             Determine versions
 # -----------------------------------------------------------------------------
 
-# If we still think the exe_name is makemili, we're not running in parallel.
-if ($exe_name eq "makemili")
+# If we still think the exe_name is makemili or convert, we're not running 
+# in parallel.
+if (($exe_name eq "makemili") or ($exe_name eq "convert"))
 {
     $exe_name .= "_ser" if (!$parallel);
 }

@@ -1,5 +1,5 @@
 // ************************************************************************* //
-//                              DatabasePluginInfo.h                             //
+//                            DatabasePluginInfo.h                           //
 // ************************************************************************* //
 
 #ifndef DATABASE_PLUGIN_INFO_H
@@ -21,6 +21,7 @@ enum DatabaseType
 
 // Forward declarations.
 class avtDatabase;
+class avtDatabaseWriter;
 
 // ****************************************************************************
 //  Class: *DatabasePluginInfo
@@ -34,6 +35,9 @@ class avtDatabase;
 //  Creation:   August 21, 2002
 //
 //  Modifications:
+//
+//    Hank Childs, Wed Sep 10 07:05:54 PDT 2003
+//    Added DatabaseWriter.
 //
 // ****************************************************************************
 
@@ -52,6 +56,7 @@ class PLUGIN_API CommonDatabasePluginInfo : public virtual GeneralDatabasePlugin
     virtual std::vector<std::string>  GetDefaultExtensions() = 0;
     virtual avtDatabase              *SetupDatabase(const char * const *list,
                                                     int nList, int nBlock) = 0;
+    virtual avtDatabaseWriter        *GetWriter(void) { return NULL; };
 };
 
 class PLUGIN_API MDServerDatabasePluginInfo : public virtual CommonDatabasePluginInfo
