@@ -16,36 +16,31 @@
 //
 //  Modifications:
 //
-//    Hank Childs, Fri Sep 14 09:38:58 PDT 2001
-//    Initialize usingAllDomains.
-//
-//    Kathleen Bonnell, Fri Oct 12 12:07:01 PDT 2001 
-//    Initialize isThisDynamic.
-//
-//    Kathleen Bonnell, Wed Dec 12 10:50:01 PST 2001 
-//    Initialize pointsWereTransformed.
-//
-//    Hank Childs, Sun Jun 23 23:08:13 PDT 2002
-//    Initialize wireframeRenderingIsInappropriate.
-//
-//    Hank Childs, Tue Aug  6 10:57:20 PDT 2002
-//    Initialize normalsAreInappropriate.
-//
-//    Jeremy Meredith, Tue Aug 13 10:10:35 PDT 2002
-//    Added subdivisionOccurred and notAllCellsSubdivided.
-//
-//    Hank Childs, Sun Aug 18 10:58:23 PDT 2002
-//    Initialize disjointElements.
-//
-//    Kathleen Bonnell, Tue Oct 22 11:44:55 PDT 2002   
-//    Initialize queryable.
-//
-//    Hank Childs, Fri May 16 10:18:12 PDT 2003
-//    Initialize errorOccrred, errorString.
+//    Hank Childs, Tue Sep 30 16:33:37 PDT 2003
+//    Moved all real work into "Reset".  Blew away all previous comments since
+//    they were no longer meaningful.
 //
 // ****************************************************************************
 
 avtDataValidity::avtDataValidity()
+{
+    Reset();
+}
+
+
+// ****************************************************************************
+//  Method: avtDataValidity::Reset
+//
+//  Purpose:
+//      Resets the data validity object to a state where everything is valid.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 30, 2003
+//
+// ****************************************************************************
+
+void
+avtDataValidity::Reset(void)
 {
     zonesPreserved                    = true;
     dataMetaDataPreserved             = true;

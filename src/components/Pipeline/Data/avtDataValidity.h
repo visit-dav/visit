@@ -62,6 +62,7 @@ class PIPELINE_API avtDataValidity
   public:
                              avtDataValidity();
     virtual                 ~avtDataValidity() {;};
+    void                     Reset(void);
 
     void                     Copy(const avtDataValidity &);
     void                     Merge(const avtDataValidity &);

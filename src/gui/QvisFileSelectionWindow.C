@@ -232,10 +232,16 @@ private:
 //   Brad Whitlock, Fri Mar 28 15:51:51 PST 2003
 //   I added pixmaps.
 //
+//   Brad Whitlock, Mon Sep 29 16:00:15 PST 2003
+//   This might be a bad move but I made the window be non-modal like it was
+//   originally so we don't have problems dismissing the Error dialog and
+//   so the GUI does not get into a hung state. Hopefully this won't cause
+//   other problems.
+//
 // ****************************************************************************
 
 QvisFileSelectionWindow::QvisFileSelectionWindow(const char *winCaption) :
-    QvisDelayedWindowSimpleObserver(winCaption, WType_Modal), intermediateFileList()
+    QvisDelayedWindowSimpleObserver(winCaption), intermediateFileList()
 {
     fs = 0;
     profiles = 0;
@@ -1339,6 +1345,10 @@ QvisFileSelectionWindow::ChangePath(bool allowPathChange)
 // Modifications:
 //   Brad Whitlock, Thu May 9 17:08:17 PST 2002
 //   Made it use the base class's fileServer pointer.
+//
+//   Brad Whitlock, Mon Sep 29 16:11:15 PST 2003
+//   I changed the routine so it uses "*" for the filter if the user tries
+//   to enter an invalid filter.
 //   
 // ****************************************************************************
 
@@ -1346,28 +1356,43 @@ bool
 QvisFileSelectionWindow::ChangeFilter()
 {
     bool errFlag = false;
+    bool forcedChange = false;
+    std::string filter("*");
 
     // If the line edit is not empty, change the host name.
     if(!filterLineEdit->text().isEmpty())
     {
         // Take the string from the text field and simplify whitespace.
-        std::string filter(filterLineEdit->text().simplifyWhiteSpace().latin1());
+        filter = filterLineEdit->text().simplifyWhiteSpace().latin1();
 
-        // If the filters are different, modify the filter in the fileserver.
-        if(filter != fileServer->GetFilter())
+        if(filter == "")
         {
-            // Try and set the filter in the file server.
-            if(filter.length() > 0)
-            {
-                fileServer->SetFilter(filter);
-                fileServer->Notify();
-            }
-            else
-                errFlag = true;
+            forcedChange = true;
+            filter = "*";
+        }
+    }
+    else
+    {
+        filter = "*";
+        forcedChange = true;
+    }
+
+    // If the filters are different, modify the filter in the fileserver.
+    if(filter != fileServer->GetFilter() || forcedChange)
+    {
+        // Try and set the filter in the file server.
+        if(filter.length() > 0)
+        {
+            fileServer->SetFilter(filter);
+            fileServer->Notify();
+        }
+        else
+        {
+            errFlag = true;
         }
     }
 
-    if(errFlag)
+    if(errFlag || forcedChange)
     {
         Error("An invalid filter was entered.");
         filterLineEdit->setText(QString(fileServer->GetFilter().c_str()));
@@ -1471,7 +1496,12 @@ QvisFileSelectionWindow::ConnectSubjects(HostProfileList *hpl)
 // Creation:   Mon Sep 30 07:59:57 PDT 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Sep 29 11:47:06 PDT 2003
+//   I changed the code so that the window's enabled state gets set regardless
+//   of whether the window is visible. This fixes a bug where minimizing the
+//   window in the middle of connecting to a remote mdserver causes the
+//   window to stay disabled, thus hanging the gui.
+//
 // ****************************************************************************
 
 bool
@@ -1479,25 +1509,25 @@ QvisFileSelectionWindow::ProgressCallback(void *data, int stage)
 {
     QvisFileSelectionWindow *This = (QvisFileSelectionWindow *)data;
 
-    if(This->isVisible())
+    if(stage == 0)
     {
-        if(stage == 0)
-        {
-            // Disable the widgets in the file selection window.
-            This->setEnabled(false);
-        }
-        else if(stage == 1)
+        // Disable the widgets in the file selection window.
+        This->setEnabled(false);
+    }
+    else if(stage == 1)
+    {
+        if(This->isVisible())
         {
 #if QT_VERSION >= 300
            if(qApp->hasPendingEvents())
 #endif
                qApp->processOneEvent();
         }
-        else
-        {
-            // Enable the widgets in the file selection window.
-            This->setEnabled(true);
-        }
+    }
+    else
+    {
+        // Enable the widgets in the file selection window.
+        This->setEnabled(true);
     }
 
     return true;

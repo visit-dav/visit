@@ -31,6 +31,7 @@ class EXPRESSION_API avtConstantCreatorFilter : public avtUnaryMathFilter
   protected:
     virtual void             DoOperation(vtkDataArray *in, vtkDataArray *out,
                                          int ncomponents, int ntuples);
+    virtual int              GetNumberOfComponentsInOutput(int) { return 1; };
 
     double                   value;
 };

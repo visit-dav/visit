@@ -347,22 +347,29 @@ avtActor::GetWindowMode(void)
 //  Purpose:
 //      Gets the render order of the plot.
 //
+//  Arguments:
+//    aa  Indicates antialiasing mode.
+//
 //  Returns:    the render order of the plot
 //
 //  Programmer: Kathleen Bonnell 
 //  Creation:   April 3, 2001 
 //
+//  Modifications:
+//    Kathleen Bonnell, Mon Sep 29 13:44:01 PDT 2003
+//    Added bool argument.
+//
 // ****************************************************************************
 
 int
-avtActor::GetRenderOrder(void)
+avtActor::GetRenderOrder(bool aa)
 {
     if (*behavior == NULL)
     {
         EXCEPTION0(NoInputException);
     }
 
-    return behavior->GetRenderOrder();
+    return behavior->GetRenderOrder(aa);
 }
 
 
@@ -754,3 +761,4 @@ avtActor::SetImmediateModeRendering(bool val)
         decorations->SetImmediateModeRendering(val);
     }
 }
+

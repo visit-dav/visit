@@ -114,6 +114,9 @@ class avtTransparencyActor;
 //    Kathleen Bonnell, Fri Jun  6 15:23:05 PDT 2003  
 //    Added FullFrameOn/Off methods. 
 //    
+//    Kathleen Bonnell, Mon Sep 29 13:21:12 PDT 2003
+//    Added bool arg to OrderPlots. 
+//    
 // ****************************************************************************
 
 class VISWINDOW_API VisWinPlots : public VisWinColleague
@@ -126,7 +129,7 @@ class VISWINDOW_API VisWinPlots : public VisWinColleague
     void                          RemovePlot(avtActor_p &);
 
     void                          ClearPlots(void);
-    void                          OrderPlots(void);
+    void                          OrderPlots(bool);
 
     void                          GetBounds(float [6]);
     void                          GetDataRange(float &, float &);

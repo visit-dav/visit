@@ -161,6 +161,9 @@ avtContourPlot::Create()
 //    Brad Whitlock, Fri Nov 22 14:33:50 PST 2002
 //    I moved the color code to SetColors.
 //
+//    Kathleen Bonnell, Mon Sep 29 13:13:32 PDT 2003 
+//    Set AntialiasedRenderOrder dependent upon Wireframe mode.
+//
 // ****************************************************************************
 
 void
@@ -187,6 +190,10 @@ avtContourPlot::SetAtts(const AttributeGroup *a)
     SetLineWidth(atts.GetLineWidth());
     SetLineStyle(atts.GetLineStyle());
     SetLegend(atts.GetLegendFlag());
+    if (atts.GetWireframe())
+        behavior->SetAntialiasedRenderOrder(ABSOLUTELY_LAST);
+    else 
+        behavior->SetAntialiasedRenderOrder(DOES_NOT_MATTER);
 }
 
 // ****************************************************************************

@@ -765,6 +765,9 @@ avtMeshPlot::ApplyRenderingTransformation(avtDataObject_p input)
 //    Eric Brugger, Wed Jul 16 10:57:44 PDT 2003
 //    Modified to work with the new way legends are managed.
 //
+//    Kathleen Bonnell, Mon Sep 29 13:07:50 PDT 2003 
+//    Set AntialiasedRenderOrder.
+//
 // ****************************************************************************
 
 void
@@ -774,6 +777,8 @@ avtMeshPlot::CustomizeBehavior(void)
 
     behavior->SetLegend(varLegendRefPtr);
     behavior->SetShiftFactor(0.5);
+    behavior->SetRenderOrder(DOES_NOT_MATTER);
+    behavior->SetAntialiasedRenderOrder(ABSOLUTELY_LAST);
 }
 
 

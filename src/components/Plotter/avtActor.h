@@ -64,6 +64,9 @@ class     avtTransparencyActor;
 //    Eric Brugger, Wed Aug 20 09:49:33 PDT 2003
 //    Added GetWindowMode.
 //
+//    Kathleen Bonnell, Mon Sep 29 13:44:01 PDT 2003 
+//    Added bool arg to GetRenderOrder. 
+//
 // ****************************************************************************
 
 class PLOTTER_API avtActor
@@ -85,7 +88,7 @@ class PLOTTER_API avtActor
     void                          GetDataExtents(float &dmin, float &dmax);
     int                           GetDimension(void);
     WINDOW_MODE                   GetWindowMode(void);
-    int                           GetRenderOrder(void);
+    int                           GetRenderOrder(bool aa);
     avtLegend_p                   GetLegend(void);
 
     void                          ShiftByVector(const float [3]);

@@ -29,6 +29,8 @@
 
 #include <QvisVariablePopupMenu.h>
 
+#include <DebugStream.h>
+
 //
 // Include icons
 //
@@ -716,11 +718,13 @@ SetOperatorOptionsAction::Execute()
 // Creation:   Thu Mar 20 12:41:50 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Sep 29 17:39:17 PST 2003
+//   Initialized host.
+//
 // ****************************************************************************
 
 AddPlotAction::AddPlotAction(ViewerWindow *win) : ViewerMultipleAction(win,
-    "AddPlotAction"), database(), pluginEntries(), menuPopulator()
+    "AddPlotAction"), host(), database(), pluginEntries(), menuPopulator()
 {
     SetAllText("Add plot");
     SetExclusive(false);
@@ -805,6 +809,13 @@ AddPlotAction::~AddPlotAction()
 // Creation:   Thu Mar 20 12:43:45 PDT 2003
 //
 // Modifications:
+//   Brad Whitlock, Mon Sep 29 17:03:33 PST 2003
+//   I changed the code so it no longer will attempt to get the metadata and
+//   the SIL for an invalid database name.
+//
+//   Brad Whitlock, Mon Sep 29 17:39:31 PST 2003
+//   I separated the database into host and database and queried it from the
+//   plot list in such a way that it is more likely to be valid.
 //
 // ****************************************************************************
 
@@ -813,17 +824,29 @@ AddPlotAction::Update()
 {
     if(pluginEntries.size() > 0)
     {
-        const std::string &hostdb = window->GetAnimation()->GetPlotList()->GetHostDatabaseName();
+        const std::string &newHost = window->GetAnimation()->GetPlotList()->GetHostName();
+        const std::string &newDB = window->GetAnimation()->GetPlotList()->GetDatabaseName();
 
-        if(database != hostdb)
+        //
+        // If the new host and database are valid and they differ from the old values
+        // then we need to update the variable menu.
+        //
+        if(newHost.size() > 0 && newDB.size() > 0 && 
+           (host != newHost || database != newDB))
         {
-            database = hostdb;
+            host = newHost;
+            database = newDB;
 
+            // Print to the debug logs.
+            debug4 << "AddPlotAction::Update: Either the host or the database " << endl
+                   << "changed so we need to update the variable menu!" << endl
+                   << "\thost=" << host.c_str() << endl
+                   << "\tdb=" << database.c_str() << endl;
+
+            // Get the metadata and SIL for the file.
             ViewerFileServer *fileServer = ViewerFileServer::Instance();
-            std::string host, db;
-            ViewerPlotList::SplitHostDatabase(database, host, db);
-            const avtDatabaseMetaData *md = fileServer->GetMetaData(host, db);
-            const avtSIL *sil = fileServer->GetSIL(host, db);
+            const avtDatabaseMetaData *md = fileServer->GetMetaData(host, database);
+            const avtSIL *sil = fileServer->GetSIL(host, database);
             const ExpressionList *exprList = ParsingExprList::Instance()->GetList();
 
             //

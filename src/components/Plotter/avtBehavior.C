@@ -21,6 +21,10 @@
 //  Modifications:
 //    Kathleen Bonnell, Tue Apr  3 14:58:59 PDT 2001
 //    Added initialization of renderOrder.
+//
+//    Kathleen Bonnell, Mon Sep 29 13:21:12 PDT 2003
+//    Added initialization of antialiasedRenderOrder.
+// 
 // ****************************************************************************
 
 avtBehavior::avtBehavior()
@@ -29,6 +33,7 @@ avtBehavior::avtBehavior()
     renderer    = NULL;
     shiftFactor = 0;
     renderOrder = DOES_NOT_MATTER;
+    antialiasedRenderOrder = DOES_NOT_MATTER;
 }
 
 
@@ -385,14 +390,36 @@ avtBehavior::SetRenderOrder(RenderOrder ro)
 
 
 // ****************************************************************************
+//  Method: avtBehavior::SetAntialiasedRenderOrder
+//
+//  Purpose:
+//      Sets the render order so that antialiased plots can be rendered in 
+//      proper order.
+//
+//  Arguments:
+//      ro      The new render order for antialiased mode.  
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   September 29, 2003 
+//
+// ****************************************************************************
+
+void
+avtBehavior::SetAntialiasedRenderOrder(RenderOrder ro)
+{
+    antialiasedRenderOrder = ro;
+}
+
+
+// ****************************************************************************
 //  Method: avtBehavior::SetRenderOrder
 //
 //  Purpose:
 //      Sets the render order so that plots can be rendered in proper order.
 //
 //  Arguments:
-//      ro      The new render order.  This should be between 0 and 2.
-//              (MUST_GO_FIRST, MUST_GO_LAST)
+//      ro      The new render order.  This should be between 0 and 3.
+//              (MUST_GO_FIRST, ABSOLUTELY_LAST)
 //
 //  Programmer: Kathleen Bonnell 
 //  Creation:   April 3, 2001
@@ -422,21 +449,73 @@ avtBehavior::SetRenderOrder(int ro)
 
 
 // ****************************************************************************
+//  Method: avtBehavior::SetAntiAliasedRenderOrder
+//
+//  Purpose:
+//      Sets the render order so that antialiased plots can be rendered in 
+//      proper order.
+//
+//  Arguments:
+//      ro      The new render order.  This should be between 0 and 3.
+//              (MUST_GO_FIRST, ABSOLTELY_LAST)
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   September 29, 2003 
+//
+// ****************************************************************************
+void
+avtBehavior::SetAntialiasedRenderOrder(int ro)
+{
+    if (ro < 0)
+    {
+        debug1 << "Bad render order given (" << ro << "), correcting to 0"
+               << " (" << RenderOrderName(0) << ")." << endl;
+        ro = 0;
+    }
+
+    if (ro >= MAX_ORDER)
+    {
+        debug1 << "Bad render order given (" << ro << "), correcting to "
+               << MAX_ORDER-1 << " (" << RenderOrderName(MAX_ORDER-1)
+               << ")."  << endl;
+        ro = MAX_ORDER-1;
+    }
+
+    antialiasedRenderOrder = Int2RenderOrder(ro);
+}
+
+
+// ****************************************************************************
 //  Method: avtBehavior::GetRenderOrder
 //
 //  Purpose:
 //      Returns the render order for a plot.  The render order is whatever
 //      is appropriate for the plot type.
 //
+//  Arguments:
+//     antialiased  Indicates whether to return antialisedRenderOrder or
+//                  regular renderOrder. 
+//
+//  Returns:
+//    renderOrder if passed arg is false, antialiasedRenderOrder otherwise.
+//
 //  Programmer: Kathleen Bonnell 
 //  Creation:   April 3, 2001 
 //
+//  Modifications:
+//    Kathleen Bonnell, Mon Sep 29 13:21:12 PDT 2003
+//    Added bool arg indicating which renderorder to return. Changed return
+//    based on passed arg.
+// 
 // ****************************************************************************
 
 int
-avtBehavior::GetRenderOrder(void)
+avtBehavior::GetRenderOrder(bool antialiased)
 {
-    return RenderOrder2Int(renderOrder);
+    if (!antialiased)
+        return RenderOrder2Int(renderOrder);
+    else 
+        return RenderOrder2Int(antialiasedRenderOrder);
 }
 
 

@@ -304,6 +304,9 @@ avtPseudocolorPlot::ApplyRenderingTransformation(avtDataObject_p input)
 //    Kathleen Bonnell, Wed Mar 13 12:04:53 PST 2002
 //    Move code that sets legend range to new method.
 //
+//    Kathleen Bonnell, Mon Sep 29 13:07:50 PDT 2003 
+//    Set AntialiasedRenderOrder. 
+//
 // ****************************************************************************
 
 void
@@ -312,9 +315,15 @@ avtPseudocolorPlot::CustomizeBehavior()
     SetLegendRanges();
 
     if (atts.GetOpacity() < 1.)
+    {
        behavior->SetRenderOrder(MUST_GO_LAST);
+       behavior->SetAntialiasedRenderOrder(MUST_GO_LAST);
+    }
     else
+    {
        behavior->SetRenderOrder(DOES_NOT_MATTER);
+       behavior->SetAntialiasedRenderOrder(DOES_NOT_MATTER);
+    }
 
     behavior->SetLegend(varLegendRefPtr);
     behavior->SetShiftFactor(0.);
@@ -634,12 +643,26 @@ avtPseudocolorPlot::SetLimitsMode(int limitsMode)
 //  Programmer: Hank Childs
 //  Creation:   December 28, 2000
 //
+//  Modifications:
+//    Kathleen Bonnell, Mon Sep 29 13:07:50 PDT 2003 
+//    Set AntialiasedRenderOrder. 
+//
 // ****************************************************************************
 
 void
 avtPseudocolorPlot::SetOpacity(float opacity)
 {
     varMapper->SetOpacity(opacity);
+    if (opacity < 1.)
+    {
+       behavior->SetRenderOrder(MUST_GO_LAST);
+       behavior->SetAntialiasedRenderOrder(MUST_GO_LAST);
+    }
+    else
+    {
+       behavior->SetRenderOrder(DOES_NOT_MATTER);
+       behavior->SetAntialiasedRenderOrder(DOES_NOT_MATTER);
+    }
 }
 
 

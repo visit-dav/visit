@@ -207,6 +207,10 @@ avtVectorPlot::ApplyRenderingTransformation(avtDataObject_p input)
 //    Guess we should shift vectors after all because it can be put behind
 //    PC plots in 2D mode.
 //
+//    Kathleen Bonnell, Mon Sep 29 12:31:18 PDT 2003
+//    Set AntialiasedRenderOrder, so that vector lines get drawn without
+//    the 'halo'. 
+//    
 // ****************************************************************************
 
 void
@@ -214,6 +218,7 @@ avtVectorPlot::CustomizeBehavior(void)
 {
     behavior->SetShiftFactor(0.6);
     behavior->SetLegend(varLegendRefPtr);
+    behavior->SetAntialiasedRenderOrder(ABSOLUTELY_LAST);
 }
 
 

@@ -4,6 +4,7 @@ static const char *RenderOrderNameLookup[] = {
     "MUST_GO_FIRST",
     "DOES_NOT_MATTER",
     "MUST_GO_LAST",
+    "ABSOLUTELY_LAST",
     "MAX_ORDER"
 };
 
@@ -18,6 +19,10 @@ static const char *RenderOrderNameLookup[] = {
 // Programmer: Kathleen Bonnell 
 // Creation:   April 3, 2001 
 //
+// Modifications:
+//   Kathleen Bonnell, Mon Sep 29 13:21:12 PDT 2003
+//   Added ABSOLUTELY_LAST.
+//
 // *******************************************************************
 
 int
@@ -29,8 +34,10 @@ RenderOrder2Int(RenderOrder order)
         return 1;
     else if(order == MUST_GO_LAST)
         return 2;        
+    else if(order == ABSOLUTELY_LAST)
+        return 3;        
     else
-        return 3;
+        return 4;
 }
 
 // *******************************************************************
@@ -44,6 +51,10 @@ RenderOrder2Int(RenderOrder order)
 // Programmer: Kathleen Bonnell 
 // Creation:   April 3, 2001 
 //
+// Modifications:
+//   Kathleen Bonnell, Mon Sep 29 13:21:12 PDT 2003
+//   Added ABSOLUTELY_LAST.
+//
 // *******************************************************************
 
 RenderOrder
@@ -55,6 +66,8 @@ Int2RenderOrder(int order)
         return DOES_NOT_MATTER;
     else if(order == 2)
         return MUST_GO_LAST;
+    else if(order == 3)
+        return ABSOLUTELY_LAST;
     else
         return MAX_ORDER;
 }
