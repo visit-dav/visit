@@ -188,6 +188,9 @@ typedef struct {
 //    Mark C. Miller, Tue Oct 19 14:08:56 PDT 2004
 //    Changed 'spec' arg of PopulateDataObjectInformation to a ref_ptr
 //
+//    Mark C. Miller, Wed Oct 20 10:35:53 PDT 2004
+//    Added GetExtentsFromAuxiliaryData
+//
 // ****************************************************************************
 
 class DATABASE_API avtDatabase
@@ -277,6 +280,10 @@ class DATABASE_API avtDatabase
                                                   int,
                                                   const vector<bool> &selsApplied,
                                                   avtDataSpecification_p =NULL);
+    bool                        GetExtentsFromAuxiliaryData(avtDataSpecification_p spec,
+                                                            const char *var,
+                                                            const char *type,
+                                                            double *extents);
     virtual bool                QueryScalars(const std::string &, const int, 
                                              const int, const int,
                                              const std::vector<int> &,
