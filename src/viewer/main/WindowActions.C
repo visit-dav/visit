@@ -1,5 +1,6 @@
 #include <WindowActions.h>
 #include <ViewerPlotList.h>
+#include <ViewerQueryManager.h>
 #include <ViewerWindow.h>
 #include <ViewerWindowManager.h>
 #include <PlotPluginManager.h>
@@ -419,6 +420,8 @@ ClearReferenceLinesAction::ClearReferenceLinesAction(ViewerWindow *win) :
 // Creation:   Fri Apr 4 15:34:54 PST 2003
 //
 // Modifications:
+//   Kathleen Bonnell, Wed Mar 23 15:09:16 PST 2005
+//   Tell ViewerQueryManager that reflines have been cleared. 
 //   
 // ****************************************************************************
 
@@ -426,6 +429,7 @@ void
 ClearReferenceLinesAction::Execute()
 {
     window->ClearRefLines();
+    ViewerQueryManager::Instance()->ClearRefLines(window);
 }
 
 // ****************************************************************************

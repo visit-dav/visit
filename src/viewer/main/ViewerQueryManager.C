@@ -4253,3 +4253,30 @@ ViewerQueryManager::SetLineoutsTimeSlider(bool removeTimeSlider)
     }
 }
 
+
+// ****************************************************************************
+//  Method: ViewerQueryManager::ClearRefLines
+//
+//  Purpose:
+//    Tells the lineout lists to stop observing plots, because the reflines
+//    have been cleared. 
+//
+//  Arguments:
+//    origWin   The window from which reflines have been cleared. 
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   March 23, 2005 
+//
+// ****************************************************************************
+
+void
+ViewerQueryManager::ClearRefLines(ViewerWindow *origWin)
+{
+    for (int i = 0; i < nLineouts; i++)
+    {
+        if (lineoutList[i]->MatchOriginatingWindow(origWin))
+        {
+            lineoutList[i]->StopObservingPlot();
+        }
+    }
+}
