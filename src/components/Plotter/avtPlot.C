@@ -76,6 +76,9 @@
 //    Brad Whitlock, Tue Jul 20 16:10:51 PST 2004
 //    Added variable units.
 //
+//    Mark C. Miller, Mon Aug 23 20:24:31 PDT 2004
+//    Added cellCountMultiplierForSRThreshold
+//
 // ****************************************************************************
 
 avtPlot::avtPlot()
@@ -94,6 +97,7 @@ avtPlot::avtPlot()
     silr                   = NULL;
     index                  = -1;
     intermediateDataObject = NULL;
+    cellCountMultiplierForSRThreshold = 0.0; // an invalid value
 }
 
 
@@ -234,6 +238,9 @@ avtPlot::GetDataExtents(vector<double> &extents)
 //    Hank Childs, Tue Feb 24 13:47:47 PST 2004
 //    Fixed memory leak.
 //
+//    Mark C. Miller, Mon Aug 23 20:24:31 PDT 2004
+//    Added code to set cellCountMultiplierForSRThreshold back to zero
+//
 // ****************************************************************************
 
 void
@@ -255,6 +262,7 @@ avtPlot::SetVarName(const char *name)
         legend->SetVarName(varname);
     }
     needsRecalculation = true;
+    cellCountMultiplierForSRThreshold = 0.0;
 }
 
 // ****************************************************************************
@@ -380,6 +388,9 @@ avtPlot::Execute(avtDataObject_p input, avtPipelineSpecification_p spec,
 //    Brad Whitlock, Tue Jul 20 16:39:07 PST 2004
 //    Added code to set the units for the plot.
 //
+//    Mark C. Miller, Mon Aug 23 20:24:31 PDT 2004
+//    Added call to set cell count multiplier for SR threshold
+//
 // ****************************************************************************
 
 avtDataObjectWriter_p
@@ -440,6 +451,8 @@ avtPlot::Execute(avtDataObject_p input, avtPipelineSpecification_p spec,
         SetVarUnits(NULL);
     }
     ENDTRY
+
+    SetCellCountMultiplierForSRThreshold(dob);
 
     return writer;
 }
@@ -1105,4 +1118,43 @@ avtPlot::ReleaseData(void)
     theater.SetInput(NULL, doi, NULL);
 }
 
+// ****************************************************************************
+//  Method: avtPlot::SetCellCountMultiplierForSRThreshold
+//
+//  Purpose: Default method to set a plot's cell count multiplier for SR
+//      threshold. By default, all plot's that don't override this method
+//      will set a value of 1.0.
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   August 23, 2004 
+//
+// ****************************************************************************
 
+void
+avtPlot::SetCellCountMultiplierForSRThreshold(const avtDataObject_p)
+{
+    cellCountMultiplierForSRThreshold = 1.0;
+}
+
+// ****************************************************************************
+//  Method: avtPlot::GetCellCountMultiplierForSRThreshold
+//
+//  Purpose: Return the cell count multiplier for SR threshold. However, throw
+//  an exception if this information is requested but hasn't already been set.
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   August 23, 2004 
+//
+// ****************************************************************************
+
+float
+avtPlot::GetCellCountMultiplierForSRThreshold() const
+{
+    if (cellCountMultiplierForSRThreshold == 0.0)
+    {
+        EXCEPTION1(ImproperUseException, "The plot has not been executed such "
+            "that the cell count multiplier for SR threshold can be computed");
+    }
+
+    return cellCountMultiplierForSRThreshold;
+}

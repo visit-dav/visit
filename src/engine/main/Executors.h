@@ -754,6 +754,9 @@ RPCExecutor<SetWinAnnotAttsRPC>::Execute(SetWinAnnotAttsRPC *rpc)
 //    Mark C. Miller, Wed Aug 11 23:42:18 PDT 2004
 //    Added code to pass cellCountMultiplier to WriteData
 //
+//    Mark C. Miller, Mon Aug 23 20:24:31 PDT 2004
+//    Moved code to get cellCountMultiplier to inside GetOutput
+//
 // ****************************************************************************
 template<>
 void
@@ -787,7 +790,7 @@ RPCExecutor<ExecuteRPC>::Execute(ExecuteRPC *rpc)
     {
         // save the current network id for later
         bool shouldSendAbort = false;
-        float cellCountMultiplier = netmgr->GetPlot()->GetCellCountMultiplierForSRThreshold();
+        float cellCountMultiplier;
         int netId = netmgr->GetCurrentNetworkId();
         avtNullData abortDob(NULL);
 
@@ -796,7 +799,8 @@ RPCExecutor<ExecuteRPC>::Execute(ExecuteRPC *rpc)
         avtDataObjectWriter_p writer;
         TRY
         {
-            writer = netmgr->GetOutput(rpc->GetRespondWithNull(),false);
+            writer = netmgr->GetOutput(rpc->GetRespondWithNull(), false,
+                                       &cellCountMultiplier);
         }
         CATCH(AbortException)
         {

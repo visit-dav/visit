@@ -173,6 +173,9 @@ class VisWindow;
 //    Added frameAndState data member and associated arg to
 //    SetAnnotationAttributes
 //
+//    Mark C. Miller, Mon Aug 23 20:27:17 PDT 2004
+//    Added argument to GetOutput for cell count multiplier
+//
 // ****************************************************************************
 class NetworkManager
 {
@@ -221,7 +224,8 @@ class NetworkManager
     void          SetLoadBalancer(LoadBalancer *lb) {loadBalancer = lb;};
 
     avtDataObjectWriter_p GetOutput(bool respondWithNullData,
-                                    bool calledForRender);
+                                    bool calledForRender,
+                                    float *cellCountMultiplier);
     avtDataObjectWriter_p Render(intVector networkIds, bool getZBuffer,
                                  bool do3DAnnotsOnly);
  

@@ -219,26 +219,32 @@ avtMeshPlot::Create()
 }
 
 // ****************************************************************************
-//  Method:  avtMeshPlot::GetCellCountMultiplierForSRThreshold
+//  Method:  avtMeshPlot::SetCellCountMultiplierForSRThreshold
 //
-//  Purpose: Returns number of polygons each point in the plot's output will be
+//  Purpose: Sets number of polygons each point in the plot's output will be
 //  glyphed into.
 //
 //  Programmer:  Mark C. Miller
 //  Creation:    August 12, 2004
 //
+//  Modifications:
+//
+//    Mark C. Miller, Mon Aug 23 20:24:31 PDT 2004
+//    Changed to the Set... method (Get is now done in avtPlot.C)
+//
 // ****************************************************************************
-float
-avtMeshPlot::GetCellCountMultiplierForSRThreshold() const
+
+void
+avtMeshPlot::SetCellCountMultiplierForSRThreshold(const avtDataObject_p dob)
 {
-    float retval = 1.0;
-    if (*behavior)
+    if (*dob)
     {
-        int dim = behavior->GetInfo().GetAttributes().GetSpatialDimension();
+        int dim = dob->GetInfo().GetAttributes().GetSpatialDimension();
         if (dim == 0)
-            retval = 6.0;
+            cellCountMultiplierForSRThreshold = 6.0;
+        else
+            cellCountMultiplierForSRThreshold = 1.0;
     }
-    return retval;
 }
 
 // ****************************************************************************

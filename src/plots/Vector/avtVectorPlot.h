@@ -50,6 +50,9 @@ class     avtLookupTable;
 //    Kathleen Bonnell, Mon Aug  9 14:33:26 PDT 2004 
 //    Added magVarName, ComputeMagVarName, and SetMapperColors.
 //
+//    Mark C. Miller, Mon Aug 23 20:24:31 PDT 2004
+//    Changed GetCellCountMultiplierForSRThreshold to Set...
+//
 // ****************************************************************************
 
 class avtVectorPlot : public avtPointDataPlot
@@ -66,7 +69,6 @@ class avtVectorPlot : public avtPointDataPlot
     virtual void                SetAtts(const AttributeGroup*);
     virtual bool                SetColorTable(const char *ctName);
 
-    virtual float               GetCellCountMultiplierForSRThreshold() const;
 
   protected:
     VectorAttributes            atts;
@@ -93,6 +95,8 @@ class avtVectorPlot : public avtPointDataPlot
     void                        ComputeMagVarName(const std::string &);
     void                        SetMapperColors(void);
     std::string                 magVarName;
+
+    virtual void                SetCellCountMultiplierForSRThreshold(const avtDataObject_p);
 };
 
 

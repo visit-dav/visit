@@ -2389,6 +2389,11 @@ avtRectilinearDomainBoundaries::ExchangeMesh(vector<int>        domainNum,
 //  Programmer: Hank Childs
 //  Creation:   August 14, 2004
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Aug 24 09:25:39 PDT 2004
+//    Create avtRealDims.
+//
 // ****************************************************************************
 
 void
@@ -2476,6 +2481,23 @@ avtStructuredDomainBoundaries::CreateGhostNodes(vector<int>         domainNum,
     
         ds->GetPointData()->AddArray(gn);
         gn->Delete();
+
+        //
+        //  Create a field-data array indicating the extents of real zones.
+        //  Used during ghostzone removal.
+        //
+        vtkIntArray *realDims = vtkIntArray::New();
+        realDims->SetName("avtRealDims");
+        realDims->SetNumberOfTuples(6);
+        realDims->SetValue(0, 0);
+        realDims->SetValue(1, dims[0]);
+        realDims->SetValue(2, 0);
+        realDims->SetValue(3, dims[1]);
+        realDims->SetValue(4, 0);
+        realDims->SetValue(5, dims[2]);
+        ds->GetFieldData()->AddArray(realDims);
+        ds->GetFieldData()->CopyFieldOn("avtRealDims");
+        realDims->Delete();
     }
 }
 
