@@ -7,6 +7,7 @@
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
 #include <vtkDataSetRemoveGhostCells.h>
+#include <vtkPointData.h>
 
 #include <DebugStream.h>
 
@@ -77,6 +78,9 @@ avtGhostZoneFilter::~avtGhostZoneFilter()
 //    Hank Childs, Tue Sep 10 12:54:01 PDT 2002
 //    Renamed to ExecuteData.  Added support for memory management.
 //
+//    Hank Childs, Sun Jun 27 09:45:20 PDT 2004
+//    Add support for ghost nodes as well.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -88,7 +92,11 @@ avtGhostZoneFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
         return in_ds;
     }
 
-    if (in_ds->GetCellData()->GetArray("vtkGhostLevels") == NULL)
+    bool haveGhostZones = 
+                    (in_ds->GetCellData()->GetArray("vtkGhostLevels") != NULL);
+    bool haveGhostNodes = (in_ds->GetDataObjectType() == VTK_POLY_DATA) &&
+                    (in_ds->GetPointData()->GetArray("vtkGhostNodes") != NULL);
+    if (!haveGhostZones && !haveGhostNodes)
     {
         //
         //  No ghost cells, no need to use this filter.

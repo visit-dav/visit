@@ -1682,6 +1682,9 @@ avtGenericDatabase::GetSymmetricTensorVariable(const char *varname, int ts,
 //    Hank Childs, Tue Jul 29 16:48:28 PDT 2003
 //    Scale mesh when appropriate.  Also cache bounds.
 //
+//    Hank Childs, Sun Jun 27 10:47:38 PDT 2004
+//    Copy over more information about ghosts or global indexing.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -1749,11 +1752,31 @@ avtGenericDatabase::GetMesh(const char *meshname, int ts, int domain,
     vtkDataSet *rv = (vtkDataSet *) mesh->NewInstance();
     rv->CopyStructure(mesh);
 
+    //
+    // There are some mesh variables that we want to copy over -- namely
+    // those with ghost information or global numbering information.
+    //
     if (mesh->GetCellData()->GetArray("vtkGhostLevels"))
     {
         rv->GetCellData()->AddArray(
             mesh->GetCellData()->GetArray("vtkGhostLevels"));
         GetMetaData(ts)->SetContainsGhostZones(meshname, AVT_HAS_GHOSTS);
+    }
+    if (mesh->GetPointData()->GetArray("vtkGhostNodes"))
+    {
+        rv->GetPointData()->AddArray(
+            mesh->GetPointData()->GetArray("vtkGhostNodes"));
+        GetMetaData(ts)->SetContainsGhostZones(meshname, AVT_HAS_GHOSTS);
+    }
+    if (mesh->GetCellData()->GetArray("avtGlobalZoneId"))
+    {
+        rv->GetCellData()->AddArray(
+            mesh->GetCellData()->GetArray("avtGlobalZoneId"));
+    }
+    if (mesh->GetPointData()->GetArray("avtGlobalNodeId"))
+    {
+        rv->GetPointData()->AddArray(
+            mesh->GetPointData()->GetArray("avtGlobalNodeId"));
     }
     rv->GetFieldData()->ShallowCopy(mesh->GetFieldData());
 
@@ -3281,13 +3304,27 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, vector<int> &domains,
 //    Also check to see if there is per-timestep domain boundary information,
 //    since this can change from timestep-to-timestep for AMR meshes.
 //
+//    Hank Childs, Sun Jun 27 11:02:42 PDT 2004
+//    Add support for identifying ghost nodes using global indexing.
+//
 // ****************************************************************************
 
 bool
 avtGenericDatabase::CommunicateGhosts(avtDatasetCollection &ds, 
    vector<int> &doms, avtDataSpecification_p &spec, avtSourceFromDatabase *src)
 {
-    bool rv = false;
+    int  i, j, k;
+
+    bool created_new_zones = false;
+    bool created_ghosts = false;
+
+    int ts = spec->GetTimestep();
+    const char *varname = spec->GetVariable();
+    avtDatabaseMetaData *md = GetMetaData(ts);
+    avtVarType type = md->DetermineVarType(varname);
+    std::string meshname = md->MeshForVar(varname);
+    const avtMeshMetaData *mmd = md->GetMesh(meshname);
+
     void_ref_ptr vr = cache.GetVoidRef("any_mesh",
                                    AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION,
                                   -1, -1);
@@ -3298,7 +3335,6 @@ avtGenericDatabase::CommunicateGhosts(avtDatasetCollection &ds,
 
     if (*vr != NULL)
     {
-        int  i, j, k;
         avtDomainBoundaries *dbi = (avtDomainBoundaries*)*vr;
 
         //
@@ -3395,11 +3431,6 @@ avtGenericDatabase::CommunicateGhosts(avtDatasetCollection &ds,
             }
         }
         int nummixvars = most_mixvars;
-
-        // Setup vars
-        const char *varname = spec->GetVariable();
-        int ts = spec->GetTimestep();
-        avtVarType type = GetMetaData(ts)->DetermineVarType(varname);
 
         localstage  = 1;
         nlocalstage = (1 + 
@@ -3760,19 +3791,276 @@ avtGenericDatabase::CommunicateGhosts(avtDatasetCollection &ds,
             list[i]->Delete();
         }
 
+        src->DatabaseProgress(1, 0, progressString);
+        created_new_zones = true;
+        created_ghosts = true;
+        visitTimer->StopTimer(timerHandle, "Creating ghost zones");
+    }
+
+    if (mmd->containsGlobalNodeIds);
+    {
+        //
+        // Make sure that we actually have the node ids.
+        //
+        bool haveGlobalNodeIds = true;
+        for (i = 0 ; i < doms.size() ; i++)
+        {
+            vtkDataSet *d = ds.GetDataset(i, 0);   
+            if (d->GetPointData()->GetArray("avtGlobalNodeId") == NULL)
+                haveGlobalNodeIds = false;
+        }
+        int  shouldStop = (haveGlobalNodeIds ? 0 : 1);
+
+#ifdef PARALLEL
+        int  parallelShouldStop;
+        MPI_Allreduce(&shouldStop, &parallelShouldStop, 1, MPI_INT, MPI_MAX,
+                      MPI_COMM_WORLD);
+        shouldStop = parallelShouldStop;
+#endif
+
+        if (shouldStop > 0)
+        {
+            debug1 << "Not applying ghost zones because not all the domains "
+                   << "have global node ids." << endl;
+            return false;
+        }
+
+        int timerHandle = visitTimer->StartTimer();
+
+        //
+        // Identify what the biggest id is.
+        //
+        int maxId = -1;
+        for (i = 0 ; i < doms.size() ; i++)
+        {
+            vtkDataSet *d = ds.GetDataset(i, 0);
+            vtkDataArray *gni = d->GetPointData()->GetArray("avtGlobalNodeId");
+            vtkIntArray *int_gni = (vtkIntArray *) gni;
+            int *ptr = int_gni->GetPointer(0);
+            int nvals = int_gni->GetNumberOfTuples();
+            for (j = 0 ; j < nvals ; j++)
+                maxId = (maxId < ptr[j] ? ptr[j] : maxId);
+        }
+
+        maxId += 1;  // Its easier to work with ranges if maxId is one bigger
+                     // than the actual biggest id.
+
+        //
+        // Identify what the maximum id is across all processors.
+        //
+        maxId = UnifyMaximumValue(maxId);
+        int num_procs = PAR_Size();
+        int rank = PAR_Rank();
+
+        //
+        // Break the range up among all processors.
+        //
+        int numIdsPerProc = maxId / num_procs + 1;
+        int myMin = numIdsPerProc * rank;
+        int myMax = numIdsPerProc * (rank+1);
+        if (myMax > maxId)
+            myMax = maxId;
+
+        //
+        // We will do the bookkeeping for this processor's range.  Set up
+        // the variables for that now.
+        //
+        int mySize = myMax-myMin;
+        int *allIds = new int[mySize];
+        for (i = 0 ; i < mySize ; i++)
+            allIds[i] = 0;
+
+        //
+        // Go through all of the ids for this processor and either update
+        // our arrays or determine which processor they should go to.
+        //
+        vector< vector <int> > ids_for_proc(num_procs);
+        for (i = 0 ; i < doms.size() ; i++)
+        {
+            vtkDataSet *d = ds.GetDataset(i, 0);
+            vtkDataArray *gni = d->GetPointData()->GetArray("avtGlobalNodeId");
+            vtkIntArray *int_gni = (vtkIntArray *) gni;
+            int *ptr = int_gni->GetPointer(0);
+            int nvals = int_gni->GetNumberOfTuples();
+            for (j = 0 ; j < nvals ; j++)
+            {
+                if (ptr[j] < myMin || ptr[j] >= myMax)
+                {
+                    int otherProc = ptr[j] / numIdsPerProc;
+                    ids_for_proc[otherProc].push_back(ptr[j]);
+                }
+                else
+                    allIds[ptr[j]-myMin]++;
+            }
+        }
+
+#ifdef PARALLEL
+        // 
+        // Now take all the nodes that fell into other processors' ranges and
+        // send them there using all-to-all communication.
+        //
+        int *sendcount = new int[num_procs];
+        int *recvcount = new int[num_procs];
+        int totalSend = 0;
+        for (i = 0 ; i < num_procs ; i++)
+        {
+            sendcount[i] = ids_for_proc[i].size();
+            totalSend += sendcount[i];
+        }
+
+        MPI_Alltoall(sendcount, 1, MPI_INT, recvcount, 1, MPI_INT,
+                     MPI_COMM_WORLD);
+
+        int totalRecv = 0;
+        for (i = 0 ; i < num_procs ; i++)
+        {
+            totalRecv += recvcount[i];
+        }
+
+        int *senddisp = new int[num_procs];
+        int *recvdisp = new int[num_procs];
+        senddisp[0] = 0;
+        recvdisp[0] = 0;
+        for (i = 1 ; i < num_procs ; i++)
+        {
+            senddisp[i] = senddisp[i-1] + sendcount[i-1];
+            recvdisp[i] = recvdisp[i-1] + recvcount[i-1];
+        }
+
+        int *big_send_buffer = new int[totalSend];
+        int idx = 0;
+        for (i = 0 ; i < num_procs ; i++)
+            for (j = 0 ; j < ids_for_proc[i].size() ; j++)
+                big_send_buffer[idx++] = ids_for_proc[i][j];
+
+        int *big_recv_buffer = new int[totalRecv];
+      
+        //
+        // We are now ready to transfer the actual node ids.
+        //
+        MPI_Alltoallv(big_send_buffer, sendcount, senddisp, MPI_INT,
+                      big_recv_buffer, recvcount, recvdisp, MPI_INT,
+                      MPI_COMM_WORLD);
+
+        //
+        // Now take everything in the receive buffer and add update our
+        // node list counters with it.
+        //
+        for (i = 0 ; i < totalRecv ; i++)
+        {
+            if (big_recv_buffer[i] < myMin || big_recv_buffer[i] >= myMax)
+            {
+                EXCEPTION0(ImproperUseException);
+            }
+            allIds[big_recv_buffer[i]-myMin]++;
+        }
+
+        //
+        // We now know definitively whether each node is a ghost or not ghost.
+        //  Now get that information back to the processors
+        // that requested it.  Because we know what order things were sent in,
+        // it is sufficient to simply send back a yes/no answer with no
+        // further information.
+        //
+        // Note: since we are now sending back information about what we
+        // received, all the "send" sizes become "receive" sizes and 
+        // vice-versa.
+        //
+        int new_totalSend = totalRecv;
+        int new_totalRecv = totalSend;
+        int *new_senddisp = recvdisp;
+        int *new_recvdisp = senddisp;
+        int *new_sendcount = recvcount;
+        int *new_recvcount = sendcount;
+        char *new_big_send_buffer = new char[new_totalSend];
+        char *new_big_recv_buffer = new char[new_totalRecv];
+
+        for (i = 0 ; i < new_totalSend ; i++)
+            new_big_send_buffer[i] = 
+                                (allIds[big_recv_buffer[i]-myMin] > 1 ? 1 : 0);
+
+        MPI_Alltoallv(new_big_send_buffer, new_sendcount, new_senddisp,MPI_CHAR,
+                      new_big_recv_buffer, new_recvcount, new_recvdisp,MPI_CHAR,
+                      MPI_COMM_WORLD);
+
+        // 
+        // We are almost there!  Each processor has now sent us whether or not
+        // the nodes we requested are ghost nodes are not.  Note: the info
+        // is coming back to us in *exactly* the order requested, so we can
+        // take the values and start blindly assigning them.  There is some
+        // subtlety to the indexing here.
+        //
+        vector<int> num_used_from_proc(num_procs, 0);
+#endif
+
+        for (i = 0 ; i < doms.size() ; i++)
+        {
+            vtkDataSet *d = ds.GetDataset(i, 0);
+            vtkDataArray *gni = d->GetPointData()->GetArray("avtGlobalNodeId");
+            vtkIntArray *int_gni = (vtkIntArray *) gni;
+            int *ptr = int_gni->GetPointer(0);
+            int nvals = int_gni->GetNumberOfTuples();
+            vtkUnsignedCharArray *ghost_nodes = vtkUnsignedCharArray::New();
+            ghost_nodes->SetName("vtkGhostNodes");
+            ghost_nodes->SetNumberOfTuples(nvals);
+            for (j = 0 ; j < nvals ; j++)
+            {
+                if (ptr[j] >= myMin && ptr[j] < myMax)
+                {
+                    if (allIds[ptr[j]-myMin] > 1)
+                        ghost_nodes->SetValue(j, 1);
+                    else
+                        ghost_nodes->SetValue(j, 0);
+                }
+                else
+                {
+#ifdef PARALLEL
+                    int otherProc = ptr[j] / numIdsPerProc;
+                    int idx = new_recvdisp[otherProc] + 
+                              num_used_from_proc[otherProc];
+                    char val = new_big_recv_buffer[idx];
+                    num_used_from_proc[otherProc]++;
+                    ghost_nodes->SetValue(j, val);
+#else
+                    EXCEPTION0(ImproperUseException);
+#endif
+                }
+            }
+            vtkDataSet *d2 = d->NewInstance();
+            d2->ShallowCopy(d);
+            d2->GetPointData()->AddArray(ghost_nodes);
+            ds.SetDataset(i, 0, d2);
+            d2->Delete();
+            ghost_nodes->Delete();
+        }
+
+        delete [] allIds;
+#ifdef PARALLEL
+        delete [] new_big_send_buffer;
+        delete [] new_big_recv_buffer;
+        delete [] big_recv_buffer;
+        delete [] big_send_buffer;
+        delete [] senddisp;
+        delete [] recvdisp;
+        delete [] sendcount;
+        delete [] recvcount;
+#endif
+
+        visitTimer->StopTimer(timerHandle, "Creating ghost nodes");
+        created_ghosts = true;
+    }
+
+    if (created_ghosts)
+    {
         //
         // Tell everything downstream that we do have ghost zones.
         //
         avtDatabaseMetaData *md = GetMetaData(ts);
         string meshname = md->MeshForVar(spec->GetVariable());
         GetMetaData(ts)->SetContainsGhostZones(meshname, AVT_CREATED_GHOSTS);
-
-        src->DatabaseProgress(1, 0, progressString);
-        rv = true;
-        visitTimer->StopTimer(timerHandle, "Creating ghost zones");
     }
 
-    return rv;
+    return created_new_zones;
 }
 
 // ****************************************************************************

@@ -63,6 +63,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //   Hank Childs, Sat Apr 17 07:29:22 PDT 2004
 //   Added support for reading times.
 //
+//   Hank Childs, Sun Jun 27 10:31:18 PDT 2004
+//   Added support for reading global node numbers.
+//
 
 #ifndef __vtkExodusReader_h
 #define __vtkExodusReader_h
@@ -114,6 +117,15 @@ public:
   vtkSetMacro(GenerateElementGlobalIdArray, int);
   vtkGetMacro(GenerateElementGlobalIdArray, int);
   vtkBooleanMacro(GenerateElementGlobalIdArray, int);
+  
+  // Description:
+  // Extra node data array that can be generated.  By default, this array
+  // is off.  The value of the array is the integer id of the node.
+  // The id is relative to the entire data set (all blocks).
+  // The name of the array is "avtGlobalNodeId".
+  vtkSetMacro(GenerateNodeGlobalIdArray, int);
+  vtkGetMacro(GenerateNodeGlobalIdArray, int);
+  vtkBooleanMacro(GenerateNodeGlobalIdArray, int);
   
   // Description:
   // Extra point data array that can be generated.  By default, this array
@@ -191,6 +203,7 @@ protected:
   int GenerateElementIdArray;
   int GenerateElementGlobalIdArray;
   int GenerateNodeIdArray;
+  int GenerateNodeGlobalIdArray;
 
   // Keep the file name that was used to generate the geometry.
   // This is to avoid rereading the geometry when only time step has changed.

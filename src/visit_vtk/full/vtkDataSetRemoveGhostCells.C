@@ -145,6 +145,9 @@ void vtkDataSetRemoveGhostCells::UnstructuredGridExecute()
 //    Reverted back to removing ghost zones by hand since the VTK
 //    implementation is buggy.
 //
+//    Hank Childs, Sun Jun 27 09:49:22 PDT 2004
+//    Account for ghost nodes as well as ghost zones.
+//
 // ***************************************************************************
 
 void vtkDataSetRemoveGhostCells::PolyDataExecute()
@@ -152,10 +155,13 @@ void vtkDataSetRemoveGhostCells::PolyDataExecute()
   vtkPolyData *input   = (vtkPolyData*) this->GetInput();
   vtkPolyData *output  = (vtkPolyData*) this->GetOutput();
 
-  vtkUnsignedCharArray *ghosts = (vtkUnsignedCharArray *)
+  vtkUnsignedCharArray *ghost_zones = (vtkUnsignedCharArray *)
                               input->GetCellData()->GetArray("vtkGhostLevels");
 
-  if (ghosts == NULL)
+  vtkUnsignedCharArray *ghost_nodes = (vtkUnsignedCharArray *)
+                              input->GetPointData()->GetArray("vtkGhostNodes");
+
+  if ((ghost_zones == NULL) && (ghost_nodes == NULL))
     {
     output->ShallowCopy(input);
     return;
@@ -169,7 +175,14 @@ void vtkDataSetRemoveGhostCells::PolyDataExecute()
   vtkCellData *outCD = output->GetCellData();
   outCD->CopyAllocate(inCD);
  
-  unsigned char *ptr = ghosts->GetPointer(0);
+  bool usingGhostZones = (ghost_zones != NULL);
+  unsigned char *zone_ptr = NULL;
+  unsigned char *node_ptr = NULL;
+  if (usingGhostZones)
+    zone_ptr = ghost_zones->GetPointer(0);
+  else
+    node_ptr = ghost_nodes->GetPointer(0);
+
   int nCells = input->GetNumberOfCells();
   output->Allocate(nCells);
   input->BuildCells();
@@ -178,11 +191,28 @@ void vtkDataSetRemoveGhostCells::PolyDataExecute()
   int cell = 0;
   for (int i = 0 ; i < nCells ; i++)
     {
-    if (ptr[i] > 0)
+    if (usingGhostZones)
       {
-      continue;
+      if (zone_ptr[i] > 0)
+        {
+        continue;
+        }
       }
+
     input->GetCellPoints(i, npts, pts);
+
+    if (!usingGhostZones)
+      {
+      bool haveOneGoodNode = false;
+      for (int j = 0 ; j < npts ; j++)
+        {
+        if (node_ptr[pts[j]] == 0)
+            haveOneGoodNode = true;
+        }
+      if (!haveOneGoodNode)
+        continue;
+      }
+
     output->InsertNextCell(input->GetCellType(i), npts, pts);
     outCD->CopyData(inCD, i, cell++);
     }

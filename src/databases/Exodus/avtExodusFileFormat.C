@@ -166,6 +166,11 @@ avtExodusFileFormat::FreeUpResources(void)
 //  Programmer: Hank Childs
 //  Creation:   October 8, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Sun Jun 27 10:31:18 PDT 2004
+//    Tell the reader that it should always generate the global node id numbers
+//
 // ****************************************************************************
 
 vtkExodusReader *
@@ -178,6 +183,7 @@ avtExodusFileFormat::GetReader(void)
 
     reader = vtkExodusReader::New();
     reader->SetFileName(filenames[0]);
+    reader->SetGenerateNodeGlobalIdArray(1);
 
     //
     // Everything we want will assume that at least the information has been
@@ -292,6 +298,9 @@ avtExodusFileFormat::GetNTimesteps(void)
 //    Hank Childs, Tue Apr  8 10:58:18 PDT 2003
 //    Make sure the file is read in before proceeding.
 //
+//    Hank Childs, Sun Jun 27 13:20:51 PDT 2004
+//    Indicate that we have global node ids.
+//
 // ****************************************************************************
 
 void
@@ -321,6 +330,7 @@ avtExodusFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     mesh->topologicalDimension = spatialDimension;
     mesh->blockTitle = "file";
     mesh->blockPieceName = "file";
+    mesh->containsGlobalNodeIds = true;
     md->Add(mesh);
 
     //

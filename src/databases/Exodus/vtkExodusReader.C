@@ -90,6 +90,10 @@ vtkStandardNewMacro(vtkExodusReader);
 //  Modifications:
 //    Hank Childs, Sat Apr 17 07:44:05 PDT 2004
 //    Initialize times.
+//
+//    Hank Childs, Sun Jun 27 10:31:18 PDT 2004
+//    Initialize GenerateNodeGlobalIdArray.
+//
 //----------------------------------------------------------------------------
 // Description:
 // Instantiate object with NULL filename.
@@ -101,6 +105,7 @@ vtkExodusReader::vtkExodusReader()
   this->GenerateElementIdArray = 0;
   this->GenerateElementGlobalIdArray = 0;
   this->GenerateNodeIdArray = 0;
+  this->GenerateNodeGlobalIdArray = 0;
   
   this->Title = NULL;
   this->NumberOfBlocks = 0;
@@ -784,6 +789,9 @@ void vtkExodusReader::ReadCells(int exoid)
 //   Kathleen Bonnell, Mon Oct 29 15:27:41 PST 2001
 //   Use vtkIdType for outPtCount to match VTK 4.0 API. 
 //
+//   Hank Childs, Sun Jun 27 10:31:18 PDT 2004
+//   Read in the global node ids as well.
+//
 //----------------------------------------------------------------------------
 void vtkExodusReader::ReadPoints(int exoid)
 {
@@ -839,6 +847,33 @@ void vtkExodusReader::ReadPoints(int exoid)
   newPoints->Delete();
   newPoints = NULL;
   
+  if (this->GenerateNodeGlobalIdArray != 0)
+    {
+    int *ids = new int[this->NumberOfNodes];
+    ex_get_node_num_map(exoid, ids);
+
+    vtkIntArray *arr = vtkIntArray::New();
+    arr->SetName("avtGlobalNodeId");
+    outPtCount = this->PointMapOutIn->GetNumberOfIds();
+    arr->SetNumberOfTuples(outPtCount);
+
+    for (outId = 0 ; outId < outPtCount ; outId++)
+      {
+      inId = this->PointMapOutIn->GetId(outId);
+
+      if (inId < 0 || inId >= this->NumberOfNodes)
+        {
+        vtkErrorMacro("Point id out of range");
+        inId = 0;
+        }
+
+      arr->SetValue(outId, ids[inId]);
+      }
+
+    GetOutput()->GetPointData()->AddArray(arr);
+    arr->Delete();
+    delete [] ids;
+    }
   
   if (output->GetReleaseDataFlag() == 0)
     {
