@@ -91,6 +91,9 @@
 #   Brad Whitlock, Tue Nov 25 13:50:19 PST 2003
 #   Added reader for ANALYZE.
 #
+#   Hank Childs, Mon Nov 24 09:33:18 PST 2003
+#   Added Cosmos++.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -102,7 +105,7 @@ BOXLIB2D=Boxlib2D
 BOXLIB3D=Boxlib3D
 EXODUS=Exodus TimeVaryingExodus
 HDF4=Cosmos
-HDF5=Tetrad SAMRAI
+HDF5=Tetrad SAMRAI CosmosPP
 MILI=Mili
 PDB=KullLite PDB
 SAF=SAF

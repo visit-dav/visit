@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+  <Plugin name="CosmosPP" label="CosmosPP" type="database" dbtype="MTMD" version="1.0">
+    <Extensions> cosmospp cosmos++ </Extensions>
+    <CXXFLAGS> $(HDF5_INCLUDE) </CXXFLAGS>
+    <LIBS>     $(HDF5_LIB)     </LIBS>
+  </Plugin>
