@@ -1145,16 +1145,58 @@ QvisSliceWindow::interactiveToggled(bool val)
 //   I set the text in the lineedits so it doesn't get wiped out when
 //   autoupdate is on.
 //
+//   Jeremy Meredith, Mon Aug 18 15:59:16 PDT 2003
+//   I added "smart" switching from point-origin to intercept-origin
+//   based on if you are switching from arbitrary to orthogonal axis
+//   types, or back again.
+//
 // ****************************************************************************
 
 void
 QvisSliceWindow::normalTypeChanged(int index)
 {
+    QString temp;
+
+    // If we're switching from arbitrary to orthogonal 
+    if (sliceAtts->GetAxisType() == SliceAttributes::Arbitrary &&
+        sliceAtts->GetOriginType() == SliceAttributes::Point   &&
+        (index==0 || index==1 || index==2))
+    {
+        double intercept; 
+        if (index == 0) // x axis
+        {
+            intercept = sliceAtts->GetOriginPoint()[0];
+        }
+        else if (index == 1) // y axis
+        {
+            intercept = sliceAtts->GetOriginPoint()[1];
+        }
+        else // (index == 2) // z axis
+        {
+            intercept = sliceAtts->GetOriginPoint()[2];
+        }
+        sliceAtts->SetOriginType(SliceAttributes::Intercept);
+        sliceAtts->SetOriginIntercept(intercept);
+        temp.sprintf("%g", intercept);
+        originInterceptLineEdit->setText(temp);
+        UpdateOriginArea();
+    }
+
+    // If we're switching from orthogonal to arbitrary
+    if ((sliceAtts->GetAxisType() == SliceAttributes::XAxis ||
+         sliceAtts->GetAxisType() == SliceAttributes::YAxis ||
+         sliceAtts->GetAxisType() == SliceAttributes::ZAxis)     &&
+        sliceAtts->GetOriginType() == SliceAttributes::Intercept &&
+        index == 3)
+    {
+        sliceAtts->SetOriginType(SliceAttributes::Point);
+        UpdateOriginArea();
+    }
+
     sliceAtts->SetAxisType(SliceAttributes::AxisType(index));
 
     // Change the normal and upaxis here or it will not change if autoupdate is
     // on because of Apply's call to GetCurrentValues.
-    QString temp;
     double *dptr = sliceAtts->GetNormal();
     temp.sprintf("%g %g %g", dptr[0], dptr[1], dptr[2]);
     normalLineEdit->setText(temp);

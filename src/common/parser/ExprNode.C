@@ -193,11 +193,25 @@ FunctionExpr::PrintNode(ostream &o)
         o << "no arguments\n";
 }
 
+// ****************************************************************************
+//  Method:  FunctionExpr::GetVarLeaves
+//
+//  Programmer:  Sean Ahern
+//
+//  Modifications:
+//    Jeremy Meredith, Mon Aug 18 12:00:44 PDT 2003
+//    Allow empty argument lists.
+//
+// ****************************************************************************
 std::set<std::string>
 FunctionExpr::GetVarLeaves()
 {
-    std::vector<ArgExpr*> *a = args->GetArgs();
     std::set<std::string> ret;
+
+    if (!args)
+        return ret;
+
+    std::vector<ArgExpr*> *a = args->GetArgs();
 
     for (int i = 0; i < a->size(); i++)
     {

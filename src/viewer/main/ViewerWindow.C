@@ -26,6 +26,7 @@ using std::string;
 #include <LineoutInfo.h>
 #include <PickAttributes.h>
 #include <PickPointInfo.h>
+#include <RenderingAttributes.h>
 #include <ViewAttributes.h>
 #include <ViewerActionManager.h>
 #include <ViewerAnimation.h>
@@ -3999,10 +4000,14 @@ ViewerWindow::GetWindowAttributes() const
         bgMode = annot->GetGradientBackgroundStyle() + 1;
     winAtts.SetBackgroundMode(bgMode);
 
-    // Relevant rendering attributes (only those for scalable renderer)
+    // Rendering attributes
     RenderingAttributes renderAtts;
     renderAtts.SetScalableRendering(GetScalableRendering());
     renderAtts.SetScalableThreshold(GetScalableThreshold());
+    renderAtts.SetDisplayLists(!GetImmediateModeRendering());
+    renderAtts.SetAntialiasing(GetAntialiasing());
+    renderAtts.SetGeometryRepresentation(
+       (RenderingAttributes::GeometryRepresentation) GetSurfaceRepresentation());
     winAtts.SetRenderAtts(renderAtts);
 
     //

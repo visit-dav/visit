@@ -68,6 +68,9 @@ class QRadioButton;
 //    Jeremy Meredith, Mon May 19 12:49:17 PDT 2003
 //    Added shareMDServer toggle.
 //
+//    Jeremy Meredith, Mon Aug 18 13:37:25 PDT 2003
+//    Changed processUserNameText to userNameChanged.
+//
 // ****************************************************************************
 
 class GUI_API QvisHostProfileWindow : public QvisPostableWindowObserver
@@ -98,7 +101,6 @@ private slots:
     void activateProfile(QListBoxItem *item);
     void pageTurned(QWidget *);
     void processProfileNameText(const QString &name);
-    void processUserNameText();
     void processEngineArgumentsText();
     void processPartitionNameText();
     void processBankNameText();
@@ -120,6 +122,7 @@ private slots:
     void loadBalancingChanged(int);
     void hostNameChanged(const QString &host);
     void hostAliasesChanged(const QString &host);
+    void userNameChanged(const QString &username);
 private:
     QTabWidget   *hostTabs;
     QListBox     *emptyListBox;

@@ -143,6 +143,10 @@ QvisHostProfileWindow::~QvisHostProfileWindow()
 //   Jeremy Meredith, Thu Jun 26 10:37:09 PDT 2003
 //   Enabled the share-batch-job toggle.
 //
+//   Jeremy Meredith, Mon Aug 18 13:38:40 PDT 2003
+//   Changed username field to update on any text change, not just
+//   a return press.
+//
 // ****************************************************************************
 void
 QvisHostProfileWindow::CreateWindowContents()
@@ -220,8 +224,8 @@ QvisHostProfileWindow::CreateWindowContents()
     row++;
 
     userName = new QLineEdit(activeProfileGroup, "userName");
-    connect(userName, SIGNAL(returnPressed()),
-            this, SLOT(processUserNameText()));
+    connect(userName, SIGNAL(textChanged(const QString &)),
+            this, SLOT(userNameChanged(const QString &)));
     userNameLabel = new QLabel(userName, "Username",
         activeProfileGroup, "userNameLabel");
     profileLayout->addMultiCellWidget(userNameLabel, row, row, 0, 0);
@@ -1408,7 +1412,7 @@ QvisHostProfileWindow::makeActiveProfile(bool)
 }
 
 // ****************************************************************************
-// Method: QvisHostProfileWindow::processUserNameText
+// Method: QvisHostProfileWindow::userNameChanged
 //
 // Purpose: 
 //   This is a Qt slot function that sets the username for the active
@@ -1421,15 +1425,22 @@ QvisHostProfileWindow::makeActiveProfile(bool)
 //   Brad Whitlock, Mon Sep 24 09:16:12 PDT 2001
 //   Prevented the window from being updated.
 //
+//    Jeremy Meredith, Mon Aug 18 13:36:20 PDT 2003
+//    Made it apply without a return press, and 
+//    renamed the method appropriately.
+//
 // ****************************************************************************
 
 void
-QvisHostProfileWindow::processUserNameText()
+QvisHostProfileWindow::userNameChanged(const QString &u)
 {
+    if (u.isEmpty())
+        return;
+
     // Update the user name.
-    if(!GetCurrentValues(2))
-        SetUpdate(false);
-    Apply();
+    HostProfileList *profiles = (HostProfileList *)subject;
+    HostProfile &current = profiles->operator[](profiles->GetActiveProfile());
+    current.SetUserName(u.latin1());
 }
 
 // ****************************************************************************
