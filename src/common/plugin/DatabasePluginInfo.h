@@ -42,6 +42,9 @@ class avtDatabaseWriter;
 //    Jeremy Meredith, Wed Nov  5 10:28:29 PST 2003
 //    Added ability to disable plugins by default.
 //
+//    Hank Childs, Thu Feb 19 10:01:47 PST 2004
+//    Added GetFilenames.  Made GetDefaultExtensions not be pure virtual.
+//
 // ****************************************************************************
 
 class PLUGIN_API GeneralDatabasePluginInfo
@@ -57,7 +60,10 @@ class PLUGIN_API CommonDatabasePluginInfo : public virtual GeneralDatabasePlugin
 {
   public:
     virtual DatabaseType              GetDatabaseType() = 0;
-    virtual std::vector<std::string>  GetDefaultExtensions() = 0;
+    virtual std::vector<std::string>  GetDefaultExtensions()
+                                   { std::vector<std::string> rv; return rv; };
+    virtual std::vector<std::string>  GetFilenames()
+                                   { std::vector<std::string> rv; return rv; };
     virtual avtDatabase              *SetupDatabase(const char * const *list,
                                                     int nList, int nBlock) = 0;
     virtual avtDatabaseWriter        *GetWriter(void) { return NULL; };

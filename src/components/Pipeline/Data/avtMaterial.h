@@ -64,6 +64,9 @@ struct CellMatInfo
 //    Jeremy Meredith, Fri Aug 22 10:33:10 PDT 2003
 //    Added another helper function.
 //
+//    Hank Childs, Wed Feb 18 09:30:12 PST 2004
+//    Keep around the original material names.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtMaterial
@@ -80,12 +83,12 @@ class PIPELINE_API avtMaterial
                                                  const int *mixz,
                                                  const float *mixv, 
                                                  const char *domain = NULL);
-                                     avtMaterial(int, const
-                                                     std::vector<std::string>&,
-                                                 int, const int *, int,
-                                                 const int *, const int *,
-                                                 const int *,
-                                                 const float *);
+                                     avtMaterial(int, 
+                                              const std::vector<std::string>&,
+                                              int, const int *, int,
+                                              const int *, const int *,
+                                              const int *,
+                                              const float *);
 
     avtMaterial                     *CreatePackedMaterial() const;
 
@@ -95,6 +98,8 @@ class PIPELINE_API avtMaterial
     int                              GetNZones(void)     { return nZones; };
     int                              GetNMaterials(void) { return nMaterials;};
     const std::vector<std::string>  &GetMaterials(void)  { return materials; };
+    const std::vector<std::string>  &GetCompleteMaterialList(void) 
+                                                     { return all_materials; };
     const int                       *GetMatlist(void)    { return matlist; };
     int                              GetMixlen(void)     { return mixlen; };
     const int                       *GetMixMat(void)     { return mix_mat; };
@@ -115,6 +120,7 @@ class PIPELINE_API avtMaterial
   protected:
     int                        nMaterials;
     std::vector<std::string>   materials;
+    std::vector<std::string>   all_materials;
     int                        nZones;
     int                       *matlist;
     int                        mixlen;
@@ -132,6 +138,7 @@ class PIPELINE_API avtMaterial
                                            std::vector<int>);
 
     void                       Initialize(int,
+                                          const std::vector<std::string> &,
                                           const std::vector<std::string> &,
                                           const std::vector<bool>&,
                                           int, int, const int *, int,

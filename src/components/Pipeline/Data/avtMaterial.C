@@ -69,6 +69,9 @@ using namespace std;
 //    Do a better job of checking for bad materials and also issue a warning
 //    when they are encountered.
 //
+//    Hank Childs, Wed Feb 18 09:36:38 PST 2004
+//    Added the "all materials" list to the Initialize call.
+//
 // ****************************************************************************
 
 avtMaterial::avtMaterial(int nMats, const int *mats, char **names,
@@ -284,8 +287,8 @@ avtMaterial::avtMaterial(int nMats, const int *mats, char **names,
     {
         nActualMats = nMats+1;
     }
-    Initialize(nActualMats, matnames, matUsed, nzon, ndims, dims, major_order,
-               newml, mixl, newmixm, mixn, mixz, mixv);
+    Initialize(nActualMats, matnames, matnames, matUsed, nzon, ndims, dims, 
+               major_order, newml, mixl, newmixm, mixn, mixz, mixv);
     delete[] newml;
     delete[] newmixm;
 
@@ -325,6 +328,9 @@ avtMaterial::avtMaterial(int nMats, const int *mats, char **names,
 //    Hank Childs, Fri Dec 20 12:33:45 PST 2002
 //    Account for phoney materials.
 //
+//    Hank Childs, Wed Feb 18 09:36:38 PST 2004
+//    Added the "all materials" list to the Initialize call.
+//
 // ****************************************************************************
 
 avtMaterial::avtMaterial(int nMats, const vector<string> &mats, int nzon,
@@ -347,8 +353,8 @@ avtMaterial::avtMaterial(int nMats, const vector<string> &mats, int nzon,
 
     int nActualMats = (matUsed[nMats] ? nMats+1 : nMats);
 
-    Initialize(nActualMats, mats, matUsed, nzon, 1, &nzon, 0, ml, mixl, mixm,
-               mixn, mixz, mixv);
+    Initialize(nActualMats, mats, mats, matUsed, nzon, 1, &nzon, 0, ml, mixl,
+               mixm, mixn, mixz, mixv);
 }
 
 
@@ -366,6 +372,9 @@ avtMaterial::avtMaterial(int nMats, const vector<string> &mats, int nzon,
 //
 //  Modifications:
 //
+//    Hank Childs, Wed Feb 18 09:36:38 PST 2004
+//    Added the "all materials" list to the Initialize call.
+//
 // ****************************************************************************
 
 avtMaterial::avtMaterial(const avtMaterial *mat,
@@ -378,7 +387,7 @@ avtMaterial::avtMaterial(const avtMaterial *mat,
     if (mat->nMaterials == nUsedMats)
     {
         // no packing can occur
-        Initialize(mat->nMaterials, mat->materials, matUsed,
+        Initialize(mat->nMaterials, mat->materials, mat->materials, matUsed,
                    mat->nZones, 1, &mat->nZones, 0,
                    mat->matlist, mat->mixlen, mat->mix_mat,
                    mat->mix_next, mat->mix_zone, mat->mix_vf);
@@ -407,7 +416,7 @@ avtMaterial::avtMaterial(const avtMaterial *mat,
     for (i=0; i<nUsedMats; i++)
         materials[i] = mat->materials[mapUsedMatToMat[i]];
 
-    Initialize(nUsedMats, materials, matUsed,
+    Initialize(nUsedMats, materials, mat->materials, matUsed,
                mat->nZones, 1, &mat->nZones, 0,
                matlist, mat->mixlen, mix_mat,
                mat->mix_next, mat->mix_zone, mat->mix_vf);
@@ -504,6 +513,8 @@ avtMaterial::Destruct(void *p)
 //  Arguments:
 //      nMats        The number of material in matnames.
 //      matnames     The names of the materials.
+//      all_matnames The names of all the materials, including those discarded
+//                   because they weren't present in this domain.
 //      nzon         The number of zones in ml.
 //      ndims        The number of entries in dims.
 //      dims         The number of material entries in each direction.
@@ -537,10 +548,14 @@ avtMaterial::Destruct(void *p)
 //    Hank Childs, Mon Apr  7 09:26:23 PDT 2003
 //    Do not assume mixz is non-NULL.
 //
+//    Hank Childs, Wed Feb 18 09:36:38 PST 2004
+//    Add an argument for a list of all materials.
+//
 // ****************************************************************************
 
 void
 avtMaterial::Initialize(int nMats, const vector<string> &matnames,
+                        const vector<string> &all_matnames, 
                         const vector<bool> &matUsed, int nzon,
                         int ndims, const int *dims, int major_order,
                         const int *ml, int mixl, const int *mixm,
@@ -562,6 +577,7 @@ avtMaterial::Initialize(int nMats, const vector<string> &matnames,
 
     nMaterials = nMats;
     materials  = matnames;
+    all_materials = all_matnames;
     nZones     = nzon;
     matlist    = new int[nZones];
     if (ndims <= 1 || major_order == 0)

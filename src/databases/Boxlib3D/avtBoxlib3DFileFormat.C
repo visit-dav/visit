@@ -35,7 +35,9 @@
 #include <ctype.h>
 #include <stdlib.h>
 
+#include <vtkFieldData.h>
 #include <vtkFloatArray.h>
+#include <vtkIntArray.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkUnsignedCharArray.h>
 
@@ -405,6 +407,9 @@ avtBoxlib3DFileFormat::GetLevelAndLocalPatchNumber(int global_patch,
 //    Hank Childs, Thu Nov  6 09:49:33 PST 2003
 //    Removed all notions of timesteps.
 //
+//    Hank Childs, Wed Feb 18 11:29:59 PST 2004
+//    Add a base index.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -440,7 +445,31 @@ avtBoxlib3DFileFormat::GetMesh(int patch, const char *mesh_name)
     delta[1] = deltaY[level];
     delta[2] = deltaZ[level];
 
-    return CreateGrid(lo, hi, delta);
+    vtkDataSet *rv = CreateGrid(lo, hi, delta);
+
+    //
+    // Determine the indices of the mesh within its group.  Add that to the
+    // VTK dataset as field data.
+    //
+    double epsilonX = deltaX[level] / 8.0;
+    double epsilonY = deltaY[level] / 8.0;
+    double epsilonZ = deltaZ[level] / 8.0;
+    int iStart = ((int) ((xMin[patch]-probLo[0]+epsilonX) 
+                       / deltaX[level]));
+    int jStart = ((int) ((yMin[patch]-probLo[1]+epsilonY) 
+                       / deltaY[level]));
+    int kStart = ((int) ((zMin[patch]-probLo[2]+epsilonZ) 
+                       / deltaZ[level]));
+    vtkIntArray *arr = vtkIntArray::New();
+    arr->SetNumberOfTuples(3);
+    arr->SetValue(0, iStart);
+    arr->SetValue(1, jStart);
+    arr->SetValue(2, kStart);
+    arr->SetName("base_index");
+    rv->GetFieldData()->AddArray(arr);
+    arr->Delete();
+
+    return rv;
 }
 
 
@@ -1064,6 +1093,9 @@ avtBoxlib3DFileFormat::GetVisMF(int index)
 //    (because we will get it, the DB will clear it, and, now we will get
 //    it again).
 //
+//    Hank Childs, Wed Feb 18 10:46:42 PST 2004
+//    Expose all scalar variables whether or not they are used elsewhere.
+//
 // ****************************************************************************
 
 void
@@ -1109,8 +1141,6 @@ avtBoxlib3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     int v;
     for (v = 0; v < nVars; ++v)
     {
-        if (varUsedElsewhere[v])
-            continue;
         if (varCentering[v] == AVT_UNKNOWN_CENT)
             continue;
 
@@ -1395,6 +1425,11 @@ avtBoxlib3DFileFormat::GetAuxiliaryData(const char *var, int dom,
 //  Programmer: Hank Childs
 //  Creation:   November 8, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Wed Feb 18 10:19:34 PST 2004
+//    Construct material in a more numerically reliable way.
+//
 // ****************************************************************************
     
 void *
@@ -1448,21 +1483,20 @@ avtBoxlib3DFileFormat::GetMaterial(const char *var, int patch,
         int j;
 
         // First look for pure materials
-        bool pure = false;
+        int nmats = 0;
+        int lastMat = -1;
         for (j = 0; j < nMaterials; ++j)
         {
-            if (mats[j][i] >= 1)
+            if (mats[j][i] > 0)
             {
-                pure = true;
-                break;
+                nmats++;
+                lastMat = j;
             }
-            else if (mats[j][i] > 0)
-                break;
         }
 
-        if (pure)
+        if (nmats == 1)
         {
-            material_list[i] = j;
+            material_list[i] = lastMat;
             continue;
         }
 
