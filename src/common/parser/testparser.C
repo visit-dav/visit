@@ -226,7 +226,7 @@ class TestParser : public Parser
                 ParseOneToken(token);
             }
         }
-        CATCH (UnhandledReductionException &e)
+        CATCH2(UnhandledReductionException, e)
         {
             // This should only occur during debugging; print to cerr anyway
             cerr << e.Message() << endl;
@@ -234,13 +234,13 @@ class TestParser : public Parser
             cerr << e.GetPos().GetText(input) << endl;
             CATCH_RETURN2(1, NULL);
         }
-        CATCH (ParseException &e)
+        CATCH2(ParseException, e)
         {
             cerr << e.Message() << endl;
             cerr << e.GetPos().GetText(input) << endl;
             CATCH_RETURN2(1, NULL);
         }
-        CATCHALL (...)
+        CATCHALL(...)
         {
             cerr << "Unknown exception!\n";
             CATCH_RETURN2(1, NULL);
