@@ -160,6 +160,12 @@ void vtkDataSetRemoveGhostCells::UnstructuredGridExecute()
 //    for a discussion of this -- the relevant pieces have been pasted into
 //    avtOVERFLOWFileFormat::GetMesh.
 //
+//    Hank Childs, Wed Aug 11 15:33:31 PDT 2004
+//    Allow for the presence of both ghost zones and ghost nodes.  This can
+//    happen when ghost zones are created by the database and then ghost nodes
+//    are created by the reflect filter, for example.  Also remove ghost nodes
+//    array when we are done with it, since it just slows down processing.
+//
 // ***************************************************************************
 
 void vtkDataSetRemoveGhostCells::PolyDataExecute()
@@ -188,11 +194,12 @@ void vtkDataSetRemoveGhostCells::PolyDataExecute()
   outCD->CopyAllocate(inCD);
  
   bool usingGhostZones = (ghost_zones != NULL);
+  bool usingGhostNodes = (ghost_nodes != NULL);
   unsigned char *zone_ptr = NULL;
   unsigned char *node_ptr = NULL;
   if (usingGhostZones)
     zone_ptr = ghost_zones->GetPointer(0);
-  else
+  if (usingGhostNodes)
     node_ptr = ghost_nodes->GetPointer(0);
 
   int nCells = input->GetNumberOfCells();
@@ -213,7 +220,7 @@ void vtkDataSetRemoveGhostCells::PolyDataExecute()
 
     input->GetCellPoints(i, npts, pts);
 
-    if (!usingGhostZones)
+    if (usingGhostNodes)
       {
       bool haveOneLevel0Node = false;
       bool haveOneLevel2Node = false;
@@ -232,6 +239,7 @@ void vtkDataSetRemoveGhostCells::PolyDataExecute()
     outCD->CopyData(inCD, i, cell++);
     }
   output->GetCellData()->RemoveArray("vtkGhostLevels");
+  output->GetPointData()->RemoveArray("vtkGhostNodes");
   output->Squeeze();
 }
 

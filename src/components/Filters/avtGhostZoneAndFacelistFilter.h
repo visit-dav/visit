@@ -31,6 +31,9 @@ class   avtFacelistFilter;
 //    Hank Childs, Thu Sep  6 11:14:38 PDT 2001
 //    Allowed for dynamic load balancing.
 //
+//    Hank Childs, Wed Aug 11 09:46:53 PDT 2004
+//    Added PerformRestriction.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtGhostZoneAndFacelistFilter :
@@ -61,6 +64,8 @@ class AVTFILTERS_API avtGhostZoneAndFacelistFilter :
     virtual void          RefashionDataObjectInfo(void);
     virtual int           AdditionalPipelineFilters(void);
     virtual void          ChangedInput(void);
+    virtual avtPipelineSpecification_p
+                          PerformRestriction(avtPipelineSpecification_p);
 };
 
 

@@ -170,17 +170,26 @@ avtContourFilter::~avtContourFilter()
 //    Kathleen Bonnell, Thu Mar 11 11:10:07 PST 2004 
 //    DataExtents now always have only 2 components. 
 //
+//    Hank Childs, Wed Aug 11 08:53:57 PDT 2004
+//    Make sure that we request ghost zones.
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
 avtContourFilter::PerformRestriction(avtPipelineSpecification_p in_spec)
 {
+    int  i, j;
+
     avtPipelineSpecification_p spec = new avtPipelineSpecification(in_spec);
 
     if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() == 3)
         spec->GetDataSpecification()->SetNeedValidFaceConnectivity(true);
 
-    int  i, j;
+    //
+    // We will need the ghost zones so that we can interpolate along domain
+    // boundaries and get no cracks in our isosurface.
+    //
+    spec->GetDataSpecification()->SetDesiredGhostDataType(GHOST_ZONE_DATA);
 
     if (atts.GetContourMethod() == ContourOpAttributes::Level ||
         atts.GetContourMethod() == ContourOpAttributes::Percent)

@@ -82,6 +82,10 @@
 #    Hank Childs, Thu Jul  8 10:31:20 PDT 2004
 #    Add volume.py back to the skipList for scalable mode.
 #
+#    Jeremy Meredith, Fri Aug 13 09:11:55 PDT 2004
+#    Moved /usr/local/bin ahead of /usr/bin in the PATH so it would get
+#    the GNU date program.
+#
 # ----------------------------------------------------------------------------
 
 # list of users who want email every night with the log file
@@ -151,7 +155,7 @@ fi
 umask 002
 DISPLAY=elysium:0
 export DISPLAY
-PATH=/home/visit/bin:/data_vobs/VisIt/clearcase_bin:/home/visit/clearcase_bin:/usr/atria/bin:/usr/security/bin:/sbin:/usr/sbin:/usr/bsd:/usr/bin:/usr/local/bin:/bin:/etc:/usr/bin/X11:/usr/local/X11:/usr/etc:/usr/lib:/usr/atria/bin:/usr/ccs/bin:/usr/SUNWspro/bin:/usr/gapps/mpich/1.2.4/SunOS/serial/default/debug/bin:.
+PATH=/home/visit/bin:/data_vobs/VisIt/clearcase_bin:/home/visit/clearcase_bin:/usr/atria/bin:/usr/security/bin:/sbin:/usr/sbin:/usr/bsd:/usr/local/bin:/usr/bin:/bin:/etc:/usr/bin/X11:/usr/local/X11:/usr/etc:/usr/lib:/usr/atria/bin:/usr/ccs/bin:/usr/SUNWspro/bin:/usr/gapps/mpich/1.2.4/SunOS/serial/default/debug/bin:.
 export PATH
 
 # rebuild visit

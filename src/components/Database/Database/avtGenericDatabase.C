@@ -241,6 +241,9 @@ avtGenericDatabase::SetDatabaseMetaData(avtDatabaseMetaData *md, int timeState)
 //    Kathleen Bonnell, Wed Jun 23 17:04:23 PDT 2004 
 //    Add TRY-CATCH, so that no process skips the parallel communication. 
 //
+//    Hank Childs, Wed Aug 11 08:14:16 PDT 2004
+//    Only create ghost data if it is requested.
+//
 //    Mark C. Miller, Thu Aug 12 12:10:37 PDT 2004
 //    I changed behavior when processors have errors during the read phase.
 //    Previously, only the err'ing processor knew about and would return
@@ -415,7 +418,18 @@ avtGenericDatabase::GetOutput(avtDataSpecification_p spec,
     // boundary information.
     //
     bool didGhosts = false;
-    if (spec->GhostZonesAreAppropriate())
+
+    bool ghostDataIsNeeded = false;
+    if (spec->GetDesiredGhostDataType() != NO_GHOST_DATA)
+        ghostDataIsNeeded = true;
+    if (shouldDoMatSelect)
+        ghostDataIsNeeded = true;
+
+    bool canCreateGhostData = true;
+    if (spec->MustMaintainOriginalConnectivity())
+        canCreateGhostData = false;
+
+    if (canCreateGhostData && ghostDataIsNeeded)
     {
         didGhosts = CommunicateGhosts(datasetCollection, domains, spec, src);
     }
@@ -3107,6 +3121,10 @@ avtGenericDatabase::ActivateTimestep(int stateIndex)
 //    method to get the secondary variable list without duplicating either the
 //    primary variable or other secondary variables, and made use of it here.
 //
+//    Hank Childs, Wed Aug 11 08:14:16 PDT 2004
+//    Do not simply remove the vtkGhostLevels array so we can pretend we don't
+//    have ghost zones.
+//
 // ****************************************************************************
 
 void
@@ -3326,22 +3344,6 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, vector<int> &domains,
         }
 
         src->DatabaseProgress(i, nDomains, progressString);
-    }
-
-    //
-    // Sometimes we can't stop our readers from reading in ghost zones.
-    // Remove the array in that case so we don't get confused downstream.
-    //
-    if (!spec->GhostZonesAreAppropriate())
-    {
-        for (int j = 0 ; j < nDomains ; j++)
-        {
-            vtkDataSet *ds1 = ds.GetDataset(j, 0);
-            if (ds1 != NULL)
-            {
-                ds1->GetCellData()->RemoveArray("vtkGhostLevels");
-            }
-        }
     }
 
     src->DatabaseProgress(1, 0, progressString);

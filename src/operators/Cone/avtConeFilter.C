@@ -526,6 +526,10 @@ avtConeFilter::SetUpCone(void)
 //    Make the transform use right-handed coords, similar to recent changes
 //    made to slice filter.
 //
+//    Hank Childs, Fri Aug 13 08:25:52 PDT 2004
+//    Use 4-tuples for multiplying points (or else VTK does a UMR).
+//    Also renormalize basis vectors to ensure they are truly unit vectors.
+//
 // ****************************************************************************
 
 void
@@ -559,7 +563,7 @@ avtConeFilter::SetUpProjection(void)
         }
     }
 
-    float origin[3] = {Corigin[0], Corigin[1], Corigin[2]};
+    float origin[4] = {Corigin[0], Corigin[1], Corigin[2],1};
     float normal[3] = {nx,ny,nz};
     float upaxis[3] = {ux,uy,uz};
 
@@ -572,9 +576,11 @@ avtConeFilter::SetUpProjection(void)
     //
     float  third[3];
     vtkMath::Cross(upaxis, normal, third);
+    vtkMath::Normalize(third);
 
     // Make sure the up axis is orthogonal to third and normal
     vtkMath::Cross(normal, third, upaxis);
+    vtkMath::Normalize(upaxis);
 
     //
     // Because it is easier to find the Frame-to-Cartesian-Frame conversion
@@ -625,7 +631,7 @@ avtConeFilter::SetUpProjection(void)
     transform->SetTransform(mtlt);
     mtlt->Delete();
 
-    float zdim[3];
+    float zdim[4];
     ftcf->MultiplyPoint(origin, zdim);
     zdim[0] = 0;
     zdim[1] = 0;

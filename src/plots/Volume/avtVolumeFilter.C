@@ -625,6 +625,9 @@ avtVolumeFilter::ReleaseData(void)
 //    Hank Childs, Mon Jan 14 14:15:20 PST 2002
 //    Clean up memory leak.
 //
+//    Hank Childs, Wed Aug 11 09:15:21 PDT 2004
+//    Allow for ghost zones to be created by other filters if necessary.
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -643,7 +646,6 @@ avtVolumeFilter::PerformRestriction(avtPipelineSpecification_p spec)
  */
     newspec = spec;
 
-    newspec->GetDataSpecification()->NoGhostZones();
     newspec->NoDynamicLoadBalancing();
 
     if (primaryVariable != NULL)

@@ -1,4 +1,4 @@
-#                            Copyright 2000 - 2003
+#                            Copyright 2000 - 2004
 #                 The Regents of the University of California.
 #                             All rights reserved.
 # 
@@ -108,6 +108,9 @@
 #   Jeremy Meredith, Wed Jul 21 17:44:55 PDT 2004
 #   Added OVERFLOW.  It depends on no other libraries.
 #
+#   Brad Whitlock, Fri Aug 13 14:29:40 PST 2004
+#   Added Pixie.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -119,7 +122,7 @@ BOXLIB2D=Boxlib2D
 BOXLIB3D=Boxlib3D
 EXODUS=Exodus TimeVaryingExodus
 HDF4=Cosmos
-HDF5=Tetrad SAMRAI CosmosPP
+HDF5=Tetrad SAMRAI CosmosPP Pixie
 MILI=Mili
 PDB=KullLite PDB
 SAF=SAF

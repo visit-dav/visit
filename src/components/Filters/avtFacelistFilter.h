@@ -52,6 +52,9 @@ class   avtMultiFacelist;
 //    Hank Childs, Wed Oct  2 16:59:10 PDT 2002
 //    Removed unused data member f2d.
 //
+//    Hank Childs, Wed Aug 11 09:46:53 PDT 2004
+//    Added PerformRestriction.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtFacelistFilter : public avtStreamer
@@ -87,6 +90,8 @@ class AVTFILTERS_API avtFacelistFilter : public avtStreamer
     virtual void                         InitializeFilter(void);
 
     virtual void                         RefashionDataObjectInfo(void);
+    virtual avtPipelineSpecification_p   PerformRestriction(
+                                                   avtPipelineSpecification_p);
 };
 
 

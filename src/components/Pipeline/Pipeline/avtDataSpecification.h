@@ -13,6 +13,7 @@
 #include <ref_ptr.h>
 
 #include <avtSILRestriction.h>
+#include <avtGhostData.h>
 
 
 class PIPELINE_API avtSILSpecification
@@ -104,6 +105,9 @@ typedef ref_ptr<avtDataSpecification> avtDataSpecification_p;
 //    Jeremy Meredith, Fri Jul  9 16:49:24 PDT 2004
 //    Added GetSecondaryVariablesWithoutDuplicates.
 //
+//    Hank Childs, Tue Aug 10 13:47:48 PDT 2004
+//    Added maintainOriginalConnectivity.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataSpecification
@@ -192,9 +196,15 @@ class PIPELINE_API avtDataSpecification
     void                         SetMayRequireNodes(bool val) 
                                      { mayRequireNodes = val; };
 
-    bool                         GhostZonesAreAppropriate(void)
-                                     { return useGhostZones; };
-    void                         NoGhostZones(void);
+    bool                         MustMaintainOriginalConnectivity(void)
+                                     { return maintainOriginalConnectivity; };
+    void                         SetMaintainOriginalConnectivity(bool val)
+                                     { maintainOriginalConnectivity = val; };
+
+    void                         SetDesiredGhostDataType(avtGhostDataType t)
+                                     { desiredGhostDataType = t; };
+    avtGhostDataType             GetDesiredGhostDataType(void)
+                                     { return desiredGhostDataType; };
 
     bool                         NeedValidFaceConnectivity()
                                      { return needValidFaceConnectivity; };
@@ -247,7 +257,6 @@ class PIPELINE_API avtDataSpecification
     bool                         needNodes;
     bool                         mayRequireZones;
     bool                         mayRequireNodes;
-    bool                         useGhostZones;
     bool                         mustDoMIR;
     bool                         needInternalSurfaces;
     bool                         needBoundarySurfaces;
@@ -257,6 +266,8 @@ class PIPELINE_API avtDataSpecification
     bool                         needSmoothMaterialInterfaces;
     bool                         needCleanZonesOnly;
     bool                         useNewMIRAlgorithm;
+    bool                         maintainOriginalConnectivity;
+    avtGhostDataType             desiredGhostDataType;
 
     //
     // If we are processing in parallel, this information may have been lost.
