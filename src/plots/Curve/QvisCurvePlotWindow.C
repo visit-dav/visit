@@ -6,10 +6,10 @@
 #include <qcheckbox.h>
 #include <qlabel.h>
 #include <qlayout.h>
-#include <qlineedit.h>
 #include <QvisColorButton.h>
 #include <QvisLineStyleWidget.h>
 #include <QvisLineWidthWidget.h>
+#include <QNarrowLineEdit.h>
 #include <stdio.h>
 #include <string>
 
@@ -68,14 +68,15 @@ QvisCurvePlotWindow::~QvisCurvePlotWindow()
 // Creation:   Tue Jul 23 13:34:33 PST 2002
 //
 // Modifications:
+//   Kathleen Bonnell, Tue Dec 23 13:27:22 PST 2003
+//   Added PointSize and ShowPoints.
 //   
 // ****************************************************************************
 
 void
 QvisCurvePlotWindow::CreateWindowContents()
 {
-    QGridLayout *mainLayout = new QGridLayout(topLayout, 5,2,  10, "mainLayout");
-
+    QGridLayout *mainLayout = new QGridLayout(topLayout, 5,4, 10, "mainLayout");
 
     mainLayout->addWidget(new QLabel("Line Style", central, "lineStyleLabel"),0,0);
     lineStyle = new QvisLineStyleWidget(0, central, "lineStyle");
@@ -103,6 +104,20 @@ QvisCurvePlotWindow::CreateWindowContents()
             this, SLOT(showLabelsChanged(bool)));
     mainLayout->addWidget(showLabels, 3,0);
 
+    showPoints = new QCheckBox("Points", central, "showPoints");
+    connect(showPoints, SIGNAL(toggled(bool)),
+            this, SLOT(showPointsChanged(bool)));
+    mainLayout->addWidget(showPoints, 3,1);
+
+    // Create the point size line edit
+    pointSize = new QNarrowLineEdit(central, "pointSize");
+    connect(pointSize, SIGNAL(returnPressed()),
+            this, SLOT(processPointSizeText())); 
+    mainLayout->addWidget(pointSize, 3, 3);
+    pointSizeLabel = new QLabel(pointSize, "Point size",
+        central, "pointSizeLabel");
+    pointSizeLabel->setAlignment(AlignRight | AlignVCenter);
+    mainLayout->addWidget(pointSizeLabel, 3, 2);
 }
 
 
@@ -116,12 +131,14 @@ QvisCurvePlotWindow::CreateWindowContents()
 // Creation:   Tue Jul 23 13:34:33 PST 2002
 //
 // Modifications:
-//   
+//   Kathleen Bonnell, Tue Dec 23 13:27:22 PST 2003
+//   Added pointSize and showPoints. 
 // ****************************************************************************
 
 void
 QvisCurvePlotWindow::UpdateWindow(bool doAll)
 {
+    QString tempText;
     for(int i = 0; i < atts->NumAttributes(); ++i)
     {
         if(!doAll)
@@ -157,6 +174,19 @@ QvisCurvePlotWindow::UpdateWindow(bool doAll)
           case 3: //showLabels
             showLabels->setChecked(atts->GetShowLabels());
             break;
+          case 4: //designator -- internal
+            break;
+          case 5: //showPoints
+            showPoints->blockSignals(true);
+            showPoints->setChecked(atts->GetShowPoints());
+            pointSize->setEnabled(atts->GetShowPoints());
+            pointSizeLabel->setEnabled(atts->GetShowPoints());
+            showPoints->blockSignals(false);
+            break;
+          case 6: //pointSize
+            tempText.sprintf("%g", atts->GetPointSize());
+            pointSize->setText(tempText);
+            break;
         }
     }
 }
@@ -172,39 +202,37 @@ QvisCurvePlotWindow::UpdateWindow(bool doAll)
 // Creation:   Tue Jul 23 13:34:33 PST 2002
 //
 // Modifications:
+//   Kathleen Bonnell, Tue Dec 23 13:27:22 PST 2003
+//   Added pointSize.  Removed do-nothing code.
 //   
 // ****************************************************************************
 
 void
 QvisCurvePlotWindow::GetCurrentValues(int which_widget)
 {
-    bool doAll = (which_widget == -1);
+    bool okay, doAll = (which_widget == -1);
     QString msg, temp;
 
-    // Do lineStyle
+    // Do pointSize
     if(which_widget == 0 || doAll)
     {
-        // Nothing for lineStyle
-    }
+        temp = pointSize->displayText().stripWhiteSpace();
+        okay = !temp.isEmpty();
+        if(okay)
+        {
+            double val = temp.toDouble(&okay);
+            atts->SetPointSize(val);
+        }
 
-    // Do lineWidth
-    if(which_widget == 1 || doAll)
-    {
-        // Nothing for lineWidth
+        if(!okay)
+        {
+            msg.sprintf("The point size was invalid. "
+                "Resetting to the last good value of %g.",
+                atts->GetPointSize());
+            Message(msg);
+            atts->SetPointSize(atts->GetPointSize());
+        }
     }
-
-    // Do color
-    if(which_widget == 2 || doAll)
-    {
-        // Nothing for color
-    }
-
-    // Do showLabels
-    if(which_widget == 3 || doAll)
-    {
-        // Nothing for showLabels
-    }
-
 }
 
 
@@ -334,5 +362,20 @@ QvisCurvePlotWindow::showLabelsChanged(bool val)
     atts->SetShowLabels(val);
     Apply();
 }
+
+void
+QvisCurvePlotWindow::showPointsChanged(bool val)
+{
+    atts->SetShowPoints(val);
+    Apply();
+}
+
+void
+QvisCurvePlotWindow::processPointSizeText()
+{
+    GetCurrentValues(0); 
+    Apply();
+}
+
 
 

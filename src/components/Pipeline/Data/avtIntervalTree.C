@@ -13,6 +13,8 @@
 #include <IntervalTreeNotCalculatedException.h>
 #include <BadDomainException.h>
 
+#include <vtkBox.h>
+
 using     std::vector;
 
 
@@ -31,6 +33,7 @@ using     std::vector;
 static float    EquationsValueAtPoint(const float *, int, int, int, 
                                       const float *);
 static bool     Intersects(const float *, float, int, int, const float *);
+static bool     Intersects(float [3], float[3], int, int, const float *);
 
 
 // ****************************************************************************
@@ -875,3 +878,111 @@ avtIntervalTree::GetDomainExtents(int domainIndex, float *extents) const
 }
 
 
+// ****************************************************************************
+//  Function: Intersects
+//
+//  Purpose:
+//      Determine if the range of values for the current node is intersected 
+//      by the line designated by origin and rayDir. 
+//
+//  Arguments:
+//      origin       The origin of the ray. 
+//      rayDir       The xyz components of the ray direction.
+//      block        The block in the nodeExtents that should be checked for an
+//                   intersection.
+//      nDims        The number of dimensions of the var.
+//      nodeExtents  The extents at each node.
+//
+//  Returns:    true if there is an intersection, false otherwise.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   December 19, 2003 
+//
+// ****************************************************************************
+
+bool
+Intersects(float origin[3], float rayDir[3], int block, int nDims,
+           const float *nodeExtents)
+{
+    float bnds[6] = { 0., 0., 0., 0., 0., 0.};
+    float coord[3] = { 0., 0., 0.};
+    float t;
+
+    for (int i = 0; i < nDims; i++)
+    {
+        bnds[2*i] = nodeExtents[block*nDims*2 + 2*i];
+        bnds[2*i+1] = nodeExtents[block*nDims*2 + 2*i + 1];
+    }
+
+    if (vtkBox::IntersectBox(bnds, origin, rayDir, coord, t))
+        return true;
+    else 
+        return false;
+}
+
+
+// ****************************************************************************
+//  Method: avtIntervalTree::GetDomainsList
+//
+//  Purpose:
+//      Takes in a ray origin and direction,  and determines which domains have 
+//      are intersected by the ray. 
+//
+//  Notes: Copied from GetDomainLists for an equation, just changed the
+//         args and the call to Intersects.
+//
+//  Arguments:
+//      origin        The ray origin. 
+//      rayDir        The ray direction.
+//      list          The list of domains that satisfy the linear equation.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   December 19, 2003 
+//
+// ****************************************************************************
+
+void
+avtIntervalTree::GetDomainsList(float origin[3], float rayDir[3],
+                                vector<int> &list) const
+{
+    list.clear();
+
+    int nodeStack[100]; // Only need log amount
+    int nodeStackSize = 0;
+
+    //
+    // Populate the stack by putting on the root domain.  This domain contains
+    // all the other domains in its extents.
+    //
+    nodeStack[0] = 0;
+    nodeStackSize++;
+
+    while (nodeStackSize > 0)
+    {
+        nodeStackSize--;
+        int stackIndex = nodeStack[nodeStackSize];
+        if ( Intersects(origin, rayDir, stackIndex, nDims, nodeExtents) )
+        {
+            //
+            // The equation has a solution contained by the current extents.
+            //
+            if (nodeIDs[stackIndex] < 0)
+            {
+                //
+                // This is not a leaf, so put children on stack
+                //
+                nodeStack[nodeStackSize] = 2 * stackIndex + 1;
+                nodeStackSize++;
+                nodeStack[nodeStackSize] = 2 * stackIndex + 2;
+                nodeStackSize++;
+            }
+            else
+            {
+                //
+                // Leaf node, put in list
+                //
+                list.push_back(nodeIDs[stackIndex]);
+            }
+        }
+    }
+}

@@ -255,6 +255,9 @@ avtCurvePlot::CustomizeBehavior(void)
 //    Kathleen Bonnell, Tue Jul 23 14:12:47 PDT 2002       
 //    LabelSize no longer an attribute. 
 //
+//    Kathleen Bonnell, Tue Dec 23 11:08:38 PST 2003 
+//    Added ShowPoints and PointSize. 
+//
 // ****************************************************************************
 
 void
@@ -274,6 +277,13 @@ avtCurvePlot::SetAtts(const AttributeGroup *a)
     decoMapper->SetLabel(atts.GetDesignator());
     decoMapper->SetLabelColor((float)rgba[0], (float)rgba[1], (float)rgba[2]);
     decoMapper->SetLabelVisibility(atts.GetShowLabels());
+
+    if (atts.GetShowPoints())
+        renderer->SurfaceVertsOn();
+    else 
+        renderer->SurfaceVertsOff();
+    
+    property->SetPointSize(atts.GetPointSize()); 
 }
 
 // ****************************************************************************

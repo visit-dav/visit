@@ -74,6 +74,10 @@ avtCurveConstructorFilter::~avtCurveConstructorFilter()
 //    Removed vtk filters associated with label-creation.  Now handled by
 //    the plot.
 //
+//    Kathleen Bonnell, Tue Dec 23 10:18:06 PST 2003 
+//    Added logic to handle point-sorting when necessary. Add vertex cells,
+//    so they can be displayed upon user request.
+//    
 // ****************************************************************************
 
 void avtCurveConstructorFilter::Execute()
@@ -166,7 +170,7 @@ void avtCurveConstructorFilter::Execute()
     //  This filter doesn't do much right now.  Basically just a 
     //  "connect-the-dots" between the vertices.  
     //
-    int nleaves, j;
+    int nleaves, j, k;
     float x;
     avtDataTree_p outTree;
     vtkDataSet **ds;
@@ -175,20 +179,37 @@ void avtCurveConstructorFilter::Execute()
     map <float, int> minX;
 
     //
-    //  Assuming points are sorted w/i each dataset (which is true
-    //  when lineout operator applied, our only use just now).  
+    //  Cannot assume that there are no overlaps of points
+    //  between datasets, so keep track of first and last
+    //  x values, to determine if sorting is required. 
     //  Now must order the datasets so that the points will
     //  be accessed in proper order, to avoid discontinuities
     //  between domains.
     //  Store in map with x value as the key.  
     //  (from first point in each ds).
     //
+    float *mm = new float[nleaves*2];
+    int npts;
+
     for (j = 0; j < nleaves; j++)
     {
+        npts = ((vtkPolyData*)ds[j])->GetNumberOfPoints();
         x = ((vtkPolyData*)ds[j])->GetPoint(0)[0]; 
         minX.insert(std::map <float, int> ::value_type(x, j));
+        mm[j*2] = x;
+        mm[j*2+1] = ((vtkPolyData*)ds[j])->GetPoint(npts-1)[0]; 
     }
 
+    bool requiresSort = false;
+    for (j = 0; j < nleaves && !requiresSort; j++)
+    {
+        for (k = 0; k < nleaves && !requiresSort; k++)
+        {
+            if (k != j && mm[k*2] > mm[j*2] && mm[k*2] < mm[j*2+1])
+                requiresSort = true;
+        }
+    }
+    delete [] mm;
     vtkPolyData *outPolys = vtkPolyData::New();
     
     vtkPoints *inPts; 
@@ -199,6 +220,10 @@ void avtCurveConstructorFilter::Execute()
     vtkCellArray *lines   = vtkCellArray::New();
     outPolys->SetLines(lines);
     lines->Delete();
+
+    vtkCellArray *verts   = vtkCellArray::New();
+    outPolys->SetVerts(verts);
+    verts->Delete();
 
     int nPoints; 
     float pt[3];
@@ -220,13 +245,43 @@ void avtCurveConstructorFilter::Execute()
         }
     }
 
-    nPoints = outPts->GetNumberOfPoints();
+    // 
+    // Sort if necessary
+    // 
+    vtkPoints *sortedPts;
+    if (requiresSort)
+    {
+        sortedPts = vtkPoints::New();
+        map <float, int> sortedIds;
+        nPoints = outPts->GetNumberOfPoints();
+        for (i = 0; i < nPoints; i++)
+        {
+            x = outPts->GetPoint(i)[0]; 
+            sortedIds.insert(std::map <float, int> ::value_type(x, i));
+        }
+        std::map <float, int>::iterator it;
+        for (it = sortedIds.begin(); it != sortedIds.end(); it++)
+        {
+            sortedPts->InsertNextPoint(outPts->GetPoint((*it).second));
+        }
+        outPolys->SetPoints(sortedPts);
+        sortedPts->Delete();
+    }
+    else
+    {
+        sortedPts = outPts;
+    }
+    nPoints = sortedPts->GetNumberOfPoints();
     for (i = 0; i < nPoints-1; i++)
     {
-        ptIds[0] = i;
-        ptIds[1] = i+1;
+        ptIds[0] = i; 
+        ptIds[1] = i+1; 
         lines->InsertNextCell(2, ptIds);        
+        verts->InsertNextCell(1, ptIds);        
     } 
+    // need to add one last vertex:
+    ptIds[0] = ptIds[1];
+    verts->InsertNextCell(1, ptIds);        
 
     const char *varname = (pipelineVariable != NULL ? pipelineVariable : "");
 

@@ -1777,6 +1777,10 @@ QvisViewWindow::ParseViewCommands(const char *str)
 //   Eric Brugger, Thu Jun 12 09:59:42 PDT 2003  
 //   Modify the command to change the image pan instead of the focus.
 //
+//   Eric Brugger, Tue Dec 23 07:58:34 PST 2003
+//   Modify the command to divide the pan amounts by the zoom factor so that
+//   they are a fraction of the current image width and height.
+//
 // ****************************************************************************
  
 void
@@ -1784,8 +1788,8 @@ QvisViewWindow::Pan(double panx, double pany)
 {
     double imagePan[2];
  
-    imagePan[0] = view3d->GetImagePan()[0] + panx;
-    imagePan[1] = view3d->GetImagePan()[1] + pany;
+    imagePan[0] = view3d->GetImagePan()[0] + panx / view3d->GetImageZoom();
+    imagePan[1] = view3d->GetImagePan()[1] + pany / view3d->GetImageZoom();
 
     view3d->SetImagePan(imagePan);
  

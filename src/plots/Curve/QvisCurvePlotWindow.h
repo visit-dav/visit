@@ -6,8 +6,8 @@
 
 class CurveAttributes;
 class QLabel;
+class QNarrowLineEdit;
 class QCheckBox;
-class QLineEdit;
 class QButtonGroup;
 class QvisColorButton;
 class QvisLineStyleWidget;
@@ -25,6 +25,9 @@ class QvisLineWidthWidget;
 // Creation:   Tue Jul 23 13:34:33 PST 2002
 //
 // Modifications:
+//   Kathleen Bonnell, Tue Dec 23 13:27:22 PST 2003
+//   Added showPoints, pointSize and pointSizeLabel widgets. 
+//   Added showPointChanged and processPointSizeText slots.
 //   
 // ****************************************************************************
 
@@ -52,12 +55,17 @@ class QvisCurvePlotWindow : public QvisPostableWindowObserver
     void lineWidthChanged(int style);
     void colorChanged(const QColor &color);
     void showLabelsChanged(bool val);
+    void showPointsChanged(bool val);
+    void processPointSizeText();
   private:
     int plotType;
     QvisLineStyleWidget *lineStyle;
     QvisLineWidthWidget *lineWidth;
     QvisColorButton     *color;
     QCheckBox           *showLabels;
+    QCheckBox           *showPoints;
+    QNarrowLineEdit     *pointSize;
+    QLabel              *pointSizeLabel;
 
     CurveAttributes *atts;
 };

@@ -44,6 +44,8 @@ class PIPELINE_API avtIntervalTree
     void                      GetExtents(float *) const;
     void                      GetDomainsList(const float *, float,
                                              std::vector<int> &) const;
+    void                      GetDomainsList(float [3], float[3],
+                                             std::vector<int> &) const;
     void                      GetDomainsListFromRange(const float *,
                                                       const float *,
                                                       std::vector<int>&) const;

@@ -8,6 +8,7 @@
 #include <vtkLineoutFilter.h>
 #include <vtkPolyData.h>
 #include <avtMetaData.h>
+#include <avtIntervalTree.h>
 #include <InvalidDimensionsException.h>
 #include <DebugStream.h>
 
@@ -104,6 +105,10 @@ avtLineoutFilter::Equivalent(const AttributeGroup *a)
 //    Hank Childs, Tue Sep 10 16:46:57 PDT 2002
 //    Re-work memory management.
 //
+//    Kathleen Bonnell, Tue Dec 23 10:18:06 PST 2003 
+//    Set vtkLineoutFilter's UpdateGhostLevel, so that ghost levels can be 
+//    ignored.  Ensure output has points.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -120,11 +125,13 @@ avtLineoutFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
     filter->SetPoint1(pt1);
     filter->SetPoint2(pt2);
     filter->SetNumberOfSamplePoints(atts.GetNumberOfSamplePoints());
+    filter->GetOutput()->SetUpdateGhostLevel(0);
     vtkPolyData *outPolys = filter->GetOutput();
     outPolys->Update();
 
     vtkDataSet *rv = outPolys;
-    if (outPolys->GetNumberOfCells() == 0)
+    if (outPolys->GetNumberOfCells() == 0 ||
+        outPolys->GetNumberOfPoints() == 0)
     {
         debug5 << "vtkLineoutFilter returned empty DS for domain " 
                << domain << "." << endl;
@@ -182,6 +189,58 @@ avtLineoutFilter::VerifyInput(void)
     {
         EXCEPTION2(InvalidDimensionsException, "Lineout", "2D or 3D");
     }
+}
+
+
+
+
+// ****************************************************************************
+//  Method: avtLineoutFilter::PerformRestriction
+//
+//  Purpose:
+//      Calculates the restriction on the meta-data and the line endpoints. 
+//
+//  Arguments:
+//      spec    The current pipeline specification.
+//
+//  Returns:    The new specification.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   December 19, 2003 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+
+avtPipelineSpecification_p
+avtLineoutFilter::PerformRestriction(avtPipelineSpecification_p spec)
+{
+    avtPipelineSpecification_p rv = new avtPipelineSpecification(spec);
+
+    //
+    // Get the interval tree.
+    //
+    avtIntervalTree *it = GetMetaData()->GetSpatialExtents();
+    if (it == NULL)
+    {
+        return rv;
+    }
+    if (GetInput()->GetInfo().GetValidity().GetPointsWereTransformed())
+    {
+        return rv;
+    }
+    double *dpt = atts.GetPoint1();
+    float pt1[3] = {dpt[0], dpt[1], dpt[2]};
+    dpt = atts.GetPoint2();
+    float pt2[3] = {dpt[0], dpt[1], dpt[2]};
+    float rayDir[3] = {pt2[0]-pt1[0], pt2[1]-pt1[1], pt2[2]-pt1[2]};   
+
+    vector<int> domains;
+    it->GetDomainsList(pt1, rayDir, domains);
+    rv->GetDataSpecification()->GetRestriction()->RestrictDomains(domains);
+
+    return rv;
 }
 
 

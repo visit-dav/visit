@@ -27,6 +27,9 @@ class vtkDataSet;
 //    Hank Childs, Tue Sep 10 16:46:57 PDT 2002
 //    Re-worked memory management paradigm.
 //
+//    Kathleen Bonnell, Tue Dec 23 10:18:06 PST 2003 
+//    Added PerformRestriction. 
+//
 // ****************************************************************************
 
 class avtLineoutFilter : public avtPluginStreamer
@@ -51,6 +54,8 @@ class avtLineoutFilter : public avtPluginStreamer
     virtual vtkDataSet       *ExecuteData(vtkDataSet *, int, std::string);
     virtual void              VerifyInput(void);
     virtual void              RefashionDataObjectInfo(void);
+    virtual avtPipelineSpecification_p
+                              PerformRestriction(avtPipelineSpecification_p);
 };
 
 #endif

@@ -140,12 +140,7 @@ ver=`echo $ver2 | tr "_" "."`
 rm -f hitit
 cat <<EOF > hitit
 #!/bin/sh
-if [ -d /usr/gapps/visit/$ver ]
-then
-   ./visit-install -private -a -c closed -g visit -gw $ver linux /usr/gapps/visit > installlog 2>&1
-else
-   ./visit-install -private -c closed -g visit -gw $ver linux /usr/gapps/visit > installlog 2>&1
-fi
+./visit-install -private -c closed -g visit -gw -l $ver linux /usr/gapps/visit > installlog 2>&1
 rm -f resultlog
 echo "        install of visit on hitit"           > resultlog 2>&1
 echo "       ---------------------------"          >> resultlog 2>&1
@@ -175,9 +170,9 @@ cat <<EOF > warp
 #!/bin/sh
 if [ -d /usr/gapps/visit/$ver ]
 then
-   ./visit-install $verflag -a -c closed -g visit -gw $ver irix6 /usr/gapps/visit > installlog 2>&1
+   ./visit-install $verflag -a -c closed -g visit -gw -l $ver irix6 /usr/gapps/visit > installlog 2>&1
 else
-   ./visit-install $verflag -c closed -g visit -gw $ver irix6 /usr/gapps/visit > installlog 2>&1
+   ./visit-install $verflag -c closed -g visit -gw -l $ver irix6 /usr/gapps/visit > installlog 2>&1
 fi
 rm -f resultlog
 echo "        install of visit on warp"            > resultlog 2>&1
@@ -206,12 +201,7 @@ fi
 rm -f sc
 cat <<EOF > sc
 #!/bin/sh
-if [ -d /usr/gapps/visit/$ver ]
-then
-   ./visit-install -private -a -c closed -g visit -gw $ver osf1 /usr/gapps/visit > installlog 2>&1
-else
-   ./visit-install -private -c closed -g visit -gw $ver osf1 /usr/gapps/visit > installlog 2>&1
-fi
+./visit-install -private -c closed -g visit -gw -l $ver osf1 /usr/gapps/visit > installlog 2>&1
 rm -f resultlog
 echo "        install of visit on sc"              > resultlog 2>&1
 echo "       ------------------------"             >> resultlog 2>&1
@@ -241,9 +231,9 @@ cat <<EOF > tidalwave
 #!/bin/sh
 if [ -d /usr/gapps/visit/$ver ]
 then
-   ./visit-install -private -a -c closed -g visit -gw $ver irix6 /usr/gapps/visit > installlog 2>&1
+   ./visit-install -private -a -c closed -g visit -gw -l $ver irix6 /usr/gapps/visit > installlog 2>&1
 else
-   ./visit-install -private -c closed -g visit -gw $ver irix6 /usr/gapps/visit > installlog 2>&1
+   ./visit-install -private -c closed -g visit -gw -l $ver irix6 /usr/gapps/visit > installlog 2>&1
 fi
 rm -f resultlog
 echo "        install of visit on tidalwave"       > resultlog 2>&1
@@ -274,9 +264,9 @@ cat <<EOF > white
 #!/bin/sh
 if [ -d /usr/gapps/visit/$ver ]
 then
-   ./visit-install -private -a -c closed -g visit -gw $ver aix /usr/gapps/visit > installlog 2>&1
+   ./visit-install -private -a -c closed -g visit -gw -l $ver aix /usr/gapps/visit > installlog 2>&1
 else
-   ./visit-install -private -c closed -g visit -gw $ver aix /usr/gapps/visit > installlog 2>&1
+   ./visit-install -private -c closed -g visit -gw -l $ver aix /usr/gapps/visit > installlog 2>&1
 fi
 rm -f resultlog
 echo "        install of visit on white"           > resultlog 2>&1
@@ -307,9 +297,9 @@ cat <<EOF > emperor
 #!/bin/sh
 if [ -d /usr/gapps/visit/$ver ]
 then
-   ./visit-install $verflag -a -c closed -g visit -gw $ver linux /usr/gapps/visit > installlog 2>&1
+   ./visit-install $verflag -a -c closed -g visit -gw -l $ver linux /usr/gapps/visit > installlog 2>&1
 else
-   ./visit-install $verflag -c closed -g visit -gw $ver linux /usr/gapps/visit > installlog 2>&1
+   ./visit-install $verflag -c closed -g visit -gw -l $ver linux /usr/gapps/visit > installlog 2>&1
 fi
 rm -f resultlog
 echo "        install of visit on emperor"         > resultlog 2>&1

@@ -8,8 +8,8 @@
 # Date:   October 26, 1996
 #
 # Usage
-#    visit-install [-a] [-beta | -private] [-g group] [-gw]
-#                  version platform directory
+#    visit-install [-a] [-c open | closed] [-g group] [-gw] [-l]
+#                  [-beta | -private] version platform directory
 #
 #    The default is to install this version as the current version.
 #    The -beta flag makes this version the current beta version instead.
@@ -61,6 +61,9 @@
 #    execute file permissions so they can run when double-clicked in
 #    the Finder.
 #
+#    Eric Brugger, Tue Dec 23 11:05:37 PST 2003
+#    I added an option to enable usage logging.
+#
 #-----------------------------------------------------------------------
 
 set Compress = COMPRESS
@@ -69,6 +72,7 @@ set append = false
 set beta = false
 set private = false
 set config = prompt
+set logging = false
 set group_ownership = none
 set dir_permission = 755
 set file_permission = 644
@@ -108,6 +112,10 @@ while ($option_found == true)
          shift
          shift
          breaksw
+      case -l:
+         set logging = true
+         shift
+         breaksw
       default:
          set option_found = false
          breaksw
@@ -115,7 +123,8 @@ while ($option_found == true)
 end
 
 if ($#argv != 3) then
-   echo "Usage: visit-install [-g group] [-gw] version platform directory"
+   echo "Usage: visit-install [-a] [-c open | closed] [-g group] [-gw] [-l]"
+   echo "                     [-beta | -private] version platform directory"
    exit (1)
 endif
 
@@ -221,7 +230,11 @@ endif
 # installation in a consistent state with the exception of the
 # data directory.
 #
-cp distribution/visit/bin/visit                  $dir/bin/visit+
+if ($logging == false) then
+   cp distribution/visit/bin/visit $dir/bin/visit+
+else
+   sed -e "s/logging      = 0/logging      = 1/" distribution/visit/bin/visit > $dir/bin/visit+
+endif
 
 if (-e $dir/$version+)           rm -rf $dir/$version+
 if ($append == false) then
@@ -296,11 +309,19 @@ chmod $dir_permission $dir/$version+/*/bin/*
 #
 if ($group_ownership != none) then
     chgrp $group_ownership $dir/bin
-    chgrp $group_ownership $dir/bin/visit
+    chgrp $group_ownership $dir/bin/visit+
     chgrp $group_ownership $dir/data
     chgrp $group_ownership $dir/data/*
     find $dir/$version+ -type d -exec chgrp $group_ownership {} \;
     find $dir/$version+ -type f -exec chgrp $group_ownership {} \;
+endif
+
+if ($logging == true) then
+    touch $dir/$version+/usagelog
+    chmod 666 $dir/$version+/usagelog
+    if ($group_ownership != none) then
+        chgrp $group_ownership $dir/$version/usagelog
+    endif
 endif
 
 #
