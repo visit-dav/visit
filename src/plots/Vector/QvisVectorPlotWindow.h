@@ -34,6 +34,9 @@ class QvisColorTableButton;
 //   Brad Whitlock, Fri Aug 29 11:34:52 PDT 2003
 //   I grouped related fields into group boxes.
 //
+//   Jeremy Meredith, Fri Nov 21 12:06:46 PST 2003
+//   Added radio buttons for vector origin.
+//
 // ****************************************************************************
 
 class QvisVectorPlotWindow : public QvisPostableWindowObserver
@@ -67,6 +70,7 @@ private slots:
     void drawHeadToggled();
     void colorModeChanged(int);
     void colorTableClicked(bool useDefault, const QString &ctName);
+    void originTypeChanged(int);
 private:
     int                  plotType;
     VectorAttributes     *vectorAtts;
@@ -86,6 +90,7 @@ private:
     QLineEdit            *strideLineEdit;
     QCheckBox            *legendToggle;
     QCheckBox            *drawHeadToggle;
+    QButtonGroup         *originButtonGroup;
 };
 
 #endif

@@ -7,6 +7,7 @@
 #include <qlabel.h>
 #include <qcheckbox.h>
 #include <qlineedit.h>
+#include <qhbox.h>
 
 #include <VectorAttributes.h>
 #include <ViewerProxy.h>
@@ -98,12 +99,15 @@ QvisVectorPlotWindow::~QvisVectorPlotWindow()
 //   Brad Whitlock, Fri Aug 29 11:37:35 PDT 2003
 //   Grouped like items into group boxes.
 //
+//   Jeremy Meredith, Fri Nov 21 12:29:29 PST 2003
+//   Added vector origin type radio buttons.
+//
 // ****************************************************************************
 
 void
 QvisVectorPlotWindow::CreateWindowContents()
 {
-    QGridLayout *gLayout = new QGridLayout(topLayout, 5, 4);
+    QGridLayout *gLayout = new QGridLayout(topLayout, 6, 4);
     gLayout->setSpacing(10);
 
     // Create the lineStyle widget.
@@ -230,18 +234,35 @@ QvisVectorPlotWindow::CreateWindowContents()
     rgLayout->addWidget(strideLineEdit, 1, 1);
 
     //
+    // Create the radio buttons to choose the glyph origin
+    //
+    originButtonGroup = new QButtonGroup(0, "originButtonGroup");
+    QHBox *originBox = new QHBox(central, "originBox");
+    originBox->setSpacing(10);
+    new QLabel("Vector origin", originBox, "originLabel");
+    connect(originButtonGroup, SIGNAL(clicked(int)),
+            this, SLOT(originTypeChanged(int)));
+    rb = new QRadioButton("Head", originBox);
+    originButtonGroup->insert(rb,0);
+    rb = new QRadioButton("Middle", originBox);
+    originButtonGroup->insert(rb,1);
+    rb = new QRadioButton("Tail", originBox);
+    originButtonGroup->insert(rb,2);
+    gLayout->addMultiCellWidget(originBox, 4, 4, 0, 3);
+
+    //
     // Add the toggle buttons
     //
 
     // Add the legend toggle button.
     legendToggle = new QCheckBox("Legend", central, "legendToggle");
     connect(legendToggle, SIGNAL(clicked()), this, SLOT(legendToggled()));
-    gLayout->addMultiCellWidget(legendToggle, 4, 4, 0, 1);
+    gLayout->addMultiCellWidget(legendToggle, 5, 5, 0, 1);
 
     // Add the "draw head" toggle button.
     drawHeadToggle = new QCheckBox("Draw head", central, "drawHeadToggle");
     connect(drawHeadToggle, SIGNAL(clicked()), this, SLOT(drawHeadToggled()));
-    gLayout->addMultiCellWidget(drawHeadToggle, 4, 4, 2, 3);
+    gLayout->addMultiCellWidget(drawHeadToggle, 5, 5, 2, 3);
 }
 
 // ****************************************************************************
@@ -276,6 +297,9 @@ QvisVectorPlotWindow::CreateWindowContents()
 //
 //   Brad Whitlock, Fri Feb 15 11:49:23 PDT 2002
 //   Fixed format strings.
+//
+//   Jeremy Meredith, Fri Nov 21 12:29:16 PST 2003
+//   Added vector origin type radio buttons.
 //
 // ****************************************************************************
 
@@ -358,6 +382,22 @@ QvisVectorPlotWindow::UpdateWindow(bool doAll)
         case 11: // colorTableName
             colorTableButton->setColorTable(vectorAtts->GetColorTableName().c_str());
             break;
+        case 12: // vectorOrigin
+            originButtonGroup->blockSignals(true);
+            switch (vectorAtts->GetVectorOrigin())
+            {
+              case VectorAttributes::Head:
+                originButtonGroup->setButton(0);
+                break;
+              case VectorAttributes::Middle:
+                originButtonGroup->setButton(1);
+                break;
+              case VectorAttributes::Tail:
+                originButtonGroup->setButton(2);
+                break;
+            }
+            originButtonGroup->blockSignals(false);
+          break;
         }
     } // end for
 }
@@ -807,5 +847,37 @@ QvisVectorPlotWindow::colorTableClicked(bool useDefault,
 {
     vectorAtts->SetColorByMag(true);
     vectorAtts->SetColorTableName(ctName.latin1());
+    Apply();
+}
+
+// ****************************************************************************
+//  Method:  
+//
+//  Purpose:
+//    Qt slot function to change the state of the vector origin type on
+//    response to a radio button click.
+//
+//  Arguments:
+//    index      the index of the radio button
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November 21, 2003
+//
+// ****************************************************************************
+void
+QvisVectorPlotWindow::originTypeChanged(int index)
+{
+    if (index==0)
+    {
+        vectorAtts->SetVectorOrigin(VectorAttributes::Head);
+    }
+    else if (index==1)
+    {
+        vectorAtts->SetVectorOrigin(VectorAttributes::Middle);
+    }
+    else
+    {
+        vectorAtts->SetVectorOrigin(VectorAttributes::Tail);
+    }
     Apply();
 }

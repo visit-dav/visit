@@ -199,6 +199,9 @@ Navigate3D::StartLeftButtonAction()
 //    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002
 //    Removed arguments to match vtk's new interactor api. 
 //
+//    Eric Brugger, Thu Nov 20 15:24:48 PST 2003
+//    Added code to call the view callback.
+//
 // ****************************************************************************
 
 void
@@ -220,6 +223,8 @@ Navigate3D::EndLeftButtonAction()
     }
 
     EndBoundingBox();
+
+    IssueViewCallback();
 }
 
 
@@ -281,6 +286,9 @@ Navigate3D::StartMiddleButtonAction()
 //    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002
 //    Removed arguments to match vtk's new interactor api.
 //
+//    Eric Brugger, Thu Nov 20 15:24:48 PST 2003
+//    Added code to call the view callback.
+//
 // ****************************************************************************
 
 void
@@ -289,6 +297,8 @@ Navigate3D::EndMiddleButtonAction()
     EndZoom();
 
     EndBoundingBox();
+
+    IssueViewCallback();
 }
 
 

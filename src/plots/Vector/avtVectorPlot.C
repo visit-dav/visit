@@ -304,6 +304,9 @@ avtVectorPlot::CustomizeMapper(avtDataObjectInformation &doi)
 //    Jeremy Meredith, Thu Aug 23 14:11:40 PDT 2001
 //    Made it use the color table name "Default" instead of the boolean flag.
 //
+//    Jeremy Meredith, Fri Nov 21 11:30:35 PST 2003
+//    Added origin offset.
+//
 // ****************************************************************************
 
 void
@@ -333,6 +336,15 @@ avtVectorPlot::SetAtts(const AttributeGroup *a)
 
     glyph->SetMakeHead(atts.GetHeadOn());
     glyph->SetHeadSize(atts.GetHeadSize());
+
+    float offset;
+    switch (atts.GetVectorOrigin())
+    {
+      case VectorAttributes::Head:    offset = -.5;  break;
+      case VectorAttributes::Middle:  offset =   0;  break;
+      case VectorAttributes::Tail:    offset = +.5;  break;
+    }
+    glyph->SetOriginOffset(offset);
 
     glyphMapper->SetScale(atts.GetScale());
 

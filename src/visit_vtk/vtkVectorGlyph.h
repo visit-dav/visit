@@ -55,6 +55,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "vtkPolyDataSource.h"
 
+//  Modifications:
+//    Jeremy Meredith, Fri Nov 21 11:25:27 PST 2003
+//    Added offset to allow glyphs to originate/terminate at the point.
+//
+
+
 class VISIT_VTK_API vtkVectorGlyph : public vtkPolyDataSource
 {
 public:
@@ -67,6 +73,9 @@ public:
 
   vtkSetClampMacro(HeadSize,float,0.0,1.0);
   vtkGetMacro(HeadSize,float);
+
+  vtkSetClampMacro(OriginOffset,float,-.5,+.5);
+  vtkGetMacro(OriginOffset,float);
 
   vtkSetMacro(ConeHead,int);
   vtkGetMacro(ConeHead,int);
@@ -84,6 +93,7 @@ protected:
   int ConeHead;
   int MakeHead;
   float HeadSize;
+  float OriginOffset;
 
 private:
   vtkVectorGlyph(const vtkVectorGlyph&);
