@@ -131,6 +131,9 @@ class VisWindow;
 //    Hank Childs, Mon Mar 22 11:10:43 PST 2004
 //    Allow for the database's file format type to be specified explicitly.
 //
+//    Jeremy Meredith, Tue Mar 23 10:55:10 PST 2004
+//    Added a file format string to StartNetwork.
+//
 // ****************************************************************************
 class NetworkManager
 {
@@ -145,7 +148,7 @@ class NetworkManager
     NetnodeDB*    GetDBFromCache(const string &filename, int time,
                                  const char * = NULL);
     void          StartNetwork(const std::string&, const std::string &,
-                               int,
+                               const std::string &, int,
                                const CompactSILRestrictionAttributes &,
                                const MaterialAttributes &);
     void          DefineDB(const std::string &, const std::string &,

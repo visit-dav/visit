@@ -141,6 +141,9 @@ RPCExecutor<KeepAliveRPC>::Execute(KeepAliveRPC *rpc)
 //    Hank Childs, Tue Mar  9 14:27:31 PST 2004
 //    Load the database plugin before reading.
 //
+//    Jeremy Meredith, Tue Mar 23 14:41:33 PST 2004
+//    Added the file format as an argument to StartNetwork.
+//
 // ****************************************************************************
 template<>
 void
@@ -153,7 +156,8 @@ RPCExecutor<ReadRPC>::Execute(ReadRPC *rpc)
     TRY
     {
         DatabasePluginManager::Instance()->PluginAvailable(rpc->GetFormat());
-        netmgr->StartNetwork(rpc->GetFile(), rpc->GetVar(), rpc->GetTime(),
+        netmgr->StartNetwork(rpc->GetFile(), rpc->GetFormat(),
+                             rpc->GetVar(), rpc->GetTime(),
                              rpc->GetCSRAttributes(),
                              rpc->GetMaterialAttributes());
         rpc->SendReply();

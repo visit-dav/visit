@@ -103,6 +103,10 @@ ViewerSubject  *viewerSubject=0;
 
 using std::string;
 
+// Static method to split a string using a given delimiter
+static vector<string> SplitValues(const string &buff, char delim);
+
+
 // ****************************************************************************
 //  Method: ViewerSubject constructor
 //
@@ -1162,6 +1166,8 @@ ViewerSubject::AddInitialWindows()
 // Creation:   Tue Jun 17 15:21:00 PST 2003
 //
 // Modifications:
+//    Jeremy Meredith, Tue Mar 23 14:34:53 PST 2004
+//    Use the engineParallelArguments for this launch.
 //   
 // ****************************************************************************
 
@@ -1175,7 +1181,8 @@ ViewerSubject::LaunchEngineOnStartup()
     {
         stringVector noArgs;
         ViewerEngineManager::Instance()->CreateEngine(launchEngineAtStartup.c_str(),
-                                                      noArgs, true, numEngineRestarts);
+                                                      engineParallelArguments,
+                                                      true, numEngineRestarts);
     }
 }
 
@@ -1631,6 +1638,14 @@ ViewerSubject::GetOperatorFactory() const
 //    Brad Whitlock, Fri Aug 15 13:20:16 PST 2003
 //    Added support for MacOS X styles.
 //
+//    Jeremy Meredith, Tue Mar 23 14:31:29 PST 2004
+//    Added parsing of the new "-engineargs" flag.  This is to eliminate
+//    blind passing-on of arguments like "-np" etc., because we will not
+//    be able to remove those later if the user needs to re-launch the engine.
+//    The viewer expects the engine parallel arguments to be passed in
+//    as a colon-delimited string, with an optional leading/trailing colon
+//    to prevent parsing errors.  The visit script fills this expectation.
+//
 // ****************************************************************************
 
 void
@@ -1856,6 +1871,16 @@ ViewerSubject::ProcessCommandLine(int *argc, char ***argv)
                 continue;
             }
             numEngineRestarts = atoi(argv2[++i]);
+        }
+        else if (strcmp(argv2[i], "-engineargs") == 0)
+        {
+            if ((i + 1 >= argc2))
+            {
+                cerr << "The -engineargs option must be followed by a "
+                        "string." << endl;
+                continue;
+            }
+            engineParallelArguments = SplitValues(argv2[++i], ':');
         }
         else // Unknown argument -- add it to the list
         {
@@ -3042,6 +3067,9 @@ ViewerSubject::CreateAttributesDataNode(const avtDefaultPlotMetaData *dp) const
 //    Hank Childs, Fri Mar  5 11:39:22 PST 2004
 //    Send the file format type to the engine.
 //
+//    Jeremy Meredith, Mon Mar 22 17:12:22 PST 2004
+//    I made use of the "success" result flag from CreateEngine.
+//
 // ****************************************************************************
 
 void
@@ -3103,25 +3131,31 @@ ViewerSubject::OpenDatabaseHelper(const std::string &entireDBName,
         // Create a compute engine to use with the database.
         //
         stringVector noArgs;
-        ViewerEngineManager::Instance()->CreateEngine(host.c_str(), noArgs,
+        bool success = ViewerEngineManager::Instance()->
+                                        CreateEngine(host.c_str(), noArgs,
                                                      false, numEngineRestarts);
 
-        //
-        // Tell the new engine to open the specified database.
-        //
-        ViewerEngineManager *eMgr = ViewerEngineManager::Instance();
-        if(md->GetIsVirtualDatabase() && md->GetNumStates() > 1)
+        if (success)
         {
-            eMgr->DefineVirtualDatabase(host.c_str(), 
-                                        md->GetFileFormat().c_str(),db.c_str(),
-                                        md->GetTimeStepPath().c_str(),
-                                        md->GetTimeStepNames(),
-                                        timeState);
-        }
-        else
-        {
-            eMgr->OpenDatabase(host.c_str(), md->GetFileFormat().c_str(),
-                               db.c_str(), timeState);
+            //
+            // Tell the new engine to open the specified database.
+            // Don't bother if you couldn't even start an engine.
+            //
+            ViewerEngineManager *eMgr = ViewerEngineManager::Instance();
+            if(md->GetIsVirtualDatabase() && md->GetNumStates() > 1)
+            {
+                eMgr->DefineVirtualDatabase(host.c_str(), 
+                                            md->GetFileFormat().c_str(),
+                                            db.c_str(),
+                                            md->GetTimeStepPath().c_str(),
+                                            md->GetTimeStepNames(),
+                                            timeState);
+            }
+            else
+            {
+                eMgr->OpenDatabase(host.c_str(), md->GetFileFormat().c_str(),
+                                   db.c_str(), timeState);
+            }
         }
         
         //
@@ -5936,4 +5970,43 @@ void
 ViewerSubject::SetDefaultPickAttributes()
 {
     ViewerQueryManager::Instance()->SetDefaultPickAttsFromClient();
+}
+
+// ****************************************************************************
+//  Function:  SplitValues
+//
+//  Purpose:
+//    Separate a string into a vector of strings using a single char delimiter.
+//
+//  Arguments:
+//    buff       the string to split
+//    delim      the single-character delimiter
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    March 23, 2004
+//
+// ****************************************************************************
+static vector<string>
+SplitValues(const string &buff, char delim)
+{
+    vector<string> output;
+    
+    string tmp="";
+    for (int i=0; i<buff.length(); i++)
+    {
+        if (buff[i] == delim)
+        {
+            if (!tmp.empty())
+                output.push_back(tmp);
+            tmp = "";
+        }
+        else
+        {
+            tmp += buff[i];
+        }
+    }
+    if (!tmp.empty())
+        output.push_back(tmp);
+
+    return output;
 }

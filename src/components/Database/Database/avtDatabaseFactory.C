@@ -277,6 +277,10 @@ avtDatabaseFactory::FileList(const char * const * filelist, int filelistN,
 //  Programmer: Hank Childs
 //  Creation:   March 22, 2004
 //
+//  Modifications:
+//    Jeremy Meredith/Hank Childs, Tue Mar 23 12:26:55 PST 2004
+//    Set the file format with the database, not the meta-data.
+//
 // ****************************************************************************
 
 avtDatabase *
@@ -299,8 +303,8 @@ avtDatabaseFactory::SetupDatabase(CommonDatabasePluginInfo *info,
     if (rv != NULL)
     {
         rv->ActivateTimestep(timestep);
-        avtDatabaseMetaData *md = rv->GetMetaData(timestep);
-        md->SetFileFormat(info->GetID());
+        rv->SetFileFormat(info->GetID());
+        rv->GetMetaData(timestep);
     }
 
     return rv;

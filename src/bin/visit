@@ -300,6 +300,12 @@ $0 = shift @ARGV;
 #    Eric Brugger, Tue Mar 16 13:56:05 PST 2004
 #    Added /usr/local/lib to LD_LIBRARY_PATH.
 #
+#    Jeremy Meredith, Tue Mar 23 14:21:57 PST 2004
+#    Added better support for parallel engine arguments.  Instead of expecting
+#    the viewer to pass them along, we concatenate them into a single
+#    colon-delimited string and pass it as the argument to "-engineargs", which
+#    is a new option the viewer can parse.
+#
 ###############################################################################
 
 
@@ -690,15 +696,22 @@ if ((($parallel) or ($launchengine)) and
 {
     # If we're trying to run in parallel, or we've been explicitly
     # told to launch an engine, add any parallel arguments back on
-    push @visitargs, "-par"                   if ($parallel && !$procs_set);
-    push @visitargs, "-l",  $launch           if ($launch_set);
-    push @visitargs, "-la", "@launchargs"     if ($launchargs_set);
-    push @visitargs, "-np", $procs            if ($procs_set);
-    push @visitargs, "-nn", $nodes            if ($nodes_set);
-    push @visitargs, "-n",  $name             if ($name_set);
-    push @visitargs, "-p",  $part             if ($part_set);
-    push @visitargs, "-b",  $bank             if ($bank_set);
-    push @visitargs, "-t",  $time             if ($time_set);
+    @engine_parallel_args = ();
+    push @engine_parallel_args, "-par"                   if ($parallel && !$procs_set);
+    push @engine_parallel_args, "-l",  $launch           if ($launch_set);
+    push @engine_parallel_args, "-la", "@launchargs"     if ($launchargs_set);
+    push @engine_parallel_args, "-np", $procs            if ($procs_set);
+    push @engine_parallel_args, "-nn", $nodes            if ($nodes_set);
+    push @engine_parallel_args, "-n",  $name             if ($name_set);
+    push @engine_parallel_args, "-p",  $part             if ($part_set);
+    push @engine_parallel_args, "-b",  $bank             if ($bank_set);
+    push @engine_parallel_args, "-t",  $time             if ($time_set);
+
+    if (scalar(@engine_parallel_args) > 0)
+    {
+	$engine_arg_string = ":".join(':', @engine_parallel_args);
+	push @visitargs, "-engineargs", $engine_arg_string;
+    }
 
     # ... but don't confuse the script
     $parallel=0;

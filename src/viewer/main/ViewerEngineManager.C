@@ -50,6 +50,11 @@ using std::string;
 //    Inserted "false" before numRestarts so that it wouldn't take numRestarts
 //    as the value for skipChooser. 
 //
+//    Jeremy Meredith, Mon Mar 22 17:15:44 PST 2004
+//    Added a setting of retry=false when creating the engine in the first
+//    section of code, because if the user cancels the launch of the engine,
+//    it could otherwise get into an infinite loop.
+//
 #define ENGINE_PROXY_RPC_BEGIN(rpcname)  \
     const char *hostName = RealHostName(hostName_); \
     bool retval = false; \
@@ -66,6 +71,7 @@ using std::string;
                    << hostName << ".\n****" << endl; \
             CreateEngine(hostName_, restartArguments, false, numRestarts); \
             engineIndex = GetEngineIndex(hostName); \
+            retry = false; \
         } \
         if(engineIndex >= 0) \
         { \
@@ -449,9 +455,13 @@ ViewerEngineManager::GetEngineIndex(const char *hostName) const
 //    Mark C. Miller, Sat Jan 17 12:40:16 PST 2004
 //    Changed how numRestarts is set 
 //
+//    Jeremy Meredith, Mon Mar 22 17:55:36 PST 2004
+//    Added a boolean "success" return value to this method.  Cancelling
+//    or failing to start an engine results in a return value of false.
+//
 // ****************************************************************************
 
-void
+bool
 ViewerEngineManager::CreateEngine(const char *hostName,
                                   const stringVector &args,
                                   bool skipChooser,
@@ -477,13 +487,17 @@ ViewerEngineManager::CreateEngine(const char *hostName,
     //
     // If an engine for the host doesn't already exist, create one.
     //
+    int success = true;
     if(engineIndex < 0)
     {
+        success = false;
         ViewerRemoteProcessChooser *chooser =
                                         ViewerRemoteProcessChooser::Instance();
 
         if (! chooser->SelectProfile(clientAtts,hostName,skipChooser))
-            return;
+        {
+            return false;
+        }
 
         EngineProxy *newEngine = new EngineProxy;
 
@@ -565,6 +579,9 @@ ViewerEngineManager::CreateEngine(const char *hostName,
 
             // Now that the new engine is in the list, tell the GUI.
             UpdateEngineList();
+
+            // Success!
+            success = true;
         }
         CATCH2(BadHostException, e)
         {
@@ -634,6 +651,8 @@ ViewerEngineManager::CreateEngine(const char *hostName,
         // Delete the connection dialog
         delete dialog;
     }
+
+    return success;
 }
 
 // ****************************************************************************
@@ -1040,6 +1059,11 @@ ViewerEngineManager::LaunchMessage(const char *hostName) const
 //   Added setting of engineIndex to the loop over plots. Added use of
 //   RealHostName in computing the engineIndex
 //
+//   Jeremy Meredith, Mon Mar 22 17:57:32 PST 2004
+//   Added a check to make sure the engine actually existed before clearing
+//   its status inside the exception handler.  It is possible the engine died
+//   or was closed when it gets to that piece of code.
+//
 // ****************************************************************************
 
 bool
@@ -1142,7 +1166,8 @@ ViewerEngineManager::ExternalRender(std::vector<const char*> pluginIDsList,
 #endif
         // Send a message to the client to clear the status for the
         // engine that had troubles.
-        ClearStatus(engines[engineIndex]->hostName);
+        if (engineIndex >= 0)
+            ClearStatus(engines[engineIndex]->hostName);
 
         //
         //  Let calling method handle this exception. 
@@ -2255,14 +2280,23 @@ ViewerEngineManager::Query(const char *hostName_, const std::vector<int> &nid,
 // Programmer: Kathleen Bonnell 
 // Creation:   September 18, 2002 
 //
+//    Jeremy Meredith, Mon Mar 22 17:59:09 PST 2004
+//    First, I made it not bother attempting this if there was no engine
+//    for this host.  Second, I made it not attempt to restart an engine
+//    if it had died.
+//
 // ****************************************************************************
 
 bool
 ViewerEngineManager::ReleaseData(const char *hostName_, int id)
 {
+    // If the engine has gone away, we have no need to call this method!
+    if (GetEngineIndex(RealHostName(hostName_)) < 0)
+        return true;
+
     ENGINE_PROXY_RPC_BEGIN("ReleaseData");
     engine->ReleaseData(id);
-    ENGINE_PROXY_RPC_END;
+    ENGINE_PROXY_RPC_END_NORESTART;
 }
 
 // ****************************************************************************

@@ -3173,6 +3173,10 @@ ViewerPlotList::InterruptUpdatePlotList()
 //    Kathleen Bonnell, Thu Aug 28 10:10:35 PDT 2003 
 //    Added call to CanMeshPlotBeOpaque.
 //
+//    Jeremy Meredith, Mon Mar 22 17:40:13 PST 2004
+//    Removed the ifdef to disable caching.  It was past its expiration date.
+//    I added a check to see if a plot was interrupted during its creation.
+//
 // ****************************************************************************
 
 bool
@@ -3193,11 +3197,8 @@ ViewerPlotList::UpdatePlots(const int frame, bool animating)
             if (plots[i].realized &&
                 plots[i].plot->IsInFrameRange(frame) &&
                 !plots[i].hidden &&
-                !plots[i].plot->GetErrorFlag()
-#ifndef JEREMY_CACHE_KLUDGE
-                && plots[i].plot->NoActorExists(frame)
-#endif
-                )
+                !plots[i].plot->GetErrorFlag() &&
+                plots[i].plot->NoActorExists(frame))
             {
                 if(interrupted)
                 {
@@ -3227,6 +3228,12 @@ ViewerPlotList::UpdatePlots(const int frame, bool animating)
 #else
                 CreatePlot((void *)info);
 #endif
+
+                if(interrupted)
+                {
+                    plots[i].plot->SetErrorFlag(true);
+                    continue;
+                }
             }
         }
 
@@ -3813,6 +3820,12 @@ ViewerPlotList::UpdatePlotAtts(bool updateThoseNotRepresented) const
 //  Programmer: Mark C. Miller
 //  Creation:   07Apr03 
 //
+//  Modifications:
+//    Jeremy Meredith, Tue Mar 23 14:27:15 PST 2004
+//    Scalable rendering required an actor to not only exist but also
+//    have some actor before scalable rendering would affect it.  I
+//    made the test for plots to be rendered more stringent.
+//
 // ****************************************************************************
 
 void
@@ -3827,7 +3840,7 @@ ViewerPlotList::GetCurrentPlotAtts(
     for (int i = 0; i < nPlots; i++)
     {
         if (plots[i].plot->IsInFrameRange(frame) && !plots[i].hidden &&
-            plots[i].realized)
+            plots[i].realized && !plots[i].plot->NoActorExists(frame))
         {
            ViewerPlot *plot = plots[i].plot;
 
@@ -4470,6 +4483,12 @@ PthreadAttrInit(pthread_attr_t *attr)
 //    I added code to catch AbortException which is now rethrown from
 //    the call to CreateActor.
 //
+//    Jeremy Meredith, Tue Mar 23 14:29:07 PST 2004
+//    I made it check that the SetWindowAtts RPC succeeded before proceeding,
+//    and setting the interruption status if not.  The SetWindowAtts RPC is
+//    the first one called for a plot, so it can fail if the engine didn't
+//    launch.
+//
 // ****************************************************************************
 
 void *
@@ -4479,8 +4498,13 @@ CreatePlot(void *info)
 
     TRY
     {
-        plotInfo->animation->SetWindowAtts(plotInfo->plot->GetHostName());
-        plotInfo->plot->CreateActor(plotInfo->animation->GetFrameIndex());
+        bool success =
+            plotInfo->animation->SetWindowAtts(plotInfo->plot->GetHostName());
+
+        if (success)
+            plotInfo->plot->CreateActor(plotInfo->animation->GetFrameIndex());
+        else
+            plotInfo->plotList->InterruptUpdatePlotList();
     }
     CATCH(AbortException)
     {

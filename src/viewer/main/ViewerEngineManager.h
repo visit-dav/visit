@@ -132,6 +132,9 @@ typedef struct
 //    Brad Whitlock, Fri Mar 12 11:39:27 PDT 2004
 //    Added SendKeepAlives.
 //
+//    Jeremy Meredith, Mon Mar 22 09:20:58 PST 2004
+//    Made CreateEngine return a success flag.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerEngineManager : public ViewerServerManager,
@@ -143,7 +146,7 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
 
     static ViewerEngineManager *Instance();
 
-    void CreateEngine(const char *hostname,
+    bool CreateEngine(const char *hostname,
                       const std::vector<std::string> &arguments,
                       bool  skipChooser=false,
                       int numRestarts=-1);

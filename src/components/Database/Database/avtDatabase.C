@@ -58,6 +58,9 @@ bool      avtDatabase::onlyServeUpMetaData = false;
 //    Hank Childs, Fri Aug 31 17:01:18 PDT 2001
 //    Initialized gotIOInfo.
 //
+//    Jeremy Meredith/Hank Childs, Tue Mar 23 12:26:55 PST 2004
+//    Initialize file format type.
+//
 // ****************************************************************************
 
 avtDatabase::avtDatabase()
@@ -65,6 +68,7 @@ avtDatabase::avtDatabase()
     gotIOInfo         = false;
     invariantMetaData = NULL;
     invariantSIL      = NULL;
+    fileFormat        = "<unknown>";
 }
 
 
@@ -529,6 +533,9 @@ avtDatabase::GetMostRecentTimestep(void) const
 //    Hank Childs, Thu Jan 22 10:05:41 PST 2004
 //    Do not populate the I/O information if we are only getting meta-data.
 //
+//    Jeremy Meredith/Hank Childs, Tue Mar 23 12:26:55 PST 2004
+//    Set the file format with the meta-data.
+//
 // ****************************************************************************
 
 void
@@ -551,6 +558,7 @@ avtDatabase::GetNewMetaData(int timeState)
         fname = filename;
     SetDatabaseMetaData(md, timeState);
     md->SetDatabaseName(fname);
+    md->SetFileFormat(fileFormat);
     md->SetMustRepopulateOnStateChange(!MetaDataIsInvariant() ||
                                        !SILIsInvariant());
 

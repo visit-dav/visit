@@ -141,6 +141,12 @@ ViewerHostProfileSelectorWithWin::~ViewerHostProfileSelectorWithWin()
 //    Kathleen Bonnell, Wed Feb  5 09:46:31 PST 2003
 //    Extracted code from ViewerHostProfileSelector::GetNewEngine.
 //
+//    Jeremy Meredith, Tue Mar 23 13:18:27 PST 2004
+//    Disabled the code to cache the profile.  With our big parallel machines, 
+//    resources change so frequently that it will irritate users to assume
+//    that they want the same number of processors every time the engine
+//    launches.
+//
 // ****************************************************************************
 
 bool 
@@ -213,7 +219,13 @@ ViewerHostProfileSelectorWithWin::SelectProfile(
         }
 
         // Save it for use later
-        cachedProfile[hostName] = profile;
+
+        // DISABLED 3/23/04 JSM:  No!  This was causing more usability
+        // issues than it solved.  With our big parallel machines, 
+        // resources change so frequently that it will irritate a 
+        // user to assume that they want the same number of processors
+        // every time the engine launches.
+        //cachedProfile[hostName] = profile;
     }
     return true;
 }
