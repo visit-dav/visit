@@ -194,6 +194,9 @@
 #    Jeremy Meredith, Tue Feb 22 18:55:53 PST 2005
 #    Renamed convert to the more unique visitconver.
 #
+#    Jeremy Meredith, Thu Mar 17 11:31:49 PST 2005
+#    Added xml2plugin back into the distribution.
+#
 #------------------------------------------------------------------------------
 
 set DataFiles = "TRUE"
@@ -583,6 +586,9 @@ set frameworkdir = distribution/visit/$Version/$visitbindir/Frameworks
 #
 cp $VisItDir/bin/legacylauncher    distribution/visit/bin/
 cp $VisItDir/bin/frontendlauncher  distribution/visit/bin/
+
+# copy xml2plugin
+cp $VisItDir/bin/xml2plugin        distribution/visit/bin/
 
 # Copy the version-specific visit script
 cp $VisItDir/bin/internallauncher $verdir/bin/

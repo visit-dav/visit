@@ -46,6 +46,9 @@
 //    Jeremy Meredith, Wed Aug 25 11:50:14 PDT 2004
 //    Added the concept of an engine-only or everything-but-the-engine plugin.
 //
+//    Jeremy Meredith, Thu Mar 17 12:52:28 PST 2005
+//    The onlyengine/noengine flags were getting save as the wrong value.
+//
 // ****************************************************************************
 
 class Plugin
@@ -143,8 +146,8 @@ class Plugin
         WriteTagAttr(out, "version", version);
         WriteTagAttr(out, "enabled", Bool2Text(enabledByDefault));
         WriteTagAttr(out, "mdspecificcode", Bool2Text(has_MDS_specific_code));
-        WriteTagAttr(out, "onlyengine", Bool2Text(has_MDS_specific_code));
-        WriteTagAttr(out, "noengine", Bool2Text(has_MDS_specific_code));
+        WriteTagAttr(out, "onlyengine", Bool2Text(onlyEnginePlugin));
+        WriteTagAttr(out, "noengine", Bool2Text(noEnginePlugin));
 
         if (type == "plot")
         {

@@ -16,10 +16,10 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "VisIt.h"
+#include "VisItV1.h"
 
 /* ****************************************************************************
-//  File:  VisIt.C
+//  File:  VisItV1.C
 //
 //  Purpose:
 //    Abstraction of VisIt Engine wrapper library.  Handles the
@@ -337,7 +337,7 @@ void VisItInitializeSocketAndDumpSimFile(char *name)
 
     EnsureSimulationDirectoryExists();
     
-    snprintf(simulationFileName, 255, "%s/.visit/simulations/%012d.%s.sim",
+    snprintf(simulationFileName, 255, "%s/.visit/simulations/%012d.%s.sim1",
              GetHomeDirectory(), (int)time(NULL), name);
 
     file = fopen(simulationFileName, "wt");
@@ -524,7 +524,7 @@ void VisItSetupEnvironment(void)
 
     /* VisIt can tell us what variables to set! */
     /* (redirect stderr so it won't complain if it can't find visit) */
-    file = popen("VISITPLUGINDIR=/data_vobs/VisIt/sim visit -env 2>/dev/null", "r");
+    file = popen("visit -env 2>/dev/null", "r");
     envoutput_ptr = envoutput;
     while ((n = read(fileno(file), envoutput_ptr, PIPE_BUF)) > 0)
     {
@@ -536,7 +536,7 @@ void VisItSetupEnvironment(void)
     /* If there was no output, then visit wasn't in their path */
     if (envoutput_ptr == envoutput)
     {
-        file = popen("VISITPLUGINDIR=/data_vobs/VisIt/sim /usr/gapps/visit/bin/visit -env 2>/dev/null", "r");
+        file = popen("/usr/gapps/visit/bin/visit -env 2>/dev/null", "r");
         envoutput_ptr = envoutput;
         while ((n = read(fileno(file), envoutput_ptr, PIPE_BUF)) > 0)
         {

@@ -932,10 +932,13 @@ avtScalarMetaData::avtScalarMetaData(std::string n, std::string mn,
 //    Hank Childs, Mon Feb 14 14:16:49 PST 2005
 //    Added original name.  Also added missing "s".
 //
+//    Jeremy Meredith, Wed Mar 16 17:44:36 PST 2005
+//    Added missing 'b'.
+//
 // ****************************************************************************
 
 avtScalarMetaData::avtScalarMetaData(const avtScalarMetaData &rhs)
-    : AttributeSubject("ssibffbbss")
+    : AttributeSubject("ssibffbbbss")
 {
     name           = rhs.name;
     originalName   = name;

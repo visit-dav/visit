@@ -24,13 +24,17 @@ class vtkUnstructuredGrid;
 //  Programmer: Jeremy Meredith
 //  Creation:   November 16, 2004
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Mar 17 09:37:26 PST 2005
+//    Fixed memory leak.
+//
 // ****************************************************************************
 
 class avtTecplotFileFormat : public avtSTMDFileFormat
 {
   public:
                        avtTecplotFileFormat(const char *);
-    virtual           ~avtTecplotFileFormat() {;};
+    virtual           ~avtTecplotFileFormat();
 
     virtual const char    *GetType(void)   { return "Tecplot"; };
     virtual void           FreeUpResources(void); 
