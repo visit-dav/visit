@@ -1270,18 +1270,26 @@ void vtkVisItClipper3D::GeneralExecute(void)
     ClipDataset(GetInput(), (vtkUnstructuredGrid*)GetOutput());
 }
 
+// ****************************************************************************
+//  Modifications:
+//
+//    Hank Childs, Sat Mar 27 10:56:08 PST 2004
+//    Work-around some funniness with VTK memory management.  (the funniness
+//    is a bug with the vtkClipDataSet filter.)
+//
+// ****************************************************************************
+
 void vtkVisItClipper3D::ClipDataset(vtkDataSet *in_ds,
                                     vtkUnstructuredGrid *out_ds)
 {
     vtkClipDataSet *clipData = vtkClipDataSet::New();
     clipData->SetInput(in_ds);
-    clipData->SetOutput(out_ds);
     //if (clipFunction 
     clipData->SetClipFunction(clipFunction);
     clipData->GenerateClipScalarsOff();
     clipData->SetInsideOut(insideOut);
     clipData->Update();
+    out_ds->ShallowCopy(clipData->GetOutput());
     clipData->Delete();
-    clipData = NULL;
 }
 
