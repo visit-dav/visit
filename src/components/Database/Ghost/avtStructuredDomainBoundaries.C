@@ -1123,12 +1123,18 @@ BoundaryHelperFunctions<T>::FakeNonexistentBoundaryData(int  d1,
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 25, 2001
 //
+//  Modifications:
+//    Mark C. Miller, Mon Jan 12 17:29:19 PST 2004
+//    Added optional bool, canComputeNeighborsFromExtents
+//
 // ****************************************************************************
-avtStructuredDomainBoundaries::avtStructuredDomainBoundaries()
+avtStructuredDomainBoundaries::avtStructuredDomainBoundaries(
+   bool canComputeNeighborsFromExtents)
 {
     bhf_int   = new BoundaryHelperFunctions<int>(this);
     bhf_float = new BoundaryHelperFunctions<float>(this);
     bhf_uchar = new BoundaryHelperFunctions<unsigned char>(this);
+    shouldComputeNeighborsFromExtents = canComputeNeighborsFromExtents; 
 }
 
 // ****************************************************************************
@@ -1178,33 +1184,22 @@ avtStructuredDomainBoundaries::Destruct(void *p)
 //    Hank Childs, Tue Nov 11 10:08:51 PST 2003
 //    Added call to DeclareNumDomains for the derived types.
 //
+//    Mark C. Miller, Mon Jan 12 17:29:19 PST 2004
+//    Added code to populate extents/levels if
+//    shouldComputeNeighborsFromExtents is true
+//
 // ****************************************************************************
 void
 avtStructuredDomainBoundaries::SetNumDomains(int nd)
 {
     wholeBoundary.resize(nd);
-    DeclareNumDomains(nd);
+
+    if (shouldComputeNeighborsFromExtents)
+    {
+        extents.resize(nd*6);
+        levels.resize(nd);
+    }
 }
-
-// ****************************************************************************
-//  Method: avtStructuredDomainBoundaries::DeclareNumDomains
-//
-//  Purpose:
-//      A hook to derived types declaring the number of domains.
-//      This routine does nothing and only exists so that derived types can
-//      re-define it.
-//
-//  Programmer: Hank Childs
-//  Creation:   November 11, 2003
-//
-// ****************************************************************************
-
-void
-avtStructuredDomainBoundaries::DeclareNumDomains(int ndomains)
-{
-     ;
-}
-
 
 // ****************************************************************************
 //  Method:  avtStructuredDomainBoundaries::SetExtents
@@ -2195,6 +2190,9 @@ avtStructuredDomainBoundaries::CreateGhostZones(vtkDataSet *outMesh,
 //    Hank Childs, Thu Nov 13 08:56:18 PST 2003
 //    Fixed stupid bug where arguments to CreateGhostZones were out of order.
 //
+//    Mark C. Miller, Mon Jan 12 19:21:22 PST 2004
+//    Added check and exception for wrong VTK grid type
+//
 // ****************************************************************************
 vector<vtkDataSet*>
 avtCurvilinearDomainBoundaries::ExchangeMesh(vector<int>         domainNum,
@@ -2221,6 +2219,13 @@ avtCurvilinearDomainBoundaries::ExchangeMesh(vector<int>         domainNum,
 
     for (d = 0; d < meshes.size(); d++)
     {
+        if (meshes[d]->GetDataObjectType() != VTK_STRUCTURED_GRID)
+        {
+            EXCEPTION1(VisItException,
+                       "avtStructuredDomainBoundaries: "
+                       "VTK data object type not VTK_STRUCTURED_GRID");
+        }
+
         int d1 = domainNum[d];
         vtkStructuredGrid *mesh = (vtkStructuredGrid*)(meshes[d]);
         Boundary *bi = &boundary[d1];
@@ -2269,6 +2274,11 @@ avtCurvilinearDomainBoundaries::ExchangeMesh(vector<int>         domainNum,
 //  Programmer:  Hank Childs
 //  Creation:    November 10, 2003
 //
+//  Modifications:
+//
+//    Mark C. Miller, Mon Jan 12 19:21:22 PST 2004
+//    Added check and exception for wrong VTK grid type
+//
 // ****************************************************************************
 
 vector<vtkDataSet*>
@@ -2298,6 +2308,13 @@ avtRectilinearDomainBoundaries::ExchangeMesh(vector<int>        domainNum,
 
     for (d = 0; d < meshes.size(); d++)
     {
+        if (meshes[d]->GetDataObjectType() != VTK_RECTILINEAR_GRID)
+        {
+            EXCEPTION1(VisItException,
+                       "avtRectilinearDomainBoundaries: "
+                       "VTK data object type not VTK_RECTILINEAR_GRID");
+        }
+
         int d1 = domainNum[d];
         vtkRectilinearGrid *mesh = (vtkRectilinearGrid*)(meshes[d]);
         Boundary *bi = &boundary[d1];
@@ -2345,26 +2362,7 @@ avtRectilinearDomainBoundaries::ExchangeMesh(vector<int>        domainNum,
 }
 
 // ****************************************************************************
-//  Method: avtRectilinearDomainBoundaries::DeclareNumDomains
-//
-//  Purpose:
-//      A message from the base class about how many domains there wil be.
-//
-//  Programmer: Hank Childs
-//  Creation:   November 11, 2003
-//
-// ****************************************************************************
-
-void
-avtRectilinearDomainBoundaries::DeclareNumDomains(int ndomains)
-{
-    extents.resize(ndomains*6);
-    levels.resize(ndomains);
-}
-
-
-// ****************************************************************************
-//  Method: avtRectilinearDomainBoundaries::SetIndicesForRectGrid
+//  Method: avtStructuredDomainBoundaries::SetIndicesForRectGrid
 //
 //  Purpose:
 //      Sets the indices for a rectilinear grid.  This just sets some state
@@ -2376,13 +2374,13 @@ avtRectilinearDomainBoundaries::DeclareNumDomains(int ndomains)
 // ****************************************************************************
 
 void
-avtRectilinearDomainBoundaries::SetIndicesForRectGrid(int domain, int e[6])
+avtStructuredDomainBoundaries::SetIndicesForRectGrid(int domain, int e[6])
 {
     SetIndicesForAMRPatch(domain, 0, e);
 }
 
 // ****************************************************************************
-//  Method: avtRectilinearDomainBoundaries::SetIndicesForAMRPatch
+//  Method: avtStructuredDomainBoundaries::SetIndicesForAMRPatch
 //
 //  Purpose:
 //      Sets the indices for an AMR patch.  This just sets some state
@@ -2391,16 +2389,30 @@ avtRectilinearDomainBoundaries::SetIndicesForRectGrid(int domain, int e[6])
 //  Programmer: Hank Childs
 //  Creation:   November 11, 2003
 //
+//  Modifications:
+//
+//    Mark C. Miller, Mon Jan 12 17:29:19 PST 2004
+//    Added code to disallow operation if shouldComputeNeighborsFromExtents is
+//    not true.
+//
 // ****************************************************************************
 
 void
-avtRectilinearDomainBoundaries::SetIndicesForAMRPatch(int domain, 
-                                                      int level, int e[6])
+avtStructuredDomainBoundaries::SetIndicesForAMRPatch(int domain, 
+                                                     int level, int e[6])
 {
     if (domain >= levels.size())
         EXCEPTION1(VisItException,
-                   "avtRectilinearDomainBoundaries: "
+                   "avtStructuredDomainBoundaries: "
                    "targetted domain more than number of domains");
+
+    if (!shouldComputeNeighborsFromExtents)
+    {
+        EXCEPTION1(VisItException,
+                   "avtStructuredDomainBoundaries: "
+                   "passing indices for a mesh that does not support "
+                   "computation of neighbors from index extents");
+    }
 
     levels[domain] = level;
     extents[6*domain+0] = e[0];
@@ -2421,7 +2433,7 @@ avtRectilinearDomainBoundaries::SetIndicesForAMRPatch(int domain,
 }
 
 // ****************************************************************************
-//  Method: avtRectilinearDomainBoundaries::CalculateBoundaries
+//  Method: avtStructuredDomainBoundaries::CalculateBoundaries
 //
 //  Purpose:
 //      Calculates the boundaries between rectilinear grids.
@@ -2429,12 +2441,26 @@ avtRectilinearDomainBoundaries::SetIndicesForAMRPatch(int domain,
 //  Programmer: Hank Childs
 //  Creation:   November 11, 2003
 //
+//  Modifications:
+//
+//    Mark C. Miller, Mon Jan 12 17:29:19 PST 2004
+//    Added code to disallow operation if shouldComputeNeighborsFromExtents is
+//    not true.
+//
 // ****************************************************************************
 
 void
-avtRectilinearDomainBoundaries::CalculateBoundaries(void)
+avtStructuredDomainBoundaries::CalculateBoundaries(void)
 {
     int i, j, k;
+
+    if (!shouldComputeNeighborsFromExtents)
+    {
+        EXCEPTION1(VisItException,
+                   "avtStructuredDomainBoundaries: "
+                   "passing indices for a mesh that does not support "
+                   "computation of neighbors from index extents");
+    }
 
     //
     // Here's the approach: we are going to sort all of the patches into
