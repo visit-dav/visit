@@ -8,6 +8,7 @@
 #include <avtCustomRenderer.h>
 #include <LabelAttributes.h>
 #include <vtkSystemIncludes.h>
+#include <map>
 
 class vtkDataArray;
 class vtkFloatArray;
@@ -29,6 +30,13 @@ class vtkPolyData;
 //  Modifications:
 //    Brad Whitlock, Mon Oct 25 15:57:39 PST 2004
 //    Changed a couple things so it works with scalable rendering.
+//
+//    Jeremy Meredith, Mon Nov  8 17:29:27 PST 2004
+//    When running with a parallel engine, multiple passes are made using
+//    the same avtCustomRenderer.  This was wreaking havoc with the caching,
+//    so I made it do caching on a per-vtkDataset basis.  This renderer is
+//    freed when significant changes happen to the dataset, so there should
+//    be no possibility for major leaks.
 //
 // ****************************************************************************
 
@@ -80,6 +88,8 @@ protected:
 
     LabelAttributes        atts;
 
+    std::map<vtkDataSet*,vtkPolyData*> inputMap;
+
     vtkPolyData           *input;
     char                  *varname;
     bool                   treatAsASCII;
@@ -94,18 +104,15 @@ protected:
     int                    singleCellIndex;
     int                    singleNodeIndex;
     int                    maxLabelLength;
+
     //
-    // Cache the label strings for cell variables.
+    // Cache the label strings for cell and node variables.
     //
-    char                  *cellLabelsCache;
-    bool                   cellLabelsCached;
-    int                    cellLabelsCacheSize;
-    //
-    // Cache the label strings for node variables.
-    //
-    char                  *nodeLabelsCache;
-    bool                   nodeLabelsCached;
-    int                    nodeLabelsCacheSize;
+    std::map<vtkPolyData*,char*> cellLabelsCacheMap;
+    std::map<vtkPolyData*,int>   cellLabelsCacheSizeMap;
+    std::map<vtkPolyData*,char*> nodeLabelsCacheMap;
+    std::map<vtkPolyData*,int>   nodeLabelsCacheSizeMap;
+
     //
     // Visible point lookup
     //

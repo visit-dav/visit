@@ -628,6 +628,8 @@ avtOpenGLLabelRenderer::DrawLabels2D()
 // Creation:   Mon Oct 25 09:19:43 PDT 2004
 //
 // Modifications:
+//    Jeremy Meredith, Mon Nov  8 17:16:21 PST 2004
+//    Caching is now done on a per-vtk-dataset basis.
 //   
 // ****************************************************************************
 
@@ -640,7 +642,8 @@ avtOpenGLLabelRenderer::DrawAllLabels2D(bool drawNodeLabels, bool drawCellLabels
     if(drawNodeLabels)
     {
         vtkPoints *p = input->GetPoints();
-        const char *labelPtr = nodeLabelsCache;
+        const char *labelPtr = nodeLabelsCacheMap[input];
+        int nodeLabelsCacheSize = nodeLabelsCacheSizeMap[input];
         for(int i = 0; i < nodeLabelsCacheSize; ++i)
         {
             const float *vert = p->GetPoint(i);
@@ -655,7 +658,8 @@ avtOpenGLLabelRenderer::DrawAllLabels2D(bool drawNodeLabels, bool drawCellLabels
     vtkFloatArray *cellCenters = GetCellCenterArray();
     if(drawCellLabels && cellCenters != 0)
     {
-        const char *labelPtr = cellLabelsCache;
+        const char *labelPtr = cellLabelsCacheMap[input];
+        int cellLabelsCacheSize = cellLabelsCacheSizeMap[input];
         for(int i = 0; i < cellLabelsCacheSize; ++i)
         {
             const float *vert = cellCenters->GetTuple3(i);
@@ -680,6 +684,8 @@ avtOpenGLLabelRenderer::DrawAllLabels2D(bool drawNodeLabels, bool drawCellLabels
 // Creation:   Mon Oct 25 09:20:29 PDT 2004
 //
 // Modifications:
+//    Jeremy Meredith, Mon Nov  8 17:16:21 PST 2004
+//    Caching is now done on a per-vtk-dataset basis.
 //   
 // ****************************************************************************
 
@@ -765,7 +771,8 @@ avtOpenGLLabelRenderer::DrawDynamicallySelectedLabels2D(bool drawNodeLabels,
     //
     if(drawNodeLabels)
     {
-        char *labelPtr = nodeLabelsCache;
+        char *labelPtr = nodeLabelsCacheMap[input];
+        int nodeLabelsCacheSize = nodeLabelsCacheSizeMap[input];
         vtkPoints *p = input->GetPoints();
         for(int i = 0; i < nodeLabelsCacheSize; ++i, labelPtr += MAX_LABEL_SIZE)
         {
@@ -804,7 +811,8 @@ avtOpenGLLabelRenderer::DrawDynamicallySelectedLabels2D(bool drawNodeLabels,
     vtkFloatArray *cellCenters = GetCellCenterArray();
     if(drawCellLabels && cellCenters != 0)
     {
-        const char *labelPtr = cellLabelsCache;
+        const char *labelPtr = cellLabelsCacheMap[input];
+        int cellLabelsCacheSize = cellLabelsCacheSizeMap[input];
         for(int i = 0; i < cellLabelsCacheSize; ++i, labelPtr += MAX_LABEL_SIZE)
         {
             //
@@ -1047,6 +1055,8 @@ avtOpenGLLabelRenderer::DrawLabels3D()
 // Creation:   Tue Oct 5 14:45:59 PST 2004
 //
 // Modifications:
+//    Jeremy Meredith, Mon Nov  8 17:16:21 PST 2004
+//    Caching is now done on a per-vtk-dataset basis.
 //   
 // ****************************************************************************
 
@@ -1070,6 +1080,9 @@ void
 avtOpenGLLabelRenderer::DrawAllCellLabels3D()
 {
     char *labelString = 0;
+    char *&cellLabelsCache     = cellLabelsCacheMap[input];
+    int    cellLabelsCacheSize = cellLabelsCacheSizeMap[input];
+    bool   cellLabelsCached    = cellLabelsCache != NULL;
 
     //
     // Look for the cell center array that the label filter calculated.
@@ -1132,6 +1145,8 @@ avtOpenGLLabelRenderer::DrawAllCellLabels3D()
 // Creation:   Tue Oct 5 14:49:59 PST 2004
 //
 // Modifications:
+//    Jeremy Meredith, Mon Nov  8 17:16:21 PST 2004
+//    Caching is now done on a per-vtk-dataset basis.
 //   
 // ****************************************************************************
 
@@ -1141,6 +1156,9 @@ void
 avtOpenGLLabelRenderer::DrawAllNodeLabels3D()
 {
     char *labelString = 0;
+    char *&nodeLabelsCache     = nodeLabelsCacheMap[input];
+    int    nodeLabelsCacheSize = nodeLabelsCacheSizeMap[input];
+    bool   nodeLabelsCached    = nodeLabelsCache != NULL;
 
     // Resize the node labels cache.
     if(nodeLabelsCache == 0 || input->GetPoints()->GetNumberOfPoints() != nodeLabelsCacheSize)

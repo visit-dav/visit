@@ -2450,10 +2450,12 @@ NetworkManager::Pick(const int id, PickAttributes *pa)
             }
             else if (pa->GetPickType() == PickAttributes::DomainNode)
             {
+                skipLocate = true;
                 pQ = new avtPickByNodeQuery;
             }
             else if (pa->GetPickType() == PickAttributes::DomainZone)
             {
+                skipLocate = true;
                 pQ = new avtPickByZoneQuery;
             }
             if (skipLocate || pa->GetLocationSuccessful())
