@@ -604,6 +604,10 @@ ViewerPlotList::GetNumVisiblePlots() const
 //    Walter Herrera, Thu Sep 04 16:13:43 PST 2003
 //    I made it capable of creating plots with default attributes
 //
+//    Jeremy Meredith, Wed Mar 24 12:56:34 PST 2004
+//    Since it is possible for GetDefaultSILRestriction to throw an exception
+//    I added a try/catch around it.
+//
 // ****************************************************************************
 
 int
@@ -669,14 +673,21 @@ ViewerPlotList::AddPlot(int type, const std::string &var, bool replacePlots,
 
     if (compatiblePlotIndex > -1)
     {
-        avtSILRestriction_p new_silr = GetDefaultSILRestriction(
+        TRY
+        {
+            avtSILRestriction_p new_silr = GetDefaultSILRestriction(
                                           newPlot->GetHostName(),
                                           newPlot->GetDatabaseName(),
                                           newPlot->GetVariableName());
-
-        ViewerPlot *matchedPlot = plots[compatiblePlotIndex].plot;
-        new_silr->SetFromCompatibleRestriction(matchedPlot->GetSILRestriction());
-        newPlot->SetSILRestriction(new_silr);
+            ViewerPlot *matchedPlot = plots[compatiblePlotIndex].plot;
+            new_silr->SetFromCompatibleRestriction(matchedPlot->GetSILRestriction());
+            newPlot->SetSILRestriction(new_silr);
+        }
+        CATCH2(VisItException, e)
+        {
+            Error(e.Message().c_str());
+        }
+        ENDTRY
     }
 
     UpdateSILRestrictionAtts();
@@ -2183,6 +2194,10 @@ ViewerPlotList::ReplaceDatabase(const std::string &host, const std::string &data
 //   Brad Whitlock, Thu Apr 11 17:46:07 PST 2002
 //   Added to the interface of NewPlot().
 //
+//   Jeremy Meredith, Wed Mar 24 12:57:09 PST 2004
+//   Since it is possible for NewPlot to throw an exception, I added
+//   try/catch around it.
+//
 // ****************************************************************************
 
 void
@@ -2199,10 +2214,21 @@ ViewerPlotList::OverlayDatabase(const std::string &host, const std::string &data
         // Create a new plot based on the old plot. Then copy the old plot's
         // plot attributes into the new plot.
         //
-        ViewerPlot *newPlot = NewPlot(plots[i].plot->GetType(),
-                                      host, database,
-                                      plots[i].plot->GetVariableName(),
-                                      false);
+        ViewerPlot *newPlot = 0;
+        TRY
+        {
+            newPlot = NewPlot(plots[i].plot->GetType(),
+                              host, database,
+                              plots[i].plot->GetVariableName(),
+                              false);
+        }
+        CATCH(...)
+        {
+            // newPlot will be zero if an error occurred, so we don't
+            // need to do further error handling right here
+        }
+        ENDTRY
+
         //
         // If the plot was created, add it to the plot list.
         //
@@ -2292,6 +2318,13 @@ ViewerPlotList::OverlayDatabase(const std::string &host, const std::string &data
 //   I added code to catch InvalidVariableException if it gets thrown from
 //   avtDatabaseMetaData::MeshForVar.
 //
+//   Jeremy Meredith, Wed Mar 24 12:51:24 PST 2004
+//   I moved the try/catch block around avtDatabaseMetaData::MeshForVar
+//   up a level or two.  If we catch it too soon, then we will get later
+//   errors that overwrite the error message from it.  This meant ensuring
+//   any path up the stack would eventually catch the exception.  Luckily
+//   there are only a few paths that needed to be filled in.
+//
 // ****************************************************************************
 
 avtSILRestriction_p
@@ -2369,17 +2402,7 @@ ViewerPlotList::GetDefaultSILRestriction(const std::string &host,
     // variable is invalid, an InvalidVariableException is thrown.
     //
     std::string meshName;
-    TRY
-    {
-        meshName = md->MeshForVar(realvar);
-    }
-    CATCH(InvalidVariableException)
-    {
-        SNPRINTF(str, 400, "VisIt could not determine the mesh name for %s.", realvar.c_str());
-        Error(str);
-        CATCH_RETURN2(1, silr);
-    }
-    ENDTRY
+    meshName = md->MeshForVar(realvar);// Don't catch InvalidVariableException!
 
     //
     // If there is more than one top set, try and find the right one.
@@ -4823,6 +4846,10 @@ ViewerPlotList::CreateNode(DataNode *parentNode)
 //   Have SIL restriction use Compact SIL Atts in constructor, especially 
 //   because topSet is now a string and not an int.
 //
+//   Jeremy Meredith, Wed Mar 24 12:58:09 PST 2004
+//   Since it is possible for NewPlot to throw an exception, I added
+//   try/catch around it.
+//
 // ****************************************************************************
 
 bool
@@ -4935,7 +4962,18 @@ ViewerPlotList::SetFromNode(DataNode *parentNode)
                 //
                 ViewerPlot *plot = 0;
                 if(!failure)
-                    plot = NewPlot(type, plotHost, plotDB, plotVar, false);
+                {
+                    TRY
+                    {
+                        plot = NewPlot(type, plotHost, plotDB, plotVar, false);
+                    }
+                    CATCH(...)
+                    {
+                        // plot will be zero if an error occurred, so we don't
+                        // need to do further error handling right here
+                    }
+                    ENDTRY
+                }
 
                 if(plot)
                 {

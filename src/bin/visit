@@ -306,6 +306,9 @@ $0 = shift @ARGV;
 #    colon-delimited string and pass it as the argument to "-engineargs", which
 #    is a new option the viewer can parse.
 #
+#    Jeremy Meredith, Fri Mar 26 09:21:08 PST 2004
+#    Changed colons in engineargs to semicolons.
+#
 ###############################################################################
 
 
@@ -709,7 +712,7 @@ if ((($parallel) or ($launchengine)) and
 
     if (scalar(@engine_parallel_args) > 0)
     {
-	$engine_arg_string = ":".join(':', @engine_parallel_args);
+	$engine_arg_string = ";".join(';', @engine_parallel_args);
 	push @visitargs, "-engineargs", $engine_arg_string;
     }
 

@@ -694,6 +694,10 @@ ViewerPlot::GetPluginID() const
 //    Brad Whitlock, Wed Dec 31 14:20:50 PST 2003
 //    Added TRY/CATCH block around the call to avtDatabaseMetaData::MeshForVar.
 //
+//    Jeremy Meredith, Fri Mar 26 15:15:15 PST 2004
+//    Added code to print the error message received from an
+//    InvalidVariableException.
+//
 // ****************************************************************************
 
 bool
@@ -737,8 +741,9 @@ ViewerPlot::SetVariableName(const char *name)
                     {
                         meshName = md->MeshForVar(std::string(name));
                     }
-                    CATCH(InvalidVariableException)
+                    CATCH2(InvalidVariableException,e)
                     {
+                        Error(e.Message().c_str());
                         CATCH_RETURN2(2, false);
                     }
                     ENDTRY
