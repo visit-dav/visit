@@ -41,6 +41,10 @@ avtDatasetToDatasetFilter::avtDatasetToDatasetFilter()
 //    Brad Whitlock, Fri Jun 28 13:23:13 PST 2002
 //    Fixed a memory leak.
 //
+//    Kathleen Bonnell, Fri Jan  7 14:24:37 PST 2005 
+//    Changed 'delete [] tmp' to 'free(tmp)' as the elements of the
+//    secondaryVarList are created with strdup which uses malloc. 
+//
 // ****************************************************************************
 
 avtDatasetToDatasetFilter::~avtDatasetToDatasetFilter()
@@ -58,7 +62,7 @@ avtDatasetToDatasetFilter::~avtDatasetToDatasetFilter()
     for (int i=0;i<secondaryVarList.size();i++)
     {
         char *tmp = (char *)secondaryVarList[i];
-        delete [] tmp;
+        free(tmp);
     }
 }
 

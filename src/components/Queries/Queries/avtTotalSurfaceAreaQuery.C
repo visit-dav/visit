@@ -135,51 +135,45 @@ avtTotalSurfaceAreaQuery::VerifyInput()
 //    Kathleen Bonnell, Tue May  4 14:25:07 PDT 2004
 //    Set SILRestriction via member restriction, instead of SILUseSet. 
 //
+//    Kathleen Bonnell, Thu Jan  6 11:06:29 PST 2005 
+//    Both time-varying and non use artificial pipeline. Only difference is
+//    the pipeline spec used. 
+//
 // ****************************************************************************
 
 avtDataObject_p 
 avtTotalSurfaceAreaQuery::ApplyFilters(avtDataObject_p inData)
 {
-    if (!timeVarying)
-    {
-        //
-        // Create an artificial pipeline.
-        //
-        avtPipelineSpecification_p pspec  = 
-              inData->GetTerminatingSource()->GetGeneralPipelineSpecification();
-        avtDataset_p ds;
-        CopyTo(ds, inData);
-        avtSourceFromAVTDataset termsrc(ds);
-        avtDataObject_p dob = termsrc.GetOutput();
+    avtPipelineSpecification_p pspec = 
+        inData->GetTerminatingSource()->GetGeneralPipelineSpecification();
 
-        facelist->SetInput(dob);
-        area->SetInput(facelist->GetOutput());
-        avtDataObject_p objOut = area->GetOutput();
-        objOut->Update(pspec);
-
-        return objOut;
-    }
-    else
-    {
+    if (timeVarying) 
+    { 
         avtDataSpecification_p oldSpec = inData->GetTerminatingSource()->
             GetGeneralPipelineSpecification()->GetDataSpecification();
 
         avtDataSpecification_p newDS = new 
-            avtDataSpecification(oldSpec->GetVariable(), queryAtts.GetTimeStep(), 
-                                 querySILR);
+            avtDataSpecification(oldSpec, querySILR);
+        newDS->SetTimestep(queryAtts.GetTimeStep());
 
-        avtPipelineSpecification_p pspec = 
-            new avtPipelineSpecification(newDS, queryAtts.GetPipeIndex());
-
-        avtDataObject_p dob;
-        CopyTo(dob, inData);
-        facelist->SetInput(dob);
-        area->SetInput(facelist->GetOutput());
-        avtDataObject_p objOut = area->GetOutput();
-        objOut->Update(pspec); 
-
-        return objOut;
+        pspec = new avtPipelineSpecification(newDS, pspec->GetPipelineIndex());
     }
+
+    //
+    // Create an artificial pipeline.
+    //
+
+    avtDataset_p ds;
+    CopyTo(ds, inData);
+    avtSourceFromAVTDataset termsrc(ds);
+    avtDataObject_p dob = termsrc.GetOutput();
+
+    facelist->SetInput(dob);
+    area->SetInput(facelist->GetOutput());
+    avtDataObject_p objOut = area->GetOutput();
+    objOut->Update(pspec);
+
+    return objOut;
 }
 
 

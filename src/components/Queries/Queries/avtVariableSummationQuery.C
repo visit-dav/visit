@@ -50,6 +50,9 @@ avtVariableSummationQuery::~avtVariableSummationQuery()
 //    Kathleen Bonnell, Wed Jul 28 08:26:05 PDT 2004
 //    Retrieve variable's units, if available.
 //
+//    Kathleen Bonnell, Thu Jan  6 10:34:57 PST 2005 
+//    Remove TRY-CATCH block in favor of testing for ValidVariable.
+//
 // ****************************************************************************
 
 void
@@ -70,18 +73,13 @@ avtVariableSummationQuery::VerifyInput(void)
     SetVariableName(varname);
     SumGhostValues(false);
     SetSumType(varname);
-    TRY
+    if (dataAtts.ValidVariable(varname.c_str()))
     {
         //
         // Set the base class units to be used in output.
         //
         SetUnits(dataAtts.GetVariableUnits(varname.c_str()));
     }
-    CATCH(BadIndexException)
-    {
-       ; // do nothing; 
-    }
-    ENDTRY
 }
 
 

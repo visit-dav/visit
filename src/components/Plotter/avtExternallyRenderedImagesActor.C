@@ -58,6 +58,9 @@ avtExternallyRenderedImagesActor::avtExternallyRenderedImagesActor()
 //  Programmer: Mark C. Miller 
 //  Creation:   December 7, 2002
 //
+//  Kathleen Bonnell, Fri Jan  7 15:11:25 PST 2005
+//  Fix memory leak -- delete dummyImage.
+//
 // ****************************************************************************
 
 avtExternallyRenderedImagesActor::~avtExternallyRenderedImagesActor()
@@ -76,6 +79,11 @@ avtExternallyRenderedImagesActor::~avtExternallyRenderedImagesActor()
     {
         lastNonDummyImage->Delete();
         lastNonDummyImage = NULL;
+    }
+    if (dummyImage != NULL)
+    {
+        dummyImage->Delete();
+        dummyImage = NULL;
     }
 }
 

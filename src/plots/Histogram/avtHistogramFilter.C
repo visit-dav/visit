@@ -133,6 +133,9 @@ avtHistogramFilter::PreExecute(void)
 //    Changed the xlabel and xunits in the output data attributes so the
 //    histogram plot would have the units along the axes.
 //
+//    Kathleen Bonnell, Thu Jan  6 10:34:57 PST 2005 
+//    Remove TRY-CATCH block in favor of testing for ValidActiveVariable.
+//
 // ****************************************************************************
 
 void
@@ -291,7 +294,7 @@ avtHistogramFilter::PostExecute(void)
     //
     // Set the X-axis's units to match the variable units.
     // 
-    TRY
+    if (GetInput()->GetInfo().GetAttributes().ValidActiveVariable())
     {
         if(GetInput()->GetInfo().GetAttributes().GetVariableUnits() != "")
         {
@@ -301,11 +304,6 @@ avtHistogramFilter::PostExecute(void)
         else
             outAtts.SetXUnits(pipelineVariable);
     }
-    CATCH(ImproperUseException)
-    {
-        ; // nothing.
-    }
-    ENDTRY
 
     string yunits = "";
     if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() == 3)

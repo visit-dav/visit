@@ -403,6 +403,9 @@ avtPlot::Execute(avtDataObject_p input, avtPipelineSpecification_p spec,
 //    Added test for ValidActiveVariable for attempting to retrieve Units,
 //    to avoid unncessary exception catches. 
 //
+//    Kathleen Bonnell, Fri Jan  7 13:00:32 PST 2005 
+//    Removed unnecessary TRY-CATCH block. 
+//
 // ****************************************************************************
 
 avtDataObjectWriter_p
@@ -450,22 +453,18 @@ avtPlot::Execute(avtDataObject_p input, avtPipelineSpecification_p spec,
     //
     // Try setting the plot's units based on the information in the dob.
     //
-    TRY
+    if (dob->GetInfo().GetAttributes().ValidActiveVariable())
     {
-        if (dob->GetInfo().GetAttributes().ValidActiveVariable())
-        {
-            std::string dobunits = dob->GetInfo().GetAttributes().GetVariableUnits();
-            if(dobunits == "")
-                SetVarUnits(NULL);
-            else
-                SetVarUnits(dobunits.c_str());
-        }
+        std::string dobunits = dob->GetInfo().GetAttributes().GetVariableUnits();
+        if(dobunits == "")
+            SetVarUnits(NULL);
+        else
+            SetVarUnits(dobunits.c_str());
     }
-    CATCH(ImproperUseException)
-    {
+    else
+    { 
         SetVarUnits(NULL);
     }
-    ENDTRY
 
     SetCellCountMultiplierForSRThreshold(dob);
 

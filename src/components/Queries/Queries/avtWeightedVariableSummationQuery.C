@@ -10,7 +10,6 @@
 #include <avtVMetricArea.h>
 #include <avtVMetricVolume.h>
 
-#include <BadIndexException.h>
 
 using     std::string;
 
@@ -82,99 +81,65 @@ avtWeightedVariableSummationQuery::~avtWeightedVariableSummationQuery()
 //    Kathleen Bonnell, Tue May  4 14:25:07 PDT 2004
 //    Set SILRestriction via member restriction, instead of SILUseSet. 
 //
+//    Kathleen Bonnell, Fri Jan  7 15:15:32 PST 2005 
+//    Rework so that both time-varying and non use artificial pipeline. 
+//    Only difference is the pipeline spec used. 
+//
 // ****************************************************************************
 
 avtDataObject_p
 avtWeightedVariableSummationQuery::ApplyFilters(avtDataObject_p inData)
 {
-    if (!timeVarying)
-    {
-        //
-        // Create an artificial pipeline.
-        //
-        avtDataset_p ds;
-        CopyTo(ds, inData);
-        avtSourceFromAVTDataset termsrc(ds);
-        avtDataObject_p dob = termsrc.GetOutput();
+    //
+    // Create an artificial pipeline.
+    //
+    avtDataset_p ds;
+    CopyTo(ds, inData);
+    avtSourceFromAVTDataset termsrc(ds);
+    avtDataObject_p dob = termsrc.GetOutput();
 
-        //
-        // Set up our base class so it is ready to sum.
-        //
-        avtDataSpecification_p dspec = GetInput()->GetTerminatingSource()
+    //
+    // Set up our base class so it is ready to sum.
+    //
+    avtDataSpecification_p dspec = GetInput()->GetTerminatingSource()
                                      ->GetFullDataSpecification();
-        string varname = dspec->GetVariable();
-        SetSumType(varname);
+    string varname = dspec->GetVariable();
+    SetSumType(varname);
 
-        int topo = GetInput()->GetInfo().GetAttributes().GetTopologicalDimension();
-        if (topo == 2)
-        {
-            area->SetInput(dob);
-            dob = area->GetOutput();
-        }
-        else
-        {
-            volume->SetInput(dob);
-            dob = volume->GetOutput();
-        }
-
-        multiply->SetInput(dob);
-        multiply->ClearInputVariableNames();
-        multiply->AddInputVariableName("avt_weights");
-        multiply->AddInputVariableName(varname.c_str());
-
-        //
-        // Cause our artificial pipeline to execute.
-        //
-        avtPipelineSpecification_p pspec = inData->GetTerminatingSource()
-                                          ->GetGeneralPipelineSpecification();
-        multiply->GetOutput()->Update(pspec);
-
-        return multiply->GetOutput();
+    int topo = GetInput()->GetInfo().GetAttributes().GetTopologicalDimension();
+    if (topo == 2)
+    {
+        area->SetInput(dob);
+        dob = area->GetOutput();
     }
     else
     {
-        avtDataObject_p dob = inData;
-
-        //
-        // Set up our base class so it is ready to sum.
-        //
-        avtDataSpecification_p oldSpec = inData->GetTerminatingSource()->
-            GetGeneralPipelineSpecification()->GetDataSpecification();
-
-        avtDataSpecification_p newDS = new
-                           avtDataSpecification(oldSpec->GetVariable(),
-                           queryAtts.GetTimeStep(), querySILR);
-
-        avtPipelineSpecification_p pspec =
-            new avtPipelineSpecification(newDS, queryAtts.GetPipeIndex());
-
-        string varname = newDS->GetVariable();
-        SetSumType(varname);
-
-        int topo = GetInput()->GetInfo().GetAttributes().GetTopologicalDimension();
-        if (topo == 2)
-        {
-            area->SetInput(dob);
-            dob = area->GetOutput();
-        }
-        else
-        {
-            volume->SetInput(dob);
-            dob = volume->GetOutput();
-        }
-
-        multiply->SetInput(dob);
-        multiply->ClearInputVariableNames();
-        multiply->AddInputVariableName("avt_weights");
-        multiply->AddInputVariableName(varname.c_str());
-
-        //
-        // Cause our artificial pipeline to execute.
-        //
-        multiply->GetOutput()->Update(pspec);
-
-        return multiply->GetOutput();
+        volume->SetInput(dob);
+        dob = volume->GetOutput();
     }
+
+    multiply->SetInput(dob);
+    multiply->ClearInputVariableNames();
+    multiply->AddInputVariableName("avt_weights");
+    multiply->AddInputVariableName(varname.c_str());
+
+    //
+    // Cause our artificial pipeline to execute.
+    //
+    avtPipelineSpecification_p pspec = 
+        inData->GetTerminatingSource()->GetGeneralPipelineSpecification();
+
+    if (timeVarying) 
+    { 
+        avtDataSpecification_p newDS = new 
+            avtDataSpecification(dspec, querySILR);
+        newDS->SetTimestep(queryAtts.GetTimeStep());
+
+        pspec = new avtPipelineSpecification(newDS, pspec->GetPipelineIndex());
+    }
+
+    multiply->GetOutput()->Update(pspec);
+    return multiply->GetOutput();
 }
 
 
@@ -189,6 +154,8 @@ avtWeightedVariableSummationQuery::ApplyFilters(avtDataObject_p inData)
 //  Creation:   July 28, 2004 
 //
 //  Modifications:
+//    Kathleen Bonnell, Thu Jan  6 10:34:57 PST 2005 
+//    Remove TRY-CATCH block in favor of testing for ValidActiveVariable. 
 //
 // ****************************************************************************
 
@@ -201,17 +168,12 @@ avtWeightedVariableSummationQuery::VerifyInput(void)
     //
     avtSummationQuery::VerifyInput();
 
-    TRY
+    if (GetInput()->GetInfo().GetAttributes().ValidActiveVariable()) 
     {
         //
         // Set the base class units to be used in output.
         //
         SetUnits(GetInput()->GetInfo().GetAttributes().GetVariableUnits());
     }
-    CATCH(BadIndexException)
-    {
-       ; // do nothing; 
-    }
-    ENDTRY
 }
 

@@ -9530,6 +9530,9 @@ AddMethod(const char *methodName, PyObject *(cb)(PyObject *, PyObject *),
 //   Kathleen Bonnell, Thu Dec 16 17:31:10 PST 2004
 //   Added PickByGlobalZone and PickByGlobalNode. 
 //
+//   Kathleen Bonnell, Thu Jan  6 11:06:29 PST 2005 
+//   Added GetViewCurve. 
+//
 // ****************************************************************************
 
 static void
@@ -9602,6 +9605,7 @@ AddDefaultMethods()
     AddMethod("GetLocalHostName", visit_GetLocalHostName);
     AddMethod("GetLocalUserName", visit_GetLocalUserName);
     AddMethod("GetSaveWindowAttributes", visit_GetSaveWindowAttributes);
+    AddMethod("GetViewCurve", visit_GetViewCurve);
     AddMethod("GetView2D", visit_GetView2D);
     AddMethod("GetView3D", visit_GetView3D);
     AddMethod("GetAnnotationAttributes", visit_GetAnnotationAttributes);

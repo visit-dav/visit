@@ -7,8 +7,8 @@
 #include <string.h>
 
 #include <avtDataObjectQuery.h>
-#include <avtQueryOverTimeFilter.h>
 #include <avtQueryFactory.h>
+#include <avtQueryOverTimeFilter.h>
 
 #include <vtkCellArray.h>
 #include <vtkPoints.h>
@@ -17,6 +17,7 @@
 #include <avtCallback.h>
 #include <avtDatasetExaminer.h>
 #include <avtExtents.h>
+#include <avtParallel.h>
 
 #include <VisItException.h>
 #include <DebugStream.h>
@@ -39,11 +40,17 @@ vtkPolyData     *CreatePolys(const doubleVector &, const doubleVector &);
 //  Programmer: Kathleen Bonnell 
 //  Creation:   March 15, 2004
 //
+//  Modifications:
+//    Kathleen Bonnell, Thu Jan  6 11:16:40 PST 2005
+//    Add call to SetTimeLoop.  Initialize finalOutputCreated.
+//
 // ****************************************************************************
 
 avtQueryOverTimeFilter::avtQueryOverTimeFilter(const AttributeGroup *a)
 {
     atts = *(QueryOverTimeAttributes*)a;
+    SetTimeLoop(atts.GetStartTime(), atts.GetEndTime(), atts.GetStride());
+    finalOutputCreated = false;
 }
 
 
@@ -102,18 +109,53 @@ avtQueryOverTimeFilter::Create(const AttributeGroup *atts)
 //    Check for skippedTimeSteps and issue a Warning message.
 //    Changed CATCH to CATCHALL.  Reset avtDataValidity before processing.
 //
+//    Kathleen Bonnell, Mon Jan  3 15:21:44 PST 2005
+//    Reworked, since time-looping is now handled by parent class 
+//    'avtTimeLoopFilter' instead of avtDatasetQuery::PerformQueryInTime.
+//    Test for error condition upstream, capture and store query results
+//    and times.   Moved IssueWarning callbacks to CreateFinalOutput.
+//
 // ****************************************************************************
 
 void
 avtQueryOverTimeFilter::Execute(void)
 {
+    //
+    // The real output will be created after all time steps have completed, 
+    // so create a dummy output to pass along for now.
+    //
+    avtDataTree_p dummy = new avtDataTree();
+
+    //
+    // Set up error conditions and return early if any processor had an 
+    // error upstream.
+    //
+
+    int hadError = 0;
+    if (GetInput()->GetInfo().GetValidity().HasErrorOccurred())
+    {
+        errorMessage = GetInput()->GetInfo().GetValidity().GetErrorMessage();
+        hadError = 1;
+    }
+    hadError = UnifyMaximumValue(hadError);
+    if (hadError)
+    {
+        SetOutputDataTree(dummy);
+        success = false;    
+        return;
+    }
+
+    //
+    // Set up the query. 
+    //
     QueryAttributes qatts = atts.GetQueryAtts();
+    qatts.SetTimeStep(currentTime);
     avtDataObjectQuery *query = avtQueryFactory::Instance()->
         CreateQuery(&qatts);
 
     query->SetTimeVarying(true);
     query->SetInput(GetInput());
-    query->SetSILRestriction(&querySILAtts);
+    query->SetSILRestriction(currentSILR);
 
     //
     // HokeyHack ... we want only 1 curve, so limit the
@@ -126,69 +168,56 @@ avtQueryOverTimeFilter::Execute(void)
     // End HokeyHack. 
     //
 
-    doubleVector times;
-    int startTime = atts.GetStartTime();
-    int endTime = atts.GetEndTime();
-    int stride = atts.GetStride();
-    int timeType = (int) atts.GetTimeType();  // 0 = cycle, 1 = time, 2 = timestep
-    intVector skippedTimes;
-    string eM;
- 
-    //
-    // Make sure that out Output doesn't have any error settings hanging around
-    // from the CloneNetwork process that don't pertain to this execution:
-    //
-    GetOutput()->GetInfo().GetValidity().ResetErrorOccurred();
-
-
     TRY
     {
-        query->PerformQueryInTime(&qatts, startTime, endTime, stride, 
-                                  timeType, times, skippedTimes, eM);
+        query->PerformQuery(&qatts);
     }
     CATCHALL( ... )
     {
-        avtDataTree_p dummy = new avtDataTree();
         SetOutputDataTree(dummy);
+        success = false;
         delete query;
         RETHROW;
     }
     ENDTRY
 
-    doubleVector results = qatts.GetResultsValue();
-
-    vtkPolyData *output = CreatePolys(times, results);
-    avtDataTree_p tree = new avtDataTree(output, 0);
-    output->Delete();
-
-    if (results.size() != times.size())
-    {
-        debug5 << "QueryOverTime ERROR, number of results (" 
-               << results.size() << ") does not equal number "
-               << "of timesteps (" << times.size() << ")." << endl;
-        avtCallback::IssueWarning(
-            "\nQueryOverTime error, number of results does not equal "
-            "number of timestates.  Curve being created may be missing "
-            "some values.  Please contact a VisIt developer."); 
-    }
-    if (skippedTimes.size() != 0)
-    {
-        ostrstream osm;
-        osm << "\nQueryOverTime ( " << qatts.GetName().c_str()
-            << ") experienced\n"
-            << "problems with the following timesteps and \n"
-            << "skipped them while generating the curve:\n   ";
-
-        for (int j = 0; j < skippedTimes.size(); j++)
-            osm << skippedTimes[j] << " ";
-        osm << "\nLast message received: " << eM.c_str() << endl;
-        string errorMessage = osm.str();                   
-        debug5 << errorMessage.c_str() << endl;
-        avtCallback::IssueWarning(errorMessage.c_str());
-    }
-
-    SetOutputDataTree(tree);
+    SetOutputDataTree(dummy);
     delete query;
+
+    doubleVector results = qatts.GetResultsValue();
+    if (results.size() == 0)
+    {
+        success = false;
+        return;
+    }
+    else
+    {
+        success = true;
+    }
+
+    //
+    // Store the necessary time value 
+    //
+    double tval;  
+    switch(atts.GetTimeType()) 
+    {
+        case QueryOverTimeAttributes::Cycle:
+           tval = (double) GetInput()->GetInfo().GetAttributes().GetCycle();
+           break;
+        case QueryOverTimeAttributes::DTime: 
+           tval = GetInput()->GetInfo().GetAttributes().GetTime();
+           break;
+        case QueryOverTimeAttributes::Timestep: 
+        default: // timestep
+               tval = (double)currentTime;
+           break;
+    }
+    times.push_back(tval);
+
+    //
+    // Store the query results ... currently only one result.
+    //
+    qRes.push_back(results[0]);
 }
 
 
@@ -201,6 +230,10 @@ avtQueryOverTimeFilter::Execute(void)
 //  Programmer: Kathleen Bonnell
 //  Creation:   March 15, 2004 
 //
+//  Modifications:
+//    Kathleen Bonnell, Thu Jan  6 11:21:44 PST 2005
+//    Moved setting of  dataAttributes from PostExecute to here.
+//
 // ****************************************************************************
 
 void
@@ -210,11 +243,119 @@ avtQueryOverTimeFilter::RefashionDataObjectInfo(void)
     GetOutput()->GetInfo().GetValidity().InvalidateSpatialMetaData();
     avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
     outAtts.SetTopologicalDimension(1);
+
+    if (finalOutputCreated)
+    {
+        outAtts.GetTrueSpatialExtents()->Clear();
+        outAtts.GetEffectiveSpatialExtents()->Clear();
+        outAtts.SetXLabel("Time");
+        outAtts.SetYLabel(atts.GetQueryAtts().GetName());
+        // later, can use cycles or dtime
+        if (atts.GetTimeType() == QueryOverTimeAttributes::Cycle)
+        {
+            outAtts.SetXUnits("cycle");
+        }
+        else if (atts.GetTimeType() == QueryOverTimeAttributes::DTime)
+        {
+            outAtts.SetXUnits("time");
+        }
+        else if (atts.GetTimeType() == QueryOverTimeAttributes::Timestep)
+        {
+            outAtts.SetXUnits("timestep");
+        }
+        else 
+        {
+            outAtts.SetXUnits("");
+        }
+        outAtts.SetYUnits("");
+
+        double bounds[6];
+        avtDataset_p ds = GetTypedOutput();
+        avtDatasetExaminer::GetSpatialExtents(ds, bounds);
+        outAtts.GetCumulativeTrueSpatialExtents()->Set(bounds);
+    }
 }
 
 
 // ****************************************************************************
-//  Method: avtQueryOverTimeFilter::CreatePolys
+//  Method: avtQueryOverTimeFilter::SetSILAtts
+//
+//  Purpose:
+//    Sets the SILRestriction atts necessary to create a SILRestriction. 
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   May 4, 2004 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtQueryOverTimeFilter::SetSILAtts(const SILRestrictionAttributes *silAtts)
+{
+    querySILAtts = *silAtts;
+}
+
+
+// ****************************************************************************
+//  Method: avtQueryOverTimeFilter::CreateFinalOutput
+//
+//  Purpose:
+//    Combines the results of all timesteps into one vtkDataSet output.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   January 3, 2005 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtQueryOverTimeFilter::CreateFinalOutput()
+{
+    if (qRes.size() == 0)
+    {
+        debug4 << "Query failed at all timesteps" << endl;
+        avtCallback::IssueWarning("Query failed at all timesteps");
+        avtDataTree_p dummy = new avtDataTree();
+        SetOutputDataTree(dummy);
+        return;
+    }
+    if (qRes.size() != times.size())
+    {
+        debug4 << "QueryOverTime ERROR, number of results (" 
+               << qRes.size() << ") does not equal number "
+               << "of timesteps (" << times.size() << ")." << endl;
+        avtCallback::IssueWarning(
+            "\nQueryOverTime error, number of results does not equal "
+            "number of timestates.  Curve being created may be missing "
+            "some values.  Please contact a VisIt developer."); 
+    }
+    if (skippedTimes.size() != 0)
+    {
+        ostrstream osm;
+        osm << "\nQueryOverTime (" << atts.GetQueryAtts().GetName().c_str()
+            << ") experienced\n"
+            << "problems with the following timesteps and \n"
+            << "skipped them while generating the curve:\n   ";
+
+        for (int j = 0; j < skippedTimes.size(); j++)
+            osm << skippedTimes[j] << " ";
+        osm << "\nLast message received: " << errorMessage.c_str() << ends;
+        debug4 << osm.str() << endl;
+        avtCallback::IssueWarning(osm.str());
+    }
+
+    vtkPolyData *outpolys = CreatePolys(times, qRes);
+    avtDataTree_p tree = new avtDataTree(outpolys, 0);
+    outpolys->Delete();
+    SetOutputDataTree(tree);
+    finalOutputCreated = true;
+}
+
+
+// ****************************************************************************
+//  Method: CreatePolys
 //
 //  Purpose:
 //    Creates a polydata dataset that consists of points and vertices.
@@ -253,72 +394,4 @@ CreatePolys(const doubleVector &x, const doubleVector &y)
     }
 
     return pd;
-}
-
-
-
-// ****************************************************************************
-//  Method: avtQueryOverTimeFilter::PostExecute
-//
-//  Purpose:
-//    Cleans up after the execution.  This manages extents, labels and units.
-//
-//  Programmer: Kathleen Bonnell 
-//  Creation:   March 15, 2004
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-void
-avtQueryOverTimeFilter::PostExecute(void)
-{
-    avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
-    outAtts.GetTrueSpatialExtents()->Clear();
-    outAtts.GetEffectiveSpatialExtents()->Clear();
-    outAtts.SetXLabel("Time");
-    outAtts.SetYLabel(atts.GetQueryAtts().GetName());
-    // later, can use cycles or dtime
-    if (atts.GetTimeType() == QueryOverTimeAttributes::Cycle)
-    {
-        outAtts.SetXUnits("cycle");
-    }
-    else if (atts.GetTimeType() == QueryOverTimeAttributes::DTime)
-    {
-        outAtts.SetXUnits("time");
-    }
-    else if (atts.GetTimeType() == QueryOverTimeAttributes::Timestep)
-    {
-        outAtts.SetXUnits("timestep");
-    }
-    else 
-    {
-        outAtts.SetXUnits("");
-    }
-    outAtts.SetYUnits("");
-
-    double bounds[6];
-    avtDataset_p ds = GetTypedOutput();
-    avtDatasetExaminer::GetSpatialExtents(ds, bounds);
-    outAtts.GetCumulativeTrueSpatialExtents()->Set(bounds);
-}
-
-
-// ****************************************************************************
-//  Method: avtQueryOverTimeFilter::SetSILAtts
-//
-//  Purpose:
-//    Sets the SILRestriction atts necessary to create a SILRestriction. 
-//
-//  Programmer: Kathleen Bonnell 
-//  Creation:   May 4, 2004 
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-void
-avtQueryOverTimeFilter::SetSILAtts(const SILRestrictionAttributes *silAtts)
-{
-    querySILAtts = *silAtts;
 }

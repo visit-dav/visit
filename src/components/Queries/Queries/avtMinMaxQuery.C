@@ -200,6 +200,9 @@ avtMinMaxQuery::PreExecute()
 //    Hank Childs, Fri Aug 27 16:02:58 PDT 2004
 //    Rename ghost data array.
 //
+//    Kathleen Bonnell, Fri Jan  7 15:15:32 PST 2005 
+//    Fix memory leak -- delete cellIds. 
+//
 // ****************************************************************************
 
 void 
@@ -422,6 +425,7 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
                 matValues.clear();
         } 
     }
+    cellIds->Delete();
 
     if (nodeCentered)
     {
@@ -713,7 +717,7 @@ avtMinMaxQuery::CreateResultMessage(const int n)
 string 
 avtMinMaxQuery::InfoToString(const MinMaxInfo &info)
 {
-    ostrstream os;
+    std::strstream os;
     int elNum = info.GetElementNum();
 
     if (!nodeCentered)
@@ -760,7 +764,9 @@ avtMinMaxQuery::InfoToString(const MinMaxInfo &info)
         os << c[0] << ", " << c[1] << ", " << c[2];
     }
     os << ">)" << ends;
-    return os.str();
+    string str;
+    os >> str;
+    return str;
 }
 
 

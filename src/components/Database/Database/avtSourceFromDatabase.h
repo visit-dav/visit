@@ -75,6 +75,9 @@ class  PickAttributes;
 //    Kathleen Bonnell, Thu Dec 16 17:11:19 PST 2004 
 //    Added another bool arg to QueryCoords. 
 //
+//    Kathleen Bonnell, Mon Jan  3 13:26:20 PST 2005 
+//    Add method 'GetSIL'. 
+//
 // ****************************************************************************
 
 class DATABASE_API avtSourceFromDatabase : public avtTerminatingDatasetSource
@@ -92,6 +95,8 @@ class DATABASE_API avtSourceFromDatabase : public avtTerminatingDatasetSource
                             void *args, avtDataSpecification_p, VoidRefList &);
     virtual void        FetchSpeciesAuxiliaryData(const char *type, 
                             void *args, avtDataSpecification_p, VoidRefList &);
+
+    avtSIL             *GetSIL(int stateIndex);
 
     virtual avtDataSpecification_p
                         GetFullDataSpecification(void);

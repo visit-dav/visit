@@ -2507,9 +2507,12 @@ ViewerPlot::GetReader() const
 // 
 //    Kathleen Bonnell, Wed Nov  3 16:51:24 PST 2004 
 //    Removed call to set the avtPlot's mesh type. Added test for valid
-//    active variable before attempting to retrieve Units, to preven 
+//    active variable before attempting to retrieve Units, to prevent 
 //    unnecessary Exception handling.
 // 
+//    Kathleen Bonnell, Fri Jan  7 13:00:32 PST 2005 
+//    Removed unnecessary TRY-CATCH block surrounding retrieval of units. 
+//
 // ****************************************************************************
 
 void
@@ -2703,27 +2706,19 @@ ViewerPlot::CreateActor(bool createNew,
         //
         // Set the actor's units from the data attributes.
         //
-        TRY
+        if (actor->GetDataObject()->GetInfo().GetAttributes().ValidActiveVariable())
         {
-            if (actor->GetDataObject()->GetInfo().GetAttributes().ValidActiveVariable())
-            {
-                std::string units(actor->GetDataObject()->GetInfo().GetAttributes().
-                    GetVariableUnits());
-                if(units != "")
-                    plotList[cacheIndex]->SetVarUnits(units.c_str());
-                else
-                    plotList[cacheIndex]->SetVarUnits(0);
-            }
+            std::string units(actor->GetDataObject()->GetInfo().GetAttributes().
+            GetVariableUnits());
+            if(units != "")
+                plotList[cacheIndex]->SetVarUnits(units.c_str());
             else
                 plotList[cacheIndex]->SetVarUnits(0);
         }
-        CATCH(ImproperUseException)
+        else
         {
-            // ignore improper use exception that might occur when getting
-            // the data attributes' units.
             plotList[cacheIndex]->SetVarUnits(0);
         }
-        ENDTRY
 
         this->SetActor(actor);
 

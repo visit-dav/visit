@@ -180,6 +180,9 @@ avtLineoutFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
 //    Brad Whitlock, Thu Jul 22 17:20:05 PST 2004
 //    Set the Y units.
 //
+//    Kathleen Bonnell, Thu Jan  6 10:34:57 PST 2005 
+//    Remove TRY-CATCH block in favor of testing for ValidActiveVariable. 
+//
 // ****************************************************************************
 
 void
@@ -191,17 +194,12 @@ avtLineoutFilter::RefashionDataObjectInfo(void)
     GetOutput()->GetInfo().GetValidity().InvalidateZones();
     GetOutput()->GetInfo().GetValidity().InvalidateSpatialMetaData();
 
-    TRY
+    if (GetInput()->GetInfo().GetAttributes().ValidActiveVariable())
     {
         std::string units(GetInput()->GetInfo().GetAttributes().GetVariableUnits());
         if(units != "")
             GetOutput()->GetInfo().GetAttributes().SetYUnits(units);
     }
-    CATCH(ImproperUseException)
-    {
-        ; // ignore
-    }
-    ENDTRY
 }
 
 
