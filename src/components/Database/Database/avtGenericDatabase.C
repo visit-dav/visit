@@ -929,6 +929,11 @@ avtGenericDatabase::GetMeshDataset(const char *varname, int ts, int domain,
 //    Jeremy Meredith, Wed Mar 19 12:22:20 PST 2003
 //    Allow for a NULL var as well as a NULL mesh.
 //
+//    Jeremy Meredith, Fri Jun 18 14:18:48 PDT 2004
+//    Allow for non-3-component vectors.  This will be used in the short
+//    term for colors, though we should have a better solution when colors
+//    are no longer categorized as vectors.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -971,11 +976,25 @@ avtGenericDatabase::GetVectorVarDataset(const char *varname, int ts,
 
     if (vmd->centering == AVT_NODECENT)
     {
-        mesh->GetPointData()->SetVectors(var);
+        if (var->GetNumberOfComponents() == 3)
+        {
+            mesh->GetPointData()->SetVectors(var);
+        }
+        else
+        {
+            mesh->GetPointData()->AddArray(var);
+        }
     }
     else
     {
-        mesh->GetCellData()->SetVectors(var);
+        if (var->GetNumberOfComponents() == 3)
+        {
+            mesh->GetCellData()->SetVectors(var);
+        }
+        else
+        {
+            mesh->GetCellData()->AddArray(var);
+        }
     }
 
     return mesh;

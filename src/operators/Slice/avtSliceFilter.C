@@ -574,6 +574,9 @@ avtSliceFilter::SetUpProjection(void)
 //    Kathleen Bonnell, Wed Jun 16 14:01:07 PDT 2004 
 //    Made SliceByZone use a db query to get the zone center. 
 //    
+//    Hank Childs, Thu Jun 17 15:08:24 PDT 2004
+//    Improve error message when zone or node cannot be located.
+//
 // ****************************************************************************
 
 void
@@ -673,9 +676,9 @@ avtSliceFilter::GetOrigin(double &ox, double &oy, double &oz)
               point[1] = 0.;
               point[2] = 0.;
               char warning[1024];
-              sprintf(warning, "Was not able to locate domain %d, zone %d, "
-                               "using point (0., 0., 0.)", domain+blockOrigin,
-                                                     zone+cellOrigin);
+              sprintf(warning, "Was not able to locate domain %d, zone %d. "
+                               " Using point (0., 0., 0.) instead.", 
+                                          domain+blockOrigin, zone+cellOrigin);
               avtCallback::IssueWarning(warning);
           }
           else
@@ -728,9 +731,9 @@ avtSliceFilter::GetOrigin(double &ox, double &oy, double &oz)
               point[1] = 0.;
               point[2] = 0.;
               char warning[1024];
-              sprintf(warning, "Was not able to locate domain %d, node %d, "
-                               "using point (0., 0., 0.)", domain+blockOrigin,
-                                                           node);
+              sprintf(warning, "Was not able to locate domain %d, node %d. "
+                               " Using point (0., 0., 0.) instead.",
+                                                    domain+blockOrigin, node);
               avtCallback::IssueWarning(warning);
           }
           else

@@ -3,7 +3,11 @@
 // ************************************************************************* //
 
 #include <avtSimilarityTransformFilter.h>
+
+#include <avtExtents.h>
+
 #include <BadVectorException.h>
+
 
 // ****************************************************************************
 //  Method: avtSimilarityTransformFilter constructor
@@ -357,6 +361,12 @@ avtSimilarityTransformFilter::PerformRestriction(
 //  Programmer: Hank Childs
 //  Creation:   March 7, 2003
 //
+//  Modifications:
+//  
+//    Hank Childs, Thu Jun 17 10:44:20 PDT 2004
+//    Set the topological dimension to be higher so that we know we need
+//    to apply the facelist filter.  Also transform the extents.
+//    
 // ****************************************************************************
 
 void
@@ -377,9 +387,63 @@ avtSimilarityTransformFilter::RefashionDataObjectInfo(void)
             avtDataAttributes &outAtts= GetOutput()->GetInfo().GetAttributes();
             if (inAtts.GetSpatialDimension() < 3)
             {
+                //
+                // Tell the new plot that it has spatial dimension 3.  Also
+                // lie and say that its topological dimension is also 3.  This
+                // will cause the facelist filter to execute.
+                //
                 outAtts.SetSpatialDimension(3);
+                if (inAtts.GetTopologicalDimension() == 2)
+                    outAtts.SetTopologicalDimension(3);
+
+                double extents[6];
+                vtkMatrix4x4 *t = GetTransform();
+
+                //
+                // Transform the extents into 3D.
+                //
+                if (inAtts.GetTrueSpatialExtents()->HasExtents())
+                {
+                    avtExtents *newTrueSpatial = new avtExtents(3);
+                    inAtts.GetTrueSpatialExtents()->CopyTo(extents);
+                    extents[4] = extents[5] = 0.;
+                    newTrueSpatial->Set(extents);
+                    *(outAtts.GetTrueSpatialExtents()) = *newTrueSpatial;
+                    outAtts.GetTrueSpatialExtents()->Transform(t);
+                }
+
+                if (inAtts.GetCumulativeTrueSpatialExtents()->HasExtents())
+                {
+                    avtExtents *newCumulativeTrueSpatial = new avtExtents(3);
+                    inAtts.GetCumulativeTrueSpatialExtents()->CopyTo(extents);
+                    extents[4] = extents[5] = 0.;
+                    newCumulativeTrueSpatial->Set(extents);
+                    *(outAtts.GetCumulativeTrueSpatialExtents()) = 
+                                                     *newCumulativeTrueSpatial;
+                    outAtts.GetCumulativeTrueSpatialExtents()->Transform(t);
+                }
+
+                if (inAtts.GetEffectiveSpatialExtents()->HasExtents())
+                {
+                    avtExtents *newEffectiveSpatial = new avtExtents(3);
+                    inAtts.GetEffectiveSpatialExtents()->CopyTo(extents);
+                    extents[4] = extents[5] = 0.;
+                    newEffectiveSpatial->Set(extents);
+                    *(outAtts.GetEffectiveSpatialExtents()) 
+                                                        = *newEffectiveSpatial;
+                    outAtts.GetEffectiveSpatialExtents()->Transform(t);
+                }
+
+                if (inAtts.GetCurrentSpatialExtents()->HasExtents())
+                {
+                    avtExtents *newCurrentSpatial = new avtExtents(3);
+                    inAtts.GetCurrentSpatialExtents()->CopyTo(extents);
+                    extents[4] = extents[5] = 0.;
+                    newCurrentSpatial->Set(extents);
+                    *(outAtts.GetCurrentSpatialExtents()) = *newCurrentSpatial;
+                    outAtts.GetCurrentSpatialExtents()->Transform(t);
+                }
             }
-   
         }
     }
 }

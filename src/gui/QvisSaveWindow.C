@@ -288,6 +288,9 @@ QvisSaveWindow::CreateWindowContents()
 //   Only allow the compression type combo box to be enabled when we 
 //   have a tiff format.
 //
+//   Hank Childs, Thu Jun 17 11:39:35 PDT 2004
+//   Disable "Screen capture" button when saving out polygonal formats.
+//
 // ****************************************************************************
 
 void
@@ -348,10 +351,12 @@ QvisSaveWindow::UpdateWindow(bool doAll)
             if (saveWindowAtts->CurrentFormatIsImageFormat())
             {
                 stereoCheckBox->setEnabled(true);
+                screenCaptureCheckBox->setEnabled(true);
             }
             else
             {
                 stereoCheckBox->setEnabled(false);
+                screenCaptureCheckBox->setEnabled(false);
             }
             break;
         case 4: // maintain aspect

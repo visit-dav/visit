@@ -465,6 +465,10 @@ avtMapper::InsertFilters(vtkDataSet *ds, int)
 //    Hank Childs, Tue Sep 18 10:37:29 PDT 2001
 //    Removed unused variable data.
 //
+//    Hank Childs, Thu Jun 17 14:29:02 PDT 2004
+//    Do not make use of the mappers min/max, since this does not work with
+//    scalable rendering mode.
+//
 // ****************************************************************************
 
 void
@@ -479,32 +483,12 @@ avtMapper::SetDefaultRange(void)
     }
 
     int  i;
-    float minRange = +FLT_MAX;
-    float maxRange = -FLT_MAX;
-
-    //
-    // Determine the extents over *all* of the mappers.
-    //
-    for (i = 0 ; i < nMappers ; i++)
+    float minRange;
+    float maxRange;
+    if (!GetRange(minRange, maxRange))
     {
-        if (mappers[i] != NULL)
-        {
-            vtkDataSet *ds = mappers[i]->GetInput();
-            if (ds != NULL)
-            {
-                ds->Update();
-                float tmpRange[2];
-                ds->GetScalarRange(tmpRange);
-                if (tmpRange[0] < minRange)
-                {
-                    minRange = tmpRange[0];
-                }
-                if (tmpRange[1] > maxRange)
-                {
-                    maxRange = tmpRange[1];
-                }
-            }
-        }
+        minRange = 0;
+        maxRange = 1;
     }
 
     //
@@ -518,7 +502,6 @@ avtMapper::SetDefaultRange(void)
         }
     }
 }
-
 
 
 // ****************************************************************************
@@ -582,6 +565,9 @@ avtMapper::CreateMapper(void)
 //    Kathleen Bonnell, Thu Mar 11 10:07:35 PST 2004 
 //    Tensor, vectors and scalars all handled by GetDataExtents. 
 //
+//    Jeremy Meredith, Fri Jun 18 14:18:23 PDT 2004
+//    Allow variable dimension of 4.  This will be used for colors.
+//
 // ****************************************************************************
 
 bool
@@ -597,6 +583,7 @@ avtMapper::GetRange(float &rmin, float &rmax)
     avtDataAttributes &data = GetInput()->GetInfo().GetAttributes();
     if ((data.GetVariableDimension() == 1) ||
         (data.GetVariableDimension() <= 3) ||
+        (data.GetVariableDimension() == 4) ||
         (data.GetVariableDimension() == 9))
     {
         double extents[2];
