@@ -141,7 +141,7 @@ avtSILSet::AddMatrixColumn(int mat, int column, int coll)
 void
 avtSILSet::Print(ostream &out) const
 {
-    out << "\tSet name = " << name.c_str() << endl;
+    out << "\tSet name = " << name.c_str() << ", identifier = " << id << endl;
     std::vector<int>::const_iterator it;
     if (mapsIn.size() > 0)
     {

@@ -45,6 +45,8 @@ class     avtVariableCache;
 //    Hank Childs, Sat Sep 20 09:04:49 PDT 2003
 //    Added support for tensors.
 //
+//    Mark C. Miller, 30Sep03, Added support for time varying sil/metadata 
+//
 // ****************************************************************************
 
 class DATABASE_API avtFileFormat
@@ -66,6 +68,8 @@ class DATABASE_API avtFileFormat
 
     virtual bool          PerformsMaterialSelection(void) { return false; };
     virtual bool          HasVarsDefinedOnSubMeshes(void) { return false; };
+    virtual bool          HasInvariantMetaData(void) const { return true; };
+    virtual bool          HasInvariantSIL(void) const      { return true; };
     virtual void          TurnMaterialSelectionOff(void);
     virtual void          TurnMaterialSelectionOn(const char *);
 

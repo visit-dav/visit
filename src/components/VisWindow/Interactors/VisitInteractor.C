@@ -885,16 +885,21 @@ VisitInteractor::StartBoundingBox(void)
 //  Programmer: Hank Childs
 //  Creation:   March 19, 2002
 //
+//  Modifications:
+//    Eric Brugger, Wed Oct  8 08:44:20 PDT 2003
+//    I removed a call to IssueViewCallback since MotionEnd also called it.
+//
 // ****************************************************************************
 
 void
 VisitInteractor::EndBoundingBox(void)
 {
     //
-    // When we turn off the bounding box, it will do a render.  Better make
-    // sure that the view is correct.
+    // We do not issue a view callback here, since MotionEnd is always
+    // called and it will issue a view callback. Doing so here would cause
+    // a duplicate entry to be added to the view stack messing up the
+    // undo view operation.
     //
-    IssueViewCallback();
 
     //
     // If bounding box mode is enabled, then we turned on the bounding box,

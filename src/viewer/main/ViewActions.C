@@ -125,7 +125,6 @@ void
 UndoViewAction::Execute()
 {
     windowMgr->UndoView(windowId);
-    windowMgr->UndoView(windowId);
 }
 
 bool

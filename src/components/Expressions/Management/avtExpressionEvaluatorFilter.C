@@ -295,6 +295,10 @@ avtExpressionEvaluatorFilter::PerformRestriction(avtPipelineSpecification_p spec
 //    Hank Childs, Mon Sep 22 13:32:51 PDT 2003
 //    Tell each variable what type it is.
 //
+//    Hank Childs, Wed Oct  8 15:23:13 PDT 2003
+//    Make room for each expression variable (was previously clobbering
+//    existing vars -- whoops).
+//
 // ****************************************************************************
 
 void
@@ -395,12 +399,8 @@ avtExpressionEvaluatorFilter::Query(PickAttributes *pa)
             int ncomps = arr->GetNumberOfComponents();
             if (ncomps == 1)
                 varInfo.SetVariableType("scalar");
-            else if (ncomps <= 3)
+            else if (ncomps == 3)
                 varInfo.SetVariableType("vector");
-            else if (ncomps == 4)
-                varInfo.SetVariableType("tensor");
-            else if (ncomps == 6)
-                varInfo.SetVariableType("symm_tensor");
             else if (ncomps == 9)
                 varInfo.SetVariableType("tensor");
 
@@ -449,8 +449,7 @@ avtExpressionEvaluatorFilter::Query(PickAttributes *pa)
             {
                 varInfo.SetNames(names);
                 varInfo.SetValues(vals);
-                PickVarInfo &varInfo2 = pa->GetPickVarInfo(indices[i]);
-                varInfo2 = varInfo;
+                pa->AddPickVarInfo(varInfo);
             }
         }
     }

@@ -781,14 +781,30 @@ avtSIL::MakeSILAttributes(void) const
 //    Hank Childs, Thu Nov 14 16:46:58 PST 2002
 //    Print out the SIL matrices as well.
 //
+//    Mark C. Miller, 23Sep03, Added additional perXXXInfo options
+//
 // ****************************************************************************
-
 void
 avtSIL::Print(ostream &out) const
 {
+   std::vector< std::string > dummyInfo;
+   Print(out, dummyInfo, dummyInfo, dummyInfo);
+}
+
+void
+avtSIL::Print(ostream &out,
+    std::vector< std::string > perSetInfo,
+    std::vector< std::string > perCollInfo,
+    std::vector< std::string > perMatInfo) const
+{
     int  i;
+    bool useInfo;
 
     int nSets = sets.size();
+    if (perSetInfo.size() == nSets)
+       useInfo = true; 
+    else
+       useInfo = false;
     for (i = 0 ; i < nSets ; i++)
     {
         if (isWhole[i])
@@ -799,23 +815,31 @@ avtSIL::Print(ostream &out) const
         {
             out << "Subset ";
         }
-        out << i << endl;
+        out << i << " " << (useInfo?perSetInfo[i]:"") << endl;
         avtSILSet_p s = sets[i];
         s->Print(out);
     }
 
     int nColls = collections.size();
+    if (perCollInfo.size() == nColls)
+       useInfo = true; 
+    else
+       useInfo = false;
     for (i = 0 ; i < nColls ; i++)
     {
-        out << "Collection " << i << endl;
+        out << "Collection " << i << " " << (useInfo?perCollInfo[i]:"") << endl;
         avtSILCollection_p c = collections[i];
         c->Print(out);
     }
 
     int nMats = matrices.size();
+    if (perMatInfo.size() == nMats)
+       useInfo = true; 
+    else
+       useInfo = false;
     for (i = 0 ; i < nMats ; i++)
     {
-        out << "Matrix " << i << endl;
+        out << "Matrix " << i << " " << (useInfo?perMatInfo[i]:"") << endl;
         avtSILMatrix_p m = matrices[i];
         m->Print(out);
     }

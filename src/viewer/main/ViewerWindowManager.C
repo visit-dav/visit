@@ -3331,6 +3331,10 @@ ViewerWindowManager::RenderInformationCallback(void *data)
 //   Brad Whitlock, Mon Apr 14 17:26:24 PST 2003
 //   Factored some updates out of UpdateGlobalAtts.
 //
+//   Eric Brugger, Wed Oct  8 11:37:15 PDT 2003
+//   I added code to turn off view stacking when calling UpdateViewAtts so
+//   that a new view doesn't get pushed on the view stack.
+//
 // ****************************************************************************
 
 void
@@ -3359,7 +3363,9 @@ ViewerWindowManager::UpdateAllAtts()
     //
     // Send the new view info to the client.
     //
+    viewStacking = false;
     UpdateViewAtts();
+    viewStacking = true;
 
     //
     // Update the client animation attributes.

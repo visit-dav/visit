@@ -14,6 +14,7 @@
 #include <PickAttributes.h>
 #include <avtExtents.h>
 #include <avtNullData.h>
+#include <avtDatabaseMetaData.h>
 #include <avtDataObjectQuery.h>
 #include <avtCompactnessQuery.h>
 #include <avtEulerianQuery.h>
@@ -161,7 +162,7 @@ NetworkManager::ClearAllNetworks(void)
 NetnodeDB *
 NetworkManager::GetDBFromCache(const string &filename, int time)
 {
-    //cerr << "NetworkManager::LoadDBCache()" << endl;
+    //cerr << "NetworkManager::GetDBFromCache()" << endl;
 
     // If we don't have a load balancer, we're dead.
     if (loadBalancer == NULL)
@@ -171,18 +172,26 @@ NetworkManager::GetDBFromCache(const string &filename, int time)
     }
 
     // Generate the list of matching databases.
-    std::vector<NetnodeDB*> databaseMatches;
     for (int i = 0; i < databaseCache.size(); i++)
     {
-        if (databaseCache[i]->GetFilename() == filename)
-            databaseMatches.push_back(databaseCache[i]);
-    }
-
-    // See if we have a match.
-    if (!databaseMatches.empty())
-    {
-        databaseMatches[0]->SetDBInfo(filename, "", time);
-        return databaseMatches[0];
+        if (!databaseCache[i]->GetDB()->MetaDataIsInvariant() ||
+            !databaseCache[i]->GetDB()->SILIsInvariant())
+        {
+            if ((databaseCache[i]->GetFilename() == filename) &&
+                (databaseCache[i]->GetTime() == time))
+                {
+                   databaseCache[i]->SetDBInfo(filename, "", time);
+                   return databaseCache[i];
+                }
+        }
+        else
+        {
+            if (databaseCache[i]->GetFilename() == filename)
+            {
+                databaseCache[i]->SetDBInfo(filename, "", time);
+                return databaseCache[i];
+            }
+        }
     }
 
     // No match.  Load a new DB.
@@ -198,12 +207,14 @@ NetworkManager::GetDBFromCache(const string &filename, int time)
             db = avtDatabaseFactory::FileList(&filename_c, 1);
 
         // If we want to open the file at a later timestep, get the
-        // metadata and the SIL so that it contains the right data.
-        if (time > 0)
+        // SIL so that it contains the right data.
+        if ((time > 0) ||
+            (!db->MetaDataIsInvariant()) ||
+            (!db->SILIsInvariant()))
         {
             debug2 << "NetworkManager::AddDB: We were instructed to open "
                    << filename.c_str() << " at timestate=" << time
-                   << " so we're reading the MetaData and SIL early."
+                   << " so we're reading the SIL early."
                    << endl;
             db->GetMetaData(time);
             db->GetSIL(time);
@@ -343,7 +354,7 @@ NetworkManager::StartNetwork(const string &filename, const string &var,
 
     // Set up the data spec.
     avtSILRestriction_p silr =
-        new avtSILRestriction(workingNet->GetNetDB()->GetDB()->GetSIL(), atts);
+        new avtSILRestriction(workingNet->GetNetDB()->GetDB()->GetSIL(time), atts);
     avtDataSpecification *dspec = new avtDataSpecification(var.c_str(), time, silr);
 
     // Set up some options from the data specification
@@ -480,7 +491,9 @@ NetworkManager::DefineDB(const string &dbName, const string &dbPath,
 
         // If we want to open the file at a later timestep, get the
         // metadata and the SIL so that it contains the right data.
-        if(time > 0)
+        if ((time > 0) ||
+            (!db->MetaDataIsInvariant()) || 
+            (!db->SILIsInvariant()))
         {
             debug2 << "NetworkManager::DefineDB: We were instructed to define "
                        << dbName.c_str() << " at timestate=" << time

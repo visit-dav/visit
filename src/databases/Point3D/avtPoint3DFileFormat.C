@@ -214,6 +214,10 @@ avtPoint3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    We are consistently adding one bogus point at the end of the array.
 //    Remove that.
 //
+//    Hank Childs, Wed Oct  8 15:36:36 PDT 2003
+//    Removed another bogus line, this time it was at the beginning, with
+//    the variable declaration.
+//
 // ****************************************************************************
 
 void
@@ -235,6 +239,11 @@ avtPoint3DFileFormat::ReadData(void)
     }
 
     char     line[1024];
+
+    // We read out the four variables, but not the newline at the end.
+    // Get that now.
+    ifile.getline(line, 1024);
+
     vector<float> var1;
     vector<float> var2;
     vector<float> var3;
@@ -242,6 +251,7 @@ avtPoint3DFileFormat::ReadData(void)
 
     while (!ifile.eof())
     {
+        line[0] = '\0';
         ifile.getline(line, 1024);
         float a, b, c, d;
         sscanf(line, "%f %f %f %f", &a, &b, &c, &d);

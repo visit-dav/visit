@@ -1098,6 +1098,7 @@ FileServerList::OpenAndGetMetaData(const QualifiedFilename &filename,
         Select(5, (void *)&fileAction);
         // We made it to here then really set the open file.
         openFile = filename;
+        openFileTimeState = timeState;
     }
     else
     {
@@ -1155,6 +1156,7 @@ FileServerList::OpenAndGetMetaData(const QualifiedFilename &filename,
 
                 // We made it to here then really set the open file.
                 openFile = filename;
+                openFileTimeState = timeState;
                 fileAction = action;
                 Select(5, (void *)&fileAction);
             }
@@ -2001,6 +2003,12 @@ FileServerList::GetOpenFile()
     return openFile;
 }
 
+int
+FileServerList::GetOpenFileTimeState() const
+{
+    return openFileTimeState;
+}
+
 const avtDatabaseMetaData *
 FileServerList::GetMetaData()
 {
@@ -2021,6 +2029,15 @@ FileServerList::GetMetaData(const QualifiedFilename &filename)
         return fileMetaData[temp];
     else
         return 0;
+}
+
+const avtDatabaseMetaData *
+FileServerList::GetMetaDataFromMDServer(
+                   const QualifiedFilename &filename,
+                   int timeState)
+{
+    MDServerProxy *mds = servers[filename.host]->server;
+    return mds->GetMetaData(filename.PathAndFile(), timeState);
 }
 
 bool

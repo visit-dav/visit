@@ -110,8 +110,18 @@ QvisFileInformationWindow::UpdateWindow(bool doAll)
     if(fileServer->FileChanged() || doAll)
     {
         const avtDatabaseMetaData *md = fileServer->GetMetaData();
+
         if(md != 0)
         {
+
+            // get MetaData directly from server if its not invariant
+            if (md->GetMustRepopulateOnStateChange())
+            {
+                md = fileServer->GetMetaDataFromMDServer(
+                                     fileServer->GetOpenFile(),
+                                     fileServer->GetOpenFileTimeState());
+            }
+
             ostrstream os;
             os << "File = " << fileServer->GetOpenFile().FullName().c_str()
                << endl;

@@ -169,6 +169,10 @@ VisWinLegends::SetForegroundColor(float fr, float fg, float fb)
 //    Modified the call to GetLegendSize to pass the maximum space left
 //    for legends.
 //
+//    Eric Brugger, Tue Oct  7 14:58:45 PDT 2003
+//    Modified the routine to set the database information to NULL if
+//    mainDBInfoVisible is false.
+//
 // ****************************************************************************
 
 void
@@ -186,7 +190,7 @@ VisWinLegends::PositionLegends(vector<avtActor_p> &lst)
         {
             if(legendVisible && legend->GetLegendOn())
             {
-                if (homogeneous)
+                if (homogeneous || !mainDBInfoVisible)
                 {
                     legend->SetDatabaseInfo(NULL);
                 }
@@ -246,6 +250,10 @@ VisWinLegends::PositionLegends(vector<avtActor_p> &lst)
 //    Eric Brugger, Mon Jul 14 16:43:13 PDT 2003
 //    Changed the way database information is handled.
 //
+//    Eric Brugger, Tue Oct  7 14:58:45 PDT 2003
+//    Modified the routine to set the database information to NULL if
+//    mainDBInfoVisible is false.
+//
 // ****************************************************************************
 
 void
@@ -290,7 +298,7 @@ VisWinLegends::UpdateDBInfo(vector<avtActor_p> &lst)
     // overall database information.
     //
     vtkRenderer *foreground = mediator.GetForeground();
-    if (!lst.empty() && homogeneous)
+    if (!lst.empty() && homogeneous && mainDBInfoVisible)
     {
         avtBehavior_p b = lst[0]->GetBehavior();
         avtDataAttributes &atts = b->GetInfo().GetAttributes();
@@ -305,7 +313,7 @@ VisWinLegends::UpdateDBInfo(vector<avtActor_p> &lst)
         vtkCoordinate *c = dbInfoActor->GetPositionCoordinate();
         c->SetCoordinateSystemToNormalizedViewport();
         c->SetValue(x, y);
-        if (!dbInfoIsAdded && mainDBInfoVisible)
+        if (!dbInfoIsAdded)
         {
             foreground->AddActor2D(dbInfoActor);
             dbInfoIsAdded = true;

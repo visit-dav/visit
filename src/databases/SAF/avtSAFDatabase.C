@@ -406,10 +406,11 @@ avtSAFDatabase::GetOutput(avtDataSpecification_p spec, avtSourceFromDatabase *)
     // zero origin count of domains.
     // HACK!!! The domain label logic needs to be modified when
     // subselections other than domain subselections are allowed.
+    // Also, we assume MetaData at time 0 is sufficient for this information
     //
     bool needDomainLabels =
-        (GetMetaData()->DetermineVarType(variable) != AVT_MATERIAL) &&
-        (GetMetaData()->DetermineSubsetType(variable) == AVT_DOMAIN_SUBSET);
+        (GetMetaData(0)->DetermineVarType(variable) != AVT_MATERIAL) &&
+        (GetMetaData(0)->DetermineSubsetType(variable) == AVT_DOMAIN_SUBSET);
     if (needDomainLabels)
     {
         int bigHackDomainCounter = 0;

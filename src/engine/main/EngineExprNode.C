@@ -45,13 +45,6 @@
 #include <avtVectorCrossProductFilter.h>
 #include <avtMeshCoordinateFilter.h>
 #include <avtProcessorIdFilter.h>
-#include <avtDataObjectQuery.h>
-#include <avtEulerianQuery.h>
-#include <avtLocateCellQuery.h>
-#include <avtPickQuery.h>
-#include <avtTotalSurfaceAreaQuery.h>
-#include <avtTotalVolumeQuery.h>
-#include <avtTotalRevolvedVolumeQuery.h>
 #include <avtDegreeFilter.h>
 #include <avtVMetrics.h>
 #include <avtConstantCreatorFilter.h>

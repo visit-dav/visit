@@ -105,8 +105,9 @@ int main(int argc, char *argv[])
 
     //
     // Figure out which mesh to operate on.
+    // Assume MetaData for timestep 0 is sufficient for what we need here
     //
-    const avtDatabaseMetaData *md = db->GetMetaData();
+    const avtDatabaseMetaData *md = db->GetMetaData(0);
     if (md->GetNumMeshes() > 1)
     {
         cerr << "There are multiple meshes in the file.  This program can "
