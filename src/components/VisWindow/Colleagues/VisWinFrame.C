@@ -2,11 +2,13 @@
 //                                VisWinFrame.C                              //
 // ************************************************************************* //
 
+#include <VisWinFrame.h>
+
 #include <vtkHankAxisActor2D.h>
 #include <vtkProperty2D.h>
 #include <vtkRenderer.h>
 
-#include <VisWinFrame.h>
+#include <VisWindow.h>
 #include <VisWindowColleagueProxy.h>
 
 
@@ -591,6 +593,10 @@ VisWinFrame::SetLineWidth(int width)
 //    Hank Childs, Tue Jul 11 13:22:37 PDT 2000
 //    Re-wrote function.
 //
+//    Eric Brugger, Mon Nov 24 15:55:23 PST 2003
+//    I added code to set the axis orientation angle to handle degenerate
+//    viewports.
+//
 // ****************************************************************************
 
 void
@@ -604,8 +610,21 @@ VisWinFrame::UpdateView(void)
     // correct side of the viewport.  Must propogate kludge by sending
     // range in backwards.
     //
+    leftBorder->SetRange(max_y, min_y);
+    leftBorder->SetUseOrientationAngle(1);
+    leftBorder->SetOrientationAngle(-1.5707963);
+
     rightBorder->SetRange(min_y, max_y);
+    rightBorder->SetUseOrientationAngle(1);
+    rightBorder->SetOrientationAngle(1.5707963);
+
+    bottomBorder->SetRange(min_x, max_x);
+    bottomBorder->SetUseOrientationAngle(1);
+    bottomBorder->SetOrientationAngle(0.);
+
     topBorder->SetRange(max_x, min_x);
+    topBorder->SetUseOrientationAngle(1);
+    topBorder->SetOrientationAngle(3.1415926);
 }
 
 
@@ -626,49 +645,39 @@ VisWinFrame::UpdateView(void)
 //  Programmer: Hank Childs
 //  Creation:   July 11, 2000
 //
+//  Modifications:
+//    Eric Brugger, Mon Nov 24 15:55:23 PST 2003
+//    I rewrote the routine to get the range from the curve or 2d view from
+//    the vis window.
+//
 // ****************************************************************************
 
 void
 VisWinFrame::GetRange(float &min_x, float &max_x, float &min_y, float &max_y)
 {
-    //
-    // Note that even though the axes are on the background, we are getting
-    // the canvas here, since we are interested in having the axes reflect
-    // the view of the canvas.
-    //
-    vtkRenderer *canvas = mediator.GetCanvas();
+    VisWindow *vw = mediator;
 
-    //
-    // Figure out what the minimum and maximum values in the view are by
-    // querying the renderer.
-    //
-    float  origin_x = 0.;
-    float  origin_y = 0.;
-    float  origin_z = 0.;
-    canvas->NormalizedViewportToView(origin_x, origin_y, origin_z);
-    canvas->ViewToWorld(origin_x, origin_y, origin_z);
-
-    float right_x = 1.;
-    float right_y = 0.;
-    float right_z = 0.;
-    canvas->NormalizedViewportToView(right_x, right_y, right_z);
-    canvas->ViewToWorld(right_x, right_y, right_z);
-
-    float top_x = 0.;
-    float top_y = 1.;
-    float top_z = 0.;
-    canvas->NormalizedViewportToView(top_x, top_y, top_z);
-    canvas->ViewToWorld(top_x, top_y, top_z);
-
-    //
-    // Even though the points are labeled as "right" and "top", they may
-    // actually be "left" and "below", so be careful when assigning the
-    // min and max.
-    //
-    min_x = (origin_x < right_x ? origin_x : right_x);
-    max_x = (origin_x > right_x ? origin_x : right_x);
-    min_y = (origin_y < top_y ? origin_y : top_y);
-    max_y = (origin_y > top_y ? origin_y : top_y);
+    switch (vw->GetWindowMode())
+    {
+      case WINMODE_2D:
+        {
+        const avtView2D view2D = vw->GetView2D();
+        min_x = view2D.window[0];
+        max_x = view2D.window[1];
+        min_y = view2D.window[2];
+        max_y = view2D.window[3];
+        }
+        break;
+      case WINMODE_CURVE:
+        {
+        const avtViewCurve viewCurve = vw->GetViewCurve();
+        min_x = viewCurve.domain[0];
+        max_x = viewCurve.domain[1];
+        min_y = viewCurve.range[0];
+        max_y = viewCurve.range[1];
+        }
+        break;
+    }
 }
 
 

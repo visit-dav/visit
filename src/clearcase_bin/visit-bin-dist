@@ -152,6 +152,12 @@
 #    Modified the script to handle the absence of the help directory.
 #    Added libvtkDICOMParser to the distribution.
 #
+#    Jeremy Meredith, Mon Dec  1 12:40:51 PST 2003
+#    We aren't using the Qt Free version on Mac, so I prevented it from
+#    copying the Qt include files when os==darwin.  I also put the 
+#    Qt license in an obvious spot, and fixed a typo with copying
+#    duplicates.
+#
 #-----------------------------------------------------------------------
 
 set DataFiles = "TRUE"
@@ -698,7 +704,7 @@ cp $VisItDir/include/visit/a[a-uw-zA-Z]*.h      $incdir/visit
 cp $VisItDir/include/visit/av[a-su-zA-Z]*.h     $incdir/visit
 cp $VisItDir/include/visit/avt[a-z]*.h          $incdir/visit
 cp $VisItDir/include/visit/avt[A-M]*.h          $incdir/visit
-cp $VisItDir/include/visit/avt[M-Z]*.h          $incdir/visit
+cp $VisItDir/include/visit/avt[N-Z]*.h          $incdir/visit
 cp $VisItDir/include/visit/[b-z]*.h             $incdir/visit
 cp $VisItDir/include/mesa/GL/*.h                $incdir/mesa/GL
 cp $VisItDir/include/vtk/*.h                    $incdir/vtk
@@ -715,9 +721,17 @@ cp $VisItDir/include/vtk/Imaging/*.h            $incdir/vtk/Imaging
 cp $VisItDir/include/vtk/MangleMesaInclude/*.h  $incdir/vtk/MangleMesaInclude
 cp $VisItDir/include/vtk/Rendering/*.h          $incdir/vtk/Rendering
 cp $VisItDir/include/python/*.h                 $incdir/python
-cp $VisItDir/include/qt/[a-pr-zA-Z]*.h          $incdir/qt
-cp $VisItDir/include/qt/q[a-l]*.h               $incdir/qt
-cp $VisItDir/include/qt/q[m-zA-Z]*.h            $incdir/qt
+
+#
+# Copy the QT headers to the include directory if we are using the
+# Free edition.  Copy the license there as well.
+#
+if ("$os" != "darwin") then
+    cp $VisItDir/include/qt/[a-pr-zA-Z]*.h          $incdir/qt
+    cp $VisItDir/include/qt/q[a-l]*.h               $incdir/qt
+    cp $VisItDir/include/qt/q[m-zA-Z]*.h            $incdir/qt
+    cp $VisItDir/clearcase_bin/QTLICENSE.*          $incdir/qt
+endif
 
 #
 # Copy the help files to the distribution.

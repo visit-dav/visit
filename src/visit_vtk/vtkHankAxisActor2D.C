@@ -70,6 +70,9 @@ vtkStandardNewMacro(vtkHankAxisActor2D);
 //    Eric Brugger, Tue Jun  3 11:45:37 PDT 2003 
 //    Change the default tick offset to 4.
 //
+//    Eric Brugger, Tue Nov 25 11:44:40 PST 2003
+//    Added the ability to specify the axis orientation angle.
+//
 // **********************************************************************
 vtkHankAxisActor2D::vtkHankAxisActor2D()
 {
@@ -80,6 +83,9 @@ vtkHankAxisActor2D::vtkHankAxisActor2D()
   this->Point2Coordinate = vtkCoordinate::New();
   this->Point2Coordinate->SetCoordinateSystemToNormalizedViewport();
   this->Point2Coordinate->SetValue(0.75, 0.0);
+
+  this->UseOrientationAngle = 0;
+  this->OrientationAngle = 0.; 
   
   this->NumberOfLabels = 5;
 
@@ -290,6 +296,10 @@ void vtkHankAxisActor2D::ReleaseGraphicsResources(vtkWindow *win)
 // Modifications:
 //   Kathleen Bonnell, Wed Mar  6 13:48:48 PST 2002
 //   Call superclass's method in the new vtk way
+//
+//   Eric Brugger, Tue Nov 25 11:44:40 PST 2003
+//   Added the ability to specify the axis orientation angle.
+//
 // ********************************************************************
 void vtkHankAxisActor2D::PrintSelf(ostream& os, vtkIndent indent)
 {
@@ -345,6 +355,11 @@ void vtkHankAxisActor2D::PrintSelf(ostream& os, vtkIndent indent)
   
   os << indent << "Point2 Coordinate: " << this->Point2Coordinate << "\n";
   this->Point2Coordinate->PrintSelf(os, indent.GetNextIndent());
+
+  os << indent << "Use Orientation Angle: "
+     << (this->UseOrientationAngle ? "On\n" : "Off\n");
+
+  os << indent << "Orientation Angle: " << this->OrientationAngle << "\n";
 }
 
 
@@ -372,6 +387,9 @@ void vtkHankAxisActor2D::PrintSelf(ostream& os, vtkIndent indent)
 //   Eric Brugger, Tue Jun  3 11:45:37 PDT 2003 
 //   Multiply the text height by a fudge factor to account for the fact that
 //   the height of a digit is considerably less than the height returned.
+//
+//   Eric Brugger, Tue Nov 25 11:44:40 PST 2003
+//   Added the ability to specify the axis orientation angle.
 //
 // ****************************************************************************
 
@@ -457,8 +475,16 @@ void vtkHankAxisActor2D::BuildAxis(vtkViewport *viewport)
   deltaX = p2[0] - p1[0];
   deltaY = p2[1] - p1[1];
   
-  // Suns throw an exception for atan2 when deltaX == deltaY == 0.
-  theta = (deltaX != 0. || deltaY != 0. ? atan2(deltaY, deltaX) : 0.);
+  // Determine the axis orientation angle.
+  if (UseOrientationAngle)
+    {
+    theta = OrientationAngle;
+    }
+  else
+    {
+    // Suns throw an exception for atan2 when deltaX == deltaY == 0.
+    theta = (deltaX != 0. || deltaY != 0. ? atan2(deltaY, deltaX) : 0.);
+    }
 
   // Compute these for later.
   sin_theta = sin(theta);
@@ -973,6 +999,10 @@ float vtkHankAxisActor2D::ComputeStringOffset(float width, float height,
 // Modifications:
 //   Kathleen Bonnell, Wed Mar  6 13:48:48 PST 2002
 //   Call superclass's method in the new vtk way
+//
+//   Eric Brugger, Tue Nov 25 11:44:40 PST 2003
+//   Added the ability to specify the axis orientation angle.
+//
 // ********************************************************************
 
 void vtkHankAxisActor2D::ShallowCopy(vtkProp *prop)
@@ -982,6 +1012,8 @@ void vtkHankAxisActor2D::ShallowCopy(vtkProp *prop)
     {
     this->SetPoint1(a->GetPoint1());
     this->SetPoint2(a->GetPoint2());
+    this->SetUseOrientationAngle(a->GetUseOrientationAngle());
+    this->SetOrientationAngle(a->GetOrientationAngle());
     this->SetRange(a->GetRange());
     this->SetNumberOfLabels(a->GetNumberOfLabels());
     this->SetLabelFormat(a->GetLabelFormat());

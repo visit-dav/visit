@@ -3970,6 +3970,9 @@ avtDatabaseMetaData::SetExtents(std::string name, const float *extents)
 //    Hank Childs, Fri Sep 12 09:11:26 PDT 2003
 //    Re-wrote so this could be designated const.
 //
+//    Hank Childs, Mon Dec  1 14:06:19 PST 2003
+//    Made a more informative error message.
+//
 // ****************************************************************************
 
 int
@@ -3993,6 +3996,8 @@ avtDatabaseMetaData::GetNDomains(std::string var) const
         }
     }
 
+    debug1 << "Unable to find mesh \"" << meshname << "\" associated with "
+           << "variable \"" << var << "\"." << endl;
     EXCEPTION1(InvalidVariableException, var);
 }
 
