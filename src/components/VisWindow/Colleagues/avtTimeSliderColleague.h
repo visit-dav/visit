@@ -20,6 +20,8 @@ class vtkTimeSliderActor;
 // Creation:   Wed Oct 29 16:27:10 PST 2003
 //
 // Modifications:
+//   Kathleen Bonnell, Thu Jan 13 08:39:30 PST 2005
+//   Added timeFormatString and another char* arg to SetText.
 //   
 // ****************************************************************************
 
@@ -45,7 +47,7 @@ public:
     virtual void UpdatePlotList(std::vector<avtActor_p> &lst);
 private:
     bool ShouldBeAddedToRenderer() const;
-    void SetText(const char *text);
+    void SetText(const char *text, const char *format);
     float SliderHeight(float height) const;
     void  GetTextRect(float, float, float, float, float *) const;
     void  GetSliderRect(float, float, float, float, float *) const;
@@ -54,6 +56,7 @@ private:
     vtkTextActor       *textActor;
     char               *textFormatString;
     char               *textString;
+    char               *timeFormatString;
     int                timeDisplayMode;
 
     double             currentTime;

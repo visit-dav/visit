@@ -124,6 +124,10 @@ class WindowInformation;
 //   Kathleen Bonnell, Wed Aug 18 09:44:09 PDT 2004 
 //   Added method to activate interactors window. 
 //
+//   Hank Childs, Thu Jan 13 13:18:27 PST 2005
+//   Added a boolean to iconifyWindows to indicate if the request was 
+//   spontaneous.
+//
 // ****************************************************************************
 
 class GUI_API QvisMainWindow : public QvisWindowBase, public SimpleObserver
@@ -147,7 +151,7 @@ public:
     bool GetShowSelectedFiles() const;
     bool GetAllowFileSelectionChange() const;
 signals:
-    void iconifyWindows();
+    void iconifyWindows(bool = false);
     void deIconifyWindows();
 
     // These signals are emitted when opening windows from the

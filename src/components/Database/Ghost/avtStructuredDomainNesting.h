@@ -1,5 +1,10 @@
+// ************************************************************************* //
+//                      avtStructuredDomainNesting.h                         //
+// ************************************************************************* //
+
 #ifndef AVT_STRUCTURED_DOMAIN_NESTING_H
 #define AVT_STRUCTURED_DOMAIN_NESTING_H
+
 #include <database_exports.h>
 
 #include <avtDomainNesting.h>
@@ -11,7 +16,7 @@ class vtkDataSet;
 class vtkDataArray;
 
 // ****************************************************************************
-//  Class:  avtDomainNesting
+//  Class:  avtStructuredDomainNesting
 //
 //  Purpose: Encapsulate domain nesting information for structured meshes
 //
@@ -41,6 +46,9 @@ class vtkDataArray;
 //    Mark C. Miller, Wed Aug 18 18:20:27 PDT 2004
 //    Added GetSelectedDescendents
 //
+//    Hank Childs, Thu Jan  6 16:00:27 PST 2005
+//    Added ConfirmMesh.
+//
 // ****************************************************************************
 class DATABASE_API avtStructuredDomainNesting : public avtDomainNesting
 {
@@ -69,6 +77,8 @@ class DATABASE_API avtStructuredDomainNesting : public avtDomainNesting
                           { domainNesting[dom].level          = level;
                             domainNesting[dom].childDomains   = childDomains;
                             domainNesting[dom].logicalExtents = exts; } ;
+
+        virtual bool  ConfirmMesh(vector<int> &, vector<vtkDataSet*> &);
 
     protected:
 

@@ -5250,6 +5250,9 @@ avtGenericDatabase::CommunicateGhostNodesFromGlobalNodeIds(
 //    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004 
 //    Changed 'vector<int>' to 'intVector'.
 //
+//    Hank Childs, Thu Jan  6 16:47:50 PST 2005
+//    Added calls to confirm mesh.
+//
 // ****************************************************************************
 
 bool
@@ -5258,21 +5261,46 @@ avtGenericDatabase::ApplyGhostForDomainNesting(avtDatasetCollection &ds,
 {
     bool rv = false;
 
-    void_ref_ptr vr = cache.GetVoidRef("any_mesh",
+    int ts = spec->GetTimestep();
+    avtDatabaseMetaData *md = GetMetaData(ts);
+    string meshname = md->MeshForVar(spec->GetVariable());
+    
+    void_ref_ptr vr = cache.GetVoidRef(meshname.c_str(),
                                    AUXILIARY_DATA_DOMAIN_NESTING_INFORMATION,
-                                  spec->GetTimestep(), -1);
+                                   ts, -1);
+    if (*vr == NULL)
+        vr = cache.GetVoidRef("any_mesh",
+                              AUXILIARY_DATA_DOMAIN_NESTING_INFORMATION,
+                              spec->GetTimestep(), -1);
 
+    avtDomainNesting *dn = (avtDomainNesting*)*vr;
+    vector<vtkDataSet *> list;
+
+    int shouldStop = 0;
     if (*vr != NULL)
     {
         int  i;
-        avtDomainNesting *dn = (avtDomainNesting*)*vr;
-
-        vector<vtkDataSet *> list;
         for (i = 0 ; i < doms.size() ; i++)
         {
             list.push_back(ds.GetDataset(i, 0));
         }
 
+        bool rightMesh = dn->ConfirmMesh(doms, list);
+        if (!rightMesh)
+            shouldStop = 1;
+    }
+    else
+        shouldStop = 1;
+
+#ifdef PARALLEL
+    int  parallelShouldStop;
+    MPI_Allreduce(&shouldStop, &parallelShouldStop, 1, MPI_INT, MPI_MAX,
+                  MPI_COMM_WORLD);
+    shouldStop = parallelShouldStop;
+#endif
+
+    if (!shouldStop)  
+    {
         rv = dn->ApplyGhost(doms, allDoms, list);
 
         //
@@ -5280,10 +5308,8 @@ avtGenericDatabase::ApplyGhostForDomainNesting(avtDatasetCollection &ds,
         //
         if (rv)
         {
-            int ts = spec->GetTimestep();
-            avtDatabaseMetaData *md = GetMetaData(ts);
-            string meshname = md->MeshForVar(spec->GetVariable());
-            GetMetaData(ts)->SetContainsGhostZones(meshname, AVT_CREATED_GHOSTS);
+            GetMetaData(ts)->SetContainsGhostZones(meshname, 
+                                                   AVT_CREATED_GHOSTS);
         }
     }
 

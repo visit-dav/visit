@@ -229,6 +229,10 @@ class SplashScreen;
 //    Brad Whitlock, Thu Dec 9 10:12:24 PDT 2004
 //    Added newExpression, AddPlot, AddOperator slots.
 //
+//    Hank Childs, Thu Jan 13 13:21:27 PST 2005
+//    Added NonSpontaneousIconifyWindow and added an argument to 
+//    IconifyWindow indicating if it is spontaneous.
+//
 // ****************************************************************************
 
 class GUI_API QvisGUIApplication : public QObject, public ConfigManager, public GUIBase
@@ -294,7 +298,8 @@ private slots:
     void SaveSettings();
     void ActivatePlotWindow(int index);
     void ActivateOperatorWindow(int index);
-    void IconifyWindows();
+    void IconifyWindows(bool);
+    void NonSpontaneousIconifyWindows();
     void DeIconifyWindows();
     void AboutVisIt();
     void CustomizeAppearance(bool notify);

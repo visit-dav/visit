@@ -1404,6 +1404,10 @@ QvisMainWindow::closeEvent( QCloseEvent* ce )
 //
 // Modifications:
 //   
+//   Hank Childs, Thu Jan 13 13:19:31 PST 2005
+//   Add argument to iconify windows that indicates if the request is
+//   spontaneous.
+//
 // ****************************************************************************
 
 void
@@ -1414,7 +1418,9 @@ QvisMainWindow::hideEvent(QHideEvent *e)
 
     // If the event was caused by the window manager, emit a signal.
     if(e->spontaneous())
-        emit iconifyWindows();
+    {
+        emit iconifyWindows(e->spontaneous());
+    }
 }
 
 // ****************************************************************************
