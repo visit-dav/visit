@@ -1276,6 +1276,8 @@ ViewerEngineManager::LaunchMessage(const EngineKey &ek)  const
 //   Brad Whitlock, Tue Jun 29 11:09:50 PDT 2004
 //   Made it work with the Windows compiler again.
 //
+//   Mark C. Miller, Mon Jul 12 19:46:32 PDT 2004
+//   Removed call back arguments in call to EngineProxy::Render
 // ****************************************************************************
 
 bool
@@ -1350,8 +1352,7 @@ ViewerEngineManager::ExternalRender(const ExternalRenderRequestInfo& reqInfo,
             ek = pos->first;
 
             avtDataObjectReader_p rdr =
-                engines[ek]->Render(sendZBuffer, pos->second, !doAllAnnotations,
-                                    ViewerSubject::ProcessEventsCB, (void *)viewerSubject);
+                engines[ek]->Render(sendZBuffer, pos->second, !doAllAnnotations);
 
             if (*rdr == NULL)
             {
@@ -1795,6 +1796,9 @@ ViewerEngineManager::UseDataObjectReader(ViewerPlot *const plot,
 //    Added args to the proxy's render method to support warning call backs
 //    comming from the engine.
 //
+//    Mark C. Miller, Mon Jul 12 19:46:32 PDT 2004
+//    Removed call back arguments in call to EngineProxy::Render
+//
 // ****************************************************************************
 
 avtDataObjectReader_p
@@ -1811,9 +1815,7 @@ ViewerEngineManager::GetDataObjectReader(bool sendZBuffer,
 
     TRY
     {
-        retval = engines[ek]->Render(sendZBuffer, ids, !doAllAnnotations,
-                                     ViewerSubject::ProcessEventsCB,
-                                     (void *)viewerSubject);
+        retval = engines[ek]->Render(sendZBuffer, ids, !doAllAnnotations);
     }
     CATCH(LostConnectionException)
     {

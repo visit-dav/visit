@@ -11,6 +11,7 @@
 #include <ViewerQuery.h>
 #include <avtTypes.h>
 #include <vector>
+#include <Line.h>
 
 // Forward declarations.
 class DataNode;
@@ -26,6 +27,16 @@ class ViewerWindow;
 class ViewerPlot;
 class ViewerPlotList;
 class avtToolInterface;
+
+
+typedef struct {
+   ViewerWindow *origWin;
+   Line     line;
+   bool     fromDefault;
+   std::vector<std::string> vars;
+} CachedLineout;
+
+
 
 // ****************************************************************************
 //  Class: ViewerQueryManager
@@ -130,6 +141,16 @@ class avtToolInterface;
 //    Added VerifySingleInputQuery, VerifyMultipleInputQuery, 
 //    DoSpatialExtentsQuery.
 //
+//    Kathleen Bonnell, Fri Jul  9 16:55:32 PDT 2004 
+//    In order to get Lineouts working successfully with parallel engine
+//    and SR mode, split Lineout into two parts -- Start (where the Lineout
+//    window gets created, and lineout options get cached), and Finish
+//    (where the CurvePlot and LineoutOperator are created and realized).
+//    To accomplish this, I  replace 'Lineout' methods with 'StartLineout',
+//    and LineQuery with StartLineQuery.  Added 'FinishLineout' and 
+//    'FinishLineQuery'.  Added lineoutCache to store the lineout options
+//    between calling Start and Finish.
+//
 // ****************************************************************************
     
 class VIEWER_API ViewerQueryManager 
@@ -153,7 +174,7 @@ class VIEWER_API ViewerQueryManager
                             const std::vector<std::string> &,
                             QueryAttributes &); 
 
-    void            LineQuery(const char *qName, const double *pt1, 
+    void            StartLineQuery(const char *qName, const double *pt1, 
                       const double *pt2, const std::vector<std::string> &vars,
                       const int samples);
 
@@ -204,12 +225,6 @@ class VIEWER_API ViewerQueryManager
     static QueryOverTimeAttributes   *GetQueryOverTimeDefaultAtts();
 
 
-    void            Lineout(ViewerWindow *win, const double pt1[3], 
-                            const double pt2[3], const std::string &,
-                            const int samples);
-    void            Lineout(ViewerWindow *, const bool fromLineout = true);
-    void            Lineout(ViewerWindow *, Line *);
-
     void            SetGlobalLineoutAttsFromClient();
     void            SetDynamicLineout(bool);
 
@@ -223,6 +238,12 @@ class VIEWER_API ViewerQueryManager
     void            InitializeQueryList(void);
 
     void            DoSpatialExtentsQuery(ViewerPlot *, bool);
+
+    void            StartLineout(ViewerWindow *, bool);
+    void            StartLineout(ViewerWindow *, Line *);
+    void            FinishLineout();
+
+    void            FinishLineQuery();
 
   protected:
                     ViewerQueryManager();
@@ -245,6 +266,7 @@ class VIEWER_API ViewerQueryManager
                                 const int el = -1);
 
     void            DoTimeQuery(ViewerWindow *origWin, QueryAttributes *qA);
+    void            ResetLineoutCache();
 
     void            HandlePickCache();
     bool            initialPick;
@@ -262,6 +284,10 @@ class VIEWER_API ViewerQueryManager
     int                   colorIndex;
     QueryList             *queryTypes;
     ViewerOperatorFactory *operatorFactory;
+
+    CachedLineout         lineoutCache;
+
+
 
     static QueryAttributes    *queryClientAtts;
     static PickAttributes     *pickAtts;

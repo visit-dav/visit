@@ -5390,6 +5390,11 @@ ViewerWindow::ClearRefLines()
 //    Kathleen Bonnell, Fri Jun  6 16:42:06 PDT 2003 
 //    Changed call from AddQuery to Lineout. 
 //
+//    Kathleen Bonnell, Fri Jul  9 16:24:56 PDT 2004 
+//    Changed call from "Lineout" to "StartLineout".  Added call to
+//    RendererMessageThread so that the Lineout will finish after the
+//    new window (if necessary) has been created and properly initialized. 
+//
 // ****************************************************************************
 
 void
@@ -5401,7 +5406,8 @@ ViewerWindow::PerformLineoutCallback(void *data)
     LINE_OUT_INFO *loData = (LINE_OUT_INFO *)data;
 
     ViewerWindow *win = (ViewerWindow *)loData->callbackData;
-    ViewerQueryManager::Instance()->Lineout(win, &loData->atts);
+    ViewerQueryManager::Instance()->StartLineout(win, &loData->atts);
+    viewerSubject->MessageRendererThread("finishLineout;");
 }
 
 
@@ -7414,4 +7420,30 @@ ViewerWindow::ExternalRenderCallback(void *data, avtDataObject_p& dob)
 {
     ViewerWindow *win = (ViewerWindow *)data;
     win->ExternalRenderAuto(dob);
+}
+
+
+// ****************************************************************************
+//  Method: ViewerWindow::Lineout
+//
+//  Purpose: 
+//    Perform lineout. 
+//
+//  Arguments:  
+//    fromDefault  Specifies if the Lineout is to be performed based on the
+//                 operator's default attributes.
+//
+//  Programmer:  Kathleen Bonnell
+//  Creation:    July 9, 2004A
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+ViewerWindow::Lineout(const bool fromDefault)
+{
+    ViewerQueryManager::Instance()->StartLineout(this, fromDefault);
+
+    viewerSubject->MessageRendererThread("finishLineout;");
 }

@@ -1,0 +1,77 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta http-equiv="Content-Language" content="en-us">
+   <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+   <meta name="ProgId" content="FrontPage.Editor.Document">
+   <title>VisIt 1.3.3 Release Notes</title>
+</head>
+<body>
+
+<center><b><font size="6">VisIt 1.3.3 Release Notes</font></b></center>
+
+<p>Welcome to VisIt's release notes page. This page describes the important
+enhancements and bug-fixes that were added to this release.</p>
+<p><b><font size="4">Features added in version 1.3.3</font></b></p>
+<ul>
+<li>VisIt can now pick on slices of Boundary plots.</li>
+<li>VisIt's Slice operator now uses interval trees when slicing by a percent so it is much faster for large multi-domain databases.</li>
+<li>VisIt now supports ghost nodes, which allow for geometry for adjacent internal domains to be removed from the visualization without costly parallel communication. The Exodus database reader plugin supports ghost nodes.</li>
+<li>VisIt's BoxLib database reader plugins are now more tolerant of errors in data files.</li>
+<li>VisIt's configure script now builds VisIt optimized by default if no CXXFLAGS are specified.</li>
+<li>The file selection filter in the File Selection Window is now global to all hosts.</li>
+<li>The Vector plot's vectors are now positioned at the tail by default.</li>
+<li>VisIt's Mili database reader plugin now reports materials as beginning at index 1.</li>
+<li>VisIt now supports quads that were stored as degenerate hexes.</li>
+<li>The Boundary and FilledBoundary plots no longer will plot domain subsets since they are primarily for plotting materials.</li>
+<li>The "screen capture" toggle button is disabled in the Set Save Options window when the output format is for polygonal geometry.</li>
+<li>VisIt's FAQ has been updated to include a table of all of VisIt's supported database plugins along with the platforms and specific computers where each is built by default.</li>
+</ul>
+<p><b><font size="4">Bugs fixed in version 1.3.3</font></b></p>
+<ul>
+<li>Plots disappear when parallel, remote compute engines die in scalable rendering mode.</li>
+<li>VisIt can get into a bad state in scalable rendering mode where plots disappear and cannot be recovered.</li>
+<li>VisIt issues an error message when you turn off the "Clean zones only" toggle in the FilledBoundary plot after having used that toggle once.</li>
+<li>Some help files are not distributed in the binary UNIX versions of VisIt due to a flaw in the visit-bin-dist script.</li>
+<li>VisIt's parallel compute engine does not build on riptide.</li>
+<li>Opening monochrome images with VisIt is slow.</li>
+<li>Multi-part EnSight data files crash VisIt's compute engine.</li>
+<li>VisIt displayed the "plot yielded no data" warning message when it should not have done so.</li>
+<li>VisIt's automatic mesh scaling has been disabled.</li>
+<li>Reediting an uncompleted host profile causes a crash.</li>
+<li>The vector plot always colors by the local maximum.</li>
+<li>Slicing by a zone does not work when slicing a Boundary plot.</li>
+<li>Time queries sometimes cause VisIt to issue warning messages when used with expressions.</li>
+<li>Scaled databases sometimes result in an invisible plot.</li>
+<li>VisIt's Ensight database reader plugin does not correctly parse some case files.</li>
+<li>Performing a query over time can cause the parallel compute engine to fail when processing data from the Mili database reader plugin.</li>
+<li>A Mesh plot of rotated 2D data causes the compute engine to crash.</li>
+<li>Contour plots look very bad if materials have been removed because of interpolation of internal nodal data that should never be interpolated.</li>
+<li>The last time state of certain Mili files is not valid.</li>
+<li>The MinMax query gives results over deleted values.</li>
+<li>Vectors seemd to be colored by a provessor's maximum value when in scalable rendering mode.</li>
+<li>Material selecting a variable leaves zeros in the ghost zones.</li>
+<li>Material selection may not create zones for all materials in a zone.</li>
+<li>Using the IsoSurface operator with multiple variables causes VisIt to become confused about the variable extents.</li>
+<li>Software volume rendering fails in parallel when the number of domains is less than the number of processors.</li>
+<li>VisIt's new clipping code does not handle unstructured voxels.</li>
+<li>Mili files should use "processor" instead of "domain" in the SIL.</li>
+<li>The Reflect operator does not handle vector data well.</li>
+<li>The metadata server should be switched back to using the lightweight VTK libraries.</li>
+<li>The Vista database reader plugin should not be required.</li>
+<li>The compute engine crashes when reopening STL files.</li>
+<li>VisIt's xml2java program does not generate correct code for enum constants defined in an XML file.</li>
+<li>The ImageFileFormat database reader plugin won't load in the mdserver without the heavyweight VTK libraries.</li>
+<li>The Time curve for the Variable Sum query of the matvf expression is wrong.</li>
+<li>The Displace operator is incorrectly issuing a warning message.</li>
+<li>Mysterious lines appear when the IsoSurface operator is applied to a Boundary plot.</li>
+<li>VisIt's launch script should have /usr/local/lib in the LD_LIBRARY_PATH to avoid strange launch problems on some Solaris computers..</li>
+<li>Some plugin source code files are compiled too many times.</li>
+<li>Slicing by percent after rotating a 2D plot into 3D does not work.</li>
+<li>The lib directory's Makefile contains links for Mili and HDF5 on MacOS X even when those libraries are not used.</li>
+</ul>
+<p>Click the following link to view the release notes for the previous version
+of VisIt: <a href="relnotes1.3.2.html">VisIt 1.3.2 Release Notes</a>.</p>
+</body>
+</html>

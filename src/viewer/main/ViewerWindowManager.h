@@ -287,6 +287,9 @@ typedef struct {
 //    Kathleen Bonnell, Thu Apr  1 19:13:59 PST 2004
 //    Added GetTimeQueryWindow and ResetTimeQuery methods.
 //
+//    Mark C. Miller, Mon Jul 12 19:46:32 PDT 2004
+//    Added optional bool to GetLineoutWindow to return NULL if window
+//    doesn't already exist
 // ****************************************************************************
 
 class VIEWER_API ViewerWindowManager : public QObject
@@ -382,7 +385,7 @@ class VIEWER_API ViewerWindowManager : public QObject
     int             *GetWindowIndices(int *nwin) const;
     int              GetNumWindows() const;
     ViewerWindow    *GetActiveWindow() const;
-    ViewerWindow    *GetLineoutWindow();
+    ViewerWindow    *GetLineoutWindow(bool failIfNoneExists = false);
     ViewerWindow    *GetTimeQueryWindow();
     ViewerWindow    *GetEmptyWindow() ;
     ViewerWindow    *GetWindow(int windowIndex) ;

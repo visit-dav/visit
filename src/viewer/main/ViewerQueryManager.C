@@ -21,7 +21,6 @@
 #include <DebugStream.h>
 #include <InvalidVariableException.h>
 #include <GlobalAttributes.h>
-#include <Line.h>
 #include <LineoutListItem.h>
 #include <LostConnectionException.h>
 #include <NoEngineException.h>
@@ -174,6 +173,8 @@ ViewerQueryManager::ViewerQueryManager()
     handlingCache = false;
     pickAtts = new PickAttributes();
     timeQueryAtts = new QueryOverTimeAttributes();
+
+    lineoutCache.origWin = NULL;
 }
 
 
@@ -318,6 +319,9 @@ ViewerQueryManager::SetOperatorFactory(ViewerOperatorFactory *factory)
 //    Brad Whitlock, Fri Mar 26 08:42:11 PDT 2004
 //    I made it use strings.
 //
+//    Mark C. Miller, Mon Jul 12 19:46:32 PDT 2004
+//    Made call to GetLineoutWindow fail if the window doesn't already exist
+//
 // ****************************************************************************
 
 void
@@ -356,12 +360,16 @@ ViewerQueryManager::AddQuery(ViewerWindow *origWin, Line *lineAtts,
         Error(message);
         return;
     }
+
     //
     // Can we get a lineout window? 
     //
-    ViewerWindow *resWin = ViewerWindowManager::Instance()->GetLineoutWindow();
+    bool failIfNoneExists = true;
+    ViewerWindow *resWin = ViewerWindowManager::Instance()->
+        GetLineoutWindow(failIfNoneExists);
     if (resWin == NULL)
     {
+        ResetLineoutCache();
         return;
     }
 
@@ -1103,24 +1111,60 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
 //    Kathleen Bonnell, Wed Jul 23 16:26:34 PDT 2003 
 //    Remove duplicate vars, call GetUniqueVars. 
 // 
+//    Kathleen Bonnell, Fri Jul  9 14:33:17 PDT 2004  
+//    Renamed to StartLineQuery.  Attempt to get LineoutWindow. Save info 
+//    necessary for Lineout to lineoutCache.
+// 
 // ****************************************************************************
 
 void         
-ViewerQueryManager::LineQuery(const char *qName, const double *pt1, 
+ViewerQueryManager::StartLineQuery(const char *qName, const double *pt1, 
                     const double *pt2, const stringVector &vars,
                     const int samples)
 {
     if (strcmp(qName, "Lineout") == 0)
     {
+        //
+        // Can we get a lineout window? 
+        //
+        ViewerWindow *resWin = ViewerWindowManager::Instance()->GetLineoutWindow();
+        if (resWin == NULL)
+        {
+            ResetLineoutCache();
+            return;
+        }
+
         ViewerWindow *win = ViewerWindowManager::Instance()->GetActiveWindow();
+        if (win->GetWindowMode() == WINMODE_CURVE)
+        {
+            Error("Lineout cannot be performed on curve windows.");
+            return;
+        }
+        else if ((win->GetWindowMode() == WINMODE_2D) &&
+                 (pt1[2] != 0 || pt2[2] != 0))
+        {
+            string msg = "Only 2D points allowed for 2D lineouts. ";
+            msg += "Please set z-coord to 0.";
+            Error(msg.c_str());
+            return;
+        }
+
         stringVector uniqueVars; 
         // GetUniqueVars sets 'default' to the passed 'activeVar'.
         // Since we don't want to go through the trouble of figuring what
         // that is right now, send 'default' as the active var.
         string activeVar("default");
         GetUniqueVars(vars, activeVar, uniqueVars);
-        for (int i = 0; i < uniqueVars.size(); i++)
-            Lineout(win, pt1, pt2, uniqueVars[i], samples);
+
+        Line line;
+        line.SetPoint1(pt1);
+        line.SetPoint2(pt2);
+        line.SetNumSamples(samples);
+
+        lineoutCache.origWin = win;
+        lineoutCache.line = line;
+        lineoutCache.fromDefault = true;
+        lineoutCache.vars = uniqueVars;
     }
 }
 
@@ -1874,65 +1918,6 @@ ViewerQueryManager::GetColor()
 }
 
 
-// ****************************************************************************
-// Method: ViewerQueryManager::Lineout
-//
-// Purpose: 
-//   Performs a lineout on the currently active plot using the
-//   passed endpoints.
-//
-// Arguments:
-//   win       The window that originated the lineout.
-//   pt1       The first endpoint of the refline in world coordinates. 
-//   pt2       The second endpoint of the refline in world coordinates. 
-//   vName     The variable to use for this lineout. 
-//   samples   The number of sample points along the line.
-//
-// Programmer: Kathleen Bonnell 
-// Creation:   December 19, 2002 
-//
-// Modifications:
-//   Kathleen Bonnell, Mon Dec 23 08:23:26 PST 2002
-//   Allow 3D lineouts.
-//   
-//   Kathleen Bonnell, Fri Mar 14 17:11:42 PST 2003 
-//   Added win and var arguments.  SetVarName of line with the passed vName. 
-//   
-//   Kathleen Bonnell, Wed Jul 23 16:51:18 PDT 2003 
-//   Added samples argument.  Removed calls to win->SetInteractionMode.
-//   
-//   Eric Brugger, Wed Aug 20 11:05:54 PDT 2003
-//   Replaced references to GetTypeIsCurve and GetViewDimension with
-//   GetWindowMode.
-//
-// ****************************************************************************
-
-void
-ViewerQueryManager::Lineout(ViewerWindow *win, const double pt1[3], 
-                            const double pt2[3], const string &vName,
-                            const int samples)
-{
-    if (win->GetWindowMode() == WINMODE_CURVE)
-    {
-        Error("Lineout cannot be performed on curve windows.");
-    }
-    else if ((win->GetWindowMode() == WINMODE_2D) &&
-             (pt1[2] != 0 || pt2[2] != 0))
-    {
-        string msg = "Only 2D points allowed for 2D lineouts. ";
-        msg += "Please set z-coord to 0.";
-        Error(msg.c_str());
-    }
-    else
-    {
-        Line line;
-        line.SetPoint1(pt1);
-        line.SetPoint2(pt2);
-        line.SetVarName(vName);
-        line.SetNumSamples(samples);
-        AddQuery(win, &line);
-    }
-}
 
 // ****************************************************************************
 // Method: ViewerQueryManager::Lineout
@@ -1968,44 +1953,58 @@ ViewerQueryManager::Lineout(ViewerWindow *win, const double pt1[3],
 //   Added optional bool arg that indicates if lineout should be initialized
 //   from its default or its client atts.
 //   
+//   Kathleen Bonnell, Fri Jul  9 16:55:32 PDT 2004 
+//   Renamed to 'StartLineout'.   Attempt to get Lineout window.  Save off
+//   information to lineoutCache for use during FinishLineout.
+// 
 // ****************************************************************************
 
 void
-ViewerQueryManager::Lineout(ViewerWindow *win, const bool fromDefault)
+ViewerQueryManager::StartLineout(ViewerWindow *win, bool fromDefault)
 {
-    if(operatorFactory == 0)
+   if(operatorFactory == 0)
         return;
 
     if (win->GetWindowMode() == WINMODE_CURVE)
     {
         Error("Lineout cannot be performed on curve windows.");
+        return;
     }
-    else
-    {
-        int type = OperatorPluginManager::Instance()->GetEnabledIndex("Lineout_1.0"); 
-        AttributeSubject *atts;
-        if (fromDefault)
-           atts = operatorFactory->GetDefaultAtts(type);
-        else 
-           atts = operatorFactory->GetClientAtts(type);
-        Line *line = (Line*)atts->CreateCompatible("Line");
-        double *pt1 = line->GetPoint1();
-        double *pt2 = line->GetPoint2();
-        if ((win->GetWindowMode() == WINMODE_2D) &&
-            (pt1[2] != 0 || pt2[2] != 0))
-        {
-            string msg = "Only 2D points allowed for 2D lineouts. ";
-            msg += "Please set z-coord to 0.";
-            Error(msg.c_str());
-        }
-        else
-        {
-            AddQuery(win, line, fromDefault);
-        }
-        delete line;
-    }
-}
 
+    //
+    // Can we get a lineout window? 
+    //
+    ViewerWindow *resWin = ViewerWindowManager::Instance()->GetLineoutWindow();
+    if (resWin == NULL)
+    {
+        ResetLineoutCache();
+        return;
+    }
+
+    int type = OperatorPluginManager::Instance()->GetEnabledIndex("Lineout_1.0"); 
+    AttributeSubject *atts;
+    if (fromDefault)
+        atts = operatorFactory->GetDefaultAtts(type);
+    else 
+        atts = operatorFactory->GetClientAtts(type);
+    Line *line = (Line*)atts->CreateCompatible("Line");
+    double *pt1 = line->GetPoint1();
+    double *pt2 = line->GetPoint2();
+    if ((win->GetWindowMode() == WINMODE_2D) &&
+        (pt1[2] != 0 || pt2[2] != 0))
+    {
+        string msg = "Only 2D points allowed for 2D lineouts. ";
+        msg += "Please set z-coord to 0.";
+        Error(msg.c_str());
+        return;
+    }
+    
+    // Save the information necessary for the lineout to finish.
+    lineoutCache.origWin = win;
+    lineoutCache.line = *line;
+    lineoutCache.fromDefault = fromDefault;
+    delete line;
+}
 
 // ****************************************************************************
 // Method: ViewerQueryManager::ResetDesignator
@@ -2408,11 +2407,28 @@ ViewerQueryManager::PointQuery(const string &qName, const double *pt,
 //   Eric Brugger, Wed Aug 20 11:05:54 PDT 2003
 //   I replaced the use of GetViewDimension with GetWindowMode. 
 //   
+//   Kathleen Bonnell, Fri Jul  9 16:55:32 PDT 2004 
+//   Renamed to 'StartLineout'.   Save off information to lineoutCache 
+//   for use during FinishLineout.
+//
+//   Mark C. Miller, Mon Jul 12 19:46:32 PDT 2004
+//   Added call to create (get) the lineout window
+//
 // ****************************************************************************
 
 void
-ViewerQueryManager::Lineout(ViewerWindow *origWin, Line *lineAtts)
+ViewerQueryManager::StartLineout(ViewerWindow *origWin, Line *lineAtts)
 {
+    //
+    // Can we get a lineout window? 
+    //
+    ViewerWindow *resWin = ViewerWindowManager::Instance()->GetLineoutWindow();
+    if (resWin == NULL)
+    {
+        ResetLineoutCache();
+        return;
+    }
+
     //
     // If in full-frame mode on a 2d plot, the end points were computed
     // in the scaled full-frame space.  Reverse the scaling to get the 
@@ -2436,7 +2452,9 @@ ViewerQueryManager::Lineout(ViewerWindow *origWin, Line *lineAtts)
             pt2[1] /= scale;
         }
     }
-    AddQuery(origWin, lineAtts);
+    lineoutCache.origWin = origWin;
+    lineoutCache.line = *lineAtts;
+    lineoutCache.fromDefault = true;
 }
 
 
@@ -3701,4 +3719,81 @@ ViewerQueryManager::DoSpatialExtentsQuery(ViewerPlot *oplot, bool actualData)
         CATCH_RETURN(0);
     }
     ENDTRY
+}
+
+
+// ****************************************************************************
+//  Method: ViewerQueryManager::ResetLineoutCache
+//
+//  Purpose:
+//    Resets lineoutCache information to default values. 
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   July 9, 2004 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+ViewerQueryManager::ResetLineoutCache()
+{
+    lineoutCache.origWin = NULL;
+    lineoutCache.fromDefault = true;
+    if (!lineoutCache.vars.empty())
+        lineoutCache.vars.clear(); 
+}
+
+
+// ****************************************************************************
+//  Method: ViewerQueryManager::FinishLineout
+//
+//  Purpose:
+//    Completes the Lineout by calling AddQuery with the cached info. 
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   July 9, 2004 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+ViewerQueryManager::FinishLineout()
+{
+    if (lineoutCache.origWin != NULL)
+    {
+        AddQuery(lineoutCache.origWin, &lineoutCache.line, lineoutCache.fromDefault);
+        ResetLineoutCache();  
+    }
+}
+
+
+
+// ****************************************************************************
+//  Method: ViewerQueryManager::FinishLineQuery
+//
+//  Purpose:
+//    Completes the LineQuery.
+//    For Lineout, this is done by calling AddQuery with the cached info. 
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   July 9, 2004 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+ViewerQueryManager::FinishLineQuery()
+{
+    if (lineoutCache.origWin != NULL)
+    {
+        for (int i = 0; i < lineoutCache.vars.size(); i++)
+        {
+            lineoutCache.line.SetVarName(lineoutCache.vars[i]);
+            AddQuery(lineoutCache.origWin, &lineoutCache.line);
+        }
+        ResetLineoutCache();  
+    }
 }
