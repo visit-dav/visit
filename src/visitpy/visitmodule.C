@@ -7535,12 +7535,17 @@ SetLogging(bool val)
 // Creation:   Tue Sep 4 15:36:47 PST 2001
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Oct 7 14:08:20 PST 2003
+//   I made it use a mutex so the debug logs don't get clobbered by competing
+//   threads.
+//
 // ****************************************************************************
 
 static void
 PlotPluginAddInterface()
 {
+    MUTEX_LOCK();
+
     // Get a pointer to the plot plugin manager.
     PlotPluginManager *pluginManager = PlotPluginManager::Instance();
 
@@ -7584,6 +7589,8 @@ PlotPluginAddInterface()
             }
         }
     }
+
+    MUTEX_UNLOCK();
 }
 
 // ****************************************************************************
@@ -7596,12 +7603,17 @@ PlotPluginAddInterface()
 // Creation:   Tue Sep 4 15:36:47 PST 2001
 //
 // Modifications:
+//   Brad Whitlock, Tue Oct 7 14:08:20 PST 2003
+//   I made it use a mutex so the debug logs don't get clobbered by competing
+//   threads.
 //   
 // ****************************************************************************
 
 static void
 OperatorPluginAddInterface()
 {
+    MUTEX_LOCK();
+
     // Get a pointer to the plot plugin manager.
     OperatorPluginManager *pluginManager = OperatorPluginManager::Instance();
 
@@ -7645,6 +7657,8 @@ OperatorPluginAddInterface()
             }
         }
     }
+
+    MUTEX_UNLOCK();
 }
 
 // ****************************************************************************

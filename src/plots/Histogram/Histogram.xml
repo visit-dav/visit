@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
   <Plugin name="Histogram" type="plot" label="Histogram" version="1.0" vartype="scalar,material" iconFile="Histogram.xpm">
-    <Attribute name="HistogramAttributes" purpose="Attributes for Histogram Plot" persistent="false" exportAPI="" exportInclude="" codefile="HistogramAttributes.code">
+    <Attribute name="HistogramAttributes" purpose="Attributes for Histogram Plot" persistent="true" exportAPI="" exportInclude="" codefile="HistogramAttributes.code">
       <Enum name="OutputType">
         Curve
         Block
@@ -33,7 +33,11 @@
       <Field name="lineWidth" label="Line Width" type="linewidth">
         0
       </Field>
-      <Field name="color" label="Color" type="att" subtype="ColorAttribute">
+      <Field name="color" label="Color" type="color">
+         0
+         0
+         0
+         255
       </Field>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>

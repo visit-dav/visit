@@ -415,6 +415,11 @@ ViewerEngineManager::GetEngineIndex(const char *hostName) const
 //    user chose one when launching the VCL).  Renamed ViewerEngineChooser
 //    to ViewerRemoteProcessChooser.
 //
+//    Jeremy Meredith, Thu Oct  9 13:55:27 PDT 2003
+//    Added ability to manually specify a client host name or to have it
+//    parsed from the SSH_CLIENT (or related) environment variables.  Added
+//    ability to specify an SSH port.
+//
 // ****************************************************************************
 
 void
@@ -481,15 +486,28 @@ ViewerEngineManager::CreateEngine(const char *hostName,
         {
             EngineListEntry **newEngines=0;
 
+            // Get the client machine name options
+            HostProfile::ClientHostDetermination chd;
+            std::string clientHostName;
+            GetClientMachineNameOptions(hostName, chd, clientHostName);
+
+            // Get the ssh port options
+            bool manualSSHPort;
+            int  sshPort;
+            GetSSHPortOptions(hostName, manualSSHPort, sshPort);
+
             //
             // Launch the engine.
             //
             if (!ShouldShareBatchJob(hostName) && HostIsLocalHost(hostName))
-                newEngine->Create("localhost");
+                newEngine->Create("localhost", chd, clientHostName,
+                                  manualSSHPort, sshPort);
             else
             {
                 // Use VisIt's launcher to start the remote engine.
-                newEngine->Create(hostName, OpenWithLauncher, (void *)dialog,
+                newEngine->Create(hostName,  chd, clientHostName,
+                                  manualSSHPort, sshPort,
+                                  OpenWithLauncher, (void *)dialog,
                                   true);
             }
 

@@ -541,9 +541,9 @@ avtDatabase::GetMetaData(int timeState)
     if (MetaDataIsInvariant())
     {
 
-        // since its invariant, get it at time 0
+        // since its invariant, get it once at specified time 
         if (metadata.size() == 0)
-            GetNewMetaData(0);
+            GetNewMetaData(timeState);
 
     }
     else

@@ -30,6 +30,7 @@
 #include <CouldNotConnectException.h>
 
 #include <DebugStream.h>
+#include <snprintf.h>
 #include <map>
 
 #ifdef HAVE_THREADS
@@ -938,11 +939,21 @@ RemoteProcess::MultiThreadedAcceptSocket()
 //    I moved the code that creates the command line into CreateCommandLine
 //    instead of having it inside of the methods to launch processes.
 //
+//    Jeremy Meredith, Thu Oct  9 14:02:22 PDT 2003
+//    Added ability to manually specify a client host name or to have it
+//    parsed from the SSH_CLIENT (or related) environment variables.  Added
+//    ability to specify an SSH port.
+//
 // ****************************************************************************
 
 bool
-RemoteProcess::Open(const std::string &rHost, int numRead, int numWrite,
-    bool createAsThoughLocal)
+RemoteProcess::Open(const std::string &rHost,
+                    HostProfile::ClientHostDetermination chd,
+                    const std::string &clientHostName,
+                    bool manualSSHPort,
+                    int sshPort,
+                    int numRead, int numWrite,
+                    bool createAsThoughLocal)
 {
     // Start making the connections and start listening.
     if(!StartMakingConnection(rHost, numRead, numWrite))
@@ -950,7 +961,9 @@ RemoteProcess::Open(const std::string &rHost, int numRead, int numWrite,
 
     // Add all of the relevant command line arguments to a vector of strings.
     stringVector commandLine;
-    CreateCommandLine(commandLine, rHost, numRead, numWrite,
+    CreateCommandLine(commandLine, rHost,
+                      chd, clientHostName, manualSSHPort, sshPort,
+                      numRead, numWrite,
                       createAsThoughLocal);
 
     //
@@ -1409,11 +1422,20 @@ RemoteProcess::SecureShellArgs() const
 //   Brad Whitlock, Tue Jul 29 10:51:42 PDT 2003
 //   I removed -nread and -nwrite from the command line.
 //
+//    Jeremy Meredith, Thu Oct  9 14:02:47 PDT 2003
+//    Added ability to manually specify a client host name or to have it
+//    parsed from the SSH_CLIENT (or related) environment variables.  Added
+//    ability to specify an SSH port.
+//
 // ****************************************************************************
 
 void
 RemoteProcess::CreateCommandLine(stringVector &args, const std::string &rHost,
-    int numRead, int numWrite, bool local) const
+                                 HostProfile::ClientHostDetermination chd,
+                                 const std::string &clientHostName,
+                                 bool manualSSHPort,
+                                 int sshPort,
+                                 int numRead, int numWrite, bool local) const
 {
     //
     // If the host is not local, then add some ssh arguments to the
@@ -1441,6 +1463,14 @@ RemoteProcess::CreateCommandLine(stringVector &args, const std::string &rHost,
         const char *sshArgs = SecureShellArgs();
         if(sshArgs)
             args.push_back(sshArgs);
+
+        if (manualSSHPort)
+        {
+            char portStr[256];
+            SNPRINTF(portStr, 256, "%d", sshPort);
+            args.push_back("-p");
+            args.push_back(portStr);
+        }
 
         // Set the username.
         if(remoteUserName != std::string("notset"))
@@ -1474,8 +1504,20 @@ RemoteProcess::CreateCommandLine(stringVector &args, const std::string &rHost,
     //
     // Add the local hostname and the ports we'll be talking on.
     //
-    args.push_back("-host");
-    args.push_back(localHost.c_str());
+    switch (chd)
+    {
+      case HostProfile::MachineName:
+        args.push_back("-host");
+        args.push_back(localHost.c_str());
+        break;
+      case HostProfile::ManuallySpecified:
+        args.push_back("-host");
+        args.push_back(clientHostName);
+        break;
+      case HostProfile::ParsedFromSSHCLIENT:
+        args.push_back("-guesshost");
+        break;
+    }
 
     args.push_back("-port");
     char tmp[20];

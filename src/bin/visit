@@ -264,6 +264,11 @@ $0 = shift @ARGV;
 #    Brad Whitlock, Fri Oct 3 12:59:49 PDT 2003
 #    I made the -s argument become -scriptfile when -movie is specified.
 #
+#    Jeremy Meredith, Thu Oct  9 13:12:51 PDT 2003
+#    Added ability to guess remote client host name from SSH_CLIENT,
+#    SSH2_CLIENT, or SSH_CONNECTION environment variables.
+#    Added ia64 linux machine type.
+#
 ###############################################################################
 
 
@@ -343,6 +348,11 @@ USAGE:  visit [arguments]
         -background <color>  Background color for GUI
         -foreground <color>  Foreground color for GUI
         -nowin               Run without viewer windows
+
+    Advanced arguments:
+        -guesshost           Try to guess the client host name from one of
+                             the SSH_CLIENT, SSH2_CLIENT, or SSH_CONNECTION
+                             environment variables.
 
     Plugin arguments:
         -publicpluginsonly   Disable all plugins but the default ones
@@ -488,7 +498,34 @@ while (scalar(@ARGV) > 0) {
                                             push @visitargs, "-totalview", $debug_totalview;
                                           }
                                         }
+    elsif ($arg eq "-guesshost" )       { $guesshost=1; }
     else                         { push @visitargs, $arg; }
+}
+
+if ($guesshost)
+{
+    if ($ENV{SSH_CLIENT})
+    {
+        ($remotehost) = split /\s/, $ENV{SSH_CLIENT};
+        $remotehost_set = 1;
+    }
+    elsif ($ENV{SSH2_CLIENT})
+    {
+        ($remotehost) = split /\s/, $ENV{SSH2_CLIENT};
+        $remotehost_set = 1;
+    }
+    elsif ($ENV{SSH_CONNECTION})
+    {
+        ($remotehost) = split /\s/, $ENV{SSH_CONNECTION};
+        $remotehost_set = 1;
+    }
+    else
+    {
+        print STDERR "Error: -guesshost was specified, but it was\n".
+                     "unable to parse the SSH_CLIENT/CONNECTION\n".
+                     "environment variable to get a valid host name\n";
+        exit 1;
+    }
 }
 
 # ----
@@ -674,6 +711,9 @@ for ($os) {
         chomp( $mach    = `uname -m` );
         if ($mach =~ /alpha/) {
             $archdir = "linux-alpha";
+        }
+        elsif ($mach =~ /ia64/) {
+            $archdir = "linux-ia64";
         }
         else {
             $archdir = "linux-intel";

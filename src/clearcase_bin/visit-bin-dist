@@ -133,6 +133,9 @@
 #    Eric Brugger, Tue Sep 23 15:36:07 PDT 2003
 #    Added a missing endif.
 #
+#    Jeremy Meredith, Thu Oct  9 15:44:43 PDT 2003
+#    Added ia64 linux machine name.
+#
 #-----------------------------------------------------------------------
 
 set DataFiles = "TRUE"
@@ -365,7 +368,7 @@ endif
 
 mkdir distribution/visit/$Version
 ln -s $Version distribution/visit/current
-set platforms="hp-hpux-pa sgi-irix6-mips2 sun4-sunos5-sparc ibm-aix-pwr dec-osf1-alpha linux-intel linux-alpha intel-tflops-ppro"
+set platforms="hp-hpux-pa sgi-irix6-mips2 sun4-sunos5-sparc ibm-aix-pwr dec-osf1-alpha linux-intel linux-ia64 linux-alpha intel-tflops-ppro"
 foreach platform ($platforms)
    mkdir distribution/visit/$Version/$platform
    mkdir distribution/visit/$Version/$platform/bin
@@ -450,6 +453,9 @@ switch ($os)
          case i586:
          case i686:
             set visitbindir = linux-intel
+            breaksw
+         case ia64:
+            set visitbindir = linux-ia64
             breaksw
          case alpha:
             set visitbindir = linux-alpha

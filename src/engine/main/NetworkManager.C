@@ -157,6 +157,9 @@ NetworkManager::ClearAllNetworks(void)
 //    Changed the return statement to CATCH_RETURN2 so bad things don't happen
 //    when we use fake exceptions.
 //
+//    Mark C. Miller Thu Oct  9 10:59:27 PDT 2003
+//    I modified to force GetMetaData and GetSIL if they're invariant 
+//
 // ****************************************************************************
 
 NetnodeDB *
@@ -171,27 +174,32 @@ NetworkManager::GetDBFromCache(const string &filename, int time)
         EXCEPTION0(ImproperUseException);
     }
 
-    // Generate the list of matching databases.
+    // Find a matching database 
+    NetnodeDB* cachedDB = NULL;
     for (int i = 0; i < databaseCache.size(); i++)
     {
-        if (!databaseCache[i]->GetDB()->MetaDataIsInvariant() ||
-            !databaseCache[i]->GetDB()->SILIsInvariant())
+        if (databaseCache[i]->GetFilename() == filename)
         {
-            if ((databaseCache[i]->GetFilename() == filename) &&
-                (databaseCache[i]->GetTime() == time))
-                {
-                   databaseCache[i]->SetDBInfo(filename, "", time);
-                   return databaseCache[i];
-                }
+            cachedDB = databaseCache[i];
+            break;
         }
-        else
+    }
+
+    // got a match
+    if (cachedDB != NULL)
+    {
+
+        // even if we found the DB in the cache,
+        // we need to update the metadata if its time-varying
+        if (!cachedDB->GetDB()->MetaDataIsInvariant() ||
+            !cachedDB->GetDB()->SILIsInvariant())
         {
-            if (databaseCache[i]->GetFilename() == filename)
-            {
-                databaseCache[i]->SetDBInfo(filename, "", time);
-                return databaseCache[i];
-            }
+            cachedDB->GetDB()->GetMetaData(time);
+            cachedDB->GetDB()->GetSIL(time);
         }
+
+        cachedDB->SetDBInfo(filename, "", time);
+        return cachedDB;
     }
 
     // No match.  Load a new DB.

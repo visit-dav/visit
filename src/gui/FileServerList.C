@@ -675,6 +675,11 @@ FileServerList::SetHost(const std::string &host)
 //   Brad Whitlock, Mon Dec 16 16:36:47 PST 2002
 //   I added support for IncompatibleSecurityTokenException.
 //
+//   Jeremy Meredith, Thu Oct  9 15:46:23 PDT 2003
+//   Added ability to manually specify a client host name or to have it
+//   parsed from the SSH_CLIENT (or related) environment variables.  Added
+//   ability to specify an SSH port.
+//
 // ****************************************************************************
 
 void
@@ -689,7 +694,9 @@ FileServerList::StartServer(const std::string &host)
         info->server = new MDServerProxy();
         info->server->SetProgressCallback(progressCallback,
             progressCallbackData);
-        info->server->Create(host, connectCallback, connectCallbackData);
+        info->server->Create(host,
+                             HostProfile::MachineName, "", false, 0,
+                             connectCallback, connectCallbackData);
 
         // Get the current directory from the server
         info->path = info->server->GetDirectory();

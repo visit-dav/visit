@@ -168,7 +168,9 @@ Definition:
 // Creation:   Tue Dec 3 08:50:34 PDT 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Oct 9 13:32:13 PST 2003
+//   I made the single color always be saved out.
+//
 // ****************************************************************************
 
 bool
@@ -212,17 +214,14 @@ ContourAttributes::CreateNode(DataNode *parentNode, bool forceAdd)
         node->AddNode(new DataNode("lineWidth", lineWidth));
     }
 
-    if(!FieldsEqual(7, &defaultObject))
-    {
         DataNode *singleColorNode = new DataNode("singleColor");
-        if(singleColor.CreateNode(singleColorNode, false))
+        if(singleColor.CreateNode(singleColorNode, true))
         {
             addToParent = true;
             node->AddNode(singleColorNode);
         }
         else
             delete singleColorNode;
-    }
 
     if(!FieldsEqual(9, &defaultObject))
     {
