@@ -8,7 +8,14 @@
 #include <vector>
 #include <fstream.h>
 
-#include <pdb.h>
+#include <visit-config.h>
+
+#ifdef HAVE_PDB_PROPER
+#    include <pdb.h>
+#else
+#    include <lite_pdb.h>
+#endif
+
 #include <KullFormatStructures.h>
 
 #include <vtkCellType.h>
