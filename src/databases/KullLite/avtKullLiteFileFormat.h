@@ -6,15 +6,13 @@
 #define AVT_KULL_LITE_FILE_FORMAT_H
 
 #include <string>
-#include <map>
 
-//#include <pdb.h>
 #include <KullFormatStructures.h>
 
 #include <avtSTMDFileFormat.h>
 
 #include <database_exports.h>
-
+#include <void_ref_ptr.h>
 
 struct s_PDBfile;
 typedef struct s_PDBfile PDBfile;
@@ -31,6 +29,12 @@ class vtkDataArray;
 //  Programmer: Akira Haddox
 //  Creation:   June 18, 2002
 //
+//  Modifications:
+//
+//    Akira Haddox, Tue May 20 08:49:59 PDT 2003
+//    Added in for dealing with mixed materials, removed code
+//    that tried to deal with data variables.
+//    
 // ****************************************************************************
 
 class DATABASE_API avtKullLiteFileFormat : public avtSTMDFileFormat
@@ -48,28 +52,42 @@ class DATABASE_API avtKullLiteFileFormat : public avtSTMDFileFormat
 
     virtual void          FreeUpResources(void);
 
-    virtual bool          PerformsMaterialSelection() {    return true; }
+    virtual void *        GetAuxiliaryData(const char *var, int domain,
+                                           const char *type, void *,
+                                           DestructorFunction &df);
 
   protected:
-// Datasets stored by domain
+    // Datasets stored by domain
     vtkDataSet          **dataset;
-// Datasets also stored by domain * tag/material name.
-    std::vector<std::map<std::string, vtkDataSet *> > materials;
-    std::vector<std::string>       m_names;
-    std::vector<std::string>       tag_names;
-    std::vector<int>            tag_dim;
     
-// m_names is loaded at construction, so this will always be right
+    std::vector<std::string>       m_names;
+    
+    // m_names is loaded at construction, so this will always be right
     inline int NumberOfMaterials()  { return m_names.size(); }
+
+    // Returns true if the string holds to the material string standard:
+    // Must start with mat_, and must have one other underscore. 
+    inline bool IsMaterialName(const string &str)
+    {
+        return (str[0] == 'm') && (str[1] == 'a') && (str[2] == 't')
+               && (str[3] == '_') && (str.find_last_of('_') != 4);
+    }
+
+    // Precondition: IsMaterialName(str) is true
+    // Returns the string contained between mat_ and the last underscore.
+    // Eg: "pure_gold" in "mat_pure_gold_zones"
+    inline string GetMaterialName(const string &str)
+    {   return str.substr(4, str.find_last_of('_') - 4);    }
 
     PDBfile *m_pdbFile;
     pdb_mesh *m_kullmesh;
     pdb_taglist *m_tags;
+   
+    inline int ReadNumberRecvZones();
     
     static const char    *MESHNAME;
 
     void          ReadInFile(int);
-    void          ReadInAllFiles();
     void          ReadInMaterialNames();
     void          ReadInMaterialName(int);
 
@@ -78,5 +96,4 @@ class DATABASE_API avtKullLiteFileFormat : public avtSTMDFileFormat
 
 
 #endif
-
 
