@@ -51,6 +51,9 @@ $0 = shift @ARGV;
 #    Made it look for makemovie.py in its actual location instead of
 #    assuming it was an executable.
 #
+#    Jeremy Meredith, Thu Feb 17 15:29:20 PST 2005
+#    Added support for valgrind.
+#
 ###############################################################################
 
 
@@ -292,6 +295,7 @@ $launchengine = "";
 @breakpoints  = ();
 $debug_gdb    = 0;
 $debug_totalview = "";
+$debug_valgrind = "";
 $add_movie_args = 0;
 $envonly        = 0;
 $logging        = 0;
@@ -353,6 +357,15 @@ while (scalar(@ARGV) > 0) {
                                           if ($exe_name ne $debug_totalview)
                                           {
                                             push @visitargs, "-totalview", $debug_totalview;
+                                          }
+                                        }
+    elsif ($arg eq "-valgrind" )       {
+                                          $debug_valgrind = shift;
+                                          push @norun, $debug_valgrind;
+                                          push @visitargs, "-norun", $debug_valgrind;
+                                          if ($exe_name ne $debug_valgrind)
+                                          {
+                                            push @visitargs, "-valgrind", $debug_valgrind;
                                           }
                                         }
     elsif ($arg eq "-guesshost" )       { $guesshost=1; }
@@ -854,7 +867,8 @@ if ($envonly)
 }
 
 @visitcmd = ("$visitbindir/$exe_name", @visitargs);
-$printonly = grep(/^$exe_name$/, @norun) unless ($debug_totalview);
+$printonly = grep(/^$exe_name$/, @norun) unless ($debug_totalview or
+                                                 $debug_valgrind);
 
 if ($procs_set or ($parallel and $parlaunch_set))
 {
@@ -1025,6 +1039,17 @@ else
         print STDERR "Running: @debugcmd\n";
         $exec_totalview_failed = 0;
         exec @debugcmd or $exec_totalview_failed = 1;
+    }
+    elsif ($debug_valgrind eq $exe_name)
+    {
+        # Run valgrind
+        # Note: could use --tool=addrcheck because it uses much less memory
+        #       and runs twice as fast, but it doesn't catch UMRs
+        # Note: could add --leak-check=yes to either tool
+        @debugcmd = ("valgrind", "--tool=memcheck", "--num-callers=32", "$visitbindir/$exe_name", @visitargs);
+        if ($security_key_set) { push @debugcmd, "-key", $security_key; }
+        print STDERR "Running: @debugcmd\n";
+        exec @debugcmd or die "Could not execute $exe_name under valgrind\n";
     }
     elsif ($debug_gdb)
     {
