@@ -64,7 +64,9 @@ QvisGlobalLineoutWindow::~QvisGlobalLineoutWindow()
 // Creation:   Fri Nov 19 10:46:23 PDT 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Dec 15 11:07:46 PDT 2004
+//   I ifdef'd some code so it builds with Qt versions older than 3.2.
+//
 // ****************************************************************************
 
 void
@@ -116,7 +118,9 @@ QvisGlobalLineoutWindow::CreateWindowContents()
     msg->setText("These items can be overridden\nby Lineout Operator");
     msg->setAlignment(Qt::AlignCenter);
     qgrid->addMultiCellWidget(msg, 0,0,0,1);
+#if QT_VERSION >= 0x030200
     qgrid->setRowSpacing(1,10);
+#endif
 
     //
     // SamplingOn

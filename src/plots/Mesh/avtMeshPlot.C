@@ -496,27 +496,6 @@ avtMeshPlot::SetOpaqueColor(const double *col, bool force)
 
 
 // ****************************************************************************
-//  Method: avtMeshPlot::SetVarName
-//
-//  Purpose:
-//      Sets the variable name in the legend.
-//
-//  Arguments:
-//      name      The name of the variable.
-//
-//  Programmer:   Kathleen Bonnell
-//  Creation:     March 21, 2001
-//
-// ****************************************************************************
-
-void
-avtMeshPlot::SetVarName(const char *name)
-{
-    varLegend->SetVarName(name);
-}
-
-
-// ****************************************************************************
 //  Method: avtMeshPlot::SetLegend
 //
 //  Purpose:

@@ -30,6 +30,9 @@ class     avtLookupTable;
 //    Kathleen Bonnell, Thu Sep 18 13:44:50 PDT 2003
 //    Moved SetOpacity to C file.
 //
+//    Brad Whitlock, Wed Dec 15 10:48:35 PDT 2004
+//    Removed SetVarName.
+//
 // ****************************************************************************
 
 class avtKerbelPlot : public avtSurfaceDataPlot
@@ -45,7 +48,6 @@ class avtKerbelPlot : public avtSurfaceDataPlot
     void                        SetOpacity(float o);
     virtual bool                SetColorTable(const char *);
     void                        SetLegend(bool);
-    void                        SetVarName(const char *);
     virtual void                SetAtts(const AttributeGroup*);
 
   protected:

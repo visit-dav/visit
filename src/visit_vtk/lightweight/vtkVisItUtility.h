@@ -34,6 +34,10 @@ namespace vtkVisItUtility
                                         vtkDataSet *ds,
                                         const int cellId, 
                                         const bool forCell);
+    VISIT_VTK_LIGHT_API int         GetLocalElementForGlobal(
+                                        vtkDataSet *ds,
+                                        const int elementId, 
+                                        const bool forCell);
 
     VISIT_VTK_LIGHT_API void       GetCellCenter(vtkCell* cell, float center[3]);
 }

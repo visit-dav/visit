@@ -106,6 +106,10 @@ QvisSaveWindow::~QvisSaveWindow()
 //   I replaced the host line edit with an output directory line edit. I also
 //   added a save button.
 //
+//   Kathleen Bonnell, Wed Dec 15 08:20:11 PST 2004 
+//   Changed SLOT for saveButton from 'saveWindow' to 'saveButtonClicked' so
+//   that 'apply' can be called before the save.
+//   
 // ****************************************************************************
 
 void
@@ -274,7 +278,7 @@ QvisSaveWindow::CreateWindowContents()
     saveButtonLayout->setSpacing(5);
     QPushButton *saveButton = new QPushButton("Save", central, "saveButton");
     connect(saveButton, SIGNAL(clicked()),
-            this, SLOT(saveWindow()));
+            this, SLOT(saveButtonClicked()));
     saveButtonLayout->addWidget(saveButton);
     saveButtonLayout->addStretch(50);
 }
@@ -1107,4 +1111,25 @@ QvisSaveWindow::selectOutputDirectory()
         GetCurrentValues(0);
         Apply();
     }
+}
+
+
+// ****************************************************************************
+// Method: QvisSaveWindow::saveButtonClicked
+//
+// Purpose: 
+//   This is Qt slot function that is called when the save button is clicked. 
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   December 15, 2004 
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisSaveWindow::saveButtonClicked()
+{
+    apply();
+    saveWindow();
 }

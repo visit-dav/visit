@@ -133,13 +133,17 @@ avtVolumePlot::~avtVolumePlot()
 //
 //  Programmer: Hank Childs
 //  Creation:   November 24, 2004
-//      
+//
+//  Modifications:
+//    Brad Whitlock, Wed Dec 15 09:33:40 PDT 2004
+//    I made it use the renderer type instead.
+//
 // ****************************************************************************
 
 bool
 avtVolumePlot::PlotIsImageBased(void)
 {
-    return atts.GetDoSoftware();
+    return atts.GetRendererType() == VolumeAttributes::RayCasting;
 }
 
 
@@ -413,10 +417,12 @@ avtVolumePlot::ApplyOperators(avtDataObject_p input)
 //  Creation:   October 22, 2002 
 //
 //  Modifications:
-//
 //    Hank Childs, Wed Nov 24 17:03:44 PST 2004
 //    Apply the rendering transformation -- resampling in hardware, volume
 //    filter for ray tracing.
+//
+//    Brad Whitlock, Wed Dec 15 09:34:33 PDT 2004
+//    I made it use the renderer type instead.
 //
 // ****************************************************************************
 
@@ -438,7 +444,7 @@ avtVolumePlot::ApplyRenderingTransformation(avtDataObject_p input)
     }
 
     avtDataObject_p dob = input;
-    if (atts.GetDoSoftware())
+    if (atts.GetRendererType() == VolumeAttributes::RayCasting)
     {
         volumeFilter = new avtVolumeFilter();
         volumeFilter->SetAttributes(atts);

@@ -21,6 +21,7 @@
 #include <LogicalIndexException.h>
 #include <DebugStream.h>
 #include <CompactSILRestrictionAttributes.h>
+#include <vtkVisItUtility.h>
 
 #include <avtCallback.h>
 #include <avtParallel.h>
@@ -186,11 +187,21 @@ avtOnionPeelFilter::Equivalent(const AttributeGroup *a)
 //    Hank Childs, Fri Aug 27 15:25:22 PDT 2004
 //    Rename ghost data array.
 //
+//    Kathleen Bonnell, Fri Dec 10 14:17:44 PST 2004 
+//    Add support for using global zone numbers as seed-cell, including
+//    early-termination and returning NULL ds if this domain does not
+//    contain the global zone. 
+//
 // ****************************************************************************
 
 vtkDataSet *
 avtOnionPeelFilter::ExecuteData(vtkDataSet *in_ds, int DOM, std::string)
 {
+    if (successfullyExecuted)
+    {
+        return NULL;
+    }
+   
     encounteredBadSeed = false;
     encounteredGhostSeed = false;
 
@@ -255,21 +266,33 @@ avtOnionPeelFilter::ExecuteData(vtkDataSet *in_ds, int DOM, std::string)
         ds->SetSource(NULL);
     }
 
-    opf->SetInput(ds);
     avtDataAttributes &da = GetInput()->GetInfo().GetAttributes();
     if (!atts.GetLogical())
     {
-        if (da.GetCellOrigin() != 0)
+        int seedCell = -1;
+        if (atts.GetUseGlobalId()) 
         {
-            debug5 << "Offsetting seed cell by origin = " << da.GetCellOrigin()
-                   << endl;
-            if (da.GetCellOrigin() > 1)
+            seedCell = 
+                vtkVisItUtility::GetLocalElementForGlobal(in_ds, id[0], true);
+            if (seedCell == -1)
             {
-                debug1 << "WARNING: mesh origin to offset seed cell by is "
-                        << da.GetCellOrigin() << endl;
+                 return NULL;
             }
         }
-        int seedCell = id[0] - da.GetCellOrigin();
+        else
+        {
+            if (da.GetCellOrigin() != 0)
+            {
+                debug5 << "Offsetting seed cell by origin = " << da.GetCellOrigin()
+                       << endl;
+                if (da.GetCellOrigin() > 1)
+                {
+                    debug1 << "WARNING: mesh origin to offset seed cell by is "
+                            << da.GetCellOrigin() << endl;
+                }
+            }
+            seedCell = id[0] - da.GetCellOrigin();
+        }
 
         //
         // This often comes up when someone has their default saved to cell 0 and
@@ -288,6 +311,7 @@ avtOnionPeelFilter::ExecuteData(vtkDataSet *in_ds, int DOM, std::string)
         else  
            opf->SetLogicalIndex(id[0], id[1]);
     }
+    opf->SetInput(ds);
     opf->SetRequestedLayer(atts.GetRequestedLayer());
     opf->SetAdjacencyType(atts.GetAdjacencyType());
 
@@ -409,19 +433,34 @@ avtOnionPeelFilter::RefashionDataObjectInfo(void)
 //    Kathleen Bonnell, Tue Nov 30 09:25:28 PST 2004 
 //    Turn on ZoneNumbers when appropriate, even if not performing restriction. 
 //
+//    Kathleen Bonnell, Fri Dec 10 14:17:44 PST 2004 
+//    Turn on GlobalZoneNumbers when appropriate, and don't perform restriction
+//    if using global zone for seed cell. 
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
 avtOnionPeelFilter::PerformRestriction(avtPipelineSpecification_p spec)
 {
-    if (atts.GetSubsetName() == "Whole")
+    if (atts.GetSubsetName() == "Whole") 
     {
         if (spec->GetDataSpecification()->MayRequireZones())
         {
             spec->GetDataSpecification()->TurnZoneNumbersOn();
         }
+        if (atts.GetUseGlobalId()) 
+            spec->GetDataSpecification()->TurnGlobalZoneNumbersOn();
         //
         // No restriction necessary. 
+        //
+        return spec;
+    }
+    if (atts.GetUseGlobalId()) 
+    {
+        spec->GetDataSpecification()->TurnGlobalZoneNumbersOn();
+        //
+        // Cannot determine a-priori where the global zone number
+        // exists, so don't perform a restriction. 
         //
         return spec;
     }
@@ -658,6 +697,10 @@ avtOnionPeelFilter::PostExecute()
 //    Hank Childs, Fri Apr  4 10:10:22 PST 2003 
 //    Moved connectivity check from VerifyInput to here.
 //
+//    Kathleen Bonnell, Fri Dec 10 14:17:44 PST 2004 
+//    Added warning for attempted use of global zone when that information
+//    is not present in the DB. 
+//
 // ****************************************************************************
 
 void 
@@ -674,6 +717,14 @@ avtOnionPeelFilter::PreExecute()
                    " peel operator work in these conditions in the future.  If"
                    " you need this capability in the short term, please "
                    "contact a VisIt developer.");
+    }
+    if (atts.GetUseGlobalId() &&  
+        !GetInput()->GetInfo().GetAttributes().GetContainsGlobalZoneIds())
+    {
+        avtCallback::IssueWarning("The onion peel operator will not perform "
+                   "as expected, because a global seed cell was specified,"
+                   "but the mesh does not have global zone information.  "
+                   "Plese turn off use of Global Id for onion peel");
     }
 }
 

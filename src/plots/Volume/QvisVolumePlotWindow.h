@@ -6,17 +6,18 @@
 // Forward declarations
 class VolumeAttributes;
 class QButtonGroup;
-class QVBoxLayout;
-class QPushButton;
 class QCheckBox;
+class QComboBox;
 class QGroupBox;
-class QvisSpectrumBar;
+class QLineEdit;
+class QPushButton;
+class QSlider;
+class QVBoxLayout;
 class QvisColorSelectionWidget;
 class QvisGaussianOpacityBar;
-class QvisScribbleOpacityBar;
 class QvisOpacitySlider;
-class QLineEdit;
-class QSlider;
+class QvisScribbleOpacityBar;
+class QvisSpectrumBar;
 class QvisVariableButton;
 
 // ****************************************************************************
@@ -52,6 +53,10 @@ class QvisVariableButton;
 //
 //    Brad Whitlock, Thu Dec 9 17:32:14 PST 2004
 //    I changed the opacity variable so it uses QvisVariableButton.
+//
+//    Brad Whitlock, Wed Dec 15 09:20:45 PDT 2004
+//    I removed the raytrace toggle and made it a rendering mode. Changed to
+//    a combobox widget.
 //
 // ****************************************************************************
 
@@ -89,7 +94,6 @@ private slots:
     void attenuationChanged(int opacity);
     void legendToggled(bool val);
     void lightingToggled(bool val);
-    void softwareToggled(bool val);
     void colorMinToggled(bool val);
     void colorMinProcessText();
     void colorMaxToggled(bool val);
@@ -146,7 +150,7 @@ private:
     QCheckBox                *lightingToggle;
     QCheckBox                *softwareToggle;
     QCheckBox                *smoothDataToggle;
-    QButtonGroup             *rendererButtonGroup;
+    QComboBox                *rendererTypesComboBox;
     QButtonGroup             *gradientButtonGroup;
     QLineEdit                *resampleTarget;
     QSlider                  *resampleTargetSlider;

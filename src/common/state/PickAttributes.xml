@@ -162,6 +162,14 @@
     <Field name="locationSuccessful" label="locationSuccessful" type="bool" internal="true">
       false
     </Field>
+    <Field name="displayGlobalIds" label="displayGlobalIds" type="bool">
+      false
+    </Field>
+    <Field name="globalElement" label="globalElement" type="int" internal="true">
+      -1
+    </Field>
+    <Field name="globalIncidentElements" label="globalIncidentElements" type="intVector" internal="true">
+    </Field>
     <Function name="PrintSelf" user="true" member="true">
     </Function>
     <Function name="CreateOutputString" user="true" member="true">

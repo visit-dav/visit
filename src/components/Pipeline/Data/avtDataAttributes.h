@@ -129,6 +129,9 @@ class     avtExtents;
 //    Changed a typedef anonymous struct to a normal struct.  xlC was not
 //    generating methods (e.g. copy constructor) using the C-style declaration.
 //
+//    Kathleen Bonnell, Thu Dec  9 16:12:33 PST 2004 
+//    Added containsGlobalNode/ZoneIds and Set/Get methods. 
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataAttributes
@@ -285,6 +288,15 @@ class PIPELINE_API avtDataAttributes
     bool                     GetSelectionApplied(int selID) const;
     const std::vector<bool> &GetSelectionsApplied() const;
 
+    bool                     GetContainsGlobalZoneIds(void) const
+                                   { return containsGlobalZoneIds; };
+    void                     SetContainsGlobalZoneIds(bool c)
+                                   { containsGlobalZoneIds= c; };
+    bool                     GetContainsGlobalNodeIds(void) const
+                                   { return containsGlobalNodeIds; };
+    void                     SetContainsGlobalNodeIds(bool c)
+                                   { containsGlobalNodeIds= c; };
+
   protected:
     int                      spatialDimension;
     int                      topologicalDimension;
@@ -298,6 +310,8 @@ class PIPELINE_API avtDataAttributes
     bool                     containsOriginalCells;
     bool                     containsOriginalNodes;
     bool                     keepNodeZoneArrays;
+    bool                     containsGlobalZoneIds;
+    bool                     containsGlobalNodeIds;
     avtMatrix               *invTransform;
     bool                     canUseInvTransform;
     avtMatrix               *transform;

@@ -644,27 +644,6 @@ avtSurfacePlot::SetScaling(const int mode, const double skew)
 
 
 // ****************************************************************************
-//  Method: avtSurfacePlot::SetVarName
-//
-//  Purpose:
-//      Sets the variable name in the legend.
-//
-//  Arguments:
-//      name      The name of the variable.
-//
-//  Programmer:   Kathleen Bonnell
-//  Creation:     March 05, 2001
-//
-// ****************************************************************************
-
-void
-avtSurfacePlot::SetVarName(const char *name)
-{
-    varLegend->SetVarName(name);
-}
-
-
-// ****************************************************************************
 //  Method: avtSurfacePlot::SetRepresentation
 //
 //  Purpose:

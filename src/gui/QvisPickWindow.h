@@ -65,6 +65,9 @@ class PickAttributes;
 //   I added a pick variable button so it is a little easier to select
 //   variables.
 //
+//   Kathleen Bonnell, Wed Dec 15 08:20:11 PST 2004
+//   Add checkbox and slot for displayGlobalIds. 
+//
 // ****************************************************************************
 
 class GUI_API QvisPickWindow : public QvisPostableWindowObserver
@@ -92,6 +95,7 @@ protected:
 private slots:
     void variableProcessText();
     void displayIncElsToggled(bool val);
+    void displayGlobalIdsToggled(bool val);
     void nodeIdToggled(bool val);
     void nodeDomLogToggled(bool val);
     void nodeBlockLogToggled(bool val);
@@ -138,5 +142,6 @@ private:
     QLineEdit          *varsLineEdit;
 
     PickAttributes     *pickAtts;
+    QCheckBox          *displayGlobalIds;
 };
 #endif

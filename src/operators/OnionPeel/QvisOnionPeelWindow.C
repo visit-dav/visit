@@ -5,6 +5,7 @@
 #include <avtSIL.h>
 #include <SILRestrictionAttributes.h>
 
+#include <qcheckbox.h>
 #include <qcombobox.h>
 #include <qlabel.h>
 #include <qlayout.h>
@@ -82,6 +83,8 @@ QvisOnionPeelWindow::~QvisOnionPeelWindow()
 // Creation:   Thu Aug 8 14:29:46 PST 2002
 //
 // Modifications:
+//   Kathleen Bonnell, Fri Dec 10 14:28:14 PST 2004
+//   Added useGlobalId checkbox.
 //   
 // ****************************************************************************
 
@@ -138,6 +141,7 @@ QvisOnionPeelWindow::CreateWindowContents()
             this, SLOT(subsetNameChanged()));
     mainLayout->addMultiCellWidget(subsetName, 2,2, 1,2);
 
+    
     //
     // Index
     //
@@ -150,13 +154,22 @@ QvisOnionPeelWindow::CreateWindowContents()
     mainLayout->addWidget(index, 3,2);
 
     //
+    // UseGlobalId
+    //
+    useGlobalId = new QCheckBox("Cell # is Global", central, "useGlobalId");
+    useGlobalId->setChecked(false);
+    connect(useGlobalId, SIGNAL(toggled(bool)),
+            this, SLOT(useGlobalIdToggled(bool)));
+    mainLayout->addMultiCellWidget(useGlobalId, 4,4, 0,2);
+
+    //
     // Layers
     //
-    mainLayout->addWidget(new QLabel("Layers", central, "requestedLayerLabel"),4,0);
+    mainLayout->addWidget(new QLabel("Layers", central, "requestedLayerLabel"),5,0);
     requestedLayer = new QSpinBox(0, 1000, 1, central, "requestedLayer");
     connect(requestedLayer, SIGNAL(valueChanged(int)), 
             this, SLOT(requestedLayerChanged(int)));
-    mainLayout->addWidget(requestedLayer, 4,1);
+    mainLayout->addWidget(requestedLayer, 5,1);
 }
 
 
@@ -175,6 +188,9 @@ QvisOnionPeelWindow::CreateWindowContents()
 //   
 //   Kathleen Bonnell, Tue May  4 17:47:50 PDT 2004 
 //   Also update the ComboBoxes if doAll is true. 
+//    
+//   Kathleen Bonnell, Fri Dec 10 14:28:14 PST 2004
+//   Added useGlobalId checkbox.
 //   
 // ****************************************************************************
 
@@ -212,11 +228,23 @@ QvisOnionPeelWindow::UpdateWindow(bool doAll)
             adjacencyType->setButton(atts->GetAdjacencyType());
             adjacencyType->blockSignals(false);
             break;
-        case 1: //Category 
+        case 1: //useGlobalId 
+            useGlobalId->blockSignals(true);
+            useGlobalId->setChecked(atts->GetUseGlobalId());
+            if (atts->GetUseGlobalId())
+            {
+                categoryName->setEnabled(false);
+                categoryLabel->setEnabled(false);
+                subsetName->setEnabled(false);
+                subsetLabel->setEnabled(false);
+            }
+            useGlobalId->blockSignals(false);
             break;
-        case 2: // Subset 
+        case 2: //Category 
             break;
-        case 3: // index 
+        case 3: // Subset 
+            break;
+        case 4: // index 
             index->blockSignals(true);
             ivec = atts->GetIndex(); 
             char buff[80];
@@ -229,13 +257,15 @@ QvisOnionPeelWindow::UpdateWindow(bool doAll)
             index->setText(temp); 
             index->blockSignals(false);
             break;
-        case 4: // Layers 
+        case 5: // Layers 
             requestedLayer->blockSignals(true);
             requestedLayer->setValue(atts->GetRequestedLayer());
             requestedLayer->blockSignals(false);
             break;
         }
     } // end for
+    if (!doAll)
+        UpdateComboBoxesEnabledState(2);
 }
 
 // ****************************************************************************
@@ -255,7 +285,6 @@ QvisOnionPeelWindow::UpdateWindow(bool doAll)
 void
 QvisOnionPeelWindow::UpdateComboBoxes()
 {
-
     QString cn = categoryName->currentText();
 
     if (silAtts->GetTopSet() != silTopSet ||
@@ -270,6 +299,81 @@ QvisOnionPeelWindow::UpdateComboBoxes()
     {
         silUseSet = silAtts->GetUseSet();
         FillSubsetBox();
+    }
+}
+
+// ****************************************************************************
+// Method: QvisOnionPeelWindow::UpdateComboBoxesEnabledState
+//
+// Purpose: 
+//   Updates the enabled state for category and subset combo boxes. 
+//
+// Arguments:
+//   which     Which combo box should be updated. 0 == Category
+//             1 == Subset, 2 == Both.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   December 10, 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisOnionPeelWindow::UpdateComboBoxesEnabledState(int which)
+{
+    bool doAll = which == 2;
+    if (which == 0 || doAll)
+    {
+        if (categoryName->count() == 0)
+        {
+            categoryName->insertItem(defaultItem);
+            categoryName->setCurrentItem(0);
+            categoryName->setEnabled(false);
+            categoryLabel->setEnabled(false);
+        }
+        else if (categoryName->count() == 1)
+        {
+            categoryName->setEnabled(false);
+            categoryLabel->setEnabled(false);
+        }
+        else if (atts->GetUseGlobalId())
+        {
+            categoryName->setEnabled(false);
+            categoryLabel->setEnabled(false);
+        }
+        else 
+        {
+            categoryName->setEnabled(true);
+            categoryLabel->setEnabled(true);
+        }
+    }
+    if (which == 1 || doAll)
+    {
+        if (subsetName->count() == 0)
+        {
+            subsetName->insertItem(defaultItem);
+            subsetName->setCurrentItem(0);
+            subsetName->setEnabled(false);
+            subsetLabel->setEnabled(false);
+        }
+        else if (subsetName->count() == 1)
+        {
+            subsetName->setEnabled(false);
+            subsetLabel->setEnabled(false);
+        }
+        else if (atts->GetUseGlobalId())
+        {
+            subsetName->setEnabled(false);
+            subsetLabel->setEnabled(false);
+        }
+        else
+        {
+            subsetName->setEnabled(true);
+            subsetLabel->setEnabled(true);
+        }
+        categoryName->blockSignals(false);
+        subsetName->blockSignals(false);
     }
 }
 
@@ -335,23 +439,7 @@ QvisOnionPeelWindow::FillCategoryBox()
         } /* if category has items in it */
     }
 
-    if (categoryName->count() == 0)
-    {
-        categoryName->insertItem(defaultItem);
-        categoryName->setCurrentItem(0);
-        categoryName->setEnabled(false);
-        categoryLabel->setEnabled(false);
-    }
-    else if (categoryName->count() == 1)
-    {
-        categoryName->setEnabled(false);
-        categoryLabel->setEnabled(false);
-    }
-    else 
-    {
-        categoryName->setEnabled(true);
-        categoryLabel->setEnabled(true);
-    }
+    UpdateComboBoxesEnabledState(0);
     categoryName->setEditText(categoryName->currentText());
     categoryName->blockSignals(false);
 }
@@ -382,7 +470,7 @@ QvisOnionPeelWindow::FillSubsetBox()
 
     QString cn = categoryName->currentText();
 
-    if (cn != defaultItem)
+    if (cn != defaultItem) 
     {
         avtSILRestriction_p restriction = viewer->GetPlotSILRestriction();
 
@@ -422,23 +510,7 @@ QvisOnionPeelWindow::FillSubsetBox()
             }
         } /*if collection!=NULL */
     }
-    if (subsetName->count() == 0)
-    {
-        subsetName->insertItem(defaultItem);
-        subsetName->setCurrentItem(0);
-        subsetName->setEnabled(false);
-        subsetLabel->setEnabled(false);
-    }
-    else if (subsetName->count() == 1)
-    {
-        subsetName->setEnabled(false);
-        subsetLabel->setEnabled(false);
-    }
-    else
-    {
-        subsetName->setEnabled(true);
-        subsetLabel->setEnabled(true);
-    }
+    UpdateComboBoxesEnabledState(1);
     subsetName->setEditText(subsetName->currentText());
     subsetName->blockSignals(false);
 }
@@ -525,7 +597,7 @@ QvisOnionPeelWindow::GetCurrentValues(int which_widget)
         okay = ((ivec.size() > 0) && (ivec.size() <= 3));
         if (okay)
         {
-            atts->SetLogical(ivec.size() != 1);
+            atts->SetLogical(ivec.size() != 1 && !atts->GetUseGlobalId());
             atts->SetIndex(ivec);
         } 
         else 
@@ -640,4 +712,18 @@ QvisOnionPeelWindow::requestedLayerChanged(int val)
     }
 }
 
+
+void
+QvisOnionPeelWindow::useGlobalIdToggled(bool val)
+{
+    if(val != atts->GetUseGlobalId())
+    {
+        atts->SetUseGlobalId(val);
+        UpdateComboBoxesEnabledState(2);
+        if (AutoUpdate())
+            QTimer::singleShot(100, this, SLOT(delayedApply()));
+        else
+            Apply();
+    }
+}
 

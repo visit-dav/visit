@@ -27,6 +27,8 @@ class avtVertexNormalsFilter;
 //  Creation:   Wed Jan 7 14:58:26 PST 2004
 //
 //  Modifications:
+//    Brad Whitlock, Wed Dec 15 10:48:35 PDT 2004
+//    Removed SetVarName.
 //
 // ****************************************************************************
 
@@ -43,7 +45,6 @@ class avtLabelPlot : public avtSurfaceDataPlot
     virtual void                ReleaseData(void);
 
     virtual bool                SetForegroundColor(const double *);
-    void                        SetVarName(const char *);
     void                        SetLegend(bool);
 
     virtual avtPipelineSpecification_p EnhanceSpecification(avtPipelineSpecification_p spec);

@@ -66,7 +66,10 @@ class     avtVariableLegend;
 //    
 //    Kathleen Bonnell, Mon May 24 14:13:55 PDT 2004 
 //    Added avtWireframeFilter.
-//    
+//
+//    Brad Whitlock, Wed Dec 15 10:48:35 PDT 2004
+//    Removed SetVarName.
+//
 // ****************************************************************************
 
 class avtSurfacePlot : public avtSurfaceDataPlot
@@ -87,7 +90,6 @@ class avtSurfacePlot : public avtSurfaceDataPlot
     void                        SetLighting(bool);
     void                        SetLineWidth(_LineWidth);
     void                        SetLineStyle(_LineStyle);
-    void                        SetVarName(const char *);
     void                        SetScaling(const int, const double);
     void                        SetRepresentation(bool);
     void                        SetSurfaceAttributes(bool);

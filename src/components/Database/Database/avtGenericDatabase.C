@@ -6,8 +6,6 @@
 
 #include <float.h>
 
-#include <string>
-
 #ifdef PARALLEL
 #include <mpi.h>
 #endif
@@ -261,6 +259,9 @@ avtGenericDatabase::SetDatabaseMetaData(avtDatabaseMetaData *md, int timeState)
 //    Mark C. Miller, Tue Sep 28 19:57:42 PDT 2004
 //    Added vector of bools for data selections that plugins apply
 //
+//    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004 
+//    Changed 'vector<int>' to 'intVector' and 'vector<bool>' to 'boolVector'.
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -277,7 +278,7 @@ avtGenericDatabase::GetOutput(avtDataSpecification_p spec,
     //
     avtSILRestriction_p silr = spec->GetRestriction();
     avtSILRestrictionTraverser trav(silr);
-    vector<int> domains, allDomains;
+    intVector domains, allDomains;
     trav.GetDomainList(domains);
     trav.GetDomainListAllProcs(allDomains);
 
@@ -289,7 +290,7 @@ avtGenericDatabase::GetOutput(avtDataSpecification_p spec,
 
     bool shouldDoMatSelect = false;
     bool hadError = false;
-    vector<bool> selectionsApplied;
+    boolVector selectionsApplied;
     TRY
     {
         //
@@ -314,7 +315,7 @@ avtGenericDatabase::GetOutput(avtDataSpecification_p spec,
         //
         // Do species selection if appropriate.
         //
-        vector<bool> speciesList;
+        boolVector speciesList;
         if (trav.GetSpecies(speciesList))
         {
             SpeciesSelect(datasetCollection, domains, speciesList, spec, src);
@@ -807,7 +808,7 @@ avtGenericDatabase::GetScalarVarDataset(const char *varname, int ts,
 
 void
 avtGenericDatabase::AddSecondaryVariables(vtkDataSet *ds, int ts, int domain,
-                  const char *material, const std::vector<CharStrRef> &vars2nd)
+                  const char *material, const vector<CharStrRef> &vars2nd)
 {
     int nzones = ds->GetNumberOfCells();
 
@@ -1870,6 +1871,9 @@ avtGenericDatabase::GetMesh(const char *meshname, int ts, int domain,
 //    Added call to ActivateTimestep to deal with cases in which the *first*
 //    thing we attempt to read from the file is auxiliary data
 //
+//    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004 
+//    Changed 'vector<int>' to 'intVector'.
+//
 // ****************************************************************************
 
 void
@@ -1901,7 +1905,7 @@ avtGenericDatabase::GetAuxiliaryData(avtDataSpecification_p spec,
     //
     ActivateTimestep(ts);
 
-    vector<int> domains;
+    intVector domains;
     sil.GetDomainList(domains);
 
     //
@@ -2260,12 +2264,16 @@ avtGenericDatabase::AddOriginalNodesArray(vtkDataSet *ds, const int domain)
 //    Make sure that the material object and the dataset are sized 
 //    appropriately before starting to execute.
 //
+//    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004 
+//    Changed 'vector<int>' to 'intVector', and 'vector<string>' to 
+//    'stringVector'.
+//
 // ****************************************************************************
 
 avtDataTree_p
 avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
                         vector<avtMixedVariable *> mvl,int dom,const char *var,
-                        int ts, vector<string> &mnames, vector<string> &labels,
+                        int ts, stringVector &mnames, stringVector &labels,
                         bool needInternalSurfaces,
                         bool needBoundarySurfaces,
                         bool needValidConnectivity,
@@ -2281,7 +2289,7 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
     //
     // We need to have the material indices as well.
     //
-    vector<int> mindex;
+    intVector mindex;
     GetMaterialIndices(mat, mnames, mindex);
 
     if (mat == NULL || ds == NULL || mat->GetNZones() !=ds->GetNumberOfCells())
@@ -2318,7 +2326,7 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
 
     int numSelected = mindex.size();
 
-    vector<int> selMats;
+    intVector selMats;
     int numOutput = (needInternalSurfaces ?  numSelected : 1);
     vtkDataSet **out_ds = new vtkDataSet *[numOutput];
 
@@ -2418,7 +2426,7 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
     //
     // Create new labels.
     //
-    vector<string> labelStrings;
+    stringVector labelStrings;
 
     if (type == AVT_MATERIAL)
     {
@@ -2522,11 +2530,15 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
 //    Hank Childs, Wed Jul 28 15:27:45 PDT 2004
 //    Make sure material is valid before moving on.
 //
+//    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004 
+//    Changed 'vector<int>' to 'intVector', and 'vector<string>' to 
+//    'stringVector'.
+//
 // ****************************************************************************
 
 void
-avtGenericDatabase::GetMaterialIndices(avtMaterial *mat, vector<string> &mn,
-                                       vector<int> &ml)
+avtGenericDatabase::GetMaterialIndices(avtMaterial *mat, stringVector &mn,
+                                       intVector &ml)
 {
     if (mat == NULL)
     {
@@ -2536,7 +2548,7 @@ avtGenericDatabase::GetMaterialIndices(avtMaterial *mat, vector<string> &mn,
                                            "the material information.\"");
     }
 
-    const vector<string> &matlist = mat->GetCompleteMaterialList();
+    const stringVector &matlist = mat->GetCompleteMaterialList();
 
     int nstr = mn.size();
     for (int i = 0 ; i < nstr ; i++)
@@ -2676,6 +2688,10 @@ avtGenericDatabase::GetSpecies(int dom, const char *var, int ts)
 //    Hank Childs, Thu Sep 23 09:48:24 PDT 2004
 //    Name the global node ids array.
 //
+//    Kathleen Bonnell, Thu Dec  9 14:11:44 PST 2004 
+//    Only set 'ContainsGlobalNodeIds' to true if the returned array
+//    is not null.  Pass meshname instead of var to SetContainsGlobalNodeIds. 
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -2698,10 +2714,12 @@ avtGenericDatabase::GetGlobalNodeIds(int dom, const char *var, int ts)
     }
     else if (gnodeIds.nList == 1)
     {
-        md->SetContainsGlobalNodeIds(var, true);
         vtkDataArray *arr = (vtkDataArray *) *(gnodeIds.list[0]);
         if (arr != NULL)
+        {
+            md->SetContainsGlobalNodeIds(meshname, true);
             arr->SetName("avtGlobalNodeNumbers");
+        }
         return arr;
     }
     else
@@ -2731,6 +2749,10 @@ avtGenericDatabase::GetGlobalNodeIds(int dom, const char *var, int ts)
 //    Hank Childs, Thu Sep 23 09:48:24 PDT 2004
 //    Name the global zone ids array.
 //
+//    Kathleen Bonnell, Thu Dec  9 14:11:44 PST 2004 
+//    Only set 'ContainsGlobalZoneIds' to true if the returned array
+//    is not null.  Pass meshname instead of var to SetContainsGlobalZoneIds. 
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -2753,10 +2775,12 @@ avtGenericDatabase::GetGlobalZoneIds(int dom, const char *var, int ts)
     }
     else if (gzoneIds.nList == 1)
     {
-        md->SetContainsGlobalZoneIds(var, true);
         vtkDataArray *arr = (vtkDataArray *) *(gzoneIds.list[0]);
         if (arr != NULL)
+        {
             arr->SetName("avtGlobalZoneNumbers");
+            md->SetContainsGlobalZoneIds(meshname, true);
+        }
         return arr;
     }
     else
@@ -2795,11 +2819,14 @@ avtGenericDatabase::GetGlobalZoneIds(int dom, const char *var, int ts)
 //    Hank Childs, Tue Sep 24 08:25:28 PDT 2002
 //    I screwed up the progress bar for species selection on my last checkin.
 //
+//    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004 
+//    Changed 'vector<int>' to 'intVector', and 'vector<bool>' to 'boolVector'.
+//
 // ****************************************************************************
 
 void
 avtGenericDatabase::SpeciesSelect(avtDatasetCollection &dsc, 
-                      vector<int> &domains, vector<bool> &specList,
+                      intVector &domains, boolVector &specList,
                       avtDataSpecification_p &spec, avtSourceFromDatabase *src)
 {
     char *progressString = "Doing species selection";
@@ -3043,11 +3070,14 @@ avtGenericDatabase::GetMIR(int domain, const char *varname, int timestep,
 //    Do not longer key off type, instead use a flag that has been explicitly
 //    set.
 //
+//    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004 
+//    Changed 'vector<string>' to 'stringVector'.
+//
 // ****************************************************************************
 
 bool
 avtGenericDatabase::PrepareMaterialSelect(int dom, bool forceMIROn,
-                      avtSILRestrictionTraverser &trav, vector<string> &mnames)
+                      avtSILRestrictionTraverser &trav, stringVector &mnames)
 {
     //
     // Have the SIL restriction determine if material selection is necessary
@@ -3208,12 +3238,19 @@ avtGenericDatabase::ActivateTimestep(int stateIndex)
 //    Mark C. Miller, Tue Sep 28 19:57:42 PDT 2004
 //    Added call to RegisterDataSelections with the plugins
 //
+//    Kathleen Bonnell, Thu Dec  9 14:11:44 PST 2004 
+//    Initialize ContainsGlobalNode/ZoneIds in the MetaData. 
+//
+//    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004 
+//    Changed 'vector<int>' to 'intVector', 'vector<bool>' to 'boolVector',
+//    and 'vector<string>' to 'stringVector'.
+//
 // ****************************************************************************
 
 void
-avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, vector<int> &domains,
+avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, intVector &domains,
                       avtDataSpecification_p &spec, avtSourceFromDatabase *src,
-                      vector<bool> &selectionsApplied)
+                      boolVector &selectionsApplied)
 {
     int timerHandle = visitTimer->StartTimer();
     int ts = spec->GetTimestep();
@@ -3227,6 +3264,8 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, vector<int> &domains,
     md->SetContainsGhostZones(meshname, AVT_NO_GHOSTS);
     md->SetContainsOriginalCells(meshname, false);
     md->SetContainsOriginalNodes(meshname, false);
+    md->SetContainsGlobalZoneIds(meshname, false);
+    md->SetContainsGlobalNodeIds(meshname, false);
 
     //
     // Set up some things we will want for later.
@@ -3239,8 +3278,8 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, vector<int> &domains,
     char  progressString[1024];
     sprintf(progressString, "Reading from %s", Interface->GetType());
 
-    vector<string> blockNames;
-    vector<int>    gIds;
+    stringVector blockNames;
+    intVector gIds;
     int domOrigin = 0;
 
     avtSubsetType subT = GetMetaData(ts)->DetermineSubsetType(var);
@@ -3282,8 +3321,8 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, vector<int> &domains,
     avtSILRestrictionTraverser trav(silr);
     for (i = 0 ; i < nDomains ; i++)
     {
-        vector<string> labels;
-        vector<string> matnames;
+        stringVector labels;
+        stringVector matnames;
         bool forceMIR = spec->MustDoMaterialInterfaceReconstruction();
         bool doSelect = PrepareMaterialSelect(domains[i], forceMIR, trav, 
                                               matnames);
@@ -3562,11 +3601,14 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, vector<int> &domains,
 //    Brad Whitlock, Thu Sep 16 11:04:57 PDT 2004
 //    Removed a stray semicolon.
 //
+//    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004 
+//    Changed 'vector<int>' to 'intVector'.
+//
 // ****************************************************************************
 
 bool
 avtGenericDatabase::CommunicateGhosts(avtGhostDataType ghostType, 
-                      avtDatasetCollection &ds, vector<int> &doms,
+                      avtDatasetCollection &ds, intVector &doms,
                       avtDataSpecification_p &spec, avtSourceFromDatabase *src)
 {
     int portion1 = visitTimer->StartTimer();
@@ -3576,7 +3618,7 @@ avtGenericDatabase::CommunicateGhosts(avtGhostDataType ghostType,
     int ts = spec->GetTimestep();
     avtDatabaseMetaData *md = GetMetaData(ts);
     const char *varname = spec->GetVariable();
-    std::string meshname = md->MeshForVar(varname);
+    string meshname = md->MeshForVar(varname);
 
     //
     // We may already have ghost data from reading it out of the file.  If this
@@ -3686,11 +3728,15 @@ avtGenericDatabase::CommunicateGhosts(avtGhostDataType ghostType,
 //  Programmer: Hank Childs
 //  Creation:   August 14, 2004
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004 
+//    Changed 'vector<int>' to 'intVector'.
+//
 // ****************************************************************************
 
 avtDomainBoundaries *
 avtGenericDatabase::GetDomainBoundaryInformation(avtDatasetCollection &ds,
-                                                 std::vector<int> &doms,
+                                                 intVector &doms,
                                                  avtDataSpecification_p spec)
 {
     //
@@ -3749,11 +3795,15 @@ avtGenericDatabase::GetDomainBoundaryInformation(avtDatasetCollection &ds,
 //  Programmer: Hank Childs
 //  Creation:   August 13, 2004
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004 
+//    Changed 'vector<int>' to 'intVector'.
+//
 // ****************************************************************************
 
 bool
 avtGenericDatabase::CommunicateGhostZonesFromDomainBoundariesFromFile(
-                      avtDatasetCollection &ds, std::vector<int> &doms,
+                      avtDatasetCollection &ds, intVector &doms,
                       avtDataSpecification_p &spec, avtSourceFromDatabase *src)
 {
     //
@@ -3770,7 +3820,7 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundariesFromFile(
     int ts = spec->GetTimestep();
     avtDatabaseMetaData *md = GetMetaData(ts);
     const char *varname = spec->GetVariable();
-    std::string meshname = md->MeshForVar(varname);
+    string meshname = md->MeshForVar(varname);
 
     int shouldStop = 0;
     avtDomainBoundaries *dbi = GetDomainBoundaryInformation(ds, doms, spec);
@@ -3817,12 +3867,16 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundariesFromFile(
 //  Programmer: Hank Childs
 //  Creation:   August 17, 2004
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004 
+//    Changed 'vector<int>' to 'intVector'.
+//
 // ****************************************************************************
 
 bool
 avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
                       avtDomainBoundaries *dbi,
-                      avtDatasetCollection &ds, std::vector<int> &doms,
+                      avtDatasetCollection &ds, intVector &doms,
                       avtDataSpecification_p &spec, avtSourceFromDatabase *src)
 {
     int   i, j, k;
@@ -3840,7 +3894,7 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
     avtDatabaseMetaData *md = GetMetaData(ts);
     const char *varname = spec->GetVariable();
     avtVarType type = md->DetermineVarType(varname);
-    std::string meshname = md->MeshForVar(varname);
+    string meshname = md->MeshForVar(varname);
 
     // Setup materials
     int anymats    = false;
@@ -4275,11 +4329,15 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
 //  Programmer: Hank Childs
 //  Creation:   August 14, 2004
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004 
+//    Changed 'vector<int>' to 'intVector'.
+//
 // ****************************************************************************
 
 bool
 avtGenericDatabase::CommunicateGhostNodesFromDomainBoundariesFromFile(
-                      avtDatasetCollection &ds, std::vector<int> &doms,
+                      avtDatasetCollection &ds, intVector &doms,
                       avtDataSpecification_p &spec, avtSourceFromDatabase *src)
 {
     //
@@ -4296,7 +4354,7 @@ avtGenericDatabase::CommunicateGhostNodesFromDomainBoundariesFromFile(
     int ts = spec->GetTimestep();
     avtDatabaseMetaData *md = GetMetaData(ts);
     const char *varname = spec->GetVariable();
-    std::string meshname = md->MeshForVar(varname);
+    string meshname = md->MeshForVar(varname);
 
     int shouldStop = 0;
     avtDomainBoundaries *dbi = GetDomainBoundaryInformation(ds, doms, spec);
@@ -4354,11 +4412,14 @@ avtGenericDatabase::CommunicateGhostNodesFromDomainBoundariesFromFile(
 //    Update name of global node numbers, since name was recently changed
 //    out from underneath us.
 //
+//    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004 
+//    Changed 'vector<int>' to 'intVector'.
+//
 // ****************************************************************************
 
 bool
 avtGenericDatabase::CommunicateGhostZonesFromGlobalNodeIds(
-                      avtDatasetCollection &ds, std::vector<int> &doms, 
+                      avtDatasetCollection &ds, intVector &doms, 
                       avtDataSpecification_p &spec, avtSourceFromDatabase *src)
 {
     //
@@ -4370,7 +4431,7 @@ avtGenericDatabase::CommunicateGhostZonesFromGlobalNodeIds(
     int ts = spec->GetTimestep();
     avtDatabaseMetaData *md = GetMetaData(ts);
     const char *varname = spec->GetVariable();
-    std::string meshname = md->MeshForVar(varname);
+    string meshname = md->MeshForVar(varname);
     int numDomains = md->GetMesh(meshname)->numBlocks;
 
     //
@@ -4476,20 +4537,20 @@ avtGenericDatabase::CommunicateGhostZonesFromGlobalNodeIds(
     // the variables for that now.
     //
     int mySize = myMax-myMin;
-    vector<int> index_for_node(mySize, -1);
+    intVector index_for_node(mySize, -1);
 
     int curIndex = 0;
     int curSize = 4096;
-    vector< vector <int> > doms_for_id(curSize);
-    vector< vector <int> > local_ids_for_id(curSize);
+    vector< intVector > doms_for_id(curSize);
+    vector< intVector > local_ids_for_id(curSize);
 
     //
     // Go through all of the ids for this processor and either update
     // our arrays or determine which processor they should go to.
     //
-    vector< vector <int> > global_ids_for_proc(num_procs);
-    vector< vector <int> > doms_for_proc(num_procs);
-    vector< vector <int> > local_ids_for_proc(num_procs);
+    vector< intVector > global_ids_for_proc(num_procs);
+    vector< intVector > doms_for_proc(num_procs);
+    vector< intVector > local_ids_for_proc(num_procs);
     for (i = 0 ; i < doms.size() ; i++)
     {
         vtkIntArray *int_gni = gni[i];
@@ -4601,7 +4662,7 @@ avtGenericDatabase::CommunicateGhostZonesFromGlobalNodeIds(
     {
         EXCEPTION0(ImproperUseException);
     }
-    vector<int> Domain2Proc(numDomains, -1);
+    intVector Domain2Proc(numDomains, -1);
     int index = 0;
     for (i = 0 ; i < num_procs ; i++)
     {
@@ -4645,9 +4706,9 @@ avtGenericDatabase::CommunicateGhostZonesFromGlobalNodeIds(
     // at least).
     //
     int t4 = visitTimer->StartTimer();
-    vector< vector<int> > pairs(numDomains);
-    vector< vector< vector<int> > > first_val(numDomains);
-    vector< vector< vector<int> > > second_val(numDomains);
+    vector< intVector > pairs(numDomains);
+    vector< vector< intVector > > first_val(numDomains);
+    vector< vector< intVector > > second_val(numDomains);
     for (i = myMin ; i < myMax ; i++)
     {
         int idx = i-myMin;
@@ -4895,11 +4956,14 @@ avtGenericDatabase::CommunicateGhostZonesFromGlobalNodeIds(
 //    Hank Childs, Fri Aug 27 16:16:52 PDT 2004
 //    Rename ghost data arrays.
 //
+//    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004 
+//    Changed 'vector<int>' to 'intVector'.
+//
 // ****************************************************************************
 
 bool
 avtGenericDatabase::CommunicateGhostNodesFromGlobalNodeIds(
-                      avtDatasetCollection &ds, std::vector<int> &doms, 
+                      avtDatasetCollection &ds, intVector &doms, 
                       avtDataSpecification_p &spec, avtSourceFromDatabase *src)
 {
     int   i, j;
@@ -4907,7 +4971,7 @@ avtGenericDatabase::CommunicateGhostNodesFromGlobalNodeIds(
     int ts = spec->GetTimestep();
     avtDatabaseMetaData *md = GetMetaData(ts);
     const char *varname = spec->GetVariable();
-    std::string meshname = md->MeshForVar(varname);
+    string meshname = md->MeshForVar(varname);
 
     //
     // Identify what the biggest id is.
@@ -4955,7 +5019,7 @@ avtGenericDatabase::CommunicateGhostNodesFromGlobalNodeIds(
     // Go through all of the ids for this processor and either update
     // our arrays or determine which processor they should go to.
     //
-    vector< vector <int> > ids_for_proc(num_procs);
+    vector< intVector > ids_for_proc(num_procs);
     for (i = 0 ; i < doms.size() ; i++)
     {
         vtkDataArray *gni = GetGlobalNodeIds(doms[i], meshname.c_str(), ts); 
@@ -5069,7 +5133,7 @@ avtGenericDatabase::CommunicateGhostNodesFromGlobalNodeIds(
     // take the values and start blindly assigning them.  There is some
     // subtlety to the indexing here.
     //
-    vector<int> num_used_from_proc(num_procs, 0);
+    intVector num_used_from_proc(num_procs, 0);
 #endif
 
     for (i = 0 ; i < doms.size() ; i++)
@@ -5158,11 +5222,14 @@ avtGenericDatabase::CommunicateGhostNodesFromGlobalNodeIds(
 //    Hank Childs, Mon Nov 17 17:45:39 PST 2003
 //    Clean up memory leak.
 //
+//    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004 
+//    Changed 'vector<int>' to 'intVector'.
+//
 // ****************************************************************************
 
 bool
 avtGenericDatabase::ApplyGhostForDomainNesting(avtDatasetCollection &ds, 
-   vector<int> &doms, vector<int> &allDoms, avtDataSpecification_p &spec)
+   intVector &doms, intVector &allDoms, avtDataSpecification_p &spec)
 {
     bool rv = false;
 
@@ -5252,11 +5319,14 @@ avtGenericDatabase::ApplyGhostForDomainNesting(avtDatasetCollection &ds,
 //    Jeremy Meredith, Fri Sep  5 15:32:30 PDT 2003
 //    Added a flag for the MIR algorithm.
 //
+//    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004 
+//    Changed 'vector<int>' to 'intVector'.
+//
 // ****************************************************************************
 
 void
 avtGenericDatabase::MaterialSelect(avtDatasetCollection &ds,
-                            vector<int> &domains, avtDataSpecification_p &spec,
+                            intVector &domains, avtDataSpecification_p &spec,
                             avtSourceFromDatabase *src, bool didGhosts)
 {
     int i, timerHandle = visitTimer->StartTimer();
@@ -5353,11 +5423,15 @@ avtGenericDatabase::MaterialSelect(avtDatasetCollection &ds,
 //  Programmer:   Hank Childs
 //  Creation:     September 23, 2004
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004 
+//    Changed 'vector<int>' to 'intVector'.
+//
 // ****************************************************************************
 
 void
 avtGenericDatabase::CreateGlobalZones(avtDatasetCollection &ds, 
-                              vector<int> &domains, avtSourceFromDatabase *src,
+                              intVector &domains, avtSourceFromDatabase *src,
                               avtDataSpecification_p &spec)
 {
     char  progressString[1024] = "Creating Global Zones Array";
@@ -5382,11 +5456,15 @@ avtGenericDatabase::CreateGlobalZones(avtDatasetCollection &ds,
 //  Programmer:   Hank Childs 
 //  Creation:     September 23, 2004
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004 
+//    Changed 'vector<int>' to 'intVector'.
+//
 // ****************************************************************************
 
 void
 avtGenericDatabase::CreateGlobalNodes(avtDatasetCollection &ds, 
-                              vector<int> &domains, avtSourceFromDatabase *src,
+                              intVector &domains, avtSourceFromDatabase *src,
                               avtDataSpecification_p &spec)
 {
     char  progressString[1024] = "Creating Global Nodes Array";
@@ -5423,11 +5501,14 @@ avtGenericDatabase::CreateGlobalNodes(avtDatasetCollection &ds,
 //    Removed starting cell number.  Pass domain number to 
 //    AddOriginalCellsArray.  
 //    
+//    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004 
+//    Changed 'vector<int>' to 'intVector'.
+//
 // ****************************************************************************
 
 void
 avtGenericDatabase::CreateOriginalZones(avtDatasetCollection &ds, 
-                              vector<int> &domains, avtSourceFromDatabase *src)
+                              intVector &domains, avtSourceFromDatabase *src)
 {
     char  progressString[1024] = "Creating Original Zones Array";
     src->DatabaseProgress(0, 0, progressString);
@@ -5453,11 +5534,15 @@ avtGenericDatabase::CreateOriginalZones(avtDatasetCollection &ds,
 //  Programmer:   Hank Childs 
 //  Creation:     June 18, 2003
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004 
+//    Changed 'vector<int>' to 'intVector'.
+//
 // ****************************************************************************
 
 void
 avtGenericDatabase::CreateOriginalNodes(avtDatasetCollection &ds, 
-                              vector<int> &domains, avtSourceFromDatabase *src)
+                              intVector &domains, avtSourceFromDatabase *src)
 {
     char  progressString[1024] = "Creating Original Nodes Array";
     src->DatabaseProgress(0, 0, progressString);
@@ -5567,6 +5652,9 @@ avtGenericDatabase::CreateStructuredIndices(avtDatasetCollection &dsc,
 //    Refactored MIR into a base and subclass.  This will allow us to swap
 //    in other MIR algorithms more easily.
 //
+//    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004 
+//    Changed 'vector<int>' to 'intVector', and 'vector<bool>' to 'boolVector'.
+//
 // ****************************************************************************
 
 int
@@ -5576,7 +5664,7 @@ avtGenericDatabase::NumStagesForFetch(avtDataSpecification_p spec)
 
     avtSILRestriction_p silr = spec->GetRestriction();
     avtSILRestrictionTraverser trav(silr);
-    vector<int> domains;
+    intVector domains;
     trav.GetDomainList(domains);
     
     //
@@ -5619,7 +5707,7 @@ avtGenericDatabase::NumStagesForFetch(avtDataSpecification_p spec)
         numStages += 1;
     }
 
-    vector<bool> list;
+    boolVector list;
     if (trav.GetSpecies(list))
     {
         numStages += 1;
@@ -5681,20 +5769,24 @@ avtGenericDatabase::NumStagesForFetch(avtDataSpecification_p spec)
 //    Hank Childs, Fri Aug 20 14:05:54 PDT 2004
 //    Initialize variable to remove compiler warning.
 //
+//    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004 
+//    Changed 'std::vector<int>' to 'intVector', 'std::vector<std::string>'
+//    to 'stringVector', and 'std::vector<double>' to 'doubleVector'.
+//
 // ****************************************************************************
 
 bool
-avtGenericDatabase::QueryScalars(const std::string &varName, const int dom, 
+avtGenericDatabase::QueryScalars(const string &varName, const int dom, 
                                  const int element, const int ts, 
-                                 const std::vector<int> &incidentElements, 
+                                 const intVector &incidentElements, 
                                  PickVarInfo &varInfo, const bool zonePick)
 {
     bool rv = false;
     int i;
     if (varInfo.GetValues().empty())
     {
-        std::vector<double> vals;
-        std::vector<std::string> names;
+        doubleVector vals;
+        stringVector names;
         const avtScalarMetaData *smd = GetMetaData(ts)->GetScalar(varName);
         if (!smd)
         {
@@ -5767,10 +5859,10 @@ avtGenericDatabase::QueryScalars(const std::string &varName, const int dom,
     {
         avtMixedVariable *mv = (avtMixedVariable*)(*vr);
         avtMaterial *mat = GetMaterial(dom, varName.c_str(), ts);
-        std::vector<CellMatInfo> matInfo; 
-        std::vector<std::string> mN;
-        std::vector<double> mV;
-        std::vector<int> nMats;
+        vector<CellMatInfo> matInfo; 
+        stringVector mN;
+        doubleVector mV;
+        intVector nMats;
         int i, j, nMatsPerZone;
         bool mixed = false;
         
@@ -5881,12 +5973,16 @@ avtGenericDatabase::QueryScalars(const std::string &varName, const int dom,
 //    Hank Childs, Fri Aug 20 14:05:54 PDT 2004
 //    Initialize variable to remove compiler warning.
 //
+//    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004 
+//    Changed 'std::vector<int>' to 'intVector', 'std::vector<std::string>'
+//    to 'stringVector', and 'std::vector<double>' to 'doubleVector'.
+//
 // ****************************************************************************
 
 bool
-avtGenericDatabase::QueryVectors(const std::string &varName, const int dom, 
+avtGenericDatabase::QueryVectors(const string &varName, const int dom, 
                                  const int element, const int ts, 
-                                 const std::vector<int> &incidentElements, 
+                                 const intVector &incidentElements, 
                                  PickVarInfo &varInfo, const bool zonePick)
 {
     bool rv = false;
@@ -5899,8 +5995,8 @@ avtGenericDatabase::QueryVectors(const std::string &varName, const int dom,
                    << " meta data!" << endl;
             return false;
         }
-        std::vector<std::string> names;
-        std::vector<double> vals;
+        stringVector names;
+        doubleVector vals;
         char buff[80];
         vtkDataArray *vectors = GetVectorVariable(varName.c_str(), ts, dom,
                                                   "_all");
@@ -6005,12 +6101,16 @@ avtGenericDatabase::QueryVectors(const std::string &varName, const int dom,
 //    Hank Childs, Fri Aug 20 14:05:54 PDT 2004
 //    Initialize variable to remove compiler warning.
 //
+//    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004 
+//    Changed 'std::vector<int>' to 'intVector', 'std::vector<std::string>'
+//    to 'stringVector', and 'std::vector<double>' to 'doubleVector'.
+//
 // ****************************************************************************
 
 bool
-avtGenericDatabase::QueryTensors(const std::string &varName, const int dom, 
+avtGenericDatabase::QueryTensors(const string &varName, const int dom, 
                                  const int element, const int ts, 
-                                 const std::vector<int> &incidentElements, 
+                                 const intVector &incidentElements, 
                                  PickVarInfo &varInfo, const bool zonePick)
 {
     bool rv = false;
@@ -6024,8 +6124,8 @@ avtGenericDatabase::QueryTensors(const std::string &varName, const int dom,
             return false;
         }
 
-        std::vector<std::string> names;
-        std::vector<double> vals;
+        stringVector names;
+        doubleVector vals;
         char buff[80];
         vtkDataArray *tensors = GetTensorVariable(varName.c_str(), ts, dom,
                                                   "_all");
@@ -6117,12 +6217,16 @@ avtGenericDatabase::QueryTensors(const std::string &varName, const int dom,
 //    Hank Childs, Fri Aug 20 14:05:54 PDT 2004
 //    Initialize variable to remove compiler warning.
 //
+//    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004 
+//    Changed 'std::vector<int>' to 'intVector', 'std::vector<std::string>'
+//    to 'stringVector', and 'std::vector<double>' to 'doubleVector'.
+//
 // ****************************************************************************
 
 bool
-avtGenericDatabase::QuerySymmetricTensors(const std::string &varName,
+avtGenericDatabase::QuerySymmetricTensors(const string &varName,
                                  const int dom, const int element,const int ts,
-                                 const std::vector<int> &incidentElements,
+                                 const intVector &incidentElements,
                                  PickVarInfo &varInfo, const bool zonePick)
 {
     bool rv = false;
@@ -6137,8 +6241,8 @@ avtGenericDatabase::QuerySymmetricTensors(const std::string &varName,
             return false;
         }
 
-        std::vector<std::string> names;
-        std::vector<double> vals;
+        stringVector names;
+        doubleVector vals;
         char buff[80];
         vtkDataArray *tensors = GetSymmetricTensorVariable(varName.c_str(), ts,
                                                            dom, "_all");
@@ -6237,19 +6341,23 @@ avtGenericDatabase::QuerySymmetricTensors(const std::string &varName,
 //    Kathleen Bonnell, Thu Nov 20 15:11:52 PST 2003
 //    Removed call to varInfo.SetVarIsMaterial.
 //    
+//    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004 
+//    Changed 'std::vector<int>' to 'intVector', 'std::vector<std::string>'
+//    to 'stringVector', and 'std::vector<double>' to 'doubleVector'.
+//    
 // ****************************************************************************
 
 bool
-avtGenericDatabase::QueryMaterial(const std::string &varName, const int dom, 
+avtGenericDatabase::QueryMaterial(const string &varName, const int dom, 
                                   const int element, const int ts, 
-                                  const std::vector<int> &incidentElements, 
+                                  const intVector &incidentElements, 
                                   PickVarInfo &varInfo, const bool zonePick)
 {
-    std::vector<double> volFracs;
-    std::vector<std::string> matNames;
-    std::vector<std::string> zoneNames;
-    std::vector<int> nMats;
-    std::vector<CellMatInfo> matInfo; 
+    doubleVector volFracs;
+    stringVector matNames;
+    stringVector zoneNames;
+    intVector    nMats;
+    vector<CellMatInfo> matInfo; 
     avtMaterial *mat = GetMaterial(dom, varName.c_str(), ts);
     int i, j;
     if (mat == NULL)
@@ -6382,22 +6490,23 @@ avtGenericDatabase::QueryMaterial(const std::string &varName, const int dom,
 //    Replaced get-cell-center code with single call to 
 //    vtkVisItUtility::GetCellCenter.
 //    
+//    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004 
+//    Changed 'std::vector<int>' to 'intVector', and 'std::vector<std::string>'
+//    to 'stringVector'.
+//    
 // ****************************************************************************
 
 bool
-avtGenericDatabase::QueryNodes(const std::string &varName, const int dom, 
-                               const int zone, bool &zoneIsGhost, 
-                               const int ts, std::vector<int> &nodes, 
-                               std::vector<int> &ghostNodes, 
+avtGenericDatabase::QueryNodes(const string &varName, const int dom, 
+                               const int zone, bool &zoneIsGhost, const int ts, 
+                               intVector &nodes, intVector &ghostNodes, 
                                const bool includeGhosts, float ppt[3],
                                const int dim, const bool physicalNodes, 
                                const bool logicalDNodes, const bool logicalBNodes,
-                               std::vector<std::string> &pnCoords,
-                               std::vector<std::string> &dnCoords,
-                               std::vector<std::string> &bnCoords,
+                               stringVector &pnCoords, stringVector &dnCoords,
+                               stringVector &bnCoords,
                                const bool logicalDZones, const bool logicalBZones,
-                               std::vector<std::string> &dzCoords,
-                               std::vector<std::string> &bzCoords)
+                               stringVector &dzCoords, stringVector &bzCoords)
 {
     string meshName = GetMetaData(ts)->MeshForVar(varName);
     vtkDataSet *ds = GetMeshDataset(meshName.c_str(), ts, dom, "_all");
@@ -6580,11 +6689,14 @@ avtGenericDatabase::QueryNodes(const std::string &varName, const int dom,
 //    Kathleen Bonnell, Wed Jun  9 17:41:00 PDT 2004 
 //    Added showName argument. 
 //
+//    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004 
+//    Removed use of 'std::'. 
+//    
 // ****************************************************************************
 
 bool
-avtGenericDatabase::QueryMesh(const std::string &varName, const int ts,
-                              const int dom, std::string &meshInfo,
+avtGenericDatabase::QueryMesh(const string &varName, const int ts,
+                              const int dom, string &meshInfo,
                               const bool showName)
 {
     bool rv = false;
@@ -6686,24 +6798,28 @@ avtGenericDatabase::QueryMesh(const std::string &varName, const int ts,
 //    Kathleen Bonnell, Thu Oct 21 18:02:50 PDT 2004 
 //    Correctly test whether a zone is ghost or not. 
 //
+//    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004 
+//    Changed 'std::vector<int>' to 'intVector', and 
+//    'std::vector<std::string>'.
+//    
 // ****************************************************************************
 
 bool
 avtGenericDatabase::QueryZones(const string &varName, const int dom, 
                                int &foundEl, bool &elIsGhost, 
-                               const int ts, vector<int> &zones, 
-                               vector<int> &ghostZ, bool includeGhosts,
+                               const int ts, intVector &zones, 
+                               intVector &ghostZ, bool includeGhosts,
                                float ppt[3], const int dimension,
                                const bool physicalNodes, 
                                const bool logicalDNodes, 
                                const bool logicalBNodes, 
-                               vector<string> &pnodeCoords,
-                               vector<string> &dnodeCoords,
-                               vector<string> &bnodeCoords,
+                               stringVector &pnodeCoords,
+                               stringVector &dnodeCoords,
+                               stringVector &bnodeCoords,
                                const bool logicalDZones, 
                                const bool logicalBZones, 
-                               vector<string> &dzoneCoords,
-                               vector<string> &bzoneCoords)
+                               stringVector &dzoneCoords,
+                               stringVector &bzoneCoords)
 {
     string meshName = GetMetaData(ts)->MeshForVar(varName);
     vtkDataSet *ds = GetMeshDataset(meshName.c_str(), ts, dom, "_all");
@@ -7097,13 +7213,17 @@ avtGenericDatabase::ScaleMesh(vtkDataSet *ds)
 //  Creation:     November 20, 2003 
 //
 //  Modifications:
+//    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004 
+//    Changed 'std::vector<int>' to 'intVector', 'std::vector<std::string>'
+//    to stringVector, 'std::vector<double>' to 'doubleVector'.  Removed
+//    use of 'std::'. 
 //    
 // ****************************************************************************
 
 bool
-avtGenericDatabase::QuerySpecies(const std::string &varName, const int dom, 
+avtGenericDatabase::QuerySpecies(const string &varName, const int dom, 
                                  const int element, const int ts, 
-                                 const std::vector<int> &incidentElements, 
+                                 const intVector &incidentElements, 
                                  PickVarInfo &varInfo, const bool zonePick)
 {
     const avtSpeciesMetaData *smd = GetMetaData(ts)->GetSpecies(varName);
@@ -7114,7 +7234,7 @@ avtGenericDatabase::QuerySpecies(const std::string &varName, const int dom,
         return false;
     }
 
-    std::string matName = smd->materialName;
+    string matName = smd->materialName;
     avtMaterial *mat = GetMaterial(dom, matName.c_str(), ts);
     avtSpecies *spec = GetSpecies(dom, varName.c_str(), ts);
 
@@ -7139,8 +7259,8 @@ avtGenericDatabase::QuerySpecies(const std::string &varName, const int dom,
     vtkDataSet *mesh = GetMesh(meshname.c_str(), ts, dom, matName.c_str());
     vtkDataArray *species = GetSpeciesVariable(varName.c_str(), ts, dom, 
                                 matName.c_str(), mesh->GetNumberOfCells());
-    std::vector<double> vals = varInfo.GetValues();
-    std::vector<std::string> names;
+    doubleVector vals = varInfo.GetValues();
+    stringVector names;
     char buff[80];
         
     if (species == NULL)
@@ -7178,13 +7298,13 @@ avtGenericDatabase::QuerySpecies(const std::string &varName, const int dom,
     // Retrieve the mass fractions for each species within each material
     //
 
-    std::vector<int> nMats;
-    std::vector<std::string> matNames;
-    std::vector<int> nSpecs;
-    std::vector<std::string> specNames;
-    std::vector<double> massFracs;
+    intVector    nMats;
+    stringVector matNames;
+    intVector    nSpecs;
+    stringVector specNames;
+    doubleVector massFracs;
 
-    std::vector<CellMatInfo> matInfo;
+    vector<CellMatInfo> matInfo;
 
     int numMatsThisZone = 0;
 
@@ -7353,8 +7473,8 @@ avtGenericDatabase::FindElementForPoint(const char *var, const int ts,
 // ****************************************************************************
 
 void
-avtGenericDatabase::GetDomainName(const std::string &varName, const int ts,
-                                const int dom, std::string &domName)
+avtGenericDatabase::GetDomainName(const string &varName, const int ts,
+                                const int dom, string &domName)
 {
     ActivateTimestep(ts);
 
@@ -7415,6 +7535,9 @@ avtGenericDatabase::GetDomainName(const std::string &varName, const int ts,
 //    Replaced get-cell-center code with single call to 
 //    vtkVisItUtility::GetCellCenter.
 //    
+//    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004 
+//    Removed 'std::' from 'std::string'.
+//    vtkVisItUtility::GetCellCenter.
 // ****************************************************************************
 
 bool
@@ -7487,3 +7610,61 @@ avtGenericDatabase::QueryCoords(const string &varName, const int dom,
     }
     return rv;
 }
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::QueryGlobalIds
+//
+//  Purpose:
+//    Given an element id, and a list of incident elements, find corresponding 
+//    global ids.
+//
+//  Arguments:
+//    dom       The domain to use in searching the database.
+//    var       The variable to use in searching the database.
+//    ts        The timestep to use in searching the database.
+//    zonal     Whether or not the element is a zonal or nodal id.
+//    element   The zone or node number to use in searching the database.
+//    incEls    A list of nodes/zone incident to element. 
+//    globalElement   A place to store the global element. 
+//    globalIncEls    A place to store the global incident elements. 
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   December 15, 2004 
+//
+//  Modifications:
+//    
+// ****************************************************************************
+void        
+avtGenericDatabase::QueryGlobalIds(const int dom, const string &var, const int ts,
+                                   const bool zonal, const int element, 
+                                   const intVector &incEls, int &globalElement, 
+                                    intVector &globalIncEls)
+{
+    vtkIntArray *globalZones = 
+        (vtkIntArray*)GetGlobalZoneIds(dom, var.c_str(), ts);
+    vtkIntArray *globalNodes = 
+        (vtkIntArray*)GetGlobalNodeIds(dom, var.c_str(), ts);
+
+    globalElement = -1;
+    if (!globalIncEls.empty());
+        globalIncEls.clear();
+
+    if (zonal)
+    {
+        if (globalZones)
+            globalElement = globalZones->GetValue(element);
+        if (globalNodes)
+            for (int i = 0; i < incEls.size(); i++)
+                globalIncEls.push_back(globalNodes->GetValue(incEls[i]));
+    }
+    else 
+    {
+        if (globalNodes)
+            globalElement = globalNodes->GetValue(element);
+        if (globalZones)
+            for (int i = 0; i < incEls.size(); i++)
+                globalIncEls.push_back(globalZones->GetValue(incEls[i]));
+    }
+}
+

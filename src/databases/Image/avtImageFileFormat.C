@@ -442,6 +442,9 @@ avtImageFileFormat::FreeUpResources(void)
 //     Mark C. Miller, Tue Nov  9 13:41:33 PST 2004
 //     Moved code to populate variable names to constructor
 //
+//     Mark C. Miller, Wed Dec 15 10:26:07 PST 2004
+//     Added support for node-centered representation of image
+//
 // ****************************************************************************
 
 void
@@ -451,6 +454,7 @@ avtImageFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     //    EXCEPTION1(InvalidFilesException, fname.c_str());
 
     AddMeshToMetaData(md, "ImageMesh", AVT_RECTILINEAR_MESH, NULL, 1, 0, 2, 2);
+    AddMeshToMetaData(md, "ImageMesh_nodal", AVT_RECTILINEAR_MESH, NULL, 1, 0, 2, 2);
 
     // we do not create a list of vector variables,
     // because there is only one vector variable, "color", 
@@ -461,8 +465,10 @@ avtImageFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     for(i=0; i<cellvarnames.size(); i++)
     {
         AddScalarVarToMetaData(md, cellvarnames[i], "ImageMesh", AVT_ZONECENT);
+        AddScalarVarToMetaData(md, cellvarnames[i] + "_nodal", "ImageMesh_nodal", AVT_NODECENT);
     }
     AddVectorVarToMetaData(md, "color", "ImageMesh", AVT_ZONECENT, 4);
+    AddVectorVarToMetaData(md, "color_nodal", "ImageMesh_nodal", AVT_NODECENT, 4);
 }
 
 
@@ -485,12 +491,19 @@ avtImageFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Mark C. Miller, Thu Nov  4 18:21:25 PST 2004
 //    I made it get xdim/ydim (and mins/maxs) from vtkImageData object
 //
+//    Mark C. Miller, Wed Dec 15 10:26:07 PST 2004
+//    Added support for node-centered representation of image
+//
 // ****************************************************************************
 
 vtkDataSet *
 avtImageFileFormat::GetMesh(const char *meshname)
 {
     ReadInImage();
+
+    int addOne = 1;
+    if (strcmp(meshname, "ImageMesh_nodal") == 0)
+        addOne = 0;
     
     int dims[3];
     image->GetDimensions(dims);
@@ -510,16 +523,16 @@ avtImageFileFormat::GetMesh(const char *meshname)
     //    so we can have the correct number of cells.
     int i;
     vtkFloatArray *xCoords = vtkFloatArray::New();
-    for(i=0; i<xdim + 1; i++)
-        xCoords->InsertNextValue((float) i+xmin);
+    for(i=0; i<xdim + addOne; i++)
+        xCoords->InsertNextValue((float) i+xmin-addOne/2.0);
     vtkFloatArray *yCoords = vtkFloatArray::New();
-    for(i=0; i<ydim + 1; i++)
-        yCoords->InsertNextValue((float) i+ymin);
+    for(i=0; i<ydim + addOne; i++)
+        yCoords->InsertNextValue((float) i+ymin-addOne/2.0);
     vtkFloatArray *zCoords = vtkFloatArray::New();
     zCoords->InsertNextValue(0.0);
     
     vtkRectilinearGrid *dataset = vtkRectilinearGrid::New();
-    dataset->SetDimensions(xdim+1,ydim+1,1);
+    dataset->SetDimensions(xdim+addOne,ydim+addOne,1);
     dataset->SetXCoordinates(xCoords);
     dataset->SetYCoordinates(yCoords);
     dataset->SetZCoordinates(zCoords);
@@ -553,6 +566,10 @@ avtImageFileFormat::GetMesh(const char *meshname)
 //    Mark C. Miller, Tue Nov  9 13:41:33 PST 2004
 //    Added code to return float data directly from vtkImageData object
 //    instead of through intermediary float vectors
+//
+//    Mark C. Miller, Wed Dec 15 10:26:07 PST 2004
+//    Added support for node-centered representation of image
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -573,15 +590,15 @@ avtImageFileFormat::GetVar(const char *varname)
     int ymax = extents[3];
 
     int channel = -2;
-    if (string(varname) == "red")
+    if (strncmp(varname, "red", 3) == 0)
         channel = 0;
-    else if (string(varname) == "blue")
+    else if (strncmp(varname, "blue", 4) == 0)
         channel = 1;
-    else if (string(varname) == "green")
+    else if (strncmp(varname, "green", 5) == 0)
         channel = 2;
-    else if (string(varname) == "alpha")
+    else if (strncmp(varname, "alpha", 5) == 0)
         channel = 3;
-    else if (string(varname) == "intensity")
+    else if (strncmp(varname, "intensity", 9) == 0)
         channel = -1;
 
     if (channel == -2)

@@ -6,9 +6,10 @@
 
 #include <float.h>
 #include <vtkCell.h>
-#include <vtkFieldData.h>
+#include <vtkCellData.h>
 #include <vtkGenericCell.h>
 #include <vtkIntArray.h>
+#include <vtkPointData.h>
 #include <vtkPointSet.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
@@ -722,4 +723,54 @@ vtkVisItUtility::GetCellCenter(vtkCell* cell, float center[3])
     center[1] = coord[1];
     center[2] = coord[2];
 }
+
  
+// ****************************************************************************
+//  Function: GetLocalElementForGlobal
+//
+//  Purpose:
+//    Given a globalElement id (zonal or nodal), determine the local element
+//    id whose global id matches. 
+//
+//  Arguments:
+//    ds             The dataset to be queried.
+//    globalElement  Storage for the coordinates.
+//    forCell        True if this query is for zonal ids, false otherwise. 
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   December 13, 2004 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+int
+vtkVisItUtility::GetLocalElementForGlobal(vtkDataSet* ds, 
+    const int globalElement, const bool forCell)
+{
+    int retVal = -1;
+    vtkIntArray *globalIds = NULL; 
+    if (forCell)
+    {
+        globalIds = vtkIntArray::SafeDownCast(
+                ds->GetCellData()->GetArray("avtGlobalZoneNumbers"));
+    }
+    else 
+    {
+        globalIds = vtkIntArray::SafeDownCast(
+                ds->GetPointData()->GetArray("avtGlobalNodeNumbers"));
+    }
+
+    if (globalIds)
+    {
+        int n = globalIds->GetNumberOfTuples();
+        int *g = globalIds->GetPointer(0);
+        for (int i = 0; i < n && retVal == -1; i++)
+        {
+            retVal = (g[i] == globalElement ? i : -1);
+        }
+    }
+    return retVal; 
+}
+
+

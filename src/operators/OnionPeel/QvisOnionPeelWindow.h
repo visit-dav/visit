@@ -5,6 +5,7 @@
 #include <AttributeSubject.h>
 
 class OnionPeelAttributes;
+class QCheckBox;
 class QComboBox;
 class QLabel;
 class QLineEdit;
@@ -27,6 +28,10 @@ class SILRestrictionAttributes;
 //   Kathleen Bonnell, Thu Feb 26 13:19:40 PST 2004
 //   Added silUseSet and silAtts.
 //   
+//   Kathleen Bonnell, Fri Dec 10 14:28:14 PST 2004 
+//   Added useGlobalId checkbox, related methods and method
+//   UpdateComboBoxesEnabledState. 
+//   
 // ****************************************************************************
 
 class QvisOnionPeelWindow : public QvisOperatorWindow
@@ -48,10 +53,12 @@ class QvisOnionPeelWindow : public QvisOperatorWindow
     void categoryNameChanged();
     void subsetNameChanged();
     void indexChanged();
+    void useGlobalIdToggled(bool val);
     void requestedLayerChanged(int val);
     void delayedApply();
   private:
     void UpdateComboBoxes();
+    void UpdateComboBoxesEnabledState(int which);
     void FillCategoryBox();
     void FillSubsetBox();
 
@@ -61,11 +68,13 @@ class QvisOnionPeelWindow : public QvisOperatorWindow
     QLabel    *subsetLabel;
     QComboBox *subsetName;
     QLineEdit *index;
-    QSpinBox *requestedLayer;
+    QSpinBox  *requestedLayer;
+    QCheckBox *useGlobalId;
 
     OnionPeelAttributes *atts;
     SILRestrictionAttributes *silAtts;
     QString defaultItem;
+    
     int silTopSet;
     int silNumSets;
     int silNumCollections;

@@ -352,8 +352,13 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
             os += "Zone:  ";
         if (showZoneId)
         {
-            if (!elementIsGhost)
-                SNPRINTF(buff, 512, "%d", elementNumber);
+            if (!elementIsGhost) 
+            {
+                if (globalElement == -1) 
+                    SNPRINTF(buff, 512, "%d", elementNumber);
+                else 
+                    SNPRINTF(buff, 512, "%d (global)", globalElement);
+            }
             else 
                 SNPRINTF(buff, 512, "%d(ghost)", elementNumber);
             os += buff;
@@ -378,7 +383,12 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
         if (showNodeId)
         {
             if (!elementIsGhost)
-                SNPRINTF(buff, 512, "%d", elementNumber);
+            {
+                if (globalElement == -1)
+                    SNPRINTF(buff, 512, "%d", elementNumber);
+                else 
+                    SNPRINTF(buff, 512, "%d (global)", globalElement);
+            }
             else 
                 SNPRINTF(buff, 512, "%d(ghost)", elementNumber);
             os += buff;
@@ -404,9 +414,13 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
     if (displayIncidentElements)
     {
         bool showId;
+        bool showGlobal = globalIncidentElements.size() == incidentElements.size();
         if (pickType == Zone || pickType == DomainZone)
         {
-            os += "Incident Nodes:  " ; 
+            if (!showGlobal)
+                os += "Incident Nodes:  " ; 
+            else 
+                os += "Incident Nodes: (global)  " ; 
             if (showNodeCoords)
             {
                 os += "\n    "; 
@@ -415,20 +429,24 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
         }
         else if (pickType == Node || pickType == DomainNode)
         {
-            os += "Incident Zones:  " ; 
+            if (!showGlobal)
+                os += "Incident Zones:  " ; 
+            else 
+                os += "Incident Zones: (global)  " ; 
             if (showZoneCoords)
             {
                 os += "\n    "; 
             }
             showId = showZoneId;
         }
-
         for (i = 0; i < incidentElements.size(); i++)
         {
             if (showId)
             {
                 if (ghosts.size() > 0 && ghosts[i])
                     SNPRINTF(buff, 512, "%d(ghost)  ", incidentElements[i]);
+                else if (showGlobal)
+                    SNPRINTF(buff, 512, "%d  ", globalIncidentElements[i]);
                 else 
                     SNPRINTF(buff, 512, "%d  ", incidentElements[i]);
                 os += buff; 
@@ -599,6 +617,10 @@ PickAttributes::PrepareForNewPick()
     elementIsGhost = false;
     requiresGlyphPick = false;
     locationSuccessful = false;
+
+    globalElement = -1;
+    if (!globalIncidentElements.empty())
+        globalIncidentElements.clear();
 }
 
 Function: SetFromNode
@@ -660,6 +682,9 @@ PickAttributes::SetFromNode(DataNode *parentNode)
 
     if((node = searchNode->GetNode("showMeshName")) != 0)
         SetShowMeshName(node->AsBool());
+
+    if((node = searchNode->GetNode("displayGlobalIds")) != 0)
+        SetDisplayGlobalIds(node->AsBool());
 
     // Clear all the PickVarInfos.
     ClearPickVarInfos();
@@ -776,6 +801,11 @@ PickAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceAd
         node->AddNode(new DataNode("showMeshName", showMeshName));
     }
 
+    if(completeSave || !FieldsEqual(52, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("displayGlobalIds", displayGlobalIds));
+    }
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -886,7 +916,12 @@ PickAttributes::CreateConciseOutputString(std::string &os, bool withLetter)
         if (showZoneId)
         {
             if (!elementIsGhost)
-                SNPRINTF(buff, 512, "%d ", elementNumber);
+            {
+                if (globalElement == -1)
+                    SNPRINTF(buff, 512, "%d ", elementNumber);
+                else 
+                    SNPRINTF(buff, 512, "%d (global) ", globalElement);
+            }
             else 
                 SNPRINTF(buff, 512, "%d(ghost) ", elementNumber);
             os += buff;
@@ -909,7 +944,12 @@ PickAttributes::CreateConciseOutputString(std::string &os, bool withLetter)
         if (showNodeId)
         {
             if (!elementIsGhost)
-                SNPRINTF(buff, 512, "%d ", elementNumber);
+            {
+                if (globalElement == -1)
+                    SNPRINTF(buff, 512, "%d ", elementNumber);
+                else 
+                    SNPRINTF(buff, 512, "%d (global) ", globalElement);
+            }
             else 
                 SNPRINTF(buff, 512, "%d(ghost) ", elementNumber);
             os += buff;
@@ -933,6 +973,7 @@ PickAttributes::CreateConciseOutputString(std::string &os, bool withLetter)
     if (displayIncidentElements)
     {
         bool showId;
+        bool showGlobal = globalIncidentElements.size() == incidentElements.size();
         if (pickType == Zone || pickType == DomainZone)
         {
             os += "  Nodes: " ; 
@@ -943,13 +984,16 @@ PickAttributes::CreateConciseOutputString(std::string &os, bool withLetter)
             os += "  Zones: " ; 
             showId = showZoneId;
         }
-
+        if (showId && showGlobal)
+            os += " (global) ";
         for (i = 0; i < incidentElements.size(); i++)
         {
             if (showId)
             {
                 if (ghosts.size() > 0 && ghosts[i])
                     SNPRINTF(buff, 512, "%d(ghost) ", incidentElements[i]);
+                else if (showGlobal) 
+                    SNPRINTF(buff, 512, "%d ", globalIncidentElements[i]);
                 else 
                     SNPRINTF(buff, 512, "%d ", incidentElements[i]);
                 os += buff; 

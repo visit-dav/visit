@@ -10,6 +10,7 @@
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
 #include <vtkIdList.h>
+#include <vtkIntArray.h>
 #include <vtkMath.h>
 #include <vtkPointData.h>
 #include <vtkPoints.h>
@@ -266,6 +267,9 @@ avtPickQuery::PostExecute(void)
 //    Kathleen Bonnell, Wed Oct  6 09:58:49 PDT 2004 
 //    Don't perform certain tasks unless this process will be doing real work. 
 //
+//    Kathleen Bonnell, Wed Dec 15 09:19:39 PST 2004 
+//    Turn on GlobalZone/Node numbers when appropriate. 
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -342,6 +346,11 @@ avtPickQuery::ApplyFilters(avtDataObject_p inData)
         {
             dspec->TurnZoneNumbersOn();
             dspec->TurnNodeNumbersOn();
+        }
+        if (pickAtts.GetDisplayGlobalIds()) 
+        {
+            dspec->TurnGlobalZoneNumbersOn();
+            dspec->TurnGlobalNodeNumbersOn();
         }
     }
 
@@ -649,6 +658,9 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds)
 //    is valid before retrieving the flag to avoid EXCEPTION throwing 
 //    altogether. 
 //    
+//    Kathleen Bonnell, Wed Dec 15 09:19:39 PST 2004 
+//    Use GlobalZone/Node numbers when present. 
+//
 // ****************************************************************************
 
 void
@@ -671,6 +683,8 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds, const int findElement,
                     pickAtts.GetPickType() == PickAttributes::DomainZone;
     bool zoneCent;
     bool foundData = true;
+
+
 
     int numVars;
     if (pickAtts.GetFulfilled())
@@ -726,12 +740,21 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds, const int findElement,
         {
             nComponents = varArray->GetNumberOfComponents(); 
             temp = new double[nComponents];
+            intVector globalIncEl = pickAtts.GetGlobalIncidentElements();
             if (zoneCent != zonePick)
             {
                 // data we want is associated with incidentElements
                 for (int k = 0; k < incidentElements.size(); k++)
                 {
-                    SNPRINTF(buff, 80, "(%d)", incidentElements[k]);
+                    if (pickAtts.GetDisplayGlobalIds() && 
+                        globalIncEl.size() == incidentElements.size())
+                    {
+                        SNPRINTF(buff, 80, "(%d)", globalIncEl[k]);
+                    }
+                    else 
+                    {
+                        SNPRINTF(buff, 80, "(%d)", incidentElements[k]);
+                    }
                     names.push_back(buff);
                     varArray->GetTuple(findIncidentElements[k], temp);
                     mag = 0;
@@ -751,7 +774,11 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds, const int findElement,
             else  
             {
                 // data we want is associated with element
-                SNPRINTF(buff, 80, "(%d)", element);
+                if (pickAtts.GetDisplayGlobalIds() && 
+                    pickAtts.GetGlobalElement() != -1)
+                    SNPRINTF(buff, 80, "(%d)", pickAtts.GetGlobalElement());
+                else 
+                    SNPRINTF(buff, 80, "(%d)", element);
                 names.push_back(buff);
                 varArray->GetTuple(findElement, temp);
                 mag = 0.;
@@ -842,6 +869,9 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds, const int findElement,
 //
 //    Kathleen Bonnell, Thu Sep 23 17:38:15 PDT 2004 
 //    Added logic to search for ghost nodes, if ghostType == AVT_HAS_GHOSTS. 
+//
+//    Kathleen Bonnell, Wed Dec 15 09:19:39 PST 2004 
+//    Added call to 'SetGlobalIds'. 
 //
 // ****************************************************************************
 
@@ -996,6 +1026,10 @@ avtPickQuery::RetrieveNodes(vtkDataSet *ds, int zone)
             (nGnodes > 0 && nGnodes == ptIds->GetNumberOfIds()));
         ptIds->Delete();
     }
+    if (success && pickAtts.GetDisplayGlobalIds())
+    {
+        SetGlobalIds(ds, zone);
+    }
     return success;
 }
 
@@ -1039,6 +1073,9 @@ avtPickQuery::RetrieveNodes(vtkDataSet *ds, int zone)
 //
 //    Kathleen Bonnell, Thu Oct 21 18:02:50 PDT 2004 
 //    Correct test for whether a zone is ghost or not. 
+//
+//    Kathleen Bonnell, Wed Dec 15 09:19:39 PST 2004 
+//    Added call to 'SetGlobalIds'. 
 //
 // ****************************************************************************
 
@@ -1144,6 +1181,10 @@ avtPickQuery::RetrieveZones(vtkDataSet *ds, int foundNode)
         pickAtts.SetGhosts(ghostZones);
     }
     cellIds->Delete();
+    if (success && pickAtts.GetDisplayGlobalIds())
+    {
+        SetGlobalIds(ds, foundNode);
+    }
     return success;
 }
 
@@ -1153,7 +1194,7 @@ avtPickQuery::RetrieveZones(vtkDataSet *ds, int foundNode)
 //
 //  Purpose:
 //    Determines the zone in the dataset whose original zone designation
-///   matches that of the passed zone.
+//    matches that of the passed zone.
 //
 //  Arguments:
 //    ds         The dataset to retrieve information from.
@@ -1245,4 +1286,55 @@ avtPickQuery::GetCurrentZoneForOriginal(vtkDataSet *ds, const intVector &origZon
         }
     }
     return currentZones;
+}
+
+
+// ****************************************************************************
+//  Method: avtPickQuery::SetGlobalIds
+//
+//  Purpose:
+//    Determines the global ids associated with element and incidentelements,
+//    and stores them in pickatts.
+//
+//  Arguments:
+//    ds         The dataset to retrieve information from.
+//    element    A zone or node id.
+//
+//  Programmer: Kathleen Bonnell  
+//  Creation:   December 15, 2004 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtPickQuery::SetGlobalIds(vtkDataSet *ds, int element)
+{
+    vtkIntArray *globalZones = vtkIntArray::SafeDownCast(
+        ds->GetCellData()->GetArray("avtGlobalZoneNumbers"));
+    vtkIntArray *globalNodes = vtkIntArray::SafeDownCast(
+        ds->GetPointData()->GetArray("avtGlobalNodeNumbers"));
+
+    intVector gie; 
+    intVector incEls = pickAtts.GetIncidentElements();
+    if (pickAtts.GetPickType() == PickAttributes::Zone ||
+        pickAtts.GetPickType() == PickAttributes::DomainZone)
+    {
+        if (globalZones)
+            pickAtts.SetGlobalElement(globalZones->GetValue(element));
+        if (globalNodes)
+            for (int i = 0; i < incEls.size(); i++)
+                gie.push_back(globalNodes->GetValue(incEls[i]));
+    
+    }
+    else 
+    {
+        if (globalNodes)
+            pickAtts.SetGlobalElement(globalNodes->GetValue(element));
+        if (globalZones)
+            for (int i = 0; i < incEls.size(); i++)
+                gie.push_back(globalZones->GetValue(incEls[i]));
+    
+    }
+    pickAtts.SetGlobalIncidentElements(gie);
 }

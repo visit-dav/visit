@@ -41,6 +41,9 @@ class SaveWindowAttributes;
 //   Brad Whitlock, Fri Jul 30 15:14:44 PST 2004
 //   Added save path and a slot to save the image.
 //
+//   Kathleen Bonnell, Wed Dec 15 08:20:11 PST 2004 
+//   Added slot 'saveButtonClicked'. 
+//
 // ****************************************************************************
 
 class GUI_API QvisSaveWindow : public QvisPostableWindowObserver
@@ -76,6 +79,7 @@ protected slots:
     void compressionTypeChanged(int);
     void saveWindow();
     void selectOutputDirectory();
+    void saveButtonClicked();
 private:
     QCheckBox           *outputToCurrentDirectoryCheckBox;
     QLabel              *outputDirectoryLabel;

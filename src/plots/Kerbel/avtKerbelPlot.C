@@ -233,12 +233,6 @@ avtKerbelPlot::SetOpacity(float o)
 }
 
 void
-avtKerbelPlot::SetVarName(const char *name)
-{
-    varLegend->SetVarName(name);
-}
-
-void
 avtKerbelPlot::SetLegend(bool legendOn)
 {
     if (legendOn)

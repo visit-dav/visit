@@ -6,7 +6,6 @@
 
 #include <visitstream.h>
 #include <stdio.h>
-#include <vector>
 
 #include <Expression.h>
 #include <ParsingExprList.h>
@@ -283,6 +282,9 @@ avtDatabase::GetOutput(const char *var, int ts)
 //    Throw an exception in the case that BoundarySurfaces are requested but
 //    the topological dimension is zero. 
 //
+//    Kathleen Bonnell, Thu Dec  9 08:43:47 PST 2004 
+//    Set ContainsGlobalNode/ZoneIds in DataAtts from db MetaData. 
+//
 // ****************************************************************************
 
 void
@@ -317,6 +319,8 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
         atts.SetContainsGhostZones(mmd->containsGhostZones);
         atts.SetContainsOriginalCells(mmd->containsOriginalCells);
         atts.SetContainsOriginalNodes(mmd->containsOriginalNodes);
+        atts.SetContainsGlobalZoneIds(mmd->containsGlobalZoneIds);
+        atts.SetContainsGlobalNodeIds(mmd->containsGlobalNodeIds);
         vector<bool> tmp = selectionsApplied;
         atts.SetSelectionsApplied(tmp);
         validity.SetDisjointElements(mmd->disjointElements);
@@ -1203,6 +1207,10 @@ avtDatabase::GetFileListFromTextFile(const char *textfile,
 //    Added args to QueryZones and QueryNodes, to support ghost-element 
 //    retrieval if requested. 
 //
+//    Kathleen Bonnell, Wed Dec 15 08:31:38 PST 2004 
+//    Changed 'std::vector<int>' to 'intVector' and 'std::vector<std::string>'
+//    to stringVector.  Added call to QueryGlobalIds.
+//
 // ****************************************************************************
 
 void               
@@ -1214,15 +1222,15 @@ avtDatabase::Query(PickAttributes *pa)
     int zonePick    = pa->GetPickType() == PickAttributes::Zone ||
                       pa->GetPickType() == PickAttributes::DomainZone;
     float *PPT, *CPT, ppt[3], cpt[3];
-    std::vector<int> incEls  = pa->GetIncidentElements();
-    std::vector<int> ghostEls  = pa->GetGhosts();
-    std::vector<std::string> pnodeCoords  = pa->GetPnodeCoords();
-    std::vector<std::string> dnodeCoords  = pa->GetDnodeCoords();
-    std::vector<std::string> bnodeCoords  = pa->GetBnodeCoords();
-    std::vector<std::string> dzoneCoords  = pa->GetDzoneCoords();
-    std::vector<std::string> bzoneCoords  = pa->GetBzoneCoords();
-    vector<string> userVars = pa->GetVariables();
-    std::string vName; 
+    intVector incEls  = pa->GetIncidentElements();
+    intVector ghostEls  = pa->GetGhosts();
+    stringVector pnodeCoords  = pa->GetPnodeCoords();
+    stringVector dnodeCoords  = pa->GetDnodeCoords();
+    stringVector bnodeCoords  = pa->GetBnodeCoords();
+    stringVector dzoneCoords  = pa->GetDzoneCoords();
+    stringVector bzoneCoords  = pa->GetBzoneCoords();
+    stringVector userVars = pa->GetVariables();
+    string vName; 
 
     //
     //  Ensure that the timestep being queried is the active one. 
@@ -1286,6 +1294,15 @@ avtDatabase::Query(PickAttributes *pa)
             pa->SetBzoneCoords(bzoneCoords);
             pa->SetPickPoint(ppt);
             pa->SetCellPoint(cpt);
+            if (pa->GetDisplayGlobalIds())
+            {
+                intVector gie;
+                int ge = -1;
+                QueryGlobalIds(foundDomain, vName, ts, zonePick, foundEl,
+                               incEls, ge, gie);
+                pa->SetGlobalElement(ge);
+                pa->SetGlobalIncidentElements(gie);
+            }
         }
         else
         {
