@@ -13,6 +13,7 @@
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
 #include <vtkDataSetMapper.h>
+#include <vtkIntArray.h>
 #include <vtkMath.h>
 #include <vtkPointData.h>
 #include <vtkUnsignedIntArray.h>
@@ -1450,6 +1451,9 @@ CLocateZone(avtDataRepresentation &data, void *arg, bool &success)
 //    Hank Childs, Wed Jun 18 10:55:48 PDT 2003
 //    Make use of original nodes array if available.
 //
+//    Kathleen Bonnell, Wed Jun 16 13:54:28 PDT 2004 
+//    avtOriginalNodeNumbers is now of type vtkIntArray. 
+//
 // ****************************************************************************
 
 void
@@ -1487,7 +1491,7 @@ CLocateNode(avtDataRepresentation &data, void *arg, bool &success)
     }
     else
     {
-        vtkUnsignedIntArray *origNode = (vtkUnsignedIntArray *) onn;
+        vtkIntArray *origNode = (vtkIntArray *) onn;
 
         //
         // There are two components when we have saved out the domain number
@@ -1507,7 +1511,7 @@ CLocateNode(avtDataRepresentation &data, void *arg, bool &success)
             int index  = -1;
             if (args->index < nvals)
             {
-                unsigned int *p = origNode->GetPointer(0);
+                int *p = origNode->GetPointer(0);
                 p += 2*args->index;
                 index  = p[1];
             }
@@ -1521,7 +1525,7 @@ CLocateNode(avtDataRepresentation &data, void *arg, bool &success)
                 // No avoiding it -- look at every node and try to find a
                 // match.
                 //
-                unsigned int *ptr = origNode->GetPointer(0);
+                int *ptr = origNode->GetPointer(0);
                 for (int i = 0 ; i < nvals ; i++)
                 {
                     int domain = *(ptr++);
@@ -1544,7 +1548,7 @@ CLocateNode(avtDataRepresentation &data, void *arg, bool &success)
             int index  = -1;
             if (args->index < nvals)
             {
-                unsigned int *p = origNode->GetPointer(args->index);
+                int *p = origNode->GetPointer(args->index);
                 index  = p[0];
             }
             if (index == args->index)
@@ -1553,7 +1557,7 @@ CLocateNode(avtDataRepresentation &data, void *arg, bool &success)
             }
             else
             {
-                unsigned int *ptr = origNode->GetPointer(0);
+                int *ptr = origNode->GetPointer(0);
                 for (int i = 0 ; i < nvals ; i++)
                 {
                     int index  = *(ptr++);

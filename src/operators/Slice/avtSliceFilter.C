@@ -23,6 +23,7 @@
 #include <avtIntervalTree.h>
 #include <avtMetaData.h>
 #include <avtParallel.h>
+#include <avtTerminatingSource.h>
 
 #include <BadVectorException.h>
 #include <DebugStream.h>
@@ -570,6 +571,9 @@ avtSliceFilter::SetUpProjection(void)
 //    Made the routine be a method with avtSliceFilter.  Added cases for
 //    slicing by zone, node, etc.
 //
+//    Kathleen Bonnell, Wed Jun 16 14:01:07 PDT 2004 
+//    Made SliceByZone use a db query to get the zone center. 
+//    
 // ****************************************************************************
 
 void
@@ -624,19 +628,26 @@ avtSliceFilter::GetOrigin(double &ox, double &oy, double &oz)
       }
       case SliceAttributes::Zone:
       {
-          avtDataset_p ds = GetTypedInput();
-          int blockOrigin = ds->GetInfo().GetAttributes().GetBlockOrigin();
-          int cellOrigin  = ds->GetInfo().GetAttributes().GetCellOrigin();
+          avtTerminatingSource *src = GetInput()->GetTerminatingSource();
+          int blockOrigin = GetInput()->GetInfo().GetAttributes().GetBlockOrigin();
+          int cellOrigin  = GetInput()->GetInfo().GetAttributes().GetCellOrigin();
           int domain = atts.GetOriginZoneDomain();
           domain -= blockOrigin;
           int zone = atts.GetOriginZone();
           zone -= cellOrigin;
-          double point[3];
-          point[0] = DBL_MAX;
-          point[1] = DBL_MAX;
-          point[2] = DBL_MAX;
-          bool success = avtDatasetExaminer::FindZone(ds, domain, zone, point);
+          float point[3];
+          point[0] = FLT_MAX;
+          point[1] = FLT_MAX;
+          point[2] = FLT_MAX;
+          string var = src->GetFullDataSpecification()->GetVariable();
+          int    ts  = src->GetFullDataSpecification()->GetTimestep();
+          bool success = src->QueryCoords(var, domain, zone, ts, point, true);
 
+          //
+          //  All processors are participating in the same query, so should
+          //  return the same results.  In case they don't (e.g. one proc
+          //  failed for some reason), Unify the results.
+          //
           double buff[6];
           if (success)
           {

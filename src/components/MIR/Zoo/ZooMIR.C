@@ -246,6 +246,10 @@ ZooMIR::ReconstructMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig, int dim)
 //    Hank Childs, Fri Jan 30 08:46:07 PST 2004
 //    Removed unnecessary Allocate call.
 //
+//    Jeremy Meredith, Wed Jun 16 11:05:28 PDT 2004
+//    Original node numbers array was being interpolated.  We now just slap
+//    a -1 in for new nodes instead of trying to interpolate them.
+//
 // ****************************************************************************
 vtkDataSet *
 ZooMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
@@ -424,12 +428,30 @@ ZooMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
         {
             outpd->CopyData(inpd, i, outIndex++);
         }
+
+        int newPtStartingIndex = outIndex;
         for (i=0; i<newNPoints; i++)
         {
             ReconstructedCoord &coord = coordsList[i];
             vtkCell *cell = mesh->GetCell(coord.origzone);
             outpd->InterpolatePoint(inpd, outIndex++, cell->GetPointIds(),
                                     coord.weight);
+        }
+
+        //
+        // The original node numbers should *not* be interpolated!
+        // Throw a -1 in there for new nodes as a flag.
+        // 
+        vtkDataArray *origNodes = outpd->GetArray("avtOriginalNodeNumbers");
+        if (origNodes)
+        {
+            int  multiplier = origNodes->GetNumberOfComponents();
+            int  offset     = (multiplier == 2) ? 1 : 0;
+            int *origNodeArray = (int*)origNodes->GetVoidPointer(0);
+            for (i=0; i<newNPoints; i++)
+            {
+                origNodeArray[(newPtStartingIndex+i)*multiplier + offset] = -1;
+            }
         }
     }
     //

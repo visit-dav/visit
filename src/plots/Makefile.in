@@ -107,7 +107,7 @@
 all: message
 	for dir in $(SUBDIRS); do (cd $$dir && $(MAKE) $@) || exit 1; done
 
-OPTIONAL=Topology
+OPTIONAL=Topology Truecolor
 
 REQUIRED=Boundary Contour Curve FilledBoundary Histogram Mesh Pseudocolor \
          Streamline Subset Surface Tensor Vector Volume

@@ -5,9 +5,9 @@
 #include <avtActualNodeCoordsQuery.h>
 
 #include <vtkDataSet.h>
+#include <vtkIntArray.h>
 #include <vtkPointData.h>
 #include <vtkPoints.h>
-#include <vtkUnsignedIntArray.h>
 #include <vtkVisItUtility.h>
 
 
@@ -50,7 +50,9 @@ avtActualNodeCoordsQuery::~avtActualNodeCoordsQuery()
 //  Creation:   June 2, 2004 
 //
 //  Modifications:
-//    
+//    Kathleen Bonnell, Wed Jun 16 13:54:28 PDT 2004
+//    avtOriginalNode numbers is now of type vtkIntArray.
+//
 // ****************************************************************************
 
 void
@@ -80,7 +82,7 @@ avtActualNodeCoordsQuery::Execute(vtkDataSet *ds, const int dom)
         pickedNode = pickAtts.GetRealElementNumber();
     }
 
-    vtkUnsignedIntArray *origNodes = vtkUnsignedIntArray::SafeDownCast(
+    vtkIntArray *origNodes = vtkIntArray::SafeDownCast(
         ds->GetPointData()->GetArray("avtOriginalNodeNumbers")); 
 
     if (origNodes)
@@ -89,7 +91,7 @@ avtActualNodeCoordsQuery::Execute(vtkDataSet *ds, const int dom)
         int nt = origNodes->GetNumberOfTuples();
         int nels = nc*nt;
         int comp = nc -1;
-        unsigned int *nodeptr = origNodes->GetPointer(0);
+        int *nodeptr = origNodes->GetPointer(0);
 
         for (int i = comp; i < nels; i+=nc)
         {
