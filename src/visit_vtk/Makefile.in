@@ -171,6 +171,13 @@
 #    Akira Haddox, Fri Jul 25 10:30:45 PDT 2003
 #    Added vtkVisItScalarTree.
 # 
+#    Jeremy Meredith, Mon Aug 11 17:19:28 PDT 2003
+#    Added SolidSplitCases for clipping, split vtkTriangulationTables into
+#    a .h/.C file, refactored part of vtkSurfaceFromVolume into
+#    vtkDataSetFromVolume, made a new vtkVolumeFromVolume, and made use of
+#    it in vtkVisItClipper3D.  Added new poly data normals filter.
+#    Removed HDR because it was unused.
+#
 ##############################################################################
 
 ##
@@ -183,11 +190,16 @@
 ## Files...
 ##
 SRC=InitVTK.C \
+    SolidSplitCasesHex.C \
+    SolidSplitCasesPyr.C \
+    SolidSplitCasesTet.C \
+    SolidSplitCasesWdg.C \
     vtkAxisDepthSort.C \
     vtkBackgroundActor.C \
     vtkCamera.C \
     vtkConnectedTubeFilter.C \
     vtkDashedXorGridMapper2D.C \
+    vtkDataSetFromVolume.C \
     vtkDataSetRemoveGhostCells.C \
     vtkDebugStream.C \
     vtkHankAxisActor2D.C \
@@ -208,6 +220,7 @@ SRC=InitVTK.C \
     vtkSurfaceFilter.C \
     vtkSurfaceFromVolume.C \
     vtkTriad2D.C \
+    vtkTriangulationTables.C \
     vtkUniqueFeatureEdges.C \
     vtkUnstructuredGridBoundaryFilter.C \
     vtkUnstructuredGridFacelistFilter.C \
@@ -220,61 +233,17 @@ SRC=InitVTK.C \
     vtkVisItCellLocator.C \
     vtkVisItContourFilter.C \
     vtkVisItCutter.C \
+    vtkVisItClipper3D.C \
     vtkVisItFeatureEdges.C \
     vtkVisItPLOT3DReader.C \
+    vtkVisItPolyDataNormals.C \
     vtkVisItQuad.C \
     vtkVisItSTLWriter.C \
     vtkVisItScalarTree.C \
     vtkVisItStreamLine.C \
     vtkVisItTriangle.C \
-    vtkVisItUtility.C
-HDR=InitVTK.h \
-    vtkAxisDepthSort.h \
-    vtkBackgroundActor.h \
-    vtkCamera.h \
-    vtkConnectedTubeFilter.h \
-    vtkDashedXorGridMapper2D.h \
-    vtkDataSetRemoveGhostCells.h \
-    vtkDebugStream.h \
-    vtkHankAxisActor2D.h \
-    vtkKatAxisActor.h \
-    vtkKatCubeAxesActor.h \
-    vtkLineoutFilter.h \
-    vtkLinesFromOriginalCells.h \
-    vtkOBJWriter.h \
-    vtkOnionPeelFilter.h \
-    vtkPPMWriter.h \
-    vtkPolyDataRelevantPointsFilter.h \
-    vtkRGBWriter.h \
-    vtkRectilinearGridFacelistFilter.h \
-    vtkRubberBandMapper2D.h \
-    vtkSkewLookupTable.h \
-    vtkSlicer.h \
-    vtkStructuredGridFacelistFilter.h \
-    vtkSurfaceFilter.h \
-    vtkSurfaceFromVolume.h \
-    vtkTriad2D.h \
-    vtkTriangulationTables.h \
-    vtkUniqueFeatureEdges.h \
-    vtkUnstructuredGridBoundaryFilter.h \
-    vtkUnstructuredGridFacelistFilter.h \
-    vtkUnstructuredGridRelevantPointsFilter.h \
-    vtkVectorGlyph.h \
-    vtkVectorReduceFilter.h \
-    vtkVertexFilter.h \
-    vtkVerticalScalarBarActor.h \
-    vtkVerticalScalarBarWithOpacityActor.h \
-    vtkVisItCellLocator.h \
-    vtkVisItContourFilter.h \
-    vtkVisItCutter.h \
-    vtkVisItFeatureEdges.h \
-    vtkVisItPLOT3DReader.h \
-    vtkVisItQuad.h \
-    vtkVisItSTLWriter.h \
-    vtkVisItScalarTree.h \
-    vtkVisItStreamLine.h \
-    vtkVisItTriangle.h \
-    vtkVisItUtility.h
+    vtkVisItUtility.C \
+    vtkVolumeFromVolume.C
 
 
 CPPFLAGS=@VISIT_VTK_CPPFLAGS@ @CPPFLAGS@ @ANNOTATION_FLAGS@ -I. @MESA_INCLUDE@

@@ -246,6 +246,10 @@ class MakeMovie:
     # Programmer: Brad Whitlock
     # Date:       Mon Jul 28 13:58:06 PST 2003
     #
+    # Modifications:
+    #   Brad Whitlock, Tue Aug 12 09:57:05 PDT 2003
+    #   Added a note about Windows.
+    #
     ###########################################################################
 
     def PrintUsage(self):
@@ -255,35 +259,49 @@ class MakeMovie:
         print "OPTIONS"
         print "    The following options are recognized by visit -movie"
         print ""
-        print "    -format fmt        The format option allows you to set the output format"
-        print "                       for your movie. The supported values for fmt are:"
+        print "    -format fmt        The format option allows you to set the output"
+        print "                       format for your movie. The supported values "
+        print "                       for fmt are:"
         print ""
         print "                       mpeg : MPEG 2 movie."
         print "                       qt   : Quicktime movie."
-        print "                       sm   : Streaming movie format (popular for powerwall demos)."
-        print "                       ppm  : Save raw movie frames as individual PPM files."
-        print "                       tiff : Save raw movie frames as individual TIFF files."
-        print "                       jpeg : Save raw movie frames as individual JPEG files."
-        print "                       bmp  : Save raw movie frames as individual BMP"
-        print "                              (Windows Bitmap) files."
-        print "                       rgb  : Save raw movie frames as individual RGB"
-        print "                              (SGI format) files."
+        print "                       sm   : Streaming movie format"
+        print "                              (popular for powerwall demos)."
+        print "                       ppm  : Save raw movie frames as individual"
+        print "                              PPM files."
+        print "                       tiff : Save raw movie frames as individual"
+        print "                              TIFF files."
+        print "                       jpeg : Save raw movie frames as individual"
+        print "                              JPEG files."
+        print "                       bmp  : Save raw movie frames as individual"
+        print "                              BMP (Windows Bitmap) files."
+        print "                       rgb  : Save raw movie frames as individual"
+        print "                              RGB (SGI format) files."
         print ""
-        print "    -geometry size     The geometry option allows you to set the movie resolution."
-        print "                       The size argument is of the form WxH where W is the width of"
-        print "                       the image and H is the height of the image. For example, if"
-        print "                       you want an image that is 1024 pixels wide and 768 pixels"
-        print "                       tall, you would provide: -geometry 1024x768."
+        print "                       *** Important Note ***"
+        print "                       The mpeg, qt, and sm formats are not supported"
+        print "                       on the Windows platform."
         print ""
-        print "    -sessionfile name  The sessionfile option lets you pick the name of the VisIt"
-        print "                       session to use as input for your movie. The VisIt session "
-        print "                       is a file that describes the movie that you want to make "
-        print "                       and it is created when you save your session from within "
-        print "                       VisIt's GUI after you set up your plots how you want them."
+        print "    -geometry size     The geometry option allows you to set the movie"
+        print "                       resolution. The size argument is of the form"
+        print "                       WxH where W is the width of the image and H is"
+        print "                       the height of the image. For example, if you "
+        print "                       want an image that is 1024 pixels wide and 768"
+        print "                       pixels tall, you would provide:"
+        print "                       -geometry 1024x768."
         print ""
-        print "    -framestep step    The number of frames to advance when going to the next frame."
+        print "    -sessionfile name  The sessionfile option lets you pick the name"
+        print "                       of the VisIt session to use as input for your"
+        print "                       movie. The VisIt session is a file that describes"
+        print "                       the movie that you want to make and it is created"
+        print "                       when you save your session from within VisIt's "
+        print "                       GUI after you set up your plots how you want them."
         print ""
-        print "    -output moviename  The output option lets you set the name of your movie."
+        print "    -framestep step    The number of frames to advance when going to "
+        print "                       the next frame."
+        print ""
+        print "    -output moviename  The output option lets you set the name of "
+        print "                       your movie."
         print ""
 
     ###########################################################################
@@ -308,6 +326,10 @@ class MakeMovie:
     # Programmer: Brad Whitlock
     # Date:       Mon Jul 28 13:58:06 PST 2003
     #
+    # Modifications:
+    #   Brad Whitlock, Tue Aug 12 09:57:31 PDT 2003
+    #   Prevented use of mpeg, qt, and sm on Windows.
+    #
     ###########################################################################
 
     def ProcessArguments(self):
@@ -317,14 +339,26 @@ class MakeMovie:
                 if((i+1) < len(sys.argv)):
                     format = sys.argv[i+1]
                     if(format == "mpeg"):
-                        self.movieFormat = self.MPEG_MOVIE
-                        self.outputFormat = self.OUTPUT_PPM
+                        if(sys.platform != "win32"):
+                            self.movieFormat = self.MPEG_MOVIE
+                            self.outputFormat = self.OUTPUT_PPM
+                        else:
+                            self.PrintUsage();
+                            sys.exit(-1)
                     elif(format == "qt"):
-                        self.movieFormat = self.QUICKTIME_MOVIE
-                        self.outputFormat = self.OUTPUT_TIFF
+                        if(sys.platform != "win32"):
+                            self.movieFormat = self.QUICKTIME_MOVIE
+                            self.outputFormat = self.OUTPUT_TIFF
+                        else:
+                            self.PrintUsage();
+                            sys.exit(-1)
                     elif(format == "sm"):
-                        self.movieFormat = self.STREAMING_MOVIE
-                        self.outputFormat = self.OUTPUT_TIFF
+                        if(sys.platform != "win32"):
+                            self.movieFormat = self.STREAMING_MOVIE
+                            self.outputFormat = self.OUTPUT_TIFF
+                        else:
+                            self.PrintUsage();
+                            sys.exit(-1)
                     elif(format == "ppm"):
                         self.movieFormat = self.JUST_FRAMES_MOVIE
                         self.outputFormat = self.OUTPUT_PPM
@@ -523,6 +557,10 @@ class MakeMovie:
     # Programmer: Brad Whitlock
     # Date:       Mon Jul 28 13:58:06 PST 2003
     #
+    # Modifications:
+    #   Brad Whitlock, Tue Aug 12 09:37:37 PDT 2003
+    #   Passed the desired version to mpeg_encode.
+    #
     ###########################################################################
 
     def EncodeMPEGMovie(self):
@@ -560,7 +598,7 @@ class MakeMovie:
             f.close();
 
             # Create the movie
-            command = "visit -mpeg_encode %s" % paramFile
+            command = "visit -v %s -mpeg_encode %s" % (Version(), paramFile)
             r = os.system(command)
 
             # Remove the param file.

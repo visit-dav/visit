@@ -45,7 +45,7 @@ static const char usage[] =
 /*
  * Prototypes
  */
-char *AddEnvironment(void);
+char *AddEnvironment(int);
 void AddPath(char *, const char *);
 
 /******************************************************************************
@@ -77,6 +77,9 @@ void AddPath(char *, const char *);
  *   Brad Whitlock, Wed May 7 09:49:59 PDT 2003
  *   I added the vcl component.
  *
+ *   Brad Whitlock, Tue Aug 12 09:41:07 PDT 2003
+ *   I added some support for movie making.
+ *
  *****************************************************************************/
 
 int
@@ -85,6 +88,7 @@ main(int argc, char *argv[])
     int   nComponentArgs = 0;
     char *componentArgs[100], *command, *printCommand, *visitpath, *cptr, *cptr2;
     int i, size = 0, retval = 0, printRunInfo = 1, skipping = 0;
+    int addMovieArguments = 0, useShortFileName = 0;
 
     /*
      * Default values.
@@ -131,6 +135,19 @@ main(int argc, char *argv[])
         {
             strcpy(component, "vcl");
         }
+        else if(ARG("-movie"))
+        {
+            strcpy(component, "cli");
+            addMovieArguments = 1;
+            useShortFileName = 1;
+        }
+        else if(ARG("-mpeg_encode"))
+        {
+            fprintf(stderr, "The mpeg_encode component is not supported "
+                            "on Windows! You can only generate sequences "
+                            "of still images.\n");
+            return -1;
+        }
         else if(ARG("-v"))
         {
             /* Skip the next argument too. */
@@ -145,19 +162,36 @@ main(int argc, char *argv[])
     /*
      * Add some stuff to the environment.
      */
-    visitpath = AddEnvironment();
+    visitpath = AddEnvironment(useShortFileName);
 
     /*
-     * Create a command to execute
+     * Figure out the length of the command string.
      */
     size = strlen(visitpath) + strlen(component) + 4;
     for(i = 0; i < nComponentArgs; ++i)
         size += (strlen(componentArgs[i]) + 1);
+    if(addMovieArguments)
+    {
+        size += strlen("-s") + 1;
+        size += 1 + strlen(visitpath) + 1 + strlen("makemovie.py") + 2;
+        size += strlen("-nowin") + 1;
+    }
 
+    /*
+     * Create the command to execute and the string that we print.
+     */
     command = (char *)malloc(size);
     printCommand = (char *)malloc(size);
-    sprintf(command, "\"%s\\%s\"", visitpath, component);
-    sprintf(printCommand, "\"%s\\%s\"", visitpath, component);
+    if(useShortFileName)
+    {
+        sprintf(command, "%s\\%s", visitpath, component);
+        sprintf(printCommand, "%s\\%s", visitpath, component);
+    }
+    else
+    {
+        sprintf(command, "\"%s\\%s\"", visitpath, component);
+        sprintf(printCommand, "\"%s\\%s\"", visitpath, component);
+    }
     cptr = command + strlen(command);
     cptr2 = printCommand + strlen(printCommand);
     for(i = 0; i < nComponentArgs; ++i)
@@ -173,6 +207,11 @@ main(int argc, char *argv[])
             sprintf(cptr2, " %s", componentArgs[i]);
             cptr2 += (strlen(componentArgs[i]) + 1);
         }
+    }
+    if(addMovieArguments)
+    {
+        sprintf(cptr, " -s \"%s\\makemovie.py\" -nowin", visitpath);
+        sprintf(cptr2, " -s \"%s\\makemovie.py\" -nowin", visitpath);
     }
     command[size-1] = '\0';
     printCommand[size-1] = '\0';
@@ -269,10 +308,15 @@ ReadKey(const char *key, char **keyval)
  *   Brad Whitlock, Wed Apr 23 09:28:44 PDT 2003 
  *   I added VISITSYSTEMCONFIG to the environment.
  *
+ *   Brad Whitlock, Tue Aug 12 10:47:16 PDT 2003
+ *   I added an option that lets us return VisIt's path as the short system
+ *   name version of the path so we can effectively do visit -movie from
+ *   the command line.
+ *
  *****************************************************************************/
 
 char *
-AddEnvironment(void)
+AddEnvironment(int useShortFileName)
 {
     char *tmp, *visitpath = 0, *ssh = 0, *sshargs = 0, *visitsystemconfig = 0;
     int haveVISITHOME = 0, haveSSH = 0, haveSSHARGS = 0,
@@ -292,6 +336,15 @@ AddEnvironment(void)
         static const char *defaultVisItPath = "C:\\VisItWindows\\bin";
         visitpath = (char *)malloc(strlen(defaultVisItPath) + 1);
         strcpy(visitpath, defaultVisItPath);
+    }
+
+    /* Turn the long VisIt path into the shortened system path. */
+    if(useShortFileName)
+    {
+        char *vp2 = (char *)malloc(512);
+        GetShortPathName(visitpath, vp2, 512);
+        free(visitpath);
+        visitpath = vp2;
     }
 
     tmp = (char *)malloc(10000);
