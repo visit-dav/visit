@@ -75,6 +75,9 @@ class avtExpressionEvaluatorFilter;
 //    Kathleen Bonnell, Wed Dec 15 09:19:39 PST 2004 
 //    Add SetGlobalIds. 
 // 
+//    Kathleen Bonnell, Wed Dec 15 17:16:17 PST 2004 
+//    Add GetCurrentNodeForOriginal.
+// 
 // ****************************************************************************
 
 class QUERY_API avtPickQuery : public avtDatasetQuery
@@ -126,6 +129,8 @@ class QUERY_API avtPickQuery : public avtDatasetQuery
     bool                            RetrieveNodes(vtkDataSet *, int);   
     bool                            RetrieveZones(vtkDataSet *, int);   
 
+    int                             GetCurrentNodeForOriginal(vtkDataSet *, 
+                                                              const int);
     int                             GetCurrentZoneForOriginal(vtkDataSet *, 
                                                               const int);
     intVector                       GetCurrentZoneForOriginal(vtkDataSet *, 

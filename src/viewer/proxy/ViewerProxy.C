@@ -4777,13 +4777,17 @@ ViewerProxy::SetWindowArea(int x, int y, int w, int h)
 //
 // Modifications:
 //   Kathleen Bonnell, Wed Jul 23 17:04:10 PDT 2003
-//   Added optioninal integer args. 
+//   Added optional integer args. 
 //
+//   Kathleen Bonnell, Wed Dec 15 17:12:47 PST 2004 
+//   Added optional bool globalflag.
+//   
 // ****************************************************************************
 
 void
 ViewerProxy::DatabaseQuery(const std::string &queryName,
-    const stringVector &vars, const bool bflag, const int arg1, const int arg2)
+    const stringVector &vars, const bool bflag, const int arg1, const int arg2,
+    const bool globalFlag)
 {
     //
     // Set the rpc type.
@@ -4794,6 +4798,7 @@ ViewerProxy::DatabaseQuery(const std::string &queryName,
     viewerRPC->SetIntArg1(arg1);
     viewerRPC->SetIntArg2(arg2);
     viewerRPC->SetBoolFlag(bflag);
+    viewerRPC->SetIntArg3((int)globalFlag);
 
     //
     // Issue the RPC.
@@ -4825,11 +4830,15 @@ ViewerProxy::DatabaseQuery(const std::string &queryName,
 //   Kathleen Bonnell, Thu Apr  1 19:13:59 PST 2004 
 //   Added optional bool flag.
 //   
+//   Kathleen Bonnell, Wed Dec 15 17:12:47 PST 2004 
+//   Added optional bool flag.
+//   
 // ****************************************************************************
 
 void
 ViewerProxy::PointQuery(const std::string &queryName, const double pt[3],
-    const stringVector &vars, const bool time, const int arg1, const int arg2) 
+    const stringVector &vars, const bool time, const int arg1, const int arg2,
+    const bool globalFlag) 
 {
     //
     // Set the rpc type.
@@ -4841,6 +4850,7 @@ ViewerProxy::PointQuery(const std::string &queryName, const double pt[3],
     viewerRPC->SetBoolFlag(time);
     viewerRPC->SetIntArg1(arg1);
     viewerRPC->SetIntArg2(arg2);
+    viewerRPC->SetIntArg3((int)globalFlag);
 
     //
     // Issue the RPC.

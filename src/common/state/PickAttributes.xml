@@ -170,6 +170,9 @@
     </Field>
     <Field name="globalIncidentElements" label="globalIncidentElements" type="intVector" internal="true">
     </Field>
+    <Field name="elementIsGlobal" label="elementIsGlobal" type="bool" internal="true">
+      false
+    </Field>
     <Function name="PrintSelf" user="true" member="true">
     </Function>
     <Function name="CreateOutputString" user="true" member="true">

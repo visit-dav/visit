@@ -69,27 +69,44 @@ avtPickByNodeQuery::~avtPickByNodeQuery()
 //    Removed 'needRealId' test, no longer needed (we are reporting ghost
 //    zones when ghostType == AVT_HAS_GHOSTS). 
 //
+//    Kathleen Bonnell, Wed Dec 15 17:24:27 PST 2004 
+//    Added logic to handle case when chosen node is to be considered global.
+//
 // ****************************************************************************
 
 void
 avtPickByNodeQuery::Execute(vtkDataSet *ds, const int dom)
 {
-    if (dom != pickAtts.GetDomain() || pickAtts.GetFulfilled() || ds == NULL)
+    if (pickAtts.GetFulfilled() || ds == NULL)
     {
         return;
+    }
+
+    if (!pickAtts.GetElementIsGlobal())
+    {
+        if (dom != pickAtts.GetDomain())
+            return;
     }
 
     int nodeid = pickAtts.GetElementNumber();
     int maxEls = ds->GetNumberOfPoints(); 
 
     // Verify the node number is in range.
-    if (nodeid < 0 || nodeid >= maxEls)
+    if (!pickAtts.GetElementIsGlobal() && (nodeid < 0 || nodeid >= maxEls))
     {
         EXCEPTION2(BadNodeException, nodeid, maxEls);
     } 
 
+    bool DBsuppliedNodeId = true;
     if (!pickAtts.GetMatSelected() && ghostType != AVT_CREATED_GHOSTS)
     {
+        if (pickAtts.GetElementIsGlobal())
+        {
+            nodeid = vtkVisItUtility::GetLocalElementForGlobal(ds, nodeid, false);
+            if (nodeid == -1)
+                return;
+            DBsuppliedNodeId = false;
+        }
         GetNodeCoords(ds, nodeid);    
         if (RetrieveZones(ds, nodeid))
         {
@@ -110,10 +127,18 @@ avtPickByNodeQuery::Execute(vtkDataSet *ds, const int dom)
         }
     }
 
+    if (pickAtts.GetElementIsGlobal())
+        pickAtts.SetDomain(dom);
+
     //
     //  Allow the database to add any missing information.
     // 
     src->Query(&pickAtts);
+
+    if (pickAtts.GetElementIsGlobal() && DBsuppliedNodeId)
+    {
+        nodeid = GetCurrentNodeForOriginal(ds, pickAtts.GetElementNumber());
+    }
 
     if (pickAtts.GetMatSelected())
     {
@@ -124,7 +149,10 @@ avtPickByNodeQuery::Execute(vtkDataSet *ds, const int dom)
         //
         intVector pickedZones = pickAtts.GetIncidentElements();
         intVector currentZones = GetCurrentZoneForOriginal(ds, pickedZones); 
-        RetrieveVarInfo(ds, pickAtts.GetElementNumber(), currentZones); 
+        if (!pickAtts.GetElementIsGlobal())
+            RetrieveVarInfo(ds, pickAtts.GetElementNumber(), currentZones); 
+        else 
+            RetrieveVarInfo(ds, nodeid, currentZones); 
     }
 
     //
@@ -208,14 +236,24 @@ avtPickByNodeQuery::Execute(vtkDataSet *ds, const int dom)
 //  Creation:   May 10, 2004 
 //
 //  Modifications:
+//    Kathleen Bonnell, Wed Dec 15 17:24:27 PST 2004
+//    Set domain to -1 (so that no domain-restriction is performed) if
+//    the node is global.
 //
 // ****************************************************************************
 
 void
 avtPickByNodeQuery::Preparation()
 {
-    int dom = pickAtts.GetDomain() - blockOrigin;
-    pickAtts.SetDomain(dom < 0 ? 0 : dom);
+    if (!pickAtts.GetElementIsGlobal())
+    {
+        int dom = pickAtts.GetDomain() - blockOrigin;
+        pickAtts.SetDomain(dom < 0 ? 0 : dom);
+    }
+    else 
+    {
+        pickAtts.SetDomain(-1);
+    }
 }
 
 

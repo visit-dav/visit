@@ -52,7 +52,10 @@
       ActualData
     </Field>
     <Field name="pipeIndex" label="pipeIndex" type="int" internal="true">
-       -1
+      -1
+    </Field>
+    <Field name="useGlobalId" label="useGlobalId" type="bool">
+      false
     </Field>
     <Function name="Reset" user="true" member="true">
     </Function>
