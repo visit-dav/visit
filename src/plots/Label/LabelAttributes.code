@@ -1,0 +1,9 @@
+Function: ChangesRequireRecalculation
+Declaration: virtual bool ChangesRequireRecalculation(const LabelAttributes &) const;
+Definition:
+bool
+LabelAttributes::ChangesRequireRecalculation(const LabelAttributes &) const
+{
+    return false;
+}
+

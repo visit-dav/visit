@@ -1413,7 +1413,7 @@ avtDatabase::GetExtentsFromAuxiliaryData(avtDataSpecification_p spec,
     int nvals = 2;
     if (strcmp(type, AUXILIARY_DATA_SPATIAL_EXTENTS) == 0)
         nvals = 6;
-    for (int i = 0; i < 6; i++)
+    for (int i = 0; i < nvals; i++)
         extents[i] = fextents[i];
 
     return true;

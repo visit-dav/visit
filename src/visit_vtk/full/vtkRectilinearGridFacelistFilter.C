@@ -154,6 +154,9 @@ SpecializedIndexer::SpecializedIndexer(int x, int y, int z)
 //  Hank Childs, Fri Aug 27 15:15:20 PDT 2004
 //  Rename ghost data array.
 //
+//  Brad Whitlock, Fri Oct 1 17:03:53 PST 2004
+//  Pass field data through to the output.
+//
 // ****************************************************************************
 
 void vtkRectilinearGridFacelistFilter::Execute()
@@ -181,7 +184,7 @@ void vtkRectilinearGridFacelistFilter::Execute()
         ConsolidateFacesWithoutGhostZones();
         return;
      }
-  }
+  }  
 
   //
   // If we are doing face compaction, we will come in after the fact and
@@ -524,6 +527,7 @@ void vtkRectilinearGridFacelistFilter::Execute()
      output = new_output;
   }
 
+  GetOutput()->GetFieldData()->ShallowCopy(GetInput()->GetFieldData());
   GetOutput()->ShallowCopy(output);
   output->Delete();
 }
