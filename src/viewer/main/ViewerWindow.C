@@ -2567,11 +2567,16 @@ ViewerWindow::GetView3D() const
 //    more accurate.  I also added viewPartialSetIn3d to distinguish the
 //    view being set from a session file and from the client.
 //
+//    Hank Childs, Sun Dec 19 18:49:27 PST 2004
+//    Set the view extents type as well.
+//
 // ****************************************************************************
 
 void
 ViewerWindow::CopyViewAttributes(const ViewerWindow *source)
 {
+    SetViewExtentsType(source->plotExtentsType);
+
     //
     // Copy the views.
     //
