@@ -29,6 +29,9 @@ class vtkDataSet;
 //    Hank Childs, Mon May 24 16:16:05 PDT 2004
 //    Added PostExecute to manage extents.
 //
+//    Hank Childs, Tue Jun 29 07:21:32 PDT 2004
+//    Removed data member "issuedWarning", since we no longer issue warnings.
+//
 // ****************************************************************************
 
 class avtDisplaceFilter : public avtPluginStreamer
@@ -48,7 +51,6 @@ class avtDisplaceFilter : public avtPluginStreamer
 
   protected:
     DisplaceAttributes   atts;
-    bool                 issuedWarning;
 
     virtual vtkDataSet   *ExecuteData(vtkDataSet *, int, std::string);
     virtual void          PostExecute(void);

@@ -177,6 +177,10 @@
 #    I added support for using different Info.plist files so the viewer gets
 #    its own plist file that prevents it from getting its own menu.
 #
+#    Brad Whitlock, Tue Jun 29 12:05:42 PDT 2004
+#    Some help files were not being copied so I added commands to make sure
+#    they get copied.
+#
 #------------------------------------------------------------------------------
 
 set DataFiles = "TRUE"
@@ -773,6 +777,8 @@ if (-e $VisItDir/help) then
    cp $VisItDir/help/help[a-z]*.html   $helpdir
    cp $VisItDir/help/help0[01]*.html   $helpdir
    cp $VisItDir/help/help0[23]*.html   $helpdir
+   cp $VisItDir/help/help0[45]*.html   $helpdir
+   cp $VisItDir/help/help0[67]*.html   $helpdir
    if (-e $VisItDir/help/visit.helpml) then
       cp $VisItDir/help/visit.helpml $helpdir
    endif

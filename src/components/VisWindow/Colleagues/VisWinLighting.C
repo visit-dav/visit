@@ -119,7 +119,7 @@ VisWinLighting::InitDefaultLight()
     lights[0]->SetIntensity(1.);
     lights[0]->SwitchOn();
 
-    for (int i = 1 ; i < MAX_LIGHTS ; i++)
+    for (i = 1 ; i < MAX_LIGHTS ; i++)
     {
         lights[i]->SwitchOff();
     }

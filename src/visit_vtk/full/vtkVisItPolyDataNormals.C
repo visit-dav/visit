@@ -659,7 +659,7 @@ vtkVisItPolyDataNormals::ExecuteCell()
     vtkCellArray *inCA  = input->GetPolys();
     vtkIdType *connPtr = inCA->GetPointer();
     int nPolys = inCA->GetNumberOfCells();
-    for (int i = 0 ; i < nPolys ; i++)
+    for (i = 0 ; i < nPolys ; i++)
     {
         //
         // Technically, we can always use only the first three vertices, but

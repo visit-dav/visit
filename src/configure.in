@@ -488,6 +488,10 @@ dnl    Jeremy Meredith, Tue Jun 22 09:45:01 PDT 2004
 dnl    Have it build optimized if no CXXFLAGS were specified through
 dnl    the environment variable.
 dnl
+dnl    Brad Whitlock, Tue Jun 29 09:01:46 PDT 2004
+dnl    Prevented links to Silo, Mili, and HDF5 from being created on MacOS X
+dnl    if those libraries are not found by configure.
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -2555,9 +2559,15 @@ CREATE_MILI_LINK=""
 CREATE_HDF5_LINK=""
 case $SHORT_UNAME in
   darwin)
-    CREATE_SILO_LINK="create_silo_link"
-    CREATE_MILI_LINK="create_mili_link"
-    CREATE_HDF5_LINK="create_hdf5_link"
+    if test "$SILO_LIB" != "" ; then
+        CREATE_SILO_LINK="create_silo_link"
+    fi
+    if test "$MILI_LIBS" != "" ; then
+        CREATE_MILI_LINK="create_mili_link"
+    fi
+    if test "$HDF5_LIB" != "" ; then
+        CREATE_HDF5_LINK="create_hdf5_link"
+    fi
   ;;
 esac
 AC_SUBST(CREATE_SILO_LINK)

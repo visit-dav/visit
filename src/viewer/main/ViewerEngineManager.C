@@ -1272,6 +1272,10 @@ ViewerEngineManager::LaunchMessage(const EngineKey &ek)  const
 //   Mark C. Miller, Tue Jun 15 19:49:22 PDT 2004
 //   Added call to BeginEngineRender just inside TRY block
 //   Replaced bogus calls to EndEngineExecute with calls to EndEngineRender
+//
+//   Brad Whitlock, Tue Jun 29 11:09:50 PDT 2004
+//   Made it work with the Windows compiler again.
+//
 // ****************************************************************************
 
 bool
@@ -1310,7 +1314,8 @@ ViewerEngineManager::ExternalRender(const ExternalRenderRequestInfo& reqInfo,
 #endif
 
         // build list of per-engine plot ids
-        for (int i = 0; i < plotIdsList.size(); i++)
+        int i;
+        for (i = 0; i < plotIdsList.size(); i++)
         {
             ek = engineKeysList[i];
             perEnginePlotIds[ek].push_back(plotIdsList[i]);
@@ -1330,7 +1335,7 @@ ViewerEngineManager::ExternalRender(const ExternalRenderRequestInfo& reqInfo,
         }
 
         // send per-plot RPCs
-        for (int i = 0; i < plotIdsList.size(); i++)
+        for (i = 0; i < plotIdsList.size(); i++)
         {
             ek = engineKeysList[i];
             engines[ek]->UpdatePlotAttributes(pluginIDsList[i],

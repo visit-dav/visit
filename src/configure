@@ -9528,9 +9528,15 @@ CREATE_MILI_LINK=""
 CREATE_HDF5_LINK=""
 case $SHORT_UNAME in
   darwin)
-    CREATE_SILO_LINK="create_silo_link"
-    CREATE_MILI_LINK="create_mili_link"
-    CREATE_HDF5_LINK="create_hdf5_link"
+    if test "$SILO_LIB" != "" ; then
+        CREATE_SILO_LINK="create_silo_link"
+    fi
+    if test "$MILI_LIBS" != "" ; then
+        CREATE_MILI_LINK="create_mili_link"
+    fi
+    if test "$HDF5_LIB" != "" ; then
+        CREATE_HDF5_LINK="create_hdf5_link"
+    fi
   ;;
 esac
 

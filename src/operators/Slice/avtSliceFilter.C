@@ -298,6 +298,9 @@ avtSliceFilter::Equivalent(const AttributeGroup *a)
 //    Kathleen Bonnell, Wed Jun  2 09:11:01 PDT 2004 
 //    Turn on node numbers when appropriate. 
 // 
+//    Hank Childs, Tue Jun 29 07:24:11 PDT 2004
+//    Use interval trees when slicing by percent.
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -337,12 +340,25 @@ avtSliceFilter::PerformRestriction(avtPipelineSpecification_p spec)
     // return a domain list.
     //
     if (atts.GetOriginType() == SliceAttributes::Point ||
-        atts.GetOriginType() == SliceAttributes::Intercept)
+        atts.GetOriginType() == SliceAttributes::Intercept || 
+        atts.GetOriginType() == SliceAttributes::Percent)
     {
         float normal[3]
              = {atts.GetNormal()[0], atts.GetNormal()[1], atts.GetNormal()[2]};
         double origin[3];
-        GetOrigin(origin[0], origin[1], origin[2]);
+        if (atts.GetOriginType() == SliceAttributes::Percent)
+        {
+            double percent = atts.GetOriginPercent() / 100.;
+            float bounds[6];
+            it->GetExtents(bounds);
+            origin[0] = (bounds[1] - bounds[0])*percent + bounds[0];
+            origin[1] = (bounds[3] - bounds[2])*percent + bounds[2];
+            origin[2] = (bounds[5] - bounds[4])*percent + bounds[4];
+        }
+        else
+        {
+            GetOrigin(origin[0], origin[1], origin[2]);
+        }
         float tmpD = normal[0]*origin[0] + normal[1]*origin[1] +
                      normal[2]*origin[2];
         vector<int> domains;
