@@ -59,6 +59,7 @@ class VISWINDOW_API Lineout2D : public VisitInteractor
     vtkActor2D            *rubberBandActor;
 
     bool                   rubberBandMode;
+    bool                   doAlign;
       
     void                   StartRubberBand(int, int);
     void                   EndRubberBand();
@@ -68,6 +69,7 @@ class VISWINDOW_API Lineout2D : public VisitInteractor
     void                   SetCanvasViewport(void);
     void                   ForceCoordsToViewport(int &, int &);
     void                   Lineout(void);
+    void                   AlignToAxis(int &, int &);
 
 };
 

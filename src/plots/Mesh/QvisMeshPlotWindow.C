@@ -96,6 +96,9 @@ QvisMeshPlotWindow::~QvisMeshPlotWindow()
 //   to support 'Auto', 'On' and 'Off' modes.  Moved outlineOnly
 //   to same line of layout as errorTolerance. 
 //
+//   Kathleen Bonnell, Thu Feb  5 11:48:48 PST 2004 
+//   Added showInternalToggle. 
+// 
 // ****************************************************************************
 
 void
@@ -104,7 +107,7 @@ QvisMeshPlotWindow::CreateWindowContents()
     //
     // Create the layout that we'll use.
     //
-    QGridLayout *theLayout = new QGridLayout(topLayout, 10, 4);
+    QGridLayout *theLayout = new QGridLayout(topLayout, 11, 4);
     theLayout->setSpacing(10);
 
     // Create the lineSyle widget.
@@ -177,21 +180,28 @@ QvisMeshPlotWindow::CreateWindowContents()
     opaqueModeLayout->addWidget(rb, 0, 4);
     theLayout->addMultiCellLayout(opaqueModeLayout, 3, 3, 0, 3);
 
+    // Create the showInternal toggle
+    showInternalToggle = new QCheckBox("Show Internal Zones", central, 
+                                       "showInternalToggle");
+    connect(showInternalToggle, SIGNAL(toggled(bool)),
+            this, SLOT(showInternalToggled(bool)));
+    theLayout->addMultiCellWidget(showInternalToggle, 4,4, 0,1);
+
     // Create the outline only toggle
     outlineOnlyToggle = new QCheckBox("Outline only", central,
                                       "OutlineOnlyToggle");
     connect(outlineOnlyToggle, SIGNAL(toggled(bool)),
             this, SLOT(outlineOnlyToggled(bool)));
-    theLayout->addWidget(outlineOnlyToggle, 4, 0);
+    theLayout->addWidget(outlineOnlyToggle, 5, 0);
 
     // Create the error tolerance line edit
     errorToleranceLineEdit = new QLineEdit(central, "errorToleranceLineEdit");
     connect(errorToleranceLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processErrorToleranceText()));
-    theLayout->addMultiCellWidget(errorToleranceLineEdit, 4, 4, 2, 3);
+    theLayout->addMultiCellWidget(errorToleranceLineEdit, 5, 5, 2, 3);
     errorToleranceLabel = new QLabel(errorToleranceLineEdit, "Tolerance",
                                         central, "errorToleranceLabel");
-    theLayout->addWidget(errorToleranceLabel, 4, 1);
+    theLayout->addWidget(errorToleranceLabel, 5, 1);
     //errorToleranceLineEdit->setEnabled(false); 
     //errorToleranceLabel->setEnabled(false); 
 
@@ -199,21 +209,21 @@ QvisMeshPlotWindow::CreateWindowContents()
     pointSizeLineEdit = new QLineEdit(central, "pointSizeLineEdit");
     connect(pointSizeLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processPointSizeText()));
-    theLayout->addMultiCellWidget(pointSizeLineEdit, 5, 5, 1, 3);
+    theLayout->addMultiCellWidget(pointSizeLineEdit, 6, 6, 1, 3);
     pointSizeLabel = new QLabel(pointSizeLineEdit, "Point size", central, 
                                 "pointSizeLabel");
-    theLayout->addWidget(pointSizeLabel, 5, 0);
+    theLayout->addWidget(pointSizeLabel, 6, 0);
 
     // Create the point size variable check box and line edit.
     pointSizeVarLineEdit = new QLineEdit(central, "pointSizeVarLineEdit");
     connect(pointSizeVarLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processPointSizeVarText()));
-    theLayout->addMultiCellWidget(pointSizeVarLineEdit, 6, 6, 2, 3);
+    theLayout->addMultiCellWidget(pointSizeVarLineEdit, 7, 7, 2, 3);
     pointSizeVarToggle = new QCheckBox("Scale point size by variable", central, 
                                        "pointSizeVarToggle");
     connect(pointSizeVarToggle, SIGNAL(toggled(bool)),
             this, SLOT(pointSizeVarToggled(bool)));
-    theLayout->addMultiCellWidget(pointSizeVarToggle, 6,6, 0,1);
+    theLayout->addMultiCellWidget(pointSizeVarToggle, 7,7, 0,1);
 
     // Create the point type buttons
     pointTypeButtons = new QButtonGroup(0, "pointTypeButtons");
@@ -232,13 +242,13 @@ QvisMeshPlotWindow::CreateWindowContents()
     rb = new QRadioButton("Icosahedron", central, "Icosahedron");
     pointTypeButtons->insert(rb);
     pointTypeLayout->addWidget(rb, 0, 3);
-    theLayout->addMultiCellLayout(pointTypeLayout, 7,7 , 0,3);
+    theLayout->addMultiCellLayout(pointTypeLayout, 8,8 , 0,3);
 
     // Create the legend toggle
     legendToggle = new QCheckBox("Legend", central, "legendToggle");
     connect(legendToggle, SIGNAL(toggled(bool)),
             this, SLOT(legendToggled(bool)));
-    theLayout->addWidget(legendToggle, 8, 0);
+    theLayout->addWidget(legendToggle, 9, 0);
 
     // Create the smoothing level buttons
     smoothingLevelButtons = new QButtonGroup(0, "smoothingButtons");
@@ -257,7 +267,7 @@ QvisMeshPlotWindow::CreateWindowContents()
     rb = new QRadioButton("High", central, "HighSmoothing");
     smoothingLevelButtons->insert(rb);
     smoothingLayout->addWidget(rb, 0, 3);
-    theLayout->addMultiCellLayout(smoothingLayout, 9,9 , 0,3);
+    theLayout->addMultiCellLayout(smoothingLayout, 10,10 , 0,3);
 }
 
 // ****************************************************************************
@@ -307,6 +317,9 @@ QvisMeshPlotWindow::CreateWindowContents()
 //
 //   Kathleen Bonnell, Thu Sep  4 11:15:30 PDT 2003 
 //   MeshAtts' 'opaqueFlag' bool is now an 'opaqueMode' enum, support it. 
+//
+//   Kathleen Bonnell, Thu Feb  5 11:48:48 PST 2004 
+//   Added 'showInternalToggle'. 
 //
 // ****************************************************************************
 
@@ -476,6 +489,11 @@ QvisMeshPlotWindow::UpdateWindow(bool doAll)
                 }
                 opaqueMode->blockSignals(false);
             }
+            break;
+        case 16: // showInternal
+            showInternalToggle->blockSignals(true);
+            showInternalToggle->setChecked(meshAtts->GetShowInternal());
+            showInternalToggle->blockSignals(false);
             break;
         }
     } // end for
@@ -744,6 +762,32 @@ void
 QvisMeshPlotWindow::legendToggled(bool val)
 {
     meshAtts->SetLegendFlag(val);
+    SetUpdate(false);
+    Apply();
+}
+
+
+// ****************************************************************************
+// Method: QvisMeshPlotWindow::showInternalToggled
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the showInternal toggle is
+//   toggled.
+//
+// Arguments:
+//   val : The new showInternal toggle state.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   February 5, 2004 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisMeshPlotWindow::showInternalToggled(bool val)
+{
+    meshAtts->SetShowInternal(val);
     SetUpdate(false);
     Apply();
 }

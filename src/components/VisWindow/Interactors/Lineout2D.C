@@ -26,12 +26,17 @@
 // 
 //  Programmer: Kathleen Bonnell
 //  Creation:   April 16, 2002
+//  
+//  Modifications:
+//    Kathleen Bonnell, Thu Feb  5 10:20:38 PST 2004
+//    Initialize doAlign.
 //
 // ****************************************************************************
 
 Lineout2D::Lineout2D(VisWindowInteractorProxy &vw) : VisitInteractor(vw)
 {
     rubberBandMode = false;
+    doAlign = false;
     //
     // Create the poly data that will map the rubber band onto the screen.
     //
@@ -93,6 +98,9 @@ Lineout2D::~Lineout2D()
 //    Removed arguments to match vtk's new interactor api. 
 //    Call GetEventPosition to determine x and y.
 //
+//    Kathleen Bonnell, Thu Feb  5 10:20:38 PST 2004
+//    Set doAlign.
+//
 // ****************************************************************************
 
 void
@@ -105,6 +113,7 @@ Lineout2D::StartLeftButtonAction()
     // 
     int x, y;
     Interactor->GetEventPosition(x, y);
+    doAlign = Interactor->GetShiftKey();
     StartTimer();
     StartRubberBand(x, y);
 }
@@ -222,6 +231,9 @@ Lineout2D::StartRubberBand(int x, int y)
 //    Removed arguments to match vtk's new interactor api. 
 //    Call GetEventPosition to determine x and y.
 //
+//    Kathleen Bonnell, Thu Feb  5 10:20:38 PST 2004 
+//    AlignToAxis if shift key is being pressed (doAlign). 
+//    
 // ****************************************************************************
 
 void
@@ -231,6 +243,10 @@ Lineout2D::OnMouseMove()
     if (rubberBandMode)
     {
         Interactor->GetEventPosition(x, y);
+        if (doAlign)
+        {
+            AlignToAxis(x, y);
+        }
         ForceCoordsToViewport(x, y);
         UpdateRubberBand(anchorX, anchorY, lastX, lastY, x, y);
         lastX = x;
@@ -413,6 +429,9 @@ Lineout2D::DrawRubberBandLine(int x1, int y1, int x2, int y2)
 //    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002 
 //    Removed arguments to match vtk's new interactor api. 
 //
+//    Kathleen Bonnell, Thu Feb  5 10:20:38 PST 2004 
+//    Reset doAlign.
+//
 // ****************************************************************************
 
 void
@@ -421,6 +440,7 @@ Lineout2D::EndLeftButtonAction()
     EndRubberBand();
     Lineout();
     EndTimer();
+    doAlign = false;
 }
 
 
@@ -497,3 +517,33 @@ Lineout2D::OnTimer()
         vtkInteractorStyle::OnTimer();
     }
 }    
+
+
+// ****************************************************************************
+//  Method: ZoomInteractor::AlignToAxis
+//
+//  Purpose:
+//     Modify either the x or y value to ensure the line between 
+//     (anchorX, anchorY) and (x, y) is axis-aligned. 
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   February 5, 2004
+//
+//  Modifications:
+//    
+// ****************************************************************************
+
+void
+Lineout2D::AlignToAxis(int &x, int &y)
+{
+    float slope = (float)(y-anchorY) / (float)(x - anchorX);
+
+    if (slope < -1. || slope > 1.)
+    {
+        x = anchorX; 
+    }
+    else 
+    {
+        y = anchorY; 
+    }
+}

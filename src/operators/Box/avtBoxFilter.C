@@ -4,6 +4,7 @@
 
 #include <avtBoxFilter.h>
 
+#include <vtkBox.h>
 #include <vtkCell.h>
 #include <vtkCellData.h>
 #include <vtkDataSetToUnstructuredGridFilter.h>
@@ -335,7 +336,7 @@ vtkBoxFilter::Execute(void)
                         ray[2] = pt2[2] - pt1[2];
                         
                         float t;
-                        if (vtkCell::HitBBox(bounds, pt1, ray, pt2, t)
+                        if (vtkBox::IntersectBox(bounds, pt1, ray, pt2, t)
                                 && t < 1)
                         {
                             meetsCriteria = true;

@@ -4,6 +4,7 @@
 
 #include <avtLocateCellQuery.h>
 
+#include <vtkBox.h>
 #include <vtkCell.h>
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
@@ -346,6 +347,10 @@ avtLocateCellQuery::LocatorFindCell(vtkDataSet *ds, float &dist, float *isect)
 //    Kathleen Bonnell, Tue Nov  4 08:18:54 PST 2003 
 //    Use pickAtts instead of queryAtts. 
 //    
+//    Kathleen Bonnell, Thu Feb  5 16:17:48 PST 2004 
+//    Replaced vtkCell::HitBBox with vtkBox::IntersectBox, as the old
+//    method is soon to be obsoleted in vtk. 
+//    
 // ****************************************************************************
 
 int
@@ -381,7 +386,7 @@ avtLocateCellQuery::RGridFindCell(vtkDataSet *ds, float &dist, float *isect)
         {
            rayDir[i] = rayPt2[i] - rayPt1[i];
         }
-        if (vtkCell::HitBBox(dsBounds, rayPt1, rayDir, isect, t))
+        if (vtkBox::IntersectBox(dsBounds, rayPt1, rayDir, isect, t))
         {
             success = vtkVisItUtility::ComputeStructuredCoordinates(rgrid, 
                           isect, ijk); 
