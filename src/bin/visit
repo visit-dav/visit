@@ -294,6 +294,9 @@ $0 = shift @ARGV;
 #    Eric Brugger, Tue Dec 23 10:15:11 PST 2003
 #    Added support for logging usage.  It is off by default.
 #
+#    Brad Whitlock, Thu Jan 29 10:53:51 PDT 2004
+#    Added support for Linux running on AMD Opteron 64 (x86_64).
+#
 ###############################################################################
 
 
@@ -775,6 +778,9 @@ for ($os) {
         }
         elsif ($mach =~ /ia64/) {
             $archdir = "linux-ia64";
+        }
+        elsif ($mach =~ /x86_64/) {
+            $archdir = "linux-x86_64";
         }
         else {
             $archdir = "linux-intel";

@@ -1,6 +1,12 @@
 #include <stdio.h> // for sscanf
 #if !defined(_WIN32)
+
+#ifdef GCC3_3_X86_64
+#include <strstream>
+#else
 #include <strstream.h>
+#endif
+
 #endif
 #include <string>
 #include <vector>

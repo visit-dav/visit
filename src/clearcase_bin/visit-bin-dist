@@ -158,7 +158,12 @@
 #    Qt license in an obvious spot, and fixed a typo with copying
 #    duplicates.
 #
-#-----------------------------------------------------------------------
+#    Brad Whitlock, Thu Jan 29 10:50:56 PDT 2004
+#    I added support for Linux running AMD Opteron 64 (x86_64). I also
+#    changed the name of the distribution file on Linux if the processor
+#    is IA64, Alpha, or x86_64.
+#
+#------------------------------------------------------------------------------
 
 set DataFiles = "TRUE"
 set QtLibs = "TRUE"
@@ -412,7 +417,7 @@ endif
 
 mkdir distribution/visit/$Version
 ln -s $Version distribution/visit/current
-set platforms="hp-hpux-pa sgi-irix6-mips2 sun4-sunos5-sparc ibm-aix-pwr dec-osf1-alpha linux-intel linux-ia64 linux-alpha darwin-ppc"
+set platforms="hp-hpux-pa sgi-irix6-mips2 sun4-sunos5-sparc ibm-aix-pwr dec-osf1-alpha linux-intel linux-ia64 linux-alpha linux-x86_64 darwin-ppc"
 foreach platform ($platforms)
    mkdir distribution/visit/$Version/$platform
    mkdir distribution/visit/$Version/$platform/bin
@@ -492,19 +497,25 @@ switch ($os)
 
    case linux:
       echo "Found a Linux version of visit"
-      set osver = linux
       set arch = `/bin/uname -m`
       switch ($arch)
          case i486:
          case i586:
          case i686:
+            set osver = linux
             set visitbindir = linux-intel
             breaksw
          case ia64:
+            set osver = linux-ia64
             set visitbindir = linux-ia64
             breaksw
          case alpha:
+            set osver = linux-alpha
             set visitbindir = linux-alpha
+            breaksw
+         case x86_64:
+            set osver = linux-x86_64
+            set visitbindir = linux-x86_64
             breaksw
       endsw
       breaksw
