@@ -243,6 +243,9 @@ ZooMIR::ReconstructMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig, int dim)
 //    Hank Childs, Wed Jan 14 08:12:02 PST 2004
 //    Construct the output unstructured grid more efficiently.
 //
+//    Hank Childs, Fri Jan 30 08:46:07 PST 2004
+//    Removed unnecessary Allocate call.
+//
 // ****************************************************************************
 vtkDataSet *
 ZooMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
@@ -364,7 +367,6 @@ ZooMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
     //
     // Now insert the connectivity array.
     //
-    rv->Allocate(ncells);
     vtkIdTypeArray *nlist = vtkIdTypeArray::New();
     nlist->SetNumberOfValues(totalsize + ncells);
     vtkIdType *nl = nlist->GetPointer(0);

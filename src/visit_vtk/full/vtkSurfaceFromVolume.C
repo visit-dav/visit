@@ -4,7 +4,9 @@
 
 #include <vtkSurfaceFromVolume.h>
 
+#include <vtkCellArray.h>
 #include <vtkCellData.h>
+#include <vtkIdTypeArray.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
 
@@ -104,6 +106,13 @@ vtkSurfaceFromVolume::TriangleList::AddTriangle(int cellId, int v1, int v2,
 }
 
 
+// ****************************************************************************
+//  Modications:
+//
+//    Hank Childs, Fri Jan 30 08:50:44 PST 2004
+//    Speed up construction by doing pointer arithmetic.
+//
+// ****************************************************************************
 
 void
 vtkSurfaceFromVolume::ConstructPolyData(vtkPointData *inPD, vtkCellData *inCD,
@@ -153,7 +162,10 @@ vtkSurfaceFromVolume::ConstructPolyData(vtkPointData *inPD, vtkCellData *inCD,
     // Now set up the triangles and the cell data.
     //
     int ntris = tris.GetTotalNumberOfTriangles();
-    output->Allocate(ntris*(3+1));
+    vtkIdTypeArray *nlist = vtkIdTypeArray::New();
+    nlist->SetNumberOfValues(3*ntris + ntris);
+    vtkIdType *nl = nlist->GetPointer(0);
+
     outCD->CopyAllocate(inCD, ntris);
     int cellId = 0;
     int nlists = tris.GetNumberOfLists();
@@ -164,15 +176,20 @@ vtkSurfaceFromVolume::ConstructPolyData(vtkPointData *inPD, vtkCellData *inCD,
         for (j = 0 ; j < listSize ; j++)
         {
             outCD->CopyData(inCD, list[0], cellId);
-            vtkIdType tri[3];
-            tri[0] = list[1];
-            tri[1] = list[2];
-            tri[2] = list[3];
-            output->InsertNextCell(VTK_TRIANGLE, 3, tri);
+            *nl++ = 3;
+            *nl++ = list[1];
+            *nl++ = list[2];
+            *nl++ = list[3];
             list += 4;
             cellId++;
         }
     }
+    vtkCellArray *cells = vtkCellArray::New();
+    cells->SetCells(ntris, nlist);
+    nlist->Delete();
+
+    output->SetPolys(cells);
+    cells->Delete();
 }
 
 
@@ -186,6 +203,15 @@ inline void GetPoint(float *pt, const float *X, const float *Y,
     pt[1] = Y[cellJ];
     pt[2] = Z[cellK];
 }
+
+
+// ****************************************************************************
+//  Modications:
+//
+//    Hank Childs, Fri Jan 30 08:50:44 PST 2004
+//    Speed up construction by doing pointer arithmetic.
+//
+// ****************************************************************************
 
 void
 vtkSurfaceFromVolume::ConstructPolyData(vtkPointData *inPD, vtkCellData *inCD,
@@ -232,7 +258,10 @@ vtkSurfaceFromVolume::ConstructPolyData(vtkPointData *inPD, vtkCellData *inCD,
     // Now set up the triangles and the cell data.
     //
     int ntris = tris.GetTotalNumberOfTriangles();
-    output->Allocate(ntris*(3+1));
+    vtkIdTypeArray *nlist = vtkIdTypeArray::New();
+    nlist->SetNumberOfValues(3*ntris + ntris);
+    vtkIdType *nl = nlist->GetPointer(0);
+
     outCD->CopyAllocate(inCD, ntris);
     int cellId = 0;
     int nlists = tris.GetNumberOfLists();
@@ -243,15 +272,20 @@ vtkSurfaceFromVolume::ConstructPolyData(vtkPointData *inPD, vtkCellData *inCD,
         for (j = 0 ; j < listSize ; j++)
         {
             outCD->CopyData(inCD, list[0], cellId);
-            vtkIdType tri[3];
-            tri[0] = list[1];
-            tri[1] = list[2];
-            tri[2] = list[3];
-            output->InsertNextCell(VTK_TRIANGLE, 3, tri);
+            *nl++ = 3;
+            *nl++ = list[1];
+            *nl++ = list[2];
+            *nl++ = list[3];
             list += 4;
             cellId++;
         }
     }
+    vtkCellArray *cells = vtkCellArray::New();
+    cells->SetCells(ntris, nlist);
+    nlist->Delete();
+
+    output->SetPolys(cells);
+    cells->Delete();
 }
 
 

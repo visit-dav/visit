@@ -11,6 +11,7 @@
 #include <vtkExtractRectilinearGrid.h>
 #include <vtkIntArray.h>
 #include <vtkPointData.h>
+#include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
 #include <vtkUnsignedIntArray.h>
@@ -231,6 +232,9 @@ avtIndexSelectFilter::Equivalent(const AttributeGroup *a)
 //    Kathleen Bonnell, Fri Dec 13 16:41:12 PST 2002   
 //    Use NewInstance instead of MakeObject in order to match vtk's new api. 
 //    
+//    Jeremy Meredith, Fri Jan 30 17:45:47 PST 2004
+//    Added code to preserve dataset type if the input was polydata.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -439,8 +443,42 @@ avtIndexSelectFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
             out_ug->InsertNextCell(in_ds->GetCellType(i), list);
         }
         out_ds = out_ug;
+
+        if (out_ds->GetNumberOfCells() <= 0)
+        {
+            out_ds = NULL;
+        }
+
+        //
+        // If we had poly data input, we want poly data output.  The VTK filter
+        // only returns unstructured grids, so convert that now.
+        //
+        bool shouldDelete = false;
+        if (in_ds->GetDataObjectType() == VTK_POLY_DATA && out_ds != NULL)
+        {
+            vtkUnstructuredGrid *ugrid = (vtkUnstructuredGrid *) out_ds;
+            vtkPolyData *out_pd = vtkPolyData::New();
+            out_pd->SetPoints(ugrid->GetPoints());
+            out_pd->GetPointData()->ShallowCopy(ugrid->GetPointData());
+            out_pd->GetCellData()->ShallowCopy(ugrid->GetCellData());
+            int ncells = ugrid->GetNumberOfCells();
+            out_pd->Allocate(ncells);
+            for (int i = 0 ; i < ncells ; i++)
+            {
+                int celltype = ugrid->GetCellType(i);
+                vtkIdType *pts;
+                int npts;
+                ugrid->GetCellPoints(i, npts, pts);
+                out_pd->InsertNextCell(celltype, npts, pts);
+            }
+            out_ds = out_pd;
+            shouldDelete = true;
+        }
+
         ManageMemory(out_ds);
         out_ug->Delete();
+        if (shouldDelete)
+            out_ds->Delete();
     }
 
     successfullyExecuted = true;

@@ -163,6 +163,9 @@
 #    changed the name of the distribution file on Linux if the processor
 #    is IA64, Alpha, or x86_64.
 #
+#    Eric Brugger, Fri Jan 30 09:23:45 PST 2004
+#    Modified the script to also distribute libvtk_sl_io.
+#
 #------------------------------------------------------------------------------
 
 set DataFiles = "TRUE"
@@ -605,6 +608,7 @@ endif
 echo "Copying libraries to the distribution..."
 cp `ls $VisItDir/lib/*.$SHLIB_SOEXT | grep -v libvtk | grep -v libqt | grep -v libpython` $libdir
 cp $VisItDir/lib/libvtkqt.$SHLIB_SOEXT $libdir
+cp $VisItDir/lib/libvtk_sl_io.$SHLIB_SOEXT $libdir
 
 #
 # Copy the Qt libraries to the distribution.

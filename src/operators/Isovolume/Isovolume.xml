@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+  <Plugin name="Isovolume" type="operator" label="Isovolume" version="1.0" enabled="true" iconFile="Isovolume.xpm">
+    <Attribute name="IsovolumeAttributes" purpose="This class contains attributes for the isovolume operator." persistent="true">
+      <Field name="lbound" label="Lower bound" type="double">
+        -1e37
+      </Field>
+      <Field name="ubound" label="Upper bound" type="double">
+        1e37
+      </Field>
+      <Field name="variable" label="variable" type="string">
+        default
+      </Field>
+    </Attribute>
+  </Plugin>

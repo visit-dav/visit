@@ -21,6 +21,11 @@
 //  Programmer: Hank Childs
 //  Creation:   September 23, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Jan 30 11:38:50 PST 2004
+//    Fix mistake in calculating ('4085).
+//
 // ****************************************************************************
 
 void
@@ -41,6 +46,7 @@ avtEffectiveTensorFilter::DoOperation(vtkDataArray *in, vtkDataArray *out,
             float out2 = 0.5*(dev0*dev0 + dev1*dev1 + dev2*dev2) +
                          vals[1]*vals[1] + vals[2]*vals[2] +
                          vals[5]*vals[5];
+            out2 = sqrt(3.*out2);
             out->SetTuple1(i, out2);
         }
     }

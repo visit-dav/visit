@@ -19,6 +19,10 @@ class vtkUnstructuredGrid;
 //  Programmer:  Jeremy Meredith
 //  Creation:    August 11, 2003
 //
+//  Modifications:
+//    Jeremy Meredith, Fri Jan 30 16:15:50 PST 2004
+//    Added scalar array and scalar range for isovolume.
+//
 // ****************************************************************************
 class VISIT_VTK_API vtkVisItClipper3D
     : public vtkDataSetToUnstructuredGridFilter
@@ -30,6 +34,7 @@ class VISIT_VTK_API vtkVisItClipper3D
     static vtkVisItClipper3D *New();
 
     virtual void SetClipFunction(vtkImplicitFunction*);
+    virtual void SetClipScalars(float*, float, float);
     virtual void SetInsideOut(bool);
 
     void SetCellList(int *, int);
@@ -45,12 +50,17 @@ class VISIT_VTK_API vtkVisItClipper3D
     void UnstructuredGridExecute();
     void GeneralExecute();
     void ClipDataset(vtkDataSet *, vtkUnstructuredGrid *);
-  
+
     int *CellList;
     int  CellListSize;
   private:
     bool insideOut;
     vtkImplicitFunction *clipFunction;
+    float *scalarArray;
+    float minValue;
+    float maxValue;
+    float avgValue;
+    float halfDist;
 
     vtkVisItClipper3D(const vtkVisItClipper3D&);  // Not implemented.
     void operator=(const vtkVisItClipper3D&);  // Not implemented.
