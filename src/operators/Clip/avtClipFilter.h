@@ -1,12 +1,12 @@
 // ************************************************************************* //
-//                             avtClipFilter.h                              //
+//                              avtClipFilter.h                              //
 // ************************************************************************* //
 
 #ifndef AVT_CLIP_FILTER_H
 #define AVT_CLIP_FILTER_H
 
 
-#include <avtPluginStreamer.h>
+#include <avtPluginStructuredChunkStreamer.h>
 #include <ClipAttributes.h>
 
 
@@ -47,9 +47,12 @@ class vtkUnstructuredGrid;
 //    Hank Childs, Thu Mar 10 14:33:32 PST 2005
 //    Removed data members for filters that are now instantiated on the fly.
 //
+//    Hank Childs, Sun Mar 27 11:57:52 PST 2005
+//    Add support for structured mesh chunking.
+//
 // ****************************************************************************
 
-class avtClipFilter : public avtPluginStreamer
+class avtClipFilter : public avtPluginStructuredChunkStreamer
 {
   public:
                              avtClipFilter();
@@ -67,7 +70,11 @@ class avtClipFilter : public avtPluginStreamer
   protected:
     ClipAttributes           atts;
 
-    virtual vtkDataSet      *ExecuteData(vtkDataSet *, int, std::string);
+    virtual vtkDataSet      *ProcessOneChunk(vtkDataSet *, int, 
+                                             std::string, bool);
+    virtual void             GetAssignments(vtkDataSet *, const int *,
+                      std::vector<avtStructuredMeshChunker::ZoneDesignation>&);
+
     virtual void             RefashionDataObjectInfo(void);
 
   private:

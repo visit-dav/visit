@@ -36,6 +36,7 @@
 #include <avtDataset.h>
 #include <avtFilter.h>
 #include <avtOriginatingSink.h>
+#include <avtParallel.h>
 #include <avtStreamer.h>
 #include <avtTerminatingSource.h>
 #include <avtVariableMapper.h>
@@ -46,7 +47,6 @@ using std::string;
 
 #ifdef PARALLEL
 #include <parallel.h>
-#include <avtParallel.h>
 #else
 #include <Xfer.h>
 #endif
@@ -828,17 +828,50 @@ Engine::ProcessInput()
 //    Hank Childs, Sun Mar  6 08:42:50 PST 2005
 //    Renamed -forcedynamic to -allowdynamic.  Removed -forcestatic argument.
 //
+//    Hank Childs, Sun Mar 27 13:29:13 PST 2005
+//    Added more timing arguments.
+//
 // ****************************************************************************
 void
 Engine::ProcessCommandLine(int argc, char **argv)
 {
     // process arguments.
+    bool timingsAllowed = true;
     for (int i=1; i<argc; i++)
     {
         if (strcmp(argv[i], "-allowdynamic") == 0)
             LoadBalancer::AllowDynamic();
-        else if (strcmp(argv[i], "-timing") == 0)
+        else if ((strcmp(argv[i], "-timing") == 0) && timingsAllowed)
             visitTimer->Enable();
+        else if (strcmp(argv[i], "-timing-processor-stride") == 0)
+        {
+            int stride = 1;
+            if (i+1 < argc)
+            {
+                i++;
+                stride = atoi(argv[i]);
+            }
+            if (stride <= 0)
+            {
+                if (PAR_Rank() != 0)
+                {
+                    visitTimer->Disable();
+                    timingsAllowed = false;
+                }
+            }
+            else
+            {
+                int modulo = (PAR_Rank() % stride);
+                if (modulo != 0)
+                {
+                    visitTimer->Disable();
+                    timingsAllowed = false;
+                }
+            }
+ 
+        }
+        else if (strcmp(argv[i], "-withhold-timing-output") == 0)
+            visitTimer->WithholdOutput(true);
         else if (strcmp(argv[i], "-timeout") == 0)
         {
             timeout = atol(argv[i+1]);

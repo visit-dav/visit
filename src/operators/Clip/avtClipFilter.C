@@ -177,7 +177,7 @@ avtClipFilter::Equivalent(const AttributeGroup *a)
 
 
 // ****************************************************************************
-//  Method: avtClipFilter::ExecuteData
+//  Method: avtClipFilter::ProcessOneChunk
 //
 //  Purpose:
 //      Sends the specified input and output through the Clip filter.
@@ -186,6 +186,8 @@ avtClipFilter::Equivalent(const AttributeGroup *a)
 //      in_ds      The input dataset.
 //      dom        The domain number.
 //      label      The label.
+//      isChunked  Whether or not the data set is produced by the structured
+//                 mesh chunker -- not important for this module.
 //
 //  Returns:       The output unstructured grid.
 //
@@ -200,10 +202,14 @@ avtClipFilter::Equivalent(const AttributeGroup *a)
 //    Hank Childs, Thu Mar 10 14:33:32 PST 2005
 //    Instantiate filters on the fly.
 //
+//    Hank Childs, Sun Mar 27 12:00:18 PST 2005
+//    Renamed to ProcessOneChunk.  Changed memory management.  Fix small
+//    memory leak in error condition.
+//
 // ****************************************************************************
 
 vtkDataSet *
-avtClipFilter::ExecuteData(vtkDataSet *inDS, int dom, std::string)
+avtClipFilter::ProcessOneChunk(vtkDataSet *inDS, int dom, std::string, bool)
 {
     vtkClipPolyData *clipPoly = vtkClipPolyData::New();
     vtkVisItClipper *fastClipper = vtkVisItClipper::New();
@@ -214,6 +220,9 @@ avtClipFilter::ExecuteData(vtkDataSet *inDS, int dom, std::string)
     if (!funcSet)
     {
         // we have no functions to work with!
+        clipPoly->Delete();
+        fastClipper->Delete();
+        ifuncs->Delete();
         return inDS;
     }
 
@@ -256,18 +265,94 @@ avtClipFilter::ExecuteData(vtkDataSet *inDS, int dom, std::string)
     {
         if (outDS->GetNumberOfCells() == 0)
         {
-            return NULL;
+            outDS->Delete();
+            outDS = NULL;
         }
-        debug5 << "After clipping, domain " << dom << " has " 
-               << outDS->GetNumberOfCells() << " cells." << endl;
-
-        ManageMemory(outDS);
-        outDS->Delete();
+        else
+        {
+            debug5 << "After clipping, domain " << dom << " has " 
+                   << outDS->GetNumberOfCells() << " cells." << endl;
+        }
     }
 
     clipPoly->Delete();
     fastClipper->Delete();
-    return outDS;
+    return outDS;  // Calling function will free outDS.
+}
+
+
+// ****************************************************************************
+//  Method: avtClipFilter::GetAssignments
+//
+//  Purpose:
+//      Get the assignments for the clip.
+//
+//  Programmer: Hank Childs
+//  Creation:   March 27, 2005
+//
+// ****************************************************************************
+
+void
+avtClipFilter::GetAssignments(vtkDataSet *in_ds, const int *dims,
+                     std::vector<avtStructuredMeshChunker::ZoneDesignation> &d)
+{
+    int i, j, k;
+    vtkImplicitBoolean *ifuncs = vtkImplicitBoolean::New();
+ 
+    bool inverse = false; 
+    bool funcSet = SetUpClipFunctions(ifuncs, inverse);
+    if (!funcSet)
+    {
+        // we have no functions to work with!
+        ifuncs->Delete();
+        EXCEPTION0(ImproperUseException);
+    }
+
+    int pt_dims[3];
+    pt_dims[0] = dims[0]+1;
+    pt_dims[1] = dims[1]+1;
+    pt_dims[2] = dims[2]+1;
+    int npts = pt_dims[0]*pt_dims[1]*pt_dims[2];
+    bool *pt_dist = new bool[npts];
+    for (i = 0 ; i < npts ; i++)
+    {
+        float pt[3];
+        in_ds->GetPoint(i, pt);
+        bool pos_dist = ifuncs->EvaluateFunction(pt) >= 0;
+        pt_dist[i] = (pos_dist && !inverse) || (!pos_dist && inverse);
+    }
+
+    for (k = 0 ; k < dims[2] ; k++)
+        for (j = 0 ; j < dims[1] ; j++)
+            for (i = 0 ; i < dims[0] ; i++)
+            {
+                bool oneIn = false;
+                bool oneOut = false;
+                for (int l = 0 ; l < 8 ; l++)
+                {
+                    int i2 = (l & 1 ? i+1 : i);
+                    int j2 = (l & 2 ? j+1 : j);
+                    int k2 = (l & 4 ? k+1 : k);
+                    int index = k2*pt_dims[0]*pt_dims[1] + j2*pt_dims[0] + i2;
+                    if (pt_dist[index])
+                        oneIn = true;
+                    else
+                        oneOut = true;
+                }
+                int index = k*dims[0]*dims[1] + j*dims[0] + i;
+                if (oneIn && oneOut)
+                    d[index] = avtStructuredMeshChunker::TO_BE_PROCESSED;
+                else if (!oneOut)
+                    d[index] = avtStructuredMeshChunker::RETAIN;
+                else if (!oneIn)
+                    d[index] = avtStructuredMeshChunker::DISCARD;
+                else
+                {
+                    EXCEPTION0(ImproperUseException); // should be impossible
+                }
+            }
+
+    ifuncs->Delete();
 }
 
 

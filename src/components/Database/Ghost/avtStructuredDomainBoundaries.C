@@ -2432,6 +2432,10 @@ avtRectilinearDomainBoundaries::ExchangeMesh(vector<int>        domainNum,
 //    Hank Childs, Sun Feb 27 14:47:45 PST 2005
 //    Added argument allDomains.
 //
+//    Hank Childs, Mon Mar 28 13:38:14 PST 2005
+//    Do not create domain-processor map, since that requires communication
+//    and cannot be used with dynamic load balancing.
+//
 // ****************************************************************************
 
 void
@@ -2439,8 +2443,6 @@ avtStructuredDomainBoundaries::CreateGhostNodes(vector<int>         domainNum,
                                                 vector<vtkDataSet*> meshes,
                                                 vector<int> &allDomains)
 {
-    vector<int> domain2proc = CreateDomainToProcessorMap(domainNum);
-
     //
     // If we are doing DLB, we want to mark nodes as ghost, even if their
     // neighboring domains are not being used on this iteration.  Do this by
@@ -2448,6 +2450,8 @@ avtStructuredDomainBoundaries::CreateGhostNodes(vector<int>         domainNum,
     // trick because the rest of the routine does not care which domains 
     // are on which processors -- only that we are using them.
     //
+    int ntotaldomains = wholeBoundary.size();
+    vector<int> domain2proc(ntotaldomains, -1);
     for (int i = 0 ; i < allDomains.size() ; i++)
     {
         if (domain2proc[allDomains[i]] < 0)

@@ -822,6 +822,10 @@ RPCExecutor<SetWinAnnotAttsRPC>::Execute(SetWinAnnotAttsRPC *rpc)
 //
 //    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
 //    Added code to operate on specific window id
+//
+//    Hank Childs, Sun Mar 27 14:02:22 PST 2005
+//    Use OutputAllTimings, in case timings are being withheld.
+//
 // ****************************************************************************
 template<>
 void
@@ -930,7 +934,7 @@ RPCExecutor<ExecuteRPC>::Execute(ExecuteRPC *rpc)
     {
         visitTimer->StopTimer(writingData, "Writing data to viewer");
     }
-    visitTimer->DumpTimings();
+    visitTimer->OutputAllTimings();
 }
 
 // ****************************************************************************

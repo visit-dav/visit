@@ -82,12 +82,17 @@ class MISC_API TimingsManager
     void                       DumpTimings(void);
     void                       DumpTimings(ostream &);
 
+    void                       WithholdOutput(bool);
+    void                       OutputAllTimings();
+
   protected:
     std::string                filename;
     bool                       openedFile;
     int                        numCurrentTimings;
     int                        numTimings;
     bool                       enabled;
+    bool                       withholdOutput;
+    bool                       outputAllTimings;
 
     std::vector<double>        times;
     std::vector<std::string>   summaries;

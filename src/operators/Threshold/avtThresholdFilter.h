@@ -5,7 +5,7 @@
 #ifndef AVT_Threshold_FILTER_H
 #define AVT_Threshold_FILTER_H
 
-#include <avtPluginDataTreeStreamer.h>
+#include <avtPluginStructuredChunkStreamer.h>
 #include <ThresholdAttributes.h>
 
 #include <avtGhostData.h>
@@ -27,9 +27,12 @@ class     vtkDataSet;
 //    Hank Childs, Sat Mar 19 10:18:52 PST 2005
 //    Add support for structured chunking.
 //
+//    Hank Childs, Sun Mar 27 11:34:04 PST 2005
+//    Inherit from new base type that supports structured chunking.
+//
 // ****************************************************************************
 
-class avtThresholdFilter : public avtPluginDataTreeStreamer
+class avtThresholdFilter : public avtPluginStructuredChunkStreamer
 {
   public:
                          avtThresholdFilter();
@@ -50,15 +53,14 @@ class avtThresholdFilter : public avtPluginDataTreeStreamer
     virtual avtPipelineSpecification_p
                           PerformRestriction(avtPipelineSpecification_p);
 
-    bool                  downstreamRectilinearMeshOptimizations;
-    bool                  downstreamCurvilinearMeshOptimizations;
-    avtGhostDataType      downstreamGhostType;
-    bool                  chunkedStructuredMeshes;
+    virtual vtkDataSet   *ProcessOneChunk(vtkDataSet *, int, std::string,bool);
+    virtual void          GetAssignments(vtkDataSet *, const int *,
+                      std::vector<avtStructuredMeshChunker::ZoneDesignation>&);
 
-    virtual avtDataTree_p ExecuteDataTree(vtkDataSet *, int, std::string);
     virtual void          RefashionDataObjectInfo(void);
     virtual void          PreExecute(void);
-    virtual void          PostExecute(void);
+
+    vtkDataArray         *GetThresholdVariable(vtkDataSet *, bool &);
 };
 
 
