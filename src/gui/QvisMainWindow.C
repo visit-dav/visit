@@ -924,6 +924,8 @@ QvisMainWindow::UpdateGlobalArea(bool doAll)
             maintainDataCheckBox->setChecked(globalAtts->GetMaintainData());
             maintainDataCheckBox->blockSignals(false);
             break;
+        case 13: // automaticallyAddOperator
+            break;
         }
     } // end for
 }

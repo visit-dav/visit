@@ -3400,10 +3400,13 @@ avtDefaultPlotMetaData::Print(ostream &out, int indent) const
 //    Brad Whitlock, Fri Jul 23 12:33:17 PDT 2004
 //    Added database comment.
 //
+//    Brad Whitlock, Thu Aug 5 13:51:24 PST 2004
+//    Added mustAlphabetizeVariables.
+//
 // ****************************************************************************
 
 avtDatabaseMetaData::avtDatabaseMetaData()
-    : AttributeSubject("sssbddibss*i*i*i*d*a*a*a*a*a*a*a*a*a*aba*bsib")
+    : AttributeSubject("sssbddibss*i*i*i*d*a*a*a*a*a*a*a*a*a*aba*bsibb")
 {
     hasTemporalExtents          = false;
     minTemporalExtents          = 0.;
@@ -3411,6 +3414,7 @@ avtDatabaseMetaData::avtDatabaseMetaData()
     numStates                   = 0;
     isVirtualDatabase           = false;
     mustRepopulateOnStateChange = false;
+    mustAlphabetizeVariables    = true;
     isSimulation                = false;
     simHost                     = "";
     simPort                     = 0;
@@ -3468,10 +3472,13 @@ avtDatabaseMetaData::avtDatabaseMetaData()
 //    Brad Whitlock, Fri Jul 23 12:35:54 PDT 2004
 //    Added databaseComment.
 //
+//    Brad Whitlock, Thu Aug 5 13:52:20 PST 2004
+//    Added mustAlphabetizeVariables.
+//
 // ****************************************************************************
 
 avtDatabaseMetaData::avtDatabaseMetaData(const avtDatabaseMetaData &rhs)
-    : AttributeSubject("sssbddibss*i*i*i*d*a*a*a*a*a*a*a*a*a*aba*bsib")
+    : AttributeSubject("sssbddibss*i*i*i*d*a*a*a*a*a*a*a*a*a*aba*bsibb")
 {
     databaseName       = rhs.databaseName;
     fileFormat         = rhs.fileFormat;
@@ -3482,6 +3489,7 @@ avtDatabaseMetaData::avtDatabaseMetaData(const avtDatabaseMetaData &rhs)
     numStates          = rhs.numStates;
     isVirtualDatabase  = rhs.isVirtualDatabase;
     mustRepopulateOnStateChange = rhs.mustRepopulateOnStateChange;
+    mustAlphabetizeVariables = rhs.mustAlphabetizeVariables;
     useCatchAllMesh    = rhs.useCatchAllMesh;
     timeStepPath       = rhs.timeStepPath;
     timeStepNames      = rhs.timeStepNames;
@@ -3569,6 +3577,9 @@ avtDatabaseMetaData::avtDatabaseMetaData(const avtDatabaseMetaData &rhs)
 //    Brad Whitlock, Fri Jul 23 12:36:47 PDT 2004
 //    Added databaseComment.
 //
+//    Brad Whitlock, Thu Aug 5 13:52:20 PST 2004
+//    Added mustAlphabetizeVariables.
+//
 // ****************************************************************************
 
 const avtDatabaseMetaData &
@@ -3583,6 +3594,7 @@ avtDatabaseMetaData::operator=(const avtDatabaseMetaData &rhs)
     numStates          = rhs.numStates;
     isVirtualDatabase  = rhs.isVirtualDatabase;
     mustRepopulateOnStateChange = rhs.mustRepopulateOnStateChange;
+    mustAlphabetizeVariables    = rhs.mustAlphabetizeVariables;
     useCatchAllMesh    = rhs.useCatchAllMesh;
     timeStepPath       = rhs.timeStepPath;
     timeStepNames      = rhs.timeStepNames;
@@ -5179,6 +5191,9 @@ avtDatabaseMetaData::Print(ostream &out, int indent) const
 //   Brad Whitlock, Fri Jul 23 12:38:24 PDT 2004
 //   Added database comment.
 //
+//   Brad Whitlock, Thu Aug 5 13:53:53 PST 2004
+//   Added mustAlphabetizeVariables.
+//
 // *******************************************************************
 
 void
@@ -5217,6 +5232,7 @@ avtDatabaseMetaData::SelectAll()
     Select(27, (void*)&simHost);
     Select(28, (void*)&simPort);
     Select(29, (void*)&useCatchAllMesh);
+    Select(30, (void*)&mustAlphabetizeVariables);
 }
 
 // *******************************************************************

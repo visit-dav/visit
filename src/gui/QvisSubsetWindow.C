@@ -2,9 +2,10 @@
 #include <QvisSubsetListView.h>
 #include <QvisSubsetListViewItem.h>
 #include <qhbox.h>
-#include <qbuttongroup.h>
+#include <qlabel.h>
 #include <qlayout.h>
 #include <qpushbutton.h>
+#include <qpopupmenu.h>
 #include <qheader.h>
 #include <qscrollview.h>
 #include <qsplitter.h>
@@ -61,6 +62,9 @@ S2S(SetState s)
 //   Brad Whitlock, Fri Feb 8 14:54:47 PST 2002
 //   Added initialization of pointers that we'll delete later.
 //
+//   Brad Whitlock, Fri Aug 6 13:56:40 PST 2004
+//   Changed to support multiple set highlighting.
+//
 // ****************************************************************************
 
 QvisSubsetWindow::QvisSubsetWindow(Subject *subj, const char *caption,
@@ -73,11 +77,6 @@ QvisSubsetWindow::QvisSubsetWindow(Subject *subj, const char *caption,
     sil_TopSet = -1;
     sil_NumSets = -1;
     sil_NumCollections = -1;
-
-    // Initialize widgets that we'll delete manually later.
-    turnOnGroup = 0;
-    turnOffGroup = 0;
-    turnReverseGroup = 0;
 }
 
 // ****************************************************************************
@@ -93,13 +92,13 @@ QvisSubsetWindow::QvisSubsetWindow(Subject *subj, const char *caption,
 //   Brad Whitlock, Fri Feb 8 14:54:36 PST 2002
 //   Added deletion of parentless widgets.
 //
+//   Brad Whitlock, Fri Aug 6 13:56:19 PST 2004
+//   Removed the buttongroups.
+//
 // ****************************************************************************
 
 QvisSubsetWindow::~QvisSubsetWindow()
 {
-    delete turnOnGroup;
-    delete turnOffGroup;
-    delete turnReverseGroup;
 }
 
 // ****************************************************************************
@@ -122,22 +121,14 @@ QvisSubsetWindow::~QvisSubsetWindow()
 //   Brad Whitlock, Fri Feb 8 15:52:11 PST 2002
 //   Modified the code to use a splitter.
 //
+//   Brad Whitlock, Fri Aug 6 13:58:12 PST 2004
+//   I removed some buttongroups.
+//
 // ****************************************************************************
 
 void
 QvisSubsetWindow::CreateWindowContents()
 {
-    // Create some button groups.
-    turnOnGroup = new QButtonGroup(0, "turnOnGroup");
-    connect(turnOnGroup, SIGNAL(clicked(int)),
-            this, SLOT(turnOn(int)));
-    turnOffGroup = new QButtonGroup(0, "turnOffGroup");
-    connect(turnOffGroup, SIGNAL(clicked(int)),
-            this, SLOT(turnOff(int)));
-    turnReverseGroup = new QButtonGroup(0, "turnReverseGroup");
-    connect(turnReverseGroup, SIGNAL(clicked(int)),
-            this, SLOT(TurnReverse(int)));
- 
     scrollView = new QScrollView(central, "scrollView");
     scrollView->setHScrollBarMode(QScrollView::Auto);
     scrollView->setVScrollBarMode(QScrollView::AlwaysOff);
@@ -237,9 +228,7 @@ QvisSubsetWindow::UpdateWindow(bool)
         ClearListViewsToTheRight(1);
 
         // Set the enabled state of the buttons.
-        listViews[0].turnOn->setEnabled(validTopSet);
-        listViews[0].turnOff->setEnabled(validTopSet);
-        listViews[0].turnReverse->setEnabled(validTopSet);
+        SetButtonEnabledState(0, validTopSet);
     }
     else
     {
@@ -329,6 +318,9 @@ QvisSubsetWindow::GetNextListViewIndex(QListView *lv)
 //   Brad Whitlock, Tue Apr 22 15:30:27 PST 2003
 //   I made buttons be disabled by default.
 //
+//   Brad Whitlock, Fri Aug 6 14:12:45 PST 2004
+//   I changed the controls to allow selection of multiple sets.
+//
 // ****************************************************************************
 
 int
@@ -342,7 +334,16 @@ QvisSubsetWindow::AddListView(bool visible)
     entry.frame = new QFrame(lvSplitter, tmp.latin1());
     lvSplitter->setResizeMode(entry.frame, QSplitter::Stretch);
     entry.layout = new QGridLayout(entry.frame, 3, 2);
+    entry.layout->setSpacing(5);
+    entry.layout->setMargin(5);
     entry.lv = new QvisSubsetListView(entry.frame, tmp.latin1());
+    if(listViews.size() > 0)
+    {
+        entry.lv->setSelectionMode(QListView::Extended);
+        connect(entry.lv, SIGNAL(selectionChanged()),
+                this, SLOT(listviewSelectionChanged()));
+    }
+
     entry.layout->addMultiCellWidget(entry.lv, 0, 0, 0, 1);
     connect(entry.lv, SIGNAL(clicked(QListViewItem *)),
             this, SLOT(listviewClicked(QListViewItem *)));
@@ -353,27 +354,85 @@ QvisSubsetWindow::AddListView(bool visible)
     if(!visible)
         entry.frame->hide();
 
+    // Create a popup menu that can be used to set the action for the
+    // all sets button.
+    tmp.sprintf("popup%d", listViews.size());
+    entry.allSetsPopupMenu = new QPopupMenu();
+    entry.allSetsPopupMenu->insertItem("Reverse",  0);
+    entry.allSetsPopupMenu->insertItem("Turn on",  1);
+    entry.allSetsPopupMenu->insertItem("Turn off", 2);
+    connect(entry.allSetsPopupMenu, SIGNAL(activated(int)),
+            this, SLOT(setAllSetsButtonAction(int)));
+
     // Create some buttons.
-    tmp.sprintf("turnOn%d", listViews.size());
-    entry.turnOn = new QPushButton("All", entry.frame, tmp.latin1());
-    entry.turnOn->setEnabled(false);
-    entry.layout->addWidget(entry.turnOn, 1, 0);
-    turnOnGroup->insert(entry.turnOn);
+    QHBox *allButtonParent = new QHBox(entry.frame);
+    allButtonParent->setSpacing(0);
+    tmp.sprintf("allSets%d", listViews.size());
+    entry.allSetsLabel = new QLabel("All sets", entry.frame,
+        tmp.latin1());
+    // Create the button that does the action.
+    entry.allSetsButton = new QPushButton("Reverse", allButtonParent,
+        tmp.latin1());
+    connect(entry.allSetsButton, SIGNAL(clicked()),
+            this, SLOT(allSetsClicked()));
+    // Create the button that sets the action to perform.
+    entry.allSetsActionButton = new QPushButton("", allButtonParent,
+        tmp.latin1());
+    entry.allSetsActionButton->setPopup(entry.allSetsPopupMenu);
 
-    tmp.sprintf("turnOff%d", listViews.size());
-    entry.turnOff = new QPushButton("None", entry.frame, tmp.latin1());
-    entry.turnOff->setEnabled(false);
-    entry.layout->addWidget(entry.turnOff, 1, 1);
-    turnOffGroup->insert(entry.turnOff);
+    // Set the sizes of the grouped buttons.
+    entry.allSetsActionButton->setMaximumWidth(
+         fontMetrics().boundingRect("XX").width() + 6);
+    entry.allSetsActionButton->setSizePolicy(QSizePolicy(QSizePolicy::Fixed,
+         QSizePolicy::Minimum));
+    allButtonParent->setStretchFactor(entry.allSetsButton, 100);
 
-    tmp.sprintf("turnReverse%d", listViews.size());
-    entry.turnReverse = new QPushButton("Reverse", entry.frame, tmp.latin1());
-    entry.turnReverse->setEnabled(false);
-    entry.layout->addMultiCellWidget(entry.turnReverse, 2, 2, 0, 1);
-    turnReverseGroup->insert(entry.turnReverse);
+    // Add the all set widgets to the layout.
+    entry.layout->addWidget(entry.allSetsLabel, 1, 0);
+    entry.layout->addWidget(allButtonParent, 1, 1);
+
+    // Create a popup menu that can be used to set the action for the
+    // selected sets button.
+    tmp.sprintf("popup%d", listViews.size());
+    entry.selectedSetsPopupMenu = new QPopupMenu();
+    entry.selectedSetsPopupMenu->insertItem("Reverse",  0);
+    entry.selectedSetsPopupMenu->insertItem("Turn on",  1);
+    entry.selectedSetsPopupMenu->insertItem("Turn off", 2);
+    connect(entry.selectedSetsPopupMenu, SIGNAL(activated(int)),
+            this, SLOT(setSelectedSetsButtonAction(int)));
+
+    // Create some buttons.
+    QHBox *selectedButtonParent = new QHBox(entry.frame);
+    selectedButtonParent->setSpacing(0);
+    tmp.sprintf("selectedSets%d", listViews.size());
+    entry.selectedSetsLabel = new QLabel("Selected sets", entry.frame,
+        tmp.latin1());
+    // Create the button that does the action.
+    entry.selectedSetsButton = new QPushButton("Reverse", selectedButtonParent,
+        tmp.latin1());
+    connect(entry.selectedSetsButton, SIGNAL(clicked()),
+            this, SLOT(selectedSetsClicked()));
+    // Create the button that sets the action to perform.
+    entry.selectedSetsActionButton = new QPushButton("", selectedButtonParent,
+        tmp.latin1());
+    entry.selectedSetsActionButton->setPopup(entry.selectedSetsPopupMenu);
+
+    // Set the sizes of the grouped buttons.
+    entry.selectedSetsActionButton->setMaximumWidth(
+         fontMetrics().boundingRect("XX").width() + 6);
+    entry.selectedSetsActionButton->setSizePolicy(QSizePolicy(QSizePolicy::Fixed,
+         QSizePolicy::Minimum));
+    selectedButtonParent->setStretchFactor(entry.selectedSetsButton, 100);
+
+    // Add the selected set widgets to the layout.
+    entry.layout->addWidget(entry.selectedSetsLabel, 2, 0);
+    entry.layout->addWidget(selectedButtonParent, 2, 1);
 
     // Add the entry to the vector.
     listViews.push_back(entry);
+
+    // Set the buttons' enabled states.
+    SetButtonEnabledState(listViews.size() - 1, false);
 
     return listViews.size() - 1;
 }
@@ -452,13 +511,41 @@ QvisSubsetWindow::ItemClicked(QvisSubsetListViewItem *item, int lvNextIndex)
         lvNext->blockSignals(false);
 
         // Turn on the buttons.
-        listViews[lvNextIndex].turnOn->setEnabled(true);
-        listViews[lvNextIndex].turnOff->setEnabled(true);
-        listViews[lvNextIndex].turnReverse->setEnabled(true);
+        SetButtonEnabledState(lvNextIndex, true);
 
         // Update all of the column widths
         UpdateColumnWidths();
     }
+}
+
+// ****************************************************************************
+// Method: QvisSubsetWindow::SetButtonEnabledState
+//
+// Purpose: 
+//   Sets the enabled state for the buttons, etc in the specified panel.
+//
+// Arguments:
+//   lvIndex : The index of the panel that we're changing.
+//   val     : Whether the buttons should be updated.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Aug 6 15:55:52 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisSubsetWindow::SetButtonEnabledState(int lvIndex, bool val)
+{
+    // Set the buttons' enabled state.
+    listViews[lvIndex].allSetsLabel->setEnabled(val);
+    listViews[lvIndex].allSetsButton->setEnabled(val);
+    listViews[lvIndex].allSetsActionButton->setEnabled(val);
+
+    listViews[lvIndex].selectedSetsLabel->setEnabled(val);
+    listViews[lvIndex].selectedSetsButton->setEnabled(val);
+    listViews[lvIndex].selectedSetsActionButton->setEnabled(val);
 }
 
 // ****************************************************************************
@@ -481,6 +568,9 @@ QvisSubsetWindow::ItemClicked(QvisSubsetListViewItem *item, int lvNextIndex)
 //   Brad Whitlock, Tue Apr 22 15:34:25 PST 2003
 //   I made the buttons be disabled.
 //
+//   Brad Whitlock, Fri Aug 6 14:16:51 PST 2004
+//   Made it use SetButtonEnabledState.
+//
 // ****************************************************************************
 
 void
@@ -492,9 +582,8 @@ QvisSubsetWindow::ClearListViewsToTheRight(int index)
         listViews[i].lv->clear();
         listViews[i].lv->setColumnText(0, QString(""));
         listViews[i].lv->blockSignals(false);
-        listViews[i].turnOn->setEnabled(false);
-        listViews[i].turnOff->setEnabled(false);
-        listViews[i].turnReverse->setEnabled(false);
+        SetButtonEnabledState(i, false);
+
         if(i > 2)
             listViews[i].frame->hide();
     }
@@ -594,10 +683,14 @@ QvisSubsetWindow::UpdateCheckMarks(int lvIndex)
 //   Hank Childs, Mon Dec  2 13:41:37 PST 2002
 //   Use a reference-counted SIL restriction instead of a reference to one.
 //
+//   Brad Whitlock, Fri Aug 6 15:32:27 PST 2004
+//   I added an argument that forces it to check the listview's selected
+//   flags before altering the subsets.
+//
 // ****************************************************************************
 
 void
-QvisSubsetWindow::TurnOnOff(int index, bool val)
+QvisSubsetWindow::TurnOnOff(int index, bool val, bool checkSelection)
 {
     avtSILRestriction_p restriction = viewer->GetPlotSILRestriction();
     restriction->SuspendCorrectnessChecking();
@@ -606,7 +699,8 @@ QvisSubsetWindow::TurnOnOff(int index, bool val)
     for ( ; it.current(); ++it)
     {
         QvisSubsetListViewItem *item = (QvisSubsetListViewItem *)it.current();
-        if(item->parent() == NULL)
+        if(item->parent() == NULL &&
+           (checkSelection ? listViews[index].lv->isSelected(item) : true))
         {
             if(val)
                 restriction->TurnOnSet(item->id());
@@ -625,6 +719,140 @@ QvisSubsetWindow::TurnOnOff(int index, bool val)
             continue;
         UpdateCheckMarks(i);
     }
+}
+
+// ****************************************************************************
+// Method: QvisSubsetWindow::TurnReverse
+//
+// Purpose: 
+//   Turns all of the sets in the specified panel to the reverse of what
+//   they are currently.
+//
+// Arguments:
+//   index : The index of the panel.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Dec 20 16:23:33 PST 2001
+//
+// Modifications:
+//   Hank Childs, Thu Feb  7 16:29:33 PST 2002
+//   Make use of new SIL methods for mass setting.
+//
+//   Brad Whitlock, Mon Mar 4 15:20:49 PST 2002
+//   Added support for auto update.
+//
+//   Hank Childs, Mon Dec  2 13:41:37 PST 2002
+//   Use a reference-counted SIL restriction instead of a reference to one.
+//
+//   Brad Whitlock, Fri Jul 30 14:51:29 PST 2004
+//   I made it use a new SIL restriction method to reverse the sets under
+//   the set that we're reversing so we don't mess it up if there are sets
+//   that are partially on.
+//
+//   Brad Whitlock, Fri Aug 6 15:32:27 PST 2004
+//   It's not a slot anymore and I added an argument that forces it to
+//   check the listview's selected flags before altering the subsets.
+//
+// ****************************************************************************
+
+void
+QvisSubsetWindow::TurnReverse(int index, bool checkSelection)
+{
+    avtSILRestriction_p restriction = viewer->GetPlotSILRestriction();
+    restriction->SuspendCorrectnessChecking();
+
+    QListViewItemIterator it(listViews[index].lv);
+    avtSILRestrictionTraverser trav(restriction);
+    for ( ; it.current(); ++it)
+    {
+        QvisSubsetListViewItem *item = (QvisSubsetListViewItem *)it.current();
+        if(item->parent() == NULL &&
+           (checkSelection ? listViews[index].lv->isSelected(item) : true))
+        {
+            restriction->ReverseSet(item->id());
+        }
+    }
+
+    restriction->EnableCorrectnessChecking();
+
+    // Update all the checkmarks.
+    for(int i = 0; i < listViews.size(); ++i)
+    {
+        // Skip any that are hidden.
+        if(listViews[i].lv->isHidden())
+            continue;
+        UpdateCheckMarks(i);
+    }
+}
+
+// ****************************************************************************
+// Method: QvisSubsetWindow::ChangeSetSelection
+//
+// Purpose: 
+//   Changes the sets in the specified panel based on the current action.
+//
+// Arguments:
+//   lvIndex        : The index of the panel that we want to change.
+//   checkSelection : Whether the set selection should be taken into account.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Aug 6 15:52:07 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisSubsetWindow::ChangeSetSelection(int lvIndex, bool checkSelection)
+{
+    // Determine the function that we need to perform in order
+    // to change the set selection.
+    QPushButton *button = checkSelection ? 
+        listViews[lvIndex].selectedSetsButton : 
+        listViews[lvIndex].allSetsButton;
+
+    if(button->text() == "Turn on")
+        TurnOnOff(lvIndex, true, checkSelection);
+    else if(button->text() == "Turn off")
+        TurnOnOff(lvIndex, false, checkSelection);
+    else
+        TurnReverse(lvIndex, checkSelection);
+
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisSubsetWindow::GetListViewIndex
+//
+// Purpose: 
+//   Determines the pane that was activated.
+//
+// Arguments:
+//   obj : An object belonging to a listview pane.
+//
+// Returns:    The index of the listview pane that owns the object or -1.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Aug 6 14:27:21 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+int
+QvisSubsetWindow::GetListViewIndex(const QObject *obj) const
+{
+    for(int lvIndex = 0; lvIndex < listViews.size(); ++lvIndex)
+    {
+        if(obj == listViews[lvIndex].lv ||
+           obj == listViews[lvIndex].allSetsButton ||
+           obj == listViews[lvIndex].selectedSetsButton ||
+           obj == listViews[lvIndex].allSetsPopupMenu ||
+           obj == listViews[lvIndex].selectedSetsPopupMenu)
+            return lvIndex;
+    }
+
+    return -1;
 }
 
 // ****************************************************************************
@@ -680,7 +908,10 @@ QvisSubsetWindow::Apply(bool ignore)
 //
 //   Brad Whitlock, Thu Dec 20 16:16:11 PST 2001
 //   Modified to support additional buttons.
-//   
+//
+//   Brad Whitlock, Fri Aug 6 17:41:13 PST 2004
+//   I fixed a bug that prevented later panes from appearing.
+//
 // ****************************************************************************
 
 void
@@ -698,9 +929,12 @@ QvisSubsetWindow::listviewClicked(QListViewItem *item)
         lvNextIndex = AddListView();
     }
     // If the next listview is hidden, show it.
-    QListView *lvNext = listViews[lvNextIndex].lv;
-    if(lvNext->isHidden())
-        lvNext->show();
+    QFrame *frameNext = listViews[lvNextIndex].frame;
+    if(frameNext->isHidden())
+    {
+        frameNext->show();
+        QTimer::singleShot(300, this, SLOT(specialResize()));
+    }
 
     if(item->parent() != NULL)
     {
@@ -769,115 +1003,6 @@ QvisSubsetWindow::listviewChecked(QvisSubsetListViewItem *item)
         // Notify the viewer if necessary.
         Apply();
     }
-}
-
-// ****************************************************************************
-// Method: QvisSubsetWindow::turnOff
-//
-// Purpose: 
-//   Turn off all sets in the panel.
-//
-// Arguments:
-//    index : The index of the panel.
-//
-// Programmer: Brad Whitlock
-// Creation:   Thu Dec 20 16:21:15 PST 2001
-//
-// Modifications:
-//   Brad Whitlock, Mon Mar 4 15:20:49 PST 2002
-//   Added support for auto update.
-//
-// ****************************************************************************
-
-void
-QvisSubsetWindow::turnOff(int index)
-{
-    TurnOnOff(index, false);
-    Apply();
-}
-
-// ****************************************************************************
-// Method: QvisSubsetWindow::turnOn
-//
-// Purpose: 
-//   Turn on all sets in the panel.
-//
-// Arguments:
-//    index : The index of the panel.
-//
-// Programmer: Brad Whitlock
-// Creation:   Thu Dec 20 16:21:15 PST 2001
-//
-// Modifications:
-//   Brad Whitlock, Mon Mar 4 15:20:49 PST 2002
-//   Added support for auto update.
-//   
-// ****************************************************************************
-
-void
-QvisSubsetWindow::turnOn(int index)
-{
-    TurnOnOff(index, true);
-    Apply();
-}
-
-// ****************************************************************************
-// Method: QvisSubsetWindow::TurnReverse
-//
-// Purpose: 
-//   Turns all of the sets in the specified panel to the reverse of what
-//   they are currently.
-//
-// Arguments:
-//   index : The index of the panel.
-//
-// Programmer: Brad Whitlock
-// Creation:   Thu Dec 20 16:23:33 PST 2001
-//
-// Modifications:
-//   Hank Childs, Thu Feb  7 16:29:33 PST 2002
-//   Make use of new SIL methods for mass setting.
-//
-//   Brad Whitlock, Mon Mar 4 15:20:49 PST 2002
-//   Added support for auto update.
-//
-//   Hank Childs, Mon Dec  2 13:41:37 PST 2002
-//   Use a reference-counted SIL restriction instead of a reference to one.
-//
-//   Brad Whitlock, Fri Jul 30 14:51:29 PST 2004
-//   I made it use a new SIL restriction method to reverse the sets under
-//   the set that we're reversing so we don't mess it up if there are sets
-//   that are partially on.
-//
-// ****************************************************************************
-
-void
-QvisSubsetWindow::TurnReverse(int index)
-{
-    avtSILRestriction_p restriction = viewer->GetPlotSILRestriction();
-    restriction->SuspendCorrectnessChecking();
-
-    QListViewItemIterator it(listViews[index].lv);
-    avtSILRestrictionTraverser trav(restriction);
-    for ( ; it.current(); ++it)
-    {
-        QvisSubsetListViewItem *item = (QvisSubsetListViewItem *)it.current();
-        if(item->parent() == NULL)
-            restriction->ReverseSet(item->id());
-    }
-
-    restriction->EnableCorrectnessChecking();
-
-    // Update all the checkmarks.
-    for(int i = 0; i < listViews.size(); ++i)
-    {
-        // Skip any that are hidden.
-        if(listViews[i].lv->isHidden())
-            continue;
-        UpdateCheckMarks(i);
-    }
-
-    Apply();
 }
 
 // ****************************************************************************
@@ -1053,4 +1178,180 @@ QvisSubsetWindow::unpost()
     // Do a delayed resize to let the geometry management catch up before
     // resizing the listviews.
     QTimer::singleShot(300, this, SLOT(specialResize()));
+}
+
+// ****************************************************************************
+// Method: QvisSubsetWindow::allSetsClicked
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the "all sets" action
+//   button in a panel is clicked.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Aug 6 15:57:30 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisSubsetWindow::allSetsClicked()
+{
+    int lvIndex = GetListViewIndex(sender());
+
+    if(lvIndex != -1)
+        ChangeSetSelection(lvIndex, false);
+}
+
+// ****************************************************************************
+// Method: QvisSubsetWindow::selectedSetsClicked
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the "selected sets"
+//   action button in a panel is clicked.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Aug 6 15:57:30 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisSubsetWindow::selectedSetsClicked()
+{
+    int lvIndex = GetListViewIndex(sender());
+
+    if(lvIndex != -1)
+        ChangeSetSelection(lvIndex, true);
+}
+
+// ****************************************************************************
+// Method: QvisSubsetWindow::setAllSetsButtonAction
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the use selects a new
+//   default action for "all sets".
+//
+// Arguments:
+//   actionIndex : The index of the new default action.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Aug 6 16:01:25 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisSubsetWindow::setAllSetsButtonAction(int actionIndex)
+{
+    int lvIndex = GetListViewIndex(sender());
+
+    if(lvIndex != -1)
+    {
+        const char *btnCaptions[] = {"Reverse", "Turn on", "Turn off"};
+        listViews[lvIndex].allSetsButton->setText(btnCaptions[actionIndex]);
+        ChangeSetSelection(lvIndex, false);
+    }
+}
+
+// ****************************************************************************
+// Method: QvisSubsetWindow::setSelectedSetsButtonAction
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the use selects a new
+//   default action for "selected sets".
+//
+// Arguments:
+//   actionIndex : The index of the new default action.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Aug 6 16:01:25 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisSubsetWindow::setSelectedSetsButtonAction(int actionIndex)
+{
+    int lvIndex = GetListViewIndex(sender());
+
+    if(lvIndex != -1)
+    {
+        const char *btnCaptions[] = {"Reverse", "Turn on", "Turn off"};
+        listViews[lvIndex].selectedSetsButton->setText(btnCaptions[actionIndex]);
+        ChangeSetSelection(lvIndex, true);
+    }
+}
+
+// ****************************************************************************
+// Method: QvisSubsetWindow::listviewSelectionChanged
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the selection changes
+//   in a list view.
+//
+// Note:       This method makes sure that categories are not selected if
+//             any root items are selected.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Aug 6 17:22:41 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisSubsetWindow::listviewSelectionChanged()
+{
+    int lvIndex = GetListViewIndex(sender());
+
+    if(lvIndex > 0)
+    {
+        //
+        // See if there are any root level items selected.
+        //
+        QListViewItemIterator it(listViews[lvIndex].lv);
+        bool rootsSelected = false;
+        for ( ; it.current(); ++it)
+        {
+            if(it.current()->parent() == NULL)
+            {
+                if(listViews[lvIndex].lv->isSelected(it.current()))
+                {
+                    rootsSelected = true;
+                    break;
+                }
+            }
+        }
+
+        //
+        // If any root level items were selected, go through and unselect
+        // any non-root items.
+        //
+        if(rootsSelected)
+        {
+            QListViewItemIterator it2(listViews[lvIndex].lv);
+            bool selectionChanged = false;
+            listViews[lvIndex].lv->blockSignals(true);
+            for ( ; it2.current(); ++it2)
+            {
+                if(it2.current()->parent() != NULL)
+                {
+                    bool sel = listViews[lvIndex].lv->isSelected(it2.current());
+                    if(sel)
+                    {
+                        selectionChanged = true;
+                        listViews[lvIndex].lv->setSelected(it2.current(), false);
+                    } 
+                }
+            }
+            listViews[lvIndex].lv->blockSignals(false);
+
+            if(selectionChanged)
+                listViews[lvIndex].lv->update();
+        }
+    } 
 }

@@ -133,6 +133,9 @@ VariableMenuPopulator::ClearDatabaseName()
 //   the Subset plot is the only one that will do other kinds of subsets like
 //   domains -- at least in the GUI.
 //
+//   Brad Whitlock, Thu Aug 5 14:42:13 PST 2004
+//   I made it use VariableList instead of StringBoolMap.
+//
 // ****************************************************************************
 
 bool
@@ -161,55 +164,55 @@ VariableMenuPopulator::PopulateVariableLists(const std::string &dbName,
     if(!expressionsSame)
         cachedExpressionList = *exprList;
 
-    // Clear out the variable maps.
-    meshVars.clear();
-    scalarVars.clear();
-    vectorVars.clear();
-    materialVars.clear();
-    subsetVars.clear();
-    speciesVars.clear();
-    curveVars.clear();
-    tensorVars.clear();
-    symmTensorVars.clear();
+    // Clear out the variable lists and set their sorting method..
+    meshVars.Clear();        meshVars.SetSorted(md->GetMustAlphabetizeVariables());
+    scalarVars.Clear();      scalarVars.SetSorted(md->GetMustAlphabetizeVariables());
+    vectorVars.Clear();      vectorVars.SetSorted(md->GetMustAlphabetizeVariables());
+    materialVars.Clear();    materialVars.SetSorted(md->GetMustAlphabetizeVariables());
+    subsetVars.Clear();      subsetVars.SetSorted(md->GetMustAlphabetizeVariables());
+    speciesVars.Clear();     speciesVars.SetSorted(md->GetMustAlphabetizeVariables());
+    curveVars.Clear();       curveVars.SetSorted(md->GetMustAlphabetizeVariables());
+    tensorVars.Clear();      tensorVars.SetSorted(md->GetMustAlphabetizeVariables());
+    symmTensorVars.Clear();  symmTensorVars.SetSorted(md->GetMustAlphabetizeVariables());
 
     // Do stuff with the metadata
     int i;
     for (i = 0; i < md->GetNumMeshes(); ++i)
     {
         const avtMeshMetaData *mmd = md->GetMesh(i);
-        meshVars[mmd->name] = mmd->validVariable;
+        meshVars.AddVariable(mmd->name, mmd->validVariable);
     }
     if (md->GetUseCatchAllMesh())
-        meshVars[Init::CatchAllMeshName] = true;
+        meshVars.AddVariable(Init::CatchAllMeshName, true);
     for (i = 0; i < md->GetNumScalars(); ++i)
     {
         const avtScalarMetaData *smd = md->GetScalar(i);
-        scalarVars[smd->name] = smd->validVariable;
+        scalarVars.AddVariable(smd->name, smd->validVariable);
     }
     for (i = 0; i < md->GetNumVectors(); ++i)
     {
         const avtVectorMetaData *vmd = md->GetVector(i);
-        vectorVars[vmd->name] = vmd->validVariable;
+        vectorVars.AddVariable(vmd->name, vmd->validVariable);
     }
     for (i = 0; i < md->GetNumSpecies(); ++i)
     {
         const avtSpeciesMetaData *smd = md->GetSpecies(i);
-        speciesVars[smd->name] = smd->validVariable;
+        speciesVars.AddVariable(smd->name, smd->validVariable);
     }
     for (i = 0; i < md->GetNumCurves(); ++i)
     {
         const avtCurveMetaData *cmd = md->GetCurve(i);
-        curveVars[cmd->name] = cmd->validVariable;
+        curveVars.AddVariable(cmd->name, cmd->validVariable);
     }
     for (i = 0; i < md->GetNumTensors(); ++i)
     {
         const avtTensorMetaData *tmd = md->GetTensor(i);
-        tensorVars[tmd->name] = tmd->validVariable;
+        tensorVars.AddVariable(tmd->name, tmd->validVariable);
     }
     for (i = 0; i < md->GetNumSymmTensors(); ++i)
     {
         const avtSymmetricTensorMetaData *tmd = md->GetSymmTensor(i);
-        symmTensorVars[tmd->name] = tmd->validVariable;
+        symmTensorVars.AddVariable(tmd->name, tmd->validVariable);
     }
 
     // Do stuff with the sil
@@ -283,9 +286,9 @@ VariableMenuPopulator::PopulateVariableLists(const std::string &dbName,
             // of subset variable.
             //
             if (role == SIL_MATERIAL)
-                materialVars[varName] = validVariable;
+                materialVars.AddVariable(varName, validVariable);
             else
-                subsetVars[varName] = validVariable;
+                subsetVars.AddVariable(varName, validVariable);
         }
     }
 
@@ -316,14 +319,16 @@ VariableMenuPopulator::PopulateVariableLists(const std::string &dbName,
 // Creation:   Fri Oct 24 15:39:47 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Aug 5 14:35:26 PST 2004
+//   Made it use VariableList.
+//
 // ****************************************************************************
 
 void
 VariableMenuPopulator::AddExpression(const Expression &expr)
 {
     // Figure out which list this expression should be added to.
-    StringBoolMap *m = 0;
+    VariableList *m = 0;
     switch (expr.GetType())
     {
     case Expression::ScalarMeshVar:
@@ -354,13 +359,10 @@ VariableMenuPopulator::AddExpression(const Expression &expr)
     // Check if the name is already in the list
     if(m)
     {
-        if(m->find(expr.GetName()) == m->end())
-            m->insert(StringBoolMap::value_type(expr.GetName(), true));
+        if(!m->Contains(expr.GetName()))
+            m->AddVariable(expr.GetName(), true);
         else
-        {
-            string name(expr.GetName() + " (expression)");
-            m->insert(StringBoolMap::value_type(name, true));
-        }
+            m->AddVariable(expr.GetName() + " (expression)", true);
     }
 }
 
@@ -395,6 +397,9 @@ VariableMenuPopulator::AddExpression(const Expression &expr)
 //   Hank Childs, Tue Sep 23 22:09:33 PDT 2003
 //   Added support for tensors.
 //
+//   Brad Whitlock, Thu Aug 5 14:30:13 PST 2004
+//   I made it use VariableList instead of StringBoolMap.
+//
 // ****************************************************************************
 
 int
@@ -427,7 +432,8 @@ VariableMenuPopulator::UpdateSingleVariableMenu(QvisVariablePopupMenu *menu,
 
     if(numVarTypes > 1)
     {
-        StringBoolMap vars;
+        VariableList vars;
+        vars.SetSorted(meshVars.GetSorted());
 
         // Construct a variable list that contains variables from multiple
         // categories then sort the list.
@@ -452,7 +458,7 @@ VariableMenuPopulator::UpdateSingleVariableMenu(QvisVariablePopupMenu *menu,
        
         // Update the menu with the composite variable list.
         UpdateSingleMenu(menu, receiver, vars, changeVar);
-        retval = vars.size();
+        retval = vars.Size();
     }
     else
     {
@@ -462,39 +468,39 @@ VariableMenuPopulator::UpdateSingleVariableMenu(QvisVariablePopupMenu *menu,
         {
         case VAR_CATEGORY_MESH:
             UpdateSingleMenu(menu, receiver, meshVars, changeVar);
-            retval = meshVars.size();
+            retval = meshVars.Size();
             break;
         case VAR_CATEGORY_SCALAR:
             UpdateSingleMenu(menu, receiver, scalarVars, changeVar);
-            retval = scalarVars.size();
+            retval = scalarVars.Size();
             break;
         case VAR_CATEGORY_VECTOR:
             UpdateSingleMenu(menu, receiver, vectorVars, changeVar);
-            retval = vectorVars.size();
+            retval = vectorVars.Size();
             break;
         case VAR_CATEGORY_MATERIAL:
             UpdateSingleMenu(menu, receiver, materialVars, changeVar);
-            retval = materialVars.size();
+            retval = materialVars.Size();
             break;
         case VAR_CATEGORY_SUBSET:
             UpdateSingleMenu(menu, receiver, subsetVars, changeVar);
-            retval = subsetVars.size();
+            retval = subsetVars.Size();
             break;
         case VAR_CATEGORY_SPECIES:
             UpdateSingleMenu(menu, receiver, speciesVars, changeVar);
-            retval = speciesVars.size();
+            retval = speciesVars.Size();
             break;
         case VAR_CATEGORY_CURVE:
             UpdateSingleMenu(menu, receiver, curveVars, changeVar);
-            retval = curveVars.size();
+            retval = curveVars.Size();
             break;
         case VAR_CATEGORY_TENSOR:
             UpdateSingleMenu(menu, receiver, tensorVars, changeVar);
-            retval = curveVars.size();
+            retval = curveVars.Size();
             break;
         case VAR_CATEGORY_SYMMETRIC_TENSOR:
             UpdateSingleMenu(menu, receiver, symmTensorVars, changeVar);
-            retval = curveVars.size();
+            retval = curveVars.Size();
             break;
         }
     }
@@ -525,6 +531,9 @@ VariableMenuPopulator::UpdateSingleVariableMenu(QvisVariablePopupMenu *menu,
 //   Hank Childs, Tue Sep 23 22:09:33 PDT 2003
 //   Added support for tensors.
 //
+//   Brad Whitlock, Thu Aug 5 15:32:50 PST 2004
+//   Made it use VariableList.
+//
 // ****************************************************************************
 
 bool
@@ -533,23 +542,23 @@ VariableMenuPopulator::ItemEnabled(int varType) const
     bool retval = false;
 
     if(varType & VAR_CATEGORY_MESH)
-       retval |= (meshVars.size() > 0);
+       retval |= (meshVars.Size() > 0);
     if(varType & VAR_CATEGORY_SCALAR)
-       retval |= (scalarVars.size() > 0);
+       retval |= (scalarVars.Size() > 0);
     if(varType & VAR_CATEGORY_MATERIAL)
-       retval |= (subsetVars.size() > 0);
+       retval |= (subsetVars.Size() > 0);
     if(varType & VAR_CATEGORY_VECTOR)
-       retval |= (vectorVars.size() > 0);
+       retval |= (vectorVars.Size() > 0);
     if(varType & VAR_CATEGORY_SUBSET)
-       retval |= (subsetVars.size() > 0);
+       retval |= (subsetVars.Size() > 0);
     if(varType & VAR_CATEGORY_SPECIES)
-       retval |= (speciesVars.size() > 0);
+       retval |= (speciesVars.Size() > 0);
     if(varType & VAR_CATEGORY_CURVE)
-       retval |= (curveVars.size() > 0);
+       retval |= (curveVars.Size() > 0);
     if(varType & VAR_CATEGORY_TENSOR)
-       retval |= (tensorVars.size() > 0);
+       retval |= (tensorVars.Size() > 0);
     if(varType & VAR_CATEGORY_SYMMETRIC_TENSOR)
-       retval |= (symmTensorVars.size() > 0);
+       retval |= (symmTensorVars.Size() > 0);
 
     return retval;
 }
@@ -569,12 +578,14 @@ VariableMenuPopulator::ItemEnabled(int varType) const
 // Creation:   Mon Mar 17 14:31:20 PST 2003
 //
 // Modifications:
+//   Brad Whitlock, Thu Aug 5 14:27:22 PST 2004
+//   I made it use VariableList.
 //
 // ****************************************************************************
 
 void
 VariableMenuPopulator::UpdateSingleMenu(QvisVariablePopupMenu *menu,
-    QObject *receiver, const StringBoolMap &vars, bool changeVar)
+    QObject *receiver, VariableList &vars, bool changeVar)
 {
     if (menu == 0)
         return;
@@ -585,12 +596,14 @@ VariableMenuPopulator::UpdateSingleMenu(QvisVariablePopupMenu *menu,
     // Add each variable to the variable menu.
     std::map <std::string, QvisVariablePopupMenu *> popups;
     int j, varCount = 0;
-    StringBoolMap::const_iterator pos;
-    for(pos = vars.begin(); pos != vars.end(); ++pos)
+    std::string var;
+    bool        validVar;
+    vars.InitTraversal();
+    while(vars.GetNextVariable(var, validVar))
     {
         // Split the variable's path into a vector of strings.
         stringVector pathvar;
-        Split(pos->first, pathvar);
+        Split(var, pathvar);
 
         // Add the submenus.
         QvisVariablePopupMenu *parent = menu;
@@ -632,7 +645,7 @@ VariableMenuPopulator::UpdateSingleMenu(QvisVariablePopupMenu *menu,
 
         // Add the variable.
         int id = parent->insertItem(pathvar[j].c_str(), varCount++, parent->count());
-        parent->setItemEnabled(id, pos->second);
+        parent->setItemEnabled(id, validVar);
     }
 }
 
@@ -706,16 +719,236 @@ VariableMenuPopulator::Split(const std::string &varName, stringVector &pieces) c
 // Creation:   Tue Mar 18 08:26:22 PDT 2003
 //
 // Modifications:
+//   Brad Whitlock, Thu Aug 5 14:23:48 PST 2004
+//   Changed to VariableList instead of StringBoolMap.
+//
+// ****************************************************************************
+
+void
+VariableMenuPopulator::AddVars(VariableMenuPopulator::VariableList &to,
+    VariableMenuPopulator::VariableList &from)
+{
+    std::string var;
+    bool        validVar;
+
+    from.InitTraversal();
+    while(from.GetNextVariable(var, validVar))
+        to.AddVariable(var, validVar);
+}
+
+//
+// VariableMenuPopulator::VariableList
+//
+
+// ****************************************************************************
+// Method: VariableMenuPopulator::VariableList::VariableList
+//
+// Purpose: 
+//   Constructor for the VariableList class.
+//
+// Note:       This class is an interface on top of different containers that
+//             allow us to create sorted or unsorted variable lists. The
+//             containers used depend on whether we're sorting.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Aug 5 14:45:02 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+VariableMenuPopulator::VariableList::VariableList() : sortedVariables(),
+    sortedVariablesIterator(), unsortedVariableNames(), unsortedVariableValid()
+{
+    sorted = true;
+    unsortedVariableIndex = -1;
+}
+
+// ****************************************************************************
+// Method: VariableMenuPopulator::VariableList::~VariableList
+//
+// Purpose: 
+//   Destructor for the VariableList class.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Aug 5 14:46:44 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+VariableMenuPopulator::VariableList::~VariableList()
+{
+}
+
+// ****************************************************************************
+// Method: VariableMenuPopulator::VariableList::AddVariable
+//
+// Purpose: 
+//   Adds a variable to the appropriate container.
+//
+// Arguments:
+//   var      : The name of the variable.
+//   validVar : Whether the variable is valid.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Aug 5 14:47:34 PST 2004
+//
+// Modifications:
 //   
 // ****************************************************************************
 
 void
-VariableMenuPopulator::AddVars(VariableMenuPopulator::StringBoolMap &to,
-    const VariableMenuPopulator::StringBoolMap &from)
+VariableMenuPopulator::VariableList::AddVariable(const std::string &var, bool validVar)
 {
-    StringBoolMap::const_iterator pos;
-    for(pos = from.begin(); pos != from.end(); ++pos)
+    if(sorted)
+        sortedVariables[var] = validVar;
+    else
     {
-        to[pos->first] = pos->second;
+        unsortedVariableNames.push_back(var);
+        unsortedVariableValid.push_back(validVar);
     }
+}
+
+// ****************************************************************************
+// Method: VariableMenuPopulator::VariableList::Clear
+//
+// Purpose: 
+//   Clears the variable list.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Aug 5 15:28:48 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+VariableMenuPopulator::VariableList::Clear()
+{
+    sortedVariables.clear();
+    unsortedVariableNames.clear();
+    unsortedVariableValid.clear();
+}
+
+// ****************************************************************************
+// Method: VariableMenuPopulator::VariableList::Contains
+//
+// Purpose: 
+//   Returns whether the Variable list contains a variable.
+//
+// Arguments:
+//   var : The variable to check for.
+//
+// Returns:    True if the list contains the variable; false otherwise.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Aug 5 15:29:04 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+VariableMenuPopulator::VariableList::Contains(const std::string &var) const
+{
+    if(sorted)
+        return (sortedVariables.find(var) != sortedVariables.end());
+    else
+    {
+        for(int i = 0; i < unsortedVariableNames.size(); ++i)
+            if(unsortedVariableNames[i] == var)
+                return true;
+    }
+
+    return false;
+}
+
+// ****************************************************************************
+// Method: VariableMenuPopulator::VariableList::InitTraversal
+//
+// Purpose: 
+//   Initializes the variable list for traversal.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Aug 5 15:30:06 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+VariableMenuPopulator::VariableList::InitTraversal()
+{
+    unsortedVariableIndex = 0;
+    sortedVariablesIterator = sortedVariables.begin();
+}
+
+// ****************************************************************************
+// Method: VariableMenuPopulator::VariableList::GetNextVariable
+//
+// Purpose: 
+//   Returns the current variable.
+//
+// Arguments:
+//   var      : The name of the variable.
+//   validVar : Whether the variable is valid.
+//
+// Returns:    True if a variable was returned; false otherwise.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Aug 5 15:30:24 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool 
+VariableMenuPopulator::VariableList::GetNextVariable(std::string &var, bool &validVar)
+{
+    bool retval;
+
+    if(sorted)
+    {
+        retval = (sortedVariablesIterator != sortedVariables.end());
+        if(retval)
+        {
+            var = sortedVariablesIterator->first;
+            validVar = sortedVariablesIterator->second;
+            ++sortedVariablesIterator;
+        }
+    }
+    else
+    {
+        retval = (unsortedVariableIndex < unsortedVariableNames.size());
+        if(retval)
+        {
+            var = unsortedVariableNames[unsortedVariableIndex];
+            validVar = unsortedVariableValid[unsortedVariableIndex];
+            ++unsortedVariableIndex;
+        }
+    }
+
+    return retval;
+}
+
+// ****************************************************************************
+// Method: VariableMenuPopulator::VariableList::Size
+//
+// Purpose: 
+//   Returns the number of variables in the container.
+//
+// Returns:    The number of variables.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Aug 5 15:33:52 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+int
+VariableMenuPopulator::VariableList::Size() const
+{
+    return sorted ? sortedVariables.size() : unsortedVariableNames.size();
 }
