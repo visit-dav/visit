@@ -6,6 +6,7 @@
 
 #include <vector>
 #include <string>
+using std::getline;
 #include <visitstream.h>
 #include <set>
 

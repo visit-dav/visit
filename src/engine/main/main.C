@@ -5,6 +5,7 @@
 #include <LoadBalancer.h>
 
 #ifdef PARALLEL
+#include <avtParallel.h>
 #include <parallel.h>
 #endif
 

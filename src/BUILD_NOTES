@@ -30,6 +30,16 @@ you must use the October 28, 2003 distribution provided. The version of Qt
 used to build VisIt must be greater than or equal to 2.3.0. VisIt is also
 compatible with Qt version 3.
 
+VisIt also contains many database readers which are also built on external
+libraries.  If you want to make use of these readers you will also need to
+build and install those libraries prior to building VisIt.
+
+
+    Library  Version  Description            For More information
+    =======  =======  ===========            ====================
+    Mili     1.06     File I/O library       (none)
+
+
 Building VisIt
 ===============
 
@@ -607,6 +617,42 @@ g++ -Wl,-expect_unresolved -Wl,'*' -shared -o ../libpython2.1.so *.o # tru64
 cd ..
 rm -rf tmpdir
 cp libpython2.1.so $VISITDIR/python/$VISITARCH/lib/python2.1/config/libpython2.1.so
+cd ..
+
+
+Mili (Optional)
+================
+
+Mili uses GNU's autoconf system to provide platform independence when
+building Mili in a UNIX environment.  It requires both a C and Fortran
+compiler.  Its compiler flags are built directly into the configure script
+based on platform.  In order to change the flags you must edit the configure
+script.
+
+#
+# Build Mili.
+#
+gunzip mili.tar.gz
+tar xf mili.tar
+cd Mili
+
+On irix systems, if you want to build a 64 bit version will need to override
+the default compiler options.  You will need to replace all occurances of
+"-n32" with "-64" in the configure script.
+
+./configure
+make
+
+#
+# Install it in the visit directory under the mili directory.
+#
+mkdir $VISITDIR/mili
+mkdir $VISITDIR/mili/1.06
+mkdir $VISITDIR/mili/1.06/$VISITARCH
+cp src/mili.h      $VISITDIR/mili/1.06/$VISITARCH
+cp src/mili_enum.h $VISITDIR/mili/1.06/$VISITARCH
+cp src/libmili.a   $VISITDIR/mili/1.06/$VISITARCH
+cp src/libgahl.a   $VISITDIR/mili/1.06/$VISITARCH
 cd ..
 
 

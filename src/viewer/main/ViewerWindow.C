@@ -976,25 +976,18 @@ ViewerWindow::RecenterView()
 //    Eric Brugger, Wed Aug 20 11:15:07 PDT 2003
 //    I added a curve view.
 //
+//    Eric Brugger, Wed Sep  1 09:20:09 PDT 2004
+//    Modified the routine to reset the view for all the view modes,
+//    instead of just the current mode.
+//
 // ****************************************************************************
 
 void
 ViewerWindow::ResetView()
 {
-    switch (visWindow->GetWindowMode())
-    {
-      case WINMODE_CURVE:
-        ResetViewCurve();
-        break;
-      case WINMODE_2D:
-        ResetView2d();
-        break;
-      case WINMODE_3D:
-        ResetView3d();
-        break;
-      default:
-        break;
-    }
+    ResetViewCurve();
+    ResetView2d();
+    ResetView3d();
 }
 
 // ****************************************************************************

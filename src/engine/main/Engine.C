@@ -139,6 +139,10 @@ Engine *Engine::Instance()
 //    Mark C. Miller, Mon Jul 12 19:46:32 PDT 2004
 //    Wrapped call to set_new_handler with WIN32 conditional compilation
 //
+//    Eric Brugger, Tue Aug 31 10:45:57 PDT 2004
+//    Added a call to PAR_CreateTypes since it is no longer called from
+//    PAR_Init.
+//
 // ****************************************************************************
 void
 Engine::Initialize(int *argc, char **argv[])
@@ -146,9 +150,16 @@ Engine::Initialize(int *argc, char **argv[])
 #ifdef PARALLEL
 
     xfer = new MPIXfer;
+    //
     // Initialize for MPI and get the process rank & size.
     //
     PAR_Init(*argc, *argv);
+
+    //
+    // Create the derived types and operators for sending messages
+    // and collective operations.
+    //
+    PAR_CreateTypes();
 
     //
     // Initialize error logging

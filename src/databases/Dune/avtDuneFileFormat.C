@@ -5,6 +5,7 @@
 #include <avtDuneFileFormat.h>
 
 #include <string>
+using std::getline;
 
 #include <vtkFloatArray.h>
 #include <vtkRectilinearGrid.h>

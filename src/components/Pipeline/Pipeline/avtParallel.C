@@ -23,8 +23,66 @@ using std::vector;
 static MPI_Op AVT_MPI_MINMAX = MPI_OP_NULL;
 #endif
 
+// Variables to hold process size information
+static int   par_rank = 0, par_size = 1;
+
 // A buffer to temporarily receive broadcast data before permanent storage
 static vector<char> broadcastBuffer(1000);
+
+// ****************************************************************************
+//  Function: PAR_Exit
+//
+//  Purpose:
+//      Exits the program gracefully.
+//
+//  Programmer: Brad Whitlock
+//  Creation:   Wed Jul 12 16:02:58 PST 2000
+//
+//  Modifications:
+//    Eric Brugger, Tue Aug 31 10:27:20 PDT 2004
+//    Made the mpi coding conditional on PARALLEL.
+//
+// ****************************************************************************
+
+void
+PAR_Exit(void)
+{
+#ifdef PARALLEL
+    MPI_Finalize();
+#endif
+}
+
+
+// ****************************************************************************
+//  Function: PAR_Init
+//
+//  Purpose:
+//      Initializes parallel state information.
+//
+//  Programmer: Brad Whitlock
+//  Creation:   Wed Jul 12 16:03:46 PST 2000
+//
+//  Modifications:
+//    Eric Brugger, Tue Aug 31 10:27:20 PDT 2004
+//    Made the mpi coding conditional on PARALLEL.  Removed the call to
+//    PAR_CreateTypes.
+//
+// ****************************************************************************
+
+void
+PAR_Init (int &argc, char **&argv)
+{
+#ifdef PARALLEL
+    MPI_Init (&argc, &argv);
+
+    //
+    // Find the current process rank and the size of the process pool.
+    //
+    MPI_Comm_rank (MPI_COMM_WORLD, &par_rank);
+    MPI_Comm_size (MPI_COMM_WORLD, &par_size);
+#endif
+}
+
 
 // ****************************************************************************
 //  Function: PAR_Rank
@@ -35,18 +93,16 @@ static vector<char> broadcastBuffer(1000);
 //  Programmer: Hank Childs
 //  Creation:   November 19, 2002
 //
+//  Modifications:
+//    Eric Brugger, Tue Aug 31 10:27:20 PDT 2004
+//    Modified the routine to return the cached rank.
+//
 // ****************************************************************************
 
 int
 PAR_Rank(void)
 {
-    int rank = 0;
-
-#ifdef PARALLEL
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-#endif
-
-    return rank;
+    return par_rank;
 }
 
 
@@ -59,19 +115,36 @@ PAR_Rank(void)
 //  Programmer: Hank Childs
 //  Creation:   November 19, 2002
 //
+//  Modifications:
+//    Eric Brugger, Tue Aug 31 10:27:20 PDT 2004
+//    Modified the routine to return the cached size.
+//
 // ****************************************************************************
 
 int
 PAR_Size(void)
 {
-    int nProcs = 1;
-
-#ifdef PARALLEL
-    MPI_Comm_size(MPI_COMM_WORLD, &nProcs);
-#endif
-
-    return nProcs;
+    return par_size;
 }
+
+
+// ****************************************************************************
+//  Function: PAR_UIProcess
+//
+//  Purpose:
+//      Returns true if the process's rank is 0.
+//
+//  Programmer: Brad Whitlock
+//  Creation:   Thu Jul 13 11:47:10 PDT 2000
+//
+// ****************************************************************************
+
+bool
+PAR_UIProcess(void)
+{
+    return (par_rank == 0);
+}
+
 
 // ****************************************************************************
 //  Function: MinMaxOp 

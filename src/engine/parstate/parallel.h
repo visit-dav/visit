@@ -17,10 +17,5 @@ extern MPI_Datatype PAR_STATEBUFFER;
 
 // Parallel Prototypes
 void PAR_CreateTypes();
-void PAR_Exit();
-void PAR_Init(int &argc, char **&argv);
-int  PAR_Rank();
-int  PAR_Size();
-bool PAR_UIProcess();
 
 #endif
