@@ -1,0 +1,99 @@
+Function: CreateNode
+Declaration: virtual bool CreateNode(DataNode *node, bool, bool);
+Definition:
+// ****************************************************************************
+// Method: InteractorAttributes::CreateNode
+//
+// Purpose: 
+//   Creates a node called "InteractorAttributes" that has all of the 
+//   InteractorAttributes in it.
+//
+// Arguments:
+//   parentNode   : The node under which the globalAtts node is created.
+//   completeSave : Tells the method to save all fields even if they are not
+//                  different.
+//   forceAdd     : Tells the method to add a node to the parent node.
+//
+// Notes:
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   August 16, 2004 
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool
+InteractorAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceAdd)
+{
+    if(parentNode == 0)
+        return false;
+
+    bool addToParent = false;
+    InteractorAttributes defaultObject;
+
+    // Create a node for InteractorAttributes.
+    DataNode *node = new DataNode("InteractorAttributes");
+
+    if(completeSave || !FieldsEqual(0, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("showGuidelines", showGuidelines));
+    }
+
+    if(completeSave || !FieldsEqual(1, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("clampSquare", clampSquare));
+    }
+
+    // Add the node to the parent node.
+    if(addToParent || forceAdd)
+        parentNode->AddNode(node);
+    else
+        delete node;
+
+    return (addToParent || forceAdd);
+}
+
+Function: SetFromNode
+Declaration: virtual void SetFromNode(DataNode *node);
+Definition:
+// ****************************************************************************
+// Method: InteractorAttributes::SetFromNode
+//
+// Purpose: 
+//   Looks for a node called "InteractorAttributes" under the parentNode. If
+//   it is found, then it looks for various properties and sets the
+//   object's attributes accordingly.
+//
+// Arguments:
+//   parentNode : The node to start looking for "InteractorAttributes".
+//
+// Notes:
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   August 16, 2004 
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+InteractorAttributes::SetFromNode(DataNode *parentNode)
+{
+    if(parentNode == 0)
+        return;
+
+    DataNode *searchNode = parentNode->GetNode("InteractorAttributes");
+    if(searchNode == 0)
+        return;
+
+    DataNode *node;
+    if((node = searchNode->GetNode("showGuidelines")) != 0)
+        SetShowGuidelines(node->AsBool());
+
+    if((node = searchNode->GetNode("clampSquare")) != 0)
+        SetClampSquare(node->AsBool());
+}
+

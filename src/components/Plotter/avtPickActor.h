@@ -34,6 +34,9 @@ class vtkGlyphSource2D;
 //    Kathleen Bonnell, Tue Jun  8 17:42:59 PDT 2004 
 //    Added 'GetLetterPosition'. 
 //
+//    Kathleen Bonnell, Wed Aug 18 09:59:02 PDT 2004 
+//    Added 'GetMode3D'. 
+//
 // ****************************************************************************
 
 class PLOTTER_API avtPickActor
@@ -52,6 +55,7 @@ class PLOTTER_API avtPickActor
     const float *      GetAttachmentPoint() { return attach; };
     const float *      GetLetterPosition(void); 
     void               SetMode3D(const bool);
+    const bool         GetMode3D(void) const { return mode3D; };
     void               SetScale(float);
     void               SetDesignator(const char *l);
     void               SetForegroundColor(float fgr, float fgg, float fgb);

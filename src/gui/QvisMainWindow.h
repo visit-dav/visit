@@ -121,6 +121,9 @@ class WindowInformation;
 //   Added a method to set whether the file panel is allowed to update the
 //   file selection.
 //
+//   Kathleen Bonnell, Wed Aug 18 09:44:09 PDT 2004 
+//   Added method to activate interactors window. 
+//
 // ****************************************************************************
 
 class GUI_API QvisMainWindow : public QvisWindowBase, public SimpleObserver
@@ -182,6 +185,7 @@ signals:
     void activateOutputWindow();
     void activateGlobalLineoutWindow();
     void activateQueryOverTimeWindow();
+    void activateInteractorWindow();
 
     void saveSettings();
     void saveWindow();

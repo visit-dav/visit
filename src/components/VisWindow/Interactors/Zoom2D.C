@@ -238,6 +238,11 @@ Zoom2D::EndMiddleButtonAction()
 //  Programmer: Akira Haddox 
 //  Creation:   July 3, 2003
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed Aug 18 10:10:35 PDT 2004
+//    control-key now determines zoom/unzoom, shouldDrawGuides 
+//    (from InteractorAtts) determines whether guidelines should be drawn.
+//
 // ****************************************************************************
 
 void
@@ -245,7 +250,7 @@ Zoom2D::StartRubberBand(int x, int y)
 {
     // Must call this first: It sets some variables that we use.
     ZoomInteractor::StartRubberBand(x, y);
-    if (controlKeyDown)
+    if (shouldDrawGuides)
     {
         vtkRenderer *ren = proxy.GetBackground();
         ren->AddActor2D(guideLinesActor);
@@ -297,6 +302,11 @@ Zoom2D::EndRubberBand()
 //  Programmer: Akira Haddox 
 //  Creation:   July 3, 2003
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed Aug 18 10:10:35 PDT 2004
+//    control-key now determines zoom/unzoom, shouldDrawGuides 
+//    (from InteractorAtts) determines whether guidelines should be drawn.
+//
 // ****************************************************************************
 
 void
@@ -315,7 +325,7 @@ Zoom2D::UpdateRubberBand(int aX, int aY, int lX, int lY, int nX, int nY)
     // We have to keep track of the last x and y positions in this class,
     // since lX and lY and not always the last values used in a previous
     // call. The rubberBand doesn't need it exactly, but we do.
-    if (controlKeyDown)
+    if (shouldDrawGuides)
     {
         UpdateGuideLines(aX, aY, lastGuideX, lastGuideY, nX, nY);
         lastGuideX = nX;
@@ -662,6 +672,9 @@ Zoom2D::DrawGuideLine(int x1, int y1, int x2, int y2)
 //    Eric Brugger, Thu Oct  9 17:03:59 PDT 2003
 //    Modified to handle full frame properly.
 //
+//    Kathleen Bonnell, Tue Aug  3 15:22:58 PDT 2004 
+//    Modified to handle Un-Zoom mode (controlKey is pressed.). 
+//
 // ****************************************************************************
 
 void
@@ -738,11 +751,75 @@ Zoom2D::ZoomCamera(void)
         s = newView2D.GetScaleFactor(size);
     }
 
-    newView2D.window[0] = leftX;
-    newView2D.window[1] = rightX;
-    newView2D.window[2] = bottomY / s;
-    newView2D.window[3] = topY / s;
+    if (!controlKeyDown)
+    {
+        newView2D.window[0] = leftX;
+        newView2D.window[1] = rightX;
+        newView2D.window[2] = bottomY;
+        newView2D.window[3] = topY;
+    }
+    else
+    {
+        float win1[4], win2[4], win3[4], win4[4];
 
+        // window created by rubber band
+        win1[0] = leftX;
+        win1[1] = rightX;
+        win1[2] = bottomY;
+        win1[3] = topY;
+        float win1_w = win1[1] - win1[0];
+        float win1_h = win1[3] - win1[2];
+
+        // the current window 
+        win2[0] = newView2D.window[0];
+        win2[1] = newView2D.window[1];
+        win2[2] = newView2D.window[2];
+        win2[3] = newView2D.window[3];
+        float win2_w = win2[1] - win2[0];
+        float win2_h = win2[3] - win2[2];
+
+        float scaleX = win1_w / win2_w;
+        float scaleY = win1_h / win2_h;
+
+        if (scaleY < scaleX)
+        {
+            float midX = (win2[0] + win2[1]) / 2.;
+            float halfw = (win2_h) * (win1_w / win1_h) / 2.;
+            win3[0] = midX - halfw;
+            win3[1] = midX + halfw;
+            win3[2] = win2[2];
+            win3[3] = win2[3];
+        }
+        else 
+        {
+            float midY = (win2[2] + win2[3]) /2.;
+            float halfh = (win2_w) * (win1_h / win1_w) / 2.;
+            win3[0] = win2[0];
+            win3[1] = win2[1]; 
+            win3[2] = midY - halfh;
+            win3[3] = midY + halfh;
+        }
+
+        float win3_w = (win3[1] - win3[0]);
+        float win3_h = (win3[3] - win3[2]);
+
+        win4[0] = ((win1[0] - win2[0]) / win2_w) * win3_w + win3[0];
+        win4[1] = ((win1[1] - win2[0]) / win2_w) * win3_w + win3[0];
+        win4[2] = ((win1[2] - win2[2]) / win2_h) * win3_h + win3[2];
+        win4[3] = ((win1[3] - win2[2]) / win2_h) * win3_h + win3[2];
+
+        float win4_w = (win4[1] - win4[0]);
+        float win4_h = (win4[3] - win4[2]);
+
+        newView2D.window[0] = (win3[0] - win4[0]) * win3_w / win4_w + win3[0];
+        newView2D.window[1] = (win3[1] - win4[0]) * win3_w / win4_w + win3[0];
+        newView2D.window[2] = (win3[2] - win4[2]) * win3_h / win4_h + win3[2];
+        newView2D.window[3] = (win3[3] - win4[2]) * win3_h / win4_h + win3[2];
+    }
+
+    // handle full-frame;
+    newView2D.window[2] /= s;
+    newView2D.window[3] /= s;
     vw->SetView2D(newView2D);
 
     //

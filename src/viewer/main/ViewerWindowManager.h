@@ -39,6 +39,7 @@ class DatabaseCorrelation;
 class DataNode;
 class EngineKey;
 class GlobalAttributes;
+class InteractorAttributes;
 class KeyframeAttributes;
 class LightList;
 class Line;
@@ -300,6 +301,9 @@ typedef struct {
 //    Brad Whitlock, Tue Jul 27 10:22:15 PDT 2004
 //    Added CheckForNewStates.
 //
+//    Kathleen Bonnell, Wed Aug 18 09:28:51 PDT 2004 
+//    Added interactorAtts and related methods.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerWindowManager : public QObject
@@ -473,6 +477,15 @@ class VIEWER_API ViewerWindowManager : public QObject
     static AnnotationObjectList          *GetAnnotationObjectList();
     static AnnotationObjectList          *GetDefaultAnnotationObjectList();
     static void                          SetDefaultAnnotationObjectListFromClient();
+
+    void SetInteractorAttsFromClient();
+    void SetInteractorAttsFromDefault();
+    void UpdateInteractorAtts();
+    static InteractorAttributes          *GetInteractorClientAtts();
+    static InteractorAttributes          *GetInteractorDefaultAtts();
+    static void                          SetClientInteractorAttsFromDefault();
+    static void                          SetDefaultInteractorAttsFromClient();
+
   signals:
     void createWindow(ViewerWindow *);
     void deleteWindow(ViewerWindow *);
@@ -527,6 +540,8 @@ class VIEWER_API ViewerWindowManager : public QObject
     static RenderingAttributes           *renderAtts;
     static AnnotationObjectList          *annotationObjectList;
     static AnnotationObjectList          *defaultAnnotationObjectList;
+    static InteractorAttributes          *interactorClientAtts;
+    static InteractorAttributes          *interactorDefaultAtts;
 
     int               layout;
     int               layoutIndex;

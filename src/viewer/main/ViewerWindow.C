@@ -185,6 +185,9 @@ static void RotateAroundY(const avtView3D&, double, avtView3D&);
 //    Mark C. Miller, Tue Apr 27 14:41:35 PDT 2004
 //    Removed preparingToChangeScalableRenderingMode
 //
+//    Kathleen Bonnell, Wed Aug 18 09:39:29 PDT 2004 
+//    Added call to SetInteractorAtts. 
+//
 // ****************************************************************************
 
 ViewerWindow::ViewerWindow(int windowIndex)
@@ -206,6 +209,7 @@ ViewerWindow::ViewerWindow(int windowIndex)
         *ViewerWindowManager::GetDefaultAnnotationObjectList());
     SetAnnotationAttributes(ViewerWindowManager::GetAnnotationDefaultAtts());
     SetLightList(ViewerWindowManager::GetLightListDefaultAtts());
+    SetInteractorAtts(ViewerWindowManager::GetInteractorDefaultAtts());
 
     // Set some default values.
     cameraView = false;
@@ -6251,6 +6255,9 @@ ViewerWindow::SetPopupEnabled(bool val)
 //   Hank Childs, Mon May 10 08:04:48 PDT 2004
 //   Use "display list mode" instead of immediate rendering mode.
 //
+//   Kathleen Bonnell, Thu Aug 19 14:23:18 PDT 2004 
+//   Added InteractorAttributes. 
+//
 // ****************************************************************************
 
 void
@@ -6379,6 +6386,12 @@ ViewerWindow::CreateNode(DataNode *parentNode, bool detailed)
         annots.CreateNode(windowNode, true, true);
 
         //
+        // Save out the annotations.
+        //
+        InteractorAttributes interactor(*visWindow->GetInteractorAtts());
+        interactor.CreateNode(windowNode, true, true);
+
+        //
         // Let the plot list add its information.
         //
         GetPlotList()->CreateNode(windowNode);
@@ -6439,6 +6452,9 @@ ViewerWindow::CreateNode(DataNode *parentNode, bool detailed)
 //   Mark C. Miller, Tue May 11 20:21:24 PDT 2004
 //   Modified scalable rendering controls to use activation mode and auto
 //   threshold
+//
+//   Kathleen Bonnell, Thu Aug 19 14:23:18 PDT 2004 
+//   Added InteractorAttributes. 
 //
 // ****************************************************************************
 
@@ -6733,6 +6749,18 @@ ViewerWindow::SetFromNode(DataNode *parentNode)
         lights.SetFromNode(windowNode);
         SetLightList(&lights);
     }
+
+    //
+    // Read in and set the light list.
+    //
+    if((node = windowNode->GetNode("InteractorAttributes")) != 0)
+    {
+        InteractorAttributes interactorAtts;
+        interactorAtts.SetFromNode(windowNode);
+        SetInteractorAtts(&interactorAtts);
+    }
+
+
 
     //
     // Read in the view keyframes.
@@ -7490,3 +7518,66 @@ ViewerWindow::Lineout(const bool fromDefault)
 
     viewerSubject->MessageRendererThread("finishLineout;");
 }
+
+
+// ****************************************************************************
+//  Method: ViewerWindow::SetInteractorAtts
+//
+//  Purpose: 
+//    Set the interactor attributes of the window.
+//
+//  Arguments:
+//    atts      The interactor attributes for this window. 
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   August 16, 2004 
+//   
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+ViewerWindow::SetInteractorAtts(const InteractorAttributes *atts)
+{
+    visWindow->SetInteractorAtts(atts);
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::GetInteractorAtts
+//
+// Purpose: 
+//   Returns a pointer to the VisWindow's interactor attributes.
+//
+// Note:       Note that the pointer returned by this method cannot be used
+//             to set attributes of the interactor attributes.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   August 16, 2004 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+const InteractorAttributes *
+ViewerWindow::GetInteractorAtts() const
+{
+    return (const InteractorAttributes *)visWindow->GetInteractorAtts();
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::CopyInteractorAtts
+//
+// Purpose: 
+//   Copies the interactor attributes from the source window to this window.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   August 16, 2004 
+//
+// ****************************************************************************
+
+void
+ViewerWindow::CopyInteractorAtts(const ViewerWindow *source)
+{
+    SetInteractorAtts(source->GetInteractorAtts());
+}
+

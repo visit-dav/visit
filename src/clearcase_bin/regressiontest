@@ -86,6 +86,9 @@
 #    Moved /usr/local/bin ahead of /usr/bin in the PATH so it would get
 #    the GNU date program.
 #
+#    Hank Childs, Thu Aug 19 16:40:07 PDT 2004
+#    Add reflect2.py to the skipList for SR-mode.
+#
 # ----------------------------------------------------------------------------
 
 # list of users who want email every night with the log file
@@ -215,6 +218,7 @@ modes="serial parallel scalable,parallel"
 # set list of tests/modes to skip
 skipList="scalable,parallel:tests/hybrid/lineout.py \
           scalable,parallel:tests/rendering/volume.py \
+          scalable,parallel:tests/operators/reflect2.py \
           parallel:tests/queries/queryMultiWindow.py \
           scalable,parallel:tests/queries/queryMultiWindow.py"
 

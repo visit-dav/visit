@@ -23,6 +23,7 @@ struct avtViewInfo;
 class AnnotationAttributes;
 class AppearanceAttributes;
 class ColorTableAttributes;
+class InteractorAttributes;
 class MessageAttributes;
 class QApplication;
 class QSocketNotifier;
@@ -318,6 +319,9 @@ struct avtDefaultPlotMetaData;
 //    Kathleen Bonnell, Thu Aug  5 08:34:15 PDT 2004 
 //    Added ResetLineoutColor.
 //
+//    Kathleen Bonnell, Wed Aug 18 09:28:51 PDT 2004 
+//    Added InteractorAttributes methods.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerSubject : public QObject
@@ -472,6 +476,10 @@ private:
     void SetDefaultQueryOverTimeAttributes();
     void ResetQueryOverTimeAttributes();
     void ResetLineoutColor();
+
+    void SetInteractorAttributes();
+    void SetDefaultInteractorAttributes();
+    void ResetInteractorAttributes();
 
 private slots:
     void HandleViewerRPC();

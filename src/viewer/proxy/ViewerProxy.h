@@ -22,6 +22,7 @@ class EngineList;
 class GlobalAttributes;
 class GlobalLineoutAttributes;
 class HostProfileList;
+class InteractorAttributes;
 class InternalSILObserver;
 class KeyframeAttributes;
 class LightList;
@@ -344,6 +345,9 @@ class Xfer;
 //    Kathleen Bonnell, Thu Aug  5 08:34:15 PDT 2004 
 //    Added ResetLineoutColor.
 //
+//    Kathleen Bonnell, Wed Aug 18 09:28:51 PDT 2004 
+//    Added interactorAtts.
+//
 // ****************************************************************************
 
 class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
@@ -497,6 +501,10 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
     void SetDefaultAnnotationObjectList();
     void ResetAnnotationObjectList();
 
+    void SetInteractorAttributes();
+    void SetDefaultInteractorAttributes();
+    void ResetInteractorAttributes();
+
     void SetKeyframeAttributes();
 
     void SetMaterialAttributes();
@@ -578,6 +586,8 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
                                     {return globalAtts;};
     HostProfileList            *GetHostProfileList() const 
                                     {return hostProfiles;};
+    InteractorAttributes       *GetInteractorAttributes() const 
+                                    {return interactorAtts;};
     KeyframeAttributes         *GetKeyframeAttributes() const
                                     {return keyframeAtts;}
     LightList                  *GetLightList() const 
@@ -645,6 +655,7 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
     ColorTableAttributes       *colorTableAtts;
     ExpressionList             *exprList;
     HostProfileList            *hostProfiles;
+    InteractorAttributes       *interactorAtts;
     MessageAttributes          *messageAtts;
     SaveWindowAttributes       *saveWindowAtts;
     StatusAttributes           *statusAtts;

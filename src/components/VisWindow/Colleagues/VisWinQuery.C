@@ -465,10 +465,16 @@ VisWinQuery::Pick(const VisualCueInfo *vq)
 //    Mark C. Miller, Wed Jun  9 17:44:38 PDT 2004
 //    Modified to use PickEntry and LineEntry vectors
 //
+//    Kathleen Bonnell, Wed Aug 18 09:44:09 PDT 2004 
+//    Added arg to specify which type of pick points to remove (all, 3d or 2d). 
+//
 // ****************************************************************************
 void 
-VisWinQuery::ClearPickPoints()
-{
+VisWinQuery::ClearPickPoints(int which)
+{ 
+    // which == 0, all
+    // which == 1, 3d
+    // which == 2, 2d
     if (pickPoints.empty())
     {
         return;
@@ -476,7 +482,12 @@ VisWinQuery::ClearPickPoints()
     std::vector< PickEntry >::iterator it;
     for (it = pickPoints.begin() ; it != pickPoints.end() ; it++)
     {
-        it->pickActor->Remove();
+        if (which == 0) // all
+            it->pickActor->Remove();
+        else if (which == 1 &&  it->pickActor->GetMode3D()) // 3D
+            it->pickActor->Remove();
+        else if (which == 2 && !it->pickActor->GetMode3D()) // 2D
+            it->pickActor->Remove();
     }
     pickPoints.clear();
 }
@@ -1053,4 +1064,66 @@ VisWinQuery::GetVisualCues(const VisualCueInfo::CueType cueType,
         for (i = 0; i < lineOuts.size(); i++)
             cues.push_back(&(lineOuts[i].vqInfo));
     }
+}
+
+
+// ****************************************************************************
+//  Method: VisWinQuery::Start2DMode
+//
+//  Purpose:
+//    Clears the pick points that are not appropriate for 2D mode. 
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   August 18, 2004 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void             
+VisWinQuery::Start2DMode()
+{
+    // Remove 3d pick actors if they exists
+    ClearPickPoints(1);
+}
+
+// ****************************************************************************
+//  Method: VisWinQuery::StartCurveMode
+//
+//  Purpose:
+//    Clears the pick points that are not appropriate for Curve mode. 
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   August 18, 2004 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void             
+VisWinQuery::StartCurveMode()
+{
+    // Remove 3d pick actors if they exists
+    ClearPickPoints(1);
+}
+
+
+// ****************************************************************************
+//  Method: VisWinQuery::Start3DMode
+//
+//  Purpose:
+//    Clears the pick points that are not appropriate for 3D mode. 
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   August 18, 2004 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void             
+VisWinQuery::Start3DMode()
+{
+    // Remove 2d pick actors if they exists
+    ClearPickPoints(2);
 }

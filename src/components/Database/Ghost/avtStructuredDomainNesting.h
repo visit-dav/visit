@@ -36,6 +36,11 @@ class vtkDataArray;
 //  Programmer:  Mark C. Miller 
 //  Creation:    October 13, 2003
 //
+//  Modifications:
+//
+//    Mark C. Miller, Wed Aug 18 18:20:27 PDT 2004
+//    Added GetSelectedDescendents
+//
 // ****************************************************************************
 class DATABASE_API avtStructuredDomainNesting : public avtDomainNesting
 {
@@ -66,6 +71,9 @@ class DATABASE_API avtStructuredDomainNesting : public avtDomainNesting
                             domainNesting[dom].logicalExtents = exts; } ;
 
     protected:
+
+        void          GetSelectedDescendents(const vector<int>& allDomainList,
+                          int dom, vector<int>& selectedDescendents) const;
 
         typedef struct {
            int         level;

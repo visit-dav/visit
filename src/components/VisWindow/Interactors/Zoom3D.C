@@ -203,6 +203,9 @@ Zoom3D::EndMiddleButtonAction()
 //    Akira Haddox, Thu Jul  3 13:54:59 PDT 2003
 //    Changed check for not zooming to include line rubberbands.
 //
+//    Kathleen Bonnell, Wed Aug  4 07:59:41 PDT 2004 
+//    Added logic for un-zoom. 
+//
 // ****************************************************************************
 
 void
@@ -238,15 +241,31 @@ Zoom3D::ZoomCamera(void)
 
     avtView3D newView3D = vw->GetView3D();
 
-    pan[0] = (((double)(anchorX + lastX - size[0])) / (2.0 * (double)size[0]))
+    if (!controlKeyDown) // zoom
+    {
+        pan[0] = (((double)(anchorX + lastX - size[0])) / (2.0 * (double)size[0]))
              / newView3D.imageZoom;
-    pan[1] = (((double)(anchorY + lastY - size[1])) / (2.0 * (double)size[1]))
+        pan[1] = (((double)(anchorY + lastY - size[1])) / (2.0 * (double)size[1]))
              / newView3D.imageZoom;
-    zoomFactor = fabs((double)(anchorY - lastY)) / (double) size[1];
+        zoomFactor = fabs((double)(anchorY - lastY)) / (double) size[1];
 
-    newView3D.imagePan[0] -= pan[0];
-    newView3D.imagePan[1] -= pan[1];
-    newView3D.imageZoom = newView3D.imageZoom / zoomFactor;
+        newView3D.imagePan[0] -= pan[0];
+        newView3D.imagePan[1] -= pan[1];
+        newView3D.imageZoom = newView3D.imageZoom / zoomFactor;
+    }
+    else  // unzoom
+    {
+        zoomFactor = fabs((double)(anchorY - lastY)) / (double) size[1];
+        newView3D.imageZoom = newView3D.imageZoom * zoomFactor;
+
+        pan[0] = (((double)(anchorX + lastX - size[0])) / (2.0 * (double)size[0]))
+             / newView3D.imageZoom;
+        pan[1] = (((double)(anchorY + lastY - size[1])) / (2.0 * (double)size[1]))
+             / newView3D.imageZoom;
+
+        newView3D.imagePan[0] += pan[0];
+        newView3D.imagePan[1] += pan[1];
+    }
 
     vw->SetView3D(newView3D);
 

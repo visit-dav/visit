@@ -81,6 +81,9 @@
 #    Kathleen Bonnell, Thu Jul 22 09:31:45 PDT 2004 
 #    I added PyGlobalLineoutAtributes.
 #
+#    Kathleen Bonnell, Mon Aug 16 11:41:34 PDT 2004 
+#    I added PyInteractorAttributes.
+#
 ##############################################################################
 
 ##
@@ -97,6 +100,7 @@ SRC= \
     PyGlobalAttributes.C \
     PyGlobalLineoutAttributes.C \
     PyHostProfile.C \
+    PyInteractorAttributes.C \
     PyKeyframeAttributes.C \
     PyMaterialAttributes.C \
     PyPickAttributes.C \
@@ -119,6 +123,7 @@ HDR= \
     PyGlobalAttributes.h \
     PyGlobalLineoutAttributes.h \
     PyHostProfile.h \
+    PyInteractorAttributes.h \
     PyKeyframeAttributes.h \
     PyMaterialAttributes.h \
     PyPickAttributes.h \

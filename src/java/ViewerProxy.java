@@ -118,6 +118,9 @@ import java.util.Vector;
 //   Brad Whitlock, Mon Jul 26 15:57:32 PST 2004
 //   Added CheckForNewStates.
 //
+//   Kathleen Bonnell, Wed Aug 18 09:19:25 PDT 2004 
+//   Added support for InteractorAttributes.
+//
 // ****************************************************************************
 
 public class ViewerProxy implements SimpleObserver
@@ -170,6 +173,7 @@ public class ViewerProxy implements SimpleObserver
         globalLineoutAtts = new GlobalLineoutAttributes();
         annotationObjectList = new AnnotationObjectList();
         queryOverTimeAtts = new QueryOverTimeAttributes();
+        interactorAtts = new InteractorAttributes();
 
         // Create the plugin managers.
         plotPlugins = new PluginManager("plot");
@@ -1421,6 +1425,27 @@ public class ViewerProxy implements SimpleObserver
         return synchronous ? Synchronize() : true;
     }
 
+    public boolean SetInteractorAttriubes()
+    {
+        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETINTERACTORATTRIBUTESRPC);
+        rpc.Notify();
+        return synchronous ? Synchronize() : true;
+    }
+
+    public boolean SetDefaultInteractorAttriubes()
+    {
+        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETDEFAULTINTERACTORATTRIBUTESRPC);
+        rpc.Notify();
+        return synchronous ? Synchronize() : true;
+    }
+
+    public boolean ResetQueryInteractorAttriubes()
+    {
+        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_RESETINTERACTORATTRIBUTESRPC);
+        rpc.Notify();
+        return synchronous ? Synchronize() : true;
+    }
+
     public boolean ShowToolbars(boolean forAllWindows)
     {
         if(forAllWindows)
@@ -1496,6 +1521,7 @@ public class ViewerProxy implements SimpleObserver
     public GlobalLineoutAttributes GetGlobalLineoutAttributes() { return globalLineoutAtts; }
     public AnnotationObjectList GetAnnotationObjectList() { return annotationObjectList; }
     public QueryOverTimeAttributes GetQueryOverTimeAttributes() { return queryOverTimeAtts; }
+    public InteractorAttributes GetInteractorAttributes() { return interactorAtts; }
 
     public int GetPlotIndex(String plotName)
     {
@@ -1654,4 +1680,5 @@ public class ViewerProxy implements SimpleObserver
     private GlobalLineoutAttributes  globalLineoutAtts;
     private AnnotationObjectList     annotationObjectList;
     private QueryOverTimeAttributes  queryOverTimeAtts;
+    private InteractorAttributes     interactorAtts;
 }

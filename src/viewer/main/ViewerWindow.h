@@ -30,6 +30,7 @@ class DataNode;
 class Line;
 class LightList;
 class PickAttributes;
+class InteractorAttributes;
 
 class avtToolInterface;
 
@@ -316,6 +317,9 @@ class ViewerToolbar;
 //    Mark C. Miller, Tue Jul 27 15:11:11 PDT 2004
 //    Added method to get frame and state info
 //
+//    Kathleen Bonnell, Wed Aug 18 09:39:29 PDT 2004 
+//    Added SetInteracotrAtts, GetInteractorAtts, CopyInteractorAtts.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerWindow
@@ -526,6 +530,10 @@ public:
     const ColorAttribute &GetSpecularColor() const;
 
     void Lineout(const bool);
+
+    void SetInteractorAtts(const InteractorAttributes *);
+    const InteractorAttributes *GetInteractorAtts() const;
+    void CopyInteractorAtts(const ViewerWindow *);
 
 private:
     void RecenterViewCurve(const double *limits);

@@ -214,6 +214,9 @@ class SplashScreen;
 //    Brad Whitlock, Wed Aug 4 15:50:05 PST 2004
 //    Added a filename argument to the LoadFile method.
 //
+//    Kathleen Bonnell, Wed Aug 18 09:44:09 PDT 2004
+//    Added Interactor window. 
+//
 // ****************************************************************************
 
 class GUI_API QvisGUIApplication : public QObject, public ConfigManager, public GUIBase
@@ -313,6 +316,7 @@ private slots:
     void showRenderingWindow();
     void showCorrelationListWindow();
     void showQueryOverTimeWindow();
+    void showInteractorWindow();
 
 private:
     static const char           *windowNames[];
