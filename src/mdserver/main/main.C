@@ -117,7 +117,7 @@ main(int argc, char *argv[])
                "exception: " << e.GetExceptionType().c_str()
                << " from (" << e.GetFilename().c_str()
                << ":" << e.GetLine() << ")" << endl
-               << e.GetMessage().c_str() << endl;
+               << e.Message().c_str() << endl;
         retval = -1;
     }
     ENDTRY

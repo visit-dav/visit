@@ -174,7 +174,7 @@ avtFilter::Update(avtPipelineSpecification_p spec)
             debug1 << "Exception occurred in " << GetType() << endl;
             avtDataValidity &v = GetOutput()->GetInfo().GetValidity();
             v.ErrorOccurred();
-            string tmp = e.GetMessage(); // Otherwise there is a const problem.
+            string tmp = e.Message(); // Otherwise there is a const problem.
             v.SetErrorMessage(tmp);
         }
         ENDTRY

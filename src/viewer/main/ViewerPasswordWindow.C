@@ -252,6 +252,10 @@ ViewerPasswordWindow::authenticate(const char *username, const char *host,
 //   Make use of the exec() return value to allow both Accepted and Rejected
 //   behavior.
 //
+//   Brad Whitlock, Wed Nov 3 17:20:49 PST 2004
+//   Raise the window after it becomes active. This ensures that the
+//   password window is not hidden on MacOS X.
+//
 // ****************************************************************************
 
 const char *
@@ -277,6 +281,7 @@ ViewerPasswordWindow::getPassword(const char *username, const char *host,
 
     // Make the password window be the active window.
     instance->topLevelWidget()->setActiveWindow();
+    instance->topLevelWidget()->raise();
 
     // Clear the password.
     instance->passedit->clear();

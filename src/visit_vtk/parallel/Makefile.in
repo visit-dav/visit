@@ -34,6 +34,9 @@
 #    Jeremy Meredith, Mon Aug 30 16:56:10 PDT 2004
 #    Created.
 #
+#    Brad Whitlock, Mon Nov 1 15:14:23 PST 2004
+#    Fixed for MacOS X.
+#
 ##############################################################################
 
 ##
@@ -54,8 +57,9 @@ CPPFLAGS=@VISIT_VTK_CPPFLAGS@ @CPPFLAGS@ -I.
 SEROBJ=$(SRC:.C=.o)
 PAROBJ=$(SRC:.C=_par.o)
 LIB=libparallel_visit_vtk
-LIBS=@VTK_LIBS@ $(X_LIBS) -lmisc
-
+LIBS=-lmisc -lvisit_vtk -llightweight_visit_vtk -lavtexceptions 
+SERLIBS=$(LIBS) @VTK_LIBS@ $(X_LIBS)
+PARLIBS=$(LIBS) @VTK_LIBS@ $(X_LIBS)
 
 ##
 ## Standard targets...

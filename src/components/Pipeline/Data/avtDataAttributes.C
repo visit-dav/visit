@@ -380,7 +380,8 @@ avtDataAttributes::Print(ostream &out)
         cumulativeCurrentSpatial->Print(out);
     }
 
-    for (int i = 0 ; i < variables.size() ; i++)
+    int i;
+    for (i = 0 ; i < variables.size() ; i++)
     {
         out << "Variable = " << variables[i].varname.c_str() << endl;
         if(variables[i].varunits != "")
@@ -434,7 +435,7 @@ avtDataAttributes::Print(ostream &out)
     }
 
     out << "Selections Applied: ";
-    for (int i = 0; i < selectionsApplied.size(); i++)
+    for (i = 0; i < selectionsApplied.size(); i++)
         out << (selectionsApplied[i] ? "T " : "F ");
     out << endl;
 

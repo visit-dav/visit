@@ -1068,7 +1068,7 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
                 //  and message.
                 //
                 SNPRINTF(message, sizeof(message), "%s:  %s", qName.c_str(),
-                         e.GetMessage().c_str());
+                         e.Message().c_str());
             }
             else
             {
@@ -1079,7 +1079,7 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
                 //
                 SNPRINTF(message, sizeof(message), "%s:  (%s)\n%s", qName.c_str(),
                          e.GetExceptionType().c_str(),
-                         e.GetMessage().c_str());
+                         e.Message().c_str());
 
             }
             ClearStatus(engineKey.ID().c_str());
@@ -1848,7 +1848,7 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
                     //
                     SNPRINTF(message, sizeof(message), "Pick:  (%s)\n%s", 
                              e.GetExceptionType().c_str(),
-                             e.GetMessage().c_str());
+                             e.Message().c_str());
 
                     Error(message);
                 }
@@ -3432,7 +3432,7 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin, QueryAttributes *qA)
                 //  and message.
                 //
                 SNPRINTF(message, sizeof(message), "%s:  %s", qName.c_str(),
-                         e.GetMessage().c_str());
+                         e.Message().c_str());
             }
             else if (e.GetExceptionType() == "NonQueryableInputException")
             {
@@ -3452,7 +3452,7 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin, QueryAttributes *qA)
                 //
                 SNPRINTF(message, sizeof(message), "%s:  (%s)\n%s", qName.c_str(),
                          e.GetExceptionType().c_str(),
-                         e.GetMessage().c_str());
+                         e.Message().c_str());
 
             }
             ClearStatus(engineKey.ID().c_str());
@@ -3744,7 +3744,7 @@ ViewerQueryManager::VerifySingleInputQuery(ViewerPlotList *plist, const int plot
         // message.
         //
         string msg = qName + ":  (" + e.GetExceptionType() + ")\n" + 
-            e.GetMessage() + "\nThis is probably an internal Query error," +
+            e.Message() + "\nThis is probably an internal Query error," +
             " please contact a VisIt developer.\n";
         queryClientAtts->Notify();
         Error(msg.c_str());
@@ -3844,7 +3844,7 @@ ViewerQueryManager::VerifyMultipleInputQuery(ViewerPlotList *plist,
         // message.
         //
         string msg = qName + ":  (" + e.GetExceptionType() + ")\n" + 
-            e.GetMessage() + "\nThis is probably an internal Query error," +
+            e.Message() + "\nThis is probably an internal Query error," +
             " please contact a VisIt developer.\n";
         queryClientAtts->Notify();
         Error(msg.c_str());
@@ -3906,7 +3906,7 @@ ViewerQueryManager::DoSpatialExtentsQuery(ViewerPlot *oplot, bool actualData)
         // message.
         //
         string msg = "SpatialExtents:  (" + e.GetExceptionType() + ")\n" + 
-            e.GetMessage() + "\nThis is probably an internal Query error," +
+            e.Message() + "\nThis is probably an internal Query error," +
             " please contact a VisIt developer.\n";
         queryClientAtts->Notify();
         Error(msg.c_str());

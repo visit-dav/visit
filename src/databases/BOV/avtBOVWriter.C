@@ -232,6 +232,9 @@ ResampleGrid(vtkRectilinearGrid *rgrid, float *ptr, float *samples,
 //    Hank Childs, Thu Oct 21 18:10:29 PDT 2004
 //    Fix problem with writing out one block while resampling.
 //
+//    Brad Whitlock, Wed Nov 3 12:13:15 PDT 2004
+//    Changed long long coding for Windows.
+//
 // ****************************************************************************
 
 void
@@ -289,7 +292,7 @@ avtBOVWriter::WriteChunk(vtkDataSet *ds, int chunk)
     int brickletNK = dims[2];
     if (shouldChangeChunks)
     {
-        double cubeRoot = pow(nTargetChunks, 0.3333);
+        double cubeRoot = pow(double(nTargetChunks), 0.3333);
         int approxCubeRoot = ((int) cubeRoot);
         if (approxCubeRoot*approxCubeRoot*approxCubeRoot != nTargetChunks)
             approxCubeRoot += 1;
@@ -300,7 +303,7 @@ avtBOVWriter::WriteChunk(vtkDataSet *ds, int chunk)
     }
     if (shouldChangeTotalZones)
     {
-        long long zonesPerBricklet = targetTotalZones / (long long) nBricklets;
+        VISIT_LONG_LONG zonesPerBricklet = targetTotalZones / (VISIT_LONG_LONG) nBricklets;
         zonesPerBricklet += 1;
         double cubeRoot = pow( (double) zonesPerBricklet, 0.3333);
         int approxCubeRoot = ((int) cubeRoot) + 1;
@@ -318,7 +321,7 @@ avtBOVWriter::WriteChunk(vtkDataSet *ds, int chunk)
     }
     else
     {
-        ofile << "DATA_FILE: " << stem << endl;
+        ofile << "DATA_FILE: " << stem.c_str() << endl;
     }
 
     ofile << "DATA SIZE: " << brickletsPerX*brickletNI << " "

@@ -294,7 +294,8 @@ QvisExpressionsWindow::CreateWindowContents()
     typeList = new QComboBox(f2, "typeList");
     int numtypes = Expression::GetNumTypes();
     numtypes = 5;  // HACK!!!  Variable types after 5 currently fail.  FIXME!!!
-    for (int i=1; i < numtypes ; i++)
+    int i;
+    for (i=1; i < numtypes ; i++)
         typeList->insertItem(Expression::GetTypeString((Expression::ExprType)i));
     editLayout->addMultiCellWidget(typeLabel, row,row, 0,0);
     editLayout->addMultiCellWidget(typeList, row,row, 1,3);
@@ -315,7 +316,7 @@ QvisExpressionsWindow::CreateWindowContents()
 
     insertFunctionButton = new QPushButton("Insert Function...", f2);
     insertFunctionMenu = new QPopupMenu(f2, "insertFunctionMenu");
-    for (int i=0; exprlist[i].name; i++)
+    for (i=0; exprlist[i].name; i++)
     {
         QPopupMenu *tmpMenu = new QPopupMenu(f2, exprlist[i].name);
         for (int j=0; exprlist[i].list[j]; j++)

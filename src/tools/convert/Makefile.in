@@ -37,6 +37,9 @@
 #   Jeremy Meredith, Wed Jul  7 12:12:52 PDT 2004
 #   I changed _ser.o to simply be .o.
 #
+#   Brad Whitlock, Tue Nov 2 08:49:59 PDT 2004
+#   I fixed the parallel target.
+#
 ##############################################################################
 
 ##
@@ -64,7 +67,7 @@ PAROBJ=$(SRC:.C=_par.o)
 ##
 ## Standard targets...
 ##
-all: $(LIB) @CONVERT_SER@ @CONVERT_SER@
+all: $(LIB) @CONVERT_SER@ @CONVERT_PAR@
 
 clean:
 	$(RM) $(OBJ) @CONVERT_SER@ @CONVERT_PAR@

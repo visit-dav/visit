@@ -723,7 +723,7 @@ QvisMainWindow::Update(Subject *TheChangedSubject)
             // If the message field is selected, use it. Otherwise, make up
             // a message based on the other fields.
             if(statusAtts->GetMessageType() == 1)
-                statusMsg = QString(statusAtts->GetMessage().c_str());
+                statusMsg = QString(statusAtts->GetStatusMessage().c_str());
             else if (statusAtts->GetMessageType() == 2)
             {
                 int total;

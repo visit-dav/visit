@@ -98,6 +98,9 @@
 #    Hank Childs, Thu Mar  4 09:04:45 PST 2004
 #    Removed Qt references.
 #
+#    Brad Whitlock, Tue Nov 2 11:33:30 PDT 2004
+#    I fixed some link issues on the Mac due to recent source changes.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -160,11 +163,11 @@ VisWindow_src= \
   VisWindow/VisWindow.C \
   VisWindow/VisWindowTypes.C
 
-CPPFLAGS=@COMPONENT_CPPFLAGS@ @CPPFLAGS@ @ANNOTATION_FLAGS@
+CPPFLAGS=@COMPONENT_CPPFLAGS@ @CPPFLAGS@ @ANNOTATION_FLAGS@ @VTK_INCLUDES@ $(MESA_INCLUDE)
 
 OBJ=$(SRC:.C=.o)
 LIB=libviswindow
-LIBS=-ldbatts -lpipeline_ser -lavtfilters_ser -lavtmath_ser -lavtexceptions -lavtview -lmisc -lstate -lcomm -lparser -lutility -lplotter -lvisit_vtk -llightweight_visit_vtk @VTKQT_LIBS@ $(VTK_LIBS) $(X_LIBS)
+LIBS=-ldbatts -lpipeline_ser -lavtfilters_ser -lavtmath_ser -lavtexceptions -lavtview -lmisc -lstate -lcomm -lparser -lutility -lplotter -lvisit_vtk -llightweight_visit_vtk -lparallel_visit_vtk_ser @VTKQT_LIBS@ $(VTK_LIBS) $(X_LIBS)
 
 ##
 ## Standard targets...

@@ -26,7 +26,6 @@
 #include <NoInputException.h>
 #include <TimingsManager.h>
 
-#include <avtParallel.h>
 #include <DebugStream.h>
 
 #ifdef PARALLEL
@@ -77,12 +76,9 @@ static void AreaOwned(int rank, int size, int w, int h,
 vtkParallelImageSpaceRedistributor::vtkParallelImageSpaceRedistributor()
 {
     SetNumberOfOutputs(1);
-    rank = PAR_Rank();
-    size = PAR_Size();
-    x1 = new int[size];
-    x2 = new int[size];
-    y1 = new int[size];
-    y2 = new int[size];
+    rank = 0;
+    size = 1;
+    x1 = x2 = y1 = y2 = 0;
 }
 
 // ****************************************************************************
@@ -98,6 +94,35 @@ vtkParallelImageSpaceRedistributor::~vtkParallelImageSpaceRedistributor()
     delete[] x2;
     delete[] y1;
     delete[] y2;
+}
+
+// ****************************************************************************
+// Method: vtkParallelImageSpaceRedistributor::SetRankAndSize
+//
+// Purpose: 
+//   Sets the number of processors and the processor rank so that we don't
+//   rely on external symbols for doing so.
+//
+// Arguments:
+//   r : The processor rank.
+//   s : The number of processors.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Nov 1 15:12:33 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+vtkParallelImageSpaceRedistributor::SetRankAndSize(int r, int s)
+{
+    rank = r;
+    size = s;
+    x1 = new int[size];
+    x2 = new int[size];
+    y1 = new int[size];
+    y2 = new int[size];
 }
 
 // ****************************************************************************

@@ -401,7 +401,7 @@ avtDatasetQuery::PerformQueryInTime(QueryAttributes *qA, const int startT ,
         }
         CATCH2(VisItException, e)
         {
-            errorMessage = e.GetMessage();
+            errorMessage = e.Message();
             inError = true;
         }
         ENDTRY

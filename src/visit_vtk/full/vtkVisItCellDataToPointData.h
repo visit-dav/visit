@@ -37,8 +37,9 @@
 #define __vtkVisItCellDataToPointData_h
 
 #include "vtkDataSetToDataSetFilter.h"
+#include <visit_vtk_exports.h>
 
-class VTK_GRAPHICS_EXPORT vtkVisItCellDataToPointData : public vtkDataSetToDataSetFilter
+class VISIT_VTK_API vtkVisItCellDataToPointData : public vtkDataSetToDataSetFilter
 {
 public:
   static vtkVisItCellDataToPointData *New();

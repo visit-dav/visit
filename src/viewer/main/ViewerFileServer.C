@@ -485,7 +485,7 @@ ViewerFileServer::GetMetaDataHelper(const std::string &host,
                 SNPRINTF(msg, 1000, "VisIt cannot read the metadata for the file "
                          "\"%s\" on host %s.\n\nThe metadata server returned "
                          "the following message:\n\n%s", db.c_str(),
-                        host.c_str(), gmde.GetMessage().c_str());
+                        host.c_str(), gmde.Message().c_str());
                 Error(msg);
             }
             CATCH(LostConnectionException)
@@ -752,7 +752,7 @@ ViewerFileServer::GetSILHelper(const std::string &host, const std::string &db,
                 SNPRINTF(msg, 1000, "VisIt cannot read the SIL for the file "
                          "\"%s\" on host %s.\n\nThe metadata server returned "
                          "the following message:\n\n%s", db.c_str(),
-                         host.c_str(), gmde.GetMessage().c_str());
+                         host.c_str(), gmde.Message().c_str());
                 Error(msg);
             }
             CATCH(LostConnectionException)

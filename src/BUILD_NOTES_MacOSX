@@ -27,7 +27,8 @@ shell prompt.
     Mesa     5.0.2    3-D Graphics Library   http://www.mesa3d.org/
     Python   2.3.3    Scripting Language     http://www.python.org
     Qt       3.3.1    GUI Toolkit            http://www.trolltech.com
-    Silo     4.4.1    File I/O library       http://www.llnl.gov/bdiv/meshtv
+    Silo     4.4.2    File I/O library       http://www.llnl.gov/bdiv/meshtv
+                                             ftp://ftp.llnl.gov/pub/visit/3rd_party/silo041018.sh
     VTK      20031028 Visualization Toolkit  http://www.kitware.com
     HDF5     1.6.0    I/O library            http://hdf.ncsa.uiuc.edu/HDF5/
     
@@ -624,6 +625,13 @@ to build VisIt.  Follow the directions listed below to build VisIt.
 More information about building VisIt follows after that.
 
 #
+# Unzipping VisIt's source code distribution
+#
+gunzip visit041108.tar.gz
+tar xf visit041108.tar
+cd visit041108
+
+#
 # HDF5 and Silo
 #
 If you built the Silo library with support for HDF5 using the instructions in
@@ -640,9 +648,7 @@ save and quit
 #
 # Configure VisIt
 #
-gunzip visit040816.tar.gz
-tar xf visit040816.tar
-cd visit040816/config-site
+cd config-site
 echo VISITHOME=`cat ../../visitpath` > `hostname`.conf
 cat Template.conf >> `hostname`.conf
 cd ..

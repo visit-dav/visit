@@ -1082,7 +1082,10 @@ QvisSaveWindow::saveWindow()
 // Creation:   Fri Jul 30 16:56:24 PST 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Nov 4 14:04:11 PST 2004
+//   Added code to get current values to ensure that the new directory
+//   gets stored in the window attributes.
+//
 // ****************************************************************************
 
 void
@@ -1101,6 +1104,7 @@ QvisSaveWindow::selectOutputDirectory()
     if(!dirName.isEmpty())
     {
         outputDirectoryLineEdit->setText(dirName);
+        GetCurrentValues(0);
         Apply();
     }
 }

@@ -88,7 +88,7 @@ avtDatabaseWriter::SetTargetChunks(int nChunks)
 // ****************************************************************************
 
 bool
-avtDatabaseWriter::SetTargetZones(long long nZones)
+avtDatabaseWriter::SetTargetZones(VISIT_LONG_LONG nZones)
 {
     shouldChangeTotalZones = true;
     targetTotalZones = nZones;

@@ -334,7 +334,9 @@ avtOpenGLLabelRenderer::DrawLabel(const float *screenPoint, const char *label)
 // Creation:   Mon Oct 25 09:18:01 PDT 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Nov 3 09:23:01 PDT 2004
+//   Fixed for win32.
+//
 // ****************************************************************************
 
 void
@@ -374,7 +376,7 @@ avtOpenGLLabelRenderer::DrawLabel2(const float *screenPoint, const char *label)
     // Translate the text to the screen location
     glTranslatef(screenPoint[0]*x_scale + dx, screenPoint[1]*y_scale + dy, 0);
 
-    for(const char *cptr = label; *cptr != '\0'; ++cptr)
+    for(cptr = label; *cptr != '\0'; ++cptr)
     {
         unsigned int cIndex = (unsigned int)(*cptr);
         if(characterDisplayListIndices[cIndex] != -1)

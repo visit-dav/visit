@@ -4,7 +4,7 @@
 
 #ifndef __vtkParallelImageSpaceRedistributor_h
 #define __vtkParallelImageSpaceRedistributor_h
-#include <visit_vtk_exports.h>
+#include <parallel_visit_vtk_exports.h>
 #include <vtkRenderer.h>
 #include <vector>
 #include <vtkPolyDataToPolyDataFilter.h>
@@ -30,9 +30,13 @@
 //    More refactoring.  Cloned WhichProcessorsForCell so it could count cells
 //    in the first pass without having to create the destinations vector.
 //
+//    Brad Whitlock, Mon Nov 1 15:10:49 PST 2004
+//    Added a method to set rank and size to eliminate a circular code
+//    dependency. Changed the API.
+//
 // ****************************************************************************
 
-class VISIT_VTK_API vtkParallelImageSpaceRedistributor :
+class PARALLEL_VISIT_VTK_API vtkParallelImageSpaceRedistributor :
                                             public vtkPolyDataToPolyDataFilter
 {
   public:
@@ -40,6 +44,7 @@ class VISIT_VTK_API vtkParallelImageSpaceRedistributor :
 
     vtkPolyData      *GetOutput();
     void             SetRenderer(vtkRenderer *renderer) {ren = renderer;};
+    void             SetRankAndSize(int r, int s);
 
   protected:
                      vtkParallelImageSpaceRedistributor();

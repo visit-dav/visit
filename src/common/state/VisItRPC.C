@@ -49,7 +49,7 @@ VisItRPC::RPCReply::SetMessage(const std::string &msg)
 }
 
 const std::string &
-VisItRPC::RPCReply::GetMessage() const
+VisItRPC::RPCReply::Message() const
 {
     return message;
 }
@@ -102,9 +102,9 @@ VisItRPC::GetStatus() const
 }
 
 const std::string &
-VisItRPC::GetMessage() const
+VisItRPC::Message() const
 {
-    return reply.GetMessage();
+    return reply.Message();
 }
 
 const std::string &

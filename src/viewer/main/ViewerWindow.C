@@ -7237,9 +7237,10 @@ ViewerWindow::ClearLastExternalRenderRequestInfo()
     lastExternalRenderRequest.extStr =
         avtExtentType_ToString(AVT_UNKNOWN_EXTENT_TYPE);
     lastExternalRenderRequest.visCues.ClearVisualCueInfos();
-    for (int i = 0; i < 7; i++)
+    int i;
+    for (i = 0; i < 7; i++)
         lastExternalRenderRequest.frameAndState[i] = 0;
-    for (int i = 0; i < 6; i++)
+    for (i = 0; i < 6; i++)
         lastExternalRenderRequest.viewExtents[i] = (i%2 ? 1.0 : 0.0);
     lastExternalRenderRequest.lastChangedCtName = "";
 }
@@ -7307,9 +7308,9 @@ ViewerWindow::UpdateLastExternalRenderRequestInfo(
     lastExternalRenderRequest.annotObjs     = newRequest.annotObjs;
     lastExternalRenderRequest.extStr        = newRequest.extStr;
     lastExternalRenderRequest.visCues       = newRequest.visCues;
-    for (int i = 0; i < 7; i++)
+    for (i = 0; i < 7; i++)
         lastExternalRenderRequest.frameAndState[i] = newRequest.frameAndState[i];
-    for (int i = 0; i < 6; i++)
+    for (i = 0; i < 6; i++)
         lastExternalRenderRequest.viewExtents[i] = newRequest.viewExtents[i];
     lastExternalRenderRequest.lastChangedCtName = ""; 
 
@@ -7403,7 +7404,8 @@ ViewerWindow::CanSkipExternalRender(const ExternalRenderRequestInfo& thisRequest
         return false;
 
     bool sameFrameAndState = true;
-    for (int i = 0; i < 7; i++)
+    int i;
+    for (i = 0; i < 7; i++)
     {
         if (thisRequest.frameAndState[i] != lastRequest.frameAndState[i])
         {
@@ -7415,7 +7417,7 @@ ViewerWindow::CanSkipExternalRender(const ExternalRenderRequestInfo& thisRequest
         return false;
 
     bool sameViewExtents = true;
-    for (int i = 0; i < 6; i++)
+    for (i = 0; i < 6; i++)
     {
         if (thisRequest.viewExtents[i] != lastRequest.viewExtents[i])
         {
@@ -7430,7 +7432,7 @@ ViewerWindow::CanSkipExternalRender(const ExternalRenderRequestInfo& thisRequest
         (thisRequest.plotIdsList.size() != lastRequest.plotIdsList.size()))
         return false;
 
-    for (int i = 0; i < thisRequest.plotIdsList.size(); i++)
+    for (i = 0; i < thisRequest.plotIdsList.size(); i++)
     {
         // search for index of current plot in last list
         int indexOfPlotInLastList = -1;
@@ -7598,7 +7600,7 @@ ViewerWindow::ExternalRender(const ExternalRenderRequestInfo& thisRequest,
         SNPRINTF(message, sizeof(message), "%s:  (%s)\n%s", 
             "Scalable Render Request Failed",
             e.GetExceptionType().c_str(),
-            e.GetMessage().c_str());
+            e.Message().c_str());
 
         Error(message);
 

@@ -4,10 +4,8 @@
 
 #include <avtMesaSplattingVolumeRenderer.h>
 
-#if !defined(_WIN32)
-// Don't do this on windows yet until we figure it out.
+// Mangle the GL calls to mgl.
 #include <GL/gl_mangle.h>
-#endif
 
 #define avtOpenGLSplattingVolumeRenderer avtMesaSplattingVolumeRenderer
 

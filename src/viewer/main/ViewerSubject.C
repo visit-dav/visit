@@ -97,9 +97,6 @@
 #include <strings.h>
 #include <unistd.h>
 #else
-#if defined(GetMessage)
-#undef GetMessage
-#endif
 #endif
 
 #include <algorithm>
@@ -1056,7 +1053,7 @@ ViewerSubject::LoadPlotPlugins()
         // Just print out an error message to the console because we cannot
         // abort without hanging the viewer's client.
         cerr << "VisIt could not read all of the plot plugins. "
-             << "The error message is: \"" << e.GetMessage().c_str() << "\"" << endl;
+             << "The error message is: \"" << e.Message().c_str() << "\"" << endl;
     }
     ENDTRY
     visitTimer->StopTimer(timeid, "Loading plot plugins.");
@@ -1118,7 +1115,7 @@ ViewerSubject::LoadOperatorPlugins()
         // Just print out an error message to the console because we cannot
         // abort without hanging the viewer's client.
         cerr << "VisIt could not read all of the operator plugins. "
-             << "The error message is: \"" << e.GetMessage().c_str() << "\"" << endl;
+             << "The error message is: \"" << e.Message().c_str() << "\"" << endl;
     }
     ENDTRY
     visitTimer->StopTimer(timeid, "Loading operator plugins.");
@@ -2172,7 +2169,7 @@ ViewerSubject::Status(const char *message)
     statusAtts->SetSender("viewer");
     statusAtts->SetClearStatus(false);
     statusAtts->SetMessageType(1);
-    statusAtts->SetMessage(message);
+    statusAtts->SetStatusMessage(message);
     statusAtts->SetDuration(StatusAttributes::DEFAULT_DURATION);
     statusAtts->Notify();
 }
@@ -2200,7 +2197,7 @@ ViewerSubject::Status(const char *message, int milliseconds)
     statusAtts->SetSender("viewer");
     statusAtts->SetClearStatus(false);
     statusAtts->SetMessageType(1);
-    statusAtts->SetMessage(message);
+    statusAtts->SetStatusMessage(message);
     statusAtts->SetDuration(milliseconds);
     statusAtts->Notify();
 }
@@ -2233,7 +2230,7 @@ ViewerSubject::Status(const char *sender, const char *message)
     statusAtts->SetSender(sender);
     statusAtts->SetClearStatus(false);
     statusAtts->SetMessageType(1);
-    statusAtts->SetMessage(message);
+    statusAtts->SetStatusMessage(message);
     statusAtts->SetDuration(StatusAttributes::DEFAULT_DURATION);
     statusAtts->Notify();
 }

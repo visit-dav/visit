@@ -665,7 +665,8 @@ avtDataSpecification::operator==(const avtDataSpecification &ds)
     {
         return false;
     }
-    for (int i = 0 ; i < secondaryVariables.size() ; i++)
+    int i;
+    for (i = 0 ; i < secondaryVariables.size() ; i++)
     {
         const char *my_str  = *(secondaryVariables[i]);
         const char *his_str = *(ds.secondaryVariables[i]);
@@ -679,7 +680,7 @@ avtDataSpecification::operator==(const avtDataSpecification &ds)
     {
         return false;
     }
-    for (int i = 0; i < selList.size(); i++)
+    for (i = 0; i < selList.size(); i++)
     {
         if (*selList[i] != *(ds.selList[i]))
             return false;
@@ -962,12 +963,17 @@ avtDataSpecification::GetSecondaryVariablesWithoutDuplicates(void)
 //  Programmer: Mark C. Miller 
 //  Creation:   September 28, 2004 
 //
+//  Modifications:
+//    Brad Whitlock, Mon Nov 1 16:07:37 PST 2004
+//    I added a return statement since the return type is int.
+//
 // ****************************************************************************
 
 int
 avtDataSpecification::AddDataSelection(avtDataSelection *sel)
 {
     selList.push_back(sel);
+    return selList.size();
 }
 
 // ****************************************************************************

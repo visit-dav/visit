@@ -405,7 +405,8 @@ avtSoftwareShader::AddShadows(avtImage_p light_image, avtImage_p current_image,
     // Now iterate over every pixel in the scene and see if the light can
     // see the same spots as the camera.
     //
-    for (int j = 0 ; j < rs ; j++)
+    int j;
+    for (j = 0 ; j < rs ; j++)
     {
         for (int i = 0 ; i < cs ; i++)
         {
