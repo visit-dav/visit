@@ -578,10 +578,16 @@ avtPixieFileFormat::GetMesh(int timestate, const char *meshname)
         EXCEPTION1(InvalidVariableException, meshNameString);
     }
 
+    // The dims are being copied to a temporary array before being output
+    // to get around a compiler (STL) deficiency with g++-3.3.3 on tru64.
+    int originalDims[3];
+    originalDims[0] = it->second.dims[0];
+    originalDims[1] = it->second.dims[1];
+    originalDims[2] = it->second.dims[2];
     debug4 << "avtPixieFileFormat::GetMesh: 0: "
-           << "originalDims={" << it->second.dims[0]
-           << ", " << it->second.dims[1]
-           << ", " << it->second.dims[2] << "}" << endl;
+           << "originalDims={" << originalDims[0]
+           << ", " << originalDims[1]
+           << ", " << originalDims[2] << "}" << endl;
 
     //
     // Determine the number of cells in each dimension. Note that 

@@ -114,10 +114,15 @@ class avtVistaFileFormat : public avtSTMDFileFormat
     VistaTree           *vTree;
     VistaFormatType      formatType;
 
+    static const int     MASTER_FILE_INDEX;
+    string               masterFileName;
+    string               masterDirName;
+
+    int                  numChunks;
+    int                 *chunkToFileMap;
+
                          avtVistaFileFormat(const char *,
                                             avtVistaFileFormat *morphFrom);
-
-    void                 GetFileNameForRead(int domain, char *fileName, int size);
 
     bool                 ReadDataset(const char *fileName, const char *dsPath,
                              VistaDataType *type, size_t *size, void **buf);
@@ -136,13 +141,6 @@ class avtVistaFileFormat : public avtSTMDFileFormat
                              bool convertToFloat);
 
     char                *writerName;
-
-    static const int     MASTER_FILE_INDEX;
-    string               masterFileName;
-    string               masterDirName;
-
-    int                  numChunks;
-    int                 *chunkToFileMap;
 
     // we use void * here so we can use either HDF5 or Silo
     void                **fileHandles;

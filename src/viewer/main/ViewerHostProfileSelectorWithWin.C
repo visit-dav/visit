@@ -37,6 +37,8 @@ extern ViewerSubject *viewerSubject;
 ViewerHostProfileSelectorWithWin::ViewerHostProfileSelectorWithWin(QWidget *parent, const char *name)
     : QDialog(parent, name, true)
 {
+    waitingOnUser = false;
+
     QVBoxLayout *topLayout = new QVBoxLayout(this);
 
     QGridLayout *layout = new QGridLayout(topLayout, 4, 4);
@@ -147,6 +149,9 @@ ViewerHostProfileSelectorWithWin::~ViewerHostProfileSelectorWithWin()
 //    that they want the same number of processors every time the engine
 //    launches.
 //
+//    Jeremy Meredith, Wed Oct 27 13:59:14 PDT 2004
+//    Prevented recursion into QDialog::exec().  See VisIt00005532.
+//
 // ****************************************************************************
 
 bool 
@@ -170,6 +175,15 @@ ViewerHostProfileSelectorWithWin::SelectProfile(
     }
     else
     {
+        //
+        // If someone tries to do something while we already have the
+        // selector open and waiting on a user, just pretend they didn't
+        // want to launch one.  This will cause the new operations to fail,
+        // but at least it won't recurse into the exec() call and crash.
+        //
+        if (waitingOnUser)
+            return false;
+
         //
         // Check for a host profile for the hostName. If one exists, add
         // any arguments to the command line for the engine proxy.  If
@@ -204,7 +218,9 @@ ViewerHostProfileSelectorWithWin::SelectProfile(
             }
 
             viewerSubject->BlockSocketSignals(true);
+            waitingOnUser = true;
             bool rejected = (exec() == QDialog::Rejected);
+            waitingOnUser = false;
             viewerSubject->BlockSocketSignals(false);
 
             if (rejected)

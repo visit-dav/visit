@@ -96,6 +96,15 @@ avtVertexNormalsFilter::~avtVertexNormalsFilter()
 //    Hank Childs, Thu Feb 26 09:50:37 PST 2004
 //    Decide what type of normals (point, cell) to do from inside this filter.
 //
+//    Jeremy Meredith, Wed Oct 27 15:22:32 PDT 2004
+//    Removed check for ensuring that polgons actually existed before doing
+//    the normals.  The vtkVisItPolyDataNormals filter accepts them just fine,
+//    and we can count on the spatial/topological tests to rule out cases
+//    where it will be inefficient to compute normals anyway.  There were
+//    cases where some domains had polgons, and others only had lines, but
+//    the final append filter removed *all* normals because some domains
+//    did not have any.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -124,11 +133,6 @@ avtVertexNormalsFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
     }
 
     vtkPolyData *pd = (vtkPolyData *)in_ds;
-
-    if (pd->GetNumberOfPolys() <= 0 && pd->GetNumberOfStrips() <= 0)
-    {
-        return in_ds;
-    }
 
     bool pointNormals = true;
     if (atts.ValidActiveVariable())

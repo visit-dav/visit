@@ -45,6 +45,9 @@ using std::vector;
 //    Mark C. Miller, Wed May 19 10:56:11 PDT 2004
 //    Added spatialDim data member
 //
+//    Mark C. Miller, Wed Oct 27 16:02:46 PDT 2004
+//    Added GetFileNameForRead
+//
 // ****************************************************************************
 
 class avtVistaAle3dFileFormat : public avtVistaFileFormat
@@ -74,6 +77,9 @@ class avtVistaAle3dFileFormat : public avtVistaFileFormat
   private:
 
     vtkFloatArray       *ReadVar(int domain, const char *visitName);
+
+    void                 GetFileNameForRead(int dom, char *fileName, int size);
+
 
     avtMaterial         *GetMaterial(int, const char *);
 

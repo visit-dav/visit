@@ -219,6 +219,34 @@ avtVistaDiabloFileFormat::FreeUpResources(void)
 }
 
 // ****************************************************************************
+//  Method:  GetFileNameForRead
+//
+//  Purpose:   Determines file name for a read based on domain number
+//             variables
+//
+//  Programmer:  Mark C. Miller
+//  Creation:    October 27, 2004 
+//
+// ****************************************************************************
+void
+avtVistaDiabloFileFormat::GetFileNameForRead(int dom, char *fileName, int size)
+{
+    int filePart = chunkToFileMap[dom];
+    if (filePart == MASTER_FILE_INDEX)
+        strncpy(fileName, masterFileName.c_str(), size);
+    else
+    {
+        const char *tmp1 = masterFileName.c_str();
+        int i = strlen(tmp1) - 1;
+        while (i && tmp1[i] != '_')
+            i--;
+        string tmp2 = string(masterFileName,0,i);
+        SNPRINTF(fileName, size, "%s_%05d.SILO", tmp2.c_str(), filePart);
+    }
+}
+
+
+// ****************************************************************************
 //  Method: avtVistaDiabloFileFormat::PopulateDatabaseMetaData
 //
 //  Purpose:
