@@ -140,6 +140,9 @@ EngineProxy::~EngineProxy()
 //    Hank Childs, Mon Feb 28 17:26:21 PST 2005
 //    Added StartQuery.
 //
+//    Mark C. Miller, Tue Mar  8 17:59:40 PST 2005
+//    Added ProcInfoRPC
+//
 // ****************************************************************************
 void
 EngineProxy::SetupComponentRPCs()
@@ -164,6 +167,7 @@ EngineProxy::SetupComponentRPCs()
     xfer.Add(&renderRPC);
     xfer.Add(&setWinAnnotAttsRPC);
     xfer.Add(&cloneNetworkRPC);
+    xfer.Add(&procInfoRPC);
 
     //
     // Add other state objects to the transfer object
@@ -1192,6 +1196,46 @@ EngineProxy::Query(const std::vector<int> &nid, const QueryAttributes *atts,
     ClearStatus();
 }
 
+// ****************************************************************************
+//  Method:  EngineProxy::GetProcInfo
+//
+//  Purpose: Gets unix process information from the engine
+//
+//  Programmer:  Mark C. Miller 
+//  Creation:    November 15, 2004 
+//
+// ****************************************************************************
+
+void 
+EngineProxy::GetProcInfo(ProcessAttributes &retAtts)
+{
+    procInfoRPC();
+    cerr << "In EngineProxy::GetProcInfo" << endl;
+
+    // Get the reply and update the progress bar
+    while (procInfoRPC.GetStatus() == VisItRPC::incomplete ||
+           procInfoRPC.GetStatus() == VisItRPC::warning)
+    {
+        procInfoRPC.RecvReply();
+    }
+ 
+    // Check for abort
+    if (procInfoRPC.GetStatus() == VisItRPC::abort)
+    {
+        ClearStatus();
+        EXCEPTION0(AbortException);
+    }
+
+    // Check for an error
+    if (procInfoRPC.GetStatus() == VisItRPC::error)    
+    {
+        RECONSTITUTE_EXCEPTION(procInfoRPC.GetExceptionType(),
+                               procInfoRPC.Message());
+    }
+
+    retAtts = procInfoRPC.GetReturnAtts();
+
+}
 
 // ****************************************************************************
 //  Method:  EngineProxy::ReleaseData

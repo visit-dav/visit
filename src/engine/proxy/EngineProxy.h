@@ -17,6 +17,7 @@
 #include <MakePlotRPC.h>
 #include <OpenDatabaseRPC.h>
 #include <PickRPC.h>
+#include <ProcInfoRPC.h>
 #include <QueryRPC.h>
 #include <ReleaseDataRPC.h>
 #include <SetWinAnnotAttsRPC.h>
@@ -224,6 +225,9 @@ class StatusAttributes;
 //    Kathleen Bonnell, Tue Mar  1 11:20:15 PST 2005 
 //    Added UpdateExpressions. 
 //
+//    Mark C. Miller, Tue Mar  8 17:59:40 PST 2005
+//    Added GetProcInfo
+//
 // ****************************************************************************
 
 class ENGINE_PROXY_API EngineProxy : public RemoteProxyBase
@@ -311,6 +315,8 @@ public:
     void                     CloneNetwork(const int, const QueryOverTimeAttributes *);
     void                     UpdateExpressions(const ExpressionList &);
 
+    void                     GetProcInfo(ProcessAttributes &);
+
 protected:
     virtual void             SetupComponentRPCs();
     void                     ExtractEngineInformation();
@@ -339,6 +345,7 @@ private:
     SetWinAnnotAttsRPC       setWinAnnotAttsRPC;
     ExpressionList           exprList;
     CloneNetworkRPC          cloneNetworkRPC;
+    ProcInfoRPC              procInfoRPC;
 
     // For indicating status.
     StatusAttributes        *statusAtts;

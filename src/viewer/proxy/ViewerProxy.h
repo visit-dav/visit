@@ -33,6 +33,7 @@ class PickAttributes;
 class PlotList;
 class PluginManagerAttributes;
 class PrinterAttributes;
+class ProcessAttributes;
 class QueryAttributes;
 class QueryOverTimeAttributes;
 class QueryList;
@@ -356,6 +357,9 @@ class Xfer;
 //    Kathleen Bonnell, Wed Dec 15 17:12:47 PST 2004 
 //    Added bool arg to DatabaseQuery and PointQuery. 
 //
+//    Mark C. Miller, Tue Mar  8 17:59:40 PST 2005
+//    Added QueryProcessAttributes and GetProcessAttributes
+//
 // ****************************************************************************
 
 class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
@@ -576,6 +580,10 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
     void Lineout(const double p0[3], const double p1[3],
                  const stringVector &vars, const int samples);
 
+    void QueryProcessAttributes(const std::string componentName,
+                                const std::string engineHostName,
+                                const std::string engineDbName);
+
     // Methods for returning pointers to state obects.
     AnimationAttributes        *GetAnimationAttributes() const 
                                     {return animationAtts;};
@@ -647,6 +655,9 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
                                     {return metaData; }
     SILAttributes              *GetSILAtts() const
                                     {return silAtts; }
+    ProcessAttributes          *GetProcessAttributes() const
+                                    {return procAtts; }
+           
   protected:
     virtual void Update(Subject *subj);
   private:
@@ -694,6 +705,7 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
     QueryOverTimeAttributes    *queryOverTimeAtts;
     avtDatabaseMetaData        *metaData;
     SILAttributes              *silAtts;
+    ProcessAttributes          *procAtts;
 
     AttributeSubject           **plotAtts;
     AttributeSubject           **operatorAtts;

@@ -20,6 +20,7 @@ class EngineList;
 class EngineProxy;
 class MaterialAttributes;
 class PickAttributes;
+class ProcessAttributes;
 class QueryAttributes;
 class QueryOverTimeAttributes;
 class ViewerPlot;
@@ -203,6 +204,9 @@ class avtDatabaseMetaData;
 //    Hank Childs, Wed Mar  2 11:52:32 PST 2005
 //    Added StartQuery.
 //
+//    Mark C. Miller, Tue Mar  8 18:06:19 PST 2005
+//    Added GetProcInfo
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerEngineManager : public ViewerServerManager,
@@ -293,6 +297,7 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
     bool ClearCache(const EngineKey &ek, const char *dbName = 0);
     bool Query(const EngineKey &ek, const std::vector<int> &networkIds, 
                const QueryAttributes *atts, QueryAttributes &retAtts);
+    bool GetProcInfo(const EngineKey &ek, ProcessAttributes &retAtts);
     bool ReleaseData(const EngineKey &ek, int id);
     bool CloneNetwork(const EngineKey &ek, int id, 
                       const QueryOverTimeAttributes *qatts);

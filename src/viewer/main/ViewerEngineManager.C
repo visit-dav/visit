@@ -18,6 +18,7 @@
 #include <CouldNotConnectException.h>
 #include <AnnotationAttributes.h>
 #include <PickAttributes.h>
+#include <ProcessAttributes.h>
 #include <QueryAttributes.h>
 #include <StatusAttributes.h>
 #include <ViewerFileServer.h>
@@ -2775,6 +2776,24 @@ ViewerEngineManager::Query(const EngineKey &ek,
     ENGINE_PROXY_RPC_END_NORESTART_RETHROW2;
 }
 
+// ****************************************************************************
+// Method: ViewerEngineManager::GetProcInfo
+//
+// Purpose:
+//   Engine GetProcInfoRPC wrapped for safety.
+//
+// Programmer: Mark C. Miller 
+// Creation:   November 15, 2004
+//
+// ****************************************************************************
+ 
+bool
+ViewerEngineManager::GetProcInfo(const EngineKey &ek, ProcessAttributes &retAtts)
+{
+    ENGINE_PROXY_RPC_BEGIN("GetProcInfo");
+    engine->GetProcInfo(retAtts);
+    ENGINE_PROXY_RPC_END_NORESTART_RETHROW2;
+}
 
 // ****************************************************************************
 // Method: ViewerEngineManager::ReleaseData
