@@ -222,7 +222,10 @@ class LightList;
 //    I added AdjustView3d.
 //
 //    Kathleen Bonnell, Thu May 15 13:09:41 PDT 2003 
-//    Aded fullFrame member and Set/Get methods.  Added Compute2DScaleFactor.
+//    Added fullFrame member and Set/Get methods.  Added Compute2DScaleFactor.
+//
+//    Kathleen Bonnell, Fri Jun  6 16:06:25 PDT 2003
+//    Added GetScaleFactorAndType method. 
 //
 // ****************************************************************************
 
@@ -364,7 +367,8 @@ public:
 
     void SetFullFrameMode(const bool mode);
     bool GetFullFrameMode() const;
-    void Compute2DScaleFactor(double &s, int & t);
+    void Compute2DScaleFactor(double &s, int &t);
+    void GetScaleFactorAndType(double &s, int &t);
 
 
     void ScalePlots(const float [3]);

@@ -44,6 +44,9 @@ class vtkHighlightActor2D;
 //   Kathleen Bonnell, Wed May 28 15:58:15 PDT 2003 
 //   Added method ReAddToWindow. 
 //
+//   Kathleen Bonnell, Fri Jun  6 15:23:05 PDT 2003
+//   Added FullFrameOn/Off methods. 
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinTools : public VisWinColleague
@@ -77,6 +80,9 @@ class VISWINDOW_API VisWinTools : public VisWinColleague
 
     void             TurnLightingOn();
     void             TurnLightingOff();
+
+    virtual void     FullFrameOn(const double, const int);
+    virtual void     FullFrameOff(void);
 
   protected:
     void                  ClearHighlight();

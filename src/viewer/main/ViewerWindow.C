@@ -1319,6 +1319,10 @@ ViewerWindow::GetMaintainViewMode() const
 //    non-curve window with realized plots.  Preserve the current view's zoom 
 //    or pan parameters by not calling ResetView.  Instead, simply scale or 
 //    reverse the scale of view2D.window as necessary.
+//
+//    Kathleen Bonnell, Fri Jun  6 16:39:22 PDT 2003
+//    Removed call to ScalePlots. Now handled at VisWindow level.  
+//
 // ****************************************************************************
 
 void
@@ -1328,15 +1332,7 @@ ViewerWindow::SetFullFrameMode(const bool mode)
     {
         return;
     }
-    if (fullFrame && viewDimension == 2 && !GetTypeIsCurve()) 
-    {
-        // 
-        //  fullFrame mode is being turned off, reset the scale of the
-        //  plots.
-        // 
-        float vec[3] = {1., 1., 1.};
-        ScalePlots(vec);
-    }
+
     fullFrame = mode;
 
     if (viewDimension == 2 && !GetTypeIsCurve() && boundingBoxValid2d) 
@@ -2809,6 +2805,41 @@ ViewerWindow::Compute2DScaleFactor(double &s, int & t)
     }
 }
 
+
+// ****************************************************************************
+//  Method: ViewerWindow::GetScaleFactorAndType
+//
+//  Purpose: 
+//    Retrieves the axis scale factor from view2d.
+//
+//  Arguments:
+//    s         The scale factor. 
+//    t         The axis that should be scaled (0 == x, 1 == y) 
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   June 2, 2003 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+ViewerWindow::GetScaleFactorAndType(double &s, int &t)
+{
+    if (fullFrame && viewDimension == 2 && !GetTypeIsCurve())
+    {
+        avtView2D view2D=visWindow->GetView2D();
+        s = view2D.axisScaleFactor;
+        t = view2D.axisScaleType;
+    }
+    else 
+    {
+        s = 0.;
+        t = 1;
+    }
+}
+
+
 // ****************************************************************************
 //  Method: ViewerWindow::RecenterView3d
 //
@@ -4145,6 +4176,9 @@ ViewerWindow::ClearRefLines()
 //    Kathleen Bonnell, Fri Jul 26 16:52:47 PDT 2002 
 //    Removed references to YScale, not used any more. 
 //
+//    Kathleen Bonnell, Fri Jun  6 16:42:06 PDT 2003 
+//    Changed call from AddQuery to Lineout. 
+//
 // ****************************************************************************
 
 void
@@ -4156,7 +4190,7 @@ ViewerWindow::PerformLineoutCallback(void *data)
     LINE_OUT_INFO *loData = (LINE_OUT_INFO *)data;
 
     ViewerWindow *win = (ViewerWindow *)loData->callbackData;
-    ViewerQueryManager::Instance()->AddQuery(win, &loData->atts);
+    ViewerQueryManager::Instance()->Lineout(win, &loData->atts);
 }
 
 

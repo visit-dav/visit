@@ -38,6 +38,9 @@ typedef std::vector<HotPoint> HotPointVector;
 //   Kathleen Bonnell, Wed May 28 16:14:22 PDT 2003 
 //   Added method ReAddToWindow.
 //
+//   Kathleen Bonnell, Fri Jun  6 15:36:24 PDT 2003 
+//   Added FullFrameOn/Off methods.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisitInteractiveTool
@@ -76,6 +79,9 @@ class VISWINDOW_API VisitInteractiveTool
     virtual void          TurnLightingOn()  {; }; 
     virtual void          TurnLightingOff() {; }; 
     virtual void          ReAddToWindow() {; }; 
+
+    virtual void          FullFrameOn(const double, const int)  {; }; 
+    virtual void          FullFrameOff() {; }; 
 
   protected:
     void                  ComputeDisplayToWorld(double x, double y, double z,

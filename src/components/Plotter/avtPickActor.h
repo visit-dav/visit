@@ -23,6 +23,9 @@ class vtkRenderer;
 //    Kathleen Bonnell, Wed May  8 13:50:44 PDT 2002
 //    Moved ComputeScaleFactor to VisWinRendering.
 //
+//    Kathleen Bonnell, Fri Jun  6 15:08:45 PDT 2003  
+//    Added Translate and ResetPosition methods. 
+//
 // ****************************************************************************
 
 class PLOTTER_API avtPickActor
@@ -45,6 +48,8 @@ class PLOTTER_API avtPickActor
     void               SetForegroundColor(float fg[3]);
     void               UpdateView();
     void               Shift(const float vec[3]);
+    void               Translate(const float vec[3]);
+    void               ResetPosition(const float vec[3]);
 
   protected:
     bool               mode3D;

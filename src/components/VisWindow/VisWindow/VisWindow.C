@@ -1967,6 +1967,10 @@ VisWindow::ResetView(void)
 //    Kathleen Bonnell, Thu May 15 10:00:02 PDT 2003 
 //    Scale the plots if necessary. 
 //    
+//    Kathleen Bonnell, Fri Jun  6 15:53:58 PDT 2003  
+//    Removed call to ScalePlots.  Added calls to FullFramOn/Off so that all
+//    colleagues can be notified when full-frame mode changes. 
+//    
 // ****************************************************************************
 
 void
@@ -1974,6 +1978,20 @@ VisWindow::SetView2D(const avtView2D &v)
 {
     if (view2D == v)
         return;
+    
+    //
+    // Determine if full-frame mode has changed. 
+    //
+    int fframe = 0;
+
+    if (v.axisScaleFactor > 0. && view2D.axisScaleFactor == 0.)
+    {
+        fframe = 1; 
+    }
+    else if (v.axisScaleFactor == 0. && view2D.axisScaleFactor > 0.)
+    {
+        fframe = 2; 
+    }
 
     //
     // In the future this should propably be done by the VisWinView
@@ -1981,20 +1999,14 @@ VisWindow::SetView2D(const avtView2D &v)
     //
     view2D = v;
 
-    if (view2D.axisScaleFactor > 0.)
-    {
-        float vec[3] = { 1., 1., 1.};
-        if (view2D.axisScaleType == 0) // requires x_axis scaling
-        {
-            vec[0] = view2D.axisScaleFactor;
-        }
-        else // requires y_axis scaling
-        {
-            vec[1] = view2D.axisScaleFactor;
-        }
-        ScalePlots(vec);
-    }
- 
+    //
+    // Tell colleagues that full-frame mode has changed, if necessary. 
+    //
+    if (fframe == 1)
+        FullFrameOn(v.axisScaleFactor, v.axisScaleType);
+    else if (fframe == 2)
+        FullFrameOff();
+
     UpdateView();
 }
 
@@ -4277,3 +4289,75 @@ VisWindow::ReAddColleaguesToRenderWindow(void)
         (*it)->ReAddToWindow();
     }
 }
+
+
+// ****************************************************************************
+//  Method: VisWindow::FullFrameOff
+//
+//  Purpose:
+//    Tells colleagues that FullFrameMode has been turned off. 
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   June 6, 2003 
+//
+// ****************************************************************************
+ 
+void
+VisWindow::FullFrameOff()
+{
+    std::vector< VisWinColleague * >::iterator it;
+    for (it = colleagues.begin() ; it != colleagues.end() ; it++)
+    {
+        (*it)->FullFrameOff();
+    }
+}
+
+
+// ****************************************************************************
+//  Method: VisWindow::FullFrameOn
+//
+//  Purpose:
+//    Tells colleagues that FullFrameMode has been turned on. 
+//
+//  Arguments:
+//    scale     The axis scale factor.
+//    type      The axis scale type.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   June 6, 2003 
+//
+// ****************************************************************************
+
+void
+VisWindow::FullFrameOn(const double scale, const int type)
+{
+    std::vector< VisWinColleague * >::iterator it;
+    for (it = colleagues.begin() ; it != colleagues.end() ; it++)
+    {
+        (*it)->FullFrameOn(scale, type);
+    }
+}
+
+
+// ****************************************************************************
+//  Method: VisWindow::GetFullFrameMode
+//
+//  Purpose:
+//    Returns the status of full-frame mode.
+//
+//  Returns: true if window mode is 2d, and full frame is on, false otherwise. 
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   June 6, 2003 
+//
+// ****************************************************************************
+
+bool
+VisWindow::GetFullFrameMode()
+{
+    if (mode == WINMODE_2D && view2D.axisScaleFactor > 0.)
+        return true;
+    else 
+        return false; 
+}
+

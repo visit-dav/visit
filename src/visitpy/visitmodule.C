@@ -44,6 +44,7 @@
 #include <GlobalAttributes.h>
 #include <KeyframeAttributes.h>
 #include <MessageAttributes.h>
+#include <PickAttributes.h>
 #include <Plot.h>
 #include <PlotList.h>
 #include <PluginManagerAttributes.h>
@@ -4653,6 +4654,34 @@ visit_SetPlotSILRestriction(PyObject *self, PyObject *args)
     return PyLong_FromLong(long(errorFlag == 0));
 }
 
+
+// ****************************************************************************
+// Function: visit_GetPickOutput
+//
+// Purpose:
+//   Returns the pick output for the active window.
+//
+// Notes:      
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   May 14, 2003 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_GetPickOutput(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+    std::string pickOut;
+    PickAttributes *pa = viewer->GetPickAttributes();
+    if (pa->GetFulfilled())
+        pa->CreateOutputString(pickOut);
+
+    return PyString_FromString(pickOut.c_str());
+}
+
 // ****************************************************************************
 // Function: ListCategoryHelper
 //
@@ -6057,7 +6086,6 @@ visit_Pick(PyObject *self, PyObject *args)
     PyObject *tuple = NULL;
     if (!PyArg_ParseTuple(args, "iiO", &x, &y, &tuple))
         return NULL;
-
     // Check the tuple argument.
     stringVector vars;
     if(PyTuple_Check(tuple))
@@ -6416,6 +6444,7 @@ AddDefaultMethods()
     AddMethod("GetKeyframeAttributes", visit_GetKeyframeAttributes);
     AddMethod("GetMaterialAttributes", visit_GetMaterialAttributes);
     AddMethod("GetPipelineCachingMode", visit_GetPipelineCachingMode);
+    AddMethod("GetPickOutput", visit_GetPickOutput);
     AddMethod("GetRenderingAttributes", visit_GetRenderingAttributes);
     AddMethod("GetWindowInformation", visit_GetWindowInformation);
     AddMethod("HideActivePlots", visit_HideActivePlots);

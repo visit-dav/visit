@@ -24,6 +24,9 @@
 //   Hank Childs, Wed Sep  4 08:40:47 PDT 2002
 //   Added RecalculateRenderOrder.
 //
+//   Kathleen Bonnell, Fri Jun  6 15:31:37 PDT 2003  
+//   Added GetFullFrameMode and GetScaleFactorAndType. 
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindowToolProxy : public VisWindowProtectionProxy
@@ -69,6 +72,12 @@ class VISWINDOW_API VisWindowToolProxy : public VisWindowProtectionProxy
 
     bool                UpdatesEnabled()
                                   { return ProxiedUpdatesEnabled(); };
+
+    bool                GetFullFrameMode()
+                                  { return ProxiedGetFullFrameMode(); };
+
+    void                GetScaleFactorAndType(double &scale, int &type)
+                            { ProxiedGetScaleFactorAndType(scale, type); };
 };
 
 

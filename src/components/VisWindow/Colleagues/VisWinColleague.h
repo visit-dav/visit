@@ -55,6 +55,9 @@ class     VisWindowColleagueProxy;
 //    Kathleen Bonnell, Wed May 28 15:52:32 PDT 2003  
 //    Added virtual method ReAddToWindow.  
 //    
+//    Kathleen Bonnell, Fri Jun  6 08:57:33 PDT 2003 
+//    Added virtual methods FullFrameOn, FullFrameOff.  
+//    
 // ****************************************************************************
 
 class VISWINDOW_API VisWinColleague
@@ -97,6 +100,9 @@ class VISWINDOW_API VisWinColleague
     virtual void              UpdatePlotList(std::vector<avtActor_p> &) {;};
 
     virtual void              ReAddToWindow(void)       {;};
+
+    virtual void              FullFrameOn(const double, const int)       {;};
+    virtual void              FullFrameOff(void)       {;};
 
   protected:
     VisWindowColleagueProxy  &mediator;

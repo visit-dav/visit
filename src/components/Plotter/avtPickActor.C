@@ -168,6 +168,7 @@ avtPickActor::Shift(const float vec[3])
     letterActor->SetPosition(newPos[0], newPos[1], newPos[2]);
 }
 
+
 // ****************************************************************************
 //  Method:  avtPickActor::SetMode3D
 //
@@ -294,7 +295,8 @@ void avtPickActor::SetForegroundColor(float fg[3])
 //
 // ****************************************************************************
 
-void avtPickActor::SetForegroundColor(float r, float g, float b)
+void 
+avtPickActor::SetForegroundColor(float r, float g, float b)
 {
     letterActor->GetProperty()->SetColor(r, g, b);
     lineActor->GetProperty()->SetColor(r, g, b);
@@ -311,7 +313,8 @@ void avtPickActor::SetForegroundColor(float r, float g, float b)
 //
 // ****************************************************************************
 
-void avtPickActor::Hide()
+void 
+avtPickActor::Hide()
 {
     letterActor->VisibilityOff();
     lineActor->VisibilityOff();
@@ -328,7 +331,8 @@ void avtPickActor::Hide()
 //
 // ****************************************************************************
 
-void avtPickActor::UnHide()
+void 
+avtPickActor::UnHide()
 {
     letterActor->VisibilityOn();
     lineActor->VisibilityOn();
@@ -349,9 +353,70 @@ void avtPickActor::UnHide()
 //
 // ****************************************************************************
 
-void avtPickActor::UpdateView()
+void 
+avtPickActor::UpdateView()
 {
     // nothing for now. 
 }
 
 
+// ****************************************************************************
+//  Method:  avtPickActor::Translate
+//
+//  Purpose:   Translates the actor by the given vector. 
+//
+//  Arguments:
+//    vec      The vector to use in translating the actor.
+//
+//  Programmer:  Kathleen Bonnell 
+//  Creation:    June 6, 2003
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void 
+avtPickActor::Translate(const float vec[3])
+{
+    float *newPos = letterActor->GetPosition();
+    newPos[0] *= vec[0];
+    newPos[1] *= vec[1]; 
+    newPos[2] *= vec[2];
+
+    newPos = lineSource->GetPoint1();
+    newPos[0] *= vec[0];
+    newPos[1] *= vec[1]; 
+    newPos[2] *= vec[2];
+
+    newPos = lineSource->GetPoint2();
+    newPos[0] *= vec[0];
+    newPos[1] *= vec[1]; 
+    newPos[2] *= vec[2];
+
+    lineSource->Modified();
+}
+
+
+// ****************************************************************************
+//  Method:  avtPickActor::ResetPosition
+//
+//  Purpose:   Resets the actor's position to the original location, including
+//             Shifting towards the camera. 
+//
+//  Arguments:
+//    vec      The vector to use in Shifting the actor. 
+//
+//  Programmer:  Kathleen Bonnell 
+//  Creation:    June 6, 2003
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void 
+avtPickActor::ResetPosition(const float vec[3])
+{
+    lineSource->SetPoint1(attach[0], attach[1], attach[2]);
+    letterActor->SetPosition(attach[0], attach[1], attach[2]);
+    Shift(vec);
+}

@@ -111,6 +111,9 @@ class avtTransparencyActor;
 //    Added method to forward request to register an external rendering
 //    callback to the externally rendered images actor
 //
+//    Kathleen Bonnell, Fri Jun  6 15:23:05 PDT 2003  
+//    Added FullFrameOn/Off methods. 
+//    
 // ****************************************************************************
 
 class VISWINDOW_API VisWinPlots : public VisWinColleague
@@ -162,6 +165,9 @@ class VISWINDOW_API VisWinPlots : public VisWinColleague
                                       VisCallbackWithDob *cb, void *data);
     bool                          EnableExternalRenderRequests(void);
     bool                          DisableExternalRenderRequests(void);
+
+    virtual void                  FullFrameOn(const double, const int);
+    virtual void                  FullFrameOff(void);
 
   protected:
     std::vector< avtActor_p >     plots;

@@ -372,6 +372,9 @@ VisWinQuery::QueryIsValid(const PickAttributes *pa, const Line *lineAtts)
 //    Kathleen Bonnell, Fri Apr 11 15:20:47 PDT 2003 
 //    Force z-coord of attachmentPoint in 2D to be zero.  
 //    
+//    Kathleen Bonnell, Fri Jun  6 15:17:45 PDT 2003  
+//    Added support for FullFrame mode. 
+//    
 // ****************************************************************************
 
 void 
@@ -421,6 +424,24 @@ VisWinQuery::Pick(const PickAttributes *pa)
     projection[1] = distance*(pos[1] - foc[1]);
     projection[2] = distance*(pos[2] - foc[2]);
     pp->Shift(projection);
+
+    if (mediator.GetFullFrameMode())
+    {
+        double scale;
+        int type;
+
+        mediator.GetScaleFactorAndType(scale, type);
+        float vec[3] = { 1., 1., 1.};
+        if (type == 0) // x_axis
+        {
+            vec[0] = scale; 
+        }
+        else // y_axis 
+        {
+            vec[1] = scale; 
+        }
+        pp->Translate(vec);
+    }
 
     //
     //  Add the pickpoint to the renderer. 
@@ -542,6 +563,9 @@ VisWinQuery::ClearPickPoints()
 //    Set the actor's designator from the lineAtts designator. Set 
 //    attachmentPoint and secondaryPoint from lineAtts. 
 //
+//    Kathleen Bonnell, Fri Jun  6 15:17:45 PDT 2003  
+//    Added support for FullFrame mode. 
+//    
 // ****************************************************************************
 
 void 
@@ -591,6 +615,24 @@ VisWinQuery::Lineout(const Line *lineAtts)
 
     lo->SetAttachmentPoint(attachmentPoint);
     lo->SetPoint2(secondaryPoint);
+
+    if (mediator.GetFullFrameMode())
+    {
+        double scale;
+        int type;
+
+        mediator.GetScaleFactorAndType(scale, type);
+        float vec[3] = { 1., 1., 1.};
+        if (type == 0) // x_axis
+        {
+            vec[0] = scale; 
+        }
+        else // y_axis 
+        {
+            vec[1] = scale; 
+        }
+        lo->Translate(vec);
+    }
 
     lo->Add(mediator.GetCanvas());
 
@@ -650,6 +692,9 @@ VisWinQuery::ClearLineouts()
 //    Kathleen Bonnell, Tue Oct  1 16:07:40 PDT 2002 
 //    Add ability for reflines to display labels. 
 //
+//    Kathleen Bonnell, Fri Jun  6 15:17:45 PDT 2003  
+//    Added support for FullFrame mode. 
+//    
 // ****************************************************************************
  
 void
@@ -691,6 +736,23 @@ VisWinQuery::UpdateQuery(const Line *lineAtts)
             lineAtts->GetColor().GetRgba(c);
             (*it)->SetForegroundColor(c[0], c[1], c[2]);
             (*it)->SetShowLabels(lineAtts->GetReflineLabels());
+            if (mediator.GetFullFrameMode())
+            {
+                double scale;
+                int type;
+
+                mediator.GetScaleFactorAndType(scale, type);
+                float vec[3] = { 1., 1., 1.};
+                if (type == 0) // x_axis
+                {
+                    vec[0] = scale; 
+                }
+                else // y_axis 
+                {
+                    vec[1] = scale; 
+                }
+                (*it)->Translate(vec);
+            }
         }
     }
     //
@@ -735,4 +797,81 @@ VisWinQuery::DeleteQuery(const Line *lineAtts)
     //  Issue a render call so changes take effect.
     //
     mediator.Render();
+}
+
+
+// ****************************************************************************
+//  Method: VisWinQuery::FullFrameOn
+//
+//  Purpose:
+//    Translates the queries so that they appear in the proper spot in
+//    full-frame mode. 
+//
+//  Arguments:
+//    scale    The axis scale factor.
+//    type     The axis scale type.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   June 6, 2003 
+//
+// ****************************************************************************
+ 
+void
+VisWinQuery::FullFrameOn(const double scale, const int type)
+{
+    if (scale > 0.)
+    {
+        float vec[3] = { 1., 1., 1.};
+        if (type == 0) // x_axis
+            vec[0] = scale;
+        else           //  y_axis
+            vec[1] = scale;
+        std::vector< avtPickActor_p >::iterator it;
+        for (it = pickPoints.begin() ; it != pickPoints.end() ; it++)
+        {
+            (*it)->Translate(vec);
+        }
+        std::vector< avtLineoutActor_p >::iterator it2;
+        for (it2 = lineOuts.begin() ; it2 != lineOuts.end() ; it2++)
+        {
+            (*it2)->Translate(vec);
+        }
+    }
+}
+
+
+// ****************************************************************************
+//  Method: VisWinQuery::FullFrameOff
+//
+//  Purpose:
+//    Resets the positions of pick and lineout actors to their original
+//    position. 
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   June 6, 2003 
+//
+// ****************************************************************************
+
+void
+VisWinQuery::FullFrameOff()
+{
+    float distance = 0.003;
+    float foc[3], pos[3], projection[3];
+
+    mediator.GetCanvas()->GetActiveCamera()->GetPosition(pos);
+    mediator.GetCanvas()->GetActiveCamera()->GetFocalPoint(foc);
+
+    projection[0] = distance*(pos[0] - foc[0]);
+    projection[1] = distance*(pos[1] - foc[1]);
+    projection[2] = distance*(pos[2] - foc[2]);
+    std::vector< avtPickActor_p >::iterator it;
+    for (it = pickPoints.begin() ; it != pickPoints.end() ; it++)
+    {
+        (*it)->ResetPosition(projection);
+    }
+    std::vector< avtLineoutActor_p >::iterator it2;
+    for (it2 = lineOuts.begin() ; it2 != lineOuts.end() ; it2++)
+    {
+        (*it2)->ResetPosition();
+    }
 }
