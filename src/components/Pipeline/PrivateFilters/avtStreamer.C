@@ -58,11 +58,20 @@ avtStreamer::~avtStreamer()
 //  Programmer: Hank Childs
 //  Creation:   February 1, 2002
 //
+//  Modifications:
+//    Jeremy Meredith, Thu May  6 11:35:15 PDT 2004
+//    Made sure not to delete the last reference to something if it was the
+//    thing we were about to add a reference to.  In other words, if the
+//    new dataset is the same as the old one, noop.
+//
 // ****************************************************************************
 
 void
 avtStreamer::ManageMemory(vtkDataSet *ds)
 {
+    if (ds == lastDataset)
+        return;
+
     if (lastDataset != NULL)
     {
         lastDataset->Delete();

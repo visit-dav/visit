@@ -69,6 +69,9 @@ static double RenderBalance(int numTrianglesIHave);
 //    Hank Childs, Thu Mar  4 09:11:46 PST 2004
 //    Change instantiation of vis window, since it is now assumed to be nowin.
 //
+//    Mark C. Miller, Thu Apr 29 16:15:25 PDT 2004
+//    Added missing initialization of dumpRenders
+//
 // ****************************************************************************
 NetworkManager::NetworkManager(void) : virtualDatabases()
 {
@@ -77,6 +80,7 @@ NetworkManager::NetworkManager(void) : virtualDatabases()
     loadBalancer = NULL;
     requireOriginalCells = false;
     uniqueNetworkId = 0;
+    dumpRenders = false;
 
     // stuff to support scalable rendering
     {

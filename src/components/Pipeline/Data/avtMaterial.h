@@ -36,6 +36,28 @@ struct CellMatInfo
 };
 
 // ****************************************************************************
+//  Class:  MatZoneMap
+//
+//  Purpose:
+//    For a given material, holds list of clean zones, a list of mixed zones
+//    and for the list of mixed zones, the volume fractions
+//
+//  Programmer:  Mark C. Miller 
+//  Creation:    April 28, 2004 
+//
+// ****************************************************************************
+struct MatZoneMap 
+{
+    std::string name;          // the material name
+    int         matno;         // the material number
+    int         numClean;      // length of cleanZones
+    int        *cleanZones;    // 0-origin array of clean zone numbers 
+    int         numMixed;      // length of mixedZones
+    int        *mixedZones;    // 0-origin array of mixed zone numbers
+    float      *volFracs;      // volume fractions for each mixed zone
+};
+
+// ****************************************************************************
 //  Class: avtMaterial
 //
 //  Purpose:
@@ -67,6 +89,11 @@ struct CellMatInfo
 //    Hank Childs, Wed Feb 18 09:30:12 PST 2004
 //    Keep around the original material names.
 //
+//    Mark C. Miller, Thu Apr 29 12:14:37 PDT 2004
+//    Added new constructors for constucting from...
+//        a) lists of elements containing each material
+//        b) sparse volume fractions arrays
+//
 // ****************************************************************************
 
 class PIPELINE_API avtMaterial
@@ -89,6 +116,21 @@ class PIPELINE_API avtMaterial
                                               const int *, const int *,
                                               const int *,
                                               const float *);
+                                     avtMaterial(int nTotMats,
+                                                 const int *mats,
+                                                 const char **names,
+                                                 const std::vector<MatZoneMap>
+                                                     &matMap,
+                                                 int ndims, const int *dims,
+                                                 int major_order,
+                                                 const char *domain = NULL);
+                                     avtMaterial(int nTotMats,
+                                                 const int *mats,
+                                                 char **names,
+                                                 int ndims, const int *dims,
+                                                 int major_order,
+                                                 const float *const *vfracs,
+                                                 const char *domain);
 
     avtMaterial                     *CreatePackedMaterial() const;
 

@@ -7,6 +7,7 @@
 
 #include <database_exports.h>
 
+#include <avtMaterial.h>
 #include <avtSTMDFileFormat.h>
 
 #include <string>
@@ -20,7 +21,8 @@ void  VisitParseInternal(char *, Node **);
 void  ExtractAttr(Node *);
 void  VisitFreeVistaInfo(Node *);
 void  VisitDumpTree(Node *);
-Node *VisitGetNode(Node *, const char *);
+const Node *VisitGetNodeFromPath(const Node *, const char *);
+char *VisitGetPathFromNode(const Node *);
 void  VisitFindNodes(const Node *, const char *, Node ***, int *);
 
 // used in STL maps where we need to control initialization of
@@ -49,23 +51,35 @@ using std::string;
 //  Programmer: Mark C. Miller 
 //  Creation:   February 17, 2004 
 //
+//  Modifications:
+//
+//    Mark C. Miller, Thu Apr 29 12:14:37 PDT 2004
+//    Added data members to remember material names/numbers
+//    Added GetMaterial method
+//    Added GetAuxiliaryData method
+//    Added GetFileNameForRead method
+//
 // ****************************************************************************
 
 class avtVistaFileFormat : public avtSTMDFileFormat
 {
 
   public:
-                         avtVistaFileFormat(const char *);
-                        ~avtVistaFileFormat();
+                               avtVistaFileFormat(const char *);
+    virtual                   ~avtVistaFileFormat();
 
-      const char        *GetType(void)   { return "Vista"; };
-      void               FreeUpResources(void); 
+    virtual const char        *GetType(void)   { return "Vista"; };
+    virtual void               FreeUpResources(void); 
 
-      vtkDataSet        *GetMesh(int, const char *);
-      vtkDataArray      *GetVar(int, const char *);
-      vtkDataArray      *GetVectorVar(int, const char *);
+    virtual void              *GetAuxiliaryData(const char *var, int,
+                                                const char *type, void *args,
+                                                DestructorFunction &);
 
-      void               PopulateDatabaseMetaData(avtDatabaseMetaData *);
+    virtual vtkDataSet        *GetMesh(int, const char *);
+    virtual vtkDataArray      *GetVar(int, const char *);
+    virtual vtkDataArray      *GetVectorVar(int, const char *);
+
+    virtual void               PopulateDatabaseMetaData(avtDatabaseMetaData *);
 
   private:
 
@@ -89,10 +103,12 @@ class avtVistaFileFormat : public avtSTMDFileFormat
                          };
 
           const void     DumpTree() { VisitDumpTree(top); };
-          const Node    *GetNode(Node *root, const char *path)
-                             { return VisitGetNode(root, path); };
-          const void     FindNodes(Node *root, const char *path_re,
-                             Node ***results, int *nmatches)
+          const Node    *GetNodeFromPath(const Node *root, const char *path)
+                             { return VisitGetNodeFromPath(root, path); };
+          char          *GetPathFromNode(const Node *root) const
+                             { return VisitGetPathFromNode(root); };
+          const void     FindNodes(const Node *root, const char *path_re,
+                             Node ***results, int *nmatches) const
                              { VisitFindNodes(root, path_re, results, nmatches); };
           const Node    *GetTop() { return top; };
 
@@ -102,21 +118,32 @@ class avtVistaFileFormat : public avtSTMDFileFormat
 
     };
 
-    vtkFloatArray       *ReadVar(int domain, const char *visitName);
+    // low-level I/O methods
     void                *OpenFile(const char *fileName);
     void                *OpenFile(int fid);
     void                 CloseFile(int fid);
     bool                 ReadDataset(const char *fileName, const char *dsPath,
                              hid_t *dataType, hsize_t *size, void **buf);
+    vtkFloatArray       *ReadVar(int domain, const char *visitName);
+
+    avtMaterial         *GetMaterial(int, const char *);
+
+    void                 GetFileNameForRead(int domain, char *fileName, int size);
 
     static const int     MASTER_FILE_INDEX;
     string               masterFileName;
     string               masterDirName;
 
-    int *domToFileMap;
+    int                 *domToFileMap;
 
-    int numPieces;
-    Node **pieceNodes;
+    int                  numPieces;
+    Node               **pieceNodes;
+
+    int                  numMaterials;
+    vector<int>          materialNumbers;
+    vector<string>       materialNames;
+    int                 *materialNumbersArray;
+    const char         **materialNamesArray;
 
     VistaTreeParser     *vTree;
 

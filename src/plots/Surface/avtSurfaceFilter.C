@@ -409,6 +409,9 @@ avtSurfaceFilter::SkewTheValue(const double val)
 //    Kathleen Bonnell, Fri Oct 10 10:48:24 PDT 2003
 //    Set PointsWereTransformed to true. 
 //
+//    Kathleen Bonnell, Thu May  6 17:51:15 PDT 2004
+//    Invalidate zones so that pick will function properly. 
+//
 // ****************************************************************************
 
 void
@@ -418,6 +421,7 @@ avtSurfaceFilter::RefashionDataObjectInfo(void)
     GetOutput()->GetInfo().GetAttributes().SetSpatialDimension(3);
     GetOutput()->GetInfo().GetAttributes().SetCentering(AVT_NODECENT);
     GetOutput()->GetInfo().GetValidity().SetPointsWereTransformed(true);
+    GetOutput()->GetInfo().GetValidity().InvalidateZones();
 }
 
 

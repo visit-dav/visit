@@ -14,6 +14,7 @@
 #include <vtkDataSet.h>
 #include <vtkDataSetMapper.h>
 #include <vtkDepthSortPolyData.h>
+#include <vtkFloatArray.h>
 #include <vtkGeometryFilter.h>
 #include <vtkMatrix4x4.h>
 #include <vtkPointData.h>
@@ -734,6 +735,10 @@ avtTransparencyActor::SetUpActor(void)
 //    Re-order setting of normals.  They were getting removed by subsequent
 //    calls.
 //
+//    Hank Childs, Thu May  6 08:37:25 PDT 2004
+//    Do a better job of handling normals for cell-based normals.  This is more
+//    important because the poly data mapper no longer calculates them for us.
+//
 // ****************************************************************************
 
 void
@@ -853,6 +858,11 @@ avtTransparencyActor::PrepareDataset(int input, int subinput)
         }
         prepDS->GetPointData()->AddArray(colors);
         colors->Delete();
+        if (pd->GetPointData()->GetNormals() != NULL)
+        {
+            prepDS->GetPointData()->SetNormals(
+                                             pd->GetPointData()->GetNormals());
+        }
     }
     else
     {
@@ -886,6 +896,11 @@ avtTransparencyActor::PrepareDataset(int input, int subinput)
             }
             prepDS->GetPointData()->AddArray(colors);
             colors->Delete();
+            if (pd->GetPointData()->GetNormals() != NULL)
+            {
+                prepDS->GetPointData()->SetNormals(
+                                             pd->GetPointData()->GetNormals());
+            }
         }
         else if (pd->GetCellData()->GetScalars() != NULL)
         {
@@ -964,16 +979,26 @@ avtTransparencyActor::PrepareDataset(int input, int subinput)
             }
             prepDS->GetPointData()->AddArray(colors);
             colors->Delete();
+            vtkDataArray *cell_normals = pd->GetCellData()->GetNormals();
+            if (cell_normals != NULL)
+            {
+                const float *cn = (float *) cell_normals->GetVoidPointer(0);
+                vtkFloatArray *newNormals;
+                newNormals = vtkFloatArray::New();
+                newNormals->SetNumberOfComponents(3);
+                newNormals->SetNumberOfTuples(count);
+                newNormals->SetName("Normals");
+                float *newNormalPtr = (float*)newNormals->GetVoidPointer(0);
+                for (i = 0 ; i < count ; i++)
+                {
+                    newNormalPtr[i*3+0] = cn[cellIds[i]*3];
+                    newNormalPtr[i*3+1] = cn[cellIds[i]*3+1];
+                    newNormalPtr[i*3+2] = cn[cellIds[i]*3+2];
+                }
+                prepDS->GetPointData()->SetNormals(newNormals);
+                newNormals->Delete();
+            }
         }
-    }
-
-    if (pd->GetPointData()->GetNormals() != NULL)
-    {
-        prepDS->GetPointData()->SetNormals(pd->GetPointData()->GetNormals());
-    }
-    else if (pd->GetCellData()->GetNormals() != NULL)
-    {
-        prepDS->GetCellData()->SetNormals(pd->GetCellData()->GetNormals());
     }
 
     //

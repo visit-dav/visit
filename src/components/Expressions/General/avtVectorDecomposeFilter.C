@@ -64,6 +64,9 @@ avtVectorDecomposeFilter::~avtVectorDecomposeFilter()
 //    Hank Childs, Thu Feb 26 09:00:06 PST 2004
 //    Account for multiple variables.
 //
+//    Hank Childs, Thu May  6 10:49:32 PDT 2004
+//    Make sure that we are getting the dimension for the active variable.
+//
 // ****************************************************************************
 
 int
@@ -76,7 +79,7 @@ avtVectorDecomposeFilter::GetVariableDimension(void)
     if (!atts.ValidVariable(activeVariable))
         return 1;
 
-    int inDim = atts.GetVariableDimension();
+    int inDim = atts.GetVariableDimension(activeVariable);
     if (inDim == 9)
         return 3;
     else if (inDim == 3)

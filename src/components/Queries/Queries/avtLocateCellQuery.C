@@ -171,6 +171,10 @@ avtLocateCellQuery::PostExecute(void)
 //    Kathleen Bonnell, Tue Nov  4 08:18:54 PST 2003 
 //    Use pickAtts instead of queryAtts. 
 //    
+//    Kathleen Bonnell, Thu May  6 14:28:00 PDT 2004 
+//    Set foundZone (used to set pickAtts.ElementNumber) to the foundCell
+//    if the zones have not been invalidated (ZonesPreserved). 
+//    
 // ****************************************************************************
 
 void
@@ -205,7 +209,7 @@ avtLocateCellQuery::Execute(vtkDataSet *ds, const int dom)
 
         vtkDataArray *origCells = 
                  ds->GetCellData()->GetArray("avtOriginalCellNumbers");
-    
+
         if (origCells)
         {
             int comp = origCells->GetNumberOfComponents() -1;
@@ -218,6 +222,11 @@ avtLocateCellQuery::Execute(vtkDataSet *ds, const int dom)
                    << " cells but the array was not found in the dataset."
                    << endl;
         }
+        else if (GetInput()->GetInfo().GetValidity().GetZonesPreserved() &&
+                 GetInput()->GetInfo().GetAttributes().GetContainsGhostZones() 
+                    != AVT_CREATED_GHOSTS)
+            foundZone = foundCell;
+
         //
         // There is no need to 'fudge' the intersection point unless 
         // avtLocateCellQuery will be using it to find the Zone number and 
