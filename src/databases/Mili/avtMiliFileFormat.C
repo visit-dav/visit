@@ -20,6 +20,7 @@ extern "C" {
 
 #include <Expression.h>
 
+#include <avtDatabase.h>
 #include <avtDatabaseMetaData.h>
 #include <avtMaterial.h>
 #include <avtVariableCache.h>
@@ -580,8 +581,12 @@ avtMiliFileFormat::DecodeMultiMeshVarname(const string &varname,
 //  Creation:   June 26, 2003
 //
 //  Modifications:
+//
 //    Akira Haddox, Tue Jul 22 15:34:40 PDT 2003
 //    Added in setting of times.
+//
+//    Hank Childs, Mon Oct 20 10:03:58 PDT 2003
+//    Made a new data member for storing times.  Populated that here.
 //
 // ****************************************************************************
 
@@ -623,13 +628,16 @@ avtMiliFileFormat::OpenDB(int dom)
             for (i = 1; i <= ntimesteps; ++i)
                 timeVars[i] = i;
 
-            vector<float> times(ntimesteps);
+            vector<float> ttimes(ntimesteps);
             rval = mc_query_family(dbid[dom], MULTIPLE_TIMES, &(timeVars[0]),
-                                    0, &(times[0]));
+                                    0, &(ttimes[0]));
+            times.clear();
             if (rval == OK)
             {
                 for (i = 0; i < ntimesteps; ++i)
-                    metadata->SetTime(i, times[i]); 
+                {
+                    times.push_back(ttimes[i]);
+                }
             }
         }
     }
@@ -1394,6 +1402,27 @@ avtMiliFileFormat::GetCycles(vector<int> &cycles)
 
 
 // ****************************************************************************
+//  Method:  avtMiliFileFormat::GetTimes
+//
+//  Purpose:
+//      Returns the actual times for each time step.
+//
+//  Arguments:
+//   out_times   the output vector of times 
+//
+//  Programmer:  Hank Childs
+//  Creation:    October 20, 2003
+//
+// ****************************************************************************
+
+void
+avtMiliFileFormat::GetTimes(vector<double> &out_times)
+{
+    out_times = times;
+}
+
+
+// ****************************************************************************
 //  Method:  avtMiliFileFormat::GetNTimesteps
 //
 //  Purpose:
@@ -1434,6 +1463,9 @@ avtMiliFileFormat::GetNTimesteps()
 //
 //    Hank Childs, Sat Oct 18 10:53:51 PDT 2003
 //    Do not read in the partition info if we are on the mdserver.
+//
+//    Hank Childs, Mon Oct 20 10:07:00 PDT 2003
+//    Call OpenDB for domain 0 to populate the times.
 //
 // ****************************************************************************
 
@@ -1531,6 +1563,11 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         }
     }
 
+    //
+    // By calling OpenDB for domain 0, it will populate the times.
+    //
+    OpenDB(0);
+
     TRY
     {
         // This call throw an exception if stress does not exist.
@@ -1586,19 +1623,22 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 
         Expression p_dev_stress1_expr;
         p_dev_stress1_expr.SetName("derived/prin_dev_stress_1");
-        p_dev_stress1_expr.SetDefinition("principal_deviatoric_tensor(stress)[0]");
+        p_dev_stress1_expr.SetDefinition(
+                                     "principal_deviatoric_tensor(stress)[0]");
         p_dev_stress1_expr.SetType(Expression::ScalarMeshVar);
         md->AddExpression(&p_dev_stress1_expr);
 
         Expression p_dev_stress2_expr;
         p_dev_stress2_expr.SetName("derived/prin_dev_stress_2");
-        p_dev_stress2_expr.SetDefinition("principal_deviatoric_tensor(stress)[1]");
+        p_dev_stress2_expr.SetDefinition(
+                                     "principal_deviatoric_tensor(stress)[1]");
         p_dev_stress2_expr.SetType(Expression::ScalarMeshVar);
         md->AddExpression(&p_dev_stress2_expr);
 
         Expression p_dev_stress3_expr;
         p_dev_stress3_expr.SetName("derived/prin_dev_stress_3");
-        p_dev_stress3_expr.SetDefinition("principal_deviatoric_tensor(stress)[2]");
+        p_dev_stress3_expr.SetDefinition(
+                                     "principal_deviatoric_tensor(stress)[2]");
         p_dev_stress3_expr.SetType(Expression::ScalarMeshVar);
         md->AddExpression(&p_dev_stress3_expr);
 
@@ -1680,19 +1720,22 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 
         Expression p_dev_strain1_expr;
         p_dev_strain1_expr.SetName("derived/prin_dev_strain_1");
-        p_dev_strain1_expr.SetDefinition("principal_deviatoric_tensor(strain)[0]");
+        p_dev_strain1_expr.SetDefinition(
+                                     "principal_deviatoric_tensor(strain)[0]");
         p_dev_strain1_expr.SetType(Expression::ScalarMeshVar);
         md->AddExpression(&p_dev_strain1_expr);
 
         Expression p_dev_strain2_expr;
         p_dev_strain2_expr.SetName("derived/prin_dev_strain_2");
-        p_dev_strain2_expr.SetDefinition("principal_deviatoric_tensor(strain)[1]");
+        p_dev_strain2_expr.SetDefinition(
+                                     "principal_deviatoric_tensor(strain)[1]");
         p_dev_strain2_expr.SetType(Expression::ScalarMeshVar);
         md->AddExpression(&p_dev_strain2_expr);
 
         Expression p_dev_strain3_expr;
         p_dev_strain3_expr.SetName("derived/prin_dev_strain_3");
-        p_dev_strain3_expr.SetDefinition("principal_deviatoric_tensor(strain)[2]");
+        p_dev_strain3_expr.SetDefinition(
+                                     "principal_deviatoric_tensor(strain)[2]");
         p_dev_strain3_expr.SetType(Expression::ScalarMeshVar);
         md->AddExpression(&p_dev_strain3_expr);
 

@@ -4926,6 +4926,10 @@ ViewerSubject::EndLaunchProgress()
 //   hide itself when the process is launched. This lets the window be active
 //   for iterated process launches.
 //
+//   Brad Whitlock, Thu Oct 16 17:53:46 PST 2003
+//   Prevented the hasPendingEvents method call from being made on MacOS X
+//   since it was causing the Viewer to block waiting for events.
+//
 // ****************************************************************************
 
 bool
@@ -4952,7 +4956,7 @@ ViewerSubject::LaunchProgressCB(void *d, int stage)
     {
         if (windowsShowing)
         {
-#if QT_VERSION >= 300
+#if QT_VERSION >= 300 && !defined(Q_WS_MACX)
             if (qApp->hasPendingEvents())
 #endif
                 qApp->processOneEvent();
