@@ -673,6 +673,9 @@ VisWinRendering::Realize(void)
 //    Hank Childs, Wed Jun 25 09:30:59 PDT 2003
 //    Fix memory leak.
 //
+//    Hank Childs, Sun Nov 16 16:04:52 PST 2003
+//    Fix (another) memory leak -- this time with zbuffer.
+//
 // ****************************************************************************
 
 avtImage_p
@@ -728,6 +731,7 @@ VisWinRendering::ScreenCapture(bool doCanvasZBufferToo)
     // disable external render requests
     //
     avtSourceFromImage screenCaptureSource(image, zb);
+    delete [] zb;
     image->Delete();
     avtImage_p img = screenCaptureSource.GetTypedOutput();
     img->Update(screenCaptureSource.GetGeneralPipelineSpecification());
