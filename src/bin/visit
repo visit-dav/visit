@@ -258,6 +258,9 @@ $0 = shift @ARGV;
 #    Hank Childs, Tue Sep  9 08:35:42 PDT 2003
 #    Add 'convert' program.
 #
+#    Jeremy Meredith, Mon Sep 29 11:26:47 PDT 2003
+#    Added help for the "-o" and "-launchengine" flags.
+#
 ###############################################################################
 
 
@@ -328,6 +331,8 @@ USAGE:  visit [arguments]
         -nopty               Run without PTYs.
 
     Window arguments:
+        -o          <file>   Open a file at startup.
+        -launchengine [host] Launch an engine at startup, locally if no 'host'.
         -small               Use a smaller desktop area/window size
         -geometry   <spec>   What portion of the screen to use.  This is a
                                  standard X Windows geometry specification
@@ -346,6 +351,9 @@ USAGE:  visit [arguments]
         -noprint             do not print any debugging output
 
     Parallel arguments:
+            (Note: when parallel arguments are added but the engine is not the
+             component being launched, -launchengine is implied.  Explicitly
+             add -launchengine to launch a remote parallel engine.)
         -par                 Select the parallel version.  (optional)
         -l    <method>       Launch in parallel using the given method.
         -pl   <method>       Launch only the engine in parallel as specified.

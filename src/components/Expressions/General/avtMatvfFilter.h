@@ -21,6 +21,10 @@ class     ConstExpr;
 //  Programmer: Sean Ahern
 //  Creation:   March 18, 2003
 //
+//  Modifications:
+//    Jeremy Meredith, Mon Sep 29 12:13:04 PDT 2003
+//    Added support for integer material indices.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtMatvfFilter : public avtSingleInputExpressionFilter
@@ -39,7 +43,8 @@ class EXPRESSION_API avtMatvfFilter : public avtSingleInputExpressionFilter
     virtual bool              IsPointVariable(void)  { return false; };
 
     void                      AddMaterial(ConstExpr *);
-    std::vector<std::string>  materials;
+    std::vector<std::string>  matNames;
+    std::vector<int>          matIndices;
 };
 
 
