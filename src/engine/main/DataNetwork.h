@@ -52,6 +52,11 @@
 //    Kathleen Bonnell, Thu Oct 21 15:55:46 PDT 2004 
 //    Added ActorIsNull method. 
 //
+//    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
+//    Changed id to nid
+//    Added wid for window id 
+//    Added methods to set/get window id
+//
 // ****************************************************************************
 class DataNetwork
 {
@@ -59,7 +64,8 @@ public:
              DataNetwork(void);
     virtual ~DataNetwork(void);
 
-    void SetID(int _id) { id = _id; };
+    void SetNetID(int _id) { nid = _id; };
+    void SetWinID(int _id) { wid = _id; };
     void SetPlottype(const std::string &type) { plottype = type; };
     virtual void SetPlot(avtPlot *_plot) { plot = _plot; };
     void SetTerminalNode(Netnode* t) {terminalNode = t;};
@@ -76,7 +82,8 @@ public:
     avtDataObjectWriter_p GetWriter(avtDataObject_p dob,
                                     avtPipelineSpecification_p pspec,
                                     WindowAttributes *atts);
-    int GetID(void) { return id; };
+    int GetNetID(void) const { return nid; };
+    int GetWinID(void) const { return wid; };
     Netnode* GetTerminalNode(void) { return terminalNode; };
     virtual avtPlot_p GetPlot(void) { return plot; };
     avtActor_p GetActor(avtDataObject_p dob);
@@ -88,7 +95,8 @@ public:
     std::vector<Netnode*>       &GetNodeList(void) { return nodeList; }; 
 
 protected:
-    int                         id;
+    int                         nid;
+    int                         wid;
     Netnode                    *terminalNode;
     std::vector<Netnode*>       nodeList;
     avtDataSpecification_p      dspec;

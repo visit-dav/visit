@@ -1307,6 +1307,9 @@ ViewerEngineManager::LaunchMessage(const EngineKey &ek)  const
 //
 //    Mark C. Miller, Mon Dec 13 15:52:20 PST 2004
 //    Replaced Begin/EndEngineRender with Begin/EndEngineExecute
+//
+//    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
+//    Added windowID to support multiwindow SR
 //    
 // ****************************************************************************
 
@@ -1314,7 +1317,8 @@ bool
 ViewerEngineManager::ExternalRender(const ExternalRenderRequestInfo& reqInfo,
                                     bool& shouldTurnOffScalableRendering,
                                     bool doAllAnnotations,
-                                    vector<avtImage_p>& imgList)
+                                    vector<avtImage_p>& imgList,
+                                    int windowID)
 {
     // break-out individual members of the request info
     const vector<const char*>& pluginIDsList         = reqInfo.pluginIDsList;
@@ -1373,7 +1377,8 @@ ViewerEngineManager::ExternalRender(const ExternalRenderRequestInfo& reqInfo,
         {
             ek = pos->first;
             engines[ek].proxy->SetWinAnnotAtts(&winAtts, &annotAtts, &annotObjs,
-                             extStr, &visCues, frameAndState, viewExtents, ctName);
+                             extStr, &visCues, frameAndState, viewExtents, ctName,
+                             windowID);
         }
 
         // send per-plot RPCs
@@ -1404,6 +1409,7 @@ ViewerEngineManager::ExternalRender(const ExternalRenderRequestInfo& reqInfo,
 
             avtDataObjectReader_p rdr =
                 engines[ek].proxy->Render(sendZBuffer, pos->second, annotMode,
+                                          windowID,
                                           ViewerSubject::ProcessEventsCB,
                                           (void *)viewerSubject);
 
@@ -1603,6 +1609,9 @@ ViewerEngineManager::ExternalRender(const ExternalRenderRequestInfo& reqInfo,
 //    Mark C. Miller, Wed Oct  6 18:12:29 PDT 2004
 //    Added code to pass view extents to engine
 //
+//    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
+//    Passed windowId to SetWinAnnotAtts
+//
 // ****************************************************************************
 
 avtDataObjectReader_p
@@ -1686,7 +1695,8 @@ ViewerEngineManager::GetDataObjectReader(ViewerPlot *const plot)
                                        fns[4], fns[5], fns[6]);
            double vext[6];
            w->GetExtents(3, vext);
-           engine->SetWinAnnotAtts(&winAtts,&annotAtts,&annotObjs,extStr,&visCues,fns,vext,"");
+           engine->SetWinAnnotAtts(&winAtts,&annotAtts,&annotObjs,extStr,
+                                   &visCues,fns,vext,"",windowId);
         }
 
         //
@@ -1851,84 +1861,6 @@ ViewerEngineManager::UseDataObjectReader(ViewerPlot *const plot,
     return retval;
 }
 
-
-// ****************************************************************************
-//  Method: ViewerEngineManager::GetDataObjectReader
-//
-//  Purpose:
-//      Return a pointer to an avt data object reader for the rendered image
-//      of the plots specified in the list of plotIds
-//
-//  Arguments:
-//
-//  Returns:    A pointer to the avt data object reader.
-//
-//  Programmer: Mark C. Miller 
-//  Creation:   08Apr03 
-//
-//  Modifications:
-//    Mark C. Miller, Mon Mar 29 14:52:08 PST 2004
-//    Added bool to control annotations on engine
-//
-//    Jeremy Meredith, Fri Mar 26 16:59:59 PST 2004
-//    Use a map of engines based on a key, and be aware of simulations.
-//
-//    Mark C. Miller, Tue Apr 20 07:44:34 PDT 2004
-//    Added args to the proxy's render method to support warning call backs
-//    comming from the engine.
-//
-//    Mark C. Miller, Mon Jul 12 19:46:32 PDT 2004
-//    Removed call back arguments in call to EngineProxy::Render
-//
-//    Brad Whitlock, Wed Aug 4 17:26:09 PST 2004
-//    Changed EngineMap.
-//
-//    Mark C. Miller, Wed Oct  6 18:12:29 PDT 2004
-//    Changed how annotation flag is handled
-//
-// ****************************************************************************
-
-avtDataObjectReader_p
-ViewerEngineManager::GetDataObjectReader(bool sendZBuffer,
-                                         const EngineKey &ek,
-                                         intVector ids,
-                                         bool doAllAnnotations)
-{
-    // The return value.
-    avtDataObjectReader_p retval(NULL);
-
-    if (!EngineExists(ek))
-        return retval;
-
-    TRY
-    {
-        int annotMode = doAllAnnotations ? 2 : 1;
-        retval = engines[ek].proxy->Render(sendZBuffer, ids, annotMode,
-                                        ViewerSubject::ProcessEventsCB,
-                                        (void *)viewerSubject);
-    }
-    CATCH(LostConnectionException)
-    {
-        // Remove the specified engine from the list of engines.
-        RemoveFailedEngine(ek);
-        UpdateEngineList();
-    }
-    CATCH(VisItException)
-    {
-        // Send a message to the client to clear the status for the
-        // engine that had troubles.
-        ClearStatus(ek.ID().c_str());
-
-        //
-        //  Let calling method handle this exception. 
-        //
-        RETHROW;
-    }
-    ENDTRY
-
-    return retval;
-}
-
 // ****************************************************************************
 // Method: ViewerEngineManager::BeginEngineExecute
 //
@@ -2077,15 +2009,18 @@ ViewerEngineManager::ApplyOperator(const EngineKey &ek,
 //    Eric Brugger, Tue Mar 30 14:54:04 PST 2004
 //    Added the plot data extents.
 //
+//    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
+//    Added winID
+//
 // ****************************************************************************
 
 bool
 ViewerEngineManager::MakePlot(const EngineKey &ek, const char *name, 
     const AttributeSubject *atts, const vector<double> &extents,
-    int *networkId)
+    int winID, int *networkId)
 {
     ENGINE_PROXY_RPC_BEGIN("MakePlot");
-    *networkId = engine->MakePlot(name, atts, extents);
+    *networkId = engine->MakePlot(name, atts, extents, winID);
     ENGINE_PROXY_RPC_END_NORESTART_RETHROW;
 }
 
@@ -2135,15 +2070,18 @@ ViewerEngineManager::UpdatePlotAttributes(const EngineKey &ek,
 //    Jeremy Meredith, Fri Mar 26 16:59:59 PST 2004
 //    Use a map of engines based on a key, and be aware of simulations.
 //
+//    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
+//    Added wid
+//
 // ****************************************************************************
 
 bool
 ViewerEngineManager::Pick(const EngineKey &ek,
-                          const int nid, const PickAttributes *atts,
+                          const int nid, int wid, const PickAttributes *atts,
                           PickAttributes &retAtts)
 {
     ENGINE_PROXY_RPC_BEGIN("Pick");
-    engine->Pick(nid, atts, retAtts);
+    engine->Pick(nid, atts, retAtts, wid);
     ENGINE_PROXY_RPC_END_NORESTART_RETHROW2;
 }
 
@@ -2204,6 +2142,9 @@ ViewerEngineManager::StartPick(const EngineKey &ek, const bool forZones,
 //
 //    Mark C. Miller, Tue Oct 19 20:18:22 PDT 2004
 //    Added code to pass along name of last color table to change
+//
+//    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
+//    Added winID
 // ****************************************************************************
 
 bool
@@ -2215,11 +2156,12 @@ ViewerEngineManager::SetWinAnnotAtts(const EngineKey &ek,
                                      const VisualCueList *visCues,
                                      const int *frameAndState,
                                      const double *viewExtents,
-                                     const string ctName)
+                                     const string ctName,
+                                     const int winID)
 {
     ENGINE_PROXY_RPC_BEGIN("SetWinAnnotAtts");
     engine->SetWinAnnotAtts(wa,aa,ao,extstr,visCues,frameAndState,viewExtents,
-        ctName);
+        ctName, winID);
     ENGINE_PROXY_RPC_END;
 }
 
@@ -2609,6 +2551,9 @@ ViewerEngineManager::Update(Subject *TheChangedSubject)
 //    Mark C. Miller, Wed Oct  6 18:12:29 PDT 2004
 //    Added code for view extents
 //
+//    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
+//    Added code to pass window id in SetWinAnnotAtts
+//
 // ****************************************************************************
 
 void
@@ -2634,7 +2579,8 @@ ViewerEngineManager::GetImage(int index, avtDataObject_p &dob)
     w->GetExtents(3, vext);
 
     // send to the engine
-    engine->SetWinAnnotAtts(&winAtts,&annotAtts,&annotObjs,extStr,&visCues,fns,vext,"");
+    engine->SetWinAnnotAtts(&winAtts,&annotAtts,&annotObjs,extStr,
+                            &visCues,fns,vext,"",w->GetWindowId());
     
     engine->UseNetwork(index);
 #ifdef VIEWER_MT

@@ -656,6 +656,11 @@ avtSliceFilter::SetUpProjection(void)
 //    Hank Childs, Thu Jun 17 15:08:24 PDT 2004
 //    Improve error message when zone or node cannot be located.
 //
+//    Eric Brugger, Tue Jan  4 09:11:51 PST 2005
+//    Made SliceByNode use avtTerminatingSource::QueryCoord instead of
+//    avtDatasetExaminer::FindNode to match the SliceByZone code so that
+//    this routine succeeds more often.
+//
 // ****************************************************************************
 
 void
@@ -774,16 +779,18 @@ avtSliceFilter::GetOrigin(double &ox, double &oy, double &oz)
       }        
       case SliceAttributes::Node:
       {
-          avtDataset_p ds = GetTypedInput();
-          int blockOrigin = ds->GetInfo().GetAttributes().GetBlockOrigin();
+          avtTerminatingSource *src = GetInput()->GetTerminatingSource();
+          int blockOrigin = GetInput()->GetInfo().GetAttributes().GetBlockOrigin();
           int domain = atts.GetOriginNodeDomain();
           domain -= blockOrigin;
           int node = atts.GetOriginNode();
-          double point[3];
+          float point[3];
           point[0] = DBL_MAX;
           point[1] = DBL_MAX;
           point[2] = DBL_MAX;
-          bool success = avtDatasetExaminer::FindNode(ds, domain, node, point);
+          string var = src->GetFullDataSpecification()->GetVariable();
+          int    ts  = src->GetFullDataSpecification()->GetTimestep();
+          bool success = src->QueryCoords(var, domain, node, ts, point, false);
 
           double buff[6];
           if (success)

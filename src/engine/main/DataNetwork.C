@@ -20,10 +20,14 @@ using std::deque;
 //
 //    Mark C. Miller, Thu May 27 11:05:15 PDT 2004
 //    Added missing initialization for plotActor data member
+//
+//    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
+//    Added window id (wid)
 // ****************************************************************************
 DataNetwork::DataNetwork(void)
 {
-    id = -1;
+    nid = -1;
+    wid = -1;
     pspec = NULL;
     dspec = NULL;
     writer = NULL;
@@ -144,11 +148,14 @@ DataNetwork::GetActor(avtDataObject_p dob)
 //      Mark C. Miller, 30Apr03 
 //      Make sure plot is not NULL before calling a method on it.
 //
+//      Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
+//      Changed id to nid 
+//
 // ****************************************************************************
 void
 DataNetwork::ReleaseData(void)
 {
-    debug1 << "Releasing all data associated with network " << id << endl;
+    debug1 << "Releasing all data associated with network " << nid << endl;
     int nNodes = nodeList.size();
     for (int i = 0 ; i < nNodes ; i++)
     {

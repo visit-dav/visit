@@ -24,6 +24,19 @@ class QueryOverTimeAttributes;
 class MaterialAttributes;
 class VisWindow;
 
+typedef struct _EngineVisWinInfo
+{
+    WindowAttributes            windowAttributes;
+    AnnotationAttributes        annotationAttributes;
+    AnnotationObjectList        annotationObjectList;
+    VisualCueList               visualCueList;
+    std::string                 extentTypeString;
+    std::string                 changedCtName;
+    int                         frameAndState[7];
+    VisWindow                  *viswin;
+    std::vector<int>            plotsCurrentlyInWindow;
+} EngineVisWinInfo;
+
 // ****************************************************************************
 //  Class: NetworkManager
 //
@@ -187,6 +200,10 @@ class VisWindow;
 //    Hank Childs, Wed Nov 24 17:30:11 PST 2004
 //    Added support for image based plots.
 //
+//    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
+//    Modified to use a map of EngineVisWindowInfo objects keyed on the
+//    window ID
+//
 // ****************************************************************************
 class NetworkManager
 {
@@ -211,15 +228,16 @@ class NetworkManager
                             const unsigned int ninputs = 1);
     void          MakePlot(const std::string&, const AttributeGroup*,
                            const std::vector<double> &);
-    int           EndNetwork(void);
+    int           EndNetwork(int windowID);
     void          CancelNetwork();
 
     void          UseNetwork(int);
     avtPlot_p     GetPlot(void);
-    int           GetCurrentNetworkId(void);
-    int           GetTotalGlobalCellCounts(void) const;
+    int           GetCurrentNetworkId(void) const;
+    int           GetCurrentWindowId(void) const;
+    int           GetTotalGlobalCellCounts(int winID) const;
     void          SetGlobalCellCount(int netId, int cellCount);
-    int           GetScalableThreshold(void) const;
+    int           GetScalableThreshold(int winId) const;
     void          DoneWithNetwork(int);
 
     void          UpdatePlotAtts(int, const AttributeGroup *);
@@ -227,11 +245,13 @@ class NetworkManager
     void          SetWindowAttributes(const WindowAttributes&,
                                       const std::string&,
                                       const double*,
-                                      const std::string&);
+                                      const std::string&,
+                                      int);
     void          SetAnnotationAttributes(const AnnotationAttributes&,
                                           const AnnotationObjectList&,
                                           const VisualCueList&, 
                                           const int *fns,
+                                          int,
                                           int annotMode=1);
 
     void          SetLoadBalancer(LoadBalancer *lb) {loadBalancer = lb;};
@@ -240,12 +260,12 @@ class NetworkManager
                                     bool calledForRender,
                                     float *cellCountMultiplier);
     avtDataObjectWriter_p Render(intVector networkIds, bool getZBuffer,
-                                 int annotMode);
+                                 int annotMode, int windowID);
  
     void          StartPickMode(const bool);
     void          StopPickMode(void);
 
-    void          Pick(const int, PickAttributes *);
+    void          Pick(const int, const int, PickAttributes *);
     void          Query(const std::vector<int> &, QueryAttributes*);
 
     void          DumpRenders(void) { dumpRenders = true; };
@@ -271,15 +291,8 @@ class NetworkManager
     bool                        requireOriginalCells;
     bool                        requireOriginalNodes;
     LoadBalancer               *loadBalancer;
-    WindowAttributes            windowAttributes;
-    AnnotationAttributes        annotationAttributes;
-    AnnotationObjectList        annotationObjectList;
-    VisualCueList               visualCueList;
-    std::string                 extentTypeString;
-    std::string                 changedCtName;
-    int                         frameAndState[7];
-    VisWindow                  *viswin;
-    std::vector<int>            plotsCurrentlyInWindow;
+
+    std::map<int, EngineVisWinInfo>   viswinMap;
 
     bool                        dumpRenders;
 };

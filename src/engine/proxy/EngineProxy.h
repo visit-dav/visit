@@ -209,6 +209,9 @@ class StatusAttributes;
 //
 //    Mark C. Miller, Tue Oct 19 19:51:43 PDT 2004
 //    Added arg to SetWinAnnotAtts for changed color table name
+//
+//    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
+//    Added window id to various methods to support multi-window SR
 // ****************************************************************************
 
 class ENGINE_PROXY_API EngineProxy : public RemoteProxyBase
@@ -256,13 +259,14 @@ public:
     void                     ApplyNamedFunction(const std::string &name, int nargs);
     int                      MakePlot(const std::string&, 
                                       const AttributeSubject*,
-                                      const std::vector<double>&);
+                                      const std::vector<double>&,
+                                      int winID);
 
     void                     UseNetwork(int);
     void                     UpdatePlotAttributes(const std::string &, int,
                                                   const AttributeSubject*);
     void                     Pick(const int, const PickAttributes *,
-                                  PickAttributes &);
+                                  PickAttributes &, const int);
     void                     StartPick(const bool, const bool, const int);
 
     void                     SetWinAnnotAtts(const WindowAttributes*,
@@ -272,9 +276,10 @@ public:
                                              const VisualCueList*,
                                              const int *frameAndState,
                                              const double *viewExtents,
-                                             std::string);
+                                             const std::string,
+                                             const int winID);
 
-    avtDataObjectReader_p    Render(bool, const intVector&, int,
+    avtDataObjectReader_p    Render(bool, const intVector&, int, int,
                                  void (*waitCB)(void *), void *cbData);
 
     avtDataObjectReader_p    Execute(bool, void (*waitCB)(void *), void *cbData);

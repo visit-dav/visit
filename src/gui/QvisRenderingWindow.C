@@ -398,6 +398,9 @@ QvisRenderingWindow::UpdateWindow(bool doAll)
 //   Hank Childs, Sun Oct 24 07:36:18 PDT 2004
 //   Added shadow options.
 //
+//   Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
+//   Fixed problem with updating scalable auto threshold
+//
 // ****************************************************************************
 
 void
@@ -461,9 +464,7 @@ QvisRenderingWindow::UpdateOptions(bool doAll)
             renderNotifyToggle->setChecked(renderAtts->GetNotifyForEachRender());
             renderNotifyToggle->blockSignals(false);
             break;
-        case 6: //scalableRendering
-            break;
-        case 7: //scalrenActivationMode
+        case 6: //scalrenActivationMode
             RenderingAttributes::TriStateMode itmp;
             itmp = renderAtts->GetScalableActivationMode();
             scalrenActivationMode->blockSignals(true);
@@ -478,6 +479,19 @@ QvisRenderingWindow::UpdateOptions(bool doAll)
             if (itmp != RenderingAttributes::Always)
                 shadowStrengthSlider->setEnabled(false);
             break;
+        case 7: //scalrenAutoThreshold
+        {
+            QString suffix;           
+            int step, widgetVal;
+            int actualVal = renderAtts->GetScalableAutoThreshold();
+            InterpretScalableAutoThreshold(actualVal, &step, &suffix, &widgetVal);
+            scalrenAutoThreshold->blockSignals(true);
+            scalrenAutoThreshold->setLineStep(step);
+            scalrenAutoThreshold->setSuffix(suffix);
+            scalrenAutoThreshold->setValue(widgetVal);
+            scalrenAutoThreshold->blockSignals(false);
+            break;
+        }
         case 8: //specularFlag
             specularToggle->blockSignals(true);
             specularToggle->setChecked(renderAtts->GetSpecularFlag());
@@ -949,6 +963,39 @@ QvisRenderingWindow::scalrenActivationModeChanged(int val)
 }
 
 // ****************************************************************************
+// Method: QvisRenderingWindow::InterpretScalableAutoThreshold
+//
+// Purpose: Determine widget controls given scalable auto threshold 
+//
+// Programmer: Mark C. Miller 
+// Creation:   January 4, 2005 
+//
+// ****************************************************************************
+void
+QvisRenderingWindow::InterpretScalableAutoThreshold(int actualVal,
+    int *step, QString *suffix, int *widgetVal) const
+{
+    // compute the step size and suffix for the displayed value in the GUI
+    if      (actualVal < 1e3) { *step = 50;  *suffix = "  Polys"; }
+    else if (actualVal < 1e4) { *step = 500; *suffix = "  Polys"; }
+    else if (actualVal < 1e5) { *step = 5;   *suffix = " KPolys"; }
+    else if (actualVal < 1e6) { *step = 50;  *suffix = " KPolys"; }
+    else if (actualVal < 1e7) { *step = 500; *suffix = " KPolys"; }
+    else if (actualVal < 1e8) { *step = 5;   *suffix = " MPolys"; }
+    else if (actualVal < 1e9) { *step = 50;  *suffix = " MPolys"; }
+    else                      { *step = 1;   *suffix = " GPolys"; }
+
+    // compute the divisor for the displayed value in the GUI
+    int div;
+    if      (*suffix == " KPolys") div = (int) 1e3;
+    else if (*suffix == " MPolys") div = (int) 1e6; 
+    else if (*suffix == " GPolys") div = (int) 1e9;
+    else                          div = 1;
+
+    *widgetVal = actualVal / div;
+}
+
+// ****************************************************************************
 // Method: QvisRenderingWindow::scalrenAutoThresholdChanged
 //
 // Purpose: 
@@ -966,6 +1013,9 @@ QvisRenderingWindow::scalrenActivationModeChanged(int val)
 //   Mark C. Miller, Tue May 11 20:21:24 PDT 2004
 //   Changed scalable rendering controls to use activation mode and auto
 //   threshold
+//
+//   Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
+//   Changed to use InterpretScalableAutoThreshold
 //
 // ****************************************************************************
 void
@@ -1001,28 +1051,15 @@ QvisRenderingWindow::scalrenAutoThresholdChanged(int val)
     else if ((val == 0) && (step == 1) && (scalrenAutoThreshold->suffix() == " GPolys"))
         actualVal = 950000000;
 
-    // compute the step size and suffix for the displayed value in the GUI
+    int widgetVal;
     QString suffix;
-    if      (actualVal < 1e3) { step = 50;  suffix = "  Polys"; }
-    else if (actualVal < 1e4) { step = 500; suffix = "  Polys"; }
-    else if (actualVal < 1e5) { step = 5;   suffix = " KPolys"; }
-    else if (actualVal < 1e6) { step = 50;  suffix = " KPolys"; }
-    else if (actualVal < 1e7) { step = 500; suffix = " KPolys"; }
-    else if (actualVal < 1e8) { step = 5;   suffix = " MPolys"; }
-    else if (actualVal < 1e9) { step = 50;  suffix = " MPolys"; }
-    else                      { step = 1;   suffix = " GPolys"; }
-
-    // compute the divisor for the displayed value in the GUI
-    int div;
-    if      (suffix == " KPolys") div = (int) 1e3;
-    else if (suffix == " MPolys") div = (int) 1e6; 
-    else if (suffix == " GPolys") div = (int) 1e9;
-    else                          div = 1;
+    InterpretScalableAutoThreshold(actualVal, &step, &suffix, &widgetVal);
 
     // set the new GUI value
     scalrenAutoThreshold->setLineStep(step);
     scalrenAutoThreshold->setSuffix(suffix);
-    scalrenAutoThreshold->setValue(actualVal / div);
+    scalrenAutoThreshold->setValue(widgetVal);
+
     renderAtts->SetScalableAutoThreshold(actualVal);
 
     SetUpdate(false);

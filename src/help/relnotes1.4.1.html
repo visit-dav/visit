@@ -20,10 +20,13 @@ enhancements and bug-fixes that were added to this release.</p>
 <li>Zooming in on 2D datasets now increases the size of the viewport, making it more square, until the zoomed rectangle takes up most of the vis window. This allows you to see more of the dataset as you zoom using the middle mouse button.</li>
 <li>VisIt's Volume plot now has a 3rd rendering mode that lets you do raycasting volume-rendering. The new raycasting volume-renderer even accepts geometry from other plots allowing you to show both surfaces and volume-rendered data.</li>
 <li>VisIt's Expressions window now has a new <i>Insert variables</i> button that lets you choose to insert variables from a list of available variables and expressions.</li>
-<li>VisIt's Pick window now has a <i>Variables</i> button that lets you select secondary variables from a list of variables for the current plot.  There are also two new checkboxes that let you choose whether or not to display the reference pick letter in the picked plot, and whether or not the returned node/zone ids should be the global values as read from the file.</li>
+<li>VisIt's Pick window now has a <i>Variables</i> button that lets you select secondary variables from a list of variables for the current plot. There are also two new checkboxes that let you choose whether or not to display the reference pick letter in the picked plot, and whether or not the returned node/zone ids should be the global values as read from the file.</li>
 <li>Many of VisIt's plot and operator attributes windows that used a line edit control for entering a variable name have been improved so they use a variable menu. The variable menu allows you to select a variable from a list of variables for the active plot or the active source.</li>
 <li>VisIt's Streamline plot has been enhanced so it can integrate more smoothly and can create longer streamlines. The plot also can now color by vorticity magnitude in addition to coloring by speed and the plot can now be displayed using lines, tubes, or ribbons. Finally, the Streamline plot now works with VisIt's Point tool when you use the plot with a point streamline source.</li>
-<li>VisIt's 3D navigation mode now has a <i>Flythrough interaction mode</i> that lets you move the camera through the dataset for genuine fly-throughs.</li>
+<li>VisIt's Vector plot has been enhanced by adding <i>Scale by magnitude</i> and <i>Auto scale</i> options. When <i>Scale by magnitude</i> is on, the size of the vectors depends on the magnitude of the vector. When <i>Scale by magnitude</i> is off, the vectors are all the same size. The default is on, which matches the previous behavior. When <i>Auto scale</i> is on, the size of the vectors is choosen so that they are a reasonable size. When <i>Auto scale</i> is off, the size of the vector is determined by the <i>Scale</i>. The default is on, which is different than the previous behavior.</li>
+<li>VisIt's Tensor plot has been enhanced by adding <i>Scale by magnitude</i> and <i>Auto scale</i> options. When <i>Scale by magnitude</i> is on, the size of the tensors depends on the magnitude of the tensor. When <i>Scale by magnitude</i> is off, the tensors are all the same size. The default is on, which matches the previous behavior. When <i>Auto scale</i> is on, the size of the tensors is choosen so that they are a reasonable size. When <i>Auto scale</i> is off, the size of the tensor is determined by the <i>Scale</i>. The default is on, which is different than the previous behavior.</li>
+<li>VisIt's 3D navigation mode now has a <i>Dolly</i> interaction mode that lets you move the camera toward the object. To enable <i>Dolly</i> mode, bring up the <i>Interactors</i> window and change the <i>Navigation mode</i> to <i>Dolly</i>. When in <i>Dolly</i> mode, the rotation interaction causes the view to rotate about the center of the object, the zoom interaction causes the camera to move toward the focus, and the pan interaction causes the camera and focus to move parallel to the image.</li>
+<li>VisIt's 3D navigation mode now has a <i>Flythrough</i> interaction mode that lets you move the camera through the dataset for genuine fly-throughs. To enable <i>Flythrough</i> mode, bring up the <i>Interactors</i> window and change the <i>Navigation mode</i> to <i>Flythrough</i>. When in <i>Flythrough</i> mode, the rotation interaction causes the view to rotate about the camera, the zoom interaction causes the camera and focus to move forward, and the pan interaction causes the camera and focus to move parallel to the image.</li>
 <li>Point mesh rendering has been improved so that it is much faster.</li>
 <li>VisIt can now read mixed variables from Flash files.</li>
 <li>VisIt now supports data from the CMAT file format.</li>
@@ -40,7 +43,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <li>VisIt can now be built with xlC on AIX platforms.</li>
 <li>You can now run many of VisIt's tools using their name on the command line instead of typing: <i>visit -command</i></li>
 <li>VisIt now provides version-specific VisIt scripts, which allow for better error checking and prevent the mixing of public and private versions.</li>
-<li>VisIt now allows for specifying a global node/zone id for the OnionPeel operator and the PickByZone, PickByNode, Zone Center and Node Coords queries. This option is accessed in the GUI by toggling the new checkbox in the Queries and OnionPeel windows..  In the CLI, the OnionPeel option is accessed via setting OnionPeelAttributes.  For Pick: PickByGlobalZone(gzoneno), PickByGlobalNode(gnodeno).  For Query:  Query("Global Zone Center", gzoneid) and Query("Global Node Coords", gnodeid).</li>
+<li>VisIt now allows for specifying a global node/zone id for the OnionPeel operator and the PickByZone, PickByNode, Zone Center and Node Coords queries. This option is accessed in the GUI by toggling the new checkbox in the Queries and OnionPeel windows.. In the CLI, the OnionPeel option is accessed via setting OnionPeelAttributes. For Pick: PickByGlobalZone(gzoneno), PickByGlobalNode(gnodeno). For Query: Query("Global Zone Center", gzoneid) and Query("Global Node Coords", gnodeid).</li>
 <li>VisIt can now generate curl, divergence, and the Laplacian through its expression language.</li>
 </ul>
 <p><b><font size="4">Bugs fixed in version 1.4.1</font></b></p>
@@ -63,6 +66,8 @@ enhancements and bug-fixes that were added to this release.</p>
 <li>VisIt has a picking problem with the 2D Boundary plot.</li>
 <li>The UV debug host profile should be interactive (poe) -- not psub.</li>
 <li>The Subset window does not represent the current plot in rare cases.</li>
+<li>The Streamline plot's streamline sources, which determine the locations of the seed points, do not limit the seed points' Z-value to zero when the input data is 2D.</li>
+<li>The Streamline plot only returns streamlines for the last selected domain.</li>
 <li>Views based on actual data extents are not copied to new windows on first reference.</li>
 <li>Mesh line offsets malfunction with the near clipping plane.</li>
 <li>The Truecolor plot leaks resources.</li>
@@ -86,6 +91,10 @@ enhancements and bug-fixes that were added to this release.</p>
 <li>Some databases do not display as ASCII characters in the Label plot even though they should.</li>
 <li>Odd behavior in CLI with queries when creating and deleting plots.</li>
 <li><i>makemili</i> now does a better job with single processor dumps that have a naming convention similar to multiple processor dumps.</li>
+<li>Using the centered difference gradiant method can crash Volume plot.</li>
+<li>The Pixie reader no longer reads data defined on 3d curvilinear meshes.</li>
+<li>Changing the time state with a plot that has been sliced through a zone fails with an Invalid File Exception.</li>
+<li>Slicing through a node causes an extraneous warning message to be displayed, giving the user the impression that the operation failed when in fact it worked.</li>
 </ul>
 <p>Click the following link to view the release notes for the previous version
 of VisIt: <a href="relnotes1.4.html">VisIt 1.4 Release Notes</a>.</p>

@@ -67,6 +67,7 @@ protected:
     void UpdateOptions(bool doAll);
     void UpdateInformation(bool doAll);
     void Apply(bool ignore = false);
+    void InterpretScalableAutoThreshold(int,int*,QString*,int*) const;
 private slots:
     void antialiasingToggled(bool);
     void objectRepresentationChanged(int);

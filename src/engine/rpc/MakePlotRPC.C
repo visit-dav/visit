@@ -144,12 +144,16 @@ PreparePlotRPC::GetMakePlotRPC()
 //    Jeremy Meredith, Fri Mar 19 15:00:21 PST 2004
 //    Modified the rpc to pass the data extents.
 //
+//    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
+//    Added windowID
+//
 // ****************************************************************************
 MakePlotRPC::MakePlotRPC() 
-    : BlockingRPC("ad*", &networkID)
+    : BlockingRPC("ad*i", &networkID)
 {
     atts = NULL;
     preparePlotRPC.SetMakePlotRPC(this);
+    windowID = -1;
 }
 
 // ****************************************************************************
@@ -206,6 +210,20 @@ MakePlotRPC::SetDataExtents(const std::vector<double> &extents)
 }
 
 // ****************************************************************************
+//  Method:  MakePlotRPC::SetWindowID
+//
+//  Programmer:  Mark C. Miller 
+//  Creation:    December 15, 2004 
+//
+// ****************************************************************************
+void
+MakePlotRPC::SetWindowID(int id)
+{
+    windowID = id;
+    Select(2, (void*)&windowID);
+}
+
+// ****************************************************************************
 //  Method:  MakePlotRPC::SetXfer
 //
 //  Purpose:
@@ -235,11 +253,15 @@ MakePlotRPC::SetXfer(Xfer *x)
 //    Jeremy Meredith, Fri Mar 19 15:00:21 PST 2004
 //    Modified the rpc to pass the data extents.
 //
+//    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
+//    Added windowID
+//
 // ****************************************************************************
 void
 MakePlotRPC::SelectAll()
 {
     Select(1, (void*)&dataExtents);
+    Select(2, (void*)&windowID);
 }
 
 // ****************************************************************************
@@ -291,6 +313,19 @@ MakePlotRPC::GetDataExtents() const
 }
 
 // ****************************************************************************
+//  Method:  MakePlotRPC::GetWindowID
+//
+//  Programmer:  Mark C. Miller 
+//  Creation:    December 15, 2004 
+//
+// ****************************************************************************
+int
+MakePlotRPC::GetWindowID() const
+{
+    return windowID;
+}
+
+// ****************************************************************************
 //  Method:  MakePlotRPC::GetPreparePlotRPC
 //
 //  Purpose:
@@ -325,10 +360,13 @@ MakePlotRPC::GetPreparePlotRPC()
 //    Jeremy Meredith, Fri Mar 19 15:00:21 PST 2004
 //    Modified the rpc to pass the data extents.
 //
+//    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
+//    Added windowID
+//
 // ****************************************************************************
 int
 MakePlotRPC::operator()(const string &n, const AttributeSubject *a,
-                        const std::vector<double> &extents)
+                        const std::vector<double> &extents, int winID)
 {
     preparePlotRPC(n);
     if (preparePlotRPC.GetStatus() == VisItRPC::error)
@@ -342,6 +380,7 @@ MakePlotRPC::operator()(const string &n, const AttributeSubject *a,
     if (a)
         Select(0, (void*)a);
     Select(1, (void*)&extents);
+    Select(2, (void*)&winID);
 
     Execute();
 

@@ -1554,6 +1554,9 @@ ViewerQueryManager::ClearPickPoints()
 //    Kathleen Bonnell, Mon Nov  8 15:47:32 PST 2004 
 //    Moved full-frame test to before 'GlyphPick' test.
 //
+//    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
+//    Added window id to Pick RPC
+//
 // ****************************************************************************
 
 bool
@@ -1790,12 +1793,14 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
         {   
             retry = false;
             int networkId = plot->GetNetworkID();
+            int windowId = plot->GetWindowId();
 
             TRY
             {
                 PickAttributes pa = *pickAtts;
                 ViewerEngineManager::Instance()->Pick(engineKey,
-                                                      networkId, &pa, pa);
+                                                      networkId, windowId,
+                                                      &pa, pa);
                 if (pa.GetFulfilled())
                 {
                    *pickAtts = pa;
