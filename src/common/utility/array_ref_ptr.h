@@ -174,7 +174,7 @@ template <class T>
 inline void
 array_ref_ptr<T>::Print(ostream &out)
 {
-    out << "<" << *n << ", " << p << ">";
+    out << "<" << *n << ", " << (void*) p << ">";
 }
 
 typedef array_ref_ptr<char> CharStrRef;

@@ -185,7 +185,7 @@ inline void
 ref_ptr<T>::Print(ostream &out)
 {
     if ((n!=NULL) && (p!=NULL))
-        out << "<" << *n << ", " << p << ">";
+        out << "<" << *n << ", " << (void*) p << ">";
     else
         out << "<NULL>";
 }

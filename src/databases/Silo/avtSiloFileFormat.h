@@ -194,7 +194,8 @@ class avtSiloFileFormat : public avtSTMDFileFormat
     void                  GetMeshname(DBfile *, char *, char *);
     void                 *GetComponent(DBfile *, char *, char *);
 
-    void                  GetTimeVaryingInformation(DBfile *);
+    void                  GetTimeVaryingInformation(DBfile *,
+                              avtDatabaseMetaData *md = NULL);
     void                  GetVectorDefvars(const char *);
     void                  RegisterDomainDirs(const char * const *, int,
                                              const char*);
