@@ -29,8 +29,6 @@
 #include <resetview.xpm>
 #include <recenterview.xpm>
 #include <undoview.xpm>
-#include <viewlockon.xpm>
-#include <viewlockoff.xpm>
 #include <saveview.xpm>
 #include <blankcamera.xpm>
 #include <choosecenterofrotation.xpm>
@@ -136,36 +134,6 @@ UndoViewAction::Enabled() const
     return (window->GetPlotList()->GetNumPlots() > 0);
 }
 
-
-///////////////////////////////////////////////////////////////////////////////
-
-ToggleLockViewAction::ToggleLockViewAction(ViewerWindow *win) :
-    ViewerToggleAction(win, "ToggleLockViewAction")
-{
-    SetAllText("Lock view");
-    if (!win->GetNoWinMode())
-        SetIcons(QPixmap(viewlockon_xpm), QPixmap(viewlockoff_xpm));
-}
-
-void
-ToggleLockViewAction::Execute()
-{
-    windowMgr->ToggleLockViewMode(windowId);
-}
-
-bool
-ToggleLockViewAction::Enabled() const
-{
-    // This action should only be enabled if the window to which the action belongs
-    // has plots in it.
-    return (window->GetPlotList()->GetNumPlots() > 0);
-}
-
-bool
-ToggleLockViewAction::Toggled() const
-{
-    return window->GetViewIsLocked();
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 

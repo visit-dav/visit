@@ -769,6 +769,12 @@ QvisFilePanel::RepopulateFileList()
 //   I made it use the new time and file scheme. I also added code to set
 //   the values in the new activeTimeSlider combobox.
 //
+//   Brad Whitlock, Fri Mar 18 13:39:02 PST 2005
+//   I improved how the time slider names are shortened so all of the sources
+//   are taken into account, which can make it easier to distinguish between
+//   time sliders when there are multiple time sliders whose names only
+//   differ by the path to their database.
+//
 // ****************************************************************************
 
 void
@@ -822,18 +828,44 @@ QvisFilePanel::UpdateAnimationControls(bool doAll)
             const stringVector &tsNames = windowInfo->GetTimeSliders();
 
             //
-            // Use a name simplifier to shorten the time slider names.
+            // Use a name simplifier to shorten the source names.
             //
             NameSimplifier simplifier;
-            for(i = 0; i < tsNames.size(); ++i)
-                simplifier.AddName(tsNames[i]);
+            const stringVector &sources = viewer->GetGlobalAttributes()->GetSources();
+            for(i = 0; i < sources.size(); ++i)
+                simplifier.AddName(sources[i]);
             stringVector shortNames;
             simplifier.GetSimplifiedNames(shortNames);
-            for(i = 0; i < shortNames.size(); ++i)
-                activeTimeSlider->insertItem(shortNames[i].c_str());
+
+            //
+            // Fill in the combo box using the short name for sources and
+            // time slider names for items that are not sources.
+            //
+            for(i = 0; i < tsNames.size(); ++i)
+            {
+                int index = -1;
+                for(int j = 0; j < sources.size(); ++j)
+                { 
+                    if(sources[j] == tsNames[i])
+                    {
+                        index = j;
+                        break;
+                    }
+                }
+                if(index == -1)
+                {
+                    // The time slider is not a source so use the original
+                    // time slider name.
+                    activeTimeSlider->insertItem(tsNames[i].c_str());
+                }
+                else
+                {
+                    // The time slider was a source, use the short name.
+                    activeTimeSlider->insertItem(shortNames[index].c_str());
+                }
+            }
             activeTimeSlider->setCurrentItem(activeTS);
             activeTimeSlider->blockSignals(false);
-
 
             bool enableSlider = windowInfo->GetTimeSliders().size() > 1;
             activeTimeSlider->setEnabled(enableSlider);

@@ -74,6 +74,7 @@
 // Extension include files.
 //
 #include <PyAnnotationAttributes.h>
+#include <PyDatabaseCorrelation.h>
 #include <PyGlobalAttributes.h>
 #include <PyGlobalLineoutAttributes.h>
 #include <PyHostProfile.h>
@@ -2125,6 +2126,77 @@ visit_SetDatabaseCorrelationOptions(PyObject *self, PyObject *args)
     return IntReturnValue(Synchronize());
 }
 
+// ****************************************************************************
+// Function: visit_GetDatabaseCorrelation
+//
+// Purpose: 
+//   Returns a read-only database correlation object that contains the
+//   attributes for the specified database correlation.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 17 11:35:41 PDT 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_GetDatabaseCorrelation(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+    char *name = 0;
+    if (!PyArg_ParseTuple(args, "s", &name))
+        return NULL;
+
+    DatabaseCorrelationList *cL = viewer->GetDatabaseCorrelationList();
+    DatabaseCorrelation *C = cL->FindCorrelation(name);
+    PyObject *retval = 0;
+    if(C != 0)
+    {
+        // Create a new database correlation object.
+        retval = PyDatabaseCorrelation_NewPyObject(C);
+    }
+    else
+        VisItErrorFunc("No such database correlation!");
+
+    return retval;
+}
+
+// ****************************************************************************
+// Function: visit_GetDatabaseCorrelationNames
+//
+// Purpose: 
+//   Returns the names of all of the database correlations.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 17 11:35:41 PDT 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_GetDatabaseCorrelationNames(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
+
+    // Allocate a tuple the with enough entries to hold the database
+    // correlation name list.
+    DatabaseCorrelationList *cL = viewer->GetDatabaseCorrelationList();
+    PyObject *retval = PyTuple_New(cL->GetNumDatabaseCorrelations());
+
+    for(int i = 0; i < cL->GetNumDatabaseCorrelations(); ++i)
+    {
+        PyObject *name = PyString_FromString(
+            cL->operator[](i).GetName().c_str());
+        if(name == NULL)
+            continue;
+        PyTuple_SET_ITEM(retval, i, name);
+    }
+
+    return retval;
+}
 
 // ****************************************************************************
 // Function: ExpressionDefinitionHelper
@@ -7612,6 +7684,34 @@ visit_ToggleLockTime(PyObject *self, PyObject *args)
 }
 
 // ****************************************************************************
+// Function: visit_ToggleLockTools
+//
+// Purpose: 
+//   Tells the viewer to toggle tool locking for the active vis window.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 17 10:15:55 PDT 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_ToggleLockTools(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
+
+    MUTEX_LOCK();
+        viewer->ToggleLockTools();
+        if(logging)
+            fprintf(logFile, "ToggleLockTools()\n");
+    MUTEX_UNLOCK();
+
+    return IntReturnValue(Synchronize());
+}
+
+// ****************************************************************************
 // Function: visit_ToggleBoundingBoxMode
 //
 // Purpose:
@@ -9673,6 +9773,9 @@ AddMethod(const char *methodName, PyObject *(cb)(PyObject *, PyObject *),
 //   Mark C. Miller, Tue Mar  8 18:06:19 PST 2005
 //   Added GetProcessAttributes
 //
+//   Brad Whitlock, Thu Mar 17 10:17:32 PDT 2005
+//   Added ToggleLockTools, GetDatabaseCorrelation, GetDatabaseCorrelationNames.
+//
 // ****************************************************************************
 
 static void
@@ -9749,6 +9852,8 @@ AddDefaultMethods()
     AddMethod("GetView2D", visit_GetView2D);
     AddMethod("GetView3D", visit_GetView3D);
     AddMethod("GetAnnotationAttributes", visit_GetAnnotationAttributes);
+    AddMethod("GetDatabaseCorrelation", visit_GetDatabaseCorrelation);
+    AddMethod("GetDatabaseCorrelationNames", visit_GetDatabaseCorrelationNames);
     AddMethod("GetDatabaseNStates", visit_GetDatabaseNStates);
     AddMethod("GetEngineList", visit_GetEngineList);
     AddMethod("GetGlobalAttributes", visit_GetGlobalAttributes);
@@ -9852,6 +9957,7 @@ AddDefaultMethods()
     AddMethod("ToggleCameraViewMode", visit_ToggleCameraViewMode);
     AddMethod("ToggleFullFrameMode", visit_ToggleFullFrameMode);
     AddMethod("ToggleLockTime", visit_ToggleLockTime);
+    AddMethod("ToggleLockTools", visit_ToggleLockTools);
     AddMethod("ToggleLockViewMode", visit_ToggleLockViewMode);
     AddMethod("ToggleMaintainViewMode", visit_ToggleMaintainViewMode);
     AddMethod("ToggleMaintainDataMode", visit_ToggleMaintainDataMode);
@@ -9955,6 +10061,9 @@ AddExtensions()
     ADD_EXTENSION(PyView3DAttributes_GetMethodTable);
     ADD_EXTENSION(PyWindowInformation_GetMethodTable);
     ADD_EXTENSION(PyLightAttributes_GetMethodTable);
+
+    // Note that we don't add PyDatabaseCorrelation's method table
+    // because we don't want to be able to create them.
 }
 
 // ****************************************************************************

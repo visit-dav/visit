@@ -122,7 +122,10 @@ avtExtents::operator=(const avtExtents &exts)
     dimension = exts.dimension;
     if (exts.extents != NULL)
     {
-        extents = new double[2*dimension];
+        if (extents == NULL)
+        {
+            extents = new double[2*dimension];
+        }
         for (int i = 0 ; i < 2*dimension ; i++)
         {
             extents[i] = exts.extents[i];

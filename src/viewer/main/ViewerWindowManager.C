@@ -902,6 +902,7 @@ ViewerWindowManager::DeleteWindow(ViewerWindow *win)
     //
     delete windows[windowIndex];
     windows[windowIndex] = 0;
+    referenced[windowIndex] = false;
     nWindows--;
 
     //
@@ -2667,7 +2668,11 @@ ViewerWindowManager::AskForCorrelationPermission(const char *msg,
 // Creation:   Mon Mar 29 09:54:27 PDT 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Mar 18 10:37:21 PDT 2005
+//   I made the correlation be returned in the event that the user chose
+//   to create a new multiwindow database correlation or alter a database
+//   correlation.
+//
 // ****************************************************************************
 
 DatabaseCorrelation *
@@ -2704,6 +2709,8 @@ ViewerWindowManager::CreateMultiWindowCorrelationHelper(const stringVector &dbs)
                 AlterDatabaseCorrelation(correlation->GetName(), dbs,
                     correlation->GetMethod());
             }
+            else
+                correlation = 0;
         }
         else
         {
@@ -2753,10 +2760,9 @@ ViewerWindowManager::CreateMultiWindowCorrelationHelper(const stringVector &dbs)
             Warning("Since you opted not to create a database correlation, "
                     "changing time sliders in one locked window might not "
                     "affect other locked windows.");
+            correlation = 0;
         }
     }
-    else
-        correlation = 0;
 
     return correlation;
 }
@@ -2775,10 +2781,12 @@ ViewerWindowManager::CreateMultiWindowCorrelationHelper(const stringVector &dbs)
 // Creation:   Mon Mar 29 11:20:16 PDT 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Mar 16 17:40:02 PST 2005
+//   I made it return the database correlation to use for multiple windows.
+//
 // ****************************************************************************
 
-void
+DatabaseCorrelation *
 ViewerWindowManager::CreateMultiWindowCorrelation(const intVector &windowIds)
 {
     //
@@ -2786,22 +2794,24 @@ ViewerWindowManager::CreateMultiWindowCorrelation(const intVector &windowIds)
     //
     stringVector dbs;
     GetDatabasesForWindows(windowIds, dbs);
+    DatabaseCorrelation *correlation = 0;
 
-    if(dbs.size() < 2)
+    if(dbs.size() == 1)
     {
         // All of the locked windows used a single time slider so nothing
         // needs to be done. Alternatively, none of the locked windows
         // even had an active time slider so nothing needs to be done.
+        correlation = ViewerFileServer::Instance()->
+            GetDatabaseCorrelationList()->FindCorrelation(dbs[0]);
     }
-    else
+    else if(dbs.size() > 1)
     {
         //
         // Get a correlation that has all of the databases in it. If such a
         // correlation does not exist then prompt the user to create one.
         // Either modify an existing correlation or create a brand new one.
         //
-        DatabaseCorrelation *correlation =
-            CreateMultiWindowCorrelationHelper(dbs);
+        correlation = CreateMultiWindowCorrelationHelper(dbs);
 
         //
         // If we had to create or edit a correlation, set the active time
@@ -2838,7 +2848,13 @@ ViewerWindowManager::CreateMultiWindowCorrelation(const intVector &windowIds)
                     // Create a new time slider using the name of the
                     // new multiwindow correlation.
                     //
-                    pl->CreateTimeSlider(correlation->GetName(), cts);
+                    if(!pl->TimeSliderExists(correlation->GetName()))
+                    {
+                        debug2 << "Creating " << correlation->GetName().c_str()
+                               << " time slider in window " << i+1
+                               << " and making it the active time slider.\n";
+                        pl->CreateTimeSlider(correlation->GetName(), cts);
+                    }
  
                     //
                     // Make the new time slider be the active time slider.
@@ -2848,6 +2864,8 @@ ViewerWindowManager::CreateMultiWindowCorrelation(const intVector &windowIds)
             }
         }
     }
+
+    return correlation;
 }
 
 // ****************************************************************************
@@ -2874,6 +2892,9 @@ ViewerWindowManager::CreateMultiWindowCorrelation(const intVector &windowIds)
 //   I completely rewrote the method so it supports database correlations
 //   across windows when locking the windows in time.
 //
+//   Brad Whitlock, Wed Mar 16 17:34:38 PST 2005
+//   Made it use GetTimeLockedWindowIndices.
+//
 // ****************************************************************************
 
 void
@@ -2895,13 +2916,7 @@ ViewerWindowManager::ToggleLockTime(int windowIndex)
             // Get the list of window id's that are time-locked windows.
             //
             intVector windowIds;
-            int i;
-            for(i = 0; i < maxWindows; ++i)
-            {
-                if(windows[i] != 0 && windows[i]->GetTimeLock() &&
-                   windows[i]->GetPlotList()->HasActiveTimeSlider())
-                    windowIds.push_back(i);
-            }
+            GetTimeLockedWindowIndices(windowIds);
 
             //
             // Create a correlation for all of the time-locked windows.
@@ -2913,7 +2928,7 @@ ViewerWindowManager::ToggleLockTime(int windowIndex)
             // window that has locked time and copy its time.
             //
             int winner = -1;
-            for (i = 0; i < windowIds.size(); ++i)
+            for (int i = 0; i < windowIds.size(); ++i)
             {
                 if (windowIds[i] != index)
                 {
@@ -3518,6 +3533,12 @@ ViewerWindowManager::SetWindowLayout(const int windowLayout)
 //    Brad Whitlock, Tue Jan 27 17:37:31 PST 2004
 //    I changed the copy codea little bit.
 //
+//    Brad Whitlock, Wed Mar 16 15:18:43 PST 2005
+//    I made the active window's database be copied to the new window's
+//    plot list if the new window has not been referenced and its database
+//    has not been set. This prevents problems where the new window does not
+//    have a database and the right time sliders.
+//
 // ****************************************************************************
 
 void
@@ -3526,7 +3547,8 @@ ViewerWindowManager::SetActiveWindow(const int windowId)
     //
     // Check the window id.
     //
-    if (windowId <= 0 || windowId > maxWindows || windows[windowId-1] == 0)
+    int winIndex = windowId - 1;
+    if (windowId <= 0 || windowId > maxWindows || windows[winIndex] == 0)
     {
         Error("The specified window doesn't exist.");
         return;
@@ -3536,12 +3558,11 @@ ViewerWindowManager::SetActiveWindow(const int windowId)
     // Copy the window attributes from the current window to the new
     // window if the new window has been referenced for the first time.
     //
+    ViewerWindow *dest = windows[winIndex];
+    ViewerWindow *src = windows[activeWindow];
     if (clientAtts->GetCloneWindowOnFirstRef())
     {
-        ViewerWindow *dest = windows[windowId-1];
-        ViewerWindow *src = windows[activeWindow];
-
-        if(referenced[windowId-1])
+        if(referenced[winIndex])
         {
             // The window has been referenced before but it does not have
             // a database. In this case, since we are probably going back to
@@ -3563,12 +3584,29 @@ ViewerWindowManager::SetActiveWindow(const int windowId)
             dest->GetPlotList()->CopyFrom(src->GetPlotList(), true);
         }
     }
-    referenced[windowId-1] = true;
+    else
+    {
+        // We're not cloning everything when going to the new window but
+        // if the window has not been referenced before then we still want
+        // to make sure that the new window has a database and the right
+        // time sliders.
+        if(!referenced[winIndex] &&
+           dest->GetPlotList()->GetHostDatabaseName() == "")
+        {
+            debug2 << "Window " << windowId << ", a window that is being "
+                "referenced for the first time, is having its database "
+                "set to: " << src->GetPlotList()->GetHostDatabaseName().c_str()
+                   << ".\n";
+            dest->GetPlotList()->CopyFrom(src->GetPlotList(), false);
+        }
+    }
+    
+    referenced[winIndex] = true;
 
     //
     // Make the specified window active.
     //
-    activeWindow = windowId - 1;
+    activeWindow = winIndex;
 
     // Deiconify the activated window.
     windows[activeWindow]->DeIconify();
@@ -6847,6 +6885,10 @@ ViewerWindowManager::SimpleAddWindow()
 //    Put all of the code for setting the window attributes into a separate
 //    routine.
 //
+//    Brad Whitlock, Wed Mar 16 13:26:42 PST 2005
+//    I set the referenced flag for the window to false so it is right if
+//    we delete and recreate a window.
+//
 // ****************************************************************************
 
 void
@@ -6870,6 +6912,7 @@ ViewerWindowManager::CreateVisWindow(const int windowIndex,
     }
     x_locations[windowIndex] = x;
     y_locations[windowIndex] = y;
+    referenced[windowIndex] = false;
 
     nWindows++;
 
@@ -7777,6 +7820,33 @@ ViewerWindowManager::GetWindowIndices(int *nwin) const
 
     *nwin = id;
     return indices;
+}
+
+// ****************************************************************************
+// Method: ViewerWindowManager::GetTimeLockedWindowIndices
+//
+// Purpose: 
+//   Gets the indices of the locked windows.
+//
+// Arguments:
+//   windowIds : The return vector for the locked window indices.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Mar 16 17:35:53 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerWindowManager::GetTimeLockedWindowIndices(intVector &windowIds) const
+{
+    for(int i = 0; i < maxWindows; ++i)
+    {
+        if(windows[i] != 0 && windows[i]->GetTimeLock() &&
+           windows[i]->GetPlotList()->HasActiveTimeSlider())
+            windowIds.push_back(i);
+    }
 }
 
 // ****************************************************************************

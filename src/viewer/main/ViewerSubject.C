@@ -3917,6 +3917,10 @@ ViewerSubject::ReOpenDatabase()
 //   I made the time state used for file replacement be the value that is now
 //   returned from OpenDatabaseHelper.
 //
+//   Brad Whitlock, Wed Mar 16 16:32:14 PST 2005
+//   I added code to make sure that the active window is still compatible
+//   with other time-locked windows after the database was replaced.
+//
 // ****************************************************************************
 
 void
@@ -3953,6 +3957,51 @@ ViewerSubject::ReplaceDatabase()
                               timeState,
                               true,
                               false);
+
+    //
+    // If the current window is time-locked then we have to make sure that
+    // its new database is compatible with being time-locked with other
+    // windows.
+    //
+    if(win->GetTimeLock())
+    {
+        intVector windowIds;
+        wM->GetTimeLockedWindowIndices(windowIds);
+        if(windowIds.size() > 1)
+        {
+            debug2 << "We have more than 1 time locked window. We have to "
+                      "make sure that we have a suitable multi-window "
+                      "database correlation."
+                   << endl;
+            // Create or alter the most suitable correlation to be used for
+            // time-locked windows. If we have to create a multi-window
+            // database correlation then we'll have set
+            DatabaseCorrelation *C = wM->CreateMultiWindowCorrelation(windowIds);
+            if(C != 0)
+            {
+                std::string hdb(win->GetPlotList()->GetHostDatabaseName());
+                debug2 << "ReplaceDatabase: The active window is time-locked "
+                          "and uses the multi-window database correlation: "
+                       << C->GetName().c_str() << ". We have to make sure that "
+                       << "we display time state " << timeState << " for the "
+                       << "database: " << hdb.c_str() << endl;
+
+                // We have to find the time state in C where we find
+                // the new database's new state. Then we have to make
+                // the other time locked windows go to that time state.
+                int cts = C->GetInverseCorrelatedTimeState(hdb, timeState);
+                if(cts != -1)
+                {
+                    debug2 << "Correlation state "<< cts
+                           << " will allow us to show time state "
+                           << timeState << " for database " << hdb.c_str()
+                           << ". We also have to update the other locked "
+                              "windows.\n";
+                    wM->SetFrameIndex(cts);
+                }
+            } // C != 0
+        }
+    }
 
     //
     // Make sure the time slider is set to something appropriate.
@@ -5424,28 +5473,6 @@ ViewerSubject::ToggleCameraViewMode(int windowIndex)
 }
 
 // ****************************************************************************
-// Method: ViewerSubject::ToggleLockTime
-//
-// Purpose: 
-//   Locks the time for the specified window.
-//
-// Arguments:
-//   windowIndex : The index of the window for which to set the locktime flag.
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon Nov 11 11:52:00 PDT 2002
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-ViewerSubject::ToggleLockTime(int windowIndex)
-{
-     ViewerWindowManager::Instance()->ToggleLockTime(windowIndex);
-}
-
-// ****************************************************************************
 // Method: ViewerSubject::ToggleLockTools.
 //
 // Purpose: 
@@ -6657,9 +6684,6 @@ ViewerSubject::HandleViewerRPC()
         break;
     case ViewerRPC::ResetMaterialAttributesRPC:
         ResetMaterialAttributes();
-        break;
-    case ViewerRPC::ToggleLockTimeRPC:
-        ToggleLockTime();
         break;
     case ViewerRPC::ToggleLockToolsRPC:
         ToggleLockTools();

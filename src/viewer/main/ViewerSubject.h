@@ -337,7 +337,11 @@ struct avtDefaultPlotMetaData;
 //    Added int return value for OpenDatabaseHelper.
 //
 //    Mark C. Miller, Tue Mar  8 18:06:19 PST 2005
-//    Added ProcessAttributees
+//    Added ProcessAttributees.
+//
+//    Brad Whitlock, Fri Mar 18 16:37:51 PST 2005
+//    I removed ToggleLockTime.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerSubject : public QObject
@@ -520,7 +524,6 @@ private slots:
     void ToggleMaintainViewMode(int windowIndex = -1);
     void ToggleMaintainDataMode(int windowIndex = -1);
     void ToggleCameraViewMode(int windowIndex = -1);
-    void ToggleLockTime(int windowIndex = -1);
     void ToggleLockTools(int windowIndex = -1);
 
     void CopyViewToWindow(int from, int to);

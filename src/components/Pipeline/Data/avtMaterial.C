@@ -699,9 +699,9 @@ avtMaterial::avtMaterial(int nTotMats, const int *mats, const char **names,
         int *newml   = new int[numZones];
         int *newmixm = new int[mixl];
         int *newmats = new int[nTotMats+addOne];
+        newmats[nTotMats+addOne-1] = matnoMax;
         for (i = 0; i < nTotMats; i++)
             newmats[i] = mats[i];
-        newmats[nTotMats] = matnoMax;
         vector<bool> newmatUsed(nTotMats+addOne, false);
         RenumberMaterialsZeroToNminusOne(nTotMats+addOne, newmats,
                                          numZones, ml,
