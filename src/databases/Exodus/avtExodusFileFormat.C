@@ -218,6 +218,36 @@ avtExodusFileFormat::GetCycles(vector<int> &cycles)
 
 
 // ****************************************************************************
+//  Method: avtExodusFileFormat::GetTimes
+//
+//  Purpose:
+//      Get the times for each timestep.
+//
+//  Arguments:
+//      times  A place to put the times numbers.
+//
+//  Programmer: Hank Childs
+//  Creation:   April 17, 2004
+//
+// ****************************************************************************
+
+void
+avtExodusFileFormat::GetTimes(vector<double> &times)
+{
+    int nTimesteps = GetNTimesteps();
+
+    times.clear();
+    for (int i = 0 ; i < nTimesteps ; i++)
+    {
+        if (reader != NULL)
+            times.push_back(reader->GetTime(i));
+        else
+            times.push_back(0.);
+    }
+}
+
+
+// ****************************************************************************
 //  Method: avtExodusFileFormat::GetNTimesteps
 //
 //  Purpose:

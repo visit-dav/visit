@@ -27,6 +27,9 @@ class     avtVariableCache;
 //    vtkScalars and vtkVectors have been deprecated in VTK 4.0, 
 //    use vtkDataArray instead.
 //
+//    Hank Childs, Sat Apr 17 07:42:40 PDT 2004
+//    Added support for times.
+//
 // ****************************************************************************
 
 class avtExodusFileFormat : public avtMTSDFileFormat
@@ -39,6 +42,7 @@ class avtExodusFileFormat : public avtMTSDFileFormat
     const char                 *GetType(void) { return "Exodus File Format"; };
 
     virtual void                GetCycles(std::vector<int> &);
+    virtual void                GetTimes(std::vector<double> &);
     virtual int                 GetNTimesteps(void);
  
     virtual vtkDataSet         *GetMesh(int, const char *);

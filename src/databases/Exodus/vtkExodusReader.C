@@ -87,6 +87,10 @@ vtkStandardNewMacro(vtkExodusReader);
 
 
 //----------------------------------------------------------------------------
+//  Modifications:
+//    Hank Childs, Sat Apr 17 07:44:05 PDT 2004
+//    Initialize times.
+//----------------------------------------------------------------------------
 // Description:
 // Instantiate object with NULL filename.
 vtkExodusReader::vtkExodusReader()
@@ -121,9 +125,15 @@ vtkExodusReader::vtkExodusReader()
 
   this->StartBlock = this->EndBlock = -1;
   this->PointMapOutIn = vtkIdList::New();
+
+  this->Times = NULL;
 }
 
 
+//----------------------------------------------------------------------------
+//  Modifications:
+//    Hank Childs, Sat Apr 17 07:44:05 PDT 2004
+//    Destruct times.
 //----------------------------------------------------------------------------
 vtkExodusReader::~vtkExodusReader()
 {
@@ -143,7 +153,12 @@ vtkExodusReader::~vtkExodusReader()
     delete [] this->Title;
     this->Title = NULL;
     }
-  
+  if (this->Times)
+    {
+    delete [] this->Times;
+    this->Times = NULL;
+    }
+    
   this->SetGeometryFileName(NULL);
   this->GeometryCache->Delete();
   this->GeometryCache = NULL;
@@ -337,6 +352,13 @@ void vtkExodusReader::SetNumberOfCellDataArrays(int num)
 
 
 //----------------------------------------------------------------------------
+// Modifications:
+//
+//   Hank Childs, Sat Apr 17 07:29:22 PDT 2004
+//   Read in the times as well.
+//
+//----------------------------------------------------------------------------
+
 void vtkExodusReader::ExecuteInformation()
 {
   int exoid;
@@ -473,6 +495,8 @@ void vtkExodusReader::ExecuteInformation()
     vtkErrorMacro("Error: " << error << " while reading number of time steps from file " 
                   << this->FileName);
     }
+  this->Times = new float[this->NumberOfTimeSteps];
+  ex_get_all_times(exoid, this->Times);
   
   error = ex_close(exoid);
   if (error < 0)
