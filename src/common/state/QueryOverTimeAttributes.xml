@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Attribute name="QueryOverTimeAttributes" purpose="Attributes for queries over time." persistent="false" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="QueryOverTimeAttributes.code">
+  <Attribute name="QueryOverTimeAttributes" purpose="Attributes for queries over time." persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="QueryOverTimeAttributes.code">
     <Enum name="TimeType">
       Cycle
       DTime
@@ -31,4 +31,8 @@
     </Field>
     <Field name="queryAtts" label="queryAtts" type="att" subtype="QueryAttributes" internal="true">
     </Field>
+    <Function name="CreateNode" user="false" member="true">
+    </Function>
+    <Function name="SetFromNode" user="false" member="true">
+    </Function>
   </Attribute>

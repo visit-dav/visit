@@ -1,0 +1,146 @@
+Function: CreateNode
+Declaration: virtual bool CreateNode(DataNode *parentNode, bool completeSave, bool forceAdd);
+Definition:
+// ****************************************************************************
+// Method: QueryOverTimeAttributes::CreateNode
+//
+// Purpose: 
+//   This method creates a DataNode representation of the object so it can be 
+//   saved to a config file.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   May 26, 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+QueryOverTimeAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceAdd)
+{
+    if(parentNode == 0)
+        return false;
+
+    QueryOverTimeAttributes defaultObject;
+    bool addToParent = false;
+    // Create a node for QueryOverTimeAttributes.
+    DataNode *node = new DataNode("QueryOverTimeAttributes");
+
+    if(completeSave || !FieldsEqual(0, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("timeType", TimeType_ToString(timeType)));
+    }
+
+    if(completeSave || !FieldsEqual(1, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("startTimeFlag", startTimeFlag));
+    }
+
+    if(completeSave || !FieldsEqual(2, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("startTime", startTime));
+    }
+
+    if(completeSave || !FieldsEqual(3, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("endTimeFlag", endTimeFlag));
+    }
+
+    if(completeSave || !FieldsEqual(4, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("endTime", endTime));
+    }
+
+    if(completeSave || !FieldsEqual(5, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("stride", stride));
+    }
+
+    if(completeSave || !FieldsEqual(6, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("createWindow", createWindow));
+    }
+
+    if(completeSave || !FieldsEqual(7, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("windowId", windowId));
+    }
+
+    // Add the node to the parent node.
+    if(addToParent || forceAdd)
+        parentNode->AddNode(node);
+    else
+        delete node;
+
+    return (addToParent || forceAdd);
+}
+
+Function: SetFromNode
+Declaration: virtual void SetFromNode(DataNode *parentNode);
+Definition:
+// ****************************************************************************
+// Method: QueryOverTimeAttributes::SetFromNode
+//
+// Purpose: 
+//   This method sets attributes in this object from values in a DataNode 
+//   representation of the object.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   May 26, 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QueryOverTimeAttributes::SetFromNode(DataNode *parentNode)
+{
+    int i;
+    if(parentNode == 0)
+        return;
+
+    DataNode *searchNode = parentNode->GetNode("QueryOverTimeAttributes");
+    if(searchNode == 0)
+        return;
+
+    DataNode *node;
+    if((node = searchNode->GetNode("timeType")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 3)
+                SetTimeType(TimeType(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            TimeType value;
+            if(TimeType_FromString(node->AsString(), value))
+                SetTimeType(value);
+        }
+    }
+    if((node = searchNode->GetNode("startTimeFlag")) != 0)
+        SetStartTimeFlag(node->AsBool());
+    if((node = searchNode->GetNode("startTime")) != 0)
+        SetStartTime(node->AsInt());
+    if((node = searchNode->GetNode("endTimeFlag")) != 0)
+        SetEndTimeFlag(node->AsBool());
+    if((node = searchNode->GetNode("endTime")) != 0)
+        SetEndTime(node->AsInt());
+    if((node = searchNode->GetNode("stride")) != 0)
+        SetStride(node->AsInt());
+    if((node = searchNode->GetNode("createWindow")) != 0)
+        SetCreateWindow(node->AsBool());
+    if((node = searchNode->GetNode("windowId")) != 0)
+        SetWindowId(node->AsInt());
+}
+
