@@ -146,6 +146,9 @@
 #    Jeremy Meredith, Tue Nov 23 14:53:07 PST 2004
 #    Refactored the expression parser into two separate libraries.
 #
+#    Jeremy Meredith, Mon Feb  7 16:00:12 PST 2005
+#    Added GetPluginErrorsRPCExecutor.
+#
 ##############################################################################
 
 ##
@@ -192,6 +195,7 @@ SRC=ChangeDirectoryRPCExecutor.C \
     GetDirectoryRPCExecutor.C \
     GetFileListRPCExecutor.C \
     GetMetaDataRPCExecutor.C \
+    GetPluginErrorsRPCExecutor.C \
     GetSILRPCExecutor.C \
     KeepAliveRPCExecutor.C \
     LoadPluginsRPCExecutor.C \

@@ -96,6 +96,9 @@ typedef struct
 //    Mark C. Miller, Thu Oct 21 22:11:28 PDT 2004
 //    Added arbMeshZoneRangesToSkip to support DBzonelists with arb. zones.
 //
+//    Kathleen Bonnell, Tue Feb  8 13:41:05 PST 2005 
+//    Added int arg to GetQuadMesh. 
+//
 // ****************************************************************************
 
 class avtSiloFileFormat : public avtSTMDFileFormat
@@ -178,7 +181,7 @@ class avtSiloFileFormat : public avtSTMDFileFormat
     vtkDataSet           *CreateCurvilinearMesh(DBquadmesh *);
     vtkDataSet           *CreateRectilinearMesh(DBquadmesh *);
     vtkDataSet           *GetPointMesh(DBfile *, const char *);
-    vtkDataSet           *GetQuadMesh(DBfile *, const char *);
+    vtkDataSet           *GetQuadMesh(DBfile *, const char *, int);
     vtkDataSet           *GetUnstructuredMesh(DBfile *, const char *,
                                               int, const char *);
     void                  ReadInConnectivity(vtkUnstructuredGrid *,

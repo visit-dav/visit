@@ -6,7 +6,7 @@
 #include <InitVTKNoGraphics.h>
 #include <avtDatabase.h>
 #include <avtDatabaseFactory.h>
-
+#include <DatabasePluginManager.h>
 
 // Prototypes.
 bool ProcessCommandLine(int argc, char *argv[]);
@@ -80,6 +80,12 @@ bool ProcessCommandLine(int argc, char *argv[]);
 //    Hank Childs, Tue Jun  1 13:49:48 PDT 2004
 //    Add call to finalize.
 //
+//    Jeremy Meredith, Tue Feb  8 08:49:46 PST 2005
+//    Move initialization of the plugins from the LoadPlugins method to here.
+//    It is much cheaper than the full loading of plugins and guarantees
+//    that we can later query for their initialization errors and have a
+//    meaningful answer.
+//
 // ****************************************************************************
 
 int
@@ -92,6 +98,7 @@ main(int argc, char *argv[])
     Init::SetComponentName("mdserver");
     InitVTKNoGraphics::Initialize();
     avtDatabase::SetOnlyServeUpMetaData(true);
+    DatabasePluginManager::Initialize(DatabasePluginManager::MDServer, false);
 
     bool runApp = ProcessCommandLine(argc, argv);
 

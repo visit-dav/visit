@@ -20,6 +20,7 @@
 #include <LoadPluginsRPC.h>
 #include <avtDatabaseMetaData.h>
 #include <SILAttributes.h>
+#include <GetPluginErrorsRPC.h>
 
 #include <string>
 #include <vector>
@@ -99,6 +100,10 @@
 //    Brad Whitlock, Thu Jul 29 12:26:38 PDT 2004
 //    Added another argument to GetFileList.
 //
+//    Jeremy Meredith, Tue Feb  8 08:52:45 PST 2005
+//    Added the ability to query for errors detected during plugin
+//    initialization.
+//
 // ****************************************************************************
 
 class MDSERVER_PROXY_API MDServerProxy : public RemoteProxyBase
@@ -162,6 +167,7 @@ public:
     void                       CloseDatabase();
     void                       CloseDatabase(const std::string &);
     void                       LoadPlugins();
+    std::string                GetPluginErrors();
 
     char                       GetSeparator() const;
     std::string                GetSeparatorString() const;
@@ -182,6 +188,7 @@ private:
     ExpandPathRPC              expandPathRPC;
     CloseDatabaseRPC           closeDatabaseRPC;
     LoadPluginsRPC             loadPluginsRPC;
+    GetPluginErrorsRPC         getPluginErrorsRPC;
 
     FileList                   fileList;
     avtDatabaseMetaData        metaData;

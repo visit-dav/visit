@@ -2078,6 +2078,9 @@ AttributeGroup::DeclareVectorString()
 //   Brad Whitlock, Tue Aug 29 10:30:02 PDT 2000
 //   I changed it so an empty or NULL format string is allowable.
 //
+//   Hank Childs, Fri Jan 28 15:36:03 PST 2005
+//   Use exception macros.
+//
 // ****************************************************************************
 
 void
@@ -2141,7 +2144,7 @@ AttributeGroup::CreateTypeMap(const char *formatString)
                 DeclareVectorAttributeGroup();
                 break;
             default:
-                throw BadDeclareFormatString();
+                EXCEPTION0(BadDeclareFormatString);
             }
         }
         else
@@ -2204,7 +2207,7 @@ AttributeGroup::CreateTypeMap(const char *formatString)
                 DeclareListBool();
                 break;
             default:
-                throw BadDeclareFormatString();
+                EXCEPTION0(BadDeclareFormatString);
             }
         }
     }

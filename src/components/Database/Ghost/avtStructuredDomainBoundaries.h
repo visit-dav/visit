@@ -164,6 +164,9 @@ class BoundaryHelperFunctions
 //    Hank Childs, Sat Aug 14 06:41:00 PDT 2004
 //    Added CreateGhostNodes.
 //
+//    Kathleen Bonnell, Tue Feb  8 15:32:22 PST 2005 
+//    Added GetExtents. 
+//
 // ****************************************************************************
 
 class DATABASE_API avtStructuredDomainBoundaries :  public avtDomainBoundaries
@@ -178,6 +181,8 @@ class DATABASE_API avtStructuredDomainBoundaries :  public avtDomainBoundaries
     void     SetExtents(int domain, int e[6]);
     void     AddNeighbor(int domain, int d,int mi, int o[3], int e[6]);
     void     Finish(int domain);
+
+    void     GetExtents(int domain, int e[6]);
 
     //  methods for cases where neighbors can be computed
     void  SetIndicesForRectGrid(int domain, int e[6]);

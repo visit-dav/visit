@@ -22,6 +22,8 @@ class GetDirectoryRPCExecutor;
 class GetFileListRPCExecutor;
 class GetMetaDataRPC;
 class GetMetaDataRPCExecutor;
+class GetPluginErrorsRPC;
+class GetPluginErrorsRPCExecutor;
 class GetSILRPC;
 class GetSILRPCExecutor;
 class KeepAliveRPC;
@@ -103,6 +105,10 @@ class Xfer;
 //    Added a database argument to CloseDatabase and added the
 //    SetFileGroupingOptions method.
 //
+//    Jeremy Meredith, Tue Feb  8 08:52:09 PST 2005
+//    Added the ability to query for errors detected during plugin
+//    initialization.
+//
 // ****************************************************************************
 
 class MDServerConnection
@@ -155,6 +161,8 @@ public:
     void CloseDatabase(const std::string &db);
     void LoadPlugins();
 
+    std::string GetPluginErrors();
+
     int  ChangeDirectory(const std::string &dir);
     const std::string &GetCurrentWorkingDirectory() const;
 
@@ -191,6 +199,7 @@ private:
     ExpandPathRPC              *expandPathRPC;
     CloseDatabaseRPC           *closeDatabaseRPC;
     LoadPluginsRPC             *loadPluginsRPC;
+    GetPluginErrorsRPC         *getPluginErrorsRPC;
 
     // RPC Executors.
     QuitRPCExecutor            *quitExecutor;
@@ -205,6 +214,7 @@ private:
     ExpandPathRPCExecutor      *expandPathExecutor;
     CloseDatabaseRPCExecutor   *closeDatabaseExecutor;
     LoadPluginsRPCExecutor     *loadPluginsExecutor;
+    GetPluginErrorsRPCExecutor *getPluginErrorsRPCExecutor;
 
     // State information for the program using this MDServer.
     avtDatabaseMetaData        *currentMetaData;

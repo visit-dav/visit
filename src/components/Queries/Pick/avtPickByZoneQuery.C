@@ -5,6 +5,7 @@
 #include <avtPickByZoneQuery.h>
 
 #include <vtkCell.h>
+#include <vtkCellData.h>
 #include <vtkDataSet.h>
 #include <vtkFieldData.h>
 #include <vtkIntArray.h>
@@ -77,6 +78,10 @@ avtPickByZoneQuery::~avtPickByZoneQuery()
 //    Kathleen Bonnell, Wed Dec 15 17:24:27 PST 2004 
 //    Added logic to handle case when chosen zone is to be considered global.
 //
+//    Kathleen Bonnell, Tue Feb  8 08:29:44 PST 2005 
+//    Added test for presence of avtGlobalZoneNumbers array, create error
+//    message when not available but should be.
+//
 // ****************************************************************************
 
 void
@@ -91,6 +96,16 @@ avtPickByZoneQuery::Execute(vtkDataSet *ds, const int dom)
     {
         if (dom != pickAtts.GetDomain()) 
             return;
+    }
+    else if (ds->GetCellData()->GetArray("avtGlobalZoneNumbers") == NULL)
+    {
+        pickAtts.SetDomain(-1);
+        pickAtts.SetElementNumber(-1);
+        pickAtts.SetErrorMessage("Pick could not be performed because a global "
+                                 "zone id was specified for Pick but the mesh "
+                                 "does not contain global zone information.");
+        pickAtts.SetError(true);
+        return; 
     }
 
     int zoneid = userZoneId;

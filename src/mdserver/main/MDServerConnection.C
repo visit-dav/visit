@@ -38,6 +38,8 @@
 #include <GetFileListRPCExecutor.h>
 #include <GetMetaDataRPC.h>
 #include <GetMetaDataRPCExecutor.h>
+#include <GetPluginErrorsRPC.h>
+#include <GetPluginErrorsRPCExecutor.h>
 #include <GetSILRPC.h>
 #include <GetSILRPCExecutor.h>
 #include <KeepAliveRPC.h>
@@ -190,6 +192,9 @@ MDServerConnection::VirtualFileInformationMap MDServerConnection::virtualFiles;
 //    Brad Whitlock, Fri Feb 4 15:07:42 PST 2005
 //    I added filterList and extraSmartFileGrouping.
 //
+//    Jeremy Meredith, Tue Feb  8 08:48:34 PST 2005
+//    Added the ability to query for plugin initialization errors.
+//
 // ****************************************************************************
 
 MDServerConnection::MDServerConnection(int *argc, char **argv[])
@@ -260,6 +265,7 @@ MDServerConnection::MDServerConnection(int *argc, char **argv[])
     expandPathRPC = new ExpandPathRPC;
     closeDatabaseRPC = new CloseDatabaseRPC;
     loadPluginsRPC = new LoadPluginsRPC;
+    getPluginErrorsRPC = new GetPluginErrorsRPC;
 
     // Hook up the RPCs to the xfer object.
     xfer->Add(quitRPC);
@@ -274,6 +280,7 @@ MDServerConnection::MDServerConnection(int *argc, char **argv[])
     xfer->Add(expandPathRPC);
     xfer->Add(closeDatabaseRPC);
     xfer->Add(loadPluginsRPC);
+    xfer->Add(getPluginErrorsRPC);
 
     // Create the RPC Observers.
     quitExecutor = new QuitRPCExecutor(quitRPC);
@@ -289,6 +296,7 @@ MDServerConnection::MDServerConnection(int *argc, char **argv[])
     expandPathExecutor = new ExpandPathRPCExecutor(this, expandPathRPC);
     closeDatabaseExecutor = new CloseDatabaseRPCExecutor(this, closeDatabaseRPC);
     loadPluginsExecutor = new LoadPluginsRPCExecutor(this, loadPluginsRPC);
+    getPluginErrorsRPCExecutor = new GetPluginErrorsRPCExecutor(this, getPluginErrorsRPC);
 
     // Indicate that the file list is not valid since we have not read
     // one yet.
@@ -328,6 +336,9 @@ MDServerConnection::MDServerConnection(int *argc, char **argv[])
 //   Brad Whitlock, Fri Mar 12 10:19:42 PDT 2004
 //   I added KeepAliveRPC.
 //
+//   Jeremy Meredith, Tue Feb  8 08:48:34 PST 2005
+//   Added the ability to query for plugin initialization errors.
+//
 // ****************************************************************************
 
 MDServerConnection::~MDServerConnection()
@@ -345,6 +356,7 @@ MDServerConnection::~MDServerConnection()
     delete expandPathExecutor;
     delete closeDatabaseExecutor;
     delete loadPluginsExecutor;
+    delete getPluginErrorsRPCExecutor;
 
     // Delete the RPCs
     delete quitRPC;
@@ -359,6 +371,7 @@ MDServerConnection::~MDServerConnection()
     delete expandPathRPC;
     delete closeDatabaseRPC;
     delete loadPluginsRPC;
+    delete getPluginErrorsRPC;
 
     // Delete the database.
     if(currentDatabase)
@@ -472,7 +485,11 @@ MDServerConnection::GetWriteConnection() const
 // Creation:   Mon Jun 9 10:58:42 PDT 2003
 //
 // Modifications:
-//   
+//    Jeremy Meredith, Tue Feb  8 08:49:46 PST 2005
+//    Move the initialization of the plugins to the program initialization.
+//    It is the cheaper of the operations and guarantees that we can later
+//    query for their initialization errors and have a meaningful answer.
+//
 // ****************************************************************************
 
 void
@@ -481,11 +498,31 @@ MDServerConnection::LoadPlugins()
     if(!pluginsLoaded)
     {
         debug2 << "Loading plugins!" << endl;
-        DatabasePluginManager::Initialize(DatabasePluginManager::MDServer, false);
         DatabasePluginManager::Instance()->LoadPluginsNow();
         pluginsLoaded = true;
     }
 }
+
+
+// ****************************************************************************
+//  Method:  MDServerConnection::GetPluginErrors
+//
+//  Purpose:
+//    Query the plugin manager(s) for initialization errors.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    February  7, 2005
+//
+// ****************************************************************************
+std::string
+MDServerConnection::GetPluginErrors()
+{
+    return DatabasePluginManager::Instance()->GetPluginInitializationErrors();
+}
+
 
 // ****************************************************************************
 // Method: MDServerConnection::ReadMetaData

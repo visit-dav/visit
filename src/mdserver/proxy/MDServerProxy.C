@@ -112,6 +112,10 @@ MDServerProxy::GetComponentName() const
 //   Hank Childs, Thu Jan 22 21:02:56 PST 2004
 //   Added loadPluginsRPC.
 //
+//   Jeremy Meredith, Tue Feb  8 08:53:15 PST 2005
+//   Added the ability to query for errors detected during plugin
+//   initialization.
+//
 // ****************************************************************************
 
 void
@@ -130,6 +134,7 @@ MDServerProxy::SetupComponentRPCs()
     xfer.Add(&expandPathRPC);
     xfer.Add(&closeDatabaseRPC);
     xfer.Add(&loadPluginsRPC);
+    xfer.Add(&getPluginErrorsRPC);
 
     // Determine the separator to use in filenames.
     DetermineSeparator();
@@ -206,6 +211,25 @@ string
 MDServerProxy::GetDirectory()
 {
     return getDirectoryRPC();
+}
+
+// ****************************************************************************
+//  Method:  MDServerProxy::GetPluginErrors
+//
+//  Purpose:
+//    Returns the error string from plugin initialization.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    February  7, 2005
+//
+// ****************************************************************************
+std::string
+MDServerProxy::GetPluginErrors()
+{
+    return getPluginErrorsRPC();
 }
 
 // ****************************************************************************

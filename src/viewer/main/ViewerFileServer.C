@@ -2503,3 +2503,26 @@ ViewerFileServer::SetSimulationSILAtts(const std::string &host,
     }
     delete sil;
 }
+
+// ****************************************************************************
+//  Method:  ViewerFileServer::GetPluginErrors
+//
+//  Purpose:
+//    Gets the errors a particular mdserver found during plugin initialization.
+//
+//  Arguments:
+//    host       the host where the appropriate mdserver is running
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    February  7, 2005
+//
+// ****************************************************************************
+std::string
+ViewerFileServer::GetPluginErrors(const std::string &host)
+{
+    if(servers.find(host) != servers.end())
+    {
+        return servers[host]->proxy->GetPluginErrors();
+    }
+    return "";
+}

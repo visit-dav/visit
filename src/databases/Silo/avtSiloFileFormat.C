@@ -3349,6 +3349,9 @@ avtSiloFileFormat::GetPointVectorVar(DBfile *dbfile, const char *vname)
 //    Mark C. Miller, Mon Feb 23 12:02:24 PST 2004
 //    Changed call to OpenFile() to GetFile()
 //
+//    Kathleen Bonnell, Tue Feb  8 17:00:46 PST 2005 
+//    Added domain to args for GetQuadMesh. 
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -3433,7 +3436,7 @@ avtSiloFileFormat::GetMesh(int domain, const char *m)
     }
     else if (type == DB_QUADMESH || type == DB_QUAD_RECT || type==DB_QUAD_CURV)
     {
-        rv = GetQuadMesh(domain_file, directory_mesh);
+        rv = GetQuadMesh(domain_file, directory_mesh, domain);
     }
     else if (type == DB_POINTMESH)
     {
@@ -4298,6 +4301,7 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
 //  Arguments:
 //      dbfile   A handle to the file this variable lives in.
 //      mn       The mesh name.
+//      mn       The domain.
 //
 //  Returns:     The vtkDataSet corresponding to mn.
 //
@@ -4319,10 +4323,14 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
 //    Hank Childs, Tue Jun 25 16:29:12 PDT 2002
 //    Add the base indices as field data to the VTK dataset.
 //
+//    Kathleen Bonnell, Tue Feb  8 13:41:05 PST 2005 
+//    Added int arg for domain, to be used in retrieving connectivity extents
+//    for setting base_index when necessary. 
+//
 // ****************************************************************************
 
 vtkDataSet *
-avtSiloFileFormat::GetQuadMesh(DBfile *dbfile, const char *mn)
+avtSiloFileFormat::GetQuadMesh(DBfile *dbfile, const char *mn, int domain)
 {
     //
     // It's ridiculous, but Silo does not have all of the `const's in their
@@ -4363,6 +4371,31 @@ avtSiloFileFormat::GetQuadMesh(DBfile *dbfile, const char *mn)
     arr->SetValue(1, qm->base_index[1]);
     arr->SetValue(2, qm->base_index[2]);
     arr->SetName("base_index");
+
+    //
+    //  If we're not really sure that the base_index was set in the file,
+    //  check for connectivity info.
+    //
+    if (qm->base_index[0] == 0 &&
+        qm->base_index[1] == 0 &&
+        qm->base_index[2] == 0) 
+    {
+        void_ref_ptr vr = cache->GetVoidRef("any_mesh",
+                        AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION, -1, -1);
+        if (*vr != NULL)
+        {
+            avtStructuredDomainBoundaries *dbi = 
+                (avtStructuredDomainBoundaries*)*vr;
+            if (dbi != NULL)
+            {
+                int ext[6];
+                dbi->GetExtents(domain, ext);
+                arr->SetValue(0, ext[0]);
+                arr->SetValue(1, ext[2]);
+                arr->SetValue(2, ext[4]); 
+            }
+        }
+    }
     ds->GetFieldData()->AddArray(arr);
     arr->Delete();
 

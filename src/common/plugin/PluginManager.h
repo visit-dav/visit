@@ -37,6 +37,13 @@
 //    Jeremy Meredith, Wed Nov  5 13:48:58 PST 2003
 //    Added ability to check if a plugin is enabled (by id).
 //
+//    Jeremy Meredith, Mon Feb  7 18:55:26 PST 2005
+//    Added ability to check if any errors were generated when
+//    the plugins were initialized.  Right now it is only used
+//    for detecting incompatible versions.  Also, added ability
+//    for PluginSymbol to not print an error if requested to be
+//    silent about such things.
+//
 // ****************************************************************************
 
 class PLUGIN_API PluginManager
@@ -82,6 +89,8 @@ class PLUGIN_API PluginManager
     std::string                     GetEnabledID(const int) const;
     int                             GetEnabledIndex(const std::string &);
 
+    std::string                     GetPluginInitializationErrors();
+
   protected:
                                     PluginManager(const std::string&);
     void                            ReadPluginInfo();
@@ -96,7 +105,7 @@ class PLUGIN_API PluginManager
 
     bool                            PluginLoaded(const std::string&);
     void                            PluginOpen(const std::string &pluginFile);
-    void                           *PluginSymbol(const std::string &symbol);
+    void                           *PluginSymbol(const std::string &symbol,bool ne=false);
     char                           *PluginError() const;
     void                            PluginClose();
 
@@ -139,6 +148,9 @@ class PLUGIN_API PluginManager
     // arrays containing enabled plugins
     std::vector<void*>                      loadedhandles;
     std::vector<std::string>                loadedids;
+
+    // accumlated plugin initialization errors
+    std::string                             pluginInitErrors;
 };
 
 #endif

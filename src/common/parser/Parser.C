@@ -81,6 +81,9 @@ Parser::Shift(Token *t, int s)
 //    Jeremy Meredith, Wed Nov 24 09:02:32 PST 2004
 //    Added list of tokens.  Also, significant refactoring.
 //
+//    Hank Childs, Fri Jan 28 13:19:33 PST 2005
+//    Use exception macros.
+//
 // ****************************************************************************
 void
 Parser::Reduce(int r)
@@ -111,7 +114,7 @@ Parser::Reduce(int r)
 
     if (!node)
     {
-        throw UnhandledReductionException(p, rule);
+        EXCEPTION2(UnhandledReductionException, p, rule);
     }
 
     node->GetPos().Join(p);
@@ -177,6 +180,9 @@ Parser::PrintState(ostream &o)
 //    Added list of allowed tokens to the error message.  Did not yet
 //    enable it by default because it may be exposing the guts too much.
 //
+//    Hank Childs, Fri Jan 28 13:19:33 PST 2005
+//    Use exception macros.
+//
 // ****************************************************************************
 void
 Parser::ParseOneToken(Token *t)
@@ -203,7 +209,9 @@ Parser::ParseOneToken(Token *t)
     else
     {
         if (t->GetType() == EOF_TOKEN_ID)
-            throw UnexpectedEndException(t->GetPos());
+        {
+            EXCEPTION1(UnexpectedEndException, t->GetPos());
+        }
         else
         {
 #ifdef DEBUG
@@ -217,9 +225,9 @@ Parser::ParseOneToken(Token *t)
             {
                 allowed += it->first->GetDisplayString() + " ";
             }
-            throw SyntacticException(t->GetPos(), allowed);
+            EXCEPTION2(SyntacticException, t->GetPos(), allowed);
 #else
-            throw SyntacticException(t->GetPos());
+            EXCEPTION1(SyntacticException, t->GetPos());
 #endif
         }
     }

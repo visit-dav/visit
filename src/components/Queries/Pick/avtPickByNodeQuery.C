@@ -6,6 +6,7 @@
 
 #include <vtkDataSet.h>
 #include <vtkFieldData.h>
+#include <vtkPointData.h>
 #include <vtkPoints.h>
 #include <vtkIntArray.h>
 #include <vtkVisItUtility.h>
@@ -76,6 +77,10 @@ avtPickByNodeQuery::~avtPickByNodeQuery()
 //    Added early return when DB should determine local id from global, and 
 //    pickAtts not fulfilled when returned from the query.
 //
+//    Kathleen Bonnell, Tue Feb  8 08:29:44 PST 2005 
+//    Added test for presence of avtGlobalNodeNumbers array, create error
+//    message when not available but should be.
+//
 // ****************************************************************************
 
 void
@@ -90,6 +95,16 @@ avtPickByNodeQuery::Execute(vtkDataSet *ds, const int dom)
     {
         if (dom != pickAtts.GetDomain())
             return;
+    }
+    else if (ds->GetPointData()->GetArray("avtGlobalNodeNumbers") == NULL)
+    {
+        pickAtts.SetDomain(-1);
+        pickAtts.SetElementNumber(-1);
+        pickAtts.SetErrorMessage("Pick could not be performed because a global "
+                                 "node id was specified for Pick but the mesh "
+                                 "does not contain global node information.");
+        pickAtts.SetError(true);
+        return; 
     }
 
     int nodeid = pickAtts.GetElementNumber();

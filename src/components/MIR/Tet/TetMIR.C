@@ -337,6 +337,9 @@ TetMIR::~TetMIR()
 //    Removed support for clean-zones-only.  Leaving it in would have required
 //    more maintenance to this class than we would like to support.
 //
+//    Hank Childs, Fri Jan 28 15:39:23 PST 2005
+//    Use exception macros.
+//
 // ****************************************************************************
 bool
 TetMIR::Reconstruct3DMesh(vtkDataSet *mesh, avtMaterial *mat_orig)
@@ -617,6 +620,9 @@ TetMIR::Reconstruct3DMesh(vtkDataSet *mesh, avtMaterial *mat_orig)
 //    Jeremy Meredith, Wed Oct 15 16:49:47 PDT 2003
 //    Removed support for clean-zones-only.  Leaving it in would have required
 //    more maintenance to this class than we would like to support.
+//
+//    Hank Childs, Fri Jan 28 15:36:03 PST 2005
+//    Use exception macros.
 //
 // ****************************************************************************
 bool
@@ -1923,6 +1929,9 @@ TetMIR::ReconstructCleanTri(int matno, int c, int npts, const int *c_ptr,
 //    Jeremy Meredith, Tue Jan 14 14:38:37 PST 2003
 //    Simplified the logic.  The assertion was never called.
 //
+//    Hank Childs, Fri Jan 28 15:36:03 PST 2005
+//    Use exception macros.
+//
 // ****************************************************************************
 static double
 FindIntersect(double a1, double b1, double a2, double b2)
@@ -1932,7 +1941,7 @@ FindIntersect(double a1, double b1, double a2, double b2)
     double c;
 
     if (s2==s1)       /* parallel */
-        throw;
+        EXCEPTION0(VisItException)
     else if (a1==a2)  /* meet at c=0 */
         return 0;
     else if (b1==b2)  /* meet at c=1 */
@@ -1999,6 +2008,9 @@ FindIntersect(double a1, double b1, double a2, double b2)
 //    Jeremy Meredith, Tue Jan 14 14:37:46 PST 2003
 //    Leave any created wedges whole.  We will split them into tets only if
 //    they need to be.
+//
+//    Hank Childs, Fri Jan 28 15:36:03 PST 2005
+//    Use exception macros.
 //
 // ****************************************************************************
 void
@@ -2147,7 +2159,7 @@ TetMIR::MergeTetsHelper(TetList &tetlist, WedgeList &wedgelist,
     else
     {
         // Internal Error in MergeTetsHelper() 
-        throw;
+        EXCEPTION0(VisItException);
     }
 
 }
@@ -2191,6 +2203,9 @@ TetMIR::MergeTetsHelper(TetList &tetlist, WedgeList &wedgelist,
 //    Jeremy Meredith, Wed Dec 11 10:10:31 PST 2002
 //    Added a "forced material" where if it is >=0, any added tet will have
 //    the forced material instead of the normal requested material.
+//
+//    Hank Childs, Fri Jan 28 15:36:03 PST 2005
+//    Use exception macros.
 //
 // ****************************************************************************
 void
@@ -2282,7 +2297,7 @@ TetMIR::MergeTrisHelper(TriList &trilist, int c, int npts, const int *c_ptr,
     else
     {
         // Internal Error in MergeTrisHelper() 
-        throw;
+        EXCEPTION0(VisItException);
     }
 }
 

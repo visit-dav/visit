@@ -137,6 +137,11 @@ FinalizeHDF5(void)
 //  Programmer:  Mark C. Miller 
 //  Creation:    July 14, 2004 
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Jan 28 13:38:43 PST 2005
+//    Add CATCH_RETURN.
+//
 // ****************************************************************************
 avtFileFormatInterface *
 avtVistaFileFormat::CreateFileFormatInterface(const char *const *list, int nList)
@@ -152,7 +157,7 @@ avtVistaFileFormat::CreateFileFormatInterface(const char *const *list, int nList
             vff = new avtVistaFileFormat(list[0]);
 
             if (vff == 0)
-                return 0;
+                CATCH_RETURN2(1, 0);
 
             switch (vff->GetFormatType())
             {

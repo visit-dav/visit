@@ -454,6 +454,9 @@ avtExpressionEvaluatorFilter::PerformRestriction(
 //    Kathleen Bonnell, Thu Apr 22 14:42:38 PDT 2004
 //    Moved code to new pipelineState method.
 //  
+//    Hank Childs, Mon Feb  7 16:41:36 PST 2005
+//    Fix memory leak.
+//
 // ****************************************************************************
 
 void
@@ -461,6 +464,11 @@ avtExpressionEvaluatorFilter::ReleaseData(void)
 {
     avtDatasetToDatasetFilter::ReleaseData();
     pipelineState.ReleaseData();
+    if (termsrc != NULL)
+    {
+        delete termsrc;
+        termsrc = NULL;
+    }
 }
 
 // ****************************************************************************

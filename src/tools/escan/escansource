@@ -1,51 +1,70 @@
 #!/bin/csh -f
+#
+#  Modifications:
+#
+#    Hank Childs, Fri Jan 28 13:17:16 PST 2005
+#    Updated directories.
+#
+# ****************************************************************************
 
 set VISITDIR = "/data_vobs/VisIt"
 
+echo ""
+echo "escansource will issue warnings for the following known spots:"
+echo ""
+echo "     VisItException.C (necessarily has throw/try/catch)"
+echo "     NetworkManager.C (does not use CATCH2 to avoid compiler bug)"
+echo "     FileServerList.C (uses macro that confuses escan)"
+echo "     PyVolumeAttributes.C forces the warning:"
+echo "           Input string too long, limit 1024"
+echo ""
+echo ""
+
 escan $VISITDIR/common/comm/*.C
+escan $VISITDIR/common/expr/*.C
 escan $VISITDIR/common/misc/*.C
 escan $VISITDIR/common/parser/*.C
 escan $VISITDIR/common/plugin/*.C
+escan $VISITDIR/common/proxybase/*.C
 escan $VISITDIR/common/siloobj/*.C
 escan $VISITDIR/common/siloobj_vtk_db/*.C
 escan $VISITDIR/common/state/*.C
 escan $VISITDIR/common/utility/*.C
-escan $VISITDIR/common/winutil/*.C
-escan $VISITDIR/components/DBAtts/*.C
+escan $VISITDIR/common/Exceptions/Database/*.C
+escan $VISITDIR/common/Exceptions/Pipeline/*.C
+escan $VISITDIR/common/Exceptions/Plotter/*.C
+escan $VISITDIR/common/Exceptions/VisWindow/*.C
 escan $VISITDIR/components/DBAtts/MetaData/*.C
 escan $VISITDIR/components/DBAtts/SIL/*.C
-escan $VISITDIR/components/Database/*.C
 escan $VISITDIR/components/Database/Database/*.C
 escan $VISITDIR/components/Database/Formats/*.C
 escan $VISITDIR/components/Database/Ghost/*.C
-escan $VISITDIR/components/Exceptions/*.C
-escan $VISITDIR/components/Exceptions/Database/*.C
-escan $VISITDIR/components/Exceptions/Pipeline/*.C
-escan $VISITDIR/components/Exceptions/VisWindow/*.C
-escan $VISITDIR/components/Expressions/*.C
 escan $VISITDIR/components/Expressions/Abstract/*.C
 escan $VISITDIR/components/Expressions/Conditional/*.C
+escan $VISITDIR/components/Expressions/Derivations/*.C
 escan $VISITDIR/components/Expressions/General/*.C
 escan $VISITDIR/components/Expressions/Management/*.C
 escan $VISITDIR/components/Expressions/Math/*.C
 escan $VISITDIR/components/Expressions/MeshQuality/*.C
+escan $VISITDIR/components/FileWriter/*.C
+escan $VISITDIR/components/Filters/*.C
 escan $VISITDIR/components/Math/*.C
 escan $VISITDIR/components/MIR/Base/*.C
 escan $VISITDIR/components/MIR/Tet/*.C
 escan $VISITDIR/components/MIR/Zoo/*.C
-escan $VISITDIR/components/Pipeline/*.C
 escan $VISITDIR/components/Pipeline/Data/*.C
 escan $VISITDIR/components/Pipeline/Pipeline/*.C
 escan $VISITDIR/components/Pipeline/PrivateFilters/*.C
-escan $VISITDIR/components/Pipeline/PublicFilters/*.C
 escan $VISITDIR/components/Pipeline/Sinks/*.C
 escan $VISITDIR/components/Pipeline/Sources/*.C
 escan $VISITDIR/components/Plotter/*.C
 escan $VISITDIR/components/Preprocessor/*.C
-escan $VISITDIR/components/Queries/*.C
+escan $VISITDIR/components/QtVisWindow/*.C
 escan $VISITDIR/components/Queries/Abstract/*.C
+escan $VISITDIR/components/Queries/Misc/*.C
+escan $VISITDIR/components/Queries/Pick/*.C
 escan $VISITDIR/components/Queries/Queries/*.C
-escan $VISITDIR/components/VisWindow/*.C
+escan $VISITDIR/components/View/*.C
 escan $VISITDIR/components/VisWindow/Colleagues/*.C
 escan $VISITDIR/components/VisWindow/Interactors/*.C
 escan $VISITDIR/components/VisWindow/Proxies/*.C
@@ -56,15 +75,22 @@ escan $VISITDIR/engine/parstate/*.C
 escan $VISITDIR/engine/proxy/*.C
 escan $VISITDIR/engine/rpc/*.C
 escan $VISITDIR/gui/*.C
+escan $VISITDIR/launcher/main/*.C
+escan $VISITDIR/launcher/proxy/*.C
+escan $VISITDIR/launcher/rpc/*.C
 escan $VISITDIR/mdserver/main/*.C
 escan $VISITDIR/mdserver/proxy/*.C
 escan $VISITDIR/mdserver/rpc/*.C
 escan $VISITDIR/viewer/main/*.C
 escan $VISITDIR/viewer/proxy/*.C
 escan $VISITDIR/viewer/rpc/*.C
-escan $VISITDIR/visit_vtk/*.C
+escan $VISITDIR/visit_vtk/full/*.C
+escan $VISITDIR/visit_vtk/lightweight/*.C
+escan $VISITDIR/visit_vtk/parallel/*.C
+escan $VISITDIR/visit_vtk/sl_io/*.C
 escan $VISITDIR/visitpy/*.C
 escan $VISITDIR/vtkqt/*.C
+escan $VISITDIR/winutil/*.C
 escan $VISITDIR/databases/*/*.C
 escan $VISITDIR/operators/*/*.C
 escan $VISITDIR/plots/*/*.C

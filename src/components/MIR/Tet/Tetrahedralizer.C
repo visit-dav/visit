@@ -1,6 +1,7 @@
 #include "Tetrahedralizer.h"
 #include "mat3d_tet.h"
 #include <vtkCell.h>
+#include <VisItException.h>
 
 #include <vector>
 using std::vector;
@@ -620,6 +621,9 @@ Tetrahedralizer::fill_tets_low()
 //    Hank Childs, Mon Oct  7 17:43:41 PDT 2002 
 //    Remove costly VTK calls.
 //
+//    Hank Childs, Fri Jan 28 15:43:04 PST 2005
+//    Use exception macros.
+//
 // ****************************************************************************
 void
 Tetrahedralizer::Tetrahedralize(MIROptions::SubdivisionLevel s, int celltype,
@@ -648,7 +652,7 @@ Tetrahedralizer::Tetrahedralize(MIROptions::SubdivisionLevel s, int celltype,
           case VTK_HEXAHEDRON:  calc_hex_low();   break;
           case VTK_WEDGE:       calc_wdg_low();   break;
           case VTK_PYRAMID:     calc_pyr_low();   break;
-          default:              throw;
+          default:              EXCEPTION0(VisItException);
         }
         break;
       case MIROptions::Med:
@@ -663,7 +667,7 @@ Tetrahedralizer::Tetrahedralize(MIROptions::SubdivisionLevel s, int celltype,
           case VTK_HEXAHEDRON:  ntet = 24;     break;
           case VTK_WEDGE:       ntet = 18;     break;
           case VTK_PYRAMID:     ntet = 13;     break;
-          default:              throw;
+          default:              EXCEPTION0(VisItException);
         }
         break;
       case MIROptions::High:
@@ -678,10 +682,10 @@ Tetrahedralizer::Tetrahedralize(MIROptions::SubdivisionLevel s, int celltype,
           case VTK_HEXAHEDRON:  ntet = 48;     break;
           case VTK_WEDGE:       ntet = 36;     break;
           case VTK_PYRAMID:     ntet = 26;     break;
-          default:              throw;
+          default:              EXCEPTION0(VisItException);
         }
         break;
       default:
-        throw;
+        EXCEPTION0(VisItException);
     }
 }

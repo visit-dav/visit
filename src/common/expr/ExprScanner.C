@@ -154,7 +154,7 @@ ExprScanner::GetAcceptToken(const Pos &pos, const std::string &parsed, int state
       case 12:
         return new Space(pos, parsed);
     }
-    throw LexicalException(pos);    
+    EXCEPTION1(LexicalException, pos);    
 }
 
 // ****************************************************************************
@@ -270,9 +270,9 @@ ExprScanner::ScanOneToken()
             if (lastacceptstate == -1)
             {
                 if (lookahead == 0)
-                    throw UnexpectedEndException(pos);
+                    EXCEPTION1(UnexpectedEndException, pos)
                 else
-                    throw LexicalException(pos);
+                    EXCEPTION1(LexicalException, pos);
             }
 
             UpdateScanState(lastacceptstring);

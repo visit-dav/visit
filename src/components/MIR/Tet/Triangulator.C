@@ -1,6 +1,7 @@
 #include "Triangulator.h"
 #include <vector>
 #include <vtkCell.h>
+#include <VisItException.h>
 using std::vector;
 
 
@@ -246,6 +247,9 @@ Triangulator::calc_poly_high()
 //    Jeremy Meredith, Fri Aug 30 17:03:24 PDT 2002
 //    Moved nmat into constructor.
 //
+//    Hank Childs, Fri Jan 28 15:43:04 PST 2005
+//    Use expression macros.
+//
 // ****************************************************************************
 void
 Triangulator::Triangulate(MIROptions::SubdivisionLevel s, int ct, int np,
@@ -275,7 +279,7 @@ Triangulator::Triangulate(MIROptions::SubdivisionLevel s, int ct, int np,
         calc_poly_high();
         break;
       default:
-        throw;
+        EXCEPTION0(VisItException);
     }
 
     // these are the basic types of 2d zones in case we need to split them:
@@ -288,7 +292,7 @@ Triangulator::Triangulate(MIROptions::SubdivisionLevel s, int ct, int np,
           case VTK_QUAD:       calc_poly_low;     break;
           case VTK_POLYGON:    calc_poly_low;     break;
           case VTK_PIXEL:      calc_pixel_low;    break;
-          default:             throw;
+          default:             EXCEPTION0(VisItException);
         }
         break;
       case MIR::Med:
@@ -297,7 +301,7 @@ Triangulator::Triangulate(MIROptions::SubdivisionLevel s, int ct, int np,
           case VTK_QUAD:       calc_poly_med;     break;
           case VTK_POLYGON:    calc_poly_med;     break;
           case VTK_PIXEL:      calc_pixel_med;    break;
-          default:             throw;
+          default:             EXCEPTION0(VisItException);
         }
         break;
       case MIR::High:
@@ -306,11 +310,11 @@ Triangulator::Triangulate(MIROptions::SubdivisionLevel s, int ct, int np,
           case VTK_QUAD:       calc_poly_high;    break;
           case VTK_POLYGON:    calc_poly_high;    break;
           case VTK_PIXEL:      calc_pixel_high;   break;
-          default:             throw;
+          default:             EXCEPTION0(VisItException);
         }
         break;
       default:
-        throw;
+        EXCEPTION0(VisItException);
     }
     */
 }
