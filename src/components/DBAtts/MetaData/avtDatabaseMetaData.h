@@ -219,7 +219,7 @@ struct DBATTS_API avtSILCollectionMetaData : public AttributeSubject
    int                                 collectionIdOfParent;
    int                                 indexOfParent;
    int                                 collectionIdOfChildren;
-   vector<int>                         indicesOfChildren;
+   intVector                           indicesOfChildren;
 
 public:
     typedef enum { 

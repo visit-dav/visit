@@ -17,7 +17,7 @@ Unix:
 
     where
 
-        "version" will be 1.2.1 for the current distribution.
+        "version" will be 1.2.2 for the current distribution.
 
         "platform" will be one of the following:  aix, irix6, linux, osf1,
         or sunos5 depending on the machine.  The one you use should match
@@ -28,17 +28,17 @@ Unix:
 
     For example
 
-        visit-install 1.2.1 irix6 /usr/local/visit
+        visit-install 1.2.2 irix6 /usr/local/visit
 
-    will install the irix6, 1.2.1 version of visit in the directory
+    will install the irix6, 1.2.2 version of visit in the directory
     "/usr/local/visit".  Note that you will need to have the file
-    "visit1_2_1.irix6.tar.gz" present in the current directory for this
+    "visit1_2_2.irix6.tar.gz" present in the current directory for this
     to function properly.  You can install multiple binaries into the
     same directory.  For example, you could then execute
 
-        visit-install -a 1.2.1 linux /usr/local/visit
+        visit-install -a 1.2.2 linux /usr/local/visit
 
-    to add a linux, 1.2.1 version of visit to the same directory.
+    to add a linux, 1.2.2 version of visit to the same directory.
 
 2.  Add the bin directory below the installation directory
     (/usr/local/visit/bin in our example) to each user's search path.
@@ -76,15 +76,15 @@ Unix:
 
 Windows:
 
-1.  Copy the file visit1.2.1.exe to your desktop.
+1.  Copy the file visit1.2.2.exe to your desktop.
 
-2.  Right click on the visit1.2.1.exe icon using your mouse and selecting
-    "Extract to folder C:\...\Desktop\visit1.2.1" from the popup menu.  A
+2.  Right click on the visit1.2.2.exe icon using your mouse and selecting
+    "Extract to folder C:\...\Desktop\visit1.2.2" from the popup menu.  A
     window will popup as the file is extracted into the directory.  Once
-    the process is complete a "visit1.2.1" directory icon should appear on
+    the process is complete a "visit1.2.2" directory icon should appear on
     your desktop.
 
-3.  Double click on the "visit1.2.1" directory icon bringing up a file
+3.  Double click on the "visit1.2.2" directory icon bringing up a file
     system browsing window.
 
 4.  Double click on the SETUP icon with the computer display icon to run

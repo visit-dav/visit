@@ -2,9 +2,6 @@
 //                               avtSILGenerator.C                           //
 // ************************************************************************* //
 
-using std::string;
-using std::vector;
-
 #include <avtSILGenerator.h>
 
 #include <stdio.h>
@@ -15,6 +12,10 @@ using std::vector;
 
 #include <ImproperUseException.h>
 
+using std::string;
+using std::vector;
+
+// Prototypes
 static int GroupSorter(const void *, const void *);
 static SILCategoryRole CategoryFromCollectionClassName(string classStr);
 
