@@ -20,6 +20,7 @@
 #include <avtGhostData.h>
 #include <avtMaterial.h>
 #include <avtMixedVariable.h>
+#include <avtVariableCache.h>
 
 #include <DebugStream.h>
 #include <snprintf.h>
@@ -54,6 +55,9 @@ const int PP_ZFileReader::revolutionSteps = 40 + 1;
 //   Added nMaterials, assumeMixedMaterialsPresent, nodalVars, and the new
 //   cache pointer to the argument list.
 //
+//   Brad Whitlock, Mon Dec 6 16:52:29 PST 2004
+//   Initialize cache pointer.
+//
 // ****************************************************************************
 
 PP_ZFileReader::PP_ZFileReader(const char *filename) :
@@ -73,6 +77,7 @@ PP_ZFileReader::PP_ZFileReader(const char *filename) :
     formatIdentified = false;
     initialized = false;
     varStorageInitialized = false;
+    cache = 0;
 }
 
 PP_ZFileReader::PP_ZFileReader(PDBFileObject *pdb) :
@@ -92,6 +97,7 @@ PP_ZFileReader::PP_ZFileReader(PDBFileObject *pdb) :
     formatIdentified = false;
     initialized = false;
     varStorageInitialized = false;
+    cache = 0;
 }
 
 // ****************************************************************************
@@ -240,6 +246,29 @@ PP_ZFileReader::GetTimes()
 {
     Initialize();
     return times;
+}
+
+// ****************************************************************************
+// Method: PP_ZFileReader::SetCache
+//
+// Purpose: 
+//   Sets the internal cache pointer so the reader can access the generic
+//   database's variable cache.
+//
+// Arguments:
+//   c : The cache pointer.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Dec 6 18:09:18 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+PP_ZFileReader::SetCache(avtVariableCache *c)
+{
+    cache = c;
 }
 
 // ****************************************************************************
@@ -1976,7 +2005,11 @@ PP_ZFileReader::ConstructRayMesh(int state, bool is3d)
 // Creation:   Thu Jun 26 16:06:40 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Dec 7 16:14:04 PST 2004
+//   I put in code to convert double data to float to avoid trouble in more
+//   frail pieces of the VisIt pipeline. Undo this change if we ever handle
+//   the data using whatever type the user provided.
+//
 // ****************************************************************************
 
 void
@@ -1992,11 +2025,108 @@ PP_ZFileReader::ReadVariable(const std::string &varStr)
             varStorage.erase(pos);
             EXCEPTION1(InvalidVariableException, varStr);
         }
+
+#if 1
+        //
+        // This plugin handles doubles but many parts of VisIt do not
+        // due to some "optimizations". To prevent this plugin from
+        // causing VisIt to mess up later, we're now converting double
+        // data to float. This will temporarily render some of the
+        // explicit double coding in this plugin dead but it may be
+        // possible to remove this code here someday.
+        //
+        if(pos->second->dataType == DOUBLEARRAY_TYPE)
+        {
+            int n = pos->second->nTotalElements;
+            float *fdata = new float[n];
+            float *dest = fdata;
+            const double *src = (const double *)pos->second->data;
+            for(int i = 0; i < n; ++i)
+                *dest++ = float(*src++);
+            free_void_mem(pos->second->data, DOUBLEARRAY_TYPE);
+            pos->second->data = (void *)fdata;
+            pos->second->dataType = FLOATARRAY_TYPE;
+        }
+#endif
+
     }
     else
     {
         EXCEPTION1(InvalidVariableException, varStr);
     }
+}
+
+// ****************************************************************************
+// Function: GetMixArray
+//
+// Purpose: 
+//   This is a template helper function for the ReadMixvarAndCache method. It
+//   traverses the mixvar data just as the volume fractions array would be
+//   traversed so that we create an array that is the same "shape" as the
+//   volume fraction array.
+//
+// Arguments:
+//   ireg   : Material numbers for the mesh.
+//   ilamm  : Mixed material indexing array,
+//   nummm  : Number of materials per cell for the mesh.
+//   varmm  : Mixvar array.
+//   kmax   : Cells in x.
+//   lmax   : Cells in y;
+//   mixlen : The length of the returned array.
+//
+// Returns:    Float array containing the mixvar data.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Dec 6 18:02:28 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+template <class T>
+float *
+GetMixArray(const int *ireg, const int *ilamm, const int *nummm,
+    const T *varmm, int kmax, int lmax, int &mixlen)
+{
+    int arraySize = kmax * lmax / 2;
+    float *mixout = new float[arraySize];
+    mixlen = 0;
+
+    for(int j = 1; j < lmax; ++j)
+    {
+        const int *nummm_row = nummm + j * kmax;
+        const int *ireg_row = ireg + j * kmax;
+        const int *ilamm_row = ilamm + j * 2 * kmax;
+        for(int i = 1; i < kmax; ++i)
+        {
+            int nMatsInCell = nummm_row[i];
+            if(ireg_row[i] >= 1 && nMatsInCell != 0)
+            {
+                // Resize the mixout array.
+                if(mixlen + nMatsInCell >= arraySize)
+                {
+                    int newSize = arraySize * 3 / 2; 
+                    float *newData = new float[newSize];
+                    float *src = mixout, *dest = newData;
+                    for(int index = 0; index < mixlen; ++index)
+                        *dest++ = *src++;
+                    delete [] mixout;
+                    mixout = newData;
+                    arraySize = newSize;
+                }
+
+                // Copy the data into the mixout array.
+                int minIndex = ilamm_row[2 * i] - 1;
+                const T *src = varmm + minIndex;
+                for(int index = 0; index < nMatsInCell; ++index)
+                    mixout[mixlen++] = float(*src++);
+            }
+        }
+    }
+
+    return mixout;
 }
 
 // ****************************************************************************
@@ -2007,8 +2137,11 @@ PP_ZFileReader::ReadVariable(const std::string &varStr)
 //   database's variable cache.
 //
 // Arguments:
-//   varStr : The name of the variable for which we want a mixed var array.
-//   state  : The timestate that we want.
+//   varStr  : The name of the variable for which we want a mixed var array.
+//             The variable name is the name of the variable in the file
+//             without the suffix.
+//   realVar : The advertised name of the variable (as in the metadata).
+//   state   : The timestate that we want.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Aug 7 16:41:51 PST 2003
@@ -2017,20 +2150,28 @@ PP_ZFileReader::ReadVariable(const std::string &varStr)
 //   Brad Whitlock, Mon Jun 7 09:47:10 PDT 2004
 //   Added support for float arrays.
 //
+//   Brad Whitlock, Mon Dec 6 17:49:05 PST 2004
+//   Changed the code so it works and removed the conditional compilation.
+//
 // ****************************************************************************
 
 void
-PP_ZFileReader::ReadMixvarAndCache(const std::string &varStr, int state)
+PP_ZFileReader::ReadMixvarAndCache(const std::string &varStr,
+    const std::string &realVar, int state)
 {
-// Disable mixvars for now.
-#if 0
-    VariableData *data = varStorage[varStr];
+    const char *mName = "PP_ZFileReader::ReadMixvarAndCache: ";
+    if(!assumeMixedMaterialsPresent)
+    {
+        debug4 << mName << "Returning because there is no evidence "
+               << "of mixed materials." << endl;
+    }
 
+    VariableData *data = varStorage[varStr];
     std::string suffix(data->varName.substr(varStr.size()));
     std::string mixedVar(varStr + "mm");
     std::string mixedVarWithSuffix(mixedVar + suffix);
 
-    if(SymbolExists(mixedVarWithSuffix.c_str()))
+    if(pdb->SymbolExists(mixedVarWithSuffix.c_str()))
     {
         //
         // If the mixedVar is not cached, add an empty cache entry.
@@ -2039,7 +2180,27 @@ PP_ZFileReader::ReadMixvarAndCache(const std::string &varStr, int state)
         {
             VariableData *v = new VariableData(mixedVarWithSuffix);
             varStorage[mixedVar] = v;
+            debug4 << mName << "Added an empty entry in varStorage for "
+                   << mixedVar << " since it was not already in the map."
+                   << endl;
         }
+
+        //
+        // Try and read in required material vars.
+        //
+        TRY
+        {
+            ReadVariable("nummm");
+            ReadVariable("ilamm");
+            ReadVariable("ireg");
+        }
+        CATCH(InvalidVariableException)
+        {
+            debug4 << "Could not read required mixed material arrays." << endl;
+            assumeMixedMaterialsPresent = false;
+            CATCH_RETURN();
+        }
+        ENDTRY
 
         TRY
         {
@@ -2048,65 +2209,108 @@ PP_ZFileReader::ReadMixvarAndCache(const std::string &varStr, int state)
             //
             ReadVariable(mixedVar);
 
-            //
-            // Translate the variable into a float array.
-            //
-            data = varStorage[mixedVar];
-            float *mixvar = new float[data->nTotalElements];
-            if(data->dataType == INTEGERARRAY_TYPE)
+            VariableData *ilamm_data = varStorage["ilamm"];
+            VariableData *nummm_data = varStorage["nummm"];
+            VariableData *ireg_data = varStorage["ireg"];
+            
+            if(ilamm_data->dataType == INTEGERARRAY_TYPE &&
+               nummm_data->dataType == INTEGERARRAY_TYPE &&
+               ireg_data->dataType == INTEGERARRAY_TYPE)
             {
-                const int *iptr = (const int *)data->data;
-                for(int i = 0; i < data->nTotalElements; ++i)
-                    mixvar[i] = float(iptr[i]);
-            }
-            else if(data->dataType == DOUBLEARRAY_TYPE)
-            {
-                const double *iptr = (const double *)data->data;
-                for(int i = 0; i < data->nTotalElements; ++i)
-                    mixvar[i] = float(iptr[i]);
-            }
-            else if(data->dataType == FLOATARRAY_TYPE)
-            {
-                const float *fptr = (const float *)data->data;
-                for(int i = 0; i < data->nTotalElements; ++i)
-                    mixvar[i] = float(fptr[i]);
+                // Get a pointers to data at the right time state.
+                int nnodes = kmax * lmax;
+                const int *ireg = (const int *)data->data;
+                ireg += ((state < nCycles) ? (state * nnodes) : 0);
+
+                const int *nummm = (const int *)nummm_data->data;
+                nummm += ((state < nCycles) ? (state * nnodes) : 0);
+
+                const int *ilamm = (const int *)ilamm_data->data;
+                ilamm += ((state < nCycles) ? (state * 2 * nnodes) : 0);
+
+                //
+                // Get the mixvar array.
+                //
+                int mixlen = 0;
+                float *mixvar = 0;
+                VariableData *varmm_data = varStorage[mixedVar];
+                int mixOffset = 0;
+                if(varmm_data->nDims > 1)
+                {
+                    mixOffset = varmm_data->dims[0];
+                    debug4 << mixedVar.c_str() << "'s dims={";
+                    for(int q = 0; q < varmm_data->nDims; ++q)
+                        debug4 << varmm_data->dims[q] << ", ";
+                    debug4 << "}" << endl;
+                    debug4 << "mixOffset for " << mixedVar.c_str()
+                           << "to be: " << mixOffset << endl;
+                }
+                else
+                {
+                    mixOffset = varmm_data->nTotalElements / nCycles;
+                    debug4 << "Guessed mixOffset for " << mixedVar.c_str()
+                           << "to be: " << mixOffset << endl;
+                }
+
+                if(varmm_data->dataType == FLOATARRAY_TYPE)
+                {
+                    const float *varmm = (const float *)varmm_data->data;
+                    varmm += ((state < nCycles) ? (state * mixOffset) : 0);
+                    mixvar = GetMixArray(ireg, ilamm, nummm, varmm,
+                        kmax, lmax, mixlen);
+                }
+                else if(varmm_data->dataType == DOUBLEARRAY_TYPE)
+                {
+                    const double *varmm = (const double *)varmm_data->data;
+                    varmm += ((state < nCycles) ? (state * mixOffset) : 0);
+                    mixvar = GetMixArray(ireg, ilamm, nummm, varmm,
+                        kmax, lmax, mixlen);
+                }
+                else if(varmm_data->dataType == INTEGERARRAY_TYPE)
+                {
+                    const int *varmm = (const int *)varmm_data->data;
+                    varmm += ((state < nCycles) ? (state * mixOffset) : 0);
+                    mixvar = GetMixArray(ireg, ilamm, nummm, varmm,
+                        kmax, lmax, mixlen);
+                }
+                else
+                {
+                    debug4 << mName << "mixvar data type unsupported." << endl;
+                }
+
+                //
+                // If we have a mixed variable array by this point, add it to
+                // the generic database's cache.
+                //
+                if(mixvar)
+                {
+                    avtMixedVariable *mv = new avtMixedVariable(mixvar,
+                        mixlen, realVar);
+                    void_ref_ptr vr = void_ref_ptr(mv,
+                        avtMixedVariable::Destruct);
+                    cache->CacheVoidRef(realVar.c_str(),
+                        AUXILIARY_DATA_MIXED_VARIABLE, state, 0, vr);
+                    delete [] mixvar;
+                }
             }
             else
             {
-                debug4 << "PP_ZFileReader::ReadMixvarAndCache:"
-                       << "Unsupported array type!" << endl;
-                delete [] mixvar;
-                mixvar = 0;
-            }
-
-            //
-            // If we have a mixed variable array by this point, add it to
-            // the generic database's cache.
-            //
-            if(mixvar)
-            {
-                avtMixedVariable *mv = new avtMixedVariable(mixvar,
-                    data->nTotalElements, varStr);
-                void_ref_ptr vr = void_ref_ptr(mv, avtMixedVariable::Destruct);
-                cache->CacheVoidRef(varStr.c_str(),
-                    AUXILIARY_DATA_MIXED_VARIABLE, state, 0, vr);
-
-                delete [] mixvar;
+                debug4 << mName << "ilamm, ireg, or nummm was not int[]\n";
             }
         }
         CATCH(InvalidVariableException)
         {
-            debug4 << "The mixvar array: " << mixedVarWithSuffix << " could "
+            debug4 << mName << "The mixvar array: "
+                   << mixedVarWithSuffix.c_str() << " could "
                    << "not be read!" << endl;
         }
         ENDTRY
     }
     else
     {
-        debug4 << "The mixvar array: " << mixedVarWithSuffix << " was not"
-               << "found in the file." << endl;
+        debug4 << mName << "The mixvar array: " << mixedVarWithSuffix.c_str()
+               << " was not found in the file." << endl;
     }
-#endif
 }
 
 // ****************************************************************************
@@ -2442,6 +2646,11 @@ PP_ZFileReader::GetRayVar(int state, const std::string &varStr)
 //   Brad Whitlock, Mon Jun 7 10:00:04 PDT 2004
 //   I added support for float arrays.
 //
+//   Brad Whitlock, Mon Dec 6 16:54:18 PST 2004
+//   Passed the real variable name to ReadMixvarAndCache. I also made that
+//   routine only be called on non-revolved meshes since it's not worth it
+//   to revolve that information.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -2547,9 +2756,10 @@ PP_ZFileReader::GetVar(int state, const char *var)
                                      kmax, lmax, revolutionSteps);
         }
         else
+        {
             CopyVariableData(ptr, dataPointer, centering, kmax, lmax);
-
-        ReadMixvarAndCache(varStr, state);
+            ReadMixvarAndCache(varStr, var, state);
+        }
     }
     else if(data->dataType == DOUBLEARRAY_TYPE)
     {
@@ -2571,9 +2781,10 @@ PP_ZFileReader::GetVar(int state, const char *var)
                                      kmax, lmax, revolutionSteps);
         }
         else
+        {
             CopyVariableData(ptr, dataPointer, centering, kmax, lmax);
-
-        ReadMixvarAndCache(varStr, state);
+            ReadMixvarAndCache(varStr, var, state);
+        }
     }
     else if(data->dataType == FLOATARRAY_TYPE)
     {
@@ -2595,9 +2806,10 @@ PP_ZFileReader::GetVar(int state, const char *var)
                                      kmax, lmax, revolutionSteps);
         }
         else
+        {
             CopyVariableData(ptr, dataPointer, centering, kmax, lmax);
-
-        ReadMixvarAndCache(varStr, state);
+            ReadMixvarAndCache(varStr, var, state);
+        }
     }
     else
     {
@@ -2734,11 +2946,14 @@ AddCleanMaterials(MaterialEncoder &mats, const int *ireg, int kmax, int lmax,
 //   Added code to make sure that VisIt does not use an invalid material
 //   number in ghost zones.
 //
+//   Brad Whitlock, Tue Dec 7 16:20:23 PST 2004
+//   I changed the volfmm argument to float.
+//
 // ****************************************************************************
 
 static void
 AddMixedMaterials(MaterialEncoder &mats, const int *ireg, const int *iregmm,
-    const int *nummm, const int *ilamm, const double *volfmm, int kmax,
+    const int *nummm, const int *ilamm, const float *volfmm, int kmax,
     int lmax, bool wantRevolvedMaterial, int nSteps)
 {
     //
@@ -2838,6 +3053,10 @@ AddMixedMaterials(MaterialEncoder &mats, const int *ireg, const int *iregmm,
 //
 //   Brad Whitlock, Wed Sep 8 13:39:33 PST 2004
 //   Fixed mixed materials over time so they work correctly with Flash files.
+//
+//   Brad Whitlock, Tue Dec 7 16:19:09 PST 2004
+//   Changed some float->double code to double->float and disabled it since
+//   we're converting doubles to float at read time in ReadVariable.
 //
 // ****************************************************************************
 
@@ -2941,28 +3160,28 @@ PP_ZFileReader::GetAuxiliaryData(int state, const char *var, const char *type,
 
                         const int *iregmm = (const int *)iregmm_data->data;
                         iregmm += ((state < nCycles) ? (state * mixOffset) : 0);
-
-                        if(volfmm_data->dataType == FLOATARRAY_TYPE)
+#if 0
+                        if(volfmm_data->dataType == DOUBLEARRAY_TYPE)
                         {
-                            // Convert the float data to double.
-                            double *d = new double[volfmm_data->nTotalElements];
-                            double *dptr = d;
-                            const float *src = (const float *)volfmm_data->data;
+                            // Convert the double data to float.
+                            float *f = new float[volfmm_data->nTotalElements];
+                            float *fptr = f;
+                            const double *src = (const double *)volfmm_data->data;
                             for(int i = 0; i < volfmm_data->nTotalElements; ++i)
-                                *dptr++ = double(*src++);
+                                *fptr++ = float(*src++);
                             
                             // Free the old data.
-                            free_void_mem(volfmm_data->data, FLOATARRAY_TYPE);
+                            free_void_mem(volfmm_data->data, DOUBLEARRAY_TYPE);
 
-                            // Store the converted double data.
-                            volfmm_data->data = (void *)d;
-                            volfmm_data->dataType = DOUBLEARRAY_TYPE;
+                            // Store the converted float data.
+                            volfmm_data->data = (void *)f;
+                            volfmm_data->dataType = FLOATARRAY_TYPE;
                         }
-
+#endif
                         //
                         // Add materials for all of the zones.
                         //
-                        const double *volfmm = (const double *)volfmm_data->data;
+                        const float *volfmm = (const float *)volfmm_data->data;
                         volfmm += ((state < nCycles) ? (state * mixOffset) : 0);
                         AddMixedMaterials(mats, ireg, iregmm, nummm, ilamm,
                                           volfmm, kmax, lmax,

@@ -17,7 +17,9 @@ class avtMaterial;
 // Creation:   Fri Jun 21 13:53:35 PST 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Dec 7 16:15:38 PST 2004
+//   Changed the double argument to float on the AddMixed method.
+//
 // ****************************************************************************
 
 class MaterialEncoder
@@ -28,7 +30,7 @@ public:
 
     void AddMaterial(const std::string &mat);
     void AddClean(int zoneId, int matNumber);
-    void AddMixed(int zoneId, const int *matNumbers, const double *matVf,
+    void AddMixed(int zoneId, const int *matNumbers, const float *matVf,
                   int nMats);
     void AllocClean(int nZones);
     int  GetMixedSize() const;

@@ -206,12 +206,14 @@ PP_Z_STSD_FileFormat::GetTime(void)
 vtkDataSet *
 PP_Z_STSD_FileFormat::GetMesh(const char *var)
 {
+    reader.SetCache(cache);
     return reader.GetMesh(0, var);
 }
 
 vtkDataArray *
 PP_Z_STSD_FileFormat::GetVar(const char *var)
 {
+    reader.SetCache(cache);
     return reader.GetVar(0, var);
 }
 
@@ -219,7 +221,8 @@ void *
 PP_Z_STSD_FileFormat::GetAuxiliaryData(const char *var, const char *type,
     void *args, DestructorFunction &df)
 {
-     return reader.GetAuxiliaryData(0, var, type, args, df);
+    reader.SetCache(cache);
+    return reader.GetAuxiliaryData(0, var, type, args, df);
 }
 
 // ****************************************************************************

@@ -520,6 +520,9 @@ PP_Z_MTSD_FileFormat::DetermineTimeFlow(int ts)
 //    Brad Whitlock, Thu Sep 2 09:39:32 PDT 2004
 //    Added a call to DetermineTimeFlow.
 //
+//    Brad Whitlock, Mon Dec 6 16:50:27 PST 2004
+//    Added code to set the reader's cache pointer.
+//
 // ****************************************************************************
 
 void *
@@ -534,6 +537,7 @@ PP_Z_MTSD_FileFormat::GetAuxiliaryData(const char *var, int ts,
     if(index != -1)
     {
         DetermineTimeFlow(ts);
+        readers[index]->SetCache(cache);
         retval = readers[index]->GetAuxiliaryData(localTimeState, var, type, args, df);
     }
 
@@ -558,6 +562,9 @@ PP_Z_MTSD_FileFormat::GetAuxiliaryData(const char *var, int ts,
 //    Brad Whitlock, Thu Sep 2 09:39:32 PDT 2004
 //    Added a call to DetermineTimeFlow.
 // 
+//    Brad Whitlock, Mon Dec 6 16:50:27 PST 2004
+//    Added code to set the reader's cache pointer.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -571,6 +578,7 @@ PP_Z_MTSD_FileFormat::GetMesh(int ts, const char *var)
     if(index != -1)
     {
         DetermineTimeFlow(ts);
+        readers[index]->SetCache(cache);
         retval = readers[index]->GetMesh(localTimeState, var);
     }
 
@@ -596,6 +604,9 @@ PP_Z_MTSD_FileFormat::GetMesh(int ts, const char *var)
 //    Brad Whitlock, Thu Sep 2 09:39:32 PDT 2004
 //    Added a call to DetermineTimeFlow.
 //
+//    Brad Whitlock, Mon Dec 6 16:50:27 PST 2004
+//    Added code to set the reader's cache pointer.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -609,6 +620,7 @@ PP_Z_MTSD_FileFormat::GetVar(int ts, const char *var)
     if(index != -1)
     {
         DetermineTimeFlow(ts);
+        readers[index]->SetCache(cache);
         retval = readers[index]->GetVar(localTimeState, var);
     }
 
