@@ -333,6 +333,9 @@ class ViewerToolbar;
 //    Kathleen Bonnell, Tue Oct 12 16:31:46 PDT 2004
 //    Added GlyphPick method. 
 //
+//    Hank Childs, Sun Oct 24 13:39:57 PDT 2004
+//    Added shading.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerWindow
@@ -541,6 +544,9 @@ public:
     float GetSpecularCoeff() const;
     float GetSpecularPower() const;
     const ColorAttribute &GetSpecularColor() const;
+    void SetShadingProperties(bool,double);
+    bool GetDoShading() const;
+    double GetShadingStrength() const;
 
     void Lineout(const bool);
 
@@ -646,6 +652,11 @@ private:
 
     static bool     doNoWinMode;
 
+    // Note: since these aren't stored in VisWindow, this seems like a fine
+    // place to put them.  If the shading ever is stored in VisWindow, this
+    // should be removed.
+    bool            doShading;
+    double          shadingStrength;
 };
 
 #endif

@@ -54,6 +54,12 @@
       255
       255
     </Field>
+    <Field name="doShadowing" label="Do Shadowing" type="bool">
+      false
+    </Field>
+    <Field name="shadowStrength" label="Shadow Strength" type="double">
+      0.500000
+    </Field>
     <Function name="GetEffectiveScalableThreshold" user="true" member="true">
     </Function>
     <Constant name="DEFAULT_SCALABLE_AUTO_THRESHOLD" member="false">

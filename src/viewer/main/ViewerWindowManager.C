@@ -2388,6 +2388,10 @@ ViewerWindowManager::SetViewExtentsType(avtExtentType viewType,
 //   Mark C. Miller, Tue May 11 20:21:24 PDT 2004
 //   Modified calls to set scalable controls to accomdate scalable activaation
 //   mode and scalable auto threshold
+//
+//   Hank Childs, Sun Oct 24 13:39:57 PDT 2004
+//   Added shading properties.
+//
 // ****************************************************************************
 
 void
@@ -2437,6 +2441,14 @@ ViewerWindowManager::SetRenderingAttributes(int windowIndex)
                                                  renderAtts->GetSpecularCoeff(),
                                                  renderAtts->GetSpecularPower(),
                                                  renderAtts->GetSpecularColor());
+        }
+
+        if (windows[index]->GetDoShading() != renderAtts->GetDoShadowing() ||
+            windows[index]->GetShadingStrength() != 
+                                              renderAtts->GetShadowStrength())
+        {
+            windows[index]->SetShadingProperties(renderAtts->GetDoShadowing(),
+                                                 renderAtts->GetShadowStrength());
         }
 
         // If the updatesEnabled flag was true before we temporarily disabled
@@ -3920,6 +3932,10 @@ ViewerWindowManager::UpdateLightListAtts()
 //   Mark C. Miller, Tue May 11 20:21:24 PDT 2004
 //   Modified calls to set scalable controls to accomdate scalable activaation
 //   mode and scalable auto threshold
+//
+//   Hank Childs, Sun Oct 24 13:39:57 PDT 2004
+//   Added updates for shading.
+//
 // ****************************************************************************
 
 void
@@ -3950,6 +3966,8 @@ ViewerWindowManager::UpdateRenderingAtts(int windowIndex)
         renderAtts->SetSpecularCoeff(win->GetSpecularCoeff());
         renderAtts->SetSpecularPower(win->GetSpecularPower());
         renderAtts->SetSpecularColor(win->GetSpecularColor());
+        renderAtts->SetDoShadowing(win->GetDoShading());
+        renderAtts->SetShadowStrength(win->GetShadingStrength());
 
         // Tell the client about the new rendering information.
         renderAtts->Notify();
@@ -6785,6 +6803,10 @@ ViewerWindowManager::CreateVisWindow(const int windowIndex,
 //   Mark C. Miller, Tue May 11 20:21:24 PDT 2004
 //   Modified calls to set scalable controls to accomdate scalable activation
 //   mode and scalable auto threshold
+//
+//    Hank Childs, Sun Oct 24 13:39:57 PDT 2004
+//    Added shading properties.
+//
 // ****************************************************************************
 
 void
@@ -6821,6 +6843,8 @@ ViewerWindowManager::SetWindowAttributes(int windowIndex, bool copyAtts)
                              renderAtts->GetSpecularCoeff(),
                              renderAtts->GetSpecularPower(),
                              renderAtts->GetSpecularColor());
+    w->SetShadingProperties(renderAtts->GetDoShadowing(),
+                            renderAtts->GetShadowStrength());
 }
 
 // ****************************************************************************

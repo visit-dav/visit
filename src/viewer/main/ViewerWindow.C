@@ -191,6 +191,9 @@ static void RotateAroundY(const avtView3D&, double, avtView3D&);
 //    Mark C. Miller, Tue Oct 19 20:18:22 PDT 2004
 //    Added code to manage name of last color table to change
 //
+//    Hank Childs, Sun Oct 24 13:39:57 PDT 2004
+//    Initialize doShading.
+//
 // ****************************************************************************
 
 ViewerWindow::ViewerWindow(int windowIndex)
@@ -309,6 +312,8 @@ ViewerWindow::ViewerWindow(int windowIndex)
     //
     actionMgr = new ViewerActionManager(this);
 
+    doShading = false;
+    shadingStrength = 0.5;
 }
 
 // ****************************************************************************
@@ -2062,6 +2067,9 @@ ViewerWindow::InvertBackgroundColor()
 //   Modified scalable rendering controls to use activation mode and auto
 //   threshold
 //
+//   Hank Childs, Sun Oct 24 13:39:57 PDT 2004
+//   Add shading.
+//
 // ****************************************************************************
 
 void
@@ -2081,6 +2089,7 @@ ViewerWindow::CopyGeneralAttributes(const ViewerWindow *source)
                           source->GetSpecularCoeff(),
                           source->GetSpecularPower(),
                           source->GetSpecularColor());
+    SetShadingProperties(source->GetDoShading(), source->GetShadingStrength());
 
     //
     // Set window mode flags.
@@ -5001,6 +5010,9 @@ ViewerWindow::SetLargeIcons(bool val)
 //   Modified scalable rendering controls to use activation mode and auto
 //   threshold
 //
+//   Hank Childs, Sun Oct 24 13:39:57 PDT 2004
+//   Add shading.
+//
 // ****************************************************************************
 
 WindowAttributes
@@ -5076,6 +5088,10 @@ ViewerWindow::GetWindowAttributes() const
     renderAtts.SetSpecularCoeff(GetSpecularCoeff());
     renderAtts.SetSpecularPower(GetSpecularPower());
     renderAtts.SetSpecularColor(GetSpecularColor());
+
+    renderAtts.SetDoShadowing(GetDoShading());
+    renderAtts.SetShadowStrength(GetShadingStrength());
+
     winAtts.SetRenderAtts(renderAtts);
 
     //
@@ -5881,6 +5897,68 @@ ViewerWindow::GetSurfaceRepresentation() const
 }
 
 // ****************************************************************************
+//  Method:  ViewerWindow::GetDoShading
+//
+//  Purpose:
+//    Returns the window's shading flag.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Hank Childs
+//  Creation:    October 24, 2004
+//
+// ****************************************************************************
+
+bool
+ViewerWindow::GetDoShading() const
+{
+    return doShading;
+}
+
+// ****************************************************************************
+//  Method:  ViewerWindow::GetShadingStrength
+//
+//  Purpose:
+//    Returns the window's shading strength.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Hank Childs
+//  Creation:    October 24, 2004
+//
+// ****************************************************************************
+
+double
+ViewerWindow::GetShadingStrength() const
+{
+    return shadingStrength;
+}
+
+// ****************************************************************************
+//  Method:  ViewerWindow::SetShadingProperties
+//
+//  Purpose:
+//    Sets the window's shading properites.
+//
+//  Arguments:
+//      flag  :  the new shading flag
+//      str   :  the new shading strength
+//
+//  Programmer:  Hank Childs
+//  Creation:    October 24, 2004
+//
+// ****************************************************************************
+
+void
+ViewerWindow::SetShadingProperties(bool flag, double str)
+{
+    doShading = flag;
+    shadingStrength = str;
+}
+
+// ****************************************************************************
 //  Method:  ViewerWindow::GetSpecularFlag
 //
 //  Purpose:
@@ -6378,6 +6456,9 @@ ViewerWindow::SetPopupEnabled(bool val)
 //   Kathleen Bonnell, Thu Aug 19 14:23:18 PDT 2004 
 //   Added InteractorAttributes. 
 //
+//   Hank Childs, Sun Oct 24 13:39:57 PDT 2004
+//   Save out shading properties.
+//
 // ****************************************************************************
 
 void
@@ -6458,6 +6539,8 @@ ViewerWindow::CreateNode(DataNode *parentNode, bool detailed)
         windowNode->AddNode(new DataNode("specularPower", GetSpecularPower()));
         ColorAttribute specColor(GetSpecularColor());
         specColor.CreateNode(windowNode, true, true);
+        windowNode->AddNode(new DataNode("doShading", GetDoShading()));
+        windowNode->AddNode(new DataNode("shadingStrength", GetShadingStrength()));
 
         //
         // View
@@ -6575,6 +6658,9 @@ ViewerWindow::CreateNode(DataNode *parentNode, bool detailed)
 //
 //   Kathleen Bonnell, Thu Aug 19 14:23:18 PDT 2004 
 //   Added InteractorAttributes. 
+//
+//   Hank Childs, Sun Oct 24 13:39:57 PDT 2004
+//   Read in shading properties.
 //
 // ****************************************************************************
 
@@ -6837,6 +6923,24 @@ ViewerWindow::SetFromNode(DataNode *parentNode)
     {
         SetSpecularProperties(tmpSpecularFlag, tmpSpecularCoeff, 
                               tmpSpecularPower, tmpSpecularColor);
+    }
+
+    numParamsSaved = 0;
+    bool tmpDoShading = false;
+    bool tmpShadingStrength = false;
+    if((node = windowNode->GetNode("doShading")) != 0)
+    {
+        tmpDoShading = node->AsBool();
+        numParamsSaved++;
+    }
+    if((node = windowNode->GetNode("shadingStrength")) != 0)
+    {
+        tmpShadingStrength = node->AsDouble();
+        numParamsSaved++;
+    }
+    if (numParamsSaved == 2)
+    {
+        SetShadingProperties(tmpDoShading, tmpShadingStrength);
     }
 
     //

@@ -41,6 +41,7 @@
 #include <avtPickByZoneQuery.h>
 #include <avtZonePickQuery.h>
 #include <avtCurvePickQuery.h>
+#include <avtSoftwareShader.h>
 #include <avtSourceFromAVTImage.h>
 #include <avtSourceFromImage.h>
 #include <avtSourceFromNullData.h>
@@ -1453,6 +1454,9 @@ NetworkManager::GetOutput(bool respondWithNullData, bool calledForRender,
 //    Forced the second pass to turn off gradient backgrounds before rendering.
 //    It was causing erasing of the first-pass results.
 //
+//    Hank Childs, Sat Oct 23 14:06:21 PDT 2004
+//    Added support for shadows.  Also cleaned up memory leak.
+//
 // ****************************************************************************
 avtDataObjectWriter_p
 NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode)
@@ -1629,13 +1633,14 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode)
                                     annotationObjectList, visualCueList,
                                     frameAndState, annotMode);
 
-            debug5 << "Rendering " << viswin->GetNumTriangles() << " triangles. " 
-                   << "Balanced speedup = " << RenderBalance(viswin->GetNumTriangles())
-                   << "x" << endl;
+            debug5 << "Rendering " << viswin->GetNumTriangles() 
+                   << " triangles.  Balanced speedup = " 
+                   << RenderBalance(viswin->GetNumTriangles()) << "x" << endl;
 
             //
             // Determine if we need to go for two passes
             //
+            bool doShadows = windowAttributes.GetRenderAtts().GetDoShadowing();
             bool two_pass_mode = false;
 #ifdef PARALLEL
             if (viswin->GetWindowMode() == WINMODE_3D)
@@ -1667,17 +1672,22 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode)
             if (dumpRenders)
                 DumpImage(theImage, "before_ImageCompositer");
 
-
             avtWholeImageCompositer *imageCompositer;
             if (viswin->GetWindowMode() == WINMODE_3D)
             {
                 imageCompositer = new avtWholeImageCompositerWithZ();
                 imageCompositer->SetShouldOutputZBuffer(getZBuffer ||
-                                                        two_pass_mode);
+                                                        two_pass_mode ||
+                                                        doShadows);
             }
             else
             {
-                imageCompositer = new avtWholeImageCompositerNoZ();
+                // we have to use z-buffer in 2D windows with gradient background
+                if (viswin->GetBackgroundMode() == 0)
+                    imageCompositer = new avtWholeImageCompositerNoZ();
+                else
+                    imageCompositer = new avtWholeImageCompositerWithZ();
+                imageCompositer->SetShouldOutputZBuffer(two_pass_mode);
             }
 
             //
@@ -1761,6 +1771,71 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode)
             }
 
             //
+            // Do shadows if appropriate.
+            //
+            if (doShadows)
+            {
+                avtView3D cur_view = viswin->GetView3D();
+                avtView3D light_view = cur_view;
+
+                //
+                // Figure out which direction the light is pointing.
+                //
+                const LightList *light_list = viswin->GetLightList();
+                const LightAttributes &la = light_list->GetLight0();
+                double light_dir[3];
+                bool canShade = avtSoftwareShader::GetLightDirection(la,
+                                                          cur_view, light_dir);
+
+                if (canShade)
+                {
+                    //
+                    // Now create a new image from the light source.
+                    //
+                    light_view.normal[0] = light_dir[0];
+                    light_view.normal[1] = light_dir[1];
+                    light_view.normal[2] = light_dir[2];
+                    viswin->SetView3D(light_view);
+                    avtImage_p myLightImage =
+                                    viswin->ScreenCapture(viewportedMode,true);
+                    avtWholeImageCompositer *wic =
+                                            new avtWholeImageCompositerWithZ();
+                    wic->SetShouldOutputZBuffer(true);
+                    int imageRows, imageCols;
+                    myLightImage->GetSize(&imageCols, &imageRows);
+                    wic->SetOutputImageSize(imageRows, imageCols);
+                    wic->AddImageInput(myLightImage, 0, 0);
+                    wic->SetShouldOutputZBuffer(1);
+                    wic->SetAllProcessorsNeedResult(false);
+
+                    //
+                    // Do the parallel composite using a 1 stage pipeline
+                    //
+                    wic->Execute();
+                    avtImage_p lightImage = wic->GetTypedOutput();
+    
+                    viswin->SetView3D(cur_view);
+    
+                    avtImage_p compositedImage;
+                    CopyTo(compositedImage, compositedImageAsDataObject);
+                    int width, height;
+                    viswin->GetSize(width, height);
+                    double aspect = ((double) width) / ((double) height);
+                    double strength = 
+                         windowAttributes.GetRenderAtts().GetShadowStrength();
+#ifdef PARALLEL
+                    if (PAR_Rank() == 0)
+#endif
+                    {
+                        avtSoftwareShader::AddShadows(lightImage, 
+                                                   compositedImage, light_view, 
+                                                   cur_view, aspect, strength);
+                    }
+                    delete wic;
+                }
+            }
+
+            //
             // If the engine is doing more than just 3D attributes,
             // post-process the composited image.
             //
@@ -1781,11 +1856,10 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode)
             writer = compositedImageAsDataObject->InstantiateWriter();
             writer->SetInput(compositedImageAsDataObject);
 
-
             if (dumpRenders)
                 DumpImage(compositedImageAsDataObject,
                           "after_ImageCompositer", false);
-
+            delete imageCompositer;
         }
         
         delete [] cellCounts;

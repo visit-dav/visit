@@ -70,6 +70,12 @@ static int  SiloZoneTypeToVTKZoneType(int);
 static void TranslateSiloWedgeToVTKWedge(const int *, vtkIdType [6]);
 static void TranslateSiloPyramidToVTKPyramid(const int *, vtkIdType [5]);
 
+static int  ComputeNumZonesSkipped(vector<int>& zoneRangesSkipped);
+
+template<class T>
+static void RemoveValuesForSkippedZones(vector<int>& zoneRangesSkipped,
+                T *inArray, int inArraySize, T *outArray); 
+
 
 bool avtSiloFileFormat::madeGlobalSiloCalls = false;
 
@@ -3117,6 +3123,10 @@ avtSiloFileFormat::GetVectorVar(int domain, const char *v)
 //    I modified the routine to use nvals as the number of components in
 //    the variable.
 //
+//    Mark C. Miller, Thu Oct 21 22:11:28 PDT 2004
+//    Added code to remove values from the array for arb. zones that have
+//    been removed
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -3140,11 +3150,52 @@ avtSiloFileFormat::GetUcdVectorVar(DBfile *dbfile, const char *vname,
 
     vtkFloatArray   *vectors = vtkFloatArray::New();
     vectors->SetNumberOfComponents(3);
-    vectors->SetNumberOfTuples(uv->nels);
-    for (int i = 0 ; i < uv->nels ; i++)
+
+    //
+    // Handle cases where we need to remove values for zone types we don't
+    // understand
+    //
+    float *vals[3];
+    vals[0] = uv->vals[0];
+    vals[1] = uv->vals[1];
+    if (uv->nvals == 3)
+       vals[2] = uv->vals[2];
+    int numSkipped = 0;
+    if (uv->centering == DB_ZONECENT && metadata != NULL)
     {
-        float v3 = (uv->nvals == 3 ? uv->vals[2][i] : 0.);
-        vectors->SetTuple3(i, uv->vals[0][i], uv->vals[1][i], v3);
+        string meshName = metadata->MeshForVar(tvn);
+        vector<int> zonesRangesToSkip = arbMeshZoneRangesToSkip[meshName];
+        if (zonesRangesToSkip.size() > 0)
+        {
+            numSkipped = ComputeNumZonesSkipped(zonesRangesToSkip);
+            vals[0] = new float[uv->nels - numSkipped];
+            vals[1] = new float[uv->nels - numSkipped];
+            if (uv->nvals == 3)
+                vals[2] = new float[uv->nels - numSkipped];
+
+            RemoveValuesForSkippedZones(zonesRangesToSkip,
+                uv->vals[0], uv->nels, vals[0]);
+            RemoveValuesForSkippedZones(zonesRangesToSkip,
+                uv->vals[1], uv->nels, vals[1]);
+            if (uv->nvals == 3)
+                RemoveValuesForSkippedZones(zonesRangesToSkip,
+                    uv->vals[2], uv->nels, vals[2]);
+        }
+    }
+
+    vectors->SetNumberOfTuples(uv->nels - numSkipped);
+    for (int i = 0 ; i < uv->nels - numSkipped; i++)
+    {
+        float v3 = (uv->nvals == 3 ? vals[2][i] : 0.);
+        vectors->SetTuple3(i, vals[0][i], vals[1][i], v3);
+    }
+
+    if (vals[0] != uv->vals[0])
+    {
+        delete [] vals[0];
+        delete [] vals[1];
+        if (uv->nvals == 3)
+            delete [] vals[2];
     }
 
     DBFreeUcdvar(uv);
@@ -3440,6 +3491,10 @@ avtSiloFileFormat::GetMesh(int domain, const char *m)
 //    Hank Childs, Fri Jul  5 15:03:23 PDT 2002
 //    Add the name of the mixed variable to its constructor.
 //
+//    Mark C. Miller, Thu Oct 21 22:11:28 PDT 2004
+//    Added code to remove values from array for arb. zones that were
+//    removed from the mesh
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -3461,13 +3516,38 @@ avtSiloFileFormat::GetUcdVar(DBfile *dbfile, const char *vname,
         EXCEPTION1(InvalidVariableException, varname);
     }
 
-    //
-    // Populate the variable.  This assumes it is a scalar variable.
-    //
     vtkFloatArray   *scalars = vtkFloatArray::New();
-    scalars->SetNumberOfTuples(uv->nels);
-    float        *ptr     = (float *) scalars->GetVoidPointer(0);
-    memcpy(ptr, uv->vals[0], sizeof(float)*uv->nels);
+
+    //
+    // Handle stripping out values for zone types we don't understand
+    //
+    bool arrayWasRemapped = false;
+    if (uv->centering == DB_ZONECENT && metadata != NULL)
+    {
+        string meshName = metadata->MeshForVar(tvn);
+        vector<int> zonesRangesToSkip = arbMeshZoneRangesToSkip[meshName];
+        if (zonesRangesToSkip.size() > 0)
+        {
+            int numSkipped = ComputeNumZonesSkipped(zonesRangesToSkip);
+
+            scalars->SetNumberOfTuples(uv->nels - numSkipped);
+            float *ptr = (float *) scalars->GetVoidPointer(0);
+            RemoveValuesForSkippedZones(zonesRangesToSkip,
+                uv->vals[0], uv->nels, ptr);
+            arrayWasRemapped = true;
+        }
+    }
+
+    //
+    // Populate the variable as we normally would.
+    // This assumes it is a scalar variable.
+    //
+    if (arrayWasRemapped == false)
+    {
+        scalars->SetNumberOfTuples(uv->nels);
+        float        *ptr     = (float *) scalars->GetVoidPointer(0);
+        memcpy(ptr, uv->vals[0], sizeof(float)*uv->nels);
+    }
 
     if (uv->mixvals != NULL && uv->mixvals[0] != NULL)
     {
@@ -3746,6 +3826,10 @@ avtSiloFileFormat::GetPointVar(DBfile *dbfile, const char *vname)
 //    Mark C. Miller, August 9, 2004
 //    Added code to read and cache optional global node and zone ids
 //
+//    Mark C. Miller, Thu Oct 21 22:11:28 PDT 2004
+//    Added code to set arbMeshZoneRangesToSkip and issue warning for meshes
+//    that have arbitrary polyhedra embedded in an ordinary DBzonelist
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -3851,7 +3935,24 @@ avtSiloFileFormat::GetUnstructuredMesh(DBfile *dbfile, const char *mn,
     {
         vtkUnstructuredGrid  *ugrid = vtkUnstructuredGrid::New(); 
         ugrid->SetPoints(points);
-        ReadInConnectivity(ugrid, um->zones, um->origin);
+        vector<int> zoneRangesToSkip;
+        ReadInConnectivity(ugrid, um->zones, um->origin, zoneRangesToSkip);
+        if (zoneRangesToSkip.size() > 0)
+        {
+            // squirl away knowledge of the zones we've removed
+            arbMeshZoneRangesToSkip[mesh] = zoneRangesToSkip;
+            int numSkipped = ComputeNumZonesSkipped(zoneRangesToSkip);
+
+            // Issue a warning message about having skipped some zones
+            char msg[1024];
+            sprintf(msg, "\nIn reading mesh, \"%s\", VisIt encountered "
+                "%d arbitrary polyhedral zones accounting for %3d %% "
+                "of the zones in the mesh. Those zones have been removed. "
+                "Future versions of VisIt will be able to display these "
+                "zones. However, the current version cannot.", mesh,
+                numSkipped, 100 * numSkipped / um->zones->nzones);
+            avtCallback::IssueWarning(msg);
+        }
         rv = ugrid;
 
         if (um->zones->gzoneno != NULL)
@@ -3920,7 +4021,8 @@ avtSiloFileFormat::GetUnstructuredMesh(DBfile *dbfile, const char *mn,
 
 void
 avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
-                                      DBzonelist *zl, int origin)
+                                      DBzonelist *zl, int origin,
+                                      vector<int> &zoneRangesToSkip)
 {
     int   i, j, k;
 
@@ -3931,8 +4033,12 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
     int  totalSize = 0;
     for (i = 0 ; i < zl->nshapes ; i++)
     {
-        numCells += zl->shapecnt[i];
-        totalSize += zl->shapecnt[i] * (zl->shapesize[i]+1);
+        int vtk_zonetype = SiloZoneTypeToVTKZoneType(zl->shapetype[i]);
+        if (vtk_zonetype != -2) // don't include arb. polyhedra
+        {
+            numCells += zl->shapecnt[i];
+            totalSize += zl->shapecnt[i] * (zl->shapesize[i]+1);
+        }
     }
 
     //
@@ -3952,8 +4058,11 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
     cellLocations->SetNumberOfValues(numCells);
     int *cl = cellLocations->GetPointer(0);
 
+    int zoneIndex = 0;
     int currentIndex = 0;
     bool mustResize = false;
+    int minIndexOffset = 0;
+    int maxIndexOffset = 0;
     for (i = 0 ; i < zl->nshapes ; i++)
     {
         const int shapecnt = zl->shapecnt[i];
@@ -3963,7 +4072,7 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
         int effective_vtk_zonetype = vtk_zonetype;
         int effective_shapesize = shapesize;
 
-        if (vtk_zonetype < 0)
+        if (vtk_zonetype < 0 && vtk_zonetype != -2)
         {
             EXCEPTION1(InvalidZoneTypeException, zl->shapetype[i]);
         }
@@ -3992,50 +4101,89 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
             }
         }
 
-        for (j = 0 ; j < shapecnt ; j++)
+        //
+        // "Handle" arbitrary polyhedra by skipping over them
+        //
+        if (vtk_zonetype == -2) // DB_ZONETYPE_POLYHEDRON
         {
-            *ct++ = effective_vtk_zonetype;
-            *cl++ = currentIndex;
+            zoneRangesToSkip.push_back(zoneIndex);
+            zoneRangesToSkip.push_back(zoneIndex + shapecnt - 1);
 
-            if (vtk_zonetype != VTK_WEDGE &&
-                vtk_zonetype != VTK_PYRAMID &&
-                vtk_zonetype != -1)
+            // keep track of adjustments we'll need to make to
+            // min/max offsets for ghosting
+            if (zoneIndex < zl->min_index)
             {
-                *nl++ = shapesize;
-                for (k = 0 ; k < shapesize ; k++)
-                    *nl++ = *(nodelist+k) - origin;
+               if (zoneIndex + shapecnt < zl->min_index)
+               {
+                   minIndexOffset += shapecnt;
+                   maxIndexOffset += shapecnt;
+               }
+               else
+               {
+                   minIndexOffset += (zl->min_index - zoneIndex); 
+                   maxIndexOffset += (zl->min_index - zoneIndex); 
+               }
             }
-            else if (vtk_zonetype == VTK_WEDGE)
+            else if (zoneIndex + shapecnt <= zl->max_index)
             {
-                *nl++ = 6;
-
-                vtkIdType vtk_wedge[6];
-                TranslateSiloWedgeToVTKWedge(nodelist, vtk_wedge);
-                for (k = 0 ; k < 6 ; k++)
-                {
-                    *nl++ = vtk_wedge[k]-origin;
-                }
+               maxIndexOffset += shapecnt;
             }
-            else if (vtk_zonetype == VTK_PYRAMID)
+            else if (zoneIndex + shapecnt > zl->max_index)
             {
-                *nl++ = 5;
-
-                vtkIdType vtk_pyramid[5];
-                TranslateSiloPyramidToVTKPyramid(nodelist, vtk_pyramid);
-                for (k = 0 ; k < 5 ; k++)
-                {
-                    *nl++ = vtk_pyramid[k]-origin;
-                }
-            }
-            else if (vtk_zonetype == -1)
-            {
-                *nl++ = 4;
-                for (k = 0 ; k < 4 ; k++)
-                    *nl++ = *(nodelist+k);
+               maxIndexOffset += (zl->max_index - zoneIndex + 1); 
             }
 
             nodelist += shapesize;
-            currentIndex += effective_shapesize+1;
+            zoneIndex += shapecnt;
+        }
+        else
+        {
+            for (j = 0 ; j < shapecnt ; j++)
+            {
+                *ct++ = effective_vtk_zonetype;
+                *cl++ = currentIndex;
+
+                if (vtk_zonetype != VTK_WEDGE &&
+                    vtk_zonetype != VTK_PYRAMID &&
+                    vtk_zonetype != -1)
+                {
+                    *nl++ = shapesize;
+                    for (k = 0 ; k < shapesize ; k++)
+                        *nl++ = *(nodelist+k) - origin;
+                }
+                else if (vtk_zonetype == VTK_WEDGE)
+                {
+                    *nl++ = 6;
+
+                    vtkIdType vtk_wedge[6];
+                    TranslateSiloWedgeToVTKWedge(nodelist, vtk_wedge);
+                    for (k = 0 ; k < 6 ; k++)
+                    {
+                        *nl++ = vtk_wedge[k]-origin;
+                    }
+                }
+                else if (vtk_zonetype == VTK_PYRAMID)
+                {
+                    *nl++ = 5;
+
+                    vtkIdType vtk_pyramid[5];
+                    TranslateSiloPyramidToVTKPyramid(nodelist, vtk_pyramid);
+                    for (k = 0 ; k < 5 ; k++)
+                    {
+                        *nl++ = vtk_pyramid[k]-origin;
+                    }
+                }
+                else if (vtk_zonetype == -1)
+                {
+                    *nl++ = 4;
+                    for (k = 0 ; k < 4 ; k++)
+                        *nl++ = *(nodelist+k);
+                }
+
+                nodelist += shapesize;
+                currentIndex += effective_shapesize+1;
+                zoneIndex++;
+            }
         }
     }
 
@@ -4070,8 +4218,8 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
     //  which are ghost (avtGhostZone = 1), but only create the ghost
     //  zones array if ghost zones are actually present.
     //
-    const int first = zl->min_index;  // where the real zones start
-    const int last = zl->max_index;   // where the real zones end
+    const int first = zl->min_index - minIndexOffset;  // where the real zones start
+    const int last = zl->max_index - maxIndexOffset;   // where the real zones end
 
     if (first == 0 && last == 0 )
     {
@@ -5495,7 +5643,7 @@ avtSiloFileFormat::GetMaterial(int dom, const char *mat)
     char   *directory_mat = NULL;
     DetermineFileAndDirectory(matname, domain_file, directory_mat);
 
-    avtMaterial *rv = CalcMaterial(domain_file, directory_mat, dom);
+    avtMaterial *rv = CalcMaterial(domain_file, directory_mat, mat, dom);
 
     if (matname != NULL)
     {
@@ -5895,11 +6043,6 @@ avtSiloFileFormat::GetSpatialExtents(const char *meshName)
     debug5 << "Reading in from toc " << filenames[tocIndex] << endl;
 
     //
-    // Get the file handle, throw an exception if it hasn't already been opened
-    //
-    DBfile *dbfile = GetFile(tocIndex);
-
-    //
     // It's ridiculous, but Silo does not have all of the `const's in their
     // library, so let's cast it away.
     //
@@ -5958,11 +6101,6 @@ avtSiloFileFormat::GetDataExtents(const char *varName)
 {
     debug5 << "Getting data extents for \"" << varName << "\"" << endl;
     debug5 << "Reading in from toc " << filenames[tocIndex] << endl;
-
-    //
-    // Get the file handle, throw an exception if it hasn't already been opened
-    //
-    DBfile *dbfile = GetFile(tocIndex);
 
     //
     // It's ridiculous, but Silo does not have all of the `const's in their
@@ -6042,10 +6180,15 @@ avtSiloFileFormat::GetDataExtents(const char *varName)
 //    Hank Childs, Wed Apr 14 07:52:48 PDT 2004
 //    Attach the material number to the material name.
 //
+//    Mark C. Miller, Thu Oct 21 22:11:28 PDT 2004
+//    Added code to remove entries from matlist array for arb. zones that
+//    were removed from the mesh
+//
 // ****************************************************************************
 
 avtMaterial *
-avtSiloFileFormat::CalcMaterial(DBfile *dbfile, char *matname, int dom)
+avtSiloFileFormat::CalcMaterial(DBfile *dbfile, char *matname, const char *tmn,
+    int dom)
 {
     DBmaterial *silomat = DBGetMaterial(dbfile, matname);
     if (silomat == NULL)
@@ -6075,13 +6218,50 @@ avtSiloFileFormat::CalcMaterial(DBfile *dbfile, char *matname, int dom)
         }
     }
 
+    //
+    // Handle cases were zones may have been removed due to unknown zone type
+    // Note: We can get away with remapping only the matlist array 
+    // Note: We should only wind up doing this for an unstructured mesh
+    //
+    int *matList = silomat->matlist;
+
+    // handle cases where we really have a 1d matlist array even when ndims
+    // is greater than 1
+    int numDimsNonUnity = 0;
+    int nonUnityDim = -1;
+    int ndims = silomat->ndims;
+    int dims[3];
+    for (int i = 0; i < silomat->ndims; i++)
+    {
+        if (silomat->dims[i] != 1)
+        {
+            numDimsNonUnity++;
+            nonUnityDim = i;
+        }
+        dims[i] = silomat->dims[i];
+    }
+
+    if (metadata != NULL && numDimsNonUnity == 1)
+    {
+        string meshName = metadata->MeshForVar(tmn);
+        vector<int> zonesRangesToSkip = arbMeshZoneRangesToSkip[meshName];
+        if (zonesRangesToSkip.size() > 0)
+        {
+            int numSkipped = ComputeNumZonesSkipped(zonesRangesToSkip);
+            matList = new int[dims[nonUnityDim] - numSkipped];
+            RemoveValuesForSkippedZones(zonesRangesToSkip,
+                silomat->matlist, dims[nonUnityDim], matList);
+            dims[nonUnityDim] -= numSkipped;
+        }
+    }
+
     avtMaterial *mat = new avtMaterial(silomat->nmat,
                                        silomat->matnos,
                                        matnames,
-                                       silomat->ndims,
-                                       silomat->dims,
+                                       ndims,
+                                       dims,
                                        silomat->major_order,
-                                       silomat->matlist,
+                                       matList,
                                        silomat->mixlen,
                                        silomat->mix_mat,
                                        silomat->mix_next,
@@ -6089,6 +6269,8 @@ avtSiloFileFormat::CalcMaterial(DBfile *dbfile, char *matname, int dom)
                                        silomat->mix_vf,
                                        dom_string);
 
+    if (matList != silomat->matlist)
+        delete [] matList;
     DBFreeMaterial(silomat);
     if (matnames != NULL)
         delete [] matnames;
@@ -7061,4 +7243,58 @@ TranslateSiloPyramidToVTKPyramid(const int *siloPyramid, vtkIdType vtkPyramid[5]
     vtkPyramid[2] = siloPyramid[2];
     vtkPyramid[3] = siloPyramid[1];
     vtkPyramid[4] = siloPyramid[4];
+}
+
+// ****************************************************************************
+//  Function: ComputeNumZonesSkipped 
+//
+//  Purpose: Determine total number of zones represented in a set of skip
+//  ranges.
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   October 21, 2004 
+//
+// ****************************************************************************
+
+int
+ComputeNumZonesSkipped(vector<int>& zoneRangesSkipped)
+{
+   int retVal = 0;
+   for (int i = 0; i < zoneRangesSkipped.size(); i+=2)
+       retVal += (zoneRangesSkipped[i+1] - zoneRangesSkipped[i] + 1);
+   return retVal;
+}
+
+// ****************************************************************************
+//  Function: RemoveValuesForSkippedZones
+//
+//  Purpose: Given an input and output array, remove values from the input
+//  array that are for zones that are in the skip ranges.
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   October 21, 2004 
+//
+// ****************************************************************************
+template<class T>
+static void RemoveValuesForSkippedZones(vector<int>& zoneRangesSkipped,
+                T *inArray, int inArraySize, T *outArray)
+{
+    int skipRangeIndexToUse = 0;
+    int inArrayIndex = 0;
+    int outArrayIndex = 0;
+
+    while (inArrayIndex < inArraySize)
+    {
+        while (inArrayIndex == zoneRangesSkipped[skipRangeIndexToUse])
+        {
+            inArrayIndex += (zoneRangesSkipped[skipRangeIndexToUse+1] -
+                             zoneRangesSkipped[skipRangeIndexToUse] + 1);
+            skipRangeIndexToUse += 2;
+        }
+
+        outArray[outArrayIndex] = inArray[inArrayIndex];
+
+        outArrayIndex++;
+        inArrayIndex++;
+    }
 }
