@@ -58,9 +58,7 @@ class avtSAMRAIFileFormat : public avtSTMDFileFormat
     vtkDataArray         *GetVar(int, const char *);
     vtkDataArray         *GetVectorVar(int, const char *);
     avtMaterial          *GetMaterial(int, const char *);
-#if 0
     avtSpecies           *GetSpecies(int, const char *);
-#endif
 
     void                 *GetAuxiliaryData(const char *var, int,
                                            const char *type, void *args,
@@ -158,6 +156,13 @@ class avtSAMRAIFileFormat : public avtSTMDFileFormat
     map<string, matinfo_t*>       mat_names_matinfo;
     map<string, map<string, matinfo_t*> > mat_var_names_matinfo;
 
+    bool                          has_specs;
+    int                           num_spec_vars;
+    string                       *spec_var_names;
+    int                          *nmatspec;
+    map<string, string*>          mat_specs;
+    map<string, map<string, matinfo_t*> > mat_specs_matinfo;
+
     var_extents_t               **var_extents; 
     patch_extents_t              *patch_extents;
     patch_map_t                  *patch_map;
@@ -221,12 +226,18 @@ class avtSAMRAIFileFormat : public avtSTMDFileFormat
     void            ReadParentPointerArray(hid_t &h5_file);
 
     void            ReadMaterialInfo(hid_t &h5_file);
-    float          *ReadMaterialVolumeFractions(int, string);
-    void            ConvertVolumeFractionFields(std::vector<int> matIds, float **vfracs,
+    float          *ReadMatSpecFractions(int, string, string="");
+    void            ConvertVolumeFractionFields(vector<int> matIds, float **vfracs,
                         int ncells, int* &matfield, int &mixlen, int* &mix_mat,
                         int* &mix_next, int* &mix_zone, float* &mix_vf);
     char            DebugMixedMaterials(int ncells, int* &matfield, int* &mix_next,
                         int* &mix_mat, float* &mix_vf, int* &mix_zone);
+
+    void            ReadSpeciesInfo(hid_t &h5_file);
+    void            ConvertMassFractionFields(vector<int> matIds,
+                        vector<float**> sfracs, int ncells, avtMaterial *mat,
+                        int* &speclist, int &nspecies_mf, float* &species_mf,
+                        int* &mixList);
 
     void            BuildDomainAuxiliaryInfo();
 

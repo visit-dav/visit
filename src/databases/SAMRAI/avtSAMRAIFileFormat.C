@@ -11,6 +11,8 @@
 
 #include <avtSAMRAIFileFormat.h>
 
+#include <AutoArray.h>
+
 #include <vector>
 #include <string>
 #include <stdlib.h>
@@ -24,6 +26,7 @@
 #include <avtDatabaseMetaData.h>
 #include <avtIntervalTree.h>
 #include <avtMaterial.h>
+#include <avtSpecies.h>
 #include <avtStructuredDomainBoundaries.h>
 #include <avtStructuredDomainNesting.h>
 #include <avtVariableCache.h>
@@ -40,7 +43,7 @@ using std::vector;
 using std::string;
 
 // the version of the SAMRAI writer the current reader code matches 
- static const float        expected_version_number = 1.0;
+ static const float        expected_version_number = 2.0;
 static const int MAX_GHOST_LAYERS = 2;
 static const int MAX_GHOST_CODES = MAX_GHOST_LAYERS *
                                    MAX_GHOST_LAYERS *
@@ -144,6 +147,12 @@ avtSAMRAIFileFormat::avtSAMRAIFileFormat(const char *fname)
     mat_names = 0;
     mat_var_num_components = 0;
     mat_var_names = 0;
+
+    has_specs = false;
+    nmatspec = 0;
+    num_spec_vars = 0;
+    spec_var_names = 0;
+
 }
 
 // ****************************************************************************
@@ -155,6 +164,8 @@ avtSAMRAIFileFormat::avtSAMRAIFileFormat(const char *fname)
 // ****************************************************************************
 avtSAMRAIFileFormat::~avtSAMRAIFileFormat()
 {
+    int i;
+
     DELETE(xlo);
     DELETE(dx);
     DELETE(num_patches_level);
@@ -169,17 +180,46 @@ avtSAMRAIFileFormat::~avtSAMRAIFileFormat()
     }
     var_extents = NULL;
 
+    //
+    // cleanup variable information
+    //
     DELETE(var_names);
     DELETE(var_cell_centered);
     DELETE(var_num_components);
     DELETE(var_num_ghosts);
 
+    //
+    // cleanup parent/child information
+    //
     DELETE(patch_map);
     DELETE(child_array);
     DELETE(child_pointer_array);
     DELETE(parent_array);
     DELETE(parent_pointer_array);
 
+    //
+    // clean up stuff having to do with species
+    //
+    DELETE(nmatspec);
+    DELETE(spec_var_names);
+    for (i = 0; i < num_mats; i++)
+        DELETE(mat_specs[mat_names[i]]);
+
+    std::map<std::string, std::map<std::string, matinfo_t*> >::iterator ms;
+    for (ms  = mat_specs_matinfo.begin();
+         ms != mat_specs_matinfo.end(); ms++)
+    {
+        std::map<std::string, matinfo_t*>::iterator mms;
+        for (mms  = ms->second.begin();
+             mms != ms->second.end(); mms++)
+        {
+            DELETE(mms->second);
+        }
+    }
+
+    //
+    // clean up stuff having to do with materials 
+    //
     std::map<std::string, matinfo_t*>::iterator m;
     for (m  = mat_names_matinfo.begin();
          m != mat_names_matinfo.end(); m++)
@@ -204,6 +244,9 @@ avtSAMRAIFileFormat::~avtSAMRAIFileFormat()
     DELETE(mat_num_ghosts);
     DELETE(mat_var_num_components);
 
+    //
+    // cleanup the mesh cache
+    //
     if (cached_patches != 0)
     {
         for (int p=0; p<num_patches; p++)
@@ -681,6 +724,8 @@ vtkDataArray *
 avtSAMRAIFileFormat::GetVectorVar(int patch, 
                                   const char *visit_var_name)
 {
+   // cerr << "FIX ME. MY PERFORMANCE IS BAD!, avtSAMRAIFileFormat::GetVectorVar" << endl;
+
     debug5 << "avtSAMRAIFileFormat::GetVectorVar for variable " <<
         visit_var_name << "on patch " << patch << endl;
 
@@ -789,10 +834,10 @@ avtSAMRAIFileFormat::GetVectorVar(int patch,
 }
 
 // ****************************************************************************
-//  Method:  avtSAMRAIFileFormat::ReadMaterialVolumeFractions
+//  Method:  avtSAMRAIFileFormat::ReadMatSpecFractions
 //
 //  Purpose:
-//    Reads volume fraction array for a given material
+//    Reads material volume and species fraction arrays for a given material
 //
 //  Programmer:  Mark C. Miller, adapted from GetVar 
 //  Creation:    December 12, 2003 
@@ -803,11 +848,12 @@ avtSAMRAIFileFormat::GetVectorVar(int patch,
 //
 // ****************************************************************************
 float *
-avtSAMRAIFileFormat::ReadMaterialVolumeFractions(int patch, string mat_name)
+avtSAMRAIFileFormat::ReadMatSpecFractions(int patch, string mat_name,
+    string spec_name)
 {
     int i;
 
-    debug5 << "avtSAMRAIFileFormat::ReadMaterialVolumeFractions for material "
+    debug5 << "avtSAMRAIFileFormat::ReadMatSpecFractions for material "
            << mat_name.c_str() << ", on patch " << patch << endl;
 
     int matNo = -1;
@@ -835,15 +881,27 @@ avtSAMRAIFileFormat::ReadMaterialVolumeFractions(int patch, string mat_name)
 
     char file[512];   
     sprintf(file, "%sprocessor_cluster.%05d.samrai",
-            dir_name.c_str(), patch_map[patch].file_cluster_number);
+        dir_name.c_str(), patch_map[patch].file_cluster_number);
 
     char variable[1024];
-    sprintf(variable, "/processor.%05d/level.%05d/patch.%05d/"
+    if (spec_name == "")
+    {
+        sprintf(variable, "/processor.%05d/level.%05d/patch.%05d/"
                       "materials/%s/%s-fractions",
             patch_map[patch].processor_number,
             patch_map[patch].level_number,
             patch_map[patch].patch_number, 
             mat_name.c_str(), mat_name.c_str());
+    }
+    else
+    {
+        sprintf(variable, "/processor.%05d/level.%05d/patch.%05d/"
+                      "materials/%s/species/%s",
+            patch_map[patch].processor_number,
+            patch_map[patch].level_number,
+            patch_map[patch].patch_number, 
+            mat_name.c_str(), spec_name.c_str());
+    }
 
     hid_t h5f_file = H5Fopen(file, H5F_ACC_RDONLY, H5P_DEFAULT); 
     if (h5f_file < 0)
@@ -916,21 +974,24 @@ avtSAMRAIFileFormat::GetMaterial(int patch, const char *matObjName)
     std::vector<int> matList;
     for (i = 0; i < num_mats; i++)
     {
-        if      (mat_names_matinfo[mat_names[i]][patch].mat_comp_flag == 0)
+        int matCompFlag = mat_names_matinfo[mat_names[i]][patch].mat_comp_flag;
+
+        switch (matCompFlag)
         {
-            // this material covers no part of the patch 
-             ;
-        }
-        else if (mat_names_matinfo[mat_names[i]][patch].mat_comp_flag == 1)
-        {
-            // this material covers the patch, wholly
-            matList.push_back(i);
-            oneMat = true;
-        }
-        else if (mat_names_matinfo[mat_names[i]][patch].mat_comp_flag == 2)
-        {
-            // this material covers the patch, partially
-            matList.push_back(i);
+            case 0: // this material covers no part of the patch 
+                 break;
+            case 1: // this material covers the patch, wholly
+                matList.push_back(i);
+                oneMat = true;
+                break;
+            case 2: // this material covers the patch, partially
+                matList.push_back(i);
+                break;
+            default:
+            {
+                EXCEPTION2(UnexpectedValueException, matCompFlag,
+                    "a value for material_composition_flag of 0,1 or 2");
+            }
         }
     }
 
@@ -970,6 +1031,8 @@ avtSAMRAIFileFormat::GetMaterial(int patch, const char *matObjName)
         matnames[i] = CXX_strdup(mat_names[i].c_str()); 
     }
 
+    avtMaterial *mat = NULL;
+
     if (matList.size() == 1)
     {
         // create a matlist array for this single material
@@ -977,28 +1040,27 @@ avtSAMRAIFileFormat::GetMaterial(int patch, const char *matObjName)
         for (i = 0; i < ncells; i++)
             matlist[i] = matList[0];
 
-        avtMaterial *mat = new avtMaterial(num_mats,      //silomat->nmat,
-                                           matnos,        //silomat->matnos,
-                                           matnames,      //silomat->matnames,
-                                           dim,           //silomat->ndims,
-                                           dims,          //silomat->dims,
-                                           0,             //silomat->major_order,
-                                           matlist,       //silomat->matlist,
-                                           0,             //silomat->mixlen,
-                                           0,             //silomat->mix_mat,
-                                           0,             //silomat->mix_next,
-                                           0,             //silomat->mix_zone,
-                                           0              //silomat->mix_vf
-                                           );
-
-        return mat;
+        mat = new avtMaterial(num_mats,      //silomat->nmat,
+                              matnos,        //silomat->matnos,
+                              matnames,      //silomat->matnames,
+                              dim,           //silomat->ndims,
+                              dims,          //silomat->dims,
+                              0,             //silomat->major_order,
+                              matlist,       //silomat->matlist,
+                              0,             //silomat->mixlen,
+                              0,             //silomat->mix_mat,
+                              0,             //silomat->mix_next,
+                              0,             //silomat->mix_zone,
+                              0              //silomat->mix_vf
+                              );
+     
     }
     else
     {
        // read the volume fractions for each material
        float **vfracs = new float*[matList.size()];
        for (i = 0; i < matList.size(); i++)
-           vfracs[i] = ReadMaterialVolumeFractions(patch, mat_names[matList[i]]);
+           vfracs[i] = ReadMatSpecFractions(patch, mat_names[matList[i]]);
 
        int *matfield;
        int mixlen;
@@ -1010,37 +1072,23 @@ avtSAMRAIFileFormat::GetMaterial(int patch, const char *matObjName)
        ConvertVolumeFractionFields(matList, vfracs, ncells, matfield, mixlen,
            mix_mat, mix_next, mix_zone, mix_vf);
 
-       avtMaterial *mat = new avtMaterial(num_mats,      //silomat->nmat,
-                                          matnos,        //silomat->matnos,
-                                          matnames,      //silomat->matnames,
-                                          dim,           //silomat->ndims,
-                                          dims,          //silomat->dims,
-                                          0,             //silomat->major_order,
-                                          matfield,      //silomat->matlist,
-                                          mixlen,        //silomat->mixlen,
-                                          mix_mat,       //silomat->mix_mat,
-                                          mix_next,      //silomat->mix_next,
-                                          mix_zone,      //silomat->mix_zone,
-                                          mix_vf         //silomat->mix_vf
-                                          );
-
+       mat = new avtMaterial(num_mats, matnos, matnames, dim, dims, 0, matfield,
+                             mixlen, mix_mat, mix_next, mix_zone, mix_vf);
 
        for (i = 0; i < matList.size(); i++)
            DELETE(vfracs[i]);
        DELETE(vfracs);
 
-       return mat;
-      
    }
 
    // free up the matnames and numbers
    DELETE(matnos);
    for (i = 0; i < num_mats; i++)
        DELETE(matnames[i]);
+
    DELETE(matnames);
 
-   return 0;
-
+   return mat;
 }
 
 // ****************************************************************************
@@ -1164,13 +1212,13 @@ avtSAMRAIFileFormat::ConvertVolumeFractionFields(vector<int> matIds,
 }
 
 // ****************************************************************************
-//  Method: avtSAMRAIFileFormat::GetAuxiliaryData
+//  Method: avtSAMRAIFileFormat::DebugMixedMaterials
 //
 //  Purpose:
-//      Gets auxiliary data about the file format.
+//      Checks mixed material arrays for correctness 
 //
-//  Programmer: Walter Herrera Jimenez
-//  Creation:   July 21, 2003
+//  Programmer: Mark C. Miller 
+//  Creation:   December 12, 2003 
 //
 // ****************************************************************************
 
@@ -1227,6 +1275,276 @@ avtSAMRAIFileFormat::DebugMixedMaterials(int ncells, int* &matfield,
 
     return ' ';
 
+}
+
+// ****************************************************************************
+//  Method: avtSAMRAIFileFormat::GetSpecies
+//
+//  Purpose:
+//      Gets an avtSpecies object for a given patch 
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   December 18, 2003 
+//
+// ****************************************************************************
+
+avtSpecies *
+avtSAMRAIFileFormat::GetSpecies(int patch, const char *specObjName)
+{
+    int i;
+    avtMaterial* mat = 0;
+
+    if (has_specs == false)
+    {
+        EXCEPTION1(InvalidVariableException, specObjName);
+    }
+
+    //
+    // we need the mixed material format computed during a GetMaterial call
+    //
+    void_ref_ptr vrTmp = cache->GetVoidRef("materials", AUXILIARY_DATA_MATERIAL,
+                                  timestep, patch);
+
+    if (*vrTmp == 0)
+    {
+        void *p = (void*) GetMaterial(patch, "materials");
+
+        vrTmp = void_ref_ptr(p, avtMaterial::Destruct);
+
+        cache->CacheVoidRef("materials", AUXILIARY_DATA_MATERIAL, timestep,
+            patch, vrTmp);
+
+    }
+
+    mat = (avtMaterial*) *vrTmp;
+
+
+    if (mat == 0)
+    {
+        char str[1024];
+        sprintf(str,"Unable to obtain material object on patch %d to satisfy "
+                    "cooresponding query for species object \"%s\"", patch,
+                    specObjName);
+        EXCEPTION1(InvalidFilesException, str);
+    }
+
+    debug5 << "avtSAMRAIFileFormat::GetSpecies getting species on patch "
+           << patch << endl;
+
+    //
+    // scan the material "extents" info to determine which species to read 
+    //
+    int totalNumSpecs = 0;
+    vector<int> matList;
+    for (i = 0; i < num_mats; i++)
+    {
+        int matCompFlag = mat_names_matinfo[mat_names[i]][patch].mat_comp_flag;
+
+        switch (matCompFlag)
+        {
+            case 0: // this material covers no part of the patch 
+                 break;
+            case 1: // this material covers the patch, wholly
+            case 2: // this material covers the patch, partially
+            {
+                matList.push_back(i);
+                totalNumSpecs += nmatspec[i];
+                break;
+            }
+            default:
+            {
+                EXCEPTION2(UnexpectedValueException, matCompFlag,
+                    "a value for material_composition_flag of 0,1 or 2");
+            }
+        }
+    }
+
+    // compute logical size in each dimension of this patch
+    int dim = num_dim_problem < 3 ? num_dim_problem: 3;
+    int dims[] = {1, 1, 1};
+    int ncells = 1;
+    for (i=0; i<dim; i++)
+    {
+        dims[i] = patch_extents[patch].upper[i] -
+                  patch_extents[patch].lower[i] + 1 +
+                  2 * mat_num_ghosts[i];
+        ncells *= dims[i];
+    }
+
+    // if this patch has no species, return a clean species object
+    if (totalNumSpecs == 0)
+    {
+        int mixlen = mat->GetMixlen();
+
+        int *mixList = new int[mixlen];
+        for (i = 0; i < mixlen; i++)
+            mixList[i] = 0;
+
+        int *specList = new int[ncells];
+        for (i = 0; i < ncells; i++)
+            specList[i] = 0;
+
+        avtSpecies *spec = new avtSpecies(num_mats, nmatspec, dim, dims, specList, mixlen,
+                                          mixList, 0, NULL);
+
+        return spec;
+    }
+
+
+    //
+    // build an array, indexed by material number, with pointers to
+    // mass fractions arrays. Only those materials that are ON this
+    // patch AND have more than 0 species have non-NULL mass fraction
+    // arrays
+    //
+    int currPatchMatId = 0;
+    vector<float**> matSpecFracs;
+    for (i = 0; i < num_mats; i++)
+    {
+        if (i == matList[currPatchMatId])
+        {
+            string matName = mat_names[i];
+            int numSpecs = nmatspec[i];
+
+            if (numSpecs > 0)
+            {
+                int j;
+                float **specFracs = new float*[numSpecs];
+
+                for (j = 0; j < numSpecs; j++)
+                    specFracs[j] = ReadMatSpecFractions(patch, matName,
+                                       mat_specs[matName][j]);
+
+                matSpecFracs.push_back(specFracs);
+            }
+            else
+            {
+                matSpecFracs.push_back(NULL);
+            }
+
+            // inc. to next material id to be on the
+            // the lookout for
+            currPatchMatId++;
+        }
+        else
+        {
+            matSpecFracs.push_back(NULL);
+        }
+    }
+
+    int *specList;
+    int nspecies_mf;
+    float *species_mf;
+    int *mixList;
+
+    ConvertMassFractionFields(matList, matSpecFracs, ncells, mat,
+        specList, nspecies_mf, species_mf, mixList);
+
+    avtSpecies *spec = new avtSpecies(num_mats, nmatspec, dim, dims, specList,
+                                      mat->GetMixlen(), mixList, nspecies_mf,
+                                      species_mf);
+
+    //
+    // free up species fields 
+    //
+    currPatchMatId = 0;
+    for (i = 0; i < num_mats; i++)
+    {
+        if (i == matList[currPatchMatId])
+        {
+            int j;
+            int numSpecs = nmatspec[i];
+            if (numSpecs > 0)
+            {
+                for (j = 0; j < numSpecs; j++)
+                    DELETE(matSpecFracs[i][j]);
+            }
+        }
+    }
+
+    return spec;
+}
+
+// ****************************************************************************
+//  Method: avtSAMRAIFileFormat::ConvertMassFractionFields
+//
+//  Purpose: Convert from field per species to Silo representation
+//
+//  Programmer: Mark C. Miller
+//  Creation:   December 20, 2003 
+//
+// ****************************************************************************
+
+void
+avtSAMRAIFileFormat::ConvertMassFractionFields(vector<int> matIds,
+    vector<float**> matSpecFracs, int ncells, avtMaterial *mat,
+    int* &speclist, int &nspecies_mf, float* &species_mf, int* &mixlist)
+{
+    int i,j;
+    const int* matlist  = mat->GetMatlist();
+    const int* mix_mat  = mat->GetMixMat();
+    const int* mix_next = mat->GetMixNext();
+    int mixlen          = mat->GetMixlen();
+
+    AutoArray<float> aaspecies_mf(ncells,ncells,true);
+    speclist = new int[ncells];
+    mixlist  = new int[mixlen];
+
+    nspecies_mf = 1;
+
+    for (i = 0; i < ncells; i++)
+    {
+        int matNum = matlist[i];
+
+        if (matNum >= 0) // clean zone
+        {
+            // if this material has species, it should have species mf pointers
+            if ((nmatspec[matNum] != 0) && (matSpecFracs[matNum] == NULL))
+            {
+                EXCEPTION2(UnexpectedValueException, nmatspec[matNum], 0);
+            }
+
+            if (nmatspec[matNum] == 0)
+                speclist[i] = 0;
+            else
+            {
+                speclist[i] = nspecies_mf;
+                for (j = 0; j < nmatspec[matNum]; j++)
+                    aaspecies_mf[nspecies_mf++] = matSpecFracs[matNum][j][i];
+            }
+        }
+        else // mixed zone
+        {
+            speclist[i] = -INT_MAX; 
+
+            bool first = true;
+            int mixidx = -(matlist[i]+1);
+
+            while (first || mixidx != 0)
+            {
+                matNum = mix_mat[mixidx];
+
+                // if this material has species, it should have species mf pointers
+                if ((nmatspec[matNum] != 0) && (matSpecFracs[matNum] == NULL))
+                {
+                    EXCEPTION2(UnexpectedValueException, nmatspec[matNum], 0);
+                }
+
+                mixlist[mixidx] = nspecies_mf;
+                for (j = 0; j < nmatspec[matNum]; j++)
+                    aaspecies_mf[nspecies_mf++] = matSpecFracs[matNum][j][i];
+
+                first = false;
+                mixidx = mix_next[mixidx];
+            }
+        }
+    }
+
+    species_mf = aaspecies_mf.GetData();
+    if (nspecies_mf != aaspecies_mf.GetSize())
+    {
+        EXCEPTION2(UnexpectedValueException, nspecies_mf, aaspecies_mf.GetSize());
+    }
 }
 
 // ****************************************************************************
@@ -1292,7 +1610,7 @@ avtSAMRAIFileFormat::GetAuxiliaryData(const char *var, int patch,
 
         } else {
             itree = new avtIntervalTree(num_patches, 3);
-            for (int patch = 0 ; patch < num_patches ; patch++) {
+            for (int patch = 0 ; patch < num_patches; patch++) {
                 bool data_defined = true;
                 float range[6] = { 0, 0, 0, 0, 0, 0 };
                 int dim = num_components <= 3 ? num_components : 3;
@@ -1329,10 +1647,12 @@ avtSAMRAIFileFormat::GetAuxiliaryData(const char *var, int patch,
     }
     else if (strcmp(type, AUXILIARY_DATA_SPATIAL_EXTENTS) == 0) {
 
-        int dim = num_dim_problem < 3 ? num_dim_problem: 3;
-        itree = new avtIntervalTree(num_patches, dim);
+        debug5 << "avtSAMRAIFileFormat::GetAuxiliaryData getting SPATIAL_EXTENTS" << endl;
+
+        itree = new avtIntervalTree(num_patches, 3);
         for (int patch = 0 ; patch < num_patches ; patch++) {
-            float bounds[] = {0., 0., 0., 0., 0., 0.};
+            float bounds[] = {0, 0, 0, 0, 0, 0};
+            int dim = num_dim_problem < 3 ? num_dim_problem: 3;
 
             for (int j=0; j<dim; j++) {
                 bounds[j*2] = patch_extents[patch].xlo[j];
@@ -1349,6 +1669,11 @@ avtSAMRAIFileFormat::GetAuxiliaryData(const char *var, int patch,
     {
         rv = (void *) GetMaterial(patch, var);
         df = avtMaterial::Destruct;
+    }
+    else if (strcmp(type, AUXILIARY_DATA_SPECIES) == 0)
+    {
+        rv = (void *) GetSpecies(patch, var);
+        df = avtSpecies::Destruct;
     }
 
     return rv;
@@ -1372,6 +1697,8 @@ avtSAMRAIFileFormat::GetAuxiliaryData(const char *var, int patch,
 void
 avtSAMRAIFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 {
+    int i;
+
     debug5 << "avtSAMRAIFileFormat::PopulateDatabaseMetaData getting data" << endl;
 
     {
@@ -1396,7 +1723,7 @@ avtSAMRAIFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         mesh->groupPieceName = "level";
         vector<int> groupIds(num_patches);
         vector<string> blockPieceNames(num_patches);
-        for (int i = 0; i < num_patches; i++)
+        for (i = 0; i < num_patches; i++)
         {
            char tmpName[64];
            sprintf(tmpName,"level%d,patch%d",patch_map[i].level_number, patch_map[i].patch_number);
@@ -1414,32 +1741,59 @@ avtSAMRAIFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         if (has_mats == true)
         {
             vector<string> matnames;
-            for (int i = 0; i < num_mats; i++)
+            for (i = 0; i < num_mats; i++)
                 matnames.push_back(mat_names[i]);
 
             avtMaterialMetaData *mmd = new avtMaterialMetaData("materials",
                                                mesh_name, num_mats, matnames);
             md->Add(mmd);
+
+            //
+            // add species information, if any
+            //
+            if (has_specs == true)
+            {
+                int j, k;
+                vector<int> nmatspecVector;
+                vector<vector<string> > spec_names;
+
+                for (j = 0; j < num_mats; j++)
+                {
+                    vector<string>  tmp_string_vector;
+
+                    nmatspecVector.push_back(nmatspec[j]); 
+
+                    for (k = 0; k < nmatspec[j]; k++)
+                        tmp_string_vector.push_back(mat_specs[mat_names[j]][k]);
+
+                    spec_names.push_back(tmp_string_vector);
+                }
+
+                avtSpeciesMetaData *smd = new avtSpeciesMetaData("species",
+                                               mesh_name, "materials", num_mats,
+                                               nmatspecVector, spec_names);
+                md->Add(smd);
+            }
         }
 
+        //
+        // add default plot
+        //
         avtDefaultPlotMetaData *plot = new avtDefaultPlotMetaData("Subset_1.0", "levels");
-
         char attribute[250];
-
         sprintf(attribute,"%d NULL ViewerPlot", INTERNAL_NODE);
         plot->AddAttribute(attribute);
-
         sprintf(attribute,"%d ViewerPlot SubsetAttributes", INTERNAL_NODE);
         plot->AddAttribute(attribute);
-
         sprintf(attribute,"%d SubsetAttributes lineWidth 1", INT_NODE);
         plot->AddAttribute(attribute);
-
         sprintf(attribute,"%d SubsetAttributes wireframe true", BOOL_NODE);
         plot->AddAttribute(attribute);
-
         md->Add(plot);
         
+        //
+        // add scalar and vector variables
+        //
         std::map<std::string, var_t>::const_iterator var_it;
         for (var_it = var_names_num_components.begin();
              var_it != var_names_num_components.end(); 
@@ -1586,6 +1940,8 @@ avtSAMRAIFileFormat::ReadMetaDataFile()
 
         ReadMaterialInfo(h5_file);
 
+        ReadSpeciesInfo(h5_file);
+
         H5Fclose(h5_file);
 
         cached_patches = new vtkDataSet**[num_patches];
@@ -1643,13 +1999,13 @@ avtSAMRAIFileFormat::ReadTime(hid_t &h5_file)
 void 
 avtSAMRAIFileFormat::ReadAndCheckVDRVersion(hid_t &h5_file)
 {
-    cerr << "WARNING! SAMRIA VDR VERSION CHECK DISABLED" << endl;
-    return;
-
+//    cerr << "WARNING, SAMRAI VERSION CHECK DISABLED" << endl;
+//    return;
+   
     hid_t h5_dataset = H5Dopen(h5_file,"/BASIC_INFO/VDR_version_number");
     if (h5_dataset < 0) {
         char str[1024];
-        sprintf(str, "%s::/BASIC_INFO/VDR_version_numer_does not exist. Unable "
+        sprintf(str, "%s::/BASIC_INFO/VDR version numer does not exist. Unable "
             "to confirm file's version compatibility with reader plugin", file_name.c_str());
         EXCEPTION1(InvalidFilesException, str);
     }
@@ -1667,9 +2023,9 @@ avtSAMRAIFileFormat::ReadAndCheckVDRVersion(hid_t &h5_file)
             "SAMRAI used to produce this file, %f, does not match the version of "
             "the VisIt reader plugin you are now trying to use to read it, %f",
              file_name.c_str(),obtained_version_number,expected_version_number);
-        EXCEPTION2(UnexpectedValueException, obtained_version_number,
-                                             expected_version_number);
+        EXCEPTION1(InvalidFilesException, str);
     }
+
 }
 
 // ****************************************************************************
@@ -2669,6 +3025,95 @@ avtSAMRAIFileFormat::ReadMaterialInfo(hid_t &h5_file)
                 (void**) &tmpInfo, isOptional);
             
             mat_var_names_matinfo[mat_names[m]][mat_var_names[mv]] = tmpInfo;
+        }
+    }
+}
+
+// ****************************************************************************
+//  Method:  ReadSpeciesInfo
+//
+//  Purpose:
+//    Read species information from the metadata file 
+//
+//  Arguments:
+//    IN:  h5_file     the handle of the file to be read
+//
+//  Programmer:  Mark C. Miller 
+//  Creation:    December 18, 2003 
+//
+// ****************************************************************************
+void
+avtSAMRAIFileFormat::ReadSpeciesInfo(hid_t &h5_file)
+{
+    // read species variable names
+    num_spec_vars = -1;
+    bool isOptional = true;
+
+    ReadDataset(h5_file, "/materials/species_variable_names", "string", 1, &num_spec_vars,
+        (void**) &spec_var_names, isOptional);
+
+    if (num_spec_vars > 0)
+        has_specs = true;
+    else
+        has_specs = false;
+
+    // if we don't have any species, we're done
+    if (has_specs == false)
+        return;
+
+    nmatspec = new int[num_mats];
+
+    // for each material, try to obtain the names of its constituent species 
+    int i;
+    bool atLeastOneMaterialHasSpecies = false;
+    for (i = 0; i < num_mats; i++)
+    {
+        char matSpecName[512];
+        sprintf(matSpecName,"/materials/species/%s", mat_names[i].c_str());
+
+        nmatspec[i] = -1;
+        string* tmpString = 0;
+        ReadDataset(h5_file, matSpecName, "string", 1, &nmatspec[i],
+            (void**) &tmpString, isOptional);
+
+        // if the given material has no constituent species, its count is 1
+        if (nmatspec[i] == 0)
+        {
+            mat_specs[mat_names[i]] = 0;
+        }
+        else
+        {
+            mat_specs[mat_names[i]] = tmpString;
+            atLeastOneMaterialHasSpecies = true;
+        }
+    }
+
+    // if no material was found to have constituent species, ignore species data
+    if (atLeastOneMaterialHasSpecies == false)
+        return;
+
+    // if we do have species, all the remaining information is required 
+    isOptional = false;
+
+    // Read "extents" information for each species 
+    for (int m = 0; m < num_mats; m++)
+    {
+        int s;
+        for (s = 0; s < nmatspec[m]; s++)
+        {
+            matinfo_t *tmpInfo = 0;
+            char dsName[1024];
+
+            string matName = mat_names[m];
+            string specName = mat_specs[matName][s];
+
+            sprintf(dsName,"/extents/materials/%s/species/%s",
+                matName.c_str(), specName.c_str());
+
+            ReadDataset(h5_file, dsName, "matinfo_t", 1, &num_patches,
+                (void**) &tmpInfo, isOptional);
+            
+            mat_specs_matinfo[matName][specName] = tmpInfo;
         }
     }
 }
