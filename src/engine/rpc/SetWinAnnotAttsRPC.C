@@ -27,9 +27,11 @@
 //    Mark C. Miller, Tue Jul 27 15:11:11 PDT 2004
 //    Added stuff to support frame and state info
 //
+//    Mark C. Miller, Wed Oct  6 18:12:29 PDT 2004
+//    Added view extents double vector 
 // ****************************************************************************
 
-SetWinAnnotAttsRPC::SetWinAnnotAttsRPC() : BlockingRPC("aaasaI")
+SetWinAnnotAttsRPC::SetWinAnnotAttsRPC() : BlockingRPC("aaasaID")
 {
 }
 
@@ -77,6 +79,8 @@ SetWinAnnotAttsRPC::~SetWinAnnotAttsRPC()
 //    Mark C. Miller, Tue Jul 27 15:11:11 PDT 2004
 //    Added stuff to support frame and state info
 //
+//    Mark C. Miller, Wed Oct  6 18:12:29 PDT 2004
+//    Added view extents double vector
 // ****************************************************************************
 
 void
@@ -85,7 +89,8 @@ SetWinAnnotAttsRPC::operator()(const WindowAttributes *winAtts,
                                const AnnotationObjectList *aoList,
                                const string extStr,
                                const VisualCueList *cueList,
-                               const int *frameAndState) 
+                               const int *frameAndState,
+                               const double *viewExtents)
 {
     if (winAtts)
        SetWindowAtts(winAtts);
@@ -105,8 +110,11 @@ SetWinAnnotAttsRPC::operator()(const WindowAttributes *winAtts,
     if (frameAndState)
        SetFrameAndState(frameAndState);
 
+    if (viewExtents)
+       SetViewExtents(viewExtents);
+
     if (winAtts || annotAtts || aoList || extStr.size() || cueList ||
-        frameAndState)
+        frameAndState || viewExtents)
        Execute();
 }
 
@@ -131,6 +139,9 @@ SetWinAnnotAttsRPC::operator()(const WindowAttributes *winAtts,
 //
 //    Mark C. Miller, Tue Jul 27 15:11:11 PDT 2004
 //    Added stuff to support frame and state info
+//
+//    Mark C. Miller, Wed Oct  6 18:12:29 PDT 2004
+//    Added view extents double vector
 // ****************************************************************************
 
 void
@@ -142,6 +153,7 @@ SetWinAnnotAttsRPC::SelectAll()
     Select(3, (void*)&extstr);
     Select(4, (void*)&cuelist);
     Select(5, (void*)fands, sizeof(fands)/sizeof(fands[0]));
+    Select(6, (void*)vexts, sizeof(vexts)/sizeof(vexts[0]));
 }
 
 
@@ -261,6 +273,22 @@ SetWinAnnotAttsRPC::SetFrameAndState(const int *frameAndState)
 }
 
 // ****************************************************************************
+//  Method: SetWinAnnotAttsRPC::SetViewExtents
+//
+//  Programmer: Mark C. Miller
+//  Creation:   August 16, 2004 
+//
+// ****************************************************************************
+
+void
+SetWinAnnotAttsRPC::SetViewExtents(const double *viewExtents)
+{
+    for (int i = 0; i < sizeof(vexts)/sizeof(vexts[0]); i++)
+        vexts[i] = viewExtents[i];
+    Select(6, (void*)vexts, sizeof(vexts)/sizeof(vexts[0]));
+}
+
+// ****************************************************************************
 //  Method: SetWinAnnotAttsRPC::GetWindowAtts
 //
 //  Purpose: 
@@ -354,4 +382,18 @@ const int*
 SetWinAnnotAttsRPC::GetFrameAndState() const
 {
     return fands;
+}
+
+// ****************************************************************************
+//  Method: SetWinAnnotAttsRPC::GetViewExtents
+//
+//  Programmer: Mark C. Miller
+//  Creation:   August 16, 2004 
+//
+// ****************************************************************************
+
+const double*
+SetWinAnnotAttsRPC::GetViewExtents() const
+{
+    return vexts;
 }

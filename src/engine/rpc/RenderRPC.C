@@ -18,9 +18,11 @@
 //    Mark C. Miller, Mon Mar 29 14:11:42 PST 2004
 //    Added bool for 3D annotations
 //
+//    Mark C. Miller, Wed Oct  6 18:12:29 PDT 2004
+//    Changed 3D annotation flag to integer mode
 // ****************************************************************************
 
-RenderRPC::RenderRPC() : NonBlockingRPC("i*bb")
+RenderRPC::RenderRPC() : NonBlockingRPC("i*bi")
 {
 }
 
@@ -58,15 +60,17 @@ RenderRPC::~RenderRPC()
 //    Mark C. Miller, Mon Mar 29 14:11:42 PST 2004
 //    Added bool for 3D annotations
 //
+//    Mark C. Miller, Wed Oct  6 18:12:29 PDT 2004
+//    Changed 3D annotation flag to integer mode
 // ****************************************************************************
 
 void
 RenderRPC::operator()(const intVector& ids_, bool sendZBuffer_,
-    bool do3DAnnotsOnly_)
+    int annotMode_)
 {
     SetIDs(ids_);
     SetSendZBuffer(sendZBuffer_);
-    SetDo3DAnnotsOnly(do3DAnnotsOnly_);
+    SetAnnotMode(annotMode_);
 
     Execute();
 }
@@ -82,6 +86,10 @@ RenderRPC::operator()(const intVector& ids_, bool sendZBuffer_,
 //  Programmer: Mark C. Miller
 //  Creation:   07Apr03
 //
+//  Modifications:
+//
+//    Mark C. Miller, Wed Oct  6 18:12:29 PDT 2004
+//    Changed 3D annotation flag to integer mode
 // ****************************************************************************
 
 void
@@ -89,7 +97,7 @@ RenderRPC::SelectAll()
 {
     Select(0, (void*)&ids);
     Select(1, (void*)&sendZBuffer);
-    Select(2, (void*)&do3DAnnotsOnly);
+    Select(2, (void*)&annotMode);
 }
 
 
@@ -108,6 +116,8 @@ RenderRPC::SelectAll()
 //  Modifications:
 //    Mark C. Miller, added method for 3D annotations
 //
+//    Mark C. Miller, Wed Oct  6 18:12:29 PDT 2004
+//    Changed 3D annotation flag to integer mode
 // ****************************************************************************
 
 void
@@ -125,10 +135,10 @@ RenderRPC::SetSendZBuffer(bool sendZBuffer_)
 }
 
 void
-RenderRPC::SetDo3DAnnotsOnly(bool do3DAnnotsOnly_)
+RenderRPC::SetAnnotMode(int annotMode_)
 {
-    do3DAnnotsOnly = do3DAnnotsOnly_;
-    Select(2, (void*)&do3DAnnotsOnly);
+    annotMode = annotMode_;
+    Select(2, (void*)&annotMode);
 }
 
 
@@ -147,6 +157,8 @@ RenderRPC::SetDo3DAnnotsOnly(bool do3DAnnotsOnly_)
 //  Modifications:
 //    Mark C. Miller, added method for 3D annotations
 //
+//    Mark C. Miller, Wed Oct  6 18:12:29 PDT 2004
+//    Changed 3D annotation flag to integer mode
 // ****************************************************************************
 
 const intVector&
@@ -161,9 +173,9 @@ RenderRPC::GetSendZBuffer() const
     return sendZBuffer;
 }
 
-bool
-RenderRPC::GetDo3DAnnotsOnly() const
+int
+RenderRPC::GetAnnotMode() const
 {
-    return do3DAnnotsOnly;
+    return annotMode;
 }
 

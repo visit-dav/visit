@@ -271,6 +271,11 @@ class VisitInteractor;
 //    Kathleen Bonnell, Thu Sep  2 13:40:25 PDT 2004 
 //    Added FindIntersection, SetPickTypeToNormal, SetPickTypeToIntersection. 
 //
+//    Mark C. Miller, Wed Oct  6 17:50:23 PDT 2004
+//    Made GetBounds public and const qualified it
+//    Added doViewport and keepZbuffer args to PostProcessScreenCapture
+//    Added explicit bounds args to SetViewExtentsType
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindow
@@ -285,13 +290,14 @@ public:
     void                 ClearPlots(void);
 
     void                 SetBounds(const float [6]);
+    void                 GetBounds(float [6]) const;
     void                 UnsetBounds(void);
 
     void                 Realize(void);
     avtImage_p           ScreenCapture(bool doViewportOnly = false,
                                        bool doZBufferToo = false);
     avtImage_p           PostProcessScreenCapture(avtImage_p capturedImage,
-                                       bool doViewportOnly);
+                                       bool doViewportOnly, bool keepZBuffer);
     avtDataset_p         GetAllDatasets(void);
 
     void                 SetSize(int, int);
@@ -346,7 +352,7 @@ public:
     bool                 GetSpinMode() const;
     void                 SetSpinModeSuspended(bool);
     bool                 GetSpinModeSuspended() const;
-    void                 SetViewExtentsType(avtExtentType);
+    void                 SetViewExtentsType(avtExtentType, const float *const bnds = 0);
 
     void                 ResetView(void);
     void                 SetView2D(const avtView2D &);
@@ -546,7 +552,6 @@ protected:
     vtkRenderer         *GetBackground(void);
     vtkRenderer         *GetForeground(void);
 
-    void                 GetBounds(float [6]);
     void                 StartBoundingBox(void);
     void                 EndBoundingBox(void);
     void                 UpdateAxes2D(void);

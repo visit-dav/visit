@@ -1626,12 +1626,20 @@ VisWindow::ScreenCapture(bool doViewportOnly, bool doZBufferToo)
 //  Programmer: Mark C. Miller 
 //  Creation:   July 26, 2004 
 //
+//  Modifications:
+//
+//    Mark C. Miller, Wed Oct  6 17:50:23 PDT 2004
+//    Added arg indicating if zbuffer should be kept or not
+//
 // ****************************************************************************
 
 avtImage_p
-VisWindow::PostProcessScreenCapture(avtImage_p capturedImage, bool doViewportOnly)
+VisWindow::PostProcessScreenCapture(avtImage_p capturedImage,
+    bool doViewportOnly, bool keepZBuffer)
 {
-    return rendering->PostProcessScreenCapture(capturedImage, doViewportOnly);
+    return rendering->PostProcessScreenCapture(capturedImage,
+                                               doViewportOnly,
+                                               keepZBuffer);
 }
 
 // ****************************************************************************
@@ -1970,14 +1978,25 @@ VisWindow::GetBoundingBoxMode() const
 //  Programmer: Hank Childs
 //  Creation:   July 15, 2002
 //
+//  Modifications:
+//
+//    Mark C. Miller, Wed Oct  6 17:50:23 PDT 2004
+//    Added code to force explicit bounds passed in from the caller
+//
 // ****************************************************************************
 
 void
-VisWindow::SetViewExtentsType(avtExtentType vt)
+VisWindow::SetViewExtentsType(avtExtentType vt, const float *const expbnds)
 {
-    plots->SetViewExtentsType(vt);
     float bnds[6];
-    plots->GetBounds(bnds);
+    plots->SetViewExtentsType(vt);
+    if ((vt != AVT_SPECIFIED_EXTENTS) || (expbnds == NULL))
+        plots->GetBounds(bnds);
+    else
+    {
+        for (int i = 0; i < 6; i++)
+            bnds[i] = expbnds[i];
+    }
     axes3D->SetBounds(bnds);
 }
 
@@ -2769,10 +2788,15 @@ VisWindow::UnsetBounds()
 //  Programmer:  Hank Childs
 //  Creation:    November 8, 2000
 //
+//  Modifications:
+//
+//    Mark C. Miller, Wed Oct  6 17:50:23 PDT 2004
+//    Added const qualification
+//
 // ****************************************************************************
 
 void
-VisWindow::GetBounds(float bounds[6])
+VisWindow::GetBounds(float bounds[6]) const
 {
     plots->GetBounds(bounds);
 }

@@ -1312,6 +1312,11 @@ ViewerEngineManager::LaunchMessage(const EngineKey &ek)  const
 //   Brad Whitlock, Wed Aug 4 17:24:46 PST 2004
 //   Changed EngineMap.
 //
+//    Mark C. Miller, Wed Oct  6 18:12:29 PDT 2004
+//    Added view extents to externa render request info
+//    Added code to push explicit view extents to the engine(s)
+//    Made it so only the last engine will render annotations
+//    
 // ****************************************************************************
 
 bool
@@ -1328,9 +1333,10 @@ ViewerEngineManager::ExternalRender(const ExternalRenderRequestInfo& reqInfo,
     const WindowAttributes& winAtts                  = reqInfo.winAtts;
     const AnnotationAttributes& annotAtts            = reqInfo.annotAtts;
     const AnnotationObjectList& annotObjs            = reqInfo.annotObjs;
-    const string& extStr                             = reqInfo.extStr;
+    string extStr                                    = string(reqInfo.extStr);
     const VisualCueList& visCues                     = reqInfo.visCues;
     const int* frameAndState                         = reqInfo.frameAndState;
+    const double *viewExtents                        = reqInfo.viewExtents;
 
     bool retval = true;
     EngineKey ek;
@@ -1361,6 +1367,13 @@ ViewerEngineManager::ExternalRender(const ExternalRenderRequestInfo& reqInfo,
         int numEnginesToRender = perEnginePlotIds.size();
         bool sendZBuffer = numEnginesToRender > 1 ? true : false;
 
+        //
+        // we have to force extents when we have more than one engine
+        // to get them to all agree
+        //
+        if (numEnginesToRender > 1)
+            extStr = avtExtentType_ToString(AVT_SPECIFIED_EXTENTS);
+
         // send RPCs to set window and annotation attributes
         std::map<EngineKey, intVector>::iterator pos;
         for (pos = perEnginePlotIds.begin();
@@ -1368,7 +1381,7 @@ ViewerEngineManager::ExternalRender(const ExternalRenderRequestInfo& reqInfo,
         {
             ek = pos->first;
             engines[ek].proxy->SetWinAnnotAtts(&winAtts, &annotAtts, &annotObjs,
-                             extStr, &visCues, frameAndState);
+                             extStr, &visCues, frameAndState, viewExtents);
         }
 
         // send per-plot RPCs
@@ -1386,8 +1399,19 @@ ViewerEngineManager::ExternalRender(const ExternalRenderRequestInfo& reqInfo,
         {
             ek = pos->first;
 
+            //
+            // 0=no annotations; 1=3D annotations only; 2=all annotations
+            // We make the last engine do annotations because the order
+            // of successive z-buffer composites in the viewer matters
+            // when annotations are involved
+            //
+            int annotMode = doAllAnnotations ? 2 : 0;
+            std::map<EngineKey, intVector>::iterator pos1 = pos;
+            if (++pos1 == perEnginePlotIds.end())
+                annotMode = doAllAnnotations ? 2 : 1;
+
             avtDataObjectReader_p rdr =
-                engines[ek].proxy->Render(sendZBuffer, pos->second, !doAllAnnotations);
+                engines[ek].proxy->Render(sendZBuffer, pos->second, annotMode);
 
             if (*rdr == NULL)
             {
@@ -1578,6 +1602,9 @@ ViewerEngineManager::ExternalRender(const ExternalRenderRequestInfo& reqInfo,
 //    Hank Childs, Wed Aug 11 08:08:18 PDT 2004
 //    Add timings code.
 //
+//    Mark C. Miller, Wed Oct  6 18:12:29 PDT 2004
+//    Added code to pass view extents to engine
+//
 // ****************************************************************************
 
 avtDataObjectReader_p
@@ -1659,7 +1686,9 @@ ViewerEngineManager::GetDataObjectReader(ViewerPlot *const plot)
            int fns[7];
            w->GetFrameAndState(fns[0], fns[1], fns[2], fns[3],
                                        fns[4], fns[5], fns[6]);
-           engine->SetWinAnnotAtts(&winAtts,&annotAtts,&annotObjs,extStr,&visCues,fns);
+           double vext[6];
+           w->GetExtents(3, vext);
+           engine->SetWinAnnotAtts(&winAtts,&annotAtts,&annotObjs,extStr,&visCues,fns,vext);
         }
 
         //
@@ -1856,6 +1885,9 @@ ViewerEngineManager::UseDataObjectReader(ViewerPlot *const plot,
 //    Brad Whitlock, Wed Aug 4 17:26:09 PST 2004
 //    Changed EngineMap.
 //
+//    Mark C. Miller, Wed Oct  6 18:12:29 PDT 2004
+//    Changed how annotation flag is handled
+//
 // ****************************************************************************
 
 avtDataObjectReader_p
@@ -1872,7 +1904,8 @@ ViewerEngineManager::GetDataObjectReader(bool sendZBuffer,
 
     TRY
     {
-        retval = engines[ek].proxy->Render(sendZBuffer, ids, !doAllAnnotations);
+        int annotMode = doAllAnnotations ? 2 : 1;
+        retval = engines[ek].proxy->Render(sendZBuffer, ids, annotMode);
     }
     CATCH(LostConnectionException)
     {
@@ -2200,6 +2233,8 @@ ViewerEngineManager::StartPick(const EngineKey &ek, const bool forZones,
 //    Mark C. Miller, Tue Jul 27 15:11:11 PDT 2004
 //    Added code to deal with frame and state in window/annotation atts
 //
+//    Mark C. Miller, Wed Oct  6 18:12:29 PDT 2004
+//    Added code for view extents
 // ****************************************************************************
 
 bool
@@ -2209,10 +2244,11 @@ ViewerEngineManager::SetWinAnnotAtts(const EngineKey &ek,
                                      const AnnotationObjectList *ao,
                                      const string extstr,
                                      const VisualCueList *visCues,
-                                     const int *frameAndState)
+                                     const int *frameAndState,
+                                     const double *viewExtents)
 {
     ENGINE_PROXY_RPC_BEGIN("SetWinAnnotAtts");
-    engine->SetWinAnnotAtts(wa,aa,ao,extstr,visCues,frameAndState);
+    engine->SetWinAnnotAtts(wa,aa,ao,extstr,visCues,frameAndState,viewExtents);
     ENGINE_PROXY_RPC_END;
 }
 
@@ -2599,6 +2635,9 @@ ViewerEngineManager::Update(Subject *TheChangedSubject)
 //    Brad Whitlock, Wed Aug 4 17:29:44 PST 2004
 //    Changed EngineMap.
 //
+//    Mark C. Miller, Wed Oct  6 18:12:29 PDT 2004
+//    Added code for view extents
+//
 // ****************************************************************************
 
 void
@@ -2620,9 +2659,11 @@ ViewerEngineManager::GetImage(int index, avtDataObject_p &dob)
     int fns[7];
     w->GetFrameAndState(fns[0], fns[1], fns[2], fns[3],
                                 fns[4], fns[5], fns[6]);
+    double vext[6];
+    w->GetExtents(3, vext);
 
     // send to the engine
-    engine->SetWinAnnotAtts(&winAtts,&annotAtts,&annotObjs,extStr,&visCues,fns);
+    engine->SetWinAnnotAtts(&winAtts,&annotAtts,&annotObjs,extStr,&visCues,fns,vext);
     
     engine->UseNetwork(index);
 #ifdef VIEWER_MT

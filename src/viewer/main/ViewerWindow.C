@@ -1359,10 +1359,12 @@ ViewerWindow::GetViewExtentsType() const
 //   Brad Whitlock, Sat Jan 31 22:39:26 PST 2004
 //   I removed the frame argumnet.
 //
+//   Mark C. Miller, Wed Oct  6 18:12:29 PDT 2004
+//   Added const qualification 
 // ****************************************************************************
 
 void
-ViewerWindow::GetExtents(int nDimensions, double *extents)
+ViewerWindow::GetExtents(int nDimensions, double *extents) const
 {
     GetPlotList()->GetPlotLimits(nDimensions, extents);
 }
@@ -5109,6 +5111,9 @@ ViewerWindow::GetWindowAttributes() const
 //
 //    Mark C. Miller, Tue Jul 27 15:11:11 PDT 2004
 //    Added code to deal with frame and state info
+//
+//    Mark C. Miller, Wed Oct  6 18:12:29 PDT 2004
+//    Added code to deal with view extents
 // ****************************************************************************
 
 bool
@@ -5124,13 +5129,16 @@ ViewerWindow::SendWindowEnvironmentToEngine(const EngineKey &ek)
     int fns[7];
     visWindow->GetFrameAndState(fns[0], fns[1], fns[2], fns[3],
                                         fns[4], fns[5], fns[6]);
+    double vexts[6];
+    GetExtents(3, vexts);
     return ViewerEngineManager::Instance()->SetWinAnnotAtts(ek,
                                                             &winAtts,
                                                             &annotAtts,
                                                             &annotObjs,
                                                             extStr,
                                                             &visCues,
-                                                             fns);
+                                                             fns,
+                                                             vexts);
 }
 
 // ****************************************************************************
@@ -7094,6 +7102,9 @@ ViewerWindow::ShouldSendScalableRenderingModeChangeMessage(bool *newMode) const
 //
 //    Mark C. Miller, Wed Jun  9 17:44:38 PDT 2004
 //    Added code to deal with visual cues (pick points and ref lines)
+//
+//    Mark C. Miller, Wed Oct  6 18:12:29 PDT 2004
+//    Added code to deal with view extents and frame and state
 // ****************************************************************************
 
 void
@@ -7107,6 +7118,10 @@ ViewerWindow::ClearLastExternalRenderRequestInfo()
     lastExternalRenderRequest.extStr =
         avtExtentType_ToString(AVT_UNKNOWN_EXTENT_TYPE);
     lastExternalRenderRequest.visCues.ClearVisualCueInfos();
+    for (int i = 0; i < 7; i++)
+        lastExternalRenderRequest.frameAndState[i] = 0;
+    for (int i = 0; i < 6; i++)
+        lastExternalRenderRequest.viewExtents[i] = (i%2 ? 1.0 : 0.0);
 }
 
 // ****************************************************************************
@@ -7134,6 +7149,9 @@ ViewerWindow::ClearLastExternalRenderRequestInfo()
 //
 //    Mark C. Miller, Wed Jun  9 17:44:38 PDT 2004
 //    Added code to deal with visual cues (pick points and ref lines)
+//
+//    Mark C. Miller, Wed Oct  6 18:12:29 PDT 2004
+//    Added code to deal with view extents and frame and state
 // ****************************************************************************
 
 void
@@ -7166,7 +7184,10 @@ ViewerWindow::UpdateLastExternalRenderRequestInfo(
     lastExternalRenderRequest.annotObjs     = newRequest.annotObjs;
     lastExternalRenderRequest.extStr        = newRequest.extStr;
     lastExternalRenderRequest.visCues       = newRequest.visCues;
-
+    for (int i = 0; i < 7; i++)
+        lastExternalRenderRequest.frameAndState[i] = newRequest.frameAndState[i];
+    for (int i = 0; i < 6; i++)
+        lastExternalRenderRequest.viewExtents[i] = newRequest.viewExtents[i];
 }
 
 // ****************************************************************************
@@ -7207,6 +7228,9 @@ ViewerWindow::UpdateLastExternalRenderRequestInfo(
 //    Mark C. Miller, Tue Jul 27 15:11:11 PDT 2004
 //    Filtered out View3DAttributes center of rotation stuff so that it does
 //    not effect the outcome.
+//
+//    Mark C. Miller, Wed Oct  6 18:12:29 PDT 2004
+//    Added code to deal with view extents and frame and state
 // ****************************************************************************
 
 bool
@@ -7246,6 +7270,30 @@ ViewerWindow::CanSkipExternalRender(const ExternalRenderRequestInfo& thisRequest
     if (thisRequest.visCues != lastRequest.visCues)
         return false;
 
+    bool sameFrameAndState = true;
+    for (int i = 0; i < 7; i++)
+    {
+        if (thisRequest.frameAndState[i] != lastRequest.frameAndState[i])
+        {
+            sameFrameAndState = false;
+            break;
+        }
+    }
+    if (!sameFrameAndState)
+        return false;
+
+    bool sameViewExtents = true;
+    for (int i = 0; i < 6; i++)
+    {
+        if (thisRequest.viewExtents[i] != lastRequest.viewExtents[i])
+        {
+            sameViewExtents = false;
+            break;
+        }
+    }
+    if (!sameViewExtents)
+        return false;
+
     if ((thisRequest.plotIdsList.size() != 0) &&
         (thisRequest.plotIdsList.size() != lastRequest.plotIdsList.size()))
         return false;
@@ -7256,7 +7304,8 @@ ViewerWindow::CanSkipExternalRender(const ExternalRenderRequestInfo& thisRequest
         int indexOfPlotInLastList = -1;
         for (int j = 0; j < lastRequest.plotIdsList.size(); j++)
         {
-            if (lastRequest.plotIdsList[j] == thisRequest.plotIdsList[i])
+            if ((lastRequest.plotIdsList[j] == thisRequest.plotIdsList[i]) &&
+                (lastRequest.engineKeysList[j] == thisRequest.engineKeysList[i]))
             {
                 indexOfPlotInLastList = j;
                 break;
@@ -7269,10 +7318,6 @@ ViewerWindow::CanSkipExternalRender(const ExternalRenderRequestInfo& thisRequest
         {
             // compare plugin ids
             if (thisRequest.pluginIDsList[i] != lastRequest.pluginIDsList[indexOfPlotInLastList])
-                return false;
-
-            // compare engine keys
-            if (thisRequest.engineKeysList[i] != lastRequest.engineKeysList[indexOfPlotInLastList])
                 return false;
 
             // compare plot attributes
@@ -7312,6 +7357,9 @@ ViewerWindow::CanSkipExternalRender(const ExternalRenderRequestInfo& thisRequest
 //
 //    Mark C. Miller, Tue Jul 27 15:11:11 PDT 2004
 //    Added code to deal with frame and state
+//
+//    Mark C. Miller, Wed Oct  6 18:12:29 PDT 2004
+//    Added code to deal with view extents
 // ****************************************************************************
 
 void
@@ -7334,11 +7382,15 @@ ViewerWindow::GetExternalRenderRequestInfo(
     VisualCueList cuelist;
     UpdateVisualCueList(cuelist);
     theRequest.visCues = cuelist;
+
     int fns[7];
     visWindow->GetFrameAndState(fns[0], fns[1], fns[2], fns[3],
                                         fns[4], fns[5], fns[6]);
     for (int i = 0; i < 7; i++)
         theRequest.frameAndState[i] = fns[i];
+
+    GetExtents(3, theRequest.viewExtents);
+
 }
 
 // ****************************************************************************

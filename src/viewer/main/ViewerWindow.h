@@ -324,6 +324,8 @@ class ViewerToolbar;
 //    Added bool arg to SetPickFunction, to indicate if pick shoul be
 //    performed normally or as intersection-only. 
 //
+//    Mark C. Miller, Wed Oct  6 18:12:29 PDT 2004
+//    Const qualified GetExtents
 // ****************************************************************************
 
 class VIEWER_API ViewerWindow
@@ -366,7 +368,7 @@ public:
     void ChooseCenterOfRotation(double sx, double sy);
     void SetViewExtentsType(const avtExtentType);
     avtExtentType GetViewExtentsType() const;
-    void GetExtents(int nDimensions, double *extents);
+    void GetExtents(int nDimensions, double *extents) const;
     void SetBoundingBoxMode(const bool mode);
     bool GetBoundingBoxMode() const;
     void SetSpinMode(const bool mode);

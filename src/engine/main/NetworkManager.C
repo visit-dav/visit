@@ -1439,9 +1439,11 @@ NetworkManager::GetOutput(bool respondWithNullData, bool calledForRender,
 //    Mark C. Miller, Mon Aug 23 20:24:31 PDT 2004
 //    Added arg to GetOutput call
 //
+//    Mark C. Miller, Wed Oct  6 18:12:29 PDT 2004
+//    Changed bool arg for 3D annots to an integer mode
 // ****************************************************************************
 avtDataObjectWriter_p
-NetworkManager::Render(intVector plotIds, bool getZBuffer, bool do3DAnnotsOnly)
+NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode)
 {
     int i;
     DataNetwork *origWorkingNet = workingNet;
@@ -1610,12 +1612,9 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, bool do3DAnnotsOnly)
             //
             // Add annotations if necessary 
             //
-            if (!do3DAnnotsOnly)
-            {
-                SetAnnotationAttributes(annotationAttributes,
-                                        annotationObjectList, visualCueList,
-                                        frameAndState, false);
-            }
+            SetAnnotationAttributes(annotationAttributes,
+                                    annotationObjectList, visualCueList,
+                                    frameAndState, annotMode);
 
             debug5 << "Rendering " << viswin->GetNumTriangles() << " triangles. " 
                    << "Balanced speedup = " << RenderBalance(viswin->GetNumTriangles())
@@ -1623,7 +1622,7 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, bool do3DAnnotsOnly)
 
             // render the image and capture it. Relies upon explicit render
             int t3 = visitTimer->StartTimer();
-            bool viewportedMode = !do3DAnnotsOnly || 
+            bool viewportedMode = (annotMode != 1) || 
                                   (viswin->GetWindowMode() == WINMODE_2D) ||
                                   (viswin->GetWindowMode() == WINMODE_CURVE);
             avtImage_p theImage = viswin->ScreenCapture(viewportedMode, true);
@@ -1667,8 +1666,8 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, bool do3DAnnotsOnly)
             int imageRows, imageCols;
             theImage->GetSize(&imageCols, &imageRows);
             imageCompositer.SetOutputImageSize(imageRows, imageCols);
-            imageCompositer.AddImageInput(theImage, 0, 0);
             imageCompositer.SetShouldOutputZBuffer(getZBuffer);
+            imageCompositer.AddImageInput(theImage, 0, 0);
 
             //
             // Do the parallel composite using a 1 stage pipeline
@@ -1681,15 +1680,16 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, bool do3DAnnotsOnly)
             // post-process the composited image.
             //
 #ifdef PARALLEL
-            if (!do3DAnnotsOnly && (PAR_Rank() == 0))
+            if ((annotMode==2) && ((PAR_Rank() == 0) || getZBuffer))
 #else
-            if (!do3DAnnotsOnly)
+            if (annotMode==2)
 #endif
             {
                 avtImage_p compositedImage;
                 CopyTo(compositedImage, compositedImageAsDataObject);
                 avtImage_p postProcessedImage = 
-                    viswin->PostProcessScreenCapture(compositedImage, viewportedMode);
+                    viswin->PostProcessScreenCapture(compositedImage, viewportedMode,
+                                                     getZBuffer);
                 CopyTo(compositedImageAsDataObject, postProcessedImage);
             }
             writer = compositedImageAsDataObject->InstantiateWriter();
@@ -1779,18 +1779,42 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, bool do3DAnnotsOnly)
 //    Mark C. Miller, Tue Jul 13 17:53:19 PDT 2004
 //    Added call to UpdateView after resizing the window.
 //
+//    Mark C. Miller, Wed Oct  6 18:12:29 PDT 2004
+//    Added code to deal with view extents
+//
 // ****************************************************************************
 void
 NetworkManager::SetWindowAttributes(const WindowAttributes &atts,
-                                    const std::string& extstr)
+                                    const std::string& extstr,
+                                    const double *vexts)
 {
+
     // do nothing if nothing changed
     if ((windowAttributes == atts) && (extentTypeString == extstr))
-       return;
+    {
+        bool extsAreDifferent = false;
+        static float curexts[6];
+        viswin->GetBounds(curexts);
+        for (int i = 0; i < 6; i ++)
+        {
+            if (curexts[i] != (float) vexts[i])
+            {
+                extsAreDifferent = true;
+                break;
+            }
+        }
+
+        if (extsAreDifferent == false)
+           return;
+    }
 
     avtExtentType extType = AVT_UNKNOWN_EXTENT_TYPE;
     avtExtentType_FromString(extstr, extType);
     viswin->SetViewExtentsType(extType);
+    float fexts[6];
+    for (int i = 0; i < 6; i ++)
+        fexts[i] = vexts[i];
+    viswin->SetBounds(fexts);
 
     // only update size if its different
     int s0,s1;
@@ -1870,6 +1894,7 @@ NetworkManager::SetWindowAttributes(const WindowAttributes &atts,
 
     windowAttributes = atts;
     extentTypeString = extstr;
+
 }
 
 // ****************************************************************************
@@ -1898,11 +1923,14 @@ NetworkManager::SetWindowAttributes(const WindowAttributes &atts,
 //    Mark C. Miller, Tue Jul 27 15:11:11 PDT 2004
 //    Added code to deal with frame and state in VisWindow for
 //    AnnotationObjects
+//
+//    Mark C. Miller, Wed Oct  6 18:12:29 PDT 2004
+//    Changed bool flag for 3D annotations to an integer mode
 // ****************************************************************************
 void
 NetworkManager::SetAnnotationAttributes(const AnnotationAttributes &atts,
     const AnnotationObjectList &aolist, const VisualCueList &visCues,
-    const int *fns, bool do3DAnnotsOnly)
+    const int *fns, int annotMode)
 {
    int i;
 
@@ -1913,22 +1941,43 @@ NetworkManager::SetAnnotationAttributes(const AnnotationAttributes &atts,
       // copy the attributes and disable all non-3D attributes 
       AnnotationAttributes newAtts = atts;
 
-      if (do3DAnnotsOnly)
+      switch (annotMode)
       {
-          newAtts.SetUserInfoFlag(false);
-          newAtts.SetDatabaseInfoFlag(false);
-          newAtts.SetLegendInfoFlag(false);
-          newAtts.SetTriadFlag(false);
-          newAtts.SetAxesFlag2D(false);
-          viswin->DeleteAllAnnotationObjects();
-      }
-      else
-      {
-          viswin->DeleteAllAnnotationObjects();
-          viswin->CreateAnnotationObjectsFromList(aolist);
-          viswin->SetFrameAndState(fns[0],
-                                   fns[1],fns[2],fns[3],
-                                   fns[4],fns[5],fns[6]);
+          case 0: // no annotations
+
+              newAtts.SetUserInfoFlag(false);
+              newAtts.SetDatabaseInfoFlag(false);
+              newAtts.SetLegendInfoFlag(false);
+              newAtts.SetTriadFlag(false);
+              newAtts.SetBboxFlag(false);
+              newAtts.SetAxesFlag(false);
+              newAtts.SetAxesFlag2D(false);
+              viswin->DeleteAllAnnotationObjects();
+              break;
+
+          case 1: // 3D annotations only
+
+              newAtts.SetUserInfoFlag(false);
+              newAtts.SetDatabaseInfoFlag(false);
+              newAtts.SetLegendInfoFlag(false);
+              newAtts.SetTriadFlag(false);
+              newAtts.SetAxesFlag2D(false);
+              viswin->DeleteAllAnnotationObjects();
+              break;
+
+          case 2: // all annotations
+
+              viswin->DeleteAllAnnotationObjects();
+              viswin->CreateAnnotationObjectsFromList(aolist);
+              viswin->SetFrameAndState(fns[0],
+                                       fns[1],fns[2],fns[3],
+                                       fns[4],fns[5],fns[6]);
+              break;
+
+          default:
+
+              EXCEPTION0(ImproperUseException);
+              break;
       }
 
       viswin->SetAnnotationAtts(&newAtts);
@@ -1936,7 +1985,7 @@ NetworkManager::SetAnnotationAttributes(const AnnotationAttributes &atts,
       //
       // Set up all the visual cues (which are 3D annotations)
       //
-      if (visCues != visualCueList)
+      if ((visCues != visualCueList) && (annotMode != 0))
       {
           viswin->ClearPickPoints();
           viswin->ClearRefLines();

@@ -176,6 +176,10 @@ class VisWindow;
 //    Mark C. Miller, Mon Aug 23 20:27:17 PDT 2004
 //    Added argument to GetOutput for cell count multiplier
 //
+//    Mark C. Miller, Wed Oct  6 18:12:29 PDT 2004
+//    Added view extents to SetWindowAttributes
+//    Changed bool flag for 3D annotations to integer mode in
+//    SetAnnotationAttributes and Render
 // ****************************************************************************
 class NetworkManager
 {
@@ -214,12 +218,13 @@ class NetworkManager
     void          UpdatePlotAtts(int, const AttributeGroup *);
 
     void          SetWindowAttributes(const WindowAttributes&,
-                                      const std::string&);
+                                      const std::string&,
+                                      const double*);
     void          SetAnnotationAttributes(const AnnotationAttributes&,
                                           const AnnotationObjectList&,
                                           const VisualCueList&, 
                                           const int *fns,
-                                          bool do3DAnnotsOnly = true);
+                                          int annotMode=1);
 
     void          SetLoadBalancer(LoadBalancer *lb) {loadBalancer = lb;};
 
@@ -227,7 +232,7 @@ class NetworkManager
                                     bool calledForRender,
                                     float *cellCountMultiplier);
     avtDataObjectWriter_p Render(intVector networkIds, bool getZBuffer,
-                                 bool do3DAnnotsOnly);
+                                 int annotMode);
  
     void          StartPickMode(const bool);
     void          StopPickMode(void);

@@ -123,6 +123,10 @@ class VisWindowColleagueProxy;
 //    Mark C. Miller, Mon Jul 26 15:08:39 PDT 2004
 //    Added GetCaptureRegion() and PostProcessScreenCapture() methods
 //
+//    Mark C. Miller, Wed Oct  6 18:12:29 PDT 2004
+//    Added args to PostProcessScreenCapture for doing viewport only and
+//    keeping zbuffer
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinRendering : public VisWinColleague
@@ -158,7 +162,7 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
     avtImage_p               ScreenCapture(bool doViewportOnly = false,
                                            bool doCanvasZBufferToo = false);
     avtImage_p               PostProcessScreenCapture(avtImage_p capturedImage,
-                                 bool doViewportOnly);
+                                 bool doViewportOnly, bool keepZBuffer);
 
     void                     SetSize(int, int);
     void                     GetSize(int&, int&);
