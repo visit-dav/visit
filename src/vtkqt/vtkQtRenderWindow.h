@@ -14,6 +14,9 @@
 //    Brad Whitlock, Wed Aug 22 10:53:45 PDT 2001
 //    I added a callback function to be called when the window closes.
 //
+//    Hank Childs, Fri May 28 13:47:39 PDT 2004
+//    Better test for Q_GLX, compliments of Brad Whitlock.
+//
 /////////////////////////////////////////////////////////////////////////////
 
 /*=========================================================================
@@ -64,8 +67,13 @@
 #define _vtkQtRenderWindow_h
 #include <vtkqt_exports.h>
 
+#include <qapplication.h>
+#include <qmainwindow.h>
+#include <vtkRenderWindow.h>
+#include <vtkOpenGLRenderer.h>
+
 #include <qgl.h>
-#if defined(Q_GLX)
+#if defined(Q_GLX) || (defined(Q_WS_X11) && defined(QT_MODULE_OPENGL))
 #include <qintdict.h>
 #define INT8  dummy_INT8
 #define INT32 dummy_INT32
@@ -73,11 +81,6 @@
 #undef  INT8
 #undef  INT32
 #endif
-
-#include <qapplication.h>
-#include <qmainwindow.h>
-#include <vtkRenderWindow.h>
-#include <vtkOpenGLRenderer.h>
 
 class vtkQtRenderWindowInteractor;
 class vtkFloatArray;
