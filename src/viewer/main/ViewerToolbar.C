@@ -247,7 +247,8 @@ ViewerToolbar::CreateToolbar(const std::string &toolBarName)
     {
         // Create a toolbar and make sure that it is hidden.
         QToolBar *tb = (QToolBar *)window->CreateToolbar(toolBarName);
-        tb->hide();
+        if(tb != 0)
+            tb->hide();
 
         ToolbarItem retval(tb, false);
         toolbars[toolBarName] = retval;
