@@ -40,6 +40,9 @@ class     vtkDataArray;
 //    Brad Whitlock, Wed Dec 4 11:48:33 PDT 2002
 //    I added CGetDataMagnitudeExtents and GetDataMagnitudeRange.
 //
+//    Hank Childs, Thu Jan 22 15:42:54 PST 2004
+//    Removed unused CSetMapperInput.
+//
 // ****************************************************************************
 
 //
@@ -53,7 +56,6 @@ PIPELINE_API void CGetNodeCenteredDataExtents(avtDataRepresentation &, void *, b
 PIPELINE_API void CUpdateData(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CAddInputToAppendFilter(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CGetNumberOfZones(avtDataRepresentation &, void *, bool &);
-PIPELINE_API void CSetMapperInput(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CGetChunkByDomain(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CGetChunkByLabel(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CSetActiveVariable(avtDataRepresentation &, void *, bool &);

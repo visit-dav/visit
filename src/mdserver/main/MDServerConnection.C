@@ -39,6 +39,8 @@
 #include <GetMetaDataRPCExecutor.h>
 #include <GetSILRPC.h>
 #include <GetSILRPCExecutor.h>
+#include <LoadPluginsRPC.h>
+#include <LoadPluginsRPCExecutor.h>
 #include <CouldNotConnectException.h>
 #include <IncompatibleVersionException.h>
 #include <ParentProcess.h>
@@ -175,6 +177,9 @@ MDServerConnection::VirtualFileInformationMap MDServerConnection::virtualFiles;
 //    Brad Whitlock, Tue Jul 29 11:36:11 PDT 2003
 //    I changed the interface to ParentProcess::Connect.
 //
+//    Hank Childs, Thu Jan 22 21:02:56 PST 2004
+//    Added LoadPlugins.
+//
 // ****************************************************************************
 
 MDServerConnection::MDServerConnection(int *argc, char **argv[])
@@ -239,6 +244,7 @@ MDServerConnection::MDServerConnection(int *argc, char **argv[])
     createGroupListRPC = new CreateGroupListRPC;
     expandPathRPC = new ExpandPathRPC;
     closeDatabaseRPC = new CloseDatabaseRPC;
+    loadPluginsRPC = new LoadPluginsRPC;
 
     // Hook up the RPCs to the xfer object.
     xfer->Add(quitRPC);
@@ -251,6 +257,7 @@ MDServerConnection::MDServerConnection(int *argc, char **argv[])
     xfer->Add(createGroupListRPC);
     xfer->Add(expandPathRPC);
     xfer->Add(closeDatabaseRPC);
+    xfer->Add(loadPluginsRPC);
 
     // Create the RPC Observers.
     quitExecutor = new QuitRPCExecutor(quitRPC);
@@ -264,6 +271,7 @@ MDServerConnection::MDServerConnection(int *argc, char **argv[])
     createGroupListExecutor = new RPCExecutor<CreateGroupListRPC>(createGroupListRPC);
     expandPathExecutor = new ExpandPathRPCExecutor(this, expandPathRPC);
     closeDatabaseExecutor = new CloseDatabaseRPCExecutor(this, closeDatabaseRPC);
+    loadPluginsExecutor = new LoadPluginsRPCExecutor(this, loadPluginsRPC);
 
     // Indicate that the file list is not valid since we have not read
     // one yet.
@@ -297,6 +305,9 @@ MDServerConnection::MDServerConnection(int *argc, char **argv[])
 //   Brad Whitlock, Wed Apr 2 15:51:27 PST 2003
 //   Deleted createGroupListRPC and the currentSIL.
 //
+//   Hank Childs, Thu Jan 22 21:02:56 PST 2004
+//   Added loadPlugins.
+//
 // ****************************************************************************
 
 MDServerConnection::~MDServerConnection()
@@ -312,6 +323,7 @@ MDServerConnection::~MDServerConnection()
     delete createGroupListExecutor;
     delete expandPathExecutor;
     delete closeDatabaseExecutor;
+    delete loadPluginsExecutor;
 
     // Delete the RPCs
     delete quitRPC;
@@ -324,6 +336,7 @@ MDServerConnection::~MDServerConnection()
     delete createGroupListRPC;
     delete expandPathRPC;
     delete closeDatabaseRPC;
+    delete loadPluginsRPC;
 
     // Delete the database.
     if(currentDatabase)

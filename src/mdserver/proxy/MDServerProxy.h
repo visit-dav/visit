@@ -17,6 +17,7 @@
 #include <GetFileListRPC.h>
 #include <GetMetaDataRPC.h>
 #include <GetSILRPC.h>
+#include <LoadPluginsRPC.h>
 #include <avtDatabaseMetaData.h>
 #include <SILAttributes.h>
 
@@ -92,6 +93,9 @@
 //    Brad Whitlock, Mon Jun 16 13:45:31 PST 2003
 //    I changed the Connect method so it only has a single argument.
 //
+//    Hank Childs, Thu Jan 22 21:02:56 PST 2004
+//    Added LoadPluginsRPC.
+//
 // ****************************************************************************
 
 class MDSERVER_PROXY_API MDServerProxy : public RemoteProxyBase
@@ -152,6 +156,7 @@ public:
     const SILAttributes       *GetSIL(const std::string &, int=0);
     std::string                ExpandPath(const std::string &);
     void                       CloseDatabase();
+    void                       LoadPlugins();
 
     char                       GetSeparator() const;
     std::string                GetSeparatorString() const;
@@ -171,6 +176,7 @@ private:
     CreateGroupListRPC         createGroupListRPC;
     ExpandPathRPC              expandPathRPC;
     CloseDatabaseRPC           closeDatabaseRPC;
+    LoadPluginsRPC             loadPluginsRPC;
 
     FileList                   fileList;
     avtDatabaseMetaData        metaData;

@@ -503,6 +503,9 @@ QvisGUIApplication::~QvisGUIApplication()
 //
 // Modifications:
 //   
+//   Hank Childs, Sat Jan 24 10:45:05 PST 2004
+//   Add a stage where we tell the mdserver to load its plugins.
+//
 // ****************************************************************************
 
 void
@@ -584,30 +587,33 @@ QvisGUIApplication::HeavyInitialization()
         }
         break;
     case 9:
+        // Tell the mdserver to load its plugins.
+        fileServer->LoadPlugins();
+        break;
+    case 10:
         // Create the GUI's windows.
         gotoNextStage = CreateWindows(56, 80);
         break;
-    case 10:
+    case 11:
         SplashScreenProgress("Loading plugin information...", 81);
         break;
-    case 11:
+    case 12:
         // Load plugin info
         timeid = visitTimer->StartTimer();
         PlotPluginManager::Initialize(PlotPluginManager::GUI);
         OperatorPluginManager::Initialize(OperatorPluginManager::GUI);
         visitTimer->StopTimer(timeid, "Loading plugin info");
         break;
-    case 12:
+    case 13:
         SplashScreenProgress("Processing config file...", 90);
         break;
-    case 13:
+    case 14:
         // Process the config file settings.
         timeid = visitTimer->StartTimer();
         ProcessConfigSettings(systemSettings, true);
         ProcessConfigSettings(localSettings, false);
         visitTimer->StopTimer(timeid, "Processing config file");
-        break;
-    case 14:
+    case 15:
         // Let the GUI read from the viewer now.
         allowSocketRead = true;
 

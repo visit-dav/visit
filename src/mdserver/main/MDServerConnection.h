@@ -24,6 +24,8 @@ class GetMetaDataRPC;
 class GetMetaDataRPCExecutor;
 class GetSILRPC;
 class GetSILRPCExecutor;
+class LoadPluginsRPC;
+class LoadPluginsRPCExecutor;
 class CreateGroupListRPC;
 class CreateGroupListRPCExecutor;
 class Observer;
@@ -81,6 +83,9 @@ class Xfer;
 //    Brad Whitlock, Mon Oct 27 11:41:47 PDT 2003
 //    Added VirtualFileName type so VirtualFileInformationMap sorts
 //    using the numeric sorting algorithm.
+//
+//    Hank Childs, Thu Jan 22 21:02:56 PST 2004
+//    Added LoadPluginsRPC.
 //
 // ****************************************************************************
 
@@ -167,6 +172,7 @@ private:
     CreateGroupListRPC         *createGroupListRPC;
     ExpandPathRPC              *expandPathRPC;
     CloseDatabaseRPC           *closeDatabaseRPC;
+    LoadPluginsRPC             *loadPluginsRPC;
 
     // RPC Executors.
     QuitRPCExecutor            *quitExecutor;
@@ -179,6 +185,7 @@ private:
     Observer                   *createGroupListExecutor;
     ExpandPathRPCExecutor      *expandPathExecutor;
     CloseDatabaseRPCExecutor   *closeDatabaseExecutor;
+    LoadPluginsRPCExecutor     *loadPluginsExecutor;
 
     // State information for the program using this MDServer.
     avtDatabaseMetaData        *currentMetaData;

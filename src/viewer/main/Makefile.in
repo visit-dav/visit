@@ -221,6 +221,9 @@
 #    Removed the link against the expressions library.  This fails with my
 #    new expressions engine.
 #
+#    Hank Childs, Sat Jan 24 11:34:44 PST 2004
+#    Changed link-line to accomodate library re-organization.
+#
 ##############################################################################
 
 ##
@@ -238,7 +241,8 @@ VTK_LIBS=@VTK_LIBS@
 VTK_INCLUDE=@VTK_INCLUDES@
 LIBS=-L../../lib -L../../vtkqt -lengineproxy -lenginerpc -lviewerrpc \
      -lmdserverproxy -lmdserverrpc -lvclproxy -lvclrpc -ldbatts -lparser -lplugin -lviswindow \
-     -lavtmath_ser -lplotter -lpipeline_ser -lvisit_vtk -lvtkqt -lwinutil \
+     -lavtmath_ser -lplotter -lavtfilters_ser -lavtwriter -lavtview \
+     -lpipeline_ser -lvisit_vtk -llightweight_visit_vtk -lvtkqt -lwinutil \
      @QT_LIBS@ -lproxybase -lmisc -lcomm -lstate -lutility -lavtexceptions \
      $(VTK_LIBS) $(X_LIBS) @LIBS@ @PTHREAD_LIB@
 

@@ -46,8 +46,8 @@
 
 CPPFLAGS=-I. -I../../include -I../../include/visit
 
-SERLIBS=-L../../lib -ldatabase_ser -lpipeline_ser -lparser -lvisit_vtk -lutility -lmisc -lcomm -lstate -ldbatts -lavtmath_ser -lavtexceptions -lmir -lplugin @VTK_LIBS@ $(X_LIBS) @LIBS@ @PTHREAD_LIB@
-PARLIBS=-L../../lib -ldatabase_par -lpipeline_par -lparser -lvisit_vtk -lutility -lmisc -lcomm -lstate -ldbatts -lavtmath_par -lavtexceptions -lmir -lplugin @VTK_LIBS@ $(X_LIBS) @LIBS@ @MPI_LIBS@ @PTHREAD_LIB@
+SERLIBS=-L../../lib -ldatabase_ser -lpipeline_ser -lparser -lvisit_vtk -llightweight_visit_vtk -lutility -lmisc -lcomm -lstate -ldbatts -lavtmath_ser -lavtexceptions -lmir -lplugin @VTK_LIBS@ $(X_LIBS) @LIBS@ @PTHREAD_LIB@
+PARLIBS=-L../../lib -ldatabase_par -lpipeline_par -lparser -lvisit_vtk -llightweight_visit_vtk -llutility -lmisc -lcomm -lstate -ldbatts -lavtmath_par -lavtexceptions -lmir -lplugin @VTK_LIBS@ $(X_LIBS) @LIBS@ @MPI_LIBS@ @PTHREAD_LIB@
 LIBDEP=
 
 ##

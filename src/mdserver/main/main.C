@@ -3,7 +3,7 @@
 #include <DebugStream.h>
 #include <TimingsManager.h>
 #include <Init.h>
-#include <InitVTK.h>
+#include <InitVTKNoGraphics.h>
 #include <avtDatabase.h>
 
 // Prototypes.
@@ -72,6 +72,9 @@ bool ProcessCommandLine(int argc, char *argv[]);
 //    Brad Whitlock, Mon Sep 8 16:58:33 PST 2003
 //    I made it log uncaught exceptions.
 //
+//    Hank Childs, Thu Jan 22 17:46:08 PST 2004
+//    Use InitVTKNoGraphics instead of InitVTK to avoid VTK/GL dependencies.
+//
 // ****************************************************************************
 
 int
@@ -82,7 +85,7 @@ main(int argc, char *argv[])
     // Initialize error logging
     Init::Initialize(argc, argv);
     Init::SetComponentName("mdserver");
-    InitVTK::Initialize();
+    InitVTKNoGraphics::Initialize();
     avtDatabase::SetOnlyServeUpMetaData(true);
 
     bool runApp = ProcessCommandLine(argc, argv);
@@ -114,6 +117,7 @@ main(int argc, char *argv[])
     }
     ENDTRY
 
+    visitTimer->DumpTimings();
     debug1 << "MDSERVER exited." << endl;
     return retval;
 }

@@ -130,6 +130,9 @@
 #    Jeremy Meredith, Wed Aug 20 09:50:42 PDT 2003
 #    I added the new mir library.
 #
+#    Hank Childs, Thu Jan 22 15:45:47 PST 2004
+#    Use the lightweight VTK libraries.  Also add LoadPluginsRPCExecutor.
+#
 ##############################################################################
 
 ##
@@ -152,11 +155,10 @@ LIBS= \
     -lcomm \
     -lmisc \
     -lutility \
-    -lvisit_vtk \
-    @VTK_LIBS@ \
+    -llightweight_visit_vtk -lvtk_sl_io \
+    @VTK_LIGHTWEIGHT_LIBS@ \
     @LIBS@ \
-    @PTHREAD_LIB@ \
-    @X_LIBS@
+    @PTHREAD_LIB@
 LIBDEP=
 CPPFLAGS=@CPPFLAGS@ @PLATFORM_CPPFLAGS@
 CXXFLAGS=@CXXFLAGS@ -I. -I../../include -I../../include/visit
@@ -167,7 +169,7 @@ CXXFLAGS=@CXXFLAGS@ -I. -I../../include -I../../include/visit
 SRC=ChangeDirectoryRPCExecutor.C GetMetaDataRPCExecutor.C ConnectRPCExecutor.C \
     MDServerApplication.C GetDirectoryRPCExecutor.C MDServerConnection.C \
     GetFileListRPCExecutor.C QuitRPCExecutor.C GetSILRPCExecutor.C \
-    ExpandPathRPCExecutor.C CloseDatabaseRPCExecutor.C main.C
+    ExpandPathRPCExecutor.C CloseDatabaseRPCExecutor.C LoadPluginsRPCExecutor.C main.C
 
 OBJ=$(SRC:.C=.o)
 

@@ -124,6 +124,9 @@ class MessageAttributes;
 //   I added GetVirtualFileDefinitionSize so it is cheaper to ask for the
 //   size of a virtual database definition.
 //
+//   Hank Childs, Sat Jan 24 11:32:01 PST 2004
+//   Added LoadPlugins.
+//
 // ****************************************************************************
 
 class GUI_API FileServerList : public AttributeSubject
@@ -155,6 +158,7 @@ public:
     void SetAppliedFileList(const QualifiedFilenameVector &newFiles);
     void SetUseCurrentDirectory(bool val);
     void SetAutomaticFileGrouping(bool val);
+    void LoadPlugins(void);
 
     void OpenFile(const QualifiedFilename &filename, int timeState);
     void ReplaceFile(const QualifiedFilename &filename);
