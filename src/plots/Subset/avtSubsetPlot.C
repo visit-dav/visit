@@ -847,6 +847,10 @@ avtSubsetPlot::ReleaseData(void)
 //    Hank Childs, Thu Mar 18 21:18:06 PST 2004
 //    Re-wrote quadratic algorithm.
 //
+//    Jeremy Meredith, Thu Apr 15 12:19:21 PDT 2004
+//    Allowed for zero-length arrays.  This probably shouldn't happen in
+//    practice, but a different bug was causing a crash here.
+//
 // ****************************************************************************
  
 void
@@ -873,11 +877,10 @@ avtSubsetPlot::SortLabels()
     vector < pair < int, string > > sortedUsedLabels;
     for (i = 0 ; i < usedLabels.size() ; i++)
     {
-        while (usedLabels[i] != originalLabelPairs[origLabelIndex].first)
+        while (origLabelIndex < originalLabelPairs.size() &&
+               usedLabels[i] != originalLabelPairs[origLabelIndex].first)
         {
             origLabelIndex++;
-            if (origLabelIndex >= originalLabelPairs.size())
-                break;
         }
 
         if (origLabelIndex >= originalLabelPairs.size())

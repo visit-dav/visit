@@ -897,13 +897,22 @@ inline VerdictVector& VerdictVector::operator*=(const VERDICT_REAL scalar)
   return *this;
 }
 
+// Modifications:
+//
+//   Hank Childs, Wed Apr 14 20:28:38 PDT 2004
+//   Do not assert.
+//
+
 // Scales all values by 1/scalar
 inline VerdictVector& VerdictVector::operator/=(const VERDICT_REAL scalar)
 {
-  assert (scalar != 0);
-  xVal /= scalar;
-  yVal /= scalar;
-  zVal /= scalar;
+  //assert (scalar != 0);
+  if (scalar != 0)
+  {
+    xVal /= scalar;
+    yVal /= scalar;
+    zVal /= scalar;
+  }
   return *this;
 }
 
@@ -1362,6 +1371,12 @@ inline VERDICT_REAL length_squared (VERDICT_REAL vec[] )
 }
 
 
+// Modifications:
+//
+//   Hank Childs, Wed Apr 14 20:28:38 PDT 2004
+//   Do not assert.
+//
+
 inline VERDICT_REAL interior_angle( VERDICT_REAL vec1[], VERDICT_REAL vec2[] )
 {
     VERDICT_REAL len1, len2, cosAngle, angleRad;
@@ -1372,8 +1387,11 @@ inline VERDICT_REAL interior_angle( VERDICT_REAL vec1[], VERDICT_REAL vec2[] )
     }
     else
     {
+      /*
         assert(len1 > 0);
         assert(len2 > 0);
+       */
+       cosAngle = 0.;
     }
 
     if ((cosAngle > 1.0) && (cosAngle < 1.0001))
@@ -1390,7 +1408,8 @@ inline VERDICT_REAL interior_angle( VERDICT_REAL vec1[], VERDICT_REAL vec2[] )
         angleRad = acos(cosAngle);
     else
     {
-        assert(cosAngle < 1.0001 && cosAngle > -1.0001);
+        //assert(cosAngle < 1.0001 && cosAngle > -1.0001);
+        angleRad = 0.;
     }
 
     return( (angleRad * 180.) / VERDICT_PI );

@@ -1104,12 +1104,15 @@ PyFilledBoundaryAttributes_SetLogging(bool val)
     FilledBoundaryAttributesEnableLogging = val;
 }
 
+// ****************************************************************************
+//  Modifications:
+//    Kathleen Bonnell, Fri Jul 18 13:49:42 PDT 2003
+//    Make defaultAtts point to the passed atts directly.
+//
+// ****************************************************************************
 void
 PyFilledBoundaryAttributes_SetDefaults(const FilledBoundaryAttributes *atts)
 {
-    if(defaultAtts)
-        delete defaultAtts;
-
-    defaultAtts = new FilledBoundaryAttributes(*atts);
+    defaultAtts = const_cast<FilledBoundaryAttributes*>(atts);
 }
 
