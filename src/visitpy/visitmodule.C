@@ -1125,6 +1125,10 @@ visit_CloneWindow(PyObject *self, PyObject *args)
 //   I rewrote the method to use the active source and its database
 //   correlation to get the number of states for the database.
 //
+//   Brad Whitlock, Tue Apr 13 12:07:05 PDT 2004
+//   I fixed a bug with my rewrite so single time state databases return 1
+//   instead of 0 when we have an open single time state database.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -1136,7 +1140,7 @@ visit_GetDatabaseNStates(PyObject *self, PyObject *args)
     // Get the number of states for the active source.
     const std::string &source = wi->GetActiveSource();
     DatabaseCorrelation *c = correlations->FindCorrelation(source);
-    int nStates = 0;
+    int nStates = (source == "notset" || source == "") ? 0 : 1;
     if(c != 0)
         nStates = c->GetNumStates();
 
@@ -1228,6 +1232,9 @@ visit_AnimationPreviousFrame(PyObject *self, PyObject *args)
 //   I changed the code to get the number of states to account for
 //   keyframe mode.
 //
+//   Brad Whitlock, Tue Apr 13 16:11:01 PST 2004
+//   I made it okay to call this function when there is no active time slider.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -1240,7 +1247,11 @@ visit_SetTimeSliderState(PyObject *self, PyObject *args)
     //
     WindowInformation *wi = viewer->GetWindowInformation();
     if(wi->GetActiveTimeSlider() < 0)
-        VisItErrorFunc("SetTimeSliderState was called when there is no time slider.");
+    {
+        fprintf(stderr, "SetTimeSliderState was called when there was no "
+                        "time slider.\n");
+        return IntReturnValue(Synchronize());
+    }
 
     //
     // Get the number of states for the active time slider.

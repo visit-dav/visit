@@ -1789,6 +1789,49 @@ QvisMainWindow::GetShowSelectedFiles() const
 }
 
 // ****************************************************************************
+// Method: QvisMainWindow::GetAllowFileSelectionChange
+//
+// Purpose: 
+//   Returns whether the selected files' selection should be changed when
+//   the source changes.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 9 14:37:38 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+QvisMainWindow::GetAllowFileSelectionChange() const
+{
+    return filePanel->GetAllowFileSelectionChange();
+}
+
+// ****************************************************************************
+// Method: QvisMainWindow::SetAllowFileSelectionChange
+//
+// Purpose: 
+//   Sets whether the file panel is allowed to change the file selection.
+//
+// Arguments:
+//   val : True if it the file panel should be allowed to change the file
+//         selection; false otherwise.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Apr 6 14:36:53 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisMainWindow::SetAllowFileSelectionChange(bool val)
+{
+    filePanel->SetAllowFileSelectionChange(val);
+}
+
+// ****************************************************************************
 // Method: QvisMainWindow::maintainViewToggled
 //
 // Purpose: 

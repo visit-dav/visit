@@ -1112,6 +1112,11 @@ avtSliceFilter::ProjectExtents(double *b)
 //  Programmer: Hank Childs
 //  Creation:   February 28, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Apr 13 09:48:57 PDT 2004
+//    Make normal-flipping cases work for all normal orientations.
+//
 // ****************************************************************************
 
 void
@@ -1130,26 +1135,32 @@ avtSliceFilter::SetPlaneOrientation(double *b)
     double ox = cachedOrigin[0];
     double oy = cachedOrigin[1];
     double oz = cachedOrigin[2];
-    if (normal[0] > 0. && normal[1] == 0. && normal[2] == 0.)
+    if (normal[0] != 0. && normal[1] == 0. && normal[2] == 0.)
     {
-        if (ox == b[0])
-        {
+        if ((normal[0] > 0.) && (ox == b[0]))
             slicer->SetNormal(-normal[0], -normal[1], -normal[2]);
-        }
+        else if ((normal[0] < 0.) && (ox == b[1]))
+            slicer->SetNormal(-normal[0], -normal[1], -normal[2]);
+        else
+            slicer->SetNormal(normal[0], normal[1], normal[2]);
     }
-    else if (normal[0] == 0. && normal[1] > 0. && normal[2] == 0.)
+    else if (normal[0] == 0. && normal[1] != 0. && normal[2] == 0.)
     {
-        if (oy == b[2])
-        {
+        if ((normal[1] > 0.) && (oy == b[2]))
             slicer->SetNormal(-normal[0], -normal[1], -normal[2]);
-        }
+        else if ((normal[1] < 0.) && (oy == b[3]))
+            slicer->SetNormal(-normal[0], -normal[1], -normal[2]);
+        else
+            slicer->SetNormal(normal[0], normal[1], normal[2]);
     }
-    else if (normal[0] == 0. && normal[1] == 0. && normal[2] > 0.)
+    else if (normal[0] == 0. && normal[1] == 0. && normal[2] != 0.)
     {
-        if (oz == b[4])
-        {
+        if ((normal[2] > 0.) && (oz == b[4]))
             slicer->SetNormal(-normal[0], -normal[1], -normal[2]);
-        }
+        else if ((normal[2] < 0.) && (oz == b[5]))
+            slicer->SetNormal(-normal[0], -normal[1], -normal[2]);
+        else
+            slicer->SetNormal(normal[0], normal[1], normal[2]);
     }
     else
     {

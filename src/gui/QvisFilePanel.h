@@ -93,6 +93,9 @@ class ViewerProxy;
 //   WindowAttributes. I also made it possible to not display the selected
 //   files list.
 //
+//   Brad Whitlock, Tue Apr 6 14:06:25 PST 2004
+//   I added allowFileSelectionChange.
+//
 // ****************************************************************************
 
 class GUI_API QvisFilePanel : public QWidget, public SimpleObserver, public GUIBase
@@ -139,6 +142,8 @@ public:
 
     bool GetShowSelectedFiles() const;
     void SetShowSelectedFiles(bool);
+    bool GetAllowFileSelectionChange() const;
+    void SetAllowFileSelectionChange(bool);
 signals:
     void reopenOnNextFrame();
 private:
@@ -160,9 +165,10 @@ private:
     void ExpandDatabaseItemUsingVirtualDBDefinition(QvisListViewFileItem *item);
     void RemoveExpandedFile(const QualifiedFilename &filename);
     void SetFileExpanded(const QualifiedFilename &filename, bool);
-    bool FileIsExpanded(const QualifiedFilename &filename);
+    bool FileIsExpanded(const QualifiedFilename &filename) const;
     bool FileShowsCorrectData(const QualifiedFilename &filename);
     void SetFileShowsCorrectData(const QualifiedFilename &filename, bool);
+    bool HighlightedItemIsInvalid() const;
 
     QString CreateItemLabel(const avtDatabaseMetaData *md, int ts, bool);
     QString FormattedCycleString(const int cycle) const;
@@ -210,6 +216,7 @@ private:
 
     WindowInformation        *windowInfo;
 
+    bool                      allowFileSelectionChange;
     int                       sliderVal;
     FileDisplayInformationMap displayInfo;
     TimeFormat                timeStateFormat;

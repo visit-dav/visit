@@ -164,6 +164,9 @@ const int FileTree::FileTreeNode::DATABASE_NODE = 3;
 //   Brad Whitlock, Tue Jan 27 18:14:38 PST 2004
 //   I renamed some slots and added the active time slider.
 //
+//   Brad Whitlock, Tue Apr 6 14:07:34 PST 2004
+//   I added allowFileSelectionChange.
+//
 // ****************************************************************************
 
 QvisFilePanel::QvisFilePanel(QWidget *parent, const char *name) :
@@ -171,6 +174,7 @@ QvisFilePanel::QvisFilePanel(QWidget *parent, const char *name) :
    timeStateFormat()
 {
     showSelectedFiles = true;
+    allowFileSelectionChange = true;
 
     // Create the top layout that will contain the widgets.
     QVBoxLayout *topLayout = new QVBoxLayout(this);
@@ -628,6 +632,7 @@ QvisFilePanel::RepopulateFileList()
 
     // Highlight the selected file.
     UpdateFileSelection();
+
     // Set the width of the zeroeth column.
     QTimer::singleShot(100, this, SLOT(updateHeaderWidth()));
 }
@@ -1137,6 +1142,10 @@ QvisFilePanel::ExpandDatabases()
 //   I changed the code so we can correctly display virtual databases that
 //   have multiple time states per file.
 //
+//   Brad Whitlock, Tue Apr 6 12:23:11 PDT 2004
+//   I changed the code so it sets the time state for files that we've
+//   never seen before to 0 so it is not the default -1.
+//
 // ****************************************************************************
 
 void
@@ -1175,7 +1184,9 @@ QvisFilePanel::ExpandDatabaseItem(QvisListViewFileItem *item)
 // Creation:   Mon Dec 29 12:22:41 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Apr 6 12:22:24 PDT 2004
+//   I made it set files with 1 time state to have their time state be 0.
+//
 // ****************************************************************************
 
 void
@@ -1183,25 +1194,32 @@ QvisFilePanel::ExpandDatabaseItemUsingMetaData(QvisListViewFileItem *item)
 {
     // See if the file is a database
     const avtDatabaseMetaData *md = fileServer->GetMetaData(item->file);
-    if(md != 0 && md->GetNumStates() > 1)
-    {              
-        fileListView->blockSignals(true);
-        bool useVirtualDBInfo = DisplayVirtualDBInformation(item->file);
-        for(int i = 0; i < md->GetNumStates(); ++i)
+    if(md != 0)
+    {
+        if(md->GetNumStates() > 1)
         {
-            QvisListViewFileItem *fi = new QvisListViewFileItem(
-                item, CreateItemLabel(md, i, useVirtualDBInfo),
-                item->file, QvisListViewFileItem::FILE_NODE, i);
-            fi->setOpen(false);
+            fileListView->blockSignals(true);
+            bool useVirtualDBInfo = DisplayVirtualDBInformation(item->file);
+            for(int i = 0; i < md->GetNumStates(); ++i)
+            {
+                QvisListViewFileItem *fi = new QvisListViewFileItem(
+                    item, CreateItemLabel(md, i, useVirtualDBInfo),
+                    item->file, QvisListViewFileItem::FILE_NODE, i);
+                fi->setOpen(false);
+            }
+
+            // Set the database pixmap.
+            item->setPixmap(0, *databasePixmap);
+            fileListView->blockSignals(false);
+
+            // Remember that the item now has the correct information
+            // displayed through its children.
+            SetFileShowsCorrectData(item->file, true);
         }
-
-        // Set the database pixmap.
-        item->setPixmap(0, *databasePixmap);
-        fileListView->blockSignals(false);
-
-        // Remember that the item now has the correct information
-        // displayed through its children.
-        SetFileShowsCorrectData(item->file, true);
+#if 0
+        else
+            item->timeState = 0;
+#endif
     }
 }
 
@@ -1460,6 +1478,10 @@ QvisFilePanel::DisplayVirtualDBInformation(const QualifiedFilename &file) const
 //   Brad Whitlock, Sat Jan 24 21:38:48 PST 2004
 //   I modified it to use the active time slider and database correlation.
 //
+//   Brad Whitlock, Tue Apr 6 14:05:42 PST 2004
+//   I changed it so it returns early if we're not allowing file
+//   selection changes.
+//
 // ****************************************************************************
 
 void
@@ -1491,7 +1513,7 @@ QvisFilePanel::UpdateFileSelection()
     //
     QualifiedFilename activeSource(windowInfo->GetActiveSource());
     DatabaseCorrelation *correlation = 0;
-    int dbStateForActiveSource = 0;
+    int dbStateForActiveSource = -1;
     // Get the index of the active time slider.
     int activeTS = windowInfo->GetActiveTimeSlider();
     if(activeTS >= 0)
@@ -1595,8 +1617,10 @@ QvisFilePanel::UpdateFileSelection()
         }
     }
 
-    // Make sure the selected item is visible.
-    if(selectedItem != 0)
+    // Make sure the selected item is visible if we're allowing selection
+    // change or if the currently highlighted item is invalid.
+    if(selectedItem != 0 && (allowFileSelectionChange ||
+       HighlightedItemIsInvalid()))
     {
         fileListView->setSelected(selectedItem, true);
         fileListView->setCurrentItem(selectedItem);
@@ -1606,6 +1630,59 @@ QvisFilePanel::UpdateFileSelection()
     // Restore signals.
     fileListView->blockSignals(false);
     blockSignals(false);
+}
+
+// ****************************************************************************
+// Method: QvisFilePanel::HighlightedItemIsInvalid
+//
+// Purpose: 
+//   Returns whether the currently highlighted item is an invalid selection.
+//
+// Returns:    True if the highlighted item is not valid; false otherwise.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Apr 13 14:00:08 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+QvisFilePanel::HighlightedItemIsInvalid() const
+{
+    bool currentItemInvalid = false;
+    if(fileListView->currentItem() != 0)
+    {
+        QvisListViewFileItem *ci = (QvisListViewFileItem *)
+            fileListView->currentItem();
+
+        // If the highlighted item is not a file, then it is not valid and
+        // we are allowed to change the highlight.
+        if(ci->isFile())
+        {
+            // If we've opened the file before and it is supposed to be
+            // expanded
+            if(fileServer->HaveOpenedFile(ci->file) &&
+               HaveFileInformation(ci->file) &&
+               FileIsExpanded(ci->file))
+            {
+                const avtDatabaseMetaData *md = fileServer->
+                    GetMetaData(ci->file);
+                if(md != 0)
+                {
+                    // We've opened the file before. If the highlighted item
+                    // is an MT database and a time state < 0 is highlighted
+                    // then the highlight is wrong. Change it.
+                    currentItemInvalid = (md->GetNumStates() > 1) &&
+                       (ci->timeState < 0);
+                }
+            }
+        }
+        else
+            currentItemInvalid = true;
+    }
+
+    return currentItemInvalid;
 }
 
 // ****************************************************************************
@@ -1937,13 +2014,20 @@ QvisFilePanel::HaveFileInformation(const QualifiedFilename &filename) const
 // Creation:   Fri Mar 1 13:22:04 PST 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Apr 13 14:07:48 PST 2004
+//   I made the method be const.
+//
 // ****************************************************************************
 
 bool
-QvisFilePanel::FileIsExpanded(const QualifiedFilename &filename)
+QvisFilePanel::FileIsExpanded(const QualifiedFilename &filename) const
 {
-    return displayInfo[filename.FullName()].expanded;
+    bool retval = true;
+    FileDisplayInformationMap::const_iterator pos = 
+        displayInfo.find(filename.FullName());
+    if(pos != displayInfo.end())
+        retval = pos->second.expanded;
+    return retval;
 }
 
 // ****************************************************************************
@@ -2104,6 +2188,52 @@ bool
 QvisFilePanel::GetShowSelectedFiles() const
 {
     return showSelectedFiles;
+}
+
+// ****************************************************************************
+// Method: QvisFilePanel::SetAllowFileSelectionChange
+//
+// Purpose: 
+//   Sets whether setting the file selection is allowed.
+//
+// Arguments:
+//   val : The new value for allowFileSelectionChange.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Apr 6 14:10:10 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisFilePanel::SetAllowFileSelectionChange(bool val)
+{
+    if(allowFileSelectionChange != val)
+    {
+        allowFileSelectionChange = val;
+        if(val)
+            UpdateFileSelection();
+    }
+}
+
+// ****************************************************************************
+// Method: QvisFilePanel::GetAllowFileSelectionChange
+//
+// Purpose: 
+//   Returns whether the file panel will update the file selection.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 9 14:57:47 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool 
+QvisFilePanel::GetAllowFileSelectionChange() const
+{
+    return allowFileSelectionChange;
 }
 
 //

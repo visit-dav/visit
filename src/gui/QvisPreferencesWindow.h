@@ -28,6 +28,9 @@ class QSpinBox;
 //   Brad Whitlock, Fri Jan 30 14:23:26 PST 2004
 //   I added a toggle for showing the selected files list.
 //
+//   Brad Whitlock, Fri Apr 9 14:12:16 PST 2004
+//   I added a toggle for highlighting the selected files.
+//
 // ****************************************************************************
 
 class GUI_API QvisPreferencesWindow : public QvisPostableWindowObserver
@@ -43,9 +46,11 @@ public:
 
     void SetTimeStateFormat(const TimeFormat &fmt);
     void SetShowSelectedFiles(bool val);
+    void SetAllowFileSelectionChange(bool val);
 signals:
     void changeTimeFormat(const TimeFormat &);
     void showSelectedFiles(bool);
+    void allowFileSelectionChange(bool);
 public slots:
     virtual void apply();
 protected:
@@ -57,16 +62,19 @@ private slots:
     void handleTimeStateDisplayModeChange(int val);
     void timeStateNDigitsChanged(int val);
     void selectedFilesToggled(bool);
+    void allowFileSelectionChangeToggled(bool);
 private:
     QCheckBox        *cloneWindowOnFirstRefToggle;
     QCheckBox        *postWindowsWhenShownToggle;
     QCheckBox        *selectedFilesToggle;
+    QCheckBox        *allowFileSelectionChangeToggle;
     QButtonGroup     *timeStateDisplayMode;
     QSpinBox         *timeStateNDigits;
     GlobalAttributes *atts;
 
     TimeFormat        tsFormat;
     bool              showSelFiles;
+    bool              allowFileSelChange;
 };
 
 #endif

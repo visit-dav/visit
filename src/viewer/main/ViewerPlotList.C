@@ -3753,6 +3753,9 @@ ViewerPlotList::CloseDatabase(const std::string &dbName)
 //   I changed the code so it should be able to change the size of the caches
 //   for a plot without having to clear the actors.
 //
+//   Brad Whitlock, Fri Apr 9 17:18:39 PST 2004
+//   I made it clear the actors for now so reopen works correctly.
+//
 // ****************************************************************************
 
 void
@@ -3821,9 +3824,11 @@ ViewerPlotList::ReplaceDatabase(const std::string &host, const std::string &data
                     //
                     // Tell the plot to update its cache size and whether it should
                     // clear out its actors when it does change the cache size.
+                    // Currently, we want to clear the actors but in the
+                    // future when we have CheckForNewStates fully implemented,
+                    // we may not want to clear actors.
                     //
-                    bool clearActors = GetKeyframeMode();
-                    plot->UpdateCacheSize(GetKeyframeMode(), clearActors);
+                    plot->UpdateCacheSize(GetKeyframeMode(), true);
                 }
             }
             CATCH(InvalidVariableException)

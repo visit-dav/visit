@@ -221,6 +221,10 @@ class SplashScreen;
 //    Kathleen Bonnell, Wed Mar 31 10:13:43 PST 2004
 //    Added QueryOverTime window. 
 //
+//    Brad Whitlock, Fri Apr 9 14:11:11 PST 2004
+//    I added allowFileSelectionChange, which is an internal flag only used
+//    at startup.
+//
 // ****************************************************************************
 
 class GUI_API QvisGUIApplication : public QObject, public ConfigManager, public GUIBase
@@ -371,6 +375,7 @@ private:
 
     // File to load on startup.
     QualifiedFilename            loadFile;
+    bool                         allowFileSelectionChange;
 
     // Session variables
     QString                      sessionFile;
