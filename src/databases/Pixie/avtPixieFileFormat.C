@@ -175,6 +175,9 @@ avtPixieFileFormat::FreeUpResources(void)
 //   Modified the reader to handle gaps in the cycle numbering (e.g. allowing
 //   0, 10, 20, 30 instead of requiring 0, 1, 2, 3).
 //
+//   Mark C. Miller, Mon Dec  6 14:13:11 PST 2004
+//   Added std:: name resolution to call to sot
+//
 // ****************************************************************************
     
 void
@@ -241,7 +244,7 @@ avtPixieFileFormat::Initialize()
         }
 
         // Sort the cycles.
-        sort(cycles.begin(), cycles.end());
+        std::sort(cycles.begin(), cycles.end());
 
 #ifdef MDSERVER
         // We're on the mdserver so close the file now that we've determined

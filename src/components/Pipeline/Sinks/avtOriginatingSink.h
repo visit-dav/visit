@@ -48,6 +48,7 @@ class PIPELINE_API avtOriginatingSink : virtual public avtDataObjectSink
     void                      Execute(avtDataSpecification_p);
 
     static void               SetGuideFunction(GuideFunction, void *);
+    static void               GetGuideFunction(GuideFunction &, void *&);
 
   protected:
     int                       pipelineIndex;

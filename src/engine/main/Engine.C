@@ -1023,6 +1023,9 @@ WriteByteStreamToSocket(NonBlockingRPC *rpc, Connection *vtkConnection,
 //    Added argument for cellCountMultiplier. Used cellCountMultiplier
 //    to adjust cell counting for SR threshold
 //
+//    Hank Childs, Wed Dec  1 14:57:22 PST 2004
+//    Automatically transition to SR mode with image based plots.
+//
 // ****************************************************************************
 void
 Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer,
@@ -1065,13 +1068,21 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer,
 
         avtDataObject_p ui_dob = writer->GetInput();
 
-        currentCellCount = (int) (ui_dob->GetNumberOfCells(polysOnly) * cellCountMultiplier);
+        if (cellCountMultiplier > INT_MAX/2.)
+            currentCellCount = INT_MAX;
+        else
+            currentCellCount = (int) 
+                   (ui_dob->GetNumberOfCells(polysOnly) * cellCountMultiplier);
 
-        // test if we've exceeded the scalable threshold already with proc 0's output
-        if (currentTotalGlobalCellCount +
-            currentCellCount > scalableThreshold)
+        // test if we've exceeded the scalable threshold already with proc 0's
+        // output
+        if (currentTotalGlobalCellCount == INT_MAX ||
+            currentCellCount == INT_MAX ||
+            (currentTotalGlobalCellCount + currentCellCount 
+                  > scalableThreshold))
         {
-            debug5 << "exceeded scalable threshold of " << scalableThreshold << endl;
+            debug5 << "exceeded scalable threshold of " << scalableThreshold 
+                   << endl;
             thresholdExceeded = true; 
         }
 
@@ -1099,11 +1110,14 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer,
                        << ") message from processor " << mpiSource << endl;
 
                 // accumulate this processors cell count in the total for this network
-                currentCellCount += proc_i_localCellCount;
+                if (currentCellCount != INT_MAX)
+                    currentCellCount += proc_i_localCellCount;
 
                 // test if we've exceeded the scalable threshold
-                if (currentTotalGlobalCellCount +
-                    currentCellCount > scalableThreshold)
+                if (currentTotalGlobalCellCount == INT_MAX ||
+                    currentCellCount == INT_MAX ||
+                    (currentTotalGlobalCellCount + currentCellCount 
+                          > scalableThreshold))
                 {
                     if (!thresholdExceeded)
                         debug5 << "exceeded scalable threshold of " << scalableThreshold << endl;
@@ -1215,7 +1229,12 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer,
             MPI_Status stat;
 
             // send the "num cells I have" message to proc 0
-            int numCells = (int) (writer->GetInput()->GetNumberOfCells(polysOnly) *
+            int numCells;
+            if (cellCountMultiplier > INT_MAX/2.)
+                numCells = INT_MAX;
+            else
+                numCells = (int) 
+                             (writer->GetInput()->GetNumberOfCells(polysOnly) *
                                                       cellCountMultiplier);
             debug5 << "sending \"num cells I have\" message (=" << numCells << ")" << endl;
             MPI_Send(&numCells, 1, MPI_INT, 0, mpiCellCountTag, MPI_COMM_WORLD);
@@ -1265,15 +1284,29 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer,
     avtDataValidity &v = dob->GetInfo().GetValidity();
     if (!v.HasErrorOccurred())
     {
+        avtDataObjectWriter_p writer_to_use = writer;
+        if (cellCountMultiplier > INT_MAX/2.) // div2 for float precision
+        {
+            // dummy a null data object message to send to viewer
+            avtNullData_p nullData =new avtNullData(NULL,AVT_NULL_DATASET_MSG);
+            nullData->GetInfo().Copy(dob->GetInfo());
+            CopyTo(dob, nullData);
+            avtDataObjectWriter_p nullwriter = dob->InstantiateWriter();
+            nullwriter->SetInput(dob);
+            writer_to_use = nullwriter;
+            *scalableThresholdExceeded = true;
+            *currentNetworkGlobalCellCount = INT_MAX;
+        }
+
         // Send a second stage for the RPC.
         rpc->SendStatus(0,
                         rpc->GetCurStageNum(),
                         "Transferring Data Set",
                         rpc->GetMaxStageNum());
 
-        writer->SetDestinationFormat(destinationFormat);
+        writer_to_use->SetDestinationFormat(destinationFormat);
         avtDataObjectString  do_str;
-        writer->Write(do_str);
+        writer_to_use->Write(do_str);
 
         rpc->SendStatus(100,
                         rpc->GetCurStageNum(),

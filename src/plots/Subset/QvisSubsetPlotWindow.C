@@ -397,6 +397,9 @@ QvisSubsetPlotWindow::CreateWindowContents()
 //   Kathleen Bonnell, Fri Nov 12 11:35:11 PST 2004 
 //   Added point options.
 //
+//   Mark C. Miller, Mon Dec  6 13:30:51 PST 2004
+//   Fixed SGI compiler error with string conversion to QString
+//
 // ****************************************************************************
 
 void
@@ -507,7 +510,7 @@ QvisSubsetPlotWindow::UpdateWindow(bool doAll)
             break;
         case 17: // pointSizeVar
             pointControl->blockSignals(true);
-            temp = QString(subsetAtts->GetPointSizeVar());
+            temp = QString(subsetAtts->GetPointSizeVar().c_str());
             pointControl->SetPointSizeVar(temp);
             pointControl->blockSignals(false);
             break;

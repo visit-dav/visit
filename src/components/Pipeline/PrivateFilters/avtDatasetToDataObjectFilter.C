@@ -97,13 +97,19 @@ avtDatasetToDataObjectFilter::InputSetActiveVariable(const char *varname)
 //  Programmer: Hank Childs
 //  Creation:   April 17, 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Dec  3 14:28:02 PST 2004
+//    Add support for variable names.
+//
 // ****************************************************************************
 
 void
-avtDatasetToDataObjectFilter::SearchDataForDataExtents(double *extents)
+avtDatasetToDataObjectFilter::SearchDataForDataExtents(double *extents,
+                                                       const char *varname)
 {
     avtDataset_p input = GetTypedInput();
-    avtDatasetExaminer::GetDataExtents(input, extents);
+    avtDatasetExaminer::GetDataExtents(input, extents, varname);
 }
 
 

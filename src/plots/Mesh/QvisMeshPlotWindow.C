@@ -312,6 +312,9 @@ QvisMeshPlotWindow::CreateWindowContents()
 //   Replaced simple QString::sprintf's with a setNum because there seems
 //   to be a bug causing numbers to be incremented by .00001.  See '5263.
 //
+//   Mark C. Miller, Mon Dec  6 13:30:51 PST 2004
+//   Fixed SGI compiler error with string conversion to QString
+//
 // ****************************************************************************
 
 void

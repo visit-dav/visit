@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Plugin name="Volume" type="plot" label="Volume" version="1.1" vartype="scalar,species" iconFile="Volume.xpm">
+  <Plugin name="Volume" type="plot" label="Volume" version="1.1" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" vartype="scalar,species" iconFile="Volume.xpm">
     <Files components="V">
       avtVolumeRenderer.C
       avtVolumeFilter.C
@@ -51,7 +51,7 @@
       </Field>
       <Field name="freeformOpacity" label="freeformOpacity" type="ucharArray" length="256" init="true">
       </Field>
-      <Field name="doSoftware" label="doSoftware" type="bool" ignoreeq="true">
+      <Field name="doSoftware" label="doSoftware" type="bool">
         false
       </Field>
       <Field name="useColorVarMin" label="useColorVarMin" type="bool">

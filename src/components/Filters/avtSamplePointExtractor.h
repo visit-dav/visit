@@ -10,6 +10,7 @@
 #include <avtDatasetToSamplePointsFilter.h>
 #include <avtVolume.h>
 
+#include <avtViewInfo.h>
 
 class  vtkHexahedron;
 class  vtkPyramid;
@@ -51,9 +52,13 @@ class  avtRayFunction;
 //    Hank Childs, Sun Dec 14 11:07:56 PST 2003
 //    Added mass voxel extractor.
 //
+//    Hank Childs, Fri Nov 19 13:41:56 PST 2004
+//    Added view conversion option.
+//
 // ****************************************************************************
 
-class AVTFILTERS_API avtSamplePointExtractor : public avtDatasetToSamplePointsFilter
+class AVTFILTERS_API avtSamplePointExtractor 
+    : public avtDatasetToSamplePointsFilter
 {
   public:
                               avtSamplePointExtractor(int, int, int);
@@ -67,6 +72,8 @@ class AVTFILTERS_API avtSamplePointExtractor : public avtDatasetToSamplePointsFi
     void                      RegisterRayFunction(avtRayFunction *rf)
                                          { rayfoo = rf; };
     void                      SendCellsMode(bool);
+    void                      SetRectilinearGridsAreInWorldSpace(bool, 
+                                                   const avtViewInfo &,double);
 
   protected:
     int                       width, height, depth;
@@ -80,6 +87,10 @@ class AVTFILTERS_API avtSamplePointExtractor : public avtDatasetToSamplePointsFi
 
     bool                      sendCells;
     avtRayFunction           *rayfoo;
+
+    bool                      rectilinearGridsAreInWorldSpace;
+    avtViewInfo               viewInfo;
+    double                    aspect;
 
     virtual void              Execute(void);
     virtual void              ExecuteTree(avtDataTree_p);

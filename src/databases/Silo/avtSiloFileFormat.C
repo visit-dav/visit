@@ -3830,6 +3830,10 @@ avtSiloFileFormat::GetPointVar(DBfile *dbfile, const char *vname)
 //    Added code to set arbMeshZoneRangesToSkip and issue warning for meshes
 //    that have arbitrary polyhedra embedded in an ordinary DBzonelist
 //
+//    Mark C. Miller, Mon Dec  6 14:37:33 PST 2004
+//    Changed call to ReadInConnectivity to use zonelist origin and not mesh
+//    origin
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -3936,7 +3940,7 @@ avtSiloFileFormat::GetUnstructuredMesh(DBfile *dbfile, const char *mn,
         vtkUnstructuredGrid  *ugrid = vtkUnstructuredGrid::New(); 
         ugrid->SetPoints(points);
         vector<int> zoneRangesToSkip;
-        ReadInConnectivity(ugrid, um->zones, um->origin, zoneRangesToSkip);
+        ReadInConnectivity(ugrid, um->zones, um->zones->origin, zoneRangesToSkip);
         if (zoneRangesToSkip.size() > 0)
         {
             // squirl away knowledge of the zones we've removed

@@ -347,6 +347,9 @@ QvisBoundaryPlotWindow::CreateWindowContents()
 //   Kathleen Bonnell, Fri Nov 12 10:17:58 PST 2004
 //   Added pointControl cases.
 //
+//   Mark C. Miller, Mon Dec  6 13:30:51 PST 2004
+//   Fixed SGI compiler error with string conversion to QString
+//
 // ****************************************************************************
 
 void
@@ -453,7 +456,7 @@ QvisBoundaryPlotWindow::UpdateWindow(bool doAll)
             break;
         case 16: // pointSizeVar
             pointControl->blockSignals(true);
-            temp = QString(boundaryAtts->GetPointSizeVar());
+            temp = QString(boundaryAtts->GetPointSizeVar().c_str());
             pointControl->SetPointSizeVar(temp);
             pointControl->blockSignals(false);
             break;

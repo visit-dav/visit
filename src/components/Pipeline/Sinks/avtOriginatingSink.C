@@ -238,3 +238,27 @@ avtOriginatingSink::SetGuideFunction(GuideFunction foo, void *args)
 }
 
 
+// ****************************************************************************
+//  Method: avtOriginatingSink::GetGuideFunction
+//
+//  Purpose:
+//      Gets the load balancer to be consulted when this originating sink
+//      determines if it should do another update.
+//
+//  Arguments:
+//      foo     The function that will call a load balancer.
+//      args    The arguments for the function.
+//
+//  Programmer: Hank Childs
+//  Creation:   December 1, 2004
+//
+// ****************************************************************************
+
+void
+avtOriginatingSink::GetGuideFunction(GuideFunction &foo, void *&args)
+{
+    foo  = guideFunction;
+    args = guideFunctionArgs;
+}
+
+

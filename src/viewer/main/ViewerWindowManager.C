@@ -5725,6 +5725,9 @@ ViewerWindowManager::CloseDatabase(const std::string &dbName)
 //   Brad Whitlock, Mon May 3 12:48:29 PDT 2004
 //   I made it use an engine key.
 //
+//   Mark C. Miller, Mon Dec  6 20:18:43 PST 2004
+//   Added code to push final SIL controls to client
+//
 // ****************************************************************************
 
 void
@@ -5741,6 +5744,18 @@ ViewerWindowManager::ReplaceDatabase(const EngineKey &key,
                                 onlyReplaceSame);
         }
     }
+
+    //
+    // After we've completed the replace, we need to make sure the SIL
+    // window displays the correct contents; that of the active plot of
+    // the active window
+    //
+    ViewerWindow aWin = GetActiveWindow();
+    if (aWin != 0)
+    {
+        aWin->GetPlotList()->UpdateSILRestrictionAtts();
+    }
+
 }
 
 // ****************************************************************************

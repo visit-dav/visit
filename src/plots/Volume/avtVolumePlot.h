@@ -14,10 +14,14 @@
 
 #include <string>
 
+class WindowAttributes;
+
 class avtLookupTable;
 class avtShiftCenteringFilter;
 class avtUserDefinedMapper;
 class avtVolumeFilter;
+class avtResampleFilter;
+
 
 // ****************************************************************************
 //  Method: avtVolumePlot
@@ -44,6 +48,10 @@ class avtVolumeFilter;
 //    Kathleen Bonnell, Tue Oct 22 08:33:26 PDT 2002
 //    Added ApplyRenderingTransformation. 
 //    
+//    Hank Childs, Wed Nov 24 16:44:44 PST 2004
+//    Integrated this plot with SR mode, meaning that a lot of infrastructure
+//    for delivering images could be removed.
+//
 // ****************************************************************************
 
 class
@@ -60,31 +68,20 @@ avtVolumePlot : public avtVolumeDataPlot
     virtual void        ReleaseData(void);
     void                SetLegend(bool);
 
-    void                OverrideWithSoftwareImage(avtDataObject_p &);
+    virtual bool        PlotIsImageBased(void);
+    virtual avtImage_p  ImageExecute(avtImage_p, const WindowAttributes &);
     virtual bool        Equivalent(const AttributeGroup *);
 
-    // This is a hack to do software rendering.
-    void                SetId(const std::string &);
     virtual bool        CanCacheWriterExternally(void) { return false; }
 
   protected:
     VolumeAttributes         atts;
     avtVolumeFilter         *volumeFilter;
+    avtResampleFilter       *resampleFilter;
     avtShiftCenteringFilter *shiftCentering;
     avtVolumeRenderer_p      renderer;
     avtUserDefinedMapper    *mapper;
     avtLookupTable          *avtLUT;
-
-    // The last image is saved in this class.  Probably this code should be
-    // pushed off to another module.  For the time being though, leave it
-    // in here.
-    avtDataObject_p          lastImage;
-    VolumeAttributes         lastAtts;
-    WindowAttributes         lastWindowAtts;
-
-    // This data member is used to tell the engine which plot type's attributes
-    // should change.
-    std::string              id;
 
     avtVolumeVariableLegend *varLegend;
     avtLegend_p              varLegendRefPtr;

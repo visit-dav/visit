@@ -55,6 +55,9 @@
 //    Hank Childs, Sun Dec 14 11:07:56 PST 2003
 //    Initialized massVoxelExtractor.
 //
+//    Hank Childs, Fri Nov 19 13:57:02 PST 2004
+//    Initialized rectilinearGridsAreInWorldSpace.
+//
 // ****************************************************************************
 
 avtSamplePointExtractor::avtSamplePointExtractor(int w, int h, int d)
@@ -73,8 +76,10 @@ avtSamplePointExtractor::avtSamplePointExtractor(int w, int h, int d)
     wedgeExtractor      = NULL;
 
     sendCells        = false;
-
     rayfoo           = NULL;
+
+    rectilinearGridsAreInWorldSpace = false;
+    aspect = 1.;
 }
 
 
@@ -118,6 +123,28 @@ avtSamplePointExtractor::~avtSamplePointExtractor()
         delete pyramidExtractor;
         pyramidExtractor = NULL;
     }
+}
+
+
+// ****************************************************************************
+//  Method: avtSamplePointExtractor::SetRectilinearGridsAreInWorldSpace
+//
+//  Purpose:
+//      Tells this object that any input rectilinear grids are in world space,
+//      not image space.
+//
+//  Programmer: Hank Childs
+//  Creation:   November 19, 2004
+//
+// ****************************************************************************
+
+void
+avtSamplePointExtractor::SetRectilinearGridsAreInWorldSpace(bool val,
+                 const avtViewInfo &v, double a)
+{
+    rectilinearGridsAreInWorldSpace = true;
+    viewInfo = v;
+    aspect = a;
 }
 
 
@@ -275,6 +302,10 @@ avtSamplePointExtractor::SetUpExtractors(void)
 //    Hank Childs, Fri Aug 27 16:47:45 PDT 2004
 //    Rename ghost data arrays.
 //
+//    Hank Childs, Fri Nov 19 13:57:02 PST 2004
+//    If the rectilinear grids are in world space, then let the mass voxel
+//    extractor know about it.
+//
 // ****************************************************************************
 
 void
@@ -307,6 +338,8 @@ avtSamplePointExtractor::ExecuteTree(avtDataTree_p dt)
 
     if (ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
     {
+        massVoxelExtractor->SetGridsAreInWorldSpace(
+                            rectilinearGridsAreInWorldSpace, viewInfo, aspect);
         massVoxelExtractor->Extract((vtkRectilinearGrid *) ds);
         return;
     }

@@ -183,6 +183,10 @@ class VisWindow;
 //
 //    Mark C. Miller, Tue Oct 19 20:18:22 PDT 2004
 //    Added arg for color table name to SetWindowAttributes
+//
+//    Hank Childs, Wed Nov 24 17:30:11 PST 2004
+//    Added support for image based plots.
+//
 // ****************************************************************************
 class NetworkManager
 {
@@ -261,6 +265,7 @@ class NetworkManager
     std::vector<Netnode*>       workingNetnodeList;
     DataNetwork                *workingNet;
     std::vector<std::string>    nameStack;
+    std::vector<avtPlot_p>      imageBasedPlots;
 
     int                         uniqueNetworkId;
     bool                        requireOriginalCells;
