@@ -25,10 +25,15 @@
 #include <avtPrincipalTensorFilter.h>
 #include <avtEffectiveTensorFilter.h>
 #include <avtGradientFilter.h>
+#include <avtCurlFilter.h>
+#include <avtDivergenceFilter.h>
+#include <avtLaplacianFilter.h>
 #include <avtMagnitudeFilter.h>
 #include <avtNeighborFilter.h>
 #include <avtNodeDegreeFilter.h>
 #include <avtMatvfFilter.h>
+#include <avtMIRvfFilter.h>
+#include <avtMatErrorFilter.h>
 #include <avtNMatsFilter.h>
 #include <avtRadianToDegreeFilter.h>
 #include <avtRevolvedVolume.h>
@@ -50,6 +55,7 @@
 #include <avtVMetrics.h>
 #include <avtRecenterFilter.h>
 #include <avtConstantCreatorFilter.h>
+#include <avtRelativeDifferenceFilter.h>
 #include <avtConditionalFilter.h>
 #include <avtLogicalAndFilter.h>
 #include <avtLogicalNegationFilter.h>
@@ -293,6 +299,10 @@ avtVectorExpr::CreateFilters(ExprPipelineState *state)
 //      Hank Childs, Thu Sep 23 09:17:26 PDT 2004
 //      Added zone id, node id, and global variants.
 //
+//      Hank Childs, Sun Jan  2 15:27:00 PST 2005
+//      Added macro expressions -- curl, divergence, laplacian, and materror.
+//      Also added support functions for materror -- MIRvf and relative diff.
+//
 // ****************************************************************************
 void
 avtFunctionExpr::CreateFilters(ExprPipelineState *state)
@@ -335,6 +345,10 @@ avtFunctionExpr::CreateFilters(ExprPipelineState *state)
         f = new avtBinaryMultiplyFilter();
     else if (functionName == "matvf")
         f = new avtMatvfFilter();
+    else if (functionName == "mirvf")
+        f = new avtMIRvfFilter();
+    else if (functionName == "materror")
+        f = new avtMatErrorFilter();
     else if (functionName == "specmf")
         f = new avtSpecMFFilter();
     else if (functionName == "nmats")
@@ -369,8 +383,16 @@ avtFunctionExpr::CreateFilters(ExprPipelineState *state)
         f = new avtProcessorIdFilter();
     else if (functionName == "gradient")
         f = new avtGradientFilter();
+    else if (functionName == "curl")
+        f = new avtCurlFilter();
+    else if (functionName == "divergence")
+        f = new avtDivergenceFilter();
+    else if (functionName == "laplacian" || functionName == "Laplacian")
+        f = new avtLaplacianFilter();
     else if (functionName == "magnitude")
         f = new avtMagnitudeFilter();
+    else if (functionName == "relative_difference")
+        f = new avtRelativeDifferenceFilter();
     else if (functionName == "if")
         f = new avtConditionalFilter();
     else if (functionName == "and")

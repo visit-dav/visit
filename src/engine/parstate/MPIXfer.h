@@ -3,7 +3,7 @@
 #include <engine_parstate_exports.h>
 #include <Xfer.h>
 
-// *******************************************************************
+// ****************************************************************************
 // Class: MPIXfer
 //
 // Purpose:
@@ -31,7 +31,13 @@
 //    Mark C. Miller, Thu Jun 10 09:08:18 PDT 2004
 //    Added arg for mpiInterruptTag to SendInterruption
 //
-// *******************************************************************
+//    Jeremy Meredith, Thu Oct  7 14:09:10 PDT 2004
+//    Added callback so the master process could tell the slaves they
+//    are about to receive data.  This was needed for running inside a
+//    parallel simulation because slave processes need some way to know
+//    that the next command coming is visit-specific.
+//
+// ****************************************************************************
 
 class ENGINE_PARSTATE_API MPIXfer : public Xfer
 {
@@ -43,11 +49,13 @@ public:
     virtual void SendInterruption(int mpiInterruptTag);
 
     void SetEnableReadHeader(bool val);
+    static void SetSlaveProcessInstructionCallback(void (*)());
 protected:
     bool ReadHeader();
 private:
     bool enableReadHeader;
     int  readsSinceReadHeaderDisabled;
+    static void (*slaveProcessInstruction)();
 };
 
 #endif

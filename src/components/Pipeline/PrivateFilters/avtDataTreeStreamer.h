@@ -2,10 +2,10 @@
 //                          avtDataTreeStreamer.h                            //
 // ************************************************************************* //
 
-#ifndef AVT_DOMAINTREESTREAMER_H
-#define AVT_DOMAINTREESTREAMER_H
-#include <pipeline_exports.h>
+#ifndef AVT_DATA_TREE_STREAMER_H
+#define AVT_DATA_TREE_STREAMER_H
 
+#include <pipeline_exports.h>
 
 #include <avtDatasetToDatasetFilter.h>
 
@@ -55,9 +55,13 @@ class  avtExtents;
 //    Hank Childs, Tue Nov  6 11:46:10 PST 2001
 //    Add support for overriding extents.
 //
+//    Hank Childs, Mon Dec 27 10:58:14 PST 2004
+//    Made inheritance virtual.
+//
 // **************************************************************************** 
 
-class PIPELINE_API avtDataTreeStreamer : public avtDatasetToDatasetFilter
+class PIPELINE_API avtDataTreeStreamer : virtual public 
+                                                      avtDatasetToDatasetFilter
 {
    public:
                              avtDataTreeStreamer();

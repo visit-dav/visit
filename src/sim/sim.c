@@ -1,4 +1,25 @@
-#include "simulation.h"
+// ****************************************************************************
+//  Programmer:  Jeremy Meredith
+//  Creation:    July 10, 2003
+//
+//  Modifications:
+//    Jeremy Meredith, Wed Jan 14 12:23:02 PST 2004
+//    Made it work with the VisIt library.
+//
+//    Jeremy Meredith, Tue Mar 30 18:12:12 PDT 2004
+//    Some major preliminary productization.
+//
+//    Jeremy Meredith, Wed Aug 25 13:36:11 PDT 2004
+//    Getting closer.  Some hefty changes -- refactored some things
+//    into a separate file that can be included by other simulations.
+//
+//    Jeremy Meredith, Mon Nov  1 17:27:54 PST 2004
+//    Made it work in parallel, at least with two processors.
+//
+// ****************************************************************************
+
+
+#include "VisIt.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -24,9 +45,9 @@ int par_size = 1;
 #define MIN(a,b) ((a)<(b)?(a):(b))
 #define MAX3(a,b,c) MAX(a,MAX(b,c))
 
-int consoleinputdescriptor = 0;
-int engineinputdescriptor = -1;
-int listenSock = -1;
+static int consoleinputdescriptor = 0;
+static int engineinputdescriptor = -1;
+static int listenSock = -1;
 
 int runflag = 0;
 int quitflag = 0;
@@ -42,6 +63,8 @@ double *p_zcoords;
 double *p_zvalues;
 double *p_nvalues;
 
+int numdomains = 1;
+
 void InitializeVariables()
 {
     int i;
@@ -52,7 +75,8 @@ void InitializeVariables()
     p_nvalues = malloc(sizeof(double) * p_nx*p_ny*p_nz);
     for (i=0; i<p_nx; i++)
     {
-        p_xcoords[i] = i*2.0;
+        int ii = (i + (p_nx-1)*par_rank);
+        p_xcoords[i] = ii*2.0;
     }
     for (i=0; i<p_ny; i++)
     {
@@ -70,6 +94,8 @@ void InitializeVariables()
     {
         p_nvalues[i] = i*1.0;
     }
+
+    numdomains = par_size;
 }
 
 void RunSingleCycle()
@@ -84,7 +110,8 @@ void RunSingleCycle()
 
     for (i=0; i<p_nx; i++)
     {
-        p_xcoords[i] = i * 2.0 + (i*i*0.1 * (double)(cycle));
+        int ii = (i + (p_nx-1)*par_rank);
+        p_xcoords[i] = ii * 2.0 + (ii*ii*0.1 * (double)(cycle));
     }
     for (i=0; i<p_nx; i++)
     {
@@ -92,8 +119,12 @@ void RunSingleCycle()
     }
 
     printf(" ... Finished cycle %d\n", cycle);
+#ifdef PARALLEL
+    MPI_Barrier(MPI_COMM_WORLD);
+    printf(" and both processors synchronized.\n");
+#endif
     cycle++;
-    TimeStepChanged();
+    VisItTimeStepChanged();
 }
 
 void RunSimulation()
@@ -106,21 +137,36 @@ void StopSimulation()
     runflag = 0;
 }
 
+void FakeConsoleCommand(char *str)
+{
+#ifdef PARALLEL
+    char buff[10000];
+    sprintf(buff, str);
+    MPI_Bcast(buff, 10000, MPI_CHAR, 0, MPI_COMM_WORLD);
+#endif
+}
 
 void ProcessConsoleCommand()
 {
     // Read A Command
     char buff[10000];
-    int iseof = (fgets(buff, 10000, stdin) == NULL);
 
-    if (iseof)
+    if (par_rank == 0)
     {
-        sprintf(buff, "quit");
-        printf("quit\n");
+        int iseof = (fgets(buff, 10000, stdin) == NULL);
+        if (iseof)
+        {
+            sprintf(buff, "quit");
+            printf("quit\n");
+        }
+
+        if (strlen(buff)>0 && buff[strlen(buff)-1] == '\n')
+            buff[strlen(buff)-1] = '\0';
     }
 
-    if (strlen(buff)>0 && buff[strlen(buff)-1] == '\n')
-        buff[strlen(buff)-1] = '\0';
+#ifdef PARALLEL
+    MPI_Bcast(buff, 10000, MPI_CHAR, 0, MPI_COMM_WORLD);
+#endif
 
     if (!strcmp(buff, "quit"))
     {
@@ -136,11 +182,20 @@ void ProcessConsoleCommand()
     }
     else if (!strcmp(buff, "stop"))
     {
+        printf("execution paused....\n");
         StopSimulation();
     }
-    else if (!strcmp(buff, "disconnect"))
+    else if (!strcmp(buff, "visit_disconnect"))
     {
-        Disconnect();
+        VisItDisconnect();
+    }
+    else if (!strcmp(buff, "visit_connect"))
+    {
+        VisItAttemptToCompleteConnection();
+    }
+    else if (!strcmp(buff, "visit_process"))
+    {
+        VisItProcessEngineCommand();
     }
     else if (!strcmp(buff, ""))
     {
@@ -152,6 +207,11 @@ void ProcessConsoleCommand()
     }
 }
 
+void SlaveProcessCallback()
+{
+    FakeConsoleCommand("visit_process");
+}
+
 void MainLoop()
 {
     fprintf(stderr, "command> ");
@@ -159,73 +219,106 @@ void MainLoop()
 
     while (!quitflag)
     {
-        fd_set readSet;
-
-        int maxdescriptor = MAX3(consoleinputdescriptor,
-                                 engineinputdescriptor,
-                                 listenSock);
-
-        int ret = 0;
-        int blocking = runflag ? FALSE : TRUE;
-        struct timeval ZeroTimeout = {0,0};
-        struct timeval *timeout = (blocking ? NULL : &ZeroTimeout);
-
-        FD_ZERO(&readSet);
-
-        FD_SET(consoleinputdescriptor, &readSet);
-        if (engineinputdescriptor >= 0)
-            FD_SET(engineinputdescriptor, &readSet);
-        if (listenSock >= 0)
-            FD_SET(listenSock, &readSet);
-        ret = select(maxdescriptor+1, &readSet, (fd_set *)NULL, (fd_set *)NULL,
-                     timeout);
-
-        if (ret < 0)
+        if (par_rank == 0)
         {
-            if (errno == EINTR)
+            fd_set readSet;
+
+            int maxdescriptor = MAX3(consoleinputdescriptor,
+                                     engineinputdescriptor,
+                                     listenSock);
+
+            int ret = 0;
+            int blocking = runflag ? FALSE : TRUE;
+            struct timeval ZeroTimeout = {0,0};
+            struct timeval *timeout = (blocking ? NULL : &ZeroTimeout);
+
+            FD_ZERO(&readSet);
+
+            FD_SET(consoleinputdescriptor, &readSet);
+
+            if (engineinputdescriptor >= 0)
             {
-                fprintf(stderr, "\nInterrupted...... quitting\n");
-                quitflag = 1;
+                FD_SET(engineinputdescriptor, &readSet);
+            }
+
+            if (listenSock >= 0)
+            {
+                FD_SET(listenSock, &readSet);
+            }
+
+            ret = select(maxdescriptor+1, &readSet, (fd_set *)NULL, (fd_set *)NULL,
+                         timeout);
+
+            if (ret < 0)
+            {
+                int err = errno;
+                if (err == EINTR)
+                {
+                    fprintf(stderr, "\nInterrupted...... quitting\n");
+                    quitflag = 1;
+                }
+                else if (err == EBADF)
+                {
+                    fprintf(stderr,"\nBad file descriptor in select\n");
+                    quitflag = 1;
+                }
+                else if (err == EINVAL)
+                {
+                    fprintf(stderr,"\nBad argument to select\n");
+                    quitflag = 1;
+                }
+                else
+                {
+                    fprintf(stderr, "Error in select at line %d\n",__LINE__);
+                    exit(1);
+                }
+            }
+            else if (ret == 0)
+            {
+                if (runflag)
+                {
+                    FakeConsoleCommand("step");
+                    RunSingleCycle();
+                }
             }
             else
             {
-                fprintf(stderr, "Error in select at line %d\n",__LINE__);
-                exit(1);
-            }
-        }
-        else if (ret == 0)
-        {
-            if (runflag)
-            {
-                RunSingleCycle();
+                if (FD_ISSET(listenSock, &readSet))
+                {
+                    fprintf(stderr, "GOT CONNECTION ATTEMPT ON LISTEN SOCKET!\n");
+                    FakeConsoleCommand("visit_connect");
+                    VisItAttemptToCompleteConnection();
+                    engineinputdescriptor = VisItGetEngineSocket();
+                    VisItSetSlaveProcessCallback(SlaveProcessCallback);
+                }
+                else if (FD_ISSET(consoleinputdescriptor, &readSet))
+                {
+                    ProcessConsoleCommand();
+                    if (!quitflag && !runflag)
+                    {
+                        fprintf(stderr, "command> ");
+                        fflush(stderr);
+                    }
+                }
+                else if (FD_ISSET(engineinputdescriptor, &readSet))
+                {
+                    if (!VisItProcessEngineCommand())
+                    {
+                        FakeConsoleCommand("visit_disconnect");
+                        VisItDisconnect();
+                        engineinputdescriptor = -1;
+                    }
+                }
+                else
+                {
+                    fprintf(stderr, "Unknown FD set by select at line %d\n",__LINE__);
+                    exit(1);
+                }
             }
         }
         else
         {
-            if (FD_ISSET(listenSock, &readSet))
-            {
-                fprintf(stderr, "GOT CONNECTION ATTEMPT ON LISTEN SOCKET!\n");
-                AttemptToCompleteConnection();
-            }
-            else if (FD_ISSET(consoleinputdescriptor, &readSet))
-            {
-                ProcessConsoleCommand();
-                if (!quitflag && !runflag)
-                {
-                    fprintf(stderr, "command> ");
-                    fflush(stderr);
-                }
-
-            }
-            else if (FD_ISSET(engineinputdescriptor, &readSet))
-            {
-                ProcessEngineCommand();
-            }
-            else
-            {
-                fprintf(stderr, "Unknown FD set by select at line %d\n",__LINE__);
-                exit(1);
-            }
+            ProcessConsoleCommand();
         }
     }
 }
@@ -234,17 +327,26 @@ void MainLoop()
 int main(int argc, char *argv[])
 {
     if (getenv("LD_LIBRARY_PATH")) printf("ld_library_path=%s\n", getenv("LD_LIBRARY_PATH")); else printf("ld_library_path=(null)\n");
-    AddVisItLibraryPaths(argc, argv);
-    InitializeSocketAndDumpSimFile("proto");
+    //VisItAddLibraryPaths(argc, argv);
+    VisItSetupEnvironment();
 
 #ifdef PARALLEL
     MPI_Init(&argc, &argv);
     MPI_Comm_rank (MPI_COMM_WORLD, &par_rank);
     MPI_Comm_size (MPI_COMM_WORLD, &par_size);
+    printf("PARALLEL started: num procs = %d\n", par_size);
+    if (par_size == 1)
+    {
+        printf("Probably not using mpirun; try again!!!!!!\n");
+        exit(0);
+    }
 #endif
 
     if (par_rank == 0)
     {
+        VisItInitializeSocketAndDumpSimFile("proto");
+        listenSock = VisItGetListenSocket();
+
         printf("\n          >>> STARTING SIMULATION PROTOTYPE <<<\n\n\n");
 
         printf("Known Commands:\n"

@@ -42,16 +42,22 @@ using std::find;
 //  Programmer: Hank Childs
 //  Creation:   February 5, 2004
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Dec 31 11:47:01 PST 2004
+//    Initialize termsrc.
+//
 // ****************************************************************************
 
 avtExpressionEvaluatorFilter::avtExpressionEvaluatorFilter()
 {
+    termsrc = NULL;
     currentTimeState = 0;
 }
 
 
 // ****************************************************************************
-//  Method: avtExpressionEvaluatorFilterdestructor
+//  Method: avtExpressionEvaluatorFilter destructor
 //
 //  Purpose:
 //      Defines the destructor.  Note: this should not be inlined in the header
@@ -60,11 +66,17 @@ avtExpressionEvaluatorFilter::avtExpressionEvaluatorFilter()
 //  Programmer: Hank Childs
 //  Creation:   February 5, 2004
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Dec 31 11:47:01 PST 2004
+//    Delete termsrc.
+//
 // ****************************************************************************
 
 avtExpressionEvaluatorFilter::~avtExpressionEvaluatorFilter()
 {
-    ;
+    if (termsrc != NULL)
+        delete termsrc;
 }
 
 
@@ -86,6 +98,9 @@ avtExpressionEvaluatorFilter::~avtExpressionEvaluatorFilter()
 //    Consult the 'lastUsedSpec' to come up with the list of secondary 
 //    variables that are needed downstream. ['5790]
 //
+//    Hank Childs, Fri Dec 31 11:47:01 PST 2004
+//    Use a cached terminating source rather than one on the stack.
+//
 // ****************************************************************************
 
 void
@@ -97,10 +112,10 @@ avtExpressionEvaluatorFilter::Execute(void)
     // Get my input and output for hooking up to the database.
     avtDataObject_p dObj = GetInput();
 
-    avtDataset_p ds; 
-    CopyTo(ds, dObj);
-    avtSourceFromAVTDataset termsrc(ds);
-    avtDataObject_p data = termsrc.GetOutput(); 
+    // Make sure our version is the "latest and greatest".
+    termsrc->ResetTree(GetInputDataTree());
+    termsrc->GetOutput()->GetInfo().Copy(GetInput()->GetInfo());
+    avtDataObject_p data = termsrc->GetOutput(); 
 
     // Do we have anything to do?  Did we apply any expression filters?
     if (pipelineState.GetFilters().size() != 0)
@@ -202,12 +217,16 @@ avtExpressionEvaluatorFilter::AdditionalPipelineFilters(void)
 //    Jeremy Meredith, Wed Nov 24 12:25:10 PST 2004
 //    Renamed EngineExprNode to avtExprNode because of a refactoring.
 //
+//    Hank Childs, Fri Dec 31 11:50:07 PST 2004
+//    Maintain our own cached version of the terminating source.
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
 avtExpressionEvaluatorFilter::PerformRestriction(
                                                avtPipelineSpecification_p spec)
 {
+    pipelineState.Clear();
     int   i;
 
     avtPipelineSpecification_p rv = spec;
@@ -392,7 +411,22 @@ avtExpressionEvaluatorFilter::PerformRestriction(
 
     rv = new avtPipelineSpecification(spec, newds);
 
+    //
+    // Set up the input of the terminating source.  This is because some of
+    // the filters may need to be able to go upstream to do the perform
+    // restriction.
+    //
     vector<avtExpressionFilter *> &filters = pipelineState.GetFilters();
+    if (termsrc == NULL)
+    {
+        termsrc = new avtSourceFromAVTDataset(GetTypedInput());
+    }
+    if (pipelineState.GetFilters().size() != 0)
+    {
+        avtExpressionFilter *top =    filters.front();
+        top->SetInput(termsrc->GetOutput());
+    }
+
     for (i = 0 ; i < filters.size() ; i++)
     {
         rv = filters[i]->PerformRestriction(rv);

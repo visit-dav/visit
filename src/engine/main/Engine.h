@@ -36,6 +36,8 @@ class Xfer;
 #include <vector>
 #include <avtDataObjectWriter.h>
 #include <ParentProcess.h>
+#include <parallel.h>
+#include <BufferConnection.h>
 
 // ****************************************************************************
 //  Class:  Engine
@@ -73,6 +75,10 @@ class Xfer;
 //    Jeremy Meredith, Wed Aug 25 11:58:44 PDT 2004
 //    Added methods needed for Simulation support.
 //
+//    Jeremy Meredith, Mon Nov  1 17:17:59 PST 2004
+//    Added a parallel ProcessInput for parallel Simulation support.  Made
+//    some other small changes necessary for that to happen.
+//
 // ****************************************************************************
 
 class Engine
@@ -103,6 +109,7 @@ class Engine
     // Methods needed for an external event loop
     int             GetInputSocket();
     void            ProcessInput();
+    void            PAR_ProcessInput();
 
     // Method to write data back to the viewer
     void            WriteData(NonBlockingRPC *, avtDataObjectWriter_p &,
@@ -161,6 +168,8 @@ class Engine
     // The Xfer object
 #ifdef PARALLEL
     MPIXfer            *xfer;
+    PAR_StateBuffer     par_buf;
+    BufferConnection    par_conn;
 #else
     Xfer               *xfer;
 #endif

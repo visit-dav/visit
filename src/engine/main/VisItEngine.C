@@ -3,6 +3,7 @@
 #include <Engine.h>
 #include <LostConnectionException.h>
 #include <LoadBalancer.h>
+#include <MPIXfer.h>
 
 #include <visitstream.h>
 
@@ -14,6 +15,10 @@
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    August 25, 2004
+//
+//  Modifications:
+//    Jeremy Meredith, Mon Nov  1 17:19:02 PST 2004
+//    Added parallel simulation support.
 //
 // ****************************************************************************
 
@@ -57,7 +62,11 @@ int process_input(void *e)
     Engine *engine = (Engine*)(e);
 
     try {
+#ifdef PARALLEL
+        engine->PAR_ProcessInput();
+#else
         engine->ProcessInput();
+#endif
     }
     catch (LostConnectionException)
     {
@@ -82,6 +91,13 @@ void time_step_changed(void *e)
 void disconnect()
 {
     Engine::Disconnect();
+}
+
+void set_slave_process_callback(void(*spic)())
+{
+#ifdef PARALLEL
+    MPIXfer::SetSlaveProcessInstructionCallback(spic);
+#endif
 }
 
 //  Needed for some reason on some platforms.

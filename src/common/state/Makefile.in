@@ -231,6 +231,9 @@
 #    Kathleen Bonnell, Mon Aug 16 11:39:46 PDT 2004 
 #    Added InteractorAttributes. 
 #
+#    Jeremy Meredith, Tue Nov  2 11:37:34 PST 2004
+#    Added SimulationCommand.
+#
 ##############################################################################
 
 ##
@@ -309,6 +312,7 @@ SRC=    AnimationAttributes.C \
         SILRestrictionAttributes.C \
         SimilarityTransformAttributes.C \
         SimpleObserver.C \
+        SimulationCommand.C \
         SphereAttributes.C \
         StatusAttributes.C \
         Subject.C \

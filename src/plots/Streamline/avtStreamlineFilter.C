@@ -496,6 +496,12 @@ avtStreamlineFilter::ReleaseData(void)
 //    I added code to convert the vorticity array to vorticity magnitude so
 //    we can color by that too. I also added the ribbon filter.
 //
+//    Brad Whitlock, Mon Jan 3 13:25:51 PST 2005
+//    Added code to create a polydata consisting of small line segments based
+//    on the streamline source if the streamline filter did not produce any
+//    streamlines. I also added code to restrict the Z coordinate of the
+//    streamline sources if the input data is 2D.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -508,19 +514,23 @@ avtStreamlineFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
     vtkSphereSource    *sphere = NULL;
 
     bool showTube = displayMethod == STREAMLINE_DISPLAY_TUBES;
+    int spatialDim = GetInput()->GetInfo().GetAttributes().GetSpatialDimension();
 
     //
     // Create a source for the filter's streamline points.
     //
     if(sourceType == STREAMLINE_SOURCE_POINT)
     {
-        streamline->SetStartPosition(pointSource[0],pointSource[1],pointSource[2]);
+        double z0 = (spatialDim > 2) ? pointSource[2] : 0.;
+        streamline->SetStartPosition(pointSource[0], pointSource[1], z0);
     }
     else if(sourceType == STREAMLINE_SOURCE_LINE)
     {
         line = vtkLineSource::New();
-        line->SetPoint1(lineStart[0], lineStart[1], lineStart[2]);
-        line->SetPoint2(lineEnd[0], lineEnd[1], lineEnd[2]);
+        double z0 = (spatialDim > 2) ? lineStart[2] : 0.;
+        double z1 = (spatialDim > 2) ? lineEnd[2] : 0.;
+        line->SetPoint1(lineStart[0], lineStart[1], z0);
+        line->SetPoint2(lineEnd[0], lineEnd[1], z1);
         line->SetResolution(pointDensity);
         if(showTube && showStart)
             ballPD = line->GetOutput();
@@ -537,6 +547,8 @@ avtStreamlineFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
         avtVector N(planeNormal);
         U.normalize();
         N.normalize();
+        if(spatialDim <= 2)
+           N = avtVector(0.,0.,1.);
         // Determine the right vector.
         avtVector R(U % N);
         R.normalize();
@@ -548,10 +560,15 @@ avtStreamlineFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
         plane->SetNormal(N.x, N.y, N.z);
         plane->SetCenter(O.x, O.y, O.z);
 
-        if(showTube && showStart)
-            ballPD = plane->GetOutput();
+        // Zero out the Z coordinate if the input dataset is only 2D.
+        vtkPolyData *planePD = plane->GetOutput();
+        if(spatialDim <= 2)
+            SetZToZero(planePD);
 
-        streamline->SetSource(plane->GetOutput());
+        if(showTube && showStart)
+            ballPD = planePD;
+
+        streamline->SetSource(planePD);
     }
     else if(sourceType == STREAMLINE_SOURCE_SPHERE)
     {
@@ -559,15 +576,20 @@ avtStreamlineFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
         sphere->SetCenter(sphereOrigin[0], sphereOrigin[1], sphereOrigin[2]);
         sphere->SetRadius(sphereRadius);
         sphere->SetLatLongTessellation(1);
-        double t = double(20 - pointDensity) / 19.;
+        double t = double(30 - pointDensity) / 29.;
         double angle = t * 3. + (1. - t) * 30.;
         sphere->SetPhiResolution(int(angle));
         sphere->SetThetaResolution(int(angle));
 
-        if(showTube && showStart)
-            ballPD = sphere->GetOutput();
+        // Zero out the Z coordinate if the input dataset is only 2D.
+        vtkPolyData *spherePD = sphere->GetOutput();
+        if(spatialDim <= 2)
+            SetZToZero(spherePD);
 
-        streamline->SetSource(sphere->GetOutput());
+        if(showTube && showStart)
+            ballPD = spherePD;
+
+        streamline->SetSource(spherePD);
     }
     else if(sourceType == STREAMLINE_SOURCE_BOX)
     {
@@ -577,14 +599,25 @@ avtStreamlineFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
         ballPD = vtkPolyData::New();
         vtkPoints *pts = vtkPoints::New();
         ballPD->SetPoints(pts);
-        pts->SetNumberOfPoints((pointDensity+1)*(pointDensity+1)*(pointDensity+1));
+
+        int npts = (pointDensity+1)*(pointDensity+1);
+        int nZvals = 1;
+        if(spatialDim > 2)
+        {
+            npts *= (pointDensity+1);
+            nZvals = (pointDensity+1);
+        }
+        pts->SetNumberOfPoints(npts);
+
         float dX = boxExtents[1] - boxExtents[0];
         float dY = boxExtents[3] - boxExtents[2];
         float dZ = boxExtents[5] - boxExtents[4];
         int index = 0;
-        for(int k = 0; k < pointDensity+1; ++k)
+        for(int k = 0; k < nZvals; ++k)
         {
-            float Z = (float(k) / float(pointDensity)) * dZ + boxExtents[4];
+            float Z = 0.;
+            if(spatialDim > 2)
+                Z = (float(k) / float(pointDensity)) * dZ + boxExtents[4];
             for(int j = 0; j < pointDensity+1; ++j)
             {
                 float Y = (float(j) / float(pointDensity)) * dY + boxExtents[2];
@@ -625,10 +658,79 @@ avtStreamlineFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
     streamline->Update();
     vtkPolyData *streams = streamline->GetOutput();
 
-    // If we're going to display the streamlines as ribbons, add the
-    // streams to the ribbon filter and get the output.
-    if(doRibbons)
+    if(streams == 0 || streams->GetPoints()->GetNumberOfPoints() == 0)
     {
+        debug4 << "The streamline filter returned a NULL output or a dataset "
+                  "with no points. Let's return a copy of the streamline "
+                  "source's polydata that contains some small lines "
+                  "originating at the source's points." << endl;
+        // Create a new polydata and fill it with the points comprising the
+        // streamline filter's source. Note that we do it like this to throw
+        // away any possible connectivity provided by the streamline source.
+        vtkDataSet *src = streamline->GetSource();
+        int npts = src->GetNumberOfPoints();
+        vtkPoints *pts = vtkPoints::New();
+        pts->SetNumberOfPoints(npts*2);
+        vtkCellArray *cells = vtkCellArray::New();
+        cells->Allocate(npts*2); 
+        vtkPolyData *newSource = vtkPolyData::New();
+        newSource->SetPoints(pts);
+        newSource->SetLines(cells);
+        pts->Delete(); cells->Delete();
+        float *newPt = (float *)pts->GetVoidPointer(0);
+        // Create a bogus scalars array too.
+        vtkFloatArray *sa = vtkFloatArray::New();
+        sa->SetNumberOfTuples(npts*2);
+        float *s = (float *)sa->GetVoidPointer(0);
+        // Create a bogus vorticity array if needed.
+        bool doVorticity = doRibbons ||
+            coloringMethod == STREAMLINE_COLOR_VORTICITY;
+        vtkFloatArray *va = 0;
+        float *v = 0;
+        if(doVorticity)
+        {
+            va = vtkFloatArray::New();
+            va->SetNumberOfComponents(3);
+            va->SetNumberOfTuples(npts*2);
+            v = (float *)va->GetVoidPointer(0);
+        }
+        for(int i = 0; i < npts; ++i, newPt += 6)
+        {
+            // Get the source's point and put it in the new point array.
+            src->GetPoint(i, newPt);
+            // Make a 2nd point that's really close to the first.
+            float *nextPoint = newPt + 3;
+            nextPoint[0] = newPt[0]+0.000001;
+            nextPoint[1] = newPt[1];
+            nextPoint[2] = newPt[2];
+            vtkIdType ids[2] = {2*i, 2*i+1};
+            // Insert a line cell.
+            cells->InsertNextCell(2, ids);
+            // Insert zero for the bogus scalar value
+            *s++ = 0.f;
+            *s++ = 0.f;
+            // If we need vorticity, add that too.
+            if(doVorticity)
+            {
+                v[0] = 0.000001;
+                v[1] = 0.f;
+                v[2] = 0.f;
+                v[3] = 0.000001;
+                v[4] = 0.f;
+                v[5] = 0.f;
+                v += 6;
+            }
+        }
+
+        newSource->GetPointData()->SetScalars(sa);
+        if(doVorticity)
+            newSource->GetPointData()->SetVectors(va);
+        streams = newSource;
+    }
+    else if(doRibbons)
+    {
+        // If we're going to display the streamlines as ribbons, add the
+        // streams to the ribbon filter and get the output.    
         ribbons->SetInput(streams);
         ribbons->Update();
         streams = ribbons->GetOutput();
@@ -637,28 +739,39 @@ avtStreamlineFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
     // If we're coloring by vorticity magnitude, convert the vorticity to
     // vorticity magnitude and put it in the Scalars array.
     vtkDataArray *vorticity = streams->GetPointData()->GetVectors();
-    if(coloringMethod == STREAMLINE_COLOR_VORTICITY && vorticity != 0)
+    if(vorticity != 0)
     {
-        int n = vorticity->GetNumberOfTuples();
-        vtkFloatArray *vortMag = vtkFloatArray::New();
-        vortMag->SetNumberOfComponents(1);
-        vortMag->SetNumberOfTuples(n);
-        float *vm = (float *)vortMag->GetVoidPointer(0);
-        for(int i = 0; i < n; ++i)
+        if(coloringMethod == STREAMLINE_COLOR_VORTICITY)
         {
-            const float *val = vorticity->GetTuple3(i);
-            *vm++ = (float)sqrt(val[0]*val[0] + val[1]*val[1] + val[2]*val[2]);
-        }
-        // If there is a scalar array, remove it.
-        vtkDataArray *oldScalars = streams->GetPointData()->GetScalars();
-        if(oldScalars != 0)
-            streams->GetPointData()->RemoveArray(oldScalars->GetName());
-        // Remove the vorticity array.
-        streams->GetPointData()->RemoveArray(vorticity->GetName());
+            debug4 << "Computing vorticity magnitude." << endl;
+            int n = vorticity->GetNumberOfTuples();
+            vtkFloatArray *vortMag = vtkFloatArray::New();
+            vortMag->SetNumberOfComponents(1);
+            vortMag->SetNumberOfTuples(n);
+            float *vm = (float *)vortMag->GetVoidPointer(0);
+            for(int i = 0; i < n; ++i)
+            {
+                const float *val = vorticity->GetTuple3(i);
+                *vm++ = (float)sqrt(val[0]*val[0] + val[1]*val[1] + val[2]*val[2]);
+            }
+            // If there is a scalar array, remove it.
+            vtkDataArray *oldScalars = streams->GetPointData()->GetScalars();
+            if(oldScalars != 0)
+                streams->GetPointData()->RemoveArray(oldScalars->GetName());
+            // Remove the vorticity array.
+            streams->GetPointData()->RemoveArray(vorticity->GetName());
 
-        // Make vorticity magnitude be the active scalar field.
-        streams->GetPointData()->SetVectors(0);
-        streams->GetPointData()->SetScalars(vortMag);
+            // Make vorticity magnitude be the active scalar field.
+            streams->GetPointData()->SetVectors(0);
+            streams->GetPointData()->SetScalars(vortMag);
+        }
+        else
+        {
+            // Remove the vorticity array.
+            streams->GetPointData()->RemoveArray(vorticity->GetName());
+            streams->GetPointData()->SetVectors(0);
+            debug4 << "Removed vorticity since we didn't need it." << endl;
+        }
     }
 
     if(!doRibbons && showTube)
@@ -681,7 +794,8 @@ avtStreamlineFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
             // they start.
             if(sourceType == STREAMLINE_SOURCE_POINT)
             {
-                float pt[] = {pointSource[0], pointSource[1], pointSource[2]};
+                float pt[] = {pointSource[0], pointSource[1], 0.};
+                if(spatialDim > 2) pt[2] = pointSource[2];
                 vtkDataArray *arr = tubeData->GetPointData()->GetScalars();
                 float val = arr->GetTuple1(0);
                 balls = new vtkPolyData *[1];
@@ -765,6 +879,37 @@ avtStreamlineFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
 }
 
 // ****************************************************************************
+// Method: avtStreamlineFilter::SetZToZero
+//
+// Purpose: 
+//   Zero out the Z coordinates.
+//
+// Arguments:
+//   pd : An input polydata dataset.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Jan 3 10:42:42 PDT 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtStreamlineFilter::SetZToZero(vtkPolyData *pd) const
+{
+    vtkPoints *pts = pd->GetPoints();
+    if(pts != 0)
+    {
+        for(int i = 0; i < pts->GetNumberOfPoints(); ++i)
+        {
+            float *p = pts->GetPoint(i);
+            if(p != 0)
+                p[2] = 0.f;
+        }
+    }
+}
+
+// ****************************************************************************
 // Method: avtStreamlineFilter::AddStartSphere
 //
 // Purpose: 
@@ -787,6 +932,9 @@ avtStreamlineFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
 //   Brad Whitlock, Wed Dec 22 14:55:46 PST 2004
 //   Changed tubeRadius to radius.
 //
+//   Brad Whitlock, Mon Jan 3 10:50:36 PDT 2005
+//   I made the sphere be 2D if we're not in 3D.
+//
 // ****************************************************************************
 
 vtkPolyData *
@@ -807,8 +955,14 @@ avtStreamlineFilter::AddStartSphere(vtkPolyData *tubeData, float val, float pt[3
     vtkDataArray *arr2 = arr->NewInstance();
     int npts = sphereData->GetNumberOfPoints();
     arr2->SetNumberOfTuples(npts);
-    for (int i = 0 ; i < npts ; i++)
+    for (int i = 0; i < npts; ++i)
+    {
         arr2->SetTuple1(i, val);
+    }
+
+    // If we're not 3D, make the sphere be 2D.
+    if(GetInput()->GetInfo().GetAttributes().GetSpatialDimension() <= 2)
+        SetZToZero(sphereData);
 
     sphereData->GetPointData()->SetScalars(arr2);
     arr2->Delete();
@@ -829,6 +983,9 @@ avtStreamlineFilter::AddStartSphere(vtkPolyData *tubeData, float val, float pt[3
 //  Creation:   Fri Oct 4 15:22:57 PST 2002
 //
 //  Modifications:
+//    Brad Whitlock, Mon Jan 3 13:31:11 PST 2005
+//    Set the flag that prevents normals from being generated if we're
+//    displaying the streamlines as lines.
 //
 // ****************************************************************************
 
@@ -837,6 +994,8 @@ avtStreamlineFilter::RefashionDataObjectInfo(void)
 {
     //IF YOU SEE FUNNY THINGS WITH EXTENTS, ETC, YOU CAN CHANGE THAT HERE.
     GetOutput()->GetInfo().GetValidity().InvalidateZones();
+    if(displayMethod == STREAMLINE_DISPLAY_LINES)
+        GetOutput()->GetInfo().GetValidity().SetNormalsAreInappropriate(true);
     GetOutput()->GetInfo().GetAttributes().SetTopologicalDimension(1);
     GetOutput()->GetInfo().GetAttributes().SetVariableDimension(1);
 }

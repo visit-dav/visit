@@ -34,6 +34,11 @@
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 23, 2004
 //
+//  Modifications:
+//
+//    Hank Childs, Sun Jan  2 15:32:00 PST 2005
+//    Added curl, divergence, Laplacian, materror.
+//
 // ****************************************************************************
 struct ExprNameList
 {
@@ -135,6 +140,7 @@ const char *expr_tensor[] = {
 };
 
 const char *expr_materials[] = {
+    "materror",
     "matvf",
     "nmats",
     "specmf",
@@ -152,7 +158,10 @@ const char *expr_mesh[] = {
 };
 
 const char *expr_misc[] = {
+    "curl",
+    "divergence",
     "gradient",
+    "Laplacian",
     "recenter",
     NULL
 };

@@ -2,6 +2,7 @@
 
 #include <StreamlineAttributes.h>
 #include <ViewerProxy.h>
+#include <DataNode.h>
 
 #include <qcheckbox.h>
 #include <qcombobox.h>
@@ -310,6 +311,43 @@ QvisStreamlinePlotWindow::CreateWindowContents()
 
 }
 
+// ****************************************************************************
+// Method: QvisStreamlinePlotWindow::ProcessOldVersions
+//
+// Purpose: 
+//   Allows modification of the data node before it is used.
+//
+// Arguments:
+//   parentNode    : The node that's a parent node of the node that is used
+//                   by this window.
+//   configVersion : The version of the config file.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Jan 3 11:24:24 PDT 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisStreamlinePlotWindow::ProcessOldVersions(DataNode *parentNode,
+    const char *configVersion)
+{
+    if(parentNode == 0)
+        return;
+
+    DataNode *searchNode = parentNode->GetNode("Streamline plot attributes");
+    if(searchNode == 0)
+        return;
+
+    // Remove height/width information if the config file is older than
+    // 1.4.1 since this window changed size quite a bit in version 1.4.1.
+    if (StreamlineAttributes::VersionLessThan(configVersion, "1.4.1"))
+    {
+        searchNode->RemoveNode("width");
+        searchNode->RemoveNode("height");
+    }
+}
 
 // ****************************************************************************
 // Method: QvisStreamlinePlotWindow::UpdateWindow

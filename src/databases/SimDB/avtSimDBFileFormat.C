@@ -21,6 +21,12 @@ using     std::string;
 //  Programmer: Jeremy Meredith
 //  Creation:   August 11, 2004
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Sep 30 18:01:57 PDT 2004
+//    Using icc, "ifstream >> string" seemed to fail.  (Note that this may
+//    have been using mixed gcc-icc libraries, but nevertheless.....)  So I
+//    made the reading of "host" go through a char* to get to a string.
+//
 // ****************************************************************************
 
 avtSimDBFileFormat::avtSimDBFileFormat(const char *filename)
@@ -35,7 +41,8 @@ avtSimDBFileFormat::avtSimDBFileFormat(const char *filename)
         EXCEPTION2(InvalidFilesException,filename,
                    "expected the first keyword to be 'host'");
     }
-    in >> host;
+    in >> buff;
+    host = buff;
 
     in >> buff;
     if (string(buff) != "port")

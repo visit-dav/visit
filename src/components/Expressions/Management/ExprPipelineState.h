@@ -23,6 +23,9 @@ class avtExpressionFilter;
 //    Kathleen Bonnell, Thu Apr 22 14:42:38 PDT 2004
 //    Moved code to new Source file.  Added ReleaseData method.
 //
+//    Hank Childs, Fri Dec 31 11:50:07 PST 2004
+//    Add a Clear method.
+//
 // ****************************************************************************
 
 class EXPRESSION_API ExprPipelineState
@@ -40,6 +43,7 @@ public:
     std::vector<avtExpressionFilter*>& GetFilters() {return filters;}
 
     void            ReleaseData(void);
+    void            Clear();
 
 protected:
     std::vector<std::string>    name_stack;

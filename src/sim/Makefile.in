@@ -3,7 +3,7 @@
 
 SIMSER=sim
 SIMPAR=psim
-SIMSRC=sim.c simulation.c
+SIMSRC=sim.c VisIt.c
 SIMSEROBJ=$(SIMSRC:.c=.o)
 SIMPAROBJ=$(SIMSRC:.c=_par.o)
 
@@ -16,7 +16,7 @@ LDFLAGS=-L../lib -L/usr/X11R6/lib
 #LIBS=-ldl -lpthread
 PARLIBS=-L/usr/gapps/mpich/1.2.4/SunOS/serial/default/optim/lib -lmpich -lrt -lthread
 
-all: dirmakefiles  $(SIMSER)
+all: dirmakefiles  $(SIMSER) $(SIMPAR)
 	cd simplugin && $(MAKE)
 
 parallel: all $(SIMPAR)

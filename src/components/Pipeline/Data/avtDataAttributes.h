@@ -132,6 +132,9 @@ class     avtExtents;
 //    Kathleen Bonnell, Thu Dec  9 16:12:33 PST 2004 
 //    Added containsGlobalNode/ZoneIds and Set/Get methods. 
 //
+//    Hank Childs, Sat Jan  1 11:23:50 PST 2005
+//    Set the name of the mesh.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataAttributes
@@ -250,6 +253,8 @@ class PIPELINE_API avtDataAttributes
     bool                     ValidVariable(const std::string &s) const;
     bool                     ValidActiveVariable(void) const;
  
+    const std::string       &GetMeshname(void) const { return meshname; };
+    void                     SetMeshname(const std::string &s) { meshname=s; };
     const std::string       &GetFilename(void) const { return filename; };
     void                     SetFilename(const std::string &s) { filename=s; };
 
@@ -343,6 +348,7 @@ class PIPELINE_API avtDataAttributes
     WINDOW_MODE              windowMode;
 
     std::vector<std::string> labels;
+    std::string              meshname;
     std::string              filename;
     std::string              xUnits;
     std::string              yUnits;

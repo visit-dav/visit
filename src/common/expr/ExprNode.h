@@ -38,6 +38,10 @@ class Pos;
 //    the true base class for expressions -- a List is a valid argument
 //    to a function but currently is not an Expression (i.e. ExprNode).
 //
+//    Jeremy Meredith, Tue Dec 28 11:21:13 PST 2004
+//    Added the original text for an argument to ArgExpr because it is
+//    useful for implementing macros.
+//
 // ****************************************************************************
 class EXPR_API ExprNode : public ExprParseTreeNode
 {
@@ -164,18 +168,21 @@ class EXPR_API ListExpr : public ExprParseTreeNode
 class EXPR_API ArgExpr : public ExprParseTreeNode
 {
   public:
-    ArgExpr(const Pos &p, ExprParseTreeNode *e)
-        : ExprParseTreeNode(p), id(NULL), expr(e) {}
+    ArgExpr(const Pos &p, ExprParseTreeNode *e, const std::string &t)
+        : ExprParseTreeNode(p), id(NULL), expr(e), text(t) {}
     virtual ~ArgExpr() { }
-    ArgExpr(const Pos &p, Identifier *i, ExprParseTreeNode *e)
-        : ExprParseTreeNode(p), id(i), expr(e) {}
+    ArgExpr(const Pos &p, Identifier *i, ExprParseTreeNode *e,
+            const std::string &t)
+        : ExprParseTreeNode(p), id(i), expr(e), text(t) {}
     virtual void PrintNode(ostream &o);
     Identifier *GetId(void) {return id;};
     ExprParseTreeNode *GetExpr(void) {return expr;};
     virtual const std::string GetTypeName() { return "Arg"; }
+    const std::string &GetText(void) const { return text; };
   protected:
     Identifier *id;
     ExprParseTreeNode *expr;
+    std::string text;
 };
 
 class EXPR_API ArgsExpr : public ExprParseTreeNode

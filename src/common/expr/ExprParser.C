@@ -84,6 +84,10 @@ ExprParser::ExprParser(ExprNodeFactory *f) : Parser(), factory(f)
 //    since no filter can yet support expressions anyway.  We can
 //    change it back later if we ever support it.
 //
+//    Jeremy Meredith, Tue Dec 28 11:22:13 PST 2004
+//    Added the original text for an argument to ArgExpr because it is
+//    useful for implementing macros.
+//
 // ****************************************************************************
 ParseTreeNode*
 ExprParser::ApplyRule(const Symbol           &sym,
@@ -278,13 +282,14 @@ ExprParser::ApplyRule(const Symbol           &sym,
         switch (rule->GetID())
         {
         case 0:
-            node = new ArgExpr(p, (ExprParseTreeNode*)E[0]);
+            node = new ArgExpr(p, (ExprParseTreeNode*)E[0], p.GetText(text));
             break;
         case 1:
-            node = new ArgExpr(p, ((Identifier*)T[0]),(ExprParseTreeNode*)E[2]);
+            node = new ArgExpr(p, ((Identifier*)T[0]),(ExprParseTreeNode*)E[2],
+                               p.GetText(text));
             break;
         case 2:
-            node = new ArgExpr(p, (ExprParseTreeNode*)E[0]);
+            node = new ArgExpr(p, (ExprParseTreeNode*)E[0], p.GetText(text));
             break;
         }
     } else if (sym == PathSpec)
@@ -436,7 +441,8 @@ ExprParser::ApplyRule(const Symbol           &sym,
 //    debugging and can still go to cerr.
 //
 //    Hank Childs, Fri Aug  8 08:13:21 PDT 2003
-//    Have error messages be issued in a way that it is indepent of component.
+//    Have error messages be issued in a way that it is independent of 
+//    component.
 //
 //    Jeremy Meredith, Fri Aug 15 12:49:01 PDT 2003
 //    Added the EMT_EXCEPTION type, and renamed EMT_VIEWER to EMT_COMPONENT.
@@ -445,11 +451,18 @@ ExprParser::ApplyRule(const Symbol           &sym,
 //    Refactored.  There's a new base class for the ExprParser and the
 //    return types became more general.
 //
+//    Jeremy Meredith, Tue Dec 28 11:18:37 PST 2004
+//    Made the current text a data member to help with macro support.
+//
+//    Hank Childs, Tue Dec 28 16:14:47 PST 2004
+//    Rename GetText and PrintText to GetErrorText and PrintErrorText.
+//
 // ****************************************************************************
 ParseTreeNode*
 ExprParser::Parse(const std::string &s)
 {
-    string text(s);
+    text = s;
+
     // Change weird spacing (tabs, newlines) to normal ones.
     // This will make printing error messages later much easier.
     for (int i=0; i<text.length(); i++)
@@ -472,14 +485,14 @@ ExprParser::Parse(const std::string &s)
         // This should only occur during debugging; print to cerr anyway
         cerr << e.Message() << endl;
         cerr << "Rule = " << *(e.GetRule()) << endl;
-        e.GetPos().PrintText(cerr, text);
+        e.GetPos().PrintErrorText(cerr, text);
         return NULL;
     }
     catch (ParseException &e)
     {
         char error[1024];
         SNPRINTF(error, 1024, "%s\n%s",
-                 e.Message(), e.GetPos().GetText(text).c_str());
+                 e.Message(), e.GetPos().GetErrorText(text).c_str());
 
         if (errorMessageTarget == EMT_COMPONENT)
         {

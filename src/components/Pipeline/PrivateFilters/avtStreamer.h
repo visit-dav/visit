@@ -4,8 +4,8 @@
 
 #ifndef AVT_STREAMER_H
 #define AVT_STREAMER_H
-#include <pipeline_exports.h>
 
+#include <pipeline_exports.h>
 
 #include <avtDataTreeStreamer.h>
 
@@ -50,9 +50,12 @@
 //    Hank Childs, Tue Sep 10 13:13:01 PDT 2002
 //    Better support for releasing data.
 //
+//    Hank Childs, Mon Dec 27 10:58:14 PST 2004
+//    Made inheritance virtual.
+//
 // **************************************************************************** 
 
-class PIPELINE_API avtStreamer : public avtDataTreeStreamer
+class PIPELINE_API avtStreamer : virtual public avtDataTreeStreamer
 {
   public:
                              avtStreamer();
