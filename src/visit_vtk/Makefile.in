@@ -192,10 +192,10 @@
 ## Files...
 ##
 SRC=InitVTK.C \
-    SolidSplitCasesHex.C \
-    SolidSplitCasesPyr.C \
-    SolidSplitCasesTet.C \
-    SolidSplitCasesWdg.C \
+    ClipCasesHex.C \
+    ClipCasesPyr.C \
+    ClipCasesTet.C \
+    ClipCasesWdg.C \
     vtkAxisDepthSort.C \
     vtkBackgroundActor.C \
     vtkCamera.C \

@@ -40,6 +40,10 @@
 //    Kathleen Bonnell, Thu Jan  2 15:16:50 PST 2003 
 //    Replace MakeObject() with NewInstance() to match new vtk api. 
 //
+//    Hank Childs, Thu Aug 14 13:40:20 PDT 2003
+//    Allow the derived types to specify how many components there will be in
+//    the output.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -77,7 +81,9 @@ avtBinaryMathFilter::DeriveVariable(vtkDataSet *in_ds)
     //
     // Set up a VTK variable reflecting the calculated variable
     //
-    int ncomps = data1->GetNumberOfComponents();
+    int ncomps1 = data1->GetNumberOfComponents();
+    int ncomps2 = data2->GetNumberOfComponents();
+    int ncomps = GetNumberOfComponentsInOutput(ncomps1, ncomps2);
     int nvals  = data1->GetNumberOfTuples();
 
     vtkDataArray *dv = data1->NewInstance();
@@ -85,6 +91,12 @@ avtBinaryMathFilter::DeriveVariable(vtkDataSet *in_ds)
     dv->SetNumberOfTuples(nvals);
 
     DoOperation(data1, data2, dv, ncomps, nvals);
+
+    if (GetOutput()->GetInfo().GetAttributes().GetVariableDimension()
+        != ncomps)
+    {
+        GetOutput()->GetInfo().GetAttributes().SetVariableDimension(ncomps);
+    }
 
     return dv;
 }

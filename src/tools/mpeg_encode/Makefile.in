@@ -63,13 +63,13 @@ MP_ALL_OBJS = $(MP_BASE_OBJS) $(MP_OTHER_OBJS) $(MP_ENCODE_OBJS) \
 MP_INCLUDE = mproto.h mtypes.h huff.h bitio.h
 MP_MISC = Makefile huff.table parse_huff.pl
 
-all: $(tmpbin)/mpeg_encode
+all: message $(tmpbin)/mpeg_encode
 
 ############
 # BINARIES #
 ############
 
-$(tmpbin)/mpeg_encode: message $(MP_ALL_OBJS)
+$(tmpbin)/mpeg_encode: $(MP_ALL_OBJS)
 	$(CC) $(CFLAGS) -o $@ $(MP_ALL_OBJS) $(LIBDIRS) $(LIBS)
 	strip $(tmpbin)/mpeg_encode
 

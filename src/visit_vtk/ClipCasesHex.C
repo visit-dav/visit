@@ -1,4 +1,4 @@
-#include "SolidSplitCases.h"
+#include "ClipCases.h"
 
 // Programmer: Jeremy Meredith
 // Date      : August 11, 2003
@@ -7,9 +7,9 @@
 // compiler.  If you must modify it by hand, at least be nice to the 
 // parser and don't add anything else to this file or rearrange it.
 
-int numSolidSplitCasesHex = 256;
+int numClipCasesHex = 256;
 
-int numSolidSplitShapesHex[256] = {
+int numClipShapesHex[256] = {
   1,  10,  10,  3,  10,  12,  3,  15, // cases 0 - 7
   10,  3,  12,  15,  3,  15,  15,  2, // cases 8 - 15
   10,  3,  12,  15,  8,  5,  5,  17, // cases 16 - 23
@@ -44,7 +44,7 @@ int numSolidSplitShapesHex[256] = {
   15,  3,  7,  10,  3,  10,  10,  1  // cases 248 - 255
 };
 
-int startSolidSplitShapesHex[256] = {
+int startClipShapesHex[256] = {
   0, 10, 79, 148, 174, 243, 323, 349, // cases 0 - 7
   449, 518, 544, 624, 724, 750, 850, 950, // cases 8 - 15
   970, 1039, 1065, 1145, 1245, 1297, 1336, 1375, // cases 16 - 23
@@ -79,7 +79,7 @@ int startSolidSplitShapesHex[256] = {
   18492, 18592, 18618, 18665, 18734, 18760, 18829, 18898  // cases 248 - 255
 };
 
-unsigned char solidSplitShapesHex[] = {
+unsigned char clipShapesHex[] = {
  // Case #0: Unique case #1
   ST_HEX, COLOR0, P0, P1, P2, P3, P4, P5, P6, P7, 
  // Case #1: Unique case #2

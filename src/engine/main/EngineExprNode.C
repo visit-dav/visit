@@ -184,26 +184,48 @@ EngineIndexExpr::CreateFilters(ExprPipelineState *state)
     state->AddFilter(f);
 }
 
+// ****************************************************************************
+//  Method:  EngineVectorExpr::CreateFilters
+//
+//  Purpose:
+//    Creates the avt filters necessary to evaluate a vector.
+//
+//  Arguments:
+//    state      The pipeline state
+//
+//  Programmer:  Sean Ahern
+//
+//  Modifications:
+//    Jeremy Meredith, Thu Aug 14 09:52:12 PDT 2003
+//    Allow 2D vectors.
+//
+// ****************************************************************************
 void
 EngineVectorExpr::CreateFilters(ExprPipelineState *state)
 {
     dynamic_cast<EngineExprNode*>(x)->CreateFilters(state);
     dynamic_cast<EngineExprNode*>(y)->CreateFilters(state);
-    dynamic_cast<EngineExprNode*>(z)->CreateFilters(state);
+    if (z)
+        dynamic_cast<EngineExprNode*>(z)->CreateFilters(state);
 
     avtVectorComposeFilter *f = new avtVectorComposeFilter();
 
     // Set the variable the function should process.
-    string inputName3 = state->PopName();
+    string inputName3 = z ? state->PopName() : "";
     string inputName2 = state->PopName();
     string inputName1 = state->PopName();
     f->AddInputVariableName(inputName1.c_str());
     f->AddInputVariableName(inputName2.c_str());
-    f->AddInputVariableName(inputName3.c_str());
+    if (z)
+        f->AddInputVariableName(inputName3.c_str());
 
     // Set the variable the function should output>
-    string outputName = string("{") + inputName1 + "," + inputName2 + "," +
-                        inputName3 + "}";
+    string outputName;
+    if (z)
+        outputName = string("{") + inputName1 + "," + inputName2 + "," +
+                                                             inputName3 + "}";
+    else
+        outputName = string("{") + inputName1 + "," + inputName2 + "}";
 
     state->PushName(outputName);
     f->SetOutputVariableName(outputName.c_str());

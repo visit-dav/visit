@@ -1,4 +1,4 @@
-#include "SolidSplitCases.h"
+#include "ClipCases.h"
 
 // Programmer: Jeremy Meredith
 // Date      : August 11, 2003
@@ -7,9 +7,9 @@
 // compiler.  If you must modify it by hand, at least be nice to the 
 // parser and don't add anything else to this file or rearrange it.
 
-int numSolidSplitCasesWdg = 64;
+int numClipCasesWdg = 64;
 
-int numSolidSplitShapesWdg[64] = {
+int numClipShapesWdg[64] = {
   1,  3,  3,  9,  3,  9,  9,  2, // cases 0 - 7
   3,  2,  15,  13,  15,  13,  10,  9, // cases 8 - 15
   3,  15,  2,  13,  15,  10,  13,  9, // cases 16 - 23
@@ -20,7 +20,7 @@ int numSolidSplitShapesWdg[64] = {
   2,  9,  9,  3,  9,  3,  3,  1  // cases 56 - 63
 };
 
-int startSolidSplitShapesWdg[64] = {
+int startClipShapesWdg[64] = {
   0, 8, 29, 50, 114, 135, 199, 263, // cases 0 - 7
   279, 300, 318, 417, 503, 602, 688, 760, // cases 8 - 15
   824, 845, 944, 962, 1048, 1147, 1219, 1305, // cases 16 - 23
@@ -31,7 +31,7 @@ int startSolidSplitShapesWdg[64] = {
   3159, 3175, 3239, 3303, 3324, 3388, 3409, 3430  // cases 56 - 63
 };
 
-unsigned char solidSplitShapesWdg[] = {
+unsigned char clipShapesWdg[] = {
  // Case #0: Unique case #1
   ST_WDG, COLOR0, P0, P1, P2, P3, P4, P5, 
  // Case #1: Unique case #2

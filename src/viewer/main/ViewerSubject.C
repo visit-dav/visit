@@ -2416,12 +2416,17 @@ ViewerSubject::RedrawWindow()
 //    Brad Whitlock, Thu May 15 13:34:19 PST 2003
 //    I added the timeState argument and renamed the method.
 //
+//    Hank Childs, Thu Aug 14 09:10:00 PDT 2003
+//    Added code to manage expressions from databases.
+//
 // ****************************************************************************
 
 void
 ViewerSubject::OpenDatabaseHelper(const std::string &entireDBName,
     int timeState, bool updateNFrames)
 {
+    int  i;
+
     debug1 << "Opening database " << entireDBName.c_str()
            << ", timeState=" << timeState << endl;
 
@@ -2467,11 +2472,24 @@ ViewerSubject::OpenDatabaseHelper(const std::string &entireDBName,
         }
 
         //
+        // Remove any expressions associated with the old database and add
+        // expressions associated with the new database.
+        //
+        ExpressionList *exprList = ParsingExprList::Instance()->GetList();
+        int nExpr = exprList->GetNumExpressions();
+        for (i = nExpr-1 ; i >= 0 ; i--)
+            if (exprList->GetExpression(i).GetFromDB())
+                exprList->RemoveExpression(i);
+        for (i = 0 ; i < md->GetNumberOfExpressions() ; i++)
+            exprList->AddExpression(*(md->GetExpression(i)));
+        exprList->Notify();
+
+        //
         // Create a compute engine to use with the database.
         //
         stringVector noArgs;
         ViewerEngineManager::Instance()->CreateEngine(host.c_str(), noArgs,
-                                                      false, numEngineRestarts);
+                                                     false, numEngineRestarts);
 
         //
         // Tell the new engine to open the specified database.

@@ -20,7 +20,7 @@
 #include <math.h>
 #include <vector>
 
-#include <SolidSplitCases.h>
+#include <ClipCases.h>
 #include <vtkTriangulationTables.h>
 
 vtkCxxRevisionMacro(vtkVisItClipper3D, "$Revision: 1.00 $");
@@ -158,9 +158,9 @@ vtkVisItClipper3D::StructuredGridExecute(void)
                 lookup_case *= 2;
         }
 
-        unsigned char *splitCase = &solidSplitShapesHex[
-                                        startSolidSplitShapesHex[lookup_case]];
-        int            numOutput = numSolidSplitShapesHex[lookup_case];
+        unsigned char *splitCase = &clipShapesHex[
+                                             startClipShapesHex[lookup_case]];
+        int            numOutput = numClipShapesHex[lookup_case];
         int            interpIDs[4];
         for (j = 0 ; j < numOutput ; j++)
         {
@@ -194,7 +194,7 @@ vtkVisItClipper3D::StructuredGridExecute(void)
                   default:
                     EXCEPTION1(ImproperUseException,
                                "An invalid output shape was found in "
-                               "the SolidSplitCases.");
+                               "the ClipCases.");
                 }
 
                 if ((!insideOut && color == COLOR0) ||
@@ -209,8 +209,11 @@ vtkVisItClipper3D::StructuredGridExecute(void)
                 for (int p = 0 ; p < npts ; p++)
                 {
                     unsigned char pt = *splitCase++;
-                    if (pt >= P0 && pt <= P7)
+                    if (pt <= P7)
                     {
+                        // We know pt P0 must be >P0 since we already
+                        // assume P0 == 0.  This is why we do not
+                        // bother subtracting P0 from pt here.
                         shape[p] = ((cellI + X_val[pt]) +
                                     (cellJ + Y_val[pt])*ptstrideY +
                                     (cellK + Z_val[pt])*ptstrideZ);
@@ -249,7 +252,7 @@ vtkVisItClipper3D::StructuredGridExecute(void)
                     {
                         EXCEPTION1(ImproperUseException,
                                    "An invalid output point value "
-                                   "was found in the SolidSplitCases.");
+                                   "was found in the ClipCases.");
                     }
                 }
 
@@ -359,9 +362,9 @@ void vtkVisItClipper3D::RectilinearGridExecute(void)
                 lookup_case *= 2;
         }
 
-        unsigned char *splitCase = &solidSplitShapesHex[
-                                        startSolidSplitShapesHex[lookup_case]];
-        int            numOutput = numSolidSplitShapesHex[lookup_case];
+        unsigned char *splitCase = &clipShapesHex[
+                                             startClipShapesHex[lookup_case]];
+        int            numOutput = numClipShapesHex[lookup_case];
         int            interpIDs[4];
         for (j = 0 ; j < numOutput ; j++)
         {
@@ -395,7 +398,7 @@ void vtkVisItClipper3D::RectilinearGridExecute(void)
                   default:
                     EXCEPTION1(ImproperUseException,
                                "An invalid output shape was found in "
-                               "the SolidSplitCases.");
+                               "the ClipCases.");
                 }
 
                 if ((!insideOut && color == COLOR0) ||
@@ -410,8 +413,11 @@ void vtkVisItClipper3D::RectilinearGridExecute(void)
                 for (int p = 0 ; p < npts ; p++)
                 {
                     unsigned char pt = *splitCase++;
-                    if (pt >= P0 && pt <= P7)
+                    if (pt <= P7)
                     {
+                        // We know pt P0 must be >P0 since we already
+                        // assume P0 == 0.  This is why we do not
+                        // bother subtracting P0 from pt here.
                         shape[p] = ((cellI + X_val[pt]) +
                                     (cellJ + Y_val[pt])*ptstrideY +
                                     (cellK + Z_val[pt])*ptstrideZ);
@@ -450,7 +456,7 @@ void vtkVisItClipper3D::RectilinearGridExecute(void)
                     {
                         EXCEPTION1(ImproperUseException,
                                    "An invalid output point value "
-                                   "was found in the SolidSplitCases.");
+                                   "was found in the ClipCases.");
                     }
                 }
 
@@ -582,27 +588,27 @@ void vtkVisItClipper3D::UnstructuredGridExecute(void)
             switch (cellType)
             {
               case VTK_TETRA:
-                startIndex = startSolidSplitShapesTet[lookup_case];
-                splitCase = &solidSplitShapesTet[startIndex];
-                numOutput = numSolidSplitShapesTet[lookup_case];
+                startIndex = startClipShapesTet[lookup_case];
+                splitCase  = &clipShapesTet[startIndex];
+                numOutput  = numClipShapesTet[lookup_case];
                 vertices_from_edges = tetVerticesFromEdges;
                 break;
               case VTK_PYRAMID:
-                startIndex = startSolidSplitShapesPyr[lookup_case];
-                splitCase = &solidSplitShapesPyr[startIndex];
-                numOutput = numSolidSplitShapesPyr[lookup_case];
+                startIndex = startClipShapesPyr[lookup_case];
+                splitCase  = &clipShapesPyr[startIndex];
+                numOutput  = numClipShapesPyr[lookup_case];
                 vertices_from_edges = pyramidVerticesFromEdges;
                 break;
               case VTK_WEDGE:
-                startIndex = startSolidSplitShapesWdg[lookup_case];
-                splitCase = &solidSplitShapesWdg[startIndex];
-                numOutput = numSolidSplitShapesWdg[lookup_case];
+                startIndex = startClipShapesWdg[lookup_case];
+                splitCase  = &clipShapesWdg[startIndex];
+                numOutput  = numClipShapesWdg[lookup_case];
                 vertices_from_edges = wedgeVerticesFromEdges;
                 break;
               case VTK_HEXAHEDRON:
-                startIndex = startSolidSplitShapesHex[lookup_case];
-                splitCase = &solidSplitShapesHex[startIndex];
-                numOutput = numSolidSplitShapesHex[lookup_case];
+                startIndex = startClipShapesHex[lookup_case];
+                splitCase  = &clipShapesHex[startIndex];
+                numOutput  = numClipShapesHex[lookup_case];
                 vertices_from_edges = hexVerticesFromEdges;
                 break;
             }
@@ -640,7 +646,7 @@ void vtkVisItClipper3D::UnstructuredGridExecute(void)
                       default:
                         EXCEPTION1(ImproperUseException,
                                    "An invalid output shape was found in "
-                                   "the SolidSplitCases.");
+                                   "the ClipCases.");
                     }
 
                     if ((!insideOut && color == COLOR0) ||
@@ -655,8 +661,11 @@ void vtkVisItClipper3D::UnstructuredGridExecute(void)
                     for (int p = 0 ; p < npts ; p++)
                     {
                         unsigned char pt = *splitCase++;
-                        if (pt >= P0 && pt <= P7)
+                        if (pt <= P7)
                         {
+                            // We know pt P0 must be >P0 since we already
+                            // assume P0 == 0.  This is why we do not
+                            // bother subtracting P0 from pt here.
                             shape[p] = pts[pt];
                         }
                         else if (pt >= EA && pt <= EL)
@@ -689,7 +698,7 @@ void vtkVisItClipper3D::UnstructuredGridExecute(void)
                         {
                             EXCEPTION1(ImproperUseException,
                                        "An invalid output point value "
-                                       "was found in the SolidSplitCases.");
+                                       "was found in the ClipCases.");
                         }
                     }
 

@@ -10,6 +10,8 @@
 #include <vtkFloatArray.h>
 #include <vtkStructuredGrid.h>
 
+#include <Expression.h>
+
 #include <avtDatabaseMetaData.h>
 
 #include <DebugStream.h>
@@ -337,6 +339,11 @@ avtPLOT2DFileFormat::FreeUpResources(void)
 //  Programmer: Hank Childs
 //  Creation:   August 11, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Aug 14 22:56:35 PDT 2003
+//    Added some common expressions.
+//
 // ****************************************************************************
 
 void
@@ -353,6 +360,42 @@ avtPLOT2DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     AddScalarVarToMetaData(md, "u", MESHNAME, AVT_NODECENT);
     AddScalarVarToMetaData(md, "v", MESHNAME, AVT_NODECENT);
     AddScalarVarToMetaData(md, "E", MESHNAME, AVT_NODECENT);
+
+    Expression momentum_expr;
+    momentum_expr.SetName("momentum");
+    momentum_expr.SetDefinition("{u, v}");
+    momentum_expr.SetType(Expression::VectorMeshVar);
+    md->AddExpression(&momentum_expr);
+
+    Expression velocity_expr;
+    velocity_expr.SetName("velocity");
+    velocity_expr.SetDefinition("momentum/rho");
+    velocity_expr.SetType(Expression::VectorMeshVar);
+    md->AddExpression(&velocity_expr);
+
+    Expression KineticEnergy_expr;
+    KineticEnergy_expr.SetName("KineticEnergy");
+    KineticEnergy_expr.SetDefinition("0.5*(momentum*momentum)/(rho*rho)");
+    KineticEnergy_expr.SetType(Expression::ScalarMeshVar);
+    md->AddExpression(&KineticEnergy_expr);
+
+    Expression pressure_expr;
+    pressure_expr.SetName("pressure");
+    pressure_expr.SetDefinition("0.4*(E - KineticEnergy*rho)");
+    pressure_expr.SetType(Expression::ScalarMeshVar);
+    md->AddExpression(&pressure_expr);
+
+    Expression enthalpy_expr;
+    enthalpy_expr.SetName("enthalpy");
+    enthalpy_expr.SetDefinition("1.4*(E/rho - KineticEnergy)");
+    enthalpy_expr.SetType(Expression::ScalarMeshVar);
+    md->AddExpression(&enthalpy_expr);
+
+    Expression entropy_expr;
+    entropy_expr.SetName("entropy");
+    entropy_expr.SetDefinition("2.5*log(((0.4*(E - rho*KineticEnergy))/1.4) / (rho^1.4))");
+    entropy_expr.SetType(Expression::ScalarMeshVar);
+    md->AddExpression(&entropy_expr);
 }
 
 

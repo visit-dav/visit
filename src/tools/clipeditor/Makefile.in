@@ -1,5 +1,4 @@
-#
-#                            Copyright 2000 - 2001
+#                            Copyright 2000 - 2003
 #                 The Regents of the University of California.
 #                             All rights reserved.
 # 
@@ -31,36 +30,57 @@
 # the University of  California,  and shall not  be  used for  advertising  or
 # product endorsement purposes.
 #
-# Modifications:
-#
-#   Hank Childs, Sun Sep  9 21:22:59 PDT 2001
-#   Added rule 'all'.
+# Programmer:  Jeremy Meredith
+# Date:        July 25, 2003
 #
 ##############################################################################
 
-##
-## Programs and options...
-##
 @SET_MAKE@
 @VARIABLES@
 
-CPPFLAGS=-I. @CPPFLAGS@ 
+# Files
+# -----
+PROG    = clip
+SRC     = main.C Matrix.C Vector.C \
+          Transforms.C Shape.C DataSet.C Font.C \
+          ClipEditor.C Viewer.C
+WIDGETS = ClipEditor.h Viewer.h
 
-OBJ=$(SRC:.C=.o)
-NOT_DISTRIB=
+# Compile flags
+# -------------
+INCDIR  = -I. -I../../include/qt -I../../include/visit
+LDFLAGS = @LDFLAGS@
+LIBS    = @QT_LIBS@ $(X_LIBS) -lGL @LIBS@
 
-all: classwriter
+# Derived objects
+# ---------------
+OBJ    = $(SRC:.C=.o)
+MOCSRC = $(WIDGETS:.h=_moc.C)
+MOCOBJ = $(MOCSRC:.C=.o)
 
+MOC    = @QT_MOC@
 
-classwriter: classwriter.C
-	$(CXX) -o classwriter $(CXXFLAGS) $(CPPFLAGS) classwriter.C
+# Targets
+# -------
 
-##
-## Misc stuff
-##
-.PRECIOUS: $(LIBSTATIC)
+all: $(PROG)
 
-##
-## Automatic dependency stuff
-##
-@TARGETS@
+# (link)
+$(PROG): Makefile $(OBJ) $(MOCOBJ)
+	 $(CXX) $(LIBDIR) $(LDFLAGS) $(OBJ) $(MOCOBJ) -o $(PROG) $(LIBS)
+
+# (compile)
+.C.o   : $(SRC)
+	 $(CXX) $(CFLAGS) $(INCDIR) -c $<
+
+# (moc)
+$(MOCSRC) or_no_widgets:
+	@rm -f $@
+	$(MOC) $(@:_moc.C=.h) > $@
+
+# (clean)
+clean  :
+	 rm -f $(OBJ) $(MOCOBJ) $(MOCSRC) $(PROG)
+
+distclean: clean
+	rm -f Makefile

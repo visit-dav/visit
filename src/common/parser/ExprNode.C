@@ -68,12 +68,24 @@ VectorExpr::PrintNode(ostream &o)
     if (z) z->Print(o);
 }
 
+// ****************************************************************************
+//  Method:  VectorExpr::GetVarLeaves
+//
+//  Programmer:  Sean Ahern
+//
+//  Modifications:
+//    Jeremy Meredith, Thu Aug 14 10:24:14 PDT 2003
+//    Allow 2D vectors.
+//
+// ****************************************************************************
 std::set<std::string>
 VectorExpr::GetVarLeaves()
 {
     std::set<std::string> xset = x->GetVarLeaves();
     std::set<std::string> yset = y->GetVarLeaves();
-    std::set<std::string> zset = z->GetVarLeaves();
+    std::set<std::string> zset;
+    if (z)
+        zset = z->GetVarLeaves();
 
     while (!yset.empty())
     {

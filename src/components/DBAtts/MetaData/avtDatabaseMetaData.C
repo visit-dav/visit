@@ -1966,7 +1966,7 @@ avtCurveMetaData::Print(ostream &out, int indent) const
 // ****************************************************************************
 
 avtDatabaseMetaData::avtDatabaseMetaData()
-    : AttributeSubject("bddibss*i*i*i*d*a*a*a*a*a*a*a")
+    : AttributeSubject("sbddibss*i*i*i*d*a*a*a*a*a*a*a")
 {
     hasTemporalExtents = false;
     minTemporalExtents = 0.;
@@ -2005,11 +2005,15 @@ avtDatabaseMetaData::avtDatabaseMetaData()
 //    Hank Childs, Fri Aug  1 11:08:21 PDT 2003
 //    Add support for curves.
 //
+//    Hank Childs, Thu Aug 14 08:16:07 PDT 2003
+//    Copy over the database name.
+//
 // ****************************************************************************
 
 avtDatabaseMetaData::avtDatabaseMetaData(const avtDatabaseMetaData &rhs)
-    : AttributeSubject("bddibss*i*i*i*d*a*a*a*a*a*a*a")
+    : AttributeSubject("sbddibss*i*i*i*d*a*a*a*a*a*a*a")
 {
+    databaseName       = rhs.databaseName;
     hasTemporalExtents = rhs.hasTemporalExtents;
     minTemporalExtents = rhs.minTemporalExtents;
     maxTemporalExtents = rhs.maxTemporalExtents;
@@ -2068,10 +2072,15 @@ avtDatabaseMetaData::avtDatabaseMetaData(const avtDatabaseMetaData &rhs)
 //    Hank Childs, Fri Aug  1 11:08:21 PDT 2003
 //    Add support for curves.
 //
+//    Hank Childs, Thu Aug 14 08:16:07 PDT 2003
+//    Copy over the database name.
+//
 // ****************************************************************************
+
 const avtDatabaseMetaData &
 avtDatabaseMetaData::operator=(const avtDatabaseMetaData &rhs)
 {
+    databaseName       = rhs.databaseName;
     hasTemporalExtents = rhs.hasTemporalExtents;
     minTemporalExtents = rhs.minTemporalExtents;
     maxTemporalExtents = rhs.maxTemporalExtents;
@@ -2737,11 +2746,11 @@ avtDatabaseMetaData::GetNDomains(std::string var)
 //    Hank Childs, Fri Aug  1 11:08:21 PDT 2003
 //    Add support for curves.
 //
-//
 //    Sean Ahern, Wed Feb  5 16:30:36 PST 2003
 //    Added support for expressions.
 //
 // ****************************************************************************
+
 avtVarType
 avtDatabaseMetaData::DetermineVarType(std::string var_in)
 {
@@ -2847,6 +2856,7 @@ avtDatabaseMetaData::DetermineVarType(std::string var_in)
 //    Added expression support.
 //
 // ****************************************************************************
+
 std::string
 avtDatabaseMetaData::MeshForVar(std::string var)
 {
@@ -3066,8 +3076,8 @@ avtDatabaseMetaData::GetMaterialOnMesh(std::string mesh)
             if (rv != NULL)
             {
                 debug1 << "WARNING: screwy file.  There are multiple materials"
-                       << " (" << rv << " and " << (*mait)->name.c_str() << ") defined"
-                       << " on the same mesh." << endl;
+                       << " (" << rv << " and " << (*mait)->name.c_str() 
+                       << ") defined on the same mesh." << endl;
                 debug1 << "There are assumptions in the VisIt code that this "
                        << "will never happen." << endl; 
             }
@@ -3156,6 +3166,9 @@ avtDatabaseMetaData::GetSpeciesOnMesh(std::string mesh)
 void
 avtDatabaseMetaData::Print(ostream &out, int indent) const
 {
+    Indent(out, indent);
+    out << "Database: " << databaseName << endl;
+
     Indent(out, indent);
     out << "Num Time States: " << numStates << endl;
 
@@ -3301,6 +3314,9 @@ avtDatabaseMetaData::Print(ostream &out, int indent) const
               case Expression::Species:
                 vartype = "species";
                 break;
+              case Expression::Unknown:
+                vartype = "unknown!";
+                break;
             }
             out << exprList[i].GetName() << " (" << vartype << "): \t"
                 << exprList[i].GetDefinition() << endl;
@@ -3339,32 +3355,36 @@ avtDatabaseMetaData::Print(ostream &out, int indent) const
 //   Hank Childs, Fri Aug  1 11:08:21 PDT 2003
 //   Add support for curves.
 //
+//   Hank Childs, Thu Aug 14 08:16:07 PDT 2003
+//   Added database name.
+//
 // *******************************************************************
 
 void
 avtDatabaseMetaData::SelectAll()
 {
-    Select(0, (void*)&hasTemporalExtents);
-    Select(1, (void*)&minTemporalExtents);
-    Select(2, (void*)&maxTemporalExtents);
-    Select(3, (void*)&numStates);
-    Select(4, (void*)&isVirtualDatabase);
+    Select(0, (void*)&databaseName);
+    Select(1, (void*)&hasTemporalExtents);
+    Select(2, (void*)&minTemporalExtents);
+    Select(3, (void*)&maxTemporalExtents);
+    Select(4, (void*)&numStates);
+    Select(5, (void*)&isVirtualDatabase);
 
-    Select(5, (void*)&timeStepPath);
-    Select(6, (void*)&timeStepNames);
-    Select(7, (void*)&cyclesAreAccurate);
-    Select(8, (void*)&cycles);
-    Select(9, (void*)&timesAreAccurate);
-    Select(10, (void*)&times);
+    Select(6, (void*)&timeStepPath);
+    Select(7, (void*)&timeStepNames);
+    Select(8, (void*)&cyclesAreAccurate);
+    Select(9, (void*)&cycles);
+    Select(10, (void*)&timesAreAccurate);
+    Select(11, (void*)&times);
 
-    Select(11, (void*)&meshes);
-    Select(12, (void*)&scalars);
-    Select(13, (void*)&vectors);
-    Select(14, (void*)&materials);
-    Select(15, (void*)&species);
-    Select(16, (void*)&curves);
+    Select(12, (void*)&meshes);
+    Select(13, (void*)&scalars);
+    Select(14, (void*)&vectors);
+    Select(15, (void*)&materials);
+    Select(16, (void*)&species);
+    Select(17, (void*)&curves);
 
-    Select(17, (void*)&exprList);
+    Select(18, (void*)&exprList);
 }
 
 // *******************************************************************
@@ -3394,6 +3414,9 @@ avtDatabaseMetaData::SelectAll()
 //   Hank Childs, Fri Aug  1 11:08:21 PDT 2003
 //   Add support for curves.
 //
+//   Hank Childs, Thu Aug 14 08:16:07 PDT 2003
+//   Account for database name being added to front of list.
+//
 // *******************************************************************
 
 AttributeGroup *
@@ -3401,17 +3424,17 @@ avtDatabaseMetaData::CreateSubAttributeGroup(int n)
 {
     switch (n)
     {
-      case 11:
-        return new avtMeshMetaData;
       case 12:
-        return new avtScalarMetaData;
+        return new avtMeshMetaData;
       case 13:
-        return new avtVectorMetaData;
+        return new avtScalarMetaData;
       case 14:
-        return new avtMaterialMetaData;
+        return new avtVectorMetaData;
       case 15:
-        return new avtSpeciesMetaData;
+        return new avtMaterialMetaData;
       case 16:
+        return new avtSpeciesMetaData;
+      case 17:
         return new avtCurveMetaData;
       default:
         return NULL;
@@ -3880,6 +3903,8 @@ avtDatabaseMetaData::UnsetExtents(void)
 void
 avtDatabaseMetaData::AddExpression(Expression *expr)
 {
+    expr->SetFromDB(true);
+    expr->SetDbName(databaseName);
     exprList.AddExpression(*expr);
 }
 
@@ -3895,8 +3920,8 @@ avtDatabaseMetaData::AddExpression(Expression *expr)
 //
 // ****************************************************************************
 
-Expression *
-avtDatabaseMetaData::GetExpression(int expr)
+const Expression *
+avtDatabaseMetaData::GetExpression(int expr) const
 {
     return &(exprList[expr]);
 }
@@ -3914,7 +3939,7 @@ avtDatabaseMetaData::GetExpression(int expr)
 // ****************************************************************************
 
 int
-avtDatabaseMetaData::GetNumberOfExpressions(void)
+avtDatabaseMetaData::GetNumberOfExpressions(void) const
 {
     return exprList.GetNumExpressions();
 }

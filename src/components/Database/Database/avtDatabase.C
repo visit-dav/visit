@@ -374,6 +374,9 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
 //    Brad Whitlock, Wed May 14 09:11:03 PDT 2003
 //    Added timeState argument.
 //
+//    Hank Childs, Thu Aug 14 08:45:39 PDT 2003
+//    Set the database's name with the meta-data.
+//
 // ****************************************************************************
 
 avtDatabaseMetaData *
@@ -382,6 +385,13 @@ avtDatabase::GetMetaData(int timeState)
     if (metadata == NULL)
     {
         metadata = new avtDatabaseMetaData;
+        const char *filename = GetFilename(timeState);
+        string fname;
+        if (filename == NULL)
+            fname = "";
+        else
+            fname = filename;
+        metadata->SetDatabaseName(fname);
         SetDatabaseMetaData(metadata, timeState);
         PopulateIOInformation(ioInfo);
         gotIOInfo = true;

@@ -22,6 +22,12 @@
     <Field name="type" label="type" type="enum" subtype="ExprType">
       ScalarMeshVar
     </Field>
+    <Field name="fromDB" label="fromDB" type="bool">
+      false
+    </Field>
+    <Field name="dbName" label="dbName" type="string">
+      "__none__"
+    </Field>
     <Function name="GetNumTypes" user="true" member="true">
     </Function>
     <Function name="GetTypeString" user="true" member="true">

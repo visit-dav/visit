@@ -240,6 +240,12 @@ avtSiloFileFormat::OpenFile(int f)
 //  Programmer: Hank Childs
 //  Creation:   April 10, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Aug 14 09:20:28 PDT 2003
+//    Remove support for vector defvars -- they are now correctly handled at a
+//    higher level.
+//
 // ****************************************************************************
 
 void
@@ -249,25 +255,6 @@ avtSiloFileFormat::ReadGlobalInformation(DBfile *dbfile)
     // Get the cycle, dtime, etc.
     //
     GetTimeVaryingInformation(dbfile);
-
-    //
-    // Make sure we are aware of any 'defvars' -- defined variables.
-    //
-    if (DBInqVarExists(dbfile, "_meshtv_defvars"))
-    {
-        int    ldefvars = DBGetVarLength(dbfile, "_meshtv_defvars");
-        if (ldefvars > 0)
-        {
-            char *defvar_str = new char[ldefvars+1];
-            for (int i = 0 ; i < ldefvars+1 ; i++)
-            {
-                defvar_str[i] = '\0';
-            }
-            DBReadVar(dbfile, "_meshtv_defvars", defvar_str);
-            GetVectorDefvars(defvar_str);
-            delete [] defvar_str;
-        }
-    }
 
     //
     // We can fake ghost zones for block-structured grids.  Read in
@@ -1854,6 +1841,7 @@ avtSiloFileFormat::BroadcastGlobalInfo(avtDatabaseMetaData *metadata)
 #endif
 }
 
+
 // ****************************************************************************
 //  Method:  avtSiloFileFormat::DoRootDirectoryWork
 //
@@ -1869,7 +1857,14 @@ avtSiloFileFormat::BroadcastGlobalInfo(avtDatabaseMetaData *metadata)
 //  Programmer:  Jeremy Meredith
 //  Creation:    July 15, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Aug 14 09:20:28 PDT 2003
+//    Removed explicit support for vector defvars -- it is all now handled
+//    correctly at a higher level.
+//
 // ****************************************************************************
+
 void
 avtSiloFileFormat::DoRootDirectoryWork(avtDatabaseMetaData *md)
 {
@@ -1882,68 +1877,8 @@ avtSiloFileFormat::DoRootDirectoryWork(avtDatabaseMetaData *md)
         md->AddGroupInformation(groupInfo.numgroups, groupInfo.ndomains,
                                 groupInfo.ids);
     }
-
-    //
-    // We already read in and parsed the defvars with the rest of the 
-    // global information.  Now add that information to the meta-data.
-    //
-    std::vector<VectorDefvar>::iterator it;
-    for (it = defvars.begin() ; it != defvars.end() ; it++)
-    {
-        const avtScalarMetaData *c1 = md->GetScalar((*it).component1);
-        const avtScalarMetaData *c2 = md->GetScalar((*it).component2);
-        const avtScalarMetaData *c3 = md->GetScalar((*it).component3);
-        bool valid_var = true;
-        int  dim = 3;
-        string       meshname;
-        avtCentering cent;
-        if (c1 == NULL || c2 == NULL
-            || (c3 == NULL && (*it).component3 != string("<no var>")) )
-        {
-            cent = AVT_NODECENT;
-            meshname = "<no_mesh>";
-            debug1 << "One of " << (*it).component1.c_str() << ", "
-                   << (*it).component2.c_str() << ", " 
-                   << (*it).component3.c_str()
-                   << " is not a valid component of a vector." << endl;
-            valid_var = false;
-        }
-        else
-        {
-            cent = c1->centering;
-            meshname = c1->meshName;
-            dim = (c3 == NULL ? 2 : 3);
-            if (c3 == NULL)
-            {
-                // For our comparisons, make it be the same as c1.
-                c3 = c1;
-            }
-
-            if (c1->centering != c2->centering ||
-                c2->centering != c3->centering)
-            {
-                debug1 << "Centering does not agree for components of "
-                       << "a vector.  Invalidating..." << endl;
-                valid_var = false;
-            }
-
-            if (c1->meshName != c2->meshName ||
-                c2->meshName != c3->meshName)
-            {
-                debug1 << " Components of a vector are defined on "
-                       << "different meshes." << endl;
-                valid_var = false;
-            }
-        }
-
-        avtVectorMetaData *vmd 
-            = new avtVectorMetaData((*it).vector_name, meshname,
-                                    cent, dim);
-        vmd->validVariable = valid_var;
-    
-        md->Add(vmd);
-    }
 }
+
 
 // ****************************************************************************
 //  Method: avtSiloFileFormat::GetConnectivityAndGroupInformation
@@ -2440,24 +2375,18 @@ avtSiloFileFormat::FindGmapConnectivity(DBfile *dbfile, int &ndomains,
 
 
 // ****************************************************************************
-//  Method: avtSiloFileFormat::GetVectorDefvars
+//  Method: avtSiloFileFormat::AddDefvars
 //
 //  Purpose:
-//      Goes through the _meshtv_defvars command and reads out the vectors.
-//      Puts those vectors into the defvars data member.
+//      Parses the defvars out of the _meshtv_defvar string and adds them to
+//      the meta-data as expressions.
 //
-//  Notes:       This is all a hack until we get better defvar support in.
-//
-//  Arguments:
-//      d_str    The string that contains the defvars.
-//
-//  Programmer:  Hank Childs
-//  Creation:    March 19, 2001
+//  Programmer: Hank Childs
+//  Creation:   September 4, 2002
 //
 //  Modifications:
-//
-//    Hank Childs, Wed Nov 20 07:58:16 PST 2002
-//    Allow for '_', which is legal for Silo names.
+//      Sean Ahern, Fri Dec 13 17:31:21 PST 2002
+//      Changed how expressions are defined.
 //
 // ****************************************************************************
 
@@ -2484,136 +2413,6 @@ inline void GetWord(char *&s, char *word)
 }
 
 
-void
-avtSiloFileFormat::GetVectorDefvars(const char *d_str)
-{
-    char *dv_tmp = new char[strlen(d_str)+1];
-    strcpy(dv_tmp, d_str);
-
-    //
-    // First determine the vector statements by separating them based on
-    // semi-colons.
-    //
-    vector<char *> stmts;
-    char *start = dv_tmp;
-    char *end   = NULL;
-    do
-    {
-        //
-        // Find the end of the substatement -- denoted by a semi-colon.
-        //
-        end = strstr(start, ";");
-
-        //
-        // Put a null character where the semi-colon used to be.  If we hit
-        // the end of the string, then end will be NULL, so we don't need to
-        // do anything.
-        //
-        if (end != NULL)
-        {
-            *end = '\0';
-        }
-
-        //
-        // Push back the start of the string so we can work on it later.
-        //
-        stmts.push_back(start);
-        start = end+1;
-    }
-    while (end != NULL);
-
-    //
-    // Now go through each of the statements and determine whether they are
-    // vector statements and get the statement if it is.
-    //
-    int size = stmts.size();
-    for (int i = 0 ; i < size ; i++)
-    {
-        char *s = stmts[i];
-
-        //
-        // Get the name out.
-        //
-        char name[1024];
-        GetWord(s, name);
-
-        //
-        // Make sure what we are looking at really is a vector.
-        //
-        char v[1024];
-        GetWord(s, v);
-        if (strcmp(v, "vector") != 0)
-        {
-            continue;
-        }
-
-        if (*s != '{')
-        {
-            continue;
-        }
-        s++;
-
-        char comp1[1024], comp2[1024], comp3[1024];
-        GetWord(s, comp1);
-
-        if (*s != ',')
-        {
-            continue;
-        }
-        s++;
-
-        GetWord(s, comp2);
-
-        if (*s != '}')
-        {
-            if (*s != ',')
-            {
-                continue;
-            }
-            s++;
-
-            GetWord(s, comp3);
-
-            if (*s != '}')
-            {
-                continue;
-            }
-            s++;
-        }
-        else
-        {
-            strcpy(comp3, "<no var>");
-            s++;
-        }
-
-        VectorDefvar d;
-        d.vector_name = name;
-        d.component1  = comp1;
-        d.component2  = comp2;
-        d.component3  = comp3;
- 
-        defvars.push_back(d);
-    }
-
-    delete [] dv_tmp;
-}
-
-
-// ****************************************************************************
-//  Method: avtSiloFileFormat::AddDefvars
-//
-//  Purpose:
-//      Parses the defvars out of the _meshtv_defvar string and adds them to
-//      the meta-data as expressions.
-//
-//  Programmer: Hank Childs
-//  Creation:   September 4, 2002
-//
-//  Modifications:
-//      Sean Ahern, Fri Dec 13 17:31:21 PST 2002
-//      Changed how expressions are defined.
-//
-// ****************************************************************************
 void
 AddDefvars(const char *defvars, avtDatabaseMetaData *md)
 {
@@ -2865,125 +2664,18 @@ avtSiloFileFormat::GetVar(int domain, const char *v)
 //    Hank Childs, Thu Apr 10 09:11:08 PDT 2003
 //    Force the defvars to get read in if they haven't been already.
 //
+//    Hank Childs, Thu Aug 14 09:18:13 PDT 2003
+//    Removed all defvar support -- it is now handled correctly at a different
+//    level.
+//
 // ****************************************************************************
 
 vtkDataArray *
 avtSiloFileFormat::GetVectorVar(int domain, const char *v)
 {
-    int  i;
-
     debug5 << "Reading in vector variable " << v << ", domain " << domain
            << endl;
     
-    //
-    // If the root file is already opened, this call is essentially free.
-    // If it is not opened yet, we do not know what the defvar's are, so we
-    // can't figure out if this vector is a defvar.
-    //
-    OpenFile(tocIndex);
-
-    //
-    // Find this vector in our defvars.
-    //
-    int  size = defvars.size();
-    int  ind  = -1;
-    for (i = 0 ; i < size ; i++)
-    {
-        if (defvars[i].vector_name == v)
-        {
-            ind = i;
-            break;
-        }
-    }
-
-    if (ind != -1)
-    {
-        return GetDefvarVectorVar(domain, i);
-    }
-
-    return GetStandardVectorVar(domain, v);
-}
-
-
-// ****************************************************************************
-//  Method: avtSiloFileFormat::GetDefvarVectorVar
-//
-//  Purpose:
-//      Gets a vector that is a defvar.
-//
-//  Arguments:
-//      dom     The domain number.
-//      d       The index into the defvars quantity.
-//
-//  Programmer: Hank Childs
-//  Creation:   May 17, 2002
-//
-// ****************************************************************************
-
-vtkDataArray *
-avtSiloFileFormat::GetDefvarVectorVar(int dom, int d)
-{
-    //
-    // We can get this vector by getting each of the three components as
-    // scalars and combining them.  We do not need to check the return value
-    // since NULL is not an option -- an exception would be thrown.
-    //
-    vtkDataArray *comp1 = GetVar(dom, defvars[d].component1.c_str());
-    vtkDataArray *comp2 = GetVar(dom, defvars[d].component2.c_str());
-    vtkDataArray *comp3 = NULL;
-    if (defvars[d].component3 != string("<no var>"))
-    {
-        comp3 = GetVar(dom, defvars[d].component3.c_str());
-    }
-
-    int numEntries = comp1->GetNumberOfTuples();
-
-    //
-    // Create the vector by getting each scalar component one at a time.
-    //
-    vtkFloatArray *rv = vtkFloatArray::New();
-    rv->SetNumberOfComponents(3);
-    rv->SetNumberOfTuples(numEntries);
-    for (int i = 0 ; i < numEntries ; i++)
-    {
-        float c1 = comp1->GetTuple1(i);
-        float c2 = comp2->GetTuple1(i);
-        float c3 = 0.;
-        if (comp3 != NULL)
-        {
-            c3 = comp3->GetTuple1(i);
-        }
-        rv->SetTuple3(i, c1, c2, c3);
-    }
-
-    return rv;
-}
-
-
-// ****************************************************************************
-//  Method: avtSiloFileFormat::GetStandardVectorVar
-//
-//  Purpose:
-//      Reads in a vector variable that is stored as a true vector variable
-//      in Silo (as opposed to a defvar'd one).
-//
-//  Arguments:
-//      dom     The domain number.
-//      v       The vector name.
-//
-//  Programmer: Hank Childs
-//  Creation:   May 17, 2002
-//
-//  Modifications:
-//    Jeremy Meredith, Wed Mar 19 12:23:25 PST 2003
-//    Allow for the case where a multi-var is only defined on a subset
-//    of its associated multimesh.
-//
-// ****************************************************************************
-
-vtkDataArray *
-avtSiloFileFormat::GetStandardVectorVar(int domain, const char *v)
-{
     int localdomain = domain;
     if (blocksForMultivar.count(v))
     {
@@ -2991,9 +2683,6 @@ avtSiloFileFormat::GetStandardVectorVar(int domain, const char *v)
         if (localdomain == -1)
             return NULL;
     }
-
-    debug5 << "Reading in domain " << domain << ", variable " << v << endl;
-    debug5 << "Reading in from toc " << filenames[tocIndex] << endl;
 
     //
     // Open file may be a misnomer -- GetFile is more like it.

@@ -24,14 +24,6 @@ class     avtSpecies;
 
 typedef struct
 {
-    std::string    vector_name;
-    std::string    component1;
-    std::string    component2;
-    std::string    component3;
-}  VectorDefvar;
-
-typedef struct
-{
     bool                haveGroups;
     int                 ndomains;
     int                 numgroups;
@@ -80,6 +72,9 @@ typedef struct
 //    Split out some of ReadDir into its own functions so that parallelizing
 //    the file reading was easier.
 //
+//    Hank Childs, Thu Aug 14 09:15:55 PDT 2003
+//    Remove vector defvars support (it is now handled correctly).
+//
 // ****************************************************************************
 
 class avtSiloFileFormat : public avtSTMDFileFormat
@@ -114,7 +109,6 @@ class avtSiloFileFormat : public avtSTMDFileFormat
 
     static bool           madeGlobalSiloCalls;
 
-    std::vector<VectorDefvar>   defvars;
     std::vector<std::string>    domainDirs;
 
     // The following fields are for determining multimeshes for multivars
@@ -139,7 +133,6 @@ class avtSiloFileFormat : public avtSTMDFileFormat
     vtkDataArray         *GetUcdVar(DBfile *, const char *, const char *, int);
     vtkDataArray         *GetPointVar(DBfile *, const char *);
 
-    vtkDataArray         *GetDefvarVectorVar(int, int);
     vtkDataArray         *GetStandardVectorVar(int, const char *);
 
     vtkDataArray         *GetQuadVectorVar(DBfile*, const char *, const char *,

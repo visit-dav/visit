@@ -1,4 +1,4 @@
-#include "SolidSplitCases.h"
+#include "ClipCases.h"
 
 // Programmer: Jeremy Meredith
 // Date      : August 11, 2003
@@ -7,19 +7,19 @@
 // compiler.  If you must modify it by hand, at least be nice to the 
 // parser and don't add anything else to this file or rearrange it.
 
-int numSolidSplitCasesTet = 16;
+int numClipCasesTet = 16;
 
-int numSolidSplitShapesTet[16] = {
+int numClipShapesTet[16] = {
   1,  2,  2,  2,  2,  2,  2,  2, // cases 0 - 7
   2,  2,  2,  2,  2,  2,  2,  1  // cases 8 - 15
 };
 
-int startSolidSplitShapesTet[16] = {
+int startClipShapesTet[16] = {
   0, 6, 20, 34, 50, 64, 80, 96, // cases 0 - 7
   110, 124, 140, 156, 170, 186, 200, 214  // cases 8 - 15
 };
 
-unsigned char solidSplitShapesTet[] = {
+unsigned char clipShapesTet[] = {
  // Case #0: Unique case #1
   ST_TET, COLOR0, P0, P1, P2, P3, 
  // Case #1: Unique case #2
