@@ -256,6 +256,9 @@
 #    Kathleen Bonnell, Thu Nov 20 07:30:51 PST 2003 
 #    Added the non-widgest files to SRC. 
 #
+#    Brad Whitlock, Fri Oct 31 13:32:19 PST 2003
+#    I Added new files for advanced annotation controls.
+#
 ##############################################################################
 
 ##
@@ -289,6 +292,7 @@ HDRMOC = \
     KFTimeSlider.h \
     QvisAbstractOpacityBar.h \
     QvisAnimationWindow.h \
+    QvisAnnotationObjectInterface.h \
     QvisAnnotationWindow.h \
     QvisAppearanceWindow.h \
     QvisApplication.h \
@@ -337,10 +341,15 @@ HDRMOC = \
     QvisRecentPathRemovalWindow.h \
     QvisRenderingWindow.h \
     QvisSaveWindow.h \
+    QvisScreenPositionEdit.h \
+    QvisScreenPositioner.h \
     QvisScribbleOpacityBar.h \
     QvisSpectrumBar.h \
     QvisSubsetListView.h \
     QvisSubsetWindow.h \
+    QvisText2DInterface.h \
+    QvisTimeSliderInterface.h \
+    QvisTurnDownButton.h \
     QvisVCRControl.h \
     QvisViewWindow.h \
     QvisWindowBase.h \
@@ -357,6 +366,7 @@ HDR = ${HDRMOC} \
     mini3D.h \
     QualifiedFilename.h \
     QvisListViewFileItem.h \
+    QvisAnnotationObjectInterfaceFactory.h \
     QvisPlotListBoxItem.h \
     QvisSubsetListViewItem.h \
     StatusSubject.h
@@ -375,6 +385,7 @@ SRC = \
     QvisListViewFileItem.C \
     QvisPlotListBoxItem.C \
     QvisSubsetListViewItem.C \
+    QvisAnnotationObjectInterfaceFactory.C \
     QvisHelpListViewItem.C
 
 # Where main() is.

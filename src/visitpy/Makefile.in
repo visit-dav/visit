@@ -1,4 +1,4 @@
-#                            Copyright 2000 - 2002
+#                            Copyright 2000 - 2003
 #                 The Regents of the University of California.
 #                             All rights reserved.
 # 
@@ -69,6 +69,9 @@
 #    Eric Brugger, Wed Aug 20 14:16:41 PDT 2003
 #    I added View2DAttributes, View3DAttributes and ViewCurveAttributes.
 #
+#    Brad Whitlock, Wed Dec 3 17:27:44 PST 2003
+#    I added PyTimeSliderObject and PyText2DObject.
+#
 ##############################################################################
 
 ##
@@ -90,6 +93,8 @@ SRC= \
     PyRenderingAttributes.C \
     PySaveWindowAttributes.C \
     PySILRestriction.C \
+    PyText2DObject.C \
+    PyTimeSliderObject.C \
     PyView2DAttributes.C \
     PyView3DAttributes.C \
     PyViewAttributes.C \
@@ -107,6 +112,8 @@ HDR= \
     PyRenderingAttributes.h \
     PySaveWindowAttributes.h \
     PySILRestriction.h \
+    PyText2DObject.h \
+    PyTimeSliderObject.h \
     PyView2DAttributes.h \
     PyView3DAttributes.h \
     PyViewAttributes.h \

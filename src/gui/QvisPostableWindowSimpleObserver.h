@@ -26,31 +26,46 @@
 //   Brad Whitlock, Mon Sep 9 10:58:32 PDT 2002
 //   I made the apply button optional.
 //
+//   Brad Whitlock, Fri Nov 7 16:12:55 PST 2003
+//   I added much of QvisPostableWindowObserver's extra functionality.
+//
 // ****************************************************************************
 
 class GUI_API QvisPostableWindowSimpleObserver : public QvisPostableWindow, public SimpleObserver
 {
     Q_OBJECT
 public:
+    static const int NoExtraButtons;
+    static const int ApplyButton;
+    static const int MakeDefaultButton;
+    static const int ResetButton;
+    static const int AllExtraButtons;
+
     QvisPostableWindowSimpleObserver(const char *caption = 0,
                                      const char *shortName = 0,
                                      QvisNotepadArea *n = 0,
+                                     int buttonCombo = AllExtraButtons,
                                      bool stretch = true);
     virtual ~QvisPostableWindowSimpleObserver();
-    virtual void CreateWindowContents() = 0;
+
     virtual void Update(Subject *TheChangedSubject);
     virtual void SubjectRemoved(Subject *TheRemovedSubject);
 
-    Subject *SelectedSubject();
     virtual void CreateEntireWindow();
 
+public slots:
+    virtual void apply();
+    virtual void makeDefault();
+    virtual void reset();
+protected slots:
+    void makeDefaultHelper();
 protected:
-    void setApplyButton(bool val) { applyButton = val; }
-    bool getStretchWindow() const { return stretchWindow; };
-private:
+    virtual void CreateWindowContents() = 0;
+    Subject     *SelectedSubject();
+
     Subject *selectedSubject;
+    int      buttonCombination;
     bool     stretchWindow;
-    bool     applyButton;
 };
 
 #endif

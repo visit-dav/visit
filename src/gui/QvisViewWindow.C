@@ -53,7 +53,7 @@
 
 QvisViewWindow::QvisViewWindow(const char *caption, const char *shortName,
     QvisNotepadArea *notepad) : QvisPostableWindowSimpleObserver(caption,
-    shortName, notepad)
+    shortName, notepad, ApplyButton)
 {
     viewCurve = 0;
     view2d = 0;

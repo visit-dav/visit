@@ -1,0 +1,73 @@
+Function: SetFontFamily
+Declaration: void SetFontFamily(int family);
+Definition:
+void
+AnnotationObject::SetFontFamily(int family)
+{
+   if(family >= 0 && family < 3)
+       SetFontProperties((fontProperties & (~3)) | family);
+}
+
+Function: GetFontFamily
+Declaration: int GetFontFamily() const;
+Definition:
+int
+AnnotationObject::GetFontFamily() const
+{
+   return fontProperties & 3;
+}
+
+Function: SetFontBold
+Declaration: void SetFontBold(bool val);
+Definition:
+void
+AnnotationObject::SetFontBold(bool val)
+{
+    SetFontProperties((fontProperties & (~4)) | ((val?1:0)<<2));
+}
+
+Function: GetFontBold
+Declaration: bool GetFontBold() const;
+Definition:
+bool
+AnnotationObject::GetFontBold() const
+{
+    return ((fontProperties & 4) >> 2) == 1;
+}
+
+Function: SetFontItalic
+Declaration: void SetFontItalic(bool val);
+Definition:
+void
+AnnotationObject::SetFontItalic(bool val)
+{
+    SetFontProperties((fontProperties & (~8)) | ((val?1:0) << 3));
+}
+
+Function: GetFontItalic
+Declaration: bool GetFontItalic() const;
+Definition:
+bool
+AnnotationObject::GetFontItalic() const
+{
+    return ((fontProperties & 8) >> 3) == 1;
+}
+
+Function: SetFontShadow
+Declaration: void SetFontShadow(bool val);
+Definition:
+void
+AnnotationObject::SetFontShadow(bool val)
+{
+    SetFontProperties((fontProperties & (~16)) | ((val?1:0) << 4));
+}
+
+Function: GetFontShadow
+Declaration: bool GetFontShadow() const;
+Definition:
+bool
+AnnotationObject::GetFontShadow() const
+{
+   return ((fontProperties & 16) >> 4) == 1;
+}
+

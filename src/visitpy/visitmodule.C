@@ -5,6 +5,7 @@
 #include <strings.h>
 #endif
 #include <snprintf.h>
+#include <map>
 
 #define THREADS
 
@@ -41,6 +42,8 @@
 //
 #include <AnimationAttributes.h>
 #include <AnnotationAttributes.h>
+#include <AnnotationObject.h>
+#include <AnnotationObjectList.h>
 #include <ColorTableAttributes.h>
 #include <EngineList.h>
 #include <GlobalAttributes.h>
@@ -75,6 +78,8 @@
 #include <PyRenderingAttributes.h>
 #include <PySaveWindowAttributes.h>
 #include <PySILRestriction.h>
+#include <PyText2DObject.h>
+#include <PyTimeSliderObject.h>
 #include <PyViewAttributes.h>
 #include <PyViewCurveAttributes.h>
 #include <PyView2DAttributes.h>
@@ -279,6 +284,9 @@ static PyObject             *VisItError;
 
 static int                   cli_argc = 0;
 static char                **cli_argv = 0;
+
+static std::vector<AnnotationObject *>   localObjectList;
+static std::map<AnnotationObject *, int> localObjectReferenceCount;
 
 #ifdef THREADS
 #if defined(_WIN32)
@@ -7224,6 +7232,324 @@ visit_Lineout(PyObject *self, PyObject *args)
     return PyLong_FromLong(long(errorFlag == 0));
 }
 
+// ****************************************************************************
+// Function: CreateAnnotationWrapper
+//
+// Purpose: 
+//   Factory method for creating annotation wrapper objects.
+//
+// Arguments:
+//   annot : The object that we want to wrap.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Dec 3 17:23:24 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+PyObject *
+CreateAnnotationWrapper(AnnotationObject *annot)
+{
+    PyObject *retval = NULL;
+
+    if(annot->GetObjectType() == AnnotationObject::Text2D)
+    {
+        // Create a time slider wrapper for the new annotation object.
+        retval = PyText2DObject_WrapPyObject(annot);
+    }
+    else if(annot->GetObjectType() == AnnotationObject::TimeSlider)
+    {
+        // Create a Text2D wrapper for the new annotation object.
+        retval = PyTimeSliderObject_WrapPyObject(annot);
+    }
+
+    // Add more cases here later...
+
+    return retval;
+}
+
+// ****************************************************************************
+// Function: visit_CreateAnnotationObject
+//
+// Purpose: 
+//   Creates an annotation object of the named type.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Dec 3 17:22:55 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_CreateAnnotationObject(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    char *annotType;
+    if (!PyArg_ParseTuple(args, "s", &annotType))
+       return NULL;
+
+    // See if it is an annotation type that we know about
+    int annotTypeIndex;
+    if(strcmp(annotType, "TimeSlider") == 0)
+        annotTypeIndex = 2;
+    else if(strcmp(annotType, "Text2D") == 0)
+        annotTypeIndex = 0;
+    else
+    {
+        char message[400];
+        SNPRINTF(message, 400, "%s is not a recognized annotation type.",
+           annotType);
+        VisItErrorFunc(message);
+        return NULL;
+    }
+
+    // Create the annotation.
+    MUTEX_LOCK();
+        viewer->AddAnnotationObject(annotTypeIndex);
+    MUTEX_UNLOCK();
+    int errorFlag = Synchronize();
+
+    // If it was a success, then get the last annotation object in the
+    // annotation object list and copy it into a Python wrapper class.
+    PyObject *retval = 0;
+    if(errorFlag == 0)
+    {
+        MUTEX_LOCK();
+            AnnotationObjectList *aol = viewer->GetAnnotationObjectList();
+            const AnnotationObject &newObject = aol->operator[](aol->GetNumAnnotationObjects() - 1);
+
+            //
+            // Create a copy of the new annotation object that we'll keep in the
+            // module's own annotation object list.
+            //
+            AnnotationObject *localCopy = new AnnotationObject(newObject);
+            localObjectList.push_back(localCopy);
+            localObjectReferenceCount[localCopy] = 1;
+            retval = CreateAnnotationWrapper(localCopy);
+        MUTEX_UNLOCK();
+    }
+    else
+    {
+        char message[400];
+        SNPRINTF(message, 400, "VisIt could not create an annotation object "
+            "of type: %s.", annotType);
+        VisItErrorFunc(message);
+        return NULL;
+    }
+
+    // Return the success value.
+    return retval;
+}
+
+// ****************************************************************************
+// Function: visit_GetAnnotationObject
+//
+// Purpose: 
+//   Creates an annotation wrapper object for the i'th annotation.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Dec 3 17:22:10 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_GetAnnotationObject(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    int annotIndex;
+    if (!PyArg_ParseTuple(args, "i", &annotIndex))
+        return NULL;
+
+    PyObject *retval = NULL;
+    if(annotIndex >= 0 && annotIndex < localObjectList.size())
+    {
+        AnnotationObject *annot = localObjectList[annotIndex];
+        retval = CreateAnnotationWrapper(annot);
+
+        // Increase the object's reference count.
+        if(retval != 0)
+            ++(localObjectReferenceCount[annot]);
+    }
+    else
+    {
+        VisItErrorFunc("An invalid annotation object index was given!");
+    }
+
+    return retval;
+}
+
+// ****************************************************************************
+// Function: UpdateAnnotationsHelper
+//
+// Purpose: 
+//   This is a helper function that is called when setting the attributes
+//   of an annotation object. The purpose is to send the annotation
+//   object list to the viewer.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Dec 3 17:21:21 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+UpdateAnnotationHelper(AnnotationObject *annot)
+{
+    // Make sure that the annotation object annot is in the localObjectList.
+    int i, index = -1;
+    for(i = 0; i < localObjectList.size(); ++i)
+    {
+        if(localObjectList[i] == annot)
+        {
+            index = i;
+            break;
+        }
+    }
+
+    if(index == -1)
+    {
+        // The annotation was not in the local object list so it must have
+        // been deleted.
+        VisItErrorFunc("Setting the annotation object attributes for this "
+                       "object has no effect because the annotation to which "
+                       "it corresponds has been deleted.");
+    }
+    else
+    {
+        // The annotation was in the local object list.
+        AnnotationObjectList *aol = viewer->GetAnnotationObjectList();
+        if(aol->GetNumAnnotationObjects() == localObjectList.size())
+        {
+            MUTEX_LOCK();
+
+            // Copy the local annotation object's list into the viewer proxy's
+            // annotation object list.
+            for(i = 0; i < aol->GetNumAnnotationObjects(); ++i)
+            {
+                AnnotationObject &viewerAnnot = aol->operator[](i);
+                viewerAnnot = *(localObjectList[i]);
+            }
+
+            // Send the options to the viewer.
+            aol->Notify();
+
+            // Make the viewer use the options.
+            viewer->SetAnnotationObjectOptions();
+
+            MUTEX_UNLOCK();
+
+            // Synchronize so we don't send more operations than we can handle.
+            Synchronize();
+        }
+        else
+        {
+            debug1 << "The local annotation object list does not match the viewer's "
+                   << "annotation object list!" << endl;
+        }
+    }
+}
+
+// ****************************************************************************
+// Function: DeleteAnnotationObjectHelper
+//
+// Purpose: 
+//   This method is called by AnnotationObject wrapper classes so they can
+//   delete themselces from the annotation object list.
+//
+// Arguments:
+//   annot : Pointer to the object that we want to delete.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Dec 3 17:20:23 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+DeleteAnnotationObjectHelper(AnnotationObject *annot)
+{
+    bool transferOwnership = false;
+
+    MUTEX_LOCK();
+
+    bool needToDelete = false;
+    AnnotationObjectList *aol = viewer->GetAnnotationObjectList();
+    if(aol->GetNumAnnotationObjects() == localObjectList.size())
+    {
+        std::vector<AnnotationObject *> compactedObjectList;
+
+        // Delete the specified annotation object and make it active so the viewer
+        // can delete it in the vis window.
+        for(int i = 0; i < localObjectList.size(); ++i)
+        { 
+            AnnotationObject &viewerAnnot = aol->operator[](i);
+            if(localObjectList[i] == annot)
+            {
+                //
+                // Decrement the AnnotationObject's reference count. If the reference
+                // count reaches zero, remove it from the localObjectReferenceCount
+                // map and set transferOwnership to true so that when the object that's
+                // deleting the annotation is the last one to reference the annotation
+                // object, it gets the annotation object to keep. That way, when the
+                // wrapper object gets deleted, so does the annotation object.
+                //
+                --(localObjectReferenceCount[annot]);
+                if(localObjectReferenceCount[annot] < 2)
+                {
+                    localObjectReferenceCount.erase(localObjectReferenceCount.find(annot));
+                    transferOwnership = true;
+                }
+
+                viewerAnnot.SetActive(true);
+                needToDelete = true;
+            }
+            else
+            {
+                compactedObjectList.push_back(localObjectList[i]);
+                viewerAnnot.SetActive(false);
+                localObjectList[i]->SetActive(false);
+            }
+        }
+
+        //
+        // Replace the old local object list with the new one without the object
+        // that was removed. After that, make sure that the first object in the
+        // local object list is made active.
+        //
+        localObjectList = compactedObjectList;
+        if(localObjectList.size() > 0)
+            localObjectList[0]->SetActive(true);
+
+        // Now that we've modified the annotation object list, we have to send
+        // it to the viewer.
+        aol->SelectAll();
+        aol->Notify();
+        viewer->SetAnnotationObjectOptions();
+    }
+    MUTEX_UNLOCK();
+    Synchronize();
+
+    // Tell the viewer to delete the active annotations.
+    if(needToDelete)
+    {
+        MUTEX_LOCK();
+        viewer->DeleteActiveAnnotationObjects();
+        MUTEX_UNLOCK();
+
+        Synchronize();
+    }
+
+    return transferOwnership;
+}
+
 //
 // Method table
 //
@@ -7369,6 +7695,9 @@ AddMethod(const char *methodName, PyObject *(cb)(PyObject *, PyObject *),
 //   Kathleen Bonnell, Mon Dec  1 18:04:41 PST 2003 
 //   Added PickByNode, PickByZone and ResetPickAttributes.
 //
+//   Brad Whitlock, Wed Dec 3 17:25:06 PST 2003
+//   Added CreateAnnotationObject and GetAnnotationObject.
+//
 // ****************************************************************************
 
 static void
@@ -7413,6 +7742,7 @@ AddDefaultMethods()
     AddMethod("CopyLightingToWindow", visit_CopyLightingToWindow);
     AddMethod("CopyPlotsToWindow", visit_CopyPlotsToWindow);
     AddMethod("CopyViewToWindow", visit_CopyViewToWindow);
+    AddMethod("CreateAnnotationObject", visit_CreateAnnotationObject);
     AddMethod("DefineMeshExpression", visit_DefineMeshExpression);
     AddMethod("DefineMaterialExpression", visit_DefineMaterialExpression);
     AddMethod("DefineScalarExpression", visit_DefineScalarExpression);
@@ -7431,6 +7761,7 @@ AddDefaultMethods()
     AddMethod("DrawPlots", visit_DrawPlots);
     AddMethod("EnableTool", visit_EnableTool);
     AddMethod("GetAnimationTimeout", visit_GetAnimationTimeout);
+    AddMethod("GetAnnotationObject", visit_GetAnnotationObject);
     AddMethod("GetLocalHostName", visit_GetLocalHostName);
     AddMethod("GetLocalUserName", visit_GetLocalUserName);
     AddMethod("GetSaveWindowAttributes", visit_GetSaveWindowAttributes);

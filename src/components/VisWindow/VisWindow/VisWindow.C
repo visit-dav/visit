@@ -11,12 +11,14 @@
 #include <vtkMath.h>
 #include <vtkMatrix4x4.h>
 
+#include <AnnotationObjectList.h>
 #include <ColorAttribute.h>
 #include <LineAttributes.h>
 
 #include <avtPlot.h>
 #include <avtLightList.h>
 #include <VisitInteractor.h>
+#include <VisWinAnnotations.h>
 #include <VisWinAxes.h>
 #include <VisWinAxes3D.h>
 #include <VisWinBackground.h>
@@ -120,6 +122,10 @@ static void      start_render(void *);
 //    Eric Brugger, Wed Aug 20 10:09:15 PDT 2003
 //    Removed typeIsCurve.
 //
+//    Brad Whitlock, Wed Oct 29 17:06:18 PST 2003
+//    Added the annotation colleague and initialized the new frameAndState
+//    array.
+//
 // ****************************************************************************
 
 VisWindow::VisWindow(bool doNoWinMode)
@@ -129,6 +135,13 @@ VisWindow::VisWindow(bool doNoWinMode)
     //
     // Set up all of the non-colleague fields. 
     //
+    frameAndState[0] = 1;
+    frameAndState[1] = 0;
+    frameAndState[2] = 0;
+    frameAndState[3] = 0;
+    frameAndState[4] = 0;
+    frameAndState[5] = 0;
+    frameAndState[6] = 0;
     mode = WINMODE_NONE;
     backgroundMode = 0;
     gradientBackground[0][0] = 0.;
@@ -204,6 +217,9 @@ VisWindow::VisWindow(bool doNoWinMode)
     legends      = new VisWinLegends(colleagueProxy);
     AddColleague(legends);
 
+    annotations = new VisWinAnnotations(colleagueProxy);
+    AddColleague(annotations);
+
     // Initialize the menu callbacks.
     showMenuCallback = 0;
     showMenuCallbackData = 0;
@@ -246,6 +262,9 @@ VisWindow::VisWindow(bool doNoWinMode)
 //
 //    Kathleen Bonnell, Tue Aug 13 15:15:37 PDT 2002
 //    Added deletion of lighting colleague.
+//
+//    Brad Whitlock, Wed Oct 29 17:06:59 PST 2003
+//    Added deletion of the annotation colleague.
 //
 // ****************************************************************************
 
@@ -320,6 +339,11 @@ VisWindow::~VisWindow()
     {
         delete rendering;
         rendering = NULL;
+    }
+    if (annotations != NULL)
+    {
+        delete annotations;
+        annotations = NULL;
     }
 }
 
@@ -2931,6 +2955,251 @@ const AnnotationAttributes *
 VisWindow::GetAnnotationAtts() const
 {
     return (const AnnotationAttributes *)&annotationAtts;
+}
+
+// ****************************************************************************
+// Method: VisWindow::AddAnnotationObject
+//
+// Purpose: 
+//   Tells the annotation colleague to create a new annotation.
+//
+// Arguments:
+//   annotType : The type of annotation to create.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Dec 2 15:32:59 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+VisWindow::AddAnnotationObject(int annotType)
+{
+    annotations->AddAnnotationObject(annotType);
+}
+
+// ****************************************************************************
+// Method: VisWindow::HideActiveAnnotationObjects
+//
+// Purpose: 
+//   Hides the active annotations.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Dec 2 15:33:29 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+VisWindow::HideActiveAnnotationObjects()
+{
+    annotations->HideActiveAnnotationObjects();
+}
+
+// ****************************************************************************
+// Method: VisWindow::DeleteActiveAnnotationObjects
+//
+// Purpose: 
+//   Deletes the active annotations.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Dec 2 15:33:43 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+VisWindow::DeleteActiveAnnotationObjects()
+{
+    annotations->DeleteActiveAnnotationObjects();
+}
+
+// ****************************************************************************
+// Method: VisWindow::DeleteAllAnnotationObjects
+//
+// Purpose: 
+//   Deletes all annotation objects.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Dec 2 15:34:01 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+VisWindow::DeleteAllAnnotationObjects()
+{
+    annotations->DeleteAllAnnotationObjects();
+}
+
+// ****************************************************************************
+// Method: VisWindow::RaiseActiveAnnotationObjects
+//
+// Purpose: 
+//   Raises the active annotations.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Dec 2 15:34:21 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+VisWindow::RaiseActiveAnnotationObjects()
+{
+    annotations->RaiseActiveAnnotationObjects();
+}
+
+// ****************************************************************************
+// Method: VisWindow::LowerActiveAnnotationObjects
+//
+// Purpose: 
+//   Lowers the active annotations.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Dec 2 15:34:51 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+VisWindow::LowerActiveAnnotationObjects()
+{
+    annotations->LowerActiveAnnotationObjects();
+}
+
+// ****************************************************************************
+// Method: VisWindow::SetAnnotationObjectOptions
+//
+// Purpose: 
+//   Sets the annotation object options.
+//
+// Arguments:
+//   al : The annotation object list.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Dec 2 15:35:16 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+VisWindow::SetAnnotationObjectOptions(const AnnotationObjectList &al)
+{
+    annotations->SetAnnotationObjectOptions(al);
+}
+
+// ****************************************************************************
+// Method: VisWindow::UpdateAnnotationObjectList
+//
+// Purpose: 
+//   Updates the annotation object list.
+//
+// Arguments:
+//   al : The annotation object list that we're going to update.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Dec 2 15:35:45 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+VisWindow::UpdateAnnotationObjectList(AnnotationObjectList &al)
+{
+    annotations->UpdateAnnotationObjectList(al);
+}
+
+// ****************************************************************************
+// Method: VisWindow::CreateAnnotationObjectsFromList
+//
+// Purpose: 
+//   Creates the annotation objects recorded in the annotation object list.
+//
+// Arguments:
+//   al : The annotation object list used to create annotations.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Dec 2 15:36:27 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+VisWindow::CreateAnnotationObjectsFromList(const AnnotationObjectList &al)
+{
+    annotations->CreateAnnotationObjectsFromList(al);
+}
+
+// ****************************************************************************
+// Method: VisWindow::SetFrameAndState
+//
+// Purpose: 
+//   Sets the vis window's frame and state so they are available for colleagues
+//   that need that information.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Dec 2 15:37:01 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+VisWindow::SetFrameAndState(int nFrames,
+    int startFrame, int curFrame, int endFrame,
+    int startState, int curState, int endState)
+{
+    frameAndState[0] = nFrames;
+    frameAndState[1] = startFrame;
+    frameAndState[2] = curFrame;
+    frameAndState[3] = endFrame;
+    frameAndState[4] = startState;
+    frameAndState[5] = curState;
+    frameAndState[6] = endState;
+
+    std::vector< VisWinColleague * >::iterator it;
+    for (it = colleagues.begin() ; it != colleagues.end() ; it++)
+    {
+        (*it)->SetFrameAndState(nFrames, startFrame, curFrame, endFrame,
+                                startState, curState, endState);
+    }
+}
+
+// ****************************************************************************
+// Method: VisWindow::GetFrameAndState
+//
+// Purpose: 
+//   Gets the vis window's frame and state information.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Dec 2 15:37:38 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+VisWindow::GetFrameAndState(int &nFrames,
+    int &startFrame, int &curFrame, int &endFrame,
+    int &startState, int &curState, int &endState) const
+{
+    nFrames    = frameAndState[0];
+    startFrame = frameAndState[1];
+    curFrame   = frameAndState[2];
+    endFrame   = frameAndState[3];
+    startState = frameAndState[4];
+    curState   = frameAndState[5];
+    endState   = frameAndState[6];
 }
 
 // ****************************************************************************

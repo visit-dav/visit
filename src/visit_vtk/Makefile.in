@@ -197,6 +197,9 @@
 #    Kathleen Bonnell, Wed Nov 12 16:56:08 PST 2003 
 #    Remove vtkVisItQuad and vtkVisItTriangle, no longer needed. 
 #
+#    Brad Whitlock, Tue Oct 28 17:00:24 PST 2003
+#    I added vtkTimeSliderActor.
+#
 ##############################################################################
 
 ##
@@ -241,6 +244,7 @@ SRC=InitVTK.C \
     vtkSurfaceFilter.C \
     vtkSurfaceFromVolume.C \
     vtkTensorReduceFilter.C \
+    vtkTimeSliderActor.C \
     vtkTriad2D.C \
     vtkTriangulationTables.C \
     vtkUniqueFeatureEdges.C \

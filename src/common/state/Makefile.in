@@ -210,6 +210,9 @@
 #    Brad Whitlock, Tue Oct 14 13:55:06 PST 2003
 #    Added TimeFormat.
 #
+#    Brad Whitlock, Wed Oct 29 10:22:06 PDT 2003
+#    I added AnnotationObject and AnnotationObjectList.
+#
 ##############################################################################
 
 ##
@@ -226,6 +229,8 @@ CPPFLAGS=-I. @CPPFLAGS@
 ##
 SRC=    AnimationAttributes.C \
         AnnotationAttributes.C \
+        AnnotationObject.C \
+        AnnotationObjectList.C \
         AppearanceAttributes.C \
         AttributeGroup.C \
         AttributeSubject.C \

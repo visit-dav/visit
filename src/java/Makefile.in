@@ -1,4 +1,4 @@
-#                            Copyright 2000 - 2002
+#                            Copyright 2000 - 2003
 #                 The Regents of the University of California.
 #                             All rights reserved.
 # 
@@ -67,6 +67,9 @@
 #   I created a NOT_DISTRIB line with Version.java so that it would not
 #   be added to the distribution since it is a generated file.
 #
+#   Brad Whitlock, Wed Oct 29 10:49:50 PDT 2003
+#   I added AnnotationObject and AnnotationObjectList.
+#
 ##############################################################################
 
 ##
@@ -85,6 +88,8 @@ INSTDIR=llnl/visit
 
 PACKAGE_STATE_SRC= AnimationAttributes.java \
 AnnotationAttributes.java \
+AnnotationObject.java \
+AnnotationObjectList.java \
 AppearanceAttributes.java \
 BoxExtents.java \
 ColorAttribute.java \

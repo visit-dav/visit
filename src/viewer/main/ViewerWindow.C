@@ -18,7 +18,8 @@ using std::string;
 #include <avtToolInterface.h>
 
 #include <AnimationAttributes.h>
-#include <AnnotationAttributes.h> 
+#include <AnnotationAttributes.h>
+#include <AnnotationObjectList.h>
 #include <AttributeSubjectMap.h>
 #include <DataNode.h>
 #include <LightList.h> 
@@ -158,6 +159,10 @@ static void RotateAroundY(const avtView3D&, double, avtView3D&);
 //    Eric Brugger, Thu Oct 16 11:21:53 PDT 2003
 //    I moved the handling of full frame mode to VisWindow.
 //
+//    Brad Whitlock, Fri Nov 7 17:54:47 PST 2003
+//    I added code to make the default annotation objects be created in
+//    this new window.
+//
 // ****************************************************************************
 
 ViewerWindow::ViewerWindow(int windowIndex)
@@ -167,6 +172,8 @@ ViewerWindow::ViewerWindow(int windowIndex)
     visWindow->SetHideCallback(HideCallback, (void *)this);
     visWindow->SetShowCallback(ShowCallback, (void *)this);
     visWindow->SetExternalRenderCallback(ExternalRenderCallback, (void*)this);
+    visWindow->CreateAnnotationObjectsFromList(
+        *ViewerWindowManager::GetDefaultAnnotationObjectList());
     SetAnnotationAttributes(ViewerWindowManager::GetAnnotationDefaultAtts());
     SetLightList(ViewerWindowManager::GetLightListDefaultAtts());
 
@@ -2001,6 +2008,41 @@ ViewerWindow::DisableUpdates()
 }
 
 // ****************************************************************************
+// Method: ViewerWindow::SetFrameAndState
+//
+// Purpose: 
+//   Tells the vis window what the current frame and state are.
+//
+// Arguments:
+//   nFrames    : The total number of animation frames.
+//   startFrame : The starting animation frame.
+//   curFrame   : The current animation frame.
+//   endFrame   : The ending animation frame.
+//   startState : The timestep of the database at startFrame
+//   curState   : The timestep of the database at curFrame
+//   endState   : The timestep of the database at endFrame
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Nov 6 11:19:59 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerWindow::SetFrameAndState(int nFrames,
+    int startFrame, int curFrame, int endFrame,
+    int startState, int curState, int endState)
+{
+    visWindow->SetFrameAndState(nFrames, startFrame, curFrame, endFrame,
+                                startState, curState, endState);
+}
+
+// ****************************************************************************
 // Method: ViewerWindow::SendRedrawMessage
 //
 // Purpose: 
@@ -2588,6 +2630,236 @@ void
 ViewerWindow::CopyAnnotationAttributes(const ViewerWindow *source)
 {
     SetAnnotationAttributes(source->GetAnnotationAttributes());
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::CopyAnnotationObjectList
+//
+// Purpose: 
+//   Copies the annotation objects from the source window to this window.
+//
+// Arguments:
+//   source : The window from which we're copying annotation objects.
+//
+// Returns:    
+//
+// Note:       All annotations in this window are deleted before copying
+//             the new annotation objects.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Nov 6 17:50:42 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerWindow::CopyAnnotationObjectList(const ViewerWindow *source)
+{
+    // First delete all of the annotation objects.
+    visWindow->DeleteAllAnnotationObjects();
+
+    // Get the properties of all of the source window's annotations.
+    AnnotationObjectList annots;
+    source->UpdateAnnotationObjectList(annots);
+
+    // Add the annotations to this window.
+    visWindow->CreateAnnotationObjectsFromList(annots);
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::AddAnnotationObject
+//
+// Purpose: 
+//   Tells the vis window to create a new annotation object.
+//
+// Arguments:
+//   annotType : The type of annotation object to create.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Dec 2 15:24:08 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerWindow::AddAnnotationObject(int annotType)
+{
+    visWindow->AddAnnotationObject(annotType);
+    SendUpdateFrameMessage();
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::HideActiveAnnotationObjects
+//
+// Purpose: 
+//   Hides the active annotations.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Dec 2 15:27:51 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerWindow::HideActiveAnnotationObjects()
+{
+    visWindow->HideActiveAnnotationObjects();
+    SendUpdateFrameMessage();
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::DeleteActiveAnnotationObjects
+//
+// Purpose: 
+//   Deletes the active annotations.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Dec 2 15:28:05 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerWindow::DeleteActiveAnnotationObjects()
+{
+    visWindow->DeleteActiveAnnotationObjects();
+    SendUpdateFrameMessage();
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::DeleteAllAnnotationObjects
+//
+// Purpose: 
+//   Deletes all annotation objects.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Dec 2 15:28:23 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerWindow::DeleteAllAnnotationObjects()
+{
+    visWindow->DeleteAllAnnotationObjects();
+    SendUpdateFrameMessage();
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::RaiseActiveAnnotationObjects
+//
+// Purpose: 
+//   Raise the active annotation objects.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Dec 2 15:28:48 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerWindow::RaiseActiveAnnotationObjects()
+{
+    visWindow->RaiseActiveAnnotationObjects();
+    SendUpdateFrameMessage();
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::LowerActiveAnnotationObjects
+//
+// Purpose: 
+//   Lowers the active annotation objects.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Dec 2 15:29:14 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerWindow::LowerActiveAnnotationObjects()
+{
+    visWindow->LowerActiveAnnotationObjects();
+    SendUpdateFrameMessage();
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::SetAnnotationObjectOptions
+//
+// Purpose: 
+//   Tells the vis window to update the properties of its annotation objects
+//   using the passed in annotation objects list.
+//
+// Arguments:
+//   al : The annotation object list to use to set the properties for the
+//        annotation objects.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Nov 6 17:49:33 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerWindow::SetAnnotationObjectOptions(const AnnotationObjectList &al)
+{
+    visWindow->SetAnnotationObjectOptions(al);
+    SendUpdateFrameMessage();
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::UpdateAnnotationObjectList
+//
+// Purpose: 
+//   Populates the annotation object list with the annotations' properties.
+//
+// Arguments:
+//   al : The annotation object list that we're populating.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Nov 6 17:48:43 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerWindow::UpdateAnnotationObjectList(AnnotationObjectList &al) const
+{
+    visWindow->UpdateAnnotationObjectList(al);
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::CreateAnnotationObjectsFromList
+//
+// Purpose: 
+//   Creates annotations according to the objects in the passed in annotation
+//   object list.
+//
+// Arguments:
+//   al : The annotation object list that we're using to create annotation
+//        objects.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Nov 6 17:55:58 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerWindow::CreateAnnotationObjectsFromList(const AnnotationObjectList &al)
+{
+    visWindow->CreateAnnotationObjectsFromList(al);
+    SendUpdateMessage();
 }
 
 // ****************************************************************************
@@ -5205,6 +5477,9 @@ ViewerWindow::SetPopupEnabled(bool val)
 //   Hank Childs, Sat Nov 15 14:28:26 PST 2003
 //   Save out specular properties.
 //
+//   Brad Whitlock, Fri Nov 7 10:14:08 PDT 2003
+//   Added code to save the annotation object list.
+//
 // ****************************************************************************
 
 void
@@ -5324,6 +5599,13 @@ ViewerWindow::CreateNode(DataNode *parentNode, bool detailed)
             delete view3DNode;
 
         //
+        // Save the annotation object list.
+        //
+        AnnotationObjectList annots;
+        UpdateAnnotationObjectList(annots);
+        annots.CreateNode(windowNode, false);
+
+        //
         // Let the animation add its information.
         //
         animation->CreateNode(windowNode);
@@ -5350,7 +5632,10 @@ ViewerWindow::CreateNode(DataNode *parentNode, bool detailed)
 // Modifications:
 //   Eric Brugger, Wed Aug 20 11:15:07 PDT 2003
 //   I added a curve view.
-//   
+//
+//   Brad Whitlock, Fri Nov 7 10:15:22 PDT 2003
+//   I added code to read in the annotation object list.
+//
 //   Hank Childs, Sat Nov 15 14:28:26 PST 2003
 //   Read in specular properties.
 //
@@ -5482,6 +5767,17 @@ ViewerWindow::SetFromNode(DataNode *parentNode)
         AnnotationAttributes annot;
         annot.SetFromNode(windowNode);
         SetAnnotationAttributes(&annot);
+    }
+
+    //
+    // Read in and set the annotation object list.
+    //
+    if((node = windowNode->GetNode("AnnotationObjectList")) != 0)
+    {
+        AnnotationObjectList annots;
+        annots.SetFromNode(windowNode);
+        visWindow->DeleteAllAnnotationObjects();
+        visWindow->CreateAnnotationObjectsFromList(annots);
     }
 
     //

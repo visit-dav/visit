@@ -85,6 +85,7 @@ public:
     virtual void CreateNode(DataNode *parentNode);
     virtual void SetFromNode(DataNode *parentNode, const int *borders);
 public slots:
+    virtual void apply();
     virtual void show();
 protected:
     void Apply(bool ignore = false);
@@ -99,7 +100,6 @@ protected:
     void Update3D(bool doAll);
     void UpdateGlobal(bool doAll);
 private slots:
-    void apply();
     void processCommandText();
 
     void processViewportCurveText();

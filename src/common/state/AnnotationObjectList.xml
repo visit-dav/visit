@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+  <Attribute name="AnnotationObjectList" purpose="Contains a list of AnnotationObjectAttributes" persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h">
+    <Field name="annotation" label="Annotation" type="attVector" subtype="AnnotationObject">
+    </Field>
+  </Attribute>

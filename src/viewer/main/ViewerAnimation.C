@@ -664,6 +664,9 @@ ViewerAnimation::DeleteWindow(const ViewerWindow *window)
 //    Eric Brugger, Wed Aug 20 11:01:26 PDT 2003
 //    I removed a call to UpdateScaleFactor since it no longer exists.
 //
+//    Brad Whitlock, Thu Nov 6 11:05:51 PDT 2003
+//    I made it pass the number of frames to the UpdateWindow method.
+//
 // ****************************************************************************
 
 void
@@ -681,7 +684,8 @@ ViewerAnimation::UpdateWindows(bool immediateUpdate)
         //
         for (int i = 0; i < nWindows; i++)
         {
-            plotList->UpdateWindow(windows[i], curFrame, immediateUpdate);
+            plotList->UpdateWindow(windows[i], curFrame, nFrames,
+                                   immediateUpdate);
         }
 
         //

@@ -11,6 +11,7 @@
 
 class AnimationAttributes;
 class AnnotationAttributes;
+class AnnotationObjectList;
 class AppearanceAttributes;
 class AttributeSubject;
 class ColorTableAttributes;
@@ -313,6 +314,9 @@ class Xfer;
 //    Kathleen Bonnell, Wed Nov 26 14:17:55 PST 2003 
 //    Added ResetPickAttributes. Added optional int args to PointQuery.
 //
+//    Brad Whitlock, Wed Oct 29 10:31:58 PDT 2003
+//    Added new methods to deal with advanced annotations.
+//
 // ****************************************************************************
 
 class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
@@ -440,6 +444,15 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
     void SetAnnotationAttributes();
     void SetDefaultAnnotationAttributes();
     void ResetAnnotationAttributes();
+    void AddAnnotationObject(int annotType);
+    void HideActiveAnnotationObjects();
+    void DeleteActiveAnnotationObjects();
+    void RaiseActiveAnnotationObjects();
+    void LowerActiveAnnotationObjects();
+    void SetAnnotationObjectOptions();
+    void SetDefaultAnnotationObjectList();
+    void ResetAnnotationObjectList();
+
     void SetKeyframeAttributes();
 
     void SetMaterialAttributes();
@@ -552,6 +565,8 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
                                     {return materialAtts;}
     GlobalLineoutAttributes    *GetGlobalLineoutAttributes() const 
                                     {return globalLineoutAtts;};
+    AnnotationObjectList       *GetAnnotationObjectList() const
+                                    {return annotationObjectList; };
   protected:
     virtual void Update(Subject *subj);
   private:
@@ -593,6 +608,7 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
     QueryList                  *queryList;
     QueryAttributes            *queryAtts;
     GlobalLineoutAttributes    *globalLineoutAtts;
+    AnnotationObjectList       *annotationObjectList;
 
     AttributeSubject           **plotAtts;
     AttributeSubject           **operatorAtts;

@@ -1,0 +1,508 @@
+#include <QvisScreenPositioner.h>
+#include <qpainter.h>
+#include <qpen.h>
+
+const int QvisScreenPositioner::minXScreenSize = 100;
+const int QvisScreenPositioner::minYScreenSize = 100;
+
+// ****************************************************************************
+// Method: QvisScreenPositioner::QvisScreenPositioner
+//
+// Purpose: 
+//   Constructor for the QvisScreenPositioner class.
+//
+// Arguments:
+//   parent : The widget's parent.
+//   name   : The widget's name.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Dec 1 14:11:15 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+QvisScreenPositioner::QvisScreenPositioner(QWidget *parent, const char *name,
+    WFlags flags) : QFrame(parent, name, flags)
+{
+    xPosition = xTempPosition = minXScreenSize / 2;
+    yPosition = yTempPosition = minYScreenSize / 2;
+    xScreenSize = minXScreenSize;
+    yScreenSize = minYScreenSize;
+    setPageIncrement(10);
+    dragging = false;
+    paging = false;
+
+    setMinimumSize(minimumSize());
+
+    setFocusPolicy(StrongFocus);
+
+    // Set the default size policy.
+    setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding,
+        QSizePolicy::MinimumExpanding));
+
+    // By default we don't want a frame.
+    setFrameStyle(NoFrame);
+}
+
+// ****************************************************************************
+// Method: QvisScreenPositioner::~QvisScreenPositioner
+//
+// Purpose: 
+//   Destructor for the QvisScreenPositioner class.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Dec 1 14:15:16 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+QvisScreenPositioner::~QvisScreenPositioner()
+{
+}
+
+// ****************************************************************************
+// Method: QvisScreenPositioner::sizeHint
+//
+// Purpose: 
+//   Returns the widget's preferred size.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Dec 1 14:15:36 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+QSize
+QvisScreenPositioner::sizeHint() const
+{
+    return QSize(minXScreenSize, minYScreenSize);
+}
+
+// ****************************************************************************
+// Method: QvisScreenPositioner::minimumSize
+//
+// Purpose: 
+//   Returns the widget's min size.
+//
+// Returns:    The min size.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Dec 1 14:15:57 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+QSize
+QvisScreenPositioner::minimumSize() const
+{
+    return QSize(minXScreenSize, minYScreenSize);
+}
+
+// ****************************************************************************
+// Method: QvisScreenPositioner::setScreenSize
+//
+// Purpose: 
+//   Sets the "screen" size.
+//
+// Arguments:
+//   xs, ys : The screen size.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Dec 1 14:16:21 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisScreenPositioner::setScreenSize(int xs, int ys)
+{
+    if(xs >= minXScreenSize)
+        xScreenSize = xs;
+    if(ys >= minYScreenSize)
+        yScreenSize = ys;
+
+    if(xPosition > xScreenSize)
+        xPosition = xScreenSize - 1;
+    if(yPosition > yScreenSize)
+        yPosition = yScreenSize - 1;
+
+    update();
+}
+
+// ****************************************************************************
+// Method: QvisScreenPositioner::setScreenPosition
+//
+// Purpose: 
+//   Sets the position of the screen crosshairs.
+//
+// Arguments:
+//   xp, yp : The screen position.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Dec 1 14:17:27 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisScreenPositioner::setScreenPosition(int xp, int yp)
+{
+    xPosition = xp;
+    yPosition = yp;
+
+    if(xPosition < 0)
+        xPosition = 0;
+    else if(xPosition >= xScreenSize)
+        xPosition = xScreenSize - 1;
+
+    if(yPosition < 0)
+        yPosition = 0;
+    else if(yPosition >= yScreenSize)
+        yPosition = yScreenSize - 1;
+
+    update();
+}
+
+void
+QvisScreenPositioner::setScreenPosition(float xp, float yp)
+{
+    int ixp = int(xp * float(xScreenSize));
+    int iyp = int(yp * float(yScreenSize));
+    setScreenPosition(ixp, iyp);
+}
+
+// ****************************************************************************
+// Method: QvisScreenPositioner::sendNewScreenPosition
+//
+// Purpose: 
+//   Emits signals that tell the clients the new screen position.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Dec 1 14:19:28 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisScreenPositioner::sendNewScreenPosition()
+{
+    if((xPosition != xTempPosition) || (yPosition != yTempPosition))
+    {
+        xPosition = xTempPosition;
+        yPosition = yTempPosition;
+
+        update();
+
+        emit screenPositionChanged(xPosition, yPosition);
+
+        float xp = float(xPosition) / float(xScreenSize);
+        float yp = float(yPosition) / float(yScreenSize);
+        emit screenPositionChanged(xp, yp);
+    }
+}
+
+// ****************************************************************************
+// Method: QvisScreenPositioner::setTempPositionFromWidgetCoords
+//
+// Purpose: 
+//   Sets the temp position using widget coordinates.
+//
+// Arguments:
+//   wx : The x coordinate.
+//   wy : The y coordinate.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Dec 1 14:20:01 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisScreenPositioner::setTempPositionFromWidgetCoords(int wx, int wy)
+{
+    bool needsUpdate = false;
+    int W = contentsRect().width();
+    int H = contentsRect().height();
+    int clipped_wx;
+    if(wx >= 0 && wx < W)
+        clipped_wx = wx;
+    else if(wx < 0)
+        clipped_wx = 0;
+    else
+        clipped_wx = W - 1;
+    int xp = int(float(clipped_wx) / float(W-1) * float(xScreenSize));
+    if(xTempPosition != xp)
+    {
+        needsUpdate = true;
+        xTempPosition = xp;
+    }
+
+    int clipped_wy;
+    if(wy >= 0 && wy < H)
+        clipped_wy = wy;
+    else if(wy < 0)
+        clipped_wy = 0;
+    else
+        clipped_wy = H - 1;
+    int yp = int((1. - float(clipped_wy) / float(H-1)) * float(yScreenSize));
+    if(yTempPosition != yp)
+    {
+        needsUpdate = true;
+        yTempPosition = yp;
+    }
+
+    if(needsUpdate)
+        update();
+}
+
+// ****************************************************************************
+// Method: QvisScreenPositioner::popupShow
+//
+// Purpose: 
+//   Shows the widget in a popup mode, which means that it is ready for
+//   dragging.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Dec 1 17:15:01 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisScreenPositioner::popupShow()
+{
+    // Make the widget have a visible frame
+    setFrameStyle(PopupPanel);
+    setFrameShadow(Raised);
+    setLineWidth(2);
+
+    xTempPosition = xPosition;
+    yTempPosition = yPosition;
+    dragging = true;
+    show();
+}
+
+// ****************************************************************************
+// Method: QvisScreenPositioner::keyPressEvent
+//
+// Purpose: 
+//   Processes key events for the widget.
+//
+// Arguments:
+//   e : The key event.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Dec 1 14:21:13 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisScreenPositioner::keyPressEvent(QKeyEvent *e)
+{
+    // Handle the key strokes.
+    switch(e->key())
+    {
+    case Key_Return:
+    case Key_Enter:
+        sendNewScreenPosition();
+        break;
+    case Key_Left:
+        xTempPosition -= ((paging) ? (pageIncrement()) : 1);
+        if(xTempPosition < 0)
+            xTempPosition = 0;
+        update();
+        break;
+    case Key_Right:
+        xTempPosition += ((paging) ? (pageIncrement()) : 1);
+        if(xTempPosition >= xScreenSize)
+            xTempPosition = xScreenSize - 1;
+        update();
+        break;
+    case Key_Down:
+        yTempPosition -= ((paging) ? (pageIncrement()) : 1);
+        if(yTempPosition < 0)
+            yTempPosition = 0;
+        update();
+        break;
+    case Key_Up:
+        yTempPosition += ((paging) ? (pageIncrement()) : 1);
+        if(yTempPosition >= yScreenSize)
+            yTempPosition = yScreenSize - 1;
+        update();
+        break;
+    case Key_Space:
+        xTempPosition = xScreenSize / 2;
+        yTempPosition = yScreenSize / 2;
+        update();
+        sendNewScreenPosition();
+        break;
+    case Key_Shift:
+        paging = true;
+        break;
+    }
+}
+
+// ****************************************************************************
+// Method: QvisScreenPositioner::keyReleaseEvent
+//
+// Purpose: 
+//   Processes key release events.
+//
+// Arguments:
+//   e : The key event.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Dec 1 14:21:40 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisScreenPositioner::keyReleaseEvent(QKeyEvent *e)
+{
+    // Handle the key strokes.
+    if(e->key() == Key_Shift)
+        paging = false;
+}
+
+// ****************************************************************************
+// Method: QvisScreenPositioner::mousePressEvent
+//
+// Purpose: 
+//   This method is called when the mouse is pressed.
+//
+// Arguments: 
+//   e : The mouse event.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Dec 1 14:25:54 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisScreenPositioner::mousePressEvent(QMouseEvent *e)
+{
+    dragging = true;
+    xTempPosition = xPosition;
+    yTempPosition = yPosition;
+    setTempPositionFromWidgetCoords(e->x(), e->y());
+}
+
+// ****************************************************************************
+// Method: QvisScreenPositioner::mouseMoveEvent
+//
+// Purpose: 
+//   This method is called when the mouse is moved.
+//
+// Arguments:
+//   e : The mouse event.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Dec 1 14:26:20 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisScreenPositioner::mouseMoveEvent(QMouseEvent *e)
+{
+    if(dragging)
+    {
+        setTempPositionFromWidgetCoords(e->x(), e->y());
+
+        emit intermediateScreenPositionChanged(xTempPosition, yTempPosition);
+
+        float xp = float(xTempPosition) / float(xScreenSize);
+        float yp = float(yTempPosition) / float(yScreenSize);
+        emit intermediateScreenPositionChanged(xp, yp);
+    }
+}
+
+// ****************************************************************************
+// Method: QvisScreenPositioner::mouseReleaseEvent
+//
+// Purpose: 
+//   This method is called when the mouse is released.
+//
+// Arguments:
+//   e : The mouse event.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Dec 1 14:26:45 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisScreenPositioner::mouseReleaseEvent(QMouseEvent *e)
+{
+    dragging = false;
+    setTempPositionFromWidgetCoords(e->x(), e->y());
+    sendNewScreenPosition();
+}
+
+// ****************************************************************************
+// Method: QvisScreenPositioner::paintEvent
+//
+// Purpose: 
+//   This method is called when the widget must be painted.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Dec 1 14:27:12 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+#define CLAMP_VALUE(VAL, MINVAL, MAXVAL) \
+    if(VAL < (MINVAL)) VAL = (MINVAL); \
+    if(VAL > (MAXVAL)) VAL = (MAXVAL);
+
+void
+QvisScreenPositioner::drawContents(QPainter *paint)
+{
+    QPen pen(colorGroup().foreground());
+    int cx = contentsRect().x();
+    int cy = contentsRect().y();
+    int w = contentsRect().width();
+    int h = contentsRect().height();
+
+    // Draw the old position
+    float t = float(xPosition) / float(xScreenSize);
+    int oldwx = int(t * float(w - 1));
+    CLAMP_VALUE(oldwx, 0, w - 1);
+    t = 1.f - float(yPosition) / float(yScreenSize);
+    int oldwy = int(t * float(h - 1));
+    CLAMP_VALUE(oldwy, 0, h - 1);
+    paint->setPen(pen);
+    paint->drawLine(oldwx + cx, cy, oldwx + cx, cy + h);
+    paint->drawLine(cx, cy + oldwy, cx + w, cy + oldwy);
+
+    // Draw the temporary position
+    t = float(xTempPosition) / float(xScreenSize);
+    int twx = int(t * float(w - 1));
+    CLAMP_VALUE(twx, 0, w - 1);
+    t = 1.f - float(yTempPosition) / float(yScreenSize);
+    int twy = int(t * float(h - 1));
+    CLAMP_VALUE(twy, 0, h - 1);
+    pen.setStyle(Qt::DotLine);
+    paint->setPen(pen);
+    paint->drawLine(twx + cx, cy, twx + cx, cy + h);
+    paint->drawLine(cx, cy + twy, cx + w, cy + twy);
+}

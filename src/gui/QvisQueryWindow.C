@@ -37,20 +37,20 @@
 // Modifications:
 //   Kathleen Bonnell, Mon Sep 30 14:38:33 PDT 2002 
 //   Initialize queryAtts.
-//   
+// 
+//   Brad Whitlock, Fri Nov 7 17:24:42 PST 2003
+//   Prevented extra buttons from being created.
+//
 // ****************************************************************************
 
 QvisQueryWindow::QvisQueryWindow(const char *caption, const char *shortName,
     QvisNotepadArea *n) : QvisPostableWindowSimpleObserver(
-    caption, shortName, n, false)
+    caption, shortName, n, NoExtraButtons, false)
 {
     queries = 0;
     queryAtts = 0;
     pickAtts = 0;
     plotList = 0;
-
-    // Make sure that there is no apply button.
-    setApplyButton(false);
 }
 
 // ****************************************************************************
@@ -221,7 +221,7 @@ QvisQueryWindow::CreateEntireWindow()
     QPushButton *dismissButton = new QPushButton("Dismiss", central,
         "dismissButton");
     buttonLayout->addWidget(dismissButton);
-    if(getStretchWindow())
+    if(stretchWindow)
         topLayout->addStretch(0);
 
     // Make the window post itself when the post button is clicked.

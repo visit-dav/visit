@@ -1,6 +1,17 @@
 #include <QvisPostableWindowSimpleObserver.h>
 #include <qlayout.h>
+#include <qmessagebox.h>
 #include <qpushbutton.h>
+
+#include <GlobalAttributes.h>
+#include <ViewerProxy.h>
+
+// Static members.
+const int QvisPostableWindowSimpleObserver::NoExtraButtons    = 0;
+const int QvisPostableWindowSimpleObserver::ApplyButton       = 1;
+const int QvisPostableWindowSimpleObserver::MakeDefaultButton = 2;
+const int QvisPostableWindowSimpleObserver::ResetButton       = 4;
+const int QvisPostableWindowSimpleObserver::AllExtraButtons   = 7;
 
 // ****************************************************************************
 // Method: QvisPostableWindowSimpleObserver::QvisPostableWindowSimpleObserver
@@ -27,12 +38,12 @@
 
 QvisPostableWindowSimpleObserver::QvisPostableWindowSimpleObserver(
     const char *caption, const char *shortName, QvisNotepadArea *notepad,
-    bool stretch) :
+    int buttonCombo, bool stretch) :
     QvisPostableWindow(caption, shortName, notepad), SimpleObserver()
 {
     selectedSubject = 0;
     stretchWindow = stretch;
-    applyButton = true;
+    buttonCombination = buttonCombo;
 }
 
 // ****************************************************************************
@@ -137,12 +148,15 @@ QvisPostableWindowSimpleObserver::SelectedSubject()
 //   Brad Whitlock, Mon Sep 9 11:01:00 PDT 2002
 //   I made the apply button optional.
 //
+//   Brad Whitlock, Fri Nov 7 16:48:36 PST 2003
+//   Added support for more buttons.
+//
 // ****************************************************************************
 
 void
 QvisPostableWindowSimpleObserver::CreateEntireWindow()
 {
-    // Return if the window is already created.
+    // If the window is already created, return.
     if(isCreated)
         return;
 
@@ -157,31 +171,166 @@ QvisPostableWindowSimpleObserver::CreateEntireWindow()
 
     // Create a button layout and the buttons.
     topLayout->addSpacing(10);
-    QHBoxLayout *buttonLayout = new QHBoxLayout(topLayout);
-    if(applyButton)
+    int nrows = ((buttonCombination & MakeDefaultButton) ||
+                 (buttonCombination & ResetButton)) ? 2 : 1;
+    QGridLayout *buttonLayout = new QGridLayout(topLayout, nrows, 4);
+    buttonLayout->setColStretch(1, 50);
+
+    // Create the extra buttons if necessary.
+    if(buttonCombination & MakeDefaultButton)
+    {
+        QPushButton *makeDefaultButton = new QPushButton("Make default",
+            central, "makeDefaultButton");
+        connect(makeDefaultButton, SIGNAL(clicked()),
+                this, SLOT(makeDefaultHelper()));
+        buttonLayout->addWidget(makeDefaultButton, 0, 0);
+    }
+    if(buttonCombination & ResetButton)
+    {
+        QPushButton *resetButton = new QPushButton("Reset", central,
+                                                   "resetButton");
+        connect(resetButton, SIGNAL(clicked()), this, SLOT(reset()));
+        buttonLayout->addWidget(resetButton, 0, 3);
+    }
+    if(buttonCombination & ApplyButton)
     {
         QPushButton *applyButton = new QPushButton("Apply", central,
             "applyButton");
         connect(applyButton, SIGNAL(clicked()), this, SLOT(apply()));
-        buttonLayout->addWidget(applyButton);
+        buttonLayout->addWidget(applyButton, 1, 0);
     }
-    buttonLayout->addStretch();
+    else
+    {
+        // Add a little space to try and make up for the absence of the
+        // grid layout.
+        buttonLayout->addColSpacing(1, 50);
+    }
 
-    postButton = new QPushButton("Post", central,
-        "postButton");
-    buttonLayout->addWidget(postButton);
-    QPushButton *dismissButton = new QPushButton("Dismiss", central,
-        "dismissButton");
-    buttonLayout->addWidget(dismissButton);
-    if(stretchWindow)
-        topLayout->addStretch(0);
-
+    postButton = new QPushButton("Post", central, "postButton");
     // Make the window post itself when the post button is clicked.
     if(notepad)
         connect(postButton, SIGNAL(clicked()), this, SLOT(post()));
     else
         postButton->setEnabled(false);
-
-    // Hide this window when the dimiss button is clicked.
+    buttonLayout->addWidget(postButton, 1, 2);
+    QPushButton *dismissButton = new QPushButton("Dismiss", central,
+        "dismissButton");
     connect(dismissButton, SIGNAL(clicked()), this, SLOT(hide()));
+    buttonLayout->addWidget(dismissButton, 1, 3);
+    if(stretchWindow)
+        topLayout->addStretch(0);
+
+    // Set the isCreated flag.
+    isCreated = true;
 }
+
+// ****************************************************************************
+// Method: QvisPostableWindowSimpleObserver::apply
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the Apply button is clicked.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Nov 7 16:56:08 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisPostableWindowSimpleObserver::apply()
+{
+    // override in derived class.
+}
+
+// ****************************************************************************
+// Method: QvisPostableWindowSimpleObserver::makeDefaultHelper
+//
+// Purpose: 
+//   This is a Qt slot function that calls the makeDefault() slot after
+//   optionally displaying a confirmation dialog box.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Aug 23 8:31:23 PDT 2001
+//
+// Modifications:
+//   Brad Whitlock, Mon Aug 27 11:17:21 PDT 2001
+//   I changed the behavior of the third button in the confirmation window.
+//
+//   Brad Whitlock, Mon Nov 4 14:11:22 PST 2002
+//   I made it so the "make default" behavior can be turned off permanently.
+//
+// ****************************************************************************
+
+void
+QvisPostableWindowSimpleObserver::makeDefaultHelper()
+{
+    if(makeDefaultConfirm)
+    {
+        QString msg("Do you really want to make these the default attributes?");
+
+        // Ask the user if he really wants to set the defaults
+        int button = QMessageBox::warning(0, "VisIt", msg, "Ok", "Cancel",
+                                          "Yes, Do not prompt again", 0, 1);
+
+        if(button == 0)
+        {
+            // The user actually chose to set the defaults.
+            makeDefault();
+        }
+        else if(button == 2)
+        {
+            // Make it so no confirmation is needed.
+            makeDefaultConfirm = false;
+            GlobalAttributes *globalAtts = viewer->GetGlobalAttributes();
+            globalAtts->SetMakeDefaultConfirm(false);
+            globalAtts->Notify();
+
+            makeDefault();
+        }
+    }
+    else
+        makeDefault();
+}
+
+// ****************************************************************************
+// Method: QvisPostableWindowSimpleObserver::makeDefault
+//
+// Purpose: 
+//   Causes the current attributes to be copied into the default
+//   attributes. This should be overridden in derived classes.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Sep 15 13:40:19 PST 2000
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisPostableWindowSimpleObserver::makeDefault()
+{
+    // override in derived class.
+}
+
+// ****************************************************************************
+// Method: QvisPostableWindowSimpleObserver::reset
+//
+// Purpose: 
+//   Causes the last applied attributes to be restored. This will
+//   result in the window's UpdateWindow method being called to
+//   update the window's widgets.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Sep 15 13:40:19 PST 2000
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisPostableWindowSimpleObserver::reset()
+{
+    // override in derived class.
+}
+

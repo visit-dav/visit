@@ -224,6 +224,8 @@ ViewerServerManager::RealHostName(const char *hostName) const
 // Creation:   Tue May 6 14:00:21 PST 2003
 //
 // Modifications:
+//    Eric Brugger, Wed Dec  3 08:27:47 PST 2003
+//    I removed the default timeout passed to the mdserver.
 //   
 // ****************************************************************************
 
@@ -257,13 +259,6 @@ ViewerServerManager::AddProfileArguments(RemoteProxyBase *component,
         //
         for(int i = 0; i < profile->GetArguments().size(); ++i)
             component->AddArgument(profile->GetArguments()[i].c_str());
-    }
-    else
-    {
-        //
-        // Add timeout information
-        //
-        component->AddArgument("-timeout 60");
     }
 }
 

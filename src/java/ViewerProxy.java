@@ -86,6 +86,9 @@ import java.util.Vector;
 //   Brad Whitlock, Wed Oct 22 12:25:43 PDT 2003
 //   I added another overloaded OpenDatabase method.
 //
+//   Brad Whitlock, Wed Oct 29 10:41:21 PDT 2003
+//   I added new RPCs to deal with setting up advanced annotations.
+//
 //   Kathleen Bonnell, Wed Nov 26 14:16:53 PST 2003 
 //   Added ResetPickAttributes method. Added overloaded PointQuery and
 //   DatabaseQuery methods to handle optional arguments.
@@ -139,6 +142,7 @@ public class ViewerProxy implements SimpleObserver
         queryList = new QueryList();
         queryAtts = new QueryAttributes();
         globalLineoutAtts = new GlobalLineoutAttributes();
+        annotationObjectList = new AnnotationObjectList();
 
         // Create the plugin managers.
         plotPlugins = new PluginManager("plot");
@@ -205,6 +209,7 @@ public class ViewerProxy implements SimpleObserver
             xfer.Add(queryAtts);
 	    xfer.Add(materialAtts);
             xfer.Add(globalLineoutAtts);
+            xfer.Add(annotationObjectList);
 
             // hook up the message observer.
             messageObserver.Attach(messageAtts);
@@ -1049,6 +1054,63 @@ public class ViewerProxy implements SimpleObserver
         return synchronous ? Synchronize() : true;
     }
 
+    public boolean AddAnnotationObject(int annotType)
+    {
+        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_ADDANNOTATIONOBJECTRPC);
+        rpc.SetIntArg1(annotType);
+        rpc.Notify();
+        return synchronous ? Synchronize() : true;
+    }
+
+    public boolean HideActiveAnnotationObjects()
+    {
+        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_HIDEACTIVEANNOTATIONOBJECTSRPC);
+        rpc.Notify();
+        return synchronous ? Synchronize() : true;
+    }
+
+    public boolean DeleteActiveAnnotationObjects()
+    {
+        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_DELETEACTIVEANNOTATIONOBJECTSRPC);
+        rpc.Notify();
+        return synchronous ? Synchronize() : true;
+    }
+
+    public boolean RaiseActiveAnnotationObjects()
+    {
+        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_RAISEACTIVEANNOTATIONOBJECTSRPC);
+        rpc.Notify();
+        return synchronous ? Synchronize() : true;
+    }
+
+    public boolean LowerActiveAnnotationObjects()
+    {
+        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_LOWERACTIVEANNOTATIONOBJECTSRPC);
+        rpc.Notify();
+        return synchronous ? Synchronize() : true;
+    }
+
+    public boolean SetAnnotationObjectOptions();
+    {
+        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETANNOTATIONOBJECTOPTIONSRPC);
+        rpc.Notify();
+        return synchronous ? Synchronize() : true;
+    }
+
+    public boolean SetDefaultAnnotationObjectList()
+    {
+        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETDEFAULTANNOTATIONOBJECTLIST);
+        rpc.Notify();
+        return synchronous ? Synchronize() : true;
+    }
+
+    public boolean ResetAnnotationObjectList()
+    {
+        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_RESTEANNOTATIONOBJECTLISTRPC);
+        rpc.Notify();
+        return synchronous ? Synchronize() : true;
+    }
+
     public boolean SetLightList()
     {
         rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETLIGHTLISTRPC);
@@ -1316,6 +1378,7 @@ public class ViewerProxy implements SimpleObserver
     public QueryAttributes GetQueryAttributes() { return queryAtts; }
     public MaterialAttributes GetMaterialAttributes() { return materialAtts; }
     public GlobalLineoutAttributes GetGlobalLineoutAttributes() { return globalLineoutAtts; }
+    public AnnotationObjectList GetAnnotationObjectList() { return annotationObjectList; }
 
     public int GetPlotIndex(String plotName)
     {
@@ -1470,5 +1533,6 @@ public class ViewerProxy implements SimpleObserver
     private QueryList                queryList;
     private QueryAttributes          queryAtts;
     private MaterialAttributes       materialAtts;
-    private GlobalLineoutAttributes  globalLineoutAtts; 
+    private GlobalLineoutAttributes  globalLineoutAtts;
+    private AnnotationObjectList     annotationObjectList;
 }

@@ -21,10 +21,10 @@
                 <Field name="profileName" type="string">serial</Field>
                 <Field name="host" type="string">blue.llnl.gov</Field>
                 <Field name="hostAliases" type="string">blue.pacific.llnl.gov blue###.pacific.llnl.gov</Field>
-                <Field name="timeout" type="int">240</Field>
+                <Field name="timeout" type="int">480</Field>
                 <Field name="numProcessors" type="int">1</Field>
                 <Field name="numNodesSet" type="bool">false</Field>
-                <Field name="numNodes" type="int">1</Field>
+                <Field name="numNodes" type="int">0</Field>
                 <Field name="partitionSet" type="bool">false</Field>
                 <Field name="partition" type="string"></Field>
                 <Field name="bankSet" type="bool">false</Field>
@@ -43,7 +43,7 @@
                 <Field name="profileName" type="string">parallel pdebug</Field>
                 <Field name="host" type="string">blue.llnl.gov</Field>
                 <Field name="hostAliases" type="string">blue.pacific.llnl.gov blue###.pacific.llnl.gov</Field>
-                <Field name="timeout" type="int">240</Field>
+                <Field name="timeout" type="int">480</Field>
                 <Field name="numProcessors" type="int">4</Field>
                 <Field name="numNodesSet" type="bool">true</Field>
                 <Field name="numNodes" type="int">1</Field>
@@ -65,7 +65,7 @@
                 <Field name="profileName" type="string">parallel pbatch</Field>
                 <Field name="host" type="string">blue.llnl.gov</Field>
                 <Field name="hostAliases" type="string">blue.pacific.llnl.gov blue###.pacific.llnl.gov</Field>
-                <Field name="timeout" type="int">240</Field>
+                <Field name="timeout" type="int">480</Field>
                 <Field name="numProcessors" type="int">16</Field>
                 <Field name="numNodesSet" type="bool">true</Field>
                 <Field name="numNodes" type="int">4</Field>
@@ -87,10 +87,10 @@
                 <Field name="profileName" type="string">serial</Field>
                 <Field name="host" type="string">frost.llnl.gov</Field>
                 <Field name="hostAliases" type="string">frost.pacific.llnl.gov frost###.pacific.llnl.gov</Field>
-                <Field name="timeout" type="int">240</Field>
+                <Field name="timeout" type="int">480</Field>
                 <Field name="numProcessors" type="int">1</Field>
                 <Field name="numNodesSet" type="bool">false</Field>
-                <Field name="numNodes" type="int">1</Field>
+                <Field name="numNodes" type="int">0</Field>
                 <Field name="partitionSet" type="bool">false</Field>
                 <Field name="partition" type="string"></Field>
                 <Field name="bankSet" type="bool">false</Field>
@@ -109,7 +109,7 @@
                 <Field name="profileName" type="string">parallel pdebug</Field>
                 <Field name="host" type="string">frost.llnl.gov</Field>
                 <Field name="hostAliases" type="string">frost.pacific.llnl.gov frost###.pacific.llnl.gov</Field>
-                <Field name="timeout" type="int">240</Field>
+                <Field name="timeout" type="int">480</Field>
                 <Field name="numProcessors" type="int">16</Field>
                 <Field name="numNodesSet" type="bool">true</Field>
                 <Field name="numNodes" type="int">1</Field>
@@ -131,7 +131,7 @@
                 <Field name="profileName" type="string">parallel pbatch</Field>
                 <Field name="host" type="string">frost.llnl.gov</Field>
                 <Field name="hostAliases" type="string">frost.pacific.llnl.gov frost###.pacific.llnl.gov</Field>
-                <Field name="timeout" type="int">240</Field>
+                <Field name="timeout" type="int">480</Field>
                 <Field name="numProcessors" type="int">32</Field>
                 <Field name="numNodesSet" type="bool">true</Field>
                 <Field name="numNodes" type="int">2</Field>
@@ -153,10 +153,10 @@
                 <Field name="profileName" type="string">serial</Field>
                 <Field name="host" type="string">gps15.llnl.gov gps16.llnl.gov</Field>
                 <Field name="hostAliases" type="string">gps##.llnl.gov</Field>
-                <Field name="timeout" type="int">240</Field>
+                <Field name="timeout" type="int">480</Field>
                 <Field name="numProcessors" type="int">1</Field>
                 <Field name="numNodesSet" type="bool">false</Field>
-                <Field name="numNodes" type="int">1</Field>
+                <Field name="numNodes" type="int">0</Field>
                 <Field name="partitionSet" type="bool">false</Field>
                 <Field name="partition" type="string"></Field>
                 <Field name="bankSet" type="bool">false</Field>
@@ -175,7 +175,7 @@
                 <Field name="profileName" type="string">parallel</Field>
                 <Field name="host" type="string">gps15.llnl.gov gps16.llnl.gov</Field>
                 <Field name="hostAliases" type="string">gps##.llnl.gov</Field>
-                <Field name="timeout" type="int">240</Field>
+                <Field name="timeout" type="int">480</Field>
                 <Field name="numProcessors" type="int">2</Field>
                 <Field name="numNodesSet" type="bool">false</Field>
                 <Field name="numNodes" type="int">0</Field>
@@ -197,10 +197,10 @@
                 <Field name="profileName" type="string">serial</Field>
                 <Field name="host" type="string">ilx.llnl.gov</Field>
                 <Field name="hostAliases" type="string">ilx#.llnl.gov ilx##.llnl.gov ilx# ilx##</Field>
-                <Field name="timeout" type="int">240</Field>
+                <Field name="timeout" type="int">480</Field>
                 <Field name="numProcessors" type="int">1</Field>
                 <Field name="numNodesSet" type="bool">false</Field>
-                <Field name="numNodes" type="int">1</Field>
+                <Field name="numNodes" type="int">0</Field>
                 <Field name="partitionSet" type="bool">false</Field>
                 <Field name="partition" type="string"></Field>
                 <Field name="bankSet" type="bool">false</Field>
@@ -219,10 +219,10 @@
                 <Field name="profileName" type="string">serial</Field>
                 <Field name="host" type="string">mcr.llnl.gov</Field>
                 <Field name="hostAliases" type="string">mcr#.llnl.gov mcr##.llnl.gov mcr###.llnl.gov mcr####.llnl.gov mcr# mcr## mcr### mcr####</Field>
-                <Field name="timeout" type="int">240</Field>
+                <Field name="timeout" type="int">480</Field>
                 <Field name="numProcessors" type="int">1</Field>
                 <Field name="numNodesSet" type="bool">false</Field>
-                <Field name="numNodes" type="int">1</Field>
+                <Field name="numNodes" type="int">0</Field>
                 <Field name="partitionSet" type="bool">false</Field>
                 <Field name="partition" type="string"></Field>
                 <Field name="bankSet" type="bool">false</Field>
@@ -241,8 +241,8 @@
                 <Field name="profileName" type="string">parallel interactive pdebug</Field>
                 <Field name="host" type="string">mcr.llnl.gov</Field>
                 <Field name="hostAliases" type="string">mcr#.llnl.gov mcr##.llnl.gov mcr###.llnl.gov mcr####.llnl.gov mcr# mcr## mcr### mcr####</Field>
-                <Field name="timeout" type="int">240</Field>
-                <Field name="numProcessors" type="int">2</Field>
+                <Field name="timeout" type="int">480</Field>
+                <Field name="numProcessors" type="int">8</Field>
                 <Field name="numNodesSet" type="bool">true</Field>
                 <Field name="numNodes" type="int">1</Field>
                 <Field name="partitionSet" type="bool">true</Field>
@@ -263,10 +263,10 @@
                 <Field name="profileName" type="string">parallel batch pbatch</Field>
                 <Field name="host" type="string">mcr.llnl.gov</Field>
                 <Field name="hostAliases" type="string">mcr#.llnl.gov mcr##.llnl.gov mcr###.llnl.gov mcr####.llnl.gov mcr# mcr## mcr### mcr####</Field>
-                <Field name="timeout" type="int">240</Field>
-                <Field name="numProcessors" type="int">4</Field>
+                <Field name="timeout" type="int">480</Field>
+                <Field name="numProcessors" type="int">16</Field>
                 <Field name="numNodesSet" type="bool">true</Field>
-                <Field name="numNodes" type="int">2</Field>
+                <Field name="numNodes" type="int">8</Field>
                 <Field name="partitionSet" type="bool">true</Field>
                 <Field name="partition" type="string">mcr,pbatch</Field>
                 <Field name="bankSet" type="bool">true</Field>
@@ -285,10 +285,10 @@
                 <Field name="profileName" type="string">serial</Field>
                 <Field name="host" type="string">riptide.llnl.gov</Field>
                 <Field name="hostAliases" type="string">riptide</Field>
-                <Field name="timeout" type="int">240</Field>
+                <Field name="timeout" type="int">480</Field>
                 <Field name="numProcessors" type="int">1</Field>
                 <Field name="numNodesSet" type="bool">false</Field>
-                <Field name="numNodes" type="int">1</Field>
+                <Field name="numNodes" type="int">0</Field>
                 <Field name="partitionSet" type="bool">false</Field>
                 <Field name="partition" type="string"></Field>
                 <Field name="bankSet" type="bool">false</Field>
@@ -307,8 +307,8 @@
                 <Field name="profileName" type="string">parallel</Field>
                 <Field name="host" type="string">riptide.llnl.gov</Field>
                 <Field name="hostAliases" type="string">riptide</Field>
-                <Field name="timeout" type="int">240</Field>
-                <Field name="numProcessors" type="int">4</Field>
+                <Field name="timeout" type="int">480</Field>
+                <Field name="numProcessors" type="int">8</Field>
                 <Field name="numNodesSet" type="bool">false</Field>
                 <Field name="numNodes" type="int">0</Field>
                 <Field name="partitionSet" type="bool">false</Field>
@@ -329,10 +329,10 @@
                 <Field name="profileName" type="string">serial</Field>
                 <Field name="host" type="string">snow.llnl.gov</Field>
                 <Field name="hostAliases" type="string">snow.llnl.gov snow##.llnl.gov</Field>
-                <Field name="timeout" type="int">240</Field>
+                <Field name="timeout" type="int">480</Field>
                 <Field name="numProcessors" type="int">1</Field>
                 <Field name="numNodesSet" type="bool">false</Field>
-                <Field name="numNodes" type="int">1</Field>
+                <Field name="numNodes" type="int">0</Field>
                 <Field name="partitionSet" type="bool">false</Field>
                 <Field name="partition" type="string"></Field>
                 <Field name="bankSet" type="bool">false</Field>
@@ -351,7 +351,7 @@
                 <Field name="profileName" type="string">parallel pbatch</Field>
                 <Field name="host" type="string">snow.llnl.gov</Field>
                 <Field name="hostAliases" type="string">snow.llnl.gov snow##.llnl.gov</Field>
-                <Field name="timeout" type="int">240</Field>
+                <Field name="timeout" type="int">480</Field>
                 <Field name="numProcessors" type="int">16</Field>
                 <Field name="numNodesSet" type="bool">true</Field>
                 <Field name="numNodes" type="int">2</Field>
@@ -373,10 +373,10 @@
                 <Field name="profileName" type="string">serial</Field>
                 <Field name="host" type="string">pengra.llnl.gov</Field>
                 <Field name="hostAliases" type="string">pengra#.llnl.gov pengra##.llnl.gov pengra###.llnl.gov pengra# pengra## pengra###</Field>
-                <Field name="timeout" type="int">240</Field>
+                <Field name="timeout" type="int">480</Field>
                 <Field name="numProcessors" type="int">1</Field>
                 <Field name="numNodesSet" type="bool">false</Field>
-                <Field name="numNodes" type="int">1</Field>
+                <Field name="numNodes" type="int">0</Field>
                 <Field name="partitionSet" type="bool">false</Field>
                 <Field name="partition" type="string"></Field>
                 <Field name="bankSet" type="bool">false</Field>
@@ -395,10 +395,10 @@
                 <Field name="profileName" type="string">parallel interactive pdebug</Field>
                 <Field name="host" type="string">pengra.llnl.gov</Field>
                 <Field name="hostAliases" type="string">pengra#.llnl.gov pengra##.llnl.gov pengra###.llnl.gov pengra# pengra## pengra###</Field>
-                <Field name="timeout" type="int">240</Field>
-                <Field name="numProcessors" type="int">2</Field>
-                <Field name="numNodesSet" type="bool">true</Field>
-                <Field name="numNodes" type="int">1</Field>
+                <Field name="timeout" type="int">480</Field>
+                <Field name="numProcessors" type="int">8</Field>
+                <Field name="numNodesSet" type="bool">false</Field>
+                <Field name="numNodes" type="int">0</Field>
                 <Field name="partitionSet" type="bool">true</Field>
                 <Field name="partition" type="string">pdebug</Field>
                 <Field name="bankSet" type="bool">false</Field>
@@ -417,10 +417,10 @@
                 <Field name="profileName" type="string">parallel batch pbatch</Field>
                 <Field name="host" type="string">pengra.llnl.gov</Field>
                 <Field name="hostAliases" type="string">pengra#.llnl.gov pengra##.llnl.gov pengra###.llnl.gov pengra# pengra## pengra###</Field>
-                <Field name="timeout" type="int">240</Field>
-                <Field name="numProcessors" type="int">4</Field>
+                <Field name="timeout" type="int">480</Field>
+                <Field name="numProcessors" type="int">16</Field>
                 <Field name="numNodesSet" type="bool">true</Field>
-                <Field name="numNodes" type="int">2</Field>
+                <Field name="numNodes" type="int">8</Field>
                 <Field name="partitionSet" type="bool">true</Field>
                 <Field name="partition" type="string">pengra,pbatch</Field>
                 <Field name="bankSet" type="bool">true</Field>
@@ -439,10 +439,10 @@
                 <Field name="profileName" type="string">serial</Field>
                 <Field name="host" type="string">pvc.llnl.gov</Field>
                 <Field name="hostAliases" type="string">pvc#.llnl.gov pvc##.llnl.gov pvc###.llnl.gov pvc# pvc## pvc###</Field>
-                <Field name="timeout" type="int">240</Field>
+                <Field name="timeout" type="int">480</Field>
                 <Field name="numProcessors" type="int">1</Field>
                 <Field name="numNodesSet" type="bool">false</Field>
-                <Field name="numNodes" type="int">1</Field>
+                <Field name="numNodes" type="int">0</Field>
                 <Field name="partitionSet" type="bool">false</Field>
                 <Field name="partition" type="string"></Field>
                 <Field name="bankSet" type="bool">false</Field>
@@ -461,10 +461,10 @@
                 <Field name="profileName" type="string">parallel interactive pbatch</Field>
                 <Field name="host" type="string">pvc.llnl.gov</Field>
                 <Field name="hostAliases" type="string">pvc#.llnl.gov pvc##.llnl.gov pvc###.llnl.gov pvc# pvc## pvc###</Field>
-                <Field name="timeout" type="int">240</Field>
-                <Field name="numProcessors" type="int">4</Field>
+                <Field name="timeout" type="int">480</Field>
+                <Field name="numProcessors" type="int">16</Field>
                 <Field name="numNodesSet" type="bool">true</Field>
-                <Field name="numNodes" type="int">2</Field>
+                <Field name="numNodes" type="int">8</Field>
                 <Field name="partitionSet" type="bool">true</Field>
                 <Field name="partition" type="string">pbatch</Field>
                 <Field name="bankSet" type="bool">false</Field>

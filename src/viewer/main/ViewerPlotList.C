@@ -3211,8 +3211,11 @@ ViewerPlotList::UpdatePlots(const int frame, bool animating)
 //    Update the specified window with the plots from the specified frame.
 //
 //  Arguments:
-//    window    The window to update.
-//    frame     The frame to use for the plot.
+//    window          : The window to update.
+//    frame           : The frame to use for the plot.
+//    nFrames         : The number of frames in the animation.
+//    immediateUpdate : Whether the window should be updated immediately or
+//                      later.
 //
 //  Programmer: Eric Brugger
 //  Creation:   August 3, 2000
@@ -3286,11 +3289,14 @@ ViewerPlotList::UpdatePlots(const int frame, bool animating)
 //    I modified the routine to use the window mode instead of the view
 //    dimension.
 //
+//    Brad Whitlock, Thu Nov 6 11:07:27 PDT 2003
+//    I added the nFrames argument.
+//
 // ****************************************************************************
 
 void
 ViewerPlotList::UpdateWindow(ViewerWindow *const window, const int frame,
-    bool immediateUpdate)
+    const int nFrames, bool immediateUpdate)
 {
     //
     // Clear the window.  Disable updates so that the window isn't updated
@@ -3312,6 +3318,11 @@ ViewerPlotList::UpdateWindow(ViewerWindow *const window, const int frame,
     WINDOW_MODE globalWindowMode;
     double      globalExtents[6];
     int         errorCount = 0;
+    int         startFrame = -1;
+    int         endFrame = -1;
+    int         startState = -1;
+    int         curState = -1;
+    int         endState = -1;
 
     globalWindowMode = WINMODE_NONE;
     globalExtents[0] = DBL_MAX; globalExtents[1] = -DBL_MAX;
@@ -3380,6 +3391,19 @@ ViewerPlotList::UpdateWindow(ViewerWindow *const window, const int frame,
                 delete [] plotExtents;
                    
                 window->AddPlot(actor);
+
+                //
+                // Get the plot's database states for the start, current, and
+                // end frames.
+                //
+                if(startFrame == -1)
+                {
+                    startFrame = plots[i].plot->GetBeginFrame();
+                    endFrame = plots[i].plot->GetEndFrame();
+                    startState = plots[i].plot->GetDatabaseState(startFrame);
+                    curState = plots[i].plot->GetDatabaseState(frame);
+                    endState = plots[i].plot->GetDatabaseState(endFrame);
+                }
             }
         }
     }
@@ -3390,6 +3414,16 @@ ViewerPlotList::UpdateWindow(ViewerWindow *const window, const int frame,
     if (globalExtents[0] != DBL_MAX)
     {
         window->UpdateView(globalWindowMode, globalExtents);
+    }
+
+    //
+    // Update the vis window's current frame and number of frames, etc so that
+    // actors that need that information will have it.
+    //
+    if(startFrame != -1)
+    {
+        window->SetFrameAndState(nFrames, startFrame, frame, endFrame,
+                                 startState, curState, endState);
     }
 
     //

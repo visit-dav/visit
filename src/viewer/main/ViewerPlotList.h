@@ -240,6 +240,7 @@ class VIEWER_API ViewerPlotList
     bool UpdatePlots(const int frame, bool animating = false);
 
     void UpdateWindow(ViewerWindow *const window, const int frame,
+                      const int nFrames,
                       bool immediateUpdate);
     bool UpdateColorTable(const char *ctName);
 
