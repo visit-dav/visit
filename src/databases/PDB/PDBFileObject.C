@@ -398,6 +398,10 @@ PDBFileObject::ReadValues(const char *name, TypeEnum *t, int *nTotalElements,
 //   Brad Whitlock, Wed Sep 17 14:32:46 PST 2003
 //   I made sure that the string is NULL terminated.
 //
+//   Brad Whitlock, Fri Jun 4 17:36:53 PST 2004
+//   I fixed an error that prevented the string from getting NULL terminated
+//   sometimes.
+//
 // ****************************************************************************
 
 bool
@@ -423,14 +427,12 @@ PDBFileObject::GetString(const char *name, char **str, int *len)
             if(t == CHAR_TYPE || t == CHARARRAY_TYPE)
             {
                 *str = (char *)val;
-                if(len != 0)
-                {
-                    *len = length;
+                // We allocated the array so it can hold the extra
+                // character required for a NULL terminator.
+                (*str)[length] = '\0';
 
-                    // We allocated the array so it can hold the extra
-                    // character required for a NULL terminator.
-                    (*str)[length] = '\0';
-                }
+                if(len != 0)
+                    *len = length;
             }
             else
                 free_void_mem(val, t);
@@ -511,7 +513,9 @@ PDBFileObject::GetDouble(const char *name, double *val)
 // Creation:   Tue Apr 29 17:45:28 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Jun 7 08:57:12 PDT 2004
+//   Added code to convert float arrays into double arrays.
+//
 // ****************************************************************************
 
 bool
@@ -538,6 +542,18 @@ PDBFileObject::GetDoubleArray(const char *name, double **d, int *nvals)
             if(t == DOUBLE_TYPE || t == DOUBLEARRAY_TYPE)
             {
                 *d = (double *)val;
+                *nvals = length;
+            }
+            else if(t == FLOAT_TYPE || t == FLOATARRAY_TYPE)
+            {
+                float *fptr = (float *)val;
+                double *dstorage = new double[length];
+                double *dptr = dstorage;
+                for(int i = 0; i < length; ++i)
+                    *dptr++ = double(*fptr++);
+                free_void_mem(val, t);
+
+                *d = dstorage;
                 *nvals = length;
             }
             else

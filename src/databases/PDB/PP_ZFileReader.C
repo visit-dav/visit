@@ -1118,6 +1118,66 @@ PP_ZFileReader::GetIreg(int state)
 }
 
 // ****************************************************************************
+// Method: GetMesh_StoreMeshPoints
+//
+// Purpose: 
+//   Template function to help store points from the rt,zt arrays into the 
+//   coordinate arrays for the VTK mesh. It's a template function because
+//   the types of the rt,zt arrays can be different depending on the file.
+//
+// Arguments:
+//   ptr    : Float array that contains the mesh points.
+//   rt     : The original array for X coordinates.
+//   zt     : The original array for Y coordinates.
+//   kmax   : The number of nodes in the horizontal direction.
+//   lmax   : The number of nodes in the vertical direction.
+//   nnodes : The total number of nodes in the mesh.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Jun 7 09:04:47 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+template <class T>
+inline void
+GetMesh_StoreMeshPoints(float *ptr, const T *rt, const T *zt, const int kmax,
+    const int lmax, const int nnodes)
+{
+    //
+    // The minimum value for R is way off the charts so we should take care
+    // to not actually use it as a node coordinate since it would make the
+    // extents be wrong. Find the maximum R value and use that everywhere we
+    // get the minR value.
+    //
+    const T *rt2 = rt;
+    const T *zt2 = zt;
+    const T minR = -1e8;
+    float maxR = float(minR);
+    for(int k = 0; k < nnodes; ++k, ++rt2)
+        if(*rt2 > maxR) maxR = *rt2;
+    rt2 = rt;
+
+    //
+    // Store the points for the mesh.
+    //
+    for(int j = 0; j < lmax; ++j)
+    { 
+        for(int i = 0; i < kmax; ++i)
+        {
+            *ptr++ = float(*zt2++);
+            if(*rt2 == minR)
+                *ptr++ = float(maxR);
+            else
+                *ptr++ = float(*rt2);
+            ++rt2;
+            *ptr++ = 0.f;
+        }
+    }    
+}
+
+// ****************************************************************************
 // Method: PP_ZFileReader::GetMesh
 //
 // Purpose: 
@@ -1147,6 +1207,10 @@ PP_ZFileReader::GetIreg(int state)
 //
 //   Brad Whitlock, Fri Sep 26 11:04:27 PDT 2003
 //   Added support for a ray mesh.
+//
+//   Brad Whitlock, Mon Jun 7 09:07:41 PDT 2004
+//   Templatized the code for storing the mesh points for the "mesh" variable
+//   so we can support double and float coordinate fields.
 //
 // ****************************************************************************
 
@@ -1237,59 +1301,38 @@ PP_ZFileReader::GetMesh(int state, const char *var)
     }
     ENDTRY
 
-    VariableData *rtData = varStorage[rtVar];
-    VariableData *ztData = varStorage[ztVar];
-    if(rtData->dataType != DOUBLEARRAY_TYPE ||
-       ztData->dataType != DOUBLEARRAY_TYPE)
-    {
-        EXCEPTION1(InvalidVariableException, var);
-    }
-
-    //
-    // Go to the right time state
-    //
-    const double *rt = (const double *)rtData->data;
-    rt += ((state < nCycles) ? (state * nnodes) : 0);
-    const double *zt = (const double *)ztData->data;
-    zt += ((state < nCycles) ? (state * nnodes) : 0);
-
     //
     // Both the unstructured grid and the structured grid need the points
     // populated in the same way so do it beforehand.
     //
     vtkPoints *points = vtkPoints::New();
     points->SetNumberOfPoints(nnodes);
+    unsigned int adjustment = ((state < nCycles) ? (state * nnodes) : 0);
 
-    //
-    // The minimum value for R is way off the charts so we should take care
-    // to not actually use it as a node coordinate since it would make the
-    // extents be wrong. Find the maximum R value and use that everywhere we
-    // get the minR value.
-    //
-    const double *rt2 = rt;
-    const double *zt2 = zt;
-    const double minR = -1e8;
-    float maxR = float(minR);
-    for(int k = 0; k < nnodes; ++k, ++rt2)
-        if(*rt2 > maxR) maxR = *rt2;
-    rt2 = rt;
-
-    //
-    // Store the points for the mesh.
-    //
-    float *ptr = (float *)points->GetVoidPointer(0);
-    for(j = 0; j < lmax; ++j)
-    { 
-        for(i = 0; i < kmax; ++i)
-        {
-            *ptr++ = float(*zt2++);
-            if(*rt2 == minR)
-                *ptr++ = maxR;
-            else
-                *ptr++ = float(*rt2);
-            ++rt2;
-            *ptr++ = 0.f;
-        }
+    VariableData *rtData = varStorage[rtVar];
+    VariableData *ztData = varStorage[ztVar];
+    if(rtData->dataType == DOUBLEARRAY_TYPE &&
+       ztData->dataType == DOUBLEARRAY_TYPE)
+    {
+        const double *rt = (const double *)rtData->data;
+        const double *zt = (const double *)ztData->data;
+        rt += adjustment; zt += adjustment;
+        GetMesh_StoreMeshPoints((float *)points->GetVoidPointer(0), rt, zt,
+            kmax, lmax, nnodes);
+    }
+    else if(rtData->dataType == FLOATARRAY_TYPE &&
+            ztData->dataType == FLOATARRAY_TYPE)
+    {
+        const float *rt = (const float *)rtData->data;
+        const float *zt = (const float *)ztData->data;
+        rt += adjustment; zt += adjustment;
+        GetMesh_StoreMeshPoints((float *)points->GetVoidPointer(0), rt, zt,
+            kmax, lmax, nnodes);
+    }
+    else
+    {
+        points->Delete();
+        EXCEPTION1(InvalidVariableException, var);
     }
 
     if(strcmp(var, "revolved_mesh") == 0)
@@ -1396,6 +1439,130 @@ PP_ZFileReader::GetRayMesh(int state, const char *mesh)
 }
 
 // ****************************************************************************
+// Method: ConstructRayMesh_CreateMesh_3D
+//
+// Purpose: 
+//   Creates a vtkPolyData object that contains 3D rays.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Jun 7 09:44:13 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+template <class T>
+inline vtkPolyData *
+ConstructRayMesh_CreateMesh_3D(const int *mxp, const int *kptryp,
+    const T *raypx, const T *raypy, const T *raypz,
+    const int npts, const int nRays)
+{
+    //
+    // Populate the coordinates for the ray mesh.
+    //
+    vtkPoints *points = vtkPoints::New();
+    points->SetNumberOfPoints(npts);
+    vtkPolyData *pd = vtkPolyData::New();
+    pd->SetPoints(points);
+    pd->Allocate(npts);
+    points->Delete();
+    float *pts = (float *)points->GetVoidPointer(0);
+
+    float *tmp = pts;
+    vtkIdType vertices[2];
+    int pointIndex = 0;
+
+    for(int nrr = 0; nrr < nRays; ++nrr)
+    {
+        if(mxp[nrr] != 0)
+        {
+            int i1 = kptryp[nrr];
+            int i2 = kptryp[nrr] + mxp[nrr];
+
+            for(int i = i1; i < i2; ++i)
+            {
+                *tmp++ = float(raypz[i]);
+                *tmp++ = float(raypx[i]);
+                *tmp++ = float(raypy[i]);
+
+                if(i > i1)
+                {
+                    vertices[0] = pointIndex-1;
+                    vertices[1] = pointIndex;
+                    pd->InsertNextCell(VTK_LINE, 2, vertices);
+                }
+
+                ++pointIndex;
+            }
+        }
+    }
+
+    return pd;
+}
+
+// ****************************************************************************
+// Method: ConstructRayMesh_CreateMesh_2D
+//
+// Purpose: 
+//   Creates a vtkPolyData object that contains 2D rays.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Jun 7 09:44:13 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+template <class T>
+inline vtkPolyData *
+ConstructRayMesh_CreateMesh_2D(const int *mxp,
+    const int *kptryp, const T *raypz, const T *raypr, const int npts,
+    const int nRays)
+{
+    //
+    // Populate the coordinates for the ray mesh.
+    //
+    vtkPoints *points = vtkPoints::New();
+    points->SetNumberOfPoints(npts);
+    vtkPolyData *pd = vtkPolyData::New();
+    pd->SetPoints(points);
+    pd->Allocate(npts);
+    points->Delete();
+    float *pts = (float *)points->GetVoidPointer(0);
+
+    float *tmp = pts;
+    vtkIdType vertices[2];
+    int pointIndex = 0;
+
+    for(int nrr = 0; nrr < nRays; ++nrr)
+    {
+        if(mxp[nrr] != 0)
+        {
+            int i1 = kptryp[nrr];
+            int i2 = kptryp[nrr] + mxp[nrr];
+
+            for(int i = i1; i < i2; ++i)
+            {
+                *tmp++ = float(raypz[i]);
+                *tmp++ = float(raypr[i]);
+                *tmp++ = 0.f;
+
+                if(i > i1)
+                {
+                    vertices[0] = pointIndex-1;
+                    vertices[1] = pointIndex;
+                    pd->InsertNextCell(VTK_LINE, 2, vertices);
+                }
+
+                ++pointIndex;
+            }
+        }
+    }
+
+    return pd;
+}
+
+// ****************************************************************************
 // Method: PP_ZFileReader::ConstructRayMesh
 //
 // Purpose: 
@@ -1415,6 +1582,9 @@ PP_ZFileReader::GetRayMesh(int state, const char *mesh)
 // Modifications:
 //   Brad Whitlock, Fri Mar 5 10:50:03 PDT 2004
 //   Fixed for Windows compiler.
+//
+//   Brad Whitlock, Mon Jun 7 09:12:34 PDT 2004
+//   Added support for float coordinate arrays.
 //
 // ****************************************************************************
 
@@ -1443,15 +1613,20 @@ PP_ZFileReader::ConstructRayMesh(int state, bool is3d)
         VariableData *kptryp_data = varStorage["kptryp"];
         VariableData *mxp_data = varStorage["mxp"];
 
-        bool haveVars;
+        bool haveVars = false;
+        bool doubleVars = false;
         if(is3d)
         {
             raypx_data = varStorage["raypx"];
             raypy_data = varStorage["raypy"];
             raypz_data = varStorage["raypz"];
-            haveVars = raypx_data->dataType == DOUBLEARRAY_TYPE &&
-                       raypy_data->dataType == DOUBLEARRAY_TYPE &&
-                       raypz_data->dataType == DOUBLEARRAY_TYPE &&
+            doubleVars = raypx_data->dataType == DOUBLEARRAY_TYPE &&
+                         raypy_data->dataType == DOUBLEARRAY_TYPE &&
+                         raypz_data->dataType == DOUBLEARRAY_TYPE;
+            bool floatVars = raypx_data->dataType == FLOATARRAY_TYPE &&
+                             raypy_data->dataType == FLOATARRAY_TYPE &&
+                             raypz_data->dataType == FLOATARRAY_TYPE;
+            haveVars = (doubleVars || floatVars) &&
                        kptryp_data->dataType == INTEGERARRAY_TYPE &&
                        mxp_data->dataType == INTEGERARRAY_TYPE;
         }
@@ -1459,18 +1634,17 @@ PP_ZFileReader::ConstructRayMesh(int state, bool is3d)
         {
             raypr_data = varStorage["raypr"];
             raypz_data = varStorage["raypz"];
-            haveVars = raypr_data->dataType == DOUBLEARRAY_TYPE &&
-                       raypz_data->dataType == DOUBLEARRAY_TYPE &&
+            doubleVars = raypr_data->dataType == DOUBLEARRAY_TYPE &&
+                         raypz_data->dataType == DOUBLEARRAY_TYPE;
+            bool floatVars = raypr_data->dataType == FLOATARRAY_TYPE &&
+                             raypz_data->dataType == FLOATARRAY_TYPE;
+            haveVars = (doubleVars || floatVars) &&
                        kptryp_data->dataType == INTEGERARRAY_TYPE &&
                        mxp_data->dataType == INTEGERARRAY_TYPE;
         }
 
         if(haveVars)
         {
-            const double *raypr = 0;
-            const double *raypx = 0;
-            const double *raypy = 0;
-            const double *raypz = 0;
             const int *kptryp = (const int *)kptryp_data->data;
             const int *mxp = (const int *)mxp_data->data;
 
@@ -1481,80 +1655,69 @@ PP_ZFileReader::ConstructRayMesh(int state, bool is3d)
 
             ADD_TIME_OFFSET(kptryp, kptryp_data);
             ADD_TIME_OFFSET(mxp, mxp_data);
+            int npts = 0;
+            int nRays = mxp_data->nTotalElements / nCycles;
+            for(int nrr = 0; nrr < nRays; ++nrr)
+                npts += mxp[nrr];
 
-            if(is3d)
+            if(doubleVars)
             {
-                raypx = (const double *)raypx_data->data;
-                raypy = (const double *)raypy_data->data;
-                raypz = (const double *)raypz_data->data;
+                const double *raypr = 0;
+                const double *raypx = 0;
+                const double *raypy = 0;
+                const double *raypz = 0;
 
-                ADD_TIME_OFFSET(raypx, raypx_data);
-                ADD_TIME_OFFSET(raypy, raypy_data);
-                ADD_TIME_OFFSET(raypz, raypz_data);
+                if(is3d)
+                {
+                    raypx = (const double *)raypx_data->data;
+                    raypy = (const double *)raypy_data->data;
+                    raypz = (const double *)raypz_data->data;
+
+                    ADD_TIME_OFFSET(raypx, raypx_data);
+                    ADD_TIME_OFFSET(raypy, raypy_data);
+                    ADD_TIME_OFFSET(raypz, raypz_data);
+                    retval = ConstructRayMesh_CreateMesh_3D(mxp, kptryp, raypx,
+                        raypy, raypz, npts, nRays);
+                }
+                else
+                {
+                    raypr = (const double *)raypr_data->data;
+                    raypz = (const double *)raypz_data->data;
+                    ADD_TIME_OFFSET(raypr, raypr_data);
+                    ADD_TIME_OFFSET(raypz, raypz_data);
+                    retval = ConstructRayMesh_CreateMesh_2D(mxp, kptryp, raypz,
+                        raypr, npts, nRays);
+                }
             }
             else
             {
-                raypr = (const double *)raypr_data->data;
-                raypz = (const double *)raypz_data->data;
-                ADD_TIME_OFFSET(raypr, raypr_data);
-                ADD_TIME_OFFSET(raypz, raypz_data);
-            }
+                const float *raypr = 0;
+                const float *raypx = 0;
+                const float *raypy = 0;
+                const float *raypz = 0;
 
-            int nrr, npts = 0;
-            int nRays = mxp_data->nTotalElements / nCycles;
-            for(nrr = 0; nrr < nRays; ++nrr)
-                npts += mxp[nrr];
-
-            //
-            // Populate the coordinates for the ray mesh.
-            //
-            vtkPoints *points = vtkPoints::New();
-            points->SetNumberOfPoints(npts);
-            vtkPolyData *pd = vtkPolyData::New();
-            pd->SetPoints(points);
-            pd->Allocate(npts);
-            points->Delete();
-
-            float *pts = (float *)points->GetVoidPointer(0);
-            float *tmp = pts;
-            vtkIdType vertices[2];
-            int pointIndex = 0;
-
-            for(nrr = 0; nrr < nRays; ++nrr)
-            {
-                if(mxp[nrr] != 0)
+                if(is3d)
                 {
-                    int i1 = kptryp[nrr];
-                    int i2 = kptryp[nrr] + mxp[nrr];
+                    raypx = (const float *)raypx_data->data;
+                    raypy = (const float *)raypy_data->data;
+                    raypz = (const float *)raypz_data->data;
 
-                    for(int i = i1; i < i2; ++i)
-                    {
-                        if(is3d)
-                        {
-                            *tmp++ = float(raypz[i]);
-                            *tmp++ = float(raypx[i]);
-                            *tmp++ = float(raypy[i]);
-                        }
-                        else
-                        {
-                            *tmp++ = float(raypz[i]);
-                            *tmp++ = float(raypr[i]);
-                            *tmp++ = 0.f;
-                        }
-
-                        if(i > i1)
-                        {
-                            vertices[0] = pointIndex-1;
-                            vertices[1] = pointIndex;
-                            pd->InsertNextCell(VTK_LINE, 2, vertices);
-                        }
-
-                        ++pointIndex;
-                    }
+                    ADD_TIME_OFFSET(raypx, raypx_data);
+                    ADD_TIME_OFFSET(raypy, raypy_data);
+                    ADD_TIME_OFFSET(raypz, raypz_data);
+                    retval = ConstructRayMesh_CreateMesh_3D(mxp, kptryp, raypx,
+                        raypy, raypz, npts, nRays);
+                }
+                else
+                {
+                    raypr = (const float *)raypr_data->data;
+                    raypz = (const float *)raypz_data->data;
+                    ADD_TIME_OFFSET(raypr, raypr_data);
+                    ADD_TIME_OFFSET(raypz, raypz_data);
+                    retval = ConstructRayMesh_CreateMesh_2D(mxp, kptryp, raypz,
+                        raypr, npts, nRays);
                 }
             }
-
-            retval = pd;
         }
         else
         {
@@ -1621,7 +1784,9 @@ PP_ZFileReader::ReadVariable(const std::string &varStr)
 // Creation:   Thu Aug 7 16:41:51 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Jun 7 09:47:10 PDT 2004
+//   Added support for float arrays.
+//
 // ****************************************************************************
 
 void
@@ -1669,6 +1834,12 @@ PP_ZFileReader::ReadMixvarAndCache(const std::string &varStr, int state)
                 const double *iptr = (const double *)data->data;
                 for(int i = 0; i < data->nTotalElements; ++i)
                     mixvar[i] = float(iptr[i]);
+            }
+            else if(data->dataType == FLOATARRAY_TYPE)
+            {
+                const float *fptr = (const float *)data->data;
+                for(int i = 0; i < data->nTotalElements; ++i)
+                    mixvar[i] = float(fptr[i]);
             }
             else
             {
@@ -1858,6 +2029,59 @@ PP_ZFileReader::GetUnstructuredCellCount()
 }
 
 // ****************************************************************************
+// Method: GetRayVar_StoreRayData
+//
+// Purpose: 
+//   Stores ray data into an input data array.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Jun 7 09:54:27 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+template <class T>
+inline void
+GetRayVar_StoreRayData(T *ptr, const T *dataPointer, const int *mxp,
+    const int *kptryp, const int nRays, bool relative)
+{
+    T *dest = ptr;
+
+    if(relative)
+    {
+        for(int nrr = 0; nrr < nRays; ++nrr)
+        {
+            if(mxp[nrr] != 0)
+            {
+                int i1 = kptryp[nrr];
+                int i2 = kptryp[nrr] + mxp[nrr];
+
+                T firstVal = dataPointer[i1];
+                if(firstVal == 0.)
+                    firstVal = 1.;
+                for(int i = i1; i < i2; ++i)
+                    *dest++ = (dataPointer[i] / firstVal);
+            }
+        }
+    }
+    else
+    {
+        for(int nrr = 0; nrr < nRays; ++nrr)
+        {
+            if(mxp[nrr] != 0)
+            {
+                int i1 = kptryp[nrr];
+                int i2 = kptryp[nrr] + mxp[nrr];
+
+                for(int i = i1; i < i2; ++i)
+                    *dest++ = dataPointer[i];
+            }
+        }
+    }
+}
+
+// ****************************************************************************
 // Method: PP_ZFileReader::GetRayVar
 //
 // Purpose: 
@@ -1875,7 +2099,9 @@ PP_ZFileReader::GetUnstructuredCellCount()
 // Creation:   Mon Oct 6 18:00:19 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Jun 7 09:58:13 PDT 2004
+//   I added support for float arrays.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -1920,37 +2146,29 @@ PP_ZFileReader::GetRayVar(int state, const std::string &varStr)
             dscalars->SetNumberOfTuples(npts);
             retval = dscalars;
             double *ptr = (double *)dscalars->GetVoidPointer(0);
-            const double *dataPointer = (const double *)var_data->data;
 
             // Add an offset the data pointer so they are at the desired
             // time state.
+            const double *dataPointer = (const double *)var_data->data;
             ADD_TIME_OFFSET(dataPointer, var_data);
 
-            for(nrr = 0; nrr < nRays; ++nrr)
-            {
-                if(mxp[nrr] != 0)
-                {
-                    int i1 = kptryp[nrr];
-                    int i2 = kptryp[nrr] + mxp[nrr];
+            GetRayVar_StoreRayData(ptr, dataPointer, mxp, kptryp, 
+                nRays, relative);
+        }
+        else if(var_data->dataType == FLOATARRAY_TYPE)
+        {
+            vtkFloatArray *fscalars = vtkFloatArray::New();
+            fscalars->SetNumberOfTuples(npts);
+            retval = fscalars;
+            float *ptr = (float *)fscalars->GetVoidPointer(0);
 
-                    if(relative)
-                    {
-                        // The power is relative to the value of the power
-                        // at the start of the ray so divide each value
-                        // by the first value so it is normalized.
-                        double firstVal = dataPointer[i1];
-                        if(firstVal == 0.)
-                            firstVal = 1.;
-                        for(int i = i1; i < i2; ++i)
-                            *ptr++ = (dataPointer[i] / firstVal);
-                    }
-                    else
-                    {
-                        for(int i = i1; i < i2; ++i)
-                            *ptr++ = dataPointer[i];
-                    }
-                }
-            }
+            // Add an offset the data pointer so they are at the desired
+            // time state.
+            const float *dataPointer = (const float *)var_data->data;
+            ADD_TIME_OFFSET(dataPointer, var_data);
+
+            GetRayVar_StoreRayData(ptr, dataPointer, mxp, kptryp, 
+                nRays, relative);
         }
         else
         {
@@ -1990,6 +2208,9 @@ PP_ZFileReader::GetRayVar(int state, const std::string &varStr)
 //
 //   Brad Whitlock, Mon Oct 6 17:54:30 PST 2003
 //   I added support for ray variables.
+//
+//   Brad Whitlock, Mon Jun 7 10:00:04 PDT 2004
+//   I added support for float arrays.
 //
 // ****************************************************************************
 
@@ -2124,6 +2345,30 @@ PP_ZFileReader::GetVar(int state, const char *var)
 
         ReadMixvarAndCache(varStr, state);
     }
+    else if(data->dataType == FLOATARRAY_TYPE)
+    {
+        vtkFloatArray *fscalars = vtkFloatArray::New();
+        fscalars->SetNumberOfTuples(nels);
+        scalars = fscalars;
+        float *ptr = (float *) fscalars->GetVoidPointer(0);
+
+        // Get a pointer to the start of the VariableData object's data array.
+        const float *dataPointer = (const float *)data->data;
+        dataPointer += ((state < nCycles) ? (state * nnodes) : 0);
+
+        //
+        // Copy the data appropriately.
+        //
+        if(wantRevolvedMesh)
+        {
+            CopyRevolvedVariableData(ptr, dataPointer, ireg, centering,
+                                     kmax, lmax, revolutionSteps);
+        }
+        else
+            CopyVariableData(ptr, dataPointer, centering, kmax, lmax);
+
+        ReadMixvarAndCache(varStr, state);
+    }
     else
     {
         debug4 << "GetVar: Unsupported data type: "
@@ -2200,6 +2445,9 @@ AddCleanMaterials(MaterialEncoder &mats, const int *ireg, int kmax, int lmax,
 //   Brad Whitlock, Thu Sep 18 17:15:21 PST 2003
 //   Fixed ilamm offset so it uses 0 origin array.
 //
+//   Brad Whitlock, Mon Jun 7 10:02:11 PDT 2004
+//   Removed stray debugging statements.
+//
 // ****************************************************************************
 
 static void
@@ -2251,33 +2499,10 @@ AddMixedMaterials(MaterialEncoder &mats, const int *ireg, const int *iregmm,
              for(int i = 1; i < kmax; ++i, ++zoneId)
              {
                  if(nummm_row[i] == 0)
-{
-if(ireg_row[i] < 1 || ireg_row[i] > 4)
-    cerr << "zone(" << j << ", " << i << ") nummm = " << nummm_row[i] << ", mat=" << ireg_row[i] << endl;;
                      mats.AddClean(zoneId, ireg_row[i]);
-}
                  else
                  {
                      int minIndex = ilamm_row[2 * i] - 1;
-
-const int *iregmm_mat = iregmm + minIndex;
-const double *volfmm_mat = volfmm + minIndex;
-int k;
-bool outOfBounds = false;
-for(k = 0; k < nummm_row[i]; ++k)
-    outOfBounds |= (iregmm_mat[k] < 1 || iregmm_mat[k] > 4);
-
-if(outOfBounds)
-{
-cerr << "zone(" << j << ", " << i << ") nummm = " << nummm_row[i];
-cerr << ", mats=(";
-for(k = 0; k < nummm_row[i]; ++k)
-    cerr << iregmm_mat[k] << endl;
-cerr << "), volf=(";
-for(k = 0; k < nummm_row[i]; ++k)
-    cerr << volfmm_mat[k] << endl;
-cerr << ")" << endl;
-}
                      mats.AddMixed(zoneId,
                                    iregmm + minIndex,
                                    volfmm + minIndex,
@@ -2309,7 +2534,9 @@ cerr << ")" << endl;
 // Creation:   Tue Aug 5 17:35:49 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Jun 7 11:20:56 PDT 2004
+//   Added support for float arrays.
+//
 // ****************************************************************************
 
 void  *
@@ -2393,7 +2620,8 @@ PP_ZFileReader::GetAuxiliaryData(int state, const char *var, const char *type,
 
                     if(nummm_data->dataType == INTEGERARRAY_TYPE &&
                        ilamm_data->dataType == INTEGERARRAY_TYPE &&
-                       volfmm_data->dataType == DOUBLEARRAY_TYPE &&
+                       (volfmm_data->dataType == DOUBLEARRAY_TYPE ||
+                        volfmm_data->dataType == FLOATARRAY_TYPE) &&
                        iregmm_data->dataType == INTEGERARRAY_TYPE)
                     {
                         const int *nummm = (const int *)nummm_data->data;
@@ -2402,7 +2630,6 @@ PP_ZFileReader::GetAuxiliaryData(int state, const char *var, const char *type,
                         const int *ilamm = (const int *)ilamm_data->data;
                         ilamm += ((state < nCycles) ? (state * 2 * nnodes) : 0);
 
-                        const double *volfmm = (const double *)volfmm_data->data;
                         const int *iregmm = (const int *)iregmm_data->data;
 
                         //
@@ -2413,9 +2640,25 @@ PP_ZFileReader::GetAuxiliaryData(int state, const char *var, const char *type,
                         // zone to index into the volfmm and iregmm arrays
                         // to get the volume fraction and material numbers.
                         //
-                        AddMixedMaterials(mats, ireg, iregmm, nummm, ilamm,
-                                          volfmm, kmax, lmax,
-                                          wantRevolvedMaterial, nSteps);
+                        if(volfmm_data->dataType == DOUBLEARRAY_TYPE)
+                        {
+                            const double *volfmm = (const double *)volfmm_data->data;
+                            AddMixedMaterials(mats, ireg, iregmm, nummm, ilamm,
+                                              volfmm, kmax, lmax,
+                                              wantRevolvedMaterial, nSteps);
+                        }
+                        else
+                        {
+                            double *volfmm = new double[volfmm_data->nTotalElements];
+                            double *dptr = volfmm;
+                            const float *src = (const float *)volfmm_data->data;
+                            for(int i = 0; i < volfmm_data->nTotalElements; ++i)
+                                *dptr++ = double(*src++);
+                            AddMixedMaterials(mats, ireg, iregmm, nummm, ilamm,
+                                              volfmm, kmax, lmax,
+                                              wantRevolvedMaterial, nSteps);
+                            delete [] volfmm;
+                        }
                     }
                     else
                     {
