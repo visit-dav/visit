@@ -671,3 +671,68 @@ void BroadcastStringVectorVector(vector< vector<string> > &vvs, int myrank)
     }
 #endif
 }
+
+
+// ****************************************************************************
+//  Function: GetListToRootProc
+//
+//  Purpose:
+//      Gets a variable list to processor 0.  At the beginning of this call,
+//      it is not clear which processor has a good list.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 8, 2003
+//
+// ****************************************************************************
+
+bool GetListToRootProc(std::vector<std::string> &vars, int total)
+{
+#ifdef PARALLEL
+    int rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    int red_val = 10000000;
+    if (vars.size() == total)
+        red_val = rank;
+       
+    int lowest_with_list = 0;
+    MPI_Allreduce(&red_val, &lowest_with_list, 1, MPI_INT, MPI_MIN,
+                  MPI_COMM_WORLD);
+
+    if (lowest_with_list == 0)
+        return (rank == 0);
+    
+    if (lowest_with_list == rank)
+    {
+        for (int i = 0 ; i < total ; i++)
+        {
+            int size = strlen(vars[i].c_str());
+            MPI_Send(&size, 1, MPI_INT, 0, rank, MPI_COMM_WORLD);
+            void *ptr = (void *) vars[i].c_str();
+            MPI_Send(ptr, size, MPI_CHAR, 0, rank, MPI_COMM_WORLD);
+        }
+    }
+    else if (rank == 0)
+    {
+        vars.clear();
+        for (int i = 0 ; i < total ; i++)
+        {
+            int len;
+            MPI_Status stat;
+            MPI_Recv(&len, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG,
+                     MPI_COMM_WORLD, &stat);
+            char *varname = new char[len+1];
+            void *buff = (void *) varname;
+            MPI_Recv(buff, len, MPI_CHAR, stat.MPI_SOURCE, MPI_ANY_TAG,
+                     MPI_COMM_WORLD, &stat);
+            varname[len] = '\0';
+            vars.push_back(varname);
+            delete [] varname;
+        }
+    }
+
+    return (rank == 0);
+#endif
+    return true;
+}
+
+
