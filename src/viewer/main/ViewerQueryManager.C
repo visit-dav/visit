@@ -2747,69 +2747,87 @@ GetUniqueVars(const stringVector &vars, const string &activeVar,
 //    Kathleen Bonnell, Tue May 25 16:09:15 PDT 2004 
 //    Added Zone center.
 //
+//    Kathleen Bonnell, Sat Sep  4 11:44:00 PDT 2004 
+//    Parameters required for AddQuery have changed. 
+//
 // ****************************************************************************
 
 void
 ViewerQueryManager::InitializeQueryList()
 {
-    queryTypes->AddQuery("ZonePick", QueryList::PointQuery, QueryList::ScreenSpace);
-    queryTypes->AddQuery("NodePick", QueryList::PointQuery, QueryList::ScreenSpace);
+    //
+    // Args, in order, for QueryList::AddQuery:
+    //    std::string                            queryName
+    //    QueryList::QueryType                   queryType
+    //    QueryList::Groups                      group
+    //    QueryList::CoordinateRepresentation    coordRep
+    //    QueryList::WindowType                  winType
+    //    int                                    numInputs
+    //    int                                    allowedVarTypes
+    //    bool                                   isTimeQuery
+    //
+    QueryList::CoordinateRepresentation ws = QueryList::WorldSpace;
+    QueryList::CoordinateRepresentation ss = QueryList::ScreenSpace;
+
+    QueryList::QueryType pq = QueryList::PointQuery;
+    QueryList::QueryType dq = QueryList::DatabaseQuery;
+    QueryList::QueryType lq = QueryList::LineQuery;
+
+    QueryList::WindowType basic = QueryList::Basic;
+    QueryList::WindowType sp = QueryList::SinglePoint;
+    QueryList::WindowType dp = QueryList::DoublePoint;
+    QueryList::WindowType dn = QueryList::DomainNode;
+    QueryList::WindowType dz = QueryList::DomainZone;
+    QueryList::WindowType ad = QueryList::ActualData;
+    QueryList::WindowType av = QueryList::ActualDataVars;
+
+    QueryList::Groups cr = QueryList::CurveRelated;
+    QueryList::Groups mr = QueryList::MeshRelated;
+    QueryList::Groups pr = QueryList::PickRelated;
+    QueryList::Groups tr = QueryList::TimeRelated;
+    QueryList::Groups vr = QueryList::VariableRelated;
+
+    
+    queryTypes->AddQuery("ZonePick", pq, pr, ss, sp, 1, 0, true);
+    queryTypes->AddQuery("NodePick", pq, pr, ss, sp, 1, 0, true);
+
     if (PlotPluginManager::Instance()->PluginAvailable("Curve_1.0") &&
         OperatorPluginManager::Instance()->PluginAvailable("Lineout_1.0")) 
     {
-        queryTypes->AddQuery("Lineout", QueryList::LineQuery);
+        queryTypes->AddQuery("Lineout", lq, vr, ws, dp, 1, 0, false);
     }
-    queryTypes->AddQuery("Eulerian", QueryList::DatabaseQuery);
-    queryTypes->AddQuery("Compactness", QueryList::DatabaseQuery);
-    queryTypes->AddQuery("Cycle", QueryList::DatabaseQuery);
-    queryTypes->AddQuery("Time", QueryList::DatabaseQuery);
-    queryTypes->AddQuery("L2Norm", QueryList::DatabaseQuery);
-    queryTypes->AddQuery("Integrate", QueryList::DatabaseQuery);
-    queryTypes->AddQuery("L2Norm Between Curves", QueryList::DatabaseQuery,
-                                   QueryList::WorldSpace, 2);
-    queryTypes->AddQuery("Area Between Curves", QueryList::DatabaseQuery,
-                                   QueryList::WorldSpace, 2);
-    queryTypes->AddQuery("Revolved volume", QueryList::DatabaseQuery);
-    queryTypes->AddQuery("Revolved surface area", QueryList::DatabaseQuery);
-    queryTypes->AddTimeQuery("2D area", QueryList::DatabaseQuery);
-    queryTypes->AddTimeQuery("3D surface area", QueryList::DatabaseQuery);
-    queryTypes->AddTimeQuery("Volume", QueryList::DatabaseQuery);
-    queryTypes->AddTimeQuery("Variable Sum", QueryList::DatabaseQuery);
-    queryTypes->AddTimeQuery("Weighted Variable Sum", QueryList::DatabaseQuery);
-    queryTypes->AddTimeQuery("WorldPick", QueryList::PointQuery);
-    queryTypes->AddTimeQuery("WorldNodePick", QueryList::PointQuery);
-    queryTypes->AddTimeQuery("Variable by Zone", QueryList::DatabaseQuery);
-    queryTypes->SetWindowType("Variable by Zone", QueryList::DomainZone);
-    queryTypes->AddTimeQuery("Variable by Node", QueryList::DatabaseQuery);
-    queryTypes->SetWindowType("Variable by Node", QueryList::DomainNode);
+    queryTypes->AddQuery("Eulerian", dq, mr, ws, basic, 1, 0, false);
+    queryTypes->AddQuery("Compactness", dq, mr, ws, basic, 1, 0, false);
+    queryTypes->AddQuery("Cycle", dq, tr, ws, basic, 1, 0, false);
+    queryTypes->AddQuery("Time", dq, tr, ws, basic, 1, 0, false);
+    queryTypes->AddQuery("L2Norm", dq, cr, ws, basic, 1, 0, false);
+    queryTypes->AddQuery("Integrate", dq, cr, ws, basic, 1, 0, false);
+    queryTypes->AddQuery("L2Norm Between Curves", dq, cr, ws, basic, 2, 0, false);
+    queryTypes->AddQuery("Area Between Curves", dq, cr, ws, basic, 2, 0, false);
+    queryTypes->AddQuery("Revloved volume", dq, mr, ws, basic, 1, 0, false);
+    queryTypes->AddQuery("Revloved surface area", dq, mr, ws, basic, 1, 0, false);
+    queryTypes->AddQuery("2D area", dq, mr, ws, basic, 1, 0, true);
+    queryTypes->AddQuery("3D surface area", dq, mr, ws, basic, 1, 0, true);
+    queryTypes->AddQuery("Volume", dq, mr, ws, basic, 1, 0, true);
+    queryTypes->AddQuery("Variable sum", dq, vr, ws, basic, 1, 0, true);
+    queryTypes->AddQuery("Weighted Variable sum", dq, vr, ws, basic, 1, 0, true);
+    queryTypes->AddQuery("WorldPick", pq, pr, ws, sp, 1, 0, true);
+    queryTypes->AddQuery("WorldNodePick", pq, pr, ws, sp, 1, 0, true);
 
     int MinMaxVars = QUERY_SCALAR_VAR | QUERY_TENSOR_VAR | QUERY_VECTOR_VAR | 
             QUERY_SYMMETRIC_TENSOR_VAR | QUERY_MATSPECIES_VAR | QUERY_CURVE_VAR;
-    queryTypes->AddQuery("MinMax", QueryList::DatabaseQuery, 
-                          QueryList::WorldSpace, 1, MinMaxVars); 
-    queryTypes->SetWindowType("MinMax", QueryList::ActualData);
-    queryTypes->AddTimeQuery("Min", QueryList::DatabaseQuery, 
-                          QueryList::WorldSpace, 1, MinMaxVars); 
-    queryTypes->SetWindowType("Min", QueryList::ActualData);
-    queryTypes->AddTimeQuery("Max", QueryList::DatabaseQuery, 
-                          QueryList::WorldSpace, 1, MinMaxVars); 
-    queryTypes->SetWindowType("Max", QueryList::ActualData);
 
-    queryTypes->AddQuery("SpatialExtents", QueryList::DatabaseQuery);
-    queryTypes->SetWindowType("SpatialExtents", QueryList::ActualData);
-    queryTypes->AddQuery("NumNodes", QueryList::DatabaseQuery);
-    queryTypes->SetWindowType("NumNodes", QueryList::ActualData);
-    queryTypes->AddQuery("NumZones", QueryList::DatabaseQuery);
-    queryTypes->SetWindowType("NumZones", QueryList::ActualData);
-    queryTypes->AddTimeQuery("PickByZone", QueryList::PointQuery);
-    queryTypes->SetWindowType("PickByZone", QueryList::DomainZone);
-    queryTypes->AddTimeQuery("PickByNode", QueryList::PointQuery);
-    queryTypes->SetWindowType("PickByNode", QueryList::DomainNode);
-    queryTypes->AddQuery("Zone Center", QueryList::DatabaseQuery);
-    queryTypes->SetWindowType("Zone Center", QueryList::DomainZone);
-    queryTypes->AddQuery("Node Coords", QueryList::DatabaseQuery);
-    queryTypes->SetWindowType("Node Coords", QueryList::DomainNode);
-
+    queryTypes->AddQuery("MinMax", dq, vr, ws, ad, 1, MinMaxVars, false);
+    queryTypes->AddQuery("Min", dq, vr, ws, ad, 1, MinMaxVars, true);
+    queryTypes->AddQuery("Max", dq, vr, ws, ad, 1, MinMaxVars, true);
+    queryTypes->AddQuery("SpatialExtents", dq, mr, ws, ad, 1, 0, false);
+    queryTypes->AddQuery("NumNodes", dq, mr, ws, ad, 1, 0, false);
+    queryTypes->AddQuery("NumZones", dq, mr, ws, ad, 1, 0, false);
+    queryTypes->AddQuery("PickByZone", pq, pr, ws, dz, 1, 0, true);
+    queryTypes->AddQuery("PickByNode", pq, pr, ws, dn, 1, 0, true);
+    queryTypes->AddQuery("Zone Center", dq, mr, ws, dz, 1, 0, false);
+    queryTypes->AddQuery("Node Coords", dq, mr, ws, dn, 1, 0, false);
+                          
     queryTypes->SelectAll();
 }
 

@@ -10,6 +10,7 @@ class PickAttributes;
 class PlotList;
 class QButtonGroup;
 class QCheckBox;
+class QComboBox;
 class QGroupBox;
 class QLabel;
 class QLineEdit;
@@ -46,6 +47,11 @@ class QueryList;
 //   Kathleen Bonnell, Thu Apr  1 18:42:52 PST 2004
 //   Added button in support of creating queries over time.
 //
+//   Kathleen Bonnell, Sat Sep  4 11:49:58 PDT 2004 
+//   Added displayMode combo box, Removed unneeded argument from 
+//   UpdateQueryList, changed arg in UpdateArgumentPanel from int to QString.
+//   All to allow query lists to be sorted and grouped functionally.
+//
 // ****************************************************************************
 
 class GUI_API QvisQueryWindow : public QvisPostableWindowSimpleObserver
@@ -69,9 +75,9 @@ protected:
 private:
     void UpdateQueryButton();
     void UpdateTimeQueryButton();
-    void UpdateQueryList(bool doAll);
+    void UpdateQueryList();
     void UpdateResults(bool doAll);
-    void UpdateArgumentPanel(int index);
+    void UpdateArgumentPanel(const QString &);
 
     void Apply(bool ignore = false, bool doTime = false);
     bool GetPoint(int index, const QString &pname, int rep, double pt[3]);
@@ -83,6 +89,7 @@ private slots:
     void handleText();
     void selectQuery();
     void clearResultText();
+    void displayModeChanged(int);
 
 private:
     QueryList       *queries;
@@ -90,6 +97,7 @@ private:
     PickAttributes  *pickAtts;
     PlotList        *plotList;
 
+    QComboBox       *displayMode;
     QLabel          *coordLabel;
     QListBox        *queryList;
     QPushButton     *queryButton;
