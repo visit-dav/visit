@@ -529,6 +529,10 @@ QvisVolumePlotWindow::CreateWindowContents()
 //   Added settings for the renderer type, the gradient method, and
 //   the number of 3D textured slices.
 //
+//   Jeremy Meredith, Tue Nov 16 11:39:53 PST 2004
+//   Replaced simple QString::sprintf's with a setNum because there seems
+//   to be a bug causing numbers to be incremented by .00001.  See '5263.
+//
 // ****************************************************************************
 
 void
@@ -607,7 +611,7 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
             colorMin->setEnabled(volumeAtts->GetUseColorVarMin());
             break;
         case 11: // colorVarMin
-            temp.sprintf("%g", volumeAtts->GetColorVarMin());
+            temp.setNum(volumeAtts->GetColorVarMin());
             colorMin->setText(temp);
             break;
         case 12: // useColorVarMax
@@ -617,7 +621,7 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
             colorMax->setEnabled(volumeAtts->GetUseColorVarMax());
             break;
         case 13: // colorVarMax
-            temp.sprintf("%g", volumeAtts->GetColorVarMax());
+            temp.setNum(volumeAtts->GetColorVarMax());
             colorMax->setText(temp);
             break;
         case 14: // useOpacityVarMin
@@ -627,7 +631,7 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
             opacityMin->setEnabled(volumeAtts->GetUseOpacityVarMin());
             break;
         case 15: // opacityVarMin
-            temp.sprintf("%g", volumeAtts->GetOpacityVarMin());
+            temp.setNum(volumeAtts->GetOpacityVarMin());
             opacityMin->setText(temp);
             break;
         case 16: // useOpacityVarMax
@@ -637,7 +641,7 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
             opacityMax->setEnabled(volumeAtts->GetUseOpacityVarMax());
             break;
         case 17: // opacityVarMax
-            temp.sprintf("%g", volumeAtts->GetOpacityVarMax());
+            temp.setNum(volumeAtts->GetOpacityVarMax());
             opacityMax->setText(temp);
             break;
         case 18: // smoothData

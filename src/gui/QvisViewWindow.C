@@ -687,6 +687,10 @@ QvisViewWindow::Update2D(bool doAll)
 //   Eric Brugger, Tue Feb 10 10:30:15 PST 2004
 //   I added center of rotation controls to the advanced tab.
 //
+//   Jeremy Meredith, Tue Nov 16 11:39:53 PST 2004
+//   Replaced simple QString::sprintf's with a setNum because there seems
+//   to be a bug causing numbers to be incremented by .00001.  See '5263.
+//
 // ****************************************************************************
 
 void
@@ -726,19 +730,19 @@ QvisViewWindow::Update3D(bool doAll)
             upvectorLineEdit->setText(temp);
             break;
         case 3: // viewAngle
-            temp.sprintf("%g", view3d->GetViewAngle());
+            temp.setNum(view3d->GetViewAngle());
             viewAngleLineEdit->setText(temp);
             break;
         case 4: // parallelScale
-            temp.sprintf("%g", view3d->GetParallelScale());
+            temp.setNum(view3d->GetParallelScale());
             parallelScaleLineEdit->setText(temp);
             break;
         case 5: // near
-            temp.sprintf("%g", view3d->GetNearPlane());
+            temp.setNum(view3d->GetNearPlane());
             nearLineEdit->setText(temp);
             break;
         case 6: // far
-            temp.sprintf("%g", view3d->GetFarPlane());
+            temp.setNum(view3d->GetFarPlane());
             farLineEdit->setText(temp);
             break;
         case 7: // imagePan
@@ -748,11 +752,11 @@ QvisViewWindow::Update3D(bool doAll)
             imagePanLineEdit->setText(temp);
             break;
         case 8: // imageZoom
-            temp.sprintf("%g", view3d->GetImageZoom());
+            temp.setNum(view3d->GetImageZoom());
             imageZoomLineEdit->setText(temp);
             break;
         case 9: // eyeAngle
-            temp.sprintf("%g", view3d->GetEyeAngle());
+            temp.setNum(view3d->GetEyeAngle());
             eyeAngleLineEdit->setText(temp);
             UpdateEyeAngleSliderFromAtts();
             break;
@@ -2490,6 +2494,10 @@ QvisViewWindow::processEyeAngleText()
     Apply();    
 }
 
+//  Modifications:
+//    Jeremy Meredith, Tue Nov 16 11:39:53 PST 2004
+//    Replaced simple QString::sprintf's with a setNum because there seems
+//    to be a bug causing numbers to be incremented by .00001.  See '5263.
 void
 QvisViewWindow::eyeAngleSliderChanged(int val)
 {
@@ -2517,7 +2525,7 @@ QvisViewWindow::eyeAngleSliderChanged(int val)
     view3d->SetEyeAngle(angle);
  
     QString temp;
-    temp.sprintf("%g", view3d->GetEyeAngle());
+    temp.setNum(view3d->GetEyeAngle());
     eyeAngleLineEdit->setText(temp);
     GetCurrentValues(13);
     Apply();

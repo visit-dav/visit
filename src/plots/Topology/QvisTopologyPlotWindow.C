@@ -178,7 +178,10 @@ QvisTopologyPlotWindow::CreateWindowContents()
 // Creation:   Tue Jul 1 08:50:16 PDT 2003
 //
 // Modifications:
-//   
+//   Jeremy Meredith, Tue Nov 16 11:39:53 PST 2004
+//   Replaced simple QString::sprintf's with a setNum because there seems
+//   to be a bug causing numbers to be incremented by .00001.  See '5263.
+//
 // ****************************************************************************
 
 void
@@ -242,11 +245,11 @@ QvisTopologyPlotWindow::UpdateWindow(bool doAll)
             maxOpacity->setValue(int(atts->GetMaxOpacity()*255.));
             break;
           case 7: //tolerance
-            temp.sprintf("%g", atts->GetTolerance());
+            temp.setNum(atts->GetTolerance());
             tolerance->setText(temp);
             break;
           case 8: //hitpercent
-            temp.sprintf("%g", atts->GetHitpercent());
+            temp.setNum(atts->GetHitpercent());
             hitpercent->setText(temp);
             break;
         }

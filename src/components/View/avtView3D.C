@@ -231,6 +231,9 @@ avtView3D::SetToDefault()
 //    Hank Childs, Wed Oct 15 13:05:33 PDT 2003
 //    Added eye angle.
 //
+//    Mark C. Miller, Tue Nov 16 17:25:30 PST 2004
+//    Added '- distance' to second case in max to compute nearPlane 
+//
 // ****************************************************************************
 
 void
@@ -287,7 +290,20 @@ avtView3D::SetViewInfoFromView(avtViewInfo &viewInfo) const
     // number should be as large as possible.  10000 would probably also
     // work, but 100000 would start showing z buffering artifacts.
     //
-    viewInfo.nearPlane = max (nearPlane + distance, (farPlane - nearPlane) / 5000.);
+    // Nominally, viewInfo.nearPlane = nearPlane + distance
+    // However, if (nearPlane + distance) is negative or too close to zero,
+    // the nearPlane we set in viewInfo needs to be clamped so that it neither
+    // goes past zero and becomes negative nor gets too close to zero.
+    // If we define 'close to zero' as...
+    //
+    //     (nearPlane + distance) / (farPlane - nearPlane) < 1/5000.0
+    //
+    // then, we arrive at a minimum value for nearPlane as...
+    //
+    //     nearPlane = (farPlane - nearPlane) / 5000.0 - distance;
+    //
+    viewInfo.nearPlane = max (nearPlane + distance,
+                              (farPlane - nearPlane) / 5000. - distance);
     viewInfo.farPlane = farPlane + distance;
 
     //

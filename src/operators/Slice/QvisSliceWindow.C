@@ -331,6 +331,10 @@ QvisSliceWindow::CreateWindowContents()
 //   Jeremy Meredith, Fri Jun 13 12:09:10 PDT 2003
 //   Added a domain number for slice-by-zone and -by-node.
 //
+//   Jeremy Meredith, Tue Nov 16 11:39:53 PST 2004
+//   Replaced simple QString::sprintf's with a setNum because there seems
+//   to be a bug causing numbers to be incremented by .00001.  See '5263.
+//
 // ****************************************************************************
 
 void
@@ -366,11 +370,11 @@ QvisSliceWindow::UpdateWindow(bool doAll)
             originPointLineEdit->setText(temp);
             break;
           case 2: // origin intercept
-            temp.sprintf("%g", sliceAtts->GetOriginIntercept());
+            temp.setNum(sliceAtts->GetOriginIntercept());
             originInterceptLineEdit->setText(temp);
             break;
           case 3: // origin percent
-            temp.sprintf("%g", sliceAtts->GetOriginPercent());
+            temp.setNum(sliceAtts->GetOriginPercent());
             originPercentLineEdit->setText(temp);
             ival = int(QMIN(QMAX(0,sliceAtts->GetOriginPercent()),100));
             originPercentSlider->blockSignals(true);
@@ -1150,6 +1154,10 @@ QvisSliceWindow::interactiveToggled(bool val)
 //   based on if you are switching from arbitrary to orthogonal axis
 //   types, or back again.
 //
+//   Jeremy Meredith, Tue Nov 16 11:39:53 PST 2004
+//   Replaced simple QString::sprintf's with a setNum because there seems
+//   to be a bug causing numbers to be incremented by .00001.  See '5263.
+//
 // ****************************************************************************
 
 void
@@ -1177,7 +1185,7 @@ QvisSliceWindow::normalTypeChanged(int index)
         }
         sliceAtts->SetOriginType(SliceAttributes::Intercept);
         sliceAtts->SetOriginIntercept(intercept);
-        temp.sprintf("%g", intercept);
+        temp.setNum(intercept);
         originInterceptLineEdit->setText(temp);
         UpdateOriginArea();
     }

@@ -165,7 +165,10 @@ QvisHistogramPlotWindow::CreateWindowContents()
 // Creation:   Thu Jun 26 10:33:56 PDT 2003
 //
 // Modifications:
-//   
+//   Jeremy Meredith, Tue Nov 16 11:39:53 PST 2004
+//   Replaced simple QString::sprintf's with a setNum because there seems
+//   to be a bug causing numbers to be incremented by .00001.  See '5263.
+//
 // ****************************************************************************
 
 void
@@ -205,11 +208,11 @@ QvisHistogramPlotWindow::UpdateWindow(bool doAll)
             specifyRange->setChecked(atts->GetSpecifyRange());
             break;
           case 1: //min
-            temp.sprintf("%g", atts->GetMin());
+            temp.setNum(atts->GetMin());
             min->setText(temp);
             break;
           case 2: //max
-            temp.sprintf("%g", atts->GetMax());
+            temp.setNum(atts->GetMax());
             max->setText(temp);
             break;
           case 3: //outputType

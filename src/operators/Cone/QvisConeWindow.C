@@ -145,7 +145,10 @@ QvisConeWindow::CreateWindowContents()
 // Creation:   Mon Jun 3 15:59:57 PST 2002
 //
 // Modifications:
-//   
+//   Jeremy Meredith, Tue Nov 16 11:39:53 PST 2004
+//   Replaced simple QString::sprintf's with a setNum because there seems
+//   to be a bug causing numbers to be incremented by .00001.  See '5263.
+//
 // ****************************************************************************
 
 void
@@ -167,7 +170,7 @@ QvisConeWindow::UpdateWindow(bool doAll)
         switch(i)
         {
           case 0: //angle
-            temp.sprintf("%g", atts->GetAngle());
+            temp.setNum(atts->GetAngle());
             angle->setText(temp);
             break;
           case 1: //origin
@@ -201,7 +204,7 @@ QvisConeWindow::UpdateWindow(bool doAll)
             cutByLength->setChecked(atts->GetCutByLength());
             break;
           case 6: //length
-            temp.sprintf("%g", atts->GetLength());
+            temp.setNum(atts->GetLength());
             length->setText(temp);
             break;
         }

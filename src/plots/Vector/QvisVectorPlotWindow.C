@@ -301,6 +301,10 @@ QvisVectorPlotWindow::CreateWindowContents()
 //   Jeremy Meredith, Fri Nov 21 12:29:16 PST 2003
 //   Added vector origin type radio buttons.
 //
+//   Jeremy Meredith, Tue Nov 16 11:39:53 PST 2004
+//   Replaced simple QString::sprintf's with a setNum because there seems
+//   to be a bug causing numbers to be incremented by .00001.  See '5263.
+//
 // ****************************************************************************
 
 void
@@ -348,11 +352,11 @@ QvisVectorPlotWindow::UpdateWindow(bool doAll)
             lineWidth->blockSignals(false);
             break;
         case 5: // scale
-            temp.sprintf("%g", vectorAtts->GetScale());
+            temp.setNum(vectorAtts->GetScale());
             scaleLineEdit->setText(temp);
             break;
         case 6: // headSize
-            temp.sprintf("%g", vectorAtts->GetHeadSize());
+            temp.setNum(vectorAtts->GetHeadSize());
             headSizeLineEdit->setText(temp);
             break;
         case 7: // headOn

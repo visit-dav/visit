@@ -119,7 +119,10 @@ QvisRevolveWindow::CreateWindowContents()
 // Creation:   Wed Dec 11 14:17:27 PST 2002
 //
 // Modifications:
-//   
+//   Jeremy Meredith, Tue Nov 16 11:39:53 PST 2004
+//   Replaced simple QString::sprintf's with a setNum because there seems
+//   to be a bug causing numbers to be incremented by .00001.  See '5263.
+//
 // ****************************************************************************
 
 void
@@ -146,11 +149,11 @@ QvisRevolveWindow::UpdateWindow(bool doAll)
             axis->setText(temp);
             break;
           case 1: //startAngle
-            temp.sprintf("%g", atts->GetStartAngle());
+            temp.setNum(atts->GetStartAngle());
             startAngle->setText(temp);
             break;
           case 2: //stopAngle
-            temp.sprintf("%g", atts->GetStopAngle());
+            temp.setNum(atts->GetStopAngle());
             stopAngle->setText(temp);
             break;
           case 3: //steps

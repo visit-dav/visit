@@ -233,7 +233,10 @@ QvisSurfCompPrepWindow::CreateWindowContents()
 // Creation:   Tue Jul 1 11:03:04 PDT 2003
 //
 // Modifications:
-//   
+//   Jeremy Meredith, Tue Nov 16 11:39:53 PST 2004
+//   Replaced simple QString::sprintf's with a setNum because there seems
+//   to be a bug causing numbers to be incremented by .00001.  See '5263.
+//
 // ****************************************************************************
 
 void
@@ -340,11 +343,11 @@ QvisSurfCompPrepWindow::UpdateWindow(bool doAll)
             coordSystem->setButton(atts->GetCoordSystem());
             break;
           case 2: //thetaStart
-            temp.sprintf("%g", atts->GetThetaStart());
+            temp.setNum(atts->GetThetaStart());
             thetaStart->setText(temp);
             break;
           case 3: //thetaStop
-            temp.sprintf("%g", atts->GetThetaStop());
+            temp.setNum(atts->GetThetaStop());
             thetaStop->setText(temp);
             break;
           case 4: //thetaSteps
@@ -352,11 +355,11 @@ QvisSurfCompPrepWindow::UpdateWindow(bool doAll)
             thetaSteps->setText(temp);
             break;
           case 5: //phiStart
-            temp.sprintf("%g", atts->GetPhiStart());
+            temp.setNum(atts->GetPhiStart());
             phiStart->setText(temp);
             break;
           case 6: //phiStop
-            temp.sprintf("%g", atts->GetPhiStop());
+            temp.setNum(atts->GetPhiStop());
             phiStop->setText(temp);
             break;
           case 7: //phiSteps
@@ -364,11 +367,11 @@ QvisSurfCompPrepWindow::UpdateWindow(bool doAll)
             phiSteps->setText(temp);
             break;
           case 8: //startRadius
-            temp.sprintf("%g", atts->GetStartRadius());
+            temp.setNum(atts->GetStartRadius());
             startRadius->setText(temp);
             break;
           case 9: //endRadius
-            temp.sprintf("%g", atts->GetEndRadius());
+            temp.setNum(atts->GetEndRadius());
             endRadius->setText(temp);
             break;
           case 10: //radiusSteps
@@ -376,11 +379,11 @@ QvisSurfCompPrepWindow::UpdateWindow(bool doAll)
             radiusSteps->setText(temp);
             break;
           case 11: //xStart
-            temp.sprintf("%g", atts->GetXStart());
+            temp.setNum(atts->GetXStart());
             xStart->setText(temp);
             break;
           case 12: //xStop
-            temp.sprintf("%g", atts->GetXStop());
+            temp.setNum(atts->GetXStop());
             xStop->setText(temp);
             break;
           case 13: //xSteps
@@ -388,11 +391,11 @@ QvisSurfCompPrepWindow::UpdateWindow(bool doAll)
             xSteps->setText(temp);
             break;
           case 14: //yStart
-            temp.sprintf("%g", atts->GetYStart());
+            temp.setNum(atts->GetYStart());
             yStart->setText(temp);
             break;
           case 15: //yStop
-            temp.sprintf("%g", atts->GetYStop());
+            temp.setNum(atts->GetYStop());
             yStop->setText(temp);
             break;
           case 16: //ySteps
@@ -400,11 +403,11 @@ QvisSurfCompPrepWindow::UpdateWindow(bool doAll)
             ySteps->setText(temp);
             break;
           case 17: //zStart
-            temp.sprintf("%g", atts->GetZStart());
+            temp.setNum(atts->GetZStart());
             zStart->setText(temp);
             break;
           case 18: //zStop
-            temp.sprintf("%g", atts->GetZStop());
+            temp.setNum(atts->GetZStop());
             zStop->setText(temp);
             break;
           case 19: //zSteps

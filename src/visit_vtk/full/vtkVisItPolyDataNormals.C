@@ -359,6 +359,9 @@ class NormalList
 //    Hank Childs, Fri Jul 30 09:00:51 PDT 2004
 //    Account for cell data in verts and lines.
 //
+//    Kathleen Bonnell, Tue Nov 16 10:29:25 PST 2004 
+//    Make nOtherCells be the count of verts and lines (not polys and lines). 
+//
 // ****************************************************************************
 void
 vtkVisItPolyDataNormals::ExecutePointWithSplitting()
@@ -373,7 +376,7 @@ vtkVisItPolyDataNormals::ExecutePointWithSplitting()
     vtkPoints    *inPts = input->GetPoints();
 
     int nCells  = inCA->GetNumberOfCells();
-    int nOtherCells = input->GetPolys()->GetNumberOfCells() +
+    int nOtherCells = input->GetVerts()->GetNumberOfCells() +
                       input->GetLines()->GetNumberOfCells();
     int nTotalCells = nCells + nOtherCells;
 

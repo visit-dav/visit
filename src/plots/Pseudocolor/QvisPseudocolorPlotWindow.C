@@ -349,6 +349,10 @@ QvisPseudocolorPlotWindow::CreateWindowContents()
 //   Kathleen Bonnell, Fri Nov 12 11:25:23 PST 2004 
 //   Replace point-size related cases with QvisPointControl 
 //
+//   Jeremy Meredith, Tue Nov 16 11:39:53 PST 2004
+//   Replaced simple QString::sprintf's with a setNum because there seems
+//   to be a bug causing numbers to be incremented by .00001.  See '5263.
+//
 // ****************************************************************************
 
 void
@@ -423,11 +427,11 @@ QvisPseudocolorPlotWindow::UpdateWindow(bool doAll)
             limitsSelect->blockSignals(false);
             break;
         case 7: // min
-            temp.sprintf("%g", pcAtts->GetMin());
+            temp.setNum(pcAtts->GetMin());
             minLineEdit->setText(temp);
             break;
         case 8: // max
-            temp.sprintf("%g", pcAtts->GetMax());
+            temp.setNum(pcAtts->GetMax());
             maxLineEdit->setText(temp);
             break;
         case 9: // pointSize
@@ -441,7 +445,7 @@ QvisPseudocolorPlotWindow::UpdateWindow(bool doAll)
             pointControl->blockSignals(false);
             break;
         case 11: // skewFactor
-            temp.sprintf("%g", pcAtts->GetSkewFactor());
+            temp.setNum(pcAtts->GetSkewFactor());
             skewLineEdit->setText(temp);
             break;
         case 12: // opacity

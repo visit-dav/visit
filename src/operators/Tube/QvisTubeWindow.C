@@ -112,7 +112,10 @@ QvisTubeWindow::CreateWindowContents()
 // Creation:   Wed Oct 30 10:58:01 PDT 2002
 //
 // Modifications:
-//   
+//   Jeremy Meredith, Tue Nov 16 11:39:53 PST 2004
+//   Replaced simple QString::sprintf's with a setNum because there seems
+//   to be a bug causing numbers to be incremented by .00001.  See '5263.
+//
 // ****************************************************************************
 
 void
@@ -133,7 +136,7 @@ QvisTubeWindow::UpdateWindow(bool doAll)
         switch(i)
         {
           case 0: //width
-            temp.sprintf("%g", atts->GetWidth());
+            temp.setNum(atts->GetWidth());
             width->setText(temp);
             break;
           case 1: //fineness

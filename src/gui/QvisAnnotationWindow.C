@@ -994,6 +994,10 @@ QvisAnnotationWindow::UpdateWindow(bool doAll)
 //   Kathleen Bonnell, Tue Dec 16 11:34:33 PST 2003 
 //   Added the ability to control the 2d & 3d label scaling exponents.
 //
+//   Jeremy Meredith, Tue Nov 16 11:39:53 PST 2004
+//   Replaced simple QString::sprintf's with a setNum because there seems
+//   to be a bug causing numbers to be incremented by .00001.  See '5263.
+//
 // ****************************************************************************
 
 void
@@ -1073,51 +1077,51 @@ QvisAnnotationWindow::UpdateAnnotationControls(bool doAll)
             setGridLines2D = true;
             break;
         case 9: // xMajorTickMinimum2D
-            temp.sprintf("%g", annotationAtts->GetXMajorTickMinimum2D());
+            temp.setNum(annotationAtts->GetXMajorTickMinimum2D());
             xMajorTickMinimumLineEdit2D->setText(temp);
             break;
         case 10: // yMajorTickMinimum2D
-            temp.sprintf("%g", annotationAtts->GetYMajorTickMinimum2D());
+            temp.setNum(annotationAtts->GetYMajorTickMinimum2D());
             yMajorTickMinimumLineEdit2D->setText(temp);
             break;
         case 11: // xMajorTickMaximum2D
-            temp.sprintf("%g", annotationAtts->GetXMajorTickMaximum2D());
+            temp.setNum(annotationAtts->GetXMajorTickMaximum2D());
             xMajorTickMaximumLineEdit2D->setText(temp);
             break;
         case 12: // yMajorTickMaximum2D
-            temp.sprintf("%g", annotationAtts->GetYMajorTickMaximum2D());
+            temp.setNum(annotationAtts->GetYMajorTickMaximum2D());
             yMajorTickMaximumLineEdit2D->setText(temp);
             break;
         case 13: // xMajorTickSpacing2D
-            temp.sprintf("%g", annotationAtts->GetXMajorTickSpacing2D());
+            temp.setNum(annotationAtts->GetXMajorTickSpacing2D());
             xMajorTickSpacingLineEdit2D->setText(temp);
             break;
         case 14: // yMajorTickSpacing2D
-            temp.sprintf("%g", annotationAtts->GetYMajorTickSpacing2D());
+            temp.setNum(annotationAtts->GetYMajorTickSpacing2D());
             yMajorTickSpacingLineEdit2D->setText(temp);
             break;
         case 15: // xMinorTickSpacing2D
-            temp.sprintf("%g", annotationAtts->GetXMinorTickSpacing2D());
+            temp.setNum(annotationAtts->GetXMinorTickSpacing2D());
             xMinorTickSpacingLineEdit2D->setText(temp);
             break;
         case 16: // yMinorTickSpacing2D
-            temp.sprintf("%g", annotationAtts->GetYMinorTickSpacing2D());
+            temp.setNum(annotationAtts->GetYMinorTickSpacing2D());
             yMinorTickSpacingLineEdit2D->setText(temp);
             break;
         case 17: // xLabelFontHeight2D
-            temp.sprintf("%g", annotationAtts->GetXLabelFontHeight2D());
+            temp.setNum(annotationAtts->GetXLabelFontHeight2D());
             xLabelFontHeightLineEdit2D->setText(temp);
             break;
         case 18: // yLabelFontHeight2D
-            temp.sprintf("%g", annotationAtts->GetYLabelFontHeight2D());
+            temp.setNum(annotationAtts->GetYLabelFontHeight2D());
             yLabelFontHeightLineEdit2D->setText(temp);
             break;
         case 19: // xTitleFontHeight2D
-            temp.sprintf("%g", annotationAtts->GetXTitleFontHeight2D());
+            temp.setNum(annotationAtts->GetXTitleFontHeight2D());
             xTitleFontHeightLineEdit2D->setText(temp);
             break;
         case 20: // yTitleFontHeight2D
-            temp.sprintf("%g", annotationAtts->GetYTitleFontHeight2D());
+            temp.setNum(annotationAtts->GetYTitleFontHeight2D());
             yTitleFontHeightLineEdit2D->setText(temp);
             break;
         case 21: // xLabelScaling2D

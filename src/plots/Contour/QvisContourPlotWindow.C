@@ -316,6 +316,10 @@ QvisContourPlotWindow::CreateWindowContents()
 //   Brad Whitlock, Fri Nov 22 12:07:38 PDT 2002
 //   I added new attributes to support color tables.
 //
+//   Jeremy Meredith, Tue Nov 16 11:39:53 PST 2004
+//   Replaced simple QString::sprintf's with a setNum because there seems
+//   to be a bug causing numbers to be incremented by .00001.  See '5263.
+//
 // ****************************************************************************
 
 void
@@ -466,11 +470,11 @@ QvisContourPlotWindow::UpdateWindow(bool doAll)
             maxToggle->blockSignals(false);
             break;
         case 15: // min
-            temp.sprintf("%g", contourAtts->GetMin());
+            temp.setNum(contourAtts->GetMin());
             minLineEdit->setText(temp);
             break;
         case 16: // max
-            temp.sprintf("%g", contourAtts->GetMax());
+            temp.setNum(contourAtts->GetMax());
             maxLineEdit->setText(temp);
             break;
         case 17: // scaling 
@@ -608,7 +612,10 @@ QvisContourPlotWindow::UpdateMultipleAreaColors()
 // Creation:   Fri Feb 16 14:18:36 PST 2001
 //
 // Modifications:
-//   
+//   Jeremy Meredith, Tue Nov 16 11:39:53 PST 2004
+//   Replaced simple QString::sprintf's with a setNum because there seems
+//   to be a bug causing numbers to be incremented by .00001.  See '5263.
+//
 // ****************************************************************************
 
 QString
@@ -620,7 +627,7 @@ QvisContourPlotWindow::LevelString(int i)
     if(cm == ContourAttributes::Level)
         retval.sprintf("%d", i + 1);
     else if(cm == ContourAttributes::Value)
-        retval.sprintf("%g", contourAtts->GetContourValue()[i]);
+        retval.setNum(contourAtts->GetContourValue()[i]);
     else
         retval.sprintf("%g %%", contourAtts->GetContourPercent()[i]);
 

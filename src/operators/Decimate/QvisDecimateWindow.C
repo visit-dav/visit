@@ -101,7 +101,10 @@ QvisDecimateWindow::CreateWindowContents()
 // Creation:   Sun Aug 11 08:39:31 PDT 2002
 //
 // Modifications:
-//   
+//   Jeremy Meredith, Tue Nov 16 11:39:53 PST 2004
+//   Replaced simple QString::sprintf's with a setNum because there seems
+//   to be a bug causing numbers to be incremented by .00001.  See '5263.
+//
 // ****************************************************************************
 
 void
@@ -122,7 +125,7 @@ QvisDecimateWindow::UpdateWindow(bool doAll)
         switch(i)
         {
           case 0: //target
-            temp.sprintf("%g", atts->GetTarget());
+            temp.setNum(atts->GetTarget());
             target->setText(temp);
             break;
         }

@@ -210,6 +210,10 @@ QvisReflectWindow::CreateWindowContents()
 //    Only update the octant menu automatically if it has
 //    changed dimensionality.
 //
+//    Jeremy Meredith, Tue Nov 16 11:39:53 PST 2004
+//    Replaced simple QString::sprintf's with a setNum because there seems
+//    to be a bug causing numbers to be incremented by .00001.  See '5263.
+//
 // ****************************************************************************
 
 void
@@ -243,7 +247,7 @@ QvisReflectWindow::UpdateWindow(bool doAll)
             specifiedX->setEnabled(atts->GetUseXBoundary() ? false : true);
             break;
           case 2: //specifiedX
-            temp.sprintf("%g", atts->GetSpecifiedX());
+            temp.setNum(atts->GetSpecifiedX());
             specifiedX->setText(temp);
             break;
           case 3: //yBound
@@ -252,7 +256,7 @@ QvisReflectWindow::UpdateWindow(bool doAll)
             specifiedY->setEnabled(atts->GetUseYBoundary() ? false : true);
             break;
           case 4: //specifiedY
-            temp.sprintf("%g", atts->GetSpecifiedY());
+            temp.setNum(atts->GetSpecifiedY());
             specifiedY->setText(temp);
             break;
           case 5: //zBound
@@ -261,7 +265,7 @@ QvisReflectWindow::UpdateWindow(bool doAll)
             specifiedZ->setEnabled(atts->GetUseZBoundary() ? false : true);
             break;
           case 6: //specifiedZ
-            temp.sprintf("%g", atts->GetSpecifiedZ());
+            temp.setNum(atts->GetSpecifiedZ());
             specifiedZ->setText(temp);
             break;
           case 7: //reflections

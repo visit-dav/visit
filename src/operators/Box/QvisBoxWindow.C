@@ -144,7 +144,10 @@ QvisBoxWindow::CreateWindowContents()
 // Creation:   Fri Apr 12 14:20:13 PST 2002
 //
 // Modifications:
-//   
+//   Jeremy Meredith, Tue Nov 16 11:39:53 PST 2004
+//   Replaced simple QString::sprintf's with a setNum because there seems
+//   to be a bug causing numbers to be incremented by .00001.  See '5263.
+//
 // ****************************************************************************
 
 void
@@ -168,27 +171,27 @@ QvisBoxWindow::UpdateWindow(bool doAll)
             amount->setButton(atts->GetAmount());
             break;
           case 1: //minx
-            temp.sprintf("%g", atts->GetMinx());
+            temp.setNum(atts->GetMinx());
             minx->setText(temp);
             break;
           case 2: //maxx
-            temp.sprintf("%g", atts->GetMaxx());
+            temp.setNum(atts->GetMaxx());
             maxx->setText(temp);
             break;
           case 3: //miny
-            temp.sprintf("%g", atts->GetMiny());
+            temp.setNum(atts->GetMiny());
             miny->setText(temp);
             break;
           case 4: //maxy
-            temp.sprintf("%g", atts->GetMaxy());
+            temp.setNum(atts->GetMaxy());
             maxy->setText(temp);
             break;
           case 5: //minz
-            temp.sprintf("%g", atts->GetMinz());
+            temp.setNum(atts->GetMinz());
             minz->setText(temp);
             break;
           case 6: //maxz
-            temp.sprintf("%g", atts->GetMaxz());
+            temp.setNum(atts->GetMaxz());
             maxz->setText(temp);
             break;
         }
