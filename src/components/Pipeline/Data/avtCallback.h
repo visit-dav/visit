@@ -20,6 +20,7 @@ typedef   void  (*UpdatePlotAttributesCallback)(void *, const std::string &,
 
 
 #include <WindowAttributes.h>
+#include <LightList.h>
 
 
 // ****************************************************************************
@@ -39,6 +40,9 @@ typedef   void  (*UpdatePlotAttributesCallback)(void *, const std::string &,
 //    Hank Childs, Tue Apr 23 19:39:36 PDT 2002
 //    Added support for nowin.
 //
+//    Jeremy Meredith, Thu Oct  2 09:49:48 PDT 2003
+//    Added support for lights.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtCallback
@@ -54,6 +58,9 @@ class PIPELINE_API avtCallback
     static void                  SetCurrentWindowAtts(const WindowAttributes&);
     static const WindowAttributes &
                                  GetCurrentWindowAtts(void);
+
+    static void                  SetCurrentLightList(const LightList&);
+    static const LightList      &GetCurrentLightList(void);
 
     static void                  RegisterUpdatePlotAttributesCallback(
                                          UpdatePlotAttributesCallback, void *);
@@ -73,6 +80,7 @@ class PIPELINE_API avtCallback
     static void                 *imageCallbackArgs;
 
     static WindowAttributes      windowAtts;
+    static LightList             lightList;
 
     static bool                  nowinMode;
 

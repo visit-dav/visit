@@ -6,12 +6,16 @@
 
 #include <vtkDataSet.h>
 #include <vtkRectilinearGrid.h>
+#include <vtkRenderer.h>
+#include <vtkRenderWindow.h>
 #include <math.h>
 #include <float.h>
 
 #include <avtCallback.h>
 #include <avtOpenGLSplattingVolumeRenderer.h>
 #include <avtMesaSplattingVolumeRenderer.h>
+#include <avtOpenGL3DTextureVolumeRenderer.h>
+#include <avtMesa3DTextureVolumeRenderer.h>
 
 #include <ImproperUseException.h>
 
@@ -40,6 +44,9 @@ static int CalculateIndex(vtkRectilinearGrid*, const int,const int,const int);
 avtVolumeRenderer::avtVolumeRenderer()
 {
     initialized = false;
+
+    rendererImplementation = NULL;
+    currentRendererIsValid = false;
 
     gx  = NULL;
     gy  = NULL;
@@ -71,6 +78,30 @@ avtVolumeRenderer::~avtVolumeRenderer()
 }
 
 // ****************************************************************************
+//  Method:  
+//
+//  Purpose:
+//    
+//
+//  Arguments:
+//    
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    October  1, 2003
+//
+// ****************************************************************************
+void
+avtVolumeRenderer::ReleaseGraphicsResources()
+{
+    if (rendererImplementation)
+    {
+        VTKRen->GetRenderWindow()->MakeCurrent();
+        delete rendererImplementation;
+        rendererImplementation = NULL;
+    }
+}
+
+// ****************************************************************************
 //  Method: avtVolumeRenderer::New
 //
 //  Purpose:
@@ -87,19 +118,69 @@ avtVolumeRenderer::~avtVolumeRenderer()
 //    Renamed the renderers to contain "Splatting" in their name.
 //
 // ****************************************************************************
- 
 avtVolumeRenderer *
 avtVolumeRenderer::New(void)
 {
-    if (avtCallback::GetNowinMode())
-    {
-        return new avtMesaSplattingVolumeRenderer;
-    }
-    else
-    { 
-        return new avtOpenGLSplattingVolumeRenderer;
-    }
+    return new avtVolumeRenderer;
 }
+ 
+// ****************************************************************************
+//  Method:  avtVolumeRenderer::Render
+//
+//  Purpose:
+//    Set up things necessary to call the renderer implentation.  Make a new
+//    implementation object if things have changed.
+//
+//  Arguments:
+//    ds         the dataset to render
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    October  1, 2003
+//
+// ****************************************************************************
+void
+avtVolumeRenderer::Render(vtkDataSet *ds)
+{
+    if (!currentRendererIsValid || !rendererImplementation)
+    {
+        if (rendererImplementation)
+            delete rendererImplementation;
+
+        if (avtCallback::GetNowinMode())
+        {
+            if (atts.GetRendererType() == VolumeAttributes::Splatting)
+                rendererImplementation = new avtMesaSplattingVolumeRenderer;
+            else // it == VolumeAttributes::Texture3D
+                rendererImplementation = new avtMesa3DTextureVolumeRenderer;
+        }
+        else
+        { 
+            if (atts.GetRendererType() == VolumeAttributes::Splatting)
+                rendererImplementation = new avtOpenGLSplattingVolumeRenderer;
+            else // it == VolumeAttributes::Texture3D
+                rendererImplementation = new avtOpenGL3DTextureVolumeRenderer;
+        }
+        currentRendererIsValid = true;
+    }
+
+    // Do other initialization
+    if (!initialized)
+    {
+        Initialize(ds);
+    }
+
+    // get data set
+    vtkRectilinearGrid  *grid = (vtkRectilinearGrid*)ds;
+    vtkDataArray *data = NULL;
+    vtkDataArray *opac = NULL;
+    GetScalars(grid, data, opac);
+
+    rendererImplementation->Render(grid, data, opac, view, atts,
+                                   vmin, vmax, vsize,
+                                   omin, omax, osize,
+                                   gx, gy, gz, gmn);
+}
+
 
 // ****************************************************************************
 //  Method:  avtVolumeRenderer::Initialize
@@ -137,6 +218,10 @@ avtVolumeRenderer::New(void)
 //    Jeremy Meredith, Tue Sep 30 11:47:41 PDT 2003
 //    Only calculate the gradient if lighting is enabled *and* if it does
 //    not already exist.  The SetAtts method will delete it if it is invalid.
+//
+//    Jeremy Meredith, Thu Oct  2 13:15:27 PDT 2003
+//    Choose the gradient method based on settings from the user.  Changed
+//    the ghost method to avoid ghosts entirely.
 //
 // ****************************************************************************
 void
@@ -223,8 +308,7 @@ avtVolumeRenderer::Initialize(vtkDataSet *ds)
         vtkDataArray *zc = grid->GetZCoordinates();
 
         // Some default values since they are not set from outside yet
-        const int ghost = 1;
-        const int style = 0;
+        const int ghost = 0;
 
         float ghostval = (ghost == 1) ? omin-osize : omax+osize;
         float maxmag = 0;
@@ -236,7 +320,7 @@ avtVolumeRenderer::Initialize(vtkDataSet *ds)
                 {
                     int index = CalculateIndex(grid,i,j,k);
 
-                    if (style==0) // centered differences
+                    if (atts.GetGradientType() == VolumeAttributes::CenteredDifferences)
                     {
                         if (ghost != 0)
                         {
@@ -285,7 +369,7 @@ avtVolumeRenderer::Initialize(vtkDataSet *ds)
                                 gz[index] = (opac->GetTuple1(CalculateIndex(grid,i  ,j  ,k+1))-opac->GetTuple1(CalculateIndex(grid,i  ,j  ,k-1)))/(zc->GetTuple1(k+1)-zc->GetTuple1(k-1));
                         }
                     }
-                    else // Sobel operator
+                    else //(atts.GetGradientType() == VolumeAttributes::SobelOperator)
                     {
                         float Mx[3][3][3] = {{{-2, -3, -2}, {-3, -6, -3}, {-2, -3, -2}},
                                              {{ 0,  0,  0}, { 0,  0,  0}, { 0,  0,  0}},
@@ -389,12 +473,18 @@ avtVolumeRenderer::Initialize(vtkDataSet *ds)
 //    Jeremy Meredith, Tue Sep 30 11:48:46 PDT 2003
 //    Make sure we need to invalidate the gradient before doing so.
 //
+//    Jeremy Meredith, Thu Oct  2 13:16:15 PDT 2003
+//    Added support for multiple renderer types.
+//
 // ****************************************************************************
 void
 avtVolumeRenderer::SetAtts(const AttributeGroup *a)
 {
-    bool invalidateGradient = 
-                   !(atts.GradientWontChange(*(const VolumeAttributes*)a));
+    const VolumeAttributes *newAtts = (const VolumeAttributes*)a;
+
+    bool invalidateGradient = !(atts.GradientWontChange(*newAtts));
+    currentRendererIsValid = (atts.GetRendererType() == newAtts->GetRendererType());
+
     atts = *(const VolumeAttributes*)a;
 
     // Clean up memory.

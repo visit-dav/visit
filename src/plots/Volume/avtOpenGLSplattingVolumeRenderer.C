@@ -16,6 +16,10 @@
 #include <vtkMatrix4x4.h>
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
+#include <VolumeAttributes.h>
+#include <avtViewInfo.h>
+#include <avtCallback.h>
+#include <LightList.h>
 
 #ifndef MAX
 #define MAX(a,b) ((a) > (b) ? (a) : (b))
@@ -51,30 +55,18 @@ avtOpenGLSplattingVolumeRenderer::avtOpenGLSplattingVolumeRenderer()
 //  Programmer:  Jeremy Meredith
 //  Creation:    September 30, 2003
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Oct  2 13:33:49 PDT 2003
+//    Delete the texture object here since this class is no longer
+//    an implementation of avtCustomRenderer, so it has no
+//    ReleaseGraphicsResources method.
+//
 // ****************************************************************************
 avtOpenGLSplattingVolumeRenderer::~avtOpenGLSplattingVolumeRenderer()
 {
     delete[] alphatex;
-}
-
-// ****************************************************************************
-//  Method:  avtOpenGLSplattingVolumeRenderer::ReleaseGraphicsResources
-//
-//  Purpose:
-//    Delete the occupied texture memory.
-//
-//  Arguments:
-//    none
-//
-//  Programmer:  Jeremy Meredith
-//  Creation:    September 30, 2003
-//
-// ****************************************************************************
-void
-avtOpenGLSplattingVolumeRenderer::ReleaseGraphicsResources()
-{
-    VTKRen->GetRenderWindow()->MakeCurrent();
-    if (alphatexId == 0)
+    // Assumes context is current
+    if (alphatexId != 0)
     {
         glDeleteTextures(1, &alphatexId);
         alphatexId = 0;
@@ -118,10 +110,23 @@ avtOpenGLSplattingVolumeRenderer::ReleaseGraphicsResources()
 //    Added calls to make an opengl texture object so we don't have to
 //    keep sending it.  Only get values of gradient if we are doing lighting.
 //
+//    Jeremy Meredith, Thu Oct  2 13:33:02 PDT 2003
+//    Changed the way lighting is handled.
+//    Made this class not inherit from avtVolumeRenderer, so it now receives
+//    most of its state in the Render arguments every frame.
+//
 // ****************************************************************************
 
 void
-avtOpenGLSplattingVolumeRenderer::Render(vtkDataSet *ds)
+avtOpenGLSplattingVolumeRenderer::Render(vtkRectilinearGrid *grid,
+                                         vtkDataArray *data,
+                                         vtkDataArray *opac,
+                                         const avtViewInfo &view,
+                                         const VolumeAttributes &atts,
+                                         float vmin, float vmax, float vsize,
+                                         float omin, float omax, float osize,
+                                         float *gx, float *gy, float *gz,
+                                         float *gmn)
 {
     // Create the texture for a gaussian splat
     const int GRIDSIZE=32;
@@ -146,17 +151,6 @@ avtOpenGLSplattingVolumeRenderer::Render(vtkDataSet *ds)
                      GRIDSIZE,GRIDSIZE,0, GL_ALPHA, GL_FLOAT, alphatex);
     }
 
-    // Do other initialization
-    if (!initialized)
-    {
-        Initialize(ds);
-    }
-
-    // get data set
-    vtkRectilinearGrid  *grid = (vtkRectilinearGrid*)ds;
-    vtkDataArray *data = NULL;
-    vtkDataArray *opac = NULL;
-    GetScalars(grid, data, opac);
     int dims[3];
     grid->GetDimensions(dims);
 
@@ -174,6 +168,7 @@ avtOpenGLSplattingVolumeRenderer::Render(vtkDataSet *ds)
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glBindTexture(GL_TEXTURE_2D, alphatexId);
     glEnable(GL_TEXTURE_2D);
+    glEnable(GL_BLEND);
 
     // set up parameters
     vtkCamera *camera = vtkCamera::New();
@@ -329,8 +324,40 @@ avtOpenGLSplattingVolumeRenderer::Render(vtkDataSet *ds)
     I->MultiplyPoint(V1,V1);
     I->MultiplyPoint(V2,V2);
 
+    LightList lights = avtCallback::GetCurrentLightList();
+
     float light[4] = {0,0,1, 0};
-    I->MultiplyPoint(light, light);
+    float ambient = 0.0;
+
+    // Find an ambient light
+    for (int i=0; i<lights.NumLights(); i++)
+    {
+        const LightAttributes &l = lights.GetLight(i);
+        if (l.GetEnabledFlag() && l.GetType()==LightAttributes::Ambient)
+        {
+            double rgba[4];
+            l.GetColor().GetRgba(rgba);
+            ambient = l.GetBrightness() * (rgba[0]+rgba[1]+rgba[2])/3.;
+            break;
+        }
+    }
+
+    // Find a directional (object or camera) light
+    for (int i=0; i<lights.NumLights(); i++)
+    {
+        const LightAttributes &l = lights.GetLight(i);
+        if (l.GetEnabledFlag() && l.GetType()!=LightAttributes::Ambient)
+        {
+            const double *dir = l.GetDirection();
+            light[0] = dir[0];
+            light[1] = dir[1];
+            light[2] = dir[2];
+            break;
+        }
+    }
+
+    // If we want to transform the light so it is attached to the camera:
+    //I->MultiplyPoint(light, light);
 
     // Splat it!
     float color[4];
@@ -394,21 +421,21 @@ avtOpenGLSplattingVolumeRenderer::Render(vtkDataSet *ds)
                     float gj = gy[index];
                     float gk = gz[index];
 
+                    // Amount of shading should be somewhat proportional
+                    // to the magnitude of the gradient
+                    float gm = pow(gmn[index], 0.25);
+
+                    // Get the base lit brightness 
                     float grad[3] = {gi,gj,gk};
-                    brightness = vtkMath::Dot(grad,light);
+                    float lightdir[3] = {light[0],light[1],light[2]};
+                    brightness = vtkMath::Dot(grad,lightdir);
                     if (brightness<0) brightness *= -1;
 
-                    // no advanced shading options
-                    /* ** HRC, 11/19/01, if this code ever becomes uncommented,
-                       ** it must be modified to address separate opacity and
-                       ** color variables. 
-                    if (shadingGradientScale)
-                        brightness = 1*(1-data->gmn[index]) +
-                            brightness*data->gmn[index];
-                    if (shadingOpacityScale)
-                        brightness = 1*(1-opacity) +
-                            brightness*opacity;
-                    */
+                    // Modulate by the gradient magnitude
+                    brightness = (1.0 - gm)*1.0 + gm*brightness;
+
+                    // Modulate by the amount of ambient lighting
+                    brightness = (1.0 - ambient)*brightness + ambient;
                 }
                 else
                 {
@@ -457,6 +484,7 @@ avtOpenGLSplattingVolumeRenderer::Render(vtkDataSet *ds)
     glDepthMask(true);
 
     glDisable(GL_TEXTURE_2D);
+    glDisable(GL_BLEND);
     glEnable(GL_LIGHTING);
     opac->Delete();
     data->Delete();

@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include <vtkDisjointCubesFacelistFilter.h>
 #include <vtkGeometryFilter.h>
 #include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
@@ -213,7 +214,9 @@ avtFacelistFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
       // 3D meshes
       case 3:
         if (dis_elem)
+        {
             out_ds = TakeFacesForDisjointElementMesh(in_ds, domain);
+        }
         else
             out_ds = Take3DFaces(in_ds, domain);
         break;
@@ -551,6 +554,9 @@ avtFacelistFilter::TakeFacesForDisjointElementMesh(vtkDataSet *in_ds, int dom)
         return Take3DFaces(in_ds, dom);
     }
 
+    //
+    // Make sure that we only have hexahedrons.
+    //
     vtkUnstructuredGrid *ugrid = (vtkUnstructuredGrid *) in_ds;
     vtkUnsignedCharArray *types = vtkUnsignedCharArray::New();
     ugrid->GetListOfUniqueCellTypes(types);
@@ -564,104 +570,17 @@ avtFacelistFilter::TakeFacesForDisjointElementMesh(vtkDataSet *in_ds, int dom)
         return Take3DFaces(in_ds, dom);
     }
 
-/*
     //
-    // Now create the new poly data structure.  Since we will be making
-    // exactly one triangle strip per hex, we can copy over the cell data
-    // as well as the point data.
+    // Use the disjoint cubes facelist filter to find the external faces.
     //
-    int ncells = ugrid->GetNumberOfCells();
-    vtkPolyData *output = vtkPolyData::New();
-    output->SetPoints(ugrid->GetPoints());
-    output->GetPointData()->PassData(ugrid->GetPointData());
-    output->GetCellData()->PassData(ugrid->GetCellData());
-    output->Allocate(ncells);
-    vtkIdType *ptr = ugrid->GetCells()->GetPointer();
-    for (int i = 0 ; i < ncells ; i++)
-    {
-        ptr += 1; // npts for cell.
-        vtkIdType pts[12];
-        pts[0]  = ptr[0];
-        pts[1]  = ptr[1];
-        pts[2]  = ptr[2];
-        pts[3]  = ptr[5];
-        pts[4]  = ptr[6];
-        pts[5]  = ptr[4];
-        pts[6]  = ptr[7];
-        pts[7]  = ptr[0];
-        pts[8]  = ptr[3];
-        pts[9]  = ptr[2];
-        pts[10] = ptr[7];
-        pts[11] = ptr[6];
-        output->InsertNextCell(VTK_TRIANGLE_STRIP, 12, pts);
-        ptr += 8;
-    }
-*/
+    vtkDisjointCubesFacelistFilter *dcff =
+                                         vtkDisjointCubesFacelistFilter::New();
+    dcff->SetInput(ugrid);
+    dcff->Update();
 
-    //
-    // Now create the new poly data structure.  There appears to be some
-    // issues with lighting and VTK's triangle strips.  Just use quad faces
-    // until that is straightened out.
-    //
-    int ncells = ugrid->GetNumberOfCells();
-    vtkPolyData *output = vtkPolyData::New();
-    output->SetPoints(ugrid->GetPoints());
-    output->GetPointData()->PassData(ugrid->GetPointData());
-    vtkCellData *inCD  = ugrid->GetCellData();
-    vtkCellData *outCD = output->GetCellData();
-    outCD->CopyAllocate(inCD, 6*ncells);
-    output->Allocate(6*ncells);
-    vtkIdType *ptr = ugrid->GetCells()->GetPointer();
-    for (int i = 0 ; i < ncells ; i++)
-    {
-        ptr += 1;  // npts for this cell.
-        vtkIdType pts[4];
-
-        pts[0] = ptr[0];
-        pts[1] = ptr[4];
-        pts[2] = ptr[7];
-        pts[3] = ptr[3];
-        outCD->CopyData(inCD, i, 6*i);
-        output->InsertNextCell(VTK_QUAD, 4, pts);
-
-        pts[0] = ptr[1];
-        pts[1] = ptr[2];
-        pts[2] = ptr[6];
-        pts[3] = ptr[5];
-        outCD->CopyData(inCD, i, 6*i+1);
-        output->InsertNextCell(VTK_QUAD, 4, pts);
-
-        pts[0] = ptr[0];
-        pts[1] = ptr[1];
-        pts[2] = ptr[5];
-        pts[3] = ptr[4];
-        outCD->CopyData(inCD, i, 6*i+2);
-        output->InsertNextCell(VTK_QUAD, 4, pts);
-
-        pts[0] = ptr[3];
-        pts[1] = ptr[7];
-        pts[2] = ptr[6];
-        pts[3] = ptr[2];
-        outCD->CopyData(inCD, i, 6*i+3);
-        output->InsertNextCell(VTK_QUAD, 4, pts);
-
-        pts[0] = ptr[0];
-        pts[1] = ptr[3];
-        pts[2] = ptr[2];
-        pts[3] = ptr[1];
-        outCD->CopyData(inCD, i, 6*i+4);
-        output->InsertNextCell(VTK_QUAD, 4, pts);
-
-        pts[0] = ptr[4];
-        pts[1] = ptr[5];
-        pts[2] = ptr[6];
-        pts[3] = ptr[7];
-        outCD->CopyData(inCD, i, 6*i+5);
-        output->InsertNextCell(VTK_QUAD, 4, pts);
-
-        ptr += 8;
-    }
+    vtkDataSet *output = dcff->GetOutput();
     ManageMemory(output);
+    dcff->Delete();
     return output;
 }
 

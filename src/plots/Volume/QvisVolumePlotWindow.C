@@ -22,6 +22,7 @@
 #include <ColorControlPoint.h>
 #include <GaussianControlPoint.h>
 #include <ViewerProxy.h>
+#include <ImproperUseException.h>
 
 // XPM data for pixmaps.
 static const char * black_xpm[] = {
@@ -170,6 +171,10 @@ QvisVolumePlotWindow::~QvisVolumePlotWindow()
 //
 //   Brad Whitlock, Mon Mar 4 15:52:59 PST 2002
 //   Connected a signal to the scribble opacity widget.
+//
+//   Jeremy Meredith, Thu Oct  2 13:10:53 PDT 2003
+//   Added settings for the renderer type, the gradient method, and
+//   the number of 3D textured slices.
 //
 // ****************************************************************************
 
@@ -388,7 +393,7 @@ QvisVolumePlotWindow::CreateWindowContents()
     opacityMinMaxLayout->addWidget(opacityMax);
 
     // Create the resample target value
-    QGridLayout *resampleAndOpacityLayout = new QGridLayout(topLayout, 4,2, 10, "resampleAndOpacityLayout");
+    QGridLayout *resampleAndOpacityLayout = new QGridLayout(topLayout, 4,3, 10, "resampleAndOpacityLayout");
     resampleTarget = new QLineEdit(central, "resampleTarget");
     connect(resampleTarget, SIGNAL(returnPressed()),
             this, SLOT(resampleTargetProcessText()));
@@ -401,14 +406,49 @@ QvisVolumePlotWindow::CreateWindowContents()
     resampleAndOpacityLayout->addWidget(resampleTarget, 0, 1);
     resampleAndOpacityLayout->addWidget(resampleTargetSlider, 0, 2);
 
+    // Create the number of 3D slices.
+    num3DSlices = new QLineEdit(central, "num3DSlices");
+    connect(num3DSlices, SIGNAL(returnPressed()), this,
+            SLOT(num3DSlicesProcessText()));
+    QLabel *num3DSlicesLabel = new QLabel(num3DSlices, "Number of slices",
+                                            central, "num3DSlicesLabel");
+    resampleAndOpacityLayout->addWidget(num3DSlicesLabel, 1, 0);
+    resampleAndOpacityLayout->addWidget(num3DSlices, 1, 1);
+
     // Create the number of samples per ray.
     samplesPerRay = new QLineEdit(central, "samplesPerRay");
     connect(samplesPerRay, SIGNAL(returnPressed()), this,
             SLOT(samplesPerRayProcessText()));
     QLabel *samplesPerRayLabel = new QLabel(samplesPerRay, "Samples per ray",
                                             central, "samplesPerRayLabel");
-    resampleAndOpacityLayout->addWidget(samplesPerRayLabel, 1, 0);
-    resampleAndOpacityLayout->addWidget(samplesPerRay, 1, 1);
+    resampleAndOpacityLayout->addWidget(samplesPerRayLabel, 2, 0);
+    resampleAndOpacityLayout->addWidget(samplesPerRay, 2, 1);
+
+    // Create the rendering method radio buttons.
+    QHBoxLayout *rendererLayout = new QHBoxLayout(topLayout);
+    rendererLayout->addWidget(new QLabel("Rendering method", central));
+    rendererButtonGroup = new QButtonGroup(0, "rendererButtonGroup");
+    connect(rendererButtonGroup, SIGNAL(clicked(int)),
+            this, SLOT(rendererTypeChanged(int)));
+    rb = new QRadioButton("Splatting", central);
+    rendererButtonGroup->insert(rb, 0);
+    rendererLayout->addWidget(rb);
+    rb = new QRadioButton("3D Texturing", central);
+    rendererButtonGroup->insert(rb, 1);
+    rendererLayout->addWidget(rb);
+
+    // Create the gradient method radio buttons.
+    QHBoxLayout *gradientLayout = new QHBoxLayout(topLayout);
+    gradientLayout->addWidget(new QLabel("Gradient method", central));
+    gradientButtonGroup = new QButtonGroup(0, "gradientButtonGroup");
+    connect(gradientButtonGroup, SIGNAL(clicked(int)),
+            this, SLOT(gradientTypeChanged(int)));
+    rb = new QRadioButton("Centered diff", central);
+    gradientButtonGroup->insert(rb, 0);
+    gradientLayout->addWidget(rb);
+    rb = new QRadioButton("Sobel", central);
+    gradientButtonGroup->insert(rb, 1);
+    gradientLayout->addWidget(rb);
 
     // Create the legend toggle.
     QHBoxLayout *toggleLayout = new QHBoxLayout(topLayout);
@@ -478,6 +518,10 @@ QvisVolumePlotWindow::CreateWindowContents()
 //
 //   Brad Whitlock, Thu Feb 14 09:31:51 PDT 2002
 //   Fixed a bug in which the min/max toggles were not set properly.
+//
+//   Jeremy Meredith, Thu Oct  2 13:11:02 PDT 2003
+//   Added settings for the renderer type, the gradient method, and
+//   the number of 3D textured slices.
 //
 // ****************************************************************************
 
@@ -597,6 +641,28 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
         case 19: // samplesPerRay
             temp.sprintf("%d", volumeAtts->GetSamplesPerRay());
             samplesPerRay->setText(temp);
+            break;
+        case 20: // rendererType
+            if (volumeAtts->GetRendererType() == VolumeAttributes::Splatting)
+            {
+                rendererButtonGroup->setButton(0);
+                num3DSlices->setEnabled(false);
+            }
+            else
+            {
+                rendererButtonGroup->setButton(1);
+                num3DSlices->setEnabled(true);
+            }
+            break;
+        case 21: // gradientType
+            if (volumeAtts->GetGradientType() == VolumeAttributes::CenteredDifferences)
+                gradientButtonGroup->setButton(0);
+            else
+                gradientButtonGroup->setButton(1);
+            break;
+        case 22:
+            temp.sprintf("%d", volumeAtts->GetNum3DSlices());
+            num3DSlices->setText(temp);
             break;
         }
     }
@@ -836,6 +902,10 @@ QvisVolumePlotWindow::CopyGaussianOpacitiesToFreeForm()
 //   Brad Whitlock, Thu Feb 14 12:46:53 PDT 2002
 //   Fixed a memory leak and moved a rule about the opacity variable to here.
 //
+//   Jeremy Meredith, Thu Oct  2 13:11:15 PDT 2003
+//   Added settings for the renderer type, the gradient method, and
+//   the number of 3D textured slices.
+//
 // ****************************************************************************
 
 void
@@ -1051,8 +1121,28 @@ QvisVolumePlotWindow::GetCurrentValues(int which_widget)
         if(!okay)
         {
             msg.sprintf("The number of samples per ray was invalid."
-                "Resetting to the last good value of %g.",
-                volumeAtts->GetOpacityVarMax());
+                "Resetting to the last good value of %i.",
+                volumeAtts->GetSamplesPerRay());
+            Message(msg);
+        }
+    }
+
+    // Get the number of slices for 3D texturing.
+    if(which_widget == 9 || doAll)
+    {
+        temp = num3DSlices->displayText().simplifyWhiteSpace();
+        okay = !temp.isEmpty();
+        if(okay)
+        {
+            float val = temp.toFloat(&okay);
+            volumeAtts->SetNum3DSlices(val);
+        }
+
+        if(!okay)
+        {
+            msg.sprintf("The number of 3d slices was invalid."
+                "Resetting to the last good value of %i.",
+                volumeAtts->GetNum3DSlices());
             Message(msg);
         }
     }
@@ -1906,3 +1996,88 @@ QvisVolumePlotWindow::opacityVariableProcessText()
     Apply();
 }
 
+// ****************************************************************************
+//  Method:  QvisVolumePlotWindow::gradientTypeChanged
+//
+//  Purpose:
+//    Update the gradient type based on user input
+//
+//  Arguments:
+//    val        the new gradient type
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    October  2, 2003
+//
+// ****************************************************************************
+void
+QvisVolumePlotWindow::gradientTypeChanged(int val)
+{
+    switch (val)
+    {
+      case 0:
+        volumeAtts->SetGradientType(VolumeAttributes::CenteredDifferences);
+        break;
+      case 1:
+        volumeAtts->SetGradientType(VolumeAttributes::SobelOperator);
+        break;
+      default:
+        EXCEPTION1(ImproperUseException,
+                   "The Volume plot received a signal for a gradient method "
+                   "that it didn't understand");
+        break;
+    }
+    Apply();
+}
+
+// ****************************************************************************
+//  Method:  QvisVolumePlotWindow::rendererTypeChanged
+//
+//  Purpose:
+//    Update the renderer type based on user input
+//
+//  Arguments:
+//    val        the new renderer type
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    October  2, 2003
+//
+// ****************************************************************************
+void
+QvisVolumePlotWindow::rendererTypeChanged(int val)
+{
+    switch (val)
+    {
+      case 0:
+        volumeAtts->SetRendererType(VolumeAttributes::Splatting);
+        break;
+      case 1:
+        volumeAtts->SetRendererType(VolumeAttributes::Texture3D);
+        break;
+      default:
+        EXCEPTION1(ImproperUseException,
+                   "The Volume plot received a signal for a renderer "
+                   "that it didn't understand");
+        break;
+    }
+    Apply();
+}
+
+// ****************************************************************************
+//  Method:  QvisVolumePlotWindow::num3DSlicesProcessText
+//
+//  Purpose:
+//    Update the number of 3D texturing slices based on user input
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    October  2, 2003
+//
+// ****************************************************************************
+void
+QvisVolumePlotWindow::num3DSlicesProcessText()
+{
+    GetCurrentValues(9);
+    Apply();
+}

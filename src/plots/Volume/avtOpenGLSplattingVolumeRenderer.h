@@ -5,14 +5,14 @@
 #ifndef AVT_OPEN_GL_SPLATTING_VOLUME_RENDERER_H
 #define AVT_OPEN_GL_SPLATTING_VOLUME_RENDERER_H
 
-#include <avtVolumeRenderer.h>
-
+#include <avtVolumeRendererImplementation.h>
 
 // ****************************************************************************
 //  Class: avtOpenGLSplattingVolumeRenderer
 //
 //  Purpose:
-//      An implementation of a volume renderer that uses OpenGL calls.
+//      An implementation of a gaussian splat volume renderer that
+//      uses OpenGL calls.
 //
 //  Programmer: Hank Childs
 //  Creation:   April 24, 2002
@@ -23,17 +23,29 @@
 //    class to here.  Added OpenGL texture object ID.  Added method to
 //    release texture object when we are done with it.
 //
+//    Jeremy Meredith, Thu Oct  2 13:36:28 PDT 2003
+//    Made this class not inherit from avtVolumeRenderer.  It now 
+//    gets most of its state from the arguments to Render.
+//
 // ****************************************************************************
 
-class avtOpenGLSplattingVolumeRenderer : public avtVolumeRenderer
+class avtOpenGLSplattingVolumeRenderer : public avtVolumeRendererImplementation
 {
   public:
                             avtOpenGLSplattingVolumeRenderer();
     virtual                ~avtOpenGLSplattingVolumeRenderer();
-    virtual void            ReleaseGraphicsResources();
 
   protected:
-    virtual void            Render(vtkDataSet *);
+    virtual void            Render(vtkRectilinearGrid *grid,
+                                   vtkDataArray *data,
+                                   vtkDataArray *opac,
+                                   const avtViewInfo &view,
+                                   const VolumeAttributes&,
+                                   float vmin, float vmax, float vsize,
+                                   float omin, float omax, float osize,
+                                   float *gx, float *gy, float *gz,
+                                   float *gmn);
+
     float                  *alphatex;
     unsigned int            alphatexId;
 };

@@ -9,6 +9,7 @@
 #include <VolumeAttributes.h>
 
 class vtkDataArray;
+class avtVolumeRendererImplementation;
 
 // ****************************************************************************
 //  Class: avtVolumeRenderer
@@ -33,6 +34,11 @@ class vtkDataArray;
 //    Jeremy Meredith, Tue Sep 30 11:49:42 PDT 2003
 //    Added method "ReleaseGraphicsResources".  Moved alphatex to subclass.
 //
+//    Jeremy Meredith, Thu Oct  2 13:13:23 PDT 2003
+//    Made this class be a concrete implementation of a custom renderer.
+//    It will chose between actual rendering methods by instantiating an
+//    avtVolumeRendererImplementation at render time.
+//
 // ****************************************************************************
 
 class avtVolumeRenderer : public avtCustomRenderer
@@ -45,9 +51,13 @@ class avtVolumeRenderer : public avtCustomRenderer
     void                    SetAtts(const AttributeGroup*);
 
     virtual bool            OperatesOnScalars(void) { return true; };
-    virtual void            ReleaseGraphicsResources()  { };
+    virtual void            ReleaseGraphicsResources();
+    virtual void            Render(vtkDataSet *);
 
   protected:
+    avtVolumeRendererImplementation  *rendererImplementation;
+    bool                              currentRendererIsValid;
+
     VolumeAttributes        atts;
 
     void                    Initialize(vtkDataSet*);

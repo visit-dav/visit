@@ -5,14 +5,28 @@
       avtVolumeFilter.C
       avtOpenGLSplattingVolumeRenderer.C
       avtMesaSplattingVolumeRenderer.C
+      avtOpenGL3DTextureVolumeRenderer.C
+      avtMesa3DTextureVolumeRenderer.C
+      BoundingBoxContourer.C
     </Files>
     <Files components="E">
       avtVolumeRenderer.C
       avtVolumeFilter.C
       avtOpenGLSplattingVolumeRenderer.C
       avtMesaSplattingVolumeRenderer.C
+      avtOpenGL3DTextureVolumeRenderer.C
+      avtMesa3DTextureVolumeRenderer.C
+      BoundingBoxContourer.C
     </Files>
     <Attribute name="VolumeAttributes" purpose="This class contains the plot attributes for the volume plot." persistent="true" codefile="VolumeAttributes.code">
+      <Enum name="Renderer">
+        Splatting
+        Texture3D
+      </Enum>
+      <Enum name="GradientType">
+        CenteredDifferences
+        SobelOperator
+      </Enum>
       <Field name="legendFlag" label="legendFlag" type="bool">
         true
       </Field>
@@ -69,6 +83,15 @@
       </Field>
       <Field name="samplesPerRay" label="samplesPerRay" type="int">
         500
+      </Field>
+      <Field name="rendererType" label="Renderer Type" type="enum" subtype="Renderer">
+        Splatting
+      </Field>
+      <Field name="gradientType" label="Gradient Type" type="enum" subtype="GradientType">
+        SobelOperator
+      </Field>
+      <Field name="num3DSlices" label="num3DSlices" type="int">
+        200
       </Field>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>

@@ -112,6 +112,11 @@ avtVolumeFilter::SetAttributes(const VolumeAttributes &a)
 //  Programmer: Hank Childs
 //  Creation:   November 28, 2001
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Oct  2 13:32:16 PDT 2003
+//    Added support for the 3D texturing volume renderer.  It prefers
+//    dimensions that are powers of two.
+//
 // ****************************************************************************
 
 bool
@@ -132,6 +137,8 @@ avtVolumeFilter::DoSoftwareRender(void)
             ResampleAttributes resampleAtts;
             resampleAtts.SetTargetVal(atts.GetResampleTarget());
             resampleAtts.SetUseTargetVal(true);
+            resampleAtts.SetPrefersPowersOfTwo(
+                        atts.GetRendererType() == VolumeAttributes::Texture3D);
             resampler = new avtResampleFilter(&resampleAtts);
         }
     }
