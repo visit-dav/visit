@@ -745,20 +745,16 @@ RPCExecutor<ExecuteRPC>::Execute(ExecuteRPC *rpc)
 //  Purpose:
 //      Execute a ClearCacheRPC.
 //
-//  Notes:      At present, this RPC executor forces the network manager to
-//              clear all networks. This is not a good thing to do because
-//              it potentially wastes a lot of work. Someone more knowledgeable
-//              about the engine should make it clear the networks that use
-//              the specified database and make the engine re-open the
-//              database since it could have changed on disk if we're
-//              doing this RPC.
-//
 //  Programmer: Brad Whitlock
 //  Creation:   Tue Jul 30 13:10:26 PST 2002
 //
 //  Modifications:
 //    Jeremy Meredith, Thu Jul 10 11:37:48 PDT 2003
 //    Made the engine an object.
+//
+//    Hank Childs, Mon Jan  5 15:54:26 PST 2004
+//    When a database is involved, only clear the networks that reference
+//    that database.
 //
 // ****************************************************************************
 template<>
@@ -776,9 +772,7 @@ RPCExecutor<ClearCacheRPC>::Execute(ClearCacheRPC *rpc)
             netmgr->ClearAllNetworks();
         else
         {
-            // Fix me. Make it only clear info related to the specified db and
-            // also make it reopen the database.
-            netmgr->ClearAllNetworks();
+            netmgr->ClearNetworksWithDatabase(rpc->GetDatabaseName());
         }
 
         rpc->SendReply();

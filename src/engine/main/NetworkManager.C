@@ -66,6 +66,9 @@ static double RenderBalance(int numTrianglesIHave);
 //    Kathleen Bonnell, Tue Nov 20 12:35:54 PST 2001
 //    Initialize requireOriginalCells. 
 //
+//    Hank Childs, Mon Jan  5 16:04:57 PST 2004
+//    Initialize uniqueNetworkId.
+//
 // ****************************************************************************
 NetworkManager::NetworkManager(void) : virtualDatabases()
 {
@@ -73,6 +76,7 @@ NetworkManager::NetworkManager(void) : virtualDatabases()
     workingNet = NULL;
     loadBalancer = NULL;
     requireOriginalCells = false;
+    uniqueNetworkId = 0;
 
     // stuff to support scalable rendering
     {
@@ -97,16 +101,20 @@ NetworkManager::NetworkManager(void) : virtualDatabases()
 //  Creation:   September 29, 2000
 //
 //  Modifications:
-//      Sean Ahern, Fri May 24 11:12:25 PDT 2002
-//      Got rid of deletion of the database cache, since all DBs in there
-//      will be deleted by deleting the network cache.
+//    Sean Ahern, Fri May 24 11:12:25 PDT 2002
+//    Got rid of deletion of the database cache, since all DBs in there
+//    will be deleted by deleting the network cache.
+//
+//    Hank Childs, Mon Jan  5 16:30:04 PST 2004
+//    Don't assume the caches are valid.
 //
 // ****************************************************************************
 NetworkManager::~NetworkManager(void)
 {
     //cerr << "NetworkManager::~NetworkManager(void)" << endl;
     for (int i = 0; i < networkCache.size(); i++)
-        delete networkCache[i];
+        if (networkCache[i] != NULL)
+            delete networkCache[i];
 }
 
 // ****************************************************************************
@@ -119,11 +127,15 @@ NetworkManager::~NetworkManager(void)
 //  Creation:   January 7, 2001
 //
 //  Modifications:
-//      Sean Ahern, Tue May 14 14:35:42 PDT 2002
-//      Retrofitted for my new network management techniques.
+//    Sean Ahern, Tue May 14 14:35:42 PDT 2002
+//    Retrofitted for my new network management techniques.
 //
-//      Sean Ahern, Tue May 21 16:09:56 PDT 2002
-//      Told the underlying objects to free their data.
+//    Sean Ahern, Tue May 21 16:09:56 PDT 2002
+//    Told the underlying objects to free their data.
+//
+//    Hank Childs, Mon Jan  5 16:30:04 PST 2004
+//    Don't clear out the vectors, so this can be consistent with how the
+//    ClearNetworksWithDatabase works.
 //
 // ****************************************************************************
 void
@@ -133,14 +145,76 @@ NetworkManager::ClearAllNetworks(void)
     int i;
 
     for (i = 0; i < databaseCache.size(); i++)
-        delete databaseCache[i];
-    databaseCache.clear();
+    {
+        if (databaseCache[i] != NULL)
+            delete databaseCache[i];
+        databaseCache[i] = NULL;
+    }
 
     for (i = 0; i < networkCache.size(); i++)
-        delete networkCache[i];
-    networkCache.clear();
-    globalCellCounts.clear();
+    {
+        if (networkCache[i] != NULL)
+            delete networkCache[i];
+        networkCache[i] = NULL;
+    }
 
+    for (i = 0 ; i < globalCellCounts.size() ; i++)
+    {
+        globalCellCounts[i] = 0;
+    }
+}
+
+// ****************************************************************************
+//  Method: NetworkManager::ClearNetworksWithDatabase
+//
+//  Purpose:
+//      Clears out the caches that reference a specific database.
+//
+//  Arguments:
+//      db      The name of a database.
+//
+//  Programmer: Hank Childs
+//  Creation:   January 5, 2004
+//
+// ****************************************************************************
+void
+NetworkManager::ClearNetworksWithDatabase(const std::string &db)
+{
+    //cerr << "NetworkManager::ClearNetworksWithDatabase()" << endl;
+    int i;
+
+    // 
+    // Clear out the networks before the databases.  This is because if we
+    // delete the databases first, the networks will have dangling pointers.
+    //
+    for (i = 0; i < networkCache.size(); i++)
+    {
+        if (networkCache[i] != NULL)
+        {
+            NetnodeDB *ndb = networkCache[i]->GetNetDB();
+            if (ndb != NULL)
+            {
+                if (ndb->GetFilename() == db)
+                {
+                    delete networkCache[i];
+                    networkCache[i] = NULL;
+                    globalCellCounts[i] = 0;
+                }
+            }
+        }
+    }
+
+    for (i = 0; i < databaseCache.size(); i++)
+    {
+        if (databaseCache[i] != NULL)
+        {
+            if (databaseCache[i]->GetFilename() == db)
+            {
+                delete databaseCache[i];
+                databaseCache[i] = NULL;
+            }
+        }
+    }
 }
 
 // ****************************************************************************
@@ -170,6 +244,9 @@ NetworkManager::ClearAllNetworks(void)
 //    Hank Childs, Tue Nov  4 14:19:05 PST 2003
 //    Checked in work-around (HACK) to avoid apparent compiler bug on AIX.
 //
+//    Hank Childs, Mon Jan  5 16:49:28 PST 2004
+//    Do not assume that all of the cached databases are non-NULL.
+//
 // ****************************************************************************
 
 NetnodeDB *
@@ -180,7 +257,8 @@ NetworkManager::GetDBFromCache(const string &filename, int time)
     // If we don't have a load balancer, we're dead.
     if (loadBalancer == NULL)
     {
-        debug1 << "Internal error: A load balancer was never registered." << endl;
+        debug1 << "Internal error: A load balancer was never registered." 
+               << endl;
         EXCEPTION0(ImproperUseException);
     }
 
@@ -188,6 +266,8 @@ NetworkManager::GetDBFromCache(const string &filename, int time)
     NetnodeDB* cachedDB = NULL;
     for (int i = 0; i < databaseCache.size(); i++)
     {
+        if (databaseCache[i] == NULL)
+            continue;
         if (databaseCache[i]->GetFilename() == filename)
         {
             cachedDB = databaseCache[i];
@@ -454,6 +534,9 @@ NetworkManager::StartNetwork(const string &filename, const string &var,
 //   This ensures that we pick up the metadata and SIL for the time state
 //   that we're intersted in.
 //
+//   Hank Childs, Mon Jan  5 16:49:28 PST 2004
+//   Account for databases in the cached lists that have been cleared.
+//
 // ****************************************************************************
 void
 NetworkManager::DefineDB(const string &dbName, const string &dbPath,
@@ -499,7 +582,11 @@ NetworkManager::DefineDB(const string &dbName, const string &dbPath,
             // cache.
             bool found = false;
             for(i = 0; i < databaseCache.size() && !found; ++i)
+            {
+                if (databaseCache[i] == NULL)
+                    continue;
                 found = (databaseCache[i]->GetFilename() == dbName);
+            }
 
             // If the database was in the database cache, we can return.
             if(found)
@@ -520,6 +607,8 @@ NetworkManager::DefineDB(const string &dbName, const string &dbPath,
     std::vector<NetnodeDB*> databaseBadMatches;
     for (i = 0; i < databaseCache.size(); i++)
     {
+        if (databaseCache[i] == NULL)
+            continue;
         if (databaseCache[i]->GetFilename() != dbName)
             databaseBadMatches.push_back(databaseCache[i]);
     }
@@ -724,6 +813,11 @@ NetworkManager::MakePlot(const string &id, const AttributeGroup *atts)
 //  Programmer:  Jeremy Meredith
 //  Creation:    November  9, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Mon Jan  5 16:04:57 PST 2004
+//    Make sure that the network id is always unique for each network.
+//
 // ****************************************************************************
 int
 NetworkManager::EndNetwork(void)
@@ -749,7 +843,7 @@ NetworkManager::EndNetwork(void)
     workingNet->SetTerminalNode(workingNetnodeList[0]);
 
     // Push the working net onto the network caches.
-    workingNet->SetID(networkCache.size());
+    workingNet->SetID(uniqueNetworkId++);
     networkCache.push_back(workingNet);
     globalCellCounts.push_back(-1);
 
@@ -791,6 +885,9 @@ NetworkManager::CancelNetwork(void)
 //    Hank Childs, Wed Nov 21 11:41:59 PST 2001
 //    Tell the load balancer to reset the pipeline if we re-use the network.
 //
+//    Hank Childs, Mon Jan  5 16:39:06 PST 2004
+//    Make sure that the id requested hasn't already been cleared.
+//
 // ****************************************************************************
 void
 NetworkManager::UseNetwork(int id)
@@ -798,7 +895,8 @@ NetworkManager::UseNetwork(int id)
     //cerr << "NetworkManager::UseNetwork()" << endl;
     if (workingNet)
     {
-        debug1 << "Internal error: UseNetwork called with an open network" << endl;
+        debug1 << "Internal error: UseNetwork called with an open network" 
+               << endl;
         EXCEPTION0(ImproperUseException);
     }
 
@@ -811,6 +909,13 @@ NetworkManager::UseNetwork(int id)
     }
 
     // re-access the given network
+    if (networkCache[id] == NULL)
+    {
+        debug1 << "Asked to use a network that was cleared out previously."
+                << "  (presumably because a database was re-opened)." << endl;
+        EXCEPTION0(ImproperUseException);
+    }
+ 
     workingNet = networkCache[id];
     int pipelineIndex = workingNet->GetPipelineSpec()->GetPipelineIndex();
     loadBalancer->ResetPipeline(pipelineIndex);
@@ -898,6 +1003,11 @@ NetworkManager::GetTotalGlobalCellCounts(void) const
 //  Programmer: Hank Childs
 //  Creation:   September 9, 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Mon Jan  5 16:39:06 PST 2004
+//    Make sure that this isn't called on a previously cleared network.
+//
 // ****************************************************************************
 void
 NetworkManager::DoneWithNetwork(int id)
@@ -911,9 +1021,16 @@ NetworkManager::DoneWithNetwork(int id)
         EXCEPTION0(ImproperUseException);
     }
 
-    networkCache[id]->ReleaseData();
-    globalCellCounts[id] = -1;
-
+    if (networkCache[id] != NULL)
+    {
+        networkCache[id]->ReleaseData();
+        globalCellCounts[id] = -1;
+    }
+    else
+    {
+        debug1 << "Warning: DoneWithNetwork called on previously cleared "
+               << "network." << endl;
+    }
 }
 
 // ****************************************************************************
@@ -929,6 +1046,11 @@ NetworkManager::DoneWithNetwork(int id)
 //  Programmer: Hank Childs
 //  Creation:   November 30, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Mon Jan  5 16:39:06 PST 2004
+//    Make sure the network hasn't already been cleared.
+//
 // ****************************************************************************
 void
 NetworkManager::UpdatePlotAtts(int id, const AttributeGroup *atts)
@@ -942,6 +1064,12 @@ NetworkManager::UpdatePlotAtts(int id, const AttributeGroup *atts)
         EXCEPTION0(ImproperUseException);
     }
 
+    if (networkCache[id] == NULL)
+    {
+        debug1 << "Asked to update the plot attributes of a network that has "
+               << "already been cleared." << endl;
+        EXCEPTION0(ImproperUseException);
+    }
     if (networkCache[id]->GetID() != id)
     {
         debug1 << "Internal error: network at position[" << id
@@ -1461,6 +1589,9 @@ NetworkManager::StopPickMode(void)
 //    Kathleen Bonnell, Tue Dec  2 17:36:44 PST 2003 
 //    Use a special query if the pick type is Curve.
 //    
+//    Hank Childs, Mon Jan  5 16:39:06 PST 2004
+//    Make sure the network hasn't already been cleared.
+//
 // ****************************************************************************
 void
 NetworkManager::Pick(const int id, PickAttributes *pa)
@@ -1469,6 +1600,13 @@ NetworkManager::Pick(const int id, PickAttributes *pa)
     {
         debug1 << "Internal error:  asked to use network ID (" << id << ") >= "
                << "num saved networks (" << networkCache.size() << ")" << endl;
+        EXCEPTION0(ImproperUseException);
+    }
+
+    if (networkCache[id] == NULL)
+    {
+        debug1 << "Asked to pick on a network that has already been cleared."
+               << endl;
         EXCEPTION0(ImproperUseException);
     }
 
@@ -1574,6 +1712,9 @@ NetworkManager::Pick(const int id, PickAttributes *pa)
 //    Kathleen Bonnell, Wed Oct 29 16:06:23 PST 2003 
 //    Add PlotMinMax query.
 //
+//    Hank Childs, Mon Jan  5 16:39:06 PST 2004
+//    Make sure the network hasn't already been cleared.
+//
 // ****************************************************************************
 void
 NetworkManager::Query(const std::vector<int> &ids, QueryAttributes *qa)
@@ -1590,6 +1731,13 @@ NetworkManager::Query(const std::vector<int> &ids, QueryAttributes *qa)
             EXCEPTION0(ImproperUseException);
         }
      
+        if (networkCache[id] == NULL)
+        {
+            debug1 << "Asked to query a network that has already been cleared."
+                   << endl;
+            EXCEPTION0(ImproperUseException);
+        }
+
         if (id != networkCache[id]->GetID())
         {
             debug1 << "Internal error: network at position[" << id << "] "
