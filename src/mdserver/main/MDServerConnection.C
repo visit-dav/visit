@@ -170,6 +170,9 @@ MDServerConnection::VirtualFileInformationMap MDServerConnection::virtualFiles;
 //    to its client within a few minutes. It most likely indicates that 
 //    the client does not want to connect anymore.
 //
+//    Brad Whitlock, Tue Jul 29 11:36:11 PDT 2003
+//    I changed the interface to ParentProcess::Connect.
+//
 // ****************************************************************************
 
 MDServerConnection::MDServerConnection(int *argc, char **argv[])
@@ -197,7 +200,7 @@ MDServerConnection::MDServerConnection(int *argc, char **argv[])
     parent = new ParentProcess;
     TRY
     {
-        parent->Connect(argc, argv, true);
+        parent->Connect(1, 1, argc, argv, true);
         visitTimer->StopTimer(timeid, connectStr);
     }
     CATCH(IncompatibleVersionException)

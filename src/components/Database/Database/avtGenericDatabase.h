@@ -141,6 +141,9 @@ class     PickVarInfo;
 //    Kathleen Bonnell, Fri Jun 20 13:52:00 PDT 2003  
 //    Added QueryZones, added parameter to other Query methods.
 //
+//    Hank Childs, Tue Jul 29 15:59:56 PDT 2003
+//    Added AssociateBounds and ScaleMesh.
+//
 // ****************************************************************************
 
 class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
@@ -264,6 +267,8 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
                                           const int, std::vector<int> &, 
                                           float [3], const int, const bool, 
                                           const bool, std::vector<std::string> &) ;
+    void                       AssociateBounds(vtkDataSet *);
+    void                       ScaleMesh(vtkDataSet *);
 };
 
 

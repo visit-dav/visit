@@ -248,6 +248,9 @@ ViewerSubject::~ViewerSubject()
 //    Brad Whitlock, Tue Jun 17 14:27:26 PST 2003
 //    Completely reorganized.
 //
+//    Brad Whitlock, Tue Jul 29 11:18:07 PDT 2003
+//    I changed the interface to ParentProcess::Connect.
+//
 // ****************************************************************************
 
 void
@@ -258,7 +261,7 @@ ViewerSubject::Connect(int *argc, char ***argv)
     //
     int total = visitTimer->StartTimer();
     int timeid = visitTimer->StartTimer();
-    parent.Connect(argc, argv, true);
+    parent.Connect(1, 1, argc, argv, true);
     visitTimer->StopTimer(timeid, "Connecting to client");
 
     //

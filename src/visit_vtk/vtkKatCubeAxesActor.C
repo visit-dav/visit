@@ -24,6 +24,11 @@ All rights reserved.
 #include <DebugStream.h>
 #include <float.h>
 
+#include <vector>
+using std::vector;
+#include <string>
+using std::string;
+
 int LabelExponent(float min, float max);
 int Digits(float min, float max, int pow);
 float MaxOf(float, float);

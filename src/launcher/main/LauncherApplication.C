@@ -216,7 +216,9 @@ LauncherApplication::ProcessArguments(int *argcp, char **argvp[])
 // Creation:   Fri May 2 17:30:33 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Jul 29 11:19:26 PDT 2003
+//   I changed the interface to ParentProcess::Connect.
+//
 // ****************************************************************************
 
 void
@@ -227,7 +229,7 @@ LauncherApplication::Connect(int *argc, char **argv[])
     //
     TRY
     {
-        parent.Connect(argc, argv, true);
+        parent.Connect(1, 1, argc, argv, true);
     }
     CATCH(IncompatibleVersionException)
     {
@@ -542,7 +544,9 @@ LauncherApplication::LaunchProcess(const stringVector &launchArgs)
 // Creation:   Mon May 5 11:46:35 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Jul 29 11:39:03 PDT 2003
+//   Changed interface to ParentProcess::Connect.
+//
 // ****************************************************************************
 
 void
@@ -557,7 +561,7 @@ LauncherApplication::TerminateConnectionRequest(int argc, char *argv[])
         ParentProcess killer;
 
         // Connect back to the process and say that we could not connect.
-        killer.Connect(&argc, &argv, true, 3);
+        killer.Connect(1, 1, &argc, &argv, true, 3);
     }
     CATCHALL(...)
     {

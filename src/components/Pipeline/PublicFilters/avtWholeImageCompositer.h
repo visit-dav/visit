@@ -48,7 +48,7 @@ class PIPELINE_API avtWholeImageCompositer : public avtImageCompositer
 
       friend void             MergeBuffers(avtWholeImageCompositer *thisObj,
                                  int npixels, bool doParallel,
-                                 float *inz, unsigned char *inrgb,
+                                 const float *inz, const unsigned char *inrgb,
                                  float *ioz, unsigned char *iorgb);
 
       static int              objectCount;

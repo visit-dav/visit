@@ -612,7 +612,7 @@ VisWinPlots::StartBoundingBox(void)
         (*it)->VisibilityOff();
     }
     transparencyActor->VisibilityOff();
-    extRenderedImagesActor->SetVisibility(false, this);
+    extRenderedImagesActor->SetVisibility(false);
 
     //
     // Create the bounding box and add it to the renderer.
@@ -674,7 +674,7 @@ VisWinPlots::EndBoundingBox(void)
         (*it)->VisibilityOn();
     }
     transparencyActor->VisibilityOn();
-    extRenderedImagesActor->SetVisibility(this);
+    extRenderedImagesActor->SetVisibility(true);
 
     //
     // We will not do an explicit render here -- only remember that we need

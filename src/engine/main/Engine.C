@@ -318,6 +318,9 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
 //    Jeremy Meredith, Thu Jul 10 11:37:48 PDT 2003
 //    Made the engine an object.
 //
+//    Brad Whitlock, Tue Jul 29 11:21:22 PDT 2003
+//    I updated the interface to ParentProcess::Connect.
+//
 // ****************************************************************************
 
 bool
@@ -327,9 +330,9 @@ Engine::ConnectViewer(int *argc, char **argv[])
     TRY
     {
 #ifdef PARALLEL
-        theViewer.Connect(argc, argv, PAR_UIProcess());
+        theViewer.Connect(1, 2, argc, argv, PAR_UIProcess());
 #else
-        theViewer.Connect(argc, argv, true);
+        theViewer.Connect(1, 2, argc, argv, true);
 #endif
     }
     CATCH(IncompatibleVersionException)

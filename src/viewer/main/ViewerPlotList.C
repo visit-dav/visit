@@ -3438,7 +3438,8 @@ ViewerPlotList::GetCurrentPlotAtts(
 
     for (int i = 0; i < nPlots; i++)
     {
-        if (plots[i].plot->IsInFrameRange(frame) && !plots[i].hidden)
+        if (plots[i].plot->IsInFrameRange(frame) && !plots[i].hidden &&
+            plots[i].realized)
         {
            ViewerPlot *plot = plots[i].plot;
 

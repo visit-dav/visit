@@ -427,9 +427,9 @@ More information about building VisIt follows after that.
 #
 # Build and install it in the visit directory.
 #
-gunzip visit030709.tar.gz
-tar xf visit030709.tar
-cd visit030709/config-site
+gunzip visit030804.tar.gz
+tar xf visit030804.tar
+cd visit030804/config-site
 echo VISITHOME=`cat ../../visitpath` > `hostname`.conf
 cat Template.conf >> `hostname`.conf
 cd ..
@@ -438,11 +438,11 @@ make
 clearcase_bin/visit-bin-dist
 # Use the appropriate install command based on the operating system on
 # which you built VisIt.
-clearcase_bin/visit-install 1.1.6 aix `cat ../visitpath`
-clearcase_bin/visit-install 1.1.6 irix6 `cat ../visitpath`
-clearcase_bin/visit-install 1.1.6 linux `cat ../visitpath`
-clearcase_bin/visit-install 1.1.6 osf1 `cat ../visitpath`
-clearcase_bin/visit-install 1.1.6 sunos5 `cat ../visitpath`
+clearcase_bin/visit-install 1.2 aix `cat ../visitpath`
+clearcase_bin/visit-install 1.2 irix6 `cat ../visitpath`
+clearcase_bin/visit-install 1.2 linux `cat ../visitpath`
+clearcase_bin/visit-install 1.2 osf1 `cat ../visitpath`
+clearcase_bin/visit-install 1.2 sunos5 `cat ../visitpath`
 
 When running the configure script you can enable or disable certain dependent
 packages.  All the configure options are listed at the beginning of the

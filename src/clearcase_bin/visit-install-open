@@ -294,7 +294,7 @@ if [ $gps = true ]
 then
    if [ $test = no ]
    then
-      scp gps15:/nfs/tmp1/$user/gps/visitbuild/visit$ver2.osf1.tar.gz .
+      scp gps15:/nfs/tmp3/$user/gps/visitbuild/visit$ver2.osf1.tar.gz .
       scp visit$ver2.osf1.tar.gz gps15:
       scp visit-install gps15:
       scp gps gps15:gps_install
@@ -362,7 +362,7 @@ if [ $frost = true ]
 then
    if [ $test = no ]
    then
-      scp gps15:/nfs/tmp1/$user/frost/visitbuild/visit$ver2.aix.tar.gz .
+      scp frost:/p/gf1/$user/frost/visitbuild/visit$ver2.aix.tar.gz .
       scp visit$ver2.aix.tar.gz gps15:
       scp visit-install gps15:
       scp frost gps15:frost_install
