@@ -46,6 +46,9 @@ class avtSpecies;
 //    Mark C. Miller, Mon Aug 23 14:17:55 PDT 2004
 //    Added methods PopulateIOInformation, OpenFile, CloseFile and data
 //    member h5files
+//
+//    Mark C. Miller, Thu Nov 18 18:04:01 PST 2004
+//    Added FreeUpResources
 // 
 // ****************************************************************************
 
@@ -79,6 +82,7 @@ class avtSAMRAIFileFormat : public avtSTMDFileFormat
 
     hid_t                 OpenFile(const char *fileName);
     void                  CloseFile(int f);
+    void                  FreeUpResources();
 
   protected:
 

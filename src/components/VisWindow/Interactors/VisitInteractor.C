@@ -917,6 +917,104 @@ VisitInteractor::EndBoundingBox(void)
 
 
 // ****************************************************************************
+//  Method: Navigate2D::ZoomCamera
+//
+//  Purpose:
+//    Handle zooming the camera.
+//
+//  Programmer: Eric Brugger
+//  Creation:   October 10, 2003
+//
+// ****************************************************************************
+
+void
+VisitInteractor::ZoomCamera2D(const int x, const int y)
+{
+    vtkRenderWindowInteractor *rwi = Interactor;
+
+    if (OldY != y)
+    {
+        //
+        // Calculate the zoom factor.
+        //
+        double dyf = MotionFactor * (double)(y - OldY) /
+                         (double)(Center[1]);
+        double zoomFactor = pow((double)1.1, dyf);
+
+        //
+        // Calculate the new parallel scale.
+        //
+        VisWindow *vw = proxy;
+        bool fillViewportOnZoom = vw->GetInteractorAtts()->GetFillViewportOnZoom();
+
+        avtView2D newView2D = vw->GetView2D();
+
+        double xDist = newView2D.window[1] - newView2D.window[0];
+        double yDist = newView2D.window[3] - newView2D.window[2];
+        double dX = ((1. / zoomFactor) - 1.) * (xDist / 2.);
+        double dY = ((1. / zoomFactor) - 1.) * (yDist / 2.);
+
+        //
+        // If fill viewport on zoom is enabled and we are zooming and not
+        // in fullframe mode then zoom so that we will fill the viewport.
+        //
+        if (fillViewportOnZoom && zoomFactor > 1. && !newView2D.fullFrame)
+        {
+            //
+            // Determine the y scale factor to account for the viewport
+            // and window size.
+            //
+            int       size[2];
+            double    yScale;
+
+            rwi->GetSize(size);
+
+            yScale = ((newView2D.viewport[3] - newView2D.viewport[2]) /
+                      (newView2D.viewport[1] - newView2D.viewport[0])) *
+                     ((double) size[1] / (double) size[0]) ;
+
+            //
+            // We fill the viewport by only zooming one of the axes.  In
+            // the case where we will overshoot, we zoom the second axis a
+            // small amount so that we will just fill the viewport.
+            //
+            if ((yDist / xDist) < yScale)
+            {
+                //
+                // Handle the case where the x direction should be zoomed.
+                //
+                if ((xDist + 2.0 * dX) > (yDist / yScale))
+                    dY = 0.;
+                else
+                    dY = ((xDist + 2.0 * dX) * yScale - yDist) / 2.0;
+            }
+            else
+            {
+                //
+                // Handle the case where the x direction should be zoomed.
+                //
+                if ((yDist + 2.0 * dY) > (xDist * yScale))
+                    dX = 0.;
+                else
+                    dX = ((yDist + 2.0 * dY) / yScale - xDist) / 2.0;
+            }
+        }
+
+        newView2D.window[0] -= dX;
+        newView2D.window[1] += dX;
+        newView2D.window[2] -= dY;
+        newView2D.window[3] += dY;
+
+        vw->SetView2D(newView2D);
+
+        OldX = x;
+        OldY = y;
+        rwi->Render();
+    }
+}
+
+
+// ****************************************************************************
 //  Method: VisitInteractor::SetInteractor
 //
 //  Purpose:

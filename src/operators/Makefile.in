@@ -157,6 +157,9 @@
 #    Hank Childs, Tue Nov  2 09:52:49 PST 2004
 #    Added SubdivideQuads operator.
 #
+#    Eric Brugger, Mon Nov 22 09:50:55 PST 2004
+#    Build the Revolve operator by default.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -165,12 +168,12 @@ all: message
 	for dir in $(SUBDIRS); do (cd $$dir && $(MAKE) $@) || exit 1; done
 
 OPTIONAL=Context ConnCompReduce Decimate ExternalSurface \
-         MetricThreshold RemoveCells Revolve SiloDump SubdivideQuads \
+         MetricThreshold RemoveCells SiloDump SubdivideQuads \
          SurfCompPrep Tube
 
 REQUIRED=Box Clip Cone Cylinder Displace IndexSelect InverseGhostZone \
-         Isosurface Isovolume Lineout OnionPeel Project Reflect Slice \
-         SphereSlice ThreeSlice Threshold Transform
+         Isosurface Isovolume Lineout OnionPeel Project Reflect Revolve \
+         Slice SphereSlice ThreeSlice Threshold Transform
 
 SUBDIRS=$(REQUIRED) @OPERATOR_OPTIONAL_DIRS@
 ALLSUBDIRS=$(REQUIRED) $(OPTIONAL)
