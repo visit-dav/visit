@@ -14,6 +14,10 @@
 //  Programmer:  Jeremy Meredith
 //  Creation:    November 12, 2001
 //
+//  Modifications:
+//    Fixed problem with character arrays longer than 1024 chars
+//    Added missing call to free memory allocated by GetVar call
+//
 // ****************************************************************************
 SiloArrayViewWindow::SiloArrayViewWindow(SiloFile *s, const QString &n, QWidget *p)
     : QMainWindow(p, n), silo(s), name(n)
@@ -82,6 +86,14 @@ SiloArrayViewWindow::SiloArrayViewWindow(SiloFile *s, const QString &n, QWidget 
                     lb->insertItem(str);
                 p = str;
             }
+            else if (i % (sizeof(str)-2) == 0)
+            {
+                str[sizeof(str)-2] = c;
+                str[sizeof(str)-1] = '\0';
+                if (strlen(str) > 0)
+                    lb->insertItem(str);
+                p = str;
+            }
             else
                 *(p++)=c;
         }
@@ -89,6 +101,8 @@ SiloArrayViewWindow::SiloArrayViewWindow(SiloFile *s, const QString &n, QWidget 
         if (strlen(str) > 0)
             lb->insertItem(str);
     }
+
+    free(var);
 }
 
 // ****************************************************************************

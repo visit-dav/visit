@@ -64,5 +64,7 @@ SiloValueViewWindow::SiloValueViewWindow(SiloFile *s, const QString &n, QWidget 
         break;
     }
     l->setText(str);
+
+    free(var);
 }
 

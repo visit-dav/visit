@@ -937,6 +937,9 @@ RPCExecutor<ReleaseDataRPC>::Execute(ReleaseDataRPC *rpc)
 //    Hank Childs, Fri Mar  5 11:46:09 PST 2004
 //    Load database plugins before trying to instantiate the DB of that type.
 //
+//    Hank Childs, Mon Mar 22 11:16:47 PST 2004
+//    Specify the file format type explicitly.
+//
 // ****************************************************************************
 template<>
 void
@@ -945,11 +948,12 @@ RPCExecutor<OpenDatabaseRPC>::Execute(OpenDatabaseRPC *rpc)
     Engine         *engine = Engine::Instance();
     NetworkManager *netmgr = engine->GetNetMgr();
 
-    debug2 << "Executing OpenDatabaseRPC: db=" << rpc->GetDatabaseName().c_str()
+    debug2 << "Executing OpenDatabaseRPC: db=" <<rpc->GetDatabaseName().c_str()
            << ", time=" << rpc->GetTime() << endl;
     DatabasePluginManager::Instance()->PluginAvailable(rpc->GetFileFormat());
 
-    netmgr->GetDBFromCache(rpc->GetDatabaseName(), rpc->GetTime());
+    netmgr->GetDBFromCache(rpc->GetDatabaseName(), rpc->GetTime(),
+                           rpc->GetFileFormat().c_str());
 }
 
 // ****************************************************************************
@@ -967,6 +971,10 @@ RPCExecutor<OpenDatabaseRPC>::Execute(OpenDatabaseRPC *rpc)
 //
 //    Hank Childs, Fri Mar  5 11:46:09 PST 2004
 //    Load database plugins before trying to instantiate the DB of that type.
+//
+//    Hank Childs, Mon Mar 22 11:10:43 PST 2004
+//    Explicitly tell NetworkManager what file format type to open the file 
+//    with.
 //
 // ****************************************************************************
 template<>
@@ -986,7 +994,7 @@ RPCExecutor<DefineVirtualDatabaseRPC>::Execute(DefineVirtualDatabaseRPC *rpc)
     DatabasePluginManager::Instance()->PluginAvailable(rpc->GetFileFormat());
 
     netmgr->DefineDB(rpc->GetDatabaseName(), rpc->GetDatabasePath(),
-                     rpc->GetDatabaseFiles(), rpc->GetTime());
+                rpc->GetDatabaseFiles(), rpc->GetTime(), rpc->GetFileFormat());
 }
 
 // ****************************************************************************

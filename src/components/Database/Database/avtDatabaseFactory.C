@@ -54,6 +54,8 @@ void CheckPermissions(const char *);
 //  Arguments:
 //      filelist     A list of files.
 //      filelistN    The number of files in `filelist'.
+//      timestep     The timestep to open to.
+//      format       The format to try first.
 //
 //  Returns:    An avtDatabase object that is correctly typed for the filelist.
 //
@@ -83,11 +85,14 @@ void CheckPermissions(const char *);
 //    Mark C. Miller, Tue Mar 16 09:38:19 PST 2004
 //    Just prior to calls to GetMetaData, added calls to ActivateTimestep.
 //
+//    Hank Childs, Mon Mar 22 09:43:33 PST 2004
+//    Added the ability for a format to be specified.
+//
 // ****************************************************************************
 
 avtDatabase *
 avtDatabaseFactory::FileList(const char * const * filelist, int filelistN,
-                             int timestep)
+                             int timestep, const char *format)
 {
     int   i, j;
 
@@ -136,12 +141,37 @@ avtDatabaseFactory::FileList(const char * const * filelist, int filelistN,
     int start = lastSlash+1;
     string file(fap + start);
 
-    string defaultDatabaseType("Silo");
+    DatabasePluginManager *dbmgr = DatabasePluginManager::Instance();
 
+    //
+    // If we were specifically told which format to use, then try that now.
+    //
+    if (format != NULL)
+    {
+        int formatindex = dbmgr->GetAllIndex(format);
+        if (formatindex != -1)
+        {
+            string formatid = dbmgr->GetAllID(formatindex);
+            CommonDatabasePluginInfo *info = 
+                                         dbmgr->GetCommonPluginInfo(formatid);
+            rv = SetupDatabase(info, filelist, filelistN, timestep, fileIndex,
+                               nBlocks);
+        }
+
+        if (formatindex < 0 || rv == NULL)
+        {
+            char msg[1000];
+            sprintf(msg,
+                    "The DB factory was told to open a file of type %s, but "
+                    "that format is not a match for file %s",
+                    format, filelist[0]);
+            EXCEPTION1(ImproperUseException, msg);
+        }
+    }
+ 
     //
     // Try each database type looking for a match to the given extensions
     //
-    DatabasePluginManager *dbmgr = DatabasePluginManager::Instance();
     for (i=0; i<dbmgr->GetNEnabledPlugins() && rv == NULL; i++)
     {
         string id = dbmgr->GetEnabledID(i);
@@ -184,24 +214,8 @@ avtDatabaseFactory::FileList(const char * const * filelist, int filelistN,
         {
             TRY
             {
-                rv = info->SetupDatabase(filelist+fileIndex,
-                                         filelistN-fileIndex, nBlocks);
-
-                //
-                // By policy, the plugin doesn't do much work to set up the
-                // database.  So there is a chance that a format did not
-                // throw an exception, but is the wrong type.  To make
-                // sure we have the correct plugin, force it to read
-                // in its metadata.  This does not cause extra work,
-                // because the metadata is cached and we are going to
-                // ask for it in a bit anyway.
-                //
-                if (rv != NULL)
-                {
-                    rv->ActivateTimestep(timestep);
-                    avtDatabaseMetaData *md = rv->GetMetaData(timestep);
-                    md->SetFileFormat(info->GetID());
-                }
+                rv = SetupDatabase(info, filelist, filelistN, timestep,
+                                   fileIndex, nBlocks);
             }
             CATCH2(InvalidDBTypeException, e)
             {
@@ -214,6 +228,7 @@ avtDatabaseFactory::FileList(const char * const * filelist, int filelistN,
     //
     // If no file extension match, then we default to the given database type
     //
+    string defaultDatabaseType("Silo");
     if (rv == NULL)
     {
         int defaultindex = dbmgr->GetAllIndexFromName(defaultDatabaseType);
@@ -222,20 +237,8 @@ avtDatabaseFactory::FileList(const char * const * filelist, int filelistN,
             string defaultid = dbmgr->GetAllID(defaultindex);
             CommonDatabasePluginInfo *info = 
                                          dbmgr->GetCommonPluginInfo(defaultid);
-            rv = info->SetupDatabase(filelist+fileIndex, filelistN-fileIndex,
-                                     nBlocks);
-
-            //
-            // If we match an extension or an exact filename, we call get the
-            // database metadata to make sure we have the right plugin.  We 
-            // make the same call here to be consistent.
-            //
-            if (rv != NULL)
-            {
-                rv->ActivateTimestep(timestep);
-                avtDatabaseMetaData *md = rv->GetMetaData(timestep);
-                md->SetFileFormat(info->GetID());
-            }
+            rv = SetupDatabase(info, filelist, filelistN, timestep, fileIndex,
+                               nBlocks);
         }
         else
         {
@@ -252,6 +255,59 @@ avtDatabaseFactory::FileList(const char * const * filelist, int filelistN,
 
 
 // ****************************************************************************
+//  Method: avtDatabaseFactory::SetupDatabase
+//
+//  Purpose:
+//      Setups the avtDatabase.  There are several spots where we want to do
+//      this, so this provides a "single point of source" that all routines
+//      can call.
+//
+//  Arguments:
+//      info         The CommonDatabasePluginInfo that can instantiate a DB.
+//      filelist     A list of files.
+//      filelistN    The number of files in filelist.
+//      timestep     The current timestep.
+//
+//  Returns:         A database.  This may very well be NULL.
+//
+//  Notes:           If the format type is not correct, there is a strong
+//                   possibility that the exception InvalidDBTypeException
+//                   will be thrown.
+//
+//  Programmer: Hank Childs
+//  Creation:   March 22, 2004
+//
+// ****************************************************************************
+
+avtDatabase *
+avtDatabaseFactory::SetupDatabase(CommonDatabasePluginInfo *info,
+                                  const char * const *filelist, int filelistN, 
+                                  int timestep, int fileIndex, int nBlocks)
+{
+    avtDatabase *rv = info->SetupDatabase(filelist+fileIndex,
+                                          filelistN-fileIndex, nBlocks);
+
+    //
+    // By policy, the plugin doesn't do much work to set up the
+    // database.  So there is a chance that a format did not
+    // throw an exception, but is the wrong type.  To make
+    // sure we have the correct plugin, force it to read
+    // in its metadata.  This does not cause extra work,
+    // because the metadata is cached and we are going to
+    // ask for it in a bit anyway.
+    //
+    if (rv != NULL)
+    {
+        rv->ActivateTimestep(timestep);
+        avtDatabaseMetaData *md = rv->GetMetaData(timestep);
+        md->SetFileFormat(info->GetID());
+    }
+
+    return rv;
+}
+
+
+// ****************************************************************************
 //  Method: avtDatabaseFactory::VisitFile
 //
 //  Purpose:
@@ -259,6 +315,8 @@ avtDatabaseFactory::FileList(const char * const * filelist, int filelistN,
 //
 //  Arguments:
 //      visitFile   The name of the .visit file.
+//      timestep    The timestep to open at.
+//      format      The file format type (optional).
 //
 //  Returns:    An avtDatabase object that is correctly typed for the .visit
 //              file.
@@ -286,10 +344,14 @@ avtDatabaseFactory::FileList(const char * const * filelist, int filelistN,
 //    Hank Childs, Mon Mar  1 08:56:52 PST 2004
 //    Allow for the time to be specified.
 //
+//    Hank Childs, Mon Mar 22 11:01:05 PST 2004
+//    Added format argument.
+//
 // ****************************************************************************
 
 avtDatabase *
-avtDatabaseFactory::VisitFile(const char *visitFile, int timestep)
+avtDatabaseFactory::VisitFile(const char *visitFile, int timestep,
+                              const char *format)
 {
     //
     // Make sure we can read the file before we proceed.
@@ -343,7 +405,7 @@ avtDatabaseFactory::VisitFile(const char *visitFile, int timestep)
     //
     // Create a database using the list of files.
     //
-    avtDatabase *rv = FileList(reallist, listcount, timestep);
+    avtDatabase *rv = FileList(reallist, listcount, timestep, format);
 
     //
     // Clean up memory

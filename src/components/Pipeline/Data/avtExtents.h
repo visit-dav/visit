@@ -7,7 +7,8 @@
 
 #include <pipeline_exports.h>
 
-class   ostream;
+#include <iostream.h>
+
 class   avtDataObjectString;
 class   avtDataObjectWriter;
 class   vtkMatrix4x4;
