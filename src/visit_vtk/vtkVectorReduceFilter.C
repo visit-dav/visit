@@ -88,6 +88,9 @@ void vtkVectorReduceFilter::SetNumberOfElements(int n)
 //    Hank Childs, Wed Apr  9 09:36:07 PDT 2003
 //    Made each output vertex also have a VTK_VERTEX in the cell list.
 //
+//    Kathleen Bonnell, Mon Nov 17 13:58:38 PST 2003 
+//    Preserve the name of the Vectors array. 
+//
 // ****************************************************************************
 
 void vtkVectorReduceFilter::Execute(void)
@@ -139,6 +142,7 @@ void vtkVectorReduceFilter::Execute(void)
   float nextToTake = 0.;
   if (inPvecs != NULL)
     {
+    outVecs->SetName(inPvecs->GetName());
     for (int i = 0 ; i < npts ; i++)
       {
       if (i >= nextToTake)
@@ -159,6 +163,7 @@ void vtkVectorReduceFilter::Execute(void)
   nextToTake = 0.;
   if (inCvecs != NULL)
     {
+    outVecs->SetName(inCvecs->GetName());
     for (int i = 0 ; i < ncells ; i++)
       {
       if (i >= nextToTake)

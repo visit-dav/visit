@@ -162,6 +162,9 @@ class     PickVarInfo;
 //    Kathleen Bonnell, Thu Nov 20 15:10:23 PST 2003 
 //    Added QuerySpecies. 
 //    
+//    Kathleen Bonnell, Thu Nov 20 17:47:57 PST 2003 
+//    Add 'FindElementForPoint'. 
+//
 // ****************************************************************************
 
 class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
@@ -184,6 +187,9 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
 
     virtual bool               HasInvariantMetaData(void) const;
     virtual bool               HasInvariantSIL(void) const;
+
+    virtual bool               FindElementForPoint(const char *, const int, 
+                                    const int, const char *, float[3], int &);
 
   protected:
     avtFileFormatInterface    *Interface;
@@ -315,6 +321,7 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
                                           float [3], const int, const bool, 
                                           const bool, std::vector<std::string> &,
                                           const bool, std::vector<std::string> &);
+
     void                       AssociateBounds(vtkDataSet *);
     void                       ScaleMesh(vtkDataSet *);
 };

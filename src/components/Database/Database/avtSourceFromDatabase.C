@@ -473,3 +473,35 @@ avtSourceFromDatabase::Query(PickAttributes *pa)
 {
     database->Query(pa);
 }
+
+
+// ****************************************************************************
+//  Method: avtSourceFromDatabase::FindElementForPoint
+//
+//  Purpose:
+//      Allows the database to return the cell containing a point, or the 
+//      closest node to the point (which one specified by elType).
+//
+//  Returns:
+//      True for successful search, false otherwise.
+// 
+//  Arguments:
+//    var       The variable to use in searching the database.
+//    ts        The timestep to use in searching the database.
+//    dom       The domain to use in searching the database.
+//    elType    Specified which type of element (node, zone) to search for.
+//    pt        The point to use in searching the database.
+//    elNum     A place to store the zone or node number associated with the
+//              point pt.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   November 13, 2003 
+//
+// ****************************************************************************
+
+bool
+avtSourceFromDatabase::FindElementForPoint(const char *var, const int ts,
+    const int dom, const char *elType, float pt[3], int &elNum)
+{
+    return database->FindElementForPoint(var, ts, dom, elType, pt, elNum);
+}

@@ -51,6 +51,9 @@ typedef void                   (*InitializeProgressCallback)(void *, int);
 //    Hank Childs, Mon Jul 28 16:33:34 PDT 2003
 //    Derived from avtQueryableSource instead of avtDataObjectSource.
 //
+//    Kathleen Bonnell, Wed Nov 12 18:26:21 PST 2003 
+//    Added virtual method FindElementForPoint. 
+//
 // ****************************************************************************
 
 class PIPELINE_API avtTerminatingSource : virtual public avtQueryableSource
@@ -87,6 +90,9 @@ class PIPELINE_API avtTerminatingSource : virtual public avtQueryableSource
 
     // Define this so derived types don't have to.
     virtual void                   Query(PickAttributes *){;};
+    virtual bool                   FindElementForPoint(const char*, const int, 
+                                       const int, const char*, float[3], int &)
+                                       { return false;};
 
   protected:
     avtMetaData                   *metadata;

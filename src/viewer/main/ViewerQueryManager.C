@@ -41,6 +41,21 @@
 #include <GlobalLineoutAttributes.h>
 #include <VisItException.h>
 
+
+
+#define QUERY_MESH_VAR              0x0001
+#define QUERY_SCALAR_VAR            0x0002
+#define QUERY_VECTOR_VAR            0x0004
+#define QUERY_TENSOR_VAR            0x0008
+#define QUERY_SYMMETRIC_TENSOR_VAR  0x0010
+#define QUERY_MATERIAL_VAR          0x0020
+#define QUERY_MATSPECIES_VAR        0x0040
+#define QUERY_CURVE_VAR             0x0080
+#define QUERY_UNKNOWN_VAR           0x0100
+
+
+
+
 using std::vector;
 using std::string;
 
@@ -802,6 +817,14 @@ ViewerQueryManager::GetQueryClientAtts()
 //    Hank Childs, Thu Oct  2 13:51:31 PDT 2003
 //    Add support for queries with multiple inputs.
 //
+//    Kathleen Bonnell, Wed Oct 29 16:06:23 PST 2003 
+//    Rework code around GetUniqueVars to ensure the vars are truly
+//    unique and the "default" gets translated to the active variable. 
+//
+//    Kathleen Bonnell, Wed Nov 19 15:41:11 PST 2003
+//    Added logic to verify that all variables the named query will process
+//    are allowed by the query. 
+//
 // ****************************************************************************
 
 void         
@@ -836,6 +859,7 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
     ViewerPlotList *olist = oWin->GetAnimation()->GetPlotList();
     std::vector<int> plotIds;
     olist->GetActivePlotIDs(plotIds);
+    int t = oWin->GetAnimation()->GetFrameIndex();
 
     //
     // Make sure the number of active plots jives with the expected number
@@ -878,8 +902,10 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
         }
     }
 
-    stringVector uniqueVars = vars;
+    stringVector uniqueVars; 
+    stringVector tmp = vars;
     const char *host = NULL;
+    const char *dbname = NULL;
     for (int i = 0 ; i < plotIds.size() ; i++)
     {
         int plotId = plotIds[i];
@@ -893,11 +919,29 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
             return;
         }
         host = oplot->GetHostName();
+        dbname = oplot->GetDatabaseName();
         const char *activeVar = oplot->GetVariableName();
-        stringVector tmp = uniqueVars;
         GetUniqueVars(tmp, activeVar, uniqueVars);
+        tmp = uniqueVars;
     }
-    bool retry;
+
+    intVector varTypes;
+    for (int j = 0; j < uniqueVars.size(); j++)
+    {
+        varTypes.push_back((int)DetermineVarType(host, dbname, uniqueVars[j].c_str()));
+    }
+ 
+    int badVarType =  VerifyQueryVariables(qName, varTypes); 
+    if (badVarType != -1)
+    {
+        queryClientAtts->Notify();
+        string msg = "Cannot perform a " + qName  + " query on variable  ";
+        msg += uniqueVars[badVarType] + ".\n";
+        Error(msg.c_str());
+        return;
+    }
+    
+    bool retry; 
     int numAttempts = 0;
     do
     {
@@ -916,8 +960,10 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
             QueryAttributes qa;
             qa.SetName(qName);
             qa.SetVariables(uniqueVars);
+            qa.SetVarTypes(varTypes);
             qa.SetDomain(arg1);
             qa.SetElement(arg2);
+            qa.SetTimeStep(t);
             if (strcmp(qName.c_str(), "Variable by Zone") == 0)
                 qa.SetElementType(QueryAttributes::Zone);
             else if (strcmp(qName.c_str(), "Variable by Node") == 0)
@@ -1369,9 +1415,9 @@ ViewerQueryManager::Pick(PICK_POINT_INFO *ppi)
         pickAtts->SetRayPoint1(rp1);
         pickAtts->SetRayPoint2(rp2);
 
-
         bool retry;
         int numAttempts = 0; 
+
         do 
         {   
             retry = false;
@@ -2218,6 +2264,9 @@ GetUniqueVars(const stringVector &vars, const string &activeVar,
 //    Hank Childs, Thu Oct  2 09:46:27 PDT 2003
 //    Add L2Norm, Area Between Curves, more.
 //
+//    Kathleen Bonnell, Wed Oct 29 16:06:23 PST 2003 
+//    Uncomment MinMax, changed its AddQuery arguments..
+//
 // ****************************************************************************
 
 void
@@ -2248,7 +2297,51 @@ ViewerQueryManager::InitializeQueryList()
     queryTypes->AddQuery("WorldNodePick", QueryList::PointQuery);
     queryTypes->AddQuery("Variable by Zone", QueryList::DatabaseQuery);
     //queryTypes->AddQuery("Variable by Node", QueryList::DatabaseQuery);
-    //queryTypes->AddQuery("MinMax", QueryList::DatabaseQuery);
+    queryTypes->AddQuery("Plot MinMax", QueryList::DatabaseQuery, 
+                          QueryList::WorldSpace, 1,
+    QUERY_SCALAR_VAR | QUERY_TENSOR_VAR | QUERY_VECTOR_VAR | 
+    QUERY_SYMMETRIC_TENSOR_VAR | QUERY_MATSPECIES_VAR | QUERY_CURVE_VAR);
 
     queryTypes->SelectAll();
+}
+
+
+// ****************************************************************************
+//  Method: ViewerQueryManager::VerifyQueryVariables
+//
+//  Purpose:
+//    Verifies that the named query allows all the passed var types.
+//
+//  Returns:
+//    The index of a bad var type, if present, -1 otherwise.
+//
+//  Arguments:
+//    qName     The name of the query to check.
+//    varTypes  A list of var types that the named query will be operating on.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   November 18, 2003 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+int
+ViewerQueryManager::VerifyQueryVariables(const std::string &qName, 
+     const std::vector<int> &varTypes)
+{
+    int i, badIndex = -1;
+    int allowedTypes = queryTypes->AllowedVarsForQuery(qName);
+    if (allowedTypes > 0)
+    {
+        for (i = 0; i < varTypes.size() && badIndex == -1; i++)
+        {
+           int vt = (int) pow(2, varTypes[i]);
+           if (!(allowedTypes & vt))
+           {
+               badIndex = i;
+           }
+        }
+    }
+   return badIndex; 
 }

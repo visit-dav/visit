@@ -79,6 +79,9 @@ avtGradientFilter::~avtGradientFilter()
 //    Akira Haddox, Wed Jun 18 13:03:23 PDT 2003
 //    Added proper error check for scalar data, and check for 2D data.
 // 
+//    Hank Childs, Tue Nov 25 17:12:17 PST 2003
+//    Do a better job of updating progress.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -117,7 +120,11 @@ avtGradientFilter::DeriveVariable(vtkDataSet *in_ds)
     for (int nodeId = 0 ; nodeId < nPoints; nodeId++)
     {
         if (nodeId % 10000 == 0)
-            UpdateProgress(nodeId, nPoints);
+        {
+            int nsteps = (nPoints / 10000) + 1;
+            UpdateProgress(currentNode*nsteps + nodeId/10000, 
+                           totalNodes*nsteps);
+        }
 
         float xDELTA=1e6, yDELTA=1e6, zDELTA=1e6;
         

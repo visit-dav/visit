@@ -11,10 +11,19 @@ QueryAttributes::Reset()
         variables.clear();
         variables.push_back("default");
     }
+    if (!varTypes.empty())
+    {
+         varTypes.clear();
+    }
     worldPoint[0] = worldPoint[1] = worldPoint[2] = 0.;
     domain = -1;
     element = -1;
     elementType = Zone;
+    if (!resultsValue.empty())
+    {
+        resultsValue.clear();
+        resultsValue.push_back(0.);
+    }
     SelectAll();
 }
 
@@ -39,5 +48,14 @@ QueryAttributes::PrintSelf(ostream &os)
     os << "Element type is Zone " << endl;
     else
     os << "Element type is Node " << endl;
+}
+
+Function: SetResultsValue
+Declaration: void SetResultsValue(const double);
+Definition:
+void
+QueryAttributes::SetResultsValue(const double val)
+{
+    resultsValue[0] = val;    
 }
 

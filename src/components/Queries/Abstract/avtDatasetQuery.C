@@ -6,6 +6,7 @@
 #include <vtkDataSet.h>
 
 #include <DebugStream.h>
+#include <BadIndexException.h>
 #include <ImproperUseException.h>
 #include <NoInputException.h>
 #include <avtSourceFromAVTDataset.h>
@@ -30,7 +31,8 @@ avtDatasetQuery::avtDatasetQuery() : avtDatasetSink()
 {
     currentNode = 0;
     totalNodes = 0;
-    resValue = 0.;
+    // always have 1 value.
+    resValue.push_back(0.);
 }
 
 
@@ -208,4 +210,43 @@ avtDatasetQuery::ApplyFilters(avtDataObject_p dob)
     return rv;
 }
 
+// ****************************************************************************
+//  Method: avtDatasetQuery::SetResultValue
+//
+//  Purpose:
+//    Set the result value for the specified index. 
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   November 12, 2003 
+//
+// ****************************************************************************
 
+void
+avtDatasetQuery::SetResultValue(const double &d, const int i)
+{
+    if (i < 0 || i >= resValue.size())
+        EXCEPTION2(BadIndexException, i, resValue.size()-1)
+
+    resValue[i] = d;
+}
+
+
+// ****************************************************************************
+//  Method: avtDatasetQuery::GetResultValue
+//
+//  Purpose:
+//    Return  the result value for the specified index. 
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   November 12, 2003 
+//
+// ****************************************************************************
+
+double
+avtDatasetQuery::GetResultValue(const int i)
+{
+    if (i < 0 || i >= resValue.size())
+        EXCEPTION2(BadIndexException,i, resValue.size()-1)
+
+    return resValue[i];
+}

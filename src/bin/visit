@@ -285,6 +285,9 @@ $0 = shift @ARGV;
 #    Added compression of ".." and stripping of "." dirs in the visit path.
 #    Removed erroneous single quotes for the launcher args.
 #
+#    Jeremy Meredith, Tue Nov 25 10:50:40 PST 2003
+#    Changed the help text for the -dir argument slightly.
+#
 ###############################################################################
 
 
@@ -357,7 +360,9 @@ USAGE:  visit [arguments]
         -beta                Run the current beta version
         -v     <version>     Run the specified version
         -dir   <directory>   Run the version in the given directory 
-                                (automatically appends /bin to the path)
+                                The directory argument should specify the 
+                                path to the visit installation directory.
+                                /bin is automatically appended to this path.
 
     Viewer arguments:
         -noconfig            Don't process configuration files

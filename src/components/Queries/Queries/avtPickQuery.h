@@ -41,6 +41,10 @@ class vtkRectilinearGrid;
 //    SetRealIds, RetrieveVarInfo -- to support Node Pick and make code
 //    more legible.
 //
+//    Kathleen Bonnell, Thu Nov 13 09:05:14 PST 2003 
+//    Remove RgridFindCell, LocatorFindCell -- functionality now resides
+//    in vtkVisItUtility. 
+//    
 // ****************************************************************************
 
 class QUERY_API avtPickQuery : public avtDatasetQuery
@@ -69,8 +73,6 @@ class QUERY_API avtPickQuery : public avtDatasetQuery
     virtual void                    PreExecute(void);
     virtual void                    PostExecute(void);
     virtual avtDataObject_p         ApplyFilters(avtDataObject_p);   
-    int                             LocatorFindCell(vtkDataSet *);
-    int                             RGridFindCell(vtkRectilinearGrid *);
     bool                            RetrieveNodes(vtkDataSet *, int);
     bool                            RetrieveZones(vtkDataSet *, int);
     bool                            DeterminePickedNode(vtkDataSet *, int &);

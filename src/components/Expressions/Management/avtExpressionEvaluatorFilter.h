@@ -30,6 +30,9 @@
 //   Hank Childs, Mon Nov 17 16:47:33 PST 2003
 //   Add ReleaseData.
 //
+//   Kathleen Bonnell, Thu Nov 13 08:39:40 PST 2003 
+//   Added 'FindElementForPoint'.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtExpressionEvaluatorFilter 
@@ -46,6 +49,10 @@ public:
     virtual avtQueryableSource *
                              GetQueryableSource(void) { return this; };
     virtual void             ReleaseData(void);
+
+    virtual bool             FindElementForPoint(const char *, const int, 
+                                 const int, const char *, float[3], int &);
+
 
 protected:
     virtual void             PreExecute(void) {}

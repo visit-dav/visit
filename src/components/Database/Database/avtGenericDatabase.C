@@ -5547,3 +5547,53 @@ avtGenericDatabase::QuerySpecies(const std::string &varName, const int dom,
     return true;
 }
 
+// ****************************************************************************
+//  Method: avtGenericDatabase::FindElementForPoint
+//
+//  Purpose:
+//     Searches for the node (elementName = 'node') closest to the passed 
+//     point or the zone (elementName = 'zone') which contains the point.
+//
+//  Returns:
+//      True for successful search, false otherwise.
+// 
+//  Arguments:
+//    var       The variable to use in searching the database.
+//    ts        The timestep to use in searching the database.
+//    dom       The domain to use in searching the database.
+//    elType    Specified which type of element (node, zone) to search for.
+//    pt        The point to use in searching the database.
+//    elNum     A place to store the zone or node number associated with the
+//              point pt.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   November 13, 2003 
+//
+// ****************************************************************************
+
+bool                
+avtGenericDatabase::FindElementForPoint(const char *var, const int ts, 
+                        const int dom, const char *elementName, 
+                        float pt[3], int &elNum)
+{
+    string mesh = GetMetaData(ts)->MeshForVar(var);
+    vtkDataSet *ds = GetMeshDataset(mesh.c_str(), ts, dom, "_all");
+    char temp[256];
+
+    if (strcmp(elementName, "node") == 0)
+    {
+        elNum = ds->FindPoint(pt);
+    }
+    else if (strcmp(elementName, "zone") == 0)
+    {
+        elNum = vtkVisItUtility::FindCell(ds, pt);
+    }
+
+    if (elNum != -1)
+        return true;
+
+    return false;
+}
+                                      
+
+

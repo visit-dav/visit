@@ -139,6 +139,13 @@ typedef struct {
 //    Kathleen Bonnell, Thu Nov 20 15:17:21 PST 2003 
 //    Added QuerySpecies. 
 //
+//    Kathleen Bonnell, Thu Nov 20 17:47:57 PST 2003 
+//    Added virtual FindElementForPoint, defined here so derived types don't
+//    have to. 
+//    
+//    Hank Childs, Tue Nov 25 07:39:32 PST 2003
+//    Added AddMeshQualityExpressions.
+//
 // ****************************************************************************
 
 class DATABASE_API avtDatabase
@@ -173,6 +180,9 @@ class DATABASE_API avtDatabase
                                      { onlyServeUpMetaData = val; };
  
     void                        Query(PickAttributes *);
+    virtual bool                FindElementForPoint(const char *, const int, 
+                                    const int, const char *, float[3], int &)
+                                    { return false; } ;
 
     static void                 GetFileListFromTextFile(const char *,
                                                         char **&, int &);
@@ -192,6 +202,7 @@ class DATABASE_API avtDatabase
 
     void                        GetNewMetaData(int stateIndex);
     void                        GetNewSIL(int stateIndex);
+    void                        AddMeshQualityExpressions(avtDatabaseMetaData *);
 
     virtual bool                HasInvariantMetaData(void) const = 0;
     virtual bool                HasInvariantSIL(void) const = 0;

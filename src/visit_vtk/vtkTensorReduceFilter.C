@@ -123,6 +123,7 @@ void vtkTensorReduceFilter::Execute(void)
   float nextToTake = 0.;
   if (inPtensors != NULL)
     {
+    outTensors->SetName(inPtensors->GetName());
     for (int i = 0 ; i < npts ; i++)
       {
       if (i >= nextToTake)
@@ -143,6 +144,7 @@ void vtkTensorReduceFilter::Execute(void)
   nextToTake = 0.;
   if (inCtensors != NULL)
     {
+    outTensors->SetName(inCtensors->GetName());
     for (int i = 0 ; i < ncells ; i++)
       {
       if (i >= nextToTake)

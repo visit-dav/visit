@@ -27,6 +27,7 @@
 #include <avtTimeQuery.h>
 #include <avtLocateCellQuery.h>
 #include <avtPickQuery.h>
+#include <avtPlotMinMaxQuery.h>
 #include <avtSourceFromAVTImage.h>
 #include <avtSourceFromImage.h>
 #include <avtSourceFromNullData.h>
@@ -1557,6 +1558,9 @@ NetworkManager::Pick(const int id, PickAttributes *pa)
 //    Hank Childs, Thu Oct  2 09:47:48 PDT 2003
 //    Allow queries to involve multiple networks.  Add L2Norm query, more.
 //
+//    Kathleen Bonnell, Wed Oct 29 16:06:23 PST 2003 
+//    Add PlotMinMax query.
+//
 // ****************************************************************************
 void
 NetworkManager::Query(const std::vector<int> &ids, QueryAttributes *qa)
@@ -1659,6 +1663,10 @@ NetworkManager::Query(const std::vector<int> &ids, QueryAttributes *qa)
         else if (strcmp(queryName.c_str(), "Variable by Node") == 0) 
         {
             query = new avtVariableQuery();
+        }
+        else if (strcmp(queryName.c_str(), "Plot MinMax") == 0) 
+        {
+            query = new avtPlotMinMaxQuery();
         }
         if (query != NULL)
         {

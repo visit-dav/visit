@@ -32,6 +32,7 @@
 #include <PlotPluginManager.h>
 #include <OperatorPluginInfo.h>
 #include <OperatorPluginManager.h>
+#include <QueryList.h>
 #include <Init.h>
 #include <DebugStream.h>
 
@@ -5122,7 +5123,9 @@ visit_GetQueryOutputString(PyObject *self, PyObject *args)
 // Creation:   July 11, 2003 
 //
 // Modifications:
-//   
+//   Kathleen Bonnell, Wed Nov 12 17:55:14 PST 2003
+//   If the query returned multiple values, return them in a python tuple. 
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -5130,7 +5133,22 @@ visit_GetQueryOutputValue(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
     QueryAttributes *qa = viewer->GetQueryAttributes();
-    PyObject *retval = PyFloat_FromDouble(qa->GetResultsValue());
+    doubleVector vals = qa->GetResultsValue();
+    PyObject *retval;
+    if (vals.size() == 1)
+        retval = PyFloat_FromDouble(vals[0]);
+    else
+    {
+        PyObject *tuple = PyTuple_New(vals.size());
+        for(int j = 0; j < vals.size(); ++j)
+        {
+            PyObject *item = PyFloat_FromDouble(vals[j]);
+            if(item == NULL)
+                continue;
+            PyTuple_SET_ITEM(tuple, j, item);
+        }
+        retval = tuple;
+    }
     return retval;
 }
 
@@ -5962,6 +5980,56 @@ visit_OperatorPlugins(PyObject *self, PyObject *args)
 
     return retval;
 }
+
+// ****************************************************************************
+// Function: visit_Queries
+//
+// Purpose:
+//   Returns a tuple containing the names of queries that can be used with
+//   the Query command.
+//
+// Notes:      
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   November 12, 2003 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_Queries(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    stringVector queries = viewer->GetQueryList()->GetNames();
+
+    // We only want to include Database queries, so count them.
+    intVector types = viewer->GetQueryList()->GetTypes();
+    int nQueries = 0; 
+    for(int i = 0; i < types.size(); ++i)
+    {
+        if (types[i] == QueryList::DatabaseQuery)
+            nQueries++;
+    }
+
+    // Allocate a tuple the enough entries to hold the queries name list.
+    PyObject *retval = PyTuple_New(nQueries);
+
+    for(int j = 0, k = 0; j < queries.size(); ++j)
+    {
+        if (types[j] == QueryList::DatabaseQuery)
+        {
+            PyObject *dval = PyString_FromString(queries[j].c_str());
+            if(dval == NULL)
+                continue;
+            PyTuple_SET_ITEM(retval, k++, dval);
+        }
+    }
+
+    return retval;
+}
+
 
 // ****************************************************************************
 // Function: visit_NumOperatorPlugins
@@ -7339,6 +7407,7 @@ AddDefaultMethods()
     AddMethod("TurnDomainsOn",  visit_TurnDomainsOn);
     AddMethod("TurnMaterialsOff",  visit_TurnMaterialsOff);
     AddMethod("TurnMaterialsOn",  visit_TurnMaterialsOn);
+    AddMethod("Queries",  visit_Queries);
 
     // Temporary methods
     AddMethod("ColorTableNames", visit_ColorTableNames);

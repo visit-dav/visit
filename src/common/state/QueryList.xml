@@ -17,10 +17,14 @@
     </Field>
     <Field name="numInputs" label="numInputs" type="intVector">
     </Field>
+    <Field name="allowedVarTypes" label="allowedVarTypes" type="intVector">
+    </Field>
     <Function name="AddQuery" user="true" member="true">
     </Function>
     <Function name="QueryExists" user="true" member="true">
     </Function>
     <Function name="NumberOfInputsForQuery" user="true" member="true">
+    </Function>
+    <Function name="AllowedVarsForQuery" user="true" member="true">
     </Function>
   </Attribute>

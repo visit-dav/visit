@@ -41,6 +41,10 @@ class vtkDataSet;
 //    Added value and Set/Get methods. Renamed Set/GetMessage to 
 //    Set/GetResultMessage
 //    
+//    Kathleen Bonnell,  Wed Nov 12 18:18:19 PST 2003 
+//    Made resValue a doubleVector.  Add more Get/Set methods so that queries
+//    that only return 1 value don't need to be updated. 
+//
 // ****************************************************************************
 
 class QUERY_API avtDatasetQuery : public avtDataObjectQuery, 
@@ -55,8 +59,15 @@ class QUERY_API avtDatasetQuery : public avtDataObjectQuery,
     virtual std::string      GetResultMessage(void) { return resMsg; };
     virtual void             SetResultMessage(const std::string &m) 
                                  { resMsg = m; }; 
-    virtual double           GetResultValue(void) { return resValue; };
-    virtual void             SetResultValue(const double &d) { resValue = d; };
+
+    virtual double           GetResultValue(const int i = 0); 
+    virtual void             SetResultValue(const double &d, const int i = 0);
+
+    virtual void             AddResultValue(const double &d)
+                                 { resValue.push_back(d); };
+    virtual doubleVector     GetResultValues(void) { return resValue; };
+    virtual void             SetResultValues(const doubleVector &d)
+                                 { resValue = d; };
 
   protected:
 
@@ -74,7 +85,7 @@ class QUERY_API avtDatasetQuery : public avtDataObjectQuery,
   private:
     virtual void             Execute(avtDataTree_p);
     std::string              resMsg;
-    double                   resValue;
+    doubleVector             resValue;
 };
 
 
