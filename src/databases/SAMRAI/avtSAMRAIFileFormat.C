@@ -16,7 +16,9 @@
 #include <stdlib.h>
 
 #include <vtkRectilinearGrid.h>
+#include <vtkStructuredGrid.h>
 #include <vtkFloatArray.h>
+#include <vtkPoints.h>
 
 #include <avtDatabaseMetaData.h>
 #include <avtIntervalTree.h>
@@ -200,15 +202,11 @@ avtSAMRAIFileFormat::ReadMesh(int patch, const char *level_name)
     // should really interact with variable cache (see Exodus format)
     // so the mesh is only read once for all time steps
 
-  //    char level_name[100];
-  //    strcpy(level_name, in_level_name);
-  //    level_name[strlen(level_name)-6] = '.';
-
     unsigned level;
     string name = GetNameLevel(level_name, level);
     if (level >= num_levels)
         EXCEPTION1(InvalidVariableException, level_name);
-
+ 
 
     unsigned offset = GetPatchOffset(level, patch);
     int dimensions[] = {1, 1, 1};
@@ -224,30 +222,52 @@ avtSAMRAIFileFormat::ReadMesh(int patch, const char *level_name)
         spacing[i] = dx[level * num_dim_problem + i];
     }
 
+    if (is_rectilinear) {
+        vtkFloatArray  *coords[3];
+        for (int i = 0 ; i < 3 ; i++)
+          {
+            // Default number of components for an array is 1.
+            coords[i] = vtkFloatArray::New();
+            coords[i]->SetNumberOfTuples(dimensions[i]);
+            for (int j = 0 ; j < dimensions[i] ; j++)
+              {
+                float c = origin[i] + j * spacing[i];
+                coords[i]->SetComponent(j, 0, c);
+              }
+          }
+   
+        vtkRectilinearGrid  *rGrid = vtkRectilinearGrid::New(); 
+        rGrid->SetDimensions(dimensions);
+        rGrid->SetXCoordinates(coords[0]);
+        coords[0]->Delete();
+        rGrid->SetYCoordinates(coords[1]);
+        coords[1]->Delete();
+        rGrid->SetZCoordinates(coords[2]);
+        coords[2]->Delete();
     
-    vtkFloatArray  *coords[3];
-    for (int i = 0 ; i < 3 ; i++)
-    {
-        // Default number of components for an array is 1.
-        coords[i] = vtkFloatArray::New();
-        coords[i]->SetNumberOfTuples(dimensions[i]);
-        for (int j = 0 ; j < dimensions[i] ; j++)
-        {
-            float c = origin[i] + j * spacing[i];
-            coords[i]->SetComponent(j, 0, c);
-        }
+        return rGrid;
     }
+    else {
+        char var_name[100];
+        sprintf(var_name, "Coords_%05d", level);
+        vtkDataArray * array = GetVectorVar(patch, var_name);
+        vtkStructuredGrid  *sGrid = vtkStructuredGrid::New(); 
+        vtkPoints *points = vtkPoints::New();
+        points->SetNumberOfPoints(array->GetNumberOfTuples());
 
-    vtkRectilinearGrid  *grid = vtkRectilinearGrid::New(); 
-    grid->SetDimensions(dimensions);
-    grid->SetXCoordinates(coords[0]);
-    coords[0]->Delete();
-    grid->SetYCoordinates(coords[1]);
-    coords[1]->Delete();
-    grid->SetZCoordinates(coords[2]);
-    coords[2]->Delete();
-    
-    return grid;
+        for (unsigned i=0; i<array->GetNumberOfTuples(); i++) {
+            float p[3];
+            array->GetTuple(i, p);
+            points->SetPoint(i,p);
+        }
+
+        sGrid->SetDimensions(dimensions);
+        sGrid->SetPoints(points);
+
+        points->Delete();
+        array->Delete();
+        return sGrid;
+    }
 }
 
 // ****************************************************************************
@@ -272,10 +292,6 @@ avtSAMRAIFileFormat::ReadMesh(int patch, const char *level_name)
 vtkDataArray *
 avtSAMRAIFileFormat::GetVar(int patch, const char *visit_var_name)
 {
-  //    char visit_var_name[100];
-  //    strcpy(visit_var_name, in_visit_var_name);
-  //    visit_var_name[strlen(visit_var_name)-6] = '.';
-
     unsigned int level;
     string var_name = GetNameLevel(visit_var_name, level);    
 
@@ -360,10 +376,6 @@ vtkDataArray *
 avtSAMRAIFileFormat::GetVectorVar(int patch, 
                                   const char *visit_var_name)
 {
-  //    char visit_var_name[100];
-  //    strcpy(visit_var_name, in_visit_var_name);
-  //    visit_var_name[strlen(visit_var_name)-6] = '.';
-
     unsigned int level;
     string var_name = GetNameLevel(visit_var_name, level);    
 
@@ -454,10 +466,6 @@ avtSAMRAIFileFormat::GetAuxiliaryData(const char *var, int domain,
                                       const char *type, void *,
                                       DestructorFunction &df)
 {
-  //    char var[100];
-  //    strcpy(var, in_var);
-  //    var[strlen(var)-6] = '.';
-
     unsigned level;
     string name;
     void *rv = NULL;
@@ -579,7 +587,11 @@ avtSAMRAIFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         for (var_it = var_names_num_components.begin();
              var_it != var_names_num_components.end(); 
              var_it++) {
-          
+
+            if ((*var_it).first == "Coords") {
+                continue;
+            }
+
             char var_name[(*var_it).first.size() + 20];
             sprintf(var_name, "%s_%05d", (*var_it).first.c_str(), l);
           
@@ -766,8 +778,14 @@ avtSAMRAIFileFormat::ReadMetaDataFile(hid_t &h5f_file)
     H5Tclose(h5t_var_name);
     H5Dclose(h5d_var_names);        
 
+    is_rectilinear = true;
     for (int v=0; v<num_vars; v++) {
+        unsigned level;
         var_names[v] = &names_buffer[v * name_size];
+        string var_name = GetNameLevel(var_names[v].c_str(), level);
+        if (var_name == "Coords") {
+            is_rectilinear = false;
+        }
     }
 
 

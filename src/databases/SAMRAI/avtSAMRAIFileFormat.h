@@ -71,6 +71,7 @@ class avtSAMRAIFileFormat : public avtSTMDFileFormat
     vtkDataSet                  **cached_patches;
     std::string                   file_name;
     std::string                   dir_name;
+    bool                          is_rectilinear;
     int                           dump_number;
     double                       *xlo;
     double                       *dx;
