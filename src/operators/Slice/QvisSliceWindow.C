@@ -180,12 +180,6 @@ QvisSliceWindow::CreateWindowContents()
     originTypeLayout->addWidget(otZone);
     originTypeLayout->addWidget(otNode);
 
-    // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>..
-    // Remove this to re-enable the percent, zone, and node controls
-    otPercent->hide();
-    otZone->hide();
-    otNode->hide();
-
     // -- origin (point)
     originPointLayout = new QHBoxLayout(5);
     originPointLabel = new QLabel("Point", originBox);

@@ -52,5 +52,7 @@
       </Function>
       <Function name="VarChangeRequiresReset" user="true" member="true">
       </Function>
+      <Function name="ProcessOldVersions" user="true" member="true">
+      </Function>
     </Attribute>
   </Plugin>

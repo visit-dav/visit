@@ -87,6 +87,7 @@ class avtSliceFilter : public avtPluginStreamer
   protected:
     SliceAttributes               atts;
     float                         D;
+    double                        cachedOrigin[3];
 
     vtkSlicer                    *slicer;
     vtkTransformPolyDataFilter   *transform;
@@ -104,6 +105,9 @@ class avtSliceFilter : public avtPluginStreamer
     void                    CalculateRectilinearCells(vtkRectilinearGrid *);
     void                    ProjectExtents(double *);
     void                    SetPlaneOrientation(double *);
+
+    void                    GetOrigin(double &, double &, double &);
+    void                    SetUpProjection(void);
 };
 
 

@@ -11,6 +11,7 @@
 #include <vtkAppendPolyData.h>
 #include <vtkDataSet.h>
 #include <vtkDataSetMapper.h>
+#include <vtkUnsignedIntArray.h>
 
 #include <avtCallback.h>
 #include <avtDataTree.h>
@@ -1483,6 +1484,11 @@ CFindMinimum(avtDataRepresentation &data, void *arg, bool &success)
 //  Programmer: Hank Childs
 //  Creation:   March 15, 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Wed Jun 18 10:55:48 PDT 2003
+//    Make use of original zones array if available.
+//
 // ****************************************************************************
 
 void
@@ -1507,15 +1513,110 @@ CLocateZone(avtDataRepresentation &data, void *arg, bool &success)
         EXCEPTION0(NoInputException);
     }
 
-    if (args->index >= ds->GetNumberOfCells())
+    //
+    // It might be that the original node numbers are saved off.  If so, they
+    // will be the most accurate.  If not, assume that the nodes are ordered
+    // in the same way they were when the data was saved out.
+    //
+    int indexToUse = -1;
+    vtkDataArray *ocn = ds->GetCellData()->GetArray("avtOriginalCellNumbers");
+    if (ocn == NULL)
     {
-        return;
+        indexToUse = args->index;
     }
-    vtkCell *cell = ds->GetCell(args->index);
+    else
+    {
+        vtkUnsignedIntArray *origZone = (vtkUnsignedIntArray *) ocn;
+
+        //
+        // There are two components when we have saved out the domain number
+        // as well.  The domain number is needed in cases where we have created
+        // ghost zones, for example.
+        //
+        if (origZone->GetNumberOfComponents() == 2)
+        {
+            //
+            // If the zone numbering has not changed, then the zone we want
+            // will still be in the same location.  Check to see if this is
+            // the case.  If so, it will allow us to not have to iterate over
+            // the whole array.
+            //
+            int nvals = origZone->GetNumberOfTuples();
+            int domain = -1;
+            int index  = -1;
+            if (args->index < nvals)
+            {
+                unsigned int *p = origZone->GetPointer(0);
+                p += 2*args->index;
+                domain = p[0];
+                index  = p[1];
+            }
+            if (domain == args->domain && index == args->index)
+            {
+                indexToUse = args->index;
+            }
+            else
+            {
+                //
+                // No avoiding it -- look at every zone and try to find a
+                // match.
+                //
+                unsigned int *ptr = origZone->GetPointer(0);
+                for (int i = 0 ; i < nvals ; i++)
+                {
+                    int domain = *(ptr++);
+                    int index  = *(ptr++);
+                    if (domain == args->domain && index == args->index)
+                    {
+                        indexToUse = i;
+                        break;
+                    }
+                }
+            }
+        }
+        else
+        {
+            //
+            // The domain numbers are not included.  This is very similar to
+            // the logic above -- so see above for pertinent comments.
+            //
+            int nvals = origZone->GetNumberOfTuples();
+            int index  = -1;
+            if (args->index < nvals)
+            {
+                unsigned int *p = origZone->GetPointer(args->index);
+                index  = p[0];
+            }
+            if (index == args->index)
+            {
+                indexToUse = args->index;
+            }
+            else
+            {
+                unsigned int *ptr = origZone->GetPointer(0);
+                for (int i = 0 ; i < nvals ; i++)
+                {
+                    int index  = *(ptr++);
+                    if (index == args->index)
+                    {
+                        indexToUse = i;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    if (indexToUse == -1)
+        return;
+
+    if (indexToUse >= ds->GetNumberOfCells())
+        return;
+
+    vtkCell *cell = ds->GetCell(indexToUse);
+
     if (cell == NULL)
-    {
         return;
-    }
 
     float p[3];
     cell->GetParametricCenter(p);
@@ -1550,6 +1651,11 @@ CLocateZone(avtDataRepresentation &data, void *arg, bool &success)
 //  Programmer: Hank Childs
 //  Creation:   March 15, 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Wed Jun 18 10:55:48 PDT 2003
+//    Make use of original nodes array if available.
+//
 // ****************************************************************************
 
 void
@@ -1574,13 +1680,109 @@ CLocateNode(avtDataRepresentation &data, void *arg, bool &success)
         EXCEPTION0(NoInputException);
     }
 
-    if (ds->GetNumberOfPoints() < args->index)
+    //
+    // It might be that the original node numbers are saved off.  If so, they
+    // will be the most accurate.  If not, assume that the nodes are ordered
+    // in the same way they were when the data was saved out.
+    //
+    int indexToUse = -1;
+    vtkDataArray *onn = ds->GetPointData()->GetArray("avtOriginalNodeNumbers");
+    if (onn == NULL)
+    {
+        indexToUse = args->index;
+    }
+    else
+    {
+        vtkUnsignedIntArray *origNode = (vtkUnsignedIntArray *) onn;
+
+        //
+        // There are two components when we have saved out the domain number
+        // as well.  The domain number is needed in cases where we have created
+        // ghost zones, for example.
+        //
+        if (origNode->GetNumberOfComponents() == 2)
+        {
+            //
+            // If the node numbering has not changed, then the node we want
+            // will still be in the same location.  Check to see if this is
+            // the case.  If so, it will allow us to not have to iterate over
+            // the whole array.
+            //
+            int nvals = origNode->GetNumberOfTuples();
+            int domain = -1;
+            int index  = -1;
+            if (args->index < nvals)
+            {
+                unsigned int *p = origNode->GetPointer(0);
+                p += 2*args->index;
+                index  = p[1];
+            }
+            if (domain == args->domain && index == args->index)
+            {
+                indexToUse = args->index;
+            }
+            else
+            {
+                //
+                // No avoiding it -- look at every node and try to find a
+                // match.
+                //
+                unsigned int *ptr = origNode->GetPointer(0);
+                for (int i = 0 ; i < nvals ; i++)
+                {
+                    int domain = *(ptr++);
+                    int index  = *(ptr++);
+                    if (domain == args->domain && index == args->index)
+                    {
+                        indexToUse = i;
+                        break;
+                    }
+                }
+            }
+        }
+        else
+        {
+            //
+            // The domain numbers are not included.  This is very similar to
+            // the logic above -- so see above for pertinent comments.
+            //
+            int nvals = origNode->GetNumberOfTuples();
+            int index  = -1;
+            if (args->index < nvals)
+            {
+                unsigned int *p = origNode->GetPointer(args->index);
+                index  = p[0];
+            }
+            if (index == args->index)
+            {
+                indexToUse = args->index;
+            }
+            else
+            {
+                unsigned int *ptr = origNode->GetPointer(0);
+                for (int i = 0 ; i < nvals ; i++)
+                {
+                    int index  = *(ptr++);
+                    if (index == args->index)
+                    {
+                        indexToUse = i;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    if (indexToUse == -1)
+        return;
+
+    if (ds->GetNumberOfPoints() < indexToUse)
     {
         return;
     }
 
     float p[3];
-    ds->GetPoint(args->index, p);
+    ds->GetPoint(indexToUse, p);
     args->point[0] = p[0];
     args->point[1] = p[1];
     args->point[2] = p[2];

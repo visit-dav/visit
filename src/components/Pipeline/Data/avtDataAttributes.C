@@ -308,6 +308,9 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
 //    Kathleen Bonnell, Thu Apr 10 10:31:54 PDT 2003  
 //    Merge transform.
 //
+//    Kathleen Bonnell, Wed Jun 18 17:50:20 PDT 2003 
+//    Account for avtGhostType AVT_CREATED_GHOSTS. 
+//
 // ****************************************************************************
 
 void
@@ -357,6 +360,10 @@ avtDataAttributes::Merge(const avtDataAttributes &da)
         if (da.GetContainsGhostZones() == AVT_HAS_GHOSTS)
         {
             SetContainsGhostZones(AVT_HAS_GHOSTS);
+        }
+        else if (da.GetContainsGhostZones() == AVT_CREATED_GHOSTS)
+        {
+            SetContainsGhostZones(AVT_CREATED_GHOSTS);
         }
     }
     else if (GetContainsGhostZones() == AVT_NO_GHOSTS)

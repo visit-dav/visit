@@ -26,3 +26,38 @@ BoundaryAttributes::VarChangeRequiresReset()
     return true;
 }
 
+Function: ProcessOldVersions
+Declaration: virtual void ProcessOldVersions(DataNode *parentNode, const char *configVersion);
+Definition:
+// ****************************************************************************
+// Method: BoundaryAttributes::ProcessOldVersions
+//
+// Purpose: 
+//   This method creates modifies a DataNode representation of the object
+//   so it conforms to the newest representation of the object, which can
+//   can be read back in.
+//
+// Programmer: Jeremy Meredith
+// Creation:   June 18, 2003
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+BoundaryAttributes::ProcessOldVersions(DataNode *parentNode,
+                                       const char *configVersion)
+{
+    if(parentNode == 0)
+        return;
+
+    DataNode *searchNode = parentNode->GetNode("BoundaryAttributes");
+    if(searchNode == 0)
+        return;
+
+    DataNode *wfNode = searchNode->GetNode("wireframe");
+    if (wfNode == 0)
+        return;
+
+    if (VersionLessThan(configVersion, "1.1.5"))
+        searchNode->RemoveNode("wireframe");
+}

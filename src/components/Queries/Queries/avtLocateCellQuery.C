@@ -136,6 +136,9 @@ avtLocateCellQuery::PostExecute(void)
 //    Removed calculation of tolerance, and passing of that value to FindCell
 //    methods.  No longer use tolerance when calculating fudgedIsect.
 //    
+//    Kathleen Bonnell, Wed Jun 18 17:52:45 PDT 2003
+//    Always use OriginalCellsArray if present.   
+//    
 // ****************************************************************************
 
 void
@@ -166,27 +169,20 @@ avtLocateCellQuery::Execute(vtkDataSet *ds, const int dom)
 
         queryAtts.SetWorldPoint(isect);
 
-        //
-        // Only try to use avtOriginalCellsArray if the inverse transformation 
-        // matrix is not available.
-        //
-        avtDataAttributes &inAtts = GetInput()->GetInfo().GetAttributes();
-        if (!(inAtts.HasTransform() && inAtts.GetCanUseTransform()))
-        { 
-            vtkDataArray *origCells = 
+        vtkDataArray *origCells = 
                  ds->GetCellData()->GetArray("avtOriginalCellNumbers");
-            if (origCells)
-            {
-                int comp = origCells->GetNumberOfComponents() -1;
-                foundZone = (int) origCells->GetComponent(foundCell, comp);
-            }
-            else if (GetInput()->GetInfo().GetAttributes().
-                     GetContainsOriginalCells())
-            {
-                 debug5 << "PICK PROBLEM! Info says we should have original "
-                        << " cells but the array was not found in the dataset."
-                        << endl;
-            }
+    
+        if (origCells)
+        {
+            int comp = origCells->GetNumberOfComponents() -1;
+            foundZone = (int) origCells->GetComponent(foundCell, comp);
+        }
+        else if (GetInput()->GetInfo().GetAttributes().
+                 GetContainsOriginalCells())
+        {
+            debug5 << "PICK PROBLEM! Info says we should have original "
+                   << " cells but the array was not found in the dataset."
+                   << endl;
         }
         //
         // There is no need to 'fudge' the intersection point unless 
@@ -234,6 +230,10 @@ avtLocateCellQuery::Execute(vtkDataSet *ds, const int dom)
 //    in favor of a tolerance calculated from the MinimumCellLength as 
 //    determined by the locator.  
 //
+//    Kathleen Bonnell, Wed Jun 18 17:52:45 PDT 2003 
+//    Use new IntersectWithLine routine from cellLocator.  It doesn't require
+//    the calculation of a tolerance. 
+//    
 // ****************************************************************************
 
 int
@@ -246,32 +246,14 @@ avtLocateCellQuery::LocatorFindCell(vtkDataSet *ds, float &dist, float *isect)
     cellLocator->SetIgnoreGhosts(true);
     cellLocator->SetDataSet(ds);
     cellLocator->BuildLocator();
-    float tol = cellLocator->GetMinCellLength(); 
-    if (tol != VTK_LARGE_FLOAT)
-    {
-        tol *= 0.001;
-    }
-    else  // for some reason, the min-cell length did not get calculated.
-    {
-        int nCells = ds->GetNumberOfCells();
-        tol = ds->GetLength();
-        if (nCells != 0)
-        {
-            tol /= (float) nCells;
-        }
-        else // we have no cells with which to search.
-        {
-            cellLocator->Delete();
-            return -1; 
-        }
-    }
 
     float pcoords[3];
     int subId;
 
     vtkIdType foundCell; 
-    int success = cellLocator->IntersectWithLine(rayPt1, rayPt2, tol, dist, 
+    int success = cellLocator->IntersectWithLine(rayPt1, rayPt2, dist, 
                                      isect, pcoords, subId, foundCell);
+
     cellLocator->Delete();
     if (success)
         return foundCell;

@@ -266,6 +266,14 @@ avtGenericDatabase::GetOutput(avtDataSpecification_p spec,
     }
 
     //
+    // Add node numbers if requested.
+    //
+    if (spec->NeedNodeNumbers())
+    {
+        CreateOriginalNodes(datasetCollection, domains, src);
+    }
+
+    //
     // Add zone numbers if requested.
     //
     if (spec->NeedZoneNumbers())
@@ -1480,6 +1488,52 @@ avtGenericDatabase::AddOriginalCellsArray(vtkDataSet *ds, const int domain)
 
 
 // ****************************************************************************
+//  Function: AddOriginalNodesArray
+//
+//  Purpose:
+//    Creates an array of 'original node numbers' to attach to the dataset.
+//
+//  Programmer: Hank Childs
+//  Creation:   June 18, 2003
+//
+// ****************************************************************************
+
+void
+avtGenericDatabase::AddOriginalNodesArray(vtkDataSet *ds, const int domain)
+{
+    if (ds == NULL || ds->GetCellData()->GetArray("avtOriginalCellNumbers"))
+    {
+        // DataSet is NULL or array is already created -- return.
+        return;
+    }
+
+    int timerHandle = visitTimer->StartTimer();
+    vtkUnsignedIntArray *origNodes = vtkUnsignedIntArray::New();
+    origNodes->SetName("avtOriginalNodeNumbers");
+    bool encodeDomains = (domain >= 0 ? true : false);
+    int nComps = (encodeDomains ? 2 : 1);
+    origNodes->SetNumberOfComponents(nComps);
+    int nnodes = ds->GetNumberOfPoints();
+    origNodes->SetNumberOfTuples(nnodes);
+    unsigned int *ptr = origNodes->GetPointer(0);
+    for (int i = 0; i < nnodes; i++)
+    {
+        if (encodeDomains)
+        {
+            *ptr = domain;
+            ptr++;
+        }
+        *ptr = i;
+        ptr++;
+    }
+    ds->GetPointData()->AddArray(origNodes);
+    origNodes->Delete();
+    ds->GetPointData()->CopyFieldOn("avtOriginalNodeNumbers");
+    visitTimer->StopTimer(timerHandle, "Creating original nodes array");
+}
+
+
+// ****************************************************************************
 //  Method: avtGenericDatabase::MaterialSelect
 //
 //  Purpose:
@@ -2552,6 +2606,15 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, vector<int> &domains,
 //    Also communicate the original zone numbers if we are creating structured
 //    indices.
 //
+//    Hank Childs, Wed Jun 18 09:34:38 PDT 2003
+//    Communicate node numbers.
+//
+//    Kathleen Bonnell, Wed Jun 18 17:47:10 PDT 2003  
+//    When telling downstream items that ghost zones are present, use
+//    AVT_CREATED_GHOSTS to distinguish between those designated by the file
+//    format (AVT_HAS_GHOSTS) and those created here. (Needed currently so
+//    that Pick can return the correct cell id and/or coords).
+//
 // ****************************************************************************
 
 bool
@@ -2965,6 +3028,28 @@ avtGenericDatabase::CommunicateGhosts(avtDatasetCollection &ds,
         }
 
         //
+        // Exchange OriginalNodes Arrays.
+        //
+        if (spec->NeedNodeNumbers())
+        {
+            vector<vtkDataArray *> nodeNums;
+            for (j = 0 ; j < doms.size() ; j++)
+            {
+                vtkDataSet *ds1 = list[j];
+                nodeNums.push_back(ds1->GetPointData()->GetArray(
+                                                    "avtOriginalNodeNumbers"));
+            }
+            vector<vtkDataArray *> nodeNumsOut;
+            nodeNumsOut = dbi->ExchangeIntVector(doms,true,nodeNums);
+            for (j = 0 ; j < doms.size() ; j++)
+            {
+                vtkDataSet *ds1 = ds.GetDataset(j, 0);
+                ds1->GetPointData()->AddArray(nodeNumsOut[j]);
+                nodeNumsOut[j]->Delete();
+            }
+        }
+
+        //
         // Exchange OriginalCells Arrays.
         //
         if (spec->NeedZoneNumbers() || spec->NeedStructuredIndices())
@@ -3001,7 +3086,7 @@ avtGenericDatabase::CommunicateGhosts(avtDatasetCollection &ds,
         //
         avtDatabaseMetaData *md = GetMetaData();
         string meshname = md->MeshForVar(spec->GetVariable());
-        GetMetaData()->SetContainsGhostZones(meshname, AVT_HAS_GHOSTS);
+        GetMetaData()->SetContainsGhostZones(meshname, AVT_CREATED_GHOSTS);
 
         src->DatabaseProgress(1, 0, progressString);
         rv = true;
@@ -3184,6 +3269,36 @@ avtGenericDatabase::CreateOriginalZones(avtDatasetCollection &ds,
 
 
 // ****************************************************************************
+//  Method: avtGenericDatabase::CreateOriginalNodes
+//
+//  Purpose:
+//    Create original nodes array. 
+//
+//  Arguments:
+//      ds        The dataset collection.
+//      src       The source object.
+//
+//  Programmer:   Hank Childs 
+//  Creation:     June 18, 2003
+//
+// ****************************************************************************
+
+void
+avtGenericDatabase::CreateOriginalNodes(avtDatasetCollection &ds, 
+                              vector<int> &domains, avtSourceFromDatabase *src)
+{
+    char  progressString[1024] = "Creating Original Nodes Array";
+    src->DatabaseProgress(0, 0, progressString);
+    for (int i = 0 ; i < ds.GetNDomains() ; i++)
+    {
+        AddOriginalNodesArray(ds.GetDataset(i, 0), domains[i]);
+        src->DatabaseProgress(i, ds.GetNDomains(), progressString);
+    }
+    src->DatabaseProgress(1, 0, progressString);
+}
+
+
+// ****************************************************************************
 //  Method: avtGenericDatabase::CreateStructuredIndices
 //
 //  Purpose:
@@ -3234,7 +3349,6 @@ avtGenericDatabase::CreateStructuredIndices(avtDatasetCollection &dsc,
         ds->GetFieldData()->AddArray(orig_dims);
         orig_dims->Delete();
         AddOriginalCellsArray(ds, -1);
-       
         src->DatabaseProgress(i, dsc.GetNDomains(), progressString);
     }
     src->DatabaseProgress(1, 0, progressString);
@@ -3269,6 +3383,9 @@ avtGenericDatabase::CreateStructuredIndices(avtDatasetCollection &dsc,
 //    Hank Childs, Fri Nov 22 16:39:13 PST 2002
 //    Use the SIL restriction traverser since SIL restriction routines were
 //    antiquated.
+//
+//    Hank Childs, Wed Jun 18 09:34:38 PDT 2003
+//    Added a stage for needing node numbers.
 //
 // ****************************************************************************
 
@@ -3325,6 +3442,11 @@ avtGenericDatabase::NumStagesForFetch(avtDataSpecification_p spec)
 
     vector<bool> list;
     if (trav.GetSpecies(list))
+    {
+        numStages += 1;
+    }
+
+    if (spec->NeedNodeNumbers())
     {
         numStages += 1;
     }

@@ -15,11 +15,13 @@
 #include <vtkSlicer.h>
 #include <vtkTransformPolyDataFilter.h>
 
+#include <avtCallback.h>
 #include <avtDataset.h>
+#include <avtDatasetExaminer.h>
 #include <avtExtents.h>
 #include <avtIntervalTree.h>
 #include <avtMetaData.h>
-#include <avtPointAttribute.h>
+#include <avtParallel.h>
 
 #include <BadVectorException.h>
 #include <DebugStream.h>
@@ -33,7 +35,6 @@ static void      FindCells(float *x, float *y, float *z, int nx, int ny,
                            int nz, int *clist, int &ncells, float *plane, 
                            int dim, int ax, int ay, int az, int onx, int ony,
                            int onz);
-static void      GetOrigin(SliceAttributes&, double&, double&, double&);
 
 
 // ****************************************************************************
@@ -80,6 +81,9 @@ avtSliceFilter::avtSliceFilter()
     transform = vtkTransformPolyDataFilter::New();
     celllist = NULL;
     invTrans = vtkMatrix4x4::New();
+    cachedOrigin[0] = 0.;
+    cachedOrigin[1] = 0.;
+    cachedOrigin[2] = 0.;
 }
 
 
@@ -213,123 +217,6 @@ avtSliceFilter::SetAtts(const AttributeGroup *a)
         EXCEPTION1(BadVectorException, "Normal");
         return;
     }
-
-    double ox = 0;
-    double oy = 0;
-    double oz = 0;
-    GetOrigin(atts, ox, oy, oz);
-
-    double ux = atts.GetUpAxis()[0];
-    double uy = atts.GetUpAxis()[1];
-    double uz = atts.GetUpAxis()[2];
-
-
-    // figure out D in the plane equation
-    D = nx*ox + ny*oy + nz*oz;
-
-    slicer->SetOrigin(ox, oy, oz);
-    slicer->SetNormal(nx, ny, nz);
-
-    if (atts.GetProject2d())
-    {
-        //
-        // Make sure the up axis is valid. 
-        //
-        if (ux == 0. && uy == 0. && uz == 0.)
-        {
-            EXCEPTION1(BadVectorException, "Up Axis");
-            return;
-        }
-        //
-        // Make sure the up axis and normal are not equal
-        //
-        if (nx==ux && ny==uy && nz==uz)
-        {
-            // We could throw an exception here....
-            // ...but for now I'll just correct the error instead.
-            if (ux==0 && uy==0 && uz==1)
-            {
-                ux=1;  uy=0;  uz=0;
-            }
-            else
-            {
-                ux=0;  uy=0;  uz=1;
-            }
-        }
-
-        float origin[3] = {ox,oy,oz};
-        float normal[3] = {nx,ny,nz};
-        float upaxis[3] = {ux,uy,uz};
-
-        vtkMath::Normalize(normal);
-        vtkMath::Normalize(upaxis);
-
-        //
-        // The normal and up vectors for two thirds of a basis, take their
-        // cross product to find the third element of the basis.
-        //
-        float  third[3];
-        vtkMath::Cross(normal, upaxis, third);
-
-        // Make sure the up axis is orthogonal to third and normal
-        vtkMath::Cross(third, normal, upaxis);
-
-        //
-        // Because it is easier to find the Frame-to-Cartesian-Frame conversion
-        // matrix and invert it than to calculate the Cartesian-Frame-To-Frame
-        // conversion matrix, we will calculate the former matrix.
-        //
-        vtkMatrix4x4 *ftcf = vtkMatrix4x4::New();
-        ftcf->SetElement(0, 0, third[0]);
-        ftcf->SetElement(0, 1, third[1]);
-        ftcf->SetElement(0, 2, third[2]);
-        ftcf->SetElement(0, 3, 0.);
-        ftcf->SetElement(1, 0, upaxis[0]);
-        ftcf->SetElement(1, 1, upaxis[1]);
-        ftcf->SetElement(1, 2, upaxis[2]);
-        ftcf->SetElement(1, 3, 0.);
-        ftcf->SetElement(2, 0, normal[0]);
-        ftcf->SetElement(2, 1, normal[1]);
-        ftcf->SetElement(2, 2, normal[2]);
-        ftcf->SetElement(2, 3, 0.);
-        ftcf->SetElement(3, 0, origin[0]);
-        ftcf->SetElement(3, 1, origin[1]);
-        ftcf->SetElement(3, 2, origin[2]);
-        ftcf->SetElement(3, 3, 1.);
-
-        //
-        //  ftcf Transpose can be used as the inverse transform to take 
-        //  a point back to its original location, so save it. 
-        //
-        vtkMatrix4x4::Transpose(ftcf, invTrans);
-
-        vtkMatrix4x4 *cftf = vtkMatrix4x4::New();
-        vtkMatrix4x4::Invert(ftcf, cftf);
-        ftcf->Delete();
-   
-        vtkMatrix4x4 *projTo2D = vtkMatrix4x4::New();
-        projTo2D->Identity();
-        projTo2D->SetElement(2, 2, 0.);
-
-        vtkMatrix4x4 *result = vtkMatrix4x4::New();
-        vtkMatrix4x4::Multiply4x4(cftf, projTo2D, result);
-        cftf->Delete();
-        projTo2D->Delete();
-
-        //
-        // VTK right-multiplies the points, so we need transpose the matrix.
-        //
-        vtkMatrix4x4 *result_transposed = vtkMatrix4x4::New();
-        vtkMatrix4x4::Transpose(result, result_transposed);
-        result->Delete();
-
-        vtkMatrixToLinearTransform *mtlt = vtkMatrixToLinearTransform::New();
-        mtlt->SetInput(result_transposed);
-        result_transposed->Delete();
-
-        transform->SetTransform(mtlt);
-        mtlt->Delete();
-    }
 }
 
 
@@ -387,6 +274,9 @@ avtSliceFilter::Equivalent(const AttributeGroup *a)
 //    Completely removed the code turning off zone numbers.  Why set a flag
 //    to false if it is already false?  False is the default setting.
 //    
+//    Hank Childs, Wed Jun 18 11:06:30 PDT 2003
+//    Request arrays if necessary for different slice types.
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -397,6 +287,15 @@ avtSliceFilter::PerformRestriction(avtPipelineSpecification_p spec)
     if (atts.GetProject2d() && rv->GetDataSpecification()->MayRequireZones())
     {
         rv->GetDataSpecification()->TurnZoneNumbersOn();
+    }
+
+    if (atts.GetOriginType() == SliceAttributes::Zone)
+    {
+        rv->GetDataSpecification()->TurnZoneNumbersOn();
+    }
+    if (atts.GetOriginType() == SliceAttributes::Node)
+    {
+        rv->GetDataSpecification()->TurnNodeNumbersOn();
     }
 
     //
@@ -436,6 +335,10 @@ avtSliceFilter::PerformRestriction(avtPipelineSpecification_p spec)
 //    Jeremy Meredith, Mon May  5 14:37:08 PDT 2003
 //    Changed the way "origin" works.
 //
+//    Hank Childs, Tue Jun 17 08:54:31 PDT 2003
+//    Made origin be determined in this routine since it may require parallel
+//    execution.
+//
 // ****************************************************************************
 
 void
@@ -448,12 +351,334 @@ avtSliceFilter::PreExecute(void)
     double ox = 0;
     double oy = 0;
     double oz = 0;
-    GetOrigin(atts, ox, oy, oz);
+    GetOrigin(ox, oy, oz);
+
+    cachedOrigin[0] = ox;
+    cachedOrigin[1] = oy;
+    cachedOrigin[2] = oz;
 
     slicer->SetOrigin(ox, oy, oz);
+    slicer->SetNormal(nx, ny, nz);
+
+    // figure out D in the plane equation
     D = nx*ox + ny*oy + nz*oz;
+
+    if (atts.GetProject2d())
+        SetUpProjection();
 }
 
+
+// ****************************************************************************
+//  Method: avtSliceFilter::SetUpProjection
+//
+//  Purpose:
+//      Sets up the projection matrix.
+//
+//  Programmer: Hank Childs (taken from old PreExecute code)
+//  Creation:   June 17, 2003
+//
+// ****************************************************************************
+
+void
+avtSliceFilter::SetUpProjection(void)
+{
+    double nx = atts.GetNormal()[0];
+    double ny = atts.GetNormal()[1];
+    double nz = atts.GetNormal()[2];
+
+    double ox = cachedOrigin[0];
+    double oy = cachedOrigin[1];
+    double oz = cachedOrigin[2];
+
+    double ux = atts.GetUpAxis()[0];
+    double uy = atts.GetUpAxis()[1];
+    double uz = atts.GetUpAxis()[2];
+
+    //
+    // Make sure the up axis is valid. 
+    //
+    if (ux == 0. && uy == 0. && uz == 0.)
+    {
+        EXCEPTION1(BadVectorException, "Up Axis");
+        return;
+    }
+
+    //
+    // Make sure the up axis and normal are not equal
+    //
+    if (nx==ux && ny==uy && nz==uz)
+    {
+        // We could throw an exception here....
+        // ...but for now I'll just correct the error instead.
+        if (ux==0 && uy==0 && uz==1)
+        {
+            ux=1;  uy=0;  uz=0;
+        }
+        else
+        {
+            ux=0;  uy=0;  uz=1;
+        }
+    }
+
+    float origin[3] = {ox,oy,oz};
+    float normal[3] = {nx,ny,nz};
+    float upaxis[3] = {ux,uy,uz};
+
+    vtkMath::Normalize(normal);
+    vtkMath::Normalize(upaxis);
+
+    //
+    // The normal and up vectors for two thirds of a basis, take their
+    // cross product to find the third element of the basis.
+    //
+    float  third[3];
+    vtkMath::Cross(normal, upaxis, third);
+
+    // Make sure the up axis is orthogonal to third and normal
+    vtkMath::Cross(third, normal, upaxis);
+
+    //
+    // Because it is easier to find the Frame-to-Cartesian-Frame conversion
+    // matrix and invert it than to calculate the Cartesian-Frame-To-Frame
+    // conversion matrix, we will calculate the former matrix.
+    //
+    vtkMatrix4x4 *ftcf = vtkMatrix4x4::New();
+    ftcf->SetElement(0, 0, third[0]);
+    ftcf->SetElement(0, 1, third[1]);
+    ftcf->SetElement(0, 2, third[2]);
+    ftcf->SetElement(0, 3, 0.);
+    ftcf->SetElement(1, 0, upaxis[0]);
+    ftcf->SetElement(1, 1, upaxis[1]);
+    ftcf->SetElement(1, 2, upaxis[2]);
+    ftcf->SetElement(1, 3, 0.);
+    ftcf->SetElement(2, 0, normal[0]);
+    ftcf->SetElement(2, 1, normal[1]);
+    ftcf->SetElement(2, 2, normal[2]);
+    ftcf->SetElement(2, 3, 0.);
+    ftcf->SetElement(3, 0, origin[0]);
+    ftcf->SetElement(3, 1, origin[1]);
+    ftcf->SetElement(3, 2, origin[2]);
+    ftcf->SetElement(3, 3, 1.);
+
+    //
+    //  ftcf Transpose can be used as the inverse transform to take 
+    //  a point back to its original location, so save it. 
+    //
+    vtkMatrix4x4::Transpose(ftcf, invTrans);
+
+    vtkMatrix4x4 *cftf = vtkMatrix4x4::New();
+    vtkMatrix4x4::Invert(ftcf, cftf);
+    ftcf->Delete();
+
+    vtkMatrix4x4 *projTo2D = vtkMatrix4x4::New();
+    projTo2D->Identity();
+    projTo2D->SetElement(2, 2, 0.);
+
+    vtkMatrix4x4 *result = vtkMatrix4x4::New();
+    vtkMatrix4x4::Multiply4x4(cftf, projTo2D, result);
+    cftf->Delete();
+    projTo2D->Delete();
+
+    //
+    // VTK right-multiplies the points, so we need transpose the matrix.
+    //
+    vtkMatrix4x4 *result_transposed = vtkMatrix4x4::New();
+    vtkMatrix4x4::Transpose(result, result_transposed);
+    result->Delete();
+
+    vtkMatrixToLinearTransform *mtlt = vtkMatrixToLinearTransform::New();
+    mtlt->SetInput(result_transposed);
+    result_transposed->Delete();
+
+    transform->SetTransform(mtlt);
+    mtlt->Delete();
+}
+
+
+// ****************************************************************************
+//  Method:  avtSliceFilter::GetOrigin
+//
+//  Purpose:
+//    Extract the origin from the attributes as a 3-tuple.
+//
+//  Arguments:
+//    ox,oy,oz   the origin        (o)
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    May  5, 2003
+//
+//  Modifications:
+//
+//    Hank Childs, Tue Jun 17 09:07:14 PDT 2003 
+//    Made the routine be a method with avtSliceFilter.  Added cases for
+//    slicing by zone, node, etc.
+//
+// ****************************************************************************
+
+void
+avtSliceFilter::GetOrigin(double &ox, double &oy, double &oz)
+{
+    double nx = atts.GetNormal()[0];
+    double ny = atts.GetNormal()[1];
+    double nz = atts.GetNormal()[2];
+    double nl = sqrt(nx*nx + ny*ny + nz*nz);
+
+    // We want to make sure for orthogonal slices that "intercept" is still
+    // meaningful even when the normal is pointing in the negative direction
+    if (nx+ny+nz < 0 && atts.GetAxisType() != SliceAttributes::Arbitrary)
+    {
+        nl *= -1;
+    }
+
+    ox = 0;
+    oy = 0;
+    oz = 0;
+
+    switch (atts.GetOriginType())
+    {
+      case SliceAttributes::Point:
+      {
+          double *p = atts.GetOriginPoint();
+          ox = p[0];
+          oy = p[1];
+          oz = p[2];
+          break;
+      }
+      case SliceAttributes::Intercept:
+      {
+          if (nl != 0)
+          {
+              double d = atts.GetOriginIntercept();
+              ox = nx * d / nl;
+              oy = ny * d / nl;
+              oz = nz * d / nl;
+          }
+          break;
+      }
+      case SliceAttributes::Percent:
+      {
+          double bounds[6];
+          double percent = atts.GetOriginPercent() / 100.;
+          GetSpatialExtents(bounds);
+          ox = (bounds[1] - bounds[0])*percent + bounds[0];
+          oy = (bounds[3] - bounds[2])*percent + bounds[2];
+          oz = (bounds[5] - bounds[4])*percent + bounds[4];
+          break;
+      }
+      case SliceAttributes::Zone:
+      {
+          avtDataset_p ds = GetTypedInput();
+          int blockOrigin = ds->GetInfo().GetAttributes().GetBlockOrigin();
+          int cellOrigin  = ds->GetInfo().GetAttributes().GetCellOrigin();
+          int domain = atts.GetOriginZoneDomain();
+          domain -= blockOrigin;
+          int zone = atts.GetOriginZone();
+          zone -= cellOrigin;
+          double point[3];
+          point[0] = DBL_MAX;
+          point[1] = DBL_MAX;
+          point[2] = DBL_MAX;
+          bool success = avtDatasetExaminer::FindZone(ds, domain, zone, point);
+
+          double buff[6];
+          if (success)
+          {
+              buff[0] = point[0];
+              buff[2] = point[1];
+              buff[4] = point[2];
+          }
+          else
+          {
+              buff[0] = DBL_MAX;
+              buff[2] = DBL_MAX;
+              buff[4] = DBL_MAX;
+          }
+
+          // This buffer is pretty much set up as a hack that uses existing
+          // functions to unify minimum and maximum values -- we will only use
+          // the minimum part as a way to broadcast a message.
+          UnifyMinMax(buff, 6);
+
+          if (buff[0] == DBL_MAX)
+          {
+              point[0] = 0.;
+              point[1] = 0.;
+              point[2] = 0.;
+              char warning[1024];
+              sprintf(warning, "Was not able to locate domain %d, zone %d, "
+                               "using point (0., 0., 0.)", domain+blockOrigin,
+                                                     zone+cellOrigin);
+              avtCallback::IssueWarning(warning);
+          }
+          else
+          {
+              point[0] = buff[0];
+              point[1] = buff[2];
+              point[2] = buff[4];
+          }
+
+          ox = point[0];
+          oy = point[1];
+          oz = point[2];
+          break;
+      }        
+      case SliceAttributes::Node:
+      {
+          avtDataset_p ds = GetTypedInput();
+          int blockOrigin = ds->GetInfo().GetAttributes().GetBlockOrigin();
+          int domain = atts.GetOriginNodeDomain();
+          domain -= blockOrigin;
+          int node = atts.GetOriginNode();
+          double point[3];
+          point[0] = DBL_MAX;
+          point[1] = DBL_MAX;
+          point[2] = DBL_MAX;
+          bool success = avtDatasetExaminer::FindNode(ds, domain, node, point);
+
+          double buff[6];
+          if (success)
+          {
+              buff[0] = point[0];
+              buff[2] = point[1];
+              buff[4] = point[2];
+          }
+          else
+          {
+              buff[0] = DBL_MAX;
+              buff[2] = DBL_MAX;
+              buff[4] = DBL_MAX;
+          }
+
+          // This buffer is pretty much set up as a hack that uses existing
+          // functions to unify minimum and maximum values -- we will only use
+          // the minimum part as a way to broadcast a message.
+          UnifyMinMax(buff, 6);
+
+          if (buff[0] == DBL_MAX)
+          {
+              point[0] = 0.;
+              point[1] = 0.;
+              point[2] = 0.;
+              char warning[1024];
+              sprintf(warning, "Was not able to locate domain %d, node %d, "
+                               "using point (0., 0., 0.)", domain+blockOrigin,
+                                                           node);
+              avtCallback::IssueWarning(warning);
+          }
+          else
+          {
+              point[0] = buff[0];
+              point[1] = buff[2];
+              point[2] = buff[4];
+          }
+
+          ox = point[0];
+          oy = point[1];
+          oz = point[2];
+          break;
+      }
+    }
+}
 
 // ****************************************************************************
 //  Method: avtSliceFilter::ExecuteData
@@ -648,6 +873,10 @@ avtSliceFilter::ReleaseData(void)
 //    Hank Childs, Tue Aug  6 11:07:14 PDT 2002
 //    Tell the output that normals are not needed.
 //
+//    Hank Childs, Wed Jun 18 19:06:23 PDT 2003
+//    Do not project the extents here, since the origin has not been
+//    established yet.
+//
 // ****************************************************************************
 
 void
@@ -665,43 +894,6 @@ avtSliceFilter::RefashionDataObjectInfo(void)
         outAtts.SetSpatialDimension(2);
         outValidity.InvalidateSpatialMetaData();
         outValidity.SetPointsWereTransformed(true);
-
-        double b[6];
- 
-        if (inAtts.GetTrueSpatialExtents()->HasExtents())
-        {
-            inAtts.GetTrueSpatialExtents()->CopyTo(b);
-            ProjectExtents(b);
-            outAtts.GetTrueSpatialExtents()->Set(b);
-        }
-
-        if (inAtts.GetCumulativeTrueSpatialExtents()->HasExtents())
-        {
-            inAtts.GetCumulativeTrueSpatialExtents()->CopyTo(b);
-            ProjectExtents(b);
-            outAtts.GetCumulativeTrueSpatialExtents()->Set(b);
-        }
-
-        if (inAtts.GetEffectiveSpatialExtents()->HasExtents())
-        {
-            inAtts.GetEffectiveSpatialExtents()->CopyTo(b);
-            ProjectExtents(b);
-            outAtts.GetEffectiveSpatialExtents()->Set(b);
-        }
-
-        if (inAtts.GetCurrentSpatialExtents()->HasExtents())
-        {
-            inAtts.GetCurrentSpatialExtents()->CopyTo(b);
-            ProjectExtents(b);
-            outAtts.GetCurrentSpatialExtents()->Set(b);
-        }
-
-        if (inAtts.GetCumulativeCurrentSpatialExtents()->HasExtents())
-        {
-            inAtts.GetCumulativeCurrentSpatialExtents()->CopyTo(b);
-            ProjectExtents(b);
-            outAtts.GetCumulativeCurrentSpatialExtents()->Set(b);
-        }
     }
 }
 
@@ -727,11 +919,22 @@ avtSliceFilter::RefashionDataObjectInfo(void)
 //    Hank Childs, Mon Jun  9 09:20:43 PDT 2003
 //    Use the new vtkSlicer class.
 //
+//    Hank Childs, Wed Jun 18 19:28:01 PDT 2003
+//    Ensure that we don't affect the actual output.
+//
 // ****************************************************************************
 
 void
 avtSliceFilter::ProjectExtents(double *b)
 {
+    //
+    // Clean up leftovers from previous executions.
+    //
+    vtkPolyData *new_output = vtkPolyData::New();
+    transform->SetOutput(new_output);
+    new_output->Delete();
+    slicer->SetCellList(NULL, 0);
+
     SetPlaneOrientation(b);
 
     //
@@ -835,9 +1038,9 @@ avtSliceFilter::SetPlaneOrientation(double *b)
     // there is no slice if it intersects the cell on the face.  Try to 
     // counter-act this.
     //
-    double ox = atts.GetOriginPoint()[0];
-    double oy = atts.GetOriginPoint()[1];
-    double oz = atts.GetOriginPoint()[2];
+    double ox = cachedOrigin[0];
+    double oy = cachedOrigin[1];
+    double oz = cachedOrigin[2];
     if (normal[0] > 0. && normal[1] == 0. && normal[2] == 0.)
     {
         if (ox == b[0])
@@ -1081,9 +1284,6 @@ PlaneIntersectsCube(float plane[4], float bounds[6])
         else
             has_high_point = true;
 
-        //
-        // Do the 'test' now to avoid further FLOPs.
-        //
         if (has_low_point && has_high_point)
             return true;
     }
@@ -1101,6 +1301,11 @@ PlaneIntersectsCube(float plane[4], float bounds[6])
 //  Programmer: Kathleen Bonnell 
 //  Creation:   April 10, 2003 
 //
+//  Modifications:
+//
+//    Hank Childs, Wed Jun 18 19:06:23 PDT 2003
+//    Project the extents here, since the origin is now determined.
+//
 // ****************************************************************************
 
 void
@@ -1108,66 +1313,47 @@ avtSliceFilter::PostExecute()
 {
     if (atts.GetProject2d())
     {
+        avtDataAttributes &inAtts      = GetInput()->GetInfo().GetAttributes();
+        avtDataAttributes &outAtts     =GetOutput()->GetInfo().GetAttributes();
+
         GetOutput()->GetInfo().GetAttributes().SetTransform((*invTrans)[0]);
+        double b[6];
+ 
+        if (inAtts.GetTrueSpatialExtents()->HasExtents())
+        {
+            inAtts.GetTrueSpatialExtents()->CopyTo(b);
+            ProjectExtents(b);
+            outAtts.GetTrueSpatialExtents()->Set(b);
+        }
+
+        if (inAtts.GetCumulativeTrueSpatialExtents()->HasExtents())
+        {
+            inAtts.GetCumulativeTrueSpatialExtents()->CopyTo(b);
+            ProjectExtents(b);
+            outAtts.GetCumulativeTrueSpatialExtents()->Set(b);
+        }
+
+        if (inAtts.GetEffectiveSpatialExtents()->HasExtents())
+        {
+            inAtts.GetEffectiveSpatialExtents()->CopyTo(b);
+            ProjectExtents(b);
+            outAtts.GetEffectiveSpatialExtents()->Set(b);
+        }
+
+        if (inAtts.GetCurrentSpatialExtents()->HasExtents())
+        {
+            inAtts.GetCurrentSpatialExtents()->CopyTo(b);
+            ProjectExtents(b);
+            outAtts.GetCurrentSpatialExtents()->Set(b);
+        }
+
+        if (inAtts.GetCumulativeCurrentSpatialExtents()->HasExtents())
+        {
+            inAtts.GetCumulativeCurrentSpatialExtents()->CopyTo(b);
+            ProjectExtents(b);
+            outAtts.GetCumulativeCurrentSpatialExtents()->Set(b);
+        }
     }
 }
 
-
-// ****************************************************************************
-//  Function:  GetOrigin
-//
-//  Purpose:
-//    Extract the origin from the attributes as a 3-tuple.
-//
-//  Arguments:
-//    atts       the attributes    (i)
-//    ox,oy,oz   the origin        (o)
-//
-//  Programmer:  Jeremy Meredith
-//  Creation:    May  5, 2003
-//
-// ****************************************************************************
-void
-GetOrigin(SliceAttributes &atts, double &ox, double &oy, double &oz)
-{
-    double nx = atts.GetNormal()[0];
-    double ny = atts.GetNormal()[1];
-    double nz = atts.GetNormal()[2];
-    double nl = sqrt(nx*nx + ny*ny + nz*nz);
-
-    // We want to make sure for orthogonal slices that "intercept" is still
-    // meaningful even when the normal is pointing in the negative direction
-    if (nx+ny+nz < 0 && atts.GetAxisType() != SliceAttributes::Arbitrary)
-    {
-        nl *= -1;
-    }
-
-
-    ox = 0;
-    oy = 0;
-    oz = 0;
-
-    switch (atts.GetOriginType())
-    {
-      case SliceAttributes::Point:
-      {
-          double *p = atts.GetOriginPoint();
-          ox = p[0];
-          oy = p[1];
-          oz = p[2];
-          break;
-      }
-      case SliceAttributes::Intercept:
-      {
-          if (nl != 0)
-          {
-              double d = atts.GetOriginIntercept();
-              ox = nx * d / nl;
-              oy = ny * d / nl;
-              oz = nz * d / nl;
-          }
-          break;
-      }
-    }        
-}
 

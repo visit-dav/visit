@@ -63,9 +63,10 @@ enum avtMeshType
 
 enum avtGhostType
 {
-    AVT_NO_GHOSTS      = 0,
-    AVT_HAS_GHOSTS,   /* 1 */
-    AVT_MAYBE_GHOSTS  /* 2 */
+    AVT_NO_GHOSTS        = 0,
+    AVT_HAS_GHOSTS,     /* 1 */
+    AVT_CREATED_GHOSTS, /* 2 */
+    AVT_MAYBE_GHOSTS    /* 3 */
 };
 
 
