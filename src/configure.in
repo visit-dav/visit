@@ -468,6 +468,9 @@ dnl    Mark C. Miller, Thu Feb 26 10:44:14 PDT 2004
 dnl    Modified to defualt to using PDB lite (in libsilo.a) but still
 dnl    accept --with-pdb option if PDB proper is desired
 dnl
+dnl    Hank Childs, Thu Mar  4 08:32:01 PST 2004
+dnl    Added new Qt VisWindow library.
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -2622,7 +2625,8 @@ COMPONENT_FILES="components/Makefile
                  components/Preprocessor/Makefile
                  components/Queries/Makefile
                  components/View/Makefile
-                 components/VisWindow/Makefile"
+                 components/VisWindow/Makefile
+                 components/QtVisWindow/Makefile"
 PLOT_FILES="plots/Makefile"
 OPERATOR_FILES="operators/Makefile"
 DATABASE_FILES="databases/Makefile"

@@ -76,6 +76,9 @@ static double RenderBalance(int numTrianglesIHave);
 //    Hank Childs, Mon Jan  5 16:04:57 PST 2004
 //    Initialize uniqueNetworkId.
 //
+//    Hank Childs, Thu Mar  4 09:11:46 PST 2004
+//    Change instantiation of vis window, since it is now assumed to be nowin.
+//
 // ****************************************************************************
 NetworkManager::NetworkManager(void) : virtualDatabases()
 {
@@ -87,7 +90,7 @@ NetworkManager::NetworkManager(void) : virtualDatabases()
 
     // stuff to support scalable rendering
     {
-       viswin = new VisWindow(true);
+       viswin = new VisWindow();
        AnnotationAttributes newAtts = *(viswin->GetAnnotationAtts());
        newAtts.SetUserInfoFlag(false);
        newAtts.SetDatabaseInfoFlag(false);

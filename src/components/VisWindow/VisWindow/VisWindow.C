@@ -29,7 +29,6 @@
 #include <VisWinLighting.h>
 #include <VisWinPlots.h>
 #include <VisWinQuery.h>
-#include <VisWinRenderingWithWindow.h>
 #include <VisWinRenderingWithoutWindow.h>
 #include <VisWinTools.h>
 #include <VisWinTriad.h>
@@ -55,15 +54,56 @@ static void      start_render(void *);
 // ****************************************************************************
 //  Method: VisWindow constructor
 //
-//  Purpose:
-//      Initializes the VisWindow.  Does this by setting up many colleagues.
-//
-//  Arguments:
-//      doNoWinMode    true if we should instantiate this VisWindow in a
-//                     windowless mode.
-//
 //  Programmer: Hank Childs
 //  Creation:   May 4, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Thu Mar  4 08:43:15 PST 2004
+//    Made the constructor just call an initialize routine.
+//
+// ****************************************************************************
+
+VisWindow::VisWindow()
+    : colleagueProxy(this), interactorProxy(this), renderProxy(this),
+      lightList()
+{
+    Initialize(new VisWinRenderingWithoutWindow(colleagueProxy));
+}
+
+
+// ****************************************************************************
+//  Method: VisWindow protected constructor
+//
+//  Programmer: Hank Childs
+//  Creation:   March 4, 2004
+//
+// ****************************************************************************
+
+VisWindow::VisWindow(bool callInit)
+    : colleagueProxy(this), interactorProxy(this), renderProxy(this),
+      lightList()
+{
+    if (callInit)
+    {
+        Initialize(new VisWinRenderingWithoutWindow(colleagueProxy));
+    }
+}
+
+
+// ****************************************************************************
+//  Method: VisWindow::Initialize
+//
+//  Purpose:
+//      Does the work of the constructor.  Separated into its own routine so
+//      there will be a "single point of source".
+//
+//  Notes:   This routine was formerly the VisWindow constructor until that
+//           constructor got split on March 4, 2004.  For this reason, some
+//           modification comments will come before the creation date.
+//
+//  Programmer: Hank Childs
+//  Creation:   March 4, 2004
 //
 //  Modifications:
 //
@@ -129,9 +169,8 @@ static void      start_render(void *);
 //
 // ****************************************************************************
 
-VisWindow::VisWindow(bool doNoWinMode)
-    : colleagueProxy(this), interactorProxy(this), renderProxy(this),
-      lightList()
+void
+VisWindow::Initialize(VisWinRendering *ren)
 {
     //
     // Set up all of the non-colleague fields. 
@@ -162,14 +201,7 @@ VisWindow::VisWindow(bool doNoWinMode)
     // rendering must be the first colleague added since it must change window
     // modes before the rest.
     //
-    if (doNoWinMode)
-    {
-        rendering = new VisWinRenderingWithoutWindow(colleagueProxy);
-    }
-    else
-    {
-        rendering = new VisWinRenderingWithWindow(colleagueProxy);
-    }
+    rendering = ren;
     rendering->SetResizeEvent(ProcessResizeEvent, this);
     AddColleague(rendering);
 

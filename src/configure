@@ -15653,7 +15653,8 @@ COMPONENT_FILES="components/Makefile
                  components/Preprocessor/Makefile
                  components/Queries/Makefile
                  components/View/Makefile
-                 components/VisWindow/Makefile"
+                 components/VisWindow/Makefile
+                 components/QtVisWindow/Makefile"
 PLOT_FILES="plots/Makefile"
 OPERATOR_FILES="operators/Makefile"
 DATABASE_FILES="databases/Makefile"

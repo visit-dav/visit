@@ -40,6 +40,7 @@ using std::string;
 #include <ViewerWindowManager.h> 
 #include <VisItException.h>
 #include <VisWindow.h>
+#include <QtVisWindow.h>
 
 #include <DebugStream.h>
 
@@ -166,11 +167,22 @@ static void RotateAroundY(const avtView3D&, double, avtView3D&);
 //    Brad Whitlock, Wed Jan 7 09:52:59 PDT 2004
 //    I initialized pickFunction and pickFunctionData.
 //
+//    Hank Childs, Thu Mar  4 08:10:34 PST 2004
+//    Use a QtVisWindow.
+//
 // ****************************************************************************
 
 ViewerWindow::ViewerWindow(int windowIndex)
 {
-    visWindow = new VisWindow(doNoWinMode);
+    if (doNoWinMode)
+    {
+        visWindow = new VisWindow();
+    }
+    else
+    {
+        visWindow = new QtVisWindow();
+    }
+
     visWindow->SetCloseCallback(CloseCallback, (void *)this);
     visWindow->SetHideCallback(HideCallback, (void *)this);
     visWindow->SetShowCallback(ShowCallback, (void *)this);

@@ -224,6 +224,9 @@
 #    Hank Childs, Sat Jan 24 11:34:44 PST 2004
 #    Changed link-line to accomodate library re-organization.
 #
+#    Hank Childs, Thu Mar  4 08:08:19 PST 2004
+#    Add a new library for a Qt vis window.
+#
 ##############################################################################
 
 ##
@@ -240,7 +243,8 @@ LIB=libviewer
 VTK_LIBS=@VTK_LIBS@
 VTK_INCLUDE=@VTK_INCLUDES@
 LIBS=-L../../lib -L../../vtkqt -lengineproxy -lenginerpc -lviewerrpc \
-     -lmdserverproxy -lmdserverrpc -lvclproxy -lvclrpc -ldbatts -lparser -lplugin -lviswindow \
+     -lmdserverproxy -lmdserverrpc -lvclproxy -lvclrpc -ldbatts -lparser \
+     -lplugin -lqtviswindow -lviswindow \
      -lavtmath_ser -lplotter -lavtfilters_ser -lavtwriter -lavtview \
      -lpipeline_ser -lvisit_vtk -llightweight_visit_vtk -lvtkqt -lwinutil \
      @QT_LIBS@ -lproxybase -lmisc -lcomm -lstate -lutility -lavtexceptions \
