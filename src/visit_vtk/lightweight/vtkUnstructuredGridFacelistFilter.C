@@ -1765,6 +1765,12 @@ vtkUnstructuredGridFacelistFilter::Execute()
 //  Programmer: Hank Childs
 //  Creation:   November 4, 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Wed Aug 25 16:11:24 PDT 2004
+//    Since we are translating a pixel into a quad, make sure to tell the
+//    output that it is of "quad" type.
+//
 // ****************************************************************************
 
 void
@@ -1806,7 +1812,7 @@ LoopOverPolygonalCells(vtkUnstructuredGrid *input, vtkPolyData *output,
             pixel_ids[1] = pts[1];
             pixel_ids[2] = pts[3];
             pixel_ids[3] = pts[2];
-            newCellId = output->InsertNextCell(cellType, npts, pixel_ids);
+            newCellId = output->InsertNextCell(VTK_QUAD, npts, pixel_ids);
             out_cd->CopyData(in_cd, cellId, newCellId);
             break;
         }

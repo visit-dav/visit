@@ -192,6 +192,11 @@ avtMinMaxQuery::PreExecute()
 //    Kathleen Bonnell, Tue Jul 27 09:53:01 PDT 2004 
 //    Store the value per material, even if not mixed. 
 //
+//    Kathleen Bonnell, Thu Aug 26 10:22:00 PDT 2004 
+//    Changed min/max val check to <= or >= so that serial and parallel 
+//    versions will always return the same results. 
+//    (ThisProcessorHasMinimum/MaximumValue has changed).
+//
 // ****************************************************************************
 
 void 
@@ -307,7 +312,7 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
         {
             if (doMin) 
             {
-                if (val <= minInfo1.GetValue())
+                if (val < minInfo1.GetValue())
                 {
                     haveMin1 = true;
                     minInfo1.SetElementNum(elNum);
@@ -316,7 +321,7 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
                 }
                 ds->GetPointCells(elNum, cellIds);
                 if (cellIds->GetNumberOfIds() > 0  && 
-                    val <= minInfo2.GetValue())
+                    val < minInfo2.GetValue())
                 {
                     haveMin2 = true;
                     minInfo2.SetElementNum(elNum);
@@ -327,7 +332,7 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
             }
             if (doMax) 
             {
-                if (val >= maxInfo1.GetValue())
+                if (val > maxInfo1.GetValue())
                 {
                     haveMax1 = true;
                     maxInfo1.SetElementNum(elNum);
@@ -336,7 +341,7 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
                 }
                 ds->GetPointCells(elNum, cellIds);
                 if (cellIds->GetNumberOfIds() > 0  && 
-                    val >= maxInfo2.GetValue())
+                    val > maxInfo2.GetValue())
                 {
                     haveMax2 = true;
                     maxInfo2.SetElementNum(elNum);
@@ -368,7 +373,7 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
 
             if (doMin && !ghost)
             {
-                if (val <= minInfo1.GetValue())
+                if (val < minInfo1.GetValue())
                 {
                     haveMin1 = true;
                     minInfo1.SetElementNum(elNum);
@@ -377,7 +382,7 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
                 }
                 for (i = 0; i < matValues.size(); i++)
                 {
-                    if (matValues[i] <= minInfo2.GetValue())
+                    if (matValues[i] < minInfo2.GetValue())
                     {
                         haveMin2 = true;
                         minInfo2.SetElementNum(elNum);
@@ -389,7 +394,7 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
             }
             if (doMax && !ghost)
             {
-                if (val >= maxInfo1.GetValue()) 
+                if (val > maxInfo1.GetValue()) 
                 {
                     haveMax1 = true;
                     maxInfo1.SetElementNum(elNum);
@@ -398,7 +403,7 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
                 }
                 for (i = 0; i < matValues.size(); i++)
                 {
-                    if (matValues[i] >= maxInfo2.GetValue())
+                    if (matValues[i] > maxInfo2.GetValue())
                     {
                         haveMax2 = true;
                         maxInfo2.SetElementNum(elNum);

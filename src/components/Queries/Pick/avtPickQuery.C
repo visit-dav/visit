@@ -256,6 +256,9 @@ avtPickQuery::PostExecute(void)
 //    When material selection has been applied, request OriginalZoneNumbers
 //    and OriginalNodeNumbers. 
 //
+//    Kathleen Bonnell, Thu Aug 26 09:50:31 PDT 2004 
+//    Don't restrict domains if pickAtts.domain has not yet been set. 
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -298,7 +301,7 @@ avtPickQuery::ApplyFilters(avtDataObject_p inData)
                                      pickAtts.GetTimeStep(), querySILR);
 
     int i;
-    if (!singleDomain)
+    if (!singleDomain && pickAtts.GetDomain() != -1)
     {
         intVector dlist;
         dlist.push_back(pickAtts.GetDomain());

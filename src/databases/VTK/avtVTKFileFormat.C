@@ -362,6 +362,9 @@ avtVTKFileFormat::FreeUpResources(void)
 //    Hank Childs, Wed Sep 24 08:02:08 PDT 2003
 //    Add support for tensors.
 //
+//    Hank Childs, Thu Aug 26 08:32:09 PDT 2004
+//    Only declare the mesh as 2D if Z=0 for all points.
+//
 // ****************************************************************************
 
 void
@@ -403,7 +406,7 @@ avtVTKFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     float bounds[6];
     dataset->GetBounds(bounds);
 
-    if (bounds[4] == bounds[5])
+    if ((bounds[4] == bounds[5]) && (bounds[5] == 0.))
     {
         spat = 2;
         topo = 2;

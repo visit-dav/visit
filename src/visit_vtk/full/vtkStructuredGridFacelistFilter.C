@@ -27,10 +27,34 @@ PointIndex(int x, int y, int z, int nX, int nY, int nZ)
     return z*nY*nX + y*nX + x;
 }
 
+// ****************************************************************************
+//  Modifications:
+//
+//    Hank Childs, Wed Aug 25 16:28:52 PDT 2004
+//    Account for degenerate meshes.
+//
+// ****************************************************************************
+
 inline int
 CellIndex(int x, int y, int z, int nX, int nY, int nZ)
 {
-    return z*(nY-1)*(nX-1) + y*(nX-1) + x;
+    int cellYBase = 1;
+    if (nX > 1)
+       cellYBase = (nX-1);
+    else
+       cellYBase = 1;
+
+    int cellZBase = 1;
+    if (nY > 1 && nX > 1)
+       cellZBase = (nY-1)*(nX-1);
+    else if (nY > 1)
+       cellZBase = (nY-1);
+    else if (nX > 1)
+       cellZBase = (nX-1);
+    else
+       cellZBase = 1;
+
+    return z*cellZBase + y*cellYBase + x;
 }
 
 // ***************************************************************************
@@ -55,6 +79,9 @@ CellIndex(int x, int y, int z, int nX, int nY, int nZ)
 //    Hank Childs, Mon Aug  9 07:24:52 PDT 2004
 //    Do a better job of handling degenerate meshes with dimensions 1xJxK.
 //
+//    Hank Childs, Wed Aug 25 16:32:08 PDT 2004
+//    Do a better job of assessing the output cell count.
+//
 // ****************************************************************************
 
 void vtkStructuredGridFacelistFilter::Execute()
@@ -71,16 +98,20 @@ void vtkStructuredGridFacelistFilter::Execute()
   int   nX = dims[0];
   int   nY = dims[1];
   int   nZ = dims[2];
-  int   numOutCells;
-  if (nX == 1)
-     numOutCells = (nY-1)*(nZ-1);
-  else if (nY == 1)
-     numOutCells = (nX-1)*(nZ-1);
-  else if (nZ == 1)
-     numOutCells = (nX-1)*(nY-1);
+  int   numOutCells = 0;
+  if (nX > 1)
+     numOutCells += 2*(nY-1)*(nZ-1);
   else
-     numOutCells = 2*(nX-1)*(nY-1) + 2*(nX-1)*(nZ-1) + 2*(nY-1)*(nZ-1);
-  
+     numOutCells += (nY-1)*(nZ-1);
+  if (nY > 1)
+     numOutCells += 2*(nX-1)*(nZ-1);
+  else
+     numOutCells += (nX-1)*(nZ-1);
+  if (nZ > 1)
+     numOutCells += 2*(nX-1)*(nY-1);
+  else
+     numOutCells += (nX-1)*(nY-1);
+
   //
   // Copy over the points and the point data.
   //

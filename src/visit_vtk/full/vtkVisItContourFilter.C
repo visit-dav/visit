@@ -105,11 +105,17 @@ vtkVisItContourFilter::GetPointScalars(void)
     return (float *) arr->GetVoidPointer(0);
 }
 
-// Modifications:
-//   Brad Whitlock, Thu Aug 12 14:45:24 PST 2004
-//   Added float casts to the pow() arguments so it builds on MSVC7.Net.
+
+// ****************************************************************************
+//  Modifications:
 //
-///////////////////////////////////////////////////////////////////////////////
+//    Brad Whitlock, Thu Aug 12 14:45:24 PST 2004
+//    Added float casts to the pow() arguments so it builds on MSVC7.Net.
+//
+//    Hank Childs, Wed Aug 25 13:21:02 PDT 2004
+//    Better checks for degenerate datasets.
+//
+// ****************************************************************************
 
 void
 vtkVisItContourFilter::StructuredGridExecute(void)
@@ -119,7 +125,7 @@ vtkVisItContourFilter::StructuredGridExecute(void)
     vtkStructuredGrid *sg = (vtkStructuredGrid *) GetInput();
     int pt_dims[3];
     sg->GetDimensions(pt_dims);
-    if (pt_dims[2] <= 1)
+    if (pt_dims[0] <= 1 || pt_dims[1] <= 1 || pt_dims[2] <= 1)
     {
         GeneralExecute();
         return;
@@ -207,11 +213,16 @@ vtkVisItContourFilter::StructuredGridExecute(void)
     sfv.ConstructPolyData(inPD, inCD, output, pts_ptr);
 }
 
-// Modifications:
-//   Brad Whitlock, Thu Aug 12 14:45:24 PST 2004
-//   Added float casts to the pow() arguments so it builds on MSVC7.Net.
+// ****************************************************************************
+//  Modifications:
 //
-///////////////////////////////////////////////////////////////////////////////
+//    Brad Whitlock, Thu Aug 12 14:45:24 PST 2004
+//    Added float casts to the pow() arguments so it builds on MSVC7.Net.
+//
+//    Hank Childs, Wed Aug 25 13:21:02 PDT 2004
+//    Better checks for degenerate datasets.
+//
+// ****************************************************************************
 
 void vtkVisItContourFilter::RectilinearGridExecute(void)
 {
@@ -220,7 +231,7 @@ void vtkVisItContourFilter::RectilinearGridExecute(void)
     vtkRectilinearGrid *rg = (vtkRectilinearGrid *) GetInput();
     int pt_dims[3];
     rg->GetDimensions(pt_dims);
-    if (pt_dims[2] <= 1)
+    if (pt_dims[0] <= 1 || pt_dims[1] <= 1 || pt_dims[2] <= 1)
     {
         GeneralExecute();
         return;

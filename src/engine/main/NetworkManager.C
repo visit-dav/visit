@@ -2024,6 +2024,9 @@ NetworkManager::StopPickMode(void)
 //    Kathleen Bonnell, Wed Jun  2 09:48:29 PDT 2004
 //    Add support for new pick classes. 
 //
+//    Kathleen Bonnell, Thu Aug 26 11:18:47 PDT 2004 
+//    Skip LocateQuery if picking on 2d boundary or contour plots. 
+//
 // ****************************************************************************
 
 void
@@ -2064,6 +2067,8 @@ NetworkManager::Pick(const int id, PickAttributes *pa)
 
     avtDataAttributes &queryInputAtts = queryInput->GetInfo().GetAttributes();
     avtDataValidity   &queryInputVal  = queryInput->GetInfo().GetValidity();
+    bool skipLocate = queryInputAtts.GetTopologicalDimension() == 1 &&
+                      queryInputAtts.GetSpatialDimension() == 2;
     avtLocateQuery *lQ = NULL;
     avtPickQuery *pQ = NULL;
     avtCurvePickQuery *cpQ = NULL;
@@ -2073,25 +2078,40 @@ NetworkManager::Pick(const int id, PickAttributes *pa)
         if (pa->GetPickType() != PickAttributes::CurveNode &&
             pa->GetPickType() != PickAttributes::CurveZone)
         {
+            if (skipLocate) // picking lines, set up pick atts appropriately
+            {
+                float *pt = pa->GetRayPoint1();
+                pt[2] = 0.;
+                pa->SetRayPoint1(pt);
+                pa->SetRayPoint2(pt);
+                pa->SetPickPoint(pt);
+                pa->SetCellPoint(pt);
+            }
             if (pa->GetPickType() == PickAttributes::Zone)
             {
-                lQ = new avtLocateCellQuery;
                 pQ = new avtZonePickQuery;
-                lQ->SetInput(queryInput);
-                lQ->SetPickAtts(pa);
-                lQ->PerformQuery(&qa); 
-                *pa = *(lQ->GetPickAtts());
-                delete lQ;
+                if (!skipLocate)
+                {
+                    lQ = new avtLocateCellQuery;
+                    lQ->SetInput(queryInput);
+                    lQ->SetPickAtts(pa);
+                    lQ->PerformQuery(&qa); 
+                    *pa = *(lQ->GetPickAtts());
+                    delete lQ;
+                }
             }
             else if (pa->GetPickType() == PickAttributes::Node)
             {
-                lQ = new avtLocateNodeQuery;
                 pQ = new avtNodePickQuery;
-                lQ->SetInput(queryInput);
-                lQ->SetPickAtts(pa);
-                lQ->PerformQuery(&qa); 
-                *pa = *(lQ->GetPickAtts());
-                delete lQ;
+                if (!skipLocate)
+                {
+                    lQ = new avtLocateNodeQuery;
+                    lQ->SetInput(queryInput);
+                    lQ->SetPickAtts(pa);
+                    lQ->PerformQuery(&qa); 
+                    *pa = *(lQ->GetPickAtts());
+                    delete lQ;
+                }
             }
             else if (pa->GetPickType() == PickAttributes::DomainNode)
             {

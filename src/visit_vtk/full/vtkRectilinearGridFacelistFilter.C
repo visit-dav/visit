@@ -91,6 +91,14 @@ class SpecializedIndexer
    int                cellYBase;
 };
 
+// ****************************************************************************
+//  Modifications:
+//
+//    Hank Childs, Wed Aug 25 16:28:52 PDT 2004
+//    Account for degenerate meshes.
+//
+// ****************************************************************************
+
 SpecializedIndexer::SpecializedIndexer(int x, int y, int z)
 {
     nX = x;
@@ -104,8 +112,19 @@ SpecializedIndexer::SpecializedIndexer(int x, int y, int z)
     leftOffset = 2*nX*nY + 2*nX*(nZ-2);
     rightOffset = 2*nX*nY + 2*nX*(nZ-2) + (nY-2)*(nZ-2);
 
-    cellZBase = (nY-1)*(nX-1);
-    cellYBase = (nX-1);
+    if (nX > 1)
+       cellYBase = (nX-1);
+    else
+       cellYBase = 1;
+
+    if (nY > 1 && nX > 1)
+       cellZBase = (nY-1)*(nX-1);
+    else if (nX > 1)
+       cellZBase = nX-1;
+    else if (nY > 1)
+       cellZBase = nY-1;
+    else
+       cellZBase = 1;
 }
 
 
@@ -128,6 +147,9 @@ SpecializedIndexer::SpecializedIndexer(int x, int y, int z)
 //
 //  Hank Childs, Sun Feb  1 22:02:51 PST 2004
 //  Do a better job of estimating the number of cells in the 2D case.
+//
+//  Hank Childs, Wed Aug 25 16:30:30 PDT 2004
+//  Do a better job of handling degenerate meshes.
 //
 // ****************************************************************************
 
@@ -325,11 +347,19 @@ void vtkRectilinearGridFacelistFilter::Execute()
   //
   // Have the cell data allocate memory.
   //
-  int   numOutCells;
-  if (nZ > 1)
-     numOutCells = 2*(nX-1)*(nY-1) + 2*(nX-1)*(nZ-1) + 2*(nY-1)*(nZ-1);
+  int   numOutCells = 0;
+  if (nX > 1)
+     numOutCells += 2*(nY-1)*(nZ-1);
   else
-     numOutCells = (nX-1)*(nY-1);
+     numOutCells += (nY-1)*(nZ-1);
+  if (nY > 1)
+     numOutCells += 2*(nX-1)*(nZ-1);
+  else
+     numOutCells += (nX-1)*(nZ-1);
+  if (nZ > 1)
+     numOutCells += 2*(nX-1)*(nY-1);
+  else
+     numOutCells += (nX-1)*(nY-1);
   outCellData->CopyAllocate(inCellData);
 
   vtkCellArray *polys = vtkCellArray::New();

@@ -69,12 +69,17 @@ avtNodePickQuery::~avtNodePickQuery()
 //    When material-selection has been applied, ensure that RetriveVarInfo
 //    will be using the correct zone ids for this dataset.
 //
+//    Kathleen Bonnell, Thu Aug 26 09:50:31 PDT 2004 
+//    Handle case when pickatts.domain has not yet been set. (e.g. when
+//    picking 2d contour or boundary plots.)
+//
 // ****************************************************************************
 
 void
 avtNodePickQuery::Execute(vtkDataSet *ds, const int dom)
 {
-    if (dom != pickAtts.GetDomain() || pickAtts.GetFulfilled() || ds == NULL)
+    if (ds == NULL || pickAtts.GetFulfilled() ||
+        (pickAtts.GetDomain() != -1 && dom != pickAtts.GetDomain()))
     {
         return;
     }
@@ -85,13 +90,10 @@ avtNodePickQuery::Execute(vtkDataSet *ds, const int dom)
             (type == VTK_STRUCTURED_GRID || type == VTK_RECTILINEAR_GRID || 
              ds->GetFieldData()->GetArray("vtkOriginalDimensions") != NULL );
 
-    //
-    //  
-    //  
     if (pickedNode == -1)
     {
         pickedNode = DeterminePickedNode(ds);
-        if (pickedNode == -1)
+        if (pickedNode == -1 && pickAtts.GetDomain() != -1)
         {
             // the node could not be found, no further processing required.
             // SetDomain and ElementNumber to -1 to indicate failure. 
@@ -141,6 +143,13 @@ avtNodePickQuery::Execute(vtkDataSet *ds, const int dom)
     if (needRealId && ghostType == AVT_CREATED_GHOSTS) 
         SetRealIds(ds);
 
+    //
+    //  The database needs a valid domain
+    // 
+    if (pickAtts.GetDomain() == -1)
+        pickAtts.SetDomain(dom);
+    
+ 
     //
     //  Allow the database to add any missing information.
     // 
