@@ -9,12 +9,15 @@
 #    Brad Whitlock, Tue Apr 1 10:07:57 PDT 2003
 #    Updated for 1.1.3.
 #
+#    Eric Brugger, Tue Sep  2 12:06:22 PDT 2003
+#    I updated the script for 1.2.1.
+#
 # ----------------------------------------------------------------------------
 
 import os
 
 # Check the version.
-ScriptVersion = "1.1.3"
+ScriptVersion = "1.2.1"
 if(Version() != ScriptVersion):
     print "This script is for VisIt %s. It may not work with version %s" % (ScriptVersion, Version())
 

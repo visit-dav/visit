@@ -77,6 +77,9 @@ import java.util.Vector;
 //   I added viewCurveAttributes.  I split the view attributes into 2d
 //   and 3d parts.
 //
+//   Brad Whitlock, Fri Aug 29 11:24:11 PDT 2003
+//   I added HideToolbars and ShowToolbars.
+//
 // ****************************************************************************
 
 public class ViewerProxy implements SimpleObserver
@@ -1177,6 +1180,26 @@ public class ViewerProxy implements SimpleObserver
     public boolean SetPickAttributes()
     {
         rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETPICKATTRIBUTESRPC);
+        rpc.Notify();
+        return synchronous ? Synchronize() : true;
+    }
+
+    public boolean ShowToolbars(boolean forAllWindows)
+    {
+        if(forAllWindows)
+            rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SHOWTOOLBARSFORALLWINDOWSRPC);
+        else
+            rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SHOWTOOLBARSRPC);
+        rpc.Notify();
+        return synchronous ? Synchronize() : true;
+    }
+
+    public boolean HideToolbars(boolean forAllWindows)
+    {
+        if(forAllWindows)
+            rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_HIDETOOLBARSFORALLWINDOWSRPC);
+        else
+            rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_HIDETOOLBARSRPC);
         rpc.Notify();
         return synchronous ? Synchronize() : true;
     }

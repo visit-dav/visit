@@ -9,13 +9,16 @@
 #    Brad Whitlock, Tue Apr 1 09:57:04 PDT 2003
 #    Updated for 1.1.3.
 #
+#    Eric Brugger, Fri Aug 29 16:30:46 PDT 2003
+#    I modified the script to use the new interface for setting views.
+#
 # ----------------------------------------------------------------------------
 
 import os
 from math import sin, cos, sqrt
 
 # Check the version.
-ScriptVersion = "1.1.3"
+ScriptVersion = "1.2.1"
 if(Version() != ScriptVersion):
     print "This script is for VisIt %s. It may not work with version %s" % (ScriptVersion, Version())
 
@@ -45,32 +48,14 @@ def setview2d():
     DrawPlots()
     
     # Set the view.
-    v0 = ViewAttributes()
-    v0.viewNormal = (-0.933551, 2.48087, 5)
-    v0.focus = (-0.933551, 2.48087, 0)
-    v0.viewUp = (0, 1, 0)
-    v0.viewAngle = 30
-    v0.setScale = 1
-    v0.parallelScale = 0.94531
-    v0.nearPlane = 2.5
-    v0.farPlane = 7.5
-    v0.perspective = 1
+    v0 = View2DAttributes()
     v0.windowCoords = (-4.71769, -1.18606, 0.543024, 4.07465)
     v0.viewportCoords = (0.22, 0.9, 0.1, 0.9)
     SetView2D(v0)
     RedrawWindow()
     
     # Create a new view.
-    v1 = ViewAttributes()
-    v1.viewNormal = (-0.933551, 2.48087, 5)
-    v1.focus = (-0.933551, 2.48087, 0)
-    v1.viewUp = (0, 1, 0)
-    v1.viewAngle = 30
-    v1.setScale = 1
-    v1.parallelScale = 0.94531
-    v1.nearPlane = 2.5
-    v1.farPlane = 7.5
-    v1.perspective = 1
+    v1 = View2DAttributes()
     v1.windowCoords = (1.59449, 5.12612, 0.0458612, 3.57749)
     v1.viewportCoords = (0.22, 0.9, 0.1, 0.9)
     
@@ -81,16 +66,7 @@ def setview2d():
         SetView2D(view)
     
     # Create a new view.
-    v2 = ViewAttributes()
-    v2.viewNormal = (-0.933551, 2.48087, 5)
-    v2.focus = (-0.933551, 2.48087, 0)
-    v2.viewUp = (0, 1, 0)
-    v2.viewAngle = 30
-    v2.setScale = 1
-    v2.parallelScale = 0.94531
-    v2.nearPlane = 2.5
-    v2.farPlane = 7.5
-    v2.perspective = 1
+    v2 = View2DAttributes()
     v2.windowCoords = (1.9001, 3.1167, 0.198349, 1.41495)
     v2.viewportCoords = (0.22, 0.9, 0.1, 0.9)
     

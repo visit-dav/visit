@@ -1831,6 +1831,66 @@ ViewerProxy::RedrawWindow()
 }
 
 // ****************************************************************************
+// Method: ViewerProxy::HideToolbars
+//
+// Purpose: 
+//   Hides the toolbars for the active vis window or for all vis windows.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Aug 29 11:22:09 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerProxy::HideToolbars(bool forAllWindows)
+{
+    //
+    // Set the rpc type and arguments.
+    //
+    if(forAllWindows)
+        viewerRPC->SetRPCType(ViewerRPC::HideToolbarsForAllWindowsRPC);
+    else
+        viewerRPC->SetRPCType(ViewerRPC::HideToolbarsRPC);
+
+    //
+    // Issue the RPC.
+    //
+    viewerRPC->Notify();
+}
+
+// ****************************************************************************
+// Method: ViewerProxy::ShowToolbars
+//
+// Purpose: 
+//   Shows the toolbars for the active vis window or for all vis windows.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Aug 29 11:22:09 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerProxy::ShowToolbars(bool forAllWindows)
+{
+    //
+    // Set the rpc type and arguments.
+    //
+    if(forAllWindows)
+        viewerRPC->SetRPCType(ViewerRPC::ShowToolbarsForAllWindowsRPC);
+    else
+        viewerRPC->SetRPCType(ViewerRPC::ShowToolbarsRPC);
+
+    //
+    // Issue the RPC.
+    //
+    viewerRPC->Notify();
+}
+
+// ****************************************************************************
 //  Method: ViewerProxy::AddPlot
 //
 //  Purpose:

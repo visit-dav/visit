@@ -9,12 +9,15 @@
 #    Brad Whitlock, Tue Apr 1 09:40:34 PDT 2003
 #    Updated for 1.1.3.
 #
+#    Eric Brugger, Fri Aug 29 16:28:45 PDT 2003
+#    I modified the script to use the new interface for setting views.
+#
 # ----------------------------------------------------------------------------
 
 import os
 
 # Check the version.
-ScriptVersion = "1.1.3"
+ScriptVersion = "1.2.1"
 if(Version() != ScriptVersion):
     print "This script is for VisIt %s. It may not work with version %s" % (ScriptVersion, Version())
 
@@ -30,18 +33,15 @@ def lines():
     DrawPlots()
     
     # Set the view.
-    v = ViewAttributes()
+    v = View3DAttributes()
     v.viewNormal = (-0.410342, 0.533276, -0.739754)
     v.focus = (0.454296, -0.69183, 4.2213)
     v.viewUp = (0.365615, 0.83935, 0.402266)
     v.viewAngle = 30
-    v.setScale = 1
     v.parallelScale = 4.02425
     v.nearPlane = -20.2
     v.farPlane = 20.2139
     v.perspective = 1
-    v.windowCoords = (0, 1, 0, 1)
-    v.viewportCoords = (0.2, 0.8, 0.2, 0.8)
     SetView3D(v)
     
     RedrawWindow()

@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Plugin name="Histogram" type="plot" label="Histogram" version="1.0" vartype="scalar" iconFile="Histogram.xpm">
+  <Plugin name="Histogram" type="plot" label="Histogram" version="1.0" vartype="scalar,material" iconFile="Histogram.xpm">
     <Attribute name="HistogramAttributes" purpose="Attributes for Histogram Plot" persistent="false" exportAPI="" exportInclude="" codefile="HistogramAttributes.code">
       <Enum name="OutputType">
         Curve

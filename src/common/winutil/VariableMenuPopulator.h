@@ -24,9 +24,12 @@ class QObject;
 // Creation:   Mon Mar 17 14:50:59 PST 2003
 //
 // Modifications:
-//   
 //   Hank Childs, Fri Aug  1 10:44:45 PDT 2003
 //   Add support for curves.
+//
+//   Brad Whitlock, Tue Sep 2 09:47:15 PDT 2003
+//   Added materialVars map so we can distinguish between materials and
+//   subset variables if we want to.
 //
 // ****************************************************************************
 
@@ -55,8 +58,8 @@ private:
     void AddVars(StringBoolMap &to, const StringBoolMap &from);
 
     // Create some lists to keep track of the variable names.
-    StringBoolMap meshVars, scalarVars, vectorVars, subsetVars, speciesVars,
-                  curveVars;
+    StringBoolMap meshVars, scalarVars, materialVars, vectorVars, subsetVars,
+                  speciesVars, curveVars;
 };
 
 #endif

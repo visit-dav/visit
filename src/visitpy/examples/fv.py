@@ -9,6 +9,9 @@
 #    Brad Whitlock, Tue Apr 1 09:37:38 PDT 2003
 #    I made it work with 1.1.3.
 # 
+#    Eric Brugger, Tue Sep  2 12:04:02 PDT 2003
+#    I updated the script for 1.2.1.
+#
 # ----------------------------------------------------------------------------
 
 import os
@@ -17,7 +20,7 @@ import os
 import math, sys
 
 # Check the version.
-ScriptVersion = "1.1.3"
+ScriptVersion = "1.2.1"
 if(Version() != ScriptVersion):
     print "This script is for VisIt %s. It may not work with version %s" % (ScriptVersion, Version())
 

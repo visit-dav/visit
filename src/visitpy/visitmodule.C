@@ -2827,6 +2827,74 @@ visit_HideActivePlots(PyObject *self, PyObject *args)
 }
 
 // ****************************************************************************
+// Function: visit_HideToolbars
+//
+// Purpose: 
+//   Hides the toolbars for the active window or for all windows.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Aug 29 11:18:05 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_HideToolbars(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+    int hideForAllWindows = 0;
+
+    if (!PyArg_ParseTuple(args, "i", &hideForAllWindows))
+    {
+        PyErr_Clear();
+    }
+
+    MUTEX_LOCK();
+        // If we passed an argument then hide toolbars for all windows.
+        viewer->HideToolbars(hideForAllWindows != 0);
+    MUTEX_UNLOCK();
+    int errorFlag = Synchronize();
+
+    // Return the success value.
+    return PyLong_FromLong(long(errorFlag == 0));
+}
+
+// ****************************************************************************
+// Function: visit_ShowToolbars
+//
+// Purpose: 
+//   Shows the toolbars for the active window or for all windows.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Aug 29 11:18:05 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_ShowToolbars(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+    int showForAllWindows = 0;
+
+    if (!PyArg_ParseTuple(args, "i", &showForAllWindows))
+    {
+        PyErr_Clear();
+    }
+
+    MUTEX_LOCK();
+        // If we passed an argument then show toolbars for all windows.
+        viewer->ShowToolbars(showForAllWindows != 0);
+    MUTEX_UNLOCK();
+    int errorFlag = Synchronize();
+
+    // Return the success value.
+    return PyLong_FromLong(long(errorFlag == 0));
+}
+
+// ****************************************************************************
 // Function: visit_SetAnnotationAttributes
 //
 // Purpose:
@@ -7087,6 +7155,9 @@ AddMethod(const char *methodName, PyObject *(cb)(PyObject *, PyObject *),
 //   Eric Brugger, Wed Aug 20 14:20:25 PDT 2003
 //   Added SetViewCurve.
 //
+//   Brad Whitlock, Fri Aug 29 11:11:30 PDT 2003
+//   Added HideToolbars and ShowToolbars.
+//
 // ****************************************************************************
 
 static void
@@ -7167,6 +7238,7 @@ AddDefaultMethods()
     AddMethod("GetRenderingAttributes", visit_GetRenderingAttributes);
     AddMethod("GetWindowInformation", visit_GetWindowInformation);
     AddMethod("HideActivePlots", visit_HideActivePlots);
+    AddMethod("HideToolbars", visit_HideToolbars);
     AddMethod("IconifyAllWindows", visit_IconifyAllWindows);
     AddMethod("InvertBackgroundColor", visit_InvertBackgroundColor);
     AddMethod("Lineout", visit_Lineout);
@@ -7223,6 +7295,7 @@ AddDefaultMethods()
     AddMethod("SetWindowArea",  visit_SetWindowArea);
     AddMethod("SetWindowLayout",  visit_SetWindowLayout);
     AddMethod("SetWindowMode",  visit_SetWindowMode);
+    AddMethod("ShowToolbars", visit_ShowToolbars);
     AddMethod("ToggleBoundingBoxMode", visit_ToggleBoundingBoxMode);
     AddMethod("ToggleCameraViewMode", visit_ToggleCameraViewMode);
     AddMethod("ToggleFullFrameMode", visit_ToggleFullFrameMode);
