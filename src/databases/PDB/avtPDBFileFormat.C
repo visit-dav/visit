@@ -7,6 +7,7 @@
 #include <PF3DFileFormat.h>
 #include <PP_Z_STSD_FileFormat.h>
 #include <PP_Z_MTSD_FileFormat.h>
+#include <LEOSFileFormat.h>
 
 // ****************************************************************************
 // Method: PDBCommonPluginInfo::CreateInterface
@@ -66,6 +67,10 @@ CreateFileFormatInterface(const char * const *list, int nList, int nBlock)
             // Check to see if it is a PPZ Collected MTSD file.
             if(ffi == 0)
                 ffi = PP_Z_MTSD_FileFormat::CreateInterface(pdb, list, nList);
+
+            // Check to see if it is an LEOS file.
+            if(ffi == 0)
+                ffi = LEOSFileFormat::CreateInterface(pdb, list[0]);
 
             // Add more file formats here.
 
