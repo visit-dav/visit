@@ -19,6 +19,10 @@
 //  Programmer: Jeremy Meredith
 //  Creation:   December 3, 2004
 //
+//  Modifications:
+//    Jeremy Meredith, Fri Feb 11 18:15:49 PST 2005
+//    Added HDF5 support to the existing HDF4 support.
+//
 // ****************************************************************************
 
 class avtEnzoFileFormat : public avtSTMDFileFormat
@@ -41,6 +45,9 @@ class avtEnzoFileFormat : public avtSTMDFileFormat
                                             DestructorFunction &);
     
   protected:
+    enum FileType { ENZO_FT_UNKNOWN, ENZO_FT_HDF4, ENZO_FT_HDF5 };
+    FileType fileType;
+
     // DATA MEMBERS
     struct Grid
     {
