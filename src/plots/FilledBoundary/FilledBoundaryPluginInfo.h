@@ -1,5 +1,5 @@
 // ************************************************************************* //
-//                               FilledBoundaryPluginInfo.h                            //
+//                               FilledBoundaryPluginInfo.h                  //
 // ************************************************************************* //
 
 #ifndef FILLEDBOUNDARY_PLUGIN_INFO_H
@@ -29,8 +29,6 @@ class FilledBoundaryAttributes;
 // ****************************************************************************
 
 class FilledBoundaryGeneralPluginInfo: public virtual GeneralPlotPluginInfo
-
-
 {
   public:
     virtual char *GetName() const;
@@ -66,15 +64,15 @@ class FilledBoundaryViewerPluginInfo: public virtual ViewerPlotPluginInfo, publi
     virtual avtPlot *AllocAvtPlot();
 
     virtual void InitializePlotAtts(AttributeSubject *atts,
-        const char *hostName, const char *databaseName,
+        const avtDatabaseMetaData *md,
         const char *variableName);
 
     virtual void ReInitializePlotAtts(AttributeSubject *atts,
-        const char *hostName, const char *databaseName,
+        const avtDatabaseMetaData *md,
         const char *variableName);
 
     virtual void ResetPlotAtts(AttributeSubject *atts,
-        const char *hostName, const char *databaseName,
+        const avtDatabaseMetaData *md,
         const char *variableName);
 
     virtual const char **XPMIconData() const;
@@ -86,7 +84,7 @@ class FilledBoundaryViewerPluginInfo: public virtual ViewerPlotPluginInfo, publi
     static FilledBoundaryAttributes *clientAtts;
 
     void   PrivateSetPlotAtts(AttributeSubject *atts,
-        const char *hostName, const char *databaseName,
+        const avtDatabaseMetaData *md,
         const char *variableName);
 };
 

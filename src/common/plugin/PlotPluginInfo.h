@@ -21,6 +21,7 @@
 class AttributeSubject;
 class QvisNotepadArea;
 class QvisPostableWindowObserver;
+class avtDatabaseMetaData;
 class avtPlot;
 
 // ****************************************************************************
@@ -74,6 +75,9 @@ class avtPlot;
 //    Jeremy Meredith, Wed Nov  5 10:28:29 PST 2003
 //    Added ability to disable plugins by default.
 //
+//    Brad Whitlock, Fri Mar 26 00:40:29 PDT 2004
+//    I changed the interface to several methods in the viewer plugin.
+//
 // ****************************************************************************
 
 class PLUGIN_API GeneralPlotPluginInfo
@@ -114,15 +118,15 @@ class PLUGIN_API ViewerPlotPluginInfo : public virtual CommonPlotPluginInfo
     virtual avtPlot *AllocAvtPlot() = 0;
 
     virtual void InitializePlotAtts(AttributeSubject *atts,
-        const char *hostName, const char *databaseName,
+        const avtDatabaseMetaData *,
         const char *variableName) = 0;
 
     virtual void ReInitializePlotAtts(AttributeSubject *atts,
-        const char *hostName, const char *databaseName,
+        const avtDatabaseMetaData *,
         const char *variableName) { ; };
 
     virtual void ResetPlotAtts(AttributeSubject *atts,
-        const char *hostName, const char *databaseName,
+        const avtDatabaseMetaData *md,
         const char *variableName) { ; } ;
 
     virtual const char **XPMIconData() const { return 0; }

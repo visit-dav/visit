@@ -10,8 +10,6 @@
 
 #include <stdio.h>
 
-#include <ViewerFileServer.h>
-
 #include <avtColorTables.h>
 #include <avtDatabaseMetaData.h>
 #include <avtBoundaryPlot.h>
@@ -189,15 +187,18 @@ BoundaryViewerPluginInfo::AllocAvtPlot()
 //    Moved bulk of code to PrivateSetPlotAtts to aid in maintenance, as it is
 //    shared with ResetPlotAtts. 
 //
+//    Brad Whitlock, Fri Mar 26 15:15:38 PST 2004
+//    I made it use passed in metadata.
+//
 // ****************************************************************************
 
 void
 BoundaryViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
-    const char *hostName, const char *databaseName, const char *varName)
+    const avtDatabaseMetaData *md, const char *varName)
 {
     *(BoundaryAttributes*)atts = *defaultAtts;
 
-    PrivateSetPlotAtts(atts, hostName, databaseName, varName);
+    PrivateSetPlotAtts(atts, md, varName);
 }
 
 // ****************************************************************************
@@ -224,14 +225,16 @@ BoundaryViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
 //    Moved code to PrivateSetPlotAtts to aid in maintenance, as the code is
 //    shared with InitializePlotAtts. 
 //
+//    Brad Whitlock, Fri Mar 26 15:15:38 PST 2004
+//    I made it use passed in metadata.
+//
 // ****************************************************************************
 
 void
 BoundaryViewerPluginInfo::ResetPlotAtts(AttributeSubject *atts,
-    const char *hostName, const char *databaseName, const char *varName)
-
+    const avtDatabaseMetaData *md, const char *varName)
 {
-    PrivateSetPlotAtts(atts, hostName, databaseName, varName);
+    PrivateSetPlotAtts(atts, md, varName);
 }
 
 // ****************************************************************************
@@ -264,11 +267,14 @@ BoundaryViewerPluginInfo::ResetPlotAtts(AttributeSubject *atts,
 //    Set colors, subsetNames for defaultAtts so that "Reset" won't zero
 //    out the colors in the gui.
 //
+//    Brad Whitlock, Fri Mar 26 15:15:38 PST 2004
+//    I made it use passed in metadata.
+//
 // ****************************************************************************
 
 void
 BoundaryViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts, 
-    const char *hostName, const char *databaseName, const char *varName)
+    const avtDatabaseMetaData *md, const char *varName)
 {
     BoundaryAttributes *boundaryAtts = (BoundaryAttributes *)atts;
 
@@ -276,10 +282,6 @@ BoundaryViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
     // Get the meta-data and initialize the boundary names and colors in the
     // new BoundaryAttributes object.
     //
-    std::string h(hostName), db(databaseName);
-    const avtDatabaseMetaData *md =
-        ViewerFileServer::Instance()->GetMetaData(h, db);
-
     if (md == NULL)
     {
         return;
@@ -447,14 +449,16 @@ BoundaryViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
 //  Creation:   December 5, 2002 
 //
 //  Modifications:
+//    Brad Whitlock, Fri Mar 26 15:15:38 PST 2004
+//    I made it use passed in metadata.
 //
 // ****************************************************************************
 
 void
 BoundaryViewerPluginInfo::ReInitializePlotAtts(AttributeSubject *atts,
-    const char *hostName, const char *databaseName, const char *varName)
+    const avtDatabaseMetaData *md, const char *varName)
 {
-    PrivateSetPlotAtts(atts, hostName, databaseName, varName);
+    PrivateSetPlotAtts(atts, md, varName);
 }
 
 // ****************************************************************************

@@ -1,4 +1,4 @@
-#                            Copyright 2000 - 2003
+#                            Copyright 2000 - 2004
 #                 The Regents of the University of California.
 #                             All rights reserved.
 # 
@@ -262,6 +262,10 @@
 #    Brad Whitlock, Tue Dec 30 14:28:20 PST 2003
 #    I added QvisAnimationSlider.
 #
+#    Brad Whitlock, Fri Jan 30 18:07:28 PST 2004
+#    I added NameSimplifier, QvisDatabaseCorrelationListWindow, and
+#    QvisDatabaseCorrelationWindow.
+#
 ##############################################################################
 
 ##
@@ -308,6 +312,8 @@ HDRMOC = \
     QvisColorTableButton.h \
     QvisColorTableWindow.h \
     QvisCommandLineWindow.h \
+    QvisDatabaseCorrelationListWindow.h \
+    QvisDatabaseCorrelationWindow.h \
     QvisDelayedWindow.h \
     QvisDelayedWindowObserver.h \
     QvisDelayedWindowSimpleObserver.h \
@@ -367,6 +373,7 @@ HDR = ${HDRMOC} \
     Interpreter.h \
     KFBase.h \
     KFListViewItem.h \
+    NameSimplifier.h \
     mini3D.h \
     QualifiedFilename.h \
     QvisListViewFileItem.h \
@@ -384,6 +391,7 @@ SRC = \
     Interpreter.C \
     KFBase.C \
     KFListViewItem.C \
+    NameSimplifier.C \
     mini3D.C \
     QualifiedFilename.C \
     QvisListViewFileItem.C \

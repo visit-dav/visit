@@ -16,5 +16,7 @@ PyObject       *PyWindowInformation_WrapPyObject(const WindowInformation *attr);
 void            PyWindowInformation_SetLogging(bool val);
 void            PyWindowInformation_SetDefaults(const WindowInformation *atts);
 
+PyObject       *PyWindowInformation_StringRepresentation(const WindowInformation *atts);
+
 #endif
 

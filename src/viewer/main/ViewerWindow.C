@@ -29,8 +29,8 @@ using std::string;
 #include <PickPointInfo.h>
 #include <RenderingAttributes.h>
 #include <ViewerActionManager.h>
-#include <ViewerAnimation.h>
 #include <ViewerEngineManager.h>
+#include <ViewerFileServer.h>
 #include <ViewerMessaging.h>
 #include <ViewerPlotList.h> 
 #include <ViewerPopupMenu.h>
@@ -170,6 +170,9 @@ static void RotateAroundY(const avtView3D&, double, avtView3D&);
 //    Hank Childs, Thu Mar  4 08:10:34 PST 2004
 //    Use a QtVisWindow.
 //
+//    Brad Whitlock, Mon Jan 26 22:59:12 PST 2004
+//    I removed the animation and replaced it with the plot list.
+//
 // ****************************************************************************
 
 ViewerWindow::ViewerWindow(int windowIndex)
@@ -219,8 +222,7 @@ ViewerWindow::ViewerWindow(int windowIndex)
     popupMenu = new ViewerPopupMenu(this);
     toolbar = new ViewerToolbar(this);
 
-    animation = new ViewerAnimation;
-    animation->AddWindow(this);
+    plotList = new ViewerPlotList(this);
     SetAnimationAttributes(ViewerWindowManager::GetAnimationClientAtts());
 
     //
@@ -313,11 +315,14 @@ ViewerWindow::ViewerWindow(int windowIndex)
 //    Eric Brugger, Wed Aug 20 11:15:07 PDT 2003
 //    I added a curve view.
 //
+//    Brad Whitlock, Tue Jan 27 17:03:28 PST 2004
+//    I removed animation and put plotList.
+//
 // ****************************************************************************
 
 ViewerWindow::~ViewerWindow()
 {
-    delete animation;
+    delete plotList;
     delete popupMenu;
     delete visWindow;
     delete toolbar;
@@ -408,22 +413,22 @@ ViewerWindow::GetToolbar() const
 }
 
 // ****************************************************************************
-//  Method: ViewerWindow::GetAnimation
+//  Method: ViewerWindow::GetPlotList
 //
 //  Purpose: 
-//    Return a pointer to the window's animation.
+//    Return a pointer to the window's plot list.
 //
-//  Returns:    A pointer to the animation.
+//  Returns:    A pointer to the plot list.
 //
 //  Programmer: Brad Whitlock
-//  Creation:   Tue Nov 7 11:19:01 PDT 2000
+//  Creation:   Tue Jan 27 01:07:19 PDT 2004
 //
 // ****************************************************************************
 
-ViewerAnimation *
-ViewerWindow::GetAnimation() const
+ViewerPlotList *
+ViewerWindow::GetPlotList() const
 {
-    return animation;
+    return plotList;
 }
 
 // ****************************************************************************
@@ -663,7 +668,7 @@ ViewerWindow::SetInteractionMode(const INTERACTION_MODE mode)
         //
         // Stopping pick mode
         //
-        animation->GetPlotList()->StopPick();
+        GetPlotList()->StopPick();
         ViewerQueryManager::Instance()->StopPickMode();
     }
 
@@ -724,8 +729,7 @@ ViewerWindow::SetToolEnabled(int toolId, bool enabled)
     {
         if(enabled)
         {
-            ViewerPlotList *pl = animation->GetPlotList();
-            pl->InitializeTool(visWindow->GetToolInterface(toolId));
+            GetPlotList()->InitializeTool(visWindow->GetToolInterface(toolId));
             ViewerQueryManager::Instance()->
                 InitializeTool(this, visWindow->GetToolInterface(toolId));
         }
@@ -797,7 +801,7 @@ ViewerWindow::HandleTool(const avtToolInterface &ti, bool applyToAll)
     //
     // Pass the tool info off to the plot list and redraw the window.
     //
-    animation->GetPlotList()->HandleTool(ti, applyToAll);
+    GetPlotList()->HandleTool(ti, applyToAll);
     ViewerQueryManager::Instance()->HandleTool(this, ti);
 }
 
@@ -820,7 +824,6 @@ ViewerWindow::HandleTool(const avtToolInterface &ti, bool applyToAll)
 void
 ViewerWindow::UpdateTools()
 {
-    ViewerPlotList *pl = animation->GetPlotList();
     bool redrawWindow = false;
 
     //
@@ -830,7 +833,7 @@ ViewerWindow::UpdateTools()
     {
         if(visWindow->GetToolEnabled(toolId))
         {
-            if(pl->InitializeTool(visWindow->GetToolInterface(toolId)))
+            if(GetPlotList()->InitializeTool(visWindow->GetToolInterface(toolId)))
             {
                 redrawWindow = true;
                 visWindow->UpdateTool(toolId, false);
@@ -1021,6 +1024,7 @@ ViewerWindow::ClearViewKeyframes()
 void
 ViewerWindow::DeleteViewKeyframe(const int frame)
 {
+#ifdef BEFORE_NEW_FILE_SELECTION
     int nFrames = animation->GetNFrames();
 
     //
@@ -1053,6 +1057,7 @@ ViewerWindow::DeleteViewKeyframe(const int frame)
         UpdateCameraView();
         ViewerWindowManager::Instance()->UpdateViewAtts();
     }
+#endif
 }
 
 // ****************************************************************************
@@ -1077,6 +1082,7 @@ ViewerWindow::DeleteViewKeyframe(const int frame)
 void
 ViewerWindow::MoveViewKeyframe(int oldFrame, int newFrame)
 {
+#ifdef BEFORE_NEW_FILE_SELECTION
     int nFrames = animation->GetNFrames();
 
     //
@@ -1113,6 +1119,7 @@ ViewerWindow::MoveViewKeyframe(int oldFrame, int newFrame)
         UpdateCameraView();
         ViewerWindowManager::Instance()->UpdateViewAtts();
     }
+#endif
 }
 
 // ****************************************************************************
@@ -1143,6 +1150,7 @@ ViewerWindow::MoveViewKeyframe(int oldFrame, int newFrame)
 void
 ViewerWindow::SetViewKeyframe()
 {
+#ifdef BEFORE_NEW_FILE_SELECTION
     //
     // Set a curve view keyframe.
     //
@@ -1183,6 +1191,7 @@ ViewerWindow::SetViewKeyframe()
     curView3D->SetEyeAngle(view3d.eyeAngle);
 
     view3DAtts->SetAtts(animation->GetFrameIndex(), curView3D);
+#endif
 }
 
 // ****************************************************************************
@@ -1232,7 +1241,7 @@ ViewerWindow::SetViewExtentsType(avtExtentType viewType)
         boundingBoxValid2d = false;
         boundingBoxValid3d = false;
         plotExtentsType = viewType;
-        animation->GetPlotList()->SetSpatialExtentsType(plotExtentsType);
+        GetPlotList()->SetSpatialExtentsType(plotExtentsType);
     }
 }
 
@@ -1274,14 +1283,16 @@ ViewerWindow::GetViewExtentsType() const
 // Modifications:
 //   Eric Brugger, Tue Jan 14 07:56:14 PST 2003 
 //   I added an nDimensions argument.
-//   
+//
+//   Brad Whitlock, Sat Jan 31 22:39:26 PST 2004
+//   I removed the frame argumnet.
+//
 // ****************************************************************************
 
 void
 ViewerWindow::GetExtents(int nDimensions, double *extents)
 {
-    int time = animation->GetFrameIndex();
-    animation->GetPlotList()->GetPlotLimits(time, nDimensions, extents);
+    GetPlotList()->GetPlotLimits(nDimensions, extents);
 }
 
 // ****************************************************************************
@@ -1748,7 +1759,7 @@ void
 ViewerWindow::UpdateColorTable(const char *ctName)
 {
     // If any plots in the plot list had to be updated, redraw the window.
-    if(animation->GetPlotList()->UpdateColorTable(ctName))
+    if(GetPlotList()->UpdateColorTable(ctName))
     {
         SendRedrawMessage();
     }
@@ -1819,7 +1830,7 @@ ViewerWindow::ClearWindow()
 {
     ClearRefLines();
     ClearPickPoints();
-    animation->GetPlotList()->ClearPlots();
+    GetPlotList()->ClearPlots();
 }
 
 // ****************************************************************************
@@ -1955,29 +1966,6 @@ void
 ViewerWindow::AddPlot(avtActor_p &actor)
 {
     visWindow->AddPlot(actor);
-}
-
-// ****************************************************************************
-// Method: ViewerWindow::CopyAnimation
-//
-// Purpose: 
-//   Copies the animation from one window to this window.
-//
-// Arguments:
-//   w         : The viewer window from which we're copying the animation.
-//   copyPlots : Whether or not we're copying the animation's plot list too.
-//
-// Programmer: Brad Whitlock
-// Creation:   Tue Oct 15 16:54:36 PST 2002
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-ViewerWindow::CopyAnimation(const ViewerWindow *w, bool copyplots)
-{
-    animation->CopyFrom(w->GetAnimation(), copyplots);
 }
 
 // ****************************************************************************
@@ -2461,6 +2449,7 @@ ViewerWindow::CopyViewAttributes(const ViewerWindow *source)
 void
 ViewerWindow::UpdateCameraView()
 {
+#ifdef BEFORE_NEW_FILE_SELECTION
     //
     // If we are in camera view mode and at least one view keyframe has
     // been defined then set the view based on the view keyframes.
@@ -2533,7 +2522,8 @@ ViewerWindow::UpdateCameraView()
 
             visWindow->SetView3D(view3d);
         }
-    } 
+    }
+#endif
 }
 
 // ****************************************************************************
@@ -2558,14 +2548,14 @@ void
 ViewerWindow::SetAnimationAttributes(const AnimationAttributes *atts)
 {
     // Set the pipeline caching flag.
-    animation->SetPipelineCaching(atts->GetPipelineCachingMode());
+    GetPlotList()->SetPipelineCaching(atts->GetPipelineCachingMode());
     // Set the animation's playback style.
     if(atts->GetPlaybackMode() == AnimationAttributes::Looping)
-        animation->SetPlaybackMode(ViewerAnimation::Looping);
+        GetPlotList()->SetPlaybackMode(ViewerPlotList::Looping);
     else if(atts->GetPlaybackMode() == AnimationAttributes::PlayOnce)
-        animation->SetPlaybackMode(ViewerAnimation::PlayOnce);
+        GetPlotList()->SetPlaybackMode(ViewerPlotList::PlayOnce);
     else if(atts->GetPlaybackMode() == AnimationAttributes::Swing)
-        animation->SetPlaybackMode(ViewerAnimation::Swing);
+        GetPlotList()->SetPlaybackMode(ViewerPlotList::Swing);
 }
 
 // ****************************************************************************
@@ -2593,13 +2583,13 @@ ViewerWindow::GetAnimationAttributes() const
 {
     // Set the caching mode.
     animationAttributes.SetPipelineCachingMode(
-        animation->GetPipelineCaching());
+        GetPlotList()->GetPipelineCaching());
     // Set the playback mode.
-    if(animation->GetPlaybackMode() == ViewerAnimation::Looping)
+    if(GetPlotList()->GetPlaybackMode() == ViewerPlotList::Looping)
         animationAttributes.SetPlaybackMode(AnimationAttributes::Looping);
-    else if(animation->GetPlaybackMode() == ViewerAnimation::PlayOnce)
+    else if(GetPlotList()->GetPlaybackMode() == ViewerPlotList::PlayOnce)
         animationAttributes.SetPlaybackMode(AnimationAttributes::PlayOnce);
-    else if(animation->GetPlaybackMode() == ViewerAnimation::Swing)
+    else if(GetPlotList()->GetPlaybackMode() == ViewerPlotList::Swing)
         animationAttributes.SetPlaybackMode(AnimationAttributes::Swing);
 
     return &animationAttributes;
@@ -3199,8 +3189,8 @@ void
 ViewerWindow::SetPlotColors(const double *bg, const double *fg)
 {
     bool redraw = false;
-    redraw |= animation->GetPlotList()->SetBackgroundColor(bg);
-    redraw |= animation->GetPlotList()->SetForegroundColor(fg);
+    redraw |= GetPlotList()->SetBackgroundColor(bg);
+    redraw |= GetPlotList()->SetForegroundColor(fg);
     if (redraw) 
     {
         SendRedrawMessage();
@@ -4852,6 +4842,33 @@ ViewerWindow::GetWindowAttributes() const
 }
 
 // ****************************************************************************
+// Method: ViewerWindow::SendWindowEnvironmentToEngine
+//
+// Purpose: 
+//   Sends the window environment (i.e. window size, colors, lights, etc.)
+//   to the engine that might need it for scalable rendering.
+//
+// Arguments:
+//   host : The host to which we want to send the window environment.
+//
+// Programmer: Brad Whitlock
+// Creation:   Sun Jan 25 23:49:44 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+ViewerWindow::SendWindowEnvironmentToEngine(const std::string &host)
+{
+    WindowAttributes winAtts(GetWindowAttributes());
+    AnnotationAttributes annotAtts(*GetAnnotationAttributes());
+    return ViewerEngineManager::Instance()->SetWinAnnotAtts(host.c_str(),
+                                                            &winAtts,
+                                                            &annotAtts);
+}
+
+// ****************************************************************************
 // Method: ViewerWindow::Pick
 //
 // Purpose: 
@@ -5687,6 +5704,12 @@ ViewerWindow::GetNotifyForEachRender() const
 // Programmer: Mark C. Miller
 // Creation:   Mon Nov  3 17:08:14 PST 2003 
 //
+// Modifications:
+//   Brad Whitlock, Fri Jan 23 17:04:36 PST 2004
+//   I changed the interface to UpdateWindowInformation and I changed enough
+//   viewer classes so the frame does not have to be passed around all over
+//   the place.
+//
 // ****************************************************************************
 
 void
@@ -5707,22 +5730,23 @@ ViewerWindow::ChangeScalableRenderingMode(bool newMode)
         targetScalableRenderingMode = newMode;
 
         // clear support info for external render requests
-        ClearLastExternalRenderRequest();
+        ClearLastExternalRenderRequestInfo();
 
         // remove all plot's actors from the VisWindow
         ClearPlots();
 
         // transmute the plots
-        animation->GetPlotList()->TransmutePlots(animation->GetFrameIndex(),!newMode);
+        GetPlotList()->TransmutePlots(!newMode);
 
         // set scalable rendering mode in the vis window 
         visWindow->SetScalableRendering(newMode);
 
-        if (updatesEnabled)
-            animation->UpdateWindows(true);
+        if(updatesEnabled)
+            GetPlotList()->UpdateFrame();
 
         // update the window information
-        ViewerWindowManager::Instance()->UpdateWindowInformation(windowId, false);
+        ViewerWindowManager::Instance()->UpdateWindowInformation(
+            WINDOWINFO_WINDOWFLAGS, windowId);
     }
 
     // note, this flag is set to true when the render message is sent
@@ -6038,9 +6062,9 @@ ViewerWindow::CreateNode(DataNode *parentNode, bool detailed)
         annots.CreateNode(windowNode, true, true);
 
         //
-        // Let the animation add its information.
+        // Let the plot list add its information.
         //
-        animation->CreateNode(windowNode);
+        GetPlotList()->CreateNode(windowNode);
     }
 
     //
@@ -6081,6 +6105,9 @@ ViewerWindow::CreateNode(DataNode *parentNode, bool detailed)
 //   I added code to delete plots before reading the new plots so we don't
 //   have the window redrawing the old plots with the new view.
 //
+//   Brad Whitlock, Mon Feb 2 15:26:00 PST 2004
+//   Added code to translate old config files that had ViewerAnimation.
+//
 // ****************************************************************************
 
 void
@@ -6115,15 +6142,84 @@ ViewerWindow::SetFromNode(DataNode *parentNode)
     // view, etc no updates can happen.
     //
     intVector plots, tmp;
-    for(int j = 0; j < animation->GetPlotList()->GetNumPlots(); ++j)
+    for(int j = 0; j < GetPlotList()->GetNumPlots(); ++j)
         plots.push_back(j);
-    animation->GetPlotList()->SetActivePlots(plots, tmp, tmp, false);
-    animation->GetPlotList()->DeleteActivePlots();
+    GetPlotList()->SetActivePlots(plots, tmp, tmp, false);
+    GetPlotList()->DeleteActivePlots();
+
+    ////////////////////// Reformat pre 1.3 session files /////////////////////
+    //
+    // If we find a ViewerAnimation, reparent its ViewerPlotList to the
+    // windowNode so old config files will still work. This should be removed
+    // in the future as configs with the now defunct ViewerAnimation become
+    // less common.
+    //
+    DataNode *vaNode = windowNode->GetNode("ViewerAnimation");
+    if(vaNode != 0)
+    {
+        debug1 << "***\n*** Converting the session file from pre 1.3 version.\n***\n";
+        DataNode *vplNode = vaNode->GetNode("ViewerPlotList");
+        // Remove the plot list node from the animation node without
+        // deleting it. Then reparent it in the window node.
+        vaNode->RemoveNode("ViewerPlotList", false);
+        windowNode->AddNode(vplNode);
+
+        // Add a few things from the animation node to the viewer plot
+        // list node.
+        DataNode *aNode;
+        if((aNode = vaNode->GetNode("pipelineCaching")) != 0)
+            vplNode->AddNode(new DataNode("pipelineCaching", aNode->AsBool()));
+        if((aNode = vaNode->GetNode("playbackMode")) != 0)
+        {
+            if(aNode->GetNodeType() == INT_NODE)
+                vplNode->AddNode(new DataNode("playbackMode", aNode->AsInt()));
+            else if(aNode->GetNodeType() == STRING_NODE)
+                vplNode->AddNode(new DataNode("playbackMode", aNode->AsString()));
+        }
+        //
+        // Get the curFrame and nFrames out of the ViewerAnimation and try
+        // to put it into the plots in the ViewerPlotList.
+        //
+        int curFrame = -1;
+        int nFrames = -1;
+        if((aNode = vaNode->GetNode("curFrame")) != 0)
+            curFrame = aNode->AsInt();
+        if((aNode = vaNode->GetNode("nFrames")) != 0)
+            nFrames = aNode->AsInt();
+        if(nFrames != -1 && curFrame != -1 &&
+           curFrame >= 0 && curFrame < nFrames)
+        {
+            DataNode *hostNode = vplNode->GetNode("hostName");
+            DataNode *databaseNode = vplNode->GetNode("databaseName");
+            if(hostNode != 0 && databaseNode != 0)
+            {
+                std::string tsHost(hostNode->AsString());
+                std::string tsDB(databaseNode->AsString());
+                tsDB = ViewerFileServer::Instance()->
+                    ExpandedFileName(tsHost, tsDB);
+                std::string tsName(tsHost + ":" + tsDB);
+
+                //
+                // If the database has multiple time states then add a time
+                // slider for it in the ViewerPlotList.
+                //
+                DataNode *tsNode = new DataNode("timeSliders");
+                tsNode->AddNode(new DataNode(tsName, curFrame));
+                vplNode->AddNode(tsNode);
+                vplNode->AddNode(new DataNode("activeTimeSlider", tsName));
+                debug3 << "Created a time slider (" << tsName.c_str()
+                       << " at state" << curFrame << ") for old session file." << endl;
+            }
+        }
+        // Remove the ViewerAnimation node.
+        windowNode->RemoveNode("ViewerAnimation");
+    }
+    ///////////////// Done reformatting pre 1.3 session files /////////////////
 
     //
-    // Read in the animation.
+    // Read in the plot list.
     //
-    if(animation->SetFromNode(windowNode))
+    if(GetPlotList()->SetFromNode(windowNode))
         SendUpdateFrameMessage();
 
     //
@@ -6441,7 +6537,7 @@ ViewerWindow::SendScalableRenderingModeChangeMessage(bool newMode)
 // ****************************************************************************
 
 void
-ViewerWindow::ClearLastExternalRenderRequest()
+ViewerWindow::ClearLastExternalRenderRequestInfo()
 {
     lastExternalRenderRequest.pluginIDsList.clear();
     lastExternalRenderRequest.hostsList.clear();
@@ -6466,7 +6562,7 @@ ViewerWindow::ClearLastExternalRenderRequest()
 // ****************************************************************************
 
 void
-ViewerWindow::UpdateLastExternalRenderRequest(
+ViewerWindow::UpdateLastExternalRenderRequestInfo(
     const ExternalRenderRequestInfo &newRequest)
 {
     int i = 0;
@@ -6506,6 +6602,12 @@ ViewerWindow::UpdateLastExternalRenderRequest(
 // Programmer: Mark C. Miller 
 // Creation:   November 10, 2003 
 //
+// Modifications:
+//
+//   Mark C. Miller, Mon Mar 29 19:13:38 PST 2004
+//   Made check for annotations consider only the subset of all annotations 
+//   that should require a re-render on the engine
+//
 // ****************************************************************************
 
 bool
@@ -6516,7 +6618,13 @@ ViewerWindow::CanSkipExternalRender(const ExternalRenderRequestInfo& thisRequest
     if (thisRequest.winAtts != lastRequest.winAtts)
         return false;
 
-    if (thisRequest.annotAtts != lastRequest.annotAtts)
+    // compare annotation attributes but ignore a few of them by forcing
+    // old/new to be equal for those few
+    AnnotationAttributes tmpAtts = thisRequest.annotAtts;
+    tmpAtts.SetUserInfoFlag(lastRequest.annotAtts.GetUserInfoFlag());
+    tmpAtts.SetDatabaseInfoFlag(lastRequest.annotAtts.GetDatabaseInfoFlag());
+    tmpAtts.SetLegendInfoFlag(lastRequest.annotAtts.GetLegendInfoFlag());
+    if (tmpAtts != lastRequest.annotAtts)
         return false;
 
     if ((thisRequest.plotIdsList.size() != 0) &&
@@ -6559,6 +6667,215 @@ ViewerWindow::CanSkipExternalRender(const ExternalRenderRequestInfo& thisRequest
 }
 
 // ****************************************************************************
+// Method: ViewerWindow::GetExternalRenderRequestInfo
+//
+// Purpose: Populates an ExternalRenderRequestInfo struct with all the
+// information needed to process an external render request
+//
+// Programmer: Mark C. Miller
+// Creation:   March 25, 2004 
+//
+// ****************************************************************************
+void
+ViewerWindow::GetExternalRenderRequestInfo(
+    ExternalRenderRequestInfo& theRequest) const
+{
+    // get information about the plots, their hosts, ids, and attributes
+    GetPlotList()->GetCurrentPlotAtts(theRequest.pluginIDsList,
+                                      theRequest.hostsList,
+                                      theRequest.plotIdsList,
+                                      theRequest.attsList);
+
+    // get information about this window's attributes
+    theRequest.winAtts = GetWindowAttributes();
+    theRequest.annotAtts = *GetAnnotationAttributes();
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::ExternalRender
+//
+// Purpose: Make an explicit external render request for the window. Do not
+// consider things like whether to skip the external render request, to
+// update the last request information, etc or whether external rendering
+// should be turned off
+//
+// Programmer: Mark C. Miller
+// Creation:   March 25, 2004 
+//
+// ****************************************************************************
+bool
+ViewerWindow::ExternalRender(const ExternalRenderRequestInfo& thisRequest,
+    bool& shouldTurnOffScalableRendering, bool doAllAnnotations,
+    avtDataObject_p& dob)
+{
+
+    // return immediately without error if we have nothing to do
+    if (thisRequest.plotIdsList.size() == 0)
+    {
+        dob = NULL;
+        return true;
+    }
+
+    ViewerEngineManager *eMgr = ViewerEngineManager::Instance();
+    bool success = false;
+    std::vector<avtImage_p> imgList;
+
+    TRY
+    {
+        // let the engine manager do the render
+        success = eMgr->ExternalRender(thisRequest.pluginIDsList,
+                                       thisRequest.hostsList,
+                                       thisRequest.plotIdsList,
+                                       thisRequest.attsList,
+                                       thisRequest.winAtts,
+                                       thisRequest.annotAtts,
+                                       shouldTurnOffScalableRendering,
+                                       doAllAnnotations,
+                                       imgList);
+
+
+    }
+    CATCH2(VisItException, e)
+    {
+        char message[2048];
+        //
+        // Add as much information to the message as we can,
+        // including plot name, exception type and exception 
+        // message.
+        // 
+        SNPRINTF(message, sizeof(message), "%s:  (%s)\n%s", 
+            "Scalable Render Request Failed",
+            e.GetExceptionType().c_str(),
+            e.GetMessage().c_str());
+
+        Error(message);
+
+        // finally, make sure we return a "blank" image 
+        dob = NULL;
+        return false;
+    }
+    ENDTRY
+
+    // return noting if the request failed
+    if (!success)
+    {
+        dob = NULL;
+        return false;
+    }
+
+    if (imgList.size() == 0)
+    {
+        dob = NULL;
+        return true;
+    }
+
+    // composite images from different engines as necessary
+    if (imgList.size() > 1)
+    {
+        avtWholeImageCompositer imageCompositer;
+        int numRows = thisRequest.winAtts.GetSize()[1];
+        int numCols = thisRequest.winAtts.GetSize()[0];
+
+        imageCompositer.SetOutputImageSize(numRows, numCols);
+        for (int i = 0; i < imgList.size(); i++)
+            imageCompositer.AddImageInput(imgList[i], 0, 0);
+        imageCompositer.Execute();
+        dob = imageCompositer.GetOutput();
+    }
+    else if (imgList.size() == 1)
+    {
+        CopyTo(dob, imgList[0]);
+    }
+
+    return true;
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::ExternalRenderManual
+//
+// Purpose: Handle a manual external render request for the window. Do not
+// consider things like whether to skip the external render request, to
+// update the last request information, etc or whether external rendering
+// could be turned off
+//
+// Programmer: Mark C. Miller
+// Creation:   March 25, 2004 
+//
+// ****************************************************************************
+void
+ViewerWindow::ExternalRenderManual(avtDataObject_p& dob, int w, int h)
+{
+    bool dummyBool;
+    ExternalRenderRequestInfo thisRequest;
+
+    GetExternalRenderRequestInfo(thisRequest);
+
+    // adjust rendering request info for this manual render
+    int size[2] = {w, h};
+    thisRequest.winAtts.SetSize(size);
+    thisRequest.winAtts.GetRenderAtts().SetScalableThreshold(0);
+
+    ExternalRender(thisRequest, dummyBool, true, dob);
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::ExternalRenderAuto
+//
+// Purpose: Handle an automatic external render request for the window.
+//
+// Programmer: Mark C. Miller
+// Creation:   March 25, 2004 
+//
+// ****************************************************************************
+void
+ViewerWindow::ExternalRenderAuto(avtDataObject_p& dob)
+{
+    if (!GetScalableRendering())
+    {
+       dob = NULL;
+       return;
+    }
+
+    ExternalRenderRequestInfo thisRequest;
+    GetExternalRenderRequestInfo(thisRequest);
+
+    if (thisRequest.plotIdsList.size() == 0)
+    {
+        dob = NULL;
+        return;
+    }
+
+    // return now without modifying dob if we've decided we can skip 
+    if (CanSkipExternalRender(thisRequest))
+        return;
+
+    // ok, now make an explict external render request
+    bool shouldTurnOffScalableRendering = false;
+    bool success = ExternalRender(thisRequest,
+                                  shouldTurnOffScalableRendering, false, dob);
+
+    // return nothing if the request failed
+    if (!success)
+    {
+        GetPlotList()->SetErrorFlagAllPlots(true);
+        dob = NULL;
+        return;
+    }
+
+    // send an SR mode change message, if necessary
+    if (shouldTurnOffScalableRendering)
+    {
+        SendScalableRenderingModeChangeMessage(false);
+        dob = NULL;
+        return;
+    }
+
+    // only update last request if this request wasn't empty
+    if (thisRequest.plotIdsList.size() > 0)
+        UpdateLastExternalRenderRequestInfo(thisRequest);
+}
+
+// ****************************************************************************
 // Function: ExternalRenderCallback 
 //
 // Note that the external render request can respond to the caller with
@@ -6578,116 +6895,16 @@ ViewerWindow::CanSkipExternalRender(const ExternalRenderRequestInfo& thisRequest
 // Programmer: Mark C. Miller 
 // Creation:   03Apr03 
 //
+// Modifications:
+//
+//   Mark C. Miller, Thu Mar 25 21:08:25 PST 2004
+//   Paired down to just dereference the void * for the window and call into
+//   the objects method
+//
 // ****************************************************************************
 void
 ViewerWindow::ExternalRenderCallback(void *data, avtDataObject_p& dob)
 {
     ViewerWindow *win = (ViewerWindow *)data;
-    ExternalRenderRequestInfo thisRequest;
-
-    // if we aren't currently in scalable rendering mode, we have nothing to do
-    if (!win->GetScalableRendering())
-    {
-       dob = NULL;
-       return;
-    }
-
-    // get all the plot's attributes in this window
-    std::map<std::string,std::vector<int> > perEnginePlotIds;
-    win->GetAnimation()->GetPlotList()->
-       GetCurrentPlotAtts(thisRequest.pluginIDsList, thisRequest.hostsList,
-                          thisRequest.plotIdsList, thisRequest.attsList);
-
-    // get this window's attributes
-    thisRequest.winAtts = win->GetWindowAttributes();
-    thisRequest.annotAtts = *(win->GetAnnotationAttributes());
-
-    // see if we can skip the external render because nothing has changed 
-    bool canSkip = win->CanSkipExternalRender(thisRequest);
-
-    TRY
-    {
-        // ok, we actually have to do a render
-        if (!canSkip && (thisRequest.plotIdsList.size() > 0))
-        {
-            ViewerEngineManager *eMgr = ViewerEngineManager::Instance();
-            bool shouldTurnOffScalableRendering = false;
-            std::vector<avtImage_p> imgList;
-
-            // let the engine manager do the render
-            bool requestSuccess = eMgr->ExternalRender(thisRequest.pluginIDsList,
-                                                      thisRequest.hostsList,
-                                                      thisRequest.plotIdsList,
-                                                      thisRequest.attsList,
-                                                      thisRequest.winAtts,
-                                                      thisRequest.annotAtts,
-                                                      shouldTurnOffScalableRendering,
-                                                      imgList);
-
-            // return noting if the request failed
-            if (!requestSuccess)
-            {
-                dob = NULL;
-                return;
-            }
-
-            // send an SR mode change message, if necessary
-            if (shouldTurnOffScalableRendering)
-            {
-                win->SendScalableRenderingModeChangeMessage(false);
-                dob = NULL;
-                return;
-            }
-
-            // composite images from different engines as necessary
-            if (imgList.size() > 1)
-            {
-                avtWholeImageCompositer imageCompositer;
-                int numRows = thisRequest.winAtts.GetSize()[1];
-                int numCols = thisRequest.winAtts.GetSize()[0];
-
-                imageCompositer.SetOutputImageSize(numRows, numCols);
-                for (int i = 0; i < imgList.size(); i++)
-                    imageCompositer.AddImageInput(imgList[i], 0, 0);
-                imageCompositer.Execute();
-                dob = imageCompositer.GetOutput();
-            }
-            else
-                CopyTo(dob, imgList[0]);
-
-        }
-        else
-        {
-           if (thisRequest.plotIdsList.size() == 0)
-               dob = NULL;
-        }
-
-        // only update last request if this request wasn't empty
-        if (thisRequest.plotIdsList.size() > 0)
-            win->UpdateLastExternalRenderRequest(thisRequest);
-
-    }
-    CATCH2(VisItException, e)
-    {
-        char message[2048];
-        //
-        // Add as much information to the message as we can,
-        // including plot name, exception type and exception 
-        // message.
-        // 
-        SNPRINTF(message, sizeof(message), "%s:  (%s)\n%s", 
-            "Scalable Render Request Failed",
-            e.GetExceptionType().c_str(),
-            e.GetMessage().c_str());
-
-        Error(message);
-
-        // Indicate that all plots in this window are in error
-        win->GetAnimation()->GetPlotList()->SetErrorFlagAllPlots(true);
-
-        // finally, make sure we return a "blank" image 
-        dob = NULL;
-    }
-    ENDTRY
-
+    win->ExternalRenderAuto(dob);
 }

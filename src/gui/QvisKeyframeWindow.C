@@ -10,7 +10,7 @@
 #include <Plot.h>
 #include <PlotList.h>
 #include <QualifiedFilename.h>
-#include <GlobalAttributes.h>
+#include <WindowInformation.h>
 
 #include <qapplication.h>
 #include <qcheckbox.h>
@@ -34,8 +34,7 @@
 #include <snprintf.h>
 
 #include <algorithm>
-#include <vector>
-#include <map>
+
 using std::vector;
 using std::map;
 
@@ -103,7 +102,7 @@ QvisKeyframeWindow::QvisKeyframeWindow(KeyframeAttributes *subj,
     kfAtts = subj;
     kfAtts->Attach(this);
     plotList = NULL;
-    globalAtts = NULL;
+    windowInfo = NULL;
     lv = NULL;
     ts = NULL;
     viewItem = NULL;
@@ -278,10 +277,10 @@ QvisKeyframeWindow::ConnectPlotAttributes(AttributeSubject *subj, int index)
 }
 
 // ****************************************************************************
-//  Method:  QvisKeyframeWindow::ConnectGlobalAttributes
+//  Method:  QvisKeyframeWindow::ConnectWindowInformation
 //
 //  Purpose:
-//    Connect the global attributes to the keyframe window.
+//    Connect the window information state object to the keyframe window.
 //
 //  Arguments:
 //    subj       the subject
@@ -291,11 +290,11 @@ QvisKeyframeWindow::ConnectPlotAttributes(AttributeSubject *subj, int index)
 //
 // ****************************************************************************
 void
-QvisKeyframeWindow::ConnectGlobalAttributes(GlobalAttributes *subj)
+QvisKeyframeWindow::ConnectWindowInformation(WindowInformation *subj)
 {
-    globalAtts = subj;
-    subj->Attach(this);
-    UpdateGlobalAttributes();
+    windowInfo = subj;
+    windowInfo->Attach(this);
+    UpdateWindowInformation();
 }
 
 // ****************************************************************************
@@ -334,6 +333,10 @@ QvisKeyframeWindow::ConnectPlotList(PlotList *subj)
 //    Brad Whitlock, Fri May 10 10:41:29 PDT 2002
 //    Added code to mark certain attributes as deleted.
 //
+//    Brad Whitlock, Sat Jan 24 23:59:13 PST 2004
+//    I made it observe window information because of next generation file
+//    handling.
+//
 // ****************************************************************************
 
 void
@@ -341,8 +344,8 @@ QvisKeyframeWindow::SubjectRemoved(Subject *subj)
 {
     if(subj == kfAtts)
         kfAtts = 0;
-    else if(subj == globalAtts)
-        globalAtts = 0;
+    else if(subj == windowInfo)
+        windowInfo = 0;
     else if(subj == plotList)
         plotList = 0;
     else
@@ -370,6 +373,8 @@ QvisKeyframeWindow::SubjectRemoved(Subject *subj)
 //    Brad Whitlock, Fri May 10 10:43:33 PDT 2002
 //    Added code to detach the keyframe atts.
 //
+//    Brad Whitlock, Sat Jan 24 23:59:47 PST 2004
+//    I replaced 
 // ****************************************************************************
 
 QvisKeyframeWindow::~QvisKeyframeWindow()
@@ -377,8 +382,8 @@ QvisKeyframeWindow::~QvisKeyframeWindow()
     if(kfAtts)
         kfAtts->Detach(this);
 
-    if(globalAtts)
-        globalAtts->Detach(this);
+    if(windowInfo)
+        windowInfo->Detach(this);
 
     if(plotList)
         plotList->Detach(this);
@@ -468,7 +473,7 @@ QvisKeyframeWindow::CreateWindowContents()
     connect(dbStateButton, SIGNAL(clicked()),
             this, SLOT(stateKFClicked()));
 
-    UpdateGlobalAttributes();
+    UpdateWindowInformation();
     UpdatePlotList();
     UpdateWindowSensitivity();
 }
@@ -501,11 +506,20 @@ QvisKeyframeWindow::apply()
 //  Programmer:  Jeremy Meredith
 //  Creation:    May  8, 2002
 //
+//  Modifications:
+//    Brad Whitlock, Tue Jan 27 21:47:40 PST 2004
+//    Changed to support multiple time sliders, etc.
+//
 // ****************************************************************************
+
 void
 QvisKeyframeWindow::timeChanged(int t)
 {
+#ifdef BEFORE_NEW_FILE_SELECTION
     viewer->AnimationSetFrame(t);
+#else
+    viewer->SetTimeSliderState(t);
+#endif
 }
 
 // ****************************************************************************
@@ -527,7 +541,7 @@ QvisKeyframeWindow::nFramesProcessText()
 {
     GetCurrentValues(0);
     Apply();
-    UpdateGlobalAttributes();
+    UpdateWindowInformation();
     UpdatePlotList();
 }
 
@@ -549,10 +563,42 @@ QvisKeyframeWindow::keyframeEnabledToggled(bool k)
 }
 
 // ****************************************************************************
-//  Method:  QvisKeyframeWindow::UpdateGlobalAttributes
+// Method: QvisKeyframeWindow::GetCurrentFrame
+//
+// Purpose: 
+//   Returns the current frame for animation.
+//
+// Returns:    The current animation frame.
+//
+// Programmer: Brad Whitlock
+// Creation:   Sun Jan 25 00:19:01 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+int
+QvisKeyframeWindow::GetCurrentFrame() const
+{
+    int curFrame = 0;
+
+    for(int i = 0; i < windowInfo->GetTimeSliders().size(); ++i)
+    {
+        if(windowInfo->GetTimeSliders()[i] == "Animation")
+        {
+            curFrame = windowInfo->GetTimeSliderCurrentStates()[i];
+            break;
+        }
+    }
+
+    return curFrame;
+}
+
+// ****************************************************************************
+//  Method:  QvisKeyframeWindow::UpdateWindowInformation
 //
 //  Purpose:
-//    Updates the window based on new global attributes
+//    Updates the window based on new window information.
 //
 //  Arguments:
 //    none
@@ -564,29 +610,44 @@ QvisKeyframeWindow::keyframeEnabledToggled(bool k)
 //    Jeremy Meredith, Tue Feb  4 17:48:30 PST 2003
 //    Added code for the view keyframing item.
 //
+//    Brad Whitlock, Sun Jan 25 00:03:44 PDT 2004
+//    I made it use the window information and I made the number of frames
+//    come from the keyframe atts.
+//
 // ****************************************************************************
+
 void
-QvisKeyframeWindow::UpdateGlobalAttributes()
+QvisKeyframeWindow::UpdateWindowInformation()
 {
-    if (!globalAtts || !lv || !ts)
+    if (!windowInfo || !lv || !ts)
         return;
 
     QString temp;
 
-    int n = globalAtts->GetNFrames();
-    int i = globalAtts->GetCurrentFrame();
-    if (n == 0)
+    //
+    // If we're in keyframing mode then there will be a time slider called
+    // "Animation". Look for it in the time slider list and get the number
+    // of frames from the keyframe attributes.
+    //
+    int curFrame = GetCurrentFrame();
+
+    //
+    // Get the number of frames from the keyframe atts.
+    //
+    int numFrames = kfAtts->GetNFrames();
+    if (numFrames == 0)
     {
-        n = 1;
-        i = 0;
+        numFrames = 1;
+        curFrame = 0;
     }
+
     ts->blockSignals(true);
-    lv->SetNFrames(n);
-    ts->setNSteps(n);
-    lv->timeChanged(i);
-    ts->setValue(i);
+    lv->SetNFrames(numFrames);
+    ts->setNSteps(numFrames);
+    lv->timeChanged(curFrame);
+    ts->setValue(curFrame);
     ts->blockSignals(false);
-    temp.sprintf("%d", globalAtts->GetNFrames());
+    temp.sprintf("%d", numFrames);
     nFrames->setText(temp);
 
     if (!viewItem)
@@ -595,14 +656,14 @@ QvisKeyframeWindow::UpdateGlobalAttributes()
         viewItem->setText(0, "View");
         viewItem->SetIsView(true);
     }
-    double nframeminus1 = (n-1);
+    double nframeminus1 = (numFrames - 1);
     if (nframeminus1 < 1)
         nframeminus1 = 1;
 
     viewItem->Initialize();
-    const intVector &vkf = globalAtts->GetViewKeyframes();
+    const intVector &vkf = windowInfo->GetViewKeyframes();
     for (int j=0; j<vkf.size(); j++)
-        viewItem->AddPoint(double(vkf[j])/nframeminus1);
+        viewItem->AddPoint(double(vkf[j]) / nframeminus1);
     viewItem->repaint();
 }
 
@@ -848,6 +909,9 @@ QvisKeyframeWindow::UpdatePlotList()
 //    I made the Keyframing enabled checkbox get set when the keyframing
 //    attributes are updated.
 //
+//    Brad Whitlock, Sun Jan 25 00:16:58 PDT 2004
+//    I made it windowInfo instead of globalAtts.
+//
 // ****************************************************************************
 
 void
@@ -875,17 +939,20 @@ QvisKeyframeWindow::UpdateWindow(bool doAll)
                 keyframeEnabledCheck->setChecked(kfAtts->GetEnabled());
                 keyframeEnabledCheck->blockSignals(false);
                 break;
+            case 1: // nFrames
+                UpdateWindowInformation();
+                break;
             }
         }
     }
-    if (SelectedSubject() == globalAtts)
+    if (SelectedSubject() == windowInfo)
     {
         // Be selective over what to update everything for.
-        if(globalAtts->IsSelected(9)  || // currentFrame
-           globalAtts->IsSelected(10) || // nFrames
-           globalAtts->IsSelected(15))   // viewKeyFrames
+        if(windowInfo->IsSelected(2)  || // timeSliders
+           windowInfo->IsSelected(3)  || // timeSliderCurrentStates
+           windowInfo->IsSelected(15))   // viewKeyFrames
         {
-            UpdateGlobalAttributes();
+            UpdateWindowInformation();
         }
     }
     else if (SelectedSubject() == plotList)
@@ -920,7 +987,7 @@ QvisKeyframeWindow::UpdateWindow(bool doAll)
                         if (a->IsSelected(j))
                         {
                             if (lv->GetNFrames() > 1)
-                                field->AddPoint(double(globalAtts->GetCurrentFrame())/double(lv->GetNFrames()-1));
+                                field->AddPoint(double(GetCurrentFrame())/double(lv->GetNFrames()-1));
                         }
                         field = (KFListViewItem*)field->nextSibling();
                     }
@@ -951,7 +1018,12 @@ QvisKeyframeWindow::UpdateWindow(bool doAll)
 //  Programmer:  Jeremy Meredith
 //  Creation:    May  8, 2002
 //
+//  Modifications:
+//    Brad Whitlock, Sun Jan 25 00:22:14 PDT 2004
+//    I made it use the keyframing attributes for the number of frames.
+//
 // ****************************************************************************
+
 void
 QvisKeyframeWindow::GetCurrentValues(int which_widget)
 {
@@ -973,9 +1045,9 @@ QvisKeyframeWindow::GetCurrentValues(int which_widget)
         {
             msg.sprintf("The value for the number of frames was invalid. "
                 "Resetting to the last good value of %d.",
-                globalAtts->GetNFrames());
+                kfAtts->GetNFrames());
             Message(msg);
-            viewer->AnimationSetNFrames(globalAtts->GetNFrames());
+            viewer->AnimationSetNFrames(kfAtts->GetNFrames());
         }
     }
 }

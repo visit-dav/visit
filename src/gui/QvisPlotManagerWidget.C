@@ -1,6 +1,7 @@
 #include <QvisPlotManagerWidget.h>
 #include <qapplication.h>
 #include <qcheckbox.h>
+#include <qcombobox.h>
 #include <qcursor.h>
 #include <qiconset.h>
 #include <qlabel.h>
@@ -18,11 +19,13 @@
 #include <ExpressionList.h>
 #include <Expression.h>
 #include <GlobalAttributes.h>
+#include <NameSimplifier.h>
 #include <PluginManagerAttributes.h>
 #include <QvisPlotListBoxItem.h>
 #include <QvisPlotListBox.h>
 #include <QvisVariablePopupMenu.h>
 #include <PlotPluginInfo.h>
+#include <WindowInformation.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -96,6 +99,9 @@ using std::vector;
 //   Brad Whitlock, Tue Feb 24 16:27:15 PST 2004
 //   I added varMenuPopulator and a few other new members.
 //
+//   Brad Whitlock, Thu Jan 29 19:55:51 PST 2004
+//   I added the activeSource combo box.
+//
 //   Brad Whitlock, Mon Mar 15 11:46:34 PDT 2004
 //   I added varMenuFlags.
 //
@@ -105,36 +111,53 @@ QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,
     QWidget *parent, const char *name) : QWidget(parent, name), GUIBase(),
     SimpleObserver(), menuPopulator(), varMenuPopulator(), plotPlugins()
 {
+    plotList = 0;
+    globalAtts = 0;
+    windowInfo = 0;
+    exprList = 0;
+    pluginAtts = 0;
+
     pluginsLoaded = false;
     updatePlotVariableMenuEnabledState = false;
     updateOperatorMenuEnabledState = false;
     updateVariableMenuEnabledState = false;
     maxVarCount = 0;
     varMenuFlags = 0;
+    sourceVisible = false;
 
-    topLayout = new QGridLayout(this, 4, 4);
+    topLayout = new QGridLayout(this, 5, 4);
     topLayout->setSpacing(5);
 
+    // Create the source combobox.
+    sourceComboBox = new QComboBox(this, "sourceComboBox");
+    sourceComboBox->hide();
+    connect(sourceComboBox, SIGNAL(activated(int)),
+            this, SLOT(sourceChanged(int)));
+    sourceLabel = new QLabel(sourceComboBox, "Source", this, "sourceLabel");
+    sourceLabel->hide();
+    topLayout->addWidget(sourceLabel, 0, 0);
+    topLayout->addMultiCellWidget(sourceComboBox, 0, 0, 1, 3);
+
     activePlots = new QLabel("Active plots", this, "activePlots");
-    topLayout->addWidget(activePlots, 0, 0);
+    topLayout->addWidget(activePlots, 1, 0);
 
     // Create the hide/show button.
     hideButton = new QPushButton("Hide/Show", this, "hideButton");
     hideButton->setEnabled(false);
     connect(hideButton, SIGNAL(clicked()), this, SLOT(hidePlots()));
-    topLayout->addWidget(hideButton, 0, 1);
+    topLayout->addWidget(hideButton, 1, 1);
 
     // Create the delete button.
     deleteButton = new QPushButton("Delete", this, "deleteButton");
     deleteButton->setEnabled(false);
     connect(deleteButton, SIGNAL(clicked()), this, SLOT(deletePlots()));
-    topLayout->addWidget(deleteButton, 0, 2);
+    topLayout->addWidget(deleteButton, 1, 2);
 
     // Create the draw button.
     drawButton = new QPushButton("Draw", this, "drawButton");
     drawButton->setEnabled(false);
     connect(drawButton, SIGNAL(clicked()), this, SLOT(drawPlots()));
-    topLayout->addWidget(drawButton, 0, 3);
+    topLayout->addWidget(drawButton, 1, 3);
 
     // Create the plot list box.
     plotListBox = new QvisPlotListBox(this, "plotListBox");
@@ -156,14 +179,14 @@ QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,
             this, SLOT(removeOperator(int)));
 
 
-    topLayout->addMultiCellWidget(plotListBox, 1, 1, 0, 3);
+    topLayout->addMultiCellWidget(plotListBox, 2, 2, 0, 3);
 
     // Create the "Apply operator to all plots" toggle.
     applyOperatorToggle = new QCheckBox("Apply operators and selection to all plots", this,
         "applyOperatorToggle");
     connect(applyOperatorToggle, SIGNAL(toggled(bool)),
             this, SLOT(applyOperatorToggled(bool)));
-    topLayout->addMultiCellWidget(applyOperatorToggle, 2, 2, 0, 3);
+    topLayout->addMultiCellWidget(applyOperatorToggle, 4, 4, 0, 3);
 
     // Create the plot and operator menus. Note that they will be empty until
     // they are populated by the main application.
@@ -183,24 +206,68 @@ QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,
 //   Brad Whitlock, Fri Feb 1 15:25:07 PST 2002
 //   Added exprList, pluginAtts to prevent a memory error.
 //
+//   Brad Whitlock, Thu Jan 29 21:40:31 PST 2004
+//   Added windowInfo.
+//
 // ****************************************************************************
 
 QvisPlotManagerWidget::~QvisPlotManagerWidget()
 {
     if(plotList)
-       plotList->Detach(this);
+        plotList->Detach(this);
 
     if(fileServer)
-       fileServer->Detach(this);
+        fileServer->Detach(this);
 
     if(globalAtts)
-       globalAtts->Detach(this);
+        globalAtts->Detach(this);
 
     if(exprList)
-       exprList->Detach(this);
+        exprList->Detach(this);
 
     if(pluginAtts)
-       pluginAtts->Detach(this);
+        pluginAtts->Detach(this);
+
+    if(windowInfo)
+        windowInfo->Detach(this);
+}
+
+// ****************************************************************************
+// Method: QvisPlotManagerWidget::SetSourceVisible
+//
+// Purpose: 
+//   Sets whether of not the source combo box is visible.
+//
+// Arguments:
+//   val : True to make the source visible; false to hide it.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jan 29 21:49:12 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisPlotManagerWidget::SetSourceVisible(bool val)
+{
+    if(sourceVisible != val)
+    {
+        sourceVisible = val;
+
+        if(sourceVisible)
+        {
+            sourceLabel->show();
+            sourceComboBox->show();
+        }
+        else
+        { 
+            sourceLabel->hide();
+            sourceComboBox->hide();
+        }
+
+        updateGeometry();
+    }
 }
 
 // ****************************************************************************
@@ -390,13 +457,19 @@ QvisPlotManagerWidget::CreateMenus(QMenuBar *menuBar)
 //   I moved the code that sets the enabled state for the Hide, Delete,
 //   and Draw buttons to UpdateHideDeleteDrawButtonsEnabledState.
 //
+//   Brad Whitlock, Thu Jan 29 21:45:34 PST 2004
+//   I added code to update the source list.
+//
 // ****************************************************************************
 
 void
 QvisPlotManagerWidget::Update(Subject *TheChangedSubject)
 {
-    if(plotList == 0 || fileServer == 0 || globalAtts == 0 || pluginAtts == 0)
+    if(plotList == 0 || fileServer == 0 || globalAtts == 0 ||
+       pluginAtts == 0 || windowInfo == 0)
+    {
         return;
+    }
 
     // Get whether or not we are allowed to modify things.
     bool canChange = !globalAtts->GetExecuting();
@@ -472,6 +545,7 @@ QvisPlotManagerWidget::Update(Subject *TheChangedSubject)
             }
 
             UpdatePlotVariableMenu();
+            UpdateSourceList(false);
         }
     }
     else if(TheChangedSubject == exprList)
@@ -482,6 +556,10 @@ QvisPlotManagerWidget::Update(Subject *TheChangedSubject)
     }
     else if(TheChangedSubject == globalAtts)
     {
+        // Update the source list.
+        if(globalAtts->IsSelected(0))
+            UpdateSourceList(false);
+
         // Set the "Apply operator toggle."
         applyOperatorToggle->blockSignals(true);
         applyOperatorToggle->setChecked(globalAtts->GetApplyOperator());
@@ -501,6 +579,18 @@ QvisPlotManagerWidget::Update(Subject *TheChangedSubject)
         this->updatePlotVariableMenuEnabledState = true;
         this->updateOperatorMenuEnabledState = true;
         this->updateVariableMenuEnabledState = true;
+    }
+    else if(TheChangedSubject == windowInfo)
+    {
+        // Update the source list when the active source changes.
+        if(windowInfo->IsSelected(0))
+        {
+            UpdateSourceList(true);
+
+            // If the active source changed then the variable list needs
+            // to change.
+            UpdatePlotVariableMenu();
+        }
     }
     else if(TheChangedSubject == pluginAtts)
     {
@@ -615,6 +705,75 @@ QvisPlotManagerWidget::UpdatePlotList()
     UpdateHideDeleteDrawButtonsEnabledState();
 
     blockSignals(false);
+}
+
+// ****************************************************************************
+// Method: QvisPlotManagerWidget::UpdateSourceList
+//
+// Purpose: 
+//   Updates the source list.
+//
+// Arguments:
+//   updateActiveSourceOnly : Tells the method to only update the active
+//                            source and not the list of sources.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jan 29 21:58:49 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisPlotManagerWidget::UpdateSourceList(bool updateActiveSourceOnly)
+{
+    const stringVector &sources = globalAtts->GetSources();
+    const std::string &activeSource = windowInfo->GetActiveSource();
+
+    // See if the active source is in the list.
+    int i, sourceIndex = -1;
+    for(i = 0; i < sources.size(); ++i)
+    {
+        if(activeSource == sources[i])
+        {
+            sourceIndex = i;
+            break;
+        }
+    }
+
+    sourceComboBox->blockSignals(true);
+
+    //
+    // Populate the menu if we were not told to only update the active source.
+    //
+    if(!updateActiveSourceOnly)
+    {
+        //
+        // Simplify the current source names and put the short names into
+        // the source combo box.
+        //
+        NameSimplifier simplifier;
+        for(i = 0; i < sources.size(); ++i)
+            simplifier.AddName(sources[i]);
+        stringVector shortSources;
+        simplifier.GetSimplifiedNames(shortSources);
+        sourceComboBox->clear();
+        for(i = 0; i < shortSources.size(); ++i)
+            sourceComboBox->insertItem(shortSources[i].c_str());
+    }
+
+    //
+    // Set the current item.
+    //
+    if(sourceIndex != -1 && sourceIndex != sourceComboBox->currentItem())
+        sourceComboBox->setCurrentItem(sourceIndex);
+
+    sourceComboBox->blockSignals(false);
+
+    // Set the enabled state on the source combo box.
+    bool enabled = (sources.size() > 1);
+    sourceLabel->setEnabled(enabled);
+    sourceComboBox->setEnabled(enabled);
 }
 
 // ****************************************************************************
@@ -1184,6 +1343,9 @@ QvisPlotManagerWidget::UpdateVariableMenu()
 //   Brad Whitlock, Thu May 9 16:47:36 PST 2002
 //   Removed fileServer since it is now a static member of the base class.
 //
+//   Brad Whitlock, Fri Jan 30 00:36:54 PDT 2004
+//   Added windowInfo.
+//
 // ****************************************************************************
 
 void
@@ -1197,6 +1359,8 @@ QvisPlotManagerWidget::SubjectRemoved(Subject *TheRemovedSubject)
         pluginAtts = 0;
     else if(TheRemovedSubject == exprList)
         exprList = 0;
+    else if(TheRemovedSubject == windowInfo)
+        windowInfo = 0;
 }
 
 //
@@ -1235,6 +1399,13 @@ QvisPlotManagerWidget::ConnectPluginManagerAttributes(PluginManagerAttributes *p
 {
     pluginAtts = pa;
     pluginAtts->Attach(this);
+}
+
+void
+QvisPlotManagerWidget::ConnectWindowInformation(WindowInformation *wi)
+{
+    windowInfo = wi;
+    windowInfo->Attach(this);
 }
 
 // ****************************************************************************
@@ -1667,4 +1838,26 @@ QvisPlotManagerWidget::applyOperatorToggled(bool val)
     globalAtts->SetApplyOperator(val);
     SetUpdate(false);
     globalAtts->Notify();
+}
+
+// ****************************************************************************
+// Method: QvisPlotManagerWidget::sourceChanged
+//
+// Purpose: 
+//   This is a Qt slot function that tells the viewer to activate a source
+//   that is already open.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jan 29 22:02:49 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisPlotManagerWidget::sourceChanged(int index)
+{
+    const stringVector &sources = globalAtts->GetSources();
+    if(index >= 0 && index < sources.size())
+        viewer->ActivateDatabase(sources[index]);
 }

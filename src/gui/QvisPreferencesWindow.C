@@ -23,7 +23,10 @@
 // Modifications:
 //   Brad Whitlock, Mon Oct 13 16:54:32 PST 2003
 //   Added tsFormat and made the window stretch.
-//   
+//
+//   Brad Whitlock, Fri Jan 30 14:16:18 PST 2004
+//   Added showSelFiles.
+//
 // ****************************************************************************
 
 QvisPreferencesWindow::QvisPreferencesWindow(
@@ -37,6 +40,8 @@ QvisPreferencesWindow::QvisPreferencesWindow(
 {
     atts = subj;
     timeStateDisplayMode = 0;
+    showSelFiles = true;
+    selectedFilesToggle = 0;
 }
 
 
@@ -77,6 +82,9 @@ QvisPreferencesWindow::~QvisPreferencesWindow()
 //   Brad Whitlock, Mon Oct 13 16:54:32 PST 2003
 //   Added radio buttons for changing the timestate display mode.
 //
+//   Brad Whitlock, Fri Jan 30 14:16:40 PST 2004
+//   I added a toggle button for showing the selected files.
+//
 // ****************************************************************************
 
 void
@@ -95,6 +103,13 @@ QvisPreferencesWindow::CreateWindowContents()
     connect(postWindowsWhenShownToggle, SIGNAL(toggled(bool)),
             this, SLOT(postWindowsWhenShownToggled(bool)));
     topLayout->addWidget(postWindowsWhenShownToggle);
+
+    selectedFilesToggle = new QCheckBox("Show selected files", central,
+        "selectedFilesToggle");
+    selectedFilesToggle->setChecked(showSelFiles);
+    connect(selectedFilesToggle, SIGNAL(toggled(bool)),
+            this, SLOT(selectedFilesToggled(bool)));
+    topLayout->addWidget(selectedFilesToggle);
 
     //
     // Create group box for time controls.
@@ -156,12 +171,15 @@ QvisPreferencesWindow::CreateWindowContents()
 //   Brad Whitlock, Fri Sep 5 15:46:50 PST 2003
 //   I added a toggle button for posting windows when they are shown.
 //
+//   Brad Whitlock, Fri Jan 30 14:19:11 PST 2004
+//   I added a toggle for showing the selected files.
+//
 // ****************************************************************************
 
 void
 QvisPreferencesWindow::UpdateWindow(bool doAll)
 {
-    if (doAll || atts->IsSelected(18))
+    if (doAll || atts->IsSelected(10))
     {
         //
         // Clone window on first reference
@@ -177,6 +195,10 @@ QvisPreferencesWindow::UpdateWindow(bool doAll)
         postWindowsWhenShownToggle->blockSignals(true);
         postWindowsWhenShownToggle->setChecked(postWhenShown);
         postWindowsWhenShownToggle->blockSignals(false);
+
+        selectedFilesToggle->blockSignals(true);
+        selectedFilesToggle->setChecked(showSelFiles);
+        selectedFilesToggle->blockSignals(false);
     }
 }
 
@@ -209,6 +231,32 @@ QvisPreferencesWindow::SetTimeStateFormat(const TimeFormat &fmt)
         timeStateNDigits->blockSignals(true);
         timeStateNDigits->setValue(tsFormat.GetPrecision());
         timeStateNDigits->blockSignals(false);
+    }
+}
+
+// ****************************************************************************
+// Method: QvisPreferencesWindow::SetShowSelectedFiles
+//
+// Purpose: 
+//   This method sets the toggle for the selected files.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jan 30 14:40:03 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisPreferencesWindow::SetShowSelectedFiles(bool val)
+{
+    showSelFiles = val;
+
+    if(selectedFilesToggle != 0)
+    {
+        selectedFilesToggle->blockSignals(true);
+        selectedFilesToggle->setChecked(showSelFiles);
+        selectedFilesToggle->blockSignals(false);
     }
 }
 
@@ -336,4 +384,28 @@ QvisPreferencesWindow::timeStateNDigitsChanged(int val)
 {
     tsFormat.SetPrecision(val);
     emit changeTimeFormat(tsFormat);
+}
+
+// ****************************************************************************
+// Method: QvisPreferencesWindow::selectedFilesToggled
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the selectedFilesToggle
+//   is clicked.
+//
+// Arguments:
+//   val : Whether the selected files should show.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jan 30 14:28:44 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisPreferencesWindow::selectedFilesToggled(bool val)
+{
+    showSelFiles = val;
+    emit showSelectedFiles(val);
 }

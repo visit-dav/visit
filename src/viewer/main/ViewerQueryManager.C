@@ -14,6 +14,8 @@
 #include <avtDatabaseMetaData.h>
 #include <avtToolInterface.h>
 #include <avtTypes.h>
+#include <DatabaseCorrelation.h>
+#include <DatabaseCorrelationList.h>
 #include <DataNode.h>
 #include <DebugStream.h>
 #include <InvalidVariableException.h>
@@ -27,7 +29,6 @@
 #include <QueryAttributes.h>
 #include <QueryList.h>
 #include <ViewerActionManager.h>
-#include <ViewerAnimation.h>
 #include <ViewerEngineManager.h>
 #include <ParsingExprList.h>
 #include <ViewerFileServer.h>
@@ -42,7 +43,11 @@
 #include <GlobalLineoutAttributes.h>
 #include <VisItException.h>
 
-
+// File wide modifications:
+//   Brad Whitlock, Tue Jan 27 16:41:32 PST 2004
+//   I removed all instances of ViewerAnimation.
+//
+// ****************************************************************************
 
 #define QUERY_MESH_VAR              0x0001
 #define QUERY_SCALAR_VAR            0x0002
@@ -303,20 +308,23 @@ ViewerQueryManager::SetOperatorFactory(ViewerOperatorFactory *factory)
 //    Hank Childs, Thu Oct  2 14:22:16 PDT 2003
 //    Account for multiple active plots.
 //
+//    Brad Whitlock, Fri Mar 26 08:42:11 PDT 2004
+//    I made it use strings.
+//
 // ****************************************************************************
 
 void
 ViewerQueryManager::AddQuery(ViewerWindow *origWin, Line *lineAtts,
                              const bool fromDefault)
 {
-    std::vector<int> plotIDs;
-    origWin->GetAnimation()->GetPlotList()->GetActivePlotIDs(plotIDs);
+    intVector plotIDs;
+    origWin->GetPlotList()->GetActivePlotIDs(plotIDs);
     //
     // Is there an active non-hidden plot in the originating window? 
     //
     if (plotIDs.size() == 0)
     {
-        string msg("Lineout requires an active non-hidden Plot.\n");
+        string msg("Lineout requires an active non-hidden plot.\n");
         msg += "Please select a plot and try again.\n";
         Error(msg.c_str());
         return;
@@ -327,19 +335,17 @@ ViewerQueryManager::AddQuery(ViewerWindow *origWin, Line *lineAtts,
     //
     // Is there a valid variable? 
     //
-    ViewerPlot *oplot = origWin->GetAnimation()->GetPlotList()->GetPlot(plotId); 
-    const char *hname = oplot->GetHostName();
-    const char *dname = oplot->GetDatabaseName();
-    const char *vname = lineAtts->GetVarName().c_str();
-    if (strcmp(vname, "default") == 0)
+    ViewerPlot *oplot = origWin->GetPlotList()->GetPlot(plotId); 
+    std::string vname(lineAtts->GetVarName());
+    if (vname == "default")
         vname = oplot->GetVariableName();
-    int varType = DetermineVarType(hname, dname, vname);
+    int varType = oplot->GetVarType(vname);
     if (varType != AVT_SCALAR_VAR &&
         varType != AVT_MATSPECIES) 
     {
         char message[100];
         SNPRINTF(message, 100, "Lineout requires scalar variable.  "
-                 "%s is not scalar.", vname);
+                 "%s is not scalar.", vname.c_str());
         Error(message);
         return;
     }
@@ -652,8 +658,8 @@ ViewerQueryManager::Delete(ViewerWindow *vw)
 void
 ViewerQueryManager::HandleTool(ViewerWindow *oWin, const avtToolInterface &ti)
 {
-    std::vector<int> plotIDs;
-    oWin->GetAnimation()->GetPlotList()->GetActivePlotIDs(plotIDs);
+    intVector plotIDs;
+    oWin->GetPlotList()->GetActivePlotIDs(plotIDs);
     if ((nLineouts == 0) || (plotIDs.size() == 0)) 
     {
         return;
@@ -661,7 +667,7 @@ ViewerQueryManager::HandleTool(ViewerWindow *oWin, const avtToolInterface &ti)
     // Use the first plot.
     int plotId = plotIDs[0];
     
-    ViewerPlot *oPlot = oWin->GetAnimation()->GetPlotList()->GetPlot(plotId);
+    ViewerPlot *oPlot = oWin->GetPlotList()->GetPlot(plotId);
     for (int i = 0; i < nLineouts; i++)
     {
         if (lineoutList[i]->MatchOriginatingPlot(oPlot))
@@ -704,8 +710,8 @@ ViewerQueryManager::InitializeTool(ViewerWindow *oWin, avtToolInterface &ti)
         return false;
     }
 
-    std::vector<int> plotIDs;
-    oWin->GetAnimation()->GetPlotList()->GetActivePlotIDs(plotIDs);
+    intVector plotIDs;
+    oWin->GetPlotList()->GetActivePlotIDs(plotIDs);
     if ((nLineouts == 0) || (plotIDs.size() == 0))
     {
         return false;
@@ -714,7 +720,7 @@ ViewerQueryManager::InitializeTool(ViewerWindow *oWin, avtToolInterface &ti)
     int plotId = plotIDs[0];
 
     bool retval = false;
-    ViewerPlot *oPlot = oWin->GetAnimation()->GetPlotList()->GetPlot(plotId);
+    ViewerPlot *oPlot = oWin->GetPlotList()->GetPlot(plotId);
     for (int i = 0; i < nLineouts; i++)
     {
         if (lineoutList[i]->MatchOriginatingPlot(oPlot)) 
@@ -839,6 +845,9 @@ ViewerQueryManager::GetQueryClientAtts()
 //    Kathleen Bonnell, Fri Mar  5 15:48:44 PST 2004 
 //    Only DetermineVarTypes if necessary, and added more TRY-CATCH blocks. 
 // 
+//    Brad Whitlock, Wed Mar 10 10:06:36 PDT 2004
+//    Changed to match other viewer changes related to plots and time.
+//
 //    Kathleen Bonnell, Tue Mar 23 15:31:32 PST 2004 
 //    Restructured try-catch block around actual query execution, to catch
 //    ImproperUseException which can occur if engine has been closed prior
@@ -848,7 +857,7 @@ ViewerQueryManager::GetQueryClientAtts()
 
 void         
 ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
-                            const vector<string> &vars, const int arg1,
+                            const stringVector &vars, const int arg1,
                             const int arg2)
 {
     queryClientAtts->SetResultsMessage("");
@@ -873,21 +882,23 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
         Error(msg.c_str());
         return;
     }
-    std::vector<int> plotIds;
-    int t;
-    const char *host = NULL;
-    const char *dbname = NULL;
-    ViewerPlotList *olist = NULL; 
+    ViewerFileServer *fs = ViewerFileServer::Instance();
+    ViewerPlotList *olist = oWin->GetPlotList();
+    std::string host, dbname;
+    intVector plotIds;
     stringVector uniqueVars; 
     stringVector tmp = vars;
     intVector varTypes;
+    //
+    // Note: This needs to be an intVector of states that correspond to
+    //       the uniqueVars.
+    //
+    int state = -1;
 
     TRY
     {
-        olist = oWin->GetAnimation()->GetPlotList();
         // Get a list of the active plots.
         olist->GetActivePlotIDs(plotIds);
-        t = oWin->GetAnimation()->GetFrameIndex();
 
         //
         // Make sure the number of active plots jives with the expected number
@@ -930,31 +941,103 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
             }
         }
 
+        //
+        // Determine the host, database, and list of variables that will be 
+        // used for the query.
+        //
+        // Note by Brad: I think this section of code right here will require
+        //               a rewrite to make sure that when we use a plot as
+        //               input, it takes the state of the plot into account
+        //               so we can query between more than 1 time state in
+        //               a database. Variables that are in unique var list
+        //               at this point should probably use the same plot state
+        //               as the first selected plot. If we're doing a query
+        //               that takes no plot inputs then we need to use the
+        //               state for the current time slider, etc.
+        //
+        //               The bottom line is that the variable used in the query
+        //               needs to have: (database, var, state) information to
+        //               really be considered unique. Without all of that
+        //               information, I don't see how the query can really
+        //               get the right answer.
+        //
         for (int i = 0 ; i < plotIds.size() ; i++)
         {
             int plotId = plotIds[i];
             ViewerPlot *oplot = olist->GetPlot(plotId);
-            if (host != NULL && (strcmp(host, oplot->GetHostName()) != 0))
+            if (host != "" && host != oplot->GetHostName())
             {
                 queryClientAtts->Notify();
-                string msg = "Multiple input queries require all their inputs ";
-                msg += "to be on the same host.\n";
-                Error(msg.c_str());
+                Error("Multiple input queries require all their inputs "
+                      "to be on the same host.\n");
+                return;
+            }
+            if(state != -1 && state != oplot->GetState())
+            {
+                queryClientAtts->Notify();
+                Error("For now, multiple input queries require all "
+                      "their inputs to have the same time state.\n");
                 return;
             }
             host = oplot->GetHostName();
             dbname = oplot->GetDatabaseName();
-            const char *activeVar = oplot->GetVariableName();
+            state = oplot->GetState();
+            const std::string &activeVar = oplot->GetVariableName();
             GetUniqueVars(tmp, activeVar, uniqueVars);
             tmp = uniqueVars;
         }
 
+        //
+        // If the state was not determined by the above code, then there
+        // were no plots as input to the query. In that case, use the
+        // state for the current time slider if its correlation uses
+        // the host + dbname. If it does not use the host + dbname then
+        // try the time slider for host + dbname. If that does not
+        // work then use zero.
+        //
+        if (state < 0)
+        {
+            if(olist->HasActiveTimeSlider())
+            {
+                DatabaseCorrelationList *cL = fs->GetDatabaseCorrelationList();
+                string tsName(olist->GetActiveTimeSlider());
+                string dbName(fs->ComposeDatabaseName(host, dbname));
+                DatabaseCorrelation *c = cL->FindCorrelation(tsName);
+                int nStates;
+                if(c != 0)
+                {
+                    // Get the state for the active time slider.
+                    olist->GetTimeSliderStates(tsName, state, nStates);
+
+                    // Does the correlation for the active time slider use
+                    // the query database?
+                    int cts = c->GetCorrelatedTimeState(dbName, state);
+                    if(cts >= 0)
+                        state = cts;
+                }
+
+                // If we didn't have a correlation that uses the query
+                // database, try using the time slider for the query
+                // database if there is one. If there is not one, then
+                // we'll use state 0.
+                if(state < 0)
+                    olist->GetTimeSliderStates(dbName, state, nStates);
+            }
+
+            state = (state < 0) ? 0 : state;
+        }
+
         if (queryTypes->AllowedVarsForQuery(qName) > 0)
         {
+            //
+            // Get the var type for the specified state. This code will have
+            // to be modified to potentially use a different state for each
+            // dbname/var pair.
+            //
             for (int j = 0; j < uniqueVars.size(); j++)
             {
                 varTypes.push_back((int)
-                    DetermineVarType(host, dbname, uniqueVars[j].c_str()));
+                    fs->DetermineVarType(host, dbname, uniqueVars[j], state));
             }
  
             int badVarType =  VerifyQueryVariables(qName, varTypes); 
@@ -976,17 +1059,17 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
             //
             int plotId = plotIds[0];
             ViewerPlot *oplot = olist->GetPlot(plotId);
-            int dim = oplot->GetSpatialDimension(t);
+            int dim = oplot->GetSpatialDimension();
             double *ext;
             string s;
             if (arg1 == 0) // We want original extents
             {
-                ext = oplot->GetSpatialExtents(t, AVT_ORIGINAL_EXTENTS);
+                ext = oplot->GetSpatialExtents(AVT_ORIGINAL_EXTENTS);
                 s = CreateExtentsString(ext, dim, "original");
             }
             else
             {
-                ext = oplot->GetSpatialExtents(t, AVT_ACTUAL_EXTENTS);
+                ext = oplot->GetSpatialExtents(AVT_ACTUAL_EXTENTS);
                 s = CreateExtentsString(ext, dim, "actual");
             }
 
@@ -1020,12 +1103,21 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
     do
     {
         retry = false;
-        std::vector<int> networkIds;
+        intVector networkIds;
         for (int i = 0 ; i < plotIds.size() ; i++)
         {
             int plotId = plotIds[i];
             ViewerPlot *oplot = olist->GetPlot(plotId);
             networkIds.push_back(oplot->GetNetworkID());
+            //
+            // Use the state for the first plot. This seems a little odd to
+            // me that we could be querying databases, that could be at
+            // different states, with a single state. Querying will probably
+            // need to be extended to pass a vector of plot states to
+            // make the query work for multiple plots.
+            //
+            if(state == -1)
+                state = oplot->GetState();
         }
 
         TRY
@@ -1045,13 +1137,13 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
                 qa.SetDataType(QueryAttributes::OriginalData); 
             qa.SetDomain(arg1);
             qa.SetElement(arg2);
-            qa.SetTimeStep(t);
+            qa.SetTimeStep(state);
             if (strcmp(qName.c_str(), "Variable by Zone") == 0)
                 qa.SetElementType(QueryAttributes::Zone);
             else if (strcmp(qName.c_str(), "Variable by Node") == 0)
                 qa.SetElementType(QueryAttributes::Node);
 
-            if (eM->Query(host, networkIds, &qa, qa))
+            if (eM->Query(host.c_str(), networkIds, &qa, qa))
             {
                 qa.SetVariables(vars);
                *queryClientAtts = qa;
@@ -1074,18 +1166,15 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
                 e.GetExceptionType() == "NoEngineException" ||
                 e.GetExceptionType() == "ImproperUseException" )
             {
+                //
                 // Queries access the cached network used by the queried plot.
                 // Simply relaunching the engine does not work, as no network
                 // is created. This situation requires re-execution of the 
                 // plot that is being queried.
-                int curFrame = oWin->GetAnimation()->GetFrameIndex();
+                //
                 for (int i = 0 ; i < plotIds.size() ; i++)
-                {
-                    int plotId = plotIds[i];
-                    ViewerPlot *oplot = olist->GetPlot(plotId);
-                    oplot->ClearActors(curFrame, curFrame);
-                }
-                oWin->GetAnimation()->UpdateFrame(); 
+                    olist->GetPlot(plotIds[i])->ClearCurrentActor();
+                oWin->GetPlotList()->UpdateFrame(); 
                 retry = true;
                 numAttempts++; 
             }
@@ -1160,7 +1249,7 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
 
 void         
 ViewerQueryManager::LineQuery(const char *qName, const double *pt1, 
-                    const double *pt2, const vector<string> &vars,
+                    const double *pt2, const stringVector &vars,
                     const int samples)
 {
     if (strcmp(qName, "Lineout") == 0)
@@ -1484,6 +1573,9 @@ ViewerQueryManager::ClearPickPoints()
 //    I renamed the routine to ComputePick, made it return a bool, and moved
 //    the code that adds the pick point to the window to the Pick method.
 //
+//    Brad Whitlock, Sat Jan 31 22:51:24 PST 2004
+//    I made it so we don't have to pass the frame to StartPick.
+//
 //    Kathleen Bonnell, Tue Mar 16 16:02:05 PST 2004 
 //    Determine VarTypes, and only pass along to Pick the valid ones.
 //    Set invalidVars in PickAtts so that user will get a message. 
@@ -1493,12 +1585,17 @@ ViewerQueryManager::ClearPickPoints()
 //    ImproperUseException which can occur if engine has been closed prior
 //    to initiation of pick.  
 //
+//    Brad Whitlock, Fri Mar 26 09:35:15 PDT 2004
+//    I made it use ViewerPlot::GetVarType because it knows the right time
+//    state for which to ask for metadata. Down here we don't know it as well.
+//
 // ****************************************************************************
 
 bool
 ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom, const int el)
 {
     bool retval = false;
+
 
     //
     //  Keep local copy, due to caching issues.
@@ -1514,9 +1611,8 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom, const int e
     {
         preparingPick = true;
         ViewerWindow *win = (ViewerWindow *)pd.callbackData;
-        ViewerPlotList *plist = win->GetAnimation()->GetPlotList();
-        int t = win->GetAnimation()->GetFrameIndex();
-        plist->StartPick(t);
+        ViewerPlotList *plist = win->GetPlotList();
+        plist->StartPick();
         initialPick = false;
         preparingPick = false;
     }
@@ -1532,8 +1628,8 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom, const int e
         string msg;
         ViewerWindow *win = (ViewerWindow *)pd.callbackData;
 
-        ViewerPlotList *plist = win->GetAnimation()->GetPlotList();
-        std::vector<int> plotIDs;
+        ViewerPlotList *plist = win->GetPlotList();
+        intVector plotIDs;
         plist->GetActivePlotIDs(plotIDs);
         //
         // Is there an active non-hidden plot in the originating window?
@@ -1548,19 +1644,18 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom, const int e
         // Use the first plot.
         int plotId = plotIDs[0];
         ViewerPlot *plot = plist->GetPlot(plotId);
-        const char *host = plot->GetHostName();
-        const char *db = plot->GetDatabaseName();
-        const char *activeVar = plot->GetVariableName();
+        const std::string &host = plot->GetHostName();
+        const std::string &db = plot->GetDatabaseName();
+        const std::string &activeVar = plot->GetVariableName();
         pickAtts->SetActiveVariable(activeVar);
-        int t = win->GetAnimation()->GetFrameIndex();
 
         //
         // Retrieve plot's actual extents. 
         //
-        double *dext = plot->GetSpatialExtents(t, AVT_ACTUAL_EXTENTS);
+        double *dext = plot->GetSpatialExtents(AVT_ACTUAL_EXTENTS);
         if (dext)
         {
-            int dim = plot->GetSpatialDimension(t);
+            int dim = plot->GetSpatialDimension();
             float pb[6] = { 0., 0., 0., 0., 0., 0.};
             for (int i = 0; i < 2*dim; i++)
             {
@@ -1573,21 +1668,21 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom, const int e
         //
         // Remove duplicate vars, so that query doesn't report them twice.
         //
-        vector<string> userVars = pickAtts->GetVariables();
-        vector<string> uniqueVars; 
+        stringVector userVars = pickAtts->GetVariables();
+        stringVector uniqueVars; 
         GetUniqueVars(userVars, activeVar, uniqueVars);
-        vector<string> validVars;
-        vector<string> invalidVars;
+        stringVector validVars;
+        stringVector invalidVars;
         for (int i = 0; i < uniqueVars.size(); i++)
         {
-            if (DetermineVarType(host, db, uniqueVars[i].c_str()) != AVT_UNKNOWN_TYPE)
+            if (plot->GetVarType(uniqueVars[i]) != AVT_UNKNOWN_TYPE)
                 validVars.push_back(uniqueVars[i]);
             else 
                 invalidVars.push_back(uniqueVars[i]);
         }
         pickAtts->SetVariables(validVars);
         pickAtts->SetPickLetter(designator);
-        pickAtts->SetTimeStep(t);
+        pickAtts->SetTimeStep(plot->GetState());
         pickAtts->SetDatabaseName(db);
         if (win->GetWindowMode() == WINMODE_CURVE)
         {
@@ -1661,7 +1756,7 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom, const int e
             TRY
             {
                 PickAttributes pa = *pickAtts;
-                ViewerEngineManager::Instance()->Pick(host, networkId, 
+                ViewerEngineManager::Instance()->Pick(host.c_str(), networkId, 
                      &pa, pa);
                 if (pa.GetFulfilled())
                 {
@@ -1702,8 +1797,8 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom, const int e
                     // plot.  Simply relaunching the engine does not work, 
                     // as no network is created. This situation requires 
                     // re-execution of the plot that is being queried.
-                    plot->ClearActors(t, t);
-                    win->GetAnimation()->UpdateFrame(); 
+                    plot->ClearCurrentActor();
+                    win->GetPlotList()->UpdateFrame(); 
                     retry = true;
                     numAttempts++; 
                 }
@@ -2163,71 +2258,6 @@ ViewerQueryManager::SetGlobalLineoutAttsFromClient()
 
 
 // ****************************************************************************
-//  Method:  ViewerQueryManager::DetermineVarType
-//
-//  Purpose:
-//    Returns the type of the passed variable.
-//  
-//  Arguments:
-//    hName     The host name where the variable can be found.
-//    dbName    The database where the variable can be found.
-//    varName   The variable name.
-//
-//  Returns:
-//    The type of the variable.
-//
-//  Progammer:  Kathleen S. Bonnell
-//  Creation:   March 14, 2003
-//
-//  Modifications:
-//      Sean Ahern, Mon Mar 17 22:30:07 America/Los_Angeles 2003
-//      Changed to the new expression interface.
-// 
-//      Kathleen Bonnell, Tue Mar 16 16:02:05 PST 2004 
-//      Added TRY-CATCH.
-// 
-// ****************************************************************************
-
-avtVarType
-ViewerQueryManager::DetermineVarType(const char *hName, const char *dbName, const char *varName)
-{
-    avtVarType retval = AVT_UNKNOWN_TYPE;
-
-    // Check if the variable is an expression.
-    Expression *exp = ParsingExprList::GetExpression(varName);
-    if (exp != NULL)
-    {
-        // Get the expression type.
-        retval = ParsingExprList::GetAVTType(exp->GetType());
-    }
-    else
-    {
-        ViewerFileServer *s = ViewerFileServer::Instance();
-        avtDatabaseMetaData *md =
-        (avtDatabaseMetaData *) s->GetMetaData(string(hName),
-                                               string(dbName));
-        if (md != 0)
-        {
-            TRY
-            {
-                // 
-                // Get the type for the variable.
-                // 
-                retval = md->DetermineVarType(string(varName));
-            }
-            CATCH2(InvalidVariableException, e)
-            {
-                debug5 << e.Message().c_str() << endl;
-            }
-            ENDTRY
-        }
-    }
-
-    return retval;
-}
-
-
-// ****************************************************************************
 //  Method:  ViewerQueryManager::StartPickMode
 //
 //  Purpose:
@@ -2338,7 +2368,7 @@ ViewerQueryManager::HandlePickCache()
 
 void         
 ViewerQueryManager::PointQuery(const string &qName, const double *pt, 
-                    const vector<string> &vars, const int arg1, const int arg2)
+                    const stringVector &vars, const int arg1, const int arg2)
 {
     if ((strcmp(qName.c_str(), "ZonePick") == 0) ||
         (strcmp(qName.c_str(), "Pick") == 0))
@@ -2598,7 +2628,7 @@ GetUniqueVars(const stringVector &vars, const string &activeVar,
     for (int i = 0; i < vars.size(); i++)
     {
         string v = vars[i];
-        if (strcmp(v.c_str(), "default") == 0)
+        if (v == "default")
         {
             v = activeVar;
         }
@@ -2718,7 +2748,7 @@ ViewerQueryManager::InitializeQueryList()
 
 int
 ViewerQueryManager::VerifyQueryVariables(const std::string &qName, 
-     const std::vector<int> &varTypes)
+     const intVector &varTypes)
 {
     int i, badIndex = -1;
     int allowedTypes = queryTypes->AllowedVarsForQuery(qName);

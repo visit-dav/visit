@@ -14,8 +14,13 @@
 
 #include <visit-config.h>
 
+// for off-screen save window
+#include <InitVTK.h>
+
 #include <AnimationAttributes.h>
 #include <AnnotationObjectList.h>
+#include <DatabaseCorrelation.h>
+#include <DatabaseCorrelationList.h>
 #include <DataNode.h>
 #include <GlobalAttributes.h>
 #include <KeyframeAttributes.h>
@@ -30,9 +35,9 @@
 #include <WindowInformation.h>
 #include <ViewerActionManager.h>
 #include <ViewerEngineManager.h>
+#include <ViewerFileServer.h>
 #include <ViewerWindow.h>
 #include <ViewerWindowManagerAttributes.h>
-#include <ViewerAnimation.h>
 #include <ViewerMessaging.h>
 #include <ViewerPlotList.h>
 #include <ViewerPlot.h>
@@ -58,10 +63,12 @@
 #include <vtkQtImagePrinter.h>
 
 #include <qtimer.h>
+#include <qmessagebox.h>
 #include <qprinter.h>
 #include <DebugStream.h>
 #include <ViewerOperatorFactory.h>
 
+#include <algorithm>
 using std::string;
 
 //
@@ -466,6 +473,9 @@ ViewerWindowManager::SetGeometry(const char *windowGeometry)
 //    Brad Whitlock, Fri Nov 7 10:03:35 PDT 2003
 //    I added code to copy the annotation object list.
 //
+//    Brad Whitlock, Tue Jan 27 17:26:46 PST 2004
+//    I changed the copy code a little bit.
+//
 // ****************************************************************************
 
 void
@@ -489,12 +499,14 @@ ViewerWindowManager::AddWindow(bool copyAtts)
     if ((copyAtts || clientAtts->GetCloneWindowOnFirstRef()) &&
         (windowIndex != activeWindow))
     {
-        windows[windowIndex]->CopyGeneralAttributes(windows[activeWindow]);
-        windows[windowIndex]->CopyAnnotationAttributes(windows[activeWindow]);
-        windows[windowIndex]->CopyAnnotationObjectList(windows[activeWindow]);
-        windows[windowIndex]->CopyLightList(windows[activeWindow]);
-        windows[windowIndex]->CopyViewAttributes(windows[activeWindow]);
-        windows[windowIndex]->CopyAnimation(windows[activeWindow]);
+        ViewerWindow *dest = windows[windowIndex];
+        ViewerWindow *src = windows[activeWindow];
+        dest->CopyGeneralAttributes(src);
+        dest->CopyAnnotationAttributes(src);
+        dest->CopyAnnotationObjectList(src);
+        dest->CopyLightList(src);
+        dest->CopyViewAttributes(src);
+        dest->GetPlotList()->CopyFrom(src->GetPlotList());
     }
     referenced[windowIndex] = true;
 
@@ -546,8 +558,6 @@ ViewerWindowManager::CloneWindow()
 //  Creation:   October 4, 2000
 //
 //  Modifications:
-//     Brad Whitlock, Tue Nov 7 09:47:31 PDT 2000
-//     Changed to reflect that ViewerAnimation is now in ViewerWindow.
 //
 // ****************************************************************************
 
@@ -702,7 +712,7 @@ ViewerWindowManager::CopyViewToWindow(int from, int to)
 }
 
 // ****************************************************************************
-// Method: ViewerWindowManager::CopyAnimationToWindow
+// Method: ViewerWindowManager::CopyPlotListToWindow
 //
 // Purpose: 
 //   Copies the plots from one window to another window.
@@ -719,7 +729,7 @@ ViewerWindowManager::CopyViewToWindow(int from, int to)
 // ****************************************************************************
 
 void
-ViewerWindowManager::CopyAnimationToWindow(int from, int to)
+ViewerWindowManager::CopyPlotListToWindow(int from, int to)
 {
     if(from < 0 || from >= maxWindows)
         return;
@@ -729,7 +739,7 @@ ViewerWindowManager::CopyAnimationToWindow(int from, int to)
     // If the Window pointers are valid then perform the operation.
     if(windows[from] != 0 && windows[to] != 0)
     {
-        windows[to]->CopyAnimation(windows[from]);
+        windows[to]->GetPlotList()->CopyFrom(windows[from]->GetPlotList());
     }
 }
 
@@ -889,7 +899,6 @@ ViewerWindowManager::DeleteWindow(ViewerWindow *win)
     UpdateAllAtts();
 }
 
-
 // ****************************************************************************
 // Method: ViewerWindowManager::DisableRedraw
 //
@@ -927,17 +936,20 @@ ViewerWindowManager::DisableRedraw(int windowIndex)
 // Creation:   Fri Feb 8 10:32:14 PDT 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Mar 26 14:42:50 PST 2004
+//   I made it use strings.
+//
 // ****************************************************************************
 
 bool
-ViewerWindowManager::FileInUse(const char *host, const char *dbName) const
+ViewerWindowManager::FileInUse(const std::string &host,
+    const std::string &dbName) const
 {
     for(int i = 0; i < maxWindows; ++i)
     {
         if(windows[i] != 0)
         {
-            if(windows[i]->GetAnimation()->GetPlotList()->FileInUse(host, dbName))
+            if(windows[i]->GetPlotList()->FileInUse(host, dbName))
                 return true;
         } 
     }
@@ -1281,7 +1293,7 @@ ViewerWindowManager::ChooseCenterOfRotation(int windowIndex,
 //  Method: ViewerWindowManager::SaveWindow
 //
 //  Purpose: 
-//    Saves the window with the specified index.
+//    Saves the screen captured contents of the window with the specified index
 //
 //  Arguments:
 //    windowIndex A zero-origin integer that identifies the window
@@ -1333,6 +1345,10 @@ ViewerWindowManager::ChooseCenterOfRotation(int windowIndex,
 //
 //    Hank Childs, Tue Dec 16 10:58:20 PST 2003
 //    Take more care in creating filenames for stereo images in subdirectories.
+//
+//    Mark C. Miller, Mon Mar 29 20:25:49 PST 2004
+//    Changed 'Saving...' status message to indicate that its rendering.
+//    Added new status message for saving the image to disk
 //
 // ****************************************************************************
 
@@ -1442,13 +1458,14 @@ ViewerWindowManager::SaveWindow(int windowIndex)
     }
 
     //
-    // Send a status message about starting to save the image and make the
+    // Send a status message about starting to render the image and make the
     // status message display for 10 minutes.
     //
     char message[1000];
-    SNPRINTF(message, 1000, "Saving window %d...",
+    SNPRINTF(message, sizeof(message), "Rendering window %d...",
             (windowIndex == -1) ? (activeWindow + 1) : (windowIndex + 1));
     Status(message, 6000000);
+    Message(message);
 
     avtDataObject_p dob = NULL;
     avtDataObject_p dob2 = NULL;
@@ -1497,6 +1514,15 @@ ViewerWindowManager::SaveWindow(int windowIndex)
             ds->Compact();
         CopyTo(dob, ds);
     }
+
+    //
+    // Send a status message about starting to save the image to disk
+    // and make the status message display for 10 minutes.
+    //
+    SNPRINTF(message, sizeof(message), "Saving window %d...",
+            (windowIndex == -1) ? (activeWindow + 1) : (windowIndex + 1));
+    Status(message, 6000000);    
+    Message(message);
 
     // Save the window.
     bool savedWindow = true;
@@ -1580,11 +1606,15 @@ ViewerWindowManager::SaveWindow(int windowIndex)
 //    Hank Childs, Wed Oct 15 10:30:33 PDT 2003
 //    Added stereo support.
 //
+//    Mark C. Miller, Mon Mar 29 14:05:23 PST 2004
+//    Enabled non-screen-capture based mode as well as width and height
+//    arguments
+//
 // ****************************************************************************
 
 avtImage_p
 ViewerWindowManager::CreateSingleImage(int windowIndex,
-    int /*width*/, int /*height*/, bool /*screenCapture*/, bool leftEye)
+    int width, int height, bool screenCapture, bool leftEye)
 {
     int        index = (windowIndex == -1) ? activeWindow : windowIndex;
     avtImage_p retval = NULL;
@@ -1595,18 +1625,16 @@ ViewerWindowManager::CreateSingleImage(int windowIndex,
         {
             windows[index]->ConvertFromLeftEyeToRightEye();
         }
-#if 0
+
         if(screenCapture)
             retval = windows[index]->ScreenCapture();
         else
         {
-            debug1 << "Doing offscreen rendering of window " << index
-                   << "..." << endl;
+            avtDataObject_p extImage;
+            windows[index]->ExternalRenderManual(extImage, width, height);
+            CopyTo(retval, extImage);
         }
-#else
-        // Just do screen capture since that is all we can do right now.
-        retval = windows[index]->ScreenCapture();
-#endif
+
         if (!leftEye)
         {
             windows[index]->ConvertFromRightEyeToLeftEye();
@@ -1826,7 +1854,7 @@ ViewerWindowManager::SetInteractionMode(INTERACTION_MODE m,
     if(windows[index] != 0)
     {
         windows[index]->SetInteractionMode(m);
-        UpdateWindowInformation(index);
+        UpdateWindowInformation(WINDOWINFO_WINDOWFLAGS, index);
     }
 }
 
@@ -2013,6 +2041,8 @@ ViewerWindowManager::SetView3DFromClient()
 //  Creation:   January 6, 2003
 //
 //  Modifications:
+//    Brad Whitlock, Fri Jan 23 15:38:17 PST 2004
+//    Moved update code into a method.
 //
 // ****************************************************************************
 
@@ -2020,22 +2050,7 @@ void
 ViewerWindowManager::ClearViewKeyframes()
 { 
     windows[activeWindow]->ClearViewKeyframes();
-
-    //
-    // Update the view keyframe list.
-    //
-    int i;
-    int nIndices;
-    const int *keyframeIndices = windows[activeWindow]->
-                           GetViewKeyframeIndices(nIndices);
-    vector<int> keyframeIndices2;
-    for (i = 0; i < nIndices; i++)
-    {
-        keyframeIndices2.push_back(keyframeIndices[i]);
-    }
-    clientAtts->SetViewKeyframes(keyframeIndices2);
-
-    clientAtts->Notify();
+    UpdateViewKeyframeInformation();
 }
 
 // ****************************************************************************
@@ -2051,6 +2066,8 @@ ViewerWindowManager::ClearViewKeyframes()
 //  Creation:   January 6, 2003
 //
 //  Modifications:
+//    Brad Whitlock, Fri Jan 23 15:38:17 PST 2004
+//    Moved update code into a method.
 //
 // ****************************************************************************
 
@@ -2058,22 +2075,7 @@ void
 ViewerWindowManager::DeleteViewKeyframe(const int frame)
 { 
     windows[activeWindow]->DeleteViewKeyframe(frame);
-
-    //
-    // Update the view keyframe list.
-    //
-    int i;
-    int nIndices;
-    const int *keyframeIndices = windows[activeWindow]->
-                           GetViewKeyframeIndices(nIndices);
-    vector<int> keyframeIndices2;
-    for (i = 0; i < nIndices; i++)
-    {
-        keyframeIndices2.push_back(keyframeIndices[i]);
-    }
-    clientAtts->SetViewKeyframes(keyframeIndices2);
-
-    clientAtts->Notify();
+    UpdateViewKeyframeInformation();
 }
 
 // ****************************************************************************
@@ -2090,6 +2092,8 @@ ViewerWindowManager::DeleteViewKeyframe(const int frame)
 //  Creation:   January 29, 2003
 //
 //  Modifications:
+//    Brad Whitlock, Fri Jan 23 15:38:17 PST 2004
+//    Moved update code into a method.
 //
 // ****************************************************************************
 
@@ -2097,22 +2101,7 @@ void
 ViewerWindowManager::MoveViewKeyframe(int oldFrame, int newFrame)
 { 
     windows[activeWindow]->MoveViewKeyframe(oldFrame, newFrame);
-
-    //
-    // Update the view keyframe list.
-    //
-    int i;
-    int nIndices;
-    const int *keyframeIndices = windows[activeWindow]->
-                           GetViewKeyframeIndices(nIndices);
-    vector<int> keyframeIndices2;
-    for (i = 0; i < nIndices; i++)
-    {
-        keyframeIndices2.push_back(keyframeIndices[i]);
-    }
-    clientAtts->SetViewKeyframes(keyframeIndices2);
-
-    clientAtts->Notify();
+    UpdateViewKeyframeInformation();
 }
 
 // ****************************************************************************
@@ -2125,6 +2114,8 @@ ViewerWindowManager::MoveViewKeyframe(int oldFrame, int newFrame)
 //  Creation:   January 6, 2003
 //
 //  Modifications:
+//    Brad Whitlock, Fri Jan 23 15:38:17 PST 2004
+//    Moved update code into a method.
 //
 // ****************************************************************************
 
@@ -2132,22 +2123,7 @@ void
 ViewerWindowManager::SetViewKeyframe()
 { 
     windows[activeWindow]->SetViewKeyframe();
-
-    //
-    // Update the view keyframe list.
-    //
-    int i;
-    int nIndices;
-    const int *keyframeIndices = windows[activeWindow]->
-                           GetViewKeyframeIndices(nIndices);
-    vector<int> keyframeIndices2;
-    for (i = 0; i < nIndices; i++)
-    {
-        keyframeIndices2.push_back(keyframeIndices[i]);
-    }
-    clientAtts->SetViewKeyframes(keyframeIndices2);
-
-    clientAtts->Notify();
+    UpdateViewKeyframeInformation();
 }
 
 // ****************************************************************************
@@ -2174,6 +2150,9 @@ ViewerWindowManager::SetViewKeyframe()
 //   Eric Brugger, Fri Apr 18 12:38:05 PDT 2003 
 //   I replaced auto center mode with maintain view mode.
 //
+//   Brad Whitlock, Tue Feb 3 16:03:19 PST 2004
+//   I made it use window information.
+//
 // ****************************************************************************
 
 void
@@ -2190,7 +2169,7 @@ ViewerWindowManager::SetViewExtentsType(avtExtentType viewType,
         if(!windows[index]->GetMaintainViewMode())
             RecenterView(index);
         
-        UpdateWindowInformation(index);
+        UpdateWindowInformation(WINDOWINFO_WINDOWFLAGS, index);
     }
 }
 
@@ -2225,6 +2204,9 @@ ViewerWindowManager::SetViewExtentsType(avtExtentType viewType,
 //
 //   Jeremy Meredith, Fri Nov 14 12:23:19 PST 2003
 //   Added specular properties.
+//
+//   Brad Whitlock, Tue Feb 3 16:03:47 PST 2004
+//   I made it use window information.
 //
 // ****************************************************************************
 
@@ -2284,7 +2266,7 @@ ViewerWindowManager::SetRenderingAttributes(int windowIndex)
         }
 
         UpdateRenderingAtts(index);
-        UpdateWindowInformation(index);
+        UpdateWindowInformation(WINDOWINFO_WINDOWFLAGS, index);
     }
 }
 
@@ -2319,7 +2301,7 @@ ViewerWindowManager::ToggleBoundingBoxMode(int windowIndex)
     {
         bool bboxMode = windows[index]->GetBoundingBoxMode();
         windows[index]->SetBoundingBoxMode(!bboxMode);
-        UpdateWindowInformation(index);
+        UpdateWindowInformation(WINDOWINFO_WINDOWFLAGS, index);
     }
 }
 
@@ -2354,7 +2336,7 @@ ViewerWindowManager::ToggleSpinMode(int windowIndex)
     {
         bool spinMode = windows[index]->GetSpinMode();
         windows[index]->SetSpinMode(!spinMode);
-        UpdateWindowInformation(index);
+        UpdateWindowInformation(WINDOWINFO_WINDOWFLAGS, index);
     }
 }
 
@@ -2378,6 +2360,9 @@ ViewerWindowManager::ToggleSpinMode(int windowIndex)
 //    changes.  (I also added the mode info to the WindowInformation, which
 //    is what made this necessary.)
 //
+//    Brad Whitlock, Tue Feb 3 16:04:12 PST 2004
+//    I made it use window information.
+//
 // ****************************************************************************
 
 void
@@ -2391,7 +2376,255 @@ ViewerWindowManager::ToggleCameraViewMode(int windowIndex)
     {
         bool cameraViewMode = windows[index]->GetCameraViewMode();
         windows[index]->SetCameraViewMode(!cameraViewMode);
-        UpdateWindowInformation(index);
+        UpdateWindowInformation(WINDOWINFO_WINDOWFLAGS, index);
+    }
+}
+
+// ****************************************************************************
+// Method: ViewerWindowManager::AskForCorrelationPermission
+//
+// Purpose: 
+//   Asks the user if a correlation should be created.
+//
+// Arguments:
+//   msg   : The message to display.
+//   title : The title of the dialog window.
+//   dbs   : The databases that will be correlated.
+//
+// Returns:    True if the correlation should be created; false otherwise.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Mar 29 09:53:14 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+ViewerWindowManager::AskForCorrelationPermission(const char *msg,
+    const char *title, const stringVector &dbs) const
+{
+    bool permission;
+
+    if(avtCallback::GetNowinMode())
+        permission = true;
+    else
+    {
+        // Pop up a Qt dialog to ask the user whether or not to correlate
+        // the specified databases.
+        QString text(msg); text += "\n";
+        for(int i = 0; i < dbs.size(); ++i)
+            text += (QString(dbs[i].c_str()) + QString("\n"));
+
+        viewerSubject->BlockSocketSignals(true);
+        permission = (QMessageBox::information(0, title,
+            text, QMessageBox::Yes, QMessageBox::No, QMessageBox::NoButton) ==
+            QMessageBox::Yes);
+        viewerSubject->BlockSocketSignals(false);
+    }
+
+    return permission;
+}
+
+// ****************************************************************************
+// Method: ViewerWindowManager::CreateMultiWindowCorrelationHelper
+//
+// Purpose: 
+//   Creates a new multiwindow database correlation or alters an existing
+//   database correlation so it supports all of the specified databases.
+//
+// Arguments:
+//   dbs : The list of databases for which we want a database correlation.
+//
+// Returns:    A pointer to the database correlation that we'll use or 0
+//             if there is no correlation to use.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Mar 29 09:54:27 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+DatabaseCorrelation *
+ViewerWindowManager::CreateMultiWindowCorrelationHelper(const stringVector &dbs)
+{
+    //
+    // Get the most suitable correlation for the list of dbs.
+    //
+    bool createNewCorrelation = true;
+    ViewerFileServer *fs = ViewerFileServer::Instance();
+    DatabaseCorrelationList *cL = fs->GetDatabaseCorrelationList();
+    DatabaseCorrelation *correlation = fs->GetMostSuitableCorrelation(dbs);
+    char msg[400];
+
+    if(correlation)
+    {
+        //
+        // If the number of databases in the correlation is less than the
+        // number of databases in the dbs list then ask the user if the
+        // correlation should be modfified.
+        //
+        if(correlation->GetNumDatabases() < dbs.size())
+        {
+            SNPRINTF(msg, 400, "Would you like to modify the %s correlation so "
+                "it correlates the following databases?",
+                 correlation->GetName().c_str());
+            if(AskForCorrelationPermission(msg, "Alter correlation?", dbs))
+            {
+                createNewCorrelation = false;
+
+                //
+                // Alter the correlation
+                //
+                AlterDatabaseCorrelation(correlation->GetName(), dbs,
+                    correlation->GetMethod());
+            }
+        }
+        else
+        {
+            // We found a correlation that matched perfectly. Do nothing.
+            createNewCorrelation = false;
+        }
+    }
+
+    const char *prompt =
+        "Would you like to correlate the following databases\n"
+        "to ensure that changing the time will apply to all\n"
+        "windows that are locked in time?\n";
+    if(createNewCorrelation)
+    {
+        if(AskForCorrelationPermission(prompt, "Create correlation?", dbs))
+        {
+            //
+            // Create a new database correlation since there was no suitable
+            // database correlation.
+            //
+            std::string newName(fs->CreateNewCorrelationName());
+            correlation = fs->CreateDatabaseCorrelation(newName, dbs,
+            cL->GetDefaultCorrelationMethod());
+            if(correlation)
+            {
+                // Add the new correlation to the correlation list.
+                cL->AddDatabaseCorrelation(*correlation);
+                cL->Notify();
+                delete correlation; 
+                correlation = cL->FindCorrelation(newName);
+
+                debug3 << "Created a new correlation called: "
+                       << newName.c_str() << endl << *correlation << endl;
+
+                // Tell the user about the new correlation.
+                SNPRINTF(msg, 400, "VisIt created a new database correlation "
+                         "called %s.", correlation->GetName().c_str());
+                Message(msg);
+            }
+        }
+        else
+        {
+            //
+            // The user opted to not create a multi-window correlation.
+            // Issue a warning message.
+            //
+            Warning("Since you opted not to create a database correlation, "
+                    "changing time sliders in one locked window might not "
+                    "affect other locked windows.");
+        }
+    }
+    else
+        correlation = 0;
+
+    return correlation;
+}
+
+// ****************************************************************************
+// Method: ViewerWindowManager::CreateMultiWindowCorrelation
+//
+// Purpose: 
+//   Creates a database correlation that involves multiple windows.
+//
+// Arguments:
+//   windowIds : The window ids of the windows that we want to involve in
+//               creating the database correlation.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Mar 29 11:20:16 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerWindowManager::CreateMultiWindowCorrelation(const intVector &windowIds)
+{
+    //
+    // Get the list of databases for all of the time-locked windows.
+    //
+    stringVector dbs;
+    GetDatabasesForWindows(windowIds, dbs);
+
+    if(dbs.size() < 2)
+    {
+        // All of the locked windows used a single time slider so nothing
+        // needs to be done. Alternatively, none of the locked windows
+        // even had an active time slider so nothing needs to be done.
+    }
+    else
+    {
+        //
+        // Get a correlation that has all of the databases in it. If such a
+        // correlation does not exist then prompt the user to create one.
+        // Either modify an existing correlation or create a brand new one.
+        //
+        DatabaseCorrelation *correlation =
+            CreateMultiWindowCorrelationHelper(dbs);
+
+        //
+        // If we had to create or edit a correlation, set the active time
+        // slider for each time-locked window to be that correlation if the
+        // time-locked window has an active time slider. We don't want to 
+        // change windows that don't have an active time slider. Use the
+        // old time slider in each window to set the state for the new 
+        // time slider.
+        //
+        for(int i = 0; i < windowIds.size(); ++i)
+        {
+            ViewerPlotList *pl = windows[windowIds[i]]->GetPlotList();
+            if(correlation != 0 && pl->HasActiveTimeSlider())
+            {
+                std::string ts(pl->GetActiveTimeSlider());
+
+                //
+                // If the window's current time slider is the same as 
+                // the new correlation, then don't change the time slider.
+                //
+                if(ts != correlation->GetName())
+                {
+                    //
+                    // We found a correlation for the time slider so it's
+                    // a valid time slider. Get the time state for the
+                    // time slider and feed it through the multiwindow
+                    // correlation to get the new time slider's time
+                    // state.
+                    int state = 0, nStates = 0;
+                    pl->GetTimeSliderStates(ts, state, nStates);
+                    int cts = correlation->GetCorrelatedTimeState(ts, state);
+
+                    //
+                    // Create a new time slider using the name of the
+                    // new multiwindow correlation.
+                    //
+                    pl->CreateTimeSlider(correlation->GetName(), cts);
+ 
+                    //
+                    // Make the new time slider be the active time slider.
+                    //
+                    pl->SetActiveTimeSlider(correlation->GetName());
+                }
+            }
+        }
     }
 }
 
@@ -2414,7 +2647,11 @@ ViewerWindowManager::ToggleCameraViewMode(int windowIndex)
 //   I corrected the test to make sure that the number of frames matched
 //   between the windows being locked.  I added code to turn on view
 //   limit merging.
-//   
+//
+//   Brad Whitlock, Tue Mar 16 09:06:32 PDT 2004
+//   I completely rewrote the method so it supports database correlations
+//   across windows when locking the windows in time.
+//
 // ****************************************************************************
 
 void
@@ -2426,63 +2663,87 @@ ViewerWindowManager::ToggleLockTime(int windowIndex)
     int index = (windowIndex == -1) ? activeWindow : windowIndex;
     if(windows[index] != 0)
     {
+        int flags = WINDOWINFO_WINDOWFLAGS;
         bool lockTime = windows[index]->GetTimeLock();
         windows[index]->SetTimeLock(!lockTime);
+
         if (windows[index]->GetTimeLock())
         {
+            //
+            // Get the list of window id's that are time-locked windows.
+            //
+            intVector windowIds;
+            int i;
+            for(i = 0; i < maxWindows; ++i)
+            {
+                if(windows[i] != 0 && windows[i]->GetTimeLock() &&
+                   windows[i]->GetPlotList()->HasActiveTimeSlider())
+                    windowIds.push_back(i);
+            }
+
+            //
+            // Create a correlation for all of the time-locked windows.
+            //
+            CreateMultiWindowCorrelation(windowIds);
+
             //
             // We have just locked time for this window. Find another
             // window that has locked time and copy its time.
             //
             int winner = -1;
-            for (int i = 0; i < maxWindows; i++)
+            for (i = 0; i < windowIds.size(); ++i)
             {
-                if (windows[i] != NULL && i != index)
+                if (windowIds[i] != index)
                 {
-                    if (windows[i]->GetTimeLock())
-                    {
-                        winner = i;
-                        break;
-                    }
+                    winner = windowIds[i];
+                    break;
                 }
             }
 
+            //
+            // If we found another window from which to copy time and
+            // animation settings, copy the values now. It should be okay
+            // to do this since we'll have created a correlation to use for
+            // all of the time-locked windows.
+            //
             if (winner != -1)
             {
-                if (windows[winner]->GetAnimation()->GetNFrames() ==
-                    windows[index]->GetAnimation()->GetNFrames())
+                //
+                // Get the time slider state from the time slider that we're
+                // copying from. The call to GetMultiWindowCorrelation
+                // should have changed the active time slider if it was
+                // required. If the user did not allow the correlation to
+                // be created and the time slider to be changed, they will
+                // be different at this point to don't bother setting
+                // the time for the window that we just locked.
+                //
+                ViewerPlotList *fromPL = windows[winner]->GetPlotList();
+
+                if(fromPL->GetActiveTimeSlider() ==
+                   windows[index]->GetPlotList()->GetActiveTimeSlider())
                 {
-                    // Copy the frame index.
-                    int fi = windows[winner]->GetAnimation()->GetFrameIndex();
+                    int tsState, nStates;
+                    fromPL->GetTimeSliderStates(fromPL->GetActiveTimeSlider(),
+                        tsState, nStates);
 
-                    windows[index]->GetAnimation()->SetMergeViewLimits(true);
-                    windows[index]->GetAnimation()->SetFrameIndex(fi);
-
-                    // Copy the animation mode.
-                    ViewerAnimation::AnimationMode mode;
-                    mode = windows[winner]->GetAnimation()->GetMode();
-                    if(mode == ViewerAnimation::PlayMode)
-                        windows[index]->GetAnimation()->Play();
-                    else if(mode == ViewerAnimation::ReversePlayMode)
-                        windows[index]->GetAnimation()->ReversePlay();
-                    else
-                        windows[index]->GetAnimation()->Stop();
-
-                    UpdateGlobalAtts();
+                    // Set the time slider state in the window that we
+                    // just locked.
+                    windows[index]->GetPlotList()->SetTimeSliderState(tsState);
                 }
-                else
-                {
-                    windows[index]->SetTimeLock(false);
-                    char msg[500];
-                    SNPRINTF(msg, 500, "Window %d could not lock times "
-                        "because it does not have the same number frames as "
-                        "window %d.", index+1, winner+1);
-                    Error(msg);
-                }
+                
+                windows[index]->SetMergeViewLimits(true);
+                // Copy the animation mode.
+                ViewerPlotList::AnimationMode mode = 
+                    fromPL->GetAnimationMode();
+                windows[index]->GetPlotList()->SetAnimationMode(mode);
             }
+
+            // We likely changed time sliders so update them.
+            flags |= WINDOWINFO_TIMESLIDERS;
         }
 
-        UpdateWindowInformation(index);
+        // Send information back to the client.
+        UpdateWindowInformation(flags, index);
     }
 }
 
@@ -2501,7 +2762,9 @@ ViewerWindowManager::ToggleLockTime(int windowIndex)
 // Creation:   Mon Nov 11 11:59:05 PDT 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Feb 3 16:05:39 PST 2004
+//   Changed how UpdateWindowInformation is called.
+//
 // ****************************************************************************
 
 void
@@ -2515,7 +2778,7 @@ ViewerWindowManager::ToggleLockTools(int windowIndex)
     {
         bool lockTools = windows[index]->GetToolLock();
         windows[index]->SetToolLock(!lockTools);
-        UpdateWindowInformation(index);
+        UpdateWindowInformation(WINDOWINFO_WINDOWFLAGS, index);
     }
 }
 
@@ -2586,7 +2849,7 @@ ViewerWindowManager::ToggleLockViewMode(int windowIndex)
         }
 
         // Update the view information.
-        UpdateWindowInformation(index);
+        UpdateWindowInformation(WINDOWINFO_WINDOWFLAGS, index);
     }
 }
 
@@ -2638,7 +2901,7 @@ ViewerWindowManager::TogglePerspective(int windowIndex)
         // Send the new view info to the client.
         //
         UpdateViewAtts(index, false, false, true);
-        UpdateWindowInformation(index);
+        UpdateWindowInformation(WINDOWINFO_WINDOWFLAGS, index);
     }
 }
 
@@ -2661,6 +2924,9 @@ ViewerWindowManager::TogglePerspective(int windowIndex)
 //    Eric Brugger, Wed Aug 20 13:22:14 PDT 2003
 //    I changed the call to UpdateViewAtts.
 //
+//    Brad Whitlock, Tue Feb 3 16:06:34 PST 2004
+//    I changed the call to UpdateWindowInformation.
+//
 // ****************************************************************************
 
 void
@@ -2679,7 +2945,7 @@ ViewerWindowManager::ToggleFullFrameMode(int windowIndex)
         // Send the new view info to the client.
         //
         UpdateViewAtts(index, false, true, false);
-        UpdateWindowInformation(index);
+        UpdateWindowInformation(WINDOWINFO_WINDOWFLAGS, index);
     }
 }
 
@@ -2996,6 +3262,9 @@ ViewerWindowManager::SetWindowLayout(const int windowLayout)
 //    Brad Whitlock, Tue Dec 30 14:41:38 PST 2003
 //    Added code to make sure the new active window is not iconified.
 //
+//    Brad Whitlock, Tue Jan 27 17:37:31 PST 2004
+//    I changed the copy codea little bit.
+//
 // ****************************************************************************
 
 void
@@ -3020,11 +3289,13 @@ ViewerWindowManager::SetActiveWindow(const int windowId)
         // Copy the global attributes, the annotation attributes, the light
         // source attributes, the view attributes and the animation attributes.
         //
-        windows[windowId-1]->CopyGeneralAttributes(windows[activeWindow]);
-        windows[windowId-1]->CopyAnnotationAttributes(windows[activeWindow]);
-        windows[windowId-1]->CopyLightList(windows[activeWindow]);
-        windows[windowId-1]->CopyViewAttributes(windows[activeWindow]);
-        windows[windowId-1]->CopyAnimation(windows[activeWindow]);
+        ViewerWindow *dest = windows[windowId-1];
+        ViewerWindow *src = windows[activeWindow];
+        dest->CopyGeneralAttributes(src);
+        dest->CopyAnnotationAttributes(src);
+        dest->CopyLightList(src);
+        dest->CopyViewAttributes(src);
+        dest->GetPlotList()->CopyFrom(src->GetPlotList());
     }
     referenced[windowId-1] = true;
 
@@ -3077,82 +3348,6 @@ ViewerWindowManager::GetActiveWindow() const
     return windows[activeWindow];
 }
 
-// ****************************************************************************
-//  Method: ViewerWindowManager::GetActiveAnimation
-//
-//  Purpose:
-//    Return the animation associated with the currently active window.
-//
-//  Returns:    The animation associated with the currently active window.
-//
-//  Programmer: Eric Brugger
-//  Creation:   September 7, 2000
-//
-//  Modifications:
-//     Brad Whitlock, Tue Nov 7 09:56:23 PDT 2000
-//     Changed to reflect that animations are now part of ViewerWindow.
-//
-// ****************************************************************************
-
-ViewerAnimation *ViewerWindowManager::GetActiveAnimation() const
-{
-    //
-    // If there are no windows it is an error.
-    //
-    if (nWindows == 0)
-    {
-        Error("ViewerWindowManager::GetActiveAnimation() There are no windows.\n");
-        return 0;
-    }
-
-    return windows[activeWindow]->GetAnimation();
-}
-
-// ****************************************************************************
-//  Method: ViewerWindowManager::UpdateAnimationState
-//
-//  Purpose:
-//    Update the animation state in the client global attributes.
-//
-//  Arguments:
-//    animation The animation whose state changed.
-//    state     The new state.
-//    mode      The new mode.
-//
-//  Programmer: Eric Brugger
-//  Creation:   October 26, 2000
-//
-//  Modifications:
-//    Eric Brugger, Mon Oct 29 08:52:14 PST 2001
-//    I added the argument animation which specified which animation state
-//    changed so that the state would only be updated if the animation was
-//    the active animation. 
-//
-//    Eric Brugger, Thu Dec 19 11:47:53 PST 2002
-//    Added support for keyframing.
-//
-//    Eric Brugger, Fri Jan 31 13:45:27 PST 2003 
-//    I removed the state argument and also had the routine update the
-//    current state.
-//
-// ****************************************************************************
-
-void
-ViewerWindowManager::UpdateAnimationState(const ViewerAnimation *animation,
-    const int mode) const
-{
-    //
-    // Only update the animation state if this is the active animation.
-    //
-    if (windows[activeWindow]->GetAnimation() != animation)
-        return;
-
-    clientAtts->SetCurrentFrame(animation->GetFrameIndex());
-    clientAtts->SetCurrentState(animation->GetFrameIndex());
-    clientAtts->SetAnimationMode(mode);
-    clientAtts->Notify();
-}
-
 // **************************************************************************** 
 //  Method: ViewerWindowManager::UpdateGlobalAtts
 //
@@ -3188,6 +3383,10 @@ ViewerWindowManager::UpdateAnimationState(const ViewerAnimation *animation,
 //    Eric Brugger, Fri Apr 18 12:38:05 PDT 2003 
 //    I added maintain view mode.
 //
+//    Brad Whitlock, Fri Jan 23 15:39:53 PST 2004
+//    I changed the list of attributes contained by GlobalAttributes and
+//    made changes here to set the right things.
+//
 // ****************************************************************************
 
 void
@@ -3200,6 +3399,11 @@ ViewerWindowManager::UpdateGlobalAtts() const
     {
         clientAtts  = new GlobalAttributes;
     }
+
+    //
+    // Update the list of sources.
+    //
+    clientAtts->SetSources(ViewerFileServer::Instance()->GetOpenDatabases());
 
     //
     // Update the window list in the client Global Attributes
@@ -3227,54 +3431,9 @@ ViewerWindowManager::UpdateGlobalAtts() const
     clientAtts->SetWindowLayout(layout);
 
     //
-    // Set the current file information.
-    //
-    ViewerWindow    *window = windows[activeWindow];
-    ViewerAnimation *animation = window->GetAnimation();
-    ViewerPlotList  *plotList = animation->GetPlotList();
-    ViewerAnimation::AnimationMode mode = animation->GetMode();
-
-    if (plotList->GetHostDatabaseName().size() < 1)
-    {
-        clientAtts->SetCurrentFile("notset");
-    }
-    else
-    {
-        clientAtts->SetCurrentFile(plotList->GetHostDatabaseName());
-    }
-    clientAtts->SetCurrentFrame(animation->GetFrameIndex());
-    clientAtts->SetNFrames(animation->GetNFrames());
-    clientAtts->SetNStates(animation->GetNFrames());
-    clientAtts->SetCurrentState(animation->GetFrameIndex());
-    if (mode == ViewerAnimation::PlayMode)
-    {
-        clientAtts->SetAnimationMode(3);
-    }
-    else if (mode == ViewerAnimation::ReversePlayMode)
-    {
-        clientAtts->SetAnimationMode(1);
-    }
-    else
-    {
-        clientAtts->SetAnimationMode(2);
-    }
-
-    //
-    // Update the view keyframe list.
-    //
-    int       nIndices;
-    const int *keyframeIndices = window->GetViewKeyframeIndices(nIndices);
-    vector<int> keyframeIndices2;
-    for (i = 0; i < nIndices; i++)
-    {
-        keyframeIndices2.push_back(keyframeIndices[i]);
-    }
-    clientAtts->SetViewKeyframes(keyframeIndices2);
-
-    //
     // Update the maintain view mode.
     //
-    clientAtts->SetMaintainView(window->GetMaintainViewMode());
+    clientAtts->SetMaintainView(windows[activeWindow]->GetMaintainViewMode());
 
     clientAtts->Notify();
 }
@@ -3586,13 +3745,16 @@ ViewerWindowManager::UpdateRenderingAtts(int windowIndex)
 //   Brad Whitlock, Mon Sep 30 12:15:25 PDT 2002
 //   Fixed problem with 64 bit to 32 bit typecast.
 //
+//   Brad Whitlock, Fri Jan 23 15:56:26 PST 2004
+//   Made it call UpdateWindowRenderingInformation.
+//
 // ****************************************************************************
 
 void
 ViewerWindowManager::RenderInformationCallback(void *data)
 {
     int index = (int)((long)data);
-    instance->UpdateWindowInformation(index, true);
+    instance->UpdateWindowRenderingInformation(index);
 }
 
 // ****************************************************************************
@@ -3629,6 +3791,9 @@ ViewerWindowManager::RenderInformationCallback(void *data)
 //   Brad Whitlock, Wed Oct 29 11:39:22 PDT 2003
 //   Added code to update the annotation object list.
 //
+//   Brad Whitlock, Fri Jan 23 15:55:55 PST 2004
+//   I split up UpdateWindowInformation into three methods.
+//
 // ****************************************************************************
 
 void
@@ -3645,14 +3810,12 @@ ViewerWindowManager::UpdateAllAtts()
     //
     if(windows[activeWindow] != NULL)
     {
-        ViewerAnimation *animation = windows[activeWindow]->GetAnimation();
-        ViewerPlotList  *plotList = animation->GetPlotList();
+        ViewerPlotList *plotList = windows[activeWindow]->GetPlotList();
         plotList->UpdatePlotList();
         plotList->UpdatePlotAtts();
         plotList->UpdateSILRestrictionAtts();
         plotList->UpdateExpressionList(true);
-        keyframeClientAtts->SetEnabled(plotList->GetKeyframeMode());
-        keyframeClientAtts->Notify();
+        UpdateKeyframeAttributes();
         UpdateAnnotationObjectList();
     }
 
@@ -3681,12 +3844,23 @@ ViewerWindowManager::UpdateAllAtts()
     //
     // Update the window information.
     //
-    UpdateWindowInformation();
+    UpdateWindowInformation(-1);
+    UpdateWindowRenderingInformation();
+    UpdateViewKeyframeInformation();
 
     //
     // Update the rendering attributes.
     //
     UpdateRenderingAtts();
+}
+
+void
+ViewerWindowManager::UpdateKeyframeAttributes()
+{
+    ViewerPlotList *plotList = windows[activeWindow]->GetPlotList();
+    keyframeClientAtts->SetEnabled(plotList->GetKeyframeMode());
+    keyframeClientAtts->SetNFrames(plotList->GetNKeyframes());
+    keyframeClientAtts->Notify();
 }
 
 // ****************************************************************************
@@ -4234,13 +4408,20 @@ ViewerWindowManager::GetKeyframeClientAtts()
 //  Programmer: Eric Brugger
 //  Creation:   November 25, 2002
 //
+//  Modifications:
+//    Brad Whitlock, Mon Jan 26 22:44:52 PST 2004
+//    Made it use the plot list and I made it set the number of keyframes
+//    into the plot list.
+//
 // ****************************************************************************
  
 void
 ViewerWindowManager::SetKeyframeAttsFromClient()
 {
-    windows[activeWindow]->GetAnimation()->GetPlotList()->SetKeyframeMode(
+    windows[activeWindow]->GetPlotList()->SetKeyframeMode(
         keyframeClientAtts->GetEnabled());
+    windows[activeWindow]->GetPlotList()->SetNKeyframes(
+        keyframeClientAtts->GetNFrames());
 }
 
 // ****************************************************************************
@@ -4265,10 +4446,13 @@ ViewerWindowManager::SetKeyframeAttsFromClient()
 //   Eric Brugger, Mon Dec  8 08:24:16 PST 2003
 //   Added code to turn on view limit merging.
 //
+//   Brad Whitlock, Mon Jan 26 16:50:40 PST 2004
+//   Changed how animation is done.
+//
 // ****************************************************************************
 
 void
-ViewerWindowManager::SetFrameIndex(int frame, int windowIndex)
+ViewerWindowManager::SetFrameIndex(int state, int windowIndex)
 {
     if(windowIndex < -1 || windowIndex >= maxWindows)
         return;
@@ -4277,25 +4461,99 @@ ViewerWindowManager::SetFrameIndex(int frame, int windowIndex)
     if(windows[index] != 0)
     {
         // Set the frame of the active window first.
-        windows[index]->GetAnimation()->SetMergeViewLimits(true);
-        windows[index]->GetAnimation()->SetFrameIndex(frame);
+        windows[index]->SetMergeViewLimits(true);
+        ViewerPlotList *activePL = windows[index]->GetPlotList();
+        activePL->SetTimeSliderState(state);
 
+        //
         // If the active window is time-locked, update the other windows
-        // that are also time locked.
-        if(windows[index]->GetTimeLock())
+        // that are also time locked and have the same time slider or a
+        // time slider that is used by the correlation for the active
+        // window's time slider.
+        //
+        if(windows[index]->GetTimeLock() && activePL->HasActiveTimeSlider())
         {
+            intVector badWindowIds;
             for(int i = 0; i < maxWindows; ++i)
             {
                 if(i != index && windows[i] != 0)
                 {
-                    if(windows[i]->GetTimeLock())
+                    ViewerPlotList *winPL = windows[i]->GetPlotList();
+                    if(windows[i]->GetTimeLock() &&
+                       winPL->HasActiveTimeSlider())
                     {
-                        windows[i]->GetAnimation()->SetMergeViewLimits(true);
-                        windows[i]->GetAnimation()->SetFrameIndex(frame);
+                        int tsState = -1;
+                        if(activePL->GetActiveTimeSlider() ==
+                           winPL->GetActiveTimeSlider())
+                        {
+                            //
+                            // The windows have the same active time slider
+                            // so we can just set the state.
+                            //
+                            tsState = state;
+                        }
+                        else
+                        {
+                            //
+                            // The windows have different active time sliders
+                            // so let's see if we can set the time for the i'th
+                            // time slider. If not, warn the user.
+                            //
+                            DatabaseCorrelationList *cL = 
+                                ViewerFileServer::Instance()->
+                                GetDatabaseCorrelationList();
+                            DatabaseCorrelation *c = cL->FindCorrelation(
+                                activePL->GetActiveTimeSlider());
+                            const std::string &ts = winPL->GetActiveTimeSlider();
+                            if(c != 0)
+                                tsState = c->GetCorrelatedTimeState(ts, state);
+                        }
+
+                        if(tsState != -1)
+                        {
+                            windows[i]->SetMergeViewLimits(true);
+                            windows[i]->GetPlotList()->SetTimeSliderState(tsState);
+                        }
+                        else
+                            badWindowIds.push_back(i);
                     }
                 }
             }
+
+            if(badWindowIds.size() > 0)
+            {
+                std::string msg("VisIt did not set the time state for window");
+                if(badWindowIds.size() > 1)
+                    msg += "s (";
+                else
+                    msg += " ";
+                char tmp[50];
+                for(int j = 0; j < badWindowIds.size(); ++j)
+                {
+                    SNPRINTF(tmp, 50, "%d", badWindowIds[j] + 1);
+                    msg += tmp;
+                    if(j < badWindowIds.size() - 1)
+                        msg += ", ";
+                }
+
+                if(badWindowIds.size() > 1)
+                    msg += ") because the time sliders in those windows ";
+                else
+                    msg += " because the time slider in that window ";
+
+                msg += "cannot be set by the active window's time slider "
+                       "since the correlations of the time sliders have "
+                       "nothing in common.\n\nTo avoid this warning in the "
+                       "future, make sure that locked windows have compatible "
+                       "time sliders.";
+                Warning(msg.c_str());
+            }
         }
+
+        //
+        // Send the new time slider state to the client.
+        //
+        UpdateWindowInformation(WINDOWINFO_ANIMATION);
     }
 }
 
@@ -4313,6 +4571,9 @@ ViewerWindowManager::SetFrameIndex(int frame, int windowIndex)
 //   Brad Whitlock, Wed Feb 5 10:28:13 PDT 2003
 //   Made it so it does not have to apply to the active window.
 //
+//   Brad Whitlock, Mon Jan 26 16:49:06 PST 2004
+//   I changed how animation works.
+//
 // ****************************************************************************
 
 void
@@ -4325,8 +4586,9 @@ ViewerWindowManager::NextFrame(int windowIndex)
     if(windows[index] != 0)
     {
         // Advance one frame for the active window first.
-        windows[index]->GetAnimation()->Stop();
-        windows[index]->GetAnimation()->NextFrame();
+        windows[index]->GetPlotList()->SetAnimationMode(
+            ViewerPlotList::StopMode);
+        windows[index]->GetPlotList()->ForwardStep();
 
         // If the active window is time-locked, update the other windows that are
         // also time locked.
@@ -4338,12 +4600,20 @@ ViewerWindowManager::NextFrame(int windowIndex)
                 {
                     if(windows[i]->GetTimeLock())
                     {
-                        windows[i]->GetAnimation()->Stop();
-                        windows[i]->GetAnimation()->NextFrame();
+                        windows[i]->GetPlotList()->SetAnimationMode(
+                            ViewerPlotList::StopMode);
+                        windows[i]->GetPlotList()->ForwardStep();
                     }
                 }
             }
         }
+
+        //
+        // Modify the animation timer since we set the animation mode
+        // for at least one window.
+        //
+        UpdateAnimationTimer();
+        UpdateWindowInformation(WINDOWINFO_ANIMATION);
     }
 }
 
@@ -4363,7 +4633,10 @@ ViewerWindowManager::NextFrame(int windowIndex)
 // Modifications:
 //   Brad Whitlock, Wed Feb 5 10:31:01 PDT 2003
 //   I made it so the routine does not have to apply to the active window.
-//   
+//
+//   Brad Whitlock, Mon Jan 26 16:46:08 PST 2004
+//   I changed how animation is done.
+//
 // ****************************************************************************
 
 void
@@ -4376,8 +4649,9 @@ ViewerWindowManager::PrevFrame(int windowIndex)
     if(windows[index] != 0)
     {
         // Back up one frame for the active window first.
-        windows[index]->GetAnimation()->Stop();
-        windows[index]->GetAnimation()->PrevFrame();
+        windows[index]->GetPlotList()->SetAnimationMode(
+            ViewerPlotList::StopMode);
+        windows[index]->GetPlotList()->BackwardStep();
 
         // If the active window is time-locked, update the other windows
         // that are also time locked.
@@ -4389,12 +4663,20 @@ ViewerWindowManager::PrevFrame(int windowIndex)
                 {
                     if(windows[i]->GetTimeLock())
                     {
-                        windows[i]->GetAnimation()->Stop();
-                        windows[i]->GetAnimation()->PrevFrame();
+                        windows[i]->GetPlotList()->SetAnimationMode(
+                            ViewerPlotList::StopMode);
+                        windows[i]->GetPlotList()->BackwardStep();
                     }
                 }
             }
         }
+
+        //
+        // Modify the animation timer since we set the animation mode
+        // for at least one window.
+        //
+        UpdateAnimationTimer();
+        UpdateWindowInformation(WINDOWINFO_ANIMATION);
     }
 }
 
@@ -4414,7 +4696,10 @@ ViewerWindowManager::PrevFrame(int windowIndex)
 // Modifications:
 //   Brad Whitlock, Wed Feb 5 10:31:01 PDT 2003
 //   I made it so the routine does not have to apply to the active window.
-//   
+//
+//   Brad Whitlock, Mon Jan 26 09:58:20 PDT 2004
+//   I changed how animation is done.
+//
 // ****************************************************************************
 
 void
@@ -4427,7 +4712,8 @@ ViewerWindowManager::Stop(int windowIndex)
     if(windows[index] != 0)
     {
         // Stop animation for the active window first.
-        windows[index]->GetAnimation()->Stop();
+        windows[index]->GetPlotList()->SetAnimationMode(
+            ViewerPlotList::StopMode);
 
         // If the active window is time-locked, update the other windows that are
         // also time locked.
@@ -4439,11 +4725,19 @@ ViewerWindowManager::Stop(int windowIndex)
                 {
                     if(windows[i]->GetTimeLock())
                     {
-                        windows[i]->GetAnimation()->Stop();
+                        windows[i]->GetPlotList()->SetAnimationMode(
+                            ViewerPlotList::StopMode);
                     }
                 }
             }
         }
+
+        //
+        // Modify the animation timer since we set the animation mode
+        // for at least one window.
+        //
+        UpdateAnimationTimer();
+        UpdateWindowInformation(WINDOWINFO_ANIMATION);
     }
 }
 
@@ -4463,7 +4757,10 @@ ViewerWindowManager::Stop(int windowIndex)
 // Modifications:
 //   Brad Whitlock, Wed Feb 5 10:31:01 PDT 2003
 //   I made it so the routine does not have to apply to the active window.
-//   
+//
+//   Brad Whitlock, Mon Jan 26 22:46:27 PST 2004
+//   I changed how animation works.
+//
 // ****************************************************************************
 
 void
@@ -4476,7 +4773,7 @@ ViewerWindowManager::Play(int windowIndex)
     if(windows[index] != 0)
     {
         // Start forward animation for the active window first.
-        windows[index]->GetAnimation()->Play();
+        windows[index]->GetPlotList()->SetAnimationMode(ViewerPlotList::PlayMode);
 
         // If the active window is time-locked, update the other windows that are
         // also time locked.
@@ -4488,11 +4785,19 @@ ViewerWindowManager::Play(int windowIndex)
                 {
                     if(windows[i]->GetTimeLock())
                     {
-                        windows[i]->GetAnimation()->Play();
+                        windows[i]->GetPlotList()->SetAnimationMode(
+                            ViewerPlotList::PlayMode);
                     }
                 }
             }
         }
+
+        //
+        // Modify the animation timer since we set the animation mode
+        // for at least one window.
+        //
+        UpdateAnimationTimer();
+        UpdateWindowInformation(WINDOWINFO_ANIMATION);
     }
 }
 
@@ -4513,6 +4818,9 @@ ViewerWindowManager::Play(int windowIndex)
 //   Brad Whitlock, Wed Feb 5 10:31:01 PDT 2003
 //   I made it so the routine does not have to apply to the active window.
 //
+//   Brad Whitlock, Mon Jan 26 22:48:30 PST 2004
+//   I changed how animation works.
+//
 // ****************************************************************************
 
 void
@@ -4525,7 +4833,8 @@ ViewerWindowManager::ReversePlay(int windowIndex)
     if(windows[index] != 0)
     {
         // Start forward animation for the active window first.
-        windows[index]->GetAnimation()->ReversePlay();
+        windows[index]->GetPlotList()->SetAnimationMode(
+            ViewerPlotList::ReversePlayMode);
 
         // If the active window is time-locked, update the other windows
         // that are also time locked.
@@ -4537,10 +4846,583 @@ ViewerWindowManager::ReversePlay(int windowIndex)
                 {
                     if(windows[i]->GetTimeLock())
                     {
-                        windows[i]->GetAnimation()->ReversePlay();
+                        windows[i]->GetPlotList()->SetAnimationMode(
+                            ViewerPlotList::ReversePlayMode);
                     }
                 }
             }
+        }
+
+        //
+        // Modify the animation timer since we set the animation mode
+        // for at least one window.
+        //
+        UpdateAnimationTimer();
+        UpdateWindowInformation(WINDOWINFO_ANIMATION);
+    }
+}
+
+
+// ****************************************************************************
+// Method: ViewerWindowManager::SetActiveTimeSlider
+//
+// Purpose: 
+//   Sets the active time slider for the specified window.
+//
+// Arguments:
+//   ts : The time slider that we want to make active.
+//   windowIndex : The index of the window to change.
+//
+// Programmer: Brad Whitlock
+// Creation:   Sun Jan 25 02:29:13 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerWindowManager::SetActiveTimeSlider(const std::string &ts, int windowIndex)
+{
+    if(windowIndex < -1 || windowIndex >= maxWindows)
+        return;
+
+    int index = (windowIndex == -1) ? activeWindow : windowIndex;
+    if(windows[index] != 0)
+    {
+        //
+        // Make sure that we can find a correlation for the desired time
+        // slider or it is not a valid time slider and we should return.
+        //
+        DatabaseCorrelationList *cL = ViewerFileServer::Instance()->
+            GetDatabaseCorrelationList();
+        DatabaseCorrelation *correlation = cL->FindCorrelation(ts);
+        if(correlation == 0)
+        {
+            Error("VisIt could not find a database correlation "
+                  "for the desired time slider so it must not be a valid time "
+                  "slider.");
+            return;
+        }
+
+        //
+        // Set the active time slider for the active window first.
+        //
+        windows[index]->GetPlotList()->SetActiveTimeSlider(ts);
+
+        //
+        // If the active window is time-locked, update the other windows
+        // that are also time locked.
+        //
+        if(windows[index]->GetTimeLock())
+        {
+            intVector badWindowIds;
+            for(int i = 0; i < maxWindows; ++i)
+            {
+                if(i != index && windows[i] != 0 && windows[i]->GetTimeLock())
+                {
+                    ViewerPlotList *pl = windows[i]->GetPlotList();
+                    if(pl->HasActiveTimeSlider())
+                    {
+                        // Get the databases used in window i.
+                        intVector winId; winId.push_back(i);
+                        stringVector dbs;
+                        GetDatabasesForWindows(winId, dbs);
+
+                        //
+                        // The window has some MT databases so let's make
+                        // sure that they can be handled by the new time
+                        // slider. If not, tell the user about it.
+                        //
+                        if(dbs.size() > 0)
+                        {
+                            bool usedAll = true;
+                            for(int j = 0; j < dbs.size() && usedAll; ++j)
+                                usedAll &= correlation->UsesDatabase(dbs[j]);
+                            if(!usedAll)
+                                badWindowIds.push_back(i);
+                            else
+                            {
+                                //
+                                // Set the active time slider.
+                                //
+                                windows[i]->GetPlotList()->SetActiveTimeSlider(ts);
+                            }
+                        }
+                    }
+                }
+            }
+
+            //
+            // If we found some windows that could not use the new time slider
+            // because the correlation did not support some of their databases,
+            // tell the user about it.
+            //
+            if(badWindowIds.size() > 0)
+            {
+                std::string msg("VisIt could not set the active time slider "
+                    "for window");
+                if(badWindowIds.size() > 1)
+                    msg += "s (";
+                else
+                    msg += " ";
+                char tmp[50];
+                for(int j = 0; j < badWindowIds.size(); ++j)
+                {
+                    SNPRINTF(tmp, 50, "%d", badWindowIds[j] + 1);
+                    msg += tmp;
+                    if(j < badWindowIds.size() - 1)
+                        msg += ", ";
+                }
+
+                if(badWindowIds.size() > 1)
+                    msg += ") because those windows contain ";
+                else
+                    msg += " because that window contains ";
+
+                msg += "at least one database that is not used by the new "
+                       "time slider.\n\nYou may want to create a new database "
+                       "correlation using all of the databases for your "
+                       "locked windows and use that database correlation "
+                       "for your active time slider or you may find that "
+                       "not all windows update when you change the time "
+                       "slider's active time state.";
+                Warning(msg.c_str());
+            }
+        }
+
+        //
+        // Modify the animation timer since we set the time slider
+        // for at least one window.
+        //
+        UpdateAnimationTimer();
+        UpdateWindowInformation(WINDOWINFO_TIMESLIDERS | WINDOWINFO_ANIMATION);
+    }
+}
+
+// ****************************************************************************
+// Method: ViewerWindowManager::CreateDatabaseCorrelation
+//
+// Purpose: 
+//   Creates a new database correlation.
+//
+// Arguments:
+//   name         : The name of the new database correlation.
+//   dbs          : The databases to include in the new database correlation.
+//   method       : The correlation method.
+//   initialState : The initial state for the time slider that will get
+//                  created to 
+//   nStates      : The number of states in the correlation (currently ignored).
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Mar 29 11:21:29 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerWindowManager::CreateDatabaseCorrelation(const std::string &name,
+    const stringVector &dbs, int method, int initialState, int nStates)
+{
+    ViewerFileServer *fs = ViewerFileServer::Instance();
+    DatabaseCorrelationList *cL = fs->GetDatabaseCorrelationList();
+
+    // Make sure that the correlation is not already in the list.
+    if(cL->FindCorrelation(name) == 0)
+    {
+        //
+        // Try and create a new correlation.
+        //
+        DatabaseCorrelation *correlation = fs->CreateDatabaseCorrelation(
+            name, dbs, method, nStates);
+
+        //
+        // If there was no error in creating the correlation then
+        // add the new one to the list and notify the client.
+        //
+        if(correlation)
+        {
+            cL->AddDatabaseCorrelation(*correlation);
+            cL->Notify();
+
+            //
+            // Print the correlation to the log
+            //
+            debug3 << "New correlation:" << endl
+                   << *correlation << endl;
+
+            //
+            // Now that the correlation has been created, create a time
+            // slider for it in all windows and make it the active time
+            // slider in the active window and all windows that are
+            // locked to it.
+            //
+            for(int i = 0; i < maxWindows; ++i)
+            {
+                ViewerWindow *win = windows[i];
+                if(win)
+                {
+                    // Create the time slider and set its initial state.
+                    win->GetPlotList()->CreateTimeSlider(name,
+                        initialState);
+
+                    // Make the new correlation be the active time slider
+                    // in the active window or any window locked to it.
+                    if(i == activeWindow ||
+                       (windows[activeWindow]->GetTimeLock() &&
+                        windows[i]->GetTimeLock()))
+                    {
+                        win->GetPlotList()->SetActiveTimeSlider(name);
+                    }
+                }
+            }
+
+            UpdateWindowInformation(WINDOWINFO_TIMESLIDERS |
+                                    WINDOWINFO_ANIMATION);
+
+            delete correlation;
+        }
+    }
+    else if(!fs->IsDatabase(name))
+    {
+        // The database correlation is already in the list of correlations
+        // so try and alter the existing correlation.
+        AlterDatabaseCorrelation(name, dbs, method, nStates);
+    }
+}
+
+// ****************************************************************************
+// Method: ViewerWindowManager::AlterDatabaseCorrelation
+//
+// Purpose: 
+//   Alters the named database correlation.
+//
+// Arguments:
+//   name         : The name of the new database correlation.
+//   dbs          : The databases to include in the new database correlation.
+//   method       : The correlation method.
+//   initialState : The initial state for the time slider that will get
+//                  created to 
+//   nStates      : The number of states in the correlation (currently ignored).
+//
+// Returns:    
+//
+// Note:       Trivial correlations can't be modified.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Mar 29 11:23:35 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerWindowManager::AlterDatabaseCorrelation(const std::string &name,
+    const stringVector &dbs, int method, int nStates)
+{
+    ViewerFileServer *fs = ViewerFileServer::Instance();
+    DatabaseCorrelationList *cL = fs->GetDatabaseCorrelationList();
+    DatabaseCorrelation *correlation = cL->FindCorrelation(name);
+    if(correlation)
+    {
+        // Make sure that the correlation does not have the same name as
+        // an existing source.
+        if(fs->IsDatabase(name))
+        {
+            Error("You cannot alter a database correlation that "
+                  "corresponds directly to a database.");
+        }
+        else
+        {
+            //
+            // Try and create a new correlation.
+            //
+            DatabaseCorrelation *newCorrelation = 
+                fs->CreateDatabaseCorrelation(name, dbs, method, nStates);
+
+            //
+            // If there was no error in creating the correlation then
+            // add the new one to the list and notify the client.
+            //
+            if(newCorrelation)
+            {
+                *correlation = *newCorrelation;
+                cL->Notify();
+
+                // Make sure that all time sliders for all windows with the
+                // same name as the correlation have a state that still
+                // fits into the number of states for the altered correlation.
+                for(int j = 0; j < maxWindows; ++j)
+                {
+                    if(windows[j] != 0)
+                    {
+                        windows[j]->GetPlotList()->
+                            AlterTimeSlider(name);
+                    }
+                }
+
+                delete newCorrelation;
+
+                UpdateWindowInformation(WINDOWINFO_TIMESLIDERS |
+                                        WINDOWINFO_ANIMATION);
+            }
+        }
+    }
+    else
+    {
+        char msg[300];
+        SNPRINTF(msg, 300, "You cannot alter a database correlation for %s "
+                 "because there is no such database correlation.", 
+                 name.c_str());
+        Error(msg);
+    }
+}
+
+// ****************************************************************************
+// Method: ViewerWindowManager::DeleteDatabaseCorrelation
+//
+// Purpose: 
+//   Deletes the named database correlation.
+//
+// Arguments:
+//   name : The name of the correlation to delete.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Mar 29 11:24:10 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerWindowManager::DeleteDatabaseCorrelation(const std::string &name)
+{
+    ViewerFileServer *fs = ViewerFileServer::Instance();
+    DatabaseCorrelationList *cL = fs->GetDatabaseCorrelationList();
+    DatabaseCorrelation *correlation = cL->FindCorrelation(name);
+    if(correlation)
+    {
+        // Make sure that the correlation does not have the same name as
+        // an existing source.
+        if(fs->IsDatabase(name))
+        {
+            Error("You cannot delete a database correlation that "
+                  "corresponds directly to a source.");
+        }
+        else
+        {
+            //
+            // Remove the correlation.
+            //
+            for(int i = 0; i < cL->GetNumDatabaseCorrelations(); ++i)
+            {
+                if(cL->GetDatabaseCorrelation(i).GetName() == name)
+                {
+                    cL->RemoveDatabaseCorrelation(i);
+                    cL->Notify();
+
+                    // Make any plot lists that used the correlation that
+                    // we just deleted switch to a new time slider.
+                    for(int j = 0; j < maxWindows; ++j)
+                    {
+                        if(windows[j] != 0)
+                        {
+                            windows[j]->GetPlotList()->
+                                DeleteTimeSlider(name);
+                        }
+                    }
+
+                    // The time sliders changed. Send the new list to
+                    // the client.
+                    UpdateWindowInformation(WINDOWINFO_TIMESLIDERS);
+
+                    break;
+                }
+            }
+        }
+    }
+    else
+    {
+        Error("There is no such database correlation.");
+    }
+}
+
+// ****************************************************************************
+// Method: ViewerWindowManager::GetDatabasesForWindows
+//
+// Purpose: 
+//   Returns a list of databases for the specified windows.
+//
+// Arguments:
+//   windowIds : The list of windows for which we want databases.
+//   dbs       : The return list of databases.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Mar 16 09:01:45 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerWindowManager::GetDatabasesForWindows(const intVector &windowIds,
+    stringVector &dbs) const
+{
+    ViewerFileServer *fs = ViewerFileServer::Instance();
+    DatabaseCorrelationList *cL = fs->GetDatabaseCorrelationList();
+ 
+    for(int i = 0; i < windowIds.size(); ++i)
+    {
+        int index = windowIds[i];
+        if(index >= 0 && index < maxWindows && windows[index] != 0)
+        {
+            ViewerPlotList *pl = windows[index]->GetPlotList();
+
+            // Try and add the active source for the window.
+            std::string source(pl->GetHostDatabaseName());
+            if(cL->FindCorrelation(source) != 0)
+            {
+                if(std::find(dbs.begin(), dbs.end(), source) == dbs.end())
+                    dbs.push_back(source);
+            }
+
+            // Try and add the source for each of the plots.
+            for(int j = 0; j < pl->GetNumPlots(); ++j)
+            {
+                std::string pSource(pl->GetPlot(j)->GetSource());
+                if(cL->FindCorrelation(pSource) != 0)
+                {
+                    if(std::find(dbs.begin(), dbs.end(), pSource) == dbs.end())
+                        dbs.push_back(pSource);
+                }
+            }
+        }
+    }
+}
+
+// ****************************************************************************
+// Method: ViewerWindowManager::CloseDatabase
+//
+// Purpose: 
+//   This method closes a database in all plot lists that have that database
+//   as their open database. It also removes the time slider for that database
+//   from all windows and clears the metadata for the database in the file
+//   before finally telling the engine to clear out all networks involving
+//   the database.
+//
+// Arguments:
+//   dbName : The name of the databsae to close.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Feb 27 12:52:19 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerWindowManager::CloseDatabase(const std::string &dbName)
+{
+    char tmp[300];
+
+    //
+    // Expand the filename in case it contains relative paths, etc.
+    //
+    ViewerFileServer *fs = ViewerFileServer::Instance();
+    std::string expandedDB(dbName), host, db;
+    fs->ExpandDatabaseName(expandedDB, host, db);
+
+    if(FileInUse(host, db))
+    {
+        SNPRINTF(tmp, 300, "VisIt could not close \"%s\" because it is still "
+                 "being used by one or more plots.",
+                 expandedDB.c_str());
+        Error(tmp);
+    }
+    else
+    {
+        //
+        // Tell the file server to clear out any metadata related to
+        // the database that we're closing.
+        //
+        fs->ClearFile(expandedDB);
+
+        //
+        // If the plot list's open database is the database that we're
+        // closing, make it have no open database. Also, remove its
+        // time slider for the database
+        //
+        int updateFlags = 0;
+        for(int i = 0; i < maxWindows; ++i)
+        {
+            if(windows[i] != 0)
+            {
+                ViewerPlotList *pl = windows[i]->GetPlotList();
+                int flags = pl->CloseDatabase(expandedDB);
+                if(i == activeWindow)
+                    updateFlags |= flags;
+            }
+        }
+
+        // Update the client if there were changes.
+        if(updateFlags > 0)
+            UpdateWindowInformation(updateFlags);
+
+        //
+        // Update the global attributes since clearing out the file in
+        // the file server will affect the list of sources.
+        //
+        UpdateGlobalAtts();
+
+        //
+        // Tell the engine to clear any networks that involve the
+        // database that we're closing.
+        //
+        ViewerEngineManager::Instance()->ClearCache(host.c_str(), db.c_str());
+
+        SNPRINTF(tmp, 300, "VisIt closed \"%s\".", expandedDB.c_str());
+        Message(tmp);        
+    }
+}
+
+// ****************************************************************************
+// Method: ViewerWindowManager::ReplaceDatabase
+//
+// Purpose: 
+//   Replaces the database in all windows.
+//
+// Arguments:
+//   host            : The host where the new database is found.
+//   database        : The database to use.
+//   timeState       : The time state to use.
+//   setTimeState    : Whether or not to set the time state.
+//   onlyReplaceSame : If true, then file replacement is only done if the
+//                     new database is the same as the database in a plot.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Oct 15 14:03:35 PST 2003
+//
+// Modifications:
+//   Brad Whitlock, Mon Nov 3 10:03:00 PDT 2003
+//   Added timeState and setTimeState arguments.
+//
+//   Brad Whitlock, Mon Jan 26 22:50:56 PST 2004
+//   I made it use the plot list directly.
+//
+// ****************************************************************************
+
+void
+ViewerWindowManager::ReplaceDatabase(const std::string &host,
+    const std::string &database, int timeState, bool setTimeState,
+    bool onlyReplaceSame)
+{
+    for(int i = 0; i < maxWindows; ++i)
+    {
+        if(windows[i] != 0)
+        {
+            windows[i]->GetPlotList()->
+                ReplaceDatabase(host, database, timeState, setTimeState,
+                                onlyReplaceSame);
         }
     }
 }
@@ -4796,6 +5678,13 @@ ViewerWindowManager::GetWindowInformation()
 // Purpose: 
 //   Sends the window information (button state, etc.) to the client.
 //
+// Arguments:
+//   flags       : The pieces of the window information that we want to
+//                 send. See ViewerWindowManager.h for the flags that we use.
+//   windowIndex : The index of the window for which we're updating. We use
+//                 this to make sure that we only update the for the active
+//                 window.
+//
 // Programmer: Brad Whitlock
 // Creation:   Mon Sep 16 15:14:23 PST 2002
 //
@@ -4818,10 +5707,16 @@ ViewerWindowManager::GetWindowInformation()
 //   Eric Brugger, Wed Aug 20 13:22:14 PDT 2003
 //   I split the view attributes into 2d and 3d parts.
 //
+//   Brad Whitlock, Fri Jan 23 16:10:38 PST 2004
+//   I removed some code into other methods and I added code to set new
+//   attributes in the WindowInformation such as the active source and the
+//   list of time states. Finally, I added the flags argument so we can
+//   do partial sends of data to the client.
+//
 // ****************************************************************************
 
 void
-ViewerWindowManager::UpdateWindowInformation(int windowIndex, bool reportTimes)
+ViewerWindowManager::UpdateWindowInformation(int flags, int windowIndex)
 {
     GetWindowInformation();
 
@@ -4832,30 +5727,104 @@ ViewerWindowManager::UpdateWindowInformation(int windowIndex, bool reportTimes)
     ViewerWindow *win = windows[index];
     if(win != 0 && index == activeWindow)
     {
-        // Set window mode, etc.
-        windowInfo->SetWindowMode(int(win->GetInteractionMode()));
-        windowInfo->SetBoundingBoxNavigate(win->GetBoundingBoxMode());
-        windowInfo->SetSpin(win->GetSpinMode());
-        windowInfo->SetLockView(win->GetViewIsLocked());
-        windowInfo->SetViewExtentsType(int(win->GetViewExtentsType()));
-        windowInfo->SetWindowMode(win->GetWindowMode());
-        windowInfo->SetPerspective(win->GetPerspectiveProjection());
-        windowInfo->SetLockTools(win->GetToolLock());
-        windowInfo->SetLockTime(win->GetTimeLock());
-        windowInfo->SetCameraViewMode(win->GetCameraViewMode());
-        windowInfo->SetFullFrame(win->GetFullFrameMode());
-        // Set the render times.
-        if(reportTimes)
+        //
+        // Set the active source for the window into the window atts.
+        //
+        ViewerPlotList  *plotList = win->GetPlotList();
+        if((flags & WINDOWINFO_SOURCE) != 0)
         {
-            float times[3] = {0., 0., 0.};
-            win->GetRenderTimes(times);
-            windowInfo->SetLastRenderMin(times[0]);
-            windowInfo->SetLastRenderAvg(times[1]);
-            windowInfo->SetLastRenderMax(times[2]);
+            if(plotList->GetHostDatabaseName().size() < 1)
+                windowInfo->SetActiveSource("notset");
+            else
+                windowInfo->SetActiveSource(plotList->GetHostDatabaseName());
         }
 
-        // indicate if we're in scalable rendering mode
-        windowInfo->SetUsingScalableRendering(win->GetScalableRendering());
+        //
+        // Get the list of time sliders and their current states from
+        // the plot list.
+        //
+        stringVector timeSliders;
+        intVector    timeSliderCurrentStates;
+        int          activeTimeSlider = -1;
+        plotList->GetTimeSliderInformation(activeTimeSlider, timeSliders,
+                                           timeSliderCurrentStates);
+        if((flags & WINDOWINFO_TIMESLIDERS) != 0)
+        {
+            windowInfo->SetTimeSliders(timeSliders);
+            windowInfo->SetActiveTimeSlider(activeTimeSlider);
+        }
+
+        //
+        // Return the current animation mode for the window.
+        // (i.e. is the window playing an animation?)
+        //
+        if((flags & WINDOWINFO_ANIMATION) != 0 ||
+           (flags & WINDOWINFO_TIMESLIDERS) != 0)
+        {
+            windowInfo->SetTimeSliderCurrentStates(timeSliderCurrentStates);
+
+            if (plotList->GetAnimationMode() == ViewerPlotList::PlayMode)
+                windowInfo->SetAnimationMode(3);
+            else if (plotList->GetAnimationMode() == ViewerPlotList::ReversePlayMode)
+                windowInfo->SetAnimationMode(1);
+            else
+                windowInfo->SetAnimationMode(2);
+        }
+
+        //
+        // Set window mode, etc.
+        //
+        if((flags & WINDOWINFO_WINDOWFLAGS) != 0)
+        {
+            windowInfo->SetWindowMode(int(win->GetInteractionMode()));
+            windowInfo->SetBoundingBoxNavigate(win->GetBoundingBoxMode());
+            windowInfo->SetSpin(win->GetSpinMode());
+            windowInfo->SetLockView(win->GetViewIsLocked());
+            windowInfo->SetViewExtentsType(int(win->GetViewExtentsType()));
+            windowInfo->SetWindowMode(win->GetWindowMode());
+            windowInfo->SetPerspective(win->GetPerspectiveProjection());
+            windowInfo->SetLockTools(win->GetToolLock());
+            windowInfo->SetLockTime(win->GetTimeLock());
+            windowInfo->SetCameraViewMode(win->GetCameraViewMode());
+            windowInfo->SetFullFrame(win->GetFullFrameMode());
+
+            // indicate if we're in scalable rendering mode
+            windowInfo->SetUsingScalableRendering(win->GetScalableRendering());
+        }
+
+        windowInfo->Notify();
+    }
+}
+
+// ****************************************************************************
+// Method: ViewerWindowManager::UpdateWindowRenderingInformation
+//
+// Purpose: 
+//   Sends information about rendering such as render time and triangle count
+//   to the client.
+//
+// Arguments:
+//   windowIndex : The index of the window that caused the update.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jan 23 16:00:25 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerWindowManager::UpdateWindowRenderingInformation(int windowIndex)
+{
+    int index = (windowIndex == -1) ? activeWindow : windowIndex;
+    ViewerWindow *win = windows[index];
+    if(win != 0 && index == activeWindow)
+    {
+        float times[3] = {0., 0., 0.};
+        win->GetRenderTimes(times);
+        windowInfo->SetLastRenderMin(times[0]);
+        windowInfo->SetLastRenderAvg(times[1]);
+        windowInfo->SetLastRenderMax(times[2]);
 
         // Set the approximate number of triangles.
         windowInfo->SetNumTriangles(win->GetNumTriangles());
@@ -4868,8 +5837,40 @@ ViewerWindowManager::UpdateWindowInformation(int windowIndex, bool reportTimes)
             win->GetExtents(2, extents);
         windowInfo->SetExtents(extents);
 
+        // Send the new state to the client.
         windowInfo->Notify();
     }
+}
+
+// ****************************************************************************
+// Method: ViewerWindowManager::UpdateViewKeyframeInformation
+//
+// Purpose: 
+//   Updates the view keyframes in the window info and notifies the client.
+//
+// Arguments:
+//   notify : Whether the client should be notified.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jan 23 15:37:06 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerWindowManager::UpdateViewKeyframeInformation()
+{
+    //
+    // Update the view keyframe list.
+    //
+    int        nIndices = 0;
+    const int *keyframeIndices = windows[activeWindow]->GetViewKeyframeIndices(nIndices);
+    intVector  keyframeIndices2;
+    for (int i = 0; i < nIndices; ++i)
+        keyframeIndices2.push_back(keyframeIndices[i]);
+    windowInfo->SetViewKeyframes(keyframeIndices2);
+    windowInfo->Notify();
 }
 
 // ****************************************************************************
@@ -5531,6 +6532,9 @@ ViewerWindowManager::ToolCallback(const avtToolInterface &ti)
 //    I added a check to make sure that individual windows are checked for
 //    visibility before they are considered for animation.
 //
+//    Brad Whitlock, Mon Jan 26 09:49:19 PDT 2004
+//    I changed how we check the window for animation.
+//
 // ****************************************************************************
 
 void
@@ -5551,11 +6555,11 @@ ViewerWindowManager::UpdateAnimationTimer()
         {
             if (windows[i] != NULL && windows[i]->IsVisible())
             {
-                ViewerAnimation::AnimationMode mode =
-                    windows[i]->GetAnimation()->GetMode();
+                ViewerPlotList::AnimationMode mode =
+                    windows[i]->GetPlotList()->GetAnimationMode();
 
-                if (mode == ViewerAnimation::PlayMode ||
-                    mode == ViewerAnimation::ReversePlayMode)
+                if (mode == ViewerPlotList::PlayMode ||
+                    mode == ViewerPlotList::ReversePlayMode)
                 {
                     playing = true;
                     break;
@@ -5600,7 +6604,9 @@ ViewerWindowManager::UpdateAnimationTimer()
 // Creation:   Wed Jul 24 17:50:04 PST 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Jan 26 09:48:30 PDT 2004
+//   I changed how animations are stopped.
+//
 // ****************************************************************************
 
 void
@@ -5622,7 +6628,8 @@ ViewerWindowManager::StopTimer()
         {
             if(windows[i] != NULL)
             {
-                windows[i]->GetAnimation()->Stop(false);
+                windows[i]->GetPlotList()->SetAnimationMode(
+                    ViewerPlotList::StopMode);
                 ++numWindows;
             }
         }
@@ -5632,7 +6639,7 @@ ViewerWindowManager::StopTimer()
         // will be no pending delete to update them.
         //
         if(numWindows < 2)
-            UpdateGlobalAtts();
+            UpdateWindowInformation(WINDOWINFO_ANIMATION);
     }
 }
 
@@ -5674,6 +6681,10 @@ ViewerWindowManager::StopTimer()
 //    Execute RPC and it is pretty much a noop when we get to this function
 //    with an animation that's been cached.
 //
+//    Brad Whitlock, Mon Jan 26 09:51:08 PDT 2004
+//    I changed how we check for animation since there are now multiple
+//    time sliders that could update.
+//
 // ****************************************************************************
 
 void
@@ -5695,11 +6706,11 @@ ViewerWindowManager::AnimationCallback()
     {
         if (windows[i] != NULL)
         {
-            ViewerAnimation::AnimationMode mode =
-                windows[i]->GetAnimation()->GetMode();
+            ViewerPlotList::AnimationMode mode =
+                windows[i]->GetPlotList()->GetAnimationMode();
 
-            if (mode == ViewerAnimation::PlayMode ||
-                mode == ViewerAnimation::ReversePlayMode)
+            if (mode == ViewerPlotList::PlayMode ||
+                mode == ViewerPlotList::ReversePlayMode)
             {
                 lastAnimation = i;
                 break;
@@ -5719,29 +6730,37 @@ ViewerWindowManager::AnimationCallback()
     //
     if(windows[lastAnimation] != NULL)
     {
-        ViewerAnimation::AnimationMode mode =
-            windows[lastAnimation]->GetAnimation()->GetMode();
+        ViewerPlotList::AnimationMode mode =
+            windows[lastAnimation]->GetPlotList()->GetAnimationMode();
 
         // Prevent the timer from emitting any signals since the
         // code to handle animation may get back to the Qt event
         // loop which makes it possible to get back here reentrantly.
         timer->blockSignals(true);
 
-        if (mode == ViewerAnimation::PlayMode)
+        if (mode == ViewerPlotList::PlayMode)
         {
             // Change to the next frame in the animation, which will likely
             // cause us to have to read a plot from the compute engine.
-            windows[lastAnimation]->GetAnimation()->NextFrame();
+            windows[lastAnimation]->GetPlotList()->ForwardStep();
+
+            // Send new window information to the client if we're animating
+            // the active window.
+            UpdateWindowInformation(WINDOWINFO_ANIMATION, lastAnimation);
 
             // Process any client input that we had to ignore while reading
             // the plot from the compute engine.
             viewerSubject->ProcessFromParent();
         }
-        else
+        else if(mode == ViewerPlotList::ReversePlayMode)
         {
             // Change to the next frame in the animation, which will likely
             // cause us to have to read a plot from the compute engine.
-            windows[lastAnimation]->GetAnimation()->PrevFrame();
+            windows[lastAnimation]->GetPlotList()->BackwardStep();
+
+            // Send new window information to the client if we're animating
+            // the active window.
+            UpdateWindowInformation(WINDOWINFO_ANIMATION, lastAnimation);
 
             // Process any client input that we had to ignore while reading
             // the plot from the compute engine.
@@ -5902,6 +6921,9 @@ ViewerWindowManager::SetDefaultAnnotationObjectListFromClient()
 //   Eric Brugger, Wed Aug 20 13:22:14 PDT 2003
 //   Removed call to SetTypeIsCurve since it is no longer necessary.
 //
+//   Brad Whitlock, Mon Jan 26 22:50:15 PST 2004
+//   Made it use the plot list directly.
+//
 // ****************************************************************************
 
 ViewerWindow *
@@ -5921,7 +6943,7 @@ ViewerWindowManager::GetLineoutWindow()
                 winIdx = -1;
                 break;
             }
-            if (windows[winIdx]->GetAnimation()->GetPlotList()->GetNumPlots() == 0)
+            if (windows[winIdx]->GetPlotList()->GetNumPlots() == 0)
             {
                 break;
             }
@@ -6570,7 +7592,7 @@ ViewerWindowManager::SetFromNode(DataNode *parentNode)
         if(windows[i] != 0 && childCount < newNWindows)
         {
             windows[i]->SetFromNode(wNodes[childCount++]);
-            if(windows[i]->GetAnimation()->GetPlotList()->GetNumPlots() > 0)
+            if(windows[i]->GetPlotList()->GetNumPlots() > 0)
                 referenced[i] = true;
         }
     }
@@ -6608,44 +7630,5 @@ ViewerWindowManager::SetFromNode(DataNode *parentNode)
             lineoutWindow = -1;
         else
             lineoutWindow = n;
-    }
-}
-
-// ****************************************************************************
-// Method: ViewerWindowManager::ReplaceDatabase
-//
-// Purpose: 
-//   Replaces the database in all windows.
-//
-// Arguments:
-//   host            : The host where the new database is found.
-//   database        : The database to use.
-//   timeState       : The time state to use.
-//   setTimeState    : Whether or not to set the time state.
-//   onlyReplaceSame : If true, then file replacement is only done if the
-//                     new database is the same as the database in a plot.
-//
-// Programmer: Brad Whitlock
-// Creation:   Wed Oct 15 14:03:35 PST 2003
-//
-// Modifications:
-//   Brad Whitlock, Mon Nov 3 10:03:00 PDT 2003
-//   Added timeState and setTimeState arguments.
-//
-// ****************************************************************************
-
-void
-ViewerWindowManager::ReplaceDatabase(const std::string &host,
-    const std::string &database, int timeState, bool setTimeState,
-    bool onlyReplaceSame)
-{
-    for(int i = 0; i < maxWindows; ++i)
-    {
-        if(windows[i] != 0)
-        {
-            windows[i]->GetAnimation()->GetPlotList()->
-                ReplaceDatabase(host, database, timeState, setTimeState,
-                                onlyReplaceSame);
-        }
     }
 }

@@ -990,8 +990,9 @@ RPCExecutor<DefineVirtualDatabaseRPC>::Execute(DefineVirtualDatabaseRPC *rpc)
 
     debug2 << "Executing DefineVirtualDatabaseRPC: "
            << "db=" << rpc->GetDatabaseName().c_str()
-           << "path=" << rpc->GetDatabasePath().c_str()
+           << ", path=" << rpc->GetDatabasePath().c_str()
            << ", time=" << rpc->GetTime()
+           << ", numStates=" << rpc->GetDatabaseFiles().size()
            << endl;
     for (int i = 0; i < rpc->GetDatabaseFiles().size(); ++i)
         debug5 << "file["<<i<<"]="<<rpc->GetDatabaseFiles()[i].c_str() << endl;
@@ -1013,6 +1014,9 @@ RPCExecutor<DefineVirtualDatabaseRPC>::Execute(DefineVirtualDatabaseRPC *rpc)
 //  Modifications:
 //    Jeremy Meredith, Thu Jul 10 11:37:48 PDT 2003
 //    Made the engine an object.
+//
+//    Mark C. Miller, Mon Mar 29 14:27:10 PST 200
+//    Added stuff to pass knowledge of annotations to render method
 //
 // ****************************************************************************
 template<>
@@ -1036,7 +1040,8 @@ RPCExecutor<RenderRPC>::Execute(RenderRPC *rpc)
     {
         // do the render
         avtDataObjectWriter_p writer =
-            netmgr->Render(rpc->GetIDs(),rpc->GetSendZBuffer());
+            netmgr->Render(rpc->GetIDs(),rpc->GetSendZBuffer(),
+                           rpc->GetDo3DAnnotsOnly());
 
         // Send the data back to the viewer.
         engine->WriteData(rpc, writer);

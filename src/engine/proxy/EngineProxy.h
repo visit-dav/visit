@@ -166,6 +166,9 @@ class StatusAttributes;
 //    Brad Whitlock, Fri Mar 12 10:43:41 PDT 2004
 //    I added an override of the base class's SendKeepAlive method.
 //
+//    Mark C. Miller, Mon Mar 29 15:01:58 PST 2004
+//    Added new bool arg for controlling 3D annoations in Render method
+//
 // ****************************************************************************
 
 class ENGINE_PROXY_API EngineProxy : public RemoteProxyBase
@@ -216,7 +219,7 @@ public:
 
     void                     SetWinAnnotAtts(const WindowAttributes*,
                                              const AnnotationAttributes*);
-    avtDataObjectReader_p    Render(bool, const intVector&);
+    avtDataObjectReader_p    Render(bool, const intVector&, bool);
 
     avtDataObjectReader_p    Execute(bool, void (*waitCB)(void *), void *cbData);
 

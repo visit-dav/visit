@@ -293,6 +293,10 @@ struct avtDefaultPlotMetaData;
 //    I added the processingFromParent member. I also changed some methods
 //    that deal with processing input to be public slots.
 //
+//    Brad Whitlock, Thu Jan 29 22:20:56 PST 2004
+//    I added ActivateDatabase, CheckForNewStates, CreateDatabaseCorrelation,
+//    AlterDatabaseCorrelation, DeleteDatabaseCorrelation, and CloseDatabase.
+//
 //    Brad Whitlock, Thu Feb 26 13:32:43 PST 2004
 //    Added ClearCacheForAllEngines.
 //
@@ -364,7 +368,7 @@ private:
     void InitializeWorkArea();
     void ProcessSpecialOpcodes(int opcode);
     void OpenDatabaseHelper(const std::string &db, int timeState,
-                            bool updateNFrames, bool loadDefaultPlots);
+                            bool loadDefaultPlots);
 
     DataNode *CreateAttributesDataNode(const avtDefaultPlotMetaData *) const;
 
@@ -376,9 +380,15 @@ private:
     void ShowAllWindows();
     void HideAllWindows();
     void OpenDatabase();
+    void CloseDatabase();
+    void ActivateDatabase();
+    void CheckForNewStates();
     void ReOpenDatabase();
     void ReplaceDatabase();
     void OverlayDatabase();
+    void CreateDatabaseCorrelation();
+    void AlterDatabaseCorrelation();
+    void DeleteDatabaseCorrelation();
     void OpenComputeEngine();
     void CloseComputeEngine();
     void InterruptComputeEngine();

@@ -1,23 +1,41 @@
 <?xml version="1.0"?>
-  <Attribute name="GlobalAttributes" codefile="GlobalAttributes.code" purpose="This class contains attributes associated with the main window." exportAPI="STATE_API" exportInclude="state_exports.h">
-    <Field name="windows"               type="intVector"></Field>
-    <Field name="activeWindow"          type="int">1</Field>
-    <Field name="iconifiedFlag"         type="bool">false</Field>
-    <Field name="autoUpdateFlag"        type="bool">false</Field>
-    <Field name="replacePlots"          type="bool">false</Field>
-    <Field name="applyOperator"         type="bool">true</Field>
-    <Field name="currentFile"           type="string">"notset"</Field>
-    <Field name="currentState"          type="int">0</Field>
-    <Field name="nStates"               type="int">0</Field>
-    <Field name="currentFrame"          type="int">0</Field>
-    <Field name="nFrames"               type="int">0</Field>
-    <Field name="animationMode"         type="int">2</Field>
-    <Field name="executing"             type="bool">false</Field>
-    <Field name="windowLayout"          type="int">1</Field>
-    <Field name="makeDefaultConfirm"    type="bool">true</Field>
-    <Field name="viewKeyframes"         type="intVector"></Field>
-    <Field name="cloneWindowOnFirstRef" type="bool">false</Field>
-    <Field name="maintainView"          type="bool">false</Field>
-    <Function name="CreateNode"    user="false"></Function>
-    <Function name="SetFromNode"   user="false"></Function>
+  <Attribute name="GlobalAttributes" purpose="This class contains attributes associated with the main window." persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="GlobalAttributes.code">
+    <Field name="sources" label="Sources" type="stringVector">
+    </Field>
+    <Field name="windows" label="windows" type="intVector">
+    </Field>
+    <Field name="activeWindow" label="activeWindow" type="int">
+      1
+    </Field>
+    <Field name="iconifiedFlag" label="iconifiedFlag" type="bool">
+      false
+    </Field>
+    <Field name="autoUpdateFlag" label="autoUpdateFlag" type="bool">
+      false
+    </Field>
+    <Field name="replacePlots" label="replacePlots" type="bool">
+      false
+    </Field>
+    <Field name="applyOperator" label="applyOperator" type="bool">
+      true
+    </Field>
+    <Field name="executing" label="executing" type="bool">
+      false
+    </Field>
+    <Field name="windowLayout" label="windowLayout" type="int">
+      1
+    </Field>
+    <Field name="makeDefaultConfirm" label="makeDefaultConfirm" type="bool">
+      true
+    </Field>
+    <Field name="cloneWindowOnFirstRef" label="cloneWindowOnFirstRef" type="bool">
+      false
+    </Field>
+    <Field name="maintainView" label="maintainView" type="bool">
+      false
+    </Field>
+    <Function name="CreateNode" user="false" member="true">
+    </Function>
+    <Function name="SetFromNode" user="false" member="true">
+    </Function>
   </Attribute>

@@ -1,0 +1,646 @@
+Function: GetCorrelatedTimeStates
+Declaration: bool GetCorrelatedTimeStates(int state, intVector &states) const;
+Definition:
+// ****************************************************************************
+// Method: DatabaseCorrelation::GetCorrelatedTimeStates
+//
+// Purpose: 
+//   Gets the correlated time states for all databases in the correlation at
+//   the specified time state.
+//
+// Arguments:
+//   state : The state for which we want the correlated time states.
+//   states : The return vector for the correlated time states.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Sat Jan 31 19:56:11 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+DatabaseCorrelation::GetCorrelatedTimeStates(int state, intVector &states) const
+{
+    bool retval = false;
+
+    if(state >= 0 && state < numStates)
+    {
+        states.clear();
+        int index = state;
+        for(int i = 0; i < databaseNames.size(); ++i)
+        {
+            states.push_back(indices[index]);
+            index += numStates;
+        }
+        retval = true;
+    }
+
+    return retval;
+}
+
+Function: SetNumStates
+Declaration: void SetNumStates(int nstates);
+Definition:
+// ****************************************************************************
+// Method: DatabaseCorrelation::SetNumStates
+//
+// Purpose: 
+//    Sets the number of states in the correlation and adjusts the correlation
+//    indices.
+//   
+// Arguments:
+//   nStates : The new number of states.
+//
+// Returns:    
+//
+// Note:       NOTE -- This method is not done and probably won't work yet.
+//
+// Programmer: Brad Whitlock
+// Creation:   Sat Jan 31 19:56:11 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+DatabaseCorrelation::SetNumStates(int nStates)
+{
+    if(method == IndexForIndexCorrelation)
+    {
+        intVector newIndices;
+        for(int i = 0; i < databaseNames.size(); ++i)
+        {
+            for(int j = 0; j < nStates; ++j)
+            {
+                int state = (i < databaseNStates[i]) ? i :
+                    (databaseNStates[i]-1);
+                newIndices.push_back(state);
+            }
+        }
+        indices = newIndices;
+        numStates = nStates;
+    }
+    else if(method == StretchedIndexCorrelation)
+    {
+        intVector newIndices;
+        int maxStates = (numStates > nStates) ? numStates : nStates;
+
+        for(int i = 0; i < databaseNames.size(); ++i)
+        {
+            for(int j = 0; j < maxStates; ++j)
+            {
+                float t = float(j) / float(maxStates - 1);
+                int state = int(t * databaseNStates[i]);
+                newIndices.push_back(state);
+            }
+        }
+        indices = newIndices;
+        numStates = maxStates;
+    }
+    else if(method == UserDefinedCorrelation)
+    {
+        intVector newIndices;
+        int currentState = 0;
+        int lastState = numStates - 1;
+        for(int i = 0; i < databaseNames.size(); ++i)
+        {            
+            for(int j = 0; j < nStates; ++j)
+            {
+                if(j < numStates)
+                {
+                    newIndices.push_back(indices[currentState++]);
+                }
+                else
+                    newIndices.push_back(indices[lastState]);
+            }
+
+            lastState += numStates;
+        }
+    }
+    //
+    // Setting the number of time states for a time or cycle correlation database has
+    // no effect because those correlations are controlled by the times and cycles
+    // in the database that makes them up.
+    //
+}
+
+Function: AddDatabase
+Declaration: void AddDatabase(const std::string &database, int nStates, const doubleVector &times, const intVector &cycles);
+Definition:
+// ****************************************************************************
+// Method: DatabaseCorrelation::AddDatabase
+//
+// Purpose: 
+//   Adds a new database to the correlation.
+//
+// Arguments:
+//   database : The name of the database to add to the correlation.
+//   nStates  : The number of states in the database.
+//   times    : The times for the states in the database.
+//   cycles   : The cycles for the states in the database.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Sat Jan 31 19:56:11 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+DatabaseCorrelation::AddDatabase(const std::string &database, int nStates,
+    const doubleVector &times, const intVector &cycles)
+{
+    int i;
+
+    // If the database is already in the correlation, maybe we should
+    // remove it and then add it again in case the length changed like
+    // when we add time states to a file.
+    if(UsesDatabase(database))
+        return;
+
+    //
+    // Add the times and cycles for the new database to the correlation so
+    // we can access them later and perhaps use them to correlate.
+    //
+    for(i = 0; i < nStates; ++i)
+    {
+        double t = ((i < times.size()) ? times[i] : 0.);
+        databaseTimes.push_back(t);
+        int c = ((i < cycles.size()) ? cycles[i] : 0);
+        databaseCycles.push_back(c);
+    }
+
+    if(method == IndexForIndexCorrelation)
+    {
+        if(numStates >= nStates)
+        {
+            //
+            // The number of states in the correlation is larger than
+            // the number of states in the database so we can append
+            // the database's states to the end of the indices and
+            // repeat the last frames.
+            //
+            for(i = 0; i < numStates; ++i)
+            {
+                int state = (i < nStates) ? i : (nStates - 1);
+                indices.push_back(state);
+            }
+        } 
+        else
+        {
+            //
+            // The number of states for the current database is larger
+            // than the number of states in the correlation. The correlation
+            // must be lengthened.
+            //
+            indices.clear();
+            for(i = 0; i < databaseNames.size(); ++i)
+            {
+                for(int j = 0; j < nStates; ++j)
+                {
+                    int state = (j < databaseNStates[i]) ? j :
+                        (databaseNStates[i]-1);
+                    indices.push_back(state);
+                }
+            }
+            // Add the new database to the correlation.
+            for(i = 0; i < nStates; ++i)
+                indices.push_back(i);
+
+            numStates = nStates;
+        }
+
+        databaseNames.push_back(database);
+        databaseNStates.push_back(nStates);
+    }
+    else if(method == StretchedIndexCorrelation)
+    {
+        databaseNames.push_back(database);
+        databaseNStates.push_back(nStates);
+
+        indices.clear();
+        int maxStates = (numStates > nStates) ? numStates : nStates;
+        for(i = 0; i < databaseNames.size(); ++i)
+        {
+            for(int j = 0; j < maxStates; ++j)
+            {
+                float t = float(j) / float(maxStates - 1);
+                int state = int(t * (databaseNStates[i] - 1));
+                indices.push_back(state);
+            }
+        }
+
+        numStates = maxStates;
+    }
+    else if(method == UserDefinedCorrelation)
+    {
+        if(numStates > nStates)
+        {
+            //
+            // The database being added has fewer states so we need to
+            // repeat the last states.
+            //
+            
+            // We'll have to pass in the user-defined indices and append them to the indices vector 
+        }
+        else
+        {
+            
+        }
+    }
+    else if(method == TimeCorrelation)
+    {
+        databaseNames.push_back(database);
+        databaseNStates.push_back(nStates);
+
+        // Align time for all databases on the same time axis so we can count the 
+        // number of times and make that be the new number of states.
+        std::map<double, intVector> timeAlignmentMap;
+        int index = 0;         
+        for(i = 0; i < databaseNames.size(); ++i)
+            for(int j = 0; j < databaseNStates[i]; ++j, ++index)
+                timeAlignmentMap[databaseTimes[index]].push_back(i);
+
+        //
+        // Set the condensed times vector
+        //
+        condensedTimes.clear();
+        for(std::map<double,intVector>::const_iterator p = timeAlignmentMap.begin();
+            p != timeAlignmentMap.end(); ++p)
+        {
+            condensedTimes.push_back(p->first);
+        }
+        
+        // Now there is a map that has for each time in all of the databases 
+        // a list of the databases that contain that time.
+        indices.clear();
+        for(i = 0; i < databaseNames.size(); ++i)
+        {
+            int state = 0;
+            std::map<double, intVector>::const_iterator pos = timeAlignmentMap.begin();
+            for(; pos != timeAlignmentMap.end(); ++pos)
+            {
+                // Look to see if the current database is in the list of databases
+                // for the current time. If so, we need to increment the state after
+                // we use it.
+                intVector::const_iterator dbIndex =
+                    std::find(pos->second.begin(), pos->second.end(), i);
+                indices.push_back(state);
+                if(dbIndex != pos->second.end() && state < databaseNStates[i] - 1)
+                    ++state;
+            }
+        }
+
+        numStates = timeAlignmentMap.size();
+    }
+    else if(method == CycleCorrelation)
+    {
+        databaseNames.push_back(database);
+        databaseNStates.push_back(nStates);
+
+        // Align cycle for all databases on the same time axis so we can count the 
+        // number of cycles and make that be the new number of states.
+        std::map<int, intVector> cycleAlignmentMap;
+        int index = 0;         
+        for(i = 0; i < databaseNames.size(); ++i)
+            for(int j = 0; j < databaseNStates[i]; ++j, ++index)
+                cycleAlignmentMap[databaseCycles[index]].push_back(i);
+
+        //
+        // Set the condensed cycles vector
+        //
+        condensedCycles.clear();
+        for(std::map<int,intVector>::const_iterator p = cycleAlignmentMap.begin();
+            p != cycleAlignmentMap.end(); ++p)
+        {
+            condensedCycles.push_back(p->first);
+        }
+
+        // Now there is a map that has for each time in all of the databases 
+        // a list of the databases that contain that time.
+        indices.clear();
+        for(i = 0; i < databaseNames.size(); ++i)
+        {
+            int state = 0;
+            std::map<int, intVector>::const_iterator pos = cycleAlignmentMap.begin();
+            for(; pos != cycleAlignmentMap.end(); ++pos)
+            {
+                // Look to see if the current database is in the list of databases
+                // for the current time. If so, we need to increment the state after
+                // we use it.
+                intVector::const_iterator dbIndex =
+                    std::find(pos->second.begin(), pos->second.end(), i);
+                indices.push_back(state);
+                if(dbIndex != pos->second.end() && state < databaseNStates[i] - 1)
+                    ++state;
+            }
+        }
+
+        numStates = cycleAlignmentMap.size();
+    }
+}
+
+
+Function: UsesDatabase
+Declaration: bool UsesDatabase(const std::string &database) const;
+Definition:
+// ****************************************************************************
+// Method: DatabaseCorrelation::UsesDatabase
+//
+// Purpose: 
+//   Returns whether or not a database is used in the correlation.
+//
+// Arguments:
+//   database : The database we're checking for membership in the correlation.
+//
+// Returns:    True if database is used; false otherwise.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Sat Jan 31 19:56:11 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+DatabaseCorrelation::UsesDatabase(const std::string &database) const
+{
+    return std::find(databaseNames.begin(), databaseNames.end(), database) !=
+           databaseNames.end();
+}
+
+
+Function: GetNumDatabases
+Declaration: int GetNumDatabases() const;
+Definition:
+// ****************************************************************************
+// Method: DatabaseCorrelation::GetNumDatabases
+//
+// Purpose: 
+//   Returns the number of databases used in the correlation.
+//
+// Programmer: Brad Whitlock
+// Creation:   Sat Jan 31 19:56:11 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+int
+DatabaseCorrelation::GetNumDatabases() const
+{
+    return databaseNames.size();
+}
+
+
+Function: GetCorrelatedTimeState
+Declaration: int GetCorrelatedTimeState(const std::string &db, int state) const;
+Definition:
+// ****************************************************************************
+// Method: DatabaseCorrelation::GetCorrelatedTimeState
+//
+// Purpose: 
+//   Gets the correlated time state for the specified database at the given state.
+//
+// Arguments:
+//   db    : The database for which we want the correlated time.
+//   state : The state for which we want the correlated time.
+//
+// Returns:    The correlated time state or -1 if no correlated time state
+//             exists.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Sat Jan 31 19:56:11 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+int
+DatabaseCorrelation::GetCorrelatedTimeState(const std::string &db, int state) const
+{
+    int retval = -1;
+
+    if(state >= 0 && state < numStates)
+    {
+        for(int i = 0; i < databaseNames.size(); ++i)
+        {
+            if(databaseNames[i] == db)
+            {
+                retval = indices[i * numStates + state];
+                break;
+            }
+        }
+    }
+
+    return retval;
+}
+
+
+Function: GetInverseCorrelatedTimeState
+Declaration: int GetInverseCorrelatedTimeState(const std::string &db, int state) const;
+Definition:
+// ****************************************************************************
+// Method: DatabaseCorrelation::GetInverseCorrelatedTimeState
+//
+// Purpose: 
+//   Gets the state in the correlation where the database "db" has a database
+//   state of "state".
+//
+// Arguments:
+//   db    : The database for which we want the inverse correlated time.
+//   state : The state for which we want the inverse correlated time.
+//
+// Returns:    The inverse correlated time state or -1 if no inverse
+//             correlated time state exists.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Sat Jan 31 19:56:11 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+int
+DatabaseCorrelation::GetInverseCorrelatedTimeState(const std::string &db,
+    int dbState) const
+{
+    int retval = -1;
+
+    for(int i = 0; i < databaseNames.size() && retval == -1; ++i)
+    {
+        if(databaseNames[i] == db)
+        {
+            int startIndex = i * numStates;
+            for(int j = 0; j < numStates; ++j)
+            {
+                if(indices[startIndex + j] == dbState)
+                {
+                    retval = j;
+                    break;
+                }
+            }
+        }
+    }
+
+    return retval;
+}
+
+
+Function: OutputOperator
+Declaration: ostream& operator << (ostream &os, const DatabaseCorrelation &);
+Definition:
+// ****************************************************************************
+// Method: operator <<
+//
+// Purpose: 
+//   This is a print function for DatabaseCorrelation.
+//
+// Arguments:
+//   os          : The stream to print on.
+//   correlation : The correlation that we want to print.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Sat Jan 31 19:56:11 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+ostream &
+operator << (ostream &os, const DatabaseCorrelation &correlation)
+{
+    os << "name = " << correlation.GetName() << endl;
+    os << "numStates = " << correlation.GetNumStates() << endl;
+    os << "method = " << DatabaseCorrelation::CorrelationMethod_ToString(correlation.GetMethod()) << endl;
+    int i, j, index = 0;
+    for(i = 0; i < correlation.GetDatabaseNames().size(); ++i)
+    {
+        os << "database[" << i << "]=" << correlation.GetDatabaseNames()[i] << endl;
+        os << "    numStates=" << correlation.GetDatabaseNStates()[i] << endl;
+        os << "    times={";
+        for(j = 0; j < correlation.GetDatabaseNStates()[i]; ++j)
+            os << correlation.GetDatabaseTimes()[index+j] << ", ";
+        os << "}" << endl;
+
+        os << "    cycles={";
+        for(j = 0; j < correlation.GetDatabaseNStates()[i]; ++j)
+            os << correlation.GetDatabaseCycles()[index+j] << ", ";
+        os << "}" << endl;
+
+        index += correlation.GetDatabaseNStates()[i];
+
+        os << "    indices={";
+        for(j = 0; j < correlation.GetNumStates(); ++j)
+            os << correlation.GetIndices()[i*correlation.GetNumStates() + j] << ", ";
+        os << "}" << endl;
+
+    }
+
+    const doubleVector &t = correlation.GetCondensedTimes();
+    if(t.size() > 0)
+    {
+        os << "condensedTimes={";
+        for(j = 0; j < t.size(); ++j)
+            os << t[j] << ", ";
+        os << "}" << endl;       
+    }
+
+    const intVector &c = correlation.GetCondensedCycles();
+    if(c.size() > 0)
+    {
+        os << "condensedCycles={";
+        for(j = 0; j < c.size(); ++j)
+            os << c[j] << ", ";
+        os << "}" << endl;       
+    }
+
+    return os;
+}
+
+
+Function: GetCondensedCycleForState
+Declaration: int GetCondensedCycleForState(int state) const;
+Definition:
+// ****************************************************************************
+// Method: DatabaseCorrelation::GetCondensedCycleForState
+//
+// Purpose: 
+//   Returns the cycle for the specified state in a cycle correlation.
+//
+// Arguments:
+//   state : The state for which we want the cycle.
+//
+// Returns:    The cycle at the specified state.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Sat Jan 31 19:56:11 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+int
+DatabaseCorrelation::GetCondensedCycleForState(int state) const
+{
+    int retval = 0;
+    if(state >= 0 && state < condensedCycles.size())
+        retval = condensedCycles[state];
+
+    return retval;
+}
+
+
+Function: GetCondensedTimeForState
+Declaration: double GetCondensedTimeForState(int state) const;
+Definition:
+// ****************************************************************************
+// Method: DatabaseCorrelation::GetCondensedTimeForState
+//
+// Purpose: 
+//   Returns the time for the specified state in a time correlation.
+//
+// Arguments:
+//   state : The state for which we want the time.
+//
+// Returns:    The time at the specified state.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Sat Jan 31 19:56:11 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+double
+DatabaseCorrelation::GetCondensedTimeForState(int state) const
+{
+    double retval = 0.;
+    if(state >= 0 && state < condensedTimes.size())
+        retval = condensedTimes[state];
+
+    return retval;
+}

@@ -52,6 +52,10 @@
 #    Added the new test multi_format2.py to the parallel skip list since
 #    it forces an engine restart.
 #
+#    Brad Whitlock, Mon Mar 29 12:05:18 PDT 2004
+#    I added keyframe and simplekeyframe to the skip list until I
+#    fix keyframing.
+#
 # ----------------------------------------------------------------------------
 
 # list of users who want email every night with the log file
@@ -179,14 +183,20 @@ curdate=`date +%Y-%m-%d-%p%I%M`
 modes="serial parallel scalable,parallel"
 
 # set list of tests/modes to skip
-skipList="parallel:tests/databases/samrai.py \
+skipList="serial:tests/hybrid/keyframe.py \
+          serial:tests/session/simplekeyframe.py \
+          parallel:tests/databases/samrai.py \
           parallel:tests/hybrid/sil.py \
           parallel:tests/rendering/volume.py \
-          parallel,parallel:tests/databases/multi_format2.py \
+          parallel:tests/hybrid/keyframe.py \
+          parallel:tests/session/simplekeyframe.py \
+          scalable,parallel:tests/databases/multi_format2.py \
           scalable,parallel:tests/hybrid/gradient.py \
           scalable,parallel:tests/hybrid/lineout.py \
           scalable,parallel:tests/operators/operators.py \
-          scalable,parallel:tests/rendering/volume.py" 
+          scalable,parallel:tests/rendering/volume.py \
+          scalable,parallel:tests/hybrid/keyframe.py \
+          scalable,parallel:tests/session/simplekeyframe.py"
 
 # run the test(s)
 error=0

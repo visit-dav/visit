@@ -102,6 +102,9 @@ import java.util.Vector;
 //   Brad Whitlock, Thu Jan 8 14:19:43 PST 2004
 //   I fixed a typo that prevented it from building.
 //
+//   Brad Whitlock, Fri Jan 23 14:15:49 PST 2004
+//   I added DatabaseCorrelationList and the CloseDatabase rpc.
+//
 //   Brad Whitlock, Thu Feb 26 13:38:26 PST 2004
 //   I added ClearCacheForAllEngines.
 //
@@ -130,6 +133,7 @@ public class ViewerProxy implements SimpleObserver
         appearanceAtts = new AppearanceAttributes();
         pluginAtts = new PluginManagerAttributes();
         globalAtts = new GlobalAttributes();
+        correlationList = new DatabaseCorrelationList();
         plotList = new PlotList();
         hostProfiles = new HostProfileList();
         messageAtts = new MessageAttributes();
@@ -197,6 +201,7 @@ public class ViewerProxy implements SimpleObserver
             xfer.Add(appearanceAtts);
             xfer.Add(pluginAtts);
             xfer.Add(globalAtts);
+            xfer.Add(correlationList);
             xfer.Add(plotList);
             xfer.Add(hostProfiles);
             xfer.Add(messageAtts);
@@ -439,6 +444,14 @@ public class ViewerProxy implements SimpleObserver
         rpc.SetDatabase(database);
         rpc.SetIntArg1(timeState);
         rpc.SetBoolFlag(addDefaultPlots);
+        rpc.Notify();
+        return synchronous ? Synchronize() : true;
+    }
+
+    public boolean CloseDatabase(String database)
+    {
+        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_CLOSEDATABASERPC);
+        rpc.SetDatabase(database);
         rpc.Notify();
         return synchronous ? Synchronize() : true;
     }
@@ -1416,6 +1429,7 @@ public class ViewerProxy implements SimpleObserver
     public MessageAttributes GetMessageAttributes() { return messageAtts; }
     public AnnotationAttributes GetAnnotationAttributes() { return annotationAtts; }
     public GlobalAttributes GetGlobalAttributes() { return globalAtts;}
+    public DatabaseCorrelationList GetDatabaseCorrelationList() { return correlationList; }
     public PlotList GetPlotList() { return plotList; }
     public PluginManagerAttributes GetPluginAtts() { return pluginAtts;}
     public HostProfileList GetHostProfiles() { return hostProfiles; }

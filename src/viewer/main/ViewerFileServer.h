@@ -1,14 +1,17 @@
 #ifndef VIEWER_FILE_SERVER_H
 #define VIEWER_FILE_SERVER_H
-#include <viewer_exports.h>
 #include <ViewerServerManager.h>
 #include <map>
 #include <string>
 #include <vectortypes.h>
+#include <avtTypes.h>
 
 class MDServerProxy;
 class avtDatabaseMetaData;
 class avtSIL;
+class DatabaseCorrelation;
+class DatabaseCorrelationList;
+class DataNode;
 
 // ****************************************************************************
 // Class: ViewerFileServer
@@ -73,12 +76,23 @@ class avtSIL;
 //    Mark C. Miller, Wed Oct  8 23:46:25 PDT 2003
 //    Added methods to query a given database's MetaData or SIL for invariance
 //
+//    Brad Whitlock, Fri Jan 23 09:37:54 PDT 2004
+//    I added state objects for the for database correlations.
+//
 //    Brad Whitlock, Fri Mar 12 12:04:53 PDT 2004
 //    I added SendKeepAlives.
 //
+//    Brad Whitlock, Fri Jan 30 22:54:24 PST 2004
+//    I added a method to create database correlations. I also added a private
+//    method for splitting map keys for the metadata and SIL maps. I removed
+//    the optional time state argument from GetMetaData and GetSIL and 
+//    added the GetMetaDataForState and GetSILForState methods for when a
+//    time state is required. I added CreateNode, SetFromNode,
+//    DetermineVarType, GetMetaDataForState, GetSILForState.
+//
 // ****************************************************************************
 
-class VIEWER_API ViewerFileServer : public ViewerServerManager
+class ViewerFileServer : public ViewerServerManager
 {
     class ServerInfo
     {
@@ -98,19 +112,55 @@ public:
     virtual                   ~ViewerFileServer();
 
     static ViewerFileServer   *Instance();
+    static void                SplitHostDatabase(const std::string &hostDB,
+                                                 std::string &host,
+                                                 std::string &db);
+    static std::string         ComposeDatabaseName(const std::string &host,
+                                                   const std::string &db);
 
+    //
+    // Use this method when you need metadata about the file but metadata
+    // from any time state will suffice.
+    //
     const avtDatabaseMetaData *GetMetaData(const std::string &host,
-                                           const std::string &filename,
-                                           const int timeState = -1);
-    bool               MetaDataIsInvariant(const std::string &host,
-                                           const std::string &filename,
-                                           const int timeState = -1);
-    const avtSIL              *GetSIL(const std::string &host,
-                                      const std::string &filename,
-                                      const int timeState = -1);
-    std::string                ExpandedFileName(const std::string &host,
-                                                const std::string &filename);
+                                           const std::string &filename);
 
+    //
+    // Use this method when you need metadata about the file at
+    // the specified time state.
+    //
+    const avtDatabaseMetaData *GetMetaDataForState(const std::string &host,
+                                                   const std::string &filename,
+                                                   int timeState);
+
+    //
+    // Use this method when you need to determine if the metadata for a
+    // file varies over time.
+    //
+    bool                       MetaDataIsInvariant(const std::string &host,
+                                                   const std::string &filename,
+                                                   int timeState);
+
+    //
+    // Use this method when you need the file's SIL but the SIL from any
+    // time state will suffice.
+    //
+    const avtSIL              *GetSIL(const std::string &host,
+                                      const std::string &filename);
+
+    //
+    // Use this method when you need the file's SIL at the specified
+    // time state.
+    //
+    const avtSIL              *GetSILForState(const std::string &host,
+                                              const std::string &filename,
+                                              int timeState);
+
+    std::string                ExpandedFileName(const std::string &host,
+                                                const std::string &db);
+    void                       ExpandDatabaseName(std::string &hostDBName,
+                                                  std::string &host,
+                                                  std::string &dbName);
     void                       NoFaultStartServer(const std::string &host);
     void                       NoFaultStartServer(const std::string &host,
                                                   const stringVector &args);
@@ -126,16 +176,41 @@ public:
 
     void                       ClearFile(const std::string &fullName);
     void                       CloseFile(const std::string &host);
+
+    DatabaseCorrelationList   *GetDatabaseCorrelationList();
+    DatabaseCorrelation       *CreateDatabaseCorrelation(const std::string &,
+                                                         const stringVector &,
+                                                         int, int=-1);
+    DatabaseCorrelation       *GetMostSuitableCorrelation(const stringVector &) const;
+    std::string                CreateNewCorrelationName() const;
+    bool                       IsDatabase(const std::string &fullname) const;
+    stringVector               GetOpenDatabases() const;
+
+    avtVarType                 DetermineVarType(const std::string &host,
+                                                const std::string &db,
+                                                const std::string &var,
+                                                int state);
+
+    void                       CreateNode(DataNode *, bool detailed);
+    void                       SetFromNode(DataNode *);
 protected:
     ViewerFileServer();
     ViewerFileServer(const ViewerFileServer&);
     void TerminateConnectionRequest(const stringVector &, int failCode);
+    void SplitKey(const std::string &key, std::string &hdb, int &ts) const;
+    const avtDatabaseMetaData *GetMetaDataHelper(const std::string &host, 
+                                                 const std::string &db,
+                                                 int timeState);
+    const avtSIL *GetSILHelper(const std::string &host, 
+                               const std::string &db,
+                               int timeState);
 private:
     static ViewerFileServer *instance;
 
-    ServerMap                servers;
-    FileMetaDataMap          fileMetaData;
-    FileSILMap               fileSIL;
+    ServerMap                 servers;
+    FileMetaDataMap           fileMetaData;
+    FileSILMap                fileSIL;
+    DatabaseCorrelationList  *databaseCorrelationList;
 };
 
 #endif

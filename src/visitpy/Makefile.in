@@ -1,4 +1,4 @@
-#                            Copyright 2000 - 2003
+#                            Copyright 2000 - 2004
 #                 The Regents of the University of California.
 #                             All rights reserved.
 # 
@@ -72,6 +72,9 @@
 #    Brad Whitlock, Wed Dec 3 17:27:44 PST 2003
 #    I added PyTimeSliderObject and PyText2DObject.
 #
+#    Brad Whitlock, Fri Mar 19 08:49:00 PDT 2004
+#    I added PyGlobalAttributes.
+#
 ##############################################################################
 
 ##
@@ -85,6 +88,7 @@
 ##
 SRC= \
     PyAnnotationAttributes.C \
+    PyGlobalAttributes.C \
     PyHostProfile.C \
     PyKeyframeAttributes.C \
     PyMaterialAttributes.C \
@@ -104,6 +108,7 @@ SRC= \
 
 HDR= \
     PyAnnotationAttributes.h \
+    PyGlobalAttributes.h \
     PyHostProfile.h \
     PyKeyframeAttributes.h \
     PyMaterialAttributes.h \

@@ -104,6 +104,10 @@ class WindowInformation;
 //   Brad Whitlock, Mon Oct 13 17:08:13 PST 2003
 //   Added methods to set the timestate display mode.
 //
+//   Brad Whitlock, Fri Jan 30 14:15:02 PST 2004
+//   Added methods to set a flag indicating whether the selected files
+//   should be shown.
+//
 // ****************************************************************************
 
 class GUI_API QvisMainWindow : public QvisWindowBase, public SimpleObserver
@@ -124,6 +128,7 @@ public:
 
     void SetOrientation(int orientation);
     const TimeFormat &GetTimeStateFormat() const;
+    bool GetShowSelectedFiles() const;
 signals:
     void iconifyWindows();
     void deIconifyWindows();
@@ -141,6 +146,7 @@ signals:
     void activateAnimationWindow();
     void activateAnnotationWindow();
     void activateColorTableWindow();
+    void activateCorrelationListWindow();
     void activateExpressionsWindow();
     void activateCommandLineWindow();
     void activateKeyframeWindow();
@@ -174,11 +180,15 @@ signals:
 public slots:
     void unreadOutput(bool);
     void SetTimeStateFormat(const TimeFormat &fmt);
+    void SetShowSelectedFiles(bool);
 protected:
     virtual void closeEvent(QCloseEvent*);
     virtual void hideEvent(QHideEvent *);
     virtual void showEvent(QShowEvent *);
 private slots:
+    void reopenFile(int);
+    void closeFile(int);
+
     void windowAdd();
     void windowClone();
     void windowDelete();
@@ -217,6 +227,7 @@ private slots:
     void lockView();
 private:
     void CreateGlobalArea(QLayout *tl);
+    void UpdateFileMenu(QPopupMenu *, int);
     void UpdateGlobalArea(bool doAll);
     void UpdateWindowList(bool doList);
     void UpdateWindowMenu(bool updateWindowNums);
@@ -236,6 +247,12 @@ private:
     QCheckBox                 *maintainViewCheckBox;
     QCheckBox                 *replacePlotsCheckBox;
     QCheckBox                 *autoUpdateCheckBox;
+
+    QPopupMenu                *filePopup;
+    QPopupMenu                *reopenPopup;
+    int                        reopenPopupId;
+    QPopupMenu                *closePopup;
+    int                        closePopupId;
 
     QPopupMenu                *winPopup;
     QPopupMenu                *layoutPopup;

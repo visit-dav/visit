@@ -216,6 +216,9 @@
 #    Brad Whitlock, Fri Mar 12 10:09:50 PDT 2004
 #    I added KeepAliveRPC.
 #
+#    Brad Whitlock, Thu Jan 22 14:06:37 PST 2004
+#    I added DatabaseCorrelation, and DatabaseCorrelationList.
+#
 ##############################################################################
 
 ##
@@ -249,6 +252,8 @@ SRC=    AnimationAttributes.C \
         ConfigManager.C \
         ContourOpAttributes.C \
         DatabaseAttributes.C \
+        DatabaseCorrelation.C \
+        DatabaseCorrelationList.C \
         DataNode.C \
         EngineList.C \
         Expression.C \
@@ -304,74 +309,7 @@ SRC=    AnimationAttributes.C \
         WindowInformation.C \
         Xfer.C
 
-HDR=    AnimationAttributes.h \
-        AnnotationAttributes.h \
-        AppearanceAttributes.h \
-        AttributeGroup.h \
-        AttributeSubject.h \
-        AttributeSubjectMap.h \
-        BoxExtents.h \
-        ColorAttribute.h \
-        ColorAttributeList.h \
-        ColorControlPoint.h \
-        ColorControlPointList.h \
-        ColorTableAttributes.h \
-        CompactSILRestrictionAttributes.h \
-        ConfigManager.h \
-        ContourOpAttributes.h \
-        DatabaseAttributes.h \
-        DataNode.h \
-        EngineList.h \
-        Expression.h \
-        ExpressionList.h \
-        GaussianControlPoint.h \
-        GaussianControlPointList.h \
-        GlobalAttributes.h \
-        GlobalLineoutAttributes.h \
-        HostProfile.h \
-        HostProfileList.h \
-        KeyframeAttributes.h \
-        Line.h \
-        MaterialAttributes.h \
-        MessageAttributes.h \
-        NamespaceAttributes.h \
-        Observer.h \
-        ObserverToCallback.h \
-        PlaneAttributes.h \
-        PickAttributes.h \
-        PickVarInfo.h \
-        Plot.h \
-        PlotList.h \
-        PlotQueryInfo.h \
-        PluginManagerAttributes.h \
-        Point.h \
-        PointAttributes.h \
-        PrinterAttributes.h \
-        QueryAttributes.h \
-        QueryList.h \
-	QuitRPC.h \
-        RenderingAttributes.h \
-        ResampleAttributes.h \
-        RenderingAttributes.h \
-        SaveWindowAttributes.h \
-        SILAttributes.h \
-        SILMatrixAttributes.h \
-        SILRestrictionAttributes.h \
-        SimilarityTransformAttributes.h \
-        SimpleObserver.h \
-        SphereAttributes.h \
-        StatusAttributes.h \
-        Subject.h \
-        TimeFormat.h \
-        View2DAttributes.h \
-        View3DAttributes.h \
-        ViewAttributes.h \
-        ViewCurveAttributes.h \
-	VisItRPC.h \
-        WindowAttributes.h \
-        WindowInformation.h \
-        Xfer.h
-
+HDR=$(SRC:.C=.h)
 OBJ=$(SRC:.C=.o)
 LIB=libstate
 LIBS=-lcomm -lutility

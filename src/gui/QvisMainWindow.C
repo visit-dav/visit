@@ -19,6 +19,7 @@
 #include <FileServerList.h>
 #include <GlobalAttributes.h>
 #include <MessageAttributes.h>
+#include <NameSimplifier.h>
 #include <PlotList.h>
 #include <StatusAttributes.h>
 #include <TimeFormat.h>
@@ -187,6 +188,10 @@
 //    Kathleen Bonnell, Tue Aug 26 13:47:34 PDT 2003 
 //    Changed 'Material' to 'Material Options'.
 //
+//    Brad Whitlock, Sat Jan 24 23:51:40 PST 2004
+//    I added support for next generation file handling, including close
+//    and reopen menus.
+//
 // ****************************************************************************
 
 QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
@@ -241,24 +246,39 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     //
     // Add the File menu.
     //
-    QPopupMenu * file = new QPopupMenu( this );
-    menuBar()->insertItem( tr("&File"), file );
-    file->insertItem(openIcon, tr("Select &file . . ."), this, SIGNAL(activateFileWindow()), CTRL+Key_F );
-    file->insertItem( tr("Refresh file list"), this, SIGNAL(refreshFileList()), CTRL+Key_R);
-    file->insertItem( tr("File &information . . ."), this, SIGNAL(activateFileInformationWindow()), CTRL+Key_I);
-    file->insertItem( tr("Compute &engines . . ."), this, SIGNAL(activateEngineWindow()), CTRL+Key_E);
-    file->insertSeparator();
-    file->insertItem(saveIcon, tr("&Save window"), this, SIGNAL(saveWindow()), CTRL+Key_S );
-    file->insertItem( tr("Set Save &options . . ."), this, SIGNAL(activateSaveWindow()), CTRL+Key_O);
+    filePopup = new QPopupMenu( this );
+    menuBar()->insertItem( tr("&File"), filePopup );
+    filePopup->insertItem(openIcon, tr("Select &file . . ."), this, SIGNAL(activateFileWindow()), CTRL+Key_F );
+
+    // ReOpen pull-right menu.
+    reopenPopup = new QPopupMenu(filePopup, "reopenPopup");
+    connect(reopenPopup, SIGNAL(activated(int)),
+            this, SLOT(reopenFile(int)));
+    reopenPopupId = filePopup->insertItem(tr("ReOpen file"), reopenPopup);
+    filePopup->setItemEnabled(reopenPopupId, false);
+
+    // Close pull-right menu
+    closePopup = new QPopupMenu(filePopup, "closePopup");
+    connect(closePopup, SIGNAL(activated(int)),
+            this, SLOT(closeFile(int)));
+    closePopupId = filePopup->insertItem(tr("Close file"), closePopup);
+    filePopup->setItemEnabled(closePopupId, false);
+
+    filePopup->insertItem( tr("Refresh file list"), this, SIGNAL(refreshFileList()), CTRL+Key_R);
+    filePopup->insertItem( tr("File &information . . ."), this, SIGNAL(activateFileInformationWindow()), CTRL+Key_I);
+    filePopup->insertItem( tr("Compute &engines . . ."), this, SIGNAL(activateEngineWindow()), CTRL+Key_E);
+    filePopup->insertSeparator();
+    filePopup->insertItem(saveIcon, tr("&Save window"), this, SIGNAL(saveWindow()), CTRL+Key_S );
+    filePopup->insertItem( tr("Set Save &options . . ."), this, SIGNAL(activateSaveWindow()), CTRL+Key_O);
 //    id = file->insertItem( tr("Save movie . . ."), this, SIGNAL(saveMovie()));
 //    file->setItemEnabled(id, false);
-    id = file->insertItem(printIcon, tr("Print window"), this, SIGNAL(printWindow()));
-    id = file->insertItem(tr("Set Print options . . ."), this, SIGNAL(activatePrintWindow()));
-    file->insertSeparator();
-    id = file->insertItem(tr("Restore session . . ."), this, SIGNAL(restoreSession()));
-    id = file->insertItem(tr("Save session . . ."), this, SIGNAL(saveSession()));
-    file->insertSeparator();
-    file->insertItem( tr("E&xit"), qApp, SLOT(quit()), CTRL+Key_X );
+    id = filePopup->insertItem(printIcon, tr("Print window"), this, SIGNAL(printWindow()));
+    id = filePopup->insertItem(tr("Set Print options . . ."), this, SIGNAL(activatePrintWindow()));
+    filePopup->insertSeparator();
+    id = filePopup->insertItem(tr("Restore session . . ."), this, SIGNAL(restoreSession()));
+    id = filePopup->insertItem(tr("Save session . . ."), this, SIGNAL(saveSession()));
+    filePopup->insertSeparator();
+    filePopup->insertItem( tr("E&xit"), qApp, SLOT(quit()), CTRL+Key_X );
 
     //
     // Add the Controls menu.
@@ -270,8 +290,11 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     id = ctrls->insertItem(rainbowIcon, tr("Color &table . . ."), this, SIGNAL(activateColorTableWindow()), CTRL+Key_T);
 //    id = ctrls->insertItem( tr("Command line . . ."), this, SIGNAL(activateCommandLineWindow()));
 //    ctrls->setItemEnabled(id, false);
+    id = ctrls->insertItem( tr("&Database correlations . . ."), this, SIGNAL(activateCorrelationListWindow()), CTRL+Key_D);
     id = ctrls->insertItem(exprIcon, tr("&Expressions . . ."), this, SIGNAL(activateExpressionsWindow()), CTRL+SHIFT+Key_E );
     id = ctrls->insertItem( tr("&Keyframing . . ."), this, SIGNAL(activateKeyframeWindow()), CTRL+Key_K);
+    // Disable keyframing for now...
+    ctrls->setItemEnabled(id, false);
     id = ctrls->insertItem( tr("&Material Options . . ."), this, SIGNAL(activateMaterialWindow()), CTRL+Key_M);
     id = ctrls->insertItem(lightIcon, tr("&Lighting . . ."), this, SIGNAL(activateLightingWindow()), CTRL+Key_L );
     id = ctrls->insertItem(tr("&Lineout . . ."), this, SIGNAL(activateGlobalLineoutWindow()), CTRL+SHIFT+Key_L );
@@ -404,7 +427,7 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     connect(filePanel, SIGNAL(reopenOnNextFrame()),
             this, SIGNAL(reopenOnNextFrame()));
     filePanel->ConnectFileServer(fileServer);
-    filePanel->ConnectGlobalAttributes(viewer->GetGlobalAttributes());
+    filePanel->ConnectWindowInformation(viewer->GetWindowInformation());
     middleLayout->addWidget(filePanel);
 
     // Create the global area.
@@ -417,6 +440,7 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     plotManager->ConnectGlobalAttributes(viewer->GetGlobalAttributes());
     plotManager->ConnectExpressionList(viewer->GetExpressionList());
     plotManager->ConnectPluginManagerAttributes(viewer->GetPluginManagerAttributes());
+    plotManager->ConnectWindowInformation(viewer->GetWindowInformation());
     plotManager->viewer = viewer;
 #ifdef Q_WS_MACX
     topLayout->addWidget(plotManager, 200);
@@ -551,8 +575,7 @@ QvisMainWindow::CreateGlobalArea(QLayout *tl)
     globalLayout->addMultiCellWidget(activeWindowComboBox, 1, 1, 0, 1);
 
     QLabel *maintainLabel = new QLabel("Maintain limits", central);
-    globalLayout->addMultiCellWidget(maintainLabel, 0, 0, 3, 4, Qt::AlignCenter)
-;
+    globalLayout->addMultiCellWidget(maintainLabel, 0, 0, 3, 4, Qt::AlignCenter);
 
     maintainViewCheckBox = new QCheckBox("view", central,
         "maintainViewCheckBox");
@@ -625,6 +648,9 @@ QvisMainWindow::CreateGlobalArea(QLayout *tl)
 //
 //   Brad Whitlock, Tue May 20 15:05:18 PST 2003
 //   Made it work with the regenerated MessageAttributes.
+//
+//   Brad Whitlock, Fri Jan 23 17:29:21 PST 2004
+//   Made it work with the regenerated GlobalAttributes.
 //
 // ****************************************************************************
 
@@ -738,8 +764,8 @@ QvisMainWindow::Update(Subject *TheChangedSubject)
         // Update the things in the main window that need the
         // viewer proxy's global attributes.
         UpdateGlobalArea(false);
-        UpdateWindowMenu(globalAtts->IsSelected(0) ||
-                         globalAtts->IsSelected(1));
+        UpdateWindowMenu(globalAtts->IsSelected(1) ||
+                         globalAtts->IsSelected(2));
     }
     else if(TheChangedSubject == plotList)
     {
@@ -790,7 +816,11 @@ QvisMainWindow::Update(Subject *TheChangedSubject)
 //   
 //   Eric Brugger, Fri Apr 18 09:10:03 PDT 2003 
 //   I added maintain view limits.
-//   
+//
+//   Brad Whitlock, Fri Jan 23 17:32:11 PST 2004
+//   I updated the code due to changes in GlobalAttributes. I also added code
+//   to set the contents of the source list.
+//
 // ****************************************************************************
 
 void
@@ -809,15 +839,19 @@ QvisMainWindow::UpdateGlobalArea(bool doAll)
 
         switch(i)
         {
-        case 0: // windows
+        case 0: // sources
+            UpdateFileMenu(reopenPopup, reopenPopupId);
+            UpdateFileMenu(closePopup, closePopupId);
+            break;
+        case 1: // windows
             UpdateWindowList(true);
             break;
-        case 1: // activeWindow
+        case 2: // activeWindow
             UpdateWindowList(false);
             break;
-        case 2: // iconifiedFlag
+        case 3: // iconifiedFlag
             break;
-        case 3: // autoUpdateflag
+        case 4: // autoUpdateflag
             autoUpdateCheckBox->blockSignals(true);
             autoUpdateCheckBox->setChecked(globalAtts->GetAutoUpdateFlag());
             autoUpdateCheckBox->blockSignals(false);
@@ -825,28 +859,16 @@ QvisMainWindow::UpdateGlobalArea(bool doAll)
             // Set GUIBase's autoupdate flag.
             autoUpdate = globalAtts->GetAutoUpdateFlag();
             break;
-        case 4: // replacePlots
+        case 5: // replacePlots
             replacePlotsCheckBox->blockSignals(true);
             replacePlotsCheckBox->setChecked(globalAtts->GetReplacePlots());
             replacePlotsCheckBox->blockSignals(false);
             break;
-        case 5: // applyOperator
+        case 6: // applyOperator
             break;
-        case 6: // currentFile
+        case 7: // executing
             break;
-        case 7: // currentState
-            break;
-        case 8: // nStates
-            break;
-        case 9: // currentFrame
-            break;
-        case 10: // nFrames
-            break;
-        case 11: // animationMode
-            break;
-        case 12: // executing
-            break;
-        case 13: // windowLayout
+        case 8: // windowLayout
         { // new scope
             layoutPopup->setItemChecked(0,globalAtts->GetWindowLayout() == 1);
             layoutPopup->setItemChecked(1,globalAtts->GetWindowLayout() == 2);
@@ -858,21 +880,62 @@ QvisMainWindow::UpdateGlobalArea(bool doAll)
                 layoutPopup->setItemEnabled(j, true);
         }
             break;
-        case 14: // makeDefaultConfirm
+        case 9: // makeDefaultConfirm
             // Set GUIBase's makeDefaultConfirm flag.
             makeDefaultConfirm = globalAtts->GetMakeDefaultConfirm();
             break;
-        case 15: // viewKeyframes
+        case 10: // cloneWindowOnFirstRef
             break;
-        case 16: // cloneWindowOnFirstRef
-            break;
-        case 17: // maintainView
+        case 11: // maintainView
             maintainViewCheckBox->blockSignals(true);
             maintainViewCheckBox->setChecked(globalAtts->GetMaintainView());
             maintainViewCheckBox->blockSignals(false);
             break;
         }
     } // end for
+}
+
+// ****************************************************************************
+// Method: QvisMainWindow::UpdateFileMenu
+//
+// Purpose: 
+//   Updates the contents of the specified file menu.
+//
+// Arguments:
+//   menu   : The menu to update.
+//   menuId : The menu's id in the file menu.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Feb 27 10:49:30 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisMainWindow::UpdateFileMenu(QPopupMenu *m, int menuId)
+{
+    stringVector simpleNames;
+    const stringVector &sources = globalAtts->GetSources();
+
+    // Simplify the names in the list.
+    NameSimplifier simple;
+    int i;
+    for(i = 0; i < sources.size(); ++i)
+        simple.AddName(sources[i]);
+    simple.GetSimplifiedNames(simpleNames);
+
+    // Clear out the old list and add the new list.
+    m->clear();
+    for(i = 0; i < simpleNames.size(); ++i)
+        m->insertItem(simpleNames[i].c_str(), i, i);
+
+    //
+    // Set the menu's enabled state.
+    //
+    bool menuEnabled = (m->count() > 0);
+    if(filePopup->isItemEnabled(menuId) != menuEnabled)
+        filePopup->setItemEnabled(menuId, menuEnabled);
 }
 
 // ****************************************************************************
@@ -1337,6 +1400,81 @@ QvisMainWindow::showEvent(QShowEvent *e)
 // Qt slot functions
 //
 
+// ****************************************************************************
+// Method: QvisMainWindow::reopenFile
+//
+// Purpose: 
+//   Tells the viewer to reopen the specified file. This makes the reopened
+//   file be the new active source.
+//
+// Arguments:
+//   fileIndex : The index of the source that we're reopening in the source list.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Feb 27 11:42:41 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisMainWindow::reopenFile(int fileIndex)
+{
+    const stringVector &sources = globalAtts->GetSources();
+
+    if(fileIndex >= 0 && fileIndex < sources.size())
+    {
+        //
+        // Make the file that we reopened be the new open file. Since we're
+        // reopening, this will take care of freeing the old metadata and SIL.
+        //
+        QualifiedFilename fileName(sources[fileIndex]);
+        int timeState = GetStateForSource(fileName);
+        SetOpenDataFile(fileName, timeState, 0, true);
+
+        // Tell the viewer to replace all of the plots having
+        // databases that match the file we're re-opening.
+        viewer->ReOpenDatabase(sources[fileIndex], false);
+    }
+}
+
+// ****************************************************************************
+// Method: QvisMainWindow::closeFile
+//
+// Purpose: 
+//   Tells the viewer to close the specified file.
+//
+// Arguments:
+//   fileIndex : The index of the file that we want to close.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Feb 27 11:51:59 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisMainWindow::closeFile(int fileIndex)
+{
+    const stringVector &sources = globalAtts->GetSources();
+
+    if(fileIndex >= 0 && fileIndex < sources.size())
+    {
+        //
+        // Clear out the metadata and SIL for the file.
+        //
+        fileServer->ClearFile(sources[fileIndex]);
+
+        //
+        // Tell the viewer to replace close the specified database. If the
+        // file is not being used then the viewer will allow it. Otherwise
+        // the viewer will issue a warning message.
+        //
+        viewer->CloseDatabase(sources[fileIndex]);
+    }
+}
+
 void
 QvisMainWindow::windowAdd()
 {
@@ -1502,6 +1640,49 @@ const TimeFormat &
 QvisMainWindow::GetTimeStateFormat() const
 {
     return filePanel->GetTimeStateFormat();
+}
+
+// ****************************************************************************
+// Method: QvisMainWindow::SetShowSelectedFiles
+//
+// Purpose: 
+//   This is a Qt slot function that sets whether or not the selected files
+//   should be showing.
+//
+// Arguments:
+//   val : If true, show the selected files. If false, don't show them.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jan 30 14:36:47 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisMainWindow::SetShowSelectedFiles(bool val)
+{
+    filePanel->SetShowSelectedFiles(val);
+    plotManager->SetSourceVisible(!val);
+}
+
+// ****************************************************************************
+// Method: QvisMainWindow::GetShowSelectedFiles
+//
+// Purpose: 
+//   Returns whether the selected files should be showing.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jan 30 14:36:24 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+QvisMainWindow::GetShowSelectedFiles() const
+{
+    return filePanel->GetShowSelectedFiles();
 }
 
 // ****************************************************************************

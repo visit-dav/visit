@@ -8,8 +8,6 @@
 
 #include <ViewerQuery.h>
 
-
-#include <ViewerAnimation.h>
 #include <ViewerOperator.h>
 #include <ViewerPlot.h>
 #include <ViewerPlotList.h>
@@ -243,6 +241,9 @@ ViewerQuery::StopObservingPlot()
 //    Kathleen Bonnell, Thu Mar 11 08:19:10 PST 2004
 //    Removed calculation of width and height. 
 //
+//    Brad Whitlock, Sat Jan 31 23:04:00 PST 2004
+//    I made it work without frame numbers.
+//
 // ****************************************************************************
 
 void
@@ -251,37 +252,36 @@ ViewerQuery::CreateLineout(const bool fromDefault)
     //
     //  Grab information from the originating window.
     //
-    ViewerPlotList *origList = originatingWindow->GetAnimation()->GetPlotList();
-    std::vector<int> plotIDs;
+    ViewerPlotList *origList = originatingWindow->GetPlotList();
+    intVector plotIDs;
     origList->GetActivePlotIDs(plotIDs);
     int origPlotID = (plotIDs.size() > 0 ? plotIDs[0] : -1);
     originatingPlot = origList->GetPlot(origPlotID);
-    int currentFrame = originatingWindow->GetAnimation()->GetFrameIndex();
-    int nFrames = originatingWindow->GetAnimation()->GetNFrames();
-    const char *vName;
-    if (strcmp(lineAtts->GetVarName().c_str(), "default") == 0)
-        vName  = originatingPlot->GetVariableName();
+
+    std::string vName;
+    if (lineAtts->GetVarName() == "default")
+        vName = originatingPlot->GetVariableName();
     else 
-        vName  = lineAtts->GetVarName().c_str();
-    std::string hdbName(originatingPlot->GetHostName());
-    hdbName += ":";
-    hdbName += originatingPlot->GetDatabaseName();
+        vName = lineAtts->GetVarName();
+    std::string hdbName(originatingPlot->GetSource());
     bool replacePlots = ViewerWindowManager::Instance()->
                         GetClientAtts()->GetReplacePlots();
  
     int plotType = PlotPluginManager::Instance()->GetEnabledIndex("Curve_1.0");
-    ViewerPlotList *plotList =  resultsWindow->GetAnimation()->GetPlotList();
-    resultsWindow->GetAnimation()->SetNFrames(nFrames);
+    ViewerPlotList *plotList = resultsWindow->GetPlotList();
 
-    //
-    // Only set the frame index if it different than what the animation
-    // currently holds, otherwise will force unnecessary pipeline re-executions.
-    //
-    if (currentFrame != resultsWindow->GetAnimation()->GetFrameIndex())
+    // If the original plot list has an active time slider, make sure that
+    // the the new plot list uses the same time slider.
+    if(origList->HasActiveTimeSlider())
     {
-        resultsWindow->GetAnimation()->SetFrameIndex(currentFrame);
+        const std::string &ats = origList->GetActiveTimeSlider();
+        int state, nStates;
+        origList->GetTimeSliderStates(ats, state, nStates);
+        plotList->CreateTimeSlider(ats, state);
+        plotList->SetActiveTimeSlider(ats);
     }
-    plotList->SetHostDatabaseName(hdbName.c_str());
+
+    plotList->SetHostDatabaseName(hdbName);
  
     int pid = plotList->AddPlot(plotType, vName, replacePlots, false);
     resultsPlot = plotList->GetPlot(pid);
@@ -314,16 +314,10 @@ ViewerQuery::CreateLineout(const bool fromDefault)
     resultsPlot->AddOperator(operatorType, fromDefault);
 
     //
-    // Update the view for the new window.
-    //
-
-    int ts = originatingWindow->GetAnimation()->GetFrameIndex();
- 
-    //
     //  The client atts were already copied created,
     //  so now update them with the lineAtts.
     //
-    resultsPlot->SetPlotAtts(0, lineAtts);
+    resultsPlot->SetPlotAtts(lineAtts);
     int id = resultsPlot->GetNOperators() -1;
     resultsPlot->GetOperator(id)->SetOperatorAtts(lineAtts);
 
@@ -772,13 +766,13 @@ ViewerQuery::CanHandleTool()
         // Retrieve the plot ID for the current active,non-hidden, realized 
         // plot in the plot list where my results are drawn.
         std::vector<int> plotIDs;
-        resultsWindow->GetAnimation()->GetPlotList()->GetActivePlotIDs(plotIDs);
+        resultsWindow->GetPlotList()->GetActivePlotIDs(plotIDs);
         int activePlotId = (plotIDs.size() > 0 ? plotIDs[0] : -1);
 
         //
         //  Does this plot match my results?
-        retval = MatchResultsPlot(resultsWindow->GetAnimation()
-                 ->GetPlotList()->GetPlot(activePlotId));
+        retval = MatchResultsPlot(resultsWindow->GetPlotList()->
+                                  GetPlot(activePlotId));
     }
     return retval;
 }
@@ -859,7 +853,7 @@ void
 ViewerQuery::ReCreateLineout()
 {
     StopObservingPlot();
-    resultsWindow->GetAnimation()->GetPlotList()->DeletePlot(resultsPlot, false);   
+    resultsWindow->GetPlotList()->DeletePlot(resultsPlot, false);   
     CreateLineout();
     StartObservingPlot();
 }

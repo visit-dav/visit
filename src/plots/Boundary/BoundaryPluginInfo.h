@@ -29,8 +29,6 @@ class BoundaryAttributes;
 // ****************************************************************************
 
 class BoundaryGeneralPluginInfo: public virtual GeneralPlotPluginInfo
-
-
 {
   public:
     virtual char *GetName() const;
@@ -66,15 +64,15 @@ class BoundaryViewerPluginInfo: public virtual ViewerPlotPluginInfo, public virt
     virtual avtPlot *AllocAvtPlot();
 
     virtual void InitializePlotAtts(AttributeSubject *atts,
-        const char *hostName, const char *databaseName,
+        const avtDatabaseMetaData *md,
         const char *variableName);
 
     virtual void ReInitializePlotAtts(AttributeSubject *atts,
-        const char *hostName, const char *databaseName,
+        const avtDatabaseMetaData *md,
         const char *variableName);
 
     virtual void ResetPlotAtts(AttributeSubject *atts,
-        const char *hostName, const char *databaseName,
+        const avtDatabaseMetaData *md,
         const char *variableName);
 
     virtual const char **XPMIconData() const;
@@ -86,7 +84,7 @@ class BoundaryViewerPluginInfo: public virtual ViewerPlotPluginInfo, public virt
     static BoundaryAttributes *clientAtts;
 
     void   PrivateSetPlotAtts(AttributeSubject *atts,
-        const char *hostName, const char *databaseName,
+        const avtDatabaseMetaData *md,
         const char *variableName);
 };
 

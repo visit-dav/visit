@@ -31,6 +31,7 @@
 #include <OperatorPluginManager.h>
 
 #include <ChangeDirectoryException.h>
+#include <DatabaseCorrelationList.h>
 #include <GetFileListException.h>
 #include <SaveWindowAttributes.h>
 #include <AnnotationAttributes.h>
@@ -56,6 +57,7 @@
 #include <QvisAppearanceWindow.h>
 #include <QvisColorTableWindow.h>
 #include <QvisCommandLineWindow.h>
+#include <QvisDatabaseCorrelationListWindow.h>
 #include <QvisEngineWindow.h>
 #include <QvisExpressionsWindow.h>
 #include <QvisFileInformationWindow.h>
@@ -1647,13 +1649,18 @@ QvisGUIApplication::CreateMainWindow()
 //   Brad Whitlock, Fri Oct 31 14:24:24 PST 2003
 //   I changed how the annotation window is initialized.
 //
+//   Brad Whitlock, Tue Jan 27 21:39:16 PST 2004
+//   I changed some initialization for the keyframe window. I also hooked up
+//   a new preference window signal. I added the database correlation list
+//   window.
+//
 // ****************************************************************************
 
 bool
 QvisGUIApplication::CreateWindows(int startPercent, int endPercent)
 {
     bool  done = false;
-    const int nWindows = 25;
+    const int nWindows = 26;
     float perWindow = float(endPercent - startPercent) / float(nWindows-1);
 #define PERCENT int(startPercent + (perWindow * windowInitStage))
 
@@ -1824,7 +1831,7 @@ QvisGUIApplication::CreateWindows(int startPercent, int endPercent)
         keyframeWin->ConnectAttributes(viewer->GetAnnotationAttributes(), "Annotation");
         keyframeWin->ConnectAttributes(viewer->GetAppearanceAttributes(), "Appearance");
         */
-        keyframeWin->ConnectGlobalAttributes(viewer->GetGlobalAttributes());
+        keyframeWin->ConnectWindowInformation(viewer->GetWindowInformation());
         keyframeWin->ConnectPlotList(viewer->GetPlotList());
         break;
     case 17:
@@ -1897,6 +1904,8 @@ QvisGUIApplication::CreateWindows(int startPercent, int endPercent)
                 preferencesWin, SLOT(show()));
         connect(preferencesWin, SIGNAL(changeTimeFormat(const TimeFormat &)),
                 mainWin, SLOT(SetTimeStateFormat(const TimeFormat &)));
+        connect(preferencesWin, SIGNAL(showSelectedFiles(bool)),
+                mainWin, SLOT(SetShowSelectedFiles(bool)));
         otherWindows.push_back(preferencesWin);
         break;
     case 24:
@@ -1914,6 +1923,15 @@ QvisGUIApplication::CreateWindows(int startPercent, int endPercent)
         // engine window.
         engineWin->ConnectStatusAttributes(viewer->GetStatusAttributes());
         mainWin->ConnectViewerStatusAttributes(viewer->GetStatusAttributes());
+    case 25:
+        // Create the database correlation list window.
+        SplashScreenProgress("Creating Correlation window...", PERCENT);
+        correlationListWin = new QvisDatabaseCorrelationListWindow(
+            viewer->GetDatabaseCorrelationList(), "Database correlation list",
+            "Correlations", mainWin->GetNotepad());
+        connect(mainWin, SIGNAL(activateCorrelationListWindow()),
+                correlationListWin, SLOT(show()));
+        otherWindows.push_back(correlationListWin);
 
         // Move this code to the new last case when one is added.
         done = true;
@@ -2124,6 +2142,9 @@ QvisGUIApplication::CreatePluginWindows()
 //    Brad Whitlock, Tue Feb 24 10:25:12 PDT 2004
 //    I made it open a text file instead of a binary file.
 //
+//    Brad Whitlock, Fri Jan 30 14:46:54 PST 2004
+//    I added code to save whether the selected files list should be shown.
+//
 // ****************************************************************************
 
 void
@@ -2177,6 +2198,10 @@ QvisGUIApplication::WriteConfigFile(const char *filename)
     // Save the timestate format.
     TimeFormat fmt(mainWin->GetTimeStateFormat());
     fmt.CreateNode(guiNode, true, false);
+
+    // Save whether the selected files list should be shown.
+    guiNode->AddNode(
+        new DataNode("showSelectedFiles", mainWin->GetShowSelectedFiles()));
 
     // Try to open the output file.
     if((fp = fopen(filename, "wt")) == 0)
@@ -2555,6 +2580,9 @@ QvisGUIApplication::ProcessConfigSettings(DataNode *node, bool systemConfig)
 //   I added code to set the timestate display mode for the main window and
 //   the preferences window.
 //
+//   Brad Whitlock, Fri Jan 30 14:41:50 PST 2004
+//   I added code to set whether the selected files should be shown.
+//
 // ****************************************************************************
 
 void
@@ -2600,6 +2628,14 @@ QvisGUIApplication::ProcessWindowConfigSettings(DataNode *node)
     fmt.SetFromNode(guiNode);
     mainWin->SetTimeStateFormat(fmt);
     preferencesWin->SetTimeStateFormat(fmt);
+
+    // Get whether the selected files should be shown.
+    DataNode *ssfNode = 0;
+    if((ssfNode = guiNode->GetNode("showSelectedFiles")) != 0)
+    {
+        mainWin->SetShowSelectedFiles(ssfNode->AsBool());
+        preferencesWin->SetShowSelectedFiles(ssfNode->AsBool());
+    }
 
     // Read the config file stuff for the plugin windows.
     ReadPluginWindowConfigs(guiNode, configVersion);
@@ -3002,14 +3038,16 @@ QvisGUIApplication::RefreshFileList()
 // Creation:   Wed Jul 30 16:57:16 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Jan 27 21:41:00 PST 2004
+//   Changed the name of the viewer RPC that advances to the next state.
+//
 // ****************************************************************************
 
 void
 QvisGUIApplication::RefreshFileListAndNextFrame()
 {
     RefreshFileList();
-    viewer->AnimationNextFrame();
+    viewer->TimeSliderNextState();
 }
 
 // ****************************************************************************

@@ -688,6 +688,10 @@ class MakeMovie:
     #   If there was a problem when trying to set the animation frame,
     #   try and draw the plots again.
     #
+    #   Brad Whitlock, Tue Mar 2 10:55:33 PDT 2004
+    #   I changed the animation methods so they animate using the active
+    #   time slider.
+    #
     ###########################################################################
 
     def GenerateFrames(self):
@@ -716,15 +720,15 @@ class MakeMovie:
             self.numFrames = 0
             i = 0
             drawThePlots = 0
-            while(i < AnimationGetNFrames()):
-                if(AnimationSetFrame(i) == 0):
+            while(i < TimeSliderGetNStates()):
+                if(SetTimeSliderState(i) == 0):
                     drawThePlots = 1
                     print "There was an error when trying to set the "\
-"animation frame to %d. VisIt will now try to redraw the plots." % i
+"time slider state to %d. VisIt will now try to redraw the plots." % i
                 if(drawThePlots):
                     if(DrawPlots() == 0):
-                        print "VisIt could not draw plots for frame %d. "\
-"You should investigate the file used for that frame." % i
+                        print "VisIt could not draw plots for time slider "\
+"state %d. You should investigate the files used for that state." % i
                     else:
                         drawThePlots = 0
                 self.SaveImage(self.numFrames, ext)

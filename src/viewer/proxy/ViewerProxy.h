@@ -16,6 +16,7 @@ class AppearanceAttributes;
 class AttributeSubject;
 class ColorTableAttributes;
 class Connection;
+class DatabaseCorrelationList;
 class ExpressionList;
 class EngineList;
 class GlobalAttributes;
@@ -320,6 +321,13 @@ class Xfer;
 //    Brad Whitlock, Mon Dec 29 09:17:30 PDT 2003
 //    Added methods to set and update the center of rotation.
 //
+//    Brad Whitlock, Fri Jan 23 09:07:48 PDT 2004
+//    I added a list of DatabaseCorrelations and the list of sources. I also
+//    renamed a few of the animation methods so they make more sense for
+//    multiple time sliders. I added the ActivateDatabase and CheckForNewStates
+//    methods. I also added DefineDatabaseCorrelation, AlterDatabaseCorrelation,
+//    DeleteDatabaseCorrelation, and CloseDatabase.
+//
 //    Brad Whitlock, Thu Feb 26 13:37:02 PST 2004
 //    Added ClearCacheForAllEngines.
 //
@@ -365,11 +373,22 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
 
     void OpenDatabase(const std::string &database, int timeState = 0,
                       bool addDefaultPlots = true);
+    void CloseDatabase(const std::string &database);
+    void ActivateDatabase(const std::string &database);
+    void CheckForNewStates(const std::string &database);
     void ReOpenDatabase(const std::string &database, bool forceClose = true);
     void ReplaceDatabase(const std::string &database, int timeState = 0);
     void OverlayDatabase(const std::string &database);
     void ClearCache(const std::string &hostName);
     void ClearCacheForAllEngines();
+
+    void CreateDatabaseCorrelation(const std::string &name,
+                                   const stringVector &dbs, int method,
+                                   int nStates = -1);
+    void AlterDatabaseCorrelation(const std::string &name,
+                                  const stringVector &dbs, int method,
+                                  int nStates = -1);
+    void DeleteDatabaseCorrelation(const std::string &name);
 
     void OpenComputeEngine(const std::string &hostName, const stringVector &argv);
     void CloseComputeEngine(const std::string &hostName);
@@ -379,9 +398,10 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
     void AnimationPlay();
     void AnimationReversePlay();
     void AnimationStop();
-    void AnimationNextFrame();
-    void AnimationPreviousFrame();
-    void AnimationSetFrame(int frame);
+    void TimeSliderNextState();
+    void TimeSliderPreviousState();
+    void SetTimeSliderState(int state);
+    void SetActiveTimeSlider(const std::string &ts);
 
     void AddPlot(int type, const std::string &var);
     void SetPlotFrameRange(int plotId, int frame0, int frame1);
@@ -527,6 +547,8 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
                                     {return appearanceAtts;};
     ColorTableAttributes       *GetColorTableAttributes() const 
                                     {return colorTableAtts;};
+    DatabaseCorrelationList    *GetDatabaseCorrelationList() const
+                                    {return correlationList; };
     EngineList                 *GetEngineList() const 
                                     {return engineList;};
     ExpressionList             *GetExpressionList() const 
@@ -538,7 +560,7 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
     KeyframeAttributes         *GetKeyframeAttributes() const
                                     {return keyframeAtts;}
     LightList                  *GetLightList() const 
-                                    { return lightList; };
+                                    {return lightList; };
     MessageAttributes          *GetMessageAttributes() const 
                                     {return messageAtts;};
     AttributeSubject           *GetOperatorAttributes(int type) const;
@@ -560,7 +582,7 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
     StatusAttributes           *GetStatusAttributes() const 
                                     {return statusAtts;};
     SyncAttributes             *GetSyncAttributes() const
-                                    { return syncAtts; };
+                                    {return syncAtts; };
     ViewCurveAttributes        *GetViewCurveAttributes() const 
                                     {return viewCurveAttributes;};
     View2DAttributes           *GetView2DAttributes() const 
@@ -594,6 +616,7 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
     // State objects
     SyncAttributes             *syncAtts;
     GlobalAttributes           *globalAtts;
+    DatabaseCorrelationList    *correlationList;
     PlotList                   *plotList;
     ColorTableAttributes       *colorTableAtts;
     ExpressionList             *exprList;

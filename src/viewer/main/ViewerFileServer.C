@@ -6,6 +6,10 @@
 #include <avtDatabaseMetaData.h>
 #include <avtSIL.h>
 #include <BadHostException.h>
+#include <DatabaseCorrelation.h>
+#include <DatabaseCorrelationList.h>
+#include <DataNode.h>
+#include <Expression.h>
 #include <GetMetaDataException.h>
 #include <HostProfileList.h>
 #include <HostProfile.h>
@@ -16,12 +20,16 @@
 #include <CancelledConnectException.h>
 #include <MDServerProxy.h>
 #include <ParentProcess.h>
+#include <ParsingExprList.h>
 #include <ViewerConnectionProgressDialog.h>
 #include <ViewerMessaging.h>
 #include <ViewerWindowManager.h>
-#include <ViewerAnimation.h>
 
 #include <DebugStream.h>
+
+#include <algorithm>
+
+#define ANY_STATE -1
 
 // A static pointer to the one and only instance of ViewerFileServer
 ViewerFileServer *ViewerFileServer::instance = NULL;
@@ -53,6 +61,7 @@ ViewerFileServer *ViewerFileServer::instance = NULL;
 ViewerFileServer::ViewerFileServer() : ViewerServerManager(), servers(),
     fileMetaData(), fileSIL()
 {
+    databaseCorrelationList = new DatabaseCorrelationList;
 }
 
 // ****************************************************************************
@@ -205,36 +214,22 @@ ViewerFileServer::Instance()
 //   host     : Identifies the mdserver from which to get the metadata.
 //   filename : The path and filename of the file for which we want metadata.
 //
+// Modifications:
+//   Brad Whitlock, Fri Mar 26 10:47:51 PDT 2004
+//   I rewrote the method so it uses GetMetaDataForState.
+//
 // ****************************************************************************
+
 bool
 ViewerFileServer::MetaDataIsInvariant(const std::string &host, 
-                                      const std::string &filename,
-                                      const int timeState)
+    const std::string &filename, int state)
 {
-    int workingTimeState = -1;
-    if (timeState < 0)
-        workingTimeState = ViewerWindowManager::Instance()->
-                                          GetActiveAnimation()->GetTimeIndex();
-    else
-        workingTimeState = timeState;
-
-    // Create a filename of the form host:filename.
-    std::string fullname(host);
-    fullname += ":";
-    fullname += filename;
-
-    // search for any entry in the cache that at least begins host:filename 
-    FileMetaDataMap::iterator i;
-    for (i = fileMetaData.begin(); i != fileMetaData.end(); i++)
-    {
-       if (i->first.find(fullname) != std::string::npos)
-          return ! i->second->GetMustRepopulateOnStateChange();
-    }
-
-    // ok, do it the hard way
-    const avtDatabaseMetaData *md = GetMetaData(host, filename, timeState);
-
-    return ! md->GetMustRepopulateOnStateChange();
+    //
+    // Get the metadata for the specified state and then return whether it
+    // is invariant.
+    //
+    const avtDatabaseMetaData *md = GetMetaDataForState(host, filename, state);
+    return (md != 0) ? (!md->GetMustRepopulateOnStateChange()) : true;
 }
 
 // ****************************************************************************
@@ -289,46 +284,143 @@ ViewerFileServer::MetaDataIsInvariant(const std::string &host,
 //   Hank Childs, Mon Sep 15 17:18:36 PDT 2003
 //   Account for databases that change over time.
 //
+//   Brad Whitlock, Fri Mar 26 11:48:56 PDT 2004
+//   Moved the bulk of the code into GetMetaDataHelper.
+//
 // ****************************************************************************
 
 const avtDatabaseMetaData *
 ViewerFileServer::GetMetaData(const std::string &host, 
-                              const std::string &filename,
-                              const int timeState)
+                              const std::string &db)
 {
-    int workingTimeState = -1;
-    if (timeState < 0)
-        workingTimeState = ViewerWindowManager::Instance()->
-                                          GetActiveAnimation()->GetTimeIndex();
-    else
-        workingTimeState = timeState;
-    // Create a filename of the form host:filename.
-    std::string fullname(host);
-    fullname += ":";
-    fullname += filename;
-
-    // If the filename is in the cache, return its metadata, otherwise query
-    // the appropriate mdserver for it.
-    if(fileMetaData.find(fullname) != fileMetaData.end())
+    //
+    // We don't care about the time state so look for any cached metadata
+    // having the right host and database name and return it.
+    //
+    std::string dbName(ComposeDatabaseName(host, db));
+    for(FileMetaDataMap::const_iterator pos = fileMetaData.begin();
+        pos != fileMetaData.end();
+        ++pos)
     {
-        return fileMetaData[fullname];
+        // Split the metadata key into name and ts components so we only
+        // add a file once in the case that it is time-varying and there are
+        // multiple cached metadata objects for different time states.
+        std::string name;
+        int         ts;
+        SplitKey(pos->first, name, ts);
+
+        if(name == dbName)
+            return pos->second;
     }
 
-    // Some databases have meta-data that varies over time.  If this is the
-    // case, then we store the timeState with the meta-data.  Give this a try
-    // as well.
-    std::string fullname_state(host);
-    fullname_state += ":";
-    fullname_state += filename;
-    fullname_state += ":";
-    char state_str[64];
-    sprintf(state_str, "%d", workingTimeState);
-    fullname_state += state_str;
-    if(fileMetaData.find(fullname_state) != fileMetaData.end())
+    return GetMetaDataHelper(host, db, ANY_STATE);
+}
+
+// ****************************************************************************
+// Method: ViewerFileServer::GetMetaDataForState
+//
+// Purpose: 
+//   This method returns the metadata for database at the specified time state.
+//
+// Arguments:
+//   host      : The host where the database is located.
+//   db        : The name of the database.
+//   timeState : The time state for which we want metadata.
+//
+// Returns:    
+//
+// Note:       The timeState argument is only used if we have to read new
+//             metadata or if the metadata is not invariant. We ignore the
+//             time state argument in the cache lookup if the metadata is
+//             invariant because invariant metadata never has the time state
+//             stored as part of its cache key.
+//
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Mar 26 11:49:13 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+const avtDatabaseMetaData *
+ViewerFileServer::GetMetaDataForState(const std::string &host, 
+    const std::string &db, int timeState)
+{
+    //
+    // Make sure a valid state was passed.
+    //
+    if(timeState < 0)
     {
-        return fileMetaData[fullname_state];
+        Error("GetMetaDataForState called with ANY_STATE. That is "
+              "not allowed so VisIt will instead use time state 0.");
+        timeState = 0;
     }
 
+    //
+    // First check to see if the metadata is time-varying. If the metadata
+    // does not vary over time then return the first metadata that we
+    // find. If it does vary over time and that metadata is already cached,
+    // return that metadata.
+    //
+    std::string dbName(ComposeDatabaseName(host, db));
+    for(FileMetaDataMap::const_iterator pos = fileMetaData.begin();
+        pos != fileMetaData.end();
+        ++pos)
+    {
+        // Split the metadata key into name and ts components so we only
+        // add a file once in the case that it is time-varying and there are
+        // multiple cached metadata objects for different time states.
+        std::string name;
+        int         ts;
+        SplitKey(pos->first, name, ts);
+
+        if(name == dbName)
+        {
+            //
+            // If the metadata does not change over time or if it does and
+            // the time states match then return what we found.
+            //
+            if(!pos->second->GetMustRepopulateOnStateChange() ||
+               ts == timeState)
+            {
+                return pos->second;
+            }
+        }
+    }
+
+    return GetMetaDataHelper(host, db, timeState);
+}
+
+// ****************************************************************************
+// Method: ViewerFileServer::GetMetaDataHelper
+//
+// Purpose: 
+//   This method is used to help read metadata from the mdserver.
+//
+// Arguments:
+//   host      : The host where the database is located.
+//   db        : The name of the database.
+//   timeState : The time state for which we want metadata.
+//
+// Returns:    
+//
+// Note:       The bulk of this code was moved from GetMetaData. The timeState
+//             argument can be set to a valid time state or it can be set to
+//             ANY_STATE if we want to allow the mdserver to give back the
+//             metadata for whatever state it prefers.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Mar 26 11:52:33 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+const avtDatabaseMetaData *
+ViewerFileServer::GetMetaDataHelper(const std::string &host, 
+    const std::string &db, int timeState)
+{
     // Try and start a server if one does not exist.
     NoFaultStartServer(host);
 
@@ -341,9 +433,11 @@ ViewerFileServer::GetMetaData(const std::string &host,
         int numAttempts = 0;
         bool tryAgain = false;
 
+        //
         // We have a server from which we can get the metadata for the 
         // specified filename so let's try and get it now and put it in the
         // metadata map.
+        //
         do
         {
             tryAgain = false;
@@ -351,21 +445,30 @@ ViewerFileServer::GetMetaData(const std::string &host,
             TRY
             {
                 const avtDatabaseMetaData *md =
-                    servers[host]->proxy->GetMetaData(filename, 
-                                                      workingTimeState);
+                    servers[host]->proxy->GetMetaData(db, timeState);
 
                 if(md != NULL)
                 {
                     avtDatabaseMetaData *mdCopy = new avtDatabaseMetaData(*md);
 
+                    //
                     // If the meta-data changes for each state, then cache
                     // the meta-data on a per state basis.  This is done by
-                    // encoding the state into the name.
-                    std::string key;
-                    if (mdCopy->GetMustRepopulateOnStateChange())
-                        key = fullname_state;
-                    else
-                        key = fullname;
+                    // encoding the state into the name. Don't encode the state
+                    // into the name though if we got it using ANY_STATEs
+                    //
+                    std::string key(ComposeDatabaseName(host, db));
+                    if (mdCopy->GetMustRepopulateOnStateChange() &&
+                        timeState != ANY_STATE)
+                    {
+                        char timeStateString[20];
+                        SNPRINTF(timeStateString, 20, ":%d", timeState);
+                        key += timeStateString;
+                    }
+
+                    //
+                    // Add the metadata copy to the cache.
+                    //
                     fileMetaData[key] = mdCopy;
 
                     retval = mdCopy;
@@ -376,7 +479,7 @@ ViewerFileServer::GetMetaData(const std::string &host,
                 char msg[1000];
                 SNPRINTF(msg, 1000, "VisIt cannot read the metadata for the file "
                          "\"%s\" on host %s.\n\nThe metadata server returned "
-                         "the following message:\n\n%s", filename.c_str(),
+                         "the following message:\n\n%s", db.c_str(),
                         host.c_str(), gmde.GetMessage().c_str());
                 Error(msg);
             }
@@ -456,39 +559,140 @@ ViewerFileServer::GetMetaData(const std::string &host,
 //   Hank Childs, Mon Sep 15 17:18:36 PDT 2003
 //   Account for SILs that change over time.
 //
+//   Brad Whitlock, Fri Mar 26 12:27:00 PDT 2004
+//   I rewrote the method so it will return the SIL for any time state that
+//   it finds.
+//
 // ****************************************************************************
 
 const avtSIL *
-ViewerFileServer::GetSIL(const std::string &host, const std::string &filename,
-    const int timeState)
+ViewerFileServer::GetSIL(const std::string &host, 
+    const std::string &db)
 {
-    int workingTimeState = -1;
-    if (timeState < 0)
-        workingTimeState = ViewerWindowManager::Instance()->
-                                          GetActiveAnimation()->GetTimeIndex();
-    else
-        workingTimeState = timeState;
-
-    // Create a filename of the form host:filename:time.
-    // If we request a SIL from time A, and then request it from time B,
-    // it will calculate a new SIL, even if the SIL does not change over time.
-    // However, this routine will only be called one time if the SIL does
-    // not change over time, so this is a non-issue.
-    std::string fullName(host);
-    fullName += ":";
-    fullName += filename;
-    fullName += ":";
-    char state_str[64];
-    sprintf(state_str, "%d", workingTimeState);
-    fullName += state_str;
-
-    // If the filename is in the cache, return its SIL attributes,
-    // otherwise query the appropriate mdserver for it.
-    if(fileSIL.find(fullName) != fileSIL.end())
+    //
+    // We don't care about the time state so look for any cached metadata
+    // having the right host and database name and return it.
+    //
+    std::string dbName(ComposeDatabaseName(host, db));
+    for(FileSILMap::const_iterator pos = fileSIL.begin();
+        pos != fileSIL.end();
+        ++pos)
     {
-        return fileSIL[fullName];
+        // Split the metadata key into name and ts components so we only
+        // add a file once in the case that it is time-varying and there are
+        // multiple cached metadata objects for different time states.
+        std::string name;
+        int         ts;
+        SplitKey(pos->first, name, ts);
+
+        if(name == dbName)
+            return pos->second;
     }
 
+    return GetSILHelper(host, db, ANY_STATE);
+}
+
+// ****************************************************************************
+// Method: ViewerFileServer::GetSILForState
+//
+// Purpose: 
+//   Gets the SIL at the specified time state.
+//
+// Arguments:
+//   host      : The host where the database is located.
+//   db        : The database for which we want the SIL.
+//   timeState : The time state for which we want the SIL.
+//
+// Returns:    A pointer to a SIL.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Mar 26 12:27:31 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+const avtSIL *
+ViewerFileServer::GetSILForState(const std::string &host, 
+    const std::string &db, int timeState)
+{
+    //
+    // Make sure a valid state was passed.
+    //
+    if(timeState < 0)
+    {
+        Error("GetSILForState called with ANY_STATE. That is "
+              "not allowed so VisIt will instead use time state 0.");
+        timeState = 0;
+    }
+
+    //
+    // Determine whether the metadata (and the SIL) are invariant.
+    //
+    bool invariantMetaData = MetaDataIsInvariant(host, db, timeState);
+
+    //
+    // First check to see if the metadata is time-varying. If the metadata
+    // does not vary over time then return the first metadata that we
+    // find. If it does vary over time and that metadata is already cached,
+    // return that metadata.
+    //
+    std::string dbName(ComposeDatabaseName(host, db));
+    for(FileSILMap::const_iterator pos = fileSIL.begin();
+        pos != fileSIL.end();
+        ++pos)
+    {
+        // Split the metadata key into name and ts components so we only
+        // add a file once in the case that it is time-varying and there are
+        // multiple cached metadata objects for different time states.
+        std::string name;
+        int         ts;
+        SplitKey(pos->first, name, ts);
+
+        if(name == dbName)
+        {
+            //
+            // If the metadata does not change over time or if it does and
+            // the time states match then return what we found.
+            //
+            if(invariantMetaData || ts == timeState)
+            {
+                return pos->second;
+            }
+        }
+    }
+
+    return GetSILHelper(host, db, timeState);
+}
+
+// ****************************************************************************
+// Method: ViewerFileServer::GetSILHelper
+//
+// Purpose: 
+//   Gets the SIL at the specified time state.
+//
+// Arguments:
+//   host      : The host where the database is located.
+//   db        : The database for which we want the SIL.
+//   timeState : The time state for which we want the SIL.
+//
+// Returns:    A pointer to a SIL.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Mar 26 12:27:31 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+const avtSIL *
+ViewerFileServer::GetSILHelper(const std::string &host, const std::string &db,
+    const int timeState)
+{
     // Try and start a server if one does not exist.
     NoFaultStartServer(host);
 
@@ -510,13 +714,28 @@ ViewerFileServer::GetSIL(const std::string &host, const std::string &filename,
 
             TRY
             {
+                //
+                // Create a key to use when storing the SIL in the map.
+                //
+                std::string key(ComposeDatabaseName(host, db));
+                if(timeState != ANY_STATE &&
+                   !MetaDataIsInvariant(host, db, timeState))
+                {
+                    char state_str[64];
+                    SNPRINTF(state_str, 64, ":%d", timeState);
+                    key += state_str;
+                }
+
+                //
+                // Get the SIL from the mdserver
+                //
                 const SILAttributes *atts =
-                    servers[host]->proxy->GetSIL(filename, workingTimeState);
+                    servers[host]->proxy->GetSIL(db, timeState);
 
                 if(atts != NULL)
                 {
                     avtSIL *silCopy = new avtSIL(*atts);
-                    fileSIL[fullName] = silCopy;
+                    fileSIL[key] = silCopy;
                     retval = silCopy;
                 }
             }
@@ -527,7 +746,7 @@ ViewerFileServer::GetSIL(const std::string &host, const std::string &filename,
                 char msg[1000];
                 SNPRINTF(msg, 1000, "VisIt cannot read the SIL for the file "
                          "\"%s\" on host %s.\n\nThe metadata server returned "
-                         "the following message:\n\n%s", filename.c_str(),
+                         "the following message:\n\n%s", db.c_str(),
                          host.c_str(), gmde.GetMessage().c_str());
                 Error(msg);
             }
@@ -563,6 +782,47 @@ ViewerFileServer::GetSIL(const std::string &host, const std::string &filename,
     }
 
     return retval;
+}
+
+// ****************************************************************************
+// Method: ViewerFileServer::ExpandDatabaseName
+//
+// Purpose: 
+//   Expands a hostDBName into a host, db, and host+db name.
+//
+// Arguments:
+//   hostDBName : The only input that is required. The value must be a
+//                host:database.
+//   host       : Returns the name of the host.
+//   db         : Returns the expanded database name.
+//
+// Note:       hostDBName is modified to be the new host-qualified
+//             expanded name.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 25 15:03:48 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerFileServer::ExpandDatabaseName(std::string &hostDBName,
+    std::string &host, std::string &db)
+{
+    // Split the host database name into host + db.
+    SplitHostDatabase(hostDBName, host, db);
+
+    //
+    // Expand the file name so it does not contain wildcards or
+    // relatve paths.
+    //
+    db = ExpandedFileName(host, db);
+
+    //
+    // Compose the new filename.
+    //
+    hostDBName = ComposeDatabaseName(host, db);
 }
 
 // ****************************************************************************
@@ -1189,27 +1449,56 @@ ViewerFileServer::TerminateConnectionRequest(const stringVector &args, int failC
 // Creation:   Mon Jul 29 15:28:25 PST 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Feb 27 12:25:13 PDT 2004
+//   I changed the code so it can actually remove metadata and SILs for
+//   time-varying metadata. I also added code to delete the default database
+//   correlation for the database, if one exists.
+//
 // ****************************************************************************
 
 void
 ViewerFileServer::ClearFile(const std::string &fullName)
 {
     // Clear the metadata.
-    FileMetaDataMap::iterator mpos;
-    if((mpos = fileMetaData.find(fullName)) != fileMetaData.end())
+    for(FileMetaDataMap::iterator mpos = fileMetaData.begin();
+        mpos != fileMetaData.end();)
     {
-        delete mpos->second;
-        fileMetaData.erase(mpos);
+        // Split the key into host+database and time state components.
+        std::string hdb;
+        int ts;
+        SplitKey(mpos->first, hdb, ts);
+
+        // If the name is a file that we're deleting then remove the metadata.
+        if(hdb == fullName)
+        {
+            delete mpos->second;
+            fileMetaData.erase(mpos++);
+        }
+        else
+            ++mpos;
     }
 
     // Clear the SIL.
-    FileSILMap::iterator spos;
-    if((spos = fileSIL.find(fullName)) != fileSIL.end())
+    for(FileSILMap::iterator spos = fileSIL.begin(); spos != fileSIL.end();)
     {
-        delete spos->second;
-        fileSIL.erase(spos);
+        // Split the key into host+database and time state components.
+        std::string hdb;
+        int ts;
+        SplitKey(spos->first, hdb, ts);
+
+        // If the name is a file that we're deleting then remove the SIL.
+        if(hdb == fullName)
+        {
+            delete spos->second;
+            fileSIL.erase(spos++);
+        }
+        else
+            ++spos;
     }
+
+    // Remove the correlation
+    if(databaseCorrelationList->RemoveCorrelation(fullName))
+        databaseCorrelationList->Notify();
 }
 
 // ****************************************************************************
@@ -1247,6 +1536,673 @@ ViewerFileServer::CloseFile(const std::string &host)
     }
 }
 
+// ****************************************************************************
+// Method: ViewerFileServer::GetDatabaseCorrelationList
+//
+// Purpose: 
+//   Returns the list of database correlations.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jan 23 17:15:45 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+DatabaseCorrelationList *
+ViewerFileServer::GetDatabaseCorrelationList()
+{
+    return databaseCorrelationList;
+}
+
+// ****************************************************************************
+// Method: ViewerFileServer::CreateDatabaseCorrelation
+//
+// Purpose: 
+//   Creates and returns a database correlation that contains the specified
+//   databases.
+//
+// Arguments:
+//   name    : The name of the new correlation.
+//   dbs     : The databases to include in the correlation.
+//   method  : The correlation method.
+//   nStates : The number of states (optional)
+//
+// Returns:    A pointer to a new database correlation or 0 if one could
+//             not be created.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jan 30 22:58:13 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+DatabaseCorrelation *
+ViewerFileServer::CreateDatabaseCorrelation(const std::string &name,
+    const stringVector &dbs, int method, int nStates)
+{
+    if(dbs.size() < 1)
+    {
+        Error("VisIt cannot create a database correlation that does "
+              "not use any databases.");
+        return 0;
+    }
+
+    //
+    // Create a new correlation and set its basic attributes.
+    //
+    DatabaseCorrelation *correlation = new DatabaseCorrelation;
+    correlation->SetName(name);
+    DatabaseCorrelation::CorrelationMethod m =
+        (DatabaseCorrelation::CorrelationMethod)method;
+    correlation->SetMethod(m);
+    if(nStates != -1 &&
+       (m == DatabaseCorrelation::IndexForIndexCorrelation ||
+        m == DatabaseCorrelation::StretchedIndexCorrelation))
+    {
+        correlation->SetNumStates(nStates);
+    }
+
+    // Add the different databases to the correlation.
+    char msg[200];
+    for(int i = 0; i < dbs.size(); ++i)
+    {
+        //
+        // Split the database name into host and database components
+        // and expand it too.
+        //
+        std::string host, db;
+        std::string correlationDB(dbs[i]);
+        ExpandDatabaseName(correlationDB, host, db);
+
+        //
+        // Get the metadata for the database.
+        //
+        const avtDatabaseMetaData *md = GetMetaData(host, db);
+        if(md)
+        {
+            //
+            // Issue warning messages if we're doing time or cycle
+            // correlations and the metadata cannot be trusted.
+            //
+            if(m == DatabaseCorrelation::TimeCorrelation)
+            {
+                bool accurate = true;
+                for(int j = 0; j < md->GetNumStates() && accurate; ++j)
+                    accurate &= md->IsTimeAccurate(j);
+
+                if(!accurate)
+                {
+                    SNPRINTF(msg, 200, "The times for %s may not be "
+                             "accurate so the new correlation %s might "
+                             "not work as expected.", correlationDB.c_str(),
+                             name.c_str());
+                    Warning(msg);
+                }
+            }
+            else if(m == DatabaseCorrelation::CycleCorrelation)
+            {
+                bool accurate = true;
+                for(int j = 0; j < md->GetNumStates() && accurate; ++j)
+                    accurate &= md->IsCycleAccurate(j);
+
+                if(!accurate)
+                {
+                    SNPRINTF(msg, 200, "The cycles for %s may not be "
+                             "accurate so the new correlation %s might "
+                             "not work as expected.", correlationDB.c_str(),
+                             name.c_str());
+                    Warning(msg);
+                }
+            }
+
+            //
+            // Add the database to the new correlation.
+            //
+            correlation->AddDatabase(correlationDB, md->GetNumStates(),
+                md->GetTimes(), md->GetCycles()); 
+        }
+        else
+        {
+            delete correlation; correlation = 0;
+            SNPRINTF(msg, 200, "VisIt could not retrieve metadata "
+                     "for %s so the correlation %s could not be "
+                     "created.", correlationDB.c_str(),
+                     name.c_str());
+            Error(msg);
+            break;
+        }
+    }
+
+    return correlation;
+}
+
+// ****************************************************************************
+// Method: ViewerFileServer::GetMostSuitableCorrelation
+//
+// Purpose: 
+//   Returns a pointer to the correlation that most matches the list of 
+//   databases.
+//
+// Arguments:
+//   dbs : The list of databases for which we want a correlation.
+//
+// Returns:    A pointer to the most suitable correlation or 0 if there is
+//             no suitable correlation.
+//
+// Note:       This method will not return a pointer to a trivial correlation
+//             unless that is the only database in the dbs list.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Mar 16 08:57:49 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+DatabaseCorrelation *
+ViewerFileServer::GetMostSuitableCorrelation(const stringVector &dbs) const
+{
+    //
+    // Score the correlations as to how many of the input databases they
+    // contain.
+    //
+    StringIntMap scores;
+    for(int i = 0; i < databaseCorrelationList->GetNumDatabaseCorrelations();
+        ++i)
+    {
+        const DatabaseCorrelation &c = databaseCorrelationList->
+            GetDatabaseCorrelation(i);
+        scores[c.GetName()] = 0;
+        for(int j = 0; j < dbs.size(); ++j)
+        {
+            if(c.UsesDatabase(dbs[j]))
+                ++scores[c.GetName()];
+        }
+    }
+
+#if 0
+    debug3 << "Scores: " << endl;
+    for(StringIntMap::const_iterator sIt = scores.begin(); sIt != scores.end(); ++sIt)
+        debug3 << "\t" << sIt->first << ", score= " << sIt->second << endl;
+#endif
+
+    //
+    // Look for any databases with a score of dbs.size() and then go down
+    // to the correlation with the next highest score.
+    //
+    std::string correlationName;
+    int score = 0;
+    for(int desiredScore = dbs.size(); desiredScore > 1 && score == 0;
+        --desiredScore)
+    {
+        for(StringIntMap::const_iterator pos = scores.begin();
+            pos != scores.end(); ++pos)
+        {
+            if(pos->second == desiredScore)
+            {
+                score = desiredScore;
+                correlationName = pos->first;
+                break;
+            }
+        }
+    }
+
+    //
+    // If the score matches the number of databases then return that
+    // correlation. It's okay to return that correlation if score > 1
+    // since it means that it is not a trivial correlation.
+    //
+    DatabaseCorrelation *retval = 0;
+    if(dbs.size() == score || score > 1)
+        retval = databaseCorrelationList->FindCorrelation(correlationName);
+
+    return retval;
+}
+
+// ****************************************************************************
+// Method: ViewerFileServer::CreateNewCorrelationName
+//
+// Purpose: 
+//   Gets the next correlation name in the series.
+//
+// Returns:    The next automatically generated name for a database correlation.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Mar 16 08:56:09 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+std::string
+ViewerFileServer::CreateNewCorrelationName() const
+{
+    int index = 1;
+    char newName[100];
+    do
+    {
+        SNPRINTF(newName, 100, "Correlation%02d", index);
+    } while(databaseCorrelationList->FindCorrelation(newName) != 0);
+
+    return std::string(newName);
+}
+
+// ****************************************************************************
+// Method: ViewerFileServer::IsDatabase
+//
+// Purpose: 
+//   Returns whether or not the name is an open database.
+//
+// Arguments:
+//   fullname : The whole host+database filename.
+//
+// Returns:    True if the fullname is an open file.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jan 30 23:43:20 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+ViewerFileServer::IsDatabase(const std::string &fullname) const
+{
+    stringVector f(GetOpenDatabases());
+    return std::find(f.begin(), f.end(), fullname) != f.end();
+}
+
+// ****************************************************************************
+// Method: ViewerFileServer::SplitHostDatabase
+//
+// Purpose: 
+//   Splits a hostDB into host and database names.
+//
+// Arguments:
+//   hostDB : The entire host and db name.
+//   host   : The host that was split out of the hostDB.
+//   db     : The db that was split out of the hostDB.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 25 15:40:48 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerFileServer::SplitHostDatabase(const std::string &hostDB, 
+    std::string &host, std::string &db)
+{
+    std::string hdb(hostDB);
+    //
+    // If we found what looks like drive punctuation (on Windows), replace
+    // the : in the drive with something else so we can still check
+    // for a host without getting it wrong.
+    //
+    bool foundDrive = false;
+    std::string::size_type driveColon = hdb.find(":\\");
+    if(driveColon != std::string::npos)
+    {
+        hdb.replace(driveColon, 1, "]");
+        foundDrive = true;
+    }
+
+    // Look for the host colon.
+    std::string::size_type hostColon = hdb.find(':');
+
+    //
+    // Now that the host colon was looked for, replace the drive if
+    // we found one previously.
+    //
+    if(foundDrive)
+        hdb.replace(driveColon, 1, ":");
+
+    //
+    // If the database string doesn't have a ':' in it then assume that
+    // the host name is "localhost" and the database name is the entire
+    // string.
+    //
+    if (hostColon == std::string::npos)
+    {
+        host = "localhost";
+        db = hdb;
+    }
+    else
+    {
+        //
+        // If the database string does have a ':' in it then the part before
+        // it is the host name and the part after it is the database name.
+        //
+        host = hdb.substr(0, hostColon);
+        db = hdb.substr(hostColon + 1);
+    }
+}
+
+// ****************************************************************************
+// Method: ViewerFileServer::ComposeDatabaseName
+//
+// Purpose: 
+//   Composes a database name from host and file names.
+//
+// Arguments:
+//   host : The name of the host where the database is stored.
+//   db   : The name of the database.
+//
+// Returns:    The host + database name.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 25 15:05:40 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+std::string
+ViewerFileServer::ComposeDatabaseName(const std::string &host,
+    const std::string &db)
+{
+    std::string h(host);
+
+    if(h == "")
+        h = "localhost";
+
+    return h + ":" + db;
+}
+
+// ****************************************************************************
+// Method: ViewerFileServer::SplitKey
+//
+// Purpose: 
+//   Splits a key into name and time state components.
+//
+// Arguments:
+//   name : The key to split.
+//   hdb  : The host + database part of the key.
+//   ts   : The ts value of the key or -1 if no ts value was in the key.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Mar 1 09:23:15 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerFileServer::SplitKey(const std::string &key, std::string &hdb,
+    int &ts) const
+{
+    hdb = key;
+    ts = -1;
+
+    std::string::size_type drive = hdb.find(":\\");
+        
+    // If we found what looks like drive punctuation (on Windows), replace
+    // the : in the drive with something else so we can still check
+    // for a state suffix without getting it wrong.
+    if(drive != std::string::npos)
+        hdb.replace(drive, 1, "]");
+
+    // Search for colon from both ends of the string so we can see if
+    // there is more than one. If so, then asume that we have a state
+    // suffix.
+    std::string::size_type lsearch = hdb.find(":");
+    std::string::size_type rsearch = hdb.rfind(":");
+
+    // If we replaced the drive punctuation, restore it now.
+    if(drive != std::string::npos)
+        hdb.replace(drive, 1, ":");
+
+    // The key has the time state in it. Remove it.
+    if(lsearch != rsearch)
+    {
+        hdb = hdb.substr(0, rsearch);
+        std::string tsString = key.substr(rsearch+1, key.size() - rsearch-1);
+        int tmp;
+        if(sscanf(tsString.c_str(), "%d", &tmp) == 1 && tmp >= 0)
+            ts = tmp;
+    }
+}
+
+// ****************************************************************************
+// Method: ViewerFileServer::GetOpenDatabases
+//
+// Purpose: 
+//   Returns a vector of sorted open database names.
+//
+// Returns:    A vector containing the open file names.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jan 30 23:42:35 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+stringVector
+ViewerFileServer::GetOpenDatabases() const
+{
+    stringVector openFiles;
+    for(FileMetaDataMap::const_iterator pos = fileMetaData.begin();
+        pos != fileMetaData.end();
+        ++pos)
+    {
+        // Split the metadata key into name and ts components so we only
+        // add a file once in the case that it is time-varying and there are
+        // multiple cached metadata objects for different time states.
+        std::string name;
+        int         ts;
+        SplitKey(pos->first, name, ts);
+
+        // If the name is not already in the list, add it to the list.
+        if(std::find(openFiles.begin(), openFiles.end(), name) == openFiles.end())
+            openFiles.push_back(name);
+    }
+ 
+    // Sort the list of sources.
+    std::sort(openFiles.begin(), openFiles.end());
+
+    return openFiles;
+}
+
+// ****************************************************************************
+// Method: ViewerFileServer::CreateNode
+//
+// Purpose: 
+//   Tells the database correlation list to save its settings to the data
+//   node that was passed in.
+//
+// Arguments:
+//   parentNode : the node on which to save the settings.
+//   detailed   : Whether we're saving a session file.
+//
+// Note:       Correlations are only saved in session files.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 25 16:50:05 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerFileServer::CreateNode(DataNode *parentNode, bool detailed)
+{
+    databaseCorrelationList->CreateNode(parentNode, detailed, false);
+}
+
+// ****************************************************************************
+// Method: ViewerFileServer::SetFromNode
+//
+// Purpose: 
+//   Initializes the database correlation list.
+//
+// Arguments:
+//   parentNode : The node on which to look for attribute nodes.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 25 16:49:01 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerFileServer::SetFromNode(DataNode *parentNode)
+{
+    DataNode *cLNode = parentNode->GetNode("DatabaseCorrelationList");
+    if(cLNode != 0)
+    {
+        //
+        // We need to iterate through the correlations and expand
+        // their names and databases so we have valid correlations
+        // if the names contain ".." or "~".
+        //
+        // Note that this code depends on the structure of the
+        // DatabaseCorrelation and DatabaseCorrelationList state objects.
+        //
+        DataNode **children = cLNode->GetChildren();
+        for(int i = 0; i < cLNode->GetNumChildren(); ++i)
+        {
+            if(children[i]->GetKey() == "DatabaseCorrelation")
+            {
+                std::string h, db;
+
+                //
+                // Expand the correlation name if it is a database name.
+                //
+                DataNode *nameNode = children[i]->GetNode("name");
+                if(nameNode != 0 && nameNode->GetNodeType() == STRING_NODE)
+                {
+                    std::string name(nameNode->AsString());
+                    if(name.find(':') != std::string::npos)
+                    {
+                        debug3 << "Correlation name before was: "
+                               << name.c_str() << endl;
+                        ExpandDatabaseName(name, h, db);
+                        debug3 << "Correlation name after is: "
+                               << name.c_str() << endl;
+                        nameNode->SetString(name);
+                    }
+                }
+
+                //
+                // Expand the names of the databases used by the correlation.
+                //
+                DataNode *dbsNode = children[i]->GetNode("databaseNames");
+                if(dbsNode != 0 && dbsNode->GetNodeType() == STRING_VECTOR_NODE)
+                {
+                    stringVector dbs(dbsNode->AsStringVector());
+                    for(int j = 0; j < dbs.size(); ++j)
+                    {
+                        debug3 << "Database name before was: "
+                               << dbs[j].c_str() << endl;
+                        ExpandDatabaseName(dbs[j], h, db);
+                        debug3 << "Database name after is: "
+                               << dbs[j].c_str() << endl;
+                    }
+                    dbsNode->SetStringVector(dbs);
+                }
+            }
+        }
+
+        //
+        // Now that the correlation list contains valid correlations, read
+        // it into the actual correlation list state object.
+        //
+        databaseCorrelationList->SetFromNode(parentNode);
+        databaseCorrelationList->Notify();
+    }
+}
+
+// ****************************************************************************
+// Method: ViewerFileServer::DetermineVarType
+//
+// Purpose: 
+//   Determines the AVT variable type for the specified variable.
+//
+// Arguments:
+//   host  : The host where the file resides.
+//   db    : The database.
+//   var   : The variable that we want.
+//   state : The state at which we want information about the variable.
+//
+// Returns:    
+//
+// Note:       This code was moved out of ViewerPlot and ViewerQueryManager
+//             since the code in those two classes was identical. Normally
+//             code like this would not be here but it seems like a fairly
+//             convenient place since we have no base class for viewer objects.
+//
+//             We must pass the state because of variables that can exist
+//             at some time states and not at others.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Mar 26 10:18:45 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+avtVarType
+ViewerFileServer::DetermineVarType(const std::string &host,
+    const std::string &db, const std::string &var, int state)
+{
+    avtVarType retval = AVT_UNKNOWN_TYPE;
+
+    // Check if the variable is an expression.
+    Expression *exp = ParsingExprList::GetExpression(var);
+    if (exp != NULL)
+    {
+        // Get the expression type.
+        retval = ParsingExprList::GetAVTType(exp->GetType());
+    }
+    else
+    {
+        const avtDatabaseMetaData *md = GetMetaDataForState(host, db, state);
+        if (md != 0)
+        {
+            // 
+            // Get the type for the variable.
+            //
+            TRY
+            {
+                avtDatabaseMetaData *ncmd = (avtDatabaseMetaData *) md;
+                retval = ncmd->DetermineVarType(var);
+            }
+            CATCH(VisItException)
+            {
+                std::string message("VisIt was unable to determine "
+                    "the variable type for ");
+                message += host; 
+                message += ":";
+                message += db;
+                message += "'s ";
+                message += var;
+                message += " variable.";
+                Error(message.c_str());
+                debug1 << "ViewerFileServer::DetermineVarType: Caught an "
+                          "exception!" << endl;
+                retval = AVT_UNKNOWN_TYPE;
+            }
+            ENDTRY
+        }
+    }
+
+    return retval;
+}
+
+//
+// ViewerFileServer::ServerInfo methods
+//
 
 ViewerFileServer::ServerInfo::ServerInfo(MDServerProxy *p, const stringVector &args) : arguments(args)
 {

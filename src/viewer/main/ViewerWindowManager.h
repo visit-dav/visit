@@ -17,9 +17,25 @@
 
 #define VIEWER_WINDOW_MANAGER_VSTACK 10
 
+//
+// Flags to use in calls to the UpdateWindowInformation method.
+//
+
+// Use when the active source could have changed
+#define WINDOWINFO_SOURCE           1
+// Use when the list of time slider names or the active time slider could
+// have changed.
+#define WINDOWINFO_TIMESLIDERS      2
+// Use when the time slider states or the animation mode could have changed.
+#define WINDOWINFO_ANIMATION        4
+// Use when the window flag could have changed.
+#define WINDOWINFO_WINDOWFLAGS      8
+
+
 class AnimationAttributes;
 class AnnotationAttributes;
 class AnnotationObjectList;
+class DatabaseCorrelation;
 class DataNode;
 class GlobalAttributes;
 class KeyframeAttributes;
@@ -257,6 +273,10 @@ typedef struct {
 //    Brad Whitlock, Wed Jan 7 10:02:39 PDT 2004
 //    I added methods for setting the center of rotation.
 //
+//    Brad Whitlock, Tue Feb 3 22:41:31 PST 2004
+//    Added some methods to deal with time sliders and database correlations.
+//    I also added a method to close a database.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerWindowManager : public QObject
@@ -279,11 +299,12 @@ class VIEWER_API ViewerWindowManager : public QObject
     void CopyAnnotationsToWindow(int from, int to);
     void CopyLightingToWindow(int from, int to);
     void CopyViewToWindow(int from, int to);
-    void CopyAnimationToWindow(int from, int to);
+    void CopyPlotListToWindow(int from, int to);
     void DeleteWindow();
     void DeleteWindow(ViewerWindow *win);
     void DisableRedraw(int windowIndex = -1);
-    bool FileInUse(const char *host, const char *dbName) const;
+    bool FileInUse(const std::string &host,
+                   const std::string &dbName) const;
     void IconifyAllWindows();
     void DeIconifyAllWindows();
     void ShowAllWindows();
@@ -307,13 +328,17 @@ class VIEWER_API ViewerWindowManager : public QObject
     void SetAnnotationObjectOptions();
     void UpdateAnnotationObjectList();
 
-    void SetKeyframeAttsFromClient();
     void SetFrameIndex(int frame, int windowIndex = -1);
     void NextFrame(int windowIndex = -1);
     void PrevFrame(int windowIndex = -1);
     void Stop(int windowIndex = -1);
     void Play(int windowIndex = -1);
     void ReversePlay(int windowIndex = -1);
+    void SetActiveTimeSlider(const std::string &ts, int windowIndex = -1);
+
+    void SetKeyframeAttsFromClient();
+    void UpdateKeyframeAttributes();
+
     void SetInteractionMode(INTERACTION_MODE m, int windowIndex = -1);
     void SetLightListFromClient();
     void SetLightListFromDefault();
@@ -344,8 +369,7 @@ class VIEWER_API ViewerWindowManager : public QObject
     int             *GetWindowIndices(int *nwin) const;
     int              GetNumWindows() const;
     ViewerWindow    *GetActiveWindow() const;
-    ViewerWindow    *GetLineoutWindow() ;
-    ViewerAnimation *GetActiveAnimation() const;
+    ViewerWindow    *GetLineoutWindow();
     int              GetWindowLayout() const { return layout; };
     void UpdateActions();
     void HideToolbarsForAllWindows();
@@ -356,7 +380,6 @@ class VIEWER_API ViewerWindowManager : public QObject
     void UpdateAnimationTimer();
     void StopTimer();
 
-    void UpdateAnimationState(const ViewerAnimation *, const int mode) const;
     void UpdateGlobalAtts() const;
     void UpdateViewAtts(int windowIndex = -1, bool updateCurve = true,
                         bool update2d = true, bool update3d = true);
@@ -364,8 +387,11 @@ class VIEWER_API ViewerWindowManager : public QObject
     void UpdateAnnotationAtts();
     void UpdateLightListAtts();
     void UpdateWindowAtts();
-    void UpdateWindowInformation(int windowIndex = -1,
-                                 bool reportTimes = false);
+
+    void UpdateWindowInformation(int flags, int windowIndex = -1);
+    void UpdateWindowRenderingInformation(int windowIndex = -1);
+    void UpdateViewKeyframeInformation();
+
     void UpdateRenderingAtts(int windowIndex = -1);
     void UpdateAllAtts();
 
@@ -380,6 +406,15 @@ class VIEWER_API ViewerWindowManager : public QObject
                          int timeState,
                          bool setTimeState,
                          bool onlyReplaceSame);
+    void CreateDatabaseCorrelation(const std::string &name,
+                                   const stringVector &dbs,
+                                   int method, int initialState,
+                                   int nStates = -1);
+    void AlterDatabaseCorrelation(const std::string &name,
+                                  const stringVector &dbs,
+                                  int method, int nStates = -1);
+    void DeleteDatabaseCorrelation(const std::string &name);
+    void CloseDatabase(const std::string &dbName);
 
     void CreateNode(DataNode *parentNode, bool detailed);
     void SetFromNode(DataNode *parentNode);
@@ -424,6 +459,11 @@ class VIEWER_API ViewerWindowManager : public QObject
                                  bool screenCapture, bool leftEye);
     avtImage_p CreateTiledImage(int width, int height);
     avtDataset_p GetDataset(int windowIndex);
+    void GetDatabasesForWindows(const intVector &,stringVector &) const;
+    bool AskForCorrelationPermission(const char *, const char *,
+                                     const stringVector &dbs) const;
+    DatabaseCorrelation *CreateMultiWindowCorrelationHelper(const stringVector &dbs);
+    void CreateMultiWindowCorrelation(const intVector &windowIds);
     static void ToolCallback(const avtToolInterface &);
 
   private:

@@ -25,6 +25,8 @@
 #include <AnnotationObjectList.h>
 #include <AppearanceAttributes.h>
 #include <ColorTableAttributes.h>
+#include <DatabaseCorrelation.h>
+#include <DatabaseCorrelationList.h>
 #include <EngineList.h>
 #include <GlobalAttributes.h>
 #include <GlobalLineoutAttributes.h>
@@ -51,7 +53,6 @@
 #include <SyncAttributes.h>
 
 #include <ViewerActionManager.h>
-#include <ViewerAnimation.h>
 #include <ViewerConnectionProgressDialog.h>
 #include <ParsingExprList.h>
 #include <ViewerConfigManager.h>
@@ -93,6 +94,8 @@
 #undef GetMessage
 #endif
 #endif
+
+#include <algorithm>
 
 static std::string getToken(std::string buff, bool reset);
 static int getVectorTokens(std::string buff, std::vector<std::string> &tokens, int nodeType);
@@ -451,6 +454,9 @@ ViewerSubject::ReadConfigFiles(int argc, char **argv)
 //   Brad Whitlock, Wed Oct 29 11:03:56 PDT 2003
 //   Added the viewer window manager's annotation object list to xfer.
 //
+//   Brad Whitlock, Fri Jan 23 09:47:24 PDT 2004
+//   I added the file server's database correlation list to xfer.
+//
 // ****************************************************************************
 
 void
@@ -470,6 +476,7 @@ ViewerSubject::ConnectXfer()
     xfer.Add(appearanceAtts);
     xfer.Add(pluginAtts);
     xfer.Add(ViewerWindowManager::GetClientAtts());
+    xfer.Add(ViewerFileServer::Instance()->GetDatabaseCorrelationList());
     xfer.Add(ViewerPlotList::GetClientAtts());
     xfer.Add(ViewerEngineManager::GetClientAtts());
     xfer.Add(messageAtts);
@@ -581,7 +588,7 @@ ViewerSubject::ConnectObjectsAndHandlers()
     keepAliveTimer = new QTimer(this, "keepAliveTimer");
     connect(keepAliveTimer, SIGNAL(timeout()),
             this, SLOT(SendKeepAlives()));
-//    keepAliveTimer->start(5 * 60 * 1000);
+    keepAliveTimer->start(5 * 60 * 1000);
 
     //
     // Register a callback function to be called when launching a remote
@@ -1945,6 +1952,9 @@ ViewerSubject::MessageRendererThread(const char *message)
 //   Brad Whitlock, Tue May 20 14:24:51 PST 2003
 //   Updated MessageAttributes.
 //
+//   Brad Whitlock, Fri Mar 19 16:12:00 PST 2004
+//   Added code to print errors to debug1.
+//
 // ****************************************************************************
 
 void
@@ -1957,6 +1967,8 @@ ViewerSubject::Error(const char *message)
     messageAtts->SetText(std::string(message));
     messageAtts->SetSeverity(MessageAttributes::Error);
     messageAtts->Notify();
+
+    debug1 << "Error - " << message << endl;
 }
 
 // ****************************************************************************
@@ -1974,7 +1986,10 @@ ViewerSubject::Error(const char *message)
 // Modifications:
 //   Brad Whitlock, Tue May 20 14:24:51 PST 2003
 //   Updated MessageAttributes.
-//   
+//
+//   Brad Whitlock, Fri Mar 19 16:12:00 PST 2004
+//   Added code to print errors to debug1.
+//
 // ****************************************************************************
 
 void
@@ -1987,6 +2002,8 @@ ViewerSubject::Warning(const char *message)
     messageAtts->SetText(std::string(message));
     messageAtts->SetSeverity(MessageAttributes::Warning);
     messageAtts->Notify();
+
+    debug1 << "Warning - " << message << endl;
 }
 
 // ****************************************************************************
@@ -2005,6 +2022,9 @@ ViewerSubject::Warning(const char *message)
 //   Brad Whitlock, Tue May 20 14:24:51 PST 2003
 //   Updated MessageAttributes.
 //   
+//   Brad Whitlock, Fri Mar 19 16:12:00 PST 2004
+//   Added code to print errors to debug1.
+//
 // ****************************************************************************
 
 void
@@ -2017,6 +2037,8 @@ ViewerSubject::Message(const char *message)
     messageAtts->SetText(std::string(message));
     messageAtts->SetSeverity(MessageAttributes::Message);
     messageAtts->Notify();
+
+    debug1 << "Message - " << message << endl;
 }
 
 // ****************************************************************************
@@ -2198,6 +2220,9 @@ ViewerSubject::ClearStatus(const char *sender)
 //   Brad Whitlock, Fri Jul 18 10:47:20 PDT 2003
 //   Added detailed argument. Made query manager add its data.
 //
+//   Brad Whitlock, Thu Mar 18 08:47:17 PDT 2004
+//   Made the file server save its settings.
+//
 // ****************************************************************************
 
 void
@@ -2209,6 +2234,7 @@ ViewerSubject::CreateNode(DataNode *parentNode, bool detailed)
     DataNode *vsNode = new DataNode("ViewerSubject");
     parentNode->AddNode(vsNode);
 
+    ViewerFileServer::Instance()->CreateNode(vsNode, detailed);
     ViewerWindowManager::Instance()->CreateNode(vsNode, detailed);
     if(detailed)
         ViewerQueryManager::Instance()->CreateNode(vsNode);
@@ -2230,6 +2256,9 @@ ViewerSubject::CreateNode(DataNode *parentNode, bool detailed)
 //   Brad Whitlock, Tue Jul 22 10:12:59 PDT 2003
 //   Added code to let the query manager initialize itself.
 //
+//   Brad Whitlock, Thu Mar 18 08:48:39 PDT 2004
+//   Added code to initialize the file server.
+//
 // ****************************************************************************
 
 void
@@ -2242,7 +2271,7 @@ ViewerSubject::SetFromNode(DataNode *parentNode)
     if(searchNode == 0)
         return;
 
-    // Let the other objects set themselves up using data from searchNode.
+    ViewerFileServer::Instance()->SetFromNode(searchNode);
     ViewerWindowManager::Instance()->SetFromNode(searchNode);
     ViewerQueryManager::Instance()->SetFromNode(searchNode);
 }
@@ -3075,11 +3104,15 @@ ViewerSubject::CreateAttributesDataNode(const avtDefaultPlotMetaData *dp) const
 //    Jeremy Meredith, Mon Mar 22 17:12:22 PST 2004
 //    I made use of the "success" result flag from CreateEngine.
 //
+//    Brad Whitlock, Tue Mar 23 17:41:57 PST 2004
+//    I added support for database correlations. I also prevented the default
+//    plot from being realized if the engine was not launched.
+//
 // ****************************************************************************
 
 void
 ViewerSubject::OpenDatabaseHelper(const std::string &entireDBName,
-    int timeState, bool updateNFrames, bool addDefaultPlots)
+    int timeState, bool addDefaultPlots)
 {
     int  i;
 
@@ -3090,42 +3123,63 @@ ViewerSubject::OpenDatabaseHelper(const std::string &entireDBName,
     // Associate the database with the currently active animation (window).
     //
     ViewerWindowManager *wM=ViewerWindowManager::Instance();
-    ViewerPlotList *plotList = wM->GetActiveAnimation()->GetPlotList();
+    ViewerPlotList *plotList = wM->GetActiveWindow()->GetPlotList();
 
     //
-    // Set the new host/database name into the plot list. This splits it.
+    // Expand the new database name and then set it into the plot list.
     //
-    plotList->SetHostDatabaseName(entireDBName);
-    std::string host(plotList->GetHostName());
-    std::string db(plotList->GetDatabaseName());
-
-    //
-    // Expand the database name to its full path just in case.
-    //
+    std::string hdb(entireDBName), host, db;
     ViewerFileServer *fs = ViewerFileServer::Instance();
-    std::string expandedDB(fs->ExpandedFileName(host, db));
-    plotList->SetDatabaseName(expandedDB.c_str());
-    db = plotList->GetDatabaseName();
+    fs->ExpandDatabaseName(hdb, host, db);
+    plotList->SetHostDatabaseName(hdb.c_str());
 
     //
     // Get the number of time states and set that information into the
     // active animation.
     //
-    const avtDatabaseMetaData *md = fs->GetMetaData(host, db, timeState);
+    const avtDatabaseMetaData *md = fs->GetMetaDataForState(host, db, timeState);
     if (md != NULL)
     {
-        if(updateNFrames)
+        //
+        // If the database has more than one time state then we should
+        // add it to the list of database correlations so we have a trivial
+        // correlation for this database.
+        //
+        if(md->GetNumStates() > 1)
         {
-            // Update the number of animation frames.
-            ViewerAnimation *animation = wM->GetActiveAnimation();
-            animation->UpdateNFrames();
+            //
+            // Get the name of the database so we can use that for the name
+            // of a new trivial database correlation.
+            //
+            const std::string &correlationName = plotList->GetHostDatabaseName();
 
-            // Move to the specified time state.
-            if(timeState > 0)
-                animation->SetFrameIndex(timeState);
+            debug3 << "Correlation for " << hdb.c_str() << " is "
+                   << correlationName.c_str() << endl;
 
-            wM->UpdateGlobalAtts();
+            //
+            // Tell the window manager to create the correlation. We could
+            // use the file server but this way also creates time sliders
+            // for the new correlation in each window and makes the active
+            // window's active time slider be the new correlation.
+            //
+            stringVector dbs; dbs.push_back(correlationName);
+            int timeSliderState = (timeState >= 0) ? timeState : 0;
+            wM->CreateDatabaseCorrelation(correlationName, dbs, 0,
+                timeSliderState, md->GetNumStates());
         }
+
+        //
+        // Update the global atts since that has the list of sources.
+        //
+        wM->UpdateGlobalAtts();
+
+        //
+        // Since we updated the source and we made have also updated the time
+        // slider and time slider states when the new database was opened, send
+        // back the source, time sliders, and animation information.
+        //
+        wM->UpdateWindowInformation(WINDOWINFO_SOURCE | WINDOWINFO_TIMESLIDERS |
+                                    WINDOWINFO_ANIMATION);
 
         //
         // Update the expression list.
@@ -3167,8 +3221,7 @@ ViewerSubject::OpenDatabaseHelper(const std::string &entireDBName,
         // Create default plots if there are no plots from the database
         // already in the plot list.
         //
-        if(addDefaultPlots &&
-           !plotList->FileInUse(host.c_str(), db.c_str()))
+        if(addDefaultPlots && !plotList->FileInUse(host, db))
         {
             DataNode *adn = NULL;
             bool defaultPlotsAdded = false;
@@ -3193,7 +3246,11 @@ ViewerSubject::OpenDatabaseHelper(const std::string &entireDBName,
                 }
             }
 
-            if (defaultPlotsAdded)
+            //
+            // Only realize the plots if we added some default plots *and*
+            // the engine was successfully launched above.
+            //
+            if (defaultPlotsAdded && success)
             {
                 plotList->RealizePlots();
             } 
@@ -3229,7 +3286,74 @@ void
 ViewerSubject::OpenDatabase()
 {
     OpenDatabaseHelper(viewerRPC.GetDatabase(), viewerRPC.GetIntArg1(),
-                       true, viewerRPC.GetBoolFlag());
+                       viewerRPC.GetBoolFlag());
+}
+
+// ****************************************************************************
+// Method: ViewerSubject::ActivateDatabase
+//
+// Purpose: 
+//   Sets the specified database as the new active source. This has the effect
+//   of changing the active time slider to the time slider that best matches
+//   the new source and the plot list.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jan 29 23:46:49 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerSubject::ActivateDatabase()
+{
+    const std::string &database = viewerRPC.GetDatabase();
+
+    //
+    // Expand the database name to its full path just in case.
+    //
+    std::string expandedDB(database), host, db;
+    ViewerFileServer *fs = ViewerFileServer::Instance();
+    fs->ExpandDatabaseName(expandedDB, host, db);
+
+    //
+    // If the database has been opened before then we can make it the active
+    // plot list's active database. Then we can set the time slider if we
+    // need to.
+    //
+    if(fs->IsDatabase(expandedDB))
+    {
+        ViewerWindowManager::Instance()->GetActiveWindow()->
+            GetPlotList()->ActivateSource(expandedDB);
+    }
+    else
+    {
+        // We have not seen the database before so open it.
+        OpenDatabaseHelper(database, 0, true);
+    }
+}
+
+// ****************************************************************************
+// Method: ViewerSubject::CheckForNewStates
+//
+// Purpose: 
+//   Adds new time states for a database if there are any new states to add.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jan 30 23:56:42 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerSubject::CheckForNewStates()
+{
+    //
+    // Add new states to the specified database and update the metadata,
+    // correlations, and plot list caches.
+    //
+    debug1 << "CheckForNewStates: " << viewerRPC.GetDatabase().c_str();
 }
 
 // ****************************************************************************
@@ -3271,6 +3395,10 @@ ViewerSubject::OpenDatabase()
 //   Brad Whitlock, Mon Nov 3 10:03:51 PDT 2003
 //   Made some interface changes to ViewerWindowManager::ReplaceDatabase.
 //
+//   Brad Whitlock, Fri Mar 19 16:20:40 PST 2004
+//   I added code to expand the database name and use time sliders and 
+//   database correlations to figure out where to open the database.
+//
 // ****************************************************************************
 
 void
@@ -3283,41 +3411,91 @@ ViewerSubject::ReOpenDatabase()
     bool forceClose = (viewerRPC.GetWindowLayout() == 1);
 
     //
-    // Clear default SIL restrictions
+    // Expand the filename.
     //
     std::string host, db;
-    ViewerPlotList::SplitHostDatabase(hostDatabase, host, db);
+    ViewerFileServer *fileServer = ViewerFileServer::Instance();
+    fileServer->ExpandDatabaseName(hostDatabase, host, db);
+    debug1 << "Reopening " << hostDatabase.c_str() << endl;
+
+    //
+    // Clear default SIL restrictions
+    //
     ViewerPlotList::ClearDefaultSILRestrictions(host, db);
 
     //
-    // Clear out any previous information about the file.
+    // Clear out any previous information about the file on the mdserver.
     //
-    ViewerFileServer *fileServer = ViewerFileServer::Instance();
-    fileServer->ClearFile(hostDatabase);
     if (forceClose)
         fileServer->CloseFile(host);
 
     //
-    // First open the database.
+    // Try to determine the time state at which the file should be
+    // reopened. If the plot list has an active time slider, see if
+    // the time slider's correlation includes the database that we're
+    // reopening. If so, then we can use the active time slider's
     //
     ViewerWindowManager *wM = ViewerWindowManager::Instance();
-    ViewerAnimation *animation = wM->GetActiveAnimation();
-    OpenDatabaseHelper(hostDatabase, animation->GetFrameIndex(), 
-                       false, false);
+    ViewerPlotList *plotList = wM->GetActiveWindow()->GetPlotList();
+    DatabaseCorrelationList *cL = fileServer->GetDatabaseCorrelationList();
+
+    int reOpenState = 0;
+    if(plotList->HasActiveTimeSlider())
+    {
+        const std::string &activeTimeSlider = plotList->GetActiveTimeSlider();
+        debug3 << "Reopening " << hostDatabase.c_str()
+               << " with an active time slider: " << activeTimeSlider.c_str()
+               << endl;
+        DatabaseCorrelation *correlation = cL->FindCorrelation(activeTimeSlider);
+        if(correlation != 0)
+        {
+            int state = 0, nStates = 0;
+            plotList->GetTimeSliderStates(activeTimeSlider, state, nStates);
+            reOpenState = correlation->GetCorrelatedTimeState(hostDatabase, state);
+            debug3 << "The active time slider was a correlation involving "
+                   << hostDatabase.c_str()
+                   << " so we're using the correlated state to reopen the file."
+                   << " state = " << reOpenState << endl;
+        }
+    }
+
+    if(reOpenState < 0)
+    {
+        // There either was no active time slider, no correlation for the
+        // active time slider or there was a correlation for the active time
+        // slider but it had nothing to do with the database that we want to
+        // reopen. We should try and use the active time slider for the
+        // database we're trying to open if there is such a time slider.
+        int ns;
+        plotList->GetTimeSliderStates(hostDatabase, reOpenState, ns);
+        debug3 << "Could not use correlation or active time slider to "
+               << "get the reopen state for " << hostDatabase.c_str()
+               << ". Using state " << reOpenState << endl;
+    }
+
+    //
+    // Clear out any local information that we've cached about the file. We
+    // have to do this after checking for the correlation because this call
+    // will remove the correlation for the database.
+    //
+    fileServer->ClearFile(hostDatabase);
 
     //
     // Tell the compute engine to clear any cached information about the
     // database so it forces the networks to re-execute.
     //
     ViewerEngineManager::Instance()->ClearCache(host.c_str(), db.c_str());
+
+    //
+    // Open the database.
+    //
+    OpenDatabaseHelper(hostDatabase, reOpenState, false);
  
     //
     // Now perform the database replacement in all windows that use the
     // specified database.
     //
     ViewerWindowManager::Instance()->ReplaceDatabase(host, db, 0, false, true);
-
-    wM->UpdateGlobalAtts();
 }
 
 // ****************************************************************************
@@ -3361,6 +3539,9 @@ ViewerSubject::ReOpenDatabase()
 //   the call to recenter view more restrictive, also requiring the
 //   window to be in 3d mode.
 //
+//   Brad Whitlock, Tue Jan 27 16:52:40 PST 2004
+//   Changed for multiple time sliders.
+//
 // ****************************************************************************
 
 void
@@ -3374,38 +3555,40 @@ ViewerSubject::ReplaceDatabase()
     // view limit merging.
     //
     ViewerWindowManager *wM = ViewerWindowManager::Instance();
-    if (viewerRPC.GetDatabase() ==
-        wM->GetActiveAnimation()->GetPlotList()->GetHostDatabaseName())
-    {
-        wM->GetActiveAnimation()->SetMergeViewLimits(true);
-    }
+    ViewerWindow *win = wM->GetActiveWindow();
+    if(win == 0)
+        return;
+
+    if (viewerRPC.GetDatabase() == win->GetPlotList()->GetHostDatabaseName())
+        win->SetMergeViewLimits(true);
 
     //
     // First open the database.
     //
     OpenDatabaseHelper(viewerRPC.GetDatabase(), viewerRPC.GetIntArg1(),
-                       false, false);
+                       false);
 
     //
     // Now perform the database replacement.
     //
-    ViewerPlotList *plotList = wM->GetActiveAnimation()->GetPlotList();
+    ViewerPlotList *plotList = win->GetPlotList();
     plotList->ReplaceDatabase(plotList->GetHostName(),
                               plotList->GetDatabaseName(),
                               viewerRPC.GetIntArg1(),
                               true,
                               false);
-    wM->UpdateGlobalAtts();
+
+    //
+    // We have to send back the source and the time sliders since we
+    // could have replaced at a later time state.
+    //
+    wM->UpdateWindowInformation(WINDOWINFO_SOURCE | WINDOWINFO_TIMESLIDERS);
 
     //
     // Recenter the active window's view and redraw.
     //
-    if(wM->GetActiveWindow() &&
-       !wM->GetActiveWindow()->GetMaintainViewMode() &&
-       (wM->GetActiveWindow()->GetWindowMode() == WINMODE_3D))
-    {
+    if(!win->GetMaintainViewMode() && (win->GetWindowMode() == WINMODE_3D))
         wM->RecenterView();
-    }
 }
 
 // ****************************************************************************
@@ -3424,6 +3607,9 @@ ViewerSubject::ReplaceDatabase()
 //   Brad Whitlock, Thu May 15 13:30:57 PST 2003
 //   I made it use OpenDatabaseHelper.
 //
+//   Brad Whitlock, Tue Jan 27 16:56:46 PST 2004
+//   Changed for multiple time sliders.
+//
 // ****************************************************************************
 
 void
@@ -3432,13 +3618,13 @@ ViewerSubject::OverlayDatabase()
     //
     // First open the database.
     //
-    OpenDatabaseHelper(viewerRPC.GetDatabase(), 0, true, false);
+    OpenDatabaseHelper(viewerRPC.GetDatabase(), 0, false);
 
     //
     // Now perform the database replacement.
     //
     ViewerWindowManager *wM = ViewerWindowManager::Instance();
-    ViewerPlotList *plotList = wM->GetActiveAnimation()->GetPlotList();
+    ViewerPlotList *plotList = wM->GetActiveWindow()->GetPlotList();
     plotList->OverlayDatabase(plotList->GetHostName(),
                               plotList->GetDatabaseName());
 
@@ -3446,6 +3632,108 @@ ViewerSubject::OverlayDatabase()
     // Recenter the active window's view and redraw.
     //
     wM->RecenterView();
+}
+
+// ****************************************************************************
+// Method: ViewerSubject::CloseDatabase
+//
+// Purpose: 
+//   Tell the viewer window manager to try and close the specified database.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Feb 27 12:04:52 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerSubject::CloseDatabase()
+{
+    ViewerWindowManager::Instance()->CloseDatabase(viewerRPC.GetDatabase());
+}
+
+// ****************************************************************************
+// Method: ViewerSubject::CreateDatabaseCorrelation
+//
+// Purpose: 
+//   Creates a new database correlation.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jan 30 23:52:00 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerSubject::CreateDatabaseCorrelation()
+{
+    const std::string &name = viewerRPC.GetDatabase();
+
+    //
+    // Make sure that the correlation does not have the same name as
+    // an existing source.
+    //
+    if(ViewerFileServer::Instance()->IsDatabase(name))
+    {
+        std::string err("You cannot define a database correlation that "
+                        "has the same name as a source. No database "
+                        "correlation will be created for ");
+        err += name;
+        err += ".";
+        Error(err.c_str());
+    }
+    else
+    {
+        ViewerWindowManager::Instance()->CreateDatabaseCorrelation(
+            name, viewerRPC.GetProgramOptions(),
+            viewerRPC.GetIntArg1(), 0, viewerRPC.GetIntArg2());
+    }
+}
+
+// ****************************************************************************
+// Method: ViewerSubject::AlterDatabaseCorrelation
+//
+// Purpose: 
+//   Alters a database correlation.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jan 30 23:51:24 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerSubject::AlterDatabaseCorrelation()
+{
+    // Alter the database correlation and update all of the windows that
+    // used it.
+    ViewerWindowManager::Instance()->AlterDatabaseCorrelation(
+        viewerRPC.GetDatabase(), viewerRPC.GetProgramOptions(),
+        viewerRPC.GetIntArg1(), viewerRPC.GetIntArg2());
+}
+
+// ****************************************************************************
+// Method: ViewerSubject::DeleteDatabaseCorrelation
+//
+// Purpose: 
+//   Deletes a database correlation.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jan 30 23:50:47 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerSubject::DeleteDatabaseCorrelation()
+{
+    // Delete the database correlation and update the windows that used it.
+    const std::string &name = viewerRPC.GetDatabase();
+    ViewerWindowManager::Instance()->DeleteDatabaseCorrelation(name);
 }
 
 // ****************************************************************************
@@ -3623,6 +3911,9 @@ ViewerSubject::SetDefaultPlotOptions()
 //    Brad Whitlock, Thu Jul 18 16:58:46 PST 2002
 //    I added code to set the attributes back into the selected plots.
 //
+//    Brad Whitlock, Tue Jan 27 16:57:39 PST 2004
+//    Changed for multiple time sliders.
+//
 // ****************************************************************************
 
 void
@@ -3642,7 +3933,7 @@ ViewerSubject::ResetPlotOptions()
     // Perform the rpc.
     //
     ViewerWindowManager *wM=ViewerWindowManager::Instance();
-    wM->GetActiveAnimation()->GetPlotList()->SetPlotAtts(plot);
+    wM->GetActiveWindow()->GetPlotList()->SetPlotAtts(plot);
 }
 
 // ****************************************************************************
@@ -3686,6 +3977,9 @@ ViewerSubject::SetDefaultOperatorOptions()
 //    I added code to set the default attributes back into the selected
 //    plots that have the designated operator.
 //
+//    Brad Whitlock, Tue Jan 27 16:57:57 PST 2004
+//    Changed for multiple time sliders.
+//
 // ****************************************************************************
 
 void
@@ -3706,7 +4000,7 @@ ViewerSubject::ResetOperatorOptions()
     //
     ViewerWindowManager *wM=ViewerWindowManager::Instance();
     bool apply = wM->GetClientAtts()->GetApplyOperator();
-    wM->GetActiveAnimation()->GetPlotList()->SetPlotOperatorAtts(oper, apply);
+    wM->GetActiveWindow()->GetPlotList()->SetPlotOperatorAtts(oper, apply);
 }
 
 // ****************************************************************************
@@ -4827,13 +5121,15 @@ ViewerSubject::CopyViewToWindow(int from, int to)
 // Creation:   Tue Oct 15 16:30:56 PST 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Jan 27 17:30:53 PST 2004
+//   I made it use renamed the copy method that it uses.
+//
 // ****************************************************************************
 
 void
 ViewerSubject::CopyPlotsToWindow(int from, int to)
 {
-    ViewerWindowManager::Instance()->CopyAnimationToWindow(from-1, to-1);
+    ViewerWindowManager::Instance()->CopyPlotListToWindow(from-1, to-1);
 }
 
 // ****************************************************************************
@@ -5183,6 +5479,9 @@ ViewerSubject::BlockSocketSignals(bool b)
 //    loop and return early if the engine is executing or if we're launching
 //    a component.
 //
+//    Brad Whitlock, Tue Jan 27 17:01:50 PST 2004
+//    Added support for multiple time sliders.
+//
 // ****************************************************************************
 
 void
@@ -5284,7 +5583,7 @@ ViewerSubject::ProcessRendererMessage()
             sscanf (&msg[offset], "%p", &window);
 
             // Tell the window's animation to update.
-            window->GetAnimation()->UpdateFrame();
+            window->GetPlotList()->UpdateFrame();
             ViewerWindowManager::Instance()->UpdateActions();
         }
         else if (strncmp(msg, "setScalableRenderingMode", 24) == 0)
@@ -5519,6 +5818,10 @@ ViewerSubject::SendKeepAlives()
 //    Kathleen Bonnell, Wed Dec 17 14:45:22 PST 2003 
 //    Added ResetPickLetterRPC, SetDefaultPickAttributesRPC.
 //
+//    Brad Whitlock, Thu Jan 29 23:49:03 PST 2004
+//    Added ActivateSource, CheckForNewStates, CreateDatabaseCorrelation,
+//    AlterDatabaseCorrelation, DeleteDatabaseCorrelation, and CloseDatabase.
+//
 //    Brad Whitlock, Thu Feb 26 13:32:43 PST 2004
 //    Added ClearCacheForAllEngines.
 //
@@ -5533,6 +5836,10 @@ ViewerSubject::HandleViewerRPC()
     bool actionHandled = false;
     ViewerActionManager *actionMgr = 0;
 
+    debug5 << "Handling "
+           << ViewerRPC::ViewerRPCType_ToString(viewerRPC.GetRPCType())
+           << " RPC." << endl;
+
     //
     // Handle the RPC. Note that these should be replaced with actions.
     //
@@ -5544,6 +5851,15 @@ ViewerSubject::HandleViewerRPC()
     case ViewerRPC::OpenDatabaseRPC:
         OpenDatabase();
         break;
+    case ViewerRPC::CloseDatabaseRPC:
+        CloseDatabase();
+        break;
+    case ViewerRPC::ActivateDatabaseRPC:
+        ActivateDatabase();
+        break;
+    case ViewerRPC::CheckForNewStatesRPC:
+        CheckForNewStates();
+        break;
     case ViewerRPC::ReOpenDatabaseRPC:
         ReOpenDatabase();
         break;
@@ -5552,6 +5868,15 @@ ViewerSubject::HandleViewerRPC()
         break;
     case ViewerRPC::OverlayDatabaseRPC:
         OverlayDatabase();
+        break;
+    case ViewerRPC::CreateDatabaseCorrelationRPC:
+        CreateDatabaseCorrelation();
+        break;
+    case ViewerRPC::AlterDatabaseCorrelationRPC:
+        AlterDatabaseCorrelation();
+        break;
+    case ViewerRPC::DeleteDatabaseCorrelationRPC:
+        DeleteDatabaseCorrelation();
         break;
     case ViewerRPC::OpenComputeEngineRPC:
         OpenComputeEngine();

@@ -689,16 +689,18 @@ MDServerConnection::GetCurrentSIL() const
 // Creation:   Wed Feb 13 14:08:01 PST 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Mar 18 11:40:40 PDT 2004
+//   I fixed the code so it filters out .. properly.
+//
 // ****************************************************************************
 
 std::string
 MDServerConnection::FilteredPath(const std::string &path) const
 {
     // Remove multiple slashes in a row.
-    int state = 0;
+    int i, state = 0;
     std::string filteredPath;
-    for(int i = 0; i < path.length(); ++i)
+    for(i = 0; i < path.length(); ++i)
     {
         if(state == 0)
         {
@@ -721,6 +723,36 @@ MDServerConnection::FilteredPath(const std::string &path) const
 
     if(filteredPath.size() == 0)
         filteredPath = SLASH_STRING;
+    else
+    {
+        // Filter out .. so we get the right path.
+        stringVector tmpNames;
+        std::string  tmp;
+        state = 0;
+        const char *str = filteredPath.c_str();
+        for(i = 0; i < filteredPath.length() + 1; ++i)
+        {
+            if(str[i] == SLASH_CHAR || str[i] == '\0')
+            {
+                if(tmp.size() > 0)
+                {
+                    if(tmp == "..")
+                        tmpNames.pop_back();
+                    else
+                        tmpNames.push_back(tmp);
+                }
+                tmp = "";
+            }
+            else
+                tmp += str[i];
+        }
+        filteredPath = (tmpNames.size() > 0) ? "" : SLASH_STRING;
+        for(i = 0; i < tmpNames.size(); ++i)
+        {
+            filteredPath += SLASH_STRING;
+            filteredPath += tmpNames[i];
+        }
+    }
 
     return filteredPath;
 }
@@ -1620,6 +1652,9 @@ MDServerConnection::GetVirtualFileDefinition(const std::string &file)
 //    Hank Childs, Mon Mar  1 08:48:26 PST 2004
 //    Set the time state to the database factory.
 //
+//    Brad Whitlock, Mon Mar 22 09:37:08 PDT 2004
+//    Added code to print virtual file definition to debug3.
+//
 // ****************************************************************************
 
 avtDatabase *
@@ -1663,12 +1698,15 @@ MDServerConnection::GetDatabase(string file, int timeState)
             const std::string &path = virtualFile->second.path;
             char **names = new char *[fileNames.size()];
             int i;
+            debug3 << "New virtual database: " << file.c_str()
+                   << ", path=" << path.c_str() << endl;
             for(i = 0; i < fileNames.size(); ++i)
             {
                 std::string name(ExpandPathHelper(fileNames[i], path));
                 char *charName = new char[name.size() + 1];
                 strcpy(charName, name.c_str());
                 names[i] = charName;
+                debug3 << "\t" << charName << endl;
             }
 
             TRY
@@ -1720,12 +1758,25 @@ MDServerConnection::GetDatabase(string file, int timeState)
 // Creation:   Tue Jul 30 10:33:03 PDT 2002
 //
 // Modifications:
+//   Brad Whitlock, Mon Mar 22 09:43:27 PDT 2004
+//   Added code to remove the open database from the virtual file map if
+//   it is a virtual file so the next time we ask for it, we'll read the
+//   directory and get the right list of time states.
 //
 // ****************************************************************************
 
 void
 MDServerConnection::CloseDatabase()
 {
+    VirtualFileInformationMap::iterator virtualFile = virtualFiles.find(currentDatabaseName);
+
+    if(virtualFile != virtualFiles.end())
+    {
+        debug1 << "Removing " << currentDatabaseName.c_str()
+               << " from the virtual file map." << endl;
+        virtualFiles.erase(virtualFile);
+    }
+
     if (currentDatabase != NULL)
     {
         debug1 << "Closing database: " << currentDatabaseName.c_str() << endl;

@@ -9,6 +9,8 @@
 #include <map>
 
 // Forward declarations.
+class QComboBox;
+class QLabel;
 class QListView;
 class QListViewItem;
 class QPushButton;
@@ -20,7 +22,7 @@ class QvisVCRControl;
 
 class avtDatabaseMetaData;
 class FileServerList;
-class GlobalAttributes;
+class WindowInformation;
 class ViewerProxy;
 
 // ****************************************************************************
@@ -84,6 +86,13 @@ class ViewerProxy;
 //   Brad Whitlock, Tue Dec 30 14:33:25 PST 2003
 //   I made it use QvisAnimationSlider.
 //
+//   Brad Whitlock, Sat Jan 24 23:48:13 PST 2004
+//   I made it observe WindowInformation instead of GlobalAttributes
+//   because I rewrote both of those state objects to better support time
+//   and file selection and now much of the needed information resides in
+//   WindowAttributes. I also made it possible to not display the selected
+//   files list.
+//
 // ****************************************************************************
 
 class GUI_API QvisFilePanel : public QWidget, public SimpleObserver, public GUIBase
@@ -121,23 +130,30 @@ public:
     virtual void Update(Subject *);
     virtual void SubjectRemoved(Subject *);
     void ConnectFileServer(FileServerList *);
-    void ConnectGlobalAttributes(GlobalAttributes *);
+    void ConnectWindowInformation(WindowInformation *);
 
     bool HaveFileInformation(const QualifiedFilename &filename) const;
     void AddExpandedFile(const QualifiedFilename &filename);
     void SetTimeStateFormat(const TimeFormat &fmt);
     const TimeFormat &GetTimeStateFormat() const;
+
+    bool GetShowSelectedFiles() const;
+    void SetShowSelectedFiles(bool);
 signals:
     void reopenOnNextFrame();
 private:
     void UpdateFileList(bool doAll);
+    void RepopulateFileList();
     void UpdateAnimationControls(bool doAll);
     void UpdateFileSelection();
     void UpdateTimeFieldText(int timeState);
+    void UpdateAnimationControlsEnabledState();
+
     bool OpenFile(const QualifiedFilename &filename, int timeState,
                   bool reOpen);
     void ReplaceFile(const QualifiedFilename &filename, int timeState=0);
     void OverlayFile(const QualifiedFilename &filename);
+
     void ExpandDatabases();
     void ExpandDatabaseItem(QvisListViewFileItem *item);
     void ExpandDatabaseItemUsingMetaData(QvisListViewFileItem *item);
@@ -147,17 +163,20 @@ private:
     bool FileIsExpanded(const QualifiedFilename &filename);
     bool FileShowsCorrectData(const QualifiedFilename &filename);
     void SetFileShowsCorrectData(const QualifiedFilename &filename, bool);
+
     QString CreateItemLabel(const avtDatabaseMetaData *md, int ts, bool);
     QString FormattedCycleString(const int cycle) const;
     QString FormattedTimeString(const double d, bool accurate) const;
     bool DisplayVirtualDBInformation(const QualifiedFilename &file) const;
-    void AnimationSetFrame(int, bool);
+
+    void SetTimeSliderState(int);
 private slots:
-    void prevFrame();
+    void changeActiveTimeSlider(int);
+    void backwardStep();
     void reversePlay();
     void stop();
     void play();
-    void nextFrame();
+    void forwardStep();
     void sliderStart();
     void sliderMove(int val);
     void sliderEnd();
@@ -174,18 +193,22 @@ private slots:
     void updateHeaderWidth();
     void internalUpdateFileList();
 private:
-    QListView        *fileListView;
-    QPushButton      *openButton;
-    QPushButton      *replaceButton;
-    QPushButton      *overlayButton;
-    QvisAnimationSlider *animationPosition;
-    QLineEdit        *timeField;
-    QvisVCRControl   *vcrControls;
-    QPixmap          *computerPixmap;
-    QPixmap          *databasePixmap;
-    QPixmap          *folderPixmap;
+    bool                     showSelectedFiles;
 
-    GlobalAttributes *globalAtts;
+    QListView                *fileListView;
+    QComboBox                *activeTimeSlider;
+    QLabel                   *activeTimeSliderLabel;
+    QPushButton              *openButton;
+    QPushButton              *replaceButton;
+    QPushButton              *overlayButton;
+    QvisAnimationSlider      *animationPosition;
+    QLineEdit                *timeField;
+    QvisVCRControl           *vcrControls;
+    QPixmap                  *computerPixmap;
+    QPixmap                  *databasePixmap;
+    QPixmap                  *folderPixmap;
+
+    WindowInformation        *windowInfo;
 
     int                       sliderVal;
     FileDisplayInformationMap displayInfo;

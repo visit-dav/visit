@@ -491,8 +491,8 @@ VisWinRenderingWithWindow::SetLargeIcons(bool val)
 // Creation:   Wed Jan 7 14:49:10 PST 2004
 //
 // Modifications:
-//   Brad Whitlock, Thu Mar 4 13:40:12 PST 2004
-//   I fixed the code so it works with Qt 3.x as well as the 2.3.x series.
+//   Brad Whitlock, Fri Feb 27 16:22:40 PST 2004
+//   I made the code work with Qt 3.
 //
 // ****************************************************************************
 

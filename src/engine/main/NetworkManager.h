@@ -134,6 +134,9 @@ class VisWindow;
 //    Jeremy Meredith, Tue Mar 23 10:55:10 PST 2004
 //    Added a file format string to StartNetwork.
 //
+//    Mark C. Miller, Mon Mar 29 14:27:10 PST 200
+//    Added bool for doing 3D annots only to Render method
+//
 // ****************************************************************************
 class NetworkManager
 {
@@ -169,13 +172,15 @@ class NetworkManager
     void          UpdatePlotAtts(int, const AttributeGroup *);
 
     void          SetWindowAttributes(const WindowAttributes&);
-    void          SetAnnotationAttributes(const AnnotationAttributes&);
+    void          SetAnnotationAttributes(const AnnotationAttributes&,
+                                          bool do3DAnnotsOnly = true);
 
     void          SetLoadBalancer(LoadBalancer *lb) {loadBalancer = lb;};
 
     avtDataObjectWriter_p GetOutput(bool respondWithNullData,
                                     bool calledForRender);
-    avtDataObjectWriter_p Render(intVector networkIds, bool getZBuffer);
+    avtDataObjectWriter_p Render(intVector networkIds, bool getZBuffer,
+                                 bool do3DAnnotsOnly);
  
     void          StartPickMode(void);
     void          StopPickMode(void);

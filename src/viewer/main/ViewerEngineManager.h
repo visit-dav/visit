@@ -123,6 +123,9 @@ typedef struct
 //    Removed 'numRestarts' data member. Made numRestarts argument to
 //    CreateEngine default to -1 (e.g. unknown)
 //
+//    Brad Whitlock, Sat Jan 31 23:22:26 PST 2004
+//    I removed a frame argument from GetDataObjectReader.
+//
 //    Brad Whitlock, Thu Feb 26 13:00:16 PST 2004
 //    I added ClearCacheForMultipleEngines.
 //
@@ -134,6 +137,10 @@ typedef struct
 //
 //    Jeremy Meredith, Mon Mar 22 09:20:58 PST 2004
 //    Made CreateEngine return a success flag.
+//
+//    Mark C. Miller, Mon Mar 29 14:52:08 PST 2004
+//    Added new bool args to control annotations in SR mode on engine
+//    GetDataObject reader used in external rendering and ExternalRender
 //
 // ****************************************************************************
 
@@ -164,15 +171,16 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
                         WindowAttributes winAtts,
                         AnnotationAttributes annotAtts,
                         bool& shouldTurnOfScalableRendering,
+                        bool doAllAnnotations,
                         std::vector<avtImage_p>& imgList);
 
-    avtDataObjectReader_p GetDataObjectReader(ViewerPlot *const plot,
-                                              const int frame);
+    avtDataObjectReader_p GetDataObjectReader(ViewerPlot *const plot);
     avtDataObjectReader_p UseDataObjectReader(ViewerPlot *const plot,
                                               bool turningOffScalableRendering);
     avtDataObjectReader_p GetDataObjectReader(bool sendZBuffer,
                                               const char *hostName_,
-                                              intVector ids);
+                                              intVector ids,
+                                              bool doAllAnnotations);
     void GetImage(int index, avtDataObject_p &);
     void UpdatePlotAttributes(const std::string &,int index,AttributeSubject*);
     void ClearCacheForAllEngines();

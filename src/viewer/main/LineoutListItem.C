@@ -8,7 +8,6 @@
 #include <avtToolInterface.h>
 #include <Line.h>
 #include <PlaneAttributes.h>
-#include <ViewerAnimation.h>
 #include <ViewerOperator.h>
 #include <ViewerPlot.h>
 #include <ViewerPlotList.h>
@@ -476,6 +475,8 @@ LineoutListItem::DeleteOriginatingWindow()
 //  Creation:   March 4, 2003
 //
 //  Modifications:
+//    Brad Whitlock, Tue Jan 27 00:52:37 PDT 2004
+//    I made it use the plot list instead of an animation.
 //
 // ****************************************************************************
 
@@ -508,7 +509,7 @@ LineoutListItem::HandleTool(const avtToolInterface &ti)
         } 
         else // some other tool, have the plot list handle it in the usual way.
         {
-            ViewerPlotList *resPL = resWin->GetAnimation()->GetPlotList();
+            ViewerPlotList *resPL = resWin->GetPlotList();
             resPL->HandleTool(ti);
         }
     }
@@ -524,9 +525,9 @@ LineoutListItem::HandleTool(const avtToolInterface &ti)
         if (activeWindowIndex != resWinIndex)
             vwm->SetActiveWindow(resWinIndex); 
 
-        ViewerPlotList *resPL = resWin->GetAnimation()->GetPlotList();
+        ViewerPlotList *resPL = resWin->GetPlotList();
         resPL->UpdatePlotAtts(false);
-        resWin->GetAnimation()->UpdateFrame();
+        resPL->UpdateFrame();
 
         // Reset the active window if necessary.
         if (activeWindowIndex != resWinIndex)
@@ -613,6 +614,9 @@ LineoutListItem::DisableTool()
 //    Brad Whitlock, Mon Nov 3 10:17:12 PDT 2003
 //    Changed the interface to ViewerPlotList::ReplaceDatabase.
 //
+//    Brad Whitlock, Fri Mar 26 10:53:24 PDT 2004
+//    Made it use more strings.
+//
 // ****************************************************************************
 
 void
@@ -620,16 +624,13 @@ LineoutListItem::Update(Subject *TheChangedSubject)
 {
      if (origPlotQueryInfo == TheChangedSubject)
      {
-         ViewerPlotList *vpl = resWin->GetAnimation()->GetPlotList();
-         const char * host;
-         const char * db;
-         int i, nOps;;
+         ViewerPlotList *vpl = resWin->GetPlotList();
+         int i, nOps;
          switch(origPlotQueryInfo->GetChangeType())
          {
              case PlotQueryInfo::Database:
-                 host = origPlot->GetHostName();
-                 db = origPlot->GetDatabaseName();
-                 vpl->ReplaceDatabase(host, db, 0, false, false);
+                 vpl->ReplaceDatabase(origPlot->GetHostName(),
+                     origPlot->GetDatabaseName(), 0, false, false);
                  break;
              case PlotQueryInfo::VarName:
                  vpl->SetPlotVar(origPlot->GetVariableName());
