@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Plugin name="BOV" type="database" label="BOV" version="1.0" dbtype="STMD">
+  <Plugin name="BOV" type="database" label="BOV" version="1.0" enabled="true" mdspecificcode="false" dbtype="STMD" haswriter="true">
     <Extensions>
       bov
     </Extensions>
