@@ -20,6 +20,7 @@
 #include <avtGeometryDrawable.h>
 #include <avtTransparencyActor.h>
 
+#include <ColorAttribute.h>
 #include <BadIndexException.h>
 #include <DebugStream.h>
 #include <ImproperUseException.h>
@@ -61,6 +62,9 @@ using std::string;
 //    Mark C. Miller, Tue May 11 20:21:24 PDT 2004
 //    Removed extRenderedImagesActor data member
 //
+//    Kathleen Bonnell, Thu Sep  2 11:44:09 PDT 2004 
+//    Initialize specularIsInappropriate.
+//
 // ****************************************************************************
 
 avtMapper::avtMapper()
@@ -73,6 +77,7 @@ avtMapper::avtMapper()
     transparencyActor = NULL;
     transparencyIndex = -1;
     globalAmbient = 0.;
+    specularIsInappropriate = false;
 }
 
 
@@ -1021,3 +1026,115 @@ avtMapper::GetImmediateModeRendering()
     return immediateMode;
 }
 
+
+
+// ****************************************************************************
+//  Method: avtMapper::SetSpecularProperties
+//
+//  Purpose:
+//      Sets the property's surface representation.
+//
+//  Arguments:
+//      flag  :  true to enable specular, false otherwise
+//      coeff :  the new specular coefficient
+//      power :  the new specular power
+//      color :  the new specular color
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   November 14, 2003
+//
+//  Modifications:
+//    Kathleen Bonnell, Thu Sep  2 08:52:56 PDT 2004
+//    Moved from avtGeometryDrawable so that derived mappers may override.
+//    Only set the specular properties when appropriate (eg. only for surface 
+//     renderings.)
+//
+// ****************************************************************************
+
+void
+avtMapper::SetSpecularProperties(bool flag, float coeff, float power,
+                                           const ColorAttribute &color)
+{
+    if (specularIsInappropriate)
+    {
+        return;
+    }
+
+    for (int i = 0 ; i < nMappers ; i++)
+    {
+        if (actors[i] != NULL)
+        {
+            vtkProperty *prop = actors[i]->GetProperty();
+            if(prop != NULL && prop->GetRepresentation() == VTK_SURFACE)
+            {
+                prop->SetSpecular(flag ? coeff : 0);
+                prop->SetSpecularPower(power);
+                int r = color.Red();
+                int g = color.Green();
+                int b = color.Blue();
+                prop->SetSpecularColor(float(r)/255.,
+                                       float(g)/255.,
+                                       float(b)/255.);
+            }
+        }
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtMapper::SetSurfaceRepresentation
+//
+//  Purpose:
+//      Sets the drawable's surface representation.
+//
+//  Arguments:
+//      rep : The new surface representation.
+//
+//  Programmer: Brad Whitlock
+//  Creation:   Mon Sep 23 15:58:48 PST 2002
+//
+//  Modifications:
+//    Kathleen Bonnell, Sat Oct 19 15:07:04 PDT 2002 
+//    Disable lighting for Wireframe and Points representation.
+//
+//    Kathleen Bonnell, Thu Sep  2 11:44:09 PDT 2004 
+//    Moved from avtGeometryDrawable so that derived mappers may override. 
+//
+// ****************************************************************************
+
+void
+avtMapper::SetSurfaceRepresentation(int rep)
+{
+    for (int i = 0 ; i < nMappers ; i++)
+    {
+        if (actors[i] != NULL)
+        {
+            vtkProperty *prop = actors[i]->GetProperty();
+            if(prop != NULL)
+            {
+                int actorRep = prop->GetRepresentation();
+                if(rep == 0 && actorRep != VTK_SURFACE)
+                {
+                    prop->SetRepresentation(VTK_SURFACE);
+                    if (GetLighting())
+                    {
+                        prop->SetAmbient(GetGlobalAmbientCoefficient());
+                        prop->SetDiffuse(1.);
+                    }
+                }
+                else if(rep == 1 && actorRep != VTK_WIREFRAME)
+                {
+                    prop->SetRepresentation(VTK_WIREFRAME);
+                    prop->SetAmbient(1.);
+                    prop->SetDiffuse(0.);
+                }
+                else if(rep == 2 && actorRep != VTK_POINTS)
+                {
+                    prop->SetRepresentation(VTK_POINTS);
+                    prop->SetAmbient(1.);
+                    prop->SetDiffuse(0.);
+                }
+            }
+        }
+    }
+}

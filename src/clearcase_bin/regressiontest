@@ -89,6 +89,9 @@
 #    Hank Childs, Thu Aug 19 16:40:07 PDT 2004
 #    Add reflect2.py to the skipList for SR-mode.
 #
+#    Kathleen Bonnell, Thu Sep  2 16:45:02 PDT 2004 
+#    Removed queryMultiWindow.py from skipList for parallel and 
+#    scalable,parallel. 
 # ----------------------------------------------------------------------------
 
 # list of users who want email every night with the log file
@@ -218,9 +221,7 @@ modes="serial parallel scalable,parallel"
 # set list of tests/modes to skip
 skipList="scalable,parallel:tests/hybrid/lineout.py \
           scalable,parallel:tests/rendering/volume.py \
-          scalable,parallel:tests/operators/reflect2.py \
-          parallel:tests/queries/queryMultiWindow.py \
-          scalable,parallel:tests/queries/queryMultiWindow.py"
+          scalable,parallel:tests/operators/reflect2.py" 
 
 # run the test(s)
 error=0

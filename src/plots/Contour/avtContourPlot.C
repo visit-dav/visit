@@ -164,6 +164,9 @@ avtContourPlot::Create()
 //    Kathleen Bonnell, Mon Sep 29 13:13:32 PDT 2003 
 //    Set AntialiasedRenderOrder dependent upon Wireframe mode.
 //
+//    Kathleen Bonnell, Thu Sep  2 11:44:09 PDT 2004 
+//    Ensure that specular properties aren't used in wireframe mode.
+//
 // ****************************************************************************
 
 void
@@ -191,9 +194,15 @@ avtContourPlot::SetAtts(const AttributeGroup *a)
     SetLineStyle(atts.GetLineStyle());
     SetLegend(atts.GetLegendFlag());
     if (atts.GetWireframe())
+    {
         behavior->SetAntialiasedRenderOrder(ABSOLUTELY_LAST);
+        levelsMapper->SetSpecularIsInappropriate(true);
+    }
     else 
+    {
         behavior->SetAntialiasedRenderOrder(DOES_NOT_MATTER);
+        levelsMapper->SetSpecularIsInappropriate(false);
+    }
 }
 
 // ****************************************************************************

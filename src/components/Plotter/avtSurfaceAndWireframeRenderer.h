@@ -75,6 +75,10 @@ typedef struct lec { float r, g, b; } LEC;
 //    Kathleen Bonnell, Tue Aug 26 14:47:57 PDT 2003 
 //    Added ReleaseGraphicsResources(), lastWindowSize, and setupModified.
 //    
+//    Kathleen Bonnell, Thu Sep  2 11:44:09 PDT 2004 
+//    Added SetSurfaceRepresentation, SetSpecularProperties and 
+//    CanApplyGlobalRepresentation.
+//    
 // ****************************************************************************
 
 class PLOTTER_API avtSurfaceAndWireframeRenderer : public avtCustomRenderer
@@ -118,9 +122,14 @@ class PLOTTER_API avtSurfaceAndWireframeRenderer : public avtCustomRenderer
     virtual void              GlobalLightingOn();
     virtual void              GlobalLightingOff();
     virtual void              GlobalSetAmbientCoefficient(const float);
+    virtual void              SetSurfaceRepresentation(int);
+    virtual void              SetSpecularProperties(bool,float,float,
+                                                    const ColorAttribute&);
 
     void                      IgnoreLighting(const bool);
     void                      LUTColorsChanged(const bool);
+    void                      CanApplyGlobalRepresentation(const bool val)
+                                  { canApplyGlobalRep = val; };
 
   protected:
     
@@ -142,6 +151,7 @@ class PLOTTER_API avtSurfaceAndWireframeRenderer : public avtCustomRenderer
 
     bool                      ignoreLighting;
     bool                      lutColorsChanged;
+    bool                      canApplyGlobalRep;
 
     void                      Initialize();
     virtual void              SetupGraphicsLibrary() = 0;
@@ -161,6 +171,7 @@ class PLOTTER_API avtSurfaceAndWireframeRenderer : public avtCustomRenderer
     std::vector<vtkDataSet*>   inputs;         
     int                        inputNum; 
     int                        lastWindowSize[2]; 
+    float                      globalAmbientCoeff;
 };
 
 

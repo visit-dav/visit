@@ -1554,6 +1554,10 @@ VisWinPlots::SetAmbientCoefficient(const float amb)
 //  Programmer: Brad Whitlock
 //  Creation:   Mon Sep 23 15:48:39 PST 2002
 //
+//  Modifications:
+//    Kathleen Bonnell, Thu Sep  2 08:52:16 PDT 2004
+//    Set specular properties when surface rep is Surface.
+//
 // ****************************************************************************
 
 void
@@ -1563,6 +1567,19 @@ VisWinPlots::SetSurfaceRepresentation(int rep)
     for (it = plots.begin() ; it != plots.end() ; it++)
     {
         (*it)->SetSurfaceRepresentation(rep);
+    }
+
+    //
+    //  If we are changing to surface rep, and are in 3D mode, make
+    //  sure the specular properties get reset. (They were not 
+    //  applied if old rep was wireframe).
+    //
+    if (rep == 0 && mediator.GetMode() == WINMODE_3D)
+    {
+        SetSpecularProperties(mediator.GetSpecularFlag(),
+                              mediator.GetSpecularCoeff(),
+                              mediator.GetSpecularPower(),
+                              mediator.GetSpecularColor());
     }
 }
 

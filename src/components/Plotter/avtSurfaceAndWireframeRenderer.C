@@ -52,6 +52,9 @@
 //    Kathleen Bonnell, Tue Aug 26 14:45:31 PDT 2003 
 //    Initialize lastWindowSize. 
 //
+//    Kathleen Bonnell, Thu Sep  2 16:24:49 PDT 2004 
+//    Added globalAmbientCoeff and canApplyGlobalRep. 
+//
 // ****************************************************************************
 
 avtSurfaceAndWireframeRenderer::avtSurfaceAndWireframeRenderer()
@@ -71,6 +74,7 @@ avtSurfaceAndWireframeRenderer::avtSurfaceAndWireframeRenderer()
 
     drawSurfaceVerts = drawSurfaceLines = true;
     drawSurfaceStrips = drawSurfacePolys = true;
+    canApplyGlobalRep = true;
 
     drawEdgeLines = drawEdgeStrips = drawEdgePolys = true;
 
@@ -78,6 +82,7 @@ avtSurfaceAndWireframeRenderer::avtSurfaceAndWireframeRenderer()
     ignoreLighting = false;
     lutColorsChanged = false;
     lastWindowSize[0] = lastWindowSize[1] = -1;
+    globalAmbientCoeff = 0.;
 }
 
 
@@ -157,6 +162,10 @@ avtSurfaceAndWireframeRenderer::New(void)
 //  Programmer:  Kathleen Bonnell  (thanks to Kitware)
 //  Creation:    August 16, 2001 
 //
+//  Modifications:
+//    Kathleen Bonnell, Thu Sep  2 16:24:49 PDT 2004
+//    Allow DrawEdges to be called, even if Representation is points.
+//
 // ****************************************************************************
 
 void 
@@ -182,7 +191,7 @@ avtSurfaceAndWireframeRenderer::Draw()
         DrawSurface();
     }
 
-    if (prop->GetEdgeVisibility() && rep != VTK_POINTS)
+    if (prop->GetEdgeVisibility())
     {
         DrawEdges();
     }
@@ -1059,11 +1068,15 @@ avtSurfaceAndWireframeRenderer::GlobalLightingOff()
 //   Kathleen Bonnell, Wed Aug 14 12:33:59 PDT 2002 
 //   Allow the lighting coefficents to be ignored.
 //
+//   Kathleen Bonnell, Thu Sep  2 16:24:49 PDT 2004 
+//   Set internal globalAmbientCoeff. 
+//
 // ****************************************************************************
 
 void
 avtSurfaceAndWireframeRenderer::GlobalSetAmbientCoefficient(const float amb)
 {
+    globalAmbientCoeff = amb;
     if (!ignoreLighting)
     {
        prop->SetAmbient(amb);
@@ -1109,5 +1122,91 @@ void
 avtSurfaceAndWireframeRenderer::LUTColorsChanged(const bool val)
 {
     lutColorsChanged = val; 
+}
+
+
+// ****************************************************************************
+//  Method: avtSurfaceAndWireframeRenderer::SetSpecularProperties
+//
+//  Purpose:
+//      Sets the drawable's surface representation.
+//
+//  Arguments:
+//      flag  :  true to enable specular, false otherwise
+//      coeff :  the new specular coefficient
+//      power :  the new specular power
+//      color :  the new specular color
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   September 2, 2004 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtSurfaceAndWireframeRenderer::SetSpecularProperties(bool flag, float coeff, 
+    float power, const ColorAttribute &color)
+{
+    if (prop != NULL && (drawSurfaceStrips || drawSurfacePolys ||
+        prop->GetRepresentation() == VTK_SURFACE))
+    {
+        prop->SetSpecular(flag ? coeff : 0);
+        prop->SetSpecularPower(power);
+        int r = color.Red();
+        int g = color.Green();
+        int b = color.Blue();
+        prop->SetSpecularColor(float(r)/255.,
+                               float(g)/255.,
+                               float(b)/255.);
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtSurfaceAndWireframeRenderer::SetSurfaceRepresentation
+//
+//  Purpose:
+//      Sets the property's surface representation.
+//
+//  Arguments:
+//      rep : The new surface representation.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   September 2, 2004 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtSurfaceAndWireframeRenderer::SetSurfaceRepresentation(int rep)
+{
+    if(prop != NULL) 
+    {
+        int actorRep = prop->GetRepresentation();
+        if(rep == 0 && actorRep != VTK_SURFACE && canApplyGlobalRep &&
+           (drawSurfaceStrips || drawSurfacePolys)) 
+        {
+            prop->SetRepresentation(VTK_SURFACE);
+            if (!ignoreLighting)
+            {
+                prop->SetAmbient(globalAmbientCoeff);
+                prop->SetDiffuse(1.);
+            }
+        }
+        else if(rep == 1 && actorRep != VTK_WIREFRAME)
+        {
+            prop->SetRepresentation(VTK_WIREFRAME);
+            prop->SetAmbient(1.);
+            prop->SetDiffuse(0.);
+        }
+        else if(rep == 2 && actorRep != VTK_POINTS)
+        {
+            prop->SetRepresentation(VTK_POINTS);
+            prop->SetAmbient(1.);
+            prop->SetDiffuse(0.);
+        }
+    }
 }
 

@@ -194,6 +194,9 @@ avtSubsetPlot::Create()
 //    Kathleen Bonnell, Mon Sep 29 12:31:18 PDT 2003 
 //    Set AntialiasedRenderOrder depending upon wireframe mode. 
 //
+//    Kathleen Bonnell, Thu Sep  2 11:44:09 PDT 2004 
+//    Ensure that specular properties aren't used in wireframe mode.
+//
 // ****************************************************************************
 
 void
@@ -209,9 +212,15 @@ avtSubsetPlot::SetAtts(const AttributeGroup *a)
     SetLineWidth(atts.GetLineWidth());
     sub->SetPlotAtts(&atts);
     if (!atts.GetWireframe())
+    {
         behavior->SetAntialiasedRenderOrder(DOES_NOT_MATTER);
+        levelsMapper->SetSpecularIsInappropriate(false);
+    }
     else 
+    {
         behavior->SetAntialiasedRenderOrder(ABSOLUTELY_LAST);
+        levelsMapper->SetSpecularIsInappropriate(true);
+    }
 }
 
 // ****************************************************************************

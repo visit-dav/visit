@@ -16,6 +16,7 @@ class   vtkDataObjectCollection;
 class   vtkDataSetMapper;
 
 class   avtTransparencyActor;
+class   ColorAttribute;
 
 
 // ****************************************************************************
@@ -60,6 +61,12 @@ class   avtTransparencyActor;
 //    Mark C. Miller Tue May 11 20:21:24 PDT 2004
 //    Removed extRenderdImagesActor data member and method to set it
 //
+//    Kathleen Bonnell, Thu Sep  2 11:44:09 PDT 2004 
+//    Added specularIsInappropriate to control whether or not specular 
+//    properties get applied.  Moved SetSpecularProperties and 
+//    SetSurfaceRepresentation from avtGeometryDrawable so that derived 
+//    mappers may override.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtMapper : public avtOriginatingDatasetSink
@@ -86,8 +93,18 @@ class PLOTTER_API avtMapper : public avtOriginatingDatasetSink
 
     int                        SetTransparencyActor(avtTransparencyActor *);
 
+    void                       SetSpecularIsInappropriate(bool val)
+                                   { specularIsInappropriate = val; };
+    bool                       GetSpecularIsInappropriate()
+                                   { return specularIsInappropriate; };
+
+    virtual void                SetSurfaceRepresentation(int rep);
+    virtual void                SetSpecularProperties(bool,float,float,
+                                                      const ColorAttribute&);
+
   protected:
     bool                       immediateMode;
+    bool                       specularIsInappropriate;
     avtDrawable_p              drawable;
     avtTransparencyActor      *transparencyActor;
     int                        transparencyIndex;

@@ -11,6 +11,7 @@
 #include <vtkRenderer.h>
 
 #include <avtImageMapper.h>
+#include <ColorAttribute.h>
 
 
 // ****************************************************************************
@@ -304,4 +305,50 @@ avtCustomRenderer::ImmediateModeRenderingOff()
     immediateModeRendering = false;    
 }
 
+
+// ****************************************************************************
+//  Method: avtCustomRenderer::SetSpecularProperties
+//
+//  Purpose:
+//    Sets the specified specular properties. 
+//    This is a stub for derived types. 
+//
+//  Arguments:
+//    <un-named> :  true to enable specular, false otherwise
+//    <un-named> :  the new specular coefficient
+//    <un-named> :  the new specular power
+//    <un-named> :  the new specular color
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   September 2, 2004
+//
+// ****************************************************************************
+
+void
+avtCustomRenderer::SetSpecularProperties(bool , float , float ,
+                                         const ColorAttribute &)
+{
+    ;
+}
+
+// ****************************************************************************
+//  Method: avtCustomRenderer::SetSurfaceRepresentation
+//
+//  Purpose:
+//     Set the surface representation to the specified value.
+//     This is a stub for derived types. 
+//
+//  Arguments:
+//     <un-named>  The new surface representation.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   September 2, 2004 
+//
+// ****************************************************************************
+
+void
+avtCustomRenderer::SetSurfaceRepresentation(int rep)
+{
+    ;
+}
 

@@ -6,6 +6,7 @@
 
 #include <vtkObjectFactory.h>
 #include <vtkRenderer.h>
+#include <ColorAttribute.h>
 
 
 // ****************************************************************************
@@ -214,6 +215,56 @@ void
 avtUserDefinedMapper::GlobalSetAmbientCoefficient(const float amb)
 {
     renderer->GlobalSetAmbientCoefficient(amb);
+}
+
+
+// ****************************************************************************
+//  Method: avtUserDefinedMapper::SetSpecularProperties
+//
+//  Purpose:
+//    Sends the specular properties to the renderer. 
+//
+//  Arguments:
+//    flag  :  true to enable specular, false otherwise
+//    coeff :  the new specular coefficient
+//    power :  the new specular power
+//    color :  the new specular color
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   September 2, 2004 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtUserDefinedMapper::SetSpecularProperties(bool flag, float coeff, float power,
+                                           const ColorAttribute &color)
+{
+    renderer->SetSpecularProperties(flag, coeff, power, color);
+}
+
+
+// ****************************************************************************
+//  Method: avtUserDefinedMapper::SetSurfaceRepresentation
+//
+//  Purpose:
+//    Sends the surface representation to the renderer. 
+//
+//  Arguments:
+//    rep  :  the new representation 
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   September 2, 2004 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtUserDefinedMapper::SetSurfaceRepresentation(int rep)
+{
+    renderer->SetSurfaceRepresentation(rep);
 }
 
 

@@ -20,11 +20,15 @@
 //   Added rayPoint1, rayPoint2. Removed domain, zoneNumber, pickLetter,
 //   pickPoint.
 //
+//   Kathleen Bonnell, Thu Sep  2 13:40:25 PDT 2004 
+//   Added intersectionOnly.
+// 
 // ****************************************************************************
 
 typedef struct PickPointInfo 
 {
     bool    validPick;
+    bool    intersectionOnly;
     float   rayPt1[3];
     float   rayPt2[3];
     void   *callbackData;

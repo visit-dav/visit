@@ -370,6 +370,10 @@ avtSurfacePlot::CustomizeBehavior()
 //    Kathleen Bonnell, Mon Sep 29 12:31:18 PDT 2003 
 //    Set AntialiasedRenderOrder depending upon whether or not the wireframe
 //    is being drawn without the surface. 
+//
+//    Kathleen Bonnell, Thu Sep  2 11:44:09 PDT 2004 
+//    Set renderer's CanApplyGlobalRepresentation flag. 
+//    
 // ****************************************************************************
 
 void
@@ -394,6 +398,7 @@ avtSurfacePlot::SetAtts(const AttributeGroup *a)
     SetLighting(atts.GetLightingFlag());
     SetLineWidth(Int2LineWidth(atts.GetLineWidth()));
     SetLineStyle(Int2LineStyle(atts.GetLineStyle()));
+    renderer->CanApplyGlobalRepresentation(atts.GetSurfaceFlag());
     SetRepresentation(!atts.GetSurfaceFlag() && atts.GetWireframeFlag());
     SetLegend(atts.GetLegendFlag());
 

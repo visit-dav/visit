@@ -656,6 +656,9 @@ ViewerWindow::Realize()
 //    I added code to remove the pick function so if we change pick modes,
 //    for example, we're back to picking.
 //
+//    Kathleen Bonnell, Thu Sep  2 13:55:05 PDT 2004 
+//    Tell the visWindow that Pick will be normal. 
+//
 // ****************************************************************************
 
 void
@@ -670,6 +673,7 @@ ViewerWindow::SetInteractionMode(const INTERACTION_MODE mode)
     // user-defined action.
     pickFunction = 0;
     pickFunctionData = 0;
+    visWindow->SetPickTypeToNormal();
 
     if  (changingToPickMode)
     {
@@ -5108,6 +5112,8 @@ ViewerWindow::Pick(int x, int y, const INTERACTION_MODE pickMode)
 // Creation:   Tue Jan 6 09:37:03 PDT 2004
 //
 // Modifications:
+//    Kathleen Bonnell, Thu Sep  2 13:55:05 PDT 2004 
+//    Tell the visWindow that Pick will be an intersection-only. 
 //   
 // ****************************************************************************
 
@@ -5129,6 +5135,7 @@ ViewerWindow::GetPickAttributesForScreenPoint(double sx, double sy,
         // Make the Pick infrastructure use a pick routine that does not add
         // a Pick graphic to the vis window.
         //
+        visWindow->SetPickTypeToIntersection();
         pickFunction = PickFunctionSetSuccessFlag;
         pickFunctionData = (void *)&retval;
 
@@ -5218,7 +5225,11 @@ ViewerWindow::PerformPickCallback(void *data)
 // Creation:   Wed Jan 7 09:18:58 PDT 2004
 //
 // Modifications:
-//   
+//   Kathleen Bonnell, Thu Sep  2 13:55:05 PDT 2004
+//   If the pick was an intersection-only, set the PickPoint to be the
+//   pickpoint info's rayPoint (or intersection point). Reset the visWindow's 
+//   pick type to Normal
+//
 // ****************************************************************************
 
 void
@@ -5235,6 +5246,13 @@ ViewerWindow::HandlePick(void *data)
             // Let the Query manager do a pick
             //
             qMgr->Pick(ppi);
+        }
+        else if (ppi->intersectionOnly)
+        {
+            PickAttributes *p = qMgr->GetPickAtts();
+            p->SetPickPoint(ppi->rayPt1);
+            bool pickWorked = ppi->validPick;
+            (*pickFunction)(pickFunctionData, pickWorked, p);
         }
         else
         {
@@ -5262,11 +5280,13 @@ ViewerWindow::HandlePick(void *data)
         //
         pickFunction = 0;
         pickFunctionData = 0;
+        visWindow->SetPickTypeToNormal();
     }
     CATCH(VisItException)
     {
         pickFunction = 0;
         pickFunctionData = 0;
+        visWindow->SetPickTypeToNormal();
         RETHROW;
     }
     ENDTRY
@@ -5281,20 +5301,28 @@ ViewerWindow::HandlePick(void *data)
 // Arguments:
 //   func : The callback function.
 //   data : The callback function data.
+//   intersectOnly : whether the pick will be performed as intersection only
+//                   or normally.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Jan 7 09:51:59 PDT 2004
 //
 // Modifications:
+//   Kathleen Bonnell, Thu Sep  2 13:55:05 PDT 2004
+//   Set the VisWindow's pick type based on the new flag.
 //   
 // ****************************************************************************
 
 void
 ViewerWindow::SetPickFunction(void (*func)(void *, bool, const PickAttributes *),
-    void *data)
+    void *data, bool intersectOnly)
 {
     pickFunction = func;
     pickFunctionData = data;
+    if (intersectOnly)
+        visWindow->SetPickTypeToIntersection();
+    else 
+        visWindow->SetPickTypeToNormal();
 }
 
 // ****************************************************************************

@@ -6,6 +6,7 @@
 
 class OnionPeelAttributes;
 class QComboBox;
+class QLabel;
 class QLineEdit;
 class QSpinBox;
 class QButtonGroup;
@@ -55,7 +56,9 @@ class QvisOnionPeelWindow : public QvisOperatorWindow
     void FillSubsetBox();
 
     QButtonGroup *adjacencyType;
+    QLabel    *categoryLabel;
     QComboBox *categoryName;
+    QLabel    *subsetLabel;
     QComboBox *subsetName;
     QLineEdit *index;
     QSpinBox *requestedLayer;

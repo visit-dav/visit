@@ -268,6 +268,9 @@ class VisitInteractor;
 //    Kathleen Bonnell, Wed Aug 18 10:10:35 PDT 2004 
 //    Added InteractorAttributes and Set/Get methods.
 //
+//    Kathleen Bonnell, Thu Sep  2 13:40:25 PDT 2004 
+//    Added FindIntersection, SetPickTypeToNormal, SetPickTypeToIntersection. 
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindow
@@ -416,6 +419,8 @@ public:
     void                *CreateToolbar(const char *name);
     void                 SetLargeIcons(bool);
 
+    bool                 FindIntersection(const int, const int, double [3]);
+
     // external rendering controls
     void                 SetExternalRenderCallback(
                              VisCallbackWithDob *cb, void *data);
@@ -452,6 +457,9 @@ public:
     float                GetSpecularCoeff();
     float                GetSpecularPower();
     const ColorAttribute &GetSpecularColor();
+
+    void                 SetPickTypeToIntersection(void);
+    void                 SetPickTypeToNormal(void);
 
 
 protected:
@@ -493,6 +501,7 @@ protected:
     WINDOW_MODE                        mode;
     bool                               updatesEnabled;
     bool                               hasPlots;
+    bool                               pickForIntersectionOnly;
 
     avtView2D                          view2D;
     avtView3D                          view3D;
