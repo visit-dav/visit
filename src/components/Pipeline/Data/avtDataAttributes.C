@@ -2269,20 +2269,35 @@ avtDataAttributes::GetVariableName(int index) const
 // Creation:   Tue Jul 20 16:36:00 PST 2004
 //
 // Modifications:
+//   Kathleen Bonnell, Tue Jul 27 14:44:20 PDT 2004
+//   Allow retrieval by varname.
 //   
 // ****************************************************************************
 
 const std::string &
-avtDataAttributes::GetVariableUnits(void) const
+avtDataAttributes::GetVariableUnits(const char *varname) const
 {
-    if (activeVariable < 0)
+    if (varname == NULL)
     {
-        string reason = "Attempting to retrieve non-existent"
-                        " active variable.\n";
-        EXCEPTION1(ImproperUseException, reason);
-    }
+        if (activeVariable < 0)
+        {
+            string reason = "Attempting to retrieve non-existent"
+                            " active variable.\n";
+            EXCEPTION1(ImproperUseException, reason);
+        }
 
-    return variables[activeVariable].varunits;
+        return variables[activeVariable].varunits;
+    }
+    else
+    {
+        int index = VariableNameToIndex(varname);
+        if (index < 0 || index >= variables.size())
+        {
+            EXCEPTION2(BadIndexException, index, variables.size());
+        }
+
+        return variables[index].varunits;
+    }
 }
 
 // ****************************************************************************
@@ -2315,6 +2330,7 @@ avtDataAttributes::GetVariableUnits(int index) const
 
     return variables[index].varunits;
 }
+
 
 // ****************************************************************************
 //  Method: avtDataAttributes::GetNumberOfVariables

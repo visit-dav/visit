@@ -24,6 +24,10 @@ class     avtVMetricVolume;
 //  Programmer: Hank Childs
 //  Creation:   February 3, 2004
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed Jul 28 08:50:51 PDT 2004
+//    Added VerifyInput.
+//
 // ****************************************************************************
 
 class QUERY_API avtWeightedVariableSummationQuery : public avtSummationQuery
@@ -42,6 +46,7 @@ class QUERY_API avtWeightedVariableSummationQuery : public avtSummationQuery
 
     virtual avtDataObject_p    ApplyFilters(avtDataObject_p);
     virtual int                GetNFilters(void) { return 2; };
+    virtual void               VerifyInput(void);
 };
 
 

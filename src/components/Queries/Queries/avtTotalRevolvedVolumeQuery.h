@@ -26,6 +26,10 @@ class     avtRevolvedVolume;
 //  Programmer: Kathleen Bonnell 
 //  Creation:   September 30, 2002 
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed Jul 28 08:35:22 PDT 2004
+//    Added VerifyInput.
+//
 // ****************************************************************************
 
 class QUERY_API avtTotalRevolvedVolumeQuery : public avtSummationQuery
@@ -41,6 +45,7 @@ class QUERY_API avtTotalRevolvedVolumeQuery : public avtSummationQuery
 
   protected:
     virtual avtDataObject_p       ApplyFilters(avtDataObject_p);
+    virtual void                  VerifyInput(void);
     avtRevolvedVolume            *volume;
     virtual int                   GetNFilters() { return 1; };
 

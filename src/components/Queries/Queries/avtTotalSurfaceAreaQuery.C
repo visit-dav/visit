@@ -86,6 +86,10 @@ avtTotalSurfaceAreaQuery::~avtTotalSurfaceAreaQuery()
 //  Programmer: Kathleen Bonnell 
 //  Creation:   October 22, 2002 
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed Jul 28 08:26:05 PDT 2004
+//    Retrieve units from dataAttributes to be used in output.
+//
 // ****************************************************************************
 
 void 
@@ -102,6 +106,7 @@ avtTotalSurfaceAreaQuery::VerifyInput()
         EXCEPTION2(InvalidDimensionsException, "Surface Area query", 
                    "2D or 3D surface");
     }
+    SetUnits(GetInput()->GetInfo().GetAttributes().GetXUnits());
 }
 
 

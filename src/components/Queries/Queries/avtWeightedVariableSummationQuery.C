@@ -10,6 +10,8 @@
 #include <avtVMetricArea.h>
 #include <avtVMetricVolume.h>
 
+#include <BadIndexException.h>
+
 using     std::string;
 
 
@@ -175,4 +177,41 @@ avtWeightedVariableSummationQuery::ApplyFilters(avtDataObject_p inData)
     }
 }
 
+
+// ****************************************************************************
+//  Method: avtWeightedVariableSummationQuery::VerifyInput
+//
+//  Purpose:
+//      Now that we have an input, we can determine what the variable units
+//      are and tell the base class about it.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   July 28, 2004 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtWeightedVariableSummationQuery::VerifyInput(void)
+{
+    //
+    // We want to do this in addition to what the base class does, so call the
+    // base class' version of this method as well.
+    //
+    avtSummationQuery::VerifyInput();
+
+    TRY
+    {
+        //
+        // Set the base class units to be used in output.
+        //
+        SetUnits(GetInput()->GetInfo().GetAttributes().GetVariableUnits());
+    }
+    CATCH(BadIndexException)
+    {
+       ; // do nothing; 
+    }
+    ENDTRY
+}
 

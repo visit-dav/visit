@@ -202,6 +202,10 @@ avtDataObjectQuery::GetNFilters()
 //  Kathleen Bonnell, Fri Jul 11 16:33:16 PDT 2003
 //  Retrieve units.
 //
+//  Kathleen Bonnell, Wed Jul 28 08:26:05 PDT 2004
+//  Removed unit retrieval.  Derived types can set it themselves, as some
+//  want var-units others want mesh-units.
+//
 // ****************************************************************************
 
 void
@@ -212,8 +216,6 @@ avtDataObjectQuery::ChangedInput()
     // don't like the input.
     //
     VerifyInput(); 
-
-    units = GetInput()->GetInfo().GetAttributes().GetXUnits();
 }
 
 

@@ -56,3 +56,37 @@ MinMaxInfo::TransformCoord(const avtMatrix *trans)
     }
 }
 
+Function: EquivalentForOutput
+Declaration: bool  EquivalentForOutput (const MinMaxInfo &obj) const;
+Definition:
+// ****************************************************************************
+//  Method: MinMaxInfo::EquivalentForOutput
+//
+//  Purpose:
+//    Determine equivalency for output purposes (matname not considered). 
+//
+//  Programmer:   Kathleen Bonnell 
+//  Creation:     July 28, 2004 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+bool
+MinMaxInfo::EquivalentForOutput(const MinMaxInfo &obj) const
+{
+    int i;
+
+    // Compare the coord arrays.
+    bool coord_equal = true;
+    for(i = 0; i < 3 && coord_equal; ++i)
+        coord_equal = (coord[i] == obj.coord[i]);
+
+    // Create the return value
+    return ((elementNum == obj.elementNum) &&
+            (domain == obj.domain) &&
+            (value == obj.value) &&
+            coord_equal &&
+            (type == obj.type));
+}
+
