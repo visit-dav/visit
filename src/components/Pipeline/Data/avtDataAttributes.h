@@ -102,6 +102,9 @@ class     avtExtents;
 //    Eric Brugger, Wed Aug 20 09:27:54 PDT 2003
 //    Added GetWindowMode and SetWindowMode.
 //
+//    Mark C. Miller, Thu Jan 29 17:31:20 PST 2004
+//    Added bools to Merge method to control ignoring certain attributes
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataAttributes
@@ -111,7 +114,9 @@ class PIPELINE_API avtDataAttributes
     virtual                 ~avtDataAttributes();
 
     void                     Copy(const avtDataAttributes &);
-    void                     Merge(const avtDataAttributes &);
+    void                     Merge(const avtDataAttributes &,
+                                 bool ignoreThisOk = false,
+                                 bool ignoreThatOk = false);
 
     void                     Write(avtDataObjectString &, 
                                    const avtDataObjectWriter *);

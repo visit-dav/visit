@@ -2,6 +2,8 @@
 //                                  avtParallel.C                            //
 // ************************************************************************* //
 
+#include <float.h>
+
 #include <avtParallel.h>
 
 #ifdef PARALLEL
@@ -13,6 +15,11 @@
 
 using std::string;
 using std::vector;
+
+// handle for user-defined reduction operator for min/max in single reduce
+#ifdef PARALLEL
+static MPI_Op AVT_MPI_MINMAX = MPI_OP_NULL;
+#endif
 
 // A buffer to temporarily receive broadcast data before permanent storage
 static vector<char> broadcastBuffer(1000);
@@ -64,6 +71,51 @@ PAR_Size(void)
     return nProcs;
 }
 
+// ****************************************************************************
+//  Function: MinMaxOp 
+//
+//  Purpose:
+//      User defined MPI reduction operator. We can assume double values
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   January 29, 2004 
+//
+// ****************************************************************************
+
+#ifdef PARALLEL
+static void
+MinMaxOp(void *ibuf, void *iobuf, int *len, MPI_Datatype *dtype)
+{
+    int i;
+    double *iovals = (double *) iobuf;
+    double  *ivals = (double *) ibuf;
+
+
+    // there is a chance, albeit slim for small values of *len, that if MPI
+    // decides to chop up the buffers, it could decide to chop them on an
+    // odd boundary. That would be catastrophic!
+    if (*len % 2 != 0)
+    {
+        EXCEPTION0(ImproperUseException);
+    }
+
+    // handle the minimums by copying any values in ibuff that are less than
+    // respective value in iobuff into iobuff
+    for (i = 0; i < *len; i += 2)
+    {
+        if (ivals[i] < iovals[i])
+            iovals[i] = ivals[i];
+    }
+
+    // handle the maximums by copying any values in ibuff that are greater than
+    // respective value in iobuff into iobuff
+    for (i = 1; i < *len; i += 2)
+    {
+        if (ivals[i] > iovals[i])
+            iovals[i] = ivals[i];
+    }
+}
+#endif
 
 // ****************************************************************************
 //  Function: UnifyMinMax
@@ -79,63 +131,83 @@ PAR_Size(void)
 //  Programmer:  Hank Childs
 //  Creation:    June 18, 2001
 //
+//  Modifications
+//
+//    Mark C. Miller, Thu Jan 29 21:26:10 PST 2004
+//    Modified to use a single all reduce with the user-defined reduction
+//    operator. Also modified to accept an alternate size to use if there is
+//    a chance that all processors don't agree on size upon entering. ALL
+//    PROCESSORS MUST AGREE ON altsize THOUGH. An altsize of zero means to
+//    use size (e.g. operate as normally). An altsize > 0 means to use
+//    the alternate size for any communication, but truncate the result to
+//    size upon exit. An altsize of -1 means to do an initial communication
+//    to get all processors to agree on a size before proceeding.
+//
 // ****************************************************************************
 
 /* ARGSUSED */
 void
-UnifyMinMax(double *buff, int size)
+UnifyMinMax(double *buff, int size, int altsize)
 {
 #ifdef PARALLEL
     int  i;
+    double *rbuff;
 
-    if (size % 2 != 0)
+    // if it hasn't been created yet, create the min/max MPI reduction operator
+    if (AVT_MPI_MINMAX == MPI_OP_NULL)
+        MPI_Op_create(MinMaxOp, true, &AVT_MPI_MINMAX);
+
+    // we do this 'extra' communication if we can't be sure all processors
+    // have an agreed upon size to work with. This will have effect of 
+    // overwriting altsize with a maximum agreed upon size
+    if (altsize == -1)
+        MPI_Allreduce(&size, &altsize, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
+
+    if (altsize == 0)
     {
-        debug1 << "Min/max layout must be divisible by 2." << endl;
+        if (size % 2 != 0)
+        {
+            debug1 << "Min/max layout must be divisible by 2." << endl;
+            EXCEPTION0(ImproperUseException);
+        }
+
+        rbuff = new double[size];
+
+        MPI_Allreduce(buff, rbuff, size, MPI_DOUBLE, AVT_MPI_MINMAX, MPI_COMM_WORLD);
+    }
+    else if (altsize > 0)
+    {
+        if ((altsize % 2 != 0) || (altsize < size))
+        {
+            EXCEPTION0(ImproperUseException);
+        }
+
+        rbuff = new double[altsize];
+
+        // we're going to be reducing a buffer that is larger than size
+        // so populate it with appropriate default values
+        double *tbuff = new double[altsize];
+        for (i = 0; i < size; i++)
+            tbuff[i] = buff[i];
+        for (i = size; i < altsize; i += 2)
+        {
+            tbuff[i  ] = +DBL_MAX;
+            tbuff[i+1] = -DBL_MAX;
+        }
+
+        MPI_Allreduce(tbuff, rbuff, altsize, MPI_DOUBLE, AVT_MPI_MINMAX, MPI_COMM_WORLD);
+
+    }
+    else
+    {
         EXCEPTION0(ImproperUseException);
     }
 
-    //
-    // Create some buffers that can be used for the maximums and minimums.
-    //
-    double *outbuff = new double[size/2];
-    double *inbuff  = new double[size/2];
+    // put the reduced results back into buff
+    for (i = 0; i < size ; i++)
+        buff[i] = rbuff[i];
 
-    //
-    // Copy just the minimums into the buffer.
-    //
-    for (i = 0 ; i < size/2 ; i++)
-    {
-        outbuff[i] = buff[2*i];
-    }
-
-    //
-    // Take the minimum of all of the minimums in each dimension.
-    //
-    MPI_Allreduce(outbuff, inbuff, size/2, MPI_DOUBLE, MPI_MIN,MPI_COMM_WORLD);
-
-    //
-    // Now copy those minimums back into the input buffer.
-    //
-    for (i = 0 ; i < size/2 ; i++)
-    {
-         buff[2*i] = inbuff[i];
-    }
-    
-    //
-    // Do the same thing for the maximums.
-    //
-    for (i = 0 ; i < size/2 ; i++)
-    {
-        outbuff[i] = buff[2*i+1];
-    }
-    MPI_Allreduce(outbuff, inbuff, size/2, MPI_DOUBLE, MPI_MAX,MPI_COMM_WORLD);
-    for (i = 0 ; i < size/2 ; i++)
-    {
-        buff[2*i+1] = inbuff[i];
-    }
-
-    delete [] inbuff;
-    delete [] outbuff;
+    delete [] rbuff;
 #endif
 }
 

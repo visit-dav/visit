@@ -389,6 +389,8 @@ avtGenericDatabase::GetOutput(avtDataSpecification_p spec,
     // for example), so call this again.
     //
     avtDataObject_p dob = src->GetOutput();
+    if (nDomains == 0)
+        dob->GetInfo().GetValidity().SetHasEverOwnedAnyDomain(false);
     PopulateDataObjectInformation(dob, spec->GetVariable(), timeStep, *spec);
 
     return rv;
@@ -1337,16 +1339,18 @@ avtGenericDatabase::GetScalarVariable(const char *varname, int ts, int domain,
         if (var != NULL)
         {
             if (Interface->CanCacheVariable(varname))
+            {
                 cache.CacheVTKObject(varname, avtVariableCache::SCALARS_NAME, ts,
                                      domain, material, var);
 
-            //
-            // We need to decrement the reference count of the variable 
-            // returned from FetchVar, but we could not do it previously 
-            // because it would knock the count down to 0 and delete it.  Since 
-            // we have cached it, we can do it now.
-            //
-            var->Delete();
+                //
+                // We need to decrement the reference count of the variable 
+                // returned from FetchVar, but we could not do it previously 
+                // because it would knock the count down to 0 and delete it.  Since 
+                // we have cached it, we can do it now.
+                //
+                var->Delete();
+            }
         }
     }
 
@@ -1412,16 +1416,18 @@ avtGenericDatabase::GetVectorVariable(const char *varname, int ts, int domain,
         if (var != NULL)
         {
             if (Interface->CanCacheVariable(varname))
+            {
                 cache.CacheVTKObject(varname, avtVariableCache::VECTORS_NAME, ts, 
                                      domain, material, var);
 
-            //
-            // We need to decrement the reference count of the variable 
-            // returned from FetchVar, but we could not do it previously 
-            // because it would knock the count down to 0 and delete it.  Since
-            // we have cached it, we can do it now.
-            //
-            var->Delete();
+                //
+                // We need to decrement the reference count of the variable 
+                // returned from FetchVar, but we could not do it previously 
+                // because it would knock the count down to 0 and delete it.  Since
+                // we have cached it, we can do it now.
+                //
+                var->Delete();
+            }
         }
     }
 
@@ -1477,16 +1483,18 @@ avtGenericDatabase::GetTensorVariable(const char *varname, int ts, int domain,
         if (var != NULL)
         {
             if (Interface->CanCacheVariable(varname))
+            {
                 cache.CacheVTKObject(varname, avtVariableCache::TENSORS_NAME, ts, 
                                      domain, material, var);
 
-            //
-            // We need to decrement the reference count of the variable 
-            // returned from FetchVar, but we could not do it previously 
-            // because it would knock the count down to 0 and delete it.  Since
-            // we have cached it, we can do it now.
-            //
-            var->Delete();
+                //
+                // We need to decrement the reference count of the variable 
+                // returned from FetchVar, but we could not do it previously 
+                // because it would knock the count down to 0 and delete it.  Since
+                // we have cached it, we can do it now.
+                //
+                var->Delete();
+            }
         }
     }
 
@@ -1543,16 +1551,18 @@ avtGenericDatabase::GetSymmetricTensorVariable(const char *varname, int ts,
         if (var != NULL)
         {
             if (Interface->CanCacheVariable(varname))
+            {
                 cache.CacheVTKObject(varname, avtVariableCache::TENSORS_NAME, ts, 
                                      domain, material, var);
 
-            //
-            // We need to decrement the reference count of the variable 
-            // returned from FetchVar, but we could not do it previously 
-            // because it would knock the count down to 0 and delete it.  Since
-            // we have cached it, we can do it now.
-            //
-            var->Delete();
+                //
+                // We need to decrement the reference count of the variable 
+                // returned from FetchVar, but we could not do it previously 
+                // because it would knock the count down to 0 and delete it.  Since
+                // we have cached it, we can do it now.
+                //
+                var->Delete();
+            }
         }
     }
 
@@ -1656,16 +1666,18 @@ avtGenericDatabase::GetMesh(const char *meshname, int ts, int domain,
         ScaleMesh(mesh);
 
         if (Interface->CanCacheVariable(meshname))
+        {
             cache.CacheVTKObject(meshname, avtVariableCache::DATASET_NAME, ts,
                                  domain, material, mesh);
 
-        //
-        // We need to decrement the reference count of the variable returned
-        // from FetchMesh, but we could not do it previously because it would
-        // knock the count down to 0 and delete it.  Since we have cached it,
-        // we can do it now.
-        //
-        mesh->Delete();
+            //
+            // We need to decrement the reference count of the variable returned
+            // from FetchMesh, but we could not do it previously because it would
+            // knock the count down to 0 and delete it.  Since we have cached it,
+            // we can do it now.
+            //
+            mesh->Delete();
+        }
     }
 
     //

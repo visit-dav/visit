@@ -55,6 +55,9 @@ class     avtDataObjectWriter;
 //    Hank Childs, Fri May 16 10:15:54 PDT 2003
 //    Add error handling.
 //
+//    Mark C. Miller, Thu Jan 29 16:40:25 PST 2004
+//    Added hasOwnedAnyDomain
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataValidity
@@ -141,6 +144,12 @@ class PIPELINE_API avtDataValidity
     bool                     GetQueryable(void)
                                    { return queryable; }
 
+    void                     SetHasEverOwnedAnyDomain(bool val)
+                                   { hasEverOwnedAnyDomain = val; }
+    bool                     GetHasEverOwnedAnyDomain(void) const
+                                   { return hasEverOwnedAnyDomain; }
+
+
     void                     ErrorOccurred(void) { errorOccurred = true; };
     void                     ResetErrorOccurred(void)
                                                  { errorOccurred = false; };
@@ -164,6 +173,7 @@ class PIPELINE_API avtDataValidity
     bool                     notAllCellsSubdivided;
     bool                     disjointElements;
     bool                     queryable;
+    bool                     hasEverOwnedAnyDomain;
 
     bool                     errorOccurred;
     std::string              errorString;

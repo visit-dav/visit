@@ -37,6 +37,11 @@ avtDataValidity::avtDataValidity()
 //  Programmer: Hank Childs
 //  Creation:   September 30, 2003
 //
+//  Modifications:
+//
+//    Mark C. Miller, Thu Jan 29 16:40:25 PST 2004
+//    Added hasEverOwnedAnyDomain
+//
 // ****************************************************************************
 
 void
@@ -56,6 +61,7 @@ avtDataValidity::Reset(void)
     notAllCellsSubdivided             = false;
     disjointElements                  = false;
     queryable                         = true;
+    hasEverOwnedAnyDomain             = true;
     errorOccurred                     = false;
     errorString                       = "";
 }
@@ -102,6 +108,9 @@ avtDataValidity::Reset(void)
 //    Hank Childs, Fri May 16 10:18:12 PDT 2003
 //    Copy over errorOccurred, errorString.
 //
+//    Mark C. Miller, Thu Jan 29 16:40:25 PST 2004 
+//    Added hasEverOwnedAnyDomain
+//
 // ****************************************************************************
 
 void
@@ -121,6 +130,7 @@ avtDataValidity::Copy(const avtDataValidity &di)
     notAllCellsSubdivided             = di.notAllCellsSubdivided;
     disjointElements                  = di.disjointElements;
     queryable                         = di.queryable;
+    hasEverOwnedAnyDomain             = di.hasEverOwnedAnyDomain;
     errorOccurred                     = di.errorOccurred;
     errorString                       = di.errorString;
 }
@@ -167,6 +177,9 @@ avtDataValidity::Copy(const avtDataValidity &di)
 //    Hank Childs, Fri May 16 10:18:12 PDT 2003
 //    Account for errorOccurred, errorString.
 //
+//    Mark C. Miller, Thu Jan 29 16:40:25 PST 2004
+//    Added hasEverOwnedAnyDomain 
+//
 // ****************************************************************************
 
 void
@@ -187,6 +200,7 @@ avtDataValidity::Merge(const avtDataValidity &di)
                                di.normalsAreInappropriate;
     disjointElements = disjointElements && di.disjointElements;
     queryable = queryable && di.queryable;
+    hasEverOwnedAnyDomain = hasEverOwnedAnyDomain || hasEverOwnedAnyDomain;
 
     // If not all cells were subdivided in either dataset, or if all were
     // in one but not both, then not all of our cells were subdivided
@@ -263,13 +277,16 @@ avtDataValidity::Merge(const avtDataValidity &di)
 //    Hank Childs, Fri May 16 10:18:12 PDT 2003
 //    Write errorOccrred, errorString.
 //
+//    Mark C. Miller, Thu Jan 29 16:40:25 PST 2004
+//    Added hasEverOwnedAnyDomain
+//
 // ****************************************************************************
 
 void
 avtDataValidity::Write(avtDataObjectString &str,
                        const avtDataObjectWriter *wrtr)
 {
-    const int numVals = 16;
+    const int numVals = 17;
     int  vals[numVals];
 
     vals[0] = (zonesPreserved ? 1 : 0);
@@ -286,8 +303,9 @@ avtDataValidity::Write(avtDataObjectString &str,
     vals[11]= (notAllCellsSubdivided ? 1 : 0);
     vals[12]= (disjointElements ? 1 : 0);
     vals[13]= (queryable ? 1 : 0);
-    vals[14]= (errorOccurred ? 1 : 0);
-    vals[15]= errorString.size();
+    vals[14]= (hasEverOwnedAnyDomain ? 1 : 0);
+    vals[15]= (errorOccurred ? 1 : 0);
+    vals[16]= errorString.size();
     wrtr->WriteInt(str, vals, numVals);
 
     str.Append((char *) errorString.c_str(), errorString.size(),
@@ -337,6 +355,9 @@ avtDataValidity::Write(avtDataObjectString &str,
 //
 //    Hank Childs, Fri May 16 10:18:12 PDT 2003
 //    Read errorOccrred, errorString.
+//
+//    Mark C. Miller, Thu Jan 29 16:40:25 PST 2004
+//    Added hasEverOwnedAnyDomain, careful to put in right order in sequence
 //
 // ****************************************************************************
 
@@ -440,6 +461,12 @@ avtDataValidity::Read(char *input)
     memcpy(&queryable, input, sizeof(int));
     input += sizeof(int); size += sizeof(int);
     SetQueryable((queryable == 1 ? true : false));
+
+    // read whether the object has ever owned any domain.
+    int everOwned;
+    memcpy(&everOwned, input, sizeof(int));
+    input += sizeof(int); size += sizeof(int);
+    SetHasEverOwnedAnyDomain((everOwned == 1 ? true : false));
 
     int eo;
     memcpy(&eo, input, sizeof(int));

@@ -1166,10 +1166,14 @@ NetworkManager::GetOutput(bool respondWithNullData, bool calledForRender)
                                           workingNet->GetPipelineSpec(),
                                           &windowAttributes);
 
+        int  scalableThreshold = windowAttributes.GetRenderAtts().GetScalableThreshold();
+
         // compute this network's cell count if we haven't already 
         if (globalCellCounts[netId] == -1)
         {
            bool polysOnly = true;
+           if (scalableThreshold == 0)
+               polysOnly = false;
            int localCellCount = writer->GetInput()->GetNumberOfCells(polysOnly);
            int totalCellCount;
 #ifdef PARALLEL
@@ -1199,7 +1203,6 @@ NetworkManager::GetOutput(bool respondWithNullData, bool calledForRender)
         {
 
 #ifdef PARALLEL
-           int  scalableThreshold = windowAttributes.GetRenderAtts().GetScalableThreshold();
 
            if ((PAR_Size() > 1) && (GetTotalGlobalCellCounts() > scalableThreshold))
            {
@@ -1291,52 +1294,7 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer)
              viswin->AddPlot(anActor);
           }
 
-          // adjust window size, viewport, etc. if we're in 2D mode
-          WINDOW_MODE windowMode = viswin->GetWindowMode();
-          if (windowMode == WINMODE_2D)
-          {  avtView2D v = viswin->GetView2D();
-
-             // set window size to size of viewport, in pixels
-             double viewPort[4];
-             int oldRows, oldCols;
-             viswin->GetSize(oldCols, oldRows);
-             v.GetActualViewport(viewPort, oldCols, oldRows);
-
-             int newCols = (int) ((viewPort[1] - viewPort[0]) * oldCols + 0.5);
-             int newRows = (int) ((viewPort[3] - viewPort[2]) * oldRows + 0.5);
-             viswin->SetSize(newCols, newRows);
-
-             // set viewport to [0,1,0,1]
-             View2DAttributes vAtts;
-             v.SetToView2DAttributes(&vAtts);
-             double viewportCoords[4] = {0.0, 1.0, 0.0, 1.0};
-             vAtts.SetViewportCoords(viewportCoords);
-             v.SetFromView2DAttributes(&vAtts);
-
-             viswin->SetView2D(v);
-          }
-          else if (windowMode == WINMODE_CURVE)
-          {  avtViewCurve v = viswin->GetViewCurve();
-
-             // set window size to size of viewport, in pixels
-             double viewPort[4];
-             int oldRows, oldCols;
-             viswin->GetSize(oldCols, oldRows);
-             v.GetViewport(viewPort);
-
-             int newCols = (int) ((viewPort[1] - viewPort[0]) * oldCols + 0.5);
-             int newRows = (int) ((viewPort[3] - viewPort[2]) * oldRows + 0.5);
-             viswin->SetSize(newCols, newRows);
-
-             // set viewport to [0,1,0,1]
-             ViewCurveAttributes vAtts;
-             v.SetToViewCurveAttributes(&vAtts);
-             double viewportCoords[4] = {0.0, 1.0, 0.0, 1.0};
-             vAtts.SetViewportCoords(viewportCoords);
-             v.SetFromViewCurveAttributes(&vAtts);
-
-             viswin->SetViewCurve(v);
-          }
+          AdjustWindowAttributes();
 
           int numTriangles = viswin->GetNumTriangles();
           debug1 << "Rendering " << numTriangles << " triangles. " 
@@ -1481,6 +1439,85 @@ NetworkManager::SetWindowAttributes(const WindowAttributes &atts)
        viswin->SetImmediateModeRendering(!atts.GetRenderAtts().GetDisplayLists());
 
     windowAttributes = atts;
+}
+
+// ****************************************************************************
+//  Method:  NetworkManager::AdjustWindowAttributes
+//
+//  Purpose:
+//    Deals with adjustments of window attributes just prior to rendering.
+//    On the engine, we may need to change the view-port or image size to
+//    integrate correctly with the viewer. The intent is to make adjustments
+//    not only to the viswin object but also the windowAttributes object that
+//    maintains some of this knowledge and keep the two consistent.
+//
+//    This should really only be called once all the actors are in the
+//    viswindow but before we do the render.
+//
+//  Programmer:  Mark C. Miller 
+//  Creation:    Monday, January 26, 2004 
+//
+// ****************************************************************************
+void
+NetworkManager::AdjustWindowAttributes()
+{
+    // adjust window size, viewport, etc. if we're in 2D mode
+    WINDOW_MODE windowMode = viswin->GetWindowMode();
+
+    if (windowMode == WINMODE_2D)
+    {  avtView2D v = viswin->GetView2D();
+
+        // set window size to size of viewport, in pixels
+        double viewPort[4];
+        int oldRows, oldCols;
+        viswin->GetSize(oldCols, oldRows);
+        v.GetActualViewport(viewPort, oldCols, oldRows);
+
+        int newCols = (int) ((viewPort[1] - viewPort[0]) * oldCols + 0.5);
+        int newRows = (int) ((viewPort[3] - viewPort[2]) * oldRows + 0.5);
+        viswin->SetSize(newCols, newRows);
+        int newSize[2];
+        newSize[0] = newCols;
+        newSize[1] = newRows;
+        windowAttributes.SetSize(newSize);
+
+        // set viewport to [0,1,0,1]
+        View2DAttributes vAtts;
+        v.SetToView2DAttributes(&vAtts);
+        double viewportCoords[4] = {0.0, 1.0, 0.0, 1.0};
+        vAtts.SetViewportCoords(viewportCoords);
+        v.SetFromView2DAttributes(&vAtts);
+
+        viswin->SetView2D(v);
+        windowAttributes.SetView2D(vAtts);
+    }
+    else if (windowMode == WINMODE_CURVE)
+    {  avtViewCurve v = viswin->GetViewCurve();
+
+        // set window size to size of viewport, in pixels
+        double viewPort[4];
+        int oldRows, oldCols;
+        viswin->GetSize(oldCols, oldRows);
+        v.GetViewport(viewPort);
+
+        int newCols = (int) ((viewPort[1] - viewPort[0]) * oldCols + 0.5);
+        int newRows = (int) ((viewPort[3] - viewPort[2]) * oldRows + 0.5);
+        viswin->SetSize(newCols, newRows);
+        int newSize[2];
+        newSize[0] = newCols;
+        newSize[1] = newRows;
+        windowAttributes.SetSize(newSize);
+
+        // set viewport to [0,1,0,1]
+        ViewCurveAttributes vAtts;
+        v.SetToViewCurveAttributes(&vAtts);
+        double viewportCoords[4] = {0.0, 1.0, 0.0, 1.0};
+        vAtts.SetViewportCoords(viewportCoords);
+        v.SetFromViewCurveAttributes(&vAtts);
+
+        viswin->SetViewCurve(v);
+        windowAttributes.SetViewCurve(vAtts);
+    }
 }
 
 // ****************************************************************************

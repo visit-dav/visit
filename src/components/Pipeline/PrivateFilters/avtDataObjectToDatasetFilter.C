@@ -33,6 +33,11 @@
 //    Initialize the dimension for the cases of non-variables (like meshes and
 //    subsets).
 //
+//    Mark C. Miller, Thu Jan 22 22:13:19 PST 2004
+//    Initialized activeVarDim to -1 and success to false before call to
+//    Traverse and protected call to SetVariableDimension with check for
+//    success==true and activeVarDim!=-1
+//
 // ****************************************************************************
 
 void
@@ -40,11 +45,12 @@ avtDataObjectToDatasetFilter::OutputSetActiveVariable(const char *varname)
 {
     SetActiveVariableArgs args;
     args.varname = varname;
-    args.activeVarDim = 0;
+    args.activeVarDim = -1;
     avtDataTree_p tree = GetDataTree();
-    bool success;
+    bool success = false;
     tree->Traverse(CSetActiveVariable, (void *) &args, success);
-    GetOutput()->GetInfo().GetAttributes().
+    if (success && (args.activeVarDim != -1))
+        GetOutput()->GetInfo().GetAttributes().
                                       SetVariableDimension(args.activeVarDim);
 }
 

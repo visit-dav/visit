@@ -98,8 +98,8 @@ avtSAMRAIFileFormat::InitializeHDF5(void)
 void
 avtSAMRAIFileFormat::FinalizeHDF5(void)
 {
-    H5close();
     debug5 << "Finalizing HDF5 Library" << endl;
+    H5close();
 }
 
 // ****************************************************************************
@@ -111,10 +111,17 @@ avtSAMRAIFileFormat::FinalizeHDF5(void)
 //  Programmer:  Walter Herrera Jimenez
 //  Creation:    July 07, 2003
 //
+//  Modifications:
+//
+//    Mark C. Miller, Thu Jan 29 11:21:41 PST 2004
+//    Added initialization for var_max_ghost data member
+//
 // ****************************************************************************
 avtSAMRAIFileFormat::avtSAMRAIFileFormat(const char *fname)
     : avtSTMDFileFormat(&fname, 1)
 {
+    int i;
+
     // do HDF5 library initialization on consturction of first instance 
     if (avtSAMRAIFileFormat::objcnt == 0)
         InitializeHDF5();
@@ -149,6 +156,8 @@ avtSAMRAIFileFormat::avtSAMRAIFileFormat(const char *fname)
 
     has_ghost = false;
     ghosting_is_consistent = true;
+    for (i = 0; i < 3; i++)
+       var_max_ghosts[i] = 0;
 
     has_mats = false;
     inferVoidMaterial = false;
@@ -373,7 +382,8 @@ avtSAMRAIFileFormat::GetMesh(int patch, const char *)
 
     if (cached_patches[patch][ghostCode] != NULL)
     {
-        debug5 << "avtSAMRAIFileFormat::GetMesh returning cached value" << endl;
+        debug5 << "avtSAMRAIFileFormat::GetMesh returning cached value for \""
+               << active_visit_var_name << "\"" << endl;
 
         // The reference count will be decremented by the generic database,
         // because it will assume it owns it.
@@ -435,7 +445,14 @@ avtSAMRAIFileFormat::ReadMesh(int patch)
         std::map<std::string, var_t>::const_iterator cur_var;
         cur_var = var_names_num_components.find(active_visit_var_name);
 
-        if (cur_var == var_names_num_components.end())
+        if (active_visit_var_name == "amr_mesh")
+        {
+            num_ghosts[0] = var_max_ghosts[0];
+            num_ghosts[1] = var_max_ghosts[1];
+            num_ghosts[2] = var_max_ghosts[2];
+            should_ghost_this_patch = true;
+        }
+        else if (cur_var == var_names_num_components.end())
         {
             num_ghosts[0] = 0;
             num_ghosts[1] = 0;
@@ -1682,7 +1699,7 @@ avtSAMRAIFileFormat::GetAuxiliaryData(const char *var, int patch,
                                       const char *type, void *,
                                       DestructorFunction &df)
 {
-    string name;
+    string name = var;
     void *rv = NULL;
     avtIntervalTree *itree = NULL;
 
@@ -2645,12 +2662,21 @@ avtSAMRAIFileFormat::ReadVarNumGhosts(hid_t &h5_file)
     // So, we examine the ghost information here for differences between
     // variables. If there are no differences, things can proceed as
     // normal. Otherwise, we need to turn off caching above the plugin.
+    // We do this by setting a boolean indicating if ghosting is
+    // consistent or not. Also, for the mesh 'variable', we need to know
+    // the maximal amount of ghosting, so we compute that here too
     ghosting_is_consistent = true;
     for (int v = 1; v < num_vars; v++) {
         if ((var_num_ghosts[v*3+0] != var_num_ghosts[0*3+0]) ||
             (var_num_ghosts[v*3+1] != var_num_ghosts[0*3+1]) ||
             (var_num_ghosts[v*3+2] != var_num_ghosts[0*3+2]))
                 ghosting_is_consistent = false;
+        if (var_num_ghosts[v*3+0] > var_max_ghosts[0])
+            var_max_ghosts[0] = var_num_ghosts[v*3+0];
+        if (var_num_ghosts[v*3+1] > var_max_ghosts[1])
+            var_max_ghosts[1] = var_num_ghosts[v*3+1];
+        if (var_num_ghosts[v*3+2] > var_max_ghosts[2])
+            var_max_ghosts[2] = var_num_ghosts[v*3+2];
     }
 
     // finally, lets just make sure we actually do have ghost zones
@@ -3470,16 +3496,26 @@ avtSAMRAIFileFormat::GetGhostCodeForVar(const char *visit_var_name)
         return 0;
 
     string var_name = visit_var_name;
+    int num_ghosts[3];
+
+    if (var_name == "amr_mesh")
+    {
+        num_ghosts[0] = var_max_ghosts[0];
+        num_ghosts[1] = var_max_ghosts[1];
+        num_ghosts[2] = var_max_ghosts[2];
+    }
+    else
+    {
+        std::map<std::string, var_t>::const_iterator cur_var;
+        cur_var = var_names_num_components.find(var_name);
  
-    std::map<std::string, var_t>::const_iterator cur_var;
-    cur_var = var_names_num_components.find(var_name);
- 
-    if (cur_var == var_names_num_components.end())
-        return 0;
- 
-    int num_ghosts[3] = {(*cur_var).second.num_ghosts[0],
-                         (*cur_var).second.num_ghosts[1],
-                         (*cur_var).second.num_ghosts[2]};
+        if (cur_var == var_names_num_components.end())
+            return 0;
+
+        num_ghosts[0] = (*cur_var).second.num_ghosts[0];
+        num_ghosts[1] = (*cur_var).second.num_ghosts[1];
+        num_ghosts[2] = (*cur_var).second.num_ghosts[2];
+    }
 
     int code = 0;
     int powr = 1;
