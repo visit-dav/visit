@@ -4,6 +4,8 @@
 #include <vector>
 #include <map>
 #include <string>
+#include <void_ref_ptr.h>
+#include <avtVariableCache.h>
 
 // Forward declarations
 class avtDatabaseMetaData;
@@ -34,12 +36,16 @@ typedef enum {NO_TYPE, CHAR_TYPE, INTEGER_TYPE, FLOAT_TYPE, DOUBLE_TYPE,
 //   added the GetCycles method. I also added GetDoubleArray, GetIntegerArray,
 //   and GetString.
 //
+//   Brad Whitlock, Thu Aug 7 16:53:50 PST 2003
+//   I added a pointer to a variable cache and an overloaded SymbolExists
+//   method that can return metadata about a variable.
+//
 // ****************************************************************************
 
 class PDBReader
 {
 public:
-    PDBReader(PDBfile *pdb);
+    PDBReader(PDBfile *pdb, avtVariableCache *c);
     virtual ~PDBReader();
 
     virtual bool Identify() = 0;
@@ -52,6 +58,12 @@ public:
     virtual vtkDataSet   *GetMesh(int, const char *) = 0;
     virtual vtkDataArray *GetVar(int, const char *) = 0;
     virtual vtkDataArray *GetVectorVar(int, const char *) = 0;
+
+    virtual void         *GetAuxiliaryData(const char *var,
+                                           int timeState,
+                                           const char *type,
+                                           void *args,
+                                           DestructorFunction &);
 
     void *ReadValues(const char *, TypeEnum *, int *, int **, int*);
 
@@ -77,10 +89,12 @@ protected:
     bool GetDoubleArray(const char *name, double **val, int *nvals);
     bool GetInteger(const char *name, int *val);
     bool GetIntegerArray(const char *name, int **val, int *nvals);
-    bool GetString(const char *name, char **str);
+    bool GetString(const char *name, char **str, int *len = 0);
     bool SymbolExists(const char *name);
+    bool SymbolExists(const char *, TypeEnum *, int *, int **, int*);
 protected:
-    PDBfile *pdb;
+    PDBfile          *pdb;
+    avtVariableCache *cache;
 };
 
 
@@ -91,6 +105,6 @@ protected:
 template <class T>
 void free_mem(T *);
 
-void free_void_mem(void *);
+void free_void_mem(void *, TypeEnum);
 
 #endif

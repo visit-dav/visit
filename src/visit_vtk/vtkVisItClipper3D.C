@@ -157,6 +157,7 @@ vtkVisItClipper3D::StructuredGridExecute(void)
             if (j > 0)
                 lookup_case *= 2;
         }
+
         unsigned char *splitCase = &solidSplitShapesHex[
                                         startSolidSplitShapesHex[lookup_case]];
         int            numOutput = numSolidSplitShapesHex[lookup_case];
@@ -227,6 +228,11 @@ vtkVisItClipper3D::StructuredGridExecute(void)
                         float dir = dist[pt2] - dist[pt1];
                         float amt = 0. - dist[pt1];
                         float percent = 1. - (amt / dir);
+
+                        // We may have physically (though not logically)
+                        // degenerate cells if percent==0 or percent==1.
+                        // We could pretty easily and mostly safely clamp
+                        // percent to the range [1e-4, 1. - 1e-4] right here.
                         int ptId1 = ((cellI + X_val[pt1]) +
                                      (cellJ + Y_val[pt1])*ptstrideY +
                                      (cellK + Z_val[pt1])*ptstrideZ);
@@ -423,6 +429,11 @@ void vtkVisItClipper3D::RectilinearGridExecute(void)
                         float dir = dist[pt2] - dist[pt1];
                         float amt = 0. - dist[pt1];
                         float percent = 1. - (amt / dir);
+
+                        // We may have physically (though not logically)
+                        // degenerate cells if percent==0 or percent==1.
+                        // We could pretty easily and mostly safely clamp
+                        // percent to the range [1e-4, 1. - 1e-4] right here.
                         int ptId1 = ((cellI + X_val[pt1]) +
                                      (cellJ + Y_val[pt1])*ptstrideY +
                                      (cellK + Z_val[pt1])*ptstrideZ);
@@ -661,6 +672,11 @@ void vtkVisItClipper3D::UnstructuredGridExecute(void)
                             float dir = dist[pt2] - dist[pt1];
                             float amt = 0. - dist[pt1];
                             float percent = 1. - (amt / dir);
+
+                            // We may have physically (though not logically)
+                            // degenerate cells if percent==0 or percent==1.
+                            // We could pretty easily and mostly safely clamp
+                            // percent to the range [1e-4, 1. - 1e-4] here.
                             int ptId1 = pts[pt1];
                             int ptId2 = pts[pt2];
                             shape[p] = vfv.AddPoint(ptId1, ptId2, percent);

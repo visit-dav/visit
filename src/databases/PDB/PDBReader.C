@@ -177,12 +177,15 @@ PDBReader::VariableData::ReadValues(PDBReader *reader)
 // Creation:   Thu Oct 10 08:58:35 PDT 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Aug 7 16:54:39 PST 2003
+//   Added cache.
+//
 // ****************************************************************************
 
-PDBReader::PDBReader(PDBfile *p)
+PDBReader::PDBReader(PDBfile *p, avtVariableCache *c)
 {
     pdb = p;
+    cache = c;
 }
 
 // ****************************************************************************
@@ -222,7 +225,10 @@ PDBReader::~PDBReader()
 // Creation:   Thu Jun 26 13:45:43 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Aug 8 11:17:30 PDT 2003
+//   Moved all of the code to get information about the variable to the
+//   SymbolExists method.
+//
 // ****************************************************************************
 
 void *
@@ -230,92 +236,38 @@ PDBReader::ReadValues(const char *name, TypeEnum *t, int *nTotalElements,
     int **dimensions, int *nDims)
 {
     void *retval = 0;
-    syment *ep = 0;
 
-    // Indicate that there is no type initially.
-    *t = NO_TYPE;
-    *nTotalElements = 0;
-    *dimensions = 0;
-    *nDims = 0;
-
-    if((ep = PD_inquire_entry(pdb, (char *)name, 0, NULL)) != NULL)
+    //
+    // Get information about the variable if it is in the file.
+    //
+    if(SymbolExists(name, t, nTotalElements, dimensions, nDims))
     {
-        dimdes *dimptr = NULL;
-        int i = 0, nd = 0, length = 1;
-        int *dims = 0;
-
-        // Figure out the number of dimensions and the number of elements
-        // that are in the entire array.
-        dimptr = PD_entry_dimensions(ep);
-        if(dimptr != NULL)
-        {
-            // Figure out the number of dimensions.
-            while(dimptr != NULL)
-            {
-                length *= dimptr->number;
-                dimptr = dimptr->next;
-                ++nd;
-            }
-
-            // Store the dimensions of the array.
-            dims = new int[nd];
-            dimptr = PD_entry_dimensions(ep);
-            while(dimptr != NULL)
-            {
-                dims[i++] = dimptr->number;
-                dimptr = dimptr->next;
-            }
-        }
-        else
-        {
-            dims = new int[1];
-            dims[0] = 1;
-        }
-
-        // Print the dimensions to the debug log.
-        debug4 << "PDBReader::ReadValues: name=" << name << ", dimensions={";
-        for(i = 0; i < nd; ++i)
-            debug4 << dims[i] << ", ";
-        debug4 << "}" << endl;
-
-        // Set some of the return values.
-        *dimensions = dims;
-        *nDims = nd;
-        *nTotalElements = length;
-
         //
-        // Take the storage type along with the length to determine the real
-        // type that we want to report. Also allocate memory for the
-        // variable.
+        // Allocate memory for the variable.
         //
-        if(strcmp(PD_entry_type(ep), "char") == 0)
+        switch(*t)
         {
-            *t = (length > 1) ? CHARARRAY_TYPE : CHAR_TYPE;
-            retval = (void *)new char[length];
-        }
-        else if(strcmp(PD_entry_type(ep), "int") == 0 ||
-                strcmp(PD_entry_type(ep), "integer") == 0)
-        {
-            *t = (length > 1) ? INTEGERARRAY_TYPE : INTEGER_TYPE;
-            retval = (void *)new int[length];
-        }
-        else if(strcmp(PD_entry_type(ep), "float") == 0)
-        {
-            *t = (length > 1) ? FLOATARRAY_TYPE : FLOAT_TYPE;
-            retval = (void *)new float[length];
-        }
-        else if(strcmp(PD_entry_type(ep), "double") == 0)
-        {
-            *t = (length > 1) ? DOUBLEARRAY_TYPE : DOUBLE_TYPE;
-            retval = (void *)new double[length];
-        }
-        else if(strcmp(PD_entry_type(ep), "long") == 0)
-        {
-            *t = (length > 1) ? LONGARRAY_TYPE : LONG_TYPE;
-            retval = (void *)new long[length];
-        }
-        else
-        {
+        case CHAR_TYPE:
+        case CHARARRAY_TYPE:
+            retval = (void *)new char[*nTotalElements];
+            break;
+        case INTEGER_TYPE:
+        case INTEGERARRAY_TYPE:
+            retval = (void *)new int[*nTotalElements];
+            break;
+        case FLOAT_TYPE:
+        case FLOATARRAY_TYPE:
+            retval = (void *)new float[*nTotalElements];
+            break;
+        case DOUBLE_TYPE:
+        case DOUBLEARRAY_TYPE:
+            retval = (void *)new double[*nTotalElements];
+            break;
+        case LONG_TYPE:
+        case LONGARRAY_TYPE:
+            retval = (void *)new long[*nTotalElements];
+            break;
+        default:
             EXCEPTION1(InvalidVariableException, "unsupported type");
         }
 
@@ -354,6 +306,7 @@ PDBReader::ReadValues(const char *name, TypeEnum *t, int *nTotalElements,
 // Arguments:
 //   name  : The name of the string variable to read.
 //   str   : A pointer to the returned string.
+//   len   : A pointer to an int where we can store the length.
 //
 // Returns:    true if successful; otherwise false.
 //
@@ -363,11 +316,13 @@ PDBReader::ReadValues(const char *name, TypeEnum *t, int *nTotalElements,
 // Creation:   Tue Apr 29 17:45:28 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Aug 11 09:35:22 PDT 2003
+//   I added an optional lengeh pointer to the argument list.
+//
 // ****************************************************************************
 
 bool
-PDBReader::GetString(const char *name, char **str)
+PDBReader::GetString(const char *name, char **str, int *len)
 {
     int *dims = 0;
     int nDims = 0;
@@ -385,7 +340,11 @@ PDBReader::GetString(const char *name, char **str)
     {
         free_mem(dims);
         if(t == CHAR_TYPE || t == CHARARRAY_TYPE)
+        {
             *str = (char *)val;
+            if(len != 0)
+                *len = length;
+        }
         else
             free_void_mem(val, t);
     }
@@ -620,6 +579,112 @@ PDBReader::SymbolExists(const char *name)
 }
 
 // ****************************************************************************
+// Method: PDBReader::SymbolExists.
+//
+// Purpose: 
+//   This method returns information about a PDB variable if it is in the file.
+//
+// Arguments:
+//   name           : The name of the variable to read.
+//   t              : The returned type of the variable.
+//   nTotalElements : The returned number of elements in the variable.
+//   dimensions     : The returned array of dimensions.
+//   nDims          : The returned number of dimensions.
+//
+// Returns:    True if the symbol exists; false otherwise.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Aug 8 11:12:52 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+PDBReader::SymbolExists(const char *name, TypeEnum *t, int *nTotalElements,
+    int **dimensions, int *nDims)
+{
+    bool retval = false;
+    syment *ep = 0;
+
+    // Indicate that there is no type initially.
+    *t = NO_TYPE;
+    *nTotalElements = 0;
+    *dimensions = 0;
+    *nDims = 0;
+
+    if((ep = PD_inquire_entry(pdb, (char *)name, 0, NULL)) != NULL)
+    {
+        dimdes *dimptr = NULL;
+        int i = 0, nd = 0, length = 1;
+        int *dims = 0;
+
+        // Figure out the number of dimensions and the number of elements
+        // that are in the entire array.
+        dimptr = PD_entry_dimensions(ep);
+        if(dimptr != NULL)
+        {
+            // Figure out the number of dimensions.
+            while(dimptr != NULL)
+            {
+                length *= dimptr->number;
+                dimptr = dimptr->next;
+                ++nd;
+            }
+
+            // Store the dimensions of the array.
+            dims = new int[nd];
+            dimptr = PD_entry_dimensions(ep);
+            while(dimptr != NULL)
+            {
+                dims[i++] = dimptr->number;
+                dimptr = dimptr->next;
+            }
+        }
+        else
+        {
+            dims = new int[1];
+            dims[0] = 1;
+        }
+
+        // Print the dimensions to the debug log.
+        debug4 << "PDBReader::SymbolExists: name=" << name << ", dimensions={";
+        for(i = 0; i < nd; ++i)
+            debug4 << dims[i] << ", ";
+        debug4 << "}" << endl;
+
+        // Set some of the return values.
+        *dimensions = dims;
+        *nDims = nd;
+        *nTotalElements = length;
+
+        //
+        // Take the storage type along with the length to determine the real
+        // type that we want to report. Also allocate memory for the
+        // variable.
+        //
+        retval = true;
+        if(strcmp(PD_entry_type(ep), "char") == 0)
+            *t = (length > 1) ? CHARARRAY_TYPE : CHAR_TYPE;
+        else if(strcmp(PD_entry_type(ep), "int") == 0 ||
+                strcmp(PD_entry_type(ep), "integer") == 0)
+            *t = (length > 1) ? INTEGERARRAY_TYPE : INTEGER_TYPE;
+        else if(strcmp(PD_entry_type(ep), "float") == 0)
+            *t = (length > 1) ? FLOATARRAY_TYPE : FLOAT_TYPE;
+        else if(strcmp(PD_entry_type(ep), "double") == 0)
+            *t = (length > 1) ? DOUBLEARRAY_TYPE : DOUBLE_TYPE;
+        else if(strcmp(PD_entry_type(ep), "long") == 0)
+            *t = (length > 1) ? LONGARRAY_TYPE : LONG_TYPE;
+        else
+        {
+            EXCEPTION1(InvalidVariableException, "unsupported type");
+        }
+    }
+
+    return retval;
+}
+
+// ****************************************************************************
 // Method: PDBReader::GetCycles
 //
 // Purpose: 
@@ -661,4 +726,26 @@ int
 PDBReader::GetNTimesteps()
 {
     return 1;
+}
+
+// ****************************************************************************
+// Method: PDBReader::GetAuxiliaryData
+//
+// Purpose: 
+//   Returns auxiliary data.
+//
+// Note:       This is a base class implementation that does nothing.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Aug 5 17:34:15 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void *
+PDBReader::GetAuxiliaryData(const char *, int, const char *, void *,
+    DestructorFunction &)
+{
+     return 0;
 }

@@ -161,6 +161,39 @@ avtMetaData::GetExternalFacelist(int domain)
 
 
 // ****************************************************************************
+//  Method: avtMetaData::GetMaterial
+//
+//  Purpose:
+//      Gets an avtMaterial object.
+//
+//  Returns:  The material for the dataset, if one exists.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 12, 2003
+//
+// ****************************************************************************
+
+avtMaterial *
+avtMetaData::GetMaterial(int domain)
+{
+    VoidRefList list;
+    cerr << "asking for domain " << domain << endl;
+    avtPipelineSpecification_p spec = GetPipelineSpecification(domain);
+    source->GetMaterialAuxiliaryData(AUXILIARY_DATA_MATERIAL, NULL, spec,list);
+    if (list.nList == 0)
+    {
+        return NULL;
+    }
+    if (list.nList != 1)
+    {
+        EXCEPTION0(ImproperUseException);
+    }
+
+    return (avtMaterial *) *(list.list[0]);
+}
+
+
+// ****************************************************************************
 //  Method: avtMetaData::GetPipelineSpecification
 //
 //  Purpose:

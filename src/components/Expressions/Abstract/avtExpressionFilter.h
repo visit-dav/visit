@@ -6,11 +6,15 @@
 #define AVT_EXPRESSION_FILTER_H
 
 #include <expression_exports.h>
+
+#include <string>
+
 #include <avtStreamer.h>
 
 class     vtkDataArray;
 class     ArgsExpr;
 class     ExprPipelineState;
+
 
 // ****************************************************************************
 //  Class: avtExpressionFilter
@@ -23,10 +27,15 @@ class     ExprPipelineState;
 //  Creation:   June 7, 2002
 //
 //  Modifications:
-//      Sean Ahern, Fri Jun 13 11:18:07 PDT 2003
-//      Added the virtual function NumVariableArguments that lets an
-//      expression declare how many of its arguments are variables.
 //
+//    Sean Ahern, Fri Jun 13 11:18:07 PDT 2003
+//    Added the virtual function NumVariableArguments that lets an
+//    expression declare how many of its arguments are variables.
+//
+//    Hank Childs, Tue Aug 12 10:34:02 PDT 2003
+//    Store the domain label and index when deriving a variable.  Certain
+//    filters need this information.
+//  
 // ****************************************************************************
 
 class EXPRESSION_API avtExpressionFilter : public avtStreamer
@@ -44,6 +53,8 @@ class EXPRESSION_API avtExpressionFilter : public avtStreamer
 
   protected:
     char                    *outputVariableName;
+    std::string              currentDomainsLabel;
+    int                      currentDomainsIndex;
 
     virtual bool             IsPointVariable();
 

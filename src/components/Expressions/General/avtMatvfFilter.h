@@ -1,5 +1,5 @@
 // ************************************************************************* //
-//                             avtMatvfFilter.h                             //
+//                              avtMatvfFilter.h                             //
 // ************************************************************************* //
 
 #ifndef AVT_MATVF_FILTER_H
@@ -31,7 +31,7 @@ class EXPRESSION_API avtMatvfFilter : public avtSingleInputExpressionFilter
 
     virtual const char       *GetType(void) { return "avtMatvfFilter"; };
     virtual const char       *GetDescription(void)
-                                           {return "Assigning random #.";};
+                                           {return "Calculating Material VF";};
     virtual void              ProcessArguments(ArgsExpr*, ExprPipelineState *);
   protected:
 

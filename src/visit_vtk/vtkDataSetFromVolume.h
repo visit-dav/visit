@@ -37,7 +37,7 @@ class vtkPoints;
 
 class vtkDataSetFromVolume
 {
-
+  protected:
 struct PointEntry
 {
    int     ptIds[2];

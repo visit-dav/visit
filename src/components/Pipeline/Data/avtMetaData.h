@@ -4,13 +4,14 @@
 
 #ifndef AVT_META_DATA_H
 #define AVT_META_DATA_H
-#include <pipeline_exports.h>
 
+#include <pipeline_exports.h>
 
 #include <avtPipelineSpecification.h>
 
 class     avtFacelist;
 class     avtIntervalTree;
+class     avtMaterial;
 class     avtTerminatingSource;
 
 
@@ -38,6 +39,9 @@ class     avtTerminatingSource;
 //    Jeremy Meredith, Thu Dec 13 16:00:29 PST 2001
 //    Removed GetMaterial since it was never used.
 //
+//    Hank Childs, Tue Aug 12 10:27:25 PDT 2003
+//    Added GetMaterial for matvf expressions.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtMetaData
@@ -50,6 +54,7 @@ class PIPELINE_API avtMetaData
     avtIntervalTree             *GetSpatialExtents(void);
 
     avtFacelist                 *GetExternalFacelist(int);
+    avtMaterial                 *GetMaterial(int);
 
   protected:
     avtTerminatingSource        *source;

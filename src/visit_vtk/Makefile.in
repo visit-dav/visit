@@ -175,8 +175,10 @@
 #    Added SolidSplitCases for clipping, split vtkTriangulationTables into
 #    a .h/.C file, refactored part of vtkSurfaceFromVolume into
 #    vtkDataSetFromVolume, made a new vtkVolumeFromVolume, and made use of
-#    it in vtkVisItClipper3D.  Added new poly data normals filter.
-#    Removed HDR because it was unused.
+#    it in vtkVisItClipper3D.  Removed HDR because it was unused.
+#
+#    Jeremy Meredith, Wed Aug 13 18:14:36 PDT 2003
+#    Added new poly data normals filter.
 #
 ##############################################################################
 

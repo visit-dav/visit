@@ -293,17 +293,26 @@ avtSubsetFilter::RefashionDataObjectInfo(void)
 //    Kathleen Bonnell, Wed Sep  4 16:22:57 PDT 2002 
 //    Removed NeedDomainLabels. 
 //    
+//    Hank Childs, Wed Aug 13 07:55:35 PDT 2003
+//    Explicitly tell the data spec when we want material interface
+//    reconstruction.
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
 avtSubsetFilter::PerformRestriction(avtPipelineSpecification_p spec)
 {
+    if (plotAtts.GetSubsetType() == SubsetAttributes::Material)
+    {
+        spec->GetDataSpecification()->ForceMaterialInterfaceReconstructionOn();
+    }
     if (plotAtts.GetDrawInternal())
     {
         spec->GetDataSpecification()->TurnInternalSurfacesOn();
     }
     return spec;
 }
+
 
 // ****************************************************************************
 //  Method: avtSubsetFilter::PostExcecute

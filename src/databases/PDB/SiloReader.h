@@ -23,12 +23,15 @@ class vtkDataSet;
 //   Brad Whitlock, Tue Apr 29 13:24:01 PST 2003
 //   I added a time argument to GetMesh, GetVar, and GetVectorVar.
 //
+//   Brad Whitlock, Thu Aug 7 16:55:57 PST 2003
+//   I added a pointer to a variable cache.
+//
 // ****************************************************************************
 
 class SiloReader : public PDBReader
 {
 public:
-    SiloReader(PDBfile *p) : PDBReader(p) { };
+    SiloReader(PDBfile *p, avtVariableCache *c) : PDBReader(p,c) { };
     virtual ~SiloReader() { };
 
     virtual bool Identify();

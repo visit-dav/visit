@@ -42,6 +42,9 @@
 //   Silo .pdb file and then fail later when actually trying to read the Silo
 //   file and we DON'T want that.
 //
+//   Brad Whitlock, Thu Aug 7 16:48:29 PST 2003
+//   I passed the database cache to the factory.
+//
 // ****************************************************************************
 
 avtPDBFileFormat::avtPDBFileFormat(const char * const *names, int nNames,
@@ -58,7 +61,7 @@ avtPDBFileFormat::avtPDBFileFormat(const char * const *names, int nNames,
     // file with other database formats in avtDatabaseFactory::FileList.
     //
     if(openImmediately)
-        factory.Open(filenames[0]);
+        factory.Open(filenames[0], cache);
 }
 
 // ****************************************************************************
@@ -77,12 +80,15 @@ avtPDBFileFormat::avtPDBFileFormat(const char * const *names, int nNames,
 //   Brad Whitlock, Tue Apr 29 11:00:59 PDT 2003
 //   I added the timeState argument.
 //
+//   Brad Whitlock, Thu Aug 7 16:48:29 PST 2003
+//   I passed the database cache to the factory.
+//
 // ****************************************************************************
 
 void
 avtPDBFileFormat::InitializeFactory(int timeState)
 {
-    factory.Open(filenames[0]);
+    factory.Open(filenames[0], cache);
     factory.GetReader()->GetTimeVaryingInformation(timeState, metadata);
     initializedFactory = true;
 }
@@ -132,8 +138,13 @@ avtPDBFileFormat::FreeUpResources(void)
 //   Gets auxiliary data from the file.
 //
 // Arguments:
+//   var   : The variable for which to get aux data.
+//   state : The start at which to get aux data.
+//   type  : The type of aux data to get.
+//   args  : ?
+//   df    : A function to delete the aux data.
 //
-// Returns:    
+// Returns:    Auxiliary data like materials.
 //
 // Note:       This is not yet implemented.
 //
@@ -141,14 +152,21 @@ avtPDBFileFormat::FreeUpResources(void)
 // Creation:   Wed Oct 23 14:37:54 PST 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Aug 5 17:29:35 PST 2003
+//   I made the implementation do something.
+//
 // ****************************************************************************
 
 void *
-avtPDBFileFormat::GetAuxiliaryData(const char *, int, const char *, void *,
-    DestructorFunction &)
+avtPDBFileFormat::GetAuxiliaryData(const char *var, int state, const char *type,
+    void *args, DestructorFunction &df)
 {
-    return NULL;
+    if (!initializedFactory)
+    {
+        InitializeFactory(state);
+    }
+
+    return factory.GetReader()->GetAuxiliaryData(var, state, type, args, df);
 }
 
 // ****************************************************************************

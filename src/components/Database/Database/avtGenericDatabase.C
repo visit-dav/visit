@@ -2247,10 +2247,10 @@ avtGenericDatabase::GetMIR(int domain, const char *varname, int timestep,
 //      so that it can do the material selection as we read.
 //
 //  Arguments:
-//      var     The variable name.
-//      dom     The domain.
-//      silr    The SIL restriction.
-//      mnames  A place to put the list of material names.
+//      dom          The domain.
+//      forceMIROn   A boolean saying whether we should force MIR on.
+//      silr         The SIL restriction.
+//      mnames       A place to put the list of material names.
 //      
 //  Returns:    true if we need to perform material selection, false otherwise.
 //
@@ -2263,10 +2263,14 @@ avtGenericDatabase::GetMIR(int domain, const char *varname, int timestep,
 //    Use the SIL restriction traverser since SIL restriction routines were
 //    antiquated.
 //
+//    Hank Childs, Wed Aug 13 08:09:20 PDT 2003
+//    Do not longer key off type, instead use a flag that has been explicitly
+//    set.
+//
 // ****************************************************************************
 
 bool
-avtGenericDatabase::PrepareMaterialSelect(const char *var, int dom,
+avtGenericDatabase::PrepareMaterialSelect(int dom, bool forceMIROn,
                       avtSILRestrictionTraverser &trav, vector<string> &mnames)
 {
     //
@@ -2277,9 +2281,10 @@ avtGenericDatabase::PrepareMaterialSelect(const char *var, int dom,
     mnames = trav.GetMaterials(dom, needMatSel);
 
     //
-    // If we want a material plot, we must do material selection.
+    // If we were told to do material interface reconstruction, we should do
+    // it, regardless of SIL.
     //
-    needMatSel |= (GetMetaData()->DetermineVarType(var) == AVT_MATERIAL);
+    needMatSel |= forceMIROn;
 
     return needMatSel;
 }
@@ -2409,7 +2414,9 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, vector<int> &domains,
     {
         vector<string> labels;
         vector<string> matnames;
-        bool doSelect = PrepareMaterialSelect(var, domains[i], trav, matnames);
+        bool forceMIR = spec->MustDoMaterialInterfaceReconstruction();
+        bool doSelect = PrepareMaterialSelect(domains[i], forceMIR, trav, 
+                                              matnames);
         int nmats = matnames.size();
         vtkDataSet *single_ds = NULL;
 
@@ -3436,6 +3443,10 @@ avtGenericDatabase::CreateStructuredIndices(avtDatasetCollection &dsc,
 //    Hank Childs, Wed Jun 18 09:34:38 PDT 2003
 //    Added a stage for needing node numbers.
 //
+//    Hank Childs, Wed Aug 13 08:09:20 PDT 2003
+//    We should do MIR if we are told to by the data spec, not if the type of
+//    variable is material.
+//
 // ****************************************************************************
 
 int
@@ -3454,7 +3465,7 @@ avtGenericDatabase::NumStagesForFetch(avtDataSpecification_p spec)
     bool needMatSel = false;
     
     const char *var = spec->GetVariable();
-    needMatSel |= (GetMetaData()->DetermineVarType(var) == AVT_MATERIAL);
+    needMatSel |= spec->MustDoMaterialInterfaceReconstruction();
     if (!needMatSel)
     {
         for (int i = 0 ; i < domains.size() ; i++)

@@ -20,23 +20,28 @@
 //  Creation:   December 31, 2001
 //
 //  Modifications:
-//
 //    Hank Childs, Tue Sep 10 15:17:21 PDT 2002
 //    Removed data members to conform with new memory management paradigm.
+//
+//    Jeremy Meredith, Tue Aug 12 10:55:35 PDT 2003
+//    Added ability to have cell normals.
 //
 // ****************************************************************************
 
 class PIPELINE_API avtVertexNormalsFilter : public avtStreamer
 {
   public:
-                         avtVertexNormalsFilter() {;};
+                         avtVertexNormalsFilter() { pointNormals=false;};
     virtual             ~avtVertexNormalsFilter() {;};
 
     virtual const char  *GetType(void) { return "avtVertexNormalsFilter"; };
     virtual const char  *GetDescription(void) 
                              { return "Calculating normals"; };
 
+    void SetPointNormals(bool pn) { pointNormals = pn; }
+
   protected:
+    bool pointNormals;
     virtual vtkDataSet  *ExecuteData(vtkDataSet *, int, std::string);
 };
 

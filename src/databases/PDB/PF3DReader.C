@@ -27,10 +27,12 @@
 // Creation:   Thu Oct 10 08:28:54 PDT 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Aug 7 16:55:27 PST 2003
+//   I added the variable cache pointer.
+//
 // ****************************************************************************
 
-PF3DReader::PF3DReader(PDBfile *p) : PDBReader(p)
+PF3DReader::PF3DReader(PDBfile *p, avtVariableCache *c) : PDBReader(p,c)
 {
     dx = dy = dz = 0.;
     lx = ly = lz = 0.;

@@ -274,11 +274,18 @@ avtFilledBoundaryFilter::RefashionDataObjectInfo(void)
 //
 //  Modifications:
 //    
+//    Hank Childs, Wed Aug 13 07:55:35 PDT 2003
+//    Explicitly tell the data specification when we want MIR.
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
 avtFilledBoundaryFilter::PerformRestriction(avtPipelineSpecification_p spec)
 {
+    if (plotAtts.GetBoundaryType() == FilledBoundaryAttributes::Material)
+    {
+        spec->GetDataSpecification()->ForceMaterialInterfaceReconstructionOn();
+    }
     if (plotAtts.GetDrawInternal())
     {
         spec->GetDataSpecification()->TurnInternalSurfacesOn();

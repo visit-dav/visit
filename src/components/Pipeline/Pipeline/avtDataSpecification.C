@@ -59,6 +59,9 @@ using     std::vector;
 //    Hank Childs, Wed Jun 18 09:20:16 PDT 2003
 //    Added needNodes.
 //
+//    Hank Childs, Tue Aug 12 17:27:32 PDT 2003
+//    Added mustDoMIR.
+//
 // ****************************************************************************
 
 avtDataSpecification::avtDataSpecification(const char *var, int ts,
@@ -69,6 +72,7 @@ avtDataSpecification::avtDataSpecification(const char *var, int ts,
     needNodes = false;
     useGhostZones = true;
     needInternalSurfaces = false;
+    mustDoMIR = false;
     needBoundarySurfaces = false;
     needValidFaceConnectivity = false;
     needStructuredIndices = false;
@@ -129,6 +133,9 @@ avtDataSpecification::avtDataSpecification(const char *var, int ts,
 //    Hank Childs, Wed Jun 18 09:20:16 PDT 2003
 //    Added needNodes.
 //
+//    Hank Childs, Tue Aug 12 17:27:32 PDT 2003
+//    Added mustDoMIR.
+//
 // ****************************************************************************
 
 avtDataSpecification::avtDataSpecification(const char *var, int ts, int ch)
@@ -136,6 +143,7 @@ avtDataSpecification::avtDataSpecification(const char *var, int ts, int ch)
     mayRequireZones = false;
     needZones = false;
     needNodes = false;
+    mustDoMIR = false;
     useGhostZones = true;
     needInternalSurfaces = false;
     needBoundarySurfaces = false;
@@ -298,6 +306,9 @@ avtDataSpecification::avtDataSpecification(avtDataSpecification_p spec)
 //    Jeremy Meredith, Tue Jun 10 13:21:32 PDT 2003
 //    Added needBoundarySurfaces.
 //
+//    Hank Childs, Tue Aug 12 17:27:32 PDT 2003
+//    Added mustDoMIR.
+//
 // ****************************************************************************
 
 avtDataSpecification &
@@ -323,6 +334,7 @@ avtDataSpecification::operator=(const avtDataSpecification &spec)
     }
 
     mayRequireZones                 = spec.mayRequireZones;
+    mustDoMIR                       = spec.mustDoMIR;
     useGhostZones                   = spec.useGhostZones;
     needZones                       = spec.needZones;
     needNodes                       = spec.needNodes;
@@ -391,6 +403,9 @@ avtDataSpecification::operator=(const avtDataSpecification &spec)
 //    Hank Childs, Wed Jun 18 09:20:16 PDT 2003
 //    Compare needNodes.
 //
+//    Hank Childs, Tue Aug 12 17:27:32 PDT 2003
+//    Added mustDoMIR.
+//
 // ****************************************************************************
 
 bool
@@ -420,6 +435,11 @@ avtDataSpecification::operator==(const avtDataSpecification &ds)
     }
 
     if (needNodes != ds.needNodes)
+    {
+        return false;
+    }
+
+    if (mustDoMIR != ds.mustDoMIR)
     {
         return false;
     }

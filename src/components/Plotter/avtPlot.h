@@ -22,6 +22,7 @@
 
 class     avtDatasetToDatasetFilter;
 class     avtSmoothPolyDataFilter;
+class     avtVertexNormalsFilter;
 class     AttributeGroup;
 class     WindowAttributes;
 
@@ -119,6 +120,10 @@ class     WindowAttributes;
 //    Kathleen Bonnell, Tue Mar 25 11:18:43 PST 2003 
 //    Renamed GetTransformedPoints to RequiresReExecuteForQuery. 
 //
+//    Jeremy Meredith, Wed Aug 13 16:33:21 PDT 2003
+//    Made the vertex normals filter be a pointer to the subclass so I could
+//    access methods not in avtDatasetToDatasetFilter.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtPlot
@@ -174,7 +179,7 @@ class PLOTTER_API avtPlot
     avtDatasetToDatasetFilter *ghostZoneAndFacelistFilter;
     avtDatasetToDatasetFilter *compactTreeFilter;
     avtDatasetToDatasetFilter *currentExtentFilter;
-    avtDatasetToDatasetFilter *vertexNormalsFilter;
+    avtVertexNormalsFilter    *vertexNormalsFilter;
     avtSmoothPolyDataFilter   *smooth;
     avtSILRestriction_p        silr;
     char                      *varname;
