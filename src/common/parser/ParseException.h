@@ -21,6 +21,10 @@ class Rule;
 //    Jeremy Meredith, Fri Aug 15 12:49:53 PDT 2003
 //    Changed the error messages to be a little friendlier.
 //
+//    Jeremy Meredith, Wed Nov 24 11:56:52 PST 2004
+//    Added a SyntacticException with no specific token type name, for the
+//    times that information is not readily available.
+//
 // ****************************************************************************
 class ParseException
 {
@@ -42,6 +46,10 @@ class LexicalException : public ParseException
 class SyntacticException : public ParseException
 {
   public:
+    SyntacticException(Pos p) : ParseException(p)
+    {
+        SNPRINTF(msg, 1024, "The expression parser encountered an unexpected token:");
+    }
     SyntacticException(Pos p, const std::string &s) : ParseException(p)
     {
         SNPRINTF(msg, 1024, "The expression parser encountered an unexpected token (%s):", s.c_str());

@@ -22,61 +22,19 @@ using std::deque;
 //  Programmer:  Jeremy Meredith
 //  Creation:    April  2, 2002
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Nov 11 15:36:55 PST 2004
+//    Refactored to allow other kinds of scanners.  This class's old
+//    functionality moved to ExprScanner.
+//
 // ****************************************************************************
 class PARSER_API Scanner
 {
   public:
-    // These are the characters belonging to each character class:
-    /*
-      Quo   "
-      Sgn   + -
-      Sym   * / + - [ ] { } ( ) < > = , ^ % @ :
-      Eee   e E
-      Alp   a-z A-Z _
-      Dig   0-9
-      Dot   .
-    */
-
-    enum CharType {
-        Quo = 0,
-        Sgn = 1,
-        Sym = 2,
-        Eee = 3,
-        Alp = 4,
-        Dig = 5,
-        Dot = 6,
-        Spc = 7,
-        Err
-    };
-
-    // Certain characters get scanned differently in different states
-    enum ScanState {
-        Normal,
-        FileSpec,
-        TimeSpec,
-        VarSpec
-    };
-
-  public:
-    void   SetInput(const std::string &);
-    Token *ScanOneToken();
-    string GetTokenTypeString(int t);
-
-  private:
-    int    GetCharType(const char c);
-    Token *GetAcceptToken(const Pos&,const std::string&, int);
-    void   UpdateScanState(const std::string &parsed);
-
-    // All state for scanning
-    std::string      text;
-    int              state;
-    deque<ScanState> scanstate;
-
-    int              pos;
-    int              lastacceptstate;
-    string           lastacceptstring;
-    int              lastacceptpos;
-
+    Scanner() { }
+    virtual ~Scanner() { }
+    virtual void   SetInput(const std::string &) = 0;
+    virtual Token *ScanOneToken() = 0;
 };
 
 #endif

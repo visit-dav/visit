@@ -2,8 +2,8 @@
 //                              avtRandomFilter.C                            //
 // ************************************************************************* //
 
-#include <Token.h>
-#include <EngineExprNode.h>
+#include <ExprToken.h>
+#include <avtExprNode.h>
 #include <avtRandomFilter.h>
 #include <DebugStream.h>
 #include <ExpressionException.h>
@@ -98,6 +98,11 @@ avtRandomFilter::DeriveVariable(vtkDataSet *in_ds)
 //  Programmer:   Sean Ahern
 //  Creation:     Sat Mar  8 00:18:28 America/Los_Angeles 2003
 //
+//  Modifications:
+//    Jeremy Meredith, Wed Nov 24 12:26:21 PST 2004
+//    Renamed EngineExprNode to avtExprNode due to a refactoring.
+//    Also renamed Token to ExprToken for the same reason.
+//
 // ****************************************************************************
 void
 avtRandomFilter::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
@@ -112,7 +117,7 @@ avtRandomFilter::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
 
     // Tell the first argument to create its filters.
     ArgExpr *firstarg = (*arguments)[0];
-    EngineExprNode *firstTree = dynamic_cast<EngineExprNode*>(firstarg->GetExpr());
+    avtExprNode *firstTree = dynamic_cast<avtExprNode*>(firstarg->GetExpr());
     firstTree->CreateFilters(state);
 
     // Check if there's a second argument.
@@ -124,17 +129,17 @@ avtRandomFilter::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
 
     // Pull off the second argument and make sure it's a constant.
     ArgExpr *secondarg = (*arguments)[1];
-    EngineExprNode *secondTree = dynamic_cast<EngineExprNode*>(secondarg->GetExpr());
+    avtExprNode *secondTree = dynamic_cast<avtExprNode*>(secondarg->GetExpr());
     if (secondTree->GetTypeName() != "Const")
     {
         debug5 << "avtRandomFilter: Second argument is not a constant: "
                << secondTree->GetTypeName().c_str() << endl;
         EXCEPTION1(ExpressionException, "avtRandomFilter: Second argument is not a constant.");
     }
-    EngineConstExpr *con = dynamic_cast<EngineConstExpr*>(secondTree);
+    avtConstExpr *con = dynamic_cast<avtConstExpr*>(secondTree);
 
     // Now check that it's an int.
-    Token *t = con->GetToken();
+    ExprToken *t = con->GetToken();
     if (t->GetType() != TT_IntegerConst)
     {
         debug5 << "avtRandomFilter: Second argument is not an integer: "

@@ -11,8 +11,8 @@
 #include <vtkFloatArray.h>
 #include <vtkUnsignedIntArray.h>
 
-#include <Token.h>
-#include <EngineExprNode.h>
+#include <ExprToken.h>
+#include <avtExprNode.h>
 
 #include <avtCallback.h>
 #include <avtMaterial.h>
@@ -474,6 +474,11 @@ avtSpecMFFilter::DeriveVariable(vtkDataSet *in_ds)
 //    Make sure the base pointer type for the dynamic cast is in the 
 //    inheritance tree of what we are downcasting type. ('5201)
 //
+//    Jeremy Meredith, Wed Nov 24 12:26:21 PST 2004
+//    Renamed EngineExprNode to avtExprNode due to a refactoring.
+//    Also renamed Token to ExprToken for the same reason.
+//    Changed base type for an Arg's expression.
+//
 // ****************************************************************************
 void
 avtSpecMFFilter::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
@@ -487,7 +492,7 @@ avtSpecMFFilter::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
     }
     // Tell the first argument to create its filters.
     ArgExpr *firstarg = (*arguments)[0];
-    EngineExprNode *firstTree = dynamic_cast<EngineExprNode*>(firstarg->GetExpr());
+    avtExprNode *firstTree = dynamic_cast<avtExprNode*>(firstarg->GetExpr());
     firstTree->CreateFilters(state);
 
     // Check if there's a second and third argument.
@@ -507,7 +512,7 @@ avtSpecMFFilter::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
 
     // Pull off the second argument and see if it's a constant.
     ArgExpr *secondarg = (*arguments)[1];
-    ExprGrammarNode *secondTree = secondarg->GetExpr();
+    ExprParseTreeNode *secondTree = secondarg->GetExpr();
     string secondtype = secondTree->GetTypeName();
     if ((secondtype != "Const"))
     {
@@ -520,7 +525,7 @@ avtSpecMFFilter::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
 
     // Pull off the third argument and see if it's a constant or a list.
     ArgExpr *thirdarg = (*arguments)[2];
-    ExprNode *thirdTree = thirdarg->GetExpr();
+    ExprParseTreeNode *thirdTree = thirdarg->GetExpr();
     string thirdtype = thirdTree->GetTypeName();
     if ((thirdtype != "Const") && (thirdtype != "List"))
     {
@@ -555,9 +560,9 @@ avtSpecMFFilter::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
                                "Range must contain integers.");
                 }
 
-                Token *begTok  = dynamic_cast<ConstExpr*>(begExpr)->GetToken();
-                Token *endTok  = dynamic_cast<ConstExpr*>(endExpr)->GetToken();
-                Token *skipTok = !skipExpr ? NULL :
+                ExprToken *begTok  = dynamic_cast<ConstExpr*>(begExpr)->GetToken();
+                ExprToken *endTok  = dynamic_cast<ConstExpr*>(endExpr)->GetToken();
+                ExprToken *skipTok = !skipExpr ? NULL :
                                 dynamic_cast<ConstExpr*>(skipExpr)->GetToken();
 
                 if (begTok->GetType() != TT_IntegerConst ||
@@ -605,14 +610,14 @@ avtSpecMFFilter::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
     if (nargs == 4)
     {
         ArgExpr *fourtharg = (*arguments)[3];
-        ExprNode *fourthTree = fourtharg->GetExpr();
+        ExprParseTreeNode *fourthTree = fourtharg->GetExpr();
         string fourthtype = fourthTree->GetTypeName();
         if ((secondtype != "Const"))
         {
             EXCEPTION1(ExpressionException, "avtSpecMFFilter: Fourth argument is not a constant boolean.");
         }
         ConstExpr *constExpr = dynamic_cast<ConstExpr*>(fourthTree);
-        Token *t = constExpr->GetToken();
+        ExprToken *t = constExpr->GetToken();
         if (t->GetType() != TT_BoolConst)
         {
             EXCEPTION1(ExpressionException, "avtSpecMFFilter: Fourth argument is not a constant boolean.");

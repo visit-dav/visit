@@ -1,15 +1,15 @@
 #ifndef PARSING_EXPR_LIST_H
 #define PARSING_EXPR_LIST_H
-#include <parser_exports.h>
+#include <expr_exports.h>
 #include <Expression.h>
 #include <ExpressionList.h>
 #include <SimpleObserver.h>
+#include <Parser.h>
 #include <string> 
 #include <avtTypes.h>
 
 // Forward declarations.
 class ExprNode;
-class ParserInterface;
 
 // ****************************************************************************
 // Class: ParsingExprList
@@ -26,13 +26,16 @@ class ParserInterface;
 //    Jeremy Meredith, Fri Aug 15 11:33:25 PDT 2003
 //    Added a new form of GetExpressionTree that takes an Expression.
 //
+//    Jeremy Meredith, Wed Nov 24 12:27:15 PST 2004
+//    Refactored and changed parse tree classes around.
+//
 // ****************************************************************************
 
-class PARSER_API ParsingExprList : public SimpleObserver
+class EXPR_API ParsingExprList : public SimpleObserver
 {
 public:
     ParsingExprList();
-    ParsingExprList(ParserInterface *p);
+    ParsingExprList(Parser *p);
     ~ParsingExprList();
 
     static ParsingExprList *Instance();
@@ -52,11 +55,11 @@ public:
 
 protected:
 
-    ParserInterface* GetParser() { return parser; }
+    Parser* GetParser() { return parser; }
 
 private:
     ExpressionList exprList;
-    ParserInterface *parser;
+    Parser *parser;
 
     static ParsingExprList *instance;
 };

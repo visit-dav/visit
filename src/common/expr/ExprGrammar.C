@@ -1,4 +1,24 @@
 #include "ExprGrammar.h"
+#include "ExprToken.h"
+
+//
+//                     VisIt Expression Grammar
+//
+//
+//  Written April 5, 2002 by Jeremy Meredith
+//
+//
+//  Modifications:
+//    Jeremy Meredith, Wed Nov 24 11:43:51 PST 2004
+//    Refactored the parser into a standalone module.  This required
+//    telling some tokens what their display name is instead of
+//    getting it from a function.
+//
+//    Jeremy Meredith, Wed Nov 24 14:52:41 PST 2004
+//    Removed Expr => List and added Arg => List because we cannot
+//    work with lists as expressions just yet.  We can change this
+//    back someday.
+//
 
 // ------------------------------------------------------------------------
 // TERMINALS
@@ -22,11 +42,11 @@ Symbol T_Equal         ('=');
 Symbol T_At            ('@');
 Symbol T_Comma         (',');
 Symbol T_Colon         (':');
-Symbol T_Ident         (TT_Identifier);
-Symbol T_Integer       (TT_IntegerConst);
-Symbol T_Float         (TT_FloatConst);
-Symbol T_String        (TT_StringConst);
-Symbol T_Bool          (TT_BoolConst);
+Symbol T_Ident         (TT_Identifier,   "Identifier");
+Symbol T_Integer       (TT_IntegerConst, "Integer");
+Symbol T_Float         (TT_FloatConst,   "Float");
+Symbol T_String        (TT_StringConst,  "String");
+Symbol T_Bool          (TT_BoolConst,    "Bool");
 
 
 // ------------------------------------------------------------------------
@@ -79,10 +99,10 @@ ExprGrammar::ExprGrammar() : Grammar()
   AddRule(Rule(8,  Expr)  >>  T_LParen + Expr + T_RParen );
   AddRule(Rule(9,  Expr)  >>  Constant );
   AddRule(Rule(10, Expr)  >>  Vector   );
-  AddRule(Rule(11, Expr)  >>  List     );
-  AddRule(Rule(12, Expr)  >>  Function );
-  AddRule(Rule(13, Expr)  >>  Variable );
-  AddRule(Rule(14, Expr)  >>  Database );
+  AddRule(Rule(11, Expr)  >>  Function );
+  AddRule(Rule(12, Expr)  >>  Variable );
+  AddRule(Rule(13, Expr)  >>  Database );
+  //AddRule(Rule(14, Expr)  >>  List     );
 
   // Constant
   AddRule(Rule(0, Constant)  >>  T_Integer );
@@ -117,6 +137,7 @@ ExprGrammar::ExprGrammar() : Grammar()
   // Arg
   AddRule(Rule(0, Arg)      >> Expr);
   AddRule(Rule(1, Arg)      >> T_Ident + T_Equal + Expr);
+  AddRule(Rule(2, Arg)      >> List);
 
   // PathSpec
   AddRule(Rule(0, PathSpec) >> PathSpec + MultiSlash + T_Ident);

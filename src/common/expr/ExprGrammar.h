@@ -1,6 +1,6 @@
 #ifndef EXPRGRAMMAR_H
 #define EXPRGRAMMAR_H
-#include <parser_exports.h>
+#include <expr_exports.h>
 
 #include "Grammar.h"
 
@@ -13,8 +13,12 @@
 //  Programmer:  Jeremy Meredith
 //  Creation:    April  5, 2002
 //
+//  Modifications:
+//    Jeremy Meredith, Wed Nov 24 11:45:56 PST 2004
+//    Refactored the expression-specific stuff to its own library.
+//
 // ****************************************************************************
-class PARSER_API ExprGrammar : public Grammar
+class EXPR_API ExprGrammar : public Grammar
 {
   public:
     ExprGrammar();
@@ -54,22 +58,22 @@ extern Symbol T_Bool;
 // ------------------------------------------------------------------------
 // NON-TERMINALS
 // ------------------------------------------------------------------------
-extern PARSER_API Symbol Expr;
-extern PARSER_API Symbol Constant;
-extern PARSER_API Symbol Vector;
-extern PARSER_API Symbol List;
-extern PARSER_API Symbol ListElems;
-extern PARSER_API Symbol ListElem;
-extern PARSER_API Symbol Function;
-extern PARSER_API Symbol Args;
-extern PARSER_API Symbol Arg;
-extern PARSER_API Symbol PathSpec;
-extern PARSER_API Symbol MultiSlash;
-extern PARSER_API Symbol Variable;
-extern PARSER_API Symbol Database;
-extern PARSER_API Symbol DBSpec;
-extern PARSER_API Symbol PathMachSpec;
-extern PARSER_API Symbol MachSpec;
-extern PARSER_API Symbol TimeSpec;
+extern EXPR_API Symbol Expr;
+extern EXPR_API Symbol Constant;
+extern EXPR_API Symbol Vector;
+extern EXPR_API Symbol List;
+extern EXPR_API Symbol ListElems;
+extern EXPR_API Symbol ListElem;
+extern EXPR_API Symbol Function;
+extern EXPR_API Symbol Args;
+extern EXPR_API Symbol Arg;
+extern EXPR_API Symbol PathSpec;
+extern EXPR_API Symbol MultiSlash;
+extern EXPR_API Symbol Variable;
+extern EXPR_API Symbol Database;
+extern EXPR_API Symbol DBSpec;
+extern EXPR_API Symbol PathMachSpec;
+extern EXPR_API Symbol MachSpec;
+extern EXPR_API Symbol TimeSpec;
 
 #endif

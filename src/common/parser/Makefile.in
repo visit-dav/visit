@@ -46,6 +46,11 @@
 #   Brad Whitlock, Thu Apr 22 12:01:10 PDT 2004
 #   Added -lstate -lcomm -lutility to LIBS.
 #
+#   Jeremy Meredith, Wed Nov 24 12:20:57 PST 2004
+#   Split VisIt Expression specific stuff to a new library.
+#   Added new files due to the refactoring.  Added a new, simple
+#   test grammar.
+#
 ##############################################################################
 
 ##
@@ -60,41 +65,32 @@ CPPFLAGS=-I. @CPPFLAGS@
 ##
 ## Files...
 ##
-CONFIGPROG=exprconfig
-TESTPROG=parse
-TESTSRC=test.C
+CONFIGPROG=testconfig
+TESTPROG1=testparser
+TESTSRC1=testparser.C
 COMMONSRC = \
     ConfiguratingItem.C \
     ConfiguratingSet.C \
-    ExprGrammar.C \
-    ExprGrammarNode.C \
-    ExprNode.C \
-    ExprParser.C \
-    InvalidExpressionException.C \
     Grammar.C \
-    ParserBase.C \
-    ParserInterface.C \
-    ParsingExprList.C \
-    RecursiveExpressionException.C \
+    ParseTreeNode.C \
+    Parser.C \
     Rule.C \
-    Scanner.C \
     Sequence.C \
     Symbol.C \
-    Token.C
-CONFIGSRC = ExprConfig.C
-INITSRC=ExprInit.C
+    Token.C \
+    TokenParseTreeNode.C
+CONFIGSRC = TestConfig.C
+INITSRC=TestInit.C
 INITOBJ=${INITSRC:.C=.o}
-LIBSRC = \
-    ExprInit.C
+LIBSRC =
 SRC=${LIBSRC} ${COMMONSRC}
 OBJ=$(SRC:.C=.o)
 CONFIGOBJ=$(CONFIGSRC:.C=.o)
 COMMONOBJ=${COMMONSRC:.C=.o}
-CONFIGOBJ=${CONFIGSRC:.C=.o}
-TESTOBJ=$(TESTSRC:.C=.o)
+TESTOBJ1=$(TESTSRC1:.C=.o)
 LIB=libparser
 NOT_DISTRIB=
-LIBS=-L../../lib -lmisc -lstate -lcomm -lutility
+LIBS=-L../../lib -lmisc -lstate -lcomm -lutility @LIBS@
 
 ##
 ## Standard targets...
@@ -121,8 +117,8 @@ $(CONFIGPROG): $(COMMONOBJ) $(CONFIGOBJ)
 ##
 ## Test targets...
 ##
-$(TESTPROG) test: $(INITOBJ) $(TESTOBJ) $(LIBSHARED)
-	$(CXX) -o $(TESTPROG) $(LDFLAGS) -lparser $(TESTOBJ) $(LIBS)
+$(TESTPROG1) test: $(TESTOBJ1) $(LIBSHARED)
+	$(CXX) -o $(TESTPROG1) $(LDFLAGS) -lparser $(TESTOBJ1) @LIBS@
 
 
 ##

@@ -3,8 +3,8 @@
 #include <ExpressionList.h>
 #include <Expression.h>
 #include <ExprNode.h>
-#include <ParserInterface.h>
 #include <ExprNodeFactory.h>
+#include <ExprParser.h>
 
 ParsingExprList * ParsingExprList::instance = 0;
 
@@ -18,6 +18,8 @@ ParsingExprList * ParsingExprList::instance = 0;
 // Creation:   Wed Feb  5 13:53:33 PST 2003
 //
 // Modifications:
+//    Jeremy Meredith, Wed Nov 24 12:27:15 PST 2004
+//    Refactored and changed parser base classes around.
 //
 // ****************************************************************************
 ParsingExprList::ParsingExprList() : SimpleObserver()
@@ -26,7 +28,7 @@ ParsingExprList::ParsingExprList() : SimpleObserver()
     exprList.Attach(this);
 
     // Make a default parser.
-    parser = ParserInterface::MakeParser(new ExprNodeFactory());
+    parser = new ExprParser(new ExprNodeFactory());
 
     // Set the instance variable.
     instance = this;
@@ -43,9 +45,11 @@ ParsingExprList::ParsingExprList() : SimpleObserver()
 // Creation:   Wed Feb  5 13:53:26 PST 2003
 //
 // Modifications:
+//    Jeremy Meredith, Wed Nov 24 12:27:15 PST 2004
+//    Refactored and changed parser base classes around.
 //
 // ****************************************************************************
-ParsingExprList::ParsingExprList(ParserInterface *p) : SimpleObserver(),
+ParsingExprList::ParsingExprList(Parser *p) : SimpleObserver(),
     parser(p)
 {
     // Make this object observe the expression list.
@@ -219,6 +223,8 @@ ParsingExprList::GetExpression(const char *varname)
 // Creation:   Wed Feb  5 13:52:35 PST 2003
 //
 // Modifications:
+//    Jeremy Meredith, Wed Nov 24 12:27:15 PST 2004
+//    Refactored and changed parse tree classes and return types around.
 //   
 // ****************************************************************************
 ExprNode *
@@ -230,7 +236,10 @@ ParsingExprList::GetExpressionTree(const char *varname)
     //Expression *exp = const_cast<ExpressionList&>(exprList)[varname];
     Expression *exp = GetExpression(varname);
     if (exp != NULL)
-        tree = Instance()->GetParser()->Parse(exp->GetDefinition());
+    {
+        ParseTreeNode *t=Instance()->GetParser()->Parse(exp->GetDefinition());
+        tree = (ExprNode*)t;
+    }
     else
         tree = NULL;
 
@@ -254,6 +263,8 @@ ParsingExprList::GetExpressionTree(const char *varname)
 // Creation:   August 14, 2003
 //
 // Modifications:
+//    Jeremy Meredith, Wed Nov 24 12:27:15 PST 2004
+//    Refactored and changed parse tree classes and return types around.
 //   
 // ****************************************************************************
 ExprNode *
@@ -262,5 +273,6 @@ ParsingExprList::GetExpressionTree(Expression *expr)
     if (!expr)
         return NULL;
 
-    return Instance()->GetParser()->Parse(expr->GetDefinition());
+    ParseTreeNode *t = Instance()->GetParser()->Parse(expr->GetDefinition());
+    return (ExprNode*)t;
 }

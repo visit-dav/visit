@@ -1,59 +1,68 @@
 #ifndef EXPRNODE_H
 #define EXPRNODE_H
 
-#include <parser_exports.h>
+#include <expr_exports.h>
 #include <vector>
 #include <set>
 #include <string>
-#include <ExprGrammarNode.h>
+#include <ExprParseTreeNode.h>
+#include <ExprToken.h>
 
 class Identifier;
-class Token;
 class Pos;
 
 // ****************************************************************************
-//  Class:  ExprNode
+//  Class:  ExprNode and other Expression Grammar parse tree nodes
 //
 //  Purpose:
-//    Base class for all nodes in VisIt expression trees.
+//    ExprNode is the base class for all nodes in an Expression tree
+//    that are themselves expressions.  Other things like paths and
+//    function arguments are not directly Expressions, but can contain
+//    them -- these derive directly from ExprParseTreeNode.
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    April  5, 2002
 //
 //  Modifications:
-//      Sean Ahern, Wed Apr 17 17:01:41 PDT 2002
-//      Made the class able to contact the engine to generate plots.
+//    Sean Ahern, Wed Apr 17 17:01:41 PDT 2002
+//    Made the class able to contact the engine to generate plots.
 //
-//      Sean Ahern, Wed Oct 16 16:41:32 PDT 2002
-//      Removed the engine communication code to a separate set of classes
-//      owned by the viewer.
+//    Sean Ahern, Wed Oct 16 16:41:32 PDT 2002
+//    Removed the engine communication code to a separate set of classes
+//    owned by the viewer.
+//
+//    Jeremy Meredith, Wed Nov 24 11:47:45 PST 2004
+//    Made expression language specific tokens have a more specific
+//    base class.  Renamed GrammarNode to ParseTreeNode.  Refactored
+//    expression specific stuff to its own library.  Had ArgExpr contain
+//    the true base class for expressions -- a List is a valid argument
+//    to a function but currently is not an Expression (i.e. ExprNode).
 //
 // ****************************************************************************
-class PARSER_API ExprNode : public ExprGrammarNode
+class EXPR_API ExprNode : public ExprParseTreeNode
 {
   public:
     ExprNode(const Pos &p)
-        : ExprGrammarNode(p) {}
+        : ExprParseTreeNode(p) {}
     virtual ~ExprNode() { }
     virtual std::set<std::string> GetVarLeaves() = 0;
     virtual const std::string GetTypeName() = 0;
-
 };
 
-class PARSER_API ConstExpr : public virtual ExprNode
+class EXPR_API ConstExpr : public virtual ExprNode
 {
   public:
-    ConstExpr(const Pos &p, Token *t);
+    ConstExpr(const Pos &p, ExprToken *t);
     virtual ~ConstExpr() { }
     virtual void PrintNode(ostream &o);
     virtual std::set<std::string> GetVarLeaves() {return std::set<std::string>();}
     virtual const std::string GetTypeName() { return "Const"; }
-    Token * GetToken() { return token; }
+    ExprToken * GetToken() { return token; }
   protected:
-    Token *token;
+    ExprToken *token;
 };
 
-class PARSER_API MathExpr : public virtual ExprNode
+class EXPR_API MathExpr : public virtual ExprNode
 {
   public:
     MathExpr(const Pos &p, char o)
@@ -64,7 +73,7 @@ class PARSER_API MathExpr : public virtual ExprNode
     char op;
 };
 
-class PARSER_API UnaryExpr : public MathExpr
+class EXPR_API UnaryExpr : public MathExpr
 {
   public:
     UnaryExpr(const Pos &p, char o, ExprNode *e)
@@ -78,7 +87,7 @@ class PARSER_API UnaryExpr : public MathExpr
     ExprNode *expr;
 };
 
-class PARSER_API BinaryExpr : public MathExpr
+class EXPR_API BinaryExpr : public MathExpr
 {
   public:
     BinaryExpr(const Pos &p, char o, ExprNode *l, ExprNode *r)
@@ -92,7 +101,7 @@ class PARSER_API BinaryExpr : public MathExpr
     ExprNode *right;
 };
 
-class PARSER_API IndexExpr : public virtual ExprNode
+class EXPR_API IndexExpr : public virtual ExprNode
 {
   public:
     IndexExpr(const Pos &p, ExprNode *e, int i)
@@ -107,7 +116,7 @@ class PARSER_API IndexExpr : public virtual ExprNode
     int ind;
 };
 
-class PARSER_API VectorExpr : public virtual ExprNode
+class EXPR_API VectorExpr : public virtual ExprNode
 {
   public:
     VectorExpr(const Pos &p, ExprNode *xi, ExprNode *yi, ExprNode *zi=NULL)
@@ -120,11 +129,11 @@ class PARSER_API VectorExpr : public virtual ExprNode
     ExprNode *x, *y, *z;
 };
 
-class PARSER_API ListElemExpr : public ExprGrammarNode
+class EXPR_API ListElemExpr : public ExprParseTreeNode
 {
   public:
     ListElemExpr(const Pos &p, ExprNode *b, ExprNode *e=NULL, ExprNode *s=NULL)
-        : ExprGrammarNode(p), beg(b), end(e), skip(s) {}
+        : ExprParseTreeNode(p), beg(b), end(e), skip(s) {}
     virtual ~ListElemExpr() { }
     virtual void PrintNode(ostream &o);
     virtual const std::string GetTypeName() { return "ListElem"; }
@@ -138,7 +147,7 @@ class PARSER_API ListElemExpr : public ExprGrammarNode
     ExprNode *skip;
 };
 
-class PARSER_API ListExpr : public ExprGrammarNode
+class EXPR_API ListExpr : public ExprParseTreeNode
 {
   public:
     ListExpr(const Pos &p, ListElemExpr *e);
@@ -152,24 +161,24 @@ class PARSER_API ListExpr : public ExprGrammarNode
     std::vector<ListElemExpr*> *elems;
 };
 
-class PARSER_API ArgExpr : public ExprGrammarNode
+class EXPR_API ArgExpr : public ExprParseTreeNode
 {
   public:
-    ArgExpr(const Pos &p, ExprNode *e)
-        : ExprGrammarNode(p), id(NULL), expr(e) {}
+    ArgExpr(const Pos &p, ExprParseTreeNode *e)
+        : ExprParseTreeNode(p), id(NULL), expr(e) {}
     virtual ~ArgExpr() { }
-    ArgExpr(const Pos &p, Identifier *i, ExprNode *e)
-        : ExprGrammarNode(p), id(i), expr(e) {}
+    ArgExpr(const Pos &p, Identifier *i, ExprParseTreeNode *e)
+        : ExprParseTreeNode(p), id(i), expr(e) {}
     virtual void PrintNode(ostream &o);
     Identifier *GetId(void) {return id;};
-    ExprNode *GetExpr(void) {return expr;};
+    ExprParseTreeNode *GetExpr(void) {return expr;};
     virtual const std::string GetTypeName() { return "Arg"; }
   protected:
     Identifier *id;
-    ExprNode   *expr;
+    ExprParseTreeNode *expr;
 };
 
-class PARSER_API ArgsExpr : public ExprGrammarNode
+class EXPR_API ArgsExpr : public ExprParseTreeNode
 {
   public:
     ArgsExpr(const Pos &p, ArgExpr *e);
@@ -182,7 +191,7 @@ class PARSER_API ArgsExpr : public ExprGrammarNode
     std::vector<ArgExpr*> *args;
 };
 
-class PARSER_API FunctionExpr : public virtual ExprNode
+class EXPR_API FunctionExpr : public virtual ExprNode
 {
   public:
     FunctionExpr(const Pos &p, Identifier *i, ArgsExpr *e=NULL)
@@ -196,11 +205,11 @@ class PARSER_API FunctionExpr : public virtual ExprNode
     ArgsExpr   *args;
 };
 
-class PARSER_API PathExpr : public ExprGrammarNode
+class EXPR_API PathExpr : public ExprParseTreeNode
 {
   public:
     PathExpr(const Pos &p, const std::string &s)
-        : ExprGrammarNode(p), basename(s), fullpath(s) {}
+        : ExprParseTreeNode(p), basename(s), fullpath(s) {}
     virtual ~PathExpr() { }
     void Append(const std::string&);
     virtual void PrintNode(ostream &o);
@@ -214,11 +223,11 @@ class PARSER_API PathExpr : public ExprGrammarNode
     std::string fullpath;
 };
 
-class PARSER_API MachExpr : public ExprGrammarNode
+class EXPR_API MachExpr : public ExprParseTreeNode
 {
   public:
     MachExpr(const Pos &p, Identifier *i)
-        : ExprGrammarNode(p), host(i) {}
+        : ExprParseTreeNode(p), host(i) {}
     virtual ~MachExpr() { }
     virtual void PrintNode(ostream &o);
     virtual const std::string GetTypeName() { return "Mach"; }
@@ -226,12 +235,12 @@ class PARSER_API MachExpr : public ExprGrammarNode
     Identifier *host;
 };
 
-class PARSER_API TimeExpr : public ExprGrammarNode
+class EXPR_API TimeExpr : public ExprParseTreeNode
 {
   public:
     enum Type { Cycle, Time, Index, Unknown };
     TimeExpr(const Pos &p, ListExpr *l, Type t=Unknown)
-        : ExprGrammarNode(p), type(t), list(l) {}
+        : ExprParseTreeNode(p), type(t), list(l) {}
     virtual ~TimeExpr() { }
     virtual void PrintNode(ostream &o);
     virtual const std::string GetTypeName() { return "Time"; }
@@ -240,11 +249,11 @@ class PARSER_API TimeExpr : public ExprGrammarNode
     ListExpr *list;
 };
 
-class PARSER_API DBExpr : public ExprGrammarNode
+class EXPR_API DBExpr : public ExprParseTreeNode
 {
   public:
     DBExpr(const Pos &p, PathExpr *f, MachExpr *m, TimeExpr *t)
-        : ExprGrammarNode(p), file(f), mach(m), time(t) {}
+        : ExprParseTreeNode(p), file(f), mach(m), time(t) {}
     virtual ~DBExpr() { }
     virtual void PrintNode(ostream &o);
     virtual const std::string GetTypeName() { return "DBExpr"; }
@@ -254,7 +263,7 @@ class PARSER_API DBExpr : public ExprGrammarNode
     TimeExpr *time;
 };
 
-class PARSER_API VarExpr : public virtual ExprNode
+class EXPR_API VarExpr : public virtual ExprNode
 {
   public:
     VarExpr(const Pos &p, DBExpr *d, PathExpr *v, bool exp)
@@ -268,5 +277,6 @@ class PARSER_API VarExpr : public virtual ExprNode
     PathExpr *var;
     bool      canexpand;
 };
+
 
 #endif

@@ -35,6 +35,9 @@ static void UsageAndExit(const char *);
 //    Hank Childs, Sat Sep 11 12:10:53 PDT 2004
 //    Add support for target chunks, target zones, -variable.
 //
+//    Jeremy Meredith, Wed Nov 24 15:39:02 PST 2004
+//    Added expression support back in.  ('3769)
+//
 // ****************************************************************************
 
 int main(int argc, char *argv[])
@@ -179,11 +182,9 @@ int main(int argc, char *argv[])
     for (int i = 0 ; i < md->GetNumStates() ; i++)
     {
          avtDataObject_p dob = db->GetOutput(mmd->name.c_str(), i);
-/* The EEF is currently only available on the engine.
          avtExpressionEvaluatorFilter eef;
          eef.SetInput(dob);
          dob = eef.GetOutput();
- */
          wrtr->SetInput(dob);
 
          char filename[1024];

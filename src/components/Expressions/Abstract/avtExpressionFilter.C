@@ -17,7 +17,7 @@
 #include <avtExtents.h>
 #include <avtCommonDataFunctions.h>
 
-#include <EngineExprNode.h>
+#include <avtExprNode.h>
 
 #include <DebugStream.h>
 #include <ExpressionException.h>
@@ -65,7 +65,7 @@ avtExpressionFilter::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
     std::vector<ArgExpr*> *arguments = args->GetArgs();
     std::vector<ArgExpr*>::iterator i;
     for (i=arguments->begin(); i != arguments->end(); i++)
-        dynamic_cast<EngineExprNode*>((*i)->GetExpr())->CreateFilters(state);
+        dynamic_cast<avtExprNode*>((*i)->GetExpr())->CreateFilters(state);
 }
 
 

@@ -33,6 +33,26 @@ Symbol::Symbol(int tt)
 //  Constructor:  Symbol::Symbol
 //
 //  Purpose:
+//    Creates a terminal from the token type, overriding the display
+//    string with a known one.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November 24, 2004
+//
+// ****************************************************************************
+Symbol::Symbol(int tt, const string &s)
+    : type(Terminal), terminaltype(tt), displaystring(s)
+{
+    InitStatic();
+    if (nsymbols>=MAXSYMBOLS) { cerr << "Too many symbols! Increase MAXSYMBOLS\n"; exit(-1); }
+    index=nsymbols++;
+    (*allterminals)[tt] = this;
+}
+
+// ****************************************************************************
+//  Constructor:  Symbol::Symbol
+//
+//  Purpose:
 //    Creates a nonterminal from its name.
 //
 //  Programmer:  Jeremy Meredith

@@ -9375,7 +9375,7 @@ class avtExprFilterNoNamespaceConflict : public avtStreamer
 //                           avtExprFilterNoNamespaceConflict.C                           //
 // ************************************************************************* //
 
-#include <EngineExprNode.h>
+#include <avtExprNode.h>
 
 #include <math.h>
 #include <float.h>
@@ -9423,7 +9423,7 @@ avtExprFilterNoNamespaceConflict::ProcessArguments(ArgsExpr *args, ExprPipelineS
     std::vector<ArgExpr*> *arguments = args->GetArgs();
     std::vector<ArgExpr*>::iterator i;
     for (i=arguments->begin(); i != arguments->end(); i++)
-        dynamic_cast<EngineExprNode*>((*i)->GetExpr())->CreateFilters(state);
+        dynamic_cast<avtExprNode*>((*i)->GetExpr())->CreateFilters(state);
 }
 
 

@@ -15968,6 +15968,7 @@ COMMON_FILES="common/Makefile
               common/comm/Makefile
               common/misc/Makefile
               common/parser/Makefile
+              common/expr/Makefile
               common/plugin/Makefile
               common/proxybase/Makefile
               common/siloobj/Makefile

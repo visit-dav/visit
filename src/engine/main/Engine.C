@@ -15,9 +15,9 @@
 #include <DefineVirtualDatabaseRPC.h>
 #include <IncompatibleVersionException.h>
 #include <ExpressionList.h>
-#include <ParserInterface.h>
+#include <ExprParser.h>
 #include <ParsingExprList.h>
-#include <EngineExprNodeFactory.h>
+#include <avtExprNodeFactory.h>
 #include <Init.h>
 #include <InitVTK.h>
 #include <LoadBalancer.h>
@@ -231,6 +231,9 @@ Engine::Finalize(void)
 //    Jeremy Meredith, Wed Aug 25 10:09:14 PDT 2004
 //    Added ability to send metadata and SIL atts back to the viewer.
 //
+//    Jeremy Meredith, Wed Nov 24 11:42:40 PST 2004
+//    Renamed EngineExprNode to avtExprNode.
+//
 // ****************************************************************************
 
 void
@@ -338,7 +341,7 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     rpcExecutors.push_back(new RPCExecutor<CloneNetworkRPC>(cloneNetworkRPC));
 
     // Hook up the expression list as an observed object.
-    ParserInterface *p = ParserInterface::MakeParser(new EngineExprNodeFactory());
+    Parser *p = new ExprParser(new avtExprNodeFactory());
     ParsingExprList *l = new ParsingExprList(p);
     xfer->Add(l->GetList());
 

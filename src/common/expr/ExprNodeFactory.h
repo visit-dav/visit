@@ -1,20 +1,27 @@
 #ifndef EXPRNODEFACTORY_H
 #define EXPRNODEFACTORY_H
 
-#include <parser_exports.h>
+#include <expr_exports.h>
 #include <ExprNode.h>
 #include <Pos.h>
 
 class Token;
 
-class PARSER_API ExprNodeFactory
+//  Modifications:
+//    Jeremy Meredith, Wed Nov 24 12:22:32 PST 2004
+//    Expression-language specific tokens are in a new,
+//    more specific base class.
+//
+
+
+class EXPR_API ExprNodeFactory
 {
 public:
     ExprNodeFactory() {}
     virtual ~ExprNodeFactory() {}
 
     virtual ConstExpr*
-        CreateConstExpr(const Pos & p, Token * t)
+        CreateConstExpr(const Pos & p, ExprToken * t)
             { return new ConstExpr(p, t); }
 
     virtual UnaryExpr*

@@ -2,7 +2,6 @@
 #define SYMBOLSET_H
 #include <parser_exports.h>
 
-#include "Token.h"
 #include "Symbol.h"
 
 // ****************************************************************************

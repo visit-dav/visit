@@ -1,14 +1,20 @@
 #include <stdio.h>
 #include <ExprNode.h>
-#include <Token.h>
+#include <ExprToken.h>
 #include <DebugStream.h>
 #include <ExpressionException.h>
 #include <snprintf.h>
 
 using     std::vector;
 
+//    Jeremy Meredith, Wed Nov 24 11:46:43 PST 2004
+//    Made expression language specific tokens have a more specific
+//    base class.  Renamed GrammarNode to ParseTreeNode.
+//
+
+
 // class ConstExpr
-ConstExpr::ConstExpr(const Pos &p, Token *t) : ExprNode(p)
+ConstExpr::ConstExpr(const Pos &p, ExprToken *t) : ExprNode(p)
 {
     token = t;
 }
@@ -114,7 +120,7 @@ ListElemExpr::PrintNode(ostream &o)
 }
 
 // class ListExpr
-ListExpr::ListExpr(const Pos &p, ListElemExpr *e) : ExprGrammarNode(p)
+ListExpr::ListExpr(const Pos &p, ListElemExpr *e) : ExprParseTreeNode(p)
 {
     elems = new vector<ListElemExpr*>;
     elems->push_back(e);
@@ -159,7 +165,7 @@ ArgExpr::PrintNode(ostream &o)
 }
 
 // class ArgsExpr
-ArgsExpr::ArgsExpr(const Pos &p, ArgExpr *e) : ExprGrammarNode(p)
+ArgsExpr::ArgsExpr(const Pos &p, ArgExpr *e) : ExprParseTreeNode(p)
 {
     args = new vector<ArgExpr*>;
     args->push_back(e);

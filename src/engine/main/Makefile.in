@@ -212,6 +212,9 @@
 #    Jeremy Meredith, Mon Aug 30 17:06:36 PDT 2004
 #    Link against the (new) parallel visit_vtk library.
 #
+#    Jeremy Meredith, Tue Nov 23 14:53:07 PST 2004
+#    Refactored the expression parser into two separate libraries.
+#
 ##############################################################################
 
 ##
@@ -230,7 +233,7 @@ CPPFLAGS= -I@tmpinc@ @ENGINE_CPPFLAGS@ @CPPFLAGS@ \
 COMMONLIBS=-L../../lib -lplugin -lviswindow -lplotter -lmir -lavtview \
         -lavtwriter -lvisit_vtk -llightweight_visit_vtk \
 	-lenginerpc -lutility -lmisc -lcomm -lstate \
-        -ldbatts -lavtexceptions -lparser
+        -ldbatts -lavtexceptions -lexpr -lparser
 
 SERLIBS=$(COMMONLIBS) -lavtmath_ser -ldatabase_ser -lquery_ser \
         -lexpressions_ser -lavtfilters_ser -lpipeline_ser  \
@@ -266,8 +269,6 @@ SRC= \
     DataNetwork.C \
     ClonedDataNetwork.C \
     Engine.C \
-    EngineExprNode.C \
-    EngineExprNodeFactory.C \
     LoadBalancer.C \
     Netnodes.C \
     NetworkManager.C
