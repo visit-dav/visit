@@ -1368,6 +1368,10 @@ ViewerWindow::GetMaintainViewMode() const
 //    Kathleen Bonnell, Fri Jun  6 16:39:22 PDT 2003
 //    Removed call to ScalePlots. Now handled at VisWindow level.  
 //
+//    Kathleen Bonnell, Wed Jul 16 10:02:52 PDT 2003 
+//    Removed scaling of view2D.window, handled by avtView2D. 
+//    Moved test for valid bbox to Compute2DScaleFactor.
+//
 // ****************************************************************************
 
 void
@@ -1380,7 +1384,7 @@ ViewerWindow::SetFullFrameMode(const bool mode)
 
     fullFrame = mode;
 
-    if (viewDimension == 2 && !GetTypeIsCurve() && boundingBoxValid2d) 
+    if (viewDimension == 2 && !GetTypeIsCurve())
     {
         avtView2D view2D=visWindow->GetView2D();
         if (fullFrame)
@@ -1389,38 +1393,9 @@ ViewerWindow::SetFullFrameMode(const bool mode)
             // Scale the window.
             //
             Compute2DScaleFactor(view2D.axisScaleFactor, view2D.axisScaleType);
-            if (view2D.axisScaleFactor != 0.)
-            {
-                if (view2D.axisScaleType == 0) // requires x-axis scaling
-                {
-                    view2D.window[0] *= view2D.axisScaleFactor;
-                    view2D.window[1] *= view2D.axisScaleFactor;
-                }
-                else // requires y-axis scaling
-                {
-                    view2D.window[2] *= view2D.axisScaleFactor;
-                    view2D.window[3] *= view2D.axisScaleFactor;
-                }
-            }
         }
         else
         {
-            //
-            // Un-do the previous scaling on the window.
-            //
-            if (view2D.axisScaleFactor != 0.)
-            {
-                if (view2D.axisScaleType == 0) // requires x-axis scaling
-                {
-                    view2D.window[0] /= view2D.axisScaleFactor;
-                    view2D.window[1] /= view2D.axisScaleFactor;
-                }
-                else // requires y-axis scaling
-                {
-                    view2D.window[2] /= view2D.axisScaleFactor;
-                    view2D.window[3] /= view2D.axisScaleFactor;
-                }
-            }
             view2D.axisScaleFactor = 0.;
         }
 
@@ -2293,6 +2268,10 @@ ViewerWindow::CopyViewAttributes(const ViewerWindow *source)
 //   I renamed camera to view normal in the view attributes.  I added
 //   image pan and image zoom to the 3d view attributes.
 //
+//   Kathleen Bonnell, Wed Jul 16 10:02:52 PDT 2003 
+//   Don't instantiate new avtView2D, but retrieve from VisWindow so that
+//   axisScale information can be preserved. 
+//   
 // ****************************************************************************
 
 void
@@ -2308,7 +2287,7 @@ ViewerWindow::UpdateCameraView()
         {
             view2DAtts->GetAtts(animation->GetFrameIndex(), curView);
  
-            avtView2D view2d;
+            avtView2D view2d = visWindow->GetView2D();
  
             const double *viewport=curView->GetViewportCoords();
             const double *window=curView->GetWindowCoords();
@@ -2756,6 +2735,9 @@ ViewerWindow::SetPlotColors(const double *bg, const double *fg)
 //    Kathleen Bonnell, Thu May 15 11:52:56 PDT 2003   
 //    Added code to compute axis scale factor when in fullFrame mode. 
 //
+//    Kathleen Bonnell, Wed Jul 16 10:02:52 PDT 2003 
+//    Don't scale view2D's window, handled in avtView2d. 
+//
 // ****************************************************************************
 
 void
@@ -2795,16 +2777,6 @@ ViewerWindow::RecenterView2d(const double *limits)
     if (fullFrame)
     { 
         Compute2DScaleFactor(view2D.axisScaleFactor, view2D.axisScaleType);
-        if (view2D.axisScaleType == 0) // requires x-axis scaling
-        {
-            view2D.window[0] *= view2D.axisScaleFactor;
-            view2D.window[1] *= view2D.axisScaleFactor;
-        }
-        else // requires y-axis scaling
-        {
-            view2D.window[2] *= view2D.axisScaleFactor;
-            view2D.window[3] *= view2D.axisScaleFactor;
-        }
     }
     else
     {
@@ -2833,15 +2805,39 @@ ViewerWindow::RecenterView2d(const double *limits)
 //  Creation:   May 13, 2003 
 //
 //  Modifications:
+//    Kathleen Bonnell, Wed Jul 16 16:32:43 PDT 2003
+//    Use boundingBox2d only if valid, otherwise retrieve plot extents. 
 //
 // ****************************************************************************
 
 void
 ViewerWindow::Compute2DScaleFactor(double &s, int & t)
 {
-    // assumes a valid boundingBox2d.
-    double width = boundingBox2d[1] - boundingBox2d[0];
-    double height = boundingBox2d[3] - boundingBox2d[2];
+   
+    double width, height; 
+    if (boundingBoxValid2d)
+    {
+        width  = boundingBox2d[1] - boundingBox2d[0];
+        height = boundingBox2d[3] - boundingBox2d[2];
+    }
+    else
+    {
+        //
+        // Get the extents based on the plot limits.
+        //
+        double ext[4];
+        GetExtents(2, ext);
+        if (ext[0] == DBL_MAX && ext[1] == -DBL_MAX)
+        {
+            // no scaling can take place, plot limits invalid.
+            s = 0.;  
+            t = 1;   // scale the y_axis (default)
+            return;
+        }
+        width  = ext[1] - ext[0];
+        height = ext[3] - ext[2];
+    }
+
     if (width > height && height > 0.)
     {
         s =  width / height;
@@ -3103,6 +3099,9 @@ ViewerWindow::RecenterViewCurve(const double *limits)
 //    Kathleen Bonnell, Thu May 15 11:52:56 PDT 2003   
 //    Create a square window by scaling, if in fullFrame mode. 
 //
+//    Kathleen Bonnell, Wed Jul 16 10:02:52 PDT 2003 
+//    Don't scale view2D's window, handled in avtView2d. 
+//
 // ****************************************************************************
 
 void
@@ -3136,19 +3135,6 @@ ViewerWindow::ResetView2d()
     if (fullFrame)
     { 
         Compute2DScaleFactor(view2D.axisScaleFactor, view2D.axisScaleType);
-        if (view2D.axisScaleFactor != 0.)
-        {
-            if (view2D.axisScaleType == 0) // requires x-axis scaling
-            {
-                view2D.window[0] *= view2D.axisScaleFactor;
-                view2D.window[1] *= view2D.axisScaleFactor;
-            }
-            else // requires y-axis scaling
-            {
-                view2D.window[2] *= view2D.axisScaleFactor;
-                view2D.window[3] *= view2D.axisScaleFactor;
-            }
-        }
     }
     else
     {

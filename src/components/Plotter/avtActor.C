@@ -488,6 +488,10 @@ avtActor::ShiftByVector(const float vec[3])
 //  Programmer: Kathleen Bonnell 
 //  Creation:   July 12, 2002 
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed Jul 16 16:40:47 PDT 2003
+//    Scale the transparency actor.
+//
 // ****************************************************************************
 
 void
@@ -497,6 +501,10 @@ avtActor::ScaleByVector(const float vec[3])
     if (*decorations != NULL)
     {
         decorations->ScaleByVector(vec);
+    }
+    if (transparencyActor != NULL && transparencyIndex >= 0)
+    {
+        transparencyActor->ScaleByVector(vec);
     }
 }
 

@@ -22,6 +22,9 @@ class ViewAttributes;
 //    Kathleen Bonnell, Thu May 15 09:46:46 PDT 2003 
 //    Added members axisScaleFactor and axisScaleType.
 // 
+//    Kathleen Bonnell, Wed Jul 16 16:46:02 PDT 2003 
+//    Added methods ScaleWindow and ReverseScaleWindow.
+// 
 // ****************************************************************************
 
 struct PIPELINE_API avtView2D
@@ -45,6 +48,8 @@ struct PIPELINE_API avtView2D
 
   protected:
     void            GetValidWindow(double *) const;
+    void            ScaleWindow(double *) const;
+    void            ReverseScaleWindow(double *) const;
 };
 
 

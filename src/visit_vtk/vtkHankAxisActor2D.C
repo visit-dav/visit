@@ -793,6 +793,9 @@ inline double fsign(double value, double sign)
 //   Kathleen Bonnell, Fri Jul  6 14:48:53 PDT 2001
 //   Added support for drawing gridlines.
 //
+//   Akira Haddox, Wed Jul 16 16:45:48 PDT 2003
+//   Added special case for when range is too small.
+//
 // *******************************************************************
 
 void vtkHankAxisActor2D::AdjustLabelsComputeRange(float inRange[2], 
@@ -860,6 +863,19 @@ void vtkHankAxisActor2D::AdjustLabelsComputeRange(float inRange[2],
     major /= div;
     }
   minor = (fxt/div) / 10.;
+
+  // When we get too close, we lose the tickmarks. Run some special case code.
+  if (minor == 0)
+    {
+    numTicks = 3;
+    ticksize[0] = (float)major_tick;
+    proportion[0] = 0.0;
+    ticksize[1] = (float)major_tick;
+    proportion[1] = 0.5;
+    ticksize[2] = (float)major_tick;
+    proportion[2] = 1.0;
+    return;
+    }
 
   // Figure out the first major and minor tick locations, relative to the
   // start of the axis.

@@ -1994,6 +1994,10 @@ VisWindow::ResetView(void)
 //    Removed call to ScalePlots.  Added calls to FullFramOn/Off so that all
 //    colleagues can be notified when full-frame mode changes. 
 //    
+//    Kathleen Bonnell, Wed Jul 16 16:32:43 PDT 2003 
+//    Allow FullFrameOn to be called when scale factor changes, not just
+//    when full-frame turned on for first time. 
+//    
 // ****************************************************************************
 
 void
@@ -2007,13 +2011,13 @@ VisWindow::SetView2D(const avtView2D &v)
     //
     int fframe = 0;
 
-    if (v.axisScaleFactor > 0. && view2D.axisScaleFactor == 0.)
+    if (v.axisScaleFactor != view2D.axisScaleFactor)
     {
-        fframe = 1; 
-    }
-    else if (v.axisScaleFactor == 0. && view2D.axisScaleFactor > 0.)
-    {
-        fframe = 2; 
+        fframe = 1;
+        if (v.axisScaleFactor == 0. && view2D.axisScaleFactor > 0.)
+        {
+            fframe = 2; 
+        }
     }
 
     //

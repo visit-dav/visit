@@ -336,6 +336,9 @@ avtSamplePointExtractor::ExecuteTree(avtDataTree_p dt)
 //    Hank Childs, Fri Dec  7 10:15:45 PST 2001
 //    Added early termination for zero-opacity cells.
 //
+//    Hank Childs, Thu Jul 17 17:27:59 PDT 2003
+//    Don't extract VTK or AVT variables.
+//
 // ****************************************************************************
 
 void
@@ -355,6 +358,10 @@ avtSamplePointExtractor::ExtractHex(vtkHexahedron *hex, vtkDataSet *ds,
     for (v = 0 ; v < ncd ; v++)
     {
         vtkDataArray *arr = cd->GetArray(v);
+        if (strstr(arr->GetName(), "vtk") != NULL)
+            continue;
+        if (strstr(arr->GetName(), "avt") != NULL)
+            continue;
         float val = arr->GetComponent(hexind, 0);
         for (i = 0 ; i < 8 ; i++)
         {
@@ -371,6 +378,10 @@ avtSamplePointExtractor::ExtractHex(vtkHexahedron *hex, vtkDataSet *ds,
     for (v = 0 ; v < npd ; v++)
     {
         vtkDataArray *arr = pd->GetArray(v);
+        if (strstr(arr->GetName(), "vtk") != NULL)
+            continue;
+        if (strstr(arr->GetName(), "avt") != NULL)
+            continue;
         vtkIdList *ids = hex->GetPointIds();
         for (i = 0 ; i < 8 ; i++)
         {
@@ -429,6 +440,9 @@ avtSamplePointExtractor::ExtractHex(vtkHexahedron *hex, vtkDataSet *ds,
 //    Hank Childs, Fri Dec  7 10:15:45 PST 2001
 //    Added early termination for zero-opacity cells.
 //
+//    Hank Childs, Thu Jul 17 17:27:59 PDT 2003
+//    Don't extract VTK or AVT variables.
+//
 // ****************************************************************************
 
 void
@@ -448,6 +462,10 @@ avtSamplePointExtractor::ExtractWedge(vtkWedge *wedge, vtkDataSet *ds,
     for (v = 0 ; v < ncd ; v++)
     {
         vtkDataArray *arr = cd->GetArray(v);
+        if (strstr(arr->GetName(), "vtk") != NULL)
+            continue;
+        if (strstr(arr->GetName(), "avt") != NULL)
+            continue;
         float val = arr->GetComponent(wedgeind, 0);
         for (i = 0 ; i < 6 ; i++)
         {
@@ -464,6 +482,10 @@ avtSamplePointExtractor::ExtractWedge(vtkWedge *wedge, vtkDataSet *ds,
     for (v = 0 ; v < npd ; v++)
     {
         vtkDataArray *arr = pd->GetArray(v);
+        if (strstr(arr->GetName(), "vtk") != NULL)
+            continue;
+        if (strstr(arr->GetName(), "avt") != NULL)
+            continue;
         vtkIdList *ids = wedge->GetPointIds();
         for (i = 0 ; i < 6 ; i++)
         {
@@ -522,6 +544,9 @@ avtSamplePointExtractor::ExtractWedge(vtkWedge *wedge, vtkDataSet *ds,
 //    Hank Childs, Fri Dec  7 10:15:45 PST 2001
 //    Added early termination for zero-opacity cells.
 //
+//    Hank Childs, Thu Jul 17 17:27:59 PDT 2003
+//    Don't extract VTK or AVT variables.
+//
 // ****************************************************************************
 
 void
@@ -541,6 +566,10 @@ avtSamplePointExtractor::ExtractTet(vtkTetra *tet, vtkDataSet *ds,
     for (v = 0 ; v < ncd ; v++)
     {
         vtkDataArray *arr = cd->GetArray(v);
+        if (strstr(arr->GetName(), "vtk") != NULL)
+            continue;
+        if (strstr(arr->GetName(), "avt") != NULL)
+            continue;
         float val = arr->GetComponent(tetind, 0);
         for (i = 0 ; i < 4 ; i++)
         {
@@ -557,6 +586,10 @@ avtSamplePointExtractor::ExtractTet(vtkTetra *tet, vtkDataSet *ds,
     for (v = 0 ; v < npd ; v++)
     {
         vtkDataArray *arr = pd->GetArray(v);
+        if (strstr(arr->GetName(), "vtk") != NULL)
+            continue;
+        if (strstr(arr->GetName(), "avt") != NULL)
+            continue;
         vtkIdList *ids = tet->GetPointIds();
         for (i = 0 ; i < 4 ; i++)
         {
@@ -615,6 +648,9 @@ avtSamplePointExtractor::ExtractTet(vtkTetra *tet, vtkDataSet *ds,
 //    Hank Childs, Fri Dec  7 10:15:45 PST 2001
 //    Added early termination for zero-opacity cells.
 //
+//    Hank Childs, Thu Jul 17 17:27:59 PDT 2003
+//    Don't extract VTK or AVT variables.
+//
 // ****************************************************************************
 
 void
@@ -634,6 +670,10 @@ avtSamplePointExtractor::ExtractPyramid(vtkPyramid *pyr, vtkDataSet *ds,
     for (v = 0 ; v < ncd ; v++)
     {
         vtkDataArray *arr = cd->GetArray(v);
+        if (strstr(arr->GetName(), "vtk") != NULL)
+            continue;
+        if (strstr(arr->GetName(), "avt") != NULL)
+            continue;
         float val = arr->GetComponent(pyrind, 0);
         for (i = 0 ; i < 5 ; i++)
         {
@@ -650,6 +690,10 @@ avtSamplePointExtractor::ExtractPyramid(vtkPyramid *pyr, vtkDataSet *ds,
     for (v = 0 ; v < npd ; v++)
     {
         vtkDataArray *arr = pd->GetArray(v);
+        if (strstr(arr->GetName(), "vtk") != NULL)
+            continue;
+        if (strstr(arr->GetName(), "avt") != NULL)
+            continue;
         vtkIdList *ids = pyr->GetPointIds();
         for (i = 0 ; i < 5 ; i++)
         {
@@ -708,6 +752,9 @@ avtSamplePointExtractor::ExtractPyramid(vtkPyramid *pyr, vtkDataSet *ds,
 //    Hank Childs, Fri Dec  7 10:15:45 PST 2001
 //    Added early termination for zero-opacity cells.
 //
+//    Hank Childs, Thu Jul 17 17:27:59 PDT 2003
+//    Don't extract VTK or AVT variables.
+//
 // ****************************************************************************
 
 void
@@ -727,6 +774,10 @@ avtSamplePointExtractor::ExtractVoxel(vtkVoxel *voxel, vtkDataSet *ds,
     for (v = 0 ; v < ncd ; v++)
     {
         vtkDataArray *arr = cd->GetArray(v);
+        if (strstr(arr->GetName(), "vtk") != NULL)
+            continue;
+        if (strstr(arr->GetName(), "avt") != NULL)
+            continue;
         float val = arr->GetComponent(voxind, 0);
         for (i = 0 ; i < 8 ; i++)
         {
@@ -748,6 +799,10 @@ avtSamplePointExtractor::ExtractVoxel(vtkVoxel *voxel, vtkDataSet *ds,
     for (v = 0 ; v < npd ; v++)
     {
         vtkDataArray *arr = pd->GetArray(v);
+        if (strstr(arr->GetName(), "vtk") != NULL)
+            continue;
+        if (strstr(arr->GetName(), "avt") != NULL)
+            continue;
         vtkIdList *ids = voxel->GetPointIds();
         for (i = 0 ; i < 8 ; i++)
         {

@@ -41,6 +41,9 @@ avtCurrentExtentFilter::Execute(void)
 //    Hank Childs, Fri Mar 15 18:11:12 PST 2002
 //    Account for avtDatasetExaminer.
 //
+//    Hank Childs, Thu Jul 17 17:40:24 PDT 2003
+//    Treat 2D vectors as 3D since VTK will assume that vectors are 3D.
+//
 // ****************************************************************************
 
 void
@@ -49,6 +52,8 @@ avtCurrentExtentFilter::RefashionDataObjectInfo(void)
     avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
     avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
     int dataDim = atts.GetVariableDimension();
+    if (dataDim == 2)
+        dataDim = 3;
 
     double *de = new double[dataDim*2];
     avtDataset_p ds = GetTypedInput();

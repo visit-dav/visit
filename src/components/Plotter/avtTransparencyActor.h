@@ -47,6 +47,9 @@ class     vtkRenderer;
 //    Jeremy Meredith, Fri Jul 26 14:28:09 PDT 2002
 //    Made perfect sorting a permanent mode instead of a one-frame mode.
 //
+//    Kathleen Bonnell, Wed Jul 16 16:39:02 PDT 2003
+//    Added ScaleByVector method. 
+//
 // ****************************************************************************
 
 class PLOTTER_API avtTransparencyActor
@@ -76,6 +79,7 @@ class PLOTTER_API avtTransparencyActor
 
     void                             AddToRenderer(vtkRenderer *);
     void                             RemoveFromRenderer(vtkRenderer *);
+    void                             ScaleByVector(const float vec[3]);
 
   protected:
     std::vector<std::vector <vtkDataSet *> >         datasets;

@@ -744,6 +744,9 @@ VisWinAxes::AdjustRange(float min_x, float max_x, float min_y, float max_y)
 //    Hank Childs, Tue Sep 18 10:41:30 PDT 2001
 //    Casted to get rid of warning.
 //
+//    Akira Haddox, Wed Jul 16 16:48:20 PDT 2003
+//    Added special case for when range is zero.
+//
 // ****************************************************************************
 
 int
@@ -751,6 +754,10 @@ Digits(float min, float max)
 {
     float  range = max - min;
     float  pow10   = log10(range);
+
+    if (range <= 0)
+        pow10 = -5;
+
     int    ipow10  = (int)floor(pow10);
 
     int    digitsPastDecimal = -ipow10;
