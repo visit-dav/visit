@@ -52,6 +52,9 @@
 //    Still execute even if we have an empty SIL.  This will allow databases
 //    to do collective communication routines.
 //
+//    Hank Childs, Fri Jan  9 10:10:05 PST 2004
+//    Change the arugments to the dataset verifier.
+//
 // ****************************************************************************
 
 bool
@@ -97,7 +100,12 @@ avtTerminatingDatasetSource::FetchData(avtDataSpecification_p spec)
             atts.GetCumulativeTrueDataExtents()->Merge(de);
         }
 
-        verifier.VerifyDataTree(tree);
+        int nleaves = 0;
+        vtkDataSet **ds = tree->GetAllLeaves(nleaves);
+        vector<int> domains;
+        tree->GetAllDomainIds(domains);
+        verifier.VerifyDatasets(nleaves, ds, domains);
+        delete [] ds;
     }
 
     return rv;

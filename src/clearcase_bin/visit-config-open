@@ -10,11 +10,11 @@
             <Field name="axisType" type="int">1</Field>
         </Object>
         <Object name="PluginManagerAttributes" childObjects="0">
-            <Field name="name" type="stringVector">Streamline </Field>
-            <Field name="type" type="stringVector">plot </Field>
-            <Field name="version" type="stringVector">1.0 </Field>
-            <Field name="id" type="stringVector">Streamline_1.0 </Field>
-            <Field name="enabled" type="intVector">0 </Field>
+            <Field name="name" type="stringVector">Streamline InverseGhostZone </Field>
+            <Field name="type" type="stringVector">plot operator </Field>
+            <Field name="version" type="stringVector">1.0 1.0 </Field>
+            <Field name="id" type="stringVector">Streamline_1.0 InverseGhostZone_1.0 </Field>
+            <Field name="enabled" type="intVector">0 0 </Field>
         </Object>
         <Object name="HostProfileList" childObjects="21">
             <Object name="HostProfile" childObjects="0">

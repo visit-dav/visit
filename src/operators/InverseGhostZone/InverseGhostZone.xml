@@ -1,6 +1,12 @@
 <?xml version="1.0"?>
-  <Plugin name="InverseGhostZone" label="Inverse Ghost Zone" type="operator" version="1.0">
-    <Attribute name="InverseGhostZoneAttributes" purpose="This class contains attributes for the inverse ghost zone operator.">
-        <Field name="constantData" type="bool">false</Field>
+  <Plugin name="InverseGhostZone" type="operator" label="Inverse Ghost Zone" version="1.0" enabled="true" iconFile="InverseGhostZone.xpm">
+    <Attribute name="InverseGhostZoneAttributes" purpose="This class contains attributes for the inverse ghost zone operator." persistent="true">
+      <Enum name="ShowType">
+        GhostZonesOnly
+        GhostZonesAndRealZones
+      </Enum>
+      <Field name="showType" label="Zones to Display:" type="enum" subtype="ShowType">
+        GhostZonesOnly
+      </Field>
     </Attribute>
   </Plugin>

@@ -33,6 +33,7 @@
 #include <avtCallback.h>
 #include <avtDatabaseMetaData.h>
 #include <avtDatasetCollection.h>
+#include <avtDatasetVerifier.h>
 #include <avtDomainBoundaries.h>
 #include <avtDomainNesting.h>
 #include <avtFileFormatInterface.h>
@@ -230,6 +231,9 @@ avtGenericDatabase::SetDatabaseMetaData(avtDatabaseMetaData *md, int timeState)
 //    is difficult to do them in the opposite order (nesting must be on orig
 //    indices), but fairly straight-forward to do them in new order.
 //
+//    Hank Childs, Fri Jan  9 13:46:43 PST 2004
+//    Use a dataset verifier before passing data into routines like the MIR.
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -261,6 +265,19 @@ avtGenericDatabase::GetOutput(avtDataSpecification_p spec,
     // This is the primary routine that reads things in from disk.
     //
     ReadDataset(datasetCollection, domains, spec, src);
+
+    //
+    // Now that we have read things in from disk, verify that the dataset
+    // is valid, since routines like the MIR downstream will assume they are.
+    //
+    avtDatasetVerifier verifier;
+    vtkDataSet **ds_list = new vtkDataSet*[nDomains];
+    for (int i = 0 ; i < nDomains ; i++)
+    {
+        ds_list[i] = datasetCollection.GetDataset(i, 0);
+    }
+    verifier.VerifyDatasets(nDomains, ds_list, domains);
+    delete [] ds_list;
 
     //
     // Do species selection if appropriate.

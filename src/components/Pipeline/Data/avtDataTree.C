@@ -1305,6 +1305,38 @@ avtDataTree::GetAllLabels(vector<string> &labels)
     }
 }
 
+
+// ****************************************************************************
+//  Method: avtDataTree::GetAllDomainIds
+//
+//  Purpose:
+//    Recursive method to retrieve domain ids.
+//
+//  Arguments:  
+//    doms      A place to store the retrieved domains.
+//
+//  Programmer: Hank Childs
+//  Creation:   January 9, 2004
+//
+// ****************************************************************************
+
+void
+avtDataTree::GetAllDomainIds(vector<int> &doms)
+{
+    if (nChildren > 0)
+    {
+        for (int i = 0; i < nChildren; i++)
+        {
+            if (*children[i] != NULL)
+                children[i]->GetAllDomainIds(doms);
+        }
+    }
+    else if (dataRep != NULL)
+    {
+        doms.push_back(dataRep->GetDomain());
+    }
+}
+
 // ****************************************************************************
 //  Method: avtDataTree::IsEmpty
 //

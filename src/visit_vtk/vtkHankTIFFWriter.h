@@ -28,8 +28,9 @@
 #define __vtkHankTIFFWriter_h
 
 #include "vtkImageWriter.h"
+#include <visit_vtk_exports.h>
 
-class VTK_IO_EXPORT vtkHankTIFFWriter : public vtkImageWriter
+class VISIT_VTK_API vtkHankTIFFWriter : public vtkImageWriter
 {
 public:
   static vtkHankTIFFWriter *New();

@@ -1,47 +1,60 @@
-#ifndef QVIS_INVERSE_GHOST_ZONE_WINDOW_H
-#define QVIS_INVERSE_GHOST_ZONE_WINDOW_H
-#include <QvisOperatorWindow.h>
+#ifndef QVISINVERSEGHOSTZONEWINDOW_H
+#define QVISINVERSEGHOSTZONEWINDOW_H
 
+#include <QvisOperatorWindow.h>
+#include <AttributeSubject.h>
+
+class InverseGhostZoneAttributes;
+class QLabel;
 class QCheckBox;
 class QLineEdit;
-class QLabel;
-class InverseGhostZoneAttributes;
+class QSpinBox;
+class QVBox;
+class QButtonGroup;
+class QvisColorTableButton;
+class QvisOpacitySlider;
+class QvisColorButton;
+class QvisLineStyleWidget;
+class QvisLineWidthWidget;
 
 // ****************************************************************************
 // Class: QvisInverseGhostZoneWindow
 //
-// Purpose:
-//   This class is a postable window that watches the inverse
-//   ghost zone operator attributes and always represents their current
-//   state.
+// Purpose: 
+//   Defines QvisInverseGhostZoneWindow class.
 //
-// Programmer: Hank Childs
-// Creation:   July 27, 2001
+// Notes:      This class was automatically generated!
+
+// Programmer: xml2window
+// Creation:   Thu Jan 8 09:57:12 PDT 2004
 //
 // Modifications:
-//    Brad Whitlock, Fri Apr 12 13:06:55 PST 2002
-//    Made it inherit from QvisOperatorWindow.
-//
+//   
 // ****************************************************************************
 
 class QvisInverseGhostZoneWindow : public QvisOperatorWindow
 {
     Q_OBJECT
-public:
+  public:
     QvisInverseGhostZoneWindow(const int type,
-                             InverseGhostZoneAttributes *subj,
-                             const char *caption = 0,
-                             const char *shortName = 0,
-                             QvisNotepadArea *notepad = 0);
+                         InverseGhostZoneAttributes *subj,
+                         const char *caption = 0,
+                         const char *shortName = 0,
+                         QvisNotepadArea *notepad = 0);
     virtual ~QvisInverseGhostZoneWindow();
-protected:
     virtual void CreateWindowContents();
+  protected:
     void UpdateWindow(bool doAll);
-private slots:
-    void constantDataToggled(bool);    
-private:
-    QCheckBox *constantData;
+    virtual void GetCurrentValues(int which_widget);
+  private slots:
+    void showTypeChanged(int val);
+  private:
+    QButtonGroup *showType;
+    QLabel *showTypeLabel;
 
-    InverseGhostZoneAttributes *igzAtts;
+    InverseGhostZoneAttributes *atts;
 };
+
+
+
 #endif

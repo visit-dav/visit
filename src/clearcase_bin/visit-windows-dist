@@ -20,6 +20,9 @@
 #   files. It also puts the core header files into a single include directory
 #   so you don't have to add tons of include directories in MSVC.
 #
+#   Brad Whitlock, Thu Jan 8 11:15:13 PDT 2004
+#   I added BUILD_NOTES.txt.
+#
 #------------------------------------------------------------------------------
 
 if(`pwd` != "/data_vobs/VisIt") then
@@ -62,6 +65,7 @@ rm -rf $VISITSRC/include/visit
 
 # Copy windowsbuild/VisItBuildInstructionsOnWindows.doc to $VisItDev
 cp $TOPDIR/windowsbuild/VisItBuildInstructionsOnWindows.doc .
+cp $TOPDIR/windowsbuild/BUILD_NOTES.txt .
 
 # Move windowsbuild/include to $VisItDev/include.
 cp -R $TOPDIR/windowsbuild/include .
