@@ -56,6 +56,9 @@
 #   Hank Childs, Fri Sep 19 16:56:04 PDT 2003
 #   Added matrix operations.
 #
+#   Hank Childs, Tue Dec  9 17:05:14 PST 2003
+#   Added Identity, Recenter filter.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -97,6 +100,7 @@ General_src= \
   General/avtNMatsFilter.C \
   General/avtProcessorIdFilter.C \
   General/avtRandomFilter.C \
+  General/avtRecenterFilter.C \
   General/avtVectorComposeFilter.C \
   General/avtVectorDecomposeFilter.C
 
@@ -120,6 +124,7 @@ Math_src= \
   Math/avtDeterminantFilter.C \
   Math/avtEigenvalueFilter.C \
   Math/avtEigenvectorFilter.C \
+  Math/avtIdentityFilter.C \
   Math/avtInverseFilter.C \
   Math/avtNaturalLogFilter.C \
   Math/avtPolarCoordinatesFilter.C \

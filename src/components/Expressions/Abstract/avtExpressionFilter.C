@@ -2,18 +2,24 @@
 //                           avtExpressionFilter.C                           //
 // ************************************************************************* //
 
-#include <EngineExprNode.h>
 #include <avtExpressionFilter.h>
 
 #include <math.h>
 #include <float.h>
 
 #include <vtkCellData.h>
+#include <vtkCellDataToPointData.h>
 #include <vtkDataSet.h>
 #include <vtkPointData.h>
+#include <vtkPointDataToCellData.h>
 #include <vtkUnsignedCharArray.h>
-#include <DebugStream.h>
+
 #include <avtExtents.h>
+
+#include <EngineExprNode.h>
+
+#include <DebugStream.h>
+#include <ExpressionException.h>
 
 
 // ****************************************************************************
@@ -97,6 +103,11 @@ avtExpressionFilter::SetOutputVariableName(const char *name)
 //  Programmer: Hank Childs
 //  Creation:   June 7, 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Wed Dec 10 08:59:31 PST 2003
+//    Fix wrap-around lines.
+//
 // ****************************************************************************
  
 void
@@ -104,7 +115,8 @@ avtExpressionFilter::PreExecute(void)
 {
     avtStreamer::PreExecute();
     double exts[6] = {FLT_MAX, -FLT_MAX, FLT_MAX, -FLT_MAX, FLT_MAX, -FLT_MAX};
-    GetOutput()->GetInfo().GetAttributes().GetCumulativeTrueDataExtents()->Set(exts);
+    GetOutput()->GetInfo().GetAttributes().GetCumulativeTrueDataExtents()
+                                                                   ->Set(exts);
 }
 
 
@@ -295,9 +307,11 @@ avtExpressionFilter::ExecuteData(vtkDataSet *in_ds, int index,
 //  Creation:   June 7, 2002
 //
 //  Modifications:
-//      Akira Haddox, Mon Aug 19 16:41:12 PDT 2002
-//      Modified to set the centering of the variable to cell or point
-//      based on IsPointVariable().
+//
+//    Akira Haddox, Mon Aug 19 16:41:12 PDT 2002
+//    Modified to set the centering of the variable to cell or point
+//    based on IsPointVariable().
+//
 // ****************************************************************************
  
 void
@@ -359,6 +373,75 @@ avtExpressionFilter::IsPointVariable()
 {
     return (GetInput()->GetInfo().GetAttributes().GetCentering()
             == AVT_NODECENT);
+}
+
+
+// ****************************************************************************
+//  Method: avtExpressionFilter::Recenter
+//
+//  Purpose:
+//      Recenters a variable from zonal to nodal or vice-versa.
+//
+//  Arguments:
+//      ds      The mesh the variable lays on.
+//      arr     The variable to recenter.
+//      cent    The centering of the variable now -- NOT the desired centering.
+//
+//  Returns:    The array recentered.  Note: the calling routine will then
+//              be responsible for deleting the returned object.
+//      
+//  Programmer: Hank Childs
+//  Creation:   December 10, 2003
+//
+// ****************************************************************************
+
+vtkDataArray *
+avtExpressionFilter::Recenter(vtkDataSet *ds, vtkDataArray *arr, 
+                              avtCentering cent)
+{
+    vtkDataSet *ds2 = ds->NewInstance();
+    ds2->CopyStructure(ds);
+
+    vtkDataArray *outv = NULL;
+    if (cent == AVT_NODECENT)
+    {
+        if (ds2->GetNumberOfPoints() != arr->GetNumberOfTuples())
+        {
+            EXCEPTION1(ExpressionException, "Asked to re-center a nodal "
+                       "variable that is not nodal.");
+        }
+
+        ds2->GetPointData()->SetScalars(arr);
+
+        vtkPointDataToCellData *pd2cd = vtkPointDataToCellData::New();
+        pd2cd->SetInput(ds2);
+        vtkDataSet *ds3 = pd2cd->GetOutput();
+        ds3->Update();
+        outv = ds3->GetCellData()->GetScalars();
+        outv->Register(NULL);
+        pd2cd->Delete();
+    }
+    else
+    {
+        if (ds2->GetNumberOfCells() != arr->GetNumberOfTuples())
+        {
+            EXCEPTION1(ExpressionException, "Asked to re-center a zonal "
+                       "variable that is not zonal.");
+        }
+
+        ds2->GetCellData()->SetScalars(arr);
+
+        vtkCellDataToPointData *cd2pd = vtkCellDataToPointData::New();
+        cd2pd->SetInput(ds2);
+        vtkDataSet *ds3 = cd2pd->GetOutput();
+        ds3->Update();
+        outv = ds3->GetPointData()->GetScalars();
+        outv->Register(NULL);
+        cd2pd->Delete();
+    }
+
+    ds2->Delete();
+    return outv;
 }
 
 
