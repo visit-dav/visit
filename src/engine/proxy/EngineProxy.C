@@ -774,6 +774,9 @@ EngineProxy::DefineVirtualDatabase(const std::string &fileFormat,
 //   
 //    Mark C. Miller, Wed Oct  6 18:12:29 PDT 2004
 //    Changed bool arg for doing 3D annots to annotMode
+//
+//    Mark C. Miller, Sat Nov 13 09:35:51 PST 2004
+//    Disabled callback to waitCB
 // ****************************************************************************
 
 avtDataObjectReader_p
@@ -807,8 +810,10 @@ EngineProxy::Render(bool sendZBuffer, const intVector& networkIDs,
         }
 
         // If we passed a callback function, execute it.
+#if MCM_FIX 
         if(waitCB)
             waitCB(cbData);
+#endif
     }
 
     // Check for abort

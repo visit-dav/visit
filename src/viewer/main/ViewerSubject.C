@@ -5889,6 +5889,9 @@ ViewerSubject::EnableSocketSignals()
 //    Moved code to test if VEM is InRender to inside the block that 
 //    processes the SR mode change message
 //
+//    Mark C. Miller, Sat Nov 13 09:35:51 PST 2004
+//    Removed code to test if VEM is InRender and defer SR mode change
+//
 // ****************************************************************************
 
 void
@@ -5996,13 +5999,6 @@ ViewerSubject::ProcessRendererMessage()
         }
         else if (strncmp(msg, "setScalableRenderingMode", 24) == 0)
         {
-            if (ViewerEngineManager::Instance()->InRender())
-            {
-                messageBuffer->AddString(msg);
-                QTimer::singleShot(400, this, SLOT(ProcessRendererMessage()));
-                return;
-            }
-
             ViewerWindow *window = 0;
             int iMode = 0;
             int offset = 27;  // = strlen("setScalableRenderingMode 0x");
