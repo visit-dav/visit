@@ -251,6 +251,10 @@ $0 = shift @ARGV;
 #    I added back the splashscreen support so that the script would still
 #    work with previous versions.
 #
+#    Eric Brugger, Mon Aug 25 16:47:04 PDT 2003
+#    I corrected a bug in the logic that decided if the vcl should be
+#    launched in the batch system.  The fix was actually made by Jeremy.
+#
 ###############################################################################
 
 
@@ -561,7 +565,7 @@ if (($procs_set) and ($procs < 1))
 
 if ((($parallel) or ($launchengine)) and
     ($exe_name ne "engine") and
-    ($exe_name ne "vcl"))
+    (($exe_name ne "vcl") or (!$parlaunch_set)))
 {
     # If we're trying to run in parallel, or we've been explicitly
     # told to launch an engine, add any parallel arguments back on

@@ -124,6 +124,9 @@
 #    Brad Whitlock, Wed Jul 30 13:12:14 PST 2003
 #    Added mpeg_encode and makemovie.py to the distribution.
 #
+#    Eric Brugger, Tue Aug 26 09:04:30 PDT 2003
+#    Added surfcomp to the distribution.
+#
 #-----------------------------------------------------------------------
 
 set DataFiles = "TRUE"
@@ -495,6 +498,8 @@ endif
 # Copy the MPEG encoder and the makemovie script.
 cp $VisItDir/bin/mpeg_encode   $bindir
 cp $VisItDir/bin/makemovie.py  $bindir
+# copy surfcomp
+cp $VisItDir/bin/surfcomp      $bindir
 
 #
 # Copy the VisIt libraries to the distribution.

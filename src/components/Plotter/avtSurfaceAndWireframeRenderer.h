@@ -72,6 +72,9 @@ typedef struct lec { float r, g, b; } LEC;
 //    Kathleen Bonnell, Thu Aug  7 08:29:31 PDT 2003 
 //    Moved immediateModeRendering and Set/Get methods to parent class. 
 //    
+//    Kathleen Bonnell, Tue Aug 26 14:47:57 PDT 2003 
+//    Added ReleaseGraphicsResources(), lastWindowSize, and setupModified.
+//    
 // ****************************************************************************
 
 class PLOTTER_API avtSurfaceAndWireframeRenderer : public avtCustomRenderer
@@ -146,15 +149,18 @@ class PLOTTER_API avtSurfaceAndWireframeRenderer : public avtCustomRenderer
     virtual void              DrawEdges() = 0;
     virtual void              DrawSurface() = 0;
     void                      SetColors();
+    virtual void              ReleaseGraphicsResources() = 0;
 
     std::vector<bool>          surfaceModified; 
     std::vector<bool>          edgesModified; 
+    std::vector<bool>          setupModified; 
     std::vector<unsigned long> propMTime; 
     std::vector<int>           lastRep; 
     std::vector<int>           lastInterp; 
     std::vector<LEC>           lastEdgeColor; 
     std::vector<vtkDataSet*>   inputs;         
     int                        inputNum; 
+    int                        lastWindowSize[2]; 
 };
 
 

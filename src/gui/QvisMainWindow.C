@@ -180,6 +180,9 @@
 //    Brad Whitlock, Wed Jul 30 16:50:12 PST 2003
 //    I made the main window re-emit a signal from the file panel.
 //
+//    Kathleen Bonnell, Tue Aug 26 13:47:34 PDT 2003 
+//    Changed 'Material' to 'Material Options'.
+//
 // ****************************************************************************
 
 QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
@@ -265,7 +268,7 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
 //    ctrls->setItemEnabled(id, false);
     id = ctrls->insertItem(exprIcon, tr("&Expressions . . ."), this, SIGNAL(activateExpressionsWindow()), CTRL+SHIFT+Key_E );
     id = ctrls->insertItem( tr("&Keyframing . . ."), this, SIGNAL(activateKeyframeWindow()), CTRL+Key_K);
-    id = ctrls->insertItem( tr("&Materials . . ."), this, SIGNAL(activateMaterialWindow()), CTRL+Key_M);
+    id = ctrls->insertItem( tr("&Material Options . . ."), this, SIGNAL(activateMaterialWindow()), CTRL+Key_M);
     id = ctrls->insertItem(lightIcon, tr("&Lighting . . ."), this, SIGNAL(activateLightingWindow()), CTRL+Key_L );
     id = ctrls->insertItem(tr("&Lineout . . ."), this, SIGNAL(activateGlobalLineoutWindow()), CTRL+SHIFT+Key_L );
     id = ctrls->insertItem(pickIcon, tr("&Pick . . ."), this, SIGNAL(activatePickWindow()), CTRL+Key_P );

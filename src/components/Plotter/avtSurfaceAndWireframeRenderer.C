@@ -8,6 +8,8 @@
 #include <vtkLookupTable.h>
 #include <vtkPolyData.h>
 #include <vtkProperty.h>
+#include <vtkRenderer.h>
+#include <vtkRenderWindow.h>
 
 #include <avtCallback.h>
 #include <avtOpenGLSurfaceAndWireframeRenderer.h>
@@ -16,7 +18,8 @@
 #include <ImproperUseException.h>
 
 #include <DebugStream.h>
-
+#include <Init.h>
+#define ScalRen ((!strcmp(Init::GetComponentName(), "engine")) ? 1 : 0)
 
 // ****************************************************************************
 //  Constructor:  avtSurfaceAndWireframeRenderer  
@@ -44,6 +47,9 @@
 //    Kathleen Bonnell, Thu Aug  7 08:29:31 PDT 2003 
 //    Removed immediateModeRendering. 
 //
+//    Kathleen Bonnell, Tue Aug 26 14:45:31 PDT 2003 
+//    Initialize lastWindowSize. 
+//
 // ****************************************************************************
 
 avtSurfaceAndWireframeRenderer::avtSurfaceAndWireframeRenderer()
@@ -69,6 +75,7 @@ avtSurfaceAndWireframeRenderer::avtSurfaceAndWireframeRenderer()
     inputNum = 0;
     ignoreLighting = false;
     lutColorsChanged = false;
+    lastWindowSize[0] = lastWindowSize[1] = -1;
 }
 
 
@@ -218,6 +225,10 @@ avtSurfaceAndWireframeRenderer::Draw()
 //    Kathleen Bonnell, Fri Aug 22 12:40:55 PDT 2003 
 //    Set lutColorsChanged to false. 
 //    
+//    Kathleen Bonnell, Tue Aug 26 14:45:31 PDT 2003
+//    If window size has changed and we are in Scalable Rendering mode,
+//    ReleaseGraphicsResources.   Set lastWindowSize and setupModified.
+//    
 // ****************************************************************************
 
 void
@@ -237,6 +248,7 @@ avtSurfaceAndWireframeRenderer::Render(vtkDataSet *ds)
         inputs.push_back(ds);
         surfaceModified.push_back(true);
         edgesModified.push_back(true);
+        setupModified.push_back(true);
         propMTime.push_back(0);
         lastRep.push_back(-1);
         lastInterp.push_back(-1);
@@ -269,6 +281,17 @@ avtSurfaceAndWireframeRenderer::Render(vtkDataSet *ds)
         input->Register(NULL);
     }
 
+    int *curSize = VTKRen->GetRenderWindow()->GetSize();
+    if (ScalRen && ((curSize[0] != lastWindowSize[0]) ||
+        (curSize[0] != lastWindowSize[0])))
+    {
+        // Changing size of the render window in scalable rendering
+        // (offscreen) mode causes the rendering Context to be destroyed.
+        // All display list ids stored will be invalid, so allow
+        // derived types to be notified. 
+        ReleaseGraphicsResources();
+    } 
+
     SetColors();
     SetupGraphicsLibrary();
     //
@@ -288,6 +311,7 @@ avtSurfaceAndWireframeRenderer::Render(vtkDataSet *ds)
     // 
     surfaceModified[inputNum] = false;
     edgesModified[inputNum] = false;
+    setupModified[inputNum] = false;
     propMTime[inputNum] = prop->GetMTime();
     lastRep[inputNum] = prop->GetRepresentation();
     lastInterp[inputNum] = prop->GetInterpolation();
@@ -295,6 +319,8 @@ avtSurfaceAndWireframeRenderer::Render(vtkDataSet *ds)
     lastEdgeColor[inputNum].g = prop->GetEdgeColor()[1];
     lastEdgeColor[inputNum].b = prop->GetEdgeColor()[2];
     lutColorsChanged = false;
+    lastWindowSize[0] = curSize[0];
+    lastWindowSize[1] = curSize[1];
 }
 
 

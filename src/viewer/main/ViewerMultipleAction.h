@@ -24,9 +24,12 @@ class QToolBar;
 // Creation:   Thu Jan 30 13:49:49 PST 2003
 //
 // Modifications:
-//      Sean Ahern, Thu Feb 20 01:51:35 America/Los_Angeles 2003
-//      Added the ability to set large and small icons.
-//   
+//   Sean Ahern, Thu Feb 20 01:51:35 America/Los_Angeles 2003
+//   Added the ability to set large and small icons.
+//
+//   Brad Whitlock, Tue Aug 26 17:12:02 PST 2003
+//   I added the isExclusive flag.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerMultipleAction : public ViewerActionBase
@@ -71,8 +74,6 @@ public:
 
     virtual void SetExclusive(bool val);
 protected slots:
-    virtual void Selected(QAction *);
-
     // Helper slots for when the choices are not exclusive.
     void activate0();
     void activate1();
@@ -105,6 +106,7 @@ protected:
     QActionGroup        *action;
     QPopupMenu          *actionMenu;
     int                  actionMenuId;
+    bool                 isExclusive;
     ActionPointerVector  children;
 };
 
