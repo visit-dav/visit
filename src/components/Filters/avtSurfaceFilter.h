@@ -5,9 +5,11 @@
 #ifndef AVT_SURFACE_FILTER_H
 #define AVT_SURFACE_FILTER_H
 
+#include <filters_exports.h>
 
 #include <avtStreamer.h>
-#include <SurfaceAttributes.h>
+
+#include <SurfaceFilterAttributes.h>
 
 
 class vtkDataSet;
@@ -57,9 +59,13 @@ class vtkCellDataToPointData;
 //    Hank Childs, Fri Jul 30 12:09:16 PDT 2004
 //    Added PostExecute.
 //
+//    Hank Childs, Sun Jan 30 13:48:54 PST 2005
+//    Changed attributes and more to support stand-alone filter so Elevate
+//    operator can also use.
+//
 // ****************************************************************************
 
-class avtSurfaceFilter : public avtStreamer
+class AVTFILTERS_API avtSurfaceFilter : public avtStreamer
 {
   public:
                             avtSurfaceFilter(const AttributeGroup*);
@@ -75,15 +81,16 @@ class avtSurfaceFilter : public avtStreamer
     virtual bool            Equivalent(const AttributeGroup*);
 
   protected:
-    SurfaceAttributes       atts;
-    vtkSurfaceFilter       *filter;
-    vtkCellDataToPointData *cd2pd;
-    double                  min;
-    double                  max;
-    double                  Ms;
-    double                  Bs;
-    double                  zValMin, zValMax;
-    bool                    stillNeedExtents;
+    SurfaceFilterAttributes    atts;
+    vtkSurfaceFilter          *filter;
+    vtkCellDataToPointData    *cd2pd;
+    double                     min;
+    double                     max;
+    double                     Ms;
+    double                     Bs;
+    double                     zValMin, zValMax;
+    bool                       stillNeedExtents;
+    bool                       haveIssuedWarning;
 
     double                  SkewTheValue(const double);
     void                    CalculateScaleValues(double *, double*);

@@ -622,6 +622,9 @@ avtFilter::TryDataExtents(double *outexts, const char *varname)
 //    Hank Childs, Fri Dec  3 14:25:56 PST 2004
 //    Add variable name to SearchDataForDataExtents.
 //
+//    Hank Childs, Sun Jan 30 14:25:00 PST 2005
+//    Be leery of case where there is no input variable.
+//
 // ****************************************************************************
 
 void
@@ -637,7 +640,8 @@ avtFilter::GetDataExtents(double *outexts, const char *varname)
 
     bool hadThemAlready = false;
     avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
-    if (varname == NULL || (atts.GetVariableName() == varname))
+    if (varname == NULL || 
+        (atts.ValidActiveVariable() && atts.GetVariableName() == varname))
     {
         avtExtents *exts = atts.GetCumulativeTrueDataExtents();
         if (exts->HasExtents())

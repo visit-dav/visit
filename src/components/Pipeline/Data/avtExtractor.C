@@ -32,6 +32,11 @@ const float  avtExtractor::FRUSTUM_MAX_Z = +1.;
 //  Programmer:  Hank Childs
 //  Creation:    December 5, 2000
 //
+//  Modifications:
+//
+//    Hank Childs, Sat Jan 29 18:49:00 PST 2005
+//    Added checks for degenerate volumes.
+//
 // ****************************************************************************
 
 avtExtractor::avtExtractor(int w, int h, int d, avtVolume *vol,avtCellList *cl)
@@ -45,9 +50,18 @@ avtExtractor::avtExtractor(int w, int h, int d, avtVolume *vol,avtCellList *cl)
     restrictedMaxHeight = height-1;
     volume   = vol;
     celllist = cl;
-    x_step = (FRUSTUM_MAX_X - FRUSTUM_MIN_X) / (width-1);
-    y_step = (FRUSTUM_MAX_Y - FRUSTUM_MIN_Y) / (height-1);
-    z_step = (FRUSTUM_MAX_Z - FRUSTUM_MIN_Z) / (depth-1);
+    if (width > 1)
+        x_step = (FRUSTUM_MAX_X - FRUSTUM_MIN_X) / (width-1);
+    else
+        x_step = 0;
+    if (height > 1)
+        y_step = (FRUSTUM_MAX_Y - FRUSTUM_MIN_Y) / (height-1);
+    else
+        y_step = 0;
+    if (depth > 1)
+        z_step = (FRUSTUM_MAX_Z - FRUSTUM_MIN_Z) / (depth-1);
+    else
+        z_step = 0;
     sendCellsMode = false;
     tmpSampleList = new float[depth][AVT_VARIABLE_LIMIT];
 }

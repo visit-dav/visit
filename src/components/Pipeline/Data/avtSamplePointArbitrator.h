@@ -15,9 +15,7 @@ class    avtOpacityMap;
 //
 //  Purpose:
 //      Decides which sample point to use when multiple cells map to the same
-//      sample.  The algorithm it uses tries to emphasize things of higher
-//      opacity, since those will show up in the picture anyway and their
-//      exclusion is the most noticable.
+//      sample.  The algorithm it uses is defined by its derived type.
 //
 //  Programmer: Hank Childs
 //  Creation:   January 23, 2002
@@ -28,20 +26,22 @@ class    avtOpacityMap;
 //    Moved inlined constructor and destructor definitions to .C files
 //    because certain compilers have problems with them.
 //
+//    Hank Childs, Sat Jan 29 10:22:56 PST 2005
+//    Made ShouldOverwrite be pure virtual.  This is now an abstract type.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtSamplePointArbitrator
 {
   public:
-                             avtSamplePointArbitrator(avtOpacityMap *, int);
+                             avtSamplePointArbitrator(int);
     virtual                 ~avtSamplePointArbitrator();
 
     int                      GetArbitrationVariable(void)
                                                { return arbitrationVariable; };
-    bool                     ShouldOverwrite(float, float);
+    virtual bool             ShouldOverwrite(float, float) = 0;
 
   protected:
-    avtOpacityMap           *omap;
     int                      arbitrationVariable;
 };
 

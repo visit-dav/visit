@@ -50,6 +50,9 @@
 #    Brad Whitlock, Tue Jan 4 18:14:57 PST 2005
 #    Added -lexpr so we can link on MacOS X.
 #
+#    Hank Childs, Tue Feb  1 08:47:07 PST 2005
+#    Added avtSurfaceFilter.
+#
 ##############################################################################
 
 ##
@@ -87,6 +90,7 @@ SRC=\
  avtSimilarityTransformFilter.C \
  avtSmoothPolyDataFilter.C \
  avtSummationFilter.C \
+ avtSurfaceFilter.C \
  avtTiledImageCompositor.C \
  avtTransform.C \
  avtVertexNormalsFilter.C \

@@ -77,14 +77,27 @@ avtDatasetToDatasetFilter::~avtDatasetToDatasetFilter()
 //  Programmer: Hank Childs
 //  Creation:   October 24, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Feb  1 16:56:42 PST 2005
+//    Make sure that if we haven't asked for an "active variable", that we
+//    get the "pipeline variable".
+//
 // ****************************************************************************
 
 void
 avtDatasetToDatasetFilter::PreExecute(void)
 {
+    avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
+
     if (switchVariables)
     {
         InputSetActiveVariable(activeVariable);
+    }
+    else if (atts.ValidActiveVariable() &&
+             atts.GetVariableName() != pipelineVariable)
+    {
+        InputSetActiveVariable(pipelineVariable);
     }
 }
 
@@ -200,8 +213,6 @@ avtDatasetToDatasetFilter::ExamineSpecification(avtPipelineSpecification_p s)
     pipelineVariable = new char[strlen(var) + 1];
     strcpy(pipelineVariable, var);
 
-    const char *me = GetType();
-
     if (switchVariables)
     {
         // 
@@ -301,7 +312,6 @@ void
 avtDatasetToDatasetFilter::SetActiveVariable(const char *varname)
 {
     switchVariables = true;
-    const char *me = GetType();
     if (activeVariable != NULL)
     {
         delete [] activeVariable;

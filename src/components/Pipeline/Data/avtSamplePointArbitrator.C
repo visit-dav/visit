@@ -17,12 +17,16 @@
 //  Programmer: Hank Childs
 //  Creation:   January 23, 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Sat Jan 29 10:22:56 PST 2005
+//    Removed opacity map, which is now in a derived type.
+//
 // ****************************************************************************
 
-avtSamplePointArbitrator::avtSamplePointArbitrator(avtOpacityMap *om, int av)
+avtSamplePointArbitrator::avtSamplePointArbitrator(int av)
 {
     arbitrationVariable = av;
-    omap                = om;
 }
 
 
@@ -41,45 +45,6 @@ avtSamplePointArbitrator::avtSamplePointArbitrator(avtOpacityMap *om, int av)
 avtSamplePointArbitrator::~avtSamplePointArbitrator()
 {
     ;
-}
-
-
-// ****************************************************************************
-//  Method: avtSamplePointArbitrator::ShouldOverwrite
-//
-//  Purpose:
-//      Decides whether the new sample point has a more important contribution
-//      to the picture than the old sample point.  "More important contribution"
-//      can be loosely defined as higher opacity, since higher opacity creatures
-//      are more noticable when they are missing.
-//
-//  Arguments:
-//     whatIgot        The current value.
-//     whatIcouldHave  The potential new value.
-//
-//  Returns:    true if the new value is better than the old.
-//
-//  Programmer: Hank Childs
-//  Creation:   January 23, 2002
-//
-// ****************************************************************************
-
-bool
-avtSamplePointArbitrator::ShouldOverwrite(float whatIgot, float whatIcouldHave)
-{
-    RGBA val1 = omap->GetOpacity(whatIgot);
-    RGBA val2 = omap->GetOpacity(whatIcouldHave);
- 
-    if (val2.A == val1.A)
-    {
-        //
-        // They got mapped to the same opacity.  Return the higher value, so
-        // we don't end up with weirdness on the color map.
-        //
-        return (whatIcouldHave > whatIgot ? true : false);
-    }
- 
-    return (val2.A > val1.A ? true : false);
 }
 
 

@@ -441,18 +441,20 @@ avtProjectFilter::ProjectVectors(vtkDataSet *old_ds,
 //  Programmer:  Jeremy Meredith
 //  Creation:    September  6, 2004
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Feb  1 15:37:37 PST 2005
+//    Allow normals, since if they are not appropriate, it will be detected.
+//
 // ****************************************************************************
 void
 avtProjectFilter::RefashionDataObjectInfo(void)
 {
     avtDataAttributes &inAtts      = GetInput()->GetInfo().GetAttributes();
     avtDataAttributes &outAtts     = GetOutput()->GetInfo().GetAttributes();
-    avtDataValidity   &outValidity = GetOutput()->GetInfo().GetValidity();
    
     if (inAtts.GetSpatialDimension() == 3)
         outAtts.SetSpatialDimension(2);
-
-    outValidity.SetNormalsAreInappropriate(true);
 }
 
 // ****************************************************************************

@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+  <Attribute name="SurfaceFilterAttributes" purpose="Attributes for the surface filter" persistent="true">
+    <Enum name="Scaling">
+      Linear
+      Log
+      Skew
+    </Enum>
+    <Enum name="LimitsMode">
+      OriginalData
+      CurrentPlot
+    </Enum>
+    <Field name="limitsMode" label="LimitsMode" type="enum" subtype="LimitsMode">
+      OriginalData
+    </Field>
+    <Field name="minFlag" label="Use min" type="bool">
+      false
+    </Field>
+    <Field name="maxFlag" label="Use max" type="bool">
+      false
+    </Field>
+    <Field name="scaling" label="Scale" type="enum" subtype="Scaling">
+      Linear
+    </Field>
+    <Field name="skewFactor" label="Skew factor" type="double" enabler="scaling:Skew">
+      1.000001
+    </Field>
+    <Field name="min" label="Min" type="double" enabler="minFlag:true">
+      0.000000
+    </Field>
+    <Field name="max" label="Max" type="double" enabler="maxFlag:true">
+      1.000000
+    </Field>
+    <Field name="variable" label="Elevate by Variable" type="variablename" vartypes="010000000">
+      default
+    </Field>
+    <Field name="useXYLimits" label="Use XY Limits" type="bool">
+      true
+    </Field>
+    <Field name="generateNodalOutput" label="Generate Nodal Output" type="bool">
+      true
+    </Field>
+  </Attribute>

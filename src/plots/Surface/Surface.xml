@@ -1,11 +1,9 @@
 <?xml version="1.0"?>
-  <Plugin name="Surface" type="plot" label="Surface" version="1.0" enabled="true" vartype="scalar,species" iconFile="Surface.xpm">
+  <Plugin name="Surface" type="plot" label="Surface" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" vartype="scalar,species" iconFile="Surface.xpm">
     <Files components="V">
-      avtSurfaceFilter.C
       avtWireframeFilter.C
     </Files>
     <Files components="E">
-      avtSurfaceFilter.C
       avtWireframeFilter.C
     </Files>
     <Attribute name="SurfaceAttributes" purpose="Attributes for the surface plot" persistent="true" codefile="Surface.code">
