@@ -5730,6 +5730,8 @@ ViewerWindow::UpdateLastExternalRenderRequest(
     lastExternalRenderRequest.pluginIDsList = newRequest.pluginIDsList;
     lastExternalRenderRequest.hostsList     = newRequest.hostsList;
     lastExternalRenderRequest.plotIdsList   = newRequest.plotIdsList;
+    lastExternalRenderRequest.winAtts       = newRequest.winAtts;
+    lastExternalRenderRequest.annotAtts     = newRequest.annotAtts;
 
 }
 

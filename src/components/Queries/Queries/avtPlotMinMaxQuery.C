@@ -175,7 +175,6 @@ avtPlotMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
     float *x;
     bool haveMin = false;
     bool haveMax = false;
-    int nc = data->GetNumberOfComponents();
     for (int elNum = 0; elNum < data->GetNumberOfTuples(); elNum++)
     {
         switch(varType)
@@ -348,7 +347,7 @@ avtPlotMinMaxQuery::PostExecute(void)
 
 #ifdef PARALLEL
     int myRank, numProcs;
-    int size, j;
+    int size, i;
     MPI_Comm_rank(MPI_COMM_WORLD, &myRank);
     MPI_Comm_size(MPI_COMM_WORLD, &numProcs);
 
