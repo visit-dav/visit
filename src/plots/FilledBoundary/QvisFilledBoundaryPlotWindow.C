@@ -20,6 +20,7 @@
 #include <QvisLineStyleWidget.h>
 #include <QvisLineWidthWidget.h>
 #include <QvisOpacitySlider.h>
+#include <QvisPointControl.h>
 #include <FilledBoundaryAttributes.h>
 #include <ViewerProxy.h>
 
@@ -167,6 +168,9 @@ QvisFilledBoundaryPlotWindow::~QvisFilledBoundaryPlotWindow()
 //    Jeremy Meredith, Wed Apr 14 16:43:06 PDT 2004
 //    Added mixed color.
 //
+//    Kathleen Bonnell, Fri Nov 12 10:42:08 PST 2004 
+//    Added pointControl.
+//
 // ****************************************************************************
 
 void
@@ -270,7 +274,7 @@ QvisFilledBoundaryPlotWindow::CreateWindowContents()
     colorLayout->addMultiCellWidget(colorTableButton, 1, 1, 1, 2, AlignLeft | AlignVCenter);
 
     // Create the overall opacity.
-    QGridLayout *opLayout = new QGridLayout(topLayout, 6, 2);
+    QGridLayout *opLayout = new QGridLayout(topLayout, 7, 2);
     opLayout->setSpacing(5);
     overallOpacity = new QvisOpacitySlider(0, 255, 25, 255, central, 
                     "overallOpacity", NULL);
@@ -285,29 +289,41 @@ QvisFilledBoundaryPlotWindow::CreateWindowContents()
     overallOpacityLabel->setAlignment(AlignLeft | AlignVCenter);
     opLayout->addWidget(overallOpacityLabel, 0, 0);
 
+    // Create the point control 
+    pointControl = new QvisPointControl(central, "pointControl");
+    connect(pointControl, SIGNAL(pointSizeChanged(double)),
+            this, SLOT(pointSizeChanged(double)));
+    connect(pointControl, SIGNAL(pointSizeVarChanged(QString &)),
+            this, SLOT(pointSizeVarChanged(QString &)));
+    connect(pointControl, SIGNAL(pointSizeVarToggled(bool)),
+            this, SLOT(pointSizeVarToggled(bool)));
+    connect(pointControl, SIGNAL(pointTypeChanged(int)),
+            this, SLOT(pointTypeChanged(int)));
+    opLayout->addMultiCellWidget(pointControl, 1, 1, 0, 1);
+
     // Create the legend toggle
     legendCheckBox = new QCheckBox("Legend", central, "legendToggle");
     connect(legendCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(legendToggled(bool)));
-    opLayout->addWidget(legendCheckBox, 1, 0);
+    opLayout->addWidget(legendCheckBox, 2, 0);
 
     // Create the wireframe toggle
     wireframeCheckBox = new QCheckBox("Wireframe", central, "wireframeCheckBox");
     connect(wireframeCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(wireframeToggled(bool)));
-    opLayout->addWidget(wireframeCheckBox, 2, 0);
+    opLayout->addWidget(wireframeCheckBox, 3, 0);
 
     // Create the internal surfaces toggle
     drawInternalCheckBox = new QCheckBox("Draw internal surfaces", central, "drawInternalCheckBox");
     connect(drawInternalCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(drawInternalToggled(bool)));
-    opLayout->addMultiCellWidget(drawInternalCheckBox, 3,3, 0,1);
+    opLayout->addMultiCellWidget(drawInternalCheckBox, 4,4, 0,1);
 
     // Create the clean zones only toggle
     cleanZonesOnlyCheckBox = new QCheckBox("Clean zones only", central, "cleanZonesOnlyCheckBox");
     connect(cleanZonesOnlyCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(cleanZonesOnlyToggled(bool)));
-    opLayout->addWidget(cleanZonesOnlyCheckBox, 4, 0);
+    opLayout->addWidget(cleanZonesOnlyCheckBox, 5, 0);
 
     // Create the mixed color button.
     QHBox *mixedColorBox = new QHBox(central);
@@ -316,7 +332,7 @@ QvisFilledBoundaryPlotWindow::CreateWindowContents()
     mixedColor->setButtonColor(QColor(255, 255, 255));
     connect(mixedColor, SIGNAL(selectedColor(const QColor &)),
             this, SLOT(mixedColorChanged(const QColor &)));
-    opLayout->addWidget(mixedColorBox, 4, 1);
+    opLayout->addWidget(mixedColorBox, 5, 1);
 
     // Create the smoothing level buttons
     smoothingLevelButtons = new QButtonGroup(0, "smoothingButtons");
@@ -335,7 +351,7 @@ QvisFilledBoundaryPlotWindow::CreateWindowContents()
     rb = new QRadioButton("High", central, "HighSmoothing");
     smoothingLevelButtons->insert(rb);
     smoothingLayout->addWidget(rb, 0, 3);
-    opLayout->addMultiCellLayout(smoothingLayout, 5,5 , 0,1);
+    opLayout->addMultiCellLayout(smoothingLayout, 6,6 , 0,1);
 }
 
 // ****************************************************************************
@@ -365,6 +381,9 @@ QvisFilledBoundaryPlotWindow::CreateWindowContents()
 //
 //    Jeremy Meredith, Wed Apr 14 16:43:06 PDT 2004
 //    Added mixed color.
+//
+//    Kathleen Bonnell, Fri Nov 12 10:42:08 PST 2004 
+//    Added pointControl.
 //
 // ****************************************************************************
 
@@ -471,6 +490,28 @@ QvisFilledBoundaryPlotWindow::UpdateWindow(bool doAll)
                                       boundaryAtts->GetMixedColor().Green(),
                                       boundaryAtts->GetMixedColor().Blue()));
             mixedColor->blockSignals(false);
+            break;
+        case 16: // pointSize
+            pointControl->blockSignals(true);
+            pointControl->SetPointSize(boundaryAtts->GetPointSize());
+            pointControl->blockSignals(false);
+            break;
+        case 17: // pointType
+            pointControl->blockSignals(true);
+            pointControl->SetPointType(boundaryAtts->GetPointType());
+            pointControl->blockSignals(false);
+            break;
+        case 18: // pointSizeVarEnabled
+            pointControl->blockSignals(true);
+            pointControl->SetPointSizeVarChecked(boundaryAtts->GetPointSizeVarEnabled());
+            pointControl->blockSignals(false);
+            break;
+        case 19: // pointSizeVar
+            pointControl->blockSignals(true);
+            temp = QString(boundaryAtts->GetPointSizeVar());
+            pointControl->SetPointSizeVar(temp);
+            pointControl->blockSignals(false);
+            break;
         }
     } // end for
 
@@ -752,6 +793,8 @@ QvisFilledBoundaryPlotWindow::SetMultipleColorWidgets(int index)
 //  Note:  taken almost verbatim from the Subset plot
 //
 // Modifications:
+//    Kathleen Bonnell, Fri Nov 12 10:42:08 PST 2004 
+//    Uncommented GetCurrentValues. 
 //   
 // ****************************************************************************
 
@@ -762,7 +805,7 @@ QvisFilledBoundaryPlotWindow::Apply(bool ignore)
     {
         // Get the current boundary plot attributes and tell the other
         // observers about them.
-//        GetCurrentValues(-1);
+        GetCurrentValues(-1);
         boundaryAtts->Notify();
 
         // Tell the viewer to set the boundary plot attributes.
@@ -811,6 +854,8 @@ QvisFilledBoundaryPlotWindow::apply()
 //  Note:  taken almost verbatim from the Subset plot
 //
 // Modifications:
+//    Kathleen Bonnell, Fri Nov 12 10:42:08 PST 2004 
+//    Uncommented GetCurrentValues. 
 //   
 // ****************************************************************************
 
@@ -818,7 +863,7 @@ void
 QvisFilledBoundaryPlotWindow::makeDefault()
 {
     // Tell the viewer to set the default boundary plot attributes.
-//    GetCurrentValues(-1);
+    GetCurrentValues(-1);
     boundaryAtts->Notify();
     viewer->SetDefaultPlotOptions(plotType);
 }
@@ -1320,4 +1365,128 @@ QvisFilledBoundaryPlotWindow::mixedColorChanged(const QColor &color)
     boundaryAtts->SetMixedColor(temp);
     Apply();
 }
+
+// ****************************************************************************
+// Method: QvisFilledBoundaryPlotWindow::GetCurrentValues
+//
+// Purpose: 
+//   Gets the current values for one or all of the lineEdit widgets.
+//
+// Arguments:
+//   which_widget : The number of the widget to update. If -1 is passed,
+//                  the routine gets the current values for all widgets.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   November 10, 2004 
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisFilledBoundaryPlotWindow::GetCurrentValues(int which_widget)
+{
+    bool doAll = (which_widget == -1);
+
+    // Do the point size and pointSizeVar
+    if(doAll)
+    {
+        boundaryAtts->SetPointSize(pointControl->GetPointSize());
+        boundaryAtts->SetPointSizeVar(pointControl->GetPointSizeVar().latin1());
+    }
+}
+
+
+// ****************************************************************************
+//  Method:  QvisFilledBoundaryPlotWindow::pointTypeChanged
+//
+//  Purpose:
+//    Qt slot function that is called when one of the point type buttons
+//    is clicked.
+//
+//  Arguments:
+//    type   :   The new type
+//
+//  Programmer:  Kathleen Bonnell 
+//  Creation:    November 10, 2004 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+QvisFilledBoundaryPlotWindow::pointTypeChanged(int type)
+{
+    boundaryAtts->SetPointType((FilledBoundaryAttributes::PointType) type);
+    SetUpdate(false);
+    Apply();
+}
+
+
+// ****************************************************************************
+// Method: QvisFilledBoundaryPlotWindow::pointSizeVarToggled
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the pointSizeVar toggle
+//   button is toggled.
+//
+// Arguments:
+//   val : The new state of the pointSizeVar toggle.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   November 10, 2004 
+//   
+// ****************************************************************************
+
+void
+QvisFilledBoundaryPlotWindow::pointSizeVarToggled(bool val)
+{
+    boundaryAtts->SetPointSizeVarEnabled(val);
+    Apply();
+}
+
+
+// ****************************************************************************
+// Method: QvisFilledBoundaryPlotWindow::pointSizeVarChanged
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the user changes the
+//   point size variable text and presses the Enter key.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   November 10, 2004 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisFilledBoundaryPlotWindow::pointSizeVarChanged(QString &var)
+{
+    boundaryAtts->SetPointSizeVar(var.latin1());
+    Apply();
+}
+
+
+// ****************************************************************************
+// Method: QvisFilledBoundaryPlotWindow::pointSizeChanged
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the user changes the
+//   point size text and presses the Enter key.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   November 10, 2004 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisFilledBoundaryPlotWindow::pointSizeChanged(double d)
+{
+    boundaryAtts->SetPointSize(d);
+    Apply();
+}
+
 

@@ -13,7 +13,7 @@
 #include <avtFacelistFilter.h>
 #include <avtGhostZoneFilter.h>
 #include <avtLevelsLegend.h>
-#include <avtLevelsMapper.h>
+#include <avtLevelsPointGlyphMapper.h>
 #include <avtLookupTable.h>
 #include <avtSubsetFilter.h>
 #include <avtFeatureEdgesFilter.h>
@@ -52,11 +52,14 @@ using std::pair;
 //    Hank Childs, Wed Oct 15 20:30:10 PDT 2003
 //    Tell facelist filter to consolidate faces.
 //
+//    Kathleen Bonnell, Fri Nov 12 11:47:49 PST 2004 
+//    Changed mapper type to avtLevelsPointGlyphMapper. 
+//
 // ****************************************************************************
 
 avtSubsetPlot::avtSubsetPlot()
 {
-    levelsMapper = new avtLevelsMapper();
+    levelsMapper = new avtLevelsPointGlyphMapper();
     levelsLegend = new avtLevelsLegend();
     levelsLegend->SetTitle("Subset");
     // there is no 'range' per se, so turn off range visibility.
@@ -197,6 +200,9 @@ avtSubsetPlot::Create()
 //    Kathleen Bonnell, Thu Sep  2 11:44:09 PDT 2004 
 //    Ensure that specular properties aren't used in wireframe mode.
 //
+//    Kathleen Bonnell, Fri Nov 12 11:47:49 PST 2004 
+//    Incorporate pointSize, pointtype and pointSizeVar. 
+//
 // ****************************************************************************
 
 void
@@ -221,6 +227,20 @@ avtSubsetPlot::SetAtts(const AttributeGroup *a)
         behavior->SetAntialiasedRenderOrder(ABSOLUTELY_LAST);
         levelsMapper->SetSpecularIsInappropriate(true);
     }
+
+    levelsMapper->SetScale(atts.GetPointSize());
+    if (atts.GetPointSizeVarEnabled() &&
+        atts.GetPointSizeVar() != "default" &&
+        atts.GetPointSizeVar() != "" &&
+        atts.GetPointSizeVar() != "\0")
+    {
+        levelsMapper->ScaleByVar(atts.GetPointSizeVar());
+    }
+    else 
+    {
+        levelsMapper->DataScalingOff();
+    }
+    levelsMapper->SetGlyphType((int)atts.GetPointType());
 }
 
 // ****************************************************************************

@@ -1,50 +1,50 @@
 // ************************************************************************* //
-//                           avtPointGlyphMapper.h                           //
+//                           avtPointGlypher.h                               //
 // ************************************************************************* //
 
-#ifndef AVT_POINT_GLYPH_MAPPER_H
-#define AVT_POINT_GLYPH_MAPPER_H
+#ifndef AVT_POINT_GLYPHER_H
+#define AVT_POINT_GLYPHER_H
 
 #include <plotter_exports.h>
+#include <string>
 
-#include <avtVariableMapper.h>
-
-class     vtkVisItGlyph3D;
+class     vtkDataSet;
 class     vtkPolyData;
+class     vtkVisItGlyph3D;
 class     vtkVisItPolyDataNormals;
 
 
 // ****************************************************************************
-//  Class: avtPointGlyphMapper
+//  Class: avtPointGlypher
 //
 //  Purpose:
-//      A mapper for glyph.  This extends the functionality of a mapper by
-//      mapping a glyph onto a dataset with a scalar variable.
+//    Turns points into glyphs.  
 //
 //  Programmer: Kathleen Bonnell
 //  Creation:   August 19, 2004 
 //
 //  Modifications:
-//    Kathleen Bonnell, Tue Nov  2 10:18:16 PST 2004
-//    Added more flavors of ColorByScalarOff. 
+//    Kathleen Bonnell, Fri Nov 12 09:14:16 PST 2004
+//    Renamed from avtPointGlyphMapper, no longer derived from 
+//    avtVariableMapper, modified some method names so that they don't collide
+//    with avtMapper method names.
 //
 // ****************************************************************************
 
-class PLOTTER_API  avtPointGlyphMapper : public avtVariableMapper
+class PLOTTER_API  avtPointGlypher  
 {
   public:
-                               avtPointGlyphMapper();
-    virtual                   ~avtPointGlyphMapper();
+                               avtPointGlypher();
+    virtual                   ~avtPointGlypher();
+
+    virtual void               ScaleByVar(const std::string &) = 0;
+    void                       DataScalingOff(void);
 
     void                       SetScale(float);
     void                       SetGlyphType(const int);
-    void                       DataScalingOff(void);
-    void                       DataScalingOn(const std::string &);
 
     void                       ColorByScalarOn(const std::string &);
-    void                       ColorByScalarOff(const unsigned char [3]);
-    void                       ColorByScalarOff(const double [3]);
-    void                       ColorByScalarOff(const float [3]);
+    void                       ColorByScalarOff(void);
 
   protected:
     vtkPolyData               *glyph2D;
@@ -52,25 +52,26 @@ class PLOTTER_API  avtPointGlyphMapper : public avtVariableMapper
     float                      scale;
     std::string                scalingVarName;
     std::string                coloringVarName;
+    int                        scalingVarDim;
     int                        glyphType;
     bool                       dataScaling;
     bool                       colorByScalar;
-    float                      glyphColor[3];
 
     vtkVisItGlyph3D          **glyphFilter;
     vtkVisItPolyDataNormals  **normalsFilter;
     int                        nGlyphFilters;
 
-    virtual void               CustomizeMappers(void);
+    virtual vtkDataSet        *InsertGlyphs(vtkDataSet *, int, int);
+    virtual void               SetUpGlyphs(int);
+    virtual void               CustomizeGlyphs(int);
 
-    virtual vtkDataSet        *InsertFilters(vtkDataSet *, int);
-    virtual void               SetUpFilters(int);
+    void                       DataScalingOn(const std::string &, int = 1);
 
   private:
+    int                        spatialDim;
     vtkPolyData               *GetGlyphSource(void);
     void                       ClearGlyphs(void);
     void                       SetUpGlyph(void);
-
 };
 
 

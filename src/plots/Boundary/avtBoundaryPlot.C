@@ -13,7 +13,7 @@
 #include <avtFacelistFilter.h>
 #include <avtGhostZoneFilter.h>
 #include <avtLevelsLegend.h>
-#include <avtLevelsMapper.h>
+#include <avtLevelsPointGlyphMapper.h>
 #include <avtLookupTable.h>
 #include <avtBoundaryFilter.h>
 #include <avtFeatureEdgesFilter.h>
@@ -38,11 +38,14 @@ using std::pair;
 //    Eric Brugger, Wed Jul 16 10:19:00 PDT 2003
 //    Modified to work with the new way legends are managed.
 //
+//    Kathleen Bonnell, Fri Nov 12 10:23:09 PST 2004 
+//    Changed mapper type to avtLevelsPointGlyphMapper.
+//
 // ****************************************************************************
 
 avtBoundaryPlot::avtBoundaryPlot()
 {
-    levelsMapper = new avtLevelsMapper();
+    levelsMapper = new avtLevelsPointGlyphMapper();
     levelsLegend = new avtLevelsLegend();
     levelsLegend->SetTitle("Boundary");
     // there is no 'range' per se, so turn off range visibility.
@@ -158,6 +161,9 @@ avtBoundaryPlot::Create()
 //    Kathleen Bonnell, Thu Sep  2 11:44:09 PDT 2004 
 //    Ensure that specular properties aren't used in wireframe mode. 
 //
+//    Kathleen Bonnell, Fri Nov 12 10:23:09 PST 2004 
+//    Incorporate point controls (pointSize, pointType, pointSizeVar).
+//
 // ****************************************************************************
 
 void
@@ -182,7 +188,25 @@ avtBoundaryPlot::SetAtts(const AttributeGroup *a)
         behavior->SetAntialiasedRenderOrder(ABSOLUTELY_LAST);
         levelsMapper->SetSpecularIsInappropriate(true);
     }
+
+    //
+    // Setup point controls
+    //
+    levelsMapper->SetScale(atts.GetPointSize());
+    if (atts.GetPointSizeVarEnabled() &&
+        atts.GetPointSizeVar() != "default" &&
+        atts.GetPointSizeVar() != "" &&
+        atts.GetPointSizeVar() != "\0")
+    {
+        levelsMapper->ScaleByVar(atts.GetPointSizeVar());
+    }
+    else
+    {
+        levelsMapper->DataScalingOff();
+    }
+    levelsMapper->SetGlyphType((int)atts.GetPointType());
 }
+
 
 // ****************************************************************************
 // Method: avtBoundaryPlot::SetColorTable

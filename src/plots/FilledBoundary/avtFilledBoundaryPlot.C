@@ -13,7 +13,7 @@
 #include <avtFacelistFilter.h>
 #include <avtGhostZoneFilter.h>
 #include <avtLevelsLegend.h>
-#include <avtLevelsMapper.h>
+#include <avtLevelsPointGlyphMapper.h>
 #include <avtLookupTable.h>
 #include <avtFilledBoundaryFilter.h>
 #include <avtFeatureEdgesFilter.h>
@@ -40,11 +40,14 @@ using std::pair;
 //    Eric Brugger, Wed Jul 16 10:29:53 PDT 2003
 //    Modified to work with the new way legends are managed.
 //
+//    Kathleen Bonnell, Fri Nov 12 10:42:08 PST 2004 
+//    Changed mapper to type avtLevelsPointGlyphMapper. 
+//
 // ****************************************************************************
 
 avtFilledBoundaryPlot::avtFilledBoundaryPlot()
 {
-    levelsMapper = new avtLevelsMapper();
+    levelsMapper = new avtLevelsPointGlyphMapper();
     levelsLegend = new avtLevelsLegend();
     levelsLegend->SetTitle("Filled Boundary");
     // there is no 'range' per se, so turn off range visibility.
@@ -174,6 +177,9 @@ avtFilledBoundaryPlot::Create()
 //    Kathleen Bonnell, Thu Sep  2 11:44:09 PDT 2004 
 //    Ensure that specular properties aren't used in wireframe mode. 
 //
+//    Kathleen Bonnell, Fri Nov 12 10:42:08 PST 2004 
+//    Incorporate point controls (point size, point type, point size var). 
+//
 // ****************************************************************************
 
 void
@@ -198,6 +204,20 @@ avtFilledBoundaryPlot::SetAtts(const AttributeGroup *a)
         behavior->SetAntialiasedRenderOrder(ABSOLUTELY_LAST);
         levelsMapper->SetSpecularIsInappropriate(true);
     }
+
+    levelsMapper->SetScale(atts.GetPointSize());
+    if (atts.GetPointSizeVarEnabled() &&
+        atts.GetPointSizeVar() != "default" &&
+        atts.GetPointSizeVar() != "" &&
+        atts.GetPointSizeVar() != "\0")
+    {
+        levelsMapper->ScaleByVar(atts.GetPointSizeVar());
+    }
+    else 
+    {
+        levelsMapper->DataScalingOff();
+    }
+    levelsMapper->SetGlyphType((int)atts.GetPointType());
 }
 
 // ****************************************************************************
@@ -388,8 +408,8 @@ avtFilledBoundaryPlot::ApplyRenderingTransformation(avtDataObject_p input)
     if (!atts.GetWireframe())
     {
         if ((type == FilledBoundaryAttributes::Domain ||
-              type == FilledBoundaryAttributes::Group)
-            && atts.GetDrawInternal())
+             type == FilledBoundaryAttributes::Group) && 
+             atts.GetDrawInternal())
         {
             gzfl->SetUseFaceFilter(false);
         }
@@ -404,8 +424,9 @@ avtFilledBoundaryPlot::ApplyRenderingTransformation(avtDataObject_p input)
         //
         // Apply the needed filters
         //
-        if ((type==FilledBoundaryAttributes::Domain || type==FilledBoundaryAttributes::Group)
-             && atts.GetDrawInternal())
+        if ((type==FilledBoundaryAttributes::Domain || 
+             type==FilledBoundaryAttributes::Group) &&
+             atts.GetDrawInternal())
         {
             // We're doing a non-wireframe domain boundary plot
             // where we require internal faces:
@@ -445,7 +466,8 @@ avtFilledBoundaryPlot::ApplyRenderingTransformation(avtDataObject_p input)
     }
     else
     {
-        if (type==FilledBoundaryAttributes::Domain || type==FilledBoundaryAttributes::Group)
+        if (type==FilledBoundaryAttributes::Domain || 
+            type==FilledBoundaryAttributes::Group)
         {
             // We're doing a wireframe domain boundary plot:
             //   - strip ghost zones first to keep domain boundaries

@@ -10,7 +10,7 @@
 #include <BoundaryAttributes.h>
 
 class     avtLevelsLegend;
-class     avtLevelsMapper;
+class     avtLevelsPointGlyphMapper;
 class     avtLookupTable;
 
 class     avtFeatureEdgesFilter;
@@ -36,6 +36,9 @@ class     avtSmoothPolyDataFilter;
 //
 //    Mark C. Miller, Wed Mar 24 19:23:21 PST 2004
 //    Added AttributesDependOnDatabaseMetaData
+//
+//    Kathleen Bonnell, Fri Nov 12 10:23:09 PST 2004 
+//    Changed mapper type to avtLevelsPointGlyphMapper.
 //
 // ****************************************************************************
 
@@ -67,20 +70,20 @@ avtBoundaryPlot : public avtVolumeDataPlot
     avtBoundaryFilter               *sub;
     avtSmoothPolyDataFilter         *smooth;
 
-    BoundaryAttributes        atts;
-    avtLevelsMapper          *levelsMapper;
-    avtLevelsLegend          *levelsLegend;
-    avtLegend_p               levLegendRefPtr;
-    avtLookupTable           *avtLUT;
+    BoundaryAttributes         atts;
+    avtLevelsPointGlyphMapper *levelsMapper;
+    avtLevelsLegend           *levelsLegend;
+    avtLegend_p                levLegendRefPtr;
+    avtLookupTable            *avtLUT;
 
-    void                      SetColors(void); 
-    void                      SortLabels(void); 
-    virtual avtMapper        *GetMapper(void);
-    virtual avtDataObject_p   ApplyOperators(avtDataObject_p);
-    virtual avtDataObject_p   ApplyRenderingTransformation(avtDataObject_p);
-    virtual void              CustomizeBehavior(void);
+    void                       SetColors(void); 
+    void                       SortLabels(void); 
+    virtual avtMapper         *GetMapper(void);
+    virtual avtDataObject_p    ApplyOperators(avtDataObject_p);
+    virtual avtDataObject_p    ApplyRenderingTransformation(avtDataObject_p);
+    virtual void               CustomizeBehavior(void);
 
-    virtual avtLegend_p       GetLegend(void) { return levLegendRefPtr; };
+    virtual avtLegend_p        GetLegend(void) { return levLegendRefPtr; };
 };
 
 

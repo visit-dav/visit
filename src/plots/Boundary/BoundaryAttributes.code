@@ -6,15 +6,25 @@ Definition:
 //    Jeremy Meredith, Mon Dec  9 16:30:54 PST 2002
 //    Added smoothing level.
 //
+//    Kathleen Bonnell, Wed Nov 10 09:37:01 PST 2004
+//    Added needsSecondaryVar. 
+//
 // ****************************************************************************
 bool
 BoundaryAttributes::ChangesRequireRecalculation(const BoundaryAttributes &obj)
 {
+    bool needSecondaryVar = obj.pointSizeVarEnabled &&
+                            pointSizeVar != obj.pointSizeVar &&
+                            obj.pointSizeVar != "default" && 
+                            obj.pointSizeVar != "" &&
+                            obj.pointSizeVar != "\0"; 
+
     return ((filledFlag != obj.filledFlag) ||
             (boundaryType != obj.boundaryType) || 
             (boundaryNames != obj.boundaryNames) ||
             (wireframe != obj.wireframe) ||
-            (smoothingLevel != obj.smoothingLevel));
+            (smoothingLevel != obj.smoothingLevel) ||
+            needSecondaryVar);
 }
 
 Function: VarChangeRequiresReset

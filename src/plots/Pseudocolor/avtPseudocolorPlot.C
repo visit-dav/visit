@@ -8,10 +8,10 @@
 
 #include <avtExtents.h>
 #include <avtLookupTable.h>
+#include <avtPseudocolorFilter.h>
 #include <avtShiftCenteringFilter.h>
 #include <avtVariableLegend.h>
-#include <avtPointGlyphMapper.h>
-#include <avtPseudocolorFilter.h>
+#include <avtVariablePointGlyphMapper.h>
 
 #include <DebugStream.h>
 #include <InvalidLimitsException.h>
@@ -46,13 +46,16 @@
 //    Kathleen Bonnell, Tue Nov  2 11:02:15 PST 2004 
 //    Added pcfilter.
 //
+//    Kathleen Bonnell, Fri Nov 12 11:25:23 PST 2004
+//    Replaced avtPointGlyphMapper with avtVariablePointGlyphMapper. 
+//
 // ****************************************************************************
 
 avtPseudocolorPlot::avtPseudocolorPlot()
 {
     varLegend = new avtVariableLegend;
     varLegend->SetTitle("Pseudocolor");
-    glyphMapper = new avtPointGlyphMapper;
+    glyphMapper = new avtVariablePointGlyphMapper;
 
     colorsInitialized = false;
     topoDim = 3;
@@ -213,6 +216,9 @@ avtPseudocolorPlot::GetMapper(void)
 //    Kathleen Bonnell, Tue Nov  2 11:02:15 PST 2004 
 //    Added pcfilter for point meshes.
 //
+//    Kathleen Bonnell, Fri Nov 12 11:25:23 PST 2004
+//    Added pcfilter->SetPlotAtts. 
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -243,6 +249,7 @@ avtPseudocolorPlot::ApplyOperators(avtDataObject_p input)
         }
         pcfilter = new avtPseudocolorFilter();
         pcfilter->SetInput(dob);
+        pcfilter->SetPlotAtts(&atts);
         dob = pcfilter->GetOutput();
     }
 
@@ -394,6 +401,9 @@ avtPseudocolorPlot::CustomizeBehavior()
 //    Kathleen Bonnell, Thu Aug 19 15:29:46 PDT 2004
 //    Replaced varMapper with glyphMapper. Added glyphMapper specific code.
 //
+//    Kathleen Bonnell, Fri Nov 12 11:25:23 PST 2004 
+//    Replaced glyphMapper methods with new names. 
+//
 // ****************************************************************************
 
 void
@@ -422,16 +432,18 @@ avtPseudocolorPlot::SetAtts(const AttributeGroup *a)
     }
 
     glyphMapper->SetScale(atts.GetPointSize());
-    if (atts.GetPointSizeVarEnabled())
+    if (atts.GetPointSizeVarEnabled() &&
+        atts.GetPointSizeVar() != "" &&
+        atts.GetPointSizeVar() != "\0")
     {
         if (atts.GetPointSizeVar() == "default")
         { 
             if (varname != NULL)
-                glyphMapper->DataScalingOn(varname);
+                glyphMapper->ScaleByVar(varname);
         } 
         else
         { 
-            glyphMapper->DataScalingOn(atts.GetPointSizeVar());
+            glyphMapper->ScaleByVar(atts.GetPointSizeVar());
         } 
     }
     else 
@@ -442,7 +454,9 @@ avtPseudocolorPlot::SetAtts(const AttributeGroup *a)
 
 
     if (varname != NULL)
+    {
         glyphMapper->ColorByScalarOn(string(varname));
+    }
 
     SetScaling(atts.GetScaling(), atts.GetSkewFactor());
     SetLimitsMode(atts.GetLimitsMode());

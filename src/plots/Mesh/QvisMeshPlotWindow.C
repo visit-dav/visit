@@ -10,6 +10,7 @@
 #include <qradiobutton.h>
 
 #include <QvisColorButton.h>
+#include <QvisPointControl.h>
 #include <QvisColorManagerWidget.h>
 #include <QvisLineStyleWidget.h>
 #include <QvisLineWidthWidget.h>
@@ -102,6 +103,9 @@ QvisMeshPlotWindow::~QvisMeshPlotWindow()
 //   Jeremy Meredith, Tue May  4 13:23:10 PDT 2004
 //   Added support for a new (Point) type of glyphing for point meshes.
 //
+//   Kathleen Bonnell, Fri Nov 12 10:51:59 PST 2004 
+//   Replaced point-related control widgets with QvisPointControl. 
+//
 // ****************************************************************************
 
 void
@@ -110,7 +114,7 @@ QvisMeshPlotWindow::CreateWindowContents()
     //
     // Create the layout that we'll use.
     //
-    QGridLayout *theLayout = new QGridLayout(topLayout, 11, 4);
+    QGridLayout *theLayout = new QGridLayout(topLayout, 9, 4);
     theLayout->setSpacing(10);
 
     // Create the lineSyle widget.
@@ -208,53 +212,23 @@ QvisMeshPlotWindow::CreateWindowContents()
     //errorToleranceLineEdit->setEnabled(false); 
     //errorToleranceLabel->setEnabled(false); 
 
-    // Create the point size label and line edit.
-    pointSizeLineEdit = new QLineEdit(central, "pointSizeLineEdit");
-    connect(pointSizeLineEdit, SIGNAL(returnPressed()),
-            this, SLOT(processPointSizeText()));
-    theLayout->addMultiCellWidget(pointSizeLineEdit, 6, 6, 1, 3);
-    pointSizeLabel = new QLabel(pointSizeLineEdit, "Point size", central, 
-                                "pointSizeLabel");
-    theLayout->addWidget(pointSizeLabel, 6, 0);
-
-    // Create the point size variable check box and line edit.
-    pointSizeVarLineEdit = new QLineEdit(central, "pointSizeVarLineEdit");
-    connect(pointSizeVarLineEdit, SIGNAL(returnPressed()),
-            this, SLOT(processPointSizeVarText()));
-    theLayout->addMultiCellWidget(pointSizeVarLineEdit, 7, 7, 2, 3);
-    pointSizeVarToggle = new QCheckBox("Scale point size by variable", central, 
-                                       "pointSizeVarToggle");
-    connect(pointSizeVarToggle, SIGNAL(toggled(bool)),
+    pointControl = new QvisPointControl(central, "pointControl");
+    connect(pointControl, SIGNAL(pointSizeChanged(double)),
+            this, SLOT(pointSizeChanged(double)));
+    connect(pointControl, SIGNAL(pointSizeVarChanged(QString &)),
+            this, SLOT(pointSizeVarChanged(QString &)));
+    connect(pointControl, SIGNAL(pointSizeVarToggled(bool)),
             this, SLOT(pointSizeVarToggled(bool)));
-    theLayout->addMultiCellWidget(pointSizeVarToggle, 7,7, 0,1);
-
-    // Create the point type buttons
-    pointTypeButtons = new QButtonGroup(0, "pointTypeButtons");
-    connect(pointTypeButtons, SIGNAL(clicked(int)),
+    connect(pointControl, SIGNAL(pointTypeChanged(int)),
             this, SLOT(pointTypeChanged(int)));
-    QGridLayout *pointTypeLayout = new QGridLayout(1, 5);
-    pointTypeLayout->setSpacing(10);
-    pointTypeLayout->setColStretch(4, 1000);
-    pointTypeLayout->addWidget(new QLabel("Point Type", central), 0,0);
-    rb = new QRadioButton("Box", central, "Box");
-    pointTypeButtons->insert(rb);
-    pointTypeLayout->addWidget(rb, 0, 1);
-    rb = new QRadioButton("Axis", central, "Axis");
-    pointTypeButtons->insert(rb);
-    pointTypeLayout->addWidget(rb, 0, 2);
-    rb = new QRadioButton("Icosahedron", central, "Icosahedron");
-    pointTypeButtons->insert(rb);
-    pointTypeLayout->addWidget(rb, 0, 3);
-    rb = new QRadioButton("Point", central, "Point");
-    pointTypeButtons->insert(rb);
-    pointTypeLayout->addWidget(rb, 0, 4);
-    theLayout->addMultiCellLayout(pointTypeLayout, 8,8 , 0,3);
+    theLayout->addMultiCellWidget(pointControl, 6, 6, 0, 3);
+ 
 
     // Create the legend toggle
     legendToggle = new QCheckBox("Legend", central, "legendToggle");
     connect(legendToggle, SIGNAL(toggled(bool)),
             this, SLOT(legendToggled(bool)));
-    theLayout->addWidget(legendToggle, 9, 0);
+    theLayout->addWidget(legendToggle, 7, 0);
 
     // Create the smoothing level buttons
     smoothingLevelButtons = new QButtonGroup(0, "smoothingButtons");
@@ -273,7 +247,7 @@ QvisMeshPlotWindow::CreateWindowContents()
     rb = new QRadioButton("High", central, "HighSmoothing");
     smoothingLevelButtons->insert(rb);
     smoothingLayout->addWidget(rb, 0, 3);
-    theLayout->addMultiCellLayout(smoothingLayout, 10,10 , 0,3);
+    theLayout->addMultiCellLayout(smoothingLayout, 8,8 , 0,3);
 }
 
 // ****************************************************************************
@@ -330,6 +304,9 @@ QvisMeshPlotWindow::CreateWindowContents()
 //   Jeremy Meredith, Tue May  4 13:23:10 PDT 2004
 //   Added support for a new (Point) type of glyphing for point meshes.
 //   When doing GL_POINT, we ignore point size, so also disable it.
+//
+//   Kathleen Bonnell, Fri Nov 12 10:51:59 PST 2004 
+//   Replaced point-related widgets with  pointControl. 
 //
 // ****************************************************************************
 
@@ -428,8 +405,9 @@ QvisMeshPlotWindow::UpdateWindow(bool doAll)
             opaqueMode->blockSignals(false);
             break;
         case 7: // pointSize
-            temp.sprintf("%g", meshAtts->GetPointSize());
-            pointSizeLineEdit->setText(temp);
+            pointControl->blockSignals(true);
+            pointControl->SetPointSize(meshAtts->GetPointSize());
+            pointControl->blockSignals(false);
             break;
         case 8: // opaqueColor
             { // new scope
@@ -463,22 +441,20 @@ QvisMeshPlotWindow::UpdateWindow(bool doAll)
             smoothingLevelButtons->blockSignals(false);
             break;
         case 12: // pointSizeVarEnabled
-            pointSizeVarToggle->blockSignals(true);
-            pointSizeVarToggle->setChecked(meshAtts->GetPointSizeVarEnabled());
-            pointSizeVarToggle->blockSignals(false);
-            pointSizeVarLineEdit->setEnabled(meshAtts->GetPointSizeVarEnabled());
+            pointControl->blockSignals(true);
+            pointControl->SetPointSizeVarChecked(meshAtts->GetPointSizeVarEnabled());
+            pointControl->blockSignals(false);
             break;
         case 13: // pointSizeVar
-            pointSizeVarLineEdit->blockSignals(true);
-            pointSizeVarLineEdit->setText(meshAtts->GetPointSizeVar().c_str());
-            pointSizeVarLineEdit->blockSignals(false);
+            pointControl->blockSignals(true);
+            temp = QString(meshAtts->GetPointSizeVar().c_str());
+            pointControl->SetPointSizeVar(temp);
+            pointControl->blockSignals(false);
             break;
         case 14: // pointType
-            pointTypeButtons->blockSignals(true);
-            pointTypeButtons->setButton((int) meshAtts->GetPointType());
-            pointTypeButtons->blockSignals(false);
-            pointSizeLineEdit->setEnabled(meshAtts->GetPointType() !=
-                                                        MeshAttributes::Point);
+            pointControl->blockSignals(true);
+            pointControl->SetPointType (meshAtts->GetPointType());
+            pointControl->blockSignals(false);
             break;
         case 15: // opaqueMeshIsAppropriate
             // If in AUTO mode:  if OpaqueMesh is appropriate, handle 
@@ -529,6 +505,10 @@ QvisMeshPlotWindow::UpdateWindow(bool doAll)
 //   Jeremy Meredith, Fri Dec 20 11:36:03 PST 2002
 //   Added scaling of point variables by a scalar field.
 //
+//   Kathleen Bonnell, Fri Nov 12 10:58:37 PST 2004 
+//   Replace separate pointSize and pointSizeVar widgets with single
+//   pointControl. 
+//
 // ****************************************************************************
 
 void
@@ -558,45 +538,10 @@ QvisMeshPlotWindow::GetCurrentValues(int which_widget)
         }
     }
 
-    // Do the point size
-    if(which_widget == 1 || doAll)
+    if(doAll)
     {
-        temp = pointSizeLineEdit->displayText().stripWhiteSpace();
-        okay = !temp.isEmpty();
-        if(okay)
-        {
-            double val = temp.toDouble(&okay);
-            meshAtts->SetPointSize(val);
-        }
-
-        if(!okay)
-        {
-            msg.sprintf("The point size was invalid. "
-                "Resetting to the last good value of %g.",
-                meshAtts->GetPointSize());
-            Message(msg);
-            meshAtts->SetPointSize(meshAtts->GetPointSize());
-        }
-    }
-
-    // Do the point size scale variable
-    if(which_widget == 2 || doAll)
-    {
-        temp = pointSizeVarLineEdit->displayText().stripWhiteSpace();
-        okay = !temp.isEmpty();
-        if(okay)
-        {
-            meshAtts->SetPointSizeVar(temp.latin1());
-        }
-
-        if(!okay)
-        {
-            msg.sprintf("The point size variable was invalid. "
-                        "Resetting to the last good value of %s.",
-                        meshAtts->GetPointSizeVar().c_str());
-            Message(msg);
-            meshAtts->SetPointSizeVar(meshAtts->GetPointSizeVar());
-        }
+        meshAtts->SetPointSize(pointControl->GetPointSize());
+        meshAtts->SetPointSizeVar(pointControl->GetPointSizeVar().latin1());
     }
 }
 
@@ -973,27 +918,6 @@ QvisMeshPlotWindow::processErrorToleranceText()
     Apply();
 }
 
-// ****************************************************************************
-// Method: QvisMeshPlotWindow::processPointSizeText
-//
-// Purpose: 
-//   This is a Qt slot function that is called when the user changes the
-//   point size text and pressed the Enter key.
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Mar 9 17:34:22 PST 2001
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisMeshPlotWindow::processPointSizeText()
-{
-    GetCurrentValues(1);
-    Apply();
-}
-
 
 // ****************************************************************************
 //  Method:  QvisMeshPlotWindow::smoothingLevelChanged
@@ -1039,15 +963,41 @@ QvisMeshPlotWindow::smoothingLevelChanged(int level)
 //   Added support for a new (Point) type of glyphing for point meshes.
 //   When doing GL_POINT, we ignore point size, so also disable it.
 //
+//   Kathleen Bonnell, Fri Nov 12 11:04:56 PST 2004 
+//   Setting enabled state of pointSizeLineEdit handled by QvisPointControl. 
+//
 // ****************************************************************************
 
 void
 QvisMeshPlotWindow::pointTypeChanged(int type)
 {
     meshAtts->SetPointType((MeshAttributes::PointType) type);
-    pointSizeLineEdit->setEnabled(meshAtts->GetPointType() !=
-                                                        MeshAttributes::Point);
     SetUpdate(false);
+    Apply();
+}
+
+
+// ****************************************************************************
+//  Method:  QvisMeshPlotWindow::pointSizeChanged
+//
+//  Purpose:
+//   This is a Qt slot function that is called when the user changes the
+//   point size text and presses the Enter key.
+//
+//  Arguments:
+//    size       The new point size
+//
+//  Programmer:  Kathleen Bonnell 
+//  Creation:    November 12, 2004 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+QvisMeshPlotWindow::pointSizeChanged(double size)
+{
+    meshAtts->SetPointSize(size); 
     Apply();
 }
 
@@ -1076,24 +1026,22 @@ QvisMeshPlotWindow::pointSizeVarToggled(bool val)
 
 
 // ****************************************************************************
-// Method: QvisMeshPlotWindow::processPointSizeVarText
+// Method: QvisMeshPlotWindow::pointSizeVarChanged
 //
 // Purpose: 
 //   This is a Qt slot function that is called when the user changes the
-//   point size variable text and pressed the Enter key.
+//   point size variable text and presses the Enter key.
 //
-// Programmer: Jeremy Meredith
-// Creation:   December 19, 2002
+// Programmer: Kathleen Bonnell 
+// Creation:   November 12, 2004 
 //
 // Modifications:
 //   
 // ****************************************************************************
 
 void
-QvisMeshPlotWindow::processPointSizeVarText()
+QvisMeshPlotWindow::pointSizeVarChanged(QString &var)
 {
-    GetCurrentValues(2);
+    meshAtts->SetPointSizeVar(var.latin1()); 
     Apply();
 }
-
-

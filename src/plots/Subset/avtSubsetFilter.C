@@ -17,6 +17,26 @@
 #include <ImproperUseException.h>
 
 
+
+// ****************************************************************************
+//  Method: avtSubsetFilter constructor
+//
+//  Arguments:
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   November 10, 2004 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+avtSubsetFilter::avtSubsetFilter()
+{
+    keepNodeZone = false; 
+}
+
+
+
 // ****************************************************************************
 //  Method: avtSubsetFilter::SetPlotAtts
 //
@@ -274,6 +294,10 @@ avtSubsetFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string label)
 //  Programmer: Kathleen Bonnell 
 //  Creation:   October 12, 2001 
 //
+//  Modifications:
+//    Kathleen Bonnell, Fri Nov 12 11:50:33 PST 2004
+//    Added call to SetKeepNodeZoneArrays. 
+//
 // ****************************************************************************
 
 void
@@ -281,6 +305,7 @@ avtSubsetFilter::RefashionDataObjectInfo(void)
 {
     avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
     outAtts.SetLabels(plotAtts.GetSubsetNames());
+    outAtts.SetKeepNodeZoneArrays(keepNodeZone);
 }
 
  
@@ -303,6 +328,11 @@ avtSubsetFilter::RefashionDataObjectInfo(void)
 //    Explicitly tell the data spec when we want material interface
 //    reconstruction.
 //
+//    Kathleen Bonnell, Fri Nov 12 10:23:09 PST 2004
+//    If working with a point mesh (topodim == 0), then determine if a point
+//    size var secondary variable needs to be added to the pipeline, and
+//    whether or not we need to keep Node and Zone numbers around. 
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -316,6 +346,36 @@ avtSubsetFilter::PerformRestriction(avtPipelineSpecification_p spec)
     {
         spec->GetDataSpecification()->TurnInternalSurfacesOn();
     }
+
+    if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() == 0)
+    {
+        string pointVar = plotAtts.GetPointSizeVar();
+        avtDataSpecification_p dspec = spec->GetDataSpecification();
+
+        //
+        // Find out if we REALLY need to add the secondary variable.
+        //
+        if (plotAtts.GetPointSizeVarEnabled() && 
+            pointVar != "default" &&
+            pointVar != "\0" &&
+            pointVar != dspec->GetVariable() &&
+            !dspec->HasSecondaryVariable(pointVar.c_str()))
+        {
+            spec->GetDataSpecification()->AddSecondaryVariable(pointVar.c_str());
+        }
+
+        avtDataAttributes &data = GetInput()->GetInfo().GetAttributes();
+        if (spec->GetDataSpecification()->MayRequireZones())
+        {
+            keepNodeZone = true;
+            spec->GetDataSpecification()->TurnNodeNumbersOn();
+        }
+        else
+        {
+            keepNodeZone = false;
+        }
+    }
+
     return spec;
 }
 

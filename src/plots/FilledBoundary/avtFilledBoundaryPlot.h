@@ -10,7 +10,7 @@
 #include <FilledBoundaryAttributes.h>
 
 class     avtLevelsLegend;
-class     avtLevelsMapper;
+class     avtLevelsPointGlyphMapper;
 class     avtLookupTable;
 
 class     avtFeatureEdgesFilter;
@@ -36,6 +36,9 @@ class     avtSmoothPolyDataFilter;
 //
 //    Mark C. Miller, Wed Mar 24 19:23:21 PST 2004
 //    Added AttributesDependOnDatabaseMetaData
+//
+//    Kathleen Bonnell, Fri Nov 12 10:42:08 PST 2004 
+//    Changed mapper to type avtLevelsPointGlyphMapper. 
 //
 // ****************************************************************************
 
@@ -69,11 +72,11 @@ avtFilledBoundaryPlot : public avtVolumeDataPlot
     avtFilledBoundaryFilter         *sub;
     avtSmoothPolyDataFilter         *smooth;
 
-    FilledBoundaryAttributes atts;
-    avtLevelsMapper          *levelsMapper;
-    avtLevelsLegend          *levelsLegend;
-    avtLegend_p               levLegendRefPtr;
-    avtLookupTable           *avtLUT;
+    FilledBoundaryAttributes   atts;
+    avtLevelsPointGlyphMapper *levelsMapper;
+    avtLevelsLegend           *levelsLegend;
+    avtLegend_p                levLegendRefPtr;
+    avtLookupTable             *avtLUT;
 
     void                      SetColors(void); 
     void                      SortLabels(void); 

@@ -9,6 +9,7 @@ class QLabel;
 class QvisLineStyleWidget;
 class QvisLineWidthWidget;
 class QvisColorButton;
+class QvisPointControl;
 class Subject;
 class MeshAttributes;
 
@@ -47,6 +48,10 @@ class MeshAttributes;
 //   Kathleen Bonnell, Thu Feb  5 11:51:39 PST 2004 
 //   Added showInternalToggle, signal showInternalToggled.
 //
+//   Kathleen Bonnell, Fri Nov 12 10:51:59 PST 2004 
+//   Replaced point-related control widgets (and associated slots) 
+//   with QvisPointControl. 
+//
 // ****************************************************************************
 
 class QvisMeshPlotWindow : public QvisPostableWindowObserver
@@ -76,14 +81,16 @@ private slots:
     void outlineOnlyToggled(bool on);
     void opaqueModeChanged(int val);
     void processErrorToleranceText();
-    void processPointSizeText();
     void opaqueColorChanged(const QColor &color);
     void backgroundToggled(bool on);
     void foregroundToggled(bool on);
     void smoothingLevelChanged(int index);
+
+    void pointSizeChanged(double d);
     void pointTypeChanged(int index);
-    void processPointSizeVarText();
-    void pointSizeVarToggled(bool on);
+    void pointSizeVarToggled(bool);
+    void pointSizeVarChanged(QString &);
+
 private:
     int                     plotType;
     MeshAttributes         *meshAtts;
@@ -99,16 +106,12 @@ private:
     QButtonGroup           *opaqueMode;
     QCheckBox              *legendToggle;
     QCheckBox              *showInternalToggle;
-    QLabel                 *pointSizeLabel;
-    QLineEdit              *pointSizeLineEdit;
-    QCheckBox              *pointSizeVarToggle;
-    QLineEdit              *pointSizeVarLineEdit;
     QLabel                 *opaqueColorLabel;
     QvisColorButton        *opaqueColor;
     QCheckBox              *backgroundToggle;
     QCheckBox              *foregroundToggle;
     QButtonGroup           *smoothingLevelButtons;
-    QButtonGroup           *pointTypeButtons;
+    QvisPointControl       *pointControl;
 };
 
 #endif

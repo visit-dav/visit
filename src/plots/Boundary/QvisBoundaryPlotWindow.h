@@ -14,6 +14,7 @@ class QvisColorTableButton;
 class QvisLineStyleWidget;
 class QvisLineWidthWidget;
 class QvisOpacitySlider;
+class QvisPointControl;
 
 // ****************************************************************************
 // Class: QvisBoundaryPlotWindow
@@ -28,6 +29,8 @@ class QvisOpacitySlider;
 // Creation:   June 12, 2003
 //
 // Modifications:
+//   Kathleen Bonnell, Fri Nov 12 10:17:58 PST 2004
+//   Added QvisPointControl widget and appropriate methods and slots.
 //
 // ****************************************************************************
 
@@ -51,6 +54,7 @@ protected:
     void SetMultipleColorWidgets(int index);
     void UpdateMultipleArea();
     void UpdateItem(int i);
+    void GetCurrentValues(int which_widget);
 private slots:
     void lineStyleChanged(int newStyle);
     void lineWidthChanged(int newWidth);
@@ -65,6 +69,12 @@ private slots:
     void boundarySelectionChanged();
     void overallOpacityChanged(int opacity);
     void smoothingLevelChanged(int index);
+
+    void pointSizeChanged(double d);
+    void pointTypeChanged(int index);
+    void pointSizeVarToggled(bool on);
+    void pointSizeVarChanged(QString &);
+
 private:
     int                     plotType;
     BoundaryAttributes     *boundaryAtts;
@@ -85,6 +95,7 @@ private:
     QvisOpacitySlider      *overallOpacity;
     QCheckBox              *wireframeCheckBox;
     QButtonGroup           *smoothingLevelButtons;
+    QvisPointControl       *pointControl;
 };
 
 #endif

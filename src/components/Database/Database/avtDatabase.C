@@ -22,9 +22,10 @@
 #include <avtIntervalTree.h>
 #include <avtSIL.h>
 
-#include <InvalidVariableException.h>
-#include <InvalidFilesException.h>
 #include <ImproperUseException.h>
+#include <InvalidFilesException.h>
+#include <InvalidDimensionsException.h>
+#include <InvalidVariableException.h>
 #include <TimingsManager.h>
 
 // size of MD/SIL caches
@@ -278,6 +279,10 @@ avtDatabase::GetOutput(const char *var, int ts)
 //    Moved code to get extents from auxiliary data to a subroutine. Also,
 //    placed it inside the checks for various variable types.
 //
+//    Kathleen Bonnell, Fri Nov 12 08:13:02 PST 2004 
+//    Throw an exception in the case that BoundarySurfaces are requested but
+//    the topological dimension is zero. 
+//
 // ****************************************************************************
 
 void
@@ -494,7 +499,16 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
     // checking a data specification) needs to change.
     //
     if (*spec && spec->NeedBoundarySurfaces())
-        atts.SetTopologicalDimension(atts.GetTopologicalDimension() - 1);
+    {
+        if (atts.GetTopologicalDimension() > 0)
+        {
+            atts.SetTopologicalDimension(atts.GetTopologicalDimension() - 1);
+        }
+        else 
+        {
+            EXCEPTION2(InvalidDimensionsException, "Boundary", ">0"); 
+        }
+    }
 
     char str[1024];
     sprintf(str, "Populating Information for %s", var);

@@ -22,13 +22,15 @@
 //  Note:  taken almost verbatim from the Subset plot
 //
 //  Modifications:
+//    Kathleen Bonnell, Fri Nov 12 10:23:09 PST 2004
+//    Moved constructor to source file, added keepNodeZone data member.
 //
 // ****************************************************************************
 
 class avtBoundaryFilter : public avtDataTreeStreamer
 {
   public:
-                          avtBoundaryFilter(){};
+                          avtBoundaryFilter();
     virtual              ~avtBoundaryFilter(){}; 
 
     virtual const char   *GetType(void) {return "avtBoundaryFilter";};
@@ -46,6 +48,9 @@ class avtBoundaryFilter : public avtDataTreeStreamer
                           PerformRestriction(avtPipelineSpecification_p);
 
     virtual void          PostExecute(void);
+
+  private:
+    bool                  keepNodeZone;
 };
 
 

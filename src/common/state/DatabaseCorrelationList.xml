@@ -25,6 +25,6 @@
     <Function name="CreateNode" user="false" member="true">
     </Function>
     <Include file="header" quoted="false">
-      iostream.h
+      visitstream.h
     </Include>
   </Attribute>
