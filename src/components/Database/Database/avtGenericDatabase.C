@@ -49,6 +49,7 @@
 #include <ZooMIR.h>
 
 #include <DebugStream.h>
+#include <BadDomainException.h>
 #include <ImproperUseException.h>
 #include <InvalidDBTypeException.h>
 #include <InvalidVariableException.h>
@@ -7600,12 +7601,16 @@ avtGenericDatabase::GetDomainName(const string &varName, const int ts,
 //    Eric Brugger, Wed Dec 29 15:20:37 PST 2004
 //    I added a call to ActivateTimestep to handle changing time steps.
 //
+//    Kathleen Bonnell, Tue Jan 25 07:59:28 PST 2005 
+//    Added const char* arg to QueryCoords for meshName, use the meshname
+//    to determine where the coords should come from.
+//
 // ****************************************************************************
 
 bool
 avtGenericDatabase::QueryCoords(const string &varName, const int dom, 
        const int id, const int ts, float coord[3], const bool forZone,
-       const bool useGlobalId)
+       const bool useGlobalId, const char *mN)
 {
     ActivateTimestep(ts);
 
@@ -7616,8 +7621,21 @@ avtGenericDatabase::QueryCoords(const string &varName, const int dom,
         if (currentid == -1) 
             return false;
     }
-    string meshName = GetMetaData(ts)->MeshForVar(varName);
-    vtkDataSet *ds = GetMeshDataset(meshName.c_str(), ts, dom, "_all");
+    string meshName;
+    if (mN == NULL || strcmp(mN, "default") == 0)
+        meshName = GetMetaData(ts)->MeshForVar(varName);
+    else 
+        meshName = mN; 
+    vtkDataSet *ds =  NULL;
+    TRY
+    {
+        ds = GetMeshDataset(meshName.c_str(), ts, dom, "_all");
+    }
+    CATCH(BadDomainException)
+    {
+        ; // do nothing, possible if domain is not defined on specified mesh.
+    }
+    ENDTRY
     bool rv = false; 
     if (ds)
     {

@@ -663,6 +663,10 @@ avtSliceFilter::SetUpProjection(void)
 //    avtDatasetExaminer::FindNode to match the SliceByZone code so that
 //    this routine succeeds more often.
 //
+//    Kathleen Bonnell, Tue Jan 25 07:59:28 PST 2005 
+//    Added meshName specified in atts to QueryCoords call.  Added more to
+//    warning message.
+//
 // ****************************************************************************
 
 void
@@ -730,7 +734,8 @@ avtSliceFilter::GetOrigin(double &ox, double &oy, double &oz)
           point[2] = FLT_MAX;
           string var = src->GetFullDataSpecification()->GetVariable();
           int    ts  = src->GetFullDataSpecification()->GetTimestep();
-          bool success = src->QueryCoords(var, domain, zone, ts, point, true);
+          bool success = src->QueryCoords(var, domain, zone, ts, point, true,
+                         false, atts.GetMeshName().c_str());
 
           //
           //  All processors are participating in the same query, so should
@@ -763,6 +768,7 @@ avtSliceFilter::GetOrigin(double &ox, double &oy, double &oz)
               point[2] = 0.;
               char warning[1024];
               sprintf(warning, "Was not able to locate domain %d, zone %d. "
+                               " They may not be defined on this mesh. "
                                " Using point (0., 0., 0.) instead.", 
                                           domain+blockOrigin, zone+cellOrigin);
               avtCallback::IssueWarning(warning);
@@ -792,7 +798,8 @@ avtSliceFilter::GetOrigin(double &ox, double &oy, double &oz)
           point[2] = DBL_MAX;
           string var = src->GetFullDataSpecification()->GetVariable();
           int    ts  = src->GetFullDataSpecification()->GetTimestep();
-          bool success = src->QueryCoords(var, domain, node, ts, point, false);
+          bool success = src->QueryCoords(var, domain, node, ts, point, false,
+                         false, atts.GetMeshName().c_str());
 
           double buff[6];
           if (success)
@@ -820,6 +827,7 @@ avtSliceFilter::GetOrigin(double &ox, double &oy, double &oz)
               point[2] = 0.;
               char warning[1024];
               sprintf(warning, "Was not able to locate domain %d, node %d. "
+                               " They may not be defined on this mesh. " 
                                " Using point (0., 0., 0.) instead.",
                                                     domain+blockOrigin, node);
               avtCallback::IssueWarning(warning);

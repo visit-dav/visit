@@ -57,6 +57,9 @@
 //   Added friend access to avtMacroExpressionFilter.  Also cache the
 //   terminating source for updates.
 //
+//   Kathleen Bonnell, Tue Jan 25 07:59:28 PST 2005 
+//   Added const char* arg to QueryCoords. 
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtExpressionEvaluatorFilter 
@@ -80,7 +83,7 @@ class EXPRESSION_API avtExpressionEvaluatorFilter
                                  const int, const char *, float[3], int &);
     virtual bool             QueryCoords(const std::string&, const int, 
                                  const int, const int, float[3], const bool,
-                                 const bool);
+                                 const bool, const char *mn = NULL);
 
     virtual void             GetDomainName(const std::string &, const int,
                                  const int , std::string &);

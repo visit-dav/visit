@@ -72,6 +72,9 @@ typedef void                   (*InitializeProgressCallback)(void *, int);
 //    Kathleen Bonnell, Mon Jan  3 13:40:42 PST 2005 
 //    Added GetSIL method. 
 //
+//    Kathleen Bonnell, Tue Jan 25 07:59:28 PST 2005 
+//    Added const char *arg to QueryCoords. 
+//
 // ****************************************************************************
 
 class PIPELINE_API avtTerminatingSource : virtual public avtQueryableSource
@@ -119,7 +122,7 @@ class PIPELINE_API avtTerminatingSource : virtual public avtQueryableSource
                                        const int, std::string &) {;};
     virtual bool                   QueryCoords(const std::string &, const int, 
                                        const int, const int, float[3],
-                                       const bool, const bool = false)
+                                       const bool, const bool = false, const char *mn=NULL)
                                        { return false;};
 
   protected:

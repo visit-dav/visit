@@ -1,16 +1,19 @@
 #include <stdio.h> // for sscanf
 
 #include <qbuttongroup.h>
+#include <qcheckbox.h>
+#include <qcombobox.h>
 #include <qgroupbox.h>
+#include <qlabel.h>
 #include <qlayout.h>
 #include <qlineedit.h>
+#include <qlistbox.h>
 #include <qpushbutton.h>
-#include <qcheckbox.h>
-#include <qlabel.h>
 #include <qradiobutton.h>
 #include <qslider.h>
 
 #include <QvisSliceWindow.h>
+#include <FileServerList.h>
 #include <SliceAttributes.h>
 #include <ViewerProxy.h>
 
@@ -37,6 +40,9 @@
 //    Added "sliderDragging" to keep track of when the user is dragging
 //    the slice-by-percent slider.
 //
+//   Kathleen Bonnell, Tue Jan 25 08:15:23 PST 2005
+//   Initialize defaultItem, attach fileServer.
+//
 // ****************************************************************************
 
 QvisSliceWindow::QvisSliceWindow(const int type,
@@ -46,6 +52,9 @@ QvisSliceWindow::QvisSliceWindow(const int type,
 {
     sliceAtts = subj;
     sliderDragging = false;
+
+    defaultItem = "default";
+    fileServer->Attach(this);   
 }
 
 // ****************************************************************************
@@ -58,11 +67,15 @@ QvisSliceWindow::QvisSliceWindow(const int type,
 // Creation:   Fri Sep 15 11:36:26 PDT 2000
 //
 // Modifications:
+//   Kathleen Bonnell, Tue Jan 25 08:15:23 PST 2005
+//   Detach fileServer.
 //   
 // ****************************************************************************
 
 QvisSliceWindow::~QvisSliceWindow()
 {
+    if (fileServer)
+        fileServer->Detach(this);
 }
 
 // ****************************************************************************
@@ -92,6 +105,9 @@ QvisSliceWindow::~QvisSliceWindow()
 //
 //   Jeremy Meredith, Fri Jun 13 12:08:47 PDT 2003
 //   Added a domain number for slice-by-zone and -by-node.
+//
+//   Kathleen Bonnell, Tue Jan 25 08:15:23 PST 2005
+//   Added meshName combo box and label. 
 //
 // ****************************************************************************
 
@@ -157,7 +173,7 @@ QvisSliceWindow::CreateWindowContents()
     originBox->setTitle("Origin");
     topLayout->addWidget(originBox);
 
-    QGridLayout *originLayout = new QGridLayout(originBox, 3, 1);
+    QGridLayout *originLayout = new QGridLayout(originBox, 8, 1);
     originLayout->setMargin(10);
     originLayout->addRowSpacing(0, 10);
 
@@ -179,6 +195,7 @@ QvisSliceWindow::CreateWindowContents()
     originTypeLayout->addWidget(otPercent);
     originTypeLayout->addWidget(otZone);
     originTypeLayout->addWidget(otNode);
+
 
     // -- origin (point)
     originPointLayout = new QHBoxLayout(5);
@@ -264,6 +281,20 @@ QvisSliceWindow::CreateWindowContents()
 
     originLayout->addLayout(originNodeLayout, 6,0);
 
+    QHBoxLayout *meshLayout = new QHBoxLayout(5);
+    meshLayout->setMargin(5);
+    meshLabel = new QLabel("Mesh", originBox, "MeshLabel");
+    meshName = new QComboBox(true, originBox, "meshName");
+    meshName->setAutoCompletion(true);
+    meshName->setInsertionPolicy(QComboBox::NoInsertion);
+    meshName->insertItem(defaultItem);
+    meshName->setCurrentItem(0);
+    meshName->setEditText(defaultItem);
+    connect(meshName, SIGNAL(activated(int)), this, SLOT(meshNameChanged()));
+    meshLayout->addWidget(meshLabel);
+    meshLayout->addWidget(meshName);
+    originLayout->addLayout(meshLayout, 7, 0);
+
     // Up Axis
     QGroupBox *upAxisBox = new QGroupBox(central, "upAxisBox");
     upAxisBox->setTitle("Up Axis");
@@ -335,12 +366,23 @@ QvisSliceWindow::CreateWindowContents()
 //   Replaced simple QString::sprintf's with a setNum because there seems
 //   to be a bug causing numbers to be incremented by .00001.  See '5263.
 //
+//   Kathleen Bonnell, Tue Jan 25 08:15:23 PST 2005
+//   Added call to UpdateMeshNames. 
+//
 // ****************************************************************************
 
 void
 QvisSliceWindow::UpdateWindow(bool doAll)
 {
     QString temp;
+
+    if (selectedSubject == fileServer)
+    {
+        UpdateMeshNames();
+        return;
+    }
+
+    UpdateMeshNames();
 
     bool orthogonal = sliceAtts->GetAxisType() != SliceAttributes::Arbitrary;
 
@@ -459,6 +501,9 @@ QvisSliceWindow::UpdateWindow(bool doAll)
 //    Jeremy Meredith, Fri Jun 13 12:09:21 PDT 2003
 //    Added a domain number for slice-by-zone and -by-node.
 //
+//    Kathleen Bonnell, Tue Jan 25 08:15:23 PST 2005
+//    Added meshName and meshLabel. 
+//
 // ****************************************************************************
 void
 QvisSliceWindow::UpdateOriginArea()
@@ -480,6 +525,8 @@ QvisSliceWindow::UpdateOriginArea()
     originZoneDomainLineEdit->hide();
     originNodeDomainLabel->hide();
     originNodeDomainLineEdit->hide();
+    meshLabel->hide();
+    meshName->hide();
 
     if (originType==SliceAttributes::Point)
     {
@@ -506,6 +553,11 @@ QvisSliceWindow::UpdateOriginArea()
         originZoneLineEdit->show();
         originZoneDomainLabel->show();
         originZoneDomainLineEdit->show();
+        if (meshName->count() > 1)
+        {
+            meshLabel->show();
+            meshName->show();
+        }
     }
 
     if (originType==SliceAttributes::Node)
@@ -514,6 +566,11 @@ QvisSliceWindow::UpdateOriginArea()
         originNodeLineEdit->show();
         originNodeDomainLabel->show();
         originNodeDomainLineEdit->show();
+        if (meshName->count() > 1)
+        {
+            meshLabel->show();
+            meshName->show();
+        }
     }
 }
 
@@ -552,6 +609,9 @@ QvisSliceWindow::UpdateOriginArea()
 //
 //   Jeremy Meredith, Fri Jun 13 12:09:30 PDT 2003
 //   Added a domain number for slice-by-zone and -by-node.
+//
+//   Kathleen Bonnell, Tue Jan 25 08:15:23 PST 2005
+//   Added meshName.
 //
 // ****************************************************************************
 
@@ -780,6 +840,25 @@ QvisSliceWindow::GetCurrentValues(int which_widget)
                 "Resetting to the last good value %d.", d);
             Message(msg);
             sliceAtts->SetOriginNodeDomain(d);
+        }
+    }
+    // Do the meshName 
+    if(which_widget == 10 || doAll)
+    {
+        temp = meshName->currentText();
+        okay = !temp.isEmpty();
+        if(okay)
+        {
+            sliceAtts->SetMeshName(temp.latin1());
+        }
+
+        if(!okay)
+        {
+            msg.sprintf("The value of meshName was invalid. " 
+                "Resetting to the last good value of %s.", 
+                sliceAtts->GetMeshName().c_str());
+            Message(msg);
+            sliceAtts->SetMeshName(sliceAtts->GetMeshName());
         }
     }
 
@@ -1212,5 +1291,92 @@ QvisSliceWindow::normalTypeChanged(int index)
     temp.sprintf("%g %g %g", dptr[0], dptr[1], dptr[2]);
     upAxisLineEdit->setText(temp);
 
+    Apply();
+}
+
+// ****************************************************************************
+//  Method: QvisSliceWindow::UpdateMeshNames
+//
+//  Purpose: 
+//    This method retrieves the mesh names from the fileServer and stores
+//    them in the meshName combo box.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   January 25, 2005 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+QvisSliceWindow::UpdateMeshNames()
+{
+    meshName->blockSignals(true);
+    meshName->clear();
+    if (fileServer) 
+    {
+        const avtDatabaseMetaData *md = 
+            fileServer->GetMetaData(fileServer->GetOpenFile());
+        if (md)
+        {
+            stringVector meshNames = md->GetAllMeshNames();
+            for (int i = 0; i < meshNames.size(); i++)
+            {
+                meshName->insertItem(QString(meshNames[i].c_str()));
+            }
+        }
+        if (meshName->count() != 0)
+        {
+            QString mn(sliceAtts->GetMeshName().c_str());
+            if (mn == defaultItem)
+            {
+                meshName->setCurrentItem (0);
+            }
+            else
+            {
+                QListBox *lb = meshName->listBox();
+                int idx = lb->index(lb->findItem(mn));
+                idx = (idx == -1 ? 0 : idx);
+                meshName->setCurrentItem (idx);
+            }
+        }
+    }
+    if (meshName->count() == 0)
+    {
+        meshName->insertItem(defaultItem);
+        meshName->setCurrentItem(0);
+        meshName->setEnabled(false);
+        meshLabel->setEnabled(false);
+    }
+    else if (meshName->count() == 1)
+    {
+        meshName->setEnabled(false);
+        meshLabel->setEnabled(false);
+    }
+    else 
+    {
+        meshName->setEnabled(true);
+        meshLabel->setEnabled(true);
+    }
+}
+
+
+// ****************************************************************************
+//  Method: QvisSliceWindow::meshNameChanged
+//
+//  Purpose: 
+//   This is a Qt slot function that sets the meshName. 
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   January 25, 2005 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+QvisSliceWindow::meshNameChanged()
+{
+    GetCurrentValues(10);
     Apply();
 }

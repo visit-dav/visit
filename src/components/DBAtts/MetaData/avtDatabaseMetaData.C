@@ -6521,3 +6521,32 @@ avtDatabaseMetaData::GetAllVariableNames(const std::string &activeVar) const
     }
     return vars;
 }
+
+
+// ****************************************************************************
+//  Function: GetAllMeshNames
+//
+//  Purpose:
+//    Retrieves names of all mesh defined on this database. 
+//
+//  Returns:
+//    A list of mesh names.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   January 21, 2005 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+const stringVector
+avtDatabaseMetaData::GetAllMeshNames() const
+{
+    int i;
+    stringVector meshNames;
+    for (i = 0; i < GetNumMeshes(); i++) 
+    {
+        meshNames.push_back(GetMesh(i)->name);
+    }
+    return meshNames;
+}

@@ -78,6 +78,9 @@ class  PickAttributes;
 //    Kathleen Bonnell, Mon Jan  3 13:26:20 PST 2005 
 //    Add method 'GetSIL'. 
 //
+//    Kathleen Bonnell, Tue Jan 25 07:59:28 PST 2005 
+//    Added const char* arg to QueryCoords.
+//
 // ****************************************************************************
 
 class DATABASE_API avtSourceFromDatabase : public avtTerminatingDatasetSource
@@ -105,7 +108,7 @@ class DATABASE_API avtSourceFromDatabase : public avtTerminatingDatasetSource
     void                DatabaseProgress(int, int, const char *);
     virtual void        Query(PickAttributes *);
     virtual bool        QueryCoords(const std::string &, const int, const int,
-                                    const int, float[3], const bool, const bool);
+                                    const int, float[3], const bool, const bool, const char *mn = NULL);
     virtual bool        FindElementForPoint(const char *, const int, 
                             const int, const char *, float[3], int &);
     virtual void        GetDomainName(const std::string &, const int, 
