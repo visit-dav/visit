@@ -30,6 +30,11 @@ using std::vector;
 //  Programmer:  Hank Childs
 //  Creation:    October 8, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Mon Aug 16 16:22:56 PDT 2004
+//    Tell each file format what its domain is.
+//
 // ****************************************************************************
 
 avtMTSDFileFormatInterface::avtMTSDFileFormatInterface(avtMTSDFileFormat **lst,
@@ -37,6 +42,14 @@ avtMTSDFileFormatInterface::avtMTSDFileFormatInterface(avtMTSDFileFormat **lst,
 {
     domains  = lst;
     nDomains = nLst;
+
+    for (int i = 0 ; i < nDomains ; i++)
+    {
+        if (lst[i] != NULL)
+        {
+            lst[i]->SetDomain(i);
+        }
+    }
 }
 
 

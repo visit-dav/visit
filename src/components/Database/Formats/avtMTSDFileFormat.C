@@ -24,6 +24,11 @@ const int avtMTSDFileFormat::MAX_FILES = 1000;
 //  Programmer:  Hank Childs
 //  Creation:    October 8, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Mon Aug 16 16:22:56 PDT 2004
+//    Initialize myDomain.
+//
 // ****************************************************************************
 
 avtMTSDFileFormat::avtMTSDFileFormat(const char * const *names, int nNames)
@@ -40,6 +45,7 @@ avtMTSDFileFormat::avtMTSDFileFormat(const char * const *names, int nNames)
     {
         filenames[i] = NULL;
     }
+    myDomain = -1;
 }
 
 

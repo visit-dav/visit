@@ -31,6 +31,9 @@ class avtMaterial;
 //    Made ExhangeVector into two methods to handle different underlying
 //    data types (int, float).
 //
+//    Hank Childs, Sat Aug 14 06:41:00 PDT 2004
+//    Added ghost nodes.
+//
 // ****************************************************************************
 class DATABASE_API avtDomainBoundaries
 {
@@ -59,6 +62,8 @@ class DATABASE_API avtDomainBoundaries
     virtual vector<avtMixedVariable*> ExchangeMixVar(vector<int>     domainNum,
                                         const vector<avtMaterial*>   mats,
                                         vector<avtMixedVariable*>    mixvars) =0;
+    virtual void                      CreateGhostNodes(vector<int>   domainNum,
+                                               vector<vtkDataSet*>   meshes)  =0;
     virtual bool                      ConfirmMesh(vector<int>      domainNum,
                                                vector<vtkDataSet*> meshes)  =0;
 };

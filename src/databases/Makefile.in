@@ -111,6 +111,9 @@
 #   Brad Whitlock, Fri Aug 13 14:29:40 PST 2004
 #   Added Pixie.
 #
+#   Jeremy Meredith, Mon Aug 23 14:54:51 PDT 2004
+#   Added the Dune plugin.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -127,7 +130,7 @@ MILI=Mili
 PDB=KullLite PDB
 SAF=SAF
 SAMPLES=Rect Hex
-REQUIRED=ANALYZE BOV Curve2D EnSight Image Lines OVERFLOW \
+REQUIRED=ANALYZE BOV Curve2D Dune EnSight Image Lines OVERFLOW \
  PLOT2D PLOT3D Point3D STL Silo Spheral Vista VTK WavefrontOBJ
 
 OPTIONAL=

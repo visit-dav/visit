@@ -638,7 +638,7 @@ void vtkExodusReader::Execute()
 
   // Extra arrays that the reader can generate.
   this->GenerateExtraArrays();
-  
+
   // Reclaim any extra space.
   output->Squeeze();
   
@@ -683,6 +683,11 @@ void vtkExodusReader::ReadGeometry(int exoid)
 //   Mark C. Miller, Mon Aug  9 19:12:24 PDT 2004
 //   Added code to read global element ids. If exodus winds up generating
 //   "default" ones for us, we toss 'em.
+//
+//   Hank Childs, Mon Aug 16 17:04:17 PDT 2004
+//   Don't blocks where there are zero elements in that block -- it is causing
+//   warnings in the debug logs.
+//
 //----------------------------------------------------------------------------
 void vtkExodusReader::ReadCells(int exoid)
 {
@@ -790,6 +795,9 @@ void vtkExodusReader::ReadCells(int exoid)
   int currentIndex = 0;
   for (i = this->StartBlock, idx=0 ; i <= this->EndBlock; i++, idx++)
     {
+    if (num_elem_in_block[idx] <= 0)
+      continue;
+
     // cellNumPoints may be smaller than num_nodes_per_elem 
     // because of higher order cells.
     len = strlen(elem_type[idx].c_str());
@@ -836,7 +844,8 @@ void vtkExodusReader::ReadCells(int exoid)
     else
       {
       vtkErrorMacro("Cannot handle type: " << elem_type[idx].c_str() 
-                    << " with " << num_nodes_per_elem[idx] << " nodes.");
+                    << " with " << num_nodes_per_elem[idx] << " nodes."
+                    << "Num elem in block = " << num_elem_in_block[idx]);
       continue;
       }
       

@@ -1,13 +1,18 @@
+// ************************************************************************* //
+//                      avtUnstructuredDomainBoundaries.C                    //
+// ************************************************************************* //
+
 #include <avtUnstructuredDomainBoundaries.h>
 
 #include <vtkCellData.h>
 #include <vtkFloatArray.h>
 #include <vtkIdList.h>
 #include <vtkIntArray.h>
+#include <vtkPointData.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnstructuredGrid.h>
 
-
+#include <avtGhostData.h>
 #include <avtMaterial.h>
 #include <avtMixedVariable.h>
 
@@ -1468,3 +1473,53 @@ avtUnstructuredDomainBoundaries::CommunicateDataInformation(
     MPI_Barrier(MPI_COMM_WORLD);
 #endif
 }
+
+
+// ****************************************************************************
+//  Method: avtUnstructuredDomainBoundaries::CreateGhostNodes
+//
+//  Purpose:
+//      Creates ghost nodes.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 16, 2004
+//
+// ****************************************************************************
+
+void
+avtUnstructuredDomainBoundaries::CreateGhostNodes(vector<int> domainNum,
+                                                  vector<vtkDataSet*> meshes)
+{
+    int  i, j;
+
+    for (i = 0 ; i < domainNum.size() ; i++)
+    {
+        vtkDataSet *ds = meshes[i];
+        int npts = ds->GetNumberOfPoints();
+
+        vtkUnsignedCharArray *gn = vtkUnsignedCharArray::New();
+        gn->SetNumberOfTuples(npts);
+        gn->SetName("vtkGhostNodes");
+        unsigned char *gnp = gn->GetPointer(0);
+        for (j = 0 ; j < npts ; j++)
+            gnp[j] = 0;
+
+        for (j = 0 ; j < giveIndex.size() ; j++)
+        {
+            if (giveIndex[j].first != domainNum[i])
+                continue;
+            std::map<int,int> &thisMap = sharedPointsMap[giveIndex[j].first];
+            std::map<int,int>::iterator p = thisMap.begin();
+            for (p = thisMap.begin() ; p != thisMap.end() ; p++)
+            {
+                int node = (*p).first;
+                avtGhostData::AddGhostNodeType(gnp[node], DUPLICATED_NODE);
+            }
+        }
+
+        ds->GetPointData()->AddArray(gn);
+        gn->Delete();
+    }
+}
+
+

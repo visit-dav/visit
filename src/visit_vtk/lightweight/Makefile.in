@@ -44,6 +44,9 @@
 #    Jeremy Meredith, Wed Jun 23 15:36:29 PDT 2004
 #    Added voxel and pixel cases.
 #
+#    Hank Childs, Wed Aug 18 08:34:12 PDT 2004
+#    Added ugrid facelist filter and polydata relevant points from "full".
+#
 ##############################################################################
 
 ##
@@ -66,8 +69,10 @@ SRC=InitVTKNoGraphics.C \
     ClipCasesVox.C \
     vtkDataSetFromVolume.C \
     vtkDebugStream.C \
+    vtkPolyDataRelevantPointsFilter.C \
     vtkTriangulationTables.C \
     vtkUnstructuredGridBoundaryFilter.C \
+    vtkUnstructuredGridFacelistFilter.C \
     vtkVisItPointLocator.C \
     vtkVisItUtility.C 
 

@@ -226,6 +226,10 @@
 #    Renamed vtkHankAxisActor2D to vtkVisItAxisActor2D, similar for 
 #    vtkHankTIFFWriter, vtkKatCubeAxesActor and vtkKatAxisActor.
 #
+#    Hank Childs, Wed Aug 18 08:34:12 PDT 2004
+#    Moved unstructured grid facelist filter and poly-data relevant points to
+#    lightweight directory.
+#
 #    Kathleen Bonnell, Thu Aug 19 15:29:46 PDT 2004 
 #    Added vtkVisItGlyph3D. 
 #
@@ -252,7 +256,6 @@ SRC=InitVTK.C \
     vtkOBJWriter.C \
     vtkOnionPeelFilter.C \
     vtkPPMWriter.C \
-    vtkPolyDataRelevantPointsFilter.C \
     vtkRGBWriter.C \
     vtkRectilinearGridFacelistFilter.C \
     vtkRubberBandMapper2D.C \
@@ -265,7 +268,6 @@ SRC=InitVTK.C \
     vtkTimeSliderActor.C \
     vtkTriad2D.C \
     vtkUniqueFeatureEdges.C \
-    vtkUnstructuredGridFacelistFilter.C \
     vtkUnstructuredGridRelevantPointsFilter.C \
     vtkVectorGlyph.C \
     vtkVectorReduceFilter.C \

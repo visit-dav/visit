@@ -35,6 +35,11 @@ class avtMaterial;
 //  Programmer:  Akira Haddox
 //  Creation:    August 11, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Mon Aug 16 08:47:27 PDT 2004
+//    Added CreateGhostNodes.
+//
 // ****************************************************************************
 
 class DATABASE_API avtUnstructuredDomainBoundaries : public avtDomainBoundaries
@@ -77,6 +82,9 @@ class DATABASE_API avtUnstructuredDomainBoundaries : public avtDomainBoundaries
                                         const vector<avtMaterial*>   mats,
                                         vector<avtMixedVariable*>    mixvars);
     
+    virtual void                      CreateGhostNodes(vector<int>   domainNum,
+                                               vector<vtkDataSet*> meshes);
+
     virtual bool                      ConfirmMesh(vector<int>      domainNum,
                                         vector<vtkDataSet*> meshes);
     
