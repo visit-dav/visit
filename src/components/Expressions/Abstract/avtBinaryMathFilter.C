@@ -85,6 +85,9 @@ avtBinaryMathFilter::~avtBinaryMathFilter()
 //    Hank Childs, Wed Dec 10 11:11:46 PST 2003
 //    Do a better job of handling variables with different centerings.
 //
+//    Hank Childs, Thu Apr 22 11:11:33 PDT 2004
+//    When the centerings are different, always use zonal.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -108,6 +111,7 @@ avtBinaryMathFilter::DeriveVariable(vtkDataSet *in_ds)
     }
 
     // Get the second variable.
+    bool ownData1 = false;
     bool ownData2 = false;
     if (centering == AVT_ZONECENT)
     {
@@ -134,8 +138,10 @@ avtBinaryMathFilter::DeriveVariable(vtkDataSet *in_ds)
             data2 = in_ds->GetCellData()->GetArray(varnames[1]);
             if (data2 != NULL)
             {
-                data2 = Recenter(in_ds, data2, AVT_ZONECENT);
-                ownData2 = true;
+                // Recenter data1 so it will match data2.  We want both zonal.
+                data1 = Recenter(in_ds, data1, AVT_NODECENT);
+                centering = AVT_ZONECENT;
+                ownData1 = true;
             }
             else
             {
@@ -164,6 +170,10 @@ avtBinaryMathFilter::DeriveVariable(vtkDataSet *in_ds)
         GetOutput()->GetInfo().GetAttributes().SetVariableDimension(ncomps);
     }
 
+    if (ownData1)
+    {
+        data1->Delete();
+    }
     if (ownData2)
     {
         data2->Delete();
