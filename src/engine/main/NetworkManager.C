@@ -1,3 +1,4 @@
+#include <snprintf.h>
 #include <NetworkManager.h>
 #include <DataNetwork.h>
 #include <ClonedDataNetwork.h>
@@ -14,6 +15,7 @@
 #include <OperatorPluginManager.h>
 #include <OperatorPluginInfo.h>
 #include <PickAttributes.h>
+#include <avtCallback.h>
 #include <avtExtents.h>
 #include <avtNullData.h>
 #include <avtDatabaseMetaData.h>
@@ -1324,6 +1326,9 @@ NetworkManager::GetOutput(bool respondWithNullData, bool calledForRender)
 //    
 //    Mark C. Miller, Fri Apr  2 11:06:09 PST 2004
 //    Removed call to FullFrameOff
+//
+//    Mark C. Miller, Tue Apr 20 07:44:34 PDT 2004
+//    Added code to issue a warning if a plot's actor has no data
 // ****************************************************************************
 avtDataObjectWriter_p
 NetworkManager::Render(intVector plotIds, bool getZBuffer, bool do3DAnnotsOnly)
@@ -1395,7 +1400,16 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, bool do3DAnnotsOnly)
                  avtActor_p anActor = workingNetSaved->GetActor(dob,
                                                             &windowAttributes);
                  visitTimer->StopTimer(t5, "Calling GetActor for DOB");
-    
+
+                 bool polysOnly = false;
+                 if (anActor->GetDataObject()->GetNumberOfCells(polysOnly) == 0) 
+                 {
+                     char message[256];
+                     SNPRINTF(message, sizeof(message),
+                         "The plot with id = %d yielded no data", plotIds[i]);
+                     avtCallback::IssueWarning(message);
+                 }
+
                  int t6 = visitTimer->StartTimer();
                  viswin->AddPlot(anActor);
                  visitTimer->StopTimer(t6, "Adding plot to the vis window");

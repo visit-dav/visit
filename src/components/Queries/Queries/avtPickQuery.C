@@ -603,6 +603,10 @@ avtPickQuery::Execute(vtkDataSet *ds, const int dom)
 //    Hank Childs, Fri Apr  9 16:25:40 PDT 2004
 //    Minimize work done by creating new SIL.
 //
+//    Kathleen Bonnell, Mon Apr 19 15:40:23 PDT 2004 
+//    Simplified use of pspec and dspec.   No longer use dspec's timestep
+//    to set pickAtts' timestep.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -656,11 +660,9 @@ avtPickQuery::ApplyFilters(avtDataObject_p inData)
         pickAtts.SetNeedTransformMessage(false);
     }
 
-    avtDataSpecification_p dspec = inData->GetTerminatingSource()
-        ->GetGeneralPipelineSpecification()->GetDataSpecification();
+    avtDataSpecification_p dspec = 
+        inData->GetTerminatingSource()->GetFullDataSpecification();
 
-    int ts = dspec->GetTimestep();
-    pickAtts.SetTimeStep(ts);
     intVector dlist;
     dspec->GetSIL().GetDomainList(dlist);
     if (dlist.size() == 1 && dspec->UsesAllDomains())
@@ -674,35 +676,34 @@ avtPickQuery::ApplyFilters(avtDataObject_p inData)
     dlist.clear();
     dlist.push_back(pickAtts.GetDomain());
 
-    avtPipelineSpecification_p pspec = 
-        inData->GetTerminatingSource()->GetGeneralPipelineSpecification();
+
     stringVector vars = pickAtts.GetVariables();
 
-    pspec->SetDataSpecification(dspec);
-
-    pspec->GetDataSpecification()->GetRestriction()->SuspendCorrectnessChecking();
-    pspec->GetDataSpecification()->GetRestriction()->TurnOnAll();
+    dspec->GetRestriction()->SuspendCorrectnessChecking();
+    dspec->GetRestriction()->TurnOnAll();
     int i;
     for (i = 0; i < silUseSet.size(); i++)
     {
         if (silUseSet[i] == 0)
-            pspec->GetDataSpecification()->GetRestriction()->TurnOffSet(i);
+            dspec->GetRestriction()->TurnOffSet(i);
     }
-    pspec->GetDataSpecification()->GetRestriction()->EnableCorrectnessChecking();
+    dspec->GetRestriction()->EnableCorrectnessChecking();
 
     if (!singleDomain)
     {
-        pspec->GetDataSpecification()->GetRestriction()->RestrictDomains(dlist);
+        dspec->GetRestriction()->RestrictDomains(dlist);
     }
 
     for (i = 0; i < vars.size(); i++)
     {
-        if (strcmp(pspec->GetDataSpecification()->GetVariable(), vars[i].c_str()) != 0)
+        if (strcmp(dspec->GetVariable(), vars[i].c_str()) != 0)
         {
-            if (!pspec->GetDataSpecification()->HasSecondaryVariable(vars[i].c_str()))
-                pspec->GetDataSpecification()->AddSecondaryVariable(vars[i].c_str());
+            if (!dspec->HasSecondaryVariable(vars[i].c_str()))
+                dspec->AddSecondaryVariable(vars[i].c_str());
         }
     }
+    avtPipelineSpecification_p pspec = new avtPipelineSpecification(dspec, 0);
+
     avtDataObject_p temp;
     CopyTo(temp, inData);
     eef->SetInput(temp);

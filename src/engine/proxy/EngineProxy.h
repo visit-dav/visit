@@ -180,6 +180,8 @@ class StatusAttributes;
 //    Mark C. Miller, Wed Apr 14 16:41:32 PDT 2004
 //    Added argument for extents type string to SetWinAnnotAtts
 //
+//    Mark C. Miller, Tue Apr 20 07:44:34 PDT 2004
+//    Added waitCB and cbData args to Render method
 // ****************************************************************************
 
 class ENGINE_PROXY_API EngineProxy : public RemoteProxyBase
@@ -232,7 +234,8 @@ public:
     void                     SetWinAnnotAtts(const WindowAttributes*,
                                              const AnnotationAttributes*,
                                              std::string);
-    avtDataObjectReader_p    Render(bool, const intVector&, bool);
+    avtDataObjectReader_p    Render(bool, const intVector&, bool,
+                                    void (*waitCB)(void *), void *cbData);
 
     avtDataObjectReader_p    Execute(bool, void (*waitCB)(void *), void *cbData);
 

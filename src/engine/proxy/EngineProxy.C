@@ -737,12 +737,16 @@ EngineProxy::DefineVirtualDatabase(const std::string &fileFormat,
 // Modifications:
 //    Mark C. Miller, Mon Mar 29 15:01:58 PST 2004
 //    Added new bool arg for controlling 3D annoations
+//
+//    Mark C. Miller, Tue Apr 20 07:44:34 PDT 2004
+//    Added new waitCB and cbData args as well as a call to the waitCB in the
+//    inner loop to support warning messages comming from engine
 //   
 // ****************************************************************************
 
 avtDataObjectReader_p
 EngineProxy::Render(bool sendZBuffer, const intVector& networkIDs,
-    bool do3DAnnotsOnly)
+    bool do3DAnnotsOnly, void (*waitCB)(void *), void *cbData)
 {
 
     // Send a status message indicating that we're starting a scalable render 
@@ -770,6 +774,9 @@ EngineProxy::Render(bool sendZBuffer, const intVector& networkIDs,
             Warning(renderRPC.GetMessage().c_str());
         }
 
+        // If we passed a callback function, execute it.
+        if(waitCB)
+            waitCB(cbData);
     }
 
     // Check for abort

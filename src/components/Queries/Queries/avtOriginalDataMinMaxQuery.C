@@ -88,6 +88,9 @@ avtOriginalDataMinMaxQuery::~avtOriginalDataMinMaxQuery()
 //    Kathleen Bonnell, Wed Apr 14 18:05:08 PDT 2004 
 //    Added condense filter. 
 //
+//    Kathleen Bonnell, Tue Apr 20 09:36:58 PDT 2004 
+//    Ensure that we are working with correct var and timestep. 
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -95,23 +98,21 @@ avtOriginalDataMinMaxQuery::ApplyFilters(avtDataObject_p inData)
 {
     Preparation(inData);
 
-    avtDataSpecification_p dspec;
-    if (!timeVarying)
-    {
-        dspec = inData->GetTerminatingSource()->
-            GetGeneralPipelineSpecification()->GetDataSpecification();
-    }
-    else 
-    {
-        avtDataSpecification_p oldSpec = inData->GetTerminatingSource()->
-            GetGeneralPipelineSpecification()->GetDataSpecification();
+    avtDataSpecification_p dspec = 
+        inData->GetTerminatingSource()->GetFullDataSpecification();
 
-        dspec = new avtDataSpecification(oldSpec->GetVariable(), 
+    if (dspec->GetVariable() != queryAtts.GetVariables()[0] ||
+        dspec->GetTimestep() != queryAtts.GetTimeStep() ||
+        timeVarying)
+    {
+        dspec = new avtDataSpecification(queryAtts.GetVariables()[0].c_str(), 
                                          queryAtts.GetTimeStep(), 
-                                         oldSpec->GetRestriction());
+                                         dspec->GetRestriction());
     }
+
     avtPipelineSpecification_p pspec =
         new avtPipelineSpecification(dspec, queryAtts.GetPipeIndex()); 
+
     avtDataObject_p temp;
     CopyTo(temp, inData);
     eef->SetInput(temp);

@@ -57,6 +57,9 @@ avtNumZonesQuery::~avtNumZonesQuery()
 //    Rewrote code to work correctly in parallel when some processors have
 //    not done any work and thus have a different value for ghost type. 
 //    
+//    Kathleen Bonnell, Tue Apr 20 12:49:46 PDT 2004 
+//    Modified msg creation so that it works properly on all platforms. 
+//
 // ****************************************************************************
 
 void
@@ -132,14 +135,16 @@ avtNumZonesQuery::PerformQuery(QueryAttributes *qA)
     if (gt != AVT_HAS_GHOSTS)
     {
         qA->SetResultsValue((double)totalZones[0]);
+        qA->SetResultsMessage(msg);
     }
     else
     {
-        SNPRINTF(msg, 200, "%s\nThe number of ghost zones is %d.", msg, totalZones[1]);
+        char msg2[200];
+        SNPRINTF(msg2, 200, "%s\nThe number of ghost zones is %d.", msg, totalZones[1]);
         double results[2] = {(double) totalZones[0], (double) totalZones[1]};
         qA->SetResultsValues(results, 2);
+        qA->SetResultsMessage(msg2);
     }
-    qA->SetResultsMessage(msg);
     UpdateProgress(1, 0);
 }
 

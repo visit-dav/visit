@@ -5727,6 +5727,10 @@ avtGenericDatabase::QuerySpecies(const std::string &varName, const int dom,
 //  Programmer: Kathleen Bonnell
 //  Creation:   November 13, 2003 
 //
+//  Modifications:
+//    Kathleen Bonnell, Mon Apr 19 15:49:05 PDT 2004 
+//    Ensure that the timestep being queried is the active one.
+//    
 // ****************************************************************************
 
 bool                
@@ -5734,6 +5738,8 @@ avtGenericDatabase::FindElementForPoint(const char *var, const int ts,
                         const int dom, const char *elementName, 
                         float pt[3], int &elNum)
 {
+    ActivateTimestep(ts);
+
     string mesh = GetMetaData(ts)->MeshForVar(var);
     vtkDataSet *ds = GetMeshDataset(mesh.c_str(), ts, dom, "_all");
 
@@ -5764,12 +5770,17 @@ avtGenericDatabase::FindElementForPoint(const char *var, const int ts,
 //  Programmer: Kathleen Bonnell
 //  Creation:   December 22, 2003
 //
+//    Kathleen Bonnell, Mon Apr 19 15:49:05 PDT 2004 
+//    Ensure that the timestep being queried is the active one.
+//    
 // ****************************************************************************
 
 void
 avtGenericDatabase::GetDomainName(const std::string &varName, const int ts,
                                 const int dom, std::string &domName)
 {
+    ActivateTimestep(ts);
+
     string mesh = GetMetaData(ts)->MeshForVar(varName.c_str());
     const avtMeshMetaData *mmd = GetMetaData(ts)->GetMesh(mesh);
     char temp[256];
