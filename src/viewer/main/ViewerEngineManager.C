@@ -958,6 +958,10 @@ ViewerEngineManager::LaunchMessage(const char *hostName) const
 // Programmer: Mark C. Miller 
 // Creation:   November 11, 2003 
 //
+// Modifications:
+//   Brad Whitlock, Thu Dec 11 08:27:14 PDT 2003
+//   Fixed a small coding error related to the declaration of engineIndex.
+//
 // ****************************************************************************
 
 bool
@@ -1001,7 +1005,7 @@ ViewerEngineManager::ExternalRender(std::vector<const char*> pluginIDsList,
         std::map<std::string,std::vector<int> >::iterator pos;
         for (pos = perEnginePlotIds.begin(); pos != perEnginePlotIds.end(); pos++)
         {
-            int engineIndex = GetEngineIndex(pos->first.c_str());
+            engineIndex = GetEngineIndex(pos->first.c_str());
 
             if (!SetWinAnnotAtts(pos->first.c_str(), &winAtts, &annotAtts))
             {

@@ -58,6 +58,9 @@ class VisWindowColleagueProxy;
 //    Eric Brugger, Wed Jun 25 14:09:15 PDT 2003
 //    I added SetLineWidth.
 //
+//    Kathleen Bonnell, Tue Dec 16 11:34:33 PST 2003 
+//    Added SetLabelScaling, autolabelscalng, userPowX, userPowY.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinAxes : public VisWinColleague
@@ -98,6 +101,7 @@ class VISWINDOW_API VisWinAxes : public VisWinColleague
     void                      SetXTitleFontHeight(double);
     void                      SetYTitleFontHeight(double);
     void                      SetLineWidth(int);
+    void                      SetLabelScaling(bool, int, int);
 
   protected:
     vtkHankAxisActor2D       *xAxis, *yAxis;
@@ -111,6 +115,9 @@ class VISWINDOW_API VisWinAxes : public VisWinColleague
     int                       powY;
     char                      unitsX[256];
     char                      unitsY[256];
+    bool                      autolabelScaling;
+    int                       userPowX;
+    int                       userPowY;
     
     void                      AdjustValues(float, float, float, float);
     void                      AdjustRange(float, float, float, float);

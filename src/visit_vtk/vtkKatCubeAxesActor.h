@@ -234,7 +234,8 @@ public:
     { this->SetTickLocation(VTK_TICKS_OUTSIDE); };
   void SetTickLocationToBoth(void) 
     { this->SetTickLocation(VTK_TICKS_BOTH); };
-  
+
+  void SetLabelScaling(bool, int, int, int);  
   // Description:
   // Shallow copy of a KatCubeAxesActor.
   void ShallowCopy(vtkKatCubeAxesActor *actor);
@@ -301,12 +302,16 @@ private:
   int lastXPow;
   int lastYPow;
   int lastZPow;
+  int userXPow;
+  int userYPow;
+  int userZPow;
+  bool autoLabelScaling;
   int lastXAxisDigits;
   int lastYAxisDigits;
   int lastZAxisDigits;
-  float LastXExtent;
-  float LastYExtent;
-  float LastZExtent;
+  float LastXRange[2];
+  float LastYRange[2];
+  float LastZRange[2];
   int   LastFlyMode;
 
   int   renderAxesX[4];

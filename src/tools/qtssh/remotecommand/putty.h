@@ -1,7 +1,7 @@
 #ifndef PUTTY_PUTTY_H
 #define PUTTY_PUTTY_H
 
-#include "network.h"
+#include "puttynetwork.h"
 
 #define PUTTY_REG_POS "Software\\SimonTatham\\PuTTY"
 #define PUTTY_REG_PARENT "Software\\SimonTatham"

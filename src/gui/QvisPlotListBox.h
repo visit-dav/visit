@@ -45,7 +45,6 @@ public:
     bool NeedsToBeRegenerated(const PlotList *) const;
     bool NeedToUpdateSelection(const PlotList *) const;
 signals:
-    void selectionChanged();
     void activateSubsetWindow();
     void activatePlotWindow(int plotType);
     void activateOperatorWindow(int operatorType);

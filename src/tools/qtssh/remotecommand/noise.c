@@ -8,7 +8,7 @@
 
 #include "putty.h"
 #include "ssh.h"
-#include "storage.h"
+#include "puttystorage.h"
 
 /*
  * GetSystemPowerStatus function.

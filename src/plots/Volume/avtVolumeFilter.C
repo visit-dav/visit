@@ -229,6 +229,10 @@ avtVolumeFilter::GetOutput(void)
 //    Modified to handle the splitting of the view attributes into 2d and
 //    3d parts.
 //
+//    Hank Childs, Tue Dec 16 10:43:53 PST 2003
+//    Do a better job of setting up variable names based on rules that exclude
+//    "vtk" and "avt" substrings.
+//
 // ****************************************************************************
 
 void
@@ -287,15 +291,20 @@ avtVolumeFilter::Execute(void)
         avtDatasetExaminer::GetVariableList(input, vl);
         int primIndex = -1;
         int opacIndex = -1;
+        int count = 0;
         for (int i = 0 ; i < vl.nvars ; i++)
         {
+            if ((strstr(vl.varnames[i].c_str(), "vtk") != NULL) &&
+                (strstr(vl.varnames[i].c_str(), "avt") != NULL))
+                count++;
+
             if (vl.varnames[i] == primaryVariable)
             {
-                primIndex = i;
+                primIndex = count;
             }
             if (vl.varnames[i] == atts.GetOpacityVariable())
             {
-                opacIndex = i;
+                opacIndex = count;
             }
         }
         if (primIndex == -1)

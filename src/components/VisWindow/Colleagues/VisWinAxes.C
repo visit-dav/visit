@@ -58,6 +58,9 @@ using   std::vector;
 //    Eric Brugger, Fri Jan 24 09:06:18 PST 2003
 //    Changed the way the font sizes for the axes labels are set.
 //
+//    Kathleen Bonnell, Tue Dec 16 11:47:25 PST 2003 
+//    Intialize autlabelscaling, userPowX,  userPowY. 
+//
 // ****************************************************************************
 
 VisWinAxes::VisWinAxes(VisWindowColleagueProxy &p) : VisWinColleague(p)
@@ -103,6 +106,10 @@ VisWinAxes::VisWinAxes(VisWindowColleagueProxy &p) : VisWinColleague(p)
     powX = 0;
     powY = 0;
     SetTitle();
+
+    autolabelScaling = true; 
+    userPowX = 0;
+    userPowY = 0;
 }
 
 
@@ -652,19 +659,33 @@ VisWinAxes::GetRange(float &min_x, float &max_x, float &min_y, float &max_y)
 //    Eric Brugger, Fri Feb 28 11:18:28 PST 2003
 //    Modified the routine to leave the input values unchanged.
 //
+//    Kathleen Bonnell, Tue Dec 16 11:47:25 PST 2003 
+//    Utilize user-set exponents if autolabelscaling is off. 
+//
 // ****************************************************************************
 
 void
 VisWinAxes::AdjustValues(float min_x, float max_x, float min_y, float max_y)
 {
-    int curPowX = LabelExponent(min_x, max_x);
+    int curPowX;
+    int curPowY;
+    if (autolabelScaling) 
+    {
+        curPowX = LabelExponent(min_x, max_x);
+        curPowY = LabelExponent(min_y, max_y);
+    }
+    else 
+    {
+        curPowX = userPowX;
+        curPowY = userPowY;
+    }
+ 
     if (curPowX != powX)
     {
         powX = curPowX;
         SetTitle();
     }
 
-    int curPowY = LabelExponent(min_y, max_y);
     if (curPowY != powY)
     {
         powY = curPowY;
@@ -1282,6 +1303,9 @@ VisWinAxes::SetLineWidth(int width)
 //    Changed the printing of the y axis label to look nicer when displaying
 //    scientific notation and units.
 //
+//    Kathleen Bonnell, Tue Dec 16 11:47:25 PST 2003 
+//    Use '10e' insted of just 'e' when diplaying scientific notation. 
+//
 // ****************************************************************************
 
 void
@@ -1298,9 +1322,9 @@ VisWinAxes::SetTitle(void)
     else
     {
         if (unitsX[0] == '\0')
-            sprintf(buffer, "%s (e%d)", xTitle, powX);
+            sprintf(buffer, "%s (10e%d)", xTitle, powX);
         else
-            sprintf(buffer, "%s (e%d %s)", xTitle, powX, unitsX);
+            sprintf(buffer, "%s (10e%d %s)", xTitle, powX, unitsX);
     }
     xAxis->SetTitle(buffer);
 
@@ -1314,10 +1338,31 @@ VisWinAxes::SetTitle(void)
     else
     {
         if (unitsY[0] == '\0')
-            sprintf(buffer, "%s\n (e%d)", yTitle, powY);
+            sprintf(buffer, "%s\n (10e%d)", yTitle, powY);
         else
-            sprintf(buffer, " %s\n(e%d %s)", yTitle, powY, unitsY);
+            sprintf(buffer, " %s\n(10e%d %s)", yTitle, powY, unitsY);
     }
     yAxis->SetTitle(buffer);
 }
- 
+
+
+// ****************************************************************************
+//  Method: VisWinAxes::SetLabelScaling
+//
+//  Purpose:
+//      Sets autolabelscaling and the exponents to be used with each axis. 
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   December 16, 2003
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+VisWinAxes::SetLabelScaling(bool autoscale, int upowX, int upowY)
+{
+    autolabelScaling = autoscale;
+    userPowX = upowX;
+    userPowY = upowY;
+} 

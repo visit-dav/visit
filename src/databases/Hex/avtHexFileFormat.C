@@ -14,6 +14,7 @@
 #include <vector>
 #include <string>
 
+#include <vtkCellType.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkFloatArray.h>
 

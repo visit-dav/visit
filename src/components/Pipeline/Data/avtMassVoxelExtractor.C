@@ -93,7 +93,7 @@ avtMassVoxelExtractor::Extract(vtkRectilinearGrid *rgrid)
 
     vtkUnsignedCharArray *ghosts = (vtkUnsignedCharArray *)rgrid->GetCellData()
                                                   ->GetArray("vtkGhostLevels");
-    vector<float *> cell_arrays;
+    std::vector<float *> cell_arrays;
     for (i = 0 ; i < rgrid->GetCellData()->GetNumberOfArrays() ; i++)
     {
         vtkDataArray *arr = rgrid->GetCellData()->GetArray(i);
@@ -103,7 +103,7 @@ avtMassVoxelExtractor::Extract(vtkRectilinearGrid *rgrid)
             continue;
         cell_arrays.push_back((float *) arr->GetVoidPointer(0));
     }
-    vector<float *> pt_arrays;
+    std::vector<float *> pt_arrays;
     for (i = 0 ; i < rgrid->GetPointData()->GetNumberOfArrays() ; i++)
     {
         vtkDataArray *arr = rgrid->GetPointData()->GetArray(i);

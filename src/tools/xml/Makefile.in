@@ -1,4 +1,4 @@
-#                            Copyright 2000 - 2001
+#                            Copyright 2000 - 2003
 #                 The Regents of the University of California.
 #                             All rights reserved.
 # 
@@ -49,6 +49,10 @@
 #    Sean Ahern, Tue Sep  3 15:57:14 PDT 2002
 #    We were missing some of the default rules.
 #
+#    Brad Whitlock, Tue Dec 16 11:22:01 PDT 2003
+#    Added xml2projectfile target though we don't build it by default since
+#    it generates project files for Windows.
+# 
 ##############################################################################
 
 @SET_MAKE@
@@ -78,6 +82,9 @@ DEFINES7 = -DGENERATE_PYTHON
 PROGRAM8 = $(tmpbin)/xml2java
 DEFINES8 = -DGENERATE_JAVA
 
+PROGRAM9 = $(tmpbin)/xml2projectfile
+DEFINES9 = -DGENERATE_PROJECTFILE
+
 SRC=main.C
 OBJ=$(SRC:.C=.o)
 
@@ -87,7 +94,7 @@ LDFLAGS=@QT_LDFLAGS@ @LDFLAGS@ @QT_LIBS@ @LIBS@
 all: $(PROGRAM1) $(PROGRAM2) $(PROGRAM3) $(PROGRAM4) $(PROGRAM5) $(PROGRAM6) $(PROGRAM7) $(PROGRAM8)
 
 clean:
-	$(RM) $(OBJ) $(PROGRAM1) $(PROGRAM2) $(PROGRAM3) $(PROGRAM4) $(PROGRAM5) $(PROGRAM6) $(PROGRAM7) $(PROGRAM8)
+	$(RM) $(OBJ) $(PROGRAM1) $(PROGRAM2) $(PROGRAM3) $(PROGRAM4) $(PROGRAM5) $(PROGRAM6) $(PROGRAM7) $(PROGRAM8) $(PROGRAM9)
 
 $(PROGRAM1): $(SRC)
 	$(CXX) main1.C -o $@ $(CXXFLAGS) $(LDFLAGS) $(DEFINES1)
@@ -112,5 +119,8 @@ $(PROGRAM7): $(SRC)
 
 $(PROGRAM8): $(SRC)
 	$(CXX) main8.C -o $@ $(CXXFLAGS) $(LDFLAGS) $(DEFINES8)
+
+$(PROGRAM9): $(SRC)
+	$(CXX) main9.C -o $@ $(CXXFLAGS) $(LDFLAGS) $(DEFINES9)
 
 @TARGETS@

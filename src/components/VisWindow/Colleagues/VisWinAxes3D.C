@@ -738,3 +738,23 @@ VisWinAxes3D::ReAddToWindow()
         }
     }
 }
+
+
+// ****************************************************************************
+//  Function: SetLabelScaling
+//
+//  Purpose:
+//    Sets the auto label scaling and label exponents for the axes.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   December 16, 2003 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+VisWinAxes3D::SetLabelScaling(bool autoscale, int upowX, int upowY, int upowZ)
+{
+    axes->SetLabelScaling(autoscale, upowX, upowY, upowZ);
+} 

@@ -3996,8 +3996,8 @@ avtDatabaseMetaData::GetNDomains(std::string var) const
         }
     }
 
-    debug1 << "Unable to find mesh \"" << meshname << "\" associated with "
-           << "variable \"" << var << "\"." << endl;
+    debug1 << "Unable to find mesh \"" << meshname.c_str() << "\" associated with "
+           << "variable \"" << var.c_str() << "\"." << endl;
     EXCEPTION1(InvalidVariableException, var);
 }
 

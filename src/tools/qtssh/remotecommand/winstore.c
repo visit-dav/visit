@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "putty.h"
-#include "storage.h"
+#include "puttystorage.h"
 
 static const char *const puttystr = PUTTY_REG_POS "\\Sessions";
 

@@ -326,6 +326,11 @@ ReadKey(const char *key, char **keyval)
  *   name version of the path so we can effectively do visit -movie from
  *   the command line.
  *
+ *   Brad Whitlock, Wed Dec 10 16:12:21 PST 2003
+ *   I changed the default directory that we use if VISITHOME is not
+ *   found. In that case, it now tries to look up VISITDEVDIR. Finally,
+ *   if that is not found then it resorts to using
+ *
  *****************************************************************************/
 
 char *
@@ -346,9 +351,31 @@ AddEnvironment(int useShortFileName)
      */
     if(!haveVISITHOME)
     {
-        static const char *defaultVisItPath = "C:\\VisItWindows\\bin";
-        visitpath = (char *)malloc(strlen(defaultVisItPath) + 1);
-        strcpy(visitpath, defaultVisItPath);
+        int haveVISITDEVDIR = 0;
+        char *visitdevdir = 0;
+        haveVISITDEVDIR = ReadKey("VISITDEVDIR", &visitdevdir);
+
+        if(haveVISITDEVDIR)
+        {
+#if defined(_DEBUG)
+            static const char *configDir = "\\bin\\Debug";
+#else
+            static const char *configDir = "\\bin\\Release";
+#endif
+            visitpath = (char *)malloc(strlen(visitdevdir) + strlen(configDir) + 1);
+            sprintf(visitpath, "%s%s", visitdevdir, configDir);
+        }
+        else
+        {
+            char tmpdir[512];
+#if defined(_DEBUG)
+            sprintf(tmpdir, "C:\\VisItDev%s\\bin\\Debug", VERSION);
+#else
+            sprintf(tmpdir, "C:\\VisItDev%s\\bin\\Release", VERSION);
+#endif
+            visitpath = (char *)malloc(strlen(tmpdir) + 1);
+            strcpy(visitpath, tmpdir);
+        }
     }
 
     /* Turn the long VisIt path into the shortened system path. */

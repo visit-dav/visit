@@ -234,6 +234,10 @@ ViewerQuery::StopObservingPlot()
 //    Hank Childs, Thu Oct  2 14:22:16 PDT 2003
 //    Account for multiple active plots.
 //
+//    Kathleen Bonnell 
+//    Set SILRestriction for the resultsPlot from the SILRestriction of
+//    the originatingPlot. 
+//
 // ****************************************************************************
 
 void
@@ -276,7 +280,8 @@ ViewerQuery::CreateLineout(const bool fromDefault)
  
     int pid = plotList->AddPlot(plotType, vName, replacePlots, false);
     resultsPlot = plotList->GetPlot(pid);
- 
+
+    resultsPlot->SetSILRestriction(originatingPlot->GetSILRestriction()); 
     //
     // Copy operators from the originating plot to the results (curve) plot.
     //

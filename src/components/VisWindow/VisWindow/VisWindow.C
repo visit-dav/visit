@@ -3306,6 +3306,9 @@ VisWindow::GetLightList() const
 //   Eric Brugger, Wed Jun 25 15:45:22 PDT 2003
 //   Added the setting of the line width.
 //
+//   Kathleen Bonnell, Tue Dec 16 11:34:33 PST 2003 
+//   Added the setting of the label scaling.
+//
 // ****************************************************************************
 
 void
@@ -3323,6 +3326,10 @@ VisWindow::UpdateAxes2D()
     int xLabel = annotationAtts.GetXAxisLabels2D();
     int yLabel = annotationAtts.GetYAxisLabels2D();
     axes->SetLabelsVisibility(xLabel, yLabel);
+
+    axes->SetLabelScaling(annotationAtts.GetLabelAutoSetScaling2D(), 
+                          annotationAtts.GetXLabelScaling2D(),
+                          annotationAtts.GetYLabelScaling2D());
 
     //
     // Titles
@@ -3430,6 +3437,9 @@ VisWindow::UpdateAxes2D()
 //   Eric Brugger, Wed Nov  5 14:03:46 PST 2002
 //   Change the names of some of the fields in annotationAtts.
 //
+//   Kathleen Bonnell, Tue Dec 16 11:34:33 PST 2003 
+//   Added the setting of the label scaling.
+//
 // ****************************************************************************
 
 void
@@ -3447,6 +3457,10 @@ VisWindow::UpdateAxes3D()
     axes3D->SetXLabelVisibility(a && annotationAtts.GetXAxisLabels());
     axes3D->SetYLabelVisibility(a && annotationAtts.GetYAxisLabels());
     axes3D->SetZLabelVisibility(a && annotationAtts.GetZAxisLabels());
+    axes3D->SetLabelScaling(annotationAtts.GetLabelAutoSetScaling(), 
+                            annotationAtts.GetXLabelScaling(),
+                            annotationAtts.GetYLabelScaling(),
+                            annotationAtts.GetZLabelScaling());
 
     //
     // Ticks

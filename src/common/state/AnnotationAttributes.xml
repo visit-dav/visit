@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Attribute name="AnnotationAttributes" purpose="This class contains the attributes controlling annotations." exportAPI="STATE_API" exportInclude="state_exports.h">
+  <Attribute name="AnnotationAttributes" purpose="This class contains the attributes controlling annotations." persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h">
     <Enum name="Ticks">
       Off
       Bottom
@@ -30,72 +30,241 @@
       Solid
       Gradient
     </Enum>
-    <Field name="axesFlag2D" type="bool">true</Field>
-    <Field name="axesAutoSetTicks2D" type="bool">true</Field>
-    <Field name="xAxisLabels2D" type="bool">true</Field>
-    <Field name="yAxisLabels2D" type="bool">true</Field>
-    <Field name="xAxisTitle2D" type="bool">true</Field>
-    <Field name="yAxisTitle2D" type="bool">true</Field>
-    <Field name="xGridLines2D" type="bool">false</Field>
-    <Field name="yGridLines2D" type="bool">false</Field>
-    <Field name="xMajorTickMinimum2D" type="double">0.</Field>
-    <Field name="yMajorTickMinimum2D" type="double">0.</Field>
-    <Field name="xMajorTickMaximum2D" type="double">1.</Field>
-    <Field name="yMajorTickMaximum2D" type="double">1.</Field>
-    <Field name="xMajorTickSpacing2D" type="double">0.2</Field>
-    <Field name="yMajorTickSpacing2D" type="double">0.2</Field>
-    <Field name="xMinorTickSpacing2D" type="double">0.02</Field>
-    <Field name="yMinorTickSpacing2D" type="double">0.02</Field>
-    <Field name="xLabelFontHeight2D" type="double">0.02</Field>
-    <Field name="yLabelFontHeight2D" type="double">0.02</Field>
-    <Field name="xTitleFontHeight2D" type="double">0.02</Field>
-    <Field name="yTitleFontHeight2D" type="double">0.02</Field>
-    <Field name="axesLineWidth2D" type="linewidth">0</Field>
-    <Field name="axesTickLocation2D" type="enum" subtype="Location">Outside</Field>
-    <Field name="axesTicks2D" type="enum" subtype="Ticks">BottomLeft</Field>
-    <Field name="axesFlag" type="bool">true</Field>
-    <Field name="axesAutoSetTicks" type="bool">true</Field>
-    <Field name="xAxisLabels" type="bool">true</Field>
-    <Field name="yAxisLabels" type="bool">true</Field>
-    <Field name="zAxisLabels" type="bool">true</Field>
-    <Field name="xAxisTitle" type="bool">true</Field>
-    <Field name="yAxisTitle" type="bool">true</Field>
-    <Field name="zAxisTitle" type="bool">true</Field>
-    <Field name="xGridLines" type="bool">false</Field>
-    <Field name="yGridLines" type="bool">false</Field>
-    <Field name="zGridLines" type="bool">false</Field>
-    <Field name="xAxisTicks" type="bool">true</Field>
-    <Field name="yAxisTicks" type="bool">true</Field>
-    <Field name="zAxisTicks" type="bool">true</Field>
-    <Field name="xMajorTickMinimum" type="double">0.</Field>
-    <Field name="yMajorTickMinimum" type="double">0.</Field>
-    <Field name="zMajorTickMinimum" type="double">0.</Field>
-    <Field name="xMajorTickMaximum" type="double">1.</Field>
-    <Field name="yMajorTickMaximum" type="double">1.</Field>
-    <Field name="zMajorTickMaximum" type="double">1.</Field>
-    <Field name="xMajorTickSpacing" type="double">0.2</Field>
-    <Field name="yMajorTickSpacing" type="double">0.2</Field>
-    <Field name="zMajorTickSpacing" type="double">0.2</Field>
-    <Field name="xMinorTickSpacing" type="double">0.02</Field>
-    <Field name="yMinorTickSpacing" type="double">0.02</Field>
-    <Field name="zMinorTickSpacing" type="double">0.02</Field>
-    <Field name="xLabelFontHeight" type="double">0.02</Field>
-    <Field name="yLabelFontHeight" type="double">0.02</Field>
-    <Field name="zLabelFontHeight" type="double">0.02</Field>
-    <Field name="xTitleFontHeight" type="double">0.02</Field>
-    <Field name="yTitleFontHeight" type="double">0.02</Field>
-    <Field name="zTitleFontHeight" type="double">0.02</Field>
-    <Field name="axesTickLocation" type="enum" subtype="Location">Inside</Field>
-    <Field name="axesType" type="enum" subtype="Axes">ClosestTriad</Field>
-    <Field name="triadFlag" type="bool">true</Field>
-    <Field name="bboxFlag" type="bool">true</Field>
-    <Field name="backgroundColor" type="color">255 255 255 255</Field>
-    <Field name="foregroundColor" type="color">0 0 0 255</Field>
-    <Field name="gradientBackgroundStyle" type="enum" subtype="GradientStyle">Radial</Field>
-    <Field name="gradientColor1" type="color">0 0 255 255</Field>
-    <Field name="gradientColor2" type="color">0 0 0 255</Field>
-    <Field name="backgroundMode" type="enum" subtype="BackgroundMode">Solid</Field>
-    <Field name="userInfoFlag" type="bool">true</Field>
-    <Field name="databaseInfoFlag" type="bool">true</Field>
-    <Field name="legendInfoFlag" type="bool">true</Field>
+    <Field name="axesFlag2D" label="axesFlag2D" type="bool">
+      true
+    </Field>
+    <Field name="axesAutoSetTicks2D" label="axesAutoSetTicks2D" type="bool">
+      true
+    </Field>
+    <Field name="labelAutoSetScaling2D" label="labelAutoSetScaling2D" type="bool">
+      true
+    </Field>
+    <Field name="xAxisLabels2D" label="xAxisLabels2D" type="bool">
+      true
+    </Field>
+    <Field name="yAxisLabels2D" label="yAxisLabels2D" type="bool">
+      true
+    </Field>
+    <Field name="xAxisTitle2D" label="xAxisTitle2D" type="bool">
+      true
+    </Field>
+    <Field name="yAxisTitle2D" label="yAxisTitle2D" type="bool">
+      true
+    </Field>
+    <Field name="xGridLines2D" label="xGridLines2D" type="bool">
+      false
+    </Field>
+    <Field name="yGridLines2D" label="yGridLines2D" type="bool">
+      false
+    </Field>
+    <Field name="xMajorTickMinimum2D" label="xMajorTickMinimum2D" type="double">
+      0.000000
+    </Field>
+    <Field name="yMajorTickMinimum2D" label="yMajorTickMinimum2D" type="double">
+      0.000000
+    </Field>
+    <Field name="xMajorTickMaximum2D" label="xMajorTickMaximum2D" type="double">
+      1.000000
+    </Field>
+    <Field name="yMajorTickMaximum2D" label="yMajorTickMaximum2D" type="double">
+      1.000000
+    </Field>
+    <Field name="xMajorTickSpacing2D" label="xMajorTickSpacing2D" type="double">
+      0.200000
+    </Field>
+    <Field name="yMajorTickSpacing2D" label="yMajorTickSpacing2D" type="double">
+      0.200000
+    </Field>
+    <Field name="xMinorTickSpacing2D" label="xMinorTickSpacing2D" type="double">
+      0.020000
+    </Field>
+    <Field name="yMinorTickSpacing2D" label="yMinorTickSpacing2D" type="double">
+      0.020000
+    </Field>
+    <Field name="xLabelFontHeight2D" label="xLabelFontHeight2D" type="double">
+      0.020000
+    </Field>
+    <Field name="yLabelFontHeight2D" label="yLabelFontHeight2D" type="double">
+      0.020000
+    </Field>
+    <Field name="xTitleFontHeight2D" label="xTitleFontHeight2D" type="double">
+      0.020000
+    </Field>
+    <Field name="yTitleFontHeight2D" label="yTitleFontHeight2D" type="double">
+      0.020000
+    </Field>
+    <Field name="xLabelScaling2D" label="xLabelScaling2D" type="int">
+      0
+    </Field>
+    <Field name="yLabelScaling2D" label="yLabelScaling2D" type="int">
+      0
+    </Field>
+    <Field name="axesLineWidth2D" label="axesLineWidth2D" type="linewidth">
+      0
+    </Field>
+    <Field name="axesTickLocation2D" label="axesTickLocation2D" type="enum" subtype="Location">
+      Outside
+    </Field>
+    <Field name="axesTicks2D" label="axesTicks2D" type="enum" subtype="Ticks">
+      BottomLeft
+    </Field>
+    <Field name="axesFlag" label="axesFlag" type="bool">
+      true
+    </Field>
+    <Field name="axesAutoSetTicks" label="axesAutoSetTicks" type="bool">
+      true
+    </Field>
+    <Field name="labelAutoSetScaling" label="labelAutoSetScaling" type="bool">
+      true
+    </Field>
+    <Field name="xAxisLabels" label="xAxisLabels" type="bool">
+      true
+    </Field>
+    <Field name="yAxisLabels" label="yAxisLabels" type="bool">
+      true
+    </Field>
+    <Field name="zAxisLabels" label="zAxisLabels" type="bool">
+      true
+    </Field>
+    <Field name="xAxisTitle" label="xAxisTitle" type="bool">
+      true
+    </Field>
+    <Field name="yAxisTitle" label="yAxisTitle" type="bool">
+      true
+    </Field>
+    <Field name="zAxisTitle" label="zAxisTitle" type="bool">
+      true
+    </Field>
+    <Field name="xGridLines" label="xGridLines" type="bool">
+      false
+    </Field>
+    <Field name="yGridLines" label="yGridLines" type="bool">
+      false
+    </Field>
+    <Field name="zGridLines" label="zGridLines" type="bool">
+      false
+    </Field>
+    <Field name="xAxisTicks" label="xAxisTicks" type="bool">
+      true
+    </Field>
+    <Field name="yAxisTicks" label="yAxisTicks" type="bool">
+      true
+    </Field>
+    <Field name="zAxisTicks" label="zAxisTicks" type="bool">
+      true
+    </Field>
+    <Field name="xMajorTickMinimum" label="xMajorTickMinimum" type="double">
+      0.000000
+    </Field>
+    <Field name="yMajorTickMinimum" label="yMajorTickMinimum" type="double">
+      0.000000
+    </Field>
+    <Field name="zMajorTickMinimum" label="zMajorTickMinimum" type="double">
+      0.000000
+    </Field>
+    <Field name="xMajorTickMaximum" label="xMajorTickMaximum" type="double">
+      1.000000
+    </Field>
+    <Field name="yMajorTickMaximum" label="yMajorTickMaximum" type="double">
+      1.000000
+    </Field>
+    <Field name="zMajorTickMaximum" label="zMajorTickMaximum" type="double">
+      1.000000
+    </Field>
+    <Field name="xMajorTickSpacing" label="xMajorTickSpacing" type="double">
+      0.200000
+    </Field>
+    <Field name="yMajorTickSpacing" label="yMajorTickSpacing" type="double">
+      0.200000
+    </Field>
+    <Field name="zMajorTickSpacing" label="zMajorTickSpacing" type="double">
+      0.200000
+    </Field>
+    <Field name="xMinorTickSpacing" label="xMinorTickSpacing" type="double">
+      0.020000
+    </Field>
+    <Field name="yMinorTickSpacing" label="yMinorTickSpacing" type="double">
+      0.020000
+    </Field>
+    <Field name="zMinorTickSpacing" label="zMinorTickSpacing" type="double">
+      0.020000
+    </Field>
+    <Field name="xLabelFontHeight" label="xLabelFontHeight" type="double">
+      0.020000
+    </Field>
+    <Field name="yLabelFontHeight" label="yLabelFontHeight" type="double">
+      0.020000
+    </Field>
+    <Field name="zLabelFontHeight" label="zLabelFontHeight" type="double">
+      0.020000
+    </Field>
+    <Field name="xTitleFontHeight" label="xTitleFontHeight" type="double">
+      0.020000
+    </Field>
+    <Field name="yTitleFontHeight" label="yTitleFontHeight" type="double">
+      0.020000
+    </Field>
+    <Field name="zTitleFontHeight" label="zTitleFontHeight" type="double">
+      0.020000
+    </Field>
+    <Field name="xLabelScaling" label="xLabelScaling" type="int">
+      0
+    </Field>
+    <Field name="yLabelScaling" label="yLabelScaling" type="int">
+      0
+    </Field>
+    <Field name="zLabelScaling" label="zLabelScaling" type="int">
+      0
+    </Field>
+    <Field name="axesTickLocation" label="axesTickLocation" type="enum" subtype="Location">
+      Inside
+    </Field>
+    <Field name="axesType" label="axesType" type="enum" subtype="Axes">
+      ClosestTriad
+    </Field>
+    <Field name="triadFlag" label="triadFlag" type="bool">
+      true
+    </Field>
+    <Field name="bboxFlag" label="bboxFlag" type="bool">
+      true
+    </Field>
+    <Field name="backgroundColor" label="backgroundColor" type="color">
+      255
+      255
+      255
+      255
+    </Field>
+    <Field name="foregroundColor" label="foregroundColor" type="color">
+      0
+      0
+      0
+      255
+    </Field>
+    <Field name="gradientBackgroundStyle" label="gradientBackgroundStyle" type="enum" subtype="GradientStyle">
+      Radial
+    </Field>
+    <Field name="gradientColor1" label="gradientColor1" type="color">
+      0
+      0
+      255
+      255
+    </Field>
+    <Field name="gradientColor2" label="gradientColor2" type="color">
+      0
+      0
+      0
+      255
+    </Field>
+    <Field name="backgroundMode" label="backgroundMode" type="enum" subtype="BackgroundMode">
+      Solid
+    </Field>
+    <Field name="userInfoFlag" label="userInfoFlag" type="bool">
+      true
+    </Field>
+    <Field name="databaseInfoFlag" label="databaseInfoFlag" type="bool">
+      true
+    </Field>
+    <Field name="legendInfoFlag" label="legendInfoFlag" type="bool">
+      true
+    </Field>
   </Attribute>

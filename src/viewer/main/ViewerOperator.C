@@ -315,7 +315,7 @@ ViewerOperator::Removeable() const
 // Method: ViewerOperator::Moveable
 //
 // Purpose: 
-//   Returns whether or not the operator can be removed.
+//   Returns whether or not the operator can be moved.
 //
 // Returns:    True if the operator can be removed; false otherwise.
 //
@@ -430,8 +430,6 @@ ViewerOperator::CreateNode(DataNode *parentNode)
 void
 ViewerOperator::SetFromNode(DataNode *parentNode)
 {
-    DataNode *node;
-
     if(parentNode == 0)
         return;
 

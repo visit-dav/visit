@@ -5,6 +5,8 @@
 
 // for sprintf
 #include <stdio.h>
+
+using std::string;
  
 // ****************************************************************************
 //  Method: UnexpectedValueException constructor
