@@ -5,7 +5,7 @@
 #ifndef AVT_RAY_COMPOSITER_H
 #define AVT_RAY_COMPOSITER_H
 
-#include <pipeline_exports.h>
+#include <filters_exports.h>
 
 #include <avtSamplePointsToImageFilter.h>
 
@@ -42,7 +42,7 @@ class  avtPixelizer;
 //
 // ****************************************************************************
 
-class PIPELINE_API avtRayCompositer : public avtSamplePointsToImageFilter
+class AVTFILTERS_API avtRayCompositer : public avtSamplePointsToImageFilter
 {
   public:
                           avtRayCompositer(avtRayFunction *);

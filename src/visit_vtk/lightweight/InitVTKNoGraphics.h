@@ -5,7 +5,7 @@
 #ifndef INIT_VTK_NO_GRAPHICS_H
 #define INIT_VTK_NO_GRAPHICS_H
 
-#include <visit_vtk_exports.h>
+#include <visit_vtk_light_exports.h>
 
 // ****************************************************************************
 //  Module: InitVTKNoGraphics
@@ -20,7 +20,7 @@
 
 namespace InitVTKNoGraphics
 {
-    VISIT_VTK_API void Initialize();
+    VISIT_VTK_LIGHT_API void Initialize();
 }
 
 #endif

@@ -5,7 +5,7 @@
 #ifndef AVT_SMOOTH_POLY_DATA_FILTER_H
 #define AVT_SMOOTH_POLY_DATA_FILTER_H
 
-#include <pipeline_exports.h>
+#include <filters_exports.h>
 
 #include <avtStreamer.h>
 
@@ -21,15 +21,20 @@
 //
 //  Modifications:
 //
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined constructor and destructor definitions to .C files
+//    because certain compilers have problems with them.
+//
 // ****************************************************************************
 
-class PIPELINE_API avtSmoothPolyDataFilter : public avtStreamer
+class AVTFILTERS_API avtSmoothPolyDataFilter : public avtStreamer
 {
   public:
-                             avtSmoothPolyDataFilter() {;};
-    virtual                 ~avtSmoothPolyDataFilter() {;};
+                             avtSmoothPolyDataFilter();
+    virtual                 ~avtSmoothPolyDataFilter();
 
-    virtual const char      *GetType(void) { return "avtSmoothPolyDataFilter"; };
+    virtual const char      *GetType(void) 
+                                 { return "avtSmoothPolyDataFilter"; };
     virtual const char      *GetDescription(void)
                                  { return "Smoothing geometry"; };
 

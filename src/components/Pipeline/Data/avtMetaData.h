@@ -42,13 +42,17 @@ class     avtTerminatingSource;
 //    Hank Childs, Tue Aug 12 10:27:25 PDT 2003
 //    Added GetMaterial for matvf expressions.
 //
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined constructor and destructor definitions to .C files
+//    because certain compilers have problems with them.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtMetaData
 {
   public:
                                  avtMetaData(avtTerminatingSource *);
-    virtual                     ~avtMetaData() {;};
+    virtual                     ~avtMetaData();
 
     avtIntervalTree             *GetDataExtents(void);
     avtIntervalTree             *GetSpatialExtents(void);

@@ -27,6 +27,10 @@
 //    Brad Whitlock, Thu Oct 9 15:05:27 PST 2003
 //    Fixed the friend declaration so it builds with newer g++ versions.
 //
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined destructor definition to .C file because certain compilers 
+//    have problems with them.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDatasetSink : virtual public avtDataObjectSink
@@ -35,7 +39,7 @@ class PIPELINE_API avtDatasetSink : virtual public avtDataObjectSink
 
   public:
                               avtDatasetSink();
-    virtual                  ~avtDatasetSink() {;};
+    virtual                  ~avtDatasetSink();
 
     virtual avtDataObject_p   GetInput(void);
 

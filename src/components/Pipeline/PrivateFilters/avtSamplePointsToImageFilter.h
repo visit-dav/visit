@@ -28,8 +28,8 @@ class PIPELINE_API avtSamplePointsToImageFilter
       virtual public avtDataObjectToImageFilter
 {
   public:
-                       avtSamplePointsToImageFilter() {;};
-    virtual           ~avtSamplePointsToImageFilter() {;};
+                       avtSamplePointsToImageFilter();
+    virtual           ~avtSamplePointsToImageFilter();
 };
 
 

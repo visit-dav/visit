@@ -37,13 +37,14 @@
 #define __vtkWriter_h
 
 #include "vtkProcessObject.h"
+#include <vtk_sl_io_exports.h>
 
 class vtkDataObject;
 
 #define VTK_ASCII 1
 #define VTK_BINARY 2
 
-class VTK_IO_EXPORT vtkWriter : public vtkProcessObject
+class VTK_SL_IO_API vtkWriter : public vtkProcessObject
 {
 public:
   vtkTypeRevisionMacro(vtkWriter,vtkProcessObject);

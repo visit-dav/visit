@@ -5,7 +5,7 @@
 #ifndef AVT_POINT_TO_GLYPH_FILTER_H
 #define AVT_POINT_TO_GLYPH_FILTER_H
 
-#include <pipeline_exports.h>
+#include <filters_exports.h>
 
 #include <avtStreamer.h>
 
@@ -34,7 +34,7 @@ class vtkPolyData;
 //
 // ****************************************************************************
 
-class PIPELINE_API avtPointToGlyphFilter : public avtStreamer
+class AVTFILTERS_API avtPointToGlyphFilter : public avtStreamer
 {
   public:
                          avtPointToGlyphFilter();

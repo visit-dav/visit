@@ -45,6 +45,10 @@ class vtkDataSet;
 //    Made resValue a doubleVector.  Add more Get/Set methods so that queries
 //    that only return 1 value don't need to be updated. 
 //
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined destructor definition to .C file because certain compilers
+//    have problems with them.
+//
 // ****************************************************************************
 
 class QUERY_API avtDatasetQuery : public avtDataObjectQuery, 
@@ -52,7 +56,7 @@ class QUERY_API avtDatasetQuery : public avtDataObjectQuery,
 {
   public:
                               avtDatasetQuery();
-    virtual                  ~avtDatasetQuery() {;};
+    virtual                  ~avtDatasetQuery();
 
 
     virtual void             PerformQuery(QueryAttributes *);

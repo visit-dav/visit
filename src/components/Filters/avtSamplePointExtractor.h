@@ -5,7 +5,7 @@
 #ifndef AVT_SAMPLE_POINT_EXTRACTOR_H
 #define AVT_SAMPLE_POINT_EXTRACTOR_H
 
-#include <pipeline_exports.h>
+#include <filters_exports.h>
 
 #include <avtDatasetToSamplePointsFilter.h>
 #include <avtVolume.h>
@@ -53,7 +53,7 @@ class  avtRayFunction;
 //
 // ****************************************************************************
 
-class PIPELINE_API avtSamplePointExtractor : public avtDatasetToSamplePointsFilter
+class AVTFILTERS_API avtSamplePointExtractor : public avtDatasetToSamplePointsFilter
 {
   public:
                               avtSamplePointExtractor(int, int, int);

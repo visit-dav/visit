@@ -7,7 +7,7 @@
 
 
 #include <avtStreamer.h>
-
+#include <filters_exports.h>
 #include <string>
 
 
@@ -21,13 +21,19 @@
 //  Programmer: Hank Childs
 //  Creation:   August 30, 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined destructor definition to .C file because certain compilers
+//    have problems with them.
+//
 // ****************************************************************************
 
-class PIPELINE_API avtSummationFilter : public avtStreamer
+class AVTFILTERS_API avtSummationFilter : public avtStreamer
 {
   public:
                                     avtSummationFilter();
-    virtual                        ~avtSummationFilter() {;};
+    virtual                        ~avtSummationFilter();
 
     void                            SetVariableName(std::string &);
     void                            SetSumType(std::string &);

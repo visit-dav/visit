@@ -118,6 +118,9 @@ class avtToolInterface;
 //    Added SetPickAttsFromDefault, SetDefaultPickAttsFromClient,
 //    SetClientPickAttsFromDefault. 
 //
+//    Brad Whitlock, Tue Jan 6 10:30:26 PDT 2004
+//    I added some new methods related to pick.
+//
 // ****************************************************************************
     
 class VIEWER_API ViewerQueryManager 
@@ -141,6 +144,7 @@ class VIEWER_API ViewerQueryManager
 
     void            Pick(PICK_POINT_INFO *pd, const int dom = -1,
                          const int el = -1);
+    void            NoGraphicsPick(PICK_POINT_INFO *ppi);
 
     void            Delete(ViewerPlot *vp);
     void            Delete(ViewerWindow *vw);
@@ -205,6 +209,8 @@ class VIEWER_API ViewerQueryManager
     int             VerifyQueryVariables(const std::string &qName, 
                                          const std::vector<int> &varTypes);
 
+    bool            ComputePick(PICK_POINT_INFO *pd, const int dom = -1,
+                                const int el = -1);
 
     void            HandlePickCache();
     bool            initialPick;

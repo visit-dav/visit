@@ -445,7 +445,7 @@ protected:
             AddElements(srcFiles, defaultefiles);
 
         WriteProjectHelper(out, "plots", 'E', "ENGINE_PLUGIN_EXPORTS",
-            "state.lib misc.lib plugin.lib plotter.lib pipeline_ser.lib avtexceptions.lib viewer.lib dbatts.lib visit_vtk.lib vtkCommon.lib vtkGraphics.lib vtkFiltering.lib", srcFiles);
+            "state.lib misc.lib plugin.lib plotter.lib pipeline_ser.lib avtfilters.lib avtexceptions.lib viewer.lib dbatts.lib visit_vtk.lib vtkCommon.lib vtkGraphics.lib vtkFiltering.lib", srcFiles);
     }
 
     void WritePlotProject_G(ostream &out)
@@ -521,7 +521,7 @@ protected:
             AddElements(srcFiles, defaultvfiles);
 
         WriteProjectHelper(out, "plots", 'V', "VIEWER_PLUGIN_EXPORTS",
-            "state.lib misc.lib plugin.lib plotter.lib pipeline_ser.lib avtexceptions.lib viewer.lib dbatts.lib visit_vtk.lib vtkCommon.lib vtkGraphics.lib vtkFiltering.lib", srcFiles);
+            "state.lib misc.lib plugin.lib plotter.lib pipeline_ser.lib avtfilters.lib avtexceptions.lib viewer.lib dbatts.lib visit_vtk.lib vtkCommon.lib vtkGraphics.lib vtkFiltering.lib", srcFiles);
     }
 
     void WritePlotProjects(bool (*openCB)(ofstream &, const QString &))
@@ -616,7 +616,6 @@ protected:
         srcFiles.push_back(atts->name + ".C");
 
         srcFiles.push_back(name + "EnginePluginInfo.C");
-        srcFiles.push_back("avt" + name + "Operator.C");
 
         if(customefiles)
             AddElements(srcFiles, efiles);
@@ -693,7 +692,6 @@ protected:
         srcFiles.push_back(name + "PluginInfo.C");
         srcFiles.push_back(name + "CommonPluginInfo.C");
         srcFiles.push_back(name + "ViewerPluginInfo.C");
-        srcFiles.push_back("avt"+name + "Operator.C");
         srcFiles.push_back(atts->name + ".C");
 
         if (customvfiles)

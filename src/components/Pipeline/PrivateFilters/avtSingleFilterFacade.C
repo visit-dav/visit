@@ -4,6 +4,11 @@
 
 #include <avtSingleFilterFacade.h>
 
+//
+// Must be in here or won't build on Windows.
+//
+avtSingleFilterFacade::avtSingleFilterFacade() {;};
+avtSingleFilterFacade::~avtSingleFilterFacade() {;};
 
 // ****************************************************************************
 //  Method: avtSingleFilterFacade::GetFirstFilter

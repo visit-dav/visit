@@ -45,13 +45,17 @@ class vtkRectilinearGrid;
 //    Remove RgridFindCell, LocatorFindCell -- functionality now resides
 //    in vtkVisItUtility. 
 //    
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined destructor definition to .C file because certain compilers
+//    have problems with them.
+//
 // ****************************************************************************
 
 class QUERY_API avtPickQuery : public avtDatasetQuery
 {
   public:
                                     avtPickQuery();
-    virtual                        ~avtPickQuery() {;};
+    virtual                        ~avtPickQuery();
 
 
     virtual const char             *GetType(void)

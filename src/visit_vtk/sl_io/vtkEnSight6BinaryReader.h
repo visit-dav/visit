@@ -39,11 +39,12 @@
 #define __vtkEnSight6BinaryReader_h
 
 #include "vtkEnSightReader.h"
+#include <vtk_sl_io_exports.h>
 
 class vtkIdTypeArray;
 class vtkPoints;
 
-class VTK_IO_EXPORT vtkEnSight6BinaryReader : public vtkEnSightReader
+class VTK_SL_IO_API vtkEnSight6BinaryReader : public vtkEnSightReader
 {
 public:
   static vtkEnSight6BinaryReader *New();

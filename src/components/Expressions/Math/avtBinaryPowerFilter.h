@@ -20,13 +20,19 @@ class     vtkDataArray;
 //  Programmer: Sean Ahern
 //  Creation:   Wed Jun 26 17:05:31 PDT 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined constructor and destructor definitions to .C files
+//    because certain compilers have problems with them.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtBinaryPowerFilter : public avtBinaryMathFilter
 {
   public:
-                              avtBinaryPowerFilter() {;};
-    virtual                  ~avtBinaryPowerFilter() {;};
+                              avtBinaryPowerFilter();
+    virtual                  ~avtBinaryPowerFilter();
 
     virtual const char       *GetType(void) { return "avtBinaryPowerFilter"; };
     virtual const char       *GetDescription(void)

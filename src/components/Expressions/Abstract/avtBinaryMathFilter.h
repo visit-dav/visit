@@ -25,14 +25,18 @@ class     vtkDataArray;
 //      Added the NumVariableArguments function, specifying that all
 //      subclasses of BinaryMathFilter process two variable arguments.
 //
+//      Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//      Moved inlined constructor and destructor definitions to .C files
+//      because certain compilers have problems with them.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtBinaryMathFilter 
     : public avtMultipleInputExpressionFilter
 {
   public:
-                              avtBinaryMathFilter() {;};
-    virtual                  ~avtBinaryMathFilter() {;};
+                              avtBinaryMathFilter();
+    virtual                  ~avtBinaryMathFilter();
 
     virtual const char       *GetType(void)   { return "avtBinaryMathFilter";};
     virtual const char       *GetDescription(void) = 0;

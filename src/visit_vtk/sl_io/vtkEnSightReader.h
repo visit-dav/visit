@@ -21,12 +21,13 @@
 #define __vtkEnSightReader_h
 
 #include "vtkGenericEnSightReader.h"
+#include <vtk_sl_io_exports.h>
 
 class vtkDataSetCollection;
 class vtkIdList;
 class vtkEnSightReaderCellIdsType;
 
-class VTK_IO_EXPORT vtkEnSightReader : public vtkGenericEnSightReader
+class VTK_SL_IO_API vtkEnSightReader : public vtkGenericEnSightReader
 {
 public:
   vtkTypeRevisionMacro(vtkEnSightReader, vtkGenericEnSightReader);

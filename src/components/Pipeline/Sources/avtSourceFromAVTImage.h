@@ -22,6 +22,12 @@ class avtImageRepresentation;
 //  Programmer: Mark C. Miller 
 //  Creation:   26Feb03 
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined destructor definition to .C file because certain compilers
+//    have problems with them.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtSourceFromAVTImage : virtual public avtTerminatingImageSource,
@@ -29,7 +35,7 @@ class PIPELINE_API avtSourceFromAVTImage : virtual public avtTerminatingImageSou
 {
   public:
                           avtSourceFromAVTImage(avtImage_p ds);
-    virtual              ~avtSourceFromAVTImage() {;};
+    virtual              ~avtSourceFromAVTImage();
 
   protected:
     avtImageRepresentation            image;

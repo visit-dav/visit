@@ -1,10 +1,10 @@
 #ifndef VTK_DEBUG_STREAM_H
 #define VTK_DEBUG_STREAM_H
-#include <visit_vtk_exports.h>
+#include <visit_vtk_light_exports.h>
 
 #include <vtkOutputWindow.h>
 
-class VISIT_VTK_API vtkDebugStream : public vtkOutputWindow
+class VISIT_VTK_LIGHT_API vtkDebugStream : public vtkOutputWindow
 {
 public:
   vtkTypeMacro(vtkDebugStream,vtkObject);

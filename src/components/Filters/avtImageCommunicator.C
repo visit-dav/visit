@@ -14,13 +14,12 @@
 
 
 //
-// Most of the code for the communicator depends on mpi calls, so ifdef the
-// whole thing out if we are not running in parallel.
+// Most of the code for the communicator depends on mpi calls, so ifdef out
+// parallel code out if we are not running in parallel.
 //
 #ifdef PARALLEL
-
 #include <mpi.h>
-
+#endif
 
 // ****************************************************************************
 //  Method: avtImageCommunicator constructor
@@ -32,9 +31,31 @@
 
 avtImageCommunicator::avtImageCommunicator()
 {
+#ifdef PARALLEL
     MPI_Comm_size(MPI_COMM_WORLD, &numProcs);
     MPI_Comm_rank(MPI_COMM_WORLD, &myRank);
+#else
+    numProcs = 1; myRank = 0;
+#endif
     imagePartition = NULL;
+}
+
+
+// ****************************************************************************
+//  Method: avtImageCommunicator destructor
+//
+//  Purpose:
+//      Defines the destructor.  Note: this should not be inlined in the header
+//      because it causes problems for certain compilers.
+//
+//  Programmer: Hank Childs
+//  Creation:   February 5, 2004
+//
+// ****************************************************************************
+
+avtImageCommunicator::~avtImageCommunicator()
+{
+    ;
 }
 
 
@@ -94,6 +115,7 @@ avtImageCommunicator::SetImagePartition(avtImagePartition *ip)
 void
 avtImageCommunicator::Execute(void)
 {
+#ifdef PARALLEL
     int timingsIndex = visitTimer->StartTimer();
 
     if (imagePartition == NULL)
@@ -210,13 +232,8 @@ avtImageCommunicator::Execute(void)
     }
 
     visitTimer->StopTimer(timingsIndex, "Image Communication");
+#endif
 }
 
-
-//
-// We previously ifdef'd out this whole file if we weren't in parallel, so
-// put in the matching endif here.
-//
-#endif
 
 

@@ -20,13 +20,19 @@ class     vtkDataArray;
 //  Programmer: Hank Childs
 //  Creation:   November 19, 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined constructor and destructor definitions to .C files
+//    because certain compilers have problems with them.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtProcessorIdFilter : public avtSingleInputExpressionFilter
 {
   public:
-                              avtProcessorIdFilter() {;};
-    virtual                  ~avtProcessorIdFilter() {;};
+                              avtProcessorIdFilter();
+    virtual                  ~avtProcessorIdFilter();
 
     virtual const char       *GetType(void) { return "avtProcessorIdFilter"; };
     virtual const char       *GetDescription(void)

@@ -20,13 +20,19 @@
 //  Programmer: Hank Childs
 //  Creation:   May 29, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined destructor definition to .C file because certain compilers
+//    have problems with them.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDatasetSource : virtual public avtDataObjectSource
 {
   public:
                              avtDatasetSource();
-    virtual                 ~avtDatasetSource() {;};
+    virtual                 ~avtDatasetSource();
 
     virtual avtDataObject_p  GetOutput(void);
     vtkDataSet              *GetVTKOutput(void);

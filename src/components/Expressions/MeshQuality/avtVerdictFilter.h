@@ -6,10 +6,13 @@
 
 #ifndef AVT_VERDICT_FILTER_H
 #define AVT_VERDICT_FILTER_H
+
 #include <expression_exports.h>
+
 #include <avtSingleInputExpressionFilter.h>
 
 class     vtkDataArray;
+
 
 // ****************************************************************************
 //  Class: avtVerdictFilter
@@ -20,13 +23,19 @@ class     vtkDataArray;
 //  Programmer: Akira Haddox
 //  Creation:   June 13, 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined destructor definition to .C file because certain compilers
+//    have problems with them.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtVerdictFilter : public avtSingleInputExpressionFilter
 {
   public:
                               avtVerdictFilter();
-    virtual                  ~avtVerdictFilter() {;};
+    virtual                  ~avtVerdictFilter();
 
     virtual void              PreExecute();
 

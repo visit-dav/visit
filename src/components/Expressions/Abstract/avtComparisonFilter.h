@@ -19,13 +19,19 @@
 //  Programmer: Hank Childs
 //  Creation:   August 20, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined constructor and destructor definitions to .C files
+//    because certain compilers have problems with them.
+//
 // ****************************************************************************
 
 class avtComparisonFilter : public avtBinaryMathFilter
 {
   public:
-                           avtComparisonFilter() {;};
-    virtual               ~avtComparisonFilter() {;};
+                           avtComparisonFilter();
+    virtual               ~avtComparisonFilter();
 
   protected:
     virtual int            GetNumberOfComponentsInOutput() { return 1; };

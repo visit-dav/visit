@@ -5,7 +5,7 @@
 #ifndef AVT_FILE_WRITER_H
 #define AVT_FILE_WRITER_H
 
-#include <pipeline_exports.h>
+#include <file_writer_exports.h>
 
 #include <avtDatasetFileWriter.h>
 #include <avtImageFileWriter.h>
@@ -26,7 +26,7 @@
 //
 // ****************************************************************************
 
-class PIPELINE_API avtFileWriter
+class AVTFILEWRITER_API avtFileWriter
 {
   public:
                            avtFileWriter();

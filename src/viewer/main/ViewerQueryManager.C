@@ -1210,6 +1210,29 @@ ViewerQueryManager::GetPickClientAtts()
     return pickClientAtts;
 }
 
+// ****************************************************************************
+// Method: ViewerQueryManager::GetPickAtts
+//
+// Purpose: 
+//   Returns the pick attributes.
+//
+// Returns:    A pointer to the pick attributes.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jan 6 12:29:38 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+PickAttributes *
+ViewerQueryManager::GetPickAtts()
+{
+    if(pickAtts == 0)
+        pickAtts = new PickAttributes;
+
+    return pickAtts;
+}
 
 // ****************************************************************************
 //  Method: ViewerQueryManager::ResetPickLetter
@@ -1372,10 +1395,10 @@ ViewerQueryManager::ClearPickPoints()
 }
 
 // ****************************************************************************
-//  Method: ViewerQueryManager::Pick
+//  Method: ViewerQueryManager::ComputePick
 //
 //  Purpose:
-//    Perform a Pick with the passed information.
+//    Calculates pick attributes for a point.
 //
 //  Arguments:
 //    pd        The struct containing picked point and window information.
@@ -1435,12 +1458,18 @@ ViewerQueryManager::ClearPickPoints()
 //   
 //    Kathleen Bonnell, Tue Dec  2 17:31:17 PST 2003 
 //    Code changes to allow picking curve plots. 
-//   
+//
+//    Brad Whitlock, Tue Jan 6 09:54:12 PDT 2004
+//    I renamed the routine to ComputePick, made it return a bool, and moved
+//    the code that adds the pick point to the window to the Pick method.
+//
 // ****************************************************************************
 
-void
-ViewerQueryManager::Pick(PICK_POINT_INFO *ppi, const int dom, const int el)
+bool
+ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom, const int el)
 {
+    bool retval = false;
+
     //
     //  Keep local copy, due to caching issues.
     // 
@@ -1449,7 +1478,7 @@ ViewerQueryManager::Pick(PICK_POINT_INFO *ppi, const int dom, const int el)
     {
         debug5 << "Caching pick point info." << endl;
         pickCache.push_back(pd);
-        return;
+        return retval;
     }
     if (initialPick)
     {
@@ -1484,7 +1513,7 @@ ViewerQueryManager::Pick(PICK_POINT_INFO *ppi, const int dom, const int el)
             msg = "PICK requires an active non-hidden Plot.\n";
             msg += "Please select a plot and try again.\n";
             Error(msg.c_str());
-            return;
+            return retval ;
         }
         // Use the first plot.
         int plotId = plotIDs[0];
@@ -1598,16 +1627,17 @@ ViewerQueryManager::Pick(PICK_POINT_INFO *ppi, const int dom, const int el)
                 if (pa.GetFulfilled())
                 {
                    *pickAtts = pa;
+
                    //
                    // Reset the vars to what the user actually typed.
                    //
                    pickAtts->SetVariables(userVars);
-                   win->ValidateQuery(pickAtts, NULL);
-                   //SEND PICKATTS TO GUI WINDOW FOR DISPLAY
-                   pickAtts->CreateOutputString(msg);
-                   Message(msg.c_str()); 
-                   UpdatePickAtts();
-                   UpdateDesignator();
+
+                   //
+                   // At this point, pickAtts contains information for a 
+                   // valid pick point. We can return true.
+                   //
+                   retval = true;
                 }
                 else 
                 {
@@ -1665,7 +1695,57 @@ ViewerQueryManager::Pick(PICK_POINT_INFO *ppi, const int dom, const int el)
     }
     else
     {
-       Message("The picked point is not contained in a surface");
+        Message("The picked point is not contained in a surface");
+    }
+
+    return retval;
+}
+
+// ****************************************************************************
+// Method: ViewerQueryManager::Pick
+//
+// Purpose: 
+//   Performs a pick, which if it is successful adds a pick letter to the
+//   vis window.
+//
+// Arguments:
+//   ppi : Information about the pick point.
+//   dom : The domain number of the pick point or -1 to determine the domain.
+//   el  : The element number for the pick or -1 to determine the number.
+//
+// Note:       This code was moved from the ComputePick method and was
+//             reformulated to call ComputePick.
+//
+// Programmer: Kathleen Bonnell, Brad Whitlock
+// Creation:   Tue Jan 6 09:59:18 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerQueryManager::Pick(PICK_POINT_INFO *ppi, const int dom, const int el)
+{
+    if(ComputePick(ppi, dom, el))
+    {
+        //
+        // Add a pick point to the window
+        //
+        ViewerWindow *win = (ViewerWindow *)ppi->callbackData;
+        win->ValidateQuery(pickAtts, NULL);
+
+        //
+        // Send pick attributes to the client.
+        //
+        std::string msg;
+        pickAtts->CreateOutputString(msg);
+        Message(msg.c_str()); 
+        UpdatePickAtts();
+
+        //
+        // Make the pick label ready for the next pick point.
+        //
+        UpdateDesignator();
     }
 
     //
@@ -1673,6 +1753,29 @@ ViewerQueryManager::Pick(PICK_POINT_INFO *ppi, const int dom, const int el)
     //
     if (!handlingCache)
         HandlePickCache();
+}
+
+// ****************************************************************************
+// Method: ViewerQueryManager::NoGraphicsPick
+//
+// Purpose: 
+//   Computes the pick attributes for a pick point but does not add a pick
+//   label to the vis window.
+//
+// Arguments:
+//   ppi : Information about the pick.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jan 6 10:03:03 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerQueryManager::NoGraphicsPick(PICK_POINT_INFO *ppi)
+{
+    ppi->validPick = ComputePick(ppi);
 }
 
 // ****************************************************************************

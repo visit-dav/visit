@@ -1208,6 +1208,76 @@ ViewerWindowManager::RecenterView(int windowIndex)
 }
 
 // ****************************************************************************
+// Method: ViewerWindowManager::SetCenterOfRotation
+//
+// Purpose: 
+//   Sets the center of rotation using a world space coordinate.
+//
+// Arguments:
+//   windowIndex : The index of the window whose center we're setting.
+//   x,y,z       : The new world space center of rotation.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jan 7 09:59:50 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerWindowManager::SetCenterOfRotation(int windowIndex,
+    double x, double y, double z)
+{
+    if(windowIndex < -1 || windowIndex >= maxWindows)
+        return;
+
+    if(windows[windowIndex] != 0)
+    {
+        windows[windowIndex]->SetCenterOfRotation(x, y, z);
+
+        //
+        // Send the new view info to the client.
+        //
+        UpdateViewAtts(windowIndex);
+    }
+}
+
+// ****************************************************************************
+// Method: ViewerWindowManager::ChooseCenterOfRotation
+//
+// Purpose: 
+//   Chooses the center of rotation using the surface that lies at point
+//   sx,sy in the vis window's screen.
+//
+// Arguments:
+//   sx, sy : The screen point. sx and sy in [0,1].
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jan 7 09:58:54 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerWindowManager::ChooseCenterOfRotation(int windowIndex,
+    double sx, double sy)
+{
+    if(windowIndex < -1 || windowIndex >= maxWindows)
+        return;
+
+    if(windows[windowIndex] != 0)
+    {
+        windows[windowIndex]->ChooseCenterOfRotation(sx, sy);
+
+        //
+        // Send the new view info to the client.
+        //
+        UpdateViewAtts(windowIndex);
+    }
+}
+
+// ****************************************************************************
 //  Method: ViewerWindowManager::SaveWindow
 //
 //  Purpose: 
@@ -1888,6 +1958,9 @@ ViewerWindowManager::SetView2DFromClient()
 //    Hank Childs, Wed Oct 15 12:58:19 PDT 2003
 //    Copied over eye angle.
 //
+//    Eric Brugger, Wed Feb 11 08:52:25 PST 2004
+//    Added code to copy center of rotation information.
+//
 // ****************************************************************************
 
 void
@@ -1913,6 +1986,10 @@ ViewerWindowManager::SetView3DFromClient()
     view3d.imagePan[1] = view3DClientAtts->GetImagePan()[1];
     view3d.imageZoom = view3DClientAtts->GetImageZoom();
     view3d.perspective = view3DClientAtts->GetPerspective();
+    view3d.centerOfRotationSet = view3DClientAtts->GetCenterOfRotationSet();
+    view3d.centerOfRotation[0] = view3DClientAtts->GetCenterOfRotation()[0];
+    view3d.centerOfRotation[1] = view3DClientAtts->GetCenterOfRotation()[1];
+    view3d.centerOfRotation[2] = view3DClientAtts->GetCenterOfRotation()[2];
 
     //
     // Set the 3D view for the active viewer window.

@@ -524,6 +524,38 @@ ViewerPlotList::GetNumRealizedPlots() const
 }
 
 // ****************************************************************************
+// Method: ViewerPlotList::GetNumVisiblePlots
+//
+// Purpose: 
+//   Counts the number of plots that are realized and NOT hidden.
+//
+// Returns:    The number of plots that are visible in the window.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jan 7 14:21:23 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+int
+ViewerPlotList::GetNumVisiblePlots() const
+{
+    int nVisiblePlots = 0;
+
+    for (int i = 0; i < nPlots; i++)
+    {
+        if (plots[i].realized && !plots[i].hidden &&
+            !plots[i].plot->GetErrorFlag())
+        {
+            ++nVisiblePlots;
+        }
+    }
+
+    return nVisiblePlots;
+}
+
+// ****************************************************************************
 //  Method: ViewerPlotList::AddPlot
 //
 //  Purpose:

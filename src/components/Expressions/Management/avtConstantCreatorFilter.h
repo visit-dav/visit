@@ -21,13 +21,17 @@
 //    Hank Childs, Mon Nov  3 15:15:47 PST 2003
 //    Override base class' definition of CreateArray.
 //
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined constructor and destructor definitions to .C files
+//    because certain compilers have problems with them.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtConstantCreatorFilter : public avtUnaryMathFilter
 {
   public:
-                             avtConstantCreatorFilter() {value = 0;}
-    virtual                 ~avtConstantCreatorFilter() {;}
+                             avtConstantCreatorFilter();
+    virtual                 ~avtConstantCreatorFilter();
 
     void                     SetValue(double v) {value = v;}
     virtual const char *     GetType(void) 

@@ -24,13 +24,14 @@
 #define __vtkGenericEnSightReader_h
 
 #include "vtkDataSetSource.h"
+#include <vtk_sl_io_exports.h>
 
 class vtkCallbackCommand;
 class vtkDataArrayCollection;
 class vtkDataArraySelection;
 class vtkIdListCollection;
 
-class VTK_IO_EXPORT vtkGenericEnSightReader : public vtkDataSetSource
+class VTK_SL_IO_API vtkGenericEnSightReader : public vtkDataSetSource
 {
 public:
   static vtkGenericEnSightReader *New();

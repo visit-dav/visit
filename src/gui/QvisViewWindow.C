@@ -139,6 +139,9 @@ QvisViewWindow::~QvisViewWindow()
 //   Eric Brugger, Thu Oct 16 12:22:54 PDT 2003
 //   I added full frame mode to the 2D view tab.
 //
+//   Eric Brugger, Tue Feb 10 10:30:15 PST 2004
+//   I added center of rotation controls to the advanced tab.
+//
 // ****************************************************************************
 
 void
@@ -378,7 +381,7 @@ QvisViewWindow::CreateWindowContents()
 
     QVBoxLayout *advInternalLayout = new QVBoxLayout(advancedGroup);
     advInternalLayout->addSpacing(10);
-    QGridLayout *advLayout = new QGridLayout(advInternalLayout, 5, 3);
+    QGridLayout *advLayout = new QGridLayout(advInternalLayout, 7, 3);
     advLayout->setSpacing(5);
     advLayout->setColStretch(1, 10);
 
@@ -427,6 +430,21 @@ QvisViewWindow::CreateWindowContents()
     connect(makeViewKeyframeButton, SIGNAL(clicked()),
             this, SLOT(makeViewKeyframe()));
     advLayout->addMultiCellWidget(makeViewKeyframeButton, 4,4, 0,2);
+
+    centerToggle = new QCheckBox("User defined center of rotation",
+                                 advancedGroup, "centerToggle");
+    connect(centerToggle, SIGNAL(toggled(bool)),
+            this, SLOT(centerChecked(bool)));
+    advLayout->addMultiCellWidget(centerToggle, 5,5, 0,2);
+
+    centerLineEdit = new QLineEdit(advancedGroup, "centerLineEdit");
+    centerLineEdit->setMinimumWidth(MIN_LINEEDIT_WIDTH);
+    connect(centerLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(processCenterText()));
+    advLayout->addMultiCellWidget(centerLineEdit, 6, 6, 1, 2);
+    QLabel *centerLabel = new QLabel(centerLineEdit, "Center",
+                                  advancedGroup, "centerLineEditLabel");
+    advLayout->addWidget(centerLabel, 6, 0);
 
     advInternalLayout->addStretch(10);
 
@@ -666,6 +684,9 @@ QvisViewWindow::Update2D(bool doAll)
 //   Hank Childs, Wed Oct 15 15:26:03 PDT 2003
 //   Added eye angle.
 //
+//   Eric Brugger, Tue Feb 10 10:30:15 PST 2004
+//   I added center of rotation controls to the advanced tab.
+//
 // ****************************************************************************
 
 void
@@ -739,6 +760,18 @@ QvisViewWindow::Update3D(bool doAll)
             perspectiveToggle->blockSignals(true);
             perspectiveToggle->setChecked(view3d->GetPerspective());
             perspectiveToggle->blockSignals(false);
+            break;
+        case 11: // centerOfRotationSet.
+            centerToggle->blockSignals(true);
+            centerToggle->setChecked(view3d->GetCenterOfRotationSet());
+            centerToggle->blockSignals(false);
+            break;
+        case 12: // centerOfRotation.
+            temp.sprintf("%g %g %g",
+                         view3d->GetCenterOfRotation()[0],
+                         view3d->GetCenterOfRotation()[1],
+                         view3d->GetCenterOfRotation()[2]);
+            centerLineEdit->setText(temp);
             break;
         }
     }
@@ -900,7 +933,7 @@ QvisViewWindow::Apply(bool ignore)
         bool do2d    = (view2d->NumAttributesSelected() > 0);
         bool do3d    = (view3d->NumAttributesSelected() > 0);
 
-        // Get the current aslice attributes and tell the other
+        // Get the current view attributes and tell the other
         // observers about them.
         GetCurrentValues(-1);
 
@@ -1217,6 +1250,9 @@ QvisViewWindow::GetCurrentValues2d(int which_widget)
 //   Hank Childs, Wed Oct 15 15:26:03 PDT 2003
 //   Added eye angle.
 //
+//   Eric Brugger, Tue Feb 10 10:30:15 PST 2004
+//   I added center of rotation controls to the advanced tab.
+//
 // ****************************************************************************
 
 void
@@ -1497,6 +1533,35 @@ QvisViewWindow::GetCurrentValues3d(int which_widget)
                  view3d->GetEyeAngle());
             Error(msg);
             view3d->SetEyeAngle(view3d->GetEyeAngle());
+        }
+    }
+
+    // Do the center of rotation values.
+    if(which_widget == 14 || doAll)
+    {
+        temp = centerLineEdit->displayText().stripWhiteSpace();
+        okay = !temp.isEmpty();
+        if(okay)
+        {
+            double center[3];
+            if(sscanf(temp.latin1(), "%lg %lg %lg",
+                      &center[0], &center[1], &center[2]) == 3)
+            {
+                view3d->SetCenterOfRotation(center);
+            }
+            else
+                okay = false;
+        }
+
+        if(!okay)
+        {
+            msg.sprintf("The center of rotation values were invalid. "
+                "Resetting to the last good values of %g %g %g.",
+                 view3d->GetCenterOfRotation()[0],
+                 view3d->GetCenterOfRotation()[1],
+                 view3d->GetCenterOfRotation()[2]);
+            Error(msg);
+            view3d->SetCenterOfRotation(view3d->GetCenterOfRotation());
         }
     }
 }
@@ -1857,6 +1922,10 @@ QvisViewWindow::Pan(double panx, double pany)
 //   I added controls for image pan and image zoom. I renamed camera
 //   to view normal in the view attributes.
 //
+//   Eric Brugger, Tue Feb 10 10:30:15 PST 2004
+//   I modified the routine to rotate about the center of rotation if one
+//   is specified.
+//
 // ****************************************************************************
  
 void
@@ -1864,10 +1933,13 @@ QvisViewWindow::RotateAxis(int axis, double angle)
 {
     double angleRadians;
     double v1[3], v2[3], v3[3];
-    double m1[9], m2[9], m3[9], r[9];
-    double rotationMatrix[9];
+    double t1[16], t2[16], m1[16], m2[16], r[16];
+    double ma[16], mb[16], mc[16];
+    double rM[16];
     double viewNormal[3];
     double viewUp[3];
+    double viewFocus[3];
+    double dist;
  
     //
     // Calculate the rotation matrix in screen coordinates.
@@ -1876,38 +1948,60 @@ QvisViewWindow::RotateAxis(int axis, double angle)
     switch (axis)
     {
       case 0:
-        r[0] = 1.;
-        r[1] = 0.;
-        r[2] = 0.;
-        r[3] = 0.;
-        r[4] = cos(angleRadians);
-        r[5] = - sin(angleRadians);
-        r[6] = 0.;
-        r[7] = sin(angleRadians);
-        r[8] = cos(angleRadians);
+        r[0]  = 1.;
+        r[1]  = 0.;
+        r[2]  = 0.;
+        r[3]  = 0.;
+        r[4]  = 0.;
+        r[5]  = cos(angleRadians);
+        r[6]  = - sin(angleRadians);
+        r[7]  = 0.;
+        r[8]  = 0.;
+        r[9]  = sin(angleRadians);
+        r[10] = cos(angleRadians);
+        r[11] = 0.;
+        r[12] = 0.;
+        r[13] = 0.;
+        r[14] = 0.;
+        r[15] = 1.;
         break;
+
       case 1:
-        r[0] = cos(angleRadians);
-        r[1] = 0.;
-        r[2] = sin(angleRadians);
-        r[3] = 0.;
-        r[4] = 1.;
-        r[5] = 0.;
-        r[6] = - sin(angleRadians);
-        r[7] = 0.;
-        r[8] = cos(angleRadians);
+        r[0]  = cos(angleRadians);
+        r[1]  = 0.;
+        r[2]  = sin(angleRadians);
+        r[3]  = 0.;
+        r[4]  = 0.;
+        r[5]  = 1.;
+        r[6]  = 0.;
+        r[7]  = 0.;
+        r[8]  = - sin(angleRadians);
+        r[9]  = 0.;
+        r[10]  = cos(angleRadians);
+        r[11] = 0.;
+        r[12] = 0.;
+        r[13] = 0.;
+        r[14] = 0.;
+        r[15] = 1.;
         break;
  
       case 2:
-        r[0] = cos(angleRadians);
-        r[1] = - sin(angleRadians);
-        r[2] = 0.;
-        r[3] = sin(angleRadians);
-        r[4] = cos(angleRadians);
-        r[5] = 0.;
-        r[6] = 0.;
-        r[7] = 0.;
-        r[8] = 1.;
+        r[0]  = cos(angleRadians);
+        r[1]  = - sin(angleRadians);
+        r[2]  = 0.;
+        r[3]  = 0.;
+        r[4]  = sin(angleRadians);
+        r[5]  = cos(angleRadians);
+        r[6]  = 0.;
+        r[7]  = 0.;
+        r[8]  = 0.;
+        r[9]  = 0.;
+        r[10]  = 1.;
+        r[11] = 0.;
+        r[12] = 0.;
+        r[13] = 0.;
+        r[14] = 0.;
+        r[15] = 1.;
         break;
     }
  
@@ -1927,76 +2021,204 @@ QvisViewWindow::RotateAxis(int axis, double angle)
     v3[1] = - v2[0]*v1[2] + v2[2]*v1[0];
     v3[2] =   v2[0]*v1[1] - v2[1]*v1[0];
 
-    m1[0] = v3[0];
-    m1[1] = v2[0];
-    m1[2] = v1[0];
-    m1[3] = v3[1];
-    m1[4] = v2[1];
-    m1[5] = v1[1];
-    m1[6] = v3[2];
-    m1[7] = v2[2];
-    m1[8] = v1[2];
+    m1[0]  = v3[0];
+    m1[1]  = v2[0];
+    m1[2]  = v1[0];
+    m1[3]  = 0.;
+    m1[4]  = v3[1];
+    m1[5]  = v2[1];
+    m1[6]  = v1[1];
+    m1[7]  = 0.;
+    m1[8]  = v3[2];
+    m1[9]  = v2[2];
+    m1[10] = v1[2];
+    m1[11] = 0.;
+    m1[12] = 0.;
+    m1[13] = 0.;
+    m1[14] = 0.;
+    m1[15] = 1.;
 
-    m2[0] = m1[0];
-    m2[1] = m1[3];
-    m2[2] = m1[6];
-    m2[3] = m1[1];
-    m2[4] = m1[4];
-    m2[5] = m1[7];
-    m2[6] = m1[2];
-    m2[7] = m1[5];
-    m2[8] = m1[8];
+    m2[0]  = m1[0];
+    m2[1]  = m1[4];
+    m2[2]  = m1[8];
+    m2[3]  = m1[12];
+    m2[4]  = m1[1];
+    m2[5]  = m1[5];
+    m2[6]  = m1[9];
+    m2[7]  = m1[13];
+    m2[8]  = m1[2];
+    m2[9]  = m1[6];
+    m2[10] = m1[10];
+    m2[11] = m1[14];
+    m2[12] = m1[3];
+    m2[13] = m1[7];
+    m2[14] = m1[11];
+    m2[15] = m1[15];
 
     //
-    // Form the composite transformation matrix m1 X r X m2.
+    // Calculate the translation to the center of rotation (and its
+    // inverse).
     //
-    m3[0] = m1[0]*r[0] + m1[1]*r[3] + m1[2]*r[6];
-    m3[1] = m1[0]*r[1] + m1[1]*r[4] + m1[2]*r[7];
-    m3[2] = m1[0]*r[2] + m1[1]*r[5] + m1[2]*r[8];
-    m3[3] = m1[3]*r[0] + m1[4]*r[3] + m1[5]*r[6];
-    m3[4] = m1[3]*r[1] + m1[4]*r[4] + m1[5]*r[7];
-    m3[5] = m1[3]*r[2] + m1[4]*r[5] + m1[5]*r[8];
-    m3[6] = m1[6]*r[0] + m1[7]*r[3] + m1[8]*r[6];
-    m3[7] = m1[6]*r[1] + m1[7]*r[4] + m1[8]*r[7];
-    m3[8] = m1[6]*r[2] + m1[7]*r[5] + m1[8]*r[8];
+    t1[0]  = 1.;
+    t1[1]  = 0.;
+    t1[2]  = 0.;
+    t1[3]  = 0.;
+    t1[4]  = 0.;
+    t1[5]  = 1.;
+    t1[6]  = 0.;
+    t1[7]  = 0.;
+    t1[8]  = 0.;
+    t1[9]  = 0.;
+    t1[10] = 1.;
+    t1[11] = 0.;
+    t1[12] = -view3d->GetCenterOfRotation()[0];
+    t1[13] = -view3d->GetCenterOfRotation()[1];
+    t1[14] = -view3d->GetCenterOfRotation()[2];
+    t1[15] = 1.;
+
+    t2[0]  = 1.;
+    t2[1]  = 0.;
+    t2[2]  = 0.;
+    t2[3]  = 0.;
+    t2[4]  = 0.;
+    t2[5]  = 1.;
+    t2[6]  = 0.;
+    t2[7]  = 0.;
+    t2[8]  = 0.;
+    t2[9]  = 0.;
+    t2[10] = 1.;
+    t2[11] = 0.;
+    t2[12] = view3d->GetCenterOfRotation()[0];
+    t2[13] = view3d->GetCenterOfRotation()[1];
+    t2[14] = view3d->GetCenterOfRotation()[2];
+    t2[15] = 1.;
+
+    //
+    // Form the composite transformation matrix t1 X m1 X r X m2 X t2.
+    //
+    ma[0]  = t1[0]*m1[0]  + t1[1]*m1[4]  + t1[2]*m1[8]   + t1[3]*m1[12];
+    ma[1]  = t1[0]*m1[1]  + t1[1]*m1[5]  + t1[2]*m1[9]   + t1[3]*m1[13];
+    ma[2]  = t1[0]*m1[2]  + t1[1]*m1[6]  + t1[2]*m1[10]  + t1[3]*m1[14];
+    ma[3]  = t1[0]*m1[3]  + t1[1]*m1[7]  + t1[2]*m1[11]  + t1[3]*m1[15];
+    ma[4]  = t1[4]*m1[0]  + t1[5]*m1[4]  + t1[6]*m1[8]   + t1[7]*m1[12];
+    ma[5]  = t1[4]*m1[1]  + t1[5]*m1[5]  + t1[6]*m1[9]   + t1[7]*m1[13];
+    ma[6]  = t1[4]*m1[2]  + t1[5]*m1[6]  + t1[6]*m1[10]  + t1[7]*m1[14];
+    ma[7]  = t1[4]*m1[3]  + t1[5]*m1[7]  + t1[6]*m1[11]  + t1[7]*m1[15];
+    ma[8]  = t1[8]*m1[0]  + t1[9]*m1[4]  + t1[10]*m1[8]  + t1[11]*m1[12];
+    ma[9]  = t1[8]*m1[1]  + t1[9]*m1[5]  + t1[10]*m1[9]  + t1[11]*m1[13];
+    ma[10] = t1[8]*m1[2]  + t1[9]*m1[6]  + t1[10]*m1[10] + t1[11]*m1[14];
+    ma[11] = t1[8]*m1[3]  + t1[9]*m1[7]  + t1[10]*m1[11] + t1[11]*m1[15];
+    ma[12] = t1[12]*m1[0] + t1[13]*m1[4] + t1[14]*m1[8]  + t1[15]*m1[12];
+    ma[13] = t1[12]*m1[1] + t1[13]*m1[5] + t1[14]*m1[9]  + t1[15]*m1[13];
+    ma[14] = t1[12]*m1[2] + t1[13]*m1[6] + t1[14]*m1[10] + t1[15]*m1[14];
+    ma[15] = t1[12]*m1[3] + t1[13]*m1[7] + t1[14]*m1[11] + t1[15]*m1[15];
+
+    mb[0]  = ma[0]*r[0]  + ma[1]*r[4]  + ma[2]*r[8]   + ma[3]*r[12];
+    mb[1]  = ma[0]*r[1]  + ma[1]*r[5]  + ma[2]*r[9]   + ma[3]*r[13];
+    mb[2]  = ma[0]*r[2]  + ma[1]*r[6]  + ma[2]*r[10]  + ma[3]*r[14];
+    mb[3]  = ma[0]*r[3]  + ma[1]*r[7]  + ma[2]*r[11]  + ma[3]*r[15];
+    mb[4]  = ma[4]*r[0]  + ma[5]*r[4]  + ma[6]*r[8]   + ma[7]*r[12];
+    mb[5]  = ma[4]*r[1]  + ma[5]*r[5]  + ma[6]*r[9]   + ma[7]*r[13];
+    mb[6]  = ma[4]*r[2]  + ma[5]*r[6]  + ma[6]*r[10]  + ma[7]*r[14];
+    mb[7]  = ma[4]*r[3]  + ma[5]*r[7]  + ma[6]*r[11]  + ma[7]*r[15];
+    mb[8]  = ma[8]*r[0]  + ma[9]*r[4]  + ma[10]*r[8]  + ma[11]*r[12];
+    mb[9]  = ma[8]*r[1]  + ma[9]*r[5]  + ma[10]*r[9]  + ma[11]*r[13];
+    mb[10] = ma[8]*r[2]  + ma[9]*r[6]  + ma[10]*r[10] + ma[11]*r[14];
+    mb[11] = ma[8]*r[3]  + ma[9]*r[7]  + ma[10]*r[11] + ma[11]*r[15];
+    mb[12] = ma[12]*r[0] + ma[13]*r[4] + ma[14]*r[8]  + ma[15]*r[12];
+    mb[13] = ma[12]*r[1] + ma[13]*r[5] + ma[14]*r[9]  + ma[15]*r[13];
+    mb[14] = ma[12]*r[2] + ma[13]*r[6] + ma[14]*r[10] + ma[15]*r[14];
+    mb[15] = ma[12]*r[3] + ma[13]*r[7] + ma[14]*r[11] + ma[15]*r[15];
  
-    rotationMatrix[0] = m3[0]*m2[0] + m3[1]*m2[3] + m3[2]*m2[6];
-    rotationMatrix[1] = m3[0]*m2[1] + m3[1]*m2[4] + m3[2]*m2[7];
-    rotationMatrix[2] = m3[0]*m2[2] + m3[1]*m2[5] + m3[2]*m2[8];
-    rotationMatrix[3] = m3[3]*m2[0] + m3[4]*m2[3] + m3[5]*m2[6];
-    rotationMatrix[4] = m3[3]*m2[1] + m3[4]*m2[4] + m3[5]*m2[7];
-    rotationMatrix[5] = m3[3]*m2[2] + m3[4]*m2[5] + m3[5]*m2[8];
-    rotationMatrix[6] = m3[6]*m2[0] + m3[7]*m2[3] + m3[8]*m2[6];
-    rotationMatrix[7] = m3[6]*m2[1] + m3[7]*m2[4] + m3[8]*m2[7];
-    rotationMatrix[8] = m3[6]*m2[2] + m3[7]*m2[5] + m3[8]*m2[8];
+    mc[0]  = mb[0]*m2[0]  + mb[1]*m2[4]  + mb[2]*m2[8]   + mb[3]*m2[12];
+    mc[1]  = mb[0]*m2[1]  + mb[1]*m2[5]  + mb[2]*m2[9]   + mb[3]*m2[13];
+    mc[2]  = mb[0]*m2[2]  + mb[1]*m2[6]  + mb[2]*m2[10]  + mb[3]*m2[14];
+    mc[3]  = mb[0]*m2[3]  + mb[1]*m2[7]  + mb[2]*m2[11]  + mb[3]*m2[15];
+    mc[4]  = mb[4]*m2[0]  + mb[5]*m2[4]  + mb[6]*m2[8]   + mb[7]*m2[12];
+    mc[5]  = mb[4]*m2[1]  + mb[5]*m2[5]  + mb[6]*m2[9]   + mb[7]*m2[13];
+    mc[6]  = mb[4]*m2[2]  + mb[5]*m2[6]  + mb[6]*m2[10]  + mb[7]*m2[14];
+    mc[7]  = mb[4]*m2[3]  + mb[5]*m2[7]  + mb[6]*m2[11]  + mb[7]*m2[15];
+    mc[8]  = mb[8]*m2[0]  + mb[9]*m2[4]  + mb[10]*m2[8]  + mb[11]*m2[12];
+    mc[9]  = mb[8]*m2[1]  + mb[9]*m2[5]  + mb[10]*m2[9]  + mb[11]*m2[13];
+    mc[10] = mb[8]*m2[2]  + mb[9]*m2[6]  + mb[10]*m2[10] + mb[11]*m2[14];
+    mc[11] = mb[8]*m2[3]  + mb[9]*m2[7]  + mb[10]*m2[11] + mb[11]*m2[15];
+    mc[12] = mb[12]*m2[0] + mb[13]*m2[4] + mb[14]*m2[8]  + mb[15]*m2[12];
+    mc[13] = mb[12]*m2[1] + mb[13]*m2[5] + mb[14]*m2[9]  + mb[15]*m2[13];
+    mc[14] = mb[12]*m2[2] + mb[13]*m2[6] + mb[14]*m2[10] + mb[15]*m2[14];
+    mc[15] = mb[12]*m2[3] + mb[13]*m2[7] + mb[14]*m2[11] + mb[15]*m2[15];
+ 
+    rM[0]  = mc[0]*t2[0]  + mc[1]*t2[4]  + mc[2]*t2[8]   + mc[3]*t2[12];
+    rM[1]  = mc[0]*t2[1]  + mc[1]*t2[5]  + mc[2]*t2[9]   + mc[3]*t2[13];
+    rM[2]  = mc[0]*t2[2]  + mc[1]*t2[6]  + mc[2]*t2[10]  + mc[3]*t2[14];
+    rM[3]  = mc[0]*t2[3]  + mc[1]*t2[7]  + mc[2]*t2[11]  + mc[3]*t2[15];
+    rM[4]  = mc[4]*t2[0]  + mc[5]*t2[4]  + mc[6]*t2[8]   + mc[7]*t2[12];
+    rM[5]  = mc[4]*t2[1]  + mc[5]*t2[5]  + mc[6]*t2[9]   + mc[7]*t2[13];
+    rM[6]  = mc[4]*t2[2]  + mc[5]*t2[6]  + mc[6]*t2[10]  + mc[7]*t2[14];
+    rM[7]  = mc[4]*t2[3]  + mc[5]*t2[7]  + mc[6]*t2[11]  + mc[7]*t2[15];
+    rM[8]  = mc[8]*t2[0]  + mc[9]*t2[4]  + mc[10]*t2[8]  + mc[11]*t2[12];
+    rM[9]  = mc[8]*t2[1]  + mc[9]*t2[5]  + mc[10]*t2[9]  + mc[11]*t2[13];
+    rM[10] = mc[8]*t2[2]  + mc[9]*t2[6]  + mc[10]*t2[10] + mc[11]*t2[14];
+    rM[11] = mc[8]*t2[3]  + mc[9]*t2[7]  + mc[10]*t2[11] + mc[11]*t2[15];
+    rM[12] = mc[12]*t2[0] + mc[13]*t2[4] + mc[14]*t2[8]  + mc[15]*t2[12];
+    rM[13] = mc[12]*t2[1] + mc[13]*t2[5] + mc[14]*t2[9]  + mc[15]*t2[13];
+    rM[14] = mc[12]*t2[2] + mc[13]*t2[6] + mc[14]*t2[10] + mc[15]*t2[14];
+    rM[15] = mc[12]*t2[3] + mc[13]*t2[7] + mc[14]*t2[11] + mc[15]*t2[15];
 
     //
     // Calculate the new view normal and view up.
     //
-    viewNormal[0] = view3d->GetViewNormal()[0] * rotationMatrix[0] +
-                    view3d->GetViewNormal()[1] * rotationMatrix[3] +
-                    view3d->GetViewNormal()[2] * rotationMatrix[6];
-    viewNormal[1] = view3d->GetViewNormal()[0] * rotationMatrix[1] +
-                    view3d->GetViewNormal()[1] * rotationMatrix[4] +
-                    view3d->GetViewNormal()[2] * rotationMatrix[7];
-    viewNormal[2] = view3d->GetViewNormal()[0] * rotationMatrix[2] +
-                    view3d->GetViewNormal()[1] * rotationMatrix[5] +
-                    view3d->GetViewNormal()[2] * rotationMatrix[8];
+    viewNormal[0] = view3d->GetViewNormal()[0] * rM[0] +
+                    view3d->GetViewNormal()[1] * rM[4] +
+                    view3d->GetViewNormal()[2] * rM[8];
+    viewNormal[1] = view3d->GetViewNormal()[0] * rM[1] +
+                    view3d->GetViewNormal()[1] * rM[5] +
+                    view3d->GetViewNormal()[2] * rM[9];
+    viewNormal[2] = view3d->GetViewNormal()[0] * rM[2] +
+                    view3d->GetViewNormal()[1] * rM[6] +
+                    view3d->GetViewNormal()[2] * rM[10];
+    dist = sqrt(viewNormal[0]*viewNormal[0] + viewNormal[1]*viewNormal[1] +
+                viewNormal[2]*viewNormal[2]);
+    viewNormal[0] /= dist;
+    viewNormal[1] /= dist;
+    viewNormal[2] /= dist;
  
     view3d->SetViewNormal(viewNormal);
  
-    viewUp[0] = view3d->GetViewUp()[0] * rotationMatrix[0] +
-                view3d->GetViewUp()[1] * rotationMatrix[3] +
-                view3d->GetViewUp()[2] * rotationMatrix[6];
-    viewUp[1] = view3d->GetViewUp()[0] * rotationMatrix[1] +
-                view3d->GetViewUp()[1] * rotationMatrix[4] +
-                view3d->GetViewUp()[2] * rotationMatrix[7];
-    viewUp[2] = view3d->GetViewUp()[0] * rotationMatrix[2] +
-                view3d->GetViewUp()[1] * rotationMatrix[5] +
-                view3d->GetViewUp()[2] * rotationMatrix[8];
+    viewUp[0] = view3d->GetViewUp()[0] * rM[0] +
+                view3d->GetViewUp()[1] * rM[4] +
+                view3d->GetViewUp()[2] * rM[8];
+    viewUp[1] = view3d->GetViewUp()[0] * rM[1] +
+                view3d->GetViewUp()[1] * rM[5] +
+                view3d->GetViewUp()[2] * rM[9];
+    viewUp[2] = view3d->GetViewUp()[0] * rM[2] +
+                view3d->GetViewUp()[1] * rM[6] +
+                view3d->GetViewUp()[2] * rM[10];
+    dist = sqrt(viewUp[0]*viewUp[0] + viewUp[1]*viewUp[1] +
+                viewUp[2]*viewUp[2]);
+    viewUp[0] /= dist;
+    viewUp[1] /= dist;
+    viewUp[2] /= dist;
  
     view3d->SetViewUp(viewUp);
  
+    if (view3d->GetCenterOfRotationSet())
+    {
+        viewFocus[0] = view3d->GetFocus()[0] * rM[0]  +
+                       view3d->GetFocus()[1] * rM[4]  +
+                       view3d->GetFocus()[2] * rM[8]  +
+                       rM[12];
+        viewFocus[1] = view3d->GetFocus()[0] * rM[1]  +
+                       view3d->GetFocus()[1] * rM[5]  +
+                       view3d->GetFocus()[2] * rM[9]  +
+                       rM[13];
+        viewFocus[2] = view3d->GetFocus()[0] * rM[2]  +
+                       view3d->GetFocus()[1] * rM[6]  +
+                       view3d->GetFocus()[2] * rM[10] +
+                       rM[14];
+
+        view3d->SetFocus(viewFocus);
+    }
+
     Update3D(true);
 }
  
@@ -2539,3 +2761,44 @@ QvisViewWindow::makeViewKeyframe()
     viewer->SetViewKeyframe();
 }
 
+// ****************************************************************************
+// Method: QvisViewWindow::centerChecked
+//
+// Purpose: 
+//   This Qt slot function tells the viewer that the center of rotation
+//   was set.
+//
+// Programmer: Eric Brugger
+// Creation:   February 10, 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisViewWindow::centerChecked(bool val)
+{
+    view3d->SetCenterOfRotationSet(val);
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisViewWindow::processCenterText
+//
+// Purpose: 
+//   This Qt slot function handles the center of rotation changing.
+//
+// Programmer: Eric Brugger
+// Creation:   February 10, 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisViewWindow::processCenterText()
+{
+    GetCurrentValues(14);
+    Apply();    
+}

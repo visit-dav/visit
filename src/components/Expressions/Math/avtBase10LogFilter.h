@@ -25,13 +25,17 @@ class     vtkDataArray;
 //    Hank Childs, Fri Nov 15 15:23:54 PST 2002
 //    Added support for vectors and non-float arrays.
 //
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined constructor and destructor definitions to .C files
+//    because certain compilers have problems with them.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtBase10LogFilter : public avtUnaryMathFilter
 {
   public:
-                              avtBase10LogFilter() {;};
-    virtual                  ~avtBase10LogFilter() {;};
+                              avtBase10LogFilter();
+    virtual                  ~avtBase10LogFilter();
 
     virtual const char       *GetType(void)   { return "avtBase10LogFilter"; };
     virtual const char       *GetDescription(void) 

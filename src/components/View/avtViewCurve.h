@@ -4,7 +4,7 @@
 
 #ifndef AVT_VIEW_CURVE_H
 #define AVT_VIEW_CURVE_H
-#include <pipeline_exports.h>
+#include <view_exports.h>
 
 struct avtViewInfo;
 class ViewCurveAttributes;
@@ -38,7 +38,7 @@ class ViewCurveAttributes;
 //
 // ****************************************************************************
 
-struct PIPELINE_API avtViewCurve
+struct AVTVIEW_API avtViewCurve
 {
     double   viewport[4];
     double   domain[2];

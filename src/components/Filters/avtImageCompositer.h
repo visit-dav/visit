@@ -4,7 +4,7 @@
 
 #ifndef AVT_IMAGE_COMPOSITER_H
 #define AVT_IMAGE_COMPOSITER_H
-#include <pipeline_exports.h>
+#include <filters_exports.h>
 #ifdef PARALLEL
 #include <mpi.h>
 #endif
@@ -28,13 +28,19 @@
 //  Programmer: Mark C. Miller 
 //  Creation:   February 12, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined destructor definition to .C file because certain compilers
+//    have problems with them.
+//
 // ****************************************************************************
 
-class PIPELINE_API avtImageCompositer : public avtImageToImageFilter
+class AVTFILTERS_API avtImageCompositer : public avtImageToImageFilter
 {
    public:
                               avtImageCompositer();
-      virtual                ~avtImageCompositer() {;};
+      virtual                ~avtImageCompositer();
 
       void                    SetOutputImageSize(const int numRows,
                                                  const int numCols);

@@ -96,6 +96,9 @@ import java.util.Vector;
 //   Kathleen Bonnell, Wed Dec 17 15:19:46 PST 2003 
 //   Added SetDefaultPickAttributes, ResetPickLetter. 
 //
+//   Brad Whitlock, Mon Dec 29 09:24:20 PDT 2003
+//   Added methods for setting and choosing the center of rotation.
+//
 //   Brad Whitlock, Thu Jan 8 14:19:43 PST 2004
 //   I fixed a typo that prevented it from building.
 //
@@ -869,6 +872,32 @@ public class ViewerProxy implements SimpleObserver
     public boolean SetRenderingAttributes()
     {
         rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETRENDERINGATTRIBUTESRPC);
+        rpc.Notify();
+        return synchronous ? Synchronize() : true;
+    }
+
+
+    public boolean SetCenterOfRotation(double[] pt)
+    {
+        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETCENTEROFROTATIONRPC);
+        rpc.SetQueryPoint1(pt);
+        rpc.Notify();
+        return synchronous ? Synchronize() : true;
+    }
+
+    public boolean ChooseCenterOfRotation()
+    {
+        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_CHOOSECENTEROFROTATIONRPC);
+        rpc.SetBoolFlag(false);
+        rpc.Notify();
+        return synchronous ? Synchronize() : true;
+    }
+
+    public boolean ChooseCenterOfRotation(double[] pt)
+    {
+        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_CHOOSECENTEROFROTATIONRPC);
+        rpc.SetBoolFlag(true);
+        rpc.SetQueryPoint1(pt);
         rpc.Notify();
         return synchronous ? Synchronize() : true;
     }

@@ -31,10 +31,11 @@
 #define __vtkAppendFilter_h
 
 #include "vtkDataSetToUnstructuredGridFilter.h"
+#include <vtk_sl_io_exports.h>
 
 class vtkDataSetCollection;
 
-class VTK_GRAPHICS_EXPORT vtkAppendFilter : public vtkDataSetToUnstructuredGridFilter
+class VTK_SL_IO_API vtkAppendFilter : public vtkDataSetToUnstructuredGridFilter
 {
 public:
   static vtkAppendFilter *New();

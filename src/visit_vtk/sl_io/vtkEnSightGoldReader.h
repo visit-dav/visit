@@ -39,8 +39,9 @@
 #define __vtkEnSightGoldReader_h
 
 #include "vtkEnSightReader.h"
+#include <vtk_sl_io_exports.h>
 
-class VTK_IO_EXPORT vtkEnSightGoldReader : public vtkEnSightReader
+class VTK_SL_IO_API vtkEnSightGoldReader : public vtkEnSightReader
 {
 public:
   static vtkEnSightGoldReader *New();

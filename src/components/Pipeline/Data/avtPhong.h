@@ -20,13 +20,19 @@
 //  Programmer: Hank Childs
 //  Creation:   November 29, 2000
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined constructor and destructor definitions to .C files
+//    because certain compilers have problems with them.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtPhong : public avtLightingModel
 {
   public:
                            avtPhong();
-    virtual               ~avtPhong() {;};
+    virtual               ~avtPhong();
 
     virtual double         GetShading(double, const double[3]) const;
 

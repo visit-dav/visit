@@ -254,6 +254,9 @@ typedef struct {
 //    Brad Whitlock, Wed Oct 29 11:13:55 PDT 2003
 //    I added method to deal with advanced annotation features.
 //
+//    Brad Whitlock, Wed Jan 7 10:02:39 PDT 2004
+//    I added methods for setting the center of rotation.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerWindowManager : public QObject
@@ -321,6 +324,8 @@ class VIEWER_API ViewerWindowManager : public QObject
     void DeleteViewKeyframe(const int frame);
     void MoveViewKeyframe(int oldFrame, int newFrame);
     void SetViewKeyframe();
+    void SetCenterOfRotation(int, double x, double y, double z);
+    void ChooseCenterOfRotation(int, double sx, double sy);
     void SetWindowLayout(const int windowLayout);
 
     void SetRenderingAttributes(int windowIndex = -1);

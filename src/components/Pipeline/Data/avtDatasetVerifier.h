@@ -31,13 +31,17 @@ class     vtkDataArray;
 //    Hank Childs, Fri Jan  9 09:36:01 PST 2004
 //    Add a routine that is accessible for the generic database.
 //
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined constructor and destructor definitions to .C files
+//    because certain compilers have problems with them.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDatasetVerifier
 {
   public:
                 avtDatasetVerifier();
-    virtual    ~avtDatasetVerifier() {;};
+    virtual    ~avtDatasetVerifier();
 
     void        VerifyDatasets(int, vtkDataSet **, std::vector<int> &domains);
 

@@ -33,13 +33,17 @@ class vtkCell;
 //    STL vectors, and made it collect the boundary points
 //    across all domains and processors.
 //
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined destructor definition to .C file because certain compilers
+//    have problems with them.
+//
 // ****************************************************************************
 
 class QUERY_API avtCompactnessQuery : public avtTwoPassDatasetQuery
 {
   public:
                                     avtCompactnessQuery();
-    virtual                        ~avtCompactnessQuery() {;};
+    virtual                        ~avtCompactnessQuery();
 
     virtual const char             *GetType(void)
                                              { return "avtCompactnessQuery"; };

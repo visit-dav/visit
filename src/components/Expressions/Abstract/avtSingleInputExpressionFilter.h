@@ -1,14 +1,14 @@
-// ********************************************************************** //
-//                             avtSingleInputExpressionFilter.h           //
-// ********************************************************************** //
+// ************************************************************************* //
+//                        avtSingleInputExpressionFilter.h                   //
+// ************************************************************************* //
 
 #ifndef AVT_SINGLE_INPUT_EXPRESSION_FILTER_H
 #define AVT_SINGLE_INPUT_EXPRESSION_FILTER_H
 
-
 #include <avtExpressionFilter.h>
 
 class     vtkDataArray;
+
 
 // ****************************************************************************
 //  Class: avtSingleInputExpressionFilter
@@ -24,15 +24,21 @@ class     vtkDataArray;
 //      Added the NumVariableArguments function, specifying that all
 //      subclasses of SingleInputExpressionFilter have one variable input.
 //
+//      Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//      Moved inlined constructor and destructor definitions to .C files
+//      because certain compilers have problems with them.
+//
 // ****************************************************************************
 
-class EXPRESSION_API avtSingleInputExpressionFilter : public avtExpressionFilter
+class EXPRESSION_API avtSingleInputExpressionFilter 
+    : public avtExpressionFilter
 {
   public:
-                              avtSingleInputExpressionFilter() {;}
-    virtual                  ~avtSingleInputExpressionFilter() {;}
+                              avtSingleInputExpressionFilter();
+    virtual                  ~avtSingleInputExpressionFilter();
 
-    virtual const char       *GetType(void) { return "avtSingleInputExpressionFilter"; }
+    virtual const char       *GetType(void) 
+                                  { return "avtSingleInputExpressionFilter"; };
     virtual const char       *GetDescription(void) = 0;
     virtual int               NumVariableArguments() { return 1; }
 

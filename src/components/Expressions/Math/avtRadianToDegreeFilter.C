@@ -14,6 +14,43 @@
 #define M_PI 3.14159265358979323846
 #endif
 
+
+// ****************************************************************************
+//  Method: avtRadianToDegreeFilter constructor
+//
+//  Purpose:
+//      Defines the constructor.  Note: this should not be inlined in the
+//      header because it causes problems for certain compilers.
+//
+//  Programmer: Hank Childs
+//  Creation:   February 5, 2004
+//
+// ****************************************************************************
+
+avtRadianToDegreeFilter::avtRadianToDegreeFilter()
+{
+    ;
+}
+
+
+// ****************************************************************************
+//  Method: avtRadianToDegreeFilter destructor
+//
+//  Purpose:
+//      Defines the destructor.  Note: this should not be inlined in the header
+//      because it causes problems for certain compilers.
+//
+//  Programmer: Hank Childs
+//  Creation:   February 5, 2004
+//
+// ****************************************************************************
+
+avtRadianToDegreeFilter::~avtRadianToDegreeFilter()
+{
+    ;
+}
+
+
 // ****************************************************************************
 //  Method: avtRadianToDegreeFilter::DoOperation
 //

@@ -36,13 +36,14 @@
 #define __vtkSTLReader_h
 
 #include "vtkPolyDataSource.h"
+#include <vtk_sl_io_exports.h>
 
 class vtkCellArray;
 class vtkFloatArray;
 class vtkPointLocator;
 class vtkPoints;
 
-class VTK_IO_EXPORT vtkSTLReader : public vtkPolyDataSource 
+class VTK_SL_IO_API vtkSTLReader : public vtkPolyDataSource 
 {
 public:
   vtkTypeRevisionMacro(vtkSTLReader,vtkPolyDataSource);

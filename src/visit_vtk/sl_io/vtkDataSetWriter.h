@@ -25,8 +25,9 @@
 #define __vtkDataSetWriter_h
 
 #include "vtkDataWriter.h"
+#include <vtk_sl_io_exports.h>
 
-class VTK_IO_EXPORT vtkDataSetWriter : public vtkDataWriter
+class VTK_SL_IO_API vtkDataSetWriter : public vtkDataWriter
 {
 public:
   static vtkDataSetWriter *New();

@@ -21,13 +21,19 @@ class     ExprPipelineState;
 //  Programmer: Hank Childs
 //  Creation:   March 7, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined constructor and destructor definitions to .C files
+//    because certain compilers have problems with them.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtRandomFilter : public avtSingleInputExpressionFilter
 {
   public:
-                              avtRandomFilter() {;};
-    virtual                  ~avtRandomFilter() {;};
+                              avtRandomFilter();
+    virtual                  ~avtRandomFilter();
 
     virtual const char       *GetType(void) { return "avtRandomFilter"; };
     virtual const char       *GetDescription(void)

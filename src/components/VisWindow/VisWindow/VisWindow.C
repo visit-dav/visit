@@ -8,6 +8,7 @@
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
 #include <vtkRenderer.h>
+#include <vtkRenderWindow.h>
 #include <vtkMath.h>
 #include <vtkMatrix4x4.h>
 
@@ -2464,12 +2465,17 @@ VisWindow::UpdateView()
 //    Kathleen Bonnell, Fri Jun 27 16:30:26 PDT 2003  
 //    Removed calls to queries->SetQueryType, no longer necessary. 
 //
+//    Brad Whitlock, Wed Jan 7 14:38:38 PST 2004
+//    Added code to tell the renderer colleague to set the right cursor
+//    for the interaction mode.
+//
 // ****************************************************************************
 
 void
 VisWindow::SetInteractionMode(INTERACTION_MODE m)
 {
     interactions->SetInteractionMode(m);
+    rendering->SetCursorForMode(m);
 }
 
 // ****************************************************************************
@@ -3769,6 +3775,38 @@ VisWindow::Pick(int x, int y)
     (*performPickCallback)((void*)ppInfo);
 }
 
+// ****************************************************************************
+// Method: VisWindow::Pick
+//
+// Purpose: 
+//   Calls the Pick method with window coordinates [0,1]
+//
+// Arguments:
+//   sx, sy : The point on which to pick.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Jan 5 14:43:11 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+VisWindow::Pick(double sx, double sy)
+{
+    vtkRenderer *ren = GetCanvas();
+    
+    if(ren->GetRenderWindow())
+    {
+        int *windowSize = ren->GetRenderWindow()->GetSize();
+        if(windowSize)
+        {
+            int x = int(sx * windowSize[0]);
+            int y = int(sy * windowSize[1]);
+            Pick(x, y);
+        }
+    }
+}
 
 // ****************************************************************************
 // Method: VisWindow::SetPickCB

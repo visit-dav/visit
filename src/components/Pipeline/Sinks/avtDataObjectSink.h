@@ -30,6 +30,10 @@
 //    Hank Childs, Mon Oct  1 14:13:09 PDT 2001
 //    Made GetInput public.  Needed for comparisons.
 //
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined constructor and destructor definitions to .C files
+//    because certain compilers have problems with them.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataObjectSink
@@ -37,8 +41,8 @@ class PIPELINE_API avtDataObjectSink
     friend class                  avtMultipleInputSink;
 
   public:
-                                  avtDataObjectSink() {;};
-    virtual                      ~avtDataObjectSink() {;};
+                                  avtDataObjectSink();
+    virtual                      ~avtDataObjectSink();
 
     void                          SetInput(avtDataObject_p);
     virtual avtDataObject_p       GetInput(void) = 0;

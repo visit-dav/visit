@@ -39,8 +39,9 @@
 #define __vtkEnSightGoldBinaryReader_h
 
 #include "vtkEnSightReader.h"
+#include <vtk_sl_io_exports.h>
 
-class VTK_IO_EXPORT vtkEnSightGoldBinaryReader : public vtkEnSightReader
+class VTK_SL_IO_API vtkEnSightGoldBinaryReader : public vtkEnSightReader
 {
 public:
   static vtkEnSightGoldBinaryReader *New();

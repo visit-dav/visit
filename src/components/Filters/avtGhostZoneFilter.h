@@ -5,7 +5,7 @@
 #ifndef AVT_GHOST_ZONE_FILTER_H
 #define AVT_GHOST_ZONE_FILTER_H
 
-#include <pipeline_exports.h>
+#include <filters_exports.h>
 
 #include <avtStreamer.h>
 
@@ -30,13 +30,17 @@ class     vtkDataSetRemoveGhostCells;
 //    Inherited from avtStreamer instead of avtDataTreeStreamer.  Re-worked
 //    the paradigm for memory management.
 //
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined constructor and destructor definitions to .C files
+//    because certain compilers have problems with them.
+//
 // ****************************************************************************
 
-class PIPELINE_API avtGhostZoneFilter : public avtStreamer
+class AVTFILTERS_API avtGhostZoneFilter : public avtStreamer
 {
   public:
-                         avtGhostZoneFilter() {;};
-    virtual             ~avtGhostZoneFilter() {;};
+                         avtGhostZoneFilter();
+    virtual             ~avtGhostZoneFilter();
 
     virtual const char  *GetType(void) { return "avtGhostZoneFilter"; };
     virtual const char  *GetDescription(void) 

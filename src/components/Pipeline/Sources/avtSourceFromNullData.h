@@ -18,13 +18,19 @@
 //  Programmer: Mark C. Miller
 //  Creation:   January 8, 2003 
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined constructor and destructor definitions to .C files
+//    because certain compilers have problems with them.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtSourceFromNullData : virtual public avtTerminatingNullDataSource 
 {
   public:
-                           avtSourceFromNullData() {;};
-    virtual               ~avtSourceFromNullData() {;};
+                           avtSourceFromNullData();
+    virtual               ~avtSourceFromNullData();
 };
 
 #endif

@@ -25,13 +25,17 @@
 //    Hank Childs, Mon Jun  4 08:55:55 PDT 2001
 //    Inherited from avtDataObjectSink.
 //
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined destructor definition to .C file because certain compilers 
+//    have problems with them.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtSamplePointsSink : virtual public avtDataObjectSink
 {
   public:
                                     avtSamplePointsSink();
-    virtual                        ~avtSamplePointsSink() {;};
+    virtual                        ~avtSamplePointsSink();
 
   protected:
     virtual avtDataObject_p         GetInput(void);

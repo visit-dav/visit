@@ -4,8 +4,8 @@
 
 #ifndef AVT_POINT_ATTRIBUTE_H
 #define AVT_POINT_ATTRIBUTE_H
-#include <pipeline_exports.h>
 
+#include <pipeline_exports.h>
 
 #include <string>
 
@@ -24,13 +24,19 @@
 //  Programmer: Hank Childs
 //  Creation:   March 15, 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined constructor and destructor definitions to .C files
+//    because certain compilers have problems with them.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtPointAttribute : public avtDynamicAttribute
 {
   public:
                              avtPointAttribute(Point &);
-    virtual                 ~avtPointAttribute() {;};
+    virtual                 ~avtPointAttribute();
 
     void                     GetPoint(double [3]);
 

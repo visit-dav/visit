@@ -29,6 +29,10 @@
 //    Hank Childs, Wed Nov 21 12:08:42 PST 2001
 //    Re-define DerivedCopy.
 //
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined constructor and destructor definitions to .C files
+//    because certain compilers have problems with them.
+//
 //    Mark C. Miller, Wed Feb  4 19:47:30 PST 2004
 //    Added Instance, needed by avtDataObject->Clone
 //
@@ -46,7 +50,7 @@ class PIPELINE_API avtImage : public avtDataObject
 
   public:
                               avtImage(avtDataObjectSource *);
-    virtual                  ~avtImage() {;};
+    virtual                  ~avtImage();
 
     virtual const char       *GetType(void)  { return "avtImage"; };
     virtual int               GetNumberOfCells(bool polysOnly = false) const;

@@ -276,6 +276,10 @@ struct ExternalRenderRequestInfo
 //    Eric Brugger, Mon Dec 22 10:22:09 PST 2003
 //    Added SetInitialView3d.
 //
+//    Brad Whitlock, Tue Dec 30 10:47:42 PDT 2003
+//    I added SetCenterOfRotation, ChooseCenterOfRotation and methods to
+//    support more generall=ized picking.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerWindow
@@ -314,6 +318,8 @@ public:
     void RecenterView();
     void RecenterView(const double *limits);
     void ResetView();
+    void SetCenterOfRotation(double x, double y, double z);
+    void ChooseCenterOfRotation(double sx, double sy);
     void SetViewExtentsType(const avtExtentType);
     avtExtentType GetViewExtentsType() const;
     void GetExtents(int nDimensions, double *extents);
@@ -400,6 +406,10 @@ public:
     void HideMenu();
 
     void Pick(int x, int y, const INTERACTION_MODE mode);
+    bool GetPickAttributesForScreenPoint(double sx, double sy,
+                                         PickAttributes &pa);
+    void SetPickFunction(void (*func)(void *, bool, const PickAttributes *),
+                         void *data);
     void ClearPickPoints();
 
     void ValidateQuery(const PickAttributes *, const Line *);
@@ -495,6 +505,8 @@ private:
 
     static void PerformPickCallback(void *);
     static void PerformLineoutCallback(void *);
+    static void PickFunctionSetSuccessFlag(void *, bool, const PickAttributes *);
+    void HandlePick(void *ppi);
 
     void *CreateToolbar(const std::string &name);
 
@@ -512,6 +524,9 @@ private:
     AttributeSubjectMap *view3DAtts;
 
     ExternalRenderRequestInfo lastExternalRenderRequest;
+
+    void           (*pickFunction)(void *, bool, const PickAttributes *);
+    void           *pickFunctionData;
 
     bool            preparingToChangeScalableRenderingMode;
     bool            isChangingScalableRenderingMode;

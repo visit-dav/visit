@@ -26,6 +26,10 @@
 //    Hank Childs, Tue Sep 11 14:58:14 PDT 2001
 //    Re-worked inheritance hierarchy.
 //
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined destructor definition to .C file because certain compilers
+//    have problems with them.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtSourceFromAVTDataset : virtual public avtTerminatingDatasetSource,
@@ -33,7 +37,7 @@ class PIPELINE_API avtSourceFromAVTDataset : virtual public avtTerminatingDatase
 {
   public:
                           avtSourceFromAVTDataset(avtDataset_p ds);
-    virtual              ~avtSourceFromAVTDataset() {;};
+    virtual              ~avtSourceFromAVTDataset();
 
   protected:
     avtDataTree_p         tree;

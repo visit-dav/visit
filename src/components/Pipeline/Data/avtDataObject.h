@@ -29,13 +29,19 @@ class     avtQueryableSource;
 //  Programmer: Hank Childs
 //  Creation:   May 23, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined constructor and destructor definitions to .C files
+//    because certain compilers have problems with them.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataObject
 {
   public:
                                      avtDataObject(avtDataObjectSource *);
-    virtual                         ~avtDataObject() {;};
+    virtual                         ~avtDataObject();
 
     avtTerminatingSource            *GetTerminatingSource(void);
     avtQueryableSource              *GetQueryableSource(void);

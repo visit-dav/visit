@@ -239,6 +239,9 @@ class VisitInteractor;
 //    Kathleen Bonnell, Wed Dec  3 16:58:20 PST 2003
 //    Added ReAddToolsToRenderWindow, TransparenciesExist.
 //
+//    Brad Whitlock, Tue Jan 6 10:34:23 PDT 2004
+//    I added a new Pick method that uses viewport coordinates.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindow
@@ -372,6 +375,7 @@ public:
     void                 ScalePlots(const float [3]);
 
     void                 Pick(int, int);
+    void                 Pick(double, double);
     void                 Lineout(int, int, int, int);
 
     void                *CreateToolbar(const char *name);

@@ -5,7 +5,7 @@
 #ifndef AVT_SAMPLE_POINT_TO_SURFACE_FILTER_H
 #define AVT_SAMPLE_POINT_TO_SURFACE_FILTER_H
 
-#include <pipeline_exports.h>
+#include <filters_exports.h>
 
 #include <avtSamplePointsToDatasetFilter.h>
 
@@ -32,14 +32,20 @@ typedef enum
 //  Programmer: Hank Childs
 //  Creation:   June 30, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined destructor definition to .C file because certain compilers
+//    have problems with them.
+//
 // ****************************************************************************
 
-class PIPELINE_API avtSamplePointToSurfaceFilter 
+class AVTFILTERS_API avtSamplePointToSurfaceFilter 
     : public avtSamplePointsToDatasetFilter
 {
   public:
                               avtSamplePointToSurfaceFilter();
-    virtual                  ~avtSamplePointToSurfaceFilter() {;};
+    virtual                  ~avtSamplePointToSurfaceFilter();
 
     void                      SetSurfaceType(SurfaceType st)
                                     { surfType = st; };

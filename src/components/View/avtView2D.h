@@ -4,7 +4,7 @@
 
 #ifndef AVT_VIEW_2D_H
 #define AVT_VIEW_2D_H
-#include <pipeline_exports.h>
+#include <view_exports.h>
 
 struct avtViewInfo;
 class View2DAttributes;
@@ -40,7 +40,7 @@ class View2DAttributes;
 //
 // ****************************************************************************
 
-struct PIPELINE_API avtView2D
+struct AVTVIEW_API avtView2D
 {
     double   viewport[4];
     double   window[4];

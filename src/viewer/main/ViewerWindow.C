@@ -163,6 +163,9 @@ static void RotateAroundY(const avtView3D&, double, avtView3D&);
 //    I added code to make the default annotation objects be created in
 //    this new window.
 //
+//    Brad Whitlock, Wed Jan 7 09:52:59 PDT 2004
+//    I initialized pickFunction and pickFunctionData.
+//
 // ****************************************************************************
 
 ViewerWindow::ViewerWindow(int windowIndex)
@@ -227,6 +230,8 @@ ViewerWindow::ViewerWindow(int windowIndex)
     PICK_POINT_INFO *pdata = new PICK_POINT_INFO;
     pdata->callbackData = this;
     visWindow->SetPickCB(ViewerWindow::PerformPickCallback, pdata);
+    pickFunction = 0;
+    pickFunctionData = 0;
 
     //
     // Callback for lineout.
@@ -613,6 +618,10 @@ ViewerWindow::Realize()
 //    Modified to handle different Pick modes.  Removed calls to Start/Stop
 //    PickMode (moved the logic for those methods here.)
 //
+//    Brad Whitlock, Wed Jan 7 09:55:36 PDT 2004
+//    I added code to remove the pick function so if we change pick modes,
+//    for example, we're back to picking.
+//
 // ****************************************************************************
 
 void
@@ -622,6 +631,11 @@ ViewerWindow::SetInteractionMode(const INTERACTION_MODE mode)
 
     bool changingToPickMode  = (ZONE_PICK == mode || NODE_PICK == mode);
     bool currentlyInPickMode = (ZONE_PICK == curMode || NODE_PICK == curMode);
+
+    // Clear the pick function so it will default to pick instead of a
+    // user-defined action.
+    pickFunction = 0;
+    pickFunctionData = 0;
 
     if  (changingToPickMode)
     {
@@ -3384,6 +3398,9 @@ ViewerWindow::RecenterView2d(const double *limits)
 //    I modified the routine to handle the case where there are no plots in
 //    the window.
 //
+//    Eric Brugger, Tue Feb 10 09:59:15 PST 2004
+//    I modified the routine to also reset the center of rotation.
+//
 // ****************************************************************************
 
 void
@@ -3453,6 +3470,14 @@ ViewerWindow::RecenterView3d(const double *limits)
     //
     view3D.nearPlane = - 2.0 * width;
     view3D.farPlane  =   2.0 * width;
+
+    //
+    // Reset the center of rotation.
+    //
+    view3D.centerOfRotationSet = false;
+    view3D.centerOfRotation[0] = 0.;
+    view3D.centerOfRotation[1] = 0.;
+    view3D.centerOfRotation[2] = 0.;
 
     //
     // Update the view.
@@ -3663,6 +3688,9 @@ ViewerWindow::ResetView2d()
 //    Modify the routine to also set haveRenderedIn3d to false if the
 //    bounding box is invalid so that the view really gets reset.
 //
+//    Eric Brugger, Tue Feb 10 09:59:15 PST 2004
+//    I modified the routine to also reset the center of rotation.
+//
 // ****************************************************************************
 
 void
@@ -3738,6 +3766,14 @@ ViewerWindow::ResetView3d()
     view3D.imagePan[0] = 0.;
     view3D.imagePan[1] = 0.;
     view3D.imageZoom = 1.;
+
+    //
+    // Reset the center of rotation.
+    //
+    view3D.centerOfRotationSet = false;
+    view3D.centerOfRotation[0] = 0.;
+    view3D.centerOfRotation[1] = 0.;
+    view3D.centerOfRotation[2] = 0.;
 
     //
     // Update the view.
@@ -4222,6 +4258,77 @@ ViewerWindow::UpdateView3d(const double *limits)
 
     haveRenderedIn3d = true;
 }
+
+// ****************************************************************************
+// Method: ViewerWindow::SetCenterOfRotation
+//
+// Purpose: 
+//   Sets the center of rotation for the plots in the window.
+//
+// Arguments:
+//   x,y,z : The new center of rotation.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jan 6 10:29:13 PDT 2004
+//
+// Modifications:
+//   Eric Brugger, Tue Feb 10 09:59:15 PST 2004
+//   I changed the code to set the center of rotation instead of the focus.
+//   
+// ****************************************************************************
+
+void
+ViewerWindow::SetCenterOfRotation(double x, double y, double z)
+{
+    avtView3D view(GetView3D());
+
+    view.centerOfRotationSet = true;
+    view.centerOfRotation[0] = x;
+    view.centerOfRotation[1] = y;
+    view.centerOfRotation[2] = z;
+
+    SetView3D(view);
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::ChooseCenterOfRotation
+//
+// Purpose: 
+//   Picks the center of rotation to be the world space point that lies at
+//   the screen point.
+//
+// Arguments:
+//   sx, sy : The screen point where sx,sy in [0,1].
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jan 6 10:27:53 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerWindow::ChooseCenterOfRotation(double sx, double sy)
+{
+    PickAttributes pick;
+
+    //
+    // Determine the world point using the screen point using pick.
+    //
+    if(GetPickAttributesForScreenPoint(sx, sy, pick))
+    {
+        // Use the pick point as the new center of rotation.
+        SetCenterOfRotation(pick.GetPickPoint()[0],
+                            pick.GetPickPoint()[1],
+                            pick.GetPickPoint()[2]);
+    }
+    else
+    {
+        Warning("VisIt could not pick the center of rotation. "
+                "You might not have clicked on a plot.");
+    }
+}
+
 
 // ****************************************************************************
 //  Method: ViewerWindow::ConvertFromLeftEyeToRightEye
@@ -4751,6 +4858,72 @@ ViewerWindow::Pick(int x, int y, const INTERACTION_MODE pickMode)
 }
 
 // ****************************************************************************
+// Method: ViewerWindow::GetPickAttributesForScreenPoint
+//
+// Purpose: 
+//   Performs a pick at the specified screen location but does not add any sort
+//   of pick letter. Instead, just return the pick attributes that were
+//   determined for the point.
+//
+// Arguments:
+//   sx, sy : The screen location of the pick point. Both sx, sy are in [0,1].
+//   pa     : The pick attributes to populate.
+//
+// Returns:    True if successful; false otherwise.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jan 6 09:37:03 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+ViewerWindow::GetPickAttributesForScreenPoint(double sx, double sy,
+    PickAttributes &pa)
+{
+    INTERACTION_MODE iMode = visWindow->GetInteractionMode();
+
+    // The return value will be set in the pick function.
+    bool retval = false;
+
+    TRY
+    {
+        // Set the interaction mode to pick.
+        SetInteractionMode(ZONE_PICK);
+
+        //
+        // Make the Pick infrastructure use a pick routine that does not add
+        // a Pick graphic to the vis window.
+        //
+        pickFunction = PickFunctionSetSuccessFlag;
+        pickFunctionData = (void *)&retval;
+
+        //
+        // This method calls the Pick infrastructure with a pick routine that
+        // does not add a pick graphic to the vis window.
+        //
+        visWindow->Pick(sx, sy);
+
+        // Copy the pick attributes
+        pa = *(ViewerQueryManager::GetPickAtts());
+
+        // Restore the interaction mode.
+        SetInteractionMode(iMode);
+    }
+    CATCHALL(...)
+    {
+        // Restore the interaction mode.
+        SetInteractionMode(iMode);
+
+        RETHROW;
+    }
+    ENDTRY
+
+    return retval;
+}
+
+// ****************************************************************************
 //  Method: ViewerWindow::PerformPickCallback
 //
 //  Purpose: 
@@ -4776,6 +4949,11 @@ ViewerWindow::Pick(int x, int y, const INTERACTION_MODE pickMode)
 //    Kathleen Bonnell, Fri Nov 15 09:07:36 PST 2002 
 //    Moved bulk of code to ViewerQueryManager. 
 //
+//    Brad Whitlock, Wed Jan 7 09:15:33 PDT 2004
+//    I made the pick be handled in the HandlePick method so we'd have access
+//    to member fields. Another reason I did it this way is so I can make pick
+//    do other things without having to change its callback with the vis window.
+//
 // ****************************************************************************
 
 void
@@ -4783,12 +4961,135 @@ ViewerWindow::PerformPickCallback(void *data)
 {
     if(data == 0)
         return;
-    // 
-    // Let the Query manager handle this.
+
     //
-    ViewerQueryManager::Instance()->Pick((PICK_POINT_INFO*)data);
+    // Let the ViewerWindow handle the pick since it could do various things
+    // with the pick request.
+    //
+    PICK_POINT_INFO *ppi = (PICK_POINT_INFO*)data;
+    ViewerWindow *win = (ViewerWindow *)ppi->callbackData;
+    win->HandlePick(data);
 }
 
+// ****************************************************************************
+// Method: ViewerWindow::HandlePick
+//
+// Purpose: 
+//   Handles the pick request by either doing a complete pick or by picking
+//   and then giving the pick information to a user-supplied pick function.
+//
+// Arguments:
+//   data : A pointer to the PICK_POINT_INFO.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jan 7 09:18:58 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerWindow::HandlePick(void *data)
+{
+    ViewerQueryManager *qMgr = ViewerQueryManager::Instance();
+    PICK_POINT_INFO *ppi = (PICK_POINT_INFO*)data;
+
+    TRY
+    {
+        if(pickFunction == 0)
+        {
+            // 
+            // Let the Query manager do a pick
+            //
+            qMgr->Pick(ppi);
+        }
+        else
+        {
+            // 
+            // Let the Query manager do a pick but don't add anything to the
+            // vis window.
+            //
+            qMgr->NoGraphicsPick(ppi);
+
+            //
+            // Call the pick function with the pick attributes and a flag
+            // that indicates whether pick really did something.
+            //
+            PickAttributes *p = qMgr->GetPickAtts();
+            if(p)
+            {
+                bool pickWorked = ppi->validPick;
+                (*pickFunction)(pickFunctionData, pickWorked, p);
+            }
+        }
+
+        //
+        // Clear the pick function so it defaults to Pick and not some
+        // user-defined function.
+        //
+        pickFunction = 0;
+        pickFunctionData = 0;
+    }
+    CATCH(VisItException)
+    {
+        pickFunction = 0;
+        pickFunctionData = 0;
+        RETHROW;
+    }
+    ENDTRY
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::SetPickFunction
+//
+// Purpose: 
+//   Sets the pick function to execute after pick has been performed.
+//
+// Arguments:
+//   func : The callback function.
+//   data : The callback function data.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jan 7 09:51:59 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerWindow::SetPickFunction(void (*func)(void *, bool, const PickAttributes *),
+    void *data)
+{
+    pickFunction = func;
+    pickFunctionData = data;
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::PickFunctionSetSuccessFlag
+//
+// Purpose: 
+//   Causes no action to be done after a pick.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jan 6 09:35:33 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerWindow::PickFunctionSetSuccessFlag(void *data, bool success,
+    const PickAttributes *)
+{
+    // This function is used to set the return value for
+    // GetPickAttributesForScreenPoint.
+    if(data)
+    {
+        // Make it return whether or not we got a valid pick.
+        bool *retval = (bool *)data;
+        *retval = success;
+    }
+}
 
 // ****************************************************************************
 //  Method: ViewerWindow::ClearPickPoints

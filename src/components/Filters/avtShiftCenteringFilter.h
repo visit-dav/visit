@@ -5,7 +5,7 @@
 #ifndef AVT_SHIFT_CENTERING_FILTER_H
 #define AVT_SHIFT_CENTERING_FILTER_H
 
-#include <pipeline_exports.h>
+#include <filters_exports.h>
 
 #include <avtStreamer.h>
 
@@ -36,13 +36,17 @@ class vtkPointDataToCellData;
 //    Hank Childs, Wed Feb 27 13:03:32 PST 2002
 //    Added RefashionDataObjectInfo.
 //
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined destructor definition to .C file because certain compilers
+//    have problems with them.
+//
 // ****************************************************************************
 
-class PIPELINE_API avtShiftCenteringFilter : public avtStreamer
+class AVTFILTERS_API avtShiftCenteringFilter : public avtStreamer
 {
   public:
                             avtShiftCenteringFilter(int);
-    virtual                ~avtShiftCenteringFilter() {;};
+    virtual                ~avtShiftCenteringFilter();
 
     virtual const char     *GetType(void) { return "avtShiftCenteringFilter"; };
     virtual const char     *GetDescription(void) 

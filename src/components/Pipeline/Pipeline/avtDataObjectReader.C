@@ -2,8 +2,9 @@
 //                             avtDataObjectReader.C                         //
 // ************************************************************************* //
 
-#include <string>
 #include <avtDataObjectReader.h>
+
+#include <string>
 
 #include <avtDataSetReader.h>
 #include <avtImageReader.h>
@@ -23,7 +24,8 @@
 //  Modifications:
 //
 //      Mark C. Miller, Wed Jan  8 11:43:44 PST 2003
-//         Initialized boolean data members for type of object
+//      Initialized boolean data members for type of object
+//
 // ****************************************************************************
 
 avtDataObjectReader::avtDataObjectReader()
@@ -35,6 +37,24 @@ avtDataObjectReader::avtDataObjectReader()
     datasetInput   = false;
     imageInput     = false;
     nullDataInput  = false;
+}
+
+
+// ****************************************************************************
+//  Method: avtDataObjectReader destructor
+//
+//  Purpose:
+//      Defines the destructor.  Note: this should not be inlined in the header
+//      because it causes problems for certain compilers.
+//
+//  Programmer: Hank Childs
+//  Creation:   February 5, 2004
+//
+// ****************************************************************************
+
+avtDataObjectReader::~avtDataObjectReader()
+{
+    ;
 }
 
 

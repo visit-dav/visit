@@ -1,6 +1,6 @@
 #ifndef CLIP_CASES_H
 #define CLIP_CASES_H
-#include <visit_vtk_exports.h>
+#include <visit_vtk_light_exports.h>
 
 // Programmer: Jeremy Meredith
 // Date      : August 11, 2003
@@ -65,34 +65,34 @@
 #define NOCOLOR 122
 
 // Tables
-extern VISIT_VTK_API int numClipCasesHex;
-extern VISIT_VTK_API int numClipShapesHex[256];
-extern VISIT_VTK_API int startClipShapesHex[256];
-extern VISIT_VTK_API unsigned char clipShapesHex[];
+extern VISIT_VTK_LIGHT_API int numClipCasesHex;
+extern VISIT_VTK_LIGHT_API int numClipShapesHex[256];
+extern VISIT_VTK_LIGHT_API int startClipShapesHex[256];
+extern VISIT_VTK_LIGHT_API unsigned char clipShapesHex[];
 
-extern VISIT_VTK_API int numClipCasesWdg;
-extern VISIT_VTK_API int numClipShapesWdg[64];
-extern VISIT_VTK_API int startClipShapesWdg[64];
-extern VISIT_VTK_API unsigned char clipShapesWdg[];
+extern VISIT_VTK_LIGHT_API int numClipCasesWdg;
+extern VISIT_VTK_LIGHT_API int numClipShapesWdg[64];
+extern VISIT_VTK_LIGHT_API int startClipShapesWdg[64];
+extern VISIT_VTK_LIGHT_API unsigned char clipShapesWdg[];
 
-extern VISIT_VTK_API int numClipCasesPyr;
-extern VISIT_VTK_API int numClipShapesPyr[32];
-extern VISIT_VTK_API int startClipShapesPyr[32];
-extern VISIT_VTK_API unsigned char clipShapesPyr[];
+extern VISIT_VTK_LIGHT_API int numClipCasesPyr;
+extern VISIT_VTK_LIGHT_API int numClipShapesPyr[32];
+extern VISIT_VTK_LIGHT_API int startClipShapesPyr[32];
+extern VISIT_VTK_LIGHT_API unsigned char clipShapesPyr[];
 
-extern VISIT_VTK_API int numClipCasesTet;
-extern VISIT_VTK_API int numClipShapesTet[16];
-extern VISIT_VTK_API int startClipShapesTet[16];
-extern VISIT_VTK_API unsigned char clipShapesTet[];
+extern VISIT_VTK_LIGHT_API int numClipCasesTet;
+extern VISIT_VTK_LIGHT_API int numClipShapesTet[16];
+extern VISIT_VTK_LIGHT_API int startClipShapesTet[16];
+extern VISIT_VTK_LIGHT_API unsigned char clipShapesTet[];
 
-extern VISIT_VTK_API int numClipCasesQua;
-extern VISIT_VTK_API int numClipShapesQua[16];
-extern VISIT_VTK_API int startClipShapesQua[16];
-extern VISIT_VTK_API unsigned char clipShapesQua[];
+extern VISIT_VTK_LIGHT_API int numClipCasesQua;
+extern VISIT_VTK_LIGHT_API int numClipShapesQua[16];
+extern VISIT_VTK_LIGHT_API int startClipShapesQua[16];
+extern VISIT_VTK_LIGHT_API unsigned char clipShapesQua[];
 
-extern VISIT_VTK_API int numClipCasesTri;
-extern VISIT_VTK_API int numClipShapesTri[8];
-extern VISIT_VTK_API int startClipShapesTri[8];
-extern VISIT_VTK_API unsigned char clipShapesTri[];
+extern VISIT_VTK_LIGHT_API int numClipCasesTri;
+extern VISIT_VTK_LIGHT_API int numClipShapesTri[8];
+extern VISIT_VTK_LIGHT_API int startClipShapesTri[8];
+extern VISIT_VTK_LIGHT_API unsigned char clipShapesTri[];
 
 #endif

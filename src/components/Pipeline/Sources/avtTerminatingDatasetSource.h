@@ -23,14 +23,20 @@
 //  Programmer: Hank Childs
 //  Creation:   May 29, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined constructor and destructor definitions to .C files
+//    because certain compilers have problems with them.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtTerminatingDatasetSource
     : virtual public avtDatasetSource, virtual public avtTerminatingSource
 {
   public:
-                              avtTerminatingDatasetSource() {;};
-    virtual                  ~avtTerminatingDatasetSource() {;};
+                              avtTerminatingDatasetSource();
+    virtual                  ~avtTerminatingDatasetSource();
 
     void                      MergeExtents(vtkDataSet *);
 

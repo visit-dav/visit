@@ -11,6 +11,42 @@
 
 
 // ****************************************************************************
+//  Method: avtConstantCreatorFilter constructor
+//
+//  Purpose:
+//      Defines the constructor.  Note: this should not be inlined in the
+//      header because it causes problems for certain compilers.
+//
+//  Programmer: Hank Childs
+//  Creation:   February 5, 2004
+//
+// ****************************************************************************
+
+avtConstantCreatorFilter::avtConstantCreatorFilter()
+{
+    value = 0;
+}
+
+
+// ****************************************************************************
+//  Method: avtConstantCreatorFilter destructor
+//
+//  Purpose:
+//      Defines the destructor.  Note: this should not be inlined in the header
+//      because it causes problems for certain compilers.
+//
+//  Programmer: Hank Childs
+//  Creation:   February 5, 2004
+//
+// ****************************************************************************
+
+avtConstantCreatorFilter::~avtConstantCreatorFilter()
+{
+    ;
+}
+
+
+// ****************************************************************************
 //  Method: avtConstantCreatorFilter::DoOperation
 //
 //  Purpose:

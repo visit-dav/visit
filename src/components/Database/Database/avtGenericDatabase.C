@@ -272,7 +272,8 @@ avtGenericDatabase::GetOutput(avtDataSpecification_p spec,
     //
     avtDatasetVerifier verifier;
     vtkDataSet **ds_list = new vtkDataSet*[nDomains];
-    for (int i = 0 ; i < nDomains ; i++)
+    int i;
+    for (i = 0 ; i < nDomains ; i++)
     {
         ds_list[i] = datasetCollection.GetDataset(i, 0);
     }
@@ -295,7 +296,7 @@ avtGenericDatabase::GetOutput(avtDataSpecification_p spec,
     //  always send the array when MatSelected, until a better solution is derived.
     // 
     bool shouldDoMatSelect = false;
-    for (int i = 0 ; i < datasetCollection.GetNDomains() ; i++)
+    for (i = 0 ; i < datasetCollection.GetNDomains() ; i++)
     {
         shouldDoMatSelect = shouldDoMatSelect || datasetCollection.needsMatSelect[i];
     }

@@ -2813,6 +2813,92 @@ visit_ResetView(PyObject *self, PyObject *args)
 }
 
 // ****************************************************************************
+// Function: visit_SetCenterOfRotation
+//
+// Purpose:
+//   Sets the center of rotation for the active window.
+//
+// Notes:      
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Nov 12 12:15:53 PDT 2001
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_SetCenterOfRotation(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    double c0, c1, c2;
+    if(!PyArg_ParseTuple(args, "ddd", &c0, &c1, &c2))
+        return NULL;
+
+    MUTEX_LOCK();
+        viewer->SetCenterOfRotation(c0, c1, c2);
+        if(logging)
+        {
+            fprintf(logFile, "SetCenterOfRotation(%g, %g, %g)\n",
+                    c0, c1, c2);
+        }
+    MUTEX_UNLOCK();
+
+    return IntReturnValue(Synchronize());
+}
+
+// ****************************************************************************
+// Function: visit_ChooseCenterOfRotation
+//
+// Purpose:
+//   Tells the viewer to use the center of the screen to update the center
+//   of rotation.
+//
+// Notes:      
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Nov 12 12:15:53 PDT 2001
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_ChooseCenterOfRotation(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    bool havePoint = true;
+    double sx, sy;
+    if(!PyArg_ParseTuple(args, "dd", &sx, &sy))
+    {
+        havePoint = false;
+        PyErr_Clear(); 
+    }
+    
+
+    MUTEX_LOCK();
+        if(havePoint)
+        {
+            // We know where we want to pick.
+            viewer->ChooseCenterOfRotation(sx, sy);
+            if(logging)
+                fprintf(logFile, "ChooseCenterOfRotation(%g ,%g)\n", sx, sy);
+        }
+        else
+        {
+            // Choose the point interactively
+            viewer->ChooseCenterOfRotation();
+            if(logging)
+                fprintf(logFile, "ChooseCenterOfRotation()\n");
+        }
+    MUTEX_UNLOCK();
+
+    return IntReturnValue(Synchronize());
+}
+
+// ****************************************************************************
 // Function: visit_RestoreSession
 //
 // Purpose:
@@ -7856,6 +7942,9 @@ AddMethod(const char *methodName, PyObject *(cb)(PyObject *, PyObject *),
 //   Eric Brugger, Thu Dec 18 15:29:44 PST 2003
 //   Added SetCloneWindowOnFirstRef.
 //
+//   Brad Whitlock, Tue Dec 30 10:58:07 PDT 2003
+//   Added SetCenterOfRotation and ChooseCenterOfRotation.
+//
 // ****************************************************************************
 
 static void
@@ -7889,6 +7978,7 @@ AddDefaultMethods()
     AddMethod("AnimationGetNFrames", visit_AnimationGetNFrames);
     AddMethod("AnimationSetNFrames", visit_AnimationSetNFrames);
     AddMethod("ChangeActivePlotsVar", visit_ChangeActivePlotsVar);
+    AddMethod("ChooseCenterOfRotation",  visit_ChooseCenterOfRotation);
     AddMethod("ClearAllWindows", visit_ClearAllWindows);
     AddMethod("ClearCache", visit_ClearCache);
     AddMethod("ClearPickPoints", visit_ClearPickPoints);
@@ -7972,6 +8062,7 @@ AddDefaultMethods()
     AddMethod("SetActiveWindow", visit_SetActiveWindow);
     AddMethod("SetAnimationTimeout", visit_SetAnimationTimeout);
     AddMethod("SetAnnotationAttributes", visit_SetAnnotationAttributes);
+    AddMethod("SetCenterOfRotation",  visit_SetCenterOfRotation);
     AddMethod("SetCloneWindowOnFirstRef", visit_SetCloneWindowOnFirstRef);
     AddMethod("SetDefaultAnnotationAttributes", visit_SetDefaultAnnotationAttributes);
     AddMethod("SetDefaultMaterialAttributes", visit_SetDefaultMaterialAttributes);

@@ -1085,6 +1085,28 @@ vtkQtRenderWindow::SetLineSmoothing(int val)
     gl->initializeGL();
 }
 
+// ****************************************************************************
+// Method: vtkQtRenderWindow::setCursor
+//
+// Purpose: 
+//   Sets the cursor for the GL widget.
+//
+// Arguments:
+//   c : The cursor to use.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jan 7 14:54:27 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+vtkQtRenderWindow::setCursor(const QCursor &c)
+{
+    gl->setCursor(c);
+}
+
 //
 // Include more source code for vtkQtRenderWindow that deals with getting/setting
 // pixels to and from the GL widget. This code, though needed by VTK, is boilerplate

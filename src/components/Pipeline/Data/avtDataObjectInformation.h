@@ -32,13 +32,17 @@ class     avtDataObjectWriter;
 //    Split class into two classes, blew away previous comments since they
 //    now apply to avtDataAttributes and avtDataValidity.
 //
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined constructor and destructor definitions to .C files
+//    because certain compilers have problems with them.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataObjectInformation
 {
   public:
-                             avtDataObjectInformation() {;};
-    virtual                 ~avtDataObjectInformation() {;};
+                             avtDataObjectInformation();
+    virtual                 ~avtDataObjectInformation();
 
     void                     Copy(const avtDataObjectInformation &);
  

@@ -4,8 +4,8 @@
 
 #ifndef AVT_RAY_FUNCTION_H
 #define AVT_RAY_FUNCTION_H
-#include <pipeline_exports.h>
 
+#include <pipeline_exports.h>
 
 #include <avtCellTypes.h>
 
@@ -32,13 +32,17 @@ class     avtRay;
 //    Hank Childs, Sat Feb  3 20:14:19 PST 2001
 //    Made the output of GetRayValue be a pixel instead of a value.
 //
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined constructor and destructor definitions to .C files
+//    because certain compilers have problems with them.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtRayFunction
 {
   public:
                          avtRayFunction(avtLightingModel *);
-    virtual             ~avtRayFunction() {;};
+    virtual             ~avtRayFunction();
 
     bool                 NeedsGradients(void);
 

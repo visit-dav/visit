@@ -4,6 +4,9 @@
 
 #include <Navigate3D.h>
 
+#include <avtVector.h>
+#include <avtMatrix.h>
+
 #include <VisWindow.h>
 #include <VisWindowInteractorProxy.h>
 
@@ -377,6 +380,10 @@ Navigate3D::DisableSpinMode(void)
 //    Hank Childs, Wed May 29 10:50:12 PDT 2002
 //    Initialized data members needed for determining which direction to spin.
 //
+//    Eric Brugger, Tue Feb 10 08:41:08 PST 2004
+//    I modified the routine to rotate about the center of rotation if one
+//    is specified.
+//
 // ****************************************************************************
 
 void
@@ -417,12 +424,10 @@ Navigate3D::RotateCamera(const int x, const int y)
         // magnitude of the rotation, the closer to 1 the smaller.
         // The quaternion will be of unit length.
         //
-        double    q[4];
-        double    rot[3][3];
+        avtMatrix rot;
 
-        BuildQuaternion(q, unitPrevX, unitPrevY, unitX, unitY);
-        q[2] = -q[2];
-        MatrixFromQuaternion(rot, q);
+        rot.MakeTrackball(unitPrevX, unitPrevY, unitX, unitY, true);
+        rot.Transpose();
 
         //
         // Get the current view information.
@@ -431,66 +436,91 @@ Navigate3D::RotateCamera(const int x, const int y)
 
         const avtView3D &oldView3D = vw->GetView3D();
 
-        double    VPN[3];
-        double    VUP[3];
-
-        VPN[0] = oldView3D.normal[0];
-        VPN[1] = oldView3D.normal[1];
-        VPN[2] = oldView3D.normal[2];
-        VUP[0] = oldView3D.viewUp[0];
-        VUP[1] = oldView3D.viewUp[1];
-        VUP[2] = oldView3D.viewUp[2];
+        avtVector VPN(oldView3D.normal);
+        avtVector VUP(oldView3D.viewUp);
+        avtVector Focus(oldView3D.focus);
 
         //
         // Calculate the coordinate transformation from the world coordinate
         // space to the screen coordinate space (and its inverse).
         //
-        double    VPNCrossVUP[3];
-        double    mat[3][3], matTranspose[3][3];
+        avtVector VPNCrossVUP;
+        avtMatrix mata, mataInverse;
 
-        VectorCross(VPN, VUP, VPNCrossVUP);
+        VPNCrossVUP = VPN % VUP;
 
-        MatrixSet(mat, VPNCrossVUP, VUP, VPN);
-        MatrixTranspose(mat, matTranspose);
+        mata[0][0] = VPNCrossVUP.x;
+        mata[0][1] = VPNCrossVUP.y;
+        mata[0][2] = VPNCrossVUP.z;
+        mata[0][3] = 0.;
+        mata[1][0] = VUP.x;
+        mata[1][1] = VUP.y;
+        mata[1][2] = VUP.z;
+        mata[1][3] = 0.;
+        mata[2][0] = VPN.x;
+        mata[2][1] = VPN.y;
+        mata[2][2] = VPN.z;
+        mata[2][3] = 0.;
+        mata[3][0] = 0.;
+        mata[3][1] = 0.;
+        mata[3][2] = 0.;
+        mata[3][3] = 1.;
+
+        mataInverse = mata;
+        mataInverse.Transpose();
 
         //
-        // Calculate the new view plane normal.
+        // Calculate the translation to the center of rotation (and its
+        // inverse).
         //
-        double    vecTemp[3], vecTemp2[3];
-        double    newVPN[3];
+        avtMatrix matb, matbInverse;
 
-        VectorMatrixMult(VPN, mat, vecTemp);
-        VectorMatrixMult(vecTemp, rot, vecTemp2);
-        VectorMatrixMult(vecTemp2, matTranspose, newVPN);
+        matb.MakeTranslate(-oldView3D.centerOfRotation[0],
+                           -oldView3D.centerOfRotation[1],
+                           -oldView3D.centerOfRotation[2]);
+        matbInverse.MakeTranslate(oldView3D.centerOfRotation[0],
+                                  oldView3D.centerOfRotation[1],
+                                  oldView3D.centerOfRotation[2]);
 
         //
-        // Calculate the new view up vector.
+        // Calculate the composite transformation.
         //
-        double    newVUP[3];
+        avtMatrix mat;
 
-        VectorMatrixMult(VUP, mat, vecTemp);
-        VectorMatrixMult(vecTemp, rot, vecTemp2);
-        VectorMatrixMult(vecTemp2, matTranspose, newVUP);
+        mat = matbInverse * mataInverse * rot * mata * matb;
+
+        //
+        // Calculate the new view plane normal, view up vector and focus.
+        //
+        avtVector newVPN(mat ^ VPN);
+        avtVector newVUP(mat ^ VUP);
+        avtVector newFocus(mat * Focus);
 
         //
         // Orthogonalize the new view plane normal and view up vector.
         //
-        VectorScale(newVPN, 1.0 / VectorLength(newVPN));
-        VectorCross(newVPN, newVUP, VPNCrossVUP);
-        VectorCross(VPNCrossVUP, newVPN, newVUP);
-        VectorScale(newVUP, 1.0 / VectorLength(newVUP));
+        newVPN.normalize();
+        VPNCrossVUP = newVPN % newVUP;
+        newVUP = VPNCrossVUP % newVPN;
+        newVUP.normalize();
 
         //
         // Set the new view.
         //
         avtView3D newView3D = vw->GetView3D();
 
-        newView3D.normal[0] = newVPN[0];
-        newView3D.normal[1] = newVPN[1];
-        newView3D.normal[2] = newVPN[2];
-        newView3D.viewUp[0] = newVUP[0];
-        newView3D.viewUp[1] = newVUP[1];
-        newView3D.viewUp[2] = newVUP[2];
+        newView3D.normal[0] = newVPN.x;
+        newView3D.normal[1] = newVPN.y;
+        newView3D.normal[2] = newVPN.z;
+        newView3D.viewUp[0] = newVUP.x;
+        newView3D.viewUp[1] = newVUP.y;
+        newView3D.viewUp[2] = newVUP.z;
+        if (oldView3D.centerOfRotationSet)
+        {
+            newView3D.focus[0]  = newFocus.x;
+            newView3D.focus[1]  = newFocus.y;
+            newView3D.focus[2]  = newFocus.z;
+        }
 
         vw->SetView3D(newView3D);
 
@@ -609,175 +639,4 @@ Navigate3D::ZoomCamera(const int x, const int y)
         OldY = y;
         rwi->Render();
     }
-}
-
-
-//
-// Use a Witch of Agnesi for a trackball.  The default is a sphere
-// unioned with a plane.
-//
-#define AGNESI
-
-//
-// This size should really be based on the distance from the center
-// of rotation to the point on the object underneath the mouse.  That
-// point would then track the mouse as closely as possible.
-//
-#define AGNESI_RADIUS   0.8     // Z value at x = y = 0.0
-#define COMPRESSION     3.5     // Multipliers for x and y
-#define SPHERE_RADIUS   1.0     // Radius of sphere embedded in plane
-
-#define AR3 (AGNESI_RADIUS*AGNESI_RADIUS*AGNESI_RADIUS)
-
-// ****************************************************************************
-//  Method: Navigate3D::BuildQuaternion
-//
-//  Purpose:
-//    Build a quaterion from mouse motion using a virtual trackball.
-//
-//  Arguments:
-//    q        The rotation quaternion.
-//    p1x      The x coordinate of the first mouse position.
-//    p1y      The y coordinate of the first mouse position.
-//    p2x      The x coordinate of the second mouse position.
-//    p2y      The y coordinate of the second mouse position.
-//
-//  Notes:
-//    Project the mouse points onto the virtual trackball, then
-//    figure out the axis of rotation which is the cross product of
-//    the two mouse positions projected onto the trackball.
-//
-//  Programmer: Robb Matzke
-//  Creation:   May 1992
-//
-// ****************************************************************************
-
-void
-Navigate3D::BuildQuaternion(double q[4], const double p1x, const double p1y,
-   const double p2x, const double p2y) const
-{
-    double    p1[3], p2[3];
-    double    d[3], t;
-    double    phi;
-
-    //
-    // Check for zero mouse movement.
-    //
-    if (p1x == p2x && p1y == p2y)
-    {
-        q[0] = 0.0; q[1] = 0.0; q[2] = 0.0; q[3] = 0.0;
-        return;
-    }
-
-    //
-    // Compute z-coordinates for projection of P1 and P2 onto
-    // the trackball.
-    //
-    VectorSet(p1, p1x, p1y, ProjectToSphere(p1x, p1y));
-    VectorSet(p2, p2x, p2y, ProjectToSphere(p2x, p2y));
-
-    //
-    // Compute the axis of rotation and temporarily store it
-    // in the quaternion.
-    //
-    VectorCross(p2, p1, (double*)q);
-    VectorScale(q, 1.0 / VectorLength(q));
-
-    //
-    // Figure how much to rotate around that axis.
-    //
-    VectorSubtract(p2, p1, d);
-    t = VectorLength(d);
-    if (t > 1.0)
-        t = 1.0;
-    else if (t < -1.0)
-        t = -1.0;
-#ifdef AGNESI
-    phi = 2.0 * asin (t / (2.0 * AGNESI_RADIUS));
-#else
-    phi = 2.0 * asin (t / (2.0 * SPHERE_RADIUS));
-#endif
-    VectorScale(q, sin((double) phi / 2.0));
-    q[3] = cos((double) phi / 2.0);
-
-    //
-    // Normalize quaternion to unit magnitude.
-    //
-    t = 1.0 / sqrt(q[0] * q[0] + q[1] * q[1] + q[2] * q[2] + q[3] * q[3]);
-    q[0] *= t; q[1] *= t; q[2] *= t; q[3] *= t;
-}
-
-// ****************************************************************************
-//  Method: Navigate3D::ProjectToSphere
-//
-//  Purpose:
-//    Given an (x,y) coordinate in the viewport, calculate the z-coordinate.
-//    If AGNESI is defined, then use a Witch of Agnesi as the trackball.
-//    Otherwise, use the "cap" of a sphere and the x-y plane.
-//
-//  Arguments:
-//    x        The x coordinate of the pointer position.
-//    y        The y coordinate of the pointer position.
-//
-//  Returns:    The z-coordinate.
-//
-//  Programmer: Robb Matzke
-//  Creation:   May 1992
-//
-// ****************************************************************************
-
-double
-Navigate3D::ProjectToSphere(const double x, const double y) const
-{
-    double z;
-
-#ifdef AGNESI
-    z = (double) AR3 / ((x * x + y * y) * COMPRESSION + AR3);
-#else
-    double t;
-
-    t = SPHERE_RADIUS*SPHERE_RADIUS - x * x - y * y;
-    if ( t >= 0.0)
-    {
-        z = sqrt ((double)t) - SPHERE_RADIUS / 1.4;
-        if (z < 0.0) z = 0.0;
-    }
-    else
-    {
-        z = 0.0;
-    }
-#endif
-
-   return z;
-}
-
-// ****************************************************************************
-//  Method: Navigate3D::MatrixFromQuaternion
-//
-//  Purpose:
-//    Convert a quaternion to a 3x3 transformation matrix.
-//
-//  Arguments:
-//    m        The transformation matrix.
-//    q        The quaternion.
-//
-//  Programmer: Robb Matzke
-//  Creation:   May 1992
-//
-// ****************************************************************************
-
-void
-Navigate3D::MatrixFromQuaternion(double m[3][3], const double q[4]) const
-{
-    m[0][0] = 1.0 - 2.0 * (q[1] * q[1] + q[2] * q[2]);
-    m[0][1] = 2.0 * (q[0] * q[1] - q[2] * q[3]);
-    m[0][2] = 2.0 * (q[2] * q[0] + q[1] * q[3]);
-
-    m[1][0] = 2.0 * (q[0] * q[1] + q[2] * q[3]);
-    m[1][1] = 1.0 - 2.0 * (q[2] * q[2] + q[0] * q[0]);
-    m[1][2] = 2.0 * (q[1] * q[2] - q[0] * q[3]);
-
-    m[2][0] = 2.0 * (q[2] * q[0] - q[1] * q[3]);
-    m[2][1] = 2.0 * (q[1] * q[2] + q[0] * q[3]);
-    m[2][2] = 1.0 - 2.0 * (q[1] * q[1] + q[0] * q[0]);
 }

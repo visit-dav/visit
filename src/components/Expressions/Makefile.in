@@ -59,6 +59,9 @@
 #   Hank Childs, Tue Dec  9 17:05:14 PST 2003
 #   Added Identity, Recenter filter.
 #
+#   Hank Childs, Thu Feb  5 18:11:46 PST 2004
+#   Added avtSingleInputExpressionFilter and avtComparisonFilter.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -69,8 +72,10 @@ SRC=$(Abstract_src) $(Conditional_src) $(Derivations_src) $(General_src) $(Manag
 
 Abstract_src= \
   Abstract/avtBinaryMathFilter.C \
+  Abstract/avtComparisonFilter.C \
   Abstract/avtExpressionFilter.C \
   Abstract/avtMultipleInputExpressionFilter.C \
+  Abstract/avtSingleInputExpressionFilter.C \
   Abstract/avtUnaryMathFilter.C
 
 Conditional_src= \

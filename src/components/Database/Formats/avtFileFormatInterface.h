@@ -79,6 +79,10 @@ class    avtVariableCache;
 //    Mark C. Miller, Wed Dec 10 10:31:52 PST 2003
 //    I added method CanCacheVariable()
 //
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined destructor definition to .C file because certain compilers
+//    have problems with them.
+//
 //    Mark C. Miller, Mon Feb  9 16:00:10 PST 2004
 //    Added method, ActivateTimestep
 //
@@ -87,7 +91,7 @@ class    avtVariableCache;
 class DATABASE_API avtFileFormatInterface
 {
   public:
-    virtual                ~avtFileFormatInterface() {;};
+    virtual                ~avtFileFormatInterface();
 
     virtual vtkDataSet     *GetMesh(int, int, const char *) = 0;
     virtual vtkDataArray   *GetVar(int, int, const char *) = 0;

@@ -22,14 +22,18 @@
 //      Added NumVariableArguments, specifying that it processes three
 //      variable arguments.
 //
+//      Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//      Moved inlined constructor and destructor definitions to .C files
+//      because certain compilers have problems with them.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtVectorComposeFilter 
     : public avtMultipleInputExpressionFilter
 {
   public:
-                              avtVectorComposeFilter() {;}
-    virtual                  ~avtVectorComposeFilter() {;}
+                              avtVectorComposeFilter();
+    virtual                  ~avtVectorComposeFilter();
 
     virtual const char       *GetType(void)  
                                     { return "avtVectorComposeFilter"; };

@@ -54,6 +54,7 @@ avtDataset::avtDataset(vtkDataSet *ds)
     dataTree = new avtDataTree(ds, 0);
 }
 
+
 // ****************************************************************************
 //  Method: avtDataset copy constructor
 //
@@ -69,6 +70,23 @@ avtDataset::avtDataset(avtDataset_p in, bool dontCopyData)
    dataTree = new avtDataTree(in->dataTree, dontCopyData);
 }
 
+
+// ****************************************************************************
+//  Method: avtDataset destructor
+//
+//  Purpose:
+//      Defines the destructor.  Note: this should not be inlined in the header
+//      because it causes problems for certain compilers.
+//
+//  Programmer: Hank Childs
+//  Creation:   February 5, 2004
+//
+// ****************************************************************************
+
+avtDataset::~avtDataset()
+{
+    ;
+}
 
 
 // ****************************************************************************

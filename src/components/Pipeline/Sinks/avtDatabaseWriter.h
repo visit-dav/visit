@@ -29,13 +29,19 @@ class     avtDatabaseMetaData;
 //  Programmer: Hank Childs
 //  Creation:   September 10, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined destructor definition to .C file because certain compilers 
+//    have problems with them.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDatabaseWriter : public avtOriginatingDatasetSink
 {
   public:
                        avtDatabaseWriter();
-    virtual           ~avtDatabaseWriter() {;};
+    virtual           ~avtDatabaseWriter();
    
     void               Write(const std::string &, const avtDatabaseMetaData *);
     void               SetShouldAlwaysDoMIR(bool s)

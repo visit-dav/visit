@@ -3462,6 +3462,63 @@ ViewerProxy::ImportEntireState(const std::string &filename, bool inVisItDir)
 }
 
 // ****************************************************************************
+// Method: ViewerProxy::SetCenterOfRotation
+//
+// Purpose: 
+//   Sets the center of rotation.
+//
+// Arguments:
+//   x,y,z : The new center of rotation.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Dec 29 09:21:31 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerProxy::SetCenterOfRotation(double x, double y, double z)
+{
+    viewerRPC->SetRPCType(ViewerRPC::SetCenterOfRotationRPC);
+    double pts[] = {x, y, z};
+    viewerRPC->SetQueryPoint1(pts);
+    viewerRPC->Notify();
+}
+
+// ****************************************************************************
+// Method: ViewerProxy::ChooseCenterOfRotation
+//
+// Purpose: 
+//   Tells the viewer to use the point at the center of the screen as the
+//   new center of rotation.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Dec 29 09:22:02 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerProxy::ChooseCenterOfRotation()
+{
+    viewerRPC->SetRPCType(ViewerRPC::ChooseCenterOfRotationRPC);
+    viewerRPC->SetBoolFlag(false);
+    viewerRPC->Notify();
+}
+
+void
+ViewerProxy::ChooseCenterOfRotation(double sx, double sy)
+{
+    viewerRPC->SetRPCType(ViewerRPC::ChooseCenterOfRotationRPC);
+    viewerRPC->SetBoolFlag(true);
+    double pt[] = {sx, sy, 0.};
+    viewerRPC->SetQueryPoint1(pt);
+    viewerRPC->Notify();
+}
+
+// ****************************************************************************
 // Method: ViewerProxy::SetViewCurve
 //
 // Purpose: 

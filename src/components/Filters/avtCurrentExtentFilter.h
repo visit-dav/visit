@@ -4,7 +4,7 @@
 
 #ifndef AVT_CURRENT_EXTENT_FILTER_H
 #define AVT_CURRENT_EXTENT_FILTER_H
-#include <pipeline_exports.h>
+#include <filters_exports.h>
 
 
 #include <avtDatasetToDatasetFilter.h>
@@ -21,7 +21,7 @@
 //
 // ****************************************************************************
 
-class PIPELINE_API avtCurrentExtentFilter : public avtDatasetToDatasetFilter
+class AVTFILTERS_API avtCurrentExtentFilter : public avtDatasetToDatasetFilter
 {
   public:
                           avtCurrentExtentFilter(){};

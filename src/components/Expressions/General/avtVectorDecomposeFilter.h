@@ -21,14 +21,18 @@
 //      Sean Ahern, Thu Mar  6 01:59:23 America/Los_Angeles 2003
 //      Merged the vector component filters together.
 //
+//      Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//      Moved inlined constructor and destructor definitions to .C files
+//      because certain compilers have problems with them.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtVectorDecomposeFilter 
     : public avtSingleInputExpressionFilter
 {
   public:
-                              avtVectorDecomposeFilter(int w) {which_comp = w;}
-    virtual                  ~avtVectorDecomposeFilter() {;}
+                              avtVectorDecomposeFilter(int w);
+    virtual                  ~avtVectorDecomposeFilter();
 
     virtual const char       *GetType(void)  
                                {return "avtVectorDecomposeFilter";};
