@@ -542,6 +542,7 @@ GUIBase::GetStateForSource(const QualifiedFilename &source) const
 //   has a specific database index.
 //
 // Arguments:
+//   tsName  : The name of the active time slider.
 //   source  : The source that we're interested in.
 //   dbState : The database state that we're looking for.
 //
@@ -553,24 +554,24 @@ GUIBase::GetStateForSource(const QualifiedFilename &source) const
 // Creation:   Tue Feb 3 18:52:44 PST 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon May 3 16:51:20 PST 2004
+//   I made the name of the time slider be passed in so the method can be a
+//   little more general.
+//
 // ****************************************************************************
 
 int
-GUIBase::GetTimeSliderStateForDatabaseState(const QualifiedFilename &source,
-    int dbState) const
+GUIBase::GetTimeSliderStateForDatabaseState(const std::string &activeTSName,
+    const QualifiedFilename &source, int dbState) const
 {
     int retval = dbState;
 
-    WindowInformation *windowInfo = viewer->GetWindowInformation();
-    int activeTS = windowInfo->GetActiveTimeSlider();
-
-    if(activeTS >= 0)
+    if(activeTSName != "")
     {
+        WindowInformation *windowInfo = viewer->GetWindowInformation();
+
         // Try and find a correlation for the active time slider so we
         // can get the number of states in the correlation.
-        const stringVector &tsNames = windowInfo->GetTimeSliders();
-        const std::string &activeTSName = tsNames[activeTS];
         DatabaseCorrelationList *cL = viewer->GetDatabaseCorrelationList();
         DatabaseCorrelation *correlation = cL->FindCorrelation(activeTSName);
  
@@ -586,7 +587,6 @@ GUIBase::GetTimeSliderStateForDatabaseState(const QualifiedFilename &source,
             // state where the specified database has the given dbState.
             //
             std::string sourceStr(source.FullName());
-            const intVector &currentStates = windowInfo->GetTimeSliderCurrentStates();
             int cts = correlation->GetInverseCorrelatedTimeState(sourceStr, dbState);
             if(cts >= 0)
                 retval = cts;

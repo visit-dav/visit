@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Plugin name="Pseudocolor" type="plot" label="Pseudocolor" version="1.0" vartype="scalar,species" iconFile="Pseudocolor.xpm">
+  <Plugin name="Pseudocolor" type="plot" label="Pseudocolor" version="1.0" enabled="true" vartype="scalar,species" iconFile="Pseudocolor.xpm">
     <Files components="V">
     </Files>
     <Files components="E">
@@ -23,6 +23,7 @@
         Box
         Axis
         Icosahedron
+        Point
       </Enum>
       <Field name="legendFlag" label="Legend" type="bool">
         true

@@ -1,10 +1,11 @@
 <?xml version="1.0"?>
-  <Plugin name="Mesh" type="plot" label="Mesh" version="1.0" vartype="mesh" iconFile="Mesh.xpm">
+  <Plugin name="Mesh" type="plot" label="Mesh" version="1.0" enabled="true" vartype="mesh" iconFile="Mesh.xpm">
     <Attribute name="MeshAttributes" purpose="Attributes for the mesh plot" persistent="true" codefile="MeshAttributes.code">
       <Enum name="PointType">
         Box
         Axis
         Icosahedron
+        Point
       </Enum>
       <Enum name="SmoothingLevel">
         None

@@ -10,6 +10,7 @@
 #include <avtDatasetToDatasetFilter.h>
 
 #include <QueryOverTimeAttributes.h>
+#include <SILRestrictionAttributes.h>
 
 
 // ****************************************************************************
@@ -25,6 +26,9 @@
 //    Brad Whitlock, Wed Apr 14 14:56:45 PST 2004
 //    Fixed for Windows.
 //
+//    Kathleen Bonnell, Tue May  4 14:21:37 PDT 2004
+//    Removed SilUseSet in favor of SILRestrictionAttributes. 
+//
 // ****************************************************************************
 
 class QUERY_API avtQueryOverTimeFilter : public avtDatasetToDatasetFilter
@@ -38,14 +42,13 @@ class QUERY_API avtQueryOverTimeFilter : public avtDatasetToDatasetFilter
     virtual const char   *GetType(void)  { return "avtQueryOverTimeFilter"; };
     virtual const char   *GetDescription(void) { return "Querying over Time"; };
 
-    void                  SetSILUseSet(const unsignedCharVector &u)
-                                        { silUseSet = u; };
+    void                  SetSILAtts(const SILRestrictionAttributes *silAtts);
 
 
 
   protected:
     QueryOverTimeAttributes   atts;
-    unsignedCharVector    silUseSet;
+    SILRestrictionAttributes  querySILAtts;
 
     virtual void          Execute(void);
     virtual void          PostExecute(void);
@@ -53,10 +56,6 @@ class QUERY_API avtQueryOverTimeFilter : public avtDatasetToDatasetFilter
 
     virtual int           AdditionalPipelineFilters(void) { return 1; };
 
-#if 0
-    virtual avtPipelineSpecification_p
-                          PerformRestriction(avtPipelineSpecification_p);
-#endif
 };
 
 

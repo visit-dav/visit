@@ -246,19 +246,8 @@ avtDatasetQuery::ApplyFilters(avtDataObject_p dob)
 
         avtDataSpecification_p newDS = new 
             avtDataSpecification(oldSpec->GetVariable(), queryAtts.GetTimeStep(), 
-                                 oldSpec->GetRestriction());
+                                 querySILR);
 
-        if (!OriginalData()) 
-        {
-            newDS->GetRestriction()->SuspendCorrectnessChecking();
-            newDS->GetRestriction()->TurnOnAll();
-            for (int i = 0; i < silUseSet.size(); i++)
-            {
-               if (silUseSet[i] == 0)
-                   newDS->GetRestriction()->TurnOffSet(i);
-            }
-            newDS->GetRestriction()->EnableCorrectnessChecking();
-        }
         avtPipelineSpecification_p pspec = 
             new avtPipelineSpecification(newDS, queryAtts.GetPipeIndex());
 

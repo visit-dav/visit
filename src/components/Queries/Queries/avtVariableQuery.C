@@ -313,6 +313,9 @@ avtVariableQuery::PreExecute()
 //    Hank Childs, Fri Apr  9 16:25:40 PDT 2004
 //    Minimize work done by creating new SIL.
 //
+//    Kathleen Bonnell, Tue May  4 14:25:07 PDT 2004
+//    Set SILRestriction via member restriction, instead of SILUseSet. 
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -327,31 +330,13 @@ avtVariableQuery::ApplyFilters(avtDataObject_p inData)
         searchElement -=  data.GetCellOrigin();
 
     src = inData->GetQueryableSource();
-    int i;
-    avtDataSpecification_p dspec; 
-    if (!timeVarying)
-    {
-        dspec = inData->GetTerminatingSource()->
-            GetGeneralPipelineSpecification()->GetDataSpecification();
-    }
-    else 
-    {
-        avtDataSpecification_p oldSpec = inData->GetTerminatingSource()->
+
+    avtDataSpecification_p oldSpec = inData->GetTerminatingSource()->
             GetGeneralPipelineSpecification()->GetDataSpecification();
 
-        dspec = new 
+    avtDataSpecification_p dspec = new 
             avtDataSpecification(oldSpec->GetVariable(), queryAtts.GetTimeStep(), 
-                                 oldSpec->GetRestriction());
-
-    }
-    dspec->GetRestriction()->SuspendCorrectnessChecking();
-    dspec->GetRestriction()->TurnOnAll();
-    for (i = 0; i < silUseSet.size(); i++)
-    {
-        if (silUseSet[i] == 0)
-            dspec->GetRestriction()->TurnOffSet(i);
-    }
-    dspec->GetRestriction()->EnableCorrectnessChecking();
+                                 querySILR);
 
     intVector dlist;
     dlist.push_back(searchDomain);
@@ -359,6 +344,7 @@ avtVariableQuery::ApplyFilters(avtDataObject_p inData)
 
     stringVector vars = queryAtts.GetVariables();
 
+    int i;
     for (i = 0; i < vars.size(); i++)
     {
         if (dspec->GetVariable() != vars[i])

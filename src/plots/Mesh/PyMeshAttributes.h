@@ -16,5 +16,7 @@ PyObject       *PyMeshAttributes_WrapPyObject(const MeshAttributes *attr);
 void            PyMeshAttributes_SetLogging(bool val);
 void            PyMeshAttributes_SetDefaults(const MeshAttributes *atts);
 
+PyObject       *PyMeshAttributes_StringRepresentation(const MeshAttributes *atts);
+
 #endif
 

@@ -1763,9 +1763,13 @@ NetworkManager::StopPickMode(void)
 //    Hank Childs, Mon Jan  5 16:39:06 PST 2004
 //    Make sure the network hasn't already been cleared.
 //
-//    Kathleen bonnell, Mon Mar  8 08:01:48 PST 2004 
+//    Kathleen Bonnell, Mon Mar  8 08:01:48 PST 2004 
 //    Send the SILRestriction's UseSet to PickQuery if it is available. 
 //    Also send the Transform.
+//
+//    Kathleen Bonnell, Tue May  4 14:35:08 PDT 2004 
+//    Send the SILRestriction to PickQuery (insted of UseSet).
+//    If LocateCellQuery fails, set error condition in PickAtts.
 //
 // ****************************************************************************
 
@@ -1798,15 +1802,6 @@ NetworkManager::Pick(const int id, PickAttributes *pa)
         networkCache[id]->GetPlot()->GetIntermediateDataObject();
 
     avtSILRestriction_p silr = networkCache[id]->GetDataSpec()->GetRestriction();
-    unsignedCharVector useSet;
-    if (*silr != NULL)
-    {
-        CompactSILRestrictionAttributes *silAtts = silr->MakeCompactAttributes();
-        if (silAtts != NULL)
-        {
-            useSet = silAtts->GetUseSet();
-        }
-    }
 
     if (*queryInput == NULL)
     {
@@ -1833,21 +1828,32 @@ NetworkManager::Pick(const int id, PickAttributes *pa)
                 *pa = *(lcQ->GetPickAtts());
                 delete lcQ;
             }
-
-            pQ = new avtPickQuery;
-            pQ->SetInput(networkCache[id]->GetNetDB()->GetOutput());
-            pQ->SetSILUseSet(useSet);
-            if (queryInput->GetInfo().GetAttributes().HasTransform() &&
-                queryInput->GetInfo().GetAttributes().GetCanUseTransform())
+            if (pa->GetDomain() != -1)
             {
-                pQ->SetTransform(queryInput->GetInfo().GetAttributes().GetTransform());
+                pQ = new avtPickQuery;
+                pQ->SetInput(networkCache[id]->GetNetDB()->GetOutput());
+                if (*silr != NULL)
+                    pQ->SetSILRestriction(silr->MakeAttributes());
+                if (queryInput->GetInfo().GetAttributes().HasTransform() &&
+                    queryInput->GetInfo().GetAttributes().GetCanUseTransform())
+                {
+                    pQ->SetTransform(queryInput->GetInfo().GetAttributes().GetTransform());
+                }
+                pQ->SetNeedTransform(
+                    queryInput->GetInfo().GetValidity().GetPointsWereTransformed());
+                pQ->SetPickAtts(pa);
+                pQ->PerformQuery(&qa); 
+                *pa = *(pQ->GetPickAtts());
+                delete pQ;
             }
-            pQ->SetNeedTransform(
-                queryInput->GetInfo().GetValidity().GetPointsWereTransformed());
-            pQ->SetPickAtts(pa);
-            pQ->PerformQuery(&qa); 
-            *pa = *(pQ->GetPickAtts());
-            delete pQ;
+            else
+            {
+                if (!pa->GetError())
+                {
+                    pa->SetError(true);
+                    pa->SetErrorMessage("Chosen pick did not intersect surface.");
+                }
+            }
         }
         else 
         {
@@ -1931,6 +1937,9 @@ NetworkManager::Pick(const int id, PickAttributes *pa)
 //    Moved instantiation of individual queries to avtQueryFactory. 
 //    Retrieve current SIL and send to query.
 //
+//    Kathleen Bonnell, Tue May  4 14:35:08 PDT 2004 
+//    Send the SILRestriction to query (insted of UseSet).
+//
 // ****************************************************************************
 
 void
@@ -2012,12 +2021,7 @@ NetworkManager::Query(const std::vector<int> &ids, QueryAttributes *qa)
                networkCache[ids[0]]->GetDataSpec()->GetRestriction();
             if (*silr != NULL)
             {
-                unsignedCharVector useSet;
-                CompactSILRestrictionAttributes *silAtts = 
-                    silr->MakeCompactAttributes();
-                if (silAtts != NULL)
-                    useSet = silAtts->GetUseSet();
-                query->SetSILUseSet(useSet);
+                query->SetSILRestriction(silr->MakeAttributes());
             }
 
 
@@ -2178,6 +2182,9 @@ NetworkManager::CloneNetwork(const int id)
 //    Kathleen Bonnell, Tue Apr 27 13:41:32 PDT 2004
 //    Pass the cloned network's pipeline index to query atts. 
 //
+//    Kathleen Bonnell, Tue May  4 14:35:08 PDT 2004 
+//    Send the SILRestriction to QueryOverTime filter (insted of UseSet).
+//
 // ****************************************************************************
 
 void
@@ -2209,15 +2216,7 @@ NetworkManager::AddQueryOverTimeFilter(QueryOverTimeAttributes *qA,
     // Pass down the current SILRestriction (via UseSet) in case the query 
     // needs to make use of this information.
     //    
-    unsignedCharVector useSet;
     avtSILRestriction_p silr = workingNet->GetDataSpec()->GetRestriction();
-    if (*silr != NULL)
-    {
-        CompactSILRestrictionAttributes *silAtts = 
-            silr->MakeCompactAttributes();
-        if (silAtts != NULL)
-            useSet = silAtts->GetUseSet();
-    }
    
     // 
     //  Create a transition node so that the new filter will receive
@@ -2235,7 +2234,8 @@ NetworkManager::AddQueryOverTimeFilter(QueryOverTimeAttributes *qA,
     // the query. 
     // 
     avtQueryOverTimeFilter *qf = new avtQueryOverTimeFilter(qA);
-    qf->SetSILUseSet(useSet);
+    if (*silr != NULL)
+        qf->SetSILAtts(silr->MakeAttributes());
     NetnodeFilter *qfilt = new NetnodeFilter(qf, "QueryOverTime");
     qfilt->GetInputNodes().push_back(trans);
     

@@ -12,7 +12,8 @@
 
 
 class QueryAttributes;
-class avtDataSpecification;
+class avtSILRestriction;
+class SILRestrictionAttributes;
 
 typedef void (*InitializeProgressCallback)(void *, int); 
 typedef void (*ProgressCallback)(void *, const char *, const char *,int,int);                      
@@ -49,6 +50,9 @@ typedef void (*ProgressCallback)(void *, const char *, const char *,int,int);
 //    Kathleen Bonnell, Fri Apr  2 08:51:17 PST 2004 
 //    Changed args to PerformQueryInTime. 
 //
+//    Kathleen Bonnell, Tue May  4 14:18:26 PDT 2004 
+//    Replaced SetSILUseSet with SetILRestriction. 
+//
 // ****************************************************************************
 
 class QUERY_API avtDataObjectQuery : public virtual avtDataObjectSink
@@ -75,8 +79,7 @@ class QUERY_API avtDataObjectQuery : public virtual avtDataObjectSink
 
     virtual void                  SetTimeVarying(bool val) { timeVarying = val;};
 
-    void                          SetSILUseSet(const unsignedCharVector &u)
-                                        { silUseSet = u; };
+    void                          SetSILRestriction(const SILRestrictionAttributes *);
 
   protected:
     static InitializeProgressCallback
@@ -95,7 +98,7 @@ class QUERY_API avtDataObjectQuery : public virtual avtDataObjectSink
 
     std::string                   units;
     bool                          timeVarying;
-    unsignedCharVector            silUseSet;
+    avtSILRestriction_p           querySILR;
 };
 
 

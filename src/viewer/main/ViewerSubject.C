@@ -3505,6 +3505,9 @@ ViewerSubject::CheckForNewStates()
 //   Brad Whitlock, Mon Apr 19 10:00:13 PDT 2004
 //   I added another argument to OpenDatabaseHelper.
 //
+//   Brad Whitlock, Mon May 3 13:00:21 PST 2004
+//   I made it pass an engine key to replacedatabase.
+//
 // ****************************************************************************
 
 void
@@ -3599,12 +3602,14 @@ ViewerSubject::ReOpenDatabase()
     // Tell the compute engine to clear any cached information about the
     // database so it forces the networks to re-execute.
     //
+    EngineKey key(host, "");
     if (isSim)
-        ViewerEngineManager::Instance()->ClearCache(EngineKey(host,db),
-                                                    db.c_str());
-    else
-        ViewerEngineManager::Instance()->ClearCache(EngineKey(host,""),
-                                                    db.c_str());
+        key = EngineKey(host, db);
+
+    //
+    // Clear the cache for the database.
+    //
+    ViewerEngineManager::Instance()->ClearCache(key, db.c_str());
 
     //
     // Open the database.
@@ -3615,7 +3620,7 @@ ViewerSubject::ReOpenDatabase()
     // Now perform the database replacement in all windows that use the
     // specified database.
     //
-    ViewerWindowManager::Instance()->ReplaceDatabase(host, db, reOpenState,
+    ViewerWindowManager::Instance()->ReplaceDatabase(key, db, reOpenState,
                                                      false, true);
 }
 
@@ -3668,6 +3673,9 @@ ViewerSubject::ReOpenDatabase()
 //   window information since we're already doing that here. I also added
 //   a call to validate the plot lists's time slider.
 //
+//   Brad Whitlock, Mon May 3 13:21:19 PST 2004
+//   I made it use the plot list's engine key in the call to ReplaceDatabase.
+//
 // ****************************************************************************
 
 void
@@ -3698,7 +3706,7 @@ ViewerSubject::ReplaceDatabase()
     // Now perform the database replacement.
     //
     ViewerPlotList *plotList = win->GetPlotList();
-    plotList->ReplaceDatabase(plotList->GetHostName(),
+    plotList->ReplaceDatabase(plotList->GetEngineKey(),
                               plotList->GetDatabaseName(),
                               viewerRPC.GetIntArg1(),
                               true,
@@ -3747,6 +3755,9 @@ ViewerSubject::ReplaceDatabase()
 //   Brad Whitlock, Mon Apr 19 10:00:13 PDT 2004
 //   I added another argument to OpenDatabaseHelper.
 //
+//   Brad Whitlock, Mon May 3 13:58:36 PST 2004
+//   I removed an argument from OverlayDatabase.
+//
 // ****************************************************************************
 
 void
@@ -3763,7 +3774,6 @@ ViewerSubject::OverlayDatabase()
     ViewerWindowManager *wM = ViewerWindowManager::Instance();
     ViewerPlotList *plotList = wM->GetActiveWindow()->GetPlotList();
     plotList->OverlayDatabase(plotList->GetEngineKey(),
-                              plotList->GetHostName(),
                               plotList->GetDatabaseName());
 
     //
@@ -3944,10 +3954,14 @@ ViewerSubject::OpenComputeEngine()
 // Creation:   Mon Apr 30 13:08:14 PST 2001
 //
 // Modifications:
-//    Jeremy Meredith, Tue Mar 30 10:52:06 PST 2004
-//    Added an engine key used to index (and restart) engines.
-//    This was needed for simulation support.
-//   
+//   Jeremy Meredith, Tue Mar 30 10:52:06 PST 2004
+//   Added an engine key used to index (and restart) engines.
+//   This was needed for simulation support.
+// 
+//   Brad Whitlock, Mon May 3 14:18:03 PST 2004
+//   I added code to reset the network ids for the plots that use the engine
+//   that we're closing.
+//  
 // ****************************************************************************
 
 void
@@ -3960,9 +3974,17 @@ ViewerSubject::CloseComputeEngine()
     const string &simName  = viewerRPC.GetProgramSim();
 
     //
+    // We're closing the engine so reset all of the network ids for plots that
+    // are on the specified engine. This ensures that pick, etc works when
+    // we use a new compute engine.
+    //
+    EngineKey key(hostName, simName);
+    ViewerWindowManager::Instance()->ResetNetworkIds(key);
+
+    //
     // Perform the RPC.
     //
-    ViewerEngineManager::Instance()->CloseEngine(EngineKey(hostName, simName));
+    ViewerEngineManager::Instance()->CloseEngine(key);
 }
 
 // ****************************************************************************

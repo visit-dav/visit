@@ -4,6 +4,7 @@
 
 #include <avtDataObjectQuery.h>
 #include <NonQueryableInputException.h>
+#include <avtSILRestriction.h>
 
 
 
@@ -29,11 +30,15 @@ void                *avtDataObjectQuery::initializeProgressCallbackArgs=NULL;
 //    Kathleen Bonnell, Wed Mar 31 15:52:54 PST 2004
 //    Initialize new member timeVarying.
 //
+//    Kathleen Bonnell, Tue May  4 14:18:26 PDT 2004 
+//    Initialize new member querySILR.
+//
 // ****************************************************************************
 
 avtDataObjectQuery::avtDataObjectQuery()
 {
     timeVarying = false;
+    querySILR = NULL;
 }
 
 
@@ -236,3 +241,20 @@ avtDataObjectQuery::VerifyInput()
     }
 }
 
+
+// ****************************************************************************
+//  Method: avtDataObjectQuery::SetSILRestriction
+//
+//  Purpose:
+//    Creates a new avtSILRestriction from the passed Attributes. 
+//
+//  Programmer:  Kathleen Bonnell 
+//  Creation:    May 4, 2004 
+//
+// ****************************************************************************
+
+void
+avtDataObjectQuery::SetSILRestriction(const SILRestrictionAttributes *silAtts)
+{
+    querySILR = new avtSILRestriction(*silAtts);
+}

@@ -33,6 +33,9 @@
 //    for simulations and ViewerPlotList thought my plots were from a
 //    simulation even though they were not.
 //
+//    Brad Whitlock, Tue May 4 10:01:33 PDT 2004
+//    Added a method to return the original hostname.
+//
 // ****************************************************************************
 
 class VIEWER_API EngineKey
@@ -88,6 +91,7 @@ class VIEWER_API EngineKey
     }
 
     const std::string &HostName() const      { return realHostName; }
+    const std::string &OriginalHostName() const  { return origHostName; }
 
     const std::string &SimName()  const      { return simName; }
 

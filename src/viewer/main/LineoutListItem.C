@@ -617,6 +617,9 @@ LineoutListItem::DisableTool()
 //    Brad Whitlock, Fri Mar 26 10:53:24 PDT 2004
 //    Made it use more strings.
 //
+//    Brad Whitlock, Mon May 3 13:49:17 PST 2004
+//    I made it use an engine key in ReplaceDatabase.
+//
 // ****************************************************************************
 
 void
@@ -629,7 +632,7 @@ LineoutListItem::Update(Subject *TheChangedSubject)
          switch(origPlotQueryInfo->GetChangeType())
          {
              case PlotQueryInfo::Database:
-                 vpl->ReplaceDatabase(origPlot->GetHostName(),
+                 vpl->ReplaceDatabase(origPlot->GetEngineKey(),
                      origPlot->GetDatabaseName(), 0, false, false);
                  break;
              case PlotQueryInfo::VarName:

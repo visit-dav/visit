@@ -53,6 +53,9 @@ class SimpleObserver;
 //   I added methods to get the state for the active source and to open
 //   the active source in the file server.
 //
+//.  Brad Whitlock, Mon May 3 17:27:11 PST 2004
+//   I added an argument to GetTimeSliderStateForDatabaseState.
+//
 // ****************************************************************************
 
 class GUI_API GUIBase
@@ -85,7 +88,8 @@ protected:
 
     void OpenActiveSourceInFileServer();
     int  GetStateForSource(const QualifiedFilename &source) const;
-    int  GetTimeSliderStateForDatabaseState(const QualifiedFilename &source,
+    int  GetTimeSliderStateForDatabaseState(const std::string &tsName,
+                                            const QualifiedFilename &source,
                                             int dbState) const;
 protected:
     static StatusSubject     *statusSubject;

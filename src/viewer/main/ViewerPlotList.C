@@ -3904,7 +3904,7 @@ ViewerPlotList::CloseDatabase(const std::string &dbName)
 //   regenerates the plots.
 //
 // Arguments:
-//   host     : The host on which the new database is located.
+//   key      : The key of the engine that will process the data.
 //   database : The new database.
 //
 // Programmer: Brad Whitlock
@@ -3949,24 +3949,29 @@ ViewerPlotList::CloseDatabase(const std::string &dbName)
 //   I modified the routine to update the plot list and plot attributes in
 //   the client if any plots were updated.
 //
+//   Brad Whitlock, Mon May 3 12:51:20 PDT 2004
+//   I made it use an engine key instead of a host.
+//
 // ****************************************************************************
 
 void
-ViewerPlotList::ReplaceDatabase(const std::string &host, const std::string &database,
-    int timeState, bool setTimeState, bool onlyReplaceSame)
+ViewerPlotList::ReplaceDatabase(const EngineKey &key,
+    const std::string &database, int timeState, bool setTimeState,
+    bool onlyReplaceSame)
 {
     //
     // Loop through the list replacing the plot's database.
     //
     bool defaultChanged = false;
     bool plotsReplaced = false;
+    const std::string &host = key.OriginalHostName();
     for (int i = 0; i < nPlots; i++)
     {
         //
         // Decide which files to replace.
         //
         ViewerPlot *plot = plots[i].plot;
-        bool sameHost = (host == plot->GetHostName());
+        bool sameHost = (key == plot->GetEngineKey());
         bool sameDB = (database == plot->GetDatabaseName());
         bool doReplace;
         if (onlyReplaceSame)
@@ -4010,7 +4015,7 @@ ViewerPlotList::ReplaceDatabase(const std::string &host, const std::string &data
                     //
                     // Set the new host, database and SIL restriction.
                     //
-                    plot->SetHostDatabaseName(host.c_str(), database.c_str());
+                    plot->SetHostDatabaseName(key, database.c_str());
                     plot->SetSILRestriction(silr);
                     plotsReplaced = true;
 
@@ -4071,7 +4076,7 @@ ViewerPlotList::ReplaceDatabase(const std::string &host, const std::string &data
 //   list.
 //
 // Arguments:
-//   host     : The host for the database file.
+//   ek       : The key of the engine that will process the data.
 //   database : The database that we want to use.
 //
 // Returns:    
@@ -4098,11 +4103,13 @@ ViewerPlotList::ReplaceDatabase(const std::string &host, const std::string &data
 //   Brad Whitlock, Mon Apr 5 12:13:07 PDT 2004
 //   I rewrote the method using a copy constructor.
 //
+//   Brad Whitlock, Mon May 3 12:43:31 PDT 2004
+//   I removed the host argument since that info is in the engine key.
+//
 // ****************************************************************************
 
 void
 ViewerPlotList::OverlayDatabase(const EngineKey &ek,
-                                const std::string &host,
                                 const std::string &database)
 {
     //
@@ -4116,7 +4123,7 @@ ViewerPlotList::OverlayDatabase(const EngineKey &ek,
         TRY
         {
             newPlot = new ViewerPlot(*(plots[i].plot));
-            newPlot->SetHostDatabaseName(host, database);
+            newPlot->SetHostDatabaseName(ek, database);
             newPlot->UpdateCacheSize(GetKeyframeMode(), true);
         }
         CATCHALL(...)
@@ -6688,6 +6695,28 @@ ViewerPlotList::StopPick()
     }
 }
 
+// ****************************************************************************
+// Method: ViewerPlotList::ResetNetworkIds
+//
+// Purpose: 
+//   Resets the network ids for all plots that use the specified engine key.
+//
+// Arguments:
+//   key : The engine key to use.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon May 3 14:19:42 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerPlotList::ResetNetworkIds(const EngineKey &key)
+{
+    for (int i = 0; i < nPlots; ++i)
+        plots[i].plot->ResetNetworkIds(key);
+}
 
 // ****************************************************************************
 //  Method: ViewerPlotList::GetVarName

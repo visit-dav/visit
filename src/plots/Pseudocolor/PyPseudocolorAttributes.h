@@ -16,5 +16,7 @@ PyObject       *PyPseudocolorAttributes_WrapPyObject(const PseudocolorAttributes
 void            PyPseudocolorAttributes_SetLogging(bool val);
 void            PyPseudocolorAttributes_SetDefaults(const PseudocolorAttributes *atts);
 
+PyObject       *PyPseudocolorAttributes_StringRepresentation(const PseudocolorAttributes *atts);
+
 #endif
 

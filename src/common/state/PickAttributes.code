@@ -209,6 +209,12 @@ Definition:
 void
 PickAttributes::CreateOutputString(std::string &os, bool withLetter)
 {
+    if (error)
+    {
+        os = errorMessage;
+        return;
+    }
+
     if (!fulfilled)
         return;
 
@@ -510,6 +516,9 @@ PickAttributes::PrepareForNewPick()
 
     if (!invalidVars.empty())
         invalidVars.clear();
+
+    errorMessage = "";
+    error = false;
 }
 
 Function: SetFromNode

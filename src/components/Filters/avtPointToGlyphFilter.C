@@ -6,6 +6,8 @@
 
 #include <math.h>
 
+#include <vtkCellArray.h>
+#include <vtkGeometryFilter.h>
 #include <vtkGlyph3D.h>
 #include <vtkIdTypeArray.h>
 #include <vtkPointData.h>
@@ -74,6 +76,10 @@ avtPointToGlyphFilter::~avtPointToGlyphFilter()
 //
 //  Programmer: Hank Childs
 //  Creation:   August 21, 2003
+//
+//  Modifications:
+//    Jeremy Meredith, Tue May  4 13:20:01 PDT 2004
+//    Added support for unglyphed (i.e. GL_POINT) glyph types.
 //
 // ****************************************************************************
 
@@ -268,6 +274,10 @@ avtPointToGlyphFilter::SetUpGlyph(void)
             glyph2D->InsertNextCell(VTK_TRIANGLE, 3, tri);
         }
     }
+    else if (glyphType == 3) // POINT
+    {
+        // Do nothing; we're not going to glyph them!
+    }
     else
     {
         EXCEPTION0(ImproperUseException);
@@ -386,6 +396,9 @@ avtPointToGlyphFilter::SetScaleByVariableEnabled(bool s)
 //    Hank Childs, Sat Dec 13 21:34:05 PST 2003
 //    Do a better job of handling nodal and zonal point data.
 //
+//    Jeremy Meredith, Tue May  4 12:25:07 PDT 2004
+//    Added support for un-glyphed point meshes (glyph type 3).
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -430,6 +443,23 @@ avtPointToGlyphFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
     {
         ugrp->SetInput((vtkUnstructuredGrid *) ds);
         ds = ugrp->GetOutput();
+    }
+
+    //
+    // If there is no glypher, then just copy the points into vtkPolyData
+    //
+    if (glyphType == 3)
+    {
+        // vtkGeometryFilter should work just fine for this.
+        vtkGeometryFilter *geom = vtkGeometryFilter::New();
+        geom->SetInput(ds);
+        vtkPolyData *output = geom->GetOutput();
+        geom->Update();
+        ManageMemory(output);
+        pdrp->Delete();
+        ugrp->Delete();
+        geom->Delete();
+        return output;
     }
 
     //
@@ -505,6 +535,9 @@ avtPointToGlyphFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 //    Hank Childs, Thu Aug 21 22:53:30 PDT 2003
 //    Allow for icosahedrons to get shaded.
 //
+//    Jeremy Meredith, Tue May  4 12:31:47 PDT 2004
+//    Don't change topological dimension from zero if we are not glyphing.
+//
 // ****************************************************************************
 
 void
@@ -512,7 +545,8 @@ avtPointToGlyphFilter::RefashionDataObjectInfo(void)
 {
     if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() == 0)
     {
-        GetOutput()->GetInfo().GetAttributes().SetTopologicalDimension(2);
+        if (glyphType != 3)
+            GetOutput()->GetInfo().GetAttributes().SetTopologicalDimension(2);
         GetOutput()->GetInfo().GetValidity().
                                     SetWireframeRenderingIsInappropriate(true);
         if (glyphType != 2)

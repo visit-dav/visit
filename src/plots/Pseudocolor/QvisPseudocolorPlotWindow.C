@@ -106,6 +106,9 @@ QvisPseudocolorPlotWindow::~QvisPseudocolorPlotWindow()
 //   Hank Childs, Thu Aug 21 21:36:38 PDT 2003
 //   Added point type options.
 //
+//   Jeremy Meredith, Tue May  4 13:23:10 PDT 2004
+//   Added support for a new (Point) type of glyphing for point meshes.
+//
 // ****************************************************************************
 
 void
@@ -261,6 +264,9 @@ QvisPseudocolorPlotWindow::CreateWindowContents()
     rb = new QRadioButton("Icosahedron", central, "Icosahedron");
     pointTypeButtons->insert(rb);
     pointTypeLayout->addWidget(rb, 0, 3);
+    rb = new QRadioButton("Point", central, "Point");
+    pointTypeButtons->insert(rb);
+    pointTypeLayout->addWidget(rb, 0, 4);
     gLayout->addMultiCellLayout(pointTypeLayout, 3,3 , 0,1);
 
     //
@@ -368,6 +374,10 @@ QvisPseudocolorPlotWindow::CreateWindowContents()
 //   Hank Childs, Thu Aug 21 21:59:56 PDT 2003
 //   Account for point type.
 //
+//   Jeremy Meredith, Tue May  4 13:23:10 PDT 2004
+//   Added support for a new (Point) type of glyphing for point meshes.
+//   When doing GL_POINT, we ignore point size, so also disable it.
+//
 // ****************************************************************************
 
 void
@@ -457,6 +467,8 @@ QvisPseudocolorPlotWindow::UpdateWindow(bool doAll)
             pointTypeButtons->blockSignals(true);
             pointTypeButtons->setButton(pcAtts->GetPointType());
             pointTypeButtons->blockSignals(false);
+            pointsizeLineEdit->setEnabled(pcAtts->GetPointType() !=
+                                               PseudocolorAttributes::Point);
             break;
         case 11: // skewFactor
             temp.sprintf("%g", pcAtts->GetSkewFactor());
@@ -846,6 +858,9 @@ QvisPseudocolorPlotWindow::smoothingLevelChanged(int level)
 //  Creation:    August 21, 2003
 //
 //  Modifications:
+//   Jeremy Meredith, Tue May  4 13:23:10 PDT 2004
+//   Added support for a new (Point) type of glyphing for point meshes.
+//   When doing GL_POINT, we ignore point size, so also disable it.
 //
 // ****************************************************************************
 
@@ -853,6 +868,8 @@ void
 QvisPseudocolorPlotWindow::pointTypeChanged(int type)
 {
     pcAtts->SetPointType((PseudocolorAttributes::PointType) type);
+    pointsizeLineEdit->setEnabled(pcAtts->GetPointType() !=
+                                                 PseudocolorAttributes::Point);
     SetUpdate(false);
     Apply();
 }

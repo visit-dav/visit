@@ -109,10 +109,13 @@ avtQueryOverTimeFilter::Create(const AttributeGroup *atts)
 //  Creation:   March 15, 2004
 //
 //  Modifications:
-//    Katthleen Bonnell, Fri Apr  2 13:18:08 PST 2004
+//    Kathleen Bonnell, Fri Apr  2 13:18:08 PST 2004
 //    Pass along to the query: startTime,  endTimes and stride instead of an 
 //    intVector representing timesteps.  Send a doubleVector for the query
 //    to fill with values requested for x-axis (cycle, time, or timestep).
+//
+//    Kathleen Bonnell, Tue May  4 14:21:37 PDT 2004 
+//    Replaced query->SetSILUseSet with query->SetSILRestriction. 
 //
 // ****************************************************************************
 
@@ -125,7 +128,7 @@ avtQueryOverTimeFilter::Execute(void)
 
     query->SetTimeVarying(true);
     query->SetInput(GetInput());
-    query->SetSILUseSet(silUseSet);
+    query->SetSILRestriction(&querySILAtts);
 
     //
     // HokeyHack ... we want only 1 curve, so limit the
@@ -292,3 +295,21 @@ avtQueryOverTimeFilter::PostExecute(void)
 }
 
 
+// ****************************************************************************
+//  Method: avtQueryOverTimeFilter::SetSILAtts
+//
+//  Purpose:
+//    Sets the SILRestriction atts necessary to create a SILRestriction. 
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   May 4, 2004 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtQueryOverTimeFilter::SetSILAtts(const SILRestrictionAttributes *silAtts)
+{
+    querySILAtts = *silAtts;
+}

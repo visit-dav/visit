@@ -170,6 +170,9 @@ QvisOnionPeelWindow::CreateWindowContents()
 //   Kathleen Bonnell, Thu Feb 26 13:19:40 PST 2004
 //   Only update the ComboBoxes if the SILRestrictionAttributes have changed.
 //   
+//   Kathleen Bonnell, Tue May  4 17:47:50 PDT 2004 
+//   Also update the ComboBoxes if doAll is true. 
+//   
 // ****************************************************************************
 
 void
@@ -184,6 +187,9 @@ QvisOnionPeelWindow::UpdateWindow(bool doAll)
         UpdateComboBoxes();
         return;
     }
+
+    if (doAll)
+        UpdateComboBoxes();
 
     // Loop through all the attributes and do something for
     // each of them that changed. This function is only responsible
