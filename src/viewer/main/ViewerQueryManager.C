@@ -2804,15 +2804,17 @@ ViewerQueryManager::InitializeQueryList()
     queryTypes->AddQuery("Integrate", dq, cr, ws, basic, 1, 0, false);
     queryTypes->AddQuery("L2Norm Between Curves", dq, cr, ws, basic, 2, 0, false);
     queryTypes->AddQuery("Area Between Curves", dq, cr, ws, basic, 2, 0, false);
-    queryTypes->AddQuery("Revloved volume", dq, mr, ws, basic, 1, 0, false);
-    queryTypes->AddQuery("Revloved surface area", dq, mr, ws, basic, 1, 0, false);
+    queryTypes->AddQuery("Revolved volume", dq, mr, ws, basic, 1, 0, false);
+    queryTypes->AddQuery("Revolved surface area", dq, mr, ws, basic, 1, 0, false);
     queryTypes->AddQuery("2D area", dq, mr, ws, basic, 1, 0, true);
     queryTypes->AddQuery("3D surface area", dq, mr, ws, basic, 1, 0, true);
     queryTypes->AddQuery("Volume", dq, mr, ws, basic, 1, 0, true);
-    queryTypes->AddQuery("Variable sum", dq, vr, ws, basic, 1, 0, true);
-    queryTypes->AddQuery("Weighted Variable sum", dq, vr, ws, basic, 1, 0, true);
+    queryTypes->AddQuery("Variable Sum", dq, vr, ws, basic, 1, 0, true);
+    queryTypes->AddQuery("Weighted Variable Sum", dq, vr, ws, basic, 1, 0, true);
     queryTypes->AddQuery("WorldPick", pq, pr, ws, sp, 1, 0, true);
     queryTypes->AddQuery("WorldNodePick", pq, pr, ws, sp, 1, 0, true);
+    queryTypes->AddQuery("Variable by Zone", dq, vr, ws, dz, 1, 0, true);
+    queryTypes->AddQuery("Variable by Node", dq, vr, ws, dn, 1, 0, true);
 
     int MinMaxVars = QUERY_SCALAR_VAR | QUERY_TENSOR_VAR | QUERY_VECTOR_VAR | 
             QUERY_SYMMETRIC_TENSOR_VAR | QUERY_MATSPECIES_VAR | QUERY_CURVE_VAR;
