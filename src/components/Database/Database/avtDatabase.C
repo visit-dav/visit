@@ -89,7 +89,12 @@ avtDatabase::avtDatabase()
 //    Hank Childs, Thu Mar  1 13:42:43 PST 2001
 //    Split class so functionality went in derived type, avtGenericDatabase.
 //
-//    Mark C. Miller, 30Sep03 Added support to time-varying SIL/MD
+//    Mark C. Miller, 30Sep03
+//    Added support to time-varying SIL/MD
+//
+//    Hank Childs, Tue Mar 22 10:41:23 PST 2005
+//    Fix memory leak.
+//
 // ****************************************************************************
 
 avtDatabase::~avtDatabase()
@@ -110,6 +115,17 @@ avtDatabase::~avtDatabase()
     {
         delete invariantSIL;
         invariantSIL = NULL;
+    }
+
+    std::list<CachedMDEntry>::iterator it2;
+    for (it2 = metadata.begin() ; it2 != metadata.end() ; it2++)
+    {
+        delete (*it2).md;
+    }
+    std::list<CachedSILEntry>::iterator it3;
+    for (it3 = sil.begin() ; it3 != sil.end() ; it3++)
+    {
+        delete (*it3).sil;
     }
 }
 

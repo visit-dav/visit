@@ -76,6 +76,10 @@ const int INTERRUPT_MESSAGE_TAG = GetUniqueStaticMessageTag();
 //
 //    Mark C. Miller, Tue Mar  8 17:59:40 PST 2005
 //    Added procAtts
+//
+//    Hank Childs, Mon Mar 21 11:24:06 PST 2005
+//    Initialize all of the data members.
+//
 // ****************************************************************************
 Engine::Engine()
 {
@@ -85,6 +89,29 @@ Engine::Engine()
     netmgr = NULL;
     lb = NULL;
     procAtts = NULL;
+    metaData = NULL;
+    silAtts = NULL;
+    
+    quitRPC = NULL;
+    keepAliveRPC = NULL;
+    readRPC = NULL;
+    applyOperatorRPC = NULL;
+    makePlotRPC = NULL;
+    useNetworkRPC = NULL;
+    updatePlotAttsRPC = NULL;
+    pickRPC = NULL;
+    startPickRPC = NULL;
+    startQueryRPC = NULL;
+    executeRPC = NULL;
+    clearCacheRPC = NULL;
+    queryRPC = NULL;
+    releaseDataRPC = NULL;
+    openDatabaseRPC = NULL;
+    defineVirtualDatabaseRPC = NULL;
+    renderRPC = NULL;
+    setWinAnnotAttsRPC = NULL;
+    cloneNetworkRPC = NULL;
+    procInfoRPC = NULL;
 }
 
 // ****************************************************************************
@@ -93,14 +120,43 @@ Engine::Engine()
 //  Programmer:  Jeremy Meredith
 //  Creation:    July 10, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Mon Mar 21 11:21:42 PST 2005
+//    Delete RPCs.
+//
 // ****************************************************************************
 Engine::~Engine()
 {
     delete netmgr;
     delete xfer;
     delete lb;
+    delete silAtts;
+    delete metaData;
+
     for (int i=0; i<rpcExecutors.size(); i++)
         delete rpcExecutors[i];
+
+    delete quitRPC;
+    delete keepAliveRPC;
+    delete readRPC;
+    delete applyOperatorRPC;
+    delete makePlotRPC;
+    delete useNetworkRPC;
+    delete updatePlotAttsRPC;
+    delete pickRPC;
+    delete startPickRPC;
+    delete startQueryRPC;
+    delete executeRPC;
+    delete clearCacheRPC;
+    delete queryRPC;
+    delete releaseDataRPC;
+    delete openDatabaseRPC;
+    delete defineVirtualDatabaseRPC;
+    delete renderRPC;
+    delete setWinAnnotAttsRPC;
+    delete cloneNetworkRPC;
+    delete procInfoRPC;
 }
 
 // ****************************************************************************

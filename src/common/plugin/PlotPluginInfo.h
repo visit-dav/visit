@@ -83,11 +83,15 @@ class avtPlot;
 //    Brad Whitlock, Tue Dec 14 09:42:33 PDT 2004
 //    I added support for plot wizards.
 //
+//    Hank Childs, Tue Mar 22 16:06:15 PST 2005
+//    Made destructor virtual.
+//
 // ****************************************************************************
 
 class PLUGIN_API GeneralPlotPluginInfo
 {
   public:
+    virtual ~GeneralPlotPluginInfo() { ; };
     virtual char *GetName() const = 0;
     virtual char *GetVersion() const = 0;
     virtual char *GetID() const = 0;

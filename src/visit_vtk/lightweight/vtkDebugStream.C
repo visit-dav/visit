@@ -14,10 +14,17 @@
 vtkStandardNewMacro(vtkDebugStream);
 
 
+// *****************************************************
+// Modifications:
+//   Hank Childs, Tue Mar 22 16:19:59 PST 2005
+//   Fix memory leak.
+// *****************************************************
+
 void vtkDebugStream::Initialize(void)
 {
   vtkDebugStream *ds = vtkDebugStream::New();
   vtkOutputWindow::SetInstance(ds);
+  ds->Delete();
 }
 
 

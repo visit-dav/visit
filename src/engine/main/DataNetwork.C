@@ -58,6 +58,9 @@ DataNetwork::DataNetwork(void)
 //    Kathleen Bonnell, Tue Mar 15 17:41:26 PST 2005 
 //    Don't release data if this network is a clone. 
 //    
+//    Hank Childs, Tue Mar 22 10:08:11 PST 2005
+//    Fix memory leak.
+//
 // ****************************************************************************
 DataNetwork::~DataNetwork(void)
 {
@@ -65,7 +68,13 @@ DataNetwork::~DataNetwork(void)
     terminalNode = NULL;
 
     if (!clone)
+    {
         ReleaseData();
+        for (int i = 0 ; i < nodeList.size() ; i++)
+        {
+            delete nodeList[i];
+        }
+    }
 }
 
 // ****************************************************************************

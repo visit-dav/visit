@@ -2,7 +2,6 @@
 #define ENGINE_H
 
 // RPCs
-class ApplyNamedFunctionRPC;
 class ApplyOperatorRPC;
 class ClearCacheRPC;
 class CloneNetworkRPC;
@@ -17,7 +16,6 @@ class QuitRPC;
 class ReadRPC;
 class ReleaseDataRPC;
 class RenderRPC;
-class SetFinalVariableNameRPC;
 class SetWinAnnotAttsRPC;
 class StartPickRPC;
 class StartQueryRPC;
@@ -90,6 +88,9 @@ class ProcessAttributes;
 //
 //    Mark C. Miller, Tue Mar  8 18:06:19 PST 2005
 //    Added GetProcessAttributes
+//
+//    Hank Childs, Tue Mar 22 09:37:58 PST 2005
+//    Remove unused data members that date back to old expression calls.
 //
 // ****************************************************************************
 
@@ -197,8 +198,6 @@ class Engine
     KeepAliveRPC             *keepAliveRPC;
     ReadRPC                  *readRPC;
     ApplyOperatorRPC         *applyOperatorRPC;
-    ApplyNamedFunctionRPC    *applyNamedFunctionRPC;
-    SetFinalVariableNameRPC  *setFinalVariableNameRPC;
     MakePlotRPC              *makePlotRPC;
     UseNetworkRPC            *useNetworkRPC;
     UpdatePlotAttsRPC        *updatePlotAttsRPC;
