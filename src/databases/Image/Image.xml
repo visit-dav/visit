@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+  <Plugin name="Image" type="database" label="Image" version="1.0" enabled="true" dbtype="STSD" haswriter="false">
+    <Extensions>
+      pnm
+      ppm
+      png
+      tiff
+      jpeg
+      jpg
+      tif
+      PNM
+      PPM
+      PNG
+      TIFF
+      JPEG
+      JPG
+      TIF
+      bmp
+      BMP
+    </Extensions>
+    <Attribute name="" purpose="" persistent="false" exportAPI="" exportInclude="">
+    </Attribute>
+  </Plugin>
