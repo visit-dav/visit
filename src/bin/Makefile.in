@@ -37,6 +37,10 @@
 #   Brad Whitlock, Mon Jul 28 17:09:09 PST 2003
 #   I added makemovie.py to the list of files that get distributed.
 #
+#   Jeremy Meredith, Fri Jul 16 08:59:15 PDT 2004
+#   Renamed the MOC target so it would always get rebuilt.  There wasn't
+#   enough dependency information to determine if the Qt version changed.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -45,9 +49,9 @@
 DISTRIB= install-sh visit makemovie.py
 NOT_DISTRIB= run_doxygen
 
-all: moc
+all: mocprogram
 
-moc:
+mocprogram:
 	if test -n "@QTDIR@"; then               \
 	    $(RM) moc                        ;   \
 	    ln -s @QTDIR@/bin/moc moc        ;   \

@@ -176,6 +176,9 @@
 #    Jeremy Meredith, Wed Jul  7 12:12:52 PDT 2004
 #    I changed _ser.o to simply be .o.
 #
+#    Brad Whitlock, Thu Jul 15 15:54:25 PST 2004
+#    Added avtImageTiler.C
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -245,6 +248,7 @@ Pipeline_src= \
   Pipeline/avtDataSetWriter.C \
   Pipeline/avtDataSpecification.C \
   Pipeline/avtImageReader.C \
+  Pipeline/avtImageTiler.C \
   Pipeline/avtImageWriter.C \
   Pipeline/avtNullDataReader.C \
   Pipeline/avtNullDataWriter.C \

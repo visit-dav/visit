@@ -58,6 +58,7 @@
 #include <avtCallback.h>
 #include <avtDatabaseMetaData.h>
 #include <avtImage.h>
+#include <avtImageTiler.h>
 #include <avtFileWriter.h>
 #include <avtToolInterface.h>
 #include <ImproperUseException.h>
@@ -1363,6 +1364,9 @@ ViewerWindowManager::ChooseCenterOfRotation(int windowIndex,
 //    Hank Childs, Tue Apr  6 18:05:39 PDT 2004
 //    Do not save out empty data objects.
 //
+//    Brad Whitlock, Thu Jul 15 16:27:15 PST 2004
+//    I made it send a different message for tiled images.
+//
 // ****************************************************************************
 
 void
@@ -1475,8 +1479,15 @@ ViewerWindowManager::SaveWindow(int windowIndex)
     // status message display for 10 minutes.
     //
     char message[1000];
-    SNPRINTF(message, sizeof(message), "Rendering window %d...",
-            (windowIndex == -1) ? (activeWindow + 1) : (windowIndex + 1));
+    if(saveWindowClientAtts->GetSaveTiled())
+    {
+        strcpy(message, "Saving tiled image...");
+    }
+    else
+    {
+        SNPRINTF(message, sizeof(message), "Rendering window %d...",
+                (windowIndex == -1) ? (activeWindow + 1) : (windowIndex + 1));
+    }
     Status(message, 6000000);
     Message(message);
 
@@ -1486,13 +1497,22 @@ ViewerWindowManager::SaveWindow(int windowIndex)
     {
         avtImage_p image = NULL;
         avtImage_p image2 = NULL;
+
         if (saveWindowClientAtts->GetSaveTiled())
         {
-            // Create a tiled image.
+            // Create a tiled image for the left eye.
             image = CreateTiledImage(saveWindowClientAtts->GetWidth(),
-                                     saveWindowClientAtts->GetHeight());
+                                     saveWindowClientAtts->GetHeight(),
+                                     true);
+            // Create a tiled image for the right eye.
+            if (saveWindowClientAtts->GetStereo())
+            {
+                image2 = CreateTiledImage(saveWindowClientAtts->GetWidth(),
+                                          saveWindowClientAtts->GetHeight(),
+                                          false);
+            }
         }
-        else if (saveWindowClientAtts->GetStereo())
+        else 
         {
             // Create the left eye.
             image = CreateSingleImage(windowIndex,
@@ -1502,20 +1522,14 @@ ViewerWindowManager::SaveWindow(int windowIndex)
                                       true);
 
             // Create the right eye.
-            image2 = CreateSingleImage(windowIndex,
-                                      saveWindowClientAtts->GetWidth(),
-                                      saveWindowClientAtts->GetHeight(),
-                                      saveWindowClientAtts->GetScreenCapture(),
-                                      false);
-        }
-        else
-        {
-            // Create a single image.
-            image = CreateSingleImage(windowIndex,
-                                      saveWindowClientAtts->GetWidth(),
-                                      saveWindowClientAtts->GetHeight(),
-                                      saveWindowClientAtts->GetScreenCapture(),
-                                      true);
+            if (saveWindowClientAtts->GetStereo())
+            {
+                image2 = CreateSingleImage(windowIndex,
+                                           saveWindowClientAtts->GetWidth(),
+                                           saveWindowClientAtts->GetHeight(),
+                                           saveWindowClientAtts->GetScreenCapture(),
+                                           false);
+            }
         }
         CopyTo(dob, image);
         CopyTo(dob2, image2);
@@ -1532,10 +1546,13 @@ ViewerWindowManager::SaveWindow(int windowIndex)
     // Send a status message about starting to save the image to disk
     // and make the status message display for 10 minutes.
     //
-    SNPRINTF(message, sizeof(message), "Saving window %d...",
-            (windowIndex == -1) ? (activeWindow + 1) : (windowIndex + 1));
-    Status(message, 6000000);    
-    Message(message);
+    if(!saveWindowClientAtts->GetSaveTiled())
+    {
+        SNPRINTF(message, sizeof(message), "Saving window %d...",
+                (windowIndex == -1) ? (activeWindow + 1) : (windowIndex + 1));
+        Status(message, 6000000);    
+        Message(message);
+    }
 
     // Save the window.
     bool savedWindow = true;
@@ -1696,15 +1713,96 @@ ViewerWindowManager::CreateSingleImage(int windowIndex,
 //  Returns:    A tiled image.
 //
 //  Programmer: Brad Whitlock
-// Creation:   Tue Feb 13 15:27:26 PST 2001
+//  Creation:   Tue Feb 13 15:27:26 PST 2001
+//
+//  Modifications:
+//    Brad Whitlock, Thu Jul 15 13:38:37 PST 2004
+//    Implemented the method finally.
 //
 // ****************************************************************************
 
 avtImage_p
-ViewerWindowManager::CreateTiledImage(int /*width*/, int /*height*/)
+ViewerWindowManager::CreateTiledImage(int width, int height, bool leftEye)
 {
-    // Not yet implemented.
-    return NULL;
+    //
+    // Determine how many windows actually have plots to save in the
+    // tiled image. Also sort the windows into the sortedWindows array.
+    // We need to do this because if any windows have ever been deleted,
+    // new windows can appear in the first unused slot in the windows array.
+    // Thus the windows array does not contain windows in any given order.
+    // Since we want to always tile the image so that windows are in order
+    // (1, 2, 3, ...) we sort.
+    //
+    int windowIndex, windowWithPlot = -1, windowsWithPlots = 0;
+    ViewerWindow **sortedWindows = new ViewerWindow*[maxWindows];
+    for(windowIndex = 0; windowIndex < maxWindows; ++windowIndex)
+        sortedWindows[windowIndex] = 0;
+    for(windowIndex = 0; windowIndex < maxWindows; ++windowIndex)
+    {
+        ViewerWindow *win = windows[windowIndex];
+        if(win != 0 && win->GetPlotList()->GetNumPlots() > 0)
+        {
+            sortedWindows[win->GetWindowId()] = win;
+            if(windowWithPlot == -1)
+                windowWithPlot = windowIndex;
+            ++windowsWithPlots;
+        }
+    }
+
+    // 
+    // Return early if none of the windows have plots.
+    //
+    if(windowsWithPlots == 0)
+    {
+        delete [] sortedWindows;
+        Warning("VisIt did not save a tiled image because none of the "
+                "windows had any plots.");
+        return NULL;
+    }
+    else if(windowsWithPlots == 1)
+    {
+        delete [] sortedWindows;
+        // There's just 1 window that has plots don't bother tiling.
+        return CreateSingleImage(windowWithPlot,
+                width, height,
+                saveWindowClientAtts->GetScreenCapture(),
+                leftEye);
+    }
+
+    //
+    // If we're not in screen capture mode then divide up the prescribed
+    // image size among the tiles that we have.
+    //
+    avtImageTiler tiler(windowsWithPlots);
+
+    int imageWidth = width;
+    int imageHeight = height;
+    if(!saveWindowClientAtts->GetScreenCapture())
+    {
+        imageWidth = width / tiler.GetNumberOfColumnsForNTiles(windowsWithPlots);
+        imageHeight = imageWidth;
+    }
+
+    //
+    // Get an image for each window that has plots and add the images to the
+    // tiler object.
+    //
+    for(int index = 0; index < maxWindows; ++index)
+    {
+        if(sortedWindows[index] != 0)
+        {
+            tiler.AddImage(CreateSingleImage(sortedWindows[index]->GetWindowId(),
+                imageWidth, imageHeight,
+                saveWindowClientAtts->GetScreenCapture(), leftEye));
+            Message("Saving tiled image...");
+        }
+    }
+    delete [] sortedWindows;
+
+    //
+    // Return the tiled image returned by the tiler.
+    //
+    return tiler.CreateTiledImage();
 }
 
 // ****************************************************************************

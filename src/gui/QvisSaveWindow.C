@@ -245,13 +245,11 @@ QvisSaveWindow::CreateWindowContents()
     toggleLayout2->addWidget(stereoCheckBox);
     toggleLayout2->addStretch(10);
 
-#if 1
     // Get rid of this code when saving images is fully implemented in the
     // viewer.
     hostLabel->setEnabled(false);
     hostLineEdit->setEnabled(false);
-    saveTiledCheckBox->setEnabled(false);
-#endif
+    saveTiledCheckBox->setEnabled(true);
 }
 
 // ****************************************************************************
@@ -290,6 +288,10 @@ QvisSaveWindow::CreateWindowContents()
 //
 //   Hank Childs, Thu Jun 17 11:39:35 PDT 2004
 //   Disable "Screen capture" button when saving out polygonal formats.
+//
+//   Brad Whitlock, Fri Jul 16 12:30:42 PDT 2004
+//   I added code to disable the height line edit when we're saving a tiled
+//   image.
 //
 // ****************************************************************************
 
@@ -412,6 +414,15 @@ QvisSaveWindow::UpdateWindow(bool doAll)
             break;
         }
     } // end for
+
+    // Make sure that the height text field is not enabled when we're saving
+    // a tiled image.
+    bool shouldBeEnabled = !saveWindowAtts->GetSaveTiled();
+    if(maintainAspectCheckBox->isEnabled() != shouldBeEnabled)
+    {
+        maintainAspectCheckBox->setEnabled(shouldBeEnabled);
+        heightLineEdit->setEnabled(shouldBeEnabled);
+    }
 }
 
 // ****************************************************************************
@@ -428,9 +439,11 @@ QvisSaveWindow::UpdateWindow(bool doAll)
 // Creation:   Fri Feb 9 17:16:08 PST 2001
 //
 // Modifications:
-//   
 //   Hank Childs, Fri May 24 13:36:05 PDT 2002
 //   Renamed saveImageAtts to saveWindowAtts.
+//
+//   Brad Whitlock, Fri Jul 16 15:46:40 PST 2004
+//   Removed some code and added new code to enforce the 1:1 aspect if needed.
 //
 // ****************************************************************************
 
@@ -479,6 +492,7 @@ QvisSaveWindow::GetCurrentValues(int which_widget)
     }
 
     // Do the image width
+    bool setWidth = false;
     if(which_widget == 2 || doAll)
     {
         temp = widthLineEdit->displayText().simplifyWhiteSpace();
@@ -489,12 +503,8 @@ QvisSaveWindow::GetCurrentValues(int which_widget)
             okay = (sscanf(temp.latin1(), "%d", &w) == 1);
             if(okay)
             {
+                setWidth = (saveWindowAtts->GetWidth() != w);
                 saveWindowAtts->SetWidth(w);
-
-                // If we're maintaining the 1:1 aspect ratio, udpate
-                // the height too.
-                if(saveWindowAtts->GetMaintainAspect())
-                    saveWindowAtts->SetHeight(w);
             }
         }
 
@@ -509,6 +519,7 @@ QvisSaveWindow::GetCurrentValues(int which_widget)
     }
 
     // Do the image height
+    bool setHeight = false;
     if(which_widget == 3 || doAll)
     {
         temp = heightLineEdit->displayText().simplifyWhiteSpace();
@@ -519,12 +530,8 @@ QvisSaveWindow::GetCurrentValues(int which_widget)
             okay = (sscanf(temp.latin1(), "%d", &h) == 1);
             if(okay)
             {
+                setHeight = (saveWindowAtts->GetHeight() != h);
                 saveWindowAtts->SetHeight(h);
-
-                // If we're maintaining the 1:1 aspect ratio, udpate
-                // the width too.
-                if(saveWindowAtts->GetMaintainAspect())
-                    saveWindowAtts->SetWidth(h);
             }
         }
 
@@ -536,6 +543,21 @@ QvisSaveWindow::GetCurrentValues(int which_widget)
             Message(msg);
             saveWindowAtts->SetHeight(saveWindowAtts->GetHeight());
         }
+    }
+
+    //
+    // If doAll is true then this method is probably getting called by clicking
+    // the Apply button. In that case, and we're enforcing 1:1 aspect then we
+    // should update the width or height with the value that was set last in
+    // case the user never hit the Enter key after typing a new width or height.
+    //
+    if(doAll && saveWindowAtts->GetMaintainAspect() &&
+       saveWindowAtts->GetWidth() != saveWindowAtts->GetHeight())
+    {
+        if(setWidth)
+            saveWindowAtts->SetHeight(saveWindowAtts->GetWidth());
+        else if(setHeight)
+            saveWindowAtts->SetWidth(saveWindowAtts->GetHeight());
     }
 }
 
@@ -768,13 +790,23 @@ QvisSaveWindow::maintainAspectToggled(bool val)
 // Creation:   Mon Feb 12 13:00:24 PST 2001
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Jul 16 14:37:13 PST 2004
+//   Moved some code out of GetCurrentValues.
+//
 // ****************************************************************************
 
 void
 QvisSaveWindow::processWidthText()
 {
     GetCurrentValues(2);
+    // If we're maintaining the 1:1 aspect ratio, udpate
+    // the height too.
+    if(saveWindowAtts->GetMaintainAspect())
+        saveWindowAtts->SetHeight(saveWindowAtts->GetWidth());
+    QString temp;
+    temp.sprintf("%d", saveWindowAtts->GetHeight());
+    heightLineEdit->setText(temp);
+
     Apply();
 }
 
@@ -788,6 +820,8 @@ QvisSaveWindow::processWidthText()
 // Creation:   Mon Feb 12 13:00:24 PST 2001
 //
 // Modifications:
+//   Brad Whitlock, Fri Jul 16 14:37:13 PST 2004
+//   Moved some code out of GetCurrentValues.
 //   
 // ****************************************************************************
 
@@ -795,6 +829,14 @@ void
 QvisSaveWindow::processHeightText()
 {
     GetCurrentValues(3);
+    // If we're maintaining the 1:1 aspect ratio, udpate
+    // the width too.
+    if(saveWindowAtts->GetMaintainAspect())
+        saveWindowAtts->SetWidth(saveWindowAtts->GetHeight());
+    QString temp;
+    temp.sprintf("%d", saveWindowAtts->GetWidth());
+    widthLineEdit->setText(temp);
+
     Apply();
 }
 
@@ -886,9 +928,11 @@ QvisSaveWindow::qualityChanged(int val)
 // Creation:   Fri Feb 9 17:27:07 PST 2001
 //
 // Modifications:
-//   
 //   Hank Childs, Fri May 24 13:36:05 PDT 2002
 //   Renamed saveImageAtts to saveWindowAtts.
+//
+//   Brad Whitlock, Thu Jul 15 16:10:25 PST 2004
+//   Removed some code to prevent saving tiled images.
 //
 // ****************************************************************************
 
@@ -896,11 +940,6 @@ void
 QvisSaveWindow::screenCaptureToggled(bool val)
 {
     saveWindowAtts->SetScreenCapture(val);
-
-    // If we're doing screen capture, prevent saving tiled images.
-    if(val)
-        saveWindowAtts->SetSaveTiled(false);
-
     Apply();
 }
 
@@ -918,9 +957,11 @@ QvisSaveWindow::screenCaptureToggled(bool val)
 // Creation:   Fri Feb 9 17:27:07 PST 2001
 //
 // Modifications:
-//   
 //   Hank Childs, Fri May 24 13:36:05 PDT 2002
 //   Renamed saveImageAtts to saveWindowAtts.
+//
+//   Brad Whitlock, Thu Jul 15 16:10:25 PST 2004
+//   Removed some code to prevent screen capture.
 //
 // ****************************************************************************
 
@@ -928,10 +969,5 @@ void
 QvisSaveWindow::saveTiledToggled(bool val)
 {
     saveWindowAtts->SetSaveTiled(val);
-
-    // If we're doing tiled, prevent screen capture.
-    if(val)
-        saveWindowAtts->SetScreenCapture(false);
-
     Apply();
 }
