@@ -448,9 +448,9 @@ void vtkSlicer::SliceDataset(vtkDataSet *in_ds, vtkPolyData *out_pd)
     cutter->SetCutFunction(plane);
 
     cutter->SetInput(in_ds);
-    cutter->SetOutput(out_pd);
-    out_pd->Update();
-    out_pd->SetSource(NULL);
+    cutter->Update();
+
+    out_pd->ShallowCopy(cutter->GetOutput());
     
     cutter->Delete();
     plane->Delete();

@@ -82,16 +82,17 @@ avtKullLiteFileFormat::avtKullLiteFileFormat(const char *fname)
     if (a=='M' && b=='K' && c=='F')
     {
         string a(fname);
+        char b[1024];
         string prefix = "";
         int last_slash = a.find_last_of('/');
         if (last_slash != string::npos)
             prefix = a.substr(0, last_slash + 1);
-        inf >> a;
+        inf >> b;
         while (inf && !inf.eof())
         {
-            a = prefix + a;
+            a = prefix + b;
             AddFile(a.c_str());
-            inf >> a;
+            inf >> b;
         }
     }
     else // We're opening a single file, it's not an index
@@ -1108,7 +1109,7 @@ OrderWedgePoints(const vector< vector<int> > &nodes, int *points)
 {
     const int nWedgeFaces = 5;
 
-    int  i, j;
+    int  i;
 
     //
     // First determine that we really have a quad.  Also determine the location
