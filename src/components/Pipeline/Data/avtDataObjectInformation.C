@@ -49,7 +49,7 @@ UnifyDobInfo(void *ibuf, void *iobuf, int *count, MPI_Datatype *datatype)
    ostr.GetWholeString(tmp,tmpLen);
  
    // check lengths
-   if (tmpLen != len)
+   if (tmpLen > len)
       MPI_Abort(MPI_COMM_WORLD, 1);
  
    // copy string to output buffer
@@ -210,21 +210,28 @@ avtDataObjectInformation::ParallelMerge(const avtDataObjectWriter_p dobw)
    // convert this processor's avtDataObjectInformation to its char* rep.
    avtDataObjectString localDobStr;
    Write(localDobStr, *dobw);
-   char *localStr; int len;
+   char *localStr; int len, reducedLen;
    localDobStr.GetWholeString(localStr,len);
  
-   // create storage for reduced result
-   char *reducedStr = new char [len];
- 
+   // make sure all processors agree on len of string
+   MPI_Allreduce(&len, &reducedLen, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
+
+   // create storage for copy and reduced result
+   char *copiedStr = new char [reducedLen];
+   char *reducedStr = new char [reducedLen];
+
+   // copy localStr to the copiedStr buffer for MPI
+   strncpy(copiedStr, localStr, len);
+
    // create mpi type to circumvent possible buffer chopping during reduce
-   MPI_Type_contiguous(len, MPI_CHAR, &mpiTypeDobStr);
+   MPI_Type_contiguous(reducedLen, MPI_CHAR, &mpiTypeDobStr);
    MPI_Type_commit(&mpiTypeDobStr);
 
    // setup unifyDobInfo_writer variable so UnifyDobInfo operator can see it
    unifyDobInfo_writer = dobw;
  
    // do the parallel reduction on char* rep of avtDataObjectInformation
-   MPI_Allreduce(localStr, reducedStr, 1, mpiTypeDobStr,
+   MPI_Allreduce(copiedStr, reducedStr, 1, mpiTypeDobStr,
       avtDataObjectInformation::mpiOpUnifyDobInfo, MPI_COMM_WORLD);
  
    // convert char* rep. back to real avtDataObjectInformation objects
@@ -240,6 +247,7 @@ avtDataObjectInformation::ParallelMerge(const avtDataObjectWriter_p dobw)
    // cleanup
    MPI_Type_free(&mpiTypeDobStr);
    delete [] reducedStr;
+   delete [] copiedStr;
 
 #endif
 }

@@ -185,6 +185,9 @@ public:
 //   Brad Whitlock, Tue Jul 1 10:24:25 PDT 2003
 //   I added SetFromNode and CreateNode.
 //
+//   Brad Whitlock, Thu Aug 14 16:12:22 PST 2003
+//   I added DeleteViewsFromInterface.
+//
 // ****************************************************************************
 
 class VIEWER_API SaveViewAction : public ViewerMultipleAction
@@ -213,6 +216,7 @@ public:
     virtual bool CreateNode(DataNode *);
     virtual void SetFromNode(DataNode *);
 private:
+    void DeleteViewsFromInterface();
     void DeleteViews();
     void SaveCurrentView();
     void UseSavedView(int index);

@@ -85,6 +85,9 @@ using std::vector;
 //   Brad Whitlock, Thu Apr 10 15:53:17 PST 2003
 //   I connected some new signals and slots for plotListBox.
 //
+//   Brad Whitlock, Mon Aug 25 09:38:58 PDT 2003
+//   I changed a label string.
+//
 // ****************************************************************************
 
 QvisPlotManagerWidget::QvisPlotManagerWidget(QWidget *parent, const char *name)
@@ -140,7 +143,7 @@ QvisPlotManagerWidget::QvisPlotManagerWidget(QWidget *parent, const char *name)
     topLayout->addMultiCellWidget(plotListBox, 1, 1, 0, 3);
 
     // Create the "Apply operator to all plots" toggle.
-    applyOperatorToggle = new QCheckBox("Apply operator to all plots", this,
+    applyOperatorToggle = new QCheckBox("Apply operators and selection to all plots", this,
         "applyOperatorToggle");
     connect(applyOperatorToggle, SIGNAL(toggled(bool)),
             this, SLOT(applyOperatorToggled(bool)));

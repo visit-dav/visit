@@ -107,6 +107,31 @@ VisItException::Log(void)
 #endif
 }
 
+// ****************************************************************************
+// Method: VisItException::LogCatch
+//
+// Purpose: 
+//   Saves information about a caught exception to the log file.
+//
+// Arguments:
+//   exceptionName : The name of the exception being caught.
+//   srcFile       : The source file where the exception was caught.
+//   srcLine       : The source line where the exception was caught.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Aug 25 15:15:26 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+VisItException::LogCatch(const char *exceptionName, const char *srcFile,
+    int srcLine)
+{
+    debug1_real << "catch(" << exceptionName << ") " << srcFile << ":" << srcLine << endl;
+}
+
 #ifdef FAKE_EXCEPTIONS
 // ****************************************************************************
 //          Fake C++ exception code that gets us by on sucky platforms.

@@ -474,10 +474,12 @@ avtVolumePlot::EnhanceSpecification(avtPipelineSpecification_p spec)
 //  Creation:   November 20, 2001
 //
 //  Modifications:
-//
 //    Hank Childs, Sun Aug 10 19:39:52 PDT 2003
 //    Add support for software volume rendering crashing the engine (meaning
 //    make sure the engine doesn't crash as well.)
+//
+//    Brad Whitlock, Mon Aug 25 17:22:30 PST 2003
+//    Added missing ENDTRY.
 //
 // ****************************************************************************
 
@@ -510,6 +512,7 @@ avtVolumePlot::OverrideWithSoftwareImage(avtDataObject_p &dob)
         {
             lastImage = NULL;
         }
+        ENDTRY
     }
 
     atts.SetDoSoftware(false);

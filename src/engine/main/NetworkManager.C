@@ -145,7 +145,12 @@ NetworkManager::ClearAllNetworks(void)
 //    This ensures that we pick up the metadata and SIL for the time state
 //    that we're intersted in.
 //
+//    Brad Whitlock, Mon Aug 25 16:51:35 PST 2003
+//    Changed the return statement to CATCH_RETURN2 so bad things don't happen
+//    when we use fake exceptions.
+//
 // ****************************************************************************
+
 NetnodeDB *
 NetworkManager::GetDBFromCache(const string &filename, int time)
 {
@@ -203,7 +208,7 @@ NetworkManager::GetDBFromCache(const string &filename, int time)
         netDB->SetDBInfo(filename, "", time);
         const   avtIOInformation & ioinfo = db->GetIOInformation();
         loadBalancer->AddDatabase(filename, ioinfo);
-        return netDB;
+        CATCH_RETURN2(1, netDB);
     }
     CATCH(DatabaseException)
     {

@@ -312,6 +312,38 @@ SaveViewAction::DeleteViews()
 }
 
 // ****************************************************************************
+// Method: SaveViewAction::DeleteViewsFromInterface(
+//
+// Purpose: 
+//   Deletes the saved views from the interface (toolbar, menu).
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Aug 14 16:13:47 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+SaveViewAction::DeleteViewsFromInterface()
+{
+    // Delete the views.
+    DeleteViews();
+
+    // Remove the action from the popup menu and the toolbar.
+    window->GetPopupMenu()->RemoveAction(this);
+    window->GetToolbar()->RemoveAction(this);
+
+    // Remove all of the choices after the second choice.
+    int s = children.size();
+    for(int i = 2; i < s; ++i)
+    {
+        delete children[s - i + 1];
+        children.pop_back();
+    }
+}
+
+// ****************************************************************************
 // Method: SaveViewAction::Execute
 //
 // Purpose: 
@@ -327,6 +359,9 @@ SaveViewAction::DeleteViews()
 //   Brad Whitlock, Thu Feb 27 14:41:35 PST 2003
 //   I added support for curve views.
 //
+//   Brad Whitlock, Thu Aug 14 16:13:03 PST 2003
+//   I moved code into DeleteViewsFromInterface.
+//
 // ****************************************************************************
 
 void
@@ -334,20 +369,8 @@ SaveViewAction::Execute(int val)
 {
     if(val == 0)
     {
-        // Delete the views.
-        DeleteViews();
-
-        // Remove the action from the popup menu and the toolbar.
-        window->GetPopupMenu()->RemoveAction(this);
-        window->GetToolbar()->RemoveAction(this);
-
-        // Remove all of the choices after the second choice.
-        int s = children.size();
-        for(int i = 2; i < s; ++i)
-        {
-            delete children[s - i + 1];
-            children.pop_back();
-        }
+        // Delete the views from the interface.
+        DeleteViewsFromInterface();
 
         // Update the construction.
         UpdateConstruction();
@@ -689,7 +712,10 @@ SaveViewAction::CreateNode(DataNode *parentNode)
 // Creation:   Tue Jul 1 14:58:58 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Aug 12 11:31:04 PDT 2003
+//   I made it clear out views before reading them back in so we don't get
+//   an ever-increasing number of views.
+//
 // ****************************************************************************
 
 void
@@ -706,10 +732,16 @@ SaveViewAction::SetFromNode(DataNode *parentNode)
     if(viewTypesNode == 0)
         return;
 
+    bool addedOrRemovedViews = false;
+    if(views.size() > 0)
+    {
+        DeleteViewsFromInterface();
+        addedOrRemovedViews = true;
+    }
+
     const intVector &viewTypes = viewTypesNode->AsIntVector();
     DataNode **views = saveviewNode->GetChildren();
     int index = 0;
-    bool addedViews = false;
     for(int i = 0; i < saveviewNode->GetNumChildren(); ++i)
     {
         if(views[i]->GetKey() == "ViewAttributes")
@@ -743,7 +775,7 @@ SaveViewAction::SetFromNode(DataNode *parentNode)
             if(viewPtr)
             {
                 AddNewView(viewPtr, viewTypes[index]);
-                addedViews = true;
+                addedOrRemovedViews = true;
             }
 
             ++index;
@@ -751,6 +783,6 @@ SaveViewAction::SetFromNode(DataNode *parentNode)
     }
 
     // If we added some views, update the menus.
-    if(addedViews)
+    if(addedOrRemovedViews)
         UpdateConstruction();
 }
