@@ -30,6 +30,8 @@
 //  Note:  taken almost verbatim from the Subset plot
 //
 //  Modifications:
+//    Eric Brugger, Wed Jul 16 10:29:53 PDT 2003
+//    Modified to work with the new way legends are managed.
 //
 // ****************************************************************************
 
@@ -39,7 +41,9 @@ avtFilledBoundaryPlot::avtFilledBoundaryPlot()
     levelsLegend = new avtLevelsLegend();
     levelsLegend->SetTitle("Filled Boundary");
     // there is no 'range' per se, so turn off range visibility.
-    levelsLegend->SetRange(0);
+    levelsLegend->SetVarRangeVisibility(0);
+    // Tell the legend to draw top-to-bottom (default is bottom-to-top).
+    levelsLegend->SetReverseOrder(true);
 
     avtLUT = new avtLookupTable();
 
@@ -516,6 +520,8 @@ avtFilledBoundaryPlot::CustomizeBehavior(void)
 //  Note:  taken almost verbatim from the Subset plot
 //
 //  Modifications:
+//    Eric Brugger, Wed Jul 16 10:29:53 PDT 2003
+//    Modified to work with the new way legends are managed.
 //
 // ****************************************************************************
 
@@ -530,18 +536,13 @@ avtFilledBoundaryPlot::SetColors()
    
     if (labels.size() == 0)
     {
-        levelsLegend->SetColorBar(0);
-        levelsLegend->SetTitle("Filled Boundary");
-        levelsLegend->SetMessage("No Subsets Present");
+        levelsLegend->SetColorBarVisibility(0);
+        levelsLegend->SetMessage("No subsets present");
     }  
     else 
     {
-        //
-        // If a messages was previously set, the title needs to
-        // be reset so that the message disappears.
-        //
-        levelsLegend->SetTitle("Filled Boundary");
-        levelsLegend->SetColorBar(1);
+        levelsLegend->SetColorBarVisibility(1);
+        levelsLegend->SetMessage(NULL);
     }  
 
     if (atts.GetColorType() == FilledBoundaryAttributes::ColorBySingleColor)

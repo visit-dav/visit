@@ -2,11 +2,12 @@
 //                             avtLevelsLegend.C                             //
 // ************************************************************************* //
 
-#include <vtkLookupTable.h>
-#include <vtkVerticalScalarBarActor.h>
-
 #include <avtLevelsLegend.h>
 
+#include <math.h>
+
+#include <vtkLookupTable.h>
+#include <vtkVerticalScalarBarActor.h>
 
 // ****************************************************************************
 //  Method: avtLevelsLegend constructor
@@ -25,12 +26,21 @@
 //    Kathleen Bonnell, Mon Apr 29 13:37:14 PDT 2002  
 //    Initialize varName. 
 //
+//    Eric Brugger, Mon Jul 14 15:53:07 PDT 2003
+//    Remove member varName.
+//
+//    Eric Brugger, Wed Jul 16 08:07:17 PDT 2003
+//    I added nLevels, barVisibility and rangeVisibility.  I changed the
+//    default size and position of the legend.
+//
 // ****************************************************************************
 
 avtLevelsLegend::avtLevelsLegend()
 {
     min = 0.;
     max = 1.;
+
+    nLevels = 0;
 
     lut = NULL;
 
@@ -39,11 +49,13 @@ avtLevelsLegend::avtLevelsLegend()
     sBar->UseDefinedLabelsOn();
 
     size[0] = 0.08;
-    size[1] = 0.17;
-    sBar->SetWidth(size[0]);
-    sBar->SetHeight(size[1]);
+    size[1] = 0.26;
+    sBar->SetPosition2(size[0], size[1]);
 
-    SetLegendPosition(0.1, 0.7);
+    SetLegendPosition(0.05, 0.72);
+
+    barVisibility = 1;
+    rangeVisibility = 1;
 
     //
     // Set the legend to also point to sBar, so the base methods will work
@@ -51,7 +63,6 @@ avtLevelsLegend::avtLevelsLegend()
     //
     legend = sBar;
     legend->Register(NULL);
-    varName = NULL;
 }
 
 
@@ -68,6 +79,9 @@ avtLevelsLegend::avtLevelsLegend()
 //    Kathleen Bonnell, Mon Apr 29 13:37:14 PDT 2002  
 //    Delete varName. 
 //
+//    Eric Brugger, Mon Jul 14 15:53:07 PDT 2003
+//    Remove member varName.
+//
 // ****************************************************************************
 
 avtLevelsLegend::~avtLevelsLegend()
@@ -82,16 +96,70 @@ avtLevelsLegend::~avtLevelsLegend()
         lut->Delete();
         lut = NULL;
     }
-    if (varName != NULL)
-    {
-        delete [] varName;
-        varName = NULL;
-    }
 }
 
 
 // ****************************************************************************
-//  Method: avtLevelsLegend::SetColorBar
+//  Method: avtLevelsLegend::GetLegendSize
+//
+//  Purpose:
+//      Gets the legend's size.
+//
+//  Arguments:
+//      w        The legend's width.
+//      h        The legend's height.
+//
+//  Programmer:  Eric Brugger
+//  Creation:    July 15, 2003
+//
+//  Modifications:
+//    Eric Brugger, Thu Jul 17 08:20:28 PDT 2003
+//    Added maxSize argument.
+//
+// ****************************************************************************
+
+void
+avtLevelsLegend::GetLegendSize(float maxSize, float &w, float &h)
+{
+    w = 0.08;
+
+    //
+    // The fudge factor added to nLines when barVisibility is true is
+    // there to make sure that there is enough room for all the levels
+    // because this algorithm doesn't exactly match the algorithm in
+    // vtkVerticalScalarBarActor.
+    //
+    float fudge = 0.5;
+    float nLines = 0.0;
+    if (title != NULL)        nLines += 1.0;
+    if (databaseInfo != NULL) nLines += 2.0;
+    if (varName != NULL)      nLines += 1.0;
+    if (message != NULL)      nLines += 1.0;
+    if (rangeVisibility)      nLines += 2.0;
+    if (barVisibility)        nLines += nLevels * 1.1 + 1.0 + fudge;
+
+    h = nLines * fontHeight;
+
+    //
+    // If the legend is larger than the maximum size, then try to shrink
+    // the color bar so that it fits within the maximum size.
+    //
+    if (h > maxSize && barVisibility)
+    {
+        float hTitles = h - (nLevels * 1.1 + 1.0 + fudge) * fontHeight;
+        float nLevelsSpace = (maxSize - hTitles) / (fontHeight * 1.1);
+        if (nLevelsSpace > 2.)
+        {
+            h = maxSize;
+        }
+    }
+
+    sBar->SetPosition2(w, h);
+}
+
+
+// ****************************************************************************
+//  Method: avtLevelsLegend::SetColorBarVisibility
 //
 //  Purpose:
 //      Turns on/off the visibility of the color bar. 
@@ -102,12 +170,41 @@ avtLevelsLegend::~avtLevelsLegend()
 //  Programmer: Kathleen Bonnell 
 //  Creation:   March 2, 2001 
 //
+//  Modifications:
+//    Eric Brugger, Wed Jul 16 08:07:17 PDT 2003
+//    Add code to track the color bar visibility.
+//
 // ****************************************************************************
 
 void
-avtLevelsLegend::SetColorBar(const int val)
+avtLevelsLegend::SetColorBarVisibility(const int val)
 {
+    barVisibility = val;
     sBar->SetColorBarVisibility(val);
+}
+
+
+// ****************************************************************************
+//  Method: avtLevelsLegend::SetRange
+//
+//  Purpose:
+//      Sets the range of the scalar bars.
+//
+//  Arguments:
+//      nmin    The new minimum.
+//      nmax    The new maximum.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   March 1, 2001 
+//
+// ****************************************************************************
+
+void
+avtLevelsLegend::SetRange(float nmin, float nmax)
+{
+    min = nmin;
+    max = nmax;
+    sBar->SetRange(min, max);
 }
 
 
@@ -123,11 +220,16 @@ avtLevelsLegend::SetColorBar(const int val)
 //  Programmer: Kathleen Bonnell 
 //  Creation:   March 1, 2001 
 //
+//  Modifications:
+//    Eric Brugger, Wed Jul 16 08:07:17 PDT 2003
+//    Add code to track the number of levels.
+//
 // ****************************************************************************
 
 void
 avtLevelsLegend::SetLevels(const std::vector<double> &levels)
 {
+    nLevels = levels.size();
     sBar->SetDefinedLabels(levels);
 }
 
@@ -144,11 +246,16 @@ avtLevelsLegend::SetLevels(const std::vector<double> &levels)
 //  Programmer: Kathleen Bonnell 
 //  Creation:   March 1, 2001 
 //
+//  Modifications:
+//    Eric Brugger, Wed Jul 16 08:07:17 PDT 2003
+//    Add code to track the number of levels.
+//
 // ****************************************************************************
 
 void
 avtLevelsLegend::SetLevels(const std::vector<std::string> &levels)
 {
+    nLevels = levels.size();
     sBar->SetDefinedLabels(levels);
 }
 
@@ -187,201 +294,6 @@ avtLevelsLegend::SetLookupTable(vtkLookupTable *LUT)
     lut->Register(NULL);
     lut->SetTableRange(0, lut->GetNumberOfColors()); 
     sBar->SetLookupTable(lut);
-}
-
-
-// ****************************************************************************
-//  Method: avtLevelsLegend::SetMessage
-//
-//  Purpose:
-//      Appends a message to the title of this legend.
-//
-//  Arguments:
-//      msg    The message. 
-//
-//  Programmer: Kathleen Bonnell 
-//  Creation:   March 1, 2001 
-//
-// ****************************************************************************
-
-void
-avtLevelsLegend::SetMessage(const char *msg)
-{
-    char *title = sBar->GetTitle();
-    char *nl = "\n";
-    int size = strlen(title) + strlen(nl) + strlen(msg) + 1;
-    char *msgtitle = new char [size];
-    strcpy(msgtitle, title);
-    strcat(msgtitle, nl);
-    strcat(msgtitle, msg);
-    sBar->SetTitle(msgtitle);
-    delete [] msgtitle;
-}
-
-
-// ****************************************************************************
-//  Method: avtLevelsLegend::SetVarRange
-//
-//  Purpose:
-//      Sets the var range to be displayed as limits text. 
-//
-//  Arguments:
-//      nmin    The new minimum.
-//      nmax    The new maximum.
-//
-//  Programmer: Kathleen Bonnell 
-//  Creation:   April 2, 2001 
-//
-// ****************************************************************************
-
-void
-avtLevelsLegend::SetVarRange(float nmin, float nmax)
-{
-    sBar->SetVarRange(nmin, nmax);
-}
-
-
-// ****************************************************************************
-//  Method: avtLevelsLegend::SetRange
-//
-//  Purpose:
-//      Sets the range of the scalar bars.
-//
-//  Arguments:
-//      nmin    The new minimum.
-//      nmax    The new maximum.
-//
-//  Programmer: Kathleen Bonnell 
-//  Creation:   March 1, 2001 
-//
-// ****************************************************************************
-
-void
-avtLevelsLegend::SetRange(float nmin, float nmax)
-{
-    min = nmin;
-    max = nmax;
-    sBar->SetRange(min, max);
-}
-
-
-// ****************************************************************************
-//  Method: avtLevelsLegend::SetRange
-//
-//  Purpose:
-//      Turns on/off the visibility of the range. 
-//
-//  Arguments:
-//      val     The new value (On 1, Off 0).
-//
-//  Programmer: Kathleen Bonnell 
-//  Creation:   March 1, 2001 
-//
-// ****************************************************************************
-
-void
-avtLevelsLegend::SetRange(const int val )
-{
-    sBar->SetRangeVisibility(val);
-}
-
-
-// ****************************************************************************
-//  Method: avtLevelsLegend::SetTitle
-//
-//  Purpose:
-//      Sets the title for the legend. 
-//
-//  Arguments:
-//      title    The title. 
-//
-//  Programmer: Kathleen Bonnell 
-//  Creation:   March 1, 2001 
-//
-//  Modifications:
-//    Kathleen Bonnell, Mon Apr 29 13:37:14 PDT 2002 
-//    Add the varName to the title, if it has already been set.
-//
-// ****************************************************************************
-
-void
-avtLevelsLegend::SetTitle(const char *title)
-{
-    sBar->SetTitle(title);
-    if (varName != NULL)
-    {
-        char *subtitle = "\nVar:  ";
-        int size = strlen(title) + strlen(subtitle) + strlen(varName) + 1;
-        char *vartitle = new char [size];
-        strcpy(vartitle, title);
-        strcat(vartitle, subtitle);
-        strcat(vartitle, varName);
-        sBar->SetTitle(vartitle);
-        delete [] vartitle;
-    }
-}
-
-
-// ****************************************************************************
-//  Method: avtLevelsLegend::SetVarName
-//
-//  Purpose:
-//      Appends the variable name to the title of this legend.
-//
-//  Arguments:
-//      name    The variable name.
-//
-//  Programmer: Kathleen Bonnell 
-//  Creation:   March 1, 2001 
-//
-//  Modifications:
-//    Kathleen Bonnell, Mon Apr 29 13:37:14 PDT 2002 
-//    Store the var name for future reference.
-//
-// ****************************************************************************
-
-void
-avtLevelsLegend::SetVarName(const char *name)
-{
-    char *title = sBar->GetTitle();
-    char *subtitle = "\nVar:  ";
-    int size = strlen(title) + strlen(subtitle) + strlen(name) + 1;
-    if (varName != NULL)
-        delete [] varName;
-    varName = new char [strlen(name) + 1];
-    strcpy(varName, name);
-
-    char *vartitle = new char [size];
-    strcpy(vartitle, title);
-    strcat(vartitle, subtitle);
-    strcat(vartitle, name);
-    sBar->SetTitle(vartitle);
-    delete [] vartitle;
-}
-
-
-// ****************************************************************************
-//  Method: avtLevelsLegend::ChangePosition
-//
-//  Purpose:
-//      Because the base type doesn't know what kind of 2D actor we have used,
-//      this is the hook that allows it to do the bookkeeping and the derived
-//      type to do the actual work of changing the legend's position.
-//
-//  Arguments:
-//      x       The new x-position.
-//      y       The new y-position.
-//
-//  Programmer: Kathleen Bonnell 
-//  Creation:   March 1, 2001 
-//
-// ****************************************************************************
-
-void
-avtLevelsLegend::ChangePosition(float x, float y)
-{
-    sBar->GetPositionCoordinate()->SetCoordinateSystemToNormalizedViewport();
-    sBar->GetPositionCoordinate()->SetValue(x, y, 0.);
 }
 
 
@@ -435,4 +347,78 @@ avtLevelsLegend::SetReverseOrder(const bool rev)
      else
         sBar->ReverseOrderOff();
 }
+
+
+// ****************************************************************************
+//  Method: avtLevelsLegend::SetVarRangeVisibility
+//
+//  Purpose:
+//      Turns on/off the visibility of the variable range.
+//
+//  Arguments:
+//      val     The new value (On 1, Off 0).
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   March 1, 2001
+//
+//  Modifications:
+//    Eric Brugger, Wed Jul 16 08:07:17 PDT 2003
+//    Add code to track the number of levels.
+//
+// ****************************************************************************
+
+void
+avtLevelsLegend::SetVarRangeVisibility(const int val )
+{
+    rangeVisibility = val;
+    sBar->SetRangeVisibility(val);
+}
+
+
+// ****************************************************************************
+//  Method: avtLevelsLegend::SetVarRange
+//
+//  Purpose:
+//      Sets the var range to be displayed as limits text. 
+//
+//  Arguments:
+//      nmin    The new minimum.
+//      nmax    The new maximum.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   April 2, 2001 
+//
+// ****************************************************************************
+
+void
+avtLevelsLegend::SetVarRange(float nmin, float nmax)
+{
+    sBar->SetVarRange(nmin, nmax);
+}
+
+
+// ****************************************************************************
+//  Method: avtLevelsLegend::ChangePosition
+//
+//  Purpose:
+//      Because the base type doesn't know what kind of 2D actor we have used,
+//      this is the hook that allows it to do the bookkeeping and the derived
+//      type to do the actual work of changing the legend's position.
+//
+//  Arguments:
+//      x       The new x-position.
+//      y       The new y-position.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   March 1, 2001 
+//
+// ****************************************************************************
+
+void
+avtLevelsLegend::ChangePosition(float x, float y)
+{
+    sBar->GetPositionCoordinate()->SetCoordinateSystemToNormalizedViewport();
+    sBar->GetPositionCoordinate()->SetValue(x, y, 0.);
+}
+
 

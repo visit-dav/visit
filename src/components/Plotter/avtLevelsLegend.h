@@ -46,6 +46,18 @@ class  vtkLookupTable;
 //    Kathleen Bonnell, Mon May 19 13:47:48 PDT 2003  
 //    Added method 'SetReverseOrder'.
 //
+//    Eric Brugger, Mon Jul 14 15:52:46 PDT 2003
+//    Moved SetVarName, SetTitle and SetMessage to avtLegend.
+//
+//    Eric Brugger, Wed Jul 16 08:03:26 PDT 2003
+//    I added GetLegendSize.  I renamed SetColorBar to SetColorBarVisibility
+//    and SetRange to SetVarRangeVisibility.  I also added data members to
+//    track the number of levels, the colorbar visibility and variable range
+//    visibility.
+//
+//    Eric Brugger, Thu Jul 17 08:17:40 PDT 2003
+//    Added maxSize argument to GetLegendSize.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtLevelsLegend : public avtLegend
@@ -54,25 +66,29 @@ class PLOTTER_API avtLevelsLegend : public avtLegend
                     avtLevelsLegend();
     virtual        ~avtLevelsLegend();
 
-    void            SetColorBar(const int);
+    virtual void    GetLegendSize(float, float &, float &);
+
+    void            SetColorBarVisibility(const int);
+    void            SetRange(float min, float max);
     void            SetLevels(const std::vector<double> &);
     void            SetLevels(const std::vector<std::string> &);
     void            SetLookupTable(vtkLookupTable *);
-    void            SetMessage(const char *msg);
-    void            SetVarRange(float min, float max);
-    void            SetRange(float min, float max);
-    void            SetRange(const int);
-    void            SetTitle(const char *title);
-    virtual void    SetVarName(const char *name);
     void            SetLabelColorMap(const LevelColorMap &);
     void            SetReverseOrder(const bool);
+    void            SetVarRangeVisibility(const int);
+    void            SetVarRange(float min, float max);
 
 
   protected:
     float                      min, max;
+    int                        nLevels;
+
     vtkLookupTable            *lut;
     vtkVerticalScalarBarActor *sBar;
-    char                      *varName;
+
+    int                        barVisibility;
+    int                        rangeVisibility;
+
     virtual void               ChangePosition(float, float);
 };
 

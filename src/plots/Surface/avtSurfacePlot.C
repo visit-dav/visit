@@ -46,6 +46,9 @@
 //    Hank Childs, Thu Sep 12 14:01:37 PDT 2002          
 //    Initialize filter.
 //
+//    Eric Brugger, Wed Jul 16 11:22:08 PDT 2003
+//    Modified to work with the new way legends are managed.
+//
 // ****************************************************************************
 
 avtSurfacePlot::avtSurfacePlot()
@@ -59,7 +62,7 @@ avtSurfacePlot::avtSurfacePlot()
     property = vtkProperty::New();
 
     varLegend = new avtVariableLegend;
-    varLegend->SetTitle("Surface Plot");
+    varLegend->SetTitle("Surface");
 
     colorsInitialized = false;
 
@@ -742,6 +745,9 @@ avtSurfacePlot::SetSurfaceAttributes(bool useScalars)
 //    Kathleen Bonnell, Wed May 29 13:40:22 PDT 2002 
 //    Always allow user-specified min/max.
 //
+//    Eric Brugger, Wed Jul 16 11:22:08 PDT 2003
+//    Modified to work with the new way legends are managed.
+//
 // ****************************************************************************
 
 void
@@ -805,7 +811,7 @@ avtSurfacePlot::SetLimitsMode(int mode)
     
     if (!atts.GetColorByZFlag()) 
     {
-        varLegend->SetColorBar(0);
+        varLegend->SetColorBarVisibility(0);
         char msg[250];
         SNPRINTF(msg, 250, "Z-min:  %# -9.4g\nZ-max:  %# -9.4g", 
                  origMin, origMax);
@@ -817,7 +823,7 @@ avtSurfacePlot::SetLimitsMode(int mode)
         // Make sure we render the color bar, in case we turned it off 
         // previously. 
         // 
-        varLegend->SetColorBar(1);
+        varLegend->SetColorBarVisibility(1);
         varLegend->SetMessage(NULL);
     }
 }

@@ -49,6 +49,18 @@ class  vtkLookupTable;
 //    Kathleen Bonnell, Thu Oct 11 12:45:30 PDT 2001 
 //    Added member 'title'. 
 //    
+//    Eric Brugger, Mon Jul 14 15:53:54 PDT 2003
+//    Moved SetVarName, SetTitle and SetMessage to avtLegend.
+//
+//    Eric Brugger, Wed Jul 16 08:15:15 PDT 2003
+//    I added  GetLegendSize.  I renamed SetColorBar to SetColorBarVisibility,
+//    SetRange to SetVarRangeVisibility and GetRange to GetVarRange.  I also
+//    added data members to track the colorbar visibility and variable range
+//    visibility.
+//
+//    Eric Brugger, Thu Jul 17 08:45:29 PDT 2003
+//    Added maxSize argument to GetLegendSize.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtVariableLegend : public avtLegend
@@ -58,22 +70,24 @@ class PLOTTER_API avtVariableLegend : public avtLegend
                                avtVariableLegend(int arg);
     virtual                   ~avtVariableLegend();
 
+    virtual void               GetLegendSize(float, float &, float &);
+
+    void                       SetColorBarVisibility(const int);
     void                       SetRange(float min, float max);
-    void                       SetVarRange(float min, float max);
-    void                       GetVarRange(float &, float &);
-    virtual void               SetVarName(const char *name);
-    void                       SetTitle(const char *);
-    void                       SetMessage(const char *);
-    void                       SetColorBar(const int);
+    void                       GetRange(float &, float &);
     void                       SetScaling(int mode = 0, float skew = 1.);
     void                       SetLookupTable(vtkLookupTable *);
+    void                       SetVarRangeVisibility(const int);
+    void                       SetVarRange(float min, float max);
 
   protected:
     float                      min, max;
-    char *                     title;
 
     vtkVerticalScalarBarActor *sBar;
     vtkLookupTable            *lut;
+
+    int                        barVisibility;
+    int                        rangeVisibility;
 
     virtual void               ChangePosition(float, float);
 };

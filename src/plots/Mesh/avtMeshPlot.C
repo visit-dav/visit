@@ -66,6 +66,9 @@
 //    Jeremy Meredith, Tue Dec 10 10:00:34 PST 2002
 //    Added poly data smooth filter.
 //
+//    Eric Brugger, Wed Jul 16 10:57:44 PDT 2003
+//    Modified to work with the new way legends are managed.
+//
 // ****************************************************************************
 
 avtMeshPlot::avtMeshPlot()
@@ -107,11 +110,14 @@ avtMeshPlot::avtMeshPlot()
     vtkLookupTable *lut = vtkLookupTable::New();
     varLegend->SetLookupTable(lut);
     lut->Delete();
+    varLegend->SetColorBarVisibility(0);
+    varLegend->SetVarRangeVisibility(0);
 
     bgColor[0] = bgColor[1] = bgColor[2] = 1.0;  // white
     fgColor[0] = fgColor[1] = fgColor[2] = 0.0;  // black
 
     wireframeRenderingIsInappropriate = false;
+
     //
     // This is to allow the legend to be reference counted so the behavior can
     // still access it after the plot is deleted.  The legend cannot be
@@ -351,7 +357,6 @@ avtMeshPlot::SetMeshColor(const double *col)
         SetOpaqueColor(col, true);
     }
 }
-
 
 
 // ****************************************************************************
@@ -721,7 +726,6 @@ avtMeshPlot::ApplyRenderingTransformation(avtDataObject_p input)
 }
 
 
-
 // ****************************************************************************
 //  Method: avtMeshPlot::CustomizeBehavior
 //
@@ -746,18 +750,15 @@ avtMeshPlot::ApplyRenderingTransformation(avtDataObject_p input)
 //    I moved the calls to SetMeshColor, SetOpaqueColor and SetLegend from
 //    here to SetAtts, since that is the appropriate place for them.
 //
+//    Eric Brugger, Wed Jul 16 10:57:44 PDT 2003
+//    Modified to work with the new way legends are managed.
+//
 // ****************************************************************************
 
 void
 avtMeshPlot::CustomizeBehavior(void)
 {
     renderer->SetProperty(property);
-
-    //
-    // don't need a color bar for mesh plot legends, so turn it off
-    //
-
-    varLegend->SetColorBar(0);
 
     behavior->SetLegend(varLegendRefPtr);
     behavior->SetShiftFactor(0.5);

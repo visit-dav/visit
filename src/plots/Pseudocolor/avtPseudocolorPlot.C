@@ -37,13 +37,16 @@
 //    Hank Childs, Sun Jun 23 12:22:58 PDT 2002
 //    Initialize glyphPoints.
 //
+//    Eric Brugger, Wed Jul 16 11:09:02 PDT 2003
+//    Modified to work with the new way legends are managed.
+//
 // ****************************************************************************
 
 avtPseudocolorPlot::avtPseudocolorPlot()
 {
     varMapper = new avtVariableMapper;
     varLegend = new avtVariableLegend;
-    varLegend->SetTitle("Pseudocolor Plot");
+    varLegend->SetTitle("Pseudocolor");
 
     colorsInitialized = false;
 

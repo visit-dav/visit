@@ -38,6 +38,9 @@
 //    Kathleen Bonnell, Mon May 19 13:46:55 PDT 2003 
 //    Tell the legend to draw in top-to-bottom order (ReverseOrder). 
 //
+//    Eric Brugger, Wed Jul 16 11:17:28 PDT 2003
+//    Modified to work with the new way legends are managed.
+//
 // ****************************************************************************
 
 avtSubsetPlot::avtSubsetPlot()
@@ -46,7 +49,7 @@ avtSubsetPlot::avtSubsetPlot()
     levelsLegend = new avtLevelsLegend();
     levelsLegend->SetTitle("Subset");
     // there is no 'range' per se, so turn off range visibility.
-    levelsLegend->SetRange(0);
+    levelsLegend->SetVarRangeVisibility(0);
     // Tell the legend to draw top-to-bottom (default is bottom-to-top). 
     levelsLegend->SetReverseOrder(true);
 
@@ -595,6 +598,9 @@ avtSubsetPlot::CustomizeBehavior(void)
 //    Brad Whitlock, Fri Apr 25 12:44:29 PDT 2003
 //    I made it throw an InvalidColortableException.
 //
+//    Eric Brugger, Wed Jul 16 11:17:28 PDT 2003
+//    Modified to work with the new way legends are managed.
+//
 // ****************************************************************************
 
 void 
@@ -608,18 +614,13 @@ avtSubsetPlot::SetColors()
    
     if (labels.size() == 0)
     {
-        levelsLegend->SetColorBar(0);
-        levelsLegend->SetTitle("Subset");
-        levelsLegend->SetMessage("No Subsets Present");
+        levelsLegend->SetColorBarVisibility(0);
+        levelsLegend->SetMessage("No subsets present");
     }  
     else 
     {
-        //
-        // If a messages was previously set, the title needs to
-        // be reset so that the message disappears.
-        //
-        levelsLegend->SetTitle("Subset");
-        levelsLegend->SetColorBar(1);
+        levelsLegend->SetColorBarVisibility(1);
+        levelsLegend->SetMessage(NULL);
     }  
 
     if (atts.GetColorType() == SubsetAttributes::ColorBySingleColor)

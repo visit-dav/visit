@@ -813,12 +813,17 @@ PyBoundaryAttributes_SetLogging(bool val)
     BoundaryAttributesEnableLogging = val;
 }
 
+
+// ****************************************************************************
+//  Modifications:
+//    Kathleen Bonnell, Fri Jul 18 13:49:42 PDT 2003 
+//    Make defaultAtts point to the passed atts directly.
+//
+// ****************************************************************************
+
 void
 PyBoundaryAttributes_SetDefaults(const BoundaryAttributes *atts)
 {
-    if(defaultAtts)
-        delete defaultAtts;
-
-    defaultAtts = new BoundaryAttributes(*atts);
+    defaultAtts = const_cast<BoundaryAttributes*>(atts);
 }
 

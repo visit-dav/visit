@@ -103,6 +103,14 @@ typedef std::vector<double> doubleVector;
 //    Kathleen Bonnell, Mon May 19 13:42:19 PDT 2003   
 //    Added member ReverseOrder and Set/Get methods. 
 //
+//    Eric Brugger, Mon Jul 14 11:55:19 PDT 2003
+//    I changed the way the scalar bar is built.  I removed TitleFraction,
+//    LabelFraction, SetWidth, SetHeight and FontSize.  I added BarWidth
+//    and FontHeight.
+//
+//    Eric Brugger, Wed Jul 16 08:29:27 PDT 2003
+//    I added a number of labels argument to BuildTics and BuildLabels.
+//
 // ****************************************************************************
 
 class VISIT_VTK_API vtkVerticalScalarBarActor : public vtkActor2D
@@ -145,18 +153,9 @@ public:
   virtual void ReleaseGraphicsResources(vtkWindow *);
 
   // Description:
-  // Set/Get the height for the title annotation text. This
-  // is expressed as a fraction of the overall legend height,
-  // not to exceed 1/2.
-  vtkSetClampMacro(TitleFraction,float, 0.0, 0.5);
-  vtkGetMacro(TitleFraction,float);
-
-  // Description:
-  // Set/Get the height for the labels annotation text. This
-  // is expressed as a fraction of the overall legend width,
-  // not to exceed 1/2.
-  vtkSetClampMacro(LabelFraction,float, 0.0, 0.5);
-  vtkGetMacro(LabelFraction,float);
+  // Set/Get the scalar bar width.
+  vtkSetClampMacro(BarWidth,float, 0.0, 0.5);
+  vtkGetMacro(BarWidth,float);
 
   // Description:
   // Set/Get the vtkLookupTable to use. The lookup table specifies the number
@@ -165,17 +164,6 @@ public:
   vtkSetObjectMacro(LookupTable,vtkLookupTable);
   vtkGetObjectMacro(LookupTable,vtkLookupTable);
 
-  // Description:
-  // Set/Get the height and width of the legend. The value is expressed
-  // as a fraction of the viewport. This really is just another way of
-  // setting the Position2 instance variable.
-  void SetWidth(float w);
-  float GetWidth() 
-        { return this->Position2Coordinate->GetValue()[0]; };
-  void SetHeight(float h);
-  float GetHeight()
-        { return this->Position2Coordinate->GetValue()[1]; };
-  
   // Description:
   // Set/Get the maximum number of color bar segments to show. This may
   // differ from the number of colors in the lookup table, in which case
@@ -231,10 +219,10 @@ public:
   void SetFontFamilyToTimes() {this->SetFontFamily(VTK_TIMES);};
 
   // Description:
-  // Set/Get the font size for the annotation text. 
-  vtkSetClampMacro(FontSize, int, 0, 100);
-  vtkGetMacro(FontSize, int);
-  
+  // Set/Get the font height for the annotation text.
+  vtkSetClampMacro(FontHeight, float, 0, 0.2);
+  vtkGetMacro(FontHeight, float);
+
   // Description:
   // Set/Get the format with which to print the labels on the scalar
   // bar.
@@ -322,8 +310,9 @@ protected:
   virtual ~vtkVerticalScalarBarActor();
 
   void BuildTitle(vtkViewport *);
-  void BuildTics(float, float);
-  void BuildLabels(vtkViewport *viewport, int, int);
+  void BuildRange(vtkViewport *);
+  void BuildTics(float, float, float, int);
+  void BuildLabels(vtkViewport *, float, float, float, int);
   virtual void BuildColorBar(vtkViewport *);
 
   float SkewTheValue(float, float, float);
@@ -338,7 +327,7 @@ protected:
   int   Italic;
   int   Shadow;
   int   FontFamily;
-  int   FontSize;
+  float FontHeight;
   char  *LabelFormat;
   char  *RangeFormat;
   vtkCoordinate *Position2Coordinate;
@@ -349,8 +338,7 @@ protected:
   int ColorBarVisibility;
   int ReverseOrder;
   
-  float TitleFraction;
-  float LabelFraction;
+  float BarWidth;
 
   vtkPolyData         *ColorBar;
   vtkPolyDataMapper2D *ColorBarMapper;

@@ -28,6 +28,9 @@
 //    Brad Whitlock, Mon Dec 2 11:59:27 PDT 2002
 //    I added a legend.
 //
+//    Eric Brugger, Wed Jul 16 11:32:57 PDT 2003
+//    Modified to work with the new way legends are managed.
+//
 // ****************************************************************************
 
 avtVectorPlot::avtVectorPlot()
@@ -40,7 +43,7 @@ avtVectorPlot::avtVectorPlot()
     avtLUT       = new avtLookupTable();
 
     varLegend = new avtVariableLegend;
-    varLegend->SetTitle("Vector Plot");
+    varLegend->SetTitle("Vector");
 
     //
     // This is to allow the legend to be reference counted so the behavior can

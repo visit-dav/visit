@@ -37,6 +37,13 @@
 //    Hank Childs, Thu Mar 14 15:57:09 PST 2002
 //    Make the legend a bit smaller.
 //
+//    Eric Brugger, Mon Jul 14 15:54:19 PDT 2003
+//    Remove member title.  Remove initialization of scalar bar title.
+//
+//    Eric Brugger, Wed Jul 16 08:20:29 PDT 2003
+//    I added barVisibility and rangeVisibility.  I changed the default
+//    size and position of the legend.
+//
 // ****************************************************************************
 
 avtVariableLegend::avtVariableLegend()
@@ -46,17 +53,17 @@ avtVariableLegend::avtVariableLegend()
 
     lut = NULL;
  
-    title = NULL;
     sBar = vtkVerticalScalarBarActor::New();
     sBar->SetShadow(0);
-    sBar->SetTitle("Variable Plot");
 
     size[0] = 0.08;
-    size[1] = 0.17;
-    sBar->SetWidth(size[0]);
-    sBar->SetHeight(size[1]);
+    size[1] = 0.26;
+    sBar->SetPosition2(size[0], size[1]);
 
-    SetLegendPosition(0.05, 0.7);
+    SetLegendPosition(0.05, 0.72);
+
+    barVisibility = 1;
+    rangeVisibility = 1;
 
     //
     // Set the legend to also point to sBar, so the base methods will work
@@ -95,15 +102,17 @@ avtVariableLegend::avtVariableLegend()
 //    Kathleen Bonnell, Wed Oct 10 17:31:26 PDT 2001 
 //    Initialize new member 'title'. 
 //    
+//    Eric Brugger, Mon Jul 14 15:54:19 PDT 2003
+//    Remove member title.
+//
 // ****************************************************************************
 
-avtVariableLegend::avtVariableLegend(int arg)
+avtVariableLegend::avtVariableLegend(int)
 {
     min = 0.;
-    max = (float)arg/arg;
+    max = 1.;
     lut = NULL;
     sBar = NULL;
-    title = NULL;
 }
 
 
@@ -121,6 +130,9 @@ avtVariableLegend::avtVariableLegend(int arg)
 //    Kathleen Bonnell, Wed Oct 10 17:31:26 PDT 2001 
 //    Delete new member 'title'. 
 //
+//    Eric Brugger, Mon Jul 14 15:54:19 PDT 2003
+//    Remove member title.
+//
 // ****************************************************************************
 
 avtVariableLegend::~avtVariableLegend()
@@ -130,56 +142,77 @@ avtVariableLegend::~avtVariableLegend()
         sBar->Delete();
         sBar = NULL;
     }
-    if (title != NULL)
+}
+
+
+// ****************************************************************************
+//  Method: avtVariableLegend::GetLegendSize
+//
+//  Purpose:
+//      Gets the legend's size.
+//
+//  Arguments:
+//      w        The legend's width.
+//      h        The legend's height.
+//
+//  Programmer:  Eric Brugger
+//  Creation:    July 15, 2003
+//
+//  Modifications:
+//    Eric Brugger, Thu Jul 17 08:47:55 PDT 2003
+//    Added maxSize argument.  It is unused in this routine so it is unnamed.
+//
+// ****************************************************************************
+
+void
+avtVariableLegend::GetLegendSize(float, float &w, float &h)
+{
+    w = 0.08;
+
+    if (barVisibility)
     {
-        delete [] title;
-        title = NULL;
+        h = 0.26;
+    }
+    else
+    {
+        float nLines = 0.51;
+
+        if (title != NULL)        nLines += 1.0;
+        if (databaseInfo != NULL) nLines += 2.0;
+        if (varName != NULL)      nLines += 1.0;
+        if (message != NULL)      nLines += 1.0;
+        if (rangeVisibility)      nLines += 2.5;
+
+        h = nLines * fontHeight;
+
+        sBar->SetPosition2(w, h);
     }
 }
 
 
 // ****************************************************************************
-//  Method: avtVariableLegend::SetVarRange 
+//  Method: avtVariableLegend::SetColorBarVisibility
 //
 //  Purpose:
-//      Sets the range of the var used in limit text.
+//      Turns on/off the visibility of the color bar.
 //
 //  Arguments:
-//      nmin    The new minimum.
-//      nmax    The new maximum.
+//      val     The new value (On 1, Off 0).
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   April 2, 2001 
+//  Programmer: Eric Brugger
+//  Creation:   July 15, 2003
+//
+//  Modifications:
+//    Eric Brugger, Wed Jul 16 08:20:29 PDT 2003
+//    Add code to track the color bar visibility.
 //
 // ****************************************************************************
 
 void
-avtVariableLegend::SetVarRange(float nmin, float nmax)
+avtVariableLegend::SetColorBarVisibility(const int val)
 {
-    sBar->SetVarRange(nmin, nmax);
-}
-
-
-// ****************************************************************************
-//  Method: avtVariableLegend::GetVarRange
-//
-//  Purpose:
-//      Get the variable range.
-//
-//  Arguments:
-//      amin    reference that will contain the minimum after the call.
-//      amax    reference that will contain the minimum after the call.
-//
-//  Programmer: Hank Childs
-//  Creation:   December 14, 2001
-//
-// ****************************************************************************
-
-void
-avtVariableLegend::GetVarRange(float &amin, float &amax)
-{
-    amin = min;
-    amax = max;
+    barVisibility = val;
+    sBar->SetColorBarVisibility(val);
 }
 
 
@@ -257,156 +290,25 @@ avtVariableLegend::SetRange(float nmin, float nmax)
 
 
 // ****************************************************************************
-//  Method: avtVariableLegend::SetTitle
+//  Method: avtVariableLegend::GetRange
 //
 //  Purpose:
-//    Sets the title for this legend. 
+//      Get the variable range.
 //
 //  Arguments:
-//    nTitle    The title name.
-//
-//  Programmer: Kathleen Bonnell 
-//  Creation:   March 09, 2001
-//
-//  Modifications:
-//    Kathleen Bonnell, Wed Oct 10 17:31:26 PDT 2001
-//    Reflect that 'title' is now a member.
-//
-// ****************************************************************************
-
-void
-avtVariableLegend::SetTitle(const char *nTitle)
-{
-    int size = strlen(nTitle) + 1;
-    if (title != NULL)
-    {
-        delete [] title;
-    }
-    title = new char[size];
-    strcpy(title, nTitle);
-    sBar->SetTitle(title);
-}
-
-
-// ****************************************************************************
-//  Method: avtVariableLegend::SetVarName
-//
-//  Purpose:
-//      Adds the variable name to the title of this plot.
-//
-//  Arguments:
-//      name    The variable name.
-//
-//  Programmer: Kathleen Bonnell 
-//  Creation:   December 11, 2000 
-//
-//  Modifications:
-//    Kathleen Bonnell, Thu Mar 15 13:16:41 PST 2001
-//    Modified to preserve original title, and append var name to end.
-//
-//    Kathleen Bonnell, Wed Oct 10 17:31:26 PDT 2001 
-//    Append var name to new member 'title'. 
-//
-// ****************************************************************************
-
-void
-avtVariableLegend::SetVarName(const char *name)
-{
-    char *subtitle = "\nVar:  ";
-    int size = strlen(title) + strlen(subtitle) + strlen(name) + 1;
-    char *vartitle = new char [size];
-    strcpy(vartitle, title);
-    strcat(vartitle, subtitle);
-    strcat(vartitle, name);
-    delete [] title;
-    title = new char [size];
-    strcpy(title, vartitle);
-
-    sBar->SetTitle(title);
-    delete [] vartitle;
-}
-
-// ****************************************************************************
-//  Method: avtVariableLegend::SetMessage
-//
-//  Purpose:
-//      Appends a message to the title of this legend.
-//
-//  Arguments:
-//      msg    The message.
-//
-//  Programmer: Kathleen Bonnell
-//  Creation:   March 09, 2001
-//
-//  Modifications:
-//    Kathleen Bonnell, Wed Oct 10 17:31:26 PDT 2001
-//    Allow for NULL message.  title is now a member.
-//
-// ****************************************************************************
-
-void
-avtVariableLegend::SetMessage(const char *msg)
-{
-    if (msg == NULL)
-    {
-        sBar->SetTitle(title);
-        return;
-    }
-    char *nl = "\n";
-    int size = strlen(title) + strlen(nl) + strlen(msg) + 1;
-    char *msgtitle = new char [size];
-    strcpy(msgtitle, title);
-    strcat(msgtitle, nl);
-    strcat(msgtitle, msg);
-
-    sBar->SetTitle(msgtitle);
-    delete [] msgtitle;
-}
-
-
-// ****************************************************************************
-//  Method: avtVariableLegend::ChangePosition
-//
-//  Purpose:
-//      Because the base type doesn't know what kind of 2D actor we have used,
-//      this is the hook that allows it to do the bookkeeping and the derived
-//      type to do the actual work of changing the legend's position.
-//
-//  Arguments:
-//      x       The new x-position.
-//      y       The new y-position.
+//      amin    reference that will contain the minimum after the call.
+//      amax    reference that will contain the minimum after the call.
 //
 //  Programmer: Hank Childs
-//  Creation:   October 4, 2000
+//  Creation:   December 14, 2001
 //
 // ****************************************************************************
 
 void
-avtVariableLegend::ChangePosition(float x, float y)
+avtVariableLegend::GetRange(float &amin, float &amax)
 {
-    sBar->GetPositionCoordinate()->SetCoordinateSystemToNormalizedViewport();
-    sBar->GetPositionCoordinate()->SetValue(x, y, 0.);
-}
-
-
-// ****************************************************************************
-//  Method: avtVariableLegend::SetColorBar
-//
-//  Purpose:
-//      Turns on/off the visibility of the color bar.
-//
-//  Arguments:
-//      val    On (1) or Off (0).
-//
-//  Programmer: Kathleen Bonnell
-//  Creation:   March 2, 2001
-//
-// ****************************************************************************
-
-void
-avtVariableLegend::SetColorBar(const int val)
-{
-    sBar->SetColorBarVisibility(val);
+    amin = min;
+    amax = max;
 }
 
 
@@ -469,4 +371,74 @@ avtVariableLegend::SetLookupTable(vtkLookupTable *LUT)
     lut = LUT;
     sBar->SetLookupTable(lut);
 }
+
+
+// ****************************************************************************
+//  Method: avtVariableLegend::SetVarRangeVisibility
+//
+//  Purpose:
+//      Turns on/off the visibility of the variable range.
+//
+//  Arguments:
+//      val     The new value (On 1, Off 0).
+//
+//  Programmer: Eric Brugger
+//  Creation:   July 15, 2003
+//
+// ****************************************************************************
+
+void
+avtVariableLegend::SetVarRangeVisibility(const int val )
+{
+    rangeVisibility = val;
+    sBar->SetRangeVisibility(val);
+}
+
+
+// ****************************************************************************
+//  Method: avtVariableLegend::SetVarRange 
+//
+//  Purpose:
+//      Sets the range of the var used in limit text.
+//
+//  Arguments:
+//      nmin    The new minimum.
+//      nmax    The new maximum.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   April 2, 2001 
+//
+// ****************************************************************************
+
+void
+avtVariableLegend::SetVarRange(float nmin, float nmax)
+{
+    sBar->SetVarRange(nmin, nmax);
+}
+
+
+// ****************************************************************************
+//  Method: avtVariableLegend::ChangePosition
+//
+//  Purpose:
+//      Because the base type doesn't know what kind of 2D actor we have used,
+//      this is the hook that allows it to do the bookkeeping and the derived
+//      type to do the actual work of changing the legend's position.
+//
+//  Arguments:
+//      x       The new x-position.
+//      y       The new y-position.
+//
+//  Programmer: Hank Childs
+//  Creation:   October 4, 2000
+//
+// ****************************************************************************
+
+void
+avtVariableLegend::ChangePosition(float x, float y)
+{
+    sBar->GetPositionCoordinate()->SetCoordinateSystemToNormalizedViewport();
+    sBar->GetPositionCoordinate()->SetValue(x, y, 0.);
+}
+
 

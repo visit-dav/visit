@@ -12,14 +12,6 @@
 class     vtkTextActor;
 
 
-//
-// I would like to make this a constant integer associated with the class, but
-// I am concerned that some compilers will barf with that.  Will have to live
-// with a #define to avoid magic numbers.
-//
-#define MAX_LEGENDS 6
-
-
 // ****************************************************************************
 //  Class: VisWinLegends
 //
@@ -38,6 +30,12 @@ class     vtkTextActor;
 //    vtkScaledTextActor has been deprecated in favor of vtkTextActor. 
 //    vtkTextActor defines its own mapper, so vtkTextMapper not needed. 
 //
+//    Eric Brugger, Mon Jul 14 16:27:28 PDT 2003
+//    Changed the way database information is handled.
+//
+//    Eric Brugger, Wed Jul 16 09:47:15 PDT 2003
+//    Removed GetPosition.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinLegends : public VisWinColleague
@@ -50,16 +48,13 @@ class VISWINDOW_API VisWinLegends : public VisWinColleague
     virtual void                  UpdatePlotList(std::vector<avtActor_p> &);
 
     void                          SetVisibility(bool db, bool legend);
-    void                          RemoveDBInfos(void);
-    void                          AddDBInfos(void);
 
   protected:
-    vtkTextActor                 *dbInfoActor[MAX_LEGENDS];
-    bool                          dbInfoIsAdded[MAX_LEGENDS];
+    vtkTextActor                 *dbInfoActor;
+    bool                          dbInfoIsAdded;
     bool                          mainDBInfoVisible;
     bool                          legendVisible;
     bool                          homogeneous;
-    int                           numLegends;
     
     static const float            leftColumnPosition;
     static const float            rightColumnPosition;
@@ -69,7 +64,9 @@ class VISWINDOW_API VisWinLegends : public VisWinColleague
     void                          PositionLegends(std::vector<avtActor_p> &);
     void                          UpdateDBInfo(std::vector<avtActor_p> &);
 
-    float                         GetPosition(int);
+  private:
+    static void                   CreateDatabaseInfo(char *,
+                                                     avtDataAttributes &);
 };
 
 
