@@ -156,6 +156,9 @@ class     AttributeSubject;
 //    Added meshType as a member of this class, removed MeshType arg from
 //    SetOpaqueMeshIsAppropriate. 
 //
+//    Kathleen Bonnell, Wed Nov  3 16:51:24 PST 2004 
+//    Removed meshType, added topologicalDim and SpatialDim. 
+//
 // ****************************************************************************
 
 class PLOTTER_API avtPlot
@@ -216,6 +219,8 @@ class PLOTTER_API avtPlot
   protected:
     bool                       needsRecalculation;
     int                        index;
+    int                        spatialDim;
+    int                        topologicalDim;
     avtTheater                 theater;
     avtBehavior_p              behavior;
     avtDrawer                 *drawer;
@@ -228,7 +233,6 @@ class PLOTTER_API avtPlot
     avtSILRestriction_p        silr;
     char                      *varname;
     char                      *varunits;
-    avtMeshType                meshType;
     vector<double>             dataExtents;
     float                      cellCountMultiplierForSRThreshold;
 

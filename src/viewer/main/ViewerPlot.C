@@ -1140,6 +1140,9 @@ ViewerPlot::GetMetaData() const
 //    Kathleen Bonnell, Tue Nov  2 11:13:15 PST 2004 
 //    Added call to set the avtPlot's mesh type. 
 // 
+//    Kathleen Bonnell, Wed Nov  3 16:51:24 PST 2004 
+//    Removed call to set the avtPlot's mesh type. 
+// 
 // ****************************************************************************
 
 bool
@@ -1259,7 +1262,6 @@ ViewerPlot::SetVariableName(const std::string &name)
     {
         if (*plotList[i] != 0)
         {
-            plotList[i]->SetMeshType(GetMeshType());
             plotList[i]->SetVarName(variableName.c_str());
         }
     }
@@ -2503,6 +2505,11 @@ ViewerPlot::GetReader() const
 //    Kathleen Bonnell, Tue Nov  2 11:13:15 PST 2004 
 //    Added call to set the avtPlot's mesh type. 
 // 
+//    Kathleen Bonnell, Wed Nov  3 16:51:24 PST 2004 
+//    Removed call to set the avtPlot's mesh type. Added test for valid
+//    active variable before attempting to retrieve Units, to preven 
+//    unnecessary Exception handling.
+// 
 // ****************************************************************************
 
 void
@@ -2678,7 +2685,6 @@ ViewerPlot::CreateActor(bool createNew,
     }
 
     plotList[cacheIndex]->SetAtts(curPlotAtts);
-    plotList[cacheIndex]->SetMeshType(GetMeshType());
     plotList[cacheIndex]->SetVarName(variableName.c_str());
     plotList[cacheIndex]->SetBackgroundColor(bgColor);
     plotList[cacheIndex]->SetForegroundColor(fgColor);
@@ -2699,10 +2705,15 @@ ViewerPlot::CreateActor(bool createNew,
         //
         TRY
         {
-            std::string units(actor->GetDataObject()->GetInfo().GetAttributes().
-                GetVariableUnits());
-            if(units != "")
-                plotList[cacheIndex]->SetVarUnits(units.c_str());
+            if (actor->GetDataObject()->GetInfo().GetAttributes().ValidActiveVariable())
+            {
+                std::string units(actor->GetDataObject()->GetInfo().GetAttributes().
+                    GetVariableUnits());
+                if(units != "")
+                    plotList[cacheIndex]->SetVarUnits(units.c_str());
+                else
+                    plotList[cacheIndex]->SetVarUnits(0);
+            }
             else
                 plotList[cacheIndex]->SetVarUnits(0);
         }

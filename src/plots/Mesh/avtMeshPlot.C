@@ -682,15 +682,22 @@ avtMeshPlot::SetRenderOpaque()
 //    Kathleen Bonnell, Tue Nov  2 10:41:33 PST 2004
 //    Return glyphMapper when mesh type is point mesh.
 //
+//    Kathleen Bonnell, Wed Nov  3 16:51:24 PST 2004 
+//    Changed test from PointMesh to topologicalDimension == 0. 
+//
 // ****************************************************************************
 
 avtMapper *
 avtMeshPlot::GetMapper(void)
 {
-    if (meshType != AVT_POINT_MESH)
+    if (topologicalDim != 0)
+    {
         return mapper;
+    }
     else 
+    {
         return glyphMapper;
+    }
 }
 
 
@@ -1080,13 +1087,16 @@ avtMeshPlot::ReleaseData(void)
 //    Kathleen Bonnell, Tue Nov  2 10:41:33 PST 2004 
 //    Removed avtMeshType arg, now available as data member of avtPlot. 
 //
+//    Kathleen Bonnell, Wed Nov  3 14:44:17 PST 2004 
+//    Removed meshType, now use topologicalDim. 
+//
 // ****************************************************************************
 
 const AttributeSubject *
 avtMeshPlot::SetOpaqueMeshIsAppropriate(bool val)
 {
     if ((atts.GetOpaqueMode() == MeshAttributes::Auto) &&
-       (val != atts.GetOpaqueMeshIsAppropriate() && meshType != AVT_POINT_MESH))
+       (val != atts.GetOpaqueMeshIsAppropriate() && topologicalDim != 0))
     {
         atts.SetOpaqueMeshIsAppropriate(val);
         return &atts;
