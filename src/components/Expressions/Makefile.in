@@ -1,4 +1,4 @@
-#                            Copyright 2000 - 2002
+#                            Copyright 2000 - 2004
 #                 The Regents of the University of California.
 #                             All rights reserved.
 # 
@@ -61,6 +61,10 @@
 #
 #   Hank Childs, Thu Feb  5 18:11:46 PST 2004
 #   Added avtSingleInputExpressionFilter and avtComparisonFilter.
+#
+#   Brad Whitlock, Thu Apr 22 17:22:04 PST 2004
+#   Changed the link line for libraries needed so we can do prebinding on
+#   MacOS X.
 #
 #   Kathleen Bonnell, Tue Apr 27 13:29:46 PDT 2004 
 #   Added ExprPipelineState.
@@ -180,8 +184,9 @@ CPPFLAGS=@COMPONENT_CPPFLAGS@ @CPPFLAGS@
 SEROBJ=$(SRC:.C=_ser.o)
 PAROBJ=$(SRC:.C=_par.o)
 LIB=libexpressions
-SERLIBS=-ldbatts -lavtexceptions -lstate -lcomm -lmisc -lutility -lvisit_vtk @VTK_LIBS@ $(X_LIBS) @LIBS@
-PARLIBS=${SERLIBS} @SHLIB_MPI_LIBS@
+COMMONLIBS=-ldbatts -lavtexceptions -lstate -lcomm -lmisc -lparser -lutility -lvisit_vtk -llightweight_visit_vtk
+SERLIBS=$(COMMONLIBS) -lpipeline_ser -lavtmath_ser $(VTK_LIBS) $(X_LIBS) @LIBS@
+PARLIBS=$(COMMONLIBS) -lpipeline_par -lavtmath_par $(VTK_LIBS) $(X_LIBS) @LIBS@ @SHLIB_MPI_LIBS@
 
 ##
 ## Standard targets...

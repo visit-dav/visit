@@ -56,9 +56,12 @@ vtkCxxSetObjectMacro(vtkKatAxisActor, Camera, vtkCamera);
 //
 //   Kathleen Bonnell, Thu Aug  1 13:44:02 PDT 2002 
 //   Initialize new member ForceLabelReset. 
-
+//
 //   Kathleen Bonnell, Fri Jul 25 14:37:32 PDT 2003 
 //   Removed mustAdjustValue, valueScaleFator, ForceLabelReset.
+//
+//   Kathleen Bonnell, Thu Apr 29 17:02:10 PDT 2004
+//   Initialize MinorStart, MajorStart, DeltaMinor, DeltaMajor.
 //
 // ****************************************************************
 
@@ -138,6 +141,11 @@ vtkKatAxisActor::vtkKatAxisActor()
   this->gridlinePts  = vtkPoints::New();
 
   this->AxisHasZeroLength = false;
+
+  this->MinorStart = 0.;
+  this->MajorStart = 0.;
+  this->DeltaMinor = 1.;
+  this->DeltaMajor = 1.;
 }
 
 

@@ -1,4 +1,4 @@
-#                            Copyright 1991 - 2001
+#                            Copyright 1991 - 2004
 #                 The Regents of the University of California.
 #                             All rights reserved.
 # 
@@ -144,6 +144,9 @@
 #    Hank Childs, Fri Feb  6 10:53:43 PST 2004
 #    Added avtDrawable.
 #
+#    Brad Whitlock, Thu Apr 22 17:14:16 PST 2004
+#    Added more libraries so we can prelink on MacOS X.
+#
 ##############################################################################
 
 ##
@@ -172,7 +175,7 @@ CPPFLAGS=-I../../include/visit @COMPONENT_CPPFLAGS@ @CPPFLAGS@ @MESA_INCLUDE@
 
 OBJ=$(SRC:.C=.o)
 LIB=libplotter
-LIBS=-ldbatts -lpipeline_ser -lavtexceptions -lvisit_vtk -lmisc -lstate -lutility @VTK_LIBS@ $(X_LIBS)
+LIBS=-ldbatts -lmisc -lcomm -lstate -lparser -lutility -lpipeline_ser -lavtview -lavtmath_ser -lavtfilters_ser -lavtexceptions -lvisit_vtk -llightweight_visit_vtk $(VTK_LIBS) $(X_LIBS)
 
 ##
 ## Standard targets...

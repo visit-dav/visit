@@ -2,7 +2,7 @@
 #include <strstrea.h>
 #else
 
-#ifdef GCC3_3_X86_64
+#if defined(GCC3_3_X86_64) || defined(__APPLE__)
 #include <strstream>
 using std::ostrstream;
 #else

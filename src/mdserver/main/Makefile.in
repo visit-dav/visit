@@ -136,6 +136,9 @@
 #    Brad Whitlock, Fri Mar 12 10:28:57 PDT 2004
 #    I added KeepAliveRPCExecutor.
 #
+#    Brad Whitlock, Fri Apr 23 10:30:00 PDT 2004
+#    I added prebinding for MacOS X.
+#
 ##############################################################################
 
 ##
@@ -143,6 +146,10 @@
 ##
 @SET_MAKE@
 @VARIABLES@
+
+# Libraries to use in prebinding. Some library has indirectly required the
+# use of visit_vtk. Not good.
+PREBIND_LIBS=-lvisit_vtk
 
 LIBS= \
     -lparser \
@@ -159,7 +166,7 @@ LIBS= \
     -lmisc \
     -lutility \
     -llightweight_visit_vtk -lvtk_sl_io \
-    @VTK_LIGHTWEIGHT_LIBS@ \
+    $(VTK_LIBS) @PREBIND_LIBS@\
     @LIBS@ \
     @PTHREAD_LIB@
 LIBDEP=

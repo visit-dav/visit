@@ -64,11 +64,17 @@
 //    I removed one of the base classes and I changed the code so that
 //    images can cycle or they don't have to cycle.
 //
+//    Brad Whitlock, Tue Apr 27 14:21:15 PST 2004
+//    I made it modal on MacOS X to fix a menu bug that I ran into.
+//
 // ****************************************************************************
 
 SplashScreen::SplashScreen(bool cyclePictures, const char *name) :
     QFrame(0, name,
            WStyle_Customize | WStyle_NoBorderEx
+#ifdef Q_WS_MACX
+           | WShowModal
+#endif
           )
 {
     splashMode = true;

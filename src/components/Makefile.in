@@ -1,4 +1,4 @@
-#                            Copyright 2000 - 2000
+#                            Copyright 2000 - 2004
 #                 The Regents of the University of California.
 #                             All rights reserved.
 # 
@@ -71,14 +71,18 @@
 #   Hank Childs, Thu Mar  4 08:18:50 PST 2004
 #   Add QtVisWindow directory.
 #
+#   Brad Whitlock, Thu Apr 22 14:25:53 PST 2004
+#   I moved the Exceptions library out of components into common to fix
+#   the build order so we can prelink on MacOS X.
+#
 ##############################################################################
 
 @SET_MAKE@
 @VARIABLES@
 @DIRTARGETS@
 
-SUBDIRS=Exceptions DBAtts Math Pipeline MIR \
-        Expressions Queries Database Plotter Filters FileWriter View \
+SUBDIRS=DBAtts Math Pipeline MIR \
+        Expressions View Filters Queries Database Plotter FileWriter \
         @VISWINDOW@ QtVisWindow
 
 message:

@@ -1,5 +1,5 @@
 #
-#                            Copyright 2000 - 2002
+#                            Copyright 2000 - 2004
 #                 The Regents of the University of California.
 #                             All rights reserved.
 # 
@@ -42,6 +42,9 @@
 #
 #   Brad Whitlock, Fri Aug 22 17:26:52 PST 2003
 #   Removed libraries that don't exist yet from LIBS.
+#
+#   Brad Whitlock, Thu Apr 22 12:01:10 PDT 2004
+#   Added -lstate -lcomm -lutility to LIBS.
 #
 ##############################################################################
 
@@ -91,7 +94,7 @@ CONFIGOBJ=${CONFIGSRC:.C=.o}
 TESTOBJ=$(TESTSRC:.C=.o)
 LIB=libparser
 NOT_DISTRIB=
-LIBS=-L../../lib -lmisc
+LIBS=-L../../lib -lmisc -lstate -lcomm -lutility
 
 ##
 ## Standard targets...

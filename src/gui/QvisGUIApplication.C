@@ -448,11 +448,15 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv) :
 //   Since windows now have parents on the Windows platform, don't delete
 //   them or it will cause a crash.
 //
+//   Brad Whitlock, Tue Apr 27 14:23:59 PST 2004
+//   I prevented windows from being deleted on MacOS X since it was causing
+//   a crash.
+//
 // ****************************************************************************
 
 QvisGUIApplication::~QvisGUIApplication()
 {
-#if !defined(_WIN32)
+#if !defined(_WIN32) && !defined(__APPLE__)
     // Delete the windows.
     int i;
     for(i = 0; i < otherWindows.size(); ++i)

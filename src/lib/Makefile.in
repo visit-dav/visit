@@ -1,4 +1,4 @@
-#                            Copyright 2000 - 2003
+#                            Copyright 2000 - 2004
 #                 The Regents of the University of California.
 #                             All rights reserved.
 # 
@@ -68,6 +68,10 @@
 #
 #    Kathleen Bonnell, Wed Nov 12 17:20:03 PST 2003 
 #    Added new vtk libs: vtkDICOMParser.
+#
+#    Brad Whitlock, Wed Apr 28 15:50:23 PST 2004
+#    I made it create links to Mili and HDF5 on MacOS X.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -99,7 +103,7 @@ LIBSILO=libsilo.@SHLIB_LIBEXT@
 all: libvtkcommon libvtkdicom libvtkfiltering libvtkgraphics libvtkhybrid \
      libvtkio libvtkimaging libvtkrendering libvtkzlib libvtkpng libvtkjpeg \
      libvtkexpat libvtktiff libvtkfreetype libvtkftgl libosmesa libmesagl \
-     libqt pythondir @CREATE_SILO_LINK@
+     libqt pythondir @CREATE_SILO_LINK@ @CREATE_MILI_LINK@ @CREATE_HDF5_LINK@
 
 libvtkcommon:
 	$(RM) $(LIBVTKCOMMON)
@@ -185,6 +189,15 @@ pythondir:
 create_silo_link:
 	$(RM) $(LIBSILO)
 	ln -s @SILO_LIBDIR@/$(LIBSILO) .
+
+create_mili_link:
+	$(RM) libmili.@SHLIB_LIBEXT@ libgahl.@SHLIB_LIBEXT@
+	ln -s @MILI_DIR@/libmili.@SHLIB_LIBEXT@ .
+	ln -s @MILI_DIR@/libgahl.@SHLIB_LIBEXT@ .
+
+create_hdf5_link:
+	$(RM) libhdf5.@SHLIB_LIBEXT@
+	ln -s @HDF5_LIB@ .
 
 clean distclean:
 	$(RM) \

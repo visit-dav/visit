@@ -1,4 +1,4 @@
-#                            Copyright 2000 - 2003
+#                            Copyright 2000 - 2004
 #                 The Regents of the University of California.
 #                             All rights reserved.
 # 
@@ -110,6 +110,11 @@
 #    Eric Brugger, Thu Nov 20 10:04:46 PST 2003
 #    I made the build in the help directory optional.
 #
+#    Brad Whitlock, Thu Apr 22 11:38:06 PDT 2004
+#    I moved common/winutil to the top level because of some dependencies
+#    on the components directory. I did this because of prebinding on the
+#    Mac.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -119,7 +124,7 @@
 DISTRIB=configure configure.in VERSION
 
 SUBDIRS=include lib bin common @VTKQT@ visit_vtk components engine \
-        launcher @METADATA_SERVER@ @VIEWER@ @GUI@ @VISITPY@ \
+        launcher @METADATA_SERVER@ winutil @VIEWER@ @GUI@ @VISITPY@ \
         @JAVA_TARGET@ plots operators databases @HELP@ tools
 
 #

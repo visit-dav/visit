@@ -1,7 +1,7 @@
 #include <stdio.h> // for sscanf
 #if !defined(_WIN32)
 
-#ifdef GCC3_3_X86_64
+#if defined(GCC3_3_X86_64) || defined(__APPLE__)
 #include <strstream>
 #else
 #include <strstream.h>

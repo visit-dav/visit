@@ -222,6 +222,9 @@
 #    Kathleen Bonnell, Wed Mar 31 15:46:46 PST 2004 
 #    Added QueryOverTimeAttributes.
 #
+#    Brad Whitlock, Thu Apr 22 10:42:08 PDT 2004
+#    Added -lmisc to the libs since that's needed for the Mac.
+#
 ##############################################################################
 
 ##
@@ -316,7 +319,7 @@ SRC=    AnimationAttributes.C \
 HDR=$(SRC:.C=.h)
 OBJ=$(SRC:.C=.o)
 LIB=libstate
-LIBS=-lcomm -lutility
+LIBS=-lcomm -lmisc -lutility
 NOT_DISTRIB=
 
 TSTPROG=test1 test2 test3

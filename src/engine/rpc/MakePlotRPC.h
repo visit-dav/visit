@@ -92,7 +92,7 @@ class ENGINE_RPC_API MakePlotRPC : public BlockingRPC
 
   private:
     AttributeSubject *atts;
-    vector<double> dataExtents;
+    std::vector<double> dataExtents;
     PreparePlotRPC preparePlotRPC;
     NetworkID networkID;
 };

@@ -316,6 +316,9 @@ $0 = shift @ARGV;
 #    Jeremy Meredith, Thu Apr  1 16:11:43 PST 2004
 #    Made the new parallel argument stuff backwards-compatible.
 #
+#    Brad Whitlock, Tue Apr 27 09:49:57 PDT 2004
+#    I removed some obsolete MacOS X coding and I updated the GDB directories.
+#
 ###############################################################################
 
 
@@ -887,7 +890,6 @@ if (-e "$visitdir/bin/$exe_name" ||
     $visitlibdir  = "$visitdir/lib";
     $visithelpdir = "$visitdir/help";
     $visitplugins = "$visitdir/plugins";
-    $visitframeworks = "$visitdir/Frameworks";
     $publicversion = 0;
 
     # Set the version to nothing because we're running the component that
@@ -959,7 +961,6 @@ else
     $visitlibdir  = "$visitdir/$archdir/lib";
     $visithelpdir = "$visitdir/$archdir/help";
     $visitplugins = "$visitdir/$archdir/plugins";
-    $visitframeworks = "$visitdir/$archdir/Frameworks";
     $publicversion = 1;
 
     # Parse the version
@@ -1066,8 +1067,6 @@ $ENV{LD_LIBRARY_PATH}    = "/usr/local/lib:$ENV{LD_LIBRARY_PATH}";
 if($os eq "darwin")
 {
     $ENV{DYLD_LIBRARY_PATH}   = "$visitlibdir:/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries:$ENV{DYLD_LIBRARY_PATH}";
-    $ENV{DYLD_BIND_AT_LAUNCH} = "1";
-    $ENV{DYLD_FRAMEWORK_PATH} = "$visitframeworks:${DYLD_FRAMEWORK_PATH}";
 }
 
 # Set up plugin search paths in the correct order
@@ -1311,6 +1310,15 @@ else
     }
     elsif ($debug_gdb)
     {
+        # Determine the name of the program. This is only necessary on
+        # MacOS X to make sure that we run the executable from its
+        # bundle directory so it gets events while we debug it.
+        $real_exe = $exe_name;
+        if($os eq "darwin" and ($exe_name eq "gui" or $exe_name eq "viewer" or $exe_name eq "xmledit" or $exe_name eq "silex"))
+        {
+            $real_exe = "$visitbindir/$exe_name";
+        }
+
         $gdbfilename = "$exe_name$ver-gdbcommands";
         $gdbfile_opened = 1;
         open(GDBFILE, ">$gdbfilename") or $gdbfile_opened = 0;
@@ -1332,27 +1340,30 @@ else
             }
             print GDBFILE "set environment MESA_GLX_FX=$ENV{MESA_GLX_FX}\n";
             print GDBFILE "path $ENV{VISITHOME}/bin\n";
-            print GDBFILE "file $exe_name\n";
+            print GDBFILE "file $real_exe\n";
+            print GDBFILE "directory $ENV{VISITHOME}/common/Exceptions/Database\n";
+            print GDBFILE "directory $ENV{VISITHOME}/common/Exceptions/Pipeline\n";
+            print GDBFILE "directory $ENV{VISITHOME}/common/Exceptions/VisWindow\n";
             print GDBFILE "directory $ENV{VISITHOME}/common/comm\n";
             print GDBFILE "directory $ENV{VISITHOME}/common/state\n";
             print GDBFILE "directory $ENV{VISITHOME}/common/misc\n";
             print GDBFILE "directory $ENV{VISITHOME}/common/parser\n";
+            print GDBFILE "directory $ENV{VISITHOME}/common/proxybase\n";
             print GDBFILE "directory $ENV{VISITHOME}/common/plugin\n";
             print GDBFILE "directory $ENV{VISITHOME}/common/utility\n";
-            print GDBFILE "directory $ENV{VISITHOME}/common/winutil\n";
             print GDBFILE "directory $ENV{VISITHOME}/components/DBAtts/MetaData\n";
             print GDBFILE "directory $ENV{VISITHOME}/components/DBAtts/SIL\n";
             print GDBFILE "directory $ENV{VISITHOME}/components/Database/Database\n";
             print GDBFILE "directory $ENV{VISITHOME}/components/Database/Formats\n";
             print GDBFILE "directory $ENV{VISITHOME}/components/Database/Ghost\n";
-            print GDBFILE "directory $ENV{VISITHOME}/components/Exceptions/Database\n";
-            print GDBFILE "directory $ENV{VISITHOME}/components/Exceptions/Pipeline\n";
-            print GDBFILE "directory $ENV{VISITHOME}/components/Exceptions/VisWindow\n";
             print GDBFILE "directory $ENV{VISITHOME}/components/Expressions/Abstract\n";
+            print GDBFILE "directory $ENV{VISITHOME}/components/Expressions/Conditional\n";
+            print GDBFILE "directory $ENV{VISITHOME}/components/Expressions/Derivations\n";
             print GDBFILE "directory $ENV{VISITHOME}/components/Expressions/General\n";
             print GDBFILE "directory $ENV{VISITHOME}/components/Expressions/Management\n";
             print GDBFILE "directory $ENV{VISITHOME}/components/Expressions/Math\n";
             print GDBFILE "directory $ENV{VISITHOME}/components/Expressions/MeshQuality\n";
+            print GDBFILE "directory $ENV{VISITHOME}/components/Filters\n";
             print GDBFILE "directory $ENV{VISITHOME}/components/Math\n";
             print GDBFILE "directory $ENV{VISITHOME}/components/MIR/Base\n";
             print GDBFILE "directory $ENV{VISITHOME}/components/MIR/Tet\n";
@@ -1360,13 +1371,15 @@ else
             print GDBFILE "directory $ENV{VISITHOME}/components/Pipeline/Data\n";
             print GDBFILE "directory $ENV{VISITHOME}/components/Pipeline/Pipeline\n";
             print GDBFILE "directory $ENV{VISITHOME}/components/Pipeline/PrivateFilters\n";
-            print GDBFILE "directory $ENV{VISITHOME}/components/Pipeline/PublicFilters\n";
             print GDBFILE "directory $ENV{VISITHOME}/components/Pipeline/Sinks\n";
             print GDBFILE "directory $ENV{VISITHOME}/components/Pipeline/Sources\n";
             print GDBFILE "directory $ENV{VISITHOME}/components/Plotter\n";
             print GDBFILE "directory $ENV{VISITHOME}/components/Preprocessor\n";
+            print GDBFILE "directory $ENV{VISITHOME}/components/QtVisWindow\n";
             print GDBFILE "directory $ENV{VISITHOME}/components/Queries/Abstract\n";
+            print GDBFILE "directory $ENV{VISITHOME}/components/Queries/Misc\n";
             print GDBFILE "directory $ENV{VISITHOME}/components/Queries/Queries\n";
+            print GDBFILE "directory $ENV{VISITHOME}/components/View\n";
             print GDBFILE "directory $ENV{VISITHOME}/components/VisWindow/Colleagues\n";
             print GDBFILE "directory $ENV{VISITHOME}/components/VisWindow/Interactors\n";
             print GDBFILE "directory $ENV{VISITHOME}/components/VisWindow/Proxies\n";
@@ -1376,6 +1389,9 @@ else
             print GDBFILE "directory $ENV{VISITHOME}/engine/proxy\n";
             print GDBFILE "directory $ENV{VISITHOME}/engine/rpc\n";
             print GDBFILE "directory $ENV{VISITHOME}/gui\n";
+            print GDBFILE "directory $ENV{VISITHOME}/launcher/main\n";
+            print GDBFILE "directory $ENV{VISITHOME}/launcher/proxy\n";
+            print GDBFILE "directory $ENV{VISITHOME}/launcher/rpc\n";
             print GDBFILE "directory $ENV{VISITHOME}/mdserver/main\n";
             print GDBFILE "directory $ENV{VISITHOME}/mdserver/proxy\n";
             print GDBFILE "directory $ENV{VISITHOME}/mdserver/rpc\n";
@@ -1383,8 +1399,12 @@ else
             print GDBFILE "directory $ENV{VISITHOME}/viewer/proxy\n";
             print GDBFILE "directory $ENV{VISITHOME}/viewer/rpc\n";
             print GDBFILE "directory $ENV{VISITHOME}/visitpy\n";
-            print GDBFILE "directory $ENV{VISITHOME}/visit_vtk\n";
+            print GDBFILE "directory $ENV{VISITHOME}/visit_vtk/full\n";
+            print GDBFILE "directory $ENV{VISITHOME}/visit_vtk/lightweight\n";
+            print GDBFILE "directory $ENV{VISITHOME}/visit_vtk/sl_io\n";
             print GDBFILE "directory $ENV{VISITHOME}/vtkqt\n";
+            print GDBFILE "directory $ENV{VISITHOME}/winutil\n";
+
             if ($security_key_set)
             {
                 print GDBFILE "set args @visitargs -dograb -key $security_key\n";
@@ -1417,12 +1437,12 @@ else
             close GDBFILE;
 
             # Run gdb directly
-            @debugcmd = ("gdb", $exe_name, "-x", $gdbfilename);
+            @debugcmd = ("gdb", $real_exe, "-x", $gdbfilename);
             if($gdb_xterm)
             {
                 # Run GDB under an xterm
-                $debugtitle = "\"Debug $exe_name\"";
-                @debugcmd = ("xterm", "-title", $debugtitle, "-fn", "fixed", "-e", "gdb", $exe_name, "-x", $gdbfilename);
+                $debugtitle = "\"Debug $real_exe\"";
+                @debugcmd = ("xterm", "-title", $debugtitle, "-fn", "fixed", "-e", "gdb", $real_exe, "-x", $gdbfilename);
             }
 
             print STDERR "Running: @debugcmd\n";
@@ -1430,14 +1450,14 @@ else
             exec @debugcmd or $exec_gdb_failed = 1;
             if($exec_gdb_failed)
             {
-                print STDERR "Could not run $exe_name in the gdb debugger. Running VisIt normally.\n";
-                RunComponent($exe_name, $ver, $security_key_set, $security_key, @visitcmd);
+                print STDERR "Could not run $real_exe in the gdb debugger. Running VisIt normally.\n";
+                RunComponent($real_exe, $ver, $security_key_set, $security_key, @visitcmd);
             }
         }
         else
         {
             print STDERR "Could not create GDB command file \"$gdbfilename\". Running VisIt normally.\n";
-            RunComponent($exe_name, $ver, $security_key_set, $security_key, @visitcmd);
+            RunComponent($real_exe, $ver, $security_key_set, $security_key, @visitcmd);
         }
     }
     else

@@ -269,6 +269,10 @@
 #    Kathleen Bonnell, Wed Mar 31 10:22:47 PST 2004 
 #    Added QvisQueryOverTimeWindow.
 #
+#    Brad Whitlock, Mon Apr 26 10:21:25 PDT 2004
+#    I added support for MacOS X frameworks so the gui can be prebound on
+#    MacOS X.
+#
 ##############################################################################
 
 ##
@@ -281,7 +285,7 @@ LIB=libgui
 LIBS=-lplugin @QT_LIBS@ -L../lib -lviewerproxy -lviewerrpc \
      -lmdserverproxy -lmdserverrpc -ldbatts -lproxybase \
      -lmisc -lstate -lcomm -lavtexceptions -lutility -lparser \
-     -lwinutil $(X_LIBS) @LIBS@ @PTHREAD_LIB@
+     -lwinutil $(X_LIBS) @LIBS@ @PTHREAD_LIB@ @GUIFRAMEWORKS@
 
 LDFLAGS=@LDFLAGS@ @QT_LDFLAGS@
 LIBDEP=

@@ -276,13 +276,13 @@ CPPFLAGS=@CPPFLAGS@ $(VTK_INCLUDE) -I../../vtkqt \
 ## Files...
 ##
 
-SRC= \
+PUBLIC_SRC= \
     ViewerMessaging.C \
     ViewerOperator.C \
     ViewerPlot.C \
     ViewerSubject.C
 
-MAINSRC=\
+PRIVATE_SRC=\
     ActionGroupDescription.C \
     AnimationActions.C \
     EngineKey.C \
@@ -317,8 +317,9 @@ MAINSRC=\
     ViewerWindow.C \
     ViewerWindowManager.C \
     ViewerWindowManagerAttributes.C \
-    WindowActions.C \
-    viewer.C
+    WindowActions.C
+
+MAINSRC=viewer.C
 
 HDRMOC = \
     PlotAndOperatorActions.h \
@@ -333,10 +334,25 @@ HDRMOC = \
     ViewerWindowManager.h
 
 SRCMOC=${HDRMOC:.h=_moc.C}
-OBJMOC=${SRCMOC:.C=.o}
 
-OBJ=$(SRC:.C=.o)
-MAINOBJ=$(MAINSRC:.C=.o) ${OBJMOC}
+VIEWERLIB_SRC=@VIEWERLIB_SRC@
+VIEWEREXE_SRC=@VIEWEREXE_SRC@
+
+##
+## On MacOS X, here are the expansions
+##
+## VIEWERLIB_SRC=$(PUBLIC_SRC) $(PRIVATE_SRC) $(SRCMOC)
+## VIEWEREXE_SRC=$(MAINSRC)
+##
+## On other Unix versions, here are the expansions.
+##
+## VIEWERLIB_SRC=$(PUBLIC_SRC)
+## VIEWEREXE_SRC=$(MAINSRC) $(PRIVATE_SRC) $(SRCMOC)
+##
+
+VIEWERLIB_OBJ=${VIEWERLIB_SRC:.C=.o}
+VIEWEREXE_OBJ=${VIEWEREXE_SRC:.C=.o}
+OBJ=$(VIEWERLIB_OBJ)
 
 ##
 ## Standard targets...
@@ -347,19 +363,19 @@ all: $(LIBSHARED) $(tmpbin)/viewer
 install: install_bin
 
 clean:
-	$(RM) $(OBJ) $(MAINOBJ) $(SRCMOC) $(LIBSHARED) $(tmpbin)/viewer
+	$(RM) $(VIEWERLIB_OBJ) $(VIEWEREXE_OBJ) $(SRCMOC) $(LIBSHARED) $(tmpbin)/viewer
 
 ##
 ## Other targets...
 ##
-$(tmpbin)/viewer: $(LIBDEP) $(MAINOBJ) $(LIBSHARED)
-	$(CXX) -o $@ $(MAINOBJ) $(LDFLAGS) -lviewer $(LIBS)
+$(tmpbin)/viewer: $(LIBDEP) $(VIEWEREXE_OBJ) $(LIBSHARED)
+	$(CXX) -o $@ $(VIEWEREXE_OBJ) $(LDFLAGS) -lviewer $(LIBS)
 
-purify: $(LIBDEP) $(MAINOBJ) $(LIBSHARED)
-	purify $(CXX) -o $(tmpbin)/viewer $(MAINOBJ) $(LDFLAGS) -lviewer $(LIBS)
+purify: $(LIBDEP) $(VIEWEREXE_OBJ) $(LIBSHARED)
+	purify $(CXX) -o $(tmpbin)/viewer $(VIEWEREXE_OBJ) $(LDFLAGS) -lviewer $(LIBS)
 
-quantify: $(LIBDEP) $(MAINOBJ) $(LIBSHARED)
-	quantify $(CXX) -o $(tmpbin)/viewer $(MAINOBJ) $(LDFLAGS) -lviewer $(LIBS)
+quantify: $(LIBDEP) $(VIEWEREXE_OBJ) $(LIBSHARED)
+	quantify $(CXX) -o $(tmpbin)/viewer $(VIEWEREXE_OBJ) $(LDFLAGS) -lviewer $(LIBS)
 
 install_bin: $(tmpbin)/viewer
 	$(INSTALL) $(tmpbin)/viewer $(bindir)

@@ -167,6 +167,9 @@ const int FileTree::FileTreeNode::DATABASE_NODE = 3;
 //   Brad Whitlock, Tue Apr 6 14:07:34 PST 2004
 //   I added allowFileSelectionChange.
 //
+//   Brad Whitlock, Tue Apr 27 12:11:29 PDT 2004
+//   I improved the spacing for newer versions of Qt.
+//
 // ****************************************************************************
 
 QvisFilePanel::QvisFilePanel(QWidget *parent, const char *name) :
@@ -239,8 +242,11 @@ QvisFilePanel::QvisFilePanel(QWidget *parent, const char *name) :
             this, SLOT(sliderEnd()));
     connect(animationPosition, SIGNAL(sliderValueChanged(int)),
             this, SLOT(sliderChange(int)));
+#if QT_VERSION >= 0x030000
+    animationLayout->addWidget(animationPosition, 25);
+#else
     animationLayout->addWidget(animationPosition, 1000);
-
+#endif
     // Create the animation time field.
     timeField = new QLineEdit(this, "timeField");
     timeField->setEnabled(false);
@@ -255,7 +261,7 @@ QvisFilePanel::QvisFilePanel(QWidget *parent, const char *name) :
     connect(vcrControls, SIGNAL(stop()), this, SLOT(stop()));
     connect(vcrControls, SIGNAL(play()), this, SLOT(play()));
     connect(vcrControls, SIGNAL(nextFrame()), this, SLOT(forwardStep()));
-    topLayout->addWidget(vcrControls, 10);
+    topLayout->addWidget(vcrControls);
 
     // Create the computer pixmap.
     computerPixmap = new QPixmap(computer_xpm);

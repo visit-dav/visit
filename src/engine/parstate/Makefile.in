@@ -1,4 +1,4 @@
-#                            Copyright 2000 - 2000
+#                            Copyright 2000 - 2004
 #                 The Regents of the University of California.
 #                             All rights reserved.
 # 
@@ -61,6 +61,9 @@
 #    Jeremy Meredith, Fri Jul 12 14:34:44 PDT 2002
 #    Unified include directories.
 #
+#    Brad Whitlock, Fri Apr 23 09:03:45 PDT 2004
+#    Added more libraries to get prebinding working on MacOS X.
+#
 ##############################################################################
 
 ##
@@ -81,7 +84,7 @@ SEROBJ=$(SRC:.C=_ser.o)
 PAROBJ=$(SRC:.C=_par.o)
 
 LIB=libengineparstate
-LIBS=-lstate -lcomm
+LIBS=-lstate -lcomm -lmisc -lutility
 
 ##
 ## Standard targets...
