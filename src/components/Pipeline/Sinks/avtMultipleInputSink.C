@@ -4,6 +4,8 @@
 
 #include <avtMultipleInputSink.h>
 
+#include <avtDatasetSink.h>
+
 #include <BadIndexException.h>
 
 
@@ -219,6 +221,33 @@ avtMultipleInputSink::UpdateInput(avtPipelineSpecification_p spec)
     }
 
     return modifiedUpstream;
+}
+
+
+// ****************************************************************************
+//  Method: avtMultipleInputSink::GetTreeFromSink
+//
+//  Purpose:
+//      Gets a data tree from a dataset sink.
+//      This is leveraging the friend access of the multiple input sink.
+//
+//  NOTE:       I feel pretty bad about doing this.  This is essentially
+//              breaking encapsulation.  Pretty unavoidable with the current
+//              design.  The "right" thing to do is to somehow allow the
+//              multiple input sink to have friend access to the data object
+//              sink.  However, it cannot access data trees at that level.
+//              So the MISink has to know about the derived type
+//              avtDatasetSink.
+//
+//  Programmer: Hank Childs
+//  Creation:   October 3, 2003
+//
+// ****************************************************************************
+
+avtDataTree_p
+avtMultipleInputSink::GetTreeFromSink(avtDatasetSink *dss)
+{
+    return dss->GetInputDataTree();
 }
 
 

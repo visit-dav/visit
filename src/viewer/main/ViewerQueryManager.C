@@ -281,23 +281,30 @@ ViewerQueryManager::SetOperatorFactory(ViewerOperatorFactory *factory)
 //    Added optional bool arg that indicates if lineout should be initialized
 //    with its default atts or its client atts.
 //
+//    Hank Childs, Thu Oct  2 14:22:16 PDT 2003
+//    Account for multiple active plots.
+//
 // ****************************************************************************
 
 void
 ViewerQueryManager::AddQuery(ViewerWindow *origWin, Line *lineAtts,
                              const bool fromDefault)
 {
-    int plotId = origWin->GetAnimation()->GetPlotList()->GetPlotID(); 
+    std::vector<int> plotIDs;
+    origWin->GetAnimation()->GetPlotList()->GetActivePlotIDs(plotIDs);
     //
     // Is there an active non-hidden plot in the originating window? 
     //
-    if (plotId == -1)
+    if (plotIDs.size() == 0)
     {
         string msg("Lineout requires an active non-hidden Plot.\n");
         msg += "Please select a plot and try again.\n";
         Error(msg.c_str());
         return;
     }
+    // Use the first plot.
+    int plotId = plotIDs[0];
+
     //
     // Is there a valid variable? 
     //
@@ -617,16 +624,22 @@ ViewerQueryManager::Delete(ViewerWindow *vw)
 //    Kathleen Bonnell, Tue Mar  4 13:36:54 PST 2003  
 //    Have lineout lists handle the tool.
 //
+//    Hank Childs, Thu Oct  2 14:22:16 PDT 2003
+//    Account for multiple active plots.
+//
 // ****************************************************************************
  
 void
 ViewerQueryManager::HandleTool(ViewerWindow *oWin, const avtToolInterface &ti)
 {
-    int plotId = oWin->GetAnimation()->GetPlotList()->GetPlotID();
-    if ((nLineouts == 0) || (plotId == -1)) 
+    std::vector<int> plotIDs;
+    oWin->GetAnimation()->GetPlotList()->GetActivePlotIDs(plotIDs);
+    if ((nLineouts == 0) || (plotIDs.size() == 0)) 
     {
         return;
     }
+    // Use the first plot.
+    int plotId = plotIDs[0];
     
     ViewerPlot *oPlot = oWin->GetAnimation()->GetPlotList()->GetPlot(plotId);
     for (int i = 0; i < nLineouts; i++)
@@ -658,6 +671,9 @@ ViewerQueryManager::HandleTool(ViewerWindow *oWin, const avtToolInterface &ti)
 //    Kathleen Bonnell, Tue Mar  4 13:36:54 PST 2003  
 //    Have lineout lists handle the tool.
 //
+//    Hank Childs, Thu Oct  2 14:22:16 PDT 200
+//    Account for multiple plots.
+//
 // ****************************************************************************
  
 bool
@@ -668,11 +684,14 @@ ViewerQueryManager::InitializeTool(ViewerWindow *oWin, avtToolInterface &ti)
         return false;
     }
 
-    int plotId = oWin->GetAnimation()->GetPlotList()->GetPlotID();
-    if ((nLineouts == 0) || (plotId == -1))
+    std::vector<int> plotIDs;
+    oWin->GetAnimation()->GetPlotList()->GetActivePlotIDs(plotIDs);
+    if ((nLineouts == 0) || (plotIDs.size() == 0))
     {
         return false;
     }
+    // Use the first plot.
+    int plotId = plotIDs[0];
 
     bool retval = false;
     ViewerPlot *oPlot = oWin->GetAnimation()->GetPlotList()->GetPlot(plotId);
@@ -780,6 +799,9 @@ ViewerQueryManager::GetQueryClientAtts()
 //    the active var, and no duplicates will be in the list when passed
 //    to queryAtts.
 // 
+//    Hank Childs, Thu Oct  2 13:51:31 PDT 2003
+//    Add support for queries with multiple inputs.
+//
 // ****************************************************************************
 
 void         
@@ -799,32 +821,94 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
         return;
     }
 
-    ViewerPlotList *olist = oWin->GetAnimation()->GetPlotList();
-    int plotId = olist->GetPlotID();
-    //
-    // Is there an active non-hidden plot in the originating window?
-    //
-    if (plotId == -1)
+    int numInputs = queryTypes->NumberOfInputsForQuery(qName);
+    if (numInputs <= 0)
     {
+        // we've reset some values, notify clients
         queryClientAtts->Notify();
         string msg(qName);
-        msg += " requires an active non-hidden Plot.\n";
-        msg += "Please select a plot and try again.\n";
+        msg += " has had an internal error when processing.\n";
         Error(msg.c_str());
         return;
     }
 
-    ViewerPlot *oplot = olist->GetPlot(plotId);
-    const char *host = oplot->GetHostName();
-    const char *activeVar = oplot->GetVariableName();
+    // Get a list of the active plots.
+    ViewerPlotList *olist = oWin->GetAnimation()->GetPlotList();
+    std::vector<int> plotIds;
+    olist->GetActivePlotIDs(plotIds);
+
+    //
+    // Make sure the number of active plots jives with the expected number
+    // of inputs for the query.
+    //
+    if (plotIds.size() != numInputs)
+    {
+        if (plotIds.size() == 0)
+        {
+            queryClientAtts->Notify();
+            string msg(qName);
+            msg += " requires an active non-hidden Plot.\n";
+            msg += "Please select a plot and try again.\n";
+            Error(msg.c_str());
+            return;
+        }
+        else if (numInputs == 1)
+        {
+            //
+            // We have a convention of just using the first active plot
+            // when there are multiple active plots selected for a single
+            // input query.  BY CONVENTION, THIS IS NOT AN ERROR.
+            //
+            int firstPlot = plotIds[0];
+            plotIds.clear();
+            plotIds.push_back(firstPlot);
+        }
+        else
+        {
+            queryClientAtts->Notify();
+            string msg(qName);
+            char num[32];
+            sprintf(num, "%d", numInputs);
+            msg += " requires exactly ";
+            msg += num;
+            msg += " plots to be selected, realized, and drawn.";
+            msg += "   Please select them and try again.\n";
+            Error(msg.c_str());
+            return;
+        }
+    }
+
+    stringVector uniqueVars = vars;
+    const char *host = NULL;
+    for (int i = 0 ; i < plotIds.size() ; i++)
+    {
+        int plotId = plotIds[i];
+        ViewerPlot *oplot = olist->GetPlot(plotId);
+        if (host != NULL && (strcmp(host, oplot->GetHostName()) != 0))
+        {
+            queryClientAtts->Notify();
+            string msg = "Multiple input queries require all their inputs ";
+            msg += "to be on the same host.\n";
+            Error(msg.c_str());
+            return;
+        }
+        host = oplot->GetHostName();
+        const char *activeVar = oplot->GetVariableName();
+        stringVector tmp = uniqueVars;
+        GetUniqueVars(tmp, activeVar, uniqueVars);
+    }
     bool retry;
     int numAttempts = 0;
-    stringVector uniqueVars;
-    GetUniqueVars(vars, activeVar, uniqueVars);
     do
     {
         retry = false;
-        int networkId = oplot->GetNetworkID();
+        std::vector<int> networkIds;
+        for (int i = 0 ; i < plotIds.size() ; i++)
+        {
+            int plotId = plotIds[i];
+            ViewerPlot *oplot = olist->GetPlot(plotId);
+            networkIds.push_back(oplot->GetNetworkID());
+        }
 
         TRY
         { 
@@ -838,7 +922,7 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
                 qa.SetElementType(QueryAttributes::Zone);
             else if (strcmp(qName.c_str(), "Variable by Node") == 0)
                 qa.SetElementType(QueryAttributes::Node);
-            if (eM->Query(host, networkId, &qa, qa))
+            if (eM->Query(host, networkIds, &qa, qa))
             {
                 qa.SetVariables(vars);
                *queryClientAtts = qa;
@@ -862,7 +946,12 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
             // is created. This situation requires re-execution of the 
             // plot that is being queried.
             int curFrame = oWin->GetAnimation()->GetFrameIndex();
-            oplot->ClearActors(curFrame, curFrame);
+            for (int i = 0 ; i < plotIds.size() ; i++)
+            {
+                int plotId = plotIds[i];
+                ViewerPlot *oplot = olist->GetPlot(plotId);
+                oplot->ClearActors(curFrame, curFrame);
+            }
             oWin->GetAnimation()->UpdateFrame(); 
             retry = true;
             numAttempts++; 
@@ -874,7 +963,12 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
             // is created. This situation requires re-execution of the 
             // plot that is being queried.
             int curFrame = oWin->GetAnimation()->GetFrameIndex();
-            oplot->ClearActors(curFrame, curFrame);
+            for (int i = 0 ; i < plotIds.size() ; i++)
+            {
+                int plotId = plotIds[i];
+                ViewerPlot *oplot = olist->GetPlot(plotId);
+                oplot->ClearActors(curFrame, curFrame);
+            }
             oWin->GetAnimation()->UpdateFrame(); 
             retry = true;
             numAttempts++; 
@@ -1192,17 +1286,20 @@ ViewerQueryManager::Pick(PICK_POINT_INFO *ppi)
         ViewerWindow *win = (ViewerWindow *)pd.callbackData;
 
         ViewerPlotList *plist = win->GetAnimation()->GetPlotList();
-        int plotId = plist->GetPlotID();
+        std::vector<int> plotIDs;
+        plist->GetActivePlotIDs(plotIDs);
         //
         // Is there an active non-hidden plot in the originating window?
         //
-        if (plotId == -1)
+        if (plotIDs.size() == 0)
         {
             msg = "PICK requires an active non-hidden Plot.\n";
             msg += "Please select a plot and try again.\n";
             Error(msg.c_str());
             return;
         }
+        // Use the first plot.
+        int plotId = plotIDs[0];
         ViewerPlot *plot = plist->GetPlot(plotId);
         const char *host = plot->GetHostName();
         const char *db = plot->GetDatabaseName();
@@ -2047,7 +2144,7 @@ ViewerQueryManager::SetFromNode(DataNode *parentNode)
 //  Method: GetUniqueVars
 //
 //  Purpose:
-//    Return a list of the unque vars in the passed argument. 
+//    Return a list of the unique vars in the passed argument. 
 //
 //  Arguments:
 //    vars       The original list.
@@ -2098,6 +2195,9 @@ GetUniqueVars(const stringVector &vars, const string &activeVar,
 //
 //  Modifications:
 //    
+//    Hank Childs, Thu Oct  2 09:46:27 PDT 2003
+//    Add L2Norm, Area Between Curves, more.
+//
 // ****************************************************************************
 
 void
@@ -2112,6 +2212,14 @@ ViewerQueryManager::InitializeQueryList()
     }
     queryTypes->AddQuery("Eulerian", QueryList::DatabaseQuery);
     queryTypes->AddQuery("Compactness", QueryList::DatabaseQuery);
+    queryTypes->AddQuery("Cycle", QueryList::DatabaseQuery);
+    queryTypes->AddQuery("Time", QueryList::DatabaseQuery);
+    queryTypes->AddQuery("L2Norm", QueryList::DatabaseQuery);
+    queryTypes->AddQuery("Integrate", QueryList::DatabaseQuery);
+    queryTypes->AddQuery("L2Norm Between Curves", QueryList::DatabaseQuery,
+                                   QueryList::WorldSpace, 2);
+    queryTypes->AddQuery("Area Between Curves", QueryList::DatabaseQuery,
+                                   QueryList::WorldSpace, 2);
     queryTypes->AddQuery("Revolved volume", QueryList::DatabaseQuery);
     queryTypes->AddQuery("Revolved surface area", QueryList::DatabaseQuery);
     queryTypes->AddQuery("Surface area", QueryList::DatabaseQuery);

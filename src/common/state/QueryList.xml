@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Attribute name="QueryList" codefile="QueryList.code" purpose="List of supported queries" exportAPI="STATE_API" exportInclude="state_exports.h">
+  <Attribute name="QueryList" purpose="List of supported queries" persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="QueryList.code">
     <Enum name="QueryType">
       DatabaseQuery
       PointQuery
@@ -9,10 +9,18 @@
       WorldSpace
       ScreenSpace
     </Enum>
-    <Field name="names" type="stringVector"> </Field>
-    <Field name="types" type="intVector"> </Field>
-    <Field name="coordRep" type="intVector"> </Field>
-    <Function name="AddQuery" user="true"></Function>
-    <Function name="QueryExists" user="true"></Function>
+    <Field name="names" label="names" type="stringVector">
+    </Field>
+    <Field name="types" label="types" type="intVector">
+    </Field>
+    <Field name="coordRep" label="coordRep" type="intVector">
+    </Field>
+    <Field name="numInputs" label="numInputs" type="intVector">
+    </Field>
+    <Function name="AddQuery" user="true" member="true">
+    </Function>
+    <Function name="QueryExists" user="true" member="true">
+    </Function>
+    <Function name="NumberOfInputsForQuery" user="true" member="true">
+    </Function>
   </Attribute>
-

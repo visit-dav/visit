@@ -1,5 +1,6 @@
 #ifndef QUERY_RPC_H 
 #define QUERY_RPC_H 
+#include <vector.h>
 #include <engine_rpc_exports.h>
 #include <VisItRPC.h>
 #include <QueryAttributes.h>
@@ -13,6 +14,11 @@
 //  Programmer:  Kathleen Bonnell 
 //  Creation:    September 6, 2002 
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Oct  2 16:22:29 PDT 2003
+//    Allow for queries to involve multiple networks.
+//
 // ****************************************************************************
 
 class ENGINE_RPC_API QueryRPC : public NonBlockingRPC
@@ -22,19 +28,19 @@ public:
     virtual ~QueryRPC() { };
 
     // Invokation method
-    void operator() (const int netid, const QueryAttributes *);
+    void operator() (const std::vector<int> &netids, const QueryAttributes *);
 
     // Property selection methods
     virtual void SelectAll();
 
     // Property setting methods
-    void    SetNetworkId(const int netId)
-        { networkId = netId; Select(0, (void *)&networkId); };
+    void    SetNetworkIds(const std::vector<int> &netIds)
+        { networkIds = netIds; Select(0, (void *)&networkIds); };
 
     void SetQueryAtts(const QueryAttributes*);
 
     // Property getting methods
-    int     GetNetworkId() const { return networkId; };
+    const std::vector<int>    &GetNetworkIds() const { return networkIds; };
 
     // Property getting methods
     QueryAttributes *GetQueryAtts();
@@ -45,8 +51,8 @@ public:
     QueryAttributes returnAtts; 
 
 private:
-    int         networkId;
-    QueryAttributes queryAtts; 
+    std::vector<int>  networkIds;
+    QueryAttributes   queryAtts; 
 };
 
 #endif

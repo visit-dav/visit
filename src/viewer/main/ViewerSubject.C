@@ -2467,6 +2467,10 @@ ViewerSubject::RedrawWindow()
 //    Walter Herrera, Thu Sep 04 16:13:43 PST 2003
 //    I made it capable of creating default plots
 //
+//    Brad Whitlock, Fri Oct 3 10:40:49 PDT 2003
+//    I prevented the addition of default plots if the plot list already
+//    contains plots from the new database.
+//
 // ****************************************************************************
 
 void
@@ -2556,37 +2560,48 @@ ViewerSubject::OpenDatabaseHelper(const std::string &entireDBName,
         }
         
         //
-        // Create default plots
+        // Create default plots if there are no plots from the database
+        // already in the plot list.
         //
-       
-        DataNode *adn = NULL;
-        bool defaultPlotsAdded = false;
-
-        for(i=0; i<md->GetNumDefaultPlots(); i++)
+        if(!plotList->FileInUse(host.c_str(), db.c_str()))
         {
-            const avtDefaultPlotMetaData *dp = md->GetDefaultPlot(i);
-            adn = CreateAttributesDataNode(dp);
+            DataNode *adn = NULL;
+            bool defaultPlotsAdded = false;
 
-            //
-            // Use the plot plugin manager to get the plot type index from
-            // the plugin id.
-            //
-            int type = PlotPluginManager::Instance()->GetEnabledIndex(dp->pluginID);
-
-            if(type != -1)
+            for(i=0; i<md->GetNumDefaultPlots(); i++)
             {
-                plotList->AddPlot(type, dp->plotVar, false, false, adn);
-                defaultPlotsAdded = true;
+                const avtDefaultPlotMetaData *dp = md->GetDefaultPlot(i);
+                adn = CreateAttributesDataNode(dp);
+
+                //
+                // Use the plot plugin manager to get the plot type index from
+                // the plugin id.
+                //
+                int type = PlotPluginManager::Instance()->GetEnabledIndex(dp->pluginID);
+
+                if(type != -1)
+                {
+                    debug4 << "Adding default plot: type=" << type
+                           << " var=" << dp->plotVar.c_str() << endl;
+                    plotList->AddPlot(type, dp->plotVar, false, false, adn);
+                    defaultPlotsAdded = true;
+                }
             }
+
+            if (defaultPlotsAdded)
+            {
+                plotList->RealizePlots();
+            } 
+
+            if (adn != NULL)
+                delete adn;
         }
-
-        if (defaultPlotsAdded)
+        else
         {
-            plotList->RealizePlots();
-        } 
-
-        if (adn != NULL)
-            delete adn;
+            debug4 << "Default plots were not added because the plot list "
+                      "already contains plots from "
+                   << host.c_str() << ":" << db.c_str() << endl;
+        }
     }
 }
 
@@ -4138,12 +4153,26 @@ ViewerSubject::SetWindowArea()
 //   Brad Whitlock, Mon May 5 14:31:23 PST 2003
 //   I changed how the arguments are passed.
 //
+//   Brad Whitlock, Mon Oct 6 11:52:06 PDT 2003
+//   Added code to write the arguments to the debug log.
+//
 // ****************************************************************************
 
 void
 ViewerSubject::ConnectToMetaDataServer()
 {
     int timeid = visitTimer->StartTimer();
+
+    //
+    // Write the arguments to the debug logs
+    //
+    debug4 << "Telling mdserver on host "
+           << viewerRPC.GetProgramHost().c_str()
+           << " to connect to another client." << endl;
+    debug4 << "Arguments:" << endl;
+    const stringVector &sv = viewerRPC.GetProgramOptions();
+    for(int i = 0; i < sv.size(); ++i)
+         debug4 << "\t" << sv[i].c_str() << endl;
 
     //
     // Tell the viewer's fileserver to have its mdserver running on 

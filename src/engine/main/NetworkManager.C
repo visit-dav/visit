@@ -17,6 +17,12 @@
 #include <avtDataObjectQuery.h>
 #include <avtCompactnessQuery.h>
 #include <avtEulerianQuery.h>
+#include <avtAreaBetweenCurvesQuery.h>
+#include <avtCycleQuery.h>
+#include <avtIntegrateQuery.h>
+#include <avtL2NormQuery.h>
+#include <avtL2NormBetweenCurvesQuery.h>
+#include <avtTimeQuery.h>
 #include <avtLocateCellQuery.h>
 #include <avtPickQuery.h>
 #include <avtSourceFromAVTImage.h>
@@ -1382,36 +1388,47 @@ NetworkManager::Pick(const int id, PickAttributes *pa)
 //    Kathleen Bonnell, Wed Jul 23 15:34:11 PDT 2003 
 //    Add Variable query. 
 //
+//    Hank Childs, Thu Oct  2 09:47:48 PDT 2003
+//    Allow queries to involve multiple networks.  Add L2Norm query, more.
+//
 // ****************************************************************************
 void
-NetworkManager::Query(const int id, QueryAttributes *qa)
+NetworkManager::Query(const std::vector<int> &ids, QueryAttributes *qa)
 {
-    if (id >= networkCache.size())
+    std::vector<avtDataObject_p> queryInputs;
+    for (int i = 0 ; i < ids.size() ; i++)
     {
-        debug1 << "Internal error:  asked to use network ID (" << id << ") >= "
-               << "num saved networks (" << networkCache.size() << ")" << endl;
-        EXCEPTION0(ImproperUseException);
-    }
- 
-    if (id != networkCache[id]->GetID())
-    {
-        debug1 << "Internal error: network at position[" << id << "] "
-               << "does not have same id (" << networkCache[id]->GetID()
-               << ")" << endl;
-        EXCEPTION0(ImproperUseException);
-    }
+        int id = ids[i];
+        if (id >= networkCache.size())
+        {
+            debug1 << "Internal error:  asked to use network ID (" << id 
+                   << ") >= num saved networks ("
+                   << networkCache.size() << ")" << endl;
+            EXCEPTION0(ImproperUseException);
+        }
+     
+        if (id != networkCache[id]->GetID())
+        {
+            debug1 << "Internal error: network at position[" << id << "] "
+                   << "does not have same id (" << networkCache[id]->GetID()
+                   << ")" << endl;
+            EXCEPTION0(ImproperUseException);
+        }
 
-    avtDataObject_p queryInput = 
-        networkCache[id]->GetPlot()->GetIntermediateDataObject();
+        avtDataObject_p queryInput = 
+            networkCache[id]->GetPlot()->GetIntermediateDataObject();
 
-    if (*queryInput == NULL)
-    {
-        debug1 << "Could not retrieve query input." << endl;
-        EXCEPTION0(NoInputException);
+        if (*queryInput == NULL)
+        {
+            debug1 << "Could not retrieve query input." << endl;
+            EXCEPTION0(NoInputException);
+        }
+        queryInputs.push_back(queryInput);
     }
 
     std::string queryName = qa->GetName();
     avtDataObjectQuery *query = NULL;
+    avtDataObject_p queryInput = queryInputs[0];
 
     TRY
     {
@@ -1438,6 +1455,36 @@ NetworkManager::Query(const int id, QueryAttributes *qa)
         else if (strcmp(queryName.c_str(), "Compactness") == 0)
         {
             query = new avtCompactnessQuery();
+        }
+        else if (strcmp(queryName.c_str(), "Cycle") == 0)
+        {
+            query = new avtCycleQuery();
+        }
+        else if (strcmp(queryName.c_str(), "Integrate") == 0)
+        {
+            query = new avtIntegrateQuery();
+        }
+        else if (strcmp(queryName.c_str(), "Time") == 0)
+        {
+            query = new avtTimeQuery();
+        }
+        else if (strcmp(queryName.c_str(), "L2Norm") == 0)
+        {
+            query = new avtL2NormQuery();
+        }
+        else if (strcmp(queryName.c_str(), "L2Norm Between Curves") == 0)
+        {
+            avtL2NormBetweenCurvesQuery *q = new avtL2NormBetweenCurvesQuery();
+            q->SetNthInput(queryInputs[0], 0);
+            q->SetNthInput(queryInputs[1], 1);
+            query = q;
+        }
+        else if (strcmp(queryName.c_str(), "Area Between Curves") == 0)
+        {
+            avtAreaBetweenCurvesQuery *q = new avtAreaBetweenCurvesQuery();
+            q->SetNthInput(queryInputs[0], 0);
+            q->SetNthInput(queryInputs[1], 1);
+            query = q;
         }
         else if (strcmp(queryName.c_str(), "Variable by Zone") == 0)
         {

@@ -29,6 +29,9 @@
 //   Brad Whitlock, Thu Jul 3 17:43:47 PST 2003
 //   I added a convenience method to get the user's home .visit dir.
 //
+//   Brad Whitlock, Fri Oct 3 16:11:27 PST 2003
+//   Added internal methods to handle string vectors better.
+//
 // ****************************************************************************
 
 class STATE_API ConfigManager
@@ -48,6 +51,7 @@ protected:
     // Functions to write out the tree.
     void WriteObject(DataNode *node, int indentLevel = 0);
     void WriteData(DataNode *node);
+    void WriteQuotedStringData(const std::string &str);
     void WriteIndent(int indentLevel);
     void WriteBack(DataNode *root);
 
@@ -64,6 +68,7 @@ protected:
     bool ReadTag(std::string &tagName, NodeTypeEnum &tagType,
                    int &tagLength, bool &tagIsReturnTag);
     stringVector ReadStringVector(char termChar);
+    void RemoveLeadAndTailQuotes(stringVector &sv);
 
     // File attributes used in reading.
     bool  putback;

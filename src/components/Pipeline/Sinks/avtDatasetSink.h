@@ -4,8 +4,8 @@
 
 #ifndef AVT_DATASET_SINK_H
 #define AVT_DATASET_SINK_H
-#include <pipeline_exports.h>
 
+#include <pipeline_exports.h>
 
 #include <avtDataObjectSink.h>
 #include <avtDataset.h>
@@ -29,6 +29,8 @@
 
 class PIPELINE_API avtDatasetSink : virtual public avtDataObjectSink
 {
+    friend                    avtMultipleInputSink;
+
   public:
                               avtDatasetSink();
     virtual                  ~avtDatasetSink() {;};

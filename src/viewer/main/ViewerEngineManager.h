@@ -109,8 +109,12 @@ typedef struct
 //    I added the DefineVirtualDatabase rpc that allows us to define visit
 //    file style databases without having to have a visit file on disk.
 //
-//    Mark C. Miller, 08Apr03, Added another GetDataObjectReader method for
-//    getting scalable rendered image from engine
+//    Mark C. Miller, 08Apr03
+//    Added another GetDataObjectReader method for getting scalable rendered 
+//    image from engine
+//
+//    Hank Childs, Thu Oct  2 16:18:11 PDT 2003
+//    Allow queries to have multiple network ids.
 //
 // ****************************************************************************
 
@@ -169,7 +173,7 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
     bool SetWinAnnotAtts(const char *hostName_, const WindowAttributes *wa,
                          const AnnotationAttributes *aa);    
     bool ClearCache(const char *hostName, const char *dbName = 0);
-    bool Query(const char *hotsName_, const int nid, 
+    bool Query(const char *hostName_, const std::vector<int> &networkIds, 
                const QueryAttributes *atts, QueryAttributes &retAtts);
     bool ReleaseData(const char *hostName_, int id);
 

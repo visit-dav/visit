@@ -149,6 +149,9 @@ typedef std::map<std::string, avtSILRestriction_p> SILRestrictionMap;
 //    Added optional bool argument to AddOperator, indicates whether the
 //    operator should be initialized from its Default or Client atts. 
 //
+//    Hank Childs, Thu Oct  2 14:22:16 PDT 2003
+//    Renamed GetPlotID to GetActivePlotIDs.
+//
 // ****************************************************************************
 
 
@@ -250,7 +253,7 @@ class VIEWER_API ViewerPlotList
     const char *GetVarName();
 
     ViewerPlot *GetPlot(const int id) const;
-    int GetPlotID(void) const;
+    void GetActivePlotIDs(std::vector<int> &) const;
 
     void SetKeyframeMode(const bool mode);
     bool GetKeyframeMode() const;

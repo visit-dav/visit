@@ -157,6 +157,9 @@ class StatusAttributes;
 //    Jeremy Meredith, Mon Sep 15 17:15:59 PDT 2003
 //    Removed SetFinalVariableName.
 //
+//    Hank Childs, Thu Oct  2 16:20:17 PDT 2003
+//    Allow for queries to involve multiple networks.
+//
 // ****************************************************************************
 
 class ENGINE_PROXY_API EngineProxy : public RemoteProxyBase
@@ -211,7 +214,8 @@ public:
 
     void                     Interrupt();
 
-    void                     Query(const int, const QueryAttributes *, 
+    void                     Query(const std::vector<int> &,
+                                   const QueryAttributes *, 
                                    QueryAttributes &);
 
     void                     ReleaseData(const int);

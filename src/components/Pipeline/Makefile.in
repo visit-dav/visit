@@ -156,6 +156,9 @@
 #    Hank Childs, Wed Sep 10 07:56:10 PDT 2003
 #    Added avtDatabaseWriter.
 #
+#    Hank Childs, Fri Oct  3 11:10:29 PDT 2003
+#    Added avtCurveConstructorFilter.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -253,6 +256,7 @@ PublicFilters_src= \
   PublicFilters/avtContourFilter.C \
   PublicFilters/avtCoordSystemConvert.C \
   PublicFilters/avtCurrentExtentFilter.C \
+  PublicFilters/avtCurveConstructorFilter.C \
   PublicFilters/avtFacelistFilter.C \
   PublicFilters/avtFeatureEdgesFilter.C \
   PublicFilters/avtGhostZoneAndFacelistFilter.C \
