@@ -7,7 +7,7 @@
 #if defined(_WIN32)
 #include <windows.h>
 #endif
-#include <GL/gl.h>
+
 #include <float.h>
 
 #include <vtkTriangulationTables.h>
@@ -96,15 +96,23 @@ BoundingBoxContourer::CalculateCase(float value)
 //  Arguments:
 //    value      the current contouring value
 //
+//  Return Arguments:
+//    ntriangles   the final number of triangles
+//    tr,ts,tt     the texture coordinates of each node
+//    vx,vy,vz     the vertex coordinates of each node
+//
 //  Programmer:  Jeremy Meredith
 //  Creation:    October  2, 2003
 //
+//  Modifications:
+//    Jeremy Meredith, Fri Oct 10 16:23:29 PDT 2003
+//    Modified the ContourTriangles to return the triangles through arguments.
+//
 // ****************************************************************************
-//
-//   Contour as individual triangles
-//
 void
-BoundingBoxContourer::ContourTriangles(float value)
+BoundingBoxContourer::ContourTriangles(float value, int   &ntriangles,
+                                       float *tr, float *ts, float *tt,
+                                       float *vx, float *vy, float *vz)
 {
     int *casepointer;
 
@@ -118,10 +126,18 @@ BoundingBoxContourer::ContourTriangles(float value)
         {
             int edge = *casepointer++;
             Coord c  = GetEdgeIsoCoord(edge, value);
-            glTexCoord3f(c.r,c.s,c.t);
-            glVertex3f(c.x,c.y,c.z);
+
+            tr[triangle*3 + node] = c.r;
+            ts[triangle*3 + node] = c.s;
+            tt[triangle*3 + node] = c.t;
+
+            vx[triangle*3 + node] = c.x;
+            vy[triangle*3 + node] = c.y;
+            vz[triangle*3 + node] = c.z;
         }
         triangle++;
     }
+
+    ntriangles = triangle;
 }
 

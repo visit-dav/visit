@@ -199,6 +199,9 @@ avtSurfaceFilter::Equivalent(const AttributeGroup *a)
 //    vtkScalars has been deprecated in VTK 4.0, use vtkDataArray 
 //    and vtkFloatArray instead.
 //
+//    Kathleen Bonnell, Fri Oct 10 10:48:24 PDT 2003
+//    Preserve original-cell information if present in input dataset. 
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -296,6 +299,14 @@ avtSurfaceFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
         // remove ghost-point data possibly set by cd2pd filter.
         outUG->GetPointData()->RemoveArray("vtkGhostLevels");
     }
+    // We want to preserve original-cell information, if present.
+    vtkDataArray *oc = inDS->GetCellData()->GetArray("avtOriginalCellNumbers");
+    if (oc)
+    {
+        outUG->GetCellData()->AddArray(oc);
+        // remove the array possibly set by cd2pd filter.
+        outUG->GetPointData()->RemoveArray("avtOriginalCellNumbers");
+    }
 
     outScalars->Delete();
 
@@ -378,6 +389,9 @@ avtSurfaceFilter::SkewTheValue(const double val)
 //    Hank Childs, Tue Sep  4 16:14:49 PDT 2001
 //    Reflect new interface for avtDataAttributes.
 //
+//    Kathleen Bonnell, Fri Oct 10 10:48:24 PDT 2003
+//    Set PointsWereTransformed to true. 
+//
 // ****************************************************************************
 
 void
@@ -386,6 +400,7 @@ avtSurfaceFilter::RefashionDataObjectInfo(void)
     GetOutput()->GetInfo().GetValidity().InvalidateSpatialMetaData();
     GetOutput()->GetInfo().GetAttributes().SetSpatialDimension(3);
     GetOutput()->GetInfo().GetAttributes().SetCentering(AVT_NODECENT);
+    GetOutput()->GetInfo().GetValidity().SetPointsWereTransformed(true);
 }
 
 
@@ -485,6 +500,31 @@ avtSurfaceFilter::PreExecute(void)
         CalculateScaleValues(dataExtents, spatialExtents);
     }
 }
+
+
+// ****************************************************************************
+//  Method: avtSurfaceFilter::PostExecute
+//
+//  Purpose:
+//    Send an inverse transform that will take the output points of this 
+//    filter and transform them back to their original state.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   October 10, 2003
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtSurfaceFilter::PostExecute(void)
+{
+    // Create a transform that will drop the z-coordinate created by
+    // this filter.
+    double tform[16] = {1.,0.,0.,0.,0.,1.,0.,0.,0.,0.,0.,0.,0.,0.,0.,1.};
+    GetOutput()->GetInfo().GetAttributes().SetTransform(tform);
+}
+
 
 // ****************************************************************************
 //  Method: avtSurfaceFilter::CalculateScaleValues

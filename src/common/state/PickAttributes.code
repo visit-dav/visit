@@ -287,6 +287,7 @@ PickAttributes::PrepareForNewPick()
     dimension       = -1;
     pickPoint[0] = pickPoint[1] = pickPoint[2] = 0;
     cellPoint[0] = cellPoint[1] = cellPoint[2] = 0;
+    nodePoint[0] = nodePoint[1] = nodePoint[2] = 0;
     needTransformMessage = false;
 
     if (!incidentElements.empty())

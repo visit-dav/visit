@@ -9,6 +9,8 @@
 #endif
 #include <GL/gl.h>
 
+#include <visit-config.h>
+
 #include <vtkDataSet.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkCamera.h>
@@ -93,6 +95,14 @@ avtOpenGL3DTextureVolumeRenderer::~avtOpenGL3DTextureVolumeRenderer()
 //  Creation:    October  1, 2003
 //
 //  Modifications:
+//    Jeremy Meredith, Fri Oct 10 12:39:38 PDT 2003
+//    Added check for the (new) HAVE_GL_TEX_IMAGE_3D flag.
+//    Also, unconditionally enable it if avtOpenGL3DTextureVolumeRenderer
+//    has been redefined, because this means we're doing Mesa, and Mesa
+//    always supports 3D texturing.
+//
+//    Jeremy Meredith, Fri Oct 10 16:29:31 PDT 2003
+//    Made it work with Mesa again.
 //
 // ****************************************************************************
 void
@@ -106,6 +116,8 @@ avtOpenGL3DTextureVolumeRenderer::Render(vtkRectilinearGrid *grid,
                                          float *gx, float *gy, float *gz,
                                          float *gmn)
 {
+#if defined(HAVE_GL_TEX_IMAGE_3D) || defined(avtOpenGL3DTextureVolumeRenderer)
+
     // Get the transfer function
     int ncolors=256;
     int nopacities=256;
@@ -388,10 +400,22 @@ avtOpenGL3DTextureVolumeRenderer::Render(vtkRectilinearGrid *grid,
         ns = 1;
     if (ns > 500)
         ns = 500;
+
+    float tr[15], ts[15], tt[15];
+    float vx[15], vy[15], vz[15];
+    int   ntriangles;
     for (int z=0; z<ns; z++)
     {
         float value = (float(z)+0.5)/float(ns);
-        bbox.ContourTriangles(minz + dist*value);
+
+        bbox.ContourTriangles(minz + dist*value,
+                              ntriangles, tr, ts, tt, vx, vy, vz);
+
+        for (int t=0; t<ntriangles*3; t++)
+        {
+            glTexCoord3f(tr[t], ts[t], tt[t]);
+            glVertex3f(vx[t], vy[t], vz[t]);
+        }
     }
     glEnd();
 
@@ -403,6 +427,7 @@ avtOpenGL3DTextureVolumeRenderer::Render(vtkRectilinearGrid *grid,
     opac->Delete();
     data->Delete();
     camera->Delete();
+#endif
 }
 
 

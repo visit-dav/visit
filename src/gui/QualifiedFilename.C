@@ -1,6 +1,7 @@
 #include <QualifiedFilename.h>
 #include <visit-config.h>
 #include <Utility.h>
+#include <algorithm>
 
 // ****************************************************************************
 // Method: QualifiedFilename::QualifiedFilename
@@ -408,4 +409,52 @@ QualifiedFilename::PathAndFile() const
     temp += filename;
 
     return temp;
+}
+
+// ****************************************************************************
+// Function: CombineQualifiedFilenameVectors
+//
+// Purpose: 
+//   Combines two QualifiedFilenameVector objects into a single
+//   QualifiedFilenameVector object while making sure that there are no
+//   duplicates.
+//
+// Arguments:
+//   a : The first filename vector.
+//   b : The second filename vector.
+//
+// Returns:    A QualifiedFilenameVector object that contains both a,b.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Oct 10 10:33:55 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+QualifiedFilenameVector
+CombineQualifiedFilenameVectors(const QualifiedFilenameVector &a,
+    const QualifiedFilenameVector &b)
+{
+    int i;
+    QualifiedFilenameVector retval;
+
+    // Add the elements from a if they're not in retval.
+    for(i = 0; i < a.size(); ++i)
+    {
+        if(std::find(retval.begin(), retval.end(), a[i]) == retval.end())
+            retval.push_back(a[i]);
+    }
+
+    // Add the elements from b if they're not in retval.
+    for(i = 0; i < b.size(); ++i)
+    {
+        if(std::find(retval.begin(), retval.end(), b[i]) == retval.end())
+            retval.push_back(b[i]);
+    }
+
+    // Sort the final vector of filenames.
+    std::sort(retval.begin(), retval.end());
+
+    return retval;
 }

@@ -43,6 +43,11 @@
     <Field name="elementType" label="elementType" type="enum" subtype="ElementType">
       Zone
     </Field>
+    <Field name="nodePoint" label="nodePoint" type="floatArray" length="3">
+      0.000000
+      0.000000
+      0.000000
+    </Field>
     <Function name="Reset" user="true" member="true">
     </Function>
     <Function name="PrintSelf" user="true" member="true">

@@ -16,6 +16,11 @@
 // gcc-3.1.
 #include <PF3DFileFormat.h>
 
+#ifdef PARALLEL
+#include <mpi.h>
+#include <avtParallel.h>
+#endif
+
 // ****************************************************************************
 // Method: PF3DFileFormat::CreateInterface
 //
@@ -38,7 +43,11 @@
 // Creation:   Tue Sep 16 11:35:20 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Sep 19 14:39:30 PST 2003
+//   I changed how the file format is identified in parallel so that only
+//   one file is opened instead of having each processor trying to open
+//   the first file.
+//
 // ****************************************************************************
 
 avtFileFormatInterface *
@@ -47,11 +56,37 @@ PF3DFileFormat::CreateInterface(PDBFileObject *pdb, const char *const *filenames
 {
     avtFileFormatInterface *inter = 0;
 
+#ifdef PARALLEL
+    PF3DFileFormat *ff = 0;
+    int fileIsPF3D = 0;
+
+    if(PAR_Rank() == 0)
+    {
+        TRY
+        {
+            // Create a PF3D file that uses the pdb file but does not own it.
+            ff = new PF3DFileFormat(pdb);
+            fileIsPF3D = ff->Identify() ? 1 : 0;
+        }
+        CATCH(VisItException)
+        {
+            fileIsPF3D = 0;
+        }
+        ENDTRY
+    }
+    else
+        ff = new PF3DFileFormat(filenames[0]);
+
+    // Make sure that all processors get the same answer.
+    BroadcastInt(fileIsPF3D);
+#else
     // Create a PF3D file that uses the pdb file but does not own it.
     PF3DFileFormat *ff = new PF3DFileFormat(pdb);
+    bool fileIsPF3D = ff->Identify();
+#endif
 
     // If the file format is a PF3D file then
-    if(ff->Identify())
+    if(fileIsPF3D)
     {
         //
         // Create an array of STMD file formats since that's what the PF3D
@@ -125,12 +160,16 @@ PF3DFileFormat::CreateInterface(PDBFileObject *pdb, const char *const *filenames
 // Creation:   Tue Sep 16 11:38:00 PDT 2003
 //
 // Modifications:
+//   Brad Whitlock, Fri Sep 19 14:41:23 PST 2003
+//   Added the initialized flag.
 //   
 // ****************************************************************************
 
 PF3DFileFormat::PF3DFileFormat(const char *filename) : PDBReader(filename),
     avtSTSDFileFormat(filename)
 {
+    initialized = false;
+
     dx = dy = dz = 0.;
     lx = ly = lz = 0.;
     nx = ny = nz = 0;
@@ -156,12 +195,16 @@ PF3DFileFormat::PF3DFileFormat(const char *filename) : PDBReader(filename),
 // Creation:   Tue Sep 16 11:38:00 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Sep 19 14:41:23 PST 2003
+//   Added the initialized flag.
+//
 // ****************************************************************************
 
 PF3DFileFormat::PF3DFileFormat(PDBFileObject *p) : PDBReader(p),
     avtSTSDFileFormat(p->GetName().c_str())
 {
+    initialized = false;
+
     dx = dy = dz = 0.;
     lx = ly = lz = 0.;
     nx = ny = nz = 0;
@@ -256,7 +299,30 @@ PF3DFileFormat::IdentifyFormat()
         pdb->GetInteger("mp_size", &nDomains);
     }
 
+    // Indicate that the file format has been initialized.
+    initialized = true;
+
     return validFile;
+}
+
+// ****************************************************************************
+// Method: PF3DFileFormat::Initialize
+//
+// Purpose: 
+//   Opens the file and gets required values from it.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Sep 19 14:42:40 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+PF3DFileFormat::Initialize()
+{
+    if(!initialized)
+        Identify();
 }
 
 // ****************************************************************************
@@ -320,6 +386,9 @@ PF3DFileFormat::GetType()
 //   Brad Whitlock, Tue Sep 16 15:10:08 PST 2003
 //   Refactored into the PF3DFileFormat class.
 //
+//   Brad Whitlock, Fri Sep 19 14:43:31 PST 2003
+//   Added call to Initialize.
+//
 // ****************************************************************************
 
 void
@@ -331,6 +400,9 @@ PF3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     int   dims[3], first[3], last[3];
     float extents[6];
     bool  ghostPresent;
+
+    // Make sure that the file is open.
+    Initialize();
 
     //
     // Check for the hydro mesh (fluid).
@@ -441,7 +513,9 @@ PF3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 // Creation:   Thu Oct 10 08:43:51 PDT 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Sep 19 14:44:05 PST 2003
+//   Added a call to Initialize.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -450,6 +524,11 @@ PF3DFileFormat::GetMesh(const char *meshName)
     int   dims[3], first[3], last[3];
     float extents[6];
     bool  ghostPresent;
+
+    debug4 << "PF3DFileFormat::GetMesh: meshName=" << meshName << endl;
+
+    // Make sure the file format it initialized.
+    Initialize();
 
     //
     // Get the mesh information.
@@ -712,7 +791,9 @@ PF3DFileFormat::GetMeshInfo(const char *meshName, float extents[6],
 // Creation:   Thu Oct 10 08:53:09 PDT 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Sep 19 14:45:14 PST 2003
+//   I added a call to Initialize.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -721,9 +802,11 @@ PF3DFileFormat::GetVar(const char *varName)
     char *fileVar = NULL;
     char *meshName = "fluid";
     vtkFloatArray *retval = NULL;
-#if 0
-// THIS NEEDS TO BE PORTED SO IT USES THE NEW CLASS HIERARCHY.
 
+    debug4 << "PF3DFileFormat::GetVar: varName=" << varName << endl;
+
+    // Make sure the file format it initialized.
+    Initialize();
 
     //
     // Determine the file variable and the mesh.
@@ -774,6 +857,8 @@ PF3DFileFormat::GetVar(const char *varName)
         bool  ghostPresent;
         GetMeshInfo(meshName, extents, nodeDims, ghostPresent, first, last);
 
+        PDBfile *pdbPtr = pdb->filePointer();
+
         if(strcmp(meshName, "fluid") == 0)
         {
             // The variables are zonal so figure out the number of cells and
@@ -797,12 +882,12 @@ PF3DFileFormat::GetVar(const char *varName)
                 //
                 char pointer_def[100];
                 sprintf(pointer_def, "float var[%d]", nExpectedCells);
-                PD_defstr(pdb, "pointer", pointer_def, LAST);
+                PD_defstr(pdbPtr, "pointer", pointer_def, LAST);
 
                 //
                 // Try to read the data from the PDB file.
                 //
-                if(PD_read(pdb, fileVar, data) == TRUE)
+                if(PD_read(pdbPtr, fileVar, data) == TRUE)
                 {
                     //
                     // Copy the parts of the data that we need. We don't just
@@ -894,10 +979,10 @@ PF3DFileFormat::GetVar(const char *varName)
                 // library to convert the data from the file.
                 char pointer_def[100];
                 sprintf(pointer_def, "float var[%d]", nNodes*2);
-                PD_defstr(pdb, "pointer", pointer_def, LAST);
+                PD_defstr(pdbPtr, "pointer", pointer_def, LAST);
 
                 // Try to read the data from the PDB file.
-                if(PD_read(pdb, fileVar, data) == TRUE)
+                if(PD_read(pdbPtr, fileVar, data) == TRUE)
                 {
                     // Process the data array.
                     float *var2 = var;
@@ -935,6 +1020,6 @@ PF3DFileFormat::GetVar(const char *varName)
             }
         }
     }
-#endif
+
     return retval;
 }

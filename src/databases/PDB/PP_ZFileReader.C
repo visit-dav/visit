@@ -7,6 +7,7 @@
 #include <vtkFloatArray.h>
 #include <vtkIntArray.h>
 #include <vtkMatrix4x4.h>
+#include <vtkPolyData.h>
 #include <vtkStructuredGrid.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkUnstructuredGrid.h>
@@ -840,10 +841,132 @@ PP_ZFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                << endl;
     }
 
+    //
+    // Add the ray mesh metadata if there are ray variables.
+    //
+    AddRayMetaData(md);
+
     // Set a flag indicating that the varStorage map has been initialized.
-    varStorageInitialized = false;
+    varStorageInitialized = true;
 
     debug4 << "PP_ZFileReader::PopulateDatabaseMetaData: end" << endl;
+}
+
+// ****************************************************************************
+// Method: PP_ZFileReader::AddRayMetaData
+//
+// Purpose: 
+//   Adds ray mesh variables to the metadata.
+//
+// Arguments:
+//   md : The metadata object to which we might add more metadata.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Sep 26 10:37:22 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+PP_ZFileReader::AddRayMetaData(avtDatabaseMetaData *md)
+{
+    const int maxRayVars = 6;
+    const char *vars[] = {"raypr", "raypz", "kptryp", "mxp", "raypx", "raypy"};
+    const char *suffixes[] = {"@lzr", "@history"};
+    const char *suffix = suffixes[0];
+    stringVector realVars;
+
+    //
+    // Try and determine the variable suffix.
+    //
+    std::string var = std::string(vars[0]) + suffix;
+    if(!pdb->SymbolExists(var.c_str()))
+    {
+        suffix = suffixes[1];
+        var = std::string(vars[0]) + suffix;
+        if(!pdb->SymbolExists(var.c_str()))
+        {
+            debug4 << "The first ray variable could not be found in the file so "
+                   << "no ray meshes or variables will be added." << endl;
+            return;
+        }
+    }
+
+    //
+    // Look for the arrays required to have a ray mesh.
+    //
+    bool haveRayVars = true;
+    bool haveRay2d = false;
+    bool haveRay3d = false;
+    int  i;
+    for(i = 0; i < maxRayVars; ++i)
+    {
+        realVars.push_back(std::string(vars[i]) + suffix);
+        haveRayVars &= pdb->SymbolExists(realVars[i].c_str());
+        if(i == 3)
+            haveRay2d = haveRayVars;
+        else if(i == 5)
+            haveRay3d = haveRayVars;
+    }
+
+    int nRayVars = (haveRay3d ? maxRayVars : (haveRay2d ? maxRayVars-2 : 0));
+    for(i = 0; i < nRayVars; ++i)
+    {
+        if(varStorage.find(vars[i]) == varStorage.end())
+        {
+            VariableData *v = new VariableData(realVars[i]);
+            varStorage[vars[i]] = v;
+        }
+    }
+
+    //
+    // Check to see if the power array is available.
+    //
+    const int cellOrigin = 1;
+    std::string rayPowerVar = std::string("rayppow") + suffix;
+    bool haveRayPower = pdb->SymbolExists(rayPowerVar.c_str());
+
+    //
+    // If we had all of the 2d ray arrays, add a 2d ray mesh. 
+    //
+    if(haveRay2d)
+    {
+        avtMeshMetaData *mmd = new avtMeshMetaData("ray", 1, 0, cellOrigin,
+            2, 1, AVT_UNSTRUCTURED_MESH);
+        mmd->hasSpatialExtents = false;
+        mmd->cellOrigin = cellOrigin;
+        md->Add(mmd);
+
+        // Add the variables to the metadata and create varStorage
+        // entries for them.
+        if(haveRayPower)
+        {
+            md->Add(new avtScalarMetaData("ray/power", "ray", AVT_NODECENT));
+            varStorage["power"] = new VariableData(rayPowerVar);
+            md->Add(new avtScalarMetaData("ray/rel_power", "ray", AVT_NODECENT));
+            varStorage["rel_power"] = new VariableData(rayPowerVar);
+        }
+    }
+
+    //
+    // If we had all of the 3d ray arrays, add a 3d ray mesh. 
+    //
+    if(haveRay3d)
+    {
+        avtMeshMetaData *mmd = new avtMeshMetaData("ray3d", 1, 0, cellOrigin,
+            3, 1, AVT_UNSTRUCTURED_MESH);
+        mmd->hasSpatialExtents = false;
+        mmd->cellOrigin = cellOrigin;
+        md->Add(mmd);
+
+        // Add the variables to the metadata.
+        if(haveRayPower)
+        {
+            md->Add(new avtScalarMetaData("ray3d/power", "ray3d", AVT_NODECENT));
+            md->Add(new avtScalarMetaData("ray3d/rel_power", "ray3d", AVT_NODECENT));
+        }
+    }
 }
 
 // ****************************************************************************
@@ -988,6 +1111,9 @@ PP_ZFileReader::GetIreg(int state)
 //   Brad Whitlock, Wed Sep 17 12:03:32 PDT 2003
 //   I made it call InitializeVarStorage.
 //
+//   Brad Whitlock, Fri Sep 26 11:04:27 PDT 2003
+//   Added support for a ray mesh.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -1001,6 +1127,13 @@ PP_ZFileReader::GetMesh(int state, const char *var)
     //
     InitializeVarStorage();
 
+    //
+    // Try getting the ray mesh.
+    //
+    vtkDataSet *retval = 0;
+    if((retval = GetRayMesh(state, var)) != 0)
+        return retval;
+   
     //
     // Read the ireg variable, which tells us which are ghost zones.
     //
@@ -1125,7 +1258,6 @@ PP_ZFileReader::GetMesh(int state, const char *var)
         }
     }
 
-    vtkDataSet *retval = 0;
     if(strcmp(var, "revolved_mesh") == 0)
     {
         //
@@ -1165,7 +1297,7 @@ PP_ZFileReader::GetMesh(int state, const char *var)
         // Revolve the unstructured grid.
         //
         double axis[3] = {1., 0., 0.};
-        retval = RevolveDataSet(ugrid, axis, 0., 360., revolutionSteps);
+        retval = RevolveDataSet(ugrid, axis, 0., 360., revolutionSteps, true);
         ugrid->Delete();
     }
     else
@@ -1192,6 +1324,212 @@ PP_ZFileReader::GetMesh(int state, const char *var)
         CreateGhostZones(ireg, sgrid);
         retval = sgrid;
     }
+
+    return retval;
+}
+
+// ****************************************************************************
+// Method: PP_ZFileReader::GetRayMesh
+//
+// Purpose: 
+//   Returns a pointer to the ray mesh or 0 if the ray mesh was not requested.
+//
+// Arguments:
+//   mesh : The name of the ray mesh to return.
+//
+// Returns:    A pointer to the requested ray mesh.
+//
+// Note:       Recurses for the revolved ray mesh.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Sep 26 11:00:41 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+vtkDataSet *
+PP_ZFileReader::GetRayMesh(int state, const char *mesh)
+{
+    vtkDataSet *retval = 0;
+
+    if(strcmp(mesh, "ray") == 0)
+        retval = ConstructRayMesh(state, false);
+    else if(strcmp(mesh, "ray3d") == 0)
+        retval = ConstructRayMesh(state, true);
+    
+    return retval;
+}
+
+// ****************************************************************************
+// Method: PP_ZFileReader::ConstructRayMesh
+//
+// Purpose: 
+//   Returns a 2d or 3d ray mesh.
+//
+// Arguments:
+//   state : The time state for which we're returning the ray mesh.
+//   is3d  : Whether we want a 3d mesh or a 2d mesh.
+//
+// Returns:    vtkPolyData containing the mesh.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Oct 6 17:50:51 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+vtkDataSet *
+PP_ZFileReader::ConstructRayMesh(int state, bool is3d)
+{
+    vtkDataSet *retval = 0;
+
+    TRY
+    {
+        if(is3d)
+        {
+            ReadVariable("raypx");
+            ReadVariable("raypy");
+        }
+        else
+            ReadVariable("raypr");
+        ReadVariable("raypz");
+        ReadVariable("kptryp");
+        ReadVariable("mxp");
+
+        VariableData *raypr_data = 0;
+        VariableData *raypx_data = 0;
+        VariableData *raypy_data = 0;
+        VariableData *raypz_data = 0;
+        VariableData *kptryp_data = varStorage["kptryp"];
+        VariableData *mxp_data = varStorage["mxp"];
+
+        bool haveVars;
+        if(is3d)
+        {
+            raypx_data = varStorage["raypx"];
+            raypy_data = varStorage["raypy"];
+            raypz_data = varStorage["raypz"];
+            haveVars = raypx_data->dataType == DOUBLEARRAY_TYPE &&
+                       raypy_data->dataType == DOUBLEARRAY_TYPE &&
+                       raypz_data->dataType == DOUBLEARRAY_TYPE &&
+                       kptryp_data->dataType == INTEGERARRAY_TYPE &&
+                       mxp_data->dataType == INTEGERARRAY_TYPE;
+        }
+        else
+        {
+            raypr_data = varStorage["raypr"];
+            raypz_data = varStorage["raypz"];
+            haveVars = raypr_data->dataType == DOUBLEARRAY_TYPE &&
+                       raypz_data->dataType == DOUBLEARRAY_TYPE &&
+                       kptryp_data->dataType == INTEGERARRAY_TYPE &&
+                       mxp_data->dataType == INTEGERARRAY_TYPE;
+        }
+
+        if(haveVars)
+        {
+            const double *raypr = 0;
+            const double *raypx = 0;
+            const double *raypy = 0;
+            const double *raypz = 0;
+            const int *kptryp = (const int *)kptryp_data->data;
+            const int *mxp = (const int *)mxp_data->data;
+
+            // Add time offsets to the arrays so we're looking at the right
+            // time state.
+#define ADD_TIME_OFFSET(P, ObjPtr) \
+            P += (state < nCycles) ? (state * ObjPtr->nTotalElements / nCycles) : 0;
+
+            ADD_TIME_OFFSET(kptryp, kptryp_data);
+            ADD_TIME_OFFSET(mxp, mxp_data);
+
+            if(is3d)
+            {
+                raypx = (const double *)raypx_data->data;
+                raypy = (const double *)raypy_data->data;
+                raypz = (const double *)raypz_data->data;
+
+                ADD_TIME_OFFSET(raypx, raypx_data);
+                ADD_TIME_OFFSET(raypy, raypy_data);
+                ADD_TIME_OFFSET(raypz, raypz_data);
+            }
+            else
+            {
+                raypr = (const double *)raypr_data->data;
+                raypz = (const double *)raypz_data->data;
+                ADD_TIME_OFFSET(raypr, raypr_data);
+                ADD_TIME_OFFSET(raypz, raypz_data);
+            }
+
+            int nrr, npts = 0;
+            int nRays = mxp_data->nTotalElements / nCycles;
+            for(int nrr = 0; nrr < nRays; ++nrr)
+                npts += mxp[nrr];
+
+            //
+            // Populate the coordinates for the ray mesh.
+            //
+            vtkPoints *points = vtkPoints::New();
+            points->SetNumberOfPoints(npts);
+            vtkPolyData *pd = vtkPolyData::New();
+            pd->SetPoints(points);
+            pd->Allocate(npts);
+            points->Delete();
+
+            float *pts = (float *)points->GetVoidPointer(0);
+            float *tmp = pts;
+            vtkIdType vertices[2];
+            int pointIndex = 0;
+
+            for(nrr = 0; nrr < nRays; ++nrr)
+            {
+                if(mxp[nrr] != 0)
+                {
+                    int i1 = kptryp[nrr];
+                    int i2 = kptryp[nrr] + mxp[nrr];
+
+                    for(int i = i1; i < i2; ++i)
+                    {
+                        if(is3d)
+                        {
+                            *tmp++ = float(raypz[i]);
+                            *tmp++ = float(raypx[i]);
+                            *tmp++ = float(raypy[i]);
+                        }
+                        else
+                        {
+                            *tmp++ = float(raypz[i]);
+                            *tmp++ = float(raypr[i]);
+                            *tmp++ = 0.f;
+                        }
+
+                        if(i > i1)
+                        {
+                            vertices[0] = pointIndex-1;
+                            vertices[1] = pointIndex;
+                            pd->InsertNextCell(VTK_LINE, 2, vertices);
+                        }
+
+                        ++pointIndex;
+                    }
+                }
+            }
+
+            retval = pd;
+        }
+        else
+        {
+            debug4 << "Some arrays were not the expected types!" << endl;
+        }
+    }
+    CATCH(InvalidVariableException)
+    {
+        debug4 << "Could not read one of the required ray arrays." << endl;
+    }
+    ENDTRY
 
     return retval;
 }
@@ -1484,6 +1822,114 @@ PP_ZFileReader::GetUnstructuredCellCount()
 }
 
 // ****************************************************************************
+// Method: PP_ZFileReader::GetRayVar
+//
+// Purpose: 
+//   Gets a variable that is defined on a ray mesh.
+//
+// Arguments:
+//   state  : The time state for which we want the data.
+//   varStr : The variable to return.
+//
+// Returns:    A vtkDataArray object containing the variable data.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Oct 6 18:00:19 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+vtkDataArray *
+PP_ZFileReader::GetRayVar(int state, const std::string &varStr)
+{
+    vtkDataArray *retval = 0;
+
+    //
+    // Read in the the required variables.
+    //
+    ReadVariable(varStr);
+    ReadVariable("kptryp");
+    ReadVariable("mxp");
+
+    VariableData *kptryp_data = varStorage["kptryp"];
+    VariableData *mxp_data = varStorage["mxp"];
+    VariableData *var_data = varStorage[varStr];
+
+    if(kptryp_data->dataType == INTEGERARRAY_TYPE &&
+       mxp_data->dataType == INTEGERARRAY_TYPE)
+    {
+        const int *kptryp = (const int *)kptryp_data->data;
+        const int *mxp = (const int *)mxp_data->data;
+        int nrr, npts = 0;
+
+        // Add an offset the pointers so they are at the desired time state.
+        ADD_TIME_OFFSET(kptryp, kptryp_data);
+        ADD_TIME_OFFSET(mxp, mxp_data);
+
+        // Determine the number of points in the rays.
+        int nRays = mxp_data->nTotalElements / nCycles;
+        for(nrr = 0; nrr < nRays; ++nrr)
+            npts += mxp[nrr];
+
+        //
+        // Create the data array
+        //
+        bool relative = (varStr == "rel_power");
+        if(var_data->dataType == DOUBLEARRAY_TYPE)
+        {
+            vtkDoubleArray *dscalars = vtkDoubleArray::New();
+            dscalars->SetNumberOfTuples(npts);
+            retval = dscalars;
+            double *ptr = (double *)dscalars->GetVoidPointer(0);
+            const double *dataPointer = (const double *)var_data->data;
+
+            // Add an offset the data pointer so they are at the desired
+            // time state.
+            ADD_TIME_OFFSET(dataPointer, var_data);
+
+            for(nrr = 0; nrr < nRays; ++nrr)
+            {
+                if(mxp[nrr] != 0)
+                {
+                    int i1 = kptryp[nrr];
+                    int i2 = kptryp[nrr] + mxp[nrr];
+
+                    if(relative)
+                    {
+                        // The power is relative to the value of the power
+                        // at the start of the ray so divide each value
+                        // by the first value so it is normalized.
+                        double firstVal = dataPointer[i1];
+                        if(firstVal == 0.)
+                            firstVal = 1.;
+                        for(int i = i1; i < i2; ++i)
+                            *ptr++ = (dataPointer[i] / firstVal);
+                    }
+                    else
+                    {
+                        for(int i = i1; i < i2; ++i)
+                            *ptr++ = dataPointer[i];
+                    }
+                }
+            }
+        }
+        else
+        {
+            debug4 << "The ray data is not of a supported type." << endl;
+        }
+    }
+    else
+    {
+        debug4 << "Some variables were not of the right type!" << endl;
+    }
+    
+    return retval;
+}
+
+// ****************************************************************************
 // Method: PP_ZFileReader::GetVar
 //
 // Purpose: 
@@ -1506,6 +1952,9 @@ PP_ZFileReader::GetUnstructuredCellCount()
 //   Brad Whitlock, Wed Sep 17 12:03:50 PDT 2003
 //   I made it call InitializeVarStorage.
 //
+//   Brad Whitlock, Mon Oct 6 17:54:30 PST 2003
+//   I added support for ray variables.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -1527,6 +1976,8 @@ PP_ZFileReader::GetVar(int state, const char *var)
     std::string meshName("mesh/");
     std::string logical("logical_mesh/");
     std::string revolved("revolved_mesh/");
+    std::string ray("ray/");
+    std::string ray3d("ray3d/");
     bool wantRevolvedMesh = false;
     if(varStr.substr(0, meshName.size()) == meshName)
         varStr = varStr.substr(meshName.size());
@@ -1536,6 +1987,16 @@ PP_ZFileReader::GetVar(int state, const char *var)
     {
         varStr = varStr.substr(revolved.size());
         wantRevolvedMesh = true;
+    }
+    else if(varStr.substr(0, ray.size()) == ray)
+    {
+        varStr = varStr.substr(ray.size());
+        return GetRayVar(state, varStr);
+    }
+    else if(varStr.substr(0, ray3d.size()) == ray3d)
+    {
+        varStr = varStr.substr(ray3d.size());
+        return GetRayVar(state, varStr);
     }
 
     //
@@ -1943,171 +2404,6 @@ PP_ZFileReader::GetAuxiliaryData(int state, const char *var, const char *type,
 }
 
 // ****************************************************************************
-//  Method: PP_ZFileReader::RevolveDataSet
-//
-//  Purpose:
-//      Sends the specified input and output through the Revolve filter.
-//
-//  Arguments:
-//      in_ds      The input dataset.
-//      <unused>   The domain number.
-//      <unused>   The label.
-//
-//  Returns:       The output dataset.
-//
-//  Programmer: childs -- generated by xml2info
-//  Creation:   Wed Dec 11 11:31:52 PDT 2002
-//
-//  Modifications:
-//     Brad Whitlock, Wed Aug 6 12:14:51 PDT 2003
-//     I stole this code from avtRevolveFilter in the Revolve operator.
-//
-// ****************************************************************************
-
-vtkDataSet *
-PP_ZFileReader::RevolveDataSet(vtkDataSet *in_ds, const double *axis,
-    double start_angle, double stop_angle, int nsteps)
-{
-    int   i, j;
-
-    //
-    // Set up our VTK structures.
-    //
-    vtkMatrix4x4 *mat = vtkMatrix4x4::New();
-    vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
-    vtkPoints *pts = vtkPoints::New();
-    int npts = in_ds->GetNumberOfPoints();
-    int ncells = in_ds->GetNumberOfCells();
-    int n_out_pts = npts*nsteps;
-    pts->SetNumberOfPoints(n_out_pts);
-    ugrid->SetPoints(pts);
-
-    //
-    // Create the points for each timestep.
-    //
-    int niter = (fabs(stop_angle-start_angle-360.) < 0.001 ? nsteps-1 : nsteps);
-    float *ptr = (float *) pts->GetVoidPointer(0);
-    for (i = 0 ; i < niter ; i++)
-    {
-        double angle = ((stop_angle-start_angle)*i)/(nsteps-1) + start_angle;
-        GetRotationMatrix(angle, axis, mat);
-        for (j = 0 ; j < npts ; j++)
-        {
-            float pt[4];
-            in_ds->GetPoint(j, pt);
-            pt[3] = 1.;
-            float outpt[4];
-            mat->MultiplyPoint(pt, outpt);
-            ptr[0] = outpt[0];
-            ptr[1] = outpt[1];
-            ptr[2] = outpt[2];
-            ptr += 3;
-        }
-    }
-
-    //
-    // Now set up the connectivity.  The output will consist of revolved
-    // quads (-> hexes) and revolved triangles (-> wedges).  No special care is
-    // given to the case where an edge of a cell lies directly on the axis of
-    // revolution (ie: you get a degenerate hex, not a wedge).
-    //
-    int n_out_cells = ncells*(nsteps-1);
-    ugrid->Allocate(8*n_out_cells);
-    bool overlap_ends = (fabs(stop_angle-start_angle-360.) < 0.001);
-    for (i = 0 ; i < ncells ; i++)
-    {
-         vtkCell *cell = in_ds->GetCell(i);
-         int c = cell->GetCellType();
-         if (c != VTK_QUAD && c != VTK_TRIANGLE && c != VTK_PIXEL)
-         {
-             EXCEPTION1(InvalidCellTypeException, "anything but quads and"
-                                                  " tris.");
-         }
-         vtkIdList *list = cell->GetPointIds();
-
-         if (c == VTK_TRIANGLE)
-         {
-             int pt0 = list->GetId(0);
-             int pt1 = list->GetId(1);
-             int pt2 = list->GetId(2);
-             for (j = 0 ; j < nsteps-1 ; j++)
-             {
-                 vtkIdType wedge[6];
-                 wedge[0] = npts*j + pt0;
-                 wedge[1] = npts*j + pt1;
-                 wedge[2] = npts*j + pt2;
-                 wedge[3] = npts*(j+1) + pt0;
-                 wedge[4] = npts*(j+1) + pt1;
-                 wedge[5] = npts*(j+1) + pt2;
-                 if (j == nsteps-2 && overlap_ends)
-                 {
-                     wedge[3] = pt0;
-                     wedge[4] = pt1;
-                     wedge[5] = pt2;
-                 }
-                 ugrid->InsertNextCell(VTK_WEDGE, 6, wedge);
-             }
-         }
-         else
-         {
-             int pt0 = list->GetId(0);
-             int pt1 = list->GetId(1);
-             int pt2 = list->GetId(2);
-             int pt3 = list->GetId(3);
-             if (c == VTK_PIXEL)
-             {
-                 pt2 = list->GetId(3);
-                 pt3 = list->GetId(2);
-             }
-             for (j = 0 ; j < nsteps-1 ; j++)
-             {
-                 vtkIdType hex[6];
-                 hex[0] = npts*j + pt0;
-                 hex[1] = npts*j + pt1;
-                 hex[2] = npts*j + pt2;
-                 hex[3] = npts*j + pt3;
-                 hex[4] = npts*(j+1) + pt0;
-                 hex[5] = npts*(j+1) + pt1;
-                 hex[6] = npts*(j+1) + pt2;
-                 hex[7] = npts*(j+1) + pt3;
-                 if (j == nsteps-2 && overlap_ends)
-                 {
-                     hex[4] = pt0;
-                     hex[5] = pt1;
-                     hex[6] = pt2;
-                     hex[7] = pt3;
-                 }
-                 ugrid->InsertNextCell(VTK_HEXAHEDRON, 8, hex);
-             }
-         }
-    }
-
-    vtkCellData *incd   = in_ds->GetCellData();
-    vtkCellData *outcd  = ugrid->GetCellData();
-    outcd->CopyAllocate(incd, n_out_cells);
-    for (i = 0 ; i < n_out_cells ; i++)
-    {
-        outcd->CopyData(incd, i/(nsteps-1), i);
-    }
-    
-    vtkPointData *inpd  = in_ds->GetPointData();
-    vtkPointData *outpd = ugrid->GetPointData();
-    outpd->CopyAllocate(inpd, n_out_pts);
-    for (i = 0 ; i < n_out_pts ; i++)
-    {
-        outpd->CopyData(inpd, i%npts, i);
-    }
-    
-    //
-    // Clean up.
-    //
-    mat->Delete();
-    pts->Delete();
-
-    return ugrid;
-}
-
-// ****************************************************************************
 //  Function: GetRotationMatrix
 //
 //  Purpose:
@@ -2123,9 +2419,8 @@ PP_ZFileReader::RevolveDataSet(vtkDataSet *in_ds, const double *axis,
 //
 // ****************************************************************************
 
-void
-PP_ZFileReader::GetRotationMatrix(double angle, const double axis[3],
-    vtkMatrix4x4 *mat)
+static void
+GetRotationMatrix(double angle, const double axis[3], vtkMatrix4x4 *mat)
 {
     //
     // The game plan is to transform into a coordinate space that we are
@@ -2220,5 +2515,240 @@ PP_ZFileReader::GetRotationMatrix(double angle, const double axis[3],
     rot4->Delete();
     rot5->Delete();
 }
+
+// ****************************************************************************
+//  Function: RevolveDataSetHelper
+//
+//  Purpose:
+//      Sends the specified input and output through the Revolve filter.
+//
+//  Arguments:
+//      in_ds      The input dataset.
+//      <unused>   The domain number.
+//      <unused>   The label.
+//
+//  Returns:       The output dataset.
+//
+//  Programmer: childs -- generated by xml2info
+//  Creation:   Wed Dec 11 11:31:52 PDT 2002
+//
+//  Modifications:
+//     Brad Whitlock, Wed Aug 6 12:14:51 PDT 2003
+//     I stole this code from avtRevolveFilter in the Revolve operator.
+//
+//     Brad Whitlock, Fri Sep 26 11:04:48 PDT 2003
+//     I turned it into a template function and added support for
+//     revolving lines. I changed the code a little so there can never
+//     be uninitialized points to interfere with computing the plot bounds.
+//
+// ****************************************************************************
+
+template <class T>
+static vtkDataSet *
+RevolveDataSetHelper(T *ugrid, vtkDataSet *in_ds,
+    const double *axis, double start_angle, double stop_angle, int nsteps)
+{
+    int   i, j;
+
+    //
+    // Set up our VTK structures.
+    //
+    vtkMatrix4x4 *mat = vtkMatrix4x4::New();
+    vtkPoints *pts = vtkPoints::New();
+    int npts = in_ds->GetNumberOfPoints();
+    int ncells = in_ds->GetNumberOfCells();
+    int niter = (fabs(stop_angle-start_angle-360.) < 0.001 ? nsteps : nsteps+1);
+    int n_out_pts = npts * niter;
+    pts->SetNumberOfPoints(n_out_pts);
+    ugrid->SetPoints(pts);
+
+    //
+    // Create the points for each timestep.
+    //
+    float *ptr = (float *) pts->GetVoidPointer(0);
+    for (i = 0 ; i < niter ; i++)
+    {
+        double angle = ((stop_angle-start_angle)*i)/(niter-1) + start_angle;
+        GetRotationMatrix(angle, axis, mat);
+        for (j = 0 ; j < npts ; j++)
+        {
+            float pt[4];
+            in_ds->GetPoint(j, pt);
+            pt[3] = 1.;
+            float outpt[4];
+            mat->MultiplyPoint(pt, outpt);
+            *ptr++ = outpt[0];
+            *ptr++ = outpt[1];
+            *ptr++ = outpt[2];
+        }
+    }
+
+    //
+    // Now set up the connectivity.  The output will consist of revolved
+    // quads (-> hexes) and revolved triangles (-> wedges).  No special care is
+    // given to the case where an edge of a cell lies directly on the axis of
+    // revolution (ie: you get a degenerate hex, not a wedge).
+    //
+    int n_out_cells = ncells*(niter-1);
+    ugrid->Allocate(8*n_out_cells);
+    bool overlap_ends = (fabs(stop_angle-start_angle-360.) < 0.001);
+    for (i = 0 ; i < ncells ; i++)
+    {
+         vtkCell *cell = in_ds->GetCell(i);
+         int c = cell->GetCellType();
+         if (c != VTK_QUAD && c != VTK_TRIANGLE && c != VTK_PIXEL &&
+             c != VTK_LINE)
+         {
+             EXCEPTION1(InvalidCellTypeException, "anything but quads and"
+                                                  " tris.");
+         }
+         vtkIdList *list = cell->GetPointIds();
+
+         if (c == VTK_TRIANGLE)
+         {
+             int pt0 = list->GetId(0);
+             int pt1 = list->GetId(1);
+             int pt2 = list->GetId(2);
+             int npts_times_j = 0;
+             int npts_times_j1 = npts;
+             for (j = 0 ; j < niter-1 ; j++)
+             {
+                 vtkIdType wedge[6];
+                 wedge[0] = npts_times_j + pt0;
+                 wedge[1] = npts_times_j + pt1;
+                 wedge[2] = npts_times_j + pt2;
+                 wedge[3] = npts_times_j1 + pt0;
+                 wedge[4] = npts_times_j1 + pt1;
+                 wedge[5] = npts_times_j1 + pt2;
+                 if (j == niter-2 && overlap_ends)
+                 {
+                     wedge[3] = pt0;
+                     wedge[4] = pt1;
+                     wedge[5] = pt2;
+                 }
+                 ugrid->InsertNextCell(VTK_WEDGE, 6, wedge);
+                 npts_times_j += npts;
+                 npts_times_j1 += npts;
+             }
+         }
+         else if(c == VTK_LINE)
+         {
+             // We revolve the line to create more lines; not a surface.
+             int pt0 = list->GetId(0);
+             int pt1 = list->GetId(1);
+             int npts_times_j = 0;
+             for(j = 0; j < niter - 1; ++j)
+             {
+                 vtkIdType segment[2];
+                 segment[0] = npts_times_j + pt0;
+                 segment[1] = npts_times_j + pt1;
+                 ugrid->InsertNextCell(VTK_LINE, 2, segment);
+                 npts_times_j += npts;
+             }
+         }
+         else
+         {
+             int pt0 = list->GetId(0);
+             int pt1 = list->GetId(1);
+             int pt2 = list->GetId(2);
+             int pt3 = list->GetId(3);
+             if (c == VTK_PIXEL)
+             {
+                 pt2 = list->GetId(3);
+                 pt3 = list->GetId(2);
+             }
+             int npts_times_j = 0;
+             int npts_times_j1 = npts;
+             for (j = 0 ; j < niter-1 ; j++)
+             {
+                 vtkIdType hex[6];
+                 hex[0] = npts_times_j + pt0;
+                 hex[1] = npts_times_j + pt1;
+                 hex[2] = npts_times_j + pt2;
+                 hex[3] = npts_times_j + pt3;
+                 hex[4] = npts_times_j1 + pt0;
+                 hex[5] = npts_times_j1 + pt1;
+                 hex[6] = npts_times_j1 + pt2;
+                 hex[7] = npts_times_j1 + pt3;
+                 if (j == niter-2 && overlap_ends)
+                 {
+                     hex[4] = pt0;
+                     hex[5] = pt1;
+                     hex[6] = pt2;
+                     hex[7] = pt3;
+                 }
+                 ugrid->InsertNextCell(VTK_HEXAHEDRON, 8, hex);
+                 npts_times_j += npts;
+                 npts_times_j1 += npts;
+             }
+         }
+    }
+
+    vtkCellData *incd   = in_ds->GetCellData();
+    vtkCellData *outcd  = ugrid->GetCellData();
+    outcd->CopyAllocate(incd, n_out_cells);
+    for (i = 0 ; i < n_out_cells ; i++)
+    {
+        outcd->CopyData(incd, i/(niter-1), i);
+    }
+    
+    vtkPointData *inpd  = in_ds->GetPointData();
+    vtkPointData *outpd = ugrid->GetPointData();
+    outpd->CopyAllocate(inpd, n_out_pts);
+    for (i = 0 ; i < n_out_pts ; i++)
+    {
+        outpd->CopyData(inpd, i%npts, i);
+    }
+    
+    //
+    // Clean up.
+    //
+    mat->Delete();
+    pts->Delete();
+
+    return ugrid;
+}
+
+// ****************************************************************************
+// Method: PP_ZFileReader::RevolveDataSet
+//
+// Purpose: 
+//   Revolves a VTK dataset.
+//
+// Arguments:
+//
+// Returns:    A pointer to the revolved dataset.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Sep 26 11:16:15 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+vtkDataSet *
+PP_ZFileReader::RevolveDataSet(vtkDataSet *in_ds, const double *axis,
+    double start_angle, double stop_angle, int nsteps, bool extrude)
+{
+    vtkDataSet *retval = 0;
+
+    if(extrude)
+    {
+        vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
+        retval = RevolveDataSetHelper(ugrid, in_ds, axis, start_angle,
+                                      stop_angle, nsteps);
+    }
+    else
+    {
+        vtkPolyData *pd = vtkPolyData::New();
+        retval = RevolveDataSetHelper(pd, in_ds, axis, start_angle,
+                                      stop_angle, nsteps);
+    }
+
+    return retval;
+}
+
 
 

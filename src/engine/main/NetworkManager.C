@@ -1318,11 +1318,13 @@ NetworkManager::StopPickMode(void)
 //    Kathleen Bonnell, Wed Jun 25 13:45:04 PDT 2003  
 //    Reflect new pickAtts naming convention:  ZoneNumber is now ElementNumber. 
 //
+//    Kathleen Bonnell, Fri Oct 10 10:44:52 PDT 2003 
+//    Set ElementType in QueryAtts, SetNodePoint in PickAtts from QueryAtts.
+//
 // ****************************************************************************
 void
 NetworkManager::Pick(const int id, PickAttributes *pa)
 {
-    //cerr << "NetworkManager::Pick()" << endl;
     if (id >= networkCache.size())
     {
         debug1 << "Internal error:  asked to use network ID (" << id << ") >= "
@@ -1354,12 +1356,17 @@ NetworkManager::Pick(const int id, PickAttributes *pa)
         QueryAttributes qa;
         qa.SetRayPoint1(pa->GetRayPoint1());
         qa.SetRayPoint2(pa->GetRayPoint2());
+        if (pa->GetPickType() == PickAttributes::Zone)
+            qa.SetElementType(QueryAttributes::Zone);
+        else
+            qa.SetElementType(QueryAttributes::Node);
         lcQ->SetInput(queryInput);
         lcQ->PerformQuery(&qa); 
         pa->SetDomain(qa.GetDomain());
         pa->SetElementNumber(qa.GetElement());
         pa->SetCellPoint(qa.GetCellPoint());
         pa->SetPickPoint(qa.GetWorldPoint());
+        pa->SetNodePoint(qa.GetNodePoint());
         delete lcQ;
 
         pQ->SetInput(queryInput);

@@ -461,6 +461,9 @@ RPCExecutor<UpdatePlotAttsRPC>::Execute(UpdatePlotAttsRPC *rpc)
 //    Hank Childs, Tue Aug 19 21:15:58 PDT 2003
 //    Set up callbacks before doing the pick.
 //
+//    Kathleen Bonnell, Fri Oct 10 10:58:10 PDT 2003 
+//    Set up callbacks for DataObjectQuery.
+//
 // ****************************************************************************
 template<>
 void
@@ -473,8 +476,10 @@ RPCExecutor<PickRPC>::Execute(PickRPC *rpc)
     TRY 
     {
         avtDataObjectSource::RegisterProgressCallback(NULL, NULL);
+        avtDataObjectQuery::RegisterProgressCallback(NULL, NULL);
         LoadBalancer::RegisterProgressCallback(NULL, NULL);
         avtTerminatingSource::RegisterInitializeProgressCallback(NULL, NULL);
+        avtDataObjectQuery::RegisterInitializeProgressCallback(NULL, NULL);
         netmgr->Pick(rpc->GetNetId(), rpc->GetPickAtts());
         rpc->SendReply(rpc->GetPickAtts());
     }
@@ -486,9 +491,13 @@ RPCExecutor<PickRPC>::Execute(PickRPC *rpc)
 
     avtDataObjectSource::RegisterProgressCallback(
                                Engine::EngineUpdateProgressCallback, NULL);
+    avtDataObjectQuery::RegisterProgressCallback(
+                               Engine::EngineUpdateProgressCallback, NULL);
     LoadBalancer::RegisterProgressCallback(
                                Engine::EngineUpdateProgressCallback, NULL);
     avtTerminatingSource::RegisterInitializeProgressCallback(
+                               Engine::EngineInitializeProgressCallback, NULL);
+    avtDataObjectQuery::RegisterInitializeProgressCallback(
                                Engine::EngineInitializeProgressCallback, NULL);
 }
 

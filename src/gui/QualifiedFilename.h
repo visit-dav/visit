@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 
-// *******************************************************************
+// ****************************************************************************
 // Class: QualifiedFilename
 //
 // Purpose:
@@ -26,7 +26,7 @@
 //   Brad Whitlock, Fri Mar 28 12:01:51 PDT 2003
 //   I added a flag that contains the file's access and virtual bits.
 //
-// *******************************************************************
+// ****************************************************************************
 
 struct QualifiedFilename
 {
@@ -66,5 +66,11 @@ private:
 };
 
 typedef std::vector<QualifiedFilename> QualifiedFilenameVector;
+
+// Function to combine two QualifiedFilenameVector so that there are no
+// duplicate filenames.
+QualifiedFilenameVector
+CombineQualifiedFilenameVectors(const QualifiedFilenameVector &a,
+    const QualifiedFilenameVector &b);
 
 #endif

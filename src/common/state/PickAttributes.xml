@@ -76,6 +76,11 @@
     </Field>
     <Field name="realIncidentElements" label="RealIncidentElements" type="intVector" internal="true">
     </Field>
+    <Field name="nodePoint" label="nodePoint" type="floatArray" length="3">
+      0.000000
+      0.000000
+      0.000000
+    </Field>
     <Function name="PrintSelf" user="true" member="true">
     </Function>
     <Function name="CreateOutputString" user="true" member="true">

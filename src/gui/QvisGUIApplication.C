@@ -37,6 +37,7 @@
 #include <PickAttributes.h>
 #include <QueryAttributes.h>
 #include <PlotList.h>
+#include <Plot.h>
 #include <PrinterAttributes.h>
 #include <RenderingAttributes.h>
 #include <SILRestrictionAttributes.h>
@@ -1969,6 +1970,10 @@ QvisGUIApplication::CreatePluginWindows()
 //    Brad Whitlock, Tue May 20 14:55:54 PST 2003
 //    Modified CreateNode interface for state objects.
 //
+//    Brad Whitlock, Thu Oct 9 17:12:14 PST 2003
+//    Added code to save the databases that are being visualized so we can
+//    attempt to load those files before restoring a session.
+//
 // ****************************************************************************
 
 void
@@ -1997,6 +2002,28 @@ QvisGUIApplication::WriteConfigFile(const char *filename)
     // saved into the config file.
     WritePluginWindowConfigs(guiNode);
 
+    //
+    // Save the list of files that are being used in plots. This is not
+    // perfect for sessions where there may be many windows that contain
+    // databases from several remote hosts because we're only considering
+    // files from the active window.
+    //
+    stringVector plotDatabases;
+    const PlotList *pl = viewer->GetPlotList();
+    for(int i = 0; i < pl->GetNumPlots(); ++i)
+    {
+        const Plot &p = pl->GetPlot(i);
+        // Make sure we only add it if it's not already there.
+        if(std::find(plotDatabases.begin(),
+                     plotDatabases.end(),
+                     p.GetDatabaseName()) == plotDatabases.end())
+        {
+            plotDatabases.push_back(p.GetDatabaseName());
+        }
+    }
+    if(plotDatabases.size() > 0)
+        guiNode->AddNode(new DataNode("plotDatabases", plotDatabases));
+    
     // Try to open the output file.
     if((fp = fopen(filename, "wb")) == 0)
         return;
@@ -2180,7 +2207,10 @@ QvisGUIApplication::ReadConfigFile(const char *filename)
 // Creation:   Mon Jul 14 11:54:10 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Oct 9 15:50:30 PST 2003
+//   I changed how we restore sessions so that we first try to open
+//   all of the files that are in the session.
+//
 // ****************************************************************************
 
 void
@@ -2193,16 +2223,9 @@ QvisGUIApplication::RestoreSession()
     // If the user chose a file, tell the viewer to import that session file.
     if(!s.isEmpty())
     {
-        // Have the viewer read in its part of the config. Note that we
-        // pass the inVisItDir flag as false because we don't want to have
-        // the viewer prepend the .visit directory to the file since it's
-        // already part of the filename.
-        std::string filename(s.latin1());
-        viewer->ImportEntireState(filename, false);
-
         // Make the gui read in its part of the config.
-        filename += ".gui";
-        DataNode *node = ReadConfigFile(filename.c_str());
+        std::string guifilename(s.latin1()); guifilename += ".gui";
+        DataNode *node = ReadConfigFile(guifilename.c_str());
         if(node)
         {
             ProcessConfigSettings(node, false);
@@ -2216,13 +2239,39 @@ QvisGUIApplication::RestoreSession()
                 DataNode *guiNode = visitRoot->GetNode("GUI");
                 if(guiNode != 0)
                 {
+                    //
+                    // Customize the GUI's appearance based on the session.
+                    //
                     viewer->GetAppearanceAttributes()->SetFromNode(guiNode);
                     CustomizeAppearance(true);
+
+                    //
+                    // Look for the list of files that we need to open up
+                    // and if we find it, open up each one of them.
+                    //
+                    DataNode *plotDatabases = guiNode->GetNode("plotDatabases");
+                    if(plotDatabases)
+                    {
+                        const stringVector &db = plotDatabases->AsStringVector();
+                        for(int i = 0; i < db.size(); ++i)
+                        {
+                            loadFile = QualifiedFilename(db[i]);
+                            if(!fileServer->HaveOpenedFile(loadFile))
+                                LoadFile();
+                        }
+                    }
                 }
             }
 
             delete node;
         }
+
+        // Have the viewer read in its part of the config. Note that we
+        // pass the inVisItDir flag as false because we don't want to have
+        // the viewer prepend the .visit directory to the file since it's
+        // already part of the filename.
+        std::string filename(s.latin1());
+        viewer->ImportEntireState(filename, false);
     }
 }
 
@@ -2284,6 +2333,11 @@ QvisGUIApplication::ProcessConfigSettings(DataNode *node, bool systemConfig)
 //   Brad Whitlock, Fri Mar 21 10:28:11 PDT 2003
 //   I added code to process old versions.
 //
+//   Brad Whitlock, Fri Oct 10 12:11:45 PDT 2003
+//   I added code to hide windows that are already posted so they don't cause
+//   problems when we try and post them again or hide them when processing
+//   the settings.
+//
 // ****************************************************************************
 
 void
@@ -2314,6 +2368,12 @@ QvisGUIApplication::ProcessWindowConfigSettings(DataNode *node)
     // routines.
     for(int i = 0; i < otherWindows.size(); ++i)
     {
+        if(otherWindows[i]->inherits("QvisPostableWindow"))
+        {
+            QvisPostableWindow *win = (QvisPostableWindow *)otherWindows[i];
+            if(win->posted())
+                win->hide();
+        }
         otherWindows[i]->ProcessOldVersions(guiNode, configVersion);
         otherWindows[i]->SetFromNode(guiNode, borders);
     }
@@ -2340,6 +2400,11 @@ QvisGUIApplication::ProcessWindowConfigSettings(DataNode *node)
 //   Brad Whitlock, Fri Mar 21 10:22:49 PDT 2003
 //   I added code to handle old versions.
 //
+//   Brad Whitlock, Fri Oct 10 12:11:45 PDT 2003
+//   I added code to hide windows that are already posted so they don't cause
+//   problems when we try and post them again or hide them when processing
+//   the settings.
+//
 // ****************************************************************************
 
 void
@@ -2352,6 +2417,12 @@ QvisGUIApplication::ReadPluginWindowConfigs(DataNode *parentNode,
     // to the config file data.
     for(i = 0; i < plotWindows.size(); ++i)
     {
+        if(plotWindows[i]->inherits("QvisPostableWindow"))
+        {
+            QvisPostableWindow *win = (QvisPostableWindow *)plotWindows[i];
+            if(win->posted())
+                win->hide();
+        }
         plotWindows[i]->ProcessOldVersions(parentNode, configVersion);
         plotWindows[i]->SetFromNode(parentNode, borders);
     }
@@ -2360,6 +2431,12 @@ QvisGUIApplication::ReadPluginWindowConfigs(DataNode *parentNode,
     // information to the config file data.
     for(i = 0; i < operatorWindows.size(); ++i)
     {
+        if(operatorWindows[i]->inherits("QvisPostableWindow"))
+        {
+            QvisPostableWindow *win = (QvisPostableWindow *)operatorWindows[i];
+            if(win->posted())
+                win->hide();
+        }
         operatorWindows[i]->ProcessOldVersions(parentNode, configVersion);
         operatorWindows[i]->SetFromNode(parentNode, borders);
     }
@@ -2725,6 +2802,12 @@ QvisGUIApplication::RefreshFileListAndNextFrame()
 //   Brad Whitlock, Wed Jun 18 10:30:04 PDT 2003
 //   Added timing information.
 //
+//   Brad Whitlock, Fri Oct 10 10:26:26 PDT 2003
+//   Changed so that files are added to the applied file list instead of
+//   overwriting the applied file list. This way, the method can be called
+//   multiple times and the names of each file that we've opened will be
+//   in the list.
+//
 // ****************************************************************************
 
 void
@@ -2789,11 +2872,16 @@ QvisGUIApplication::LoadFile()
             // Make sure that we put our file in the applied files list if it
             // is not already in the list.
             if(!fileInList)
-            {
                 files.push_back(loadFile);
-                std::sort(files.begin(), files.end());
-            }
-            fileServer->SetAppliedFileList(files);
+
+            //
+            // Combine the files with the applied files so we can call this
+            // method repeatedly and have all of the files that we've opened 
+            // this way be in the applied file list.
+            //
+            fileServer->SetAppliedFileList(
+                CombineQualifiedFilenameVectors(files,
+                    fileServer->GetAppliedFileList()));
             fileServer->Notify();
 
             // Tell the viewer to show all of its windows since launching

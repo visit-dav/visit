@@ -138,6 +138,9 @@ avtSiloFileFormat::avtSiloFileFormat(const char *toc_name)
 //    Hank Childs, Mon Jan  7 18:51:24 PST 2002
 //    Fixed memory leak.
 //
+//    Kathleen Bonnell, Wed Oct  1 17:08:51 PDT 2003 
+//    Call CloseFile so that files are unregistered. 
+//
 // ****************************************************************************
 
 avtSiloFileFormat::~avtSiloFileFormat()
@@ -146,11 +149,7 @@ avtSiloFileFormat::~avtSiloFileFormat()
     {
         for (int i = 0 ; i < MAX_FILES ; i++)
         {
-            if (dbfiles[i] != NULL)
-            {
-                DBClose(dbfiles[i]);
-                dbfiles[i] = NULL;
-            }
+            CloseFile(i);
         }
         delete [] dbfiles;
     }

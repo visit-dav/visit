@@ -66,6 +66,10 @@ extern "C" void nonstandard_arithmetic(int) { }
 //    Removed data variable handling, and material dataset storage.
 //    Added paths to the filenames for multi-file sets.
 //
+//    Brad Whitlock, Thu Oct 9 15:13:13 PST 2003
+//    Added code to delete memory that was leaked when the file format can't
+//    understand this type of PDB file.
+//
 // ****************************************************************************
 
 avtKullLiteFileFormat::avtKullLiteFileFormat(const char *fname) 
@@ -110,14 +114,27 @@ avtKullLiteFileFormat::avtKullLiteFileFormat(const char *fname)
 
     dataset = new vtkDataSet*[nFiles];
     for (int i = 0; i < nFiles; i++)
-    {
         dataset[i] = NULL;
-    }
 
-    // We might read them in from the master file eventually, but for
-    // now, we'll do it here in the constructor [so it's a straight
-    // modification if we do put them in the master file]
-    ReadInMaterialNames();
+    TRY
+    {
+        // We might read them in from the master file eventually, but for
+        // now, we'll do it here in the constructor [so it's a straight
+        // modification if we do put them in the master file]
+        ReadInMaterialNames();
+    }
+    CATCH(VisItException)
+    {
+        for(int j = 0; j < nFiles; ++j)
+        {
+            if(dataset[j] != NULL)
+                dataset[j]->Delete();
+        }
+        delete [] dataset;
+        dataset = NULL;
+        RETHROW;
+    }
+    ENDTRY
 }
 
 
