@@ -19,6 +19,7 @@
 
 #include <avtCellList.h>
 #include <avtHexahedronExtractor.h>
+#include <avtMassVoxelExtractor.h>
 #include <avtPyramidExtractor.h>
 #include <avtRayFunction.h>
 #include <avtSamplePoints.h>
@@ -51,6 +52,9 @@
 //    Hank Childs, Tue Jan  1 10:01:20 PST 2002
 //    Initialized sendCells.
 //
+//    Hank Childs, Sun Dec 14 11:07:56 PST 2003
+//    Initialized massVoxelExtractor.
+//
 // ****************************************************************************
 
 avtSamplePointExtractor::avtSamplePointExtractor(int w, int h, int d)
@@ -62,10 +66,11 @@ avtSamplePointExtractor::avtSamplePointExtractor(int w, int h, int d)
     currentNode = 0;
     totalNodes  = 0;
 
-    hexExtractor     = NULL;
-    pyramidExtractor = NULL;
-    tetExtractor     = NULL;
-    wedgeExtractor   = NULL;
+    hexExtractor        = NULL;
+    massVoxelExtractor  = NULL;
+    pyramidExtractor    = NULL;
+    tetExtractor        = NULL;
+    wedgeExtractor      = NULL;
 
     sendCells        = false;
 
@@ -79,6 +84,11 @@ avtSamplePointExtractor::avtSamplePointExtractor(int w, int h, int d)
 //  Programmer: Hank Childs
 //  Creation:   December 8, 2000
 //      
+//  Modifications:
+//
+//    Hank Childs, Sun Dec 14 11:07:56 PST 2003
+//    Deleted massVoxelExtractor.
+//
 // ****************************************************************************
 
 avtSamplePointExtractor::~avtSamplePointExtractor()
@@ -87,6 +97,11 @@ avtSamplePointExtractor::~avtSamplePointExtractor()
     {
         delete hexExtractor;
         hexExtractor = NULL;
+    }
+    if (massVoxelExtractor != NULL)
+    {
+        delete massVoxelExtractor;
+        massVoxelExtractor = NULL;
     }
     if (tetExtractor != NULL)
     {
@@ -167,6 +182,9 @@ avtSamplePointExtractor::Execute(void)
 //    Hank Childs, Tue Jan  1 10:01:20 PST 2002
 //    Tell the extractors whether they should extract from large cells.
 //
+//    Hank Childs, Sun Dec 14 11:07:56 PST 2003
+//    Set up massVoxelExtractor.
+//
 // ****************************************************************************
 
 void
@@ -180,6 +198,10 @@ avtSamplePointExtractor::SetUpExtractors(void)
     if (hexExtractor != NULL)
     {
         delete hexExtractor;
+    }
+    if (massVoxelExtractor != NULL)
+    {
+        delete massVoxelExtractor;
     }
     if (tetExtractor != NULL)
     {
@@ -199,11 +221,13 @@ avtSamplePointExtractor::SetUpExtractors(void)
     //
     avtCellList *cl = output->GetCellList();
     hexExtractor = new avtHexahedronExtractor(width, height, depth, volume,cl);
+    massVoxelExtractor = new avtMassVoxelExtractor(width, height, depth, volume,cl);
     tetExtractor = new avtTetrahedronExtractor(width, height, depth,volume,cl);
     wedgeExtractor = new avtWedgeExtractor(width, height, depth, volume, cl);
     pyramidExtractor = new avtPyramidExtractor(width, height, depth,volume,cl);
 
     hexExtractor->SendCellsMode(sendCells);
+    massVoxelExtractor->SendCellsMode(sendCells);
     tetExtractor->SendCellsMode(sendCells);
     wedgeExtractor->SendCellsMode(sendCells);
     pyramidExtractor->SendCellsMode(sendCells);
@@ -245,6 +269,9 @@ avtSamplePointExtractor::SetUpExtractors(void)
 //    And ghost zones occasionally have the wrong value (due to problems with
 //    the code that produced it).
 //
+//    Hank Childs, Sun Dec 14 11:07:56 PST 2003
+//    Make use of massVoxelExtractor.
+//
 // ****************************************************************************
 
 void
@@ -274,6 +301,12 @@ avtSamplePointExtractor::ExecuteTree(avtDataTree_p dt)
     // Get the dataset for this leaf in the tree.
     //
     vtkDataSet *ds = dt->GetDataRepresentation().GetDataVTK();
+
+    if (ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
+    {
+        massVoxelExtractor->Extract((vtkRectilinearGrid *) ds);
+        return;
+    }
 
     //
     // Iterate over all cells in the mesh and call the appropriate 
