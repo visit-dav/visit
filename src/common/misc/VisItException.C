@@ -201,6 +201,9 @@ typedef struct
 //   Kathleen Bonnell, Tue Dec 16 14:58:46 PST 2003 
 //   Added UnexpectedValueException.
 //
+//   Kathleen Bonnell, Tue Jan 13 08:48:14 PST 2004 
+//   Added BadNodeException.
+//
 
 static const exception_info exception_tree[] =
 {
@@ -212,6 +215,7 @@ static const exception_info exception_tree[] =
     {"BadHostException",                   "VisItException"},
     {"BadIndexException",                  "PipelineException"},
     {"BadInteractorException",             "VisWindowException"},
+    {"BadNodeException",                   "PipelineException"},
     {"BadPermissionException",             "DatabaseException"},
     {"BadPlotException",                   "VisWindowException"},
     {"BadWindowModeException",             "VisWindowException"},
