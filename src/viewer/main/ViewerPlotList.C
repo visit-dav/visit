@@ -1420,6 +1420,9 @@ ViewerPlotList::DeletePlot(ViewerPlot *whichOne, bool doUpdate)
 //    Eric Brugger, Mon Nov 18 07:50:16 PST 2002
 //    I added support for keyframing.
 //
+//    Kathleen Bonnell, Thu Aug 28 10:10:35 PDT 2003 
+//    Added call to CanMeshPlotBeOpaque.
+//
 // ****************************************************************************
 
 void
@@ -1459,6 +1462,7 @@ ViewerPlotList::DeleteActivePlots()
     if (nPlots > 0)
     {
         plots[0].active = true;
+        CanMeshPlotBeOpaque();
     }
     else
     {
@@ -1488,6 +1492,10 @@ ViewerPlotList::DeleteActivePlots()
 //  Programmer: Eric Brugger
 //  Creation:   September 6, 2000
 //
+//  Modifications:
+//    Kathleen Bonnell, Thu Aug 28 10:10:35 PDT 2003 
+//    Added call to CanMeshPlotBeOpaque.
+//
 // ****************************************************************************
 
 void
@@ -1506,7 +1514,9 @@ ViewerPlotList::HideActivePlots()
             plots[i].hidden = plots[i].hidden == true ? false : true;
         }
     }
-
+  
+    CanMeshPlotBeOpaque();
+ 
     //
     // Update the client attributes.
     //
@@ -2876,6 +2886,9 @@ ViewerPlotList::InterruptUpdatePlotList()
 //    I added code to run through the plot list again if any plots had errors
 //    when we're animating.
 //
+//    Kathleen Bonnell, Thu Aug 28 10:10:35 PDT 2003 
+//    Added call to CanMeshPlotBeOpaque.
+//
 // ****************************************************************************
 
 bool
@@ -2961,6 +2974,8 @@ ViewerPlotList::UpdatePlots(const int frame, bool animating)
             attempts = 0;
     }
 #endif
+
+    CanMeshPlotBeOpaque();
 
 #ifdef VIEWER_MT
     return false;
@@ -4516,4 +4531,34 @@ ViewerPlotList::SetFromNode(DataNode *parentNode)
         plots[j].active = (plotSelected[j] > 0);
 
     return sendUpdateFrame;
+}
+
+
+// ****************************************************************************
+// Method: ViewerPlotList::CanMeshPlotBeOpaque
+//
+// Purpose: 
+//   Determines whether or not a mesh plot can honor its opaque-mode flag. 
+//   If there are any non-mesh, non-hidden plots, then the mesh plot should
+//   not be opaque.
+//
+// Programmer: Kathleen Bonnell
+// Creation:   Thu Aug 28 09:09:25 PDT 2003 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerPlotList::CanMeshPlotBeOpaque()
+{
+    int i;
+    bool canBeOpaque = true;
+    for (i = 0; i < nPlots && canBeOpaque; ++i)
+    {
+        if (!plots[i].hidden && !plots[i].plot->IsMesh())
+            canBeOpaque = false;
+    }
+    for (i = 0; i < nPlots; ++i)
+        plots[i].plot->SetOpaqueMeshIsAppropriate(canBeOpaque);
 }

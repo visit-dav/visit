@@ -6,6 +6,11 @@
         Axis
         Icosahedron
       </Enum>
+      <Enum name="SmoothingLevel">
+        None
+        Fast
+        High
+      </Enum>
       <Field name="legendFlag" label="Legend" type="bool">
         true
       </Field>
@@ -28,7 +33,7 @@
         0.010000
       </Field>
       <Field name="opaqueFlag" label="Opaque" type="bool">
-        false
+        true
       </Field>
       <Field name="pointSize" label="Point size" type="double">
         0.050000
@@ -45,8 +50,8 @@
       <Field name="foregroundFlag" label="Use Foreground " type="bool">
         true
       </Field>
-      <Field name="smoothingLevel" label="Smoothing" type="int">
-        0
+      <Field name="smoothingLevel" label="Smoothing" type="enum" subtype="SmoothingLevel">
+        None
       </Field>
       <Field name="pointSizeVarEnabled" label="Point size by var enabled" type="bool">
         false
@@ -56,6 +61,9 @@
       </Field>
       <Field name="pointType" label="Point Type" type="enum" subtype="PointType">
         Box
+      </Field>
+      <Field name="opaqueMeshIsAppropriate" label="Opaque Mesh Is Appropriate" type="bool" internal="true">
+        true
       </Field>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>

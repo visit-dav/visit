@@ -69,6 +69,9 @@
 //    Eric Brugger, Wed Jul 16 10:57:44 PDT 2003
 //    Modified to work with the new way legends are managed.
 //
+//    Kathleen Bonnell, Thu Aug 28 10:03:42 PDT 2003 
+//    Initialize opaqueMeshIsAppropriate. 
+//
 // ****************************************************************************
 
 avtMeshPlot::avtMeshPlot()
@@ -563,6 +566,9 @@ avtMeshPlot::SetPointSize(float ps)
 //    Kathleen Bonnell, Mon Mar 24 17:48:27 PST 2003 
 //    Don't use wireframe mode if not appropriate. 
 //    
+//    Kathleen Bonnell, Wed Aug 27 15:45:45 PDT 2003 
+//    Don't use opaque mode if not appropriate. 
+//    
 // ****************************************************************************
 
 void
@@ -570,9 +576,10 @@ avtMeshPlot::SetRenderOpaque(bool on)
 {
    //
    // Although the polys for opaque mode are always present, don't draw
-   // them unless we are in opaque mode. 
+   // them unless we are in opaque mode, and only if appropriate
    //
-   if (on || wireframeRenderingIsInappropriate)
+   if (atts.GetOpaqueMeshIsAppropriate() && 
+       (on || wireframeRenderingIsInappropriate))
    {
        renderer->SurfacePolysOn();
        renderer->SurfaceStripsOn();
@@ -953,3 +960,30 @@ avtMeshPlot::ReleaseData(void)
 }
 
 
+// ****************************************************************************
+//  Method: avtMeshPlot::SetOpaqueMeshIsAppropriate
+//
+//  Purpose:
+//    Sets the flag specifying whether or not opaque Mode is appropriate.
+//
+//  Returns:
+//    The changed MeshAtts, or NULL if atts did not change.
+//
+//  Arguments:
+//    val  The new mode.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   August 27, 2003 
+//
+// ****************************************************************************
+
+const AttributeSubject *
+avtMeshPlot::SetOpaqueMeshIsAppropriate(bool val)
+{
+    if (val != atts.GetOpaqueMeshIsAppropriate())
+    {
+        atts.SetOpaqueMeshIsAppropriate(val);
+        return &atts;
+    }
+    return NULL;
+}

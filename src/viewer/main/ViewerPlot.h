@@ -140,6 +140,9 @@ class avtToolInterface;
 //    Brad Whitlock, Wed Jul 16 13:29:03 PST 2003
 //    Added CreateNode and SetFromNode.
 //
+//    Kathleen Bonnell, Thu Aug 28 10:10:35 PDT 2003
+//    Added IsMesh and SetOpaqueMeshIsAppropriate. 
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerPlot
@@ -248,6 +251,8 @@ class VIEWER_API ViewerPlot
 
     void CreateNode(DataNode *);
     void SetFromNode(DataNode *);
+    void SetOpaqueMeshIsAppropriate(bool);
+    bool IsMesh(void);
 
   protected:
     bool MoveOperator(const int operatorIndex, bool promote);
@@ -279,6 +284,7 @@ class VIEWER_API ViewerPlot
 
     bool                    expandedFlag;
     bool                    errorFlag;
+    bool                    isMesh;
 
     AttributeSubjectMap    *plotAtts;
     AttributeSubject       *curPlotAtts;

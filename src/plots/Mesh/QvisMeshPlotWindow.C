@@ -283,6 +283,9 @@ QvisMeshPlotWindow::CreateWindowContents()
 //   Hank Childs, Thu Aug 21 23:17:17 PDT 2003
 //   Added support for point type.
 //
+//   Kathleen Bonnell, Wed Sep  3 08:46:25 PDT 2003 
+//   Added support for opaqueMeshIsAppropriate. 
+//
 // ****************************************************************************
 
 void
@@ -388,7 +391,7 @@ QvisMeshPlotWindow::UpdateWindow(bool doAll)
             break;
         case 11: // smoothingLevel
             smoothingLevelButtons->blockSignals(true);
-            smoothingLevelButtons->setButton(meshAtts->GetSmoothingLevel());
+            smoothingLevelButtons->setButton((int)meshAtts->GetSmoothingLevel());
             smoothingLevelButtons->blockSignals(false);
             break;
         case 12: // pointSizeVarEnabled
@@ -406,6 +409,32 @@ QvisMeshPlotWindow::UpdateWindow(bool doAll)
             pointTypeButtons->blockSignals(true);
             pointTypeButtons->setButton((int) meshAtts->GetPointType());
             pointTypeButtons->blockSignals(false);
+            break;
+        case 15: // opaqueMeshIsAppropriate
+            // If opaque mode is appropriate, handle opaqueToggle,
+            // opaqueColor and backgroundToggle according to the
+            // appropriate values in meshAtts, otherwise disable them 
+            // and un-check opaqueToggle to indicate its OFF status.
+            opaqueToggle->blockSignals(true);
+            if (meshAtts->GetOpaqueMeshIsAppropriate())
+            {
+                opaqueToggle->setEnabled(true);
+                opaqueToggle->setChecked(meshAtts->GetOpaqueFlag());
+                opaqueColor->setEnabled(meshAtts->GetOpaqueFlag() && 
+                                    !meshAtts->GetBackgroundFlag());
+                opaqueColorLabel->setEnabled(meshAtts->GetOpaqueFlag() &&
+                                         !meshAtts->GetBackgroundFlag());
+                backgroundToggle->setEnabled(meshAtts->GetOpaqueFlag()) ;
+            }
+            else 
+            {
+                opaqueToggle->setEnabled(false);
+                opaqueToggle->setChecked(false);
+                opaqueColor->setEnabled(false);
+                opaqueColorLabel->setEnabled(false);
+                backgroundToggle->setEnabled(false);
+            }
+            opaqueToggle->blockSignals(false);
             break;
         }
     } // end for
@@ -886,7 +915,7 @@ QvisMeshPlotWindow::processPointSizeText()
 void
 QvisMeshPlotWindow::smoothingLevelChanged(int level)
 {
-    meshAtts->SetSmoothingLevel(level);
+    meshAtts->SetSmoothingLevel((MeshAttributes::SmoothingLevel) level);
     SetUpdate(false);
     Apply();
 }

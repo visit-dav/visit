@@ -79,6 +79,9 @@ class     avtSmoothPolyDataFilter;
 //    Added SetOpaqueColor with double* arg.  Added flag
 //    wireframeRenderingIsInappropriate. 
 //
+//    Kathleen Bonnell, Wed Aug 27 15:45:45 PDT 2003 
+//    Added SetOpaqueMeshIsAppropriate.
+//    
 // ****************************************************************************
 
 class
@@ -110,6 +113,8 @@ avtMeshPlot : public avtPlot
     virtual bool    SetForegroundColor(const double *);
 
     virtual int     TargetTopologicalDimension(void);
+    virtual const AttributeSubject 
+                   *SetOpaqueMeshIsAppropriate(bool);
 
   protected:
     avtSurfaceAndWireframeRenderer_p renderer;

@@ -102,6 +102,9 @@ avtDataObjectReader_p ViewerPlot::nullReader((avtDataObjectReader *)0);
 //    Brad Whitlock, Fri Apr 11 09:48:58 PDT 2003
 //    I initialized some new members.
 //
+//    Kathleen Bonnell, Wed Aug 27 15:45:45 PDT 2003 
+//    Initialize 'isMesh'. 
+//
 // ****************************************************************************
 
 ViewerPlot::ViewerPlot(const int type_,
@@ -115,6 +118,7 @@ ViewerPlot::ViewerPlot(const int type_,
     //
     type                = type_;
     viewerPluginInfo    = viewerPluginInfo_;
+    isMesh = (strcmp(viewerPluginInfo->GetName(), "Mesh") == 0); 
     hostName            = 0;
     databaseName        = 0;
     variableName        = 0;
@@ -3626,4 +3630,63 @@ ViewerPlot::SetFromNode(DataNode *parentNode)
                 activeOperatorIndex = node->AsInt();
         }
     }
+}
+
+// ****************************************************************************
+// Method: ViewerPlot::SetOpaqueMeshIsAppropriate
+//
+// Purpose: 
+//   Notifies avtPlot if opaque mesh is appropriate. 
+//
+// Arguments:
+//   val :  True if opaque mesh is appropriate, false otherwise.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   August 27, 2003 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerPlot::SetOpaqueMeshIsAppropriate(bool val)
+{
+    const AttributeSubject *atts = NULL;
+    for (int i = 0; i < (frame1 - frame0 + 1) && !atts; ++i)
+    {
+        if (*plotList[i] != 0 && isMesh)
+        {
+            atts = plotList[i]->SetOpaqueMeshIsAppropriate(val);
+        }
+    }
+    //
+    // If the plot's atts have changed as a result, 
+    //
+    if (atts != NULL)
+    {
+        SetPlotAtts(atts);
+    }
+}
+
+
+// ****************************************************************************
+// Method: ViewerPlot::IsMesh
+//
+// Purpose: 
+//   Returns whether or not the plot type is Mesh Plot.
+//
+// Returns:
+//   true if this is a mesh plot, false otherwise.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   August 27, 2003 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+ViewerPlot::IsMesh()
+{
+    return isMesh;
 }
