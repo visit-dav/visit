@@ -28,6 +28,7 @@
 
 #include <BadDomainException.h>
 #include <BadIndexException.h>
+#include <BufferConnection.h>
 #include <DebugStream.h>
 #include <ImproperUseException.h>
 #include <InvalidFilesException.h>
@@ -40,7 +41,7 @@
 #include <visit-config.h>
 
 #ifdef PARALLEL
-#include <mpi.h>
+#include <avtParallel.h>
 #endif
 
 using std::string;
@@ -62,7 +63,6 @@ static void TranslateSiloPyramidToVTKPyramid(const int *, vtkIdType [5]);
 
 
 bool avtSiloFileFormat::madeGlobalSiloCalls = false;
-
 
 // ****************************************************************************
 //  Class: avtSiloFileFormat
@@ -475,6 +475,10 @@ avtSiloFileFormat::FreeUpResources(void)
 //    Hank Childs, Mon Mar 11 08:52:59 PST 2002
 //    Renamed to PopulateDatabaseMetaData.
 //
+//    Jeremy Meredith, Tue Jul 15 09:44:15 PDT 2003
+//    Split some of the methods out of ReadDir so it could be
+//    parallelized.
+//
 // ****************************************************************************
 
 void
@@ -493,9 +497,22 @@ avtSiloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     blocksForMesh.clear();
 
     //
+    // We're just interested in metadata for now, so tell Silo not
+    // to read the extra data arrays, except for material names and 
+    // numbers.
+    //
+    DBSetDataReadMask(DBMatMatnames|DBMatMatnos);
+
+    //
     // Do a recursive search through the subdirectories.
     //
     ReadDir(dbfile, "/", md);
+    BroadcastGlobalInfo(md);
+    DoRootDirectoryWork(md);
+
+    // To be nice to other functions, tell Silo to turn back on reading all
+    // of the data.
+    DBSetDataReadMask(DBAll);
 }
 
 
@@ -617,12 +634,21 @@ avtSiloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Hank Childs, Fri May 16 18:21:20 PDT 2003
 //    Make sure that all return values are valid.
 //
+//    Jeremy Meredith, Tue Jul 15 09:44:15 PDT 2003
+//    Split some of the methods out of ReadDir so it could be
+//    parallelized.  Only allow the first process to read the root file.
+//
 // ****************************************************************************
 
 void
 avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
                            avtDatabaseMetaData *md)
 {
+#ifdef PARALLEL
+    if (PAR_Rank() != 0)
+        return;
+#endif
+
     int    i, j, k;
     DBtoc *toc = DBGetToc(dbfile);
     if (toc == NULL)
@@ -738,13 +764,6 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
     char  *searchpath_str = NULL;
     if (strcmp(dirname, "/") == 0)
     {
-        //
-        // We're just interested in metadata in this function, so tell Silo not
-        // to read the extra data arrays, except for material names and 
-        // numbers.
-        //
-        DBSetDataReadMask(DBMatMatnames|DBMatMatnos);
-
         if (DBInqVarExists(dbfile, "_disjoint_elements"))
         {
             hasDisjointElements = true;
@@ -1677,84 +1696,6 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         DBSetDir(dbfile, "..");
     }
 
-    //
-    // We should only add the defvars if we are at the 'root' level.
-    // Ditto adding group information.
-    //
-    if (strcmp(dirname, "/") == 0)
-    {
-        if (groupInfo.haveGroups)
-        {
-            md->AddGroupInformation(groupInfo.numgroups, groupInfo.ndomains,
-                                    groupInfo.ids);
-        }
-
-        //
-        // We already read in and parsed the defvars with the rest of the 
-        // global information.  Now add that information to the meta-data.
-        //
-        std::vector<VectorDefvar>::iterator it;
-        for (it = defvars.begin() ; it != defvars.end() ; it++)
-        {
-            const avtScalarMetaData *c1 = md->GetScalar((*it).component1);
-            const avtScalarMetaData *c2 = md->GetScalar((*it).component2);
-            const avtScalarMetaData *c3 = md->GetScalar((*it).component3);
-            bool valid_var = true;
-            int  dim = 3;
-            string       meshname;
-            avtCentering cent;
-            if (c1 == NULL || c2 == NULL
-                || (c3 == NULL && (*it).component3 != string("<no var>")) )
-            {
-                cent = AVT_NODECENT;
-                meshname = "<no_mesh>";
-                debug1 << "One of " << (*it).component1.c_str() << ", "
-                       << (*it).component2.c_str() << ", " 
-                       << (*it).component3.c_str()
-                       << " is not a valid component of a vector." << endl;
-                valid_var = false;
-            }
-            else
-            {
-                cent = c1->centering;
-                meshname = c1->meshName;
-                dim = (c3 == NULL ? 2 : 3);
-                if (c3 == NULL)
-                {
-                    // For our comparisons, make it be the same as c1.
-                    c3 = c1;
-                }
-
-                if (c1->centering != c2->centering ||
-                    c2->centering != c3->centering)
-                {
-                    debug1 << "Centering does not agree for components of "
-                           << "a vector.  Invalidating..." << endl;
-                    valid_var = false;
-                }
-
-                if (c1->meshName != c2->meshName ||
-                    c2->meshName != c3->meshName)
-                {
-                    debug1 << " Components of a vector are defined on "
-                           << "different meshes." << endl;
-                    valid_var = false;
-                }
-            }
-
-            avtVectorMetaData *vmd 
-                       = new avtVectorMetaData((*it).vector_name, meshname,
-                                               cent, dim);
-            vmd->validVariable = valid_var;
-    
-            md->Add(vmd);
-        }
-
-        // To be nice to other functions, tell Silo to turn back on reading all
-        // of the data.
-        DBSetDataReadMask(DBAll);
-    }
-
     for (i = 0 ; i < nmultimesh ; i++)
     {
         delete [] multimesh_names[i];
@@ -1827,6 +1768,181 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
     delete [] origdir_names;
 }
 
+// ****************************************************************************
+//  Method:  avtSiloFileFormat::BroadcastGlobalInfo
+//
+//  Purpose:
+//    Send information collected only by the first processor to the other ones.
+//    This includes the avtDatabaseMetaData as well as some class data members.
+//
+//  Arguments:
+//    metadata   the avtDatabaseMetadata to broadcast.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    July 15, 2003
+//
+// ****************************************************************************
+void
+avtSiloFileFormat::BroadcastGlobalInfo(avtDatabaseMetaData *metadata)
+{
+#ifdef PARALLEL
+    int rank = PAR_Rank();
+
+    //
+    // Broadcast Full DatabaseMetaData
+    //
+    BufferConnection tmp;
+    int n;
+    if (rank==0)
+        n = metadata->CalculateMessageSize(tmp);
+    BroadcastInt(n);
+    unsigned char *buff = new unsigned char[n];
+
+    if (rank == 0)
+    {
+        metadata->SelectAll();
+        metadata->Write(tmp);
+        for (int i=0; i<n; i++)
+        {
+            tmp.Read(&buff[i]);
+        }
+    }
+    MPI_Bcast(buff, n, MPI_UNSIGNED_CHAR, 0, MPI_COMM_WORLD);
+    if (rank != 0)
+    {
+        tmp.Append(buff, n);
+        metadata->Read(tmp);
+    }
+    delete[] buff;
+
+    //
+    // Broadcast Database-level Info
+    //
+    BroadcastStringVector(firstSubMesh, rank);
+    BroadcastStringVector(firstSubMeshVarName, rank);
+    BroadcastStringVectorVector(allSubMeshDirs, rank);
+    BroadcastStringVector(actualMeshName, rank);
+    BroadcastIntVector(blocksForMesh, rank);
+    
+    //
+    // Broadcast Group Info
+    //
+    int haveGroups = groupInfo.haveGroups;
+    BroadcastInt(haveGroups);
+    groupInfo.haveGroups = haveGroups;
+    BroadcastInt(groupInfo.ndomains);
+    BroadcastInt(groupInfo.numgroups);
+    BroadcastIntVector(groupInfo.ids,  rank);
+
+    //
+    // Broadcast DefVars
+    //
+    int size;
+    if (rank == 0)
+        size = defvars.size();
+    BroadcastInt(size);
+    if (rank != 0)
+        defvars.resize(size);
+    for (int i=0; i<size; i++)
+    {
+        BroadcastString(defvars[i].vector_name, rank);
+        BroadcastString(defvars[i].component1, rank);
+        BroadcastString(defvars[i].component2, rank);
+        BroadcastString(defvars[i].component3, rank);
+    }
+#endif
+}
+
+// ****************************************************************************
+//  Method:  avtSiloFileFormat::DoRootDirectoryWork
+//
+//  Purpose:
+//    Does some collection of information that came from the root of the
+//    silo file.
+//
+//  Note:  this used to be part of PopulateDatabaseMetaData
+//
+//  Arguments:
+//    md         the avtDatabaseMetaData
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    July 15, 2003
+//
+// ****************************************************************************
+void
+avtSiloFileFormat::DoRootDirectoryWork(avtDatabaseMetaData *md)
+{
+    //
+    // We should only add the defvars if we are at the 'root' level.
+    // Ditto adding group information.
+    //
+    if (groupInfo.haveGroups)
+    {
+        md->AddGroupInformation(groupInfo.numgroups, groupInfo.ndomains,
+                                groupInfo.ids);
+    }
+
+    //
+    // We already read in and parsed the defvars with the rest of the 
+    // global information.  Now add that information to the meta-data.
+    //
+    std::vector<VectorDefvar>::iterator it;
+    for (it = defvars.begin() ; it != defvars.end() ; it++)
+    {
+        const avtScalarMetaData *c1 = md->GetScalar((*it).component1);
+        const avtScalarMetaData *c2 = md->GetScalar((*it).component2);
+        const avtScalarMetaData *c3 = md->GetScalar((*it).component3);
+        bool valid_var = true;
+        int  dim = 3;
+        string       meshname;
+        avtCentering cent;
+        if (c1 == NULL || c2 == NULL
+            || (c3 == NULL && (*it).component3 != string("<no var>")) )
+        {
+            cent = AVT_NODECENT;
+            meshname = "<no_mesh>";
+            debug1 << "One of " << (*it).component1.c_str() << ", "
+                   << (*it).component2.c_str() << ", " 
+                   << (*it).component3.c_str()
+                   << " is not a valid component of a vector." << endl;
+            valid_var = false;
+        }
+        else
+        {
+            cent = c1->centering;
+            meshname = c1->meshName;
+            dim = (c3 == NULL ? 2 : 3);
+            if (c3 == NULL)
+            {
+                // For our comparisons, make it be the same as c1.
+                c3 = c1;
+            }
+
+            if (c1->centering != c2->centering ||
+                c2->centering != c3->centering)
+            {
+                debug1 << "Centering does not agree for components of "
+                       << "a vector.  Invalidating..." << endl;
+                valid_var = false;
+            }
+
+            if (c1->meshName != c2->meshName ||
+                c2->meshName != c3->meshName)
+            {
+                debug1 << " Components of a vector are defined on "
+                       << "different meshes." << endl;
+                valid_var = false;
+            }
+        }
+
+        avtVectorMetaData *vmd 
+            = new avtVectorMetaData((*it).vector_name, meshname,
+                                    cent, dim);
+        vmd->validVariable = valid_var;
+    
+        md->Add(vmd);
+    }
+}
 
 // ****************************************************************************
 //  Method: avtSiloFileFormat::GetConnectivityAndGroupInformation

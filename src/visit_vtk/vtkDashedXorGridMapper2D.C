@@ -63,6 +63,14 @@ vtkDashedXorGridMapper2D::SetDots(int drawn, int spaced)
     pixelSpaced = spaced;
 }
 
+// ****************************************************************************
+// Modifications:
+//    Brad Whitlock, Tue Jul 15 10:55:17 PDT 2003
+//    Fixed offset applied to Windows lines so they are not drawn in the
+//    wrong location anymore. The offset used to be correct, but at some point,
+//    it broke so now I'm making it so no offset is used.
+//   
+// ****************************************************************************
 
 void vtkDashedXorGridMapper2D::RenderOverlay(vtkViewport* viewport, vtkActor2D* actor)
 {
@@ -107,8 +115,8 @@ void vtkDashedXorGridMapper2D::RenderOverlay(vtkViewport* viewport, vtkActor2D* 
     POINT *points = new POINT[1024];
     POINT oldPoint;
     HDC hdc = GetWindowDC((HWND)window->GetGenericWindowId());
-    int borderT = GetSystemMetrics(SM_CYFRAME) + GetSystemMetrics(SM_CYSIZE);
-    int borderL = GetSystemMetrics(SM_CXFRAME);
+    int borderT = 0; //GetSystemMetrics(SM_CYFRAME) + GetSystemMetrics(SM_CYSIZE);
+    int borderL = 0; //GetSystemMetrics(SM_CXFRAME);
 
     // Make the drawing mode be XOR.
     SetROP2(hdc, R2_XORPEN);

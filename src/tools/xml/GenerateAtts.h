@@ -86,6 +86,9 @@ using std::vector;
 //    only the fields that differ from the default values for the class. I also
 //    made the generated code have fewer unneeded variables.
 //
+//    Brad Whitlock, Tue Jul 15 13:22:36 PST 2003
+//    I added range checking for enums so reading from config files is safer.
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -1214,7 +1217,11 @@ class AttsGeneratorEnum : public virtual Enum , public virtual AttsGeneratorFiel
         c << "    {" << endl;
         c << "        // Allow enums to be int or string in the config file" << endl;
         c << "        if(node->GetNodeType() == INT_NODE)" << endl;
-        c << "            Set" << Name << "(" << GetCPPName(true) << "(node->AsInt()));" << endl;
+        c << "        {" << endl;
+        c << "            int ival = node->AsInt();" << endl;
+        c << "            if(ival >= 0 && ival < " << enumType->values.size() << ")" << endl;
+        c << "                Set" << Name << "(" << GetCPPName(true) << "(ival));" << endl;
+        c << "        }" << endl;
         c << "        else if(node->GetNodeType() == STRING_NODE)" << endl;
         c << "        {" << endl;
         c << "            " << GetCPPName(true) << " value;" << endl;
@@ -2234,18 +2241,23 @@ class AttsGeneratorAttribute
             c << "std::string"<< endl;
             c << name << "::" << EnumType::enums[i]->type<<"_ToString("<<name<<"::"<<EnumType::enums[i]->type<<" t)" << endl;
             c << "{" << endl;
-            c << "    return " << EnumType::enums[i]->type << "_strings[(int)t];" << endl;
+            c << "    int index = int(t);" << endl;
+            c << "    if(index < 0 || index >= " << EnumType::enums[i]->values.size() << ") index = 0;" << endl;
+            c << "    return " << EnumType::enums[i]->type << "_strings[index];" << endl;
             c << "}" << endl << endl;
 
             c << "std::string"<< endl;
             c << name << "::" << EnumType::enums[i]->type<<"_ToString(int t)" << endl;
             c << "{" << endl;
-            c << "    return " << EnumType::enums[i]->type << "_strings[t];" << endl;
+            c << "    int index = (t < 0 || t >= " << EnumType::enums[i]->values.size() << ") ? 0 : t;" << endl;
+            c << "    return " << EnumType::enums[i]->type << "_strings[index];" << endl;
             c << "}" << endl << endl;
 
             c << "bool" << endl;
             c << name << "::"<< EnumType::enums[i]->type<<"_FromString(const std::string &s, "<<name<<"::"<<EnumType::enums[i]->type<<" &val)" << endl;
             c << "{" << endl;
+            if(EnumType::enums[i]->values.size() > 0)
+                c << "    val = " << name << "::" << EnumType::enums[i]->values[0] << ";" << endl;
             c << "    for(int i = 0; i < "<<EnumType::enums[i]->values.size()<<"; ++i)" << endl;
             c << "    {" << endl;
             c << "        if(s == "<< EnumType::enums[i]->type<<"_strings[i])" << endl;

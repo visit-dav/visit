@@ -6,6 +6,7 @@
 
 // For the VisIt module.
 extern "C" void cli_initvisit(int, bool, int, char **);
+extern "C" void cli_runscript(const char *);
 extern "C" int Py_Main(int, char **);
 
 // ****************************************************************************
@@ -29,6 +30,9 @@ extern "C" int Py_Main(int, char **);
 //
 //   Brad Whitlock, Mon Dec 16 13:43:20 PST 2002
 //   I added the -verbose argument.
+//
+//   Brad Whitlock, Tue Jul 15 12:59:22 PDT 2003
+//   I moved the code to run a script into the visit module.
 //
 // ****************************************************************************
 
@@ -108,19 +112,7 @@ main(int argc, char *argv[])
         }
 
         // If there was a file to execute, do it.
-        if(runFile != 0)
-        {
-            FILE *fp = fopen(runFile, "r");
-            if(fp)
-            {
-                PyRun_SimpleFile(fp, runFile);
-                fclose(fp);
-            }
-            else
-            {
-                fprintf(stderr, "The file %s could not be opened.\n", runFile);
-            }
-        }
+        cli_runscript(runFile);
 
         // Enter the python interpreter loop.
         int argc3 = 1;
