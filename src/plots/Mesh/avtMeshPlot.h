@@ -82,6 +82,9 @@ class     avtSmoothPolyDataFilter;
 //    Kathleen Bonnell, Wed Aug 27 15:45:45 PDT 2003 
 //    Added SetOpaqueMeshIsAppropriate.
 //    
+//    Kathleen Bonnell, Thu Sep  4 11:15:30 PDT 2003 
+//    Removed argument from 'SetRenderOpaque', added 'ShouldRenderOpaque'.
+//    
 // ****************************************************************************
 
 class
@@ -103,7 +106,7 @@ avtMeshPlot : public avtPlot
     void            SetLineWidth(_LineWidth);
     void            SetLineStyle(_LineStyle);
     void            SetPointSize(float);
-    void            SetRenderOpaque(bool);
+    void            SetRenderOpaque(void);
     void            SetMeshColor(const unsigned char *);
     void            SetMeshColor(const double *);
     void            SetOpaqueColor(const unsigned char *, bool force = false);
@@ -137,6 +140,9 @@ avtMeshPlot : public avtPlot
     virtual void             CustomizeBehavior(void);
     virtual void             CustomizeMapper(avtDataObjectInformation &);
     virtual avtLegend_p      GetLegend(void) { return varLegendRefPtr; };
+
+  private:
+    bool                     ShouldRenderOpaque(void);
 };
 
 

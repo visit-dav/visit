@@ -40,6 +40,10 @@ class MeshAttributes;
 //   Hank Childs, Thu Aug 21 23:14:39 PDT 2003
 //   Added support for different types of point glyphs.
 //
+//   Kathleen Bonnell, Thu Sep  4 11:15:30 PDT 2003 
+//   Changed opaqueToggle check box to opaqueMode button group.
+//   Renamed signal opaqueToggled to opaqueModeChanged.
+//
 // ****************************************************************************
 
 class QvisMeshPlotWindow : public QvisPostableWindowObserver
@@ -66,7 +70,7 @@ private slots:
     void legendToggled(bool val);
     void meshColorChanged(const QColor &color);
     void outlineOnlyToggled(bool on);
-    void opaqueToggled(bool on);
+    void opaqueModeChanged(int val);
     void processErrorToleranceText();
     void processPointSizeText();
     void opaqueColorChanged(const QColor &color);
@@ -88,7 +92,7 @@ private:
     QCheckBox              *outlineOnlyToggle;
     QLabel                 *errorToleranceLabel;
     QLineEdit              *errorToleranceLineEdit;
-    QCheckBox              *opaqueToggle;
+    QButtonGroup           *opaqueMode;
     QCheckBox              *legendToggle;
     QLabel                 *pointSizeLabel;
     QLineEdit              *pointSizeLineEdit;

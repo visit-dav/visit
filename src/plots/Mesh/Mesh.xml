@@ -11,6 +11,11 @@
         Fast
         High
       </Enum>
+      <Enum name="OpaqueMode">
+        Auto
+        On
+        Off
+      </Enum>
       <Field name="legendFlag" label="Legend" type="bool">
         true
       </Field>
@@ -32,8 +37,8 @@
       <Field name="errorTolerance" label="Tolerance" type="double">
         0.010000
       </Field>
-      <Field name="opaqueFlag" label="Opaque" type="bool">
-        true
+      <Field name="opaqueMode" label="Opaque mode" type="enum" subtype="OpaqueMode">
+        Auto
       </Field>
       <Field name="pointSize" label="Point size" type="double">
         0.050000

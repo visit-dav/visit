@@ -256,6 +256,10 @@ SubsetViewerPluginInfo::ResetPlotAtts(AttributeSubject *atts,
 //    Brad Whitlock, Wed Nov 20 14:12:03 PST 2002
 //    I added support for discrete color tables.
 //
+//    Kathleen Bonnell, Thu Sep  4 16:08:46 PDT 2003 
+//    Set colors, subsetNames for defaultAtts so that "Reset" won't zero
+//    out the colors in the gui.
+//
 // ****************************************************************************
 
 void
@@ -304,6 +308,7 @@ SubsetViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
       case AVT_DOMAIN_SUBSET : 
           debug5 << "Variable for subset plot is a domain Mesh." << endl; 
           subsetAtts->SetSubsetType(SubsetAttributes::Domain);
+          defaultAtts->SetSubsetType(SubsetAttributes::Domain);
           if (mesh->blockNames.empty())
           {
               for (i = 0; i < mesh->numBlocks; i++)
@@ -325,6 +330,7 @@ SubsetViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
       case AVT_GROUP_SUBSET :
           debug5 << "Variable for subset plot is a group Mesh." << endl; 
           subsetAtts->SetSubsetType(SubsetAttributes::Group);
+          defaultAtts->SetSubsetType(SubsetAttributes::Group);
           for (i = 0; i < mesh->groupIds.size(); i++)
           {
               if (groupSet.count(mesh->groupIds[i]) == 0)
@@ -343,6 +349,7 @@ SubsetViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
       case AVT_MATERIAL_SUBSET :
           debug5 << "Variable for subset plot is a Material." << endl; 
           subsetAtts->SetSubsetType(SubsetAttributes::Material);
+          defaultAtts->SetSubsetType(SubsetAttributes::Material);
           mat = md->GetMaterial(vn);
           if (mat != NULL)
           {
@@ -419,6 +426,8 @@ SubsetViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
     // Set the subset names and colors in the subsetAtts.
     subsetAtts->SetSubsetNames(sv);
     subsetAtts->SetMultiColor(cal);
+    defaultAtts->SetSubsetNames(sv);
+    defaultAtts->SetMultiColor(cal);
 }
 
 // ****************************************************************************
