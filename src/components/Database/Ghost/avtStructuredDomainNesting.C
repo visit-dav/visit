@@ -1,7 +1,15 @@
+// ************************************************************************* //
+//                       avtStructuredDomainNesting.C                        //
+// ************************************************************************* //
+
 #include <avtStructuredDomainNesting.h>
+
+#include <avtGhostData.h>
+
 #include <BadIndexException.h>
 #include <UnexpectedValueException.h>
 #include <VisItException.h>
+
 #include <vtkCellData.h>
 #include <vtkFloatArray.h>
 #include <vtkIntArray.h>
@@ -33,7 +41,7 @@ avtStructuredDomainNesting::Destruct(void *p)
 //
 //  Purpose: Detects number of ghost layers in each dimension given
 //     knowledge of the dimension, non-ghosted size of the patch in each
-//     dimension and the pre-existing vtkGhostLevels data
+//     dimension and the pre-existing avtGhostZones data
 //
 //     To perform the detection, basically we try all reasonable combinations
 //     of ghost numbers of layers and probe the ghostData array around the
@@ -241,7 +249,7 @@ avtStructuredDomainNesting::GetSelectedDescendents(
 //  Method: avtStructuredDomainNesting::ApplyGhost
 //
 //  Purpose:
-//    Applies "vtkGhostLevels" array to the meshes passed in 
+//    Applies "avtGhostZones" array to the meshes passed in 
 //
 //  Programmer:  Mark C. Miller 
 //  Creation:    October 13, 2003
@@ -274,6 +282,9 @@ avtStructuredDomainNesting::GetSelectedDescendents(
 //    re-organized the key loops a bit for better cache efficiency and less
 //    multiplication.
 //
+//    Hank Childs, Fri Aug 27 16:16:52 PDT 2004
+//    Renamed ghost data array.  Also properly mark each zone's ghost type.
+//
 // ****************************************************************************
 bool
 avtStructuredDomainNesting::ApplyGhost(vector<int> domainList,
@@ -288,7 +299,7 @@ avtStructuredDomainNesting::ApplyGhost(vector<int> domainList,
         unsigned char *ghostData = 0;
 
         vtkUnsignedCharArray *ghostArray = vtkUnsignedCharArray::SafeDownCast(
-            meshes[i]->GetCellData()->GetArray("vtkGhostLevels"));
+            meshes[i]->GetCellData()->GetArray("avtGhostZones"));
 
         int parentDom = domainList[i];
         int numCells = meshes[i]->GetNumberOfCells();
@@ -316,7 +327,7 @@ avtStructuredDomainNesting::ApplyGhost(vector<int> domainList,
             ghostArray = vtkUnsignedCharArray::New();
             ghostArray->SetNumberOfTuples(numCells);
             ghostData = (unsigned char *) ghostArray->GetVoidPointer(0);
-            ghostArray->SetName("vtkGhostLevels");
+            ghostArray->SetName("avtGhostZones");
             meshes[i]->GetCellData()->AddArray(ghostArray);
             ghostArray->Delete();
         }
@@ -426,7 +437,8 @@ avtStructuredDomainNesting::ApplyGhost(vector<int> domainList,
                         {
                             int aa = ii - I0 + ghostLayers[0];
                             int a = b + aa;
-                            ghostData[a] = 0x1;
+                            avtGhostData::AddGhostZoneType(ghostData[a],
+                                                     REFINED_ZONE_IN_AMR_GRID);
                         }
                     }
                 }
@@ -441,7 +453,8 @@ avtStructuredDomainNesting::ApplyGhost(vector<int> domainList,
                     {
                         int aa = ii - I0 + ghostLayers[0];
                         int a = b + aa;
-                        ghostData[a] = 0x1; 
+                        avtGhostData::AddGhostZoneType(ghostData[a],
+                                                     REFINED_ZONE_IN_AMR_GRID);
                     }
                 }
             }
@@ -450,7 +463,8 @@ avtStructuredDomainNesting::ApplyGhost(vector<int> domainList,
                 for (int ii = i0; ii < i1; ii++)
                 {
                     int a = ii - I0 + ghostLayers[0];
-                    ghostData[a] = 0x1;
+                    avtGhostData::AddGhostZoneType(ghostData[a],
+                                                     REFINED_ZONE_IN_AMR_GRID);
                 }
             }
         }

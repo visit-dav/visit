@@ -69,6 +69,9 @@ vtkLineoutFilter::~vtkLineoutFilter()
 //   Kathleen Bonnell, Tue Dec 23 10:18:06 PST 2003 
 //   Slight rework to consider ghost levels. 
 //  
+//   Hank Childs, Fri Aug 27 15:15:20 PDT 2004
+//   Rename ghost data array.
+//
 //======================================================================
 void
 vtkLineoutFilter::Execute()
@@ -136,7 +139,7 @@ vtkLineoutFilter::Execute()
 
   unsigned char* ghosts = 0;
   vtkDataArray *gl = 
-      this->Probe->GetOutput()->GetPointData()->GetArray("vtkGhostLevels");
+      this->Probe->GetOutput()->GetPointData()->GetArray("avtGhostZones");
 
   int updateLevel = GetOutput()->GetUpdateGhostLevel();
   if (gl && gl->GetDataType() == VTK_UNSIGNED_CHAR && 

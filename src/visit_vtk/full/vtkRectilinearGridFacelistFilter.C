@@ -151,6 +151,9 @@ SpecializedIndexer::SpecializedIndexer(int x, int y, int z)
 //  Hank Childs, Wed Aug 25 16:30:30 PDT 2004
 //  Do a better job of handling degenerate meshes.
 //
+//  Hank Childs, Fri Aug 27 15:15:20 PDT 2004
+//  Rename ghost data array.
+//
 // ****************************************************************************
 
 void vtkRectilinearGridFacelistFilter::Execute()
@@ -173,7 +176,7 @@ void vtkRectilinearGridFacelistFilter::Execute()
   //
   if (ForceFaceConsolidation)
   {
-     if (inCellData->GetArray("vtkGhostLevels") == NULL)
+     if (inCellData->GetArray("avtGhostZones") == NULL)
      {
         ConsolidateFacesWithoutGhostZones();
         return;
@@ -526,6 +529,14 @@ void vtkRectilinearGridFacelistFilter::Execute()
 }
 
 
+// ****************************************************************************
+//  Modifications:
+//
+//    Hank Childs, Fri Aug 27 15:15:20 PDT 2004
+//    Rename ghost data array.
+//
+// ****************************************************************************
+
 vtkPolyData *
 vtkRectilinearGridFacelistFilter::ConsolidateFacesWithGhostZones(
                                  vtkPolyData *pd, vector<int> &sideStart,
@@ -545,7 +556,7 @@ vtkRectilinearGridFacelistFilter::ConsolidateFacesWithGhostZones(
   vtkCellData *inCellData  = pd->GetCellData();
   vtkCellData *outCellData = cpd->GetCellData();
   vtkUnsignedCharArray *gza = (vtkUnsignedCharArray *) 
-                                 inCellData->GetArray("vtkGhostLevels");
+                                 inCellData->GetArray("avtGhostZones");
 
   //
   // We will be modifying the cells.  So set up some of the data structures.

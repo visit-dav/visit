@@ -1820,6 +1820,11 @@ CGetNumberOfNodes(avtDataRepresentation &data, void *sum, bool &)
 //  Programmer: Kathleen Bonnell
 //  Creation:   February 18, 2004
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Aug 27 15:32:06 PDT 2004
+//    Rename ghost data array.
+//
 // ****************************************************************************
 
 void
@@ -1836,7 +1841,7 @@ CGetNumberOfRealZones(avtDataRepresentation &data, void *sum, bool &)
     }
     vtkDataSet *ds = data.GetDataVTK();
     vtkUnsignedCharArray *ghosts = (vtkUnsignedCharArray*)
-        ds->GetCellData()->GetArray("vtkGhostLevels");
+        ds->GetCellData()->GetArray("avtGhostZones");
 
     int nCells = ds->GetNumberOfCells();
     if (ghosts)

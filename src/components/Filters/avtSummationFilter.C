@@ -221,6 +221,11 @@ avtSummationFilter::PostExecute(void)
 //  Programmer: Hank Childs
 //  Creation:   August 30, 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Aug 27 16:16:52 PDT 2004
+//    Rename ghost data array.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -243,7 +248,7 @@ avtSummationFilter::ExecuteData(vtkDataSet *ds, int dom, std::string)
     if (!pointData && !sumGhostValues)
     {
         ghosts = (vtkUnsignedCharArray *)
-                                 ds->GetCellData()->GetArray("vtkGhostLevels");
+                                  ds->GetCellData()->GetArray("avtGhostZones");
     }
 
     int nValues = arr->GetNumberOfTuples();

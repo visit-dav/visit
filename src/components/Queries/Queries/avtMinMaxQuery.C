@@ -197,6 +197,9 @@ avtMinMaxQuery::PreExecute()
 //    versions will always return the same results. 
 //    (ThisProcessorHasMinimum/MaximumValue has changed).
 //
+//    Hank Childs, Fri Aug 27 16:02:58 PDT 2004
+//    Rename ghost data array.
+//
 // ****************************************************************************
 
 void 
@@ -208,7 +211,7 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
     }
     int i;
     vtkUnsignedCharArray *ghosts = 
-        (vtkUnsignedCharArray*)ds->GetCellData()->GetArray("vtkGhostLevels");
+           (vtkUnsignedCharArray*)ds->GetCellData()->GetArray("avtGhostZones");
     vtkDataArray *data = NULL;
     string var = queryAtts.GetVariables()[0];
     int varType = queryAtts.GetVarTypes()[0];

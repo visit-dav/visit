@@ -81,6 +81,9 @@ avtGhostZoneFilter::~avtGhostZoneFilter()
 //    Hank Childs, Sun Jun 27 09:45:20 PDT 2004
 //    Add support for ghost nodes as well.
 //
+//    Hank Childs, Fri Aug 27 16:02:58 PDT 2004
+//    Rename ghost data array.  Also remove SetGhostLevel call.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -93,9 +96,9 @@ avtGhostZoneFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
     }
 
     bool haveGhostZones = 
-                    (in_ds->GetCellData()->GetArray("vtkGhostLevels") != NULL);
+                    (in_ds->GetCellData()->GetArray("avtGhostZones") != NULL);
     bool haveGhostNodes = (in_ds->GetDataObjectType() == VTK_POLY_DATA) &&
-                    (in_ds->GetPointData()->GetArray("vtkGhostNodes") != NULL);
+                    (in_ds->GetPointData()->GetArray("avtGhostNodes") != NULL);
     if (!haveGhostZones && !haveGhostNodes)
     {
         //
@@ -115,7 +118,6 @@ avtGhostZoneFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
     // will be removed.  Currently our 'real' zones have
     // ghostlevel ==0, 'ghost' have ghostlevel ==1.
     //
-    filter->SetGhostLevel(1);
     vtkDataSet *outDS = filter->GetOutput();
     outDS->Update();
 

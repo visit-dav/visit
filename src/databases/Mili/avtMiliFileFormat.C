@@ -22,6 +22,7 @@ extern "C" {
 
 #include <avtDatabase.h>
 #include <avtDatabaseMetaData.h>
+#include <avtGhostData.h>
 #include <avtMaterial.h>
 #include <avtVariableCache.h>
 #include <avtUnstructuredPointBoundaries.h>
@@ -398,6 +399,9 @@ read_results(Famid &dbid, int ts, int sr, int rank,
 //    Hank Childs, Sat Jun 26 11:24:47 PDT 2004
 //    Check for bad files where number of timesteps is incorrectly reported.
 //
+//    Hank Childs, Fri Aug 27 17:12:50 PDT 2004
+//    Rename ghost data array.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -587,6 +591,8 @@ avtMiliFileFormat::GetMesh(int ts, int dom, const char *mesh)
             // If the sand value is 0, we want to drop it as a ghost zone.
             if (p[i] < 0.5)
             {
+                avtGhostData::AddGhostZoneType(ptr[i], 
+                                               ZONE_NOT_APPLICABLE_TO_PROBLEM);
                 ptr[i] = 1;
                 someValid = true;
             }
@@ -598,7 +604,7 @@ avtMiliFileFormat::GetMesh(int ts, int dom, const char *mesh)
 
         if (someValid)
         {
-            ghostLevels->SetName("vtkGhostLevels");
+            ghostLevels->SetName("avtGhostZones");
             rv->GetCellData()->AddArray(ghostLevels);
         }
         sandLevels->Delete();

@@ -62,6 +62,9 @@ vtkVisItFeatureEdges::~vtkVisItFeatureEdges()
 //    I added correct code to deal with ghost levels (per Kathleen's
 //    suggestions).
 //
+//    Hank Childs, Fri Aug 27 15:15:20 PDT 2004
+//    Renamed ghost data array.  Also remove vestiges of "levels" concept.
+//
 // ****************************************************************************
 
 // Generate feature edges for mesh
@@ -96,7 +99,7 @@ void vtkVisItFeatureEdges::Execute()
   vtkDataArray* temp = 0;
   if (cd)
     {
-    temp = cd->GetArray("vtkGhostLevels");
+    temp = cd->GetArray("avtGhostZones");
     }
   if ( (!temp) || (temp->GetDataType() != VTK_UNSIGNED_CHAR)
        || (temp->GetNumberOfComponents() != 1))
@@ -206,7 +209,6 @@ void vtkVisItFeatureEdges::Execute()
   int abort=0;
   vtkIdType progressInterval=numCells/20+1;
 
-  int updateLevel = GetOutput()->GetUpdateGhostLevel();
   numBEdges = numNonManifoldEdges = numFedges = numManifoldEdges = 0;
   for (cellId=0, newPolys->InitTraversal(); 
        newPolys->GetNextCell(npts,pts) && !abort; cellId++)
@@ -227,7 +229,7 @@ void vtkVisItFeatureEdges::Execute()
 
       if ( this->BoundaryEdges && numNei < 1 )
         {
-        if (ghostLevels && ghostLevels[cellId] > updateLevel)
+        if (ghostLevels && ghostLevels[cellId] > 0)
           {
           continue;
           }
@@ -250,7 +252,7 @@ void vtkVisItFeatureEdges::Execute()
           }
         if ( j >= numNei )
           {
-          if (ghostLevels && ghostLevels[cellId] > updateLevel)
+          if (ghostLevels && ghostLevels[cellId] > 0)
             {
             continue;
             }
@@ -271,7 +273,7 @@ void vtkVisItFeatureEdges::Execute()
         if ( vtkMath::Dot(polyNormals->GetTuple(nei),
                           polyNormals->GetTuple(cellId)) <= cosAngle ) 
           {
-          if (ghostLevels && ghostLevels[cellId] > updateLevel)
+          if (ghostLevels && ghostLevels[cellId] > 0)
             {
             continue;
             }
@@ -288,7 +290,7 @@ void vtkVisItFeatureEdges::Execute()
         }
       else if ( this->ManifoldEdges )
         {
-        if (ghostLevels && ghostLevels[cellId] > updateLevel)
+        if (ghostLevels && ghostLevels[cellId] > 0)
           {
           continue;
           }

@@ -231,7 +231,11 @@ avtTimeSliderColleague::ShouldBeAddedToRenderer() const
 //    Remove a workaround where the text height and width were set when the
 //    text string was changed.  This doesn't seem to be necessary and it
 //    set the size incorrectly.
-//   
+//
+//    Brad Whitlock, Tue Aug 31 11:56:56 PDT 2004
+//    I added code to set the object's visibility so objects that are not
+//    visible remain invisible when restoring a session file.
+//
 // ****************************************************************************
 
 void
@@ -371,6 +375,18 @@ avtTimeSliderColleague::SetOptions(const AnnotationObject &annot)
             mediator.GetFrameAndState(a, b, c, d, e, f, g);
             SetFrameAndState(a, b, c, d, e, f, g);
         }
+    }
+
+    //
+    // Set the object's visibility.
+    //
+    if(currentOptions.GetVisible() != annot.GetVisible())
+    {
+        SetVisible(annot.GetVisible());
+        if(annot.GetVisible())
+            AddToRenderer();
+        else
+            RemoveFromRenderer();
     }
 }
 

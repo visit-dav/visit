@@ -106,6 +106,9 @@ avtDatasetVerifier::VerifyDatasets(int nlist, vtkDataSet **list,
 //    Iterate over all variables.  Added an argument for the domain number.
 //    Also do not issue a warning if the missing values are for ghost zones.
 //
+//    Hank Childs, Fri Aug 27 15:32:06 PDT 2004
+//    Rename ghost data array.
+//
 // ****************************************************************************
 
 void
@@ -138,7 +141,7 @@ avtDatasetVerifier::VerifyDataset(vtkDataSet *ds, int dom)
             CorrectVarMismatch(ds, cell_var, false);
             bool issueWarning = true;
             vtkUnsignedCharArray *gz = (vtkUnsignedCharArray *)
-                                 ds->GetCellData()->GetArray("vtkGhostLevels");
+                                 ds->GetCellData()->GetArray("avtGhostZones");
             if (gz != NULL)
             {
                 int ntuples = gz->GetNumberOfTuples();

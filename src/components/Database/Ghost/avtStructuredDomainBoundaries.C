@@ -2126,6 +2126,11 @@ avtStructuredDomainBoundaries::ConfirmMesh(vector<int>         domainNum,
 //  Programmer: Hank Childs
 //  Creation:   November 12, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Aug 27 16:16:52 PDT 2004
+//    Rename ghost data arrays.
+//
 // ****************************************************************************
 
 void
@@ -2133,26 +2138,27 @@ avtStructuredDomainBoundaries::CreateGhostZones(vtkDataSet *outMesh,
                                               vtkDataSet *inMesh, Boundary *bi)
 {
     vtkUnsignedCharArray *oldGhosts = (vtkUnsignedCharArray *)
-                        inMesh->GetCellData()->GetArray("vtkGhostLevels");
+                        inMesh->GetCellData()->GetArray("avtGhostZones");
 
     // Create the ghost zone array
     vtkUnsignedCharArray *ghostCells = vtkUnsignedCharArray::New();
-    ghostCells->SetName("vtkGhostLevels");
+    ghostCells->SetName("avtGhostZones");
     ghostCells->Allocate(bi->newncells);
     for (int k = bi->newzextents[4]; k <= bi->newzextents[5]; k++)
         for (int j = bi->newzextents[2]; j <= bi->newzextents[3]; j++)
             for (int i = bi->newzextents[0]; i <= bi->newzextents[1]; i++)
             {
-                unsigned char used_to_be_ghost = 0;
-                if (oldGhosts)
+                unsigned char gv = 0;
+                if (oldGhosts != NULL)
                 {
                     int index = bi->OldCellIndex(i, j, k);
                     if (index >= 0)
-                        used_to_be_ghost = oldGhosts->GetValue(index);
+                        gv = oldGhosts->GetValue(index);
                 }
- 
-                ghostCells->InsertNextValue(bi->IsGhostZone(i,j,k) 
-                                            ? 1 : used_to_be_ghost);
+                if (bi->IsGhostZone(i,j,k))
+                    avtGhostData::AddGhostZoneType(gv,
+                                          DUPLICATED_ZONE_INTERNAL_TO_PROBLEM);
+                ghostCells->InsertNextValue(gv);
             }
 
     outMesh->GetCellData()->AddArray(ghostCells);
@@ -2394,6 +2400,9 @@ avtRectilinearDomainBoundaries::ExchangeMesh(vector<int>        domainNum,
 //    Hank Childs, Tue Aug 24 09:25:39 PDT 2004
 //    Create avtRealDims.
 //
+//    Hank Childs, Fri Aug 27 16:16:52 PDT 2004
+//    Renamed ghost data array.
+//
 // ****************************************************************************
 
 void
@@ -2413,7 +2422,7 @@ avtStructuredDomainBoundaries::CreateGhostNodes(vector<int>         domainNum,
 
         vtkUnsignedCharArray *gn = vtkUnsignedCharArray::New();
         gn->SetNumberOfTuples(npts);
-        gn->SetName("vtkGhostNodes");
+        gn->SetName("avtGhostNodes");
         unsigned char *gnp = gn->GetPointer(0);
    
         for (int j = 0 ; j < npts ; j++)

@@ -131,6 +131,9 @@ vtkOnionPeelFilter::SetBadSeedCellCallback(BadSeedCellCallback cb, void *args)
 //   Since we are issuing an error callback for a bad seed,
 //   don't allow further processing. 
 //
+//   Hank Childs, Fri Aug 27 15:15:20 PDT 2004
+//   Renamed ghost data arrays.
+//
 //======================================================================
 
 bool 
@@ -192,7 +195,7 @@ vtkOnionPeelFilter::Initialize(const int numCells)
     //
     // check if seedcellId is a ghost cell;
     //
-    vtkDataArray *ghosts = input->GetCellData()->GetArray("vtkGhostLevels");
+    vtkDataArray *ghosts = input->GetCellData()->GetArray("avtGhostZones");
     if (ghosts)
     {
         if (ghosts->GetComponent(this->SeedCellId, 0) != 0)

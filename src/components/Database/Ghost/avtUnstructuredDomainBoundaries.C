@@ -295,6 +295,11 @@ avtUnstructuredDomainBoundaries::CopyPointer(T *src, T *dest, int components,
 //  Programmer:  Akira Haddox
 //  Creation:    August 11, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Aug 27 16:34:46 PDT 2004
+//    Rename ghost data arrays.  Also properly mark ghost data type.
+//
 // ****************************************************************************
 
 vector<vtkDataSet*>
@@ -395,7 +400,7 @@ avtUnstructuredDomainBoundaries::ExchangeMesh(vector<int>       domainNum,
             // The id that the cells will be inserted at is
             // important, and we need to remember.
             startingCell[pair<int,int>(sendDom, recvDom)] = outm->
-                                                             GetNumberOfCells();
+                                                            GetNumberOfCells();
             
             // We want the map that indexes the ptIds from sendDom into
             // the ptIds of recvDom.
@@ -424,18 +429,21 @@ avtUnstructuredDomainBoundaries::ExchangeMesh(vector<int>       domainNum,
         // Create the ghost zone array
 
         vtkUnsignedCharArray *ghostCells = vtkUnsignedCharArray::New();
-        ghostCells->SetName("vtkGhostLevels");
+        ghostCells->SetName("avtGhostZones");
         ghostCells->SetNumberOfTuples(outm->GetNumberOfCells());
         unsigned char *ptr = ghostCells->GetPointer(0);
         for (i = 0; i < nOldCells; ++i)
             *(ptr++) = 0;
         int nGhostCells = outm->GetNumberOfCells() - nOldCells;
         for (i = 0; i < nGhostCells; ++i)
-            *(ptr++) = 1;
+        {
+            avtGhostData::AddGhostZoneType(*ptr,
+                                          DUPLICATED_ZONE_INTERNAL_TO_PROBLEM);
+            ptr++;
+        }
         outm->GetCellData()->AddArray(ghostCells);
         ghostCells->Delete();
         outm->SetUpdateGhostLevel(0);
-
 
         outm->BuildLinks();
         out[d] = outm;
@@ -1484,6 +1492,9 @@ avtUnstructuredDomainBoundaries::CommunicateDataInformation(
 //  Programmer: Hank Childs
 //  Creation:   August 16, 2004
 //
+//    Hank Childs, Fri Aug 27 16:34:46 PDT 2004
+//    Rename ghost data arrays.
+//
 // ****************************************************************************
 
 void
@@ -1499,7 +1510,7 @@ avtUnstructuredDomainBoundaries::CreateGhostNodes(vector<int> domainNum,
 
         vtkUnsignedCharArray *gn = vtkUnsignedCharArray::New();
         gn->SetNumberOfTuples(npts);
-        gn->SetName("vtkGhostNodes");
+        gn->SetName("avtGhostNodes");
         unsigned char *gnp = gn->GetPointer(0);
         for (j = 0 ; j < npts ; j++)
             gnp[j] = 0;

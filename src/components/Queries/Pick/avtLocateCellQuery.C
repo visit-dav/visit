@@ -229,6 +229,9 @@ avtLocateCellQuery::Execute(vtkDataSet *ds, const int dom)
 //    Kathleen Bonnell, Wed Jun  2 10:21:50 PDT 2004 
 //    Moved Isect code to RGridIsect. 
 //
+//    Hank Childs, Fri Aug 27 16:02:58 PDT 2004
+//    Rename ghost data array.
+//
 // ****************************************************************************
 
 int
@@ -242,7 +245,7 @@ avtLocateCellQuery::RGridFindCell(vtkDataSet *ds, float &dist, float *isect)
     {
         cellId = rgrid->ComputeCellId(ijk);
         vtkUnsignedCharArray *ghosts = (vtkUnsignedCharArray *)ds->
-                     GetCellData()->GetArray("vtkGhostLevels");
+                     GetCellData()->GetArray("avtGhostZones");
         if (ghosts && ghosts->GetComponent(cellId, 0) == 1 )
         {
             cellId = -1;

@@ -317,6 +317,9 @@ avtContourFilter::PerformRestriction(avtPipelineSpecification_p in_spec)
 //    Kathleen Bonnell, Thu Mar 11 11:10:07 PST 2004 
 //    DataExtents now always have only 2 components. 
 //
+//    Hank Childs, Mon Aug 30 08:42:48 PDT 2004
+//    Initialize current_node and nnodes for better progress indicators.
+//
 // ****************************************************************************
 
 void
@@ -367,6 +370,9 @@ avtContourFilter::PreExecute(void)
     debug5 << endl;
     CreateLabels();
     GetOutput()->GetInfo().GetAttributes().SetLabels(isoLabels);
+
+    nnodes = GetInputDataTree()->GetNumberOfLeaves();
+    current_node = 0;
 }
 
 
@@ -451,6 +457,9 @@ avtContourFilter::PreExecute(void)
 //    Hank Childs, Tue May 11 06:47:24 PDT 2004
 //    Fix a bug that assumed that we would always have *something* to contour.
 //
+//    Hank Childs, Mon Aug 30 08:45:14 PDT 2004
+//    Give better progress.
+//
 // ****************************************************************************
 
 avtDataTree_p 
@@ -465,6 +474,7 @@ avtContourFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string label)
     {
         debug3 << "No levels to calculate! " << endl;
         GetOutput()->GetInfo().GetValidity().InvalidateOperation();
+        current_node++;
         return NULL;
     }
 
@@ -516,11 +526,24 @@ avtContourFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string label)
     toBeContoured->GetPointData()->SetActiveScalars(contourVar);
     visitTimer->StopTimer(t3, "Recentering");
 
+    //
+    // The progress is a bit funny.  Recentering and building the scalar
+    // tree takes a lot of time.  So we would like for that to be 1/2 of
+    // the progress for this stage.  So allocate 1/4 for each.  The "+2"
+    // business is to account for a case where there are 0 isolevels,
+    // which could lead to a divide-by-0 when calculating progress.
+    //
+    int nLevels = isoValues.size();
+    int total = 4*nLevels+2;
+    UpdateProgress(current_node*total + nLevels+1, total*nnodes);
+
     vtkVisItScalarTree *tree = vtkVisItScalarTree::New();
     tree->SetDataSet(toBeContoured);
     int id0 = visitTimer->StartTimer();
     tree->BuildTree();
     visitTimer->StopTimer(id0, "Building scalar tree");
+
+    UpdateProgress(current_node*total + 2*nLevels+2, total*nnodes);
 
     //
     // Do the actual contouring.  Split each isolevel into its own dataset.
@@ -553,6 +576,7 @@ avtContourFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string label)
             out_ds[i]->ShallowCopy(output);
         }
         visitTimer->StopTimer(id2, "Calculating isosurface");
+        UpdateProgress(current_node*total + 2*nLevels+2+2*i, total*nnodes);
     }
 
     //
@@ -583,6 +607,7 @@ avtContourFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string label)
     tree->Delete();
 
     visitTimer->StopTimer(tt1, "avtContourFilter::ExecuteData");
+    current_node++;
     return outDT;
 }
 

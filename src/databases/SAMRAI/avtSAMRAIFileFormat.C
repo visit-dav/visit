@@ -33,6 +33,7 @@
 #include <vtkPoints.h>
 
 #include <avtDatabaseMetaData.h>
+#include <avtGhostData.h>
 #include <avtIntervalTree.h>
 #include <avtIOInformation.h>
 #include <avtMaterial.h>
@@ -548,6 +549,9 @@ avtSAMRAIFileFormat::GetMesh(int patch, const char *)
 //    Mark C. Miller, Tue Aug 24 20:11:52 PDT 2004
 //    Added code to set up the magic 'base_index' array
 //
+//    Hank Childs, Fri Aug 27 17:16:05 PDT 2004
+//    Rename ghost data array.
+//
 // ****************************************************************************
 vtkDataSet *
 avtSAMRAIFileFormat::ReadMesh(int patch)
@@ -682,7 +686,7 @@ avtSAMRAIFileFormat::ReadMesh(int patch)
             ncells *= (dimensions[i]-1);
 
         vtkUnsignedCharArray *ghostCells = vtkUnsignedCharArray::New();
-        ghostCells->SetName("vtkGhostLevels");
+        ghostCells->SetName("avtGhostZones");
         ghostCells->Allocate(ncells);
 
         // fill in ghost value (0/1) for each cell
@@ -708,7 +712,10 @@ avtSAMRAIFileFormat::ReadMesh(int patch)
 
             if (in_ghost_layers)
             {
-                ghostCells->InsertNextValue((unsigned char)1);
+                unsigned char v = 0;
+                avtGhostData::AddGhostZoneType(v, 
+                                          DUPLICATED_ZONE_INTERNAL_TO_PROBLEM);
+                ghostCells->InsertNextValue(v);
                 nghost++;
             }   
             else

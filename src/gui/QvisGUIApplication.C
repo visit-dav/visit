@@ -915,6 +915,9 @@ QvisGUIApplication::SyncCallback(Subject *s, void *data)
 //   wants to be visible. Finally, I made the main window be shown later to
 //   speed up launch time on MacOS X.
 //
+//   Brad Whitlock, Mon Aug 30 08:54:17 PDT 2004
+//   Prevented an error message from being shown unintentionally.
+//
 // ****************************************************************************
 
 void
@@ -980,7 +983,7 @@ QvisGUIApplication::FinalInitialization()
         break;
     case 5:
         // Load the initial data file.
-        if(!sessionFile.isEmpty())
+        if(!loadFile.Empty() && !sessionFile.isEmpty())
         {
             Message("When a session file is specified on the command line, "
                     "files specified with the -o argument are ignored.");

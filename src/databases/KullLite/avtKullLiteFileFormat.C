@@ -241,6 +241,9 @@ avtKullLiteFileFormat::~avtKullLiteFileFormat()
 //    subroutines and renamed to ReadInPrimaryMesh (from ReadInFile), since
 //    another routine now reads in "mesh tag" meshes.
 //
+//    Hank Childs, Fri Aug 27 16:54:45 PDT 2004
+//    Rename ghost data array.
+//
 // ****************************************************************************
 
 void
@@ -343,12 +346,16 @@ avtKullLiteFileFormat::ReadInPrimaryMesh(int fi)
     }
 
     vtkUnsignedCharArray *ghosts = vtkUnsignedCharArray::New();
-    ghosts->SetName("vtkGhostLevels");
+    ghosts->SetName("avtGhostZones");
     ghosts->SetNumberOfTuples(mesh_nzones);
     for (i = 0 ; i < nCells ; i++)
         ghosts->SetValue(i, 0);
+    unsigned char v = 0;
+    avtGhostData::AddGhostZoneType(v, DUPLICATED_ZONE_INTERNAL_TO_PROBLEM);
     for (i = nCells ; i < mesh_nzones ; i++)
-        ghosts->SetValue(i, 1);
+    {
+        ghosts->SetValue(i, v);
+    }
     datasetPtr->GetCellData()->AddArray(ghosts);
     ghosts->Delete();
     

@@ -106,6 +106,9 @@ vtkUniqueFeatureEdges::~vtkUniqueFeatureEdges()
 //    Hank Childs, Fri Jul 30 08:02:44 PDT 2004
 //    Copy over field data.
 //
+//    Hank Childs, Fri Aug 27 15:15:20 PDT 2004
+//    Rename ghost data array.
+//
 // ****************************************************************************
 
 void vtkUniqueFeatureEdges::Execute()
@@ -138,7 +141,7 @@ void vtkUniqueFeatureEdges::Execute()
   vtkDataArray* temp = 0;
   if (cd)
     {
-    temp = cd->GetArray("vtkGhostLevels");
+    temp = cd->GetArray("avtGhostZones");
     }
   if ( (!temp) || (temp->GetDataType() != VTK_UNSIGNED_CHAR)
        || (temp->GetNumberOfComponents() != 1))

@@ -74,6 +74,15 @@ All rights reserved.
 #define VTK_AXIS_POS_MAXMAX 2
 #define VTK_AXIS_POS_MAXMIN 3
 
+// ****************************************************************************
+//  Modifications:
+//    Kathleen Bonnell, Tue Aug 31 16:17:43 PDT 2004
+//    Added TitleTextTime timestamp, so that title can be updated appropriately
+//    when its text changes.  Changed Titles Set macro for a user-defined
+//    set so TitleTextTime can be updated.
+//
+// ****************************************************************************
+
 
 class VISIT_VTK_API vtkVisItAxisActor : public vtkActor
 {
@@ -118,7 +127,7 @@ public:
 
   // Description:
   // Set/Get the title of the axis actor,
-  vtkSetStringMacro(Title);
+  void SetTitle(const char *t);
   vtkGetStringMacro(Title);
 
   // Description:
@@ -337,6 +346,7 @@ private:
   vtkTimeStamp        BuildTime;
   vtkTimeStamp        BoundsTime;
   vtkTimeStamp        LabelBuildTime;
+  vtkTimeStamp        TitleTextTime;
 
   int                 AxisHasZeroLength;
 };

@@ -16,5 +16,7 @@ PyObject       *PyHistogramAttributes_WrapPyObject(const HistogramAttributes *at
 void            PyHistogramAttributes_SetLogging(bool val);
 void            PyHistogramAttributes_SetDefaults(const HistogramAttributes *atts);
 
+PyObject       *PyHistogramAttributes_StringRepresentation(const HistogramAttributes *atts);
+
 #endif
 

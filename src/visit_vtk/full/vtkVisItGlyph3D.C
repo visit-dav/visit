@@ -85,6 +85,9 @@ vtkVisItGlyph3D::~vtkVisItGlyph3D()
 //    but still perserved default vtkGlyph3D behavior if those ivars aren't
 //    populated.
 //
+//    Hank Childs, Fri Aug 27 15:15:20 PDT 2004
+//    Renamed ghost data arrays.
+//
 //*****************************************************************************
 void vtkVisItGlyph3D::Execute()
 {
@@ -145,7 +148,7 @@ void vtkVisItGlyph3D::Execute()
   vtkDataArray* temp = 0;
   if (pd)
     {
-    temp = pd->GetArray("vtkGhostLevels");
+    temp = pd->GetArray("avtGhostZones");
     }
   if ( (!temp) || (temp->GetDataType() != VTK_UNSIGNED_CHAR)
     || (temp->GetNumberOfComponents() != 1))

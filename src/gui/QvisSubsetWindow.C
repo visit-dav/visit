@@ -348,6 +348,7 @@ QvisSubsetWindow::AddListView(bool visible)
             this, SLOT(listviewSelectionChanged()));
     entry.lv->addColumn("");
     entry.lv->setColumnWidthMode(0, QListView::Manual);
+    entry.lv->setMinimumHeight(entry.lv->fontMetrics().height() * 15);
     if(!visible)
         entry.frame->hide();
 
@@ -1111,14 +1112,19 @@ QvisSubsetWindow::resizeEvent(QResizeEvent *e)
 // Modifications:
 //   Brad Whitlock, Fri Feb 8 15:52:11 PST 2002
 //   Modified the code to use a splitter.
-//   
+//
+//   Brad Whitlock, Mon Aug 30 12:05:45 PDT 2004
+//   I changed the code to make the splitter somewhat wider.
+//
 // ****************************************************************************
 
 void
 QvisSubsetWindow::specialResize()
 {
-    int minWidth = listViews.size()*listViews[0].lv->minimumWidth() +
-                       (listViews.size() - 1) * 5;
+    int splitterWidths = (listViews.size() - 1) * 10;
+    int minWidth = listViews.size()*listViews[0].frame->minimumWidth() +
+                   splitterWidths;
+
     int w = minWidth;
     if(scrollView->visibleWidth() > minWidth)
          w = scrollView->visibleWidth();

@@ -216,6 +216,9 @@ avtExpressionFilter::PostExecute(void)
 //    DataExtents now always only 2 components.  Allow for Tensor var's range
 //    to be computed. 
 //
+//    Hank Childs, Fri Aug 27 16:54:45 PDT 2004
+//    Rename ghost data arrays.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -298,7 +301,7 @@ avtExpressionFilter::ExecuteData(vtkDataSet *in_ds, int index,
         if (!isPoint)
         {
             vtkUnsignedCharArray *g = (vtkUnsignedCharArray *)
-                                 rv->GetCellData()->GetArray("vtkGhostLevels");
+                                 rv->GetCellData()->GetArray("avtGhostZones");
             if (g != NULL)
             {
                 ghosts = g->GetPointer(0);

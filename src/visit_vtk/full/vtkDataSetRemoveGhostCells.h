@@ -53,6 +53,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //    Kathleen Bonnell, Wed Jul 10 16:02:56 PDT 2002
 //    Removed FindCellMins and FindCellMax methods.
 //
+//    Hank Childs, Mon Aug 30 16:27:16 PDT 2004
+//    Removed GhostLevels data member.
+//
 class VISIT_VTK_API vtkDataSetRemoveGhostCells : public vtkDataSetToDataSetFilter
 {
 public:
@@ -60,13 +63,6 @@ public:
   vtkTypeMacro(vtkDataSetRemoveGhostCells, vtkDataSetToDataSetFilter);
   void PrintSelf(ostream& os, vtkIndent indent);
   
-  // Description:
-  // Set / Get the lowest ghost level to remove.  (All cells with ghost
-  // levels at this level or higher will be removed.)
-  vtkSetMacro(GhostLevel, int);
-  vtkGetMacro(GhostLevel, int);
-
-
 protected:
   vtkDataSetRemoveGhostCells();
   ~vtkDataSetRemoveGhostCells() {};
@@ -78,8 +74,6 @@ protected:
   void UnstructuredGridExecute();
   void RectilinearGridExecute();
   void PolyDataExecute();
-
-  int GhostLevel;
 
 private:
   vtkDataSetRemoveGhostCells(const vtkDataSetRemoveGhostCells&);

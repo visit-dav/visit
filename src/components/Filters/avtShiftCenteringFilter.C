@@ -104,6 +104,9 @@ avtShiftCenteringFilter::~avtShiftCenteringFilter()
 //    Kathleen Bonnell, Thu Mar 13 10:23:37 PST 2003   
 //    Ensure that avtOriginalCellNumbers remains a cell-data array.
 //
+//    Hank Childs, Fri Aug 27 16:02:58 PDT 2004
+//    Rename ghost data array.  Also add support for ghost nodes.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -128,12 +131,17 @@ avtShiftCenteringFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
         cd2pd->Delete();
 
         // We want to preserve knowledge of ghost zones
-        vtkDataArray *ghosts = inDS->GetCellData()->GetArray("vtkGhostLevels");
+        vtkDataArray *ghosts = inDS->GetCellData()->GetArray("avtGhostZones");
         if (ghosts)
         {
             outDS->GetCellData()->AddArray(ghosts);
             // Only want ghost cell-data, not ghost point-data.
-            outDS->GetPointData()->RemoveArray("vtkGhostLevels");
+            outDS->GetPointData()->RemoveArray("avtGhostZones");
+        }
+        if (inDS->GetPointData()->GetArray("avtGhostNodes") != NULL)
+        {
+            outDS->GetPointData()->AddArray(
+                              inDS->GetPointData()->GetArray("avtGhostNodes"));
         }
         // We want to preserve knowledge of original cells 
         vtkDataArray *origCells = 
@@ -159,10 +167,16 @@ avtShiftCenteringFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
         pd2cd->Delete();
 
         // We want to preserve knowledge of ghost zones
-        vtkDataArray *ghosts = inDS->GetCellData()->GetArray("vtkGhostLevels");
+        vtkDataArray *ghosts = inDS->GetCellData()->GetArray("avtGhostZones");
         if (ghosts)
         {
             outDS->GetCellData()->AddArray(ghosts);
+        }
+        vtkDataArray *gn = inDS->GetPointData()->GetArray("avtGhostNodes");
+        if (gn != NULL)
+        {
+            outDS->GetPointData()->AddArray(gn);
+            outDS->GetCellData()->RemoveArray("avtGhostNodes");
         }
     }
     else
