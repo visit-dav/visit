@@ -60,6 +60,7 @@
 #include <avtTestLessThanFilter.h>
 #include <avtTestLessThanOrEqualToFilter.h>
 #include <avtTestNotEqualToFilter.h>
+#include <avtNeighborEvaluatorFilter.h>
 
 #include <stdio.h>
 #include <ExpressionException.h>
@@ -285,6 +286,9 @@ EngineVectorExpr::CreateFilters(ExprPipelineState *state)
 //      Jeremy Meredith, Wed Jun  9 09:16:25 PDT 2004
 //      Added specmf.
 //
+//      Hank Childs, Sat Sep 18 08:54:51 PDT 2004
+//      Added neighbor evaluation expressions.
+//
 // ****************************************************************************
 void
 EngineFunctionExpr::CreateFilters(ExprPipelineState *state)
@@ -434,6 +438,24 @@ EngineFunctionExpr::CreateFilters(ExprPipelineState *state)
         f = new avtRevolvedVolume;
     else if (functionName == "revolved_surface_area")
         f = new avtRevolvedSurfaceArea;
+    else if (functionName == "biggest_neighbor")
+    {
+        avtNeighborEvaluatorFilter *ff = new avtNeighborEvaluatorFilter;
+        ff->SetEvaluationType(avtNeighborEvaluatorFilter::BIGGEST_NEIGHBOR);
+        f = ff;
+    }
+    else if (functionName == "smallest_neighbor")
+    {
+        avtNeighborEvaluatorFilter *ff = new avtNeighborEvaluatorFilter;
+        ff->SetEvaluationType(avtNeighborEvaluatorFilter::SMALLEST_NEIGHBOR);
+        f = ff;
+    }
+    else if (functionName == "neighbor_average")
+    {
+        avtNeighborEvaluatorFilter *ff = new avtNeighborEvaluatorFilter;
+        ff->SetEvaluationType(avtNeighborEvaluatorFilter::AVERAGE_NEIGHBOR);
+        f = ff;
+    }
     else
     {
         string error =

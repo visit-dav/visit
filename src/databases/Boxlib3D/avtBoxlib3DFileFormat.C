@@ -506,6 +506,9 @@ avtBoxlib3DFileFormat::GetMesh(int patch, const char *mesh_name)
 //    Hank Childs, Wed Jul  7 11:28:30 PDT 2004
 //    LBNL refinement ratios are funky, so infer them at a separate spot.
 //
+//    Hank Childs, Sat Sep 18 08:58:23 PDT 2004
+//    Replace commas in variable names with underscores.
+//
 // ****************************************************************************
 
 void
@@ -534,6 +537,13 @@ avtBoxlib3DFileFormat::ReadHeader(void)
     for (i = 0; i < nVars; ++i)
     {
         in.getline(buf, 1024); // Read in var names
+
+        // Replace commas with underscores.
+        int len = strlen(buf);
+        for (int j = 0 ; j < len ; j++)
+            if (buf[j] == ',')
+                buf[j] = '_';
+
         varNames[i] = buf;
     }
     // Read in dimension
