@@ -278,44 +278,61 @@ avtPixieFileFormat::ActivateTimestep(int ts)
 // Creation:   Thu Aug 19 10:57:09 PDT 2004
 //
 // Modifications:
-//   
+//   Eric Brugger, Tue Oct 26 08:36:53 PDT 2004
+//   I modified the routine to return the hyperslab to read of an array.  I
+//   also modified the routine to handle the fact that any arrays associated
+//   with a curvilinear mesh that are 2*nx*ny should be treated as 2d.
+//
 // ****************************************************************************
 
 void
-avtPixieFileFormat::DetermineVarDimensions(const VarInfo &info, int *dims,
-    int &nSpatialDims) const
+avtPixieFileFormat::DetermineVarDimensions(const VarInfo &info,
+    hsize_t *hyperslabDims, int *varDims, int &nVarDims) const
 {
-    // Determine the number of spatial dimensions.
-    nSpatialDims = 0;
-    if(info.dims[0] > 1) ++nSpatialDims;
-    if(info.dims[1] > 1) ++nSpatialDims;
-    if(info.dims[2] > 1) ++nSpatialDims;
+    //
+    // If the mesh is rectilinear, then 1*nx*ny arrays should be treated
+    // as 2d, if the mesh is curvilinear (hasCoords), then 2*nx*ny arrays
+    // should be treated as 2d.
+    //
+    int size1D = 1;
+    if (info.hasCoords)
+    {
+        size1D = 2;
+    }
+
+    //
+    // Determine the hyperslab dimensions.
+    //
+    if (hyperslabDims != 0)
+    {
+        hyperslabDims[0] = (info.dims[0] > size1D) ? info.dims[0] : 1;
+        hyperslabDims[1] = (info.dims[1] > size1D) ? info.dims[1] : 1;
+        hyperslabDims[2] = (info.dims[2] > size1D) ? info.dims[2] : 1;
+    }
 
     //
     // Determine the dimensions for the mesh.
     //
-    if(dims != 0)
+    if(varDims != 0)
     {
-        if(nSpatialDims < 3)
-        {
-            int d[3] = {1,1,1}, di = 0;
-            if(info.dims[0] > 1)
-                d[di++] = int(info.dims[0]);
-            if(info.dims[1] > 1)
-                d[di++] = int(info.dims[1]);
-            if(info.dims[2] > 1)
-                d[di++] = int(info.dims[2]);
-            dims[0] = d[0];
-            dims[1] = d[1];
-            dims[2] = 1;
-        }
-        else
-        {
-            dims[0] = int(info.dims[0]);
-            dims[1] = int(info.dims[1]);
-            dims[2] = int(info.dims[2]);
-        }
+        int di = 0;
+        varDims[0] = 1; varDims[1] = 1; varDims[2] = 1;
+
+        if(info.dims[0] > size1D)
+            varDims[di++] = int(info.dims[0]);
+        if(info.dims[1] > size1D)
+            varDims[di++] = int(info.dims[1]);
+        if(info.dims[2] > size1D)
+            varDims[di++] = int(info.dims[2]);
     }
+
+    //
+    // Determine the number of spatial dimensions of the variable.
+    //
+    nVarDims = 0;
+    if(info.dims[0] > size1D) ++nVarDims;
+    if(info.dims[1] > size1D) ++nVarDims;
+    if(info.dims[2] > size1D) ++nVarDims;
 }
 
 // ****************************************************************************
@@ -337,6 +354,12 @@ avtPixieFileFormat::DetermineVarDimensions(const VarInfo &info, int *dims,
 //   Brad Whitlock, Wed Sep 15 17:06:28 PST 2004
 //   I changed how the support for mesh coordinates is handled.
 //
+//   Eric Brugger, Tue Oct 26 08:36:53 PDT 2004
+//   I modified the routine to handle the fact that variables defined on a
+//   curvilinear mesh are now nodal.  I also simplified the logic to compare
+//   the raw array sizes instead of the reduced sizes since those should
+//   also match.
+//
 // ****************************************************************************
 
 bool
@@ -357,26 +380,29 @@ avtPixieFileFormat::MeshIsCurvilinear(const std::string &name) const
             VarInfoMap::const_iterator zvar = variables.find(
                 mesh->second.coordZ);
 
-            int dims[3], nSpatialDims = 1;
-            DetermineVarDimensions(mesh->second, dims, nSpatialDims);
-            int xDims[3], nXDims = 1;
-            DetermineVarDimensions(xvar->second, xDims, nXDims);
-            int yDims[3], nYDims = 1;
-            DetermineVarDimensions(yvar->second, yDims, nYDims);
-            int zDims[3], nZDims = 1;
-            DetermineVarDimensions(zvar->second, zDims, nZDims);
+            int dims[3], nSpatialDims = 3;
+            dims[0] = int(mesh->second.dims[0]);
+            dims[1] = int(mesh->second.dims[1]);
+            dims[2] = int(mesh->second.dims[2]);
+            int xDims[3], nXDims = 3;
+            xDims[0] = int(xvar->second.dims[0]);
+            xDims[1] = int(xvar->second.dims[1]);
+            xDims[2] = int(xvar->second.dims[2]);
+            int yDims[3], nYDims = 3;
+            yDims[0] = int(yvar->second.dims[0]);
+            yDims[1] = int(yvar->second.dims[1]);
+            yDims[2] = int(yvar->second.dims[2]);
+            int zDims[3], nZDims = 3;
+            zDims[0] = int(zvar->second.dims[0]);
+            zDims[1] = int(zvar->second.dims[1]);
+            zDims[2] = int(zvar->second.dims[2]);
 
             bool same = true;
             for(int i = 0; i < nSpatialDims && same; ++i)
             {
                 same &= (xDims[i] == yDims[i]);
                 same &= (yDims[i] == zDims[i]);
-
-                // The Pixie mesh's coordinate arrays have a
-                // (nx+1)*(ny+1)*(nz+1) values compared to the
-                // mesh size. This is somewhat weird but check
-                // for it.
-                same &= (xvar->second.dims[i] == (mesh->second.dims[i] + 1));
+                same &= (zDims[i] == dims[i]);
             }
 
             retval = same;
@@ -402,6 +428,11 @@ avtPixieFileFormat::MeshIsCurvilinear(const std::string &name) const
 //    Added support for a curvilinear mesh and an optional point mesh for
 //    debugging.
 //
+//    Eric Brugger, Tue Oct 26 08:36:53 PDT 2004
+//    I modified the routine to handle the fact that variables defined on a
+//    curvilinear mesh are now nodal.  I also modified the call to Determine
+//    VarDimensions since an argument was added to it.
+//
 // ****************************************************************************
 
 void
@@ -418,7 +449,7 @@ avtPixieFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     {
         // Determine the number of spatial dimensions.
         int nSpatialDims = 0;
-        DetermineVarDimensions(it->second, 0, nSpatialDims);
+        DetermineVarDimensions(it->second, 0, 0, nSpatialDims);
         if(nSpatialDims == 0)
             continue;
 
@@ -481,7 +512,10 @@ avtPixieFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                  int(it->second.dims[0]));
 
         // Add a zonal scalar to the metadata.
-        AddScalarVarToMetaData(md, it->first, tmp, AVT_ZONECENT);
+        if (it->second.hasCoords)
+            AddScalarVarToMetaData(md, it->first, tmp, AVT_NODECENT);
+        else
+            AddScalarVarToMetaData(md, it->first, tmp, AVT_ZONECENT);
     }
 
 #ifdef ADD_POINT_MESH
@@ -518,6 +552,10 @@ avtPixieFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    I reversed the dimensions for the 3D rectilinear mesh so the variables
 //    would display correctly on it.
 //
+//    Eric Brugger, Tue Oct 26 08:36:53 PDT 2004
+//    I modified the routine to handle the fact that variables defined on a
+//    curvilinear mesh are now nodal.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -540,58 +578,59 @@ avtPixieFileFormat::GetMesh(int timestate, const char *meshname)
         EXCEPTION1(InvalidVariableException, meshNameString);
     }
 
-    int originalDims[3] = {it->second.dims[0],
-                           it->second.dims[1],
-                           it->second.dims[2]};
-
     debug4 << "avtPixieFileFormat::GetMesh: 0: "
-           << "originalDims={" << originalDims[0]
-           << ", " << originalDims[1]
-           << ", " << originalDims[2] << "}" << endl;
+           << "originalDims={" << it->second.dims[0]
+           << ", " << it->second.dims[1]
+           << ", " << it->second.dims[2] << "}" << endl;
 
     //
     // Determine the number of cells in each dimension. Note that 
-    // DetermineVarDimensions throws out dimensions with 1 so we
-    // 1x33x33 could become 33x33. When we use ndims hereafter,
+    // DetermineVarDimensions may throw out dimensions with 1 or 2
+    // depending on wether the variable is nodal or zonal. So
+    // 1x33x33 could become 33x33. When we use nVarDims hereafter,
     // it will contain the reduced number of dimensions if any
     // reduction has been done.
     //
-    int dims[3] = {1, 1, 1};
-    int ndims = 2;
-    DetermineVarDimensions(it->second, dims, ndims);
-    if(ndims < 2)
+    hsize_t hyperslabDims[3];
+    int varDims[3];
+    int nVarDims;
+    DetermineVarDimensions(it->second, hyperslabDims, varDims, nVarDims);
+    if(nVarDims < 2)
     {
         EXCEPTION1(InvalidVariableException, meshNameString);
     }
 
-    //
-    // Add 1 so we have the number of nodes instead of #cells.
-    //
-    ++dims[0];
-    ++dims[1];
-    if(ndims == 3)
-        ++dims[2];
+    debug4 << "avtPixieFileFormat::GetMesh: 1: nVarDims=" << nVarDims 
+           << ", varDims={" << varDims[0] << ", " << varDims[1] << ", "
+           << varDims[2] << "}" << endl;
 
-    debug4 << "avtPixieFileFormat::GetMesh: 1: ndims=" << ndims 
-           << ", dims={" << dims[0] << ", " << dims[1] << ", "
-           << dims[2] << "}" << endl;
-
-    // Try and create a curvilinear mesh.
+    // Try to create a point or curvilinear mesh.
     vtkDataSet *retval = 0;
     if(meshNameString == "pointmesh")
-        retval = CreatePointMesh(timestate, it->second, ndims);
+        retval = CreatePointMesh(timestate, it->second, hyperslabDims,
+                                 varDims, nVarDims);
     else if(MeshIsCurvilinear(meshname))
-        retval = CreateCurvilinearMesh(timestate, it->second, dims, ndims);
+        retval = CreateCurvilinearMesh(timestate, it->second, hyperslabDims,
+                                       varDims, nVarDims);
 
-    // Create a rectilinear mesh.
+    // If the mesh isn't a point or curvilinear mesh, then create a
+    // rectilinear mesh.
     if(retval == 0)
     {
+        //
+        // Add 1 so we have the number of nodes instead of #cells.
+        //
+        ++varDims[0];
+        ++varDims[1];
+        if(nVarDims == 3)
+            ++varDims[2];
+
         // Reverse X,Z dimensions so the mesh is drawn properly.
-        if(ndims == 3)
+        if(nVarDims == 3)
         {
-            int tmp = dims[0];
-            dims[0] = dims[2];
-            dims[2] = tmp;
+            int tmp = varDims[0];
+            varDims[0] = varDims[2];
+            varDims[2] = tmp;
         }
 
         vtkRectilinearGrid *rgrid = vtkRectilinearGrid::New();
@@ -601,21 +640,21 @@ avtPixieFileFormat::GetMesh(int timestate, const char *meshname)
             // Default number of components for an array is 1.
             coords[i] = vtkFloatArray::New();
 
-            if (i < ndims)
+            if (i < nVarDims)
             {
-                coords[i]->SetNumberOfTuples(dims[i]);
-                for (int j = 0; j < dims[i]; j++)
+                coords[i]->SetNumberOfTuples(varDims[i]);
+                for (int j = 0; j < varDims[i]; j++)
                     coords[i]->SetComponent(j, 0, j);
             }
             else
             {
-                dims[i] = 1;
+                varDims[i] = 1;
                 coords[i]->SetNumberOfTuples(1);
                 coords[i]->SetComponent(0, 0, 0.);
             }
         }
 
-        rgrid->SetDimensions(dims);
+        rgrid->SetDimensions(varDims);
         rgrid->SetXCoordinates(coords[0]);
         coords[0]->Delete();
         rgrid->SetYCoordinates(coords[1]);
@@ -647,33 +686,36 @@ avtPixieFileFormat::GetMesh(int timestate, const char *meshname)
 //   Brad Whitlock, Wed Sep 15 17:18:31 PST 2004
 //   Added support for reading custom coordinate arrays.
 //
+//   Eric Brugger, Tue Oct 26 08:36:53 PDT 2004
+//   I modified the routine to handle the fact that variables defined on a
+//   curvilinear mesh are now nodal.
+//
 // ****************************************************************************
 
 vtkDataSet *
 avtPixieFileFormat::CreatePointMesh(int timestate, const VarInfo &info,
-    int nDims) const
+    const hsize_t *hyperslabDims, const int *varDims, int nVarDims) const
 {
     vtkDataSet *ds = 0;
     float *coords[3] = {0,0,0};
-    int dims[3] = {0, 0, 0};
 
     //
     // Try and read the coordinate fields.
     //
-    if(ReadCoordinateFields(timestate, info, coords, dims, nDims))
+    if(ReadCoordinateFields(timestate, info, coords, hyperslabDims, nVarDims))
     {
         //
         // Populate the coordinates. Put in 3D points with z=0 if the mesh
         // is 2D.
         //
-        int i, nPoints = dims[0] * dims[1] * ((nDims > 2) ? dims[2] : 1);        
+        int i, nPoints = varDims[0] * varDims[1] * ((nVarDims > 2) ? varDims[2] : 1);        
         vtkPoints *points  = vtkPoints::New();
         points->SetNumberOfPoints(nPoints);
         float *pts = (float *) points->GetVoidPointer(0);
         for(i = 0; i < 3; ++i)
         {
             float *tmp = pts + i;
-            if(nDims > 2)
+            if(nVarDims > 2)
             {
                 float *coord = coords[i];
                 for(int j = 0; j < nPoints; ++j)
@@ -731,11 +773,15 @@ avtPixieFileFormat::CreatePointMesh(int timestate, const VarInfo &info,
 //   Brad Whitlock, Wed Sep 15 17:19:05 PST 2004
 //   Added support for custom coordinate arrays.
 //
+//   Eric Brugger, Tue Oct 26 08:36:53 PDT 2004
+//   I modified the routine to handle the fact that variables defined on a
+//   curvilinear mesh are now nodal.
+//
 // ****************************************************************************
 
 vtkDataSet *
 avtPixieFileFormat::CreateCurvilinearMesh(int timestate, const VarInfo &info,
-    int nnodes[3], int nDims)
+    const hsize_t *hyperslabDims, const int *varDims, int nVarDims)
 {
     vtkDataSet *retval = 0;
 
@@ -744,7 +790,7 @@ avtPixieFileFormat::CreateCurvilinearMesh(int timestate, const VarInfo &info,
     //
     float *coords[3] = {0,0,0};
     int coordDims[3];
-    if(ReadCoordinateFields(timestate, info, coords, coordDims, nDims))
+    if(ReadCoordinateFields(timestate, info, coords, hyperslabDims, nVarDims))
     {
         //
         // Create the VTK objects and connect them up.
@@ -757,16 +803,16 @@ avtPixieFileFormat::CreateCurvilinearMesh(int timestate, const VarInfo &info,
         //
         // Tell the grid what its dimensions are and populate the points array.
         //
-        if(nDims == 2)
-            sgrid->SetDimensions(nnodes);
+        if(nVarDims == 2)
+            sgrid->SetDimensions((int *)varDims);
         else
         {
             // In 3D, Pixie dimensions are stored ZYX. Reverse them so we
             // give the right order to VTK.
-            int xyzNodes[] = {nnodes[2], nnodes[1], nnodes[0]};
+            int xyzNodes[] = {varDims[2], varDims[1], varDims[0]};
             sgrid->SetDimensions(xyzNodes);
         }
-        int nMeshNodes = nnodes[0] * nnodes[1] * nnodes[2];
+        int nMeshNodes = varDims[0] * varDims[1] * varDims[2];
 
         //
         // Populate the coordinates.  Put in 3D points with z=0 if the mesh is 2D.
@@ -778,11 +824,11 @@ avtPixieFileFormat::CreateCurvilinearMesh(int timestate, const VarInfo &info,
         float    *coord0, *coord1, *coord2;
         float    *tmp = pts;
 
-        switch (nDims)
+        switch (nVarDims)
         {
         case 2:
-            nx = nnodes[0];
-            ny = nnodes[1];
+            nx = varDims[0];
+            ny = varDims[1];
             coord0 = coords[0];
             coord1 = coords[1];
 
@@ -797,12 +843,7 @@ avtPixieFileFormat::CreateCurvilinearMesh(int timestate, const VarInfo &info,
             }
             break;
         case 3:
-            // If things are 3D then the nnodes array did not get reduced
-            // in the DetermineVarDimensions call in GetMesh so the numbers
-            // of dimensions will be stored Z,Y,X.
-            nx = nnodes[2];
-            ny = nnodes[1];
-            nz = nnodes[0];
+            // If things are 3D then the [0];
             coord0 = coords[0];
             coord1 = coords[1];
             coord2 = coords[2];
@@ -844,6 +885,11 @@ avtPixieFileFormat::CreateCurvilinearMesh(int timestate, const VarInfo &info,
 //  Programmer: Brad Whitlock
 //  Creation:   Fri Aug 13 14:31:43 PST 2004
 //
+//  Modifications:
+//    Eric Brugger, Tue Oct 26 08:36:53 PDT 2004
+//    I modified the routine to handle the fact that variables defined on a
+//    curvilinear mesh are now nodal.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -884,8 +930,12 @@ avtPixieFileFormat::GetVar(int timestate, const char *varname)
     //
     // Try and read the data from the file.
     //
+    int nVarDims;
+    hsize_t hyperslabDims[3];
+    DetermineVarDimensions(it->second, hyperslabDims, 0, nVarDims);
+
     vtkDataArray *scalars = 0;
-    int nels = it->second.dims[0] * it->second.dims[1] * it->second.dims[2];
+    int nels = hyperslabDims[0] * hyperslabDims[1] * hyperslabDims[2];
     if(H5Tequal(it->second.nativeVarType, H5T_NATIVE_INT) > 0 ||
        H5Tequal(it->second.nativeVarType, H5T_NATIVE_UINT) > 0)
     {
@@ -895,7 +945,7 @@ avtPixieFileFormat::GetVar(int timestate, const char *varname)
         TRY
         {
             ReadVariableFromFile(timestate, it->first, it->second,
-                iscalars->GetVoidPointer(0));
+                hyperslabDims, iscalars->GetVoidPointer(0));
         }
         CATCH(VisItException)
         {
@@ -912,7 +962,7 @@ avtPixieFileFormat::GetVar(int timestate, const char *varname)
         TRY
         {
             ReadVariableFromFile(timestate, it->first, it->second,
-                fscalars->GetVoidPointer(0));
+                hyperslabDims, fscalars->GetVoidPointer(0));
         }
         CATCH(VisItException)
         {
@@ -929,7 +979,7 @@ avtPixieFileFormat::GetVar(int timestate, const char *varname)
         TRY
         {
             ReadVariableFromFile(timestate, it->first, it->second,
-                dscalars->GetVoidPointer(0));
+                hyperslabDims, dscalars->GetVoidPointer(0));
         }
         CATCH(VisItException)
         {
@@ -963,12 +1013,14 @@ avtPixieFileFormat::GetVar(int timestate, const char *varname)
 // Creation:   Wed Sep 15 08:38:56 PDT 2004
 //
 // Modifications:
+//   Eric Brugger, Tue Oct 26 08:36:53 PDT 2004
+//   I modified the routine to read a hyperslab of the array.
 //   
 // ****************************************************************************
 
 bool
 avtPixieFileFormat::ReadVariableFromFile(int timestate, const std::string &varname,
-    const VarInfo &it, void *dest) const
+    const VarInfo &it, const hsize_t *dims, void *dest) const
 {
     bool retval = false;
 
@@ -1001,6 +1053,9 @@ avtPixieFileFormat::ReadVariableFromFile(int timestate, const std::string &varna
         H5Dclose(dataId);
         EXCEPTION1(InvalidVariableException, varname);
     }
+    hssize_t start[3];
+    start[0] = 0; start[1] = 0; start[2] = 0;
+    H5Sselect_hyperslab(spaceId, H5S_SELECT_SET, start, NULL, dims, NULL);
 
     //
     // Try and read the data from the file.
@@ -1093,11 +1148,14 @@ float *ConvertToFloat(const T *data, int nels)
 //   Brad Whitlock, Wed Sep 15 17:20:11 PST 2004
 //   Added support for reading custom coordinate arrays.
 //
+//   Eric Brugger, Tue Oct 26 08:36:53 PDT 2004
+//   I modified the routine to read a hyperslab of the array.
+//
 // ****************************************************************************
 
 bool
 avtPixieFileFormat::ReadCoordinateFields(int timestate, const VarInfo &info,
-    float *coords[3], int dims[3], int nDims) const
+    float *coords[3], const hsize_t *dims, int nDims) const
 {
     bool retval = false;
 
@@ -1114,8 +1172,6 @@ avtPixieFileFormat::ReadCoordinateFields(int timestate, const VarInfo &info,
         if(vars[i] == variables.end())
              return false;
 
-    coords[0] = coords[1] = coords[2] = 0;
-    dims[0] = dims[1] = dims[2] = 0;
     TRY
     {
         //
@@ -1123,17 +1179,15 @@ avtPixieFileFormat::ReadCoordinateFields(int timestate, const VarInfo &info,
         //
         for(i = 0; i < nDims; ++i)
         {
-            int nels = vars[i]->second.dims[0] *
-                       vars[i]->second.dims[1] *
-                       vars[i]->second.dims[2];
+            int nels = dims[0] * dims[1] * dims[2];
             if(H5Tequal(vars[i]->second.nativeVarType, H5T_NATIVE_INT) > 0 ||
                H5Tequal(vars[i]->second.nativeVarType, H5T_NATIVE_UINT) > 0)
             {
                 int *data = new int[nels];
                 TRY
                 {
-                    ReadVariableFromFile(timestate, vars[i]->first, vars[i]->second,
-                        (void *)data);
+                    ReadVariableFromFile(timestate, vars[i]->first,
+                        vars[i]->second, dims, (void *)data);
                     coords[i] = ConvertToFloat(data, nels);
                     delete [] data;
                 }
@@ -1148,15 +1202,15 @@ avtPixieFileFormat::ReadCoordinateFields(int timestate, const VarInfo &info,
             {
                 coords[i] = new float[nels];
                 ReadVariableFromFile(timestate, vars[i]->first, vars[i]->second,
-                    coords[i]);
+                    dims, coords[i]);
             }
             else if(H5Tequal(vars[i]->second.nativeVarType, H5T_NATIVE_DOUBLE) > 0)
             {
                 double *data = new double[nels];
                 TRY
                 {
-                    ReadVariableFromFile(timestate, vars[i]->first, vars[i]->second,
-                        (void *)data);
+                    ReadVariableFromFile(timestate, vars[i]->first,
+                        vars[i]->second, dims, (void *)data);
                     coords[i] = ConvertToFloat(data, nels);
                     delete [] data;
                 }
@@ -1177,17 +1231,13 @@ avtPixieFileFormat::ReadCoordinateFields(int timestate, const VarInfo &info,
         }
 
         retval = true;
-
-        // Now that we've succeeded, set the dimensions.
-        dims[0] = vars[0]->second.dims[0];
-        dims[1] = vars[0]->second.dims[1];
-        dims[2] = vars[0]->second.dims[2];
     }
     CATCH(VisItException)
     {
         // Delete any coordinate arrays that we may have read.
         for(i = 0; i < nDims; ++i)
             delete [] coords[i];
+        coords[0] = coords[1] = coords[2] = 0;
     }
     ENDTRY
 

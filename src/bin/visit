@@ -340,6 +340,10 @@ $0 = shift @ARGV;
 #    Fixed security key for totalview.  Made "visit -env" print to 
 #    stdout instead of stderr so it is easier to capture/redirect.
 #
+#    Jeremy Meredith, Tue Oct 26 22:11:23 PDT 2004
+#    Added parallel sublauncher arguments.  Specifically needed for srun in
+#    psub/srun because srun can't figure out the right number of processors.
+#
 ###############################################################################
 
 
@@ -1325,6 +1329,11 @@ if ($procs_set or ($parallel and $parlaunch_set))
     {
         ($psubcmd, $sublauncher) = split /\W+/, substr($launch,4);
         $sublauncher = "" if (!defined $sublauncher);
+	if ($sublauncher eq "srun" and $procs_set)
+        {
+            $sublauncherargs = "-n $procs";
+        }
+
         if (grep(/csh/, "$ENV{SHELL}"))
         {
             $libpathcmd="setenv LIBPATH $ENV{LIBPATH} ; setenv LD_LIBRARY_PATH $ENV{LIBPATH}";
@@ -1344,7 +1353,8 @@ if ($procs_set or ($parallel and $parlaunch_set))
         push @parcmd, "-b",  $bank  if $bank_set;
         push @parcmd, "-tM", $time  if $time_set;
         push @parcmd, "-expedite"   if $expedite_engine;
-        push @parcmd, "-i", "cd $cwd ; $libpathcmd ; $sublauncher @visitcmd";
+        push @parcmd, "-i", "cd $cwd ; $libpathcmd ; ".
+                            " $sublauncher $sublauncherargs @visitcmd";
         @printcmd = @parcmd;
         push @printcmd, ("\"".(pop @printcmd)."\"");
     }

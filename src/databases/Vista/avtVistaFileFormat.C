@@ -238,10 +238,14 @@ avtVistaFileFormat::GetFileNameForRead(int dom, char *fileName, int size)
 //    Mark C. Miller, Wed May 19 10:56:11 PDT 2004
 //    Replaced use of basename/dirname with StringHelper functions
 //
+//    Mark C. Miller, Tue Oct 26 10:28:36 PDT 2004
+//    Added argument for format type
+//
 // ****************************************************************************
 
-avtVistaFileFormat::avtVistaFileFormat(const char *filename)
-    : avtSTMDFileFormat(&filename, 1)
+avtVistaFileFormat::avtVistaFileFormat(const char *filename,
+                                       VistaFormatType _formatType)
+    : avtSTMDFileFormat(&filename, 1),  formatType(_formatType)
 {
     wasMorphed = false;
 
@@ -294,27 +298,29 @@ avtVistaFileFormat::avtVistaFileFormat(const char *filename)
     //
     // Read the name of the code that generated this vista file 
     //
-    writerName = 0;
-    ReadDataset(0, "dbtype", 0, 0, (void**) &writerName);
-    if (writerName == 0)
+    if (formatType == FTYPE_UNKNOWN)
     {
-        const char *msg = "Unable to determine name of code that generated "
-                          "this Vista file. Therefore, VisIt cannot decide "
-                          "which Vista file format to use.";
-        if (!avtCallback::IssueWarning(msg))
-            cerr << msg << endl;
+        writerName = 0;
+        ReadDataset(0, "dbtype", 0, 0, (void**) &writerName);
+        if (writerName == 0)
+        {
+            const char *msg = "Unable to determine name of code that generated "
+                              "this Vista file. Therefore, VisIt cannot decide "
+                              "which Vista file format to use.";
+            if (!avtCallback::IssueWarning(msg))
+                cerr << msg << endl;
+        }
+
+        //
+        // Determine format type
+        //
+        if (strcmp(writerName, "ALE3D") == 0)
+            formatType = FTYPE_ALE3D;
+        else if (strcmp(writerName, "DIABLO") == 0)
+            formatType = FTYPE_DIABLO;
+        else
+            formatType = FTYPE_UNKNOWN;
     }
-
-
-    //
-    // Determine format type
-    //
-    if (strcmp(writerName, "ALE3D") == 0)
-        formatType = FTYPE_ALE3D;
-    else if (strcmp(writerName, "DIABLO") == 0)
-        formatType = FTYPE_DIABLO;
-    else
-        formatType = FTYPE_UNKNOWN;
 
     //
     // Read and construct the vista tree
@@ -323,6 +329,8 @@ avtVistaFileFormat::avtVistaFileFormat(const char *filename)
     char *buf = 0;
     ReadDataset(0, "VisIt", 0, &size, (void**) &buf);
     vTree = new VistaTree(buf, size);
+    if (getenv("VISIT_VISTA_DEBUG"))
+        vTree->DumpTree();
     delete [] buf;
 
     //
@@ -578,16 +586,54 @@ avtVistaFileFormat::CloseFile(int f)
 //  Method: avtVistaFileFormat::ReadDataset
 //
 //  Purpose:
+//      General ReadDataset that returns any type
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   October 25, 2004
+//
+// ****************************************************************************
+bool
+avtVistaFileFormat::ReadDataset(const char *fileName, const char *dsName,
+    VistaDataType *dataType, size_t *size, void **buf)
+{
+    return ReadDataset(fileName, dsName, dataType, size, buf, false);
+}
+
+// ****************************************************************************
+//  Method: avtVistaFileFormat::ReadDataset
+//
+//  Purpose:
+//      Convenient ReadDataset that always returns floats
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   October 25, 2004
+//
+// ****************************************************************************
+bool
+avtVistaFileFormat::ReadDataset(const char *fileName, const char *dsName,
+    size_t *size, float **buf)
+{
+    return ReadDataset(fileName, dsName, 0, size, (void **) buf, true);
+}
+
+// ****************************************************************************
+//  Method: avtVistaFileFormat::ReadDataset
+//
+//  Purpose:
 //      Reads a named datasets from the file.
 //
 //  Programmer: Mark C. Miller 
 //  Creation:   February 17, 2004
 //
+//  Modifications:
+//
+//    Mark C. Miller, Tue Oct 26 10:28:36 PDT 2004
+//    Made it private. Added bool to control conversion to float
+//
 // ****************************************************************************
-
 bool
 avtVistaFileFormat::ReadDataset(const char *fileName, const char *dsName,
-    VistaDataType *dataType, size_t *size, void **buf)
+    VistaDataType *dataType, size_t *size, void **buf, bool convertToFloat)
 {
     VistaDataType retType;
     size_t retSize;
@@ -624,11 +670,21 @@ avtVistaFileFormat::ReadDataset(const char *fileName, const char *dsName,
                 default:        retType = DTYPE_UNKNOWN; break;
             }
 
+            // override returned type if we're converting to float
+            if (convertToFloat)
+                retType = DTYPE_FLOAT;
+
             // read the variable
             if (buf != 0)
             {
                 if (*buf == 0)
-                    *buf = new char [DBGetVarByteLength(dbfile, (char *) dsName)];
+                {
+                    if (convertToFloat)
+                        *buf = new float [retSize];
+                    else
+                        *buf = new char [DBGetVarByteLength(dbfile, (char *) dsName)];
+
+                }
                 else
                 {
                     if (*size < retSize)
@@ -636,7 +692,60 @@ avtVistaFileFormat::ReadDataset(const char *fileName, const char *dsName,
                         EXCEPTION2(UnexpectedValueException, (int) retSize, (int) *size);
                     }
                 }
-                DBReadVar(dbfile, (char *) dsName, *buf);
+
+                // since we're in ForceSingle mode, even doubles get read as floats
+                if (convertToFloat == false || type == DB_FLOAT)
+                {
+                    DBReadVar(dbfile, (char *) dsName, *buf);
+                }
+                else
+                {
+                    char *tmpBuf = new char [DBGetVarByteLength(dbfile, (char *) dsName)];
+                    DBReadVar(dbfile, (char *) dsName, tmpBuf);
+                    
+                    float *fptr = (float *) (*buf);
+                    switch (type)
+                    {
+                        case DB_CHAR:
+                        {
+                            char *cptr = (char *) tmpBuf;
+                            for (int i = 0; i < retSize; i++)
+                                *fptr++ = (float) (*cptr++);
+                            break;
+                        }
+                        case DB_SHORT:
+                        {
+                            short *sptr = (short *) tmpBuf;
+                            for (int i = 0; i < retSize; i++)
+                                *fptr++ = (float) (*sptr++);
+                            break;
+                        }
+                        case DB_INT:
+                        {
+                            int *iptr = (int *) tmpBuf;
+                            for (int i = 0; i < retSize; i++)
+                                *fptr++ = (float) (*iptr++);
+                            break;
+                        }
+                        case DB_LONG:
+                        {
+                            long *lptr = (long *) tmpBuf;
+                            for (int i = 0; i < retSize; i++)
+                                *fptr++ = (float) (*lptr++);
+                            break;
+                        }
+                        case DB_DOUBLE:
+                        {
+                            double *dptr = (double *) tmpBuf;
+                            for (int i = 0; i < retSize; i++)
+                                *fptr++ = (float) (*dptr++);
+                            break;
+                        }
+                    }
+
+                    delete [] tmpBuf;
+
+                }
             }
 
             retVal = true;
@@ -712,11 +821,18 @@ avtVistaFileFormat::ReadDataset(const char *fileName, const char *dsName,
                 }
             }
 
+            // override types if we're supposed to convert to float
+            if (convertToFloat)
+            {
+                memType = H5T_NATIVE_FLOAT;
+                retType = DTYPE_FLOAT;
+            }
+
             // do the read
             if (buf != 0)
             {
                 if (*buf == 0)
-                    *buf = new char [retSize * H5Tget_size(type)];
+                    *buf = new char [retSize * H5Tget_size(memType)];
                 else
                 {
                     if (*size < retSize)

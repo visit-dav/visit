@@ -26,6 +26,10 @@
 //    Jeremy Meredith, Thu Oct 21 18:20:33 PDT 2004
 //    Renamed, reworked, refactored.
 //
+//    Jeremy Meredith, Tue Oct 26 22:13:51 PDT 2004
+//    More refactoring.  Cloned WhichProcessorsForCell so it could count cells
+//    in the first pass without having to create the destinations vector.
+//
 // ****************************************************************************
 
 class VISIT_VTK_API vtkParallelImageSpaceRedistributor :
@@ -54,11 +58,15 @@ class VISIT_VTK_API vtkParallelImageSpaceRedistributor :
     int              rank, size;
     int              width, height;
 
-    unsigned char   *GetDataString(unsigned int &length, vtkPolyData *asVTK);
+    unsigned char   *GetDataString(int &length, vtkPolyData *asVTK);
     vtkPolyData     *GetDataVTK(unsigned char *asChar,
                                 unsigned int asCharLength);
-    int              WhichProcessors(float *pts, vtkIdType npts,
+    int              WhichProcessorsForCell(float *pts, vtkIdType npts,
                                      vtkIdType *cellPts, std::vector<int>&);
+    void             IncrementOutgoingCellCounts(float *pts, vtkIdType npts,
+                                     vtkIdType *cellPts, std::vector<int>&);
+    float           *CreateTransformedPoints();
+    vtkMatrix4x4    *CreateWorldToDisplayMatrix();
 };
 
 

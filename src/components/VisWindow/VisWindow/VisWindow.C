@@ -3349,6 +3349,9 @@ VisWindow::GetFrameAndState(int &nFrames,
 //   Kathleen Bonnell, Tue Nov  5 08:32:59 PST 2002 
 //   Allow tools to update lighting conditions. 
 // 
+//   Kathleen Bonnell, Tue Oct 26 15:58:06 PDT 2004 
+//   Call UpdateView so that CameraLights' transform matrix gets recomputed. 
+// 
 // ****************************************************************************
 
 void
@@ -3381,6 +3384,7 @@ VisWindow::SetLightList(const LightList *ll)
             //
             plots->SetAmbientCoefficient(lighting->GetAmbientCoefficient());
         }
+        UpdateView();
         Render();
     }
 }

@@ -1310,6 +1310,9 @@ class AttsFieldFactory
 //   Brad Whitlock, Tue May 14 10:30:51 PDT 2002
 //   Added export support.
 //
+//   Mark C. Miller, Tue Oct 26 16:18:21 PDT 2004
+//   Changed operator = to return & to class & check for assignment to self
+//
 // ----------------------------------------------------------------------------
 class AttsGeneratorAttribute
 {
@@ -1563,7 +1566,7 @@ class AttsGeneratorAttribute
         h << "    " << name << "(const " << name << " &obj);" << endl;
         h << "    virtual ~" << name << "();" << endl;
         h << endl;
-        h << "    virtual void operator = (const " << name << " &obj);" << endl;
+        h << "    virtual " << name << "& operator = (const " << name << " &obj);" << endl;
         h << "    virtual bool operator == (const " << name << " &obj) const;" << endl;
         h << "    virtual bool operator != (const " << name << " &obj) const;" << endl;
         h << endl;
@@ -1847,11 +1850,13 @@ class AttsGeneratorAttribute
         QString methodName("operator = ");
         WriteMethodComment(c, name, methodName, purposeString);
 
-        c << "void" << endl;
+        c << name << "& " << endl;
         c << name << "::operator = (const "
           << name << " &obj)" << endl;
         c << "{" << endl;
+        c << "    if (this == &obj) return *this;" << endl;
         WriteSourceCopyCode(c);
+        c << "    return *this;" << endl;
         c << "}" << endl << endl;
     }
     void WriteSourceTypeName(ostream &c)
