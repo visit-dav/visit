@@ -2061,6 +2061,9 @@ ViewerPlotList::OverlayDatabase(const std::string &host, const std::string &data
 //   Made it properly catch errors from parsing expressions.
 //   Made it handle (and abort from) infinitely recursive expressions.
 //
+//   Jeremy Meredith, Wed Oct 29 12:31:52 PST 2003
+//   Added code to make sure varLeaves was non-empty before accessing it.
+//
 // ****************************************************************************
 avtSILRestriction_p
 ViewerPlotList::GetDefaultSILRestriction(const std::string &host,
@@ -2096,7 +2099,12 @@ ViewerPlotList::GetDefaultSILRestriction(const std::string &host,
             // There was a parse error
             return silr;
         }
-        realvar = *tree->GetVarLeaves().begin();
+        const set<string> &varLeaves = tree->GetVarLeaves();
+        if (varLeaves.empty())
+        {
+            EXCEPTION1(InvalidVariableException, "");
+        }
+        realvar = *varLeaves.begin();
         if (expandedVars.count(realvar))
         {
             EXCEPTION1(RecursiveExpressionException, realvar);

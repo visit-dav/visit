@@ -602,6 +602,11 @@ PluginManager::LoadPluginsNow()
 //    Brad Whitlock, Fri Mar 29 12:24:28 PDT 2002
 //    Moved most of the code to other methods so it is easier to port.
 //
+//    Jeremy Meredith, Wed Oct 29 13:16:48 PST 2003
+//    Added code to catch the PluginOpen call and simply print an error
+//    and fail to load the plugin, as long as we're not the viewer or
+//    the gui.
+//
 // ****************************************************************************
 
 void
@@ -624,7 +629,29 @@ PluginManager::LoadSinglePlugin(int index)
     }
 
     // Open the plugin
-    PluginOpen(libfiles[index]);
+    TRY
+    {
+        PluginOpen(libfiles[index]);
+    }
+    CATCHALL(...)
+    {
+        if (category==GUI || category==Viewer)
+        {
+            // These guys can't handle failing to load a plugin
+            // once they decided to load it
+            RETHROW;
+        }
+        else
+        {
+            // Everyone else can!
+            debug1 << "Skipping " << managerName.c_str() << " plugin "
+                   << names[index].c_str()
+                   << " version " << versions[index].c_str()
+                   << " because it failed to open." << endl;
+            return;
+        }
+    }
+    ENDTRY
 
     // Success so far -- add the handle and the info to the list
     int loadedindex = loadedhandles.size();
@@ -650,7 +677,7 @@ PluginManager::LoadSinglePlugin(int index)
         break;
     }
 
-    debug1 << "Loaded "<<managerName.c_str()<<" plugin info for "
+    debug1 << "Loaded full "<<managerName.c_str()<<" plugin "
            << names[index].c_str() << " version " << versions[index].c_str()
            << endl;
 }

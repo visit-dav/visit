@@ -353,7 +353,11 @@ Silo
 Silo is a self-describing, machine-independent scientific file format.
 Silo is one of the file formats supported by VisIt.  Follow the directions
 listed below to build Silo.  If you have any problems building or installing
-Silo, read the INSTALL_NOTES file in the SILO distribution for more information.
+Silo, read the INSTALL_NOTES file in the SILO distribution for more
+information.
+
+Note: for Itanium (ia64) systems, the -fpic flag is needed.  You can replace
+CFLAGS=-O2 with CFLAGS="-fpic -O2" in the configure command below.
 
 #
 # Build Silo
@@ -387,6 +391,15 @@ to run without Python if scripting features are not desired.  Follow the
 directions listed below to build Python.  If you have any problems building
 or installing Python, read the README file in the Python distribution for more
 information.
+
+Note: for Itanium (ia64) systems, the -fpic flag is needed.  To add this flag
+to python's build, do the following:  (1) Follow the commands below until the
+configure step.  Execute configure as given.  (2) Look at the Makefile and find
+the value of the variable OPT.  (3) Re-execute configure with OPT specified
+through the env command, with -fpic added to OPT.  For example:
+    env OPT="-fpic -O2" ./configure --prefix=`cat ../visitpath`/python
+where the "-O2" was the value of OPT in the makefile.  (4) Continue with
+the commands below as given.
 
 #
 # Build and install it in the visit directory under the python directory.
@@ -425,6 +438,9 @@ building VisIt in a UNIX environment. Autoconf creates a script called
 configure that tests your system for various libraries and programs required
 to build VisIt.  Follow the directions listed below to build VisIt.
 More information about building VisIt follows after that.
+
+Note: for Itanium (ia64) systems, add the -fpic flag to the CXXFLAGS in the
+env command for configure.
 
 #
 # Build and install it in the visit directory.

@@ -96,6 +96,9 @@
 #    Hank Childs, Tue Sep 23 07:28:20 PDT 2003
 #    Added Tensor plot.
 #
+#    Jeremy Meredith, Thu Oct 30 12:03:04 PST 2003
+#    Removed Kerbel plot entirely from this makefile.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -104,7 +107,7 @@
 all: message
 	for dir in $(SUBDIRS); do (cd $$dir && $(MAKE) $@) || exit 1; done
 
-OPTIONAL=Kerbel Topology
+OPTIONAL=Topology
 
 REQUIRED=Boundary Contour Curve FilledBoundary Histogram Mesh Pseudocolor \
          Streamline Subset Surface Tensor Vector Volume
