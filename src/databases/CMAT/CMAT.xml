@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+  <Plugin name="CMAT" type="database" label="CMAT" version="1.0" enabled="true" mdspecificcode="true" onlyengine="false" noengine="false" dbtype="STMD" haswriter="false">
+    <Extensions>
+      cmat
+    </Extensions>
+    <Attribute name="" purpose="" persistent="false" exportAPI="" exportInclude="">
+    </Attribute>
+  </Plugin>
