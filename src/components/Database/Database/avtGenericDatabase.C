@@ -3122,6 +3122,10 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, vector<int> &domains,
 //    format (AVT_HAS_GHOSTS) and those created here. (Needed currently so
 //    that Pick can return the correct cell id and/or coords).
 //
+//    Hank Childs, Mon Oct 20 16:45:11 PDT 2003
+//    Allow for materials and meshes to be specified (and then ignored).
+//    They are typically specified as a by-product of expressions.
+//
 // ****************************************************************************
 
 bool
@@ -3472,6 +3476,13 @@ avtGenericDatabase::CommunicateGhosts(avtDatasetCollection &ds,
                     }
                 }
                 break;
+
+              case AVT_MATERIAL:
+              case AVT_MESH:
+                // These typically come about because of expressions.
+                // Just ignore -- it will be handled elsewhere.
+                continue;
+
               default:
                 EXCEPTION1(VisItException, "Cannot exchange secondary "
                          "variables that aren't scalars, vectors, or species");
