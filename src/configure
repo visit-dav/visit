@@ -861,8 +861,8 @@ Optional Packages:
   --with-hdf5=INC,LIB     Location of HDF5 header and library
   --with-vbt=INC,LIB      Location of VBT/DSL headers and libraries
   --with-saf=INC,LIB      Location of SAF headers and libraries
-  --with-silo_include     User-specified SILO include directory
-  --with-silo_library     User-specified SILO library directory
+  --with-silo_include=<INC-DIR>     User-specified SILO include directory
+  --with-silo_library=<LIB-DIR>     User-specified SILO library directory
   --with-exodus=<DIR>           enable Exodus driver
   --with-exodus-include=<DIR>   specify Exodus include path
   --with-exodus-lib=<DIR>       specify Exodus lib path
@@ -7926,6 +7926,148 @@ echo "$as_me: error: The SILO library could not be found. Please provide
     fi
 
     SILO_LIB="-L$SILO_LIBDIR -lsilo"
+fi
+
+#
+# Decide whether we should try to use libsiloh5 or just libsilo
+# or whether libsilo in turn depends on HDF5
+#
+if test -n "$HDF5_LIB"; then
+    if test -r "$SILO_LIBDIR/libsiloh5.a"; then
+
+        echo "$as_me:$LINENO: checking whether to use libsilo.a or libsiloh5.a" >&5
+echo $ECHO_N "checking whether to use libsilo.a or libsiloh5.a... $ECHO_C" >&6
+
+        saved_CPPFLAGS="$CPPFLAGS"
+        saved_LIBS="$LIBS"
+	saved_SILO_LIB="$SILO_LIB"
+
+        SILO_LIB="-L$SILO_LIBDIR -lsiloh5 $HDF5_LIB"
+        CPPFLAGS="$CPPFLAGS $SILO_INCLUDE $HDF5_INCLUDE $ZLIB_INCLUDE"
+        LIBS="$SILO_LIB $LIBS"
+
+        if test "$cross_compiling" = yes; then
+  { { echo "$as_me:$LINENO: error: cannot run test program while cross compiling" >&5
+echo "$as_me: error: cannot run test program while cross compiling" >&2;}
+   { (exit 1); exit 1; }; }
+else
+  cat >conftest.$ac_ext <<_ACEOF
+#line $LINENO "configure"
+#include "confdefs.h"
+
+	    #include <silo.h>
+	    int main()
+	    {
+	        return DBCreate("junk.silo", DB_CLOBBER,
+		           DB_LOCAL, 0, DB_HDF5) == 0;
+	    }
+
+
+_ACEOF
+rm -f conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && { ac_try='./conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  have_libsiloh=yes
+
+else
+  echo "$as_me: program exited with status $ac_status" >&5
+echo "$as_me: failed program was:" >&5
+cat conftest.$ac_ext >&5
+( exit $ac_status )
+have_libsiloh=no
+
+fi
+rm -f core core.* *.core conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
+fi
+
+	if test "$have_libsiloh" = "yes"; then
+            echo "$as_me:$LINENO: result: libsiloh5.a" >&5
+echo "${ECHO_T}libsiloh5.a" >&6
+        else
+            echo "$as_me:$LINENO: result: libsilo.a" >&5
+echo "${ECHO_T}libsilo.a" >&6
+	    SILO_LIB="$saved_SILO_LIB"
+	fi
+
+        LIBS="$saved_LIBS"
+        CPPFLAGS="$saved_CPPFLAGS"
+
+    else
+
+        echo "$as_me:$LINENO: checking whether libsilo.a depends on hdf5" >&5
+echo $ECHO_N "checking whether libsilo.a depends on hdf5... $ECHO_C" >&6
+
+        saved_CPPFLAGS="$CPPFLAGS"
+        saved_LIBS="$LIBS"
+	saved_SILO_LIB="$SILO_LIB"
+
+        SILO_LIB="$SILO_LIB $HDF5_LIB"
+        CPPFLAGS="$CPPFLAGS $SILO_INCLUDE $HDF5_INCLUDE $ZLIB_INCLUDE"
+        LIBS="$SILO_LIB $LIBS"
+
+        if test "$cross_compiling" = yes; then
+  { { echo "$as_me:$LINENO: error: cannot run test program while cross compiling" >&5
+echo "$as_me: error: cannot run test program while cross compiling" >&2;}
+   { (exit 1); exit 1; }; }
+else
+  cat >conftest.$ac_ext <<_ACEOF
+#line $LINENO "configure"
+#include "confdefs.h"
+
+	    #include <silo.h>
+	    int main()
+	    {
+	        return DBCreate("junk.silo", DB_CLOBBER,
+		           DB_LOCAL, 0, DB_HDF5) == 0;
+	    }
+
+
+_ACEOF
+rm -f conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && { ac_try='./conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  silo_depends_on_hdf5=yes
+
+else
+  echo "$as_me: program exited with status $ac_status" >&5
+echo "$as_me: failed program was:" >&5
+cat conftest.$ac_ext >&5
+( exit $ac_status )
+silo_depends_on_hdf5=no
+
+fi
+rm -f core core.* *.core conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
+fi
+
+	if test "$silo_depends_on_hdf5" = "yes"; then
+            echo "$as_me:$LINENO: result: yes" >&5
+echo "${ECHO_T}yes" >&6
+        else
+            echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+	    SILO_LIB="$saved_SILO_LIB"
+	fi
+
+        LIBS="$saved_LIBS"
+        CPPFLAGS="$saved_CPPFLAGS"
+
+    fi
 fi
 
 
