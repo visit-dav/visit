@@ -5664,11 +5664,49 @@ avtGenericDatabase::FindElementForPoint(const char *var, const int ts,
         elNum = vtkVisItUtility::FindCell(ds, pt);
     }
 
-    if (elNum != -1)
-        return true;
-
-    return false;
+    return  (elNum != -1);
 }
                                       
+// ****************************************************************************
+//  Method: avtGenericDatabase::GetDomainName
+//
+//  Purpose:
+//    Gets a string representing the passed domain.
+//
+//  Arguments:
+//    var       The variable to use in searching the database.
+//    ts        The timestep to use in searching the database.
+//    dom       The domain to use in searching the database.
+//    domName   A place to store the domain name. 
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   December 22, 2003
+//
+// ****************************************************************************
 
-
+void
+avtGenericDatabase::GetDomainName(const std::string &varName, const int ts,
+                                const int dom, std::string &domName)
+{
+    string mesh = GetMetaData(ts)->MeshForVar(varName.c_str());
+    const avtMeshMetaData *mmd = GetMetaData(ts)->GetMesh(mesh);
+    char temp[256];
+    if (mmd)
+    {
+        if (mmd->numBlocks > 1)
+        {
+            if ( mmd->blockNames.size() == 0)
+            {
+                 sprintf(temp, "%s %d" , mmd->blockPieceName.c_str(), 
+                         dom + mmd->blockOrigin);
+                 domName = temp;
+            }
+            else 
+            {
+                 sprintf(temp, "%s %s" , mmd->blockPieceName.c_str(), 
+                         mmd->blockNames[dom].c_str());
+                 domName = temp;
+            }
+        }
+    }
+}

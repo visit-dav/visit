@@ -33,6 +33,9 @@
 //   Kathleen Bonnell, Thu Nov 13 08:39:40 PST 2003 
 //   Added 'FindElementForPoint'.
 //
+//   Kathleen Bonnell, Mon Dec 22 14:39:30 PST 2003
+//   Added GetDomainName.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtExpressionEvaluatorFilter 
@@ -53,6 +56,8 @@ public:
     virtual bool             FindElementForPoint(const char *, const int, 
                                  const int, const char *, float[3], int &);
 
+    virtual void             GetDomainName(const std::string &, const int,
+                                 const int , std::string &);
 
 protected:
     virtual void             PreExecute(void) {}

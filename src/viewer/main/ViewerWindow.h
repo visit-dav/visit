@@ -273,6 +273,9 @@ struct ExternalRenderRequestInfo
 //    Jeremy Meredith, Fri Nov 14 17:58:16 PST 2003
 //    Added specular properties.
 //
+//    Eric Brugger, Mon Dec 22 10:22:09 PST 2003
+//    Added SetInitialView3d.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerWindow
@@ -472,6 +475,7 @@ private:
     void ResetView2d();
     void ResetView3d();
     void AdjustView3d(const double *limits);
+    void SetInitialView3d();
     void UpdateViewCurve(const double *limits);
     void UpdateView2d(const double *limits);
     void UpdateView3d(const double *limits);

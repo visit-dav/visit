@@ -54,6 +54,8 @@ typedef void                   (*InitializeProgressCallback)(void *, int);
 //    Kathleen Bonnell, Wed Nov 12 18:26:21 PST 2003 
 //    Added virtual method FindElementForPoint. 
 //
+//    Kathleen Bonnell, Mon Dec 22 14:48:57 PST 2003 
+//    Added virtual method GetDomainName. 
 // ****************************************************************************
 
 class PIPELINE_API avtTerminatingSource : virtual public avtQueryableSource
@@ -93,6 +95,8 @@ class PIPELINE_API avtTerminatingSource : virtual public avtQueryableSource
     virtual bool                   FindElementForPoint(const char*, const int, 
                                        const int, const char*, float[3], int &)
                                        { return false;};
+    virtual void                   GetDomainName(const std::string &, const int, 
+                                       const int, std::string &) {;};
 
   protected:
     avtMetaData                   *metadata;

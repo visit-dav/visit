@@ -150,6 +150,10 @@ typedef struct {
 //    Updated arguments lists for QueryNodes and QueryZones so that multiple
 //    types of coordinates could be retrieved. 
 //
+//    Kathleen Bonnell, Mon Dec 22 14:39:30 PST 2003 
+//    Added virtual GetDomainName, defined here so derived types don't
+//    have to. 
+//
 // ****************************************************************************
 
 class DATABASE_API avtDatabase
@@ -187,6 +191,9 @@ class DATABASE_API avtDatabase
     virtual bool                FindElementForPoint(const char *, const int, 
                                     const int, const char *, float[3], int &)
                                     { return false; } ;
+
+    virtual void                GetDomainName(const std::string &, const int ts,
+                                    const int dom, std::string &) {;};
 
     static void                 GetFileListFromTextFile(const char *,
                                                         char **&, int &);
