@@ -77,6 +77,10 @@ avtTimeLoopFilter::~avtTimeLoopFilter()
 //    Hank Childs, Fri Mar  4 09:41:53 PST 2005
 //    Don't do dynamic load balancing with time queries.
 //
+//    Kathleen Bonnell, Tue Mar 15 17:41:26 PST 2005
+//    Update Queryable source at end, to ensure the pipeline is in the same 
+//    state as when we began.
+//
 // ****************************************************************************
 
 bool
@@ -140,6 +144,11 @@ avtTimeLoopFilter::Update(avtPipelineSpecification_p spec)
     GetOutput()->GetInfo().GetValidity().ResetErrorOccurred();
     CreateFinalOutput();
     RefashionDataObjectInfo();
+
+    //
+    // Ensure the pipeline is in the same state as when we began.
+    //
+    GetInput()->GetQueryableSource()->GetOutput()->Update(spec);
 
     return modified;
 }

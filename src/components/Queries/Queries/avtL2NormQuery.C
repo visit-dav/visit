@@ -54,6 +54,13 @@ avtL2NormQuery::~avtL2NormQuery()
 //  Programmer:   Hank Childs
 //  Creation:     October 3, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Mar 15 15:43:31 PST 2005
+//    The assumption that x-coords won't be duplicated came from the original
+//    implementation of this query -- the L2-norm between curves query.  That
+//    assumption is not true for this query, so add explicit checking.
+//
 // ****************************************************************************
 
 double
@@ -69,8 +76,13 @@ avtL2NormQuery::CurveQuery(int n1, const float *x1, const float *y1)
         pt2[0] = x1[i+1];
         pt2[1] = y1[i+1];
 
+        // Degeneracies like this can occur from lineouts due to numerical
+        // sensititives.  They also can be in a file from a database (like
+        // a pre-existing degeneracy in an Ultra file).
+        if (pt1[0] == pt2[0])
+            continue;
+
         // Calculate the line in f(x) = mx+b notation. 
-        // Note that pt1[0] != pt2[0] because we threw out duplicated points.
         double rise = pt2[1] - pt1[1];
         double run  = pt2[0] - pt1[0];
         double m = rise / run;

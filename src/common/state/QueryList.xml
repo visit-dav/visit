@@ -47,4 +47,6 @@
     </Function>
     <Function name="TimeQueryAvailable" user="true" member="true">
     </Function>
+    <Function name="GetWindowType" user="true" member="true">
+    </Function>
   </Attribute>

@@ -154,3 +154,34 @@ QueryList::TimeQueryAvailable(const std::string &name)
     return canDoTime;
 }
 
+
+Function: GetWindowType
+Declaration:  int GetWindowType(const std::string &name) ;
+Definition:
+// ****************************************************************************
+//  Method:  GetWindowType
+//
+//  Purpose:
+//    Returns the window type for the named query. 
+//
+//  Programmer:  Kathleen Bonnell 
+//  Creation:    March 15, 2005 
+//
+// ****************************************************************************
+ 
+int
+QueryList::GetWindowType(const std::string &name)
+{
+    int i;
+    int wt = -1; 
+    for (i = 0; i < names.size(); i++)
+    {
+        if (name == names[i]) 
+        {
+            wt = winType[i];
+            break;
+        }
+    }
+    return wt;
+}
+

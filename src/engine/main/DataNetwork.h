@@ -57,6 +57,9 @@
 //    Added wid for window id 
 //    Added methods to set/get window id
 //
+//    Kathleen Bonnell, Tue Mar 15 17:41:26 PST 2005 
+//    Added clone.
+//
 // ****************************************************************************
 class DataNetwork
 {
@@ -109,6 +112,7 @@ protected:
     avtPlot_p                   plot;
     std::string                 plottype;
     int                         time;
+    bool                        clone;
 };
 
 #endif

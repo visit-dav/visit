@@ -23,6 +23,10 @@ using std::deque;
 //
 //    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
 //    Added window id (wid)
+//
+//    Kathleen Bonnell, Tue Mar 15 17:41:26 PST 2005 
+//    Initialize clone.
+//
 // ****************************************************************************
 DataNetwork::DataNetwork(void)
 {
@@ -32,6 +36,7 @@ DataNetwork::DataNetwork(void)
     dspec = NULL;
     writer = NULL;
     plotActor = NULL;
+    clone = false;
 }
 
 // ****************************************************************************
@@ -50,13 +55,17 @@ DataNetwork::DataNetwork(void)
 //    Do not clear the nodes before releasing the data -- we would then not
 //    release the data in those nodes.
 //
+//    Kathleen Bonnell, Tue Mar 15 17:41:26 PST 2005 
+//    Don't release data if this network is a clone. 
+//    
 // ****************************************************************************
 DataNetwork::~DataNetwork(void)
 {
     // The terminal node has already been freed by this point.
     terminalNode = NULL;
 
-    ReleaseData();
+    if (!clone)
+        ReleaseData();
 }
 
 // ****************************************************************************
