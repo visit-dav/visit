@@ -52,6 +52,10 @@ SiloObjectViewWindow::ShowItem(QListViewItem *i)
 //  Programmer:  Jeremy Meredith
 //  Creation:    November 12, 2001
 //
+//  Modifications:
+//    Jeremy Meredith, Mon May 17 12:37:32 PDT 2004
+//    Added a couple calls to free memory and prevent really big leaks.
+//
 // ****************************************************************************
 SiloObjectView::SiloObjectView(SiloFile *s, const QString &n, QWidget *p)
     : QListView(p, n), silo(s), name(n)
@@ -122,7 +126,11 @@ SiloObjectView::SiloObjectView(SiloFile *s, const QString &n, QWidget *p)
             sprintf(value, "%s", pdbname.latin1());
             break;
         }
-        
+
+        // No such call as "DBFreeComponent".  Maybe there should be one!
+        free(comp);
+        comp = NULL;
+
         if (type==DB_INT || type==DB_SHORT || type==DB_LONG)
         {
             if (compname == "coordtype")
@@ -185,6 +193,7 @@ SiloObjectView::SiloObjectView(SiloFile *s, const QString &n, QWidget *p)
     }
 
     total_items = object->ncomponents;
+    DBFreeObject(object);
 }
 
 // ****************************************************************************

@@ -6235,7 +6235,6 @@ ViewerWindow::CreateNode(DataNode *parentNode, bool detailed)
         //
         windowNode->AddNode(new DataNode("scalableAutoThreshold", GetScalableAutoThreshold()));
         windowNode->AddNode(new DataNode("scalableActivationMode", GetScalableActivationMode()));
-        windowNode->AddNode(new DataNode("scalableRendering", GetScalableRendering()));
         windowNode->AddNode(new DataNode("notifyForEachRender", GetNotifyForEachRender()));
         windowNode->AddNode(new DataNode("surfaceRepresentation", GetSurfaceRepresentation()));
         windowNode->AddNode(new DataNode("displayListMode", GetDisplayListMode()));
@@ -6571,8 +6570,6 @@ ViewerWindow::SetFromNode(DataNode *parentNode)
         SetScalableAutoThreshold(node->AsInt());
     if((node = windowNode->GetNode("scalableActivationMode")) != 0)
         SetScalableActivationMode(node->AsInt());
-    if((node = windowNode->GetNode("scalableRendering")) != 0)
-        SendScalableRenderingModeChangeMessage(node->AsBool());
     if((node = windowNode->GetNode("notifyForEachRender")) != 0)
         SetNotifyForEachRender(node->AsBool());
     if((node = windowNode->GetNode("surfaceRepresentation")) != 0)

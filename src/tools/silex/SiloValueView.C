@@ -13,6 +13,10 @@
 //  Programmer:  Jeremy Meredith
 //  Creation:    November 12, 2001
 //
+//  Modifications:
+//    Mark Miller, Tue 23 Mar 11:19:13 PDT 2004
+//    Added call to free memory from the Silo DBGetVar call.
+//
 // ****************************************************************************
 SiloValueViewWindow::SiloValueViewWindow(SiloFile *s, const QString &n, QWidget *p)
     : QMainWindow(p, n), silo(s), name(n)

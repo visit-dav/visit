@@ -29,6 +29,17 @@ Explorer::Explorer(const QString &file, QWidget *p, const QString &n)
 }
 
 // ****************************************************************************
+//  Destructor:  Explorer::~Explorer
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    May 17, 2004
+//
+// ****************************************************************************
+Explorer::~Explorer()
+{
+}
+
+// ****************************************************************************
 //  Method:  Explorer::open
 //
 //  Purpose:
@@ -36,6 +47,10 @@ Explorer::Explorer(const QString &file, QWidget *p, const QString &n)
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    November 12, 2001
+//
+//  Modifications:
+//    Jeremy Meredith, Mon May 17 11:50:08 PDT 2004
+//    Change the window caption when opening a new file.
 //
 // ****************************************************************************
 void
@@ -48,5 +63,7 @@ Explorer::open()
                                      NULL, "SiloOpen", "Open file...");
     if (file.isNull())
         return;
+
+    setCaption("Explorer: "+file);
     view->Set(file);
 }

@@ -43,6 +43,18 @@ SiloView::SiloView(const QString &file, QWidget *p, const QString &n)
 }
 
 // ****************************************************************************
+//  Destructor:  SiloView::~SiloView
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    May 17, 2004
+//
+// ****************************************************************************
+SiloView::~SiloView()
+{
+    delete silo;
+}
+
+// ****************************************************************************
 //  Method:  SiloView::Set
 //
 //  Purpose:
