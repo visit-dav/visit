@@ -8,7 +8,11 @@
 #include <VisitALE.c>
 
 #include <stdarg.h>
-#include <libgen.h>
+
+// the include for VisItALE.c also winds up including regex.h and we can't
+// include ligben.h also. So, we define these externs directly
+extern "C" char *basename(char *);
+extern "C" char *dirname(char *);
 
 #include <string>
 #include <map>
