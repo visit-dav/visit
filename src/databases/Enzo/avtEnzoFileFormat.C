@@ -16,6 +16,7 @@
 #include <avtStructuredDomainBoundaries.h>
 #include <avtStructuredDomainNesting.h>
 #include <avtVariableCache.h>
+#include <avtIntervalTree.h>
 
 #include <InvalidVariableException.h>
 #include <InvalidFilesException.h>
@@ -53,6 +54,17 @@ void avtEnzoFileFormat::Grid::Print()
     cerr << endl;
 }
 
+// ****************************************************************************
+//  Method:  avtEnzoFileFormat::Grid::DetermineExtentsInParent
+//
+//  Purpose:
+//    Use our spatial extents and the spatial extents of our parent, as well
+//    as our dimensions, to determine our logical extents within our parent.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    January  3, 2005
+//
+// ****************************************************************************
 void avtEnzoFileFormat::Grid::DetermineExtentsInParent(vector<Grid> &grids)
 {
     Grid &p = grids[parentID];
@@ -87,8 +99,20 @@ void avtEnzoFileFormat::Grid::DetermineExtentsInParent(vector<Grid> &grids)
     }
 }
 
-void avtEnzoFileFormat::Grid::DetermineExtentsGlobally(int numLevels,
-                                                       vector<Grid> &grids)
+// ****************************************************************************
+//  Method:  avtEnzoFileFormat::Grid::DetermineExtentsGlobally
+//
+//  Purpose:
+//    Use the global extents from the parent, and our local extens within
+//    our parent, to determine our global extents.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    January  3, 2005
+//
+// ****************************************************************************
+void
+avtEnzoFileFormat::Grid::DetermineExtentsGlobally(int numLevels,
+                                                  vector<Grid> &grids)
 {
     Grid &p = grids[parentID];
     if (ID != 1)
@@ -111,6 +135,19 @@ void avtEnzoFileFormat::Grid::DetermineExtentsGlobally(int numLevels,
     }
 }
 
+// ****************************************************************************
+//  Method:  avtEnzoFileFormat::ReadHierachyFile
+//
+//  Purpose:
+//    Read the .hierarchy file and get the grid/level hierarchy.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    January  6, 2005
+//
+// ****************************************************************************
 void
 avtEnzoFileFormat::ReadHierachyFile()
 {
@@ -183,6 +220,13 @@ avtEnzoFileFormat::ReadHierachyFile()
             h >> buff; // '='
             h >> g.maxSpatialExtents[0] >> g.maxSpatialExtents[1] >> g.maxSpatialExtents[2];
 
+            while (buff != "NumberOfParticles")
+            {
+                h >> buff;
+            }
+            h >> buff; // '='
+            h >> g.numberOfParticles;
+
             g.level = level;
             g.parentID = parent;
             g.DetermineExtentsInParent(grids);
@@ -246,6 +290,21 @@ avtEnzoFileFormat::ReadHierachyFile()
     h.close();
 }
 
+// ****************************************************************************
+//  Method:  avtEnzoFileFormat::ReadParameterFile
+//
+//  Purpose:
+//    The parameter file is the one without an extension, and it
+//    has some problem setup stuff in it.  We are currently only
+//    using it to get the cycle and time.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    January  6, 2005
+//
+// ****************************************************************************
 void
 avtEnzoFileFormat::ReadParameterFile()
 {
@@ -254,7 +313,7 @@ avtEnzoFileFormat::ReadParameterFile()
     ifstream r(fname_base.c_str());
     if (!r)
         EXCEPTION2(InvalidFilesException, fname_base.c_str(),
-                   "This index file did not exist.");
+                   "This parameter file did not exist.");
 
     string buff("");
     while (r)
@@ -274,19 +333,43 @@ avtEnzoFileFormat::ReadParameterFile()
     r.close();
 }
 
+// ****************************************************************************
+//  Method:  
+//
+//  Purpose:
+//    Find the smallest grid that contains some particles, or just the smallest
+//    grid if none have any particles.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    January  6, 2005
+//
+// ****************************************************************************
 void
 avtEnzoFileFormat::DetermineVariablesFromGridFile()
 {
     int smallest_grid = 0;
     int smallest_grid_nzones = INT_MAX;
+    bool found_grid_with_particles = false;
     for (int i=1; i<grids.size(); i++)
     {
         Grid &g = grids[i];
+        if (found_grid_with_particles && g.numberOfParticles <= 0)
+            continue;
+
         int numZones = g.zdims[0]*g.zdims[1]*g.zdims[2];
-        if (numZones < smallest_grid_nzones)
+        if ((!found_grid_with_particles && g.numberOfParticles > 0) ||
+            (numZones < smallest_grid_nzones))
         {
-            smallest_grid_nzones = numZones;
-            smallest_grid = g.ID;
+            if (!found_grid_with_particles ||
+                (found_grid_with_particles && g.numberOfParticles > 0))
+            {
+                smallest_grid_nzones = numZones;
+                smallest_grid = g.ID;
+                found_grid_with_particles = (g.numberOfParticles > 0);
+            }
         }
     }
 
@@ -301,7 +384,7 @@ avtEnzoFileFormat::DetermineVariablesFromGridFile()
 
     int32 n_datasets;
     int32 n_file_attrs;
-    int32 status = SDfileinfo(file_handle, &n_datasets, &n_file_attrs);
+    SDfileinfo(file_handle, &n_datasets, &n_file_attrs);
 
     for (int var = 0 ; var < n_datasets ; var++)
     {
@@ -332,7 +415,7 @@ avtEnzoFileFormat::DetermineVariablesFromGridFile()
 }
 
 // ****************************************************************************
-//  Method: avtEnzo constructor
+//  Method: avtEnzoFileFormat constructor
 //
 //  Programmer: Jeremy Meredith
 //  Creation:   January  3, 2005
@@ -346,7 +429,6 @@ avtEnzoFileFormat::avtEnzoFileFormat(const char *filename)
     numLevels = 0;
     curTime = 0;
 
-    fname_base;
     string fname(filename);
     string extH(".hierarchy");
     string extB(".boundary");
@@ -372,10 +454,30 @@ avtEnzoFileFormat::avtEnzoFileFormat(const char *filename)
 
 }
 
+// ****************************************************************************
+//  Method:  avtEnzoFileFormat destructure
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    January  6, 2005
+//
+// ****************************************************************************
 avtEnzoFileFormat::~avtEnzoFileFormat()
 {
 }
 
+// ****************************************************************************
+//  Method:  avtEnzoFileFormat::ReadAllMetaData
+//
+//  Purpose:
+//    Read the metadata if we have not done so yet.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    January  6, 2005
+//
+// ****************************************************************************
 void
 avtEnzoFileFormat::ReadAllMetaData()
 {
@@ -424,13 +526,11 @@ avtEnzoFileFormat::GetCyle()
 void
 avtEnzoFileFormat::FreeUpResources(void)
 {
-    /*
     grids.clear();
     varNames.clear();
     particleVarNames.clear();
     numGrids=0;
     numLevels=0;
-    */
 }
 
 
@@ -450,11 +550,10 @@ avtEnzoFileFormat::FreeUpResources(void)
 void
 avtEnzoFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 {
+    // read in the metadata if we have not done so yet
     ReadAllMetaData();
 
-    float extents[6] = {grids[1].minSpatialExtents[0], grids[1].maxSpatialExtents[0],
-                        grids[1].minSpatialExtents[1], grids[1].maxSpatialExtents[1],
-                        grids[1].minSpatialExtents[2], grids[1].maxSpatialExtents[2]};
+    // BuildDomainNesting() <<---  we eventually want this here, probably
 
     avtMeshMetaData *mesh = new avtMeshMetaData;
     mesh->name = "mesh";
@@ -462,8 +561,13 @@ avtEnzoFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     mesh->meshType = AVT_RECTILINEAR_MESH;
     mesh->topologicalDimension = 3;
     mesh->spatialDimension = 3;
-    mesh->hasSpatialExtents = false; // can we say yes?
-
+    mesh->hasSpatialExtents = true;
+    mesh->minSpatialExtents[0] = grids[1].minSpatialExtents[0];
+    mesh->minSpatialExtents[1] = grids[1].minSpatialExtents[1];
+    mesh->minSpatialExtents[2] = grids[1].minSpatialExtents[2];
+    mesh->maxSpatialExtents[0] = grids[1].maxSpatialExtents[0];
+    mesh->maxSpatialExtents[1] = grids[1].maxSpatialExtents[1];
+    mesh->maxSpatialExtents[2] = grids[1].maxSpatialExtents[2];
     // spoof a group/domain mesh
     mesh->numBlocks = numGrids;
     mesh->blockTitle = "Grids";
@@ -503,13 +607,13 @@ avtEnzoFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     pmesh->groupIds = groupIds;
     md->Add(pmesh);
 
-    //md->AddGroupInformation(numLevels, numGrids, groupIds);
-
+    // grid variables
     for (int v = 0 ; v < varNames.size(); v++)
     {
         AddScalarVarToMetaData(md, varNames[v], "mesh", AVT_ZONECENT);
     }
 
+    // particle variables
     for (int p = 0 ; p < particleVarNames.size(); p++)
     {
         AddScalarVarToMetaData(md, particleVarNames[p], "particles",
@@ -548,8 +652,8 @@ avtEnzoFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //      meshname    The name of the mesh of interest.  This can be ignored if
 //                  there is only one mesh.
 //
-//  Programmer: meredith -- generated by xml2avt
-//  Creation:   Fri Dec 3 17:19:52 PST 2004
+//  Programmer: Jeremy Meredith
+//  Creation:   January  6, 2005
 //
 // ****************************************************************************
 
@@ -560,9 +664,17 @@ avtEnzoFileFormat::GetMesh(int domain, const char *meshname)
 
     if (string(meshname) == "mesh")
     {
-        // rectilinear mesh
-        BuildDomainNesting();  //  <<=== causing crashes!
+        // HACK HACK HACK
+        // There is a bug in VisIt versions before 1.4.2 that will apply 
+        // the domain nesting from the AMR mesh to the particles, and
+        // cause a crash.  We add the nesting here -- i.e. at the last
+        // possible moment -- so that the particle mesh can delete the
+        // nesting info if it needs to.  For version 1.4.2 and later,
+        // this call to BuildDomainNesting should go into something like
+        // PopulateDatabaseMetaData.
+        BuildDomainNesting();
 
+        // rectilinear mesh
         vtkFloatArray  *coords[3];
         int i;
         int d = domain+1;
@@ -590,6 +702,16 @@ avtEnzoFileFormat::GetMesh(int domain, const char *meshname)
     }
     else
     {
+        // HACK HACK HACK
+        // There is a bug in VisIt versions before 1.4.2 that will apply 
+        // the domain nesting from the AMR mesh to the particles, and
+        // cause a crash.  We delete the nesting before particle plots for now.
+        void_ref_ptr nr;
+        cache->CacheVoidRef("any_mesh", AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION,
+                            timestep, -1, nr);
+        cache->CacheVoidRef("any_mesh", AUXILIARY_DATA_DOMAIN_NESTING_INFORMATION,
+                            timestep, -1, nr);
+        
         // particle mesh
         char gridFileName[1000];
         sprintf(gridFileName, "%s.grid%04d", fname_base.c_str(), domain+1);
@@ -931,3 +1053,46 @@ avtEnzoFileFormat::GetVectorVar(int domain, const char *varname)
 {
     return NULL;
 }
+
+// ****************************************************************************
+//  Method:  avtEnzoFileFormat::GetAuxiliaryData
+//
+//  Purpose:
+//    Right now this only supports spatial interval trees.  There is no
+//    other information like materials and species available.
+//
+//  Arguments:
+//    type       the kind of auxiliary data to create
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    January  6, 2005
+//
+// ****************************************************************************
+void *
+avtEnzoFileFormat::GetAuxiliaryData(const char *var, int dom, 
+                                    const char * type, void *,
+                                    DestructorFunction &df)
+{
+    if (type != AUXILIARY_DATA_SPATIAL_EXTENTS)
+        return NULL;
+
+    avtIntervalTree *itree = new avtIntervalTree(numGrids, 3);
+
+    for (int grid = 1 ; grid <= numGrids ; grid++)
+    {
+        float bounds[6];
+        bounds[0] = grids[grid].minSpatialExtents[0];
+        bounds[1] = grids[grid].maxSpatialExtents[0];
+        bounds[2] = grids[grid].minSpatialExtents[1];
+        bounds[3] = grids[grid].maxSpatialExtents[1];
+        bounds[4] = grids[grid].minSpatialExtents[2];
+        bounds[5] = grids[grid].maxSpatialExtents[2];
+        itree->AddDomain(grid-1, bounds);
+    }
+    itree->Calculate(true);
+
+    df = avtIntervalTree::Destruct;
+
+    return ((void *) itree);
+}
+

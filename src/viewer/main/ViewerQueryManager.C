@@ -908,6 +908,9 @@ ViewerQueryManager::GetQueryClientAtts()
 //    Added 'elmentIsGlobal' arg, use it to set new QueryAttriubte 
 //    'useGlobalId'.
 //
+//    Eric Brugger, Thu Jan  6 08:58:28 PST 2005
+//    Corrected a misuse of the CATCH_RETURN macro.
+//
 // ****************************************************************************
 
 void         
@@ -1093,7 +1096,7 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
             {
                 queryClientAtts->Notify();
                 Error(message);
-                CATCH_RETURN(0);
+                CATCH_RETURN(1);
             }
         }
         ENDTRY
@@ -3266,6 +3269,9 @@ ViewerQueryManager::UpdateQueryOverTimeAtts()
 //    are no longer part of the QueryList, because Pick uses these
 //    queries to do a pick-through-time.
 //    
+//    Eric Brugger, Thu Jan  6 08:58:28 PST 2005
+//    Corrected a misuse of the CATCH_RETURN macro.
+//
 // ***********************************************************************
 
 void
@@ -3500,7 +3506,7 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin, QueryAttributes *qA)
                 // around muddying up the waters.
                 // 
                 plotList->DeletePlot(resultsPlot, false);
-                CATCH_RETURN(0);
+                CATCH_RETURN(1);
             }
         }
         ENDTRY
@@ -3674,6 +3680,8 @@ ViewerQueryManager::PickThroughTime(PICK_POINT_INFO *ppi, const int dom,
 //  Creation:   June 3, 2004 
 //
 //  Modifications:
+//    Eric Brugger, Thu Jan  6 08:58:28 PST 2005
+//    Corrected a misuse of the CATCH_RETURN2 macro.
 //  
 // ****************************************************************************
 
@@ -3785,7 +3793,7 @@ ViewerQueryManager::VerifySingleInputQuery(ViewerPlotList *plist, const int plot
             " please contact a VisIt developer.\n";
         queryClientAtts->Notify();
         Error(msg.c_str());
-        CATCH_RETURN2(2, false);
+        CATCH_RETURN2(1, false);
     }
     ENDTRY
 }
@@ -3815,6 +3823,8 @@ ViewerQueryManager::VerifySingleInputQuery(ViewerPlotList *plist, const int plot
 //  Creation:   June 3, 2004 
 //
 //  Modifications:
+//    Eric Brugger, Thu Jan  6 08:58:28 PST 2005
+//    Corrected a misuse of the CATCH_RETURN2 macro.
 //  
 // ****************************************************************************
 
@@ -3885,7 +3895,7 @@ ViewerQueryManager::VerifyMultipleInputQuery(ViewerPlotList *plist,
             " please contact a VisIt developer.\n";
         queryClientAtts->Notify();
         Error(msg.c_str());
-        CATCH_RETURN2(2, false);
+        CATCH_RETURN2(1, false);
     }
     ENDTRY
 }
@@ -3907,6 +3917,8 @@ ViewerQueryManager::VerifyMultipleInputQuery(ViewerPlotList *plist,
 //  Creation:   June 3, 2004 
 //
 //  Modifications:
+//    Eric Brugger, Thu Jan  6 08:58:28 PST 2005
+//    Corrected a misuse of the CATCH_RETURN macro.
 //
 // ****************************************************************************
 
@@ -3947,7 +3959,7 @@ ViewerQueryManager::DoSpatialExtentsQuery(ViewerPlot *oplot, bool actualData)
             " please contact a VisIt developer.\n";
         queryClientAtts->Notify();
         Error(msg.c_str());
-        CATCH_RETURN(0);
+        CATCH_RETURN(1);
     }
     ENDTRY
 }

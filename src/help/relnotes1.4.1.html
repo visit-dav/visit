@@ -45,6 +45,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <li>VisIt now provides version-specific VisIt scripts, which allow for better error checking and prevent the mixing of public and private versions.</li>
 <li>VisIt now allows for specifying a global node/zone id for the OnionPeel operator and the PickByZone, PickByNode, Zone Center and Node Coords queries. This option is accessed in the GUI by toggling the new checkbox in the Queries and OnionPeel windows.. In the CLI, the OnionPeel option is accessed via setting OnionPeelAttributes. For Pick: PickByGlobalZone(gzoneno), PickByGlobalNode(gnodeno). For Query: Query("Global Zone Center", gzoneid) and Query("Global Node Coords", gnodeid).</li>
 <li>VisIt can now generate curl, divergence, and the Laplacian through its expression language.</li>
+<li>VisIt now supports the Enzo file format for AMR grids.</li>
 </ul>
 <p><b><font size="4">Bugs fixed in version 1.4.1</font></b></p>
 <ul>
@@ -91,9 +92,10 @@ enhancements and bug-fixes that were added to this release.</p>
 <li>Some databases do not display as ASCII characters in the Label plot even though they should.</li>
 <li>Odd behavior in CLI with queries when creating and deleting plots.</li>
 <li><i>makemili</i> now does a better job with single processor dumps that have a naming convention similar to multiple processor dumps.</li>
-<li>Using the centered difference gradiant method can crash Volume plot.</li>
+<li>Using the centered difference gradiant method can crash the Volume plot.</li>
 <li>The Pixie reader no longer reads data defined on 3d curvilinear meshes.</li>
 <li>Changing the time state with a plot that has been sliced through a zone fails with an Invalid File Exception.</li>
+<li>Multiple bugs in VisIt's expression language were fixed</li>
 <li>Slicing through a node causes an extraneous warning message to be displayed, giving the user the impression that the operation failed when in fact it worked.</li>
 </ul>
 <p>Click the following link to view the release notes for the previous version

@@ -7,10 +7,12 @@
 #include <ExprParser.h>
 #include <string>
 #include <set>
+#include <vector>
 #include <ImproperUseException.h>
 #include <RecursiveExpressionException.h>
 using std::set;
 using std::string;
+using std::vector;
 
 ParsingExprList * ParsingExprList::instance = 0;
 
@@ -298,43 +300,57 @@ ParsingExprList::GetExpressionTree(Expression *expr)
 //  Arguments:
 //    var        the original variable name
 //
-//  Note:  refactored this from my original implementation in ViewerPlotList.
-//
 //  Programmer:  Jeremy Meredith
-//  Creation:    December 14, 2004
+//  Creation:    January  6, 2005
 //
 // ****************************************************************************
 string
 ParsingExprList::GetRealVariable(const string &var)
 {
-    string realvar = var;
+    // Use a set to check for expression recursion
     set<string> expandedVars;
-    expandedVars.insert(realvar);
-    Expression *expr = GetExpression(realvar);
-    while (expr)
+
+    // Use a stack to walk the expression tree
+    vector<string> varStack;
+    varStack.push_back(var);
+
+    while (!varStack.empty())
     {
-        ExprNode *tree = GetExpressionTree(expr);
-        if (!tree)
-        {
-            // We won't normally get here because error
-            // conditions will usually throw exceptions.
-            return "";
-        }
-        const set<string> &varLeaves = tree->GetVarLeaves();
-        if (varLeaves.empty())
-        {
-            EXCEPTION1(ImproperUseException,
-                       "After parsing, expression has no real variables.");
-        }
-        realvar = *varLeaves.begin();
+        string realvar = varStack.back();
+        varStack.pop_back();
+
+        // Check for recursion
         if (expandedVars.count(realvar))
         {
             EXCEPTION1(RecursiveExpressionException, realvar);
         }
         expandedVars.insert(realvar);
-        expr = ParsingExprList::GetExpression(realvar);
+
+        // If this variable is not an expression, then it is real
+        // Otherwise, descend into it
+        Expression *expr = GetExpression(realvar);
+        if (!expr)
+        {
+            // Found the real variable
+            return realvar;
+        }
+
+        ExprNode *tree = GetExpressionTree(expr);
+        if (!tree)
+        {
+            // We won't normally get here because error
+            // conditions will usually throw exceptions.
+            // Otherwise, every expression should have
+            // a tree.
+            return "";
+        }
+
+        const set<string> &varLeaves = tree->GetVarLeaves();
+        varStack.insert(varStack.end(),
+                        varLeaves.begin(), varLeaves.end());
     }
 
-    return realvar;
+    EXCEPTION1(ImproperUseException,
+               "After parsing, expression has no real variables.");
 }
 

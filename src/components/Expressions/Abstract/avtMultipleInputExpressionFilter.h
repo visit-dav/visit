@@ -27,6 +27,10 @@
 //    Hank Childs, Mon Dec 27 10:37:15 PST 2004
 //    Changed inheritance from avtExpressionFilter to avtExpressionStreamer.
 //
+//    Hank Childs, Thu Jan  6 11:00:35 PST 2005
+//    Added MixedCenteringYieldsZonal method to give derived types a hook into
+//    altering behavior of IsPointVariable.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtMultipleInputExpressionFilter 
@@ -47,6 +51,7 @@ class EXPRESSION_API avtMultipleInputExpressionFilter
     std::vector<char *>       varnames;
 
     virtual bool              IsPointVariable(void);
+    virtual bool              MixedCenteringYieldsZonal(void) { return true; };
 };
 
 #endif

@@ -36,8 +36,11 @@ class Xfer;
 #include <vector>
 #include <avtDataObjectWriter.h>
 #include <ParentProcess.h>
-#include <parallel.h>
 #include <BufferConnection.h>
+
+#ifdef PARALLEL
+#include <parallel.h>
+#endif
 
 // ****************************************************************************
 //  Class:  Engine

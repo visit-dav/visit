@@ -220,6 +220,9 @@ avtExpressionEvaluatorFilter::AdditionalPipelineFilters(void)
 //    Hank Childs, Fri Dec 31 11:50:07 PST 2004
 //    Maintain our own cached version of the terminating source.
 //
+//    Hank Childs, Thu Jan  6 11:08:56 PST 2005
+//    Beef up logic to insert identity filters.
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -336,6 +339,7 @@ avtExpressionEvaluatorFilter::PerformRestriction(
     }
 
     // Take the list of expressions and make the filters for them.
+    int numFiltersLastTime = 0;
     while (createFilters && !expr_list.empty())
     {
         std::vector<string>::iterator back = expr_list.end() - 1;
@@ -354,7 +358,7 @@ avtExpressionEvaluatorFilter::PerformRestriction(
 
         vector<avtExpressionFilter*> &filters = pipelineState.GetFilters();
         avtExpressionFilter *f = NULL;
-        if (filters.size() == 0)
+        if (filters.size() == numFiltersLastTime)
         {
             // The only way we can get here is if we have an expression of 
             // the form "A = B".
@@ -363,6 +367,7 @@ avtExpressionEvaluatorFilter::PerformRestriction(
             avtIdentityFilter *ident = new avtIdentityFilter();
             string inputName = pipelineState.PopName();
             ident->AddInputVariableName(inputName.c_str());
+            ident->SetOutputVariableName(var.c_str());
             ident->SetInput(pipelineState.GetDataObject());
             pipelineState.SetDataObject(ident->GetOutput());
             pipelineState.AddFilter(ident);
@@ -373,6 +378,7 @@ avtExpressionEvaluatorFilter::PerformRestriction(
             f = filters.back();
         }
         f->SetOutputVariableName(var.c_str());
+        numFiltersLastTime = filters.size();
     }
 
     // Make sure we have real variables to pass to the database.

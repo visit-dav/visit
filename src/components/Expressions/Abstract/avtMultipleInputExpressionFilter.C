@@ -78,18 +78,32 @@ avtMultipleInputExpressionFilter::AddInputVariableName(const char *var)
 //    Kathleen Bonnell, Mon Mar 29 11:28:25 PST 2004 
 //    Make sure that varnames is not empty before attempting to index. 
 //
+//    Hank Childs, Thu Jan  6 10:42:13 PST 2005
+//    Do a better job when there are mixed centerings.
+//
 // ****************************************************************************
 
 bool
 avtMultipleInputExpressionFilter::IsPointVariable(void)
 {
     avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
-    if (varnames.size() > 0 && atts.ValidVariable(varnames[0]))
+    bool hasNodal = false;
+    bool hasZonal = false;
+    for (int i = 0 ; i < varnames.size() ; i++)
     {
-        return (atts.GetCentering(varnames[0]) != AVT_ZONECENT);
+        if (!atts.ValidVariable(varnames[i]))
+            return avtExpressionFilter::IsPointVariable();
+
+        if (atts.GetCentering(varnames[i]) == AVT_ZONECENT)
+            hasZonal = true;
+        else
+            hasNodal = true;
     }
-   
-    return avtExpressionFilter::IsPointVariable();
+
+    if (hasZonal && hasNodal)
+        return !(MixedCenteringYieldsZonal());
+
+    return hasNodal;
 }
 
 
