@@ -197,7 +197,7 @@ then
    then
       cat hitit >> bdiv
 
-      scp -P 22 hitit:/var/tmp/$user/hitit/visitbuild/visit$ver2.linux.tar.gz .
+      scp -P 22 hitit:/gscratch/$user/hitit/visitbuild/visit$ver2.linux.tar.gz .
       scp -P 22 visit$ver2.linux.tar.gz sunset:
    fi
 fi
