@@ -302,6 +302,9 @@ struct ExternalRenderRequestInfo
 //    Mark C. Miller, Tue Apr 27 14:41:35 PDT 2004
 //    Removed preparingToChangeScalableRenderingMode
 //
+//    Hank Childs, Mon May 10 08:03:22 PDT 2004
+//    Replaced "immediate mode" bool with "display list" enum.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerWindow
@@ -487,8 +490,8 @@ public:
     void SetStereoRendering(bool enabled, int type);
     bool GetStereo() const;
     int  GetStereoType() const;
-    void SetImmediateModeRendering(bool mode);
-    bool GetImmediateModeRendering() const;
+    void SetDisplayListMode(int);
+    int  GetDisplayListMode(void) const;
     void SetSurfaceRepresentation(int rep);
     int  GetSurfaceRepresentation() const;
     int  GetNumTriangles() const;

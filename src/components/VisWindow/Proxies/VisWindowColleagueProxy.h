@@ -71,6 +71,8 @@
 //    Kathleen Bonnell, Wed Dec  3 16:49:14 PST 2003
 //    Added 'ReAddtoolsToRenderWindow'.
 //
+//    Hank Childs, Mon May 10 08:31:01 PDT 2004
+//    Removed ImmediateMode rendering method.
 // ****************************************************************************
 
 class VISWINDOW_API VisWindowColleagueProxy : public VisWindowProtectionProxy
@@ -136,9 +138,6 @@ class VISWINDOW_API VisWindowColleagueProxy : public VisWindowProtectionProxy
 
     int                 GetSurfaceRepresentation()
                                   { return ProxiedGetSurfaceRepresentation(); };
-
-    bool                GetImmediateModeRendering()
-                                  { return ProxiedGetImmediateModeRendering(); };
 
     bool                DisableExternalRenderRequests()
                                   { return ProxiedDisableExternalRenderRequests(); };

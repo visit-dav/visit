@@ -86,6 +86,9 @@ class     VisitInteractor;
 //    Kathleen Bonnell, Wed Dec  3 16:49:14 PST 2003 
 //    Added methods TransparenciesExist, ReAddToolsToRenderWindow.
 //
+//    Hank Childs, Mon May 10 08:31:01 PDT 2004
+//    Removed immediate mode rendering method.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindowProtectionProxy
@@ -138,7 +141,6 @@ class VISWINDOW_API VisWindowProtectionProxy
     bool                ProxiedGetLighting();
     void                ProxiedUpdateLightPositions();
     int                 ProxiedGetSurfaceRepresentation();
-    bool                ProxiedGetImmediateModeRendering();
     bool                ProxiedDisableExternalRenderRequests();
     bool                ProxiedEnableExternalRenderRequests();
     void                ProxiedGetScaleFactorAndType(double &s, int &t);

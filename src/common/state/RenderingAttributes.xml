@@ -1,26 +1,59 @@
 <?xml version="1.0"?>
-  <Attribute name="RenderingAttributes" purpose="This class contains special rendering attributes like antialiasing and stero settings." exportAPI="STATE_API" exportInclude="state_exports.h" codefile="RenderingAttributes.code">
-    <Constant name="DEFAULT_SCALABLE_THRESHOLD" member="false"></Constant>
+  <Attribute name="RenderingAttributes" purpose="This class contains special rendering attributes like antialiasing and stero settings." persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="RenderingAttributes.code">
     <Enum name="GeometryRepresentation">
-       Surfaces
-       Wireframe
-       Points
+      Surfaces
+      Wireframe
+      Points
     </Enum>
     <Enum name="StereoTypes">
-       RedBlue
-       Interlaced
-       CrystalEyes
+      RedBlue
+      Interlaced
+      CrystalEyes
     </Enum>
-    <Field name="antialiasing" type="bool">false</Field>
-    <Field name="geometryRepresentation" type="enum" subtype="GeometryRepresentation">Surfaces</Field>
-    <Field name="displayLists" type="bool">true</Field>
-    <Field name="stereoRendering" type="bool">false</Field>
-    <Field name="stereoType" type="enum" subtype="StereoTypes">CrystalEyes</Field>
-    <Field name="notifyForEachRender" type="bool">false</Field>
-    <Field name="scalableRendering" type="bool">false</Field>
-    <Field name="scalableThreshold" type="int">2000000</Field>
-    <Field name="specularFlag" type="bool">false</Field>
-    <Field name="specularCoeff" type="float">0.6</Field>
-    <Field name="specularPower" type="float">10.0</Field>
-    <Field name="specularColor" type="color">255 255 255 255</Field>
+    <Enum name="DisplayListMode">
+      Never
+      Always
+      Auto
+    </Enum>
+    <Field name="antialiasing" label="antialiasing" type="bool">
+      false
+    </Field>
+    <Field name="geometryRepresentation" label="geometryRepresentation" type="enum" subtype="GeometryRepresentation">
+      Surfaces
+    </Field>
+    <Field name="displayListMode" label="displayListMode" type="enum" subtype="DisplayListMode">
+      Auto
+    </Field>
+    <Field name="stereoRendering" label="stereoRendering" type="bool">
+      false
+    </Field>
+    <Field name="stereoType" label="stereoType" type="enum" subtype="StereoTypes">
+      CrystalEyes
+    </Field>
+    <Field name="notifyForEachRender" label="notifyForEachRender" type="bool">
+      false
+    </Field>
+    <Field name="scalableRendering" label="scalableRendering" type="bool">
+      false
+    </Field>
+    <Field name="scalableThreshold" label="scalableThreshold" type="int">
+      2000000
+    </Field>
+    <Field name="specularFlag" label="specularFlag" type="bool">
+      false
+    </Field>
+    <Field name="specularCoeff" label="specularCoeff" type="float">
+      0.600000
+    </Field>
+    <Field name="specularPower" label="specularPower" type="float">
+      10.000000
+    </Field>
+    <Field name="specularColor" label="specularColor" type="color">
+      255
+      255
+      255
+      255
+    </Field>
+    <Constant name="DEFAULT_SCALABLE_THRESHOLD" member="false">
+    </Constant>
   </Attribute>

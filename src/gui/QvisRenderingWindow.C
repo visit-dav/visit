@@ -35,6 +35,9 @@
 //   Mark C. Miller, Tue Apr 27 14:41:35 PDT 2004
 //   Changed name of scalableThreshold to scalrenActivationMode
 //   
+//   Hank Childs, Sun May  9 15:54:29 PDT 2004
+//   Initialize dlMode.
+//
 // ****************************************************************************
 
 QvisRenderingWindow::QvisRenderingWindow(const char *caption,
@@ -45,6 +48,7 @@ QvisRenderingWindow::QvisRenderingWindow(const char *caption,
     windowInfo = 0;
 
     objectRepresentation = 0;
+    dlMode = 0;
     stereoType = 0;
     scalrenActivationMode = 0;
 }
@@ -62,11 +66,16 @@ QvisRenderingWindow::QvisRenderingWindow(const char *caption,
 //   
 //   Mark C. Miller, Tue Apr 27 14:41:35 PDT 2004
 //   Changed name of scalableThreshold to scalrenActivationMode
+//
+//   Hank Childs, Sun May  9 15:54:29 PDT 2004
+//   Delete dlMode.
+//
 // ****************************************************************************
 
 QvisRenderingWindow::~QvisRenderingWindow()
 {
     delete objectRepresentation;
+    delete dlMode;
     delete stereoType;
     delete scalrenActivationMode;
 
@@ -99,6 +108,9 @@ QvisRenderingWindow::~QvisRenderingWindow()
 //   Mark C. Miller, Tue Apr 27 14:41:35 PDT 2004
 //   Added scalable threshold spinbox
 //
+//   Hank Childs, Sun May  9 15:54:29 PDT 2004
+//   Add support for multiple display list modes.
+//
 // ****************************************************************************
 
 void
@@ -113,7 +125,7 @@ QvisRenderingWindow::CreateWindowContents()
 
     QVBoxLayout *spacer = new QVBoxLayout(options);
     spacer->addSpacing(10);
-    QGridLayout *oLayout = new QGridLayout(spacer, 13, 4);
+    QGridLayout *oLayout = new QGridLayout(spacer, 14, 4);
     oLayout->setSpacing(5);
     oLayout->setMargin(10);
 
@@ -142,66 +154,77 @@ QvisRenderingWindow::CreateWindowContents()
     objectRepresentation->insert(points);
     oLayout->addWidget(points, 3, 3);
 
-    // Create the display list toggle.
-    dislayListToggle = new QCheckBox("Use display lists", options,
-        "dislayListToggle");
-    connect(dislayListToggle, SIGNAL(toggled(bool)),
-            this, SLOT(displayListToggled(bool)));
-    oLayout->addMultiCellWidget(dislayListToggle, 4, 4, 0, 3);
+    // Create the display list widgets.
+    QLabel *displayListLabel = new QLabel("Use display lists", options, "displayListLabel");
+    oLayout->addMultiCellWidget(displayListLabel, 4, 4, 0, 3);
+    dlMode = new QButtonGroup(0, "displayList");
+    connect(dlMode, SIGNAL(clicked(int)),
+            this, SLOT(displayListModeChanged(int)));
+    QRadioButton *dl_auto = new QRadioButton("Auto", options, "dl_auto");
+    dlMode->insert(dl_auto);
+    oLayout->addWidget(dl_auto, 5, 1);
+    QRadioButton *dl_always = new QRadioButton("Always", options,
+        "dl_always");
+    dlMode->insert(dl_always);
+    oLayout->addWidget(dl_always, 5, 2);
+    QRadioButton *dl_never = new QRadioButton("Never", options,
+        "dl_never");
+    dlMode->insert(dl_never);
+    oLayout->addWidget(dl_never, 5, 3);
 
     // Create the stereo widgets.
     stereoToggle = new QCheckBox("Stereo", options,
         "stereoToggle");
     connect(stereoToggle, SIGNAL(toggled(bool)),
             this, SLOT(stereoToggled(bool)));
-    oLayout->addMultiCellWidget(stereoToggle, 5, 5, 0, 3);
+    oLayout->addMultiCellWidget(stereoToggle, 6, 6, 0, 3);
     stereoType = new QButtonGroup(0, "stereoType");
     connect(stereoType, SIGNAL(clicked(int)),
             this, SLOT(stereoTypeChanged(int)));
     redblue = new QRadioButton("Red/Blue", options, "redblue");
     stereoType->insert(redblue);
-    oLayout->addWidget(redblue, 6, 1);
+    oLayout->addWidget(redblue, 7, 1);
     interlace = new QRadioButton("Interlace", options,
         "interlace");
     stereoType->insert(interlace);
-    oLayout->addWidget(interlace, 6, 2);
+    oLayout->addWidget(interlace, 7, 2);
     crystalEyes = new QRadioButton("Crystal Eyes", options,
         "crystalEyes");
     stereoType->insert(crystalEyes);
-    oLayout->addWidget(crystalEyes, 6, 3);
+    oLayout->addWidget(crystalEyes, 7, 3);
 
     // Create the scalable rendering widgets.
     QLabel *scalrenLabel = new QLabel("Use scalable rendering", options,"scalrenLabel");
-    oLayout->addMultiCellWidget(scalrenLabel, 7, 7, 0, 3);
+    oLayout->addMultiCellWidget(scalrenLabel, 8, 8, 0, 3);
     scalrenActivationMode = new QButtonGroup(0, "scalrenActivationMode");
     connect(scalrenActivationMode, SIGNAL(clicked(int)),
             this, SLOT(scalrenActivationModeChanged(int)));
     scalrenAuto = new QRadioButton("Auto", options, "auto");
     scalrenActivationMode->insert(scalrenAuto);
-    oLayout->addWidget(scalrenAuto, 8, 1);
+    oLayout->addWidget(scalrenAuto, 9, 1);
     scalrenAlways = new QRadioButton("Always", options, "always");
     scalrenActivationMode->insert(scalrenAlways);
-    oLayout->addWidget(scalrenAlways, 8, 2);
+    oLayout->addWidget(scalrenAlways, 9, 2);
     scalrenNever = new QRadioButton("Never", options, "never");
     scalrenActivationMode->insert(scalrenNever);
-    oLayout->addWidget(scalrenNever, 8, 3);
+    oLayout->addWidget(scalrenNever, 9, 3);
 
     // Create the polygon count spin box for scalable rendering threshold
     scalrenGeometryLabel =  new QLabel("When polygon count exceeds", options, "scalrenGeometryLabel");
-    oLayout->addMultiCellWidget(scalrenGeometryLabel, 9, 9, 1, 2);
+    oLayout->addMultiCellWidget(scalrenGeometryLabel, 10, 10, 1, 2);
     scalrenAutoThreshold = new QSpinBox(0, 10000, 500, options, "scalrenAutoThreshold");
     scalrenAutoThreshold->setValue(RenderingAttributes::DEFAULT_SCALABLE_THRESHOLD);
     scalrenAutoThresholdChanged(RenderingAttributes::DEFAULT_SCALABLE_THRESHOLD);
     connect(scalrenAutoThreshold, SIGNAL(valueChanged(int)),
             this, SLOT(scalrenAutoThresholdChanged(int)));
-    oLayout->addWidget(scalrenAutoThreshold, 9, 3);
+    oLayout->addWidget(scalrenAutoThreshold, 10, 3);
 
     // Create the specular lighting options
     specularToggle = new QCheckBox("Specular lighting", options,
                                    "specularToggle");
     connect(specularToggle, SIGNAL(toggled(bool)),
             this, SLOT(specularToggled(bool)));
-    oLayout->addMultiCellWidget(specularToggle, 10, 10, 0,3);
+    oLayout->addMultiCellWidget(specularToggle, 11, 11, 0,3);
 
     specularStrengthSlider = new QvisOpacitySlider(0, 100, 10, 60, options,
                                              "specularStrengthSlider", NULL);
@@ -210,8 +233,8 @@ QvisRenderingWindow::CreateWindowContents()
             this, SLOT(specularStrengthChanged(int, const void*)));
     specularStrengthLabel = new QLabel(specularStrengthSlider, "Strength",
                                        options, "specularStrengthLabel");
-    oLayout->addWidget(specularStrengthLabel, 11,1);
-    oLayout->addMultiCellWidget(specularStrengthSlider, 11,11, 2,3);
+    oLayout->addWidget(specularStrengthLabel, 12,1);
+    oLayout->addMultiCellWidget(specularStrengthSlider, 12,12, 2,3);
 
     specularPowerSlider = new QvisOpacitySlider(0, 1000, 100, 100, options,
                                                 "specularPowerSlider", NULL);
@@ -220,8 +243,8 @@ QvisRenderingWindow::CreateWindowContents()
             this, SLOT(specularPowerChanged(int, const void*)));
     specularPowerLabel = new QLabel(specularPowerSlider, "Sharpness",
                                     options, "specularPowerLabel");
-    oLayout->addWidget(specularPowerLabel, 12,1);
-    oLayout->addMultiCellWidget(specularPowerSlider, 12,12, 2,3);
+    oLayout->addWidget(specularPowerLabel, 13,1);
+    oLayout->addMultiCellWidget(specularPowerSlider, 13,13, 2,3);
 
 
     //
@@ -341,13 +364,16 @@ QvisRenderingWindow::UpdateWindow(bool doAll)
 //   Mark C. Miller, Tue Apr 27 14:41:35 PDT 2004
 //   Changed name of scalableThreshld to scalrenActivationMode
 //
+//   Hank Childs, Sun May  9 15:54:29 PDT 2004
+//   Add support for multiple display list modes.
+//
 // ****************************************************************************
 
 void
 QvisRenderingWindow::UpdateOptions(bool doAll)
 {
     QString tmp;
-    int itmp;
+    int itmp, itmp2;
 
     // Loop through all the attributes and do something for
     // each of them that changed. This function is only responsible
@@ -374,9 +400,16 @@ QvisRenderingWindow::UpdateOptions(bool doAll)
             objectRepresentation->blockSignals(false);
             break;
         case 2: //displayLists
-            dislayListToggle->blockSignals(true);
-            dislayListToggle->setChecked(renderAtts->GetDisplayLists());
-            dislayListToggle->blockSignals(false);
+            itmp = (int) renderAtts->GetDisplayListMode();
+            if (itmp == 2) // Auto for atts's enum type order
+                itmp2 = 0; // Order of Auto in window
+            else if (itmp == 1) // Always for atts' enum type order
+                itmp2 = 1; // Order of Always in window.
+            else           // Never for atts' enum type order
+                itmp2 = 2; // Order of Never in window.
+            dlMode->blockSignals(true);
+            dlMode->setButton(itmp2);
+            dlMode->blockSignals(false);
             break;
         case 3: //stereoRendering
             stereoToggle->blockSignals(true);
@@ -711,25 +744,33 @@ QvisRenderingWindow::objectRepresentationChanged(int val)
 }
 
 // ****************************************************************************
-// Method: QvisRenderingWindow::displayListToggled
+// Method: QvisRenderingWindow::displayListModeChanged
 //
 // Purpose: 
-//   This Qt slot function is called when we click the display list toggle.
+//   This Qt slot function is called when we change the display list mode.
 //
 // Arguments:
-//   val : The new display list flag.
+//   mode : The new display list mode.
 //
-// Programmer: Brad Whitlock
-// Creation:   Mon Sep 23 14:54:06 PST 2002
+// Programmer: Hank Childs
+// Creation:   May 9, 2004
 //
 // Modifications:
 //   
 // ****************************************************************************
 
 void
-QvisRenderingWindow::displayListToggled(bool val)
+QvisRenderingWindow::displayListModeChanged(int mode)
 {
-    renderAtts->SetDisplayLists(val);
+    int itmp = 0;
+    if (mode == 0)      // Auto in Window
+        itmp = 2;       // Auto for atts' enum type
+    else if (mode == 1) // Always in window
+        itmp = 1;       // Always for atts' enum type
+    else                // Never in window.
+        itmp = 0;       // Never for atts' enum type
+
+    renderAtts->SetDisplayListMode((RenderingAttributes::DisplayListMode)itmp);
     SetUpdate(false);
     Apply();
 }

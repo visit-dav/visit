@@ -2006,6 +2006,9 @@ ViewerWindow::InvertBackgroundColor()
 //   Eric Brugger, Mon Mar 29 15:34:50 PST 2004
 //   I added maintainData.
 //
+//   Hank Childs, Mon May 10 08:04:48 PDT 2004
+//   Use "display list mode" instead of immediate rendering mode.
+//
 // ****************************************************************************
 
 void
@@ -2016,7 +2019,7 @@ ViewerWindow::CopyGeneralAttributes(const ViewerWindow *source)
     //
     SetAntialiasing(source->GetAntialiasing());
     SetStereoRendering(source->GetStereo(), source->GetStereoType());
-    SetImmediateModeRendering(source->GetImmediateModeRendering());
+    SetDisplayListMode(source->GetDisplayListMode());
     SetSurfaceRepresentation(source->GetSurfaceRepresentation());
     SetNotifyForEachRender(source->GetNotifyForEachRender());
     SetScalableThreshold(source->GetScalableThreshold());
@@ -4808,6 +4811,9 @@ ViewerWindow::SetLargeIcons(bool val)
 //   Jeremy Meredith, Fri Nov 14 11:33:24 PST 2003
 //   Added specular properties.
 //
+//   Hank Childs, Mon May 10 08:04:48 PDT 2004
+//   Use "display list mode" instead of immediate rendering mode.
+//
 // ****************************************************************************
 
 WindowAttributes
@@ -4873,7 +4879,7 @@ ViewerWindow::GetWindowAttributes() const
     RenderingAttributes renderAtts;
     renderAtts.SetScalableThreshold(GetScalableThreshold());
     renderAtts.SetScalableRendering(GetScalableRendering());
-    renderAtts.SetDisplayLists(!GetImmediateModeRendering());
+    renderAtts.SetDisplayListMode((RenderingAttributes::DisplayListMode) GetDisplayListMode());
     renderAtts.SetAntialiasing(GetAntialiasing());
     renderAtts.SetGeometryRepresentation(
        (RenderingAttributes::GeometryRepresentation) GetSurfaceRepresentation());
@@ -5517,41 +5523,37 @@ ViewerWindow::GetStereoType() const
 }
 
 // ****************************************************************************
-// Method: ViewerWindow::SetImmediateModeRendering
+// Method: ViewerWindow::SetDisplayListMode
 //
 // Purpose: 
-//   Tells the window whether or not to use immediate mode rendering.
+//     Sets the display list mode -- never, always, or auto.
 //
-// Programmer: Brad Whitlock
-// Creation:   Mon Sep 23 14:41:00 PST 2002
+// Programmer: Hank Childs
+// Creation:   May 10, 2004
 //
-// Modifications:
-//   
 // ****************************************************************************
 
 void
-ViewerWindow::SetImmediateModeRendering(bool mode)
+ViewerWindow::SetDisplayListMode(int mode)
 {
-    visWindow->SetImmediateModeRendering(mode);
+    visWindow->SetDisplayListMode(mode);
 }
 
 // ****************************************************************************
-// Method: ViewerWindow::GetImmediateModeRendering
+// Method: ViewerWindow::GetDisplayListMode
 //
 // Purpose: 
-//   Returns the window's immediate mode rendering flag.
+//     Gets the display list mode.
 //
-// Programmer: Brad Whitlock
-// Creation:   Mon Sep 23 14:41:21 PST 2002
+// Programmer: Hank Childs
+// Creation:   May 10, 2004
 //
-// Modifications:
-//   
 // ****************************************************************************
 
-bool
-ViewerWindow::GetImmediateModeRendering() const
+int
+ViewerWindow::GetDisplayListMode() const
 {
-    return visWindow->GetImmediateModeRendering();
+    return visWindow->GetDisplayListMode();
 }
 
 // ****************************************************************************
@@ -5994,6 +5996,9 @@ ViewerWindow::SetPopupEnabled(bool val)
 //   Eric Brugger, Mon Mar 29 15:34:50 PST 2004
 //   I added maintainData.
 //
+//   Hank Childs, Mon May 10 08:04:48 PDT 2004
+//   Use "display list mode" instead of immediate rendering mode.
+//
 // ****************************************************************************
 
 void
@@ -6065,7 +6070,7 @@ ViewerWindow::CreateNode(DataNode *parentNode, bool detailed)
         windowNode->AddNode(new DataNode("scalableThreshold", GetScalableThreshold()));
         windowNode->AddNode(new DataNode("notifyForEachRender", GetNotifyForEachRender()));
         windowNode->AddNode(new DataNode("surfaceRepresentation", GetSurfaceRepresentation()));
-        windowNode->AddNode(new DataNode("immediateModeRendering", GetImmediateModeRendering()));
+        windowNode->AddNode(new DataNode("displayListMode", GetDisplayListMode()));
         windowNode->AddNode(new DataNode("stereoRendering", GetStereo()));
         windowNode->AddNode(new DataNode("stereoType", GetStereoType()));
         windowNode->AddNode(new DataNode("antialiasing", GetAntialiasing()));
@@ -6391,8 +6396,8 @@ ViewerWindow::SetFromNode(DataNode *parentNode)
         SetNotifyForEachRender(node->AsBool());
     if((node = windowNode->GetNode("surfaceRepresentation")) != 0)
         SetSurfaceRepresentation(node->AsInt());
-    if((node = windowNode->GetNode("immediateModeRendering")) != 0)
-        SetImmediateModeRendering(node->AsBool());
+    if((node = windowNode->GetNode("displayListMode")) != 0)
+        SetDisplayListMode(node->AsInt());
     int stereoType = 0;
     if((node = windowNode->GetNode("stereoType")) != 0)
         stereoType = node->AsInt();

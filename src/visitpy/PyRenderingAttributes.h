@@ -16,5 +16,7 @@ PyObject       *PyRenderingAttributes_WrapPyObject(const RenderingAttributes *at
 void            PyRenderingAttributes_SetLogging(bool val);
 void            PyRenderingAttributes_SetDefaults(const RenderingAttributes *atts);
 
+PyObject       *PyRenderingAttributes_StringRepresentation(const RenderingAttributes *atts);
+
 #endif
 
