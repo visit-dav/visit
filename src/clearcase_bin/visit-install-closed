@@ -8,7 +8,7 @@
 # Date:   February 12, 2001
 #
 # Usage:
-#    visit-install-closed [-beta | -private] -v <version>
+#    visit-install-closed [-beta | -private | -public] -v <version>
 #
 #-----------------------------------------------------------------------
 
@@ -19,14 +19,15 @@ user=`whoami`
 #
 # Parse the execute line, providing default values for error checking.
 #
-warp=false
+hitit=true
+warp=true
 sc=true
 tidalwave=true
 white=true
 emperor=true
 
 ver=undefined
-verflag=
+verflag=-private
 
 #
 # The loop is executed once for each symbol on the execute line.  This means
@@ -37,11 +38,20 @@ for abc
 do
    case $1 in
       -none)
+         hitit=false
          warp=false
          sc=false
          tidalwave=false
          white=false
          emperor=false
+         shift
+         ;;
+      -hitit)
+         hitit=false
+         shift
+         ;;
+      +hitit)
+         hitit=true
          shift
          ;;
       -warp)
@@ -89,11 +99,15 @@ do
          shift 2
          ;;
       -beta)
-         verflag=-beta;
+         verflag=-beta
          shift
          ;;
       -private)
-         verflag=-private;
+         verflag=-private
+         shift
+         ;;
+      -public)
+         verflag=
          shift
          ;;
    esac
@@ -104,7 +118,16 @@ done
 #
 if [ $ver = undefined ]
 then
-   echo "Usage: [-beta | -private] [-none] [-<machine name>] -v <version>"
+   echo "Usage: [-beta | -private | -public] [-none] [-<machine name>] -v <version>"
+   exit
+fi
+
+#
+# Check that the visit install script is present.
+#
+if [ ! -e visit-install ]
+then
+   echo "visit-install is missing."
    exit
 fi
 
@@ -121,13 +144,56 @@ ver2=`echo $ver | tr "." "_"`
 ver=`echo $ver2 | tr "_" "."`
 
 #
+# Install on hitit.
+#
+rm -f hitit
+cat <<EOF > hitit
+#!/bin/sh
+if [ -d /usr/gapps/visit/$ver ]
+then
+   ./visit-install -private -a -g bdiv -gw $ver linux /usr/gapps/visit > installlog 2>&1
+else
+   ./visit-install -private -g bdiv -gw $ver linux /usr/gapps/visit > installlog 2>&1
+fi
+rm -f resultlog
+echo "        install of visit on hitit"           > resultlog 2>&1
+echo "       ---------------------------"          >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+df -k /usr/gapps/visit                             >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+ls -l /usr/gapps/visit/$ver/sgi-linux-mips2/bin    >> resultlog 2>&1
+EOF
+
+if [ $hitit = true ]
+then
+   if [ $test = no ]
+   then
+      scp -P 22 hitit:/var/tmp/$user/hitit/visitbuild/visit$ver2.linux.tar.gz .
+      scp -P 22 visit$ver2.linux.tar.gz hitit:
+      scp -P 22 visit-install hitit:
+      scp -P 22 hitit hitit:hitit_install
+      ssh -p 22 hitit "chmod 750 hitit_install;./hitit_install"
+   fi
+fi
+
+#
 # Install on warp.
 #
 rm -f warp
 cat <<EOF > warp
 #!/bin/sh
-cd /scratch/$user/warp/visitbuild
-./visit-install $verflag -g bdiv -gw $ver irix6 /usr/gapps/visit > installlog 2>&1
+if [ -d /usr/gapps/visit/$ver ]
+then
+   ./visit-install $verflag -a -g bdiv -gw $ver irix6 /usr/gapps/visit > installlog 2>&1
+else
+   ./visit-install $verflag -g bdiv -gw $ver irix6 /usr/gapps/visit > installlog 2>&1
+fi
+mkdir /usr/gapps/visit/$ver/.visit
+chmod 775 /usr/gapps/visit/$ver/.visit
+chgrp visit /usr/gapps/visit/$ver/.visit
+cp visit-config-closed /usr/gapps/visit/$ver/.visit/config
+chmod 664 /usr/gapps/visit/$ver/.visit/config
+chgrp visit /usr/gapps/visit/$ver/.visit/config
 rm -f resultlog
 echo "        install of visit on warp"            > resultlog 2>&1
 echo "       --------------------------"           >> resultlog 2>&1
@@ -141,7 +207,11 @@ if [ $warp = true ]
 then
    if [ $test = no ]
    then
+      scp tidalwave:/fc/san1/$user/tidalwave/visitbuild/visit$ver2.irix6.tar.gz .
+      scp -P 22 visit$ver2.irix6.tar.gz warp:
+      scp -P 22 visit-install warp:
       scp -P 22 warp warp:warp_install
+      scp -P 22 visit-config-closed warp:visit-config-closed
       ssh -p 22 warp "chmod 750 warp_install;./warp_install"
    fi
 fi
@@ -152,7 +222,6 @@ fi
 rm -f sc
 cat <<EOF > sc
 #!/bin/sh
-cd /nfs/tmp2/$user/sc/visitbuild
 if [ -d /usr/gapps/visit/$ver ]
 then
    ./visit-install -private -a -g bdiv -gw $ver osf1 /usr/gapps/visit > installlog 2>&1
@@ -172,6 +241,9 @@ if [ $sc = true ]
 then
    if [ $test = no ]
    then
+      scp sc1:/nfs/tmp2/$user/sc/visitbuild/visit$ver2.osf1.tar.gz .
+      scp visit$ver2.osf1.tar.gz sc1:
+      scp visit-install sc1:
       scp sc sc1:sc_install
       ssh sc1 "chmod 750 sc_install;./sc_install"
    fi
@@ -183,7 +255,6 @@ fi
 rm -f tidalwave
 cat <<EOF > tidalwave
 #!/bin/sh
-cd /fc/san1/$user/tidalwave/visitbuild
 if [ -d /usr/gapps/visit/$ver ]
 then
    ./visit-install -private -a -g bdiv -gw $ver irix6 /usr/gapps/visit > installlog 2>&1
@@ -203,6 +274,9 @@ if [ $tidalwave = true ]
 then
    if [ $test = no ]
    then
+      scp tidalwave:/fc/san1/$user/tidalwave/visitbuild/visit$ver2.irix6.tar.gz .
+      scp visit$ver2.irix6.tar.gz tidalwave:
+      scp visit-install tidalwave:
       scp tidalwave tidalwave:tidalwave_install
       ssh tidalwave "chmod 750 tidalwave_install;./tidalwave_install"
    fi
@@ -214,7 +288,6 @@ fi
 rm -f white
 cat <<EOF > white
 #!/bin/sh
-cd /p/gw1/$user/white/visitbuild
 if [ -d /usr/gapps/visit/$ver ]
 then
    ./visit-install -private -a -g bdiv -gw $ver aix /usr/gapps/visit > installlog 2>&1
@@ -234,6 +307,9 @@ if [ $white = true ]
 then
    if [ $test = no ]
    then
+      scp white:/p/gw1/$user/tidalwave/visitbuild/visit$ver2.aix.tar.gz .
+      scp visit$ver2.aix.tar.gz white:
+      scp visit-install white:
       scp white white:white_install
       ssh white "chmod 750 white_install;./white_install"
    fi
@@ -245,8 +321,6 @@ fi
 rm -f emperor
 cat <<EOF > emperor
 #!/bin/sh
-mv visit-config-closed /usr/tmp/$user/emperor/visitbuild
-cd /usr/tmp/$user/emperor/visitbuild
 if [ -d /usr/gapps/visit/$ver ]
 then
    ./visit-install $verflag -a -g bdiv -gw $ver linux /usr/gapps/visit > installlog 2>&1
@@ -272,6 +346,9 @@ if [ $emperor = true ]
 then
    if [ $test = no ]
    then
+      scp emperor0:/usr/tmp/$user/emperor/visitbuild/visit$ver2.linux.tar.gz .
+      scp visit$ver2.linux.tar.gz emperor0:
+      scp visit-install emperor0:
       scp emperor emperor0:emperor_install
       scp visit-config-closed emperor0:visit-config-closed
       ssh emperor0 "chmod 750 emperor_install;./emperor_install"
@@ -283,5 +360,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f warp sc tidalwave white emperor
+   rm -f hitit warp sc tidalwave white emperor
 fi

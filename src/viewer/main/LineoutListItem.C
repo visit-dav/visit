@@ -712,3 +712,28 @@ LineoutListItem::Update(Subject *TheChangedSubject)
     } // if
 }
 
+
+// ****************************************************************************
+//  Method: LineoutListItem::ViewDimChanged
+//
+//  Purpose:
+//    This method is called when the view dimension of the originating window 
+//    has changed, and lineouts are nto dynamic (e.g. can be updated by changes
+//    to the originating plot). Remove all visual cues from the window.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   July 9, 2003 
+//
+// ****************************************************************************
+
+void
+LineoutListItem::ViewDimChanged()
+{
+    if (nQueriesAlloc > 0)
+    {
+        for (int i = 0; i < nQueries; i++)
+        {
+            queries[i]->DeleteVisualCue();
+        }
+    }
+}

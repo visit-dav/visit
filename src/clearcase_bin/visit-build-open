@@ -51,7 +51,7 @@ esac
 #
 kickit=true
 sunspot=true
-hyper=true
+hyper=false
 gps=true
 riptide=true
 frost=true
@@ -173,12 +173,12 @@ ver2=\`echo \$ver | tr "." "_"\`
 make -j 2 >> ../buildlog 2>&1
 clearcase_bin/visit-bin-dist >> ../buildlog 2>&1
 mv visit\$ver2.linux.tar.gz ..
-cp clearcase_bin/visit-install ..
 cd ..
-./visit-install \$ver linux visit >> buildlog 2>&1
-scp visit\$ver2.linux.tar.gz kickit:/scratch/$user/$dist
 rm -f resultlog
-ls -l > resultlog 2>&1
+echo "        build of visit on kickit"       > resultlog 2>&1
+echo "       --------------------------"      >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+ls -l                                         >> resultlog 2>&1
 mail $emailName < resultlog
 EOF
 
@@ -216,12 +216,12 @@ env CXXFLAGS=-O2 ./configure >> ../buildlog 2>&1
 make -j 4 >> ../buildlog 2>&1
 clearcase_bin/visit-bin-dist >> ../buildlog 2>&1
 mv visit\$ver2.sunos5.tar.gz ..
-cp clearcase_bin/visit-install ..
 cd ..
-./visit-install \$ver sunos5 visit >> buildlog 2>&1
-scp visit\$ver2.sunos5.tar.gz kickit:/scratch/$user/$dist
 rm -f resultlog
-ls -l > resultlog 2>&1
+echo "        build of visit on sunspot"      > resultlog 2>&1
+echo "       ---------------------------"     >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+ls -l                                         >> resultlog 2>&1
 mail $emailName < resultlog
 EOF
 
@@ -259,13 +259,12 @@ env CXXFLAGS=-O2 ./configure >> ../buildlog 2>&1
 env PARALLEL=4 make -P >> ../buildlog 2>&1
 clearcase_bin/visit-bin-dist >> ../buildlog 2>&1
 mv visit\$ver2.irix6.tar.gz ..
-cp clearcase_bin/visit-install ..
 cd ..
-./visit-install \$ver irix6 visit >> buildlog 2>&1
-scp $dist/clearcase_bin/visit-install kickit:/scratch/$user/$dist
-scp visit\$ver2.irix6.tar.gz kickit:/scratch/$user/$dist
 rm -f resultlog
-ls -l > resultlog 2>&1
+echo "        build of visit on hyper"        > resultlog 2>&1
+echo "       -------------------------"       >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+ls -l                                         >> resultlog 2>&1
 mail $emailName < resultlog
 EOF
 
@@ -303,12 +302,12 @@ env CXXFLAGS=-O2 MAKE=gmake ./configure --enable-parallel >> ../buildlog 2>&1
 gmake -j 3 >> ../buildlog 2>&1
 clearcase_bin/visit-bin-dist >> ../buildlog 2>&1
 mv visit\$ver2.osf1.tar.gz ..
-cp clearcase_bin/visit-install ..
 cd ..
-./visit-install \$ver osf1 visit >> buildlog 2>&1
-scp visit\$ver2.osf1.tar.gz kickit:/scratch/$user/$dist
 rm -f resultlog
-ls -l > resultlog 2>&1
+echo "        build of visit on gps"          > resultlog 2>&1
+echo "       -----------------------"         >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+ls -l                                         >> resultlog 2>&1
 mail $emailName < resultlog
 EOF
 
@@ -328,16 +327,16 @@ fi
 rm -f riptide
 cat <<EOF > riptide
 #!/bin/sh
-if test ! -e /nfs/tmp1/$user ; then
-   mkdir /nfs/tmp1/$user
+if test ! -e /fc/tmp0/fcdata/$user ; then
+   mkdir /fc/tmp0/fcdata/$user
 fi
-if test ! -e /nfs/tmp1/$user/riptide ; then
-   mkdir /nfs/tmp1/$user/riptide
+if test ! -e /fc/tmp0/fcdata/$user/riptide ; then
+   mkdir /fc/tmp0/fcdata/$user/riptide
 fi
-rm -rf /nfs/tmp1/$user/riptide/visitbuild
-mkdir /nfs/tmp1/$user/riptide/visitbuild
-mv riptide_$dist.tar.gz /nfs/tmp1/$user/riptide/visitbuild/$dist.tar.gz
-cd /nfs/tmp1/$user/riptide/visitbuild
+rm -rf /fc/tmp0/fcdata/$user/riptide/visitbuild
+mkdir /fc/tmp0/fcdata/$user/riptide/visitbuild
+mv riptide_$dist.tar.gz /fc/tmp0/fcdata/$user/riptide/visitbuild/$dist.tar.gz
+cd /fc/tmp0/fcdata/$user/riptide/visitbuild
 gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist
 ver=\`cat VERSION\`
@@ -346,11 +345,12 @@ env CXXFLAGS=-O2 ./configure --enable-parallel >> ../buildlog 2>&1
 env PARALLEL=8 make -P >> ../buildlog 2>&1
 clearcase_bin/visit-bin-dist >> ../buildlog 2>&1
 mv visit\$ver2.irix6.tar.gz ..
-cp clearcase_bin/visit-install ..
 cd ..
-./visit-install \$ver irix6 visit >> buildlog 2>&1
 rm -f resultlog
-ls -l > resultlog 2>&1
+echo "        build of visit on riptide"      > resultlog 2>&1
+echo "       ---------------------------"     >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+ls -l                                         >> resultlog 2>&1
 mail $emailName < resultlog
 EOF
 
@@ -388,12 +388,12 @@ env CXXFLAGS=-O2 MAKE=gmake ./configure --enable-parallel >> ../buildlog 2>&1
 gmake -j 6 >> ../buildlog 2>&1
 clearcase_bin/visit-bin-dist >> ../buildlog 2>&1
 mv visit\$ver2.aix.tar.gz ..
-cp clearcase_bin/visit-install ..
 cd ..
-./visit-install \$ver aix visit >> buildlog 2>&1
-scp visit\$ver2.aix.tar.gz kickit:/scratch/$user/$dist
 rm -f resultlog
-ls -l > resultlog 2>&1
+echo "        build of visit on frost"        > resultlog 2>&1
+echo "       -------------------------"       >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+ls -l                                         >> resultlog 2>&1
 mail $emailName < resultlog
 EOF
 

@@ -8,7 +8,7 @@
 # Date:   October 27, 2000
 #
 # Usage:
-#    visit-install-open [-beta | -private] -v <version>
+#    visit-install-open [-beta | -private | -public] -v <version>
 #
 #-----------------------------------------------------------------------
 
@@ -59,7 +59,7 @@ frost=true
 pengra=true
 
 ver=undefined
-verflag=
+verflag=-private
 
 #
 # The loop is executed once for each symbol on the execute line.  This means
@@ -140,11 +140,15 @@ do
          shift 2
          ;;
       -beta)
-         verflag=-beta;
+         verflag=-beta
          shift
          ;;
       -private)
-         verflag=-private;
+         verflag=-private
+         shift
+         ;;
+      -public)
+         verflag=;
          shift
          ;;
    esac
@@ -155,7 +159,16 @@ done
 #
 if [ $ver = undefined ]
 then
-   echo "Usage: [-beta | -private] [-none] [-<machine name>] -v <version>"
+   echo "Usage: [-beta | -private | -public] [-none] [-<machine name>] -v <version>"
+   exit
+fi
+
+#
+# Check that the visit install script is present.
+#
+if [ ! -e visit-install]
+then
+   echo "visit-install is missing."
    exit
 fi
 
@@ -177,7 +190,6 @@ ver=`echo $ver2 | tr "_" "."`
 rm -f kickit
 cat <<EOF > kickit
 #!/bin/sh
-cd /var/tmp/$user/kickit/visitbuild
 ./visit-install -private -g visit -gw $ver linux /usr/gapps/visit > installlog 2>&1
 rm -f resultlog
 echo "        install of visit on kickit"          > resultlog 2>&1
@@ -193,6 +205,9 @@ if [ $kickit = true ]
 then
    if [ $test = no ]
    then
+      scp kickit:/var/tmp/$user/kickit/visitbuild/visit$ver2.linux.tar.gz .
+      scp visit$ver2.linux.tar.gz kickit:
+      scp visit-install kickit:
       scp kickit kickit:kickit_install
       ssh kickit "chmod 750 kickit_install;./kickit_install"
    fi
@@ -204,7 +219,6 @@ fi
 rm -f sunspot
 cat <<EOF > sunspot
 #!/bin/sh
-cd /export/scratch/$user/sunspot/visitbuild
 if [ -d /usr/gapps/visit/$ver ]
 then
    ./visit-install -private -a -g visit -gw $ver sunos5 /usr/gapps/visit > installlog 2>&1
@@ -225,8 +239,11 @@ if [ $sunspot = true ]
 then
    if [ $test = no ]
    then
-      scp sunspot sunspot:sunspot_install
-      ssh sunspot "chmod 750 sunspot_install;./sunspot_install"
+      scp sunspot:/export/scratch/$user/sunspot/visitbuild/visit$ver2.sunos5.tar.gz .
+      scp visit$ver2.sunos5.tar.gz kickit:
+      scp visit-install kickit:
+      scp sunspot kickit:sunspot_install
+      ssh kickit "chmod 750 sunspot_install;./sunspot_install"
    fi
 fi
 
@@ -236,8 +253,6 @@ fi
 rm -f hyper
 cat <<EOF > hyper
 #!/bin/sh
-mv visit-config-open /scratch1/$user/hyper/visitbuild
-cd /scratch1/$user/hyper/visitbuild
 if [ -d /usr/gapps/visit/$ver ]
 then
    ./visit-install $verflag -a -g visit -gw $ver irix6 /usr/gapps/visit > installlog 2>&1
@@ -264,9 +279,12 @@ if [ $hyper = true ]
 then
    if [ $test = no ]
    then
-      scp hyper hyper:hyper_install
-      scp visit-config-open hyper:visit-config-open
-      ssh hyper "chmod 750 hyper_install;./hyper_install"
+      scp riptide:/fc/tmp0/fcdata/$user/riptide/visitbuild/visit$ver2.irix6.tar.gz .
+      scp visit$ver2.irix6.tar.gz kickit:
+      scp visit-install kickit:
+      scp hyper kickit:hyper_install
+      scp visit-config-open kickit:
+      ssh kickit "chmod 750 hyper_install;./hyper_install"
    fi
 fi
 
@@ -276,7 +294,6 @@ fi
 rm -f gps
 cat <<EOF > gps
 #!/bin/sh
-cd /nfs/tmp1/$user/gps/visitbuild
 ./visit-install -private -g visit -gw $ver osf1 /usr/gapps/visit > installlog 2>&1
 rm -f resultlog
 echo "        install of visit on gps"             > resultlog 2>&1
@@ -292,6 +309,9 @@ if [ $gps = true ]
 then
    if [ $test = no ]
    then
+      scp gps15:/nfs/tmp1/$user/gps/visitbuild/visit$ver2.osf1.tar.gz .
+      scp visit$ver2.osf1.tar.gz gps15:
+      scp visit-install gps15:
       scp gps gps15:gps_install
       ssh gps15 "chmod 750 gps_install;./gps_install"
    fi
@@ -303,7 +323,6 @@ fi
 rm -f riptide
 cat <<EOF > riptide
 #!/bin/sh
-cd /nfs/tmp1/$user/riptide/visitbuild
 if [ -d /usr/gapps/visit/$ver ]
 then
    ./visit-install -private -a -g visit -gw $ver irix6 /usr/gapps/visit > installlog 2>&1
@@ -324,6 +343,9 @@ if [ $riptide = true ]
 then
    if [ $test = no ]
    then
+      scp riptide:/fc/tmp0/fcdata/$user/riptide/visitbuild/visit$ver2.irix6.tar.gz .
+      scp visit$ver2.irix6.tar.gz gps15:
+      scp visit-install gps15:
       scp riptide gps15:riptide_install
       ssh gps15 "chmod 750 riptide_install;./riptide_install"
    fi
@@ -335,7 +357,6 @@ fi
 rm -f frost
 cat <<EOF > frost
 #!/bin/sh
-cd /nfs/tmp1/$user/frost/visitbuild
 if [ -d /usr/gapps/visit/$ver ]
 then
    ./visit-install -private -a -g visit -gw $ver aix /usr/gapps/visit > installlog 2>&1
@@ -356,6 +377,9 @@ if [ $frost = true ]
 then
    if [ $test = no ]
    then
+      scp gps15:/nfs/tmp1/$user/frost/visitbuild/visit$ver2.aix.tar.gz .
+      scp visit$ver2.aix.tar.gz gps15:
+      scp visit-install gps15:
       scp frost gps15:frost_install
       ssh gps15 "chmod 750 frost_install;./frost_install"
    fi
@@ -367,8 +391,6 @@ fi
 rm -f pengra
 cat <<EOF > pengra
 #!/bin/sh
-mv visit-config-open /nfs/tmp1/$user/pengra
-cd /nfs/tmp1/$user/pengra
 if [ -d /usr/gapps/visit/$ver ]
 then
    ./visit-install $verflag -a -g visit -gw $ver linux /usr/gapps/visit > installlog 2>&1
@@ -395,10 +417,10 @@ if [ $pengra = true ]
 then
    if [ $test = no ]
    then
-      scp visit$ver2.linux.tar.gz gps15:/nfs/tmp1/brugger/pengra
-      scp visit-install gps15:/nfs/tmp1/brugger/pengra
+      scp visit$ver2.linux.tar.gz gps15:
+      scp visit-install gps15:
       scp pengra gps15:pengra_install
-      scp visit-config-open gps15:visit-config-open
+      scp visit-config-open gps15:
       ssh gps15 "chmod 750 pengra_install;./pengra_install"
    fi
 fi

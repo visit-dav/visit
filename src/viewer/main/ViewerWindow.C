@@ -2045,6 +2045,9 @@ ViewerWindow::SendDeleteMessage()
 void
 ViewerWindow::UpdateView(const int dimension, const double *limits)
 {
+    if (viewDimension != dimension)
+        ViewerQueryManager::Instance()->ViewDimChanged(this);
+
     viewDimension = dimension;
     switch (dimension)
     {
