@@ -605,7 +605,7 @@ avtPixieFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             std::string exprStr;
             if (nexts != std::string::npos)
             {
-                exprStr = std::string(rawExpressionString,s,nexts);
+                exprStr = std::string(rawExpressionString,s,nexts-s);
                 nexts += 1;
             }
             else
