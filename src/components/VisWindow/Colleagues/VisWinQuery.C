@@ -311,6 +311,9 @@ VisWinQuery::QueryIsValid(const PickAttributes *pa, const Line *lineAtts)
 //    Kathleen Bonnell, Mon Jul  7 16:46:12 PDT 2003  
 //    Un-scale the projection if in FullFrame mode. 
 //    
+//    Kathleen Bonnell, Tue Dec  2 17:43:08 PST 2003 
+//    Use the glyph for curve picks, too. 
+//    
 // ****************************************************************************
 
 void 
@@ -328,7 +331,7 @@ VisWinQuery::Pick(const PickAttributes *pa)
         pp->SetMode3D(false);
     }
 
-    if (pa->GetPickType() == PickAttributes::Node)
+    if (pa->GetPickType() != PickAttributes::Zone)
     {
         pp->UseGlyph(true);
     }
@@ -355,7 +358,8 @@ VisWinQuery::Pick(const PickAttributes *pa)
     projection[2] = distance*(pos[2] - foc[2]);
 
     // avoid z-buffer issues in 2D
-    if (mediator.GetMode() == WINMODE_2D)
+    if ((mediator.GetMode() == WINMODE_2D) ||
+        (mediator.GetMode() == WINMODE_CURVE))
     {
         pp->SetAttachmentPoint(pt[0], pt[1], projection[2]);
     }

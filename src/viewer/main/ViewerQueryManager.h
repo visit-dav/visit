@@ -110,6 +110,10 @@ class avtToolInterface;
 //    Kathleen Bonnell, Wed Nov 19 15:41:11 PST 2003 
 //    Added VerifyQueryVariables.
 //
+//    Kathleen Bonnell, Tue Dec  2 08:16:12 PST 2003 
+//    Added ResetPickAttributes, ResetDesignator.  Added optional int args
+//    to Pick and PointQuery.
+//
 // ****************************************************************************
     
 class VIEWER_API ViewerQueryManager 
@@ -128,9 +132,11 @@ class VIEWER_API ViewerQueryManager
                       const int samples);
 
     void            PointQuery(const std::string &qName, const double *pt, 
-                            const std::vector<std::string> &vars);
+                            const std::vector<std::string> &vars,
+                            const int arg1, const int arg2);
 
-    void            Pick(PICK_POINT_INFO *pd);
+    void            Pick(PICK_POINT_INFO *pd, const int dom = -1,
+                         const int el = -1);
 
     void            Delete(ViewerPlot *vp);
     void            Delete(ViewerWindow *vw);
@@ -145,6 +151,8 @@ class VIEWER_API ViewerQueryManager
     void            UpdatePickAtts();
     void            SetPickAttsFromClient();
     void            ClearPickPoints(void);
+    void            ResetPickAttributes(void);
+    void            ResetDesignator(void);
 
 
     static QueryAttributes  *GetQueryClientAtts();

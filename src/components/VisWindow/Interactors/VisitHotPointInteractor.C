@@ -357,6 +357,9 @@ VisitHotPointInteractor::Start3DMode(INTERACTION_MODE mode)
 //   Eric Brugger, Wed Oct 15 17:36:06 PDT 2003
 //   Change navigate mode to use the NavigateCurve interactor.
 //
+//   Kathleen Bonnell, Tue Dec  2 17:41:31 PST 2003 
+//   Allow Pick interactions (use Pick2d). 
+//
 // ****************************************************************************
 
 void
@@ -384,9 +387,15 @@ VisitHotPointInteractor::StartCurveMode(INTERACTION_MODE mode)
         }
         newInteractor = zoomCurve;
         break;
-    case LINEOUT:
     case ZONE_PICK:
     case NODE_PICK:
+        if(pick2D == NULL)
+        {
+            pick2D = new Pick2D(proxy);
+        }
+        newInteractor = pick2D;
+        break;
+    case LINEOUT:
         // These are only here to prevent compiler warning. 
         break;
     }

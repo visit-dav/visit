@@ -4010,6 +4010,25 @@ ViewerSubject::ResetAnnotationAttributes()
 }
 
 // ****************************************************************************
+// Method: ViewerSubject::ResetPickAttributes
+//
+// Purpose: 
+//   Resets pick attributes to default values. 
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   November 26, 2003 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerSubject::ResetPickAttributes()
+{
+    ViewerQueryManager::Instance()->ResetPickAttributes(); 
+}
+
+// ****************************************************************************
 //  Method: ViewerSubject::SetKeyframeAttributes
 //
 //  Purpose:
@@ -4546,6 +4565,9 @@ ViewerSubject::DatabaseQuery()
 //   Removed debug code, and special case handling.  Made ViewerQueryManager
 //   handle the query instead of ViewerWindowManager. 
 //
+//   Kathleen Bonnell, Wed Nov 26 14:33:23 PST 2003
+//   Use optional int args from RPC. 
+//
 // ****************************************************************************
 
 void
@@ -4558,7 +4580,8 @@ ViewerSubject::PointQuery()
 
     ViewerQueryManager *qm = ViewerQueryManager::Instance();
     qm->PointQuery(viewerRPC.GetQueryName(), viewerRPC.GetQueryPoint1(),
-                   viewerRPC.GetQueryVariables());
+                   viewerRPC.GetQueryVariables(),
+                   viewerRPC.GetIntArg1(), viewerRPC.GetIntArg2());
 
     // Clear the status
     ClearStatus();
@@ -5091,6 +5114,9 @@ ViewerSubject::LaunchProgressCB(void *d, int stage)
 //    Eric Brugger, Wed Aug 20 11:11:00 PDT 2003
 //    I added SetViewCurve.
 //
+//    Kathleen Bonnell, Wed Nov 26 14:33:23 PST 2003 
+//    Added ResetPickAttributesRPC.
+//
 // ****************************************************************************
 
 void
@@ -5295,6 +5321,9 @@ ViewerSubject::HandleViewerRPC()
         break;
     case ViewerRPC::ImportEntireStateRPC:
         ImportEntireState();
+        break;
+    case ViewerRPC::ResetPickAttributesRPC:
+        ResetPickAttributes();
         break;
     case ViewerRPC::MaxRPC:
         break;

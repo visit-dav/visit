@@ -279,6 +279,9 @@ struct avtDefaultPlotMetaData;
 //    Added another flag for stereo so we could turn its default value
 //    to 'true' if "-stereo" was on the command line.
 //
+//    Kathleen Bonnell, Wed Nov 26 14:35:29 PST 2003 
+//    Added ResetPickAttributes. 
+//    
 // ****************************************************************************
 
 class VIEWER_API ViewerSubject : public QObject
@@ -407,6 +410,7 @@ private:
     void ResetMaterialAttributes();
     void SetGlobalLineoutAttributes();
     void SetPickAttributes();
+    void ResetPickAttributes();
 
 private slots:
     void HandleViewerRPC();

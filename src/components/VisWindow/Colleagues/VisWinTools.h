@@ -51,6 +51,10 @@ class vtkHighlightActor2D;
 //   Akira Haddox, Thu Jun 12 15:56:03 PDT 2003
 //   Added point tool.
 //
+//   Kathleen Bonnell, Wed Dec  3 16:49:14 PST 2003 
+//   Renamed 'ReAddToWindow' to 'ReAddToolsToWindow', as tools get re-added
+//   at a different time than other colleagues. 
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinTools : public VisWinColleague
@@ -68,7 +72,7 @@ class VISWINDOW_API VisWinTools : public VisWinColleague
     virtual void     Stop3DMode();
     virtual void     NoPlots();
     virtual void     UpdateView();
-    virtual void     ReAddToWindow();
+    virtual void     ReAddToolsToWindow();
 
     bool             GetHotPoint(int x, int y, HotPoint &h) const;
     int              NumToolsEnabled() const;

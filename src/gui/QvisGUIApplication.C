@@ -773,6 +773,9 @@ QvisGUIApplication::SyncCallback(Subject *s, void *data)
 //   Brad Whitlock, Mon Nov 10 14:56:51 PST 2003
 //   I added a stage to load a session file.
 //
+//   Kathleen Bonnell, Mon Dec  1 08:40:21 PST 2003 
+//   Ensure that qprinter is initialized with the viewer's PrinterAttributes. 
+//
 // ****************************************************************************
 
 void
@@ -817,6 +820,7 @@ QvisGUIApplication::FinalInitialization()
         printerObserver = new ObserverToCallback(viewer->GetPrinterAttributes(),
             UpdatePrinterAttributes, (void *)printer);
         viewer->GetPrinterAttributes()->SetCreator(viewer->GetLocalUserName());
+        PrinterAttributesToQPrinter(viewer->GetPrinterAttributes(), printer);
         visitTimer->StopTimer(timeid, "Setting up printer");
 
         // Show that we're ready.

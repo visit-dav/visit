@@ -3,6 +3,8 @@
     <Enum name="PickType">
       Zone
       Node
+      CurveZone
+      CurveNode
     </Enum>
     <Field name="clearWindow" label="clearWindow" type="bool" internal="true">
       false
@@ -99,6 +101,8 @@
     <Function name="CreateOutputString" user="true" member="true">
     </Function>
     <Function name="PrepareForNewPick" user="true" member="true">
+    </Function>
+    <Function name="Reset" user="true" member="true">
     </Function>
     <Include file="source" quoted="false">
       stdio.h

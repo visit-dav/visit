@@ -954,6 +954,9 @@ VisitLineTool::InitialActorSetup(int pointIndex)
 // Creation:   Fri Oct 12 14:38:06 PST 2001
 //
 // Modifications:
+//   Kathleen Bonnell, Wed Dec  3 17:03:34 PST 2003 
+//   If transparencies exist, have the plots recalculate render order, so
+//   that this tool is rendered before the transparent actors. 
 //
 // ****************************************************************************
 
@@ -968,6 +971,8 @@ VisitLineTool::FinalActorSetup()
         proxy.EndBoundingBox();
     }
     addedBbox = false;
+    if (proxy.TransparenciesExist())
+        proxy.RecalculateRenderOrder();
 }
 
 // ****************************************************************************

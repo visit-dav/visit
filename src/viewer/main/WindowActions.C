@@ -1059,6 +1059,9 @@ SetWindowModeAction::Enabled() const
 //   Eric Brugger, Wed Aug 20 13:31:31 PDT 2003
 //   I modified the logic to use GetWindowMode instead of GetTypeIsCurve.
 //
+//   Kathleen Bonnell, Tue Dec  2 17:36:44 PST 2003 
+//   Allow pick to work in curve windows.
+//
 // ****************************************************************************
 
 bool
@@ -1069,9 +1072,9 @@ SetWindowModeAction::ChoiceEnabled(int i) const
     if(i == 0)
         retval = true;
     else if(i == 1) // zone pick
-        retval = window->GetWindowMode() != WINMODE_CURVE;
+        retval = true; 
     else if(i == 2) // node pick
-        retval = window->GetWindowMode() != WINMODE_CURVE;
+        retval = true; 
     else if(i == 3) // zoom
         retval = true;
     else if(i == 4)

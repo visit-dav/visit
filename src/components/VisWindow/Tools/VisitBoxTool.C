@@ -975,6 +975,9 @@ VisitBoxTool::InitialActorSetup()
 // Creation:   Wed Oct 30 12:22:32 PDT 2002
 //
 // Modifications:
+//   Kathleen Bonnell, Wed Dec  3 17:03:34 PST 2003 
+//   If transparencies exist, have the plots recalculate render order, so
+//   that this tool is rendered before the transparent actors. 
 //
 // ****************************************************************************
 
@@ -989,6 +992,8 @@ VisitBoxTool::FinalActorSetup()
     addedBbox = false;
 
     RemoveOutline();
+    if (proxy.TransparenciesExist())
+        proxy.RecalculateRenderOrder();
 }
 
 // ****************************************************************************

@@ -4566,14 +4566,57 @@ VisWindow::FullFrameOn(const double scale, const int type)
 //    Modified to match changes in avtView2D made to handle full frame
 //    mode properly.
 //
+//    Kathleen  Bonnell, Tue Dec  2 16:36:00 PST 2003 
+//    CurveMode is always in FullFrameMode. 
+//
 // ****************************************************************************
 
 bool
 VisWindow::GetFullFrameMode()
 {
-    if (mode == WINMODE_2D && view2D.fullFrame)
+    if ((mode == WINMODE_2D && view2D.fullFrame) ||
+        (mode == WINMODE_CURVE))
         return true;
     else 
         return false; 
 }
 
+// ****************************************************************************
+// Method: VisWindow::TransparenciesExist
+//
+// Purpose: 
+//   Returns whether or not there are transparent actors in the plots. 
+//
+// Programmer: Kathleen Bonnell
+// Creation:   December 3, 2003 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+VisWindow::TransparenciesExist()
+{
+    return plots->TransparenciesExist();
+}
+
+
+// ****************************************************************************
+// Method: VisWindow::ReAddToolsToRenderWindow
+//
+// Purpose: 
+//   Allow tools to re-add themselves to the render window, in order
+//   to be rendered after plots but before tranparent actors. 
+//
+// Programmer: Kathleen Bonnell
+// Creation:   December 3, 2003 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+VisWindow::ReAddToolsToRenderWindow(void)
+{
+    tools->ReAddToolsToWindow();
+}

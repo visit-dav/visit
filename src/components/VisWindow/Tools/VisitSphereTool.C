@@ -594,6 +594,9 @@ VisitSphereTool::InitialActorSetup()
 // Creation:   Thu May 2 16:59:02 PST 2002
 //
 // Modifications:
+//   Kathleen Bonnell, Wed Dec  3 17:03:34 PST 2003 
+//   If transparencies exist, have the plots recalculate render order, so
+//   that this tool is rendered before the transparent actors. 
 //
 // ****************************************************************************
 
@@ -606,6 +609,8 @@ VisitSphereTool::FinalActorSetup()
         proxy.EndBoundingBox();
     }
     addedBbox = false;
+    if (proxy.TransparenciesExist())
+        proxy.RecalculateRenderOrder();
 }
 
 // ****************************************************************************

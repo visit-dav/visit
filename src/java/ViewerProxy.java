@@ -86,6 +86,10 @@ import java.util.Vector;
 //   Brad Whitlock, Wed Oct 22 12:25:43 PDT 2003
 //   I added another overloaded OpenDatabase method.
 //
+//   Kathleen Bonnell, Wed Nov 26 14:16:53 PST 2003 
+//   Added ResetPickAttributes method. Added overloaded PointQuery and
+//   DatabaseQuery methods to handle optional arguments.
+//
 // ****************************************************************************
 
 public class ViewerProxy implements SimpleObserver
@@ -1114,6 +1118,20 @@ public class ViewerProxy implements SimpleObserver
         rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_DATABASEQUERYRPC);
         rpc.SetQueryName(queryName);
         rpc.SetQueryVariables(vars);
+        rpc.SetIntArg1(0);
+        rpc.SetIntArg2(0);
+        rpc.Notify();
+        return synchronous ? Synchronize() : true;
+    }
+
+    public boolean DatabaseQuery(String queryName, Vector vars,
+                   int arg1, int arg2)
+    {
+        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_DATABASEQUERYRPC);
+        rpc.SetQueryName(queryName);
+        rpc.SetQueryVariables(vars);
+        rpc.SetIntArg1(arg1);
+        rpc.SetIntArg2(arg2);
         rpc.Notify();
         return synchronous ? Synchronize() : true;
     }
@@ -1124,6 +1142,21 @@ public class ViewerProxy implements SimpleObserver
         rpc.SetQueryName(queryName);
         rpc.SetQueryPoint1(pt);
         rpc.SetQueryVariables(vars);
+        rpc.SetIntArg1(-1);
+        rpc.SetIntArg2(-1);
+        rpc.Notify();
+        return synchronous ? Synchronize() : true;
+    }
+
+    public boolean PointQuery(String queryName, double[] pt, Vector vars,
+                              int arg1, int arg2)
+    {
+        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_POINTQUERYRPC);
+        rpc.SetQueryName(queryName);
+        rpc.SetQueryPoint1(pt);
+        rpc.SetQueryVariables(vars);
+        rpc.SetIntArg1(arg1);
+        rpc.SetIntArg2(arg2);
         rpc.Notify();
         return synchronous ? Synchronize() : true;
     }
@@ -1200,6 +1233,13 @@ public class ViewerProxy implements SimpleObserver
     public boolean SetPickAttributes()
     {
         rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETPICKATTRIBUTESRPC);
+        rpc.Notify();
+        return synchronous ? Synchronize() : true;
+    }
+
+    public boolean ResetPickAttributes()
+    {
+        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_RESETPICKATTRIBUTESRPC);
         rpc.Notify();
         return synchronous ? Synchronize() : true;
     }

@@ -27,6 +27,9 @@
 //   Kathleen Bonnell, Fri Jun  6 15:31:37 PDT 2003  
 //   Added GetFullFrameMode and GetScaleFactorAndType. 
 //
+//   Kathleen Bonnell, Wed Dec  3 16:49:14 PST 2003
+//   Added TransparenciesExist. 
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindowToolProxy : public VisWindowProtectionProxy
@@ -78,6 +81,9 @@ class VISWINDOW_API VisWindowToolProxy : public VisWindowProtectionProxy
 
     void                GetScaleFactorAndType(double &scale, int &type)
                             { ProxiedGetScaleFactorAndType(scale, type); };
+
+    bool                TransparenciesExist()
+                                  { return ProxiedTransparenciesExist(); };
 };
 
 

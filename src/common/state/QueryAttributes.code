@@ -24,6 +24,7 @@ QueryAttributes::Reset()
         resultsValue.clear();
         resultsValue.push_back(0.);
     }
+ 
     SelectAll();
 }
 
@@ -57,5 +58,17 @@ void
 QueryAttributes::SetResultsValue(const double val)
 {
     resultsValue[0] = val;    
+}
+
+Function: SetResultsValues
+Declaration: void SetResultsValues(const double*, const int);
+Definition:
+void
+QueryAttributes::SetResultsValues(const double *vals, const int numVals)
+{
+    int i;
+    resultsValue.clear();
+    for (i = 0; i < numVals; ++i)
+        resultsValue.push_back(vals[i]);
 }
 

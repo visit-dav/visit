@@ -1583,6 +1583,10 @@ VisitPlaneTool::InitialActorSetup()
 //   Depend on internal state instead of proxy so that we handle error
 //   conditions better.
 //
+//   Kathleen Bonnell, Wed Dec  3 17:03:34 PST 2003 
+//   If transparencies exist, have the plots recalculate render order, so
+//   that this tool is rendered before the transparent actors. 
+//
 // ****************************************************************************
 
 void
@@ -1597,6 +1601,9 @@ VisitPlaneTool::FinalActorSetup()
         proxy.EndBoundingBox();
     }
     addedBbox = false;
+
+    if (proxy.TransparenciesExist())
+        proxy.RecalculateRenderOrder();
 }
 
 // ****************************************************************************

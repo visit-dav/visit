@@ -9,6 +9,15 @@
       WorldSpace
       ScreenSpace
     </Enum>
+    <Enum name="WindowType">
+      Basic
+      SinglePoint
+      DoublePoint
+      DomainNode
+      DomainZone
+      CurrentPlot
+      CurrentPlotVars
+    </Enum>
     <Field name="names" label="names" type="stringVector">
     </Field>
     <Field name="types" label="types" type="intVector">
@@ -19,6 +28,10 @@
     </Field>
     <Field name="allowedVarTypes" label="allowedVarTypes" type="intVector">
     </Field>
+    <Field name="winType" label="winType" type="intVector" internal="true">
+    </Field>
+    <Field name="currentPlot" label="currentPlot" type="intVector">
+    </Field>
     <Function name="AddQuery" user="true" member="true">
     </Function>
     <Function name="QueryExists" user="true" member="true">
@@ -26,5 +39,9 @@
     <Function name="NumberOfInputsForQuery" user="true" member="true">
     </Function>
     <Function name="AllowedVarsForQuery" user="true" member="true">
+    </Function>
+    <Function name="CurrentPlotOnly" user="true" member="true">
+    </Function>
+    <Function name="SetWindowType" user="true" member="true">
     </Function>
   </Attribute>

@@ -2965,6 +2965,35 @@ ViewerProxy::ResetLightList()
     viewerRPC->Notify();
 }
 
+
+// ****************************************************************************
+// Method: ViewerProxy::ResetPickAttributes
+//
+// Purpose: 
+//   Reset the pick attributes to default values.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   November 26, 2003 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerProxy::ResetPickAttributes()
+{
+    //
+    // Set the rpc type.
+    //
+    viewerRPC->SetRPCType(ViewerRPC::ResetPickAttributesRPC);
+
+    //
+    // Issue the RPC.
+    //
+    viewerRPC->Notify();
+}
+
+
 // ****************************************************************************
 // Method: ViewerProxy::SetActiveContinuousColorTable
 //
@@ -4182,17 +4211,21 @@ ViewerProxy::DatabaseQuery(const std::string &queryName,
 //   pt        : The location of the point to query. It can be in screen 
 //               or world coordinates.
 //   vars      : The variables that we're querying.
+//   arg1      : An optional int argument.
+//   arg2      : An optional int argument.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Sep 9 16:36:12 PST 2002
 //
 // Modifications:
+//   Kathleen Bonnell, Wed Nov 26 14:17:55 PST 2003
+//   Added optional int args.
 //   
 // ****************************************************************************
 
 void
 ViewerProxy::PointQuery(const std::string &queryName, const double pt[3],
-    const stringVector &vars)
+    const stringVector &vars, const int arg1, const int arg2)
 {
     //
     // Set the rpc type.
@@ -4201,6 +4234,8 @@ ViewerProxy::PointQuery(const std::string &queryName, const double pt[3],
     viewerRPC->SetQueryName(queryName);
     viewerRPC->SetQueryPoint1(pt);
     viewerRPC->SetQueryVariables(vars);
+    viewerRPC->SetIntArg1(arg1);
+    viewerRPC->SetIntArg2(arg2);
 
     //
     // Issue the RPC.

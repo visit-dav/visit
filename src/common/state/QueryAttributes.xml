@@ -44,11 +44,16 @@
     </Field>
     <Field name="varTypes" label="varTypes" type="intVector" internal="true">
     </Field>
+    <Field name="currentPlotOnly" label="currentPlotOnly" type="bool" internal="true">
+      false
+    </Field>
     <Function name="Reset" user="true" member="true">
     </Function>
     <Function name="PrintSelf" user="true" member="true">
     </Function>
     <Function name="SetResultsValue" user="true" member="true">
+    </Function>
+    <Function name="SetResultsValues" user="true" member="true">
     </Function>
     <Include file="source" quoted="false">
       stdio.h
