@@ -135,6 +135,10 @@ avtSiloWriter::WriteHeaders(const avtDatabaseMetaData *md,
 //    Mark C. Miller, Tue Mar  9 12:17:28 PST 2004
 //    Added code to output spatial extents/zone counts
 //
+//    Mark C. Miller, Tue Oct  5 12:41:41 PDT 2004
+//    Changed to use test for DBOPT_EXTENTS_SIZE for code that adds extents
+//    options
+//
 // ****************************************************************************
 
 void
@@ -215,7 +219,7 @@ avtSiloWriter::ConstructMultimesh(DBfile *dbfile, const avtMeshMetaData *mmd)
         DBAddOption(tmpOptlist, DBOPT_ZUNITS, (char *) atts.GetZUnits().c_str());
 
     // the following silo options exist only for silo 4.4 and later
-#ifdef SILO_VERSION_4_4
+#ifdef DBOPT_EXTENTS_SIZE 
     int extsize = ndims * 2;
     DBAddOption(tmpOptlist, DBOPT_EXTENTS_SIZE, &extsize);
     DBAddOption(tmpOptlist, DBOPT_EXTENTS, extents);
@@ -252,6 +256,11 @@ avtSiloWriter::ConstructMultimesh(DBfile *dbfile, const avtMeshMetaData *mmd)
 //
 //  Programmer: Hank Childs
 //  Creation:   September 12, 2003
+//
+//  Modifications:
+//    Mark C. Miller, Tue Oct  5 12:41:41 PDT 2004
+//    Changed code that outputs extents options to use DBOPT_EXTENTS_SIZE for
+//    conditional compilation
 //
 // ****************************************************************************
 
@@ -346,7 +355,7 @@ avtSiloWriter::ConstructMultivar(DBfile *dbfile, const string &sname,
     // the following silo options exist only for silo 4.4 and later
     if (extents != 0)
     {
-#ifdef SILO_VERSION_4_4
+#ifdef DBOPT_EXTENTS_SIZE 
         int extsize = ncomps * 2;
         DBAddOption(tmpOptlist, DBOPT_EXTENTS_SIZE, &extsize);
         DBAddOption(tmpOptlist, DBOPT_EXTENTS, extents);

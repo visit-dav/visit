@@ -333,6 +333,9 @@ $0 = shift @ARGV;
 #    Brad Whitlock, Fri Sep 24 11:03:03 PDT 2004
 #    I made the xml2projectfile program be an option.
 #
+#    Mark C. Miller, Tue Oct  5 12:56:54 PDT 2004
+#    Changed appearance of '-help' option. Added a '-fullhelp' option
+#
 ###############################################################################
 
 
@@ -375,79 +378,99 @@ while ($tmpdir =~ s|(/[^/]+/\.\.)||) {}
 
 chomp( $visitdir = `dirname $tmpdir` );
 
+# setup the usage note about full help
+$helpnote = "
+    NOTE: For a more complete list of options, use '-fullhelp'.";
+
 # Do the usage help text
 $usage = "
-USAGE:  visit [arguments]
+    Interface options
+    ---------------------------------------------------------------------------
+        -gui                 Run with the Graphical User Interface (default).
+        -cli                 Run with the Command Line Interface.
 
-    Program arguments:
-        -gui                 Run with the Graphical User Interface (default)
-        -cli                 Run with the Command Line Interface
-        -convert             Converts files from format A to format B
-        -makemili            Runs the .mili file generator
-        -surfcomp            Runs the surface-compare tool.
-        -text2polys          Runs a utility which generators polygons from text
-        -time_annotation     Creates graphical annotation for position in time.
-        -silex               Run the Silo Explorer
-        -xmledit             Run the XML plugin editor
-        -xml2plugin          Run the XML plugin generator
-        -xmltest             Run the XML plugin tester
-        -xml2atts            Run the XML plugin attribute generator
-        -xml2avt             Run the XML plugin AVT generator
-        -xml2info            Run the XML plugin dynamic info generator
-        -xml2makefile        Run the XML plugin Makefile generator
-        -xml2projectfile     Run the XML plugin Windows project file generator
-        -xml2python          Run the XML plugin Pthon generator
-        -xml2window          Run the XML plugin GUI window generator
-        -xml2java            Run the XML plugin Java generator
-        -movie               Run the CLI in a movie making mode.
-        -mpeg_encode         Run the MPEG encoder
+    Movie making options
+    ---------------------------------------------------------------------------
+        -mpeg_encode         Run the MPEG encoder support tool to produce an
+			     mpeg file from a set of image files.
+        -movie               Run the CLI in a movie making mode. Must be
+                             combined with -sessionfile. Will produce a simple
+			     movie by drawing all the plots in the specified
+			     session for every timestep of the database.
 
-    Version arguments:
-        -beta                Run the current beta version
-        -v     <version>     Run the specified version
-        -dir   <directory>   Run the version in the given directory 
-                                The directory argument should specify the 
-                                path to the visit installation directory.
-                                /bin is automatically appended to this path.
+    Startup options
+    ---------------------------------------------------------------------------
+        -o <filename>        Open the specified data file at startup.
+        -s <filename>        Run the specified VisIt script. Note: This
+                             argument only takes effect with -cli or -movie.
+        -sessionfile <filename>  Open the specified session file at startup
+                             Note that this argument only takes effect with
+                             -gui or -movie.
+        -config <filename>   Initialize the viewer at startup using the named
+                             config file from your .visit directory.
+        -noconfig            Don't process configuration files at startup.
+        -launchengine <host> Launch an engine at startup. The <host> parameter
+                             is optional. If it is not specified, the engine
+                             will be launched on the local host. If you wish
+                             to launch an engine on a remote host, specify 
+                             the host's name as the <host> parameter.
+	-nosplash            Do not display the splash screen at startup.
 
-    Viewer arguments:
-        -noconfig            Don't process configuration files
-        -config <filename>   Initialize the viewer using the named config file
-                             from your .visit directory
-        -noint               Disable interruption capability
-        -numrestarts <#>     Number of attempts to restart a failed engine
-                                (default is 2)
-        -nopty               Run without PTYs.
+    Window options
+    ---------------------------------------------------------------------------
+        -small               Use a smaller desktop area/window size.
+        -geometry <spec>     What portion of the screen to use.  This is a
+                             standard X Windows geometry specification. This
+                             option can be used to set the size of images
+                             generated from scripts and movies.
+        -style <style>       One of: windows,cde,motif,sgi.
+        -background <color>  Background color for GUI.
+        -foreground <color>  Foreground color for GUI.
+        -nowin               Run with viewer windows off-screen (i.e. OSMesa).
+			     This is typically used with the -cli option.
 
-    Window arguments:
-        -launchengine [host] Launch an engine at startup, locally if no 'host'.
-        -small               Use a smaller desktop area/window size
-        -geometry   <spec>   What portion of the screen to use.  This is a
-                                 standard X Windows geometry specification
-        -style      <style>  One of: windows,cde,motif,sgi
-        -background <color>  Background color for GUI
-        -foreground <color>  Foreground color for GUI
-        -nowin               Run without viewer windows
+    Version options
+    ---------------------------------------------------------------------------
+	-version             Do NOT run VisIt. Just print the current version.
+        -beta                Run the current beta version.
+        -v <version>         Run a specified version (e.g. '1.3.3').
 
-    Advanced arguments:
-        -guesshost           Try to guess the client host name from one of
-                             the SSH_CLIENT, SSH2_CLIENT, or SSH_CONNECTION
-                             environment variables.
+    Other resources for help
+    ---------------------------------------------------------------------------
+        run-time:            While running VisIt, look under the \"Help\" menu.
+        on-line:             http://www.llnl.gov/visit
+        email:               visit-help\@llnl.gov
+";
 
-    Plugin arguments:
-        -publicpluginsonly   Disable all plugins but the default ones
+# Do the full usage help text
+$fullusage = "$usage
 
-    XML tools arguments:
-        -public              xml2makefile: force install plugins publicly
-        -private             xml2makefile: force install plugins privately
-        -clobber             overwrite old files
-        -noprint             do not print any debugging output
+    ***************************************************************************
+                              ADDITIONAL OPTIONS
+    ***************************************************************************
 
-    Parallel arguments:
-            (Note: when parallel arguments are added but the engine is not the
-             component being launched, -launchengine is implied.  Explicitly
-             add -launchengine to launch a remote parallel engine.)
-        -par                 Select the parallel version.  (optional)
+    Other VisIt tools
+    ---------------------------------------------------------------------------
+        -silex               Run the Silo Explorer tool. 
+        -convert             Run a database conversion tool that converts files
+                             from format A to format B.
+        -makemili            Run the .mili file generator.
+        -surfcomp            Run the surface-compare tool.
+        -text2polys          Run a tool to generate polygons from text data.
+        -time_annotation     Run the time annotation tool for creating a
+                             graphical annotation for position in time.
+
+    Parallel launch options
+    ---------------------------------------------------------------------------
+        Notes: All of these options are ordinarily obtained from host profiles.
+	However, the command line options override anything in the profiles. 
+
+	When parallel arguments are added but the engine is not the
+        component being launched, -launchengine is implied.  Explicitly
+        add -launchengine to launch a remote parallel engine.
+    ---------------------------------------------------------------------------
+        -par                 Run the parallel version. This option is implied
+                             by any of the other parallel options listed below.
         -l    <method>       Launch in parallel using the given method.
         -pl   <method>       Launch only the engine in parallel as specified.
         -la   <args>         Additional arguments for the parallel launcher.
@@ -458,28 +481,67 @@ USAGE:  visit [arguments]
         -b    <bank>         Bank from which to draw resources.
         -t    <time>         Maximum job run time.
         -expedite            Makes DPCS give priority scheduling.
-        -forcestatic         Force static load balancing
-        -forcedynamic        Force dynamic load balancing
 
-    File and Scripting arguments:
-        -o    <datafilename> Open a data file at startup.
-        -s    <scriptname>   Runs the specified VisIt script. Note that
-                             this argument only takes effect with -cli or -movie.
-        -sessionfile
-              <sessionfile>  Opens the specified session file at startup.
-                             Note that this argument only takes effect with
-                             -gui or -movie.
+    Load balance options
+    ---------------------------------------------------------------------------
+	Note: Each time VisIt executes a pipeline the relevant domains for the
+	execution are assigned to processors. This list of domains is sorted in
+	increasing global domain number. The options below effect how domains
+	in this list are assigned to processors. Assuming there are D domains
+	and P processors...
+    ---------------------------------------------------------------------------
+        -lb-block            Assign the first D/P domains to processor 0, the
+                             next D/P domains to processor 1, etc.
+        -lb-stride           Assign every Pth domain starting from the first
+                             to processor 0, every Pth domain starting from the
+                             second to processor 1, etc.
+        -lb-random           Randomly assign domains to processors.
+
+    Advanced options
+    ---------------------------------------------------------------------------
+        -guesshost           Try to guess the client host name from one of
+                             the SSH_CLIENT, SSH2_CLIENT, or SSH_CONNECTION
+                             environment variables.
+        -noint               Disable interruption capability.
+        -nopty               Run without PTYs.
         -verbose             Prints status information during pipeline
                              execution.
-        -default_format      Sets the database plugin format to use as a default
-                             if the file type cannot be resolved by using extensions.
+        -default_format      Sets the database plugin format to use as a
+			     default if a file type cannot be determined
+			     from its extension.
+        -dir <directory>     Run a version of VisIt in the specified directory.
+                             The directory argument should specify the 
+                             path to a visit installation directory.
+                             /bin is automatically appended to this path.
+        -publicpluginsonly   Disable all plugins but the default ones.
 
-    Debugging arguments:
+    Developer options
+    ---------------------------------------------------------------------------
+        -xmledit             Run the XML plugin editor
+        -xml2plugin          Run the XML plugin generator
+        -xmltest             Run the XML plugin tester
+        -xml2atts            Run the XML plugin attribute generator
+        -xml2avt             Run the XML plugin AVT generator
+        -xml2info            Run the XML plugin dynamic info generator
+        -xml2makefile        Run the XML plugin Makefile generator
+        -xml2python          Run the XML plugin Python generator
+        -xml2window          Run the XML plugin GUI window generator
+        -xml2java            Run the XML plugin Java generator
+        -public              xml2makefile: force install plugins publicly
+        -private             xml2makefile: force install plugins privately
+        -clobber             Permit xml2... tools to overwrite old files
+        -noprint             do not print any debugging output
+
+    Debugging options
+    ---------------------------------------------------------------------------
+        Note: Debugging options may degrade performance 
+    ---------------------------------------------------------------------------
         -debug <level>       Run with <level> levels of output logging.
                              <level> must be between 1 and 5.
-        -timing              Print timings files.
-        -env                 Print environment variables only.
-        -dump                Have streamers dump their results to files.
+	-pid                 Append process ids to the names of log files.
+        -timing              Save timing data to files.
+        -env                 Print env. variables VisIt will use when run.
+	-dump                Dump intermediate results from AVT filters.
         -gdb                 Run under gdb.
         -gdb-gui             Run the gui under gdb.
         -gdb-cli             Run the cli under gdb.
@@ -489,6 +551,7 @@ USAGE:  visit [arguments]
         -break <funcname>    Add the specified breakpoint in gdb.
         -xterm               Run gdb in an xterm window.
         -totalview <comp>    Run totalview on the given component.
+        -numrestarts <#>     Number of attempts to restart a failed engine.
 ";
 
 # Get our location
@@ -567,9 +630,16 @@ while (scalar(@ARGV) > 0) {
     elsif ($arg eq "-s")                { if($add_movie_args) { $sfile = shift; push @visitargs, "-scriptfile", $sfile;} else { push @visitargs, $arg;}}
     elsif ($arg eq "-publicpluginsonly"){ $publiconly = 1; push @visitargs, $arg; }
     elsif ($arg eq "-version")   { $want_version = 1; }
-    elsif ($arg eq "-help")      { print STDERR "$usage\n"; exit(0); }
-    elsif ($arg eq "-h")         { print STDERR "$usage\n"; exit(0); }
-    elsif ($arg eq "--help")     { print STDERR "$usage\n"; exit(0); }
+    elsif ($arg eq "-help")      { print STDERR "\nUSAGE: visit [options]
+				   $helpnote\n $usage\n"; exit(0); }
+    elsif ($arg eq "-h")         { print STDERR "\nUSAGE: visit [options]
+				   $helpnote\n $usage\n"; exit(0); }
+    elsif ($arg eq "--help")     { print STDERR "\nUSAGE: visit [options]
+				   $helpnote\n $usage\n"; exit(0); }
+    elsif ($arg eq "-fullhelp")  { print STDERR "\nUSAGE: visit [options]
+				   $fullusage\n"; exit(0); }
+    elsif ($arg eq "--fullhelp") { print STDERR "\nUSAGE: visit [options]
+				   $fullusage\n"; exit(0); }
     elsif ($arg eq "-norun")     { $nr = shift; push @norun, $nr; push @visitargs, "-norun", $nr; }
     elsif ($arg eq "-env")              { $envonly = 1; }
     elsif ($arg eq "-launchengine")     { if (scalar(@ARGV)>0) {$launchengine = shift;}
