@@ -31,6 +31,9 @@
     </Field>
     <Field name="numSpecsPerMat" label="numSpecsPerMat" type="intVector">
     </Field>
+    <Field name="treatAsASCII" label="treatAsASCII" type="bool" internal = "true">
+      false
+    </Field>
     <Function name="PrintSelf" user="true" member="true">
     </Function>
     <Function name="CreateOutputString" user="true" member="true">

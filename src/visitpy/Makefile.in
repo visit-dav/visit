@@ -78,6 +78,9 @@
 #    Kathleen Bonnell, Tue Mar 30 16:32:39 PST 2004 
 #    I added PyQueryOverTimeAttributes.
 #
+#    Kathleen Bonnell, Thu Jul 22 09:31:45 PDT 2004 
+#    I added PyGlobalLineoutAtributes.
+#
 ##############################################################################
 
 ##
@@ -92,6 +95,7 @@
 SRC= \
     PyAnnotationAttributes.C \
     PyGlobalAttributes.C \
+    PyGlobalLineoutAttributes.C \
     PyHostProfile.C \
     PyKeyframeAttributes.C \
     PyMaterialAttributes.C \
@@ -113,6 +117,7 @@ SRC= \
 HDR= \
     PyAnnotationAttributes.h \
     PyGlobalAttributes.h \
+    PyGlobalLineoutAttributes.h \
     PyHostProfile.h \
     PyKeyframeAttributes.h \
     PyMaterialAttributes.h \

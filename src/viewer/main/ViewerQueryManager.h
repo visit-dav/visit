@@ -34,6 +34,7 @@ typedef struct {
    Line     line;
    bool     fromDefault;
    std::vector<std::string> vars;
+   int      resWinId;
 } CachedLineout;
 
 

@@ -756,6 +756,10 @@ avtSiloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    at most one entry per semicolon, but you can have one less separator
 //    than num entries.  Second, it was walking off the end of the string.
 //
+//    Kathleen Bonnell, Thu Jul 22 12:30:22 PDT 2004 
+//    Use value of ascii_labels option for variables to set treatAsASCII
+//    in ScalarMetaData. 
+//
 // ****************************************************************************
 
 void
@@ -1285,7 +1289,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         ENDTRY
 
         avtCentering   centering;
-
+        bool           treatAsASCII = false;
         //
         // Get the centering and dimension information.
         //
@@ -1307,6 +1311,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
                     centering = (uv->centering == DB_ZONECENT ? AVT_ZONECENT 
                                                               : AVT_NODECENT);
                     nvals = uv->nvals;
+                    treatAsASCII = (uv->ascii_labels);
                     DBFreeUcdvar(uv);
                 }
                 break;
@@ -1319,6 +1324,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
                     centering = (qv->align[0] == 0. ? AVT_NODECENT 
                                                     : AVT_ZONECENT);
                     nvals = qv->nvals;
+                    treatAsASCII = (qv->ascii_labels);
                     DBFreeQuadvar(qv);
                 }
                 break;
@@ -1330,6 +1336,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
                     if (pv == NULL)
                         EXCEPTION1(InvalidVariableException, mv->varnames[0]);
                     nvals = pv->nvals;
+                    treatAsASCII = (pv->ascii_labels);
                     DBFreeMeshvar(pv);
                 }
                 break;
@@ -1346,6 +1353,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
             avtScalarMetaData *smd = new avtScalarMetaData(name_w_dir,
                                                        meshname, centering);
             smd->validVariable = valid_var;
+            smd->treatAsASCII = treatAsASCII;
             md->Add(smd);
         }
         else
@@ -1378,7 +1386,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         //
         avtCentering   centering = (qv->align[0] == 0. ? AVT_NODECENT :
                                                          AVT_ZONECENT);
-
+        
         //
         // Get the dimension of the variable.
         //
@@ -1388,6 +1396,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         {
             avtScalarMetaData *smd = new avtScalarMetaData(name_w_dir,
                                                     meshname_w_dir, centering);
+            smd->treatAsASCII = (qv->ascii_labels);
             md->Add(smd);
         }
         else
@@ -1431,6 +1440,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         {
             avtScalarMetaData *smd = new avtScalarMetaData(name_w_dir,
                                                     meshname_w_dir, centering);
+            smd->treatAsASCII = (uv->ascii_labels);
             md->Add(smd);
         }
         else
@@ -1468,6 +1478,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         {
             avtScalarMetaData *smd = new avtScalarMetaData(name_w_dir,
                                                 meshname_w_dir, AVT_NODECENT);
+            smd->treatAsASCII = (pv->ascii_labels);
             md->Add(smd);
         }
         else

@@ -1,7 +1,7 @@
 /*=========================================================================
 
   Program:   Visualization Toolkit
-  Module:    $RCSfile: vtkHankTIFFWriter.cxx,v $
+  Module:    $RCSfile: vtkVisItTIFFWriter.cxx,v $
   Language:  C++
   Date:      $Date: 2003/10/08 13:46:13 $
   Version:   $Revision: 1.30 $
@@ -15,7 +15,7 @@
      PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
-#include "vtkHankTIFFWriter.h"
+#include "vtkVisItTIFFWriter.h"
 
 #include "vtkObjectFactory.h"
 #include "vtkImageData.h"
@@ -26,18 +26,18 @@
 #endif
 #include <tiffio.h>
 
-vtkCxxRevisionMacro(vtkHankTIFFWriter, "$Revision: 1.30 $");
-vtkStandardNewMacro(vtkHankTIFFWriter);
+vtkCxxRevisionMacro(vtkVisItTIFFWriter, "$Revision: 1.30 $");
+vtkStandardNewMacro(vtkVisItTIFFWriter);
 
 //----------------------------------------------------------------------------
-vtkHankTIFFWriter::vtkHankTIFFWriter() 
+vtkVisItTIFFWriter::vtkVisItTIFFWriter() 
 {
   this->TIFFPtr = 0;
-  this->Compression = vtkHankTIFFWriter::PackBits;
+  this->Compression = vtkVisItTIFFWriter::PackBits;
 };
 
 
-class vtkHankTIFFWriterIO
+class vtkVisItTIFFWriterIO
 {
 public:
   // Writing file no reading
@@ -86,7 +86,7 @@ public:
 };
 
 //----------------------------------------------------------------------------
-void vtkHankTIFFWriter::WriteFileHeader(ofstream *file, vtkImageData *data)
+void vtkVisItTIFFWriter::WriteFileHeader(ofstream *file, vtkImageData *data)
 {
   int dims[3];
   int width, height;
@@ -125,10 +125,10 @@ void vtkHankTIFFWriter::WriteFileHeader(ofstream *file, vtkImageData *data)
 
   TIFF* tif = TIFFClientOpen(this->GetFileName(), "w",
     (thandle_t) file,
-    vtkHankTIFFWriterIO::TIFFRead, vtkHankTIFFWriterIO::TIFFWrite,
-    vtkHankTIFFWriterIO::TIFFSeek,
-    vtkHankTIFFWriterIO::TIFFClose, vtkHankTIFFWriterIO::TIFFSize,
-    vtkHankTIFFWriterIO::TIFFMapFile, vtkHankTIFFWriterIO::TIFFUnmapFile);
+    vtkVisItTIFFWriterIO::TIFFRead, vtkVisItTIFFWriterIO::TIFFWrite,
+    vtkVisItTIFFWriterIO::TIFFSeek,
+    vtkVisItTIFFWriterIO::TIFFClose, vtkVisItTIFFWriterIO::TIFFSize,
+    vtkVisItTIFFWriterIO::TIFFMapFile, vtkVisItTIFFWriterIO::TIFFUnmapFile);
   if ( !tif )
     {
     this->TIFFPtr = 0;
@@ -165,10 +165,10 @@ void vtkHankTIFFWriter::WriteFileHeader(ofstream *file, vtkImageData *data)
   int compression = COMPRESSION_PACKBITS;
   switch ( this->Compression )
     {
-  case vtkHankTIFFWriter::PackBits: compression = COMPRESSION_PACKBITS; break;
-  case vtkHankTIFFWriter::JPEG:     compression = COMPRESSION_JPEG; break;
-  case vtkHankTIFFWriter::Deflate:  compression = COMPRESSION_DEFLATE; break;
-  case vtkHankTIFFWriter::LZW:      compression = COMPRESSION_LZW; break;
+  case vtkVisItTIFFWriter::PackBits: compression = COMPRESSION_PACKBITS; break;
+  case vtkVisItTIFFWriter::JPEG:     compression = COMPRESSION_JPEG; break;
+  case vtkVisItTIFFWriter::Deflate:  compression = COMPRESSION_DEFLATE; break;
+  case vtkVisItTIFFWriter::LZW:      compression = COMPRESSION_LZW; break;
   default: compression = COMPRESSION_NONE;
     }
   //compression = COMPRESSION_JPEG;
@@ -204,7 +204,7 @@ void vtkHankTIFFWriter::WriteFileHeader(ofstream *file, vtkImageData *data)
 
 
 //----------------------------------------------------------------------------
-void vtkHankTIFFWriter::WriteFile(ofstream *, vtkImageData *data,
+void vtkVisItTIFFWriter::WriteFile(ofstream *, vtkImageData *data,
   int extent[6])
 {
   int idx1, idx2;
@@ -258,7 +258,7 @@ void vtkHankTIFFWriter::WriteFile(ofstream *, vtkImageData *data,
 }
 
 //----------------------------------------------------------------------------
-void vtkHankTIFFWriter::WriteFileTrailer(ofstream *, vtkImageData *)
+void vtkVisItTIFFWriter::WriteFileTrailer(ofstream *, vtkImageData *)
 {
   TIFF* tif = reinterpret_cast<TIFF*>(this->TIFFPtr);
   if ( !tif )
@@ -270,28 +270,28 @@ void vtkHankTIFFWriter::WriteFileTrailer(ofstream *, vtkImageData *)
   this->TIFFPtr = 0;
 }
 //----------------------------------------------------------------------------
-void vtkHankTIFFWriter::PrintSelf(ostream& os, vtkIndent indent)
+void vtkVisItTIFFWriter::PrintSelf(ostream& os, vtkIndent indent)
 {
   this->Superclass::PrintSelf(os,indent);
 
   os << indent << "Compression: ";
-  if ( this->Compression == vtkHankTIFFWriter::PackBits )
+  if ( this->Compression == vtkVisItTIFFWriter::PackBits )
     {
     os << "Pack Bits\n";
     }
-  else if ( this->Compression == vtkHankTIFFWriter::JPEG )
+  else if ( this->Compression == vtkVisItTIFFWriter::JPEG )
     {
     os << "JPEG\n";
     }
-  else if ( this->Compression == vtkHankTIFFWriter::Deflate )
+  else if ( this->Compression == vtkVisItTIFFWriter::Deflate )
     {
     os << "Deflate\n";
     }
-  else if ( this->Compression == vtkHankTIFFWriter::LZW )
+  else if ( this->Compression == vtkVisItTIFFWriter::LZW )
     {
     os << "LZW\n";
     }
-  else //if ( this->Compression == vtkHankTIFFWriter::NoCompression )
+  else //if ( this->Compression == vtkVisItTIFFWriter::NoCompression )
     {
     os << "No Compression\n";
     }

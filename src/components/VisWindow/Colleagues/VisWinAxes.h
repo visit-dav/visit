@@ -10,7 +10,7 @@
 #include <VisWinColleague.h>
 
 
-class vtkHankAxisActor2D;
+class vtkVisItAxisActor2D;
 
 class VisWindowColleagueProxy;
 
@@ -104,7 +104,7 @@ class VISWINDOW_API VisWinAxes : public VisWinColleague
     void                      SetLabelScaling(bool, int, int);
 
   protected:
-    vtkHankAxisActor2D       *xAxis, *yAxis;
+    vtkVisItAxisActor2D       *xAxis, *yAxis;
  
     int                       lastXPow, lastYPow;
     int                       lastXAxisDigits, lastYAxisDigits;

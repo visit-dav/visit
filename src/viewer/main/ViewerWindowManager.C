@@ -7205,20 +7205,47 @@ ViewerWindowManager::SetDefaultAnnotationObjectListFromClient()
 //   Added optional bool to immediately return NULL if the window doesn't
 //   already exist
 //
+//   Kathleen Bonnell, Thu Jul 22 15:20:29 PDT 2004 
+//   Removed bool arg (no longer needed due to changes from ViewerQueryManager)
+//   added int arg to specify a particular window to return (or create). 
+//   Added logic to return specified window (if useThisId not -1).
+//   
 // ****************************************************************************
 
 ViewerWindow *
-ViewerWindowManager::GetLineoutWindow(bool failIfNoneExists) 
+ViewerWindowManager::GetLineoutWindow(int useThisId)
 {
-    if (lineoutWindow == -1)
+    int returnId = lineoutWindow;
+    if (useThisId != -1)
     {
-        // If requested, instead of creating the needed window, just fail
-        if (failIfNoneExists)
-            return NULL;
+        // 
+        // Use or create the requested window.
+        // 
+        if (useThisId >= maxWindows || windows[useThisId] == 0)
+        {
+            int newWin = SimpleAddWindow();
+            if (newWin == -1)
+            {
+                Error("VisIt could not open a window for Lineout because "
+                      "the maximum number of windows was exceeded.");
+                return NULL;
+            }
+            SetWindowAttributes(newWin, false);
+            returnId = newWin;
+            windows[returnId]->SetInteractionMode(NAVIGATE);
+            referenced[returnId] = true;
+        }
+        else
+        {
+            returnId = useThisId;
+        }
 
+    }
+    else if (lineoutWindow == -1)
+    {
         //
         //  Search for an open, empty window.  If none exists,
-        //  create one.
+        //  create one && designate it as the default Lineout window.
         //
         int       winIdx;
         for (winIdx = 0; winIdx < maxWindows; winIdx++)
@@ -7250,8 +7277,9 @@ ViewerWindowManager::GetLineoutWindow(bool failIfNoneExists)
         }
         windows[lineoutWindow]->SetInteractionMode(NAVIGATE);
         referenced[lineoutWindow] = true;
+        returnId = lineoutWindow;
     }
-    return windows[lineoutWindow];
+    return windows[returnId];
 }
 
 
@@ -8048,13 +8076,37 @@ ViewerWindowManager::GetWindow(int windowIndex)
 // Creation:   April 1, 2004 
 //
 // Modifications:
+//   Kathleen Bonnell, Tue Jul 20 10:47:26 PDT 2004
+//   Added optional arg specifiying the windowId to retrieve.
 //
 // ****************************************************************************
 
 ViewerWindow *
-ViewerWindowManager::GetTimeQueryWindow() 
+ViewerWindowManager::GetTimeQueryWindow(int useThisId) 
 {
-    if (timeQueryWindow == -1)
+    int returnId = timeQueryWindow;
+    if (useThisId != -1)
+    {
+        if (useThisId >= maxWindows || windows[useThisId] == 0)
+        {
+            int newWin = SimpleAddWindow();
+            if (newWin == -1)
+            {
+                Error("VisIt could not open a window for TimeQuery because "
+                      "the maximum number of windows was exceeded.");
+                return NULL;
+            } 
+            SetWindowAttributes(newWin, false);
+            returnId = newWin;
+            windows[returnId]->SetInteractionMode(NAVIGATE);
+            referenced[returnId] = true;
+        }
+        else 
+        {
+            returnId = useThisId; 
+        }
+    }
+    else if (timeQueryWindow == -1)
     {
         //
         //  Search for an open, empty window.  If none exists,
@@ -8084,14 +8136,15 @@ ViewerWindowManager::GetTimeQueryWindow()
         }
         else
         {
-            Error("VisIt could not open a window for Lineout because the "
+            Error("VisIt could not open a window for TimeQuery because the "
                   "maximum number of windows was exceeded.");
             return NULL;
         }
         windows[timeQueryWindow]->SetInteractionMode(NAVIGATE);
         referenced[timeQueryWindow] = true;
+        returnId = timeQueryWindow;
     }
-    return windows[timeQueryWindow];
+    return windows[returnId];
 }
 
 

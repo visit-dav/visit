@@ -1,7 +1,7 @@
 /*=========================================================================
 
   Program:   Visualization Toolkit
-  Module:    $RCSfile: vtkKatAxisActor.h,v $
+  Module:    $RCSfile: vtkVisItAxisActor.h,v $
   Language:  C++
   Date:      $Date: 2001/09/14 09:11:06 $
   Version:   $Revision: 1.1 $
@@ -13,9 +13,9 @@ All rights reserved.
      the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
      PURPOSE.  See the above copyright notice for more information.
 =========================================================================*/
-// .NAME vtkKatAxisActor - Create an axis with tick marks and labels
+// .NAME vtkVisItAxisActor - Create an axis with tick marks and labels
 // .SECTION Description
-// vtkKatAxisActor creates an axis with tick marks, labels, and/or a title,
+// vtkVisItAxisActor creates an axis with tick marks, labels, and/or a title,
 // depending on the particular instance variable settings. It is assumed that
 // the axes is part of a bounding box and is orthoganal to one of the
 // coordinate axes.  To use this class, you typically specify two points 
@@ -43,8 +43,8 @@ All rights reserved.
 // .SECTION See Also
 // vtkActor vtkVectorText vtkPolyDataMapper vtkAxisActor2D vtkCoordinate
 
-#ifndef __vtkKatAxisActor_h
-#define __vtkKatAxisActor_h
+#ifndef __vtkVisItAxisActor_h
+#define __vtkVisItAxisActor_h
 #include <visit_vtk_exports.h>
 
 #include <vector>
@@ -75,15 +75,15 @@ All rights reserved.
 #define VTK_AXIS_POS_MAXMIN 3
 
 
-class VISIT_VTK_API vtkKatAxisActor : public vtkActor
+class VISIT_VTK_API vtkVisItAxisActor : public vtkActor
 {
 public:
-  vtkTypeMacro(vtkKatAxisActor,vtkActor);
+  vtkTypeMacro(vtkVisItAxisActor,vtkActor);
   void PrintSelf(ostream& os, vtkIndent indent);
 
   // Description:
   // Instantiate object.
-  static vtkKatAxisActor *New();
+  static vtkVisItAxisActor *New();
   
   // Description:
   // Specify the position of the first point defining the axis.
@@ -253,8 +253,8 @@ public:
   void BuildAxis(vtkViewport *viewport, bool);
 
 protected:
-  vtkKatAxisActor();
-  ~vtkKatAxisActor();
+  vtkVisItAxisActor();
+  ~vtkVisItAxisActor();
 
   char  *Title;
   float  Range[2];
@@ -282,8 +282,8 @@ protected:
   float  Bounds[6];
   
 private:
-  vtkKatAxisActor(const vtkKatAxisActor&);
-  void operator=(const vtkKatAxisActor&);
+  vtkVisItAxisActor(const vtkVisItAxisActor&);
+  void operator=(const vtkVisItAxisActor&);
 
 
   void TransformBounds(vtkViewport *, float bnds[6]);

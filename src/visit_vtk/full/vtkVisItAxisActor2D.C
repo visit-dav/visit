@@ -1,7 +1,7 @@
 /*=========================================================================
 
   Program:   Visualization Toolkit
-  Module:    $RCSfile: vtkHankAxisActor2D.cxx,v $
+  Module:    $RCSfile: vtkVisItAxisActor2D.cxx,v $
   Language:  C++
   Date:      $Date: 2000/06/08 09:11:05 $
   Version:   $Revision: 1.13 $
@@ -41,20 +41,21 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 =========================================================================*/
 #include <math.h>
-#include "vtkHankAxisActor2D.h"
+#include "vtkVisItAxisActor2D.h"
 #include <vtkCellArray.h>
 #include <vtkObjectFactory.h>
 #include <vtkPolyData.h>
 #include <vtkTextProperty.h>
 #include <vtkProperty2D.h>
 #include <vtkViewport.h>
+#include <snprintf.h>
 
 //------------------------------------------------------------------------------
 // Modifications:
 //   Kathleen Bonnell, Wed Mar  6 13:48:48 PST 2002
 //   Replace 'New' method with macro.
 // -----------------------------------------------------------------------------
-vtkStandardNewMacro(vtkHankAxisActor2D);
+vtkStandardNewMacro(vtkVisItAxisActor2D);
 
 
 // **********************************************************************
@@ -74,7 +75,7 @@ vtkStandardNewMacro(vtkHankAxisActor2D);
 //    Added the ability to specify the axis orientation angle.
 //
 // **********************************************************************
-vtkHankAxisActor2D::vtkHankAxisActor2D()
+vtkVisItAxisActor2D::vtkVisItAxisActor2D()
 {
   this->Point1Coordinate = vtkCoordinate::New();
   this->Point1Coordinate->SetCoordinateSystemToNormalizedViewport();
@@ -111,7 +112,7 @@ vtkHankAxisActor2D::vtkHankAxisActor2D()
   this->Shadow = 1;
   this->FontFamily = VTK_ARIAL;
   this->LabelFormat = new char[8]; 
-  sprintf(this->LabelFormat,"%s","%-#6.3g");
+  SNPRINTF(this->LabelFormat,8, "%s","%-#6.3f");
 
   this->TitleMapper = vtkTextMapper::New();
   this->TitleActor = vtkActor2D::New();
@@ -141,7 +142,7 @@ vtkHankAxisActor2D::vtkHankAxisActor2D()
   this->GridlineYLength = 1.;  
 }
 
-vtkHankAxisActor2D::~vtkHankAxisActor2D()
+vtkVisItAxisActor2D::~vtkVisItAxisActor2D()
 {
   if (this->Point1Coordinate)
     {
@@ -219,7 +220,7 @@ vtkHankAxisActor2D::~vtkHankAxisActor2D()
 //
 // ********************************************************************
 
-int vtkHankAxisActor2D::RenderOpaqueGeometry(vtkViewport *viewport)
+int vtkVisItAxisActor2D::RenderOpaqueGeometry(vtkViewport *viewport)
 {
   int i, renderedSomething=0;
 
@@ -253,7 +254,7 @@ int vtkHankAxisActor2D::RenderOpaqueGeometry(vtkViewport *viewport)
 
 // Render the axis, ticks, title, and labels.
 //
-int vtkHankAxisActor2D::RenderOverlay(vtkViewport *viewport)
+int vtkVisItAxisActor2D::RenderOverlay(vtkViewport *viewport)
 {
   int i, renderedSomething=0;
 
@@ -282,7 +283,7 @@ int vtkHankAxisActor2D::RenderOverlay(vtkViewport *viewport)
 // Release any graphics resources that are being consumed by this actor.
 // The parameter window could be used to determine which graphic
 // resources to release.
-void vtkHankAxisActor2D::ReleaseGraphicsResources(vtkWindow *win)
+void vtkVisItAxisActor2D::ReleaseGraphicsResources(vtkWindow *win)
 {
   this->TitleActor->ReleaseGraphicsResources(win);
   for (int i=0; i < this->NumberOfLabelsBuilt; i++)
@@ -301,7 +302,7 @@ void vtkHankAxisActor2D::ReleaseGraphicsResources(vtkWindow *win)
 //   Added the ability to specify the axis orientation angle.
 //
 // ********************************************************************
-void vtkHankAxisActor2D::PrintSelf(ostream& os, vtkIndent indent)
+void vtkVisItAxisActor2D::PrintSelf(ostream& os, vtkIndent indent)
 {
   this->Superclass::PrintSelf(os,indent);
 
@@ -393,7 +394,7 @@ void vtkHankAxisActor2D::PrintSelf(ostream& os, vtkIndent indent)
 //
 // ****************************************************************************
 
-void vtkHankAxisActor2D::BuildAxis(vtkViewport *viewport)
+void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
 {
   int i, *x;
   vtkIdType ptIds[2];
@@ -402,7 +403,7 @@ void vtkHankAxisActor2D::BuildAxis(vtkViewport *viewport)
   float outRange[2], deltaX, deltaY, xTick[3];
   float theta, val;
   int *size, stringSize[2], maxLabelStringSize[2];
-  char string[512];
+  char string[64];
   float  proportion[VTK_MAX_LABELS];
   float  ticksize[VTK_MAX_LABELS];
   float  sin_theta, cos_theta;
@@ -594,8 +595,29 @@ void vtkHankAxisActor2D::BuildAxis(vtkViewport *viewport)
         val = 0.;  
         }
 
-      sprintf(string, this->LabelFormat, val*this->MajorTickLabelScale);
+      SNPRINTF(string,64,this->LabelFormat, val*this->MajorTickLabelScale);
+
       this->LabelMappers[labelCount]->SetInput(string);
+      if (fabs(val < 0.01))
+      {
+          // 
+          // Ensure that -0.0 is never a label
+          // The maximum number of digits that we allow past the decimal is 5.
+          // 
+          if (strcmp(string, "-0") == 0) 
+              this->LabelMappers[labelCount]->SetInput("0");
+          else if (strcmp(string, "-0.0") == 0) 
+              this->LabelMappers[labelCount]->SetInput("0.0");
+          else if (strcmp(string, "-0.00") == 0) 
+              this->LabelMappers[labelCount]->SetInput("0.00");
+          else if (strcmp(string, "-0.000") == 0) 
+              this->LabelMappers[labelCount]->SetInput("0.000");
+          else if (strcmp(string, "-0.0000") == 0)
+              this->LabelMappers[labelCount]->SetInput("0.0000");
+          else if (strcmp(string, "-0.00000") == 0)
+              this->LabelMappers[labelCount]->SetInput("0.00000");
+      }
+
       vtkTextProperty *tprop = this->LabelMappers[labelCount]->GetTextProperty();
       tprop->SetBold(this->Bold);
       tprop->SetItalic(this->Italic);
@@ -684,7 +706,7 @@ void vtkHankAxisActor2D::BuildAxis(vtkViewport *viewport)
 //  Creation:    November 1, 2002
 // ********************************************************************
   
-void vtkHankAxisActor2D::SpecifiedComputeRange(float inRange[2],
+void vtkVisItAxisActor2D::SpecifiedComputeRange(float inRange[2],
                                                float outRange[2],
                                                double majorMinimum,
                                                double majorMaximum,
@@ -791,7 +813,7 @@ inline double fsign(double value, double sign)
 }
 
 // *******************************************************************
-// Method: vtkHankAxisActor2D::AdjustLabelsComputeRange
+// Method: vtkVisItAxisActor2D::AdjustLabelsComputeRange
 //
 // Purpose: 
 //   
@@ -825,7 +847,7 @@ inline double fsign(double value, double sign)
 //
 // *******************************************************************
 
-void vtkHankAxisActor2D::AdjustLabelsComputeRange(float inRange[2], 
+void vtkVisItAxisActor2D::AdjustLabelsComputeRange(float inRange[2], 
                                              float outRange[2], 
                                              int vtkNotUsed(inNumTicks),
                                              int &numTicks, float *proportion, 
@@ -959,7 +981,7 @@ void vtkHankAxisActor2D::AdjustLabelsComputeRange(float inRange[2],
 // Posiion text with respect to a point (xTick) where the angle of the line
 // from the point to the center of the text is given by theta. The offset
 // is the spacing between ticks and labels.
-void vtkHankAxisActor2D::SetOffsetPosition(float xTick[3], float theta, 
+void vtkVisItAxisActor2D::SetOffsetPosition(float xTick[3], float theta, 
                                        int stringWidth, int stringHeight, 
                                        int offset, vtkActor2D *actor,
                                        int titleAtEnd)
@@ -987,7 +1009,7 @@ void vtkHankAxisActor2D::SetOffsetPosition(float xTick[3], float theta,
   actor->SetPosition(pos[0], pos[1]);
 }
 
-float vtkHankAxisActor2D::ComputeStringOffset(float width, float height,
+float vtkVisItAxisActor2D::ComputeStringOffset(float width, float height,
                                           float theta)
 {
   float f1 = height*cos(theta);
@@ -1005,9 +1027,9 @@ float vtkHankAxisActor2D::ComputeStringOffset(float width, float height,
 //
 // ********************************************************************
 
-void vtkHankAxisActor2D::ShallowCopy(vtkProp *prop)
+void vtkVisItAxisActor2D::ShallowCopy(vtkProp *prop)
 {
-  vtkHankAxisActor2D *a = vtkHankAxisActor2D::SafeDownCast(prop);
+  vtkVisItAxisActor2D *a = vtkVisItAxisActor2D::SafeDownCast(prop);
   if ( a != NULL )
     {
     this->SetPoint1(a->GetPoint1());
@@ -1046,7 +1068,7 @@ void vtkHankAxisActor2D::ShallowCopy(vtkProp *prop)
 // ********************************************************************
   
 void 
-vtkHankAxisActor2D::SetNumberOfLabelsBuilt(const int numLabels)
+vtkVisItAxisActor2D::SetNumberOfLabelsBuilt(const int numLabels)
 {    
   if (this->NumberOfLabelsBuilt == numLabels)
     {
@@ -1079,7 +1101,7 @@ vtkHankAxisActor2D::SetNumberOfLabelsBuilt(const int numLabels)
 // Take into account the MTimes of Point1Coordinate and Point2Coordinate.
 // -----------------------------------------------------------------------------
 unsigned long 
-vtkHankAxisActor2D::GetMTime()
+vtkVisItAxisActor2D::GetMTime()
 {
   unsigned long mTime = this->Superclass::GetMTime();
 

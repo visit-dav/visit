@@ -151,6 +151,9 @@ Definition:
 //   Kathleen Bonnell, Thu Jun 10 17:31:37 PDT 2004 
 //   Reduce whitespace for material vars. 
 // 
+//   Kathleen Bonnell, Thu Jul 22 12:06:53 PDT 2004 
+//   Cast values to char if treatAsASCII is true.
+// 
 // ****************************************************************************
 void
 PickVarInfo::CreateOutputString(std::string &os, const std::string &type)
@@ -313,7 +316,14 @@ PickVarInfo::CreateOutputString(std::string &os, const std::string &type)
                 }
                 else if (variableType == "scalar")
                 {
-                    SNPRINTF(buff, 256, "= %g\n", values[i]);
+                    if (!treatAsASCII)
+                    {
+                        SNPRINTF(buff, 256, "= %g\n", values[i]);
+                    }
+                    else 
+                    {
+                        SNPRINTF(buff, 256, "= %c\n", (char) values[i]);
+                    }
                     os += buff;
                 }
                 else if (variableType == "tensor")

@@ -2,7 +2,7 @@
 //                                VisWinAxes3D.C                              //
 // ************************************************************************* //
 
-#include <vtkKatCubeAxesActor.h>
+#include <vtkVisItCubeAxesActor.h>
 #include <vtkRenderer.h>
 #include <vtkActorCollection.h>
 #include <vtkActor.h>
@@ -45,7 +45,7 @@
 
 VisWinAxes3D::VisWinAxes3D(VisWindowColleagueProxy &p) : VisWinColleague(p)
 {
-    axes = vtkKatCubeAxesActor::New();
+    axes = vtkVisItCubeAxesActor::New();
     axes->SetFlyModeToClosestTriad();
     axes->GetProperty()->SetColor(0, 0, 0);
     axes->SetCornerOffset(0.);
@@ -308,7 +308,7 @@ VisWinAxes3D::RemoveAxes3DFromWindow(void)
 //  Modifications:
 //    Kathleen Bonnell, Tue Oct 30 10:30:10 PST 2001 
 //    Removed calls to AdjustValues, AdjustRange. Functionality moved to
-//    more appropriate location of vtkKatCubeAxesActor.
+//    more appropriate location of vtkVisItCubeAxesActor.
 //
 // ****************************************************************************
 

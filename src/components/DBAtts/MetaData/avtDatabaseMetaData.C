@@ -697,12 +697,16 @@ avtMeshMetaData::Print(ostream &out, int indent) const
 //    Hank Childs, Mon Dec  9 17:04:39 PST 2002
 //    Initialized validVariable.
 //
+//    Kathleen Bonnell, Thu Jul 22 12:10:19 PDT 2004 
+//    Initialized treatAsASCII.
+//
 // ****************************************************************************
 
 avtScalarMetaData::avtScalarMetaData()
-    : AttributeSubject("ssibffb")
+    : AttributeSubject("ssibffbb")
 {
     validVariable = true;
+    treatAsASCII = false;
 }
    
 
@@ -722,17 +726,21 @@ avtScalarMetaData::avtScalarMetaData()
 //    Hank Childs, Mon Dec  9 17:04:39 PST 2002
 //    Initialized validVariable.
 //
+//    Kathleen Bonnell, Thu Jul 22 12:10:19 PDT 2004 
+//    Initialized treatAsASCII.
+//
 // ****************************************************************************
 
 avtScalarMetaData::avtScalarMetaData(std::string n, std::string mn, 
                                      avtCentering c)
-    : AttributeSubject("ssibffb")
+    : AttributeSubject("ssibffbb")
 {
     name           = n;
     meshName       = mn;
     centering      = c;
     hasDataExtents = false;
     validVariable  = true;
+    treatAsASCII   = false;
 }
    
 
@@ -754,16 +762,20 @@ avtScalarMetaData::avtScalarMetaData(std::string n, std::string mn,
 //    Hank Childs, Mon Dec  9 17:04:39 PST 2002
 //    Initialized validVariable.
 //
+//    Kathleen Bonnell, Thu Jul 22 12:10:19 PDT 2004 
+//    Initialized treatAsASCII.
+//
 // ****************************************************************************
 
 avtScalarMetaData::avtScalarMetaData(std::string n, std::string mn,
                                      avtCentering c, float min, float max)
-    : AttributeSubject("ssibffb")
+    : AttributeSubject("ssibffbb")
 {
     name           = n;
     meshName       = mn;
     centering      = c;
     validVariable  = true;
+    treatAsASCII   = false;
 
     float  extents[2] = { min, max };
     SetExtents(extents);
@@ -784,10 +796,13 @@ avtScalarMetaData::avtScalarMetaData(std::string n, std::string mn,
 //    Hank Childs, Mon Dec  9 17:04:39 PST 2002
 //    Initialized validVariable.
 //
+//    Kathleen Bonnell, Thu Jul 22 12:10:19 PDT 2004 
+//    Initialized treatAsASCII.
+//
 // ****************************************************************************
 
 avtScalarMetaData::avtScalarMetaData(const avtScalarMetaData &rhs)
-    : AttributeSubject("ssibffb")
+    : AttributeSubject("ssibffbb")
 {
     name           = rhs.name;
     meshName       = rhs.meshName;
@@ -796,6 +811,7 @@ avtScalarMetaData::avtScalarMetaData(const avtScalarMetaData &rhs)
     minDataExtents = rhs.minDataExtents;
     maxDataExtents = rhs.maxDataExtents;
     validVariable  = rhs.validVariable;
+    treatAsASCII   = rhs.treatAsASCII;
 }
 
 
@@ -828,6 +844,9 @@ avtScalarMetaData::~avtScalarMetaData()
 //    Hank Childs, Mon Dec  9 17:04:39 PST 2002
 //    Copied validVariable.
 //
+//    Kathleen Bonnell, Thu Jul 22 12:10:19 PDT 2004 
+//    Copied treatAsASCII.
+//
 // ****************************************************************************
 
 const avtScalarMetaData &
@@ -840,6 +859,7 @@ avtScalarMetaData::operator=(const avtScalarMetaData &rhs)
     minDataExtents = rhs.minDataExtents;
     maxDataExtents = rhs.maxDataExtents;
     validVariable  = rhs.validVariable;
+    treatAsASCII   = rhs.treatAsASCII;
     return *this;
 }
 
@@ -851,6 +871,10 @@ avtScalarMetaData::operator=(const avtScalarMetaData &rhs)
 //
 //  Programmer: Jeremy Meredith
 //  Creation:   August 31, 2000
+//
+//  Modifications:
+//    Kathleen Bonnell, Thu Jul 22 12:10:19 PDT 2004 
+//    Added treatAsASCII.
 //
 // ****************************************************************************
 
@@ -864,6 +888,7 @@ avtScalarMetaData::SelectAll()
     Select(4, (void*)&minDataExtents);
     Select(5, (void*)&maxDataExtents);
     Select(6, (void*)&validVariable);
+    Select(7, (void*)&treatAsASCII);
 }
 
 
@@ -920,6 +945,9 @@ avtScalarMetaData::SetExtents(const float *extents)
 //    Hank Childs, Mon Dec  9 17:04:39 PST 2002
 //    Print out validVariable.
 //
+//    Kathleen Bonnell, Thu Jul 22 12:10:19 PDT 2004 
+//    Print out treatAsASCII.
+//
 // ****************************************************************************
 
 void
@@ -966,6 +994,11 @@ avtScalarMetaData::Print(ostream &out, int indent) const
     {
         Indent(out, indent);
         out << "THIS IS NOT A VALID VARIABLE." << endl;
+    }
+    if (treatAsASCII)
+    {
+        Indent(out, indent);
+        out << "This variable should be treated as ASCII." << endl;
     }
 }
 

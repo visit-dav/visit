@@ -4,7 +4,7 @@
 
 #include <VisWinFrame.h>
 
-#include <vtkHankAxisActor2D.h>
+#include <vtkVisItAxisActor2D.h>
 #include <vtkProperty2D.h>
 #include <vtkRenderer.h>
 
@@ -40,7 +40,7 @@
 
 VisWinFrame::VisWinFrame(VisWindowColleagueProxy &p) : VisWinColleague(p)
 {
-    bottomBorder = vtkHankAxisActor2D::New();
+    bottomBorder = vtkVisItAxisActor2D::New();
     bottomBorder->GetPoint1Coordinate()
                     ->SetCoordinateSystemToNormalizedViewport();
     bottomBorder->GetPoint2Coordinate()
@@ -49,7 +49,7 @@ VisWinFrame::VisWinFrame(VisWindowColleagueProxy &p) : VisWinColleague(p)
     bottomBorder->SetLabelVisibility(0);
     bottomBorder->PickableOff();
 
-    topBorder    = vtkHankAxisActor2D::New();
+    topBorder    = vtkVisItAxisActor2D::New();
     topBorder->GetPoint1Coordinate()
                     ->SetCoordinateSystemToNormalizedViewport();
     topBorder->GetPoint2Coordinate()
@@ -58,7 +58,7 @@ VisWinFrame::VisWinFrame(VisWindowColleagueProxy &p) : VisWinColleague(p)
     topBorder->SetLabelVisibility(0);
     topBorder->PickableOff();
 
-    leftBorder   = vtkHankAxisActor2D::New();
+    leftBorder   = vtkVisItAxisActor2D::New();
     leftBorder->GetPoint1Coordinate()
                     ->SetCoordinateSystemToNormalizedViewport();
     leftBorder->GetPoint2Coordinate()
@@ -67,7 +67,7 @@ VisWinFrame::VisWinFrame(VisWindowColleagueProxy &p) : VisWinColleague(p)
     leftBorder->SetLabelVisibility(0);
     leftBorder->PickableOff();
 
-    rightBorder  = vtkHankAxisActor2D::New();
+    rightBorder  = vtkVisItAxisActor2D::New();
     rightBorder->GetPoint1Coordinate()
                    ->SetCoordinateSystemToNormalizedViewport();
     rightBorder->GetPoint2Coordinate()

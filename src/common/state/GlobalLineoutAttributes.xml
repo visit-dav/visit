@@ -7,4 +7,10 @@
     <Field name="Dynamic" label="Dynamic" type="bool">
       false
     </Field>
+    <Field name="createWindow" label="createWindow" type="bool">
+      true
+    </Field>
+    <Field name="windowId" label="windowId" type="int" enabler="createWindow:false">
+      2
+    </Field>
   </Attribute>

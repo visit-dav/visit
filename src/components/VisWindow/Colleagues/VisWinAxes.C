@@ -8,7 +8,7 @@
 #include <vector>
 #include <snprintf.h>
 
-#include <vtkHankAxisActor2D.h>
+#include <vtkVisItAxisActor2D.h>
 #include <vtkProperty2D.h>
 #include <vtkRenderer.h>
 
@@ -66,7 +66,7 @@ using   std::vector;
 
 VisWinAxes::VisWinAxes(VisWindowColleagueProxy &p) : VisWinColleague(p)
 {
-    xAxis = vtkHankAxisActor2D::New();
+    xAxis = vtkVisItAxisActor2D::New();
     xAxis->SetTickVisibility(1);
     xAxis->SetLabelVisibility(1);
     xAxis->SetTitleVisibility(1);
@@ -79,7 +79,7 @@ VisWinAxes::VisWinAxes(VisWindowColleagueProxy &p) : VisWinColleague(p)
     xAxis->GetPoint2Coordinate()->SetCoordinateSystemToNormalizedViewport();
     xAxis->PickableOff();
 
-    yAxis = vtkHankAxisActor2D::New();
+    yAxis = vtkVisItAxisActor2D::New();
     yAxis->SetTickVisibility(1);
     yAxis->SetLabelVisibility(1);
     yAxis->SetTitleVisibility(1);
@@ -459,8 +459,8 @@ VisWinAxes::NoPlots(void)
 //
 //    Eric Brugger, Fri Feb 28 11:18:28 PST 2003
 //    Modified the routine to change the major tick mark labels to
-//    scientific notation using vtkHankAxisActor2D::SetMajorTickLabelScale
-//    instead of modifying the range passed to vtkHankAxisActor2D::SetRange.
+//    scientific notation using vtkVisItAxisActor2D::SetMajorTickLabelScale
+//    instead of modifying the range passed to vtkVisItAxisActor2D::SetRange.
 //
 //    Kathleen Bonnell, Thu May 15 09:46:46 PDT 2003  
 //    Scaling of labels can take place for 2D views well as Curve views. 
@@ -1313,6 +1313,9 @@ VisWinAxes::SetLineWidth(int width)
 //    Kathleen Bonnell, Tue Dec 16 11:47:25 PST 2003 
 //    Use '10e' insted of just 'e' when diplaying scientific notation. 
 //
+//    Kathleen Bonnell, Tue Jul 20 11:44:36 PDT 2004 
+//    Use 'x10^' insted of '10e' when diplaying scientific notation. 
+//
 // ****************************************************************************
 
 void
@@ -1329,9 +1332,9 @@ VisWinAxes::SetTitle(void)
     else
     {
         if (unitsX[0] == '\0')
-            SNPRINTF(buffer, 1024, "%s (10e%d)", xTitle, powX);
+            SNPRINTF(buffer, 1024, "%s (x10^%d)", xTitle, powX);
         else
-            SNPRINTF(buffer, 1024, "%s (10e%d %s)", xTitle, powX, unitsX);
+            SNPRINTF(buffer, 1024, "%s (x10^%d %s)", xTitle, powX, unitsX);
     }
     xAxis->SetTitle(buffer);
 
@@ -1345,9 +1348,9 @@ VisWinAxes::SetTitle(void)
     else
     {
         if (unitsY[0] == '\0')
-            SNPRINTF(buffer, 1024, "%s\n (10e%d)", yTitle, powY);
+            SNPRINTF(buffer, 1024, "%s\n (x10^%d)", yTitle, powY);
         else
-            SNPRINTF(buffer, 1024, " %s\n(10e%d %s)", yTitle, powY, unitsY);
+            SNPRINTF(buffer, 1024, " %s\n(x10^%d %s)", yTitle, powY, unitsY);
     }
     yAxis->SetTitle(buffer);
 }

@@ -1,7 +1,7 @@
 /*=========================================================================
 
   Program:   Visualization Toolkit
-  Module:    $RCSfile: vtkKatCubeAxesActor.h,v $
+  Module:    $RCSfile: vtkVisItCubeAxesActor.h,v $
   Language:  C++
   Date:      $Date: 2001/08/03 20:08:22 $
   Version:   $Revision: 1.22 $
@@ -15,10 +15,10 @@ All rights reserve
      the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
      PURPOSE.  See the above copyright notice for more information.
 =========================================================================*/
-// .NAME vtkKatCubeAxesActor - create a  plot of a bounding box edges - 
+// .NAME vtkVisItCubeAxesActor - create a  plot of a bounding box edges - 
 // used for navigation
 // .SECTION Description
-// vtkKatCubeAxesActor is a composite actor that draws axes of the 
+// vtkVisItCubeAxesActor is a composite actor that draws axes of the 
 // bounding box of an input dataset. The axes include labels and titles
 // for the x-y-z axes. The algorithm selects which axes to draw based
 // on the user-defined 'fly' mode.  (STATIC is default).
@@ -32,7 +32,7 @@ All rights reserve
 // bounding box in projection (display) space. 
 // 
 // To use this object you must define a bounding box and the camera used
-// to render the vtkKatCubeAxesActor. You can optionally turn on/off labels,
+// to render the vtkVisItCubeAxesActor. You can optionally turn on/off labels,
 // ticks, gridlines, and set tick location, number of labels, and text to
 // use for axis-titles.  A 'corner offset' can also be set.  This allows 
 // the axes to be set partially away from the actual bounding box to perhaps
@@ -44,11 +44,11 @@ All rights reserve
 // .SECTION See Also
 // vtkActor vtkAxisActor vtkCubeAxesActor2D
 
-#ifndef __vtkKatCubeAxesActor_h
-#define __vtkKatCubeAxesActor_h
+#ifndef __vtkVisItCubeAxesActor_h
+#define __vtkVisItCubeAxesActor_h
 #include <visit_vtk_exports.h>
 
-#include "vtkKatAxisActor.h"
+#include "vtkVisItAxisActor.h"
 #include "vtkCamera.h"
 
 #define VTK_FLY_OUTER_EDGES     0
@@ -61,16 +61,16 @@ All rights reserve
 #define VTK_TICKS_OUTSIDE       1
 #define VTK_TICKS_BOTH          2
 
-class VISIT_VTK_API vtkKatCubeAxesActor : public vtkActor
+class VISIT_VTK_API vtkVisItCubeAxesActor : public vtkActor
 {
 public:
-  vtkTypeMacro(vtkKatCubeAxesActor,vtkActor);
+  vtkTypeMacro(vtkVisItCubeAxesActor,vtkActor);
   void PrintSelf(ostream& os, vtkIndent indent);
 
   // Description:
   // Instantiate object with label format "6.3g" and the number of labels 
   // per axis set to 3.
-  static vtkKatCubeAxesActor *New();
+  static vtkVisItCubeAxesActor *New();
   
   // Description:
   // Draw the axes as per the vtkProp superclass' API.
@@ -90,7 +90,7 @@ public:
 
   // Description:
   // Set/Get the camera to perform scaling and translation of the 
-  // vtkKatCubeAxesActor.
+  // vtkVisItCubeAxesActor.
   virtual void SetCamera(vtkCamera*);
   vtkGetObjectMacro(Camera,vtkCamera);
 
@@ -238,11 +238,11 @@ public:
   void SetLabelScaling(bool, int, int, int);  
   // Description:
   // Shallow copy of a KatCubeAxesActor.
-  void ShallowCopy(vtkKatCubeAxesActor *actor);
+  void ShallowCopy(vtkVisItCubeAxesActor *actor);
 
 protected:
-  vtkKatCubeAxesActor();
-  ~vtkKatCubeAxesActor();
+  vtkVisItCubeAxesActor();
+  ~vtkVisItCubeAxesActor();
 
   float       Bounds[6]; //Define bounds explicitly
 
@@ -251,9 +251,9 @@ protected:
  
   // to control all axes  
   // [0] always for 'Major' axis during non-static fly modes.
-  vtkKatAxisActor *XAxes[4];
-  vtkKatAxisActor *YAxes[4];
-  vtkKatAxisActor *ZAxes[4];
+  vtkVisItAxisActor *XAxes[4];
+  vtkVisItAxisActor *YAxes[4];
+  vtkVisItAxisActor *ZAxes[4];
 
   char *XTitle;
   char *XUnits;
@@ -295,8 +295,8 @@ protected:
   int RenderSomething;
   
 private:
-  vtkKatCubeAxesActor(const vtkKatCubeAxesActor&);
-  void operator=(const vtkKatCubeAxesActor&);
+  vtkVisItCubeAxesActor(const vtkVisItCubeAxesActor&);
+  void operator=(const vtkVisItCubeAxesActor&);
 
   vtkTimeStamp BuildTime;
   int lastXPow;
@@ -341,8 +341,8 @@ private:
   void  BuildAxes(vtkViewport *);
   void  DetermineRenderAxes(vtkViewport *);
   void  SetNonDependentAttributes(void);
-  void  BuildLabels(vtkKatAxisActor *axes[4]);
-  void  AdjustTicksComputeRange(vtkKatAxisActor *axes[4]);
+  void  BuildLabels(vtkVisItAxisActor *axes[4]);
+  void  AdjustTicksComputeRange(vtkVisItAxisActor *axes[4]);
 
   
 

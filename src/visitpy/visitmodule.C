@@ -49,6 +49,7 @@
 #include <DatabaseCorrelation.h>
 #include <EngineList.h>
 #include <GlobalAttributes.h>
+#include <GlobalLineoutAttributes.h>
 #include <KeyframeAttributes.h>
 #include <MessageAttributes.h>
 #include <PickAttributes.h>
@@ -74,6 +75,7 @@
 //
 #include <PyAnnotationAttributes.h>
 #include <PyGlobalAttributes.h>
+#include <PyGlobalLineoutAttributes.h>
 #include <PyHostProfile.h>
 #include <PyKeyframeAttributes.h>
 #include <PyMaterialAttributes.h>
@@ -8352,6 +8354,86 @@ visit_GetQueryOverTimeAttributes(PyObject *self, PyObject *args)
 
 
 // ****************************************************************************
+// Function: visit_SetGlobalLineoutAttributes
+//
+// Purpose:
+//   Tells the viewer to use the global lineout attributes we're sending.
+//
+// Notes:      
+//
+// Programmer: Kathleen Bonnell
+// Creation:   July 22, 2004 
+//
+// Modifications:
+//
+// ****************************************************************************
+
+STATIC PyObject *
+visit_SetGlobalLineoutAttributes(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    PyObject *globalLineout = NULL;
+    // Try and get the global lineout pointer.
+    if(!PyArg_ParseTuple(args,"O",&globalLineout))
+    {
+        VisItErrorFunc("SetGlobalLineoutAttributes: Cannot parse object!");
+        return NULL;
+    }
+    if(!PyGlobalLineoutAttributes_Check(globalLineout))
+    {
+        VisItErrorFunc("Argument is not a GlobalLineoutAttributes object");
+        return NULL;
+    }
+
+    MUTEX_LOCK();
+        GlobalLineoutAttributes *gla = 
+            PyGlobalLineoutAttributes_FromPyObject(globalLineout);
+
+        // Copy the object into the global lineout attributes.
+        *(viewer->GetGlobalLineoutAttributes()) = *gla;
+        viewer->GetGlobalLineoutAttributes()->Notify();
+        viewer->SetGlobalLineoutAttributes();
+
+        if(logging)
+            fprintf(logFile, "SetGlobalLineoutAttributes()\n");
+    MUTEX_UNLOCK();
+
+    return IntReturnValue(Synchronize());;
+}
+
+
+// ****************************************************************************
+// Function: visit_GetGlobalLineoutAttributes
+//
+// Purpose:
+//   Returns the current global lineout attributes.
+//
+// Notes:      
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   July 22, 2004 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_GetGlobalLineoutAttributes(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    PyObject *retval = PyGlobalLineoutAttributes_NewPyObject();
+    GlobalLineoutAttributes *gla = PyGlobalLineoutAttributes_FromPyObject(retval);
+
+    // Copy the viewer proxy's global lineout atts into the return data structure.
+    *gla = *(viewer->GetGlobalLineoutAttributes());
+
+    return retval;
+}
+
+
+// ****************************************************************************
 // Function: visit_DomainPick
 //
 // Purpose:
@@ -9081,6 +9163,9 @@ AddMethod(const char *methodName, PyObject *(cb)(PyObject *, PyObject *),
 //   Eric Brugger, Mon Apr  5 12:14:06 PDT 2004
 //   Added ToggleMaintainDataMode.
 //
+//   Kathleen Bonnell, Thu Jul 22 15:57:23 PDT 2004
+//   Added Set/Get GlobalLineoutAttributes.
+//
 // ****************************************************************************
 
 static void
@@ -9159,6 +9244,7 @@ AddDefaultMethods()
     AddMethod("GetDatabaseNStates", visit_GetDatabaseNStates);
     AddMethod("GetEngineList", visit_GetEngineList);
     AddMethod("GetGlobalAttributes", visit_GetGlobalAttributes);
+    AddMethod("GetGlobalLineoutAttributes", visit_GetGlobalLineoutAttributes);
     AddMethod("GetKeyframeAttributes", visit_GetKeyframeAttributes);
     AddMethod("GetMaterialAttributes", visit_GetMaterialAttributes);
     AddMethod("GetPickAttributes", visit_GetPickAttributes);
@@ -9211,6 +9297,7 @@ AddDefaultMethods()
     AddMethod("SetDefaultMaterialAttributes", visit_SetDefaultMaterialAttributes);
     AddMethod("SetDefaultOperatorOptions", visit_SetDefaultOperatorOptions);
     AddMethod("SetDefaultPlotOptions", visit_SetDefaultPlotOptions);
+    AddMethod("SetGlobalLineoutAttributes", visit_SetGlobalLineoutAttributes);
     AddMethod("SetKeyframeAttributes", visit_SetKeyframeAttributes);
     AddMethod("SetMaterialAttributes", visit_SetMaterialAttributes);
     AddMethod("SetOperatorOptions", visit_SetOperatorOptions);

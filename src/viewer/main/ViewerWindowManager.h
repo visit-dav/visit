@@ -290,6 +290,13 @@ typedef struct {
 //    Mark C. Miller, Mon Jul 12 19:46:32 PDT 2004
 //    Added optional bool to GetLineoutWindow to return NULL if window
 //    doesn't already exist
+//
+//    Kathleen Bonnell, Tue Jul 20 10:47:26 PDT 2004 
+//    Added optional int arg to GetTimeQueryWindow. 
+//
+//    Kathleen Bonnell, Thu Jul 22 09:23:25 PDT 200 
+//    Added optional int arg to GetLineoutWindow, removed bool arg.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerWindowManager : public QObject
@@ -385,8 +392,8 @@ class VIEWER_API ViewerWindowManager : public QObject
     int             *GetWindowIndices(int *nwin) const;
     int              GetNumWindows() const;
     ViewerWindow    *GetActiveWindow() const;
-    ViewerWindow    *GetLineoutWindow(bool failIfNoneExists = false);
-    ViewerWindow    *GetTimeQueryWindow();
+    ViewerWindow    *GetLineoutWindow(int useThisId = -1);
+    ViewerWindow    *GetTimeQueryWindow(int useThisId = -1);
     ViewerWindow    *GetEmptyWindow() ;
     ViewerWindow    *GetWindow(int windowIndex) ;
     int              GetWindowLayout() const { return layout; };

@@ -1,7 +1,7 @@
 /*=========================================================================
 
   Program:   Visualization Toolkit
-  Module:    $RCSfile: vtkHankAxisActor2D.h,v $
+  Module:    $RCSfile: vtkVisItAxisActor2D.h,v $
   Language:  C++
   Date:      $Date: 2000/06/08 09:11:06 $
   Version:   $Revision: 1.14 $
@@ -38,9 +38,9 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 =========================================================================*/
-// .NAME vtkHankAxisActor2D - Create an axis with tick marks and labels
+// .NAME vtkVisItAxisActor2D - Create an axis with tick marks and labels
 // .SECTION Description
-// vtkHankAxisActor2D creates an axis with tick marks, labels, and/or a title,
+// vtkVisItAxisActor2D creates an axis with tick marks, labels, and/or a title,
 // depending on the particular instance variable settings. To use this class,
 // you typically specify two points defining the start and end points of the
 // line (x-y definition using vtkCoordinate class), the number of labels, and
@@ -69,8 +69,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // vtkActor2D vtkTextMapper vtkPolyDataMapper2D vtkScalarBarActor
 // vtkCoordinate
 
-#ifndef __vtkHankAxisActor2D_h
-#define __vtkHankAxisActor2D_h
+#ifndef __vtkVisItAxisActor2D_h
+#define __vtkVisItAxisActor2D_h
 #include <visit_vtk_exports.h>
 
 #include "vtkActor2D.h"
@@ -79,15 +79,15 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define VTK_MAX_LABELS 1000
 
-class VISIT_VTK_API vtkHankAxisActor2D : public vtkActor2D
+class VISIT_VTK_API vtkVisItAxisActor2D : public vtkActor2D
 {
 public:
-  vtkTypeMacro(vtkHankAxisActor2D,vtkActor2D);
+  vtkTypeMacro(vtkVisItAxisActor2D,vtkActor2D);
   void PrintSelf(ostream& os, vtkIndent indent);
 
   // Description:
   // Instantiate object.
-  static vtkHankAxisActor2D *New();
+  static vtkVisItAxisActor2D *New();
   
   // Description:
   // Specify the position of the first point defining the axis.
@@ -313,8 +313,8 @@ public:
   unsigned long GetMTime(); 
    
 protected:
-  vtkHankAxisActor2D();
-  ~vtkHankAxisActor2D();
+  vtkVisItAxisActor2D();
+  ~vtkVisItAxisActor2D();
 
   vtkCoordinate *Point1Coordinate;
   vtkCoordinate *Point2Coordinate;
@@ -357,8 +357,8 @@ protected:
   int    LastPoint2[2];
   
 private:
-  vtkHankAxisActor2D(const vtkHankAxisActor2D&);
-  void operator=(const vtkHankAxisActor2D&);
+  vtkVisItAxisActor2D(const vtkVisItAxisActor2D&);
+  void operator=(const vtkVisItAxisActor2D&);
 
   void BuildAxis(vtkViewport *viewport);
   static float ComputeStringOffset(float width, float height, float theta);

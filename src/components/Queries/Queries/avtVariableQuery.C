@@ -22,6 +22,7 @@
 #include <NonQueryableInputException.h>
 
 #include <DebugStream.h>
+#include <ImproperUseException.h>
 
 
 using std::vector;
@@ -345,11 +346,18 @@ avtVariableQuery::ApplyFilters(avtDataObject_p inData)
 //    Kathleen Bonnell, Tue Jun  1 15:26:10 PDT 2004 
 //    Allow 'DomainZone' pick type to indicate a ZonePick.
 //    
+//    Kathleen Bonnell, Thu Jul 22 12:10:19 PDT 2004 
+//    Set PickVarInfo's treatAsASCII from DataAttributes' treatAsASCII. 
+//    
 // ****************************************************************************
 
 void
 avtVariableQuery::RetrieveVarInfo(vtkDataSet* ds)
 {
+    bool treatAsASCII = false;
+    avtDataAttributes &data = GetInput()->GetInfo().GetAttributes();
+
+
     int element = pickAtts.GetElementNumber();
     stringVector userVars = pickAtts.GetVariables();
     string vName;
@@ -386,6 +394,19 @@ avtVariableQuery::RetrieveVarInfo(vtkDataSet* ds)
         {
             vName = userVars[varNum];
         }
+        TRY
+        {
+            treatAsASCII = data.GetTreatAsASCII(vName.c_str());
+        }
+        CATCH(ImproperUseException)
+        {
+            //
+            // We may be querying a Mesh var.
+            //
+            treatAsASCII = false;
+        }
+        ENDTRY
+
         vtkDataArray *varArray = ds->GetPointData()->GetArray(vName.c_str());
         if (varArray != NULL) // nodal data
         {
@@ -461,6 +482,7 @@ avtVariableQuery::RetrieveVarInfo(vtkDataSet* ds)
                 pickAtts.GetPickVarInfo(varNum).SetNames(names);
                 pickAtts.GetPickVarInfo(varNum).SetValues(vals);
                 pickAtts.GetPickVarInfo(varNum).SetCentering(centering);
+                pickAtts.GetPickVarInfo(varNum).SetTreatAsASCII(treatAsASCII);
                 if (pickAtts.GetPickVarInfo(varNum).GetVariableType() != "species")
                 { 
                     if (nComponents == 1)
@@ -478,6 +500,7 @@ avtVariableQuery::RetrieveVarInfo(vtkDataSet* ds)
             PickVarInfo varInfo;
             varInfo.SetVariableName(vName);
             varInfo.SetCentering(centering);
+            varInfo.SetTreatAsASCII(treatAsASCII);
             if (!names.empty())
             {
                 varInfo.SetNames(names);
