@@ -32,6 +32,9 @@ typedef ViewerRPC::ViewerRPCType ActionIndex;
 //   Brad Whitlock, Mon Jun 30 13:35:21 PST 2003
 //   I added CreateNode and SetFromNode.
 //
+//   Brad Whitlock, Tue Feb 24 13:24:59 PST 2004
+//   I added an argument to RealizeActionGroups.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerActionManager
@@ -79,7 +82,7 @@ private:
     void        AddActionGroup(const ActionGroup &group);
     void        AddActionToActionGroup(int index, ActionIndex);
     void        UpdatePopup();
-    void        RealizeActionGroups();
+    void        RealizeActionGroups(bool);
 
     ViewerActionBase **actions;
     ActionGroupVector  actionGroups;

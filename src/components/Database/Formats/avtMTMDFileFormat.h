@@ -32,6 +32,9 @@ class     vtkDataArray;
 //    Brad Whitlock, Mon Oct 13 14:17:30 PST 2003
 //    Added a method to get the times.
 //
+//    Mark C. Miller, Mon Feb 23 20:38:47 PST 2004
+//    Added method, ActivateTimestep
+//
 // ****************************************************************************
 
 class DATABASE_API avtMTMDFileFormat : public avtFileFormat
@@ -53,6 +56,9 @@ class DATABASE_API avtMTMDFileFormat : public avtFileFormat
     virtual vtkDataSet    *GetMesh(int, int, const char *) = 0;
     virtual vtkDataArray  *GetVar(int, int, const char *) = 0;
     virtual vtkDataArray  *GetVectorVar(int, int, const char *);
+
+    virtual void           ActivateTimestep(int ts)
+                               { avtFileFormat::ActivateTimestep(); };
 
   protected:
     char                  *filename;

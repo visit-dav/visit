@@ -37,7 +37,72 @@ class    avtVariableCache;
 //      Silo files for multiple time steps.  This interface then would worry
 //      about making those multiple time steps appear to the database while
 //      the Silo files can worry only about one time step at a time.
-//      
+//
+//      MCM, Added 23Feb04
+//
+//      Two classes go hand-in-hand here; the FormatInterface classes and
+//      the Format classes. Every FormatInterface HAS A (sometimes more than
+//      one) Format object. avtFileFormatInterface is the base class for
+//      for FormatInterface objects while avtFileFormat is the base class
+//      for Format objects.
+//
+//      In VisIt, the abstract FormatInterface supports the notion that a mesh
+//      is composed of various pieces (called domains) at various timesteps.
+//      The general request for data from VisIt through the FormatInterface to a
+//      plugin looks something like GetData(int domainNumber, int timeStep).
+//      Of course, not all real file formats that Visit reads from actually
+//      support either the notions of pieces of mesh or of time. Consequently,
+//      there are four basic FormatInterface classes defined by VisIt derived
+//      from avtFileFormatInterface. These four derived classes are used to
+//      distinguish how the FormatInterface operates on one of many domains
+//      and/or timesteps. The four FormatInterfaces are...
+//
+//         1) single-timestep, single-domain (STSD)
+//         2) single-timestep, multiple-domain (STMD)
+//         3) multiple-timestep, single-domain (MTSD)
+//         4) multiple-timestep, multiple-domain (MTMD)
+//
+//     For example, an STSD FormatInterface supports the notion of only a single
+//     timestep and a single domain. It will only ever recieve requests from VisIt
+//     of the form GetData(). Note that the timeStep and domainNumber arguments
+//     are not present because the FormatInterface cannot interpret them.
+//     Note also that this DOES NOT IMPLY that one cannot handle time-varying
+//     and/or multiple domain data through an STSD FormatInterface. Every
+//     FormatInterface object HAS A Format object, one or more. An STSD 
+//     FormatInterface in fact has many Format objects, one for each timestep
+//     and each domain. Each of these Format objects handles one timestep
+//     and one domain. The STSDFormatInterface is responsible for selecting
+//     which among the many domains and which among the many timesteps for
+//     a given operation. On the other hand, an MTMD FormatInterface has
+//     a single Format object because all classes derived from an MTMD
+//     type of FormatInterface support, natively, there own notions of
+//     domains and timesteps.
+//
+//     Here are some rules of thumb to use in deciding where to implement
+//     new functionality.
+//
+//     1) Don't define new funtions in any of the FormatInterface objects as
+//        pure virtual, UNLESS ABSOLUTELY NECESSARY. The effect of introducing
+//        pure virtual functions to the FormatInterface is that ALL derived
+//        classes (e.g. the database plugins) ARE REQUIRED to implement them.
+//        All the plugins would have to be updated.
+//
+//     2) Don't define new functions in any of the FormatInterface objects
+//        as non-virtual because it means the derived classes (e.g. the
+//        database plugins) won't be able to override the behavior if needed.
+//        If there is functionality needed in the FormatInterface that
+//        shall never be allowed to be overridden in the plugins, then it
+//        should probably by implemented in the base classes for the Format
+//        and FormatInterface.
+//
+//     3) If the interface to the new functionality is not FormatInterface
+//        specific (e.g. it has no formal arguments for time or domain),
+//        you can probably get by with implementing it in the base classes,
+//        avtFileFormat and avtFileFormatInterface. Of course, it should still
+//        be virtual so plugins can override it. Otherwise, you should
+//        implement it in BOTH the bases classes and the FormatInterface
+//        specific classes.
+//
 //  Programmer: Hank Childs
 //  Creation:   February 22, 2001
 //
@@ -86,6 +151,9 @@ class    avtVariableCache;
 //    Mark C. Miller, Mon Feb  9 16:00:10 PST 2004
 //    Added method, ActivateTimestep
 //
+//    Mark C. Miller, Mon Feb 23 20:38:47 PST 2004
+//    Added ts argument to ActivateTimestep and made it pure virtual 
+//
 // ****************************************************************************
 
 class DATABASE_API avtFileFormatInterface
@@ -104,6 +172,7 @@ class DATABASE_API avtFileFormatInterface
     virtual void            SetDatabaseMetaData(avtDatabaseMetaData *,int=0) = 0;
 
     virtual void            FreeUpResources(int, int) = 0;
+    virtual void            ActivateTimestep(int ts) = 0;
 
     bool                    HasInvariantMetaData(void);
     bool                    HasInvariantSIL(void);
@@ -120,7 +189,6 @@ class DATABASE_API avtFileFormatInterface
     void                    SetCache(avtVariableCache *);
     void                    TurnMaterialSelectionOff(void);
     void                    TurnMaterialSelectionOn(const char *);
-    void                    ActivateTimestep(void);
 
   protected:
     virtual int             GetNumberOfFileFormats(void) = 0;

@@ -55,7 +55,11 @@ ViewerToolbar::~ViewerToolbar()
 // Creation:   Thu Jan 30 09:41:58 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Feb 24 13:14:20 PST 2004
+//   I made it so the toolbar is not really shown unless the whole toolbar
+//   is not hidden. The visibilty flag still gets set though so when the
+//   toolbar is made active, the right toolbars are shown.
+//
 // ****************************************************************************
 
 void
@@ -66,7 +70,8 @@ ViewerToolbar::Show(const std::string &toolBarName)
     {
         if(pos->second.toolbar)
         {
-            pos->second.toolbar->show();
+            if(!hidden)
+                pos->second.toolbar->show();
             pos->second.visible = true;
         }
     }
@@ -227,7 +232,9 @@ ViewerToolbar::RemoveAction(ViewerActionBase *action)
 // Creation:   Thu Jan 30 09:46:44 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Feb 24 14:09:18 PST 2004
+//   I added code to make sure that the new toolbar is hidden by default.
+//
 // ****************************************************************************
 
 ViewerToolbar::ToolbarItem
@@ -238,8 +245,9 @@ ViewerToolbar::CreateToolbar(const std::string &toolBarName)
         return pos->second;
     else
     {
-        // Create a toolbar
+        // Create a toolbar and make sure that it is hidden.
         QToolBar *tb = (QToolBar *)window->CreateToolbar(toolBarName);
+        tb->hide();
 
         ToolbarItem retval(tb, false);
         toolbars[toolBarName] = retval;

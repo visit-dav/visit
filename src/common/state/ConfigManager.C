@@ -63,14 +63,16 @@ ConfigManager::~ConfigManager()
 // Creation:   Fri Sep 29 17:17:58 PST 2000
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Feb 23 16:29:41 PST 2004
+//   Write text file.
+//
 // ****************************************************************************
 
 void
 ConfigManager::WriteBack(DataNode *root)
 {
     // Try to open the output file.
-    if((fp = fopen("WRITEBACK", "wb")) == 0)
+    if((fp = fopen("WRITEBACK", "wt")) == 0)
         return;
 
     // Write the output file to stdout for now.
@@ -1216,6 +1218,10 @@ ConfigManager::ReadField(DataNode *parentNode, const std::string &tagName,
 //   Brad Whitlock, Wed Apr 23 09:20:11 PDT 2003
 //   I made it possible to use different system config files on Windows.
 //
+//   Brad Whitlock, Mon Feb 23 16:28:31 PST 2004
+//   I changed how the config file names are determined on Windows so
+//   they can be opened in Notepad by double-clicking.
+//
 // ****************************************************************************
 
 char *
@@ -1229,19 +1235,8 @@ ConfigManager::GetDefaultConfigFile(const char *filename, const char *home)
     // "config" as the default filename.
     if(filename == 0)
     {
-#if defined(_WIN32)
-        // Try and get the system config filename from the environment settings.
-        configFileName = getenv("VISITSYSTEMCONFIG");
-        if(configFileName != 0)
-            filenameLength = strlen(configFileName);
-        else
-        {
-#endif
-            filenameLength = 14;
-            configFileName = "config";
-#if defined(_WIN32)
-        }
-#endif
+        filenameLength = 7;
+        configFileName = "config";
     }
     else
     {
@@ -1263,19 +1258,19 @@ ConfigManager::GetDefaultConfigFile(const char *filename, const char *home)
             GetUserName(username, &namelen);
 
             retval = new char[strlen(realhome) + namelen + 5 + filenameLength + 2 + 7];
-            sprintf(retval, "%s\\%s for %s", realhome, configFileName, username);
+            sprintf(retval, "%s\\%s for %s.ini", realhome, configFileName, username);
         }
         else
         {
             // System config.
             retval = new char[strlen(realhome) + filenameLength + 2 + 7];
-            sprintf(retval, "%s\\%s", realhome, configFileName);
+            sprintf(retval, "%s\\%s.ini", realhome, configFileName);
         }
     }
     else
     {
         retval = new char[filenameLength + 1];
-        strcpy(retval, configFileName);
+        sprintf(retval, "%s.ini", configFileName);
     }
 #else
     // The file it is assumed to be in the home directory unless the home
@@ -1314,13 +1309,36 @@ ConfigManager::GetDefaultConfigFile(const char *filename, const char *home)
 // Creation:   Tue Feb 19 12:33:06 PDT 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Feb 23 15:53:34 PST 2004
+//   I added logic to try and determine the name of the appropriate config
+//   file.
+//
 // ****************************************************************************
 
 char *
 ConfigManager::GetSystemConfigFile(const char *filename)
 {
-    return GetDefaultConfigFile(filename, "VISITHOME");
+    const char *sysConfigName = filename;
+
+    //
+    // If no system config file name was given, check the VISITSYSTEMCONFIG
+    // environment variable if we're on Windows. Otherwise, just use the
+    // name "config".
+    //
+    if(sysConfigName == 0)
+    {
+#if defined(_WIN32)
+        // Try and get the system config filename from the environment settings.
+        sysConfigName = getenv("VISITSYSTEMCONFIG");
+#endif
+
+        // If we still don't have the name of a system config file, use 
+        // the name "config".
+        if(sysConfigName == 0)
+            sysConfigName = "config";
+    }
+
+    return GetDefaultConfigFile(sysConfigName, "VISITHOME");
 }
 
 // ****************************************************************************

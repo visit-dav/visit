@@ -175,6 +175,25 @@ avtFileFormat::FreeUpResources(void)
            << "define how to do that." << endl;
 }
 
+// ****************************************************************************
+//  Method: avtFileFormat::ActivateTimestep
+//
+//  Purpose:
+//      Defines an implementation of ActivateTimestep that does nothing -- this
+//      is for file formats that don't need to do anything special when a new
+//      timestep is encountered. 
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   February 23, 2004
+//
+// ****************************************************************************
+
+void
+avtFileFormat::ActivateTimestep(void)
+{
+    debug1 << "Asked " << GetType() << " to activate timestep, but it did not "
+           << "define how to do that." << endl;
+}
 
 // ****************************************************************************
 //  Method: avtFileFormat::PopulateIOInformation

@@ -4,10 +4,11 @@
 
 #ifndef BJHASH_H
 #define BJHASH_H
+#include <utility_exports.h>
 
 namespace BJHash
 {
-    unsigned int Hash(unsigned char *k, unsigned int length, unsigned int initval);
+    UTILITY_API unsigned int Hash(unsigned char *k, unsigned int length, unsigned int initval);
     unsigned int Mask(int n);
 }
 

@@ -253,4 +253,20 @@ avtMTMDFileFormatInterface::FreeUpResources(int, int)
     format->FreeUpResources();
 }
 
+// ****************************************************************************
+//  Method: avtMTMDFileFormatInterface::ActivateTimestep
+//
+//  Purpose: Notify the format of our intention to read data for a given
+//  timestep. This gives the format an opportunity to do whatever 
+//  parallel collective work it might need to for the given timestep
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   February 23, 2004 
+//
+// ****************************************************************************
 
+void
+avtMTMDFileFormatInterface::ActivateTimestep(int ts)
+{
+    format->ActivateTimestep(ts);
+}

@@ -24,6 +24,9 @@ Definition:
 //   Brad Whitlock, Wed Jul 23 14:00:55 PST 2003
 //   Removed window size, location coding.
 //
+//   Brad Whitlock, Tue Feb 24 13:38:09 PST 2004
+//   Added code to save the toolbarsVisible flag.
+//
 // ****************************************************************************
 
 bool
@@ -38,6 +41,9 @@ ViewerWindowManagerAttributes::CreateNode(DataNode *parentNode, bool, bool)
     for(int i = 0; i < actionConfigurations.size(); ++i)
         actionConfigurations[i]->CreateNode(attNode, true, true);
     node->AddNode(attNode);
+
+    // Add the toolbars saved flag.
+    node->AddNode(new DataNode("toolbarsVisible", toolbarsVisible));
 
     // Add the node to the parent node.
     parentNode->AddNode(node);
@@ -62,6 +68,9 @@ Definition:
 // Modifications:
 //   Brad Whitlock, Wed Jul 23 14:00:55 PST 2003
 //   Removed window size, location coding.
+//
+//   Brad Whitlock, Tue Feb 24 13:38:40 PST 2004
+//   Added code to read the toolbarsVisible flag.
 //
 // ****************************************************************************
 
@@ -95,6 +104,13 @@ ViewerWindowManagerAttributes::SetFromNode(DataNode *parentNode)
             }
         }
     }
+
+    //
+    // Read the toolbarsVisible flag.
+    //
+    DataNode *node;
+    if((node = searchNode->GetNode("toolbarsVisible")) != 0)
+        SetToolbarsVisible(node->AsBool());
 }
 
 Function: ProcessOldVersions

@@ -123,7 +123,7 @@ avtSTSDFileFormatInterface::GetMesh(int ts, int dom, const char *mesh)
 {
     if (ts < 0 || ts >= nTimesteps)
     {
-        EXCEPTION2(BadIndexException, 2, nTimesteps);
+        EXCEPTION2(BadIndexException, ts, nTimesteps);
     }
 
     if (dom < 0 || dom >= nBlocks)
@@ -166,7 +166,7 @@ avtSTSDFileFormatInterface::GetVar(int ts, int dom, const char *var)
 {
     if (ts < 0 || ts >= nTimesteps)
     {
-        EXCEPTION2(BadIndexException, 2, nTimesteps);
+        EXCEPTION2(BadIndexException, ts, nTimesteps);
     }
 
     if (dom < 0 || dom >= nBlocks)
@@ -209,7 +209,7 @@ avtSTSDFileFormatInterface::GetVectorVar(int ts, int dom, const char *var)
 {
     if (ts < 0 || ts >= nTimesteps)
     {
-        EXCEPTION2(BadIndexException, 2, nTimesteps);
+        EXCEPTION2(BadIndexException, ts, nTimesteps);
     }
 
     if (dom < 0 || dom >= nBlocks)
@@ -255,7 +255,7 @@ avtSTSDFileFormatInterface::GetAuxiliaryData(const char *var, int ts, int dom,
 {
     if (ts < 0 || ts >= nTimesteps)
     {
-        EXCEPTION2(BadIndexException, 2, nTimesteps);
+        EXCEPTION2(BadIndexException, ts, nTimesteps);
     }
 
     //
@@ -498,7 +498,7 @@ avtSTSDFileFormatInterface::FreeUpResources(int ts, int)
     {
         if (ts < 0 || ts >= nTimesteps)
         {
-            EXCEPTION2(BadIndexException, 2, nTimesteps);
+            EXCEPTION2(BadIndexException, ts, nTimesteps);
         }
         for (int j = 0 ; j < nBlocks ; j++)
         {
@@ -508,3 +508,27 @@ avtSTSDFileFormatInterface::FreeUpResources(int ts, int)
 }
 
 
+// ****************************************************************************
+//  Method: avtSTSDFileFormatInterface::ActivateTimestep
+//
+//  Purpose: Notify the format of our intention to read data for a given
+//  timestep. This gives the format an opportunity to do whatever 
+//  parallel collective work it might need to for the given timestep
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   February 23, 2004 
+//
+// ****************************************************************************
+
+void
+avtSTSDFileFormatInterface::ActivateTimestep(int ts)
+{
+    if (ts < 0 || ts >= nTimesteps)
+    {
+        EXCEPTION2(BadIndexException, ts, nTimesteps);
+    }
+    for (int j = 0 ; j < nBlocks ; j++)
+    {
+        timesteps[ts][j]->ActivateTimestep();
+    }
+}

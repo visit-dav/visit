@@ -48,6 +48,9 @@
 //    Brad Whitlock, Wed May 14 09:24:22 PDT 2003
 //    Added an optional timeState argument to SetDatabaseMetaData.
 //
+//    Mark C. Miller, Mon Feb 23 20:38:47 PST 2004
+//    Added method, ActivateTimestep
+//
 // ****************************************************************************
 
 class DATABASE_API avtSTMDFileFormatInterface : public avtFileFormatInterface
@@ -66,6 +69,8 @@ class DATABASE_API avtSTMDFileFormatInterface : public avtFileFormatInterface
     virtual const char     *GetFilename(int);
     virtual void            SetDatabaseMetaData(avtDatabaseMetaData *,int=0);
     virtual void            FreeUpResources(int, int);
+
+    virtual void            ActivateTimestep(int ts);
 
   protected:
     avtSTMDFileFormat     **timesteps;

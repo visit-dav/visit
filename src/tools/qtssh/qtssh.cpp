@@ -20,14 +20,18 @@ static char *username = 0;
 // Creation:   Thu Aug 29 14:57:24 PST 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Feb 23 15:03:24 PST 2004
+//   I made the okay parameter be 0 if the password window returns NULL
+//   for a password. This lets us quit without crashing.
+//
 // ****************************************************************************
 
 const char *
 graphicalGetPassword(const char *host, int *okay)
 {
-    *okay = 1;
-    return ViewerPasswordWindow::getPassword(username, host);
+    const char *retval = ViewerPasswordWindow::getPassword(username, host);
+    *okay = (retval != 0);
+    return retval;
 }
 
 // ****************************************************************************

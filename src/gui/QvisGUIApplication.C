@@ -2104,6 +2104,9 @@ QvisGUIApplication::CreatePluginWindows()
 //    Brad Whitlock, Thu Dec 18 14:41:57 PST 2003
 //    Changed CreateNode method calls.
 //
+//    Brad Whitlock, Tue Feb 24 10:25:12 PDT 2004
+//    I made it open a text file instead of a binary file.
+//
 // ****************************************************************************
 
 void
@@ -2159,7 +2162,7 @@ QvisGUIApplication::WriteConfigFile(const char *filename)
     fmt.CreateNode(guiNode, true, false);
 
     // Try to open the output file.
-    if((fp = fopen(filename, "wb")) == 0)
+    if((fp = fopen(filename, "wt")) == 0)
         return;
 
     // Write the output file to stdout for now.
@@ -2306,6 +2309,9 @@ QvisGUIApplication::SaveSession()
 //    Brad Whitlock, Tue Feb 19 12:47:42 PDT 2002
 //    Modified the code so it returns the DataNode from the config file.
 //
+//    Brad Whitlock, Tue Feb 24 10:25:34 PDT 2004
+//    I made it open the file in text mode.
+//
 // ****************************************************************************
 
 DataNode *
@@ -2314,7 +2320,7 @@ QvisGUIApplication::ReadConfigFile(const char *filename)
     DataNode *node = 0;
 
     // Try and open the file for reading.
-    if((fp = fopen(filename, "rb")) == 0)
+    if((fp = fopen(filename, "rt")) == 0)
         return node;
 
     // Read the XML tag and ignore it.
