@@ -279,7 +279,9 @@ SocketConnection::Append(const unsigned char *buf, int count)
 // Creation:   Mon Mar 25 14:28:39 PST 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Jul 19 11:41:13 PDT 2004
+//   I fixed a problem reading large messages on Windows.
+//
 // ****************************************************************************
 
 long
@@ -293,7 +295,41 @@ SocketConnection::DirectRead(unsigned char *buf, long ntotal)
         int n = recv(descriptor, b, ntotal-nread, 0);
 
         if (n < 0)
+        {
+#if defined(_WIN32)
+            //
+            // If the last socket error was any of the errors that are
+            // typically set by recv then return. For some large messages
+            // that VisIt reads, recv returns -1 indicating some kind of
+            // failure but the error code does match anything fatal so
+            // don't bother returning. In the situations I've observed,
+            // it's been okay to continue calling recv until it succeeds.
+            //
+            int err = WSAGetLastError();
+            if(err == WSANOTINITIALISED ||
+               err == WSAENETDOWN ||
+               err == WSAEFAULT ||
+               err == WSAENOTCONN ||
+               err == WSAEINTR ||
+               err == WSAEINPROGRESS ||
+               err == WSAENETRESET ||
+               err == WSAENOTSOCK ||
+               err == WSAEOPNOTSUPP ||
+               err == WSAESHUTDOWN ||
+               err == WSAEWOULDBLOCK ||
+               err == WSAEMSGSIZE ||
+               err == WSAEINVAL ||
+               err == WSAECONNABORTED ||
+               err == WSAETIMEDOUT ||
+               err == WSAECONNRESET ||
+               err == WSAEDISCON)
+            {
+                return long(n);
+            }
+#else
             return long(n);
+#endif
+        }
         else if(n == 0)
         {
             ++zeroesRead;
