@@ -1277,6 +1277,9 @@ PluginManager::PluginOpen(const string &pluginFile)
 //   return value to throw an exception without calling PluginError themselves.
 //   That prevents useful information from being printed to the debug logs.
 //
+//   Brad Whitlock, Tue Sep 14 13:27:35 PST 2004
+//   I made the debug output go to debug5.
+//
 // ****************************************************************************
 
 void *
@@ -1317,7 +1320,7 @@ PluginManager::PluginSymbol(const string &symbol)
 
     // If the symbol was not found, print the error message.
     if(retval == 0)
-        debug4 << PluginError() << endl;
+        debug5 << PluginError() << endl;
 
     return retval;
 }
