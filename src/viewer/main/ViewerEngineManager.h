@@ -196,6 +196,10 @@ class avtDatabaseMetaData;
 //
 //    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
 //    Added window Id to various calls to support multiwindow SR
+//
+//    Kathleen Bonnell, Tue Mar  1 11:20:15 PST 2005 
+//    Added UdpateExpressionsFromPlot. 
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerEngineManager : public ViewerServerManager,
@@ -290,6 +294,7 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
                       const QueryOverTimeAttributes *qatts);
 
     void CreateNode(DataNode *) const;
+    void UpdateExpressionsFromPlot(const ViewerPlot *);
 
   protected:
     ViewerEngineManager();

@@ -1586,6 +1586,10 @@ ViewerQueryManager::ClearPickPoints()
 //    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
 //    Added window id to Pick RPC
 //
+//    Kathleen Bonnell, Tue Mar  1 11:20:15 PST 2005 
+//    Ensure that the engine has the correct expression list from the plot
+//    that we are picking, so that pick will not fail. 
+//
 // ****************************************************************************
 
 bool
@@ -1827,6 +1831,7 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
             TRY
             {
                 PickAttributes pa = *pickAtts;
+                ViewerEngineManager::Instance()->UpdateExpressionsFromPlot(plot);
                 ViewerEngineManager::Instance()->Pick(engineKey,
                                                       networkId, windowId,
                                                       &pa, pa);

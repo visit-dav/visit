@@ -1302,3 +1302,27 @@ EngineProxy::GetSimulationSILAtts()
     return silAtts;
 }
 
+
+// ****************************************************************************
+//  Method:  EngineProxy::UpdateExpressions
+//
+//  Purpose:
+//    Make sure the engine knows about the current expression list.
+//
+//  Arguments:
+//    expressions  The new expression list.
+//
+//  Programmer:  Kathleen Bonnell 
+//  Creation:    March 1, 2005 
+//
+// ****************************************************************************
+
+void
+EngineProxy::UpdateExpressions(const ExpressionList &expressions)
+{
+    if (exprList != expressions)
+    {
+        exprList = expressions;
+        exprList.Notify();
+    }
+}
