@@ -515,6 +515,9 @@ dnl    Eric Brugger, Thu Sep 30 10:51:22 PDT 2004
 dnl    I corrected a bug that was causing the check for using siloh5 to fail
 dnl    if hdf5 was built with z lib support.
 dnl
+dnl    Eric Brugger, Tue Oct  5 10:46:12 PDT 2004
+dnl    I replaced QTDIR with QT_BIN, QT_INCLUDE and QT_LIB.
+dnl
 dnl    Mark C. Miller, Tue Oct  5 12:41:41 PDT 2004
 dnl    Fixed issues '--with-<lib>=' argument where '-I' and '-L' would be
 dnl    missing from final make variable names that were created
@@ -2282,13 +2285,12 @@ if test "$enable_gui" = "yes"; then
     dnl
     dnl Looking for a supported version of Qt.
     dnl
-    if test -z "$QTDIR"; then
-       AC_MSG_ERROR([The QTDIR environment variable must be set in order to find Qt])
+    if test -z "$QT_BIN" || test -z "$QT_INCLUDE" || test -z "$QT_LIB"; then
+       AC_MSG_ERROR([The QT_BIN, QT_INCLUDE and QT_LIB environment variables must be set in order to find Qt])
     fi
-    AC_SUBST(QTDIR)
     AC_MSG_CHECKING(for supported Qt version)
     QtVersion=""
-    QtGlobalInc="$QTDIR/include/qglobal.h"
+    QtGlobalInc="$QT_INCLUDE/qglobal.h"
 
     if test -f $QtGlobalInc; then
         ## Check for supported versions of Qt.
@@ -2308,18 +2310,16 @@ if test "$enable_gui" = "yes"; then
     if test -z "$QtVersion"; then
         AC_MSG_ERROR([  Sorry, but you need Qt version 2.3.0 or higher to compile VisIt. ])
     else
-        AC_MSG_RESULT(Qt $QtVersion in $QTDIR)
+        AC_MSG_RESULT(Qt $QtVersion in $QT_INCLUDE)
     fi
-    AC_SUBST(QTDIR)
+    AC_SUBST(QT_BIN)
+    AC_SUBST(QT_INCLUDE)
+    AC_SUBST(QT_LIB)
     QT_LIBS=-lqt
     AC_SUBST(QT_LIBS)
     QT_LDFLAGS=""
     AC_SUBST(QT_LDFLAGS)
-    if test -d $QTDIR/staticlib; then
-        QT_STATICLDFLAGS=-L$QTDIR/staticlib
-    else
-        QT_STATICLDFLAGS=-L$QTDIR/lib
-    fi
+    QT_STATICLDFLAGS=-L$QT_LIB
     AC_SUBST(QT_STATICLDFLAGS)
     if test "$SHORT_UNAME" = "darwin"; then
         QTMAC_FLAGS="-DMACOSX_102"
@@ -2333,8 +2333,12 @@ else
     dnl means no X.
     X_LIBS=""
     AC_SUBST(X_LIBS)
-    QTDIR=""
-    AC_SUBST(QTDIR)
+    QT_BIN=""
+    AC_SUBST(QT_BIN)
+    QT_INCLUDE=""
+    AC_SUBST(QT_INCLUDE)
+    QT_LIB=""
+    AC_SUBST(QT_LIB)
     QT_LIBS=""
     AC_SUBST(QT_LIBS)
     QT_LDFLAGS=""
