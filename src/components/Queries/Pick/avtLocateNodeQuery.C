@@ -74,6 +74,10 @@ avtLocateNodeQuery::~avtLocateNodeQuery()
 //    Kathleen Bonnell, Wed Oct  6 10:43:10 PDT 2004
 //    Terminate early if the ray doesn't intersect the dataset. 
 //
+//    Kathleen Bonnell, Tue Nov 30 09:25:28 PST 2004
+//    Set foundElement = foundNode when MatSelected and No subdivision 
+//    occurred, or when not MatSelected and Points not transformed. 
+//
 // ****************************************************************************
 
 void
@@ -142,11 +146,28 @@ avtLocateNodeQuery::Execute(vtkDataSet *ds, const int dom)
             {
                 foundElement = foundNode;
             }
+            else if (!GetInput()->GetInfo().GetValidity().GetPointsWereTransformed())
+            {
+                // Points were not transformed, so node id found here is valid.
+                foundElement = foundNode; 
+            }
+            // else ... Zones not preserved or we created ghosts, or points were
+            // transformed, so node id found here is not valid, so don't set it.
         }
         else if (origNode != -1)
         {
+            // MaterialSelection occurred, but we found an original node, use that
             foundElement = origNode; 
         }
+        else if (!GetInput()->GetInfo().GetValidity().SubdivisionOccurred())
+        {
+            // MaterialSelection occurred without subdivision, can use the
+            // node id found here.
+            foundElement = foundNode; 
+        }
+        // else ... MaterialSelection occurred with subdivision, and the original
+        // nodes array was not present, so the node id found here will not be
+        // valid, so don't set it.
    
         pickAtts.SetCellPoint(isect);
         pickAtts.SetNodePoint(vtkVisItUtility::GetPoints(ds)->GetPoint(foundNode));
