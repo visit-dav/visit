@@ -31,7 +31,7 @@ using std::string;
 
 
 // ****************************************************************************
-//  Method: avtExpressionEvaluatorFilter::ExecuteData
+//  Method: avtExpressionEvaluatorFilter::Execute
 //
 //  Purpose:
 //      Hook up the pipeline in the pipelineState to the network.
@@ -122,10 +122,12 @@ avtExpressionEvaluatorFilter::AdditionalPipelineFilters(void)
 //    Reorganized the code slightly to reduce code duplication.
 //
 // ****************************************************************************
+
 avtPipelineSpecification_p
 avtExpressionEvaluatorFilter::PerformRestriction(avtPipelineSpecification_p spec)
 {
     avtPipelineSpecification_p rv = spec;
+    lastUsedSpec = spec;
     avtDataSpecification_p ds = spec->GetDataSpecification();
     avtDataSpecification_p newds;
 
@@ -260,7 +262,7 @@ avtExpressionEvaluatorFilter::PerformRestriction(avtPipelineSpecification_p spec
     for ( ; i != real_list.end() ; i++)
         if (*i != ds->GetVariable())
             newds->AddSecondaryVariable((*i).c_str());
- 
+
     rv = new avtPipelineSpecification(spec, newds);
 
     return rv;
@@ -281,12 +283,18 @@ avtExpressionEvaluatorFilter::PerformRestriction(avtPipelineSpecification_p spec
 //  Programmer: Hank Childs
 //  Creation:   July 29, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Aug 19 20:47:26 PDT 2003
+//    Cause an update if there are expression variables that are not sitting
+//    in our output.
+//
 // ****************************************************************************
 
 void
 avtExpressionEvaluatorFilter::Query(PickAttributes *pa)
 {
-    int   i, j;
+    int   i, j, k;
 
     //
     // Sanity check.
@@ -295,15 +303,9 @@ avtExpressionEvaluatorFilter::Query(PickAttributes *pa)
         EXCEPTION0(NoInputException);
 
     //
-    // Start by going to the new queryable source upstream (most likely the
-    // terminating source corresponding to the database) and ask it to pick
-    // with our new pick attributes.
-    //
-    avtQueryableSource *src = GetInput()->GetQueryableSource();
-    src->Query(pa);
-    
-    //
-    // Now iterate over the expressions and add where possible.
+    // We need to identify if there are expression variables that have been
+    // requested for the pick that are missing.  If so, we will have to
+    // re-execute.
     //
     const stringVector &orig_vars = pa->GetVariables();
     stringVector expr_vars;
@@ -317,7 +319,50 @@ avtExpressionEvaluatorFilter::Query(PickAttributes *pa)
             indices.push_back(i);
         }
     }
+    stringVector unmatched_vars;
+    if (expr_vars.size() > 0)
+    {
+        avtDataset_p output = GetTypedOutput();
+        VarList vl;
+        avtDatasetExaminer::GetVariableList(output, vl);
+        for (i = 0 ; i < expr_vars.size() ; i++)
+        {
+            bool foundMatch = false;
+            for (j = 0 ; j < vl.nvars ; j++)
+            {
+                if (expr_vars[i] == vl.varnames[j])
+                    foundMatch = true;
+            }
+            if (!foundMatch)
+            {
+                unmatched_vars.push_back(expr_vars[i]);
+            }
+        }
+        modified = true;
+    }
+    if (unmatched_vars.size() > 0)
+    {
+        for (i = 0 ; i < unmatched_vars.size() ; i++)
+            lastUsedSpec->GetDataSpecification()->AddSecondaryVariable(
+                                                    unmatched_vars[i].c_str());
 
+        //
+        // Force the update.
+        //
+        GetOutput()->Update(lastUsedSpec);
+    }
+
+    //
+    // Start by going to the new queryable source upstream (most likely the
+    // terminating source corresponding to the database) and ask it to pick
+    // with our new pick attributes.
+    //
+    avtQueryableSource *src = GetInput()->GetQueryableSource();
+    src->Query(pa);
+    
+    //
+    // Now iterate over the expressions and add where possible.
+    //
     if (expr_vars.size() > 0)
     {
         bool canUseNativeArray = 
@@ -355,7 +400,15 @@ avtExpressionEvaluatorFilter::Query(PickAttributes *pa)
                     {
                         sprintf(temp, "(%d)", incidentElements[j]);
                         names.push_back(temp);
-                        vals.push_back(arr->GetTuple1(incidentElements[j]));
+                        float mag = 0.;
+                        for (k = 0 ; k < arr->GetNumberOfComponents() ; k++)
+                        {
+                            float val=arr->GetComponent(incidentElements[j],k);
+                            mag += val*val;
+                            vals.push_back(val);
+                        }
+                        mag = sqrt(mag);
+                        vals.push_back(mag);
                     }
                 }
                 else
@@ -363,7 +416,15 @@ avtExpressionEvaluatorFilter::Query(PickAttributes *pa)
                     // the info we're after is associated with element
                     sprintf(temp, "(%d)", element);
                     names.push_back(temp);
-                    vals.push_back(arr->GetTuple1(element));
+                    float mag = 0.;
+                    for (k = 0 ; k < arr->GetNumberOfComponents() ; k++)
+                    {
+                        float val = arr->GetComponent(element, k);
+                        mag += val*val;
+                        vals.push_back(val);
+                    }
+                    mag = sqrt(mag);
+                    vals.push_back(mag);
                 }
             }
             if (!vals.empty())
