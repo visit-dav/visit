@@ -132,6 +132,10 @@ avtLocateCellQuery::PostExecute(void)
 //    Kathleen Bonnell, Wed May  7 13:06:55 PDT 2003  
 //    For efficiency, do not use the cell locator for rectilinear grids.  
 //    
+//    Kathleen Bonnell, Tue Jun  3 15:20:35 PDT 2003 
+//    Removed calculation of tolerance, and passing of that value to FindCell
+//    methods.  No longer use tolerance when calculating fudgedIsect.
+//    
 // ****************************************************************************
 
 void
@@ -142,27 +146,18 @@ avtLocateCellQuery::Execute(vtkDataSet *ds, const int dom)
         return;
     }
     int dim = GetInput()->GetInfo().GetAttributes().GetSpatialDimension(); 
-    float tol, dist, diagLen, isect[3] = { 0., 0., 0.};
+    float dist, isect[3] = { 0., 0., 0.};
     int foundCell;
 
-    // Use PickedPoint to determine if it lies in this domain
-    int nCells = ds->GetNumberOfCells();
-    diagLen = ds->GetLength();
-    if (nCells != 0)
-        tol = diagLen / (float) nCells;
-    else
-        tol = 1e-6;
-    
-    //
     // Find the cell, intersection point, and distance along the ray.
     //
     if (ds->GetDataObjectType() != VTK_RECTILINEAR_GRID)
     {
-        foundCell = LocatorFindCell(ds, tol, dist, isect); 
+        foundCell = LocatorFindCell(ds, dist, isect); 
     }
     else
     {
-        foundCell = RGridFindCell(ds, tol, dist, isect); 
+        foundCell = RGridFindCell(ds, dist, isect); 
     }
 
     if ((foundCell != -1) && (dist < minDist))
@@ -202,17 +197,9 @@ avtLocateCellQuery::Execute(vtkDataSet *ds, const int dom)
         {
             vtkCell *cell = ds->GetCell(foundCell);
             float parametricCenter[3];
-            float xyzCenter[3];
             float *weights = new float[cell->GetNumberOfPoints()];
             int subId = cell->GetParametricCenter(parametricCenter);
-            cell->EvaluateLocation(subId, parametricCenter, xyzCenter, weights);
-            float proj[3];
-            proj[0] = xyzCenter[0] - isect[0];
-            proj[1] = xyzCenter[1] - isect[1];
-            proj[2] = xyzCenter[2] - isect[2];
-            isect[0] += tol *proj[0];
-            isect[1] += tol *proj[1];
-            isect[2] += tol *proj[2];
+            cell->EvaluateLocation(subId, parametricCenter, isect, weights);
             delete [] weights;
         }
         queryAtts.SetCellPoint(isect);
@@ -230,7 +217,6 @@ avtLocateCellQuery::Execute(vtkDataSet *ds, const int dom)
 //
 //  Arguments:
 //    ds      The dataset to query.
-//    tol     The tolerance to use.
 //    dist    A place to store the distance along the ray of the 
 //            intersection point. 
 //    isect   A place to store the intersection point of the ray with the 
@@ -242,11 +228,16 @@ avtLocateCellQuery::Execute(vtkDataSet *ds, const int dom)
 //  Programmer: Kathleen Bonnell  
 //  Creation:   May 7, 2003
 //
+//  Modifications:
+//    Kathleen Bonnell, Tue Jun  3 15:20:35 PDT 2003
+//    Removed tolerance parameter (based on the diagonal length of the dataset)
+//    in favor of a tolerance calculated from the MinimumCellLength as 
+//    determined by the locator.  
+//
 // ****************************************************************************
 
 int
-avtLocateCellQuery::LocatorFindCell(vtkDataSet *ds, const float tol,
-                                    float &dist, float *isect)
+avtLocateCellQuery::LocatorFindCell(vtkDataSet *ds, float &dist, float *isect)
 {
     float *rayPt1 = queryAtts.GetRayPoint1();
     float *rayPt2 = queryAtts.GetRayPoint2();
@@ -255,6 +246,25 @@ avtLocateCellQuery::LocatorFindCell(vtkDataSet *ds, const float tol,
     cellLocator->SetIgnoreGhosts(true);
     cellLocator->SetDataSet(ds);
     cellLocator->BuildLocator();
+    float tol = cellLocator->GetMinCellLength(); 
+    if (tol != VTK_LARGE_FLOAT)
+    {
+        tol *= 0.001;
+    }
+    else  // for some reason, the min-cell length did not get calculated.
+    {
+        int nCells = ds->GetNumberOfCells();
+        tol = ds->GetLength();
+        if (nCells != 0)
+        {
+            tol /= (float) nCells;
+        }
+        else // we have no cells with which to search.
+        {
+            cellLocator->Delete();
+            return -1; 
+        }
+    }
 
     float pcoords[3];
     int subId;
@@ -262,7 +272,6 @@ avtLocateCellQuery::LocatorFindCell(vtkDataSet *ds, const float tol,
     vtkIdType foundCell; 
     int success = cellLocator->IntersectWithLine(rayPt1, rayPt2, tol, dist, 
                                      isect, pcoords, subId, foundCell);
-
     cellLocator->Delete();
     if (success)
         return foundCell;
@@ -280,7 +289,6 @@ avtLocateCellQuery::LocatorFindCell(vtkDataSet *ds, const float tol,
 //
 //  Arguments:
 //    ds      The dataset to query.
-//    tol     <UNUSED> 
 //    dist    A place to store the distance along the ray of the 
 //            intersection point. 
 //    isect   A place to store the intersetion point of the ray with the 
@@ -292,11 +300,14 @@ avtLocateCellQuery::LocatorFindCell(vtkDataSet *ds, const float tol,
 //  Programmer: Kathleen Bonnell  
 //  Creation:   May 7, 2003
 //
+//  Modifications:
+//    Kathleen Bonnell, Tue Jun  3 15:20:35 PDT 2003
+//    Removed unused tolerance parameter.
+//
 // ****************************************************************************
 
 int
-avtLocateCellQuery::RGridFindCell(vtkDataSet *ds, const float, 
-                                  float &dist, float *isect)
+avtLocateCellQuery::RGridFindCell(vtkDataSet *ds, float &dist, float *isect)
 {
     vtkRectilinearGrid *rgrid = (vtkRectilinearGrid*)ds;
 
@@ -332,3 +343,4 @@ avtLocateCellQuery::RGridFindCell(vtkDataSet *ds, const float,
     }
     return cellId;
 }
+

@@ -34,6 +34,9 @@ class vtkDataSet;
 //    Kathleen Bonnell, Wed May  7 13:24:37 PDT 2003 
 //    Add methods 'RGridFindCell' and 'LocatorFindCell'.
 //
+//    Kathleen Bonnell, Tue Jun  3 15:20:35 PDT 2003 
+//    Removed 'tolerance' parameter from FindCell methods.
+//
 // ****************************************************************************
 
 class QUERY_API avtLocateCellQuery : public avtDatasetQuery
@@ -55,9 +58,9 @@ class QUERY_API avtLocateCellQuery : public avtDatasetQuery
     virtual void                    Execute(vtkDataSet *, const int);
     virtual void                    PreExecute(void);
     virtual void                    PostExecute(void);
-    int                             LocatorFindCell(vtkDataSet *, const float,
+    int                             LocatorFindCell(vtkDataSet *, 
                                                     float &, float*);
-    int                             RGridFindCell(vtkDataSet *, const float,
+    int                             RGridFindCell(vtkDataSet *, 
                                                     float &, float*);
 };
 

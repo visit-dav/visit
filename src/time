@@ -1,5 +1,0 @@
-# View configured for individual work.
-#     Development branch:   svn_Feb_25_2007
-element * CHECKEDOUT
-element * .../svn_Feb_25_2007/LATEST -time 1-Jul-2003.23:59
-element * /main/LATEST -mkbranch svn_Feb_25_2007 -time 1-Jul-2003.23:59
