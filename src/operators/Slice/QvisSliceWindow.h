@@ -45,6 +45,9 @@ class QHBoxLayout;
 //   Jeremy Meredith, Mon May  5 14:47:53 PDT 2003
 //   Reworked a lot of stuff for changes to how origin is handled.
 //
+//   Jeremy Meredith, Fri Jun 13 12:08:17 PDT 2003
+//   Added a domain number for slice-by-zone and -by-node.
+//
 // ****************************************************************************
 
 class QvisSliceWindow : public QvisOperatorWindow
@@ -76,6 +79,8 @@ private slots:
     void processOriginPercentText();
     void processOriginZoneText();
     void processOriginNodeText();
+    void processOriginZoneDomainText();
+    void processOriginNodeDomainText();
 
     void originPercentSliderPressed();
     void originPercentSliderReleased();
@@ -96,8 +101,10 @@ private:
     QNarrowLineEdit  *originPercentLineEdit;
     QHBoxLayout      *originZoneLayout;
     QLineEdit        *originZoneLineEdit;
+    QLineEdit        *originZoneDomainLineEdit;
     QHBoxLayout      *originNodeLayout;
     QLineEdit        *originNodeLineEdit;
+    QLineEdit        *originNodeDomainLineEdit;
 
     QSlider          *originPercentSlider;
     bool              sliderDragging;
@@ -107,6 +114,8 @@ private:
     QLabel           *originPercentLabel;
     QLabel           *originZoneLabel;
     QLabel           *originNodeLabel;
+    QLabel           *originZoneDomainLabel;
+    QLabel           *originNodeDomainLabel;
 
     QCheckBox        *projectToggle;
     QLineEdit        *upAxisLineEdit;

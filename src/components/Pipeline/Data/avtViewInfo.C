@@ -30,6 +30,10 @@ avtViewInfo::avtViewInfo()
 //  Programmer: Hank Childs
 //  Creation:   November 27, 2000
 //
+//  Modifications:
+//    Eric Brugger, Fri Jun  6 15:30:49 PDT 2003
+//    I added image pan and image zoom.
+//
 // ****************************************************************************
 
 avtViewInfo &
@@ -50,6 +54,9 @@ avtViewInfo::operator=(const avtViewInfo &vi)
     orthographic = vi.orthographic;
     nearPlane    = vi.nearPlane;
     farPlane     = vi.farPlane;
+    imagePan[0]  = vi.imagePan[0];
+    imagePan[1]  = vi.imagePan[1];
+    imageZoom    = vi.imageZoom;
 
     return *this;
 }
@@ -63,6 +70,10 @@ avtViewInfo::operator=(const avtViewInfo &vi)
 //
 //  Programmer: Hank Childs
 //  Creation:   November 27, 2000
+//
+//  Modifications:
+//    Eric Brugger, Fri Jun  6 15:30:49 PDT 2003
+//    I added image pan and image zoom.
 //
 // ****************************************************************************
 
@@ -107,6 +118,9 @@ avtViewInfo::operator==(const avtViewInfo &vi)
         return false;
     }
 
+    if (imagePan[0] != vi.imagePan[0] || imagePan[1] != vi.imagePan[1] ||
+        imageZoom != vi.imageZoom)
+
     return true;
 }
 
@@ -119,6 +133,10 @@ avtViewInfo::operator==(const avtViewInfo &vi)
 //
 //  Programmer:  Kathleen Bonnell
 //  Creation:    January 08, 2001
+//
+//  Modifications:
+//    Eric Brugger, Fri Jun  6 15:30:49 PDT 2003
+//    I added image pan and image zoom.
 //
 // ****************************************************************************
 
@@ -140,6 +158,9 @@ avtViewInfo::SetToDefault()
     nearPlane    = 0.001;
     farPlane     = 100;
     orthographic = true;
+    imagePan[0]  = 0.;
+    imagePan[1]  = 0.;
+    imageZoom    = 1.;
 }
 
 // ****************************************************************************
@@ -180,6 +201,10 @@ avtViewInfo::SetViewFromCamera(vtkCamera *vtkcam)
 //  Programmer:  Kathleen Bonnell
 //  Creation:    January 08, 2001
 //
+//  Modifications:
+//    Eric Brugger, Fri Jun  6 15:30:49 PDT 2003
+//    I added image pan and image zoom.
+//
 // ****************************************************************************
 
 void
@@ -195,6 +220,8 @@ avtViewInfo::SetCameraFromView(vtkCamera *vtkcam) const
     vtkcam->SetFocalPoint(focus);
     vtkcam->SetPosition(camera);
     vtkcam->SetViewUp(viewUp);
+    vtkcam->SetWindowCenter(imagePan[0], imagePan[1]);
+    vtkcam->SetFocalDisk(imageZoom);
 }
 
 

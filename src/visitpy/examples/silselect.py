@@ -32,7 +32,7 @@ def AddSubsetPlotAndTurnOff(subset, category):
     DisableRedraw()
     DrawPlots()
     v = ViewAttributes()
-    v.camera = (0.325857, -0.666083, -0.670933)
+    v.viewNormal = (0.325857, -0.666083, -0.670933)
     v.focus = (-0.620844, 3.45846, 8.74694)
     v.viewUp = (-0.414813, -0.73844, 0.531636)
     v.viewAngle = 30
@@ -62,7 +62,7 @@ def silselect():
     
     # Create a good 2d view.
     v = ViewAttributes()
-    v.camera = (0, 0, -1)
+    v.viewNormal = (0, 0, -1)
     v.focus = (0, 0, 0)
     v.viewUp = (0, 0, 0)
     v.viewAngle = 30

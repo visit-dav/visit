@@ -90,6 +90,9 @@ QvisSliceWindow::~QvisSliceWindow()
 //   Jeremy Meredith, Mon May  5 14:40:53 PDT 2003
 //   Entirely changed the way origin works.
 //
+//   Jeremy Meredith, Fri Jun 13 12:08:47 PDT 2003
+//   Added a domain number for slice-by-zone and -by-node.
+//
 // ****************************************************************************
 
 void
@@ -236,8 +239,15 @@ QvisSliceWindow::CreateWindowContents()
     originZoneLineEdit = new QLineEdit(originBox, "originZoneLineEdit");
     connect(originZoneLineEdit, SIGNAL(returnPressed()), this, SLOT(processOriginZoneText()));
 
+    originZoneDomainLabel = new QLabel("Domain", originBox);
+    originZoneDomainLineEdit = new QLineEdit(originBox, "originZoneDomainLineEdit");
+    connect(originZoneDomainLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(processOriginZoneDomainText()));
+
     originZoneLayout->addWidget(originZoneLabel);
     originZoneLayout->addWidget(originZoneLineEdit);
+    originZoneLayout->addWidget(originZoneDomainLabel);
+    originZoneLayout->addWidget(originZoneDomainLineEdit);
 
     originLayout->addLayout(originZoneLayout, 5,0);
 
@@ -248,8 +258,15 @@ QvisSliceWindow::CreateWindowContents()
     originNodeLineEdit = new QLineEdit(originBox, "originNodeLineEdit");
     connect(originNodeLineEdit, SIGNAL(returnPressed()), this, SLOT(processOriginNodeText()));
 
+    originNodeDomainLabel = new QLabel("Domain", originBox);
+    originNodeDomainLineEdit = new QLineEdit(originBox, "originNodeDomainLineEdit");
+    connect(originNodeDomainLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(processOriginNodeDomainText()));
+
     originNodeLayout->addWidget(originNodeLabel);
     originNodeLayout->addWidget(originNodeLineEdit);
+    originNodeLayout->addWidget(originNodeDomainLabel);
+    originNodeLayout->addWidget(originNodeDomainLineEdit);
 
     originLayout->addLayout(originNodeLayout, 6,0);
 
@@ -317,6 +334,9 @@ QvisSliceWindow::CreateWindowContents()
 //   Completely changed the way origin works.  Re-ordered almost everything.
 //   Also, made project-to-2d be required for "flip" to be enabled.
 //
+//   Jeremy Meredith, Fri Jun 13 12:09:10 PDT 2003
+//   Added a domain number for slice-by-zone and -by-node.
+//
 // ****************************************************************************
 
 void
@@ -364,11 +384,11 @@ QvisSliceWindow::UpdateWindow(bool doAll)
             originPercentSlider->blockSignals(false);
             break;
           case 4: // origin zone
-            temp.sprintf("%i", sliceAtts->GetOriginZone());
+            temp.sprintf("%d", sliceAtts->GetOriginZone());
             originZoneLineEdit->setText(temp);
             break;
           case 5: // origin node
-            temp.sprintf("%i", sliceAtts->GetOriginNode());
+            temp.sprintf("%d", sliceAtts->GetOriginNode());
             originNodeLineEdit->setText(temp);
             break;
           case 6: // normal
@@ -410,6 +430,14 @@ QvisSliceWindow::UpdateWindow(bool doAll)
             flipNormalToggle->setEnabled(sliceAtts->GetProject2d());
             flipNormalToggle->blockSignals(false);
             break;
+          case 12: // origin zone domain
+            temp.sprintf("%d", sliceAtts->GetOriginZoneDomain());
+            originZoneDomainLineEdit->setText(temp);
+            break;
+          case 13: // origin node domain
+            temp.sprintf("%d", sliceAtts->GetOriginNodeDomain());
+            originNodeDomainLineEdit->setText(temp);
+            break;
         }
     } // end for
 
@@ -429,6 +457,10 @@ QvisSliceWindow::UpdateWindow(bool doAll)
 //  Programmer:  Jeremy Meredith
 //  Creation:    May  5, 2003
 //
+//  Modifications:
+//    Jeremy Meredith, Fri Jun 13 12:09:21 PDT 2003
+//    Added a domain number for slice-by-zone and -by-node.
+//
 // ****************************************************************************
 void
 QvisSliceWindow::UpdateOriginArea()
@@ -446,6 +478,10 @@ QvisSliceWindow::UpdateOriginArea()
     originZoneLineEdit->hide();
     originNodeLabel->hide();
     originNodeLineEdit->hide();
+    originZoneDomainLabel->hide();
+    originZoneDomainLineEdit->hide();
+    originNodeDomainLabel->hide();
+    originNodeDomainLineEdit->hide();
 
     if (originType==SliceAttributes::Point)
     {
@@ -470,12 +506,16 @@ QvisSliceWindow::UpdateOriginArea()
     {
         originZoneLabel->show();
         originZoneLineEdit->show();
+        originZoneDomainLabel->show();
+        originZoneDomainLineEdit->show();
     }
 
     if (originType==SliceAttributes::Node)
     {
         originNodeLabel->show();
         originNodeLineEdit->show();
+        originNodeDomainLabel->show();
+        originNodeDomainLineEdit->show();
     }
 }
 
@@ -511,6 +551,9 @@ QvisSliceWindow::UpdateOriginArea()
 //
 //   Kathleen Bonnell, Tue May 20 16:02:52 PDT 2003
 //   Disallow (0, 0, 0) for Normal and UpAxis. 
+//
+//   Jeremy Meredith, Fri Jun 13 12:09:30 PDT 2003
+//   Added a domain number for slice-by-zone and -by-node.
 //
 // ****************************************************************************
 
@@ -696,6 +739,52 @@ QvisSliceWindow::GetCurrentValues(int which_widget)
         }
     }
 
+    // Do the origin zone domain
+    if(which_widget == 8 || doAll)
+    {
+        temp = originZoneDomainLineEdit->displayText().simplifyWhiteSpace();
+        okay = !temp.isEmpty();
+        if(okay)
+        {
+            int val;
+            okay = (sscanf(temp.latin1(), "%d", &val) == 1);
+            if(okay)
+                sliceAtts->SetOriginZoneDomain(val);
+        }
+
+        if(!okay)
+        {
+            const int d = sliceAtts->GetOriginZoneDomain();
+            msg.sprintf("The origin domain was invalid. "
+                "Resetting to the last good value %d.", d);
+            Message(msg);
+            sliceAtts->SetOriginZoneDomain(d);
+        }
+    }
+
+    // Do the origin node domain
+    if(which_widget == 9 || doAll)
+    {
+        temp = originNodeDomainLineEdit->displayText().simplifyWhiteSpace();
+        okay = !temp.isEmpty();
+        if(okay)
+        {
+            int val;
+            okay = (sscanf(temp.latin1(), "%d", &val) == 1);
+            if(okay)
+                sliceAtts->SetOriginNodeDomain(val);
+        }
+
+        if(!okay)
+        {
+            const int d = sliceAtts->GetOriginNodeDomain();
+            msg.sprintf("The origin domain was invalid. "
+                "Resetting to the last good value %d.", d);
+            Message(msg);
+            sliceAtts->SetOriginNodeDomain(d);
+        }
+    }
+
 }
 
 //
@@ -850,6 +939,46 @@ void
 QvisSliceWindow::originPercentSliderReleased()
 {
     sliderDragging = false;
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisSliceWindow::processOriginZoneDomainText
+//
+// Purpose: 
+//   This is a Qt slot function that sets node/zone domain number.
+//
+// Programmer: Jeremy Meredith
+// Creation:   June 13, 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisSliceWindow::processOriginZoneDomainText()
+{
+    GetCurrentValues(8);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisSliceWindow::processOriginNodeDomainText
+//
+// Purpose: 
+//   This is a Qt slot function that sets node/zone domain number.
+//
+// Programmer: Jeremy Meredith
+// Creation:   June 13, 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisSliceWindow::processOriginNodeDomainText()
+{
+    GetCurrentValues(9);
     Apply();
 }
 

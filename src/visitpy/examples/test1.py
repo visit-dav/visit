@@ -24,7 +24,7 @@ def test1():
     SetWindowLayout(8)
     
     # The default view.
-    view.camera = (-0.381295, 0.357243, 0.852638)
+    view.viewNormal = (-0.381295, 0.357243, 0.852638)
     view.focus = (0, 0, 0)
     view.viewUp = (0.159941, 0.9339, -0.319766)
     view.viewAngle = 30

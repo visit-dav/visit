@@ -51,6 +51,9 @@
       <Field name="smoothingLevel" label="Smoothing level" type="int">
         0
       </Field>
+      <Field name="cleanZonesOnly" label="cleanZonesOnly" type="bool">
+        false
+      </Field>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>
       <Function name="VarChangeRequiresReset" user="true" member="true">

@@ -272,7 +272,9 @@ RemoteProxyBase::GetVisItString() const
 // Creation:   Fri May 2 15:03:15 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Jun 10 14:47:35 PST 2003
+//   Let -dir pass through.
+//
 // ****************************************************************************
 
 void
@@ -288,12 +290,5 @@ RemoteProxyBase::AddExtraArguments()
     // Add any extra arguments to the component before opening it.
     //
     for(int i = 0; i < argv.size(); ++i)
-    {
-        if (argv[i] == "-dir")
-        {
-            i++;
-            continue;
-        }
         component->AddArgument(argv[i]);
-    }
 }

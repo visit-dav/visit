@@ -14,6 +14,7 @@ ViewAttributes *PyViewAttributes_FromPyObject(PyObject *obj);
 PyObject       *PyViewAttributes_NewPyObject();
 PyObject       *PyViewAttributes_WrapPyObject(const ViewAttributes *attr);
 void            PyViewAttributes_SetLogging(bool val);
+void            PyViewAttributes_SetDefaults(const ViewAttributes *atts);
 
 #endif
 

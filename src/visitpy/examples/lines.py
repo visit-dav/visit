@@ -31,7 +31,7 @@ def lines():
     
     # Set the view.
     v = ViewAttributes()
-    v.camera = (-0.410342, 0.533276, -0.739754)
+    v.viewNormal = (-0.410342, 0.533276, -0.739754)
     v.focus = (0.454296, -0.69183, 4.2213)
     v.viewUp = (0.365615, 0.83935, 0.402266)
     v.viewAngle = 30

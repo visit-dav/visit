@@ -49,6 +49,9 @@ class QPushButton;
 //   Eric Brugger, Fri Apr 18 11:45:10 PDT 2003
 //   Removed auto center view.
 //
+//   Eric Brugger, Tue Jun 10 12:48:03 PDT 2003
+//   I added image pan and image zoom fields to the 3d view.
+//
 // ****************************************************************************
 
 class GUI_API QvisViewWindow : public QvisPostableWindowSimpleObserver
@@ -93,6 +96,8 @@ private slots:
     void processParallelScaleText();
     void processNearText();
     void processFarText();
+    void processImagePanText();
+    void processImageZoomText();
     void perspectiveToggled(bool val);
     void viewButtonClicked(int index);
 
@@ -132,6 +137,8 @@ private:
     QLineEdit   *parallelScaleLineEdit;
     QLineEdit   *nearLineEdit;
     QLineEdit   *farLineEdit;
+    QLineEdit   *imagePanLineEdit;
+    QLineEdit   *imageZoomLineEdit;
     QCheckBox   *perspectiveToggle;
     QComboBox   *alignComboBox;
 

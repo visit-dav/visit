@@ -109,6 +109,10 @@ QvisViewWindow::~QvisViewWindow()
 //   Eric Brugger, Fri Apr 18 11:47:08 PDT 2003
 //   I removed auto center view.
 //
+//   Eric Brugger, Tue Jun 10 12:25:05 PDT 2003
+//   I added controls for image pan and image zoom. I renamed camera
+//   to view normal in the view attributes.
+//
 // ****************************************************************************
 
 void
@@ -166,7 +170,7 @@ QvisViewWindow::CreateWindowContents()
     view3DGroup->setFrameStyle(QFrame::NoFrame);
 
     QVBoxLayout *internalLayout3d = new QVBoxLayout(view3DGroup);
-    QGridLayout *Layout3d = new QGridLayout(internalLayout3d, 9, 2);
+    QGridLayout *Layout3d = new QGridLayout(internalLayout3d, 11, 2);
     Layout3d->setSpacing(5);
 
     normalLineEdit = new QLineEdit(view3DGroup, "normalLineEdit");
@@ -232,12 +236,30 @@ QvisViewWindow::CreateWindowContents()
                                   view3DGroup, "farLineEditLabel");
     Layout3d->addWidget(farLabel, 6, 0);
 
+    imagePanLineEdit = new QLineEdit(view3DGroup, "imagePanLineEdit");
+    imagePanLineEdit->setMinimumWidth(MIN_LINEEDIT_WIDTH);
+    connect(imagePanLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(processImagePanText()));
+    Layout3d->addWidget(imagePanLineEdit, 7, 1);
+    QLabel *imagePanLabel = new QLabel(imagePanLineEdit, "Image pan",
+                                  view3DGroup, "imagePanLineEditLabel");
+    Layout3d->addWidget(imagePanLabel, 7, 0);
+
+    imageZoomLineEdit = new QLineEdit(view3DGroup, "imageZoomLineEdit");
+    imageZoomLineEdit->setMinimumWidth(MIN_LINEEDIT_WIDTH);
+    connect(imageZoomLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(processImageZoomText()));
+    Layout3d->addWidget(imageZoomLineEdit, 8, 1);
+    QLabel *imageZoomLabel = new QLabel(imageZoomLineEdit, "Image zoom",
+                                  view3DGroup, "imageZoomLineEditLabel");
+    Layout3d->addWidget(imageZoomLabel, 8, 0);
+
     // Create the check boxes
     perspectiveToggle = new QCheckBox("Perspective", view3DGroup,
         "perspectiveToggle");
     connect(perspectiveToggle, SIGNAL(toggled(bool)),
             this, SLOT(perspectiveToggled(bool)));
-    Layout3d->addWidget(perspectiveToggle, 7, 1);
+    Layout3d->addWidget(perspectiveToggle, 9, 1);
 
     // Add alignment options
     alignComboBox = new QComboBox(view3DGroup, "");
@@ -250,10 +272,10 @@ QvisViewWindow::CreateWindowContents()
     alignComboBox->insertItem("+Z", 6);
     connect(alignComboBox, SIGNAL(activated(int)),
             this, SLOT(viewButtonClicked(int)));
-    Layout3d->addWidget(alignComboBox, 8, 1);
+    Layout3d->addWidget(alignComboBox, 10, 1);
     QLabel *alignLabel = new QLabel(alignComboBox, "Align to axis",
         view3DGroup, "alignLabel");
-    Layout3d->addWidget(alignLabel, 8, 0);
+    Layout3d->addWidget(alignLabel, 10, 0);
 
     //
     // The advanced view options.
@@ -407,6 +429,9 @@ QvisViewWindow::UpdateWindow(bool doAll)
 //   Brad Whitlock, Fri Feb 15 11:45:04 PDT 2002
 //   Fixed format strings.
 //
+//   Eric Brugger, Tue Jun 10 12:25:05 PDT 2003
+//   I renamed camera to view normal in the view attributes.
+//
 // ****************************************************************************
 
 void
@@ -424,13 +449,13 @@ QvisViewWindow::Update2D(bool doAll)
 
         switch(i)
         {
-        case 9: // windowcoords
+        case 11: // windowcoords
           { const double *w = view2d->GetWindowCoords();
             temp.sprintf("%g %g %g %g", w[0], w[1], w[2], w[3]);
             windowLineEdit->setText(temp);
             break;
           }
-        case 10: // viewportcoords
+        case 12: // viewportcoords
           { const double *v = view2d->GetViewportCoords();
             temp.sprintf("%g %g %g %g", v[0], v[1], v[2], v[3]);
             viewportLineEdit->setText(temp);
@@ -456,6 +481,10 @@ QvisViewWindow::Update2D(bool doAll)
 //   Brad Whitlock, Fri Feb 15 11:46:46 PDT 2002
 //   Fixed format strings.
 //
+//   Eric Brugger, Tue Jun 10 12:25:05 PDT 2003
+//   I added controls for image pan and image zoom. I renamed camera
+//   to view normal in the view attributes.
+//
 // ****************************************************************************
 
 void
@@ -473,11 +502,11 @@ QvisViewWindow::Update3D(bool doAll)
 
         switch(i)
         {
-        case 0: // normal. Currently stored as the camera in ViewAttribute.
+        case 0: // view normal.
             temp.sprintf("%g %g %g",
-                         view3d->GetCamera()[0],
-                         view3d->GetCamera()[1],
-                         view3d->GetCamera()[2]);
+                         view3d->GetViewNormal()[0],
+                         view3d->GetViewNormal()[1],
+                         view3d->GetViewNormal()[2]);
             normalLineEdit->setText(temp);
             break;
         case 1: // focus
@@ -510,7 +539,17 @@ QvisViewWindow::Update3D(bool doAll)
             temp.sprintf("%g", view3d->GetFarPlane());
             farLineEdit->setText(temp);
             break;
-        case 8: // perspective.
+        case 8: // imagePan
+            temp.sprintf("%g %g",
+                         view3d->GetImagePan()[0],
+                         view3d->GetImagePan()[1]);
+            imagePanLineEdit->setText(temp);
+            break;
+        case 9: // imageZoom
+            temp.sprintf("%g", view3d->GetImageZoom());
+            imageZoomLineEdit->setText(temp);
+            break;
+        case 10: // perspective.
             perspectiveToggle->blockSignals(true);
             perspectiveToggle->setChecked(view3d->GetPerspective());
             perspectiveToggle->blockSignals(false);
@@ -813,6 +852,10 @@ QvisViewWindow::GetCurrentValues2d(int which_widget)
 //   Brad Whitlock, Fri Feb 15 11:46:01 PDT 2002
 //   Fixed format strings.
 //
+//   Eric Brugger, Tue Jun 10 12:25:05 PDT 2003
+//   I added controls for image pan and image zoom. I renamed camera
+//   to view normal in the view attributes.
+//
 // ****************************************************************************
 
 void
@@ -822,7 +865,7 @@ QvisViewWindow::GetCurrentValues3d(int which_widget)
     QString msg, temp;
 
     // Do the normal values.
-    if(which_widget == 9 || doAll)
+    if(which_widget == 0 || doAll)
     {
         temp = normalLineEdit->displayText().stripWhiteSpace();
         okay = !temp.isEmpty();
@@ -832,7 +875,7 @@ QvisViewWindow::GetCurrentValues3d(int which_widget)
             if(sscanf(temp.latin1(), "%lg %lg %lg",
                       &normal[0], &normal[1], &normal[2]) == 3)
             {
-                view3d->SetCamera(normal);
+                view3d->SetViewNormal(normal);
             }
             else
                 okay = false;
@@ -842,16 +885,16 @@ QvisViewWindow::GetCurrentValues3d(int which_widget)
         {
             msg.sprintf("The normal location values were invalid. "
                 "Resetting to the last good values of %g %g %g.",
-                 view3d->GetCamera()[0],
-                 view3d->GetCamera()[1],
-                 view3d->GetCamera()[2]);
+                 view3d->GetViewNormal()[0],
+                 view3d->GetViewNormal()[1],
+                 view3d->GetViewNormal()[2]);
             Error(msg);
-            view3d->SetCamera(view3d->GetCamera());
+            view3d->SetViewNormal(view3d->GetViewNormal());
         }
     }
 
     // Do the focus values.
-    if(which_widget == 10 || doAll)
+    if(which_widget == 1 || doAll)
     {
         temp = focusLineEdit->displayText().stripWhiteSpace();
         okay = !temp.isEmpty();
@@ -880,7 +923,7 @@ QvisViewWindow::GetCurrentValues3d(int which_widget)
     }
 
     // Do the up vector values.
-    if(which_widget == 11 || doAll)
+    if(which_widget == 2 || doAll)
     {
         temp = upvectorLineEdit->displayText().stripWhiteSpace();
         okay = !temp.isEmpty();
@@ -909,7 +952,7 @@ QvisViewWindow::GetCurrentValues3d(int which_widget)
     }
 
     // Do the view angle value.
-    if(which_widget == 12 || doAll)
+    if(which_widget == 3 || doAll)
     {
         temp = viewAngleLineEdit->displayText().stripWhiteSpace();
         okay = !temp.isEmpty();
@@ -938,7 +981,7 @@ QvisViewWindow::GetCurrentValues3d(int which_widget)
     }
 
     // Do the parallel scale value.
-    if(which_widget == 13 || doAll)
+    if(which_widget == 5 || doAll)
     {
         temp = parallelScaleLineEdit->displayText().stripWhiteSpace();
         okay = !temp.isEmpty();
@@ -964,7 +1007,7 @@ QvisViewWindow::GetCurrentValues3d(int which_widget)
     }
 
     // Do the near value.
-    if(which_widget == 14 || doAll)
+    if(which_widget == 6 || doAll)
     {
         temp = nearLineEdit->displayText().stripWhiteSpace();
         okay = !temp.isEmpty();
@@ -990,7 +1033,7 @@ QvisViewWindow::GetCurrentValues3d(int which_widget)
     }
 
     // Do the far value.
-    if(which_widget == 15 || doAll)
+    if(which_widget == 7 || doAll)
     {
         temp = farLineEdit->displayText().stripWhiteSpace();
         okay = !temp.isEmpty();
@@ -1012,6 +1055,60 @@ QvisViewWindow::GetCurrentValues3d(int which_widget)
                  view3d->GetFarPlane());
             Error(msg);
             view3d->SetFarPlane(view3d->GetFarPlane());
+        }
+    }
+
+    // Do the image pan value.
+    if(which_widget == 8 || doAll)
+    {
+        temp = imagePanLineEdit->displayText().stripWhiteSpace();
+        okay = !temp.isEmpty();
+        if(okay)
+        {
+            double imagePan[2];
+            if(sscanf(temp.latin1(), "%lg %lg",
+                      &imagePan[0], &imagePan[1]) == 2)
+            {
+                view3d->SetImagePan(imagePan);
+            }
+            else
+                okay = false;
+        }
+
+        if(!okay)
+        {
+            msg.sprintf("The image pan values were invalid. "
+                "Resetting to the last good values of %g %g.",
+                 view3d->GetImagePan()[0],
+                 view3d->GetImagePan()[1]);
+            Error(msg);
+            view3d->SetImagePan(view3d->GetImagePan());
+        }
+    }
+
+    // Do the image zoom value.
+    if(which_widget == 9 || doAll)
+    {
+        temp = imageZoomLineEdit->displayText().stripWhiteSpace();
+        okay = !temp.isEmpty();
+        if(okay)
+        {
+            double imageZoom;
+            if(sscanf(temp.latin1(), "%lg", &imageZoom) == 1)
+            {
+                view3d->SetImageZoom(imageZoom);
+            }
+            else
+                okay = false;
+        }
+
+        if(!okay)
+        {
+            msg.sprintf("The image zoom value was invalid. "
+                "Resetting to the last good value of %g.",
+                 view3d->GetImageZoom());
+            Error(msg);
+            view3d->SetImageZoom(view3d->GetImageZoom());
         }
     }
 }
@@ -1287,20 +1384,21 @@ QvisViewWindow::ParseViewCommands(const char *str)
 // Programmer: Eric Brugger
 // Creation:   August 6, 2002
 //
+// Modifications:
+//   Eric Brugger, Thu Jun 12 09:59:42 PDT 2003  
+//   Modify the command to change the image pan instead of the focus.
+//
 // ****************************************************************************
  
 void
 QvisViewWindow::Pan(double panx, double pany)
 {
-    double scale;
-    double focus[3];
+    double imagePan[2];
  
-    scale = view3d->GetParallelScale();
-    focus[0] = view3d->GetFocus()[0] - 2. * panx * scale;
-    focus[1] = view3d->GetFocus()[1] - 2. * pany * scale;
-    focus[2] = view3d->GetFocus()[2];
- 
-    view3d->SetFocus(focus);
+    imagePan[0] = view3d->GetImagePan()[0] + panx;
+    imagePan[1] = view3d->GetImagePan()[1] + pany;
+
+    view3d->SetImagePan(imagePan);
  
     Update3D(true);
 }
@@ -1323,6 +1421,10 @@ QvisViewWindow::Pan(double panx, double pany)
 //   Modify the routine to perform the rotations in screen space instead
 //   of object space.
 //
+//   Eric Brugger, Tue Jun 10 12:25:05 PDT 2003
+//   I added controls for image pan and image zoom. I renamed camera
+//   to view normal in the view attributes.
+//
 // ****************************************************************************
  
 void
@@ -1332,7 +1434,7 @@ QvisViewWindow::RotateAxis(int axis, double angle)
     double v1[3], v2[3], v3[3];
     double m1[9], m2[9], m3[9], r[9];
     double rotationMatrix[9];
-    double camera[3];
+    double viewNormal[3];
     double viewUp[3];
  
     //
@@ -1381,9 +1483,9 @@ QvisViewWindow::RotateAxis(int axis, double angle)
     // Calculate the matrix to rotate from object coordinates to screen
     // coordinates and its inverse.
     //
-    v1[0] = view3d->GetCamera()[0];
-    v1[1] = view3d->GetCamera()[1];
-    v1[2] = view3d->GetCamera()[2];
+    v1[0] = view3d->GetViewNormal()[0];
+    v1[1] = view3d->GetViewNormal()[1];
+    v1[2] = view3d->GetViewNormal()[2];
  
     v2[0] = view3d->GetViewUp()[0];
     v2[1] = view3d->GetViewUp()[1];
@@ -1437,19 +1539,19 @@ QvisViewWindow::RotateAxis(int axis, double angle)
     rotationMatrix[8] = m3[6]*m2[2] + m3[7]*m2[5] + m3[8]*m2[8];
 
     //
-    // Calculate the new camera and view up.
+    // Calculate the new view normal and view up.
     //
-    camera[0] = view3d->GetCamera()[0] * rotationMatrix[0] +
-                view3d->GetCamera()[1] * rotationMatrix[3] +
-                view3d->GetCamera()[2] * rotationMatrix[6];
-    camera[1] = view3d->GetCamera()[0] * rotationMatrix[1] +
-                view3d->GetCamera()[1] * rotationMatrix[4] +
-                view3d->GetCamera()[2] * rotationMatrix[7];
-    camera[2] = view3d->GetCamera()[0] * rotationMatrix[2] +
-                view3d->GetCamera()[1] * rotationMatrix[5] +
-                view3d->GetCamera()[2] * rotationMatrix[8];
+    viewNormal[0] = view3d->GetViewNormal()[0] * rotationMatrix[0] +
+                    view3d->GetViewNormal()[1] * rotationMatrix[3] +
+                    view3d->GetViewNormal()[2] * rotationMatrix[6];
+    viewNormal[1] = view3d->GetViewNormal()[0] * rotationMatrix[1] +
+                    view3d->GetViewNormal()[1] * rotationMatrix[4] +
+                    view3d->GetViewNormal()[2] * rotationMatrix[7];
+    viewNormal[2] = view3d->GetViewNormal()[0] * rotationMatrix[2] +
+                    view3d->GetViewNormal()[1] * rotationMatrix[5] +
+                    view3d->GetViewNormal()[2] * rotationMatrix[8];
  
-    view3d->SetCamera(camera);
+    view3d->SetViewNormal(viewNormal);
  
     viewUp[0] = view3d->GetViewUp()[0] * rotationMatrix[0] +
                 view3d->GetViewUp()[1] * rotationMatrix[3] +
@@ -1478,12 +1580,17 @@ QvisViewWindow::RotateAxis(int axis, double angle)
 // Programmer: Eric Brugger
 // Creation:   August 6, 2002
 //
+// Modifications:
+//   Eric Brugger, Thu Jun 12 09:59:42 PDT 2003  
+//   Modify the command to change the image zoom instead of the parallel
+//   scale.
+//
 // ****************************************************************************
 
 void
 QvisViewWindow::Zoom(double zoom)
 {
-    view3d->SetParallelScale(view3d->GetParallelScale() / zoom);
+    view3d->SetImageZoom(view3d->GetImageZoom() * zoom);
  
     Update3D(true);
 }
@@ -1619,49 +1726,63 @@ QvisViewWindow::tabSelected(const QString &tabLabel)
 void
 QvisViewWindow::processNormalText()
 {
-    GetCurrentValues(9);
+    GetCurrentValues(0);
     Apply();    
 }
 
 void
 QvisViewWindow::processFocusText()
 {
-    GetCurrentValues(10);
+    GetCurrentValues(1);
     Apply();    
 }
 
 void
 QvisViewWindow::processUpVectorText()
 {
-    GetCurrentValues(11);
+    GetCurrentValues(2);
     Apply();    
 }
 
 void
 QvisViewWindow::processViewAngleText()
 {
-    GetCurrentValues(12);
+    GetCurrentValues(3);
     Apply();    
 }
 
 void
 QvisViewWindow::processParallelScaleText()
 {
-    GetCurrentValues(13);
+    GetCurrentValues(5);
     Apply();    
 }
 
 void
 QvisViewWindow::processNearText()
 {
-    GetCurrentValues(14);
+    GetCurrentValues(6);
     Apply();    
 }
 
 void
 QvisViewWindow::processFarText()
 {
-    GetCurrentValues(15);
+    GetCurrentValues(7);
+    Apply();    
+}
+
+void
+QvisViewWindow::processImagePanText()
+{
+    GetCurrentValues(8);
+    Apply();    
+}
+
+void
+QvisViewWindow::processImageZoomText()
+{
+    GetCurrentValues(9);
     Apply();    
 }
 
@@ -1698,6 +1819,9 @@ QvisViewWindow::perspectiveToggled(bool val)
 //   Brad Whitlock, Wed Sep 18 11:56:22 PDT 2002
 //   Changed it to use a combo box.
 //
+//   Eric Brugger, Tue Jun 10 12:25:05 PDT 2003
+//   I renamed camera to view normal in the view attributes.
+//
 // ****************************************************************************
 
 void
@@ -1714,49 +1838,49 @@ QvisViewWindow::viewButtonClicked(int index)
         alignComboBox->blockSignals(false);
     }
 
-    double camera[3];
+    double viewNormal[3];
     double viewUp[3];
 
     switch(index)
     {
     case 0: // -X
-        camera[0] = 1.; camera[1] = 0.; camera[2] = 0.;
+        viewNormal[0] = 1.; viewNormal[1] = 0.; viewNormal[2] = 0.;
         viewUp[0] = 0.; viewUp[1] = 1.; viewUp[2] = 0.;
         break;
     case 1: // +X
-        camera[0] = -1.; camera[1] = 0.; camera[2] = 0.;
+        viewNormal[0] = -1.; viewNormal[1] = 0.; viewNormal[2] = 0.;
         viewUp[0] = 0.; viewUp[1] = 1.; viewUp[2] = 0.;
         break;
     case 2: // -Y
-        camera[0] = 0.; camera[1] = 1.; camera[2] = 0.;
+        viewNormal[0] = 0.; viewNormal[1] = 1.; viewNormal[2] = 0.;
         viewUp[0] = 0.; viewUp[1] = 0.; viewUp[2] = -1.;
         break;
     case 3: // +Y
-        camera[0] = 0.; camera[1] = -1.; camera[2] = 0.;
+        viewNormal[0] = 0.; viewNormal[1] = -1.; viewNormal[2] = 0.;
         viewUp[0] = 0.; viewUp[1] = 0.; viewUp[2] = 1.;
         break;
     case 4: // -Z
-        camera[0] = 0.; camera[1] = 0.; camera[2] = 1.;
+        viewNormal[0] = 0.; viewNormal[1] = 0.; viewNormal[2] = 1.;
         viewUp[0] = 0.; viewUp[1] = 1.; viewUp[2] = 0.;
         break;
     case 5: // +Z
-        camera[0] = 0.; camera[1] = 0.; camera[2] = -1.;
+        viewNormal[0] = 0.; viewNormal[1] = 0.; viewNormal[2] = -1.;
         viewUp[0] = 0.; viewUp[1] = 1.; viewUp[2] = 0.;
         break;
     }
 
-    // Set the camera information into the state object and notify.
-    view3d->SetCamera(camera);
+    // Set the view normal information into the state object and notify.
+    view3d->SetViewNormal(viewNormal);
     view3d->SetViewUp(viewUp);
 
-    // Set the camera and viewUp text fields. We have to do this
+    // Set the viewNormal and viewUp text fields. We have to do this
     // because the apply method calls GetCurrentValues and that will
     // undo the changes that we've just made to the state object.
     QString temp;
     temp.sprintf("%g %g %g",
-                 view3d->GetCamera()[0],
-                 view3d->GetCamera()[1],
-                 view3d->GetCamera()[2]);
+                 view3d->GetViewNormal()[0],
+                 view3d->GetViewNormal()[1],
+                 view3d->GetViewNormal()[2]);
     normalLineEdit->setText(temp);
     temp.sprintf("%g %g %g",
                  view3d->GetViewUp()[0],

@@ -266,9 +266,7 @@ avtFilledBoundaryFilter::RefashionDataObjectInfo(void)
 //  Purpose:  Turn on domain labels in the data spec if needed.
 //
 //  Programmer: Jeremy Meredith
-//  Creation:   May  9, 2003
-//
-//  Note:  taken almost verbatim from the Subset plot
+//  Creation:   June 13, 2003
 //
 //  Modifications:
 //    
@@ -280,6 +278,10 @@ avtFilledBoundaryFilter::PerformRestriction(avtPipelineSpecification_p spec)
     if (plotAtts.GetDrawInternal())
     {
         spec->GetDataSpecification()->TurnInternalSurfacesOn();
+    }
+    if (plotAtts.GetCleanZonesOnly())
+    {
+        spec->GetDataSpecification()->SetNeedCleanZonesOnly(true);
     }
     return spec;
 }

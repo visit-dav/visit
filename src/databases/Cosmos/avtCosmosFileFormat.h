@@ -19,6 +19,12 @@
 //  Programmer:  Akira Hadodx
 //  Creation:    June 4, 2003
 //
+//  Modifications:
+//
+//    Akira Haddox, Fri Jun 13 13:50:08 PDT 2003
+//    Added data and functions to read and store the compact mesh
+//    structure information.
+//
 // ****************************************************************************
 
 class avtCosmosFileFormat : public avtMTMDFileFormat
@@ -40,6 +46,7 @@ class avtCosmosFileFormat : public avtMTMDFileFormat
 
   protected:
     void                  ReadMesh(int domain);
+    void                  ReadMeshInfo(int domain);
     
     vtkDataSet                        **meshes;
     
@@ -52,6 +59,13 @@ class avtCosmosFileFormat : public avtMTMDFileFormat
     int                                 nvectors;
     int                                 npoints;
     int                                 dimensions[3];
+
+    //
+    // Index by domain
+    //  Elements are start x,y,z   delta x,y,z
+    // 
+    std::vector<std::vector<double> >   meshInfo;
+    std::vector<bool>                   meshInfoLoaded;
 
     bool                                sphericalCoordinates;
     

@@ -488,6 +488,10 @@ Navigate3D::RotateCamera(const int x, const int y)
 //    Eric Brugger, Tue Apr  2 11:28:11 PST 2002
 //    I modified the routine to make the viewing changes using an avtView3D.
 //
+//    Eric Brugger, Wed Jun 11 08:55:07 PDT 2003
+//    I changed the pan behavior so that it pans the image and doesn't
+//    change the camera or focal point.
+//
 // ****************************************************************************
 
 void
@@ -501,66 +505,23 @@ Navigate3D::PanCamera(const int x, const int y)
         // Determine the size of the window.
         //
         int       size[2];
-        int       width, height;
 
         rwi->GetSize(size);
-        width = size[0];
-        height = size[1];
 
         //
         // Get the current view information.
         //
         VisWindow *vw = proxy;
 
-        const avtView3D &oldView3D = vw->GetView3D();
+        double    pan[2];
 
-        double    VPN[3];
-        double    VUP[3];
-
-        VPN[0] = oldView3D.normal[0];
-        VPN[1] = oldView3D.normal[1];
-        VPN[2] = oldView3D.normal[2];
-        VUP[0] = oldView3D.viewUp[0];
-        VUP[1] = oldView3D.viewUp[1];
-        VUP[2] = oldView3D.viewUp[2];
-
-        //
-        // Calculate the coordinate transformation from the world coordinate
-        // space to the screen coordinate space.
-        //
-        double    VUPCrossVPN[3];
-        double    mat[3][3], matTranspose[3][3];
-
-        VectorCross(VUP, VPN, VUPCrossVPN);
-        MatrixSet(mat, VUPCrossVPN, VUP, VPN); 
-        MatrixTranspose(mat, matTranspose);
-
-        //
-        // Calculate the x and y pan distances in the view plane.
-        // 
-        double    pan[3];
-
-        pan[0] = ((double)((OldX - x) / height)) *
-                 2.0 * oldView3D.parallelScale;
-        pan[1] = ((double)((OldY - y) / height)) *
-                 2.0 * oldView3D.parallelScale;
-        pan[2] = 0.;
-
-        //
-        // Transform the screen space pan factors to world space pan factors.
-        //
-        double    pan2[3];
-
-        VectorMatrixMult(pan, matTranspose, pan2);
-
-        //
-        // Set the new origin.
-        //
         avtView3D newView3D = vw->GetView3D();
 
-        newView3D.focus[0] += pan2[0];
-        newView3D.focus[1] += pan2[1];
-        newView3D.focus[2] += pan2[2];
+        pan[0] = ((double)((x - OldX) / size[0])) / newView3D.imageZoom;
+        pan[1] = ((double)((y - OldY) / size[1])) / newView3D.imageZoom;
+
+        newView3D.imagePan[0] += pan[0];
+        newView3D.imagePan[1] += pan[1];
 
         vw->SetView3D(newView3D);
 
@@ -588,6 +549,10 @@ Navigate3D::PanCamera(const int x, const int y)
 //    Eric Brugger, Tue Apr  2 11:28:11 PST 2002
 //    I modified the routine to make the viewing changes using an avtView3D.
 //
+//    Eric Brugger, Wed Jun 11 08:55:07 PDT 2003
+//    I changed the zoom behavior so that it zooms the image and doesn't
+//    change the camera or focal point.
+//
 // ****************************************************************************
 
 void
@@ -611,7 +576,7 @@ Navigate3D::ZoomCamera(const int x, const int y)
 
         avtView3D newView3D = vw->GetView3D();
 
-        newView3D.parallelScale = newView3D.parallelScale / zoomFactor;
+        newView3D.imageZoom = newView3D.imageZoom * zoomFactor;
 
         vw->SetView3D(newView3D);
 

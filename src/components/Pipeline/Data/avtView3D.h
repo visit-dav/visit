@@ -21,6 +21,9 @@ struct avtViewInfo;
 //    Eric Brugger, Fri Mar 29 15:09:35 PST 2002
 //    Remove the method SetViewFromViewInfo.
 //
+//    Eric Brugger, Fri Jun  6 15:20:43 PDT 2003
+//    I added image pan and image zoom.
+//
 // ****************************************************************************
 
 struct PIPELINE_API avtView3D
@@ -32,6 +35,8 @@ struct PIPELINE_API avtView3D
     double   parallelScale;
     double   nearPlane;
     double   farPlane;
+    double   imagePan[2];
+    double   imageZoom;
     bool     perspective;
 
   public:

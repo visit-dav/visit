@@ -1775,6 +1775,10 @@ ViewerWindowManager::SetView2DFromClient()
 //    Brad Whitlock, Tue Nov 19 14:40:03 PST 2002
 //    I changed UpdateViewAtts so the 2d view will not be sent to the client.
 //
+//    Eric Brugger, Tue Jun 10 13:10:17 PDT 2003
+//    I renamed camera to view normal in the view attributes.  I added
+//    image pan and image zoom to the 3d view attributes.
+//
 // ****************************************************************************
 
 void
@@ -1782,9 +1786,9 @@ ViewerWindowManager::SetView3DFromClient()
 {
     avtView3D view3d;
 
-    view3d.normal[0] = view3DClientAtts->GetCamera()[0];
-    view3d.normal[1] = view3DClientAtts->GetCamera()[1];
-    view3d.normal[2] = view3DClientAtts->GetCamera()[2];
+    view3d.normal[0] = view3DClientAtts->GetViewNormal()[0];
+    view3d.normal[1] = view3DClientAtts->GetViewNormal()[1];
+    view3d.normal[2] = view3DClientAtts->GetViewNormal()[2];
     view3d.focus[0] = view3DClientAtts->GetFocus()[0];
     view3d.focus[1] = view3DClientAtts->GetFocus()[1];
     view3d.focus[2] = view3DClientAtts->GetFocus()[2];
@@ -1795,6 +1799,9 @@ ViewerWindowManager::SetView3DFromClient()
     view3d.parallelScale = view3DClientAtts->GetParallelScale();
     view3d.nearPlane = view3DClientAtts->GetNearPlane();
     view3d.farPlane = view3DClientAtts->GetFarPlane();
+    view3d.imagePan[0] = view3DClientAtts->GetImagePan()[0];
+    view3d.imagePan[1] = view3DClientAtts->GetImagePan()[1];
+    view3d.imageZoom = view3DClientAtts->GetImageZoom();
     view3d.perspective = view3DClientAtts->GetPerspective();
 
     //
@@ -3020,6 +3027,10 @@ ViewerWindowManager::UpdateGlobalAtts() const
 //    Added default arguments that tell whether or not the 2d, 3d views
 //    should be sent to the client.
 //
+//    Eric Brugger, Tue Jun 10 13:10:17 PDT 2003
+//    I renamed camera to view normal in the view attributes.  I added
+//    image pan and image zoom to the 3d view attributes.
+//
 // ****************************************************************************
 
 void
@@ -3047,7 +3058,7 @@ ViewerWindowManager::UpdateViewAtts(int windowIndex, bool update2d,
         //
         if(update3d)
         {
-            view3DClientAtts->SetCamera(view3d.normal);
+            view3DClientAtts->SetViewNormal(view3d.normal);
             view3DClientAtts->SetFocus(view3d.focus);
             view3DClientAtts->SetViewUp(view3d.viewUp);
             view3DClientAtts->SetViewAngle(view3d.viewAngle);
@@ -3055,6 +3066,8 @@ ViewerWindowManager::UpdateViewAtts(int windowIndex, bool update2d,
             view3DClientAtts->SetSetScale(true);
             view3DClientAtts->SetNearPlane(view3d.nearPlane);
             view3DClientAtts->SetFarPlane(view3d.farPlane);
+            view3DClientAtts->SetImagePan(view3d.imagePan);
+            view3DClientAtts->SetImageZoom(view3d.imageZoom);
             view3DClientAtts->SetPerspective(view3d.perspective);
             view3DClientAtts->Notify();
         }

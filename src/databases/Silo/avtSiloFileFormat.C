@@ -37,6 +37,8 @@
 
 #include <avtStructuredDomainBoundaries.h>
 
+#include <visit-config.h>
+
 #ifdef PARALLEL
 #include <mpi.h>
 #endif
@@ -325,6 +327,10 @@ avtSiloFileFormat::GetTimeVaryingInformation(DBfile *dbfile)
 //  Programmer: Hank Childs
 //  Creation:   February 26, 2001
 //
+//  Modifications:
+//    Brad Whitlock, Thu May 22 14:23:14 PST 2003
+//    I made it use SLASH_STRING so it works better on Windows.
+//
 // *****************************************************************************
 
 DBfile *
@@ -340,7 +346,7 @@ avtSiloFileFormat::OpenFile(const char *n)
     while (thisSlash != NULL)
     {
         lastSlash = thisSlash;
-        thisSlash = strstr(lastSlash+1, "/");
+        thisSlash = strstr(lastSlash+1, SLASH_STRING);
     }
     if (lastSlash == tocFile)
     {

@@ -30,6 +30,8 @@ class QvisOpacitySlider;
 // Note:  taken almost verbatim from the Subset plot
 //
 // Modifications:
+//    Jeremy Meredith, Fri Jun 13 16:56:43 PDT 2003
+//    Added clean zones only.
 //
 // ****************************************************************************
 
@@ -60,6 +62,7 @@ private slots:
     void legendToggled(bool val);
     void wireframeToggled(bool val);
     void drawInternalToggled(bool val);
+    void cleanZonesOnlyToggled(bool val);
     void singleColorChanged(const QColor &color);
     void singleColorOpacityChanged(int opacity);
     void multipleColorChanged(const QColor &color);
@@ -78,6 +81,7 @@ private:
     QvisLineWidthWidget      *lineWidth;
     QButtonGroup             *colorModeButtons;
     QCheckBox                *legendCheckBox;
+    QCheckBox                *cleanZonesOnlyCheckBox;
     QGroupBox                *boundaryColorGroup;
     QvisColorButton          *singleColor;
     QvisOpacitySlider        *singleColorOpacity;

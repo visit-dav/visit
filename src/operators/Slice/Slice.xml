@@ -54,6 +54,12 @@
       <Field name="flip" label="flip" type="bool" ignoreeq="true">
         false
       </Field>
+      <Field name="originZoneDomain" label="originZoneDomain" type="int">
+        0
+      </Field>
+      <Field name="originNodeDomain" label="originNodeDomain" type="int">
+        0
+      </Field>
       <Function name="CopyAttributes" user="false" member="true">
       </Function>
       <Function name="CreateCompatible" user="false" member="true">

@@ -35,7 +35,7 @@ def setview():
         x = x / h
         y = y / h
         z = z / h
-        a.camera = (x, y, z)
+        a.viewNormal = (x, y, z)
         a.nearPlane = -40.
         a.farPlane = 40.
         SetView3D(a)

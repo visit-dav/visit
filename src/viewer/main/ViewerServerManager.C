@@ -401,18 +401,25 @@ ViewerServerManager::CloseLaunchers()
 // Creation:   Tue May 6 13:59:41 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Jun 10 14:21:38 PST 2003
+//   I made it use the visitPath if it is a valid value.
+//
 // ****************************************************************************
 
 void
 ViewerServerManager::StartLauncher(const std::string &host,
-     ViewerConnectionProgressDialog *dialog)
+     const std::string &visitPath, ViewerConnectionProgressDialog *dialog)
 {
     if(launchers.find(host) == launchers.end())
     {
         // Create a new laucnher proxy and add the right arguments to it.
         LauncherProxy *newLauncher = new LauncherProxy;
         stringVector args;
+        if(visitPath.size() > 0)
+        {
+            args.push_back("-dir");
+            args.push_back(visitPath);
+        }
         AddArguments(newLauncher, args);
         AddProfileArguments(newLauncher, host);
 
@@ -467,7 +474,9 @@ ViewerServerManager::StartLauncher(const std::string &host,
 // Creation:   Tue May 6 14:04:41 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Jun 10 14:22:01 PST 2003
+//   I made it extract the path to VisIt from the arguments.
+//
 // ****************************************************************************
 
 void
@@ -488,8 +497,20 @@ ViewerServerManager::OpenWithLauncher(
             ViewerConnectionProgressDialog *dialog =
                 (ViewerConnectionProgressDialog *)data;
 
+            // Search the args list and see if we've supplied the path to
+            // the visit executeable.
+            std::string visitPath;
+            for(int i = 0; i < args.size(); ++i)
+            {
+                if(args[i] == "-dir" && (i+1) < args.size())
+                {
+                    visitPath = args[i+1];
+                    ++i;
+                }
+            }
+
             // Try to start a launcher on remoteHost.
-            StartLauncher(remoteHost, dialog);
+            StartLauncher(remoteHost, visitPath, dialog);
 
             // Try to make the launcher launch the process.
             launchers[remoteHost]->LaunchProcess(args);

@@ -28,7 +28,7 @@ def fly():
     
     # Create the control points for the views.
     c0 = ViewAttributes()
-    c0.camera = (0, 0, 1)
+    c0.viewNormal = (0, 0, 1)
     c0.focus = (0, 0, 0)
     c0.viewUp = (0, 1, 0)
     c0.viewAngle = 30
@@ -41,7 +41,7 @@ def fly():
     c0.viewportCoords = (0.2, 0.8, 0.2, 0.8)
     
     c1 = ViewAttributes()
-    c1.camera = (-0.499159, 0.475135, 0.724629)
+    c1.viewNormal = (-0.499159, 0.475135, 0.724629)
     c1.focus = (0, 0, 0)
     c1.viewUp = (0.196284, 0.876524, -0.439521)
     c1.viewAngle = 30
@@ -54,7 +54,7 @@ def fly():
     c1.viewportCoords = (0.2, 0.8, 0.2, 0.8)
     
     c2 = ViewAttributes()
-    c2.camera = (-0.522881, 0.831168, -0.189092)
+    c2.viewNormal = (-0.522881, 0.831168, -0.189092)
     c2.focus = (0, 0, 0)
     c2.viewUp = (0.783763, 0.556011, 0.27671)
     c2.viewAngle = 30
@@ -67,7 +67,7 @@ def fly():
     c2.viewportCoords = (0.2, 0.8, 0.2, 0.8)
     
     c3 = ViewAttributes()
-    c3.camera = (-0.438771, 0.523661, -0.730246)
+    c3.viewNormal = (-0.438771, 0.523661, -0.730246)
     c3.focus = (0, 0, 0)
     c3.viewUp = (-0.0199911, 0.80676, 0.590541)
     c3.viewAngle = 30
@@ -80,7 +80,7 @@ def fly():
     c3.viewportCoords = (0.2, 0.8, 0.2, 0.8)
     
     c4 = ViewAttributes()
-    c4.camera = (0.286142, -0.342802, -0.894768)
+    c4.viewNormal = (0.286142, -0.342802, -0.894768)
     c4.focus = (0, 0, 0)
     c4.viewUp = (-0.0382056, 0.928989, -0.36813)
     c4.viewAngle = 30
@@ -93,7 +93,7 @@ def fly():
     c4.viewportCoords = (0.2, 0.8, 0.2, 0.8)
     
     c5 = ViewAttributes()
-    c5.camera = (0.974296, -0.223599, -0.0274086)
+    c5.viewNormal = (0.974296, -0.223599, -0.0274086)
     c5.focus = (0, 0, 0)
     c5.viewUp = (0.222245, 0.97394, -0.0452541)
     c5.viewAngle = 30

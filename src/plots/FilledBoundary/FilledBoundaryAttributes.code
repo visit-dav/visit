@@ -6,6 +6,9 @@ Definition:
 //    Jeremy Meredith, Mon Dec  9 16:30:54 PST 2002
 //    Added smoothing level.
 //
+//    Jeremy Meredith, Fri Jun 13 16:58:16 PDT 2003
+//    Added cleanZonesOnly.
+//
 // ****************************************************************************
 bool
 FilledBoundaryAttributes::ChangesRequireRecalculation(const FilledBoundaryAttributes &obj)
@@ -15,7 +18,8 @@ FilledBoundaryAttributes::ChangesRequireRecalculation(const FilledBoundaryAttrib
             (boundaryNames != obj.boundaryNames) ||
             (wireframe != obj.wireframe) ||
             (drawInternal != obj.drawInternal) ||
-            (smoothingLevel != obj.smoothingLevel));
+            (smoothingLevel != obj.smoothingLevel) ||
+            (cleanZonesOnly != obj.cleanZonesOnly));
 }
 
 Function: VarChangeRequiresReset
