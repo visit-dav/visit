@@ -141,6 +141,9 @@ class BoundaryHelperFunctions
 //    Made ExhangeVector into two methods to handle different underlying
 //    data types (int, float).  
 //    
+//    Jeremy Meredith, Fri Nov  7 15:15:34 PST 2003
+//    Added private methods to handle varying types of scalar exchanges.
+//
 // ****************************************************************************
 
 class DATABASE_API avtStructuredDomainBoundaries :  public avtDomainBoundaries
@@ -159,17 +162,17 @@ class DATABASE_API avtStructuredDomainBoundaries :  public avtDomainBoundaries
     virtual vector<vtkDataSet*>       ExchangeMesh(vector<int>       domainNum,
                                                vector<vtkDataSet*>   meshes);
 
-    virtual vector<vtkDataArray*>     ExchangeScalar(vector<int>     domainNum,
-                                               bool                  isPointData,
-                                               vector<vtkDataArray*> scalars);
+    virtual vector<vtkDataArray*>     ExchangeScalar(vector<int>   domainNum,
+                                             bool                  isPointData,
+                                             vector<vtkDataArray*> scalars);
 
     virtual vector<vtkDataArray*>     ExchangeFloatVector(vector<int> domainNum,
-                                               bool                   isPointData,
-                                               vector<vtkDataArray*>  vectors);
+                                            bool                   isPointData,
+                                            vector<vtkDataArray*>  vectors);
 
     virtual vector<vtkDataArray*>     ExchangeIntVector(vector<int>  domainNum,
-                                               bool                  isPointData,
-                                               vector<vtkDataArray*> vectors);
+                                             bool                  isPointData,
+                                             vector<vtkDataArray*> vectors);
 
     virtual vector<avtMaterial*>      ExchangeMaterial(vector<int>   domainNum,
                                               vector<avtMaterial*>   mats);
@@ -182,6 +185,18 @@ class DATABASE_API avtStructuredDomainBoundaries :  public avtDomainBoundaries
                                                vector<vtkDataSet*> meshes);
 
   private:
+    virtual vector<vtkDataArray*>     ExchangeFloatScalar(vector<int> domainNum,
+                                             bool                  isPointData,
+                                             vector<vtkDataArray*> scalars);
+
+    virtual vector<vtkDataArray*>     ExchangeIntScalar(vector<int>  domainNum,
+                                             bool                  isPointData,
+                                             vector<vtkDataArray*> scalars);
+
+    virtual vector<vtkDataArray*>     ExchangeUCharScalar(vector<int> domainNum,
+                                             bool                  isPointData,
+                                             vector<vtkDataArray*> scalars);
+
 
   private:
     // data
@@ -190,8 +205,10 @@ class DATABASE_API avtStructuredDomainBoundaries :  public avtDomainBoundaries
 
     friend class BoundaryHelperFunctions<int>;
     friend class BoundaryHelperFunctions<float>;
-    BoundaryHelperFunctions<int>   *bhf_int;
-    BoundaryHelperFunctions<float> *bhf_float;
+    friend class BoundaryHelperFunctions<unsigned char>;
+    BoundaryHelperFunctions<int>           *bhf_int;
+    BoundaryHelperFunctions<float>         *bhf_float;
+    BoundaryHelperFunctions<unsigned char> *bhf_uchar;
   private:
     // helper methods
     vector<int> CreateDomainToProcessorMap(const vector<int>&);

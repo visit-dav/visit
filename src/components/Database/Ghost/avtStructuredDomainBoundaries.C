@@ -24,6 +24,7 @@ using   std::string;
 template <class T> int GetMPIDataType();
 template <>        int GetMPIDataType<int>()    { return MPI_INT;  }
 template <>        int GetMPIDataType<float>()  { return MPI_FLOAT;}
+template <>        int GetMPIDataType<unsigned char>()  { return MPI_UNSIGNED_CHAR;}
 #endif
 
 // ****************************************************************************
@@ -909,6 +910,7 @@ avtStructuredDomainBoundaries::avtStructuredDomainBoundaries()
 {
     bhf_int   = new BoundaryHelperFunctions<int>(this);
     bhf_float = new BoundaryHelperFunctions<float>(this);
+    bhf_uchar = new BoundaryHelperFunctions<unsigned char>(this);
 }
 
 // ****************************************************************************
@@ -1160,6 +1162,51 @@ avtStructuredDomainBoundaries::ExchangeMesh(vector<int>         domainNum,
 //  Arguments:
 //    domainNum    an array of domain numbers for each mesh
 //    isPointData  true if this is node-centered, false if cell-centered
+//    vectors      an array of vectors
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November  7, 2003
+//
+//  Modifications:
+//
+// ****************************************************************************
+vector<vtkDataArray*>
+avtStructuredDomainBoundaries::ExchangeScalar(vector<int>           domainNum,
+                                              bool                  isPointData,
+                                              vector<vtkDataArray*> scalars)
+{
+    if (scalars.empty())
+        return scalars;
+
+    switch (scalars[0]->GetDataType())
+    {
+      case VTK_FLOAT:
+        return ExchangeFloatScalar(domainNum, isPointData, scalars);
+        break;
+      case VTK_INT:
+      case VTK_UNSIGNED_INT:
+        return ExchangeIntScalar(domainNum, isPointData, scalars);
+        break;
+      case VTK_CHAR:
+      case VTK_UNSIGNED_CHAR:
+        return ExchangeUCharScalar(domainNum, isPointData, scalars);
+        break;
+      default:
+        EXCEPTION1(VisItException, "Unknown scalar type in "
+                   "avtStructuredDomainBoundaries::ExchangeScalar");
+    }
+}
+
+// ****************************************************************************
+//  Method:  avtStructuredDomainBoundaries::ExchangeFloatScalar
+//
+//  Purpose:
+//    Exchange the ghost zone information for some scalars,
+//    returning the new ones.
+//
+//  Arguments:
+//    domainNum    an array of domain numbers for each mesh
+//    isPointData  true if this is node-centered, false if cell-centered
 //    scalars      an array of scalars
 //
 //  Programmer:  Jeremy Meredith
@@ -1177,11 +1224,14 @@ avtStructuredDomainBoundaries::ExchangeMesh(vector<int>         domainNum,
 //    vtkScalars has been deprecated in VTK 4.0, use vtkDataArray 
 //    and vtkFloatArray instead.
 //
+//    Jeremy Meredith, Fri Nov  7 15:13:56 PST 2003
+//    Renamed to include the "Float" in the name.
+//
 // ****************************************************************************
 vector<vtkDataArray*>
-avtStructuredDomainBoundaries::ExchangeScalar(vector<int>         domainNum,
-                                              bool                isPointData,
-                                              vector<vtkDataArray*> scalars)
+avtStructuredDomainBoundaries::ExchangeFloatScalar(vector<int>     domainNum,
+                                             bool                  isPointData,
+                                             vector<vtkDataArray*> scalars)
 {
     vector<int> domain2proc = CreateDomainToProcessorMap(domainNum);
     CreateCurrentDomainBoundaryInformation(domain2proc);
@@ -1227,6 +1277,154 @@ avtStructuredDomainBoundaries::ExchangeScalar(vector<int>         domainNum,
     }
 
     bhf_float->FreeBoundaryData(vals);
+
+    return out;
+}
+
+
+// ****************************************************************************
+//  Method:  avtStructuredDomainBoundaries::ExchangeIntScalar
+//
+//  Purpose:
+//    Exchange the ghost zone information for some scalars,
+//    returning the new ones.
+//
+//  Arguments:
+//    domainNum    an array of domain numbers for each mesh
+//    isPointData  true if this is node-centered, false if cell-centered
+//    scalars      an array of scalars
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November  7, 2003
+//
+//  Note: direct copy of ExchangeFloatScalar with modifications for ints.
+//
+//  Modifications:
+//
+// ****************************************************************************
+vector<vtkDataArray*>
+avtStructuredDomainBoundaries::ExchangeIntScalar(vector<int>       domainNum,
+                                             bool                  isPointData,
+                                             vector<vtkDataArray*> scalars)
+{
+    vector<int> domain2proc = CreateDomainToProcessorMap(domainNum);
+    CreateCurrentDomainBoundaryInformation(domain2proc);
+
+    vector<vtkDataArray*> out(scalars.size(), NULL);
+
+    //
+    // Create the matching arrays for the given scalars
+    //
+    int ***vals = bhf_int->InitializeBoundaryData();
+    int d;
+    for (d = 0; d < scalars.size(); d++)
+    {
+        int *oldvals = (int*)scalars[d]->GetVoidPointer(0);
+        bhf_int->FillBoundaryData(domainNum[d], oldvals, vals, isPointData);
+    }
+
+    bhf_int->CommunicateBoundaryData(domain2proc, vals, isPointData);
+
+    for (d = 0; d < scalars.size(); d++)
+    {
+        Boundary *bi = &boundary[domainNum[d]];
+
+        // Create the new VTK objects
+        out[d] = vtkIntArray::New(); 
+        out[d]->SetName(scalars[d]->GetName());
+        if (isPointData)
+            out[d]->SetNumberOfTuples(bi->newnpts);
+        else
+            out[d]->SetNumberOfTuples(bi->newncells);
+
+        int *oldvals = (int*)scalars[d]->GetVoidPointer(0);
+        int *newvals = (int*)out[d]->GetVoidPointer(0);
+
+        // Set the known ones
+        bhf_int->CopyOldValues(domainNum[d], oldvals, newvals, isPointData);
+
+        // Match the unknown ones
+        bhf_int->SetNewBoundaryData(domainNum[d], vals, newvals, isPointData);
+
+        // Set the remaining unset ones (reduced connectivity, etc.)
+        bhf_int->FakeNonexistentBoundaryData(domainNum[d], newvals, isPointData);
+    }
+
+    bhf_int->FreeBoundaryData(vals);
+
+    return out;
+}
+
+
+// ****************************************************************************
+//  Method:  avtStructuredDomainBoundaries::ExchangeUCharScalar
+//
+//  Purpose:
+//    Exchange the ghost zone information for some scalars,
+//    returning the new ones.
+//
+//  Arguments:
+//    domainNum    an array of domain numbers for each mesh
+//    isPointData  true if this is node-centered, false if cell-centered
+//    scalars      an array of scalars
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November  7, 2003
+//
+//  Note: direct copy of ExchangeFloatScalar with modifications for uchars.
+//
+//  Modifications:
+//
+// ****************************************************************************
+vector<vtkDataArray*>
+avtStructuredDomainBoundaries::ExchangeUCharScalar(vector<int>     domainNum,
+                                             bool                  isPointData,
+                                             vector<vtkDataArray*> scalars)
+{
+    vector<int> domain2proc = CreateDomainToProcessorMap(domainNum);
+    CreateCurrentDomainBoundaryInformation(domain2proc);
+
+    vector<vtkDataArray*> out(scalars.size(), NULL);
+
+    //
+    // Create the matching arrays for the given scalars
+    //
+    unsigned char ***vals = bhf_uchar->InitializeBoundaryData();
+    int d;
+    for (d = 0; d < scalars.size(); d++)
+    {
+        unsigned char *oldvals = (unsigned char*)scalars[d]->GetVoidPointer(0);
+        bhf_uchar->FillBoundaryData(domainNum[d], oldvals, vals, isPointData);
+    }
+
+    bhf_uchar->CommunicateBoundaryData(domain2proc, vals, isPointData);
+
+    for (d = 0; d < scalars.size(); d++)
+    {
+        Boundary *bi = &boundary[domainNum[d]];
+
+        // Create the new VTK objects
+        out[d] = vtkUnsignedCharArray::New(); 
+        out[d]->SetName(scalars[d]->GetName());
+        if (isPointData)
+            out[d]->SetNumberOfTuples(bi->newnpts);
+        else
+            out[d]->SetNumberOfTuples(bi->newncells);
+
+        unsigned char *oldvals = (unsigned char*)scalars[d]->GetVoidPointer(0);
+        unsigned char *newvals = (unsigned char*)out[d]->GetVoidPointer(0);
+
+        // Set the known ones
+        bhf_uchar->CopyOldValues(domainNum[d], oldvals, newvals, isPointData);
+
+        // Match the unknown ones
+        bhf_uchar->SetNewBoundaryData(domainNum[d], vals, newvals, isPointData);
+
+        // Set the remaining unset ones (reduced connectivity, etc.)
+        bhf_uchar->FakeNonexistentBoundaryData(domainNum[d], newvals, isPointData);
+    }
+
+    bhf_uchar->FreeBoundaryData(vals);
 
     return out;
 }
