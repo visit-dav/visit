@@ -11,6 +11,7 @@
 #include <avtSTMDFileFormat.h>
 
 #include <string>
+#include <vector>
 
 #include <silo.h>
 #include <hdf5.h>
@@ -37,6 +38,7 @@ class IMVal {
 class vtkFloatArray;
 
 using std::string;
+using std::vector;
 
 // ****************************************************************************
 //  Class: avtVistaFileFormat
@@ -58,6 +60,12 @@ using std::string;
 //    Added GetMaterial method
 //    Added GetAuxiliaryData method
 //    Added GetFileNameForRead method
+//
+//    Eric Brugger, Wed May 12 13:42:01 PDT 2004
+//    Prefixed some uses of "vector" with "std::".
+//
+//    Mark C. Miller, Wed May 19 10:56:11 PDT 2004
+//    Added spatialDim data member
 //
 // ****************************************************************************
 
@@ -139,9 +147,11 @@ class avtVistaFileFormat : public avtSTMDFileFormat
     int                  numPieces;
     Node               **pieceNodes;
 
+    int                  spatialDim;
+
     int                  numMaterials;
-    vector<int>          materialNumbers;
-    vector<string>       materialNames;
+    std::vector<int>     materialNumbers;
+    std::vector<string>  materialNames;
     int                 *materialNumbersArray;
     const char         **materialNamesArray;
 

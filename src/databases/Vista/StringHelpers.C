@@ -11,6 +11,9 @@ using std::vector;
 
 static string IGNORE_CHARS = StringHelpers::NON_RELEVANT_CHARS;
 
+const int STATIC_BUF_SIZE = 4096;
+static char StaticStringBuf[STATIC_BUF_SIZE];
+
 string RelevantString(string inStr)
 {
    string outStr;
@@ -43,6 +46,9 @@ StringHelpers::GroupStrings(vector<string> stringList,
 
    int i;
    int nStrings = stringList.size();
+
+   if (nStrings == 0)
+       return;
 
    // prime the input to the compare functions
    IGNORE_CHARS = nonRelevantChars;
@@ -115,4 +121,110 @@ StringHelpers::FindRE(const char *strToSearch, const char *re)
         return FindError;
 
     return (int) pm.rm_so;
+}
+
+static const char *
+basename(const char *path, int& start)
+{
+   start = -1;
+
+   if (path == 0)
+   {
+       strcpy(StaticStringBuf, ".");
+       return StaticStringBuf;
+   }
+   else if (*path == '\0')
+   {
+       strcpy(StaticStringBuf, ".");
+       return StaticStringBuf;
+   }
+   else
+   {
+       // find end of path string
+       int n = 0;
+       while ((path[n] != '\0') && (n < STATIC_BUF_SIZE)) 
+           n++;
+
+       // deal with string too large
+       if (n == STATIC_BUF_SIZE)
+       {
+           strcpy(StaticStringBuf, ".");
+           return StaticStringBuf;
+       }
+
+       // backup, skipping over all trailing '/' chars
+       int j = n-1;
+       while ((j >= 0) && (path[j] == '/'))
+           j--;
+
+       // deal with string consisting of all '/' chars
+       if (j == -1)
+       {
+           strcpy(StaticStringBuf, "/");
+           return StaticStringBuf;
+       }
+
+       // backup to just after next '/' char
+       int i = j-1;
+       while ((i >= 0) && (path[i] != '/'))
+           i--;
+       i++;
+       start = i;
+
+       // build the return string
+       int k;
+       for (k = 0; k < j - i + 1; k++)
+           StaticStringBuf[k] = path[i+k];
+       StaticStringBuf[k] = '\0';
+       return StaticStringBuf;
+   }
+}
+
+const char *
+StringHelpers::Basename(const char *path)
+{
+   int dummy1;
+   return basename(path, dummy1);
+}
+
+const char *
+StringHelpers::Dirname(const char *path)
+{
+    int start;
+
+   // deal with special cases first
+   if ((path == 0) ||                             // null path
+       (path[0] == '\0') ||                       // ""
+       ((path[0] == '.') && (path[1] == '\0')) || // "."
+       ((path[0] == '.') && (path[1] == '.') &&   // ".."
+        (path[2] == '\0')))
+   {
+       strcpy(StaticStringBuf, ".");
+       return StaticStringBuf;
+   }
+   else if ((path[0] == '/') && (path[1] == '\0'))
+   {
+       strcpy(StaticStringBuf, "/");
+       return StaticStringBuf;
+   }
+
+    // ok, figure out the basename
+    basename(path, start);
+
+    if (start == -1)
+    {
+        strcpy(StaticStringBuf, "/");
+        return StaticStringBuf;
+    }
+    else
+    {
+        int i;
+        for (i = 0; i < start; i++)
+            StaticStringBuf[i] = path[i];
+        if (StaticStringBuf[i-1] == '/')
+            StaticStringBuf[i-1] = '\0';
+       else
+            StaticStringBuf[i] = '\0';
+        return StaticStringBuf;
+    }
 }

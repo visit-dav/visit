@@ -19,7 +19,8 @@ const char *AUXILIARY_DATA_DOMAIN_NESTING_INFORMATION
 static const char *avtExtentType_strings[] = { "AVT_ORIGINAL_EXTENTS",
     "AVT_ACTUAL_EXTENTS", "AVT_SPECIFIED_EXTENTS", "AVT_UNKNOWN_EXTENT_TYPE"};
 
-// **************************************************************************** // Function: avtExtentType_ToString
+// ****************************************************************************
+// Function: avtExtentType_ToString
 //
 // Purpose:
 //   Returns a string version of avtExtentType.
@@ -74,4 +75,43 @@ avtExtentType_FromString(const std::string &s, avtExtentType &m)
     }
 
     return false;
+}
+
+// ****************************************************************************
+// Function: GuessVarTypeFromNumDimsAndComps
+//
+// Purpose:
+//   Guesses the avt variable type from spatial dimensions and component count 
+//
+// Programmer: Mark C. Miller 
+// Creation:  Tue May 18 15:31:37 PDT 2004 
+//
+// ****************************************************************************
+avtVarType
+GuessVarTypeFromNumDimsAndComps(int numSpatialDims, int componentCount)
+{
+    avtVarType retval = AVT_UNKNOWN_TYPE;
+
+    if (componentCount == 1)
+        retval = AVT_SCALAR_VAR;
+    else if (numSpatialDims == 2)
+    {
+        if (componentCount == 2)
+            retval = AVT_VECTOR_VAR;
+        else if (componentCount == 3)
+            retval = AVT_SYMMETRIC_TENSOR_VAR;
+        else if (componentCount == 4)
+            retval = AVT_TENSOR_VAR;
+    }
+    else if (numSpatialDims == 3)
+    {
+        if (componentCount == 3)
+            retval = AVT_VECTOR_VAR;
+        else if (componentCount == 6)
+            retval = AVT_SYMMETRIC_TENSOR_VAR;
+        else if (componentCount == 9)
+            retval = AVT_TENSOR_VAR;
+    }
+
+    return retval;
 }

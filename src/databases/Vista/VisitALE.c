@@ -405,7 +405,10 @@ const Node *VisitGetNodeFromPath(const Node *start, const char *path)
 
       for (i=0; i<root->numChild; ++i) {
          int len = strlen(root->child[i]->text) ;
-         if (strncmp(path, root->child[i]->text, len) == 0) {
+         int plen = strlen(path);
+         if ((strncmp(path, root->child[i]->text, len) == 0) &&
+            (len <= plen) && ((path[len] == '/') || (path[len] == '\0')))
+         {
             root = root->child[i] ;
             path += len ;
             found = true ;

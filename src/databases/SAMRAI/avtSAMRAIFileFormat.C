@@ -682,6 +682,10 @@ avtSAMRAIFileFormat::GetVectorVar(int patch, const char *visit_var_name)
 //    Brad Whitlock, Fri Mar 5 10:19:32 PDT 2004
 //    Changed for Windows compiler.
 //
+//    Mark C. Miller, Wed May 19 10:56:11 PDT 2004
+//    Re-factored code having to do with guessing variable type to avtTypes
+//    function GuessVarTypeFromNumDimsAndComps
+//
 // ****************************************************************************
 vtkDataArray *
 avtSAMRAIFileFormat::ReadVar(int patch, 
@@ -739,27 +743,7 @@ avtSAMRAIFileFormat::ReadVar(int patch,
     }
 
     // guess var_type from problem dimensions and number of components
-    avtVarType var_type = AVT_UNKNOWN_TYPE;
-    if (num_components == 1)
-        var_type = AVT_SCALAR_VAR;
-    else if (num_dim_problem == 2)
-    {
-        if (num_components == 2)
-            var_type = AVT_VECTOR_VAR;
-        else if (num_components == 3)
-            var_type = AVT_SYMMETRIC_TENSOR_VAR;
-        else if (num_components == 4)
-            var_type = AVT_TENSOR_VAR;
-    }
-    else if (num_dim_problem == 3)
-    {
-        if (num_components == 3)
-            var_type = AVT_VECTOR_VAR;
-        else if (num_components == 6)
-            var_type = AVT_SYMMETRIC_TENSOR_VAR;
-        else if (num_components == 9)
-            var_type = AVT_TENSOR_VAR;
-    }
+    avtVarType var_type = GuessVarTypeFromNumDimsAndComps(num_dim_problem, num_components);
     if (var_type == AVT_UNKNOWN_TYPE)
     {
         EXCEPTION1(InvalidVariableException, visit_var_name);
@@ -1001,6 +985,10 @@ avtSAMRAIFileFormat::ReadMatSpecFractions(int patch, string mat_name,
 //    Mark C. Miller, Thu May  6 22:07:32 PDT 2004
 //    Used new material constructors
 //
+//    Eric Brugger, Wed May 12 13:37:29 PDT 2004
+//    Modify the allocation of an array of float pointers so that it
+//    compiles on all platforms.
+//
 // ****************************************************************************
 
 avtMaterial *
@@ -1128,9 +1116,7 @@ avtSAMRAIFileFormat::GetMaterial(int patch, const char *matObjName)
     }
     else
     {
-       // for some reason, the initialization to zero in the 'new' call
-       // doesn't take effect...
-       float **vfracs = new (float*)[num_mats](0);
+       float **vfracs = new float*[num_mats];
        for (i = 0; i < num_mats; i++)
            vfracs[i] = 0;
 
@@ -1609,6 +1595,9 @@ avtSAMRAIFileFormat::GetSpecies(int patch, const char *specObjName)
 //    Mark C. Miller, Wed Jan  7 11:35:37 PST 2004
 //    Added stuff to compute unique species vectors for compression
 //
+//    Mark C. Miller, Wed May 19 21:31:28 PDT 2004
+//    Corrected off by one error in mixed mat traversal
+//
 // ****************************************************************************
 
 void
@@ -1664,11 +1653,8 @@ avtSAMRAIFileFormat::ConvertMassFractionFields(vector<int> matIds,
         else // mixed zone
         {
             speclist[i] = -INT_MAX; 
-
-            bool first = true;
             int mixidx = -(matlist[i]+1);
-
-            while (first || mixidx != 0)
+            while (true)
             {
                 matNum = mix_mat[mixidx];
 
@@ -1690,8 +1676,9 @@ avtSAMRAIFileFormat::ConvertMassFractionFields(vector<int> matIds,
                     aaspecies_mf[nspecies_mf++] = matSpecFracs[matNum][j][i];
 #endif
 
-                first = false;
-                mixidx = mix_next[mixidx];
+                if (mix_next[mixidx] == 0)
+                    break;
+                mixidx = mix_next[mixidx]-1;
             }
         }
     }

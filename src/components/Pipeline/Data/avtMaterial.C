@@ -3,6 +3,7 @@
 // ************************************************************************* //
 
 #include <avtMaterial.h>
+#include <map>
 
 #include <snprintf.h>
 
@@ -427,6 +428,10 @@ avtMaterial::avtMaterial(int nMats, const vector<string> &mats, int nzon,
 //  Programmer: Mark C. Miller 
 //  Creation:   April 28, 2004 
 //
+//  Modifications:
+//    Mark C. Miller, Wed May 19 21:31:28 PDT 2004
+//    corrected off by one error in mixed traversals
+//
 // ****************************************************************************
 
 avtMaterial::avtMaterial(int nTotMats, const int *mats, const char **names,
@@ -611,11 +616,15 @@ avtMaterial::avtMaterial(int nTotMats, const int *mats, const char **names,
                     // walk forward through the list for this zone
                     //
                     int k = -(ml[zoneNum]+1);
-                    while (mixn[k] != 0)
-                        k = mixn[k];
+                    while (true)
+                    {
+                        if (mixn[k] == 0)
+                            break;
+                        k = mixn[k]-1;
+                    }
  
                     // link up last entry in list with the new entry
-                    mixn[k] = mlindex;
+                    mixn[k] = mlindex+1;
  
                     // put in the new entry
                     mixm[mlindex] = matno;
@@ -721,6 +730,10 @@ avtMaterial::avtMaterial(int nTotMats, const int *mats, const char **names,
 //    
 //  Programmer: Mark C. Miller 
 //  Creation:   April 28, 2004 
+//
+//  Modifications:
+//    Mark C. Miller, Wed May 19 21:31:28 PDT 2004
+//    corrected off by one error in mixed traversals
 //
 // ****************************************************************************
 
@@ -865,11 +878,15 @@ avtMaterial::avtMaterial(int nTotMats, const int *mats, char **names,
 
                         // walk forward through the list for this zone
                         int j = -(ml[z]+1);
-                        while (mixn[j] != 0)
-                            j = mixn[j];
+                        while (true)
+                        {
+                            if (mixn[j] == 0)
+                                break;
+                            j = mixn[j]-1;
+                        }
 
                         // link up last entry in list with the new entry
-                        mixn[j] = mixl;
+                        mixn[j] = mixl+1;
 
                         // put in the new entry
                         mixm[mixl] = mats[m];
@@ -1368,6 +1385,63 @@ avtMaterial::ExtractCellMatInfo(int c) const
     return info;
 }
 
+
+// ****************************************************************************
+//  Method: Print material list and mix info passed in 
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   May 19, 2004 
+//
+// ****************************************************************************
+
+void
+avtMaterial::Print(ostream& out, int nzones , const int *matlist, int mixlen,
+    const int *mix_mat, const int *mix_zone, const float *mix_vf,
+    const int *mix_next)
+{
+    std::map<int,bool> matNumsUsed;
+
+    int i;
+    for (i = 0; i < nzones; i++)
+    {
+        if (matlist[i] >= 0)
+        {
+            out << "Zone " << i << " is clean in material " << matlist[i] << endl;
+            matNumsUsed[matlist[i]] = true;
+        }
+        else
+        {
+            out << "Zone " << i << " is mixing as follows" << endl; 
+            int mixidx = -(matlist[i]+1);
+            float vfsum = 0.0;
+
+            while (true)
+            {
+                out << mix_mat[mixidx] << " (" << (int) (100*mix_vf[mixidx]) << "%), ";
+                matNumsUsed[mix_mat[mixidx]] = true;
+                vfsum += mix_vf[mixidx];
+                if (mix_next[mixidx] == 0)
+                    break;
+                mixidx = mix_next[mixidx]-1;
+            }
+
+            out << " vfrac sum = " << vfsum;
+
+            if ((vfsum > 1 + 0.01) || (vfsum < 1 - 0.01))
+                out << " *** NOT ~1.0 ***" << endl;
+            else
+                out << " OK" << endl;
+        }
+    }
+
+    out << "In traversing the clean and mixed arrays, encountered the following "
+           "material numbers" << endl;
+    std::map<int,bool>::const_iterator pos;
+    for (pos = matNumsUsed.begin(); pos != matNumsUsed.end(); pos++)
+        out << ", " << pos->first;
+    out << endl;
+
+}
 
 // ****************************************************************************
 //  Method: avtMultiMaterial constructor

@@ -96,6 +96,9 @@ DBATTS_API std::string avtExtentType_ToString(avtExtentType);
 DBATTS_API std::string avtExtentType_ToString(int);
 DBATTS_API bool avtExtentType_FromString(const std::string &, avtExtentType &);
 
+DBATTS_API avtVarType GuessVarTypeFromNumDimsAndComps(int numSpatialDims,
+                                                      int componentCount);
+
 #endif
 
 
