@@ -2633,6 +2633,10 @@ avtDatabaseMetaData::Add(avtCurveMetaData *cmd)
 //  Programmer: Hank Childs
 //  Creation:   August 30, 2000
 //
+//  Modifications:
+//    Kathleen Bonnell, Thu Aug 28 13:42:03 PDT 2003
+//    Test for 'name' matching 'blockTitle' or 'groupTitle' in MeshMetaData.
+// 
 // ****************************************************************************
 
 void
@@ -2643,7 +2647,9 @@ avtDatabaseMetaData::SetExtents(std::string name, const float *extents)
     std::vector<avtMeshMetaData *>::iterator mit;
     for (mit = meshes.begin() ; mit != meshes.end() ; mit++)
     {
-        if ((*mit)->name == name)
+        if (((*mit)->name == name) ||
+            ((*mit)->blockTitle == name) ||
+            ((*mit)->groupTitle == name))
         {
             (*mit)->SetExtents(extents);
             foundVar = true;
@@ -2749,6 +2755,9 @@ avtDatabaseMetaData::GetNDomains(std::string var)
 //    Sean Ahern, Wed Feb  5 16:30:36 PST 2003
 //    Added support for expressions.
 //
+//    Kathleen Bonnell, Thu Aug 28 13:42:03 PDT 2003
+//    Test for 'var' matching 'blockTitle' or 'groupTitle' in MeshMetaData.
+//
 // ****************************************************************************
 
 avtVarType
@@ -2776,7 +2785,9 @@ avtDatabaseMetaData::DetermineVarType(std::string var_in)
     std::vector<avtMeshMetaData *>::iterator mit;
     for (mit = meshes.begin() ; mit != meshes.end() ; mit++)
     {
-        if ((*mit)->name == var)
+        if (((*mit)->name == var) || 
+            ((*mit)->blockTitle == var) ||
+            ((*mit)->groupTitle == var))
         {
             return AVT_MESH;
         }
@@ -2855,6 +2866,9 @@ avtDatabaseMetaData::DetermineVarType(std::string var_in)
 //    Sean Ahern, Fri Dec 13 11:04:50 PST 2002
 //    Added expression support.
 //
+//    Kathleen Bonnell, Thu Aug 28 13:42:03 PDT 2003
+//    Test for 'var' matching 'blockTitle' or 'groupTitle' in MeshMetaData.
+//
 // ****************************************************************************
 
 std::string
@@ -2895,6 +2909,11 @@ avtDatabaseMetaData::MeshForVar(std::string var)
             // convenient for some routines.
             //
             return var;
+        }
+        else if (((*mit)->blockTitle == var) ||
+                 ((*mit)->groupTitle == var))
+        {
+            return (*mit)->name;
         }
     }
 
