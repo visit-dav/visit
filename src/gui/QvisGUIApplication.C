@@ -1156,6 +1156,9 @@ QvisGUIApplication::Exec()
 //    I added support for the -sessionfile argument. I moved the filename
 //    expansion code to LongFileName.
 //
+//    Mark C. Miller, Tue Jan 18 12:44:34 PST 2005
+//    Improved the error message for when VisIt ignores the '-geometry' flag
+//
 // ****************************************************************************
 
 void
@@ -1238,8 +1241,8 @@ QvisGUIApplication::ProcessArguments(int &argc, char **argv)
         else if(current == std::string("-geometry"))
         {
             // Print a warning message to the console
-            cerr << "The -geometry flag is not used in VisIt because the "
-                 << "application geometry can be set from within the tool."
+            cerr << "The -geometry command-line flag is ignored by VisIt's "
+                 << "GUI because geometry can be set from within the GUI."
                  << endl;
         }
         else if(current == std::string("-background") ||

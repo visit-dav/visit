@@ -22,6 +22,7 @@
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
 #include <vtkUnstructuredGrid.h>
+#include <vtkUnsignedIntArray.h>
 #include <vtkVisItUtility.h>
 
 
@@ -41,6 +42,10 @@ vtkStandardNewMacro(vtkOnionPeelFilter);
 // Modifications:
 //   Kathleen Bonnell, Thu Aug 15 18:37:59 PDT 2002 
 //   Initialize logicalIndex and useLogicalIndex. 
+//
+//   Kathleen Bonnell, Tue Jan 18 19:37:46 PST 2005 
+//   Initialize ReconstructOriginalCells. 
+//
 //======================================================================
 vtkOnionPeelFilter::vtkOnionPeelFilter()
 {
@@ -51,6 +56,7 @@ vtkOnionPeelFilter::vtkOnionPeelFilter()
     this->maxLayersReached = 0;
     this->maxLayerNum = VTK_LARGE_INTEGER;
     this->AdjacencyType = VTK_NODE_ADJACENCY;
+    this->ReconstructOriginalCells = 0; 
 
     this->layerCellIds = vtkIdList::New();
     this->layerCellIds->Allocate(500);
@@ -133,6 +139,10 @@ vtkOnionPeelFilter::SetBadSeedCellCallback(BadSeedCellCallback cb, void *args)
 //
 //   Hank Childs, Fri Aug 27 15:15:20 PDT 2004
 //   Renamed ghost data arrays.
+//
+//   Kathleen Bonnell, Tue Jan 18 19:37:46 PST 2005 
+//   Addeed logic to handle requests for reconstructing original cells,
+//   e.g. when connectivity of original input has changed.
 //
 //======================================================================
 
@@ -218,7 +228,22 @@ vtkOnionPeelFilter::Initialize(const int numCells)
 
     this->layerCellIds->Reset();
     this->cellOffsets->Reset();
-    this->layerCellIds->InsertNextId(this->SeedCellId);
+    if (!this->ReconstructOriginalCells)
+    {
+        this->layerCellIds->InsertNextId(this->SeedCellId);
+    }
+    else 
+    {
+        this->FindCellsCorrespondingToOriginal(this->SeedCellId, this->layerCellIds);
+        if (this->layerCellIds->GetNumberOfIds() == 0) 
+        {
+            if (bsc_callback != NULL) 
+                bsc_callback(bsc_args, SeedCellId, numCells, false);
+            vtkWarningMacro(<<"SeedCellId " << this->SeedCellId 
+                            << " is not available from current data.");
+            return false; //unsuccessful initialization
+        }
+    }
 
     //layer 0 offset always zero, so use zeroth slot to indicate AdjacencyType
     this->cellOffsets->InsertNextId(this->AdjacencyType);
@@ -251,6 +276,10 @@ vtkOnionPeelFilter::Initialize(const int numCells)
 //   Kathleen Bonnell, Thu Aug 15 17:48:38 PDT 2002  
 //   Coding style update.
 //  
+//   Kathleen Bonnell, Tue Jan 18 19:37:46 PST 2005 
+//   Addeed logic to handle requests for reconstructing original cells,
+//   e.g. when connectivity of original input has changed.
+//
 //======================================================================
 void 
 vtkOnionPeelFilter::Grow()
@@ -304,6 +333,28 @@ vtkOnionPeelFilter::Grow()
         // did we add new cells??? 
         if (this->layerCellIds->GetNumberOfIds() > totalCurrentCells) 
         {
+            if (this->ReconstructOriginalCells)
+            {
+                vtkUnsignedIntArray *origCells = vtkUnsignedIntArray::SafeDownCast(
+                  this->GetInput()->GetCellData()->GetArray("avtOriginalCellNumbers"));
+
+                if (origCells)
+                {
+                    unsigned int *oc = origCells->GetPointer(0);
+                    int nc = origCells->GetNumberOfComponents();
+                    int comp = nc -1;
+                    vtkIdList *origIds = vtkIdList::New();
+                    start = totalCurrentCells;
+                    for (i = start; i < this->layerCellIds->GetNumberOfIds(); i++)
+                    {
+                        int cellId = this->layerCellIds->GetId(i);
+                        int index = cellId *nc + comp;;
+                        origIds->InsertNextId(oc[index]);
+                    }
+                    FindCellsCorrespondingToOriginal(origIds, this->layerCellIds);
+                    origIds->Delete();
+                }
+            }
             // set the offset for this new layer of cells
             this->cellOffsets->InsertNextId(totalCurrentCells);
             totalCurrentCells = this->layerCellIds->GetNumberOfIds();
@@ -698,6 +749,7 @@ vtkOnionPeelFilter::SetLogicalIndex(const int i, const int j, const int k)
     useLogicalIndex = true;
 }
 
+
 //======================================================================
 //
 // Method:   vtkOnionPeelFilter::SetSeedCellId
@@ -717,7 +769,6 @@ vtkOnionPeelFilter::SetLogicalIndex(const int i, const int j, const int k)
 //  
 //=======================================================================
 
-
 void
 vtkOnionPeelFilter::SetSeedCellId(const int seed)
 {  
@@ -727,4 +778,89 @@ vtkOnionPeelFilter::SetSeedCellId(const int seed)
         this->Modified();
     }
     useLogicalIndex = false;
+}
+
+
+//======================================================================
+//
+// Method:   vtkOnionPeelFilter::FindCellsCorrespondingToOriginal
+//
+// Purpose:  
+//   Finds all cells whose 'originalCell' designation matches the
+//   original id passed as arg. 
+// 
+// Arguments:  
+//   orig      The original cell id. 
+//   group     A place to store the corresponding cells.
+//   
+// Returns:    None 
+//
+// Programmer: Kathleen Bonnell
+// Creation:   January 18, 2005 
+//
+// Modifications:
+//  
+//=======================================================================
+
+void
+vtkOnionPeelFilter::FindCellsCorrespondingToOriginal(int orig, vtkIdList *group)
+{
+    vtkUnsignedIntArray *origCells = vtkUnsignedIntArray::SafeDownCast(
+        this->GetInput()->GetCellData()->GetArray("avtOriginalCellNumbers"));
+
+    if (origCells)
+    {
+        unsigned int *oc = origCells->GetPointer(0);
+        int n = origCells->GetNumberOfTuples();
+        int nc = origCells->GetNumberOfComponents();
+        int comp = nc -1;
+        for (int i = comp; i < n; i+=nc )
+        {
+            int id = i / nc;
+            if (oc[i] == orig && group->IsId(id) == -1)
+                group->InsertNextId(id);
+        }
+    }
+}
+
+
+//======================================================================
+//
+// Method:   vtkOnionPeelFilter::FindCellsCorrespondingToOriginal
+//
+// Purpose:  
+//   Finds all cells whose 'originalCell' designation matches the
+//   original ids passed as arg. 
+// 
+// Arguments:  
+//   origi     A list of original ids. 
+//   group     A place to store the corresponding cells.
+//   
+// Returns:    None 
+//
+// Programmer: Kathleen Bonnell
+// Creation:   January 18, 2005 
+//
+// Modifications:
+//  
+//=======================================================================
+
+void
+vtkOnionPeelFilter::FindCellsCorrespondingToOriginal(vtkIdList *origs, vtkIdList *group)
+{
+    vtkUnsignedIntArray *origCells = vtkUnsignedIntArray::SafeDownCast(
+        this->GetInput()->GetCellData()->GetArray("avtOriginalCellNumbers"));
+    if (origCells)
+    {
+        unsigned int *oc = origCells->GetPointer(0);
+        int n = origCells->GetNumberOfTuples();
+        int nc = origCells->GetNumberOfComponents();
+        int comp = nc -1;
+        for (int i = comp; i < n; i+=nc)
+        {
+            int id = i / nc;
+            if (origs->IsId(oc[i]) != -1 && group->IsId(id) == -1)
+                group->InsertNextId(id);
+        }
+    }
 }

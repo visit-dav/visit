@@ -130,6 +130,9 @@ class avtTransparencyActor;
 //    Kathleen Bonnell, Thu Nov  4 16:46:31 PST 2004 
 //    Added MakeAllPickable, MakeAllUnPickable. 
 //
+//    Mark C. Miller, Tue Jan 18 12:44:34 PST 2005
+//    Removed bool for antialiasing arg from OrderPlots
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinPlots : public VisWinColleague
@@ -142,7 +145,7 @@ class VISWINDOW_API VisWinPlots : public VisWinColleague
     void                          RemovePlot(avtActor_p &);
 
     void                          ClearPlots(void);
-    void                          OrderPlots(bool);
+    void                          OrderPlots();
 
     void                          GetBounds(float [6]);
     void                          GetDataRange(float &, float &);

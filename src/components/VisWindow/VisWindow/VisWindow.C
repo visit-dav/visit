@@ -2704,14 +2704,16 @@ VisWindow::GetViewport(float *vport)
 // 
 //    Kathleen Bonnell, Mon Sep 29 13:15:20 PDT 2003 
 //    Pass the antialiasing flag to the plots. 
+//
+//    Mark C. Miller, Tue Jan 18 12:44:34 PST 2005
+//    Pushed call to ReAddColleaguesToRenderWindow down into OrderPlots
 // 
 // ****************************************************************************
 
 void
 VisWindow::RecalculateRenderOrder(void)
 {
-    plots->OrderPlots(rendering->GetAntialiasing());
-    ReAddColleaguesToRenderWindow();
+    plots->OrderPlots();
 }
 
 

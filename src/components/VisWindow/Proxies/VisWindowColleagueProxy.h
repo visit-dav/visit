@@ -78,6 +78,10 @@
 //    Added 4 functions for suspending and resuming opaque and
 //    translucent geometry.
 //
+//    Mark C. Miller, Tue Jan 18 12:44:34 PST 2005
+//    Added RecalculateRenderOrder. Strangely, it was already implemented
+//    in VisWindowColleagueProxy.C
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindowColleagueProxy : public VisWindowProtectionProxy
@@ -192,6 +196,8 @@ class VISWINDOW_API VisWindowColleagueProxy : public VisWindowProtectionProxy
     void                ResumeTranslucentGeometry()
                                   { ProxiedResumeTranslucentGeometry(); };
 
+    void                RecalculateRenderOrder()
+                                  { ProxiedRecalculateRenderOrder(); };
 };
 
 

@@ -293,6 +293,10 @@ VisWinQuery::UpdateView()
 //
 //    Mark C. Miller Wed Jun  9 17:44:38 PDT 2004
 //    Modified to use VisualCueInfo arguments
+//
+//    Mark C. Miller, Tue Jan 18 12:44:34 PST 2005
+//    Removed 'else' from test for point or line. Added call
+//    to RecalculateRenderOrder
 // ****************************************************************************
 
 void
@@ -301,13 +305,13 @@ VisWinQuery::QueryIsValid(const VisualCueInfo *vqPoint, const VisualCueInfo *vqL
     if (vqPoint != NULL)
     {
         Pick(vqPoint);
-        mediator.Render();
     }
-    else if (vqLine != NULL)
+    if (vqLine != NULL)
     {
         Lineout(vqLine);
-        mediator.Render();
     }
+    mediator.RecalculateRenderOrder();
+    mediator.Render();
 }
 
 
@@ -529,6 +533,9 @@ VisWinQuery::ClearPickPoints(int which)
 //    Brad Whitlock, Tue Jun 29 10:55:15 PDT 2004
 //    I fixed the code so it builds with MSVC++ 6.0 again.
 //
+//    Mark C. Miller, Tue Jan 18 12:44:34 PST 2005
+//    Added code to set lo's line width and line style
+//
 // ****************************************************************************
 
 void 
@@ -554,6 +561,8 @@ VisWinQuery::Lineout(const VisualCueInfo *vq)
         lo->SetMode3D(false);
     }
     lo->SetShowLabels(vq->GetShowLabel());
+    lo->SetLineWidth(vq->GetLineWidth());
+    lo->SetLineStyle(vq->GetLineStyle());
 
     //
     // Pull the lineout actors a little closer to the camera to make sure
@@ -656,6 +665,9 @@ VisWinQuery::ClearLineouts()
 //
 //    Mark C. Miller, Wed Jun  9 17:44:38 PDT 2004
 //    Modified to use PickEntry and LineEntry vectors
+//
+//    Mark C. Miller, Tue Jan 18 12:44:34 PST 2005
+//    Added code to store visual cue info back into the cache
 //    
 // ****************************************************************************
  
@@ -699,6 +711,12 @@ VisWinQuery::UpdateQuery(const VisualCueInfo *vq)
                 CreateTranslationVector(transVec);
                 it->lineActor->Translate(transVec);
             }
+
+            //
+            // Finally, update the vqInfo associated with this lineActor in
+            // the list of lineOuts
+            //
+            it->vqInfo = *vq;
         }
     }
     //

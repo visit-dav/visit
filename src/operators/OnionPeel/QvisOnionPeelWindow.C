@@ -86,6 +86,9 @@ QvisOnionPeelWindow::~QvisOnionPeelWindow()
 //   Kathleen Bonnell, Fri Dec 10 14:28:14 PST 2004
 //   Added useGlobalId checkbox.
 //   
+//   Kathleen Bonnell, Tue Jan 18 19:37:46 PST 2005 
+//   Changed maximum for requestedLayer spin box. 
+//   
 // ****************************************************************************
 
 void
@@ -166,7 +169,7 @@ QvisOnionPeelWindow::CreateWindowContents()
     // Layers
     //
     mainLayout->addWidget(new QLabel("Layers", central, "requestedLayerLabel"),5,0);
-    requestedLayer = new QSpinBox(0, 1000, 1, central, "requestedLayer");
+    requestedLayer = new QSpinBox(0, 10000, 1, central, "requestedLayer");
     connect(requestedLayer, SIGNAL(valueChanged(int)), 
             this, SLOT(requestedLayerChanged(int)));
     mainLayout->addWidget(requestedLayer, 5,1);
@@ -525,6 +528,8 @@ QvisOnionPeelWindow::FillSubsetBox()
 // Creation:   Thu Aug 8 14:29:46 PST 2002
 //
 // Modifications:
+//   Kathleen Bonnell, Tue Jan 18 19:37:46 PST 2005
+//   Added logic for requestedLayer.
 //   
 // ****************************************************************************
 
@@ -613,7 +618,8 @@ QvisOnionPeelWindow::GetCurrentValues(int which_widget)
     // Do requestedLayer
     if(which_widget == 4 || doAll)
     {
-        // Nothing for requestedLayer
+        if (atts->GetRequestedLayer() != requestedLayer->value())
+            atts->SetRequestedLayer(requestedLayer->value());
     }
 
 }
@@ -699,17 +705,20 @@ QvisOnionPeelWindow::indexChanged()
 }
 
 
+// ****************************************************************************
+// Modifications:
+//   Kathleen Bonnell, Tue Jan 18 19:37:46 PST 2005
+//   Added call to GetCurrentValues. 
+//   
+// ****************************************************************************
 void
 QvisOnionPeelWindow::requestedLayerChanged(int val)
 {
-    if(val != atts->GetRequestedLayer())
-    {
-        atts->SetRequestedLayer(val);
-        if (AutoUpdate())
-            QTimer::singleShot(100, this, SLOT(delayedApply()));
-        else
-            Apply();
-    }
+    GetCurrentValues(4);
+    if (AutoUpdate())
+        QTimer::singleShot(100, this, SLOT(delayedApply()));
+    else
+        Apply();
 }
 
 

@@ -89,6 +89,7 @@
 
 #include <stdio.h>
 #include "vtkStructuredGridSource.h"
+#include <visit-config.h>
 
 class vtkIntArray;
 class vtkFloatArray;
@@ -96,10 +97,36 @@ class vtkPointData;
 class vtkPoints;
 class vtkStructuredGrid;
 
-// file formats
-#define VTK_WHOLE_SINGLE_GRID_NO_IBLANKING 0
-#define VTK_WHOLE_MULTI_GRID_NO_IBLANKING 2
-#define VTK_WHOLE_MULTI_GRID_WITH_IBLANKING 3
+
+
+#define SINGLE_GRID 0
+#define MULTI_GRID 1
+
+#define BINARY 0
+#define ASCII 1
+
+#define NATIVE_ENDIAN 0
+#define BIG_ENDIAN 1
+#define LITTLE_ENDIAN 2
+
+#define STRUCTURED 0
+#define UNSTRUCTURED 1
+
+#define NO_IBLANKING 0
+#define IBLANKING 1
+
+#define THREE 0
+#define TWO 1
+
+#define SINGLE_PRECISION 0
+#define DOUBLE_PRECISION 1
+
+#define UNCOMPRESSED_ASCII 0
+#define COMPRESSED_ASCII 1
+
+#define C_BINARY 0
+#define FORTRAN_BINARY 1
+
 
 class vtkVisItPLOT3DReader : public vtkStructuredGridSource 
 {
@@ -110,8 +137,53 @@ public:
 
   // Description:
   // Specify the PLOT3D file format to use
-  vtkSetClampMacro(FileFormat,int,0,7);
-  vtkGetMacro(FileFormat,int);
+  vtkSetClampMacro(Endianness,int,0,2);
+  vtkGetMacro(Endianness,int);
+
+  //Description:
+  // Whether or not the file is single or multi-grid file. 
+  vtkSetClampMacro(GridType,int,0,1);
+  vtkGetMacro(GridType,int);  
+  
+  // Description:
+  // Whether or not the file is ASCII or binary.
+  vtkSetClampMacro(FileType,int,0,1);
+  vtkGetMacro(FileType,int);
+
+  // Description:
+  // Whetehr or not the file is structured or unstructured.
+  vtkSetClampMacro(FileStructure,int,0,1);
+  vtkGetMacro(FileStructure,int);
+     
+  // Description:
+  // Whether or not the file is single- or double-precision.
+  vtkSetClampMacro(Precision,int,0,1);
+  vtkGetMacro(Precision,int);
+
+
+  // Description:
+  // Whether or not the PLOT3D file is in C Binary or Fortran Binary.
+  vtkSetClampMacro(BinaryType,int,0,1);
+  vtkGetMacro(BinaryType,int);
+
+  // Description:
+  // Whether or not a PLOT3D ASCII file is compressed.  
+  vtkSetClampMacro(Compression,int,0,1);
+  vtkGetMacro(Compression,int);
+  
+  // Description:
+  // Whether or not the data in file is 2D or 3D
+  vtkSetClampMacro(Dimension,int,0,1);
+  vtkGetMacro(Dimension,int);  
+
+  // Description:
+  // Whether or not the file is Iblanked.   
+  vtkSetClampMacro(Iblanking,int,0,1);
+  vtkGetMacro(Iblanking,int);
+
+  // Specify the grid index currently looking at.
+  vtkSetMacro(GridNumber,int);
+  vtkGetMacro(GridNumber,int);
 
   // Description:
   // Set/Get the PLOT3D geometry FileName.
@@ -129,14 +201,14 @@ public:
   vtkGetStringMacro(FunctionFileName);
 
   // Description:
+  // Set/Get the PLOT3D function FileName.
+  vtkSetStringMacro(VP3DFileName);
+  vtkGetStringMacro(VP3DFileName);
+  
+  // Description:
   // Set/Get the PLOT3D vector FileName.
   vtkSetStringMacro(VectorFunctionFileName);
   vtkGetStringMacro(VectorFunctionFileName);
-
-  // Description:
-  // Specify the grid to read.
-  vtkSetMacro(GridNumber,int);
-  vtkGetMacro(GridNumber,int);
 
   // Description:
   // Specify the scalar function to extract. If ==(-1), then no scalar 
@@ -204,22 +276,38 @@ public:
   // Get the number of grids. This is valid only after a
   // read has been performed.
   vtkGetMacro(NumberOfGrids, int);
+  vtkSetMacro(NumberOfGrids, int);
 
+  
+ 
+  //  Description:
+  //  Read the Visit PLOT3D file and collect PLOT3D properties.
+  void CollectInfo(char*, char*);
+  int getInfoLine(char * line, int size, FILE*fp); 
+
+  // Description:
+  // Read the number of grids provided in PLOT3D file.  
+  int FindNumberOfGrids(FILE *);
+
+  //  Read data from file regardless of file type.
+  int ReadNumbers(FILE *fp, unsigned int numbersToRead, float * output);
+  int ReadNumbers(FILE *fp, unsigned int numbersToRead, int * output);
 protected:
   vtkVisItPLOT3DReader();
   ~vtkVisItPLOT3DReader();
 
   void ExecuteInformation();
   void Execute();
-  int GetFileType(FILE *fp);
+//  int GetFileType(FILE *fp);
 
   //plot3d FileNames
-  int FileFormat; //various PLOT3D formats
   char *XYZFileName;
   char *QFileName;
   char *FunctionFileName;
   char *VectorFunctionFileName;
 
+  char *VP3DFileName;
+  
   //flags describing data to be read
   int GridNumber; //for multi-grid files, the one we're interested in
   int ScalarFunctionNumber;
@@ -227,6 +315,24 @@ protected:
   int FunctionFileFunctionNumber;
   void MapFunction(int fNumber,vtkPointData *outputPD);
 
+  int GridType;
+  int FileType;
+  int Endianness;
+  int FileStructure;
+  int Iblanking;
+  int Dimension;
+  int Precision;
+  int Compression;
+  int BinaryType;
+  
+
+  // storage used to cache grid offsets multi-grid files
+  int * GridSizes;
+  int * GridOffsets;
+  int * SolutionOffsets;
+  int * GridDimensions;  
+
+  
   //functions to read that are not scalars or vectors
   vtkIntArray *FunctionList;
 
@@ -249,12 +355,19 @@ protected:
   float Wvinf;
   
   //methods to read data
-  int ReadBinaryGrid(FILE *fp,vtkStructuredGrid *output);
-  int ReadBinaryGridDimensions(FILE *fp, vtkStructuredGrid *output);
-  int ReadBinarySolution(FILE *fp, vtkStructuredGrid *output);
-  int ReadBinaryFunctionFile(FILE *fp, vtkStructuredGrid *output);
-  int ReadBinaryVectorFunctionFile(FILE *fp, vtkStructuredGrid *output);
 
+  //  Compute the offsets before performing a read.
+  int ComputeGridOffset(FILE *fp);
+  int ComputeSolutionOffset(FILE *fp);  
+
+  //  Reader functions 
+  int ReadGrid(FILE *fp,vtkStructuredGrid *output);
+  int ReadGridDimensions(FILE *fp, vtkStructuredGrid *output);
+  int ReadSolution(FILE *fp, vtkStructuredGrid *output);
+  int ReadFunctionFile(FILE *fp, vtkStructuredGrid *output);
+  int ReadVectorFunctionFile(FILE *fp, vtkStructuredGrid *output);
+
+  
   vtkPoints *Grid;
   vtkFloatArray *Density;
   vtkFloatArray *Energy;
@@ -328,13 +441,23 @@ vtkStandardNewMacro(vtkVisItPLOT3DReader);
 
 vtkVisItPLOT3DReader::vtkVisItPLOT3DReader()
 {
-  this->FileFormat = VTK_WHOLE_SINGLE_GRID_NO_IBLANKING;
+  //  set up for the default PLOT3D file type
+  this->GridType = SINGLE_GRID;
+  this->FileType = BINARY;
+  this->BinaryType = C_BINARY;
+  this->Endianness = NATIVE_ENDIAN;
+  this->Iblanking = NO_IBLANKING;
+  this->Precision = SINGLE_PRECISION;
+  this->FileStructure = STRUCTURED;
+  this->Dimension = THREE;
+  this->Compression = UNCOMPRESSED_ASCII; 
 
   this->XYZFileName = NULL;
   this->QFileName = NULL;
+  this->VP3DFileName = NULL;
   this->FunctionFileName = NULL;
   this->VectorFunctionFileName = NULL;
-
+  
   this->FunctionList = vtkIntArray::New();
 
   this->GridNumber = 0;
@@ -359,39 +482,72 @@ vtkVisItPLOT3DReader::vtkVisItPLOT3DReader()
   this->Momentum = NULL;
 
   this->NumberOfGrids = 0;
+
+  this->GridSizes = NULL;
+  this->GridDimensions = NULL;
+  this->GridOffsets = NULL;
+  this->SolutionOffsets = NULL;
 } 
 
 vtkVisItPLOT3DReader::~vtkVisItPLOT3DReader()
 {
-  if ( this->XYZFileName )
+  if (this->XYZFileName)
     {
     delete [] this->XYZFileName;
     }
-  if ( this->QFileName )
+  if (this->QFileName)
     {
     delete [] this->QFileName;
     }
-  if ( this->FunctionFileName )
+  if (this->VP3DFileName)
+    {
+      delete [] this->VP3DFileName;
+    } 
+  if (this->FunctionFileName)
     {
     delete [] this->FunctionFileName;
     }
-  if ( this->VectorFunctionFileName )
+  if (this->VectorFunctionFileName)
     {
     delete [] this->VectorFunctionFileName;
     }
   this->FunctionList->Delete();
+ 
+  if (this->GridSizes)
+  {
+    delete [] this->GridSizes;
+  }
+  if (this->GridDimensions)
+  {
+    delete [] this->GridDimensions;
+  }
+  if (this->GridOffsets)
+  {
+    delete [] GridOffsets;
+  }
+  if (this->SolutionOffsets)
+  {
+    delete [] SolutionOffsets;
+  }
 }
+
+
+
 
 void vtkVisItPLOT3DReader::RemoveFunction(int fnum)
 {
-  for (int i=0; i < this->FunctionList->GetNumberOfTuples(); i++ )
+  for (int i=0; i < this->FunctionList->GetNumberOfTuples(); i++)
+  {
+    if (this->FunctionList->GetValue(i) == fnum)
     {
-    if ( this->FunctionList->GetValue(i) == fnum )
-      {
       this->FunctionList->SetValue(i,-1);
-      }
     }
+  }
 }
+
+
+
+
 
 void vtkVisItPLOT3DReader::ExecuteInformation()
 {
@@ -400,36 +556,225 @@ void vtkVisItPLOT3DReader::ExecuteInformation()
   vtkStructuredGrid *output = this->GetOutput();
 
   // must go through all the same checks as actual read.
-  if ( this->XYZFileName == NULL )
+  if (this->XYZFileName == NULL)
     {
     vtkErrorMacro(<< "Must specify geometry file");
     return;
     }
-  if ( (xyzFp = fopen(this->XYZFileName, "r")) == NULL)
+  if ((xyzFp = fopen(this->XYZFileName, "r")) == NULL)
     {
     vtkErrorMacro(<< "File: " << this->XYZFileName << " not found");
     return;
     }
-  if ( this->GetFileType(xyzFp) == VTK_ASCII )
-    {
-    vtkWarningMacro("reading ascii grid files currently not supported");
-    // error = this->ReadASCIIGrid(xyzFp);
-    }
-  else
-    {
-    fclose(xyzFp);
-    xyzFp = fopen(this->XYZFileName, "rb");
-    // reads the whole extent
-    error = this->ReadBinaryGridDimensions(xyzFp,output);
-    fclose(xyzFp);
-    }
+
+  error = this->ReadGridDimensions(xyzFp,output);
+  fclose (xyzFp);
   
-  if ( error )
+  if (error)
     {
     vtkErrorMacro(<<"Error reading XYZ file");
     return;
     }
 }
+
+
+bool
+MatchesSubstring(const char *c1, const char *c2)
+{
+    return (strncmp(c1, c2, strlen(c2)) == 0);
+}
+
+// ****************************************************************************
+//  Method: vtkVisItPLOT3DReader::CollectInfo
+//
+//  Arguments;
+//      x_file:  grid file name
+//      x_file:  solution file name 
+//
+//  Programmer:  Abel Gezahegne 
+//  Creation:    Sept. 9, 2004
+//
+//  Modifications:
+//
+//    Hank Childs, Tue Jan 18 13:19:28 PST 2005
+//    Added support for extended pathnames.  Also beefed up substring matching.
+//
+// ****************************************************************************
+
+void vtkVisItPLOT3DReader::CollectInfo(char *x_file, char *s_file)
+{
+  int lineSize = 1024;
+  int fileFound = 1;
+  char infoLine [lineSize];
+  FILE * vp3dFp;
+  if (this->VP3DFileName == NULL)
+  {
+    fileFound = 0;
+  }
+
+  if ((vp3dFp = fopen(this->VP3DFileName,"r")) == NULL)
+  {
+    fileFound = 0;
+  }
+
+
+  //  Note the order of these checks is important because we are using
+  //  strstr.  ie  check for BINARY must not come before C_BINARY
+  if (fileFound)
+  {
+    //
+    // We may need the path of the vp3d file later, so get it now.
+    //
+    const char *fap = this->VP3DFileName; // fap = file-and-path
+    int len = strlen(fap);
+    int lastSlash = -1;
+    for (int i = len-1; i >= 0; i--)
+    {
+        if (fap[i] == SLASH_CHAR)
+        {
+            lastSlash = i;
+            break;
+        }
+    }
+    char path[1024] = { '\0' };
+    if (lastSlash != -1)
+    {
+        strcpy(path, fap);
+        path[lastSlash] = '\0';
+    }
+
+    while (getInfoLine(infoLine,lineSize,vp3dFp))
+    {
+      if (MatchesSubstring(infoLine,"SINGLE_GRID"))
+      {
+        GridType = SINGLE_GRID;
+      }
+      else if (MatchesSubstring(infoLine,"MULTI_GRID"))
+      {
+        GridType = MULTI_GRID;
+      }
+      else if (MatchesSubstring(infoLine,"NATIVE_ENDIAN"))
+      {
+        Endianness = NATIVE_ENDIAN;
+      }
+      else if (MatchesSubstring(infoLine,"BIG_ENDIAN"))
+      {  
+        Endianness = BIG_ENDIAN;
+      }
+      else if (MatchesSubstring(infoLine,"LITTLE_ENDIAN"))
+      {
+        Endianness = LITTLE_ENDIAN;
+      }
+      else if (MatchesSubstring(infoLine,"STRUCTURED"))
+      {
+        FileStructure = STRUCTURED;
+      }
+      else if (MatchesSubstring(infoLine,"UNSTRUCTURED"))
+      {
+        FileStructure = UNSTRUCTURED;
+      }
+      else if (MatchesSubstring(infoLine,"NO_IBLANKING"))
+      {
+        Iblanking = NO_IBLANKING;
+      }
+      else if (MatchesSubstring(infoLine,"IBLANKING"))
+      {
+        Iblanking = IBLANKING;
+      }
+      else if (MatchesSubstring(infoLine,"3D"))
+      {
+        Dimension = THREE;
+      }
+      else if (MatchesSubstring(infoLine,"2D"))
+      {
+        Dimension = TWO;
+      }
+      else if (MatchesSubstring(infoLine,"SINGLE_PRECISION"))
+      {
+        Precision = SINGLE_PRECISION;
+      }
+      else if (MatchesSubstring(infoLine,"DOUBLE_PRECISION"))
+      {
+        Precision = DOUBLE_PRECISION;
+      }
+      else if (MatchesSubstring(infoLine,"COMPRESSED_ASCII"))
+      {
+        Compression = COMPRESSED_ASCII;
+      }
+      else if (MatchesSubstring(infoLine,"UNCOMPRESSED_ASCII"))
+      {
+        Compression = UNCOMPRESSED_ASCII;
+      }
+      else if (MatchesSubstring(infoLine,"C_BINARY"))
+      {
+        BinaryType = C_BINARY;
+      }
+      else if (MatchesSubstring(infoLine,"FORTRAN_BINARY"))
+      {
+        BinaryType = FORTRAN_BINARY;
+      }
+      else if (MatchesSubstring(infoLine,"BINARY"))
+      {
+        FileType = BINARY;
+      }
+      else if (MatchesSubstring(infoLine,"ASCII"))
+      {
+        FileType = ASCII;
+      }
+      else if (MatchesSubstring(infoLine,"GRID"))
+      {
+        char tmp[1024];
+        sscanf(infoLine + strlen("GRID"),"%s",tmp);
+        if (tmp[0] == '/')
+            strcpy(x_file, tmp);
+        else
+            sprintf(x_file, "%s/%s", path, tmp);
+      }
+      else if (MatchesSubstring(infoLine,"SOLUTION"))
+      { 
+        char tmp[1024];
+        sscanf(infoLine + strlen("SOLUTION"),"%s",tmp);
+        if (tmp[0] == '/')
+            strcpy(s_file, tmp);
+        else
+            sprintf(s_file, "%s/%s", path, tmp);
+      }
+    }
+    fclose(vp3dFp);
+  }
+}
+
+
+
+// ****************************************************************************
+//  Method: vtkVisItPLOT3DReader::getInfoLine
+//
+//  Arguments:
+//      line     storage for a line read from a vp3d file.
+//      size     number of characters to read for one line.
+//      fp       file stream for the vp3d file
+//
+//  Programmer:  Abel Gezahegne
+//  Creation:    Sept 9, 2004
+//
+// ****************************************************************************
+
+int vtkVisItPLOT3DReader::getInfoLine(char * line, int size, FILE*fp)
+{
+  //  skip all comments and empty lines in the file.  
+  do{
+    fscanf(fp,"%*[^0-9a-zA-Z#]s");
+    line = fgets(line,size,fp);
+  }while(line && line[0] =='#');
+
+  
+  if (line) 
+    return 1;
+  else 
+    return 0;
+}
+
+
 
 void vtkVisItPLOT3DReader::Execute()
 {
@@ -437,116 +782,117 @@ void vtkVisItPLOT3DReader::Execute()
   int error = 0;
   vtkStructuredGrid *output = this->GetOutput();
   vtkPointData *outputPD = output->GetPointData();
-  
-  // Initialize output and read geometry
+ 
+  //Initialize output and read geometry
   //
-  if ( this->XYZFileName == NULL )
+
+  if (this->XYZFileName == NULL)
     {
     output->Initialize();
     vtkErrorMacro(<< "Must specify geometry file");
     return;
     }
-  if ( (xyzFp = fopen(this->XYZFileName, "r")) == NULL)
+  if ((xyzFp = fopen(this->XYZFileName, "r")) == NULL)
     {
     output->Initialize();
     vtkErrorMacro(<< "File: " << this->XYZFileName << " not found");
     return;
     }
-  if ( this->GetFileType(xyzFp) == VTK_ASCII )
-    {
-    vtkWarningMacro("reading ascii grid files currently not supported");
-    // error = this->ReadASCIIGrid(xyzFp);
-    }
+  if (this->FileType == ASCII)
+  {
+    error = this->ReadGrid(xyzFp,output);
+    fclose(xyzFp);
+  }
   else
-    {
+  {
     fclose(xyzFp);
     xyzFp = fopen(this->XYZFileName, "rb");
-    error = this->ReadBinaryGrid(xyzFp,output);
+    error = this->ReadGrid(xyzFp,output);
     fclose(xyzFp);
-    }
+  }
   
-  if ( error )
-    {
+  if (error)
+  {
     output->Initialize();
     vtkErrorMacro(<<"Error reading XYZ file");
     return;
-    }
+  }
 
   // Read solution file (if available and requested)
   //
-  if ( this->QFileName && 
+  if (this->QFileName && 
   ((this->FunctionFileName == NULL && this->ScalarFunctionNumber >= 0) ||
-  (this->VectorFunctionFileName == NULL && this->VectorFunctionNumber >= 0)) )
+  (this->VectorFunctionFileName == NULL && this->VectorFunctionNumber >= 0)))
     {
-    if ( (QFp = fopen(this->QFileName, "r")) == NULL)
+
+    if ((QFp = fopen(this->QFileName, "r")) == NULL)
       {
       output->Initialize();
       vtkErrorMacro(<< "File: " << this->QFileName << " not found");
       return;
       }
 
-    if ( this->GetFileType(QFp) == VTK_ASCII )
-      {
-      vtkWarningMacro("reading ascii solution files currently not supported");
-      // error = this->ReadASCIISolution(QFp);
-      }
+    if (this->FileType == ASCII) 
+    {
+      error = this->ReadSolution(QFp,output);
+      fclose(QFp);
+    }
     else
-      {
+    {
       fclose(QFp);
       QFp = fopen(this->QFileName, "rb");
-      error = this->ReadBinarySolution(QFp,output);
+      error = this->ReadSolution(QFp,output);
       fclose(QFp);
-      }
+    }
     
-    if ( error )
-      {
+    if (error)
+    {
       output->Initialize();
       vtkErrorMacro(<<"Error reading solution file");
       return;
-      }
+    }
 
     // Read solutions as general point attribute data
-    if ( this->FunctionList->GetNumberOfTuples() > 0 )
+    
+    if (this->FunctionList->GetNumberOfTuples() > 0)
       {
       int fnum;
       for (int i=0; i < this->FunctionList->GetNumberOfTuples(); i++)
         {
-        if ( (fnum=this->FunctionList->GetValue(i)) >= 0 )
+        if ((fnum=this->FunctionList->GetValue(i)) >= 0)
           {
           this->MapFunction(fnum,outputPD);
           }
         }
       }
-
     this->MapFunction(this->ScalarFunctionNumber,outputPD);
     this->MapFunction(this->VectorFunctionNumber,outputPD);
     }
-
   // Read function file (if available)
   //
-  if ( this->FunctionFileName != NULL)
+  if (this->FunctionFileName != NULL)
     {
-    if ( (funcFp = fopen(this->FunctionFileName, "r")) == NULL)
+    if ((funcFp = fopen(this->FunctionFileName, "r")) == NULL)
       {
       output->Initialize();
       vtkErrorMacro(<< "File: " << this->FunctionFileName << " not found");
       return;
       }
 
-    if ( this->GetFileType(funcFp) == VTK_ASCII )
-      {
-      vtkWarningMacro("reading ASCII function files currently not supported");
-      // error = this->ReadASCIIFunctionFile(funcFp);
-      }
+    if (this->FileType == ASCII) 
+    {
+      error = this->ReadFunctionFile(funcFp,output);
+      fclose(funcFp);
+    }
     else
-      {
+    {
       fclose(funcFp);
       funcFp = fopen(this->FunctionFileName, "rb");
-      error = this->ReadBinaryFunctionFile(funcFp,output);
+      error = this->ReadFunctionFile(funcFp,output);
       fclose(funcFp);
-      }
+    }
     
-    if ( error )
+    if (error)
       {
       vtkErrorMacro(<<"Error reading function file");
       return;
@@ -555,29 +901,29 @@ void vtkVisItPLOT3DReader::Execute()
 
   // Read vector function file (if available)
   //
-  if ( this->VectorFunctionFileName != NULL )
+  if (this->VectorFunctionFileName != NULL)
     {
-    if ( (funcFp = fopen(this->VectorFunctionFileName, "r")) == NULL)
+    if ((funcFp = fopen(this->VectorFunctionFileName, "r")) == NULL)
       {
       output->Initialize();
-      vtkErrorMacro(<< "File: " << this->VectorFunctionFileName << " not found");
+      vtkErrorMacro(<< "File: "<<this->VectorFunctionFileName <<" not found");
       return;
       }
 
-    if ( this->GetFileType(funcFp) == VTK_ASCII )
-      {
-      vtkWarningMacro("reading ASCII vector function files currently not supported");
-      // error = this->ReadASCIIFunctionFile(funcFp);
-      }
+    if (this->FileType == ASCII)
+    {
+      error = this->ReadVectorFunctionFile(funcFp,output);
+      fclose(funcFp);
+    }
     else
-      {
+    {
       fclose(funcFp);
       funcFp = fopen(this->VectorFunctionFileName, "rb");
-      error = this->ReadBinaryVectorFunctionFile(funcFp,output);
+      error = this->ReadVectorFunctionFile(funcFp,output);
       fclose(funcFp);
-      }
+    }
     
-    if ( error )
+    if (error)
       {
       output->Initialize();
       vtkErrorMacro(<<"Error reading vector function file");
@@ -595,110 +941,162 @@ void vtkVisItPLOT3DReader::Execute()
   this->Grid->UnRegister(this);
   this->Grid = NULL;
 
-  if ( this->Density ) 
+  if (this->Density) 
     {
     this->Density->UnRegister(this);
     this->Density = NULL;
     }
 
-  if ( this->Energy ) 
+  if (this->Energy) 
     {
     this->Energy->UnRegister(this);
     this->Energy = NULL;
     }
 
-  if ( this->Momentum ) 
+  if (this->Momentum) 
     {
     this->Momentum->UnRegister(this);
     this->Momentum = NULL;
     }
 }
 
-int vtkVisItPLOT3DReader::ReadBinaryGrid(FILE *fp,vtkStructuredGrid *output)
+
+
+int vtkVisItPLOT3DReader::ReadGrid(FILE *fp,vtkStructuredGrid *output)
 {
   vtkPoints *newPts;
-  int dim[3];
   int i, gridFound, offset, gridSize;
+  int error = 0;
   float x[3];
+
+  rewind(fp);
+  this->NumberOfGrids = this->FindNumberOfGrids(fp);
+
+  // If First time reading grids then set up the initial offset and the
+  // grid size and dimensions for later reference. 
+  if (GridOffsets == NULL)
+  {
+    GridOffsets = new int[this->NumberOfGrids];
+    GridSizes = new int[this->NumberOfGrids];
+    GridDimensions = new int[3*this->NumberOfGrids];
+
+    for (int i = 0; i < this->NumberOfGrids; i++)
+        GridOffsets[i] = -1;
+
+    if (this->Dimension == THREE)
+      error = ReadNumbers(fp,3*this->NumberOfGrids,GridDimensions);
+    else 
+      error = ReadNumbers(fp,2*this->NumberOfGrids,GridDimensions);
+
+    if (error)
+    {
+      delete [] GridOffsets;
+      delete [] GridSizes;
+      delete [] GridDimensions;
+      return 1;
+    }
+
+    GridOffsets[0] = ftell(fp);
+  }
+
   
-  if ( this->FileFormat == VTK_WHOLE_MULTI_GRID_NO_IBLANKING ||
-       this->FileFormat == VTK_WHOLE_MULTI_GRID_WITH_IBLANKING )
-    {
-    if (fread(&(this->NumberOfGrids), sizeof(int), 1, fp) < 1 )
-      {
-      return 1;
-      }
-    vtkByteSwap::Swap4BE(&(this->NumberOfGrids));
-    }
-  else
-    {
-    this->NumberOfGrids = 1;
-    }
+  for (gridFound=0, offset=0, i=0; i<this->NumberOfGrids; i++)
+  {
+    if (this->Dimension == THREE)
+      gridSize =GridDimensions[3*i]*GridDimensions[1+3*i]*GridDimensions[2+3*i];
+    else
+      gridSize = GridDimensions[2*i]*GridDimensions[1+2*i];
 
-  // Loop over grids, reading one that has been specified
-  //
-  for (gridFound=0, offset=0, i=0; i<this->NumberOfGrids; i++) 
-    {
-    //read dimensions
-    if ( fread (dim, sizeof(int), 3, fp) < 3 )
-      {
-      return 1;
-      }
-    vtkByteSwap::Swap4BERange(dim,3);
-    
-    gridSize = dim[0] * dim[1] * dim[2];
+    GridSizes[i] = gridSize;
+  }
 
-    if ( i < this->GridNumber ) 
-      {
-      if ( this->FileFormat == VTK_WHOLE_MULTI_GRID_WITH_IBLANKING )
-        {
-        offset += 4*gridSize;
-        }
-      else
-        {
-        offset += 3*gridSize;
-        }
-      }
-    else if ( i == this->GridNumber ) 
-      {
-      gridFound = 1;
-      this->NumberOfPoints = gridSize;
-      output->SetDimensions(dim);
-      }
+  if (0 <= this->GridNumber && this->GridNumber < this->NumberOfGrids)
+  {
+    gridFound =  1;
+    this->NumberOfPoints = GridSizes[this->GridNumber];
+    if (this->Dimension == THREE) 
+    {
+      output->SetDimensions( GridDimensions[3*this->GridNumber],
+                              GridDimensions[1+3*this->GridNumber],
+                              GridDimensions[2+3*this->GridNumber]);
     }
-
-  if ( ! gridFound )
+    else
     {
+      output->SetDimensions( GridDimensions[2*this->GridNumber],
+                              GridDimensions[1+2*this->GridNumber], 1);
+    }
+  }
+
+  if (! gridFound)
+  {
     vtkErrorMacro (<<"Specified grid not found!");
     return 1;
-    }
-    
-  //allocate temporary storage to read into + points
+  }
+
+
+//allocate temporary storage to read into + points
   this->TempStorage = new float[3*this->NumberOfPoints];
   newPts = vtkPoints::New();
   newPts->SetNumberOfPoints(this->NumberOfPoints);
 
-  //seek to correct spot and read grid
-  fseek (fp, (long)(offset*sizeof(float)), 1);
 
-  //even if the file has iblanking, only read in the points fields (so 3, not 4).
-  if ( fread(this->TempStorage, sizeof(float), 3*this->NumberOfPoints, fp) < (unsigned long)3*this->NumberOfPoints ) 
-    {
+  offset = ComputeGridOffset(fp);
+  fseek (fp, (long)(offset),SEEK_SET);
+
+
+  if (this->Dimension == THREE) 
+    error = ReadNumbers(fp,3*this->NumberOfPoints,this->TempStorage);
+  else
+    error = ReadNumbers(fp,2*this->NumberOfPoints,this->TempStorage);
+
+  if (error)
+  {
     newPts->Delete();
-    delete [] this->TempStorage;
+    delete[] this->TempStorage;
     return 1;
-    }
-  else //successful read, load coordinates in points object
+  }
+  else 
+  {
+    //  The Iblank values are read and discarded.  This reader does not
+    //  yet support true iblanking.
+
+    if (this->Iblanking == IBLANKING)
     {
-    vtkByteSwap::Swap4BERange(this->TempStorage,3*this->NumberOfPoints);
-    for (i=0; i < this->NumberOfPoints; i++)
+      int * iblankValues = new int [this->NumberOfPoints];
+      error = ReadNumbers(fp,this->NumberOfPoints,iblankValues);
+      if (error)
       {
-      x[0] = this->TempStorage[i];
-      x[1] = this->TempStorage[this->NumberOfPoints+i];
-      x[2] = this->TempStorage[2*this->NumberOfPoints+i];
-      newPts->SetPoint(i,x);
+        newPts->Delete();
+        delete[] this->TempStorage;
+        delete[] iblankValues;
+        return 1;
       }
     }
+
+    //  After read mark the current position as offset for reading next grid.  
+    if (this->GridNumber +1 < this->NumberOfGrids)
+    {
+      GridOffsets[this->GridNumber + 1] = ftell(fp);
+    }
+
+
+    for (i=0; i < this->NumberOfPoints; i++)
+    {
+      x[0] = this->TempStorage[i];
+      x[1] = this->TempStorage[i + this->NumberOfPoints];
+      if (Dimension == THREE)
+      {
+        x[2] = this->TempStorage[i + 2*this->NumberOfPoints];
+      }
+      else
+      {
+        x[2] = 0;
+      }
+      newPts->SetPoint(i,x);
+    }
+  }
+  
+  
   //
   // Now send data to ourselves
   //
@@ -711,131 +1109,193 @@ int vtkVisItPLOT3DReader::ReadBinaryGrid(FILE *fp,vtkStructuredGrid *output)
   return 0;
 }
 
+
+
+
 // for UpdateInformation
-int vtkVisItPLOT3DReader::ReadBinaryGridDimensions(FILE *fp,
+int vtkVisItPLOT3DReader::ReadGridDimensions(FILE *fp,
                                               vtkStructuredGrid *output)
 {
-  int dim[3];
-  int i, offset, gridSize;
-  
-  if ( this->FileFormat == VTK_WHOLE_MULTI_GRID_NO_IBLANKING ||
-       this->FileFormat == VTK_WHOLE_MULTI_GRID_WITH_IBLANKING )
-    {
-    if (fread(&(this->NumberOfGrids), sizeof(int), 1, fp) < 1 )
-      {
-      return 1;
-      }
-    vtkByteSwap::Swap4BE(&(this->NumberOfGrids));
-    }
-  else
-    {
-    this->NumberOfGrids = 1;
-    }
-  //
-  // Loop over grids, reading one that has been specified
-  //
-  for (offset=0, i=0; i<this->NumberOfGrids; i++) 
-    {
-    //read dimensions
-    if ( fread (dim, sizeof(int), 3, fp) < 3 )
-      {
-      return 1;
-      }
-    vtkByteSwap::Swap4BERange(dim,3);
-    
-    gridSize = dim[0] * dim[1] * dim[2];
+  int *dim= new int[3*this->NumberOfGrids ];
+  int gridSize;
 
-    if ( i < this->GridNumber ) 
-      {
-      offset += 3*gridSize;
-      }
-    else if ( i == this->GridNumber ) 
-      {
-      this->NumberOfPoints = gridSize;
-      output->SetWholeExtent(0,dim[0]-1, 0,dim[1]-1, 0,dim[2]-1);
-      return 0;
-      }
+  rewind(fp);
+  if (this->GridType == MULTI_GRID)
+  {
+    // Skip the first number (number of grids) in file. 
+    int numGrids;
+    ReadNumbers(fp,1,&numGrids);
+  }
+
+  if (this->Dimension == THREE)
+  {
+    if (ReadNumbers(fp,3*this->NumberOfGrids,dim))
+    {
+      return 1;
     }
-  // could not find grid
-  return 1;
+    gridSize = dim[3 * this->GridNumber] * dim[1 + 3 * this->GridNumber] 
+                                         * dim[2 + 3 * this->GridNumber];
+
+    output->SetWholeExtent( 0, dim[3 * this->GridNumber] -1,
+                             0, dim[1 + 3 * this->GridNumber] -1,
+                             0, dim[2 + 3 * this->GridNumber] -1);
+  }
+  else
+  {
+    if (ReadNumbers(fp,2*this->NumberOfGrids,dim))
+    {
+      return 1;
+    }
+    gridSize = dim[ 2 * this->GridNumber] * dim[ 1 + 2 * GridNumber];
+    output->SetWholeExtent(0, dim[2 * this->GridNumber] -1,
+                            0, dim[1 + 2 * this->GridNumber] -1, 0, 1);
+  }
+
+  this->NumberOfPoints = gridSize;
+  return 0;
 }
 
-int vtkVisItPLOT3DReader::ReadBinarySolution(FILE *fp,vtkStructuredGrid *output)
+
+
+// ****************************************************************************
+//  Method: vtkVisItPLOT3DReader::FindNumberOfGrids
+//
+//  Arguments;
+//      fp:      grid file stream
+//
+//  Programmer:  Abel Gezahegne
+//  Creation:    Sept. 12, 2004
+//
+// ****************************************************************************
+
+int vtkVisItPLOT3DReader::FindNumberOfGrids(FILE *fp)
+{
+  int numGrids;
+  if (this->GridType == MULTI_GRID || this->Compression == COMPRESSED_ASCII) 
+  {
+    int error = ReadNumbers(fp,1,&numGrids);
+    if (error)
+    {
+      return 1;
+    }
+  }
+  else
+    numGrids = 1;
+
+  return numGrids;
+}
+
+
+int vtkVisItPLOT3DReader::ReadSolution(FILE *fp,vtkStructuredGrid *output)
 {
   vtkFloatArray *newDensity, *newEnergy;
   vtkFloatArray *newMomentum;
-  int dim[3];
-  int i, gridFound, offset, gridSize;
+  int i, gridFound, offset;
   float m[3], params[4];
   int numGrids, numPts = 0;
 
-  if ( this->FileFormat == VTK_WHOLE_MULTI_GRID_NO_IBLANKING ||
-       this->FileFormat == VTK_WHOLE_MULTI_GRID_WITH_IBLANKING )
-    {
-    if ( fread (&numGrids, sizeof(int), 1, fp) < 1 )
-      {
-      return 1;
-      }
-    vtkByteSwap::Swap4BE(&numGrids);
-    }
-  else
-    {
-    numGrids = 1;
-    }
+  int error = 0;
 
-  if ( numGrids != this->NumberOfGrids )
-    {
+  numGrids = this->FindNumberOfGrids(fp);
+
+  if (numGrids != this->NumberOfGrids)
+  {
     vtkErrorMacro(<<"Data mismatch in solution file!");
     return 1;
-    }
+  }
+
+
+  // If first time reading soluton file then find the initial offset 
+  // as well as find the gridsize(s) and Dmensions.
   //
-  // Loop over dimensions, reading grid dimensions that have been specified
-  //
-  for (gridFound=0, offset=0, i=0; i<numGrids; i++) 
+  if (SolutionOffsets == NULL)
+  {
+    SolutionOffsets = new int[this->NumberOfGrids];
+    GridSizes = new int [this->NumberOfGrids];
+    GridDimensions = new int [3*this->NumberOfGrids];
+
+    for (int i = 0; i < this->NumberOfGrids; i++) 
     {
-    //read dimensions
-    if ( fread (dim, sizeof(int), 3, fp) < 3 )
-      {
+      SolutionOffsets[i] = -1;
+    }
+
+    if (this->Dimension == THREE)
+    {
+      error = ReadNumbers(fp,3*this->NumberOfGrids, GridDimensions);
+    }
+    else if (this->Dimension == TWO)
+    {
+      error = ReadNumbers(fp,2*this->NumberOfGrids, GridDimensions);
+    }
+
+    if (error)
+    {
+      delete[] SolutionOffsets;
+      delete[] GridSizes;
+      delete[] GridDimensions;
       return 1;
-      }
-    vtkByteSwap::Swap4BERange(dim,3);
-    gridSize = dim[0] * dim[1] * dim[2];
-
-    if ( i < this->GridNumber ) 
-      {
-      offset += 4; // skip condition values for grid, fix from Tom Johnson
-      offset += 5*gridSize;
-      }
-    else if ( i == this->GridNumber ) 
-      {
-      gridFound = 1;
-      numPts = gridSize;
-      output->SetDimensions(dim);
-      }
     }
+    SolutionOffsets[0] = ftell(fp);
+  }
 
-  if ( ! gridFound )
+
+  
+  for (i =0; i < this->NumberOfGrids; i++)
+  {
+    if (this->Dimension == THREE)
     {
+      GridSizes[i] = GridDimensions[3 * i] * GridDimensions[1 + 3 * i]
+                                           * GridDimensions[2 + 3 * i];
+    } 
+    else if (this->Dimension == TWO)
+    {  
+      GridSizes[i] = GridDimensions[2 * i] * GridDimensions[1 + 2 * i];
+    }
+  }
+  
+  if (0 <= this->GridNumber && this->GridNumber < this->NumberOfGrids) 
+  {
+    gridFound = 1;
+    numPts = GridSizes[this->GridNumber];
+    
+    if (this->Dimension == THREE)
+    {
+      output->SetDimensions(GridDimensions[3 * GridNumber], 
+                             GridDimensions[1 + 3 * GridNumber], 
+                             GridDimensions[2 + 3 * GridNumber]);
+    }
+    else if (this->Dimension == TWO)
+    {
+      output->SetDimensions(GridDimensions[2 * GridNumber], 
+                             GridDimensions[1 + 2 * GridNumber], 1);
+    }
+  }
+
+  if (! gridFound)
+  {
     vtkErrorMacro (<<"Specified grid not found!");
     return 1;
-    }
-    
-  if ( numPts != this->NumberOfPoints )
-    {
+  }
+
+  if (numPts != this->NumberOfPoints)
+  {
     vtkErrorMacro (<<"Data mismatch in solution file!");
     delete [] this->TempStorage;
     return 1;
-    }
-    
+  }
+
+
   //seek to correct spot and read solution
-  fseek (fp, (long)(offset*sizeof(float)), 1);
+  offset = ComputeSolutionOffset(fp);
+  fseek (fp, (long)(offset), SEEK_SET);
 
   //read solution parameters
-  if ( fread (params, sizeof(float), 4, fp) < 4 )
-    {
+
+  error = ReadNumbers(fp,4,params);
+  if (error)
+  {
     return 1;
-    }
-  vtkByteSwap::Swap4BERange(params,4);
+  }
   this->Fsmach = params[0];
   this->Alpha = params[1];
   this->Re = params[2];
@@ -853,65 +1313,82 @@ int vtkVisItPLOT3DReader::ReadBinarySolution(FILE *fp,vtkStructuredGrid *output)
   newMomentum->SetNumberOfTuples(numPts);
   newMomentum->SetName("Momentum");
 
-  if (fread(this->TempStorage, sizeof(float), numPts, fp) < 
-      (unsigned int)numPts ) 
-    {
-    newDensity->Delete();
-    newMomentum->Delete();
-    newEnergy->Delete();
-    delete [] this->TempStorage;
-    return 1;
-    }
-  else //successful read
-    {
-    vtkByteSwap::Swap4BERange(this->TempStorage,numPts);
-    for (i=0; i < this->NumberOfPoints; i++) 
-      {
-      newDensity->SetValue(i,this->TempStorage[i]);
-      }
-    }
 
-  if (fread(this->TempStorage, sizeof(float), 3*this->NumberOfPoints, fp) < 
-      (unsigned int)3*this->NumberOfPoints ) 
-    {
+  error = ReadNumbers(fp,numPts,this->TempStorage);
+  if (error) 
+  {
     newDensity->Delete();
     newMomentum->Delete();
     newEnergy->Delete();
     delete [] this->TempStorage;
     return 1;
-    }
-  else //successful read, load coordinates into vector object
+  }
+  else //successful read
+  {
+    for (i=0; i < this->NumberOfPoints; i++) 
     {
-    vtkByteSwap::Swap4BERange(this->TempStorage,3*this->NumberOfPoints);
+      newDensity->SetValue(i,this->TempStorage[i]);
+    }
+  }
+
+  if (this->Dimension == THREE)
+  {
+    error = ReadNumbers(fp,3*this->NumberOfPoints,this->TempStorage);
+  }
+  else
+  {
+    error = ReadNumbers(fp,2*this->NumberOfPoints,this->TempStorage);
+  }
+  
+  if (error) 
+  {
+    newDensity->Delete();
+    newMomentum->Delete();
+    newEnergy->Delete();
+    delete [] this->TempStorage;
+    return 1;
+  }
+  else //successful read, load coordinates into vector object
+  {
     for (i=0; i < this->NumberOfPoints; i++)
-      {
+    {
       m[0] = this->TempStorage[i];
       m[1] = this->TempStorage[this->NumberOfPoints+i];
-      m[2] = this->TempStorage[2*this->NumberOfPoints+i];
-      newMomentum->SetTuple(i,m);
+      if (this->Dimension == THREE)
+      {
+        m[2] = this->TempStorage[2*this->NumberOfPoints+i];
       }
+      else
+      {
+        m[2] = 0;
+      }      
+      newMomentum->SetTuple(i,m);
     }
+  }
 
-  if (fread(this->TempStorage, sizeof(float), numPts, fp) < 
-      (unsigned int)numPts) 
-    {
+  error = ReadNumbers(fp,numPts,this->TempStorage);
+  if (error) 
+  {
     newDensity->Delete();
     newMomentum->Delete();
     newEnergy->Delete();
     delete [] this->TempStorage;
     return 1;
-    }
+  }
   else //successful read
+  {
+    if (this->GridNumber + 1 < this->NumberOfGrids)
     {
-    vtkByteSwap::Swap4BERange(this->TempStorage,numPts);
-    for (i=0; i < this->NumberOfPoints; i++) 
-      {
-      newEnergy->SetValue(i,this->TempStorage[i]);
-      }
+      SolutionOffsets[this->GridNumber + 1] = ftell(fp);
     }
+    for (i=0; i < this->NumberOfPoints; i++) 
+    {
+      newEnergy->SetValue(i,this->TempStorage[i]);
+    }
+  }
 
   // Register data for use by computation functions
-  //
+
   this->Density = newDensity;
   this->Density->SetName("Density");
   this->Density->Register(this);
@@ -930,26 +1407,15 @@ int vtkVisItPLOT3DReader::ReadBinarySolution(FILE *fp,vtkStructuredGrid *output)
   return 0;
 }
 
-int vtkVisItPLOT3DReader::ReadBinaryFunctionFile(FILE *fp,vtkStructuredGrid *output)
+
+int vtkVisItPLOT3DReader::ReadFunctionFile(FILE *fp,vtkStructuredGrid *output)
 {
   int numGrids;
-
-  output = output;
-  if ( this->FileFormat == VTK_WHOLE_MULTI_GRID_NO_IBLANKING ||
-       this->FileFormat == VTK_WHOLE_MULTI_GRID_WITH_IBLANKING )
-    {
-    if ( fread (&numGrids, sizeof(int), 1, fp) < 1 )
-      {
-      return 1;
-      }
-    vtkByteSwap::Swap4BE(&numGrids);
-    }
-  else
-    {
-    numGrids = 1;
-    }
-
-  if ( numGrids != this->NumberOfGrids )
+  output = output;     // what is this for?
+  
+  numGrids = this->FindNumberOfGrids(fp);
+  
+  if (numGrids != this->NumberOfGrids)
     {
     vtkErrorMacro(<<"Data mismatch in function file!");
     return 1;
@@ -958,26 +1424,14 @@ int vtkVisItPLOT3DReader::ReadBinaryFunctionFile(FILE *fp,vtkStructuredGrid *out
   return 0;
 }
 
-int vtkVisItPLOT3DReader::ReadBinaryVectorFunctionFile(FILE *fp,vtkStructuredGrid *output)
+
+int vtkVisItPLOT3DReader::ReadVectorFunctionFile(FILE *fp,
+                                                  vtkStructuredGrid *output)
 {
-  int numGrids;
+  int numGrids= this->FindNumberOfGrids(fp);
 
   output = output;
-  if ( this->FileFormat == VTK_WHOLE_MULTI_GRID_NO_IBLANKING ||
-       this->FileFormat == VTK_WHOLE_MULTI_GRID_WITH_IBLANKING )
-    {
-    if ( fread (&numGrids, sizeof(int), 1, fp) < 1 )
-      {
-      return 1;
-      }
-    vtkByteSwap::Swap4BE(&numGrids);
-    }
-  else
-    {
-    numGrids = 1;
-    }
-
-  if ( numGrids != this->NumberOfGrids )
+  if (numGrids != this->NumberOfGrids)
     {
     vtkErrorMacro(<<"Data mismatch in vector function file!");
     return 1;
@@ -991,7 +1445,7 @@ int vtkVisItPLOT3DReader::ReadBinaryVectorFunctionFile(FILE *fp,vtkStructuredGri
 //
 void vtkVisItPLOT3DReader::MapFunction(int fNumber,vtkPointData *outputPD)
 {
-  switch (fNumber)
+   switch (fNumber)
     {
     case -1: //empty mapping
       break;
@@ -1072,8 +1526,8 @@ void vtkVisItPLOT3DReader::ComputeTemperature(vtkPointData *outputPD)
 
   //  Check that the required data is available
   //
-  if ( this->Density == NULL || this->Momentum == NULL || 
-  this->Energy == NULL )
+  if (this->Density == NULL || this->Momentum == NULL || 
+  this->Energy == NULL)
     {
     vtkErrorMacro(<<"Cannot compute temperature");
     return;
@@ -1109,15 +1563,15 @@ void vtkVisItPLOT3DReader::ComputeTemperature(vtkPointData *outputPD)
 }
 
 void vtkVisItPLOT3DReader::ComputePressure(vtkPointData *outputPD)
-{
+{ 
   float *m, e, u, v, w, v2, p, d, rr;
   int i;
   vtkFloatArray *pressure;
 
   //  Check that the required data is available
   //
-  if ( this->Density == NULL || this->Momentum == NULL || 
-  this->Energy == NULL )
+  if (this->Density == NULL || this->Momentum == NULL || 
+  this->Energy == NULL)
     {
     vtkErrorMacro(<<"Cannot compute pressure");
     return;
@@ -1151,15 +1605,15 @@ void vtkVisItPLOT3DReader::ComputePressure(vtkPointData *outputPD)
 }
 
 void vtkVisItPLOT3DReader::ComputeEnthalpy(vtkPointData *outputPD)
-{
+{ 
   float *m, e, u, v, w, v2, d, rr;
   int i;
   vtkFloatArray *enthalpy;
 
   //  Check that the required data is available
   //
-  if ( this->Density == NULL || this->Momentum == NULL || 
-  this->Energy == NULL )
+  if (this->Density == NULL || this->Momentum == NULL || 
+  this->Energy == NULL)
     {
     vtkErrorMacro(<<"Cannot compute enthalpy");
     return;
@@ -1191,7 +1645,7 @@ void vtkVisItPLOT3DReader::ComputeEnthalpy(vtkPointData *outputPD)
 }
 
 void vtkVisItPLOT3DReader::ComputeInternalEnergy(vtkPointData *outputPD)
-{
+{ 
   outputPD->AddArray(this->Energy);
   outputPD->SetActiveScalars("Energy");
 
@@ -1206,7 +1660,7 @@ void vtkVisItPLOT3DReader::ComputeKineticEnergy(vtkPointData *outputPD)
 
   //  Check that the required data is available
   //
-  if ( this->Density == NULL || this->Momentum == NULL )
+  if (this->Density == NULL || this->Momentum == NULL)
     {
     vtkErrorMacro(<<"Cannot compute kinetic energy");
     return;
@@ -1244,8 +1698,8 @@ void vtkVisItPLOT3DReader::ComputeVelocityMagnitude(vtkPointData *outputPD)
 
   //  Check that the required data is available
   //
-  if ( this->Density == NULL || this->Momentum == NULL ||
-  this->Energy == NULL )
+  if (this->Density == NULL || this->Momentum == NULL ||
+  this->Energy == NULL)
     {
     vtkErrorMacro(<<"Cannot compute velocity magnitude");
     return;
@@ -1291,8 +1745,8 @@ void vtkVisItPLOT3DReader::ComputeEntropy(vtkPointData *outputPD)
 
   //  Check that the required data is available
   //
-  if ( this->Density == NULL || this->Momentum == NULL ||
-  this->Energy == NULL )
+  if (this->Density == NULL || this->Momentum == NULL ||
+  this->Energy == NULL)
     {
     vtkErrorMacro(<<"Cannot compute entropy");
     return;
@@ -1315,7 +1769,7 @@ void vtkVisItPLOT3DReader::ComputeEntropy(vtkPointData *outputPD)
     w = m[2] * rr;        
     v2 = u*u + v*v + w*w;
     p = (this->Gamma-1.)*(e - 0.5*d*v2);
-    s = VTK_CV * log((p/VTK_PINF)/pow((double)d/VTK_RHOINF,(double)this->Gamma));
+    s =VTK_CV * log((p/VTK_PINF)/pow((double)d/VTK_RHOINF,(double)this->Gamma));
     entropy->SetValue(i,s);
   }
   entropy->SetName("Entropy");
@@ -1335,8 +1789,8 @@ void vtkVisItPLOT3DReader::ComputeSwirl(vtkPointData *outputPD)
 
   //  Check that the required data is available
   //
-  if ( this->Density == NULL || this->Momentum == NULL ||
-  this->Energy == NULL )
+  if (this->Density == NULL || this->Momentum == NULL ||
+  this->Energy == NULL)
     {
     vtkErrorMacro(<<"Cannot compute swirl");
     return;
@@ -1367,7 +1821,7 @@ void vtkVisItPLOT3DReader::ComputeSwirl(vtkPointData *outputPD)
     v = m[1] * rr;        
     w = m[2] * rr;        
     v2 = u*u + v*v + w*w;
-    if ( v2 != 0.0 ) 
+    if (v2 != 0.0) 
       {
       s = (vort[0]*m[0] + vort[1]*m[1] + vort[2]*m[2]) / v2;
       }
@@ -1401,8 +1855,8 @@ void vtkVisItPLOT3DReader::ComputeVelocity(vtkPointData *outputPD)
 
   //  Check that the required data is available
   //
-  if ( this->Density == NULL || this->Momentum == NULL ||
-  this->Energy == NULL )
+  if (this->Density == NULL || this->Momentum == NULL ||
+  this->Energy == NULL)
     {
     vtkErrorMacro(<<"Cannot compute velocity");
     return;
@@ -1447,9 +1901,9 @@ void vtkVisItPLOT3DReader::ComputeVorticity(vtkPointData *outputPD)
 
   //  Check that the required data is available
   //
-  if ( (points=this->GetOutput()->GetPoints()) == NULL || 
+  if ((points=this->GetOutput()->GetPoints()) == NULL || 
        this->Density == NULL || this->Momentum == NULL || 
-       this->Energy == NULL )
+       this->Energy == NULL)
     {
     vtkErrorMacro(<<"Cannot compute vorticity");
     return;
@@ -1472,7 +1926,7 @@ void vtkVisItPLOT3DReader::ComputeVorticity(vtkPointData *outputPD)
       for (i=0; i<dims[0]; i++) 
         {
         //  Xi derivatives.
-        if ( dims[0] == 1 ) // 2D in this direction
+        if (dims[0] == 1) // 2D in this direction
           {
           factor = 1.0;
           for (ii=0; ii<3; ii++)
@@ -1481,7 +1935,7 @@ void vtkVisItPLOT3DReader::ComputeVorticity(vtkPointData *outputPD)
             }
           xp[0] = 1.0;
           }
-        else if ( i == 0 ) 
+        else if (i == 0) 
           {
           factor = 1.0;
           idx = (i+1) + j*dims[0] + k*ijsize;
@@ -1491,7 +1945,7 @@ void vtkVisItPLOT3DReader::ComputeVorticity(vtkPointData *outputPD)
           velocity->GetTuple(idx,vp);
           velocity->GetTuple(idx2,vm);
           } 
-        else if ( i == (dims[0]-1) ) 
+        else if (i == (dims[0]-1)) 
           {
           factor = 1.0;
           idx = i + j*dims[0] + k*ijsize;
@@ -1520,7 +1974,7 @@ void vtkVisItPLOT3DReader::ComputeVorticity(vtkPointData *outputPD)
         wxi = factor * (vp[2] - vm[2]);
 
         //  Eta derivatives.
-        if ( dims[1] == 1 ) // 2D in this direction
+        if (dims[1] == 1) // 2D in this direction
           {
           factor = 1.0;
           for (ii=0; ii<3; ii++)
@@ -1529,7 +1983,7 @@ void vtkVisItPLOT3DReader::ComputeVorticity(vtkPointData *outputPD)
             }
           xp[1] = 1.0;
           }
-        else if ( j == 0 ) 
+        else if (j == 0) 
           {
           factor = 1.0;
           idx = i + (j+1)*dims[0] + k*ijsize;
@@ -1539,7 +1993,7 @@ void vtkVisItPLOT3DReader::ComputeVorticity(vtkPointData *outputPD)
           velocity->GetTuple(idx,vp);
           velocity->GetTuple(idx2,vm);
           } 
-        else if ( j == (dims[1]-1) ) 
+        else if (j == (dims[1]-1)) 
           {
           factor = 1.0;
           idx = i + j*dims[0] + k*ijsize;
@@ -1569,7 +2023,7 @@ void vtkVisItPLOT3DReader::ComputeVorticity(vtkPointData *outputPD)
         weta = factor * (vp[2] - vm[2]);
 
         //  Zeta derivatives.
-        if ( dims[2] == 1 ) // 2D in this direction
+        if (dims[2] == 1) // 2D in this direction
           {
           factor = 1.0;
           for (ii=0; ii<3; ii++)
@@ -1578,7 +2032,7 @@ void vtkVisItPLOT3DReader::ComputeVorticity(vtkPointData *outputPD)
             }
           xp[2] = 1.0;
           }
-        else if ( k == 0 ) 
+        else if (k == 0) 
           {
           factor = 1.0;
           idx = i + j*dims[0] + (k+1)*ijsize;
@@ -1588,7 +2042,7 @@ void vtkVisItPLOT3DReader::ComputeVorticity(vtkPointData *outputPD)
           velocity->GetTuple(idx,vp);
           velocity->GetTuple(idx2,vm);
           } 
-        else if ( k == (dims[2]-1) ) 
+        else if (k == (dims[2]-1)) 
           {
           factor = 1.0;
           idx = i + j*dims[0] + k*ijsize;
@@ -1683,9 +2137,9 @@ void vtkVisItPLOT3DReader::ComputePressureGradient(vtkPointData *outputPD)
 
   //  Check that the required data is available
   //
-  if ( (points=this->GetOutput()->GetPoints()) == NULL || 
+  if ((points=this->GetOutput()->GetPoints()) == NULL || 
        this->Density == NULL || this->Momentum == NULL || 
-       this->Energy == NULL )
+       this->Energy == NULL)
     {
     vtkErrorMacro(<<"Cannot compute pressure gradient");
     return;
@@ -1713,7 +2167,7 @@ void vtkVisItPLOT3DReader::ComputePressureGradient(vtkPointData *outputPD)
       for (i=0; i<dims[0]; i++) 
         {
         //  Xi derivatives.
-        if ( dims[0] == 1 ) // 2D in this direction
+        if (dims[0] == 1) // 2D in this direction
           {
           factor = 1.0;
           for (ii=0; ii<3; ii++)
@@ -1722,7 +2176,7 @@ void vtkVisItPLOT3DReader::ComputePressureGradient(vtkPointData *outputPD)
             }
           xp[0] = 1.0; pp = pm = 0.0;
           }
-        else if ( i == 0 ) 
+        else if (i == 0) 
           {
           factor = 1.0;
           idx = (i+1) + j*dims[0] + k*ijsize;
@@ -1732,7 +2186,7 @@ void vtkVisItPLOT3DReader::ComputePressureGradient(vtkPointData *outputPD)
           pp = pressure->GetComponent(idx,0);
           pm = pressure->GetComponent(idx2,0);
           } 
-        else if ( i == (dims[0]-1) ) 
+        else if (i == (dims[0]-1)) 
           {
           factor = 1.0;
           idx = i + j*dims[0] + k*ijsize;
@@ -1759,7 +2213,7 @@ void vtkVisItPLOT3DReader::ComputePressureGradient(vtkPointData *outputPD)
         pxi = factor * (pp - pm);
 
         //  Eta derivatives.
-        if ( dims[1] == 1 ) // 2D in this direction
+        if (dims[1] == 1) // 2D in this direction
           {
           factor = 1.0;
           for (ii=0; ii<3; ii++)
@@ -1768,7 +2222,7 @@ void vtkVisItPLOT3DReader::ComputePressureGradient(vtkPointData *outputPD)
             }
           xp[1] = 1.0; pp = pm = 0.0;
           }
-        else if ( j == 0 ) 
+        else if (j == 0) 
           {
           factor = 1.0;
           idx = i + (j+1)*dims[0] + k*ijsize;
@@ -1778,7 +2232,7 @@ void vtkVisItPLOT3DReader::ComputePressureGradient(vtkPointData *outputPD)
           pp = pressure->GetComponent(idx,0);
           pm = pressure->GetComponent(idx2,0);
           } 
-        else if ( j == (dims[1]-1) ) 
+        else if (j == (dims[1]-1)) 
           {
           factor = 1.0;
           idx = i + j*dims[0] + k*ijsize;
@@ -1805,7 +2259,7 @@ void vtkVisItPLOT3DReader::ComputePressureGradient(vtkPointData *outputPD)
         peta = factor * (pp - pm);
 
         //  Zeta derivatives.
-        if ( dims[2] == 1 ) // 2D in this direction
+        if (dims[2] == 1) // 2D in this direction
           {
           factor = 1.0;
           for (ii=0; ii<3; ii++)
@@ -1814,7 +2268,7 @@ void vtkVisItPLOT3DReader::ComputePressureGradient(vtkPointData *outputPD)
             }
           xp[2] = 1.0; pp = pm = 0.0;
           }
-        else if ( k == 0 ) 
+        else if (k == 0) 
           {
           factor = 1.0;
           idx = i + j*dims[0] + (k+1)*ijsize;
@@ -1824,7 +2278,7 @@ void vtkVisItPLOT3DReader::ComputePressureGradient(vtkPointData *outputPD)
           pp = pressure->GetComponent(idx,0);
           pm = pressure->GetComponent(idx2,0);
           } 
-        else if ( k == (dims[2]-1) ) 
+        else if (k == (dims[2]-1)) 
           {
           factor = 1.0;
           idx = i + j*dims[0] + k*ijsize;
@@ -1901,28 +2355,6 @@ void vtkVisItPLOT3DReader::ComputePressureGradient(vtkPointData *outputPD)
     }
 }
 
-int vtkVisItPLOT3DReader::GetFileType(FILE *fp)
-{
-  char fourBytes[4];
-  int type, i;
-
-  //  Read a little from the file to figure what type it is.
-  //
-  fgets (fourBytes, 4, fp);
-  for (i=0, type=VTK_ASCII; i<4 && type == VTK_ASCII; i++)
-    {
-    if ( ! isprint(fourBytes[i]) )
-      {
-      type = VTK_BINARY;
-      }
-    }
-
-  // Reset file for reading
-  //
-  rewind (fp);
-  return type;
-}
-
 void vtkVisItPLOT3DReader::PrintSelf(ostream& os, vtkIndent indent)
 {
   this->Superclass::PrintSelf(os,indent);
@@ -1934,13 +2366,11 @@ void vtkVisItPLOT3DReader::PrintSelf(ostream& os, vtkIndent indent)
   os << indent << "Function File Name: " << 
     (this->FunctionFileName ? this->FunctionFileName : "(none)") << "\n";
 
-  os << indent << "File Format: " << this->FileFormat << "\n";
-
   os << indent << "Grid Number: " << this->GridNumber << "\n";
   os << indent << "Scalar Function Number: " 
      << this->ScalarFunctionNumber << "\n";
 
-  if ( this->VectorFunctionFileName )
+  if (this->VectorFunctionFileName)
     {
     os << indent << "Vector Function Filename: " <<
           this->VectorFunctionFileName << "\n";
@@ -1969,17 +2399,311 @@ void vtkVisItPLOT3DReader::PrintSelf(ostream& os, vtkIndent indent)
   os << indent << "Number Of Grids: " << this->NumberOfGrids << "\n";
 }
 
-void 
-vtkVisItPLOT3DReader::AddFunction(int functionNumber)
+
+void vtkVisItPLOT3DReader::AddFunction(int functionNumber)
 {
   this->FunctionList->InsertNextValue(functionNumber);
 }
 
-void 
-vtkVisItPLOT3DReader::RemoveAllFunctions()
+
+void vtkVisItPLOT3DReader::RemoveAllFunctions()
 {
   this->FunctionList->Reset();
 }
+
+
+
+
+
+// ****************************************************************************
+//  Method: vtkVisItPLOT3DReader::ReadNumbers
+//
+//  Arguments;
+//      fp:             file stream from which to read numbers
+//      numbersToRead:  amount of numbers to read.
+//      output:         location to store the numbers.
+//
+//  Programmer:  Abel Gezahegne
+//  Creation:    Sept. 12, 2004
+//
+// ****************************************************************************
+
+int vtkVisItPLOT3DReader::ReadNumbers( FILE *fp, unsigned int numbersToRead, 
+                                        float * output)
+{
+  if (output == NULL)
+  {
+    output = new float[numbersToRead];
+  }
+
+  if (this->FileType == ASCII && this->Compression == UNCOMPRESSED_ASCII)
+  {
+    for (unsigned int i = 0; i < numbersToRead; i++)
+    {
+      fscanf(fp,"%f",output + i);
+    }
+  }
+ 
+  else if (this->FileType = ASCII && this->Compression == COMPRESSED_ASCII)
+  {
+    float multiplier;
+    float multiplicand;
+    char garbage[1024];
+    for (unsigned int i = 0; i < numbersToRead;)
+    {
+      fscanf(fp,"%f%[^0-9.-]s",&multiplier,&garbage);
+      if (strchr(garbage,'*'))
+      {
+        fscanf(fp,"%f%[^0-9.-]s",&multiplicand,&garbage);
+        for (int j = 0; j < (int)multiplier; j++)
+        {
+          output[i++] = multiplicand;
+        }
+      }
+      else
+      {
+        output[i++] = multiplier;
+      }
+    }
+  }
+  else if (this->FileType == BINARY)
+  {
+    bool isLittleEndian = true;
+    #ifdef WORDS_BIGENDIAN
+      isLittleEndian = true;
+    #endif
+
+    if (this->Precision == SINGLE_PRECISION)
+    {
+      if ((fread(output, sizeof(float),numbersToRead,fp))< numbersToRead)
+      {
+        return 1;
+      }
+      else
+      {
+        if ((this->Endianness == BIG_ENDIAN && isLittleEndian) ||
+           (this->Endianness == LITTLE_ENDIAN && !isLittleEndian))
+        {
+          vtkByteSwap::Swap4BERange(output,numbersToRead);
+        }
+      }
+    }
+    else if (this->Precision == DOUBLE_PRECISION)
+    {
+      double * doubleOutput = new double[numbersToRead];
+      if ((fread(doubleOutput,sizeof(double),numbersToRead,fp))<numbersToRead)
+      {
+        return 1;
+      }
+      else
+      {
+        if (( this->Endianness == BIG_ENDIAN && isLittleEndian) ||
+            ( this->Endianness == LITTLE_ENDIAN && !isLittleEndian))
+        {
+          vtkByteSwap::Swap8BERange(doubleOutput,numbersToRead);
+        }
+
+        //  convert the doubles to floats. 
+        for (int i = 0; i< numbersToRead; i++)
+        {
+          output[i] = (float)doubleOutput[i];
+        }
+      }
+    }
+  }
+  return 0;
+}
+
+
+
+// ****************************************************************************
+//  Method: vtkVisItPLOT3DReader::ReadNumbers
+//
+//  Arguments;
+//      fp:             file stream from which to read numbers
+//      numbersToRead:  amount of numbers to read.
+//      output:         location to store the numbers.
+//
+//  Programmer:  Abel Gezahegne
+//  Creation:    Sept. 12, 2004
+//
+// ****************************************************************************
+
+
+int vtkVisItPLOT3DReader::ReadNumbers( FILE *fp, unsigned int numbersToRead, 
+                                        int * output)
+{
+  if (this->FileType == ASCII && this->Compression == UNCOMPRESSED_ASCII)
+  {
+    for (unsigned int i = 0; i < numbersToRead; i++)
+    {
+      fscanf(fp,"%d",output + i);
+    }
+  }
+  else if (this->FileType == ASCII && this->Compression == COMPRESSED_ASCII)
+  {
+    int multiplier;
+    int multiplicand;
+    char garbage[1024];
+    for (unsigned int i = 0; i < numbersToRead;)
+    {
+      fscanf(fp,"%d%[^0-9.-]s",&multiplier,&garbage);
+      if (strchr(garbage,'*'))
+      {
+        fscanf(fp,"%d%[^0-9.-]s",&multiplicand,&garbage);
+        for (int j = 0; j < (int)multiplier; j++)
+        {
+          output[i++] = multiplicand;
+        }
+      }
+      else
+      {
+        output[i++] = multiplier;
+      }
+    }
+  }
+  else if (this->FileType ==  BINARY)
+  {
+    if (fread(output, sizeof(int),numbersToRead,fp)< numbersToRead)
+    {    
+       return 1;
+    }
+    else
+    {
+      bool isLittleEndian = true;
+      #ifdef WORDS_BIGENDIAN
+        isLittleEndian = false;
+      #endif
+      if ((this->Endianness == BIG_ENDIAN && isLittleEndian) ||
+          (this->Endianness == LITTLE_ENDIAN && !isLittleEndian))
+      {
+        vtkByteSwap::Swap4BERange(output,numbersToRead);
+      }
+    }
+  }
+  return 0;
+}
+
+
+
+
+
+
+
+// ****************************************************************************
+//  Method: vtkVisItPLOT3DReader::ComputeGridOffset
+//
+//  Arguments;
+//      fp:             file stream for grid file
+//
+//  Programmer:  Abel Gezahegne
+//  Creation:    Sept. 12, 2004
+//
+// ****************************************************************************
+
+int vtkVisItPLOT3DReader::ComputeGridOffset(FILE *fp)
+{
+  int i;
+
+  // If offset known return it else compute. 
+  if (GridOffsets[this->GridNumber] >0) 
+  {
+    return GridOffsets[this->GridNumber];
+  }
+  else
+  {
+    //  Starting from current grid back up until last known offset. 
+    for (i = this->GridNumber; i>0 && GridOffsets[i] < 0; i--) 
+    {  
+     ;
+    }
+
+    for (int j = i+1; j <= this->GridNumber; j++)
+    {
+      int * numbersToSkip;
+      if (this->FileType == BINARY)
+      {
+        if (this->Iblanking == IBLANKING)
+        {
+          GridOffsets[j] = (GridOffsets[0] + 4*GridSizes[j-1]*4);
+        }
+        else
+        {
+          GridOffsets[j] = (GridOffsets[0] + 3*GridSizes[j-1]*4);
+        }
+      }
+      else
+      {
+        int numberOfElements;
+        if (this->Iblanking == IBLANKING)
+        {
+          numberOfElements = 4*GridSizes[j-1];
+        }
+        else
+        {
+          numberOfElements = 3*GridSizes[j-1];
+        }
+        fseek(fp,(long)(GridOffsets[j-1]),SEEK_SET);
+        ReadNumbers(fp,numberOfElements,numbersToSkip);
+        GridOffsets[j] = ftell(fp);
+      }
+    }
+    return GridOffsets[this->GridNumber];
+  }
+}
+
+
+
+// ****************************************************************************
+//  Method: vtkVisItPLOT3DReader::ComputeSolutionOffset
+//
+//  Arguments;
+//      fp:             file stream for solution file 
+//
+//  Programmer:  Abel Gezahegne
+//  Creation:    Sept. 12, 2004
+//
+// ****************************************************************************
+
+int vtkVisItPLOT3DReader::ComputeSolutionOffset(FILE *fp)
+{
+  int i;
+
+  //  If solution offset known return it.
+  if (SolutionOffsets[this->GridNumber] > 0)
+  {
+    return SolutionOffsets[this->GridNumber];
+  }
+  else
+  {
+    // back up until last known offset.
+    for (i = this->GridNumber; i > 0 && SolutionOffsets[i]< 0; i--)
+    {
+     ;
+    }
+
+    for (int j = i+1; j<= this->GridNumber; j++)
+    {
+      float * numbersToSkip;
+      if (this->FileType == BINARY)
+      {
+        SolutionOffsets[j] = SolutionOffsets[0] + 4 * sizeof(float) + 
+                             5 * GridSizes[j-1]*sizeof(float);
+      }
+      else
+      {
+        int numberOfElements;
+        numberOfElements = 4 + 5*GridSizes[j-1];
+        fseek(fp,(long)SolutionOffsets[j-1],SEEK_SET);
+        ReadNumbers(fp,numberOfElements,numbersToSkip);
+        SolutionOffsets[j] = ftell(fp);
+      }
+    }
+    return SolutionOffsets[this->GridNumber];
+  }
+}
+
+
 
 
 // NOW START AVT CODE
@@ -1993,13 +2717,15 @@ vtkVisItPLOT3DReader::RemoveAllFunctions()
 #include <vtkPointData.h>
 #include <vtkStructuredGrid.h>
 
+#include <Expression.h>
+
 #include <avtDatabaseMetaData.h>
 
 #include <BadIndexException.h>
 #include <DebugStream.h>
 #include <ImproperUseException.h>
 #include <InvalidVariableException.h>
-
+#include <InvalidFilesException.h>
 
 using std::vector;
 using std::string;
@@ -2019,6 +2745,9 @@ using std::string;
 //    Hank Childs, Mon Apr  7 18:37:59 PDT 2003
 //    Do not read in the file in the constructor.
 //
+//    Abel Gezahegne, Sept 12, 2004
+//    Add the Visit plot3d file extension. 
+//
 // ****************************************************************************
 
 avtPLOT3DFileFormat::avtPLOT3DFileFormat(const char *fname)
@@ -2026,12 +2755,19 @@ avtPLOT3DFileFormat::avtPLOT3DFileFormat(const char *fname)
 {
     char *s_file = NULL;
     char *x_file = NULL;
-    if (strstr(fname, ".x") != NULL)
+    char *v_file = NULL;
+  
+    if (strstr(fname, ".vp3d") != NULL)
+    {
+        v_file = filenames[0];
+    }
+    else if (strstr(fname, ".x") != NULL)
     {
         char soln_file[1024];
         char *q = strstr(fname, ".x");
         strncpy(soln_file, fname, q-fname);
         strcpy(soln_file + (q-fname), ".q");
+          
         AddFile(soln_file);
         x_file = filenames[0];
         s_file = filenames[1];
@@ -2042,7 +2778,9 @@ avtPLOT3DFileFormat::avtPLOT3DFileFormat(const char *fname)
         char *x = strstr(fname, ".q");
         strncpy(points_file, fname, x-fname);
         strcpy(points_file + (x-fname), ".x");
+  
         AddFile(points_file);
+
         x_file = filenames[1];
         s_file = filenames[0];
     }
@@ -2052,13 +2790,16 @@ avtPLOT3DFileFormat::avtPLOT3DFileFormat(const char *fname)
         // We cannot identify either file as a points file or a solution file,
         // so give up.
         //
+        debug1 << "PLOT3D reader giving up with file identification of " 
+               << fname << endl;
         EXCEPTION0(ImproperUseException);
     }
-    
+
     reader = vtkVisItPLOT3DReader::New();
+
+    reader->SetVP3DFileName(v_file); 
     reader->SetXYZFileName(x_file);
     reader->SetQFileName(s_file);
-    reader->SetFileFormat(VTK_WHOLE_MULTI_GRID_WITH_IBLANKING);
 }
 
 
@@ -2077,7 +2818,7 @@ avtPLOT3DFileFormat::~avtPLOT3DFileFormat()
 }
 
 
-// ****************************************************************************
+// *****************************************************************************
 //  Method: avtPLOT3DFileFormat::GetMesh
 //
 //  Purpose:
@@ -2283,6 +3024,12 @@ avtPLOT3DFileFormat::GetVectorVar(int dom, const char *name)
 //  Programmer: Hank Childs
 //  Creation:   May 3, 2002
 //
+//
+//  Modifications:
+//     Abel Gezahenge,  Sept 12, 2004
+//     Read information from Visit Plot3d file; read global expressions and
+//     account for 2 and 3D files.  
+//  
 // ****************************************************************************
 
 void
@@ -2291,10 +3038,62 @@ avtPLOT3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     avtMeshMetaData *mesh = new avtMeshMetaData;
     mesh->name = "mesh";
     mesh->meshType = AVT_CURVILINEAR_MESH;
-    mesh->numBlocks = reader->GetNumberOfGrids();
+
+    if (reader->GetVP3DFileName() != NULL)
+    {
+        char points_file[1024];
+        char soln_file[1024];
+        char * fname = reader->GetVP3DFileName();
+        char *x = strstr(fname ,".vp3d");
+
+        strncpy(points_file, fname, x-fname);
+        strcpy(points_file + (x-fname), ".x");
+
+        strncpy(soln_file, fname,x-fname);
+        strcpy(soln_file + (x-fname),".q");
+
+        reader->CollectInfo(points_file,soln_file);
+        AddFile(points_file);
+        AddFile(soln_file);
+        reader->SetXYZFileName(filenames[1]);
+        reader->SetQFileName(filenames[2]);
+    }
+
+
+    FILE *xyzFp;
+    if (reader->GetFileType() == BINARY)
+    {
+        if ((xyzFp = fopen(reader->GetXYZFileName() ,"rb"))== NULL)
+        {
+            EXCEPTION1(InvalidFilesException, reader->GetXYZFileName()); 
+            return;
+        }
+    }
+        else
+    {
+        if ((xyzFp = fopen(reader->GetXYZFileName() ,"r"))== NULL)
+        {   
+            EXCEPTION1(InvalidFilesException, reader->GetXYZFileName());
+            return;
+        }
+    }
+        
+        reader->SetNumberOfGrids(reader->FindNumberOfGrids(xyzFp));
+
+    mesh->numBlocks = reader->GetNumberOfGrids();  
     mesh->blockOrigin = 0;
-    mesh->spatialDimension = 3;
-    mesh->topologicalDimension = 3;
+
+    if (reader->GetDimension() == THREE)
+    {
+        mesh->spatialDimension = 3;
+        mesh->topologicalDimension = 3;
+    }
+    else
+    {
+        mesh->spatialDimension = 2;
+        mesh->topologicalDimension =2;
+    }
+
     mesh->hasSpatialExtents = false;
     md->Add(mesh);
 
@@ -2304,7 +3103,7 @@ avtPLOT3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
          "stagnation_energy", "entropy", "swirl" };
 
     int i;
-    for (i = 0 ; i < NUM_SCALARS ; i++)
+    for (i = 0; i < NUM_SCALARS; i++)
     {
         avtScalarMetaData *sd1 = new avtScalarMetaData;
         sd1->name = scalar_names[i];
@@ -2316,8 +3115,8 @@ avtPLOT3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 
     const int NUM_VECTORS = 4;
     char *vector_names[4] = { "velocity", "vorticity", "momentum",
-                               "pressure_gradient" };
-    for (i = 0 ; i < NUM_VECTORS ; i++)
+                               "pressure_gradient"};
+    for (i = 0; i < NUM_VECTORS; i++)
     {
         avtVectorMetaData *vd1 = new avtVectorMetaData;
         vd1->name = vector_names[i];
@@ -2327,6 +3126,81 @@ avtPLOT3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         vd1->varDim = 3;
         md->Add(vd1);
     }
+
+
+   //  Read the four constant values Free-stream mach number, Angle of attack,
+   //  Reynold's number, and Intergration time.  
+   //  Note that only the numbers for the first grid are used even if a multi
+   //  grid file may contain unique values for each grid.  
+
+    FILE * QFp;
+
+    if (reader->GetQFileName() != NULL)
+    {
+      int error = 0;
+      if (reader->GetFileType() == BINARY)
+      {
+        if ((QFp = fopen(reader->GetQFileName(),"rb")) == NULL)
+        {
+          error = 1;
+        }
+      }
+      else
+      {
+        if ((QFp = fopen(reader->GetQFileName(),"r")) == NULL)
+        {
+          error = 1;
+        }
+      }
+      
+      if (! error)
+      {
+        int skip = reader->GetNumberOfGrids();
+        if (reader->GetDimension() == THREE)
+          skip *= 3;
+        else
+          skip *= 2;
+        
+        if (reader->GetGridType() == MULTI_GRID)
+          skip += 1;
+
+        int *numbersToSkip = new int [skip];
+        bool error1 = reader->ReadNumbers(QFp,skip,numbersToSkip);
+        if (!error1)
+        {
+          Expression exp;
+          float param[4];
+          char def[1024];
+
+          reader->ReadNumbers(QFp,4,param);
+          exp.SetName("Free-stream mach number");
+          sprintf(def,"%f",param[0]);
+          exp.SetDefinition(def);
+          exp.SetType(Expression::Unknown);
+          md->AddExpression(&exp);
+
+          exp.SetName("Angle of attack");
+          sprintf(def,"%f",param[1]);
+          exp.SetDefinition(def);
+          exp.SetType(Expression::Unknown);
+          md->AddExpression(&exp);
+
+          exp.SetName("Reynold's number");
+          sprintf(def,"%f",param[2]);
+          exp.SetDefinition(def);
+          exp.SetType(Expression::Unknown);
+          md->AddExpression(&exp);
+
+          exp.SetName("Integration time");
+          sprintf(def,"%f",param[3]);
+          exp.SetDefinition(def);
+          exp.SetType(Expression::Unknown);
+          md->AddExpression(&exp);
+        }
+        fclose(QFp);
+      }
+    }
 }
+
 
 
