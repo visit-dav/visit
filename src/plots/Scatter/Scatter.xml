@@ -1,0 +1,154 @@
+<?xml version="1.0"?>
+  <Plugin name="Scatter" type="plot" label="Scatter" version="1.0" enabled="true" vartype="scalar" iconFile="Scatter.xpm">
+    <Files components="G">
+      QvisScatterWidget.C QvisScatterPlotWizard.C
+    </Files>
+    <Files components="W">
+      QvisScatterWidget.h QvisScatterPlotWizard.h
+    </Files>
+    <Files components="V">
+      avtScatterFilter.C
+    </Files>
+    <Files components="E">
+      avtScatterFilter.C
+    </Files>
+    <Attribute name="ScatterAttributes" purpose="Attributes for the scatter plot" persistent="true" codefile="Scatter.code">
+      <Enum name="Scaling">
+        Linear
+        Log
+        Skew
+      </Enum>
+      <Enum name="PointType">
+        Box
+        Axis
+        Icosahedron
+        Point
+      </Enum>
+      <Enum name="VariableRole">
+        Coordinate0
+        Coordinate1
+        Coordinate2
+        Color
+        None
+      </Enum>
+      <Field name="var1Role" label="Variable 1 role" type="enum" subtype="VariableRole">
+        Coordinate0
+      </Field>      
+      <Field name="var1MinFlag" label="Use variable 1 min" type="bool">
+        false
+      </Field>
+      <Field name="var1MaxFlag" label="Use variable 1 max" type="bool">
+        false
+      </Field>
+      <Field name="var1Min" label="Variable 1 Min" type="double" enabler="var1MinFlag:true">
+        0.000000
+      </Field>
+      <Field name="var1Max" label="Variable 1 Max" type="double" enabler="var1MaxFlag:true">
+        1.000000
+      </Field>
+      <Field name="var1Scaling" label="Variable 1 scale" type="enum" subtype="Scaling">
+        Linear
+      </Field>
+      <Field name="var1SkewFactor" label="Variable 1 skew factor" type="double" enabler="var1Scaling:Skew">
+        1.000000
+      </Field>
+      <Field name="var2Role" label="Variable 2 role" type="enum" subtype="VariableRole">
+        Coordinate1
+      </Field>      
+      <Field name="var2" label="Variable 2" type="string">
+        default
+      </Field>
+      <Field name="var2MinFlag" label="Use variable 2 min" type="bool">
+        false
+      </Field>
+      <Field name="var2MaxFlag" label="Use variable 2 max" type="bool">
+        false
+      </Field>
+      <Field name="var2Min" label="Variable 2 Min" type="double" enabler="var2MinFlag:true">
+        0.000000
+      </Field>
+      <Field name="var2Max" label="Variable 2 Max" type="double" enabler="var2MaxFlag:true">
+        1.000000
+      </Field>
+      <Field name="var2Scaling" label="Variable 2 scale" type="enum" subtype="Scaling">
+        Linear
+      </Field>
+      <Field name="var2SkewFactor" label="Variable 2 skew factor" type="double" enabler="var2Scaling:Skew">
+        1.000000
+      </Field>
+      <Field name="var3Role" label="Variable 3 role" type="enum" subtype="VariableRole">
+        None
+      </Field>      
+      <Field name="var3" label="Variable 3" type="string">
+        default
+      </Field>
+      <Field name="var3MinFlag" label="Use variable 3 min" type="bool">
+        false
+      </Field>
+      <Field name="var3MaxFlag" label="Use variable 3 max" type="bool">
+        false
+      </Field>
+      <Field name="var3Min" label="Variable 3 Min" type="double" enabler="var3MinFlag:true">
+        0.000000
+      </Field>
+      <Field name="var3Max" label="Variable 3 Max" type="double" enabler="var3MaxFlag:true">
+        1.000000
+      </Field>
+      <Field name="var3Scaling" label="Variable 3 scale" type="enum" subtype="Scaling">
+        Linear
+      </Field>
+      <Field name="var3SkewFactor" label="Variable 3 skew factor" type="double" enabler="var3Scaling:Skew">
+        1.000000
+      </Field>
+      <Field name="var4Role" label="Variable 4 role" type="enum" subtype="VariableRole">
+        None
+      </Field>      
+      <Field name="var4" label="Variable 4" type="string">
+        default
+      </Field>
+      <Field name="var4MinFlag" label="Use Variable 4 min" type="bool">
+        false
+      </Field>
+      <Field name="var4MaxFlag" label="Use Variable 4 max" type="bool">
+        false
+      </Field>
+      <Field name="var4Min" label="Variable 4 Min" type="double" enabler="var4MinFlag:true">
+        0.000000
+      </Field>
+      <Field name="var4Max" label="Variable 4 Max" type="double" enabler="var4MaxFlag:true">
+        1.000000
+      </Field>
+      <Field name="var4Scaling" label="Variable 4 scale" type="enum" subtype="Scaling">
+        Linear
+      </Field>
+      <Field name="var4SkewFactor" label="Variable 4 skew factor" type="double" enabler="var4Scaling:Skew">
+        1.000000
+      </Field>
+      <Field name="pointSize" label="Point size" type="double">
+        0.050000
+      </Field>
+      <Field name="pointType" label="Point Type" type="enum" subtype="PointType">
+        Point
+      </Field>
+      <Field name="scaleCube" label="Scale to cube" type="bool">
+        true
+      </Field>
+      <Field name="colorTableName" label="Color table" type="colortable">
+        hot
+      </Field>
+      <Field name="singleColor" label="Single color" type="color">
+        255
+        0
+        0
+        255
+      </Field>
+      <Field name="foregroundFlag" label="Use Foreground " type="bool">
+        true
+      </Field>
+      <Field name="legendFlag" label="Legend" type="bool">
+        true
+      </Field>
+      <Function name="ChangesRequireRecalculation" user="true" member="true">
+      </Function>
+    </Attribute>
+  </Plugin>

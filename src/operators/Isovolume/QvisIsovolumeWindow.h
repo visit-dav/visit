@@ -16,6 +16,7 @@ class QvisOpacitySlider;
 class QvisColorButton;
 class QvisLineStyleWidget;
 class QvisLineWidthWidget;
+class QvisVariableButton;
 
 // ****************************************************************************
 // Class: QvisIsovolumeWindow
@@ -49,14 +50,14 @@ class QvisIsovolumeWindow : public QvisOperatorWindow
   private slots:
     void lboundProcessText();
     void uboundProcessText();
-    void variableProcessText();
+    void variableChanged(const QString &);
   private:
-    QLineEdit *lbound;
-    QLineEdit *ubound;
-    QLineEdit *variable;
-    QLabel *lboundLabel;
-    QLabel *uboundLabel;
-    QLabel *variableLabel;
+    QLineEdit          *lbound;
+    QLineEdit          *ubound;
+    QvisVariableButton *variable;
+    QLabel             *lboundLabel;
+    QLabel             *uboundLabel;
+    QLabel             *variableLabel;
 
     IsovolumeAttributes *atts;
 };

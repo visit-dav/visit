@@ -16,6 +16,7 @@ class QvisOpacitySlider;
 class QvisColorButton;
 class QvisLineStyleWidget;
 class QvisLineWidthWidget;
+class QvisVariableButton;
 
 // ****************************************************************************
 // Class: QvisDisplaceWindow
@@ -26,10 +27,12 @@ class QvisLineWidthWidget;
 // Notes:      This class was automatically generated!
 
 // Programmer: xml2window
-// Creation:   Fri Apr 12 14:40:27 PST 2002
+// Creation:   Thu Dec 9 15:24:08 PST 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Dec 9 15:26:42 PST 2004
+//   Changed it so it uses a variable button.
+//
 // ****************************************************************************
 
 class QvisDisplaceWindow : public QvisOperatorWindow
@@ -48,10 +51,10 @@ class QvisDisplaceWindow : public QvisOperatorWindow
     virtual void GetCurrentValues(int which_widget);
   private slots:
     void factorProcessText();
-    void variableProcessText();
+    void variableChanged(const QString &varName);
   private:
     QLineEdit *factor;
-    QLineEdit *variable;
+    QvisVariableButton *variable;
 
     DisplaceAttributes *atts;
 };

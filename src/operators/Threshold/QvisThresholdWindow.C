@@ -16,6 +16,8 @@
 #include <QvisColorButton.h>
 #include <QvisLineStyleWidget.h>
 #include <QvisLineWidthWidget.h>
+#include <QvisVariableButton.h>
+
 #include <stdio.h>
 #include <string>
 
@@ -73,7 +75,9 @@ QvisThresholdWindow::~QvisThresholdWindow()
 // Creation:   Fri Apr 12 14:41:06 PST 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Dec 10 09:40:53 PDT 2004
+//   Changed so it uses a variable button. I also improved the widget spacing.
+//
 // ****************************************************************************
 
 void
@@ -82,7 +86,8 @@ QvisThresholdWindow::CreateWindowContents()
     QGridLayout *mainLayout = new QGridLayout(topLayout, 4,2,  10, "mainLayout");
 
 
-    mainLayout->addWidget(new QLabel("Amount of cell in the range", central, "amountLabel"),0,0);
+    mainLayout->addMultiCellWidget(new QLabel("Amount of cell in the range",
+        central, "amountLabel"),0,0,0,1);
     amount = new QButtonGroup(central, "amount");
     amount->setFrameStyle(QFrame::NoFrame);
     QHBoxLayout *amountLayout = new QHBoxLayout(amount);
@@ -93,25 +98,26 @@ QvisThresholdWindow::CreateWindowContents()
     amountLayout->addWidget(amountAmountAll);
     connect(amount, SIGNAL(clicked(int)),
             this, SLOT(amountChanged(int)));
-    mainLayout->addWidget(amount, 0,1);
+    mainLayout->addMultiCellWidget(amount, 0,0, 2,3);
 
     mainLayout->addWidget(new QLabel("Lower bound", central, "lboundLabel"),1,0);
     lbound = new QLineEdit(central, "lbound");
     connect(lbound, SIGNAL(returnPressed()),
             this, SLOT(lboundProcessText()));
-    mainLayout->addWidget(lbound, 1,1);
+    mainLayout->addMultiCellWidget(lbound, 1,1, 1,3);
 
     mainLayout->addWidget(new QLabel("Upper bound", central, "uboundLabel"),2,0);
     ubound = new QLineEdit(central, "ubound");
     connect(ubound, SIGNAL(returnPressed()),
             this, SLOT(uboundProcessText()));
-    mainLayout->addWidget(ubound, 2,1);
+    mainLayout->addMultiCellWidget(ubound, 2, 2, 1, 3);
 
-    mainLayout->addWidget(new QLabel("variable", central, "variableLabel"),3,0);
-    variable = new QLineEdit(central, "variable");
-    connect(variable, SIGNAL(returnPressed()),
-            this, SLOT(variableProcessText()));
-    mainLayout->addWidget(variable, 3,1);
+    mainLayout->addWidget(new QLabel("Variable", central, "variableLabel"),3,0);
+    variable = new QvisVariableButton(true, true, true,
+        QvisVariableButton::Scalars, central, "variable");
+    connect(variable, SIGNAL(activated(const QString &)),
+            this, SLOT(variableChanged(const QString &)));
+    mainLayout->addMultiCellWidget(variable, 3,3, 1, 3);
 
 }
 
@@ -197,6 +203,9 @@ QvisThresholdWindow::UpdateWindow(bool doAll)
 //   Jeremy Meredith, Wed Mar  3 16:02:43 PST 2004
 //   Fixed a type with using "min".
 //
+//   Brad Whitlock, Fri Dec 10 09:43:19 PDT 2004
+//   Removed code to get the variable.
+//
 // ****************************************************************************
 
 void
@@ -262,27 +271,6 @@ QvisThresholdWindow::GetCurrentValues(int which_widget)
             }
         }
     }
-
-    // Do variable
-    if(which_widget == 3 || doAll)
-    {
-        temp = variable->displayText();
-        okay = !temp.isEmpty();
-        if(okay)
-        {
-            atts->SetVariable(temp.latin1());
-        }
-
-        if(!okay)
-        {
-            msg.sprintf("The value of variable was invalid. "
-                "Resetting to the last good value of %s.",
-                atts->GetVariable().c_str());
-            Message(msg);
-            atts->SetVariable(atts->GetVariable());
-        }
-    }
-
 }
 
 
@@ -320,9 +308,10 @@ QvisThresholdWindow::uboundProcessText()
 
 
 void
-QvisThresholdWindow::variableProcessText()
+QvisThresholdWindow::variableChanged(const QString &var)
 {
-    GetCurrentValues(3);
+    atts->SetVariable(var.latin1());
+    SetUpdate(false);
     Apply();
 }
 

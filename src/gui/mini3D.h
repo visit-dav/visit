@@ -74,6 +74,9 @@ typedef enum {
 // Creation:   Tue Mar 4 08:38:19 PDT 2003
 //
 // Modifications:
+//   Brad Whitlock, Mon Dec 13 12:04:08 PDT 2004
+//   Added a version of addToRenderer that accepts a color so the color can
+//   be overridden.
 //   
 // ****************************************************************************
 
@@ -85,6 +88,7 @@ public:
 
     virtual void transform(const matrix4 *M) { };
     virtual void addToRenderer(m3d_renderer &, unsigned char = 0) const = 0;
+    virtual void addToRenderer(m3d_renderer &, color, unsigned char = 0) const = 0;
     virtual void draw(m3d_renderer &) = 0;
     virtual float calc_avg_z_sort_element() const = 0;
     virtual void light_element_reset() { };
@@ -120,7 +124,10 @@ protected:
 // Creation:   Tue Mar 4 08:38:37 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Dec 13 12:04:08 PDT 2004
+//   Added a version of addToRenderer that accepts a color so the color can
+//   be overridden.
+//
 // ****************************************************************************
 
 class GUI_API m3d_line_c : public m3d_element
@@ -132,6 +139,7 @@ public:
 
     virtual void transform(const matrix4 *M);
     virtual void addToRenderer(m3d_renderer &, unsigned char = 0) const;
+    virtual void addToRenderer(m3d_renderer &, color, unsigned char = 0) const;
     virtual void draw(m3d_renderer &);
     virtual float calc_avg_z_sort_element() const;
 
@@ -154,7 +162,10 @@ protected:
 // Creation:   Tue Mar 4 08:39:06 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Dec 13 12:04:08 PDT 2004
+//   Added a version of addToRenderer that accepts a color so the color can
+//   be overridden.
+//
 // ****************************************************************************
 
 class GUI_API m3d_tri_c : public m3d_element
@@ -166,6 +177,7 @@ public:
 
     virtual void transform(const matrix4 *M);
     virtual void addToRenderer(m3d_renderer &, unsigned char = 0) const;
+    virtual void addToRenderer(m3d_renderer &, color, unsigned char = 0) const;
     virtual void draw(m3d_renderer &);
     virtual float calc_avg_z_sort_element() const;
     virtual bool intersects(int x, int y) const;
@@ -187,6 +199,9 @@ protected:
 // Creation:   Tue Mar 4 08:39:36 PDT 2003
 //
 // Modifications:
+//   Brad Whitlock, Mon Dec 13 12:04:08 PDT 2004
+//   Added a version of addToRenderer that accepts a color so the color can
+//   be overridden.
 //   
 // ****************************************************************************
 
@@ -199,6 +214,7 @@ public:
 
     virtual void transform(const matrix4 *M);
     virtual void addToRenderer(m3d_renderer &, unsigned char = 0) const;
+    virtual void addToRenderer(m3d_renderer &, color, unsigned char = 0) const;
     virtual void draw(m3d_renderer &);
     virtual void light_element_reset();
     virtual bool notCulled(const vector3 &) const;
@@ -223,7 +239,10 @@ protected:
 // Creation:   Tue Mar 4 08:40:06 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Dec 13 12:04:08 PDT 2004
+//   Added a version of addToRenderer that accepts a color so the color can
+//   be overridden.
+//
 // ****************************************************************************
 
 class GUI_API m3d_complex_element : public m3d_element
@@ -233,6 +252,7 @@ public:
     virtual ~m3d_complex_element();
 
     virtual void addToRenderer(m3d_renderer &, unsigned char = 0) const;
+    virtual void addToRenderer(m3d_renderer &, color, unsigned char = 0) const;
     virtual void draw(m3d_renderer &);
     virtual float calc_avg_z_sort_element() const;
 

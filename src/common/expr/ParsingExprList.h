@@ -29,6 +29,10 @@ class ExprNode;
 //    Jeremy Meredith, Wed Nov 24 12:27:15 PST 2004
 //    Refactored and changed parse tree classes around.
 //
+//    Jeremy Meredith, Tue Dec 14 14:09:51 PST 2004
+//    I added code to get the first real (database, non-expression) variable
+//    for a given variable (which may or may not be an expression).
+//
 // ****************************************************************************
 
 class EXPR_API ParsingExprList : public SimpleObserver
@@ -52,6 +56,8 @@ public:
     static ExprNode *GetExpressionTree(const char *varname);
     static ExprNode *GetExpressionTree(std::string varname)
         { return GetExpressionTree(varname.c_str()); }
+
+    static std::string GetRealVariable(const std::string &var);
 
 protected:
 

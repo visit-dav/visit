@@ -471,7 +471,7 @@ IsovolumeAttributes::GetFieldType(int index) const
     {
         case 0:  return FieldType_double;
         case 1:  return FieldType_double;
-        case 2:  return FieldType_string;
+        case 2:  return FieldType_variablename;
         default:  return FieldType_unknown;
     }
 }
@@ -498,7 +498,7 @@ IsovolumeAttributes::GetFieldTypeName(int index) const
     {
         case 0:  return "double";
         case 1:  return "double";
-        case 2:  return "string";
+        case 2:  return "variablename";
         default:  return "invalid index";
     }
 }

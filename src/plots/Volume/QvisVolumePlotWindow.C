@@ -18,6 +18,8 @@
 #include <QvisColorSelectionWidget.h>
 #include <QvisGaussianOpacityBar.h>
 #include <QvisScribbleOpacityBar.h>
+#include <QvisVariableButton.h>
+
 #include <VolumeAttributes.h>
 #include <ColorControlPoint.h>
 #include <GaussianControlPoint.h>
@@ -182,6 +184,9 @@ QvisVolumePlotWindow::~QvisVolumePlotWindow()
 //
 //   Hank Childs, Mon Nov 22 09:28:33 PST 2004
 //   Replace "Software" button with "Ray Trace" toggle.
+//
+//   Brad Whitlock, Thu Dec 9 17:36:14 PST 2004
+//   I changed the opacity control from a line edit to a variable button.
 //
 // ****************************************************************************
 
@@ -361,9 +366,10 @@ QvisVolumePlotWindow::CreateWindowContents()
     attLayout->addWidget(attenuationSlider, 0, 1);
 
     // Create the opacity variable
-    opacityVariable = new QLineEdit(opacityWidgetGroup, "opacityVariable");
-    connect(opacityVariable, SIGNAL(returnPressed()),
-            this, SLOT(opacityVariableProcessText()));
+    opacityVariable = new QvisVariableButton(true, true, true,
+        QvisVariableButton::Scalars, opacityWidgetGroup, "opacityVariable");
+    connect(opacityVariable, SIGNAL(activated(const QString &)),
+            this, SLOT(opacityVariableChanged(const QString &)));
     QLabel *opacityVarLabel = new QLabel(opacityVariable, "Opacity variable",
         opacityWidgetGroup, "opacityVarLabel");
     attLayout->addWidget(opacityVarLabel, 1, 0);
@@ -925,6 +931,10 @@ QvisVolumePlotWindow::CopyGaussianOpacitiesToFreeForm()
 //   Added settings for the renderer type, the gradient method, and
 //   the number of 3D textured slices.
 //
+//   Brad Whitlock, Thu Dec 9 17:37:31 PST 2004
+//   I removed the code to get the opacity variable since it's in a different
+//   kind of widget.
+//
 // ****************************************************************************
 
 void
@@ -1015,34 +1025,6 @@ QvisVolumePlotWindow::GetCurrentValues(int which_widget)
                 volumeAtts->GetResampleTarget());
             Message(msg);
             volumeAtts->SetResampleTarget(volumeAtts->GetResampleTarget());
-        }
-    }
-
-    // Get the value of the opacity variable
-    if(which_widget == 3 || doAll)
-    {
-        temp = opacityVariable->displayText();
-        okay = !temp.isEmpty();
-        if(okay)
-        {
-            volumeAtts->SetOpacityVariable(temp.latin1());
-
-            // If we're using the default opacity variable, do not use
-            // the opacity min, max.
-            if(volumeAtts->GetOpacityVariable() == "default")
-            {
-                volumeAtts->SetUseOpacityVarMin(false);
-                volumeAtts->SetUseOpacityVarMax(false);
-            }
-        }
-
-        if(!okay)
-        {
-            msg.sprintf("The value of the opacity variable was invalid. "
-                "Resetting to the last good value of %s.",
-                volumeAtts->GetOpacityVariable().c_str());
-            Message(msg);
-            volumeAtts->SetOpacityVariable(volumeAtts->GetOpacityVariable());
         }
     }
 
@@ -1177,13 +1159,15 @@ QvisVolumePlotWindow::GetCurrentValues(int which_widget)
 // Creation:   Mon Feb 5 14:00:18 PST 2001
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Dec 9 17:38:26 PST 2004
+//   Changed to work with a variable button.
+//
 // ****************************************************************************
 
 void
 QvisVolumePlotWindow::Apply(bool ignore)
 {
-    QString temp = opacityVariable->displayText();
+    QString temp = opacityVariable->text();
     if (temp == "default")
     {
         if (volumeAtts->GetUseColorVarMin() || volumeAtts->GetUseColorVarMax())
@@ -2015,7 +1999,7 @@ QvisVolumePlotWindow::resampleTargetSliderReleased()
 }
 
 // ****************************************************************************
-// Method:  QvisVolumePlotWindow::opacityVariableProcessText
+// Method:  QvisVolumePlotWindow::opacityVariableChanged
 //
 // Purpose:
 //   Qt slot function, called when opacityVariable is changed.
@@ -2024,13 +2008,16 @@ QvisVolumePlotWindow::resampleTargetSliderReleased()
 // Creation:    November 13, 2001
 //
 // Modifications:
+//   Brad Whitlock, Thu Dec 9 17:39:00 PST 2004
+//   I renamed the method and recoded it.
 //
 // ****************************************************************************
 
 void
-QvisVolumePlotWindow::opacityVariableProcessText()
+QvisVolumePlotWindow::opacityVariableChanged(const QString &var)
 {
-    GetCurrentValues(3);
+    volumeAtts->SetOpacityVariable(var.latin1());
+    SetUpdate(false);
     Apply();
 }
 

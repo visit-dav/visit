@@ -1189,7 +1189,7 @@ VolumeAttributes::GetFieldType(int index) const
         case 4:  return FieldType_bool;
         case 5:  return FieldType_att;
         case 6:  return FieldType_int;
-        case 7:  return FieldType_string;
+        case 7:  return FieldType_variablename;
         case 8:  return FieldType_ucharArray;
         case 9:  return FieldType_bool;
         case 10:  return FieldType_bool;
@@ -1236,7 +1236,7 @@ VolumeAttributes::GetFieldTypeName(int index) const
         case 4:  return "bool";
         case 5:  return "att";
         case 6:  return "int";
-        case 7:  return "string";
+        case 7:  return "variablename";
         case 8:  return "ucharArray";
         case 9:  return "bool";
         case 10:  return "bool";

@@ -10,6 +10,7 @@ class QLineEdit;
 class QMultiLineEdit;
 class QTabWidget;
 class QVBox;
+class QvisVariableButton;
 class PickAttributes;
 
 // ****************************************************************************
@@ -60,6 +61,10 @@ class PickAttributes;
 //   Kathleen Bonnell, Wed Jun  9 09:41:15 PDT 2004 
 //   Added conciseOutputCheckBox, showMeshNameCheckBox, showTimestepCheckBox. 
 //
+//   Brad Whitlock, Fri Dec 10 09:47:30 PDT 2004
+//   I added a pick variable button so it is a little easier to select
+//   variables.
+//
 // ****************************************************************************
 
 class GUI_API QvisPickWindow : public QvisPostableWindowObserver
@@ -100,36 +105,38 @@ private slots:
     void conciseOutputToggled(bool);
     void showMeshNameToggled(bool);
     void showTimestepToggled(bool);
-
+    void addPickVariable(const QString &);
 private:
     void UpdatePage(void);
     void ClearPages(void);
 
-    bool            savePicks;
-    bool            autoShow;
-    int             nextPage;
-    QString         lastLetter;
+    bool                savePicks;
+    bool                autoShow;
+    int                 nextPage;
+    QString             lastLetter;
 
-    QTabWidget     *tabWidget;
-    QVBox          *pages[MAX_PICK_TABS];
-    QMultiLineEdit *infoLists[MAX_PICK_TABS];
-    QCheckBox      *displayIncEls;
-    QCheckBox      *nodeId;
-    QCheckBox      *nodeDomLog;
-    QCheckBox      *nodeBlockLog;
-    QCheckBox      *nodePhysical;
-    QCheckBox      *zoneId;
-    QCheckBox      *zoneDomLog;
-    QCheckBox      *zoneBlockLog;
+    QTabWidget         *tabWidget;
+    QVBox              *pages[MAX_PICK_TABS];
+    QMultiLineEdit     *infoLists[MAX_PICK_TABS];
+    QCheckBox          *displayIncEls;
+    QCheckBox          *nodeId;
+    QCheckBox          *nodeDomLog;
+    QCheckBox          *nodeBlockLog;
+    QCheckBox          *nodePhysical;
+    QCheckBox          *zoneId;
+    QCheckBox          *zoneDomLog;
+    QCheckBox          *zoneBlockLog;
 
-    QCheckBox      *autoShowCheckBox;
-    QCheckBox      *savePicksCheckBox;
-    QCheckBox      *timeCurveCheckBox;
-    QCheckBox      *conciseOutputCheckBox;
-    QCheckBox      *showMeshNameCheckBox;
-    QCheckBox      *showTimestepCheckBox;
+    QCheckBox          *autoShowCheckBox;
+    QCheckBox          *savePicksCheckBox;
+    QCheckBox          *timeCurveCheckBox;
+    QCheckBox          *conciseOutputCheckBox;
+    QCheckBox          *showMeshNameCheckBox;
+    QCheckBox          *showTimestepCheckBox;
 
-    QLineEdit      *varsLineEdit;
-    PickAttributes *pickAtts;
+    QvisVariableButton *varsButton;
+    QLineEdit          *varsLineEdit;
+
+    PickAttributes     *pickAtts;
 };
 #endif

@@ -43,6 +43,9 @@
 //    Brad Whitlock, Tue Aug 17 17:23:37 PST 2004
 //    Added some code to get around a crash using MSVC7.Net.
 //
+//    Brad Whitlock, Fri Dec 10 13:51:07 PST 2004
+//    Added code to write out the vartypes attribute.
+//
 // ****************************************************************************
 
 class Attribute
@@ -158,6 +161,17 @@ class Attribute
             if (! f->initcode.isEmpty())
             {
                 WriteTagAttr(out, "init", "true");
+            }
+            if (f->type == "variablename")
+            {
+                QString varTypeString;
+                int mask = 1;
+                for(int m = 0; m < 9; ++m)
+                {
+                    varTypeString += ((f->varTypes & mask) ? "1" : "0");
+                    mask = mask << 1;
+                }
+                WriteTagAttr(out, "vartypes", varTypeString);
             }
             FinishOpenTag(out);
 

@@ -81,6 +81,9 @@ inline char toupper(char c)
 //    Brad Whitlock, Fri Jul 30 16:29:12 PST 2004
 //    Fixed the size of a buffer used by SNPRINTF when writing out enum code.
 //
+//    Brad Whitlock, Wed Dec 8 15:55:24 PST 2004
+//    Added support for variable names.
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -1271,12 +1274,12 @@ class AttsGeneratorColorTable : public virtual ColorTable , public virtual Pytho
 
     virtual void PrintValue(ostream &c, const QString &classname)
     {
-        c << "    fprintf(fp, \"" << name << " = %s\\n\", obj->data->" << MethodNameGet() << "().c_str());" << endl;
+        c << "    fprintf(fp, \"" << name << " = \\\"%s\\\"\\n\", obj->data->" << MethodNameGet() << "().c_str());" << endl;
     }
 
     virtual void StringRepresentation(ostream &c, const QString &classname)
     {
-        c << "   SNPRINTF(tmpStr, 1000, \"" << name << " = %s\\n\", atts->" << MethodNameGet() << "().c_str());" << endl;
+        c << "   SNPRINTF(tmpStr, 1000, \"" << name << " = \\\"%s\\\"\\n\", atts->" << MethodNameGet() << "().c_str());" << endl;
         c << "   str += tmpStr;" << endl;
     }
 };
@@ -1479,6 +1482,42 @@ class AttsGeneratorOpacity : public virtual Opacity , public virtual PythonGener
     {
         c << "    SNPRINTF(tmpStr, 1000, \"" << name << " = %g\\n\", atts->" << MethodNameGet() << "());" << endl;
         c << "    str += tmpStr;" << endl;
+    }
+};
+
+
+//
+// -------------------------------- VariableName --------------------------------
+//
+class AttsGeneratorVariableName : public virtual VariableName , public virtual PythonGeneratorField
+{
+  public:
+    AttsGeneratorVariableName(const QString &n, const QString &l)
+        : VariableName(n,l), PythonGeneratorField("variablename",n,l), Field("variablename",n,l) { }
+    virtual void WriteSetMethodBody(ostream &c, const QString &className)
+    {
+        c << "    char *str;" << endl;
+        c << "    if(!PyArg_ParseTuple(args, \"s\", &str))" << endl;
+        c << "        return NULL;" << endl;
+        c << endl;
+        c << "    // Set the " << name << " in the object." << endl;
+        c << "    obj->data->" << MethodNameSet() << "(std::string(str));" << endl;
+    }
+
+    virtual void WriteGetMethodBody(ostream &c, const QString &className)
+    {
+        c << "    PyObject *retval = PyString_FromString(obj->data->"<<MethodNameGet()<<"().c_str());" << endl;
+    }
+
+    virtual void PrintValue(ostream &c, const QString &classname)
+    {
+        c << "    fprintf(fp, \"" << name << " = \\\"%s\\\"\\n\", obj->data->" << MethodNameGet() << "().c_str());" << endl;
+    }
+
+    virtual void StringRepresentation(ostream &c, const QString &classname)
+    {
+        c << "   SNPRINTF(tmpStr, 1000, \"" << name << " = \\\"%s\\\"\\n\", atts->" << MethodNameGet() << "().c_str());" << endl;
+        c << "   str += tmpStr;" << endl;
     }
 };
 
@@ -1701,6 +1740,10 @@ class PythonGeneratorEnum : public virtual Enum , public virtual PythonGenerator
 
 
 // ----------------------------------------------------------------------------
+// Modifications:
+//    Brad Whitlock, Wed Dec 8 15:55:08 PST 2004
+//    Added support for variable names.
+//
 // ----------------------------------------------------------------------------
 class PythonFieldFactory
 {
@@ -1732,6 +1775,7 @@ class PythonFieldFactory
         else if (type == "opacity")      f = new AttsGeneratorOpacity(name,label);
         else if (type == "linestyle")    f = new AttsGeneratorLineStyle(name,label);
         else if (type == "linewidth")    f = new AttsGeneratorLineWidth(name,label);
+        else if (type == "variablename") f = new AttsGeneratorVariableName(name,label);
         else if (type == "att")          f = new AttsGeneratorAtt(subtype,name,label);
         else if (type == "attVector")    f = new AttsGeneratorAttVector(subtype,name,label);
         else if (type == "enum")         f = new PythonGeneratorEnum(subtype, name, label);

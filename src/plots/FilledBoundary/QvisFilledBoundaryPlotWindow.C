@@ -293,8 +293,8 @@ QvisFilledBoundaryPlotWindow::CreateWindowContents()
     pointControl = new QvisPointControl(central, "pointControl");
     connect(pointControl, SIGNAL(pointSizeChanged(double)),
             this, SLOT(pointSizeChanged(double)));
-    connect(pointControl, SIGNAL(pointSizeVarChanged(QString &)),
-            this, SLOT(pointSizeVarChanged(QString &)));
+    connect(pointControl, SIGNAL(pointSizeVarChanged(const QString &)),
+            this, SLOT(pointSizeVarChanged(const QString &)));
     connect(pointControl, SIGNAL(pointSizeVarToggled(bool)),
             this, SLOT(pointSizeVarToggled(bool)));
     connect(pointControl, SIGNAL(pointTypeChanged(int)),
@@ -1464,7 +1464,7 @@ QvisFilledBoundaryPlotWindow::pointSizeVarToggled(bool val)
 // ****************************************************************************
 
 void
-QvisFilledBoundaryPlotWindow::pointSizeVarChanged(QString &var)
+QvisFilledBoundaryPlotWindow::pointSizeVarChanged(const QString &var)
 {
     boundaryAtts->SetPointSizeVar(var.latin1());
     Apply();

@@ -550,7 +550,7 @@ ThresholdAttributes::GetFieldType(int index) const
         case 0:  return FieldType_enum;
         case 1:  return FieldType_double;
         case 2:  return FieldType_double;
-        case 3:  return FieldType_string;
+        case 3:  return FieldType_variablename;
         default:  return FieldType_unknown;
     }
 }
@@ -578,7 +578,7 @@ ThresholdAttributes::GetFieldTypeName(int index) const
         case 0:  return "enum";
         case 1:  return "double";
         case 2:  return "double";
-        case 3:  return "string";
+        case 3:  return "variablename";
         default:  return "invalid index";
     }
 }

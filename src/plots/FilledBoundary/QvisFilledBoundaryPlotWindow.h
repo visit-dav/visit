@@ -85,7 +85,7 @@ private slots:
     void pointSizeChanged(double d);
     void pointTypeChanged(int index);
     void pointSizeVarToggled(bool on);
-    void pointSizeVarChanged(QString &);
+    void pointSizeVarChanged(const QString &);
 
 private:
     int                       plotType;

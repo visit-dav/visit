@@ -473,15 +473,24 @@ m3d_line_c::transform(const matrix4 *M)
 // Creation:   Tue Mar 4 13:29:23 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Dec 13 12:04:08 PDT 2004
+//   Added a version that accepts a color so the color can be overridden.
+//
 // ****************************************************************************
 
 void
 m3d_line_c::addToRenderer(m3d_renderer &renderer, unsigned char id) const
 {
+    addToRenderer(renderer, c, id);
+}
+
+void
+m3d_line_c::addToRenderer(m3d_renderer &renderer, color C,
+    unsigned char id) const
+{
     if(segments == 1)
     {
-        m3d_line_c *copy = new m3d_line_c(v[0], v[1], c, s, 1);
+        m3d_line_c *copy = new m3d_line_c(v[0], v[1], C, s, 1);
         protectedAddElement(renderer, copy, id);
     }
     else
@@ -499,7 +508,7 @@ m3d_line_c::addToRenderer(m3d_renderer &renderer, unsigned char id) const
             p1.y = (1. - t1) * v[0].y + t1 * v[1].y;
             p1.z = (1. - t1) * v[0].z + t1 * v[1].z;
 
-            m3d_line_c *copy = new m3d_line_c(p0, p1, c, s, 1);
+            m3d_line_c *copy = new m3d_line_c(p0, p1, C, s, 1);
             protectedAddElement(renderer, copy, id);
         }
     }
@@ -662,13 +671,22 @@ m3d_tri_c::transform(const matrix4 *M)
 // Creation:   Tue Mar 4 13:31:39 PST 2003
 //
 // Modifications:
+//   Brad Whitlock, Mon Dec 13 12:04:08 PDT 2004
+//   Added a version that accepts a color so the color can be overridden.
 //   
 // ****************************************************************************
 
 void
 m3d_tri_c::addToRenderer(m3d_renderer &renderer, unsigned char id) const
 {
-    m3d_tri_c *copy = new m3d_tri_c(v[0], v[1], v[2], c);
+    addToRenderer(renderer, c, id);
+}
+
+void
+m3d_tri_c::addToRenderer(m3d_renderer &renderer, color C,
+    unsigned char id) const
+{
+    m3d_tri_c *copy = new m3d_tri_c(v[0], v[1], v[2], C);
     protectedAddElement(renderer, copy, id);
 }
 
@@ -825,7 +843,10 @@ m3d_tri_n::~m3d_tri_n()
 // Creation:   Tue Mar 4 13:34:04 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Dec 13 12:59:54 PDT 2004
+//   Added code to normalize the vector in case the world transform scaled
+//   the geometry.
+//
 // ****************************************************************************
 
 void
@@ -835,6 +856,7 @@ m3d_tri_n::transform(const matrix4 *M)
     transform_vertex(M, &v[1]);
     transform_vertex(M, &v[2]);
     transform_vector(M, &n);
+    n = vec_normalize(n);
 }
 
 // ****************************************************************************
@@ -850,13 +872,22 @@ m3d_tri_n::transform(const matrix4 *M)
 // Creation:   Tue Mar 4 13:34:38 PST 2003
 //
 // Modifications:
+//   Brad Whitlock, Mon Dec 13 12:04:08 PDT 2004
+//   Added a version that accepts a color so the color can be overridden.
 //   
 // ****************************************************************************
 
 void
 m3d_tri_n::addToRenderer(m3d_renderer &renderer, unsigned char id) const
 {
-    m3d_tri_n *copy = new m3d_tri_n(v[0], v[1], v[2], n, c);
+    addToRenderer(renderer, c, id);
+}
+
+void
+m3d_tri_n::addToRenderer(m3d_renderer &renderer, color C,
+    unsigned char id) const
+{
+    m3d_tri_n *copy = new m3d_tri_n(v[0], v[1], v[2], n, C);
     protectedAddElement(renderer, copy, id);
 }
 
@@ -1078,7 +1109,7 @@ m3d_tri_n::light_element_eye(const m3d_light &L, const vector3 &vrp, bool specul
 // Creation:   Tue Mar 4 09:38:20 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 m3d_complex_element::m3d_complex_element()
@@ -1128,6 +1159,8 @@ m3d_complex_element::~m3d_complex_element()
 // Creation:   Tue Mar 4 13:37:59 PST 2003
 //
 // Modifications:
+//   Brad Whitlock, Mon Dec 13 12:04:08 PDT 2004
+//   Added a version that accepts a color so the color can be overridden.
 //   
 // ****************************************************************************
 
@@ -1136,6 +1169,13 @@ m3d_complex_element::addToRenderer(m3d_renderer &renderer, unsigned char id) con
 {
     for(int i = 0; i < numElements; ++i)
         elements[i]->addToRenderer(renderer, id);
+}
+
+void
+m3d_complex_element::addToRenderer(m3d_renderer &renderer, color C, unsigned char id) const
+{
+    for(int i = 0; i < numElements; ++i)
+        elements[i]->addToRenderer(renderer, C, id);
 }
 
 // ****************************************************************************
@@ -1216,7 +1256,7 @@ m3d_complex_element::set_initial_size(int s)
 // Creation:   Tue Mar 4 13:40:28 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void

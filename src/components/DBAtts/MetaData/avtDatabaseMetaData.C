@@ -4635,6 +4635,12 @@ avtDatabaseMetaData::DetermineVarType(std::string var_in) const
 //    Hank Childs, Sat Sep 20 08:49:16 PDT 2003
 //    Add support for tensors.
 //
+//    Jeremy Meredith, Tue Dec 14 14:02:35 PST 2004
+//    The code to get the real variable name was a duplicate of two
+//    other spots in VisIt, but this one was out of date.  I
+//    refactored the best one into ParsingExprList::GetRealVariable
+//    and made this one point to it.
+//
 // ****************************************************************************
 
 std::string
@@ -4652,12 +4658,7 @@ avtDatabaseMetaData::MeshForVar(std::string var) const
 
     // If the variable is an expression, we need to find a "real" variable
     // name to work with.
-    ExprNode *tree = ParsingExprList::GetExpressionTree(var);
-    while (tree != NULL)
-    {
-        var = *tree->GetVarLeaves().begin();
-        tree = ParsingExprList::GetExpressionTree(var);
-    }
+    var = ParsingExprList::GetRealVariable(var);
 
     // If the variable is compound, parse out the variable name.
     if (VarIsCompound(var))

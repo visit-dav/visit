@@ -17,6 +17,7 @@ class QvisOpacitySlider;
 class QvisColorButton;
 class QvisLineStyleWidget;
 class QvisLineWidthWidget;
+class QvisVariableButton;
 
 // ****************************************************************************
 // Class: QvisIsosurfaceWindow
@@ -30,7 +31,9 @@ class QvisLineWidthWidget;
 // Creation:   Tue Apr 16 17:41:29 PST 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Dec 9 17:44:32 PST 2004
+//   I made the window use a variable button.
+//
 // ****************************************************************************
 
 class QvisIsosurfaceWindow : public QvisOperatorWindow
@@ -60,7 +63,7 @@ class QvisIsosurfaceWindow : public QvisOperatorWindow
     void processMinLimitText();
     void maxToggled(bool);
     void processMaxLimitText();
-    void variableProcessText();
+    void variableChanged(const QString &);
   private:
     QComboBox              *selectByComboBox;
     QLineEdit              *selectByLineEdit;
@@ -69,7 +72,7 @@ class QvisIsosurfaceWindow : public QvisOperatorWindow
     QLineEdit              *minLineEdit;
     QCheckBox              *maxToggle;
     QLineEdit              *maxLineEdit;
-    QLineEdit              *variable;
+    QvisVariableButton     *variable;
 
     IsosurfaceAttributes *atts;
 };

@@ -382,8 +382,8 @@ VariableMenuPopulator::AddExpression(const Expression &expr)
 // Arguments:
 //   menu      : A pointer to the variable menu that will be updated.
 //   varTypes  : A flag that contains various variable types orred together.
-//   changeVar : A flag that tells the functions called by this routine that
-//               it is being called for the change variable menu.
+//   receiver  : The QObject whose slot function will be called.
+//   slot      : The slot function that will be called on the receiver.
 //
 // Returns:    The number of variables in the list that was added to the menu.
 //
@@ -406,11 +406,14 @@ VariableMenuPopulator::AddExpression(const Expression &expr)
 //   Brad Whitlock, Thu Aug 5 14:30:13 PST 2004
 //   I made it use VariableList instead of StringBoolMap.
 //
+//   Brad Whitlock, Wed Dec 8 14:07:55 PST 2004
+//   I changed how the slot functions for the menu are hooked up.
+//
 // ****************************************************************************
 
 int
 VariableMenuPopulator::UpdateSingleVariableMenu(QvisVariablePopupMenu *menu,
-    QObject *receiver, int varTypes, bool changeVar)
+    int varTypes, QObject *receiver, const char *slot)
 {
     int numVarTypes = 0;
     int retval = 0;
@@ -463,7 +466,7 @@ VariableMenuPopulator::UpdateSingleVariableMenu(QvisVariablePopupMenu *menu,
             AddVars(vars, symmTensorVars);
        
         // Update the menu with the composite variable list.
-        UpdateSingleMenu(menu, receiver, vars, changeVar);
+        UpdateSingleMenu(menu, vars, receiver, slot);
         retval = vars.Size();
     }
     else
@@ -473,39 +476,39 @@ VariableMenuPopulator::UpdateSingleVariableMenu(QvisVariablePopupMenu *menu,
         switch(varTypes)
         {
         case VAR_CATEGORY_MESH:
-            UpdateSingleMenu(menu, receiver, meshVars, changeVar);
+            UpdateSingleMenu(menu, meshVars, receiver, slot);
             retval = meshVars.Size();
             break;
         case VAR_CATEGORY_SCALAR:
-            UpdateSingleMenu(menu, receiver, scalarVars, changeVar);
+            UpdateSingleMenu(menu, scalarVars, receiver, slot);
             retval = scalarVars.Size();
             break;
         case VAR_CATEGORY_VECTOR:
-            UpdateSingleMenu(menu, receiver, vectorVars, changeVar);
+            UpdateSingleMenu(menu, vectorVars, receiver, slot);
             retval = vectorVars.Size();
             break;
         case VAR_CATEGORY_MATERIAL:
-            UpdateSingleMenu(menu, receiver, materialVars, changeVar);
+            UpdateSingleMenu(menu, materialVars, receiver, slot);
             retval = materialVars.Size();
             break;
         case VAR_CATEGORY_SUBSET:
-            UpdateSingleMenu(menu, receiver, subsetVars, changeVar);
+            UpdateSingleMenu(menu, subsetVars, receiver, slot);
             retval = subsetVars.Size();
             break;
         case VAR_CATEGORY_SPECIES:
-            UpdateSingleMenu(menu, receiver, speciesVars, changeVar);
+            UpdateSingleMenu(menu, speciesVars, receiver, slot);
             retval = speciesVars.Size();
             break;
         case VAR_CATEGORY_CURVE:
-            UpdateSingleMenu(menu, receiver, curveVars, changeVar);
+            UpdateSingleMenu(menu, curveVars, receiver, slot);
             retval = curveVars.Size();
             break;
         case VAR_CATEGORY_TENSOR:
-            UpdateSingleMenu(menu, receiver, tensorVars, changeVar);
+            UpdateSingleMenu(menu, tensorVars, receiver, slot);
             retval = curveVars.Size();
             break;
         case VAR_CATEGORY_SYMMETRIC_TENSOR:
-            UpdateSingleMenu(menu, receiver, symmTensorVars, changeVar);
+            UpdateSingleMenu(menu, symmTensorVars, receiver, slot);
             retval = curveVars.Size();
             break;
         }
@@ -576,9 +579,11 @@ VariableMenuPopulator::ItemEnabled(int varType) const
 //   Updates a variable list so it contains the correct variables.
 //
 // Arguments:
-//   type : This corresponds to the type of plot whose menu
-//          we're updating.
-//   vars : A map of strings and bools representing the variable list.
+//   menu     : The menu that we want to update.
+//   vars     : A map of strings and bools representing the variable list.
+//   receiver : The QObject that will handle signals emitted by the menu.
+//   slot     : The slot function that will be called on the receiver when
+//              signals are emitted by the menu.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Mar 17 14:31:20 PST 2003
@@ -587,21 +592,22 @@ VariableMenuPopulator::ItemEnabled(int varType) const
 //   Brad Whitlock, Thu Aug 5 14:27:22 PST 2004
 //   I made it use VariableList.
 //
+//   Brad Whitlock, Fri Dec 3 13:26:06 PST 2004
+//   I removed the code to clear the menu and changed the slot hookup code
+//   so it is more general.
+//
 // ****************************************************************************
 
 void
 VariableMenuPopulator::UpdateSingleMenu(QvisVariablePopupMenu *menu,
-    QObject *receiver, VariableList &vars, bool changeVar)
+    VariableList &vars, QObject *receiver, const char *slot)
 {
     if (menu == 0)
         return;
 
-    // Remove the existing menu entries.
-    menu->clear();
-
     // Add each variable to the variable menu.
     std::map <std::string, QvisVariablePopupMenu *> popups;
-    int j, varCount = 0;
+    int j, varCount = menu->count();
     std::string var;
     bool        validVar;
     vars.InitTraversal();
@@ -630,15 +636,10 @@ VariableMenuPopulator::UpdateSingleMenu(QvisVariablePopupMenu *menu,
                     new QvisVariablePopupMenu(menu->getPlotType(), parent,
                                               path.c_str());
                 newPopup->setVarPath(path.c_str());
-                if (changeVar)
+                if (receiver != 0 && slot != 0)
                 {
                     QObject::connect(newPopup, SIGNAL(activated(int, const QString &)),
-                                     receiver, SLOT(changeVariable(int, const QString &)));
-                }
-                else
-                {
-                    QObject::connect(newPopup, SIGNAL(activated(int, const QString &)),
-                                     receiver, SLOT(addPlot(int, const QString &)));
+                                     receiver, slot);
                 }
 
                 popups[path] = newPopup;

@@ -528,6 +528,12 @@ NetworkManager::GetDBFromCache(const string &filename, int time,
 //    Mark C. Miller, Thu Aug 19 10:28:45 PDT 2004
 //    Removed #ifdef 0 code block
 //
+//    Jeremy Meredith, Tue Dec 14 14:02:35 PST 2004
+//    The code to get the real variable name was a duplicate of two
+//    other spots in VisIt, but this one was out of date.  I
+//    refactored the best one into ParsingExprList::GetRealVariable
+//    and made this one point to it.
+//
 // ****************************************************************************
 void
 NetworkManager::StartNetwork(const string &filename, const string &format,
@@ -538,19 +544,7 @@ NetworkManager::StartNetwork(const string &filename, const string &format,
 {
     // If the variable is an expression, we need to find a "real" variable
     // name to work with.
-    std::string leaf = var;
-    ExprNode *tree = ParsingExprList::GetExpressionTree(leaf);
-    while (tree != NULL)
-    {
-        const set<string> &varLeaves = tree->GetVarLeaves();
-        if (varLeaves.empty())
-        {
-            EXCEPTION1(ImproperUseException,
-                       "After parsing, expression has no real variables.");
-        }
-        leaf = *varLeaves.begin();
-        tree = ParsingExprList::GetExpressionTree(leaf);
-    }
+    string leaf = ParsingExprList::GetRealVariable(var);
 
     // Start up the DataNetwork and add the database to it.
     workingNet = new DataNetwork;

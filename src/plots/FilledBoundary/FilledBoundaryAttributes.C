@@ -1202,7 +1202,7 @@ FilledBoundaryAttributes::GetFieldType(int index) const
         case 16:  return FieldType_double;
         case 17:  return FieldType_enum;
         case 18:  return FieldType_bool;
-        case 19:  return FieldType_string;
+        case 19:  return FieldType_variablename;
         default:  return FieldType_unknown;
     }
 }
@@ -1246,7 +1246,7 @@ FilledBoundaryAttributes::GetFieldTypeName(int index) const
         case 16:  return "double";
         case 17:  return "enum";
         case 18:  return "bool";
-        case 19:  return "string";
+        case 19:  return "variablename";
         default:  return "invalid index";
     }
 }

@@ -4,6 +4,8 @@
 #include <qframe.h>
 
 struct XMLDocument;
+class QButtonGroup;
+class QGroupBox;
 class QLineEdit;
 class QNarrowLineEdit;
 class QButtonGroup;
@@ -23,7 +25,12 @@ class QPushButton;
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+//  Modifications:
+//    Brad Whitlock, Fri Dec 10 10:27:41 PDT 2004
+//    Added controls for setting some variable name attributes.
+//
 // ****************************************************************************
+
 class XMLEditFields : public QFrame
 {
     Q_OBJECT
@@ -52,6 +59,7 @@ class XMLEditFields : public QFrame
     void fieldlistDel();
     void fieldlistUp();
     void fieldlistDown();
+    void variableTypeClicked(int);
   private:
     XMLDocument     *xmldoc;
 
@@ -71,6 +79,8 @@ class XMLEditFields : public QFrame
     QNarrowLineEdit *length;
     QCheckBox       *internal;
     QCheckBox       *ignoreeq;
+    QGroupBox       *variableNameGroup;
+    QButtonGroup    *varNameButtons;
     QCheckBox       *init;
     QMultiLineEdit  *values;
 };

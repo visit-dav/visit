@@ -113,6 +113,9 @@ using std::vector;
 //    Removed AttVector's header SetXXX method prototype.
 //    Honor non-member user-defined functions.
 //
+//    Brad Whitlock, Wed Dec 8 15:48:10 PST 2004
+//    Added support for variable names as a type.
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -935,6 +938,45 @@ class AttsGeneratorOpacity : public virtual Opacity , public virtual AttsGenerat
 
 
 //
+// -------------------------------- VariableName --------------------------------
+//
+class AttsGeneratorVariableName : public virtual VariableName , public virtual AttsGeneratorField
+{
+  public:
+    AttsGeneratorVariableName(const QString &n, const QString &l)
+        : VariableName(n,l), AttsGeneratorField("variablename",n,l),
+          Field("variablename",n,l) { }
+    virtual bool CanHaveConst() { return true; }
+    virtual void AddSystemIncludes(UniqueStringList &sl) 
+    { 
+        sl.AddString("#include <string>\n");
+    }
+    virtual QString GetAttributeGroupID()
+    {
+        return "s";
+    }
+    virtual QString DataNodeConversion()
+    {
+        return "AsString";
+    }
+    virtual bool RequiresSourceInitializer() const
+    {
+        return true;
+    }
+    virtual void WriteSourceInitializer(ostream &c)
+    {
+        if(valueSet)
+            c << name << "(\""<<val<<"\")";
+        else
+            c << name << "(\"default\")";
+    }
+    virtual void WriteSourceSetDefault(ostream &c)
+    {
+    }
+};
+
+
+//
 // ------------------------------------ Att -----------------------------------
 //
 class AttsGeneratorAtt : public virtual Att , public virtual AttsGeneratorField
@@ -1263,6 +1305,10 @@ class AttsGeneratorEnum : public virtual Enum , public virtual AttsGeneratorFiel
 
 
 // ----------------------------------------------------------------------------
+// Modifications:
+//    Brad Whitlock, Wed Dec 8 15:47:03 PST 2004
+//    Added support for variable names.
+//
 // ----------------------------------------------------------------------------
 class AttsFieldFactory
 {
@@ -1294,6 +1340,7 @@ class AttsFieldFactory
         else if (type == "opacity")      f = new AttsGeneratorOpacity(name,label);
         else if (type == "linestyle")    f = new AttsGeneratorLineStyle(name,label);
         else if (type == "linewidth")    f = new AttsGeneratorLineWidth(name,label);
+        else if (type == "variablename") f = new AttsGeneratorVariableName(name,label);
         else if (type == "att")          f = new AttsGeneratorAtt(subtype,name,label);
         else if (type == "attVector")    f = new AttsGeneratorAttVector(subtype,name,label);
         else if (type == "enum")         f = new AttsGeneratorEnum(subtype, name, label);

@@ -6,8 +6,7 @@
 #include <qlayout.h>
 #include <qlineedit.h>
 #include <qradiobutton.h>
-
-
+#include <QvisVariableButton.h>
 
 // ****************************************************************************
 // Method: QvisPointControl::QvisPointControl
@@ -18,6 +17,8 @@
 // Creation:   November 4, 2004 
 //
 // Modifications:
+//    Brad Whitlock, Thu Dec 9 17:05:12 PST 2004
+//    I replaced one of the line edits with a QvisVariableButton.
 //
 // ****************************************************************************
 
@@ -43,11 +44,13 @@ QvisPointControl::QvisPointControl(QWidget *parent, const char *name) :
                                 "sizeLabel");
     topLayout->addWidget(sizeLabel, 0, 0);
 
-    // Create the size variable check box and line edit.
-    sizeVarLineEdit = new QLineEdit(this, "sizeVarLineEdit");
-    connect(sizeVarLineEdit, SIGNAL(returnPressed()),
-            this, SLOT(processSizeVarText()));
-    topLayout->addMultiCellWidget(sizeVarLineEdit, 1, 1, 2, 3);
+    // Create the size variable check box and variable button.
+    sizeVarButton = new QvisVariableButton(true, true, true,
+        QvisVariableButton::Scalars, this, "sizeVarButton");
+    sizeVarButton->setEnabled(false);
+    connect(sizeVarButton, SIGNAL(activated(const QString &)),
+            this, SLOT(sizeVarChanged(const QString &)));
+    topLayout->addMultiCellWidget(sizeVarButton, 1, 1, 2, 3);
     sizeVarToggle = new QCheckBox("Scale point size by variable", this, 
                                        "sizeVarToggle");
     connect(sizeVarToggle, SIGNAL(toggled(bool)),
@@ -160,7 +163,7 @@ QvisPointControl::GetPointSize()
 
 
 // ****************************************************************************
-// Method: QvisPointControl::processSizeVarText
+// Method: QvisPointControl::sizeVarChanged
 //
 // Purpose: 
 //   This is a Qt slot function that is called when the user changes the
@@ -170,23 +173,19 @@ QvisPointControl::GetPointSize()
 // Creation:   November 4, 2004 
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Dec 9 17:09:50 PST 2004
+//   I renamed the method and adapted it to work with a variable button.
+//
 // ****************************************************************************
 
 void
-QvisPointControl::processSizeVarText()
+QvisPointControl::sizeVarChanged(const QString &var)
 {
-    QString temp = sizeVarLineEdit->displayText().stripWhiteSpace();
-    bool okay = !temp.isEmpty();
-    if (okay)
+    if (var != lastGoodVar)
     {
-        lastGoodVar = temp;
+        lastGoodVar = var;
         if (!signalsBlocked())
-            emit pointSizeVarChanged(temp);
-    }
-    else 
-    {
-        SetPointSizeVar(lastGoodVar); 
+            emit pointSizeVarChanged(var);
     }
 }
 
@@ -202,15 +201,14 @@ QvisPointControl::processSizeVarText()
 // Creation:   November 4, 2004 
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Dec 9 17:12:12 PST 2004
+//   I changed the method to work with a variable button.
+//
 // ****************************************************************************
 
 QString  &
 QvisPointControl::GetPointSizeVar() 
 {
-    blockSignals(true);
-    processSizeVarText();
-    blockSignals(false);
     return lastGoodVar;
 }
 
@@ -228,6 +226,8 @@ QvisPointControl::GetPointSizeVar()
 //  Creation:    November 4, 2004 
 //
 //  Modifications:
+//    Brad Whitlock, Thu Dec 9 17:12:39 PST 2004
+//    I changed the name of one of the widgets.
 //
 // ****************************************************************************
 
@@ -237,7 +237,7 @@ QvisPointControl::typeButtonChanged(int type)
     sizeLabel->setEnabled(type != 3);
     sizeLineEdit->setEnabled(type != 3);
     sizeVarToggle->setEnabled(type != 3);
-    sizeVarLineEdit->setEnabled(type != 3);
+    sizeVarButton->setEnabled(type != 3);
     if (!signalsBlocked())
         emit pointTypeChanged(type);
 }
@@ -254,13 +254,17 @@ QvisPointControl::typeButtonChanged(int type)
 //
 // Programmer: Kathleen Bonnell
 // Creation:   November 4, 2004 
-//   
+// 
+// Modifications:
+//   Brad Whitlock, Thu Dec 9 17:13:06 PST 2004
+//   I changed the name of one of the widgets.
+//
 // ****************************************************************************
 
 void
 QvisPointControl::sizeVarToggled(bool val)
 {
-    sizeVarLineEdit->setEnabled(val);
+    sizeVarButton->setEnabled(val);
     if (!signalsBlocked())
         emit pointSizeVarToggled(val);
 }
@@ -304,7 +308,9 @@ void QvisPointControl::SetPointSize(double val)
 // Creation:   November 4, 2004 
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Dec 9 17:13:40 PST 2004
+//   I changed the name of one of the widgets.
+//
 // ****************************************************************************
 
 void QvisPointControl::SetPointSizeVarChecked(bool checked)
@@ -312,7 +318,7 @@ void QvisPointControl::SetPointSizeVarChecked(bool checked)
     sizeVarToggle->blockSignals(true);
     sizeVarToggle->setChecked(checked);
     sizeVarToggle->blockSignals(false);
-    sizeVarLineEdit->setEnabled(checked);
+    sizeVarButton->setEnabled(checked);
 }
 
 
@@ -349,15 +355,15 @@ QvisPointControl::GetPointSizeVarChecked() const
 // Creation:   November 4, 2004 
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Dec 9 17:14:17 PST 2004
+//   I changed the code so it works with a variable button.
+//
 // ****************************************************************************
 
 void QvisPointControl::SetPointSizeVar(QString &var)
 {
-    sizeVarLineEdit->blockSignals(true);
-    sizeVarLineEdit->setText(var);
+    sizeVarButton->setText(var);
     lastGoodVar = var;
-    sizeVarLineEdit->blockSignals(false);
 }
 
 
@@ -374,7 +380,9 @@ void QvisPointControl::SetPointSizeVar(QString &var)
 // Creation:   November 4, 2004 
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Dec 9 17:14:45 PST 2004
+//   I changed the name of one of the widgets.
+//
 // ****************************************************************************
 
 void QvisPointControl::SetPointType(int type)
@@ -388,7 +396,7 @@ void QvisPointControl::SetPointType(int type)
     sizeLabel->setEnabled(type != 3);
     sizeLineEdit->setEnabled(type != 3);
     sizeVarToggle->setEnabled(type != 3);
-    sizeVarLineEdit->setEnabled(type != 3);
+    sizeVarButton->setEnabled(type != 3);
     if (!signalsBlocked())
         emit pointTypeChanged(type);
 }

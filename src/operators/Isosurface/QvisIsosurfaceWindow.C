@@ -17,6 +17,8 @@
 #include <QvisColorButton.h>
 #include <QvisLineStyleWidget.h>
 #include <QvisLineWidthWidget.h>
+#include <QvisVariableButton.h>
+
 #include <stdio.h>
 #include <string>
 
@@ -76,6 +78,9 @@ QvisIsosurfaceWindow::~QvisIsosurfaceWindow()
 // Modifications:
 //   Brad Whitlock, Mon Sep 8 17:03:40 PST 2003
 //   I changed some menu labels to plural.
+//
+//   Brad Whitlock, Thu Dec 9 17:45:51 PST 2004
+//   I made it use a variable button.
 //
 // ****************************************************************************
 
@@ -155,11 +160,12 @@ QvisIsosurfaceWindow::CreateWindowContents()
             this, SLOT(processMaxLimitText()));
     limitsLayout->addWidget(maxLineEdit, 2, 2);
 
-    limitsLayout->addWidget(new QLabel("variable", central, "variableLabel"),9,0);
-    variable = new QLineEdit(central, "variable");
-    connect(variable, SIGNAL(returnPressed()),
-            this, SLOT(variableProcessText()));
-    limitsLayout->addWidget(variable, 9,1);
+    limitsLayout->addWidget(new QLabel("Variable", central, "variableLabel"),3,0);
+    variable = new QvisVariableButton(true, true, true, 
+        QvisVariableButton::Scalars, central, "variable");
+    connect(variable, SIGNAL(activated(const QString &)),
+            this, SLOT(variableChanged(const QString &)));
+    limitsLayout->addMultiCellWidget(variable, 3, 3, 1, 2);
 }
 
 
@@ -435,7 +441,10 @@ QvisIsosurfaceWindow::StringToDoubleList(const char *str, doubleVector &dv)
 // Creation:   Tue Apr 16 17:41:29 PST 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Dec 9 17:47:34 PST 2004
+//   I removed the coding to get the variable since it's now in a widget that
+//   does not need that.
+//
 // ****************************************************************************
 
 void
@@ -487,26 +496,6 @@ QvisIsosurfaceWindow::GetCurrentValues(int which_widget)
                 atts->GetMax());
             Message(msg);
             atts->SetMax(atts->GetMax());
-        }
-    }
-
-    // Do variable
-    if(which_widget == 3 || doAll)
-    {
-        temp = variable->displayText();
-        okay = !temp.isEmpty();
-        if(okay)
-        {
-            atts->SetVariable(temp.latin1());
-        }
- 
-        if(!okay)
-        {
-            msg.sprintf("The value of variable was invalid. "
-                "Resetting to the last good value of %s.",
-                atts->GetVariable().c_str());
-            Message(msg);
-            atts->SetVariable(atts->GetVariable());
         }
     }
 }
@@ -659,11 +648,28 @@ QvisIsosurfaceWindow::processMaxLimitText()
     Apply();
 }
 
+// ****************************************************************************
+// Method: QvisIsosurfaceWindow::variableChanged
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the user selects a new
+//   variable.
+//
+// Arguments:
+//   var : The name of the selected variable.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Dec 9 17:48:30 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
 
 void
-QvisIsosurfaceWindow::variableProcessText()
+QvisIsosurfaceWindow::variableChanged(const QString &var)
 {
-    GetCurrentValues(3);
+    atts->SetVariable(var.latin1());
+    SetUpdate(false);
     Apply();
 }
 

@@ -229,8 +229,8 @@ QvisPseudocolorPlotWindow::CreateWindowContents()
     pointControl = new QvisPointControl(central, "pointControl");
     connect(pointControl, SIGNAL(pointSizeChanged(double)),
             this, SLOT(pointSizeChanged(double)));
-    connect(pointControl, SIGNAL(pointSizeVarChanged(QString &)),
-            this, SLOT(pointSizeVarChanged(QString &)));
+    connect(pointControl, SIGNAL(pointSizeVarChanged(const QString &)),
+            this, SLOT(pointSizeVarChanged(const QString &)));
     connect(pointControl, SIGNAL(pointSizeVarToggled(bool)),
             this, SLOT(pointSizeVarToggled(bool)));
     connect(pointControl, SIGNAL(pointTypeChanged(int)),
@@ -870,7 +870,7 @@ QvisPseudocolorPlotWindow::pointSizeChanged(double size)
 // ****************************************************************************
 
 void
-QvisPseudocolorPlotWindow::pointSizeVarChanged(QString &var)
+QvisPseudocolorPlotWindow::pointSizeVarChanged(const QString &var)
 {
     pcAtts->SetPointSizeVar(var.latin1());
     Apply();

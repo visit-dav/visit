@@ -100,7 +100,10 @@
 #    Removed Kerbel plot entirely from this makefile.
 #
 #    Brad Whitlock, Mon Sep 27 10:03:17 PDT 2004
-#    Added the label plot.
+#    Added the Label plot.
+#
+#    Brad Whitlock, Mon Nov 29 11:52:58 PDT 2004
+#    Added the Scatter plot.
 #
 #    Jeremy Meredith, Fri Dec 10 13:39:08 PST 2004
 #    Tools are now run directly instead of as an argument to visit.
@@ -116,7 +119,7 @@ all: message
 OPTIONAL=Topology Truecolor
 
 REQUIRED=Boundary Contour Curve FilledBoundary Histogram Label Mesh Pseudocolor \
-         Streamline Subset Surface Tensor Vector Volume
+         Scatter Streamline Subset Surface Tensor Vector Volume
 
 SUBDIRS=$(REQUIRED) @PLOT_OPTIONAL_DIRS@
 ALLSUBDIRS=$(REQUIRED) $(OPTIONAL)

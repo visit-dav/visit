@@ -21,6 +21,8 @@
 class AttributeSubject;
 class QvisNotepadArea;
 class QvisPostableWindowObserver;
+class QvisWizard;
+class QWidget;
 class avtDatabaseMetaData;
 class avtPlot;
 
@@ -78,6 +80,9 @@ class avtPlot;
 //    Brad Whitlock, Fri Mar 26 00:40:29 PDT 2004
 //    I changed the interface to several methods in the viewer plugin.
 //
+//    Brad Whitlock, Tue Dec 14 09:42:33 PDT 2004
+//    I added support for plot wizards.
+//
 // ****************************************************************************
 
 class PLUGIN_API GeneralPlotPluginInfo
@@ -104,6 +109,11 @@ class PLUGIN_API GUIPlotPluginInfo : public virtual CommonPlotPluginInfo
     virtual int GetVariableTypes() const = 0;
     virtual QvisPostableWindowObserver *CreatePluginWindow(int type,
         AttributeSubject *attr, QvisNotepadArea *notepad) = 0;
+    virtual QvisWizard *CreatePluginWizard(AttributeSubject *attr,
+        QWidget *parent, const char *name =0)
+    {
+        return 0;
+    }
     virtual const char **XPMIconData() const { return 0; }
 };
 
