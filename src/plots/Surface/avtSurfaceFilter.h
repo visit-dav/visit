@@ -50,6 +50,9 @@ class vtkGeometryFilter;
 //    Mark C. Miller, Sun Feb 29 18:08:26 PST 2004
 //    Added zValMin, zValMax data members
 //
+//    Mark C. Miller, Tue Mar  2 17:55:30 PST 2004
+//    Removed zValMin, zValMax
+//
 // ****************************************************************************
 
 class avtSurfaceFilter : public avtStreamer
@@ -78,8 +81,6 @@ class avtSurfaceFilter : public avtStreamer
     double                  max;
     double                  Ms;
     double                  Bs;
-    double                  zValMin;
-    double                  zValMax;
     bool                    stillNeedExtents;
 
     double                  SkewTheValue(const double);

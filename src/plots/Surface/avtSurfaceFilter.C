@@ -49,6 +49,9 @@
 //    Mark C. Miller Sun Feb 29 18:08:26 PST 2004
 //    Initialize zValMin and zValMax
 //
+//    Mark C. Miller, Tue Mar  2 09:58:49 PST 2004
+//    Removed zValMin and zValMax data members
+//
 // ****************************************************************************
 
 avtSurfaceFilter::avtSurfaceFilter(const AttributeGroup *a)
@@ -73,8 +76,6 @@ avtSurfaceFilter::avtSurfaceFilter(const AttributeGroup *a)
     max = -1;
     Ms = 1.;
     Bs = 0.;
-    zValMin = 0;
-    zValMax = 0;
 }
 
 
@@ -214,6 +215,9 @@ avtSurfaceFilter::Equivalent(const AttributeGroup *a)
 //    Mark C. Miller, Sun Feb 29 18:08:26 PST 2004
 //    Added code to compute zValMin and zValMax
 //
+//    Mark C. Miller, Tue Mar  2 09:58:49 PST 2004
+//    Removed zValMin and zValMax data members
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -268,7 +272,6 @@ avtSurfaceFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
     int numScalars = inScalars->GetNumberOfTuples();
     outScalars->SetNumberOfTuples(numScalars);
 
-    zValMin = zValMax = inScalars->GetTuple1(0);
     for (int i = 0; i < numScalars; i++)
     {
         // calculate  and store zVals
@@ -293,11 +296,6 @@ avtSurfaceFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
              zVal = SkewTheValue(zVal); 
         }
         zVal = Ms * zVal + Bs;
-
-        if (zVal > zValMax)
-            zValMax = zVal;
-        else if (zVal < zValMin)
-            zValMin = zVal;
 
         outScalars->SetValue(i, zVal);
     }
@@ -534,8 +532,7 @@ avtSurfaceFilter::PreExecute(void)
 //  Modifications:
 //
 //    Mark C. Miller, Sun Feb 29 17:52:19 PST 2004
-//    Added code to update output spatial extents from knowledge of input
-//    spatial extents and output zValMin and zValMax
+//    Added code to traverse output data extents and set them correctly
 //
 // ****************************************************************************
 
@@ -549,14 +546,14 @@ avtSurfaceFilter::PostExecute(void)
     double tform[16] = {1.,0.,0.,0.,0.,1.,0.,0.,0.,0.,0.,0.,0.,0.,0.,1.};
     outAtts.SetTransform(tform);
 
-    // get the input's spatial extents
+    // get the outputs's spatial extents
     double se[6];
-    GetInput()->GetInfo().GetAttributes().GetSpatialExtents(se);
+    avtDataset_p output = GetTypedOutput();
+    avtDatasetExaminer::GetSpatialExtents(output, se);
 
-    // over-write z-spatial extents with our known data extents
-    se[4] = zValMin;
-    se[5] = zValMax;
-    outAtts.GetTrueSpatialExtents()->Set(se);
+    // over-write spatial extents
+    outAtts.GetTrueSpatialExtents()->Clear();
+    outAtts.GetCumulativeTrueSpatialExtents()->Set(se);
 }
 
 
