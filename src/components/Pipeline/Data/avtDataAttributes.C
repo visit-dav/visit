@@ -64,6 +64,7 @@ avtDataAttributes::avtDataAttributes()
     cumulativeCurrentSpatial  = NULL;
     currentData               = NULL;
     cumulativeCurrentData     = NULL;
+    canUseCummulativeAsTrueOrCurrent = false;
 
     centering              = AVT_UNKNOWN_CENT;
     cellOrigin             = 0;
@@ -260,6 +261,7 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
     *(effectiveData)             = *(di.effectiveData);
     *(currentData)               = *(di.currentData);
     *(cumulativeCurrentData)     = *(di.cumulativeCurrentData);
+    canUseCummulativeAsTrueOrCurrent = di.canUseCummulativeAsTrueOrCurrent;
 
     labels = di.labels;
     varname = di.varname;
@@ -387,6 +389,7 @@ avtDataAttributes::Merge(const avtDataAttributes &da)
     effectiveData->Merge(*(da.effectiveData));
     currentData->Merge(*(da.currentData));
     cumulativeCurrentData->Merge(*(da.cumulativeCurrentData));
+    canUseCummulativeAsTrueOrCurrent &= da.canUseCummulativeAsTrueOrCurrent;
 
     MergeLabels(da.labels);
     MergeTransform(da.transform);
@@ -425,13 +428,12 @@ avtDataAttributes::GetSpatialExtents(double *buff)
         return true;
     }
 
-#ifndef PARALLEL
-    if (cumulativeTrueSpatial->HasExtents())
+    if (canUseCummulativeAsTrueOrCurrent &&
+        cumulativeTrueSpatial->HasExtents())
     {
         cumulativeTrueSpatial->CopyTo(buff);
         return true;
     }
-#endif
 
     return false;
 }
@@ -468,13 +470,12 @@ avtDataAttributes::GetDataExtents(double *buff)
         return true;
     }
 
-#ifndef PARALLEL
-    if (cumulativeTrueData->HasExtents())
+    if (canUseCummulativeAsTrueOrCurrent &&
+        cumulativeTrueData->HasExtents())
     {
         cumulativeTrueData->CopyTo(buff);
         return true;
     }
-#endif
 
     return false;
 }
@@ -780,7 +781,7 @@ void
 avtDataAttributes::Write(avtDataObjectString &str,
                          const avtDataObjectWriter *wrtr)
 {
-    const int numVals = 12;
+    const int numVals = 13;
     int vals[numVals];
     vals[0] = topologicalDimension;
     vals[1] = spatialDimension;
@@ -794,6 +795,7 @@ avtDataAttributes::Write(avtDataObjectString &str,
     vals[9] = (int) containsGhostZones;
     vals[10] = (containsOriginalCells ? 1 : 0);
     vals[11] = (canUseTransform ? 1 : 0);
+    vals[12] = (canUseCummulativeAsTrueOrCurrent ? 1 : 0);
     wrtr->WriteInt(str, vals, numVals);
     wrtr->WriteDouble(str, dtime);
 
@@ -924,6 +926,10 @@ avtDataAttributes::Read(char *input)
     memcpy(&tmp, input, sizeof(int));
     input += sizeof(int); size += sizeof(int);
     canUseTransform = (tmp != 0 ? true : false);
+
+    memcpy(&tmp, input, sizeof(int));
+    input += sizeof(int); size += sizeof(int);
+    canUseCummulativeAsTrueOrCurrent = (tmp != 0 ? true : false);
 
     memcpy(&dtmp, input, sizeof(double));
     input += sizeof(double); size += sizeof(double);
@@ -1177,13 +1183,12 @@ avtDataAttributes::GetCurrentDataExtents(double *buff)
         return true;
     }
 
-#ifndef PARALLEL
-    if (cumulativeCurrentData->HasExtents())
+    if (canUseCummulativeAsTrueOrCurrent &&
+        cumulativeCurrentData->HasExtents())
     {
         cumulativeCurrentData->CopyTo(buff);
         return true;
     }
-#endif
 
     return false;
 }
@@ -1215,13 +1220,12 @@ avtDataAttributes::GetCurrentSpatialExtents(double *buff)
         return true;
     }
 
-#ifndef PARALLEL
-    if (cumulativeCurrentSpatial->HasExtents())
+    if (canUseCummulativeAsTrueOrCurrent &&
+        cumulativeCurrentSpatial->HasExtents())
     {
         cumulativeCurrentSpatial->CopyTo(buff);
         return true;
     }
-#endif
 
     return false;
 }

@@ -36,7 +36,7 @@
 #include <ReleaseDataRPC.h>
 #include <RenderRPC.h>
 #include <SetFinalVariableNameRPC.h>
-#include <SetWindowAttsRPC.h>
+#include <SetWinAnnotAttsRPC.h>
 #include <StartPickRPC.h>
 #include <UpdatePlotAttsRPC.h>
 #include <UseNetworkRPC.h>
@@ -62,8 +62,6 @@ template<>
 void
 RPCExecutor<QuitRPC>::Execute(QuitRPC *rpc)
 {
-    Engine         *engine = Engine::Instance();
-    NetworkManager *netmgr = engine->GetNetMgr();
 
     debug2 << "Executing QuitRPC" << endl;
     if (!rpc->GetQuit())
@@ -71,6 +69,8 @@ RPCExecutor<QuitRPC>::Execute(QuitRPC *rpc)
     else
     {
 #ifdef DEBUG_MEMORY_LEAKS
+        Engine         *engine = Engine::Instance();
+        NetworkManager *netmgr = engine->GetNetMgr();
         netmgr->ClearAllNetworks();
 #endif
         rpc->SendReply();
@@ -584,30 +584,23 @@ RPCExecutor<StartPickRPC>::Execute(StartPickRPC *rpc)
 }
 
 // ****************************************************************************
-//  Method: RPCExecutor<SetWindowAttsRPC>::Execute
+//  Method: RPCExecutor<SetWinAnnotAttsRPC>::Execute
 //
 //  Purpose:
-//      Execute a SetWindowAttsRPC.
+//      Execute a SetWinAnnotAttsRPC.
 //
-//  Programmer: Jeremy Meredith
-//  Creation:   November  8, 2001
-//
-//  Modifications:
-//    Brad Whitlock, Mon Dec 2 13:46:49 PST 2002
-//    I added a method call to populate the color tables.
-//
-//    Jeremy Meredith, Thu Jul 10 11:37:48 PDT 2003
-//    Made the engine an object.
+//  Programmer: Mark C. Miller 
+//  Creation:   15Jul03 
 //
 // ****************************************************************************
 template<>
 void
-RPCExecutor<SetWindowAttsRPC>::Execute(SetWindowAttsRPC *rpc)
+RPCExecutor<SetWinAnnotAttsRPC>::Execute(SetWinAnnotAttsRPC *rpc)
 {
     Engine         *engine = Engine::Instance();
     NetworkManager *netmgr = engine->GetNetMgr();
 
-    debug2 << "Executing SetWindowAttsRPC "
+    debug2 << "Executing SetWinAnnotAttsRPC "
            << rpc->GetWindowAtts().GetSize()[0] << "x"
            << rpc->GetWindowAtts().GetSize()[1] << endl;
     TRY 
@@ -615,6 +608,7 @@ RPCExecutor<SetWindowAttsRPC>::Execute(SetWindowAttsRPC *rpc)
         avtColorTables::Instance()->SetColorTables(rpc->GetWindowAtts().
                                                              GetColorTables());
         netmgr->SetWindowAttributes(rpc->GetWindowAtts());
+        netmgr->SetAnnotationAttributes(rpc->GetAnnotationAtts());
         rpc->SendReply();
     }
     CATCH2(VisItException, e)

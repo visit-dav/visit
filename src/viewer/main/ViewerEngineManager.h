@@ -18,6 +18,7 @@ class MaterialAttributes;
 class PickAttributes;
 class QueryAttributes;
 class ViewerPlot;
+class AnnotationAttributes;
 class WindowAttributes;
 
 typedef struct
@@ -165,7 +166,8 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
     bool Pick(const char *hostName_, const int nid,
               const PickAttributes *atts, PickAttributes &retAtts);
     bool StartPick(const char *hostName_, const bool flag, const int nid);
-    bool SetWindowAtts(const char *hostName_, const WindowAttributes *wa);    
+    bool SetWinAnnotAtts(const char *hostName_, const WindowAttributes *wa,
+                         const AnnotationAttributes *aa);    
     bool ClearCache(const char *hostName, const char *dbName = 0);
     bool Query(const char *hotsName_, const int nid, 
                const QueryAttributes *atts, QueryAttributes &retAtts);

@@ -14,6 +14,7 @@
 #include <avtViewCurve.h>
 #include <VisCallback.h>
 #include <VisWindowTypes.h>
+#include <AnnotationAttributes.h>
 #include <WindowAttributes.h>
 #include <vectortypes.h>
 
@@ -39,6 +40,7 @@ struct ExternalRenderRequestInfo
     intVector                             plotIdsList;
     std::vector<const AttributeSubject *> attsList;
     WindowAttributes                      winAtts;
+    AnnotationAttributes                  annotAtts;
 };
 
 // ****************************************************************************

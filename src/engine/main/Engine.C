@@ -206,7 +206,6 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     makePlotRPC                     = new MakePlotRPC;
     useNetworkRPC                   = new UseNetworkRPC;
     updatePlotAttsRPC               = new UpdatePlotAttsRPC;
-    setWindowAttsRPC                = new SetWindowAttsRPC;
     pickRPC                         = new PickRPC;
     startPickRPC                    = new StartPickRPC;
     executeRPC                      = new ExecuteRPC;
@@ -216,6 +215,7 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     openDatabaseRPC                 = new OpenDatabaseRPC;
     defineVirtualDatabaseRPC        = new DefineVirtualDatabaseRPC;
     renderRPC                       = new RenderRPC;
+    setWinAnnotAttsRPC              = new SetWinAnnotAttsRPC;
 
     xfer->Add(quitRPC);
     xfer->Add(readRPC);
@@ -225,7 +225,6 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     xfer->Add(makePlotRPC);
     xfer->Add(useNetworkRPC);
     xfer->Add(updatePlotAttsRPC);
-    xfer->Add(setWindowAttsRPC);
     xfer->Add(pickRPC);
     xfer->Add(startPickRPC);
     xfer->Add(executeRPC);
@@ -235,6 +234,7 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     xfer->Add(openDatabaseRPC);
     xfer->Add(defineVirtualDatabaseRPC);
     xfer->Add(renderRPC);
+    xfer->Add(setWinAnnotAttsRPC);
 
     // Create an object to implement the RPCs
     rpcExecutors.push_back(new RPCExecutor<QuitRPC>(quitRPC));
@@ -248,7 +248,6 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     rpcExecutors.push_back(new RPCExecutor<UseNetworkRPC>(useNetworkRPC));
     rpcExecutors.push_back(new RPCExecutor<UpdatePlotAttsRPC>(updatePlotAttsRPC));
     rpcExecutors.push_back(new RPCExecutor<PrepareUpdatePlotAttsRPC>(&updatePlotAttsRPC->GetPrepareUpdatePlotAttsRPC()));
-    rpcExecutors.push_back(new RPCExecutor<SetWindowAttsRPC>(setWindowAttsRPC));
     rpcExecutors.push_back(new RPCExecutor<PickRPC>(pickRPC));
     rpcExecutors.push_back(new RPCExecutor<StartPickRPC>(startPickRPC));
     rpcExecutors.push_back(new RPCExecutor<ExecuteRPC>(executeRPC));
@@ -258,6 +257,7 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     rpcExecutors.push_back(new RPCExecutor<OpenDatabaseRPC>(openDatabaseRPC));
     rpcExecutors.push_back(new RPCExecutor<DefineVirtualDatabaseRPC>(defineVirtualDatabaseRPC));
     rpcExecutors.push_back(new RPCExecutor<RenderRPC>(renderRPC));
+    rpcExecutors.push_back(new RPCExecutor<SetWinAnnotAttsRPC>(setWinAnnotAttsRPC));
 
     //
     // Hook up the viewer connections to Xfer
@@ -816,6 +816,9 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer)
             }
         }
         visitTimer->StopTimer(collectData, "Collecting data");
+
+        // indicate that cumulative extents in data object good as true extents
+        ui_dob->GetInfo().GetAttributes().SetCanUseCummulativeAsTrueOrCurrent(true);
 
         //
         // See if there was an error on another processor.

@@ -233,6 +233,9 @@ avtDataObjectInformation::ParallelMerge(const avtDataObjectWriter_p dobw)
  
    // override data object information of the writer's output avtDataObject
    Copy(reducedDobInfo);
+
+   // indicate that it is ok to use cummulative true extents as true extents;
+   GetAttributes().SetCanUseCummulativeAsTrueOrCurrent(true);
  
    // cleanup
    MPI_Type_free(&mpiTypeDobStr);

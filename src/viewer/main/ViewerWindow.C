@@ -4820,11 +4820,15 @@ ViewerWindow::ExternalRenderCallback(void *data, avtDataObject_p& dob)
 
     // get this window's attributes
     thisRequest.winAtts = win->GetWindowAttributes();
+    thisRequest.annotAtts = *(win->GetAnnotationAttributes());
 
     // see if anything has really changed, release data where necessary
     bool canSkipExternalRender = true;
     {
        if (thisRequest.winAtts != lastRequest.winAtts)
+          canSkipExternalRender = false;
+
+       if (thisRequest.annotAtts != lastRequest.annotAtts)
           canSkipExternalRender = false;
 
        // we don't break early so we can build a list of plots to release data on
@@ -4887,7 +4891,7 @@ ViewerWindow::ExternalRenderCallback(void *data, avtDataObject_p& dob)
        std::map<std::string,std::vector<int> >::iterator pos;
        for (pos = perEnginePlotIds.begin(); pos != perEnginePlotIds.end(); pos++)
        {
-          eMgr->SetWindowAtts(pos->first.c_str(), &thisRequest.winAtts);
+          eMgr->SetWinAnnotAtts(pos->first.c_str(), &thisRequest.winAtts, &thisRequest.annotAtts);
           avtDataObjectReader_p rdr = eMgr->GetDataObjectReader(sendZBuffer, pos->first.c_str(), pos->second);
 
           // do some magic to update the network so we don't need the reader anymore
@@ -4928,6 +4932,7 @@ ViewerWindow::ExternalRenderCallback(void *data, avtDataObject_p& dob)
     win->lastExternalRenderRequest.plotIdsList   = thisRequest.plotIdsList;
     win->lastExternalRenderRequest.attsList      = thisRequest.attsList;
     win->lastExternalRenderRequest.winAtts       = thisRequest.winAtts;
+    win->lastExternalRenderRequest.annotAtts     = thisRequest.annotAtts;
 
     debug2 << "Leaving " << me << endl;
 }
