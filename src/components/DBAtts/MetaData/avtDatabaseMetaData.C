@@ -1811,6 +1811,140 @@ avtSpeciesMetaData::Print(ostream &out, int indent) const
 
 
 // ****************************************************************************
+//  Method: avtCurveMetaData default constructor
+//
+//  Arguments:
+//
+//  Programmer: Hank Childs
+//  Creation:   August 1, 2003
+//
+// ****************************************************************************
+
+avtCurveMetaData::avtCurveMetaData()
+    : AttributeSubject("sb")
+{
+    validVariable = true;
+}
+
+
+// ****************************************************************************
+//  Method: avtCurveMetaData constructor
+//
+//  Arguments:
+//      n            The name of the curve
+//
+//  Programmer: Hank Childs
+//  Creation:   August 1, 2003
+//
+// ****************************************************************************
+
+avtCurveMetaData::avtCurveMetaData(std::string n)
+    : AttributeSubject("sb")
+{
+    name         = n;
+    validVariable = true;
+}
+
+
+// ****************************************************************************
+//  Method: avtCurveMetaData copy constructor
+//
+//  Arguments:
+//      rhs   :  the source object
+//
+//  Programmer: Hank Childs
+//  Creation:   August 1, 2003
+//
+// ****************************************************************************
+
+avtCurveMetaData::avtCurveMetaData(const avtCurveMetaData &rhs)
+    : AttributeSubject("sb")
+{
+    name          = rhs.name;
+    validVariable = rhs.validVariable;
+}
+
+
+// ****************************************************************************
+// Method: avtCurveMetaData destructor
+//
+//  Programmer: Hank Childs
+//  Creation:   August 1, 2003
+//
+// ****************************************************************************
+
+avtCurveMetaData::~avtCurveMetaData()
+{
+}
+
+
+// ****************************************************************************
+//  Method: avtCurveMetaData::operator=
+//
+//  Arguments:
+//      rhs   :  the source object
+//
+//  Programmer: Hank Childs
+//  Creation:   August 1, 2003
+//
+// ****************************************************************************
+
+const avtCurveMetaData &
+avtCurveMetaData::operator=(const avtCurveMetaData &rhs)
+{
+    name          = rhs.name;
+    validVariable = rhs.validVariable;
+
+    return *this;
+}
+
+
+// ****************************************************************************
+//  Method: avtCurveMetaData::SelectAll
+//
+//  Programmer: Hank Childs
+//  Creation:   August 1, 2003
+//
+// ****************************************************************************
+
+void
+avtCurveMetaData::SelectAll()
+{
+    Select(0, (void*)&name);
+    Select(1, (void*)&validVariable);
+}
+
+
+// ****************************************************************************
+//  Method: avtCurveMetaData::Print
+//
+//  Purpose:
+//      Print statement for debugging.
+//
+//  Arguments:
+//      out      The stream to output to.
+//      indent   The number of tabs to indent each line with.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 1, 2003
+//
+// ****************************************************************************
+
+void
+avtCurveMetaData::Print(ostream &out, int indent) const
+{
+    Indent(out, indent);
+    out << "Name = " << name.c_str() << endl;
+
+    if (!validVariable)
+    {
+        Indent(out, indent);
+        out << "THIS IS NOT A VALID VARIABLE." << endl;
+    }
+}
+
+
+// ****************************************************************************
 //  Method: avtDatabaseMetaData default constructor
 //
 //  Programmer:  Hank Childs
@@ -1831,7 +1965,7 @@ avtSpeciesMetaData::Print(ostream &out, int indent) const
 // ****************************************************************************
 
 avtDatabaseMetaData::avtDatabaseMetaData()
-    : AttributeSubject("bddibss*i*i*i*d*a*a*a*a*a*s*s*i*")
+    : AttributeSubject("bddibss*i*i*i*d*a*a*a*a*a*a*s*s*i*")
 {
     hasTemporalExtents = false;
     minTemporalExtents = 0.;
@@ -1864,10 +1998,13 @@ avtDatabaseMetaData::avtDatabaseMetaData()
 //    Brad Whitlock, Tue Mar 25 14:29:26 PST 2003
 //    I added the isVirtualDatabase, timeStepPath, timeStepNames fields.
 //
+//    Hank Childs, Fri Aug  1 11:08:21 PDT 2003
+//    Add support for curves.
+//
 // ****************************************************************************
 
 avtDatabaseMetaData::avtDatabaseMetaData(const avtDatabaseMetaData &rhs)
-    : AttributeSubject("bddibss*i*i*i*d*a*a*a*a*a*s*s*i*")
+    : AttributeSubject("bddibss*i*i*i*d*a*a*a*a*a*a*s*s*i*")
 {
     hasTemporalExtents = rhs.hasTemporalExtents;
     minTemporalExtents = rhs.minTemporalExtents;
@@ -1895,6 +2032,8 @@ avtDatabaseMetaData::avtDatabaseMetaData(const avtDatabaseMetaData &rhs)
         materials.push_back(new avtMaterialMetaData(*rhs.materials[i]));
     for (i=0; i<rhs.species.size(); i++)
         species.push_back(new avtSpeciesMetaData(*rhs.species[i]));
+    for (i=0; i<rhs.curves.size(); i++)
+        curves.push_back(new avtCurveMetaData(*rhs.curves[i]));
 }
 
 
@@ -1920,6 +2059,9 @@ avtDatabaseMetaData::avtDatabaseMetaData(const avtDatabaseMetaData &rhs)
 //
 //    Brad Whitlock, Tue Mar 25 14:31:31 PST 2003
 //    I added the isVirtualDatabase, timeStepPath, timeStepNames fields.
+//
+//    Hank Childs, Fri Aug  1 11:08:21 PDT 2003
+//    Add support for curves.
 //
 // ****************************************************************************
 const avtDatabaseMetaData &
@@ -1956,6 +2098,9 @@ avtDatabaseMetaData::operator=(const avtDatabaseMetaData &rhs)
     for (i=0; i<species.size(); i++)
         delete species[i];
     species.clear();
+    for (i=0; i<curves.size(); i++)
+        delete curves[i];
+    curves.clear();
 
     for (i=0; i<rhs.meshes.size(); i++)
         meshes.push_back(new avtMeshMetaData(*rhs.meshes[i]));
@@ -1967,6 +2112,8 @@ avtDatabaseMetaData::operator=(const avtDatabaseMetaData &rhs)
         materials.push_back(new avtMaterialMetaData(*rhs.materials[i]));
     for (i=0; i<rhs.species.size(); i++)
         species.push_back(new avtSpeciesMetaData(*rhs.species[i]));
+    for (i=0; i<rhs.curves.size(); i++)
+        curves.push_back(new avtCurveMetaData(*rhs.curves[i]));
 
     return *this;
 }
@@ -1977,6 +2124,11 @@ avtDatabaseMetaData::operator=(const avtDatabaseMetaData &rhs)
 //
 //  Programmer:  Hank Childs
 //  Creation:    September 1, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Fri Aug  1 11:08:21 PDT 2003
+//    Add support for curves.
 //
 // ****************************************************************************
 
@@ -2010,6 +2162,12 @@ avtDatabaseMetaData::~avtDatabaseMetaData()
     for (spit = species.begin() ; spit != species.end() ; spit++)
     {
         delete (*spit);
+    }
+
+    std::vector<avtCurveMetaData *>::iterator cit;
+    for (cit = curves.begin() ; cit != curves.end() ; cit++)
+    {
+        delete (*cit);
     }
 }
 
@@ -2433,6 +2591,24 @@ avtDatabaseMetaData::Add(avtSpeciesMetaData *smd)
 
 
 // ****************************************************************************
+//  Method: avtDatabaseMetaData::Add
+//
+//  Arguments:
+//      cmd    A curve meta data object.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 1, 2003
+//
+// ****************************************************************************
+
+void
+avtDatabaseMetaData::Add(avtCurveMetaData *cmd)
+{
+    curves.push_back(cmd);
+}
+
+
+// ****************************************************************************
 //  Method: avtDatabaseMetaData::SetExtents
 //
 //  Purpose:
@@ -2503,6 +2679,11 @@ avtDatabaseMetaData::SetExtents(std::string name, const float *extents)
 //  Programmer: Hank Childs
 //  Creation:   August 31, 2000
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Aug  1 21:50:51 PDT 2003
+//    Added support for curves.
+//
 // ****************************************************************************
 
 int
@@ -2516,6 +2697,15 @@ avtDatabaseMetaData::GetNDomains(std::string var)
         if ((*mit)->name == meshname)
         {
             return (*mit)->numBlocks;
+        }
+    }
+
+    std::vector<avtCurveMetaData *>::iterator cit;
+    for (cit = curves.begin() ; cit != curves.end() ; cit++)
+    {
+        if ((*cit)->name == meshname)
+        {
+            return 1;
         }
     }
 
@@ -2540,6 +2730,10 @@ avtDatabaseMetaData::GetNDomains(std::string var)
 //  Modifications:
 //    Kathleen Bonnell, Thu Sep  5 13:53:15 PDT 2002 
 //    If var is compound, parse it. 
+//
+//    Hank Childs, Fri Aug  1 11:08:21 PDT 2003
+//    Add support for curves.
+//
 // ****************************************************************************
 
 avtVarType
@@ -2600,6 +2794,15 @@ avtDatabaseMetaData::DetermineVarType(std::string var_in)
         }
     }
 
+    std::vector<avtCurveMetaData *>::iterator cit;
+    for (cit = curves.begin() ; cit != curves.end() ; cit++)
+    {
+        if ((*cit)->name == var)
+        {
+            return AVT_CURVE;
+        }
+    }
+
     EXCEPTION1(InvalidVariableException, var);
 }
 
@@ -2621,6 +2824,10 @@ avtDatabaseMetaData::DetermineVarType(std::string var_in)
 //  Modifications:
 //    Kathleen Bonnell, Thu Sep  5 13:53:15 PDT 2002 
 //    If var is compound, parse it.
+//
+//    Hank Childs, Fri Aug  1 21:35:00 PDT 2003
+//    Have curve plots return themselves.
+//
 // ****************************************************************************
 
 std::string
@@ -2678,6 +2885,15 @@ avtDatabaseMetaData::MeshForVar(std::string var)
         if ((*spit)->name == var)
         {
             return (*spit)->meshName;
+        }
+    }
+
+    std::vector<avtCurveMetaData *>::iterator cit;
+    for (cit = curves.begin() ; cit != curves.end() ; cit++)
+    {
+        if ((*cit)->name == var)
+        {
+            return var;
         }
     }
 
@@ -2885,6 +3101,9 @@ avtDatabaseMetaData::GetSpeciesOnMesh(std::string mesh)
 //    Brad Whitlock, Wed Apr 2 12:01:10 PDT 2003
 //    I made it print out the timestep names if it is a virtual database.
 //
+//    Hank Childs, Fri Aug  1 11:08:21 PDT 2003
+//    Add support for curves.
+//
 // ****************************************************************************
 
 void
@@ -2992,6 +3211,18 @@ avtDatabaseMetaData::Print(ostream &out, int indent) const
         out << endl;
     }
 
+    if(curves.begin() != curves.end())
+    {
+        Indent(out, indent);
+        out << "Curves: " << endl;
+    }
+    std::vector< avtCurveMetaData * >::const_iterator cit;
+    for (cit = curves.begin() ; cit != curves.end() ; cit++)
+    {
+        (*cit)->Print(out, indent+1);
+        out << endl;
+    }
+
     if (expressionNames.size() > 0)
     {
         Indent(out, indent);
@@ -3049,6 +3280,9 @@ avtDatabaseMetaData::Print(ostream &out, int indent) const
 //   Brad Whitlock, Tue Mar 25 14:43:31 PST 2003
 //   I added timestep names and timestep path.
 //
+//   Hank Childs, Fri Aug  1 11:08:21 PDT 2003
+//   Add support for curves.
+//
 // *******************************************************************
 
 void
@@ -3072,10 +3306,11 @@ avtDatabaseMetaData::SelectAll()
     Select(13, (void*)&vectors);
     Select(14, (void*)&materials);
     Select(15, (void*)&species);
+    Select(16, (void*)&curves);
 
-    Select(16, (void*)&expressionNames);
-    Select(17, (void*)&expressionDefns);
-    Select(18, (void*)&expressionTypes);
+    Select(17, (void*)&expressionNames);
+    Select(18, (void*)&expressionDefns);
+    Select(19, (void*)&expressionTypes);
 }
 
 // *******************************************************************
@@ -3102,6 +3337,9 @@ avtDatabaseMetaData::SelectAll()
 //   Brad Whitlock, Tue Mar 25 14:43:47 PST 2003
 //   Bumped up the numbers.
 //
+//   Hank Childs, Fri Aug  1 11:08:21 PDT 2003
+//   Add support for curves.
+//
 // *******************************************************************
 
 AttributeGroup *
@@ -3119,6 +3357,8 @@ avtDatabaseMetaData::CreateSubAttributeGroup(int n)
         return new avtMaterialMetaData;
       case 15:
         return new avtSpeciesMetaData;
+      case 16:
+        return new avtCurveMetaData;
       default:
         return NULL;
     }
@@ -3363,6 +3603,55 @@ avtDatabaseMetaData::GetSpecies(const std::string &n) const
 }
     
 
+// *******************************************************************
+// Method: avtDatabaseMetaData::GetCurve
+//
+// Purpose: 
+//     This returns the metadata for the nth curve in the file.
+//
+// Arguments:
+//     n  :  the index into the array
+//
+// Programmer: Hank Childs
+// Creation:   August 1, 2003
+//
+// Modifications:
+//   
+// *******************************************************************
+
+const avtCurveMetaData *
+avtDatabaseMetaData::GetCurve(int n) const
+{
+    return curves[n];
+}
+
+// *******************************************************************
+// Method: avtDatabaseMetaData::GetCurve
+//
+// Purpose: 
+//     This returns the metadata for the curve in the file whose name
+//     is n.
+//
+// Arguments:
+//     n  :  the name of the curve object
+//
+// Programmer: Hank Childs
+// Creation:   August  1, 2003
+//
+// Modifications:
+//   
+// *******************************************************************
+
+const avtCurveMetaData *
+avtDatabaseMetaData::GetCurve(const std::string &n) const
+{
+    for (int i=0; i<curves.size(); i++)
+        if (curves[i]->name == n)
+            return curves[i];
+    return NULL;
+}
+    
+
 // ****************************************************************************
 //  Method: avtDatabaseMetaData::SetBlocksForMesh
 //
@@ -3404,6 +3693,11 @@ avtDatabaseMetaData::SetBlocksForMesh(int index, int nBlocks)
 //  Programmer:  Hank Childs
 //  Creation:    September 30, 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Aug  1 21:58:01 PDT 2003
+//    No longer throw an exception.  This is a valid case for curves.
+//
 // ****************************************************************************
 
 void
@@ -3417,8 +3711,6 @@ avtDatabaseMetaData::SetContainsGhostZones(std::string name, avtGhostType val)
             return;
         }
     }
-
-    EXCEPTION1(InvalidVariableException, name);
 }
 
 
@@ -3435,6 +3727,11 @@ avtDatabaseMetaData::SetContainsGhostZones(std::string name, avtGhostType val)
 //  Programmer:  Kathleen Bonnell
 //  Creation:    March 25, 2003 
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Aug  1 21:58:01 PDT 2003
+//    No longer throw an exception.  This is a valid case for curves.
+//
 // ****************************************************************************
 
 void
@@ -3448,8 +3745,6 @@ avtDatabaseMetaData::SetContainsOriginalCells(std::string name, bool val)
             return;
         }
     }
-
-    EXCEPTION1(InvalidVariableException, name);
 }
 
 

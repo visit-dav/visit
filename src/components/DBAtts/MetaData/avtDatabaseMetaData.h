@@ -188,6 +188,23 @@ protected:
     virtual AttributeGroup *CreateSubAttributeGroup(int);
 };
 
+//----------------------------------------------------------------------------
+//  Class: avtCurveMetaData
+//----------------------------------------------------------------------------
+struct DBATTS_API avtCurveMetaData : public AttributeSubject
+{
+    std::string                          name;
+    bool                                 validVariable;
+
+public:
+    avtCurveMetaData();
+    avtCurveMetaData(std::string);
+    avtCurveMetaData(const avtCurveMetaData&);
+    virtual ~avtCurveMetaData();
+    const avtCurveMetaData &operator=(const avtCurveMetaData&);
+    virtual void SelectAll();
+    void Print(ostream &, int = 0) const;
+};
 
 
 //----------------------------------------------------------------------------
@@ -221,6 +238,7 @@ class DBATTS_API avtDatabaseMetaData : public AttributeSubject
     std::vector<avtVectorMetaData *>   vectors;
     std::vector<avtMaterialMetaData *> materials;
     std::vector<avtSpeciesMetaData *>  species;
+    std::vector<avtCurveMetaData *>    curves;
 
 public:
     avtDatabaseMetaData();
@@ -259,12 +277,14 @@ public:
     void         Add(avtVectorMetaData *);
     void         Add(avtMaterialMetaData *);
     void         Add(avtSpeciesMetaData *);
+    void         Add(avtCurveMetaData *);
 
     int GetNumMeshes()    const { return meshes.size();     };
     int GetNumScalars()   const { return scalars.size();    };
     int GetNumVectors()   const { return vectors.size();    };
     int GetNumMaterials() const { return materials.size();  };
     int GetNumSpecies()   const { return species.size();    };
+    int GetNumCurves()    const { return curves.size();    };
 
     const avtMeshMetaData     *GetMesh(int) const;
     const avtMeshMetaData     *GetMesh(const std::string&) const;
@@ -276,6 +296,8 @@ public:
     const avtMaterialMetaData *GetMaterial(const std::string&) const;
     const avtSpeciesMetaData  *GetSpecies(int) const;
     const avtSpeciesMetaData  *GetSpecies(const std::string&) const;
+    const avtCurveMetaData    *GetCurve(int) const;
+    const avtCurveMetaData    *GetCurve(const std::string&) const;
 
     void         SetBlocksForMesh(int index, int nBlocks);
     void         SetContainsGhostZones(std::string name, avtGhostType);

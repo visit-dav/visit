@@ -218,6 +218,9 @@ avtDatabase::GetOutput(const char *var, int ts)
 //    Added logic to decrement the topo. dimension if we have requested
 //    material boundaries.
 //
+//    Hank Childs, Fri Aug  1 21:54:08 PDT 2003
+//    Add support for curves.
+//
 // ****************************************************************************
 
 void
@@ -327,6 +330,13 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
     if (matmd != NULL)
     {
         validity.InvalidateZones();
+    }
+
+    const avtCurveMetaData *cmd = GetMetaData()->GetCurve(var);
+    if (cmd != NULL)
+    {
+        atts.SetTopologicalDimension(1);
+        atts.SetSpatialDimension(2);
     }
 
     //

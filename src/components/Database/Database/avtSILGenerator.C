@@ -40,6 +40,9 @@ using std::vector;
 //    Hank Childs, Wed Dec  4 08:21:13 PST 2002
 //    Make SIL matrices instead of large SIL objects.
 //
+//    Hank Childs, Fri Aug  1 21:38:52 PDT 2003
+//    Add support for curves.
+//
 // ****************************************************************************
 
 void
@@ -126,6 +129,12 @@ avtSILGenerator::CreateSIL(avtDatabaseMetaData *md, avtSIL *sil)
         //
     }
  
+    for (i = 0 ; i < md->GetNumCurves() ; i++)
+    {
+        const avtCurveMetaData *curve = md->GetCurve(i);
+        avtSILSet_p set = new avtSILSet(curve->name, 0);
+        sil->AddWhole(set);
+    }
     
     //
     // Note that the SIL matrices must be added last, so we have to pull this

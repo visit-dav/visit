@@ -5,7 +5,7 @@
 #ifndef AVT_CURVE2D_FILE_FORMAT_H
 #define AVT_CURVE2D_FILE_FORMAT_H
 
-#include <avtSTMDFileFormat.h>
+#include <avtSTSDFileFormat.h>
 
 #include <vector>
 #include <string>
@@ -24,6 +24,11 @@ class     vtkPolyData;
 //  Programmer: Hank Childs
 //  Creation:   May 28, 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Aug  1 21:16:55 PDT 2003
+//    Made the format be a STSD.
+//
 // ****************************************************************************
 
 typedef enum
@@ -35,7 +40,7 @@ typedef enum
 } CurveToken;
 
 
-class avtCurve2DFileFormat : public avtSTMDFileFormat
+class avtCurve2DFileFormat : public avtSTSDFileFormat
 {
   public:
                           avtCurve2DFileFormat(const char *);
@@ -43,8 +48,8 @@ class avtCurve2DFileFormat : public avtSTMDFileFormat
     
     virtual const char   *GetType(void) { return "Curve File Format"; };
     
-    virtual vtkDataSet   *GetMesh(int, const char *);
-    virtual vtkDataArray *GetVar(int, const char *);
+    virtual vtkDataSet   *GetMesh(const char *);
+    virtual vtkDataArray *GetVar(const char *);
 
     virtual void          PopulateDatabaseMetaData(avtDatabaseMetaData *);
 
