@@ -23,6 +23,7 @@
 #include <avtIntervalTree.h>
 #include <avtMetaData.h>
 #include <avtParallel.h>
+#include <avtSpatialBoxSelection.h>
 #include <avtTerminatingSource.h>
 
 #include <BadVectorException.h>
@@ -305,6 +306,9 @@ avtSliceFilter::Equivalent(const AttributeGroup *a)
 //    Always turn on Node/Zone numbers, because Pick will not work correctly
 //    without them. 
 //
+//    Mark C. Miller, Tue Sep 28 19:32:50 PDT 2004
+//    Added code to populate a data selection for this operator
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -340,6 +344,39 @@ avtSliceFilter::PerformRestriction(avtPipelineSpecification_p spec)
         rv->GetDataSpecification()->TurnNodeNumbersOn();
     }
 #endif
+
+    //
+    // Setup data selection characteristics of this operator 
+    // Currently, we only handle orthogonal slice here
+    //
+    if ((atts.GetAxisType() == SliceAttributes::XAxis) ||
+        (atts.GetAxisType() == SliceAttributes::YAxis) ||
+        (atts.GetAxisType() == SliceAttributes::ZAxis))
+    {
+        avtSpatialBoxSelection *sel = new avtSpatialBoxSelection;
+        sel->SetInclusionMode(avtSpatialBoxSelection::Partial);
+        double origin[3];
+        float mins[3], maxs[3];
+        GetOrigin(origin[0], origin[1], origin[2]);
+        if (atts.GetAxisType() == SliceAttributes::XAxis)
+        {
+            mins[0] = origin[0]; mins[1] = -FLT_MAX; mins[2] = -FLT_MAX;
+            maxs[0] = origin[0]; maxs[1] = +FLT_MAX; maxs[2] = +FLT_MAX;
+        }
+        else if (atts.GetAxisType() == SliceAttributes::YAxis)
+        {
+            mins[0] = -FLT_MAX; mins[1] = origin[1]; mins[2] = -FLT_MAX;
+            maxs[0] = +FLT_MAX; maxs[1] = origin[1]; maxs[2] = +FLT_MAX;
+        }
+        else if (atts.GetAxisType() == SliceAttributes::ZAxis)
+        {
+            mins[0] = -FLT_MAX; mins[1] = -FLT_MAX; mins[2] = origin[2];
+            maxs[0] = +FLT_MAX; maxs[1] = +FLT_MAX; maxs[2] = origin[2];
+        }
+        sel->SetMins(mins);
+        sel->SetMaxs(maxs);
+        rv->GetDataSpecification()->AddDataSelection(sel);
+    }
 
     //
     // Get the interval tree.
@@ -842,11 +879,23 @@ avtSliceFilter::GetOrigin(double &ox, double &oy, double &oz)
 //    Hank Childs, Mon Jun  9 09:20:43 PDT 2003
 //    Use the new vtkSlicer class.
 //
+//    Mark C. Miller, Tue Sep 28 19:32:50 PDT 2004
+//    Added comment regarding not by-passing this operator even if
+//    data selection is applied
+//
 // ****************************************************************************
 
 vtkDataSet *
 avtSliceFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
 {
+
+    //
+    // We DO NOT by-pass the Slice operator even if the database applied the
+    // selection associated with the slice. The reason is that the database
+    // still serves up a slab of zones (a 3D mesh) from which a 2D slice is
+    // computed.
+    //
+
     //
     // First check to see if we have to slice this domain at all.
     //

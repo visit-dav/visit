@@ -182,6 +182,9 @@ typedef struct {
 //    Added args to QueryZones and QueryNodes, to support ghost-element 
 //    indication. 
 //
+//    Mark C. Miller, Tue Sep 28 19:57:42 PDT 2004
+//    Added argument for selections applied to PopulateDataObjectInformation
+//
 // ****************************************************************************
 
 class DATABASE_API avtDatabase
@@ -269,6 +272,7 @@ class DATABASE_API avtDatabase
     void                        PopulateDataObjectInformation(avtDataObject_p&,
                                                   const char *,
                                                   int,
+                                                  const vector<bool> &selsApplied,
                                                   avtDataSpecification* =NULL);
     virtual bool                QueryScalars(const std::string &, const int, 
                                              const int, const int,

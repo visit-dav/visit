@@ -142,6 +142,8 @@ avtDatabase::~avtDatabase()
 //    Hank Childs, Fri Aug 17 16:03:44 PDT 2001
 //    Removed dependencies on avtDataset.
 //
+//    Mark C. Miller, Tue Sep 28 19:32:50 PDT 2004
+//    Added dummy argument for c all to PopulateDataObjectInformation
 // ****************************************************************************
 
 avtDataObject_p
@@ -163,7 +165,8 @@ avtDatabase::GetOutput(const char *var, int ts)
     avtDataObjectSource *src = CreateSource(var, ts);
     avtDataObject_p dob = src->GetOutput();
 
-    PopulateDataObjectInformation(dob, var, ts);
+    vector<bool> dummy;
+    PopulateDataObjectInformation(dob, var, ts, dummy);
 
     sourcelist.push_back(src);
 
@@ -264,12 +267,16 @@ avtDatabase::GetOutput(const char *var, int ts)
 //    Hank Childs, Fri Aug 20 15:42:34 PDT 2004
 //    Correct cut-and-paste bug for checking units for symmetric tensors.
 //
+//    Mark C. Miller, Tue Sep 28 19:32:50 PDT 2004
+//    Added argument for data selections that have been applied as well
+//    as code to populate data attributes
 // ****************************************************************************
 
 void
 avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
                                            const char *var,
                                            int ts,
+                                           const vector<bool> &selectionsApplied,
                                            avtDataSpecification *spec)
 {
     int   i;
@@ -296,6 +303,8 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
         atts.SetContainsGhostZones(mmd->containsGhostZones);
         atts.SetContainsOriginalCells(mmd->containsOriginalCells);
         atts.SetContainsOriginalNodes(mmd->containsOriginalNodes);
+        vector<bool> tmp = selectionsApplied;
+        atts.SetSelectionsApplied(tmp);
         validity.SetDisjointElements(mmd->disjointElements);
 
         //

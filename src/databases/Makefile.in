@@ -117,6 +117,9 @@
 #   Jeremy Meredith, Wed Aug 25 11:56:21 PDT 2004
 #   Added SimDB, needed for simulation support.
 #
+#   Mark C. Miller, Tue Sep 28 19:57:42 PDT 2004
+#   Added ViSUS
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -135,11 +138,12 @@ SAF=SAF
 SAMPLES=Rect Hex
 REQUIRED=ANALYZE BOV Curve2D Dune EnSight Image Lines OVERFLOW \
  PLOT2D PLOT3D Point3D STL Silo SimDB Spheral Vista VTK WavefrontOBJ
+VISUS=ViSUS
 
 OPTIONAL=
 
-SUBDIRS=$(REQUIRED) @DB_OPTIONAL_DIRS@ @EXODUS@ @SAF@ @HDF4@ @HDF5@ @PDB@ @MILI@ @BOXLIB2D@ @BOXLIB3D@
-ALLSUBDIRS=$(REQUIRED) $(EXODUS) $(SAF) $(HDF4) $(HDF5) $(MILI) $(PDB) $(BOXLIB2D) $(BOXLIB3D) $(SAMPLES) $(OPTIONAL)
+SUBDIRS=$(REQUIRED) @DB_OPTIONAL_DIRS@ @EXODUS@ @SAF@ @HDF4@ @HDF5@ @PDB@ @MILI@ @BOXLIB2D@ @BOXLIB3D@ @VISUS@
+ALLSUBDIRS=$(REQUIRED) $(EXODUS) $(SAF) $(HDF4) $(HDF5) $(MILI) $(PDB) $(BOXLIB2D) $(BOXLIB3D) $(VISUS) $(SAMPLES) $(OPTIONAL)
 
 message:
 	@echo

@@ -259,6 +259,9 @@ avtGenericDatabase::SetDatabaseMetaData(avtDatabaseMetaData *md, int timeState)
 //    Hank Childs, Thu Sep 23 09:28:58 PDT 2004
 //    Add support for getting global ids.
 //
+//    Mark C. Miller, Tue Sep 28 19:57:42 PDT 2004
+//    Added vector of bools for data selections that plugins apply
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -287,12 +290,13 @@ avtGenericDatabase::GetOutput(avtDataSpecification_p spec,
 
     bool shouldDoMatSelect = false;
     bool hadError = false;
+    vector<bool> selectionsApplied;
     TRY
     {
         //
         // This is the primary routine that reads things in from disk.
         //
-        ReadDataset(datasetCollection, domains, spec, src);
+        ReadDataset(datasetCollection, domains, spec, src, selectionsApplied);
 
         //
         // Now that we have read things in from disk, verify that the dataset
@@ -481,7 +485,8 @@ avtGenericDatabase::GetOutput(avtDataSpecification_p spec,
     avtDataObject_p dob = src->GetOutput();
     if (nDomains == 0)
         dob->GetInfo().GetValidity().SetHasEverOwnedAnyDomain(false);
-    PopulateDataObjectInformation(dob, spec->GetVariable(), timeStep, *spec);
+    PopulateDataObjectInformation(dob, spec->GetVariable(), timeStep, 
+        selectionsApplied, *spec);
 
     return rv;
 }
@@ -3179,12 +3184,16 @@ avtGenericDatabase::ActivateTimestep(int stateIndex)
 //    Hank Childs, Wed Aug 11 08:14:16 PDT 2004
 //    Do not simply remove the vtkGhostLevels array so we can pretend we don't
 //    have ghost zones.
+//    
+//    Mark C. Miller, Tue Sep 28 19:57:42 PDT 2004
+//    Added call to RegisterDataSelections with the plugins
 //
 // ****************************************************************************
 
 void
 avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, vector<int> &domains,
-                      avtDataSpecification_p &spec, avtSourceFromDatabase *src)
+                      avtDataSpecification_p &spec, avtSourceFromDatabase *src,
+                      vector<bool> &selectionsApplied)
 {
     int timerHandle = visitTimer->StartTimer();
     int ts = spec->GetTimestep();
@@ -3229,6 +3238,14 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, vector<int> &domains,
     // of all of the variables we will be interested in.
     //
     Interface->RegisterVariableList(var, vars2nd);
+
+    //
+    // Some file formats are interested in knowing about data selections
+    //
+    vector<avtDataSelection_p> selList = spec->GetAllDataSelections();
+    for (int i = 0; i < selList.size(); i++)
+        selectionsApplied.push_back(false);
+    Interface->RegisterDataSelections(selList, &selectionsApplied);
 
     //
     // Some file formats may need to engage in global communication when

@@ -3427,21 +3427,25 @@ avtDefaultPlotMetaData::Print(ostream &out, int indent) const
 //    Brad Whitlock, Thu Aug 5 13:51:24 PST 2004
 //    Added mustAlphabetizeVariables.
 //
+//    Mark C. Miller, Tue Sep 28 19:57:42 PDT 2004
+//    Added formatCanDoDomainDecomposition
+//
 // ****************************************************************************
 
 avtDatabaseMetaData::avtDatabaseMetaData()
-    : AttributeSubject("sssbddibss*i*i*i*d*a*a*a*a*a*a*a*a*a*aba*babb")
+    : AttributeSubject("sssbddibss*i*i*i*d*a*a*a*a*a*a*a*a*a*aba*babbb")
 {
-    hasTemporalExtents          = false;
-    minTemporalExtents          = 0.;
-    maxTemporalExtents          = 0.;
-    numStates                   = 0;
-    isVirtualDatabase           = false;
-    mustRepopulateOnStateChange = false;
-    mustAlphabetizeVariables    = true;
-    isSimulation                = false;
-    simInfo                     = new avtSimulationInformation();
-    useCatchAllMesh             = false;
+    hasTemporalExtents             = false;
+    minTemporalExtents             = 0.;
+    maxTemporalExtents             = 0.;
+    numStates                      = 0;
+    isVirtualDatabase              = false;
+    mustRepopulateOnStateChange    = false;
+    mustAlphabetizeVariables       = true;
+    isSimulation                   = false;
+    simInfo                        = new avtSimulationInformation();
+    useCatchAllMesh                = false;
+    formatCanDoDomainDecomposition = false;
 }
 
 
@@ -3498,10 +3502,13 @@ avtDatabaseMetaData::avtDatabaseMetaData()
 //    Brad Whitlock, Thu Aug 5 13:52:20 PST 2004
 //    Added mustAlphabetizeVariables.
 //
+//    Mark C. Miller, Tue Sep 28 19:57:42 PDT 2004
+//    Added formatCanDoDomainDecomposition
+//
 // ****************************************************************************
 
 avtDatabaseMetaData::avtDatabaseMetaData(const avtDatabaseMetaData &rhs)
-    : AttributeSubject("sssbddibss*i*i*i*d*a*a*a*a*a*a*a*a*a*aba*babb")
+    : AttributeSubject("sssbddibss*i*i*i*d*a*a*a*a*a*a*a*a*a*aba*babbb")
 {
     databaseName       = rhs.databaseName;
     fileFormat         = rhs.fileFormat;
@@ -3523,6 +3530,7 @@ avtDatabaseMetaData::avtDatabaseMetaData(const avtDatabaseMetaData &rhs)
     exprList           = rhs.exprList;
     isSimulation       = rhs.isSimulation;
     simInfo            = new avtSimulationInformation(*rhs.simInfo);
+    formatCanDoDomainDecomposition = rhs.formatCanDoDomainDecomposition;
 
     int i;
     for (i=0; i<rhs.meshes.size(); i++)
@@ -3602,6 +3610,9 @@ avtDatabaseMetaData::avtDatabaseMetaData(const avtDatabaseMetaData &rhs)
 //    Brad Whitlock, Thu Aug 5 13:52:20 PST 2004
 //    Added mustAlphabetizeVariables.
 //
+//    Mark C. Miller, Tue Sep 28 19:57:42 PDT 2004
+//    Added formatCanDoDomainDecomposition
+//
 // ****************************************************************************
 
 const avtDatabaseMetaData &
@@ -3627,6 +3638,7 @@ avtDatabaseMetaData::operator=(const avtDatabaseMetaData &rhs)
     exprList           = rhs.exprList;
     isSimulation       = rhs.isSimulation;
     *simInfo           = *rhs.simInfo;
+    formatCanDoDomainDecomposition = rhs.formatCanDoDomainDecomposition;
 
     int i;
     for (i=0; i<meshes.size(); i++)
@@ -4100,6 +4112,50 @@ avtDatabaseMetaData::SetTime(int ts, double t)
 
 
 // ****************************************************************************
+//  Method: avtDatabaseMetaData::SetFormatCanDoDomainDecomposition
+//
+//  Purpose:
+//     Sets flag indicating that format can do domain decomposition. This
+//     means all meshes should have numBlocks set to 1. Upon each attempt to
+//     get data from the database, the format can decide how to decompose
+//     the data across processors. This also means that when VisIt
+//     "load-balances" blocks (i.e. domains) across processors, it will do so
+//     by assigning the one and only block to each and every processor. It
+//     is up to the plugin to decide which portion of the whole it will
+//     actually return in a request to GetMesh(), GetVar(), ...
+//
+//  Programmer:  Mark C. Miller
+//  Creation:    September 20, 2004 
+// ****************************************************************************
+
+void
+avtDatabaseMetaData::SetFormatCanDoDomainDecomposition(bool can)
+{
+    if (can)
+    {
+        // see if there are any meshes with other than a single block 
+        bool someMeshesHaveOtherThanOneBlock = false;
+        for (int i = 0; i < meshes.size(); i++)
+        {
+            if (meshes[i]->numBlocks != 1)
+            {
+                someMeshesHaveOtherThanOneBlock = true;
+                break;
+            }
+        }
+
+        if (someMeshesHaveOtherThanOneBlock)
+        {
+            EXCEPTION1(ImproperUseException, "Format cannot do domain "
+                "decomposition with meshes having other than a single block");
+        }
+    }
+
+    formatCanDoDomainDecomposition = can;
+
+}
+
+// ****************************************************************************
 //  Method: avtDatabaseMetaData::Add
 //
 //  Arguments:
@@ -4108,11 +4164,25 @@ avtDatabaseMetaData::SetTime(int ts, double t)
 //  Programmer: Hank Childs
 //  Creation:   August 28, 2000
 //
+//  Modifications:
+//
+//    Mark C. Miller, Tue Sep 28 19:57:42 PDT 2004
+//    Added code to make sure num blocks is 1 if
+//    formatCanDoDomainDecomposition is true
+//
+//
 // ****************************************************************************
 
 void
 avtDatabaseMetaData::Add(avtMeshMetaData *mmd)
 {
+    if (formatCanDoDomainDecomposition && mmd->numBlocks != 1)
+    {
+        EXCEPTION1(ImproperUseException, "Cannot deal with meshes having "
+            "other than a single block in formats that do their own domain "
+            "decomposition.");
+    }
+
     meshes.push_back(mmd);
 }
 
@@ -4946,6 +5016,9 @@ avtDatabaseMetaData::GetSpeciesOnMesh(std::string mesh) const
 //    Jeremy Meredith, Thu Aug 12 13:23:25 PDT 2004
 //    Added simulation fields.
 //
+//    Mark C. Miller, Tue Sep 28 19:57:42 PDT 2004
+//    Added formatCanDoDomainDecomposition
+//
 // ****************************************************************************
 
 void
@@ -4972,6 +5045,10 @@ avtDatabaseMetaData::Print(ostream &out, int indent) const
 
     Indent(out, indent);
     out << "useCatchAllMesh: " << useCatchAllMesh << endl;
+
+    Indent(out, indent);
+    out << "Format " << (formatCanDoDomainDecomposition ? " can " : " cannot ") << 
+        "do its own domain decomposition" << endl;
 
     Indent(out, indent);
     if (hasTemporalExtents)
@@ -5221,6 +5298,9 @@ avtDatabaseMetaData::Print(ostream &out, int indent) const
 //   Brad Whitlock, Thu Aug 5 13:53:53 PST 2004
 //   Added mustAlphabetizeVariables.
 //
+//   Mark C. Miller, Tue Sep 28 19:57:42 PDT 2004
+//   Added formatCanDoDomainDecomposition
+//
 // *******************************************************************
 
 void
@@ -5259,6 +5339,7 @@ avtDatabaseMetaData::SelectAll()
     Select(27, (void*)simInfo);
     Select(28, (void*)&useCatchAllMesh);
     Select(29, (void*)&mustAlphabetizeVariables);
+    Select(30, (void*)&formatCanDoDomainDecomposition);
 }
 
 // *******************************************************************

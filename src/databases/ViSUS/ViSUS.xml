@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+  <Plugin name="ViSUS" type="database" label="ViSUS" version="1.0" dbtype="MTSD">
+    <Extensions> idx vis </Extensions>
+    <CXXFLAGS> $(VISUS_INCLUDE) </CXXFLAGS>
+    <LIBS>     $(VISUS_LIB)      </LIBS>
+  </Plugin>

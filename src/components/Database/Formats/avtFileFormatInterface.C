@@ -76,6 +76,34 @@ avtFileFormatInterface::RegisterVariableList(const char *var,
 
 
 // ****************************************************************************
+//  Method: avtFileFormatInterface::RegisterDataSelections
+//
+//  Purpose:
+//      Registers data selections with each file format and a vector of bools
+//      in which format can indicate whether a given selection was indeed
+//      applied. This is typically used
+//      just prior to avtGenericDatabase' attempt to get data from a format
+//      to give the format an opportunity to handle the selection on read.
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   September 22, 2004 
+//
+// ****************************************************************************
+
+void
+avtFileFormatInterface::RegisterDataSelections(
+    const vector<avtDataSelection_p> &selList,
+    vector<bool> *wasApplied) 
+{
+    int nFormats = GetNumberOfFileFormats();
+    for (int i = 0 ; i < nFormats ; i++)
+    {
+        avtFileFormat *ff = GetFormat(i);
+        ff->RegisterDataSelections(selList, wasApplied);
+    }
+}
+
+// ****************************************************************************
 //  Method: avtFileFormatInterface::GetType
 //
 //  Purpose:

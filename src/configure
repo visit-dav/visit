@@ -871,6 +871,7 @@ Optional Packages:
   --with-hdf4=FLAGS,LIBS      Location of HDF4 header and library
   --with-boxlib2d=INCLUDE,LIBS      Location of Boxlib2D header and library
   --with-boxlib3d=INCLUDE,LIBS      Location of Boxlib3D header and library
+  --with-visus=INCLUDE,LIBS      Location of ViSUS header and library
   --with-x                use the X Window System
 
 Some influential environment variables:
@@ -8382,6 +8383,52 @@ else
 echo "${ECHO_T}no" >&6
 fi
 
+
+
+
+#
+# Look for ViSUS
+#
+echo "$as_me:$LINENO: checking for ViSUS" >&5
+echo $ECHO_N "checking for ViSUS... $ECHO_C" >&6
+VISUS=""
+VISUS_INCLUDE=""
+VISUS_LIB=""
+
+# Check whether --with-visus or --without-visus was given.
+if test "${with_visus+set}" = set; then
+  withval="$with_visus"
+  visus_specified="yes"
+else
+  visus_specified="no"
+
+fi;
+if test "$visus_specified" = "yes"; then
+   if test "$withval" != "no"; then
+      VISUS_INCLUDE="-I`echo $withval |cut -f1 -d,`"
+      VISUS_LIB="-L`echo $withval |cut -f2 -d, -s` -lvisusidx -lvisus -lstreaming"
+   fi
+else
+   if test "$DEFAULT_VISUS_INCLUDE" != "" ; then
+      VISUS_INCLUDE="-I$DEFAULT_VISUS_INCLUDE"
+   fi
+   if test "$DEFAULT_VISUS_LIB" != "" ; then
+      VISUS_LIB="-L$DEFAULT_VISUS_LIB -lvisusidx -lvisus -lstreaming"
+   fi
+fi
+if test "$VISUS_LIB" != "" ; then
+   if test "$VISUS_INCLUDE" != "" ; then
+      VISUS="$""(VISUS)"
+      echo "$as_me:$LINENO: result: yes" >&5
+echo "${ECHO_T}yes" >&6
+   else
+      echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+   fi
+else
+   echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+fi
 
 
 
@@ -16671,6 +16718,9 @@ s,@BOXLIB2D_LIBS@,$BOXLIB2D_LIBS,;t t
 s,@BOXLIB3D@,$BOXLIB3D,;t t
 s,@BOXLIB3D_INCLUDE@,$BOXLIB3D_INCLUDE,;t t
 s,@BOXLIB3D_LIBS@,$BOXLIB3D_LIBS,;t t
+s,@VISUS@,$VISUS,;t t
+s,@VISUS_INCLUDE@,$VISUS_INCLUDE,;t t
+s,@VISUS_LIB@,$VISUS_LIB,;t t
 s,@ENGINE_CPPFLAGS@,$ENGINE_CPPFLAGS,;t t
 s,@SILOOBJVTK_CPPFLAGS@,$SILOOBJVTK_CPPFLAGS,;t t
 s,@PREPROCESSOR_CPPFLAGS@,$PREPROCESSOR_CPPFLAGS,;t t

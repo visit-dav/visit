@@ -321,6 +321,9 @@ NetworkManager::ClearNetworksWithDatabase(const std::string &db)
 //    Hank Childs, Mon Mar 22 11:10:43 PST 2004
 //    Allow for the DB type to be explicitly specified.
 //
+//   Mark C. Miller, Tue Sep 28 19:57:42 PDT 2004
+//   Added code to pass avtDatabaseMetaData to LoadBalancer->AddDatabase
+//
 // ****************************************************************************
 
 NetnodeDB *
@@ -398,7 +401,8 @@ NetworkManager::GetDBFromCache(const string &filename, int time,
 
         netDB->SetDBInfo(filename, "", time);
         const   avtIOInformation & ioinfo = db->GetIOInformation(time);
-        loadBalancer->AddDatabase(filename, ioinfo);
+        const   avtDatabaseMetaData *md = db->GetMetaData(time);
+        loadBalancer->AddDatabase(filename, ioinfo, md);
       
         // The code here should be:
         // CATCH_RETURN2(1, netDB);
@@ -618,6 +622,10 @@ NetworkManager::StartNetwork(const string &filename, const string &format,
 //
 //   Hank Childs, Mon Mar 22 11:10:43 PST 2004
 //   Send the file format type to the database factory.
+//
+//   Mark C. Miller, Tue Sep 28 19:57:42 PDT 2004
+//   Added code to pass avtDatabaseMetaData to LoadBalancer->AddDatabase
+//
 // ****************************************************************************
 void
 NetworkManager::DefineDB(const string &dbName, const string &dbPath,
@@ -748,7 +756,8 @@ NetworkManager::DefineDB(const string &dbName, const string &dbPath,
 
         // Add the database to the load balancer.
         const   avtIOInformation & ioinfo = db->GetIOInformation(time);
-        loadBalancer->AddDatabase(dbName, ioinfo);
+        const   avtDatabaseMetaData *md = db->GetMetaData(time);
+        loadBalancer->AddDatabase(dbName, ioinfo, md);
     }
     CATCH(DatabaseException)
     {
