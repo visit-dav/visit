@@ -455,6 +455,9 @@ dnl
 dnl    Kathleen Bonnell, Wed Nov 12 17:20:03 PST 2003 
 dnl    Add new vtk lib vtkDICOMParser. 
 dnl
+dnl    Eric Brugger, Thu Nov 20 08:54:13 PST 2003
+dnl    Modify the script to handle the absence of the help directory.
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -996,6 +999,16 @@ AC_SUBST(JAVA_TARGET)
 AC_SUBST(JAR)
 AC_SUBST(JAVAFLAGS)
 AC_SUBST(JAVAPLUGINFLAGS)
+
+#
+# Check if the help directory is present.
+#
+if test -d help; then
+    HELP="help"
+else
+    HELP=""
+fi
+AC_SUBST(HELP)
 
 #
 # Check to see if we should build all of the plugins.
@@ -2528,7 +2541,11 @@ else
     GUI_FILES=""
 fi
 
-HELP_FILES="help/Makefile"
+if test -n "$HELP"; then
+    HELP_FILES="help/Makefile"
+else
+    HELP_FILES=""
+fi
 
 if test -n "$VIEWER"; then
     VIEWER_FILES="viewer/Makefile

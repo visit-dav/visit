@@ -50,6 +50,26 @@
 #   Brad Whitlock, Thu Jun 19 13:17:43 PST 2003
 #   Removed splashscreen directory.
 #
+#   Eric Brugger, Thu Nov 20 08:30:07 PST 2003
+#   Only add the help directory if -withhelp specified.
+#
+
+withhelp=no
+
+#
+# The loop is executed once for each symbol on the execute line.  This means
+# that $1 may be blank for later executions of the loop if any "shift 2"
+# commands are executed.  The variable abc is not used in the loop.
+#
+for abc
+do
+   case $1 in
+      -withhelp)
+         withhelp=yes
+         shift
+         ;;
+   esac
+done
 
 if [ ! -d engine ]; then
    echo "invoke $0 from the root of the VisIt source tree" 2>&1
@@ -79,7 +99,9 @@ PATH="$PATH:./clearcase_bin"
     ./clearcase_bin/mkman --quiet --recursive --simple ./include
     ./clearcase_bin/mkman --quiet --recursive --simple ./bin
     ./clearcase_bin/mkman --quiet             --simple ./lib
-    ./clearcase_bin/mkman --quiet             --simple ./help
+    if [ $withhelp = yes ]; then
+        ./clearcase_bin/mkman --quiet         --simple ./help
+    fi
     ./clearcase_bin/mkman --quiet --recursive --simple ./archives
     ./clearcase_bin/mkman --quiet --recursive --simple ./plugins
     ./clearcase_bin/mkman --quiet --recursive --simple ./clearcase_bin

@@ -158,6 +158,9 @@ QvisHostProfileWindow::~QvisHostProfileWindow()
 //   Jeremy Meredith, Thu Nov 13 16:02:47 PST 2003
 //   Added "srun" launcher.
 //
+//   Jeremy Meredith, Thu Nov 20 16:29:54 PST 2003
+//   Adding psub/srun option.
+//
 // ****************************************************************************
 void
 QvisHostProfileWindow::CreateWindowContents()
@@ -289,6 +292,7 @@ QvisHostProfileWindow::CreateWindowContents()
     launchMethod->insertItem("psub");
     launchMethod->insertItem("psub/poe");
     launchMethod->insertItem("psub/prun");
+    launchMethod->insertItem("psub/srun");
     launchMethod->insertItem("prun");
     launchMethod->insertItem("srun");
     launchMethod->insertItem("yod");

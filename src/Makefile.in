@@ -107,6 +107,9 @@
 #    Brad Whitlock, Thu Jun 19 13:12:07 PST 2003
 #    I removed the splashscreen.
 #
+#    Eric Brugger, Thu Nov 20 10:04:46 PST 2003
+#    I made the build in the help directory optional.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -117,7 +120,7 @@ DISTRIB=configure configure.in VERSION
 
 SUBDIRS=include lib bin common @VTKQT@ visit_vtk components engine \
         launcher @METADATA_SERVER@ @VIEWER@ @GUI@ @VISITPY@ \
-        @JAVA_TARGET@ plots operators databases help tools
+        @JAVA_TARGET@ plots operators databases @HELP@ tools
 
 #
 # Make sure that the installation directories exist

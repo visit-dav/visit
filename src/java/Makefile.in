@@ -63,6 +63,10 @@
 #   I added ViewCurveAttributes.  I replaced ViewAttributes with
 #   View2DAttributes and View3DAttributes.
 #
+#   Eric Brugger, Wed Nov 19 16:11:10 PST 2003
+#   I created a NOT_DISTRIB line with Version.java so that it would not
+#   be added to the distribution since it is a generated file.
+#
 ##############################################################################
 
 ##
@@ -70,6 +74,8 @@
 ##
 @SET_MAKE@
 @VARIABLES@
+
+NOT_DISTRIB=Version.java
 
 INSTDIR=llnl/visit
 

@@ -336,6 +336,9 @@ avtExpressionEvaluatorFilter::ReleaseData(void)
 //    Make room for each expression variable (was previously clobbering
 //    existing vars -- whoops).
 //
+//    Kathleen Bonnell, Thu Nov 20 15:06:49 PST 2003 
+//    Allow for index == 0 when testing whether or not to add the pickVarInfo.
+//
 // ****************************************************************************
 
 void
@@ -406,7 +409,7 @@ avtExpressionEvaluatorFilter::Query(PickAttributes *pa)
     //
     avtQueryableSource *src = GetInput()->GetQueryableSource();
     src->Query(pa);
-    
+
     //
     // Now iterate over the expressions and add where possible.
     //
@@ -496,7 +499,7 @@ avtExpressionEvaluatorFilter::Query(PickAttributes *pa)
                         break;
                     }
                 }
-                if (index > 0)
+                if (index >= 0)
                 {
                     PickVarInfo &varInfo2 = pa->GetPickVarInfo(index);
                     varInfo2 = varInfo;
