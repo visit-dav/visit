@@ -2944,6 +2944,11 @@ avtSiloFileFormat::GetVectorVar(int domain, const char *v)
 //  Programmer:    Hank Childs
 //  Creation:      May 17, 2002
 //
+//  Modifications:
+//    Eric Brugger, Tue Mar  2 16:50:47 PST 2004
+//    I modified the routine to use nvals as the number of components in
+//    the variable.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -2970,7 +2975,7 @@ avtSiloFileFormat::GetUcdVectorVar(DBfile *dbfile, const char *vname,
     vectors->SetNumberOfTuples(uv->nels);
     for (int i = 0 ; i < uv->nels ; i++)
     {
-        float v3 = (uv->ndims == 3 ? uv->vals[2][i] : 0.);
+        float v3 = (uv->nvals == 3 ? uv->vals[2][i] : 0.);
         vectors->SetTuple3(i, uv->vals[0][i], uv->vals[1][i], v3);
     }
 
@@ -2996,6 +3001,11 @@ avtSiloFileFormat::GetUcdVectorVar(DBfile *dbfile, const char *vname,
 //
 //  Programmer:    Hank Childs
 //  Creation:      May 17, 2002
+//
+//  Modifications:
+//    Eric Brugger, Tue Mar  2 16:50:47 PST 2004
+//    I modified the routine to use nvals as the number of components in
+//    the variable.
 //
 // ****************************************************************************
 
@@ -3026,7 +3036,7 @@ avtSiloFileFormat::GetQuadVectorVar(DBfile *dbfile, const char *vname,
     vectors->SetNumberOfTuples(qv->nels);
     for (int i = 0 ; i < qv->nels ; i++)
     {
-        float v3 = (qv->ndims == 3 ? qv->vals[2][i] : 0.);
+        float v3 = (qv->nvals == 3 ? qv->vals[2][i] : 0.);
         vectors->SetTuple3(i, qv->vals[0][i], qv->vals[1][i], v3);
     }
 
@@ -3050,6 +3060,11 @@ avtSiloFileFormat::GetQuadVectorVar(DBfile *dbfile, const char *vname,
 //
 //  Programmer:    Hank Childs
 //  Creation:      Novemeber 1, 2000
+//
+//  Modifications:
+//    Eric Brugger, Tue Mar  2 16:50:47 PST 2004
+//    I modified the routine to use nvals as the number of components in
+//    the variable.
 //
 // ****************************************************************************
 
@@ -3076,7 +3091,7 @@ avtSiloFileFormat::GetPointVectorVar(DBfile *dbfile, const char *vname)
     vectors->SetNumberOfTuples(mv->nels);
     for (int i = 0 ; i < mv->nels ; i++)
     {
-        float v3 = (mv->ndims == 3 ? mv->vals[2][i] : 0.);
+        float v3 = (mv->nvals == 3 ? mv->vals[2][i] : 0.);
         vectors->SetTuple3(i, mv->vals[0][i], mv->vals[1][i], v3);
     }
 

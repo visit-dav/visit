@@ -16,7 +16,7 @@ shell prompt.
     Mesa     5.0      3-D Graphics Library   http://www.mesa3d.org/
     Python   2.1.2    Scripting Language     http://www.python.org
     Qt       2.3.0    GUI Toolkit            http://www.trolltech.com
-    Silo     4.3.1    File I/O library       http://www.llnl.gov/bdiv/meshtv
+    Silo     4.4      File I/O library       http://www.llnl.gov/bdiv/meshtv
     VTK      20031028 Visualization Toolkit  http://www.kitware.com
 
 
@@ -373,8 +373,8 @@ CFLAGS=-O2 with CFLAGS="-fpic -O2" in the configure command below.
 #
 # Build Silo
 #
-sh silo020325.sh
-cd silo020325
+sh silo040308.sh
+cd silo040308
 env CFLAGS=-O2 ./configure --without-readline --without-hdf5 --without-exodus
 make
 
