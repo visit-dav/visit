@@ -284,6 +284,11 @@ class Xfer;
 //    Brad Whitlock, Wed Jul 9 11:54:15 PDT 2003
 //    I added methods to export and import the viewer's entire state.
 //
+//    Kathleen Bonnell, Wed Jul 23 17:04:10 PDT 2003
+//    Added 'samples' arg to LineQuery and Lineout methods.
+//    Added int args to DatabaseQuery.
+//    Added overloaded Pick and NodePick methods (accepting doubles).
+//
 // ****************************************************************************
 
 class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
@@ -444,15 +449,19 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
     void SetPlotSILRestriction();
 
     // Methods for querying
-    void DatabaseQuery(const std::string &queryName, const stringVector &vars);
+    void DatabaseQuery(const std::string &queryName, const stringVector &vars,
+                       const int arg1 = 0, const int arg2 = 0);
     void PointQuery(const std::string &queryName, const double pt[3],
                     const stringVector &vars);
     void LineQuery(const std::string &queryName, const double pt1[3],
-                   const double pt2[3], const stringVector &vars);
+                   const double pt2[3], const stringVector &vars,
+                   const int samples);
     void Pick(int x, int y, const stringVector &vars);
+    void Pick(double xyz[3], const stringVector &vars);
     void NodePick(int x, int y, const stringVector &vars);
+    void NodePick(double xyz[3], const stringVector &vars);
     void Lineout(const double p0[3], const double p1[3],
-                 const stringVector &vars);
+                 const stringVector &vars, const int samples);
 
     // Methods for returning pointers to state obects.
     AnimationAttributes        *GetAnimationAttributes() const 

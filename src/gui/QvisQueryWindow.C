@@ -374,6 +374,9 @@ QvisQueryWindow::UpdateResults(bool)
 //   Jeremy Meredith, Sat Apr 12 11:31:22 PDT 2003
 //   Added compactness.
 //
+//   Kathleen Bonnell, Wed Jul 23 16:02:22 PDT 2003 
+//   Added 'Variable by Zone'.
+//
 // ****************************************************************************
 
 void
@@ -401,6 +404,32 @@ QvisQueryWindow::UpdateArgumentPanel(int index)
                  (strcmp(names[index].c_str(), "Revolved surface area") == 0)||
                  (strcmp(names[index].c_str(), "Revolved volume") == 0)) 
                 showWidgets[0] = false;
+            else if (strcmp(names[index].c_str(), "Variable by Zone") == 0) 
+            {
+                labels[0]->setText("Domain");
+                textFields[0]->setText("0");
+                labels[1]->setText("Zone");
+                textFields[1]->setText("0");
+                labels[2]->setText("Variables");
+                textFields[2]->setText("default");
+                showWidgets[0] = true;
+                showWidgets[1] = true;
+                showWidgets[2] = true;
+                showWidgets[3] = false;
+            }
+            else if (strcmp(names[index].c_str(), "Variable by Node") == 0) 
+            {
+                labels[0]->setText("Domain");
+                textFields[0]->setText("0");
+                labels[1]->setText("Node");
+                textFields[1]->setText("0");
+                labels[2]->setText("Variables");
+                textFields[2]->setText("default");
+                showWidgets[0] = true;
+                showWidgets[1] = true;
+                showWidgets[2] = true;
+                showWidgets[3] = false;
+            }
             else
                 showWidgets[0] = true;
         }
@@ -555,6 +584,10 @@ QvisQueryWindow::ConnectPlotList(PlotList *pl)
 //   Kathleen Bonnell, Wed May 14 17:32:20 PDT 2003 
 //   Removed Pick related hack. 
 //
+//   Kathleen Bonnell, Wed Jul 23 16:02:22 PDT 2003 
+//   Added special checks for 'Variable by Zone' query.  
+//   Include 'sample' in call to viewer->LineQuery.
+//
 // ****************************************************************************
 
 void
@@ -579,12 +612,37 @@ QvisQueryWindow::Apply(bool ignore)
                 // query we're doing.
                 if(t == QueryList::DatabaseQuery)
                 {
-                    if(!GetVars(0, vars))
-                        noErrors = false;
-
-                    if(noErrors)
+                    if (strcmp(names[index].c_str(), "Variable by Zone") == 0) 
                     {
-                        viewer->DatabaseQuery(names[index], vars);
+                        int dom = 0, zone = 0;
+                        bool goodDomain = GetNumber(0, &dom);
+                        if (goodDomain)
+                            goodDomain = (dom >= 0);
+                        if (!goodDomain)
+                            Error("The domain must be an integer >= 0.");
+                        bool goodZone = GetNumber(1, &zone);
+                        if (goodZone)
+                            goodZone = (zone >= 0);
+                        if (!goodZone)
+                            Error("The zone must be an integer >= 0.");
+
+                        if(!GetVars(2, vars))
+                            noErrors = false;
+
+                        if(noErrors && goodDomain && goodZone)
+                        {
+                            viewer->DatabaseQuery(names[index], vars, dom, zone);
+                        }
+                    }
+                    else 
+                    {
+                        if(!GetVars(0, vars))
+                            noErrors = false;
+
+                        if(noErrors)
+                        {
+                            viewer->DatabaseQuery(names[index], vars);
+                        }
                     }
                 }
                 else if(t == QueryList::PointQuery)
@@ -620,7 +678,7 @@ QvisQueryWindow::Apply(bool ignore)
 
                     if(noErrors && goodSample)
                     {
-                        viewer->LineQuery(names[index], p0, p1, vars);
+                        viewer->LineQuery(names[index], p0, p1, vars, sample);
                     }
                 }
 
@@ -654,6 +712,8 @@ QvisQueryWindow::Apply(bool ignore)
 // Creation:   Mon Sep 9 17:54:53 PST 2002
 //
 // Modifications:
+//   Kathleen Bonnell, Tue Jul 22 14:02:37 PDT 2003
+//   Allow for only 2 world-space coordinates, setting z to 0 if not provided.
 //   
 // ****************************************************************************
 
@@ -672,14 +732,16 @@ QvisQueryWindow::GetPoint(int index, const QString &pname, int rep, double pt[3]
             r = (QueryList::CoordinateRepresentation)rep;
             if(r == QueryList::WorldSpace)
             {
-                okay = (sscanf(temp.latin1(), "%lg %lg %lg",
-                        &pt[0], &pt[1], &pt[2]) == 3);
+                pt[2] = 0.;
+                int numScanned = sscanf(temp.latin1(), "%lg %lg %lg",
+                        &pt[0], &pt[1], &pt[2]);
+                okay = (numScanned == 2 || numScanned == 3);
                 if(!okay)
                 {
                     QString msg;
                     msg.sprintf("The %s is not valid. It should consist of "
-                                "three real world coordinate values.",
-                                pname.latin1());
+                                 "two or three real world coordinate values.",
+                                 pname.latin1());
                     Error(msg);
                 }
             }

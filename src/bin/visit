@@ -231,8 +231,12 @@ $0 = shift @ARGV;
 #    allow non-private plugin installs.
 #
 #    Jeremy Meredith, Mon Jul  7 12:46:08 PDT 2003
-#    The changed the path of "bsub" on Q, breaking things for the Q port.
+#    They changed the path of "bsub" on Q, breaking things for the Q port.
 #    I updated the path for the Q stuff to match it.
+#
+#    Jeremy Meredith, Thu Jul 24 15:58:45 PDT 2003
+#    I added the ability to translate a known remotehost into a different
+#    IP address.  This allows us to use the DISCOM pipes back to White from Q.
 #
 ###############################################################################
 
@@ -395,6 +399,7 @@ while (scalar(@ARGV) > 0) {
     elsif ($arg eq "-t")         { $time = shift; $time_set = 1; }
     elsif ($arg eq "-v" )        { $ver  = shift; $ver_set  = 1; }
     elsif ($arg eq "-expedite")  { if($exe_name eq "engine") { $expedite_engine = 1;} else { push @visitargs, $arg; }}
+    elsif ($arg eq "-host")      { $remotehost = shift; $remotehost_set = 1; }
     elsif ($arg eq "-beta")      { $beta = 1; push @visitargs,$arg;}
     elsif ($arg eq "-key" )      { $security_key = shift; $security_key_set = 1;}
     elsif ($arg eq "-viewer" )   { $exe_name = "viewer"; }
@@ -485,6 +490,14 @@ if ($ver_set)
 # ----
 if ($host =~ /^q\d+$/ || $host =~ /^qfe\d$/)
 {
+    # These are the DISCOM pipes to White from Q.  Four per login node;
+    # choose one at random.
+    $interface = int(rand(4)+1);
+    $remotehost = "172.16.$interface.1"    if ($remotehost =~ /^white128/);
+    $remotehost = "172.16.$interface.5"    if ($remotehost =~ /^white129/);
+    $remotehost = "172.16.$interface.9"    if ($remotehost =~ /^white269/);
+    $remotehost = "172.16.$interface.13"   if ($remotehost =~ /^white432/);
+
     $ENV{PATH} = join ':' , ("$ENV{PATH}","/lsf/bin");
     $ENV{LD_LIBRARY_PATH} = join ':' ,
                          ("$ENV{LD_LIBRARY_PATH}",
@@ -492,6 +505,21 @@ if ($host =~ /^q\d+$/ || $host =~ /^qfe\d$/)
                           "/lsfdir/Q_CD/4.2/alpha5-rms/lib",
                           "/usr/local/opt/Compaq_MPI_64_2.5UK1_r1/usr/shlib");
 }
+
+# ----
+#  HACK to allow other talk-back interfaces, specifically designed for Q:
+#
+#  We stripped off the "host" argument above, so put it back here.
+#  (This allowed us to change it if needed, e.g. for Q)
+#  VisIt seems to need the -host argument before the -nread and -nwrite
+#  values, so when we put it back, put it at the beginning.
+# ----
+if ($remotehost_set)
+{
+    unshift @visitargs, $remotehost;
+    unshift @visitargs, "-host";
+}
+
 
 # -----------------------------------------------------------------------------
 #                               Check for errors

@@ -1,15 +1,39 @@
 <?xml version="1.0"?>
-  <Attribute name="Line" codefile="Line.code" purpose="Attributes for a line" exportAPI="STATE_API" exportInclude="state_exports.h">
-    <Field name="point1" type="doubleArray" length="3"> 0. 0. 0. </Field>
-    <Field name="point2" type="doubleArray" length="3"> 1. 1. 1. </Field>
-    <Field name="designator" type="string" >   </Field>
-    <Field name="color" type="att" subtype="ColorAttribute" > </Field>
-    <Field name="lineStyle" type="linestyle" >0 </Field>
-    <Field name="lineWidth" type="linewidth" >0 </Field>
-    <Field name="interactive" type="bool" >false </Field>
-    <Field name="reflineLabels" type="bool" >false </Field>
-    <Field name="varName" type="string" >"default" </Field>
-    <Function name="SetPoint1" user="true" ></Function>
-    <Function name="SetPoint2" user="true" ></Function>
+  <Attribute name="Line" purpose="Attributes for a line" persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="Line.code">
+    <Field name="point1" label="point1" type="doubleArray" length="3">
+      0.000000
+      0.000000
+      0.000000
+    </Field>
+    <Field name="point2" label="point2" type="doubleArray" length="3">
+      1.000000
+      1.000000
+      1.000000
+    </Field>
+    <Field name="designator" label="designator" type="string">
+    </Field>
+    <Field name="color" label="color" type="att" subtype="ColorAttribute">
+    </Field>
+    <Field name="lineStyle" label="lineStyle" type="linestyle">
+      0
+    </Field>
+    <Field name="lineWidth" label="lineWidth" type="linewidth">
+      0
+    </Field>
+    <Field name="interactive" label="interactive" type="bool">
+      false
+    </Field>
+    <Field name="reflineLabels" label="reflineLabels" type="bool">
+      false
+    </Field>
+    <Field name="varName" label="varName" type="string">
+      default
+    </Field>
+    <Field name="numSamples" label="numSamples" type="int">
+      50
+    </Field>
+    <Function name="SetPoint1" user="true" member="true">
+    </Function>
+    <Function name="SetPoint2" user="true" member="true">
+    </Function>
   </Attribute>
-

@@ -958,6 +958,28 @@ SetWindowModeAction::SetWindowModeAction(ViewerWindow *win) :
     }
 }
 
+
+// ****************************************************************************
+// Method: SetWindowModeAction::Setup
+//
+// Purpose: 
+//   This method is called when the toolbar or popup menu are used. It stores
+//   values into the args object so it is ready for the Execute method.
+//
+// Programmer: Kathleen Bonnell
+// Creation:   July 22, 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+SetWindowModeAction::Setup()
+{
+    args.SetWindowMode(activeAction);
+}
+
+
 // ****************************************************************************
 // Method: SetWindowModeAction::Execute
 //
@@ -971,13 +993,15 @@ SetWindowModeAction::SetWindowModeAction(ViewerWindow *win) :
 // Creation:   Fri Apr 4 15:48:08 PST 2003
 //
 // Modifications:
+//   Kathleen Bonnell, Tue Jul 22 16:24:52 PDT 2003
+//   Made it use args.GetWindowMode so that can be set from CLI.
 //   
 // ****************************************************************************
 
 void
-SetWindowModeAction::Execute(int val)
+SetWindowModeAction::Execute(int)
 {
-    INTERACTION_MODE mode = (INTERACTION_MODE)val;
+    INTERACTION_MODE mode = (INTERACTION_MODE)args.GetWindowMode();
     windowMgr->SetInteractionMode(mode, window->GetWindowId());
 }
 

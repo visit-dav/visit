@@ -44,6 +44,9 @@
 #   Jeremy Meredith, Thu Apr 17 12:54:50 PDT 2003
 #   Added two-pass dataset query.
 #
+#   Kathleen Bonnell, Wed Jul 23 18:10:53 PDT 2003
+#   Added avtVariableQuery. 
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -66,7 +69,8 @@ Queries_src= \
  Queries/avtTotalRevolvedSurfaceAreaQuery.C \
  Queries/avtTotalRevolvedVolumeQuery.C \
  Queries/avtTotalSurfaceAreaQuery.C \
- Queries/avtTotalVolumeQuery.C 
+ Queries/avtTotalVolumeQuery.C \
+ Queries/avtVariableQuery.C 
 
 
 CPPFLAGS=@COMPONENT_CPPFLAGS@ @CPPFLAGS@

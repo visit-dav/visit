@@ -778,6 +778,10 @@ void FatalError(const string &s)
 //  Arguments:
 //      argv[1]     The root name of the dataset.
 //
+//  Modifications:
+//    Akira Haddox, Tue Jul 22 08:12:57 PDT 2003
+//    Added help on bad number of arguments.  
+//
 // ***************************************************************************
 
 int main(int argc, char* argv[])
@@ -788,6 +792,21 @@ int main(int argc, char* argv[])
     MPI_Comm_rank(MPI_COMM_WORLD, &myRank);
     MPI_Comm_size(MPI_COMM_WORLD, &numProcesses);
 #endif 
+
+    if (argc != 2)
+    {
+        if (myRank != 0)
+            exit(-1);
+        
+        cout <<
+"makemili help:\n"
+"  Single argument: the root name of a single or multi domained Mili dataset.\n"
+"                   The path to the dataset may be included in the name.\n"
+"                   The output .mili file will be written in the same\n"
+"                   directory as the dataset." << endl; 
+ 
+        exit(-1);
+    }
 
     DetermineRootAndPath(argv[1]);
     

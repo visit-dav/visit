@@ -56,6 +56,9 @@ PickAttributes *ViewerQueryManager::pickClientAtts=0;
 GlobalLineoutAttributes *ViewerQueryManager::globalLineoutAtts=0;
 GlobalLineoutAttributes *ViewerQueryManager::globalLineoutClientAtts=0;
 
+void
+GetUniqueVars(const stringVector &vars, const string &activeVar, 
+              stringVector &uniqueVars);
 
 // ****************************************************************************
 //  Method: ViewerQueryManager constructor
@@ -109,6 +112,9 @@ GlobalLineoutAttributes *ViewerQueryManager::globalLineoutClientAtts=0;
 //    Renamed Pick query to ZonePick, added NodePick query. 
 //    Initialize pickAtts. 
 //
+//    Kathleen Bonnell, Wed Jul 23 16:26:34 PDT 2003 
+//    Added 'Variable by Zone', 'WorldPick' and 'WorldNodePick'. 
+//
 // ****************************************************************************
 
 ViewerQueryManager::ViewerQueryManager()
@@ -140,9 +146,13 @@ ViewerQueryManager::ViewerQueryManager()
     queryTypes->AddQuery("Revolved surface area", QueryList::DatabaseQuery);
     queryTypes->AddQuery("Surface area", QueryList::DatabaseQuery);
     queryTypes->AddQuery("Volume", QueryList::DatabaseQuery);
+    queryTypes->AddQuery("WorldPick", QueryList::PointQuery);
+    queryTypes->AddQuery("WorldNodePick", QueryList::PointQuery);
+    queryTypes->AddQuery("Variable by Zone", QueryList::DatabaseQuery);
+    //queryTypes->AddQuery("Variable by Node", QueryList::DatabaseQuery);
     //queryTypes->AddQuery("MinMax", QueryList::DatabaseQuery);
-    //queryTypes->AddQuery("WorldPick", QueryList::PointQuery);
 #endif
+
     queryTypes->SelectAll();
 
     operatorFactory = 0;
@@ -838,11 +848,17 @@ ViewerQueryManager::GetQueryClientAtts()
 //    Kathleen Bonnell, Fri Jul 11 10:16:34 PDT 2003 
 //    Verify query exists before sending request to engine. 
 // 
+//    Kathleen Bonnell, Wed Jul 23 16:26:34 PDT 2003 
+//    Added call to GetUniqueVars, so that 'default' will get set to
+//    the active var, and no duplicates will be in the list when passed
+//    to queryAtts.
+// 
 // ****************************************************************************
 
 void         
 ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
-                            const vector<string> &vars)
+                            const vector<string> &vars, const int arg1,
+                            const int arg2)
 {
     queryClientAtts->SetResultsMessage("");
     queryClientAtts->SetResultsValue(0.);
@@ -873,8 +889,11 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
 
     ViewerPlot *oplot = olist->GetPlot(plotId);
     const char *host = oplot->GetHostName();
+    const char *activeVar = oplot->GetVariableName();
     bool retry;
     int numAttempts = 0;
+    stringVector uniqueVars;
+    GetUniqueVars(vars, activeVar, uniqueVars);
     do
     {
         retry = false;
@@ -885,9 +904,16 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
             ViewerEngineManager *eM = ViewerEngineManager::Instance();
             QueryAttributes qa;
             qa.SetName(qName);
-            qa.SetVariables(vars);
+            qa.SetVariables(uniqueVars);
+            qa.SetDomain(arg1);
+            qa.SetElement(arg2);
+            if (strcmp(qName.c_str(), "Variable by Zone") == 0)
+                qa.SetElementType(QueryAttributes::Zone);
+            else if (strcmp(qName.c_str(), "Variable by Node") == 0)
+                qa.SetElementType(QueryAttributes::Node);
             if (eM->Query(host, networkId, &qa, qa))
             {
+                qa.SetVariables(vars);
                *queryClientAtts = qa;
                 queryClientAtts->Notify();
                 Message(qa.GetResultsMessage().c_str());
@@ -991,17 +1017,27 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
 //    Kathleen Bonnell, Fri Mar 14 17:11:42 PST 2003  
 //    Allow multiple-vars.
 // 
+//    Kathleen Bonnell, Wed Jul 23 16:26:34 PDT 2003 
+//    Remove duplicate vars, call GetUniqueVars. 
+// 
 // ****************************************************************************
 
 void         
 ViewerQueryManager::LineQuery(const char *qName, const double *pt1, 
-                    const double *pt2, const vector<string> &vars)
+                    const double *pt2, const vector<string> &vars,
+                    const int samples)
 {
     if (strcmp(qName, "Lineout") == 0)
     {
         ViewerWindow *win = ViewerWindowManager::Instance()->GetActiveWindow();
-        for (int i = 0; i < vars.size(); i++)
-            Lineout(win, pt1, pt2, vars[i]);
+        stringVector uniqueVars; 
+        // GetUniqueVars sets 'default' to the passed 'activeVar'.
+        // Since we don't want to go through the trouble of figuring what
+        // that is right now, send 'default' as the active var.
+        string activeVar("default");
+        GetUniqueVars(vars, activeVar, uniqueVars);
+        for (int i = 0; i < uniqueVars.size(); i++)
+            Lineout(win, pt1, pt2, uniqueVars[i], samples);
     }
 }
 
@@ -1244,21 +1280,8 @@ ViewerQueryManager::Pick(PICK_POINT_INFO *ppi)
         // Remove duplicate vars, so that query doesn't report them twice.
         //
         vector<string> userVars = pickAtts->GetVariables();
-        set<string> uniqueVarsSet;
         vector<string> uniqueVars; 
-        for (int i = 0; i < userVars.size(); i++)
-        {
-            string v = userVars[i];
-            if (strcmp(v.c_str(), "default") == 0)
-            {
-                v = activeVar;
-            }
-            if (uniqueVarsSet.count(v) == 0)
-            {
-                uniqueVars.push_back(v);
-                uniqueVarsSet.insert(v); 
-            }
-        }
+        GetUniqueVars(userVars, activeVar, uniqueVars);
         pickAtts->SetVariables(uniqueVars);
         pickAtts->SetPickLetter(designator);
         pickAtts->SetTimeStep(t);
@@ -1435,6 +1458,7 @@ ViewerQueryManager::GetColor()
 //   pt1       The first endpoint of the refline in world coordinates. 
 //   pt2       The second endpoint of the refline in world coordinates. 
 //   vName     The variable to use for this lineout. 
+//   samples   The number of sample points along the line.
 //
 // Programmer: Kathleen Bonnell 
 // Creation:   December 19, 2002 
@@ -1446,11 +1470,15 @@ ViewerQueryManager::GetColor()
 //   Kathleen Bonnell, Fri Mar 14 17:11:42 PST 2003 
 //   Added win and var arguments.  SetVarName of line with the passed vName. 
 //   
+//   Kathleen Bonnell, Wed Jul 23 16:51:18 PDT 2003 
+//   Added samples argument.  Removed calls to win->SetInteractionMode.
+//   
 // ****************************************************************************
 
 void
 ViewerQueryManager::Lineout(ViewerWindow *win, const double pt1[3], 
-                            const double pt2[3], const string &vName)
+                            const double pt2[3], const string &vName,
+                            const int samples)
 {
     if (win->GetTypeIsCurve())
     {
@@ -1464,14 +1492,12 @@ ViewerQueryManager::Lineout(ViewerWindow *win, const double pt1[3],
     }
     else
     {
-        INTERACTION_MODE imode = win->GetInteractionMode();
-        win->SetInteractionMode(LINEOUT);
         Line line;
         line.SetPoint1(pt1);
         line.SetPoint2(pt2);
         line.SetVarName(vName);
+        line.SetNumSamples(samples);
         AddQuery(win, &line);
-        win->SetInteractionMode(imode);
     }
 }
 
@@ -1498,6 +1524,9 @@ ViewerQueryManager::Lineout(ViewerWindow *win, const double pt1[3],
 //   Jeremy Meredith, Tue Jun 17 19:29:00 PDT 2003
 //   Changed GetAllIndex to GetEnabledIndex.
 //
+//   Kathleen Bonnell, Wed Jul 23 16:51:18 PDT 2003 
+//   Removed calls to win->SetInteractionMode.
+//   
 // ****************************************************************************
 
 void
@@ -1525,10 +1554,7 @@ ViewerQueryManager::Lineout(ViewerWindow *win)
         }
         else
         {
-            INTERACTION_MODE imode = win->GetInteractionMode();
-            win->SetInteractionMode(LINEOUT);
             AddQuery(win, line);
-            win->SetInteractionMode(imode);
         }
         delete line;
     }
@@ -1838,6 +1864,9 @@ ViewerQueryManager::HandlePickCache()
 //    Only set pickAtts' variables if the passed list is not empty.
 //    Handle NodePick.
 //
+//    Kathleen Bonnell, Wed Jul 23 16:56:15 PDT 2003 
+//    Added support for WorldPick and WorldNodePick. 
+//    
 // ****************************************************************************
 
 void         
@@ -1858,6 +1887,34 @@ ViewerQueryManager::PointQuery(const string &qName, const double *pt,
             pickAtts->SetVariables(vars);
         ViewerWindow *win = ViewerWindowManager::Instance()->GetActiveWindow();
         win->Pick((int)pt[0], (int)pt[1], NODE_PICK);
+    }
+    else if ((strcmp(qName.c_str(), "WorldPick") == 0) ||
+             (strcmp(qName.c_str(), "WorldNodePick") == 0))
+    {
+        ViewerWindow *win = ViewerWindowManager::Instance()->GetActiveWindow();
+        if (win->GetTypeIsCurve())   
+        {
+            Error("Curve windows cannot be picked for values.");
+            return;
+        }
+        if (!vars.empty())
+            pickAtts->SetVariables(vars);
+
+        INTERACTION_MODE imode  = win->GetInteractionMode();
+        if (strcmp(qName.c_str(), "WorldPick") == 0)
+            win->SetInteractionMode(ZONE_PICK);
+        else
+            win->SetInteractionMode(NODE_PICK);
+
+        PICK_POINT_INFO ppi;
+        ppi.callbackData = win;
+        ppi.rayPt1[0] = ppi.rayPt2[0] = pt[0];
+        ppi.rayPt1[1] = ppi.rayPt2[1] = pt[1];
+        ppi.rayPt1[2] = ppi.rayPt2[2] = pt[2];
+        ppi.validPick = true;
+        Pick(&ppi);
+
+        win->SetInteractionMode(imode);
     }
 }
 
@@ -2020,4 +2077,48 @@ ViewerQueryManager::SetFromNode(DataNode *parentNode)
 
     if((node = mgrNode->GetNode("colorIndex")) != 0)
         colorIndex = node->AsInt();
+}
+
+
+// ****************************************************************************
+//  Method: GetUniqueVars
+//
+//  Purpose:
+//    Return a list of the unque vars in the passed argument. 
+//
+//  Arguments:
+//    vars       The original list.
+//    activeVar  The varname to use to replace 'default'.
+//    uniqueVars The new list of unique vars. 
+//    
+//  Programmer: Kathleen Bonnell
+//  Creation:   July 23, 2003. 
+//
+//  Modifications:
+//    
+// ****************************************************************************
+
+void
+GetUniqueVars(const stringVector &vars, const string &activeVar, 
+              stringVector &uniqueVars)
+{
+    if (vars.size() == 0)
+    {
+        uniqueVars.push_back(activeVar);
+        return;
+    }
+    set<string> uniqueVarsSet;
+    for (int i = 0; i < vars.size(); i++)
+    {
+        string v = vars[i];
+        if (strcmp(v.c_str(), "default") == 0)
+        {
+            v = activeVar;
+        }
+        if (uniqueVarsSet.count(v) == 0)
+        {
+            uniqueVars.push_back(v);
+            uniqueVarsSet.insert(v); 
+        }
+    }
 }

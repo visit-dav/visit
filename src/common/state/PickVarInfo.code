@@ -65,10 +65,12 @@ PickVarInfo::PrintSelf(ostream &os)
             for (i = 0; i < numMatsPerZone.size(); i++)
             {
                 if (names.size() > 0)
-                    os << "    " << names[i].c_str() << "\n" << "    ";
+                    os << "    " << names[i].c_str() << "\n";
                 nMats = numMatsPerZone[i];
                 for (j = 0; j < nMats; j++)
                 {
+                    if (names.size() > 0)
+                        os << "    "; 
                     os << "    " << mixNames[j+mixOffset].c_str();
                     if (mixValues[j+mixOffset] < 1.)
                         os << " = " << mixValues[j+mixOffset];
@@ -168,17 +170,22 @@ PickVarInfo::CreateOutputString(std::string &os)
         else
         {
             mixOffset  = 0;
+            string spacing;
             for (i = 0; i < numMatsPerZone.size(); i++)
             {
                 if (names.size() > 0)
                 {
-                    SNPRINTF(buff, 256, "    %s\n    ", names[i].c_str());
-                    os += buff;
+                    SNPRINTF(buff, 256, "    %s\n", names[i].c_str());
+                    os += buff; 
+                    spacing = "        ";
                 }
+                else
+                    spacing = "    ";
                 nMats = numMatsPerZone[i];
                 for (j = 0; j < nMats; j++)
                 {
-                    SNPRINTF(buff, 256, "    %s ", mixNames[j+mixOffset].c_str());
+                    SNPRINTF(buff, 256, "%s%s ", spacing.c_str(), 
+                             mixNames[j+mixOffset].c_str());
                     os += buff;
                     if (mixValues[j+mixOffset] < 1.)
                     {

@@ -4009,17 +4009,21 @@ ViewerProxy::SetWindowArea(int x, int y, int w, int h)
 // Arguments:
 //   queryName : The name of the query to perform.
 //   vars      : The variables that we're querying.
+//   arg1      : Optional integer argument. 
+//   arg2      : Optional integer argument.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Sep 9 16:35:17 PST 2002
 //
 // Modifications:
-//   
+//   Kathleen Bonnell, Wed Jul 23 17:04:10 PDT 2003
+//   Added optioninal integer args. 
+//
 // ****************************************************************************
 
 void
 ViewerProxy::DatabaseQuery(const std::string &queryName,
-    const stringVector &vars)
+    const stringVector &vars, const int arg1, const int arg2)
 {
     //
     // Set the rpc type.
@@ -4027,6 +4031,8 @@ ViewerProxy::DatabaseQuery(const std::string &queryName,
     viewerRPC->SetRPCType(ViewerRPC::DatabaseQueryRPC);
     viewerRPC->SetQueryName(queryName);
     viewerRPC->SetQueryVariables(vars);
+    viewerRPC->SetIntArg1(arg1);
+    viewerRPC->SetIntArg2(arg2);
 
     //
     // Issue the RPC.
@@ -4084,6 +4090,7 @@ ViewerProxy::PointQuery(const std::string &queryName, const double pt[3],
 //   pt2       : The end location of the line to query. It can be in screen 
 //               or world coordinates.
 //   vars      : The variables that we're querying.
+//   samples   : The number of samples to be used in the query. 
 //
 // Returns:    
 //
@@ -4093,12 +4100,14 @@ ViewerProxy::PointQuery(const std::string &queryName, const double pt[3],
 // Creation:   Mon Sep 9 16:37:43 PST 2002
 //
 // Modifications:
+//   Kathleen Bonnell, Wed Jul 23 17:04:10 PDT 2003
+//   Added samples arg.
 //   
 // ****************************************************************************
 
 void
 ViewerProxy::LineQuery(const std::string &queryName, const double pt1[3],
-    const double pt2[3], const stringVector &vars)
+    const double pt2[3], const stringVector &vars, const int samples)
 {
     //
     // Set the rpc type.
@@ -4108,6 +4117,7 @@ ViewerProxy::LineQuery(const std::string &queryName, const double pt1[3],
     viewerRPC->SetQueryPoint1(pt1);
     viewerRPC->SetQueryPoint2(pt2);
     viewerRPC->SetQueryVariables(vars);
+    viewerRPC->SetIntArg1(samples);
 
     //
     // Issue the RPC.
@@ -4142,6 +4152,30 @@ ViewerProxy::Pick(int x, int y, const stringVector &vars)
     PointQuery("Pick", pt, vars);
 }
 
+
+// ****************************************************************************
+// Method: ViewerProxy::Pick
+//
+// Purpose: 
+//   Tells the viewer to add a pick point at the specified world coordinate.
+//
+// Arguments:
+//   xyz  : The pick point location in world coordinates.
+//   vars   : The variables that we're querying.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   July 23, 2003 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerProxy::Pick(double xyz[3], const stringVector &vars)
+{
+    PointQuery("WorldPick", xyz, vars);
+}
+
 // ****************************************************************************
 // Method: ViewerProxy::NodePick
 //
@@ -4169,6 +4203,30 @@ ViewerProxy::NodePick(int x, int y, const stringVector &vars)
     PointQuery("NodePick", pt, vars);
 }
 
+
+// ****************************************************************************
+// Method: ViewerProxy::NodePick
+//
+// Purpose: 
+//   Tells the viewer to add a pick point at the specified world coordinate.
+//
+// Arguments:
+//   xyz  : The pick point location in world coordinates.
+//   vars   : The variables that we're querying.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   July 23, 2003 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerProxy::NodePick(double xyz[3], const stringVector &vars)
+{
+    PointQuery("WorldNodePick", xyz, vars);
+}
+
 // ****************************************************************************
 // Method: ViewerProxy::Lineout
 //
@@ -4176,9 +4234,10 @@ ViewerProxy::NodePick(int x, int y, const stringVector &vars)
 //   Tells the viewer to add a reference line at the specified screen location.
 //
 // Arguments:
-//   x0,y0  : The start location of the line in screen coordinates.
-//   x1,y1  : The start location of the line in screen coordinates.
-//   vars : The variables that we're querying.
+//   x0,y0   : The start location of the line in screen coordinates.
+//   x1,y1   : The start location of the line in screen coordinates.
+//   vars    : The variables that we're querying.
+//   samples : The number of samples along the line. 
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Sep 9 16:38:51 PST 2002
@@ -4187,13 +4246,16 @@ ViewerProxy::NodePick(int x, int y, const stringVector &vars)
 //   Brad Whitlock, Fri Dec 27 11:43:46 PDT 2002
 //   I changed the routine so it takes lineout endpoints in world space.
 //
+//   Kathleen Bonnell, Wed Jul 23 17:04:10 PDT 2003
+//   Added samples arg.
+//   
 // ****************************************************************************
 
 void
 ViewerProxy::Lineout(const double p0[3], const double p1[3],
-    const stringVector &vars)
+    const stringVector &vars, const int samples)
 {
-    LineQuery("Lineout", p0, p1, vars);
+    LineQuery("Lineout", p0, p1, vars, samples);
 }
 
 

@@ -12,6 +12,9 @@ Definition:
 //   Reflect new member names (zoneNumber is now elementNumber, nodes is
 //   now incidentElements).  Differentiate between zone pick and node pick.
 //   
+//   Kathleen Bonnell, Wed Jul 23 17:28:30 PDT 2003 
+//   Don't print cellPoint if it is invalid (== FLT_MAX). 
+//   
 // ****************************************************************************
 void
 PickAttributes::PrintSelf(ostream &os)
@@ -23,7 +26,10 @@ PickAttributes::PrintSelf(ostream &os)
         fileName = databaseName;
     else
         fileName = databaseName.substr(pos+1) ;
-    os << "\n" << pickLetter.c_str() << ":  ";
+    if (pickLetter.size() != 0)
+        os << "\n" << pickLetter.c_str() << ":  ";
+    else 
+        os << "\n";
     os << fileName.c_str() << " ";
     os << "timestep " << timeStep << " ";
     os << "domain " << domain << "\n";
@@ -32,18 +38,21 @@ PickAttributes::PrintSelf(ostream &os)
     for (i = 0; i < variables.size(); i++)
         os << variables[i].c_str() << "  ";
     os << "\n";
-    if (!needTransformMessage)
+    if (cellPoint[0] != FLT_MAX)
     {
-        os << "PickedPoint: <" << cellPoint[0] << ", " 
-                               << cellPoint[1] << ", " 
-                               << cellPoint[2] << ">\n";
-    }
-    else 
-    {
-        os << "PickedPoint:  (in transformed space) <" 
-           << cellPoint[0] << ", " 
-           << cellPoint[1] << ", " 
-           << cellPoint[2] << ">\n";
+        if (!needTransformMessage)
+        {
+            os << "PickedPoint: <" << cellPoint[0] << ", " 
+                                   << cellPoint[1] << ", " 
+                                   << cellPoint[2] << ">\n";
+        }
+        else 
+        {
+            os << "PickedPoint:  (in transformed space) <" 
+               << cellPoint[0] << ", " 
+               << cellPoint[1] << ", " 
+               << cellPoint[2] << ">\n";
+        }
     }
     bool printCoords = useNodeCoords && !nodeCoords.empty();
     if (pickType == Zone)
@@ -100,6 +109,9 @@ Definition:
 //   Reflect new member names (zoneNumber is now elementNumber, nodes is
 //   now incidentElements).  Differentiate between zone pick and node pick.
 //   
+//   Kathleen Bonnell, Wed Jul 23 17:28:30 PDT 2003 
+//   Don't include cellPoint or pickLetter if invalid.
+//   
 // ****************************************************************************
 void
 PickAttributes::CreateOutputString(std::string &os)
@@ -117,7 +129,10 @@ PickAttributes::CreateOutputString(std::string &os)
     else
         fileName = databaseName.substr(pos+1) ;
 
-    sprintf(buff, "\n%s:  ", pickLetter.c_str());
+    if (pickLetter.size() != 0)
+        sprintf(buff, "\n%s:  ", pickLetter.c_str());
+    else 
+        sprintf(buff, "\n");
     os += buff;
     os += fileName;
     if (domain != -1)
@@ -129,33 +144,36 @@ PickAttributes::CreateOutputString(std::string &os)
         sprintf(buff, "  timestep %d  \n", timeStep);
     }
     os += buff;
-    if (dimension == 2)
+    if (cellPoint[0] != FLT_MAX)
     {
-        if (!needTransformMessage)
+        if (dimension == 2)
         {
-            sprintf(buff, "Point: <%f, %f>\n",
-                    cellPoint[0], cellPoint[1]);
+            if (!needTransformMessage)
+            {
+                sprintf(buff, "Point: <%f, %f>\n",
+                        cellPoint[0], cellPoint[1]);
+            }
+            else 
+            {
+                sprintf(buff, "Point: (in transformed space)\n        <%f, %f>\n",
+                        cellPoint[0], cellPoint[1]);
+            }
         }
         else 
         {
-            sprintf(buff, "Point: (in transformed space)\n        <%f, %f>\n",
-                    cellPoint[0], cellPoint[1]);
+            if (!needTransformMessage)
+            {
+                sprintf(buff, "Point: <%f, %f, %f>\n",
+                        cellPoint[0], cellPoint[1], cellPoint[2]);
+            }
+            else 
+            {
+                sprintf(buff, "Point: (in transformed space) \n       <%f, %f, %f>\n",
+                        cellPoint[0], cellPoint[1], cellPoint[2]);
+            }
         }
+        os += buff;
     }
-    else 
-    {
-        if (!needTransformMessage)
-        {
-            sprintf(buff, "Point: <%f, %f, %f>\n",
-                    cellPoint[0], cellPoint[1], cellPoint[2]);
-        }
-        else 
-        {
-            sprintf(buff, "Point: (in transformed space) \n       <%f, %f, %f>\n",
-                    cellPoint[0], cellPoint[1], cellPoint[2]);
-        }
-    }
-    os += buff;
 
     bool printCoords = useNodeCoords && !nodeCoords.empty(); 
     if (pickType == Zone)

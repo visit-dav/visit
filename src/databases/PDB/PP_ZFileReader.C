@@ -3,6 +3,7 @@
 #include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
 #include <vtkIntArray.h>
+#include <vtkStructuredGrid.h>
 #include <vtkRectilinearGrid.h>
 #include <avtDatabaseMetaData.h>
 
@@ -271,15 +272,22 @@ PP_ZFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     int cellOrigin = 1;
     int ndims = 2;
 
-    // Make up some extents since the file does not have them.
+    // Add the logical mesh
     extents[0] = 0.;
-    extents[1] = float(kmax);
+    extents[1] = float(kmax - 1);
     extents[2] = 0.;
-    extents[3] = float(lmax);
-
-    // Create a mesh to use for the data.
+    extents[3] = float(lmax - 1);
     avtMeshMetaData *mmd = new avtMeshMetaData(extents,
-        "mesh", 1, 0, cellOrigin, ndims, ndims, AVT_RECTILINEAR_MESH);
+        "logical_mesh", 1, 0, cellOrigin, ndims, ndims, AVT_RECTILINEAR_MESH);
+    md->Add(mmd);
+
+    // Add the mesh.
+    extents[0] = 0.;
+    extents[1] = 2.2;
+    extents[2] = 0.;
+    extents[3] = 5.2;
+    mmd = new avtMeshMetaData(extents,
+        "mesh", 1, 0, cellOrigin, ndims, ndims, AVT_CURVILINEAR_MESH);
     md->Add(mmd);
 
     // Determine the size of the problem.
@@ -336,9 +344,15 @@ PP_ZFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                     std::string newStr(newCStr);
                     debug4 << " added as " << newCStr << endl;
 
-                    // Add the variable to the metadata.
+                    // Add the variable over the logical mesh to the metadata.
+                    std::string logicalMeshVar(std::string("logical_mesh/") +
+                                               newStr);
                     avtScalarMetaData *smd = new avtScalarMetaData(
-                        newStr, "mesh", AVT_ZONECENT);
+                        logicalMeshVar, "logical_mesh", AVT_NODECENT);
+                    md->Add(smd);
+
+                    // Add the variable over the mesh to the metadata.
+                    smd = new avtScalarMetaData(newStr, "mesh", AVT_NODECENT);
                     md->Add(smd);
 
                     // Add the variable to the variable map.
@@ -411,14 +425,79 @@ PP_ZFileReader::GetNTimesteps()
 }
 
 // ****************************************************************************
+// Method: PP_ZFileReader::CreateGhostZones
+//
+// Purpose: 
+//   Marks all of the cells in the input mesh where ireg <= 0 as ghsot cells.
+//
+// Arguments:
+//   ireg : The ireg array used to determine if cells are ghost cells.
+//   ds   : The input dataset.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jul 16 16:11:08 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+PP_ZFileReader::CreateGhostZones(const int *ireg, vtkDataSet *ds)
+{
+    if(ireg)
+    {
+        unsigned char realVal = 0, ghostVal = 1;
+        int nCells = ds->GetNumberOfCells();
+        vtkIdList *ptIds = vtkIdList::New();
+        vtkUnsignedCharArray *ghostCells = vtkUnsignedCharArray::New();
+        ghostCells->SetName("vtkGhostLevels");
+        ghostCells->Allocate(nCells);
+
+        for(int i = 0; i < nCells; ++i)
+        {
+            ds->GetCellPoints(i, ptIds);
+            int cellRow = i / (kmax - 1);
+            int cellCol = i % (kmax - 1);
+            // Get the node index for the upper right node in the cell.
+            int nodeIndex = (cellRow + 1) * kmax + cellCol + 1;
+
+            if(ireg[nodeIndex] <= 0)
+                ghostCells->InsertNextValue(ghostVal);
+            else
+                ghostCells->InsertNextValue(realVal);
+        }
+
+        ds->GetCellData()->AddArray(ghostCells);
+        ghostCells->Delete();
+        ptIds->Delete();
+
+        vtkIntArray *realDims = vtkIntArray::New();
+        realDims->SetName("avtRealDims");
+        realDims->Allocate(6);
+        realDims->SetValue(0, 0);
+        realDims->SetValue(1, kmax);
+        realDims->SetValue(2, 0);
+        realDims->SetValue(3, lmax);
+        realDims->SetValue(4, 0);
+        realDims->SetValue(5, 0);
+        ds->GetFieldData()->AddArray(realDims);
+        ds->GetFieldData()->CopyFieldOn("avtRealDims");
+        realDims->Delete();
+        ds->SetUpdateGhostLevel(0);
+    }
+}
+
+// ****************************************************************************
 // Method: PP_ZFileReader::GetMesh
 //
 // Purpose: 
 //   Returns the mesh.
 //
 // Arguments:
+//   state : The time state for which we want the mesh.
+//   var   : The name of the mesh that we want.
 //
-// Returns:    
+// Returns:    A vtkDataSet object containing the mesh.
 //
 // Note:       
 //
@@ -426,7 +505,10 @@ PP_ZFileReader::GetNTimesteps()
 // Creation:   Thu Jun 26 15:58:50 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Jul 16 16:14:12 PST 2003
+//   I added a curvilinear mesh, which is what they really want to look at,
+//   and I made cells be marked as ghost zones according to the ireg array.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -441,43 +523,157 @@ PP_ZFileReader::GetMesh(int state, const char *var)
     Initialize();
 
     //
-    // Populate the coordinates.  Put in 3D points with z=0 if the mesh is 2D.
+    // Read the ireg variable, which tells us which are ghost zones.
     //
-    vtkRectilinearGrid *rgrid = vtkRectilinearGrid::New(); 
-    int dims[3] = {kmax + 1, lmax + 1, 1};
-    int ndims = 2;
-    vtkFloatArray *coords[3];
-
-    for (int i = 0 ; i < 3 ; i++)
+    int nnodes = kmax * lmax;
+    const int *ireg = 0;
+    TRY
     {
-        // Default number of components for an array is 1.
-        coords[i] = vtkFloatArray::New();
+        ReadVariable("ireg");
 
-        if (i < ndims)
+        VariableData *iregData = varStorage["ireg"];
+        if(iregData->dataType == INTEGERARRAY_TYPE)
         {
-            coords[i]->SetNumberOfTuples(dims[i]);
-            for (int j = 0; j < dims[i]; j++)
+            //
+            // Go to the right time state in ireg
+            //
+            ireg = (const int *)iregData->data;
+            ireg += (state * nnodes);
+        }
+    }
+    CATCH(InvalidVariableException)
+    {
+        debug4 << "ireg could not be read in. We won't have ghost zones"
+               << endl;
+        ireg = 0;
+    }
+    ENDTRY
+
+    //
+    // If we're asking for the logical mesh, return it.
+    //
+    if(strcmp(var, "logical_mesh") == 0)
+    {
+        //
+        // Populate the coordinates.  Put in 3D points with z=0 if the mesh is 2D.
+        //
+        vtkRectilinearGrid *rgrid = vtkRectilinearGrid::New(); 
+        int dims[3] = {kmax, lmax, 1};
+        int ndims = 2;
+        vtkFloatArray *coords[3];
+
+        for (int i = 0 ; i < 3 ; i++)
+        {
+            // Default number of components for an array is 1.
+            coords[i] = vtkFloatArray::New();
+
+            if (i < ndims)
             {
-                coords[i]->SetComponent(j, 0, j);
+                coords[i]->SetNumberOfTuples(dims[i]);
+                for (int j = 0; j < dims[i]; j++)
+                    coords[i]->SetComponent(j, 0, j);
+            }
+            else
+            {
+                dims[i] = 1;
+                coords[i]->SetNumberOfTuples(1);
+                coords[i]->SetComponent(0, 0, 0.);
             }
         }
-        else
+
+        rgrid->SetDimensions(dims);
+        rgrid->SetXCoordinates(coords[0]);
+        coords[0]->Delete();
+        rgrid->SetYCoordinates(coords[1]);
+        coords[1]->Delete();
+        rgrid->SetZCoordinates(coords[2]);
+        coords[2]->Delete();
+
+        //
+        // Mark some cells as ghost zones so they don't show up.
+        //    
+        CreateGhostZones(ireg, rgrid);
+
+        return rgrid;
+    }
+
+    //
+    // We're still here, we must want the curvilinear mesh.
+    //
+
+    //
+    // Read the variables that give the positions of the nodes.
+    //
+    TRY
+    {
+        ReadVariable("rt");
+        ReadVariable("zt");
+    }
+    CATCH(InvalidVariableException)
+    {
+        EXCEPTION1(InvalidVariableException, var);
+    }
+    ENDTRY
+
+    VariableData *rtData = varStorage["rt"];
+    VariableData *ztData = varStorage["zt"];
+    if(rtData->dataType != DOUBLEARRAY_TYPE ||
+       ztData->dataType != DOUBLEARRAY_TYPE)
+    {
+        EXCEPTION1(InvalidVariableException, var);
+    }
+
+    //
+    // Go to the right time state
+    //
+    const double *rt = (const double *)rtData->data;
+    rt += (state * nnodes);
+    const double *zt = (const double *)ztData->data;
+    zt += (state * nnodes);
+
+    //
+    // Create the VTK objects and hook them up.
+    //
+    vtkStructuredGrid *sgrid = vtkStructuredGrid::New();
+    vtkPoints         *points = vtkPoints::New();
+    sgrid->SetPoints(points);
+    points->Delete();
+
+    //
+    // Tell the grid what its dimensions are and populate the points array.
+    //
+    int dims[3];
+    dims[0] = kmax;
+    dims[1] = lmax;
+    dims[2] = 1;
+    sgrid->SetDimensions(dims);
+    int nRealNodes = dims[0] * dims[1];
+
+    //
+    // Populate the points using rt, zt.
+    //
+    points->SetNumberOfPoints(nRealNodes);
+    float *tmp = (float *)points->GetVoidPointer(0);
+    int nx = dims[0];
+    int ny = dims[1];
+    const double *rt2 = rt;
+    const double *zt2 = zt;
+    for(int j = 0; j < ny; ++j)
+    { 
+        for(int i = 0; i < nx; ++i)
         {
-            dims[i] = 1;
-            coords[i]->SetNumberOfTuples(1);
-            coords[i]->SetComponent(0, 0, 0.);
+            *tmp++ = float(*zt2++);
+            *tmp++ = float(*rt2++);
+            *tmp++ = 0.f;
         }
     }
 
-    rgrid->SetDimensions(dims);
-    rgrid->SetXCoordinates(coords[0]);
-    coords[0]->Delete();
-    rgrid->SetYCoordinates(coords[1]);
-    coords[1]->Delete();
-    rgrid->SetZCoordinates(coords[2]);
-    coords[2]->Delete();
+    //
+    // Mark some cells as ghost zones so they don't show up.
+    //    
+    CreateGhostZones(ireg, sgrid);
 
-    return rgrid;
+    return sgrid;
 }
 
 // ****************************************************************************
@@ -547,9 +743,17 @@ PP_ZFileReader::GetVar(int state, const char *var)
     Initialize();
 
     //
-    // Read in the data for the variable if it hasn't been read yet.
+    // If we're asking for the variable over the logical mesh, it's really
+    // the same variable so strip off the logical_mesh part of the name.
     //
     std::string varStr(var);
+    std::string logical("logical_mesh/");
+    if(varStr.substr(0, logical.size()) == logical)
+        varStr = varStr.substr(logical.size());
+
+    //
+    // Read in the data for the variable if it hasn't been read yet.
+    //
     ReadVariable(varStr);
 
     //

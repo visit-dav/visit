@@ -3660,6 +3660,10 @@ visit_SetRenderingAttributes(PyObject *self, PyObject *args)
 //   Brad Whitlock, Tue Sep 24 12:53:03 PDT 2002
 //   Cleared the error flag.
 //
+//   Kathleen Bonnell, Tue Jul 22 10:47:46 PDT 2003 
+//   Added zone pick, node pick and lineout, ensured mode numbers being
+//   set from string names is correct. (based on WindowActions).
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -3676,10 +3680,15 @@ visit_SetWindowMode(PyObject *self, PyObject *args)
 
         if(strcmp(cMode, "navigate") == 0)
             mode = 0;
-        else if(strcmp(cMode, "pick") == 0)
+        else if((strcmp(cMode, "pick") == 0) ||
+               (strcmp(cMode, "zone pick") == 0))
             mode = 1;
-        else if(strcmp(cMode, "zoom") == 0)
+        else if(strcmp(cMode, "node pick") == 0)
             mode = 2;
+        else if(strcmp(cMode, "zoom") == 0)
+            mode = 3;
+        else if(strcmp(cMode, "lineout") == 0)
+            mode = 4;
         else
             mode = 0;
 
@@ -6159,6 +6168,8 @@ visit_WriteConfigFile(PyObject *self, PyObject *args)
 // Creation:   July 11, 2003 
 //
 // Modifications:
+//   Kathleen Bonnell, Wed Jul 23 17:37:33 PDT 2003
+//   Allow for two optional integer args.
 //
 // ****************************************************************************
 
@@ -6168,9 +6179,16 @@ visit_Query(PyObject *self, PyObject *args)
     ENSURE_VIEWER_EXISTS();
 
     char *queryName;
+    int arg1 = 0, arg2 = 0;
     PyObject *tuple = NULL;
-    if (!PyArg_ParseTuple(args, "s|O", &queryName, &tuple))
-        return NULL;
+    if (!PyArg_ParseTuple(args, "sii|O", &queryName, &arg1, &arg2, &tuple))
+    {
+        if (!PyArg_ParseTuple(args, "s|O", &queryName, &tuple))
+        {
+            return NULL;
+        }
+        PyErr_Clear();
+    }
 
     // Check the tuple argument.
     stringVector vars;
@@ -6200,7 +6218,7 @@ visit_Query(PyObject *self, PyObject *args)
     }
 
     MUTEX_LOCK();
-        viewer->DatabaseQuery(queryName, vars);
+        viewer->DatabaseQuery(queryName, vars, arg1, arg2);
         if(logging)
         {
             fprintf(logFile, "Query(%s, (", queryName);
@@ -6238,6 +6256,9 @@ visit_Query(PyObject *self, PyObject *args)
 //   Kathleen Bonnell, Mon Jun 30 10:48:25 PDT 2003  
 //   Allow the vars tuple argument to be optional. 
 //
+//   Kathleen Bonnell, Wed Jul 23 13:05:01 PDT 2003 
+//   Allow pick coordinates to be expressed in a tuple (world Pick). 
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -6247,8 +6268,43 @@ visit_Pick(PyObject *self, PyObject *args)
 
     int x, y;
     PyObject *tuple = NULL;
+    PyObject *pt_tuple = NULL;
+    bool wp = false;
     if (!PyArg_ParseTuple(args, "ii|O", &x, &y, &tuple))
-        return NULL;
+    {
+        if (!PyArg_ParseTuple(args, "O|O", &pt_tuple, &tuple))
+        {
+            return NULL;
+        }
+        wp = true;
+        PyErr_Clear();
+    }
+
+    double pt[3] = {0.,0.,0.};
+    if (wp)
+    {
+        // Extract the world-coordinate point from the first object.
+        if(PyTuple_Check(pt_tuple))
+        {
+            int size = PyTuple_Size(pt_tuple);
+            for(int i = 0; i < size && i < 3; ++i)
+            {
+                PyObject *item = PyTuple_GET_ITEM(pt_tuple, i);
+                if(PyFloat_Check(item))
+                    pt[i] = PyFloat_AS_DOUBLE(item);
+                else if(PyInt_Check(item))
+                    pt[i] = double(PyInt_AS_LONG(item));
+                else if(PyLong_Check(item))
+                    pt[i] = double(PyLong_AsDouble(item));
+            }
+        }
+        else
+        {
+            VisItErrorFunc("The first argument to WorldPick must be a point "
+                           "specified as a tuple of coordinates.");
+            return NULL;
+        }
+    }
 
     // Check the tuple argument.
     stringVector vars;
@@ -6278,7 +6334,10 @@ visit_Pick(PyObject *self, PyObject *args)
     }
 
     MUTEX_LOCK();
-        viewer->Pick(x, y, vars);
+        if (!wp)
+            viewer->Pick(x, y, vars);
+        else 
+            viewer->Pick(pt,  vars);
         if(logging)
         {
             fprintf(logFile, "Pick(%d, %d, (", x, y);
@@ -6310,6 +6369,8 @@ visit_Pick(PyObject *self, PyObject *args)
 // Creation:   June 25, 2003 
 //
 // Modifications:
+//   Kathleen Bonnell, Wed Jul 23 13:05:01 PDT 2003 
+//   Allow pick coordinates to be expressed in a tuple (world Pick). 
 //
 // ****************************************************************************
 
@@ -6320,8 +6381,42 @@ visit_NodePick(PyObject *self, PyObject *args)
 
     int x, y;
     PyObject *tuple = NULL;
+    PyObject *pt_tuple = NULL;
+    bool wp = false;
     if (!PyArg_ParseTuple(args, "ii|O", &x, &y, &tuple))
-        return NULL;
+    {
+        if (!PyArg_ParseTuple(args, "O|O", &pt_tuple, &tuple))
+        {
+            return NULL;
+        }
+        wp = true;
+        PyErr_Clear(); 
+    }
+    // Extract the world-coordinate point from the first object.
+    double pt[3] = {0.,0.,0.};
+    if (wp)
+    {
+        if(PyTuple_Check(pt_tuple))
+        {
+            int size = PyTuple_Size(pt_tuple);
+            for(int i = 0; i < size && i < 3; ++i)
+            {
+                PyObject *item = PyTuple_GET_ITEM(pt_tuple, i);
+                if(PyFloat_Check(item))
+                    pt[i] = PyFloat_AS_DOUBLE(item);
+                else if(PyInt_Check(item))
+                    pt[i] = double(PyInt_AS_LONG(item));
+                else if(PyLong_Check(item))
+                    pt[i] = double(PyLong_AsDouble(item));
+            }
+        }
+        else
+        {
+            VisItErrorFunc("The first argument to WorldNodePick must be a "
+                           "point specified as a tuple of coordinates.");
+            return NULL;
+        }
+    }
 
     // Check the tuple argument.
     stringVector vars;
@@ -6351,7 +6446,10 @@ visit_NodePick(PyObject *self, PyObject *args)
     }
 
     MUTEX_LOCK();
-        viewer->NodePick(x, y, vars);
+        if (!wp)
+            viewer->NodePick(x, y, vars);
+        else 
+            viewer->NodePick(pt, vars);
         if(logging)
         {
             fprintf(logFile, "Pick(%d, %d, (", x, y);
@@ -6469,6 +6567,9 @@ visit_GetPickAttributes(PyObject *self, PyObject *args)
 //    Brad Whitlock, Fri Dec 27 11:20:46 PDT 2002
 //    I changed the routine so its arguments are world coordinates.
 //
+//    Kathleen Bonnell, Wed Jul 23 17:37:33 PDT 2003 
+//    Allow an optional integer argument for samples.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -6479,8 +6580,23 @@ visit_Lineout(PyObject *self, PyObject *args)
     PyObject *p0tuple = NULL;
     PyObject *p1tuple = NULL;
     PyObject *tuple = NULL;
-    if (!PyArg_ParseTuple(args, "OOO", &p0tuple, &p1tuple, &tuple))
-        return NULL;
+    int samples = 50;
+    // Allow both vars and samples to be optional, but if both are listed,
+    // then vars should come first.
+    if (!PyArg_ParseTuple(args, "OOOi", &p0tuple, &p1tuple, &tuple, &samples))
+    {
+        if (!PyArg_ParseTuple(args, "OOi", &p0tuple, &p1tuple, &samples))
+        {
+            if (!PyArg_ParseTuple(args, "OOO", &p0tuple, &p1tuple, &tuple))
+            {
+                if (!PyArg_ParseTuple(args, "OO", &p0tuple, &p1tuple ))
+                {
+                return NULL;
+                }
+             }
+         }
+         PyErr_Clear();
+    }
 
     // Extract the starting point from the first object.
     double p0[3] = {0.,0.,0.};
@@ -6530,22 +6646,29 @@ visit_Lineout(PyObject *self, PyObject *args)
 
     // Check the tuple argument.
     stringVector vars;
-    if(PyTuple_Check(tuple))
+    if (tuple != NULL)
     {
-        int size = PyTuple_Size(tuple);
-        if(size > 0)
+        if(PyTuple_Check(tuple))
         {
-            for(int i = 0; i < size; ++i)
+            int size = PyTuple_Size(tuple);
+            if(size > 0)
             {
-                PyObject *item = PyTuple_GET_ITEM(tuple, i);
-                if(PyString_Check(item))
-                    vars.push_back(PyString_AS_STRING(item));
+                for(int i = 0; i < size; ++i)
+                {
+                    PyObject *item = PyTuple_GET_ITEM(tuple, i);
+                    if(PyString_Check(item))
+                        vars.push_back(PyString_AS_STRING(item));
+                }
             }
         }
-    }
-    else if(PyString_Check(tuple))
-    {
-        vars.push_back(PyString_AS_STRING(tuple));
+        else if(PyString_Check(tuple))
+        {
+            vars.push_back(PyString_AS_STRING(tuple));
+        }
+        else
+        {
+            vars.push_back("default");
+        }
     }
     else
     {
@@ -6553,7 +6676,7 @@ visit_Lineout(PyObject *self, PyObject *args)
     }
 
     MUTEX_LOCK();
-        viewer->Lineout(p0, p1, vars);
+        viewer->Lineout(p0, p1, vars, samples);
         if(logging)
         {
             fprintf(logFile, "Lineout((%g, %g, %g), (%g, %g, %g), (",
@@ -6703,6 +6826,9 @@ AddMethod(const char *methodName, PyObject *(cb)(PyObject *, PyObject *),
 //   Replace SurfaceArea with generic Query.  Added GetQueryOutputString,
 //   GetQueryOutputValue. 
 //
+//   Kathleen Bonnell, Wed Jul 23 13:05:01 PDT 2003 
+//   Added WorldPick and WorldNodePick. 
+//
 // ****************************************************************************
 
 static void
@@ -6844,6 +6970,8 @@ AddDefaultMethods()
     AddMethod("UndoView",  visit_UndoView);
     AddMethod("WriteConfigFile",  visit_WriteConfigFile);
     AddMethod("ZonePick", visit_Pick);
+    AddMethod("WorldPick", visit_Pick);
+    AddMethod("WorldNodePick", visit_NodePick);
 
     //
     // Extra methods that are not part of the ViewerProxy but allow the
