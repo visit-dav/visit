@@ -9,6 +9,7 @@
 #include <string>
 
 // Forward declaration.
+class HostProfile;
 class RemoteProcess;
 
 // ****************************************************************************
@@ -36,6 +37,9 @@ class RemoteProcess;
 //    I added KeepAliveRPC so we don't lose connections to remote components
 //    whose connections have been idle for a long time.
 //
+//    Brad Whitlock, Thu Aug 5 09:59:11 PDT 2004
+//    Added AddProfileArguments from another class.
+//
 // ****************************************************************************
 
 class PROXYBASE_API RemoteProxyBase
@@ -47,6 +51,7 @@ public:
     void SetRemoteUserName(const std::string &rName);
     void SetProgressCallback(bool (*cb)(void *, int), void *data);
     void AddArgument(const std::string &arg);
+    void AddProfileArguments(const HostProfile &profile, bool addParallelArgs);
 
     void Create(const std::string &hostName,
                 HostProfile::ClientHostDetermination chd,

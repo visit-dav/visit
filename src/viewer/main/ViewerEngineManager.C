@@ -63,6 +63,9 @@ using std::pair;
 //    Jeremy Meredith, Fri Apr  2 14:29:25 PST 2004
 //    Made restartArguments be saved on a per-host (per-enginekey) basis.
 //
+//    Brad Whitlock, Wed Aug 4 17:33:08 PST 2004
+//    Changed EngineMap.
+//
 #define ENGINE_PROXY_RPC_BEGIN(rpcname)  \
     bool retval = false; \
     bool retry = false; \
@@ -91,7 +94,7 @@ using std::pair;
         { \
             TRY \
             { \
-                EngineProxy *engine = engines[ek]; \
+                EngineProxy *engine = engines[ek].proxy; \
                 debug3 << "Calling " << rpcname << " RPC on " \
                        << ek.HostName().c_str() << "'s engine." << endl;
 
@@ -509,31 +512,37 @@ ViewerEngineManager::CreateEngine(const EngineKey &ek,
     //
     bool success = false;
     ViewerRemoteProcessChooser *chooser =
-                                        ViewerRemoteProcessChooser::Instance();
-
-    if (! chooser->SelectProfile(clientAtts,ek.HostName(),skipChooser))
+        ViewerRemoteProcessChooser::Instance();
+    EngineInformation newEngine;
+    if (!chooser->SelectProfile(clientAtts,ek.HostName(),skipChooser,
+        newEngine.profile))
     {
         return false;
     }
 
-    EngineProxy *newEngine = new EngineProxy;
-
-    chooser->AddProfileArguments(newEngine,
-                                          !ShouldShareBatchJob(ek.HostName()));
+    //
+    // Create a new engine proxy and add arguments from the profile to it.
+    //
+    newEngine.proxy = new EngineProxy;
+    bool addParallelArgs = !newEngine.profile.GetShareOneBatchJob();
+    newEngine.proxy->AddProfileArguments(newEngine.profile, addParallelArgs);
 
     //
     // Add some arguments to the engine proxy before we try to
     // launch the engine.  Cache them if needed for an automatic launch.
     //
-    AddArguments(newEngine, args);
+    AddArguments(newEngine.proxy, args);
     chooser->AddRestartArgsToCachedProfile(ek.HostName(),  args);
+    stringVector eArgs(newEngine.profile.GetArguments());
+    for(int s = 0; s < args.size(); ++s)
+        eArgs.push_back(args[s]);
+    newEngine.profile.SetArguments(eArgs);
 
     //
     // Set up the connection progress window.
     //
     ViewerConnectionProgressDialog *dialog =
-                       SetupConnectionProgressWindow(newEngine, ek.HostName());
-
+                       SetupConnectionProgressWindow(newEngine.proxy, ek.HostName());
 
     //
     // Send a status message.
@@ -561,12 +570,12 @@ ViewerEngineManager::CreateEngine(const EngineKey &ek,
         // Launch the engine.
         //
         if (!ShouldShareBatchJob(ek.HostName()) && HostIsLocalHost(ek.HostName()))
-            newEngine->Create("localhost", chd, clientHostName,
+            newEngine.proxy->Create("localhost", chd, clientHostName,
                               manualSSHPort, sshPort);
         else
         {
             // Use VisIt's launcher to start the remote engine.
-            newEngine->Create(ek.HostName(),  chd, clientHostName,
+            newEngine.proxy->Create(ek.HostName(),  chd, clientHostName,
                               manualSSHPort, sshPort,
                               OpenWithLauncher, (void *)dialog,
                               true);
@@ -576,7 +585,7 @@ ViewerEngineManager::CreateEngine(const EngineKey &ek,
         engines[ek] = newEngine;
 
         // Make the engine manager observe the proxy's status atts.
-        newEngine->GetStatusAttributes()->Attach(this);
+        newEngine.proxy->GetStatusAttributes()->Attach(this);
 
         // Now that the new engine is in the list, tell the GUI.
         UpdateEngineList();
@@ -587,7 +596,7 @@ ViewerEngineManager::CreateEngine(const EngineKey &ek,
     CATCH2(BadHostException, e)
     {
         // Delete the new engine since it could not launch anyway.
-        delete newEngine;
+        delete newEngine.proxy;
         ViewerRemoteProcessChooser::Instance()->ClearCache(ek.HostName());
 
         // Tell the user that the engine could not be launched.
@@ -600,7 +609,7 @@ ViewerEngineManager::CreateEngine(const EngineKey &ek,
     {
         // Delete the new engine since talking to it could be bad since
         // it is a different version.
-        delete newEngine;
+        delete newEngine.proxy;
         ViewerRemoteProcessChooser::Instance()->ClearCache(ek.HostName());
 
         // Tell the user that the engine is a different version.
@@ -613,7 +622,7 @@ ViewerEngineManager::CreateEngine(const EngineKey &ek,
     {
         // Delete the new engine since talking to it could be bad since
         // it did not provide the right credentials.
-        delete newEngine;
+        delete newEngine.proxy;
         ViewerRemoteProcessChooser::Instance()->ClearCache(ek.HostName());
 
         // Tell the user that the engine is a different version.
@@ -625,7 +634,7 @@ ViewerEngineManager::CreateEngine(const EngineKey &ek,
     CATCH(CouldNotConnectException)
     {
         // Delete the new engine since it was not launched
-        delete newEngine;
+        delete newEngine.proxy;
         ViewerRemoteProcessChooser::Instance()->ClearCache(ek.HostName());
 
         // Tell the user that the engine was not launched
@@ -636,7 +645,7 @@ ViewerEngineManager::CreateEngine(const EngineKey &ek,
     CATCH(CancelledConnectException)
     {
         // Delete the new engine since it was not launched
-        delete newEngine;
+        delete newEngine.proxy;
         ViewerRemoteProcessChooser::Instance()->ClearCache(ek.HostName());
 
         // Tell the user that the engine was not launched
@@ -677,7 +686,12 @@ ViewerEngineManager::CreateEngine(const EngineKey &ek,
 //    because this method never uses the chooser, so any extra arguments must
 //    go through the restartArguments instead of the chooser's profile cache.
 //
+//    Brad Whitlock, Thu Aug 5 10:40:00 PDT 2004
+//    I changed EngineMap. I also changed the exception messages so they say
+//    "simulation" instead of "compute engine".
+//
 // ****************************************************************************
+
 bool
 ViewerEngineManager::ConnectSim(const EngineKey &ek,
                                 const stringVector &args,
@@ -695,13 +709,14 @@ ViewerEngineManager::ConnectSim(const EngineKey &ek,
     //
     // If an engine for the host doesn't already exist, create one.
     //
-    EngineProxy *newEngine = new EngineProxy;
+    EngineInformation newEngine;
+    newEngine.proxy = new EngineProxy;
 
     //
     // Add some arguments to the engine proxy before we try to
     // launch the engine.
     //
-    AddArguments(newEngine, args);
+    AddArguments(newEngine.proxy, args);
 
     //
     // Copy the arguments into the restart arguments that are
@@ -741,7 +756,7 @@ ViewerEngineManager::ConnectSim(const EngineKey &ek,
         simData.h = simHost;
         simData.p = simPort;
 
-        newEngine->Create(ek.HostName(),  chd, clientHostName,
+        newEngine.proxy->Create(ek.HostName(),  chd, clientHostName,
                           manualSSHPort, sshPort,
                           SimConnectThroughLauncher, (void *)&simData,
                           true);
@@ -749,7 +764,7 @@ ViewerEngineManager::ConnectSim(const EngineKey &ek,
         engines[ek] = newEngine;
 
         // Make the engine manager observe the proxy's status atts.
-        newEngine->GetStatusAttributes()->Attach(this);
+        newEngine.proxy->GetStatusAttributes()->Attach(this);
 
         // Now that the new engine is in the list, tell the GUI.
         UpdateEngineList();
@@ -760,11 +775,11 @@ ViewerEngineManager::ConnectSim(const EngineKey &ek,
     CATCH2(BadHostException, e)
     {
         // Delete the new engine since it could not launch anyway.
-        delete newEngine;
+        delete newEngine.proxy;
         ViewerRemoteProcessChooser::Instance()->ClearCache(ek.HostName());
 
         // Tell the user that the engine could not be launched.
-        SNPRINTF(msg, 250, "VisIt could not launch a compute engine on host "
+        SNPRINTF(msg, 250, "VisIt could not connect to the simulation on host "
                  "\"%s\" because that host does not exist.",
                  e.GetHostName().c_str());
         Error(msg);
@@ -773,12 +788,12 @@ ViewerEngineManager::ConnectSim(const EngineKey &ek,
     {
         // Delete the new engine since talking to it could be bad since
         // it is a different version.
-        delete newEngine;
+        delete newEngine.proxy;
         ViewerRemoteProcessChooser::Instance()->ClearCache(ek.HostName());
 
         // Tell the user that the engine is a different version.
-        SNPRINTF(msg, 250, "VisIt cannot use the compute engine on "
-                 "host \"%s\" because the engine has an incompatible "
+        SNPRINTF(msg, 250, "VisIt cannot use the simulation on "
+                 "host \"%s\" because the simulation has an incompatible "
                  " version number.", ek.HostName().c_str());
         Error(msg);
     }
@@ -786,34 +801,34 @@ ViewerEngineManager::ConnectSim(const EngineKey &ek,
     {
         // Delete the new engine since talking to it could be bad since
         // it did not provide the right credentials.
-        delete newEngine;
+        delete newEngine.proxy;
         ViewerRemoteProcessChooser::Instance()->ClearCache(ek.HostName());
 
         // Tell the user that the engine is a different version.
-        SNPRINTF(msg, 250, "VisIt cannot use the compute engine on host \"%s\""
-                 "because the compute engine did not provide the proper "
+        SNPRINTF(msg, 250, "VisIt cannot use the simulation on host \"%s\""
+                 "because the simulation did not provide the proper "
                  "credentials.", ek.HostName().c_str());
         Error(msg);
     }
     CATCH(CouldNotConnectException)
     {
         // Delete the new engine since it was not launched
-        delete newEngine;
+        delete newEngine.proxy;
         ViewerRemoteProcessChooser::Instance()->ClearCache(ek.HostName());
 
         // Tell the user that the engine was not launched
-        SNPRINTF(msg, 250, "VisIt could not launch the compute engine on "
+        SNPRINTF(msg, 250, "VisIt could not connect to the simulation on "
                  "host \"%s\".", ek.HostName().c_str());
         Error(msg);
     }
     CATCH(CancelledConnectException)
     {
         // Delete the new engine since it was not launched
-        delete newEngine;
+        delete newEngine.proxy;
         ViewerRemoteProcessChooser::Instance()->ClearCache(ek.HostName());
 
         // Tell the user that the engine was not launched
-        SNPRINTF(msg, 250, "The launch of the compute engine on "
+        SNPRINTF(msg, 250, "The connection to the simulation on "
                  "host \"%s\" has been cancelled.", ek.HostName().c_str());
         Error(msg);
     }
@@ -844,6 +859,9 @@ ViewerEngineManager::ConnectSim(const EngineKey &ek,
 //    Jeremy Meredith, Fri Mar 26 16:59:59 PST 2004
 //    Changed to use a map and be aware of simulations.
 //
+//    Brad Whitlock, Wed Aug 4 17:21:25 PST 2004
+//    I changed EngineMap.
+//
 // ****************************************************************************
 
 void
@@ -856,7 +874,7 @@ ViewerEngineManager::CloseEngines()
     for (EngineMap::iterator i = engines.begin() ; i != engines.end() ; i++)
     {
         const EngineKey &key = i->first;
-        EngineProxy *engine  = i->second;
+        EngineProxy *engine  = i->second.proxy;
 
         if (key.IsSimulation())
         {
@@ -880,7 +898,7 @@ ViewerEngineManager::CloseEngines()
         }
         ENDTRY
 
-        delete i->second;
+        delete i->second.proxy;
     }
 }
 
@@ -979,6 +997,9 @@ ViewerEngineManager::CloseEngine(const EngineKey &ek)
 //   Jeremy Meredith, Fri Mar 26 16:59:59 PST 2004
 //   Use a map of engines based on a key, and be aware of simulations.
 //
+//   Brad Whitlock, Wed Aug 4 17:21:59 PST 2004
+//   Changed EngineMap.
+//
 // ****************************************************************************
 
 void
@@ -989,9 +1010,7 @@ ViewerEngineManager::InterruptEngine(const EngineKey &ek)
     // We found an engine.
     if (EngineExists(ek))
     {
-        EngineProxy *engine = engines[ek];
-        engine->Interrupt();
-
+        engines[ek].proxy->Interrupt();
         SNPRINTF(message, 200, "Interrupting the compute engine on host %s.",
                  ek.HostName().c_str());
         Message(message);
@@ -1051,8 +1070,11 @@ ViewerEngineManager::InRender() const
 // Creation:   Fri Mar 12 11:46:01 PDT 2004
 //
 // Modifications:
-//    Jeremy Meredith, Fri Mar 26 16:59:59 PST 2004
-//    Use a map of engines based on a key, and be aware of simulations.
+//   Jeremy Meredith, Fri Mar 26 16:59:59 PST 2004
+//   Use a map of engines based on a key, and be aware of simulations.
+//
+//   Brad Whitlock, Wed Aug 4 17:23:00 PST 2004
+//   Changed EngineMap.
 //
 // ****************************************************************************
 
@@ -1071,7 +1093,7 @@ ViewerEngineManager::SendKeepAlives()
 
             TRY
             {
-                i->second->SendKeepAlive();
+                i->second.proxy->SendKeepAlive();
             }
             CATCHALL(...)
             {
@@ -1127,6 +1149,9 @@ ViewerEngineManager::SendKeepAlives()
 //   Jeremy Meredith, Fri Apr  2 14:29:25 PST 2004
 //   Made restartArguments be saved on a per-host (per-enginekey) basis.
 //
+//   Brad Whitlock, Wed Aug 4 17:23:53 PST 2004
+//   Changed EngineMap.
+//
 // ****************************************************************************
 
 EngineProxy *
@@ -1159,7 +1184,7 @@ ViewerEngineManager::GetEngine(const EngineKey &ek)
     //
     // Return the engine
     //
-    return engines[ek];
+    return engines[ek].proxy;
 }
 
 // ****************************************************************************
@@ -1282,6 +1307,10 @@ ViewerEngineManager::LaunchMessage(const EngineKey &ek)  const
 //
 //   Mark C. Miller, Tue Jul 27 15:11:11 PDT 2004
 //   Added code to deal with frame and state in window/annotation atts
+//
+//   Brad Whitlock, Wed Aug 4 17:24:46 PST 2004
+//   Changed EngineMap.
+//
 // ****************************************************************************
 
 bool
@@ -1337,7 +1366,7 @@ ViewerEngineManager::ExternalRender(const ExternalRenderRequestInfo& reqInfo,
              pos != perEnginePlotIds.end(); pos++)
         {
             ek = pos->first;
-            engines[ek]->SetWinAnnotAtts(&winAtts, &annotAtts, &annotObjs,
+            engines[ek].proxy->SetWinAnnotAtts(&winAtts, &annotAtts, &annotObjs,
                              extStr, &visCues, frameAndState);
         }
 
@@ -1345,7 +1374,7 @@ ViewerEngineManager::ExternalRender(const ExternalRenderRequestInfo& reqInfo,
         for (i = 0; i < plotIdsList.size(); i++)
         {
             ek = engineKeysList[i];
-            engines[ek]->UpdatePlotAttributes(pluginIDsList[i],
+            engines[ek].proxy->UpdatePlotAttributes(pluginIDsList[i],
                                               plotIdsList[i],
                                               attsList[i]);
         }
@@ -1357,7 +1386,7 @@ ViewerEngineManager::ExternalRender(const ExternalRenderRequestInfo& reqInfo,
             ek = pos->first;
 
             avtDataObjectReader_p rdr =
-                engines[ek]->Render(sendZBuffer, pos->second, !doAllAnnotations);
+                engines[ek].proxy->Render(sendZBuffer, pos->second, !doAllAnnotations);
 
             if (*rdr == NULL)
             {
@@ -1542,6 +1571,9 @@ ViewerEngineManager::ExternalRender(const ExternalRenderRequestInfo& reqInfo,
 //    Mark C. Miller, Tue Jul 27 15:11:11 PDT 2004
 //    Added code to deal with frame and state in window/annotation atts
 //
+//    Brad Whitlock, Wed Aug 4 17:25:26 PST 2004
+//    Changed EngineMap.
+//
 // ****************************************************************************
 
 avtDataObjectReader_p
@@ -1557,7 +1589,7 @@ ViewerEngineManager::GetDataObjectReader(ViewerPlot *const plot)
     if (!EngineExists(ek))
         return retval;
 
-    EngineProxy *engine = engines[ek];
+    EngineProxy *engine = engines[ek].proxy;
 
     TRY
     {
@@ -1715,6 +1747,9 @@ ViewerEngineManager::GetDataObjectReader(ViewerPlot *const plot)
 //    Jeremy Meredith, Fri Mar 26 16:59:59 PST 2004
 //    Use a map of engines based on a key, and be aware of simulations.
 //
+//    Brad Whitlock, Wed Aug 4 17:25:47 PST 2004
+//    Changed EngineMap.
+//
 // ****************************************************************************
 
 avtDataObjectReader_p
@@ -1728,7 +1763,7 @@ ViewerEngineManager::UseDataObjectReader(ViewerPlot *const plot,
     if (!EngineExists(ek))
         return retval;
 
-    EngineProxy *engine = engines[ek];
+    EngineProxy *engine = engines[ek].proxy;
 
     TRY
     {
@@ -1810,6 +1845,9 @@ ViewerEngineManager::UseDataObjectReader(ViewerPlot *const plot,
 //    Mark C. Miller, Mon Jul 12 19:46:32 PDT 2004
 //    Removed call back arguments in call to EngineProxy::Render
 //
+//    Brad Whitlock, Wed Aug 4 17:26:09 PST 2004
+//    Changed EngineMap.
+//
 // ****************************************************************************
 
 avtDataObjectReader_p
@@ -1826,7 +1864,7 @@ ViewerEngineManager::GetDataObjectReader(bool sendZBuffer,
 
     TRY
     {
-        retval = engines[ek]->Render(sendZBuffer, ids, !doAllAnnotations);
+        retval = engines[ek].proxy->Render(sendZBuffer, ids, !doAllAnnotations);
     }
     CATCH(LostConnectionException)
     {
@@ -2275,17 +2313,21 @@ ViewerEngineManager::GetEngineList()
 //   Jeremy Meredith, Fri Mar 26 16:59:59 PST 2004
 //   Use a map of engines based on a key, and be aware of simulations.
 //
+//   Brad Whitlock, Wed Aug 4 17:27:16 PST 2004
+//   Changed EngineMap.
+//
 // ****************************************************************************
+
 void
 ViewerEngineManager::RemoveEngine(const EngineKey &ek, bool close)
 {
     if (EngineExists(ek))
     {
         // Delete the entry in the engine list for the specified index.    
-        engines[ek]->GetStatusAttributes()->Detach(this);
+        engines[ek].proxy->GetStatusAttributes()->Detach(this);
         if (close)
-            engines[ek]->Close();
-        delete engines[ek];
+            engines[ek].proxy->Close();
+        delete engines[ek].proxy;
         engines.erase(ek);
     }
 }
@@ -2363,6 +2405,9 @@ ViewerEngineManager::RemoveFailedEngine(const EngineKey &ek)
 //   Jeremy Meredith, Fri Mar 26 16:59:59 PST 2004
 //   Use a map of engines based on a key, and be aware of simulations.
 //
+//   Brad Whitlock, Wed Aug 4 17:28:35 PST 2004
+//   Changed EngineMap.
+//
 // ****************************************************************************
 
 void
@@ -2390,7 +2435,7 @@ ViewerEngineManager::UpdateEngineList()
         EngineKey ek = ids[i];
         if (EngineExists(ek))
         {
-            EngineProxy *engine = engines[ek];
+            EngineProxy *engine = engines[ek].proxy;
             numProcs.push_back(engine->NumProcessors());
             numNodes.push_back(engine->NumNodes());
             loadBalancing.push_back(engine->LoadBalancing());
@@ -2438,6 +2483,9 @@ ViewerEngineManager::UpdateEngineList()
 //    Jeremy Meredith, Fri Mar 26 16:59:59 PST 2004
 //    Use a map of engines based on a key, and be aware of simulations.
 //
+//    Brad Whitlock, Wed Aug 4 17:29:21 PST 2004
+//    Changed EngineMap.
+//
 // ****************************************************************************
 
 void
@@ -2449,7 +2497,7 @@ ViewerEngineManager::Update(Subject *TheChangedSubject)
     EngineKey ek;
     for (EngineMap::iterator i = engines.begin() ; i != engines.end() ; i++)
     {
-        if (i->second->GetStatusAttributes() == statusAtts)
+        if (i->second.proxy->GetStatusAttributes() == statusAtts)
         {
             ek = i->first;
             break;
@@ -2539,13 +2587,17 @@ ViewerEngineManager::Update(Subject *TheChangedSubject)
 //
 //    Mark C. Miller, Tue Jul 27 15:11:11 PDT 2004
 //    Added code to deal with frame and state in window/annotation atts
+//
+//    Brad Whitlock, Wed Aug 4 17:29:44 PST 2004
+//    Changed EngineMap.
+//
 // ****************************************************************************
 
 void
 ViewerEngineManager::GetImage(int index, avtDataObject_p &dob)
 {
     // WHOA!  ASSUMING ENGINE 0
-    EngineProxy *engine = (engines.begin())->second;
+    EngineProxy *engine = (engines.begin())->second.proxy;
 
     // WHOA!  ASSUMING ACTIVE WINDOW
     ViewerWindowManager *vwm = ViewerWindowManager::Instance();
@@ -2602,6 +2654,9 @@ ViewerEngineManager::GetImage(int index, avtDataObject_p &dob)
 //    Jeremy Meredith, Fri Mar 26 16:59:59 PST 2004
 //    Use a map of engines based on a key, and be aware of simulations.
 //
+//    Brad Whitlock, Wed Aug 4 17:30:14 PST 2004
+//    Changed EngineMap.
+//
 // ****************************************************************************
 
 void
@@ -2609,7 +2664,7 @@ ViewerEngineManager::UpdatePlotAttributes(const string &str, int index,
                                           AttributeSubject *atts)
 {
     // WHOA!  ASSUMING ENGINE 0
-    EngineProxy *engine = (engines.begin())->second;
+    EngineProxy *engine = (engines.begin())->second.proxy;
 
     engine->UpdatePlotAttributes(str, index, atts);
 }
@@ -2861,7 +2916,11 @@ ViewerEngineManager::CloneNetwork(const EngineKey &ek, int nid,
 // Creation:   Tue Aug 3 15:16:25 PST 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Aug 4 17:31:48 PST 2004
+//   Made it use the profile stored in the EngineMap so we don't get the 
+//   wrong profile just because there are multiple profiles for the same
+//   host.
+//
 // ****************************************************************************
 
 void
@@ -2883,15 +2942,10 @@ ViewerEngineManager::CreateNode(DataNode *parentNode) const
         {
             if(!it->first.IsSimulation())
             {
-                const HostProfile *hptr = clientAtts->
-                   FindMatchingProfileForHost(it->first.HostName());
-                if(hptr != 0)
-                {
-                    HostProfile temp(*hptr);
-                    temp.SetNumProcessors(it->second->NumProcessors());
-                    temp.SetNumNodes(it->second->NumNodes());
-                    temp.CreateNode(runningEnginesNode, true, true);
-                }
+                HostProfile temp(it->second.profile);
+                temp.SetNumProcessors(it->second.proxy->NumProcessors());
+                temp.SetNumNodes(it->second.proxy->NumNodes());
+                temp.CreateNode(runningEnginesNode, true, true);
             }
         }
     }

@@ -152,6 +152,9 @@ typedef struct {
 //    'FinishLineQuery'.  Added lineoutCache to store the lineout options
 //    between calling Start and Finish.
 //
+//    Kathleen Bonnell, Thu Aug  5 08:34:15 PDT 2004 
+//    Added ResetLineoutColor.
+//
 // ****************************************************************************
     
 class VIEWER_API ViewerQueryManager 
@@ -206,6 +209,8 @@ class VIEWER_API ViewerQueryManager
     void            ClearPickPoints(void);
     void            ResetPickLetter(void);
     void            ResetDesignator(void);
+
+    void            ResetLineoutColor(void);
 
     void            UpdateQueryOverTimeAtts();
     void            SetQueryOverTimeAttsFromClient();

@@ -5785,6 +5785,9 @@ ViewerSubject::EnableSocketSignals()
 //    Kathleen Bonnell, Fri Jul  9 13:40:42 PDT 2004 
 //    Added handlers for finishLineout, and finishLineQuery.
 //
+//    Kathleen Bonnell, Thu Aug  5 17:30:06 PDT 2004 
+//    Added handlers for 'Sync'. (at Brad's suggestion).
+//
 // ****************************************************************************
 
 void
@@ -5909,6 +5912,15 @@ ViewerSubject::ProcessRendererMessage()
         {
             ViewerQueryManager::Instance()->FinishLineQuery(); 
             ClearStatus();
+        }
+        else if (strncmp(msg, "Sync", 4) == 0)
+        {
+            int tag = 0; 
+            int offset = 5; // strlen("Sync ");
+            sscanf (&msg[offset], "%d",  &tag);
+            syncAtts->SetSyncTag(tag);
+            syncObserver->SetUpdate(false);
+            syncAtts->Notify();
         }
     }
 }
@@ -6147,6 +6159,9 @@ ViewerSubject::SendKeepAlives()
 //
 //    Kathleen Bonnell, Wed Mar 31 11:08:05 PST 2004 
 //    Added methods related to QueryOverTimeAttributes.
+//
+//    Kathleen Bonnell, Thu Aug  5 08:34:15 PDT 2004 
+//    Added ResetLineoutColorRPC.
 //
 // ****************************************************************************
 
@@ -6423,6 +6438,9 @@ ViewerSubject::HandleViewerRPC()
     case ViewerRPC::ResetQueryOverTimeAttributesRPC:
         ResetQueryOverTimeAttributes();
         break;
+    case ViewerRPC::ResetLineoutColorRPC:
+        ResetLineoutColor();
+        break;
     case ViewerRPC::MaxRPC:
         break;
     default:
@@ -6522,15 +6540,19 @@ ViewerSubject::ProcessSpecialOpcodes(int opcode)
 // Creation:   Mon Sep 17 11:17:08 PDT 2001
 //
 // Modifications:
+//   Kathleen Bonnell, Thu Aug  5 17:30:06 PDT 2004
+//   Defer sending the syncAtts back by creating a MessageRendererThread,
+//   at Brad's suggestion to help alleviate synchronization problems found
+//   with the CLI (through regression tests).
 //   
 // ****************************************************************************
 
 void
 ViewerSubject::HandleSync()
 {
-    syncAtts->SetSyncTag(syncAtts->GetSyncTag());
-    syncObserver->SetUpdate(false);
-    syncAtts->Notify();
+    char msg[100];
+    SNPRINTF(msg, 100, "Sync %d;", syncAtts->GetSyncTag());
+    MessageRendererThread(msg);
 }
 
 // ****************************************************************************
@@ -6689,4 +6711,24 @@ void
 ViewerSubject::ResetQueryOverTimeAttributes()
 {
     ViewerQueryManager::Instance()->SetQueryOverTimeAttsFromDefault(); 
+}
+
+
+// ****************************************************************************
+// Method: ViewerSubject::ResetLineoutColor
+//
+// Purpose: 
+//   Resets color used by lineout to default values. 
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   August 5, 2004 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerSubject::ResetLineoutColor()
+{
+    ViewerQueryManager::Instance()->ResetLineoutColor(); 
 }

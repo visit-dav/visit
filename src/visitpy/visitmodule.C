@@ -8039,6 +8039,36 @@ visit_ResetPickLetter(PyObject *self, PyObject *args)
 }
 
 // ****************************************************************************
+// Function: visit_ResetLineoutColor
+//
+// Purpose:
+//   Tells the viewer to reset the color used in lineout. 
+//
+// Notes:      
+//
+// Programmer: Kathleen Bonnell
+// Creation:   August 5, 2005 
+//
+// Modifications:
+//
+// ****************************************************************************
+
+STATIC PyObject *
+visit_ResetLineoutColor(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    MUTEX_LOCK();
+        viewer->ResetLineoutColor();
+
+        if(logging)
+            fprintf(logFile, "ResetLineoutColor()\n");
+    MUTEX_UNLOCK();
+
+    return IntReturnValue(Synchronize());
+}
+
+// ****************************************************************************
 // Function: visit_ResetPickAttributes
 //
 // Purpose:
@@ -9166,6 +9196,9 @@ AddMethod(const char *methodName, PyObject *(cb)(PyObject *, PyObject *),
 //   Kathleen Bonnell, Thu Jul 22 15:57:23 PDT 2004
 //   Added Set/Get GlobalLineoutAttributes.
 //
+//   Kathleen Bonnell, Thu Aug  5 10:44:22 PDT 2004 
+//   Added resetLineoutColor.
+//
 // ****************************************************************************
 
 static void
@@ -9339,6 +9372,7 @@ AddDefaultMethods()
     AddMethod("WorldNodePick", visit_NodePick);
     AddMethod("PickByZone", visit_PickByZone);
     AddMethod("PickByNode", visit_PickByNode);
+    AddMethod("ResetLineoutColor", visit_ResetLineoutColor);
     AddMethod("ResetPickAttributes", visit_ResetPickAttributes);
     AddMethod("ResetPickLetter", visit_ResetPickLetter);
     AddMethod("ResetQueryOverTimeAttributes", visit_ResetQueryOverTimeAttributes);

@@ -177,11 +177,20 @@ class WindowAttributes;
 //    Mark C. Miller, Tue Jul 27 15:11:11 PDT 2004
 //    Added arg for frame and state to SetWinAnnotAtts
 //
+//    Brad Whitlock, Wed Aug 4 17:12:28 PST 2004
+//    I changed the definition of EngineMap so it contains EngineInformation
+//    objects, which contain a HostProfile.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerEngineManager : public ViewerServerManager,
     public SimpleObserver
 {
+    struct EngineInformation
+    {
+        EngineProxy *proxy;
+        HostProfile profile;
+    };
   public:
     virtual ~ViewerEngineManager();
     virtual void Update(Subject *TheChangedSubject);
@@ -274,7 +283,7 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
     void EndEngineRender();
 
   private:
-    typedef std::map<EngineKey,EngineProxy*> EngineMap;
+    typedef std::map<EngineKey, EngineInformation> EngineMap;
 
     static ViewerEngineManager *instance;
     static EngineList          *clientEngineAtts;

@@ -341,6 +341,9 @@ class Xfer;
 //    Kathleen Bonnell, Wed Mar 31 10:56:30 PST 2004 
 //    Added queryOverTimeAtts, bool arg to DatabaseQuery, PointQuery.
 //
+//    Kathleen Bonnell, Thu Aug  5 08:34:15 PDT 2004 
+//    Added ResetLineoutColor.
+//
 // ****************************************************************************
 
 class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
@@ -520,6 +523,8 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
     void SetDefaultPickAttributes();
     void ResetPickAttributes();
     void ResetPickLetter();
+
+    void ResetLineoutColor();
 
     void SetQueryOverTimeAttributes();
     void SetDefaultQueryOverTimeAttributes();

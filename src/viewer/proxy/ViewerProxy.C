@@ -5164,3 +5164,29 @@ ViewerProxy::SetQueryOverTimeAttributes()
     viewerRPC->Notify();
 }
 
+// ****************************************************************************
+// Method: ViewerProxy::ResetLineoutColor
+//
+// Purpose: 
+//   Reset the lineout color to default values.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   August 5, 2004 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerProxy::ResetLineoutColor()
+{
+    //
+    // Set the rpc type.
+    //
+    viewerRPC->SetRPCType(ViewerRPC::ResetLineoutColorRPC);
+
+    //
+    // Issue the RPC.
+    //
+    viewerRPC->Notify();
+}

@@ -224,9 +224,12 @@ ViewerServerManager::RealHostName(const char *hostName) const
 // Creation:   Tue May 6 14:00:21 PST 2003
 //
 // Modifications:
-//    Eric Brugger, Wed Dec  3 08:27:47 PST 2003
-//    I removed the default timeout passed to the mdserver.
-//   
+//   Eric Brugger, Wed Dec  3 08:27:47 PST 2003
+//   I removed the default timeout passed to the mdserver.
+//
+//   Brad Whitlock, Thu Aug 5 10:28:33 PDT 2004
+//   I made it call RemoteProxyBase::AddProfileArguments.
+//
 // ****************************************************************************
 
 void
@@ -240,26 +243,7 @@ ViewerServerManager::AddProfileArguments(RemoteProxyBase *component,
     const HostProfile *profile =
          clientAtts->FindMatchingProfileForHost(host.c_str());
     if(profile != 0)
-    {
-        //
-        // Set the user's login name.
-        //
-        component->SetRemoteUserName(profile->GetUserName().c_str());
-
-        //
-        // Add the timeout argument
-        //
-        char temp[10];
-        SNPRINTF(temp, 10, "%d", profile->GetTimeout());
-        component->AddArgument("-timeout");
-        component->AddArgument(temp);
-
-        //
-        // Add any additional arguments.
-        //
-        for(int i = 0; i < profile->GetArguments().size(); ++i)
-            component->AddArgument(profile->GetArguments()[i].c_str());
-    }
+        component->AddProfileArguments(*profile, false);
 }
 
 // ****************************************************************************
@@ -573,10 +557,13 @@ ViewerServerManager::SendKeepAlivesToLaunchers()
 //   for itself, the mdserver, and the engine if they are told
 //   to share one batch job in the host profile.
 //
-//    Jeremy Meredith, Thu Oct  9 14:03:11 PDT 2003
-//    Added ability to manually specify a client host name or to have it
-//    parsed from the SSH_CLIENT (or related) environment variables.  Added
-//    ability to specify an SSH port.
+//   Jeremy Meredith, Thu Oct  9 14:03:11 PDT 2003
+//   Added ability to manually specify a client host name or to have it
+//   parsed from the SSH_CLIENT (or related) environment variables.  Added
+//   ability to specify an SSH port.
+//
+//   Brad Whitlock, Thu Aug 5 10:52:40 PDT 2004
+//   I made it get its profile from the chooser if possible.
 //
 // ****************************************************************************
 
@@ -586,14 +573,23 @@ ViewerServerManager::StartLauncher(const std::string &host,
 {
     if(launchers.find(host) == launchers.end())
     {
-        if (ShouldShareBatchJob(host))
+        HostProfile profile;
+        const HostProfile *hptr = clientAtts->FindMatchingProfileForHost(host);
+        bool shouldShareBatchJob = false;
+        if(hptr!= 0)
+        {
+            shouldShareBatchJob = hptr->GetShareOneBatchJob();
+            profile = *hptr;
+        }
+
+        if (shouldShareBatchJob)
         {
             ViewerRemoteProcessChooser *chooser =
                 ViewerRemoteProcessChooser::Instance();
 
             chooser->ClearCache(host);
 
-            if (! chooser->SelectProfile(clientAtts,host,false))
+            if (! chooser->SelectProfile(clientAtts, host, false, profile))
                 return;
         }
 
@@ -606,18 +602,7 @@ ViewerServerManager::StartLauncher(const std::string &host,
             args.push_back(visitPath);
         }
         AddArguments(newLauncher, args);
-
-        if (ShouldShareBatchJob(host))
-        {
-            ViewerRemoteProcessChooser *chooser =
-                ViewerRemoteProcessChooser::Instance();
-
-            chooser->AddProfileArguments(newLauncher, true);
-        }
-        else
-        {
-            AddProfileArguments(newLauncher, host);
-        }
+        newLauncher->AddProfileArguments(profile, shouldShareBatchJob);
 
         TRY
         {

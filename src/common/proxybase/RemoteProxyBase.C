@@ -1,6 +1,8 @@
 #include <RemoteProxyBase.h>
 #include <RemoteProcess.h>
 #include <ExistingRemoteProcess.h>
+#include <HostProfile.h>
+#include <snprintf.h>
 
 // ****************************************************************************
 // Method: RemoteProxyBase::RemoteProxyBase
@@ -241,6 +243,149 @@ void
 RemoteProxyBase::AddArgument(const std::string &arg)
 {
     argv.push_back(arg);
+}
+
+// ****************************************************************************
+//  Method:  RemoteProxyBase::AddProfileArguments
+//
+//  Purpose:
+//    Adds the appropriate arguments to a remote proxy.
+//
+//  Arguments:
+//    profile         : the host profile used to set the arguments.
+//    addParallelArgs : true if this process is going to launch itself
+//                      in parallel, and false if the vcl has already
+//                      created a parallel job and we just need to
+//                      choose the parallel engine when needed
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    June 26, 2003
+//
+//  Modifications:
+//    Brad Whitlock, Wed Aug 4 17:40:57 PST 2004
+//    Moved this method from ViewerRemoteProcessChooser and changed the code
+//    a little.
+//
+// ****************************************************************************
+
+void
+RemoteProxyBase::AddProfileArguments(const HostProfile &profile,
+    bool addParallelArgs)
+{
+    int  i;
+
+    //
+    // Set the user's login name.
+    //
+    SetRemoteUserName(profile.GetUserName());
+
+    //
+    // Add the parallel arguments.
+    //
+    if (profile.GetParallel())
+    {
+        char temp[10];
+        if (!addParallelArgs)
+        {
+            AddArgument("-par");
+        }
+
+        if (addParallelArgs)
+        {
+            SNPRINTF(temp, 10, "%d", profile.GetNumProcessors());
+            AddArgument("-np");
+            AddArgument(temp);
+        }
+        SetNumProcessors(profile.GetNumProcessors());
+
+        if (profile.GetNumNodesSet() &&
+            profile.GetNumNodes() > 0)
+        {
+            if (addParallelArgs)
+            {
+                SNPRINTF(temp, 10, "%d", profile.GetNumNodes());
+                AddArgument("-nn");
+                AddArgument(temp);
+            }
+            SetNumNodes(profile.GetNumNodes());
+        }
+
+        if (addParallelArgs)
+        {
+            if (profile.GetPartitionSet() &&
+                profile.GetPartition().length() > 0)
+            {
+                AddArgument("-p");
+                AddArgument(profile.GetPartition());
+            }
+
+            if (profile.GetBankSet() &&
+                profile.GetBank().length() > 0)
+            {
+                AddArgument("-b");
+                AddArgument(profile.GetBank());
+            }
+
+            if (profile.GetTimeLimitSet() &&
+                profile.GetTimeLimit().length() > 0)
+            {
+                AddArgument("-t");
+                AddArgument(profile.GetTimeLimit());
+            }
+
+            if (profile.GetLaunchMethodSet() &&
+                profile.GetLaunchMethod().length() > 0)
+            {
+                AddArgument("-l");
+                AddArgument(profile.GetLaunchMethod());
+            }
+
+            if (profile.GetLaunchArgsSet() &&
+                profile.GetLaunchArgs().length() > 0)
+            {
+                AddArgument("-la");
+                AddArgument(profile.GetLaunchArgs());
+            }
+        }
+#if 0 // disabling dynamic load balancing for now
+        if (profile.GetForceStatic())
+        {
+            if (addParallelArgs)
+            {
+                AddArgument("-forcestatic");
+            }
+            SetLoadBalancing(0);
+        }
+
+        if (profile.GetForceDynamic())
+        {
+            if (addParallelArgs)
+            {
+                AddArgument("-forcedynamic");
+            }
+            SetLoadBalancing(1);
+        }
+#else
+        // force all static until speed issues are resolved
+        if (addParallelArgs)
+        {
+            AddArgument("-forcestatic");
+        }
+        SetLoadBalancing(0);
+#endif
+    }
+
+    // Add the timeout argument
+    char temp[10];
+    SNPRINTF(temp, 10, "%d", profile.GetTimeout());
+    AddArgument("-timeout");
+    AddArgument(temp);
+
+    //
+    // Add any additional arguments specified in the profile
+    //
+    for (i = 0; i < profile.GetArguments().size(); ++i)
+        AddArgument(profile.GetArguments()[i]);
 }
 
 // ****************************************************************************
