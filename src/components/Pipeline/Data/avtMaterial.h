@@ -55,6 +55,9 @@ struct CellMatInfo
 //    Jeremy Meredith, Thu Aug 15 12:36:14 PDT 2002
 //    Added helper functions to work with packing materials.
 //
+//    Jeremy Meredith, Fri Aug 22 10:33:10 PDT 2003
+//    Added another helper function.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtMaterial
@@ -94,6 +97,8 @@ class PIPELINE_API avtMaterial
 
     std::vector<CellMatInfo>         ExtractCellMatInfo(int c) const;
     void                             ExtractCellMatInfo(int c, float *zone_vf,
+                                                        int *mix_index) const;
+    void                             ExtractCellMatInfo(int c,
                                                         int *mix_index) const;
 
     std::vector<int>           GetMapUsedMatToMat() { return mapUsedMatToMat; }

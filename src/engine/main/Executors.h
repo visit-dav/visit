@@ -34,7 +34,6 @@
 #include <ReadRPC.h>
 #include <ReleaseDataRPC.h>
 #include <RenderRPC.h>
-#include <SetFinalVariableNameRPC.h>
 #include <SetWinAnnotAttsRPC.h>
 #include <StartPickRPC.h>
 #include <UpdatePlotAttsRPC.h>
@@ -223,40 +222,6 @@ RPCExecutor<ApplyOperatorRPC>::Execute(ApplyOperatorRPC *rpc)
     TRY
     {
         netmgr->AddFilter(rpc->GetID().c_str(), rpc->GetAtts());
-        rpc->SendReply();
-    }
-    CATCH2(VisItException, e)
-    {
-        rpc->SendError(e.GetMessage(), e.GetExceptionType());
-    }
-    ENDTRY
-}
-
-// ****************************************************************************
-//  Method: RPCExecutor<SetFinalVariableNameRPC>::Execute
-//
-//  Purpose:
-//      Execute a SetFinalVariableNameRPC.
-//
-//  Programmer: Sean Ahern
-//  Creation:   Thu Jun 13 16:18:38 PDT 2002
-//
-//  Modifications:
-//    Jeremy Meredith, Thu Jul 10 11:37:48 PDT 2003
-//    Made the engine an object.
-//
-// ****************************************************************************
-template<>
-void
-RPCExecutor<SetFinalVariableNameRPC>::Execute(SetFinalVariableNameRPC *rpc)
-{
-    Engine         *engine = Engine::Instance();
-    NetworkManager *netmgr = engine->GetNetMgr();
-
-    debug2 << "Executing SetFinalVariableNameRPC" << endl;
-    TRY
-    {
-        netmgr->SetFinalVariableName(rpc->GetName());
         rpc->SendReply();
     }
     CATCH2(VisItException, e)

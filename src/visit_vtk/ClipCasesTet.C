@@ -2,6 +2,10 @@
 
 // Programmer: Jeremy Meredith
 // Date      : August 11, 2003
+//
+// Modifications:
+//    Jeremy Meredith, Mon Sep 15 17:30:21 PDT 2003
+//    Added ability for Centroid-Points to have an associated color.
 
 // This file is meant to be read and created by a program other than a
 // compiler.  If you must modify it by hand, at least be nice to the 

@@ -2,6 +2,10 @@
 
 // Programmer: Jeremy Meredith
 // Date      : August 11, 2003
+//
+// Modifications:
+//    Jeremy Meredith, Mon Sep 15 17:30:21 PDT 2003
+//    Added ability for Centroid-Points to have an associated color.
 
 // This file is meant to be read and created by a program other than a
 // compiler.  If you must modify it by hand, at least be nice to the 
@@ -17,10 +21,10 @@ int numClipShapesPyr[32] = {
 };
 
 int startClipShapesPyr[32] = {
-  0, 7, 27, 47, 105, 125, 157, 215, // cases 0 - 7
-  245, 265, 323, 355, 385, 443, 473, 503, // cases 8 - 15
-  520, 537, 567, 597, 655, 685, 713, 771, // cases 16 - 23
-  791, 821, 879, 907, 927, 985, 1005, 1025  // cases 24 - 31
+  0, 7, 27, 47, 106, 126, 158, 217, // cases 0 - 7
+  247, 267, 326, 358, 388, 447, 477, 507, // cases 8 - 15
+  524, 541, 571, 601, 660, 690, 718, 777, // cases 16 - 23
+  797, 827, 886, 914, 934, 993, 1013, 1033  // cases 24 - 31
 };
 
 unsigned char clipShapesPyr[] = {
@@ -35,7 +39,7 @@ unsigned char clipShapesPyr[] = {
   ST_TET, COLOR0, P2, P3, P0, P4, 
   ST_TET, COLOR1, P1, EB, EA, EF, 
  // Case #3: Unique case #3
-  ST_PNT, 0, 7, P4, EF, EE, EB, ED, P2, P3, 
+  ST_PNT, 0, COLOR0, 7, P4, EF, EE, EB, ED, P2, P3, 
   ST_TET, COLOR0, EE, P4, EF, N0, 
   ST_PYR, COLOR0, EB, ED, EE, EF, N0, 
   ST_PYR, COLOR0, EB, EF, P4, P2, N0, 
@@ -53,7 +57,7 @@ unsigned char clipShapesPyr[] = {
   ST_WDG, COLOR1, P0, EA, EE, P2, EB, EG, 
   ST_WDG, COLOR1, ED, P0, EE, EC, P2, EG, 
  // Case #6: (cloned #3)
-  ST_PNT, 0, 7, P4, EG, EF, EC, EA, P3, P0, 
+  ST_PNT, 0, COLOR0, 7, P4, EG, EF, EC, EA, P3, P0, 
   ST_TET, COLOR0, EF, P4, EG, N0, 
   ST_PYR, COLOR0, EC, EA, EF, EG, N0, 
   ST_PYR, COLOR0, EC, EG, P4, P3, N0, 
@@ -71,7 +75,7 @@ unsigned char clipShapesPyr[] = {
   ST_TET, COLOR0, P0, P1, P2, P4, 
   ST_TET, COLOR1, P3, ED, EC, EH, 
  // Case #9: (cloned #3)
-  ST_PNT, 0, 7, P4, EE, EH, EA, EC, P1, P2, 
+  ST_PNT, 0, COLOR0, 7, P4, EE, EH, EA, EC, P1, P2, 
   ST_TET, COLOR0, EH, P4, EE, N0, 
   ST_PYR, COLOR0, EA, EC, EH, EE, N0, 
   ST_PYR, COLOR0, EA, EE, P4, P1, N0, 
@@ -90,7 +94,7 @@ unsigned char clipShapesPyr[] = {
   ST_WDG, COLOR1, EH, EE, EF, P3, P0, P1, 
   ST_WDG, COLOR1, P1, EB, EF, P3, EC, EH, 
  // Case #12: (cloned #3)
-  ST_PNT, 0, 7, P4, EH, EG, ED, EB, P0, P1, 
+  ST_PNT, 0, COLOR0, 7, P4, EH, EG, ED, EB, P0, P1, 
   ST_TET, COLOR0, EG, P4, EH, N0, 
   ST_PYR, COLOR0, ED, EB, EG, EH, N0, 
   ST_PYR, COLOR0, ED, EH, P4, P0, N0, 
@@ -125,7 +129,7 @@ unsigned char clipShapesPyr[] = {
   ST_WDG, COLOR1, P4, EG, EE, P1, EB, EA, 
   ST_TET, COLOR1, EG, EH, EE, P4, 
  // Case #19: Unique case #9
-  ST_PNT, 0, 7, EH, EG, ED, EB, P0, P1, P4, 
+  ST_PNT, 0, COLOR1, 7, EH, EG, ED, EB, P0, P1, P4, 
   ST_WDG, COLOR0, ED, EH, P3, EB, EG, P2, 
   ST_PYR, COLOR1, EG, EH, ED, EB, N0, 
   ST_PYR, COLOR1, ED, P0, P1, EB, N0, 
@@ -144,7 +148,7 @@ unsigned char clipShapesPyr[] = {
   ST_WDG, COLOR1, EA, EB, EF, P0, P2, P4, 
   ST_WDG, COLOR1, EC, ED, EH, P2, P0, P4, 
  // Case #22: (cloned #19)
-  ST_PNT, 0, 7, EE, EH, EA, EC, P1, P2, P4, 
+  ST_PNT, 0, COLOR1, 7, EE, EH, EA, EC, P1, P2, P4, 
   ST_WDG, COLOR0, EA, EE, P0, EC, EH, P3, 
   ST_PYR, COLOR1, EH, EE, EA, EC, N0, 
   ST_PYR, COLOR1, EA, P1, P2, EC, N0, 
@@ -162,7 +166,7 @@ unsigned char clipShapesPyr[] = {
   ST_WDG, COLOR1, P4, EE, EG, P3, ED, EC, 
   ST_TET, COLOR1, EE, EF, EG, P4, 
  // Case #25: (cloned #19)
-  ST_PNT, 0, 7, EG, EF, EC, EA, P3, P0, P4, 
+  ST_PNT, 0, COLOR1, 7, EG, EF, EC, EA, P3, P0, P4, 
   ST_WDG, COLOR0, EC, EG, P2, EA, EF, P1, 
   ST_PYR, COLOR1, EF, EG, EC, EA, N0, 
   ST_PYR, COLOR1, EC, P3, P0, EA, N0, 
@@ -180,7 +184,7 @@ unsigned char clipShapesPyr[] = {
   ST_WDG, COLOR1, P3, P1, P4, EC, EB, EG, 
   ST_TET, COLOR1, P3, P0, P1, P4, 
  // Case #28: (cloned #19)
-  ST_PNT, 0, 7, EF, EE, EB, ED, P2, P3, P4, 
+  ST_PNT, 0, COLOR1, 7, EF, EE, EB, ED, P2, P3, P4, 
   ST_WDG, COLOR0, EB, EF, P1, ED, EE, P0, 
   ST_PYR, COLOR1, EE, EF, EB, ED, N0, 
   ST_PYR, COLOR1, EB, P2, P3, ED, N0, 

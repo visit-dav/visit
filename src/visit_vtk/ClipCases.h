@@ -3,6 +3,11 @@
 
 // Programmer: Jeremy Meredith
 // Date      : August 11, 2003
+//
+// Modifications:
+//    Jeremy Meredith, Mon Sep 15 17:24:15 PDT 2003
+//    Added NOCOLOR.
+//
 
 // Points of original cell (up to 8, for the hex)
 // Note: we assume P0 is zero in several places.
@@ -46,8 +51,9 @@
 #define ST_PNT 104
 
 // Colors
-#define COLOR0 120
-#define COLOR1 121
+#define COLOR0  120
+#define COLOR1  121
+#define NOCOLOR 122
 
 // Tables
 extern int numClipCasesHex;

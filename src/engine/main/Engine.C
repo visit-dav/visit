@@ -159,8 +159,11 @@ Engine::Initialize(int *argc, char **argv[])
 //  Creation:    July 10, 2003
 //
 //  Modifications:
-//      Sean Ahern, Fri Nov 22 16:09:26 PST 2002
-//      Removed ApplyNamedFunction.
+//    Sean Ahern, Fri Nov 22 16:09:26 PST 2002
+//    Removed ApplyNamedFunction.
+//
+//    Jeremy Meredith, Mon Sep 15 17:14:07 PDT 2003
+//    Removed SetFinalVariableName.
 //
 // ****************************************************************************
 void
@@ -209,7 +212,6 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     quitRPC                         = new QuitRPC;
     readRPC                         = new ReadRPC;
     applyOperatorRPC                = new ApplyOperatorRPC;
-    setFinalVariableNameRPC         = new SetFinalVariableNameRPC;
     makePlotRPC                     = new MakePlotRPC;
     useNetworkRPC                   = new UseNetworkRPC;
     updatePlotAttsRPC               = new UpdatePlotAttsRPC;
@@ -227,7 +229,6 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     xfer->Add(quitRPC);
     xfer->Add(readRPC);
     xfer->Add(applyOperatorRPC);
-    xfer->Add(setFinalVariableNameRPC);
     xfer->Add(makePlotRPC);
     xfer->Add(useNetworkRPC);
     xfer->Add(updatePlotAttsRPC);
@@ -247,7 +248,6 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     rpcExecutors.push_back(new RPCExecutor<ReadRPC>(readRPC));
     rpcExecutors.push_back(new RPCExecutor<ApplyOperatorRPC>(applyOperatorRPC));
     rpcExecutors.push_back(new RPCExecutor<PrepareOperatorRPC>(&applyOperatorRPC->GetPrepareOperatorRPC()));
-    rpcExecutors.push_back(new RPCExecutor<SetFinalVariableNameRPC>(setFinalVariableNameRPC));
     rpcExecutors.push_back(new RPCExecutor<MakePlotRPC>(makePlotRPC));
     rpcExecutors.push_back(new RPCExecutor<PreparePlotRPC>(&makePlotRPC->GetPreparePlotRPC()));
     rpcExecutors.push_back(new RPCExecutor<UseNetworkRPC>(useNetworkRPC));

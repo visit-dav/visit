@@ -30,7 +30,12 @@
 # the University of  California,  and shall not  be  used for  advertising  or
 # product endorsement purposes.
 #
+# Programmer: Jeremy Meredith
+# Date:       August 19, 2003
+#
 # Modifications:
+#    Jeremy Meredith, Wed Aug 20 12:01:48 PDT 2003
+#    Added Zoo MIR.
 #
 ##############################################################################
 
@@ -42,6 +47,7 @@ SRC=$(Base_src) $(Tet_src) $(Zoo_src)
 
 Base_src= \
   Base/MIR.C \
+  Base/MIRConnectivity.C \
   Base/MIROptions.C
 Tet_src= \
   Tet/Edge.C \
@@ -53,8 +59,11 @@ Tet_src= \
   Tet/TetMIR.C \
   Tet/Triangulator.C \
   Tet/mat3d_tet.C
-Zoo_src=
-
+Zoo_src= \
+  Zoo/BitUtils.C \
+  Zoo/CellReconstructor.C \
+  Zoo/ResampledMat.C \
+  Zoo/ZooMIR.C
 
 CPPFLAGS=-I../../include @COMPONENT_CPPFLAGS@ @CPPFLAGS@
 

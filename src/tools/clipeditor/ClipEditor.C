@@ -3,6 +3,13 @@
 //
 // Programmer: Jeremy Meredith
 // Date:       August 11, 2003
+//
+// Modifications:
+//    Jeremy Meredith, Mon Sep 15 17:21:30 PDT 2003
+//    Allowed centroid-points to use the color associated with them, and
+//    added a NOCOLOR option (i.e. the centroid-point is on the intersection
+//    between the two materials).
+//
 // ----------------------------------------------------------------------------
 
 #include "ClipEditor.h"
@@ -314,8 +321,16 @@ ClipEditor::keyPressEvent(QKeyEvent *kev)
                 if (datasets[caseindex]->selectedShape > 0 && 
                     datasets[caseindex]->selectedShape < datasets[caseindex]->shapes.size())
                 {
-                    datasets[caseindex]->shapes[datasets[caseindex]->selectedShape].color = 
-                        1 - datasets[caseindex]->shapes[datasets[caseindex]->selectedShape].color;
+                    if (datasets[caseindex]->shapes[datasets[caseindex]->selectedShape].shapeType == ST_POINT)
+                    {
+                        datasets[caseindex]->shapes[datasets[caseindex]->selectedShape].color = 
+                            (datasets[caseindex]->shapes[datasets[caseindex]->selectedShape].color + 1) % 3;
+                    }
+                    else
+                    {
+                        datasets[caseindex]->shapes[datasets[caseindex]->selectedShape].color = 
+                            1 - datasets[caseindex]->shapes[datasets[caseindex]->selectedShape].color;
+                    }
                 }
                 else if (datasets[caseindex]->selectedShape == 0)
                 {
@@ -615,6 +630,23 @@ ClipEditor::LoadFromFile()
             {
                 st=ST_POINT;
                 in >> buff; // point id
+
+                // color
+                in >> buff;
+                if (buff[strlen(buff)-1] == ',') buff[strlen(buff)-1] = '\0';
+                if (buff[strlen(buff)-1] == '0')
+                    color = 0;
+                else if (buff[strlen(buff)-1] == '1')
+                    color = 1;
+                else if (!strcmp(buff, "NOCOLOR"))
+                    color = 2;
+                else
+                {
+                    cerr << "Bad file: bad color '"<<buff<<"'!\n";
+                    exit(5);
+                }
+
+                // num verts
                 in >> buff;
                 if (buff[strlen(buff)-1] == ',') buff[strlen(buff)-1] = '\0';
                 nv = atoi(buff);
@@ -635,7 +667,7 @@ ClipEditor::LoadFromFile()
                     color = 1;
                 else
                 {
-                    cerr << "Bad file: bad color!\n";
+                    cerr << "Bad file: bad color '"<<buff<<"'!\n";
                     exit(4);
                 }
             }
@@ -758,7 +790,7 @@ ClipEditor::SaveToFile()
                 Shape *s = &(d->shapes[i]);
                 index += 2 + s->nverts;
                 if (s->shapeType==ST_POINT)
-                    index++;
+                    index += 2;
             }
         }
         if ((c%8)==0)
@@ -801,7 +833,18 @@ ClipEditor::SaveToFile()
             Shape *s = &(d->shapes[i]);
             if (s->shapeType == ST_POINT)
             {
-                out << "  ST_PNT, "<<ptcounter<<", "<<s->nverts<<", ";
+                out << "  ST_PNT, "<<ptcounter<<", ";
+                if (s->color==0)
+                    out << "COLOR0, ";
+                else if (s->color==1)
+                    out << "COLOR1, ";
+                else if (s->color==2)
+                    out << "NOCOLOR, ";
+                else
+                {
+                    cerr << "bad color for point\n";
+                }
+                out <<s->nverts<<", ";
                 for (int j=0; j<s->nverts; j++)
                 {
                     out << NodeToStr(s->parentNodes[j]) << ", ";

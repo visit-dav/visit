@@ -117,6 +117,9 @@ EngineProxy::~EngineProxy()
 //    Sean Ahern, Tue Jul 29 12:58:08 PDT 2003
 //    Added a notification for the expression list.
 //   
+//    Jeremy Meredith, Mon Sep 15 17:16:20 PDT 2003
+//    Removed SetFinalVariableNameRPC.
+//
 // ****************************************************************************
 void
 EngineProxy::SetupComponentRPCs()
@@ -126,7 +129,6 @@ EngineProxy::SetupComponentRPCs()
     //
     xfer.Add(&readRPC);
     xfer.Add(&applyOperatorRPC);
-    xfer.Add(&setFinalVariableNameRPC);
     xfer.Add(&makePlotRPC);
     xfer.Add(&useNetworkRPC);
     xfer.Add(&updatePlotAttsRPC);
@@ -320,34 +322,6 @@ EngineProxy::ApplyOperator(const string &name, const AttributeSubject *atts)
     }
 }
 
-// ****************************************************************************
-//  Method: EngineProxy::SetFinalVariableName
-//
-//  Purpose:
-//      Set the name of the final output variable.
-//
-//  Arguments:
-//      name       the name of the final variable
-//
-//  Returns:    
-//
-//  Programmer: Sean Ahern
-//  Creation:   Thu Jun 13 14:59:13 PDT 2002
-//
-//  Modifications:
-//
-// ****************************************************************************
-void
-EngineProxy::SetFinalVariableName(const std::string &name)
-{
-    setFinalVariableNameRPC(name);
-    if (setFinalVariableNameRPC.GetStatus() == VisItRPC::error)
-    {
-        RECONSTITUTE_EXCEPTION(setFinalVariableNameRPC.GetExceptionType(),
-                               setFinalVariableNameRPC.GetMessage());
-    }
-}
- 
 // ****************************************************************************
 //  Method: EngineProxy::MakePlot
 //

@@ -147,6 +147,9 @@ class     PickVarInfo;
 //    Kathleen Bonnell, Tue Sep  9 16:51:10 PDT 2003 
 //    Changed PickVarInfo argument in QueryMesh to std::string.
 //
+//    Jeremy Meredith, Mon Sep 15 09:43:26 PDT 2003
+//    Added a MIR algorithm flag to MaterialSelect and GetMIR.
+//
 // ****************************************************************************
 
 class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
@@ -213,10 +216,11 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
                                               std::vector<std::string> &,
                                               std::vector<std::string> &,
                                               bool, bool, bool, bool, bool,
-                                              bool, bool, bool&, bool&, bool);
+                                              bool, int, bool, bool&, bool&,
+                                              bool);
     void_ref_ptr               GetMIR(int, const char *, int, vtkDataSet*,
                                       avtMaterial *, int, bool, bool, bool,
-                                      bool, bool&, bool&, bool);
+                                      int, bool, bool&, bool&, bool);
     avtMaterial               *GetMaterial(int, const char *, int);
     avtSpecies                *GetSpecies(int, const char *, int);
     void                       GetMaterialIndices(const char *,

@@ -70,14 +70,14 @@ typedef vector<bool>                     ZoneCleanList;
 // ----------------------------------------------------------------------------
 static double FindIntersect(double,double,double,double);
 
-static FaceHash* CreateFaceHash(TetMIR::MIRConnectivity &, int,
+static FaceHash* CreateFaceHash(MIRConnectivity &, int,
                                 unsigned int (*)(Face&));
-static EdgeHash* CreateEdgeHash(TetMIR::MIRConnectivity &, int,
+static EdgeHash* CreateEdgeHash(MIRConnectivity &, int,
                                 unsigned int (*)(Edge&));
-static ZoneCleanList *CreateZoneCleanList(TetMIR::MIRConnectivity &, int,
+static ZoneCleanList *CreateZoneCleanList(MIRConnectivity &, int,
                               avtMaterial *, int, int*, NodeList*, int&, int&);
 
-static void SubsampleVFsAndCreateNodeList(TetMIR::MIRConnectivity &, int,
+static void SubsampleVFsAndCreateNodeList(MIRConnectivity &, int,
                               avtMaterial*,int*,NodeList*,FaceHash*,EdgeHash*);
 static void ExtractCellVFs(int, int, const int *, int, int, float *,
                                 NodeList*, FaceHash*, EdgeHash*,
@@ -160,152 +160,6 @@ TetMIR::ReconstructedCoord::operator==(const ReconstructedCoord &c)
     return ((int(x * xGrid) == int(c.x * xGrid)) &&
             (int(y * yGrid) == int(c.y * yGrid)) &&
             (int(z * zGrid) == int(c.z * zGrid)));
-}
-
-
-// ****************************************************************************
-//  Method: MIRConnectivity constructor
-//
-//  Programmer: Hank Childs
-//  Creation:   October 7, 2002
-//
-// ****************************************************************************
-
-TetMIR::MIRConnectivity::MIRConnectivity()
-{
-    connectivity = NULL;
-    celltype = NULL;
-    ncells = 0;
-}
-
-// ****************************************************************************
-//  Method: MIRConnectivity destructor
-//
-//  Programmer: Hank Childs
-//  Creation:   October 7, 2002
-//
-// ****************************************************************************
-
-TetMIR::MIRConnectivity::~MIRConnectivity()
-{
-    if (connectivity != NULL)
-    {
-        delete [] connectivity;
-    }
-    if (celltype != NULL)
-    {
-        delete [] celltype;
-    }
-}
-
-// ****************************************************************************
-//  Method: MIRConnectivity::SetUpConnectivity
-//
-//  Purpose:
-//      Sets up the connectivity from a VTK dataset.
-//
-//  Programmer: Hank Childs
-//  Creation:   October 7, 2002
-//
-// ****************************************************************************
-
-void
-TetMIR::MIRConnectivity::SetUpConnectivity(vtkDataSet *ds)
-{
-    int dstype = ds->GetDataObjectType();
-
-    if (dstype == VTK_RECTILINEAR_GRID || dstype == VTK_STRUCTURED_GRID)
-    {
-        int dims[3];
-        if (dstype == VTK_RECTILINEAR_GRID)
-        {
-            ((vtkRectilinearGrid*)ds)->GetDimensions(dims);
-        }
-        else
-        {
-            ((vtkStructuredGrid*)ds)->GetDimensions(dims);
-        }
-
-        int nx = dims[0]-1;
-        int ny = dims[1]-1;
-        int nz = dims[2]-1;
-        debug5 << "Setting up connectivity array for " << dims[0] << ", " 
-               << dims[1] << ", " << dims[2] << endl;
-        if (nz > 0)
-        {
-            ncells = nx*ny*nz;
-            int cell_idx = 0;
-            celltype = new int[ncells];
-            connectivity = new int[9*ncells];
-            int *c = connectivity;
-            for (int k = 0 ; k < nz ; k++)
-            {
-                int zOff  = k*(nx+1)*(ny+1);
-                int zOff1 = (k+1)*(nx+1)*(ny+1);
-                for (int j = 0 ; j < ny ; j++)
-                {
-                    int yOff  = j*(nx+1);
-                    int yOff1 = (j+1)*(nx+1);
-                    for (int i = 0 ; i < nx ; i++)
-                    {
-                        *c++ = 8;
-                        *c++ = zOff + yOff + i;
-                        *c++ = zOff + yOff + i+1;
-                        *c++ = zOff + yOff1 + i+1;
-                        *c++ = zOff + yOff1 + i;
-                        *c++ = zOff1 + yOff + i;
-                        *c++ = zOff1 + yOff + i+1;
-                        *c++ = zOff1 + yOff1 + i+1;
-                        *c++ = zOff1 + yOff1 + i;
-                        celltype[cell_idx++] = VTK_HEXAHEDRON;
-                    }
-                }
-            }
-        }
-        else
-        {
-            ncells = nx*ny;
-            int cell_idx = 0;
-            celltype = new int[ncells];
-            connectivity = new int[5*ncells];
-            int *c = connectivity;
-            for (int j = 0 ; j < ny ; j++)
-            {
-                int yOff  = j*(nx+1);
-                int yOff1 = (j+1)*(nx+1);
-                for (int i = 0 ; i < nx ; i++)
-                {
-                    *c++ = 4;
-                    *c++ = yOff + i;
-                    *c++ = yOff + i+1;
-                    *c++ = yOff1 + i+1;
-                    *c++ = yOff1 + i;
-                    celltype[cell_idx++] = VTK_QUAD;
-                }
-            }
-        }
-    }
-    else if (dstype == VTK_UNSTRUCTURED_GRID)
-    {
-        vtkUnstructuredGrid *ug = (vtkUnstructuredGrid *) ds;
-        vtkCellArray *ca = ug->GetCells();
-        ncells = ca->GetNumberOfCells();
-        int buff_size = ca->GetSize();
-        connectivity = new int[buff_size];
-        vtkIdType *ptr = ca->GetPointer();
-        memcpy(connectivity, ptr, buff_size*sizeof(int));
-        debug5 << "Setting up connectivity array for " << ncells
-               << " (unstructured grid)." << endl;
-        celltype = new int[ncells];
-        for (int i = 0 ; i < ncells ; i++)
-        {
-            celltype[i] = ug->GetCellType(i);
-        }
-    }
-    else
-    {
-        EXCEPTION0(ImproperUseException);
-    }
 }
 
 
@@ -972,7 +826,7 @@ TetMIR::Reconstruct2DMesh(vtkDataSet *mesh, avtMaterial *mat_orig)
 // ****************************************************************************
 bool
 TetMIR::ReconstructCleanMesh(vtkDataSet *mesh, avtMaterial *mat,
-                          MIRConnectivity &conn)
+                             MIRConnectivity &conn)
 {
     // no need to pack, so fake that part
     nMaterials = mat->GetNMaterials();
@@ -2643,7 +2497,7 @@ TetMIR::MergeTris(TriList &trilist, int c, int npts, const int *c_ptr,
 //
 // ****************************************************************************
 static FaceHash *
-CreateFaceHash(TetMIR::MIRConnectivity &conn, int nmat, 
+CreateFaceHash(MIRConnectivity &conn, int nmat, 
                unsigned int (*hashfunc)(Face&))
 {
     FaceHash *face_hash = new FaceHash(conn.ncells*3, hashfunc);
@@ -2804,7 +2658,7 @@ AddFaces(int celltype, const int *cellids, FaceHash *face_hash, int nmat,
 //
 // ****************************************************************************
 static EdgeHash *
-CreateEdgeHash(TetMIR::MIRConnectivity &conn, int nmat, 
+CreateEdgeHash(MIRConnectivity &conn, int nmat, 
                unsigned int (*hashfunc)(Edge&))
 {
     int nCells = conn.ncells;
@@ -2992,7 +2846,7 @@ AddNodes(int nPts, const int *cellids, NodeList *node_list, int nmat,
 //
 // ****************************************************************************
 ZoneCleanList *
-CreateZoneCleanList(TetMIR::MIRConnectivity &conn, int nPts, avtMaterial *mat, 
+CreateZoneCleanList(MIRConnectivity &conn, int nPts, avtMaterial *mat, 
                     int nmat, int *mat_cnt, NodeList *node_list,
                     int &nrealclean, int &nrealmixed)
 {
@@ -3093,7 +2947,7 @@ CreateZoneCleanList(TetMIR::MIRConnectivity &conn, int nPts, avtMaterial *mat,
 //
 // ****************************************************************************
 static void
-SubsampleVFsAndCreateNodeList(TetMIR::MIRConnectivity      &conn,
+SubsampleVFsAndCreateNodeList(MIRConnectivity      &conn,
                               int                        npts,
                               avtMaterial               *mat,
                               int                       *mat_cnt,

@@ -988,6 +988,10 @@ ViewerEngineManager::LaunchMessage(const char *hostName) const
 //    Brad Whitlock, Wed Mar 26 09:44:56 PDT 2003
 //    I added support for virtual databases.
 //
+//    Jeremy Meredith, Mon Sep 15 17:23:17 PDT 2003
+//    Removed the call to SetFinalVariableName.  It wasn't doing anything
+//    and was likely the wrong long-term infrastructure, so it was removed.
+//
 // ****************************************************************************
 
 avtDataObjectReader_p
@@ -1029,7 +1033,6 @@ ViewerEngineManager::GetDataObjectReader(ViewerPlot *const plot,
                                plot->GetVariableName(),
                                state, plot->GetSILRestriction(),
                                *GetMaterialClientAtts());
-        engine->SetFinalVariableName(plot->GetVariableName());
 
         //
         // Apply any operators.

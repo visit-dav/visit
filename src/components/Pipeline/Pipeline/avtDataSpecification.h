@@ -86,6 +86,9 @@ typedef ref_ptr<avtDataSpecification> avtDataSpecification_p;
 //    Hank Childs, Tue Aug 12 17:27:32 PDT 2003
 //    Added explicit flag for forcing material interface reconstruction.
 //
+//    Jeremy Meredith, Fri Sep  5 15:14:22 PDT 2003
+//    Added flag to use new MIR algorithm.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataSpecification
@@ -193,6 +196,11 @@ class PIPELINE_API avtDataSpecification
     void                         SetNeedCleanZonesOnly(bool czo)
                                      { needCleanZonesOnly = czo; }
 
+    bool                         UseNewMIRAlgorithm(void)
+                                     { return useNewMIRAlgorithm;}
+    void                         SetUseNewMIRAlgorithm(bool unma)
+                                     { useNewMIRAlgorithm = unma; }
+
   protected:
     int                          timestep;
     char                        *variable;
@@ -211,6 +219,7 @@ class PIPELINE_API avtDataSpecification
     bool                         needMixedVariableReconstruction;
     bool                         needSmoothMaterialInterfaces;
     bool                         needCleanZonesOnly;
+    bool                         useNewMIRAlgorithm;
 
     //
     // If we are processing in parallel, this information may have been lost.

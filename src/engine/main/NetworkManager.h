@@ -107,6 +107,9 @@ class VisWindow;
 //    Mark C. Miller, 15Jul03
 //    Added method to set annotation attributes
 //
+//    Jeremy Meredith, Mon Sep 15 17:15:09 PDT 2003
+//    Removed SetFinalVariableName.
+//
 // ****************************************************************************
 class NetworkManager
 {
@@ -128,7 +131,6 @@ class NetworkManager
                             const unsigned int ninputs = 1);
     void          MakePlot(const std::string&, const AttributeGroup* = NULL);
     int           EndNetwork(void);
-    void          SetFinalVariableName(const std::string&);
 
     void          UseNetwork(int);
     avtPlot_p     GetPlot(void);

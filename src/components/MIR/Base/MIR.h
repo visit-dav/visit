@@ -31,6 +31,8 @@ class avtSpecies;
 //  Note:  refactored base out of what has now become TetMIR.h
 //
 //  Modifications:
+//    Jeremy Meredith, Mon Sep 15 09:48:43 PDT 2003
+//    Changed the way some functions were refactored from TetMIR.
 //
 // ****************************************************************************
 class MIR_API MIR
@@ -64,12 +66,10 @@ class MIR_API MIR
                               vtkDataArray*&, avtMixedVariable*&);
 
     // get some result flags
-    bool SubdivisionOccurred()   { return !allClean; }
-    bool NotAllCellsSubdivided() { return someClean; }
+    virtual bool SubdivisionOccurred() = 0;
+    virtual bool NotAllCellsSubdivided() = 0;
 
   protected:
-    bool           allClean;
-    bool           someClean;
 
     MIROptions     options;
 };

@@ -364,14 +364,21 @@ avtMaterial::avtMaterial(const avtMaterial *mat,
 //  Programmer:  Jeremy Meredith
 //  Creation:    August 15, 2002
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Aug 21 15:09:17 PDT 2003
+//    Added a timer.
+//
 // ****************************************************************************
 
 avtMaterial *
 avtMaterial::CreatePackedMaterial() const
 {
-    return new avtMaterial(this, nUsedMats,
-                           mapMatToUsedMat,
-                           mapUsedMatToMat);
+    int timerHandle = visitTimer->StartTimer();
+    avtMaterial *m = new avtMaterial(this, nUsedMats,
+                                     mapMatToUsedMat,
+                                     mapUsedMatToMat);
+    visitTimer->StopTimer(timerHandle, "Packing material");
+    return m;
 }
 
 // ****************************************************************************
@@ -556,6 +563,42 @@ avtMaterial::Initialize(int nMats, const vector<string> &matnames,
         if (mixz != NULL)
             mix_zone[i] = mixz[i];
         mix_vf[i]   = mixv[i];
+    }
+}
+
+
+// ****************************************************************************
+//  Method: ExtractCellMatInfo 
+//
+//  Purpose:
+//    Extract the clean/mixed material info for a single cell.
+//
+//  Arguments:
+//    c          the cell
+//    mix_index  the output mixed index array
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    August 22, 2003
+//
+// ****************************************************************************
+void
+avtMaterial::ExtractCellMatInfo(int c, int *mix_index) const
+{
+    for (int m=0; m<nMaterials; m++)
+    {
+        mix_index[m] = -1;
+    }
+
+    if (matlist[c] < 0)
+    {
+        int  mixix  = -matlist[c] - 1;
+
+        while (mixix >= 0)
+        {
+            mix_index[mix_mat[mixix]] = mixix;
+
+            mixix = mix_next[mixix] - 1;
+        }
     }
 }
 
