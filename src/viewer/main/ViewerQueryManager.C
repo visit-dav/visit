@@ -831,6 +831,9 @@ ViewerQueryManager::GetQueryClientAtts()
 //    Kathleen Bonnell, Wed Nov 26 16:08:29 PST 2003 
 //    Added logic to handle SpatialExtents query.
 // 
+//    Kathleen Bonnell, Tue Feb  3 17:43:12 PST 2004 
+//    Use arg1 to set queryAtts.CurrentPlotOnly var. 
+// 
 // ****************************************************************************
 
 void         
@@ -998,6 +1001,14 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
             qa.SetName(qName);
             qa.SetVariables(uniqueVars);
             qa.SetVarTypes(varTypes);
+            // Right now, use of Domain and DataType are mutually
+            // exclusive, and we don't necessarily have to know thich one
+            // the query will use, so go ahead and use arg1 to set both
+            // atts.
+            if (arg1) 
+                qa.SetDataType(QueryAttributes::ActualData);
+            else      
+                qa.SetDataType(QueryAttributes::OriginalData); 
             qa.SetDomain(arg1);
             qa.SetElement(arg2);
             qa.SetTimeStep(t);
@@ -1005,6 +1016,7 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
                 qa.SetElementType(QueryAttributes::Zone);
             else if (strcmp(qName.c_str(), "Variable by Node") == 0)
                 qa.SetElementType(QueryAttributes::Node);
+
             if (eM->Query(host, networkIds, &qa, qa))
             {
                 qa.SetVariables(vars);
@@ -1020,7 +1032,6 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
                         qName.c_str());
                 Error(message);
             }
-
         }
         CATCH(NoEngineException)
         {
@@ -2475,6 +2486,10 @@ GetUniqueVars(const stringVector &vars, const string &activeVar,
 //    Hank Childs, Tue Feb  3 17:09:41 PST 2004
 //    Added variable summation query.
 //
+//    Kathleen Bonnell, Tue Feb  3 17:43:12 PST 2004 
+//    Rename 'Plot MinMax' to 'MinMax' , and set its window type to 
+//    "CurrentPlot".
+//
 // ****************************************************************************
 
 void
@@ -2510,11 +2525,12 @@ ViewerQueryManager::InitializeQueryList()
 
     int MinMaxVars = QUERY_SCALAR_VAR | QUERY_TENSOR_VAR | QUERY_VECTOR_VAR | 
             QUERY_SYMMETRIC_TENSOR_VAR | QUERY_MATSPECIES_VAR | QUERY_CURVE_VAR;
-    queryTypes->AddQuery("Plot MinMax", QueryList::DatabaseQuery, 
+    queryTypes->AddQuery("MinMax", QueryList::DatabaseQuery, 
                           QueryList::WorldSpace, 1, MinMaxVars); 
+    queryTypes->SetWindowType("MinMax", QueryList::ActualData);
 
     queryTypes->AddQuery("SpatialExtents", QueryList::DatabaseQuery);
-    queryTypes->SetWindowType("SpatialExtents", QueryList::CurrentPlot);
+    queryTypes->SetWindowType("SpatialExtents", QueryList::ActualData);
     queryTypes->AddQuery("PickByZone", QueryList::PointQuery);
     queryTypes->SetWindowType("PickByZone", QueryList::DomainZone);
     queryTypes->AddQuery("PickByNode", QueryList::PointQuery);

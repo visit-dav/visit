@@ -1,8 +1,8 @@
 // ************************************************************************* //
-//                           avtPlotMinMaxQuery.C                            //
+//                              avtMinMaxQuery.C                             //
 // ************************************************************************* //
 
-#include <avtPlotMinMaxQuery.h>
+#include <avtMinMaxQuery.h>
 
 #include <snprintf.h>
 
@@ -18,12 +18,10 @@
 #include <vtkUnsignedCharArray.h>
 #include <vtkVisItUtility.h>
 
-#include <avtCondenseDatasetFilter.h>
 #include <avtMatrix.h>
 #include <avtParallel.h>
 #include <avtQueryableSource.h>
 #include <avtTerminatingSource.h>
-#include <avtSourceFromAVTDataset.h>
 #include <avtVector.h>
 
 #include <NonQueryableInputException.h>
@@ -40,10 +38,10 @@ using std::string;
 float ComputeMajorEigenvalue(float *);
 
 // ****************************************************************************
-//  Method: avtPlotMinMaxQuery::avtPlotMinMaxQuery
+//  Method: avtMinMaxQuery::avtMinMaxQuery
 //
 //  Purpose:
-//      Construct an avtPlotMinMaxQuery object.
+//      Construct an avtMinMaxQuery object.
 //
 //  Programmer:   Kathleen Bonnell 
 //  Creation:     October 27, 2003
@@ -52,23 +50,21 @@ float ComputeMajorEigenvalue(float *);
 //
 // ****************************************************************************
 
-avtPlotMinMaxQuery::avtPlotMinMaxQuery()
+avtMinMaxQuery::avtMinMaxQuery()
 {
     dimension = 3;
     topoDim = 2;
     blockOrigin = 0;
     cellOrigin = 0;
     invTransform = NULL;
-    condense = new avtCondenseDatasetFilter;
-    condense->KeepAVTandVTK(true);
     singleDomain = true;
 }
 
 // ****************************************************************************
-//  Method: avtPlotMinMaxQuery::~avtPlotMinMaxQuery
+//  Method: avtMinMaxQuery::~avtMinMaxQuery
 //
 //  Purpose:
-//      Destruct an avtPlotMinMaxQuery object.
+//      Destruct an avtMinMaxQuery object.
 //
 //  Programmer:   Kathleen Bonnell 
 //  Creation:     October 27, 2003 
@@ -77,18 +73,13 @@ avtPlotMinMaxQuery::avtPlotMinMaxQuery()
 //
 // ****************************************************************************
 
-avtPlotMinMaxQuery::~avtPlotMinMaxQuery()
+avtMinMaxQuery::~avtMinMaxQuery()
 {
-    if (condense != NULL)
-    {
-        delete condense;
-        condense = NULL;
-    }
 }
 
 
 // ****************************************************************************
-//  Method: avtPlotMinMaxQuery::VerifyInput
+//  Method: avtMinMaxQuery::VerifyInput
 //
 //  Purpose:
 //    Verify a new input.  Overrides base class in order to allow vectors
@@ -100,7 +91,7 @@ avtPlotMinMaxQuery::~avtPlotMinMaxQuery()
 // ****************************************************************************
 
 void
-avtPlotMinMaxQuery::VerifyInput()
+avtMinMaxQuery::VerifyInput()
 {
     if (!GetInput()->GetInfo().GetValidity().GetQueryable())
     {
@@ -110,7 +101,7 @@ avtPlotMinMaxQuery::VerifyInput()
 
 
 // ****************************************************************************
-//  Method: avtPlotMinMaxQuery::Execute
+//  Method: avtMinMaxQuery::Execute
 //
 //  Purpose:
 //    Retrieves var information from the dataset, based on a domain and zone.
@@ -130,7 +121,7 @@ avtPlotMinMaxQuery::VerifyInput()
 // ****************************************************************************
 
 void 
-avtPlotMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
+avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
 {
     if (ds == NULL)
     {
@@ -174,7 +165,7 @@ avtPlotMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
     }
     else 
     {
-        debug5 << "avtPlotMinMaxQuery could not find a vtkDataArray"
+        debug5 << "avtMinMaxQuery could not find a vtkDataArray"
                << " associated with var " << var.c_str() << endl;
         return;    
     }
@@ -300,7 +291,7 @@ avtPlotMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
 
 
 // ****************************************************************************
-//  Method: avtPlotMinMaxQuery::PostExecute
+//  Method: avtMinMaxQuery::PostExecute
 //
 //  Purpose:
 //    This is called after all of the domains are executed.
@@ -318,7 +309,7 @@ avtPlotMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
 // ****************************************************************************
 
 void
-avtPlotMinMaxQuery::PostExecute(void)
+avtMinMaxQuery::PostExecute(void)
 {
     int hasMin, hasMax; 
 
@@ -427,7 +418,7 @@ avtPlotMinMaxQuery::PostExecute(void)
 
 
 // ****************************************************************************
-//  Method: avtPlotMinMaxQuery::PreExecute
+//  Method: avtMinMaxQuery::PreExecute
 //
 //  Purpose:
 //    This is called before any of the domains are executed.
@@ -441,7 +432,7 @@ avtPlotMinMaxQuery::PostExecute(void)
 // ****************************************************************************
 
 void
-avtPlotMinMaxQuery::PreExecute()
+avtMinMaxQuery::PreExecute()
 {
     avtDataAttributes &data = GetInput()->GetInfo().GetAttributes();
     dimension = data.GetSpatialDimension();
@@ -468,32 +459,29 @@ avtPlotMinMaxQuery::PreExecute()
 
 
 // ****************************************************************************
-//  Method: avtPlotMinMaxQuery::ApplyFilters
+//  Method: avtMinMaxQuery::Preparation
 //
 //  Purpose:
-//    Retrieves the termnating source to use as input. 
+//    Preforms preparation tasks common to all derived types. 
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   October 27, 2003
+//  Creation:   February 10, 2004 
 //
 //  Modifications:
 //
 // ****************************************************************************
 
-avtDataObject_p
-avtPlotMinMaxQuery::ApplyFilters(avtDataObject_p inData)
+void
+avtMinMaxQuery::Preparation(avtDataObject_p inData)
 {
-    avtPipelineSpecification_p pspec = 
-        inData->GetTerminatingSource()->GetGeneralPipelineSpecification();
-    avtDataSpecification_p dspec = pspec->GetDataSpecification();
+    avtDataSpecification_p dspec = inData->GetTerminatingSource()
+        ->GetGeneralPipelineSpecification()->GetDataSpecification();
 
     src = inData->GetQueryableSource();
-    intVector dlist;
-    avtDataSpecification_p dspec2 = 
-        inData->GetTerminatingSource()->GetFullDataSpecification();
 
-    dspec2->GetSIL().GetDomainList(dlist);
-    if (dlist.size() == 1 && dspec2->UsesAllDomains())
+    intVector dlist;
+    dspec->GetSIL().GetDomainList(dlist);
+    if (dlist.size() == 1 && dspec->UsesAllDomains())
         singleDomain = true;
     else 
         singleDomain = false;
@@ -507,21 +495,11 @@ avtPlotMinMaxQuery::ApplyFilters(avtDataObject_p inData)
     {
         invTransform = NULL;
     }
-
-    avtDataset_p ds;
-    CopyTo(ds, inData);
-    avtSourceFromAVTDataset termsrc(ds);
-    avtDataObject_p obj = termsrc.GetOutput();
-    condense->SetInput(obj);
-    avtDataObject_p objOut = condense->GetOutput();
-    objOut->Update(pspec);
-    return objOut;
-
 }
 
 
 // ****************************************************************************
-//  Method: avtPlotMinMaxQuery::GetNodeCoord
+//  Method: avtMinMaxQuery::GetNodeCoord
 //
 //  Purpose:
 //    Retrieves the coordinate for the specified node id. 
@@ -539,7 +517,7 @@ avtPlotMinMaxQuery::ApplyFilters(avtDataObject_p inData)
 // ****************************************************************************
 
 void
-avtPlotMinMaxQuery::GetNodeCoord(vtkDataSet *ds, const int id, float coord[3])
+avtMinMaxQuery::GetNodeCoord(vtkDataSet *ds, const int id, float coord[3])
 {
     float *fp = ds->GetPoint(id);
     coord[0] = fp[0];
@@ -549,7 +527,7 @@ avtPlotMinMaxQuery::GetNodeCoord(vtkDataSet *ds, const int id, float coord[3])
 
 
 // ****************************************************************************
-//  Method: avtPlotMinMaxQuery::GetCellCoord
+//  Method: avtMinMaxQuery::GetCellCoord
 //
 //  Purpose:
 //    Retrieves the coordinate (cell center) for the specified cell id.
@@ -567,7 +545,7 @@ avtPlotMinMaxQuery::GetNodeCoord(vtkDataSet *ds, const int id, float coord[3])
 // ****************************************************************************
 
 void
-avtPlotMinMaxQuery::GetCellCoord(vtkDataSet *ds, const int id, float coord[3])
+avtMinMaxQuery::GetCellCoord(vtkDataSet *ds, const int id, float coord[3])
 {
     vtkCell *cell = ds->GetCell(id);
     float parametricCenter[3];
@@ -579,7 +557,7 @@ avtPlotMinMaxQuery::GetCellCoord(vtkDataSet *ds, const int id, float coord[3])
 
 
 // ****************************************************************************
-//  Method: avtPlotMinMaxQuery::CreateMinMessage
+//  Method: avtMinMaxQuery::CreateMinMessage
 //
 //  Purpose:
 //    Creates a string containing information about the minimum value. 
@@ -594,7 +572,7 @@ avtPlotMinMaxQuery::GetCellCoord(vtkDataSet *ds, const int id, float coord[3])
 // ****************************************************************************
 
 void
-avtPlotMinMaxQuery::CreateMinMessage()
+avtMinMaxQuery::CreateMinMessage()
 {
     char buff[256]; 
     if (strcmp(elementName.c_str(), "zone") == 0)
@@ -639,7 +617,7 @@ avtPlotMinMaxQuery::CreateMinMessage()
 }
 
 // ****************************************************************************
-//  Method: avtPlotMinMaxQuery::CreateMaxMessage
+//  Method: avtMinMaxQuery::CreateMaxMessage
 //
 //  Purpose:
 //    Creates a string containing information about the maximum value. 
@@ -654,7 +632,7 @@ avtPlotMinMaxQuery::CreateMinMessage()
 // ****************************************************************************
 
 void
-avtPlotMinMaxQuery::CreateMaxMessage()
+avtMinMaxQuery::CreateMaxMessage()
 {
     char buff[256]; 
     if (strcmp(elementName.c_str(), "zone") == 0)
@@ -700,7 +678,7 @@ avtPlotMinMaxQuery::CreateMaxMessage()
 }
 
 // ****************************************************************************
-//  Method: avtPlotMinMaxQuery::CreateMaxMessage
+//  Method: avtMinMaxQuery::CreateMaxMessage
 //
 //  Purpose:
 //    Concatenates the Min and Max messages.  
@@ -713,7 +691,7 @@ avtPlotMinMaxQuery::CreateMaxMessage()
 // ****************************************************************************
 
 void
-avtPlotMinMaxQuery::CreateResultMessage()
+avtMinMaxQuery::CreateResultMessage()
 {
     string msg = "\n";
     doubleVector vals;
@@ -724,6 +702,7 @@ avtPlotMinMaxQuery::CreateResultMessage()
     SetResultMessage(msg);
     SetResultValues(vals);
 }
+
 
 float
 ComputeMajorEigenvalue(float *vals)
@@ -755,3 +734,4 @@ ComputeMajorEigenvalue(float *vals)
     vtkMath::Jacobi(input, eigenvals, eigenvecs);
     return eigenvals[0];
 }
+

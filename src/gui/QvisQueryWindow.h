@@ -92,7 +92,7 @@ private:
     QLabel          *labels[4];
     QLineEdit       *textFields[4];
   
-    QButtonGroup    *curPlotOpts;
+    QButtonGroup    *dataOpts;
 };
 
 #endif
