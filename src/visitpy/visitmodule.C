@@ -70,6 +70,7 @@
 #include <WindowInformation.h>
 #include <ExpressionList.h>
 #include <Expression.h>
+#include <LightList.h>
 
 //
 // Extension include files.
@@ -80,6 +81,7 @@
 #include <PyHostProfile.h>
 #include <PyInteractorAttributes.h>
 #include <PyKeyframeAttributes.h>
+#include <PyLightAttributes.h>
 #include <PyMaterialAttributes.h>
 #include <PyPickAttributes.h>
 #include <PyPrinterAttributes.h>
@@ -7334,6 +7336,70 @@ visit_GetPipelineCachingMode(PyObject *self, PyObject *args)
 }
 
 // ****************************************************************************
+// Function: visit_SetLight
+//
+// Purpose: 
+//   Sets a light by index (0..7)
+//
+// Programmer: Jeremy Meredith
+// Creation:   October 28, 2004
+//
+// Modifications:
+//
+// ****************************************************************************
+
+STATIC PyObject *
+visit_SetLight(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    int index;
+    PyObject *pylight;
+    if (!PyArg_ParseTuple(args, "iO", &index, &pylight))
+        return NULL;
+
+    LightAttributes *light = PyLightAttributes_FromPyObject(pylight);
+
+    MUTEX_LOCK();
+    LightList *lightlist = viewer->GetLightList();
+    lightlist->SetLight(index, *light);
+    lightlist->Notify();
+    viewer->SetLightList();
+    MUTEX_UNLOCK();
+
+    return IntReturnValue(Synchronize());
+}
+
+// ****************************************************************************
+// Function: visit_GetLight
+//
+// Purpose: 
+//   Gets a light by index (0..7)
+//
+// Programmer: Jeremy Meredith
+// Creation:   October 28, 2004
+//
+// Modifications:
+//
+// ****************************************************************************
+
+STATIC PyObject *
+visit_GetLight(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    int index;
+    if (!PyArg_ParseTuple(args, "i", &index))
+        return NULL;
+
+    PyObject *pylight = PyLightAttributes_NewPyObject();
+    LightAttributes *light = PyLightAttributes_FromPyObject(pylight);
+    *light = viewer->GetLightList()->GetLight(index);
+
+    return pylight;
+}
+
+// ****************************************************************************
 // Function: visit_Source
 //
 // Purpose: 
@@ -9367,6 +9433,9 @@ AddMethod(const char *methodName, PyObject *(cb)(PyObject *, PyObject *),
 //   Removed WorldPick and WorldNodePick, as they are unnecessary and handled
 //   by Pick and NodePick. 
 //
+//   Jeremy Meredith, Fri Oct 29 16:47:57 PDT 2004
+//   Added methods to support lighting.
+//
 // ****************************************************************************
 
 static void
@@ -9582,6 +9651,12 @@ AddDefaultMethods()
     AddMethod("TurnMaterialsOn",  visit_TurnMaterialsOn);
     AddMethod("QueriesOverTime",  visit_QueriesOverTime);
 
+    //
+    // Lighting
+    //
+    AddMethod("GetLight", visit_GetLight);
+    AddMethod("SetLight", visit_SetLight);
+
     // Temporary methods
     AddMethod("ColorTableNames", visit_ColorTableNames);
     AddMethod("NumColorTableNames", visit_NumColorTables);
@@ -9617,6 +9692,9 @@ AddDefaultMethods()
 //   Brad Whitlock, Fri Mar 19 08:50:53 PDT 2004
 //   Added GlobalAttributes.
 //
+//   Jeremy Meredith, Fri Oct 29 16:47:57 PDT 2004
+//   Added constructor to support lighting (LightAttributes).
+//
 // ****************************************************************************
 
 static void
@@ -9638,6 +9716,7 @@ AddExtensions()
     ADD_EXTENSION(PyView2DAttributes_GetMethodTable);
     ADD_EXTENSION(PyView3DAttributes_GetMethodTable);
     ADD_EXTENSION(PyWindowInformation_GetMethodTable);
+    ADD_EXTENSION(PyLightAttributes_GetMethodTable);
 }
 
 // ****************************************************************************

@@ -1457,6 +1457,12 @@ NetworkManager::GetOutput(bool respondWithNullData, bool calledForRender,
 //    Hank Childs, Sat Oct 23 14:06:21 PDT 2004
 //    Added support for shadows.  Also cleaned up memory leak.
 //
+//    Jeremy Meredith, Fri Oct 29 16:41:59 PDT 2004
+//    Refactored the code to find the shadow light's view into a method
+//    of avtSoftwareShader, since it needs to do a lot of work related to
+//    shadowing to even figure out what the view should be.  Separated out
+//    the light-view image size from the normal camera one.
+//
 // ****************************************************************************
 avtDataObjectWriter_p
 NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode)
@@ -1776,7 +1782,6 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode)
             if (doShadows)
             {
                 avtView3D cur_view = viswin->GetView3D();
-                avtView3D light_view = cur_view;
 
                 //
                 // Figure out which direction the light is pointing.
@@ -1787,17 +1792,38 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode)
                 bool canShade = avtSoftwareShader::GetLightDirection(la,
                                                           cur_view, light_dir);
 
+                double strength = 
+                    windowAttributes.GetRenderAtts().GetShadowStrength();
+
                 if (canShade)
                 {
                     //
+                    // Get the image attributes
+                    //
+                    avtImage_p compositedImage;
+                    CopyTo(compositedImage, compositedImageAsDataObject);
+
+                    int width, height;
+                    viswin->GetSize(width, height);
+
+                    //
+                    // Create a light source view
+                    //
+                    int light_width = (width > 2048) ? 4096 : width*2;
+                    int light_height = (height > 2048) ? 2096 : height*2;
+                    avtView3D light_view;
+                    light_view = avtSoftwareShader::FindLightView(
+                                 compositedImage, cur_view, light_dir, 
+                                 double(light_width)/double(light_height));
+
+                    //
                     // Now create a new image from the light source.
                     //
-                    light_view.normal[0] = light_dir[0];
-                    light_view.normal[1] = light_dir[1];
-                    light_view.normal[2] = light_dir[2];
+                    viswin->SetSize(light_width,light_height);
                     viswin->SetView3D(light_view);
                     avtImage_p myLightImage =
                                     viswin->ScreenCapture(viewportedMode,true);
+                    viswin->SetSize(width,height);
                     avtWholeImageCompositer *wic =
                                             new avtWholeImageCompositerWithZ();
                     wic->SetShouldOutputZBuffer(true);
@@ -1813,23 +1839,18 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode)
                     //
                     wic->Execute();
                     avtImage_p lightImage = wic->GetTypedOutput();
-    
                     viswin->SetView3D(cur_view);
     
-                    avtImage_p compositedImage;
-                    CopyTo(compositedImage, compositedImageAsDataObject);
-                    int width, height;
-                    viswin->GetSize(width, height);
-                    double aspect = ((double) width) / ((double) height);
-                    double strength = 
-                         windowAttributes.GetRenderAtts().GetShadowStrength();
+
 #ifdef PARALLEL
                     if (PAR_Rank() == 0)
 #endif
                     {
                         avtSoftwareShader::AddShadows(lightImage, 
-                                                   compositedImage, light_view, 
-                                                   cur_view, aspect, strength);
+                                                      compositedImage,
+                                                      light_view,
+                                                      cur_view,
+                                                      strength);
                     }
                     delete wic;
                 }
