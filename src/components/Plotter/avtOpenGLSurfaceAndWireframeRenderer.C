@@ -4054,9 +4054,10 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawEdges()
 //    Kathleen Bonnell, Thu Sep  2 16:15:35 PDT 2004 
 //    Added code to select the glFunction depending upon Representation.
 //
-//    Mark C. Miller, Thu Nov 18 21:25:36 PST 2004
-//    Made the code that sets glDepthRange conditionally compiled for Mesa
-//    only. It was causing problems in hardware
+//    Mark C. Miller, Mon Nov 22 17:42:22 PST 2004
+//    Changed how line geometry is shifted relative to surface geometry.
+//    Now, we use direct manipulation of the viewing transformation instead
+//    of adjusting depth range.
 //
 // ****************************************************************************
 
@@ -4231,18 +4232,47 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawEdges2()
     // as the edges of the polygons we've drawn previously. However, 
     // from the point of view GL and its display lists, they are totally
     // different lists of primitives. So, we can't rely on GL's
-    // glPolygonOffset stuff to help us here. Instead, we borrow from
-    // a trick the VTK folks do in vtkPolyDataMapper, and adjust the
-    // depth range of the scene using glDepthRange. We then undo this
-    // adjustment when we exit this routine. In short, we move the
-    // maximum Z value toward the viewer 0.02% of the total range in Z.
+    // glPolygonOffset stuff to help us here.
     //
 #ifdef AVT_MESA_SURFACE_AND_WIREFRAME_RENDERER_H
-    double savedDepthRange[2];
-    glGetDoublev(GL_DEPTH_RANGE, savedDepthRange);
-    double dZ = savedDepthRange[1] - savedDepthRange[0];
-    double eps = dZ / 5000.0;
-    glDepthRange(savedDepthRange[0],savedDepthRange[1]-eps);
+
+    bool didZShift = false;
+    if (ShouldDrawSurface() && surfaceListId.size() > 0)
+    {
+        //
+        // examine the current projection matrix to compute a zShift 
+        // see documentation for glFrustum for what C, D and r are
+        //
+        float pmatrix[16];
+        glGetFloatv(GL_PROJECTION_MATRIX, pmatrix);
+        double C = pmatrix[10];
+        double D = pmatrix[14];
+        double r = (C-1.)/(C+1.);
+        double far = D * (1.-r)/2.;
+        double near = far / r;
+
+        // compute a shift based upon total range in Z
+        double zShift1 = (far - near) / 1.0e+4;
+
+        // compute a shift based upon distance between eye and near clip
+        double zShift2 = near / 2.0;
+
+        // use whatever shift is smaller
+        double zShift = zShift1 < zShift2 ? zShift1 : zShift2;
+
+        //
+        // Modify the viewing transformation to shift things forward in Z
+        //
+        float current_matrix[16];
+        glPushMatrix();
+        glGetFloatv(GL_MODELVIEW_MATRIX, current_matrix);
+        glLoadIdentity();
+        glTranslatef(0.0, 0.0, zShift);
+        glMultMatrixf(current_matrix);
+
+        didZShift = true;
+    }
+
 #endif
 
     aPrim = input->GetVerts();
@@ -4288,9 +4318,15 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawEdges2()
     }
 
     glEnable(GL_LIGHTING);
+
 #ifdef AVT_MESA_SURFACE_AND_WIREFRAME_RENDERER_H
-    glDepthRange(savedDepthRange[0],savedDepthRange[1]);
+    //
+    // Undue changes we made to the view transform 
+    //
+    if (didZShift)
+        glPopMatrix();
 #endif
+
 } // DrawEdges
 
 

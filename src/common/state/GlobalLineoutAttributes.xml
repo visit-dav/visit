@@ -1,9 +1,5 @@
 <?xml version="1.0"?>
-  <Attribute name="GlobalLineoutAttributes" 
-   purpose="This file contains global attributes controlling Lineouts." 
-   persistent="false" 
-   exportAPI="STATE_API" 
-   exportInclude="state_exports.h">
+  <Attribute name="GlobalLineoutAttributes" purpose="This file contains global attributes controlling Lineouts." persistent="false" exportAPI="STATE_API" exportInclude="state_exports.h">
     <Field name="Dynamic" label="Dynamic" type="bool">
       false
     </Field>
@@ -12,5 +8,14 @@
     </Field>
     <Field name="windowId" label="windowId" type="int" enabler="createWindow:false">
       2
+    </Field>
+    <Field name="samplingOn" label="samplingOn" type="bool">
+      false
+    </Field>
+    <Field name="numSamples" label="numSamples" type="int" enabler="samplingOn:true">
+      50
+    </Field>
+    <Field name="createReflineLabels" label="createReflineLabels" type="bool">
+      false
     </Field>
   </Attribute>

@@ -11,7 +11,6 @@
 #include <ViewerOperator.h>
 #include <ViewerPlot.h>
 #include <ViewerPlotList.h>
-#include <ViewerQueryManager.h>
 #include <ViewerWindow.h>
 #include <ViewerWindowManager.h>
 #include <PlotQueryInfo.h>

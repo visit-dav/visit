@@ -1,5 +1,6 @@
 #ifndef QVIS_GLOBALLINEOUT_WINDOW_H
 #define QVIS_GLOBALLINEOUT_WINDOW_H
+
 #include <gui_exports.h>
 #include <QvisPostableWindowObserver.h>
 
@@ -7,6 +8,7 @@ class GlobalLineoutAttributes;
 class QCheckBox;
 class QLabel;
 class QLineEdit;
+
 
 // ****************************************************************************
 // Class: QvisGlobalLineoutWindow
@@ -17,11 +19,9 @@ class QLineEdit;
 // Notes:      This class was automatically generated!
 
 // Programmer: xml2window
-// Creation:   Mon Jan 13 15:34:51 PST 2003
+// Creation:   Fri Nov 19 10:46:23 PDT 2004
 //
 // Modifications:
-//   Kathleen Bonnell, Thu Jul 22 15:57:23 PDT 2004
-//   Added createWindow checkbox and windowId line edit.
 //   
 // ****************************************************************************
 
@@ -46,13 +46,19 @@ class GUI_API QvisGlobalLineoutWindow : public QvisPostableWindowObserver
     void DynamicChanged(bool val);
     void createWindowChanged(bool val);
     void windowIdProcessText();
+    void samplingOnChanged(bool val);
+    void numSamplesProcessText();
+    void createReflineLabelsChanged(bool val);
   private:
     QCheckBox *Dynamic;
-
     QCheckBox *createWindow;
-    QLabel    *createWindowLabel;
     QLineEdit *windowId;
-    QLabel    *windowIdLabel;
+    QCheckBox *samplingOn;
+    QLineEdit *numSamples;
+    QCheckBox *createReflineLabels;
+    QLabel *createWindowLabel;
+    QLabel *windowIdLabel;
+    QLabel *numSamplesLabel;
 
     GlobalLineoutAttributes *atts;
 };

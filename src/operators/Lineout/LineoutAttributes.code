@@ -1,6 +1,17 @@
 Function: CopyAttributes
 Declaration: virtual bool CopyAttributes(const AttributeGroup *);
 Definition:
+// ****************************************************************************
+//
+// Modifications:
+//   Kathleen Bonnell, Thu Nov 18 17:46:02 PST 2004
+//   Copy ReflineLabels.
+//
+//   Kathleen Bonnell, Tue Nov 23 09:19:32 PST 2004
+//   Added ability to copy GlobalLineoutAttributes, as long as we aren't
+//   ignoring them. 
+//
+// ****************************************************************************
 bool
 LineoutAttributes::CopyAttributes(const AttributeGroup *atts)
 {
@@ -21,6 +32,18 @@ LineoutAttributes::CopyAttributes(const AttributeGroup *atts)
         SetDesignator(tmp->GetDesignator());
         SetNumberOfSamplePoints(tmp->GetNumSamples());
         retval = true;
+    }
+    else if(atts->TypeName() == "GlobalLineoutAttributes")
+    {
+        if (!ignoreGlobal)
+        {
+            const GlobalLineoutAttributes *tmp = 
+                   (const GlobalLineoutAttributes*)atts;
+            SetReflineLabels(tmp->GetCreateReflineLabels());
+            SetSamplingOn(tmp->GetSamplingOn());
+            SetNumberOfSamplePoints(tmp->GetNumSamples());
+            retval = true;
+        }
     }
 
     return retval;

@@ -152,6 +152,25 @@ avtSurfaceAndWireframeRenderer::New(void)
 // ****************************************************************************
 //  Method:  avtSurfaceAndWireframeRenderer::Draw
 //
+//  Purpose: return whether or not the surface primitives (polygons) should
+//  be drawn
+//
+//  Programmer:  Mark C. Miller
+//  Creation:    November 22, 2004 
+//
+// ****************************************************************************
+
+bool
+avtSurfaceAndWireframeRenderer::ShouldDrawSurface()
+{
+    int rep = prop->GetRepresentation();
+
+    return (!(rep == VTK_WIREFRAME && prop->GetEdgeVisibility()));
+}
+
+// ****************************************************************************
+//  Method:  avtSurfaceAndWireframeRenderer::Draw
+//
 //  Purpose:
 //    Call the necessary helper draw methods to draw the primitives. 
 //    
@@ -171,22 +190,17 @@ avtSurfaceAndWireframeRenderer::New(void)
 void 
 avtSurfaceAndWireframeRenderer::Draw()
 {
-    int rep;
-
-  
     // if the primitives are invisible then get out of here 
     if (prop->GetOpacity() <= 0.0)
     {
         return;
     }
 
-    rep = prop->GetRepresentation();
-
     //
     //  No need to draw the surface if we want wireframe mode AND
     //  we want the edges to be drawn, too.
     // 
-    if (!(rep == VTK_WIREFRAME && prop->GetEdgeVisibility()))
+    if (ShouldDrawSurface())
     {
         DrawSurface();
     }

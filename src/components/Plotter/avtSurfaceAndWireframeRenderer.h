@@ -131,6 +131,8 @@ class PLOTTER_API avtSurfaceAndWireframeRenderer : public avtCustomRenderer
     void                      CanApplyGlobalRepresentation(const bool val)
                                   { canApplyGlobalRep = val; };
 
+    bool                      ShouldDrawSurface();
+
   protected:
     
     vtkPolyData              *input;

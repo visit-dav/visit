@@ -5,17 +5,10 @@
 #include <AttributeSubject.h>
 
 class LineoutAttributes;
-class QLabel;
 class QCheckBox;
+class QGroupBox;
+class QLabel;
 class QLineEdit;
-class QSpinBox;
-class QVBox;
-class QButtonGroup;
-class QvisColorTableButton;
-class QvisOpacitySlider;
-class QvisColorButton;
-class QvisLineStyleWidget;
-class QvisLineWidthWidget;
 
 // ****************************************************************************
 // Class: QvisLineoutWindow
@@ -26,7 +19,7 @@ class QvisLineWidthWidget;
 // Notes:      This class was automatically generated!
 
 // Programmer: xml2window
-// Creation:   Tue Jul 27 09:36:53 PDT 2004
+// Creation:   Fri Nov 19 11:39:48 PDT 2004
 //
 // Modifications:
 //   
@@ -49,19 +42,20 @@ class QvisLineoutWindow : public QvisOperatorWindow
   private slots:
     void point1ProcessText();
     void point2ProcessText();
+    void interactiveChanged(bool val);
+    void ignoreGlobalChanged(bool val);
     void samplingOnChanged(bool val);
     void numberOfSamplePointsProcessText();
-    void interactiveChanged(bool val);
     void reflineLabelsChanged(bool val);
   private:
     QLineEdit *point1;
     QLineEdit *point2;
+    QCheckBox *interactive;
+    QGroupBox *ignoreGlobal;
     QCheckBox *samplingOn;
     QLineEdit *numberOfSamplePoints;
-    QCheckBox *interactive;
     QCheckBox *reflineLabels;
     QLabel *numberOfSamplePointsLabel;
-    QLabel *reflineLabelsLabel;
 
     LineoutAttributes *atts;
 };
