@@ -7,6 +7,8 @@
     </Enum>
     <Field name="variableName" label="variableName" type="string">
     </Field>
+    <Field name="variableType" label="variableType" type="string">
+    </Field>
     <Field name="names" label="names" type="stringVector">
     </Field>
     <Field name="values" label="values" type="doubleVector">
@@ -33,6 +35,10 @@
     <Function name="CreateOutputString" user="true" member="true">
     </Function>
     <Function name="CreateOutputStrings" user="true" member="true">
+    </Function>
+    <Function name="PrintTensor" user="true" member="true">
+    </Function>
+    <Function name="PrintSymmetricTensor" user="true" member="true">
     </Function>
     <Include file="source" quoted="false">
       stdio.h

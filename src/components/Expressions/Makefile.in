@@ -53,13 +53,16 @@
 #   Hank Childs, Thu Aug 21 10:41:15 PDT 2003
 #   Added NMats.
 #
+#   Hank Childs, Fri Sep 19 16:56:04 PDT 2003
+#   Added matrix operations.
+#
 ##############################################################################
 
 @SET_MAKE@
 @VARIABLES@
 
-SUBDIRS=Abstract Conditional General Management Math MeshQuality 
-SRC=$(Abstract_src) $(Conditional_src) $(General_src) $(Management_src) $(Math_src) $(MeshQuality_src) 
+SUBDIRS=Abstract Conditional Derivations General Management Math MeshQuality 
+SRC=$(Abstract_src) $(Conditional_src) $(Derivations_src) $(General_src) $(Management_src) $(Math_src) $(MeshQuality_src) 
 
 Abstract_src= \
   Abstract/avtBinaryMathFilter.C \
@@ -78,6 +81,12 @@ Conditional_src= \
   Conditional/avtTestLessThanFilter.C \
   Conditional/avtTestLessThanOrEqualToFilter.C \
   Conditional/avtTestNotEqualToFilter.C
+
+Derivations_src=\
+  Derivations/avtEffectiveTensorFilter.C \
+  Derivations/avtTensorMaximumShearFilter.C \
+  Derivations/avtPrincipalDeviatoricTensorFilter.C \
+  Derivations/avtPrincipalTensorFilter.C 
 
 General_src= \
   General/avtDegreeFilter.C \
@@ -108,6 +117,10 @@ Math_src= \
   Math/avtBinarySubtractFilter.C \
   Math/avtCosFilter.C \
   Math/avtDegreeToRadianFilter.C \
+  Math/avtDeterminantFilter.C \
+  Math/avtEigenvalueFilter.C \
+  Math/avtEigenvectorFilter.C \
+  Math/avtInverseFilter.C \
   Math/avtNaturalLogFilter.C \
   Math/avtPolarCoordinatesFilter.C \
   Math/avtRadianToDegreeFilter.C \
@@ -115,6 +128,7 @@ Math_src= \
   Math/avtSquareFilter.C \
   Math/avtSquareRootFilter.C \
   Math/avtTanFilter.C \
+  Math/avtTraceFilter.C \
   Math/avtUnaryMinusFilter.C \
   Math/avtVectorCrossProductFilter.C
 

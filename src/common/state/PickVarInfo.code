@@ -37,7 +37,7 @@ PickVarInfo::PrintSelf(ostream &os)
                 {
                     int stride = values.size() / names.size();
                     os << "(";
-                    for (j = 0; j < stride; j++) 
+                    for (j = 0; j < stride; j++)
                     {
                         os << values[i*stride + j] << ", " ;
                     }
@@ -90,9 +90,115 @@ PickVarInfo::PrintSelf(ostream &os)
     }
 }
 
+Function: PrintTensor
+Declaration: void PrintTensor(std::string &, const std::vector<double> &, int, int, int);
+Definition:
+
+// ****************************************************************************
+// Method: PickVarInfo::PrintTensor
+//
+// Purpose: 
+//     Prints the information out for a tensor.
+//
+// Programmer: Hank Childs
+// Creation:   September 22, 2003
+// ****************************************************************************
+
+void
+PickVarInfo::PrintTensor(std::string &os, const std::vector<double> &values,
+                         int tuple, int ncomps, int buff_len)
+{
+    int  j;
+
+    int offset = tuple*ncomps;
+    if (ncomps == 2)  // 2D tensor
+    {
+        char line[256];
+        sprintf(line, "(%g, %g)\n", values[offset], values[offset+1]);
+        os += line;
+        for (j = 0 ; j < buff_len ; j++)
+            os += " ";
+        sprintf(line, "(%g, %g)\n", values[offset+2], values[offset+3]);
+        os += line;
+    }
+    else if (ncomps == 9) // 3D tensor
+    {
+        char line[256];
+        sprintf(line, "(%g, %g, %g)\n", values[offset], values[offset+1],
+                                        values[offset+2]);
+        os += line;
+        for (j = 0 ; j < buff_len ; j++)
+            os += " ";
+
+        sprintf(line, "(%g, %g, %g)\n", values[offset+3], values[offset+4],
+                                        values[offset+5]);
+        os += line;
+        for (j = 0 ; j < buff_len ; j++)
+            os += " ";
+
+        sprintf(line, "(%g, %g, %g)\n", values[offset+6], values[offset+7],
+                                        values[offset+8]);
+        os += line;
+    }
+}
+
+Function: PrintSymmetricTensor
+Declaration: void PrintSymmetricTensor(std::string &, const std::vector<double> &, int, int, int);
+Definition:
+
+// ****************************************************************************
+// Method: PickVarInfo::PrintSymmetricTensor
+//
+// Purpose: 
+//     Prints the information out for a tensor.
+//
+// Programmer: Hank Childs
+// Creation:   September 22, 2003
+// ****************************************************************************
+
+void
+PickVarInfo::PrintSymmetricTensor(std::string &os,
+         const std::vector<double> &values, int tuple, int ncomps, int buff_len)
+{
+    int  j;
+
+    int offset = tuple*ncomps;
+    if (ncomps == 2)  // 2D tensor
+    {
+        char line[256];
+        sprintf(line, "(%g, %g)\n", values[offset], values[offset+1]);
+        os += line;
+        for (j = 0 ; j < buff_len ; j++)
+            os += " ";
+        sprintf(line, "(%g, %g)\n", values[offset+2], values[offset+3]);
+        os += line;
+    }
+    else if (ncomps == 9) // 3D tensor
+    {
+        char line[256];
+        sprintf(line, "(%g, %g, %g)\n", values[offset], values[offset+1],
+                                        values[offset+2]);
+        os += line;
+        for (j = 0 ; j < buff_len ; j++)
+            os += " ";
+
+        sprintf(line, "(%g, %g, %g)\n", values[offset+3], values[offset+4],
+                                        values[offset+5]);
+        os += line;
+        for (j = 0 ; j < buff_len ; j++)
+            os += " ";
+
+        sprintf(line, "(%g, %g, %g)\n", values[offset+6], values[offset+7],
+                                        values[offset+8]);
+        os += line;
+    }
+}
+
+
 Function: CreateOutputString
 Declaration: void CreateOutputString(std::string &os);
 Definition:
+
 // ****************************************************************************
 // Method: PickVarInfo::CreateOutputString
 //
@@ -105,6 +211,9 @@ Definition:
 //   Logic changed in order to support node picking. Info from material vars 
 //   now handled differently. 
 //   
+//   Hank Childs, Mon Sep 22 11:19:22 PDT 2003
+//   Extend for tensors.
+//
 // ****************************************************************************
 void
 PickVarInfo::CreateOutputString(std::string &os)
@@ -130,7 +239,7 @@ PickVarInfo::CreateOutputString(std::string &os)
             {
                 SNPRINTF(buff, 256, "    %s ", names[i].c_str());
                 os += buff;
-                if (values.size() > names.size())
+                if (variableType == "vector")
                 {
                     int stride = values.size() / names.size();
                     SNPRINTF(buff, 256, "= (%g", values[i*stride]);
@@ -143,10 +252,22 @@ PickVarInfo::CreateOutputString(std::string &os)
                     SNPRINTF(buff, 256, ") mag = %g\n", values[i*stride+stride-1]);
                     os += buff; 
                 }
-                else if (values.size() == names.size())
+                else if (variableType == "scalar")
                 {
                     SNPRINTF(buff, 256, "= %g\n", values[i]);
                     os += buff;
+                }
+                else if (variableType == "tensor")
+                {
+                    int buf_len = strlen(buff);
+                    int ncomps = values.size() / names.size();
+                    PrintTensor(os, values, i, ncomps, buf_len);
+                }
+                else if (variableType == "symm_tensor")
+                {
+                    int buf_len = strlen(buff);
+                    int ncomps = values.size() / names.size();
+                    PrintSymmetricTensor(os, values, i, ncomps, buf_len);
                 }
                 else 
                 {
@@ -226,6 +347,9 @@ Definition:
 //   Logic changed in order to support node picking. Info from material vars 
 //   now handled differently. 
 //   
+//   Hank Childs, Mon Sep 22 11:19:22 PDT 2003
+//   Extend for tensors.
+//
 // ****************************************************************************
 
 void
@@ -255,8 +379,7 @@ PickVarInfo::CreateOutputStrings(std::vector<std::string> &os)
             for (i = 0; i < names.size(); i++)
             {
                 SNPRINTF(buff, 256, "    %s ", names[i].c_str());
-                // Vectors?
-                if (values.size() > names.size())
+                if (variableType == "vector")
                 {
                     int stride = values.size() / names.size();
                     SNPRINTF(buf2, 256, "= (%g", values[i*stride]);
@@ -266,14 +389,30 @@ PickVarInfo::CreateOutputStrings(std::vector<std::string> &os)
                         SNPRINTF(buf2, 256, ", %g", values[i*stride+j]);
                         strcat(buff, buf2);
                     }
-                    SNPRINTF(buf2, 256, ") mag = %g", values[i*stride+stride-1]);
+                    SNPRINTF(buf2, 256, ") mag = %g", 
+                                                    values[i*stride+stride-1]);
                     strcat(buff,  buf2);
                 }
-                // Scalars?
-                else if (values.size() == names.size())
+                else if (variableType == "scalar")
                 {
                     SNPRINTF(buf2, 256, "= %g", values[i]);
                     strcat(buff, buf2);
+                }
+                else if (variableType == "tensor")
+                {
+                    std::string tmp;
+                    int buf_len = strlen(buff);
+                    int ncomps = values.size() / names.size();
+                    PrintTensor(tmp, values, i, ncomps, buf_len);
+                    strcat(buff, tmp.c_str());
+                }
+                else if (variableType == "symm_tensor")
+                {
+                    std::string tmp;
+                    int buf_len = strlen(buff);
+                    int ncomps = values.size() / names.size();
+                    PrintSymmetricTensor(tmp, values, i, ncomps, buf_len);
+                    strcat(buff, tmp.c_str());
                 }
                 os.push_back(buff);
                 if (mixVar)

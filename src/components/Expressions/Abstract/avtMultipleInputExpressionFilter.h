@@ -1,6 +1,6 @@
-// ********************************************************************** //
-//                        avtMultipleInputExpressionFilter.h              //
-// ********************************************************************** //
+// ************************************************************************* //
+//                        avtMultipleInputExpressionFilter.h                 //
+// ************************************************************************* //
 
 #ifndef AVT_MULTIPLE_INPUT_EXPRESSION_FILTER_H
 #define AVT_MULTIPLE_INPUT_EXPRESSION_FILTER_H
@@ -18,6 +18,11 @@
 //  Programmer: Sean Ahern
 //  Creation:   Fri Jun 14 17:57:37 PDT 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Sep 19 15:20:35 PDT 2003
+//    Add destructor.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtMultipleInputExpressionFilter 
@@ -25,7 +30,7 @@ class EXPRESSION_API avtMultipleInputExpressionFilter
 {
   public:
                               avtMultipleInputExpressionFilter() {}
-    virtual                  ~avtMultipleInputExpressionFilter() {}
+    virtual                  ~avtMultipleInputExpressionFilter();
 
     virtual void              AddInputVariableName(const char *var);
 

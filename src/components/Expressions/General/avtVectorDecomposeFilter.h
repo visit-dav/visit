@@ -1,5 +1,5 @@
 // ************************************************************************* //
-//                          avtVectorDecomposeFilter.h                      //
+//                          avtVectorDecomposeFilter.h                       //
 // ************************************************************************* //
 
 #ifndef AVT_VECTOR_DECOMPOSE_FILTER_H
@@ -31,14 +31,15 @@ class EXPRESSION_API avtVectorDecomposeFilter
     virtual                  ~avtVectorDecomposeFilter() {;}
 
     virtual const char       *GetType(void)  
-                                    { return "avtVectorDecomposeFilter"; };
+                               {return "avtVectorDecomposeFilter";};
     virtual const char       *GetDescription(void)
-                                    { return "Pulling out a component of a vector"; };
+                               {return "Pulling out a component of a vector";};
 
   protected:
-    virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
-    virtual int               GetVariableDimension() { return 1; }
     int                       which_comp;
+
+    virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
+    virtual int               GetVariableDimension();
 };
 
 

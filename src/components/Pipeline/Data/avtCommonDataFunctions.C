@@ -11,6 +11,7 @@
 #include <vtkAppendPolyData.h>
 #include <vtkDataSet.h>
 #include <vtkDataSetMapper.h>
+#include <vtkMath.h>
 #include <vtkUnsignedIntArray.h>
 
 #include <avtCallback.h>
@@ -263,6 +264,9 @@ CGetDataExtents(avtDataRepresentation &data, void *de, bool &success)
 //
 //  Modifications:
 //
+//    Hank Childs, Tue Sep 23 23:09:02 PDT 2003
+//    Add support for tensors.
+//
 // ****************************************************************************
 
 void 
@@ -284,6 +288,11 @@ CGetDataMagnitudeExtents(avtDataRepresentation &data, void *de, bool &success)
                 || ds->GetCellData()->GetVectors() != NULL)
             {
                 dim = 3; // vectors
+            }
+            else if (ds->GetPointData()->GetTensors() != NULL
+                || ds->GetCellData()->GetTensors() != NULL)
+            {
+                dim = 9; // tensors
             }
             else
             {
@@ -835,6 +844,9 @@ CGetChunkByLabel(avtDataRepresentation & data, void *arg, bool &success)
 //    Hank Childs, Wed Apr 17 18:39:04 PDT 2002
 //    Be a little more selective about setting the active variable.
 //
+//    Hank Childs, Mon Sep 22 08:18:38 PDT 2003
+//    Account for tensors.
+//
 // ****************************************************************************
 
 void
@@ -869,16 +881,20 @@ CSetActiveVariable(avtDataRepresentation &data, void *arg, bool &success)
     {
         if (arr->GetNumberOfComponents() == 1)
             pd->SetActiveScalars(args->varname);
-        else
+        else if (arr->GetNumberOfComponents() == 3)
             pd->SetActiveVectors(args->varname);
+        else if (arr->GetNumberOfComponents() == 9)
+            pd->SetActiveTensors(args->varname);
     }
     arr = cd->GetArray(args->varname);
     if (arr != NULL)
     {
         if (arr->GetNumberOfComponents() == 1)
             cd->SetActiveScalars(args->varname);
-        else
+        else if (arr->GetNumberOfComponents() == 3)
             cd->SetActiveVectors(args->varname);
+        else if (arr->GetNumberOfComponents() == 9)
+            cd->SetActiveTensors(args->varname);
     }
 
     //
@@ -1111,6 +1127,9 @@ GetDataRange(vtkDataSet *ds, double *exts, int dim)
 //
 //  Modifications:
 //
+//    Hank Childs, Tue Sep 23 23:09:02 PDT 2003
+//    Add support for tensors.
+//
 // ****************************************************************************
 
 void
@@ -1128,7 +1147,7 @@ GetDataMagnitudeRange(vtkDataSet *ds, double *exts, int dim)
         exts[0] = (double) fexts[0];
         exts[1] = (double) fexts[1];
     }
-    else
+    else if (dim == 3)
     {
         exts[0] = +DBL_MAX;
         exts[1] = -DBL_MAX;
@@ -1170,6 +1189,53 @@ GetDataMagnitudeRange(vtkDataSet *ds, double *exts, int dim)
                     exts[1] = mag;
                 }
             }
+        }
+    }
+    else
+    {
+        exts[0] = +DBL_MAX;
+        exts[1] = -DBL_MAX;
+
+        vtkDataArray *tens = NULL;
+        if (ds->GetPointData()->GetTensors() != NULL)
+            tens = ds->GetPointData()->GetTensors();
+        if (ds->GetCellData()->GetTensors() != NULL)
+            tens = ds->GetCellData()->GetTensors();
+
+        int ntuples = tens->GetNumberOfTuples();
+        for (int i = 0 ; i < ntuples ; i++)
+        {
+            float in[9];
+            tens->GetTuple(i, in);
+            float *mat[3];
+            float out1[3];
+            out1[0] = in[0];
+            out1[1] = in[1];
+            out1[2] = in[2];
+            float out2[3];
+            out2[0] = in[3];
+            out2[1] = in[4];
+            out2[2] = in[5];
+            float out3[3];
+            out3[0] = in[6];
+            out3[1] = in[7];
+            out3[2] = in[8];
+            mat[0] = out1;
+            mat[1] = out2;
+            mat[2] = out3;
+            float tmp1[3], tmp2[3], tmp3[3];
+            float eigenvals[3];
+            float *eigenvecs[3];
+            eigenvecs[0] = tmp1;
+            eigenvecs[1] = tmp2;
+            eigenvecs[2] = tmp3;
+            vtkMath::Jacobi(mat, eigenvals, eigenvecs);
+            exts[0] = (eigenvals[0] < exts[0] ? eigenvals[0] : exts[0]);
+            exts[1] = (eigenvals[0] > exts[1] ? eigenvals[0] : exts[1]);
+            exts[0] = (eigenvals[1] < exts[0] ? eigenvals[1] : exts[0]);
+            exts[1] = (eigenvals[1] > exts[1] ? eigenvals[1] : exts[1]);
+            exts[0] = (eigenvals[2] < exts[0] ? eigenvals[2] : exts[0]);
+            exts[1] = (eigenvals[2] > exts[1] ? eigenvals[2] : exts[1]);
         }
     }
 }

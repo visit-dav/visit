@@ -569,6 +569,9 @@ avtMapper::CreateMapper(void)
 //    I changed the code so it supports calculating extents of vector
 //    magnitudes.
 //
+//    Hank Childs, Tue Sep 23 23:08:19 PDT 200
+//    Support tensor magnitudes as the eigenvalues extents.
+//
 // ****************************************************************************
 
 bool
@@ -602,7 +605,7 @@ avtMapper::GetRange(float &rmin, float &rmax)
             rmax = (float) de[1];
         }
     }
-    else if(data.GetVariableDimension() <= 3)
+    else if (data.GetVariableDimension() <= 3)
     {
         double de[2];
         avtDataset_p input = GetTypedInput();
@@ -610,6 +613,35 @@ avtMapper::GetRange(float &rmin, float &rmax)
 
         rmin = (float) de[0];
         rmax = (float) de[1];
+    }
+    else if (data.GetVariableDimension() == 9)
+    {
+        //
+        // Determine the extents over *all* of the mappers.
+        //
+        rmin = +FLT_MAX;
+        rmax = -FLT_MAX;
+        for (int i = 0 ; i < nMappers ; i++)
+        {
+            if (mappers[i] != NULL)
+            {
+                vtkDataSet *ds = mappers[i]->GetInput();
+                if (ds != NULL)
+                {
+                    ds->Update();
+                    float tmpRange[2];
+                    ds->GetScalarRange(tmpRange);
+                    if (tmpRange[0] < rmin)
+                    {
+                        rmin = tmpRange[0];
+                    }
+                    if (tmpRange[1] > rmax)
+                    {
+                        rmax = tmpRange[1];
+                    }
+                }
+            }
+        }
     }
     else
     {

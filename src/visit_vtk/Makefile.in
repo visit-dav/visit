@@ -183,6 +183,9 @@
 #    Jeremy Meredith, Thu Sep 18 11:10:46 PDT 2003
 #    Added Triangle and Quadrilateral clipping cases.
 #
+#    Hank Childs, Tue Sep 23 21:20:15 PDT 2003
+#    Add vtkTensorReduceFilter.
+#
 ##############################################################################
 
 ##
@@ -226,6 +229,7 @@ SRC=InitVTK.C \
     vtkStructuredGridFacelistFilter.C \
     vtkSurfaceFilter.C \
     vtkSurfaceFromVolume.C \
+    vtkTensorReduceFilter.C \
     vtkTriad2D.C \
     vtkTriangulationTables.C \
     vtkUniqueFeatureEdges.C \

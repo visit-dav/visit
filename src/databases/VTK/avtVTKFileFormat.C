@@ -335,6 +335,9 @@ avtVTKFileFormat::FreeUpResources(void)
 //    Replace call to GetListOfUniqueCellTypes, which hangs in an infinite
 //    loop if there are multiple types of cells.
 //
+//    Hank Childs, Wed Sep 24 08:02:08 PDT 2003
+//    Add support for tensors.
+//
 // ****************************************************************************
 
 void
@@ -439,9 +442,13 @@ avtVTKFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         {
             AddScalarVarToMetaData(md, name, MESHNAME, AVT_NODECENT);
         }
-        else
+        else if (ncomp <= 3)
         {
             AddVectorVarToMetaData(md, name, MESHNAME, AVT_NODECENT, ncomp);
+        }
+        else if (ncomp == 9)
+        {
+            AddTensorVarToMetaData(md, name, MESHNAME, AVT_NODECENT);
         }
         nvars++;
     }
@@ -460,9 +467,13 @@ avtVTKFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         {
             AddScalarVarToMetaData(md, name, MESHNAME, AVT_ZONECENT);
         }
-        else
+        else if (ncomp <= 3)
         {
             AddVectorVarToMetaData(md, name, MESHNAME, AVT_ZONECENT, ncomp);
+        }
+        else if (ncomp == 9)
+        {
+            AddTensorVarToMetaData(md, name, MESHNAME, AVT_ZONECENT);
         }
         nvars++;
     }

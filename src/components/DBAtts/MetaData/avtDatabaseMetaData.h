@@ -124,6 +124,50 @@ public:
 };
 
 //----------------------------------------------------------------------------
+//  Class: avtTensorMetaData
+//----------------------------------------------------------------------------
+struct DBATTS_API avtTensorMetaData : public AttributeSubject
+{
+    std::string   name;
+    std::string   meshName;
+    int           dim;
+    avtCentering  centering;
+    bool          validVariable;
+
+public:
+    avtTensorMetaData();
+    avtTensorMetaData(std::string, std::string, avtCentering, int);
+    avtTensorMetaData(const avtTensorMetaData&);
+    virtual ~avtTensorMetaData();
+    const avtTensorMetaData &operator=(const avtTensorMetaData&);
+    virtual void SelectAll();
+    void Print(ostream &, int = 0) const;
+};
+
+//----------------------------------------------------------------------------
+//  Class: avtSymmetricTensorMetaData
+//----------------------------------------------------------------------------
+struct DBATTS_API avtSymmetricTensorMetaData : public AttributeSubject
+{
+    std::string   name;
+    std::string   meshName;
+    int           dim;
+    avtCentering  centering;
+
+    bool          validVariable;
+
+public:
+    avtSymmetricTensorMetaData();
+    avtSymmetricTensorMetaData(std::string, std::string, avtCentering, int);
+    avtSymmetricTensorMetaData(const avtSymmetricTensorMetaData&);
+    virtual ~avtSymmetricTensorMetaData();
+    const avtSymmetricTensorMetaData 
+                                &operator=(const avtSymmetricTensorMetaData&);
+    virtual void SelectAll();
+    void Print(ostream &, int = 0) const;
+};
+
+//----------------------------------------------------------------------------
 //  Class: avtMaterialMetaData
 //----------------------------------------------------------------------------
 struct DBATTS_API avtMaterialMetaData : public AttributeSubject
@@ -327,14 +371,16 @@ class DBATTS_API avtDatabaseMetaData : public AttributeSubject
 
     ExpressionList exprList;
 
-    std::vector<avtMeshMetaData *>     meshes;
-    std::vector<avtScalarMetaData *>   scalars;
-    std::vector<avtVectorMetaData *>   vectors;
-    std::vector<avtMaterialMetaData *> materials;
-    std::vector<avtSpeciesMetaData *>  species;
-    std::vector<avtCurveMetaData *>    curves;
-    std::vector<avtDefaultPlotMetaData *> defaultPlots;
-    std::vector<avtSILMetaData *>      sils;
+    std::vector<avtMeshMetaData *>              meshes;
+    std::vector<avtScalarMetaData *>            scalars;
+    std::vector<avtVectorMetaData *>            vectors;
+    std::vector<avtTensorMetaData *>            tensors;
+    std::vector<avtSymmetricTensorMetaData *>   symm_tensors;
+    std::vector<avtMaterialMetaData *>          materials;
+    std::vector<avtSpeciesMetaData *>           species;
+    std::vector<avtCurveMetaData *>             curves;
+    std::vector<avtDefaultPlotMetaData *>       defaultPlots;
+    std::vector<avtSILMetaData *>               sils;
 
 public:
     avtDatabaseMetaData();
@@ -379,6 +425,8 @@ public:
     void         Add(avtMeshMetaData *);
     void         Add(avtScalarMetaData *);
     void         Add(avtVectorMetaData *);
+    void         Add(avtTensorMetaData *);
+    void         Add(avtSymmetricTensorMetaData *);
     void         Add(avtMaterialMetaData *);
     void         Add(avtSpeciesMetaData *);
     void         Add(avtCurveMetaData *);
@@ -388,6 +436,8 @@ public:
     int GetNumMeshes()        const { return meshes.size();       };
     int GetNumScalars()       const { return scalars.size();      };
     int GetNumVectors()       const { return vectors.size();      };
+    int GetNumTensors()       const { return tensors.size();      };
+    int GetNumSymmTensors()   const { return symm_tensors.size();      };
     int GetNumMaterials()     const { return materials.size();    };
     int GetNumSpecies()       const { return species.size();      };
     int GetNumCurves()        const { return curves.size();       };
@@ -400,6 +450,10 @@ public:
     const avtScalarMetaData      *GetScalar(const std::string&) const;
     const avtVectorMetaData      *GetVector(int) const;
     const avtVectorMetaData      *GetVector(const std::string&) const;
+    const avtTensorMetaData      *GetTensor(int) const;
+    const avtTensorMetaData      *GetTensor(const std::string&) const;
+    const avtSymmetricTensorMetaData *GetSymmTensor(int) const;
+    const avtSymmetricTensorMetaData *GetSymmTensor(const std::string&) const;
     const avtMaterialMetaData    *GetMaterial(int) const;
     const avtMaterialMetaData    *GetMaterial(const std::string&) const;
     const avtSpeciesMetaData     *GetSpecies(int) const;

@@ -42,6 +42,9 @@ class     avtVariableCache;
 //    Hank Childs, Thu Mar 21 13:43:14 PST 2002
 //    Added mechanisms for closing files for file descriptor management.
 //
+//    Hank Childs, Sat Sep 20 09:04:49 PDT 2003
+//    Added support for tensors.
+//
 // ****************************************************************************
 
 class DATABASE_API avtFileFormat
@@ -92,8 +95,12 @@ class DATABASE_API avtFileFormat
     void       AddVectorVarToMetaData(avtDatabaseMetaData *, std::string,
                                       std::string, avtCentering, int = 3,
                                       const float * = NULL);
+    void       AddTensorVarToMetaData(avtDatabaseMetaData *, std::string,
+                                      std::string, avtCentering, int = 3);
+    void       AddSymmetricTensorVarToMetaData(avtDatabaseMetaData *,
+                              std::string, std::string, avtCentering, int = 3);
     void       AddMaterialToMetaData(avtDatabaseMetaData *, std::string,
-                                     std::string, int,std::vector<std::string>);
+                                     std::string,int,std::vector<std::string>);
     void       AddSpeciesToMetaData(avtDatabaseMetaData *, std::string,
                                     std::string, std::string, int,
                                     std::vector<int>,

@@ -467,6 +467,9 @@ avtGenericDatabase::FreeUpResources(void)
 //    Hank Childs, Fri Aug  1 21:49:01 PDT 2003
 //    Treat curves like meshes.
 //
+//    Hank Childs, Mon Sep 22 07:48:34 PDT 2003
+//    Added support for tensors.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -494,6 +497,14 @@ avtGenericDatabase::GetDataset(const char *varname, int ts, int domain,
 
       case AVT_VECTOR_VAR:
         rv = GetVectorVarDataset(varname, ts, domain, matname);
+        break;
+
+      case AVT_TENSOR_VAR:
+        rv = GetTensorVarDataset(varname, ts, domain, matname);
+        break;
+
+      case AVT_SYMMETRIC_TENSOR_VAR:
+        rv = GetSymmetricTensorVarDataset(varname, ts, domain, matname);
         break;
 
       case AVT_MATERIAL:
@@ -884,6 +895,148 @@ avtGenericDatabase::GetVectorVarDataset(const char *varname, int ts,
 
 
 // ****************************************************************************
+//  Method: avtGenericDatabase::GetTensorVarDataset
+//
+//  Purpose:
+//      Constructs a dataset for a tensor variable.
+//
+//  Arguments:
+//      varname      The variable for that domain.
+//      ts           The timestep of interest.
+//      domain       The domain of the dataset to retrieve.
+//      material     The name of the material we are getting.
+//
+//  Returns:         The dataset for that block.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 22, 2003
+//
+// ****************************************************************************
+
+vtkDataSet *
+avtGenericDatabase::GetTensorVarDataset(const char *varname, int ts,
+                                        int domain, const char *material)
+{
+    const avtTensorMetaData *tmd = GetMetaData()->GetTensor(varname);
+    if (tmd == NULL)
+    {
+        EXCEPTION1(InvalidVariableException, varname);
+    }
+
+    vtkDataArray *var = GetTensorVariable(varname, ts, domain, material);
+
+    if (var == NULL)
+    {
+        //
+        // Some variables don't have a var for every domain, even if the
+        // mesh exists there.  Just propagate the NULL up.  
+        //
+        return NULL;
+    }
+
+    string meshname  = GetMetaData()->MeshForVar(varname);
+    vtkDataSet *mesh = GetMesh(meshname.c_str(), ts, domain, material);
+
+    if (mesh == NULL)
+    {
+        //
+        // Some file formats don't have a mesh for every domain (like Exodus
+        // when material selection is applied).  Just propagate the NULL up.  
+        //
+        return NULL;
+    }
+
+    //
+    // Set up the tensor var's name in case we have more than one.
+    //
+    var->SetName(varname);
+
+    if (tmd->centering == AVT_NODECENT)
+    {
+        mesh->GetPointData()->SetTensors(var);
+    }
+    else
+    {
+        mesh->GetCellData()->SetTensors(var);
+    }
+
+    return mesh;
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::GetSymmetricTensorVarDataset
+//
+//  Purpose:
+//      Constructs a dataset for a symmetric tensor variable.
+//
+//  Arguments:
+//      varname      The variable for that domain.
+//      ts           The timestep of interest.
+//      domain       The domain of the dataset to retrieve.
+//      material     The name of the material we are getting.
+//
+//  Returns:         The dataset for that block.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 22, 2003
+//
+// ****************************************************************************
+
+vtkDataSet *
+avtGenericDatabase::GetSymmetricTensorVarDataset(const char *varname, int ts,
+                                        int domain, const char *material)
+{
+    const avtSymmetricTensorMetaData *tmd = 
+                                         GetMetaData()->GetSymmTensor(varname);
+    if (tmd == NULL)
+    {
+        EXCEPTION1(InvalidVariableException, varname);
+    }
+
+    vtkDataArray *var = GetSymmetricTensorVariable(varname, ts, domain,
+                                                   material);
+
+    if (var == NULL)
+    {
+        //
+        // Some variables don't have a var for every domain, even if the
+        // mesh exists there.  Just propagate the NULL up.  
+        //
+        return NULL;
+    }
+
+    string meshname  = GetMetaData()->MeshForVar(varname);
+    vtkDataSet *mesh = GetMesh(meshname.c_str(), ts, domain, material);
+
+    if (mesh == NULL)
+    {
+        //
+        // Some file formats don't have a mesh for every domain (like Exodus
+        // when material selection is applied).  Just propagate the NULL up.  
+        //
+        return NULL;
+    }
+
+    //
+    // Set up the tensor var's name in case we have more than one.
+    //
+    var->SetName(varname);
+
+    if (tmd->centering == AVT_NODECENT)
+    {
+        mesh->GetPointData()->SetTensors(var);
+    }
+    else
+    {
+        mesh->GetCellData()->SetTensors(var);
+    }
+
+    return mesh;
+}
+
+
+// ****************************************************************************
 //  Method: avtGenericDatabase::GetMaterialDataset
 //
 //  Purpose:
@@ -1137,7 +1290,7 @@ avtGenericDatabase::GetScalarVariable(const char *varname, int ts, int domain,
 //      domain     The domain for the variable.
 //      material   The name of the material we are getting.
 //
-//  Returns:    A vtkVectors for the variable.
+//  Returns:    A vtkDataArray for the variable.
 //
 //  Programmer: Hank Childs
 //  Creation:   March 19, 2001
@@ -1182,6 +1335,135 @@ avtGenericDatabase::GetVectorVariable(const char *varname, int ts, int domain,
         if (var != NULL)
         {
             cache.CacheVTKObject(varname, avtVariableCache::VECTORS_NAME, ts, 
+                                 domain, material, var);
+
+            //
+            // We need to decrement the reference count of the variable 
+            // returned from FetchVar, but we could not do it previously 
+            // because it would knock the count down to 0 and delete it.  Since
+            // we have cached it, we can do it now.
+            //
+            var->Delete();
+        }
+    }
+
+    return var;
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::GetTensorVariable
+//
+//  Purpose:
+//      Checks to see if a variable is already in cache and fetches it if it
+//      is not.
+//
+//  Arguments:
+//      varname    The name of the variable.
+//      ts         The timestep for the variable.
+//      domain     The domain for the variable.
+//      material   The name of the material we are getting.
+//
+//  Returns:    A vtkDataArray for the variable.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 22, 2003
+//
+// ****************************************************************************
+
+vtkDataArray *
+avtGenericDatabase::GetTensorVariable(const char *varname, int ts, int domain,
+                                      const char *material)
+{
+    //
+    // We have to be leery about doing any caching when the variables are
+    // defined on sub-meshes.  This is because if we add new secondary
+    // variables, some parts of the mesh may drop out, and the size of the
+    // cached objects are now wrong.
+    //
+    vtkDataArray *var = NULL;
+    if (!Interface->HasVarsDefinedOnSubMeshes())
+    {
+        var = (vtkDataArray *) cache.GetVTKObject(varname,
+                         avtVariableCache::TENSORS_NAME, ts, domain, material);
+    }
+
+    if (var == NULL)
+    {
+        //
+        // We haven't read in this domain before, so fetch it from the files.
+        // Note: we use the vector var interface to get tensors.
+        //
+        var = Interface->GetVectorVar(ts, domain, varname);
+
+        if (var != NULL)
+        {
+            cache.CacheVTKObject(varname, avtVariableCache::TENSORS_NAME, ts, 
+                                 domain, material, var);
+
+            //
+            // We need to decrement the reference count of the variable 
+            // returned from FetchVar, but we could not do it previously 
+            // because it would knock the count down to 0 and delete it.  Since
+            // we have cached it, we can do it now.
+            //
+            var->Delete();
+        }
+    }
+
+    return var;
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::GetSymmetricTensorVariable
+//
+//  Purpose:
+//      Checks to see if a variable is already in cache and fetches it if it
+//      is not.
+//
+//  Arguments:
+//      varname    The name of the variable.
+//      ts         The timestep for the variable.
+//      domain     The domain for the variable.
+//      material   The name of the material we are getting.
+//
+//  Returns:    A vtkDataArray for the variable.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 22, 2003
+//
+// ****************************************************************************
+
+vtkDataArray *
+avtGenericDatabase::GetSymmetricTensorVariable(const char *varname, int ts,
+                                               int domain,const char *material)
+{
+    //
+    // We have to be leery about doing any caching when the variables are
+    // defined on sub-meshes.  This is because if we add new secondary
+    // variables, some parts of the mesh may drop out, and the size of the
+    // cached objects are now wrong.
+    //
+    vtkDataArray *var = NULL;
+    if (!Interface->HasVarsDefinedOnSubMeshes())
+    {
+        var = (vtkDataArray *) cache.GetVTKObject(varname,
+                         avtVariableCache::SYMMETRIC_TENSORS_NAME, ts, domain,
+                              material);
+    }
+
+    if (var == NULL)
+    {
+        //
+        // We haven't read in this domain before, so fetch it from the files.
+        // Note: we use the vector var interface to get tensors.
+        //
+        var = Interface->GetVectorVar(ts, domain, varname);
+
+        if (var != NULL)
+        {
+            cache.CacheVTKObject(varname, avtVariableCache::TENSORS_NAME, ts, 
                                  domain, material, var);
 
             //
@@ -3907,6 +4189,220 @@ avtGenericDatabase::QueryVectors(const std::string &varName, const int dom,
                     }
                     mag = sqrt(mag);
                     vals.push_back(mag);
+                }
+                delete [] temp;
+            }
+        }
+        if (!vals.empty())
+        {
+            varInfo.SetNames(names);
+            varInfo.SetValues(vals);
+            vals.clear();
+            names.clear();
+            rv = true;
+        }
+    }
+    // 
+    // This is where we could allow the interface to add more information.
+    // 
+    return rv;
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::QueryTensors
+//
+//  Purpose:
+//    Queries the db regarding tensor var info for a specific cell or nodes.  
+//
+//  Arguments:
+//    varName     The variable on which to retrieve data.
+//    dom         The domain to query.
+//    zone        The zone to query.
+//    ts          The timestep to query.
+//    nodes       The nodes to query.
+//    varInfo     A place to store the results. 
+//
+//  Returns:
+//    True if data was successfully retrieved, false otherwise.
+//
+//  Programmer:   Hank Childs
+//  Creation:     September 22, 2003
+//
+// ****************************************************************************
+
+bool
+avtGenericDatabase::QueryTensors(const std::string &varName, const int dom, 
+                                 const int element, const int ts, 
+                                 const std::vector<int> &incidentElements, 
+                                 PickVarInfo &varInfo, const bool zonePick)
+{
+    bool rv = false;
+    if (varInfo.GetValues().empty())
+    {
+        const avtTensorMetaData *tmd = GetMetaData()->GetTensor(varName);
+        if (!tmd)
+        {
+            debug5 << "Querying tensor var, but could not retrieve"
+                   << " meta data!" << endl;
+            return false;
+        }
+
+        std::vector<std::string> names;
+        std::vector<double> vals;
+        char buff[80];
+        vtkDataArray *tensors = GetTensorVariable(varName.c_str(), ts, dom,
+                                                  "_all");
+        int nComponents = 0;; 
+        double *temp = NULL; 
+        if (tensors)
+        {
+            bool zoneCent, validCentering = true;
+            if (tmd->centering == AVT_NODECENT)
+            {
+                varInfo.SetCentering(PickVarInfo::Nodal);
+                zoneCent = false;
+            }
+            else if (tmd->centering == AVT_ZONECENT)
+            {
+                varInfo.SetCentering(PickVarInfo::Zonal);
+                zoneCent = true;
+            }
+            else 
+            {
+                validCentering = false;
+            }
+            if (validCentering)
+            {
+                nComponents = tensors->GetNumberOfComponents();
+                temp = new double[nComponents];
+                if (zonePick != zoneCent) 
+                { 
+                    // info we're after is associated with incidentElements
+                    for (int k = 0; k < incidentElements.size(); k++)
+                    {
+                        sprintf(buff, "(%d)", incidentElements[k]); 
+                        names.push_back(buff); 
+                        tensors->GetTuple(incidentElements[k], temp);
+                        for (int i = 0; i < nComponents; i++)
+                            vals.push_back(temp[i]);
+                    }
+                }
+                else 
+                {
+                    // info we're after is associated with element 
+                    sprintf(buff, "(%d)", element);
+                    names.push_back(buff); 
+                    tensors->GetTuple(element, temp);
+                    for (int i = 0; i < nComponents; i++)
+                        vals.push_back(temp[i]);
+                }
+                delete [] temp;
+            }
+        }
+        if (!vals.empty())
+        {
+            varInfo.SetNames(names);
+            varInfo.SetValues(vals);
+            vals.clear();
+            names.clear();
+            rv = true;
+        }
+    }
+    // 
+    // This is where we could allow the interface to add more information.
+    // 
+    return rv;
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::QuerySymmetricTensors
+//
+//  Purpose:
+//    Queries the db regarding tensor var info for a specific cell or nodes.  
+//
+//  Arguments:
+//    varName     The variable on which to retrieve data.
+//    dom         The domain to query.
+//    zone        The zone to query.
+//    ts          The timestep to query.
+//    nodes       The nodes to query.
+//    varInfo     A place to store the results. 
+//
+//  Returns:
+//    True if data was successfully retrieved, false otherwise.
+//
+//  Programmer:   Hank Childs
+//  Creation:     September 22, 2003
+//
+// ****************************************************************************
+
+bool
+avtGenericDatabase::QuerySymmetricTensors(const std::string &varName,
+                                 const int dom, const int element,const int ts,
+                                 const std::vector<int> &incidentElements,
+                                 PickVarInfo &varInfo, const bool zonePick)
+{
+    bool rv = false;
+    if (varInfo.GetValues().empty())
+    {
+        const avtSymmetricTensorMetaData *tmd 
+                                       = GetMetaData()->GetSymmTensor(varName);
+        if (!tmd)
+        {
+            debug5 << "Querying tensor var, but could not retrieve"
+                   << " meta data!" << endl;
+            return false;
+        }
+
+        std::vector<std::string> names;
+        std::vector<double> vals;
+        char buff[80];
+        vtkDataArray *tensors = GetSymmetricTensorVariable(varName.c_str(), ts,
+                                                           dom, "_all");
+        int nComponents = 0;; 
+        if (tensors)
+        {
+            bool zoneCent, validCentering = true;
+            if (tmd->centering == AVT_NODECENT)
+            {
+                varInfo.SetCentering(PickVarInfo::Nodal);
+                zoneCent = false;
+            }
+            else if (tmd->centering == AVT_ZONECENT)
+            {
+                varInfo.SetCentering(PickVarInfo::Zonal);
+                zoneCent = true;
+            }
+            else 
+            {
+                validCentering = false;
+            }
+            if (validCentering)
+            {
+                nComponents = tensors->GetNumberOfComponents();
+                double *temp = new double[nComponents];
+                if (zonePick != zoneCent) 
+                { 
+                    // info we're after is associated with incidentElements
+                    for (int k = 0; k < incidentElements.size(); k++)
+                    {
+                        sprintf(buff, "(%d)", incidentElements[k]); 
+                        names.push_back(buff); 
+                        tensors->GetTuple(incidentElements[k], temp);
+                        for (int i = 0; i < nComponents; i++)
+                            vals.push_back(temp[i]);
+                    }
+                }
+                else 
+                {
+                    // info we're after is associated with element 
+                    sprintf(buff, "(%d)", element);
+                    names.push_back(buff); 
+                    tensors->GetTuple(element, temp);
+                    for (int i = 0; i < nComponents; i++)
+                        vals.push_back(temp[i]);
                 }
                 delete [] temp;
             }

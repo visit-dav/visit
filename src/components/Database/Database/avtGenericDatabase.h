@@ -150,6 +150,9 @@ class     PickVarInfo;
 //    Jeremy Meredith, Mon Sep 15 09:43:26 PDT 2003
 //    Added a MIR algorithm flag to MaterialSelect and GetMIR.
 //
+//    Hank Childs, Mon Sep 22 07:52:34 PDT 2003
+//    Added support for tensors.
+//
 // ****************************************************************************
 
 class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
@@ -189,6 +192,10 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
                                               const char *);
     vtkDataSet                *GetVectorVarDataset(const char *, int, int,
                                                    const char *);
+    vtkDataSet                *GetSymmetricTensorVarDataset(const char *, int,
+                                                            int, const char *);
+    vtkDataSet                *GetTensorVarDataset(const char *, int, int,
+                                                   const char *);
     vtkDataSet                *GetMaterialDataset(const char *, int, int,
                                                   const char *);
     vtkDataSet                *GetSpeciesDataset(const char *, int, int,
@@ -196,6 +203,10 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
     vtkDataArray              *GetScalarVariable(const char *, int, int,
                                                  const char *);
     vtkDataArray              *GetVectorVariable(const char *, int, int,
+                                                 const char *);
+    vtkDataArray              *GetSymmetricTensorVariable(const char *,int,int,
+                                                          const char *);
+    vtkDataArray              *GetTensorVariable(const char *, int, int,
                                                  const char *);
     vtkDataArray              *GetSpeciesVariable(const char *, int, int,
                                                   const char *, int);
@@ -255,7 +266,15 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
                                             const std::vector<int> &, 
                                             PickVarInfo &, const bool);
     virtual bool               QueryVectors(const std::string &, const int, 
-                                            const int , const int ,
+                                            const int, const int,
+                                            const std::vector<int> &, 
+                                            PickVarInfo &, const bool);
+    virtual bool               QueryTensors(const std::string &, const int, 
+                                            const int, const int,
+                                            const std::vector<int> &, 
+                                            PickVarInfo &, const bool);
+    virtual bool               QuerySymmetricTensors(const std::string &,
+                                            const int, const int, const int,
                                             const std::vector<int> &, 
                                             PickVarInfo &, const bool);
     virtual bool               QueryMaterial(const std::string &, const int, 
@@ -263,8 +282,9 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
                                             const std::vector<int> &, 
                                             PickVarInfo &, const bool);
     virtual bool               QueryNodes(const std::string &, const int, 
-                                          const int, const int, std::vector<int> &, 
-                                          float [3], const int, const bool, const bool,
+                                          const int, const int, 
+                                          std::vector<int> &, float [3], 
+                                          const int, const bool, const bool,
                                           std::vector<std::string> &);
 
     virtual bool               QueryMesh(const std::string &, const int, 
@@ -273,7 +293,8 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
     virtual bool               QueryZones(const std::string&, const int, int &,
                                           const int, std::vector<int> &, 
                                           float [3], const int, const bool, 
-                                          const bool, std::vector<std::string> &) ;
+                                          const bool, 
+                                          std::vector<std::string> &) ;
     void                       AssociateBounds(vtkDataSet *);
     void                       ScaleMesh(vtkDataSet *);
 };

@@ -1,11 +1,11 @@
 // ************************************************************************* //
-//                               avtGlyphMapper.h                            //
+//                            avtVectorGlyphMapper.h                         //
 // ************************************************************************* //
 
-#ifndef AVT_GLYPH_MAPPER_H
-#define AVT_GLYPH_MAPPER_H
-#include <plotter_exports.h>
+#ifndef AVT_VECTOR_GLYPH_MAPPER_H
+#define AVT_VECTOR_GLYPH_MAPPER_H
 
+#include <plotter_exports.h>
 
 #include <avtMapper.h>
 #include <LineAttributes.h>
@@ -16,7 +16,7 @@ class     vtkPolyData;
 
 
 // ****************************************************************************
-//  Class: avtGlyphMapper
+//  Class: avtVectorGlyphMapper
 //
 //  Purpose:
 //      A mapper for glyph.  This extends the functionality of a mapper by
@@ -44,13 +44,16 @@ class     vtkPolyData;
 //    Kathleen Bonnell, Wed Aug 29 16:44:31 PDT 2001 
 //    Added vtkLookupTable member and Set method.  Removed SetLUTColors. 
 //    
+//    Hank Childs, Wed Sep 24 09:42:29 PDT 2003
+//    Renamed to vector glyph mapper.
+//
 // ****************************************************************************
 
-class PLOTTER_API  avtGlyphMapper : public avtMapper
+class PLOTTER_API  avtVectorGlyphMapper : public avtMapper
 {
   public:
-                               avtGlyphMapper(vtkPolyData *);
-    virtual                   ~avtGlyphMapper();
+                               avtVectorGlyphMapper(vtkPolyData *);
+    virtual                   ~avtVectorGlyphMapper();
 
     void                       SetLineWidth(_LineWidth lw);
     void                       SetLineStyle(_LineStyle ls);

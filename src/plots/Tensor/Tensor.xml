@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+  <Plugin name="Tensor" type="plot" label="Tensor" version="1.0" vartype="tensor,symmetrictensor" iconFile="Tensor.xpm">
+    <Attribute name="TensorAttributes" purpose="Attributes for the tensor plot" persistent="true" codefile="TensorAttributes.code">
+      <Field name="useStride" label="Use stride" type="bool">
+        false
+      </Field>
+      <Field name="stride" label="Stride" type="int">
+        1
+      </Field>
+      <Field name="nTensors" label="Num tensors" type="int">
+        400
+      </Field>
+      <Field name="scale" label="Scale" type="double">
+        0.250000
+      </Field>
+      <Field name="colorByEigenvalues" label="color by eigenvalues" type="bool">
+        true
+      </Field>
+      <Field name="useLegend" label="Legend" type="bool">
+        true
+      </Field>
+      <Field name="tensorColor" label="color" type="color">
+        0
+        0
+        0
+        255
+      </Field>
+      <Field name="colorTableName" label="Color table" type="colortable">
+        Default
+      </Field>
+      <Function name="ChangesRequireRecalculation" user="true" member="true">
+      </Function>
+    </Attribute>
+  </Plugin>

@@ -179,6 +179,9 @@ avtExpressionFilter::PostExecute(void)
 //    Hank Childs, Thu Jan 23 11:19:14 PST 2003
 //    Set only the cumulative extents.
 //
+//    Hank Childs, Mon Sep 22 08:34:14 PDT 2003
+//    Add support for tensors.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -206,69 +209,68 @@ avtExpressionFilter::ExecuteData(vtkDataSet *in_ds, int index,
     {
         rv->GetPointData()->AddArray(dat);
         if (vardim == 1)
-        {
             rv->GetPointData()->SetActiveScalars(outputVariableName);
-        }
-        else
-        {
+        else if (vardim == 3)
             rv->GetPointData()->SetActiveVectors(outputVariableName);
-        }
+        else if (vardim == 9)
+            rv->GetPointData()->SetActiveTensors(outputVariableName);
     }
     else
     {
         rv->GetCellData()->AddArray(dat);
         if (vardim == 1)
-        {
             rv->GetCellData()->SetActiveScalars(outputVariableName);
-        }
-        else
-        {
+        else if (vardim == 3)
             rv->GetCellData()->SetActiveVectors(outputVariableName);
-        }
+        else if (vardim == 9)
+            rv->GetCellData()->SetActiveTensors(outputVariableName);
     }
 
     //
     // Make our best attempt at maintaining our extents.
     //
-    double exts[6];
-    unsigned char *ghosts = NULL;
-    if (!IsPointVariable())
-    {
-        vtkUnsignedCharArray *g = (vtkUnsignedCharArray *)
-                                 rv->GetCellData()->GetArray("vtkGhostLevels");
-        if (g != NULL)
-        {
-            ghosts = g->GetPointer(0);
-        }
-    }
-    int ntuples = dat->GetNumberOfTuples();
     int nvars   = dat->GetNumberOfComponents();
-    for (i = 0 ; i < nvars ; i++)
+    if (nvars <= 3)
     {
-        exts[2*i+0] = +FLT_MAX;
-        exts[2*i+1] = -FLT_MAX;
-    }
-    for (i = 0 ; i < ntuples ; i++)
-    {
-        if (ghosts != NULL && ghosts[i] > 0) 
+        double exts[6];
+        unsigned char *ghosts = NULL;
+        if (!IsPointVariable())
         {
-            continue;
-        }
-        float *val = dat->GetTuple(i);
-        for (j = 0 ; j < nvars ; j++)
-        {
-            if (val[j] < exts[2*j+0])
+            vtkUnsignedCharArray *g = (vtkUnsignedCharArray *)
+                                 rv->GetCellData()->GetArray("vtkGhostLevels");
+            if (g != NULL)
             {
-                exts[2*j+0] = val[j];
-            }
-            if (val[j] > exts[2*j+1])
-            {
-                exts[2*j+1] = val[j];
+                ghosts = g->GetPointer(0);
             }
         }
-    }
-    GetOutput()->GetInfo().GetAttributes().
+        int ntuples = dat->GetNumberOfTuples();
+        for (i = 0 ; i < nvars ; i++)
+        {
+            exts[2*i+0] = +FLT_MAX;
+            exts[2*i+1] = -FLT_MAX;
+        }
+        for (i = 0 ; i < ntuples ; i++)
+        {
+            if (ghosts != NULL && ghosts[i] > 0) 
+            {
+                continue;
+            }
+            float *val = dat->GetTuple(i);
+            for (j = 0 ; j < nvars ; j++)
+            {
+                if (val[j] < exts[2*j+0])
+                {
+                    exts[2*j+0] = val[j];
+                }
+                if (val[j] > exts[2*j+1])
+                {
+                    exts[2*j+1] = val[j];
+                }
+            }
+        }
+        GetOutput()->GetInfo().GetAttributes().
                                    GetCumulativeTrueDataExtents()->Merge(exts);
+    }
 
     //
     // Make sure that we don't have any memory leaks.

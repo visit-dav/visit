@@ -31,6 +31,9 @@ class QObject;
 //   Added materialVars map so we can distinguish between materials and
 //   subset variables if we want to.
 //
+//   Hank Childs, Tue Sep 23 22:05:54 PDT 2003
+//   Added support for tensors.
+//
 // ****************************************************************************
 
 class WINUTIL_API VariableMenuPopulator
@@ -59,7 +62,7 @@ private:
 
     // Create some lists to keep track of the variable names.
     StringBoolMap meshVars, scalarVars, materialVars, vectorVars, subsetVars,
-                  speciesVars, curveVars;
+                  speciesVars, curveVars, tensorVars, symmTensorVars;
 };
 
 #endif

@@ -11,6 +11,28 @@
 
 
 // ****************************************************************************
+//  Method: avtMultipleInputExpressionFilter destructor
+//
+//  Programmer: Hank Childs
+//  Creation:   September 19, 2003
+//
+// ****************************************************************************
+
+avtMultipleInputExpressionFilter::~avtMultipleInputExpressionFilter()
+{
+    for (int i = 0 ; i < varnames.size() ; i++)
+    {
+        //
+        // We should use the C-style de-allocation, since this string was
+        // created by strdup (which uses malloc).  If we don't, purify
+        // complains.
+        //
+        free(varnames[i]);
+    }
+}
+
+
+// ****************************************************************************
 //  Method: avtMultipleInputExpressionFilter::AddInputVariableName
 //
 //  Purpose:

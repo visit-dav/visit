@@ -95,6 +95,9 @@ class   PickVarInfo;
 //    Kathleen Bonnell, Tue Sep  9 16:51:10 PDT 2003 
 //    Changed PickVarInfo argument in QueryMesh to std::string.
 //
+//    Hank Childs, Mon Sep 22 09:20:08 PDT 2003
+//    Add support for picking tensors.
+//
 // ****************************************************************************
 
 class DATABASE_API avtDatabase
@@ -155,6 +158,16 @@ class DATABASE_API avtDatabase
                                              const std::vector<int> &,
                                              PickVarInfo &, const bool) 
                                                   {return false; };
+    virtual bool                QueryTensors(const std::string &, const int, 
+                                             const int, const int,
+                                             const std::vector<int> &,
+                                             PickVarInfo &, const bool) 
+                                                  {return false; };
+    virtual bool                QuerySymmetricTensors(const std::string &,
+                                             const int, const int, const int,
+                                             const std::vector<int> &,
+                                             PickVarInfo &, const bool) 
+                                                  {return false; };
     virtual bool                QueryMaterial(const std::string &, const int, 
                                               const int, const int,
                                               const std::vector<int> &,
@@ -169,7 +182,7 @@ class DATABASE_API avtDatabase
     virtual bool                QueryMesh(const std::string &, const int, 
                                           std::string &) {return false; };
 
-    virtual bool                QueryZones(const std::string &, const int, int &, 
+    virtual bool                QueryZones(const std::string &,const int,int &,
                                            const int, std::vector<int> &, 
                                            float [3], const int, const bool, 
                                            const bool, std::vector<std::string> &)
