@@ -11,6 +11,16 @@
 #include <visit_vtk_exports.h>
 
 #include "vtkRectilinearGridToPolyDataFilter.h"
+#include <vector>
+
+// ****************************************************************************
+//  Modifications:
+//
+//    Hank Childs, Sun Nov  9 12:37:15 PST 2003
+//    Added separate consolidation routines that work with and without ghost
+//    zones.
+//
+// ****************************************************************************
 
 class VISIT_VTK_API vtkRectilinearGridFacelistFilter : public vtkRectilinearGridToPolyDataFilter
 {
@@ -39,7 +49,9 @@ private:
   vtkRectilinearGridFacelistFilter(const vtkRectilinearGridFacelistFilter&);
   void operator=(const vtkRectilinearGridFacelistFilter&);
 
-  void ConsolidationExecute(void);
+  void ConsolidateFacesWithoutGhostZones(void);
+  vtkPolyData *ConsolidateFacesWithGhostZones(vtkPolyData *, std::vector<int>&,
+                                          std::vector<int>&,std::vector<int>&);
 };
 
 #endif

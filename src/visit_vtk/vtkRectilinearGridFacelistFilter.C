@@ -2,11 +2,14 @@
 
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
-#include <vtkDataSetRemoveGhostCells.h>
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
+#include <vtkUnsignedCharArray.h>
+
+
+using  std::vector;
 
 
 //------------------------------------------------------------------------------
@@ -114,16 +117,16 @@ SpecializedIndexer::SpecializedIndexer(int x, int y, int z)
 //  Hank Childs, Wed Oct 15 19:24:56 PDT 2003
 //  Added logic for consolidating faces.
 //
+//  Hank Childs, Sun Nov  9 09:44:04 PST 2003
+//  Made logic for consolidating faces when ghost zones are involved a little
+//  more sophisticated.  Also re-ordered how some of the quads in the normal
+//  execution were stored, to make the consolidation logic easier.  The new
+//  ordering is also more consistent.
+//
 // ****************************************************************************
 
 void vtkRectilinearGridFacelistFilter::Execute()
 {
-  if (ForceFaceConsolidation)
-    {
-        ConsolidationExecute();
-        return;
-    }
-
   int   i, j;
   vtkIdType   quad[4];
 
@@ -131,11 +134,33 @@ void vtkRectilinearGridFacelistFilter::Execute()
   // Set up some objects that we will be using throughout the process.
   //
   vtkRectilinearGrid *input        = GetInput();
-  vtkPolyData        *output       = GetOutput();
+  vtkPolyData        *output       = vtkPolyData::New();
   vtkCellData        *inCellData   = input->GetCellData();
   vtkPointData       *inPointData  = input->GetPointData();
   vtkCellData        *outCellData  = output->GetCellData();
   vtkPointData       *outPointData = output->GetPointData();
+
+  //
+  // If there are no ghost zones and we want to consolidate faces, this is a
+  // very easy problem.  Just call the routine that will do this simply.
+  //
+  if (ForceFaceConsolidation)
+  {
+     if (inCellData->GetArray("vtkGhostLevels") == NULL)
+     {
+        ConsolidateFacesWithoutGhostZones();
+        return;
+     }
+  }
+
+  //
+  // If we are doing face compaction, we will come in after the fact and
+  // compact some of the faces.  These variables are used for telling the
+  // face compaction routine about how the faces are laid out.
+  //
+  vector<int> faceStart;
+  vector<int> rowSize;
+  vector<int> columnSize;
 
   //
   // Get the information about X, Y, and Z from the rectilinear grid.
@@ -305,9 +330,12 @@ void vtkRectilinearGridFacelistFilter::Execute()
   // Left face
   //
   int cellId = 0;
-  for (i = 0 ; i < nY-1 ; i++)
+  faceStart.push_back(cellId);
+  columnSize.push_back(nZ-1);
+  rowSize.push_back(nY-1);
+  for (j = 0 ; j < nZ-1 ; j++)
   {
-    for (j = 0 ; j < nZ-1 ; j++)
+    for (i = 0 ; i < nY-1 ; i++)
     {
       quad[0] = indexer.GetLeftFacePoint(i, j);
       quad[1] = indexer.GetLeftFacePoint(i, j+1);
@@ -325,9 +353,12 @@ void vtkRectilinearGridFacelistFilter::Execute()
   //
   if (nX > 1)
     {
+    faceStart.push_back(cellId);
+    rowSize.push_back(nZ-1);
+    columnSize.push_back(nY-1);
     for (i = 0 ; i < nY-1 ; i++)
     {
-      for (j = 0 ; j < nZ-1 ; j++)
+      for (j = 0 ; j < nZ-1 ; j++) 
       {
         quad[0] = indexer.GetRightFacePoint(i, j);
         quad[1] = indexer.GetRightFacePoint(i+1, j);
@@ -344,6 +375,9 @@ void vtkRectilinearGridFacelistFilter::Execute()
   //
   // Bottom face
   //
+  faceStart.push_back(cellId);
+  rowSize.push_back(nZ-1);
+  columnSize.push_back(nX-1);
   for (i = 0 ; i < nX-1 ; i++)
   {
     for (j = 0 ; j < nZ-1 ; j++)
@@ -364,9 +398,12 @@ void vtkRectilinearGridFacelistFilter::Execute()
   //
   if (nY > 1)
   {
-    for (i = 0 ; i < nX-1 ; i++)
+    faceStart.push_back(cellId);
+    rowSize.push_back(nX-1);
+    columnSize.push_back(nZ-1);
+    for (j = 0 ; j < nZ-1 ; j++)
     {
-      for (j = 0 ; j < nZ-1 ; j++)
+      for (i = 0 ; i < nX-1 ; i++)
       {
         quad[0] = indexer.GetTopFacePoint(i, j);
         quad[1] = indexer.GetTopFacePoint(i, j+1);
@@ -383,9 +420,12 @@ void vtkRectilinearGridFacelistFilter::Execute()
   //
   // Back face
   //
-  for (i = 0 ; i < nX-1 ; i++)
+  faceStart.push_back(cellId);
+  rowSize.push_back(nX-1);
+  columnSize.push_back(nY-1);
+  for (j = 0 ; j < nY-1 ; j++)
   {
-    for (j = 0 ; j < nY-1 ; j++)
+    for (i = 0 ; i < nX-1 ; i++)
     {
       quad[0] = indexer.GetFrontFacePoint(i, j);
       quad[1] = indexer.GetFrontFacePoint(i, j+1);
@@ -403,6 +443,9 @@ void vtkRectilinearGridFacelistFilter::Execute()
   //
   if (nZ > 1)
   {
+    faceStart.push_back(cellId);
+    rowSize.push_back(nY-1);
+    columnSize.push_back(nX-1);
     for (i = 0 ; i < nX-1 ; i++)
     {
       for (j = 0 ; j < nY-1 ; j++)
@@ -422,32 +465,188 @@ void vtkRectilinearGridFacelistFilter::Execute()
   outCellData->Squeeze();
   output->SetPolys(polys);
   polys->Delete();
+
+  if (ForceFaceConsolidation)
+  {
+     //
+     // We only get to this spot if we have ghost zones -- which makes 
+     // consolidating faces a harder problem.  Use a sub-routine to do that.
+     //
+     vtkPolyData *new_output = ConsolidateFacesWithGhostZones(output, 
+                                               faceStart, rowSize, columnSize);
+     output->Delete();
+     output = new_output;
+  }
+
+  GetOutput()->ShallowCopy(output);
+  output->Delete();
+}
+
+
+vtkPolyData *
+vtkRectilinearGridFacelistFilter::ConsolidateFacesWithGhostZones(
+                                 vtkPolyData *pd, vector<int> &sideStart,
+                                 vector<int> &rowSize, vector<int> &columnSize)
+{
+  //
+  // The output will have identical point information to our input.  So copy
+  // that over now.
+  //
+  vtkPolyData *cpd = vtkPolyData::New();
+  cpd->SetPoints(pd->GetPoints());
+  cpd->GetPointData()->ShallowCopy(pd->GetPointData());
+
+  //
+  // Set up some useful vars for later.
+  //
+  vtkCellData *inCellData  = pd->GetCellData();
+  vtkCellData *outCellData = cpd->GetCellData();
+  vtkUnsignedCharArray *gza = (vtkUnsignedCharArray *) 
+                                 inCellData->GetArray("vtkGhostLevels");
+
+  //
+  // We will be modifying the cells.  So set up some of the data structures.
+  //
+  outCellData->CopyAllocate(inCellData);
+  int cellGuess = pd->GetNumberOfCells();
+  vtkCellArray *polys = vtkCellArray::New();
+  polys->Allocate(cellGuess*(4+1));
+  
+  //
+  // These for loops will walk through the cells and try to identify 
+  // neighboring cells that can be compacted.  Although the algorithm appears
+  // to be quite slow (there are 5 nested for loops), it should actually run
+  // in about O(nfaces) time.
+  //
+  int nOutputCells = 0;
+  int nSides = sideStart.size();
+  for (int i = 0 ; i < nSides ; i++)
+  {
+    int nEntries = rowSize[i]*columnSize[i];
+    int startFace = sideStart[i];
+    vector<bool> faceUsed(nEntries, false);
+    for (int k = 0 ; k < columnSize[i] ; k++)
+    {
+      for (int j = 0 ; j < rowSize[i] ; j++)
+      {
+        int face = k*rowSize[i] + j;
+        if (faceUsed[face])
+           continue;
+        unsigned char gz_standard = gza->GetValue(startFace+face);
+
+        //
+        // Find out how far we can go along the row with the same ghost
+        // zone value.
+        //
+        int lastRowMatch = j;
+        int l, m;
+        for (l = j+1 ; l < rowSize[i] ; l++)
+        {
+           int face = k*rowSize[i] + l;
+           if (faceUsed[face])
+             break;
+           unsigned char gz_current = gza->GetValue(startFace+face);
+           if (gz_current != gz_standard)
+             break;
+           lastRowMatch = l;
+        }
+
+        //
+        // Now we know we can go from k - lastRowMatch with the same ghost zone
+        // value.  Now see how far we can down in columns.
+        //
+        int lastColumnMatch = k;
+        for (m = k+1 ; m < columnSize[i] ; m++)
+        {
+          bool all_matches = true;
+          for (l = j ; l <= lastRowMatch ; l++)
+          {
+            int face = m*rowSize[i] + l;
+            if (faceUsed[face])
+            {
+              all_matches = false;
+              break;
+            }
+            unsigned char gz_current = gza->GetValue(startFace+face);
+            if (gz_current != gz_standard)
+            {
+              all_matches = false;
+              break;
+            }
+          }
+            
+          if (all_matches)
+            lastColumnMatch = m;
+          else
+            break;
+        }
+
+        for (l = j ; l <= lastRowMatch ; l++)
+          for (m = k ; m <= lastColumnMatch ; m++)
+          {
+            int face = m*rowSize[i] + l;
+            faceUsed[face] = true;
+          }
+
+        //
+        // We know now that we have a face that hasn't been used yet --
+        // face (j, k).  In addition, we know that we can form a bigger quad
+        // with face (j, k) as one corner and 
+        // face (lastRowMatch, lastColumnMatch) as the opposite corner.
+        //
+        int quad_index[4];
+        quad_index[0] = startFace + k*rowSize[i]+j;  // bottom-left
+        quad_index[1] = startFace + lastColumnMatch*rowSize[i]+j; // top-left
+        quad_index[2] = startFace 
+                       + lastColumnMatch*rowSize[i]+lastRowMatch; // top-right
+        quad_index[3] = startFace + k*rowSize[i]+lastRowMatch; // bottom-right
+
+        //
+        // We've constructed quad_index so that we want the l'th point from
+        // quad 'l' to make our new, bigger quad.  Note that this heavily
+        // depends on the quads in "Execute" being constructed in a consistent
+        // way.
+        //
+        vtkIdType   quad[4];
+        for (l = 0 ; l < 4 ; l++)
+        {
+          quad[l] = pd->GetCell(quad_index[l])->GetPointId(l);
+        }
+        polys->InsertNextCell(4, quad);
+
+        //
+        // Copy over the new cell data, too.  Just copy the cell data from
+        // the original face -> (j, k).
+        //
+        outCellData->CopyData(inCellData, quad_index[0], nOutputCells++);
+      }
+    }
+  }
+
+  cpd->SetPolys(polys);
+  polys->Squeeze();
+  cpd->GetCellData()->Squeeze();
+  polys->Delete();
+  
+  return cpd;
 }
 
 
 // ****************************************************************************
 //  Modifications:
 //
-//    Hank Childs, Tue Nov  4 13:34:38 PST 2003
-//    Do a better job handling ghost zones.
+//    Hank Childs, Sun Nov  9 12:37:15 PST 2003
+//    Modified this routine to not handle ghost zones at all (since it wasn't
+//    doing a very good job in the first place).  Also renamed the routine
+//    to make it clear what its purpose was.
 //
 // ****************************************************************************
 
-void vtkRectilinearGridFacelistFilter::ConsolidationExecute(void)
+void vtkRectilinearGridFacelistFilter::ConsolidateFacesWithoutGhostZones(void)
 {
   int  i;
-  vtkDataSetRemoveGhostCells *ghost_remover = NULL;
 
   vtkRectilinearGrid *input        = GetInput();
-
-  if (input->GetCellData()->GetArray("vtkGhostLevels") &&
-      input->GetFieldData()->GetArray("avtRealDims"))
-  {
-      ghost_remover = vtkDataSetRemoveGhostCells::New();
-      ghost_remover->SetInput(input);
-      input = (vtkRectilinearGrid *) ghost_remover->GetOutput();
-  }
-
   vtkPolyData        *output       = GetOutput();
   vtkCellData        *inCellData   = input->GetCellData();
   vtkPointData       *inPointData  = input->GetPointData();
@@ -522,10 +721,6 @@ void vtkRectilinearGridFacelistFilter::ConsolidationExecute(void)
   polys->Delete();
   output->SetPoints(pts);
   pts->Delete();
-  if (output->GetCellData()->GetArray("vtkGhostLevels") != NULL)
-      output->GetCellData()->RemoveArray("vtkGhostLevels");
-  if (ghost_remover != NULL)
-      ghost_remover->Delete();
 }
 
 void vtkRectilinearGridFacelistFilter::PrintSelf(ostream& os, vtkIndent indent)
