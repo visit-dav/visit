@@ -31,6 +31,9 @@ class vtkUnstructuredGrid;
 //  Creation:   August  7, 2003
 //
 //  Modifications:
+//    Jeremy Meredith, Mon Feb 16 18:01:29 PST 2004
+//    Added 2D shape support.  This might seem weird, but there may be 
+//    some 2D shapes in a volumetric setting.
 //
 // ****************************************************************************
 
@@ -84,6 +87,22 @@ class TetList : public ShapeList
                    TetList();
     virtual       ~TetList();
     void           AddTet(int, int, int, int, int);
+};
+
+class QuadList : public ShapeList
+{
+  public:
+                   QuadList();
+    virtual       ~QuadList();
+    void           AddQuad(int, int, int, int, int);
+};
+
+class TriList : public ShapeList
+{
+  public:
+                   TriList();
+    virtual       ~TriList();
+    void           AddTri(int, int, int, int);
 };
 
 struct CentroidPointEntry
@@ -140,6 +159,10 @@ class CentroidPointList
                         { pyramids.AddPyramid(z, v0, v1, v2, v3, v4); }
     void           AddTet(int z, int v0, int v1, int v2, int v3)
                         { tets.AddTet(z, v0, v1, v2, v3); }
+    void           AddQuad(int z, int v0, int v1, int v2, int v3)
+                        { quads.AddQuad(z, v0, v1, v2, v3); }
+    void           AddTri(int z, int v0, int v1, int v2)
+                        { tris.AddTri(z, v0, v1, v2); }
 
   protected:
     CentroidPointList  centroid_list;
@@ -147,6 +170,8 @@ class CentroidPointList
     WedgeList          wedges;
     PyramidList        pyramids;
     TetList            tets;
+    QuadList           quads;
+    TriList            tris;
 };
 
 

@@ -23,6 +23,9 @@ class vtkUnstructuredGrid;
 //    Jeremy Meredith, Fri Jan 30 16:15:50 PST 2004
 //    Added scalar array and scalar range for isovolume.
 //
+//    Jeremy Meredith, Mon Feb 16 19:08:16 PST 2004
+//    Added PolyData support.
+//
 // ****************************************************************************
 class VISIT_VTK_API vtkVisItClipper3D
     : public vtkDataSetToUnstructuredGridFilter
@@ -48,6 +51,7 @@ class VISIT_VTK_API vtkVisItClipper3D
     void RectilinearGridExecute();
     void StructuredGridExecute();
     void UnstructuredGridExecute();
+    void PolyDataExecute();
     void GeneralExecute();
     void ClipDataset(vtkDataSet *, vtkUnstructuredGrid *);
 
