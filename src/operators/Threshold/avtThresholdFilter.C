@@ -4,6 +4,7 @@
 
 #include <avtThresholdFilter.h>
 
+#include <vtkPolyData.h>
 #include <vtkThreshold.h>
 #include <vtkUnstructuredGrid.h>
 
@@ -111,6 +112,9 @@ avtThresholdFilter::Equivalent(const AttributeGroup *a)
 //    Hank Childs, Tue Sep 10 18:29:14 PDT 2002
 //    Make memory management be self-contained in this routine.
 //
+//    Hank Childs, Sat Jun 21 09:25:34 PDT 2003
+//    If we have poly data input, then we should have poly data output.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -166,8 +170,36 @@ avtThresholdFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
         out_ds = NULL;
     }
 
+    //
+    // If we had poly data input, we want poly data output.  The VTK filter
+    // only returns unstructured grids, so convert that now.
+    //
+    bool shouldDelete = false;
+    if (in_ds->GetDataObjectType() == VTK_POLY_DATA && out_ds != NULL)
+    {
+        vtkUnstructuredGrid *ugrid = (vtkUnstructuredGrid *) out_ds;
+        vtkPolyData *out_pd = vtkPolyData::New();
+        out_pd->SetPoints(ugrid->GetPoints());
+        out_pd->GetPointData()->ShallowCopy(ugrid->GetPointData());
+        out_pd->GetCellData()->ShallowCopy(ugrid->GetCellData());
+        int ncells = ugrid->GetNumberOfCells();
+        out_pd->Allocate(ncells);
+        for (int i = 0 ; i < ncells ; i++)
+        {
+            int celltype = ugrid->GetCellType(i);
+            vtkIdType *pts;
+            int npts;
+            ugrid->GetCellPoints(i, npts, pts);
+            out_pd->InsertNextCell(celltype, npts, pts);
+        }
+        out_ds = out_pd;
+        shouldDelete = true;
+    }
+
     ManageMemory(out_ds);
     threshold->Delete();
+    if (shouldDelete)
+        out_ds->Delete();
 
     return out_ds;
 }
