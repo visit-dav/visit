@@ -77,6 +77,9 @@ typedef ref_ptr<avtDataSpecification> avtDataSpecification_p;
 //    Added options for forced material interface reconstruction for mixed
 //    variables, for material interface smoothing, and for clean zones only.
 //
+//    Jeremy Meredith, Thu Jun 12 08:47:03 PDT 2003
+//    Added option for boundary surfaces.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataSpecification
@@ -115,6 +118,13 @@ class PIPELINE_API avtDataSpecification
                                      { needInternalSurfaces = true; };
     void                         TurnInternalSurfacesOff(void) 
                                      { needInternalSurfaces = false; };
+
+    bool                         NeedBoundarySurfaces(void) 
+                                     { return needBoundarySurfaces; };
+    void                         TurnBoundarySurfacesOn(void) 
+                                     { needBoundarySurfaces = true; };
+    void                         TurnBoundarySurfacesOff(void) 
+                                     { needBoundarySurfaces = false; };
 
     bool                         NeedStructuredIndices(void)
                                      { return needStructuredIndices; };
@@ -172,6 +182,7 @@ class PIPELINE_API avtDataSpecification
     bool                         mayRequireZones;
     bool                         useGhostZones;
     bool                         needInternalSurfaces;
+    bool                         needBoundarySurfaces;
     bool                         needValidFaceConnectivity;
     bool                         needStructuredIndices;
     bool                         needMixedVariableReconstruction;

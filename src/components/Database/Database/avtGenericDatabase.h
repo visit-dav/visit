@@ -132,6 +132,9 @@ class     PickVarInfo;
 //    Brad Whitlock, Wed May 14 09:16:44 PDT 2003
 //    I added an optional int argument to SetDatabaseMetaData.
 //
+//    Jeremy Meredith, Thu Jun 12 09:05:38 PDT 2003
+//    Added another flag to MaterialSelect.
+//
 // ****************************************************************************
 
 class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
@@ -196,7 +199,7 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
                                               int, const char *, int,
                                               std::vector<std::string> &,
                                               std::vector<std::string> &,
-                                              bool, bool, bool, bool,
+                                              bool, bool, bool, bool, bool,
                                               bool&, bool&, bool);
     void_ref_ptr               GetMIR(int, const char *, int, vtkDataSet*,
                                       avtMaterial *, int, bool, bool, bool,

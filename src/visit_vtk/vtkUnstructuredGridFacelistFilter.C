@@ -1698,6 +1698,10 @@ vtkUnstructuredGridFacelistFilter::PrintSelf(ostream& os, vtkIndent indent)
 //  Programmer: Hank Childs
 //  Creation:   November 4, 2002
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Jun 12 09:10:14 PDT 2003
+//    Changed the estimate of how big a connectivity array to allocate.
+//
 // ****************************************************************************
 
 void
@@ -1737,7 +1741,7 @@ vtkUnstructuredGridFacelistFilter::Execute()
     //
     // Now create our output cells.
     //
-    output->Allocate(numOutCells, 4*numOutCells);
+    output->Allocate(numOutCells, numOutCells*(4+1));
     outputCD->CopyAllocate(cd, numOutCells);
     list.CreateOutputCells(output, cd, outputCD);
     if (numPolygonalCells > 0)

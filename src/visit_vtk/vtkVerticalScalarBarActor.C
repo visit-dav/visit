@@ -1192,6 +1192,8 @@ void vtkVerticalScalarBarActor::SetLabelColorMap(const LevelColorMap &cmap)
 //  Creation:    March 19, 2003
 //
 //  Modifications:
+//    Kathleen Bonnell, Thu Jun 12 11:05:18 PDT 2003
+//    Removed 'f' from pow(10.f, ...).
 //
 // ****************************************************************************
 
@@ -1211,8 +1213,8 @@ vtkVerticalScalarBarActor::AdjustRangeFormat(double min, double max)
     //
     static double  eformat_cut_min = -1.5;
     static double  eformat_cut_max =  3.0;
-    static double  cut_min = pow(10.f, eformat_cut_min);
-    static double  cut_max = pow(10.f, eformat_cut_max);
+    static double  cut_min = pow(10., eformat_cut_min);
+    static double  cut_max = pow(10., eformat_cut_max);
     double ipow10;
     if (range < cut_min || range > cut_max)
     {

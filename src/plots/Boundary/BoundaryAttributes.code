@@ -14,7 +14,6 @@ BoundaryAttributes::ChangesRequireRecalculation(const BoundaryAttributes &obj)
             (boundaryType != obj.boundaryType) || 
             (boundaryNames != obj.boundaryNames) ||
             (wireframe != obj.wireframe) ||
-            (drawInternal != obj.drawInternal) ||
             (smoothingLevel != obj.smoothingLevel));
 }
 

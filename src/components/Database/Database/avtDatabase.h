@@ -86,6 +86,9 @@ class   PickVarInfo;
 //    Brad Whitlock, Wed May 14 09:08:32 PDT 2003
 //    I added an optional timeState argument to GetMetaData and GetSIL.
 //
+//    Jeremy Meredith, Wed Jun 11 16:39:27 PDT 2003
+//    Added an option argument to PopulateDataObjectInformation.
+//
 // ****************************************************************************
 
 class DATABASE_API avtDatabase
@@ -134,7 +137,8 @@ class DATABASE_API avtDatabase
     virtual void                PopulateIOInformation(avtIOInformation &);
 
     void                        PopulateDataObjectInformation(avtDataObject_p&,
-                                                              const char *);
+                                                  const char *,
+                                                  avtDataSpecification* =NULL);
     virtual bool                QueryScalars(const std::string &, const int, 
                                              const int, const int,
                                              const std::vector<int> &,

@@ -10,11 +10,10 @@
 #include <SliceAttributes.h>
 
 class vtkDataSet;
-class vtkPlane;
 class vtkRectilinearGrid;
 class vtkTransformPolyDataFilter;
-class vtkVisItCutter;
 class vtkMatrix4x4;
+class vtkSlicer;
 
 class avtPointAttribute;
 
@@ -89,8 +88,7 @@ class avtSliceFilter : public avtPluginStreamer
     SliceAttributes               atts;
     float                         D;
 
-    vtkVisItCutter               *cutter;
-    vtkPlane                     *plane;
+    vtkSlicer                    *slicer;
     vtkTransformPolyDataFilter   *transform;
     int                          *celllist;
     vtkMatrix4x4                 *invTrans;

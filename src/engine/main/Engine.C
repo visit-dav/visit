@@ -60,6 +60,7 @@
 #include <VisItException.h>
 #include <TimingsManager.h>
 #include <ImproperUseException.h>
+#include <snprintf.h>
 
 #include <vtkDataSetWriter.h>
 
@@ -1770,6 +1771,9 @@ AlarmHandler(int signal)
 //    Detect if there was a failure in the pipeline and send a message to
 //    the viewer if so.
 //
+//    Kathleen Bonnell, Thu Jun 12 10:57:11 PDT 2003 
+//    Split timing code to time Serialization separately from write. 
+//    
 // ****************************************************************************
 void
 WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer)
@@ -1836,9 +1840,8 @@ WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer)
         avtDataValidity &v = ui_dob->GetInfo().GetValidity();
         if (!v.HasErrorOccurred())
         {
+            int serializeData = visitTimer->StartTimer();
             networkwriter->SetInput(ui_dob);
-    
-            int writeData = visitTimer->StartTimer();
     
             avtDataObjectString do_str;
             networkwriter->Write(do_str);
@@ -1848,11 +1851,14 @@ WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer)
                             "Synchronizing",
                             rpc->GetMaxStageNum());
     
+            visitTimer->StopTimer(serializeData, "Serializing data for writer");
+
             int totalSize = do_str.GetTotalLength();
             int nStrings = do_str.GetNStrings();
             debug5 << "sending " << totalSize << " bytes in "
                    << nStrings << " DirectWrites to viewer" << endl;
             rpc->SendReply(totalSize);
+            int writeData = visitTimer->StartTimer();
             if (PAR_UIProcess())
             {
                 for (int i = 0 ; i < nStrings ; i++)
@@ -1864,7 +1870,9 @@ WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer)
                                                long(size));
                 }
             }
-            visitTimer->StopTimer(writeData, "Writing data to socket");
+            char info[124];
+            SNPRINTF(info, 124, "Writing %d bytes to socket", totalSize);     
+            visitTimer->StopTimer(writeData, info);
         }
         else
         {

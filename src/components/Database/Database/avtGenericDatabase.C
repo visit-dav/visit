@@ -20,6 +20,7 @@
 #include <vtkStructuredGrid.h>
 #include <vtkUnsignedIntArray.h>
 #include <vtkUnstructuredGrid.h>
+#include <vtkUnstructuredGridBoundaryFilter.h>
 #include <vtkVisItUtility.h>
 
 #include <avtDatabaseMetaData.h>
@@ -207,6 +208,9 @@ avtGenericDatabase::SetDatabaseMetaData(avtDatabaseMetaData *md, int timeState)
 //    Kathleen Bonnell, Wed Mar 26 13:03:54 PST 2003
 //    Tell the MetaData when the originalCells array has been added.
 // 
+//    Jeremy Meredith, Thu Jun 12 09:06:49 PDT 2003
+//    Added the data spec to the input of PopulateDataObjectInformation.
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -320,7 +324,7 @@ avtGenericDatabase::GetOutput(avtDataSpecification_p spec,
     // for example), so call this again.
     //
     avtDataObject_p dob = src->GetOutput();
-    PopulateDataObjectInformation(dob, spec->GetVariable());
+    PopulateDataObjectInformation(dob, spec->GetVariable(), *spec);
 
     return rv;
 }
@@ -1578,13 +1582,18 @@ avtGenericDatabase::AddOriginalCellsArray(vtkDataSet *ds, const int domain)
 //    Jeremy Meredith, Thu Oct 24 15:37:05 PDT 2002
 //    Added smoothing option and clean zones only option.
 //
+//    Jeremy Meredith, Thu Jun 12 09:07:28 PDT 2003
+//    Added needBoundarySurfaces option.
+//
 // ****************************************************************************
 
 avtDataTree_p
 avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
                         vector<avtMixedVariable *> mvl,int dom,const char *var,
                         int ts, vector<string> &mnames, vector<string> &labels,
-                        bool needInternalSurfaces, bool needValidConnectivity,
+                        bool needInternalSurfaces,
+                        bool needBoundarySurfaces,
+                        bool needValidConnectivity,
                         bool needSmoothMaterialInterfaces,
                         bool needCleanZonesOnly,
                         bool &subdivisionOccurred, bool &notAllCellsSubdivided,
@@ -1648,6 +1657,38 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
         {
             out_ds[d]->Delete();
             out_ds[d] = NULL;
+        }
+
+        if (out_ds[d] && needBoundarySurfaces)
+        {
+            //
+            // We need to extract the internal boundaries
+            //
+            if (out_ds[d]->GetDataObjectType() != VTK_UNSTRUCTURED_GRID)
+            {
+                EXCEPTION1(ImproperUseException, "MaterialSelect did not "
+                           "get a VTK_UNSTRUCTURED_GRID\n")
+            }
+
+            vtkUnstructuredGridBoundaryFilter *bf =
+                vtkUnstructuredGridBoundaryFilter::New();
+
+            vtkDataSet *in_ds = out_ds[d];
+
+            bf->SetInput((vtkUnstructuredGrid*)in_ds);
+            out_ds[d] = bf->GetOutput();
+            bf->Update();
+
+            out_ds[d]->Register(NULL);
+            out_ds[d]->SetSource(NULL);
+            bf->Delete();
+
+            if (out_ds != NULL && out_ds[d]->GetNumberOfCells() == 0)
+            {
+                out_ds[d]->Delete();
+                out_ds[d] = NULL;
+            }
+
         }
     }
 
@@ -3011,6 +3052,9 @@ avtGenericDatabase::CommunicateGhosts(avtDatasetCollection &ds,
 //    Jeremy Meredith, Wed Mar 19 16:50:58 PST 2003
 //    Added support for variables defined on only a subset of the domains.
 //
+//    Jeremy Meredith, Thu Jun 12 09:09:30 PDT 2003
+//    Added a flag for internal boundary surfaces.
+//
 // ****************************************************************************
 
 void
@@ -3077,6 +3121,7 @@ avtGenericDatabase::MaterialSelect(avtDatasetCollection &ds,
                                          mvl, domains[i], var, ts,
                                          ds.matnames[i], ds.labels[i],
                                          spec->NeedInternalSurfaces(),
+                                         spec->NeedBoundarySurfaces(),
                                          spec->NeedValidFaceConnectivity(),
                                          spec->NeedSmoothMaterialInterfaces(),
                                          spec->NeedCleanZonesOnly(),
