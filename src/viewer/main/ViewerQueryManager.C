@@ -1733,7 +1733,8 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
                 plot->GetActor()->MakePickable();
                 win->GlyphPick(rp1, rp2, d, e, forCell);
                 plot->GetActor()->MakeUnPickable();
-                d += plot->GetBlockOrigin();
+                if (d != -1)
+                    d += plot->GetBlockOrigin();
                 // 
                 // Due to the nature of the glyphs, the pick type MUST match
                 // the variable centering.

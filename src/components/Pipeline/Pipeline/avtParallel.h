@@ -29,6 +29,7 @@ PIPELINE_API bool    ThisProcessorHasMinimumValue(double);
 PIPELINE_API bool    ThisProcessorHasMaximumValue(double);
 PIPELINE_API void    UnifyMinMax(double *, int, int=0);
 PIPELINE_API int     UnifyMaximumValue(int);
+PIPELINE_API void    UnifyMaximumValue(std::vector<int>&, std::vector<int>&);
 
 PIPELINE_API void    BroadcastInt(int &i);
 PIPELINE_API void    BroadcastIntVector(std::vector<int>&, int myrank);

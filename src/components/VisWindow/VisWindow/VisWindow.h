@@ -294,6 +294,9 @@ class VisitInteractor;
 //    Kathleen Bonnell, Mon Oct 11 16:08:18 PDT 2004 
 //    Added GlyphPick method.
 //
+//    Kathleen Bonnell, Tue Nov  9 10:44:44 PST 2004 
+//    Added another GlyphPick method.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindow
@@ -497,6 +500,8 @@ public:
 
     void                 GlyphPick(const float*, const float*, int&, int&, 
                                    bool&, const bool = false);
+    void                 GlyphPick(const float*, const float*, int&, int&, 
+                                   bool&, double &, const bool = false);
 
 
 protected:

@@ -5474,10 +5474,17 @@ VisWindow::ResumeTranslucentGeometry()
 //   Moved support for full-frame mode to ViewerQueryManager.
 //
 // ****************************************************************************
+void
+VisWindow::GlyphPick(const float *rp1, const float *rp2, int &dom, int &elNum, 
+                     bool &forCell, const bool doRender)
+{
+    double dummy  = +FLT_MAX;
+    GlyphPick(rp1, rp2, dom, elNum, forCell, dummy, doRender);
+}
 
 void
-VisWindow::GlyphPick(const float *rp1, const float *rp2, int &dom, 
-                     int &elNum, bool &forCell, const bool doRender)
+VisWindow::GlyphPick(const float *rp1, const float *rp2, int &dom, int &elNum, 
+                     bool &forCell, double & d, const bool doRender)
 {
     //
     // First things first, we must make sure that the datasets have been
@@ -5554,7 +5561,8 @@ VisWindow::GlyphPick(const float *rp1, const float *rp2, int &dom,
             }
         }
     }
- 
+
+    d = minDist; 
     if ( cell < 0 )
     {
        debug5 << "GlyphPick:  no valid cell was intersected!" << endl; 

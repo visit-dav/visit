@@ -28,6 +28,9 @@
 //    Added support for data selections. Eliminated xdim/ydim data members
 //    since they are known from vtkImageData object
 //
+//    Mark C. Miller, Tue Nov  9 13:41:33 PST 2004
+//    Removed unnused pointvarnames, pointvars. Added fext and CanCacheVariable
+//
 // ****************************************************************************
 
 class avtImageFileFormat : public avtSTSDFileFormat
@@ -62,6 +65,8 @@ class avtImageFileFormat : public avtSTSDFileFormat
     virtual vtkDataArray  *GetVar(const char *);
     virtual vtkDataArray  *GetVectorVar(const char *);
 
+    virtual bool           CanCacheVariable(const char *);
+
     virtual void           RegisterDataSelections(
                                const std::vector<avtDataSelection_p> &selList,
                                std::vector<bool> *selectionsApplied);
@@ -69,14 +74,13 @@ class avtImageFileFormat : public avtSTSDFileFormat
   protected:
     // DATA MEMBERS
     std::string                          fname;
+    std::string                          fext;
     std::vector<std::vector<float> >     cellvars; 
     std::vector<std::string>             cellvarnames;
-    std::vector<std::vector<float> >     pointvars;
-    std::vector<std::string>             pointvarnames;
     vtkImageData                         *image;
     std::vector<avtDataSelection_p>      selList;
     std::vector<bool>                    *selsApplied;
-    bool                                 readInImage;
+    bool                                 haveReadWholeImage;
     void                                 ReadInImage(void);
     bool                                 ProcessDataSelections(
                                              int *xmin, int *xmax,

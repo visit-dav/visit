@@ -46,18 +46,35 @@ using     std::string;
 //  Modifications: 
 //
 //     Chris Wojtan, Mon Jun 21 15:36 PDT 2004
-//     Moved most of the Image loading code into ReadInImage() instead of the constructor
+//     Moved most of the Image loading code into ReadInImage() instead of the
+//     constructor
+//
+//     Mark C. Miller, Tue Nov  9 13:41:33 PST 2004
+//     Moved code to load variable names from PopulateDatabaseMetaData to here
+//     Moved code to determine file extension from ReadInImage to here
 //
 // ****************************************************************************
 
 avtImageFileFormat::avtImageFileFormat(const char *filename)
     : avtSTSDFileFormat(filename)
 {
-
-    // load in the image info
     fname = filename;
     image = NULL;
-    readInImage = false;
+    haveReadWholeImage = false;
+
+    // load variable names
+    cellvarnames.push_back("red");
+    cellvarnames.push_back("green");
+    cellvarnames.push_back("blue");
+    cellvarnames.push_back("alpha");
+    cellvarnames.push_back("intensity");
+
+    // find the file extension
+    int i, start;
+    for(i=0; i<fname.size(); i++)
+        if(fname[i] == '.')
+            start = i;
+    fext = string(fname, start+1, fname.size()-1);
 }
 
 
@@ -67,20 +84,33 @@ avtImageFileFormat::avtImageFileFormat(const char *filename)
 //  Programmer: Chris Wojtan
 //  Creation:   June 6, 2004
 //
+//  Modifications:
+//
+//    Mark C. Miller, Tue Nov  9 13:41:33 PST 2004
+//    Replaced duplicate code to free things up with a call to
+//    FreeUpResources
+//
 // **************************************************************************
 
 avtImageFileFormat::~avtImageFileFormat()
 {
-    if(image != NULL)
-    {
-        image->Delete();
-        image = NULL;
-    }
-    
-    cellvars.clear();
+    FreeUpResources();
     cellvarnames.clear();
-    pointvars.clear();
-    pointvarnames.clear();
+}
+
+// ***************************************************************************
+//  Method: CanCacheVariable 
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   November 9, 2004 
+//
+// **************************************************************************
+
+bool
+avtImageFileFormat::CanCacheVariable(const char*)
+{
+    // if we've read the whole image, we can cache its variables
+    return haveReadWholeImage;
 }
 
 // ***************************************************************************
@@ -110,6 +140,11 @@ avtImageFileFormat::RegisterDataSelections(
 //  Programmer: Mark C. Miller 
 //  Creation:   November 3, 2004 
 //
+//  Modifications:
+//
+//    Mark C. Miller, Tue Nov  9 13:41:33 PST 2004
+//    Made it not process any selections for certain image file formats
+//
 // **************************************************************************
 
 bool
@@ -117,6 +152,17 @@ avtImageFileFormat::ProcessDataSelections(int *xmin, int *xmax,
                                           int *ymin, int *ymax)
 {
     bool retval = false;
+
+    // some image file formats don't support selection on read.
+    if ((fext == "png")||(fext == "PNG")||(fext == "tif")||
+        (fext == "tiff")||(fext == "TIF")||(fext == "TIFF")||
+        (fext == "jpg")||(fext == "jpeg")||(fext == "JPG")||
+        (fext == "JPEG"))
+    {
+        for (int i = 0; i < selList.size(); i++)
+            (*selsApplied)[i] = false;
+        return retval;
+    }
 
     avtLogicalSelection composedSel;
     for (int i = 0; i < selList.size(); i++)
@@ -243,6 +289,15 @@ avtImageFileFormat::ProcessDataSelections(int *xmin, int *xmax,
 //    This is still useful to VisIt as it can reduce the amount of data
 //    the engine keeps around
 //
+//    Mark C. Miller, Tue Nov  9 13:41:33 PST 2004
+//    Backed off on the above change, a bit. Now, if a format doesn't support
+//    selection on read, then it will read and keep around the whole image
+//    If selection on read is supported but the selection is such that it winds
+//    up reading the whole image, then it will read and keep the whole image.
+//    Otherwise, it will read and keep only the portion requested.
+//    Also, removed all code to allocate large, float vectors and populate them
+//    to the GetVar call which is when they are actually needed.
+//
 // *****************************************************************************
 
 void avtImageFileFormat::ReadInImage(void)
@@ -250,24 +305,21 @@ void avtImageFileFormat::ReadInImage(void)
 #ifdef MDSERVER
     return;
 #else
-    if(image != NULL)
-    {
-        image->Delete();
-    }
 
-    // find the file extension
-    int i, start;
-    for(i=0; i<fname.size(); i++)
-        if(fname[i] == '.')
-            start = i;
-    string ext(fname, start+1, fname.size()-1);
+    // if we've already read the entire image, then do nothing
+    if (haveReadWholeImage)
+        return;
 
     // process any data selections we can handle, here
     int xmin, xmax, ymin, ymax;
     bool haveSelections = ProcessDataSelections(&xmin, &xmax, &ymin, &ymax);
 
+    haveReadWholeImage = true;
+    if (haveSelections)
+        haveReadWholeImage = false;
+
     // select the appropriate reader for the file extension
-    if((ext == "pnm")||(ext == "PNM")||(ext == "ppm")||(ext == "PPM"))
+    if((fext == "pnm")||(fext == "PNM")||(fext == "ppm")||(fext == "PPM"))
     {
         vtkPNMReader *reader = vtkPNMReader::New();
         if (haveSelections)
@@ -279,70 +331,37 @@ void avtImageFileFormat::ReadInImage(void)
         image->SetSource(NULL);
         reader->Delete();
     }
-    else if((ext == "png")||(ext == "PNG"))
+    else if((fext == "png")||(fext == "PNG"))
     {
         vtkPNGReader *reader = vtkPNGReader::New();
-        vtkExtractVOI *extvoi = vtkExtractVOI::New();
         reader->SetFileName(filename);
-        if (haveSelections)
-        {
-            extvoi->SetVOI(xmin,xmax,ymin,ymax,0,0);
-            extvoi->SetInput(reader->GetOutput());
-            image = extvoi->GetOutput();
-        }
-        else
-        {
-           image = reader->GetOutput();
-        }
+        image = reader->GetOutput();
         image->Register(NULL);
         image->Update();
         image->SetSource(NULL);
         reader->Delete();
-        extvoi->Delete();
     }
-    else if((ext == "jpg")||(ext == "jpeg")||(ext == "JPG")||(ext == "JPEG"))
+    else if((fext == "jpg")||(fext == "jpeg")||(fext == "JPG")||(fext == "JPEG"))
     {
         vtkJPEGReader *reader = vtkJPEGReader::New();
-        vtkExtractVOI *extvoi = vtkExtractVOI::New();
         reader->SetFileName(filename);
-        if (haveSelections)
-        {
-            extvoi->SetVOI(xmin,xmax,ymin,ymax,0,0);
-            extvoi->SetInput(reader->GetOutput());
-            image = extvoi->GetOutput();
-        }
-        else
-        {
-           image = reader->GetOutput();
-        }
+        image = reader->GetOutput();
         image->Register(NULL);
         image->Update();
         image->SetSource(NULL);
         reader->Delete();
-        extvoi->Delete();
     }
-    else if((ext == "tif")||(ext == "tiff")||(ext == "TIF")||(ext == "TIFF"))
+    else if((fext == "tif")||(fext == "tiff")||(fext == "TIF")||(fext == "TIFF"))
     {
         vtkTIFFReader *reader = vtkTIFFReader::New();
-        vtkExtractVOI *extvoi = vtkExtractVOI::New();
         reader->SetFileName(filename);
-        if (haveSelections)
-        {
-            extvoi->SetVOI(xmin,xmax,ymin,ymax,0,0);
-            extvoi->SetInput(reader->GetOutput());
-            image = extvoi->GetOutput();
-        }
-        else
-        {
-           image = reader->GetOutput();
-        }
+        image = reader->GetOutput();
         image->Register(NULL);
         image->Update();
         image->SetSource(NULL);
         reader->Delete();
-        extvoi->Delete();
     }
-    else if((ext == "bmp")||(ext == "BMP"))
+    else if((fext == "bmp")||(fext == "BMP"))
     {
         vtkBMPReader *reader = vtkBMPReader::New();
         if (haveSelections)
@@ -357,79 +376,15 @@ void avtImageFileFormat::ReadInImage(void)
     else
         EXCEPTION1(InvalidFilesException, fname.c_str());
 
-    int dims[3];
-    image->GetDimensions(dims);
-    int xdim = dims[0];
-    int ydim = dims[1];
-    
-    // load in color info
-    std::vector<float> red, green, blue, intensity, alpha;
-    red.resize(xdim*ydim);
-    green.resize(xdim*ydim);
-    blue.resize(xdim*ydim);
-    alpha.resize(xdim*ydim);
-
-    // if the image has an alpha channel set, read it in
-    if (image->GetNumberOfScalarComponents() == 4)
+    // see if the selection is such that we read the whole image anyways
+    if (haveSelections && (xmin == 0) && (ymin == 0))
     {
-        for(int j=0; j < ydim; j++)
-        {
-            for(i=0; i < xdim; i++)
-            {
-                red[j*xdim + i] = image->GetScalarComponentAsFloat(i+xmin,j+ymin,0,0);
-                green[j*xdim + i] = image->GetScalarComponentAsFloat(i+xmin,j+ymin,0,1);
-                blue[j*xdim + i] = image->GetScalarComponentAsFloat(i+xmin,j+ymin,0,2);
-                alpha[j*xdim + i] = image->GetScalarComponentAsFloat(i+xmin,j+ymin,0,3);
-            }
-        }
-    }
-    // otherwise, set alpha in each pixel to be maximum
-    else if (image->GetNumberOfScalarComponents() == 3)
-    {
-        for(int j=0; j < ydim; j++)
-        {
-            for(i=0; i < xdim; i++)
-            {
-                red[j*xdim + i] = image->GetScalarComponentAsFloat(i+xmin,j+ymin,0,0);
-                green[j*xdim + i] = image->GetScalarComponentAsFloat(i+xmin,j+ymin,0,1);
-                blue[j*xdim + i] = image->GetScalarComponentAsFloat(i+xmin,j+ymin,0,2);
-            }
-        }
-        for(i=0; i<xdim*ydim; i++)
-            alpha[i] = 255.0;
-    }
-    else if (image->GetNumberOfScalarComponents() == 1)
-    {
-        for(int j=0; j < ydim; j++)
-        {
-            for(i=0; i < xdim; i++)
-            {
-                red[j*xdim + i] = green[j*xdim + i] = blue[j*xdim + i] =
-                    image->GetScalarComponentAsFloat(i+xmin,j+ymin,0,0);
-            }
-        }
-        for(i=0; i<xdim*ydim; i++)
-            alpha[i] = 255.0;
-    }
-    else
-    {
-        EXCEPTION1(VisItException, "The image had an unexpected number of "
-                   "components.");
+        int extents[6];
+        image->GetExtent(extents);
+        if ((xmax > extents[1]) && (ymax > extents[3]))
+            haveReadWholeImage = true;
     }
 
-    // calculate intensity
-    intensity.resize(xdim*ydim);
-    for(i=0; i < xdim*ydim; i++)
-        intensity[i] = (red[i] + green[i] + blue[i]) / 3.;
-
-    // add these variables to the list
-    cellvars.push_back(red);
-    cellvars.push_back(green);
-    cellvars.push_back(blue);
-    cellvars.push_back(alpha);
-    cellvars.push_back(intensity);
-
-    readInImage = true;
 #endif
 }
 
@@ -446,23 +401,24 @@ void avtImageFileFormat::ReadInImage(void)
 //  Programmer: Chris Wojtan
 //  Creation:   Thu Jun 3 09:50:31 PDT 2004
 //
+//  Modifications:
+//    Mark C. Miller, Tue Nov  9 13:41:33 PST 2004
+//    Removed unnused pointvarnames and pointvars
+//
 // ****************************************************************************
 
 void
 avtImageFileFormat::FreeUpResources(void)
 {
     cellvars.clear();
-    cellvarnames.clear();
-    pointvars.clear();
-    pointvarnames.clear();
 
-    if( image != NULL)
+    if (image != NULL)
     {
         image->Delete();
         image = NULL;
     }
 
-    readInImage = false;
+    haveReadWholeImage = false;
 }
 
 
@@ -483,6 +439,9 @@ avtImageFileFormat::FreeUpResources(void)
 //     Moved variable name loading from constructor to this function,
 //     Changed the 3D vector to 4D vector
 //
+//     Mark C. Miller, Tue Nov  9 13:41:33 PST 2004
+//     Moved code to populate variable names to constructor
+//
 // ****************************************************************************
 
 void
@@ -492,13 +451,6 @@ avtImageFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     //    EXCEPTION1(InvalidFilesException, fname.c_str());
 
     AddMeshToMetaData(md, "ImageMesh", AVT_RECTILINEAR_MESH, NULL, 1, 0, 2, 2);
-
-    // load variable names
-    cellvarnames.push_back("red");
-    cellvarnames.push_back("green");
-    cellvarnames.push_back("blue");
-    cellvarnames.push_back("alpha");
-    cellvarnames.push_back("intensity");
 
     // we do not create a list of vector variables,
     // because there is only one vector variable, "color", 
@@ -538,8 +490,7 @@ avtImageFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 vtkDataSet *
 avtImageFileFormat::GetMesh(const char *meshname)
 {
-    if(!readInImage)
-        ReadInImage();
+    ReadInImage();
     
     int dims[3];
     image->GetDimensions(dims);
@@ -598,48 +549,80 @@ avtImageFileFormat::GetMesh(const char *meshname)
 //  Modifications:
 //    Mark C. Miller, Thu Nov  4 18:21:25 PST 2004
 //    I made it get xdim/ydim from vtkImageData object
+//
+//    Mark C. Miller, Tue Nov  9 13:41:33 PST 2004
+//    Added code to return float data directly from vtkImageData object
+//    instead of through intermediary float vectors
 // ****************************************************************************
 
 vtkDataArray *
 avtImageFileFormat::GetVar(const char *varname)
 {
-    if(!readInImage)
-        ReadInImage();
+    ReadInImage();
 
     int dims[3];
     image->GetDimensions(dims);
     int xdim = dims[0];
     int ydim = dims[1];
 
-    // Set up rectilinear grid representing the image...
-    int i;
-    for(i=0; i<pointvarnames.size(); i++)
-    {
-        if (pointvarnames[i] == string(varname))
-        {
+    int extents[6];
+    image->GetExtent(extents);
+    int xmin = extents[0];
+    int xmax = extents[1];
+    int ymin = extents[2];
+    int ymax = extents[3];
 
-            vtkFloatArray *scalars = vtkFloatArray::New();
-            scalars->SetNumberOfTuples(xdim*ydim);
-            float *ptr = (float *)scalars->GetVoidPointer(0);
-            memcpy(ptr, &pointvars[i][0], sizeof(float) * (xdim*ydim));
-            return scalars;
+    int channel = -2;
+    if (string(varname) == "red")
+        channel = 0;
+    else if (string(varname) == "blue")
+        channel = 1;
+    else if (string(varname) == "green")
+        channel = 2;
+    else if (string(varname) == "alpha")
+        channel = 3;
+    else if (string(varname) == "intensity")
+        channel = -1;
+
+    if (channel == -2)
+    {
+        EXCEPTION1(InvalidVariableException, varname);
+    }
+
+    if (channel > image->GetNumberOfScalarComponents())
+    {
+        EXCEPTION1(InvalidVariableException, varname);
+    }
+
+    vtkFloatArray *scalars = vtkFloatArray::New();
+    scalars->SetNumberOfTuples((xdim)*(ydim));
+    float *ptr = (float *)scalars->GetVoidPointer(0);
+
+    int i, j;
+    if (channel >= 0)
+    {
+        for (j = 0; j < ydim; j++)
+        {
+            for (i = 0; i < xdim; i++)
+                ptr[j*xdim + i] = image->GetScalarComponentAsFloat(i+xmin,j+ymin,0,channel);
+        }
+    }
+    else
+    {
+        for (j = 0; j < ydim; j++)
+        {
+            for (i = 0; i < xdim; i++)
+            {
+                float r = image->GetScalarComponentAsFloat(i+xmin,j+ymin,0,0);
+                float g = image->GetScalarComponentAsFloat(i+xmin,j+ymin,0,1);
+                float b = image->GetScalarComponentAsFloat(i+xmin,j+ymin,0,2);
+                ptr[j*xdim + i] = (r + g + b) / 3.0;
+            }
         }
     }
 
-    for(i=0; i<cellvarnames.size(); i++)
-    {
-        if (cellvarnames[i] == string(varname))
-        {
+    return scalars;
 
-            vtkFloatArray *scalars = vtkFloatArray::New();
-            scalars->SetNumberOfTuples((xdim)*(ydim));
-            float *ptr = (float *)scalars->GetVoidPointer(0);
-            memcpy(ptr, &cellvars[i][0], sizeof(float) * (xdim*ydim));
-            return scalars;
-        }
-    }
-
-    EXCEPTION1(InvalidVariableException, varname);
 }
 
 
@@ -664,19 +647,34 @@ avtImageFileFormat::GetVar(const char *varname)
 //      Mark C. Miller, Thu Nov  4 18:21:25 PST 2004
 //      I made it get xdim/ydim from vtkImageData object
 //
+//      Mark C. Miller, Tue Nov  9 13:41:33 PST 2004
+//      Added code to return float data directly from vtkImageData object
+//      instead of through intermediary float vectors
 // ****************************************************************************
 
 
 vtkDataArray *
 avtImageFileFormat::GetVectorVar(const char *varname)
 {
-    if(!readInImage)
-        ReadInImage();
+    ReadInImage();
+
+    int imgcomps = image->GetNumberOfScalarComponents();
+    if (imgcomps < 3)
+    {
+        EXCEPTION1(InvalidVariableException, varname);
+    }
 
     int dims[3];
     image->GetDimensions(dims);
     int xdim = dims[0];
     int ydim = dims[1];
+
+    int extents[6];
+    image->GetExtent(extents);
+    int xmin = extents[0];
+    int xmax = extents[1];
+    int ymin = extents[2];
+    int ymax = extents[3];
 
     int ncomps = 4;
     int ntuples = xdim*ydim;   // this is the number of entries in the variable.
@@ -690,10 +688,14 @@ avtImageFileFormat::GetVectorVar(const char *varname)
     for (int i = 0 ; i < ntuples ; i++)
     {
         int j;
-        for (j = 0 ; j < ncomps ; j++)
-            one_entry[j] = cellvars[j][i];
-        for (j = ncomps ; j < ucomps ; j++)
-            one_entry[j] = 0.;
+        for (j = 0 ; j < imgcomps; j++)
+        {
+            int ii = i % xdim;
+            int jj = i / xdim;
+            one_entry[j] = image->GetScalarComponentAsFloat(ii+xmin,jj+ymin,0,j);
+        }
+        for (j = imgcomps ; j < ucomps; j++)
+            one_entry[j] = (j == 3 ? 255.0 : 0.0);
         rv->SetTuple(i, one_entry); 
     }
     

@@ -2309,6 +2309,9 @@ NetworkManager::StopPickMode(void)
 //    Allow the 'PickQuery' portion to be skipped completely if no
 //    intersection was found. 
 //
+//    Kathleen Bonnell, Tue Nov  9 10:42:51 PST 2004 
+//    Rework parallel code for GlyphPicking. 
+//
 // ****************************************************************************
 
 void
@@ -2361,22 +2364,33 @@ NetworkManager::Pick(const int id, PickAttributes *pa)
             pids.push_back(id);
             Render(pids, false, 0);
         }
+        int d = -1, e = -1;
+        double t = +FLT_MAX; 
+        bool fc = false;
+        networkCache[id]->GetActor(NULL)->MakePickable();
+        //
+        // Retrieve the necessary information from the renderer on the 
+        // VisWindow. 
+        //
+        viswin->GlyphPick(pa->GetRayPoint1(), pa->GetRayPoint2(), d, e, fc, t, false);
+        //
+        // Make sure all processors are on the same page. 
+        //
         intVector domElFC;
-        if (PAR_UIProcess())
+        intVector odomElFC;
+        if (ThisProcessorHasMinimumValue(t))
         {
-            networkCache[id]->GetActor(NULL)->MakePickable();
-            int d = -1, e=-1;
-            bool fc = true;
-            //
-            // Retrieve the necessary information from the renderer on the 
-            // VisWindow. 
-            //
-            viswin->GlyphPick(pa->GetRayPoint1(), pa->GetRayPoint2(), d, e, fc, false);
-            domElFC.push_back(d + queryInputAtts.GetBlockOrigin());
-            domElFC.push_back(e);
-            domElFC.push_back((int)fc);
+            odomElFC.push_back(d + queryInputAtts.GetBlockOrigin());
+            odomElFC.push_back(e);
+            odomElFC.push_back(int(fc));
         }
-        BroadcastIntVector(domElFC, PAR_Rank());
+        else 
+        {
+            odomElFC.push_back(-1);
+            odomElFC.push_back(-1);
+            odomElFC.push_back(0);
+        }
+        UnifyMaximumValue(odomElFC, domElFC);
         if (domElFC[0] != -1 && domElFC[1] != -1)
         {
             pa->SetDomain(domElFC[0]);
