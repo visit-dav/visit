@@ -279,6 +279,10 @@ avtSourceFromDatabase::FetchVariableAuxiliaryData(const char *type, void *args,
 //  Programmer: Hank Childs
 //  Creation:   March 1, 2001
 //
+//  Modifications:
+//    Kathleen Bonnell, Mon Jun 28 07:48:55 PDT 2004
+//    Use timestep from DataSpecification.
+//
 // ****************************************************************************
 
 void
@@ -289,7 +293,7 @@ avtSourceFromDatabase::FetchMeshAuxiliaryData(const char *type, void *args,
     // We only have hooks to the variable defined on the mesh.  We can get
     // the mesh name by accessing the database object.
     //
-    string mn = database->GetMetaData(timestep)->MeshForVar(variable);
+    string mn = database->GetMetaData(spec->GetTimestep())->MeshForVar(variable);
     avtDataSpecification_p newspec =new avtDataSpecification(spec, mn.c_str());
     database->GetAuxiliaryData(newspec, output, type, args);
 }
@@ -311,6 +315,10 @@ avtSourceFromDatabase::FetchMeshAuxiliaryData(const char *type, void *args,
 //  Programmer: Hank Childs
 //  Creation:   April 10, 2001
 //
+//  Modifications:
+//    Kathleen Bonnell, Mon Jun 28 07:48:55 PDT 2004
+//    Use timestep from DataSpecification.
+//
 // ****************************************************************************
 
 void 
@@ -321,8 +329,8 @@ avtSourceFromDatabase::FetchMaterialAuxiliaryData(const char *type, void *args,
     // We only have hooks to the variable defined on the material.  We can get
     // the material name by accessing the database object.
     //
-    string mn   = database->GetMetaData(timestep)->MeshForVar(variable);
-    string mat  = database->GetMetaData(timestep)->MaterialOnMesh(mn);
+    string mn   = database->GetMetaData(spec->GetTimestep())->MeshForVar(variable);
+    string mat  = database->GetMetaData(spec->GetTimestep())->MaterialOnMesh(mn);
     avtDataSpecification_p newspec =new avtDataSpecification(spec, mat.c_str());
     database->GetAuxiliaryData(newspec, output, type, args);
 }
@@ -344,6 +352,10 @@ avtSourceFromDatabase::FetchMaterialAuxiliaryData(const char *type, void *args,
 //  Programmer: Jeremy Meredith
 //  Creation:   June  8, 2004
 //
+//  Modifications:
+//    Kathleen Bonnell, Mon Jun 28 07:48:55 PDT 2004
+//    Use timestep from DataSpecification.
+//
 // ****************************************************************************
 
 void 
@@ -354,8 +366,8 @@ avtSourceFromDatabase::FetchSpeciesAuxiliaryData(const char *type, void *args,
     // We only have hooks to the variable defined on the species.  We can get
     // the species name by accessing the database object.
     //
-    string mn   = database->GetMetaData(timestep)->MeshForVar(variable);
-    string sp   = database->GetMetaData(timestep)->SpeciesOnMesh(mn);
+    string mn   = database->GetMetaData(spec->GetTimestep())->MeshForVar(variable);
+    string sp   = database->GetMetaData(spec->GetTimestep())->SpeciesOnMesh(mn);
     avtDataSpecification_p newspec =new avtDataSpecification(spec, sp.c_str());
     database->GetAuxiliaryData(newspec, output, type, args);
 }

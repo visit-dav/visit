@@ -29,11 +29,16 @@
 //  Programmer: Hank Childs
 //  Creation:   June 9, 2002
 //
+//  Modifications:
+//    Kathleen Bonnell, Mon Jun 28 07:48:55 PDT 2004
+//    Initialize currentTimeState.
+//
 // ****************************************************************************
 
 avtExpressionFilter::avtExpressionFilter()
 {
     outputVariableName = NULL;
+    currentTimeState = 0;
 }
 
 
@@ -516,3 +521,20 @@ avtExpressionFilter::Recenter(vtkDataSet *ds, vtkDataArray *arr,
 }
 
 
+// ****************************************************************************
+//  Method: avtExpressionFilter::ExamineSpecification
+//
+//  Purpose:
+//    Capture current timestep information for use by derived types.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   June 25, 2004 
+//
+// ****************************************************************************
+
+void
+avtExpressionFilter::ExamineSpecification(avtPipelineSpecification_p spec)
+{
+    avtDatasetToDatasetFilter::ExamineSpecification(spec);
+    currentTimeState = spec->GetDataSpecification()->GetTimestep();
+} 

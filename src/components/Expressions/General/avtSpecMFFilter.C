@@ -94,6 +94,8 @@ avtSpecMFFilter::PreExecute(void)
 //  Creation:     June  8, 2004
 //
 //  Modifications:
+//    Kathleen Bonnell, Mon Jun 28 07:48:55 PDT 2004
+//    Send currentTimeState to GetMaterial. 
 //
 // ****************************************************************************
 
@@ -110,8 +112,15 @@ avtSpecMFFilter::DeriveVariable(vtkDataSet *in_ds)
     // called.  We need that index to make sure we are getting the right
     // materials and species.
     //
-    avtMaterial *mat = GetMetaData()->GetMaterial(currentDomainsIndex);
-    avtSpecies  *spec= GetMetaData()->GetSpecies(currentDomainsIndex);
+    // The 'currentTimeState' is a data member of the base class that is
+    // set to be the current timestep during ExamineSpecification. 
+    // We need that timestep to make sure we are getting the right 
+    // materials and species.
+    //
+    avtMaterial *mat = GetMetaData()->GetMaterial(currentDomainsIndex,
+                                                  currentTimeState);
+    avtSpecies  *spec= GetMetaData()->GetSpecies(currentDomainsIndex,
+                                                  currentTimeState);
     if (mat == NULL || spec == NULL)
     {
         if (!mat && !spec)

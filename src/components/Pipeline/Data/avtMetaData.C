@@ -189,13 +189,23 @@ avtMetaData::GetExternalFacelist(int domain)
 //  Programmer: Hank Childs
 //  Creation:   August 12, 2003
 //
+//  Modifications:
+//    Kathleen Bonnell, Mon Jun 28 08:05:38 PDT 2004
+//    Added optional timestep argument.
+//
 // ****************************************************************************
 
 avtMaterial *
-avtMetaData::GetMaterial(int domain)
+avtMetaData::GetMaterial(int domain, int timestep)
 {
     VoidRefList list;
     avtPipelineSpecification_p spec = GetPipelineSpecification(domain);
+    //
+    // If a timestep has been specified, set it in DataSpecification.
+    //
+    if (timestep != -1)
+        spec->GetDataSpecification()->SetTimestep(timestep);
+
     source->GetMaterialAuxiliaryData(AUXILIARY_DATA_MATERIAL, NULL, spec,list);
     if (list.nList == 0)
     {
@@ -221,13 +231,22 @@ avtMetaData::GetMaterial(int domain)
 //  Programmer: Jeremy Meredith
 //  Creation:   June  8, 2004
 //
+//  Modifications:
+//    Kathleen Bonnell, Mon Jun 28 08:05:38 PDT 2004
+//    Added optional timestep argument.
+//
 // ****************************************************************************
 
 avtSpecies *
-avtMetaData::GetSpecies(int domain)
+avtMetaData::GetSpecies(int domain, int timestep)
 {
     VoidRefList list;
     avtPipelineSpecification_p spec = GetPipelineSpecification(domain);
+    //
+    // If a timestep has been specified, set it in DataSpecification.
+    //
+    if (timestep != -1)
+        spec->GetDataSpecification()->SetTimestep(timestep);
     source->GetSpeciesAuxiliaryData(AUXILIARY_DATA_SPECIES, NULL, spec,list);
     if (list.nList == 0)
     {

@@ -795,11 +795,22 @@ avtMapper::GetCurrentRange(float &rmin, float &rmax)
 //  Programmer:  Hank Childs
 //  Creation:    July 7, 2002
 //
+//  Modifications:
+//
+//      Chris Wojtan, Fri Jun 25 15:15 PDT 2004
+//      we are now keeping track of the dimensionality of transparent data
+//
 // ****************************************************************************
 
 int 
 avtMapper::SetTransparencyActor(avtTransparencyActor *act)
 {
+    // record whether this data is all 2D or all 3D
+    if(GetInput()->GetInfo().GetAttributes().GetSpatialDimension() == 2)
+        act->SetIs2Dimensional(true);
+    else
+        act->SetIs2Dimensional(false);
+
     if (transparencyActor == act)
     {
         //

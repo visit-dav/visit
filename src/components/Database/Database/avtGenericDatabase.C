@@ -3797,7 +3797,7 @@ avtGenericDatabase::CommunicateGhosts(avtDatasetCollection &ds,
         visitTimer->StopTimer(timerHandle, "Creating ghost zones");
     }
 
-    if (mmd->containsGlobalNodeIds);
+    if ((mmd != NULL) && mmd->containsGlobalNodeIds)
     {
         //
         // Make sure that we actually have the node ids.
@@ -4055,9 +4055,7 @@ avtGenericDatabase::CommunicateGhosts(avtDatasetCollection &ds,
         //
         // Tell everything downstream that we do have ghost zones.
         //
-        avtDatabaseMetaData *md = GetMetaData(ts);
-        string meshname = md->MeshForVar(spec->GetVariable());
-        GetMetaData(ts)->SetContainsGhostZones(meshname, AVT_CREATED_GHOSTS);
+        md->SetContainsGhostZones(meshname, AVT_CREATED_GHOSTS);
     }
 
     return created_new_zones;

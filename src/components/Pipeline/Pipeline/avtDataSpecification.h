@@ -98,6 +98,9 @@ typedef ref_ptr<avtDataSpecification> avtDataSpecification_p;
 //    Kathleen Bonnell, Tue Jun  1 15:08:30 PDT 2004 
 //    Added methods Set/GetMayRequireNodes.
 //
+//    Kathleen Bonnell, Mon Jun 28 08:05:38 PDT 2004
+//    Added SetTimestep method.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataSpecification
@@ -119,6 +122,7 @@ class PIPELINE_API avtDataSpecification
     bool                         operator==(const avtDataSpecification &);
 
     int                          GetTimestep(void)     { return timestep; };
+    void                         SetTimestep(int t)     { timestep = t; };
     const char                  *GetVariable(void)     { return variable; };
     avtSILSpecification         &GetSIL(void)          { return sil; };
     avtSILRestriction_p          GetRestriction(void);

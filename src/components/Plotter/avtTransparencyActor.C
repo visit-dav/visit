@@ -454,11 +454,18 @@ avtTransparencyActor::VisibilityOn(void)
 //    No longer disable perfect sorting.  Our clients will disable it
 //    when they determine it is okay.
 //
+//    Chris Wojtan, Fri Jun 25 16:13 PDT 2004
+//    Ignore sorting and other unnecessary computation if the data is 2-dimensional
+//
 // ****************************************************************************
 
 void
 avtTransparencyActor::PrepareForRender(vtkCamera *cam)
 {
+    // if this is a 2D plot, we don't need to sort anything
+    if(is2Dimensional)
+        return;
+
     //
     // Determine if our poly-data input is up-to-date.
     //
