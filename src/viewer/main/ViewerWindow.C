@@ -176,6 +176,9 @@ static void RotateAroundY(const avtView3D&, double, avtView3D&);
 //    Eric Brugger, Mon Mar 29 15:34:50 PST 2004
 //    I added maintainData.
 //
+//    Mark C. Miller, Tue Apr 27 14:41:35 PDT 2004
+//    Removed preparingToChangeScalableRenderingMode
+//
 // ****************************************************************************
 
 ViewerWindow::ViewerWindow(int windowIndex)
@@ -218,7 +221,6 @@ ViewerWindow::ViewerWindow(int windowIndex)
     toolsLocked = false;
     windowId = windowIndex;
     isVisible = false;
-    preparingToChangeScalableRenderingMode = false;
     isChangingScalableRenderingMode = false;
     targetScalableRenderingMode = false;
 
@@ -5770,6 +5772,10 @@ ViewerWindow::GetNotifyForEachRender() const
 //   viewer classes so the frame does not have to be passed around all over
 //   the place.
 //
+//   Mark C. Miller, Tue Apr 27 14:41:35 PDT 2004
+//   Removed checks for IsChangingScalableRenderingMode since this couldn't
+//   happen anyways. Removed preparingToChangeScalableRenderingMode
+//
 // ****************************************************************************
 
 void
@@ -5777,18 +5783,9 @@ ViewerWindow::ChangeScalableRenderingMode(bool newMode)
 {
     bool updatesEnabled = UpdatesEnabled();
 
-    // not that it should never happen but if we're in the midst of a mode
-    // change already, we shouldn't try to change the mode
-    if (IsChangingScalableRenderingMode(true) ||
-        IsChangingScalableRenderingMode(false))
-        return;
-
     // if we aren't actually changing the mode, do nothing
     if (GetScalableRendering() != newMode)
     {
-
-        targetScalableRenderingMode = newMode;
-
         // clear support info for external render requests
         ClearLastExternalRenderRequestInfo();
 
@@ -5811,7 +5808,6 @@ ViewerWindow::ChangeScalableRenderingMode(bool newMode)
 
     // note, this flag is set to true when the render message is sent
     isChangingScalableRenderingMode = false;
-    preparingToChangeScalableRenderingMode = false;
 }
 
 // ****************************************************************************
@@ -6608,20 +6604,30 @@ ViewerWindow::SendActivateToolMessage(const int toolId) const
 // Programmer: Mark C. Miller 
 // Creation:   Mon Nov  3 15:48:33 PST 2003
 //
+// Modifications:
+//
+//   Mark C. Miller, Tue Apr 27 14:41:35 PDT 2004
+//   Bracketed all work with check to if new mode different from current mode
+//   Removed preparingToChangeScalableRenderingMode
+//
 // ****************************************************************************
 
 void
 ViewerWindow::SendScalableRenderingModeChangeMessage(bool newMode)
 {
-    char msg[256];
+    if (GetScalableRendering() != newMode)
+    {
+        char msg[256];
 
-    // we set this flag here so that everywhere else, we can ask if
-    // we're about to change modes
-    preparingToChangeScalableRenderingMode = true;
+        // we set these flags here so that everywhere else, we can ask if
+        // we're about to change modes
+        isChangingScalableRenderingMode = true;
+        targetScalableRenderingMode = newMode;
 
-    SNPRINTF(msg, 256, "setScalableRenderingMode 0x%p %d;", this,
-        (newMode?1:0));
-    viewerSubject->MessageRendererThread(msg);
+        SNPRINTF(msg, 256, "setScalableRenderingMode 0x%p %d;", this,
+            (newMode?1:0));
+        viewerSubject->MessageRendererThread(msg);
+    }
 }
 
 // ****************************************************************************
@@ -6729,6 +6735,10 @@ ViewerWindow::UpdateLastExternalRenderRequestInfo(
 //   Mark C. Miller, Wed Apr 14 16:41:32 PDT 2004
 //   Added code to deal with the extents type string
 //
+//   Mark C. Miller, Tue Apr 27 14:41:35 PDT 2004
+//   Added code to eliminate change in scalable threshold from check to see
+//   if we can skip.
+//
 // ****************************************************************************
 
 bool
@@ -6736,7 +6746,10 @@ ViewerWindow::CanSkipExternalRender(const ExternalRenderRequestInfo& thisRequest
 {
     const ExternalRenderRequestInfo& lastRequest = lastExternalRenderRequest;
 
-    if (thisRequest.winAtts != lastRequest.winAtts)
+    WindowAttributes tmpWinAtts = thisRequest.winAtts;
+    int lastScalableThreshold = lastRequest.winAtts.GetRenderAtts().GetScalableThreshold();
+    tmpWinAtts.GetRenderAtts().SetScalableThreshold(lastScalableThreshold);
+    if (tmpWinAtts != lastRequest.winAtts)
         return false;
 
     // compare annotation attributes but ignore a few of them by forcing

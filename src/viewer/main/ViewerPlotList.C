@@ -5314,6 +5314,10 @@ PthreadAttrInit(pthread_attr_t *attr)
 //    Mark C. Miller, Tue Apr 20 07:44:34 PDT 2004
 //    Added code to issue warning message if a created actor has no data
 //
+//    Mark C. Miller, Tue Apr 27 14:41:35 PDT 2004
+//    Added additional check for IsChangingScalableRenderingMode when
+//    issuing no data warning
+//
 // ****************************************************************************
 
 void *
@@ -5336,7 +5340,8 @@ CreatePlot(void *info)
                                         turningOffScalableRendering,
                                         actorHasNoData);
 
-            if (actorHasNoData && !plotInfo->window->GetScalableRendering())
+            if (actorHasNoData && !plotInfo->window->GetScalableRendering() &&
+                !plotInfo->window->IsChangingScalableRenderingMode(true))
             {
                 char message[256];
                 SNPRINTF(message, sizeof(message),

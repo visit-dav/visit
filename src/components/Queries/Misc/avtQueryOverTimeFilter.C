@@ -121,7 +121,7 @@ avtQueryOverTimeFilter::Execute(void)
 {
     QueryAttributes qatts = atts.GetQueryAtts();
     avtDataObjectQuery *query = avtQueryFactory::Instance()->
-        CreateTimeQuery(&qatts);
+        CreateQuery(&qatts);
 
     query->SetTimeVarying(true);
     query->SetInput(GetInput());

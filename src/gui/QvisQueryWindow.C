@@ -104,6 +104,9 @@ QvisQueryWindow::~QvisQueryWindow()
 //   Kathleen Bonnell, Thu Apr  1 18:46:55 PST 2004 
 //   Added TimeQuery push button. 
 //
+//   Kathleen Bonnell, Thu Apr 22 15:31:24 PDT 2004 
+//   Made the default for dataOpts be 'actual data'. 
+//
 // ****************************************************************************
 
 void
@@ -157,7 +160,7 @@ QvisQueryWindow::CreateWindowContents()
     sLayout->addWidget(origData, 5, 0);
     QRadioButton *actualData = new QRadioButton("Actual Data", argPanel, "actualData");
     dataOpts->insert(actualData);
-    dataOpts->setButton(0);
+    dataOpts->setButton(1);
     sLayout->addWidget(actualData, 6, 0);
 
     // Add the time button to the argument panel.
@@ -451,6 +454,9 @@ QvisQueryWindow::UpdateResults(bool)
 //   Kathleen Bonnell, Thu Apr  1 18:46:55 PST 2004
 //   Added code to handle new time query capabilities.
 // 
+//   Kathleen Bonnell, Thu Apr 22 15:31:24 PDT 2004 
+//   Made the default for dataOpts be 'actual data'. 
+//
 // ****************************************************************************
 
 void
@@ -461,7 +467,7 @@ QvisQueryWindow::UpdateArgumentPanel(int index)
     const intVector &timeQuery = queries->GetTimeQuery();
 
     // reset a few defaults
-    dataOpts->setButton(0);
+    dataOpts->setButton(1);
     
     if(index < winType.size())
     {
@@ -690,6 +696,9 @@ QvisQueryWindow::ConnectPlotList(PlotList *pl)
 //   Kathleen Bonnell,  Thu Apr  1 18:46:55 PST 2004
 //   Added doTime arge to viewer query calls. 
 // 
+//   Kathleen Bonnell, Thu Apr 22 15:31:24 PDT 2004
+//   Added useActualData to basic DatabaseQuery call. 
+// 
 // ****************************************************************************
 
 void
@@ -698,11 +707,11 @@ QvisQueryWindow::Apply(bool ignore, bool doTime)
     if(AutoUpdate() || ignore)
     {
         int index = queryList->currentItem();
+        int useActualData = dataOpts->id(dataOpts->selected());
         const stringVector &names = queries->GetNames();
         const intVector &types = queries->GetTypes();
         const intVector &rep = queries->GetCoordRep();
         const intVector &winType = queries->GetWinType();
-        const intVector &timeQuery = queries->GetTimeQuery();
         if(index >= 0 && index < types.size())
         {
             QueryList::QueryType t = (QueryList::QueryType)types[index];
@@ -722,7 +731,7 @@ QvisQueryWindow::Apply(bool ignore, bool doTime)
                 {
                     if (t == QueryList::DatabaseQuery)
                     {
-                        viewer->DatabaseQuery(names[index], vars, doTime);
+                        viewer->DatabaseQuery(names[index], vars, doTime, useActualData);
                     }
                     else 
                     {
@@ -828,7 +837,6 @@ QvisQueryWindow::Apply(bool ignore, bool doTime)
             {
                 if(!GetVars(0, vars))
                     noErrors = false;
-                int useActualData = dataOpts->id(dataOpts->selected());
                 if (noErrors)
                 {
                     if (t == QueryList::DatabaseQuery)

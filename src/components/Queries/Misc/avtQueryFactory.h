@@ -30,7 +30,6 @@ class QUERY_API avtQueryFactory
     static avtQueryFactory         *Instance();
 
     avtDataObjectQuery             *CreateQuery(const QueryAttributes *);
-    avtDataObjectQuery             *CreateTimeQuery(const QueryAttributes *);
 
   private:
                                     avtQueryFactory();

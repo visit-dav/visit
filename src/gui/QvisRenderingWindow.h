@@ -9,6 +9,7 @@ class QCheckBox;
 class QLabel;
 class QRadioButton;
 class QSlider;
+class QSpinBox;
 class RenderingAttributes;
 class WindowInformation;
 class QvisOpacitySlider;
@@ -34,6 +35,9 @@ class QvisOpacitySlider;
 //
 //   Jeremy Meredith, Fri Nov 14 16:03:31 PST 2003
 //   Added specular lighting.
+//
+//   Mark C. Miller, Tue Apr 27 14:41:35 PDT 2004
+//   Added stuff to deal with adjusting scalable threshold with a spinbox 
 //
 // ****************************************************************************
 
@@ -64,7 +68,8 @@ private slots:
     void stereoToggled(bool);
     void stereoTypeChanged(int);
     void renderNotifyToggled(bool);
-    void scalableThresholdChanged(int);
+    void scalrenActivationModeChanged(int);
+    void scalrenAutoThresholdChanged(int val);
     void specularToggled(bool);
     void specularStrengthChanged(int, const void*);
     void specularPowerChanged(int, const void*);
@@ -82,10 +87,12 @@ private:
     QRadioButton *interlace;
     QRadioButton *crystalEyes;
     QCheckBox    *renderNotifyToggle;
-    QButtonGroup *scalableThreshold;
+    QButtonGroup *scalrenActivationMode;
     QRadioButton *scalrenAuto;
     QRadioButton *scalrenAlways;
     QRadioButton *scalrenNever;
+    QLabel       *scalrenGeometryLabel;
+    QSpinBox     *scalrenAutoThreshold;
     QCheckBox         *specularToggle;
     QLabel            *specularStrengthLabel;
     QvisOpacitySlider *specularStrengthSlider;

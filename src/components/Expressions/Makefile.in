@@ -62,6 +62,9 @@
 #   Hank Childs, Thu Feb  5 18:11:46 PST 2004
 #   Added avtSingleInputExpressionFilter and avtComparisonFilter.
 #
+#   Kathleen Bonnell, Tue Apr 27 13:29:46 PDT 2004 
+#   Added ExprPipelineState.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -111,7 +114,8 @@ General_src= \
 
 Management_src= \
   Management/avtExpressionEvaluatorFilter.C \
-  Management/avtConstantCreatorFilter.C 
+  Management/avtConstantCreatorFilter.C \
+  Management/ExprPipelineState.C 
 
 Math_src= \
   Math/avtAbsValFilter.C \

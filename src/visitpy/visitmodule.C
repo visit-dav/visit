@@ -7699,6 +7699,9 @@ visit_WriteConfigFile(PyObject *self, PyObject *args)
 //   Brad Whitlock, Tue Mar 2 10:12:44 PDT 2004
 //   Made it use GetStringVectorFromPyObject.
 //
+//   Kathleen Bonnell, Thu Apr 22 15:28:31 PDT 2004 
+//   Changed arg1 default to 1 (is used to specify 'actual' data). 
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -7707,7 +7710,7 @@ visit_Query(PyObject *self, PyObject *args)
     ENSURE_VIEWER_EXISTS();
 
     char *queryName;
-    int arg1 = 0, arg2 = 0;
+    int arg1 = 1, arg2 = 0;
     PyObject *tuple = NULL;
     if (!PyArg_ParseTuple(args, "sii|O", &queryName, &arg1, &arg2, &tuple))
     {
@@ -7769,6 +7772,8 @@ visit_Query(PyObject *self, PyObject *args)
 // Creation:   March 23, 2004 
 //
 // Modifications:
+//   Kathleen Bonnell, Thu Apr 22 15:28:31 PDT 2004 
+//   Changed arg1 default to 1 (is used to specify 'actual' data). 
 //
 // ****************************************************************************
 
@@ -7778,7 +7783,7 @@ visit_QueryOverTime(PyObject *self, PyObject *args)
     ENSURE_VIEWER_EXISTS();
 
     char *queryName;
-    int arg1 = 0, arg2 = 0;
+    int arg1 = 1, arg2 = 0;
     PyObject *tuple = NULL;
     if (!PyArg_ParseTuple(args, "sii|O", &queryName, &arg1, &arg2, &tuple))
     {

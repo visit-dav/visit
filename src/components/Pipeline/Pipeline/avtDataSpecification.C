@@ -792,6 +792,48 @@ avtDataSpecification::NoGhostZones(void)
 
 
 // ****************************************************************************
+//  Method: avtDataSpecification::VariablesAreTheSame
+//
+//  Purpose:
+//      This compares variables with the passed object. 
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   April 22, 2004
+//
+// ****************************************************************************
+
+bool
+avtDataSpecification::VariablesAreTheSame(const avtDataSpecification &ds)
+{
+    //
+    // Assumption here that we don't have NULL pointers.
+    //
+    if (strcmp(variable, ds.variable) != 0)
+    {
+        return false;
+    }
+    if (strcmp(db_variable, ds.db_variable) != 0)
+    {
+        return false;
+    }
+    if (secondaryVariables.size() != ds.secondaryVariables.size())
+    {
+        return false;
+    }
+    for (int i = 0 ; i < secondaryVariables.size() ; i++)
+    {
+        const char *my_str  = *(secondaryVariables[i]);
+        const char *his_str = *(ds.secondaryVariables[i]);
+        if (strcmp(my_str, his_str) != 0)
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+
+// ****************************************************************************
 //  Method: avtSILSpecification::GetDomainList
 //
 //  Purpose:
