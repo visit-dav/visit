@@ -164,6 +164,9 @@ NetworkManager::ClearAllNetworks(void)
 //    Mark C. Miller Thu Oct  9 10:59:27 PDT 2003
 //    I modified to force GetMetaData and GetSIL if they're invariant 
 //
+//    Hank Childs, Tue Nov  4 14:19:05 PST 2003
+//    Checked in work-around (HACK) to avoid apparent compiler bug on AIX.
+//
 // ****************************************************************************
 
 NetnodeDB *
@@ -238,7 +241,42 @@ NetworkManager::GetDBFromCache(const string &filename, int time)
         netDB->SetDBInfo(filename, "", time);
         const   avtIOInformation & ioinfo = db->GetIOInformation();
         loadBalancer->AddDatabase(filename, ioinfo);
-        CATCH_RETURN2(1, netDB);
+      
+        // The code here should be:
+        // CATCH_RETURN2(1, netDB);
+        //
+        // However: this is crashing on AIX when you do a re-open (see '3984).
+        // After investigating this bug, I have determined the following:
+        // (1) A valid pointer is being returned from this function.  However
+        // the calling function receives NULL (leading to a seg fault).
+        // (2) When compiling with fake exceptions and running under purify
+        // on the Suns, there are no warnings.
+        // (3) The catch return unwinds into 3 calls.  If you put a print
+        // statement right before the last one (the return), everything is
+        // returned correctly and there is no seg fault.
+        //
+        // I'm always very leery to call something a compiler bug.  However,
+        // on different platforms there is no problem.  I think it is even
+        // more fishy that things work if there is a print statement and don't
+        // if there is not.  It certainly sounds like a compiler bug.
+        //
+        // Below is code that "makes this work".  It is essentially a
+        // CATCH_RETURN2 with a print statement in the middle.  If CATCH_RETURN
+        // were to ever change, this coding would have to change as well
+        // (thus, I have introduced a maintenance problem).  As such, I put
+        // a comment in VisItException.h referencing this comment.  If the
+        // coding below can ever be replaced with an everyday CATCH_RETURN,
+        // the comment in VisItException.h should be removed.
+        //
+#ifdef FAKE_EXCEPTIONS
+           exception_delete(exception_caught); 
+           jump_stack_top -= (1); 
+           debug5 << "This debug statement (from the NetworkManager) is "
+                  << "being issued to get around a compiler bug." << endl;
+           return (netDB); 
+#else
+           return netDB;
+#endif
     }
     CATCH(DatabaseException)
     {
