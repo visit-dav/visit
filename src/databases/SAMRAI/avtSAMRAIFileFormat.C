@@ -1902,7 +1902,11 @@ avtSAMRAIFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             // re-format the material names for avt's API
             vector<string> matnames;
             for (i = 0; i < num_mats; i++)
-                matnames.push_back(mat_names[i]);
+            {
+                char tmpName[1024];
+                sprintf(tmpName, "%d %s", i, mat_names[i].c_str());
+                matnames.push_back(tmpName);
+            }
 
             // add the material object
             avtMaterialMetaData *mmd = new avtMaterialMetaData("materials", mesh_name,

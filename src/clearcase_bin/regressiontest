@@ -59,6 +59,10 @@
 #    Brad Whitlock, Wed Apr 7 17:21:25 PST 2004
 #    I removed keyframing tests from the skip list.
 #
+#    Mark C. Miller, Mon Apr 12 17:11:22 PDT 2004
+#    I removed multi-format2.py,  operators.py, and gradient.py tests
+#    from scalable,parallel skip
+#
 # ----------------------------------------------------------------------------
 
 # list of users who want email every night with the log file
@@ -189,10 +193,7 @@ modes="serial parallel scalable,parallel"
 skipList="parallel:tests/databases/samrai.py \
           parallel:tests/hybrid/sil.py \
           parallel:tests/rendering/volume.py \
-          scalable,parallel:tests/databases/multi_format2.py \
-          scalable,parallel:tests/hybrid/gradient.py \
           scalable,parallel:tests/hybrid/lineout.py \
-          scalable,parallel:tests/operators/operators.py \
           scalable,parallel:tests/rendering/volume.py"
 
 # run the test(s)
