@@ -1039,6 +1039,30 @@ NetworkManager::GetTotalGlobalCellCounts(void) const
    return sum;
 }
 
+// ****************************************************************************
+//  Method: NetworkManager::GetScalableThreshold
+//
+//  Purpose: Get the effective scalable threshold
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   May 11, 2004
+//
+// ****************************************************************************
+int
+NetworkManager::GetScalableThreshold(void) const
+{
+    int scalableAutoThreshold;
+    RenderingAttributes::TriStateMode scalableActivationMode;
+
+    scalableAutoThreshold =
+        windowAttributes.GetRenderAtts().GetScalableAutoThreshold();
+    scalableActivationMode = 
+        windowAttributes.GetRenderAtts().GetScalableActivationMode();
+
+    return RenderingAttributes::GetEffectiveScalableThreshold(
+                                    scalableActivationMode,
+                                    scalableAutoThreshold);
+}
 
 // ****************************************************************************
 //  Method: NetworkManager::DoneWithNetwork
@@ -1199,6 +1223,9 @@ NetworkManager::UpdatePlotAtts(int id, const AttributeGroup *atts)
 //    I replaced the return in the TRY/CATCH block with CATCH_RETURN2 so that
 //    fake exceptions work again.
 //
+//    Mark C. Miller, Tue May 11 20:21:24 PDT 2004
+//    Modifed to use local GetScalableThreshold method
+//
 // ****************************************************************************
 avtDataObjectWriter_p
 NetworkManager::GetOutput(bool respondWithNullData, bool calledForRender)
@@ -1227,7 +1254,7 @@ NetworkManager::GetOutput(bool respondWithNullData, bool calledForRender)
                                           workingNet->GetPipelineSpec(),
                                           &windowAttributes);
 
-        int  scalableThreshold = windowAttributes.GetRenderAtts().GetScalableThreshold();
+        int scalableThreshold = GetScalableThreshold(); 
 
         // compute this network's cell count if we haven't already 
         if (globalCellCounts[netId] == -1)
@@ -1264,7 +1291,6 @@ NetworkManager::GetOutput(bool respondWithNullData, bool calledForRender)
         {
 
 #ifdef PARALLEL
-
            if ((PAR_Size() > 1) && (GetTotalGlobalCellCounts() > scalableThreshold))
            {
                debug5 << "Cell count has exceeded SR threshold. Sending the "
@@ -1333,6 +1359,9 @@ NetworkManager::GetOutput(bool respondWithNullData, bool calledForRender)
 //
 //    Mark C. Miller, Tue Apr 20 07:44:34 PDT 2004
 //    Added code to issue a warning if a plot's actor has no data
+//
+//    Mark C. Miller, Tue May 11 20:21:24 PDT 2004
+//    Added call to local GetScalableThreshold method
 // ****************************************************************************
 avtDataObjectWriter_p
 NetworkManager::Render(intVector plotIds, bool getZBuffer, bool do3DAnnotsOnly)
@@ -1343,7 +1372,7 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, bool do3DAnnotsOnly)
     {
        int t1 = visitTimer->StartTimer();
        avtDataObjectWriter_p writer;
-       int  scalableThreshold = windowAttributes.GetRenderAtts().GetScalableThreshold();
+       int  scalableThreshold = GetScalableThreshold(); 
 
        // scalable threshold test (the 0.5 is to add some hysteresus to avoid 
        // the misfortune of oscillating switching of modes around the threshold)

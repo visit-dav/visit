@@ -115,6 +115,11 @@ class VisWindowColleagueProxy;
 //    Hank Childs, Sun May  9 16:25:27 PDT 2004
 //    Added IsDirect.  Also add support for display list mode.
 //
+//    Mark C. Miller, Tue May 11 20:21:24 PDT 2004
+//    Added methods to Set/Get scalable activation mode and auto threshold.
+//    Added data members for same.
+//    Elminated call to SetScalableThreshold.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinRendering : public VisWinColleague
@@ -207,12 +212,16 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
     static void              SetStereoEnabled(bool se)
                                  { stereoEnabled = se; };
 
+    int                      GetScalableThreshold() const;
     bool                     SetScalableRendering(bool mode);
     bool                     GetScalableRendering() const
                                  { return scalableRendering; };
-    int                      SetScalableThreshold(int threshold);
-    int                      GetScalableThreshold() const
-                                 { return scalableThreshold; };
+    int                      SetScalableActivationMode(int mode);
+    int                      GetScalableActivationMode() const
+                                 { return scalableActivationMode; };
+    int                      SetScalableAutoThreshold(int threshold);
+    int                      GetScalableAutoThreshold() const
+                                 { return scalableAutoThreshold; };
 
     virtual void            *CreateToolbar(const char *) { return 0; };
     virtual void             SetLargeIcons(bool) { };
@@ -249,7 +258,8 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
 
     // scalable rendering options
     bool                          scalableRendering;
-    int                           scalableThreshold;
+    int                           scalableActivationMode;
+    int                           scalableAutoThreshold;
 
     void                          InitializeRenderWindow(vtkRenderWindow *);
     void                          ResetCounters();

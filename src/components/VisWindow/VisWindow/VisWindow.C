@@ -4830,25 +4830,6 @@ VisWindow::GetScalableRendering() const
 }
 
 // ****************************************************************************
-// Method: VisWindow::SetScalableThreshold
-//
-// Purpose: 
-//   Sets the threshold (and modality) for scalable rendering 
-//
-// Programmer: Mark C. Miller 
-// Creation:   Tue Dec  3 19:15:37 PST 2002 
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-VisWindow::SetScalableThreshold(int threshold)
-{
-    rendering->SetScalableThreshold(threshold);
-}
-
-// ****************************************************************************
 // Method: VisWindow::GetScalableThreshold
 //
 // Purpose: 
@@ -4865,6 +4846,63 @@ int
 VisWindow::GetScalableThreshold() const
 {
     return rendering->GetScalableThreshold();
+}
+
+
+// ****************************************************************************
+// Method: VisWindow::SetScalableActivationMode
+//
+// Programmer: Mark C. Miller 
+// Creation:   May 11, 2004 
+//
+// ****************************************************************************
+
+void
+VisWindow::SetScalableActivationMode(int mode)
+{
+    rendering->SetScalableActivationMode(mode);
+}
+
+// ****************************************************************************
+// Method: VisWindow::GetScalableActivationMode
+//
+// Programmer: Mark C. Miller 
+// Creation:   May 11, 2004 
+//
+// ****************************************************************************
+
+int
+VisWindow::GetScalableActivationMode() const
+{
+    return rendering->GetScalableActivationMode();
+}
+
+// ****************************************************************************
+// Method: VisWindow::SetScalableAutoThreshold
+//
+// Programmer: Mark C. Miller 
+// Creation:   May 11, 2004 
+//   
+// ****************************************************************************
+
+void
+VisWindow::SetScalableAutoThreshold(int threshold)
+{
+    rendering->SetScalableAutoThreshold(threshold);
+}
+
+// ****************************************************************************
+// Method: VisWindow::GetScalableAutoThreshold
+//
+// Programmer: Mark C. Miller 
+// Creation:   May 11, 2004 
+//
+// ****************************************************************************
+
+int
+VisWindow::GetScalableAutoThreshold() const
+{
+    return rendering->GetScalableAutoThreshold();
 }
 
 // ****************************************************************************

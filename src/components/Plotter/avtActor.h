@@ -16,7 +16,6 @@
 
 class     vtkRenderer;
 
-class     avtExternallyRenderedImagesActor;
 class     avtTransparencyActor;
 
 
@@ -70,6 +69,9 @@ class     avtTransparencyActor;
 //    Jeremy Meredith, Fri Nov 14 11:10:53 PST 2003
 //    Added a method to set the specular properties.
 //
+//    Mark C. Miller, Tue May 11 20:21:24 PDT 2004
+//    Elminated externally rendered images actor dependence
+//
 // ****************************************************************************
 
 class PLOTTER_API avtActor
@@ -101,8 +103,6 @@ class PLOTTER_API avtActor
     void                          VisibilityOn(void);
     void                          VisibilityOff(void);
     void                          SetTransparencyActor(avtTransparencyActor *);
-    void                          SetExternallyRenderedImagesActor(
-                                     avtExternallyRenderedImagesActor *);
 
     void                          TurnLightingOn(void);
     void                          TurnLightingOff(void);
@@ -122,7 +122,6 @@ class PLOTTER_API avtActor
     avtDrawable_p                 decorations;
     avtTransparencyActor         *transparencyActor;
     int                           transparencyIndex;
-    avtExternallyRenderedImagesActor *extRenderedImagesActor;
 
     vtkRenderer                  *renderer;
 };

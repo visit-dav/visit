@@ -2009,6 +2009,10 @@ ViewerWindow::InvertBackgroundColor()
 //   Hank Childs, Mon May 10 08:04:48 PDT 2004
 //   Use "display list mode" instead of immediate rendering mode.
 //
+//   Mark C. Miller, Tue May 11 20:21:24 PDT 2004
+//   Modified scalable rendering controls to use activation mode and auto
+//   threshold
+//
 // ****************************************************************************
 
 void
@@ -2022,7 +2026,8 @@ ViewerWindow::CopyGeneralAttributes(const ViewerWindow *source)
     SetDisplayListMode(source->GetDisplayListMode());
     SetSurfaceRepresentation(source->GetSurfaceRepresentation());
     SetNotifyForEachRender(source->GetNotifyForEachRender());
-    SetScalableThreshold(source->GetScalableThreshold());
+    SetScalableAutoThreshold(source->GetScalableAutoThreshold());
+    SetScalableActivationMode(source->GetScalableActivationMode());
     SetSpecularProperties(source->GetSpecularFlag(),
                           source->GetSpecularCoeff(),
                           source->GetSpecularPower(),
@@ -4814,6 +4819,10 @@ ViewerWindow::SetLargeIcons(bool val)
 //   Hank Childs, Mon May 10 08:04:48 PDT 2004
 //   Use "display list mode" instead of immediate rendering mode.
 //
+//   Mark C. Miller, Tue May 11 20:21:24 PDT 2004
+//   Modified scalable rendering controls to use activation mode and auto
+//   threshold
+//
 // ****************************************************************************
 
 WindowAttributes
@@ -4877,9 +4886,11 @@ ViewerWindow::GetWindowAttributes() const
 
     // Rendering attributes
     RenderingAttributes renderAtts;
-    renderAtts.SetScalableThreshold(GetScalableThreshold());
-    renderAtts.SetScalableRendering(GetScalableRendering());
-    renderAtts.SetDisplayListMode((RenderingAttributes::DisplayListMode) GetDisplayListMode());
+    renderAtts.SetScalableAutoThreshold(GetScalableThreshold());
+    renderAtts.SetScalableActivationMode(
+        (RenderingAttributes::TriStateMode) GetScalableActivationMode());
+    renderAtts.SetDisplayListMode(
+        (RenderingAttributes::TriStateMode) GetDisplayListMode());
     renderAtts.SetAntialiasing(GetAntialiasing());
     renderAtts.SetGeometryRepresentation(
        (RenderingAttributes::GeometryRepresentation) GetSurfaceRepresentation());
@@ -5718,6 +5729,20 @@ ViewerWindow::GetNumTriangles() const
 }
 
 // ****************************************************************************
+// Method: ViewerWindow::GetNumberOfCells
+//
+// Programmer: Mark C. Miller 
+// Creation:   Tue May 11 09:45:30 PDT 2004 
+//
+// ****************************************************************************
+
+int
+ViewerWindow::GetNumberOfCells(bool polysOnly) const
+{
+    return GetPlotList()->GetNumberOfCells(polysOnly);
+}
+
+// ****************************************************************************
 // Method: ViewerWindow::SetNotifyForEachRender
 //
 // Purpose: 
@@ -5877,52 +5902,130 @@ ViewerWindow::EnableExternalRenderRequests()
 // Method: ViewerWindow::GetScalableRendering
 //
 // Purpose: 
-//   returns boolean indicating if scalable rendering is enabled or not 
+//   returns boolean indicating if window is in scalable rendering mode or not 
 //
 // Programmer: Mark C. Miller
 // Creation:   Tue Dec  3 19:25:11 PST 2002 
 //
-// Modifications:
-//   
 // ****************************************************************************
 
 bool
 ViewerWindow::GetScalableRendering() const
 {
-    return visWindow->GetScalableRendering();
+    return visWindow->GetScalableRendering(); 
 }
 
 // ****************************************************************************
-// Method: ViewerWindow::SetScalableThreshold
+// Method: ViewerWindow::GetScalableThreshold
+//
+// Purpose: 
+//   returns effective scalable rendering threshold 
+//
+// Programmer: Mark C. Miller
+// Creation:   Tue Dec  3 19:25:11 PST 2002 
+//
+// ****************************************************************************
+
+int
+ViewerWindow::GetScalableThreshold() const
+{
+    return visWindow->GetScalableThreshold(); 
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::SetScalableActivationMode
+//
+// Purpose: 
+//   Sets scalable rendering activation mode
+//
+// Programmer: Mark C. Miller
+// Creation:   Tue May 11 08:40:36 PDT 2004 
+//   
+// ****************************************************************************
+
+int
+ViewerWindow::SetScalableActivationMode(int activationMode)
+{
+    int oldActivationMode = GetScalableActivationMode();
+
+    // only change the activation mode if it truly is different from current
+    if (activationMode != oldActivationMode)
+    {
+        visWindow->SetScalableActivationMode(activationMode);
+
+        switch (activationMode)
+        {
+            case RenderingAttributes::Always:
+                SendScalableRenderingModeChangeMessage(true);
+                break;
+            case RenderingAttributes::Never:
+                SendScalableRenderingModeChangeMessage(false);
+                break;
+            case RenderingAttributes::Auto:
+            default:
+            {
+                bool newMode;
+                if (ShouldSendScalableRenderingModeChangeMessage(&newMode))
+                    SendScalableRenderingModeChangeMessage(newMode);
+                break;
+            }
+        }
+    }
+
+    return oldActivationMode;
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::GetScalableActivationMode
+//
+// Purpose: 
+//   returns current scalable activation mode 
+//
+// Programmer: Mark C. Miller
+// Creation:   May 11, 2004 
+//
+// ****************************************************************************
+
+int
+ViewerWindow::GetScalableActivationMode() const
+{
+    return visWindow->GetScalableActivationMode();
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::SetScalableAutoThreshold
 //
 // Purpose: 
 //   Sets scalable rendering threshold (and modality) 
 //
 // Programmer: Mark C. Miller
-// Creation:   Tue Dec  3 19:25:11 PST 2002 
+// Creation:   May 11, 2004 
 //
-// Modifications:
-//   
 // ****************************************************************************
 
-void
-ViewerWindow::SetScalableThreshold(int threshold)
+int
+ViewerWindow::SetScalableAutoThreshold(int autoThreshold)
 {
-    int oldThreshold = GetScalableThreshold();
+    int oldAutoThreshold = GetScalableAutoThreshold();
 
-    if (threshold != oldThreshold)
+    if (autoThreshold != oldAutoThreshold)
     {
-       visWindow->SetScalableThreshold(threshold);
 
-       if (threshold == 0)
-          SendScalableRenderingModeChangeMessage(true);
-       else if (threshold == INT_MAX)
-          SendScalableRenderingModeChangeMessage(false);
+       visWindow->SetScalableAutoThreshold(autoThreshold);
+
+       if (GetScalableActivationMode() == RenderingAttributes::Auto)
+       {
+           bool newMode;
+           if (ShouldSendScalableRenderingModeChangeMessage(&newMode))
+               SendScalableRenderingModeChangeMessage(newMode);
+       }
     }
+
+    return oldAutoThreshold;
 }
 
 // ****************************************************************************
-// Method: ViewerWindow::GetScalableThreshold
+// Method: ViewerWindow::GetScalableAutoThreshold
 //
 // Purpose: 
 //   returns current scalable rendering threshold (and modality)
@@ -5930,14 +6033,12 @@ ViewerWindow::SetScalableThreshold(int threshold)
 // Programmer: Mark C. Miller
 // Creation:   Tue Dec  3 19:25:11 PST 2002 
 //
-// Modifications:
-//   
 // ****************************************************************************
 
 int
-ViewerWindow::GetScalableThreshold() const
+ViewerWindow::GetScalableAutoThreshold() const
 {
-    return visWindow->GetScalableThreshold();
+    return visWindow->GetScalableAutoThreshold();
 }
 
 // ****************************************************************************
@@ -6179,6 +6280,10 @@ ViewerWindow::CreateNode(DataNode *parentNode, bool detailed)
 //   Brad Whitlock, Wed Apr 7 13:53:24 PST 2004
 //   Added code to translate keyframing information for old config files.
 //
+//   Mark C. Miller, Tue May 11 20:21:24 PDT 2004
+//   Modified scalable rendering controls to use activation mode and auto
+//   threshold
+//
 // ****************************************************************************
 
 void
@@ -6388,8 +6493,10 @@ ViewerWindow::SetFromNode(DataNode *parentNode)
     //
     // Read in and set any rendering attributes.
     //
-    if((node = windowNode->GetNode("scalableThreshold")) != 0)
-        SetScalableThreshold(node->AsInt());
+    if((node = windowNode->GetNode("scalableAutoThreshold")) != 0)
+        SetScalableAutoThreshold(node->AsInt());
+    if((node = windowNode->GetNode("scalableActivationMode")) != 0)
+        SetScalableActivationMode(node->AsInt());
     if((node = windowNode->GetNode("scalableRendering")) != 0)
         SendScalableRenderingModeChangeMessage(node->AsBool());
     if((node = windowNode->GetNode("notifyForEachRender")) != 0)
@@ -6636,6 +6743,56 @@ ViewerWindow::SendScalableRenderingModeChangeMessage(bool newMode)
 }
 
 // ****************************************************************************
+// Method: ViewerWindow::ShouldSendScalableRenderingModeChangeMessage
+//
+// Purpose: 
+//   Determine if the polygon counts of current plots are such that we need to
+//   change into or out of scalable rendering mode
+//
+// Programmer: Mark C. Miller 
+// Creation:   Tue May 11 09:03:07 PDT 2004
+//
+// ****************************************************************************
+
+bool
+ViewerWindow::ShouldSendScalableRenderingModeChangeMessage(bool *newMode) const
+{
+    bool oldMode      = GetScalableRendering();
+    int autoThreshold = GetScalableAutoThreshold();
+
+    // an auto-threshold of 0 is same as Always mode
+    if ((autoThreshold == 0) && (oldMode == false))
+    {
+        *newMode = true;
+        return true;
+    }
+
+    // an auto-threshold of INT_MAX is same as Never mode
+    if ((autoThreshold == INT_MAX) && (oldMode == true))
+    {
+        *newMode = false;
+        return true;
+    }
+
+    if (oldMode == false)
+    {
+        bool polysOnly = true;
+        int cellCount = GetNumberOfCells(polysOnly);
+
+        if (cellCount < 0.5 * autoThreshold)
+            return false;
+
+        if (cellCount > autoThreshold)
+        {
+            *newMode = true;
+            return true;
+        }
+    }
+
+    return false;
+}
+
+// ****************************************************************************
 // Method: ViewerWindow::ClearLastExternalRenderRequest
 //
 // Purpose: 
@@ -6744,6 +6901,10 @@ ViewerWindow::UpdateLastExternalRenderRequestInfo(
 //   Added code to eliminate change in scalable threshold from check to see
 //   if we can skip.
 //
+//   Mark C. Miller, Tue May 11 20:21:24 PDT 2004
+//   Modified scalable rendering controls to use activation mode and auto
+//   threshold
+//
 // ****************************************************************************
 
 bool
@@ -6752,8 +6913,11 @@ ViewerWindow::CanSkipExternalRender(const ExternalRenderRequestInfo& thisRequest
     const ExternalRenderRequestInfo& lastRequest = lastExternalRenderRequest;
 
     WindowAttributes tmpWinAtts = thisRequest.winAtts;
-    int lastScalableThreshold = lastRequest.winAtts.GetRenderAtts().GetScalableThreshold();
-    tmpWinAtts.GetRenderAtts().SetScalableThreshold(lastScalableThreshold);
+    int lastScalableAutoThreshold = lastRequest.winAtts.GetRenderAtts().GetScalableAutoThreshold();
+    int lastScalableActivationMode = lastRequest.winAtts.GetRenderAtts().GetScalableActivationMode();
+    tmpWinAtts.GetRenderAtts().SetScalableAutoThreshold(lastScalableAutoThreshold);
+    tmpWinAtts.GetRenderAtts().SetScalableActivationMode(
+        (RenderingAttributes::TriStateMode) lastScalableActivationMode);
     if (tmpWinAtts != lastRequest.winAtts)
         return false;
 
@@ -6972,6 +7136,10 @@ ViewerWindow::ExternalRender(const ExternalRenderRequestInfo& thisRequest,
 //   Mark C. Miller, Wed Apr 21 12:42:13 PDT 2004
 //   I made it issue a warning message on failure
 //
+//   Mark C. Miller, Tue May 11 20:21:24 PDT 2004
+//   Modified scalable rendering controls to use activation mode and auto
+//   threshold
+//
 // ****************************************************************************
 void
 ViewerWindow::ExternalRenderManual(avtDataObject_p& dob, int w, int h)
@@ -6984,7 +7152,8 @@ ViewerWindow::ExternalRenderManual(avtDataObject_p& dob, int w, int h)
     // adjust rendering request info for this manual render
     int size[2] = {w, h};
     thisRequest.winAtts.SetSize(size);
-    thisRequest.winAtts.GetRenderAtts().SetScalableThreshold(0);
+    thisRequest.winAtts.GetRenderAtts().
+        SetScalableActivationMode(RenderingAttributes::Always);
 
     bool success = ExternalRender(thisRequest, dummyBool, true, dob);
 

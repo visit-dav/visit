@@ -10,7 +10,7 @@
       Interlaced
       CrystalEyes
     </Enum>
-    <Enum name="DisplayListMode">
+    <Enum name="TriStateMode">
       Never
       Always
       Auto
@@ -21,7 +21,7 @@
     <Field name="geometryRepresentation" label="geometryRepresentation" type="enum" subtype="GeometryRepresentation">
       Surfaces
     </Field>
-    <Field name="displayListMode" label="displayListMode" type="enum" subtype="DisplayListMode">
+    <Field name="displayListMode" label="displayListMode" type="enum" subtype="TriStateMode">
       Auto
     </Field>
     <Field name="stereoRendering" label="stereoRendering" type="bool">
@@ -33,10 +33,10 @@
     <Field name="notifyForEachRender" label="notifyForEachRender" type="bool">
       false
     </Field>
-    <Field name="scalableRendering" label="scalableRendering" type="bool">
-      false
+    <Field name="scalableActivationMode" label="scalableActivationMode" type="enum" subtype="TriStateMode">
+      Auto
     </Field>
-    <Field name="scalableThreshold" label="scalableThreshold" type="int">
+    <Field name="scalableAutoThreshold" label="scalableAutoThreshold" type="int">
       2000000
     </Field>
     <Field name="specularFlag" label="specularFlag" type="bool">
@@ -54,6 +54,13 @@
       255
       255
     </Field>
-    <Constant name="DEFAULT_SCALABLE_THRESHOLD" member="false">
+    <Function name="GetEffectiveScalableThreshold" user="true" member="true">
+    </Function>
+    <Constant name="DEFAULT_SCALABLE_AUTO_THRESHOLD" member="false">
     </Constant>
+    <Constant name="DEFAULT_SCALABLE_ACTIVATION_MODE" member="false">
+    </Constant>
+    <Include file="header" quoted="false">
+      float.h
+    </Include>
   </Attribute>

@@ -254,6 +254,10 @@ class VisitInteractor;
 //    Hank Childs, Sun May  9 16:21:36 PDT 2004
 //    Added IsDirect. Replaced immediate mode rendering with display list mode.
 //
+//    Mark C. Miller, Tue May 11 20:21:24 PDT 2004
+//    Added methods to Set/Get scalable activation mode and scalable auto
+//    theshold. Eliminated SetScalableThreshold method 
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindow
@@ -417,10 +421,13 @@ public:
     int                  GetNumTriangles() const;
     void                 SetNotifyForEachRender(bool val);
     bool                 GetNotifyForEachRender() const;
+    int                  GetScalableActivationMode() const;
+    void                 SetScalableActivationMode(int mode);
+    int                  GetScalableAutoThreshold() const;
+    void                 SetScalableAutoThreshold(int threshold);
     bool                 GetScalableRendering() const;
     void                 SetScalableRendering(bool mode);
     int                  GetScalableThreshold() const;
-    void                 SetScalableThreshold(int threshold);
     void                 SetSpecularProperties(bool,float,float,
                                                const ColorAttribute&);
     bool                 GetSpecularFlag();

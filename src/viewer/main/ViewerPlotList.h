@@ -193,6 +193,9 @@ typedef std::map<std::string, int> StringIntMap;
 //    Brad Whitlock, Mon Apr 19 09:04:41 PDT 2004
 //    I added ValidateTimeSlider.
 //
+//    Mark C. Miller, Tue May 11 20:21:24 PDT 2004
+//    Added method to GetNumberOfCells
+//
 // ****************************************************************************
 
 
@@ -256,6 +259,8 @@ public:
     int  GetNumVisiblePlots() const;
     int  AddPlot(int type, const std::string &var, bool replacePlots = false,
                  bool applyToAll = false, DataNode *attributesNode = 0);
+
+    int GetNumberOfCells(bool polysOnly = false) const;
 
     // 
     // Keyframing methods

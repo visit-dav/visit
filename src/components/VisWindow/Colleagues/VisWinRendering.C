@@ -84,6 +84,10 @@ bool VisWinRendering::stereoEnabled = false;
 //    Hank Childs, Mon May 10 08:27:32 PDT 2004
 //    Initialize displayListMode.
 //
+//    Mark C. Miller, Tue May 11 20:21:24 PDT 2004
+//    Replaced scalableThreshold member with scalableAutoThreshold
+//    Added scalableActivationMode member
+//
 // ****************************************************************************
 
 VisWinRendering::VisWinRendering(VisWindowColleagueProxy &p) 
@@ -109,7 +113,8 @@ VisWinRendering::VisWinRendering(VisWindowColleagueProxy &p)
     notifyForEachRender            = false;
     inMotion                       = false;
     scalableRendering              = false;
-    scalableThreshold              = RenderingAttributes::DEFAULT_SCALABLE_THRESHOLD;
+    scalableAutoThreshold          = RenderingAttributes::DEFAULT_SCALABLE_AUTO_THRESHOLD;
+    scalableActivationMode         = RenderingAttributes::DEFAULT_SCALABLE_ACTIVATION_MODE;
 
     canvas       = vtkRenderer::New();
     canvas->SetInteractive(1);
@@ -1410,16 +1415,23 @@ VisWinRendering::GetNumTriangles() const
 }
 
 // ****************************************************************************
+// Method: VisWinRendering::GetScalableThreshold
+//
+// Programmer: Mark C. Miller 
+// Creation:   May 11, 2004
+//
+// ****************************************************************************
+
+int
+VisWinRendering::GetScalableThreshold() const
+{
+    return RenderingAttributes::GetEffectiveScalableThreshold(
+        (RenderingAttributes::TriStateMode) scalableActivationMode,
+                                            scalableAutoThreshold);
+}
+
+// ****************************************************************************
 // Method: VisWinRendering::SetScalableRendering
-//
-// Purpose: 
-//   Sets the scalable rendering mode 
-//
-// Arguments:
-//   mode : The new mode
-//
-// Return:
-//   the old mode
 //
 // Programmer: Mark C. Miller 
 // Creation:   February 5, 2003 
@@ -1439,26 +1451,33 @@ VisWinRendering::SetScalableRendering(bool mode)
 }
 
 // ****************************************************************************
-// Method: VisWinRendering::SetScalableThreshold
-//
-// Purpose: 
-//   Sets the scalable rendering threshold
-//
-// Arguments:
-//   threshold: The new threshold
-//
-// Return:
-//   the old threshold
+// Method: VisWinRendering::SetScalableAutoThreshold
 //
 // Programmer: Mark C. Miller 
-// Creation:   February 5, 2003 
+// Creation:   May 11, 2004 
 //
 // ****************************************************************************
 
 int
-VisWinRendering::SetScalableThreshold(int threshold)
+VisWinRendering::SetScalableAutoThreshold(int autoThreshold)
 {
-    int oldVal = scalableThreshold;
-    scalableThreshold = threshold;
+    int oldVal = scalableAutoThreshold;
+    scalableAutoThreshold = autoThreshold;
+    return oldVal;
+}
+
+// ****************************************************************************
+// Method: VisWinRendering::SetScalableActivationMode
+//
+// Programmer: Mark C. Miller 
+// Creation:   May 11, 2004
+//
+// ****************************************************************************
+
+int
+VisWinRendering::SetScalableActivationMode(int mode)
+{
+    int oldVal = scalableActivationMode;
+    scalableActivationMode = mode;
     return oldVal;
 }

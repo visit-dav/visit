@@ -17,7 +17,6 @@
 #include <avtCallback.h>
 #include <avtDatasetExaminer.h>
 #include <avtExtents.h>
-#include <avtExternallyRenderedImagesActor.h>
 #include <avtGeometryDrawable.h>
 #include <avtTransparencyActor.h>
 
@@ -59,6 +58,9 @@ using std::string;
 //    Added initializiation for transparencyIndex data member to -1
 //    Added initializations for externally rendered images actor
 //
+//    Mark C. Miller, Tue May 11 20:21:24 PDT 2004
+//    Removed extRenderedImagesActor data member
+//
 // ****************************************************************************
 
 avtMapper::avtMapper()
@@ -70,7 +72,6 @@ avtMapper::avtMapper()
     nMappers = 0;
     transparencyActor = NULL;
     transparencyIndex = -1;
-    extRenderedImagesActor = NULL;
     globalAmbient = 0.;
 }
 
@@ -832,40 +833,6 @@ avtMapper::SetTransparencyActor(avtTransparencyActor *act)
 
     transparencyIndex = transparencyActor->AddInput(d, m, a);
     return transparencyIndex;
-}
-
-
-// ****************************************************************************
-//  Method: avtMapper::SetExternallyRenderedImagesActor
-//
-//  Purpose:
-//      Sets the externally rendered images actor.
-//
-//  Arguments:
-//      act      The ERI actor.  It is associated with a specific
-//               visualization window and is not owned by this object.
-//
-//  Programmer:  Mark C. Miller
-//  Creation:    January 9, 2003
-//
-// ****************************************************************************
-
-void
-avtMapper::SetExternallyRenderedImagesActor(
-    avtExternallyRenderedImagesActor *act)
-{
-    if (extRenderedImagesActor == act)
-    {
-        //
-        // This is our current ERI actor anyway.  No need to do
-        // anything new.
-        //
-        return;
-    }
-
-    extRenderedImagesActor = act;
-    return;
-
 }
 
 

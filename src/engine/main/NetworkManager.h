@@ -151,6 +151,9 @@ class VisWindow;
 //    Added argument for extents type string to SetWindowAttributes
 //    Added local variable to store past value for extents type string
 //
+//    Mark C. Miller, Tue May 11 20:21:24 PDT 2004
+//    Add GetScalableThreshold method
+//
 // ****************************************************************************
 class NetworkManager
 {
@@ -182,6 +185,7 @@ class NetworkManager
     avtPlot_p     GetPlot(void);
     int           GetCurrentNetworkId(void);
     int           GetTotalGlobalCellCounts(void) const;
+    int           GetScalableThreshold(void) const;
     void          DoneWithNetwork(int);
 
     void          UpdatePlotAtts(int, const AttributeGroup *);
