@@ -492,7 +492,7 @@ PickAttributes::PrepareForNewPick()
 }
 
 Function: SetFromNode
-Declaration: void SetFromNode(DataNode *parentNode);
+Declaration: virtual void SetFromNode(DataNode *parentNode);
 Definition:
 // ****************************************************************************
 // Method: PickAttributes::SetFromNode
@@ -542,7 +542,7 @@ PickAttributes::SetFromNode(DataNode *parentNode)
 }
 
 Function: CreateNode
-Declaration: bool CreateNode(DataNode *parentNode, bool forceAdd);
+Declaration: virtual bool CreateNode(DataNode *parentNode, bool completeSave, bool forceAdd);
 Definition:
 // ****************************************************************************
 // Method: PickAttributes::CreateNode
@@ -553,7 +553,7 @@ Definition:
 //   
 // ****************************************************************************
 bool
-PickAttributes::CreateNode(DataNode *parentNode, bool forceAdd)
+PickAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceAdd)
 {
     if(parentNode == 0)
         return false;
@@ -563,60 +563,60 @@ PickAttributes::CreateNode(DataNode *parentNode, bool forceAdd)
     // Create a node for PickAttributes.
     DataNode *node = new DataNode("PickAttributes");
 
-    if(!FieldsEqual(0, &defaultObject))
+    if(completeSave || !FieldsEqual(0, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("variables", variables));
     }
 
-    if(!FieldsEqual(1, &defaultObject))
+    if(completeSave || !FieldsEqual(1, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("displayIncidentElements", displayIncidentElements));
     }
 
-    if(!FieldsEqual(2, &defaultObject))
+    if(completeSave || !FieldsEqual(2, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("showNodeId", showNodeId));
     }
 
-    if(!FieldsEqual(3, &defaultObject))
+    if(completeSave || !FieldsEqual(3, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("showNodeDomainLogicalCoords", 
                                     showNodeDomainLogicalCoords));
     }
 
-    if(!FieldsEqual(4, &defaultObject))
+    if(completeSave || !FieldsEqual(4, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("showNodeBlockLogicalCoords", 
                                     showNodeBlockLogicalCoords));
     }
 
-    if(!FieldsEqual(5, &defaultObject))
+    if(completeSave || !FieldsEqual(5, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("showNodePhysicalCoords", 
                                     showNodePhysicalCoords));
     }
 
-    if(!FieldsEqual(6, &defaultObject))
+    if(completeSave || !FieldsEqual(6, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("showZoneId", 
                                     showZoneId));
     }
 
-    if(!FieldsEqual(7, &defaultObject))
+    if(completeSave || !FieldsEqual(7, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("showZoneDomainLogicalCoords", 
                                     showZoneDomainLogicalCoords));
     }
 
-    if(!FieldsEqual(8, &defaultObject))
+    if(completeSave || !FieldsEqual(8, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("showZoneBlockLogicalCoords", 

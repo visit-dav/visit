@@ -1394,10 +1394,15 @@ AttributeGroup::UnSelectAll()
 //   I added the bool argument and made it return a bool indicating whether
 //   or not anything was added to the node.
 //
+//   Brad Whitlock, Wed Dec 17 11:53:32 PDT 2003
+//   I added another bool argument that will be used for making the complete
+//   object save out regardless of whether or not it is equal to the
+//   defaults.
+//
 // ****************************************************************************
 
 bool
-AttributeGroup::CreateNode(DataNode *, bool)
+AttributeGroup::CreateNode(DataNode *, bool, bool)
 {
     return false;
 }

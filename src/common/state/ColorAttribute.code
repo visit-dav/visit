@@ -134,7 +134,7 @@ ColorAttribute::Alpha() const
 }
 
 Function:  CreateNode
-Declaration: bool CreateNode(DataNode *, bool);
+Declaration: virtual bool CreateNode(DataNode *, bool, bool);
 Definition:
 // ****************************************************************************
 // Method: ColorAttribute::CreateNode
@@ -151,10 +151,13 @@ Definition:
 //   Brad Whitlock, Fri Oct 3 10:13:43 PDT 2003
 //   I made it always save to the parentNode.
 //
+//   Brad Whitlock, Wed Dec 17 12:09:19 PDT 2003
+//   I changed the method prototype.
+//
 // ****************************************************************************
 
 bool
-ColorAttribute::CreateNode(DataNode *parentNode, bool forceAdd)
+ColorAttribute::CreateNode(DataNode *parentNode, bool, bool)
 {
     if(parentNode == 0)
         return false;

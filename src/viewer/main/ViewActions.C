@@ -666,6 +666,9 @@ SaveViewAction::ChoiceEnabled(int i) const
 //   I removed inappropriate code that deleted the views before trying to
 //   save them.
 //
+//   Brad Whitlock, Thu Dec 18 13:35:10 PST 2003
+//   Added another argument to the view objects's CreateNode methods.
+//
 // ****************************************************************************
 
 bool
@@ -688,7 +691,7 @@ SaveViewAction::CreateNode(DataNode *parentNode)
             avtViewCurve *v = (avtViewCurve *)views[i].view;
             v->SetToViewCurveAttributes(&viewAtts);
 
-            if(viewAtts.CreateNode(saveviewNode, false))
+            if(viewAtts.CreateNode(saveviewNode, false, false))
             {
                 haveViews = true;
                 viewTypes.push_back(views[i].viewType);
@@ -701,7 +704,7 @@ SaveViewAction::CreateNode(DataNode *parentNode)
             avtView2D *v = (avtView2D *)views[i].view;
             v->SetToView2DAttributes(&viewAtts);
 
-            if(viewAtts.CreateNode(saveviewNode, false))
+            if(viewAtts.CreateNode(saveviewNode, false, false))
             {
                 haveViews = true;
                 viewTypes.push_back(views[i].viewType);
@@ -714,7 +717,7 @@ SaveViewAction::CreateNode(DataNode *parentNode)
             avtView3D *v = (avtView3D *)views[i].view;
             v->SetToView3DAttributes(&viewAtts);
 
-            if(viewAtts.CreateNode(saveviewNode, false))
+            if(viewAtts.CreateNode(saveviewNode, false, false))
             {
                 haveViews = true;
                 viewTypes.push_back(views[i].viewType);

@@ -27,7 +27,7 @@ Definition:
 // ****************************************************************************
 
 bool
-ViewerWindowManagerAttributes::CreateNode(DataNode *parentNode, bool)
+ViewerWindowManagerAttributes::CreateNode(DataNode *parentNode, bool, bool)
 {
     if(parentNode == 0)
         return false;
@@ -36,7 +36,7 @@ ViewerWindowManagerAttributes::CreateNode(DataNode *parentNode, bool)
     DataNode *node = new DataNode("ViewerWindowManagerAttributes");
     DataNode *attNode = new DataNode("ActionConfigurations");
     for(int i = 0; i < actionConfigurations.size(); ++i)
-        actionConfigurations[i]->CreateNode(attNode, true);
+        actionConfigurations[i]->CreateNode(attNode, true, true);
     node->AddNode(attNode);
 
     // Add the node to the parent node.
@@ -347,7 +347,7 @@ ViewerWindowManagerAttributes::AddAction(DataNode *node,
         // and insert it into the node.
         ActionGroupDescription newGroup(actionGroupName);
         newGroup.AddAction(action);
-        newGroup.CreateNode(node, false);
+        newGroup.CreateNode(node, true, false);
     }
     else
     {
@@ -434,6 +434,6 @@ ViewerWindowManagerAttributes::AddActionGroup(DataNode *node,
     }
 
     // The action group was not in the node. Add it.
-    ag.CreateNode(node, false);
+    ag.CreateNode(node, true, false);
 }
 

@@ -5483,6 +5483,9 @@ ViewerWindow::SetPopupEnabled(bool val)
 //   Brad Whitlock, Fri Nov 7 10:14:08 PDT 2003
 //   Added code to save the annotation object list.
 //
+//   Brad Whitlock, Fri Dec 19 15:26:10 PST 2003
+//   I added code to save the bounding box navigation mode.
+//
 // ****************************************************************************
 
 void
@@ -5508,6 +5511,7 @@ ViewerWindow::CreateNode(DataNode *parentNode, bool detailed)
     //
     if(detailed)
     {
+        windowNode->AddNode(new DataNode("boundingBoxMode", GetBoundingBoxMode()));
         windowNode->AddNode(new DataNode("cameraView", cameraView));
         windowNode->AddNode(new DataNode("maintainView", maintainView));
         windowNode->AddNode(new DataNode("viewExtentsType", avtExtentType_ToString(plotExtentsType)));
@@ -5537,13 +5541,13 @@ ViewerWindow::CreateNode(DataNode *parentNode, bool detailed)
         // Save out the annotations.
         //
         AnnotationAttributes annot(*visWindow->GetAnnotationAtts());
-        annot.CreateNode(windowNode, false);
+        annot.CreateNode(windowNode, true, true);
 
         //
         // Save out the lights
         //
         LightList lights(*visWindow->GetLightList());
-        lights.CreateNode(windowNode, false);
+        lights.CreateNode(windowNode, true, true);
 
         //
         // Save out important rendering attributes.
@@ -5560,7 +5564,7 @@ ViewerWindow::CreateNode(DataNode *parentNode, bool detailed)
         windowNode->AddNode(new DataNode("specularCoeff", GetSpecularCoeff()));
         windowNode->AddNode(new DataNode("specularPower", GetSpecularPower()));
         ColorAttribute specColor(GetSpecularColor());
-        specColor.CreateNode(windowNode, false);
+        specColor.CreateNode(windowNode, true, true);
 
         //
         // View
@@ -5568,17 +5572,17 @@ ViewerWindow::CreateNode(DataNode *parentNode, bool detailed)
         ViewCurveAttributes tmpViewCurveAtts;
         const avtViewCurve &viewCurve = GetViewCurve();
         viewCurve.SetToViewCurveAttributes(&tmpViewCurveAtts);
-        tmpViewCurveAtts.CreateNode(windowNode, false);
+        tmpViewCurveAtts.CreateNode(windowNode, true, true);
 
         View2DAttributes tmpView2DAtts;
         const avtView2D &view2d = GetView2D();
         view2d.SetToView2DAttributes(&tmpView2DAtts);
-        tmpView2DAtts.CreateNode(windowNode, false);
+        tmpView2DAtts.CreateNode(windowNode, true, true);
 
         View3DAttributes tmpView3DAtts;
         const avtView3D &view3d = GetView3D();
         view3d.SetToView3DAttributes(&tmpView3DAtts);
-        tmpView3DAtts.CreateNode(windowNode, false);
+        tmpView3DAtts.CreateNode(windowNode, true, true);
 
         //
         // Save out the view keyframes.
@@ -5606,7 +5610,7 @@ ViewerWindow::CreateNode(DataNode *parentNode, bool detailed)
         //
         AnnotationObjectList annots;
         UpdateAnnotationObjectList(annots);
-        annots.CreateNode(windowNode, false);
+        annots.CreateNode(windowNode, true, true);
 
         //
         // Let the animation add its information.
@@ -5644,6 +5648,9 @@ ViewerWindow::CreateNode(DataNode *parentNode, bool detailed)
 //
 //   Eric Brugger, Fri Dec  5 14:10:11 PST 2003
 //   Correct an error reading viewExtentsType.
+//
+//   Brad Whitlock, Fri Dec 19 15:27:49 PST 2003
+//   Added boundingBoxNavigate.
 //
 // ****************************************************************************
 
@@ -5695,6 +5702,8 @@ ViewerWindow::SetFromNode(DataNode *parentNode)
         view3d.SetFromView3DAttributes(&view3dAtts);
         SetView3D(view3d);
     }
+    if((node = windowNode->GetNode("boundingBoxMode")) != 0)
+        SetBoundingBoxMode(node->AsBool());
     if((node = windowNode->GetNode("cameraView")) != 0)
         SetCameraViewMode(node->AsBool());
     if((node = windowNode->GetNode("maintainView")) != 0)

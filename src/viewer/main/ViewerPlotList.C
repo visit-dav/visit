@@ -4607,7 +4607,9 @@ ViewerPlotList::GetKeyframeMode() const
 // Creation:   Wed Jul 16 13:09:04 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Dec 18 13:42:29 PST 2003
+//   Added the completeSave argument to save out the SIL attributes.
+//
 // ****************************************************************************
 
 void
@@ -4660,7 +4662,7 @@ ViewerPlotList::CreateNode(DataNode *parentNode)
         // Store the SIL restriction
         CompactSILRestrictionAttributes *csilr =
             plots[i].plot->GetSILRestriction()->MakeCompactAttributes();
-        csilr->CreateNode(plotNode, true);
+        csilr->CreateNode(plotNode, false, true);
         delete csilr;
 
         // Let the plot add its attributes to the node.
