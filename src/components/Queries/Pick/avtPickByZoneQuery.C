@@ -64,6 +64,9 @@ avtPickByZoneQuery::~avtPickByZoneQuery()
 //    Kathleen Bonnell, Thu Jul  8 16:42:05 PDT 2004
 //    Changed the way that zoneid is modified when accounting for ghost zones.
 //
+//    Kathleen Bonnell, Tue Aug 10 13:14:38 PDT 2004 
+//    Account for material selection.
+//
 // ****************************************************************************
 
 void
@@ -74,13 +77,23 @@ avtPickByZoneQuery::Execute(vtkDataSet *ds, const int dom)
         return;
     }
 
-    int zoneid = pickAtts.GetElementNumber();
+    int userZoneId = pickAtts.GetElementNumber();
+    int zoneid = userZoneId;
     int maxEls = ds->GetNumberOfCells();
-    if (zoneid < 0 || zoneid >= maxEls)
+    if (pickAtts.GetMatSelected())
     {
-        EXCEPTION2(BadCellException, zoneid+cellOrigin, maxEls+cellOrigin);
+        //
+        // The zone id stored in ElementNumber will not be correct relative
+        // to this dataset.  Retrieve the correct one for use with 
+        // RetrieveVarInfo, then reset it.
+        //
+        zoneid = GetCurrentZoneForOriginal(ds, userZoneId);
     }
 
+    if (zoneid < 0 || zoneid >= maxEls)
+    {
+        EXCEPTION2(BadCellException, userZoneId+cellOrigin, maxEls+cellOrigin);
+    }
 
     int type = ds->GetDataObjectType();
     bool needRealId = ghostType == AVT_HAS_GHOSTS  &&
@@ -129,8 +142,12 @@ avtPickByZoneQuery::Execute(vtkDataSet *ds, const int dom)
 
     src->Query(&pickAtts);
 
+    pickAtts.SetElementNumber(userZoneId+cellOrigin);
+
     if (pickAtts.GetMatSelected())
-        RetrieveVarInfo(ds);
+    {
+        RetrieveVarInfo(ds, zoneid, pickAtts.GetIncidentElements());
+    }
 
     //
     // Set the domain and zone of pickAtts in relation to the
@@ -156,12 +173,9 @@ avtPickByZoneQuery::Execute(vtkDataSet *ds, const int dom)
     {
         SetRealIds(ds);
         //
-        // Put the real ids in the correct spot for output.
-
-        pickAtts.SetElementNumber(pickAtts.GetRealElementNumber());
+        // Put the real node ids in the correct spot for output.
         pickAtts.SetIncidentElements(pickAtts.GetRealIncidentElements());
     }
-    pickAtts.SetElementNumber(pickAtts.GetElementNumber() + cellOrigin);
 
     //
     // Use the cell center as the place to position the pick letter.

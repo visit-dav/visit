@@ -65,6 +65,9 @@ avtNodePickQuery::~avtNodePickQuery()
 //  Creation:   May 13, 2004 
 //
 //  Modifications:
+//    Kathleen Bonnell, Tue Aug 10 09:06:54 PDT 2004
+//    When material-selection has been applied, ensure that RetriveVarInfo
+//    will be using the correct zone ids for this dataset.
 //
 // ****************************************************************************
 
@@ -145,7 +148,14 @@ avtNodePickQuery::Execute(vtkDataSet *ds, const int dom)
 
     if (pickAtts.GetMatSelected())
     {
-        RetrieveVarInfo(ds); 
+        //
+        // The zone numbers stored in IncidentElements are not the correct
+        // ones to use with this dataset ... get the correct ones to use
+        // with RetrieveVarInfo, then reset them.
+        //
+        intVector pickedZones = pickAtts.GetIncidentElements();
+        intVector currentZones = GetCurrentZoneForOriginal(ds, pickedZones);
+        RetrieveVarInfo(ds, pickAtts.GetElementNumber(), currentZones); 
     }
 
     //

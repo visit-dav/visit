@@ -439,7 +439,7 @@ avtGenericDatabase::GetOutput(avtDataSpecification_p spec,
 
 
 // ****************************************************************************
-//  Method: avtGenericDatabase::UpdateInternalState
+//  Method: avtGenericDatabase::UpdateinternalState
 //
 //  Purpose:
 //      Do some internal bookkeeping.  This is mostly to handle current
@@ -3440,6 +3440,10 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, vector<int> &domains,
 //
 //    Mark C. Miller, Tue Aug 10 14:16:36 PDT 2004
 //    Added check for if ghosts had been read from file and return immediately
+//
+//    Mark C. Miller, Wed Aug 11 14:41:06 PDT 2004
+//    Moved check for if ghost had been read from file to just before ghost
+//    node stuff. Made it contribute to results for shouldStop
 //    
 // ****************************************************************************
 
@@ -3457,13 +3461,6 @@ avtGenericDatabase::CommunicateGhosts(avtDatasetCollection &ds,
     avtDatabaseMetaData *md = GetMetaData(ts);
     avtVarType type = md->DetermineVarType(varname);
     std::string meshname = md->MeshForVar(varname);
-
-    //
-    // Return immediately if we've alread got ghost zones we've read from the
-    // database
-    //
-    if (md->GetContainsGhostZones(meshname) == AVT_HAS_GHOSTS)
-        return false;
 
     void_ref_ptr vr = cache.GetVoidRef("any_mesh",
                                    AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION,
@@ -3949,6 +3946,10 @@ avtGenericDatabase::CommunicateGhosts(avtDatasetCollection &ds,
     }
     int  shouldStop = (haveGlobalNodeIds ? 0 : 1);
 
+    // set shouldStop to 1 also if we arrive here already having ghosts 
+    if (md->GetContainsGhostZones(meshname) == AVT_HAS_GHOSTS)
+        shouldStop = 1;
+
 #ifdef PARALLEL
     int  parallelShouldStop;
     MPI_Allreduce(&shouldStop, &parallelShouldStop, 1, MPI_INT, MPI_MAX,
@@ -3956,13 +3957,7 @@ avtGenericDatabase::CommunicateGhosts(avtDatasetCollection &ds,
     shouldStop = parallelShouldStop;
 #endif
 
-    if (shouldStop > 0)
-    {
-        debug1 << "Not applying ghost zones because not all the domains "
-               << "have global node ids." << endl;
-        return false;
-    }
-    else
+    if (shouldStop == 0)
     {
         int timerHandle = visitTimer->StartTimer();
 

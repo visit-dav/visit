@@ -59,6 +59,10 @@ class avtExpressionEvaluatorFilter;
 //    No longer inherit from avtVariableQuery, moved common methods back to
 //    this class: (RetrieveNodes, RetrieveZones, RetrieveVarInfo). 
 //
+//    Kathleen Bonnell, Wed Aug 11 09:21:07 PDT 2004 
+//    Added RetrieveVarInfo method with extra args.  Added two
+//    GetCurrentZoneForOriginal methods. 
+// 
 // ****************************************************************************
 
 class QUERY_API avtPickQuery : public avtDatasetQuery
@@ -104,8 +108,15 @@ class QUERY_API avtPickQuery : public avtDatasetQuery
     void                            SetRealIds(vtkDataSet *);
 
     void                            RetrieveVarInfo(vtkDataSet *);   
+    void                            RetrieveVarInfo(vtkDataSet *, const int, 
+                                                    const intVector &);   
     bool                            RetrieveNodes(vtkDataSet *, int);   
     bool                            RetrieveZones(vtkDataSet *, int);   
+
+    int                             GetCurrentZoneForOriginal(vtkDataSet *, 
+                                                              const int);
+    intVector                       GetCurrentZoneForOriginal(vtkDataSet *, 
+                                                              const intVector&);
 
     PickAttributes                  pickAtts;
     avtExpressionEvaluatorFilter   *eef;

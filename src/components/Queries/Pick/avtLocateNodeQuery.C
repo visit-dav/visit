@@ -264,6 +264,9 @@ avtLocateNodeQuery::DeterminePickedNode(vtkDataSet *ds, int foundCell, float *pp
 //    Test for coincident points, return the one that is part of the
 //    original intersected cell.
 //    
+//    Kathleen Bonnell, Tue Aug 10 09:06:54 PDT 2004 
+//    Set id when validOrigNodes size is 1. 
+//
 // ****************************************************************************
 
 int
@@ -318,11 +321,12 @@ avtLocateNodeQuery::FindClosestPoint(vtkDataSet *ds, const int isectedCell,
                 if (validOrigNodes.size() == 1)
                 {
                     origNode = validOrigNodes[0];
+                    id = validClosestPoints[0];
                 }
                 else 
                 {
                     oNode = -1;
-                    oNode = -1;
+                    id = -1;
                     // some close nodes are same distance, find the one
                     // that belongs to the isected cell.
                     vtkIdList *cellPts = vtkIdList::New();
