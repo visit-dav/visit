@@ -240,6 +240,7 @@ public:
     // Description:
     // Forces the render window to create a new toolbar with the given name.
     void *CreateToolbar(const char *name);
+    void SetLargeIcons(bool);
 
     // Added by LLNL
     // Description:

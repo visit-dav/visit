@@ -18,6 +18,8 @@
 #include <ViewerWindowManagerAttributes.h>
 #include <DataNode.h>
 
+#include <qaction.h>
+
 // ****************************************************************************
 // Class: EnableToolbarAction
 //
@@ -238,6 +240,80 @@ public:
 };
 
 // ****************************************************************************
+// Class: SetToolbarIconSizeAction
+//
+// Purpose:
+//   This action tells the window manager to make all vis windows use either
+//   large or small icons in the their toolbars.
+//
+// Notes:      
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Mar 16 09:52:26 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+class SetToolbarIconSizeAction : public ViewerToggleAction
+{
+public:
+    SetToolbarIconSizeAction(ViewerWindow *win) : ViewerToggleAction(win,
+        "SetToolbarIconSizeAction")
+    {
+        SetAllText("Use large icons (all windows)");
+        toggled = !windowMgr->UsesLargeIcons();
+    }
+
+    virtual ~SetToolbarIconSizeAction() { }
+
+    virtual void Execute()
+    {
+        // Set the icon size.
+        windowMgr->SetLargeIcons(!windowMgr->UsesLargeIcons());
+    }
+
+    //
+    // Note: This method is from ViewerToggleAction but was transplanted
+    //       here to ensure that the action was updated. When using the
+    //       immediate base class's Update method the popup menu was not
+    //       updating on some platforms.
+    //
+    virtual void Update()
+    {
+        // Update the action's enabled state.
+        bool actionShouldBeEnabled = Enabled();
+        if(action->isEnabled() != actionShouldBeEnabled)
+            action->setEnabled(actionShouldBeEnabled);
+
+        // Update the action's toggled state if it is a toggle action.
+        if(action->isToggleAction())
+        {
+            bool actionShouldBeToggled = Toggled();
+            if(toggled != actionShouldBeToggled)
+            {
+                // Set the appropriate icon into the action.
+                if (!action->iconSet().pixmap().isNull())
+                {
+                    if(actionShouldBeToggled)
+                        SetIconSet(QIconSet(toggledIcon));
+                    else
+                        SetIconSet(QIconSet(regularIcon));
+                }
+                action->blockSignals(true);
+                action->setOn(actionShouldBeToggled);
+                action->blockSignals(false);
+            }
+            toggled = actionShouldBeToggled;
+        }
+    }
+
+    virtual bool Toggled() { return windowMgr->UsesLargeIcons(); }
+
+    virtual bool AllowInToolbar() const { return false; }
+};
+
+// ****************************************************************************
 // Method: ViewerActionManager::ViewerActionManager
 //
 // Purpose: 
@@ -398,6 +474,9 @@ ViewerActionManager::~ViewerActionManager()
 //   Brad Whitlock, Tue Feb 24 13:27:48 PST 2004
 //   I passed the toolbar's visibility flag to RealizeActionGroups.
 //
+//   Brad Whitlock, Tue Mar 16 14:24:36 PST 2004
+//   I added another flag to RealizeActionGroups.
+//
 // ****************************************************************************
 
 void
@@ -433,7 +512,7 @@ ViewerActionManager::EnableActions(ViewerWindowManagerAttributes *wma)
     //
     // Now that the action groups are defined, add the actions to the menus.
     //
-    RealizeActionGroups(wma->GetToolbarsVisible());
+    RealizeActionGroups(wma->GetToolbarsVisible(), wma->GetLargeIcons());
 }
 
 // ****************************************************************************
@@ -459,10 +538,13 @@ ViewerActionManager::EnableActions(ViewerWindowManagerAttributes *wma)
 //   Brad Whitlock, Tue Feb 24 14:08:48 PST 2004
 //   I added an argument to set the visibilty of the toolbar.
 //
+//   Brad Whitlock, Mon Mar 15 14:55:06 PST 2004
+//   I added a new action to set the toolbar's icon size.
+//
 // ****************************************************************************
 
 void
-ViewerActionManager::RealizeActionGroups(bool toolbarsVisible)
+ViewerActionManager::RealizeActionGroups(bool toolbarsVisible, bool largeIcons)
 {
     int i;
 
@@ -477,6 +559,11 @@ ViewerActionManager::RealizeActionGroups(bool toolbarsVisible)
             break;
         }
     }
+
+    //
+    // Set the window's icon size.
+    //
+    win->SetLargeIcons(largeIcons);
 
     //
     // Set whether the toolbar is hidden or showing before it has any
@@ -558,11 +645,13 @@ ViewerActionManager::RealizeActionGroups(bool toolbarsVisible)
     ViewerActionBase *a3 = new HideToolbarsForAllWindowsAction(win);
     ViewerActionBase *a4 = new ShowToolbarsAction(win);
     ViewerActionBase *a5 = new ShowToolbarsForAllWindowsAction(win);
+    ViewerActionBase *a6 = new SetToolbarIconSizeAction(win);
     AddAction(a1, ViewerRPC::EnableToolbarRPC);
     AddAction(a2, ViewerRPC::HideToolbarsRPC);
     AddAction(a3, ViewerRPC::HideToolbarsForAllWindowsRPC);
     AddAction(a4, ViewerRPC::ShowToolbarsRPC);
     AddAction(a5, ViewerRPC::ShowToolbarsForAllWindowsRPC);
+    AddAction(a6, ViewerRPC::SetToolbarIconSizeRPC);
     // Create an action group that contains the toolbar manipulation actions.
     ActionGroup customizeGroup("Customize");
     customizeGroup.canHaveToolbar = false;
@@ -571,6 +660,7 @@ ViewerActionManager::RealizeActionGroups(bool toolbarsVisible)
     customizeGroup.AddAction(ViewerRPC::HideToolbarsForAllWindowsRPC);
     customizeGroup.AddAction(ViewerRPC::ShowToolbarsRPC);
     customizeGroup.AddAction(ViewerRPC::ShowToolbarsForAllWindowsRPC);
+    customizeGroup.AddAction(ViewerRPC::SetToolbarIconSizeRPC);
     AddActionGroup(customizeGroup);
     // Add the actions to the customize menu.
     win->GetPopupMenu()->AddAction("Customize", a1);
@@ -578,6 +668,7 @@ ViewerActionManager::RealizeActionGroups(bool toolbarsVisible)
     win->GetPopupMenu()->AddAction("Customize", a3);
     win->GetPopupMenu()->AddAction("Customize", a4);
     win->GetPopupMenu()->AddAction("Customize", a5);
+    win->GetPopupMenu()->AddAction("Customize", a6);
 
     //
     // Enable or disable the action groups based on user-settings.

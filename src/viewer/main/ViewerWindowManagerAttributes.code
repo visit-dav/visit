@@ -27,6 +27,9 @@ Definition:
 //   Brad Whitlock, Tue Feb 24 13:38:09 PST 2004
 //   Added code to save the toolbarsVisible flag.
 //
+//   Brad Whitlock, Tue Mar 16 11:06:19 PDT 2004
+//   Added code to save the large icons flag.
+//
 // ****************************************************************************
 
 bool
@@ -44,6 +47,9 @@ ViewerWindowManagerAttributes::CreateNode(DataNode *parentNode, bool, bool)
 
     // Add the toolbars saved flag.
     node->AddNode(new DataNode("toolbarsVisible", toolbarsVisible));
+
+    // Add the large icons flag.
+    node->AddNode(new DataNode("largeIcons", largeIcons));
 
     // Add the node to the parent node.
     parentNode->AddNode(node);
@@ -71,6 +77,9 @@ Definition:
 //
 //   Brad Whitlock, Tue Feb 24 13:38:40 PST 2004
 //   Added code to read the toolbarsVisible flag.
+//
+//   Brad Whitlock, Tue Mar 16 12:01:25 PDT 2004
+//   Added code to read the largeIcons flag.
 //
 // ****************************************************************************
 
@@ -111,6 +120,12 @@ ViewerWindowManagerAttributes::SetFromNode(DataNode *parentNode)
     DataNode *node;
     if((node = searchNode->GetNode("toolbarsVisible")) != 0)
         SetToolbarsVisible(node->AsBool());
+
+    //
+    // Read the largeIcons flag.
+    //
+    if((node = searchNode->GetNode("largeIcons")) != 0)
+        SetLargeIcons(node->AsBool());
 }
 
 Function: ProcessOldVersions

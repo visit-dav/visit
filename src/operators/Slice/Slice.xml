@@ -40,7 +40,7 @@
         0.000000
       </Field>
       <Field name="axisType" label="axisType" type="enum" subtype="AxisType" ignoreeq="true">
-        Arbitrary
+        YAxis
       </Field>
       <Field name="upAxis" label="upAxis" type="doubleArray" length="3">
         0.000000
@@ -48,7 +48,7 @@
         1.000000
       </Field>
       <Field name="project2d" label="project2d" type="bool">
-        false
+        true
       </Field>
       <Field name="interactive" label="interactive" type="bool">
         true

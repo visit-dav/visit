@@ -297,6 +297,9 @@ $0 = shift @ARGV;
 #    Brad Whitlock, Thu Jan 29 10:53:51 PDT 2004
 #    Added support for Linux running on AMD Opteron 64 (x86_64).
 #
+#    Eric Brugger, Tue Mar 16 13:56:05 PST 2004
+#    Added /usr/local/lib to LD_LIBRARY_PATH.
+#
 ###############################################################################
 
 
@@ -999,6 +1002,10 @@ $ENV{LD_LIBRARY32_PATH}  = "$visitlibdir:$ENV{LD_LIBRARY32_PATH}";
 $ENV{LD_LIBRARYN32_PATH} = "$visitlibdir:$ENV{LD_LIBRARYN32_PATH}";
 $ENV{LD_LIBRARY64_PATH}  = "$visitlibdir:$ENV{LD_LIBRARY64_PATH}";
 $ENV{LIBPATH}            = "$visitlibdir:$ENV{LIBPATH}";
+
+# Add /usr/local/lib to the shared library path.  This was added for the
+# c++ library on some sun systems, but it may have broader applicability.
+$ENV{LD_LIBRARY_PATH}    = "/usr/local/lib:$ENV{LD_LIBRARY_PATH}";
 
 # Set up some environment flags that let VisIt run on Darwin.
 if($os eq "darwin")

@@ -4710,6 +4710,28 @@ ViewerWindow::CreateToolbar(const std::string &name)
 }
 
 // ****************************************************************************
+// Method: ViewerWindow::SetLargeIcons
+//
+// Purpose: 
+//   Sets whether the window should use large icons.
+//
+// Arguments:
+//   val : Whether the window should use large icons.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Mar 16 09:35:59 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerWindow::SetLargeIcons(bool val)
+{
+    visWindow->SetLargeIcons(val);
+}
+
+// ****************************************************************************
 // Method: ViewerWindow::GetWindowAttributes
 //
 // Purpose: 

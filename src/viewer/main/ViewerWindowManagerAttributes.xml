@@ -5,6 +5,9 @@
     <Field name="toolbarsVisible" label="Toolbars visible" type="bool">
       true
     </Field>
+    <Field name="largeIcons" label="Large icons" type="bool">
+      false
+    </Field>
     <Function name="CreateNode" user="false" member="true">
     </Function>
     <Function name="SetFromNode" user="false" member="true">

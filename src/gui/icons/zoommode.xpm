@@ -39,7 +39,7 @@ static const char *zoommode_xpm[] = {
 "ah c #BABABC",
 "ai c #461E1C",
 "aj c #461A1C",
-"ak c #B2B2B4",
+"ak c None",
 "al c #6E6A64",
 "am c #6E6664",
 "an c #3E1614",

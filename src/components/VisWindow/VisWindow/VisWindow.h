@@ -245,6 +245,9 @@ class VisitInteractor;
 //    Hank Childs, Thu Mar  4 08:41:07 PST 2004
 //    Made it easier to inherit from this class with your own renderer.
 //
+//    Brad Whitlock, Tue Mar 16 09:50:32 PDT 2004
+//    I added a method to tell the toolbar to use larger icons.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindow
@@ -382,7 +385,7 @@ public:
     void                 Lineout(int, int, int, int);
 
     void                *CreateToolbar(const char *name);
-
+    void                 SetLargeIcons(bool);
 
     // external rendering controls
     void                 SetExternalRenderCallback(

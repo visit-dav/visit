@@ -41,6 +41,9 @@ class     vtkQtRenderWindowInteractor;
 //    Brad Whitlock, Wed Jan 7 14:43:19 PST 2004
 //    I added SetCursorForMode.
 //
+//    Brad Whitlock, Tue Mar 16 09:46:11 PDT 2004
+//    I added SetLargeIcons.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinRenderingWithWindow : public VisWinRendering
@@ -65,6 +68,7 @@ class VISWINDOW_API VisWinRenderingWithWindow : public VisWinRendering
     virtual void                       SetShowCallback(void(*callback)(void *), void *);
 
     virtual void                      *CreateToolbar(const char *);
+    virtual void                       SetLargeIcons(bool);
     virtual void                       SetCursorForMode(INTERACTION_MODE);
 
   protected:

@@ -457,6 +457,28 @@ VisWinRenderingWithWindow::CreateToolbar(const char *name)
 }
 
 // ****************************************************************************
+// Method: VisWinRenderingWithWindow::SetLargeIcons
+//
+// Purpose: 
+//   Tells the vis window to use large icons.
+//
+// Arguments:
+//   val : Whether to use large icons.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Mar 16 09:47:08 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+VisWinRenderingWithWindow::SetLargeIcons(bool val)
+{
+    renWin->SetLargeIcons(val);
+}
+
+// ****************************************************************************
 // Method: VisWinRenderingWithWindow::SetCursorForMode
 //
 // Purpose: 

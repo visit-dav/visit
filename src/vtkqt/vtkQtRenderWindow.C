@@ -299,9 +299,6 @@ void vtkQtRenderWindow::SetInteractor(vtkQtRenderWindowInteractor *interactor)
 //   Brad Whitlock, Mon Jan 27 11:29:53 PDT 2003
 //   I modified the method so it uses QMainWindow methods.
 //
-//   Sean Ahern, Thu Feb 20 01:38:14 America/Los_Angeles 2003
-//   Changed icon sizes based on the size of the window.
-//
 // ****************************************************************************
 
 void
@@ -316,13 +313,6 @@ vtkQtRenderWindow::resizeEvent(QResizeEvent *re)
     this->Modified();
     this->Size[0] = w;
     this->Size[1] = h;
-
-#if 0   // Disable until we can find a way to address different display sizes.
-    if (Size[0] > 600)
-        setUsesBigPixmaps(true);
-    else
-        setUsesBigPixmaps(false);
-#endif
 
     vtkRenderer *aren;
     for (Renderers->InitTraversal() ; (aren = Renderers->GetNextItem()) ; )
@@ -548,8 +538,6 @@ vtkQtRenderWindow::mapFromGlobal(const QPoint &pos) const
 // Creation:   Wed Jan 29 14:19:41 PST 2003
 //
 // Modifications:
-//      Sean Ahern, Thu Feb 20 01:37:39 America/Los_Angeles 2003
-//      Made the toolbar icon sizes vary based on the size of the window.
 //   
 // ****************************************************************************
 
@@ -564,14 +552,30 @@ vtkQtRenderWindow::CreateToolbar(const char *name)
         tools->setLabel(name);
     }
 
-#if 0   // Disable until we can find a way to address different display sizes.
-    if (Size[0] > 600)
-        setUsesBigPixmaps(true);
-    else
-        setUsesBigPixmaps(false);
-#endif
-
     return (void *)tools;
+}
+
+// ****************************************************************************
+// Method: vtkQtRenderWindow::SetLargeIcons
+//
+// Purpose: 
+//   Tells the window whether it should use large icons.
+//
+// Arguments:
+//   val : The new large icon value.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Mar 16 09:31:47 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+vtkQtRenderWindow::SetLargeIcons(bool val)
+{
+    if(usesBigPixmaps() != val)
+        setUsesBigPixmaps(val);
 }
 
 // ****************************************************************************

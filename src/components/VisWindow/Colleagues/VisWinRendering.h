@@ -106,6 +106,9 @@ class VisWindowColleagueProxy;
 //    Brad Whitlock, Wed Jan 7 14:42:28 PST 2004
 //    I added the SetCursorForMode method.
 //
+//    Brad Whitlock, Tue Mar 16 09:48:53 PDT 2004
+//    I added SetLargeIcons.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinRendering : public VisWinColleague
@@ -203,9 +206,9 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
     int                      GetScalableThreshold() const
                                  { return scalableThreshold; };
 
-    virtual void             SetCursorForMode(INTERACTION_MODE) { };
-
     virtual void            *CreateToolbar(const char *) { return 0; };
+    virtual void             SetLargeIcons(bool) { };
+    virtual void             SetCursorForMode(INTERACTION_MODE) { };
 
   protected:
     vtkRenderer                  *canvas;

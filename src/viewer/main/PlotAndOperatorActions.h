@@ -192,6 +192,9 @@ public:
 //   Brad Whitlock, Mon Sep 29 17:38:36 PST 2003
 //   I separated host and database into two fields.
 //
+//   Brad Whitlock, Tue Mar 16 15:35:44 PST 2004
+//   I added changeMenuIconSize.
+//
 // ****************************************************************************
 
 class QMenuBar;
@@ -223,6 +226,7 @@ public:
 private slots:
     void addPlot(int, const QString &);
     void orientationChanged(Orientation);
+    void changeMenuIconSize(bool);
 private:
     QMenuBar              *menu;
     int                   maxPixmapWidth, maxPixmapHeight;
