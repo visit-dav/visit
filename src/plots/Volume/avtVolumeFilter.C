@@ -5,6 +5,9 @@
 #include <avtVolumeFilter.h>
 
 #include <WindowAttributes.h>
+#include <Expression.h>
+#include <ExpressionList.h>
+#include <ParsingExprList.h>
 
 #include <avtCommonDataFunctions.h>
 #include <avtCompositeRF.h>
@@ -24,6 +27,7 @@
 #include <DebugStream.h>
 #include <InvalidDimensionsException.h>
 #include <InvalidVariableException.h>
+#include <snprintf.h>
 
 
 //
@@ -470,25 +474,87 @@ CreateViewInfoFromViewAttributes(avtViewInfo &vi, const View3DAttributes &view)
 //    Hank Childs, Wed Nov 24 16:23:41 PST 2004
 //    Removed commented out code, since current code is now correct.
 //
+//    Kathleen Bonnell, Fri Mar  4 13:53:45 PST 2005 
+//    Account for different scaling methods. 
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
 avtVolumeFilter::PerformRestriction(avtPipelineSpecification_p spec)
 {
     avtPipelineSpecification_p newspec = NULL;
-    newspec = spec;
 
-    newspec->NoDynamicLoadBalancing();
 
     if (primaryVariable != NULL)
     {
         delete [] primaryVariable;
     }
 
-    const char *var = spec->GetDataSpecification()->GetVariable();
-    primaryVariable = new char[strlen(var)+1];
-    strcpy(primaryVariable, var);
+    avtDataSpecification_p ds = spec->GetDataSpecification();
+    const char *var = ds->GetVariable();
 
+    if (atts.GetScaling() == VolumeAttributes::Linear)
+    {
+        newspec = spec;
+        primaryVariable = new char[strlen(var)+1];
+        strcpy(primaryVariable, var);
+    }
+    else if (atts.GetScaling() == VolumeAttributes::Log10)
+    {
+        string exprName = (string)"log_" + (string)var;
+        char exprDef[128];
+        if (atts.GetUseColorVarMin())
+        {
+            char m[16];
+            SNPRINTF(m, 16, "%f", atts.GetColorVarMin());
+            SNPRINTF(exprDef, 128, "log10(if(gt(%s, 0), %s, %s))", 
+                     var, var, m);
+        }
+        else 
+        {
+            SNPRINTF(exprDef, 128, "log10(%s)", var);
+        }
+        ExpressionList *elist = ParsingExprList::Instance()->GetList();
+        Expression *e = new Expression();
+        e->SetName(exprName.c_str());
+        e->SetDefinition(exprDef); 
+        e->SetType(Expression::ScalarMeshVar);
+        elist->AddExpression(*e);
+        delete e;
+        avtDataSpecification_p nds = new 
+          avtDataSpecification(exprName.c_str(),
+                               ds->GetTimestep(), ds->GetRestriction());
+        nds->AddSecondaryVariable(var);
+        newspec = new avtPipelineSpecification(spec, nds);
+        primaryVariable = new char[exprName.size()+1];
+        strcpy(primaryVariable, exprName.c_str());
+    }
+    else // VolumeAttributes::Skew)
+    {
+        char exprName[128];
+        SNPRINTF(exprName, 128, "%s_skewedby_%f", var, 
+                 atts.GetSkewFactor()); 
+        char exprDef[128];
+        SNPRINTF(exprDef, 128, "var_skew(%s, %f)", var, 
+                 atts.GetSkewFactor());
+        ExpressionList *elist = ParsingExprList::Instance()->GetList();
+
+        Expression *e = new Expression();
+        e->SetName(exprName);
+        e->SetDefinition(exprDef); 
+        e->SetType(Expression::ScalarMeshVar);
+        elist->AddExpression(*e);
+        delete e;
+        avtDataSpecification_p nds = 
+            new avtDataSpecification(exprName,
+                ds->GetTimestep(), ds->GetRestriction());
+        nds->AddSecondaryVariable(var);
+        newspec = new avtPipelineSpecification(spec, nds);
+        primaryVariable = new char[strlen(exprName)+1];
+        strcpy(primaryVariable, exprName);
+    }
+
+    newspec->NoDynamicLoadBalancing();
     return newspec;
 }
 

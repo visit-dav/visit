@@ -95,6 +95,9 @@
 #   Hank Childs, Thu Jan 20 15:47:25 PST 2005
 #   Added avtSideVolume, avtResradFilter.
 #
+#   Kathleen Bonnell, Thu Mar  3 11:13:22 PST 2005 
+#   Added avtVariableSkewFilter. 
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -151,6 +154,7 @@ General_src= \
   General/avtRandomFilter.C \
   General/avtRecenterFilter.C \
   General/avtSpecMFFilter.C \
+  General/avtVariableSkewFilter.C \
   General/avtVectorComposeFilter.C \
   General/avtVectorDecomposeFilter.C
 

@@ -32,6 +32,9 @@ Definition:
 //    Brad Whitlock, Wed Dec 15 09:31:24 PDT 2004
 //    Removed doSoftware since it's now part of rendererType.
 //
+//    Kathleen Bonnell, Thu Mar  3 09:27:40 PST 2005
+//    Recalculate if scaling or skewFactor changed for RayCasting.
+//
 // ****************************************************************************
 bool
 VolumeAttributes::ChangesRequireRecalculation(const VolumeAttributes &obj) const
@@ -44,6 +47,14 @@ VolumeAttributes::ChangesRequireRecalculation(const VolumeAttributes &obj) const
         return true;
     if (smoothData != obj.smoothData)
         return true;
+
+    if (rendererType == VolumeAttributes::RayCasting)
+    {
+        if (scaling != obj.scaling)
+            return true;
+        if (scaling == VolumeAttributes::Skew && skewFactor != obj.skewFactor)
+            return true;
+    }
 
     return false;
 }

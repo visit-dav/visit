@@ -9,6 +9,7 @@ class QButtonGroup;
 class QCheckBox;
 class QComboBox;
 class QGroupBox;
+class QLabel;
 class QLineEdit;
 class QPushButton;
 class QSlider;
@@ -57,6 +58,9 @@ class QvisVariableButton;
 //    Brad Whitlock, Wed Dec 15 09:20:45 PDT 2004
 //    I removed the raytrace toggle and made it a rendering mode. Changed to
 //    a combobox widget.
+//
+//    Kathleen Bonnell, Thu Mar  3 11:01:22 PST 2005 
+//    Added skewLineEdit and scalingButtons. 
 //
 // ****************************************************************************
 
@@ -114,6 +118,8 @@ private slots:
     void rendererTypeChanged(int val);
     void gradientTypeChanged(int val);
     void num3DSlicesProcessText();
+    void processSkewText();
+    void scaleClicked(int scale);
 private:
     int                      plotType;
     VolumeAttributes         *volumeAtts;
@@ -156,6 +162,9 @@ private:
     QSlider                  *resampleTargetSlider;
     QLineEdit                *num3DSlices;
     QLineEdit                *samplesPerRay;
+    QButtonGroup             *scalingButtons;
+    QLabel                   *skewLabel;
+    QLineEdit                *skewLineEdit;
 };
 
 #endif

@@ -28,6 +28,11 @@
         CenteredDifferences
         SobelOperator
       </Enum>
+      <Enum name="Scaling">
+        Linear
+        Log10
+        Skew
+      </Enum>
       <Field name="legendFlag" label="legendFlag" type="bool">
         true
       </Field>
@@ -90,6 +95,12 @@
       </Field>
       <Field name="num3DSlices" label="num3DSlices" type="int">
         200
+      </Field>
+      <Field name="scaling" label="scaling" type="enum" subtype="Scaling">
+        Linear
+      </Field>
+      <Field name="skewFactor" label="skewFactor" type="double" enabler="scaling:Skew">
+        1.000000
       </Field>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>

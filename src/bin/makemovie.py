@@ -938,10 +938,15 @@ class MakeMovie:
     #   Brad Whitlock, Wed Dec 15 11:25:27 PDT 2004
     #   Added support for PNG files.
     #
+    #   Hank Childs, Fri Mar  4 15:04:29 PST 2005
+    #   Save a tiled window if the session has tiled windows.
+    #
     ###########################################################################
 
     def SaveImage(self, index, ext):
         s = SaveWindowAttributes()
+        old_sw = GetSaveWindowAttributes()
+        s.saveTiled = old_sw.saveTiled
         s.fileName = "%s%s%s%04d.%s" % (self.tmpDir, self.slash, self.frameBase, index, ext)
         s.family = 0
         if(self.outputFormat == self.OUTPUT_PPM):
