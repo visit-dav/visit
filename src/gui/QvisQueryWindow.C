@@ -114,6 +114,9 @@ QvisQueryWindow::~QvisQueryWindow()
 //   Kathleen Bonnell, Sat Sep  4 11:49:58 PDT 2004 
 //   Added displayMode.
 //
+//   Kathleen Bonnell, Wed Sep  8 10:06:16 PDT 2004 
+//   Remove coordLabel. 
+//
 // ****************************************************************************
 
 void
@@ -158,9 +161,6 @@ QvisQueryWindow::CreateWindowContents()
     QGridLayout *sLayout = new QGridLayout(gLayout, 6, 2);
     sLayout->setMargin(10);
     sLayout->setSpacing(5);
-    coordLabel = new QLabel("** Use screen coordinates **", argPanel, "coordLabel");
-    sLayout->addMultiCellWidget(coordLabel, 0, 0, 0, 1);
-    coordLabel->hide();    
 //    sLayout->addRowSpacing(0, 15);
     for(int i = 0; i < 4; ++i)
     {
@@ -177,7 +177,7 @@ QvisQueryWindow::CreateWindowContents()
         sLayout->addWidget(labels[i], i+1, 0);
     }
   
-    // Add the plot optionos radio button group to the argument panel.
+    // Add the data options radio button group to the argument panel.
     dataOpts = new QButtonGroup(0, "dataOpts");
     QRadioButton *origData = new QRadioButton("Original Data", argPanel, "origData");
     dataOpts->insert(origData);
@@ -523,12 +523,15 @@ QvisQueryWindow::UpdateResults(bool)
 //   Changed argument from index to qname -- because queryList box may
 //   have fewer items than all queries. 
 // 
+//   Kathleen Bonnell, Wed Sep  8 10:06:16 PDT 2004 
+//   Removed references to QueryList::CoordRep and coordLabel, 
+//   no longer exists. 
+//
 // ****************************************************************************
 
 void
 QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
 {
-    const intVector &rep = queries->GetCoordRep();
     const intVector &winType = queries->GetWinType();
     const intVector &timeQuery = queries->GetTimeQuery();
     const stringVector &names = queries->GetNames();
@@ -548,11 +551,8 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
     if(index >= 0 && index < winType.size())
     {
         bool showWidgets[4] = {false, false, false, false};
-        bool showCoordLabel = false;
         bool showDataOptions = false;
         QueryList::WindowType winT = (QueryList::WindowType)winType[index];
-        QueryList::CoordinateRepresentation r;
-        r = (QueryList::CoordinateRepresentation)rep[index];
         bool showTime = (bool)timeQuery[index];
       
         labels[0]->setText("Variables");
@@ -561,13 +561,7 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
         if (winT == QueryList::SinglePoint)
         {
             labels[0]->setText("Query point");
-            if(r == QueryList::WorldSpace)
-                textFields[0]->setText("0 0 0");
-            else
-            {
-                showCoordLabel = true;
-                textFields[0]->setText("100 100");
-            }
+            textFields[0]->setText("0 0 0");
             labels[1]->setText("Variables");
             textFields[1]->setText("default");
             showWidgets[0] = true;
@@ -576,18 +570,9 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
         else if (winT == QueryList::DoublePoint)
         {
             labels[0]->setText("Start point");
-            if(r == QueryList::WorldSpace)
-                textFields[0]->setText("0 0 0");
-            else
-            {
-                showCoordLabel = true;
-                textFields[0]->setText("0 0");
-            }
+            textFields[0]->setText("0 0 0");
             labels[1]->setText("End point");
-            if(r == QueryList::WorldSpace)
-                textFields[1]->setText("1 0 0");
-            else
-                textFields[1]->setText("100 100");
+            textFields[1]->setText("1 0 0");
             labels[2]->setText("Samples");
             textFields[2]->setText("50");
             labels[3]->setText("Variables");
@@ -658,11 +643,6 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
             dataOpts->find(0)->hide();
             dataOpts->find(1)->hide();
         }
-
-        if(showCoordLabel)
-            coordLabel->show();
-        else
-            coordLabel->hide();
 
         if (showTime)
             timeQueryButton->show();
@@ -778,6 +758,9 @@ QvisQueryWindow::ConnectPlotList(PlotList *pl)
 //   Kathleen Bonnell, Tue May 25 16:09:15 PDT 2004 
 //   Switch order of dom and el in viewerProxy call.  
 // 
+//   Kathleen Bonnell, Wed Sep  8 10:06:16 PDT 2004 
+//   Removed references to QueryList::CoordRep, no longer exists. 
+//
 // ****************************************************************************
 
 void
@@ -789,7 +772,6 @@ QvisQueryWindow::Apply(bool ignore, bool doTime)
         int useActualData = dataOpts->id(dataOpts->selected());
         const stringVector &names = queries->GetNames();
         const intVector &types = queries->GetTypes();
-        const intVector &rep = queries->GetCoordRep();
         const intVector &winType = queries->GetWinType();
         if(index >= 0 && index < types.size())
         {
@@ -861,7 +843,7 @@ QvisQueryWindow::Apply(bool ignore, bool doTime)
             }
             else if(winT == QueryList::SinglePoint)
             {
-                if(!GetPoint(0, "query point", rep[index], p0))
+                if(!GetPoint(0, "query point", p0))
                     noErrors = false;
                 if(!GetVars(1, vars))
                     noErrors = false;
@@ -881,9 +863,9 @@ QvisQueryWindow::Apply(bool ignore, bool doTime)
             }
             else if(winT == QueryList::DoublePoint)
             {
-                if(!GetPoint(0, "start point", rep[index], p0))
+                if(!GetPoint(0, "start point", p0))
                     noErrors = false;
-                if(!GetPoint(1, "end point", rep[index], p1))
+                if(!GetPoint(1, "end point", p1))
                     noErrors = false;
 
                 int sample = 50;
@@ -950,7 +932,6 @@ QvisQueryWindow::Apply(bool ignore, bool doTime)
 // Arguments:
 //   index : The index of the text field to use.
 //   pname : The point name being read.
-//   rep   : The coordinate representation.
 //   pt    : The array in which the point will be stored.
 //
 // Returns:    True if it worked.
@@ -962,10 +943,13 @@ QvisQueryWindow::Apply(bool ignore, bool doTime)
 //   Kathleen Bonnell, Tue Jul 22 14:02:37 PDT 2003
 //   Allow for only 2 world-space coordinates, setting z to 0 if not provided.
 //   
+//   Kathleen Bonnell, Wed Sep  8 10:06:16 PDT 2004 
+//   Removed references to QueryList::CoordRep, no longer exists. 
+//
 // ****************************************************************************
 
 bool
-QvisQueryWindow::GetPoint(int index, const QString &pname, int rep, double pt[3])
+QvisQueryWindow::GetPoint(int index, const QString &pname, double pt[3])
 {
     bool okay = false;
 
@@ -975,39 +959,17 @@ QvisQueryWindow::GetPoint(int index, const QString &pname, int rep, double pt[3]
         okay = !temp.isEmpty();
         if(okay)
         {
-            QueryList::CoordinateRepresentation r;
-            r = (QueryList::CoordinateRepresentation)rep;
-            if(r == QueryList::WorldSpace)
-            {
-                pt[2] = 0.;
-                int numScanned = sscanf(temp.latin1(), "%lg %lg %lg",
+            pt[2] = 0.;
+            int numScanned = sscanf(temp.latin1(), "%lg %lg %lg",
                         &pt[0], &pt[1], &pt[2]);
-                okay = (numScanned == 2 || numScanned == 3);
-                if(!okay)
-                {
-                    QString msg;
-                    msg.sprintf("The %s is not valid. It should consist of "
-                                 "two or three real world coordinate values.",
-                                 pname.latin1());
-                    Error(msg);
-                }
-            }
-            else if(r == QueryList::ScreenSpace)
+            okay = (numScanned == 2 || numScanned == 3);
+            if(!okay)
             {
-                int x, y;
-                okay = (sscanf(temp.latin1(), "%d %d", &x, &y) == 2);
-                if(okay)
-                {
-                    pt[0] = (double)x; pt[1] = (double)y; pt[2] = 0.;
-                }
-                else
-                {
-                    QString msg;
-                    msg.sprintf("The %s is not valid. It should consist of "
-                                "two integer screen coordinate values.",
-                                pname.latin1());
-                    Error(msg);
-                }
+                QString msg;
+                msg.sprintf("The %s is not valid. It should consist of "
+                            "two or three real world coordinate values.",
+                            pname.latin1());
+                Error(msg);
             }
         }
     }

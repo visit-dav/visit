@@ -1060,3 +1060,35 @@ avtTransparencyActor::TransparenciesExist()
 {
     return (appender->GetNumberOfInputs() > 0);
 }
+
+
+// ****************************************************************************
+//  Method: avtTransparencyActor::SetIs2Dimensional
+//
+//  Purpose:
+//      Sets whether or not the actor is 2D.
+//
+//  Programmer: Hank CHilds
+//  Creation:   September 8, 2004
+//
+// ****************************************************************************
+
+void
+avtTransparencyActor::SetIs2Dimensional(bool val)
+{
+    if (is2Dimensional != val)
+    {
+        //
+        // If we have any inputs left over, remove them.  This is important,
+        // because the 2D execution flow will bail out before removing them,
+        // which can potentially leave old 3D datasets in the same window
+        // as the 2D dataset.
+        //
+        if (appender != NULL)
+            appender->RemoveAllInputs();
+    }
+
+    is2Dimensional = val;
+}
+
+

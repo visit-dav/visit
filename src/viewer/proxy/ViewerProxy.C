@@ -4910,6 +4910,8 @@ ViewerProxy::LineQuery(const std::string &queryName, const double pt1[3],
 // Creation:   Mon Sep 9 16:38:51 PST 2002
 //
 // Modifications:
+//   Kathleen Bonnell, Wed Sep  8 10:26:32 PDT 2004
+//   Changed queryname passed to PointQuery form 'Pick' to 'ScreenZonePick'.
 //   
 // ****************************************************************************
 
@@ -4920,7 +4922,7 @@ ViewerProxy::Pick(int x, int y, const stringVector &vars)
     pt[0] = (double)x;
     pt[1] = (double)y;
     pt[2] = 0.;
-    PointQuery("Pick", pt, vars);
+    PointQuery("ScreenZonePick", pt, vars);
 }
 
 
@@ -4938,13 +4940,15 @@ ViewerProxy::Pick(int x, int y, const stringVector &vars)
 // Creation:   July 23, 2003 
 //
 // Modifications:
-//   
+//   Kathleen Bonnell, Wed Sep  8 10:26:32 PDT 2004
+//   Changed queryname passed to PointQuery from 'WorldPick' to 'Pick'.
+//
 // ****************************************************************************
 
 void
 ViewerProxy::Pick(double xyz[3], const stringVector &vars)
 {
-    PointQuery("WorldPick", xyz, vars);
+    PointQuery("Pick", xyz, vars);
 }
 
 // ****************************************************************************
@@ -4961,6 +4965,9 @@ ViewerProxy::Pick(double xyz[3], const stringVector &vars)
 // Creation:   June 25, 2003 
 //
 // Modifications:
+//   Kathleen Bonnell, Wed Sep  8 10:26:32 PDT 2004
+//   Changed queryname passed to PointQuery from 'NodePick' to 
+//   'ScreenNodePick'.
 //   
 // ****************************************************************************
 
@@ -4971,7 +4978,7 @@ ViewerProxy::NodePick(int x, int y, const stringVector &vars)
     pt[0] = (double)x;
     pt[1] = (double)y;
     pt[2] = 0.;
-    PointQuery("NodePick", pt, vars);
+    PointQuery("ScreenNodePick", pt, vars);
 }
 
 
@@ -4989,13 +4996,15 @@ ViewerProxy::NodePick(int x, int y, const stringVector &vars)
 // Creation:   July 23, 2003 
 //
 // Modifications:
+//   Kathleen Bonnell, Wed Sep  8 10:26:32 PDT 2004
+//   Changed queryname passed to PointQuery from 'WorldNodePick' to 'NodePick'.
 //   
 // ****************************************************************************
 
 void
 ViewerProxy::NodePick(double xyz[3], const stringVector &vars)
 {
-    PointQuery("WorldNodePick", xyz, vars);
+    PointQuery("NodePick", xyz, vars);
 }
 
 // ****************************************************************************

@@ -7901,7 +7901,7 @@ visit_Pick(PyObject *self, PyObject *args)
         // Extract the world-coordinate point from the first object.
         if(!GetDoubleArrayFromPyObject(pt_tuple, pt, 3))
         {
-            VisItErrorFunc("The first argument to WorldPick must be a point "
+            VisItErrorFunc("The first argument to Pick must be a point "
                            "specified as a tuple of coordinates.");
             return NULL;
         }
@@ -7981,7 +7981,7 @@ visit_NodePick(PyObject *self, PyObject *args)
     {
         if(!GetDoubleArrayFromPyObject(pt_tuple, pt, 3))
         {
-            VisItErrorFunc("The first argument to WorldNodePick must be a "
+            VisItErrorFunc("The first argument to NodePick must be a "
                            "point specified as a tuple of coordinates.");
             return NULL;
         }
@@ -9363,6 +9363,10 @@ AddMethod(const char *methodName, PyObject *(cb)(PyObject *, PyObject *),
 //   Kathleen Bonnell, Thu Aug  5 10:44:22 PDT 2004 
 //   Added resetLineoutColor.
 //
+//   Kathleen Bonnell, Wed Sep  8 10:33:24 PDT 2004 
+//   Removed WorldPick and WorldNodePick, as they are unnecessary and handled
+//   by Pick and NodePick. 
+//
 // ****************************************************************************
 
 static void
@@ -9542,8 +9546,6 @@ AddDefaultMethods()
     AddMethod("ToggleMaintainDataMode", visit_ToggleMaintainDataMode);
     AddMethod("ToggleSpinMode", visit_ToggleSpinMode);
     AddMethod("UndoView",  visit_UndoView);
-    AddMethod("WorldPick", visit_Pick);
-    AddMethod("WorldNodePick", visit_NodePick);
     AddMethod("WriteConfigFile",  visit_WriteConfigFile);
     AddMethod("ZonePick", visit_Pick);
 
