@@ -36,6 +36,9 @@ class vtkHankAxisActor2D;
 //    Added methods SetAutoSetTicks, SetMajorTickMinimum, SetMajorTickMaximum,
 //    SetMajorTickSpacing and SetMinorTickSpacing.
 //    
+//    Eric Brugger, Wed Jun 25 15:36:16 PDT 2003
+//    I added SetLineWidth.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinFrame : public VisWinColleague
@@ -62,6 +65,7 @@ class VISWINDOW_API VisWinFrame : public VisWinColleague
     void                         SetMajorTickMaximum(double, double);
     void                         SetMajorTickSpacing(double, double);
     void                         SetMinorTickSpacing(double, double);
+    void                         SetLineWidth(int);
 
   protected:
     vtkHankAxisActor2D          *leftBorder, *rightBorder, *topBorder,

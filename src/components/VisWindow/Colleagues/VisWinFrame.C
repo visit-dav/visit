@@ -436,7 +436,7 @@ VisWinFrame::SetTickLocation(int loc)
 
 
 // ****************************************************************************
-//  Function: SetAutoSetTicks
+//  Method: VisWinFrame::SetAutoSetTicks
 //
 //  Purpose:
 //      Sets the flag which specifies if the ticks should be automatically
@@ -460,7 +460,7 @@ VisWinFrame::SetAutoSetTicks(int autoSetTicks)
 
 
 // ****************************************************************************
-//  Function: SetMajorTickMinimum
+//  Method: VisWinFrame::SetMajorTickMinimum
 //
 //  Purpose:
 //      Sets the minimum values for the major tick marks.
@@ -483,7 +483,7 @@ VisWinFrame::SetMajorTickMinimum(double xMajorMinimum, double yMajorMinimum)
 
 
 // ****************************************************************************
-//  Function: SetMajorTickMaximum
+//  Method: VisWinFrame::SetMajorTickMaximum
 //
 //  Purpose:
 //      Sets the maximum values for the major tick marks.
@@ -506,7 +506,7 @@ VisWinFrame::SetMajorTickMaximum(double xMajorMaximum, double yMajorMaximum)
 
 
 // ****************************************************************************
-//  Function: SetMajorTickSpacing
+//  Method: VisWinFrame::SetMajorTickSpacing
 //
 //  Purpose:
 //      Sets the spacing for the major tick marks.
@@ -529,7 +529,7 @@ VisWinFrame::SetMajorTickSpacing(double xMajorSpacing, double yMajorSpacing)
  
  
 // ****************************************************************************
-//  Function: SetMinorTickSpacing
+//  Method: VisWinFrame::SetMinorTickSpacing
 //
 //  Purpose:
 //      Sets the spacing for the minor tick marks.
@@ -548,6 +548,30 @@ VisWinFrame::SetMinorTickSpacing(double xMinorSpacing, double yMinorSpacing)
 {
     topBorder->SetMinorTickSpacing(xMinorSpacing);
     rightBorder->SetMinorTickSpacing(yMinorSpacing);
+}
+
+
+// ****************************************************************************
+//  Method: VisWinFrame::SetLineWidth
+//
+//  Purpose:
+//      Sets the line width for the frame.
+//
+//  Arguments:
+//      width   The line width.
+//
+//  Programmer: Eric Brugger
+//  Creation:   June 25, 2003
+//
+// ****************************************************************************
+ 
+void
+VisWinFrame::SetLineWidth(int width)
+{
+    leftBorder->GetProperty()->SetLineWidth(width);
+    rightBorder->GetProperty()->SetLineWidth(width);
+    topBorder->GetProperty()->SetLineWidth(width);
+    bottomBorder->GetProperty()->SetLineWidth(width);
 }
 
 

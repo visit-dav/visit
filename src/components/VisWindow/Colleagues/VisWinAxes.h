@@ -55,6 +55,9 @@ class VisWindowColleagueProxy;
 //    Modified AdjustValues so that the arguments aren't passed by reference
 //    because they are no longer modified.
 //
+//    Eric Brugger, Wed Jun 25 14:09:15 PDT 2003
+//    I added SetLineWidth.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinAxes : public VisWinColleague
@@ -94,6 +97,7 @@ class VISWINDOW_API VisWinAxes : public VisWinColleague
     void                      SetYLabelFontHeight(double);
     void                      SetXTitleFontHeight(double);
     void                      SetYTitleFontHeight(double);
+    void                      SetLineWidth(int);
 
   protected:
     vtkHankAxisActor2D       *xAxis, *yAxis;

@@ -91,6 +91,12 @@ avtVerdictFilter::avtVerdictFilter()
 //  Programmer:   Akira Haddox
 //  Creation:     June 11, 2002
 //
+//
+//  Modifications:
+//
+//    Akira Haddox, Wed Jul  2 08:26:30 PDT 2003
+//    Added conversion from pixel cell type.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -135,14 +141,23 @@ avtVerdictFilter::DeriveVariable(vtkDataSet *in_ds)
             pointData->GetTuple(j,coordinates[j]);
         }
 
+        int cellType = cell->GetCellType();
+        
         // Convert Voxel format into hexahedron format.
-        if (cell->GetCellType() == VTK_VOXEL)
+        if (cellType == VTK_VOXEL)
         {
-                Swap3(coordinates, 2,3);
-                Swap3(coordinates, 6,7);
+            Swap3(coordinates, 2,3);
+            Swap3(coordinates, 6,7);
         }
 
-        results[i] = Metric(coordinates, cell->GetCellType());
+        // Convert Pixel format into quad format.
+        if (cellType == VTK_PIXEL)
+        {
+            Swap3(coordinates, 2, 3);
+            cellType = VTK_QUAD;
+        }
+
+        results[i] = Metric(coordinates, cellType);
     }
 
 
@@ -238,6 +253,9 @@ avtVerdictFilter::PreExecute()
 //    Hank Childs, Thu Oct 17 08:07:53 PDT 2002
 //    Update for new verdict interface.
 //
+//    Akira Haddox, Wed Jul  2 08:26:30 PDT 2003
+//    Added conversion from pixel cell type.
+//
 // ****************************************************************************
 
 void SumSize(avtDataRepresentation &adr, void *, bool &)
@@ -279,6 +297,11 @@ void SumSize(avtDataRepresentation &adr, void *, bool &)
                 Swap3(coordinates, 6,7);
         }
 
+        // Convert Pixel format into quad format.
+        if (cell->GetCellType() == VTK_PIXEL)
+        {
+            Swap3(coordinates, 2, 3);
+        }
 
         switch (cell->GetCellType())
         {
@@ -295,6 +318,7 @@ void SumSize(avtDataRepresentation &adr, void *, bool &)
                 ++VerdictSizeData.triCount;
                 VerdictSizeData.triSize+=v_tri_area(3, coordinates);
                 break;
+            case VTK_PIXEL:
             case VTK_QUAD:
                 ++VerdictSizeData.quadCount;
                 VerdictSizeData.quadSize+=v_quad_area(3, coordinates);
