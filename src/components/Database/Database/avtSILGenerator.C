@@ -2,6 +2,9 @@
 //                               avtSILGenerator.C                           //
 // ************************************************************************* //
 
+using std::string;
+using std::vector;
+
 #include <avtSILGenerator.h>
 
 #include <stdio.h>
@@ -12,12 +15,8 @@
 
 #include <ImproperUseException.h>
 
-
 static int GroupSorter(const void *, const void *);
-
-
-using std::string;
-using std::vector;
+static SILCategoryRole CategoryFromCollectionClassName(string classStr);
 
 
 // ****************************************************************************
@@ -49,6 +48,13 @@ void
 avtSILGenerator::CreateSIL(avtDatabaseMetaData *md, avtSIL *sil)
 {
     int   i;
+
+    // skip to create custom SIL if the md object has any SIL information
+    if (md->GetNumSILs())
+    {
+       CreateCustomSIL(md, sil);
+       return;
+    }
 
     //
     // We will need these when we set up the matrices at the end.
@@ -165,25 +171,32 @@ avtSILGenerator::CreateSIL(avtDatabaseMetaData *md, avtSIL *sil)
 //
 //  Arguments:
 //      sil      The sil to add these sets to.
-//      top      The index of the top level set.
+//      parent   The index of parent of all of these subsets.
 //      num      The number of subsets.
 //      origin   The origin of the subset numbers.
 //      list     A list of all of the indices for each of the subsets created.
 //      names    A list of each of the block names.
-//      title    The title for the domains.
-//      unit     The prefix for each domain.
+//      title    The title for the subsets.
+//      unit     The prefix for each subset name.
+//      cat      The category role tag for these subsets in context of parent.
 //
 //  Notes:      This routine was originally implemented in avtGenericDatabase.
 //
 //  Programmer:  Hank Childs
 //  Creation:    September 6, 2002
 //
+//  Modifications:
+//
+//     Mark C. Miller, 04Sep03, added cat argument, renamed 2nd arg to 'parent'
+//     Mark C. Miller, 14Sep03, added onlyCreateSets argument
+//
 // ****************************************************************************
 
 void
-avtSILGenerator::AddSubsets(avtSIL *sil, int top, int num, int origin,
+avtSILGenerator::AddSubsets(avtSIL *sil, int parent, int num, int origin,
                                vector<int> &list, const string &title,
-                               const string &unit, const vector<string> &names)
+                               const string &unit, const vector<string> &names,
+                               SILCategoryRole cat, bool onlyCreateSets)
 {
     for (int i = 0 ; i < num ; i++)
     {
@@ -196,20 +209,28 @@ avtSILGenerator::AddSubsets(avtSIL *sil, int top, int num, int origin,
         {
             sprintf(name, "%s%d", unit.c_str(), i+origin);
         }
+
+        // determine "identifier" for the set (only "domains" get non -1) 
+        int ident = -1;
+        if (cat == SIL_DOMAIN)
+           ident = i; 
  
-        avtSILSet_p set = new avtSILSet(name, i);
+        avtSILSet_p set = new avtSILSet(name, ident);
  
         int dIndex = sil->AddSubset(set);
         list.push_back(dIndex);
     }
+
+    // sometimes, we only want to create sets and put them in collections later
+    if (onlyCreateSets)
+       return;
  
     //
     // Create a namespace and a collection.  The collection owns the
     // namespace after it is registered (so no leaks).
     //
     avtSILEnumeratedNamespace *ns = new avtSILEnumeratedNamespace(list);
-    avtSILCollection_p coll = new avtSILCollection(title, SIL_DOMAIN,
-                                                   top, ns);
+    avtSILCollection_p coll = new avtSILCollection(title, cat, parent, ns);
  
     sil->AddCollection(coll);
 }
@@ -592,3 +613,157 @@ GroupSorter(const void *arg1, const void *arg2)
 }
 
 
+
+// ****************************************************************************
+//  Method: CreateCustomSIL
+//
+//  Purpose: create a custom SIL using avtSILMetaData information
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   04Sep03
+//
+// ****************************************************************************
+
+void
+avtSILGenerator::CreateCustomSIL(avtDatabaseMetaData *md, avtSIL *sil)
+{
+    int numSILs = md->GetNumSILs();
+    for (int i = 0 ; i < numSILs; i++)
+    {
+        //
+        // Create the top-level set and add it to the SIL.
+        //
+        const avtSILMetaData *thisSIL = md->GetSIL(i);
+        avtSILSet_p set = new avtSILSet(thisSIL->meshName, -1);
+        int topIndex = sil->AddWhole(set);
+
+#if 0
+        // figure out the class name of the storage chunk class
+        int chunkClassId = thisSIL->theStorageChunkClassId;
+        string storageChunkClassName =
+           thisSIL->collections[chunkClassId]->classOfCollection;
+#endif
+
+        //
+        // loop over all collections in avtSILMetaData and create them
+        // in the avtSIL object
+        //
+        vector< vector<int> >  subsetListList;
+        for (int j = 0; j < thisSIL->collections.size(); j++)
+        {
+           vector<int> subsetList;
+           SILCategoryRole cat;
+
+           avtSILCollectionMetaData *thisCollection = thisSIL->collections[j];
+
+           // skip this collection entry if its any of the pre-defined collections
+           if (j == 0)
+           {
+              subsetListList.push_back(subsetList);
+              continue;
+           }
+
+#if 0
+           // determine this collection's category
+           if (j == chunkClassId)
+              cat = SIL_DOMAIN;
+           else
+#endif
+              cat = CategoryFromCollectionClassName(thisCollection->GetClassName()); 
+           
+           if (thisCollection->GetType() == avtSILCollectionMetaData::Class)
+           {
+              vector<string> names;
+              AddSubsets(sil, topIndex, thisCollection->collectionSize, 0, subsetList,
+                         thisCollection->GetClassName(), thisCollection->defaultMemberBasename,
+                         names, cat);
+           }
+           else if (thisCollection->GetType() == avtSILCollectionMetaData::PureCollection)
+           {
+              int mdCollIdOfParent = thisCollection->collectionIdOfParent;
+              int mdParentId = thisCollection->indexOfParent;
+              int parentIndex = subsetListList[mdCollIdOfParent][mdParentId];
+
+              // build the list of SIL indices in this collection from the 
+              // indices of children as they were enumerated in the plugin
+              for (int k = 0; k < thisCollection->collectionSize; k++)
+              {
+                 int mdCollIdOfChildren = thisCollection->collectionIdOfChildren;
+                 vector<int> mdIndicesOfChildren = thisCollection->indicesOfChildren;
+                 int indexInSIL;
+                 if (mdIndicesOfChildren.size() == 0)
+                    indexInSIL = subsetListList[mdCollIdOfChildren][k];
+                 else
+                    indexInSIL = subsetListList[mdCollIdOfChildren][mdIndicesOfChildren[k]];
+                 subsetList.push_back(indexInSIL);
+              }
+
+              //
+              // Create a namespace and a collection.  The collection owns the
+              // namespace after it is registered (so no leaks).
+              //
+              avtSILEnumeratedNamespace *ns = new avtSILEnumeratedNamespace(subsetList);
+              avtSILCollection_p coll = new avtSILCollection(thisCollection->GetClassName(),
+                                                             cat, parentIndex, ns);
+              sil->AddCollection(coll);
+           }
+           else if (thisCollection->GetType() == avtSILCollectionMetaData::CollectionAndSets)
+           {
+              vector<string> names;
+              int mdCollIdOfParent = thisCollection->collectionIdOfParent;
+              int mdParentId = thisCollection->indexOfParent;
+              int parentIndex = subsetListList[mdCollIdOfParent][mdParentId];
+
+              AddSubsets(sil, parentIndex, thisCollection->collectionSize, 0, subsetList,
+                         thisCollection->GetClassName(), thisCollection->defaultMemberBasename,
+                         names, cat);
+           }
+           else
+           {
+              EXCEPTION0(ImproperUseException);
+           }
+
+           subsetListList.push_back(subsetList);
+
+        }
+    }
+}
+
+// ****************************************************************************
+//  Function: CategoryFromCollectionClassName 
+//
+//  Purpose: guess the intended SIL category from the collection class name.
+//
+//  Notes: It would be best if the creator of the SIL meta data simply told
+//  us the categories. However, that would pull avtSILCollection types into
+//  the plugins and is undesireable
+//
+//  The set of strings searched for here is based on aprior knowledge of what
+//  a plugin might like to create.
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   04Sep03
+//
+// ****************************************************************************
+SILCategoryRole
+CategoryFromCollectionClassName(string classStr)
+{
+   if      (classStr.find("dom") != string::npos) // treat 'dom' as domain
+      return SIL_DOMAIN;
+   else if (classStr.find("mat") != string::npos) // treat 'mat' as material
+      return SIL_MATERIAL;
+   else if (classStr.find("spec") != string::npos) // treat 'spec' as species
+      return SIL_SPECIES;
+   else if (classStr.find("proc") != string::npos) // treat 'proc' as processor
+      return SIL_PROCESSOR;
+   else if (classStr.find("blo") != string::npos) // treat 'blo' as block
+      return SIL_BLOCK;
+   else if (classStr.find("gro") != string::npos) // treat 'gro' as block
+      return SIL_BLOCK;
+   else if (classStr.find("pat") != string::npos) // treat patches as domains
+      return SIL_DOMAIN;
+   else if (classStr.find("lev") != string::npos) // treat levels as assemblies
+      return SIL_ASSEMBLY;
+   else
+      return SIL_USERD;
+}

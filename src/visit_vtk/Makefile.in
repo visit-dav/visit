@@ -180,6 +180,9 @@
 #    Jeremy Meredith, Wed Aug 13 18:14:36 PDT 2003
 #    Added new poly data normals filter.
 #
+#    Jeremy Meredith, Thu Sep 18 11:10:46 PDT 2003
+#    Added Triangle and Quadrilateral clipping cases.
+#
 ##############################################################################
 
 ##
@@ -194,7 +197,9 @@
 SRC=InitVTK.C \
     ClipCasesHex.C \
     ClipCasesPyr.C \
+    ClipCasesQua.C \
     ClipCasesTet.C \
+    ClipCasesTri.C \
     ClipCasesWdg.C \
     vtkAxisDepthSort.C \
     vtkBackgroundActor.C \

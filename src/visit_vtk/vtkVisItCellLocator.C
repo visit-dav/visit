@@ -518,7 +518,7 @@ int vtkVisItCellLocator::IntersectWithLine(float a0[3], float a1[3],
   int tempId;
   vtkUnsignedCharArray *ghosts = 
     (vtkUnsignedCharArray *)this->DataSet->GetCellData()->GetArray("vtkGhostLevels");
-  
+
   // convert the line into i,j,k coordinates
   tMax = 0.0;
   for (i=0; i < 3; i++) 
@@ -633,7 +633,6 @@ int vtkVisItCellLocator::IntersectWithLine(float a0[3], float a1[3],
                   {
                   if (!this->IsInOctantBounds(tempX))
                    {
-
                    this->CellHasBeenVisited[cId] = 0; // mark the cell non-visited
                    }
                   else if (tempT < tMax) // it might be close
@@ -2274,6 +2273,9 @@ vtkVisItCellLocator::PolyLineIntersectWithLine(vtkPolyLine *cell, float p1[3], f
 //   Kathleen Bonnell, Mon Jul  7 15:57:37 PDT 2003 
 //   Use smaller eps for testing when DotProduct close to zero.
 //
+//   Kathleen Bonnell, Thu Sep 18 15:48:54 PDT 2003
+//   Cast multiplication to float before setting intersection point. 
+//
 // ****************************************************************************
 int
 vtkVisItCellLocator::TriangleIntersectWithLine(vtkTriangle *cell, float p1[3], 
@@ -2282,6 +2284,7 @@ vtkVisItCellLocator::TriangleIntersectWithLine(vtkTriangle *cell, float p1[3],
   float *fp1 = cell->GetPoints()->GetPoint(0);
   float *fp2 = cell->GetPoints()->GetPoint(1);
   float *fp3 = cell->GetPoints()->GetPoint(2);
+
   double pt1[3] = {fp1[0], fp1[1], fp1[2]};
   double pt2[3] = {fp2[0], fp2[1], fp2[2]};
   double pt3[3] = {fp3[0], fp3[1], fp3[2]};
@@ -2337,9 +2340,10 @@ vtkVisItCellLocator::TriangleIntersectWithLine(vtkTriangle *cell, float p1[3],
   pcoords[0] = u;
   pcoords[1] = v;
   pcoords[2] = 0; 
+
   for (i = 0; i < 3; i++)
     {
-    x[i] = (float) (dp1[i] + dt*rayDir[i]);
+    x[i] = (float) (dp1[i] + (float)(dt*rayDir[i]));
     }
   t = (float)dt;
 
@@ -2811,4 +2815,3 @@ vtkVisItCellLocator::PyramidIntersectWithLine(vtkPyramid *cell, float p1[3], flo
 
   return intersection; 
 }
-

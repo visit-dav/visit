@@ -674,6 +674,9 @@ avtDatabase::GetFileListFromTextFile(const char *textfile,
 //    Always call QueryMesh, don't keep vars of type AVT_MESH in pickAtts'
 //    PickVarInfo.
 //    
+//    Kathleen Bonnell, Thu Sep 18 07:43:33 PDT 2003 
+//    QueryMaterial should use 'real' elements when available. 
+//    
 // ****************************************************************************
 
 void               
@@ -758,6 +761,10 @@ avtDatabase::Query(PickAttributes *pa)
         TRY
         {
             avtVarType varType = metadata->DetermineVarType(vName);
+            int matEl = (pa->GetRealElementNumber() != -1 ? 
+                         pa->GetRealElementNumber() : foundEl);
+            intVector matIncEls = (pa->GetRealIncidentElements().size() > 0 ? 
+                                   pa->GetRealIncidentElements() : incEls);
             switch(varType)
             {
                 case AVT_SCALAR_VAR : success = 
@@ -768,8 +775,9 @@ avtDatabase::Query(PickAttributes *pa)
                    QueryVectors(vName, foundDomain, foundEl, ts, incEls, 
                                 pa->GetPickVarInfo(varNum), zonePick);
                    break; 
-                case AVT_MATERIAL : success = 
-                   QueryMaterial(vName, foundDomain, foundEl, ts, incEls, 
+                case AVT_MATERIAL : 
+                   success = 
+                   QueryMaterial(vName, foundDomain, matEl, ts, matIncEls, 
                                  pa->GetPickVarInfo(varNum), zonePick);
                    break; 
                 case AVT_MESH : 

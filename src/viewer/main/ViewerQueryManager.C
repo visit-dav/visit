@@ -1152,6 +1152,9 @@ ViewerQueryManager::ClearPickPoints()
 //    Eric Brugger, Wed Aug 20 11:05:54 PDT 2003
 //    I replaced the use of GetViewDimension with GetWindowMode. 
 //   
+//    Kathleen Bonnell, Thu Sep 18 16:29:43 PDT 2003 
+//    Don't scale the ray points if in world-pick mode.
+//   
 // ****************************************************************************
 
 void
@@ -1222,9 +1225,14 @@ ViewerQueryManager::Pick(PICK_POINT_INFO *ppi)
         //
         // If in full-frame mode on a 2d plot, the ray points were computed
         // in the scaled full-frame space.  Reverse the scaling to get the 
-        // correct ray points. 
+        // correct ray points.  -- But only if our ray points aren't equal
+        // (they are set equivalent for WorldPick).
         //
-        if (win->GetFullFrameMode() && win->GetWindowMode() == WINMODE_2D)
+        bool ptsEqual  = 
+           (rp1[0] == rp2[0] && rp1[1] == rp2[1] && rp1[2] == rp2[2]);
+
+        if (win->GetFullFrameMode() && win->GetWindowMode() == WINMODE_2D &&
+            !ptsEqual)
         {
             double scale;
             int type;

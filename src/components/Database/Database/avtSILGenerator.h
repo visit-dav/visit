@@ -11,6 +11,7 @@
 #include <vector>
 
 #include <avtDatabaseMetaData.h>
+#include <avtSILCollection.h>
 
 
 class     avtSIL;
@@ -37,7 +38,9 @@ class DATABASE_API avtSILGenerator
   protected:
     void                AddSubsets(avtSIL *, int, int, int, std::vector<int> &,
                                    const std::string &, const std::string &,
-                                   const std::vector<std::string> &);
+                                   const std::vector<std::string> &,
+                                   SILCategoryRole cat = SIL_DOMAIN,
+                                   bool onlyCreateSets = false);
     void                AddGroups(avtSIL *, int, int, const std::vector<int> &,
                                   const std::vector<int>&, const std::string &,
                                   const std::string &, const std::string &);
@@ -54,6 +57,7 @@ class DATABASE_API avtSILGenerator
                                            const std::string &,
                                            const std::vector<std::string> &,
                                            const std::vector<std::string> &);
+    void                CreateCustomSIL(avtDatabaseMetaData *, avtSIL *);
 };
 
 

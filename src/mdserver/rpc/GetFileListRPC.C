@@ -261,6 +261,9 @@ GetFileListRPC::FileList::Clear()
 //   Brad Whitlock, Tue Aug 26 13:28:04 PST 2003
 //   I added the name member and a < operator.
 //
+//   Brad Whitlock, Thu Sep 18 11:27:27 PDT 2003
+//   I changed the < operator a little.
+//
 // ****************************************************************************
 
 struct FileListInformation
@@ -298,7 +301,12 @@ struct FileListInformation
     // Use numeric and string comparison to compare the name.
     bool operator < (const FileListInformation &obj) const
     {
-        return NumericStringCompare(name, obj.name);
+        bool retval = false;
+
+        if(name != obj.name)
+            retval = NumericStringCompare(name, obj.name);
+
+        return retval;
     }
 
     std::string name;

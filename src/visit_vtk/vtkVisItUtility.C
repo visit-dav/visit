@@ -130,7 +130,9 @@ vtkVisItUtility::GetPoints(vtkDataSet *inDS)
 //    Fixed logic for determining 'base' for points. 
 //
 //    Kathleen Bonnell, Tue Sep 16 13:33:30 PDT 2003 
-//    Once again, redo logic for determining indices for a node. 
+//    Once again, redo logic for determining indices for a node, and allow
+//    this method to work on a non-structured dataset if the array inidicating
+//    original dimensions is present.
 //
 // ****************************************************************************
 
@@ -151,8 +153,19 @@ vtkVisItUtility::GetLogicalIndices(vtkDataSet *ds, const bool forCell, const int
     }
     else 
     {
-        ijk[0] = ijk[1] = ijk[2] = -1; 
-        return; 
+        vtkIntArray *vtkDims = 
+           (vtkIntArray*)ds->GetFieldData()->GetArray("vtkOriginalDimensions");
+        if (vtkDims != NULL)
+        {
+            dims[0] = vtkDims->GetValue(0);
+            dims[1] = vtkDims->GetValue(1);
+            dims[2] = vtkDims->GetValue(2);
+        }
+        else
+        {
+            ijk[0] = ijk[1] = ijk[2] = -1; 
+            return; 
+        }
     }
 
     vtkIntArray *realDims = (vtkIntArray*)ds->GetFieldData()->GetArray("avtRealDims");
@@ -209,6 +222,10 @@ vtkVisItUtility::GetLogicalIndices(vtkDataSet *ds, const bool forCell, const int
 //    Renamed to reflect that this method can return node id or cell id, based
 //    on the value of 'forCell' argument.
 //
+//    Kathleen Bonnell, Thu Sep 18 11:35:25 PDT 2003 
+//    Allow this method to work on a non-structured dataset if the array 
+//    inidicating original dimensions is present.
+//
 // ****************************************************************************
 
 int
@@ -217,8 +234,10 @@ vtkVisItUtility::CalculateRealID(const int cellId, const bool forCell, vtkDataSe
     int retVal = cellId;
     int type = ds->GetDataObjectType();
 
+    
     if (type == VTK_STRUCTURED_GRID ||
-        type == VTK_RECTILINEAR_GRID) 
+        type == VTK_RECTILINEAR_GRID ||
+        ds->GetFieldData()->GetArray("vtkOriginalDimensions") != NULL) 
     {
         vtkIntArray *realDims = 
             (vtkIntArray*)ds->GetFieldData()->GetArray("avtRealDims");

@@ -10,6 +10,9 @@
 //    added a NOCOLOR option (i.e. the centroid-point is on the intersection
 //    between the two materials).
 //
+//    Jeremy Meredith, Thu Sep 18 11:29:12 PDT 2003
+//    Added Quad and Triangle shapes.
+//
 // ----------------------------------------------------------------------------
 
 #include "ClipEditor.h"
@@ -113,6 +116,16 @@ ClipEditor::ClipEditor(const QString &st,
     {
         ncases    = 16;
         shapetype = ST_TET;
+    }
+    else if (st.left(3) == "qua")
+    {
+        ncases    = 16;
+        shapetype = ST_QUAD;
+    }
+    else if (st.left(3) == "tri")
+    {
+        ncases    = 8;
+        shapetype = ST_TRIANGLE;
     }
     else
     {
@@ -365,7 +378,7 @@ ClipEditor::keyPressEvent(QKeyEvent *kev)
                 textMode = TM_ADD;
                 addedpoints = -2;
                 pts = "";
-                cerr << "Adding new shape, please choose Hex, Wedge, Pyramid, Tet, or NewPoint\n";
+                cerr << "Adding new shape, please choose Hex, Wedge, Pyramid, Tet, Quad, tRiangle, or NewPoint\n";
             }
         }
         else if (kev->key() == Qt::Key_Delete)
@@ -431,6 +444,20 @@ ClipEditor::keyPressEvent(QKeyEvent *kev)
                 addingShape = ST_TET;
                 addedpoints = 0;
                 cerr << "Chose Tet; please choose 4 points\n";
+            }
+            else if (kev->key() == 'Q')
+            {
+                npts = 4;
+                addingShape = ST_QUAD;
+                addedpoints = 0;
+                cerr << "Chose Quad; please choose 4 points\n";
+            }
+            else if (kev->key() == 'R')
+            {
+                npts = 3;
+                addingShape = ST_TRIANGLE;
+                addedpoints = 0;
+                cerr << "Chose Triangle; please choose 4 points\n";
             }
             else if (kev->key() == 'N')
             {
@@ -532,6 +559,8 @@ ClipEditor::LoadFromFile()
       case ST_WEDGE:   lower="Wdg"; upper="WDG"; break;
       case ST_PYRAMID: lower="Pyr"; upper="PYR"; break;
       case ST_TET:     lower="Tet"; upper="TET"; break;
+      case ST_QUAD:    lower="Qua"; upper="QUA"; break;
+      case ST_TRIANGLE:lower="Tri"; upper="TRI"; break;
       default: cerr << "Error\n"; break;
     }
     sprintf(fname, "ClipCases%s.C", lower);
@@ -626,6 +655,16 @@ ClipEditor::LoadFromFile()
                 st=ST_TET;
                 nv=4;
             }
+            else if (!strcmp(buff,"ST_QUA"))
+            {
+                st=ST_QUAD;
+                nv=4;
+            }
+            else if (!strcmp(buff,"ST_TRI"))
+            {
+                st=ST_TRIANGLE;
+                nv=3;
+            }
             else if (!strcmp(buff,"ST_PNT"))
             {
                 st=ST_POINT;
@@ -704,6 +743,8 @@ ClipEditor::SaveToFile()
       case ST_WEDGE:   lower="Wdg"; upper="WDG"; break;
       case ST_PYRAMID: lower="Pyr"; upper="PYR"; break;
       case ST_TET:     lower="Tet"; upper="TET"; break;
+      case ST_QUAD:    lower="Qua"; upper="QUA"; break;
+      case ST_TRIANGLE:lower="Tri"; upper="TRI"; break;
       default: cerr << "Error\n"; break;
     }
     sprintf(fname, "ClipCases%s.C", lower);
@@ -870,6 +911,8 @@ ClipEditor::SaveToFile()
                       case ST_WEDGE:   out << "  ST_WDG, "; break;
                       case ST_PYRAMID: out << "  ST_PYR, "; break;
                       case ST_TET:     out << "  ST_TET, "; break;
+                      case ST_QUAD:    out << "  ST_QUA, "; break;
+                      case ST_TRIANGLE:out << "  ST_TRI, "; break;
                       default: cerr << "Error\n";
                     }
 

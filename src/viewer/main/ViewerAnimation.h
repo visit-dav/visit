@@ -70,6 +70,9 @@ class ViewerWindow;
 //    Brad Whitlock, Wed Jul 16 13:05:27 PST 2003
 //    Added CreateNode and SetFromNode.
 //
+//    Hank Childs, Tue Sep 16 10:19:53 PDT 2003
+//    Added bogus implementations of GetTimeIndex and GetNTimes
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerAnimation
@@ -92,6 +95,21 @@ class VIEWER_API ViewerAnimation
     void UpdateFrame();
     void UpdateTools();
 
+    //
+    // These routines do *not* work when we are doing keyframing.
+    // They were put in so that other modules could reference them and
+    // distinguish that they were interested in the time index.
+    // They should be removed or correctly implemented when keyframing
+    // is better separated from the time state in the viewer.
+    //
+    // The motivation for adding these routines is that there are many places
+    // in the viewer where GetFrameIndex is being used where GetTimeIndex
+    // is what is desired.  This is an attempt to "leave bread crumbs" for
+    // whoever addresses this issue.
+    //
+    int  GetNTimes() const { return GetNFrames(); };
+    int  GetTimeIndex() const { return GetFrameIndex(); };
+    
     ViewerPlotList *GetPlotList() const;
 
     void AddWindow(ViewerWindow *const window);

@@ -209,8 +209,100 @@ public:
 
 
 //----------------------------------------------------------------------------
+//  Class: avtSILCollectionMetaData
 //----------------------------------------------------------------------------
+struct DBATTS_API avtSILCollectionMetaData : public AttributeSubject
+{
+   std::string                         classOfCollection;
+   std::string                         defaultMemberBasename;
+   int                                 collectionSize;
+   int                                 collectionIdOfParent;
+   int                                 indexOfParent;
+   int                                 collectionIdOfChildren;
+   vector<int>                         indicesOfChildren;
 
+public:
+    typedef enum { 
+       Class,
+       PureCollection,
+       CollectionAndSets,
+       Unknown
+    } CollectionType;
+
+    avtSILCollectionMetaData();
+    avtSILCollectionMetaData(const avtSILCollectionMetaData&);
+    avtSILCollectionMetaData(
+       std::string _classOfCollection, std::string _defaultMemberBasename,
+       int _collectionSize,
+       int _collectionIdOfParent, int _indexOfParent,
+       int _collectionIdOfChildren, int *_indicesOfChildren);
+    virtual ~avtSILCollectionMetaData();
+    const avtSILCollectionMetaData &operator=(const avtSILCollectionMetaData&);
+    virtual void SelectAll();
+    void Print(ostream &, int = 0) const;
+    int GetSize(void) const { return collectionSize; };
+    CollectionType GetType(void) const;
+    const std::string& GetClassName(void) const { return classOfCollection; };
+};
+
+//----------------------------------------------------------------------------
+//  Class: avtSILMetaData
+//----------------------------------------------------------------------------
+struct DBATTS_API avtSILMetaData : public AttributeSubject
+{
+    std::string                             meshName;
+
+    std::vector<int>                        classIds;
+    std::vector<int>                        classDisjointFlags;
+    int                                     theStorageChunkClassId;
+    std::vector<avtSILCollectionMetaData*>  collections;
+
+protected:
+    virtual AttributeGroup *CreateSubAttributeGroup(int);
+
+public:
+    avtSILMetaData();
+    avtSILMetaData(std::string _meshName);
+    avtSILMetaData(const avtSILMetaData&);
+    virtual ~avtSILMetaData();
+    const avtSILMetaData &operator=(const avtSILMetaData&);
+    virtual void SelectAll();
+    void Print(ostream &, int = 0) const;
+
+    int GetCollectionClassId(std::string& className) const;
+
+    int AddCollectionClass(std::string className, std::string defaultMemberBasename,
+           int numSetsInClass, int pairwiseDisjoint = 0,
+           bool hideFromWhole = false, bool isStorageChunkClass = false);
+
+    int AddCollection(std::string classOfCollection,
+           std::string defaultMemberBasename, int collectionSize,
+           int collectionIdOfParent, int indexOfParent,
+           int collectionIdOfChildren = 0, int *indicesOfChildren = NULL);
+
+    void Validate(void);
+};
+
+//----------------------------------------------------------------------------
+//  Class: avtDefaultPlotMetaData
+//----------------------------------------------------------------------------
+struct DBATTS_API avtDefaultPlotMetaData : public AttributeSubject
+{
+    std::string   pluginID;
+    std::string   plotVar;
+    stringVector  plotAttributes;
+    bool          validVariable;
+
+public:
+    avtDefaultPlotMetaData();
+    avtDefaultPlotMetaData(std::string, std::string);
+    avtDefaultPlotMetaData(const avtDefaultPlotMetaData&);
+    virtual ~avtDefaultPlotMetaData();
+    const avtDefaultPlotMetaData &operator=(const avtDefaultPlotMetaData&);
+    void AddAttribute(const std::string&);
+    virtual void SelectAll();
+    void Print(ostream &, int = 0) const;
+};
 
 //----------------------------------------------------------------------------
 //  Class: avtDatabaseMetaData
@@ -222,6 +314,7 @@ class DBATTS_API avtDatabaseMetaData : public AttributeSubject
     double       maxTemporalExtents;
     int          numStates;
     bool         isVirtualDatabase;
+    bool         mustRepopulateOnStateChange;
 
     std::string  timeStepPath;
     stringVector timeStepNames;
@@ -240,6 +333,8 @@ class DBATTS_API avtDatabaseMetaData : public AttributeSubject
     std::vector<avtMaterialMetaData *> materials;
     std::vector<avtSpeciesMetaData *>  species;
     std::vector<avtCurveMetaData *>    curves;
+    std::vector<avtDefaultPlotMetaData *> defaultPlots;
+    std::vector<avtSILMetaData *>      sils;
 
 public:
     avtDatabaseMetaData();
@@ -250,6 +345,11 @@ public:
     int          GetNumStates(void) const { return numStates; };
     void         SetNumStates(int);
     void         SetTemporalExtents(double, double);
+
+    void         SetMustRepopulateOnStateChange(bool mode)
+                    { mustRepopulateOnStateChange = mode; };
+    bool         GetMustRepopulateOnStateChange(void) const
+                    { return mustRepopulateOnStateChange; };
 
     void         SetIsVirtualDatabase(bool val) { isVirtualDatabase = val; };
     bool         GetIsVirtualDatabase() const { return isVirtualDatabase; };
@@ -282,26 +382,33 @@ public:
     void         Add(avtMaterialMetaData *);
     void         Add(avtSpeciesMetaData *);
     void         Add(avtCurveMetaData *);
+    void         Add(avtSILMetaData *);
+    void         Add(avtDefaultPlotMetaData *);
 
-    int GetNumMeshes()    const { return meshes.size();     };
-    int GetNumScalars()   const { return scalars.size();    };
-    int GetNumVectors()   const { return vectors.size();    };
-    int GetNumMaterials() const { return materials.size();  };
-    int GetNumSpecies()   const { return species.size();    };
-    int GetNumCurves()    const { return curves.size();    };
+    int GetNumMeshes()        const { return meshes.size();       };
+    int GetNumScalars()       const { return scalars.size();      };
+    int GetNumVectors()       const { return vectors.size();      };
+    int GetNumMaterials()     const { return materials.size();    };
+    int GetNumSpecies()       const { return species.size();      };
+    int GetNumCurves()        const { return curves.size();       };
+    int GetNumSILs()          const { return sils.size();         };
+    int GetNumDefaultPlots()  const { return defaultPlots.size(); };
 
-    const avtMeshMetaData     *GetMesh(int) const;
-    const avtMeshMetaData     *GetMesh(const std::string&) const;
-    const avtScalarMetaData   *GetScalar(int) const;
-    const avtScalarMetaData   *GetScalar(const std::string&) const;
-    const avtVectorMetaData   *GetVector(int) const;
-    const avtVectorMetaData   *GetVector(const std::string&) const;
-    const avtMaterialMetaData *GetMaterial(int) const;
-    const avtMaterialMetaData *GetMaterial(const std::string&) const;
-    const avtSpeciesMetaData  *GetSpecies(int) const;
-    const avtSpeciesMetaData  *GetSpecies(const std::string&) const;
-    const avtCurveMetaData    *GetCurve(int) const;
-    const avtCurveMetaData    *GetCurve(const std::string&) const;
+    const avtMeshMetaData        *GetMesh(int) const;
+    const avtMeshMetaData        *GetMesh(const std::string&) const;
+    const avtScalarMetaData      *GetScalar(int) const;
+    const avtScalarMetaData      *GetScalar(const std::string&) const;
+    const avtVectorMetaData      *GetVector(int) const;
+    const avtVectorMetaData      *GetVector(const std::string&) const;
+    const avtMaterialMetaData    *GetMaterial(int) const;
+    const avtMaterialMetaData    *GetMaterial(const std::string&) const;
+    const avtSpeciesMetaData     *GetSpecies(int) const;
+    const avtSpeciesMetaData     *GetSpecies(const std::string&) const;
+    const avtCurveMetaData       *GetCurve(int) const;
+    const avtCurveMetaData       *GetCurve(const std::string&) const;
+    const avtSILMetaData         *GetSIL(int) const;
+    const avtSILMetaData         *GetSIL(const std::string&) const;
+    const avtDefaultPlotMetaData *GetDefaultPlot(int) const;
 
     void         SetBlocksForMesh(int index, int nBlocks);
     void         SetContainsGhostZones(std::string name, avtGhostType);
@@ -323,6 +430,7 @@ public:
 
     const avtMaterialMetaData *GetMaterialOnMesh(std::string) const;
     const avtSpeciesMetaData  *GetSpeciesOnMesh(std::string) const;
+    const avtSILMetaData      *GetSILForMesh(std::string) const;
 
     void         Print(ostream &, int = 0) const;
 

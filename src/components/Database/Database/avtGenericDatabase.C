@@ -1692,6 +1692,10 @@ avtGenericDatabase::AddOriginalNodesArray(vtkDataSet *ds, const int domain)
 //    Jeremy Meredith, Fri Sep  5 15:31:53 PDT 2003
 //    Added a flag for the MIR algorithm.
 //
+//    Kathleen Bonnell, Thu Sep 18 11:49:16 PDT 2003 
+//    Add 'vtkOriginalDimensions' field data to output, if input was
+//    structured (so Pick can return correct zone/node numbers).
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -1744,6 +1748,30 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
     vtkDataSet **out_ds = new vtkDataSet *[numOutput];
 
     avtVarType type = GetMetaData()->DetermineVarType(var);
+    vtkIntArray *origDims = NULL;
+    if (ds->GetDataObjectType() == VTK_STRUCTURED_GRID)
+    {
+        int *dims = ((vtkStructuredGrid*)ds)->GetDimensions();
+        origDims = vtkIntArray::New();
+        origDims->SetName("vtkOriginalDimensions");
+        origDims->SetNumberOfComponents(1);
+        origDims->SetNumberOfTuples(3);
+        origDims->SetValue(0, dims[0]);
+        origDims->SetValue(1, dims[1]);
+        origDims->SetValue(2, dims[2]);
+    }
+    else if (ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
+    {
+        int *dims = ((vtkRectilinearGrid*)ds)->GetDimensions();
+        origDims = vtkIntArray::New();
+        origDims->SetName("vtkOriginalDimensions");
+        origDims->SetNumberOfComponents(1);
+        origDims->SetNumberOfTuples(3);
+        origDims->SetValue(0, dims[0]);
+        origDims->SetValue(1, dims[1]);
+        origDims->SetValue(2, dims[2]);
+    }
+   
 
     for (int d=0; d<numOutput; d++)
     {
@@ -1802,7 +1830,14 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
             }
 
         }
+        if (out_ds[d] && origDims)
+        {
+            out_ds[d]->GetFieldData()->AddArray(origDims);
+            out_ds[d]->GetFieldData()->CopyFieldOn("vtkOriginalDimensions");
+        }
     }
+    if (origDims)
+        origDims->Delete();
 
     //
     // Create new labels.
@@ -2185,6 +2220,9 @@ avtGenericDatabase::SpeciesSelect(avtDatasetCollection &dsc,
 //    Jeremy Meredith, Fri Sep  5 15:31:33 PDT 2003
 //    Added the new MIR algorithm.
 //
+//    Jeremy Meredith, Thu Sep 18 11:31:23 PDT 2003
+//    Made the new MIR algorithm work in 2D as well.
+//
 // ****************************************************************************
 void_ref_ptr
 avtGenericDatabase::GetMIR(int domain, const char *varname, int timestep,
@@ -2233,7 +2271,7 @@ avtGenericDatabase::GetMIR(int domain, const char *varname, int timestep,
         // Right new the new algorithm (index==1) is only
         // available in 3D.
         //
-        if (topoDim == 3 && mirAlgorithm == 1)
+        if (mirAlgorithm == 1)
             mir = new ZooMIR;
         else
             mir = new TetMIR;

@@ -272,6 +272,9 @@ Definition:
 //   Kathleen Bonnell, Wed Sep 10 08:02:02 PDT 2003
 //   Reset meshInfo.
 //   
+//   Kathleen Bonnell, Wed Sep 17 17:09:00 PDT 2003 
+//   Reset realElementNumber, realIncidentElements.
+//   
 // ****************************************************************************
 
 void
@@ -291,6 +294,10 @@ PickAttributes::PrepareForNewPick()
 
     if (!nodeCoords.empty())
         nodeCoords.clear();
+
+    realElementNumber = -1;
+    if (!realIncidentElements.empty())
+        realIncidentElements.clear();
 
     meshInfo = "";
 

@@ -145,12 +145,21 @@ QualifiedFilename::operator == (const QualifiedFilename &qf) const
 //   Brad Whitlock, Tue Aug 26 13:39:46 PST 2003
 //   Changed from using < operator for strings to using NumericStringCompare.
 //
+//   Brad Whitlock, Thu Sep 18 11:16:51 PDT 2003
+//   I prevented the call to NumericStringCompare if the filenames are already
+//   equal.
+//
 // ****************************************************************************
 
 bool
 QualifiedFilename::operator < (const QualifiedFilename &qf) const
 {
-    return NumericStringCompare(FullName(), qf.FullName());
+    bool retval = false;
+ 
+    if(!(this->operator == (qf)))
+        retval = NumericStringCompare(FullName(), qf.FullName());
+
+    return retval;
 }
 
 // ****************************************************************************
@@ -171,12 +180,21 @@ QualifiedFilename::operator < (const QualifiedFilename &qf) const
 //   Brad Whitlock, Tue Aug 26 13:39:46 PST 2003
 //   Changed from using > operator for strings to using NumericStringCompare.
 //
+//   Brad Whitlock, Thu Sep 18 11:16:51 PDT 2003
+//   I prevented the call to NumericStringCompare if the filenames are already
+//   equal.
+//
 // ****************************************************************************
 
 bool
 QualifiedFilename::operator > (const QualifiedFilename &qf) const
 {
-    return NumericStringCompare(qf.FullName(), FullName());
+    bool retval = false;
+ 
+    if(!(this->operator == (qf)))
+        retval = NumericStringCompare(qf.FullName(), FullName());
+
+    return retval;
 }
 
 // ****************************************************************************

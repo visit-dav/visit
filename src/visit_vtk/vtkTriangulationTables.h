@@ -24,4 +24,7 @@ extern int hexTriangulationTable[256][16];
 extern int hexVerticesFromEdges[12][2];
 extern int hexQuadFaces[6][4];
 
+extern int triVerticesFromEdges[3][2];
+extern int quadVerticesFromEdges[4][2];
+
 #endif

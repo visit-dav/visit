@@ -67,6 +67,14 @@ CellReconstructor::~CellReconstructor()
 //    Jeremy Meredith, Tue Sep 16 10:44:59 PDT 2003
 //    Fixed a bug with material selecting mixvars.
 //
+//    Jeremy Meredith, Thu Sep 18 11:13:41 PDT 2003
+//    1. Added VTK_TRIANGLE and VTK_QUAD input cases for 2D MIR.
+//    2. Added ST_TRI and ST_QUA output shape types for 2D MIR.
+//    3. Fixed a bug with material interface smoothing; a test was inverted.
+//    4. Had to remove the faster way to calculate the variable "newexists",
+//    as it was blatantly wrong.  The faster way was using matsAtCellOneAway, 
+//    but it needed to be using matsAtCellOrig.
+//
 // ****************************************************************************
 void
 CellReconstructor::ReconstructCell(int cellid_, int celltype_,
@@ -165,9 +173,7 @@ CellReconstructor::ReconstructCell(int cellid_, int celltype_,
                 TempCell &old = tmplist[t];
 
                 bool oldexists = rm.matsAtCellOrig[cellid*rm.nBPE + byteForBit(old.mat)] & bitForBit(old.mat);
-                //bool newexists = rm.matsAtCellOrig[cellid*rm.nBPE + byteForBit(matno)]   & bitForBit(matno);
-                // faster way:
-                bool newexists = !allZeros;
+                bool newexists = rm.matsAtCellOrig[cellid*rm.nBPE + byteForBit(matno)]   & bitForBit(matno);
 
                 //
                 // Fill the VF's array and calculate the clip case
@@ -242,6 +248,18 @@ CellReconstructor::ReconstructCell(int cellid_, int celltype_,
                     numOutput  = numClipShapesHex[lookup_case];
                     vertices_from_edges = hexVerticesFromEdges;
                     break;
+                  case VTK_TRIANGLE:
+                    startIndex = startClipShapesTri[lookup_case];
+                    splitCase  = &clipShapesTri[startIndex];
+                    numOutput  = numClipShapesTri[lookup_case];
+                    vertices_from_edges = triVerticesFromEdges;
+                    break;
+                  case VTK_QUAD:
+                    startIndex = startClipShapesQua[lookup_case];
+                    splitCase  = &clipShapesQua[startIndex];
+                    numOutput  = numClipShapesQua[lookup_case];
+                    vertices_from_edges = quadVerticesFromEdges;
+                    break;
                 }
 
                 //
@@ -252,7 +270,7 @@ CellReconstructor::ReconstructCell(int cellid_, int celltype_,
                     int newmat = (lookup_case==0) ? old.mat : matno;
                     
                     // Worry about that "artificial smoothing" toggle
-                    if (! mir.options.smoothing)
+                    if (mir.options.smoothing)
                     {
                         old.mat = newmat;
                     }
@@ -322,6 +340,16 @@ CellReconstructor::ReconstructCell(int cellid_, int celltype_,
                             npts = 4;
                             color = *splitCase++;
                             cell.celltype = VTK_TETRA;
+                            break;
+                          case ST_QUA:
+                            npts = 4;
+                            color = *splitCase++;
+                            cell.celltype = VTK_QUAD;
+                            break;
+                          case ST_TRI:
+                            npts = 3;
+                            color = *splitCase++;
+                            cell.celltype = VTK_TRIANGLE;
                             break;
                           default:
                             EXCEPTION1(ImproperUseException,

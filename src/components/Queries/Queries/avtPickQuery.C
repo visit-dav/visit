@@ -229,6 +229,12 @@ avtPickQuery::PostExecute(void)
 //    Hank Childs, Tue Jul 29 11:54:11 PDT 2003
 //    Use the queryable source rather than the terminating source.
 //
+//    Kathleen Bonnell, Thu Sep 18 07:38:32 PDT 2003 
+//    Added call to SetRealIds prior to call for queryableSource->Query,
+//    for data that has 'created' ghost zones. Modified the determination
+//    of 'needRealId to include unstructured data that has the corrrect
+//    dimensional array. (Added by mat-selected plots).
+//
 // ****************************************************************************
 
 void
@@ -249,7 +255,8 @@ avtPickQuery::Execute(vtkDataSet *ds, const int dom)
     int foundElement = pickAtts.GetElementNumber();
     int type = ds->GetDataObjectType();
     bool needRealId = (ghostType == AVT_HAS_GHOSTS || foundElement == -1) &&
-                 (type == VTK_STRUCTURED_GRID || type == VTK_RECTILINEAR_GRID);
+            (type == VTK_STRUCTURED_GRID || type == VTK_RECTILINEAR_GRID || 
+             ds->GetFieldData()->GetArray("vtkOriginalDimensions") != NULL );
 
     if (foundElement == -1)
     {
@@ -306,6 +313,13 @@ avtPickQuery::Execute(vtkDataSet *ds, const int dom)
             return; 
         }
     } 
+    //
+    // If a material-var is requested it may need the real ids -- if
+    // ghost zones were not present when 
+    // a material-var is requested.
+    //
+    if (needRealId && ghostType == AVT_CREATED_GHOSTS) 
+        SetRealIds(ds);
 
     //
     //  Allow the database to add any missing information.
@@ -329,8 +343,18 @@ avtPickQuery::Execute(vtkDataSet *ds, const int dom)
         pickAtts.SetDomain(dom+blockOrigin);
     }
 
+    //
+    // The queryable source may have added more info, so call this again. 
+    //
     if (needRealId)
+    {
         SetRealIds(ds);
+        //
+        // Put the real ids in the correct spot for output.
+        //
+        pickAtts.SetElementNumber(pickAtts.GetRealElementNumber());
+        pickAtts.SetIncidentElements(pickAtts.GetRealIncidentElements());
+    }
 
     if (pickAtts.GetPickType() == PickAttributes::Zone)
         pickAtts.SetElementNumber(pickAtts.GetElementNumber() + cellOrigin);
@@ -863,6 +887,8 @@ avtPickQuery::DeterminePickedNode(vtkDataSet *ds, int &foundEl)
 //  Creation:   June 27, 2003 
 //
 //  Modifications:
+//    Kathleen Bonnell, Thu Sep 18 07:38:32 PDT 2003
+//    Store the results in 'realElement' and 'realIncidentElements'.
 //    
 // ****************************************************************************
 
@@ -909,8 +935,8 @@ avtPickQuery::SetRealIds(vtkDataSet *ds)
         }
     }
    
-    pickAtts.SetElementNumber(foundEl);
-    pickAtts.SetIncidentElements(incEls);
+    pickAtts.SetRealElementNumber(foundEl);
+    pickAtts.SetRealIncidentElements(incEls);
 }
 
 

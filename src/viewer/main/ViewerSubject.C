@@ -89,6 +89,10 @@
 #endif
 #endif
 
+static std::string getToken(std::string buff, bool reset);
+static int getVectorTokens(std::string buff, std::vector<std::string> &tokens, int nodeType);
+
+
 // Global variables.  This is a hack, they should be removed.
 ViewerSubject  *viewerSubject=0;
 
@@ -2442,6 +2446,9 @@ ViewerSubject::RedrawWindow()
 //    Hank Childs, Thu Aug 14 09:10:00 PDT 2003
 //    Added code to manage expressions from databases.
 //
+//    Walter Herrera, Thu Sep 04 16:13:43 PST 2003
+//    I made it capable of creating default plots
+//
 // ****************************************************************************
 
 void
@@ -2526,9 +2533,520 @@ ViewerSubject::OpenDatabaseHelper(const std::string &entireDBName,
                                         timeState);
         }
         else
+        {
             eMgr->OpenDatabase(host.c_str(), db.c_str(), timeState);
+        }
+        
+        //
+        // Create default plots
+        //
+       
+        DataNode *adn = NULL;
+        bool defaultPlotsAdded = false;
+
+        for(i=0; i<md->GetNumDefaultPlots(); i++)
+        {
+            const avtDefaultPlotMetaData *dp = md->GetDefaultPlot(i);
+            adn = CreateAttributesDataNode(dp);
+
+            //
+            // Use the plot plugin manager to get the plot type index from
+            // the plugin id.
+            //
+            int type = PlotPluginManager::Instance()->GetEnabledIndex(dp->pluginID);
+
+            if(type != -1)
+            {
+                plotList->AddPlot(type, dp->plotVar, false, false, adn);
+                defaultPlotsAdded = true;
+            }
+        }
+
+        if (defaultPlotsAdded)
+        {
+            plotList->RealizePlots();
+        } 
+
+        if (adn != NULL)
+            delete adn;
     }
 }
+
+
+// ****************************************************************************
+// Function: getToken
+//
+// Purpose: 
+//   Return the first token readed from a buffer string. 
+//   If there are no more tokens, it returns an empty string.
+//
+// Programmer: Walter Herrera
+// Creation:   Tue Sep 11 12:07:06 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+std::string getToken(std::string buff, bool reset = false)
+{
+    static std::string::size_type pos1 = 0;
+    std::string::size_type pos2;
+    std::string token;
+    
+    if (reset)
+      pos1 = 0;
+    
+    if (pos1 == std::string::npos)
+        return token;
+
+    pos1 = buff.find_first_not_of(' ', pos1);  
+    if (pos1 == std::string::npos)
+        return token;
+
+    pos2 = buff.find_first_of(' ', pos1);
+    token = buff.substr(pos1, pos2-pos1);
+    pos1 = pos2;
+
+    return token;
+}
+
+
+// ****************************************************************************
+// Function: getVectorTokens
+//
+// Purpose: 
+//   Return a vector of tokens readed from a buffer string. 
+//   The first token tell us the number of tokens that must be readed.
+//
+// Programmer: Walter Herrera
+// Creation:   Tue Sep 11 12:07:06 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+
+int getVectorTokens(std::string buff, std::vector<std::string> &tokens, int nodeType)
+{
+    int length, ival;
+    std::string token, numTokens;
+    long lval;
+    float fval;
+    double dval;
+
+    tokens.clear();
+    
+    numTokens = getToken(buff);  
+    if (sscanf(numTokens.c_str(),"%d",&length) != 1)
+        return 0;
+
+    bool rightArray = true;
+    
+    for(int j=0; j<length; j++)
+    {
+        token = getToken(buff);
+        if (token.size() != 0)
+        {
+              switch(nodeType)
+            {
+            case CHAR_ARRAY_NODE:
+            case CHAR_VECTOR_NODE:
+            case UNSIGNED_CHAR_ARRAY_NODE:
+            case UNSIGNED_CHAR_VECTOR_NODE:
+            case INT_ARRAY_NODE:
+            case INT_VECTOR_NODE:
+                if(sscanf(token.c_str(),"%d",&ival) == 1)
+                    tokens.push_back(token);
+                break;
+
+            case LONG_ARRAY_NODE:
+            case LONG_VECTOR_NODE:
+                if(sscanf(token.c_str(),"%ld",&lval) == 1)
+                    tokens.push_back(token);
+                break;        
+            
+            case FLOAT_ARRAY_NODE:
+            case FLOAT_VECTOR_NODE:
+                if(sscanf(token.c_str(),"%f",&fval) == 1)
+                    tokens.push_back(token);
+                break;
+            
+            case DOUBLE_ARRAY_NODE:
+            case DOUBLE_VECTOR_NODE:
+                if(sscanf(token.c_str(),"%lf",&dval) == 1)
+                    tokens.push_back(token);
+                break;
+              
+            case STRING_ARRAY_NODE:
+            case STRING_VECTOR_NODE:
+            case BOOL_ARRAY_NODE:
+            case BOOL_VECTOR_NODE:
+                if (token.size() > 0)
+                    tokens.push_back(token);
+                break;
+          }
+        }
+    }
+
+    if (tokens.size() != length)
+        tokens.clear();
+
+    return tokens.size();
+}
+
+
+// ****************************************************************************
+// Method: ViewerSubject::CreateAttributesDataNode
+//
+// Purpose: 
+//   Create a DataNode with the attributes of one plot.
+//
+// Programmer: Walter Herrera
+// Creation:   Tue Sep 9 10:27:46 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+DataNode *
+ViewerSubject::CreateAttributesDataNode(const avtDefaultPlotMetaData *dp) const
+{
+    DataNode *node = 0, *fatherNode, *newNode;
+    std::string nodeTypeToken, fatherName, attrName, attrValue;
+    std::vector<std::string> tokens;
+    int nodeType = 0, length, ival;
+    char cval;
+    unsigned char ucval;
+    long lval;
+    float fval;
+    double dval;
+
+    for(int i=0; i < dp->plotAttributes.size(); i++) 
+    {
+        nodeTypeToken = getToken(dp->plotAttributes[i], true);  
+        if(sscanf(nodeTypeToken.c_str(), "%d", &nodeType) != 1)
+            continue;
+
+        fatherName = getToken(dp->plotAttributes[i]);  
+        attrName = getToken(dp->plotAttributes[i]);  
+
+        fatherNode = 0;
+        if (node != 0)
+            fatherNode = node->GetNode(fatherName);
+
+        switch(nodeType)
+        {
+        case INTERNAL_NODE:
+            if(fatherName == "NULL")
+            {
+                if(node != 0)
+                    delete node;
+
+                node = new DataNode(attrName);
+            }
+            else if(fatherNode != 0)
+            {
+                newNode = new DataNode(attrName);
+                fatherNode->AddNode(newNode);
+            }
+            break;
+
+        case CHAR_NODE:
+            if(fatherNode != 0)
+            {
+                attrValue = getToken(dp->plotAttributes[i]);  
+
+                if (sscanf(attrValue.c_str(),"%d",&ival) == 1)
+                {                
+                    cval = (char)ival;
+                    newNode = new DataNode(attrName,cval);
+                    fatherNode->AddNode(newNode);
+                }
+            }
+            break;
+
+        case UNSIGNED_CHAR_NODE:
+            if(fatherNode != 0)
+            {
+                attrValue = getToken(dp->plotAttributes[i]);  
+
+                if (sscanf(attrValue.c_str(),"%d",&ival) == 1)
+                {                
+                    ucval = (unsigned char)ival;
+                    newNode = new DataNode(attrName,ucval);
+                    fatherNode->AddNode(newNode);
+                }
+            }
+            break;
+
+        case INT_NODE:
+            if(fatherNode != 0)
+            {
+                attrValue = getToken(dp->plotAttributes[i]);  
+
+                if (sscanf(attrValue.c_str(),"%d",&ival) == 1)
+                {                
+                    newNode = new DataNode(attrName,ival);
+                    fatherNode->AddNode(newNode);
+                }
+            }
+            break;        
+
+        case LONG_NODE:
+            if(fatherNode != 0)
+            {
+                attrValue = getToken(dp->plotAttributes[i]);  
+
+                if (sscanf(attrValue.c_str(),"%ld",&lval) == 1)
+                {                
+                    newNode = new DataNode(attrName,lval);
+                    fatherNode->AddNode(newNode);
+                }
+            }
+            break;        
+
+        case FLOAT_NODE:
+            if(fatherNode != 0)
+            {
+                attrValue = getToken(dp->plotAttributes[i]);  
+
+                if (sscanf(attrValue.c_str(),"%f",&fval) == 1)
+                {                
+                    newNode = new DataNode(attrName,fval);
+                    fatherNode->AddNode(newNode);
+                }
+            }
+            break;
+
+        case DOUBLE_NODE:
+            if(fatherNode != 0)
+            {
+                attrValue = getToken(dp->plotAttributes[i]);  
+
+                if (sscanf(attrValue.c_str(),"%lf",&dval) == 1)
+                {                
+                    newNode = new DataNode(attrName,dval);
+                    fatherNode->AddNode(newNode);
+                }
+            }
+            break;
+
+        case STRING_NODE:
+            if(fatherNode != 0)
+            {
+                attrValue = getToken(dp->plotAttributes[i]);  
+                if (attrValue.size() != 0)
+                {
+                    newNode = new DataNode(attrName,attrValue);
+                    fatherNode->AddNode(newNode);
+                }
+            }
+            break;
+
+        case BOOL_NODE:
+            if(fatherNode != 0)
+            {
+                attrValue = getToken(dp->plotAttributes[i]);  
+
+                if (attrValue.size() != 0)
+                {
+                    newNode = new DataNode(attrName,(attrValue == "true"));
+                    fatherNode->AddNode(newNode);
+                } 
+            }
+            break;        
+
+        case CHAR_ARRAY_NODE:
+        case CHAR_VECTOR_NODE:
+            length = getVectorTokens(dp->plotAttributes[i], tokens, nodeType);
+
+            if(fatherNode != 0 && length > 0)
+            {
+                char *arrayItems = new char[length];
+                charVector vectorItems(length);
+
+                for(int j=0; j<length; j++)
+                {
+                    sscanf(tokens[j].c_str(),"%d",&ival);
+                    arrayItems[j] = (char)ival;
+                    vectorItems.push_back(arrayItems[j]);
+                }
+                if (nodeType == CHAR_ARRAY_NODE)
+                    newNode = new DataNode(attrName,arrayItems,length);
+                else
+                    newNode = new DataNode(attrName,vectorItems);
+
+                fatherNode->AddNode(newNode);
+                delete [] arrayItems;
+            }
+            break;
+
+        case UNSIGNED_CHAR_ARRAY_NODE:
+        case UNSIGNED_CHAR_VECTOR_NODE:
+            length = getVectorTokens(dp->plotAttributes[i], tokens, nodeType);
+
+            if(fatherNode != 0 && length > 0)
+            {
+                unsigned char *arrayItems = new unsigned char[length];
+                unsignedCharVector vectorItems(length);
+
+                for(int j=0; j<length; j++)
+                {
+                    sscanf(tokens[j].c_str(),"%d",&ival);
+                    arrayItems[j] = (unsigned char)ival;
+                    vectorItems.push_back(arrayItems[j]);
+                }
+                if (nodeType == UNSIGNED_CHAR_ARRAY_NODE)
+                    newNode = new DataNode(attrName,arrayItems,length);
+                else
+                    newNode = new DataNode(attrName,vectorItems);
+
+                fatherNode->AddNode(newNode);
+                delete [] arrayItems;
+            }
+            break;
+
+        case INT_ARRAY_NODE:
+        case INT_VECTOR_NODE:
+            length = getVectorTokens(dp->plotAttributes[i], tokens, nodeType);
+
+            if(fatherNode != 0 && length > 0)
+            {
+                int *arrayItems = new int[length];
+                intVector vectorItems(length);
+
+                for(int j=0; j<length; j++)
+                {
+                    sscanf(tokens[j].c_str(),"%d",&arrayItems[j]);
+                    vectorItems.push_back(arrayItems[j]);
+                }
+                if (nodeType == INT_ARRAY_NODE)
+                    newNode = new DataNode(attrName,arrayItems,length);
+                else
+                    newNode = new DataNode(attrName,vectorItems);
+
+                fatherNode->AddNode(newNode);
+                delete [] arrayItems;
+            }
+            break;
+
+        case LONG_ARRAY_NODE:
+        case LONG_VECTOR_NODE:
+            length = getVectorTokens(dp->plotAttributes[i], tokens, nodeType);
+
+            if(fatherNode != 0 && length > 0)
+            {
+                long *arrayItems = new long[length];
+                longVector vectorItems(length);
+
+                for(int j=0; j<length; j++)
+                {
+                    sscanf(tokens[j].c_str(),"%ld",&arrayItems[j]);
+                    vectorItems.push_back(arrayItems[j]);
+                }
+                if (nodeType == LONG_ARRAY_NODE)
+                    newNode = new DataNode(attrName,arrayItems,length);
+                else
+                    newNode = new DataNode(attrName,vectorItems);
+
+                fatherNode->AddNode(newNode);
+                delete [] arrayItems;
+            }
+            break;        
+
+        case FLOAT_ARRAY_NODE:
+        case FLOAT_VECTOR_NODE:
+            length = getVectorTokens(dp->plotAttributes[i], tokens, nodeType);
+
+            if(fatherNode != 0 && length > 0)
+            {
+                float *arrayItems = new float[length];
+                floatVector vectorItems(length);
+
+                for(int j=0; j<length; j++)
+                {
+                    sscanf(tokens[j].c_str(),"%f",&arrayItems[j]);
+                    vectorItems.push_back(arrayItems[j]);
+                }
+                if (nodeType == FLOAT_ARRAY_NODE)
+                    newNode = new DataNode(attrName,arrayItems,length);
+                else
+                    newNode = new DataNode(attrName,vectorItems);
+
+                fatherNode->AddNode(newNode);
+                delete [] arrayItems;
+            }
+            break;
+
+        case DOUBLE_ARRAY_NODE:
+        case DOUBLE_VECTOR_NODE:
+            length = getVectorTokens(dp->plotAttributes[i], tokens, nodeType);
+
+            if(fatherNode != 0 && length > 0)
+            {
+                double *arrayItems = new double[length];
+                doubleVector vectorItems(length);
+
+                for(int j=0; j<length; j++)
+                {
+                    sscanf(tokens[j].c_str(),"%lf",&arrayItems[j]);
+                    vectorItems.push_back(arrayItems[j]);
+                }
+                if (nodeType == DOUBLE_ARRAY_NODE)
+                    newNode = new DataNode(attrName,arrayItems,length);
+                else
+                    newNode = new DataNode(attrName,vectorItems);
+
+                fatherNode->AddNode(newNode);
+                delete [] arrayItems;
+            }
+            break;
+
+        case STRING_ARRAY_NODE:
+        case STRING_VECTOR_NODE:
+            length = getVectorTokens(dp->plotAttributes[i], tokens, nodeType);
+
+            if(fatherNode != 0 && length > 0)
+            {
+                std::string *arrayItems = new std::string[length];
+
+                for(int j=0; j<length; j++)
+                {
+                    arrayItems[j] = tokens[j];
+                }
+                if (nodeType == STRING_ARRAY_NODE)
+                    newNode = new DataNode(attrName,arrayItems,length);
+                else
+                    newNode = new DataNode(attrName,tokens);
+
+                fatherNode->AddNode(newNode);
+                delete [] arrayItems;
+            }
+            break;
+
+        case BOOL_ARRAY_NODE:
+            length = getVectorTokens(dp->plotAttributes[i], tokens, nodeType);
+
+            if(fatherNode != 0 && length > 0)
+            {
+                bool *arrayItems = new bool[length];
+
+                for(int j=0; j<length; j++)
+                {
+                    arrayItems[j] = (tokens[j] == "true");
+                }
+
+                newNode = new DataNode(attrName,arrayItems,length);
+                fatherNode->AddNode(newNode);
+                delete [] arrayItems;
+            }
+            break;
+        }
+    }
+    
+    return node;
+}
+
 
 // ****************************************************************************
 // Method: ViewerSubject::OpenDatabase
