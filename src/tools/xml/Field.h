@@ -800,12 +800,11 @@ class Color : public virtual Field
         if (valueSet)
         {
             out << "            value:"
-                << ios::hex
-                << "  R=0x" << int(val[0]) 
-                << "  G=0x" << int(val[1]) 
-                << "  B=0x" << int(val[2]) 
-                << "  A=0x" << int(val[3]) 
-                << ios::dec << endl;
+                << "  R=" << int(val[0]) 
+                << "  G=" << int(val[1]) 
+                << "  B=" << int(val[2]) 
+                << "  A=" << int(val[3]) 
+                << endl;
         }
     }
     virtual vector<QString> GetValueAsText()

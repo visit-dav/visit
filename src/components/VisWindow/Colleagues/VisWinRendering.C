@@ -79,6 +79,9 @@ bool VisWinRendering::stereoEnabled = false;
 //    Set scalableThreshold to be default value obtiained from
 //    RenderingAttributes.
 //
+//    Jeremy Meredith, Fri Nov 14 11:29:05 PST 2003
+//    Added specular properties.
+//
 // ****************************************************************************
 
 VisWinRendering::VisWinRendering(VisWindowColleagueProxy &p) 
@@ -95,6 +98,10 @@ VisWinRendering::VisWinRendering(VisWindowColleagueProxy &p)
     stereoType                     = 2;
     immediateMode                  = false;
     surfaceRepresentation          = 0;
+    specularFlag                   = false;
+    specularCoeff                  = .6;
+    specularPower                  = 10.0;
+    specularColor                  = ColorAttribute(255,255,255,255);
     renderInfo                     = 0;
     renderInfoData                 = 0;
     notifyForEachRender            = false;
@@ -1246,6 +1253,35 @@ VisWinRendering::SetSurfaceRepresentation(int rep)
 }
 
 // ****************************************************************************
+// Method: VisWinRendering::SetSpecularProperties
+//
+// Purpose: 
+//   Sets the specular properties for all of the actors in the canvas
+//   renderer.
+//
+// Arguments:
+//   coeff:   the new coefficient
+//   power:   the new power
+//   color:   the new color
+//
+// Programmer: Jeremy Meredith
+// Creation:   November 14, 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+VisWinRendering::SetSpecularProperties(bool flag, float coeff, float power,
+                                       const ColorAttribute &color)
+{
+    specularFlag  = flag;
+    specularCoeff = coeff;
+    specularPower = power;
+    specularColor = color;
+}
+
+// ****************************************************************************
 // Method: VisWinRendering::GetNumTriangles
 //
 // Purpose: 
@@ -1325,13 +1361,14 @@ VisWinRendering::GetNumTriangles() const
 
 bool
 VisWinRendering::SetScalableRendering(bool mode)
-{  bool oldMode = scalableRendering;
-   scalableRendering = mode;
-   if (scalableRendering)
-      mediator.EnableExternalRenderRequests();
-   else
-      mediator.DisableExternalRenderRequests();
-   return oldMode;
+{
+    bool oldMode = scalableRendering;
+    scalableRendering = mode;
+    if (scalableRendering)
+        mediator.EnableExternalRenderRequests();
+    else
+        mediator.DisableExternalRenderRequests();
+    return oldMode;
 }
 
 // ****************************************************************************
@@ -1353,7 +1390,8 @@ VisWinRendering::SetScalableRendering(bool mode)
 
 int
 VisWinRendering::SetScalableThreshold(int threshold)
-{  int oldVal = scalableThreshold;
-   scalableThreshold = threshold;
-   return oldVal;
+{
+    int oldVal = scalableThreshold;
+    scalableThreshold = threshold;
+    return oldVal;
 }

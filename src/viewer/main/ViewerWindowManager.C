@@ -2084,6 +2084,9 @@ ViewerWindowManager::SetViewExtentsType(avtExtentType viewType,
 //   I made it so only those parts of rendereing attributes that actually
 //   were changed are changed on the window 
 //
+//   Jeremy Meredith, Fri Nov 14 12:23:19 PST 2003
+//   Added specular properties.
+//
 // ****************************************************************************
 
 void
@@ -2119,6 +2122,17 @@ ViewerWindowManager::SetRenderingAttributes(int windowIndex)
         if (windows[index]->GetScalableThreshold() !=
             renderAtts->GetScalableThreshold())
             windows[index]->SetScalableThreshold(renderAtts->GetScalableThreshold());
+
+        if (windows[index]->GetSpecularFlag()  != renderAtts->GetSpecularFlag() ||
+            windows[index]->GetSpecularCoeff() != renderAtts->GetSpecularCoeff() ||
+            windows[index]->GetSpecularPower() != renderAtts->GetSpecularPower() ||
+            windows[index]->GetSpecularColor() != renderAtts->GetSpecularColor())
+        {
+            windows[index]->SetSpecularProperties(renderAtts->GetSpecularFlag(),
+                                                 renderAtts->GetSpecularCoeff(),
+                                                 renderAtts->GetSpecularPower(),
+                                                 renderAtts->GetSpecularColor());
+        }
 
         // If the updatesEnabled flag was true before we temporarily disabled
         // updates, turn updates back on and force the window to redraw so the
@@ -3359,6 +3373,9 @@ ViewerWindowManager::UpdateLightListAtts()
 //   Kathleen Bonnell, Wed Dec  4 17:38:27 PST 2002
 //   Removed antialiasing frames, no longer needed.
 //   
+//   Jeremy Meredith, Fri Nov 14 17:44:22 PST 2003
+//   Added updates for specular.
+//
 // ****************************************************************************
 
 void
@@ -3383,6 +3400,10 @@ ViewerWindowManager::UpdateRenderingAtts(int windowIndex)
         renderAtts->SetNotifyForEachRender(win->GetNotifyForEachRender());
         renderAtts->SetScalableRendering(win->GetScalableRendering());
         renderAtts->SetScalableThreshold(win->GetScalableThreshold());
+        renderAtts->SetSpecularFlag(win->GetSpecularFlag());
+        renderAtts->SetSpecularCoeff(win->GetSpecularCoeff());
+        renderAtts->SetSpecularPower(win->GetSpecularPower());
+        renderAtts->SetSpecularColor(win->GetSpecularColor());
 
         // Tell the client about the new rendering information.
         renderAtts->Notify();
@@ -4844,6 +4865,9 @@ ViewerWindowManager::CreateVisWindow(const int windowIndex,
 //    Brad Whitlock, Wed May 21 07:52:21 PDT 2003
 //    I made fullframe be copied to the new window.
 //
+//    Jeremy Meredith, Fri Nov 14 17:57:31 PST 2003
+//    Added specular properties.
+//
 // ****************************************************************************
 
 void
@@ -4875,6 +4899,10 @@ ViewerWindowManager::SetWindowAttributes(int windowIndex, bool copyAtts)
         (int)renderAtts->GetStereoType());
     w->SetNotifyForEachRender(renderAtts->GetNotifyForEachRender());
     w->SetScalableThreshold(renderAtts->GetScalableThreshold());
+    w->SetSpecularProperties(renderAtts->GetSpecularFlag(),
+                             renderAtts->GetSpecularCoeff(),
+                             renderAtts->GetSpecularPower(),
+                             renderAtts->GetSpecularColor());
 }
 
 // ****************************************************************************

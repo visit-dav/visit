@@ -19,4 +19,8 @@
     <Field name="notifyForEachRender" type="bool">false</Field>
     <Field name="scalableRendering" type="bool">false</Field>
     <Field name="scalableThreshold" type="int">2000000</Field>
+    <Field name="specularFlag" type="bool">false</Field>
+    <Field name="specularCoeff" type="float">0.6</Field>
+    <Field name="specularPower" type="float">10.0</Field>
+    <Field name="specularColor" type="color">255 255 255 255</Field>
   </Attribute>

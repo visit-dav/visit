@@ -9,6 +9,7 @@
 #include <VisWinColleague.h>
 
 #include <avtImage.h>
+#include <ColorAttribute.h>
 
 
 class vtkInteractorStyle;
@@ -96,8 +97,11 @@ class VisWindowColleagueProxy;
 //    Brad Whitlock, Wed May 21 12:03:46 PDT 2003
 //    I made GetSize be virtual.
 //
-//    Mark C. Miller, 07Jul03
+//    Mark C. Miller, Mon Jul  7 01:23:45 PDT 2003
 //    I made GetSize non-virtual and added new virtual GetWindowSize method
+//
+//    Jeremy Meredith, Fri Nov 14 11:27:19 PST 2003
+//    Allowed specular lighting.
 //
 // ****************************************************************************
 
@@ -170,6 +174,16 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
     virtual void             SetSurfaceRepresentation(int rep);
     int                      GetSurfaceRepresentation() const
                                  { return surfaceRepresentation; };
+    virtual void             SetSpecularProperties(bool,float,float,
+                                                   const ColorAttribute&);
+    bool                     GetSpecularFlag() const
+                                 { return specularFlag; };
+    float                    GetSpecularCoeff() const
+                                 { return specularCoeff; };
+    float                    GetSpecularPower() const
+                                 { return specularPower; };
+    const ColorAttribute    &GetSpecularColor() const
+                                 { return specularColor; };
     int                      GetNumTriangles() const;
     void                     SetNotifyForEachRender(bool val)
                                  { notifyForEachRender = val; };
@@ -199,6 +213,10 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
     int                           stereoType;
     bool                          immediateMode;
     int                           surfaceRepresentation;
+    bool                          specularFlag;
+    float                         specularCoeff;
+    float                         specularPower;
+    ColorAttribute                specularColor;
     void(*renderInfo)(void *);
     void                         *renderInfoData;
     bool                          notifyForEachRender;

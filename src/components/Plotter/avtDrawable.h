@@ -13,7 +13,7 @@
 
 
 class     vtkRenderer;
-
+class     ColorAttribute;
 class     avtExternallyRenderedImagesActor;
 class     avtTransparencyActor;
 
@@ -53,6 +53,9 @@ class     avtTransparencyActor;
 //    Added a method to support changing surface representations. I added
 //    another method to set the drawable's immediate rendering mode.
 //
+//    Jeremy Meredith, Fri Nov 14 11:10:53 PST 2003
+//    Added a method to set the specular properties.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtDrawable
@@ -82,6 +85,9 @@ class PLOTTER_API avtDrawable
 
     virtual void               SetSurfaceRepresentation(int rep) {;};
     virtual void               SetImmediateModeRendering(bool val) {;};
+
+    virtual void               SetSpecularProperties(bool,float,float,
+                                                     const ColorAttribute&) {;}
 
     virtual avtDataObject_p    GetDataObject(void) = 0;
 };

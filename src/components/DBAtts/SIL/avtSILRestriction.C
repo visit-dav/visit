@@ -16,7 +16,7 @@
 #include <IncompatibleDomainListsException.h>
 #include <TimingsManager.h>
 
-#define STATE_INDEX(S) (((S)==SomeUsed)?1:(((S)==AllUsed)?2:0))
+#define STATE_INDEX(S) (((S)==SomeUsed)?1:(((S)==AllUsed)?2:((S)==AllUsedOtherProc?3:0)))
 
 using  std::string;
 using  std::vector;
@@ -489,7 +489,7 @@ avtSILRestriction::EnsureRestrictionCorrectness(int setId)
         // Set the state based the results of the children.
         useSet[setId] = retval;
     }
-
+ 
     return retval;
 }
 
@@ -715,6 +715,11 @@ avtSILRestriction::Intersect(avtSILRestriction_p silr)
 //  Programmer: Hank Childs
 //  Creation:   December 4, 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Nov 14 08:13:58 PST 2003
+//    Account for AllUsedOnOtherProc designation.
+//
 // ****************************************************************************
 
 void
@@ -731,14 +736,16 @@ avtSILRestriction::FastIntersect(avtSILRestriction_p silr)
     // determine most values. We then call EnsureRestrictionCorrectness to
     // figure out the cases that we're not sure about.
     //
-    SetState states[] = {NoneUsed, NoneUsed, NoneUsed,
-                         NoneUsed, SomeUsed, SomeUsed,
-                         NoneUsed, SomeUsed, AllUsed};
+    SetState states[] = {NoneUsed, NoneUsed, NoneUsed, NoneUsed,
+                         NoneUsed, SomeUsed, SomeUsed, AllUsedOtherProc,
+                         NoneUsed, SomeUsed, AllUsed,  AllUsedOtherProc,
+                         NoneUsed, AllUsedOtherProc, AllUsedOtherProc,
+                                                            AllUsedOtherProc };
 
     const int nsets = useSet.size();
     for (int i = 0 ; i < nsets ; i++)
     {
-        int index = (STATE_INDEX(useSet[i]) * 3) +
+        int index = (STATE_INDEX(useSet[i]) * 4) +
                      STATE_INDEX(silr->useSet[i]);
         useSet[i] = states[index];
     }
@@ -767,6 +774,9 @@ avtSILRestriction::FastIntersect(avtSILRestriction_p silr)
 //    Hank Childs, Thu Feb  7 16:19:11 PST 2002
 //    Accounted for new style of suspending correctness inspections.
 //
+//    Hank Childs, Fri Nov 14 08:13:58 PST 2003
+//    Account for AllUsedOnOtherProc designation.
+//
 // ****************************************************************************
 
 void
@@ -783,13 +793,15 @@ avtSILRestriction::Union(avtSILRestriction_p silr)
     // determine most values. We then call EnsureRestrictionCorrectness to
     // figure out the cases that we're not sure about.
     //
-    SetState states[] = {SomeUsed, SomeUsed, AllUsed,
-                         SomeUsed, NoneUsed, AllUsed,
-                         AllUsed,  AllUsed,  AllUsed};
+    SetState states[] = {NoneUsed, SomeUsed, AllUsed, AllUsedOtherProc,
+                         SomeUsed, SomeUsed, AllUsed, SomeUsed /* ? */,
+                         AllUsed, AllUsed, AllUsed, AllUsed,
+                         AllUsedOtherProc, SomeUsed, AllUsed,
+                                                            AllUsedOtherProc };
 
     for (int i = 0 ; i < useSet.size() ; i++)
     {
-        int index = (STATE_INDEX(useSet[i]) * 3) +
+        int index = (STATE_INDEX(useSet[i]) * 4) +
                      STATE_INDEX(silr->useSet[i]);
         useSet[i] = states[index];
     }
@@ -870,6 +882,9 @@ avtSILRestriction::RestrictDomainsForLoadBalance(const vector<int> &domains)
 //
 //    Mark C. Miller, Wed Oct 15 16:24:13 PDT 2003
 //    Made private, added bool for special behavior if for load balancing
+//
+//    Hank Childs, Thu Nov 13 16:52:23 PST 2003
+//    Pass 'forLoadBalance' argument on to SIL matrix 'TurnSet' call.
 //
 // ****************************************************************************
 
@@ -962,7 +977,7 @@ avtSILRestriction::RestrictDomains(const vector<int> &domains,
             {
                 if (forLoadBalance)
                 {
-                    if (useSet[setsToTurnOff[j]] == AllUsed) 
+                    if (useSet[setsToTurnOff[j]] != NoneUsed) 
                         useSet[setsToTurnOff[j]] = AllUsedOtherProc;
                     else
                         useSet[setsToTurnOff[j]] = NoneUsed;
@@ -989,7 +1004,8 @@ avtSILRestriction::RestrictDomains(const vector<int> &domains,
                         avtSILMatrix_p mat;
                         int newCollIndex = 0;
                         TranslateCollectionInfo(mapsOut[k], mat, newCollIndex);
-                        mat->TurnSet(useSet, newCollIndex, NoneUsed);
+                        mat->TurnSet(useSet, newCollIndex, NoneUsed,
+                                     forLoadBalance);
                     }
                 }
             }

@@ -4227,6 +4227,104 @@ VisWindow::GetSurfaceRepresentation() const
 }
 
 // ****************************************************************************
+// Method: VisWindow::SetSpecularProperties
+//
+// Purpose: 
+//   Sets the window's specular properties.
+//
+// Arguments:
+//      coeff :  the new specular coefficient
+//      power :  the new specular power
+//      color :  the new specular color
+//
+// Programmer: Jeremy Meredith
+// Creation:   November 14, 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+VisWindow::SetSpecularProperties(bool flag, float coeff, float power,
+                                 const ColorAttribute &color)
+{
+    std::vector< VisWinColleague * >::iterator it;
+    for (it = colleagues.begin() ; it != colleagues.end() ; it++)
+    {
+        (*it)->SetSpecularProperties(flag, coeff, power, color);
+    }
+}
+
+
+// ****************************************************************************
+//  Method:  VisWindow::GetSpecularCoeff
+//
+//  Purpose:
+//    Get the window's specular coefficient.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November 14, 2003
+//
+// ****************************************************************************
+
+float
+VisWindow::GetSpecularCoeff()
+{
+    return rendering->GetSpecularCoeff();
+}
+
+// ****************************************************************************
+//  Method:  VisWindow::GetSpecularFlag
+//
+//  Purpose:
+//    Get the window's specular flag.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November 14, 2003
+//
+// ****************************************************************************
+
+bool
+VisWindow::GetSpecularFlag()
+{
+    return rendering->GetSpecularFlag();
+}
+
+// ****************************************************************************
+//  Method:  VisWindow::GetSpecularPower
+//
+//  Purpose:
+//    Get the window's specular power.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November 14, 2003
+//
+// ****************************************************************************
+
+float
+VisWindow::GetSpecularPower()
+{
+    return rendering->GetSpecularPower();
+}
+
+// ****************************************************************************
+//  Method:  VisWindow::GetSpecularColor
+//
+//  Purpose:
+//    Get the window's specular color.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November 14, 2003
+//
+// ****************************************************************************
+
+const ColorAttribute &
+VisWindow::GetSpecularColor()
+{
+    return rendering->GetSpecularColor();
+}
+
+// ****************************************************************************
 // Method: VisWindow::GetNumTriangles
 //
 // Purpose: 

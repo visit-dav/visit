@@ -12,7 +12,7 @@
 #include <avtActor.h>
 
 class     VisWindowColleagueProxy;
-
+class     ColorAttribute;
 
 // ****************************************************************************
 //  Class: VisWinColleague
@@ -58,6 +58,9 @@ class     VisWindowColleagueProxy;
 //    Kathleen Bonnell, Fri Jun  6 08:57:33 PDT 2003 
 //    Added virtual methods FullFrameOn, FullFrameOff.  
 //    
+//    Jeremy Meredith, Fri Nov 14 17:13:53 PST 2003
+//    Added specular properties.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinColleague
@@ -94,6 +97,9 @@ class VISWINDOW_API VisWinColleague
 
     virtual void              SetSurfaceRepresentation(int) {;};
     virtual void              SetImmediateModeRendering(bool) {;};
+
+    virtual void              SetSpecularProperties(bool,float,float,
+                                                    const ColorAttribute&) {;};
 
     virtual void              UpdateView(void)     {;};
 

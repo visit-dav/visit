@@ -9,6 +9,7 @@
 #include <avtTransparencyActor.h>
 
 #include <NoInputException.h>
+#include <ColorAttribute.h>
 
 
 // ****************************************************************************
@@ -759,6 +760,35 @@ avtActor::SetImmediateModeRendering(bool val)
     if (*(decorations) != NULL)
     {
         decorations->SetImmediateModeRendering(val);
+    }
+}
+
+// ****************************************************************************
+//  Method: avtActor::SetSpecularProperties
+//
+//  Purpose:
+//      Tells the drawable to set its specular properties. 
+//
+//  Arguments:
+//      coeff :  the new specular coefficient
+//      power :  the new specular power
+//      color :  the new specular color
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   November 14, 2003
+//
+// ****************************************************************************
+
+void
+avtActor::SetSpecularProperties(bool flag, float coeff, float power,
+                                const ColorAttribute &color)
+{
+    if (*(drawable) != NULL)
+    {
+        if (GetWindowMode() == WINMODE_3D)
+            drawable->SetSpecularProperties(flag,coeff,power,color);
+        else
+            drawable->SetSpecularProperties(false,0,0,ColorAttribute(0,0,0));
     }
 }
 

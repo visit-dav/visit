@@ -408,11 +408,17 @@ avtSILMatrix::GetMaterialList(int index, MaterialList &matlist,
 //  Programmer: Hank Childs
 //  Creation:   December 4, 2002
 //
+//  Modifications:
+// 
+//    Hank Childs, Thu Nov 13 16:47:18 PST 2003
+//    Added forLoadBalance argument.  This was causing a serious AMR bug 
+//    with respect to properly ghosting out coarser zones in parallel.
+//
 // ****************************************************************************
 
 void
 avtSILMatrix::TurnSet(vector<unsigned char> &useSet, int index, 
-                      SetState val) const
+                      SetState val, bool forLoadBalance) const
 {
     int set1size = set1.size();
     int set2size = set2.size();
@@ -423,7 +429,11 @@ avtSILMatrix::TurnSet(vector<unsigned char> &useSet, int index,
         for (int i = 0 ; i < set2size ; i++)
         {
             int set = setsStartAt + row*set2size + i;
-            useSet[set] = val;
+            if (forLoadBalance && (val==NoneUsed) && 
+               ((useSet[set]==AllUsed) || (useSet[set]==AllUsedOtherProc)))
+                useSet[set] = AllUsedOtherProc;
+            else
+                useSet[set] = val;
         }
     }
     else
@@ -432,7 +442,11 @@ avtSILMatrix::TurnSet(vector<unsigned char> &useSet, int index,
         for (int i = 0 ; i < set1size ; i++)
         {
             int set = setsStartAt + i*set2size + column;
-            useSet[set] = val;
+            if (forLoadBalance && (val==NoneUsed) && 
+               ((useSet[set]==AllUsed) || (useSet[set]==AllUsedOtherProc)))
+                useSet[set] = AllUsedOtherProc;
+            else
+                useSet[set] = val;
         }
     }
 }

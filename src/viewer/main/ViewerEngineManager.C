@@ -45,7 +45,7 @@ using std::string;
 //
 // Define some boiler plate macros that wrap blocking RPCs.
 //
-#define ENGINE_PROXY_RPC_BEGIN  \
+#define ENGINE_PROXY_RPC_BEGIN(rpcname)  \
     const char *hostName = RealHostName(hostName_); \
     bool retval = false; \
     bool retry = false; \
@@ -53,11 +53,22 @@ using std::string;
     do \
     { \
         int engineIndex = GetEngineIndex(hostName); \
+        if(engineIndex < 0) \
+        { \
+            debug1 << "****\n**** Trying to execute the " << rpcname \
+                   << " RPC before an engine was started" << endl \
+                   << "**** on " << hostName << ". Starting an engine on " \
+                   << hostName << ".\n****" << endl; \
+            CreateEngine(hostName_, restartArguments); \
+            engineIndex = GetEngineIndex(hostName); \
+        } \
         if(engineIndex >= 0) \
         { \
             TRY \
             { \
-                EngineProxy *engine = engines[engineIndex]->engine;
+                EngineProxy *engine = engines[engineIndex]->engine; \
+                debug3 << "Calling " << rpcname << " RPC on " \
+                       << hostName << "'s engine." << endl;
 
 #define ENGINE_PROXY_RPC_END  \
                 retval = true; \
@@ -1433,7 +1444,7 @@ bool
 ViewerEngineManager::OpenDatabase(const char *hostName_, const char *filename,
     int time)
 {
-    ENGINE_PROXY_RPC_BEGIN;
+    ENGINE_PROXY_RPC_BEGIN("OpenDatabase");
     engine->OpenDatabase(filename, time);
     ENGINE_PROXY_RPC_END;
 }
@@ -1455,7 +1466,7 @@ bool
 ViewerEngineManager::DefineVirtualDatabase(const char *hostName_,
     const char *dbName, const char *path, const stringVector &files, int time)
 {
-    ENGINE_PROXY_RPC_BEGIN;
+    ENGINE_PROXY_RPC_BEGIN("DefineVirtualDatabase");
     engine->DefineVirtualDatabase(dbName, path, files, time);
     ENGINE_PROXY_RPC_END;
 }
@@ -1479,7 +1490,7 @@ bool
 ViewerEngineManager::ApplyOperator(const char *hostName_, const char *name,
     const AttributeSubject *atts)
 {
-    ENGINE_PROXY_RPC_BEGIN;
+    ENGINE_PROXY_RPC_BEGIN("ApplyOperator");
     engine->ApplyOperator(name, atts);
     ENGINE_PROXY_RPC_END_NORESTART_RETHROW;
 }
@@ -1503,7 +1514,7 @@ bool
 ViewerEngineManager::MakePlot(const char *hostName_, const char *name,
     const AttributeSubject *atts, int *networkId)
 {
-    ENGINE_PROXY_RPC_BEGIN;
+    ENGINE_PROXY_RPC_BEGIN("MakePlot");
     *networkId = engine->MakePlot(name, atts);
     ENGINE_PROXY_RPC_END_NORESTART_RETHROW;
 }
@@ -1524,7 +1535,7 @@ ViewerEngineManager::MakePlot(const char *hostName_, const char *name,
 bool
 ViewerEngineManager::UseNetwork(const char *hostName_, int id)
 {
-    ENGINE_PROXY_RPC_BEGIN;
+    ENGINE_PROXY_RPC_BEGIN("UseNetwork");
     engine->UseNetwork(id);
     ENGINE_PROXY_RPC_END;
 }
@@ -1546,7 +1557,7 @@ bool
 ViewerEngineManager::UpdatePlotAttributes(const char *hostName_,
     const char *name, int id, const AttributeSubject *atts)
 {
-    ENGINE_PROXY_RPC_BEGIN;
+    ENGINE_PROXY_RPC_BEGIN("UpdatePlotAttributes");
     engine->UpdatePlotAttributes(name, id, atts);
     ENGINE_PROXY_RPC_END;
 }
@@ -1575,7 +1586,7 @@ bool
 ViewerEngineManager::Pick(const char *hostName_,
     const int nid, const PickAttributes *atts, PickAttributes &retAtts)
 {
-    ENGINE_PROXY_RPC_BEGIN;
+    ENGINE_PROXY_RPC_BEGIN("Pick");
     engine->Pick(nid, atts, retAtts);
     ENGINE_PROXY_RPC_END_NORESTART_RETHROW2;
 }
@@ -1597,7 +1608,7 @@ bool
 ViewerEngineManager::StartPick(const char *hostName_, const bool flag,
     const int nid)
 {
-    ENGINE_PROXY_RPC_BEGIN;
+    ENGINE_PROXY_RPC_BEGIN("StartPick");
     engine->StartPick(flag, nid);
     ENGINE_PROXY_RPC_END;
 }
@@ -1619,7 +1630,7 @@ bool
 ViewerEngineManager::SetWinAnnotAtts(const char *hostName_,
     const WindowAttributes *wa, const AnnotationAttributes *aa)
 {
-    ENGINE_PROXY_RPC_BEGIN;
+    ENGINE_PROXY_RPC_BEGIN("SetWinAnnotAtts");
     engine->SetWinAnnotAtts(wa,aa);
     ENGINE_PROXY_RPC_END;
 }
@@ -1643,7 +1654,7 @@ ViewerEngineManager::SetWinAnnotAtts(const char *hostName_,
 bool
 ViewerEngineManager::ClearCache(const char *hostName_, const char *dbName)
 {
-    ENGINE_PROXY_RPC_BEGIN;
+    ENGINE_PROXY_RPC_BEGIN("ClearCache");
     if (dbName == 0)
         engine->ClearCache();
     else
@@ -2063,7 +2074,7 @@ ViewerEngineManager::Query(const char *hostName_, const std::vector<int> &nid,
                            const QueryAttributes *atts,
                            QueryAttributes &retAtts)
 {
-    ENGINE_PROXY_RPC_BEGIN;
+    ENGINE_PROXY_RPC_BEGIN("Query");
     engine->Query(nid, atts, retAtts);
     ENGINE_PROXY_RPC_END_NORESTART_RETHROW2;
 }
@@ -2083,7 +2094,7 @@ ViewerEngineManager::Query(const char *hostName_, const std::vector<int> &nid,
 bool
 ViewerEngineManager::ReleaseData(const char *hostName_, int id)
 {
-    ENGINE_PROXY_RPC_BEGIN;
+    ENGINE_PROXY_RPC_BEGIN("ReleaseData");
     engine->ReleaseData(id);
     ENGINE_PROXY_RPC_END;
 }

@@ -207,6 +207,9 @@ VisWinPlots::~VisWinPlots()
 //    Kathleen Bonnell, Mon Sep 29 13:21:12 PDT 2003 
 //    Send the antialiasing flag to OrderPlots method.
 //    
+//    Jeremy Meredith, Fri Nov 14 17:56:24 PST 2003
+//    Added specular properties.
+//
 // ****************************************************************************
 
 void
@@ -306,6 +309,21 @@ VisWinPlots::AddPlot(avtActor_p &p)
     p->SetImmediateModeRendering(mediator.GetImmediateModeRendering());
 
     mediator.UpdatePlotList(plots);
+
+    //
+    // Ensure that the new plot has the right immediate mode rendering flag.
+    //
+    if (p->GetWindowMode() == WINMODE_3D)
+    {
+        p->SetSpecularProperties(mediator.GetSpecularFlag(),
+                                 mediator.GetSpecularCoeff(),
+                                 mediator.GetSpecularPower(),
+                                 mediator.GetSpecularColor());
+    }
+    else
+    {
+        p->SetSpecularProperties(false, 0, 0, ColorAttribute());
+    }
 
     //
     // Must do explicit render if we want the changes to show up.
@@ -1545,6 +1563,29 @@ VisWinPlots::SetImmediateModeRendering(bool immediateMode)
     for (it = plots.begin() ; it != plots.end() ; it++)
     {
         (*it)->SetImmediateModeRendering(immediateMode);
+    }
+}
+
+
+// ****************************************************************************
+//  Method: VisWinPlots::SetSpecularProperties
+//
+//  Purpose:
+//      Set specular properties on actors.
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   November 14, 2003
+//
+// ****************************************************************************
+
+void
+VisWinPlots::SetSpecularProperties(bool flag, float coeff, float power, 
+                                   const ColorAttribute &color)
+{
+    std::vector< avtActor_p >::iterator it;
+    for (it = plots.begin() ; it != plots.end() ; it++)
+    {
+        (*it)->SetSpecularProperties(flag, coeff,power,color);
     }
 }
 

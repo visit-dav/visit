@@ -265,6 +265,9 @@ struct ExternalRenderRequestInfo
 //    Introduced several new methods to refactored
 //    ExternalRenderRequestCallback
 //
+//    Jeremy Meredith, Fri Nov 14 17:58:16 PST 2003
+//    Added specular properties.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerWindow
@@ -439,6 +442,11 @@ public:
     bool GetScalableRendering() const;
     void SetScalableThreshold(int threshold);
     int  GetScalableThreshold() const;
+    void SetSpecularProperties(bool,float,float,const ColorAttribute&);
+    bool  GetSpecularFlag() const;
+    float GetSpecularCoeff() const;
+    float GetSpecularPower() const;
+    const ColorAttribute &GetSpecularColor() const;
 
 private:
     void RecenterViewCurve(const double *limits);

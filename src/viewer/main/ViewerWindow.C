@@ -1867,6 +1867,9 @@ ViewerWindow::InvertBackgroundColor()
 //   Kathleen Bonnell, Thu May 15 11:52:56 PDT 2003  
 //   Copy over full frame mode. 
 //
+//   Jeremy Meredith, Fri Nov 14 11:32:03 PST 2003
+//   Added specular properties.
+//
 // ****************************************************************************
 
 void
@@ -1881,6 +1884,10 @@ ViewerWindow::CopyGeneralAttributes(const ViewerWindow *source)
     SetSurfaceRepresentation(source->GetSurfaceRepresentation());
     SetNotifyForEachRender(source->GetNotifyForEachRender());
     SetScalableThreshold(source->GetScalableThreshold());
+    SetSpecularProperties(source->GetSpecularFlag(),
+                          source->GetSpecularCoeff(),
+                          source->GetSpecularPower(),
+                          source->GetSpecularColor());
 
     //
     // Set window mode flags.
@@ -4274,6 +4281,9 @@ ViewerWindow::CreateToolbar(const std::string &name)
 //   Eric Brugger, Wed Aug 20 11:15:07 PDT 2003
 //   I added a curve view.
 //
+//   Jeremy Meredith, Fri Nov 14 11:33:24 PST 2003
+//   Added specular properties.
+//
 // ****************************************************************************
 
 WindowAttributes
@@ -4343,6 +4353,10 @@ ViewerWindow::GetWindowAttributes() const
     renderAtts.SetAntialiasing(GetAntialiasing());
     renderAtts.SetGeometryRepresentation(
        (RenderingAttributes::GeometryRepresentation) GetSurfaceRepresentation());
+    renderAtts.SetSpecularFlag(GetSpecularFlag());
+    renderAtts.SetSpecularCoeff(GetSpecularCoeff());
+    renderAtts.SetSpecularPower(GetSpecularPower());
+    renderAtts.SetSpecularColor(GetSpecularColor());
     winAtts.SetRenderAtts(renderAtts);
 
     //
@@ -4826,6 +4840,110 @@ int
 ViewerWindow::GetSurfaceRepresentation() const
 {
     return visWindow->GetSurfaceRepresentation();
+}
+
+// ****************************************************************************
+//  Method:  ViewerWindow::GetSpecularFlag
+//
+//  Purpose:
+//    Returns the window's specular flag.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November 14, 2003
+//
+// ****************************************************************************
+
+bool
+ViewerWindow::GetSpecularFlag() const
+{
+    return visWindow->GetSpecularFlag();
+}
+
+// ****************************************************************************
+//  Method:  ViewerWindow::GetSpecularCoeff
+//
+//  Purpose:
+//    Returns the window's specular coeff.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November 14, 2003
+//
+// ****************************************************************************
+
+float
+ViewerWindow::GetSpecularCoeff() const
+{
+    return visWindow->GetSpecularCoeff();
+}
+
+// ****************************************************************************
+//  Method:  ViewerWindow::SetSpecularProperties
+//
+//  Purpose:
+//    Sets the window's specular properites.
+//
+//  Arguments:
+//      flag  :  the new specular flag
+//      coeff :  the new specular coefficient
+//      power :  the new specular power
+//      color :  the new specular color
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November 14, 2003
+//
+// ****************************************************************************
+
+void
+ViewerWindow::SetSpecularProperties(bool flag, float coeff, float power,
+                                    const ColorAttribute &color)
+{
+    visWindow->SetSpecularProperties(flag,coeff,power,color);
+}
+
+// ****************************************************************************
+//  Method:  ViewerWindow::GetSpecularPower
+//
+//  Purpose:
+//    Returns the window's specular power.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November 14, 2003
+//
+// ****************************************************************************
+
+float
+ViewerWindow::GetSpecularPower() const
+{
+    return visWindow->GetSpecularPower();
+}
+
+// ****************************************************************************
+//  Method:  ViewerWindow::GetSpecularColor
+//
+//  Purpose:
+//    Returns the window's specular color.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November 14, 2003
+//
+// ****************************************************************************
+
+const ColorAttribute&
+ViewerWindow::GetSpecularColor() const
+{
+    return visWindow->GetSpecularColor();
 }
 
 // ****************************************************************************
