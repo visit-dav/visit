@@ -37,6 +37,8 @@
 #include <avtTotalRevolvedVolumeQuery.h>
 #include <avtTotalRevolvedSurfaceAreaQuery.h>
 #include <avtVariableQuery.h>
+#include <avtVariableSummationQuery.h>
+#include <avtWeightedVariableSummationQuery.h>
 #include <avtWholeImageCompositer.h>
 #include <avtPlot.h>
 #include <VisWindow.h>
@@ -1752,6 +1754,9 @@ NetworkManager::Pick(const int id, PickAttributes *pa)
 //    Hank Childs, Mon Jan  5 16:39:06 PST 2004
 //    Make sure the network hasn't already been cleared.
 //
+//    Hank Childs, Tue Feb  3 17:07:25 PST 2004
+//    Added variable summation query.
+//
 // ****************************************************************************
 void
 NetworkManager::Query(const std::vector<int> &ids, QueryAttributes *qa)
@@ -1853,6 +1858,14 @@ NetworkManager::Query(const std::vector<int> &ids, QueryAttributes *qa)
             q->SetNthInput(queryInputs[0], 0);
             q->SetNthInput(queryInputs[1], 1);
             query = q;
+        }
+        else if (strcmp(queryName.c_str(), "Variable Sum") == 0)
+        {
+            query = new avtVariableSummationQuery();
+        }
+        else if (strcmp(queryName.c_str(), "Weighted Variable Sum") == 0)
+        {
+            query = new avtWeightedVariableSummationQuery();
         }
         else if (strcmp(queryName.c_str(), "Variable by Zone") == 0)
         {

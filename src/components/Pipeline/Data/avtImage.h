@@ -29,6 +29,9 @@
 //    Hank Childs, Wed Nov 21 12:08:42 PST 2001
 //    Re-define DerivedCopy.
 //
+//    Mark C. Miller, Wed Feb  4 19:47:30 PST 2004
+//    Added Instance, needed by avtDataObject->Clone
+//
 // ****************************************************************************
 
 class PIPELINE_API avtImage : public avtDataObject
@@ -47,6 +50,7 @@ class PIPELINE_API avtImage : public avtDataObject
 
     virtual const char       *GetType(void)  { return "avtImage"; };
     virtual int               GetNumberOfCells(bool polysOnly = false) const;
+    virtual avtDataObject    *Instance(void);
     virtual avtDataObjectWriter
                              *InstantiateWriter(void);
     virtual void              ReleaseData(void);

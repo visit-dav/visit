@@ -91,3 +91,22 @@ avtMultipleInputExpressionFilter::IsPointVariable(void)
 }
 
 
+// ****************************************************************************
+//  Method: avtMultipleInputExpressionFilter::ClearInputVariableNames
+//
+//  Purpose:
+//      Clears the input variable names.  This allows a filter to be used
+//      repeatedly.
+//
+//  Programmer: Hank Childs
+//  Creation:   February 4, 2004
+//
+// ****************************************************************************
+
+void
+avtMultipleInputExpressionFilter::ClearInputVariableNames(void)
+{
+    varnames.clear();
+}
+
+

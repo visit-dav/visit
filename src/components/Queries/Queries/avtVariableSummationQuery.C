@@ -1,0 +1,68 @@
+// ************************************************************************* //
+//                         avtVariableSummationQuery.C                       //
+// ************************************************************************* //
+
+#include <avtVariableSummationQuery.h>
+
+#include <avtTerminatingSource.h>
+
+using     std::string;
+
+
+// ****************************************************************************
+//  Method: avtVariableSummationQuery constructor
+//
+//  Programmer: Hank Childs 
+//  Creation:   February 3, 2004 
+//
+// ****************************************************************************
+
+avtVariableSummationQuery::avtVariableSummationQuery() : avtSummationQuery()
+{
+}
+
+
+// ****************************************************************************
+//  Method: avtVariableSummationQuery destructor
+//
+//  Programmer: Hank Childs 
+//  Creation:   February 3, 2004 
+//
+// ****************************************************************************
+
+avtVariableSummationQuery::~avtVariableSummationQuery()
+{
+}
+
+
+// ****************************************************************************
+//  Method: avtVariableSummationQuery::VerifyInput
+//
+//  Purpose:
+//      Now that we have an input, we can determine what the variable name is
+//      and tell the base class about it.
+//
+//  Programmer: Hank Childs
+//  Creation:   February 3, 2004
+//
+// ****************************************************************************
+
+void
+avtVariableSummationQuery::VerifyInput(void)
+{
+    //
+    // We want to do this in addition to what the base class does, so call the
+    // base class' version of this method as well.
+    //
+    avtSummationQuery::VerifyInput();
+
+    avtDataSpecification_p dspec = GetInput()->GetTerminatingSource()
+                                     ->GetFullDataSpecification();
+
+    string varname = dspec->GetVariable();
+    SetVariableName(varname);
+    SumGhostValues(false);
+    SetSumType(varname);
+}
+
+

@@ -125,6 +125,24 @@ avtImage::ReleaseData(void)
     image.ReleaseData();
 }
 
+// ****************************************************************************
+//  Method: avtImage::Instance
+//
+//  Purpose:
+//      Creates an instance of an avtImage.
+//
+//  Programmer: Mark C. Miller
+//  Creation:   February 4, 2004 
+//
+// ****************************************************************************
+
+avtDataObject *
+avtImage::Instance(void)
+{
+    avtDataObjectSource *src = NULL;
+    avtImage *img = new avtImage(src);
+    return img;
+}
 
 // ****************************************************************************
 //  Method: avtImage::DerivedCopy
