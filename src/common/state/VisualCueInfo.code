@@ -1,0 +1,152 @@
+Function: SetPointF
+Declaration: void SetPointF(int i, const float *pt);
+Definition:
+// ****************************************************************************
+// Method: VisualCueInfo::SetPointF
+//
+// Purpose: Set a specific entry (the ith point) in the vector of
+//          points for this VisualCueInfo.
+//
+//          Points are stored in a double vector. Each successive group
+//          of 3 entries in the vector is a single point.
+//
+// Programmer: Mark C. Miller
+// Creation:   June 3, 2004
+// 
+// ****************************************************************************
+void
+VisualCueInfo::SetPointF(int i, const float *pt)
+{
+    // extend vector of points as necessary
+    while (points.size() < 3*(i+1))
+        points.push_back(0.0);
+
+    points[3*i+0] = pt[0];
+    points[3*i+1] = pt[1];
+    points[3*i+2] = pt[2];
+
+    Select(0,(void*)&points);
+}
+
+Function: GetPointF
+Declaration: bool GetPointF(int i, float *pt) const;
+Definition:
+// ****************************************************************************
+// Method: VisualCueInfo::GetPointF
+//
+// Purpose: Get a specific entry (the ith point) in the vector of
+//          points for this VisualCueInfo.
+//
+//          Return false if an ith entry does not exist
+///
+// Programmer: Mark C. Miller
+// Creation:   June 3, 2004
+// 
+// ****************************************************************************
+bool
+VisualCueInfo::GetPointF(int i, float *pt) const
+{
+    if (points.size() < 3*i)
+        return false;
+
+    pt[0] = (float) points[3*i+0];
+    pt[1] = (float) points[3*i+1];
+    pt[2] = (float) points[3*i+2];
+
+    return true;
+}
+
+Function: SetFromP
+Declaration: void SetFromP(const PickAttributes *pa);
+Definition:
+void
+VisualCueInfo::SetFromP(const PickAttributes *pa)
+{
+    if (pa == 0)
+        return;
+
+    SetCueType(PickPoint);
+    SetPointF(0,pa->GetPickPoint());
+    SetLabel(pa->GetPickLetter());
+    if ((pa->GetPickType() != PickAttributes::Zone) &&
+        (pa->GetPickType() != PickAttributes::DomainZone))
+        SetGlyphType("Square");
+}
+
+Function: SetFromL
+Declaration: void SetFromL(const Line *line);
+Definition:
+void
+VisualCueInfo::SetFromL(const Line *line)
+{
+    if (line == 0)
+        return;
+
+    SetCueType(RefLine);
+    SetPointD(0,line->GetPoint1());
+    SetPointD(1,line->GetPoint2());
+    SetLabel(line->GetDesignator());
+    SetShowLabel(line->GetReflineLabels());
+    SetLineWidth(line->GetLineWidth());
+    SetLineStyle(line->GetLineStyle());
+    SetColor(line->GetColor());
+}
+
+Function: SetPointD
+Declaration: void SetPointD(int i, const double *pt);
+Definition:
+// ****************************************************************************
+// Method: VisualCueInfo::SetPointD
+//
+// Purpose: Set a specific entry (the ith point) in the vector of
+//          points for this VisualCueInfo.
+//
+//          Points are stored in a double vector. Each successive group
+//          of 3 entries in the vector is a single point.
+//
+// Programmer: Mark C. Miller
+// Creation:   June 3, 2004
+// 
+// ****************************************************************************
+void
+VisualCueInfo::SetPointD(int i, const double *pt)
+{
+    // extend vector of points as necessary
+    while (points.size() < 3*(i+1))
+        points.push_back(0.0);
+
+    points[3*i+0] = pt[0];
+    points[3*i+1] = pt[1];
+    points[3*i+2] = pt[2];
+
+    Select(0,(void*)&points);
+}
+
+Function: GetPointD
+Declaration: bool GetPointD(int i, double *pt) const;
+Definition:
+// ****************************************************************************
+// Method: VisualCueInfo::GetPointD
+//
+// Purpose: Get a specific entry (the ith point) in the vector of
+//          points for this VisualCueInfo.
+//
+//          Return false if an ith entry does not exist
+///
+// Programmer: Mark C. Miller
+// Creation:   June 3, 2004
+// 
+// ****************************************************************************
+bool
+VisualCueInfo::GetPointD(int i, double *pt) const
+{
+    if (points.size() < 3*i)
+        return false;
+
+    pt[0] = points[3*i+0];
+    pt[1] = points[3*i+1];
+    pt[2] = points[3*i+2];
+
+    return true;
+}
+

@@ -69,6 +69,9 @@
 #   Kathleen Bonnell, Tue Apr 27 13:29:46 PDT 2004 
 #   Added ExprPipelineState.
 #
+#   Jeremy Meredith, Tue Jun  8 13:26:51 PDT 2004
+#   Added specmf.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -113,6 +116,7 @@ General_src= \
   General/avtProcessorIdFilter.C \
   General/avtRandomFilter.C \
   General/avtRecenterFilter.C \
+  General/avtSpecMFFilter.C \
   General/avtVectorComposeFilter.C \
   General/avtVectorDecomposeFilter.C
 

@@ -5,6 +5,7 @@
 #include <avtPlot.h>
 #include <AnnotationAttributes.h>
 #include <AnnotationObjectList.h>
+#include <VisualCueList.h>
 #include <WindowAttributes.h>
 #include <vectortypes.h>
 #include <string>
@@ -165,6 +166,9 @@ class VisWindow;
 //    Kathleen Bonnell, Wed Jun  2 09:48:29 PDT 2004 
 //    Added bool arg to StartPick.  Added requireOriginalNodes. 
 //
+//    Mark C. Miller, Wed Jun  9 17:44:38 PDT 2004
+//    Added visualCueList data member and arg to SetAnnotationAttributes
+//
 // ****************************************************************************
 class NetworkManager
 {
@@ -206,6 +210,7 @@ class NetworkManager
                                       const std::string&);
     void          SetAnnotationAttributes(const AnnotationAttributes&,
                                           const AnnotationObjectList&,
+                                          const VisualCueList&, 
                                           bool do3DAnnotsOnly = true);
 
     void          SetLoadBalancer(LoadBalancer *lb) {loadBalancer = lb;};
@@ -246,6 +251,7 @@ class NetworkManager
     WindowAttributes            windowAttributes;
     AnnotationAttributes        annotationAttributes;
     AnnotationObjectList        annotationObjectList;
+    VisualCueList               visualCueList;
     std::string                 extentTypeString;
     VisWindow                  *viswin;
     std::vector<int>            plotsCurrentlyInWindow;

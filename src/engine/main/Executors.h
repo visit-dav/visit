@@ -643,6 +643,9 @@ RPCExecutor<StartPickRPC>::Execute(StartPickRPC *rpc)
 //    Mark C. Miller, Tue May 25 20:44:10 PDT 2004
 //    Added code to pass annotation object list along
 //
+//    Mark C. Miller, Wed Jun  9 17:44:38 PDT 2004
+//    Added code to pass visual cue list along
+//
 // ****************************************************************************
 template<>
 void
@@ -659,7 +662,8 @@ RPCExecutor<SetWinAnnotAttsRPC>::Execute(SetWinAnnotAttsRPC *rpc)
         netmgr->SetWindowAttributes(rpc->GetWindowAtts(),
                                     rpc->GetExtentTypeString());
         netmgr->SetAnnotationAttributes(rpc->GetAnnotationAtts(),
-                                        rpc->GetAnnotationObjectList());
+                                        rpc->GetAnnotationObjectList(),
+                                        rpc->GetVisualCueList());
         rpc->SendReply();
     }
     CATCH2(VisItException, e)

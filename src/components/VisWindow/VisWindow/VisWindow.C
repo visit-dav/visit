@@ -3996,6 +3996,23 @@ VisWindow::Lineout(int x1, int y1, int x2, int y2)
     (*performLineoutCallback)((void*)loInfo);
 }
 
+// ****************************************************************************
+// Method: VisWindow::GetVisualCues
+//
+// Purpose: 
+//   Returns a vector of visual cues currently in the VisWindow 
+//
+// Programmer: Mark C. Miller 
+// Creation:   June 7, 2004 
+//
+// ****************************************************************************
+void
+VisWindow::GetVisualCues(const VisualCueInfo::CueType cueType,
+    std::vector<const VisualCueInfo*>& cues) const
+{
+    queries->GetVisualCues(cueType, cues);
+}
+
 
 // ****************************************************************************
 // Method: VisWindow::SetExternalRenderCallback
@@ -4135,12 +4152,15 @@ VisWindow::SetLineoutCB(VisCallback *cb, void *data)
 //    Kathleen Bonnell, Fri Jan 31 09:36:54 PST 2003 
 //    Replaced argument designator with PickAttributes.
 //
+//    Mark C. Miller Wed Jun  9 17:44:38 PDT 2004
+//    Changed interface to use VisualCueInfo object
+//
 // ****************************************************************************
 
 void
-VisWindow::QueryIsValid(const PickAttributes *pa, const Line *lineAtts) 
+VisWindow::QueryIsValid(const VisualCueInfo *pickCue, const VisualCueInfo *lineCue) 
 {
-    queries->QueryIsValid(pa, lineAtts);
+    queries->QueryIsValid(pickCue, lineCue);
 }
 
 
@@ -4199,12 +4219,16 @@ VisWindow::GetScaleFactorAndType(double &s, int &t)
 //  Programmer: Kathleen Bonnell
 //  Creation:   June 18, 2002 
 //
+//  Modifications:
+//
+//    Mark C. Miller Wed Jun  9 17:44:38 PDT 2004
+//    Changed interface to use VisualCueInfo object
 // ****************************************************************************
  
 void
-VisWindow::UpdateQuery(const Line *lineAtts)
+VisWindow::UpdateQuery(const VisualCueInfo *lineCue)
 {
-    queries->UpdateQuery(lineAtts);
+    queries->UpdateQuery(lineCue);
 }
 
 
@@ -4220,12 +4244,16 @@ VisWindow::UpdateQuery(const Line *lineAtts)
 //  Programmer: Kathleen Bonnell
 //  Creation:   June 18, 2002 
 //
+//  Modifications:
+//
+//    Mark C. Miller Wed Jun  9 17:44:38 PDT 2004
+//    Changed interface to use VisualCueInfo object
 // ****************************************************************************
  
 void
-VisWindow::DeleteQuery(const Line *lineAtts)
+VisWindow::DeleteQuery(const VisualCueInfo *lineCue)
 {
-    queries->DeleteQuery(lineAtts);
+    queries->DeleteQuery(lineCue);
 }
 
 

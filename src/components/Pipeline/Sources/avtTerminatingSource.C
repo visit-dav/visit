@@ -133,6 +133,32 @@ avtTerminatingSource::GetMaterialAuxiliaryData(const char *type, void *args,
 
 
 // ****************************************************************************
+//  Method: avtTerminatingSource::GetSpeciesAuxiliaryData
+//
+//  Purpose:
+//      Retrieves species auxiliary data from whatever the source to the
+//      pipeline is (most likely a database).
+//
+//  Arguments:
+//      auxType     The type of auxiliary data.
+//      args        The arguments in some sort of struct.
+//      spec        The pipeline specification.
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   June  8, 2004
+//
+// ****************************************************************************
+
+void 
+avtTerminatingSource::GetSpeciesAuxiliaryData(const char *type, void *args,
+                          avtPipelineSpecification_p spec, VoidRefList &output)
+{
+    avtDataSpecification_p data = BalanceLoad(spec);
+    FetchSpeciesAuxiliaryData(type, args, data, output);
+}
+
+
+// ****************************************************************************
 //  Method: avtTerminatingSource::Update
 //
 //  Purpose:
@@ -332,6 +358,34 @@ avtTerminatingSource::FetchVariableAuxiliaryData(const char *,void *,
 // ****************************************************************************  
 void
 avtTerminatingSource::FetchMaterialAuxiliaryData(const char *,void *,
+                                   avtDataSpecification_p, VoidRefList &output)
+{
+    output.nList = 0;
+}
+
+
+// ****************************************************************************
+//  Method: avtTerminatingSource::FetchSpeciesAuxiliaryData
+//
+//  Purpose:
+//      Defines an implementation for fetching auxiliary data about a species.
+//      This implementation does nothing and is only defined so that derived
+//      types don't need to define a method that potentially doesn't make
+//      sense for that type.
+//
+//  Arguments:
+//      dataType  The type of data about the species.
+//      args      The arguments describing the data.
+//      spec      The data we are interested in.
+//
+//  Returns:      The requested data as a void *.
+//
+//  Programmer:   Jeremy Meredith
+//  Creation:     June  8, 2004
+//
+// ****************************************************************************  
+void
+avtTerminatingSource::FetchSpeciesAuxiliaryData(const char *,void *,
                                    avtDataSpecification_p, VoidRefList &output)
 {
     output.nList = 0;

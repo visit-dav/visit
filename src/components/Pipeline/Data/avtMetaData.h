@@ -12,8 +12,8 @@
 class     avtFacelist;
 class     avtIntervalTree;
 class     avtMaterial;
+class     avtSpecies;
 class     avtTerminatingSource;
-
 
 // ****************************************************************************
 //  Class: avtMetaData
@@ -46,6 +46,9 @@ class     avtTerminatingSource;
 //    Moved inlined constructor and destructor definitions to .C files
 //    because certain compilers have problems with them.
 //
+//    Jeremy Meredith, Wed Jun  9 09:12:09 PDT 2004
+//    Added GetSpecies.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtMetaData
@@ -59,6 +62,7 @@ class PIPELINE_API avtMetaData
 
     avtFacelist                 *GetExternalFacelist(int);
     avtMaterial                 *GetMaterial(int);
+    avtSpecies                  *GetSpecies(int);
 
   protected:
     avtTerminatingSource        *source;

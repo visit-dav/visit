@@ -307,6 +307,9 @@ class ViewerToolbar;
 //    as well as methods to set/get scalable activation mode and scalable
 //    auto threshold
 //
+//    Mark C. Miller, Wed Jun  9 17:44:38 PDT 2004
+//    Added UpdateVisualCueInfo
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerWindow
@@ -446,6 +449,8 @@ public:
     void UpdateQuery(const Line *);
     void DeleteQuery(const Line *);
     void ClearRefLines();
+
+    void UpdateVisualCueList(VisualCueList& visCues) const;
 
     void Iconify();
     void DeIconify();

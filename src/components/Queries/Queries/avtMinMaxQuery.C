@@ -3,6 +3,7 @@
 // ************************************************************************* //
 
 #include <avtMinMaxQuery.h>
+#include <avtParallel.h>
 
 #include <snprintf.h>
 
@@ -20,7 +21,6 @@
 
 #include <avtCommonDataFunctions.h>
 #include <avtMatrix.h>
-#include <avtParallel.h>
 #include <avtQueryableSource.h>
 #include <avtTerminatingSource.h>
 #include <avtVector.h>
@@ -319,6 +319,9 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
 //    Change the order of the hasMin/hasMax tests so that it works correctly in
 //    parallel when one of the processors hsas no data.
 //
+//    Mark C. Miller, Wed Jun  9 21:50:12 PDT 2004
+//    Eliminated use of MPI_ANY_TAG and modified to use GetUniqueMessageTags
+//
 // ****************************************************************************
 
 void
@@ -370,6 +373,12 @@ avtMinMaxQuery::PostExecute(void)
     int size, i;
     MPI_Comm_rank(MPI_COMM_WORLD, &myRank);
     MPI_Comm_size(MPI_COMM_WORLD, &numProcs);
+    int mpiHasMinTag  = GetUniqueMessageTag();
+    int mpiMinSizeTag = GetUniqueMessageTag();
+    int mpiMinDataTag = GetUniqueMessageTag();
+    int mpiHasMaxTag  = GetUniqueMessageTag();
+    int mpiMaxSizeTag = GetUniqueMessageTag();
+    int mpiMaxDataTag = GetUniqueMessageTag();
 
 
     if (myRank == 0)
@@ -378,25 +387,25 @@ avtMinMaxQuery::PostExecute(void)
         {
             MPI_Status stat, stat2;
             MPI_Recv(&hasMin, 1, MPI_INT, MPI_ANY_SOURCE,
-                MPI_ANY_TAG, MPI_COMM_WORLD, &stat);
+                mpiHasMinTag, MPI_COMM_WORLD, &stat);
             if (hasMin)
             {
-                MPI_Recv(&size, 1, MPI_INT, stat.MPI_SOURCE, MPI_ANY_TAG,
+                MPI_Recv(&size, 1, MPI_INT, stat.MPI_SOURCE, mpiMinSizeTag,
                              MPI_COMM_WORLD, &stat2);
                 char *buf = new char[size];
-                MPI_Recv(buf, size, MPI_CHAR, stat.MPI_SOURCE, MPI_ANY_TAG,
+                MPI_Recv(buf, size, MPI_CHAR, stat.MPI_SOURCE, mpiMinDataTag,
                              MPI_COMM_WORLD, &stat2);
                 minMsg = buf;
                 delete [] buf;
             }
             MPI_Recv(&hasMax, 1, MPI_INT, MPI_ANY_SOURCE,
-                         MPI_ANY_TAG, MPI_COMM_WORLD, &stat);
+                         mpiHasMaxTag, MPI_COMM_WORLD, &stat);
             if (hasMax)
             {
-                MPI_Recv(&size, 1, MPI_INT, stat.MPI_SOURCE, MPI_ANY_TAG,
+                MPI_Recv(&size, 1, MPI_INT, stat.MPI_SOURCE, mpiMaxSizeTag,
                              MPI_COMM_WORLD, &stat2);
                 char *buf = new char[size];
-                MPI_Recv(buf, size, MPI_CHAR, stat.MPI_SOURCE, MPI_ANY_TAG,
+                MPI_Recv(buf, size, MPI_CHAR, stat.MPI_SOURCE, mpiMaxDataTag,
                              MPI_COMM_WORLD, &stat2);
                 maxMsg = buf;
                 delete [] buf;
@@ -405,24 +414,24 @@ avtMinMaxQuery::PostExecute(void)
     }
     else
     {
-        MPI_Send(&hasMin, 1, MPI_INT, 0, myRank, MPI_COMM_WORLD);
+        MPI_Send(&hasMin, 1, MPI_INT, 0, mpiHasMinTag, MPI_COMM_WORLD);
         if (hasMin)
         {
             size = minMsg.size()+1;
             char *buf = new char[size];
             SNPRINTF(buf, size, minMsg.c_str());
-            MPI_Send(&size, 1, MPI_INT, 0, myRank, MPI_COMM_WORLD);
-            MPI_Send(buf, size, MPI_CHAR, 0, myRank, MPI_COMM_WORLD);
+            MPI_Send(&size, 1, MPI_INT, 0, mpiMinSizeTag, MPI_COMM_WORLD);
+            MPI_Send(buf, size, MPI_CHAR, 0, mpiMinDataTag, MPI_COMM_WORLD);
             delete [] buf;
         }
-        MPI_Send(&hasMax, 1, MPI_INT, 0, myRank, MPI_COMM_WORLD);
+        MPI_Send(&hasMax, 1, MPI_INT, 0, mpiHasMaxTag, MPI_COMM_WORLD);
         if (hasMax)
         {
             size = maxMsg.size()+1;
             char *buf = new char[size];
             SNPRINTF(buf, size, maxMsg.c_str());
-            MPI_Send(&size, 1, MPI_INT, 0, myRank, MPI_COMM_WORLD);
-            MPI_Send(buf, size, MPI_CHAR, 0, myRank, MPI_COMM_WORLD);
+            MPI_Send(&size, 1, MPI_INT, 0, mpiMaxSizeTag, MPI_COMM_WORLD);
+            MPI_Send(buf, size, MPI_CHAR, 0, mpiMaxDataTag, MPI_COMM_WORLD);
             delete [] buf;
         }
         return;

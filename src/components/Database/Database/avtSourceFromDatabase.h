@@ -66,6 +66,9 @@ class  PickAttributes;
 //    Kathleen Bonnell, Tue May 25 16:16:25 PDT 2004 
 //    Add QueryZoneCenter method. 
 //
+//    Jeremy Meredith, Wed Jun  9 09:12:24 PDT 2004
+//    Added species aux data.
+//
 // ****************************************************************************
 
 class DATABASE_API avtSourceFromDatabase : public avtTerminatingDatasetSource
@@ -80,6 +83,8 @@ class DATABASE_API avtSourceFromDatabase : public avtTerminatingDatasetSource
     virtual void        FetchVariableAuxiliaryData(const char *type,
                             void *args, avtDataSpecification_p, VoidRefList &);
     virtual void        FetchMaterialAuxiliaryData(const char *type, 
+                            void *args, avtDataSpecification_p, VoidRefList &);
+    virtual void        FetchSpeciesAuxiliaryData(const char *type, 
                             void *args, avtDataSpecification_p, VoidRefList &);
 
     virtual avtDataSpecification_p

@@ -31,13 +31,16 @@ PARSER_API std::string GetTokenTypeString(int t);
 //  Creation:    April  5, 2002
 //
 //  Modifications:
-//      Sean Ahern, Thu Apr 18 11:25:16 PDT 2002
-//      Made the base class ExprGrammarNode so that I can separate out the
-//      code that talks to the engine.
+//    Sean Ahern, Thu Apr 18 11:25:16 PDT 2002
+//    Made the base class ExprGrammarNode so that I can separate out the
+//    code that talks to the engine.
 //
-//      Sean Ahern, Wed Oct 16 16:41:59 PDT 2002
-//      Moved the engine communication code to a separate set of classes
-//      that are owned by the viewer.  I may collapse ExprGrammarNode again.
+//    Sean Ahern, Wed Oct 16 16:41:59 PDT 2002
+//    Moved the engine communication code to a separate set of classes
+//    that are owned by the viewer.  I may collapse ExprGrammarNode again.
+//
+//    Jeremy Meredith, Wed Jun  9 10:20:08 PDT 2004
+//    Added GetValue to BoolConst.
 //
 // ****************************************************************************
 class PARSER_API Token : public ExprGrammarNode
@@ -129,6 +132,7 @@ class PARSER_API BoolConst : public Token
     BoolConst(const Pos &p, const std::string &v) : Token(p, TT_BoolConst), val(v == "true" || v == "on") { }
     virtual ~BoolConst() { }
     virtual void PrintNode(ostream &o) { o << "Bool("<<(val?"true":"false")<<")\n"; }
+    bool GetValue(void) { return val; }
   private:
     bool val;
 };

@@ -131,3 +131,29 @@ avtInlinePipelineSource::FetchMaterialAuxiliaryData(const char *dataType,
 }
 
 
+// ****************************************************************************
+//  Method: avtInlinePipelineSource::FetchSpeciesAuxiliaryData
+//
+//  Purpose:
+//      Calls the FetchSpeciesAuxiliaryData routine of the real pipeline
+//      source.
+//
+//  Arguments:
+//      dataType  The type of data about the species.
+//      args      The arguments describing the data.
+//      spec      The data we are interested in.
+//      output    The requested data as a void *.
+//
+//  Programmer:   Jeremy Meredith
+//  Creation:     June  8, 2004
+//
+// ****************************************************************************
+
+void
+avtInlinePipelineSource::FetchSpeciesAuxiliaryData(const char *dataType,
+                  void *args, avtDataSpecification_p spec, VoidRefList &output)
+{
+    realPipelineSource->FetchSpeciesAuxiliaryData(dataType, args,spec,output);
+}
+
+

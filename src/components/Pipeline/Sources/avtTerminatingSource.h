@@ -60,6 +60,9 @@ typedef void                   (*InitializeProgressCallback)(void *, int);
 //    Kathleen Bonnell, Tue May 25 16:16:25 PDT 2004 
 //    Add virtual method 'QueryZoneCenter'.
 //
+//    Jeremy Meredith, Wed Jun  9 09:13:39 PDT 2004
+//    Added species aux data.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtTerminatingSource : virtual public avtQueryableSource
@@ -80,6 +83,9 @@ class PIPELINE_API avtTerminatingSource : virtual public avtQueryableSource
                                        void *args, avtPipelineSpecification_p,
                                        VoidRefList &);
     void                           GetMaterialAuxiliaryData(const char *type,
+                                       void *args, avtPipelineSpecification_p,
+                                       VoidRefList &);
+    void                           GetSpeciesAuxiliaryData(const char *type,
                                        void *args, avtPipelineSpecification_p,
                                        VoidRefList &);
 
@@ -119,6 +125,9 @@ class PIPELINE_API avtTerminatingSource : virtual public avtQueryableSource
                                        void *args, avtDataSpecification_p,
                                        VoidRefList &);
     virtual void                   FetchMaterialAuxiliaryData(const char *type,
+                                       void *args, avtDataSpecification_p,
+                                       VoidRefList &);
+    virtual void                   FetchSpeciesAuxiliaryData(const char *type,
                                        void *args, avtDataSpecification_p,
                                        VoidRefList &);
 

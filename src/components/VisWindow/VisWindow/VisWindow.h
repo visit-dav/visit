@@ -29,12 +29,11 @@
 #include <avtViewInfo.h>
 #include <PickPointInfo.h>
 #include <LineoutInfo.h>
+#include <VisualCueInfo.h>
 
 class vtkRenderer;
 
 class AnnotationObjectList;
-class Line;
-class PickAttributes;
 class VisWinAnnotations;
 class VisWinAxes;
 class VisWinAxes3D;
@@ -258,6 +257,10 @@ class VisitInteractor;
 //    Added methods to Set/Get scalable activation mode and scalable auto
 //    theshold. Eliminated SetScalableThreshold method 
 //
+//    Mark C. Miller Wed Jun  9 17:44:38 PDT 2004
+//    Added GetVisualCues and changes interface to QueryIsValid, UpdateQuery,
+//    DeleteQuery to use VisualCueInfo
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindow
@@ -386,14 +389,17 @@ public:
     void                 ClearRefLines();
     void                 DrawRefLines(float pt1[3], float pt2[3]);
 
-    void                 QueryIsValid(const PickAttributes *, const Line *);
-    void                 UpdateQuery(const Line *);
-    void                 DeleteQuery(const Line *);
+    void                 QueryIsValid(const VisualCueInfo *, const VisualCueInfo *);
+    void                 UpdateQuery(const VisualCueInfo *);
+    void                 DeleteQuery(const VisualCueInfo *);
     void                 ScalePlots(const float [3]);
 
     void                 Pick(int, int);
     void                 Pick(double, double);
     void                 Lineout(int, int, int, int);
+
+    void                 GetVisualCues(const VisualCueInfo::CueType cueType,
+                                       std::vector<const VisualCueInfo*>& cues) const;
 
     void                *CreateToolbar(const char *name);
     void                 SetLargeIcons(bool);

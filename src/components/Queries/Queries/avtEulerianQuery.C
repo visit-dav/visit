@@ -20,6 +20,7 @@
 
 #ifdef PARALLEL
 #include <mpi.h>
+#include <avtParallel.h>
 #endif
 
 using std::set;
@@ -220,6 +221,9 @@ avtEulerianQuery::Execute(vtkDataSet *in_ds, const int dom)
 //    Kathleen Bonnell, Mon Dec 22 16:45:56 PST 2003 
 //    Use retrieved DomainName if available. 
 //
+//    Mark C. Miller, Wed Jun  9 21:50:12 PDT 2004
+//    Eliminated use of MPI_ANY_TAG and modified to use GetUniqueMessageTags
+//
 // ****************************************************************************
 
 void
@@ -232,6 +236,8 @@ avtEulerianQuery::PostExecute(void)
  
     MPI_Comm_rank(MPI_COMM_WORLD, &myRank);
     MPI_Comm_size(MPI_COMM_WORLD, &numProcs);
+    int mpiSizeTag = GetUniqueMessageTag();
+    int mpiDataTag = GetUniqueMessageTag();
     if (myRank == 0)
     {
         for (i = 1; i < numProcs; i++)
@@ -239,11 +245,11 @@ avtEulerianQuery::PostExecute(void)
             MPI_Status stat, stat2;
              
             MPI_Recv(&size, 1, MPI_INT, MPI_ANY_SOURCE,
-                     MPI_ANY_TAG, MPI_COMM_WORLD, &stat);
+                     mpiSizeTag, MPI_COMM_WORLD, &stat);
             if (size > 0)
             {
                 buf = new int [size];
-                MPI_Recv(buf, size, MPI_INT, stat.MPI_SOURCE, MPI_ANY_TAG,
+                MPI_Recv(buf, size, MPI_INT, stat.MPI_SOURCE, mpiDataTag,
                          MPI_COMM_WORLD, &stat2);
                 for (j = 0; j < size/2; j++)
                 { 
@@ -257,7 +263,7 @@ avtEulerianQuery::PostExecute(void)
     else
     {
         size = domToEulerMap.size() * 2;
-        MPI_Send(&size, 1, MPI_INT, 0, myRank, MPI_COMM_WORLD);
+        MPI_Send(&size, 1, MPI_INT, 0, mpiSizeTag, MPI_COMM_WORLD);
         if (size > 0)
         {
             buf = new int[size];
@@ -268,7 +274,7 @@ avtEulerianQuery::PostExecute(void)
                 buf[2*i] = (*iter).first;
                 buf[2*i+1] = (*iter).second;
             }
-            MPI_Send(buf, size, MPI_INT, 0, myRank, MPI_COMM_WORLD);
+            MPI_Send(buf, size, MPI_INT, 0, mpiDataTag, MPI_COMM_WORLD);
             delete [] buf;
         }
         return;

@@ -20,6 +20,7 @@ using std::string;
 
 #ifdef PARALLEL
 #include <mpi.h>
+#include <avtParallel.h>
 #endif
 
 static int  VTKZoneTypeToSiloZoneType(int);
@@ -621,6 +622,9 @@ avtSiloDumpFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
 //    Jeremy Meredith, Tue Jan  8 16:34:39 PST 2002
 //    Added support for variables which don't exist on the first processor.
 //
+//    Mark C. Miller, Wed Jun  9 21:50:12 PDT 2004
+//    Eliminated use of MPI_ANY_TAG and modified to use GetUniqueMessageTags
+//
 // ****************************************************************************
 
 void
@@ -634,20 +638,26 @@ avtSiloDumpFilter::PostExecute()
     int size;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
+    int mpiDomListSizeTag = GetUniqueMessageTag();
+    int mpiDomListTag     = GetUniqueMessageTag();
+    int mpiVarListSizeTag = GetUniqueMessageTag();
+    int mpiVarNameSizeTag = GetUniqueMessageTag();
+    int mpiVarNameTag     = GetUniqueMessageTag();
+
     if (rank!=0)
     {
         int nd = domains.size();
-        MPI_Send(&nd, 1, MPI_INT, 0, rank, MPI_COMM_WORLD);
+        MPI_Send(&nd, 1, MPI_INT, 0, mpiDomListSizeTag, MPI_COMM_WORLD);
         if (nd)
-            MPI_Send(&domains[0], nd, MPI_INT, 0, rank, MPI_COMM_WORLD);
+            MPI_Send(&domains[0], nd, MPI_INT, 0, mpiDomListTag, MPI_COMM_WORLD);
 
         int nv = vars.size();
-        MPI_Send(&nv, 1, MPI_INT, 0, rank, MPI_COMM_WORLD);
+        MPI_Send(&nv, 1, MPI_INT, 0, mpiVarListSizeTag, MPI_COMM_WORLD);
         for (int v=0; v<nv; v++)
         {
             int len = vars[v].length()+1;
-            MPI_Send(&len, 1, MPI_INT, 0, rank, MPI_COMM_WORLD);
-            MPI_Send((char*)vars[v].c_str(), len, MPI_CHAR, 0, rank, MPI_COMM_WORLD);
+            MPI_Send(&len, 1, MPI_INT, 0, mpiVarNameSizeTag, MPI_COMM_WORLD);
+            MPI_Send((char*)vars[v].c_str(), len, MPI_CHAR, 0, mpiVarNameTag, MPI_COMM_WORLD);
         }
         return;
     }
@@ -658,22 +668,22 @@ avtSiloDumpFilter::PostExecute()
     {
         MPI_Status stat;
         int nd;
-        MPI_Recv(&nd, 1, MPI_INT, i, MPI_ANY_TAG, MPI_COMM_WORLD, &stat);
+        MPI_Recv(&nd, 1, MPI_INT, i, mpiDomListSizeTag, MPI_COMM_WORLD, &stat);
         if (nd)
         {
             all_domains[i].resize(nd);
-            MPI_Recv(&all_domains[i][0], nd, MPI_INT, i, MPI_ANY_TAG,
+            MPI_Recv(&all_domains[i][0], nd, MPI_INT, i, mpiDomListTag,
                      MPI_COMM_WORLD, &stat);
         }
 
         int nv;
-        MPI_Recv(&nv, 1, MPI_INT, i, MPI_ANY_TAG, MPI_COMM_WORLD, &stat);
+        MPI_Recv(&nv, 1, MPI_INT, i, mpiVarListSizeTag, MPI_COMM_WORLD, &stat);
         for (int v=0; v<nv; v++)
         {
             int  len;
             char var[1024];
-            MPI_Recv(&len, 1, MPI_INT, i, MPI_ANY_TAG, MPI_COMM_WORLD, &stat);
-            MPI_Recv(var, len, MPI_CHAR, i, MPI_ANY_TAG, MPI_COMM_WORLD, &stat);
+            MPI_Recv(&len, 1, MPI_INT, i, mpiVarNameSizeTag, MPI_COMM_WORLD, &stat);
+            MPI_Recv(var, len, MPI_CHAR, i, mpiVarNameTag, MPI_COMM_WORLD, &stat);
 
             if (find(vars.begin(), vars.end(), string(var)) == vars.end())
                 vars.push_back(var);

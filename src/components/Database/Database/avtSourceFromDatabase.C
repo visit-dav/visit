@@ -329,6 +329,39 @@ avtSourceFromDatabase::FetchMaterialAuxiliaryData(const char *type, void *args,
 
 
 // ****************************************************************************
+//  Method: avtSourceFromDatabase::FetchSpeciesAuxiliaryData
+//
+//  Purpose:
+//      Goes to the database to get species auxiliary data.
+//
+//  Arguments:
+//      type    The type of auxiliary data.
+//      args    Additional arguments.
+//      dl      The domains to get the data for.
+//
+//  Returns:    The data as void *.
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   June  8, 2004
+//
+// ****************************************************************************
+
+void 
+avtSourceFromDatabase::FetchSpeciesAuxiliaryData(const char *type, void *args,
+                              avtDataSpecification_p spec, VoidRefList &output)
+{
+    //
+    // We only have hooks to the variable defined on the species.  We can get
+    // the species name by accessing the database object.
+    //
+    string mn   = database->GetMetaData(timestep)->MeshForVar(variable);
+    string sp   = database->GetMetaData(timestep)->SpeciesOnMesh(mn);
+    avtDataSpecification_p newspec =new avtDataSpecification(spec, sp.c_str());
+    database->GetAuxiliaryData(newspec, output, type, args);
+}
+
+
+// ****************************************************************************
 //  Method: avtSourceFromDatabase::GetFullDataSpecification
 //
 //  Purpose:

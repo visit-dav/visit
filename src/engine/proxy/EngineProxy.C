@@ -484,15 +484,19 @@ EngineProxy::UpdatePlotAttributes(const string &name, int id,
 //    Mark C. Miller, Tue May 25 17:25:55 PDT 2004
 //    Added argument for AnnotationObjectList
 //
+//    Mark C. Miller, Wed Jun  9 17:44:38 PDT 2004
+//    Added arguement for visual cues
+//
 // ****************************************************************************
 
 void
 EngineProxy::SetWinAnnotAtts(const WindowAttributes *winAtts,
                              const AnnotationAttributes *annotAtts,
                              const AnnotationObjectList *aoList,
-                             const string extStr)
+                             const string extStr,
+                             const VisualCueList *visCues)
 {
-    setWinAnnotAttsRPC(winAtts, annotAtts, aoList, extStr);
+    setWinAnnotAttsRPC(winAtts, annotAtts, aoList, extStr, visCues);
     if (setWinAnnotAttsRPC.GetStatus() == VisItRPC::error)
     {
         RECONSTITUTE_EXCEPTION(setWinAnnotAttsRPC.GetExceptionType(),

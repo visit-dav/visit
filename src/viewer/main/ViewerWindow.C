@@ -39,6 +39,7 @@ using std::string;
 #include <ViewerSubject.h>
 #include <ViewerWindowManager.h> 
 #include <VisItException.h>
+#include <VisualCueInfo.h>
 #include <VisWindow.h>
 #include <QtVisWindow.h>
 
@@ -5001,6 +5002,9 @@ ViewerWindow::GetWindowAttributes() const
 //   
 //    Mark C. Miller, Tue May 25 20:44:10 PDT 2004
 //    Added code to pass annotation object list
+//
+//    Mark C. Miller, Wed Jun  9 17:44:38 PDT 2004
+//    Added code to deal with visual cues (pick points and ref lines)
 // ****************************************************************************
 
 bool
@@ -5011,11 +5015,14 @@ ViewerWindow::SendWindowEnvironmentToEngine(const EngineKey &ek)
     AnnotationObjectList annotObjs;
     UpdateAnnotationObjectList(annotObjs);
     string extStr(avtExtentType_ToString(GetViewExtentsType())); 
+    VisualCueList visCues;
+    UpdateVisualCueList(visCues);
     return ViewerEngineManager::Instance()->SetWinAnnotAtts(ek,
                                                             &winAtts,
                                                             &annotAtts,
                                                             &annotObjs,
-                                                            extStr);
+                                                            extStr,
+                                                            &visCues);
 }
 
 // ****************************************************************************
@@ -5421,12 +5428,18 @@ ViewerWindow::PerformLineoutCallback(void *data)
 //    Kathleen Bonnell, Fri Jan 31 09:36:54 PST 2003  
 //    Removed argument designator, added PickAtts argument. 
 //
+//    Mark C. Miller, Wed Jun  9 17:44:38 PDT 2004
+//    Added code to build visual cue infos from pick and line attributes
 // ****************************************************************************
 
 void
 ViewerWindow::ValidateQuery(const PickAttributes *pa, const Line *lineAtts)
 {
-    visWindow->QueryIsValid(pa, lineAtts);
+    VisualCueInfo pickCue, lineCue;
+    pickCue.SetFromP(pa);
+    lineCue.SetFromL(lineAtts);
+    visWindow->QueryIsValid(pa==NULL ? NULL : &pickCue,
+                            lineAtts==NULL ? NULL : &lineCue);
 }
 
 
@@ -5439,12 +5452,18 @@ ViewerWindow::ValidateQuery(const PickAttributes *pa, const Line *lineAtts)
 //  Programmer: Kathleen Bonnell
 //  Creation:   June 10, 2002
 //
+//  Modifications:
+//
+//    Mark C. Miller, Wed Jun  9 17:44:38 PDT 2004
+//    Added code to build visual cue infos from line attributes
 // ****************************************************************************
  
 void
 ViewerWindow::UpdateQuery(const Line *lineAtts)
 {
-    visWindow->UpdateQuery(lineAtts);
+    VisualCueInfo cue;
+    cue.SetFromL(lineAtts);
+    visWindow->UpdateQuery(&cue);
 }
 
 
@@ -5457,12 +5476,39 @@ ViewerWindow::UpdateQuery(const Line *lineAtts)
 //  Programmer: Kathleen Bonnell
 //  Creation:   June 10, 2002
 //
+//  Modifications:
+//
+//    Mark C. Miller, Wed Jun  9 17:44:38 PDT 2004
+//    Added code to build visual cue infos from line attributes
 // ****************************************************************************
  
 void
 ViewerWindow::DeleteQuery(const Line *lineAtts)
 {
-    visWindow->DeleteQuery(lineAtts);
+    VisualCueInfo cue;
+    cue.SetFromL(lineAtts);
+    visWindow->DeleteQuery(&cue);
+}
+
+// ****************************************************************************
+//  Method: ViewerWindow::UpdateVisualCueList
+//
+//  Purpose: Populate the VisualCueList object passed in with the visual
+//      visual cues currently in the window.
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   June 7, 2004 
+//
+// ****************************************************************************
+void
+ViewerWindow::UpdateVisualCueList(VisualCueList& visCues) const
+{
+    // get visual cues from the vis window
+    vector<const VisualCueInfo*> cuesVec;
+    visWindow->GetVisualCues(VisualCueInfo::Unknown, cuesVec);
+
+    // use VisualCueList's method to set from a vector of VisualCueInfo* 
+    visCues.SetFrom(cuesVec);
 }
 
 
@@ -6884,6 +6930,8 @@ ViewerWindow::ShouldSendScalableRenderingModeChangeMessage(bool *newMode) const
 //    Mark C. Miller, Wed Apr 14 16:41:32 PDT 2004
 //    Added code to set the extents type string to the unknown value
 //
+//    Mark C. Miller, Wed Jun  9 17:44:38 PDT 2004
+//    Added code to deal with visual cues (pick points and ref lines)
 // ****************************************************************************
 
 void
@@ -6893,8 +6941,10 @@ ViewerWindow::ClearLastExternalRenderRequestInfo()
     lastExternalRenderRequest.engineKeysList.clear();
     lastExternalRenderRequest.plotIdsList.clear();
     lastExternalRenderRequest.attsList.clear();
+    lastExternalRenderRequest.annotObjs.ClearAnnotationObjects();
     lastExternalRenderRequest.extStr =
         avtExtentType_ToString(AVT_UNKNOWN_EXTENT_TYPE);
+    lastExternalRenderRequest.visCues.ClearVisualCueInfos();
 }
 
 // ****************************************************************************
@@ -6920,6 +6970,8 @@ ViewerWindow::ClearLastExternalRenderRequestInfo()
 //   Mark C. Miller, Tue May 25 20:44:10 PDT 2004
 //   Added code to set annotation object list
 //
+//    Mark C. Miller, Wed Jun  9 17:44:38 PDT 2004
+//    Added code to deal with visual cues (pick points and ref lines)
 // ****************************************************************************
 
 void
@@ -6951,6 +7003,7 @@ ViewerWindow::UpdateLastExternalRenderRequestInfo(
     lastExternalRenderRequest.annotAtts     = newRequest.annotAtts;
     lastExternalRenderRequest.annotObjs     = newRequest.annotObjs;
     lastExternalRenderRequest.extStr        = newRequest.extStr;
+    lastExternalRenderRequest.visCues       = newRequest.visCues;
 
 }
 
@@ -6985,6 +7038,9 @@ ViewerWindow::UpdateLastExternalRenderRequestInfo(
 //   Modified scalable rendering controls to use activation mode and auto
 //   threshold
 //
+//    Mark C. Miller, Wed Jun  9 17:44:38 PDT 2004
+//    Added code to deal with visual cues (pick points and ref lines) and
+//    annotation object list
 // ****************************************************************************
 
 bool
@@ -6992,6 +7048,8 @@ ViewerWindow::CanSkipExternalRender(const ExternalRenderRequestInfo& thisRequest
 {
     const ExternalRenderRequestInfo& lastRequest = lastExternalRenderRequest;
 
+    // compare window attributes but ignore a few of them by forcing
+    // old/new to be equal for those few
     WindowAttributes tmpWinAtts = thisRequest.winAtts;
     int lastScalableAutoThreshold = lastRequest.winAtts.GetRenderAtts().GetScalableAutoThreshold();
     int lastScalableActivationMode = lastRequest.winAtts.GetRenderAtts().GetScalableActivationMode();
@@ -7011,6 +7069,12 @@ ViewerWindow::CanSkipExternalRender(const ExternalRenderRequestInfo& thisRequest
         return false;
 
     if (thisRequest.extStr != lastRequest.extStr)
+        return false;
+
+    if (thisRequest.annotObjs != lastRequest.annotObjs)
+        return false;
+
+    if (thisRequest.visCues != lastRequest.visCues)
         return false;
 
     if ((thisRequest.plotIdsList.size() != 0) &&
@@ -7074,6 +7138,8 @@ ViewerWindow::CanSkipExternalRender(const ExternalRenderRequestInfo& thisRequest
 //    Mark C. Miller, Tue May 25 20:44:10 PDT 2004
 //    Added code to set annotation object list
 //
+//    Mark C. Miller, Wed Jun  9 17:44:38 PDT 2004
+//    Added code to deal with visual cues (pick points and ref lines)
 // ****************************************************************************
 
 void
@@ -7093,6 +7159,9 @@ ViewerWindow::GetExternalRenderRequestInfo(
     UpdateAnnotationObjectList(aolist);
     theRequest.annotObjs = aolist;
     theRequest.extStr = avtExtentType_ToString(GetViewExtentsType());
+    VisualCueList cuelist;
+    UpdateVisualCueList(cuelist);
+    theRequest.visCues = cuelist;
 }
 
 // ****************************************************************************

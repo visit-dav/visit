@@ -19,6 +19,7 @@
 #include <AbortException.h>
 #ifdef PARALLEL
 #include <mpi.h>
+#include <avtParallel.h>
 #endif
 
 using     std::string;
@@ -337,6 +338,9 @@ LoadBalancer::CheckDynamicLoadBalancing(avtPipelineSpecification_p input)
 //    Hank Childs, Mon May 12 19:34:54 PDT 2003
 //    Account for different load balancing schemes.
 //
+//    Mark C. Miller, Wed Jun  9 21:50:12 PDT 2004
+//    Eliminated use of MPI_ANY_TAG and modified to use GetUniqueMessageTags
+//
 // ****************************************************************************
 
 avtDataSpecification_p
@@ -368,6 +372,10 @@ LoadBalancer::Reduce(avtPipelineSpecification_p input)
     avtSILRestriction_p silr        = new avtSILRestriction(orig_silr);
     avtDataSpecification_p new_data = new avtDataSpecification(data, silr);
     avtSILRestrictionTraverser trav(silr);
+
+    // set up MPI message tags
+    int lastDomDoneMsg = GetUniqueMessageTag();
+    int newDomToDoMsg = GetUniqueMessageTag();
 
     // Can we do dynamic load balancing?
     if (! CheckDynamicLoadBalancing(input))
@@ -487,7 +495,7 @@ LoadBalancer::Reduce(avtPipelineSpecification_p input)
                 // get the completed domain number
                 MPI_Status stat;
                 MPI_Recv(&domain, 1, MPI_INT, MPI_ANY_SOURCE,
-                         MPI_ANY_TAG, MPI_COMM_WORLD, &stat);
+                         lastDomDoneMsg, MPI_COMM_WORLD, &stat);
                 int processor = stat.MPI_SOURCE;
 
                 // -1 means the first pass by the slave; nothing completed yet
@@ -561,7 +569,7 @@ LoadBalancer::Reduce(avtPipelineSpecification_p input)
                 // send the new domain number to that processor
                 debug5 << "LoadBalancer Master: sending domain " 
                        << domain << " to processor "<<processor<<"\n";
-                MPI_Send(&domain, 1, MPI_INT, processor, 0, MPI_COMM_WORLD);
+                MPI_Send(&domain, 1, MPI_INT, processor, newDomToDoMsg, MPI_COMM_WORLD);
             }
 
             // we're all done -- -2 means to abort, -1 means to send results
@@ -586,11 +594,11 @@ LoadBalancer::Reduce(avtPipelineSpecification_p input)
 
             // send our last completed domain to the master
             int domain = lbInfo.current;
-            MPI_Send(&domain, 1, MPI_INT, 0, rank, MPI_COMM_WORLD);
+            MPI_Send(&domain, 1, MPI_INT, 0, lastDomDoneMsg, MPI_COMM_WORLD);
 
             // get our new work unit
             MPI_Status stat;
-            MPI_Recv(&domain, 1, MPI_INT, 0, MPI_ANY_TAG, MPI_COMM_WORLD, &stat);
+            MPI_Recv(&domain, 1, MPI_INT, 0, newDomToDoMsg, MPI_COMM_WORLD, &stat);
             lbInfo.current = domain;
 
             if (domain == -2)

@@ -211,6 +211,37 @@ avtMetaData::GetMaterial(int domain)
 
 
 // ****************************************************************************
+//  Method: avtMetaData::GetSpecies
+//
+//  Purpose:
+//      Gets an avtSpecies object.
+//
+//  Returns:  The species for the dataset, if one exists.
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   June  8, 2004
+//
+// ****************************************************************************
+
+avtSpecies *
+avtMetaData::GetSpecies(int domain)
+{
+    VoidRefList list;
+    avtPipelineSpecification_p spec = GetPipelineSpecification(domain);
+    source->GetSpeciesAuxiliaryData(AUXILIARY_DATA_SPECIES, NULL, spec,list);
+    if (list.nList == 0)
+    {
+        return NULL;
+    }
+    if (list.nList != 1)
+    {
+        EXCEPTION0(ImproperUseException);
+    }
+    return (avtSpecies *) *(list.list[0]);
+}
+
+
+// ****************************************************************************
 //  Method: avtMetaData::GetPipelineSpecification
 //
 //  Purpose:

@@ -23,6 +23,10 @@
 //  Programmer: Hank Childs
 //  Creation:   September 11, 2001
 //
+//  Modifications:
+//    Jeremy Meredith, Wed Jun  9 09:14:57 PDT 2004
+//    Added species aux data.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtInlinePipelineSource : virtual public avtTerminatingSource
@@ -43,6 +47,9 @@ class PIPELINE_API avtInlinePipelineSource : virtual public avtTerminatingSource
                                void *args, avtDataSpecification_p,
                                VoidRefList &);
     virtual void           FetchMaterialAuxiliaryData(const char *type,
+                               void *args, avtDataSpecification_p,
+                               VoidRefList &);
+    virtual void           FetchSpeciesAuxiliaryData(const char *type,
                                void *args, avtDataSpecification_p,
                                VoidRefList &);
 

@@ -6,12 +6,11 @@
 #define VIS_WIN_QUERY_H
 #include <viswindow_exports.h>
 
+#include <VisualCueInfo.h>
 #include <VisWinColleague.h>
 #include <VisWindowTypes.h>
 #include <avtPickActor.h>
 #include <avtLineoutActor.h>
-#include <Line.h>
-#include <PickAttributes.h>
 
 // ****************************************************************************
 //  Class: VisWinQuery
@@ -63,9 +62,12 @@
 //    Kathleen Bonnell, Fri Feb 20 12:37:26 PST 2004 
 //    Added methods CreateTranslationVector, CreateShiftVector, 
 //    CalculateShiftDistance.
+//
+//    Mark C. Miller Wed Jun  9 17:44:38 PDT 2004
+//    Modified with PickEntry and LineEntry data types in vectors of pickPoints
+//    and refLines. Changed some interfaces to use VisualCueInfo.
 //    
 // ****************************************************************************
-
 class VISWINDOW_API VisWinQuery : public VisWinColleague
 {
   public:
@@ -78,19 +80,22 @@ class VISWINDOW_API VisWinQuery : public VisWinColleague
     virtual void                  SetForegroundColor(float, float, float);
     virtual void                  UpdateView(void);
 
-    void                          QueryIsValid(const PickAttributes *, const Line *);
-    void                          UpdateQuery(const Line *);
-    void                          DeleteQuery(const Line *);
+    void                          QueryIsValid(const VisualCueInfo *, const VisualCueInfo *);
+    void                          UpdateQuery(const VisualCueInfo *);
+    void                          DeleteQuery(const VisualCueInfo *);
 
-    void                          Lineout(const Line *);
+    void                          Lineout(const VisualCueInfo *);
     void                          ClearLineouts(void);
 
-    void                          Pick(const PickAttributes *);
+    void                          Pick(const VisualCueInfo *);
     void                          ClearPickPoints(void);
 
     virtual void                  FullFrameOn(const double, const int);
     virtual void                  FullFrameOff(void);
     virtual void                  ReAddToWindow(void);
+
+    void                          GetVisualCues(const VisualCueInfo::CueType cueType,
+                                      std::vector<const VisualCueInfo *>& cues) const;
 
   protected:
     void                          CreateTranslationVector(const double, 
@@ -99,10 +104,20 @@ class VISWINDOW_API VisWinQuery : public VisWinColleague
     void                          CreateShiftVector(float vec[3], const float);
     float                         CalculateShiftDistance(void);
 
-    std::vector< avtPickActor_p >      pickPoints;
-    std::vector< avtLineoutActor_p >   lineOuts;
+    struct PickEntry {
+        avtPickActor_p pickActor;
+        VisualCueInfo vqInfo;
+    };
 
-    bool                               hidden;
+    struct LineEntry {
+        avtLineoutActor_p lineActor;
+        VisualCueInfo vqInfo;
+    };
+
+    std::vector< PickEntry > pickPoints;
+    std::vector< LineEntry > lineOuts;
+
+    bool                       hidden;
 };
 
 

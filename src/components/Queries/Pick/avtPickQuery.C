@@ -21,6 +21,7 @@
 
 #ifdef PARALLEL
 #include <mpi.h>
+#include <avtParallel.h>
 #include <BufferConnection.h>
 #endif
 
@@ -156,6 +157,9 @@ avtPickQuery::PreExecute(void)
 //    Kathleen Bonnell, Wed May  5 13:24:52 PDT 2004 
 //    Added error message. 
 //
+//    Mark C. Miller, Wed Jun  9 21:50:12 PDT 2004
+//    Eliminated use of MPI_ANY_TAG and modified to use GetUniqueMessageTags
+//
 // ****************************************************************************
 
 void
@@ -170,19 +174,22 @@ avtPickQuery::PostExecute(void)
  
     MPI_Comm_rank(MPI_COMM_WORLD, &myRank);
     MPI_Comm_size(MPI_COMM_WORLD, &numProcs);
+    int mpiHasFullfilledPickTag = GetUniqueMessageTag();
+    int mpiSizeTag              = GetUniqueMessageTag();
+    int mpiDataTag              = GetUniqueMessageTag();
     if (myRank == 0)
     {
         for (i = 1; i < numProcs; i++)
         {
             MPI_Status stat, stat2;
             MPI_Recv(&hasFulfilledPick, 1, MPI_INT, MPI_ANY_SOURCE,
-                     MPI_ANY_TAG, MPI_COMM_WORLD, &stat);
+                     mpiHasFullfilledPickTag, MPI_COMM_WORLD, &stat);
             if (hasFulfilledPick)
             {
-                MPI_Recv(&size, 1, MPI_INT, stat.MPI_SOURCE, MPI_ANY_TAG,
+                MPI_Recv(&size, 1, MPI_INT, stat.MPI_SOURCE, mpiSizeTag,
                          MPI_COMM_WORLD, &stat2);
                 buf = new unsigned char[size];
-                MPI_Recv(buf, size, MPI_UNSIGNED_CHAR, stat.MPI_SOURCE, MPI_ANY_TAG,
+                MPI_Recv(buf, size, MPI_UNSIGNED_CHAR, stat.MPI_SOURCE, mpiDataTag,
                          MPI_COMM_WORLD, &stat2);
                 b.Append(buf, size);
                 pickAtts.Read(b);
@@ -193,7 +200,7 @@ avtPickQuery::PostExecute(void)
     else
     {
         hasFulfilledPick = (int) pickAtts.GetFulfilled();
-        MPI_Send(&hasFulfilledPick, 1, MPI_INT, 0, myRank, MPI_COMM_WORLD);
+        MPI_Send(&hasFulfilledPick, 1, MPI_INT, 0, mpiHasFullfilledPickTag, MPI_COMM_WORLD);
         if (hasFulfilledPick)
         {
             pickAtts.SelectAll();
@@ -203,8 +210,8 @@ avtPickQuery::PostExecute(void)
             for (int i = 0; i < size; ++i)
                 b.Read(buf+i);
  
-            MPI_Send(&size, 1, MPI_INT, 0, myRank, MPI_COMM_WORLD);
-            MPI_Send(buf, size, MPI_UNSIGNED_CHAR, 0, myRank, MPI_COMM_WORLD);
+            MPI_Send(&size, 1, MPI_INT, 0, mpiSizeTag, MPI_COMM_WORLD);
+            MPI_Send(buf, size, MPI_UNSIGNED_CHAR, 0, mpiDataTag, MPI_COMM_WORLD);
             delete [] buf;
         }
         return;
