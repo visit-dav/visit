@@ -164,6 +164,9 @@ Engine::Initialize(int *argc, char **argv[])
 //    Jeremy Meredith, Mon Sep 15 17:14:07 PDT 2003
 //    Removed SetFinalVariableName.
 //
+//    Hank Childs, Fri Mar  5 11:46:09 PST 2004
+//    Made the database plugins be loaded on demand.
+//
 // ****************************************************************************
 void
 Engine::SetUpViewerInterface(int *argc, char **argv[])
@@ -190,7 +193,7 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     //
     PlotPluginManager::Instance()->LoadPluginsOnDemand();
     OperatorPluginManager::Instance()->LoadPluginsOnDemand();
-    DatabasePluginManager::Instance()->LoadPluginsNow();
+    DatabasePluginManager::Instance()->LoadPluginsOnDemand();
 
     vtkConnection = theViewer.GetReadConnection(1);
 

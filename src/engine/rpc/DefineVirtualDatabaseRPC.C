@@ -11,10 +11,13 @@
 //
 // Modifications:
 //
+//   Hank Childs, Fri Mar  5 17:27:41 PST 2004
+//   Added file format.
+//
 // ****************************************************************************
 
-DefineVirtualDatabaseRPC::DefineVirtualDatabaseRPC() : NonBlockingRPC("sss*i"),
-    databaseName(), databasePath(), databaseFiles()
+DefineVirtualDatabaseRPC::DefineVirtualDatabaseRPC() : NonBlockingRPC("ssss*i"),
+    fileFormat(), databaseName(), databasePath(), databaseFiles()
 {
     time = 0;
 }
@@ -47,13 +50,17 @@ DefineVirtualDatabaseRPC::~DefineVirtualDatabaseRPC()
 //
 // Modifications:
 //   
+//   Hank Childs, Fri Mar  5 17:27:41 PST 2004
+//   Added file format.
+//
 // ****************************************************************************
 
 void
-DefineVirtualDatabaseRPC::operator()(const std::string &wholeDBName, 
-    const std::string &pathToTimesteps, const stringVector &dbFiles,
-    int timestep)
+DefineVirtualDatabaseRPC::operator()(const std::string &fileFormatType,
+    const std::string &wholeDBName, const std::string &pathToTimesteps, 
+    const stringVector &dbFiles, int timestep)
 {
+    fileFormat = fileFormatType;
     databaseName = wholeDBName;
     databasePath = pathToTimesteps;
     databaseFiles = dbFiles;
@@ -73,14 +80,18 @@ DefineVirtualDatabaseRPC::operator()(const std::string &wholeDBName,
 //
 // Modifications:
 //   
+//   Hank Childs, Fri Mar  5 17:27:41 PST 2004
+//   Added file format.
+//
 // ****************************************************************************
 
 void
 DefineVirtualDatabaseRPC::SelectAll()
 {
-    Select(0, (void*)&databaseName);
-    Select(1, (void*)&databasePath);
-    Select(2, (void*)&databaseFiles);
-    Select(3, (void*)&time);
+    Select(0, (void*)&fileFormat);
+    Select(1, (void*)&databaseName);
+    Select(2, (void*)&databasePath);
+    Select(3, (void*)&databaseFiles);
+    Select(4, (void*)&time);
 }
 

@@ -3025,6 +3025,9 @@ ViewerSubject::CreateAttributesDataNode(const avtDefaultPlotMetaData *dp) const
 //    Brad Whitlock, Fri Oct 24 17:07:52 PST 2003
 //    I moved the code to update the expression list into the plot list.
 //
+//    Hank Childs, Fri Mar  5 11:39:22 PST 2004
+//    Send the file format type to the engine.
+//
 // ****************************************************************************
 
 void
@@ -3095,14 +3098,16 @@ ViewerSubject::OpenDatabaseHelper(const std::string &entireDBName,
         ViewerEngineManager *eMgr = ViewerEngineManager::Instance();
         if(md->GetIsVirtualDatabase() && md->GetNumStates() > 1)
         {
-            eMgr->DefineVirtualDatabase(host.c_str(), db.c_str(),
+            eMgr->DefineVirtualDatabase(host.c_str(), 
+                                        md->GetFileFormat().c_str(),db.c_str(),
                                         md->GetTimeStepPath().c_str(),
                                         md->GetTimeStepNames(),
                                         timeState);
         }
         else
         {
-            eMgr->OpenDatabase(host.c_str(), db.c_str(), timeState);
+            eMgr->OpenDatabase(host.c_str(), md->GetFileFormat().c_str(),
+                               db.c_str(), timeState);
         }
         
         //

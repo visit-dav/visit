@@ -556,6 +556,10 @@ avtOnionPeelFilter::VerifyInput()
 //    Kathleen Bonnell, Thu Mar  4 14:37:41 PST 2004 
 //    Added hack to get around data extents problem in parallel. 
 // 
+//    Kathleen Bonnell, Fri Mar  5 13:56:44 PST 2004 
+//    Only retrieve the extents if there is a valid active variable
+//    stored in avtDataAttributes. 
+// 
 // ****************************************************************************
 
 void
@@ -611,15 +615,22 @@ avtOnionPeelFilter::PostExecute()
     // data range from all processors if this information is available).
     // Then, clear out the TRUE extents, and set Cummulative True extents.
     //
-#ifdef PARALLEL
-    avtDataAttributes &dataAtts = GetOutput()->GetInfo().GetAttributes();
-    double *ext = new double[2*dataAtts.GetVariableDimension()];
-    GetDataExtents(ext);
-    dataAtts.GetTrueDataExtents()->Clear();
-    dataAtts.GetCumulativeTrueDataExtents()->Set(ext);
-    delete [] ext;
-#endif
 
+#ifdef PARALLEL
+    avtDataAttributes &dataAtts = GetInput()->GetInfo().GetAttributes();
+    if (dataAtts.ValidActiveVariable())
+    {
+        int dim = dataAtts.GetVariableDimension();
+        if (dim > 0)
+        {
+            double *ext = new double[2*dim];
+            GetDataExtents(ext);
+            dataAtts.GetTrueDataExtents()->Clear();
+            dataAtts.GetCumulativeTrueDataExtents()->Set(ext);
+            delete [] ext;
+        }
+    }
+#endif
 }
 
 

@@ -625,12 +625,16 @@ EngineProxy::ClearCache(const std::string &filename)
 //    Jeremy Meredith, Tue Mar  4 13:07:17 PST 2003
 //    Removed the check for status since OpenDatabaseRPC is now non-blocking.
 //   
+//    Hank Childs, Fri Mar  5 11:41:12 PST 2004
+//    Add file format type.
+//
 // ****************************************************************************
 
 void
-EngineProxy::OpenDatabase(const std::string &file, int time)
+EngineProxy::OpenDatabase(const std::string &format, const std::string &file,
+                          int time)
 {
-    openDatabaseRPC(file, time);
+    openDatabaseRPC(format, file, time);
 }
 
 // ****************************************************************************
@@ -640,6 +644,7 @@ EngineProxy::OpenDatabase(const std::string &file, int time)
 //   Tells the engine to define the specified virtual database.
 //
 // Arguments:
+//   fileFormat : The file format type.
 //   dbName : The database name.
 //   files  : The files in the database.
 //   time   : The timestep to open.
@@ -649,13 +654,17 @@ EngineProxy::OpenDatabase(const std::string &file, int time)
 //
 // Modifications:
 //   
+//   Hank Childs, Fri Mar  5 16:03:46 PST 2004
+//   Added fileFormat argument.
+//
 // ****************************************************************************
 
 void
-EngineProxy::DefineVirtualDatabase(const std::string &wholeDBName,
-    const std::string &pathToFiles, const stringVector &files, int time)
+EngineProxy::DefineVirtualDatabase(const std::string &fileFormat,
+    const std::string &wholeDBName, const std::string &pathToFiles, 
+    const stringVector &files, int time)
 {
-    defineVirtualDatabaseRPC(wholeDBName, pathToFiles, files, time);
+    defineVirtualDatabaseRPC(fileFormat,wholeDBName, pathToFiles, files, time);
 }
 
 // ****************************************************************************

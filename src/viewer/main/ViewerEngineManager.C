@@ -1191,6 +1191,9 @@ ViewerEngineManager::ExternalRender(std::vector<const char*> pluginIDsList,
 //    Removed the call to SetFinalVariableName.  It wasn't doing anything
 //    and was likely the wrong long-term infrastructure, so it was removed.
 //
+//    Hank Childs, Fri Mar  5 15:59:20 PST 2004
+//    Add file format type when defining a virtual database.
+//
 // ****************************************************************************
 
 avtDataObjectReader_p
@@ -1222,7 +1225,8 @@ ViewerEngineManager::GetDataObjectReader(ViewerPlot *const plot,
                                     plot->GetDatabaseName());
         if(md && md->GetIsVirtualDatabase())
         {
-            engine->DefineVirtualDatabase(plot->GetDatabaseName(),
+            engine->DefineVirtualDatabase(md->GetFileFormat().c_str(),
+                                          plot->GetDatabaseName(),
                                           md->GetTimeStepPath(),
                                           md->GetTimeStepNames(), state);
         }
@@ -1518,14 +1522,17 @@ ViewerEngineManager::EndEngineExecute()
 //
 // Modifications:
 //
+//   Hank Childs, Fri Mar  5 11:13:32 PST 2004
+//   Added a format.
+//
 // ****************************************************************************
 
 bool
-ViewerEngineManager::OpenDatabase(const char *hostName_, const char *filename,
-    int time)
+ViewerEngineManager::OpenDatabase(const char *hostName_, const char *format,
+                                  const char *filename, int time)
 {
     ENGINE_PROXY_RPC_BEGIN("OpenDatabase");
-    engine->OpenDatabase(filename, time);
+    engine->OpenDatabase(format, filename, time);
     ENGINE_PROXY_RPC_END;
 }
 
@@ -1540,14 +1547,18 @@ ViewerEngineManager::OpenDatabase(const char *hostName_, const char *filename,
 //
 // Modifications:
 //
+//   Hank Childs, Fri Mar  5 16:02:03 PST 2004
+//   Pass along the format as well.
+//
 // ****************************************************************************
 
 bool
 ViewerEngineManager::DefineVirtualDatabase(const char *hostName_,
-    const char *dbName, const char *path, const stringVector &files, int time)
+                      const char *format, const char *dbName, const char *path,
+                      const stringVector &files, int time)
 {
     ENGINE_PROXY_RPC_BEGIN("DefineVirtualDatabase");
-    engine->DefineVirtualDatabase(dbName, path, files, time);
+    engine->DefineVirtualDatabase(format, dbName, path, files, time);
     ENGINE_PROXY_RPC_END;
 }
 

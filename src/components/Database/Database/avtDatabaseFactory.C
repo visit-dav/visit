@@ -1,6 +1,9 @@
 // ************************************************************************* //
 //                          avtDatabaseFactory.C                             //
 // ************************************************************************* //
+
+#include <avtDatabaseFactory.h>
+
 #include <errno.h> // for errno
 #include <fstream.h>
 #include <sys/stat.h>
@@ -11,7 +14,7 @@
 #include <visit-config.h>
 
 #include <avtDatabase.h>
-#include <avtDatabaseFactory.h>
+#include <avtDatabaseMetaData.h>
 #include <avtGenericDatabase.h>
 
 #include <DatabasePluginManager.h>
@@ -73,6 +76,9 @@ void CheckPermissions(const char *);
 //
 //    Hank Childs, Mon Mar  1 08:56:52 PST 2004
 //    Allow for the time to be specified.
+//
+//    Hank Childs, Fri Mar  5 11:25:47 PST 2004
+//    Set the file format type with the database meta data.
 //
 // ****************************************************************************
 
@@ -188,7 +194,10 @@ avtDatabaseFactory::FileList(const char * const * filelist, int filelistN,
                 // ask for it in a bit anyway.
                 //
                 if (rv != NULL)
-                    rv->GetMetaData(timestep);
+                {
+                    avtDatabaseMetaData *md = rv->GetMetaData(timestep);
+                    md->SetFileFormat(info->GetID());
+                }
             }
             CATCH2(InvalidDBTypeException, e)
             {
@@ -218,7 +227,10 @@ avtDatabaseFactory::FileList(const char * const * filelist, int filelistN,
             // make the same call here to be consistent.
             //
             if (rv != NULL)
-                rv->GetMetaData(timestep);
+            {
+                avtDatabaseMetaData *md = rv->GetMetaData(timestep);
+                md->SetFileFormat(info->GetID());
+            }
         }
         else
         {

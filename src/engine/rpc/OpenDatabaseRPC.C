@@ -13,9 +13,12 @@
 //   Brad Whitlock, Mon Feb 24 11:14:57 PDT 2003
 //   I made it inherit from NonBlockingRPC.
 //
+//   Hank Childs, Fri Mar  5 11:13:32 PST 2004
+//   Added string for 'format'
+//
 // ****************************************************************************
 
-OpenDatabaseRPC::OpenDatabaseRPC() : NonBlockingRPC("si"), databaseName("")
+OpenDatabaseRPC::OpenDatabaseRPC() : NonBlockingRPC("ssi"), databaseName("")
 {
     time = 0;
 }
@@ -48,11 +51,16 @@ OpenDatabaseRPC::~OpenDatabaseRPC()
 //
 // Modifications:
 //   
+//   Hank Childs, Fri Mar  5 11:13:32 PST 2004
+//   Added 'format'.
+//
 // ****************************************************************************
 
 void
-OpenDatabaseRPC::operator()(const std::string &dbName, int timestep)
+OpenDatabaseRPC::operator()(const std::string &f,
+                            const std::string &dbName, int timestep)
 {
+    fileFormat = f;
     databaseName = dbName;
     time = timestep;
     SelectAll();
@@ -75,7 +83,8 @@ OpenDatabaseRPC::operator()(const std::string &dbName, int timestep)
 void
 OpenDatabaseRPC::SelectAll()
 {
-    Select(0, (void*)&databaseName);
-    Select(1, (void*)&time);
+    Select(0, (void*)&fileFormat);
+    Select(1, (void*)&databaseName);
+    Select(2, (void*)&time);
 }
 
