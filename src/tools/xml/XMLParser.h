@@ -122,6 +122,9 @@ ParseCharacters(const QString &buff)
 //    Jeremy Meredith, Wed Nov  5 13:28:03 PST 2003
 //    Added ability to disable plugins by default.
 //
+//    Jeremy Meredith, Wed Jul  7 17:08:03 PDT 2004
+//    Allow for mdserver-specific code in a plugin's source files.
+//
 // ****************************************************************************
 
 class XMLParser : public QXmlDefaultHandler
@@ -211,12 +214,17 @@ class XMLParser : public QXmlDefaultHandler
             QString version   = atts.value("version");
             QString iconFile  = atts.value("iconFile");
             QString enabled   = atts.value("enabled");
+            QString mdspecific= atts.value("mdspecificcode");
             currentPlugin = new Plugin(name, label, type, vartype,
                                        dbtype, version, iconFile, 
                                        haswriter.isNull() ? false : Text2Bool(haswriter));
-            if (!enabled.isNull() && Text2Bool(enabled)==false)
+            if (!enabled.isNull())
             {
-                currentPlugin->enabledByDefault = false;
+                currentPlugin->enabledByDefault = Text2Bool(enabled);
+            }
+            if (!mdspecific.isNull())
+            {
+                currentPlugin->has_MDS_specific_code = Text2Bool(mdspecific);
             }
         }
         else if (tag == "Attribute")

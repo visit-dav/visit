@@ -65,6 +65,9 @@
 //    Jeremy Meredith, Tue Jun 15 10:39:32 PDT 2004
 //    Added missing blockSignals wrapper in opacity's UpdateWindow.
 //
+//    Jeremy Meredith, Wed Jul  7 17:08:03 PDT 2004
+//    Allow for mdserver-specific code in a plugin's source files.
+//
 // ****************************************************************************
 
 class WindowGeneratorField : public virtual Field
@@ -1596,6 +1599,7 @@ class WindowGeneratorPlugin
     QString dbtype;
     QString windowname;
     bool    enabledByDefault;
+    bool    has_MDS_specific_code;
 
     vector<QString> cxxflags;
     vector<QString> ldflags;
@@ -1620,6 +1624,7 @@ class WindowGeneratorPlugin
         : name(n), type(t), label(l), version(v), vartype(vt), dbtype(dt), atts(NULL)
     {
         enabledByDefault = true;
+        has_MDS_specific_code = false;
         if (type == "plot")
             windowname = QString("Qvis")+name+QString("PlotWindow");
         else if (type == "operator")

@@ -173,6 +173,9 @@
 #    Brad Whitlock, Thu Apr 22 15:15:37 PST 2004
 #    Added more libraries to the link line.
 #
+#    Jeremy Meredith, Wed Jul  7 12:12:52 PDT 2004
+#    I changed _ser.o to simply be .o.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -305,7 +308,7 @@ Sources_src= \
 
 CPPFLAGS=@COMPONENT_CPPFLAGS@ @CPPFLAGS@
 
-SEROBJ=$(SRC:.C=_ser.o)
+SEROBJ=$(SRC:.C=.o)
 PAROBJ=$(SRC:.C=_par.o)
 LIB=libpipeline
 SERLIBS=-ldbatts -lavtexceptions -lstate -lcomm -lmisc -lutility -lparser -lavtmath_ser @VTK_LIBS@ $(X_LIBS) @LIBS@

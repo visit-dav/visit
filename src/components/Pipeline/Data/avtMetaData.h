@@ -12,6 +12,7 @@
 class     avtFacelist;
 class     avtIntervalTree;
 class     avtMaterial;
+class     avtMixedVariable;
 class     avtSpecies;
 class     avtTerminatingSource;
 
@@ -52,6 +53,9 @@ class     avtTerminatingSource;
 //    Kathleen Bonnell, Mon Jun 28 08:05:38 PDT 2004 
 //    Added optional int arg (for time) to GetMaterial, GetSpecies. 
 //
+//    Kathleen Bonnell, Thu Jul  1 16:41:57 PDT 2004 
+//    Added GetMixedVar.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtMetaData
@@ -66,6 +70,7 @@ class PIPELINE_API avtMetaData
     avtFacelist                 *GetExternalFacelist(int);
     avtMaterial                 *GetMaterial(int, int = -1);
     avtSpecies                  *GetSpecies(int, int = -1);
+    avtMixedVariable            *GetMixedVar(int, int = -1);
 
   protected:
     avtTerminatingSource        *source;

@@ -128,11 +128,17 @@ Engine *Engine::Instance()
 //  Programmer:  Jeremy Meredith
 //  Creation:    July 10, 2003
 //
+//  Modifications:
+//
+//    Mark C. Miller, Wed Jul  7 11:42:09 PDT 2004
+//    Added code to override the new handler for the engine
+//
 // ****************************************************************************
 void
 Engine::Initialize(int *argc, char **argv[])
 {
 #ifdef PARALLEL
+
     xfer = new MPIXfer;
     // Initialize for MPI and get the process rank & size.
     //
@@ -147,6 +153,11 @@ Engine::Initialize(int *argc, char **argv[])
     Init::Initialize(*argc, *argv);
 #endif
     Init::SetComponentName("engine");
+
+    //
+    // Set a different new handler for the engine
+    //
+    set_new_handler(Engine::NewHandler);
 
     debug1 << "ENGINE started\n";
 }
@@ -725,6 +736,9 @@ Engine::ProcessCommandLine(int argc, char **argv)
 //    Jeremy Meredith, Thu Jul 10 11:37:48 PDT 2003
 //    Made the engine an object.
 //
+//    Mark C. Miller, Wed Jul  7 11:42:09 PDT 2004
+//    Made it PAR_Exit() in parallel and call Init::Finalize()
+//
 // ****************************************************************************
 
 void
@@ -732,7 +746,41 @@ Engine::AlarmHandler(int signal)
 {
     debug1 << "ENGINE exited due to an inactivity timeout of "
            << Engine::Instance()->timeout << " minutes." << endl;
+#ifdef PARALLEL
+    PAR_Exit();
+#else
     exit(0);
+#endif
+    Init::Finalize();
+}
+
+// ****************************************************************************
+//  Function: NewHandler
+//
+//  Purpose: Issue warning message when memory has run out
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   Tue Jun 29 17:34:19 PDT 2004
+// ****************************************************************************
+
+void
+Engine::NewHandler(void)
+{
+#ifdef PARALLEL
+    const char *msg = "VisIt: engine out of memory, try more processors";
+#else
+    const char *msg = "VisIt: engine out of memory";
+#endif
+
+    debug1 << msg << endl;
+    //cerr << msg << endl;
+
+#ifdef PARALLEL
+    MPI_Abort(MPI_COMM_WORLD, 18);
+#else
+    abort();
+#endif
+
 }
 
 // ****************************************************************************
@@ -933,6 +981,12 @@ WriteByteStreamToSocket(NonBlockingRPC *rpc, Connection *vtkConnection,
 //    Mark C. Miller, Thu Jun 10 09:08:18 PDT 2004
 //    Modified to use unique MPI message tags
 //
+//    Mark C. Miller, Wed Jul  7 11:42:09 PDT 2004
+//    Added explicit const bool polysOnly to document the fact that we
+//    are counting polygons only during this phase. Also added code to
+//    set processor 0's cell count and test if its count alone causes the
+//    scalable threshold to be exceeded.
+//
 // ****************************************************************************
 void
 Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer,
@@ -941,6 +995,8 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer,
 {
 
 #ifdef PARALLEL
+
+    static const bool polysOnly = true;
 
     // set up MPI message tags
     int mpiCellCountTag   = GetUniqueMessageTag();
@@ -972,7 +1028,15 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer,
 
         avtDataObject_p ui_dob = writer->GetInput();
 
-        currentCellCount = ui_dob->GetNumberOfCells();
+        currentCellCount = ui_dob->GetNumberOfCells(polysOnly);
+
+        // test if we've exceeded the scalable threshold already with proc 0's output
+        if (currentTotalGlobalCellCount +
+            currentCellCount > scalableThreshold)
+        {
+            debug5 << "exceeded scalable threshold of " << scalableThreshold << endl;
+            thresholdExceeded = true; 
+        }
 
         if (writer->MustMergeParallelStreams())
         {
@@ -1004,7 +1068,8 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer,
                 if (currentTotalGlobalCellCount +
                     currentCellCount > scalableThreshold)
                 {
-                    debug5 << "exceeded scalable threshold of " << scalableThreshold << endl;
+                    if (!thresholdExceeded)
+                        debug5 << "exceeded scalable threshold of " << scalableThreshold << endl;
                     shouldGetData = sendDataAnyway;
                     thresholdExceeded = true; 
                 }
@@ -1113,7 +1178,7 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer,
             MPI_Status stat;
 
             // send the "num cells I have" message to proc 0
-            int numCells = writer->GetInput()->GetNumberOfCells();
+            int numCells = writer->GetInput()->GetNumberOfCells(polysOnly);
             debug5 << "sending \"num cells I have\" message (=" << numCells << ")" << endl;
             MPI_Send(&numCells, 1, MPI_INT, 0, mpiCellCountTag, MPI_COMM_WORLD);
 

@@ -203,6 +203,9 @@
 #    Kathleen Bonnell, Thu Apr 29 16:54:44 PDT 2004 
 #    Added engineparstate_par to PARLIBS. 
 #
+#    Jeremy Meredith, Wed Jul  7 12:12:52 PDT 2004
+#    I changed _ser.o to simply be .o.
+#
 ##############################################################################
 
 ##
@@ -265,10 +268,10 @@ SRC= \
 
 MAINSRC=main.C
 
-SEROBJ=$(SRC:.C=_ser.o)
+SEROBJ=$(SRC:.C=.o)
 PAROBJ=$(SRC:.C=_par.o)
 
-MAINSEROBJ=$(MAINSRC:.C=_ser.o)
+MAINSEROBJ=$(MAINSRC:.C=.o)
 MAINPAROBJ=$(MAINSRC:.C=_par.o)
 
 ##

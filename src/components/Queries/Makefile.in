@@ -85,6 +85,9 @@
 #   Kathleen Bonnell, Thu Jun 10 17:57:41 PDT 2004 
 #   Added avtNodeCoordsQuery. 
 #
+#   Jeremy Meredith, Wed Jul  7 12:12:52 PDT 2004
+#   I changed _ser.o to simply be .o.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -147,12 +150,13 @@ Queries_src= \
  Queries/avtVariableQuery.C \
  Queries/avtVariableSummationQuery.C \
  Queries/avtWeightedVariableSummationQuery.C \
- Queries/avtZoneCenterQuery.C
+ Queries/avtZoneCenterQuery.C \
+ Queries/MinMaxInfo.C
 
 
 CPPFLAGS=@COMPONENT_CPPFLAGS@ @CPPFLAGS@
 
-SEROBJ=$(SRC:.C=_ser.o)
+SEROBJ=$(SRC:.C=.o)
 PAROBJ=$(SRC:.C=_par.o)
 LIB=libquery
 COMMONLIBS=-ldbatts -lavtexceptions -lstate -lcomm -lmisc -lparser -lutility -lavtview -lvisit_vtk -llightweight_visit_vtk

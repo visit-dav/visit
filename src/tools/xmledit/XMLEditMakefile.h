@@ -18,6 +18,10 @@ class QCheckBox;
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+//  Modifications:
+//    Jeremy Meredith, Wed Jul  7 17:08:03 PDT 2004
+//    Allow for mdserver-specific code in a plugin's source files.
+//
 // ****************************************************************************
 class XMLEditMakefile : public QFrame
 {
@@ -44,6 +48,7 @@ class XMLEditMakefile : public QFrame
     void custommfilesChanged();
     void customefilesChanged();
     void customwfilesChanged();
+    void mdSpecificCodeChanged();
   private:
     XMLDocument     *xmldoc;
 
@@ -62,6 +67,7 @@ class XMLEditMakefile : public QFrame
     QLineEdit       *EFiles;
     QCheckBox       *customWFiles;
     QLineEdit       *WFiles;
+    QCheckBox       *mdSpecificCode;
 };
 
 #endif

@@ -17,11 +17,15 @@
 //  Programmer: Hank Childs
 //  Creation:   February 5, 2004
 //
+//  Modifications:
+//    Mark C. Miller, Wed Jul  7 11:42:09 PDT 2004
+//    Added bool argument
+//
 // ****************************************************************************
 
-avtNullDataWriter::avtNullDataWriter()
+avtNullDataWriter::avtNullDataWriter(bool _mustMerge)
 {
-    ;
+    mustMerge = _mustMerge;
 }
 
 

@@ -8,8 +8,10 @@
 
 #include <avtDatasetQuery.h>
 
-class avtCondenseDatasetFilter;
+#include <MinMaxInfo.h>
+
 class avtMatrix;
+class vtkDataArray;
 class vtkDataSet;
 
 
@@ -28,6 +30,12 @@ class vtkDataSet;
 //
 //    Kathleen Bonnell, Wed Mar 31 16:07:50 PST 2004 
 //    Added args to constructor. 
+//
+//    Kathleen Bonnell, Tue Jul  6 16:59:26 PDT 2004 
+//    Encapsulated elNum, vals, domain, coords in class MinMaxInfo.
+//    Removed CreateMinMessage, CreateMaxMessage.  
+//    Added InfoToString, CreateMessage, FindElement, FinalizeZoneCoord,
+//    FinalizeNodeCoord.
 //
 // ****************************************************************************
 
@@ -51,23 +59,27 @@ class QUERY_API avtMinMaxQuery : virtual public avtDatasetQuery
             void            Preparation(avtDataObject_p);   
 
   private:
+
     int                     dimension;
     int                     topoDim;
     int                     blockOrigin;
     int                     cellOrigin;
     bool                    singleDomain;
     bool                    scalarCurve;
-    float                   minVal;
-    float                   maxVal;
-    int                     minElementNum;
-    int                     maxElementNum;
-    int                     minDomain;
-    int                     maxDomain;
-    float                   minCoord[3];
-    float                   maxCoord[3];
-    string                  minMsg;
-    string                  maxMsg;
-    string                  elementName;
+    bool                    nodeCentered;
+    std::string             minMsg;
+    std::string             maxMsg;
+    std::string             elementName;
+
+    MinMaxInfo              minInfo1;
+    MinMaxInfo              minInfo2;
+    MinMaxInfo              maxInfo1;
+    MinMaxInfo              maxInfo2;
+
+    std::string             nodeMsg1;
+    std::string             nodeMsg2;
+    std::string             zoneMsg1;
+    std::string             zoneMsg2;
 
     bool                    doMin;
     bool                    doMax;
@@ -80,9 +92,19 @@ class QUERY_API avtMinMaxQuery : virtual public avtDatasetQuery
                                         float coord[3]);
     void                    GetCellCoord(vtkDataSet *ds, const int id, 
                                         float coord[3]);
-    void                    CreateMinMessage(void);
-    void                    CreateMaxMessage(void);
-    void                    CreateResultMessage(void);
+
+    void                    CreateResultMessage(const int);
+
+    std::string             InfoToString(const MinMaxInfo &);
+    void                    CreateMessage(const int, const MinMaxInfo &, 
+                                          const MinMaxInfo &, std::string &,
+                                          doubleVector &);
+
+    void                    FindElement(MinMaxInfo &);
+    void                    FinalizeZoneCoord(vtkDataSet *, 
+                                              vtkDataArray *, 
+                                              MinMaxInfo &, bool);
+    void                    FinalizeNodeCoord(vtkDataSet *, MinMaxInfo &);
 };
 
 

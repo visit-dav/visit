@@ -4,6 +4,7 @@
 
 #include <avtDatasetQuery.h>
 
+#include <avtParallel.h>
 #include <avtSourceFromAVTDataset.h>
 
 #include <vtkDataSet.h>
@@ -11,9 +12,6 @@
 #include <BadIndexException.h>
 #include <DebugStream.h>
 
-#ifdef PARALLEL
-#include <mpi.h>
-#endif
 
 
 // ****************************************************************************
@@ -339,6 +337,9 @@ avtDatasetQuery::GetResultValue(const int i)
 //    Added TRY-CATCH, and a test for Error in avtDataValidity.  Skip
 //    the timestep in those cases and indicate in the args. 
 //
+//    Kathleen Bonnell, Tue Jul  6 15:38:28 PDT 2004 
+//    Removed mpi call, used UnifyMaximumValue instead. 
+//
 // ****************************************************************************
 
 void
@@ -405,17 +406,12 @@ avtDatasetQuery::PerformQueryInTime(QueryAttributes *qA, const int startT ,
         }
         ENDTRY
 
-#ifdef PARALLEL
         //
         // If any processor experienced a problem at this timestep,
         // they all should skip further processing. 
         //
         int hadError = (inError ? 1 : 0);
-        int collectiveHadError;;
-        MPI_Allreduce(&hadError, &collectiveHadError, 1, MPI_INT, 
-                      MPI_MAX, MPI_COMM_WORLD);
-        inError = bool(collectiveHadError);
-#endif
+        inError = bool(UnifyMaximumValue(hadError));
         if (inError)
         {
             skippedTimeSteps.push_back(queryAtts.GetTimeStep());

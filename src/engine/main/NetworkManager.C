@@ -1074,6 +1074,7 @@ void
 NetworkManager::SetGlobalCellCount(int netId, int cellCount)
 {
    globalCellCounts[netId] = cellCount;
+   debug5 << "Setting cell count for network " << netId << " to " << cellCount << endl;
 }
 
 // ****************************************************************************
@@ -1374,210 +1375,273 @@ NetworkManager::GetOutput(bool respondWithNullData, bool calledForRender)
 //
 //    Mark C. Miller, Wed Jun  9 17:44:38 PDT 2004
 //    Added visualCueList arg to SetAnnotationAttributes
+//
+//    Mark C. Miller, Wed Jul  7 11:42:09 PDT 2004
+//    Totally re-organized. Added calls to reduce cell counts for newly
+//    added plots. Moved test for exceeding scalable threshold to after point
+//    where each plot's network output is actually computed.
+//
 // ****************************************************************************
 avtDataObjectWriter_p
 NetworkManager::Render(intVector plotIds, bool getZBuffer, bool do3DAnnotsOnly)
 {
+    int i;
     DataNetwork *origWorkingNet = workingNet;
+
 
     TRY
     {
-       int t1 = visitTimer->StartTimer();
-       avtDataObjectWriter_p writer;
-       int  scalableThreshold = GetScalableThreshold(); 
+        int t1 = visitTimer->StartTimer();
+        avtDataObjectWriter_p writer;
+        bool needToSetUpWindowContents = false;
+        int *cellCounts = new int[2 * plotIds.size()];
 
-       // scalable threshold test (the 0.5 is to add some hysteresus to avoid 
-       // the misfortune of oscillating switching of modes around the threshold)
-       if (GetTotalGlobalCellCounts() < 0.5 * scalableThreshold)
-       {
-           debug5 << "Cell count has fallen below SR threshold. Sending the "
-                     "AVT_NULL_IMAGE_MSG data object to viewer" << endl;
+        // put all the plot objects into the VisWindow
+        viswin->SetScalableRendering(false);
 
-          avtNullData_p nullData = new avtNullData(NULL,AVT_NULL_IMAGE_MSG);
-          avtDataObject_p dummyDob;
-          CopyTo(dummyDob, nullData);
-          writer = dummyDob->InstantiateWriter();
-          writer->SetInput(dummyDob);
+        //
+        // Determine if the plots currently in the window are the same as
+        // those we were asked to render.
+        //
+        if (plotIds.size() != plotsCurrentlyInWindow.size())
+            needToSetUpWindowContents = true;
+        else
+        {
+            for (int p = 0 ; p < plotIds.size() ; p++)
+                if (plotIds[p] != plotsCurrentlyInWindow[p])
+                    needToSetUpWindowContents = true;
+        }
 
-       }
-       else
-       {
-          // put all the plot objects into the VisWindow
-          viswin->SetScalableRendering(false);
+        if (needToSetUpWindowContents)
+        {
+            // array to record cell counts of added networks
 
-          //
-          // Determine if the plots currently in the window are the same as
-          // those we were asked to render.
-          //
-          bool needToSetUpWindowContents = false;
-          if (plotIds.size() != plotsCurrentlyInWindow.size())
-              needToSetUpWindowContents = true;
-          else
-          {
-              for (int p = 0 ; p < plotIds.size() ; p++)
-                  if (plotIds[p] != plotsCurrentlyInWindow[p])
-                      needToSetUpWindowContents = true;
-          }
+            int t2 = visitTimer->StartTimer();
+            int t3 = visitTimer->StartTimer();
+            viswin->ClearPlots();
+            visitTimer->StopTimer(t3, "Clearing plots out of vis window");
 
-          if (needToSetUpWindowContents)
-          {
-              int t2 = visitTimer->StartTimer();
-              int t3 = visitTimer->StartTimer();
-              viswin->ClearPlots();
-              visitTimer->StopTimer(t3, "Clearing plots out of vis window");
+            for (i = 0; i < plotIds.size(); i++)
+            {
+                int t7 = visitTimer->StartTimer();
+                // get the network output as we would normally
+                workingNet = NULL;
+                UseNetwork(plotIds[i]);
+                DataNetwork *workingNetSaved = workingNet;
+                int t4 = visitTimer->StartTimer();
+                avtDataObjectWriter_p tmpWriter = GetOutput(false,true);
+                avtDataObject_p dob = tmpWriter->GetInput();
 
-              for (int i = 0; i < plotIds.size(); i++)
-              {
-                 int t7 = visitTimer->StartTimer();
-                 // get the network output as we would normally
-                 workingNet = NULL;
-                 UseNetwork(plotIds[i]);
-                 DataNetwork *workingNetSaved = workingNet;
-                 int t4 = visitTimer->StartTimer();
-                 avtDataObjectWriter_p tmpWriter = GetOutput(false,true);
-                 avtDataObject_p dob = tmpWriter->GetInput();
+                // merge polygon info output across processors 
+                dob->GetInfo().ParallelMerge(tmpWriter);
+                visitTimer->StopTimer(t4, "Merging data info in parallel");
 
-                 // merge polygon info output across processors 
-                 dob->GetInfo().ParallelMerge(tmpWriter);
-                 visitTimer->StopTimer(t4, "Merging data info in parallel");
+                int t5 = visitTimer->StartTimer();
+                avtActor_p anActor = workingNetSaved->GetActor(dob);
+                visitTimer->StopTimer(t5, "Calling GetActor for DOB");
 
-                 int t5 = visitTimer->StartTimer();
-                 avtActor_p anActor = workingNetSaved->GetActor(dob);
-                 visitTimer->StopTimer(t5, "Calling GetActor for DOB");
+                // record cell counts including and not including polys
+                cellCounts[i] =
+                    anActor->GetDataObject()->GetNumberOfCells(false);
+                cellCounts[i+plotIds.size()] =
+                    anActor->GetDataObject()->GetNumberOfCells(true);
 
-                 bool polysOnly = false;
-                 if (anActor->GetDataObject()->GetNumberOfCells(polysOnly) == 0) 
-                 {
-                     char message[256];
-                     SNPRINTF(message, sizeof(message),
-                         "The plot with id = %d yielded no data", plotIds[i]);
-                     avtCallback::IssueWarning(message);
-                 }
+                int t6 = visitTimer->StartTimer();
+                viswin->AddPlot(anActor);
+                visitTimer->StopTimer(t6, "Adding plot to the vis window");
+                visitTimer->StopTimer(t7, "Setting up one plot");
+            }
 
-                 int t6 = visitTimer->StartTimer();
-                 viswin->AddPlot(anActor);
-                 visitTimer->StopTimer(t6, "Adding plot to the vis window");
-                 visitTimer->StopTimer(t7, "Setting up one plot");
-              }
+            //
+            // Update any cell counts for the associated networks.
+            // This involves global communication. Since we're going to
+            // get sync'd up for the composite below, this
+            // additional MPI_Allreduce is not so bad.
+            // While we're at it, we'll issue any warning message for
+            // plots with no data, too.
+            //
+#ifdef PARALLEL
+            int *reducedCounts = new int[2 * plotIds.size()];
+            MPI_Allreduce(cellCounts, reducedCounts, 2 * plotIds.size(),
+                MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+            for (i = 0; i < 2 * plotIds.size(); i++)
+                cellCounts[i] = reducedCounts[i];
+            delete [] reducedCounts;
+#endif
 
-              plotsCurrentlyInWindow = plotIds;
-              visitTimer->StopTimer(t2, "Setting up window contents");
-          }
+            // update the global cell counts for each network
+            for (i = 0; i < plotIds.size(); i++)
+                SetGlobalCellCount(plotIds[i], cellCounts[i+plotIds.size()]);
 
-          //
-          // Update plot's bg/fg colors. Ignored by avtPlot objects if colors
-          // are unchanged
-          //
-          {
-              double bg[4] = {1.,0.,0.,0.};
-              double fg[4] = {0.,0.,1.,0.};
+            plotsCurrentlyInWindow = plotIds;
+            visitTimer->StopTimer(t2, "Setting up window contents");
 
-              annotationAttributes.GetForegroundColor().GetRgba(fg);
-              annotationAttributes.GetDiscernibleBackgroundColor().GetRgba(bg);
-              for (int i = 0; i < plotIds.size(); i++)
-              {
-                  workingNet = NULL;
-                  UseNetwork(plotIds[i]);
-                  workingNet->GetPlot()->SetBackgroundColor(bg);
-                  workingNet->GetPlot()->SetForegroundColor(fg);
-                  workingNet = NULL;
-              }
-          }
+        }
 
-          //
-          // Add annotations if necessary 
-          //
-          if (!do3DAnnotsOnly)
-          {
-              SetAnnotationAttributes(annotationAttributes,
-                                      annotationObjectList, visualCueList, false);
-          }
+        int  scalableThreshold = GetScalableThreshold(); 
+        // scalable threshold test (the 0.5 is to add some hysteresus to avoid 
+        // the misfortune of oscillating switching of modes around the threshold)
+        if (GetTotalGlobalCellCounts() < 0.5 * scalableThreshold)
+        {
+            debug5 << "Cell count has fallen below SR threshold. Sending the "
+                      "AVT_NULL_IMAGE_MSG data object to viewer" << endl;
 
-          debug5 << "Rendering " << viswin->GetNumTriangles() << " triangles. " 
-                 << "Balanced speedup = " << RenderBalance(viswin->GetNumTriangles())
-                 << "x" << endl;
+            avtNullData_p nullData = new avtNullData(NULL,AVT_NULL_IMAGE_MSG);
+            avtDataObject_p dummyDob;
+            CopyTo(dummyDob, nullData);
+            writer = dummyDob->InstantiateWriter();
+            writer->SetInput(dummyDob);
+        }
+        else
+        {
+            if (needToSetUpWindowContents)
+            {
+                // determine any networks with no data 
+                vector<int> networksWithNoData;
+                for (i = 0; i < plotIds.size(); i++)
+                {
+                    if (cellCounts[i] == 0)
+                        networksWithNoData.push_back(i);
+                }
 
-          // render the image and capture it. Relies upon explicit render
-          int t3 = visitTimer->StartTimer();
-          bool viewportedMode = do3DAnnotsOnly &&
-                                (viswin->GetWindowMode() == WINMODE_2D ||
-                                 viswin->GetWindowMode() == WINMODE_CURVE);
-          avtImage_p theImage = viswin->ScreenCapture(viewportedMode, true);
-          visitTimer->StopTimer(t3, "Screen capture for SR");
+                // issue warning messages for plots with no data
+                if (networksWithNoData.size() > 0)
+                {
+                    string msg = "The plot(s) with id(s) = ";
+                    for (i = 0; i < networksWithNoData.size(); i++)
+                    {
+                        char tmpStr[32];
+                        SNPRINTF(tmpStr, sizeof(tmpStr), "%d", networksWithNoData[i]);
+                        msg += tmpStr;
+                        if (i < networksWithNoData.size() - 1)
+                            msg += ", ";
+                    }
+                    msg += " yielded no data";
+#ifdef PARALLEL
+                    if (PAR_Rank() == 0)
+#endif
+                    {
+                        avtCallback::IssueWarning(msg.c_str());
+                    }
+                }
+            }
 
-          if (dumpRenders)
-          {
-              static int numDumps = 0;
-              char tmpName[256];
-              avtFileWriter *fileWriter = new avtFileWriter();
-              avtDataObject_p tmpDob;
-              CopyTo(tmpDob, theImage);
+            //
+            // Update plot's bg/fg colors. Ignored by avtPlot objects if colors
+            // are unchanged
+            //
+            {
+                double bg[4] = {1.,0.,0.,0.};
+                double fg[4] = {0.,0.,1.,0.};
+
+                annotationAttributes.GetForegroundColor().GetRgba(fg);
+                annotationAttributes.GetDiscernibleBackgroundColor().GetRgba(bg);
+                for (int i = 0; i < plotIds.size(); i++)
+                {
+                    workingNet = NULL;
+                    UseNetwork(plotIds[i]);
+                    workingNet->GetPlot()->SetBackgroundColor(bg);
+                    workingNet->GetPlot()->SetForegroundColor(fg);
+                    workingNet = NULL;
+                }
+            }
+
+            //
+            // Add annotations if necessary 
+            //
+            if (!do3DAnnotsOnly)
+            {
+                SetAnnotationAttributes(annotationAttributes,
+                                        annotationObjectList, visualCueList, false);
+            }
+
+            debug5 << "Rendering " << viswin->GetNumTriangles() << " triangles. " 
+                   << "Balanced speedup = " << RenderBalance(viswin->GetNumTriangles())
+                   << "x" << endl;
+
+            // render the image and capture it. Relies upon explicit render
+            int t3 = visitTimer->StartTimer();
+            bool viewportedMode = do3DAnnotsOnly &&
+                                  (viswin->GetWindowMode() == WINMODE_2D ||
+                                   viswin->GetWindowMode() == WINMODE_CURVE);
+            avtImage_p theImage = viswin->ScreenCapture(viewportedMode, true);
+            visitTimer->StopTimer(t3, "Screen capture for SR");
+
+            if (dumpRenders)
+            {
+                static int numDumps = 0;
+                char tmpName[256];
+                avtFileWriter *fileWriter = new avtFileWriter();
+                avtDataObject_p tmpDob;
+                CopyTo(tmpDob, theImage);
 
 #ifdef PARALLEL
-              sprintf(tmpName, "before_ImageCompositer_%03d_%03d.tif",
-                  PAR_Rank(), numDumps);
+                sprintf(tmpName, "before_ImageCompositer_%03d_%03d.tif",
+                    PAR_Rank(), numDumps);
 #else
-              sprintf(tmpName, "before_ImageCompositer_%03d.tif", numDumps);
+                sprintf(tmpName, "before_ImageCompositer_%03d.tif", numDumps);
 #endif
-              fileWriter->SetFormat(TIFF);
-              int useLZW = 6;
-              fileWriter->Write(tmpName, tmpDob, 100, false, useLZW, false);
+                fileWriter->SetFormat(TIFF);
+                int useLZW = 6;
+                fileWriter->Write(tmpName, tmpDob, 100, false, useLZW, false);
 
-              numDumps++;
-          }
+                numDumps++;
+            }
 
-          avtWholeImageCompositer imageCompositer;
+            avtWholeImageCompositer imageCompositer;
 
-          //
-          // Set the compositer's background color
-          //
-          const float *fbg = viswin->GetBackgroundColor();
-          unsigned char bg_r = (unsigned char) (fbg[0] * 255.0);
-          unsigned char bg_g = (unsigned char) (fbg[1] * 255.0);
-          unsigned char bg_b = (unsigned char) (fbg[2] * 255.0);
-          imageCompositer.SetBackground(bg_r, bg_g, bg_b);
+            //
+            // Set the compositer's background color
+            //
+            const float *fbg = viswin->GetBackgroundColor();
+            unsigned char bg_r = (unsigned char) (fbg[0] * 255.0);
+            unsigned char bg_g = (unsigned char) (fbg[1] * 255.0);
+            unsigned char bg_b = (unsigned char) (fbg[2] * 255.0);
+            imageCompositer.SetBackground(bg_r, bg_g, bg_b);
 
-          //
-          // Set up the input image size and add it to compositer's input
-          //
-          int imageRows, imageCols;
-          theImage->GetSize(&imageCols, &imageRows);
-          imageCompositer.SetOutputImageSize(imageRows, imageCols);
-          imageCompositer.AddImageInput(theImage, 0, 0);
-          imageCompositer.SetShouldOutputZBuffer(getZBuffer);
+            //
+            // Set up the input image size and add it to compositer's input
+            //
+            int imageRows, imageCols;
+            theImage->GetSize(&imageCols, &imageRows);
+            imageCompositer.SetOutputImageSize(imageRows, imageCols);
+            imageCompositer.AddImageInput(theImage, 0, 0);
+            imageCompositer.SetShouldOutputZBuffer(getZBuffer);
 
-          //
-          // Do the parallel composite using a 1 stage pipeline
-          //
-          imageCompositer.Execute();
-          avtDataObject_p compositedImageAsDataObject = imageCompositer.GetOutput();
-          writer = compositedImageAsDataObject->InstantiateWriter();
-          writer->SetInput(compositedImageAsDataObject);
+            //
+            // Do the parallel composite using a 1 stage pipeline
+            //
+            imageCompositer.Execute();
+            avtDataObject_p compositedImageAsDataObject = imageCompositer.GetOutput();
+            writer = compositedImageAsDataObject->InstantiateWriter();
+            writer->SetInput(compositedImageAsDataObject);
 
 #ifdef PARALLEL
-          if (dumpRenders && (PAR_Rank() == 0))
+            if (dumpRenders && (PAR_Rank() == 0))
 #else
-          if (dumpRenders)
+            if (dumpRenders)
 #endif
-          {
-              static int numDumps = 0;
-              char tmpName[256];
-              avtFileWriter *fileWriter = new avtFileWriter();
-              avtDataObject_p tmpDob;
+            {
+                static int numDumps = 0;
+                char tmpName[256];
+                avtFileWriter *fileWriter = new avtFileWriter();
+                avtDataObject_p tmpDob;
 
-              sprintf(tmpName, "after_ImageCompositer_%03d.tif", numDumps);
-              fileWriter->SetFormat(TIFF);
-              int useLZW = 6;
-              fileWriter->Write(tmpName, compositedImageAsDataObject,
-                  100, false, useLZW, false);
+                sprintf(tmpName, "after_ImageCompositer_%03d.tif", numDumps);
+                fileWriter->SetFormat(TIFF);
+                int useLZW = 6;
+                fileWriter->Write(tmpName, compositedImageAsDataObject,
+                    100, false, useLZW, false);
 
-              numDumps++;
-          }
-       }
+                numDumps++;
+            }
+        }
 
-       // return it
-       visitTimer->StopTimer(t1, "Total time for NetworkManager::Render");
-       CATCH_RETURN2(1, writer);
+        delete [] cellCounts;
+
+        // return it
+        visitTimer->StopTimer(t1, "Total time for NetworkManager::Render");
+        CATCH_RETURN2(1, writer);
 
     }
     CATCHALL(...)

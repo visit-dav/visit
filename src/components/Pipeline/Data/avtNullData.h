@@ -36,6 +36,9 @@ const char * const AVT_NULL_DATASET_MSG
 //    Mark C. Miller, Wed Feb  4 19:47:30 PST 2004
 //    Added Instance & DerivedCopy, needed by avtDataObject->Clone
 //
+//    Mark C. Miller, Wed Jul  7 11:42:09 PDT 2004
+//    Added method SetWriterShouldMergeParallelStreams and assoc. data member 
+//
 // ****************************************************************************
 
 class PIPELINE_API avtNullData : public avtDataObject
@@ -43,14 +46,17 @@ class PIPELINE_API avtNullData : public avtDataObject
   public:
                               avtNullData(avtDataObjectSource *src, const char *_typeStr = NULL)
                                  : avtDataObject(src)
-                                 { typeStr = _typeStr ? _typeStr : "avtNullData"; };
+                                 { typeStr = _typeStr ? _typeStr : "avtNullData";
+                                   writerShouldMergeParallelStreams = false; };
     virtual                  ~avtNullData();
 
     virtual const char       *GetType(void)  { return typeStr.c_str(); };
     virtual int               GetNumberOfCells(bool polysOnly = false) const { return 0;};
     virtual void              SetType(char *_typeStr )  { typeStr = _typeStr; };
+    void                      SetWriterShouldMergeParallelStreams()
+                                  { writerShouldMergeParallelStreams = true; };
     avtDataObject            *Instance(void);
-    avtDataObjectWriter      *InstantiateWriter(void);
+    avtDataObjectWriter      *InstantiateWriter();
 
   protected:
     virtual void              DerivedCopy(avtDataObject *) {;};
@@ -58,6 +64,7 @@ class PIPELINE_API avtNullData : public avtDataObject
 
   private:
      std::string              typeStr;
+     bool                     writerShouldMergeParallelStreams;
 };
 
 typedef ref_ptr<avtNullData>  avtNullData_p;

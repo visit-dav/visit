@@ -3,35 +3,34 @@
 // ************************************************************************* //
 
 #include <avtMinMaxQuery.h>
-#include <avtParallel.h>
 
+#include <iomanip.h>
 #include <snprintf.h>
-
+#include <string>
 #include <vector>
 #include <float.h>
+#include <strstream.h>
+
 #include <vtkCell.h>
 #include <vtkCellData.h>
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
-#include <vtkMath.h>
 #include <vtkPointData.h>
 #include <vtkPoints.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkVisItUtility.h>
 
 #include <avtCommonDataFunctions.h>
+#include <avtMaterial.h>
 #include <avtMatrix.h>
+#include <avtMetaData.h>
+#include <avtMixedVariable.h>
+#include <avtParallel.h>
 #include <avtQueryableSource.h>
 #include <avtTerminatingSource.h>
-#include <avtVector.h>
 
 #include <NonQueryableInputException.h>
 #include <DebugStream.h>
-
-#ifdef PARALLEL
-#include <mpi.h>
-#include <BufferConnection.h>
-#endif
 
 using std::vector;
 using std::string;
@@ -50,6 +49,9 @@ using std::string;
 //    Kathleen Bonnell, Wed Mar 31 16:13:07 PST 2004
 //    Added args, which control whether we do the Min or Max (or both).
 //
+//    Kathleen Bonnell, Tue Jul  6 17:05:42 PDT 2004 
+//    Init minInfo1/2, maxInfo1/2, nodeMsg1/2 and zoneMsg1/2.
+//
 // ****************************************************************************
 
 avtMinMaxQuery::avtMinMaxQuery(bool domin, bool domax)
@@ -62,6 +64,16 @@ avtMinMaxQuery::avtMinMaxQuery(bool domin, bool domax)
     singleDomain = true;
     doMin = domin;
     doMax = domax;
+
+    nodeMsg1 = "(over all nodes, even those not incident to a zone on the mesh)";
+    nodeMsg2 = "(over only those nodes incident to a zone on the mesh)";
+    zoneMsg1 = "(using only per-zone quantities)";
+    zoneMsg2 = "(using per-material zonal quantities)";
+
+    minInfo1.Initialize(FLT_MAX, "Min");
+    minInfo2.Initialize(FLT_MAX, "Min");
+    maxInfo1.Initialize(-FLT_MAX, "Max");
+    maxInfo2.Initialize(-FLT_MAX, "Max");
 }
 
 // ****************************************************************************
@@ -103,6 +115,42 @@ avtMinMaxQuery::VerifyInput()
     }
 }
 
+// ****************************************************************************
+//  Method: avtMinMaxQuery::PreExecute
+//
+//  Purpose:
+//    This is called before any of the domains are executed.
+//    Retrieves the correct spatial dimension, and resets certain values. 
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   October 27, 2003
+//
+//  Modifications:
+//    Kathleen Bonnell, Tue Jul  6 17:05:42 PDT 2004 
+//    Init minInfo1/2, maxInfo1/2.
+//
+// ****************************************************************************
+
+void
+avtMinMaxQuery::PreExecute()
+{
+    avtDataAttributes &data = GetInput()->GetInfo().GetAttributes();
+    dimension = data.GetSpatialDimension();
+    topoDim = data.GetTopologicalDimension();
+    blockOrigin = data.GetBlockOrigin();
+    cellOrigin = data.GetCellOrigin();
+
+    minMsg = "No Information Found";
+    maxMsg = "No Information Found";
+    elementName = "";
+
+    minInfo1.Initialize(FLT_MAX, "Min");
+    minInfo2.Initialize(FLT_MAX, "Min");
+
+    maxInfo1.Initialize(-FLT_MAX, "Max");
+    maxInfo2.Initialize(-FLT_MAX, "Max");
+}
+
 
 // ****************************************************************************
 //  Method: avtMinMaxQuery::Execute
@@ -129,6 +177,12 @@ avtMinMaxQuery::VerifyInput()
 //    If working with OriginalData, or zones have been preserved, use the
 //    zone number found here, rather than querying the database for it.
 //
+//    Kathleen Bonnell, Tue Jul  6 17:05:42 PDT 2004 
+//    Reworked to store results in MinMaxInfo members.  Added ability
+//    to return multiple min/max results:  
+//        nodal:  connected geometry only, entire mesh
+//        zonal:  per-zone quantities, per-material zonal quantities.
+//    
 // ****************************************************************************
 
 void 
@@ -138,15 +192,21 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
     {
         return;
     }
-
+    int i;
     vtkUnsignedCharArray *ghosts = 
         (vtkUnsignedCharArray*)ds->GetCellData()->GetArray("vtkGhostLevels");
-    bool nodeCentered;
     vtkDataArray *data = NULL;
     string var = queryAtts.GetVariables()[0];
     int varType = queryAtts.GetVarTypes()[0];
+    int ts = queryAtts.GetTimeStep();
     scalarCurve = false;
     bool checkGhost = false;
+    bool haveMin1 = false;
+    bool haveMin2 = false;
+    bool haveMax1 = false;
+    bool haveMax2 = false;
+
+    int domain = (dom < 0 ? 0 : dom);
     if ((data = ds->GetPointData()->GetArray(var.c_str())) != NULL)
     {
         nodeCentered = true;
@@ -183,9 +243,25 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
 
     float val;
     float *x;
-    bool haveMin = false;
-    bool haveMax = false;
     bool zonesPreserved = GetInput()->GetInfo().GetValidity().GetZonesPreserved();
+
+    avtMaterial *mat = NULL;
+    vector<CellMatInfo> matInfo;
+    avtMixedVariable *mv = NULL;
+    if (OriginalData() && !nodeCentered)
+    {
+        avtMetaData *md = GetInput()->GetTerminatingSource()->GetMetaData();
+        mv = md->GetMixedVar(domain, ts);
+        if (mv != NULL)
+        {
+            mat = md->GetMaterial(domain, ts);
+        } 
+    }
+
+    stringVector matNames;
+    floatVector matValues;
+    vtkIdList *cellIds = vtkIdList::New();
+
     for (int elNum = 0; elNum < data->GetNumberOfTuples(); elNum++)
     {
         switch(varType)
@@ -217,88 +293,146 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
         {
             ghost = (ghosts->GetValue(elNum) > 0);
         }
-        if (doMin && val <= minVal && !ghost)
+
+        if (nodeCentered)
         {
-             minElementNum = elNum;
-             minVal = val;
-             haveMin = true;
-        } 
-        if (doMax && val >= maxVal && !ghost)
+            if (doMin) 
+            {
+                if (val <= minInfo1.GetValue())
+                {
+                    haveMin1 = true;
+                    minInfo1.SetElementNum(elNum);
+                    minInfo1.SetValue(val);
+                    minInfo1.SetDomain(domain);
+                }
+                ds->GetPointCells(elNum, cellIds);
+                if (cellIds->GetNumberOfIds() > 0  && 
+                    val <= minInfo2.GetValue())
+                {
+                    haveMin2 = true;
+                    minInfo2.SetElementNum(elNum);
+                    minInfo2.SetValue(val);
+                    minInfo2.SetDomain(domain);
+                }
+                cellIds->Reset();
+            }
+            if (doMax) 
+            {
+                if (val >= maxInfo1.GetValue())
+                {
+                    haveMax1 = true;
+                    maxInfo1.SetElementNum(elNum);
+                    maxInfo1.SetValue(val);
+                    maxInfo1.SetDomain(domain);
+                }
+                ds->GetPointCells(elNum, cellIds);
+                if (cellIds->GetNumberOfIds() > 0  && 
+                    val >= maxInfo2.GetValue())
+                {
+                    haveMax2 = true;
+                    maxInfo2.SetElementNum(elNum);
+                    maxInfo2.SetValue(val);
+                    maxInfo2.SetDomain(domain);
+                }
+                cellIds->Reset();
+            }
+        }
+        else // zoneCentered
         {
-            maxElementNum = elNum;
-            maxVal = val;
-            haveMax = true;
+            if (mat != NULL && elNum >= 0 && elNum < mat->GetNZones())
+            {
+                matInfo = mat->ExtractCellMatInfo(elNum);
+                for (i = 0; i < matInfo.size(); ++i)
+                {
+                    if (matInfo[i].mix_index != -1)
+                    {
+                        matNames.push_back(matInfo[i].name);
+                        matValues.push_back(mv->GetBuffer()[matInfo[i].mix_index]);
+                    }
+                }
+                matInfo.clear();
+            }
+
+            if (doMin && !ghost)
+            {
+                if (val <= minInfo1.GetValue())
+                {
+                    haveMin1 = true;
+                    minInfo1.SetElementNum(elNum);
+                    minInfo1.SetValue(val);
+                    minInfo1.SetDomain(domain);
+                }
+                for (i = 0; i < matValues.size(); i++)
+                {
+                    if (matValues[i] <= minInfo2.GetValue())
+                    {
+                        haveMin2 = true;
+                        minInfo2.SetElementNum(elNum);
+                        minInfo2.SetValue(matValues[i]);
+                        minInfo2.SetDomain(domain);
+                        minInfo2.SetMatName(matNames[i]);
+                    }
+                }
+            }
+            if (doMax && !ghost)
+            {
+                if (val >= maxInfo1.GetValue()) 
+                {
+                    haveMax1 = true;
+                    maxInfo1.SetElementNum(elNum);
+                    maxInfo1.SetValue(val);
+                    maxInfo1.SetDomain(domain);
+                }
+                for (i = 0; i < matValues.size(); i++)
+                {
+                    if (matValues[i] >= maxInfo2.GetValue())
+                    {
+                        haveMax2 = true;
+                        maxInfo2.SetElementNum(elNum);
+                        maxInfo2.SetValue(matValues[i]);
+                        maxInfo2.SetDomain(domain);
+                        maxInfo2.SetMatName(matNames[i]);
+                    }
+                }
+            }
+            if (!matNames.empty())
+                matNames.clear();
+            if (!matValues.empty())
+                matValues.clear();
         } 
     }
 
-    if (haveMin)
+    if (nodeCentered)
     {
-        if (nodeCentered)
-        {
-            GetNodeCoord(ds, minElementNum, minCoord);
-            //
-            // Indicate that the db needs to supply the correct
-            // node number.
-            //
-            if (!scalarCurve && !OriginalData())
-                minElementNum = -1;
-        } 
-        else
-        {
-            GetCellCoord(ds, minElementNum, minCoord);
-            vtkDataArray *origCells = 
-                     ds->GetCellData()->GetArray("avtOriginalCellNumbers"); 
-            if (origCells)
-            {
-                int comp = origCells->GetNumberOfComponents() -1;
-                minElementNum = (int)
-                        origCells->GetComponent(minElementNum, comp);
-            }
-            else 
-            {
-                //
-                // Indicate that the db needs to supply the correct
-                // cell number.
-                //
-                if (!scalarCurve && !OriginalData() && !zonesPreserved) 
-                    minElementNum = -1;
-            }
-        } 
+        if (haveMin1)
+            FinalizeNodeCoord(ds, minInfo1); 
+   
+        if (haveMin2)
+            FinalizeNodeCoord(ds, minInfo2); 
+
+        if (haveMax1)
+            FinalizeNodeCoord(ds, maxInfo1); 
+   
+        if (haveMax2)
+            FinalizeNodeCoord(ds, maxInfo2); 
     }
-    if (haveMax)
+    else // zoneCentered
     {
-        if (nodeCentered)
-        {
-            GetNodeCoord(ds, maxElementNum, maxCoord);
-            if (!scalarCurve && !OriginalData())
-                maxElementNum = -1;
-        } 
-        else
-        {
-            GetCellCoord(ds, maxElementNum, maxCoord);
-                vtkDataArray *origCells = 
+        vtkDataArray *origCells = 
                      ds->GetCellData()->GetArray("avtOriginalCellNumbers"); 
-            if (origCells)
-            {
-                int comp = origCells->GetNumberOfComponents() -1;
-                maxElementNum = (int)
-                        origCells->GetComponent(maxElementNum, comp);
-            }
-            else 
-            {
-                //
-                // Indicate that the db needs to supply the correct
-                // cell number.
-                //
-                if (!scalarCurve && !OriginalData() && !zonesPreserved)
-                    maxElementNum = -1;
-            }
-        } 
+
+        if (haveMin1)
+            FinalizeZoneCoord(ds, origCells, minInfo1, zonesPreserved);
+
+        if (haveMin2)
+            FinalizeZoneCoord(ds, origCells, minInfo2, zonesPreserved);
+
+        if (haveMax1)
+            FinalizeZoneCoord(ds, origCells, maxInfo1, zonesPreserved);
+
+        if (haveMax2)
+            FinalizeZoneCoord(ds, origCells, maxInfo2, zonesPreserved);
     }
-    if (haveMin)
-        minDomain = (dom < 0 ? 0 : dom);
-    if (haveMax)
-        maxDomain = (dom < 0 ? 0 : dom);
 }
 
 
@@ -322,163 +456,75 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
 //    Mark C. Miller, Wed Jun  9 21:50:12 PDT 2004
 //    Eliminated use of MPI_ANY_TAG and modified to use GetUniqueMessageTags
 //
+//    Kathleen Bonnell, Tue Jul  6 17:05:42 PDT 2004 
+//    Removed MPI calls, use methods from avtParallel instead.  Reworked as
+//    result values now stored in MinMaxInfo objects. 
+//
 // ****************************************************************************
 
 void
 avtMinMaxQuery::PostExecute(void)
 {
-    int hasMin, hasMax; 
+    int hasMin1 = 0, hasMax1 = 0; 
+    int hasMin2 = 0, hasMax2 = 0; 
 
-    int ts = queryAtts.GetTimeStep(); 
-    string var = queryAtts.GetVariables()[0];
-
-    hasMin = (ThisProcessorHasMinimumValue(minVal) && minVal != FLT_MAX);
-    hasMax = (ThisProcessorHasMaximumValue(maxVal) && maxVal != -FLT_MAX);
-
-    if (hasMin)
+    hasMin1 = (ThisProcessorHasMinimumValue(minInfo1.GetValue()) && 
+               minInfo1.GetValue() != FLT_MAX);
+    if (hasMin1)
     {
-        if (invTransform != NULL)
-        {
-            avtVector v1(minCoord[0], minCoord[1], minCoord[2]);
-            v1 = (*invTransform) * v1;
-            minCoord[0] = v1.x;
-            minCoord[1] = v1.y;
-            minCoord[2] = v1.z;
-        }
-        if (minElementNum == -1)
-        {
-            src->FindElementForPoint(var.c_str(), ts, minDomain, 
-                     elementName.c_str(), minCoord, minElementNum);
-        }
-        CreateMinMessage();
-    }
-    if (hasMax)
-    {
-        if (invTransform != NULL)
-        {
-            avtVector v1(maxCoord[0], maxCoord[1], maxCoord[2]);
-            v1 = (*invTransform) * v1;
-            maxCoord[0] = v1.x;
-            maxCoord[1] = v1.y;
-            maxCoord[2] = v1.z;
-        }
-        if (maxElementNum == -1)
-            src->FindElementForPoint(var.c_str(), ts, maxDomain, 
-                     elementName.c_str(), maxCoord, maxElementNum);
-        CreateMaxMessage();
+        minInfo1.TransformCoord(invTransform);
+        FindElement(minInfo1);
     }
 
-#ifdef PARALLEL
-    int myRank, numProcs;
-    int size, i;
-    MPI_Comm_rank(MPI_COMM_WORLD, &myRank);
-    MPI_Comm_size(MPI_COMM_WORLD, &numProcs);
-    int mpiHasMinTag  = GetUniqueMessageTag();
-    int mpiMinSizeTag = GetUniqueMessageTag();
-    int mpiMinDataTag = GetUniqueMessageTag();
-    int mpiHasMaxTag  = GetUniqueMessageTag();
-    int mpiMaxSizeTag = GetUniqueMessageTag();
-    int mpiMaxDataTag = GetUniqueMessageTag();
-
-
-    if (myRank == 0)
+    hasMax1 = (ThisProcessorHasMaximumValue(maxInfo1.GetValue()) && 
+               maxInfo1.GetValue() != -FLT_MAX);
+    if (hasMax1)
     {
-        for (i = 1; i < numProcs; i++)
-        {
-            MPI_Status stat, stat2;
-            MPI_Recv(&hasMin, 1, MPI_INT, MPI_ANY_SOURCE,
-                mpiHasMinTag, MPI_COMM_WORLD, &stat);
-            if (hasMin)
-            {
-                MPI_Recv(&size, 1, MPI_INT, stat.MPI_SOURCE, mpiMinSizeTag,
-                             MPI_COMM_WORLD, &stat2);
-                char *buf = new char[size];
-                MPI_Recv(buf, size, MPI_CHAR, stat.MPI_SOURCE, mpiMinDataTag,
-                             MPI_COMM_WORLD, &stat2);
-                minMsg = buf;
-                delete [] buf;
-            }
-            MPI_Recv(&hasMax, 1, MPI_INT, MPI_ANY_SOURCE,
-                         mpiHasMaxTag, MPI_COMM_WORLD, &stat);
-            if (hasMax)
-            {
-                MPI_Recv(&size, 1, MPI_INT, stat.MPI_SOURCE, mpiMaxSizeTag,
-                             MPI_COMM_WORLD, &stat2);
-                char *buf = new char[size];
-                MPI_Recv(buf, size, MPI_CHAR, stat.MPI_SOURCE, mpiMaxDataTag,
-                             MPI_COMM_WORLD, &stat2);
-                maxMsg = buf;
-                delete [] buf;
-            }
-        } // for all procs
+        maxInfo1.TransformCoord(invTransform);
+        FindElement(maxInfo1);
     }
-    else
+
+    hasMin2 = (ThisProcessorHasMinimumValue(minInfo2.GetValue()) && 
+               minInfo2.GetValue() != FLT_MAX);
+    if (hasMin2)
     {
-        MPI_Send(&hasMin, 1, MPI_INT, 0, mpiHasMinTag, MPI_COMM_WORLD);
-        if (hasMin)
-        {
-            size = minMsg.size()+1;
-            char *buf = new char[size];
-            SNPRINTF(buf, size, minMsg.c_str());
-            MPI_Send(&size, 1, MPI_INT, 0, mpiMinSizeTag, MPI_COMM_WORLD);
-            MPI_Send(buf, size, MPI_CHAR, 0, mpiMinDataTag, MPI_COMM_WORLD);
-            delete [] buf;
-        }
-        MPI_Send(&hasMax, 1, MPI_INT, 0, mpiHasMaxTag, MPI_COMM_WORLD);
-        if (hasMax)
-        {
-            size = maxMsg.size()+1;
-            char *buf = new char[size];
-            SNPRINTF(buf, size, maxMsg.c_str());
-            MPI_Send(&size, 1, MPI_INT, 0, mpiMaxSizeTag, MPI_COMM_WORLD);
-            MPI_Send(buf, size, MPI_CHAR, 0, mpiMaxDataTag, MPI_COMM_WORLD);
-            delete [] buf;
-        }
-        return;
+        minInfo2.TransformCoord(invTransform);
+        FindElement(minInfo2);
     }
-#endif
-    CreateResultMessage();
-}
 
+    hasMax2 = (ThisProcessorHasMaximumValue(maxInfo2.GetValue()) && 
+               maxInfo2.GetValue() != -FLT_MAX);
+    if (hasMax2)
+    {
+        maxInfo2.TransformCoord(invTransform);
+        FindElement(maxInfo2);
+    }
 
-// ****************************************************************************
-//  Method: avtMinMaxQuery::PreExecute
-//
-//  Purpose:
-//    This is called before any of the domains are executed.
-//    Retrieves the correct spatial dimension, and resets certain values. 
-//
-//  Programmer: Kathleen Bonnell
-//  Creation:   October 27, 2003
-//
-//  Modifications:
-//
-// ****************************************************************************
+    GetAttToRootProc(minInfo1, hasMin1);
+    GetAttToRootProc(minInfo2, hasMin2);
+    GetAttToRootProc(maxInfo1, hasMax1);
+    GetAttToRootProc(maxInfo2, hasMax2);
+    if (PAR_Rank() == 0)
+    {
+        int nMin = 0, nMax = 0;
+        if (minInfo1.GetElementNum() != -1)
+            nMin++;
+        if ((minInfo2.GetElementNum() != -1) && (minInfo1 != minInfo2))
+            nMin++;
+        if (maxInfo1.GetElementNum() != -1)
+            nMax++;
+        if ((maxInfo2.GetElementNum() != -1) && (maxInfo1 != maxInfo2))
+            nMax++;
 
-void
-avtMinMaxQuery::PreExecute()
-{
-    avtDataAttributes &data = GetInput()->GetInfo().GetAttributes();
-    dimension = data.GetSpatialDimension();
-    topoDim = data.GetTopologicalDimension();
-    blockOrigin = data.GetBlockOrigin();
-    cellOrigin = data.GetCellOrigin();
-
-    minVal = FLT_MAX;
-    maxVal = -FLT_MAX;
-    minElementNum = -1;
-    maxElementNum = -1;
-    minDomain = -1;
-    maxDomain = -1;
-    minCoord[0] = 0.; // x
-    minCoord[1] = 0.; // y
-    minCoord[2] = 0.; // z
-    maxCoord[0] = 0.; // x
-    maxCoord[1] = 0.; // y
-    maxCoord[2] = 0.; // z
-    minMsg = "No Information Found";
-    maxMsg = "No Information Found";
-    elementName = "";
+        nMin = (nMin == 0 ? nMin : (nMax > nMin ? nMax : nMin));
+        nMax = (nMax == 0 ? nMax : (nMin > nMax ? nMin : nMax));
+       
+        doubleVector resVals;
+        CreateMessage(nMin, minInfo1, minInfo2, minMsg, resVals);
+        CreateMessage(nMax, maxInfo1, maxInfo2, maxMsg, resVals);
+        CreateResultMessage((nMin > nMax ? nMin : nMax));
+        SetResultValues(resVals);
+    }
 }
 
 
@@ -583,128 +629,7 @@ avtMinMaxQuery::GetCellCoord(vtkDataSet *ds, const int id, float coord[3])
 
 
 // ****************************************************************************
-//  Method: avtMinMaxQuery::CreateMinMessage
-//
-//  Purpose:
-//    Creates a string containing information about the minimum value. 
-//
-//  Programmer: Kathleen Bonnell
-//  Creation:   October 28, 2003 
-//
-//  Modifications:
-//    Kathleen Bonnell, Mon Dec 22 14:48:57 PST 2003
-//    Retrieve DomainName and use it in output, if available.
-//
-// ****************************************************************************
-
-void
-avtMinMaxQuery::CreateMinMessage()
-{
-    char buff[256]; 
-    if (strcmp(elementName.c_str(), "zone") == 0)
-        minElementNum += cellOrigin;
-
-    string var = queryAtts.GetVariables()[0]; 
-    minMsg = var + " -- Min = ";
-    SNPRINTF(buff, 256, "%f (%s %d ", minVal, 
-             elementName.c_str(), minElementNum);
-    minMsg += buff; 
-    if (!singleDomain)
-    {
-        string domainName;
-        src->GetDomainName(var, queryAtts.GetTimeStep(), minDomain, domainName);
-     
-        if (domainName.size() > 0)
-        { 
-            minMsg += "in " + domainName + " " ;
-        }
-        else 
-        { 
-            SNPRINTF(buff, 256, "in domain %d ", minDomain+blockOrigin);
-            minMsg += buff;
-        }
-    }
-
-    if (queryAtts.GetVarTypes()[0] == QueryAttributes::Curve || scalarCurve)
-    { 
-        SNPRINTF(buff, 256, "at coord <%f>)", minCoord[0]);
-    }
-    else if (dimension == 2)
-    {
-        SNPRINTF(buff, 256, "at coord <%f, %f>)", minCoord[0], 
-                 minCoord[1]);
-    }
-    else
-    {
-        SNPRINTF(buff, 256, "at coord <%f, %f, %f>)", minCoord[0], 
-                 minCoord[1], minCoord[2]);
-    }
-    minMsg += buff;
-}
-
-// ****************************************************************************
-//  Method: avtMinMaxQuery::CreateMaxMessage
-//
-//  Purpose:
-//    Creates a string containing information about the maximum value. 
-//
-//  Programmer: Kathleen Bonnell
-//  Creation:   October 28, 2003 
-//
-//  Modifications:
-//    Kathleen Bonnell, Mon Dec 22 14:48:57 PST 2003
-//    Retrieve DomainName and use it in output, if available.
-//
-// ****************************************************************************
-
-void
-avtMinMaxQuery::CreateMaxMessage()
-{
-    char buff[256]; 
-    if (strcmp(elementName.c_str(), "zone") == 0)
-        maxElementNum += cellOrigin;
- 
-    string var = queryAtts.GetVariables()[0]; 
-    maxMsg = var + " -- Max = ";
-    SNPRINTF(buff, 256, "%f (%s %d ", maxVal, elementName.c_str(), 
-             maxElementNum);
-    maxMsg += buff; 
-
-    if (!singleDomain)
-    {
-        string domainName;
-        src->GetDomainName(var, queryAtts.GetTimeStep(), maxDomain, domainName);
-     
-        if (domainName.size() > 0)
-        { 
-            maxMsg += "in " + domainName + " ";
-        }
-        else 
-        { 
-            SNPRINTF(buff, 256, "in domain %d ", maxDomain+blockOrigin);
-            maxMsg += buff;
-        }
-    }
-
-    if (queryAtts.GetVarTypes()[0] == QueryAttributes::Curve || scalarCurve)
-    { 
-        SNPRINTF(buff, 256, "at coord <%f>)", maxCoord[0]);
-    }
-    else if (dimension == 2)
-    {
-        SNPRINTF(buff, 256, "at coord <%f, %f>)", maxCoord[0], 
-                 maxCoord[1]);
-    }
-    else
-    {
-        SNPRINTF(buff, 256, "at coord <%f, %f, %f>)", maxCoord[0], 
-                 maxCoord[1], maxCoord[2]);
-    }
-    maxMsg += buff;
-}
-
-// ****************************************************************************
-//  Method: avtMinMaxQuery::CreateMaxMessage
+//  Method: avtMinMaxQuery::CreateResultMessage
 //
 //  Purpose:
 //    Concatenates the Min and Max messages.  
@@ -719,30 +644,270 @@ avtMinMaxQuery::CreateMaxMessage()
 // ****************************************************************************
 
 void
-avtMinMaxQuery::CreateResultMessage()
+avtMinMaxQuery::CreateResultMessage(const int n)
 {
     string msg = "\n";
     if (doMin)
     {
         if (doMax)
         {
-            doubleVector vals;
-            msg += minMsg + "\n" + maxMsg + "\n\n";
-            vals.push_back(minVal);
-            vals.push_back(maxVal);
-            SetResultValues(vals);
+            if (n > 1)
+                msg += minMsg + "\n\n" + maxMsg + "\n\n";
+            else 
+                msg += minMsg + "\n"   + maxMsg + "\n\n";
+
         }
         else 
-        {
             msg += minMsg + "\n\n";
-            SetResultValue(minVal);
-        }
     }
     else 
     {
         msg += maxMsg + "\n\n";
-        SetResultValue(maxVal);
     }
     SetResultMessage(msg);
 }
 
+
+// ****************************************************************************
+//  Method: avtMinMaxQuery::InfoToString
+//
+//  Purpose:
+//    Creates a string from the passed info.
+//
+//  Arguments:
+//    info      The MinMaxInfo to use in creating the string.
+//   
+//  Returns 
+//    A string formatted for output to user.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   July 1, 2004 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+string 
+avtMinMaxQuery::InfoToString(const MinMaxInfo &info)
+{
+    ostrstream os;
+    int elNum = info.GetElementNum();
+
+    if (!nodeCentered)
+        elNum += cellOrigin;
+  
+    os.setf(ios::fixed);
+    os.setf(ios::showpoint);
+ 
+    os << info.GetValue() << " (" << elementName << " " << elNum << " ";
+
+
+    if (info.GetMatName() != "NO_MAT")
+        os << "for material " << info.GetMatName() << " ";
+
+    if (!singleDomain)
+    {
+        string domainName;
+        src->GetDomainName(queryAtts.GetVariables()[0], queryAtts.GetTimeStep(), 
+                           info.GetDomain(), domainName);
+     
+        if (domainName.size() > 0)
+        { 
+            os << "in " << domainName << " " ;
+        }
+        else 
+        { 
+            os << "in domain " <<  info.GetDomain()+blockOrigin << " ";
+        }
+    }
+
+    os << "at coord <";
+
+    const float *c = info.GetCoord();
+    if (queryAtts.GetVarTypes()[0] == QueryAttributes::Curve || scalarCurve)
+    { 
+        os << c[0];
+    }
+    else if (dimension == 2)
+    {
+        os << c[0] << ", " << c[1];
+    }
+    else
+    {
+        os << c[0] << ", " << c[1] << ", " << c[2];
+    }
+    os << ">)" << ends;
+    return os.str();
+}
+
+
+// ****************************************************************************
+//  Method: avtMinMaxQuery::CreateMessage
+//
+//  Purpose:
+//    Creates strings from passed info.
+//
+//  Arguments:
+//    nMsg      The number of info's to use in creating the string.
+//    info1     One MinMaxInfo.
+//    info2     Another MinMaxInfo.
+//    msg       A place to store the string.
+//    vals      A place to store the values.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   July 1, 2004 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtMinMaxQuery::CreateMessage(const int nMsg, const MinMaxInfo &info1,
+                              const MinMaxInfo &info2, string &msg,
+                              doubleVector &vals) 
+{
+    if (nMsg == 0) 
+        return;
+
+    string var = queryAtts.GetVariables()[0]; 
+
+    if (nMsg == 1)
+    {
+        msg =  var + " -- " + info1.GetType() + " = ";
+        msg += InfoToString(info1);
+        vals.push_back(info1.GetValue());
+    }
+    else 
+    {
+        if (nodeCentered)
+        {
+            msg =  var + " -- " + info1.GetType() + " " + nodeMsg1;
+            msg +=  "\n           = ";
+            msg += InfoToString(info1);
+            msg =  msg + "\n" + var + " -- " + info2.GetType() + " " + nodeMsg2; 
+            msg +=  "\n           = ";
+            msg += InfoToString(info2);
+            vals.push_back(info1.GetValue());
+        }
+        else 
+        {
+            msg =  var + " -- " + info1.GetType() + " " + zoneMsg1;
+            msg +=  "\n           = ";
+            msg += InfoToString(info1);
+            msg =  msg + "\n" + var + " -- " + info2.GetType() + " " + zoneMsg2;
+            msg +=  "\n           = ";
+            msg += InfoToString(info2);
+            vals.push_back(info2.GetValue());
+        }
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtMinMaxQuery::FinalizeNodeCoord
+//
+//  Purpose:
+//    Determines the node coordinate for the passed info.
+//
+//  Arguments:
+//    info      The info that needs to be updated. 
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   July 1, 2004 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void  
+avtMinMaxQuery::FinalizeNodeCoord(vtkDataSet *ds, MinMaxInfo &info)
+{
+    float *c = info.GetCoord();
+    GetNodeCoord(ds, info.GetElementNum(), c);
+    info.SetCoord(c);
+    //
+    // Indicate that the db needs to supply the correct
+    // node number.
+    //
+    if (!scalarCurve && !OriginalData())
+        info.SetElementNum(-1);
+} 
+
+
+// ****************************************************************************
+//  Method: avtMinMaxQuery::FinalizeZoneCoord
+//
+//  Purpose:
+//    Determines the zone coordinate, and resets the element number if 
+//    appropriate. 
+// 
+//  Arguments: 
+//    oCells    An array containinng original cell numbers (may be NULL)
+//    info      The info that needs to be updated. 
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   July 1, 2004 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtMinMaxQuery::FinalizeZoneCoord(vtkDataSet *ds, vtkDataArray *oCells, 
+                               MinMaxInfo &info, bool zonesPreserved)
+{
+    int comp = -1;
+
+    if (oCells)
+        comp  = oCells->GetNumberOfComponents() -1;
+
+    int elNum = info.GetElementNum();
+    float *c = info.GetCoord();
+    GetCellCoord(ds, elNum, c);
+
+    if (oCells)
+    {
+        elNum =(int)oCells->GetComponent(elNum, comp);
+    }
+    else 
+    {
+        //
+        // Indicate that the db needs to supply the correct
+        // cell number.
+        //
+        if (!scalarCurve && !OriginalData() && !zonesPreserved) 
+            elNum = -1;
+    }
+    info.SetElementNum(elNum);
+} 
+
+
+// ****************************************************************************
+//  Method: avtMinMaxQuery::FindElement
+//
+//  Purpose:
+//    Queries the database for the element number associated with
+//    the coord of MinMaxInfo.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   July 1, 2004 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtMinMaxQuery::FindElement(MinMaxInfo &info)
+{
+    int elNum = info.GetElementNum();
+    if (elNum == -1)
+    {
+        string var = queryAtts.GetVariables()[0];
+        int ts = queryAtts.GetTimeStep();
+        float *c = info.GetCoord(); 
+        src->FindElementForPoint(var.c_str(), ts, info.GetDomain(), 
+                                 elementName.c_str(), c, elNum); 
+        info.SetElementNum(elNum);
+        info.SetCoord(c);
+    }
+}

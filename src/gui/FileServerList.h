@@ -130,6 +130,9 @@ class MessageAttributes;
 //   Brad Whitlock, Fri Mar 12 14:21:37 PST 2004
 //   Added SendKeepAlives.
 //
+//   Jeremy Meredith, Wed Jul  7 17:03:33 PDT 2004
+//   Made the selection filter global to all hosts.
+//
 // ****************************************************************************
 
 class GUI_API FileServerList : public AttributeSubject
@@ -137,7 +140,6 @@ class GUI_API FileServerList : public AttributeSubject
     typedef struct
     {
         std::string    path;
-        std::string    filter;
         MDServerProxy *server;
     } ServerInfo;
 
@@ -252,6 +254,7 @@ private:
     ServerMap   servers;
     std::string activeHost;
     bool        connectingServer;
+    std::string filter;
 
     // The file list for the current host.
     MDServerProxy::FileList fileList;

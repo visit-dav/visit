@@ -60,6 +60,9 @@ static const int FILE_CLOSE = 4;
 //   Brad Whitlock, Mon Oct 13 10:01:07 PDT 2003
 //   I initialized recentPathsFlag.
 //
+//   Jeremy Meredith, Wed Jul  7 17:04:03 PDT 2004
+//   I made the filter be global to all hosts.
+//
 // ****************************************************************************
 
 FileServerList::FileServerList() : AttributeSubject("bbbbbibbb"), servers(),
@@ -77,6 +80,7 @@ FileServerList::FileServerList() : AttributeSubject("bbbbbibbb"), servers(),
     automaticFileGroupingFlag = true;
     recentPathsFlag = false;
     connectingServer = false;
+    filter = "*";
 
     // Initialize some callback functions.
     connectCallback = 0;
@@ -212,6 +216,9 @@ FileServerList::SelectAll()
 //   Brad Whitlock, Thu Mar 27 09:23:47 PDT 2003
 //   I made it use the file grouping flag.
 //
+//   Jeremy Meredith, Wed Jul  7 17:04:03 PDT 2004
+//   I made the filter be global to all hosts.
+//
 // *************************************************************************************
 
 void
@@ -235,7 +242,7 @@ FileServerList::Initialize()
         TRY
         {
             // Try to get the file list from the MD Server.
-            fileList = *(info->second->server->GetFileList(info->second->filter,
+            fileList = *(info->second->server->GetFileList(filter,
                 automaticFileGroupingFlag));
             Select(3, (void *)&fileListFlag);
 
@@ -374,6 +381,9 @@ FileServerList::Notify()
 //   Brad Whitlock, Mon Jun 23 11:37:03 PDT 2003
 //   I renamed the method and removed some code.
 //
+//   Jeremy Meredith, Wed Jul  7 17:04:03 PDT 2004
+//   I made the filter be global to all hosts.
+//
 // ****************************************************************************
 
 void
@@ -409,7 +419,7 @@ FileServerList::SilentNotify()
                     {
                         // Get the file list from the MDServerProxy.
                         const MDServerProxy::FileList *fl =
-                            info->server->GetFileList(info->filter,
+                            info->server->GetFileList(filter,
                                                       automaticFileGroupingFlag);
                         // copy the file list into the local file list.
                         fileList = *fl;
@@ -440,7 +450,7 @@ FileServerList::SilentNotify()
 
                         // Copy the file list into the local file list.
                         const MDServerProxy::FileList *fl =
-                            info->server->GetFileList(info->filter,
+                            info->server->GetFileList(filter,
                                                       automaticFileGroupingFlag);
                         fileList = *fl;
                         Select(3, (void *)&fileListFlag);
@@ -495,23 +505,21 @@ FileServerList::SilentNotify()
 
             TRY
             {
-                // Save the old path and filter.
+                // Save the old path
                 std::string oldPath(info->path);
-                std::string oldFilter(info->filter);
 
                 // Try and restart the mdserver.
                 CloseServer(activeHost);
                 StartServer(activeHost);
 
                 // If the server was added to the server map, reset the info
-                // pointer and set the path and filter.
+                // pointer and set the path
                 if((pos = servers.find(activeHost)) != servers.end())
                 {
                     info = servers[activeHost];
 
-                    // Set the path and filter.
+                    // Set the path
                     SetPath(oldPath);
-                    SetFilter(oldFilter);
                     hostFlag = false;
                 }
                 else
@@ -579,6 +587,9 @@ FileServerList::SilentNotify()
 //   it will not exist.  By postponing the FQ lookup until trying to match a
 //   host profile, this lets ssh go to host names the users actually entered.
 //
+//   Jeremy Meredith, Wed Jul  7 17:04:03 PDT 2004
+//   I made the filter be global to all hosts.
+//
 // ****************************************************************************
 
 void
@@ -621,9 +632,8 @@ FileServerList::SetHost(const std::string &host)
         fileAction = FILE_NOACTION;
         Select(5, (void *)&fileAction);
 
-        // Use the path & filter for the new host.
+        // Use the path for the new host.
         SetPath(servers[host]->path);
-        SetFilter(servers[host]->filter);
     }
     CATCH(BadHostException)
     {
@@ -698,6 +708,9 @@ FileServerList::SetHost(const std::string &host)
 //   Brad Whitlock, Fri Mar 12 14:26:41 PST 2004
 //   Added connectingServer member.
 //
+//   Jeremy Meredith, Wed Jul  7 17:04:03 PDT 2004
+//   I made the filter be global to all hosts.
+//
 // ****************************************************************************
 
 void
@@ -720,7 +733,6 @@ FileServerList::StartServer(const std::string &host)
 
         // Get the current directory from the server
         info->path = info->server->GetDirectory();
-        info->filter = std::string("*");
 
         // Add the information about the new server to the 
         // server map.
@@ -899,25 +911,23 @@ FileServerList::SendKeepAlives()
 //   Brad Whitlock, Mon Aug 19 13:34:40 PST 2002
 //   Set the file action to no action.
 //   
+//   Jeremy Meredith, Wed Jul  7 17:04:03 PDT 2004
+//   I made the filter be global to all hosts.
+//
 // ****************************************************************************
 
 void
-FileServerList::SetFilter(const std::string &filter)
+FileServerList::SetFilter(const std::string &newFilter)
 {
-    // If the activeHost is in the server map, set its filter.
-    ServerMap::iterator pos;
-    if((pos = servers.find(activeHost)) != servers.end())
+    if(newFilter != filter)
     {
-        if(pos->second->filter != filter)
-        {
-            // Set the file action to none.
-            fileAction = FILE_NOACTION;
-            Select(5, (void *)&fileAction);
+        // Set the file action to none.
+        fileAction = FILE_NOACTION;
+        Select(5, (void *)&fileAction);
 
-            filterFlag = true;
-            pos->second->filter = filter;
-            Select(2, (void *)&filterFlag);
-        }
+        filterFlag = true;
+        filter = newFilter;
+        Select(2, (void *)&filterFlag);
     }
 }
 
@@ -1844,6 +1854,9 @@ FileServerList::GetVirtualFileDefinitionSize(const QualifiedFilename &name) cons
 //   VisIt from automatically logging you into a remote machine from having
 //   saved your settings while visiting that remote computer.
 //
+//   Jeremy Meredith, Wed Jul  7 17:04:03 PDT 2004
+//   I made the filter be global to all hosts.
+//
 // ****************************************************************************
 
 bool
@@ -1862,7 +1875,6 @@ FileServerList::CreateNode(DataNode *parentNode, bool, bool)
     //
     fsNode->AddNode(new DataNode("host", activeHost));
     fsNode->AddNode(new DataNode("path", servers[activeHost]->path));
-    fsNode->AddNode(new DataNode("filter", servers[activeHost]->filter));
 #else
     //
     // Save the path and filter for localhost. If localhost is not in the
@@ -1872,9 +1884,9 @@ FileServerList::CreateNode(DataNode *parentNode, bool, bool)
     if(info != servers.end())
     {
         fsNode->AddNode(new DataNode("path", info->second->path));
-        fsNode->AddNode(new DataNode("filter", info->second->filter));
     }
 #endif
+    fsNode->AddNode(new DataNode("filter", filter));
     fsNode->AddNode(new DataNode("useCurrentDir", useCurrentDirectoryFlag));
     fsNode->AddNode(new DataNode("automaticFileGrouping", automaticFileGroupingFlag));
 
@@ -1930,6 +1942,9 @@ FileServerList::CreateNode(DataNode *parentNode, bool, bool)
 //   I disabled VisIt's ability to set the host from a config file. This
 //   means that you cannot any longer have VisIt automatically log you into
 //   a remote computer.
+//
+//   Jeremy Meredith, Wed Jul  7 17:04:03 PDT 2004
+//   I made the filter be global to all hosts.
 //
 // ****************************************************************************
 
@@ -2110,16 +2125,15 @@ FileServerList::GetRecentPaths(const std::string &host) const
     return pos->second;
 }
 
+// Modifications:
+//
+//   Jeremy Meredith, Wed Jul  7 17:04:03 PDT 2004
+//   I made the filter be global to all hosts.
+//
 const std::string &
 FileServerList::GetFilter() const
 {
-    static std::string retval("*");
-
-    ServerMap::const_iterator pos;
-    if((pos = servers.find(activeHost)) != servers.end())
-        retval = pos->second->filter;
-
-    return retval;
+    return filter;
 }
 
 const MDServerProxy::FileList &

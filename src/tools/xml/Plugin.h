@@ -40,6 +40,9 @@
 //    Added ability to disable plugins by default.
 //    Added avt files for databases.
 //
+//    Jeremy Meredith, Wed Jul  7 17:08:03 PDT 2004
+//    Allow for mdserver-specific code in a plugin's source files.
+//
 // ****************************************************************************
 
 class Plugin
@@ -55,6 +58,7 @@ class Plugin
 
     bool haswriter;
     bool enabledByDefault;
+    bool has_MDS_specific_code;
 
     vector<QString> cxxflags;
     vector<QString> ldflags;
@@ -85,6 +89,7 @@ class Plugin
         : name(n), type(t), label(l), version(v), vartype(vt), dbtype(dt), iconFile(ifile),haswriter(hw), atts(NULL)
     {
         enabledByDefault = true;
+        has_MDS_specific_code = false;
         customgfiles = false;
         customsfiles = false;
         customvfiles = false;
@@ -132,6 +137,7 @@ class Plugin
         WriteTagAttr(out, "label", label);
         WriteTagAttr(out, "version", version);
         WriteTagAttr(out, "enabled", Bool2Text(enabledByDefault));
+        WriteTagAttr(out, "mdspecificcode", Bool2Text(has_MDS_specific_code));
 
         if (type == "plot")
         {

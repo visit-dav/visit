@@ -416,6 +416,10 @@ float avtGradientFilter::EvaluateValue(float x, float y, float z,
 //  Programmer: Hank Childs
 //  Creation:   December 13, 2003
 //
+//  Modifications:
+//    Jeremy Meredith, Fri Jul  2 15:58:01 PDT 2004
+//    Added a check to make sure the scalars existed before proceeding.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -440,6 +444,12 @@ avtGradientFilter::RectilinearGradient(vtkRectilinearGrid *rg)
     if (s == NULL)
     {
          s = rg->GetCellData()->GetScalars();
+         if (s == NULL)
+         {
+             EXCEPTION1(ExpressionException, "the scalar variable could not"
+                                             " be found.");
+         }
+
          isNodal = false;
          dims[0] -= 1;
          dims[1] -= 1;

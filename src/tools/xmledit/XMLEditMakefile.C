@@ -18,14 +18,17 @@
 //  Creation:    October 17, 2002
 //
 //  Modifications:
-//      Sean Ahern, Fri Nov 15 15:25:23 PST 2002
-//      Added "widget files" so we can have custom GUI elements.
+//    Sean Ahern, Fri Nov 15 15:25:23 PST 2002
+//    Added "widget files" so we can have custom GUI elements.
+//
+//    Jeremy Meredith, Wed Jul  7 17:08:03 PDT 2004
+//    Allow for mdserver-specific code in a plugin's source files.
 //
 // ****************************************************************************
 XMLEditMakefile::XMLEditMakefile(QWidget *p, const QString &n)
     : QFrame(p, n)
 {
-    QGridLayout *topLayout = new QGridLayout(this, 9,2, 5);
+    QGridLayout *topLayout = new QGridLayout(this, 10,2, 5);
     int row = 0;
 
     topLayout->addWidget(new QLabel("CXXFLAGS", this), row, 0);
@@ -79,6 +82,10 @@ XMLEditMakefile::XMLEditMakefile(QWidget *p, const QString &n)
     topLayout->addMultiCellWidget(WFiles, row,row, 1,2);
     row++;
 
+    mdSpecificCode = new QCheckBox("Plugin has code specific to the MDServer", this);
+    topLayout->addMultiCellWidget(mdSpecificCode, row,row, 0,2);
+    row++;
+
     topLayout->setRowStretch(row, 100);
     row++;
 
@@ -88,7 +95,7 @@ XMLEditMakefile::XMLEditMakefile(QWidget *p, const QString &n)
             this, SLOT(ldflagsTextChanged(const QString&)));
     connect(LIBS, SIGNAL(textChanged(const QString&)),
             this, SLOT(libsTextChanged(const QString&)));
-    connect(GFiles, SIGNAL(textChanged(const QString&)),
+   connect(GFiles, SIGNAL(textChanged(const QString&)),
             this, SLOT(gfilesTextChanged(const QString&)));
     connect(SFiles, SIGNAL(textChanged(const QString&)),
             this, SLOT(sfilesTextChanged(const QString&)));
@@ -112,6 +119,8 @@ XMLEditMakefile::XMLEditMakefile(QWidget *p, const QString &n)
             this, SLOT(customefilesChanged()));
     connect(customWFiles, SIGNAL(clicked()),
             this, SLOT(customwfilesChanged()));
+    connect(mdSpecificCode, SIGNAL(clicked()),
+            this, SLOT(mdSpecificCodeChanged()));
 }
 
 // ****************************************************************************
@@ -123,8 +132,12 @@ XMLEditMakefile::XMLEditMakefile(QWidget *p, const QString &n)
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
-//      Sean Ahern, Fri Nov 15 15:25:23 PST 2002
-//      Added "widget files" so we can have custom GUI elements.
+//  Modifications:
+//    Sean Ahern, Fri Nov 15 15:25:23 PST 2002
+//    Added "widget files" so we can have custom GUI elements.
+//
+//    Jeremy Meredith, Wed Jul  7 17:08:03 PDT 2004
+//    Allow for mdserver-specific code in a plugin's source files.
 //
 // ****************************************************************************
 void
@@ -168,6 +181,7 @@ XMLEditMakefile::UpdateWindowContents()
         else
             WFiles->setText(JoinValues(p->defaultwfiles, ' '));
         customWFiles->setChecked(p->customwfiles);
+        mdSpecificCode->setChecked(p->has_MDS_specific_code);
     }
 
     UpdateWindowSensitivity();
@@ -184,8 +198,12 @@ XMLEditMakefile::UpdateWindowContents()
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
-//      Sean Ahern, Fri Nov 15 15:25:23 PST 2002
-//      Added "widget files" so we can have custom GUI elements.
+//  Modifications:
+//    Sean Ahern, Fri Nov 15 15:25:23 PST 2002
+//    Added "widget files" so we can have custom GUI elements.
+//
+//    Jeremy Meredith, Wed Jul  7 17:08:03 PDT 2004
+//    Allow for mdserver-specific code in a plugin's source files.
 //
 // ****************************************************************************
 void
@@ -208,6 +226,7 @@ XMLEditMakefile::UpdateWindowSensitivity()
     customEFiles->setEnabled(plugin);
     WFiles->setEnabled(plugin && xmldoc->plugin->customwfiles);
     customWFiles->setEnabled(plugin);
+    mdSpecificCode->setEnabled(plugin);
 }
 
 // ****************************************************************************
@@ -223,8 +242,12 @@ XMLEditMakefile::UpdateWindowSensitivity()
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
-//      Sean Ahern, Fri Nov 15 15:25:23 PST 2002
-//      Added "widget files" so we can have custom GUI elements.
+//  Modifications:
+//    Sean Ahern, Fri Nov 15 15:25:23 PST 2002
+//    Added "widget files" so we can have custom GUI elements.
+//
+//    Jeremy Meredith, Wed Jul  7 17:08:03 PDT 2004
+//    Allow for mdserver-specific code in a plugin's source files.
 //
 // ****************************************************************************
 void
@@ -245,6 +268,7 @@ XMLEditMakefile::BlockAllSignals(bool block)
     customEFiles->blockSignals(block);
     WFiles->blockSignals(block);
     customWFiles->blockSignals(block);
+    mdSpecificCode->blockSignals(block);
 }
 
 // ----------------------------------------------------------------------------
@@ -450,5 +474,19 @@ void
 XMLEditMakefile::customwfilesChanged()
 {
     xmldoc->plugin->customwfiles = customWFiles->isChecked();
+    UpdateWindowContents();
+}
+
+// ****************************************************************************
+//  Method:  XMLEditMakefile::mdSpecificCodeChanged
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    July  7, 2004
+//
+// ****************************************************************************
+void
+XMLEditMakefile::mdSpecificCodeChanged()
+{
+    xmldoc->plugin->has_MDS_specific_code = mdSpecificCode->isChecked();
     UpdateWindowContents();
 }

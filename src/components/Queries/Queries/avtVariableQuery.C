@@ -16,17 +16,13 @@
 #include <vtkUnsignedCharArray.h>
 
 #include <avtExpressionEvaluatorFilter.h>
+#include <avtParallel.h>
 #include <avtTerminatingSource.h>
 #include <PickVarInfo.h>
 #include <NonQueryableInputException.h>
 
 #include <DebugStream.h>
 
-#ifdef PARALLEL
-#include <mpi.h>
-#include <avtParallel.h>
-#include <BufferConnection.h>
-#endif
 
 using std::vector;
 using std::string;
@@ -205,64 +201,17 @@ avtVariableQuery::Execute(vtkDataSet *ds, const int dom)
 //    Mark C. Miller, Wed Jun  9 21:50:12 PDT 2004
 //    Eliminated use of MPI_ANY_TAG and modified to use GetUniqueMessageTags
 //
+//    Kathleen Bonnell, Tue Jul  6 15:32:32 PDT 2004 
+//    Removed MPI calls, use GetAttToRootProc. 
+//
 // ****************************************************************************
 
 void
 avtVariableQuery::PostExecute(void)
 {
-#ifdef PARALLEL
-    int myRank, numProcs;
-    int hasFulfilledPick;
-    int size, i;
-    BufferConnection b;
-    unsigned char *buf;
- 
-    MPI_Comm_rank(MPI_COMM_WORLD, &myRank);
-    MPI_Comm_size(MPI_COMM_WORLD, &numProcs);
-    int mpiHasFullfilledPickTag = GetUniqueMessageTag();
-    int mpiSizeTag              = GetUniqueMessageTag();
-    int mpiDataTag              = GetUniqueMessageTag();
-    if (myRank == 0)
-    {
-        for (i = 1; i < numProcs; i++)
-        {
-            MPI_Status stat, stat2;
-            MPI_Recv(&hasFulfilledPick, 1, MPI_INT, MPI_ANY_SOURCE,
-                     mpiHasFullfilledPickTag, MPI_COMM_WORLD, &stat);
-            if (hasFulfilledPick)
-            {
-                MPI_Recv(&size, 1, MPI_INT, stat.MPI_SOURCE, mpiSizeTag,
-                         MPI_COMM_WORLD, &stat2);
-                buf = new unsigned char[size];
-                MPI_Recv(buf, size, MPI_UNSIGNED_CHAR, stat.MPI_SOURCE, mpiDataTag,
-                         MPI_COMM_WORLD, &stat2);
-                b.Append(buf, size);
-                pickAtts.Read(b);
-                delete [] buf;
-            }
-        }
-    }
-    else
-    {
-        hasFulfilledPick = (int) pickAtts.GetFulfilled();
-        MPI_Send(&hasFulfilledPick, 1, MPI_INT, 0, mpiHasFullfilledPickTag, MPI_COMM_WORLD);
-        if (hasFulfilledPick)
-        {
-            pickAtts.SelectAll();
-            pickAtts.Write(b);
-            size = pickAtts.CalculateMessageSize(b);
-            buf = new unsigned char[size];
-            for (int i = 0; i < size; ++i)
-                b.Read(buf+i);
- 
-            MPI_Send(&size, 1, MPI_INT, 0, mpiSizeTag, MPI_COMM_WORLD);
-            MPI_Send(buf, size, MPI_UNSIGNED_CHAR, 0, mpiDataTag, MPI_COMM_WORLD);
-            delete [] buf;
-        }
-    }
-
-#endif
-
+    int hasFulfilledPick = (int) pickAtts.GetFulfilled();
+    GetAttToRootProc(pickAtts, hasFulfilledPick);
+   
     if (pickAtts.GetFulfilled())
     {
         // Special indication that the pick point should not be displayed.

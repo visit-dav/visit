@@ -34,6 +34,9 @@
 #   Brad Whitlock, Tue Sep 30 13:41:00 PST 2003
 #   I removed -lXext since it is not needed.
 #
+#   Jeremy Meredith, Wed Jul  7 12:12:52 PDT 2004
+#   I changed _ser.o to simply be .o.
+#
 ##############################################################################
 
 ##
@@ -54,7 +57,7 @@ LIBDEP=
 ## Files...
 ##
 SRC=convert.C
-SEROBJ=$(SRC:.C=_ser.o)
+SEROBJ=$(SRC:.C=.o)
 PAROBJ=$(SRC:.C=_par.o)
 
 

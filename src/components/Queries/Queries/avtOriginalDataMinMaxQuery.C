@@ -26,15 +26,15 @@
 //    Kathleen Bonnell, Wed Apr 14 18:05:08 PDT 2004 
 //    Added condense filter. 
 //
+//    Kathleen Bonnell, Tue Jun 29 08:14:35 PDT 2004 
+//    Removed condense filter. 
+//
 // ****************************************************************************
 
 avtOriginalDataMinMaxQuery::avtOriginalDataMinMaxQuery(bool min, bool max)
     : avtMinMaxQuery(min, max)
 {
     eef = new avtExpressionEvaluatorFilter;
-    condense = new avtCondenseDatasetFilter;
-    condense->KeepAVTandVTK(true);
-    condense->BypassHeuristic(true);
 }
 
 
@@ -51,6 +51,9 @@ avtOriginalDataMinMaxQuery::avtOriginalDataMinMaxQuery(bool min, bool max)
 //    Kathleen Bonnell, Wed Apr 14 18:05:08 PDT 2004 
 //    Added condense filter. 
 //
+//    Kathleen Bonnell, Tue Jun 29 08:14:35 PDT 2004 
+//    Removed condense filter. 
+//
 // ****************************************************************************
 
 avtOriginalDataMinMaxQuery::~avtOriginalDataMinMaxQuery()
@@ -59,11 +62,6 @@ avtOriginalDataMinMaxQuery::~avtOriginalDataMinMaxQuery()
     {
         delete eef;
         eef = NULL;
-    }
-    if (condense != NULL)
-    {
-        delete condense;
-        condense = NULL;
     }
 }
 
@@ -91,6 +89,9 @@ avtOriginalDataMinMaxQuery::~avtOriginalDataMinMaxQuery()
 //    Kathleen Bonnell, Tue Apr 20 09:36:58 PDT 2004 
 //    Ensure that we are working with correct var and timestep. 
 //
+//    Kathleen Bonnell, Tue Jun 29 08:14:35 PDT 2004 
+//    Removed condense filter. 
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -116,8 +117,7 @@ avtOriginalDataMinMaxQuery::ApplyFilters(avtDataObject_p inData)
     avtDataObject_p temp;
     CopyTo(temp, inData);
     eef->SetInput(temp);
-    condense->SetInput(eef->GetOutput());
-    avtDataObject_p retObj = condense->GetOutput();
+    avtDataObject_p retObj = eef->GetOutput();
     retObj->Update(pspec);
     return retObj;
 }

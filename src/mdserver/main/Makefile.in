@@ -139,6 +139,10 @@
 #    Brad Whitlock, Fri Apr 23 10:30:00 PDT 2004
 #    I added prebinding for MacOS X.
 #
+#    Jeremy Meredith, Wed Jul  7 11:47:36 PDT 2004
+#    Made it use only lightweight VTK libraries again.  These expand to
+#    the whole VTK_LIBS under OSX.
+#
 ##############################################################################
 
 ##
@@ -166,7 +170,8 @@ LIBS= \
     -lmisc \
     -lutility \
     -llightweight_visit_vtk -lvtk_sl_io \
-    $(VTK_LIBS) @PREBIND_LIBS@\
+    @VTK_LIGHTWEIGHT_LIBS@ \
+    @PREBIND_LIBS@ \
     @LIBS@ \
     @PTHREAD_LIB@
 LIBDEP=

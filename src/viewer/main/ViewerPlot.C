@@ -2473,6 +2473,10 @@ ViewerPlot::GetReader() const
 //    Added returned bool argument, actorHasNoData and removed code that 
 //    issues the no data warning message to the caller of this method
 //
+//    Mark C. Miller, Wed Jul  7 11:42:09 PDT 2004
+//    Added call to re-enable external render request status of all windows
+//    at all early returns points.
+//
 // ****************************************************************************
 
 void
@@ -2540,6 +2544,9 @@ ViewerPlot::CreateActor(bool createNew,
         // Use the null actor.
         this->SetActor(nullActor);
         
+        // re-instate correct external render request state on all windows
+        ViewerWindowManager::Instance()->EnableExternalRenderRequestsAllWindows(oldAble);
+
         // Rethrow the exception.
         RETHROW;
     }
@@ -2577,7 +2584,12 @@ ViewerPlot::CreateActor(bool createNew,
 
         // Use the null actor.
         this->SetActor(nullActor);
+
+        // re-instate correct external render request state on all windows
+        ViewerWindowManager::Instance()->EnableExternalRenderRequestsAllWindows(oldAble);
+
         CATCH_RETURN(1);
+
     }
     ENDTRY
 
@@ -2599,6 +2611,10 @@ ViewerPlot::CreateActor(bool createNew,
 
         // Use the null actor.
         this->SetActor(nullActor);
+
+        // re-instate correct external render request state on all windows
+        ViewerWindowManager::Instance()->EnableExternalRenderRequestsAllWindows(oldAble);
+
         return;
     }
 

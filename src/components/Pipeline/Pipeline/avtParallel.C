@@ -8,10 +8,12 @@
 
 #ifdef PARALLEL
   #include <mpi.h>
+  #include <BufferConnection.h>
 #endif
 
 #include <DebugStream.h>
 #include <ImproperUseException.h>
+#include <AttributeGroup.h>
 
 using std::string;
 using std::vector;
@@ -894,3 +896,134 @@ int GetUniqueMessageTag()
 #endif
     return retval;
 }
+
+
+// ****************************************************************************
+//  Function: GetAttToRootProc
+//
+//  Purpose:
+//    Gets an attribute to processor 0.  
+//
+//  Arguments:
+//    att       The att to get to proc 0.
+//    hasAtt    Inidicates whether his processor has the attribute or not. 
+//  
+//  Programmer: Kathleen Bonnell 
+//  Creation:   July 6, 2004 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void 
+GetAttToRootProc(AttributeGroup &att, int hasAtt)
+{
+#ifdef PARALLEL
+    int rank, nprocs, size, i;
+    BufferConnection b;
+    unsigned char *buf;
+
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
+
+    int mpiHasAttTag = GetUniqueMessageTag();
+    int mpiSizeTag = GetUniqueMessageTag();
+    int mpiDataTag = GetUniqueMessageTag();
+       
+    if (rank == 0)
+    {
+        for (i = 1; i < nprocs; i++)
+        {
+            MPI_Status stat, stat2;
+            MPI_Recv(&hasAtt, 1, MPI_INT, MPI_ANY_SOURCE,
+                     mpiHasAttTag, MPI_COMM_WORLD, &stat);
+            if (hasAtt)
+            {
+                MPI_Recv(&size, 1, MPI_INT, stat.MPI_SOURCE, mpiSizeTag,
+                         MPI_COMM_WORLD, &stat2);
+                buf = new unsigned char[size];
+                MPI_Recv(buf, size, MPI_UNSIGNED_CHAR, stat.MPI_SOURCE, mpiDataTag,
+                         MPI_COMM_WORLD, &stat2);
+                b.Append(buf, size);
+                att.Read(b);
+                delete [] buf;
+            }
+        }
+    }
+    else 
+    {
+        MPI_Send(&hasAtt, 1, MPI_INT, 0, mpiHasAttTag, MPI_COMM_WORLD);
+        if (hasAtt)
+        {
+            att.SelectAll();
+            att.Write(b);
+            size = att.CalculateMessageSize(b);
+            buf = new unsigned char[size];
+            for (int i = 0; i < size; ++i)
+                b.Read(buf+i);
+ 
+            MPI_Send(&size, 1, MPI_INT, 0, mpiSizeTag, MPI_COMM_WORLD);
+            MPI_Send(buf, size, MPI_UNSIGNED_CHAR, 0, mpiDataTag, MPI_COMM_WORLD);
+            delete [] buf;
+        }
+    }
+#endif
+}
+
+
+// ****************************************************************************
+//  Function: GetFloatArrayToRootProc
+//
+//  Purpose:
+//    Gets a float array to processor 0.  
+//
+//  Arguments:
+//    fa        The  float array.
+//    nf        The number of items in the array.
+//    success   Inidicates whether or not this processor has the float array. 
+//  
+//  Programmer: Kathleen Bonnell 
+//  Creation:   July 6, 2004 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+GetFloatArrayToRootProc(float *fa, int nf, bool &success)
+{
+#ifdef PARALLEL
+    int myRank, numProcs;
+    MPI_Comm_rank(MPI_COMM_WORLD, &myRank);
+    MPI_Comm_size(MPI_COMM_WORLD, &numProcs);
+    int mpiGoodTag = GetUniqueMessageTag();
+    int mpiFloatArrayTag = GetUniqueMessageTag();
+
+    if (myRank == 0)
+    {
+        MPI_Status stat, stat2;
+        int good; 
+        for (int i = 1; i < numProcs; i++)
+        {
+            MPI_Recv(&good, 1, MPI_INT, MPI_ANY_SOURCE,
+                     mpiGoodTag, MPI_COMM_WORLD, &stat);
+            if (good)
+            {
+                MPI_Recv(fa, nf, MPI_FLOAT, stat.MPI_SOURCE, mpiFloatArrayTag,
+                         MPI_COMM_WORLD, &stat2);
+                success = good;
+            }
+        }
+    }
+    else
+    {
+        MPI_Send(&success, 1, MPI_INT, 0, mpiGoodTag, MPI_COMM_WORLD);
+        if (success)
+        {
+            MPI_Send(fa, nf, MPI_FLOAT, 0, mpiFloatArrayTag, MPI_COMM_WORLD);
+        }    
+    }
+#endif
+}
+
+
