@@ -23,12 +23,16 @@
 //    Brad Whitlock, Tue Jul 20 16:41:11 PST 2004
 //    Added varUnits.
 //
+//    Kathleen Bonnell, Thu Aug 12 13:07:29 PDT 2004 
+//    Initialize globalVisibility.
+//
 // ****************************************************************************
 
 avtLegend::avtLegend()
 {
     legend   = NULL;
     legendOn = true;
+    globalVisibility = true;
     currentlyDrawn = false;
     position[0] = position[1] = 0.;
     size[0] = size[1] = 0.;
@@ -104,12 +108,16 @@ avtLegend::~avtLegend()
 //  Programmer:  Hank Childs
 //  Creation:    October 4, 2000
 //
+//  Modifications:
+//    Kathleen Bonnell, Thu Aug 12 13:07:29 PDT 2004
+//    Only add if globalVisibility is true.
+//
 // ****************************************************************************
 
 void
 avtLegend::Add(vtkRenderer *ren)
 {
-    if (legendOn && !currentlyDrawn)
+    if (globalVisibility && legendOn && !currentlyDrawn)
     {
         ren->AddActor2D(legend);
         currentlyDrawn = true;
@@ -568,3 +576,19 @@ avtLegend::Update()
 }
 
 
+// ****************************************************************************
+//  Method: avtLegend::SetGlobalVisibility
+//
+//  Purpose:
+//    Sets the state global legend visibility. 
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   August 12, 2004 
+//
+// ****************************************************************************
+
+void
+avtLegend::SetGlobalVisibility(bool v)
+{
+    globalVisibility = v;
+}

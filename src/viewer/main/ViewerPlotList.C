@@ -7739,6 +7739,8 @@ ViewerPlotList::SetFromNode(DataNode *parentNode)
 // Creation:   Thu Aug 28 09:09:25 PDT 2003 
 //
 // Modifications:
+//   Kathleen Bonnell, Thu Aug 12 16:20:02 PDT 2004
+//   Made whether or not the plot has been realized be part of the criteria.
 //   
 // ****************************************************************************
 
@@ -7749,8 +7751,8 @@ ViewerPlotList::CanMeshPlotBeOpaque()
     bool canBeOpaque = true;
     for (i = 0; i < nPlots && canBeOpaque; ++i)
     {
-        if (plots[i].plot->IsInRange() && !plots[i].hidden &&
-            !plots[i].plot->IsMesh())
+        if (plots[i].plot->IsInRange() && plots[i].realized && 
+            !plots[i].hidden && !plots[i].plot->IsMesh())
             canBeOpaque = false;
     }
 

@@ -3818,7 +3818,6 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawSurface2()
 #endif      
     }
 
-
     // do verts
     aPrim = input->GetVerts();
     aGlFunction = glFunction[0];
@@ -4006,6 +4005,9 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawEdges()
 //    Jeremy Meredith, Tue May  4 12:24:07 PDT 2004
 //    Added support for un-glyphed point meshes (Verts in a vtkCellArray).
 //
+//    Mark C. Miller, Wed Aug 11 13:38:14 PDT 2004
+//    Added a code to adjust glDepthRange and reset it upon exit
+//
 // ****************************************************************************
 
 void
@@ -4135,6 +4137,32 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawEdges2()
 
     glDisable(GL_LIGHTING);
 
+    //
+    // If any edges in the list of edges are supposed to appear just
+    // on top of polygons on the surface, We need to bring edges just
+    // a little bit closer to the viewer. GL has some support for this
+    // kind of thing through the glPolygonOffset and GL_POLYGON_OFFSET_FILL
+    // settings. However, it is my understanding that that functionality
+    // is specific to the case in which the same graphics primitves are
+    // being drawn in two passes, once to produce polygon interiors and
+    // a second time to produce polygon edges. That isn't really what
+    // we're doing here. We are drawing an entirely different set of
+    // primitives, lines. Granted, those lines may have been computed
+    // as the edges of the polygons we've drawn previously. However, 
+    // from the point of view GL and its display lists, they are totally
+    // different lists of primitives. So, we can't rely on GL's
+    // glPolygonOffset stuff to help us here. Instead, we borrow from
+    // a trick the VTK folks do in vtkPolyDataMapper, and adjust the
+    // depth range of the scene using glDepthRange. We then undue this
+    // adjustment when we exit this routine. In short, we move the
+    // maximum Z value toward the viewer 0.01% of the total range in Z.
+    //
+    double savedDepthRange[2];
+    glGetDoublev(GL_DEPTH_RANGE, savedDepthRange);
+    double dZ = savedDepthRange[1] - savedDepthRange[0];
+    double eps = dZ / 10000.0;
+    glDepthRange(savedDepthRange[0],savedDepthRange[1]-eps);
+
     aPrim = input->GetVerts();
     aGlFunction = GL_POINTS; 
   
@@ -4177,6 +4205,7 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawEdges2()
     }
 
     glEnable(GL_LIGHTING);
+    glDepthRange(savedDepthRange[0],savedDepthRange[1]);
 } // DrawEdges
 
 

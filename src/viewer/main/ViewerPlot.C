@@ -1673,6 +1673,9 @@ ViewerPlot::SetErrorFlag(bool val)
 //    Added optional bool arg, indicates whether the operator
 //    should be initialized from its default or client atts. 
 //
+//    Mark C. Miller, Wed Aug 11 17:07:46 PDT 2004
+//    Added warning for multiple operators of same type
+//
 // ****************************************************************************
 
 int
@@ -1682,11 +1685,25 @@ ViewerPlot::AddOperator(const int type, const bool fromDefault)
     {
         if (!operators[nOperators-1]->AllowsSubsequentOperators())    
         {
-            char msg[100];
-            SNPRINTF(msg, 200, "VisIt cannot apply other operators after a "
+            char msg[200];
+            SNPRINTF(msg, sizeof(msg), "VisIt cannot apply other operators after a "
                      "%s operator.", operators[nOperators-1]->GetName());
             Error(msg);
             return -1;
+        }
+
+        for (int i = 0; i < nOperators; i++)
+        {
+            if (type == operators[i]->GetType())
+            {
+                char msg[500];
+                SNPRINTF(msg, sizeof(msg), "You have added the \"%s\" operator "
+                    "multiple times. For some operators, like \"Slice\", this "
+                    "can lead to an empty plot but is otherwise harmless.",
+                    operators[i]->GetName());
+                Warning(msg);
+                break;
+            }
         }
     }
 

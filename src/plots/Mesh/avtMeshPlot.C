@@ -218,6 +218,28 @@ avtMeshPlot::Create()
     return new avtMeshPlot;
 }
 
+// ****************************************************************************
+//  Method:  avtMeshPlot::GetCellCountMultiplierForSRThreshold
+//
+//  Purpose: Returns number of polygons each point in the plot's output will be
+//  glyphed into.
+//
+//  Programmer:  Mark C. Miller
+//  Creation:    August 12, 2004
+//
+// ****************************************************************************
+float
+avtMeshPlot::GetCellCountMultiplierForSRThreshold() const
+{
+    float retval = 1.0;
+    if (*behavior)
+    {
+        int dim = behavior->GetInfo().GetAttributes().GetSpatialDimension();
+        if (dim == 0)
+            retval = 6.0;
+    }
+    return retval;
+}
 
 // ****************************************************************************
 //  Method: avtMeshPlot::SetAtts

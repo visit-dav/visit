@@ -992,11 +992,16 @@ WriteByteStreamToSocket(NonBlockingRPC *rpc, Connection *vtkConnection,
 //    set processor 0's cell count and test if its count alone causes the
 //    scalable threshold to be exceeded.
 //
+//    Mark C. Miller, Wed Aug 11 23:42:18 PDT 2004
+//    Added argument for cellCountMultiplier. Used cellCountMultiplier
+//    to adjust cell counting for SR threshold
+//
 // ****************************************************************************
 void
 Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer,
     bool respondWithNull, int scalableThreshold, bool* scalableThresholdExceeded,
-    int currentTotalGlobalCellCount, int* currentNetworkGlobalCellCount)
+    int currentTotalGlobalCellCount, float cellCountMultiplier,
+    int* currentNetworkGlobalCellCount)
 {
 
 #ifdef PARALLEL
@@ -1033,7 +1038,7 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer,
 
         avtDataObject_p ui_dob = writer->GetInput();
 
-        currentCellCount = ui_dob->GetNumberOfCells(polysOnly);
+        currentCellCount = (int) (ui_dob->GetNumberOfCells(polysOnly) * cellCountMultiplier);
 
         // test if we've exceeded the scalable threshold already with proc 0's output
         if (currentTotalGlobalCellCount +
@@ -1183,7 +1188,8 @@ Engine::WriteData(NonBlockingRPC *rpc, avtDataObjectWriter_p &writer,
             MPI_Status stat;
 
             // send the "num cells I have" message to proc 0
-            int numCells = writer->GetInput()->GetNumberOfCells(polysOnly);
+            int numCells = (int) (writer->GetInput()->GetNumberOfCells(polysOnly) *
+                                                      cellCountMultiplier);
             debug5 << "sending \"num cells I have\" message (=" << numCells << ")" << endl;
             MPI_Send(&numCells, 1, MPI_INT, 0, mpiCellCountTag, MPI_COMM_WORLD);
 

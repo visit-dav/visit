@@ -426,6 +426,8 @@ avtHistogramFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
 //  Creation:   Thu Jun 26 09:04:54 PDT 2003
 //
 //  Modifications:
+//    Kathleen Bonnell, Thu Aug 12 08:44:36 PDT 2004
+//    Allow this plot to be queryable.
 //
 // ****************************************************************************
 
@@ -441,7 +443,6 @@ avtHistogramFilter::RefashionDataObjectInfo(void)
     outValidity.SetNormalsAreInappropriate(true);
     outValidity.InvalidateSpatialMetaData();
     outValidity.SetPointsWereTransformed(true);
-    outValidity.SetQueryable(false);
 }
 
 

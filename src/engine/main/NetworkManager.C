@@ -1387,6 +1387,10 @@ NetworkManager::GetOutput(bool respondWithNullData, bool calledForRender)
 //    viewportedMode bool. Added code to pass frame and state info to
 //    set Win/Annot atts.
 //
+//    Mark C. Miller, Wed Aug 11 23:42:18 PDT 2004
+//    Added code to get cell count multiplier for SR mode and adjust
+//    cell counts for SR threshold
+//
 // ****************************************************************************
 avtDataObjectWriter_p
 NetworkManager::Render(intVector plotIds, bool getZBuffer, bool do3DAnnotsOnly)
@@ -1433,6 +1437,9 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, bool do3DAnnotsOnly)
                 // get the network output as we would normally
                 workingNet = NULL;
                 UseNetwork(plotIds[i]);
+                float cellCountMultiplier =
+                    GetPlot()->GetCellCountMultiplierForSRThreshold();
+
                 DataNetwork *workingNetSaved = workingNet;
                 int t4 = visitTimer->StartTimer();
                 avtDataObjectWriter_p tmpWriter = GetOutput(false,true);
@@ -1448,7 +1455,8 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, bool do3DAnnotsOnly)
 
                 // record cell counts including and not including polys
                 cellCounts[i] =
-                    anActor->GetDataObject()->GetNumberOfCells(false);
+                    (int) (anActor->GetDataObject()->GetNumberOfCells(false) *
+                                                     cellCountMultiplier);
                 cellCounts[i+plotIds.size()] =
                     anActor->GetDataObject()->GetNumberOfCells(true);
 

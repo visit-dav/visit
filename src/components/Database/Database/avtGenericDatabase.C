@@ -241,6 +241,15 @@ avtGenericDatabase::SetDatabaseMetaData(avtDatabaseMetaData *md, int timeState)
 //    Kathleen Bonnell, Wed Jun 23 17:04:23 PDT 2004 
 //    Add TRY-CATCH, so that no process skips the parallel communication. 
 //
+//    Mark C. Miller, Thu Aug 12 12:10:37 PDT 2004
+//    I changed behavior when processors have errors during the read phase.
+//    Previously, only the err'ing processor knew about and would return
+//    early. Since we are doing an MPI_Allreduce for the mat select mode,
+//    I simple tacked on a second int indicating if anyone had errors
+//    and included that in the all reduce as well. Now, if any processor
+//    encounters an error during the read phase, they will are return
+//    together.
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -332,12 +341,14 @@ avtGenericDatabase::GetOutput(avtDataSpecification_p spec,
 #ifdef PARALLEL
     //
     // If any processor decides to do material selection, they all should
+    // If any processor had an error, they all should return
     //
-    int shouldDoMatSelectAsInt = (shouldDoMatSelect ? 1 : 0);
-    int shouldDoMatSelectAsIntCollective;
-    MPI_Allreduce(&shouldDoMatSelectAsInt, &shouldDoMatSelectAsIntCollective,
-                  1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
-    shouldDoMatSelect = bool(shouldDoMatSelectAsIntCollective);
+    int tmp[2], rtmp[2];
+    tmp[0] = (shouldDoMatSelect ? 1 : 0);
+    tmp[1] = (hadError ? 1 : 0);
+    MPI_Allreduce(tmp, rtmp, 2, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
+    shouldDoMatSelect = bool(rtmp[0]);
+    hadError = bool(rtmp[1]);
 #endif
 
     if (hadError)
@@ -3462,6 +3473,7 @@ avtGenericDatabase::CommunicateGhosts(avtDatasetCollection &ds,
     avtVarType type = md->DetermineVarType(varname);
     std::string meshname = md->MeshForVar(varname);
 
+    debug5 << "STARTING Communicate Ghosts" << endl;
     void_ref_ptr vr = cache.GetVoidRef("any_mesh",
                                    AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION,
                                   -1, -1);
@@ -3472,6 +3484,7 @@ avtGenericDatabase::CommunicateGhosts(avtDatasetCollection &ds,
 
     if (*vr != NULL)
     {
+        debug5 << "STARTING Domain Boundary Stuff" << endl;
         avtDomainBoundaries *dbi = (avtDomainBoundaries*)*vr;
 
         //
@@ -3938,6 +3951,7 @@ avtGenericDatabase::CommunicateGhosts(avtDatasetCollection &ds,
     //
     // Make sure that we actually have the node ids.
     //
+    debug5 << "STARTING Check for GlobalNodeIds" << endl;
     bool haveGlobalNodeIds = true;
     for (i = 0 ; i < doms.size() ; i++)
     {
@@ -3952,6 +3966,7 @@ avtGenericDatabase::CommunicateGhosts(avtDatasetCollection &ds,
 
 #ifdef PARALLEL
     int  parallelShouldStop;
+    debug5 << "STARTING Allreduce for shouldStop " << shouldStop << endl;
     MPI_Allreduce(&shouldStop, &parallelShouldStop, 1, MPI_INT, MPI_MAX,
                   MPI_COMM_WORLD);
     shouldStop = parallelShouldStop;
@@ -3959,6 +3974,7 @@ avtGenericDatabase::CommunicateGhosts(avtDatasetCollection &ds,
 
     if (shouldStop == 0)
     {
+        debug5 << "STARTING Global Node ID stuff"  << endl;
         int timerHandle = visitTimer->StartTimer();
 
         //
@@ -4189,6 +4205,9 @@ avtGenericDatabase::CommunicateGhosts(avtDatasetCollection &ds,
         //
         md->SetContainsGhostZones(meshname, AVT_CREATED_GHOSTS);
     }
+
+    debug5 << "LEAVING communicate ghosts with created_ghosts = " << created_ghosts << " and created_new_zones " <<
+    created_new_zones << endl;
 
     return created_new_zones;
 }

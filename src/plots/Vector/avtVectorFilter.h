@@ -30,6 +30,9 @@ class  vtkVertexFilter;
 //    Hank Childs, Thu Aug 30 17:30:48 PDT 2001
 //    Added the vertex filter.
 //
+//    Kathleen Bonnell, Mon Aug  9 14:27:08 PDT 2004 
+//    Added magVarName, SetMagVarName and PerformRestriction.
+//
 // ****************************************************************************
 
 class avtVectorFilter : public avtStreamer
@@ -48,17 +51,21 @@ class avtVectorFilter : public avtStreamer
 
     void                      SetStride(int);
     void                      SetNVectors(int);
+    void                      SetMagVarName(const std::string &);
 
   protected:
     bool                      useStride;
     int                       stride;
     int                       nVectors;
+    std::string               magVarName;
 
     vtkVertexFilter          *vertex;
     vtkVectorReduceFilter    *reduce;
 
     virtual vtkDataSet       *ExecuteData(vtkDataSet *, int, std::string);
     virtual void              RefashionDataObjectInfo(void);
+    virtual avtPipelineSpecification_p
+                              PerformRestriction(avtPipelineSpecification_p);
 };
 
 

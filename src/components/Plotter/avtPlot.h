@@ -142,6 +142,9 @@ class     AttributeSubject;
 //    Brad Whitlock, Tue Jul 20 16:10:25 PST 2004
 //    Added variable units.
 //
+//    Mark C. Miller, Wed Aug 11 23:42:18 PDT 2004
+//    Added GetCellCountMultiplierForSRThreshold
+//
 // ****************************************************************************
 
 class PLOTTER_API avtPlot
@@ -196,6 +199,8 @@ class PLOTTER_API avtPlot
     virtual const AttributeSubject 
                               *SetOpaqueMeshIsAppropriate(bool)
                                    { return NULL; };
+    virtual float              GetCellCountMultiplierForSRThreshold() const
+                                   { return 1.0; };
 
   protected:
     bool                       needsRecalculation;
