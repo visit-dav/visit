@@ -35,11 +35,11 @@ die "\nError running xml2atts... aborting!\n\n" if ($?);
 
 print "********* running: xml2window   $xmlfile *********\n";
 print `xml2window    @ARGV -noprint $xmlfile`;
-die "\nError runnin xml2window... aborting!\n\n" if ($?);
+die "\nError running xml2window... aborting!\n\n" if ($?);
 
 print "********* running: xml2info     $xmlfile *********\n";
 print `xml2info      @ARGV -noprint $xmlfile`;
-die "\nError runnin xml2info... aborting!\n\n" if ($?);
+die "\nError running xml2info... aborting!\n\n" if ($?);
 
 print "********* running: xml2makefile $xmlfile *********\n";
 print `xml2makefile  @ARGV -noprint $xmlfile`;

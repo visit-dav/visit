@@ -1463,6 +1463,8 @@ if test "$HDF5_LIB" != "" ; then
    if test "$HDF5_INCLUDE" != "" ; then
       HDF5="$""(HDF5)"
       AC_MSG_RESULT(yes)
+      AC_DEFINE(HAVE_HDF5_H)
+      AC_DEFINE(HAVE_LIBHDF5)
    else
       AC_MSG_RESULT(no)
    fi

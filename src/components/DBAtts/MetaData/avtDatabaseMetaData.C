@@ -4632,6 +4632,9 @@ avtDatabaseMetaData::GetSpeciesOnMesh(std::string mesh) const
 //    Mark C. Miller, Tue Mar 30 14:36:17 PST 2004
 //    Added useCatchAllMesh
 //
+//    Jeremy Meredith, Wed Jul 21 14:23:12 PDT 2004
+//    Removed the exclamation point from unknown.
+//
 // ****************************************************************************
 
 void
@@ -4833,7 +4836,7 @@ avtDatabaseMetaData::Print(ostream &out, int indent) const
                 vartype = "species";
                 break;
               case Expression::Unknown:
-                vartype = "unknown!";
+                vartype = "unknown";
                 break;
             }
             out << exprList[i].GetName().c_str()

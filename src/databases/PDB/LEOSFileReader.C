@@ -133,6 +133,11 @@ FixMatName(char *matName, int maxLen)
 // Programmer: Mark C. Miller
 // Creation:   June 17, 2004 
 //
+// Modifications:
+//
+//   Mark C. Miller, Wed Jul 21 11:19:15 PDT 2004
+//   Uncommented test of return value for avtCallback::IssueWarning
+//
 // ****************************************************************************
 void
 IssueUnknownLEOSVariableWarning(const char *matDirName, const char *matName,
@@ -160,7 +165,7 @@ IssueUnknownLEOSVariableWarning(const char *matDirName, const char *matName,
         sprintf(msg, shortMsgFmtStr, varName, matName, matDirName);
     }
 
-    //if (!avtCallback::IssueWarning(msg))
+    if (!avtCallback::IssueWarning(msg))
         cerr << msg << endl;
 }
 
