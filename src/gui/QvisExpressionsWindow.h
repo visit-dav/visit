@@ -6,14 +6,16 @@
 
 // Forward declarations
 class ExpressionList;
-class QPoint;
 class QVBoxLayout;
+class QHBoxLayout;
 class QPushButton;
 class QCheckBox;
 class QGroupBox;
 class QLineEdit;
-class QListView;
-class ExpressionTable;
+class QMultiLineEdit;
+class QLabel;
+class QListBox;
+class QComboBox;
 
 // ****************************************************************************
 // Class: QvisExpressionsWindow
@@ -23,8 +25,8 @@ class ExpressionTable;
 //
 // Notes:      
 //
-// Programmer: Sean Ahern
-// Creation:   Fri Sep 14 13:59:13 PDT 2001
+// Programmer: Jeremy Meredith
+// Creation:   October 10, 2004
 //
 // Modifications:
 //   
@@ -46,24 +48,43 @@ class GUI_API QvisExpressionsWindow : public QvisPostableWindowObserver
   protected:
     void    UpdateWindow(bool doAll);
     void    Apply(bool forceUpdate = false);
+    void    BlockAllSignals(bool);
   private slots:
     void    addExpression();
-    void    deleteExpression(int);
-  private:
-    ExpressionList *exprList;
+    void    delExpression();
+    void    nameTextChanged(const QString&);
+    void    definitionTextChanged();
+    void    typeChanged(int);
+    void    hiddenChanged();
+    void    displayAllVarsChanged();
+    void    insertFunction(int);
 
+    void    UpdateWindowSingleItem();
+    void    UpdateWindowSensitivity();
+
+  private:
     // Widgets and layouts.
-    QGroupBox *listGroup;
-    QButton *newButton;
-    QButton *editButton;
-    QButton *deleteButton;
-    ExpressionTable *table;
-    QGroupBox *editGroup;
-    QLineEdit *nameLineEdit;
-    QLineEdit *defLineEdit;
-    QCheckBox *hiddenToggle;
+    QListBox *exprListBox;
+
+    QLabel *nameEditLabel;
+    QLabel *definitionEditLabel;
+    QLabel *typeLabel;
+
+    QLineEdit *nameEdit;
+    QComboBox *typeList;
+    QCheckBox *hidden;
+    QMultiLineEdit *definitionEdit;
+
+    QPushButton *newButton;
+    QPushButton *delButton;
+
+    QPushButton *insertFunctionButton;
+    QPopupMenu *insertFunctionMenu;
+
+    QCheckBox *displayAllVars;
 
     // State information
+    ExpressionList *exprList;
 };
 
 #endif

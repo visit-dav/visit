@@ -280,6 +280,10 @@
 #    Kathleen Bonnell, Mon Aug 16 17:54:35 PDT 2004 
 #    Added QvisInteractorWindow.
 #
+#    Jeremy Meredith, Sun Oct 10 23:38:57 PDT 2004
+#    Removed ExprTableItem, ExpressionTable, and ExprDeleteButton;
+#    redesigned expressions window.
+#
 ##############################################################################
 
 ##
@@ -306,9 +310,6 @@ MOC=@QT_MOC@
 
 # First, all of the header files that define Qt objects.
 HDRMOC = \
-    ExprDeleteButton.h \
-    ExpressionTable.h \
-    ExprTypeItem.h \
     KFListView.h \
     KFTimeSlider.h \
     QvisAbstractOpacityBar.h \
