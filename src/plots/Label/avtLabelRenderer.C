@@ -47,7 +47,6 @@ avtLabelRenderer::avtLabelRenderer() : avtCustomRenderer(), singleCellInfo(),
 {
     input = 0;
     varname = 0;
-    renderer = 0;
     numXBins = 10;
     numYBins = 10;
     labelBins = 0;
@@ -89,6 +88,8 @@ avtLabelRenderer::avtLabelRenderer() : avtCustomRenderer(), singleCellInfo(),
 // Creation:    October 1, 2004
 //
 // Modifications:
+//   Brad Whitlock, Mon Oct 25 16:04:38 PST 2004
+//   Changed the call to clear the label caches.
 //
 // ****************************************************************************
 
@@ -101,47 +102,12 @@ avtLabelRenderer::~avtLabelRenderer()
     }
 
     if(labelBins != 0)
-       delete [] labelBins;
+        delete [] labelBins;
 
     if(varname != 0)
-       delete [] varname;
+        delete [] varname;
 
-    ReleaseGraphicsResources();
-}
-
-// ****************************************************************************
-// Method:  avtLabelRenderer::ReleaseGraphicsResources
-//
-// Purpose:
-//    Releases graphics resources that are being used by the renderer.
-//
-// Arguments:
-//    
-//
-// Programmer:  Brad Whitlock
-// Creation:    Thu Jan 22 11:16:18 PDT 2004
-//
-// ****************************************************************************
-
-void
-avtLabelRenderer::ReleaseGraphicsResources()
-{
-    debug3 << "avtLabelRenderer::ReleaseGraphicsResources" << endl;
-    //
-    // Clear the renderer pointer so we know to get a new one later.
-    //
-    renderer = 0;
-    maxLabelLength = 0;
-
-    delete [] cellLabelsCache;
-    cellLabelsCache = 0;
-    cellLabelsCached = false;
-    cellLabelsCacheSize = 0;
-
-    delete [] nodeLabelsCache;
-    nodeLabelsCache = 0;
-    nodeLabelsCached = false;
-    nodeLabelsCacheSize = 0;
+    ClearLabelCaches();
 }
 
 // ****************************************************************************
@@ -233,46 +199,31 @@ avtLabelRenderer::Render(vtkDataSet *ds)
         input->Register(NULL);
     }
 
-#if 0
-//
-// This stuff from avtSurfaceAndWireframeRenderer could be useful.
-//
-
-    int *curSize = VTKRen->GetRenderWindow()->GetSize();
-    if (ScalRen && ((curSize[0] != lastWindowSize[0]) ||
-        (curSize[0] != lastWindowSize[0])))
-    {
-        // Changing size of the render window in scalable rendering
-        // (offscreen) mode causes the rendering Context to be destroyed.
-        // All display list ids stored will be invalid, so allow
-        // derived types to be notified. 
-        ReleaseGraphicsResources();
-    } 
-
-#endif
-
-    if(renderer == 0)
-    {
-        vtkRendererCollection *renderers = 
-            VTKRen->GetRenderWindow()->GetRenderers();
-        int nRenderers = renderers->GetNumberOfItems();
-        int cameraIndex = (nRenderers == 3) ? 1 : ((nRenderers>0) ? 0 : -1);
-        if(cameraIndex > -1)
-        {
-            // The window should have 3 renderers. We want the second one.
-            vtkObject *obj = renderers->GetItemAsObject(cameraIndex);
-            renderer = vtkRenderer::SafeDownCast(obj);
-        }
-
-        debug3 << "renderer = " << (void*)renderer << ", VTKRen=" << (void*)VTKRen << endl;
-    }
-
     //
     // Render the labels using the derived type's RenderLabels method.
     //
     RenderLabels();
 }
 
+// ****************************************************************************
+// Method: avtLabelRenderer::ReleaseGraphicsResources
+//
+// Purpose: 
+//   This method is called when the renderer must release its graphical
+//   resources.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Oct 25 16:05:29 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtLabelRenderer::ReleaseGraphicsResources()
+{
+    ClearLabelCaches();
+}
 
 // ****************************************************************************
 // Method: avtLabelRenderer::ResetLabelBins
@@ -678,6 +629,36 @@ avtLabelRenderer::CreateCachedNodeLabels()
 #undef END_LABEL
 #undef CREATE_LABEL
 
+// ****************************************************************************
+// Method: avtLabelRenderer::ClearLabelCaches
+//
+// Purpose: 
+//   Clear out the label caches.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Oct 25 16:03:33 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtLabelRenderer::ClearLabelCaches()
+{
+    //
+    // Delete the label caches.
+    //
+    maxLabelLength = 0;
+    delete [] cellLabelsCache;
+    cellLabelsCache = 0;
+    cellLabelsCached = false;
+    cellLabelsCacheSize = 0;
+
+    delete [] nodeLabelsCache;
+    nodeLabelsCache = 0;
+    nodeLabelsCached = false;
+    nodeLabelsCacheSize = 0;
+}
 
 // ****************************************************************************
 // Method: avtLabelRenderer::AllowLabelInBin
@@ -760,13 +741,13 @@ avtLabelRenderer::WorldToDisplayMatrix() const
 {
      // Get world->view matrix
      vtkMatrix4x4 *M1 = vtkMatrix4x4::New();
-     M1->DeepCopy(renderer->GetActiveCamera()->GetCompositePerspectiveTransformMatrix(1,0,1));
+     M1->DeepCopy(VTKRen->GetActiveCamera()->GetCompositePerspectiveTransformMatrix(1,0,1));
 
      // Set up view->display matrix
      vtkMatrix4x4 *M2 = vtkMatrix4x4::New();
      {
-         float *v = renderer->GetViewport();
-         float *a = renderer->GetAspect();
+         float *v = VTKRen->GetViewport();
+         float *a = VTKRen->GetAspect();
 
          M2->Identity();
          M2->Element[0][0] = (v[2]-v[0])/(2. * a[0]);
@@ -1099,7 +1080,7 @@ avtLabelRenderer::SetAtts(const AttributeGroup *a)
     // Resize the number of bins based on the number of labels that we want to display.
     //
     int nLabels = (atts.GetNumberOfLabels() < 1) ? 1 : atts.GetNumberOfLabels();
-    int nBins = int(sqrt(nLabels));
+    int nBins = int(sqrt(double(nLabels)));
     if(nBins * nBins < nLabels)
         ++nBins;
     if(nBins * nBins != numXBins * numYBins)

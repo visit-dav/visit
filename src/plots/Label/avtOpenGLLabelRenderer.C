@@ -1,5 +1,7 @@
 #ifndef avtOpenGLLabelRenderer
 #include <avtOpenGLLabelRenderer.h>
+#else
+#include <Init.h>
 #endif
 #include <arial.h>
 #include <GL/gl.h>
@@ -35,7 +37,7 @@
 // Creation:   Mon Oct 25 09:14:10 PDT 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 avtOpenGLLabelRenderer::avtOpenGLLabelRenderer() : avtLabelRenderer()
@@ -58,11 +60,35 @@ avtOpenGLLabelRenderer::avtOpenGLLabelRenderer() : avtLabelRenderer()
 // Creation:   Mon Oct 25 09:14:32 PDT 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Oct 25 16:12:27 PST 2004
+//   Changed the routine to release the display lists.
+//
 // ****************************************************************************
 
 avtOpenGLLabelRenderer::~avtOpenGLLabelRenderer()
 {
+    ClearCharacterDisplayLists();
+}
+
+// ****************************************************************************
+// Method: avtOpenGLLabelRenderer::ReleaseGraphicsResources
+//
+// Purpose: 
+//   Clears the character display lists.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Oct 25 16:00:15 PST 2004
+//
+// Modifications:
+//   Brad Whitlock, Mon Oct 25 16:10:03 PST 2004
+//   I made it clear the label cache and release the graphical resources.
+//
+// ****************************************************************************
+
+void
+avtOpenGLLabelRenderer::ReleaseGraphicsResources()
+{
+    ClearLabelCaches();
     ClearCharacterDisplayLists();
 }
 
@@ -193,7 +219,9 @@ avtOpenGLLabelRenderer::SetupGraphicsLibrary()
 // Creation:   Mon Oct 25 09:16:30 PDT 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Oct 25 15:54:59 PST 2004
+//   Prevented the display lists from being deleted if they were not created.
+//
 // ****************************************************************************
 
 void
@@ -202,18 +230,20 @@ avtOpenGLLabelRenderer::ClearCharacterDisplayLists()
     if (VTKRen == NULL)
         return;
 
-    VTKRen->GetRenderWindow()->MakeCurrent();
-
-    for(int i = 0; i < 256; ++i)
+    if(characterDisplayListsCreated)
     {
-        if(characterDisplayListIndices[i] != -1)
-        {
-            glDeleteLists(characterDisplayListIndices[i],1);
-            characterDisplayListIndices[i] = -1;
-        }
-    }
+        VTKRen->GetRenderWindow()->MakeCurrent();
 
-    characterDisplayListsCreated = false;
+        for(int i = 0; i < 256; ++i)
+        {
+            if(characterDisplayListIndices[i] != -1)
+            {
+                glDeleteLists(characterDisplayListIndices[i],1);
+                characterDisplayListIndices[i] = -1;
+            }
+        }
+        characterDisplayListsCreated = false;
+    }
 }
 
 // ****************************************************************************
@@ -370,7 +400,9 @@ avtOpenGLLabelRenderer::DrawLabel2(const float *screenPoint, const char *label)
 // Creation:   Mon Oct 25 09:18:49 PDT 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Oct 25 16:16:16 PST 2004
+//   Added code to clear graphics resources when scalable rendering.
+//
 // ****************************************************************************
 
 void
@@ -381,10 +413,8 @@ avtOpenGLLabelRenderer::RenderLabels()
     //
     SetupGraphicsLibrary();
 
-    if(renderer == 0 || varname == 0)
-    {
+    if(varname == 0)
         return;
-    }
 
     //
     // Set up the OpenGL state
@@ -443,6 +473,13 @@ avtOpenGLLabelRenderer::RenderLabels()
     glDisable(GL_BLEND);
     glDisable(GL_TEXTURE_2D);
 #endif
+
+#ifdef avtOpenGLLabelRenderer
+    //
+    // Free up graphics resources if using the Mesa renderer.
+    //
+    ClearCharacterDisplayLists();
+#endif
 }
 
 // ****************************************************************************
@@ -455,7 +492,9 @@ avtOpenGLLabelRenderer::RenderLabels()
 // Creation:   Mon Oct 25 09:19:08 PDT 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Oct 25 16:27:22 PST 2004
+//   I made it use VTKRen.
+//
 // ****************************************************************************
 
 void
@@ -515,16 +554,16 @@ avtOpenGLLabelRenderer::DrawLabels2D()
     // actual letters are defined.
     //
     float pt1[] = {0,0,0};
-    renderer->NormalizedDisplayToViewport(pt1[0], pt1[1]);
-    renderer->ViewportToNormalizedViewport(pt1[0], pt1[1]);
-    renderer->NormalizedViewportToView(pt1[0], pt1[1], pt1[2]);
-    renderer->ViewToWorld(pt1[0], pt1[1], pt1[2]);
+    VTKRen->NormalizedDisplayToViewport(pt1[0], pt1[1]);
+    VTKRen->ViewportToNormalizedViewport(pt1[0], pt1[1]);
+    VTKRen->NormalizedViewportToView(pt1[0], pt1[1], pt1[2]);
+    VTKRen->ViewToWorld(pt1[0], pt1[1], pt1[2]);
 
     float pt2[] = {atts.GetTextHeight()*0.8, atts.GetTextHeight(),0};
-    renderer->NormalizedDisplayToViewport(pt2[0], pt2[1]);
-    renderer->ViewportToNormalizedViewport(pt2[0], pt2[1]);
-    renderer->NormalizedViewportToView(pt2[0], pt2[1], pt2[2]);
-    renderer->ViewToWorld(pt2[0], pt2[1], pt2[2]);
+    VTKRen->NormalizedDisplayToViewport(pt2[0], pt2[1]);
+    VTKRen->ViewportToNormalizedViewport(pt2[0], pt2[1]);
+    VTKRen->NormalizedViewportToView(pt2[0], pt2[1], pt2[2]);
+    VTKRen->ViewToWorld(pt2[0], pt2[1], pt2[2]);
     float charWidth  = pt2[0] - pt1[0];
     float charHeight = pt2[1] - pt1[1];
     x_scale = charWidth;
@@ -650,12 +689,12 @@ avtOpenGLLabelRenderer::DrawDynamicallySelectedLabels2D(bool drawNodeLabels,
     // Figure out the world coordinates of the window that is being displayed.
     //
     float lowerleft[3] = {0., 0., 0.};
-    renderer->NormalizedViewportToView(lowerleft[0], lowerleft[1], lowerleft[2]);
-    renderer->ViewToWorld(lowerleft[0], lowerleft[1], lowerleft[2]);
+    VTKRen->NormalizedViewportToView(lowerleft[0], lowerleft[1], lowerleft[2]);
+    VTKRen->ViewToWorld(lowerleft[0], lowerleft[1], lowerleft[2]);
 
     float upperright[3] = {1., 1., 0.};
-    renderer->NormalizedViewportToView(upperright[0], upperright[1], upperright[2]);
-    renderer->ViewToWorld(upperright[0], upperright[1], upperright[2]);
+    VTKRen->NormalizedViewportToView(upperright[0], upperright[1], upperright[2]);
+    VTKRen->ViewToWorld(upperright[0], upperright[1], upperright[2]);
 
     //
     // figure out the size and aspect of the window in world coordinates.
@@ -863,7 +902,7 @@ avtOpenGLLabelRenderer::DrawLabels3D()
     // current camera.
     //
     stageTimer = visitTimer->StartTimer();
-    vtkCamera *camera = renderer->GetActiveCamera();
+    vtkCamera *camera = VTKRen->GetActiveCamera();
     const double *pos = camera->GetPosition();
     const double *focus = camera->GetFocalPoint();
     avtVector camvec(pos[0]-focus[0],pos[1]-focus[1],pos[2]-focus[2]);
@@ -956,8 +995,8 @@ avtOpenGLLabelRenderer::DrawLabels3D()
         visitTimer->StopTimer(stageTimer, "Drawing all labels 3D");
     }
 
-#define TRANSFORM_POINT(P) renderer->WorldToView(P[0], P[1], P[2]); \
-                           renderer->ViewToNormalizedViewport(P[0], P[1], P[2]);
+#define TRANSFORM_POINT(P) VTKRen->WorldToView(P[0], P[1], P[2]); \
+                           VTKRen->ViewToNormalizedViewport(P[0], P[1], P[2]);
 
     //
     // Draw the single cell.

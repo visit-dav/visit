@@ -385,7 +385,7 @@ QvisExpressionsWindow::UpdateWindow(bool)
         if (displayAllVars->isChecked() ||
             !exprList->GetExpression(i).GetFromDB())
         {
-            exprListBox->insertItem(exprList->GetExpression(i).GetName());
+            exprListBox->insertItem(exprList->GetExpression(i).GetName().c_str());
             indexMap[pos++] = i;
         }
     }
@@ -426,10 +426,10 @@ QvisExpressionsWindow::UpdateWindowSingleItem()
     {
         Expression &e = (*exprList)[indexMap[index]];
 
-        nameEdit->setText(e.GetName());
+        nameEdit->setText(e.GetName().c_str());
         notHidden->setChecked(! e.GetHidden());
         typeList->setCurrentText(Expression::GetTypeString(e.GetType()));
-        definitionEdit->setText(e.GetDefinition());
+        definitionEdit->setText(e.GetDefinition().c_str());
     }
     
     UpdateWindowSensitivity();
@@ -646,7 +646,7 @@ QvisExpressionsWindow::definitionTextChanged()
 
     Expression &e = (*exprList)[indexMap[index]];
 
-    e.SetDefinition(definitionEdit->text());
+    e.SetDefinition(definitionEdit->text().latin1());
 }
 
 // ****************************************************************************
@@ -678,7 +678,7 @@ QvisExpressionsWindow::nameTextChanged(const QString &text)
     Expression &e = (*exprList)[indexMap[index]];
 
     QString newname = text.stripWhiteSpace();
-    e.SetName(newname);
+    e.SetName(newname.latin1());
     BlockAllSignals(true);
     exprListBox->changeItem(newname, index);
     BlockAllSignals(false);

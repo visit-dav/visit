@@ -932,22 +932,25 @@ VisWindow::Start2DMode(void)
 //    Eric Brugger, Fri Aug 17 09:42:17 PDT 2001
 //    I added code to update the view.
 //
+//    Kathleen Bonnell, Thu Oct 28 17:37:40 PDT 2004 
+//    Moved 'UpdateView' to after the colleagues have started 3D mode. 
+//
 // ****************************************************************************
 
 void
 VisWindow::Start3DMode(void)
 {
-    //
-    // Update the view.  In the future this should probably go into
-    // VisWinView's Start3DMode, but for now we will do it here.
-    //
-    UpdateView();
-
     std::vector< VisWinColleague * >::iterator it;
     for (it = colleagues.begin() ; it != colleagues.end() ; it++)
     {
         (*it)->Start3DMode();
     }
+
+    //
+    // Update the view.  In the future this should probably go into
+    // VisWinView's Start3DMode, but for now we will do it here.
+    //
+    UpdateView();
 }
 
 // ****************************************************************************

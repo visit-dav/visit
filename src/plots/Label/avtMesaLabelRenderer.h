@@ -12,8 +12,8 @@
 // Purpose:
 //   Renders the labels using Mesa.
 //
-// Notes:      The contents of this file match avtOpenGLLabelRenderer except
-//             for the class names.
+// Notes:      The contents of this file are essentially the same as
+//             avtOpenGLLabelRenderer.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Oct 25 08:46:36 PDT 2004
@@ -27,6 +27,7 @@ class avtMesaLabelRenderer : public avtLabelRenderer
 public:
                             avtMesaLabelRenderer();
     virtual                ~avtMesaLabelRenderer();
+    virtual void            ReleaseGraphicsResources();
 
 protected:
     void SetupGraphicsLibrary();

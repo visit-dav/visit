@@ -18,7 +18,9 @@
 // Creation:   Mon Oct 25 08:47:43 PDT 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Oct 25 15:58:06 PST 2004
+//   Moved a method from the base class to this class.
+//
 // ****************************************************************************
 
 class avtOpenGLLabelRenderer : public avtLabelRenderer
@@ -26,6 +28,7 @@ class avtOpenGLLabelRenderer : public avtLabelRenderer
 public:
                             avtOpenGLLabelRenderer();
     virtual                ~avtOpenGLLabelRenderer();
+    virtual void            ReleaseGraphicsResources();
 
 protected:
     void SetupGraphicsLibrary();

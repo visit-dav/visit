@@ -55,7 +55,7 @@ sunspot=true
 hyper=true
 gps=true
 riptide=true
-frost=true
+berg=true
 pengra=true
 alc=true
 thunder=true
@@ -77,7 +77,7 @@ do
          hyper=false
          gps=false
          riptide=false
-         frost=false
+         berg=false
          pengra=false
          alc=false
          thunder=false
@@ -123,12 +123,12 @@ do
          riptide=true
          shift
          ;;
-      -frost)
-         frost=false
+      -berg)
+         berg=false
          shift
          ;;
-      +frost)
-         frost=true
+      +berg)
+         berg=true
          shift
          ;;
       -pengra)
@@ -376,15 +376,15 @@ then
 fi
 
 #
-# Install on frost.
+# Install on berg.
 #
-rm -f frost
-cat <<EOF > frost
+rm -f berg
+cat <<EOF > berg
 #!/bin/sh
 ./visit-install -private -c open -g visit -gw -l $ver aix /usr/gapps/visit > installlog 2>&1
 rm -f resultlog
-echo "        install of visit on frost"           > resultlog 2>&1
-echo "       ---------------------------"          >> resultlog 2>&1
+echo "        install of visit on berg"            > resultlog 2>&1
+echo "       --------------------------"           >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
 df -k /usr/gapps/visit                             >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
@@ -399,15 +399,15 @@ ls /usr/gapps/visit/$ver/ibm-aix-pwr/plugins/databases/libI* | sed "s/\/usr\/gap
 mail $emailName < resultlog
 EOF
 
-if [ $frost = true ]
+if [ $berg = true ]
 then
    if [ $test = no ]
    then
-      scp frost:/p/gf1/$user/frost/visitbuild/visit$ver2.aix.tar.gz .
+      scp berg:/p/glocal1/$user/berg/visitbuild/visit$ver2.aix.tar.gz .
       scp visit$ver2.aix.tar.gz gps15:
       scp visit-install gps15:
-      scp frost gps15:frost_install
-      ssh gps15 "chmod 750 frost_install;./frost_install"
+      scp berg gps15:berg_install
+      ssh gps15 "chmod 750 berg_install;./berg_install"
    fi
 fi
 
@@ -532,5 +532,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f kickit sunspot hyper gps riptide frost pengra alc thunder
+   rm -f kickit sunspot hyper gps riptide berg pengra alc thunder
 fi

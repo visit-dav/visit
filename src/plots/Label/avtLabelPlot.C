@@ -491,6 +491,9 @@ avtLabelPlot::EnhanceSpecification(avtPipelineSpecification_p spec)
 // Creation:   Wed Jan 7 14:58:26 PST 2004
 //
 // Modifications:
+//   Brad Whitlock, Mon Oct 25 17:00:04 PST 2004
+//   I fixed a bug where I forgot to set the new attributes into the current
+//   attributes.
 //
 // ****************************************************************************
 
@@ -505,6 +508,7 @@ avtLabelPlot::SetAtts(const AttributeGroup *a)
     // See if any attributes that require the plot to be regenerated were
     // changed and copy the state object.
     needsRecalculation = atts.ChangesRequireRecalculation(*newAtts);
+    atts = *newAtts;
 
     // Set whether the legend is on or off.
     SetLegend(atts.GetLegendFlag());

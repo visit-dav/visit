@@ -54,7 +54,7 @@ sunspot=true
 hyper=true
 gps=true
 riptide=true
-frost=true
+berg=true
 pengra=true
 thunder=true
 
@@ -74,7 +74,7 @@ do
          hyper=false
          gps=false
          riptide=false
-         frost=false
+         berg=false
          pengra=false
          thunder=false
          shift
@@ -119,12 +119,12 @@ do
          riptide=true
          shift
          ;;
-      -frost)
-         frost=false
+      -berg)
+         berg=false
          shift
          ;;
-      +frost)
-         frost=true
+      +berg)
+         berg=true
          shift
          ;;
       -pengra)
@@ -420,33 +420,33 @@ then
 fi
 
 #
-# Build on frost, both serial and parallel versions.
+# Build on berg, both serial and parallel versions.
 #
-rm -f frost
-cat <<EOF > frost
+rm -f berg
+cat <<EOF > berg
 #!/bin/sh
-if test ! -e /p/gf1/$user ; then
-   mkdir /p/gf1/$user
+if test ! -e /p/glocal1/$user ; then
+   mkdir /p/glocal1/$user
 fi
-if test ! -e /p/gf1/$user/frost ; then
-   mkdir /p/gf1/$user/frost
+if test ! -e /p/glocal1/$user/berg ; then
+   mkdir /p/glocal1/$user/berg
 fi
-rm -rf /p/gf1/$user/frost/visitbuild
-mkdir /p/gf1/$user/frost/visitbuild
-mv frost_$dist.tar.gz /p/gf1/$user/frost/visitbuild/$dist.tar.gz
-cd /p/gf1/$user/frost/visitbuild
+rm -rf /p/glocal1/$user/berg/visitbuild
+mkdir /p/glocal1/$user/berg/visitbuild
+mv berg_$dist.tar.gz /p/glocal1/$user/berg/visitbuild/$dist.tar.gz
+cd /p/glocal1/$user/berg/visitbuild
 gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
 env CXXFLAGS=-O2 MAKE=gmake ./configure --enable-parallel >> ../buildlog 2>&1
-gmake -j 6 >> ../buildlog 2>&1
+gmake -j 4 >> ../buildlog 2>&1
 clearcase_bin/visit-bin-dist >> ../buildlog 2>&1
 mv visit\$ver2.aix.tar.gz ..
 cd ..
 rm -f resultlog
-echo "        build of visit on frost"        > resultlog 2>&1
-echo "       -------------------------"       >> resultlog 2>&1
+echo "        build of visit on berg"         > resultlog 2>&1
+echo "       ------------------------"        >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
 ls -l                                         >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
@@ -459,13 +459,13 @@ ls $dist/plugins/databases/libI* | sed "s/$dist\/plugins\/databases\/libI//" | s
 mail $emailName < resultlog
 EOF
 
-if [ $frost = true ]
+if [ $berg = true ]
 then
    if [ $test = no ]
    then
-      scp frost frost:frost_buildit
-      scp $dist.tar.gz frost:frost_$dist.tar.gz
-      ssh frost "chmod 750 frost_buildit;./frost_buildit" &
+      scp berg berg:berg_buildit
+      scp $dist.tar.gz berg:berg_$dist.tar.gz
+      ssh berg "chmod 750 berg_buildit;./berg_buildit" &
    fi
 fi
 
@@ -574,5 +574,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f kickit sunspot hyper gps riptide frost pengra thunder
+   rm -f kickit sunspot hyper gps riptide berg pengra thunder
 fi
