@@ -140,6 +140,10 @@
 #    Added support for MacOS X. Added darwin-ppc and removed
 #    tflops-intel-ppro since we probably won't ever run there.
 #
+#    Eric Brugger, Fri Oct 17 16:51:29 PDT 2003
+#    I split some copy commands into multiple commands to avoid
+#    argument length problems with some implementations of csh.
+#
 #-----------------------------------------------------------------------
 
 set DataFiles = "TRUE"
@@ -677,12 +681,21 @@ mkdir $incdir/qt
 cp $VisItDir/include/*.h                        $incdir
 cp $VisItDir/include/make*                      $incdir
 cp $VisItDir/include/visit/[A-M]*.h             $incdir/visit
-cp $VisItDir/include/visit/[N-Z]*.h             $incdir/visit
-cp $VisItDir/include/visit/a*.h                 $incdir/visit
+cp $VisItDir/include/visit/[N-Q]*.h             $incdir/visit
+cp $VisItDir/include/visit/[R-Z]*.h             $incdir/visit
+cp $VisItDir/include/visit/a[a-uw-zA-Z]*.h      $incdir/visit
+cp $VisItDir/include/visit/av[a-su-zA-Z]*.h     $incdir/visit
+cp $VisItDir/include/visit/avt[a-z]*.h          $incdir/visit
+cp $VisItDir/include/visit/avt[A-M]*.h          $incdir/visit
+cp $VisItDir/include/visit/avt[M-Z]*.h          $incdir/visit
 cp $VisItDir/include/visit/[b-z]*.h             $incdir/visit
 cp $VisItDir/include/mesa/GL/*.h                $incdir/mesa/GL
 cp $VisItDir/include/vtk/*.h                    $incdir/vtk
-cp $VisItDir/include/vtk/Common/*.h             $incdir/vtk/Common
+cp $VisItDir/include/vtk/Common/[a-uw-zA-Z]*.h   $incdir/visit
+cp $VisItDir/include/vtk/Common/v[a-su-zA-Z]*.h  $incdir/visit
+cp $VisItDir/include/vtk/Common/vt[a-jl-zA-Z]*.h $incdir/vtk/Common
+cp $VisItDir/include/vtk/Common/vtk[a-zA-J]*.h   $incdir/vtk/Common
+cp $VisItDir/include/vtk/Common/vtk[K-Z]*.h      $incdir/vtk/Common
 cp $VisItDir/include/vtk/Filtering/*.h          $incdir/vtk/Filtering
 cp $VisItDir/include/vtk/Graphics/*.h           $incdir/vtk/Graphics
 cp $VisItDir/include/vtk/Hybrid/*.h             $incdir/vtk/Hybrid
@@ -691,13 +704,17 @@ cp $VisItDir/include/vtk/Imaging/*.h            $incdir/vtk/Imaging
 cp $VisItDir/include/vtk/MangleMesaInclude/*.h  $incdir/vtk/MangleMesaInclude
 cp $VisItDir/include/vtk/Rendering/*.h          $incdir/vtk/Rendering
 cp $VisItDir/include/python/*.h                 $incdir/python
-cp $VisItDir/include/qt/*.h                     $incdir/qt
+cp $VisItDir/include/qt/[a-pr-zA-Z]*.h          $incdir/qt
+cp $VisItDir/include/qt/q[a-l]*.h               $incdir/qt
+cp $VisItDir/include/qt/q[m-zA-Z]*.h            $incdir/qt
 
 #
 # Copy the help files to the distribution.
 #
 echo "Copying help files to the distribution..."
-cp $VisItDir/help/*.html $helpdir
+cp $VisItDir/help/[a-gi-z]*.html $helpdir
+cp $VisItDir/help/help0[01]*.html $helpdir
+cp $VisItDir/help/help0[23]*.html $helpdir
 if (-e $VisItDir/help/visit.helpml) then
    cp $VisItDir/help/visit.helpml $helpdir
 endif

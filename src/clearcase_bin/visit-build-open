@@ -459,9 +459,9 @@ if [ $pengra = true ]
 then
    if [ $test = no ]
    then
-      scp1 pengra pengra0:pengra_buildit
-      scp1 $dist.tar.gz pengra0:pengra_$dist.tar.gz
-      ssh1 pengra0 "chmod 750 pengra_buildit;./pengra_buildit" &
+      scp pengra pengra0:pengra_buildit
+      scp $dist.tar.gz pengra0:pengra_$dist.tar.gz
+      ssh pengra0 "chmod 750 pengra_buildit;./pengra_buildit" &
    fi
 fi
 

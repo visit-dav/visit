@@ -73,6 +73,11 @@ extern "C" void __pgdbg_stub(void)          { }
 //    Added code to delete memory that was leaked when the file format can't
 //    understand this type of PDB file.
 //
+//    Hank Childs, Fri Oct 17 21:43:45 PDT 2003
+//    Stop using constructs that come from AddFile (filenames, nFiles), since
+//    they are primarily for handling file descriptors.  Used data members
+//    specific to this class (my_filenames, my_filenames.size()) instead.
+//
 // ****************************************************************************
 
 avtKullLiteFileFormat::avtKullLiteFileFormat(const char *fname) 
@@ -105,18 +110,23 @@ avtKullLiteFileFormat::avtKullLiteFileFormat(const char *fname)
         while (inf && !inf.eof())
         {
             a = prefix + b;
-            AddFile(a.c_str());
+            my_filenames.push_back(a);
             inf >> b;
         }
     }
     else // We're opening a single file, it's not an index
     {
-        AddFile(fname);
+        my_filenames.push_back(fname);
     }
+
+    // The generic database is much happier if we register at least one file 
+    // as our filename.
+    AddFile(fname);
+
     inf.close();
 
-    dataset = new vtkDataSet*[nFiles];
-    for (int i = 0; i < nFiles; i++)
+    dataset = new vtkDataSet*[my_filenames.size()];
+    for (int i = 0; i < my_filenames.size(); i++)
         dataset[i] = NULL;
 
     TRY
@@ -128,7 +138,7 @@ avtKullLiteFileFormat::avtKullLiteFileFormat(const char *fname)
     }
     CATCH(VisItException)
     {
-        for(int j = 0; j < nFiles; ++j)
+        for(int j = 0; j < my_filenames.size(); ++j)
         {
             if(dataset[j] != NULL)
                 dataset[j]->Delete();
@@ -151,13 +161,18 @@ avtKullLiteFileFormat::avtKullLiteFileFormat(const char *fname)
 //    Akira Haddox, Tue May 20 13:51:48 PDT 2003
 //    Removed data variable handling, and material dataset storage.
 //
+//    Hank Childs, Fri Oct 17 21:43:45 PDT 2003
+//    Stop using constructs that come from AddFile (filenames, nFiles), since
+//    they are primarily for handling file descriptors.  Used data members
+//    specific to this class (my_filenames, my_filenames.size()) instead.
+//
 // ****************************************************************************
 
 avtKullLiteFileFormat::~avtKullLiteFileFormat()
 {
     if (dataset != NULL)
     {
-        for (int i = 0; i < nFiles; i++)
+        for (int i = 0; i < my_filenames.size(); i++)
             if (dataset[i])
                 dataset[i]->Delete();
         delete[] dataset;
@@ -193,14 +208,19 @@ avtKullLiteFileFormat::~avtKullLiteFileFormat()
 //    Removed data variable handling, and material dataset storage.
 //    Fixed calculation of nRecvZones.
 //
+//    Hank Childs, Fri Oct 17 21:43:45 PDT 2003
+//    Stop using constructs that come from AddFile (filenames, nFiles), since
+//    they are primarily for handling file descriptors.  Used data members
+//    specific to this class (my_filenames, my_filenames.size()) instead.
+//
 // ****************************************************************************
 
 void
 avtKullLiteFileFormat::ReadInFile(int fi)
 {
-    debug4 << "Reading in dataset from KullLite file " << filenames[fi]<< endl;
+    debug4 << "Reading in dataset from KullLite file " << my_filenames[fi]<< endl;
 
-    m_pdbFile = PD_open(filenames[fi], "r");
+    m_pdbFile = PD_open((char *) my_filenames[fi].c_str(), "r");
     if (m_pdbFile == NULL)
     {
         Close();
@@ -574,15 +594,20 @@ avtKullLiteFileFormat::ReadInFile(int fi)
 //    Akira Haddox, Tue May 20 13:51:48 PDT 2003
 //    Removed data variable handling, and material dataset storage.
 //
+//    Hank Childs, Fri Oct 17 21:43:45 PDT 2003
+//    Stop using constructs that come from AddFile (filenames, nFiles), since
+//    they are primarily for handling file descriptors.  Used data members
+//    specific to this class (my_filenames, my_filenames.size()) instead.
+//
 // ****************************************************************************
 
 vtkDataSet *
 avtKullLiteFileFormat::GetMesh(int dom, const char *mesh)
 {
-    debug5 << "Getting mesh from KullLite file: " << filenames[dom] << endl;
+    debug5 << "Getting mesh from KullLite file: " << my_filenames[dom] << endl;
 
-    if (dom < 0 || dom >= nFiles)
-        EXCEPTION2(BadDomainException, dom, nFiles);
+    if (dom < 0 || dom >= my_filenames.size())
+        EXCEPTION2(BadDomainException, dom, my_filenames.size());
     if (!dataset[dom])
         ReadInFile(dom);
 
@@ -638,6 +663,11 @@ avtKullLiteFileFormat::GetVar(int fi, const char *var)
 //    Akira Haddox, Tue May 20 13:51:48 PDT 2003
 //    Removed data variable handling, and material dataset storage.
 //
+//    Hank Childs, Fri Oct 17 21:43:45 PDT 2003
+//    Stop using constructs that come from AddFile (filenames, nFiles), since
+//    they are primarily for handling file descriptors.  Used data members
+//    specific to this class (my_filenames, my_filenames.size()) instead.
+//
 // ****************************************************************************
 
 void
@@ -651,7 +681,7 @@ avtKullLiteFileFormat::FreeUpResources(void)
     int i;
     if (dataset != NULL)
     {
-        for (i = 0 ; i < nFiles; i++)
+        for (i = 0 ; i < my_filenames.size(); i++)
         {
             if (dataset[i])
             {
@@ -683,6 +713,13 @@ avtKullLiteFileFormat::FreeUpResources(void)
 //  Programmer: Akira Haddox
 //  Creation:   May 20, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Oct 17 21:43:45 PDT 2003
+//    Stop using constructs that come from AddFile (filenames, nFiles), since
+//    they are primarily for handling file descriptors.  Used data members
+//    specific to this class (my_filenames, my_filenames.size()) instead.
+//
 // ****************************************************************************
 
 void *
@@ -701,10 +738,10 @@ avtKullLiteFileFormat::GetAuxiliaryData(const char *var, int domain,
     if (NumberOfMaterials() == 0)
         EXCEPTION1(InvalidVariableException, "No materials to query.");
 
-    if (domain < 0 || domain >= nFiles)
-        EXCEPTION2(BadDomainException, domain, nFiles);
+    if (domain < 0 || domain >= my_filenames.size())
+        EXCEPTION2(BadDomainException, domain, my_filenames.size());
 
-    m_pdbFile = PD_open(filenames[domain], "r");
+    m_pdbFile = PD_open((char *) my_filenames[domain].c_str(), "r");
     if (m_pdbFile == NULL)
     {
         Close();
@@ -780,7 +817,7 @@ avtKullLiteFileFormat::GetAuxiliaryData(const char *var, int domain,
         if (PD_read(m_pdbFile, (char*)matName.c_str(), &(ids[0])) == false)
         {
             Close();
-            EXCEPTION1(InvalidFilesException, filenames[domain]);
+            EXCEPTION1(InvalidFilesException, my_filenames[domain].c_str());
         }
 
         // These id's have this material. To what degree, we're not
@@ -807,7 +844,7 @@ avtKullLiteFileFormat::GetAuxiliaryData(const char *var, int domain,
         if (PD_read(m_pdbFile, (char*)mixedName.c_str(), &(ids[0])) == false)
         {
             Close();
-            EXCEPTION1(InvalidFilesException, filenames[domain]);
+            EXCEPTION1(InvalidFilesException, my_filenames[domain].c_str());
         }
         
         // We now have the ids of the mixed zones.
@@ -820,7 +857,7 @@ avtKullLiteFileFormat::GetAuxiliaryData(const char *var, int domain,
                     &(fractions[0])) == false)
         {
             Close();
-            EXCEPTION1(InvalidFilesException, filenames[domain]);
+            EXCEPTION1(InvalidFilesException, my_filenames[domain].c_str());
         }
 
         // Now set the appropriate values for those zones
@@ -893,20 +930,26 @@ avtKullLiteFileFormat::GetAuxiliaryData(const char *var, int domain,
 //  Modifications:
 //      Akira Haddox, Tue May 20 13:48:04 PDT 2003
 //      Removed code that tried to deal with data variables.
+//
+//     Hank Childs, Fri Oct 17 21:43:45 PDT 2003
+//     Stop using constructs that come from AddFile (filenames, nFiles), since
+//     they are primarily for handling file descriptors.  Used data members
+//     specific to this class (my_filenames, my_filenames.size()) instead.
+//
 // ****************************************************************************
 
 void
 avtKullLiteFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 {
-    vector<string> vFilenames(nFiles);
+    vector<string> vFilenames(my_filenames.size());
     int i;
-    for (i = 0; i < nFiles; i++)
-        vFilenames[i] = string(filenames[i]);
+    for (i = 0; i < my_filenames.size(); i++)
+        vFilenames[i] = my_filenames[i];
 
     avtMeshMetaData *mesh = new avtMeshMetaData;
     mesh->name = MESHNAME;
     mesh->meshType = AVT_UNSTRUCTURED_MESH;
-    mesh->numBlocks = nFiles;
+    mesh->numBlocks = my_filenames.size();
     mesh->blockOrigin = 0;
     mesh->spatialDimension = 3;
     mesh->topologicalDimension = 3;
@@ -968,12 +1011,17 @@ avtKullLiteFileFormat::Close()
 //    Akira Haddox, Tue May 20 13:51:48 PDT 2003
 //    Removed data variable handling.
 //
+//    Hank Childs, Fri Oct 17 21:43:45 PDT 2003
+//    Stop using constructs that come from AddFile (filenames, nFiles), since
+//    they are primarily for handling file descriptors.  Used data members
+//    specific to this class (my_filenames, my_filenames.size()) instead.
+//
 // ****************************************************************************
 
 void avtKullLiteFileFormat::ReadInMaterialNames()
 {
     m_names.clear();
-    for (int i = 0; i < nFiles; i++)
+    for (int i = 0; i < my_filenames.size(); i++)
         ReadInMaterialName(i);
 }
 
@@ -1002,14 +1050,19 @@ void avtKullLiteFileFormat::ReadInMaterialNames()
 //    Akira Haddox, Tue May 20 09:01:01 PDT 2003
 //    Changed the method used to find the material names.
 //
+//    Hank Childs, Fri Oct 17 21:43:45 PDT 2003
+//    Stop using constructs that come from AddFile (filenames, nFiles), since
+//    they are primarily for handling file descriptors.  Used data members
+//    specific to this class (my_filenames, my_filenames.size()) instead.
+//
 // ****************************************************************************
 
 void avtKullLiteFileFormat::ReadInMaterialName(int fi)
 {
     debug4 << "Reading in material header from KullLite file "
-           << filenames[fi] << endl;    
+           << my_filenames[fi] << endl;    
 
-    m_pdbFile = PD_open(filenames[fi], "r");
+    m_pdbFile = PD_open((char *) my_filenames[fi].c_str(), "r");
     if (m_pdbFile == NULL)
     {
         Close();

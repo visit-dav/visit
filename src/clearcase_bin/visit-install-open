@@ -396,7 +396,7 @@ if [ $pengra = true ]
 then
    if [ $test = no ]
    then
-      scp1 pengra0:/usr/tmp/brugger/pengra/visitbuild/visit$ver2.linux.tar.gz visit$ver2.linux_chaos.tar.gz
+      scp pengra0:/usr/tmp/brugger/pengra/visitbuild/visit$ver2.linux.tar.gz visit$ver2.linux_chaos.tar.gz
       scp visit$ver2.linux_chaos.tar.gz gps15:visit$ver2.linux.tar.gz
       scp visit-install gps15:
       scp pengra gps15:pengra_install

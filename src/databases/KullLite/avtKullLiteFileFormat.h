@@ -59,6 +59,7 @@ class DATABASE_API avtKullLiteFileFormat : public avtSTMDFileFormat
   protected:
     // Datasets stored by domain
     vtkDataSet          **dataset;
+    std::vector<std::string>       my_filenames;
     
     std::vector<std::string>       m_names;
     
