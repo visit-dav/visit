@@ -182,6 +182,11 @@ typedef std::map<std::string, int> StringIntMap;
 //    Eric Brugger, Tue Mar 30 16:07:32 PST 2004
 //    Added ClearActors and GetMaintainDataMode.
 //
+//    Mark C. Miller, Wed Apr 14 10:44:42 PDT 2004
+//    I added the method, GetMeshVarNameFromActivePlots, to support the
+//    catch-all mesh feature which computes a mesh variable name from the
+//    active plots
+//
 // ****************************************************************************
 
 
@@ -326,7 +331,6 @@ public:
     void StartPick();
     void StopPick(void);
     std::string GetVarName();
-
     ViewerPlot *GetPlot(const int id) const;
     void GetActivePlotIDs(intVector &) const;
 
@@ -390,6 +394,11 @@ public:
     avtExtentType          spatialExtentsType;
 
     void                   CanMeshPlotBeOpaque();
+    void                   GetMeshVarNameForActivePlots(
+                               const std::string &host,
+                               const std::string &db,
+                               std::string &meshName) const;
+
 };
 
 #endif

@@ -93,6 +93,10 @@ class DataNode;
 //    Brad Whitlock, Wed Mar 31 09:52:59 PDT 2004
 //    I added the ExpansionRequired method.
 //
+//    Brad Whitlock, Tue Apr 13 23:15:22 PST 2004
+//    I added methods to query if the user has ever declined to create a 
+//    database correlation for a given set of files.
+//
 // ****************************************************************************
 
 class ViewerFileServer : public ViewerServerManager
@@ -186,6 +190,9 @@ public:
                                                          int, int=-1);
     DatabaseCorrelation       *GetMostSuitableCorrelation(const stringVector &) const;
     std::string                CreateNewCorrelationName() const;
+    bool                       PreviouslyDeclinedCorrelationCreation(
+                                   const stringVector &) const;
+    void                       DeclineCorrelationCreation(const stringVector &);
     bool                       IsDatabase(const std::string &fullname) const;
     stringVector               GetOpenDatabases() const;
 
@@ -215,6 +222,8 @@ private:
     FileMetaDataMap           fileMetaData;
     FileSILMap                fileSIL;
     DatabaseCorrelationList  *databaseCorrelationList;
+    stringVector              declinedFiles;
+    intVector                 declinedFilesLength;
 };
 
 #endif

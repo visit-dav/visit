@@ -33,6 +33,7 @@ namespace Init
     MISC_API bool  IsComponent(const char *);
     MISC_API void ComponentIssueError(const char *);
     MISC_API void ComponentRegisterErrorFunction(ErrorFunction, void *);
+    MISC_API const char *const CatchAllMeshName = "for active plot";
 }
 
 #endif

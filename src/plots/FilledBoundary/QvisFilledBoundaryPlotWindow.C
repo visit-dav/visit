@@ -3,6 +3,7 @@
 #include <qbuttongroup.h>
 #include <qcheckbox.h>
 #include <qcombobox.h>
+#include <qhbox.h>
 #include <qgroupbox.h>
 #include <qlabel.h>
 #include <qlayout.h>
@@ -163,6 +164,9 @@ QvisFilledBoundaryPlotWindow::~QvisFilledBoundaryPlotWindow()
 //    Jeremy Meredith, Fri Jun 13 16:56:43 PDT 2003
 //    Added clean zones only.
 //
+//    Jeremy Meredith, Wed Apr 14 16:43:06 PDT 2004
+//    Added mixed color.
+//
 // ****************************************************************************
 
 void
@@ -299,11 +303,20 @@ QvisFilledBoundaryPlotWindow::CreateWindowContents()
             this, SLOT(drawInternalToggled(bool)));
     opLayout->addMultiCellWidget(drawInternalCheckBox, 3,3, 0,1);
 
-    // Create the internal surfaces toggle
+    // Create the clean zones only toggle
     cleanZonesOnlyCheckBox = new QCheckBox("Clean zones only", central, "cleanZonesOnlyCheckBox");
     connect(cleanZonesOnlyCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(cleanZonesOnlyToggled(bool)));
-    opLayout->addMultiCellWidget(cleanZonesOnlyCheckBox, 4,4, 0,1);
+    opLayout->addWidget(cleanZonesOnlyCheckBox, 4, 0);
+
+    // Create the mixed color button.
+    QHBox *mixedColorBox = new QHBox(central);
+    mixedColorLabel = new QLabel("--  mixed color: ", mixedColorBox);
+    mixedColor = new QvisColorButton(mixedColorBox, "mixedColor");
+    mixedColor->setButtonColor(QColor(255, 255, 255));
+    connect(mixedColor, SIGNAL(selectedColor(const QColor &)),
+            this, SLOT(mixedColorChanged(const QColor &)));
+    opLayout->addWidget(mixedColorBox, 4, 1);
 
     // Create the smoothing level buttons
     smoothingLevelButtons = new QButtonGroup(0, "smoothingButtons");
@@ -349,6 +362,9 @@ QvisFilledBoundaryPlotWindow::CreateWindowContents()
 // Modifications:
 //    Jeremy Meredith, Fri Jun 13 16:56:43 PDT 2003
 //    Added clean zones only.
+//
+//    Jeremy Meredith, Wed Apr 14 16:43:06 PDT 2004
+//    Added mixed color.
 //
 // ****************************************************************************
 
@@ -448,6 +464,13 @@ QvisFilledBoundaryPlotWindow::UpdateWindow(bool doAll)
             cleanZonesOnlyCheckBox->setChecked(boundaryAtts->GetCleanZonesOnly());
             cleanZonesOnlyCheckBox->blockSignals(false);
             break;
+        case 15: // mixedColor
+            mixedColor->blockSignals(true);
+            mixedColor->
+                setButtonColor(QColor(boundaryAtts->GetMixedColor().Red(),
+                                      boundaryAtts->GetMixedColor().Green(),
+                                      boundaryAtts->GetMixedColor().Blue()));
+            mixedColor->blockSignals(false);
         }
     } // end for
 
@@ -470,6 +493,8 @@ QvisFilledBoundaryPlotWindow::UpdateWindow(bool doAll)
     multipleColorOpacity->setEnabled(mEnabled);
     colorTableButton->setEnabled(boundaryAtts->GetColorType() ==
         FilledBoundaryAttributes::ColorByColorTable);
+    mixedColor->setEnabled(boundaryAtts->GetCleanZonesOnly());
+    mixedColorLabel->setEnabled(boundaryAtts->GetCleanZonesOnly());
 }
 
 // ****************************************************************************
@@ -940,13 +965,17 @@ QvisFilledBoundaryPlotWindow::wireframeToggled(bool val)
 // Creation:   June 13, 2003
 //
 // Modifications:
-//   
+//    Jeremy Meredith, Wed Apr 14 16:43:06 PDT 2004
+//    Added mixed color.
+//
 // ****************************************************************************
 
 void
 QvisFilledBoundaryPlotWindow::cleanZonesOnlyToggled(bool val)
 {
     boundaryAtts->SetCleanZonesOnly(val);
+    mixedColor->setEnabled(val);
+    mixedColorLabel->setEnabled(val);
     Apply();
 }
 
@@ -1264,3 +1293,31 @@ QvisFilledBoundaryPlotWindow::colorTableClicked(bool useDefault, const QString &
     boundaryAtts->SetColorTableName(ctName.latin1());
     Apply();
 }
+
+
+// ****************************************************************************
+// Method: QvisFilledBoundaryPlotWindow::mixedColorChanged
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the mixed color button's
+//   color changes.
+//
+// Arguments:
+//   color : The new single color.
+//
+// Programmer: Jeremy Meredith
+// Creation:   April 13, 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisFilledBoundaryPlotWindow::mixedColorChanged(const QColor &color)
+{
+    ColorAttribute temp(color.red(), color.green(), color.blue(),
+                        boundaryAtts->GetMixedColor().Alpha());
+    boundaryAtts->SetMixedColor(temp);
+    Apply();
+}
+

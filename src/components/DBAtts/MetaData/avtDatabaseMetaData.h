@@ -364,6 +364,8 @@ class DBATTS_API avtDatabaseMetaData : public AttributeSubject
     std::string  simHost;
     int          simPort;
 
+    bool         useCatchAllMesh;
+
     std::string  timeStepPath;
     stringVector timeStepNames;
     intVector    cycles;
@@ -398,9 +400,14 @@ public:
     void         SetTemporalExtents(double, double);
 
     void         SetMustRepopulateOnStateChange(bool mode)
-                    { mustRepopulateOnStateChange = mode; };
+                     { mustRepopulateOnStateChange = mode; };
     bool         GetMustRepopulateOnStateChange(void) const
-                    { return mustRepopulateOnStateChange; };
+                     { return mustRepopulateOnStateChange; };
+
+    bool         GetUseCatchAllMesh(void) const
+                     { return useCatchAllMesh; };
+    void         SetUseCatchAllMesh(bool useIt)
+                     { useCatchAllMesh = useIt; };
 
     void         SetIsVirtualDatabase(bool val) { isVirtualDatabase = val; };
     bool         GetIsVirtualDatabase() const { return isVirtualDatabase; };

@@ -38,15 +38,15 @@ class GUI_API NameSimplifier
     {
       public:
         UniqueFileName(const QualifiedFilename &qfn);
-        string GetAsString() const;
+        std::string GetAsString() const;
 
         static bool Unique(const UniqueFileName &a, const UniqueFileName &b);
         static void Uniquify(UniqueFileName &a, UniqueFileName &b);
       private:
-        string       host;        // host name
+        std::string  host;        // host name
         stringVector path;        // path components, split by separator
         int          pathLen;     // length of the 'path' vector
-        string       file;        // raw file name without path
+        std::string  file;        // raw file name without path
         bool         leadingSlash;// true if it was a full path originally
         char         separator;   // separator character
 

@@ -13,9 +13,14 @@
 //  Programmer: Mark C. Miller
 //  Creation:   15Jul03
 //
+//  Modifications:
+//
+//    Mark C. Miller, Wed Apr 14 16:41:32 PDT 2004
+//    Added data member for extents type string
+//
 // ****************************************************************************
 
-SetWinAnnotAttsRPC::SetWinAnnotAttsRPC() : BlockingRPC("aa")
+SetWinAnnotAttsRPC::SetWinAnnotAttsRPC() : BlockingRPC("aas")
 {
 }
 
@@ -50,11 +55,15 @@ SetWinAnnotAttsRPC::~SetWinAnnotAttsRPC()
 //  Creation:   15Jul03
 //
 //  Modifications:
+//
+//    Mark C. Miller, Wed Apr 14 16:41:32 PDT 2004
+//    Added argument for extents type string
 // ****************************************************************************
 
 void
 SetWinAnnotAttsRPC::operator()(const WindowAttributes *winAtts,
-                               const AnnotationAttributes *annotAtts)
+                               const AnnotationAttributes *annotAtts,
+                               const string extStr)
 {
     if (winAtts)
        SetWindowAtts(winAtts);
@@ -62,7 +71,10 @@ SetWinAnnotAttsRPC::operator()(const WindowAttributes *winAtts,
     if (annotAtts)
        SetAnnotationAtts(annotAtts);
 
-    if (winAtts || annotAtts)
+    if (extStr.size())
+       SetExtentTypeString(extStr);
+
+    if (winAtts || annotAtts || extStr.size())
        Execute();
 }
 
@@ -77,6 +89,10 @@ SetWinAnnotAttsRPC::operator()(const WindowAttributes *winAtts,
 //  Programmer: Mark C. Miller
 //  Creation:   15Jul03
 //
+//  Modifications:
+//
+//    Mark C. Miller, Wed Apr 14 16:41:32 PDT 2004
+//    Added data member for extents type string
 // ****************************************************************************
 
 void
@@ -84,6 +100,7 @@ SetWinAnnotAttsRPC::SelectAll()
 {
     Select(0, (void*)&win);
     Select(1, (void*)&annot);
+    Select(2, (void*)&extstr);
 }
 
 
@@ -130,6 +147,27 @@ SetWinAnnotAttsRPC::SetAnnotationAtts(const AnnotationAttributes *atts)
 }
 
 // ****************************************************************************
+//  Method: SetWinAnnotAttsRPC::SetExtentTypeString
+//
+//  Purpose: 
+//    This sets the extent type.
+//
+//  Arguments:
+//    ext       the extent type 
+//
+//  Programmer: Mark C. Miller
+//  Creation:   14Apr04 
+//
+// ****************************************************************************
+
+void
+SetWinAnnotAttsRPC::SetExtentTypeString(const string extstr_)
+{
+    extstr = extstr_;
+    Select(2, (void*)&extstr);
+}
+
+// ****************************************************************************
 //  Method: SetWinAnnotAttsRPC::GetWindowAtts
 //
 //  Purpose: 
@@ -161,4 +199,21 @@ const AnnotationAttributes&
 SetWinAnnotAttsRPC::GetAnnotationAtts() const
 {
     return annot;
+}
+
+// ****************************************************************************
+//  Method: SetWinAnnotAttsRPC::GetExtentType
+//
+//  Purpose: 
+//    This returns the extent type.
+//
+//  Programmer: Mark C. Miller
+//  Creation:   14Apr04 
+//
+// ****************************************************************************
+
+const string&
+SetWinAnnotAttsRPC::GetExtentTypeString() const
+{
+    return extstr;
 }

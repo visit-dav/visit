@@ -151,6 +151,10 @@ class WindowAttributes;
 //    Jeremy Meredith, Fri Apr  2 14:29:25 PST 2004
 //    Made restartArguments be saved on a per-host (per-enginekey) basis.
 //
+//    Mark C. Miller, Wed Apr 14 16:41:32 PDT 2004
+//    Added argument for extents type string to ExternalRender and 
+//    SetWinAnnotAtts
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerEngineManager : public ViewerServerManager,
@@ -181,6 +185,7 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
                         std::vector<const AttributeSubject *> attsList,
                         WindowAttributes winAtts,
                         AnnotationAttributes annotAtts,
+                        std::string extStr,
                         bool& shouldTurnOfScalableRendering,
                         bool doAllAnnotations,
                         std::vector<avtImage_p>& imgList);
@@ -225,7 +230,8 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
     bool StartPick(const EngineKey &ek,
                    const bool flag, const int nid);
     bool SetWinAnnotAtts(const EngineKey &ek, const WindowAttributes *wa,
-                         const AnnotationAttributes *aa);    
+                         const AnnotationAttributes *aa,
+                         const std::string extStr);
     bool ClearCache(const EngineKey &ek, const char *dbName = 0);
     bool Query(const EngineKey &ek, const std::vector<int> &networkIds, 
                const QueryAttributes *atts, QueryAttributes &retAtts);

@@ -1,5 +1,6 @@
 #include <VariableMenuPopulator.h>
 
+#include <Init.h>
 #include <avtDatabaseMetaData.h>
 #include <avtSIL.h>
 #include <PlotPluginInfo.h>
@@ -122,6 +123,10 @@ VariableMenuPopulator::ClearDatabaseName()
 //   I added code to check the name of the database that we're using against
 //   the name of the database that we've used before.
 //
+//   Mark C. Miller, Wed Apr 14 10:51:23 PDT 2004
+//   I added code to include the catch-all mesh name in the list of meshes
+//   when the plugin has activiated this feature
+//
 // ****************************************************************************
 
 bool
@@ -168,6 +173,8 @@ VariableMenuPopulator::PopulateVariableLists(const std::string &dbName,
         const avtMeshMetaData *mmd = md->GetMesh(i);
         meshVars[mmd->name] = mmd->validVariable;
     }
+    if (md->GetUseCatchAllMesh())
+        meshVars[Init::CatchAllMeshName] = true;
     for (i = 0; i < md->GetNumScalars(); ++i)
     {
         const avtScalarMetaData *smd = md->GetScalar(i);

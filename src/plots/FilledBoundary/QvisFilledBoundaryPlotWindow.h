@@ -33,6 +33,9 @@ class QvisOpacitySlider;
 //    Jeremy Meredith, Fri Jun 13 16:56:43 PDT 2003
 //    Added clean zones only.
 //
+//    Jeremy Meredith, Tue Apr 13 16:42:55 PDT 2004
+//    Added mixed color.
+//
 // ****************************************************************************
 
 class QvisFilledBoundaryPlotWindow : public QvisPostableWindowObserver
@@ -72,6 +75,7 @@ private slots:
     void boundarySelectionChanged();
     void overallOpacityChanged(int opacity);
     void smoothingLevelChanged(int index);
+    void mixedColorChanged(const QColor &color);
 private:
     int                       plotType;
     FilledBoundaryAttributes *boundaryAtts;
@@ -91,6 +95,8 @@ private:
     QvisOpacitySlider        *multipleColorOpacity;
     QvisColorTableButton     *colorTableButton;
     QvisOpacitySlider        *overallOpacity;
+    QLabel                   *mixedColorLabel;
+    QvisColorButton          *mixedColor;
     QCheckBox                *wireframeCheckBox;
     QCheckBox                *drawInternalCheckBox;
     QButtonGroup             *smoothingLevelButtons;

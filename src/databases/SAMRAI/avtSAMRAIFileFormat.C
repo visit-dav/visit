@@ -1851,6 +1851,12 @@ avtSAMRAIFileFormat::GetAuxiliaryData(const char *var, int patch,
 //  Programmer:  Walter Herrera Jimenez
 //  Creation:    June 19, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Wed Apr 14 08:02:14 PDT 2004
+//    Back out undocumented changes made by Mark Miller with adding material
+//    numbers to material names.
+//
 // ****************************************************************************
 
 void
@@ -1902,11 +1908,7 @@ avtSAMRAIFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             // re-format the material names for avt's API
             vector<string> matnames;
             for (i = 0; i < num_mats; i++)
-            {
-                char tmpName[1024];
-                sprintf(tmpName, "%d %s", i, mat_names[i].c_str());
-                matnames.push_back(tmpName);
-            }
+                matnames.push_back(mat_names[i]);
 
             // add the material object
             avtMaterialMetaData *mmd = new avtMaterialMetaData("materials", mesh_name,

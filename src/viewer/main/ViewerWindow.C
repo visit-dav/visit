@@ -4910,6 +4910,9 @@ ViewerWindow::GetWindowAttributes() const
 // Modifications:
 //    Jeremy Meredith, Tue Mar 30 11:04:28 PST 2004
 //    Added an engine key used to index (and restart) engines.
+//
+//    Mark C. Miller, Wed Apr 14 16:41:32 PDT 2004
+//    Added code to get and pass extents type string to SetWinAnnotAtts
 //   
 // ****************************************************************************
 
@@ -4918,9 +4921,11 @@ ViewerWindow::SendWindowEnvironmentToEngine(const EngineKey &ek)
 {
     WindowAttributes winAtts(GetWindowAttributes());
     AnnotationAttributes annotAtts(*GetAnnotationAttributes());
+    string extStr(avtExtentType_ToString(GetViewExtentsType())); 
     return ViewerEngineManager::Instance()->SetWinAnnotAtts(ek,
                                                             &winAtts,
-                                                            &annotAtts);
+                                                            &annotAtts,
+                                                            extStr);
 }
 
 // ****************************************************************************
@@ -6632,6 +6637,9 @@ ViewerWindow::SendScalableRenderingModeChangeMessage(bool newMode)
 //    Jeremy Meredith, Tue Mar 30 11:04:04 PST 2004
 //    Added an engine key used to index (and restart) engines.
 //
+//    Mark C. Miller, Wed Apr 14 16:41:32 PDT 2004
+//    Added code to set the extents type string to the unknown value
+//
 // ****************************************************************************
 
 void
@@ -6641,6 +6649,8 @@ ViewerWindow::ClearLastExternalRenderRequestInfo()
     lastExternalRenderRequest.engineKeysList.clear();
     lastExternalRenderRequest.plotIdsList.clear();
     lastExternalRenderRequest.attsList.clear();
+    lastExternalRenderRequest.extStr =
+        avtExtentType_ToString(AVT_UNKNOWN_EXTENT_TYPE);
 }
 
 // ****************************************************************************
@@ -6659,6 +6669,9 @@ ViewerWindow::ClearLastExternalRenderRequestInfo()
 //
 //   Jeremy Meredith, Tue Mar 30 11:04:04 PST 2004
 //   Added an engine key used to index (and restart) engines.
+//
+//   Mark C. Miller, Wed Apr 14 16:41:32 PDT 2004
+//   Added code to update the extents type string
 //
 // ****************************************************************************
 
@@ -6689,6 +6702,7 @@ ViewerWindow::UpdateLastExternalRenderRequestInfo(
     lastExternalRenderRequest.plotIdsList   = newRequest.plotIdsList;
     lastExternalRenderRequest.winAtts       = newRequest.winAtts;
     lastExternalRenderRequest.annotAtts     = newRequest.annotAtts;
+    lastExternalRenderRequest.extStr        = newRequest.extStr;
 
 }
 
@@ -6712,6 +6726,9 @@ ViewerWindow::UpdateLastExternalRenderRequestInfo(
 //   Jeremy Meredith, Tue Mar 30 11:04:04 PST 2004
 //   Added an engine key used to index (and restart) engines.
 //
+//   Mark C. Miller, Wed Apr 14 16:41:32 PDT 2004
+//   Added code to deal with the extents type string
+//
 // ****************************************************************************
 
 bool
@@ -6729,6 +6746,9 @@ ViewerWindow::CanSkipExternalRender(const ExternalRenderRequestInfo& thisRequest
     tmpAtts.SetDatabaseInfoFlag(lastRequest.annotAtts.GetDatabaseInfoFlag());
     tmpAtts.SetLegendInfoFlag(lastRequest.annotAtts.GetLegendInfoFlag());
     if (tmpAtts != lastRequest.annotAtts)
+        return false;
+
+    if (thisRequest.extStr != lastRequest.extStr)
         return false;
 
     if ((thisRequest.plotIdsList.size() != 0) &&
@@ -6786,6 +6806,9 @@ ViewerWindow::CanSkipExternalRender(const ExternalRenderRequestInfo& thisRequest
 //    Brad Whitlock, Mon Apr 5 12:23:31 PDT 2004
 //    Renamed a method.
 //
+//    Mark C. Miller, Wed Apr 14 16:41:32 PDT 2004
+//    Added code to get the extents type string
+//
 // ****************************************************************************
 
 void
@@ -6801,6 +6824,7 @@ ViewerWindow::GetExternalRenderRequestInfo(
     // get information about this window's attributes
     theRequest.winAtts = GetWindowAttributes();
     theRequest.annotAtts = *GetAnnotationAttributes();
+    theRequest.extStr = avtExtentType_ToString(GetViewExtentsType());
 }
 
 // ****************************************************************************
@@ -6817,6 +6841,9 @@ ViewerWindow::GetExternalRenderRequestInfo(
 //  Modifications:
 //    Jeremy Meredith, Tue Mar 30 11:04:04 PST 2004
 //    Added an engine key used to index (and restart) engines.
+//
+//    Mark C. Miller, Wed Apr 14 16:41:32 PDT 2004
+//    Added argument for extents type string in call to ExternalRender
 //
 // ****************************************************************************
 bool
@@ -6845,6 +6872,7 @@ ViewerWindow::ExternalRender(const ExternalRenderRequestInfo& thisRequest,
                                        thisRequest.attsList,
                                        thisRequest.winAtts,
                                        thisRequest.annotAtts,
+                                       thisRequest.extStr,
                                        shouldTurnOffScalableRendering,
                                        doAllAnnotations,
                                        imgList);

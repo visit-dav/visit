@@ -1,3 +1,36 @@
+Code: SetFromNode
+Prefix:
+Postfix:
+    // We are no longer using MultiColor as the source for the "mixed"
+    // color (in clean zones only), but someone may have saved their
+    // settings with the "mixed" color in the list.  Remove it if it's
+    // in there.
+    //
+    // NOTE: This code can be removed in a few months, as soon as
+    // 1.3 is at least a few versions old, since it represents a little
+    // bit of a hack.
+    bool done = false;
+    while (!done)
+    {
+        done = true;
+        int index;
+        for (index=0; index<boundaryNames.size(); index++)
+        {
+            if (boundaryNames[index] == "mixed")
+            {
+                done = false;
+                break;
+            }
+        }
+        if (!done)
+        {
+            multiColor.RemoveColorAttribute(index);
+            for (int i=index+1; i<boundaryNames.size(); i++)
+                boundaryNames[i-1] = boundaryNames[i];
+            boundaryNames.resize(boundaryNames.size() - 1);
+        }
+    }
+
 Function: ChangesRequireRecalculation
 Declaration: bool ChangesRequireRecalculation(const FilledBoundaryAttributes &obj);
 Definition:
