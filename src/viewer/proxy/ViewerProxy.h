@@ -335,6 +335,9 @@ class Xfer;
 //    Jeremy Meredith, Fri Mar 26 10:22:36 PST 2004
 //    Added support for simulations.
 //
+//    Eric Brugger, Mon Mar 29 13:39:53 PST 2004
+//    I added ToggleMaintainDataMode.
+//
 //    Kathleen Bonnell, Wed Mar 31 10:56:30 PST 2004 
 //    Added queryOverTimeAtts, bool arg to DatabaseQuery, PointQuery.
 //
@@ -461,6 +464,7 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
     void RecenterView();
     void SetViewExtentsType(int t);
     void ToggleMaintainViewMode();
+    void ToggleMaintainDataMode();
     void UndoView();
     void ToggleLockViewMode();
     void ToggleLockTime();

@@ -141,9 +141,12 @@ PreparePlotRPC::GetMakePlotRPC()
 //    Jeremy Meredith, Fri Nov  9 10:16:51 PST 2001
 //    Added a NetworkID as a return type of the rpc.
 //
+//    Jeremy Meredith, Fri Mar 19 15:00:21 PST 2004
+//    Modified the rpc to pass the data extents.
+//
 // ****************************************************************************
 MakePlotRPC::MakePlotRPC() 
-    : BlockingRPC("a", &networkID)
+    : BlockingRPC("ad*", &networkID)
 {
     atts = NULL;
     preparePlotRPC.SetMakePlotRPC(this);
@@ -186,6 +189,23 @@ MakePlotRPC::SetAtts(AttributeSubject *a)
 }
 
 // ****************************************************************************
+//  Method:  MakePlotRPC::SetDataExtents
+//
+//  Purpose:
+//    
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    March 19, 2004
+//
+// ****************************************************************************
+void
+MakePlotRPC::SetDataExtents(const std::vector<double> &extents)
+{
+    dataExtents = extents;
+    Select(1, (void*)&dataExtents);
+}
+
+// ****************************************************************************
 //  Method:  MakePlotRPC::SetXfer
 //
 //  Purpose:
@@ -211,11 +231,15 @@ MakePlotRPC::SetXfer(Xfer *x)
 //  Programmer:  Jeremy Meredith
 //  Creation:    March  4, 2001
 //
+//  Modifications:
+//    Jeremy Meredith, Fri Mar 19 15:00:21 PST 2004
+//    Modified the rpc to pass the data extents.
+//
 // ****************************************************************************
 void
 MakePlotRPC::SelectAll()
 {
-    // nothing
+    Select(1, (void*)&dataExtents);
 }
 
 // ****************************************************************************
@@ -251,6 +275,22 @@ MakePlotRPC::GetAtts()
 }
 
 // ****************************************************************************
+//  Method:  MakePlotRPC::GetDataExtents
+//
+//  Purpose:
+//    
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    March 19, 2004
+//
+// ****************************************************************************
+const std::vector<double> &
+MakePlotRPC::GetDataExtents() const
+{
+    return dataExtents;
+}
+
+// ****************************************************************************
 //  Method:  MakePlotRPC::GetPreparePlotRPC
 //
 //  Purpose:
@@ -282,9 +322,13 @@ MakePlotRPC::GetPreparePlotRPC()
 //    Jeremy Meredith, Thu Nov 21 11:09:54 PST 2002
 //    Added propogation of error from preparatory RPC.
 //
+//    Jeremy Meredith, Fri Mar 19 15:00:21 PST 2004
+//    Modified the rpc to pass the data extents.
+//
 // ****************************************************************************
 int
-MakePlotRPC::operator()(const string &n, const AttributeSubject *a)
+MakePlotRPC::operator()(const string &n, const AttributeSubject *a,
+                        const std::vector<double> &extents)
 {
     preparePlotRPC(n);
     if (preparePlotRPC.GetStatus() == VisItRPC::error)
@@ -297,6 +341,7 @@ MakePlotRPC::operator()(const string &n, const AttributeSubject *a)
 
     if (a)
         Select(0, (void*)a);
+    Select(1, (void*)&extents);
 
     Execute();
 

@@ -50,6 +50,7 @@ extern ViewerSubject *viewerSubject;   // FIX_ME This is a hack.
 //
 avtActor_p ViewerPlot::nullActor((avtActor *)0);
 avtDataObjectReader_p ViewerPlot::nullReader((avtDataObjectReader *)0);
+vector<double> ViewerPlot::nullDataExtents;
 
 // ****************************************************************************
 //  Method: ViewerPlot constructor
@@ -2147,6 +2148,9 @@ ViewerPlot::GetReader() const
 //    Mark C. Miller, Wed Mar 24 19:02:35 PST 2004
 //    Moved declaration for 'invariantMetaData' outside of TRY block
 //
+//    Eric Brugger, Tue Mar 30 15:26:33 PST 2004
+//    Added code to set the plot data extents if maintain data limits is set.
+//
 // ****************************************************************************
 
 // only place in ViewerPlot where ViewerWindowManager is needed
@@ -2281,8 +2285,13 @@ ViewerPlot::CreateActor(bool createNew, bool turningOffScalableRendering)
     readerList[state] = reader;
 
 // REWRITE_FOR_KEYFRAMING
-    // Get the keyframed attributes for the current state.
+    // Get the keyframed attributes for the current state.  The data
+    // extents must be set before the attributes.
     plotList[state] = viewerPluginInfo->AllocAvtPlot();
+    if (viewerPlotList->GetMaintainDataMode())
+    {
+        plotList[state]->SetDataExtents(dataExtents);
+    }
     plotAtts->GetAtts(state, curPlotAtts);
 
     if (!invariantMetaData)
@@ -2721,6 +2730,9 @@ ViewerPlot::SetSpatialExtentsType(avtExtentType extsType)
 //    Jeremy Meredith, Tue Mar 30 10:39:20 PST 2004
 //    Added an engine key to map this plot to the engine used to create it.
 //
+//    Eric Brugger, Tue Mar 30 15:26:33 PST 2004
+//    Added the data extents to the call to MakePlot.
+//
 // ****************************************************************************
 
 bool
@@ -2735,8 +2747,18 @@ ViewerPlot::ExecuteEngineRPC()
 
     ViewerEngineManager *engineMgr = ViewerEngineManager::Instance();
     plotAtts->GetAtts(state, curPlotAtts);
-    bool successful = engineMgr->MakePlot(engineKey, viewerPluginInfo->GetID(),
-                                          curPlotAtts, &networkID);
+    bool successful;
+    if (viewerPlotList->GetMaintainDataMode())
+    {
+        successful = engineMgr->MakePlot(engineKey, viewerPluginInfo->GetID(),
+            curPlotAtts, dataExtents, &networkID);
+    }
+    else
+    {
+        successful = engineMgr->MakePlot(engineKey, viewerPluginInfo->GetID(),
+            curPlotAtts, nullDataExtents, &networkID);
+    }
+
     if(!successful)
     {
         networkID = -1;
@@ -3933,5 +3955,25 @@ ViewerPlot::GetVariableCentering() const
     }
 
     return retval;
+}
+
+// ****************************************************************************
+//  Method: ViewerPlot::UpdateDataExtents
+//
+//  Purpose:
+//    Update the plot's data extents.
+//
+//  Programmer: Eric Brugger
+//  Creation:   March 30, 2004
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+ViewerPlot::UpdateDataExtents()
+{
+    dataExtents.clear();
+    plotList[state]->GetDataExtents(dataExtents);
 }
 

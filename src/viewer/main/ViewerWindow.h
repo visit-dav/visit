@@ -292,6 +292,9 @@ struct ExternalRenderRequestInfo
 //    Added an engine key used to index (and restart) engines.
 //    This replaces hostName in ExternalRenderRequestInfo.
 //
+//    Eric Brugger, Mon Mar 29 15:33:13 PST 2004
+//    I added Set/GetMaintainDataMode.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerWindow
@@ -343,6 +346,8 @@ public:
     bool GetCameraViewMode() const;
     void SetMaintainViewMode(const bool mode);
     bool GetMaintainViewMode() const;
+    void SetMaintainDataMode(const bool mode);
+    bool GetMaintainDataMode() const;
     void SetViewIsLocked(const bool);
     bool GetViewIsLocked() const;
     void SetTimeLock(const bool);
@@ -554,6 +559,7 @@ private:
 
     bool            cameraView;
     bool            maintainView;
+    bool            maintainData;
     bool            viewIsLocked;
     WINDOW_MODE     windowMode;
     avtExtentType   plotExtentsType;

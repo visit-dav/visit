@@ -392,12 +392,16 @@ EngineProxy::ApplyOperator(const string &name, const AttributeSubject *atts)
 //    Jeremy Meredith, Fri Nov  9 10:21:15 PST 2001
 //    Made it return the network id.
 //
+//    Eric Brugger, Fri Mar 19 15:14:34 PST 2004
+//    I modified the rpc to pass the data limits to the engine.
+//
 // ****************************************************************************
 int
-EngineProxy::MakePlot(const string &name, const AttributeSubject *atts)
+EngineProxy::MakePlot(const string &name, const AttributeSubject *atts,
+                      const vector<double> &extents)
 {
     int id;
-    id = makePlotRPC(name, atts);
+    id = makePlotRPC(name, atts, extents);
     if (makePlotRPC.GetStatus() == VisItRPC::error)
     {
         RECONSTITUTE_EXCEPTION(makePlotRPC.GetExceptionType(),

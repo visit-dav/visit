@@ -1883,14 +1883,18 @@ ViewerEngineManager::ApplyOperator(const EngineKey &ek,
 //    Jeremy Meredith, Fri Mar 26 16:59:59 PST 2004
 //    Use a map of engines based on a key, and be aware of simulations.
 //
+//    Eric Brugger, Tue Mar 30 14:54:04 PST 2004
+//    Added the plot data extents.
+//
 // ****************************************************************************
 
 bool
 ViewerEngineManager::MakePlot(const EngineKey &ek, const char *name, 
-                              const AttributeSubject *atts, int *networkId)
+    const AttributeSubject *atts, const vector<double> &extents,
+    int *networkId)
 {
     ENGINE_PROXY_RPC_BEGIN("MakePlot");
-    *networkId = engine->MakePlot(name, atts);
+    *networkId = engine->MakePlot(name, atts, extents);
     ENGINE_PROXY_RPC_END_NORESTART_RETHROW;
 }
 

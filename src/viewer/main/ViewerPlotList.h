@@ -177,6 +177,9 @@ typedef std::map<std::string, int> StringIntMap;
 //    Jeremy Meredith, Thu Mar 25 17:19:11 PST 2004
 //    Added support for simulations.
 //
+//    Eric Brugger, Tue Mar 30 16:07:32 PST 2004
+//    Added ClearActors and GetMaintainDataMode.
+//
 // ****************************************************************************
 
 
@@ -247,6 +250,7 @@ public:
     void MovePlotDatabaseKeyframe(int plotId, int oldFrame, int newFrame);
     void CopyFrom(const ViewerPlotList *pl);
     void ClearPlots();
+    void ClearActors();
     void TransmutePlots(bool turningOffScalableRendering);
     void DeleteActivePlots();
 
@@ -295,6 +299,7 @@ public:
 
     void GetPlotLimits(int nDimensions, double *limits) const;
     void SetSpatialExtentsType(avtExtentType);
+    bool GetMaintainDataMode() const;
 
     bool SetBackgroundColor(const double *);
     bool SetForegroundColor(const double *);

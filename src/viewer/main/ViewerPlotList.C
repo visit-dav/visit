@@ -2814,6 +2814,29 @@ ViewerPlotList::ClearPlots()
 }
 
 // ****************************************************************************
+//  Method: ViewerPlotList::ClearActors
+//
+//  Purpose:
+//    Clear the actors associated with the plots in the plot list.
+//
+//  Programmer: Eric Brugger
+//  Creation:   March 30, 2004
+//
+// ****************************************************************************
+
+void
+ViewerPlotList::ClearActors()
+{
+    //
+    // Clear the actors associated with the plots.
+    //
+    for (int i = 0; i < nPlots; i++)
+    {
+        plots[i].plot->ClearActors();
+    }
+}
+
+// ****************************************************************************
 //  Method: ViewerPlotList::DeletePlot
 //
 //  Purpose:
@@ -5163,6 +5186,9 @@ CreatePlot(void *info)
 //    Brad Whitlock, Sun Jan 25 23:57:33 PST 2004
 //    I added the concept of multiple time sliders.
 //
+//    Eric Brugger, Tue Mar 30 16:12:41 PST 2004
+//    I added a call to UpdateDataExtents.
+//
 // ****************************************************************************
 
 void
@@ -5274,6 +5300,7 @@ ViewerPlotList::UpdateWindow(bool immediateUpdate)
                     globalExtents[1] = max(globalExtents[1], plotExtents[1]);
                 }
                 delete [] plotExtents;
+                plots[i].plot->UpdateDataExtents();
 
                 debug5 << "\t plot " << i << " was added to the window." << endl;
                 window->AddPlot(actor);
@@ -6142,6 +6169,25 @@ ViewerPlotList::SetSpatialExtentsType(avtExtentType setype)
         ViewerPlot *plot = plots[i].plot;
         plot->SetSpatialExtentsType(setype);
     }
+}
+
+// ****************************************************************************
+//  Method: ViewerPlotList::GetMaintainDataMode
+//
+//  Purpose: 
+//    Return the plotlist's maintain data mode.
+//
+//  Returns:    The maintain data mode.
+//
+//  Programmer: Eric Brugger
+//  Creation:   March 30, 2004
+//
+// ****************************************************************************
+
+bool
+ViewerPlotList::GetMaintainDataMode() const
+{
+    return window->GetMaintainDataMode();
 }
 
 // ****************************************************************************

@@ -34,6 +34,9 @@
     <Field name="maintainView" label="maintainView" type="bool">
       false
     </Field>
+    <Field name="maintainData" label="maintainData" type="bool">
+      false
+    </Field>
     <Function name="CreateNode" user="false" member="true">
     </Function>
     <Function name="SetFromNode" user="false" member="true">

@@ -7386,6 +7386,33 @@ visit_ToggleMaintainViewMode(PyObject *self, PyObject *args)
 }
 
 // ****************************************************************************
+// Function: visit_ToggleMaintainDataMode
+//
+// Purpose: 
+//   Tells the viewer whether or not it should maintain the data limits.
+//
+// Programmer: Eric Brugger
+// Creation:   Mon Apr  5 12:14:06 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_ToggleMaintainDataMode(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    MUTEX_LOCK();
+        viewer->ToggleMaintainDataMode();
+        if(logging)
+            fprintf(logFile, "ToggleMaintainDataMode()\n");
+    MUTEX_UNLOCK();
+
+    return IntReturnValue(Synchronize());
+}
+
+// ****************************************************************************
 // Function: visit_ToggleLockTime
 //
 // Purpose: 
@@ -8997,6 +9024,9 @@ AddMethod(const char *methodName, PyObject *(cb)(PyObject *, PyObject *),
 //   QueryOverTime, SetQueryOverTimeAttributes, ResetQueryOverTimeAttributes,
 //   SetDefaultQueryOverTimeAttributes, QueriesOverTime.
 //
+//   Eric Brugger, Mon Apr  5 12:14:06 PDT 2004
+//   Added ToggleMaintainDataMode.
+//
 // ****************************************************************************
 
 static void
@@ -9159,6 +9189,7 @@ AddDefaultMethods()
     AddMethod("ToggleLockTime", visit_ToggleLockTime);
     AddMethod("ToggleLockViewMode", visit_ToggleLockViewMode);
     AddMethod("ToggleMaintainViewMode", visit_ToggleMaintainViewMode);
+    AddMethod("ToggleMaintainDataMode", visit_ToggleMaintainDataMode);
     AddMethod("ToggleSpinMode", visit_ToggleSpinMode);
     AddMethod("UndoView",  visit_UndoView);
     AddMethod("WriteConfigFile",  visit_WriteConfigFile);

@@ -170,6 +170,42 @@ avtPlot::~avtPlot()
 
 
 // ****************************************************************************
+//  Method: avtPlot::SetDataExtents
+//
+//  Purpose:
+//      Set the data extents for the plot to use.
+//
+//  Programmer: Eric Brugger
+//  Creation:   March 19, 2004
+//
+// ****************************************************************************
+
+void
+avtPlot::SetDataExtents(const vector<double> &extents)
+{
+    dataExtents = extents;
+}
+
+
+// ****************************************************************************
+//  Method: avtPlot::GetDataExtents
+//
+//  Purpose:
+//      Get the data extents that the plot used.
+//
+//  Programmer: Eric Brugger
+//  Creation:   March 19, 2004
+//
+// ****************************************************************************
+
+void
+avtPlot::GetDataExtents(vector<double> &extents)
+{
+    extents = dataExtents;
+}
+
+
+// ****************************************************************************
 //  Method: avtPlot::SetVarName
 //
 //  Purpose:

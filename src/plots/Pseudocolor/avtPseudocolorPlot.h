@@ -72,6 +72,9 @@ class     avtSmoothPolyDataFilter;
 //    Jeremy Meredith, Tue Dec 10 09:06:18 PST 2002
 //    Added GetSmoothingLevel to allow smoothing inside avtPlot.
 //
+//    Eric Brugger, Thu Mar 25 16:59:55 PST 2004
+//    I added the GetDataExtents method.
+//
 // ****************************************************************************
 
 class avtPseudocolorPlot : public avtSurfaceDataPlot
@@ -85,6 +88,7 @@ class avtPseudocolorPlot : public avtSurfaceDataPlot
     virtual const char         *GetName(void) { return "PseudocolorPlot"; };
 
     virtual void                SetAtts(const AttributeGroup*);
+    virtual void                GetDataExtents(std::vector<double> &);
     virtual bool                SetColorTable(const char *ctName);
     virtual void                ReleaseData(void);
 

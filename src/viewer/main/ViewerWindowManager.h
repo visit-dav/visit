@@ -280,6 +280,9 @@ typedef struct {
 //    Kathleen Bonnell,  Fri Mar 19 07:26:27 PST 2004
 //    Added GetEmptyWindow and GetWindow methods. 
 //
+//    Eric Brugger, Mon Mar 29 14:53:52 PST 2004
+//    I added ToggleMaintainDataMode.
+//
 //    Kathleen Bonnell, Thu Apr  1 19:13:59 PST 2004
 //    Added GetTimeQueryWindow and ResetTimeQuery methods.
 //
@@ -363,6 +366,7 @@ class VIEWER_API ViewerWindowManager : public QObject
     void ToggleBoundingBoxMode(int windowIndex = -1);
     void TogglePerspective(int windowIndex = -1);
     void ToggleMaintainViewMode(int windowIndex = -1);
+    void ToggleMaintainDataMode(int windowIndex = -1);
     void ToggleLockViewMode(int windowIndex = -1);
     void ToggleSpinMode(int windowIndex = -1);
     void ToggleCameraViewMode(int windowIndex = -1);

@@ -65,6 +65,9 @@ class     avtLookupTable;
 //    Brad Whitlock, Tue Dec 3 09:30:39 PDT 2002
 //    I added the SetColorTable method.
 //
+//    Eric Brugger, Thu Mar 25 16:38:17 PST 2004
+//    I added the GetDataExtents method.
+//
 // ****************************************************************************
 
 class
@@ -79,6 +82,7 @@ avtContourPlot : public avtSurfaceDataPlot
     virtual const char *GetName(void) { return "ContourPlot"; };
 
     virtual void    SetAtts(const AttributeGroup*);
+    virtual void    GetDataExtents(std::vector<double> &);
     virtual void    ReleaseData(void);
     virtual bool    SetColorTable(const char *ctName);
 

@@ -108,6 +108,9 @@ class WindowInformation;
 //   Added methods to set a flag indicating whether the selected files
 //   should be shown.
 //
+//   Eric Brugger, Mon Mar 29 13:06:32 PST 2004
+//   I added maintain data limits.
+//
 //   Kathleen Bonnell, Wed Mar 31 10:13:43 PST 2004
 //   Added method to activate queryOverTime window. 
 //
@@ -219,6 +222,7 @@ private slots:
     void emitActivateOutputWindow();
 
     void maintainViewToggled(bool);
+    void maintainDataToggled(bool);
     void replacePlotsToggled(bool);
     void autoUpdateToggled(bool);
 
@@ -252,6 +256,7 @@ private:
 
     QComboBox                 *activeWindowComboBox;
     QCheckBox                 *maintainViewCheckBox;
+    QCheckBox                 *maintainDataCheckBox;
     QCheckBox                 *replacePlotsCheckBox;
     QCheckBox                 *autoUpdateCheckBox;
 
