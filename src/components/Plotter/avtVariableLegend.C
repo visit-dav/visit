@@ -217,6 +217,9 @@ avtVariableLegend::GetVarRange(float &amin, float &amax)
 //    
 //    Kathleen Bonnell, Wed Mar 19 14:31:42 PST 200
 //    For constant or invalid range, set number of labels to zero. 
+//
+//    Hank Childs, Mon Jul 14 09:54:14 PDT 2003
+//    Do not assume that the lut is non-NULL. ['3494]
 //    
 // ****************************************************************************
 
@@ -246,7 +249,8 @@ avtVariableLegend::SetRange(float nmin, float nmax)
     else 
     {
         sBar->SetNumberOfLabelsToDefault();
-        lut->SetTableRange(min, max);
+        if (lut != NULL)
+            lut->SetTableRange(min, max);
         sBar->SetRange(min, max);
     }
 }

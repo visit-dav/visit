@@ -35,6 +35,7 @@
 #include <NoInputException.h>
 #include <ImproperUseException.h>
 #include <AbortException.h>
+#include <InvalidColortableException.h>
 
 extern ViewerSubject *viewerSubject;   // FIX_ME This is a hack.
 
@@ -2794,7 +2795,10 @@ ViewerPlot::GetCurrentPlotAtts() const
 //   
 //    Eric Brugger, Tue Nov 26 10:59:42 PST 2002
 //    I added keyframing support.
-//   
+//
+//    Brad Whitlock, Mon Jul 14 13:50:54 PST 2003
+//    I made it catch InvalidColortableException.
+//
 // ****************************************************************************
 
 bool
@@ -2810,7 +2814,14 @@ ViewerPlot::UpdateColorTable(const char *ctName)
     {
         if (*plotList[i] != NULL)
         {
-            retval |= (*plotList[i])->SetColorTable(ctName);
+            TRY
+            {
+                retval |= (*plotList[i])->SetColorTable(ctName);
+            }
+            CATCH(InvalidColortableException)
+            {
+            }
+            ENDTRY
         }
     }
 

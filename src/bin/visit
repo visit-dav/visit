@@ -1003,7 +1003,7 @@ else
     elsif ($debug_totalview eq $exe_name)
     {
         # Run totalview
-        @debugcmd = ("totalview6", $exe_name, "-a", "-dograb", @visitargs);
+        @debugcmd = ("totalview", $exe_name, "-a", "-dograb", @visitargs);
         push(@debugcmd, "-key $security_key") if ($security_key_set);
         print STDERR "Running: @debugcmd\n";
         $exec_totalview_failed = 0;

@@ -1120,14 +1120,18 @@ QvisColorTableWindow::apply()
 // Creation:   Mon Jun 11 10:04:17 PDT 2001
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Jul 14 15:04:07 PST 2003
+//   Added code to block signals.
+//
 // ****************************************************************************
 
 void
 QvisColorTableWindow::alignControlPoints()
 {
     // Align the control points.
+    spectrumBar->blockSignals(true);
     spectrumBar->alignControlPoints();
+    spectrumBar->blockSignals(false);
 
     // Get the current attributes.
     GetCurrentValues(0);
@@ -1726,7 +1730,10 @@ QvisColorTableWindow::setActiveDiscrete(const QString &ct)
 // Creation:   Wed Feb 26 15:12:20 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Jul 14 14:35:27 PST 2003
+//   I added code to prevent the spectrum bar from emitting signals while
+//   it is having color control points added or removed.
+//
 // ****************************************************************************
 
 void
@@ -1788,9 +1795,14 @@ QvisColorTableWindow::resizeColorTable(int size)
             if(size < ccpl->GetNumColorControlPoints())
             {
                 int rmPoints = ccpl->GetNumColorControlPoints() - size;
+                spectrumBar->blockSignals(true);
+                spectrumBar->setSuppressUpdates(true);
                 for(int i = 0; i < rmPoints; ++i)
                     spectrumBar->removeControlPoint();
-    
+                spectrumBar->blockSignals(false);
+                spectrumBar->setSuppressUpdates(false);
+                spectrumBar->update();
+
                 GetCurrentValues(0);
                 SetUpdate(false);
                 Apply();   
@@ -1798,8 +1810,13 @@ QvisColorTableWindow::resizeColorTable(int size)
             else if(size > spectrumBar->numControlPoints())
             {
                 int addPoints = size - spectrumBar->numControlPoints();
+                spectrumBar->blockSignals(true);
+                spectrumBar->setSuppressUpdates(true);
                 for(int i = 0; i < addPoints; ++i)
                     spectrumBar->addControlPoint(GetNextColor());
+                spectrumBar->blockSignals(false);
+                spectrumBar->setSuppressUpdates(false);
+                spectrumBar->update();
 
                 GetCurrentValues(0);
                 SetUpdate(false);

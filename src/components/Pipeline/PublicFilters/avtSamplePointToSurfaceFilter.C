@@ -49,6 +49,9 @@ avtSamplePointToSurfaceFilter::avtSamplePointToSurfaceFilter()
 //    Made the surface be output in a form that will be more conducive to
 //    comparisons.
 //
+//    Hank Childs, Mon Jul 14 20:27:31 PDT 2003
+//    Better account for holes in volumes.
+//
 // ****************************************************************************
 
 void
@@ -100,8 +103,8 @@ avtSamplePointToSurfaceFilter::Execute(void)
             }
             else 
             {
-                int samp1 = ray->GetFirstSample();
-                int samp2 = ray->GetLastSample();
+                int samp1 = ray->GetFirstSampleOfLongestRun();
+                int samp2 = ray->GetLastSampleOfLongestRun();
                 depth = (samp1 + samp2) / 2;
             }
             if (depth >= 0)

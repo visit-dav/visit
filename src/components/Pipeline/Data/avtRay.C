@@ -145,3 +145,111 @@ avtRay::SetArbitrator(avtSamplePointArbitrator *arb)
 }
 
 
+// ****************************************************************************
+//  Method: avtRay::GetFirstSampleOfLongestRun
+//
+//  Purpose:
+//      Gets the first sample of the longest run.
+//
+//  Programmer: Hank Childs
+//  Creation:   July 14, 2003
+//
+// ****************************************************************************
+
+int
+avtRay::GetFirstSampleOfLongestRun(void) const
+{
+    int longestRun = 0;
+    int longestRunStartsAt = 0;
+    int currentRun = 0;
+    int currentRunStartsAt = 0;
+    bool inRun = false;
+    for (int i = 0 ; i < numSamples ; i++)
+    {
+        if (validSample[i])
+        {
+            if (inRun)
+            {
+                currentRun++;
+                if (currentRun > longestRun)
+                {
+                    longestRun = currentRun;
+                    longestRunStartsAt = currentRunStartsAt;
+                }
+            }
+            else
+            {
+                inRun = true;
+                currentRunStartsAt = i;
+                currentRun = 1;
+            }
+        }
+        else
+        {
+            inRun = false;
+        }
+    }
+
+    if (longestRun > 0)
+    {
+        return longestRunStartsAt;
+    }
+
+    return -1;
+}
+
+
+// ****************************************************************************
+//  Method: avtRay::GetLastSampleOfLongestRun
+//
+//  Purpose:
+//      Gets the first sample of the longest run.
+//
+//  Programmer: Hank Childs
+//  Creation:   July 14, 2003
+//
+// ****************************************************************************
+
+int
+avtRay::GetLastSampleOfLongestRun(void) const
+{
+    int longestRun = 0;
+    int longestRunStartsAt = 0;
+    int currentRun = 0;
+    int currentRunStartsAt = 0;
+    bool inRun = false;
+    for (int i = 0 ; i < numSamples ; i++)
+    {
+        if (validSample[i])
+        {
+            if (inRun)
+            {
+                currentRun++;
+                if (currentRun > longestRun)
+                {
+                    longestRun = currentRun;
+                    longestRunStartsAt = currentRunStartsAt;
+                }
+            }
+            else
+            {
+                inRun = true;
+                currentRunStartsAt = i;
+                currentRun = 1;
+            }
+        }
+        else
+        {
+            inRun = false;
+        }
+    }
+
+    if (longestRun > 0)
+    {
+        return longestRunStartsAt + longestRun-1;
+    }
+
+    return -1;
+}
+
+
