@@ -121,7 +121,7 @@ void
 RPCExecutor<ConnectSimRPC>::Execute(ConnectSimRPC *connect)
 {
     debug2 << "Executing ConnectSimRPC"
-           << "  Host=" << connect->GetSimHost()
+           << "  Host=" << connect->GetSimHost().c_str()
            << "  Port=" << connect->GetSimPort() << endl;
     LauncherApplication::Instance()->ConnectSimulation(
                                                   connect->GetLaunchArgs(),

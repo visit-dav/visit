@@ -5,7 +5,7 @@
 #ifndef AVT_QUERYOVERTIME_FILTER_H
 #define AVT_QUERYOVERTIME_FILTER_H
 
-#include <filters_exports.h>
+#include <query_exports.h>
 
 #include <avtDatasetToDatasetFilter.h>
 
@@ -22,10 +22,12 @@
 //  Creation:   March 19, 2004
 //
 //  Modifications:
+//    Brad Whitlock, Wed Apr 14 14:56:45 PST 2004
+//    Fixed for Windows.
 //
 // ****************************************************************************
 
-class AVTFILTERS_API avtQueryOverTimeFilter : public avtDatasetToDatasetFilter
+class QUERY_API avtQueryOverTimeFilter : public avtDatasetToDatasetFilter
 {
   public:
                           avtQueryOverTimeFilter(const AttributeGroup*);

@@ -22,6 +22,10 @@
 //    Kathleen Bonnell, Wed Mar 31 16:07:50 PST 2004
 //    Add min/max arguments, passed to parent class.
 //
+//    Kathleen Bonnell, Wed Apr 14 18:00:49 PDT 2004 
+//    Tell condense filter to bypass its heuristic and force execution of
+//    relevant points filter. 
+//
 // ****************************************************************************
 
 avtActualDataMinMaxQuery::avtActualDataMinMaxQuery(bool min, bool max)
@@ -29,6 +33,7 @@ avtActualDataMinMaxQuery::avtActualDataMinMaxQuery(bool min, bool max)
 {
     condense = new avtCondenseDatasetFilter;
     condense->KeepAVTandVTK(true);
+    condense->BypassHeuristic(true);
 }
 
 

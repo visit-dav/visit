@@ -3476,6 +3476,10 @@ ViewerSubject::CheckForNewStates()
 //   Jeremy Meredith, Tue Mar 30 10:52:06 PST 2004
 //   Added an engine key used to index (and restart) engines.
 //
+//   Jeremy Meredith, Thu Apr 15 17:01:11 PDT 2004
+//   Added the reOpenState to the ReplaceDatabase call so that the right
+//   MD/SIL would get used in all circumstances.
+//
 // ****************************************************************************
 
 void
@@ -3586,7 +3590,8 @@ ViewerSubject::ReOpenDatabase()
     // Now perform the database replacement in all windows that use the
     // specified database.
     //
-    ViewerWindowManager::Instance()->ReplaceDatabase(host, db, 0, false, true);
+    ViewerWindowManager::Instance()->ReplaceDatabase(host, db, reOpenState,
+                                                     false, true);
 }
 
 // ****************************************************************************
@@ -5992,7 +5997,7 @@ ViewerSubject::HandleViewerRPC()
     ViewerActionManager *actionMgr = 0;
 
     debug5 << "Handling "
-           << ViewerRPC::ViewerRPCType_ToString(viewerRPC.GetRPCType())
+           << ViewerRPC::ViewerRPCType_ToString(viewerRPC.GetRPCType()).c_str()
            << " RPC." << endl;
 
     //

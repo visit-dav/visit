@@ -1,5 +1,6 @@
 #ifndef QUERYOVERTIMEATTRIBUTES_H
 #define QUERYOVERTIMEATTRIBUTES_H
+#include <state_exports.h>
 #include <string>
 #include <AttributeSubject.h>
 #include <QueryAttributes.h>
@@ -19,7 +20,7 @@
 //   
 // ****************************************************************************
 
-class QueryOverTimeAttributes : public AttributeSubject
+class STATE_API QueryOverTimeAttributes : public AttributeSubject
 {
 public:
     enum TimeType

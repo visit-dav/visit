@@ -38,6 +38,9 @@
 #    Hank Childs, Sun Feb  1 13:21:44 PST 2004
 #    Added vtkDataSetFromVolume.
 #
+#    Kathleen Bonnell, Fri Apr 16 13:36:21 PDT 2004 
+#    Added vtkVisItPointLocator. 
+#
 ##############################################################################
 
 ##
@@ -60,6 +63,7 @@ SRC=InitVTKNoGraphics.C \
     vtkDebugStream.C \
     vtkTriangulationTables.C \
     vtkUnstructuredGridBoundaryFilter.C \
+    vtkVisItPointLocator.C \
     vtkVisItUtility.C 
 
 

@@ -2332,6 +2332,9 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
 //    Hank Childs, Fri Apr  9 09:02:57 PDT 2004
 //    Use the avtMaterial for the correct timestep to get the indices.
 //
+//    Brad Whitlock, Wed Apr 14 12:14:42 PDT 2004
+//    I fixed it for Windows.
+//
 // ****************************************************************************
 
 void
@@ -2355,7 +2358,7 @@ avtGenericDatabase::GetMaterialIndices(avtMaterial *mat, vector<string> &mn,
         }
         if (!foundMatch)
         {
-            debug1 << "Was unable to match material " << mn[i] << " against "
+            debug1 << "Was unable to match material " << mn[i].c_str() << " against "
                    << "any material for this dataset.  It is likely that this "
                    << "material exists at another timestep, but not at this "
                    << "one." << endl;

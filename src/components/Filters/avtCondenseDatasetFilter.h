@@ -40,6 +40,10 @@ class vtkDataSet;
 //    Added a flag that tells this filter to keep avt and vtk data arrays
 //    around, and a method for setting the flag. 
 //
+//    Kathleen Bonnell, Wed Apr 14 17:51:36 PDT 2004 
+//    Added a flag that tells this filter to force usage of relevant points 
+//    filter (bypassHeuristic).  
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtCondenseDatasetFilter : public avtStreamer
@@ -54,6 +58,7 @@ class AVTFILTERS_API avtCondenseDatasetFilter : public avtStreamer
 
     virtual void         ReleaseData(void);
     void                 KeepAVTandVTK(bool val) {keepAVTandVTK = val; };
+    void                 BypassHeuristic(bool val) {bypassHeuristic = val; };
 
   protected:
     vtkPolyDataRelevantPointsFilter         *rpfPD;
@@ -63,6 +68,7 @@ class AVTFILTERS_API avtCondenseDatasetFilter : public avtStreamer
 
   private:
     bool                 keepAVTandVTK;
+    bool                 bypassHeuristic;
 };
 
 

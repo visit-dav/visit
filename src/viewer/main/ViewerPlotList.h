@@ -187,6 +187,9 @@ typedef std::map<std::string, int> StringIntMap;
 //    catch-all mesh feature which computes a mesh variable name from the
 //    active plots
 //
+//    Eric Brugger, Fri Apr 16 18:32:47 PDT 2004
+//    I added TimeSliderExists.
+//
 // ****************************************************************************
 
 
@@ -221,6 +224,7 @@ public:
     void AlterTimeSlider(const std::string &ts);
     bool DeleteTimeSlider(const std::string &ts, bool update = true);
     void GetTimeSliderStates(const std::string &ts, int &state, int &nStates) const;
+    bool TimeSliderExists(const std::string &ts) const;
     void ForwardStep();
     void BackwardStep();
     void SetTimeSliderState(int state);

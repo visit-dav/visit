@@ -24,6 +24,9 @@
 //    Kathleen Bonnell, Wed Nov 12 18:26:21 PST 2003
 //    Initialize keepAVTandVTK.
 //
+//    Kathleen Bonnell, Wed Apr 14 17:51:36 PDT 2004 
+//    Initialize bypassHeuristic.
+//
 // ****************************************************************************
 
 avtCondenseDatasetFilter::avtCondenseDatasetFilter()
@@ -31,6 +34,7 @@ avtCondenseDatasetFilter::avtCondenseDatasetFilter()
     rpfPD = vtkPolyDataRelevantPointsFilter::New();
     rpfUG = vtkUnstructuredGridRelevantPointsFilter::New();
     keepAVTandVTK = false;
+    bypassHeuristic = false;
 }
 
 
@@ -88,6 +92,10 @@ avtCondenseDatasetFilter::~avtCondenseDatasetFilter()
 //    Kathleen Bonnell, Wed Nov 12 18:26:21 PST 2003 
 //    Allow AVT and VTK variables to be kept if requested. 
 //
+//    Kathleen Bonnell, Wed Apr 14 17:51:36 PDT 2004 
+//    Allow execution of relevant points filter to be forced, bypassing
+//    heurisitic. 
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -132,13 +140,14 @@ avtCondenseDatasetFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
     int  nPoints = no_vars->GetNumberOfPoints();
     int  nCells  = no_vars->GetNumberOfCells();
     bool shouldTakeRelevantPoints = true;
-    if (2*nCells > nPoints)
+    if (!bypassHeuristic && 2*nCells > nPoints)
     {
         debug5 << "Relevant points filter stopped by heuristic.  Points = "
                << nPoints << ", cells = " << nCells << endl;
         shouldTakeRelevantPoints = false;
     }
-    else if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() 
+    else if (!bypassHeuristic &&
+             GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() 
              == 0)
     {
         debug5 << "Not taking relevant points because we have a point mesh."
@@ -146,8 +155,15 @@ avtCondenseDatasetFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
     }
     else
     {
-        debug5 << "Relevant points filter allowed to execute by heuristic.  " 
-               << "Points = " << nPoints << ", cells = " << nCells << endl;
+        if (!bypassHeuristic)
+        {
+            debug5 << "Relevant points filter allowed to execute by heuristic.  " 
+                   << "Points = " << nPoints << ", cells = " << nCells << endl;
+        }
+        else 
+        {
+            debug5 << "Relevant points filter forced to execute." << endl; 
+        }
     }
 
     vtkDataSet *out_ds = NULL;  

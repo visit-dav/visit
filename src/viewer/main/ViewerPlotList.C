@@ -590,6 +590,32 @@ ViewerPlotList::GetTimeSliderStates(const std::string &ts, int &state,
 }
 
 // ****************************************************************************
+// Method: ViewerPlotList::TimeSliderExists
+//
+// Purpose: 
+//   Returns a boolean indicating if the named time slider exists.
+//
+// Arguments:
+//   ts      : The name of the time slider.
+//
+// Programmer: Eric Brugger
+// Creation:   April 16, 2004
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool
+ViewerPlotList::TimeSliderExists(const std::string &ts) const
+{
+    ViewerFileServer *fs = ViewerFileServer::Instance();
+    DatabaseCorrelationList *cL = fs->GetDatabaseCorrelationList();
+
+    StringIntMap::const_iterator pos = timeSliders.find(ts);
+    return pos != timeSliders.end();
+}
+
+// ****************************************************************************
 // Method: ViewerPlotList::SetNextState
 //
 // Purpose: 
@@ -1560,7 +1586,7 @@ ViewerPlotList::GetMostSuitableCorrelation(const std::string &source,
                     correlation = cL->FindCorrelation(newName);
 
                     debug3 << mName << "Created a new correlation called: "
-                           << newName << endl;
+                           << newName.c_str() << endl;
 
                     //
                     // We have an active time slider that has a time state.
@@ -3795,6 +3821,10 @@ ViewerPlotList::CloseDatabase(const std::string &dbName)
 //   Brad Whitlock, Fri Apr 9 17:18:39 PST 2004
 //   I made it clear the actors for now so reopen works correctly.
 //
+//   Eric Brugger, Fri Apr 16 14:03:33 PDT 2004
+//   I modified the routine to update the plot list and plot attributes in
+//   the client if any plots were updated.
+//
 // ****************************************************************************
 
 void
@@ -3888,14 +3918,17 @@ ViewerPlotList::ReplaceDatabase(const std::string &host, const std::string &data
     //
     // Update the client attributes.
     //
-    UpdatePlotList();
     UpdateExpressionList(true);
 
     //
-    // Update the SIL restriction attributes if necessary.
+    // Update the plot and SIL restriction attributes if necessary.
     //
     if (plotsReplaced)
+    {
+        UpdatePlotList();
+        UpdatePlotAtts();
         UpdateSILRestrictionAtts();
+    }
 
     //
     // Update the frame.
@@ -7030,7 +7063,8 @@ ViewerPlotList::SetFromNode(DataNode *parentNode)
         // Expand the database name.
         databaseName = fs->ExpandedFileName(hostName, databaseName);
         hostDatabaseName = fs->ComposeDatabaseName(hostName, databaseName);
-        debug1 << "The active source will be: " << databaseName << ", " << hostDatabaseName << endl;
+        debug1 << "The active source will be: " << databaseName.c_str()
+               << ", " << hostDatabaseName.c_str() << endl;
     }
     else
         hostDatabaseName = "";

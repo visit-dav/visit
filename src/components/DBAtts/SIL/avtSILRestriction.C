@@ -207,6 +207,9 @@ avtSILRestriction::avtSILRestriction(const SILRestrictionAttributes &silatts)
 //    Hank Childs, Tue Mar 23 07:28:08 PST 2004
 //    The compact SIL atts now only has atts for the top set that we are using.
 //
+//    Brad Whitlock, Wed Apr 14 12:04:11 PDT 2004
+//    Fixed for Windows.
+//
 // ****************************************************************************
 
 avtSILRestriction::avtSILRestriction(avtSIL *sil,
@@ -219,7 +222,7 @@ avtSILRestriction::avtSILRestriction(avtSIL *sil,
     int ns = GetNumSets();
 
     useSet.reserve(ns);
-    for (int i = 0 ; i < ns ; i++)
+    for (i = 0 ; i < ns ; i++)
     {
         useSet.push_back(NoneUsed);
     }
@@ -257,7 +260,7 @@ avtSILRestriction::avtSILRestriction(avtSIL *sil,
 
     if (topSet == -1)
     {
-        debug1 << "Was not able to match up " << topSetName << " with any of "
+        debug1 << "Was not able to match up " << topSetName.c_str() << " with any of "
                << "the existing top sets." << endl;
         EXCEPTION0(ImproperUseException);
     }
