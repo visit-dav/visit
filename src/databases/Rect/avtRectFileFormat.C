@@ -362,6 +362,12 @@ avtRectFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //  Programmer:  Jeremy Meredith
 //  Creation:    April  7, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Wed Nov 12 16:47:46 PST 2003
+//    Use curvilinear domain boundaries, since structured domain boundaries is
+//    now an abstract type.
+//
 // ****************************************************************************
 void
 avtRectFileFormat::SetUpDomainConnectivity()
@@ -369,7 +375,7 @@ avtRectFileFormat::SetUpDomainConnectivity()
     if (ndomains < 3)
         return;
 
-    avtStructuredDomainBoundaries *dbi=new avtStructuredDomainBoundaries();
+    avtCurvilinearDomainBoundaries *dbi=new avtCurvilinearDomainBoundaries();
     dbi->SetNumDomains(ndomains);
 
     int zstart = 1;

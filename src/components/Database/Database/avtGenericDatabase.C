@@ -224,6 +224,11 @@ avtGenericDatabase::SetDatabaseMetaData(avtDatabaseMetaData *md, int timeState)
 //    If any processor decides to do material selection, they all should.
 //    Unified shouldDoMatSelect across all processors.
 //
+//    Hank Childs, Wed Nov 12 10:34:57 PST 2003
+//    Communicate ghost zones after applying AMR nesting.  This is because it
+//    is difficult to do them in the opposite order (nesting must be on orig
+//    indices), but fairly straight-forward to do them in new order.
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -330,6 +335,12 @@ avtGenericDatabase::GetOutput(avtDataSpecification_p spec,
     }
 
     //
+    // Apply ghosting when domains nest within other domains (AMR meshes)
+    //
+    bool didNestingGhosts =
+        ApplyGhostForDomainNesting(datasetCollection, domains, allDomains, spec);
+
+    //
     // Communicates ghost zones if they are not present and we have domain
     // boundary information.
     //
@@ -338,12 +349,6 @@ avtGenericDatabase::GetOutput(avtDataSpecification_p spec,
     {
         didGhosts = CommunicateGhosts(datasetCollection, domains, spec, src);
     }
-
-    //
-    // Apply ghosting when domains nest within other domains (AMR meshes)
-    //
-    bool didNestingGhosts =
-        ApplyGhostForDomainNesting(datasetCollection, domains, allDomains, spec);
 
     //
     // Finally, do the material selection.
@@ -3126,6 +3131,10 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, vector<int> &domains,
 //    Allow for materials and meshes to be specified (and then ignored).
 //    They are typically specified as a by-product of expressions.
 //
+//    Hank Childs, Wed Nov 12 10:37:22 PST 2003
+//    Also check to see if there is per-timestep domain boundary information,
+//    since this can change from timestep-to-timestep for AMR meshes.
+//
 // ****************************************************************************
 
 bool
@@ -3136,6 +3145,11 @@ avtGenericDatabase::CommunicateGhosts(avtDatasetCollection &ds,
     void_ref_ptr vr = cache.GetVoidRef("any_mesh",
                                    AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION,
                                   -1, -1);
+    if (*vr == NULL)
+        vr = cache.GetVoidRef("any_mesh",
+                              AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION,
+                             spec->GetTimestep(), -1);
+
     if (*vr != NULL)
     {
         int  i, j, k;

@@ -1,11 +1,19 @@
+// ************************************************************************* //
+//                       avtStructuredDomainBoundaries.C                     //
+// ************************************************************************* //
+
 #include <avtStructuredDomainBoundaries.h>
-#include <VisItException.h>
+
 #include <vtkCellData.h>
 #include <vtkFloatArray.h>
 #include <vtkIntArray.h>
+#include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
+
 #include <avtMaterial.h>
 #include <avtMixedVariable.h>
+
+#include <VisItException.h>
 
 
 #ifdef PARALLEL
@@ -191,6 +199,70 @@ BoundaryHelperFunctions<T>::FillBoundaryData(int      d1,
                     {
                         bnddata[d1][n][bndindex*ncomp + c] = olddata[oldindex*ncomp + c];
                     }
+                    bndindex++;
+                }
+            }
+        }
+    }
+}
+
+// ****************************************************************************
+//  Method:  BoundaryHelperFunctions::FillRectilinearBoundaryData
+//
+//  Purpose:
+//    Fill the temporary boundary data from the coordinates of a single
+//    rectilinear domain, as well as allocating the actual data storage array.
+//
+//  Arguments:
+//    d1             the domain number
+//    x              the x-coordinates
+//    y              the y-coordinates
+//    z              the z-coordinates
+//    bnddata        the temporary boundary data
+//
+//  Programmer:  Hank Childs
+//  Creation:    November 10, 2003
+//
+// ****************************************************************************
+template <class T>
+void
+BoundaryHelperFunctions<T>::FillRectilinearBoundaryData(int      d1,
+                                                        const T *x,
+                                                        const T *y,
+                                                        const T *z,
+                                                        T     ***bnddata)
+{
+    Boundary *bi = &sdb->boundary[d1];
+    int *oldbiextents = bi->oldnextents;
+    int nIold = oldbiextents[1] - oldbiextents[0] + 1;
+    int nJold = oldbiextents[3] - oldbiextents[2] + 1;
+    int nKold = oldbiextents[5] - oldbiextents[4] + 1;
+    for (int n = 0; n < bi->neighbors.size(); n++)
+    {
+        Neighbor *n1 = &bi->neighbors[n];
+        bnddata[d1][n] = new T[n1->npts*3];
+
+        int d2 = n1->domain;
+        int mi = sdb->boundary[d2].FindNeighborIndex(d1);
+        Neighbor *n2 = &(sdb->boundary[d2].neighbors[mi]);
+                
+        int *n2extents = n2->nextents;
+        int bndindex = 0;
+        for (int k=n2extents[4]; k<=n2extents[5]; k++)
+        {
+            int realK = k - n2extents[4];
+            for (int j=n2extents[2]; j<=n2extents[3]; j++)
+            {
+                int realJ = j - n2extents[2];
+                for (int i=n2extents[0]; i<=n2extents[1]; i++)
+                {
+                    int ptId = bi->TranslatedPointIndex(n2, n1, i, j, k);
+                    int oldI = (ptId % nIold);
+                    int oldJ = ((ptId/nIold) % nJold);
+                    int oldK = ((ptId/(nIold*nJold)) % nKold);
+                    bnddata[d1][n][bndindex*3 + 0] = x[oldI];
+                    bnddata[d1][n][bndindex*3 + 1] = y[oldJ];
+                    bnddata[d1][n][bndindex*3 + 2] = z[oldK];
                     bndindex++;
                 }
             }
@@ -545,6 +617,85 @@ BoundaryHelperFunctions<T>::CopyOldValues(int      d1,
 }
 
 // ****************************************************************************
+//  Method:  BoundaryHelperFunctions::CopyOldRectilinearValues
+//
+//  Purpose:
+//    Copy the values from the old rectilinear mesh's data array to the new
+//    one.
+//
+//  Arguments:
+//    d1             the domain number
+//    olddata        the floats for a certain dimension
+//    newdata        the floats for a certain dimension
+//    comp_num       0=X, 1=Y, 2=Z
+//
+//  Programmer:  Hank Childs
+//  Creation:    November 11, 2003 
+//
+// ****************************************************************************
+template <class T>
+void
+BoundaryHelperFunctions<T>::CopyOldRectilinearValues(int d1, const T *olddata, 
+                                                     T *newdata, int comp_num)
+{
+    Boundary *bi = &sdb->boundary[d1];
+    int *oldbiextents = bi->oldnextents;
+    int *newbiextents = bi->newnextents;
+    int nIold = oldbiextents[1] - oldbiextents[0] + 1;
+    int nJold = oldbiextents[3] - oldbiextents[2] + 1;
+    int nKold = oldbiextents[5] - oldbiextents[4] + 1;
+    int nInew = newbiextents[1] - newbiextents[0] + 1;
+    int nJnew = newbiextents[3] - newbiextents[2] + 1;
+    int nKnew = newbiextents[5] - newbiextents[4] + 1;
+    
+    if (comp_num == 0)
+    {
+        //
+        // We want to copy over all of the X-values.  Since we have existing
+        // infrastructure that will translate indices for us in terms of
+        // 3-tuples (i,j,k), use that infrastructure.  Copy over all of the
+        // (I, j-min, k-min), where I goes from i-min to i-max.
+        //
+        int j_ind = oldbiextents[2];
+        int k_ind = oldbiextents[4];
+        for (int i_ind = oldbiextents[0] ; i_ind <= oldbiextents[1] ; i_ind++)
+        {
+            int oldindex = bi->OldPointIndex(i_ind, j_ind, k_ind);
+            int newindex = bi->NewPointIndex(i_ind, j_ind, k_ind);
+            int oldI = oldindex % nIold;
+            int newI = newindex % nInew;
+            newdata[newI] = olddata[oldI]; 
+        }
+    }
+    else if (comp_num == 1)
+    {
+        int i_ind = oldbiextents[0];
+        int k_ind = oldbiextents[4];
+        for (int j_ind = oldbiextents[2] ; j_ind <= oldbiextents[3] ; j_ind++)
+        {
+            int oldindex = bi->OldPointIndex(i_ind, j_ind, k_ind);
+            int newindex = bi->NewPointIndex(i_ind, j_ind, k_ind);
+            int oldJ = (oldindex/nIold) % nJold;
+            int newJ = (newindex/nInew) % nJnew;
+            newdata[newJ] = olddata[oldJ]; 
+        }
+    }
+    else if (comp_num == 2)
+    {
+        int i_ind = oldbiextents[0];
+        int j_ind = oldbiextents[2];
+        for (int k_ind = oldbiextents[4] ; k_ind <= oldbiextents[5] ; k_ind++)
+        {
+            int oldindex = bi->OldPointIndex(i_ind, j_ind, k_ind);
+            int newindex = bi->NewPointIndex(i_ind, j_ind, k_ind);
+            int oldK = (oldindex/(nIold*nJold)) % nKold;
+            int newK = (newindex/(nInew*nJnew)) % nKnew;
+            newdata[newK] = olddata[oldK]; 
+        }
+    }
+}
+
+// ****************************************************************************
 //  Method:  BoundaryHelperFunctions::CopyOldMixedValues
 //
 //  Purpose:
@@ -694,6 +845,70 @@ BoundaryHelperFunctions<T>::SetNewBoundaryData(int       d1,
                     {
                         for (int c=0; c<ncomp; c++)
                             newdata[newindex*ncomp + c] = data[bndindex*ncomp + c];
+                    }
+                    bndindex++;
+                }
+            }
+        }
+    }
+}
+
+// ****************************************************************************
+//  Method:  BoundaryHelperFunctions::SetNewRectilinearBoundaryData
+//
+//  Purpose:
+//    Set the ghost values of the given domain using the temporary 
+//    boundary data.
+//
+//  Arguments:
+//    d1             the domain number
+//    coord          the coordinates to set.
+//    newx           the new x-coordinates.
+//    newy           the new y-coordinates.
+//    newz           the new z-coordinates.
+//
+//  Programmer:  Hank Childs
+//  Creation:    November 11, 2003
+//
+// ****************************************************************************
+template <class T>
+void
+BoundaryHelperFunctions<T>::SetNewRectilinearBoundaryData(int d1,
+                                         T ***coord, T *newx, T *newy, T *newz)
+{
+    Boundary *bi = &sdb->boundary[d1];
+    int *newbiextents = bi->newnextents;
+    int nInew = newbiextents[1] - newbiextents[0] + 1;
+    int nJnew = newbiextents[3] - newbiextents[2] + 1;
+    int nKnew = newbiextents[5] - newbiextents[4] + 1;
+
+    for (int n=0; n<bi->neighbors.size(); n++)
+    {
+        Neighbor *n1 = &bi->neighbors[n];
+        int d2 = n1->domain;
+
+        int mi = sdb->boundary[d2].FindNeighborIndex(bi->domain);
+        T *data = coord[d2][mi];
+        if (!data)
+            EXCEPTION1(VisItException,"Null array");
+
+        int bndindex = 0;
+        int *n1extents = n1->nextents;
+        for (int k=n1extents[4]; k<=n1extents[5]; k++)
+        {
+            for (int j=n1extents[2]; j<=n1extents[3]; j++)
+            {
+                for (int i=n1extents[0]; i<=n1extents[1]; i++)
+                {
+                    int newindex = bi->NewPointIndexFromNeighbor(n1, i,j,k);
+                    if (newindex >= 0)
+                    {
+                        int newI = (newindex % nInew);
+                        int newJ = ((newindex/nInew) % nJnew);
+                        int newK = ((newindex/(nInew*nJnew)) % nKnew);
+                        newx[newI] = data[bndindex*3 + 0];
+                        newy[newJ] = data[bndindex*3 + 1];
+                        newz[newK] = data[bndindex*3 + 2];
                     }
                     bndindex++;
                 }
@@ -955,12 +1170,38 @@ avtStructuredDomainBoundaries::Destruct(void *p)
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 25, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Nov 11 10:08:51 PST 2003
+//    Added call to DeclareNumDomains for the derived types.
+//
 // ****************************************************************************
 void
 avtStructuredDomainBoundaries::SetNumDomains(int nd)
 {
     wholeBoundary.resize(nd);
+    DeclareNumDomains(nd);
 }
+
+// ****************************************************************************
+//  Method: avtStructuredDomainBoundaries::DeclareNumDomains
+//
+//  Purpose:
+//      A hook to derived types declaring the number of domains.
+//      This routine does nothing and only exists so that derived types can
+//      re-define it.
+//
+//  Programmer: Hank Childs
+//  Creation:   November 11, 2003
+//
+// ****************************************************************************
+
+void
+avtStructuredDomainBoundaries::DeclareNumDomains(int ndomains)
+{
+     ;
+}
+
 
 // ****************************************************************************
 //  Method:  avtStructuredDomainBoundaries::SetExtents
@@ -1040,116 +1281,6 @@ avtStructuredDomainBoundaries::Finish(int domain)
                    "targetted domain more than number of domains");
 
     wholeBoundary[domain].Finish();
-}
-
-// ****************************************************************************
-//  Method:  avtStructuredDomainBoundaries::ExchangeMesh
-//
-//  Purpose:
-//    Exchange the ghost zone information for some meshes,
-//    returning the new ones.
-//
-//  Arguments:
-//    domainNum    an array of domain numbers for each mesh
-//    mesh         an array of meshes
-//
-//  Programmer:  Jeremy Meredith
-//  Creation:    November 21, 2001
-//
-//  Modifications:
-//    Jeremy Meredith, Thu Dec 13 12:06:54 PST 2001
-//    Made use of templatized functions.  Added call to fake boundary
-//    data when it is nonexistent.
-//
-//    Kathleen Bonnell, Wed Jul 10 16:02:56 PDT 2002 
-//    Create a field-data array indicating the extents of real zones.
-//    Used during ghostzone removal.
-//
-// ****************************************************************************
-vector<vtkDataSet*>
-avtStructuredDomainBoundaries::ExchangeMesh(vector<int>         domainNum,
-                                            vector<vtkDataSet*> meshes)
-{
-    vector<int> domain2proc = CreateDomainToProcessorMap(domainNum);
-    CreateCurrentDomainBoundaryInformation(domain2proc);
-
-    vector<vtkDataSet*> out(meshes.size(), NULL);
-
-    //
-    // Create the matching arrays for the given meshes
-    //
-    float ***coord = bhf_float->InitializeBoundaryData();
-    int d;
-    for (d = 0; d < meshes.size(); d++)
-    {
-        vtkStructuredGrid *mesh = (vtkStructuredGrid*)(meshes[d]);
-        float *oldcoord = (float*)mesh->GetPoints()->GetVoidPointer(0);
-        bhf_float->FillBoundaryData(domainNum[d], oldcoord, coord, true, 3);
-    }
-
-    bhf_float->CommunicateBoundaryData(domain2proc, coord, true, 3);
-
-    for (d = 0; d < meshes.size(); d++)
-    {
-        int d1 = domainNum[d];
-        vtkStructuredGrid *mesh = (vtkStructuredGrid*)(meshes[d]);
-        Boundary *bi = &boundary[d1];
-
-        // Create the VTK objects
-        vtkStructuredGrid    *outm  = vtkStructuredGrid::New(); 
-        vtkPoints            *outp  = vtkPoints::New();
-        outm->SetPoints(outp);
-        outp->Delete();
-        outm->SetDimensions(bi->newndims);
-        outp->SetNumberOfPoints(bi->newnpts);
-
-        float *oldcoord = (float *)mesh->GetPoints()->GetVoidPointer(0);
-        float *newcoord = (float *)outp->GetVoidPointer(0);
-
-        // Set the known ones
-        bhf_float->CopyOldValues(d1, oldcoord, newcoord, true, 3);
-
-        // Match the unknown ones
-        bhf_float->SetNewBoundaryData(d1, coord, newcoord, true, 3);
-
-        // Set the remaining unset ones (reduced connectivity, etc.)
-        bhf_float->FakeNonexistentBoundaryData(d1, newcoord, true, 3);
-
-        // Create the ghost zone array
-        vtkUnsignedCharArray *ghostCells = vtkUnsignedCharArray::New();
-        ghostCells->SetName("vtkGhostLevels");
-        ghostCells->Allocate(bi->newncells);
-        for (int k = bi->newzextents[4]; k <= bi->newzextents[5]; k++)
-            for (int j = bi->newzextents[2]; j <= bi->newzextents[3]; j++)
-                for (int i = bi->newzextents[0]; i <= bi->newzextents[1]; i++)
-                    ghostCells->InsertNextValue(bi->IsGhostZone(i,j,k) ? 1:0);
-        outm->GetCellData()->AddArray(ghostCells);
-        ghostCells->Delete();
-        outm->SetUpdateGhostLevel(0);
-
-        //
-        //  Create a field-data array indicating the extents of real zones.
-        //  Used during ghostzone removal.
-        //
-        vtkIntArray *realDims = vtkIntArray::New();
-        realDims->SetName("avtRealDims");
-        realDims->SetNumberOfTuples(6);
-        realDims->SetValue(0, bi->oldnextents[0] - bi->newnextents[0]);
-        realDims->SetValue(1, bi->oldnextents[1] - bi->newnextents[0]);
-        realDims->SetValue(2, bi->oldnextents[2] - bi->newnextents[2]);
-        realDims->SetValue(3, bi->oldnextents[3] - bi->newnextents[2]);
-        realDims->SetValue(4, bi->oldnextents[4] - bi->newnextents[4]);
-        realDims->SetValue(5, bi->oldnextents[5] - bi->newnextents[4]);
-        outm->GetFieldData()->AddArray(realDims);
-        outm->GetFieldData()->CopyFieldOn("avtRealDims");
-        realDims->Delete();
-
-        out[d] = outm;
-    }
- 
-    bhf_float->FreeBoundaryData(coord);
-
-    return out;
 }
 
 // ****************************************************************************
@@ -1946,3 +2077,602 @@ avtStructuredDomainBoundaries::ConfirmMesh(vector<int>         domainNum,
     //
     return true;
 }
+
+// ****************************************************************************
+//  Method: avtStructuredDomainBoundaries::CreateGhostZones
+//
+//  Purpose:
+//      Creates ghost zones for the output mesh.  This uses the boundary info,
+//      as well as previous ghost zone information (if it exists -- this ghost
+//      info comes about from nesting AMR patches), to creat the ghost zones
+//      for the output.
+//
+//  Arguments:
+//      outMesh    The output mesh we just made ghost zones for.
+//      inMesh     The input mesh before it had ghost zones.
+//      bi         The boundary information.
+//
+//  Programmer: Hank Childs
+//  Creation:   November 12, 2003
+//
+// ****************************************************************************
+
+void
+avtStructuredDomainBoundaries::CreateGhostZones(vtkDataSet *outMesh,
+                                              vtkDataSet *inMesh, Boundary *bi)
+{
+    vtkUnsignedCharArray *oldGhosts = (vtkUnsignedCharArray *)
+                        inMesh->GetCellData()->GetArray("vtkGhostLevels");
+
+    // Create the ghost zone array
+    vtkUnsignedCharArray *ghostCells = vtkUnsignedCharArray::New();
+    ghostCells->SetName("vtkGhostLevels");
+    ghostCells->Allocate(bi->newncells);
+    for (int k = bi->newzextents[4]; k <= bi->newzextents[5]; k++)
+        for (int j = bi->newzextents[2]; j <= bi->newzextents[3]; j++)
+            for (int i = bi->newzextents[0]; i <= bi->newzextents[1]; i++)
+            {
+                unsigned char used_to_be_ghost = 0;
+                if (oldGhosts)
+                {
+                    int index = bi->OldCellIndex(i, j, k);
+                    if (index >= 0)
+                        used_to_be_ghost = oldGhosts->GetValue(index);
+                }
+ 
+                ghostCells->InsertNextValue(bi->IsGhostZone(i,j,k) 
+                                            ? 1 : used_to_be_ghost);
+            }
+
+    outMesh->GetCellData()->AddArray(ghostCells);
+    ghostCells->Delete();
+    outMesh->SetUpdateGhostLevel(0);
+
+    //
+    //  Create a field-data array indicating the extents of real zones.
+    //  Used during ghostzone removal.
+    //
+    vtkIntArray *realDims = vtkIntArray::New();
+    realDims->SetName("avtRealDims");
+    realDims->SetNumberOfTuples(6);
+    realDims->SetValue(0, bi->oldnextents[0] - bi->newnextents[0]);
+    realDims->SetValue(1, bi->oldnextents[1] - bi->newnextents[0]);
+    realDims->SetValue(2, bi->oldnextents[2] - bi->newnextents[2]);
+    realDims->SetValue(3, bi->oldnextents[3] - bi->newnextents[2]);
+    realDims->SetValue(4, bi->oldnextents[4] - bi->newnextents[4]);
+    realDims->SetValue(5, bi->oldnextents[5] - bi->newnextents[4]);
+    outMesh->GetFieldData()->AddArray(realDims);
+    outMesh->GetFieldData()->CopyFieldOn("avtRealDims");
+    realDims->Delete();
+}
+
+// ****************************************************************************
+//  Method:  avtCurvilinearDomainBoundaries::ExchangeMesh
+//
+//  Purpose:
+//    Exchange the ghost zone information for some meshes,
+//    returning the new ones.
+//
+//  Arguments:
+//    domainNum    an array of domain numbers for each mesh
+//    mesh         an array of meshes
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November 21, 2001
+//
+//  Modifications:
+//    Jeremy Meredith, Thu Dec 13 12:06:54 PST 2001
+//    Made use of templatized functions.  Added call to fake boundary
+//    data when it is nonexistent.
+//
+//    Kathleen Bonnell, Wed Jul 10 16:02:56 PDT 2002 
+//    Create a field-data array indicating the extents of real zones.
+//    Used during ghostzone removal.
+//
+//    Hank Childs, Mon Nov 10 14:58:43 PST 2003
+//    Made this routine be associated strictly with curvlinear meshes.
+//
+//    Hank Childs, Wed Nov 12 10:53:38 PST 2003
+//    Allowed for pre-existing ghost zones as well.
+//
+// ****************************************************************************
+vector<vtkDataSet*>
+avtCurvilinearDomainBoundaries::ExchangeMesh(vector<int>         domainNum,
+                                             vector<vtkDataSet*> meshes)
+{
+    vector<int> domain2proc = CreateDomainToProcessorMap(domainNum);
+    CreateCurrentDomainBoundaryInformation(domain2proc);
+
+    vector<vtkDataSet*> out(meshes.size(), NULL);
+
+    //
+    // Create the matching arrays for the given meshes
+    //
+    float ***coord = bhf_float->InitializeBoundaryData();
+    int d;
+    for (d = 0; d < meshes.size(); d++)
+    {
+        vtkStructuredGrid *mesh = (vtkStructuredGrid*)(meshes[d]);
+        float *oldcoord = (float*)mesh->GetPoints()->GetVoidPointer(0);
+        bhf_float->FillBoundaryData(domainNum[d], oldcoord, coord, true, 3);
+    }
+
+    bhf_float->CommunicateBoundaryData(domain2proc, coord, true, 3);
+
+    for (d = 0; d < meshes.size(); d++)
+    {
+        int d1 = domainNum[d];
+        vtkStructuredGrid *mesh = (vtkStructuredGrid*)(meshes[d]);
+        Boundary *bi = &boundary[d1];
+
+        // Create the VTK objects
+        vtkStructuredGrid    *outm  = vtkStructuredGrid::New(); 
+        vtkPoints            *outp  = vtkPoints::New();
+        outm->SetPoints(outp);
+        outp->Delete();
+        outm->SetDimensions(bi->newndims);
+        outp->SetNumberOfPoints(bi->newnpts);
+
+        float *oldcoord = (float *)mesh->GetPoints()->GetVoidPointer(0);
+        float *newcoord = (float *)outp->GetVoidPointer(0);
+
+        // Set the known ones
+        bhf_float->CopyOldValues(d1, oldcoord, newcoord, true, 3);
+
+        // Match the unknown ones
+        bhf_float->SetNewBoundaryData(d1, coord, newcoord, true, 3);
+
+        // Set the remaining unset ones (reduced connectivity, etc.)
+        bhf_float->FakeNonexistentBoundaryData(d1, newcoord, true, 3);
+
+        CreateGhostZones(mesh, outm, bi);
+
+        out[d] = outm;
+    }
+ 
+    bhf_float->FreeBoundaryData(coord);
+
+    return out;
+}
+
+// ****************************************************************************
+//  Method:  avtRectilinearDomainBoundaries::ExchangeMesh
+//
+//  Purpose:
+//    Exchange the ghost zone information for some meshes,
+//    returning the new ones.
+//
+//  Arguments:
+//    domainNum    an array of domain numbers for each mesh
+//    mesh         an array of meshes
+//
+//  Programmer:  Hank Childs
+//  Creation:    November 10, 2003
+//
+// ****************************************************************************
+
+vector<vtkDataSet*>
+avtRectilinearDomainBoundaries::ExchangeMesh(vector<int>        domainNum,
+                                            vector<vtkDataSet*> meshes)
+{
+    vector<int> domain2proc = CreateDomainToProcessorMap(domainNum);
+    CreateCurrentDomainBoundaryInformation(domain2proc);
+
+    vector<vtkDataSet*> out(meshes.size(), NULL);
+
+    //
+    // Create the matching arrays for the given meshes
+    //
+    float ***coord = bhf_float->InitializeBoundaryData();
+    int d;
+    for (d = 0; d < meshes.size(); d++)
+    {
+        vtkRectilinearGrid *mesh = (vtkRectilinearGrid*)(meshes[d]);
+        float *x = (float*)mesh->GetXCoordinates()->GetVoidPointer(0);
+        float *y = (float*)mesh->GetYCoordinates()->GetVoidPointer(0);
+        float *z = (float*)mesh->GetZCoordinates()->GetVoidPointer(0);
+        bhf_float->FillRectilinearBoundaryData(domainNum[d], x, y, z, coord);
+    }
+
+    bhf_float->CommunicateBoundaryData(domain2proc, coord, true, 3);
+
+    for (d = 0; d < meshes.size(); d++)
+    {
+        int d1 = domainNum[d];
+        vtkRectilinearGrid *mesh = (vtkRectilinearGrid*)(meshes[d]);
+        Boundary *bi = &boundary[d1];
+
+        // Create the VTK objects
+        vtkRectilinearGrid    *outm  = vtkRectilinearGrid::New(); 
+        vtkFloatArray         *x     = vtkFloatArray::New();
+        vtkFloatArray         *y     = vtkFloatArray::New();
+        vtkFloatArray         *z     = vtkFloatArray::New();
+        outm->SetXCoordinates(x);
+        outm->SetYCoordinates(y);
+        outm->SetZCoordinates(z);
+        x->Delete();
+        y->Delete();
+        z->Delete();
+        outm->SetDimensions(bi->newndims);
+        x->SetNumberOfTuples(bi->newndims[0]);
+        y->SetNumberOfTuples(bi->newndims[1]);
+        z->SetNumberOfTuples(bi->newndims[2]);
+
+        float *oldx = (float *)mesh->GetXCoordinates()->GetVoidPointer(0);
+        float *oldy = (float *)mesh->GetYCoordinates()->GetVoidPointer(0);
+        float *oldz = (float *)mesh->GetZCoordinates()->GetVoidPointer(0);
+        float *newx = (float *)x->GetVoidPointer(0);
+        float *newy = (float *)y->GetVoidPointer(0);
+        float *newz = (float *)z->GetVoidPointer(0);
+
+        // Set the known ones
+        bhf_float->CopyOldRectilinearValues(d1, oldx, newx, 0);
+        bhf_float->CopyOldRectilinearValues(d1, oldy, newy, 1);
+        bhf_float->CopyOldRectilinearValues(d1, oldz, newz, 2);
+
+        // Match the unknown ones
+        bhf_float->SetNewRectilinearBoundaryData(d1, coord, newx, newy, newz);
+
+        // Set the remaining unset ones (reduced connectivity, etc.)
+        //bhf_float->FakeNonexistentBoundaryData(d1, newcoord, true, 3);
+
+        CreateGhostZones(outm, mesh, bi);
+
+        out[d] = outm;
+    }
+ 
+    return out;
+}
+
+// ****************************************************************************
+//  Method: avtRectilinearDomainBoundaries::DeclareNumDomains
+//
+//  Purpose:
+//      A message from the base class about how many domains there wil be.
+//
+//  Programmer: Hank Childs
+//  Creation:   November 11, 2003
+//
+// ****************************************************************************
+
+void
+avtRectilinearDomainBoundaries::DeclareNumDomains(int ndomains)
+{
+    extents.resize(ndomains*6);
+    levels.resize(ndomains);
+}
+
+
+// ****************************************************************************
+//  Method: avtRectilinearDomainBoundaries::SetIndicesForRectGrid
+//
+//  Purpose:
+//      Sets the indices for a rectilinear grid.  This just sets some state
+//      information that will be used by 'CalculateBoundaries' later.
+//
+//  Programmer: Hank Childs
+//  Creation:   November 11, 2003
+//
+// ****************************************************************************
+
+void
+avtRectilinearDomainBoundaries::SetIndicesForRectGrid(int domain, int e[6])
+{
+    SetIndicesForAMRPatch(domain, 0, e);
+}
+
+// ****************************************************************************
+//  Method: avtRectilinearDomainBoundaries::SetIndicesForAMRPatch
+//
+//  Purpose:
+//      Sets the indices for an AMR patch.  This just sets some state
+//      information that will be used by 'CalculateBoundaries' later.
+//
+//  Programmer: Hank Childs
+//  Creation:   November 11, 2003
+//
+// ****************************************************************************
+
+void
+avtRectilinearDomainBoundaries::SetIndicesForAMRPatch(int domain, 
+                                                      int level, int e[6])
+{
+    if (domain >= levels.size())
+        EXCEPTION1(VisItException,
+                   "avtRectilinearDomainBoundaries: "
+                   "targetted domain more than number of domains");
+
+    levels[domain] = level;
+    extents[6*domain+0] = e[0];
+    extents[6*domain+1] = e[1];
+    extents[6*domain+2] = e[2];
+    extents[6*domain+3] = e[3];
+    extents[6*domain+4] = e[4];
+    extents[6*domain+5] = e[5];
+
+    int tmp[6];
+    tmp[0] = 1;
+    tmp[1] = e[1] - e[0] + 1;
+    tmp[2] = 1;
+    tmp[3] = e[3] - e[2] + 1;
+    tmp[4] = 1;
+    tmp[5] = e[5] - e[4] + 1;
+    SetExtents(domain, tmp);
+}
+
+// ****************************************************************************
+//  Method: avtRectilinearDomainBoundaries::CalculateBoundaries
+//
+//  Purpose:
+//      Calculates the boundaries between rectilinear grids.
+//
+//  Programmer: Hank Childs
+//  Creation:   November 11, 2003
+//
+// ****************************************************************************
+
+void
+avtRectilinearDomainBoundaries::CalculateBoundaries(void)
+{
+    int i, j, k;
+
+    //
+    // Here's the approach: we are going to sort all of the patches into
+    // bins where they start and stop (for i, j, and k).  Then we are going
+    // to try and match up patches that stop at i0 with patches that start at
+    // i0 and see if they are connected.  If so, we will declare them 
+    // neighbors.  And so on for all the i's, then all the j's and then all
+    // the k's.
+    //
+    vector< vector<int> > i_starts;
+    vector< vector<int> > i_stops;
+    vector< vector<int> > j_starts;
+    vector< vector<int> > j_stops;
+    vector< vector<int> > k_starts;
+    vector< vector<int> > k_stops;
+
+    int ndoms = levels.size();
+    int i_max = 0;
+    int j_max = 0;
+    int k_max = 0;
+    for (i = 0 ; i < ndoms ; i++)
+    {
+        if (i_max < extents[6*i+1])
+            i_max = extents[6*i+1];
+        if (j_max < extents[6*i+3])
+            j_max = extents[6*i+3];
+        if (k_max < extents[6*i+5])
+            k_max = extents[6*i+5];
+    }
+
+    i_starts.resize(i_max+1);
+    i_stops.resize(i_max+1);
+    j_starts.resize(j_max+1);
+    j_stops.resize(j_max+1);
+    k_starts.resize(k_max+1);
+    k_stops.resize(k_max+1);
+
+    for (i = 0 ; i < ndoms ; i++)
+    {
+        i_starts[extents[6*i+0]].push_back(i);
+        i_stops[extents[6*i+1]].push_back(i);
+        j_starts[extents[6*i+2]].push_back(i);
+        j_stops[extents[6*i+3]].push_back(i);
+        k_starts[extents[6*i+4]].push_back(i);
+        k_stops[extents[6*i+5]].push_back(i);
+    }
+
+    //
+    // We can get away with focusing on the "stops" and ignoring the "starts".
+    // The "starts" will be included when we match them up with the "stops".
+    //
+    vector<int> neighbors(ndoms, 0);
+    for (i = 0 ; i <= i_max ; i++)
+    {
+        for (j = 0 ; j < i_stops[i].size() ; j++)
+        {
+            int dom = i_stops[i][j];
+            int level = levels[dom];
+            int j_min = extents[6*dom+2];
+            int j_max = extents[6*dom+3];
+            int k_min = extents[6*dom+4];
+            int k_max = extents[6*dom+5];
+            for (k = 0 ; k < i_starts[i].size() ; k++)
+            {
+                int candidate_dom = i_starts[i][k];
+                int candidate_level = levels[candidate_dom];
+                if (candidate_level != level)
+                    continue;
+                int can_j_min = extents[6*candidate_dom+2];
+                int can_j_max = extents[6*candidate_dom+3];
+                int can_k_min = extents[6*candidate_dom+4];
+                int can_k_max = extents[6*candidate_dom+5];
+
+                int j_overlap_start = (j_min > can_j_min ? j_min : can_j_min);
+                int j_overlap_end = (j_max < can_j_max ? j_max : can_j_max);
+                int k_overlap_start = (k_min > can_k_min ? k_min : can_k_min);
+                int k_overlap_end = (k_max < can_k_max ? k_max : can_k_max);
+                if (j_overlap_start > j_overlap_end)
+                    continue;
+                if (k_overlap_start > k_overlap_end)
+                    continue;
+
+                //
+                // We have a match between 'dom' and 'candidate_dom'!
+                //
+                // The match is from j_min_overlap_start - j_max_overlap_start
+                // and k_min_overlap_start - k_max_overlap_start.  The indexing
+                // is 1-based, so we will add 1 to both of these numbers.
+                //
+                // Add both matches (for dom and candidate_dom) at the same
+                // time.
+                //
+                int orientation[3] = { 1, 2, 3 }; // this doesn't really
+                                                  // apply for rectilinear.
+                int e[6]; 
+                e[0] = extents[6*dom+1] - extents[6*dom]+1;
+                e[1] = extents[6*dom+1] - extents[6*dom]+1;
+                e[2] = j_overlap_start - extents[6*dom+2] + 1;
+                e[3] = j_overlap_end - extents[6*dom+2]+1;
+                e[4] = k_overlap_start - extents[6*dom+4] + 1;
+                e[5] = k_overlap_end - extents[6*dom+4]+1;
+                int index = neighbors[candidate_dom];
+                neighbors[candidate_dom]++;
+                AddNeighbor(dom, candidate_dom, index, orientation, e);
+
+                e[0] = 1;
+                e[1] = 1;
+                e[2] = j_overlap_start - extents[6*candidate_dom+2] + 1;
+                e[3] = j_overlap_end - extents[6*candidate_dom+2]+1;
+                e[4] = k_overlap_start - extents[6*candidate_dom+4] + 1;
+                e[5] = k_overlap_end - extents[6*candidate_dom+4]+1;
+                index = neighbors[dom];
+                neighbors[dom]++;
+                AddNeighbor(candidate_dom, dom, index, orientation, e);
+            }
+        }
+    }
+
+    for (i = 0 ; i <= j_max ; i++)
+    {
+        for (j = 0 ; j < j_stops[i].size() ; j++)
+        {
+            int dom = j_stops[i][j];
+            int level = levels[dom];
+            int i_min = extents[6*dom+0];
+            int i_max = extents[6*dom+1];
+            int k_min = extents[6*dom+4];
+            int k_max = extents[6*dom+5];
+            for (k = 0 ; k < j_starts[i].size() ; k++)
+            {
+                int candidate_dom = j_starts[i][k];
+                int candidate_level = levels[candidate_dom];
+                if (candidate_level != level)
+                    continue;
+                int can_i_min = extents[6*candidate_dom+0];
+                int can_i_max = extents[6*candidate_dom+1];
+                int can_k_min = extents[6*candidate_dom+4];
+                int can_k_max = extents[6*candidate_dom+5];
+
+                int i_overlap_start = (i_min > can_i_min ? i_min : can_i_min);
+                int i_overlap_end = (i_max < can_i_max ? i_max : can_i_max);
+                int k_overlap_start = (k_min > can_k_min ? k_min : can_k_min);
+                int k_overlap_end = (k_max < can_k_max ? k_max : can_k_max);
+                if (i_overlap_start > i_overlap_end)
+                    continue;
+                if (k_overlap_start > k_overlap_end)
+                    continue;
+
+                //
+                // We have a match between 'dom' and 'candidate_dom'!
+                //
+                // The match is from i_min_overlap_start - i_max_overlap_start
+                // and k_min_overlap_start - k_max_overlap_start.  The indexing
+                // is 1-based, so we will add 1 to both of these numbers.
+                //
+                // Add both matches (for dom and candidate_dom) at the same
+                // time.
+                //
+                int orientation[3] = { 1, 2, 3 }; // this doesn't really
+                                                  // apply for rectilinear.
+                int e[6]; 
+                e[0] = i_overlap_start - extents[6*dom+0] + 1;
+                e[1] = i_overlap_end - extents[6*dom+0] + 1;
+                e[2] = extents[6*dom+3] - extents[6*dom+2] + 1;
+                e[3] = extents[6*dom+3] - extents[6*dom+2] + 1;
+                e[4] = k_overlap_start - extents[6*dom+4] + 1;
+                e[5] = k_overlap_end - extents[6*dom+4] + 1;
+                int index = neighbors[candidate_dom];
+                neighbors[candidate_dom]++;
+                AddNeighbor(dom, candidate_dom, index, orientation, e);
+
+                e[0] = i_overlap_start - extents[6*candidate_dom+0] + 1;
+                e[1] = i_overlap_end - extents[6*candidate_dom+0] + 1;
+                e[2] = 1;
+                e[3] = 1;
+                e[4] = k_overlap_start - extents[6*candidate_dom+4] + 1;
+                e[5] = k_overlap_end - extents[6*candidate_dom+4] + 1;
+                index = neighbors[dom];
+                neighbors[dom]++;
+                AddNeighbor(candidate_dom, dom, index, orientation, e);
+            }
+        }
+    }
+
+    for (i = 0 ; i <= k_max ; i++)
+    {
+        for (j = 0 ; j < k_stops[i].size() ; j++)
+        {
+            int dom = k_stops[i][j];
+            int level = levels[dom];
+            int i_min = extents[6*dom+0];
+            int i_max = extents[6*dom+1];
+            int j_min = extents[6*dom+2];
+            int j_max = extents[6*dom+3];
+            for (k = 0 ; k < k_starts[i].size() ; k++)
+            {
+                int candidate_dom = k_starts[i][k];
+                int candidate_level = levels[candidate_dom];
+                if (candidate_level != level)
+                    continue;
+                int can_i_min = extents[6*candidate_dom+0];
+                int can_i_max = extents[6*candidate_dom+1];
+                int can_j_min = extents[6*candidate_dom+2];
+                int can_j_max = extents[6*candidate_dom+3];
+
+                int i_overlap_start = (i_min > can_i_min ? i_min : can_i_min);
+                int i_overlap_end = (i_max < can_i_max ? i_max : can_i_max);
+                int j_overlap_start = (j_min > can_j_min ? j_min : can_j_min);
+                int j_overlap_end = (j_max < can_j_max ? j_max : can_j_max);
+                if (i_overlap_start > i_overlap_end)
+                    continue;
+                if (j_overlap_start > j_overlap_end)
+                    continue;
+
+                //
+                // We have a match between 'dom' and 'candidate_dom'!
+                //
+                // The match is from i_min_overlap_start - i_max_overlap_start
+                // and j_min_overlap_start - j_max_overlap_start.  The indexing
+                // is 1-based, so we will add 1 to both of these numbers.
+                //
+                // Add both matches (for dom and candidate_dom) at the same
+                // time.
+                //
+                int orientation[3] = { 1, 2, 3 }; // this doesn't really
+                                                  // apply for rectilinear.
+                int e[6]; 
+                e[0] = i_overlap_start - extents[6*dom+0] + 1;
+                e[1] = i_overlap_end - extents[6*dom+0] + 1;
+                e[2] = j_overlap_start - extents[6*dom+2] + 1;
+                e[3] = j_overlap_end - extents[6*dom+2] + 1;
+                e[4] = extents[6*dom+5] - extents[6*dom+4] + 1;
+                e[5] = extents[6*dom+5] - extents[6*dom+4] + 1;
+                int index = neighbors[candidate_dom];
+                neighbors[candidate_dom]++;
+                AddNeighbor(dom, candidate_dom, index, orientation, e);
+
+                e[0] = i_overlap_start - extents[6*candidate_dom+0] + 1;
+                e[1] = i_overlap_end - extents[6*candidate_dom+0] + 1;
+                e[2] = j_overlap_start - extents[6*candidate_dom+2] + 1;
+                e[3] = j_overlap_end - extents[6*candidate_dom+2] + 1;
+                e[4] = 1;
+                e[5] = 1;
+                index = neighbors[dom];
+                neighbors[dom]++;
+                AddNeighbor(candidate_dom, dom, index, orientation, e);
+            }
+        }
+    }
+
+    //
+    // This will perform some calculations that are necessary to do the actual
+    // communication.
+    //
+    for (i = 0 ; i < ndoms ; i++)
+    {
+        Finish(i);
+    }
+}
+
+

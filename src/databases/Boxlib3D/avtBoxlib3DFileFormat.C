@@ -44,6 +44,7 @@
 #include <avtDatabaseMetaData.h>
 #include <avtIntervalTree.h>
 #include <avtMaterial.h>
+#include <avtStructuredDomainBoundaries.h>
 #include <avtStructuredDomainNesting.h>
 #include <avtVariableCache.h>
 
@@ -1104,6 +1105,11 @@ avtBoxlib3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //  Programmer: Hank Childs
 //  Creation:   November 6, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Nov 11 14:00:53 PST 2003
+//    Added rectilinear domain boundaries.
+//
 // ****************************************************************************
 
 void
@@ -1176,6 +1182,8 @@ avtBoxlib3DFileFormat::CalculateDomainNesting(void)
     vector<int> logKMin(totalPatches);
     vector<int> logKMax(totalPatches);
     level = 0;
+    avtRectilinearDomainBoundaries *rdb = new avtRectilinearDomainBoundaries;
+    rdb->SetNumDomains(totalPatches);
     for (int patch = 0 ; patch < totalPatches ; patch++)
     {
         int my_level, local_patch;
@@ -1193,7 +1201,20 @@ avtBoxlib3DFileFormat::CalculateDomainNesting(void)
                           * multiplier[my_level];
         logKMax[patch] = ((int) ((zMax[patch]-probLo[0]) / deltaZ[my_level]))
                           * multiplier[my_level];
+        int e[6];
+        e[0] = logIMin[patch] / multiplier[my_level];
+        e[1] = logIMax[patch] / multiplier[my_level];
+        e[2] = logJMin[patch] / multiplier[my_level];
+        e[3] = logJMax[patch] / multiplier[my_level];
+        e[4] = logKMin[patch] / multiplier[my_level];
+        e[5] = logKMax[patch] / multiplier[my_level];
+        rdb->SetIndicesForAMRPatch(patch, my_level, e);
     }
+    rdb->CalculateBoundaries();
+    void_ref_ptr vrdb = void_ref_ptr(rdb,
+                                   avtStructuredDomainBoundaries::Destruct);
+    cache->CacheVoidRef("any_mesh", AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION,
+                        timestep, -1, vrdb);
 
     //
     // Calculating the child patches really needs some better sorting than

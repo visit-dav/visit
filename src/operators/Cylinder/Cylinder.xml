@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
-  <Plugin name="Cylinder" type="operator" label="Cylinder" version="1.0" iconFile="Cylinder.xpm">
-    <Attribute name="CylinderAttributes" purpose="Contain the attributes for a cylinder" persistent="false" exportAPI="" exportInclude="">
+  <Plugin name="Cylinder" type="operator" label="Cylinder" version="1.0" enabled="true" iconFile="Cylinder.xpm">
+    <Attribute name="CylinderAttributes" purpose="Contain the attributes for a cylinder" persistent="true" exportAPI="" exportInclude="" codefile="CylinderAttributes.code">
       <Field name="point1" label="Endpoint 1" type="doubleArray" length="3">
         0.000000
         0.000000
@@ -14,5 +14,12 @@
       <Field name="radius" label="Radius" type="double">
         1.000000
       </Field>
+      <Function name="CopyAttributes" user="false" member="true">
+      </Function>
+      <Function name="CreateCompatible" user="false" member="true">
+      </Function>
+      <Include file="header" quoted="false">
+        Line.h
+      </Include>
     </Attribute>
   </Plugin>
