@@ -71,6 +71,9 @@ class avtPlot;
 //    Jeremy Meredith, Tue Sep 23 17:08:20 PDT 2003
 //    Added tensor and symmetric tensor.
 //
+//    Jeremy Meredith, Wed Nov  5 10:28:29 PST 2003
+//    Added ability to disable plugins by default.
+//
 // ****************************************************************************
 
 class PLUGIN_API GeneralPlotPluginInfo
@@ -79,6 +82,7 @@ class PLUGIN_API GeneralPlotPluginInfo
     virtual char *GetName() const = 0;
     virtual char *GetVersion() const = 0;
     virtual char *GetID() const = 0;
+    virtual bool  EnabledByDefault() const { return true; }
 };
 
 class PLUGIN_API CommonPlotPluginInfo : public virtual GeneralPlotPluginInfo

@@ -119,6 +119,9 @@ ParseCharacters(const QString &buff)
 //    Jeremy Meredith, Tue Sep 23 17:00:16 PDT 2003
 //    Made haswriter be a true bool.
 //
+//    Jeremy Meredith, Wed Nov  5 13:28:03 PST 2003
+//    Added ability to disable plugins by default.
+//
 // ****************************************************************************
 
 class XMLParser : public QXmlDefaultHandler
@@ -207,9 +210,14 @@ class XMLParser : public QXmlDefaultHandler
             QString haswriter = atts.value("haswriter");
             QString version   = atts.value("version");
             QString iconFile  = atts.value("iconFile");
+            QString enabled   = atts.value("enabled");
             currentPlugin = new Plugin(name, label, type, vartype,
                                        dbtype, version, iconFile, 
                                        haswriter.isNull() ? false : Text2Bool(haswriter));
+            if (!enabled.isNull() && Text2Bool(enabled)==false)
+            {
+                currentPlugin->enabledByDefault = false;
+            }
         }
         else if (tag == "Attribute")
         {

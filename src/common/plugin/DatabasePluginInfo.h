@@ -39,6 +39,9 @@ class avtDatabaseWriter;
 //    Hank Childs, Wed Sep 10 07:05:54 PDT 2003
 //    Added DatabaseWriter.
 //
+//    Jeremy Meredith, Wed Nov  5 10:28:29 PST 2003
+//    Added ability to disable plugins by default.
+//
 // ****************************************************************************
 
 class PLUGIN_API GeneralDatabasePluginInfo
@@ -47,6 +50,7 @@ class PLUGIN_API GeneralDatabasePluginInfo
     virtual char *GetName() const = 0;
     virtual char *GetVersion() const = 0;
     virtual char *GetID() const = 0;
+    virtual bool  EnabledByDefault() const { return true; }
 };
 
 class PLUGIN_API CommonDatabasePluginInfo : public virtual GeneralDatabasePluginInfo

@@ -38,6 +38,9 @@ using std::vector;
 //    Jeremy Meredith, Tue Sep 23 17:08:53 PDT 2003
 //    Made haswriter be a bool.
 //
+//    Jeremy Meredith, Wed Nov  5 13:28:03 PST 2003
+//    Added ability to disable plugins by default.
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -1810,6 +1813,7 @@ class AttsGeneratorPlugin
     QString version;
     QString vartype;
     QString dbtype;
+    bool    enabledByDefault;
 
     vector<QString> cxxflags;
     vector<QString> ldflags;
@@ -1833,6 +1837,7 @@ class AttsGeneratorPlugin
     AttsGeneratorPlugin(const QString &n,const QString &l,const QString &t,const QString &vt,const QString &dt,const QString &v,const QString &, bool)
         : name(n), type(t), label(l), version(v), vartype(vt), dbtype(dt), atts(NULL)
     {
+        enabledByDefault = true;
     }
     void Print(ostream &out)
     {

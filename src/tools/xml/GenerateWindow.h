@@ -59,6 +59,9 @@
 //    Added ability for enablers to dis/enable a widget's associated label.
 //    Made haswriter be a bool.
 //
+//    Jeremy Meredith, Wed Nov  5 13:28:03 PST 2003
+//    Added ability to disable plugins by default.
+//
 // ****************************************************************************
 
 class WindowGeneratorField : public virtual Field
@@ -1587,6 +1590,7 @@ class WindowGeneratorPlugin
     QString vartype;
     QString dbtype;
     QString windowname;
+    bool    enabledByDefault;
 
     vector<QString> cxxflags;
     vector<QString> ldflags;
@@ -1610,6 +1614,7 @@ class WindowGeneratorPlugin
     WindowGeneratorPlugin(const QString &n,const QString &l,const QString &t,const QString &vt,const QString &dt,const QString &v, const QString &, bool)
         : name(n), type(t), label(l), version(v), vartype(vt), dbtype(dt), atts(NULL)
     {
+        enabledByDefault = true;
         if (type == "plot")
             windowname = QString("Qvis")+name+QString("PlotWindow");
         else if (type == "operator")

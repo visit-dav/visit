@@ -161,6 +161,9 @@ void ProcessFile(QString file);
 //    Moved most of the functionality here into a separate function, and
 //    allow for multiple XML files on the command line.
 //
+//    Jeremy Meredith, Wed Nov  5 13:28:03 PST 2003
+//    Added avt files for databases.
+//
 // ****************************************************************************
 
 int main(int argc, char *argv[])
@@ -466,7 +469,38 @@ ProcessFile(QString file)
 #ifdef GENERATE_AVT
         if (docType == "Plugin" && plugin->type == "database")
         {
-            cerr << "No AVT code to generate for database plugins\n";
+            // avt writer mode
+            ofstream fh;
+            if (Open(fh, QString("avt") + plugin->name + "FileFormat.h"))
+            {
+                plugin->WriteFileFormatReaderHeader(fh);
+                fh.close();
+            }
+
+            ofstream fc;
+            if (Open(fc, QString("avt") + plugin->name + "FileFormat.C"))
+            {
+                plugin->WriteFileFormatReaderSource(fc);
+                fc.close();
+            }
+
+            if (plugin->haswriter)
+            {
+                // avt writer mode
+                ofstream wh;
+                if (Open(wh, QString("avt") + plugin->name + "Writer.h"))
+                {
+                    plugin->WriteFileFormatWriterHeader(wh);
+                    wh.close();
+                }
+
+                ofstream wc;
+                if (Open(wc, QString("avt") + plugin->name + "Writer.C"))
+                {
+                    plugin->WriteFileFormatWriterSource(wc);
+                    wc.close();
+                }
+            }
         }
         else
         {

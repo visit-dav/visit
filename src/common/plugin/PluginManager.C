@@ -99,6 +99,26 @@ PluginManager::PluginExists(const string &id)
 }
 
 // ****************************************************************************
+//  Method:  PluginManager::PluginEnabled
+//
+//  Purpose:
+//    Returns true if the plugin indexed by the given ID is currently enabled.
+//
+//  Arguments:
+//    id         the id to check
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    November  5, 2003
+//
+// ****************************************************************************
+bool
+PluginManager::PluginEnabled(const string &id)
+{
+    return PluginExists(id) && enabled[allindexmap[id]];
+}
+
+
+// ****************************************************************************
 //  Method:  PluginManager::PluginAvailable
 //
 //  Purpose:

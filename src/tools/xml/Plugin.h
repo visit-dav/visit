@@ -36,6 +36,10 @@
 //    Jeremy Meredith, Tue Sep 23 16:17:41 PDT 2003
 //    Changed haswriter to be a bool.
 //
+//    Jeremy Meredith, Wed Nov  5 13:28:03 PST 2003
+//    Added ability to disable plugins by default.
+//    Added avt files for databases.
+//
 // ****************************************************************************
 
 class Plugin
@@ -50,6 +54,7 @@ class Plugin
     QString iconFile;
 
     bool haswriter;
+    bool enabledByDefault;
 
     vector<QString> cxxflags;
     vector<QString> ldflags;
@@ -79,6 +84,7 @@ class Plugin
     Plugin(const QString &n,const QString &l,const QString &t,const QString &vt,const QString &dt,const QString &v, const QString &ifile, bool hw)
         : name(n), type(t), label(l), version(v), vartype(vt), dbtype(dt), iconFile(ifile),haswriter(hw), atts(NULL)
     {
+        enabledByDefault = true;
         customgfiles = false;
         customsfiles = false;
         customvfiles = false;
@@ -91,13 +97,25 @@ class Plugin
         mfiles.clear();
         efiles.clear();
         wfiles.clear();
-        if (type != "database")
+        if (type == "database")
+        {
+            QString filter = QString("avt") + name + "FileFormat.C";
+            defaultmfiles.push_back(filter);
+            defaultefiles.push_back(filter);
+        }
+        else if (type == "plot")
         {
             QString filter = QString("avt") + name + "Filter.C";
             defaultvfiles.push_back(filter);
             defaultefiles.push_back(filter);
             QString widgets = QString("Qvis") + name + "PlotWindow.h";
             defaultwfiles.push_back(widgets);
+        }
+        else if (type == "operator")
+        {
+            QString filter = QString("avt") + name + "Filter.C";
+            defaultvfiles.push_back(filter);
+            defaultefiles.push_back(filter);
         }
     };
     void Print(ostream &out)
@@ -113,6 +131,7 @@ class Plugin
         WriteTagAttr(out, "type", type);
         WriteTagAttr(out, "label", label);
         WriteTagAttr(out, "version", version);
+        WriteTagAttr(out, "enabled", Bool2Text(enabledByDefault));
 
         if (type == "plot")
         {

@@ -34,6 +34,9 @@
 //    Jeremy Meredith, Tue Jun 17 19:08:21 PDT 2003
 //    Added GetEnabledIndex.
 //
+//    Jeremy Meredith, Wed Nov  5 13:48:58 PST 2003
+//    Added ability to check if a plugin is enabled (by id).
+//
 // ****************************************************************************
 
 class PLUGIN_API PluginManager
@@ -57,6 +60,7 @@ class PLUGIN_API PluginManager
 
     void                            DisablePlugin(const std::string&);
     void                            EnablePlugin(const std::string&);
+    bool                            PluginEnabled(const std::string&);
 
     virtual void                    LoadPluginsNow();
     virtual void                    LoadPluginsOnDemand();

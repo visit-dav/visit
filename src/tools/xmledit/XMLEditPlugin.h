@@ -29,6 +29,9 @@ class QCheckBox;
 //    Added support for tensor and symmetric tensor variable types.
 //    Added support for the "haswriter" database plugin field.
 //
+//    Jeremy Meredith, Wed Nov  5 13:49:49 PST 2003
+//    Added support for enabling or disabling plugins by default.
+//
 // ****************************************************************************
 
 class XMLEditPlugin : public QFrame
@@ -48,6 +51,7 @@ class XMLEditPlugin : public QFrame
     void iconFileTextChanged(const QString&);
     void hasIconChanged(bool);
     void hasWriterChanged(bool);
+    void enabledByDefaultChanged(bool);
     void pluginTypeChanged(int);
     void varTypesChanged();
     void dbTypeChanged(int);
@@ -62,6 +66,7 @@ class XMLEditPlugin : public QFrame
     QLineEdit       *version;
     QCheckBox       *hasIcon;
     QCheckBox       *hasWriter;
+    QCheckBox       *enabledByDefault;
     QLineEdit       *iconFile;
     QCheckBox       *varTypeMesh;
     QCheckBox       *varTypeScalar;

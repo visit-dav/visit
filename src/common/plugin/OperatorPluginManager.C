@@ -241,6 +241,9 @@ OperatorPluginManager::GetScriptingPluginInfo(const string &id)
 //    Made it refuse to load more than one plugin with the same id.
 //    Made it return true on success, false on failure.
 //
+//    Jeremy Meredith, Wed Nov  5 13:28:03 PST 2003
+//    Use the default value for enabled status instead of always true.
+//
 // ****************************************************************************
 
 bool
@@ -272,7 +275,7 @@ OperatorPluginManager::LoadGeneralPluginInfo()
     ids     .push_back(info->GetID());
     names   .push_back(info->GetName());
     versions.push_back(info->GetVersion());
-    enabled .push_back(true);
+    enabled .push_back(info->EnabledByDefault());
     return true;
 }
 
