@@ -46,10 +46,12 @@ vtkQtImagePrinter::New()
 // Creation:   Thu Feb 21 15:56:22 PST 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Feb 16 11:50:02 PDT 2005
+//   Made it use higher resolution for the printed image.
+//
 // ****************************************************************************
 
-vtkQtImagePrinter::vtkQtImagePrinter() : print()
+vtkQtImagePrinter::vtkQtImagePrinter() : print(QPrinter::HighResolution)
 {
     this->FileLowerLeft = 1;
 }

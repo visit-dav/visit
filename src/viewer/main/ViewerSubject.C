@@ -431,6 +431,10 @@ ViewerSubject::Connect(int *argc, char ***argv)
 //    Brad Whitlock, Fri May 16 14:54:28 PST 2003
 //    I added support for the -config flag to read a named config file.
 //
+//    Brad Whitlock, Wed Feb 16 09:35:48 PDT 2005
+//    Updated since I moved Get*ConfigFile to Utility.h instead of having
+//    them be ConfigManager methods.
+//
 // ****************************************************************************
 
 void
@@ -472,13 +476,13 @@ ViewerSubject::ReadConfigFiles(int argc, char **argv)
     //
     configMgr = new ViewerConfigManager(this);
     timeid = visitTimer->StartTimer();
-    char *configFile = configMgr->GetSystemConfigFile();
+    char *configFile = GetSystemConfigFile();
     if (noconfig)
         systemSettings = NULL;
     else
         systemSettings = configMgr->ReadConfigFile(configFile);
     delete [] configFile;
-    configFile = configMgr->GetDefaultConfigFile(configFileName);
+    configFile = GetDefaultConfigFile(configFileName);
     if (noconfig)
         localSettings = NULL;
     else
@@ -4693,12 +4697,15 @@ ViewerSubject::ExportColorTable()
 //    with the -config option when VisIt started. If no config file was ever
 //    specified, we save to the default config file name.
 //
+//    Brad Whitlock, Wed Feb 16 11:51:49 PDT 2005
+//    Made it call utility function GetDefaultConfigFile.
+//
 // ****************************************************************************
 
 void
 ViewerSubject::WriteConfigFile()
 {
-    char *defaultConfigFile = configMgr->GetDefaultConfigFile(configFileName);
+    char *defaultConfigFile = GetDefaultConfigFile(configFileName);
 
     //
     // Tell the ViewerWindowManager to get the current location, size of the

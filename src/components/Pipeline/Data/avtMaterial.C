@@ -46,6 +46,9 @@ using std::vector;
 //    mean "highest used material number" seems clearer than changing the
 //    invalid checks to be ">=".
 //
+//    Hank Childs, Sun Feb 13 13:28:52 PST 2005
+//    Fix a bad test that assumes mixlen is > 0.
+//
 // ****************************************************************************
 static void
 RenumberMaterialsZeroToNminusOne(int nMats, const int *const mats,
@@ -97,7 +100,7 @@ RenumberMaterialsZeroToNminusOne(int nMats, const int *const mats,
                 newml[i] = ml[i];
                 continue;
             }
-            else if (ml[i] <= -mixl)
+            else if (ml[i] < 0 && ml[i] <= -mixl)
             {
                 newml[i] = nMats;
                 if (!haveIssuedWarning)

@@ -13,6 +13,9 @@
 //
 typedef void (ProcessDirectoryCallback)(void *, const std::string &, bool,
                                         bool, long);
+typedef enum {CONFIGSTATE_IOERROR,
+              CONFIGSTATE_FIRSTTIME,
+              CONFIGSTATE_SUCCESS} ConfigStateEnum;
 
 //
 // Function Prototypes
@@ -31,6 +34,14 @@ bool UTILITY_API  NumericStringCompare(const std::string &str1, const std::strin
 
 std::vector<std::string> UTILITY_API SplitValues(const std::string &buff,
                                                  char delim);
+
+std::string UTILITY_API GetUserVisItDirectory();
+char *      UTILITY_API GetDefaultConfigFile(const char *filename = 0, const char *home = 0);
+char *      UTILITY_API GetSystemConfigFile(const char *filename = 0);
+
+
+int         UTILITY_API ConfigStateGetRunCount(ConfigStateEnum &code);
+void        UTILITY_API ConfigStateIncrementRunCount(ConfigStateEnum &code);
 
 inline char *C_strdup(char const * const);
 inline char *CXX_strdup(char const * const);

@@ -584,6 +584,9 @@ avtSiloWriter::CloseFile(void)
 //    Added code to compute and store spatial extents and zone counts
 //    for this chunk
 //
+//    Hank Childs, Sun Feb 13 13:19:07 PST 2005
+//    Re-order nodes for pixels.
+//
 // ****************************************************************************
 
 void
@@ -658,6 +661,13 @@ avtSiloWriter::WriteUnstructuredMesh(DBfile *dbfile, vtkUnstructuredGrid *ug,
         // Wedges and pyramids have a different ordering in Silo and VTK.
         // Make the corrections for these cases.
         //
+        if (dim == 2 && (cell->GetCellType() == VTK_PIXEL))
+        {
+            int startOfZone = zonelist.size() - 4;
+            int tmp = zonelist[startOfZone+2];
+            zonelist[startOfZone+2] = zonelist[startOfZone+3];
+            zonelist[startOfZone+3] = tmp;
+        }
         if (dim == 3 && (cell->GetNumberOfPoints() == 6))
         {
             int startOfZone = zonelist.size() - 6;

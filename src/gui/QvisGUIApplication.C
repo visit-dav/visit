@@ -6,8 +6,10 @@
 #include <qcolor.h>
 #include <qcursor.h>
 #include <qfiledialog.h>
+#include <qmessagebox.h>
 #include <qprintdialog.h>
 #include <qprinter.h>
+#include <qprocess.h>
 #include <qsocketnotifier.h>
 #include <qstatusbar.h>
 
@@ -91,6 +93,7 @@
 #include <QvisQueryOverTimeWindow.h>
 #include <QvisVariableButton.h>
 #include <QvisViewWindow.h>
+#include <QvisVisItUpdate.h>
 #include <QvisWizard.h>
 
 #include <SplashScreen.h>
@@ -103,6 +106,7 @@
 #include <LostConnectionException.h>
 #include <TimingsManager.h>
 #include <DebugStream.h>
+#include <Utility.h>
 
 #if defined(_WIN32)
 #include <windows.h> // for LoadLibrary
@@ -366,6 +370,9 @@ LongFileName(const char *shortName)
 //   Jeremy Meredith, Wed Aug 25 10:54:58 PDT 2004
 //   Add observers for the new SIL and metadata attributes of the viewer proxy.
 //
+//   Brad Whitlock, Wed Feb 9 17:53:05 PST 2005
+//   Added VisItUpdate and developmentVersion.
+//
 // ****************************************************************************
 
 QvisGUIApplication::QvisGUIApplication(int &argc, char **argv) :
@@ -396,6 +403,7 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv) :
     // Default values.
     localOnly = false;
     readConfig = true;
+    developmentVersion = false;
     sessionCount = 0;
     initStage = 0;
     heavyInitStage = 0;
@@ -409,6 +417,7 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv) :
     allowSocketRead = false;
     keepAliveTimer = 0;
     allowFileSelectionChange = true;
+    visitUpdate = 0;
 
     // Create the viewer, statusSubject, and fileServer for GUIBase.
     viewer = new ViewerProxy;
@@ -932,6 +941,10 @@ QvisGUIApplication::SyncCallback(Subject *s, void *data)
 //   on MacOS X so we are more likely to get the GUI's menu and not the 
 //   viewer's menu.
 //
+//   Brad Whitlock, Wed Feb 16 11:03:57 PDT 2005
+//   Added code to show the release notes the first time a the use runs a
+//   new version of VisIt.
+//
 // ****************************************************************************
 
 void
@@ -1031,20 +1044,39 @@ QvisGUIApplication::FinalInitialization()
 #endif
         allowSocketRead = true;
         visitTimer->StopTimer(timeid, "stage 8");
-#ifdef Q_WS_MACX
         break;
     case 9:
+#ifdef Q_WS_MACX
         // On MacOS X, we hide the splashscreen last thing so we are very
         // near 100% likely to get the GUI's menu in the main Mac menu.
         if(splash)
             splash->hide();
         visitTimer->StopTimer(timeid, "stage 9 - Hiding splashscreen");
+#else
+        visitTimer->StopTimer(timeid, "stage 9 - no op");
 #endif
+        break;
+    case 10:
+        // Show the release notes if this is the first time that the
+        // user has run this version of VisIt.
+        if(developmentVersion)
+        {
+            // Make sure that we don't allow updates in development versions.
+            mainWin->updateNotAllowed();
+        }
+        else
+        { 
+            ConfigStateEnum code;
+            ConfigStateIncrementRunCount(code);
+            if(code == CONFIGSTATE_FIRSTTIME)
+                QTimer::singleShot(1000, this, SLOT(displayReleaseNotes()));
+        }
+        visitTimer->StopTimer(timeid, "stage 10 - Incrementing run count");
         visitTimer->StopTimer(stagedInit, "FinalInitialization");
         visitTimer->StopTimer(completeInit, "VisIt to be ready");
         moreInit = false;
         ++initStage;
-        break;        
+        break;
     default:
         moreInit = false;
     }
@@ -1158,6 +1190,9 @@ QvisGUIApplication::Exec()
 //
 //    Mark C. Miller, Tue Jan 18 12:44:34 PST 2005
 //    Improved the error message for when VisIt ignores the '-geometry' flag
+//
+//    Brad Whitlock, Wed Feb 16 10:31:57 PDT 2005
+//    Added code to parse -dv.
 //
 // ****************************************************************************
 
@@ -1308,6 +1343,10 @@ QvisGUIApplication::ProcessArguments(int &argc, char **argv)
             }
             aa->SetFontDescription(argv[i + 1]);
             ++i;
+        }
+        else if(current == "-dv")
+        {
+            developmentVersion = true;
         }
     }
 }
@@ -1764,6 +1803,9 @@ QvisGUIApplication::AddViewerSpaceArguments()
 //   Hank Childs, Thu Jan 13 13:24:37 PST 2005
 //   Change slots so that we can determine if iconify windows is spontaneous.
 //
+//   Brad Whitlock, Wed Feb 9 17:54:44 PST 2005
+//   Connected a new updateVisIt slot.
+//
 // ****************************************************************************
 
 void
@@ -1804,6 +1846,7 @@ QvisGUIApplication::CreateMainWindow()
             this, SLOT(RefreshFileListAndNextFrame()));
     connect(mainWin, SIGNAL(restoreSession()), this, SLOT(RestoreSession()));
     connect(mainWin, SIGNAL(saveSession()), this, SLOT(SaveSession()));
+    connect(mainWin, SIGNAL(updateVisIt()), this, SLOT(updateVisIt()));
     mainWin->ConnectMessageAttr(&message);
     mainWin->ConnectGUIMessageAttributes();
     mainWin->ConnectGlobalAttributes(viewer->GetGlobalAttributes());
@@ -4876,6 +4919,152 @@ QvisGUIApplication::newExpression()
         exprWin->setActiveWindow();
         exprWin->raise();
         exprWin->newExpression();
+    }
+}
+
+// ****************************************************************************
+// Method: QvisGUIApplication::updateVisIt
+//
+// Purpose: 
+//   This method creates a QvisVisItUpdate object and tells it to look for a
+//   new version of VisIt to install.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Feb 9 17:56:51 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisGUIApplication::updateVisIt()
+{
+    if(visitUpdate == 0)
+    {
+        visitUpdate = new QvisVisItUpdate(mainWin, "VisIt Update");
+        connect(visitUpdate, SIGNAL(updateNotAllowed()),
+                mainWin, SLOT(updateNotAllowed()));
+        connect(visitUpdate, SIGNAL(installationComplete(const QString &)),
+                this, SLOT(updateVisItCompleted(const QString &)));
+    }
+
+    visitUpdate->startUpdate();
+}
+
+// ****************************************************************************
+// Method: QvisGUIApplication::updateVisItCompleted
+//
+// Purpose: 
+//   This method restarts the current VisIt session in a new version of the
+//   VisIt executable. It's called when a new version of VisIt has been
+//   successfully installed.
+//
+// Arguments:
+//   program : The full name of the new VisIt executable.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Feb 15 11:43:06 PDT 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisGUIApplication::updateVisItCompleted(const QString &program)
+{
+    QString msg("VisIt has been updated. Would you like VisIt to save \n"
+                "its session, quit, and restart the session using the new \n"
+                "version of VisIt?");
+    if(QMessageBox::information(mainWin, "VisIt", msg,
+       QMessageBox::Yes, QMessageBox::No) == QMessageBox::Yes)
+    {
+        debug1 << "User chose save session and start up again in the new VisIt."
+               << endl; 
+
+        QString fileName(GetUserVisItDirectory() + "update_version");
+#if defined(_WIN32)
+        fileName += ".vses";
+#else
+        fileName += ".session";
+#endif
+
+        // Tell the viewer to save a session file.
+        viewer->ExportEntireState(fileName.latin1());
+
+        // Write the gui part of the session with a ".gui" extension.
+        QString gfileName(fileName + ".gui");
+        WriteConfigFile(gfileName.latin1());
+
+#if defined(_WIN32)
+        // Start the new version of VisIt.
+        QProcess *newVisIt = new QProcess(program, this, "start new visit");
+        newVisIt->addArgument("-sessionfile");
+        newVisIt->addArgument(fileName);
+        if(localOnly)
+            newVisIt->addArgument("-localonly");
+        if(!showSplash)
+            newVisIt->addArgument("-nosplash");
+        if(!readConfig)
+            newVisIt->addArgument("-noconfig");
+        newVisIt->start();
+
+        // quit this version.
+        mainApp->quit();
+#else
+        // Write a script to launch the new version of VisIt       
+        FILE *f = fopen("exec_new_visit", "w");
+        if(f == 0)
+        {
+            Error("VisIt could not automatically relaunch itself. "
+                  "Please exit and restart VisIt.");
+        }
+        else
+        {
+            //
+            // Write a C-shell script to launch the new version of VisIt.
+            // We use a script because it affords us the opportunity to
+            // remove some environment variables that mess up the launch
+            // of the new version.
+            //
+            fprintf(f, "unsetenv VISITDIR\n");
+            fprintf(f, "unsetenv VISITPROGRAM\n");
+            fprintf(f, "unsetenv VISITVERSION\n");
+            fprintf(f, "unsetenv VISITPLUGINDIR\n");
+            fprintf(f, "unsetenv VISITPLUGININSTPUB\n");
+            fprintf(f, "unsetenv VISITPLUGININSTPRI\n");
+            fprintf(f, "unsetenv VISITPLUGININST\n");
+            fprintf(f, "unsetenv VISITHOME\n");
+            fprintf(f, "unsetenv VISITARCHHOME\n");
+            fprintf(f, "unsetenv VISITHELPHOME\n");
+            fprintf(f, "unsetenv LD_LIBRARY32_PATH\n");
+            fprintf(f, "unsetenv LD_LIBRARYN32_PATH\n");
+            fprintf(f, "unsetenv LD_LIBRARY64_PATH\n");
+            fprintf(f, "unsetenv PYTHONHOME\n");
+            QString commandLine(program);
+            commandLine += " -sessionfile ";
+            commandLine += fileName;
+            if(localOnly)
+                commandLine += " -localonly";
+            if(!showSplash)
+                commandLine += " -nosplash";
+            if(!readConfig)
+                commandLine += " -noconfig";
+            fprintf(f, "%s\n", commandLine.latin1());
+            fprintf(f, "sleep 2\n");
+            fprintf(f, "rm -f exec_new_visit\n");
+            fprintf(f, "exit 0\n");
+            fclose(f);
+
+            // Start the script to launch the new version of VisIt.
+            QProcess *newVisIt = new QProcess(QString("csh"), this, "start new visit");
+            newVisIt->addArgument("-f");
+            newVisIt->addArgument("exec_new_visit");
+            newVisIt->start();
+
+            // quit this version.
+            mainApp->quit();
+        }
+#endif
     }
 }
 

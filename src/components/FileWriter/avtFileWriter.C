@@ -270,19 +270,62 @@ avtFileWriter::WriteImageDirectly(vtkImageWriter *wrtr, const char *filename,
 //    Hank Childs, Mon Feb 24 18:22:04 PST 2003
 //    Account for family in filename.
 //
+//    Hank Childs, Tue Feb 15 11:37:36 PST 2005
+//    Do not overwrite pre-existing files.  Also, give a warning when trying
+//    to save to a file that does not exist.
+//
 // ****************************************************************************
 
 char *
 avtFileWriter::CreateFilename(const char *base, bool family)
 {
     char *rv = NULL;
-    if (IsImageFormat())
+    char *msg = NULL;
+    bool keepGoing = true;
+    while (keepGoing)
     {
-        rv = imgWriter->CreateFilename(base, family, imgFormat);
+        keepGoing = false;
+        if (IsImageFormat())
+        {
+            rv = imgWriter->CreateFilename(base, family, imgFormat);
+        }
+        else
+        {
+            rv = dsWriter->CreateFilename(base, family, dsFormat);
+        }
+
+        bool fileExists = false;
+        ifstream ifile(rv);
+        if (!ifile.fail())
+        {
+            fileExists = true;
+        }
+        if (fileExists && family)
+        {
+            //
+            // We are saving a family, so reject this one and keep going.
+            //
+            msg = "Although VisIt typically saves out files sequentially, "
+                  "some numbers are being skipped when saving out this "
+                  "file to avoid overwriting previous saves.";
+            keepGoing = true;
+        }
+        else
+        {
+            ofstream ofile(rv);
+            if (ofile.fail())
+            {
+                rv = NULL;
+                msg = "VisIt cannot write a file in the directory specified.\n"
+                      "Note: If you are running client/server, VisIt can only "
+                      "save files onto the local client.";
+            }
+        }
     }
-    else
+
+    if (msg != NULL)
     {
-        rv = dsWriter->CreateFilename(base, family, dsFormat);
+        avtCallback::IssueWarning(msg);
     }
 
     return rv;

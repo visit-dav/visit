@@ -22,10 +22,15 @@ class avtSimulationInformation;
 //
 //    Mark C. Miller, August 9, 2004
 //    Added containsGlobalZoneIds data member
+//
+//    Hank Childs, Mon Feb 14 14:11:29 PST 2005
+//    Added originalName.
+//
 //----------------------------------------------------------------------------
 struct DBATTS_API avtMeshMetaData : public AttributeSubject
 {
     std::string   name;
+    std::string   originalName;
     std::string   blockTitle; 
     std::string   blockPieceName;
     int           numBlocks;
@@ -78,10 +83,17 @@ public:
 
 //----------------------------------------------------------------------------
 //  Class: avtScalarMetaData
+//
+//  Modifications:
+//
+//    Hank Childs, Mon Feb 14 14:11:29 PST 2005
+//    Added originalName.
+//
 //----------------------------------------------------------------------------
 struct DBATTS_API avtScalarMetaData : public AttributeSubject
 {
     std::string   name;
+    std::string   originalName;
     std::string   meshName;
 
     avtCentering  centering;
@@ -110,10 +122,17 @@ public:
 
 //----------------------------------------------------------------------------
 //  Class: avtVectorMetaData
+//
+//  Modifications:
+//
+//    Hank Childs, Mon Feb 14 14:11:29 PST 2005
+//    Added originalName.
+//
 //----------------------------------------------------------------------------
 struct DBATTS_API avtVectorMetaData : public AttributeSubject
 {
     std::string          name;
+    std::string          originalName;
     std::string          meshName;
 
     avtCentering         centering;
@@ -143,10 +162,17 @@ public:
 
 //----------------------------------------------------------------------------
 //  Class: avtTensorMetaData
+//
+//  Modifications:
+//
+//    Hank Childs, Mon Feb 14 14:11:29 PST 2005
+//    Added originalName.
+//
 //----------------------------------------------------------------------------
 struct DBATTS_API avtTensorMetaData : public AttributeSubject
 {
     std::string   name;
+    std::string   originalName;
     std::string   meshName;
     int           dim;
     avtCentering  centering;
@@ -165,10 +191,17 @@ public:
 
 //----------------------------------------------------------------------------
 //  Class: avtSymmetricTensorMetaData
+//
+//  Modifications:
+//
+//    Hank Childs, Mon Feb 14 14:11:29 PST 2005
+//    Added originalName.
+//
 //----------------------------------------------------------------------------
 struct DBATTS_API avtSymmetricTensorMetaData : public AttributeSubject
 {
     std::string   name;
+    std::string   originalName;
     std::string   meshName;
     int           dim;
     avtCentering  centering;
@@ -190,10 +223,17 @@ public:
 
 //----------------------------------------------------------------------------
 //  Class: avtMaterialMetaData
+//
+//  Modifications:
+//
+//    Hank Childs, Mon Feb 14 14:11:29 PST 2005
+//    Added originalName.
+//
 //----------------------------------------------------------------------------
 struct DBATTS_API avtMaterialMetaData : public AttributeSubject
 {
     std::string   name;
+    std::string   originalName;
     std::string   meshName;
 
     int           numMaterials;
@@ -214,6 +254,12 @@ public:
 
 //----------------------------------------------------------------------------
 //  Class: avtSpeciesMetaData
+//
+//  Modifications:
+//
+//    Hank Childs, Mon Feb 14 14:11:29 PST 2005
+//    Added originalName.
+//
 //----------------------------------------------------------------------------
 struct DBATTS_API avtMatSpeciesMetaData : public AttributeSubject
 {
@@ -234,6 +280,7 @@ public:
 struct DBATTS_API avtSpeciesMetaData : public AttributeSubject
 {
     std::string                          name;
+    std::string                          originalName;
     std::string                          meshName;
     std::string                          materialName;
     int                                  numMaterials;
@@ -256,10 +303,17 @@ protected:
 
 //----------------------------------------------------------------------------
 //  Class: avtCurveMetaData
+//
+//  Modifications:
+//
+//    Hank Childs, Mon Feb 14 14:11:29 PST 2005
+//    Added originalName.
+//
 //----------------------------------------------------------------------------
 struct DBATTS_API avtCurveMetaData : public AttributeSubject
 {
     std::string                          name;
+    std::string                          originalName;
     std::string                          xUnits;
     std::string                          xLabel;
     std::string                          yUnits;
@@ -391,6 +445,9 @@ public:
 //    Kathleen Bonnell, Tue Jan 25 07:59:28 PST 2005 
 //    Added GetAllMeshNames. 
 //
+//    Hank Childs, Mon Feb 14 14:11:29 PST 2005
+//    Added support for forbidden characters.
+//
 //----------------------------------------------------------------------------
 class DBATTS_API avtDatabaseMetaData : public AttributeSubject
 {
@@ -498,6 +555,9 @@ public:
                      { databaseComment = comment; };
     const std::string &GetDatabaseComment() const { return databaseComment; };
 
+    void         ReplaceForbiddenCharacters(std::vector<char> &,
+                                            std::vector<std::string> &);
+
     void         Add(avtMeshMetaData *);
     void         Add(avtScalarMetaData *);
     void         Add(avtVectorMetaData *);
@@ -576,6 +636,8 @@ public:
     const stringVector GetAllVariableNames(const std::string &) const;
     const stringVector GetAllMeshNames(void) const;
 
+    void  RegisterWarningCallback(void (*)(const char *));
+
 private:
     bool VarIsCompound(const std::string &inVar) const;
     void ParseCompoundForVar(const std::string &inVar, std::string &outVar)
@@ -584,6 +646,10 @@ private:
                                                                    const;
     void ParseCompoundForCategory(const std::string &inVar, 
                                             std::string &meshName) const;
+
+    static void (*WarningCallback)(const char *);
+    static bool haveWarningCallback;
+    void        IssueWarning(const char *);
 };
 
 

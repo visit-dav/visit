@@ -54,6 +54,10 @@
 //    I removed the include for database_exports.h in the generated code
 //    since it was not needed.
 //
+//    Hank Childs, Mon Feb 14 16:54:29 PST 2005
+//    Use EXCEPTION1 macro instead of EXCEPTION0 ('5979) and also add skeleton
+//    for expressions and time ('4557).
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -994,6 +998,8 @@ class AVTGeneratorPlugin
             c << "" << endl;
             c << "#include <avtDatabaseMetaData.h>" << endl;
             c << "" << endl;
+            c << "#include <Expression.h>" << endl;
+            c << "" << endl;
             c << "#include <InvalidVariableException.h>" << endl;
             c << "" << endl;
             c << "" << endl;
@@ -1139,6 +1145,18 @@ class AVTGeneratorPlugin
             c << "    //" << endl;
             c << "    // AddMaterialToMetaData(md, matname, mesh_for_mat, nmats, mnames);" << endl;
             c << "    //" << endl;
+            c << "    //" << endl;
+            c << "    // Here's the way to add expressions:" << endl;
+            c << "    //Expression momentum_expr;" << endl;
+            c << "    //momentum_expr.SetName(\"momentum\");" << endl;
+            c << "    //momentum_expr.SetDefinition(\"{u, v}\");" << endl;
+            c << "    //momentum_expr.SetType(Expression::VectorMeshVar);" << endl;
+            c << "    //md->AddExpression(&momentum_expr);" << endl;
+            c << "    //Expression KineticEnergy_expr;" << endl;
+            c << "    //KineticEnergy_expr.SetName(\"KineticEnergy\");" << endl;
+            c << "    //KineticEnergy_expr.SetDefinition(\"0.5*(momentum*momentum)/(rho*rho)\");" << endl;
+            c << "    //KineticEnergy_expr.SetType(Expression::ScalarMeshVar);" << endl;
+            c << "    //md->AddExpression(&KineticEnergy_expr);" << endl;
             c << "}" << endl;
             c << "" << endl;
             c << "" << endl;
@@ -1192,7 +1210,7 @@ class AVTGeneratorPlugin
             c << "    // strictly polygonal format like the STL (Stereo Lithography) format," << endl;
             c << "    // then uncomment the code below." << endl;
             c << "    //" << endl;
-            c << "    // EXCEPTION0(InvalidVariableException, varname);" << endl;
+            c << "    // EXCEPTION1(InvalidVariableException, varname);" << endl;
             c << "    //" << endl;
             c << "" << endl;
             c << "    //" << endl;
@@ -1237,7 +1255,7 @@ class AVTGeneratorPlugin
             c << "    // strictly polygonal format like the STL (Stereo Lithography) format," << endl;
             c << "    // then uncomment the code below." << endl;
             c << "    //" << endl;
-            c << "    // EXCEPTION0(InvalidVariableException, varname);" << endl;
+            c << "    // EXCEPTION1(InvalidVariableException, varname);" << endl;
             c << "    //" << endl;
             c << "" << endl;
             c << "    //" << endl;
@@ -1281,6 +1299,8 @@ class AVTGeneratorPlugin
             c << "#include <vtkUnstructuredGrid.h>" << endl;
             c << "" << endl;
             c << "#include <avtDatabaseMetaData.h>" << endl;
+            c << "" << endl;
+            c << "#include <Expression.h>" << endl;
             c << "" << endl;
             c << "#include <InvalidVariableException.h>" << endl;
             c << "" << endl;
@@ -1445,6 +1465,19 @@ class AVTGeneratorPlugin
             c << "    //" << endl;
             c << "    // AddMaterialToMetaData(md, matname, mesh_for_mat, nmats, mnames);" << endl;
             c << "    //" << endl;
+            c << "    //" << endl;
+            c << "    // Here's the way to add expressions:" << endl;
+            c << "    //Expression momentum_expr;" << endl;
+            c << "    //momentum_expr.SetName(\"momentum\");" << endl;
+            c << "    //momentum_expr.SetDefinition(\"{u, v}\");" << endl;
+            c << "    //momentum_expr.SetType(Expression::VectorMeshVar);" << endl;
+            c << "    //md->AddExpression(&momentum_expr);" << endl;
+            c << "    //Expression KineticEnergy_expr;" << endl;
+            c << "    //KineticEnergy_expr.SetName(\"KineticEnergy\");" << endl;
+            c << "    //KineticEnergy_expr.SetDefinition(\"0.5*(momentum*momentum)/(rho*rho)\");" << endl;
+            c << "    //KineticEnergy_expr.SetType(Expression::ScalarMeshVar);" << endl;
+            c << "    //md->AddExpression(&KineticEnergy_expr);" << endl;
+            c << "    //" << endl;
             c << "}" << endl;
             c << "" << endl;
             c << "" << endl;
@@ -1502,7 +1535,7 @@ class AVTGeneratorPlugin
             c << "    // strictly polygonal format like the STL (Stereo Lithography) format," << endl;
             c << "    // then uncomment the code below." << endl;
             c << "    //" << endl;
-            c << "    // EXCEPTION0(InvalidVariableException, varname);" << endl;
+            c << "    // EXCEPTION1(InvalidVariableException, varname);" << endl;
             c << "    //" << endl;
             c << "" << endl;
             c << "    //" << endl;
@@ -1548,7 +1581,7 @@ class AVTGeneratorPlugin
             c << "    // strictly polygonal format like the STL (Stereo Lithography) format," << endl;
             c << "    // then uncomment the code below." << endl;
             c << "    //" << endl;
-            c << "    // EXCEPTION0(InvalidVariableException, varname);" << endl;
+            c << "    // EXCEPTION1(InvalidVariableException, varname);" << endl;
             c << "    //" << endl;
             c << "" << endl;
             c << "    //" << endl;
@@ -1592,6 +1625,8 @@ class AVTGeneratorPlugin
             c << "#include <vtkUnstructuredGrid.h>" << endl;
             c << "" << endl;
             c << "#include <avtDatabaseMetaData.h>" << endl;
+            c << "" << endl;
+            c << "#include <Expression.h>" << endl;
             c << "" << endl;
             c << "#include <InvalidVariableException.h>" << endl;
             c << "" << endl;
@@ -1738,6 +1773,19 @@ class AVTGeneratorPlugin
             c << "    //" << endl;
             c << "    // AddMaterialToMetaData(md, matname, mesh_for_mat, nmats, mnames);" << endl;
             c << "    //" << endl;
+            c << "    //" << endl;
+            c << "    // Here's the way to add expressions:" << endl;
+            c << "    //Expression momentum_expr;" << endl;
+            c << "    //momentum_expr.SetName(\"momentum\");" << endl;
+            c << "    //momentum_expr.SetDefinition(\"{u, v}\");" << endl;
+            c << "    //momentum_expr.SetType(Expression::VectorMeshVar);" << endl;
+            c << "    //md->AddExpression(&momentum_expr);" << endl;
+            c << "    //Expression KineticEnergy_expr;" << endl;
+            c << "    //KineticEnergy_expr.SetName(\"KineticEnergy\");" << endl;
+            c << "    //KineticEnergy_expr.SetDefinition(\"0.5*(momentum*momentum)/(rho*rho)\");" << endl;
+            c << "    //KineticEnergy_expr.SetType(Expression::ScalarMeshVar);" << endl;
+            c << "    //md->AddExpression(&KineticEnergy_expr);" << endl;
+            c << "    //" << endl;
             c << "}" << endl;
             c << "" << endl;
             c << "" << endl;
@@ -1797,7 +1845,7 @@ class AVTGeneratorPlugin
             c << "    // strictly polygonal format like the STL (Stereo Lithography) format," << endl;
             c << "    // then uncomment the code below." << endl;
             c << "    //" << endl;
-            c << "    // EXCEPTION0(InvalidVariableException, varname);" << endl;
+            c << "    // EXCEPTION1(InvalidVariableException, varname);" << endl;
             c << "    //" << endl;
             c << "" << endl;
             c << "    //" << endl;
@@ -1844,7 +1892,7 @@ class AVTGeneratorPlugin
             c << "    // strictly polygonal format like the STL (Stereo Lithography) format," << endl;
             c << "    // then uncomment the code below." << endl;
             c << "    //" << endl;
-            c << "    // EXCEPTION0(InvalidVariableException, varname);" << endl;
+            c << "    // EXCEPTION1(InvalidVariableException, varname);" << endl;
             c << "    //" << endl;
             c << "" << endl;
             c << "    //" << endl;
@@ -1888,6 +1936,8 @@ class AVTGeneratorPlugin
             c << "#include <vtkUnstructuredGrid.h>" << endl;
             c << "" << endl;
             c << "#include <avtDatabaseMetaData.h>" << endl;
+            c << "" << endl;
+            c << "#include <Expression.h>" << endl;
             c << "" << endl;
             c << "#include <InvalidVariableException.h>" << endl;
             c << "" << endl;
@@ -2052,6 +2102,19 @@ class AVTGeneratorPlugin
             c << "    //" << endl;
             c << "    // AddMaterialToMetaData(md, matname, mesh_for_mat, nmats, mnames);" << endl;
             c << "    //" << endl;
+            c << "    //" << endl;
+            c << "    // Here's the way to add expressions:" << endl;
+            c << "    //Expression momentum_expr;" << endl;
+            c << "    //momentum_expr.SetName(\"momentum\");" << endl;
+            c << "    //momentum_expr.SetDefinition(\"{u, v}\");" << endl;
+            c << "    //momentum_expr.SetType(Expression::VectorMeshVar);" << endl;
+            c << "    //md->AddExpression(&momentum_expr);" << endl;
+            c << "    //Expression KineticEnergy_expr;" << endl;
+            c << "    //KineticEnergy_expr.SetName(\"KineticEnergy\");" << endl;
+            c << "    //KineticEnergy_expr.SetDefinition(\"0.5*(momentum*momentum)/(rho*rho)\");" << endl;
+            c << "    //KineticEnergy_expr.SetType(Expression::ScalarMeshVar);" << endl;
+            c << "    //md->AddExpression(&KineticEnergy_expr);" << endl;
+            c << "    //" << endl;
             c << "}" << endl;
             c << "" << endl;
             c << "" << endl;
@@ -2115,7 +2178,7 @@ class AVTGeneratorPlugin
             c << "    // strictly polygonal format like the STL (Stereo Lithography) format," << endl;
             c << "    // then uncomment the code below." << endl;
             c << "    //" << endl;
-            c << "    // EXCEPTION0(InvalidVariableException, varname);" << endl;
+            c << "    // EXCEPTION1(InvalidVariableException, varname);" << endl;
             c << "    //" << endl;
             c << "" << endl;
             c << "    //" << endl;
@@ -2164,7 +2227,7 @@ class AVTGeneratorPlugin
             c << "    // strictly polygonal format like the STL (Stereo Lithography) format," << endl;
             c << "    // then uncomment the code below." << endl;
             c << "    //" << endl;
-            c << "    // EXCEPTION0(InvalidVariableException, varname);" << endl;
+            c << "    // EXCEPTION1(InvalidVariableException, varname);" << endl;
             c << "    //" << endl;
             c << "" << endl;
             c << "    //" << endl;

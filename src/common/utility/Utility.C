@@ -5,8 +5,10 @@
 #include <Utility.h>
 
 #include <visitstream.h>
+#include <visit-config.h>
 #include <stdio.h>
 #include <string.h>
+#include <snprintf.h>
 
 #include <string>
 using std::string;
@@ -632,3 +634,380 @@ SplitValues(const string &buff, char delim)
 
     return output;
 }
+
+// ****************************************************************************
+// Method: GetDefaultConfigFile
+//
+// Purpose: 
+//   Returns the name and path of the default configuration file.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Sep 29 18:26:30 PST 2000
+//
+// Modifications:
+//   Brad Whitlock, Wed Feb 16 09:29:44 PDT 2005
+//   Moved from ConfigManager class, deleted old modification comments.
+//
+// ****************************************************************************
+
+char *
+GetDefaultConfigFile(const char *filename, const char *home)
+{
+    char *retval;
+    char *configFileName;
+    int  filenameLength;
+
+    // Figure out the proper filename to use. If no filename was given, use
+    // "config" as the default filename.
+    if(filename == 0)
+    {
+        filenameLength = 7;
+        configFileName = "config";
+    }
+    else
+    {
+        filenameLength = strlen(filename);
+        configFileName = (char *)filename;
+    }
+
+#if defined(_WIN32)
+    char *realhome = getenv("VISITHOME");
+
+    if(realhome != NULL)
+    {
+        if(home == NULL)
+        {
+            // User config. Get the username so we can append it to
+            // the filename.
+            DWORD namelen = 100;
+            char username[100];
+            GetUserName(username, &namelen);
+
+            retval = new char[strlen(realhome) + namelen + 5 + filenameLength + 2 + 7];
+            sprintf(retval, "%s\\%s for %s.ini", realhome, configFileName, username);
+        }
+        else
+        {
+            // System config.
+            retval = new char[strlen(realhome) + filenameLength + 2 + 7];
+            sprintf(retval, "%s\\%s.ini", realhome, configFileName);
+        }
+    }
+    else
+    {
+        retval = new char[filenameLength + 1 + 4];
+        sprintf(retval, "%s.ini", configFileName);
+    }
+#else
+    // The file it is assumed to be in the home directory unless the home
+    // directrory doesn't exist, in which case we will say it is
+    // in the current directory.
+    char *realhome = getenv((home == 0) ? "HOME" : home);
+    if(realhome != NULL)
+    {
+        retval = new char[strlen(realhome) + filenameLength + 2 + 7];
+        sprintf(retval, "%s/.visit/%s", realhome, configFileName);
+    }
+    else
+    {
+        retval = new char[filenameLength + 1];
+        strcpy(retval, configFileName);
+    }
+#endif
+
+    return retval;
+}
+
+// ****************************************************************************
+// Method: GetSystemConfigFile
+//
+// Purpose: 
+//   Returns the system config file name.
+//
+// Arguments:
+//   filename : The base name of the system filename.
+//
+// Returns:    The system config file name.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Feb 19 12:33:06 PDT 2002
+//
+// Modifications:
+//   Brad Whitlock, Mon Feb 23 15:53:34 PST 2004
+//   I added logic to try and determine the name of the appropriate config
+//   file.
+//
+//   Brad Whitlock, Wed Feb 16 09:29:44 PDT 2005
+//   Moved from ConfigManager class.
+//
+// ****************************************************************************
+
+char *
+GetSystemConfigFile(const char *filename)
+{
+    const char *sysConfigName = filename;
+
+    //
+    // If no system config file name was given, check the VISITSYSTEMCONFIG
+    // environment variable if we're on Windows. Otherwise, just use the
+    // name "config".
+    //
+    if(sysConfigName == 0)
+    {
+#if defined(_WIN32)
+        // Try and get the system config filename from the environment settings.
+        sysConfigName = getenv("VISITSYSTEMCONFIG");
+#endif
+
+        // If we still don't have the name of a system config file, use 
+        // the name "config".
+        if(sysConfigName == 0)
+            sysConfigName = "config";
+    }
+
+    return GetDefaultConfigFile(sysConfigName, "VISITHOME");
+}
+
+// ****************************************************************************
+// Method: GetUserVisItDirectory
+//
+// Purpose: 
+//   Returns the user's .visit directory or equivalent.
+//
+// Returns:    The directory where VisIt likes to put stuff.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jul 3 17:44:59 PST 2003
+//
+// Modifications:
+//   Brad Whitlock, Wed Feb 16 09:29:44 PDT 2005
+//   Moved from ConfigManager class.
+//
+// ****************************************************************************
+
+std::string
+GetUserVisItDirectory()
+{
+#if defined(_WIN32)
+    const char *home = getenv("VISITHOME");
+#else
+    const char *home = getenv("HOME");
+#endif
+
+    std::string homedir;
+
+    if(home != 0)
+    {
+#if defined(_WIN32)
+        homedir = std::string(home);
+#else
+        homedir = std::string(home) + "/.visit";
+#endif
+
+        if(homedir[homedir.size() - 1] != SLASH_CHAR)
+            homedir += SLASH_STRING;
+    }
+
+    return homedir;
+}
+
+#if defined(_WIN32)
+//
+// Functions to get at VisIt data stored in the Windows registry.
+//
+int
+ReadKeyFromRoot(HKEY which_root, const char *key, char **keyval)
+{
+    int  readSuccess = 0;
+    char regkey[100];
+    HKEY hkey;
+
+    /* Try and read the key from the system registry. */
+    sprintf(regkey, "VISIT%s", VERSION);
+    *keyval = (char *)malloc(500);
+    if(RegOpenKeyEx(which_root, regkey, 0, KEY_QUERY_VALUE, &hkey) == ERROR_SUCCESS)
+    {
+        DWORD keyType, strSize = 500;
+        if(RegQueryValueEx(hkey, key, NULL, &keyType, *keyval, &strSize) == ERROR_SUCCESS)
+        {
+            readSuccess = 1;
+        }
+
+        RegCloseKey(hkey);
+    }
+
+    return readSuccess;
+}
+
+int
+ReadKey(const char *key, char **keyval)
+{
+    int retval = 0;
+
+    if((retval = ReadKeyFromRoot(HKEY_CLASSES_ROOT, key, keyval)) == 0)
+        retval = ReadKeyFromRoot(HKEY_CURRENT_USER, key, keyval);
+    
+    return retval;     
+}
+
+int
+WriteKeyToRoot(HKEY which_root, const char *key, const char *keyval)
+{
+    int  writeSuccess = 0;
+    char regkey[100];
+    HKEY hkey;
+
+    /* Try and read the key from the system registry. */
+    sprintf(regkey, "VISIT%s", VERSION);
+    if(RegOpenKeyEx(which_root, regkey, 0, KEY_QUERY_VALUE, &hkey) == ERROR_SUCCESS)
+    {
+        DWORD strSize = strlen(keyval);
+        if(RegSetValueEx(hkey, key, NULL, REG_SZ, keyval, strSize) == ERROR_SUCCESS)
+        {
+            writeSuccess = 1;
+        }
+
+        RegCloseKey(hkey);
+    }
+
+    return writeSuccess;
+}
+
+int
+WriteKey(const char *key, const char *keyval)
+{
+    int retval = 0;
+
+    if((retval = WriteKeyToRoot(HKEY_CLASSES_ROOT, key, keyval)) == 0)
+        retval = WriteKeyToRoot(HKEY_CURRENT_USER, key, keyval);
+
+    return retval;
+}
+#endif
+
+// ****************************************************************************
+// Function: ConfigStateGetRunCount
+//
+// Purpose: 
+//   Returns the number of times the current version of VisIt has been run.
+//
+// Arguments:
+//    code : Returns the success/error code for the operation.
+//
+// Note:       The number of times the current version of VisIt has been run.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Feb 16 09:55:53 PDT 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+int
+ConfigStateGetRunCount(ConfigStateEnum &code)
+{
+    int nStartups = 1;
+#if defined(_WIN32)
+    // Get the number of startups from the registry.
+    char *rc = 0;
+    if(ReadKey("VISITRC", &rc) == 1)
+    {
+        if(sscanf(rc, "%d", &nStartups) == 1)
+        { 
+            if(nStartups < 0)
+                nStartups = 1;
+        }
+        free(rc);
+        code = CONFIGSTATE_SUCCESS;
+    }
+    else
+        code = CONFIGSTATE_IOERROR;
+#else
+    std::string rcFile(GetUserVisItDirectory());
+    rcFile += "state";
+    rcFile += VERSION;
+    rcFile += ".txt";
+
+    FILE *f = 0;
+    if((f = fopen(rcFile.c_str(), "r")) != 0)
+    {
+        if(fscanf(f, "%d", &nStartups) == 1)
+        { 
+            if(nStartups < 0)
+                nStartups = 1;
+        }
+        fclose(f);
+        code = CONFIGSTATE_SUCCESS;
+    }
+    else
+        code = CONFIGSTATE_IOERROR;
+#endif
+
+    return nStartups;
+}
+
+// ****************************************************************************
+// Function: ConfigStateIncrementRunCount
+//
+// Purpose: 
+//   Increments the number of times the current version of VisIt has been run.
+//
+// Arguments:
+//    code : Returns the success/error code for the operation.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Feb 16 09:56:54 PDT 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ConfigStateIncrementRunCount(ConfigStateEnum &code)
+{
+#if defined(_WIN32)
+    bool firstTime = false;
+    ConfigStateEnum code2;
+    int nStartups = firstTime ? 1 : ConfigStateGetRunCount(code2);
+    if(code2 == CONFIGSTATE_IOERROR)
+    {
+        firstTime = true;
+        nStartups = 0;
+    }
+
+    char keyval[100];
+    SNPRINTF(keyval, "%d", nStartups+1);
+    if(WriteKey("VISITRC", keyval) == 1)
+        code = firstTime ? CONFIGSTATE_FIRSTTIME : CONFIGSTATE_SUCCESS;
+    else
+        code = CONFIGSTATE_IOERROR;
+#else
+    std::string rcFile(GetUserVisItDirectory());
+    rcFile += "state";
+    rcFile += VERSION;
+    rcFile += ".txt";
+
+    // Does the file exist?
+    bool firstTime = false;
+    struct stat s;
+    if(stat(rcFile.c_str(), &s) == -1)
+        firstTime = true;
+
+    ConfigStateEnum code2;
+    int nStartups = firstTime ? 0 : ConfigStateGetRunCount(code2);
+    if(code2 == CONFIGSTATE_IOERROR)
+        nStartups = 0;
+    FILE *f = 0;
+    if((f = fopen(rcFile.c_str(), "w")) != 0)
+    {
+        fprintf(f, "%d\n", nStartups + 1);
+        fclose(f);
+        code = firstTime ? CONFIGSTATE_FIRSTTIME : CONFIGSTATE_SUCCESS;
+    }
+    else
+        code = CONFIGSTATE_IOERROR;
+#endif
+}
+

@@ -29,6 +29,7 @@ class QvisOutputWindow;
 class QvisPickWindow;
 class QvisPluginWindow;
 class QvisPreferencesWindow;
+class QvisVisItUpdate;
 class SplashScreen;
 
 // ****************************************************************************
@@ -233,6 +234,9 @@ class SplashScreen;
 //    Added NonSpontaneousIconifyWindow and added an argument to 
 //    IconifyWindow indicating if it is spontaneous.
 //
+//    Brad Whitlock, Wed Feb 9 17:51:44 PST 2005
+//    Added an object that knows how to update VisIt.
+//
 // ****************************************************************************
 
 class GUI_API QvisGUIApplication : public QObject, public ConfigManager, public GUIBase
@@ -343,6 +347,8 @@ private slots:
     void showQueryOverTimeWindow();
     void showInteractorWindow();
 
+    void updateVisIt();
+    void updateVisItCompleted(const QString &);
 private:
     static const char           *windowNames[];
     int                          completeInit;
@@ -385,6 +391,8 @@ private:
     QvisPreferencesWindow        *preferencesWin;
     QvisColorTableWindow         *colorTableWin;
 
+    QvisVisItUpdate              *visitUpdate;
+
     // Contains pointers to all of the plot windows.
     WindowBaseVector             plotWindows;
 
@@ -397,6 +405,7 @@ private:
     // Options that can be set via the command line
     bool                         localOnly;
     bool                         readConfig;
+    bool                         developmentVersion;
     // These hold the border sizes of the main window.
     int                          borders[4];
     // Other sizing parameters for windows

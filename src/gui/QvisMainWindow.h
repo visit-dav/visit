@@ -128,6 +128,9 @@ class WindowInformation;
 //   Added a boolean to iconifyWindows to indicate if the request was 
 //   spontaneous.
 //
+//   Brad Whitlock, Wed Feb 9 17:48:30 PST 2005
+//   Added a help option to update VisIt.
+//
 // ****************************************************************************
 
 class GUI_API QvisMainWindow : public QvisWindowBase, public SimpleObserver
@@ -190,6 +193,7 @@ signals:
     void activateGlobalLineoutWindow();
     void activateQueryOverTimeWindow();
     void activateInteractorWindow();
+    void updateVisIt();
 
     void saveSettings();
     void saveWindow();
@@ -202,6 +206,7 @@ signals:
     void reopenOnNextFrame();
 public slots:
     void unreadOutput(bool);
+    void updateNotAllowed();
     void SetTimeStateFormat(const TimeFormat &fmt);
     void SetShowSelectedFiles(bool);
     void SetAllowFileSelectionChange(bool);
@@ -300,6 +305,8 @@ private:
     int                       navigateModeId;
     int                       spinModeId;
     int                       fullFrameModeId;
+    QPopupMenu                *helpPopup;
+    int                       updateVisItId;
 
     // Subjects that the window observes.
     GlobalAttributes          *globalAtts;

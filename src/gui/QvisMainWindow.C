@@ -209,6 +209,9 @@
 //    Jeremy Meredith, Wed Aug 25 09:52:06 PDT 2004
 //    Connect the viewer proxy's database metadata to the plotmanager.
 //
+//    Brad Whitlock, Wed Feb 9 17:49:22 PST 2005
+//    Added a menu option to update VisIt.
+//
 // ****************************************************************************
 
 QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
@@ -418,13 +421,15 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     //
     // Add the Help menu
     //
-    QPopupMenu *help = new QPopupMenu( this );
+    helpPopup = new QPopupMenu( this );
     menuBar()->insertSeparator();
-    menuBar()->insertItem( tr("&Help"), help);
-    help->insertItem( tr("About . . ."), this, SIGNAL(activateAboutWindow()));
-    help->insertItem( tr("Copyright . . ."), this, SIGNAL(activateCopyrightWindow()));
-    help->insertItem( tr("Help . . ."), this, SIGNAL(activateHelpWindow()), Key_F1);
-    help->insertItem( tr("Release notes . . ."), this, SIGNAL(activateReleaseNotesWindow()));
+    menuBar()->insertItem( tr("&Help"), helpPopup);
+    helpPopup->insertItem( tr("About . . ."), this, SIGNAL(activateAboutWindow()));
+    helpPopup->insertItem( tr("Copyright . . ."), this, SIGNAL(activateCopyrightWindow()));
+    helpPopup->insertItem( tr("Help . . ."), this, SIGNAL(activateHelpWindow()), Key_F1);
+    helpPopup->insertItem( tr("Release notes . . ."), this, SIGNAL(activateReleaseNotesWindow()));
+    helpPopup->insertSeparator();
+    updateVisItId = helpPopup->insertItem( tr("Check for new version . . ."), this, SIGNAL(updateVisIt()));
 
     // Make a central widget to contain the other widgets
     central = new QWidget( this );
@@ -1652,6 +1657,25 @@ QvisMainWindow::unreadOutput(bool val)
         outputButton->setPixmap(*outputRed);
     else
         outputButton->setPixmap(*outputBlue);
+}
+
+// ****************************************************************************
+// Method: QvisMainWindow::updateNotAllowed
+//
+// Purpose: 
+//   This is a Qt slot function that disables the "update visit" help option.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Feb 15 14:16:28 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisMainWindow::updateNotAllowed()
+{
+    helpPopup->setItemEnabled(updateVisItId, false);
 }
 
 // ****************************************************************************

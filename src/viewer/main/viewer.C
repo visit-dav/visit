@@ -1,6 +1,7 @@
 // ************************************************************************* //
 //                                 viewer.C                                  //
 // ************************************************************************* //
+
 #include <DebugStream.h>
 #include <ViewerSubject.h>
 #include <VisItException.h>
@@ -9,8 +10,10 @@
 #include <RemoteProcess.h>
 #include <ViewerPasswordWindow.h>
 #include <ViewerMessaging.h>
+#include <avtCallback.h>
 
 static void ErrorCallback(void *, const char *);
+static void ViewerWarningCallback(void *, const char *);
 
 // ****************************************************************************
 //  Method: main
@@ -75,6 +78,9 @@ static void ErrorCallback(void *, const char *);
 //    Hank Childs, Tue Jun  1 13:54:48 PDT 2004
 //    Call Init::Finalize.
 //
+//    Hank Childs, Tue Feb 15 12:16:38 PST 2005
+//    Register a warning function.
+//
 // ****************************************************************************
 
 int
@@ -91,6 +97,7 @@ main(int argc, char *argv[])
         Init::SetComponentName("viewer");
         Init::ComponentRegisterErrorFunction(ErrorCallback, NULL);
         InitVTK::Initialize();
+        avtCallback::RegisterWarningCallback(ViewerWarningCallback, NULL);
 
         //
         // Create the viewer subject.
@@ -155,6 +162,29 @@ static void
 ErrorCallback(void *, const char *msg)
 {
     Error(msg);
+}
+
+
+// ****************************************************************************
+//  Function: ViewerWarningCallback
+//
+//  Purpose:
+//      A callback routine that can issue warning messages.
+//
+//  Arguments:
+//      args    Arguments to the callback.  Not needed for this routine, but
+//              necessary to match the callback signature.
+//      msg     The message to issue.
+//
+//  Programmer: Hank Childs
+//  Creation:   February 15, 2005
+//
+// ****************************************************************************
+
+static void
+ViewerWarningCallback(void *, const char *msg)
+{
+    Warning(msg);
 }
 
 
