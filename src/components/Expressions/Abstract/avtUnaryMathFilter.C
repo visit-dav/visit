@@ -45,18 +45,58 @@
 //    *has* to be one in the dataset.  Unfortunately, we don't know that
 //    it's array 0, but let's go with it for now.
 //
+//    Hank Childs, Thu Aug 21 23:49:59 PDT 2003
+//    Avoid choosing an array that is 'vtkGhostLevels', etc.
+//
 // ****************************************************************************
 
 vtkDataArray *
 avtUnaryMathFilter::DeriveVariable(vtkDataSet *in_ds)
 {
-    vtkDataArray *cell_data, *point_data, *data;
+    int  i;
+
+    vtkDataArray *cell_data = NULL;
+    vtkDataArray *point_data = NULL;
+    vtkDataArray *data = NULL;
+
     if (activeVariable == NULL)
     {
         // HACK: We don't know what the default variable is, so just go for
         // array 0.  It's probably right, but we don't know.  XXXX
-        cell_data = in_ds->GetCellData()->GetArray(0);
-        point_data = in_ds->GetPointData()->GetArray(0);
+        int ncellArray = in_ds->GetCellData()->GetNumberOfArrays();
+        for (i = 0 ; i < ncellArray ; i++)
+        {
+            cell_data = in_ds->GetCellData()->GetArray(i);
+            if (strstr(cell_data->GetName(), "vtk") != NULL)
+            {
+                cell_data = NULL;
+                continue;
+            }
+            if (strstr(cell_data->GetName(), "avt") != NULL)
+            {
+                cell_data = NULL;
+                continue;
+            }
+            if (cell_data != NULL) // We found a winner
+                break;
+        }
+        int npointArray = in_ds->GetPointData()->GetNumberOfArrays();
+        for (i = 0 ; i < npointArray ; i++)
+        {
+            point_data = in_ds->GetPointData()->GetArray(i);
+            if (strstr(point_data->GetName(), "vtk") != NULL)
+            {
+                point_data = NULL;
+                continue;
+            }
+            if (strstr(point_data->GetName(), "avt") != NULL)
+            {
+                point_data = NULL;
+                continue;
+            }
+            if (point_data != NULL) // We found a winner
+                break;
+        }
     } else
     {
         cell_data = in_ds->GetCellData()->GetArray(activeVariable);
@@ -87,6 +127,26 @@ avtUnaryMathFilter::DeriveVariable(vtkDataSet *in_ds)
     DoOperation(data, dv, ncomps, nvals);
 
     return dv;
+}
+
+
+// ****************************************************************************
+//  Method: avtUnaryMathFilter::CreateArray
+//
+//  Purpose:
+//      Creates an array to write the output into.  Most derived types want
+//      the array to be of the same form as the input.  Some (like logical
+//      operators) always want them to be a specific type (like uchar).
+//
+//  Programmer: Hank Childs
+//  Creation:   August 21, 2003
+//
+// ****************************************************************************
+
+vtkDataArray *
+avtUnaryMathFilter::CreateArray(vtkDataArray *in1)
+{
+    return in1->NewInstance();
 }
 
 

@@ -19,6 +19,11 @@
         OriginalData
         CurrentPlot
       </Enum>
+      <Enum name="PointType">
+        Box
+        Axis
+        Icosahedron
+      </Enum>
       <Field name="legendFlag" label="Legend" type="bool">
         true
       </Field>
@@ -48,6 +53,9 @@
       </Field>
       <Field name="pointSize" label="Point size" type="double">
         0.050000
+      </Field>
+      <Field name="pointType" label="Point Type" type="enum" subtype="PointType">
+        Box
       </Field>
       <Field name="skewFactor" label="Skew factor" type="double" enabler="scaling:Skew">
         1.000000

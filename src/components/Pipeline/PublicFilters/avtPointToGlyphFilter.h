@@ -25,8 +25,12 @@ class vtkPolyData;
 //  Creation:   June 22, 2002
 //
 //  Modifications:
+//
 //    Jeremy Meredith, Fri Dec 20 11:32:51 PST 2002
 //    Added code to scale by a variable.
+//
+//    Hank Childs, Thu Aug 21 22:03:57 PDT 2003
+//    Added more point glyphs.
 //
 // ****************************************************************************
 
@@ -39,6 +43,7 @@ class PIPELINE_API avtPointToGlyphFilter : public avtStreamer
     void                 SetPointSize(double);
     void                 SetScaleVariable(const std::string&);
     void                 SetScaleByVariableEnabled(bool);
+    void                 SetGlyphType(int);
 
     virtual const char  *GetType(void) { return "avtPointToGlyphFilter"; };
     virtual const char  *GetDescription(void) 
@@ -46,6 +51,7 @@ class PIPELINE_API avtPointToGlyphFilter : public avtStreamer
 
   protected:
     double               pointSize;
+    int                  glyphType;
     std::string          scaleVar;
     bool                 scaleByVarEnabled;
     vtkPolyData         *glyph3D;
@@ -53,6 +59,8 @@ class PIPELINE_API avtPointToGlyphFilter : public avtStreamer
 
     virtual vtkDataSet  *ExecuteData(vtkDataSet *, int, std::string);
     virtual void         RefashionDataObjectInfo(void);
+
+    void                 SetUpGlyph();
 };
 
 

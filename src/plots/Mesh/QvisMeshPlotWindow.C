@@ -88,6 +88,9 @@ QvisMeshPlotWindow::~QvisMeshPlotWindow()
 //   Jeremy Meredith, Fri Dec 20 11:36:03 PST 2002
 //   Added scaling of point variables by a scalar field.
 //
+//   Hank Childs, Thu Aug 21 23:09:59 PDT 2003
+//   Added support for more types of point glyphs.
+//
 // ****************************************************************************
 
 void
@@ -96,7 +99,7 @@ QvisMeshPlotWindow::CreateWindowContents()
     //
     // Create the layout that we'll use.
     //
-    QGridLayout *theLayout = new QGridLayout(topLayout, 9, 4);
+    QGridLayout *theLayout = new QGridLayout(topLayout, 10, 4);
     theLayout->setSpacing(10);
 
     // Create the lineSyle widget.
@@ -193,11 +196,30 @@ QvisMeshPlotWindow::CreateWindowContents()
             this, SLOT(pointSizeVarToggled(bool)));
     theLayout->addMultiCellWidget(pointSizeVarToggle, 6,6, 0,1);
 
+    // Create the point type buttons
+    pointTypeButtons = new QButtonGroup(0, "pointTypeButtons");
+    connect(pointTypeButtons, SIGNAL(clicked(int)),
+            this, SLOT(pointTypeChanged(int)));
+    QGridLayout *pointTypeLayout = new QGridLayout(1, 5);
+    pointTypeLayout->setSpacing(10);
+    pointTypeLayout->setColStretch(4, 1000);
+    pointTypeLayout->addWidget(new QLabel("Point Type", central), 0,0);
+    QRadioButton *rb = new QRadioButton("Box", central, "Box");
+    pointTypeButtons->insert(rb);
+    pointTypeLayout->addWidget(rb, 0, 1);
+    rb = new QRadioButton("Axis", central, "Axis");
+    pointTypeButtons->insert(rb);
+    pointTypeLayout->addWidget(rb, 0, 2);
+    rb = new QRadioButton("Icosahedron", central, "Icosahedron");
+    pointTypeButtons->insert(rb);
+    pointTypeLayout->addWidget(rb, 0, 3);
+    theLayout->addMultiCellLayout(pointTypeLayout, 7,7 , 0,3);
+
     // Create the legend toggle
     legendToggle = new QCheckBox("Legend", central, "legendToggle");
     connect(legendToggle, SIGNAL(toggled(bool)),
             this, SLOT(legendToggled(bool)));
-    theLayout->addWidget(legendToggle, 7, 0);
+    theLayout->addWidget(legendToggle, 8, 0);
 
     // Create the smoothing level buttons
     smoothingLevelButtons = new QButtonGroup(0, "smoothingButtons");
@@ -207,7 +229,7 @@ QvisMeshPlotWindow::CreateWindowContents()
     smoothingLayout->setSpacing(10);
     smoothingLayout->setColStretch(4, 1000);
     smoothingLayout->addWidget(new QLabel("Geometry smoothing", central), 0,0);
-    QRadioButton *rb = new QRadioButton("None", central, "NoSmoothing");
+    rb = new QRadioButton("None", central, "NoSmoothing");
     smoothingLevelButtons->insert(rb);
     smoothingLayout->addWidget(rb, 0, 1);
     rb = new QRadioButton("Fast", central, "LowSmoothing");
@@ -216,7 +238,7 @@ QvisMeshPlotWindow::CreateWindowContents()
     rb = new QRadioButton("High", central, "HighSmoothing");
     smoothingLevelButtons->insert(rb);
     smoothingLayout->addWidget(rb, 0, 3);
-    theLayout->addMultiCellLayout(smoothingLayout, 8,8 , 0,3);
+    theLayout->addMultiCellLayout(smoothingLayout, 9,9 , 0,3);
 }
 
 // ****************************************************************************
@@ -257,6 +279,9 @@ QvisMeshPlotWindow::CreateWindowContents()
 //
 //   Jeremy Meredith, Fri Dec 20 11:36:03 PST 2002
 //   Added scaling of point variables by a scalar field.
+//
+//   Hank Childs, Thu Aug 21 23:17:17 PDT 2003
+//   Added support for point type.
 //
 // ****************************************************************************
 
@@ -376,6 +401,11 @@ QvisMeshPlotWindow::UpdateWindow(bool doAll)
             pointSizeVarLineEdit->blockSignals(true);
             pointSizeVarLineEdit->setText(meshAtts->GetPointSizeVar().c_str());
             pointSizeVarLineEdit->blockSignals(false);
+            break;
+        case 14: // pointType
+            pointTypeButtons->blockSignals(true);
+            pointTypeButtons->setButton((int) meshAtts->GetPointType());
+            pointTypeButtons->blockSignals(false);
             break;
         }
     } // end for
@@ -857,6 +887,32 @@ void
 QvisMeshPlotWindow::smoothingLevelChanged(int level)
 {
     meshAtts->SetSmoothingLevel(level);
+    SetUpdate(false);
+    Apply();
+}
+
+
+// ****************************************************************************
+//  Method:  QvisMeshPlotWindow::pointTypeChanged
+//
+//  Purpose:
+//    Qt slot function that is called when one of the point type buttons
+//    is clicked.
+//
+//  Arguments:
+//    type   :   The new type
+//
+//  Programmer:  Hank Childs
+//  Creation:    August 21, 2003
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+QvisMeshPlotWindow::pointTypeChanged(int type)
+{
+    meshAtts->SetPointType((MeshAttributes::PointType) type);
     SetUpdate(false);
     Apply();
 }

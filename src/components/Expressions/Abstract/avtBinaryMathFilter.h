@@ -40,6 +40,7 @@ class EXPRESSION_API avtBinaryMathFilter
 
   protected:
     virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
+    virtual vtkDataArray     *CreateArray(vtkDataArray *);
     virtual void              DoOperation(vtkDataArray *in1, vtkDataArray *in2,
                                           vtkDataArray *out, int, int) = 0;
     virtual int               GetNumberOfComponentsInOutput(int ncompsIn1,

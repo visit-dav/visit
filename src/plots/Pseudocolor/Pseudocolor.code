@@ -17,6 +17,9 @@ Definition:
 //   Jeremy Meredith, Fri Dec 20 11:33:43 PST 2002
 //   Added point size variable and its enabled flag.
 //
+//   Hank Childs, Thu Aug 21 22:28:25 PDT 2003
+//   Added pointType.
+//
 // ****************************************************************************
 bool
 PseudocolorAttributes::ChangesRequireRecalculation(const PseudocolorAttributes &obj) const
@@ -24,6 +27,7 @@ PseudocolorAttributes::ChangesRequireRecalculation(const PseudocolorAttributes &
     return (centering != obj.centering ||
             pointSize != obj.pointSize ||
             pointSizeVar != obj.pointSizeVar ||
+            pointType != obj.pointType ||
             pointSizeVarEnabled != obj.pointSizeVarEnabled ||
             smoothingLevel != obj.smoothingLevel); 
 }

@@ -652,6 +652,9 @@ avtGenericDatabase::GetScalarVarDataset(const char *varname, int ts,
 //    Hank Childs, Fri Jul 25 10:49:56 PDT 2003
 //    Allow for meshes to be specified (then ignored).
 //
+//    Hank Childs, Thu Aug 21 11:01:22 PDT 2003
+//    Allow for materials to be specified (then ignored).
+//
 // ****************************************************************************
 
 void
@@ -674,7 +677,7 @@ avtGenericDatabase::AddSecondaryVariables(vtkDataSet *ds, int ts, int domain,
         // They asked for the mesh as a secondary variable.  Just ignore this
         // request -- it is likely from the expression code.
         //
-        if (vt == AVT_MESH)
+        if (vt == AVT_MESH || vt == AVT_MATERIAL)
             continue;
 
         //

@@ -86,7 +86,7 @@ avtBinaryMathFilter::DeriveVariable(vtkDataSet *in_ds)
     int ncomps = GetNumberOfComponentsInOutput(ncomps1, ncomps2);
     int nvals  = data1->GetNumberOfTuples();
 
-    vtkDataArray *dv = data1->NewInstance();
+    vtkDataArray *dv = CreateArray(data1);
     dv->SetNumberOfComponents(ncomps);
     dv->SetNumberOfTuples(nvals);
 
@@ -100,3 +100,25 @@ avtBinaryMathFilter::DeriveVariable(vtkDataSet *in_ds)
 
     return dv;
 }
+
+
+// ****************************************************************************
+//  Method: avtBinaryMathFilter::CreateArray
+//
+//  Purpose:
+//      Creates an array to write the output into.  Most derived types want
+//      the array to be of the same form as the input.  Some (like logical
+//      operators) always want them to be a specific type (like uchar).
+//
+//  Programmer: Hank Childs
+//  Creation:   August 20, 2003
+//
+// ****************************************************************************
+
+vtkDataArray *
+avtBinaryMathFilter::CreateArray(vtkDataArray *in1)
+{
+    return in1->NewInstance();
+}
+
+

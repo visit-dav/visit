@@ -13,6 +13,9 @@ Definition:
 //    Jeremy Meredith, Fri Dec 20 11:33:43 PST 2002
 //    Added point size variable and its enabled flag.
 //
+//    Hank Childs, Thu Aug 21 23:05:45 PDT 2003
+//    Added point type.
+//
 // ****************************************************************************
 
 bool
@@ -23,5 +26,6 @@ MeshAttributes::ChangesRequireRecalculation(const MeshAttributes &obj)
             (pointSize != obj.pointSize) ||
             (pointSizeVar != obj.pointSizeVar) ||
             (pointSizeVarEnabled != obj.pointSizeVarEnabled) ||
+            (pointType != obj.pointType) ||
             (smoothingLevel != obj.smoothingLevel));
 }

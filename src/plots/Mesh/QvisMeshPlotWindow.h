@@ -37,6 +37,9 @@ class MeshAttributes;
 //   Jeremy Meredith, Fri Dec 20 11:36:03 PST 2002
 //   Added scaling of point variables by a scalar field.
 //
+//   Hank Childs, Thu Aug 21 23:14:39 PDT 2003
+//   Added support for different types of point glyphs.
+//
 // ****************************************************************************
 
 class QvisMeshPlotWindow : public QvisPostableWindowObserver
@@ -70,6 +73,7 @@ private slots:
     void backgroundToggled(bool on);
     void foregroundToggled(bool on);
     void smoothingLevelChanged(int index);
+    void pointTypeChanged(int index);
     void processPointSizeVarText();
     void pointSizeVarToggled(bool on);
 private:
@@ -95,6 +99,7 @@ private:
     QCheckBox              *backgroundToggle;
     QCheckBox              *foregroundToggle;
     QButtonGroup           *smoothingLevelButtons;
+    QButtonGroup           *pointTypeButtons;
 };
 
 #endif
