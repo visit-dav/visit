@@ -48,12 +48,16 @@ avtBoundaryFilter::SetPlotAtts(const BoundaryAttributes *atts)
 //    Hank Childs, Sat Jun 21 10:51:29 PDT 2003
 //    Made more efficient by removing unnecessary work.
 //
+//    Kathleen Bonnell, Mon Sep  8 13:43:30 PDT 2003 
+//    Add test for NO cells for early termination.
+//
 // ****************************************************************************
 
 avtDataTree_p
 avtBoundaryFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string label)
 {
-    if (in_ds == NULL || in_ds->GetNumberOfPoints() == 0)
+    if (in_ds == NULL || in_ds->GetNumberOfPoints() == 0 ||
+        in_ds->GetNumberOfCells() == 0)
     {
         return NULL;
     }

@@ -51,13 +51,17 @@ avtFilledBoundaryFilter::SetPlotAtts(const FilledBoundaryAttributes *atts)
 //  Note:  taken almost verbatim from the Subset plot
 //
 //  Modifications:
+//    Kathleen Bonnell, Mon Sep  8 13:22:14 PDT 2003
+//    Added test for NO cells for early return. 
+//
 // ****************************************************************************
 
 avtDataTree_p
 avtFilledBoundaryFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain,
                                          string label)
 {
-    if (in_ds == NULL || in_ds->GetNumberOfPoints() == 0)
+    if (in_ds == NULL || in_ds->GetNumberOfPoints() == 0 ||
+        in_ds->GetNumberOfCells() == 0)
     {
         return NULL;
     }

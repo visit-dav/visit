@@ -859,9 +859,10 @@ QvisFilePanel::UpdateFileSelection()
     blockSignals(true);
     fileListView->blockSignals(true);
 
-    // Iterate through all items of the listview and set the selected
-    // attribute on the listviewitems. It must go through all of them in
-    // the event that the selected file is not in the listview.
+    //
+    // Iterate through all items of the listview and open up the appropriate items
+    // so that expansion is preserved.
+    //
     QListViewItemIterator it(fileListView);
     QvisListViewFileItem *selectedItem = 0;
 
@@ -880,7 +881,6 @@ QvisFilePanel::UpdateFileSelection()
 
         if(item->file == fileServer->GetOpenFile())
         {
-            bool setSelected = true;
             QvisListViewFileItem *parentItem = (QvisListViewFileItem *)item->parent();
 
             // The file is open, so try and use its metadata to get the number
@@ -890,27 +890,38 @@ QvisFilePanel::UpdateFileSelection()
 
             if(nStates > 1)
             {
-                // The item is the current file and it is a database.
-                setSelected = item->timeState == globalAtts->GetCurrentState();
+                // Check if the current item is for the current time state.
+                bool currentTimeState = item->timeState == globalAtts->GetCurrentState();
 
-                // Expand the parents of the database item.
-                if(HaveFileInformation(item->file) &&
-                   !FileIsExpanded(item->file))
+                // If we have information for this file and it turns out that the file
+                // is not expanded, then check to see if the item is the root of the
+                // database.
+                if(HaveFileInformation(item->file) && !FileIsExpanded(item->file))
                 {
-                    setSelected = false;
-
-                    // The cycles are not expanded. Select the parent of the item
-                    // since that is the database.
-                    if(item->timeState == -1)
-                    {
-                        setSelected = true;
-                    }
-                    else
+                    //
+                    // The cycles are not expanded. If the time state that we're
+                    // looking at is not -1 then it is a time step in the database
+                    // but since the file is not expanded, we want to instead highlight
+                    // the parent.
+                    //
+                    if(item->timeState != -1)
                     {
                         item = (QvisListViewFileItem *)item->parent();
                         parentItem = (QvisListViewFileItem *)parentItem->parent();
                     }
                 }
+
+                //
+                // If we have no selected item so far and the item's timestate is the
+                // current time state, then we want to select it.
+                //
+                if(currentTimeState)
+                    selectedItem = item;
+            }
+            else if(selectedItem == 0)
+            {
+                // If this time step / database is selected then select it.
+                selectedItem = item;
             }
 
             // Make sure the item is visible.
@@ -925,15 +936,6 @@ QvisFilePanel::UpdateFileSelection()
                 }
                 parentItem = (QvisListViewFileItem *)parentItem->parent();
             } 
-
-            // If this time step / database is selected then select it.
-            if(setSelected)
-            {
-                fileListView->setSelected(item, true);
-                fileListView->setCurrentItem(item);
-                if(selectedItem == 0)
-                    selectedItem = item;
-            }
         }
         else if(HaveFileInformation(item->file) &&
                 FileIsExpanded(item->file))
@@ -944,7 +946,11 @@ QvisFilePanel::UpdateFileSelection()
 
     // Make sure the selected item is visible.
     if(selectedItem != 0)
+    {
+        fileListView->setSelected(selectedItem, true);
+        fileListView->setCurrentItem(selectedItem);
         fileListView->ensureItemVisible(selectedItem);
+    }
 
     // Restore signals.
     fileListView->blockSignals(false);
@@ -1033,6 +1039,10 @@ QvisFilePanel::ConnectGlobalAttributes(GlobalAttributes *ga)
 //   Brad Whitlock, Fri Feb 28 08:30:24 PDT 2003
 //   I made the reOpen flag be passed in instead of being calculated in here.
 //
+//   Brad Whitlock, Fri Sep 5 16:40:20 PST 2003
+//   I added code that lets the replace button be active if there's more than
+//   one state in the database.
+//
 // ****************************************************************************
 
 bool
@@ -1041,7 +1051,11 @@ QvisFilePanel::OpenFile(const QualifiedFilename &qf, int timeState, bool reOpen)
     // Try and open the data file.
     bool retval = OpenDataFile(qf, timeState, this, reOpen);
 
-    replaceButton->setEnabled(false);
+    // Get a pointer to the file's metadata.
+    const avtDatabaseMetaData *md = fileServer->GetMetaData(qf);
+    int nTimeStates = md ? md->GetNumStates() : 1;
+
+    replaceButton->setEnabled(nTimeStates > 1);
     overlayButton->setEnabled(false);
 
     return retval;
@@ -1421,7 +1435,10 @@ QvisFilePanel::nextFrame()
 //   Eric Brugger, Mon Dec 16 13:05:01 PST 2002
 //   I seperated the concepts of state and frame, since they are no longer
 //   equivalent with keyframe support.
-//   
+//
+//   Brad Whitlock, Mon Sep 8 14:54:20 PST 2003
+//   Changed the logic for removing files from the list of expanded files.
+//
 // ****************************************************************************
 
 void
@@ -1435,15 +1452,25 @@ QvisFilePanel::fileCollapsed(QListViewItem *item)
 
     if(!fileItem->isRoot())
     {
-        // Remove the file from the expanded file list.
-        RemoveExpandedFile(fileItem->file);
-
         // If the file is a database then we want to update the file selection.
-        if(fileItem->file == fileServer->GetOpenFile() &&
-           globalAtts->GetNStates() > 1)
+        if(fileItem->isFile())
         {
-            UpdateFileSelection();
+            //
+            // If the item is the root of the current open database then remove
+            // it from the list of expanded files.
+            //
+            if(fileItem->timeState == -1)
+            {
+                // Remove the file from the expanded file list.
+                RemoveExpandedFile(fileItem->file);
+
+                // If we collapsed the open file then update the file selection.
+                if(fileItem->file == fileServer->GetOpenFile())
+                    UpdateFileSelection();
+            }
         }
+        else
+            RemoveExpandedFile(fileItem->file);
     }
 }
 
@@ -1518,6 +1545,9 @@ QvisFilePanel::fileExpanded(QListViewItem *item)
 //   I made it so highlighting a file that's been opened in the past makes
 //   the highlighted file the new open file.
 //
+//   Brad Whitlock, Fri Sep 5 17:10:43 PST 2003
+//   I made it so replace can be used to set the active time state.
+//
 // ****************************************************************************
 
 void
@@ -1550,10 +1580,10 @@ QvisFilePanel::highlightFile(QListViewItem *item)
 
     // If we've opened the file before, highlighting it should make it
     // the open file.
-    if(fileOpenedBefore)
+    if(fileOpenedBefore && fileItem->timeState == -1)
         OpenFile(fileItem->file, 0, false);
 
-    replaceButton->setEnabled(enable);
+    replaceButton->setEnabled(enable || (fileItem->timeState >= 0));
     overlayButton->setEnabled(enable);
 }
 
@@ -1675,7 +1705,10 @@ QvisFilePanel::openFileDblClick(QListViewItem *item)
 // Modifications:
 //   Brad Whitlock, Wed Mar 21 00:38:22 PDT 2001
 //   Added a check to make sure it's a file.
-
+//
+//   Brad Whitlock, Fri Sep 5 16:52:28 PST 2003
+//   I let replace change time states so MeshTV users are happy.
+//
 // ****************************************************************************
 
 void
@@ -1686,8 +1719,18 @@ QvisFilePanel::replaceFile()
 
     if((fileItem != 0) && fileItem->isFile() && (!fileItem->file.Empty()))
     {
-        // Try and replace the file.
-        ReplaceFile(fileItem->file.FullName());
+        if(fileItem->file == fileServer->GetOpenFile())
+        {
+            // It must be a database timestep if the time state is not -1 and
+            // the file item has the same filename as the open file.
+            if(fileItem->timeState != -1)
+                viewer->AnimationSetFrame(fileItem->timeState);
+        }
+        else
+        {
+            // Try and replace the file.
+            ReplaceFile(fileItem->file.FullName());
+        }
     }
 }
 

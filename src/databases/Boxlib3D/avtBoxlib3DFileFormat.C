@@ -320,6 +320,13 @@ avtBoxlib3DFileFormat::GetMesh(int ts, int patch, const char *level_name)
 //  Programmer:  Akira Haddox
 //  Creation:    July 25, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Mon Sep  8 16:04:01 PDT 2003
+//    While parsing header, a string was returned on the DECs when it was
+//    actually EOF, leading to a bad value in the multiFabFilenames.  I put
+//    in a check for this and ignored the string in this case.
+//
 // ****************************************************************************
 
 void
@@ -497,6 +504,8 @@ avtBoxlib3DFileFormat::ReadTimeHeader(int ts, bool populate)
             if (isdigit(in.peek()) || in.eof() || in.fail())
                 break;
             in.getline(buf, 1024);
+            if (strcmp(buf, "") == 0)
+                continue;
             multifabFilenames.push_back(buf);
         }
     }

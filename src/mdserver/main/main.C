@@ -69,11 +69,16 @@ bool ProcessCommandLine(int argc, char *argv[]);
 //    Brad Whitlock, Mon Jun 9 11:01:25 PDT 2003
 //    I moved plugin loading.
 //
+//    Brad Whitlock, Mon Sep 8 16:58:33 PST 2003
+//    I made it log uncaught exceptions.
+//
 // ****************************************************************************
 
 int
 main(int argc, char *argv[])
 {
+    int retval = 0;
+
     // Initialize error logging
     Init::Initialize(argc, argv);
     Init::SetComponentName("mdserver");
@@ -98,14 +103,19 @@ main(int argc, char *argv[])
         // Clean up
         delete MDServerApplication::Instance();
     }
-    CATCH(VisItException)
+    CATCH2(VisItException, e)
     {
-        ; // Catch exceptions but don't bother doing anything.
+        debug1 << "VisIt's mdserver encountered the following uncaught "
+               "exception: " << e.GetExceptionType().c_str()
+               << " from (" << e.GetFilename().c_str()
+               << ":" << e.GetLine() << ")" << endl
+               << e.GetMessage().c_str() << endl;
+        retval = -1;
     }
     ENDTRY
 
     debug1 << "MDSERVER exited." << endl;
-    return 0;
+    return retval;
 }
 
 // ****************************************************************************

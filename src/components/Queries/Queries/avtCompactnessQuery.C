@@ -11,6 +11,10 @@
 #include <vtkPolyData.h>
 #include <vtkUnsignedCharArray.h>
 
+#ifdef PARALLEL
+#include <mpi.h>
+#endif
+
 #include <avtCallback.h>
 #include <avtParallel.h>
 

@@ -10,10 +10,6 @@
 #include <avtDataAttributes.h>
 #include <avtDataValidity.h>
 
-#ifdef PARALLEL
-#include <mpi.h>
-#endif
-
 class     avtDataObjectString;
 class     avtDataObjectWriter;
 
@@ -41,8 +37,8 @@ class     avtDataObjectWriter;
 class PIPELINE_API avtDataObjectInformation
 {
   public:
-                             avtDataObjectInformation();
-    virtual                 ~avtDataObjectInformation();
+                             avtDataObjectInformation() {;};
+    virtual                 ~avtDataObjectInformation() {;};
 
     void                     Copy(const avtDataObjectInformation &);
  
@@ -61,13 +57,12 @@ class PIPELINE_API avtDataObjectInformation
     avtDataValidity          validity;
 
   private:
-    static int               objectCount;
-    static void              InitializeMPIStuff();
-    static void              FinalizeMPIStuff();
-#ifdef PARALLEL
-    static MPI_Op            mpiOpUnifyDobInfo;
-#endif
-
+    void                     SwapAndMerge(const ref_ptr<avtDataObjectWriter> dobw,
+                                          int swapWithProc);
+    void                     RecvResult(const ref_ptr<avtDataObjectWriter> dobw,
+                                        int swapWithProc);
+    void                     SendResult(const ref_ptr<avtDataObjectWriter> dobw,
+                                        int swapWithProc);
 };
 
 #endif

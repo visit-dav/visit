@@ -405,7 +405,10 @@ HostProfileList::CreateNode(DataNode *parentNode, bool forceAdd)
 //
 //   Kathleen Bonnell, Wed Aug 20 10:51:24 PDT 2003 
 //   Ensure that activeProfile is in the correct range.
-//   
+//
+//   Brad Whitlock, Fri Sep 5 15:30:55 PST 2003
+//   Prevented more than one profile from being the default profile for a host.
+//
 // ****************************************************************************
 
 void
@@ -440,9 +443,10 @@ HostProfileList::SetFromNode(DataNode *parentNode)
             // found, then read over it so that values can be replaced.
             AttributeGroupVector::iterator pos;
             bool notFound = true;
-            for(pos = profiles.begin(); pos != profiles.end(); ++pos)
+            int profileIndex = 0;
+            for(int j = 0; j < profiles.size(); ++j)
             {
-                HostProfile *p = (HostProfile *)*pos;
+                HostProfile *p = (HostProfile *)profiles[j];
                 if((temp.GetProfileName() == p->GetProfileName()) &&
                    (temp.GetHost() == p->GetHost()))
                 {
@@ -450,6 +454,7 @@ HostProfileList::SetFromNode(DataNode *parentNode)
                     notFound = false;
                     p->SetFromNode(children[i]);
                     SelectProfiles();
+                    profileIndex = j;
                     break;
                 }
             }
@@ -459,7 +464,14 @@ HostProfileList::SetFromNode(DataNode *parentNode)
             if(notFound)
             {
                 AddHostProfile(temp);
+                profileIndex = profiles.size() - 1;
             }
+
+            // If it is the active profile for the host then make
+            // sure that the other profiles for the host are not
+            // also active.
+            if(temp.GetActive())
+                SetActiveProfile(profileIndex);
         }
     }
 
@@ -478,6 +490,7 @@ HostProfileList::SetFromNode(DataNode *parentNode)
         }
     }
 }
+
 ///////////////////////////////////////////////////////////////////////////////
 // Set property methods
 ///////////////////////////////////////////////////////////////////////////////
