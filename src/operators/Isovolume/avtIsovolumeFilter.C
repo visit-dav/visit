@@ -228,6 +228,11 @@ avtIsovolumeFilter::ExecuteSingleClip(vtkDataSet *in_ds, float val, bool flip)
 //    requires it.  Also pass the dataset through if it is wholly contained
 //    within the range and return a NULL dataset if it is outside the range.
 //
+//    Hank Childs, Wed Nov 17 11:43:53 PST 2004
+//    At the end, we try to convert poly-data input back to poly-data output.
+//    There was an assumption that after processing the data, it would be
+//    in unstructured grid form, which is not true.  Add a check here. ['5640]
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -300,10 +305,13 @@ avtIsovolumeFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 
     //
     // If we had poly data input, we want poly data output.  The VTK filter
-    // only returns unstructured grids, so convert that now.
+    // only returns unstructured grids, so convert that now.  Note: we don't
+    // necessarily have a ugrid, since it might be that we didn't process the
+    // dataset.
     //
     bool shouldDelete = false;
-    if (in_ds->GetDataObjectType() == VTK_POLY_DATA && out_ds != NULL)
+    if (in_ds->GetDataObjectType() == VTK_POLY_DATA && out_ds != NULL &&
+        out_ds->GetDataObjectType() == VTK_UNSTRUCTURED_GRID)
     {
         vtkUnstructuredGrid *ugrid = (vtkUnstructuredGrid *) out_ds;
         vtkPolyData *out_pd = vtkPolyData::New();
