@@ -57,10 +57,13 @@ inline char toupper(char c)
 //
 //    Brad Whitlock, Fri Jun 20 10:55:22 PDT 2003
 //    I fixed a bug in the code generation for setattr that caused bad code
-//    to be generated when the first field it internal.
+//    to be generated when the first field is internal.
 //
 //    Kathleen Bonnell, Fri Jun 27 14:49:20 PDT 2003 
 //    I made code generation for Enum's getattr obey the internal flag. 
+//
+//    Brad Whitlock, Thu Sep 11 11:24:28 PDT 2003
+//    I rewrote the code to set colors so it handles doubles and ints.
 //
 // ****************************************************************************
 
@@ -1062,43 +1065,58 @@ class AttsGeneratorColor : public virtual Color , public virtual PythonGenerator
         : Color(n,l), PythonGeneratorField("color",n,l), Field("color",n,l) { }
     virtual void WriteSetMethodBody(ostream &c, const QString &className)
     {
-        c << "    int r,g,b,a;" << endl;
-        c << "    if(!PyArg_ParseTuple(args, \"iiii\", &r, &g, &b, &a))" << endl;
+        c << "    int c[4];" << endl;
+        c << "    if(!PyArg_ParseTuple(args, \"iiii\", &c[0], &c[1], &c[2], &c[3]))" << endl;
         c << "    {" << endl;
-        c << "        a = 255;" << endl;
-        c << "        if(!PyArg_ParseTuple(args, \"iii\", &r, &g, &b))" << endl;
+        c << "        c[3] = 255;" << endl;
+        c << "        if(!PyArg_ParseTuple(args, \"iii\", &c[0], &c[1], &c[2]))" << endl;
         c << "        {" << endl;
-        c << "            PyObject *tuple = NULL;" << endl;
-        c << "            if(!PyArg_ParseTuple(args, \"O\", &tuple))" << endl;
-        c << "                return NULL;" << endl;
-        c << endl;
-        c << "            if(!PyTuple_Check(tuple))" << endl;
-        c << "                return NULL;" << endl;
-        c << endl;
-        c << "            // Make sure that the tuple is the right size." << endl;
-        c << "            if(PyTuple_Size(tuple) < 3 || PyTuple_Size(tuple) > 4)" << endl;
-        c << "                return NULL;" << endl;
-        c << endl;
-        c << "            // Make sure that all elements in the tuple are ints." << endl;
-        c << "            for(int i = 0; i < PyTuple_Size(tuple); ++i)" << endl;
+        c << "            double dr, dg, db, da;" << endl;
+        c << "            if(PyArg_ParseTuple(args, \"dddd\", &dr, &dg, &db, &da))" << endl;
         c << "            {" << endl;
-        c << "                PyObject *item = PyTuple_GET_ITEM(tuple, i);" << endl;
-        c << "                    if(!PyInt_Check(item))" << endl;
-        c << "                return NULL;" << endl;
+        c << "                c[0] = int(dr);" << endl;
+        c << "                c[1] = int(dg);" << endl;
+        c << "                c[2] = int(db);" << endl;
+        c << "                c[3] = int(da);" << endl;
         c << "            }" << endl;
+        c << "            else if(PyArg_ParseTuple(args, \"ddd\", &dr, &dg, &db))" << endl;
+        c << "            {" << endl;
+        c << "                c[0] = int(dr);" << endl;
+        c << "                c[1] = int(dg);" << endl;
+        c << "                c[2] = int(db);" << endl;
+        c << "                c[3] = 255;" << endl;
+        c << "            }" << endl;
+        c << "            else" << endl;
+        c << "            {" << endl;
+        c << "                PyObject *tuple = NULL;" << endl;
+        c << "                if(!PyArg_ParseTuple(args, \"O\", &tuple))" << endl;
+        c << "                    return NULL;" << endl;
         c << endl;
-        c << "            // Set the r,g,b,a values from the tuple." << endl;
-        c << "            r = int(PyInt_AS_LONG(PyTuple_GET_ITEM(tuple, 0)));" << endl;
-        c << "            g = int(PyInt_AS_LONG(PyTuple_GET_ITEM(tuple, 1)));" << endl;
-        c << "            b = int(PyInt_AS_LONG(PyTuple_GET_ITEM(tuple, 2)));" << endl;
-        c << "            if(PyTuple_Size(tuple) > 3)" << endl;
-        c << "                a = int(PyInt_AS_LONG(PyTuple_GET_ITEM(tuple, 3)));" << endl;
+        c << "                if(!PyTuple_Check(tuple))" << endl;
+        c << "                    return NULL;" << endl;
+        c << endl;
+        c << "                // Make sure that the tuple is the right size." << endl;
+        c << "                if(PyTuple_Size(tuple) < 3 || PyTuple_Size(tuple) > 4)" << endl;
+        c << "                    return NULL;" << endl;
+        c << endl;
+        c << "                // Make sure that all elements in the tuple are ints." << endl;
+        c << "                for(int i = 0; i < PyTuple_Size(tuple); ++i)" << endl;
+        c << "                {" << endl;
+        c << "                    PyObject *item = PyTuple_GET_ITEM(tuple, i);" << endl;
+        c << "                    if(PyInt_Check(item))" << endl;
+        c << "                        c[i] = int(PyInt_AS_LONG(PyTuple_GET_ITEM(tuple, i)));" << endl;
+        c << "                    else if(PyFloat_Check(item))" << endl;
+        c << "                        c[i] = int(PyFloat_AS_DOUBLE(PyTuple_GET_ITEM(tuple, i)));" << endl;
+        c << "                    else" << endl;
+        c << "                        return NULL;" << endl;
+        c << "                }" << endl;
+        c << "            }" << endl;
         c << "        }" << endl;
         c << "        PyErr_Clear();" << endl;
         c << "    }" << endl;
         c << endl;
         c << "    // Set the " << name << " in the object." << endl;
-        c << "    ColorAttribute ca(r, g, b, a);" << endl;
+        c << "    ColorAttribute ca(c[0], c[1], c[2], c[3]);" << endl;
         c << "    obj->data->" << MethodNameSet() << "(ca);" << endl;
     }
 

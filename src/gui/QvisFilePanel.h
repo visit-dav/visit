@@ -93,7 +93,7 @@ class GUI_API QvisFilePanel : public QWidget, public SimpleObserver, public GUIB
         bool correctCycles;
     };
 
-    typedef std::map<QualifiedFilename, FileDisplayInformation>
+    typedef std::map<std::string, FileDisplayInformation>
             FileDisplayInformationMap;
 
 public:

@@ -323,6 +323,9 @@ QvisFilePanel::Update(Subject *TheChangedSubject)
 //   I fixed a bug that caused the GUI to hang when there were files from
 //   more than one host.
 //
+//   Brad Whitlock, Mon Sep 15 14:48:45 PST 2003
+//   I removed some code that was no longer needed.
+//
 // ****************************************************************************
 
 void
@@ -354,19 +357,6 @@ QvisFilePanel::UpdateFileList(bool doAll)
             }
         }
 
-        // Go through the displayInfo and make sure their host is in the
-        // host map. If it isn't, make sure that files from that host are
-        // not expanded by default.
-        FileDisplayInformationMap::iterator exfile;
-        for(exfile = displayInfo.begin(); exfile != displayInfo.end(); ++exfile)
-        {
-            if(exfile->first.host.size() > 0 &&
-               hostMap.find(exfile->first.host) == hostMap.end())
-            {
-                RemoveExpandedFile(exfile->first);
-            }
-        }
-
         // Clear out the fileListView widget.
         fileListView->clear();
 
@@ -381,7 +371,7 @@ QvisFilePanel::UpdateFileList(bool doAll)
             std::map<std::string, QListViewItem *>::iterator hpos;
 
             // Create the root for the host list.
-            QualifiedFilename rootName("Hosts", "", "");
+            QualifiedFilename rootName("Hosts", "(root)", "(root)");
             QListViewItem *root = new QvisListViewFileItem(fileListView, 
                 QString("Hosts"),
                 rootName,
@@ -395,7 +385,7 @@ QvisFilePanel::UpdateFileList(bool doAll)
             for(hpos = hostMap.begin(); hpos != hostMap.end(); ++hpos)
             {
                 char separator = fileServer->GetSeparator(hpos->first);
-                QualifiedFilename hostOnly(hpos->first, "", "");
+                QualifiedFilename hostOnly(hpos->first, "(host)", "(host)");
                 hostOnly.separator = separator;
                 QListViewItem *newFile = new QvisListViewFileItem(root, 
                     QString(hpos->first.c_str()), hostOnly,
@@ -436,7 +426,7 @@ QvisFilePanel::UpdateFileList(bool doAll)
                hostOtherThanLocalHost)
             {
                 // Create the root for the host list.
-                QualifiedFilename rootName(f[0].host, "", "");
+                QualifiedFilename rootName(f[0].host, "(host)", "(host)");
                 QListViewItem *root = new QvisListViewFileItem(fileListView, 
                     QString(f[0].host.c_str()), rootName,
                     QvisListViewFileItem::ROOT_NODE);
@@ -1201,7 +1191,7 @@ QvisFilePanel::RemoveExpandedFile(const QualifiedFilename &filename)
 void
 QvisFilePanel::SetFileExpanded(const QualifiedFilename &filename, bool val)
 {
-    displayInfo[filename].expanded = val;
+    displayInfo[filename.FullName()].expanded = val;
 }
 
 // ****************************************************************************
@@ -1225,7 +1215,7 @@ QvisFilePanel::SetFileExpanded(const QualifiedFilename &filename, bool val)
 bool
 QvisFilePanel::HaveFileInformation(const QualifiedFilename &filename) const
 {
-    return displayInfo.find(filename) != displayInfo.end();
+    return displayInfo.find(filename.FullName()) != displayInfo.end();
 }
 
 // ****************************************************************************
@@ -1247,7 +1237,7 @@ QvisFilePanel::HaveFileInformation(const QualifiedFilename &filename) const
 bool
 QvisFilePanel::FileIsExpanded(const QualifiedFilename &filename)
 {
-    return displayInfo[filename].expanded;
+    return displayInfo[filename.FullName()].expanded;
 }
 
 // ****************************************************************************
@@ -1269,7 +1259,7 @@ QvisFilePanel::FileIsExpanded(const QualifiedFilename &filename)
 bool
 QvisFilePanel::FileShowsCorrectCycles(const QualifiedFilename &filename)
 {
-    return displayInfo[filename].correctCycles;
+    return displayInfo[filename.FullName()].correctCycles;
 }
 
 // ****************************************************************************
@@ -1294,7 +1284,7 @@ void
 QvisFilePanel::SetFileShowsCorrectCycles(const QualifiedFilename &filename,
     bool val)
 {
-    displayInfo[filename].correctCycles = val;
+    displayInfo[filename.FullName()].correctCycles = val;
 }
 
 //
@@ -2029,6 +2019,11 @@ FileTree::~FileTree()
 //   Brad Whitlock, Mon Mar 31 15:10:48 PST 2003
 //   I added code to handle virtual files.
 //
+//   Brad Whitlock, Mon Sep 15 13:50:26 PST 2003
+//   I fixed the method so path nodes have the correct filename instead
+//   of an empty filename. This ensures that they get expanded correctly
+//   later on.
+//
 // ****************************************************************************
 
 void
@@ -2043,6 +2038,7 @@ FileTree::Add(const QualifiedFilename &fileName, char separator_)
 
     separator = separator_;
     std::string directory;
+    std::string keyPath;
     FileTreeNode *current = root;
     QualifiedFilename empty;
 
@@ -2052,6 +2048,7 @@ FileTree::Add(const QualifiedFilename &fileName, char separator_)
     {
         if(mode == SCAN_MODE)
         {
+            keyPath += fileName.path[index];
             if(fileName.path[index] == separator)
                 mode = PROCESS_MODE;
             else
@@ -2075,9 +2072,12 @@ FileTree::Add(const QualifiedFilename &fileName, char separator_)
             }
             else
             {
+                // Add the host and path but not the filename.
+                QualifiedFilename key(fileName); key.path = keyPath; key.filename = "(path)";
+
                 // The path was not found. We need to add it.
                 FileTreeNode *newNode = current->Add(FileTreeNode::PATH_NODE,
-                                                     directory, empty,
+                                                     directory, key,
                                                      separator);
 
                 // If we were able to add the node, move to it.
@@ -2726,9 +2726,7 @@ FileTree::FileTreeNode::AddElementsToListView(QListView *listview,
             if(children[i]->fileName.IsVirtual())
             {
                 if(!filePanel->HaveFileInformation(children[i]->fileName))
-                {
                     filePanel->AddExpandedFile(children[i]->fileName);
-                }
             }
         }
         else
