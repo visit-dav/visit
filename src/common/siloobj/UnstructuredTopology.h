@@ -6,7 +6,7 @@
 #define UNSTRUCTURED_TOPOLOGY_H
 #include <siloobj_exports.h>
 
-#include <iostream.h>
+#include <visitstream.h>
 #include <silo.h>
 
 #include <SiloObjLib.h>

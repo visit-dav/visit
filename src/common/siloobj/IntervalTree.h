@@ -6,7 +6,7 @@
 #define INTERVAL_TREE_H
 #include <siloobj_exports.h>
 
-#include <iostream.h>
+#include <visitstream.h>
 #include <silo.h>
 
 

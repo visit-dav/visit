@@ -5,6 +5,7 @@
 #include <avtVariableByZoneQuery.h>
 #include <avtTerminatingSource.h>
 #include <avtParallel.h>
+#include <float.h>
 #include <snprintf.h>
 #include <PickVarInfo.h>
 

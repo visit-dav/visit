@@ -2,6 +2,7 @@
 #define ENUM_H
 
 #include <qstring.h>
+#include <visitstream.h>
 #include <vector>
 using std::vector;
 
@@ -17,6 +18,9 @@ using std::vector;
 //  Modifications:
 //    Jeremy Meredith, Thu Oct 17 15:57:44 PDT 2002
 //    Moved the static data to a .C file.
+//
+//    Eric Brugger, Mon Jul 26 15:00:00 PDT 2004
+//    I changed cout to out references in the Print method.
 //
 // ****************************************************************************
 class EnumType
@@ -56,10 +60,10 @@ class EnumType
     }
     void Print(ostream &out)
     {
-        cout << "Enum: " << type << endl;
+        out << "Enum: " << type << endl;
         for (int i=0; i<values.size(); i++)
         {
-            cout << "    " << values[i] << endl;
+            out << "    " << values[i] << endl;
         }
     }
 };

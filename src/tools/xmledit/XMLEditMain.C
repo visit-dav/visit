@@ -1,7 +1,7 @@
 #include <qapplication.h>
 #include <XMLEdit.h>
 
-#include <iostream.h>
+#include <visitstream.h>
 #include <stdlib.h>
 
 #include <qfiledialog.h>

@@ -3,7 +3,7 @@
 // ************************************************************************* //
 
 #include <ctype.h>
-#include <iostream.h>
+#include <visitstream.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

@@ -2,7 +2,7 @@
 #define REF_PTR_H
 #include <utility_exports.h>
 
-#include <iostream.h>
+#include <visitstream.h>
 
 // ****************************************************************************
 //  Class: ref_ptr

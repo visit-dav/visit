@@ -9,7 +9,7 @@
 // KAI compiler prevents forward declaration of classes, so we must include
 // all headers.
 //
-#include <iostream.h>
+#include <visitstream.h>
 
 
 // ****************************************************************************

@@ -2,7 +2,7 @@
 //                            VisWindowManager.C                             //
 // ************************************************************************* //
 
-#include <iostream.h>
+#include <visitstream.h>
 
 #include <VisWindowManager.h>
 

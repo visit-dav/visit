@@ -16,7 +16,7 @@
 #include <InvalidVariableException.h>
 
 #include <avtDatabase.h>
-#include <fstream.h>
+#include <visitstream.h>
 
 using     std::string;
 

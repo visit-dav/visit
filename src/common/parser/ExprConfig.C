@@ -1,5 +1,5 @@
 #include "ExprGrammar.h"
-#include <fstream.h>
+#include <visitstream.h>
 
 // ****************************************************************************
 //  Method:  ExprGrammar::Initialize

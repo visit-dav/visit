@@ -2,7 +2,7 @@
 //                            avtDatabaseMetaData.C                          //
 // ************************************************************************* //
 
-#include <iostream.h>
+#include <visitstream.h>
 
 #include <avtDatabaseMetaData.h>
 #include <ParsingExprList.h>

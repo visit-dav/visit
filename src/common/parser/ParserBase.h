@@ -3,7 +3,7 @@
 #include <parser_exports.h>
 
 #include <vector>
-#include <iostream.h>
+#include <visitstream.h>
 
 #include <ParserInterface.h>
 #include <Token.h>

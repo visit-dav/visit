@@ -3,7 +3,7 @@
 // ************************************************************************* //
 
 #include <ctype.h>
-#include <iostream.h>
+#include <visitstream.h>
 #include <string.h>
 
 #include <DoxygenDirective.h>

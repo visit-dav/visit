@@ -5,7 +5,7 @@
 
 #include <ViewerWindowManager.h>
 
-#include <iostream.h>
+#include <visitstream.h>
 #include <string.h>
 #include <snprintf.h>
 #if !defined(_WIN32)
@@ -7999,8 +7999,12 @@ ViewerWindowManager::CreateNode(DataNode *parentNode, bool detailed)
 //   Eric Brugger, Mon Mar 29 15:21:11 PST 2004
 //   Added loading of maintainData.
 //
-//    Kathleen Bonnell, Thu Apr  1 19:13:59 PST 2004 
-//    Added timeQueryWindow. 
+//   Kathleen Bonnell, Thu Apr  1 19:13:59 PST 2004 
+//   Added timeQueryWindow. 
+//
+//   Brad Whitlock, Tue Aug 3 11:42:48 PDT 2004
+//   I added code to override the window sizes in the session file if the
+//   viewer is run in -nowin mode.
 //
 // ****************************************************************************
 
@@ -8100,10 +8104,19 @@ ViewerWindowManager::SetFromNode(DataNode *parentNode)
             {
                 // We're able to read in the size and location.
                 int  w, h, x, y;
-                w = sizeNode->AsIntArray()[0];
-                h = sizeNode->AsIntArray()[1];
-                x = locationNode->AsIntArray()[0];
-                y = locationNode->AsIntArray()[1];
+                if(ViewerWindow::GetNoWinMode())
+                {
+                    x = y = 0;
+                    w = windowLimits[0][0].width;
+                    h = windowLimits[0][0].height;
+                }
+                else
+                {
+                    w = sizeNode->AsIntArray()[0];
+                    h = sizeNode->AsIntArray()[1];
+                    x = locationNode->AsIntArray()[0];
+                    y = locationNode->AsIntArray()[1];
+                }
 
                 // If we're considering an existing window, just set the
                 // size and position.
@@ -8143,10 +8156,19 @@ ViewerWindowManager::SetFromNode(DataNode *parentNode)
             {
                 // We're able to read in the size and location.
                 int  w, h, x, y;
-                w = sizeNode->AsIntArray()[0];
-                h = sizeNode->AsIntArray()[1];
-                x = locationNode->AsIntArray()[0];
-                y = locationNode->AsIntArray()[1];
+                if(ViewerWindow::GetNoWinMode())
+                {
+                    x = y = 0;
+                    w = windowLimits[0][0].width;
+                    h = windowLimits[0][0].height;
+                }
+                else
+                {
+                    w = sizeNode->AsIntArray()[0];
+                    h = sizeNode->AsIntArray()[1];
+                    x = locationNode->AsIntArray()[0];
+                    y = locationNode->AsIntArray()[1];
+                }
 
                 // If we're considering an existing window, just set the
                 // size and position.

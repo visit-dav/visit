@@ -108,6 +108,10 @@ avtOpenGL3DTextureVolumeRenderer::~avtOpenGL3DTextureVolumeRenderer()
 //    Hank Childs, Tue May 11 15:24:45 PDT 2004
 //    Turn off blending so transparent surfaces can work afterwards.
 //
+//    Eric Brugger, Tue Jul 27 11:52:38 PDT 2004
+//    Add several casts and change a double constant to a float constant
+//    to fix compile errors.
+//
 // ****************************************************************************
 void
 avtOpenGL3DTextureVolumeRenderer::Render(vtkRectilinearGrid *grid,
@@ -141,9 +145,9 @@ avtOpenGL3DTextureVolumeRenderer::Render(vtkRectilinearGrid *grid,
 
     // Find the smallest power of two in each dimension 
     // that will accomodate this data set
-    int newnx = MAX(int(pow(2,1+int(log(nx-1)/log(2)))),1);
-    int newny = MAX(int(pow(2,1+int(log(ny-1)/log(2)))),1);
-    int newnz = MAX(int(pow(2,1+int(log(nz-1)/log(2)))),1);
+    int newnx = MAX(int(pow(2.0,1+int(log(double(nx-1))/log(2.0)))),1);
+    int newny = MAX(int(pow(2.0,1+int(log(double(ny-1))/log(2.0)))),1);
+    int newnz = MAX(int(pow(2.0,1+int(log(double(nz-1))/log(2.0)))),1);
 
     // Get the new lighting parameters
     LightList lights = avtCallback::GetCurrentLightList();
@@ -268,7 +272,7 @@ avtOpenGL3DTextureVolumeRenderer::Render(vtkRectilinearGrid *grid,
 
                         // Amount of shading should be somewhat proportional
                         // to the magnitude of the gradient
-                        float gm = pow(gmn[index], 0.25);
+                        float gm = pow(gmn[index], 0.25f);
 
                         // Get the base lit brightness based on the 
                         // light direction and the gradient

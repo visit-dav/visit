@@ -392,6 +392,9 @@ void vtkVisItAxisActor2D::PrintSelf(ostream& os, vtkIndent indent)
 //   Eric Brugger, Tue Nov 25 11:44:40 PST 2003
 //   Added the ability to specify the axis orientation angle.
 //
+//   Eric Brugger, Mon Jul 26 16:11:37 PDT 2004
+//   Correct a bug with a misplaced closing parenthesis.
+//
 // ****************************************************************************
 
 void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
@@ -598,7 +601,7 @@ void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
       SNPRINTF(string,64,this->LabelFormat, val*this->MajorTickLabelScale);
 
       this->LabelMappers[labelCount]->SetInput(string);
-      if (fabs(val < 0.01))
+      if (fabs(val) < 0.01)
       {
           // 
           // Ensure that -0.0 is never a label

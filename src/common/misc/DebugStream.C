@@ -390,11 +390,16 @@ DebugStream::DebugStreamBuf::overflow(int c)
 //    Jeremy Meredith, Fri Jun  1 17:18:46 PDT 2001
 //    Added initialization of 'enabled'.
 //
+//    Eric Brugger, Tue Aug  3 11:03:38 PDT 2004
+//    Change the DebugStreamBuf member to be a pointered value instead of a
+//    referenced value so that it works with the MIPSpro compiler.
+//
 // ****************************************************************************
-DebugStream::DebugStream(int level_) : ostream(&buf)
+DebugStream::DebugStream(int level_) : ostream(new DebugStreamBuf)
 {
     level = level_;
-    buf.SetLevel(level);
+    buf = (DebugStreamBuf*)(rdbuf());
+    buf->SetLevel(level);
     enabled = false;
 }
 
@@ -408,10 +413,15 @@ DebugStream::DebugStream(int level_) : ostream(&buf)
 //  Programmer:  Jeremy Meredith
 //  Creation:    November 17, 2000
 //
+//  Modifications:
+//    Eric Brugger, Tue Aug  3 11:03:38 PDT 2004
+//    Change the DebugStreamBuf member to be a pointered value instead of a
+//    referenced value so that it works with the MIPSpro compiler.
+//
 // ****************************************************************************
 DebugStream::~DebugStream()
 {
-    buf.close();
+    buf->close();
 }
 
 
@@ -431,13 +441,17 @@ DebugStream::~DebugStream()
 //    Jeremy Meredith, Fri Jun  1 17:25:01 PDT 2001
 //    Added setting of 'enabled' to true.
 //
+//    Eric Brugger, Tue Aug  3 11:03:38 PDT 2004
+//    Change the DebugStreamBuf member to be a pointered value instead of a
+//    referenced value so that it works with the MIPSpro compiler.
+//
 // ****************************************************************************
 void
 DebugStream::open(const char *progname)
 {
     char filename[256];
     sprintf(filename, "%s.%d.log", progname, level);
-    buf.open(filename);
+    buf->open(filename);
     enabled = true;
 }
 
@@ -458,11 +472,15 @@ DebugStream::open(const char *progname)
 //    Added setting enabled to false so we won't try to close it
 //    more than once.
 //
+//    Eric Brugger, Tue Aug  3 11:03:38 PDT 2004
+//    Change the DebugStreamBuf member to be a pointered value instead of a
+//    referenced value so that it works with the MIPSpro compiler.
+//
 // ****************************************************************************
 void
 DebugStream::close()
 {
-    buf.close();
+    buf->close();
     enabled = false;
 }
 

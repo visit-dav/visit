@@ -6,7 +6,7 @@
 #define INTERVAL_TREE_VTK_H
 #include <siloobj_vtk_exports.h>
 
-#include <iostream.h>
+#include <visitstream.h>
 #include <silo.h>
 
 #include <IntervalTree.h>

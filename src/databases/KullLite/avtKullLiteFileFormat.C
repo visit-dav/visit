@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <string>
 #include <vector>
-#include <fstream.h>
+#include <visitstream.h>
 
 #include <visit-config.h>
 

@@ -24,7 +24,7 @@
 #include "Viewer.h"
 
 #include <stdlib.h>
-#include <fstream.h>
+#include <visitstream.h>
 
 inline int ConvertedCaseIndex(int i, bool qpconv, bool hvconv)
 {

@@ -4,7 +4,7 @@
 #include <map>
 #include <utility>
 #include <qstring.h>
-#include <fstream.h>
+#include <visitstream.h>
 
 #include <XMLParserUtil.h>
 

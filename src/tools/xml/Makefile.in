@@ -53,6 +53,9 @@
 #    Added xml2projectfile target though we don't build it by default since
 #    it generates project files for Windows.
 # 
+#    Eric Brugger, Mon Jul 26 14:20:50 PDT 2004
+#    Added -I../../include/visit to pick up visitstream.h.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -88,7 +91,7 @@ DEFINES9 = -DGENERATE_PROJECTFILE
 SRC=main.C
 OBJ=$(SRC:.C=.o)
 
-CXXFLAGS=@CXXFLAGS@ @QT_CXXFLAGS@ -I. -I../../include
+CXXFLAGS=@CXXFLAGS@ @QT_CXXFLAGS@ -I. -I../../include -I../../include/visit
 LDFLAGS=@QT_LDFLAGS@ @LDFLAGS@ @QT_LIBS@ @LIBS@
 
 all: $(PROGRAM1) $(PROGRAM2) $(PROGRAM3) $(PROGRAM4) $(PROGRAM5) $(PROGRAM6) $(PROGRAM7) $(PROGRAM8)

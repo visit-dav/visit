@@ -30,7 +30,7 @@
 
 #include <vector>
 #include <string>
-#include <fstream.h>
+#include <visitstream.h>
 
 #include <ctype.h>
 #include <stdlib.h>

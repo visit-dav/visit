@@ -2792,6 +2792,8 @@ ViewerQueryManager::InitializeQueryList()
 //  Creation:   November 18, 2003 
 //
 //  Modifications:
+//    Eric Brugger, Tue Jul 27 09:31:29 PDT 2004
+//    Change an integer constant to a double constant to fix a compile error.
 //
 // ****************************************************************************
 
@@ -2805,7 +2807,7 @@ ViewerQueryManager::VerifyQueryVariables(const string &qName,
     {
         for (i = 0; i < varTypes.size() && badIndex == -1; i++)
         {
-           int vt = (int) pow(2, varTypes[i]);
+           int vt = (int) pow(2.0, varTypes[i]);
            if (!(allowedTypes & vt))
            {
                badIndex = i;
@@ -3090,6 +3092,9 @@ ViewerQueryManager::UpdateQueryOverTimeAtts()
 //    Kathleen Bonnell, Tue Jul 20 10:47:26 PDT 2004
 //    Modified retrieval of TimeQueryWindow. 
 //    
+//    Eric Brugger, Tue Jul 27 09:31:29 PDT 2004
+//    Add a cast to fix a compile error.
+//    
 // ***********************************************************************
 
 void
@@ -3194,7 +3199,8 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin, QueryAttributes *qA)
               " please correct and try again."); 
         return;
     }
-    int nUserFrames = (int) ceil((endT - startT)/timeQueryAtts->GetStride())+1;
+    int nUserFrames = (int) ceil(double((endT - startT)/
+                                        timeQueryAtts->GetStride()))+1;
     if (nUserFrames <= 1)
     {
         Error("Query over time requires more than 1 frame, "

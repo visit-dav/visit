@@ -6,8 +6,7 @@
 #define DEBUG_STREAM_H
 #include <misc_exports.h>
 
-#include <iostream.h>
-#include <fstream.h>
+#include <visitstream.h>
 #include <vector>
 #include <signal.h>
 #include <stdlib.h>
@@ -40,6 +39,10 @@
 //    Made debug streams macros so that we could skip the logic to 
 //    do the formatting if the debug output was disabled.  Removed the
 //    ability to delete a debug stream automatically on close.
+//
+//    Eric Brugger, Tue Aug  3 11:00:56 PDT 2004
+//    Change the DebugStreamBuf member to be a pointered value instead of
+//    a referenced value so that it works with the MIPSpro compiler.
 //
 // ****************************************************************************
 
@@ -83,7 +86,7 @@ class MISC_API DebugStream : public ostream
 
 
     // the streambuf used for this ostream
-    DebugStreamBuf   buf;
+    DebugStreamBuf  *buf;
     // the level of this DebugStream
     int              level;
     // true if enabled

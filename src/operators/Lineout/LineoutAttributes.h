@@ -2,7 +2,7 @@
 #define LINEOUTATTRIBUTES_H
 #include <string>
 #include <AttributeSubject.h>
-#include <iostream.h>
+#include <visitstream.h>
 
 // ****************************************************************************
 // Class: LineoutAttributes

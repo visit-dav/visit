@@ -2,7 +2,7 @@
 #define INCLUDE_H
 
 #include <qstring.h>
-#include <iostream.h>
+#include <visitstream.h>
 
 // ****************************************************************************
 //  Class:  Include

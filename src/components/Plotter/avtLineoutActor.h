@@ -2,7 +2,7 @@
 #define LINEOUT_ACTOR_H
 
 #include <plotter_exports.h>
-#include <iostream.h>
+#include <visitstream.h>
 #include <ref_ptr.h>
 #include <string>
 

@@ -51,7 +51,7 @@ esac
 #
 kickit=true
 sunspot=true
-hyper=false
+hyper=true
 gps=true
 riptide=true
 frost=true
@@ -183,11 +183,6 @@ env CXXFLAGS=-O2 ./configure >> ../buildlog 2>&1
 make -j 4 >> ../buildlog 2>&1
 clearcase_bin/visit-bin-dist >> ../buildlog 2>&1
 mv visit\$ver2.linux.tar.gz ..
-make distclean >> ../buildlog 2>&1
-env CXXFLAGS=-O2 ./configure --enable-fake-exceptions >> ../buildlog 2>&1
-make -j 4 >> ../buildlog 2>&1
-clearcase_bin/visit-bin-dist >> ../buildlog 2>&1
-mv visit\$ver2.linux.tar.gz ../visit\$ver2.linux_suse.tar.gz
 cd ..
 rm -f resultlog
 echo "        build of visit on kickit"       > resultlog 2>&1
@@ -335,7 +330,7 @@ cd $dist
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
 env CXXFLAGS=-O2 MAKE=gmake ./configure --enable-parallel >> ../buildlog 2>&1
-gmake -j 3 >> ../buildlog 2>&1
+gmake >> ../buildlog 2>&1
 clearcase_bin/visit-bin-dist >> ../buildlog 2>&1
 mv visit\$ver2.osf1.tar.gz ..
 cd ..

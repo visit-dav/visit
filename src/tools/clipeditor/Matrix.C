@@ -1,7 +1,7 @@
 #include "Matrix.h"
 #include "Vector.h"
 #include <math.h>
-#include <iostream.h>
+#include <visitstream.h>
 
 #define MAX(a,b) ((a)>(b) ? (a) : (a))
 #define MIN(a,b) ((a)>(b) ? (b) : (a))

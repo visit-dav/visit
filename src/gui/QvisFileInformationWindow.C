@@ -1,16 +1,4 @@
-#if defined(_WIN32)
-#include <strstrea.h>
-#else
-
-#if defined(__GNUC__) && __GNUC__ >= 3
-// gcc 3.x
-#include <strstream>
-using std::ostrstream;
-#else
-#include <strstream.h>
-#endif
-
-#endif
+#include <visitstream.h>
 #include <qmultilineedit.h>
 #include <qtabwidget.h>
 #include <qpushbutton.h>

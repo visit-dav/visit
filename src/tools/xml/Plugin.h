@@ -2,7 +2,7 @@
 #define PLUGIN_H
 
 #include <qstring.h>
-#include <iostream.h>
+#include <visitstream.h>
 #include "Attribute.h"
 
 // ****************************************************************************

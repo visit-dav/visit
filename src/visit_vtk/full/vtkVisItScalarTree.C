@@ -59,6 +59,10 @@ vtkVisItScalarTree::Initialize()
 // Modifications:
 //   Akira Haddox, Wed Jul 30 09:27:22 PDT 2003
 //   Fixed a bug in optimization for 2D structured / rectlinear grids.
+//
+//   Eric Brugger, Tue Jul 27 07:59:13 PDT 2004
+//   Add several casts to fix compile errors.
+//
 // ***************************************************************************
 
 void
@@ -134,13 +138,14 @@ vtkVisItScalarTree::BuildTree()
     if (levels > MaxLevel)
     {
         levels = MaxLevel;
-        bucketSize = (int)ceil(double (nCells) / pow(BranchingFactor, levels));
+        bucketSize = (int)ceil(double (nCells) /
+                     pow((double)BranchingFactor, levels));
     }
     else
         bucketSize = BranchingFactor;
     
     // Size of a full tree is a geometric series: (b^(n+1)-1) / (b-1)
-    treeSize = (int)((pow(BranchingFactor, levels + 1) - 1)
+    treeSize = (int)((pow((double)BranchingFactor, levels + 1) - 1)
                         / (BranchingFactor - 1));
 
     tree = new ScalarRange[treeSize];
@@ -149,7 +154,7 @@ vtkVisItScalarTree::BuildTree()
     // First, fill up the leaves of the tree.
     //
     
-    leafOffset = treeSize - (int)pow(BranchingFactor, levels);
+    leafOffset = treeSize - (int)pow((double)BranchingFactor, levels);
     int cellId = 0;
     vtkIdList *lst = vtkIdList::New();
     while (cellId < nCells)
@@ -234,12 +239,13 @@ vtkVisItScalarTree::BuildTree()
         // The first index of each level is ((b ^ lev) - 1) / (b - 1)
         //
         int offset;
-        offset = (int)((pow(BranchingFactor, lev) - 1) / (BranchingFactor - 1));
+        offset = (int)((pow((double)BranchingFactor, lev) - 1) /
+                 (BranchingFactor - 1));
         int cRow;
-        cRow = (int)((pow(BranchingFactor, lev + 1) - 1)
+        cRow = (int)((pow((double)BranchingFactor, lev + 1) - 1)
                          / (BranchingFactor - 1));
         
-        int len = (int)pow(BranchingFactor, lev);
+        int len = (int)pow((double)BranchingFactor, lev);
 
         int i;
         for (i = 0; i < len; ++i)

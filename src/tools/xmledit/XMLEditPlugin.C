@@ -1,7 +1,7 @@
 #include "XMLEditPlugin.h"
 
 #include <XMLDocument.h>
-#include <iostream.h>
+#include <visitstream.h>
 #include <qbuttongroup.h>
 #include <qcheckbox.h>
 #include <qcombobox.h>

@@ -7,7 +7,7 @@
 
 #include <pipeline_exports.h>
 
-#include <iostream.h>
+#include <visitstream.h>
 
 class   avtDataObjectString;
 class   avtDataObjectWriter;

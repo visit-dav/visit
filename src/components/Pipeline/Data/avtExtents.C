@@ -5,7 +5,7 @@
 #include <avtExtents.h>
 
 #include <float.h>
-#include <iostream.h>
+#include <visitstream.h>
 
 #include <avtDataObjectString.h>
 #include <avtDataObjectWriter.h>

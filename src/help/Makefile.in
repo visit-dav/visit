@@ -37,6 +37,9 @@
 #    Brad Whitlock, Wed Aug 21 11:07:27 PDT 2002
 #    I added list????.html files to the distributed files.
 #
+#    Brad Whitlock, Wed Aug 4 15:16:39 PST 2004
+#    I added the visit include directory so we can get visitstream.h.
+#
 ##############################################################################
 
 ##
@@ -45,7 +48,7 @@
 @SET_MAKE@
 @VARIABLES@
 
-CXXFLAGS=-I. -I../include @CXXFLAGS@
+CXXFLAGS=-I. -I../include -I../include/visit @CXXFLAGS@
 MOC=@QT_MOC@
 
 ##

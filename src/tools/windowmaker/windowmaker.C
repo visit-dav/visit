@@ -27,8 +27,7 @@
 
 #include "util.h"
 #include <stdio.h>
-#include <iostream.h>
-#include <fstream.h>
+#include <visitstream.h>
 #include <string>
 #include <vector>
 using std::string;

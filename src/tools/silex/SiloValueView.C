@@ -1,7 +1,7 @@
 #include "SiloValueView.h"
 #include <SiloFile.h>
 #include <qlabel.h>
-#include <iostream.h>
+#include <visitstream.h>
 
 // ----------------------------------------------------------------------------
 //                            Value View

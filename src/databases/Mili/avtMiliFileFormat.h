@@ -7,7 +7,7 @@
 
 #include <vector>
 #include <string>
-#include <fstream.h>
+#include <visitstream.h>
 
 extern "C" {
 #include <mili.h>

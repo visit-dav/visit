@@ -11,7 +11,7 @@
 
 #include <vector>
 #include <map>
-#include <fstream.h>
+#include <visitstream.h>
 
 // ****************************************************************************
 //  Class: avtOVERFLOWFileFormat
@@ -45,18 +45,18 @@ class avtOVERFLOWFileFormat : public avtSTMDFileFormat
     void        ReadCoords(int domain, float *&x,float *&y,float *&z,int *&ib);
     void        ReadVariable(int domain, int var, float *&vals);
 
-    int         read_int(ifstream &in);
-    const char *read_fortran_record(ifstream &in);
+    int         read_int(std::ifstream &in);
+    const char *read_fortran_record(std::ifstream &in);
     int         parse_int(char *&buff);
     float       parse_float(char *&buff);
 
   protected:
     virtual void PopulateDatabaseMetaData(avtDatabaseMetaData *);
 
-    ifstream                    gridin;
-    ifstream                    solin;
-    streampos                   start_of_coords;
-    streampos                   start_of_data;
+    std::ifstream               gridin;
+    std::ifstream               solin;
+    std::streampos              start_of_coords;
+    std::streampos              start_of_data;
     bool                        swap_endian;
 
     std::string                 origfilename;

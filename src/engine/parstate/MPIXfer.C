@@ -5,7 +5,7 @@
 #include <AttributeSubject.h>
 #include <DebugStream.h>
 
-#include <fstream.h>
+#include <visitstream.h>
 
 // ****************************************************************************
 // Method: MPIXfer::MPIXfer

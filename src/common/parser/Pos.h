@@ -2,7 +2,7 @@
 #define POS_H
 #include <parser_exports.h>
 
-#include <iostream.h>
+#include <visitstream.h>
 #include <string>
 
 // ****************************************************************************

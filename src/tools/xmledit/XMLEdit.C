@@ -17,7 +17,7 @@
 #include <XMLEditCode.h>
 #include <XMLDocument.h>
 
-#include <iostream.h>
+#include <visitstream.h>
 
 // ****************************************************************************
 //  Constructor: XMLEdit::XMLEdit

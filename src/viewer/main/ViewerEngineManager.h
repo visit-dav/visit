@@ -258,6 +258,8 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
     bool CloneNetwork(const EngineKey &ek, int id, 
                       const QueryOverTimeAttributes *qatts);
 
+    void CreateNode(DataNode *) const;
+
   protected:
     ViewerEngineManager();
     void RemoveEngine(const EngineKey &ek, bool close);

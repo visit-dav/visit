@@ -965,7 +965,13 @@ QvisGUIApplication::FinalInitialization()
         break;
     case 5:
         // Load the initial data file.
-        LoadFile(true);
+        if(!sessionFile.isEmpty())
+        {
+            Message("When a session file is specified on the command line, "
+                    "files specified with the -o argument are ignored.");
+        }
+        else
+            LoadFile(loadFile, true);
         visitTimer->StopTimer(timeid, "stage 5 - LoadFile");
         break;
     case 6:
@@ -1763,7 +1769,9 @@ QvisGUIApplication::CreateMainWindow()
 // Creation:   Thu May 6 14:53:20 PST 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Aug 4 16:13:42 PST 2004
+//   Forced the file selection window to be created.
+//
 // ****************************************************************************
 
 void
@@ -1771,6 +1779,10 @@ QvisGUIApplication::SetupWindows()
 {
      // Create the crucial windows
      messageWin = (QvisMessageWindow *)GetWindowPointer(WINDOW_MESSAGE);
+
+     // Create the file selection window because it contains the callbacks
+     // that update the GUI when we interact with mdservers.
+     GetWindowPointer(WINDOW_FILE_SELECTION);
 
      outputWin = (QvisOutputWindow *)GetWindowPointer(WINDOW_OUTPUT);
      outputWin->CreateEntireWindow();
@@ -2866,6 +2878,14 @@ QvisGUIApplication::RestoreSession()
 //   creates the windows for which we have information stored in the 
 //   session file.
 //
+//   Brad Whitlock, Mon Aug 2 13:30:50 PST 2004
+//   I added a second call to read the session file so if the specified
+//   session file can't be opened then we check in the user's .visit directory
+//   before giving up.
+//
+//   Brad Whitlock, Wed Aug 4 15:51:26 PST 2004
+//   I made LoadFile take an argument.
+//
 // ****************************************************************************
 
 void
@@ -2874,10 +2894,28 @@ QvisGUIApplication::RestoreSessionFile(const QString &s)
     // If the user chose a file, tell the viewer to import that session file.
     if(!s.isEmpty())
     {
+        std::string filename(s.latin1());
+         
         // Make the gui read in its part of the config.
-        std::string guifilename(s.latin1());
+        std::string guifilename(filename);
         guifilename += ".gui";
         DataNode *node = ReadConfigFile(guifilename.c_str());
+
+        // If the file could not be opened then try and prepend the
+        // VisIt directory to it.
+        if(node == 0)
+        {
+            if(guifilename[0] != SLASH_CHAR)
+            {
+                filename = GetUserVisItDirectory() + filename;
+                guifilename = GetUserVisItDirectory() + guifilename;
+                debug1 << "The desired session file " << s.latin1()
+                       << ".gui could not be opened. VisIt will try and open "
+                       << guifilename.c_str() << endl;
+                node = ReadConfigFile(guifilename.c_str());
+            }
+        }
+
         if(node)
         {
             ProcessConfigSettings(node, false);
@@ -2917,9 +2955,9 @@ QvisGUIApplication::RestoreSessionFile(const QString &s)
                         const stringVector &db = plotDatabases->AsStringVector();
                         for(int i = 0; i < db.size(); ++i)
                         {
-                            loadFile = QualifiedFilename(db[i]);
-                            if(!fileServer->HaveOpenedFile(loadFile))
-                                LoadFile(false);
+                            QualifiedFilename f(db[i]);
+                            if(!fileServer->HaveOpenedFile(f))
+                                LoadFile(f, false);
                         }
                     }
                 }
@@ -2932,7 +2970,6 @@ QvisGUIApplication::RestoreSessionFile(const QString &s)
         // pass the inVisItDir flag as false because we don't want to have
         // the viewer prepend the .visit directory to the file since it's
         // already part of the filename.
-        std::string filename(s.latin1());
         viewer->ImportEntireState(filename, false);
     }
 }
@@ -3607,17 +3644,17 @@ QvisGUIApplication::RefreshFileListAndNextFrame()
 //   I added code to allow the file selection to change when we're loading
 //   a file.
 //
+//   Brad Whitlock, Wed Aug 4 15:51:55 PST 2004
+//   I removed some code to prevent this method from doing anything if a
+//   session file was specified and moved it to a higher level so this
+//   method always does something provided the input file is not empty.
+//
 // ****************************************************************************
 
 void
-QvisGUIApplication::LoadFile(bool addDefaultPlots)
+QvisGUIApplication::LoadFile(QualifiedFilename &f, bool addDefaultPlots)
 {
-    if(!sessionFile.isEmpty())
-    {
-        Message("When a session file is specified on the command line, "
-                "files specified with the -o argument are ignored.");
-    }
-    else if(!loadFile.Empty())
+    if(!f.Empty())
     {
         int timeid = visitTimer->StartTimer();
 
@@ -3632,11 +3669,11 @@ QvisGUIApplication::LoadFile(bool addDefaultPlots)
         TRY
         {
             // In case the path was relative, expand the path to a full path.
-            loadFile.path = fileServer->ExpandPath(loadFile.path);
+            f.path = fileServer->ExpandPath(f.path);
 
             // Switch to the right host/path and get the file list.
-            fileServer->SetHost(loadFile.host);
-            fileServer->SetPath(loadFile.path);
+            fileServer->SetHost(f.host);
+            fileServer->SetPath(f.path);
             fileServer->Notify();
 
             // Get the filtered file list and look to see if it contains the
@@ -3647,12 +3684,12 @@ QvisGUIApplication::LoadFile(bool addDefaultPlots)
             QualifiedFilenameVector::const_iterator pos;
             for(pos = files.begin(); pos != files.end() && !fileInList; ++pos)
             {
-                bool sameHost = loadFile.host == pos->host;
-                bool samePath = loadFile.path == pos->path;
+                bool sameHost = f.host == pos->host;
+                bool samePath = f.path == pos->path;
 
                 if(sameHost && samePath)
                 {
-                    bool sameFile = loadFile.filename == pos->filename;
+                    bool sameFile = f.filename == pos->filename;
                     if(pos->IsVirtual())
                     {
                         // Get the list of files in the virtual file.
@@ -3662,11 +3699,11 @@ QvisGUIApplication::LoadFile(bool addDefaultPlots)
                         // file definition.                       
                         for(int state = 0; state < def.size(); ++state)
                         {
-                            if(loadFile.filename == def[state])
+                            if(f.filename == def[state])
                             {
                                 fileInList = true;
                                 timeState = state;
-                                loadFile.filename = pos->filename;
+                                f.filename = pos->filename;
                                 break;
                             }
                         }
@@ -3679,7 +3716,7 @@ QvisGUIApplication::LoadFile(bool addDefaultPlots)
             // Make sure that we put our file in the applied files list if it
             // is not already in the list.
             if(!fileInList)
-                files.push_back(loadFile);
+                files.push_back(f);
 
             //
             // Combine the files with the applied files so we can call this
@@ -3697,10 +3734,10 @@ QvisGUIApplication::LoadFile(bool addDefaultPlots)
             viewer->ShowAllWindows();
 
             // Try and open the data file for plotting.
-            SetOpenDataFile(loadFile, timeState);
+            SetOpenDataFile(f, timeState);
 
             // Tell the viewer to open the file too.
-            viewer->OpenDatabase(loadFile.FullName().c_str(), timeState,
+            viewer->OpenDatabase(f.FullName().c_str(), timeState,
                                  addDefaultPlots);
         }
         CATCH2(BadHostException, bhe)
@@ -3756,7 +3793,7 @@ QvisGUIApplication::LoadFile(bool addDefaultPlots)
             QString msgStr;
             msgStr.sprintf("VisIt could not open %s because it could not "
                            "launch a metadata server on host \"%s\".",
-                           loadFile.FullName().c_str(),
+                           f.FullName().c_str(),
                            fileServer->GetHost().c_str());
             Error(msgStr);
         }

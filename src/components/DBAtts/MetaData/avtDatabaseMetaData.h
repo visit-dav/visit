@@ -6,7 +6,7 @@
 #define _AVT_DATABASE_METADATA_H_
 #include <dbatts_exports.h>
 
-#include <iostream.h>
+#include <visitstream.h>
 #include <vectortypes.h>
 
 #include <avtTypes.h>

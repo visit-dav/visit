@@ -2,7 +2,7 @@
 #define XML_PARSER_H
 
 #include <qxml.h>
-#include <iostream.h>
+#include <visitstream.h>
 #include "Field.h"
 #include "XMLParserUtil.h"
 #include "Attribute.h"

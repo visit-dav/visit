@@ -2,7 +2,7 @@
 #define ARRAY_REF_PTR_H
 #include <utility_exports.h>
 
-#include <iostream.h>
+#include <visitstream.h>
 
 // ****************************************************************************
 //  Class: array_ref_ptr

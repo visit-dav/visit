@@ -7,7 +7,7 @@
 #include <dbatts_exports.h>
 
 
-#include <iostream.h>
+#include <visitstream.h>
 
 #include <string>
 #include <vector>

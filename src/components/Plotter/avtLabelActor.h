@@ -6,7 +6,7 @@
 #ifndef AVT_LABEL_ACTOR_H
 #define AVT_LABEL_ACTOR_H
 #include <plotter_exports.h>
-#include <iostream.h>
+#include <visitstream.h>
 #include <ref_ptr.h>
 
 class vtkFollower;

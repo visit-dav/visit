@@ -6,7 +6,7 @@
 
 #include <zlib.h>
 
-#include <fstream.h>
+#include <visitstream.h>
 
 #include <vtkFloatArray.h>
 #include <vtkRectilinearGrid.h>

@@ -5,7 +5,7 @@
 #include <avtDatabaseFactory.h>
 
 #include <errno.h> // for errno
-#include <fstream.h>
+#include <visitstream.h>
 #include <sys/stat.h>
 
 #include <vector>

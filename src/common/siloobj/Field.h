@@ -6,7 +6,7 @@
 #define FIELD_H
 #include <siloobj_exports.h>
 
-#include <iostream.h>
+#include <visitstream.h>
 #include <silo.h>
 
 #include <Value.h>

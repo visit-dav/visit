@@ -6,7 +6,7 @@
 #define VISIT_EXCEPTION_H
 
 #include <exception>
-#include <iostream.h>
+#include <visitstream.h>
 #include <string>
 #ifdef FAKE_EXCEPTIONS
 #include <setjmp.h>

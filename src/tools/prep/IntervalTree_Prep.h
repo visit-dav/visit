@@ -5,7 +5,7 @@
 #ifndef INTERVAL_TREE_PREP_H
 #define INTERVAL_TREE_PREP_H
 
-#include <iostream.h>
+#include <visitstream.h>
 #include <silo.h>
 
 #include <IntervalTree.h>

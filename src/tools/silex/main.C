@@ -1,7 +1,7 @@
 #include <qapplication.h>
 #include <Explorer.h>
 
-#include <iostream.h>
+#include <visitstream.h>
 #include <stdlib.h>
 
 #ifndef Q_WS_MACX

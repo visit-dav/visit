@@ -5,7 +5,7 @@
 #include <avtPLOT2DFileFormat.h>
 
 #include <ctype.h>
-#include <fstream.h>
+#include <visitstream.h>
 
 #include <vtkFloatArray.h>
 #include <vtkStructuredGrid.h>

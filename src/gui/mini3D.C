@@ -6,7 +6,7 @@
 #include <qpainter.h>
 #include <qcolor.h>
 
-#include <iostream.h>
+#include <visitstream.h>
 
 /*---------------------------------------------------------------------------*/
 

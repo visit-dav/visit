@@ -1,14 +1,4 @@
 #include <stdio.h> // for sscanf
-#if !defined(_WIN32)
-
-#if defined(__GNUC__) && __GNUC__ >= 3
-// gcc 3.x
-#include <strstream>
-#else
-#include <strstream.h>
-#endif
-
-#endif
 #include <string>
 #include <vector>
 

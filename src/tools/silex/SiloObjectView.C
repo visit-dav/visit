@@ -1,7 +1,7 @@
 #include "SiloObjectView.h"
 #include <SiloFile.h>
 #include <qapplication.h>
-#include <iostream.h>
+#include <visitstream.h>
 
 // ----------------------------------------------------------------------------
 //                            Object View Window

@@ -5,7 +5,7 @@
 #include <avtImageFileFormat.h>
 
 #include <string>
-#include <iostream.h>
+#include <visitstream.h>
 
 #include <vtkFloatArray.h>
 #include <vtkRectilinearGrid.h>

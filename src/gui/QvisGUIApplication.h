@@ -211,6 +211,9 @@ class SplashScreen;
 //    Brad Whitlock, Tue Jul 27 12:02:40 PDT 2004
 //    Added GetVirtualDatabaseDefinitions.
 //
+//    Brad Whitlock, Wed Aug 4 15:50:05 PST 2004
+//    Added a filename argument to the LoadFile method.
+//
 // ****************************************************************************
 
 class GUI_API QvisGUIApplication : public QObject, public ConfigManager, public GUIBase
@@ -241,7 +244,7 @@ private:
 
     void LaunchViewer();
     void InitializeFileServer(DataNode *);
-    void LoadFile(bool addDefaultPlots);
+    void LoadFile(QualifiedFilename &f, bool addDefaultPlots);
     void LoadSessionFile();
     void MoveAndResizeMainWindow(int orientation);
     void ProcessArguments(int &argc, char **argv);

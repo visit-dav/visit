@@ -1,5 +1,5 @@
 #ifdef DEBUG
-#include <iostream.h>
+#include <visitstream.h>
 #endif
 #include <QuitRPCExecutor.h>
 #include <QuitRPC.h>

@@ -1,4 +1,4 @@
-#include <iostream.h>
+#include <visitstream.h>
 
 #include <qcombobox.h>
 #include <qlabel.h>

@@ -1,7 +1,7 @@
 #ifndef MATRIX_H
 #define MATRIX_H
 #include <math_exports.h>
-#include <iostream.h>
+#include <visitstream.h>
 
 class avtVector;
 
