@@ -53,7 +53,6 @@ kickit=true
 sunspot=true
 hyper=true
 gps=true
-riptide=true
 berg=true
 pengra=true
 thunder=true
@@ -73,7 +72,6 @@ do
          sunspot=false
          hyper=false
          gps=false
-         riptide=false
          berg=false
          pengra=false
          thunder=false
@@ -109,14 +107,6 @@ do
          ;;
       +gps)
          gps=true
-         shift
-         ;;
-      -riptide)
-         riptide=false
-         shift
-         ;;
-      +riptide)
-         riptide=true
          shift
          ;;
       -berg)
@@ -370,56 +360,6 @@ then
 fi
 
 #
-# Build on riptide, both serial and parallel versions.
-#
-rm -f riptide
-cat <<EOF > riptide
-#!/bin/sh
-if test ! -e /fc/tmp0/fcdata/$user ; then
-   mkdir /fc/tmp0/fcdata/$user
-fi
-if test ! -e /fc/tmp0/fcdata/$user/riptide ; then
-   mkdir /fc/tmp0/fcdata/$user/riptide
-fi
-rm -rf /fc/tmp0/fcdata/$user/riptide/visitbuild
-mkdir /fc/tmp0/fcdata/$user/riptide/visitbuild
-mv riptide_$dist.tar.gz /fc/tmp0/fcdata/$user/riptide/visitbuild/$dist.tar.gz
-cd /fc/tmp0/fcdata/$user/riptide/visitbuild
-gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
-cd $dist
-ver=\`cat VERSION\`
-ver2=\`echo \$ver | tr "." "_"\`
-env CXXFLAGS=-O2 ./configure --enable-parallel >> ../buildlog 2>&1
-env PARALLEL=8 make -P >> ../buildlog 2>&1
-clearcase_bin/visit-bin-dist >> ../buildlog 2>&1
-mv visit\$ver2.irix6.tar.gz ..
-cd ..
-rm -f resultlog
-echo "        build of visit on riptide"      > resultlog 2>&1
-echo "       ---------------------------"     >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-ls -l                                         >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "number of database plugins = "\`ls $dist/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls $dist/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls $dist/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "The database plugins:"                  >> resultlog 2>&1
-ls $dist/plugins/databases/libI* | sed "s/$dist\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail $emailName < resultlog
-EOF
-
-if [ $riptide = true ]
-then
-   if [ $test = no ]
-   then
-      scp riptide riptide:riptide_buildit
-      scp $dist.tar.gz riptide:riptide_$dist.tar.gz
-      ssh riptide "chmod 750 riptide_buildit;./riptide_buildit" &
-   fi
-fi
-
-#
 # Build on berg, both serial and parallel versions.
 #
 rm -f berg
@@ -574,5 +514,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f kickit sunspot hyper gps riptide berg pengra thunder
+   rm -f kickit sunspot hyper gps berg pengra thunder
 fi

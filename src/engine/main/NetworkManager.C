@@ -101,6 +101,9 @@ static void   DumpImage(avtImage_p, const char *fmt, bool allprocs=true);
 //    Made the viswin part of a map of EngineVisWinInfo objects
 //    Removed some unnecessary initialization
 //
+//    Mark C. Miller, Wed Jan  5 10:14:21 PST 2005
+//    Added call to NewVisWindow
+//
 // ****************************************************************************
 NetworkManager::NetworkManager(void) : virtualDatabases()
 {
@@ -112,7 +115,7 @@ NetworkManager::NetworkManager(void) : virtualDatabases()
     dumpRenders = false;
 
     // stuff to support scalable rendering. We always have window 0
-    viswinMap[0].viswin = new VisWindow();
+    NewVisWindow(0);
 }
 
 // ****************************************************************************
@@ -135,13 +138,13 @@ NetworkManager::NetworkManager(void) : virtualDatabases()
 // ****************************************************************************
 NetworkManager::~NetworkManager(void)
 {
-    std::map<int, EngineVisWinInfo>::iterator it;
-    for (it = viswinMap.begin(); it != viswinMap.end(); it++)
-        delete it->second.viswin;
-
     for (int i = 0; i < networkCache.size(); i++)
         if (networkCache[i] != NULL)
             delete networkCache[i];
+
+    std::map<int, EngineVisWinInfo>::iterator it;
+    for (it = viswinMap.begin(); it != viswinMap.end(); it++)
+        delete it->second.viswin;
 }
 
 // ****************************************************************************
@@ -190,13 +193,6 @@ NetworkManager::ClearAllNetworks(void)
     debug3 << "NetworkManager::ClearAllNetworks(void)" << endl;
     int i;
 
-    std::map<int, EngineVisWinInfo>::iterator it;
-    for (it = viswinMap.begin(); it != viswinMap.end(); it++)
-    {
-        it->second.viswin->ClearPlots();
-        it->second.plotsCurrentlyInWindow.clear();
-    }
-
     for (i = 0; i < networkCache.size(); i++)
     {
         if (networkCache[i] != NULL)
@@ -215,6 +211,16 @@ NetworkManager::ClearAllNetworks(void)
     {
         globalCellCounts[i] = -1;
     }
+
+    std::map<int, EngineVisWinInfo>::iterator it;
+    for (it = viswinMap.begin(); it != viswinMap.end(); it++)
+    {
+        it->second.viswin->ClearPlots();
+        it->second.plotsCurrentlyInWindow.clear();
+        delete it->second.viswin;
+    }
+    viswinMap.clear();
+    NewVisWindow(0);
 }
 
 // ****************************************************************************
@@ -248,7 +254,7 @@ void
 NetworkManager::ClearNetworksWithDatabase(const std::string &db)
 {
     debug3 << "NetworkManager::ClearNetworksWithDatabase()" << endl;
-    int i,j;
+    int i;
 
     // 
     // Clear out the networks before the databases.  This is because if we
@@ -263,21 +269,7 @@ NetworkManager::ClearNetworksWithDatabase(const std::string &db)
             {
                 if (ndb->GetFilename() == db)
                 {
-                    int winID = networkCache[i]->GetWinID();
-                    EngineVisWinInfo &viswinInfo = viswinMap[winID];
-
-                    for (j = 0 ; j < viswinInfo.plotsCurrentlyInWindow.size() ; j++)
-                    {
-                        if (viswinInfo.plotsCurrentlyInWindow[j] == i)
-                        {
-                            viswinInfo.viswin->ClearPlots();
-                            viswinInfo.plotsCurrentlyInWindow.clear();
-                            break;
-                        }
-                    }
-                    delete networkCache[i];
-                    networkCache[i] = NULL;
-                    globalCellCounts[i] = -1;
+                    DoneWithNetwork(i);
                 }
             }
         }
@@ -952,10 +944,7 @@ NetworkManager::EndNetwork(int windowID)
     // seen before, make a new VisWindow for it
     //
     if (viswinMap.find(windowID) == viswinMap.end())
-    {
-        debug1 << "Creating new VisWindow for id=" << windowID << endl;
-        viswinMap[windowID].viswin = new VisWindow;
-    }
+        NewVisWindow(windowID);
 
     return workingNet->GetNetID();
 }
@@ -1132,19 +1121,18 @@ NetworkManager::GetTotalGlobalCellCounts(int winID) const
 {
    int i, sum = 0;
 
-    std::map<int, EngineVisWinInfo>::const_iterator it;
-    it = viswinMap.find(winID);
-    const std::vector<int> &plotsCurrentlyInWindow =
-       it->second.plotsCurrentlyInWindow;
-
-    for (i = 0; i < plotsCurrentlyInWindow.size(); i++)
+    for (i = 0; i < networkCache.size(); i++)
     {
+        if (networkCache[i] == NULL ||
+            networkCache[i]->GetWinID() != winID)
+            continue;
+
         // Make sure we don't have an overflow issue.
-        if (globalCellCounts[plotsCurrentlyInWindow[i]] == INT_MAX)
+        if (globalCellCounts[i] == INT_MAX)
             return INT_MAX;
 
-        if (globalCellCounts[plotsCurrentlyInWindow[i]] >= 0)
-            sum += globalCellCounts[plotsCurrentlyInWindow[i]];
+        if (globalCellCounts[i] >= 0)
+            sum += globalCellCounts[i];
     }
     return sum;
 }
@@ -1268,16 +1256,18 @@ NetworkManager::DoneWithNetwork(int id)
                 break;
             }
         }
+
+        delete networkCache[id];
+        networkCache[id] = NULL;
+        globalCellCounts[id] = -1;
+
+        // delete VisWindow after networks
         if (!otherNetsUseThisWindow && thisNetworksWinID) // never delete window 0
         {
             debug1 << "Deleting VisWindow for id=" << thisNetworksWinID << endl;
             delete viswinMap[thisNetworksWinID].viswin;
             viswinMap.erase(thisNetworksWinID);
         }
-
-        networkCache[id]->ReleaseData();
-        networkCache[id] = NULL;
-        globalCellCounts[id] = -1;
 
     }
     else
@@ -2136,10 +2126,7 @@ NetworkManager::SetWindowAttributes(const WindowAttributes &atts,
                                     int windowID)
 {
     if (viswinMap.find(windowID) == viswinMap.end())
-    {
-        debug1 << "Creating new VisWindow for id=" << windowID << endl;
-        viswinMap[windowID].viswin = new VisWindow;
-    }
+        NewVisWindow(windowID);
 
     EngineVisWinInfo &viswinInfo = viswinMap[windowID];
     VisWindow *viswin = viswinInfo.viswin;
@@ -2290,6 +2277,10 @@ NetworkManager::SetWindowAttributes(const WindowAttributes &atts,
 //    Mark C. Miller, Tue Jan  4 10:23:19 PST 200
 //    Modified to use viswinMap
 //
+//    Mark C. Miller, Wed Jan  5 10:14:21 PST 2005
+//    Fixed loop termination variable for setting frameAndState at end
+//    of routine.
+//
 // ****************************************************************************
 void
 NetworkManager::SetAnnotationAttributes(const AnnotationAttributes &atts,
@@ -2298,10 +2289,7 @@ NetworkManager::SetAnnotationAttributes(const AnnotationAttributes &atts,
 {
 
     if (viswinMap.find(windowID) == viswinMap.end())
-    {
-        debug1 << "Creating new VisWindow for id=" << windowID << endl;
-        viswinMap[windowID].viswin = new VisWindow;
-    }
+        NewVisWindow(windowID);
 
     EngineVisWinInfo &viswinInfo = viswinMap[windowID];
     VisWindow *viswin = viswinInfo.viswin;
@@ -2388,7 +2376,7 @@ NetworkManager::SetAnnotationAttributes(const AnnotationAttributes &atts,
    annotationAttributes = atts;
    annotationObjectList = aolist;
    visualCueList = visCues;
-   for (i = 0; i < sizeof(frameAndState)/sizeof(frameAndState[0]); i++)
+   for (i = 0; i < 7; i++)
        frameAndState[i] = fns[i];
 
 }
@@ -3138,6 +3126,38 @@ NetworkManager::AddQueryOverTimeFilter(QueryOverTimeAttributes *qA,
     
     workingNetnodeList.push_back(qfilt);
     workingNet->AddNode(qfilt);
+}
+
+// ****************************************************************************
+//  Method:  NetworkManager::NewVisWindow
+//
+//  Purpose: Adds a new VisWindow object and initializes its annotations
+//
+//  Programmer:  Mark C. Miller 
+//  Creation:    January 5, 2005 
+//
+// ****************************************************************************
+
+void
+NetworkManager::NewVisWindow(int winID)
+{
+    debug1 << "Creating new VisWindow for window id =" << winID << endl;
+
+    viswinMap[winID].viswin = new VisWindow();
+
+    AnnotationAttributes &annotAtts = viswinMap[winID].annotationAttributes;
+
+    annotAtts = *(viswinMap[winID].viswin->GetAnnotationAtts());
+    annotAtts.SetUserInfoFlag(false);
+    annotAtts.SetDatabaseInfoFlag(false);
+    annotAtts.SetLegendInfoFlag(false);
+    annotAtts.SetTriadFlag(false);
+    annotAtts.SetBboxFlag(false);
+    annotAtts.SetAxesFlag(false);
+    annotAtts.SetAxesFlag2D(false);
+    viswinMap[winID].viswin->SetAnnotationAtts(&annotAtts);
+
+    viswinMap[winID].viswin->DisableUpdates();
 }
 
 // ****************************************************************************

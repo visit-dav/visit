@@ -129,6 +129,9 @@
 #   Brad Whitlock, Fri Dec 17 13:26:46 PST 2004
 #   Added CMAT reader.
 #
+#   Jeremy Meredith, Mon Jan  3 12:46:10 PST 2005
+#   Added Enzo reader, which uses HDF4.  At some point it may also use HDF5.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -139,7 +142,7 @@ all: message
 BOXLIB2D=Boxlib2D
 BOXLIB3D=Boxlib3D
 EXODUS=Exodus TimeVaryingExodus
-HDF4=Cosmos
+HDF4=Cosmos Enzo
 HDF5=Tetrad SAMRAI CosmosPP Pixie
 MILI=Mili
 PDB=KullLite PDB

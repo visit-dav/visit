@@ -2589,7 +2589,7 @@ case $SHORT_UNAME in
     ;;
 
   aix)
-    if test "$CXX" = "g++"; then
+    if test "`echo $CXX | cut -c1-3`" = "g++"; then
         # AIX used to be the weird one.  It is mostly normal finally,
         # as long as you use g++.  It should be noted that for AIX to find
         # .so's as libraries, it requires "-Wl,-brtl" in the LDFLAGS.
