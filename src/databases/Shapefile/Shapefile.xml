@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+  <Plugin name="Shapefile" type="database" label="ESRI Shapefile" version="1.0" enabled="true" mdspecificcode="true" onlyengine="false" noengine="false" dbtype="STSD" haswriter="false">
+    <Extensions>
+      shp
+      shx
+      dbf
+    </Extensions>
+    <Files components="M">
+      avtShapefileFileFormat.C
+      esriShapefile.C
+      dbfFile.C
+    </Files>
+    <Files components="E">
+      avtShapefileFileFormat.C
+      esriShapefile.C
+      dbfFile.C
+    </Files>
+    <Attribute name="" purpose="" persistent="false">
+    </Attribute>
+  </Plugin>
