@@ -9,7 +9,7 @@
 #include <qlabel.h>
 #include <qlayout.h>
 #include <qlineedit.h>
-#include <qlistbox.h>
+#include <qmultilineedit.h>
 #include <qtabwidget.h>
 #include <qstringlist.h>
 #include <qvbox.h>
@@ -50,15 +50,20 @@ using std::vector;
 //   Brad Whitlock, Wed Aug 27 08:36:19 PDT 2003
 //   Added autoShow flag.
 //
+//   Brad Whitlock, Tue Sep 9 09:30:01 PDT 2003
+//   I made nextPage and lastLetter be members.
+//
 // ****************************************************************************
 
 QvisPickWindow::QvisPickWindow(PickAttributes *subj, const char *caption, 
                              const char *shortName, QvisNotepadArea *notepad) :
     QvisPostableWindowObserver(subj, caption, shortName, notepad,
-                               QvisPostableWindowObserver::ApplyButton, false)
+                               QvisPostableWindowObserver::ApplyButton, false),
+    lastLetter(" ")
 {
     pickAtts = subj;
     autoShow = true;
+    nextPage = 0;
 }
 
 // ****************************************************************************
@@ -114,23 +119,15 @@ QvisPickWindow::CreateWindowContents()
     tabWidget = new QTabWidget(central, "tabWidget");
     tabWidget->setMinimumHeight(200);
     topLayout->addWidget(tabWidget, 10);
+
     for (int i = 0; i < MAX_PICK_TABS; i++)
     {
         pages[i] = new QVBox(central, "page");
         pages[i]->setMargin(10);
         pages[i]->setSpacing(5);
-        infoLists[i]  = new QListBox(pages[i], "infoList");
-        infoLists[i]->insertItem("          ");
-        infoLists[i]->insertItem("          ");
-        infoLists[i]->insertItem("          ");
-        infoLists[i]->insertItem("          ");
-        infoLists[i]->insertItem("          ");
-        infoLists[i]->insertItem("          ");
-        infoLists[i]->insertItem("          ");
-        infoLists[i]->insertItem("          ");
-        infoLists[i]->setRowMode(9);
-        infoLists[i]->setColumnMode(1);
-        infoLists[i]->setVariableHeight(false);
+        infoLists[i]  = new QMultiLineEdit(pages[i], "infoList");
+        infoLists[i]->setWordWrap(QMultiLineEdit::WidgetWidth);
+        infoLists[i]->setReadOnly(true);
         tabWidget->addTab(pages[i]," "); 
     }
 
@@ -250,6 +247,35 @@ QvisPickWindow::UpdateWindow(bool doAll)
 }
 
 // ****************************************************************************
+// Method: QvisPickWindow::AddInformation
+//
+// Purpose: 
+//   Adds information to a display string and calculates the maximum width
+//   of the string.
+//
+// Arguments:
+//   displayString : The display string.
+//   info          : The information string to add to the display string.
+//   len           : A variable to return the max length of the string.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Sep 9 09:26:42 PDT 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisPickWindow::AddInformation(QString &displayString, const QString &info,
+    int &len) const
+{
+    int w = fontMetrics().width(info);
+    len = (len > w) ? len : w;
+    displayString += info;
+    displayString += "\n";
+}
+
+// ****************************************************************************
 // Method: QvisPickWindow::UpdatePage
 //
 // Purpose: 
@@ -285,24 +311,28 @@ QvisPickWindow::UpdateWindow(bool doAll)
 //   Reflect new naming convention in PickAttributes. Rework to support
 //   nodePick.
 //
+//   Brad Whitlock, Tue Sep 9 09:07:17 PDT 2003
+//   I made the infoLists be QMultiLineEdits instead of QListBoxes.
+//
 // ****************************************************************************
 
 void
 QvisPickWindow::UpdatePage()
 {
-    QString temp, temp2;
-    static int nextPage = 0;
-    static string lastLetter = " ";
-    int nRows = 0;
+    QString pickLetter(pickAtts->GetPickLetter().c_str());
+
     if (pickAtts->GetClearWindow())
     {
         nextPage = 0;
         ClearPages();
-        return;
     }
-    if (lastLetter != pickAtts->GetPickLetter() && pickAtts->GetFulfilled())
+    else if (lastLetter != pickLetter && pickAtts->GetFulfilled())
     {
-        lastLetter = pickAtts->GetPickLetter();
+        QString temp, temp2, displayString, indent("     ");
+        int maxLen = 0;
+
+        // Change the tab heading.
+        lastLetter = pickLetter;
         temp2.sprintf(" %s ", pickAtts->GetPickLetter().c_str());
         tabWidget->changeTab(pages[nextPage], temp2);
 
@@ -314,9 +344,6 @@ QvisPickWindow::UpdatePage()
         else
             fileName = dBaseName.substr(pos+1);
 
-        infoLists[nextPage]->clear();
-        infoLists[nextPage]->setColumnMode(1);
-        infoLists[nextPage]->setVariableHeight(false);
         if (pickAtts->GetDomain() == -1)
         {
             temp2.sprintf("%s   timestep %d",
@@ -329,8 +356,7 @@ QvisPickWindow::UpdatePage()
                 pickAtts->GetTimeStep(),
                 pickAtts->GetDomain());
         }
-        infoLists[nextPage]->insertItem(temp2);
-        nRows++;
+        AddInformation(displayString, temp2, maxLen);
 
         if (pickAtts->GetDimension() == 2)
         {
@@ -339,19 +365,16 @@ QvisPickWindow::UpdatePage()
                 temp2.sprintf("Point:  <%f, %f>",
                     pickAtts->GetCellPoint()[0],
                     pickAtts->GetCellPoint()[1]);
-                infoLists[nextPage]->insertItem(temp2);
-                nRows++;
+                AddInformation(displayString, temp2, maxLen);
             }
             else 
             {
                 temp2.sprintf("Point:  (in transformed space)");
-                infoLists[nextPage]->insertItem(temp2);
-                nRows++;
+                AddInformation(displayString, temp2, maxLen);
                 temp2.sprintf("        <%f, %f>",
                     pickAtts->GetCellPoint()[0],
                     pickAtts->GetCellPoint()[1]);
-                infoLists[nextPage]->insertItem(temp2);
-                nRows++;
+                AddInformation(displayString, temp2, maxLen);
             }
         }
         else 
@@ -362,20 +385,17 @@ QvisPickWindow::UpdatePage()
                     pickAtts->GetCellPoint()[0],
                     pickAtts->GetCellPoint()[1],
                     pickAtts->GetCellPoint()[2]);
-                infoLists[nextPage]->insertItem(temp2);
-                nRows++;
+                AddInformation(displayString, temp2, maxLen);
             }
             else 
             {
                 temp2.sprintf("Point:  (in transformed space)");
-                infoLists[nextPage]->insertItem(temp2);
-                nRows++;
+                AddInformation(displayString, temp2, maxLen);
                 temp2.sprintf("        <%f, %f, %f>",
                     pickAtts->GetCellPoint()[0],
                     pickAtts->GetCellPoint()[1],
                     pickAtts->GetCellPoint()[2]);
-                infoLists[nextPage]->insertItem(temp2);
-                nRows++;
+                AddInformation(displayString, temp2, maxLen);
             }
         }
         const stringVector &nodeCoords = pickAtts->GetNodeCoords();
@@ -399,8 +419,7 @@ QvisPickWindow::UpdatePage()
                                nodeCoords[0].c_str()); 
             }
         }
-        infoLists[nextPage]->insertItem(temp2);
-        nRows++;
+        AddInformation(displayString, temp2, maxLen);
 
         const intVector &incEls = pickAtts->GetIncidentElements();
         if (zonePick)
@@ -413,9 +432,8 @@ QvisPickWindow::UpdatePage()
         }
         if (useCoords && zonePick)
         {
-            infoLists[nextPage]->insertItem(temp);
-            nRows++;
-            temp.sprintf("     ");
+            AddInformation(displayString, temp, maxLen);
+            temp = indent;
         }
         int i;
         for (i = 0; i < incEls.size(); i++)
@@ -426,34 +444,36 @@ QvisPickWindow::UpdatePage()
             {
                 temp2.sprintf("%s", nodeCoords[i].c_str());
                 temp += temp2;
-                infoLists[nextPage]->insertItem(temp);
-                nRows++;
-                temp.sprintf("     ");
+                AddInformation(displayString, temp, maxLen);
+                temp = indent;
             }
         }
         if (!(useCoords && zonePick))
         {
-            infoLists[nextPage]->insertItem(temp);
-            nRows++;
+            AddInformation(displayString, temp, maxLen);
         }
 
         //
-        //  Displaying the vars in a list box. 
+        //  Add information about the variables.
         //
         int numVars = pickAtts->GetNumPickVarInfos();
         for (i = 0; i < numVars; i++)
         {
-            std::vector<std::string> vi;
+            stringVector vi;
             pickAtts->GetPickVarInfo(i).CreateOutputStrings(vi);
             for (int j = 0; j < vi.size(); j++)
             {
-                infoLists[nextPage]->insertItem(vi[j].c_str());
-                nRows++;
+                AddInformation(displayString, vi[j].c_str(), maxLen);
             }
-            vi.clear();
         }
-        
-        infoLists[nextPage]->setRowMode(nRows);
+
+        // Make the tab display the string.
+        infoLists[nextPage]->clear();
+        infoLists[nextPage]->setMinimumWidth(maxLen);
+        infoLists[nextPage]->insertLine(displayString);
+        infoLists[nextPage]->setCursorPosition(0, 0);
+
+        // Show the tab.
         tabWidget->showPage(pages[nextPage]);
         nextPage = (nextPage + 1) % MAX_PICK_TABS;
     }

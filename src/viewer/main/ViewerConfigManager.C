@@ -265,8 +265,12 @@ ViewerConfigManager::ProcessConfigSettings(DataNode *node)
     }
 
     // Read the attributes into the state objects and notify the observers.
+    debug4 << "ViewerConfigManager::ProcessConfigSettings" << endl;
     for (pos = subjectList.begin(); pos != subjectList.end(); ++pos)
+    {
+        debug4 << "\t" << (*pos)->TypeName().c_str() << " setting from node" << endl;
         (*pos)->SetFromNode(defaultsNode);
+    }
 }
 
 // ****************************************************************************
@@ -287,8 +291,10 @@ ViewerConfigManager::Notify()
 {
     // Call Notify() on all subjects.
     std::vector<AttributeSubject *>::iterator pos;
+    debug4 << "ViewerConfigManager::Notify()" << endl;
     for (pos = subjectList.begin(); pos != subjectList.end(); ++pos)
     {
+        debug4 << "\t" << (*pos)->TypeName().c_str() << " sending to client" << endl;
         (*pos)->Notify();
     }
 }

@@ -6,8 +6,8 @@
 #define MAX_PICK_TABS 8
 
 class QCheckBox;
-class QListBox;
 class QLineEdit;
+class QMultiLineEdit;
 class QTabWidget;
 class QVBox;
 class PickAttributes;
@@ -42,6 +42,9 @@ class PickAttributes;
 //   Brad Whitlock, Wed Aug 27 08:35:44 PDT 2003
 //   Added the autoShow flag and CreateNode and SetFromNode methods.
 //
+//   Brad Whitlock, Tue Sep 9 09:02:03 PDT 2003
+//   I made it use QMultiLineEdit instead of QListBox.
+//
 // ****************************************************************************
 
 class GUI_API QvisPickWindow : public QvisPostableWindowObserver
@@ -72,17 +75,20 @@ private slots:
 private:
     void UpdatePage(void);
     void ClearPages(void);
+    void AddInformation(QString &, const QString &, int &) const;
 
-    bool          autoShow;
+    bool            autoShow;
+    int             nextPage;
+    QString         lastLetter;
 
-    QTabWidget   *tabWidget;
-    QVBox        *pages[MAX_PICK_TABS];
-    QListBox     *infoLists[MAX_PICK_TABS];
-    QCheckBox    *useNodeCoords;
-    QCheckBox    *logicalCoords;
-    QCheckBox    *autoShowCheckBox;
+    QTabWidget     *tabWidget;
+    QVBox          *pages[MAX_PICK_TABS];
+    QMultiLineEdit *infoLists[MAX_PICK_TABS];
+    QCheckBox      *useNodeCoords;
+    QCheckBox      *logicalCoords;
+    QCheckBox      *autoShowCheckBox;
 
-    QLineEdit    *varsLineEdit;
+    QLineEdit      *varsLineEdit;
     PickAttributes *pickAtts;
 };
 #endif
