@@ -88,6 +88,9 @@ void CheckPermissions(const char *);
 //    Hank Childs, Mon Mar 22 09:43:33 PST 2004
 //    Added the ability for a format to be specified.
 //
+//    Brad Whitlock, Fri Apr 30 16:05:42 PST 2004
+//    I made extension comparison be case insensitive on Windows.
+//
 // ****************************************************************************
 
 avtDatabase *
@@ -190,11 +193,19 @@ avtDatabaseFactory::FileList(const char * const * filelist, int filelistN,
             {
                 ext = string(".") + extensions[j];
             }
+#if defined(_WIN32)
+            if (file.length() >= ext.length())
+            {
+                string fileExt(file.substr(file.length() - ext.length()));
+                foundMatch = (_stricmp(fileExt.c_str(), ext.c_str()) == 0);
+            }
+#else
             if (file.length() >= ext.length() &&
                 file.substr(file.length() - ext.length()) == ext)
             {
                 foundMatch = true;
             }
+#endif
         }
 
         //

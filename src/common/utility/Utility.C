@@ -272,13 +272,39 @@ CreateMessageStrings(char **lists, int *count, int nl)
 //    Jeremy Meredith, Thu Jun 26 10:28:28 PDT 2003
 //    Added the '#' wildcard.
 //
+//    Brad Whitlock, Fri Apr 30 16:13:50 PST 2004
+//    I made it case insensitive on Windows.
+//
 // ****************************************************************************
+
 bool
 WildcardStringMatch(const string &p, const string &s)
 {
     // wrap around the c-style function
     return WildcardStringMatch(p.c_str(), s.c_str());
 }
+
+#if defined(_WIN32)
+inline bool
+CaseInsensitiveCompare(char p, char s)
+{
+    bool p_uc = (p >= 'A' && p <= 'Z');
+    bool p_lc = (p >= 'a' && p <= 'z');
+    bool s_uc = (s >= 'A' && s <= 'Z');
+    bool s_lc = (s >= 'a' && s <= 'z');
+    bool retval;
+    if((p_uc || p_lc) && (s_uc || s_lc))
+    {
+        char pi = p_uc ? (p - 'A') : (p - 'a');
+        char si = s_uc ? (s - 'A') : (s - 'a');
+        retval = (pi == si);
+    }
+    else
+        retval = (p == s);
+
+    return retval;
+}
+#endif
 
 bool
 WildcardStringMatch(const char *p, const char *s)
@@ -302,7 +328,12 @@ WildcardStringMatch(const char *p, const char *s)
     // and consume one char
     if ( *p == '?' ||
         (*p == '#' && *s >= '0' && *s <= '9') ||
-         *p == *s)
+#if defined(_WIN32)
+         CaseInsensitiveCompare(*p, *s)
+#else
+         *p == *s
+#endif
+       )
     {
         return WildcardStringMatch(&p[1], &s[1]);
     }

@@ -1,6 +1,7 @@
 #if defined(_WIN32)
 #include <windows.h>
 #include <direct.h>
+#include <string.h>
 #else
 #include <pwd.h>
 #include <dirent.h>
@@ -1410,6 +1411,10 @@ MDServerConnection::GetPattern(const std::string &file, std::string &p) const
 //   key instead of a std::string key. I did this to fix sorting problems
 //   with the virtual filenames list.
 //
+//   Brad Whitlock, Fri Apr 30 16:47:10 PST 2004
+//   I added code to prevent VisIt from creating virtual databases that
+//   contain .visit files.
+//
 // ****************************************************************************
 
 void
@@ -1461,7 +1466,25 @@ MDServerConnection::GetFilteredFileList(GetFileListRPC::FileList &files,
                 //
                 // See if the filename matches a pattern for related files.
                 //
-                if(GetPattern(names[i], pattern))
+                bool matchesPattern = GetPattern(names[i], pattern);
+
+                //
+                // See if the filename is a .visit file.
+                //
+                std::string visitExt(names[i]);
+                if(names[i].length() > 6)
+                    visitExt = names[i].substr(names[i].length() - 6);
+#if defined(_WIN32)
+                bool notVisItFile = (_stricmp(visitExt.c_str(), ".visit") != 0);
+#else
+                bool notVisItFile = (visitExt != ".visit");
+#endif
+
+                //
+                // If the file matches a pattern and it's not a .visit file
+                // then add it to the list of possible virtual files.
+                //
+                if(matchesPattern && notVisItFile)
                 {
                     //
                     // Look for the pattern in the newVirtualFiles map.

@@ -1,4 +1,4 @@
-#                            Copyright 2000 - 2003
+#                            Copyright 2000 - 2004
 #                 The Regents of the University of California.
 #                             All rights reserved.
 #
@@ -221,11 +221,11 @@ CPPFLAGS= -I@tmpinc@ @ENGINE_CPPFLAGS@ @CPPFLAGS@ \
 COMMONLIBS=-L../../lib -lplugin -lviswindow -lplotter -lmir -lavtview \
         -lavtwriter -lvisit_vtk -llightweight_visit_vtk \
 	-lenginerpc -lutility -lmisc -lcomm -lstate \
-	-lengineparstate_ser -ldbatts -lavtexceptions -lparser
+        -ldbatts -lavtexceptions -lparser
 
 SERLIBS=$(COMMONLIBS) -lavtmath_ser -ldatabase_ser -lquery_ser \
         -lexpressions_ser -lavtfilters_ser -lpipeline_ser  \
-        @VTKQT_LIBS@ $(VTK_LIBS) $(X_LIBS) \
+        -lengineparstate_ser @VTKQT_LIBS@ $(VTK_LIBS) $(X_LIBS) \
 	@LIBS@ @PTHREAD_LIB@
 
 PARLIBS=$(COMMONLIBS) -lavtmath_par -ldatabase_par -lquery_par \
