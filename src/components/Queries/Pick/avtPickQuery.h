@@ -66,6 +66,9 @@ class avtExpressionEvaluatorFilter;
 //    Kathleen Bonnell, Mon Aug 30 17:56:29 PDT 2004
 //    Added skippedLocate flag, and Set method.
 // 
+//    Kathleen Bonnell, Fri Sep  3 08:36:58 PDT 2004 
+//    Removed VerifyInput. 
+// 
 // ****************************************************************************
 
 class QUERY_API avtPickQuery : public avtDatasetQuery
@@ -101,7 +104,6 @@ class QUERY_API avtPickQuery : public avtDatasetQuery
     bool                            skippedLocate;
 
     // Query-specific code that needs to be defined.
-    virtual void                    VerifyInput(void);
     virtual void                    PreExecute(void);
     virtual void                    PostExecute(void);
     virtual avtDataObject_p         ApplyFilters(avtDataObject_p);   

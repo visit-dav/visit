@@ -37,6 +37,9 @@ class vtkCell;
 //    Moved inlined destructor definition to .C file because certain compilers
 //    have problems with them.
 //
+//    Kathleen Bonnell, Fri Sep  3 10:10:28 PDT 2004 
+//    Added VerifyInput. 
+//
 // ****************************************************************************
 
 class QUERY_API avtCompactnessQuery : public avtTwoPassDatasetQuery
@@ -78,6 +81,7 @@ class QUERY_API avtCompactnessQuery : public avtTwoPassDatasetQuery
     virtual void                    PreExecute(void);
     virtual void                    MidExecute();
     virtual void                    PostExecute(void);
+    virtual void                    VerifyInput(void);
 
     static void                     Get2DCellCentroid(vtkCell*,float&,float&);
     static float                    Get2DCellArea(vtkCell*);

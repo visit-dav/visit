@@ -391,6 +391,10 @@ avtPlot::Execute(avtDataObject_p input, avtPipelineSpecification_p spec,
 //    Mark C. Miller, Mon Aug 23 20:24:31 PDT 2004
 //    Added call to set cell count multiplier for SR threshold
 //
+//    Kathleen Bonnell, Fri Sep  3 10:07:11 PDT 2004
+//    Added test for ValidActiveVariable for attempting to retrieve Units,
+//    to avoid unncessary exception catches. 
+//
 // ****************************************************************************
 
 avtDataObjectWriter_p
@@ -440,11 +444,14 @@ avtPlot::Execute(avtDataObject_p input, avtPipelineSpecification_p spec,
     //
     TRY
     {
-        std::string dobunits = dob->GetInfo().GetAttributes().GetVariableUnits();
-        if(dobunits == "")
-            SetVarUnits(NULL);
-        else
-            SetVarUnits(dobunits.c_str());
+        if (dob->GetInfo().GetAttributes().ValidActiveVariable())
+        {
+            std::string dobunits = dob->GetInfo().GetAttributes().GetVariableUnits();
+            if(dobunits == "")
+                SetVarUnits(NULL);
+            else
+                SetVarUnits(dobunits.c_str());
+        }
     }
     CATCH(ImproperUseException)
     {

@@ -984,14 +984,44 @@ ViewerWindow::RecenterView()
 //    Modified the routine to reset the view for all the view modes,
 //    instead of just the current mode.
 //
+//    Eric Brugger, Fri Sep  3 15:15:06 PDT 2004
+//    Modified the routine to reset the view for all the view modes and
+//    then actually reset the view for current view mode.
+//
 // ****************************************************************************
 
 void
 ViewerWindow::ResetView()
 {
-    ResetViewCurve();
-    ResetView2d();
-    ResetView3d();
+    //
+    // Reset all the view modes.
+    //
+    boundingBoxValidCurve = false;
+    viewSetInCurve = false;
+    boundingBoxValid2d = false;
+    viewSetIn2d = false;
+    boundingBoxValid3d = false;
+    viewSetIn3d = false;
+    viewPartialSetIn3d = false;
+
+    //
+    // Reset the view for the current mode.  This will actually reset
+    // the view for any existing plots.
+    //
+    switch (visWindow->GetWindowMode())
+    {
+      case WINMODE_CURVE:
+        ResetViewCurve();
+        break;
+      case WINMODE_2D:
+        ResetView2d();
+        break;
+      case WINMODE_3D:
+        ResetView3d();
+        break;
+      default:
+        break;
+    }
 }
 
 // ****************************************************************************

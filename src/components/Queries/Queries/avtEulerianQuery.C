@@ -19,6 +19,7 @@
 
 #include <DebugStream.h>
 #include <ImproperUseException.h>
+#include <NonQueryableInputException.h>
 
 #ifdef PARALLEL
 #include <mpi.h>
@@ -71,6 +72,34 @@ avtEulerianQuery::~avtEulerianQuery()
     if (gFilter)
         gFilter->Delete();
 }
+
+
+// ****************************************************************************
+//  Method: avtEulerianQuery::VerifyInput
+//
+//  Purpose:
+//    Rejects non-queryable input && input that has topological dimension == 0
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   September 3, 2004
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtEulerianQuery::VerifyInput()
+{
+    avtDataObjectQuery::VerifyInput();
+    if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() == 0)
+    {
+        EXCEPTION1(NonQueryableInputException,
+            "Requires plot with topological dimension > 0.");
+    }
+}
+
+
+
 
 
 // ****************************************************************************

@@ -228,16 +228,17 @@ avtDataObjectQuery::ChangedInput()
 //  Programmer:  Kathleen Bonnell 
 //  Creation:    October 22, 2002 
 //
+//  Modifications:
+//    Kathleen Bonnell, Fri Sep  3 08:33:47 PDT 2004
+//    As the base class for all queries, made this the least restrictive.
+//    Any derived type can override this method to make it more restrictive.
+//
 // ****************************************************************************
 
 void
 avtDataObjectQuery::VerifyInput()
 {
-    //
-    //   A few general tests for all query types.
-    //
-    if ((!GetInput()->GetInfo().GetValidity().GetQueryable()) ||
-        (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() == 0))
+    if (!GetInput()->GetInfo().GetValidity().GetQueryable()) 
     {
         EXCEPTION0(NonQueryableInputException);
     }

@@ -19,13 +19,18 @@
 //
 //  Programmer: Kathleen Bonnell 
 //  Creation:   October 22, 2002 
-//
+// 
+//  Modifications:
+//    Kathleen Bonnell, Fri Sep  3 10:10:28 PDT 2004
+//    Added constructor with string argument.
+//  
 // ****************************************************************************
 
 class AVTEXCEPTION_API NonQueryableInputException : public PipelineException
 {
   public:
                           NonQueryableInputException();
+                          NonQueryableInputException(const std::string &);
     virtual              ~NonQueryableInputException() VISIT_THROW_NOTHING {;};
 };
 

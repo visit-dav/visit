@@ -10,6 +10,7 @@
 #include <vtkRectilinearGrid.h>
 #include <vtkVisItCellLocator.h>
 #include <vtkVisItUtility.h>
+#include <NonQueryableInputException.h>
 
 
 #include <avtParallel.h>
@@ -50,6 +51,29 @@ avtLocateQuery::~avtLocateQuery()
     ;
 }
 
+// ****************************************************************************
+//  Method: avtLocateQuery::VerifyInput
+//
+//  Purpose:
+//    Rejects non-queryable input && input that has topological dimension == 0
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   September 3, 2004
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtLocateQuery::VerifyInput()
+{
+    avtDataObjectQuery::VerifyInput();
+    if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() == 0)
+    {
+        EXCEPTION1(NonQueryableInputException,
+            "Requires plot with topological dimension > 0.");
+    }
+}
 
 // ****************************************************************************
 //  Method: avtLocateQuery::PreExecute

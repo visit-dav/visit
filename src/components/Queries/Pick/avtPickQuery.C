@@ -491,23 +491,6 @@ avtPickQuery::SetRealIds(vtkDataSet *ds)
 
  
 // ****************************************************************************
-//  Method: avtPickQuery::VerifyInput
-//
-//  Purpose:
-//    Verify a new input.  Overrides parent class.
-//
-//  Programmer:  Kathleen Bonnell 
-//  Creation:    March 31, 2004 
-//
-// ****************************************************************************
-
-void
-avtPickQuery::VerifyInput()
-{
-    avtDataObjectQuery::VerifyInput();
-}
- 
-// ****************************************************************************
 //  Method: avtPickQuery::GetNodeCoords
 //
 //  Purpose:
