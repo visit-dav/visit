@@ -32,6 +32,9 @@ class QCheckBox;
 //    Jeremy Meredith, Wed Nov  5 13:49:49 PST 2003
 //    Added support for enabling or disabling plugins by default.
 //
+//    Brad Whitlock, Fri Apr 1 16:14:33 PST 2005
+//    Added label var type.
+//
 // ****************************************************************************
 
 class XMLEditPlugin : public QFrame
@@ -77,6 +80,7 @@ class XMLEditPlugin : public QFrame
     QCheckBox       *varTypeCurve;
     QCheckBox       *varTypeTensor;
     QCheckBox       *varTypeSymmetricTensor;
+    QCheckBox       *varTypeLabel;
     QComboBox       *dbType;
     QLineEdit       *extensions;
 };

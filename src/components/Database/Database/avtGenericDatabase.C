@@ -779,6 +779,9 @@ avtGenericDatabase::ManageMemoryForNonCachableMesh(vtkDataSet *v)
 //    Hank Childs, Mon Sep 22 07:48:34 PDT 2003
 //    Added support for tensors.
 //
+//    Brad Whitlock, Sat Apr 2 00:46:37 PDT 2005
+//    Added support for labels.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -814,6 +817,10 @@ avtGenericDatabase::GetDataset(const char *varname, int ts, int domain,
 
       case AVT_SYMMETRIC_TENSOR_VAR:
         rv = GetSymmetricTensorVarDataset(varname, ts, domain, matname);
+        break;
+
+      case AVT_LABEL_VAR:
+        rv = GetLabelVarDataset(varname, ts, domain, matname);
         break;
 
       case AVT_MATERIAL:
@@ -986,6 +993,9 @@ avtGenericDatabase::GetScalarVarDataset(const char *varname, int ts,
 //    Hank Childs, Sat Oct 18 10:09:40 PDT 2003
 //    Add support for tensors.
 //
+//    Brad Whitlock, Sat Apr 2 00:46:56 PDT 2005
+//    Added support for labels.
+//
 // ****************************************************************************
 
 void
@@ -1077,6 +1087,20 @@ avtGenericDatabase::AddSecondaryVariables(vtkDataSet *ds, int ts, int domain,
             }
             break;
 
+          case AVT_LABEL_VAR:
+            {
+                const avtLabelMetaData *lmd=GetMetaData(ts)->GetLabel(varName);
+                if (lmd->centering == AVT_NODECENT)
+                {
+                    atts = ds->GetPointData();
+                }
+                else
+                {
+                    atts = ds->GetCellData();
+                }
+            }
+            break;
+
           case AVT_MATSPECIES:
             atts = ds->GetCellData();
             break;
@@ -1102,6 +1126,9 @@ avtGenericDatabase::AddSecondaryVariables(vtkDataSet *ds, int ts, int domain,
             break;
           case AVT_SYMMETRIC_TENSOR_VAR:
             dat = GetSymmetricTensorVariable(varName, ts, domain, material);
+            break;
+          case AVT_LABEL_VAR:
+            dat = GetLabelVariable(varName, ts, domain, material);
             break;
           case AVT_MATSPECIES:
             dat = GetSpeciesVariable(varName, ts, domain, material, nzones);
@@ -1528,6 +1555,89 @@ avtGenericDatabase::GetSpeciesDataset(const char *specname, int ts, int domain,
     return mesh;
 }
 
+// ****************************************************************************
+// Method: avtGenericDatabase::GetLabelVarDataset
+//
+// Purpose: 
+//   Gets a label variable and its mesh.
+//
+// Arguments:
+//      varname      The variable for that domain
+//      ts           The timestep of interest.
+//      domain       The domain of the dataset to retrieve.
+//      material     The name of the material we are getting.
+//
+// Returns:    A vtkDataSet containing the data.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Sat Apr 2 00:38:47 PDT 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+vtkDataSet *
+avtGenericDatabase::GetLabelVarDataset(const char *varname, int ts,
+                                       int domain, const char *material)
+{
+    const avtLabelMetaData *lmd = GetMetaData(ts)->GetLabel(varname);
+    if (lmd == NULL)
+    {
+        EXCEPTION1(InvalidVariableException, varname);
+    }
+
+    string meshname  = GetMetaData(ts)->MeshForVar(varname);
+    vtkDataSet *mesh = GetMesh(meshname.c_str(), ts, domain, material);
+
+    if (mesh == NULL)
+    {
+        //
+        // Some file formats don't have a mesh for every domain (like Exodus
+        // when material selection is applied).  Just propagate the NULL up.  
+        //
+        return NULL;
+    }
+
+    vtkDataArray *var = GetLabelVariable(varname, ts, domain, material);
+
+    if (var == NULL)
+    {
+        //
+        // Some variables don't have a var for every domain, even if the
+        // mesh exists there.  Just propagate the NULL up.  
+        //
+        return NULL;
+    }
+
+
+    //
+    // Set up the scalar var's name in case we have more than one.
+    //
+    var->SetName(varname);
+
+    if (lmd->centering == AVT_NODECENT)
+    {
+        mesh->GetPointData()->SetScalars(var);
+    }
+    else
+    {
+        mesh->GetCellData()->SetScalars(var);
+    }
+
+    //
+    // Add some field data that indicates this dataset is a set of labels.
+    //
+    vtkUnsignedIntArray *lvs = vtkUnsignedIntArray::New();
+    lvs->SetNumberOfTuples(1);
+    lvs->SetName("avtLabelVariableSize");
+    unsigned int *uintptr = (unsigned int *)lvs->GetVoidPointer(0);
+    *uintptr = var->GetNumberOfComponents();
+    mesh->GetFieldData()->AddArray(lvs);
+
+    return mesh;
+}
 
 // ****************************************************************************
 //  Method: avtGenericDatabase::GetSpeciesVariable
@@ -1978,6 +2088,90 @@ avtGenericDatabase::GetSymmetricTensorVariable(const char *varname, int ts,
     return var;
 }
 
+// ****************************************************************************
+// Method: avtGenericDatabase::GetLabelVariable
+//
+// Purpose: 
+//   Gets the specified label data array from the database.
+//
+// Arguments:
+//      varname    The name of the variable.
+//      ts         The timestep for the variable.
+//      domain     The domain for the variable.
+//      material   The name of the material we are getting.
+//
+// Returns:    The data array
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Sat Apr 2 00:43:11 PDT 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+vtkDataArray *
+avtGenericDatabase::GetLabelVariable(const char *varname, int ts, int domain,
+                                     const char *material)
+{
+
+    //
+    // We have to be leery about doing any caching when the variables are
+    // defined on sub-meshes.  This is because if we add new secondary
+    // variables, some parts of the mesh may drop out, and the size of the
+    // cached objects are now wrong.
+    //
+    vtkDataArray *var = NULL;
+    if (!Interface->HasVarsDefinedOnSubMeshes())
+    {
+        var = (vtkDataArray *) cache.GetVTKObject(varname,
+                         avtVariableCache::LABELS_NAME, ts, domain, material);
+    }
+
+    //
+    // Translate the variable name into something the interface understands.
+    // Note: use the "real_varname" when talking to the Interface, but use
+    // the standard "varname" for caching and all other places.
+    //
+    const avtLabelMetaData *lmd = GetMetaData(ts)->GetLabel(varname);
+    if (lmd == NULL)
+        EXCEPTION1(InvalidVariableException, varname);
+    const char *real_varname = varname;
+    if (lmd->originalName != lmd->name && lmd->originalName != "")
+    {
+        real_varname = lmd->originalName.c_str();
+    }
+
+    if (var == NULL)
+    {
+        //
+        // We haven't read in this domain before, so fetch it from the files.
+        //
+        var = Interface->GetVar(ts, domain, real_varname);
+
+        if (var != NULL)
+        {
+            if (Interface->CanCacheVariable(real_varname))
+            {
+                cache.CacheVTKObject(varname, avtVariableCache::LABELS_NAME,
+                                     ts, domain, material, var);
+            }
+            else
+                ManageMemoryForNonCachableVar(var);
+
+            //
+            // We need to decrement the reference count of the variable 
+            // returned from FetchVar, but we could not do it previously 
+            // because it would knock the count down to 0 and delete it.
+            // Since we have cached it, we can do it now.
+            //
+            var->Delete();
+        }
+    }
+
+    return var;
+}
 
 // ****************************************************************************
 //  Method: avtGenericDatabase::GetMesh
@@ -4820,6 +5014,9 @@ avtGenericDatabase::CommunicateGhostNodesFromDomainBoundariesFromFile(
 //    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004 
 //    Changed 'vector<int>' to 'intVector'.
 //
+//    Hank Childs, Mon Apr  4 13:21:09 PDT 2005
+//    Fix problem where curDisp was being deleted twice in parallel.
+//
 // ****************************************************************************
 
 bool
@@ -5314,7 +5511,6 @@ avtGenericDatabase::CommunicateGhostZonesFromGlobalNodeIds(
     delete [] recvcount;
     delete [] senddisp;
     delete [] recvdisp;
-    delete [] curDisp;
     delete [] big_send_buffer;
     delete [] big_recv_buffer;
 #endif
@@ -6759,6 +6955,114 @@ avtGenericDatabase::QuerySymmetricTensors(const string &varName,
     return rv;
 }
 
+// ****************************************************************************
+// Method: avtGenericDatabase::QueryLabels
+//
+// Purpose: 
+//   Queries the database for a label dataset.
+//
+// Arguments:
+//    varName     The variable on which to retrieve data.
+//    dom         The domain to query.
+//    zone        The zone to query.
+//    ts          The timestep to query.
+//    nodes       The nodes to query.
+//    varInfo     A place to store the results. 
+//
+// Returns:    True if data was retrieved; otherwise false.
+//
+// Note:       Pretty much the same as QueryVectors except that we don't
+//             calculate a magnitude.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Apr 4 11:51:56 PDT 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+avtGenericDatabase::QueryLabels(const string &varName, const int dom, 
+                                 const int element, const int ts, 
+                                 const intVector &incidentElements, 
+                                 PickVarInfo &varInfo, const bool zonePick)
+{
+    bool rv = false;
+    if (varInfo.GetValues().empty())
+    {
+        const avtLabelMetaData *lmd = GetMetaData(ts)->GetLabel(varName);
+        if (!lmd)
+        {
+            debug5 << "Querying label var, but could not retrieve"
+                   << " meta data!" << endl;
+            return false;
+        }
+        stringVector names;
+        doubleVector vals;
+        char buff[80];
+        vtkDataArray *labels = GetLabelVariable(varName.c_str(), ts, dom,
+                                                "_all");
+        int nComponents = 0; 
+        double *temp = NULL; 
+        if (labels)
+        {
+            bool zoneCent = false, validCentering = true;
+            if (lmd->centering == AVT_NODECENT)
+            {
+                varInfo.SetCentering(PickVarInfo::Nodal);
+                zoneCent = false;
+            }
+            else if (lmd->centering == AVT_ZONECENT)
+            {
+                varInfo.SetCentering(PickVarInfo::Zonal);
+                zoneCent = true;
+            }
+            else 
+            {
+                validCentering = false;
+            }
+            if (validCentering)
+            {
+                nComponents = labels->GetNumberOfComponents();
+                temp = new double[nComponents];
+                if (zonePick != zoneCent) 
+                { 
+                    // info we're after is associated with incidentElements
+                    for (int k = 0; k < incidentElements.size(); k++)
+                    {
+                        sprintf(buff, "(%d)", incidentElements[k]); 
+                        names.push_back(buff); 
+                        labels->GetTuple(incidentElements[k], temp);
+                        for (int i = 0; i < nComponents; i++)
+                            vals.push_back(temp[i]);
+                    }
+                }
+                else 
+                {
+                    // info we're after is associated with element 
+                    sprintf(buff, "(%d)", element);
+                    names.push_back(buff); 
+                    labels->GetTuple(element, temp);
+                    for (int i = 0; i < nComponents; i++)
+                        vals.push_back(temp[i]);
+                }
+                delete [] temp;
+            }
+        }
+        if (!vals.empty())
+        {
+            varInfo.SetNames(names);
+            varInfo.SetValues(vals);
+            vals.clear();
+            names.clear();
+            rv = true;
+        }
+    }
+    // 
+    // This is where we could allow the interface to add more information.
+    // 
+    return rv;
+}
 
 // ****************************************************************************
 //  Method: avtGenericDatabase::QueryMaterial

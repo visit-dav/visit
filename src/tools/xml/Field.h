@@ -958,9 +958,9 @@ class VariableName : public virtual Field
     {
         if(a == "vartypes")
         {
-            if(v.length() != 9)
+            if(v.length() < 10)
             {
-                cout << "The vartypes attribute must be 9 characters long!" << endl;
+                cout << "The vartypes attribute must be 10 characters long!" << endl;
             }
             else
             {

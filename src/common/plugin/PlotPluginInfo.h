@@ -16,6 +16,7 @@
 #define VAR_CATEGORY_CURVE             0x0040
 #define VAR_CATEGORY_TENSOR            0x0080
 #define VAR_CATEGORY_SYMMETRIC_TENSOR  0x0100
+#define VAR_CATEGORY_LABEL             0x0200
 
 // Forward declarations.
 class AttributeSubject;

@@ -66,7 +66,7 @@
        <Field name="pointSizeVarEnabled" label="Point size by var enabled" type="bool">
         false
       </Field>
-      <Field name="pointSizeVar" label="Point size by var" type="variablename" vartypes="010000000">
+      <Field name="pointSizeVar" label="Point size by var" type="variablename" vartypes="0100000000">
         default
       </Field>
       <Function name="ChangesRequireRecalculation" user="true" member="true">

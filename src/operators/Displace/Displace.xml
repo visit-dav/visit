@@ -4,7 +4,7 @@
       <Field name="factor" label="Displacement multiplier " type="double">
         1.000000
       </Field>
-      <Field name="variable" label="variable" type="variablename" vartypes="000100000">
+      <Field name="variable" label="variable" type="variablename" vartypes="0001000000">
         DISPL
       </Field>
     </Attribute>

@@ -50,6 +50,9 @@ class QObject;
 //   Brad Whitlock, Fri Feb 18 11:38:03 PDT 2005
 //   I added the GetRelevantExpressions helper method.
 //
+//   Brad Whitlock, Fri Apr 1 16:21:46 PST 2005
+//   I added label var support.
+//
 // ****************************************************************************
 
 class WINUTIL_API VariableMenuPopulator
@@ -111,7 +114,8 @@ private:
     ExpressionList cachedExpressionList;
     // Create some lists to keep track of the variable names.
     VariableList   meshVars, scalarVars, materialVars, vectorVars, subsetVars,
-                   speciesVars, curveVars, tensorVars, symmTensorVars;
+                   speciesVars, curveVars, tensorVars, symmTensorVars,
+                   labelVars;
 };
 
 #endif

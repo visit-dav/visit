@@ -1004,6 +1004,9 @@ PickVarInfo::PrintSelf(ostream &os)
 //   Kathleen Bonnell, Thu Jul 22 12:06:53 PDT 2004 
 //   Cast values to char if treatAsASCII is true.
 // 
+//   Brad Whitlock, Mon Apr 4 12:12:19 PDT 2005
+//   Added support for printing label variables.
+//
 // ****************************************************************************
 void
 PickVarInfo::CreateOutputString(std::string &os, const std::string &type)
@@ -1187,6 +1190,17 @@ PickVarInfo::CreateOutputString(std::string &os, const std::string &type)
                     int buf_len = strlen(buff);
                     int ncomps = values.size() / names.size();
                     PrintSymmetricTensor(os, values, i, ncomps, buf_len);
+                }
+                else if (variableType == "label")
+                {
+                    int labelSize = values.size() / names.size();
+                    os += "= ";
+                    for (int j = labelSize*i; j < labelSize * (i+1); j++) 
+                    {
+                        char c[2] = {(char)values[j], 0};
+                        os += c;
+                    }
+                    os += "\n"; 
                 }
                 else 
                 {

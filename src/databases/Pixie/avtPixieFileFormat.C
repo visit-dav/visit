@@ -20,6 +20,7 @@
 
 #include <avtDatabaseMetaData.h>
 #include <DebugStream.h>
+#include <Expression.h>
 #include <InvalidVariableException.h>
 #include <InvalidDBTypeException.h>
 #include <InvalidFilesException.h>
@@ -181,6 +182,9 @@ avtPixieFileFormat::FreeUpResources(void)
 //   Mark C. Miller, Mon Dec  6 14:13:11 PST 2004
 //   Added std:: name resolution to call to sot
 //
+//   Mark C. Miller, Mon Apr  4 14:55:14 PDT 2005
+//   Added expressions
+//
 // ****************************************************************************
     
 void
@@ -244,6 +248,41 @@ avtPixieFileFormat::Initialize()
                      int(it->second.dims[1]),
                      int(it->second.dims[0]));
             meshes[std::string(tmp)] = it->second;
+        }
+
+        //
+        // Look for expressions dataset
+        //
+        int expid;
+        if ((expid = H5Dopen(fileId,"/visit_expressions")) >= 0)
+        {
+            // examine size, dimensionality and type of the dataspace
+            hid_t spid    = H5Dget_space(expid);
+            hid_t tyid    = H5Dget_type(expid); 
+            hsize_t hsize = H5Dget_storage_size(expid);
+            int ndims     = H5Sget_simple_extent_ndims(spid);
+
+            // should be a 1D, character data set
+            if (ndims != 1 || H5Tget_class(tyid) != H5T_STRING)
+            {
+                EXCEPTION2(InvalidFilesException, (const char *)filenames[0],
+                    "The dataset \"visit_expressions\" is not a 1D, character dataset");
+            }
+
+            // allocate and read
+            char *expChars = new char[hsize+1];
+            if (H5Dread(expid, tyid, H5S_ALL, H5S_ALL, H5P_DEFAULT, expChars) < 0)
+            {
+                EXCEPTION1(InvalidVariableException, "/visit_expressions");
+            }
+            expChars[hsize] = '\0';
+
+            rawExpressionString = expChars;
+            delete [] expChars;
+
+            H5Tclose(tyid);
+            H5Sclose(spid);
+            H5Dclose(expid);
         }
 
         // Sort the cycles.
@@ -453,6 +492,12 @@ avtPixieFileFormat::MeshIsCurvilinear(const std::string &name) const
 //    curvilinear mesh are now nodal.  I also modified the call to Determine
 //    VarDimensions since an argument was added to it.
 //
+//    Mark C. Miller, Mon Apr  4 14:55:14 PDT 2005
+//    Added expressions
+//
+//    Jeremy Meredith, Mon Apr  4 17:05:32 PDT 2005
+//    Added "std::" prefix to string constructors.
+//
 // ****************************************************************************
 
 void
@@ -545,6 +590,39 @@ avtPixieFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         AddScalarVarToMetaData(md, "pointvar", "pointmesh", AVT_NODECENT);
     }
 #endif
+
+    //
+    // Add expressions
+    //
+    if (rawExpressionString.size())
+    {
+        std::string::size_type s = 0;
+        while (s != std::string::npos)
+        {
+            std::string::size_type nexts = rawExpressionString.find_first_of(" ; ", s);
+            std::string exprStr;
+            if (nexts != std::string::npos)
+            {
+                exprStr = std::string(rawExpressionString,s,nexts);
+                nexts += 3;
+            }
+            else
+            {
+                exprStr = std::string(rawExpressionString,s,std::string::npos);
+            }
+
+            std::string::size_type t = exprStr.find_first_of(':');
+
+
+            Expression vec;
+            vec.SetName(std::string(exprStr,0,t));
+            vec.SetDefinition(std::string(exprStr,t+1,std::string::npos));
+            vec.SetType(Expression::VectorMeshVar);
+            md->AddExpression(&vec);
+
+            s = nexts;
+        }
+    }
 }
 
 // ****************************************************************************

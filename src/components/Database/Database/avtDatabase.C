@@ -307,6 +307,9 @@ avtDatabase::GetOutput(const char *var, int ts)
 //    Kathleen Bonnell, Thu Jan 27 09:14:35 PST 2005 
 //    Share the number of states with DataAttributes.
 //
+//    Brad Whitlock, Mon Apr 4 09:07:04 PDT 2005
+//    Added support for Label type variables.
+//
 // ****************************************************************************
 
 void
@@ -515,6 +518,15 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
             atts.SetXLabel(cmd->xLabel);
             atts.SetYUnits(cmd->yUnits);
             atts.SetYLabel(cmd->yLabel);
+        }
+
+        const avtLabelMetaData *lmd = GetMetaData(ts)->GetLabel(var_list[i]);
+        if (lmd != NULL)
+        {
+            atts.AddVariable(var_list[i]);
+            atts.SetVariableDimension(1, var_list[i]);
+            atts.SetCentering(lmd->centering, var_list[i]);
+            atts.SetTreatAsASCII(true, var_list[i]); 
         }
     }
     atts.SetActiveVariable(var);
@@ -1250,6 +1262,9 @@ avtDatabase::GetFileListFromTextFile(const char *textfile,
 //    Kathleen Bonnell, Thu Feb  3 09:27:22 PST 2005 
 //    Determine var type for Expressions from ParsingExprList. 
 //
+//    Brad Whitlock, Mon Apr 4 11:44:28 PDT 2005
+//    Added code to query label variables.
+//
 // ****************************************************************************
 
 void               
@@ -1451,6 +1466,11 @@ avtDatabase::Query(PickAttributes *pa)
                 case AVT_MESH : 
                    if (!pa->GetPickVarInfo(varNum).HasInfo())
                        pa->GetPickVarInfo(varNum).SetVariableType("mesh");
+                   break; 
+                case AVT_LABEL_VAR : success = 
+                   QueryLabels(vName, foundDomain, foundEl, ts, incEls, 
+                                pa->GetPickVarInfo(varNum), zonePick);
+                   pa->GetPickVarInfo(varNum).SetVariableType("label");
                    break; 
                 default : 
                    break; 

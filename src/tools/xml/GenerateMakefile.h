@@ -125,6 +125,9 @@
 //    common plugin info. I also added the Slice operator to the OnionPeel
 //    hack code for MacOS X.
 //
+//    Brad Whitlock, Wed Mar 30 17:56:47 PST 2005
+//    I removed Qt and Python from the CXXFLAGS for database plugins.
+//
 // ****************************************************************************
 
 class MakefileGeneratorPlugin
@@ -265,12 +268,18 @@ class MakefileGeneratorPlugin
         out << "  -I"<<vtkdir<<"/MangleMesaInclude \\"<<endl;
         out << "  -I"<<vtkdir<<"/Rendering"<<endl;
         out << "MOC="<<visithome<<"/bin/moc" << endl;
-        out << "CXXFLAGS=$(CXXFLAGSORIG) $(QT_CXXFLAGS) $(PY_CXXFLAGS)";
+        if(type == "database")
+            out << "CXXFLAGS=$(CXXFLAGSORIG)";
+        else
+            out << "CXXFLAGS=$(CXXFLAGSORIG) $(QT_CXXFLAGS) $(PY_CXXFLAGS)";
         for (int i=0; i<cxxflags.size(); i++)
             out << " " << cxxflags[i];
         out << endl;
         out << "CPPFLAGS=$(CPPFLAGSORIG) $(VTK_INCLUDE) $(MESA_INCLUDE) -I. -I"<<visithome<<"/include -I"<<visithome<<"/include/visit" << endl;
-        out << "LDFLAGS=$(LDFLAGSORIG) $(PY_LDFLAGS) ";
+        if(type == "database")
+            out << "LDFLAGS=$(LDFLAGSORIG) ";
+        else
+            out << "LDFLAGS=$(LDFLAGSORIG) $(PY_LDFLAGS) ";
         for (int i=0; i<ldflags.size(); i++)
             out << " " << ldflags[i];
         out << " -L../../plugins/" << type << "s";

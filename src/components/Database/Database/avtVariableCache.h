@@ -46,6 +46,9 @@ class   vtkObject;
 //    Moved inlined constructor and destructor definitions to .C files
 //    because certain compilers have problems with them.
 //
+//    Brad Whitlock, Sat Apr 2 00:50:39 PDT 2005
+//    Added label support.
+//
 // ****************************************************************************
 
 class DATABASE_API avtVariableCache
@@ -58,6 +61,7 @@ class DATABASE_API avtVariableCache
     static const char     *VECTORS_NAME;
     static const char     *TENSORS_NAME;
     static const char     *SYMMETRIC_TENSORS_NAME;
+    static const char     *LABELS_NAME;
     static const char     *DATASET_NAME;
 
     vtkObject             *GetVTKObject(const char *name, const char *type,

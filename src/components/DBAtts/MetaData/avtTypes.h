@@ -17,10 +17,11 @@ enum avtVarType
     AVT_VECTOR_VAR,             /* 2 */
     AVT_TENSOR_VAR,             /* 3 */
     AVT_SYMMETRIC_TENSOR_VAR,   /* 4 */
-    AVT_MATERIAL,               /* 5 */
-    AVT_MATSPECIES,             /* 6 */
-    AVT_CURVE,                  /* 7 */
-    AVT_UNKNOWN_TYPE            /* 8 */
+    AVT_LABEL_VAR,              /* 5 */
+    AVT_MATERIAL,               /* 6 */
+    AVT_MATSPECIES,             /* 7 */
+    AVT_CURVE,                  /* 8 */
+    AVT_UNKNOWN_TYPE            /* 9 */
 };
 
 

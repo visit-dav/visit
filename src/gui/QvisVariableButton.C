@@ -22,7 +22,8 @@ static const char *categoryMenuNames[] = {
     "Species",
     "Curves",
     "Tensors",
-    "Symmetric Tensors"
+    "Symmetric Tensors",
+    "Labels"
 };
 //
 // Masks of the types of variables in the order that we want them
@@ -37,7 +38,8 @@ static int categoryMasks[] = {
     VAR_CATEGORY_SPECIES,
     VAR_CATEGORY_CURVE,
     VAR_CATEGORY_TENSOR,
-    VAR_CATEGORY_SYMMETRIC_TENSOR
+    VAR_CATEGORY_SYMMETRIC_TENSOR,
+    VAR_CATEGORY_LABEL
 };
 
 // ****************************************************************************
@@ -215,6 +217,7 @@ const int QvisVariableButton::Species          = VAR_CATEGORY_SPECIES;
 const int QvisVariableButton::Curves           = VAR_CATEGORY_CURVE;
 const int QvisVariableButton::Tensors          = VAR_CATEGORY_TENSOR;
 const int QvisVariableButton::SymmetricTensors = VAR_CATEGORY_SYMMETRIC_TENSOR;
+const int QvisVariableButton::Labels           = VAR_CATEGORY_LABEL;
 
 // ****************************************************************************
 // Method: QvisVariableButton::QvisVariableButton

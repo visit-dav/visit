@@ -27,6 +27,9 @@
 //    I added code to create widgets that have to do with attributes for the
 //    variablename type.
 //
+//    Brad Whitlock, Fri Apr 1 16:05:13 PST 2005
+//    Added Labels variable type.
+//
 // ****************************************************************************
 
 XMLEditFields::XMLEditFields(QWidget *p, const QString &n)
@@ -109,7 +112,7 @@ XMLEditFields::XMLEditFields(QWidget *p, const QString &n)
     QVBoxLayout *innerVarNameLayout = new QVBoxLayout(variableNameGroup);
     innerVarNameLayout->setMargin(10);
     innerVarNameLayout->addSpacing(15);
-    QGridLayout *vnLayout = new QGridLayout(innerVarNameLayout, 3, 3);
+    QGridLayout *vnLayout = new QGridLayout(innerVarNameLayout, 4, 3);
     vnLayout->setSpacing(5);
     varNameButtons = new QButtonGroup(0, "varNameButtons");
     connect(varNameButtons, SIGNAL(clicked(int)),
@@ -123,6 +126,9 @@ XMLEditFields::XMLEditFields(QWidget *p, const QString &n)
     cb = new QCheckBox("Materials", variableNameGroup);
     varNameButtons->insert(cb,2);
     vnLayout->addWidget(cb, 2, 0);
+    cb = new QCheckBox("Labels", variableNameGroup);
+    varNameButtons->insert(cb,9);
+    vnLayout->addWidget(cb, 3, 0);
 
     cb = new QCheckBox("Vectors", variableNameGroup);
     varNameButtons->insert(cb,3);

@@ -41,6 +41,9 @@
 //    Modified the reader to handle gaps in the cycle numbering (e.g. allowing
 //    0, 10, 20, 30 instead of requiring 0, 1, 2, 3).
 //
+//    Mark C. Miller, Mon Apr  4 14:55:14 PDT 2005
+//    Added rawExpressionString data member to support expressions
+//
 // ****************************************************************************
 
 class avtPixieFileFormat : public avtMTSDFileFormat
@@ -118,6 +121,7 @@ protected:
     VarInfoMap             meshes;
     int                    nTimeStates;
     bool                   haveMeshCoords;
+    std::string            rawExpressionString;
     std::string            timeStatePrefix;
     std::vector<int>       cycles;
 

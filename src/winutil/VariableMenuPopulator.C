@@ -28,12 +28,15 @@ using std::map;
 //   Brad Whitlock, Tue Feb 24 15:50:54 PST 2004
 //   I added cachedDBName and cachedExpressionList.
 //
+//   Brad Whitlock, Fri Apr 1 16:17:09 PST 2005
+//   Added labelVars.
+//
 // ****************************************************************************
 
 VariableMenuPopulator::VariableMenuPopulator() :
     cachedDBName(), cachedExpressionList(),
     meshVars(), scalarVars(), materialVars(), vectorVars(), subsetVars(),
-    speciesVars(), curveVars(), tensorVars(), symmTensorVars()
+    speciesVars(), curveVars(), tensorVars(), symmTensorVars(), labelVars()
 {
 }
 
@@ -145,6 +148,9 @@ VariableMenuPopulator::ClearDatabaseName()
 //   database expressions from databases other than the one that we're
 //   using here.
 //
+//   Brad Whitlock, Fri Apr 1 16:17:42 PST 2005
+//   Added support for label vars.
+//
 // ****************************************************************************
 
 bool
@@ -194,6 +200,7 @@ VariableMenuPopulator::PopulateVariableLists(const std::string &dbName,
     curveVars.Clear();       curveVars.SetSorted(md->GetMustAlphabetizeVariables());
     tensorVars.Clear();      tensorVars.SetSorted(md->GetMustAlphabetizeVariables());
     symmTensorVars.Clear();  symmTensorVars.SetSorted(md->GetMustAlphabetizeVariables());
+    labelVars.Clear();       labelVars.SetSorted(md->GetMustAlphabetizeVariables());
 
     // Do stuff with the metadata
     int i;
@@ -233,6 +240,11 @@ VariableMenuPopulator::PopulateVariableLists(const std::string &dbName,
     {
         const avtSymmetricTensorMetaData *tmd = md->GetSymmTensor(i);
         symmTensorVars.AddVariable(tmd->name, tmd->validVariable);
+    }
+    for (i = 0; i < md->GetNumLabels(); ++i)
+    {
+        const avtLabelMetaData *tmd = md->GetLabel(i);
+        labelVars.AddVariable(tmd->name, tmd->validVariable);
     }
 
     // Do stuff with the sil
@@ -466,6 +478,9 @@ VariableMenuPopulator::GetRelevantExpressions(ExpressionList &newExpressionList,
 //   Brad Whitlock, Wed Dec 8 14:07:55 PST 2004
 //   I changed how the slot functions for the menu are hooked up.
 //
+//   Brad Whitlock, Fri Apr 1 16:18:52 PST 2005
+//   Added label var support.
+//
 // ****************************************************************************
 
 int
@@ -495,6 +510,8 @@ VariableMenuPopulator::UpdateSingleVariableMenu(QvisVariablePopupMenu *menu,
        ++numVarTypes;
     if(varTypes & VAR_CATEGORY_SYMMETRIC_TENSOR)
        ++numVarTypes;
+    if(varTypes & VAR_CATEGORY_LABEL)
+       ++numVarTypes;
 
     if(numVarTypes > 1)
     {
@@ -521,6 +538,8 @@ VariableMenuPopulator::UpdateSingleVariableMenu(QvisVariablePopupMenu *menu,
             AddVars(vars, tensorVars);
         if(varTypes & VAR_CATEGORY_SYMMETRIC_TENSOR)
             AddVars(vars, symmTensorVars);
+        if(varTypes & VAR_CATEGORY_LABEL)
+            AddVars(vars, labelVars);
        
         // Update the menu with the composite variable list.
         UpdateSingleMenu(menu, vars, receiver, slot);
@@ -562,11 +581,15 @@ VariableMenuPopulator::UpdateSingleVariableMenu(QvisVariablePopupMenu *menu,
             break;
         case VAR_CATEGORY_TENSOR:
             UpdateSingleMenu(menu, tensorVars, receiver, slot);
-            retval = curveVars.Size();
+            retval = tensorVars.Size();
             break;
         case VAR_CATEGORY_SYMMETRIC_TENSOR:
             UpdateSingleMenu(menu, symmTensorVars, receiver, slot);
-            retval = curveVars.Size();
+            retval = symmTensorVars.Size();
+            break;
+        case VAR_CATEGORY_LABEL:
+            UpdateSingleMenu(menu, labelVars, receiver, slot);
+            retval = labelVars.Size();
             break;
         }
     }
@@ -600,6 +623,9 @@ VariableMenuPopulator::UpdateSingleVariableMenu(QvisVariablePopupMenu *menu,
 //   Brad Whitlock, Thu Aug 5 15:32:50 PST 2004
 //   Made it use VariableList.
 //
+//   Brad Whitlock, Fri Apr 1 16:20:10 PST 2005
+//   Added label var support.
+//
 // ****************************************************************************
 
 bool
@@ -625,6 +651,8 @@ VariableMenuPopulator::ItemEnabled(int varType) const
        retval |= (tensorVars.Size() > 0);
     if(varType & VAR_CATEGORY_SYMMETRIC_TENSOR)
        retval |= (symmTensorVars.Size() > 0);
+    if(varType & VAR_CATEGORY_LABEL)
+       retval |= (labelVars.Size() > 0);
 
     return retval;
 }
