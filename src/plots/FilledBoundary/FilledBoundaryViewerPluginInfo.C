@@ -268,6 +268,12 @@ FilledBoundaryViewerPluginInfo::ResetPlotAtts(AttributeSubject *atts,
 //    Modified it to add an extra slot for a "mixed material zone" color.
 //    This value is only used when the "Clean zones only" option is checked.
 //
+//    Jeremy Meredith, Wed Oct 22 13:00:10 PDT 2003
+//    Made the support for the extra color a little more robust.  It now
+//    is treated more like a special color; it only gets added if we are
+//    doing a material plot, and doing another plot later with more materials
+//    will overwrite it with the default color.
+//
 // ****************************************************************************
 
 void
@@ -366,6 +372,7 @@ FilledBoundaryViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
               {
                   sv.push_back(*pos);
               }
+              sv.push_back("mixed");
           }
           break;
 
@@ -377,7 +384,7 @@ FilledBoundaryViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
     // 
     // Add a color for each boundary name.
     //
-    ColorAttribute *ca = new ColorAttribute[sv.size() + 1];
+    ColorAttribute *ca = new ColorAttribute[sv.size()];
     avtColorTables *ct = avtColorTables::Instance();
     if(ct->IsDiscrete(ct->GetDefaultDiscreteColorTable()))
     {
@@ -411,9 +418,14 @@ FilledBoundaryViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
 
     ColorAttributeList cal;
     int idx = 0;
-    for(pos = sv.begin(); pos != sv.end(); ++pos)
+    for(pos = sv.begin(); pos != sv.end(); ++pos, ++idx)
     {
-        if (idx < boundaryAtts->GetMultiColor().GetNumColorAttributes())
+        bool ignoreOld=(idx < boundaryAtts->GetBoundaryNames().size() &&
+                        boundaryAtts->GetBoundaryNames()[idx] == "mixed" &&
+                        *pos != "mixed");
+
+        if (idx < boundaryAtts->GetMultiColor().GetNumColorAttributes() &&
+            ! ignoreOld)
         {
             // The meshIndex is within the defaultAtts' color
             // vector size.
@@ -424,20 +436,14 @@ FilledBoundaryViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
             // The meshIndex is greater than the size of the
             // defaultAtts' color vector. Use colors from the
             // default discrete color table.
-            cal.AddColorAttribute(ca[idx]);
+            if (*pos == "mixed")
+                cal.AddColorAttribute(ColorAttribute(255,255,255,255));
+            else
+                cal.AddColorAttribute(ca[idx]);
         }
-        ++idx;
     }
 
     delete [] ca;
-
-    // Add a slot for the mixed-material-zone color
-    if (subT == AVT_MATERIAL_SUBSET)
-    {
-        sv.push_back("mixed");
-        cal.AddColorAttribute(ColorAttribute(255,255,255,255));
-    }
-
 
     // Set the boundary names and colors in the boundaryAtts.
     boundaryAtts->SetBoundaryNames(sv);

@@ -119,6 +119,9 @@ ZooMIR::Reconstruct2DMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig)
 //    Jeremy Meredith, Tue Oct 14 15:58:57 PDT 2003
 //    Added clean-zones-only.
 //
+//    Jeremy Meredith, Tue Oct 21 11:23:04 PDT 2003
+//    Keep track of the number of original materials.  Fixed memory leak.
+//
 // ****************************************************************************
 bool
 ZooMIR::ReconstructMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig, int dim)
@@ -133,6 +136,7 @@ ZooMIR::ReconstructMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig, int dim)
     // Store the mesh for use later.
     mesh = mesh_orig;
     mesh->Register(NULL);
+    nOrigMaterials = mat_orig->GetNMaterials();
 
     // see if we can perform a clean-zone-only algorithm
     if (options.cleanZonesOnly ||
@@ -197,6 +201,7 @@ ZooMIR::ReconstructMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig, int dim)
     visitTimer->StopTimer(timerHandle, "Full MIR reconstruction");
     visitTimer->DumpTimings();
 
+    delete mat;
     return true;
 }
 
@@ -228,6 +233,10 @@ ZooMIR::ReconstructMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig, int dim)
 //    the number of materials), but for the cleanZonesOnly support to be
 //    smart about which mixed zones to return.
 //
+//    Jeremy Meredith, Tue Oct 21 11:22:30 PDT 2003
+//    Use number of original materials for the clean-zone-material instead
+//    of the number of used materials.
+//
 // ****************************************************************************
 vtkDataSet *
 ZooMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
@@ -249,7 +258,7 @@ ZooMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
         for (i = 0; i < mats.size(); i++)
         {
             int origmatno = mats[i];
-            if (origmatno == nMaterials)
+            if (origmatno == nOrigMaterials)
             {
                 matFlag[nMaterials] = true;
             }
@@ -454,7 +463,7 @@ ZooMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
         for (i=0; i<ncells; i++)
         {
             int matno = zonesList[cellList[i]].mat;
-            buff[i] = matno < 0 ? nMaterials : mapUsedMatToMat[matno];
+            buff[i] = matno < 0 ? nOrigMaterials : mapUsedMatToMat[matno];
         }
         rv->GetCellData()->AddArray(outmat);
         outmat->Delete();
