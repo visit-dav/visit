@@ -135,6 +135,15 @@
     <Field name="needActualCoords" label="needActualCoords" type="bool" internal="true">
       false
     </Field>
+    <Field name="conciseOutput" label="conciseOutput" type="bool" internal="false">
+      false
+    </Field>
+    <Field name="showTimeStep" label="showTimeStep" type="bool" internal="false">
+      true
+    </Field>
+    <Field name="showMeshName" label="showMeshName" type="bool" internal="false">
+      true
+    </Field>
     <Function name="PrintSelf" user="true" member="true">
     </Function>
     <Function name="CreateOutputString" user="true" member="true">
@@ -144,6 +153,8 @@
     <Function name="SetFromNode" user="false" member="true">
     </Function>
     <Function name="CreateNode" user="false" member="true">
+    </Function>
+    <Function name="CreateConciseOutputString" user="true" member="true">
     </Function>
     <Include file="source" quoted="false">
       stdio.h

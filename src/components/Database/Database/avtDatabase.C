@@ -1073,6 +1073,9 @@ avtDatabase::GetFileListFromTextFile(const char *textfile,
 //    Kathleen Bonnell, Fri May 28 18:26:09 PDT 2004 
 //    Account for pick type of DomainZone. 
 //    
+//    Kathleen Bonnell,Wed Jun  9 12:44:48 PDT 2004 
+//    Added bool arg to QueryMesh. 
+//    
 // ****************************************************************************
 
 void               
@@ -1164,7 +1167,8 @@ avtDatabase::Query(PickAttributes *pa)
     }
 
     std::string meshInfo;
-    QueryMesh(pa->GetActiveVariable(), ts, foundDomain, meshInfo);
+    QueryMesh(pa->GetActiveVariable(), ts, foundDomain, meshInfo, 
+              pa->GetShowMeshName());
     pa->SetMeshInfo(meshInfo);
 
     for (int varNum = 0; varNum < userVars.size(); varNum++)
