@@ -47,6 +47,9 @@ class PlotList;
 //    I made it observe WindowInformation since that's where the view
 //    keyframes are now.
 //
+//    Brad Whitlock, Wed Apr 7 00:15:44 PDT 2004
+//    I added an internal slot function.
+//
 // ****************************************************************************
 
 class GUI_API QvisKeyframeWindow : public QvisPostableWindowSimpleObserver
@@ -88,7 +91,7 @@ class GUI_API QvisKeyframeWindow : public QvisPostableWindowSimpleObserver
   private slots:
     void nFramesProcessText();
     void keyframeEnabledToggled(bool);
-
+    void userSetNFrames(const QString &);
   private:
     QLineEdit *nFrames;
     QCheckBox *snapToFrameCheck;

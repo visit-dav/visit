@@ -35,6 +35,8 @@
 
 #include <algorithm>
 
+#define KF_TIME_SLIDER "Keyframe animation"
+
 using std::vector;
 using std::map;
 
@@ -402,7 +404,11 @@ QvisKeyframeWindow::~QvisKeyframeWindow()
 //    Jeremy Meredith, Fri Jan 31 16:05:18 PST 2003
 //    Added database keyframe widgets.
 //
+//    Brad Whitlock, Tue Apr 6 23:53:31 PST 2004
+//    I hooked up a new signal to nFrames.
+//
 // ****************************************************************************
+
 void
 QvisKeyframeWindow::CreateWindowContents()
 {
@@ -460,6 +466,8 @@ QvisKeyframeWindow::CreateWindowContents()
 
     connect(nFrames, SIGNAL(returnPressed()),
             this, SLOT(nFramesProcessText()));
+    connect(nFrames, SIGNAL(textChanged(const QString &)),
+            this, SLOT(userSetNFrames(const QString &)));
     connect(ts, SIGNAL(valueChanged(int)),
             lv, SLOT(timeChanged(int)));
     connect(ts, SIGNAL(valueChanged(int)),
@@ -510,16 +518,50 @@ QvisKeyframeWindow::apply()
 //    Brad Whitlock, Tue Jan 27 21:47:40 PST 2004
 //    Changed to support multiple time sliders, etc.
 //
+//    Brad Whitlock, Wed Apr 7 00:08:51 PDT 2004
+//    I added code to switch to the keyframing time slider if that's not the
+//    current time slider.
+//
 // ****************************************************************************
 
 void
 QvisKeyframeWindow::timeChanged(int t)
 {
-#ifdef BEFORE_NEW_FILE_SELECTION
-    viewer->AnimationSetFrame(t);
-#else
+    //
+    // Set the active time slider to be the keyframing time slider if that's
+    // not the currently active time slider.
+    //
+    if((windowInfo->GetActiveTimeSlider() >= 0) &&
+       (windowInfo->GetTimeSliders()[windowInfo->GetActiveTimeSlider()] !=
+        KF_TIME_SLIDER))
+    {
+        viewer->SetActiveTimeSlider(KF_TIME_SLIDER);
+    }
+
+    // Set the active time slider to the kf time slider???
     viewer->SetTimeSliderState(t);
-#endif
+}
+
+// ****************************************************************************
+// Method: QvisKeyframeWindow::userSetNFrames
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the number of frames
+//   changes. The purpose is only to record that the user entered a number 
+//   of frames so it is not okay to automatically calculate a number of
+//   frames.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Apr 6 23:50:53 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisKeyframeWindow::userSetNFrames(const QString &)
+{
+    kfAtts->SetNFramesWasUserSet(true);
 }
 
 // ****************************************************************************
@@ -574,7 +616,9 @@ QvisKeyframeWindow::keyframeEnabledToggled(bool k)
 // Creation:   Sun Jan 25 00:19:01 PDT 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Apr 6 23:46:31 PST 2004
+//   I changed the name of the keyframe time slider.
+//
 // ****************************************************************************
 
 int
@@ -584,7 +628,7 @@ QvisKeyframeWindow::GetCurrentFrame() const
 
     for(int i = 0; i < windowInfo->GetTimeSliders().size(); ++i)
     {
-        if(windowInfo->GetTimeSliders()[i] == "Animation")
+        if(windowInfo->GetTimeSliders()[i] == KF_TIME_SLIDER)
         {
             curFrame = windowInfo->GetTimeSliderCurrentStates()[i];
             break;
@@ -614,6 +658,9 @@ QvisKeyframeWindow::GetCurrentFrame() const
 //    I made it use the window information and I made the number of frames
 //    come from the keyframe atts.
 //
+//    Brad Whitlock, Tue Apr 6 23:54:37 PST 2004
+//    I added code to block signals from nFrames.
+//
 // ****************************************************************************
 
 void
@@ -626,8 +673,8 @@ QvisKeyframeWindow::UpdateWindowInformation()
 
     //
     // If we're in keyframing mode then there will be a time slider called
-    // "Animation". Look for it in the time slider list and get the number
-    // of frames from the keyframe attributes.
+    // "Keyframe animation". Look for it in the time slider list and get
+    // the number of frames from the keyframe attributes.
     //
     int curFrame = GetCurrentFrame();
 
@@ -648,7 +695,10 @@ QvisKeyframeWindow::UpdateWindowInformation()
     ts->setValue(curFrame);
     ts->blockSignals(false);
     temp.sprintf("%d", numFrames);
+
+    nFrames->blockSignals(true);
     nFrames->setText(temp);
+    nFrames->blockSignals(false);
 
     if (!viewItem)
     {
@@ -912,6 +962,9 @@ QvisKeyframeWindow::UpdatePlotList()
 //    Brad Whitlock, Sun Jan 25 00:16:58 PDT 2004
 //    I made it windowInfo instead of globalAtts.
 //
+//    Brad Whitlock, Wed Apr 7 00:13:09 PDT 2004
+//    I added code to disable the time slider if we're not in keyframing mode.
+//
 // ****************************************************************************
 
 void
@@ -938,6 +991,7 @@ QvisKeyframeWindow::UpdateWindow(bool doAll)
                 keyframeEnabledCheck->blockSignals(true);
                 keyframeEnabledCheck->setChecked(kfAtts->GetEnabled());
                 keyframeEnabledCheck->blockSignals(false);
+                ts->setEnabled(kfAtts->GetEnabled());
                 break;
             case 1: // nFrames
                 UpdateWindowInformation();
@@ -1064,13 +1118,29 @@ QvisKeyframeWindow::GetCurrentValues(int which_widget)
 //  Programmer:  Jeremy Meredith
 //  Creation:    May  8, 2002
 //
+//  Modifications:
+//    Brad Whitlock, Wed Apr 7 00:02:24 PDT 2004
+//    I changed the code so the number of frames is not set unless the user
+//    first set it. I did this because the viewer has support for
+//    automatically determining a good number of frames when you first enter
+//    keyframing mode and by always setting the number before entering
+//    keyframe mode, we can't automatically determine a good number of frames.
+//
 // ****************************************************************************
+
 void
 QvisKeyframeWindow::Apply(bool ignore)
 {
     if(AutoUpdate() || ignore)
     {
-        GetCurrentValues(-1);
+        //
+        // If the user changed the number of frames then send it. Otherwise,
+        // don't set the number of frames so the number can be determined
+        // automatically.
+        //
+        if(kfAtts->GetNFramesWasUserSet())
+            GetCurrentValues(-1);
+
         kfAtts->Notify();
 
         viewer->SetKeyframeAttributes();

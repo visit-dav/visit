@@ -16,5 +16,7 @@ PyObject       *PyKeyframeAttributes_WrapPyObject(const KeyframeAttributes *attr
 void            PyKeyframeAttributes_SetLogging(bool val);
 void            PyKeyframeAttributes_SetDefaults(const KeyframeAttributes *atts);
 
+PyObject       *PyKeyframeAttributes_StringRepresentation(const KeyframeAttributes *atts);
+
 #endif
 

@@ -55,6 +55,9 @@ class ViewerPlotPluginInfo;
 //    Added support for simulations by adding an engine key to map a plot
 //    to the engine used to create it.
 //
+//    Brad Whitlock, Fri Apr 2 16:05:29 PST 2004
+//    I added a couple more arguments to the CreatePlot method.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerPlotFactory
@@ -71,7 +74,9 @@ class VIEWER_API ViewerPlotFactory
                            const std::string &var,
                            avtSILRestriction_p silr,
                            const int plotState,
-                           const int nStates) const;
+                           const int nStates,
+                           const int cacheIndex,
+                           const int nCacheIndices) const;
 
     AttributeSubject *GetDefaultAtts(const int type) const;
     AttributeSubject *GetClientAtts(const int type) const;

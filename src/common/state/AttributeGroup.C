@@ -2366,7 +2366,7 @@ operator << (ostream& os, const AttributeGroup& atts)
             os << *((AttributeGroup *)pos->address);
             break;
         case msgTypeBool:
-            os << *((bool *)pos->address);
+            os << (*((bool *)pos->address) ? "true" : "false");
             break;
 
         // lists of primitive types 

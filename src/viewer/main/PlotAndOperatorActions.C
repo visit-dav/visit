@@ -1820,7 +1820,9 @@ SetPlotFrameRangeAction::~SetPlotFrameRangeAction()
 // Creation:   Fri Apr 11 08:27:45 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Apr 5 14:43:45 PST 2004
+//   Renamed some method calls.
+//
 // ****************************************************************************
 
 void
@@ -1830,10 +1832,10 @@ SetPlotFrameRangeAction::Execute()
     // Set the plot frame range.
     //
     int plotId = args.GetIntArg1();
-    int frame0 = args.GetIntArg2();
-    int frame1 = args.GetIntArg3();
+    int index0 = args.GetIntArg2();
+    int index1 = args.GetIntArg3();
     ViewerPlotList *plotList = window->GetPlotList();
-    plotList->SetPlotFrameRange(plotId, frame0, frame1);
+    plotList->SetPlotRange(plotId, index0, index1);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1899,8 +1901,8 @@ DeletePlotKeyframeAction::Execute()
     // Delete the plot keyframe.
     //
     int plotId = args.GetIntArg1();
-    int frame = args.GetIntArg2();
-    window->GetPlotList()->DeletePlotKeyframe(plotId, frame);
+    int index = args.GetIntArg2();
+    window->GetPlotList()->DeletePlotKeyframe(plotId, index);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1956,7 +1958,9 @@ MovePlotKeyframeAction::~MovePlotKeyframeAction()
 // Creation:   Fri Apr 11 08:36:14 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Apr 5 14:45:00 PST 2004
+//   Renamed some variables.
+//
 // ****************************************************************************
 
 void
@@ -1966,10 +1970,10 @@ MovePlotKeyframeAction::Execute()
     // Move the plot keyframe.
     //
     int plotId = args.GetIntArg1();
-    int oldFrame = args.GetIntArg2();
-    int newFrame = args.GetIntArg3();
+    int oldIndex = args.GetIntArg2();
+    int newIndex = args.GetIntArg3();
     ViewerPlotList *plotList = window->GetPlotList();
-    plotList->MovePlotKeyframe(plotId, oldFrame, newFrame);
+    plotList->MovePlotKeyframe(plotId, oldIndex, newIndex);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2025,7 +2029,9 @@ SetPlotDatabaseStateAction::~SetPlotDatabaseStateAction()
 // Creation:   Fri Apr 11 08:39:14 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Apr 5 14:45:22 PST 2004
+//   Renamed some variables.
+//
 // ****************************************************************************
 
 void
@@ -2035,10 +2041,10 @@ SetPlotDatabaseStateAction::Execute()
     // Perform the rpc.
     //
     int plotId = args.GetIntArg1();
-    int frame = args.GetIntArg2();
+    int index = args.GetIntArg2();
     int state = args.GetIntArg3();
     ViewerPlotList *plotList = window->GetPlotList();
-    plotList->SetPlotDatabaseState(plotId, frame, state);
+    plotList->SetPlotDatabaseState(plotId, index, state);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2094,7 +2100,9 @@ DeletePlotDatabaseKeyframeAction::~DeletePlotDatabaseKeyframeAction()
 // Creation:   Fri Apr 11 08:42:04 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Apr 5 14:45:40 PST 2004
+//   I renamed some variables.
+//
 // ****************************************************************************
 
 void
@@ -2104,9 +2112,9 @@ DeletePlotDatabaseKeyframeAction::Execute()
     // Delete the database keyframe
     //
     int plotId = args.GetIntArg1();
-    int frame = args.GetIntArg2();
+    int index = args.GetIntArg2();
     ViewerPlotList *plotList = window->GetPlotList();
-    plotList->DeletePlotDatabaseKeyframe(plotId, frame);
+    plotList->DeletePlotDatabaseKeyframe(plotId, index);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2168,7 +2176,9 @@ MovePlotDatabaseKeyframeAction::~MovePlotDatabaseKeyframeAction()
 // Creation:   Fri Apr 11 08:45:24 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Apr 5 14:46:15 PST 2004
+//   I renamed some variables.
+//
 // ****************************************************************************
 
 void
@@ -2178,8 +2188,8 @@ MovePlotDatabaseKeyframeAction::Execute()
     // Move the database keyframe.
     //
     int plotId = args.GetIntArg1();
-    int oldFrame = args.GetIntArg2();
-    int newFrame = args.GetIntArg3();
+    int oldIndex = args.GetIntArg2();
+    int newIndex = args.GetIntArg3();
     ViewerPlotList *plotList = window->GetPlotList();
-    plotList->MovePlotDatabaseKeyframe(plotId, oldFrame, newFrame);
+    plotList->MovePlotDatabaseKeyframe(plotId, oldIndex, newIndex);
 }

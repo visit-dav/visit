@@ -3071,6 +3071,11 @@ ViewerQueryManager::UpdateQueryOverTimeAtts()
 //  Creation:   March 22, 2004 
 //
 //  Modifications:
+//    Brad Whitlock, Fri Apr 2 08:49:03 PDT 2004
+//    I changed how the number of states are determined so the metadata
+//    is used instead of the number of "frames" in the viewer plot since
+//    that is totally unrelated thanks to keyframing.
+//
 //    Kathleen Bonnell, Fri Apr  2 13:18:08 PST 2004
 //    Delay request for Results window until most possible error states
 //    have been processed.  As 'Times' as request from DatabaseMetaDAta
@@ -3103,11 +3108,12 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin, QueryAttributes *qA)
     origList->GetActivePlotIDs(plotIDs);
     int origPlotID = (plotIDs.size() > 0 ? plotIDs[0] : -1);
     ViewerPlot *origPlot = origList->GetPlot(origPlotID);
-    int nFrames = origPlot->GetEndFrame() - origPlot->GetBeginFrame() +1;
 
-    if (nFrames <= 1)
+    const avtDatabaseMetaData *md = origPlot->GetMetaData();
+    int nStates = md->GetNumStates();
+    if (nStates <= 1)
     {
-        Error("Cannot create a time query curve with 1 timestate."); 
+        Error("Cannot create a time query curve with 1 time state."); 
         return;
     }
     string vName  = origPlot->GetVariableName();
@@ -3152,7 +3158,7 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin, QueryAttributes *qA)
     int startT = timeQueryAtts->GetStartTimeFlag() ? 
                  timeQueryAtts->GetStartTime() : 0; 
     int endT   = timeQueryAtts->GetEndTimeFlag() ? 
-                 timeQueryAtts->GetEndTime() : nFrames -1;
+                 timeQueryAtts->GetEndTime() : nStates-1;
 
     if (startT >= endT)
     {
@@ -3172,10 +3178,10 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin, QueryAttributes *qA)
         Warning("Clamping start time to 0.");
         startT = 0;
     }
-    if (endT > nFrames-1 )
+    if (endT > nStates-1)
     {
         Warning("Clamping end time to number of available timesteps.");
-        endT = nFrames -1;
+        endT = nStates-1;
     }
     timeQueryAtts->SetStartTime(startT); 
     timeQueryAtts->SetEndTime(endT); 

@@ -65,6 +65,10 @@ class avtPluginFilter;
 //    Kathleen Bonnell, Thu Sep 11 11:37:51 PDT 2003
 //    Added fromDefault arg to constructor.
 //
+//    Brad Whitlock, Fri Apr 2 11:04:16 PDT 2004
+//    I added a copy constructor and a method to set the plot pointer
+//    for the operator.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerOperator
@@ -73,12 +77,14 @@ class VIEWER_API ViewerOperator
     ViewerOperator(const int type_, 
                    ViewerOperatorPluginInfo *viewerPluginInfo_,
                    ViewerPlot *plot_, const bool fromDefault);
+    ViewerOperator(const ViewerOperator &);
     virtual ~ViewerOperator();
 
     int  GetType() const;
     const char *GetPluginID() const;
     const char *GetName() const;
 
+    void SetPlot(ViewerPlot *p);
     void SetClientAttsFromOperator();
     void SetOperatorAttsFromClient();
     bool SetOperatorAtts(const AttributeSubject *toolAtts);
@@ -96,7 +102,7 @@ class VIEWER_API ViewerOperator
 
   protected:
     ViewerPlot                   *plot;
-
+    
   private:
     bool                          needsRecalculation;
     int                           type;

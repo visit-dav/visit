@@ -26,6 +26,13 @@
 //    Brad Whitlock, Wed Mar 31 10:16:38 PDT 2004
 //    Added != operator so it builds on the SGI.
 //
+//    Brad Whitlock, Thu Apr 8 12:25:35 PDT 2004
+//    Made a small change to IsSimulation because somehow I was able to
+//    get a plot with <unset> for the simName, which is possible if the
+//    default constructor is used. Anyway, session files don't get saved
+//    for simulations and ViewerPlotList thought my plots were from a
+//    simulation even though they were not.
+//
 // ****************************************************************************
 
 class VIEWER_API EngineKey
@@ -84,7 +91,10 @@ class VIEWER_API EngineKey
 
     const std::string &SimName()  const      { return simName; }
 
-    bool               IsSimulation() const  { return !simName.empty(); }
+    bool IsSimulation() const
+    {
+        return !simName.empty() && simName != "<unset>";
+    }
 
     bool operator==(const EngineKey &ek) const
     {

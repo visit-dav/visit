@@ -16,6 +16,7 @@
 #include <DebugStream.h>
 #include <FileServerList.h>
 #include <GlobalAttributes.h>
+#include <KeyframeAttributes.h>
 #include <NameSimplifier.h>
 #include <WindowInformation.h>
 #include <ViewerProxy.h>
@@ -795,7 +796,17 @@ QvisFilePanel::UpdateAnimationControls(bool doAll)
             currentState = windowInfo->GetTimeSliderCurrentStates()[activeTS];
             nTotalStates = activeTSCorrelation->GetNumStates();
         }
-        // else set nTotalStates from #frames in animation if in keyframing mode??
+        else if(viewer->GetKeyframeAttributes()->GetEnabled())
+        {
+            //
+            // Keyframing is enabled so we must be using the keyframing time
+            // slider if we didn't find a correlation for the active time
+            // slider. Get the number of keyframes and use that as the
+            // length of the time slider.
+            //
+            currentState = windowInfo->GetTimeSliderCurrentStates()[activeTS];
+            nTotalStates = viewer->GetKeyframeAttributes()->GetNFrames();
+        }
 
         animationPosition->blockSignals(true);
         animationPosition->setRange(0, nTotalStates - 1);

@@ -42,12 +42,38 @@ ViewerOperator::ViewerOperator(const int type_,
 {
     type              = type_;
     viewerPluginInfo  = viewerPluginInfo_;
-    plot              = plot_;
     operatorAtts      = viewerPluginInfo->AllocAttributes();
     avtfilter         = NULL;
     needsRecalculation= true;
+    plot              = plot_;
 
     viewerPluginInfo->InitializeOperatorAtts(operatorAtts, plot, fromDefault);
+}
+
+// ****************************************************************************
+// Method: ViewerOperator::ViewerOperator
+//
+// Purpose: 
+//   Copy constructor for the ViewerOperator class.
+//
+// Arguments:
+//   obj : The operator to copy.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 2 11:43:39 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+ViewerOperator::ViewerOperator(const ViewerOperator &obj)
+{
+    type               = obj.type;
+    viewerPluginInfo   = obj.viewerPluginInfo;
+    operatorAtts       = obj.operatorAtts->NewInstance(true);
+    avtfilter          = NULL;
+    needsRecalculation = true;
+    plot               = obj.plot;
 }
 
 // ****************************************************************************
@@ -66,6 +92,29 @@ ViewerOperator::~ViewerOperator()
 
     if (avtfilter)
         delete avtfilter;
+}
+
+// ****************************************************************************
+// Method: ViewerOperator::SetPlot
+//
+// Purpose: 
+//   Sets the plot pointer so we can use the copy constructor and then
+//   reparent the operator to a different plot.
+//
+// Arguments:
+//   p : The new parent plot.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 2 14:19:34 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerOperator::SetPlot(ViewerPlot *p)
+{
+    plot = p;
 }
 
 // ****************************************************************************

@@ -22,6 +22,7 @@
 #include <DatabaseAttributes.h>
 #include <OperatorPluginManager.h>
 #include <PickAttributes.h>
+#include <Plot.h>
 #include <PlotPluginInfo.h>
 #include <PlotQueryInfo.h>
 #include <ViewerEngineManager.h>
@@ -121,80 +122,129 @@ vector<double> ViewerPlot::nullDataExtents;
 //    Kathleen Bonnell, Wed Mar 31 16:46:13 PST 2004 
 //    Added clonedNetworkId. 
 //
+//    Brad Whitlock, Thu Apr 8 15:27:48 PST 2004
+//    Added support for keyframing back in.
+//
 // ****************************************************************************
 
 ViewerPlot::ViewerPlot(const int type_,ViewerPlotPluginInfo *viewerPluginInfo_,
     const EngineKey &ek_, const std::string &hostName_,
     const std::string &databaseName_, const std::string &variableName_,
-    avtSILRestriction_p silr_, const int plotState, const int nStates)
+    avtSILRestriction_p silr_,
+    const int plotState,    // The initial database state for the plot
+    const int nStates,      // The number of total database states
+    const int cacheIndex_,  // The initial active cache index
+    const int nCacheEntries // The number of cache entries.
+    ) : engineKey(ek_), hostName(hostName_), databaseName(databaseName_),
+        variableName(variableName_)
 {
+    //
+    // Make sure the state is not negative.
+    //
+    int state = (plotState < 0) ? 0 : plotState;
+
     //
     // Initialize some values.
     //
     type                = type_;
     viewerPluginInfo    = viewerPluginInfo_;
     isMesh = (strcmp(viewerPluginInfo->GetName(), "Mesh") == 0); 
-    engineKey           = ek_;
-    hostName            = "";
-    databaseName        = "";
-    variableName        = "";
-    state               = (plotState < 0) ? 0 : plotState;
     followsTime         = true;
-    databaseAtts        = new AttributeSubjectMap;
-    curDatabaseAtts     = new DatabaseAttributes;
-    silr                = 0;
-    frame0              = 0;
-    frame1              = 0;
+    expandedFlag        = false;
+    errorFlag           = false;
+    networkID           = -1;
+    clonedNetworkId     = -1;
+    queryAtts           = 0;               
+    viewerPlotList      = NULL;
+    bgColor[0] = bgColor[1] = bgColor[2] = 1.0; 
+    fgColor[0] = fgColor[1] = fgColor[2] = 0.0; 
+    spatialExtentsType = AVT_ORIGINAL_EXTENTS;
+
+    //
+    // Initialize operator related members.
+    //
     nOperators          = 0;
     nOperatorsAlloc     = 0;
     operators           = 0;
     activeOperatorIndex = -1;
-    plotAtts            = new AttributeSubjectMap;
+
+    //
+    // Allocate some plot attributes
+    //
     curPlotAtts         = viewerPluginInfo->AllocAttributes();
 
-    plotList            = new avtPlot_p[nStates];
-    actorList           = new avtActor_p[nStates];
-    readerList          = new avtDataObjectReader_p[nStates];
-    for(int i = 0; i < nStates; ++i)
-    {
-        plotList[i]         = 0;
-        actorList[i]        = 0;
-        readerList[i]       = 0;
-    }
-
-    expandedFlag        = false;
-    errorFlag           = false;
-    networkID           = -1;
-    queryAtts           = 0;               
-    viewerPlotList      = NULL;
-
-    bgColor[0] = bgColor[1] = bgColor[2] = 1.0; 
-    fgColor[0] = fgColor[1] = fgColor[2] = 0.0; 
-
     //
-    // Set the host, db, var so we know what gets plotted.
+    // Set up keyframe attributes so the current plot attributes are
+    // set at the first keyframe. Set the last keyframe so that it
+    // works like a PaddedIndex correlation would work.
     //
-    SetHostDatabaseName(hostName_, databaseName_);
-    SetVariableName(variableName_);
-
-    //
-    // Use the constructor's arguments to initialize the object further.
-    //
-    viewerPluginInfo->InitializePlotAtts(curPlotAtts, GetMetaData(),
-                                         variableName.c_str());
-    plotAtts->SetAtts(0, curPlotAtts);
-
+    cacheIndex          = cacheIndex_;
+    cacheSize           = nCacheEntries;
+    databaseAtts        = new AttributeSubjectMap;
+    curDatabaseAtts     = new DatabaseAttributes;
     curDatabaseAtts->SetState(0);
     databaseAtts->SetAtts(0, curDatabaseAtts);
     curDatabaseAtts->SetState(nStates - 1);
-    int frame0 = 0, frame1 = nStates - 1;
-    databaseAtts->SetAtts(frame1 - frame0, curDatabaseAtts);
+    beginCacheIndex = 0;
+    endCacheIndex = cacheSize - 1;
+    int ci = min(endCacheIndex, nStates - 1);
+    databaseAtts->SetAtts(ci, curDatabaseAtts);
 
-    SetFrameRange(frame0, frame1);
-    SetSILRestriction(silr_);
-    spatialExtentsType = AVT_ORIGINAL_EXTENTS;
+    //
+    // Initialize the caches so that they are the right size
+    // and we have the right active cache entry.
+    //
+    plotList            = new avtPlot_p[cacheSize];
+    actorList           = new avtActor_p[cacheSize];
+    readerList          = new avtDataObjectReader_p[cacheSize];
+    for(int i = 0; i < cacheSize; ++i)
+    {
+        plotList[i]   = 0;
+        actorList[i]  = 0;
+        readerList[i] = 0;
+    }
 
-    clonedNetworkId = -1;
+    //
+    // Use the constructor's arguments to initialize the object further.
+    // Once the object is initialized, set the initialized attributes into
+    // the plot keyframes.
+    //
+    const avtDatabaseMetaData *md = ViewerFileServer::Instance()->
+        GetMetaDataForState(hostName, databaseName, state);
+    if(md == 0)
+        EXCEPTION1(InvalidVariableException, variableName);
+    viewerPluginInfo->InitializePlotAtts(curPlotAtts, md,
+                                         variableName.c_str());
+    plotAtts            = new AttributeSubjectMap;
+    plotAtts->SetAtts(0, curPlotAtts);
+
+    //
+    // Initialize the plot's SIL restriction.
+    //
+    silr = silr_;
+}
+
+// ****************************************************************************
+// Method: ViewerPlot::ViewerPlot
+//
+// Purpose: 
+//   Copy constructor for the ViewerPlot class.
+//
+// Arguments:
+//   obj : The ViewerPlot object to copy.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 2 10:54:56 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+ViewerPlot::ViewerPlot(const ViewerPlot &obj) : engineKey(obj.engineKey),
+    hostName(obj.hostName), databaseName(obj.databaseName),
+    variableName(obj.variableName)
+{
+    CopyHelper(obj);
 }
 
 // ****************************************************************************
@@ -268,26 +318,247 @@ ViewerPlot::~ViewerPlot()
         delete queryAtts;
 }
 
+// ****************************************************************************
+// Method: ViewerPlot::operator =
+//
+// Purpose: 
+//   Assignment operator.
+//
+// Arguments:
+//   obj : The ViewerPlot to copy into this plot.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 2 10:53:13 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerPlot::operator = (const ViewerPlot &obj)
+{
+    engineKey = obj.engineKey;
+    hostName = obj.hostName;
+    databaseName = obj.hostName;
+    variableName = obj.variableName;
+
+    CopyHelper(obj);
+}
+
+// ****************************************************************************
+// Method: ViewerPlot::CopyHelper
+//
+// Purpose: 
+//   Helps copy most fields into this ViewerPlot.
+//
+// Arguments:
+//   obj : The ViewerPlot to copy.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 2 10:53:56 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerPlot::CopyHelper(const ViewerPlot &obj)
+{
+    int i;
+
+    //
+    // Initialize all pointers to 0 so if an exception is thrown out of
+    // this function, the object can still be destructed safely.
+    //
+    queryAtts = 0;
+    databaseAtts = 0;
+    curDatabaseAtts = 0;
+    silr = 0;
+    operators = 0;
+    plotList = 0;
+    actorList = 0;
+    readerList = 0;
+
+    //
+    // Initialize some values.
+    //
+    type                = obj.type;
+    viewerPluginInfo    = obj.viewerPluginInfo;
+    isMesh              = obj.isMesh;
+    followsTime         = obj.followsTime;
+    errorFlag           = false;
+    networkID           = -1;
+    clonedNetworkId     = -1;
+    queryAtts           = (obj.queryAtts != 0) ?
+        new PlotQueryInfo(*(obj.queryAtts)) : 0;
+    viewerPlotList      = obj.viewerPlotList;
+    spatialExtentsType  = obj.spatialExtentsType;
+    for(i = 0; i < 3; ++i)
+    {
+        bgColor[i] = obj.bgColor[i];
+        fgColor[i] = obj.fgColor[i];
+    }
+
+    // Copy the database attributes
+    databaseAtts        = new AttributeSubjectMap(*(obj.databaseAtts));
+    curDatabaseAtts     = new DatabaseAttributes(*(obj.curDatabaseAtts));
+    silr                = new avtSILRestriction(obj.silr);
+
+    // Copy the operators
+    nOperators          = obj.nOperators;
+    nOperatorsAlloc     = obj.nOperatorsAlloc;
+    operators           = new ViewerOperator*[nOperatorsAlloc];
+    for(i = 0; i < nOperatorsAlloc; ++i)
+    {
+        if(i < nOperators)
+        {
+            operators[i] = new ViewerOperator(*(obj.operators[i]));
+            operators[i]->SetPlot(this);
+        }
+        else
+            operators[i] = 0;
+    }
+    activeOperatorIndex = obj.activeOperatorIndex;
+    expandedFlag        = obj.expandedFlag;
+
+    // Copy the plot attributes
+    curPlotAtts         = obj.curPlotAtts->NewInstance(true);
+    plotAtts            = new AttributeSubjectMap(*(obj.plotAtts));
+
+    // Copy the cache stuff.
+    cacheIndex          = obj.cacheIndex;
+    beginCacheIndex     = obj.beginCacheIndex;
+    endCacheIndex       = obj.endCacheIndex;
+    cacheSize           = obj.cacheSize;
+    plotList            = new avtPlot_p[cacheSize];
+    actorList           = new avtActor_p[cacheSize];
+    readerList          = new avtDataObjectReader_p[cacheSize];
+    for(i = 0; i < cacheSize; ++i)
+    {
+        plotList[i]   = 0;
+        actorList[i]  = 0;
+        readerList[i] = 0;
+    }
+}
+
+// ****************************************************************************
+// Method: ViewerPlot::GetState
+//
+// Purpose: 
+//   Returns the database state currently being used by the plot.
+//
+// Returns:    The plot's current database state.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Apr 8 15:28:32 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
 int
 ViewerPlot::GetState() const
 {
-    return state;
+    int dbState(cacheIndex);
+
+    //
+    // If we're in keyframe mode then the database state is what is
+    // stored in the keyFrame
+    //
+    if(viewerPlotList != 0 && viewerPlotList->GetKeyframeMode())
+    {
+        databaseAtts->GetAtts(cacheIndex, curDatabaseAtts);
+        dbState = curDatabaseAtts->GetState();
+    }
+
+    return dbState;
 }
 
+// ****************************************************************************
+// Method: ViewerPlot::SetCacheIndex
+//
+// Purpose: 
+//   Sets the plot's cacheIndex, which is the index of the actor that is being
+//   shown. The cache index corresponds to the time slider.
+//
+// Arguments:
+//   newCacheIndex : The new cache index.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Apr 8 15:29:12 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
 void
-ViewerPlot::SetState(int newState)
+ViewerPlot::SetCacheIndex(int newCacheIndex)
 {
-    if(FollowsTime() && newState >= frame0 && newState <= frame1)
+    if(FollowsTime() &&
+       newCacheIndex >= 0 &&
+       newCacheIndex < cacheSize)
     {
-        state = newState;
+        cacheIndex = newCacheIndex;
     }
 }
+
+// ****************************************************************************
+// Method: ViewerPlot::GetCacheIndex
+//
+// Purpose: 
+//   Returns the plot's cache index.
+//
+// Returns:    The plot's cache index.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Apr 8 15:30:11 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+int
+ViewerPlot::GetCacheIndex() const
+{
+    return cacheIndex;
+}
+
+// ****************************************************************************
+// Method: ViewerPlot::FollowsTime
+//
+// Purpose: 
+//   Returns whether or not the plot follows a time slider.
+//
+// Returns:    True if the plot follows a time slider; false otherwise.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Apr 8 15:30:30 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
 
 bool
 ViewerPlot::FollowsTime() const
 {
     return followsTime;
 }
+
+// ****************************************************************************
+// Method: ViewerPlot::SetFollowsTime
+//
+// Purpose: 
+//   Sets whether or not the plot follows a time slider.
+//
+// Arguments:
+//   val : Whether the plot follows a time slider.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Apr 8 15:31:02 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
 
 void
 ViewerPlot::SetFollowsTime(bool val)
@@ -296,75 +567,122 @@ ViewerPlot::SetFollowsTime(bool val)
 }
 
 // ****************************************************************************
-//  Method: ViewerPlot::SetFrameRange
+// Method: ViewerPlot::SetKeyframeMode
 //
-//  Purpose:
-//    Set the inclusive frame range that the plot is defined over.
+// Purpose: 
+//   This method shifts the plot into of out of keyframing mode.
 //
-//  Arguments:
-//    f0        The first frame at which the plot is defined.
-//    f1        The last frame at which the plot is defined.
+// Arguments:
+//   kfMode : The keyframe mode.
 //
-//  Programmer: Eric Brugger
-//  Creation:   August 25, 2000
+// Note:       When this mode switch is made, the actor cache is blown away
+//             and resized. When entering into keyframe mode, simple keyframes
+//             are added to approximate what the user sees in the window. When
+//             we leave keyframe mode, all keyframes are removed.
 //
-//  Modifications:
-//    Hank Childs, Mon Aug 20 14:49:44 PDT 2001
-//    Made use of debug stream.
+// Programmer: Brad Whitlock
+// Creation:   Thu Apr 8 15:31:29 PST 2004
 //
-//    Eric Brugger, Fri Aug 31 09:41:38 PDT 2001
-//    I replaced the avtPlot with a list of avtPlots, one per frame.
-//
-//    Eric Brugger, Tue Nov 26 10:59:42 PST 2002
-//    I added keyframing support.
-//
+// Modifications:
+//   
 // ****************************************************************************
 
 void
-ViewerPlot::SetFrameRange(const int f0, const int f1)
+ViewerPlot::SetKeyframeMode(bool kfMode)
 {
-    //
-    // Check the frame values.
-    //
-    if (f0 < 0 || f1 < f0)
+    // Clear the actor caches.
+    ClearActors();
+
+    // Get the number of states.
+    int nStates = 1;
+    const avtDatabaseMetaData *md = GetMetaData();
+    if(md != 0)
+        nStates = md->GetNumStates();
+    int cs = 1;
+
+    if(kfMode)
     {
-        debug1 << "Invalid frame range.\n";
-        return;
+        // Clear the plot and database keyframes.
+        plotAtts->ClearAtts();
+        databaseAtts->ClearAtts();
+
+        cs = viewerPlotList->GetNKeyframes();
+
+        // If we enter keyframing mode, reinitialize the keyframes.
+        plotAtts->SetAtts(0, curPlotAtts);
+        curDatabaseAtts->SetState(0);
+        databaseAtts->SetAtts(0, curDatabaseAtts);
+        curDatabaseAtts->SetState(nStates - 1);
+        int ci = min(cs - 1, nStates - 1);
+        databaseAtts->SetAtts(ci, curDatabaseAtts);
+    }
+    else
+    {
+        // Use the number of states for the plot's database as the new
+        // cache size.
+        cs = nStates;
+
+        // Clear the plot and database keyframes.
+        plotAtts->ClearAtts();
+        databaseAtts->ClearAtts();
     }
 
-    //
-    // If the frame range length is different, then create new caches,
-    // copying the overlap.
-    //
-    if ((f1 - f0) != (frame1 - frame0))
+    // Resize the cache so it will handle the right number if indices.
+    ResizeCache(cs);
+
+    cacheIndex = 0;
+    beginCacheIndex = 0;
+    endCacheIndex = cs - 1;
+}
+
+// ****************************************************************************
+// Method: ViewerPlot::ResizeCache
+//
+// Purpose: 
+//   Resizes the actor cache and adjusts the plot range if needed.
+//
+// Arguments:
+//   cs : The new cache size.
+//
+// Notes:      The actors are copied to the resized cache.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Apr 8 15:34:52 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerPlot::ResizeCache(int cs)
+{
+    if(cs != cacheSize)
     {
-        //
-        // Create a new plotList, actorList and readerList.
-        //
         avtPlot_p *newPlotList=0;
         avtActor_p *newActorList=0;
         avtDataObjectReader_p *newReaderList=0;
-        newPlotList   = new avtPlot_p[f1 - f0 + 1];
-        newActorList  = new avtActor_p[f1 - f0 + 1];
-        newReaderList = new avtDataObjectReader_p[f1 - f0 + 1];
+        newPlotList   = new avtPlot_p[cs];
+        newActorList  = new avtActor_p[cs];
+        newReaderList = new avtDataObjectReader_p[cs];
 
         //
-        // Copy the overlap from the old lists to the new lists.
+        // Copy the old entries that fit into the new lists.
         //
-        int i;
-        int overlap;
-
-        if ((f1 - f0) < (frame1 - frame0))
+        int s_min = min(cs, cacheSize);
+        for(int i = 0; i < cs; ++i)
         {
-            ClearActors(frame0 + (f1 - f0 + 1), frame1);
-        }
-
-        overlap = (f1 - f0) < (frame1 - frame0) ? (f1 - f0) : (frame1 - frame0);
-        for (i = 0; i < overlap + 1; ++i)
-        {
-            newPlotList[i] = plotList[i];
-            newActorList[i] = actorList[i];
-            newReaderList[i] = readerList[i];
+            if(i < s_min)
+            {
+                newPlotList[i] = plotList[i];
+                newActorList[i] = actorList[i];
+                newReaderList[i] = readerList[i];
+            }
+            else
+            {
+                newPlotList[i] = 0;
+                newActorList[i] = 0;
+                newReaderList[i] = 0;
+            }
         }
 
         //
@@ -376,26 +694,133 @@ ViewerPlot::SetFrameRange(const int f0, const int f1)
         actorList = newActorList;
         delete [] readerList;
         readerList = newReaderList;
-    }
 
-    //
-    // Set the new frame range.
-    //
-    frame0 = f0;
-    frame1 = f1;
+        //
+        // Set the new size and make sure that the start, end indices are
+        // within the new bounds.
+        //
+        cacheSize = cs;
+        if(cacheIndex >= cacheSize)
+            cacheIndex = 0;
+        if(beginCacheIndex >= cacheSize)
+            beginCacheIndex = 0;
+        if(endCacheIndex >= cacheSize)
+            endCacheIndex = cacheSize-1;
+    }
 }
 
 // ****************************************************************************
-//  Method: ViewerPlot::IsInFrameRange
+// Method: ViewerPlot::UpdateCacheSize
+//
+// Purpose: 
+//   This method is called when we do a replace, reopen, etc. It enlarges the
+//   actor caches so we can fit more.
+//
+// Arguments:
+//   kfMode      : Whether we're in keyframing mode.
+//   clearActors : Whether we should clear the actors before changing the
+//                 cache size.
+//   size        : The new number of keyframes if we're in keyframe mode.
+//                 Otherwise the argument is ignored.
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Apr 5 11:28:27 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerPlot::UpdateCacheSize(bool kfMode, bool clearActors, int size)
+{
+    //
+    // We were told to clear the actors so clear them now. 
+    //
+    if(clearActors)
+        ClearActors();
+
+    //
+    // Get the number of states in the updated database.
+    //
+    const avtDatabaseMetaData *md = GetMetaData();
+    int nStates = md->GetNumStates();
+
+    //
+    // We need to update the database keyframes so we have a plot that
+    // exists over all of the cache indices.
+    //
+    if(kfMode)
+    {
+        DeleteDatabaseKeyframe(cacheSize - 1);
+        if(size > 0)
+            ResizeCache(size);
+        AddDatabaseKeyframe(cacheSize - 1, nStates - 1);
+    }
+    else
+    {
+        // We're not in keyframing mode so we only have to update the cache
+        // size. There's no need to clear actors, etc. We also don't need to
+        // set any keyframes because we're not in kf mode.
+        ResizeCache(nStates);
+        endCacheIndex = nStates - 1;
+    }
+}
+
+// ****************************************************************************
+// Method: ViewerPlot::SetRange
+//
+// Purpose: 
+//   Sets the cache indices over which a plot is valid.
+//
+// Arguments:
+//   i0 : The starting cache index.
+//   i1 : The ending cache index.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Apr 8 15:36:46 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerPlot::SetRange(const int i0, const int i1)
+{
+    //
+    // Check the index values.
+    //
+    if (i0 < 0 || i1 < i0)
+    {
+        debug1 << "ViewerPlot::SetFrameRange: Invalid frame range.\n";
+        return;
+    }
+
+    if(i1 >= cacheSize)
+    {
+        debug1 << "ViewerPlot::SetFrameRange: Can't set the frame range "
+               << "beyond the end cache index of: " << cacheSize-1 <<".\n";
+        return;
+    }
+
+    // Clear the actors at the ends of the range.
+    ClearActors(0, i0);
+    ClearActors(i1, cacheSize-1);
+
+    beginCacheIndex = i0;
+    endCacheIndex = i1;
+}
+
+// ****************************************************************************
+//  Method: ViewerPlot::IsInRange
 //
 //  Purpose:
-//    Return a boolean indicating if the specified frame is within the range
-//    that the plot is defined over.
+//    Return a boolean indicating if the current cache indexs is in the
+//    range that the plot is defined over.
 //
-//  Arguments:
-//    frame     The frame to check.
-//
-//  Returns:    A boolean indicating if the frame is within the range.
+//  Returns:    A boolean indicating if the current index is within the range.
 //
 //  Programmer: Eric Brugger
 //  Creation:   August 25, 2000
@@ -407,162 +832,15 @@ ViewerPlot::SetFrameRange(const int f0, const int f1)
 //    Brad Whitlock, Sat Jan 31 22:46:11 PST 2004
 //    I removed the frame argument.
 //
+//    Brad Whitlock, Fri Apr 2 11:35:57 PDT 2004
+//    I changed some member names and the method name.
+//
 // ****************************************************************************
 
 bool
-ViewerPlot::IsInFrameRange() const
+ViewerPlot::IsInRange() const
 {
-
-// REWRITE_FOR_KEYFRAMING
-
-    return ((state >= frame0) && (state <= frame1)) ? true : false;
-}
-
-// ****************************************************************************
-//  Method: ViewerPlot::GetBeginFrame
-//
-//  Purpose:
-//    Return the first frame that the plot exists.
-//
-//  Returns:    The first frame that the plot exists.
-//
-//  Programmer: Eric Brugger
-//  Creation:   November 18, 2002
-//
-// ****************************************************************************
- 
-int
-ViewerPlot::GetBeginFrame() const
-{
-    return frame0;
-}
-
-// ****************************************************************************
-//  Method: ViewerPlot::GetEndFrame
-//
-//  Purpose:
-//    Return the last frame that the plot exists.
-//
-//  Returns:    The last frame that the plot exists.
-//
-//  Programmer: Eric Brugger
-//  Creation:   November 18, 2002
-//
-// ****************************************************************************
- 
-int
-ViewerPlot::GetEndFrame() const
-{
-    return frame1;
-}
-
-// ****************************************************************************
-//  Method: ViewerPlot::GetKeyframeIndices
-//
-//  Purpose:
-//    Return the keyframe indices in the plot.
-//
-//  Arguments:
-//    nIndices  The number of keyframe indices in the plot.
-//
-//  Returns:    The keyframe indices in the plot.
-//
-//  Programmer: Eric Brugger
-//  Creation:   November 18, 2002
-//
-// ****************************************************************************
- 
-const int *
-ViewerPlot::GetKeyframeIndices(int &nIndices) const
-{
-    return plotAtts->GetIndices(nIndices);
-}
-
-// ****************************************************************************
-//  Method: ViewerPlot::DeleteKeyframe
-//
-//  Purpose:
-//    Delete the keyframe located at the specified frame.
-//
-//  Arguments:
-//    frame     The frame at which to delete the keyframe.
-//
-//  Programmer: Eric Brugger
-//  Creation:   November 18, 2002
-//
-// ****************************************************************************
- 
-void
-ViewerPlot::DeleteKeyframe(const int frame)
-{
-    //
-    // Check that the frame is within range.
-    //
-    if ((frame < frame0) || (frame > frame1))
-    {
-        debug1 << "DeleteKeyframe: The frame is out of range. frame=" << frame
-               << ", frames=[" << frame0 << "," << frame1 << "]" << endl;
-        return;
-    }
-
-    //
-    // Delete the keyframe at the specified frame.  DeleteAtts
-    // returns the range of plots that were invalidated.  The
-    // maximum value is clamped to frame1 since DeleteAtts may return
-    // INT_MAX to indicate the end of the plot.
-    //
-    int       f0, f1;
-
-    if (!plotAtts->DeleteAtts(frame - frame0, f0, f1))
-        return;
-    f1 = f1 < (frame1 - frame0) ? f1 : (frame1 - frame0);
-
-    CheckCache(f0, f1, false);
-}
-
-// ****************************************************************************
-//  Method: ViewerPlot::MoveKeyframe
-//
-//  Purpose:
-//    Move the position of a keyframe.
-//
-//  Arguments:
-//    oldFrame  The old location of the keyframe.
-//    newFrame  The new location of the keyframe.
-//
-//  Programmer: Eric Brugger
-//  Creation:   January 29, 2003
-//
-// ****************************************************************************
- 
-void
-ViewerPlot::MoveKeyframe(int oldFrame, int newFrame)
-{
-    //
-    // Check that the frames are within range.
-    //
-    if ((oldFrame < frame0) || (oldFrame > frame1) ||
-        (newFrame < frame0) || (newFrame > frame1))
-    {
-        debug1 << "MoveKeyframe: The frame is out of range. "
-               << "newFrame=" << newFrame
-               << ", frames=[" << frame0 << "," << frame1 << "]" << endl;
-        return;
-    }
-
-    //
-    // Move the keyframe at oldFrame to newFrame.  MoveAtts
-    // returns the range of plots that were invalidated.  The
-    // maximum value is clamped to frame1 since DeleteAtts may return
-    // INT_MAX to indicate the end of the plot.
-    //
-    int       f0, f1;
-
-    if (!plotAtts->MoveAtts(oldFrame - frame0, newFrame - frame0, f0, f1))
-        return;
-    f1 = f1 < (frame1 - frame0) ? f1 : (frame1 - frame0);
-
-    CheckCache(f0, f1, false);
+    return (cacheIndex >= beginCacheIndex) && (cacheIndex <= endCacheIndex);
 }
 
 // ****************************************************************************
@@ -615,6 +893,21 @@ ViewerPlot::SetHostDatabaseName(const std::string &host,
             return;
         ClearActors();
         reInit = true;
+    }
+
+    //
+    // If the host and database are different then we need to clear the
+    // database keyframes.
+    // 
+    if(host != hostName || database != databaseName)
+    {
+        databaseAtts->ClearAtts();
+        if(viewerPlotList->GetKeyframeMode())
+        {
+            // Add in some new keyframes.
+            curDatabaseAtts->SetState(0);
+            databaseAtts->SetAtts(0, curDatabaseAtts);
+        }
     }
 
     //
@@ -754,14 +1047,17 @@ ViewerPlot::GetPluginID() const
 // Creation:   Fri Mar 26 10:35:01 PDT 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Apr 1 17:42:10 PST 2004
+//   I made it use GetState to get the right database so we can return the
+//   right state information even when we're keyframing.
+//
 // ****************************************************************************
 
 const avtDatabaseMetaData *
 ViewerPlot::GetMetaData() const
 {
     return ViewerFileServer::Instance()->GetMetaDataForState(hostName,
-        databaseName, state);
+        databaseName, GetState());
 }
 
 
@@ -933,8 +1229,7 @@ ViewerPlot::SetVariableName(const std::string &name)
     //
     // Set the variable name for any existing plots.
     //
-    int       i;
-    for (i = 0; i < (frame1 - frame0 + 1); i++)
+    for (int i = 0; i < cacheSize; i++)
     {
         if (*plotList[i] != 0)
         {
@@ -943,12 +1238,12 @@ ViewerPlot::SetVariableName(const std::string &name)
     }
     firstTime = false;
 
-
     if (notifyQuery && queryAtts != 0)
     {
         queryAtts->SetChangeType(PlotQueryInfo::VarName);
         queryAtts->Notify();
     }
+
     return retval;
 }
 
@@ -976,166 +1271,33 @@ ViewerPlot::GetVariableName() const
 }
 
 // ****************************************************************************
-//  Method: ViewerPlot::SetDatabaseAtts
+//  Method: ViewerPlot::DeleteKeyframe
 //
 //  Purpose:
-//    Set the database attributes for the plot.
-//
-//  Arguments:
-//    atts      The new database attributes for the plot.
-//
-//  Programmer: Eric Brugger
-//  Creation:   December 26, 2002
-//
-// ****************************************************************************
-
-void
-ViewerPlot::SetDatabaseAtts(const AttributeSubjectMap *atts)
-{
-    databaseAtts->CopyAttributes(atts);
-}
-
-// ****************************************************************************
-//  Method: ViewerPlot::GetDatabaseAtts
-//
-//  Purpose:
-//    Get the database attributes for the plot.
-//
-//  Returns:    The database attributes for the plot.
-//
-//  Programmer: Eric Brugger
-//  Creation:   December 26, 2002
-//
-// ****************************************************************************
-
-const AttributeSubjectMap *
-ViewerPlot::GetDatabaseAtts() const
-{
-    return databaseAtts;
-}
-
-// ****************************************************************************
-//  Method: ViewerPlot::SetDatabaseState
-//
-//  Purpose:
-//    Set the database state at the specified frame for the plot.
-//
-//  Arguments:
-//    frame     The frame for which to set the database state.
-//    state     The database state to set for the specified frame.
-//
-//  Programmer: Eric Brugger
-//  Creation:   December 26, 2002
-//
-// ****************************************************************************
-
-void
-ViewerPlot::SetDatabaseState(const int frame, const int state)
-{
-    //
-    // Check that the frame is within range.
-    //
-    if ((frame < frame0) || (frame > frame1))
-    {
-        debug1 << "SetDatabaseState: The frame is out of range. frame=" << frame
-               << ", frames=[" << frame0 << "," << frame1 << "]" << endl;
-        return;
-    }
-
-    //
-    // Set the database state for the specified frame.  SetAtts
-    // returns the range of plots that were invalidated.  The
-    // maximum value is clamped to frame1 since SetAtts may return
-    // INT_MAX to indicate the end of the plot.
-    //
-    int       f0, f1;
-
-    curDatabaseAtts->SetState(state);
-    databaseAtts->SetAtts(frame - frame0, curDatabaseAtts, f0, f1);
-    f1 = f1 < (frame1 - frame0) ? f1 : (frame1 - frame0);
-
-    CheckCache(f0, f1, true);
-}
-
-// ****************************************************************************
-//  Method: ViewerPlot::GetDatabaseState
-//
-//  Purpose:
-//    Get the database state at the specified frame for the plot.
-//
-//  Arguments:
-//    frame     The frame for which to get the database state.
-//
-//  Returns:    The database state at the specified frame.
-//
-//  Programmer: Eric Brugger
-//  Creation:   December 26, 2002
-//
-// ****************************************************************************
-
-int
-ViewerPlot::GetDatabaseState(const int frame) const
-{
-    //
-    // Check that the frame is within range.
-    //
-    if ((frame < frame0) || (frame > frame1))
-    {
-        debug1 << "GetDatabaseState: The frame is out of range. frame=" << frame
-               << ", frames=[" << frame0 << "," << frame1 << "]" << endl;
-        return 0;
-    }
-
-    databaseAtts->GetAtts(frame - frame0, curDatabaseAtts);
-    return curDatabaseAtts->GetState();
-}
-
-// ****************************************************************************
-//  Method: ViewerPlot::GetDatabaseKeyframeIndices
-//
-//  Purpose:
-//    Return the database keyframe indices in the plot.
-//
-//  Arguments:
-//    nIndices  The number of database keyframe indices in the plot.
-//
-//  Returns:    The database keyframe indices in the plot.
-//
-//  Programmer: Eric Brugger
-//  Creation:   January 2, 2003
-//
-// ****************************************************************************
- 
-const int *
-ViewerPlot::GetDatabaseKeyframeIndices(int &nIndices) const
-{
-    return databaseAtts->GetIndices(nIndices);
-}
-
-// ****************************************************************************
-//  Method: ViewerPlot::DeleteDatabaseKeyframe
-//
-//  Purpose:
-//    Delete the database keyframe at the specified frame for the plot.
+//    Delete the keyframe located at the specified frame.
 //
 //  Arguments:
 //    frame     The frame at which to delete the keyframe.
 //
 //  Programmer: Eric Brugger
-//  Creation:   December 26, 2002
+//  Creation:   November 18, 2002
+//
+//  Modifications:
+//    Brad Whitlock, Mon Apr 5 11:53:36 PDT 2004
+//    I changed the implementation to not be so "frame-centric".
 //
 // ****************************************************************************
-
+ 
 void
-ViewerPlot::DeleteDatabaseKeyframe(const int frame)
+ViewerPlot::DeleteKeyframe(const int index)
 {
     //
-    // Check that the frame is within range.
+    // Check that the index is within range.
     //
-    if ((frame < frame0) || (frame > frame1))
+    if ((index < 0) || (index >= cacheSize))
     {
-        debug1 << "DeleteDatabaseKeyframe: The frame is out of range. frame=" << frame
-               << ", frames=[" << frame0 << "," << frame1 << "]" << endl;
+        debug1 << "DeleteKeyframe: The frame is out of range. index=" << index
+               << ", indices=[0," << cacheSize-1 << "]" << endl;
         return;
     }
 
@@ -1145,15 +1307,143 @@ ViewerPlot::DeleteDatabaseKeyframe(const int frame)
     // maximum value is clamped to frame1 since DeleteAtts may return
     // INT_MAX to indicate the end of the plot.
     //
-    int       f0, f1;
+    int i0, i1;
+    if (!plotAtts->DeleteAtts(index, i0, i1))
+        return;
 
-    if (!databaseAtts->DeleteAtts(frame - frame0, f0, f1))
+    i1 = (i1 < cacheSize) ? i1 : (cacheSize - 1);
+    CheckCache(i0, i1, false);
+}
+
+// ****************************************************************************
+//  Method: ViewerPlot::MoveKeyframe
+//
+//  Purpose:
+//    Move the position of a keyframe.
+//
+//  Arguments:
+//    oldFrame  The old location of the keyframe.
+//    newFrame  The new location of the keyframe.
+//
+//  Programmer: Eric Brugger
+//  Creation:   January 29, 2003
+//
+//  Modifications:
+//    Brad Whitlock, Mon Apr 5 11:56:24 PDT 2004
+//    I made it not be so "frame-centric".
+//
+// ****************************************************************************
+ 
+void
+ViewerPlot::MoveKeyframe(int oldIndex, int newIndex)
+{
+    //
+    // Check that the frames are within range.
+    //
+    if ((oldIndex < 0) || (oldIndex >= cacheSize) ||
+        (newIndex < 0) || (newIndex >= cacheSize))
+    {
+        debug1 << "MoveKeyframe: The index is out of range. "
+               << "newIndex=" << newIndex
+               << ", indices=[0," << cacheSize-1 << "]" << endl;
+        return;
+    }
+
+    //
+    // Move the keyframe at oldFrame to newFrame.  MoveAtts
+    // returns the range of plots that were invalidated.  The
+    // maximum value is clamped to frame1 since DeleteAtts may return
+    // INT_MAX to indicate the end of the plot.
+    //
+    int i0, i1;
+    if (!plotAtts->MoveAtts(oldIndex, newIndex, i0, i1))
+        return;
+
+    i1 = (i1 < cacheSize) ? i1 : (cacheSize - 1);
+    CheckCache(i0, i1, false);
+}
+
+// ****************************************************************************
+//  Method: ViewerPlot::DeleteDatabaseKeyframe
+//
+//  Purpose:
+//    Delete the database keyframe at the specified frame for the plot.
+//
+//  Arguments:
+//    index     The index at which to delete the keyframe.
+//
+//  Programmer: Eric Brugger
+//  Creation:   December 26, 2002
+//
+//  Modifications:
+//    Brad Whitlock, Mon Apr 5 14:02:39 PST 2004
+//    Changed variable names.
+//
+// ****************************************************************************
+
+void
+ViewerPlot::DeleteDatabaseKeyframe(const int index)
+{
+    //
+    // Check that the frame is within range.
+    //
+    if ((index < 0) || (index >= cacheSize))
+    {
+        debug1 << "DeleteDatabaseKeyframe: The index is out of range. "
+               << "index=" << index
+               << ", indices=[0," << cacheSize-1 << "]" << endl;
+        return;
+    }
+
+    //
+    // Delete the keyframe at the specified frame.  DeleteAtts
+    // returns the range of plots that were invalidated.  The
+    // maximum value is clamped to frame1 since DeleteAtts may return
+    // INT_MAX to indicate the end of the plot.
+    //
+    int i0, i1;
+    if (!databaseAtts->DeleteAtts(index, i0, i1))
     {
         return;
     }
-    f1 = f1 < (frame1 - frame0) ? f1 : (frame1 - frame0);
- 
-    CheckCache(f0, f1, true);
+
+    i1 = (i1 < cacheSize) ? i1 : (cacheSize - 1); 
+    CheckCache(i0, i1, true);
+}
+
+// ****************************************************************************
+// Method: ViewerPlot::AddDatabaseKeyframe
+//
+// Purpose: 
+//   Adds a database keyframe at the specified index.
+//
+// Arguments:
+//   index : The cache index.
+//   state : The database state to use at the specified cache index.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 2 15:13:24 PST 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerPlot::AddDatabaseKeyframe(int index, int state)
+{
+    if(index < 0 || index >= cacheSize)
+    {
+        debug1 << "AddDatabaseKeyframe: The index " << index
+               << " is out of range [0," << cacheSize-1 << "]." << endl;
+        return;
+    }
+
+    int i0, i1;
+    curDatabaseAtts->SetState(state);
+    databaseAtts->SetAtts(index, curDatabaseAtts, i0, i1);
+    i1 = (i1 < cacheSize) ? i1 : (cacheSize-1);
+
+    CheckCache(i0, i1, true);
 }
 
 // ****************************************************************************
@@ -1169,19 +1459,24 @@ ViewerPlot::DeleteDatabaseKeyframe(const int frame)
 //  Programmer: Eric Brugger
 //  Creation:   January 29, 2003
 //
+//  Modifications:
+//    Brad Whitlock, Thu Apr 8 15:38:22 PST 2004
+//    I changed the method to suite the new caching scheme.
+//
 // ****************************************************************************
 
 void
-ViewerPlot::MoveDatabaseKeyframe(int oldFrame, int newFrame)
+ViewerPlot::MoveDatabaseKeyframe(int oldIndex, int newIndex)
 {
     //
     // Check that the frames are within range.
     //
-    if ((oldFrame < frame0) || (oldFrame > frame1) ||
-        (newFrame < frame0) || (newFrame > frame1))
+    if ((oldIndex < 0) || (oldIndex >= cacheSize) ||
+        (newIndex < 0) || (newIndex >= cacheSize))
     {
-        debug1 << "MoveDatabaseKeyframe: The new frame is out of range. frame=" << newFrame
-               << ", frames=[" << frame0 << "," << frame1 << "]" << endl;
+        debug1 << "MoveDatabaseKeyframe: The new index is out of range. "
+               << "index=" << newIndex
+               << ", indices=[0," << cacheSize-1 << "]" << endl;
         return;
     }
 
@@ -1191,13 +1486,12 @@ ViewerPlot::MoveDatabaseKeyframe(int oldFrame, int newFrame)
     // maximum value is clamped to frame1 since DeleteAtts may return
     // INT_MAX to indicate the end of the plot.
     //
-    int       f0, f1;
-
-    if (!databaseAtts->MoveAtts(oldFrame - frame0, newFrame - frame0, f0, f1))
+    int i0, i1;
+    if (!databaseAtts->MoveAtts(oldIndex, newIndex, i0, i1))
         return;
-    f1 = f1 < (frame1 - frame0) ? f1 : (frame1 - frame0);
- 
-    CheckCache(f0, f1, true);
+
+    i1 = (i1 < cacheSize) ? i1 : (cacheSize-1);
+    CheckCache(i0, i1, true);
 }
 
 // ****************************************************************************
@@ -1240,9 +1534,7 @@ ViewerPlot::SetSILRestriction(avtSILRestriction_p s)
     // Loop over the existing plots and delete any cached actors whose SIL
     // restriction is different from the new one.
     //
-    int       i;
-
-    for (i = 0; i < (frame1 - frame0 + 1); i++)
+    for (int i = 0; i < cacheSize; ++i)
     {
         if (*plotList[i] != 0)
         {
@@ -1956,7 +2248,7 @@ ViewerPlot::GetOperator(const int i) const
 void
 ViewerPlot::SetActor(const avtActor_p actor)
 {
-    actorList[state] = actor;
+    actorList[cacheIndex] = actor;
 }
 
 // ****************************************************************************
@@ -1991,7 +2283,7 @@ ViewerPlot::SetActor(const avtActor_p actor)
 avtActor_p &
 ViewerPlot::GetActor() const
 {
-    return actorList[state-frame0];
+    return actorList[cacheIndex];
 }
 
 // ****************************************************************************
@@ -2047,7 +2339,7 @@ ViewerPlot::NoActorExists() const
 avtDataObjectReader_p &
 ViewerPlot::GetReader() const
 {
-    return readerList[state];
+    return readerList[cacheIndex];
 }
 
 // ****************************************************************************
@@ -2282,17 +2574,17 @@ ViewerPlot::CreateActor(bool createNew, bool turningOffScalableRendering)
     }
 
     // Save the reader.
-    readerList[state] = reader;
+    readerList[cacheIndex] = reader;
 
-// REWRITE_FOR_KEYFRAMING
     // Get the keyframed attributes for the current state.  The data
     // extents must be set before the attributes.
-    plotList[state] = viewerPluginInfo->AllocAvtPlot();
+    plotList[cacheIndex] = viewerPluginInfo->AllocAvtPlot();
+    plotAtts->GetAtts(cacheIndex, curPlotAtts);
+
     if (viewerPlotList->GetMaintainDataMode())
     {
-        plotList[state]->SetDataExtents(dataExtents);
+        plotList[cacheIndex]->SetDataExtents(dataExtents);
     }
-    plotAtts->GetAtts(state, curPlotAtts);
 
     if (!invariantMetaData)
     {
@@ -2301,7 +2593,7 @@ ViewerPlot::CreateActor(bool createNew, bool turningOffScalableRendering)
 
         if (!viewerPlotList->GetKeyframeMode())
         {
-            if (plotList[state]->AttributesDependOnDatabaseMetaData())
+            if (plotList[cacheIndex]->AttributesDependOnDatabaseMetaData())
             {
                 viewerPluginInfo->ReInitializePlotAtts(curPlotAtts,
                     GetMetaData(), variableName.c_str());
@@ -2309,21 +2601,21 @@ ViewerPlot::CreateActor(bool createNew, bool turningOffScalableRendering)
 
                 // ok, now set the plotAtts map, being careful not to introduce
                 // new keyframes in the process. So, we use the 'Le' method
-                plotAtts->SetAttsLe(state, curPlotAtts);
+                plotAtts->SetAttsLe(cacheIndex, curPlotAtts);
             }
         }
     }
 
-    plotList[state]->SetAtts(curPlotAtts);
-    plotList[state]->SetVarName(variableName.c_str());
-    plotList[state]->SetBackgroundColor(bgColor);
-    plotList[state]->SetForegroundColor(fgColor);
-    plotList[state]->SetIndex(networkID);
-    plotList[state]->SetCurrentSILRestriction(silr);
+    plotList[cacheIndex]->SetAtts(curPlotAtts);
+    plotList[cacheIndex]->SetVarName(variableName.c_str());
+    plotList[cacheIndex]->SetBackgroundColor(bgColor);
+    plotList[cacheIndex]->SetForegroundColor(fgColor);
+    plotList[cacheIndex]->SetIndex(networkID);
+    plotList[cacheIndex]->SetCurrentSILRestriction(silr);
 
     TRY
     {
-        avtActor_p actor = plotList[state]->Execute(reader);
+        avtActor_p actor = plotList[cacheIndex]->Execute(reader);
         this->SetActor(actor);
 
         // Indicate that this plot has no error.
@@ -2388,7 +2680,10 @@ ViewerPlot::CreateActor(bool createNew, bool turningOffScalableRendering)
 //
 //    Eric Brugger, Tue Nov 26 10:59:42 PST 2002
 //    I added keyframing support.
-//   
+//
+//    Brad Whitlock, Mon Apr 5 09:39:22 PDT 2004
+//    I changed how we iterate over the cache.
+//
 // ****************************************************************************
 
 void
@@ -2397,11 +2692,9 @@ ViewerPlot::ClearActors()
     //
     // Delete all the actors.
     //
-    int       i;
-
-    for (i = 0; i < (frame1 - frame0 + 1); i++)
+    for (int i = 0; i < cacheSize; i++)
     {
-debug4 << GetPlotName() << ": Clearing actor at state " << i << endl;
+        debug5 << GetPlotName() << ": Clearing actor at state " << i << endl;
         plotList[i]   = (avtPlot *)0;
         actorList[i]  = (avtActor *)0;
         readerList[i] = (avtDataObjectReader *)0;
@@ -2424,9 +2717,9 @@ debug4 << GetPlotName() << ": Clearing actor at state " << i << endl;
 void
 ViewerPlot::ClearCurrentActor()
 {
-    plotList[state]   = (avtPlot *)0;
-    actorList[state]  = (avtActor *)0;
-    readerList[state] = (avtDataObjectReader *)0;
+    plotList[cacheIndex]   = (avtPlot *)0;
+    actorList[cacheIndex]  = (avtActor *)0;
+    readerList[cacheIndex] = (avtDataObjectReader *)0;
 }
 
 // ****************************************************************************
@@ -2437,8 +2730,8 @@ ViewerPlot::ClearCurrentActor()
 //    range.
 //
 //  Arguments:
-//    f0        The first frame in the range (inclusive).
-//    f1        The last frame in the range (inclusive).
+//    i0        The first index in the range (inclusive).
+//    i1        The last index in the range (inclusive).
 //
 //  Programmer: Eric Brugger
 //  Creation:   September 6, 2000
@@ -2455,36 +2748,34 @@ ViewerPlot::ClearCurrentActor()
 //
 //    Eric Brugger, Tue Nov 26 10:59:42 PST 2002
 //    I added keyframing support.
-//   
+//
+//    Brad Whitlock, Mon Apr 5 09:45:23 PDT 2004
+//    I changed how we handle the range.
+//
 // ****************************************************************************
 
 void
-ViewerPlot::ClearActors(const int f0, const int f1)
+ViewerPlot::ClearActors(const int i0, const int i1)
 {
     //
     // Check that the range is valid.
     //
-    if ((f0 < frame0) || (f0 > frame1) || (f1 < frame0) || (f1 > frame1) ||
-        (f0 > f1))
+    if(i0 < 0 || i1 >= cacheSize || i1 < i0)
     {
-        debug1 << "Invalid frame range." << endl;
+        debug1 << "Invalid cache index range." << endl;
         return;
     }
 
     //
     // Delete the actors within the range.
     //
-    int       i;
-
-    for (i = f0 - frame0; i <= f1 - frame0; i++)
+    for (int i = i0; i <= i1; ++i)
     {
         plotList[i]   = (avtPlot *)0;
         actorList[i]  = (avtActor *)0;
         readerList[i] = (avtDataObjectReader *)0;
     }
 }
-
-
 
 // ****************************************************************************
 //  Method: ViewerPlot::TransmuteActor
@@ -2546,9 +2837,9 @@ ViewerPlot::GetSpatialDimension() const
 
     if(readerList != NULL)
     {
-        if(*(readerList[state]) != NULL)
+        if(*(readerList[cacheIndex]) != NULL)
         {
-            avtDataAttributes &atts = readerList[state]->
+            avtDataAttributes &atts = readerList[cacheIndex]->
                 GetInfo().GetAttributes();
             retval = atts.GetSpatialDimension();
         }
@@ -2614,11 +2905,11 @@ ViewerPlot::GetSpatialExtents(avtExtentType extsType) const
                                   ? spatialExtentsType : extsType);
    
     // Return early if the reader does not exist.
-    if(*(readerList[state]) == 0)
+    if(*(readerList[cacheIndex]) == 0)
         return 0;
 
     // Populate some local variables.
-    avtDataAttributes &atts = readerList[state]->
+    avtDataAttributes &atts = readerList[cacheIndex]->
         GetInfo().GetAttributes();
     int dim = atts.GetSpatialDimension();
     int extentSize = ((dim * 2) < 6) ? 6 : (dim * 2);
@@ -2639,7 +2930,7 @@ ViewerPlot::GetSpatialExtents(avtExtentType extsType) const
         }
     }
 
-    if (! readerList[state]->InputIsDataset())
+    if (! readerList[cacheIndex]->InputIsDataset())
     {
         //
         // This means that the input is an image, but the extents didn't get
@@ -2657,7 +2948,7 @@ ViewerPlot::GetSpatialExtents(avtExtentType extsType) const
         return buffer;
     }
 
-    avtDataset_p ds = readerList[state]->GetDatasetOutput();
+    avtDataset_p ds = readerList[cacheIndex]->GetDatasetOutput();
 
     //
     // The dataset will have the mesh limits.
@@ -2746,7 +3037,7 @@ ViewerPlot::ExecuteEngineRPC()
                                                      networkID);
 
     ViewerEngineManager *engineMgr = ViewerEngineManager::Instance();
-    plotAtts->GetAtts(state, curPlotAtts);
+    plotAtts->GetAtts(cacheIndex, curPlotAtts);
     bool successful;
     if (viewerPlotList->GetMaintainDataMode())
     {
@@ -2811,7 +3102,7 @@ ViewerPlot::SetClientAttsFromPlot()
     //
     // Set the client attributes.
     //
-    plotAtts->GetAtts(state, curPlotAtts);
+    plotAtts->GetAtts(cacheIndex, curPlotAtts);
     viewerPluginInfo->SetClientAtts(curPlotAtts);
 }
 
@@ -2847,6 +3138,10 @@ ViewerPlot::SetPlotAttsFromClient()
 // Programmer: Eric Brugger
 // Creation:   December 27, 2002
 //
+// Modifications:
+//   Brad Whitlock, Mon Apr 5 14:05:33 PST 2004
+//   Changed the code to use the new cache indexing.
+//
 // ****************************************************************************
 
 bool
@@ -2872,12 +3167,12 @@ ViewerPlot::SetPlotAtts(const AttributeSubject *atts)
         // maximum value is clamped to frame1 since SetAtts may return
         // INT_MAX to indicate the end of the plot.
         //
-        int       f0, f1;
-
-        plotAtts->SetAtts(state, curPlotAtts, f0, f1);
-        f1 = f1 < (state) ? f1 : (state);
+        int i0, i1;
+        plotAtts->SetAtts(cacheIndex, curPlotAtts, i0, i1);
+        i1 = (i1 < cacheIndex) ? i1 : (cacheIndex-1);
  
-        CheckCache(f0, f1, false);
+        // Invalidate the cache if necessary for items i0..i1
+        CheckCache(i0, i1, false);
     }
     else
     {
@@ -2885,32 +3180,11 @@ ViewerPlot::SetPlotAtts(const AttributeSubject *atts)
         // Set the plot attributes for the entire plot.
         //
         plotAtts->SetAtts(curPlotAtts);
- 
-        CheckCache(0, frame1 - frame0, false);
+
+        // Invalidate the cache if necessary for all items.
+        CheckCache(0, cacheSize-1, false);
     }
 
-    return true;
-}
-
-// ****************************************************************************
-// Method: ViewerPlot::SetPlotAtts
-//
-// Purpose: 
-//   Tries to copy the incoming atts into the plotAtts. This only happens
-//   if they are compatible types.
-//
-// Arguments:
-//   atts : The new attributes.
-//
-// Programmer: Eric Brugger
-// Creation:   December 10, 2002
-//
-// ****************************************************************************
-
-bool
-ViewerPlot::SetPlotAtts(const AttributeSubjectMap *atts)
-{
-    plotAtts->CopyAttributes(atts);
     return true;
 }
 
@@ -2918,7 +3192,7 @@ ViewerPlot::SetPlotAtts(const AttributeSubjectMap *atts)
 // Method: ViewerOperator::GetPlotAtts
 //
 // Purpose: 
-//   Returns a const pointer to the plot attributes.
+//   Returns a const pointer to the current plot attributes.
 //
 // Returns:    A const pointer to the plot attributes.
 //
@@ -2928,32 +3202,16 @@ ViewerPlot::SetPlotAtts(const AttributeSubjectMap *atts)
 // Modifications:
 //    Eric Brugger, Mon Nov 18 09:16:38 PST 2002
 //    I added keyframing support.
-//   
+//
+//    Brad Whitlock, Mon Apr 5 12:21:34 PDT 2004
+//    I made it return the current plot attributes like it originally did.
 // ****************************************************************************
 
-const AttributeSubjectMap *
-ViewerPlot::GetPlotAtts() const
-{
-    return plotAtts;
-}
-
-// ****************************************************************************
-// Method: ViewerOperator::GetPlotAtts
-//
-// Purpose: 
-//   Returns a const pointer to the current plot attributes.
-//
-// Programmer: Mark C. Miller 
-// Creation:   02Apr03 
-//
-// ****************************************************************************
 const AttributeSubject *
-ViewerPlot::GetCurrentPlotAtts() const
+ViewerPlot::GetPlotAtts() const
 {
     return curPlotAtts;
 }
-
-
 
 // ****************************************************************************
 //  Method: ViewerPlot::UpdateColorTable
@@ -2990,7 +3248,7 @@ ViewerPlot::UpdateColorTable(const char *ctName)
     bool      retval = false;
     int       i;
 
-    for (i = 0; i < frame1 - frame0 + 1; i++)
+    for (i = 0; i < cacheSize; i++)
     {
         if (*plotList[i] != NULL)
         {
@@ -3036,7 +3294,7 @@ ViewerPlot::SetBackgroundColor(const double *bg)
     bgColor[0]  = bg[0];
     bgColor[1]  = bg[1];
     bgColor[2]  = bg[2];
-    for (int i = 0; i < frame1 - frame0 + 1; i++)
+    for (int i = 0; i < cacheSize; i++)
     {
         if (*plotList[i] != NULL)
         {
@@ -3075,7 +3333,7 @@ ViewerPlot::SetForegroundColor(const double *fg)
     fgColor[0]  = fg[0];
     fgColor[1]  = fg[1];
     fgColor[2]  = fg[2];
-    for (int i = 0; i < frame1 - frame0 + 1; i++)
+    for (int i = 0; i < cacheSize; i++)
     {
         if (*plotList[i] != NULL)
         {
@@ -3355,6 +3613,9 @@ ViewerPlot::GetExpanded() const
 //    Jeremy Meredith, Tue Mar 30 10:39:20 PST 2004
 //    Added an engine key to map this plot to the engine used to create it.
 //
+//    Brad Whitlock, Mon Apr 5 14:07:54 PST 2004
+//    Changed to use new indexing.
+//
 // ****************************************************************************
 
 bool
@@ -3371,9 +3632,9 @@ ViewerPlot::StartPick()
     if (ViewerEngineManager::Instance()->StartPick(engineKey,
                                                    true, networkID))
     {
-        if (IsInFrameRange() && *plotList[state] != NULL)
+        if (IsInRange() && *plotList[cacheIndex] != NULL)
         {
-            needsUpdate |= (*plotList[state])->RequiresReExecuteForQuery();
+            needsUpdate |= (*plotList[cacheIndex])->RequiresReExecuteForQuery();
         }
         if (needsUpdate)
         {
@@ -3478,6 +3739,9 @@ ViewerPlot::GetPlotQueryInfo()
 //    Brad Whitlock, Fri Mar 26 08:09:26 PDT 2004
 //    Made it use ViewerFileServer::DetermineVarType.
 //
+//    Brad Whitlock, Mon Apr 5 12:32:51 PDT 2004
+//    I made it use GetState to determine the database state.
+//
 // ****************************************************************************
 
 avtVarType 
@@ -3490,7 +3754,7 @@ avtVarType
 ViewerPlot::GetVarType(const std::string &var) const
 {
     return ViewerFileServer::Instance()->DetermineVarType(hostName,
-        databaseName, var, state);
+        databaseName, var, GetState());
 }
 
 // ****************************************************************************
@@ -3501,8 +3765,8 @@ ViewerPlot::GetVarType(const std::string &var) const
 //    that need recalculation.
 //
 //  Arguments:
-//    f0         The first inclusive, plot origin frame to check.
-//    f1         The last inclusive, plot origin frame to check.
+//    i0         The first inclusive, plot index to check.
+//    i1         The last inclusive, plot index to check.
 //    force      Flag indicating if the cache should be cleared
 //               unconditionally, regardless of the whether setting
 //               the plot attributes requires it.
@@ -3515,10 +3779,13 @@ ViewerPlot::GetVarType(const std::string &var) const
 //    I made it so if there is an error setting any of the frames' attributes
 //    the plot's error flag is set to true.
 //
+//    Brad Whitlock, Tue Apr 6 09:15:42 PDT 2004
+//    I renamed some variables.
+//
 // ****************************************************************************
 
 void
-ViewerPlot::CheckCache(const int f0, const int f1, const bool force)
+ViewerPlot::CheckCache(const int i0, const int i1, const bool force)
 {
     //
     // Set the plot attributes for any existing plots and delete any
@@ -3526,7 +3793,7 @@ ViewerPlot::CheckCache(const int f0, const int f1, const bool force)
     //
     bool handledFrame = false;
     bool errorOnFrame = false;
-    for (int i = f0; i <= f1; i++)
+    for (int i = i0; i <= i1; i++)
     {
         if (*plotList[i] != 0)
         {
@@ -3568,6 +3835,7 @@ ViewerPlot::CheckCache(const int f0, const int f1, const bool force)
         queryAtts->Notify();
     }
 }
+
 // ****************************************************************************
 // Method: ViewerPlot::CreateNode
 //
@@ -3593,6 +3861,9 @@ ViewerPlot::CheckCache(const int f0, const int f1, const bool force)
 //   keyframing mode because they end up making the session files harder to
 //   modify by hand if you use them with larger databases.
 //
+//   Brad Whitlock, Mon Apr 5 11:38:14 PDT 2004
+//   I changed the names of certain fields that are saved out.
+//
 // ****************************************************************************
 
 void
@@ -3607,19 +3878,18 @@ ViewerPlot::CreateNode(DataNode *parentNode)
     //
     // Add information specific to the plot.
     //
-    plotNode->AddNode(new DataNode("plotState", GetState()));
+    plotNode->AddNode(new DataNode("cacheIndex", cacheIndex));
+    // Only save beginning and end frames if the plot is keyframed.
+    if(viewerPlotList->GetKeyframeMode())
+    {
+        plotNode->AddNode(new DataNode("beginCacheIndex", beginCacheIndex));
+        plotNode->AddNode(new DataNode("endCacheIndex", endCacheIndex));
+    }
     plotNode->AddNode(new DataNode("spatialExtentsType",
         avtExtentType_ToString(spatialExtentsType)));
     plotNode->AddNode(new DataNode("bgColor", bgColor, 3));
     plotNode->AddNode(new DataNode("fgColor", fgColor, 3));
     plotNode->AddNode(new DataNode("expandedFlag", expandedFlag));
-
-    // Only save beginning and end frames if the plot is keyframed.
-    if(viewerPlotList->GetKeyframeMode())
-    {
-        plotNode->AddNode(new DataNode("beginFrame", GetBeginFrame()));
-        plotNode->AddNode(new DataNode("endFrame", GetEndFrame()));
-    }
 
     //
     // Store the current plot attributes.
@@ -3692,6 +3962,9 @@ ViewerPlot::CreateNode(DataNode *parentNode)
 //   Moved the code to set the frame range, plot state, and SIL restriction
 //   here from ViewerPlotList.
 //
+//   Brad Whitlock, Mon Apr 5 11:41:57 PDT 2004
+//   I changed the name of certain fields.
+//
 // ****************************************************************************
 
 void
@@ -3710,35 +3983,42 @@ ViewerPlot::SetFromNode(DataNode *parentNode)
     // Get and set the start and end frames.
     //
     bool haveFrameNumbers = true;
-    int beginFrame = 0, endFrame = 0;
+    int beginIndex = 0, endIndex = 0;
     if((node = plotNode->GetNode("endFrame")) != 0)
-        endFrame = (node->AsInt() < 0) ? 0 : node->AsInt();
+        endIndex = (node->AsInt() < 0) ? 0 : node->AsInt();
+    else if((node = plotNode->GetNode("endCacheIndex")) != 0)
+        endIndex = (node->AsInt() < 0) ? 0 : node->AsInt();
     else
         haveFrameNumbers = false;
     if((node = plotNode->GetNode("beginFrame")) != 0)
     {
         int f = node->AsInt();
-        beginFrame = (f < 0 || f > endFrame) ? 0 : f;
+        beginIndex = (f < 0 || f > endIndex) ? 0 : f;
+    }
+    else if((node = plotNode->GetNode("beginCacheIndex")) != 0)
+    {
+        int f = node->AsInt();
+        beginIndex = (f < 0 || f > endIndex) ? 0 : f;
     }
     else
         haveFrameNumbers = false;
     if(haveFrameNumbers)
-        SetFrameRange(beginFrame, endFrame);
+        SetRange(beginIndex, endIndex);
 
     //
     // Set the plot's state and make sure it is within the
     // range of the plot databases's correlation.
     //
-    int plotState = 0, tsNStates = 1;
-    viewerPlotList->GetTimeSliderStates(GetSource(), plotState, tsNStates);
-    if((node = plotNode->GetNode("plotState")) != 0)
+    int ci = 0, tsNStates = 1;
+    viewerPlotList->GetTimeSliderStates(GetSource(), ci, tsNStates);
+    if((node = plotNode->GetNode("cacheIndex")) != 0)
     {
-        plotState = node->AsInt();
-        if(plotState < 0)
-            plotState = 0;
-        if(plotState >= tsNStates)
-            plotState = tsNStates - 1;
-        SetState(plotState);
+        ci = node->AsInt();
+        if(ci < 0)
+            ci = 0;
+        if(ci >= tsNStates)
+            ci = tsNStates - 1;
+        SetCacheIndex(ci);
     }
 
     // Read in some plot attributes.
@@ -3840,6 +4120,63 @@ ViewerPlot::SetFromNode(DataNode *parentNode)
     }
 }
 
+// ****************************************************************************
+// Method: ViewerPlot::InitializePlot
+//
+// Purpose: 
+//   This method initializes a Plot object with the ViewerPlot's attributes
+//   so we can send the Plot object back to the client.
+//
+// Arguments:
+//   plot : The Plot object to initialize.
+//
+// Notes:      This code was moved from ViewerPlotList but I changed it so I
+//             could remove some methods that should not have been public in
+//             ViewerPlot.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Apr 5 09:57:43 PDT 2004
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerPlot::InitializePlot(Plot &plot) const
+{
+    // Set the plot type.
+    plot.SetPlotType(type);
+    // Set the database name and add the plot to the plot list.
+    plot.SetDatabaseName(GetSource());
+    // Set the plot variable.
+    plot.SetPlotVar(variableName);
+    plot.SetExpandedFlag(expandedFlag);
+    plot.SetBeginFrame(beginCacheIndex);
+    plot.SetEndFrame(endCacheIndex);
+    plot.SetIsFromSimulation(engineKey.IsSimulation());
+ 
+    // Set the keyframe indices.
+    int j, nIndices;
+    const int *indices = plotAtts->GetIndices(nIndices);
+    intVector ivec;
+    for (j = 0; j < nIndices; j++)
+        ivec.push_back(indices[j]);
+    plot.SetKeyframes(ivec);
+
+    // Set the database keyframe indices.
+    ivec.clear();
+    indices = databaseAtts->GetIndices(nIndices);
+    for (j = 0; j < nIndices; j++)
+        ivec.push_back(indices[j]);
+    plot.SetDatabaseKeyframes(ivec);
+
+    // Set the operators that are applied to the plot
+    for (int op_index = 0; op_index < GetNOperators(); ++op_index)
+    {
+        plot.AddOperator(GetOperator(op_index)->GetType());
+    }
+    plot.SetActiveOperator(activeOperatorIndex);
+}
 
 // ****************************************************************************
 // Method: ViewerPlot::SetOpaqueMeshIsAppropriate
@@ -3856,29 +4193,28 @@ ViewerPlot::SetFromNode(DataNode *parentNode)
 // Modifications:
 //   Kathleen Bonnell, Mon Sep 29 12:31:18 PDT 2003
 //   Updated client atts, too.
-//   
+//
+//   Brad Whitlock, Mon Apr 5 09:30:08 PDT 2004
+//   I rewrote it since I changed how it is called.
+//
 // ****************************************************************************
 
 void
 ViewerPlot::SetOpaqueMeshIsAppropriate(bool val)
 {
-    const AttributeSubject *atts = NULL;
-    int i, frame;
-    for (i = 0; i < (frame1 - frame0 + 1) && !atts; ++i)
+    if(isMesh)
     {
-        if (*plotList[i] != 0 && isMesh)
+        if(*plotList[cacheIndex] != 0)
         {
-            atts = plotList[i]->SetOpaqueMeshIsAppropriate(val);
-            frame = i;
+            const AttributeSubject *atts = plotList[cacheIndex]->SetOpaqueMeshIsAppropriate(val);
+            if(atts != 0)
+            {
+                // Set the attributes into the avtPlot.
+                plotList[cacheIndex]->SetAtts(atts);
+                // Set the attributes into the current plot attributes.
+                curPlotAtts->CopyAttributes(atts);
+            }
         }
-    }
-    //
-    // If the plot's atts have changed as a result, 
-    //
-    if (atts != NULL)
-    {
-        SetPlotAtts(atts);
-        SetClientAttsFromPlot();
     }
 }
 
@@ -3946,9 +4282,9 @@ ViewerPlot::GetVariableCentering() const
 
     if(readerList != NULL)
     {
-        if(*(readerList[state]) != NULL)
+        if(*(readerList[cacheIndex]) != NULL)
         {
-            avtDataAttributes &atts = readerList[state]->
+            avtDataAttributes &atts = readerList[cacheIndex]->
                 GetInfo().GetAttributes();
             retval = atts.GetCentering(variableName.c_str());
         }

@@ -66,8 +66,13 @@ avtWeightedVariableSummationQuery::~avtWeightedVariableSummationQuery()
 //  Creation:   February 3, 2004
 //
 //  Modifications:
+//
 //    Kathleen Bonnell, Wed Mar 31 16:20:39 PST 2004
 //    Added logic for time-varying case.
+//
+//    Hank Childs, Thu Apr  8 08:24:12 PDT 2004
+//    Allow time varying data to access database, so it can consider more than
+//    one timestep.
 //
 // ****************************************************************************
 
@@ -120,20 +125,29 @@ avtWeightedVariableSummationQuery::ApplyFilters(avtDataObject_p inData)
     }
     else
     {
-        //
-        // Create an artificial pipeline.
-        //
-        avtDataset_p ds;
-        CopyTo(ds, inData);
-        avtSourceFromAVTDataset termsrc(ds);
-        avtDataObject_p dob = termsrc.GetOutput();
+        avtDataObject_p dob = inData;
 
         //
         // Set up our base class so it is ready to sum.
         //
-        avtDataSpecification_p dspec = GetInput()->GetTerminatingSource()
-                                     ->GetFullDataSpecification();
-        string varname = dspec->GetVariable();
+        avtDataSpecification_p oldSpec = inData->GetTerminatingSource()->
+            GetGeneralPipelineSpecification()->GetDataSpecification();
+
+        avtDataSpecification_p newDS = new
+                           avtDataSpecification(oldSpec->GetVariable(),
+                           queryAtts.GetTimeStep(), oldSpec->GetRestriction());
+
+        newDS->GetRestriction()->TurnOnAll();
+        for (int i = 0; i < silUseSet.size(); i++)
+        {
+            if (silUseSet[i] == 0)
+                newDS->GetRestriction()->TurnOffSet(i);
+        }
+
+        avtPipelineSpecification_p pspec =
+            new avtPipelineSpecification(newDS, queryAtts.GetPipeIndex());
+
+        string varname = newDS->GetVariable();
         SetSumType(varname);
 
         int topo = GetInput()->GetInfo().GetAttributes().GetTopologicalDimension();
@@ -156,8 +170,6 @@ avtWeightedVariableSummationQuery::ApplyFilters(avtDataObject_p inData)
         //
         // Cause our artificial pipeline to execute.
         //
-        avtPipelineSpecification_p pspec = inData->GetTerminatingSource()
-                                          ->GetGeneralPipelineSpecification();
         multiply->GetOutput()->Update(pspec);
 
         return multiply->GetOutput();
