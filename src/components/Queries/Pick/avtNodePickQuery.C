@@ -8,10 +8,14 @@
 
 #include <vtkDataSet.h>
 #include <vtkFieldData.h>
+#include <vtkMath.h>
+#include <vtkPointData.h>
 #include <vtkPoints.h>
+#include <vtkUnsignedCharArray.h>
 #include <vtkVisItUtility.h>
 
 #include <avtMatrix.h>
+#include <avtParallel.h>
 #include <avtTerminatingSource.h>
 #include <avtVector.h>
 
@@ -33,6 +37,7 @@ using     std::string;
 
 avtNodePickQuery::avtNodePickQuery()
 {
+    minDist = +FLT_MAX;
 }
 
 
@@ -81,6 +86,9 @@ avtNodePickQuery::~avtNodePickQuery()
 //    Removed 'needRealId' test, no longer needed (we are reporting ghost
 //    zones when ghostType == AVT_HAS_GHOSTS). 
 //
+//    Kathleen Bonnell, Mon Dec  6 14:30:39 PST 2004 
+//    Added special logic for when locate was skipped. 
+//
 // ****************************************************************************
 
 void
@@ -114,6 +122,25 @@ avtNodePickQuery::Execute(vtkDataSet *ds, const int dom)
                         "Please contact a VisIt developer"); 
             pickAtts.SetError(true);
             return; 
+        }
+    }
+    if (skippedLocate)
+    {
+        if (pickedNode == -1)
+        {
+            return;
+        }
+
+        float dist = vtkMath::Distance2BetweenPoints(pickAtts.GetPickPoint(), 
+                          vtkVisItUtility::GetPoints(ds)->GetPoint(pickedNode)); 
+        if (dist < minDist)
+        {
+            minDist = dist;
+            
+        }
+        else 
+        {
+            return;
         }
     }
     pickAtts.SetCellPoint(vtkVisItUtility::GetPoints(ds)->GetPoint(pickedNode)); 
@@ -215,6 +242,16 @@ avtNodePickQuery::Execute(vtkDataSet *ds, const int dom)
     {
         pickAtts.SetPickPoint(pickAtts.GetCellPoint());
     }
+
+    if (skippedLocate)
+    {
+        // reset so that future domains will also check.
+        pickAtts.SetFulfilled(false);
+        pickAtts.SetDomain(-1);
+        pickAtts.SetElementNumber(-1);
+        foundNode = pickedNode;
+        foundDomain = dom;
+    }
 }
 
 
@@ -234,13 +271,36 @@ avtNodePickQuery::Execute(vtkDataSet *ds, const int dom)
 //  Creation:   May 13, 2004 
 //
 //  Modifications:
+//    Kathleen Bonnell, Mon Dec  6 14:30:39 PST 2004
+//    Add logic to return -1 when pickpoint does not lie in dataset bounds,
+//    and if 'FindPoint' returns a ghost node.
 //    
 // ****************************************************************************
 
 int
 avtNodePickQuery::DeterminePickedNode(vtkDataSet *ds)
 {
-   return (int) ds->FindPoint(pickAtts.GetPickPoint());
+    float *bnds = ds->GetBounds();
+    float *pp = pickAtts.GetPickPoint();
+
+    if (pp[0] < bnds[0] || pp[0] > bnds[1] ||
+        pp[1] < bnds[2] || pp[1] > bnds[3] ||
+        pp[2] < bnds[4] || pp[2] > bnds[5])
+    {
+        return -1;
+    }
+   
+    int node = ds->FindPoint(pickAtts.GetPickPoint());
+    vtkUnsignedCharArray *ghostNodes = vtkUnsignedCharArray::SafeDownCast(
+        ds->GetPointData()->GetArray("avtGhostNodes"));
+    if (ghostNodes && ghostNodes->GetValue(node) > 0)
+    {
+        return -1;
+    }
+    else
+    {
+        return node;
+    }
 }
 
 
@@ -297,3 +357,61 @@ avtNodePickQuery::SetInvTransform(const avtMatrix *m)
     transform = m;
 }
 
+
+// ****************************************************************************
+//  Method: avtNodePickQuery::PreExecute
+//
+//  Purpose:
+//      This is called before any of the domains are executed.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   December 6, 2004 
+//
+// ****************************************************************************
+
+void
+avtNodePickQuery::PreExecute(void)
+{
+    minDist = +FLT_MAX;
+    foundNode = -1;
+    foundDomain = -1;
+}
+
+
+// ****************************************************************************
+//  Method: avtNodePickQuery::PostExecute
+//
+//  Purpose:
+//      This is called after all of the domains are executed.
+//      Sets pickAtts elementNumber, Domain, and fulfilled flag.
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   December 6, 2004
+//
+// ****************************************************************************
+
+void
+avtNodePickQuery::PostExecute(void)
+{
+    if (skippedLocate)
+    {
+        if (ThisProcessorHasMinimumValue(minDist) && minDist != +FLT_MAX)
+        {
+            pickAtts.SetFulfilled(true);
+            pickAtts.SetElementNumber(foundNode);
+            if (singleDomain)
+            {
+                //
+                // Indicate that there was only one domain.
+                // We don't report the domain number for single-domain problems.
+                //
+                pickAtts.SetDomain(-1);
+            }
+            else
+            {
+                pickAtts.SetDomain(foundDomain+blockOrigin);
+            }
+        }
+    }
+    avtPickQuery::PostExecute();
+}

@@ -5750,7 +5750,7 @@ ViewerWindowManager::ReplaceDatabase(const EngineKey &key,
     // window displays the correct contents; that of the active plot of
     // the active window
     //
-    ViewerWindow aWin = GetActiveWindow();
+    ViewerWindow *aWin = GetActiveWindow();
     if (aWin != 0)
     {
         aWin->GetPlotList()->UpdateSILRestrictionAtts();

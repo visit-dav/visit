@@ -9,6 +9,7 @@ class QLineEdit;
 class QLabel;
 class QTabWidget;
 class QVBox;
+class QVGroupBox;
 class ClipAttributes;
 
 // ****************************************************************************
@@ -26,6 +27,10 @@ class ClipAttributes;
 // Modifications:
 //   Brad Whitlock, Fri Apr 12 13:04:35 PST 2002
 //   Made it inherit from QvisOperatorWindow.
+//
+//   Kathleen Bonnell, Mon Dec  6 14:35:14 PST 2004 
+//   Made plane*Status be checkable QVGroupBox, instead of QButtonGroup.
+//   Renamed plane*StatusCliced slots to plane*StatusToggled.
 //
 // ****************************************************************************
 
@@ -54,9 +59,9 @@ private slots:
     void processRadiusText();
     void planeInverseToggled(bool);
     void sphereInverseToggled(bool);
-    void plane1StatusClicked(int);
-    void plane2StatusClicked(int);
-    void plane3StatusClicked(int);
+    void plane1StatusToggled(bool);
+    void plane2StatusToggled(bool);
+    void plane3StatusToggled(bool);
     void tabWidgetChanged(QWidget *);
 private:
     QLineEdit    *plane1Origin;
@@ -65,9 +70,9 @@ private:
     QLineEdit    *plane1Normal;
     QLineEdit    *plane2Normal;
     QLineEdit    *plane3Normal;
-    QButtonGroup *plane1Status;
-    QButtonGroup *plane2Status;
-    QButtonGroup *plane3Status;
+    QVGroupBox   *plane1Status;
+    QVGroupBox   *plane2Status;
+    QVGroupBox   *plane3Status;
     QLineEdit    *centerLineEdit;
     QLineEdit    *radiusLineEdit;
     QCheckBox    *planeInverse;

@@ -2352,6 +2352,11 @@ NetworkManager::StopPickMode(void)
 //    Kathleen Bonnell, Tue Nov  9 10:42:51 PST 2004 
 //    Rework parallel code for GlyphPicking. 
 //
+//    Kathleen Bonnell, Thu Dec  2 12:50:41 PST 2004 
+//    Make skipLocate dependent upon NeedBoundarySurfaces instead of
+//    TopologicalDimension, because during SR mode the DataAtts may get
+//    overwritten with incorrect values. 
+//
 // ****************************************************************************
 
 void
@@ -2452,7 +2457,7 @@ NetworkManager::Pick(const int id, PickAttributes *pa)
     }
 
     avtDataValidity   &queryInputVal  = queryInput->GetInfo().GetValidity();
-    bool skipLocate = queryInputAtts.GetTopologicalDimension() == 1 &&
+    bool skipLocate = networkCache[id]->GetDataSpec()->NeedBoundarySurfaces() &&  
                       queryInputAtts.GetSpatialDimension() == 2;
     avtLocateQuery *lQ = NULL;
     avtPickQuery *pQ = NULL;
