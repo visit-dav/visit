@@ -98,6 +98,9 @@
 #    Hank Childs, Thu Mar  4 09:04:45 PST 2004
 #    Removed Qt references.
 #
+#    Eric Brugger, Thu Oct 28 14:33:53 PDT 2004
+#    Added FlyThrough.
+#
 #    Brad Whitlock, Tue Nov 2 11:33:30 PDT 2004
 #    I fixed some link issues on the Mac due to recent source changes.
 #
@@ -131,6 +134,7 @@ Colleagues_src= \
   Colleagues/avtText2DColleague.C \
   Colleagues/avtTimeSliderColleague.C
 Interactors_src= \
+  Interactors/FlyThrough.C \
   Interactors/Lineout2D.C \
   Interactors/Navigate2D.C \
   Interactors/Navigate3D.C \

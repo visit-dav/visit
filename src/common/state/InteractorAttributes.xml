@@ -1,13 +1,16 @@
 <?xml version="1.0"?>
-  <Attribute name="InteractorAttributes" purpose="This class contains attributes associated with the main window." persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="InteractorAttributes.code">
+  <Attribute name="InteractorAttributes" purpose="This class contains attributes associated with the main window." persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h">
+    <Enum name="NavigationMode">
+      Trackball
+      Flythrough
+    </Enum>
     <Field name="showGuidelines" label="showGuidelines" type="bool">
       true
     </Field>
     <Field name="clampSquare" label="clampSquare" type="bool">
       false
     </Field>
-    <Function name="CreateNode" user="false" member="true">
-    </Function>
-    <Function name="SetFromNode" user="false" member="true">
-    </Function>
+    <Field name="navigationMode" label="navigationMode" type="enum" subtype="NavigationMode">
+      Trackball
+    </Field>
   </Attribute>

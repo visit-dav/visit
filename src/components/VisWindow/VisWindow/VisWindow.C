@@ -5232,6 +5232,8 @@ VisWindow::ReAddToolsToRenderWindow(void)
 // Creation:   July 16, 2004 
 //
 // Modifications:
+//   Eric Brugger, Fri Nov 12 14:51:13 PST 2004
+//   Add code to update the interactors if the attributes changed.
 //
 // ****************************************************************************
 
@@ -5243,9 +5245,12 @@ VisWindow::SetInteractorAtts(const InteractorAttributes *atts)
     if (changed)
     {
         interactorAtts = *atts;
-        // nothing to be done at this point, the interactors interested
-        // in these atts will retrieve them at the appropriate time.
-        // This may need to change in the future.
+
+        //
+        // Update the interactors.  This is necessary to handle a change
+        // in navigation mode.
+        //
+        interactions->SetInteractionMode(interactions->GetInteractionMode());
     }
 }
 

@@ -73,6 +73,8 @@ QvisInteractorWindow::~QvisInteractorWindow()
 // Creation:   Mon Aug 16 15:29:28 PST 2004
 //
 // Modifications:
+//   Eric Brugger, Thu Nov 11 11:49:41 PST 2004
+//   I added the navigation mode toggle buttons.
 //   
 // ****************************************************************************
 
@@ -82,7 +84,7 @@ QvisInteractorWindow::CreateWindowContents()
 
     QGroupBox *zoomGroup = new QGroupBox(central, "zoomGroup");
     zoomGroup->setTitle("Zoom interaction:");
-    topLayout->addWidget(zoomGroup, 5);
+    topLayout->addWidget(zoomGroup);
 
     QVBoxLayout *zoomVBoxLayout = new QVBoxLayout(zoomGroup);
     zoomVBoxLayout->setMargin(10);
@@ -100,6 +102,31 @@ QvisInteractorWindow::CreateWindowContents()
     connect(clampSquare, SIGNAL(toggled(bool)),
             this, SLOT(clampSquareChanged(bool)));
     zoomGridLayout->addWidget(clampSquare, 2,0);
+
+    QGroupBox *navigationGroup = new QGroupBox(central, "navigationGroup");
+    navigationGroup->setTitle("Navigation mode:");
+    topLayout->addWidget(navigationGroup);
+
+    QVBoxLayout *navigationVBoxLayout = new QVBoxLayout(navigationGroup);
+    navigationVBoxLayout->setMargin(10);
+    navigationVBoxLayout->addSpacing(15);
+
+    QGridLayout *navigationLayout = new QGridLayout(navigationVBoxLayout,
+                                                    1, 2);
+    navigationLayout->setSpacing(5);
+    navigationLayout->setMargin(10);
+
+    navigationMode = new QButtonGroup(0, "navigationMode");
+    connect(navigationMode, SIGNAL(clicked(int)),
+            this, SLOT(navigationModeChanged(int)));
+    QRadioButton *trackball = new QRadioButton("Trackball", navigationGroup,
+                                               "Trackball");
+    navigationMode->insert(trackball);
+    navigationLayout->addWidget(trackball, 1, 1);
+    QRadioButton *flythrough = new QRadioButton("Flythrough", navigationGroup,
+                                                "flythrough");
+    navigationMode->insert(flythrough);
+    navigationLayout->addWidget(flythrough, 1, 2);
 }
 
 
@@ -113,6 +140,8 @@ QvisInteractorWindow::CreateWindowContents()
 // Creation:   Mon Aug 16 15:29:28 PST 2004
 //
 // Modifications:
+//   Eric Brugger, Thu Nov 11 11:49:41 PST 2004
+//   I added the navigation mode toggle buttons.
 //   
 // ****************************************************************************
 
@@ -137,6 +166,12 @@ QvisInteractorWindow::UpdateWindow(bool doAll)
           case 1: //clampSquare
             clampSquare->setChecked(atts->GetClampSquare());
             break;
+          case 2: //navigationMode
+            if (atts->GetNavigationMode() == InteractorAttributes::Trackball)
+                navigationMode->setButton(0);
+            else
+                navigationMode->setButton(1);
+            break;
         }
     }
 }
@@ -152,6 +187,8 @@ QvisInteractorWindow::UpdateWindow(bool doAll)
 // Creation:   Mon Aug 16 15:29:28 PST 2004
 //
 // Modifications:
+//   Eric Brugger, Thu Nov 11 11:49:41 PST 2004
+//   I added the navigation mode toggle buttons.
 //   
 // ****************************************************************************
 
@@ -173,6 +210,11 @@ QvisInteractorWindow::GetCurrentValues(int which_widget)
         // Nothing for clampSquare
     }
 
+    // Do navigateMode
+    if(which_widget == 1 || doAll)
+    {
+        // Nothing for navigateMode
+    }
 }
 
 
@@ -283,6 +325,18 @@ void
 QvisInteractorWindow::clampSquareChanged(bool val)
 {
     atts->SetClampSquare(val);
+    SetUpdate(false);
+    Apply();
+}
+
+
+void
+QvisInteractorWindow::navigationModeChanged(int val)
+{
+    if (val == 0)
+        atts->SetNavigationMode(InteractorAttributes::Trackball);
+    else
+        atts->SetNavigationMode(InteractorAttributes::Flythrough);
     SetUpdate(false);
     Apply();
 }

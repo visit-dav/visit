@@ -1,11 +1,14 @@
 #include <VisitHotPointInteractor.h>
 
 #include <BadInteractorException.h>
+#include <InteractorAttributes.h>
 #include <VisWindowInteractorProxy.h>
 #include <VisitInteractiveTool.h>
+#include <VisWindow.h>
 #include <VisWindowTypes.h>
 #include <vtkRenderWindowInteractor.h>
 
+#include <FlyThrough.h>
 #include <Lineout2D.h>
 #include <Navigate2D.h>
 #include <Navigate3D.h>
@@ -41,11 +44,15 @@
 //   Hank Childs, Wed Jul 21 08:16:10 PDT 2004
 //   Initialize currentInteractor.
 //
+//   Eric Brugger, Thu Oct 28 15:56:10 PDT 2004
+//   Added flyThrough.
+//
 // ****************************************************************************
 
 VisitHotPointInteractor::VisitHotPointInteractor(VisWindowInteractorProxy &v) :
     VisitInteractor(v), currentHotPoint()
 {
+    flyThrough        = NULL;
     lineout2D         = NULL;
     navigate2D        = NULL;
     navigate3D        = NULL;
@@ -79,10 +86,18 @@ VisitHotPointInteractor::VisitHotPointInteractor(VisWindowInteractorProxy &v) :
 //   Eric Brugger, Wed Oct 15 17:36:06 PDT 2003
 //   Added navigateCurve.
 //
+//   Eric Brugger, Thu Oct 28 15:56:10 PDT 2004
+//   Added flyThrough.
+//
 // ****************************************************************************
 
 VisitHotPointInteractor::~VisitHotPointInteractor()
 {
+    if(flyThrough != NULL)
+    {
+        flyThrough->Delete();
+        flyThrough = NULL;
+    }
     if(lineout2D != NULL)
     {
         lineout2D->Delete();
@@ -299,6 +314,10 @@ VisitHotPointInteractor::Start2DMode(INTERACTION_MODE mode)
 //   Kathleen Bonnell, Fri Jun 27 16:34:31 PDT 2003  
 //   Handle NodePick, ZonePick. 
 //   
+//   Eric Brugger, Thu Oct 28 15:56:10 PDT 2004
+//   Modified to use the FlyThrough interactor when the navigation mode
+//   is Flythrough and we are in navigate mode.
+//
 // ****************************************************************************
 
 void
@@ -309,16 +328,30 @@ VisitHotPointInteractor::Start3DMode(INTERACTION_MODE mode)
         return;
     }
 
+    VisWindow *vw = proxy;
+    const InteractorAttributes *atts=vw->GetInteractorAtts();
+
     VisitInteractor  *newInteractor  = NULL;
     switch(mode)
     {
     case LINEOUT:  // use Navigate until a 3d lineout mode can be implemented.
     case NAVIGATE:
-        if(navigate3D == NULL)
+        if (atts->GetNavigationMode() == InteractorAttributes::Trackball)
         {
-            navigate3D = new Navigate3D(proxy);
+            if(navigate3D == NULL)
+            {
+                navigate3D = new Navigate3D(proxy);
+            }
+            newInteractor = navigate3D;
         }
-        newInteractor = navigate3D;
+        else
+        {
+            if(flyThrough == NULL)
+            {
+                flyThrough = new FlyThrough(proxy);
+            }
+            newInteractor = flyThrough;
+        }
         break;
     case ZONE_PICK: // fall-through
     case NODE_PICK:
