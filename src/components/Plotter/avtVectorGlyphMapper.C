@@ -10,6 +10,7 @@
 #include <vtkProperty.h>
 #include <vtkDataSetMapper.h>
 #include <vtkLookupTable.h>
+#include <vtkVisItPolyDataNormals.h>
 #include <BadIndexException.h>
 
 
@@ -41,6 +42,9 @@
 //    Kathleen Bonnell, Tue Dec  3 16:10:40 PST 2002  
 //    Re-initialize lineWidth, based on new LineAttributes. 
 //
+//    Hank Childs, Wed May  5 14:19:54 PDT 2004
+//    Added poly data normals.
+//
 // ****************************************************************************
 
 avtVectorGlyphMapper::avtVectorGlyphMapper(vtkPolyData *g)
@@ -53,6 +57,7 @@ avtVectorGlyphMapper::avtVectorGlyphMapper(vtkPolyData *g)
     colorByMag        = true;
     scale             = 0.2;
     glyphFilter       = 0;
+    normalsFilter     = NULL;
     nGlyphFilters     = 0;
     lut = NULL;
 }
@@ -63,6 +68,11 @@ avtVectorGlyphMapper::avtVectorGlyphMapper(vtkPolyData *g)
 //
 //  Programmer: Hank Childs
 //  Creation:   March 23, 2001
+//
+//  Modifications:
+//
+//    Hank Childs, Wed May  5 14:19:54 PDT 2004
+//    Deleted poly data normals.
 //
 // ****************************************************************************
 
@@ -84,6 +94,17 @@ avtVectorGlyphMapper::~avtVectorGlyphMapper()
             }
         }
         delete [] glyphFilter;
+    }
+    if (normalsFilter != NULL)
+    {
+        for (int i = 0 ; i < nGlyphFilters ; i++)
+        {
+            if (normalsFilter[i] != NULL)
+            {
+                normalsFilter[i]->Delete();
+            }
+        }
+        delete [] normalsFilter;
     }
 }
 
@@ -110,6 +131,9 @@ avtVectorGlyphMapper::~avtVectorGlyphMapper()
 //    Kathleen Bonnell, Wed Aug 29 16:44:31 PDT 2001 
 //    Set mappers lookup table with member lut. 
 //    
+//    Hank Childs, Wed May  5 14:19:54 PDT 2004
+//    Added poly data normals.
+//
 // ****************************************************************************
 
 void
@@ -123,6 +147,10 @@ avtVectorGlyphMapper::CustomizeMappers(void)
             {
                 glyphFilter[i]->SetSource(glyph);
                 glyphFilter[i]->SetScaleModeToScaleByVector();
+            }
+            if (normalsFilter[i] != NULL)
+            {
+                normalsFilter[i]->SetNormalTypeToCell();
             }
         }
     }
@@ -169,6 +197,9 @@ avtVectorGlyphMapper::CustomizeMappers(void)
 //    Removed unsupported parameter nRenModes, and logic associated with
 //    it, including glyphFilterStride..
 //
+//    Hank Childs, Wed May  5 14:19:54 PDT 2004
+//    Added poly data normals.
+//
 // ****************************************************************************
 
 void
@@ -185,12 +216,25 @@ avtVectorGlyphMapper::SetUpFilters(int nDoms)
         }
         delete [] glyphFilter;
     }
+    if (normalsFilter != NULL)
+    {
+        for (int i = 0 ; i < nGlyphFilters ; i++)
+        {
+            if (normalsFilter[i] != NULL)
+            {
+                normalsFilter[i]->Delete();
+            }
+        }
+        delete [] normalsFilter;
+    }
 
     nGlyphFilters     = nDoms;
     glyphFilter       = new vtkGlyph3D*[nGlyphFilters];
+    normalsFilter      = new vtkVisItPolyDataNormals*[nGlyphFilters];
     for (int i = 0 ; i < nGlyphFilters ; i++)
     {
         glyphFilter[i] = NULL;
+        normalsFilter[i] = NULL;
     }
 }
 
@@ -216,6 +260,9 @@ avtVectorGlyphMapper::SetUpFilters(int nDoms)
 //    Kathleen Bonnell, Mon Aug 20 18:19:25 PDT 2001
 //    Removed unsupported paramter 'mode' and logic associated with it.
 //
+//    Hank Childs, Wed May  5 14:19:54 PDT 2004
+//    Added poly data normals.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -234,10 +281,15 @@ avtVectorGlyphMapper::InsertFilters(vtkDataSet *ds, int dom)
         //
         glyphFilter[dom] = vtkGlyph3D::New();
     }
+    if (normalsFilter[dom] == NULL)
+    {
+        normalsFilter[dom] = vtkVisItPolyDataNormals::New();
+    }
 
     glyphFilter[dom]->SetInput(ds);
+    normalsFilter[dom]->SetInput(glyphFilter[dom]->GetOutput());
 
-    return glyphFilter[dom]->GetOutput();
+    return normalsFilter[dom]->GetOutput();
 }
 
 

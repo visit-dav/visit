@@ -178,6 +178,9 @@ avtPickQuery::PreExecute(void)
 //    Kathleen Bonnell, Tue Mar 16 15:55:18 PST 2004
 //    Remove any "mesh" PickVarInfo's, as they are unnecessary
 //
+//    Kathleen Bonnell, Wed May  5 13:24:52 PDT 2004 
+//    Added error message. 
+//
 // ****************************************************************************
 
 void
@@ -229,7 +232,9 @@ avtPickQuery::PostExecute(void)
             MPI_Send(buf, size, MPI_UNSIGNED_CHAR, 0, myRank, MPI_COMM_WORLD);
             delete [] buf;
         }
+        return;
     }
+
 #endif
 
     //
@@ -244,7 +249,15 @@ avtPickQuery::PostExecute(void)
         }
     }
 
-
+    //
+    //  If we haven't been able to get the necessary info, and
+    //  no previous error was set, then
+    //
+    if (!pickAtts.GetFulfilled() && !pickAtts.GetError())
+    {
+        pickAtts.SetError(true);
+        pickAtts.SetErrorMessage("Chosen pick did not intersect surface.");
+    }
 }
 
 
@@ -333,6 +346,9 @@ avtPickQuery::PostExecute(void)
 //    Kathleen Bonnell, Tue May  4 14:26:42 PDT 2004
 //    Replaced avtCallback to a pickAtts error message. 
 //
+//    Kathleen Bonnell, Wed May  5 13:24:52 PDT 2004 
+//    Added error messages. 
+//
 // ****************************************************************************
 
 void
@@ -369,7 +385,8 @@ avtPickQuery::Execute(vtkDataSet *ds, const int dom)
             debug5 << "PICK BIG PROBLEM!  "
                    << "Could not find zone corresponding to pick point" << endl;
             pickAtts.SetErrorMessage("Pick encountered an internal "
-                "error.  Please contact a VisIt developer"); 
+                "error (could not find zone corresponding to pick point).\n"
+                "Please contact a VisIt developer"); 
             pickAtts.SetError(true);
             return;
         }
@@ -440,6 +457,10 @@ avtPickQuery::Execute(vtkDataSet *ds, const int dom)
             // SetDomain and ElementNumber to -1 to indicate failure. 
             pickAtts.SetDomain(-1);
             pickAtts.SetElementNumber(-1);
+            pickAtts.SetErrorMessage("Pick encountered an internal "
+                "error (could not find incident elements).\n"
+                "Please contact a VisIt developer"); 
+            pickAtts.SetError(true);
             return; 
         }
     } 

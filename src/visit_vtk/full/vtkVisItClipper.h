@@ -8,7 +8,7 @@ class vtkImplicitFunction;
 class vtkUnstructuredGrid;
 
 // ****************************************************************************
-//  Class:  vtkVisItClipper3D
+//  Class:  vtkVisItClipper
 //
 //  Purpose:
 //    Clips a dataset using an implicit function.  This is a wholesale
@@ -26,26 +26,30 @@ class vtkUnstructuredGrid;
 //    Jeremy Meredith, Mon Feb 16 19:08:16 PST 2004
 //    Added PolyData support.
 //
+//    Jeremy Meredith, Wed May  5 13:06:14 PDT 2004
+//    Renamed without the "3D" because I also made it support 2D.
+//    Changed it to a single cutoff for scalars to make the math more robust.
+//
 // ****************************************************************************
-class VISIT_VTK_API vtkVisItClipper3D
+class VISIT_VTK_API vtkVisItClipper
     : public vtkDataSetToUnstructuredGridFilter
 {
   public:
-    vtkTypeRevisionMacro(vtkVisItClipper3D,vtkDataSetToUnstructuredGridFilter);
+    vtkTypeRevisionMacro(vtkVisItClipper,vtkDataSetToUnstructuredGridFilter);
     void PrintSelf(ostream& os, vtkIndent indent);
 
-    static vtkVisItClipper3D *New();
+    static vtkVisItClipper *New();
 
     virtual void SetClipFunction(vtkImplicitFunction*);
-    virtual void SetClipScalars(float*, float, float);
+    virtual void SetClipScalars(float*, float);
     virtual void SetInsideOut(bool);
 
     void SetCellList(int *, int);
 
 
   protected:
-    vtkVisItClipper3D();
-    ~vtkVisItClipper3D();
+    vtkVisItClipper();
+    ~vtkVisItClipper();
 
     void Execute();
     void RectilinearGridExecute();
@@ -58,16 +62,14 @@ class VISIT_VTK_API vtkVisItClipper3D
     int *CellList;
     int  CellListSize;
   private:
-    bool insideOut;
+    bool   insideOut;
     vtkImplicitFunction *clipFunction;
     float *scalarArray;
-    float minValue;
-    float maxValue;
-    float avgValue;
-    float halfDist;
+    float  scalarCutoff;
+    bool   scalarFlip;
 
-    vtkVisItClipper3D(const vtkVisItClipper3D&);  // Not implemented.
-    void operator=(const vtkVisItClipper3D&);  // Not implemented.
+    vtkVisItClipper(const vtkVisItClipper&);  // Not implemented.
+    void operator=(const vtkVisItClipper&);  // Not implemented.
 };
 
 

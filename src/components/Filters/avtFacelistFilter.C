@@ -325,6 +325,9 @@ avtFacelistFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
 //    Hank Childs, Tue Jun  3 15:07:11 PDT 2003
 //    Account for avtFacelists that are "bad".
 //
+//    Hank Childs, Wed May  5 16:18:44 PDT 2004
+//    Do not prevent normal calculation for rectilinear grids.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -342,7 +345,6 @@ avtFacelistFilter::Take3DFaces(vtkDataSet *in_ds, int domain)
         rf->SetInput((vtkRectilinearGrid *) in_ds);
         rf->SetOutput(pd);
         rf->Update();
-        GetOutput()->GetInfo().GetValidity().SetNormalsAreInappropriate(true);
         out_ds = pd;
         mustDeReference = true;
         break;

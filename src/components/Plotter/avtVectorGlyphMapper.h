@@ -13,6 +13,7 @@
 class     vtkGlyph3D;
 class     vtkLookupTable;
 class     vtkPolyData;
+class     vtkVisItPolyDataNormals;
 
 
 // ****************************************************************************
@@ -47,6 +48,9 @@ class     vtkPolyData;
 //    Hank Childs, Wed Sep 24 09:42:29 PDT 2003
 //    Renamed to vector glyph mapper.
 //
+//    Hank Childs, Tue May  4 16:47:29 PDT 2004
+//    Allow for normals-generation.
+//
 // ****************************************************************************
 
 class PLOTTER_API  avtVectorGlyphMapper : public avtMapper
@@ -72,6 +76,7 @@ class PLOTTER_API  avtVectorGlyphMapper : public avtMapper
     float                      scale;
 
     vtkGlyph3D               **glyphFilter;
+    vtkVisItPolyDataNormals  **normalsFilter;
     int                        nGlyphFilters;
 
     virtual void               CustomizeMappers(void);

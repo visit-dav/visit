@@ -216,6 +216,12 @@
 #    Brad Whitlock, Fri Apr 23 14:23:32 PST 2004
 #    Added additional libraries to enable prebinding on MacOS X.
 #
+#    Hank CHilds, Tue May  4 16:29:54 PDT 2004
+#    Added vtkVisIt...PolyDataMapper.
+#
+#    Jeremy Meredith, Wed May  5 12:54:49 PDT 2004
+#    Renamed vtkVisItClipper3D to vtkVisItClipper because it supports 2D.
+#
 ##############################################################################
 
 ##
@@ -266,8 +272,10 @@ SRC=InitVTK.C \
     vtkVisItCellLocator.C \
     vtkVisItContourFilter.C \
     vtkVisItCutter.C \
-    vtkVisItClipper3D.C \
+    vtkVisItClipper.C \
     vtkVisItFeatureEdges.C \
+    vtkVisItMesaPolyDataMapper.C \
+    vtkVisItOpenGLPolyDataMapper.C \
     vtkVisItPolyDataNormals.C \
     vtkVisItSTLWriter.C \
     vtkVisItScalarTree.C \

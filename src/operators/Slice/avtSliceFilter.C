@@ -918,6 +918,9 @@ avtSliceFilter::ReleaseData(void)
 //    Do not decrease the topological dimension of points (slicing points still
 //    yields points).
 //
+//    Hank Childs, Tue May  4 16:19:32 PDT 2004
+//    Calculate normals if we are not projecting to 2D.
+//
 // ****************************************************************************
 
 void
@@ -930,8 +933,10 @@ avtSliceFilter::RefashionDataObjectInfo(void)
     if (inAtts.GetTopologicalDimension() >= 1)
         outAtts.SetTopologicalDimension(inAtts.GetTopologicalDimension()-1);
 
+    if (atts.GetProject2d())
+        outValidity.SetNormalsAreInappropriate(true);
+
     outValidity.InvalidateZones();
-    outValidity.SetNormalsAreInappropriate(true);
     if (atts.GetProject2d())
     {
         outAtts.SetSpatialDimension(2);
