@@ -16,5 +16,7 @@ PyObject       *PyTopologyAttributes_WrapPyObject(const TopologyAttributes *attr
 void            PyTopologyAttributes_SetLogging(bool val);
 void            PyTopologyAttributes_SetDefaults(const TopologyAttributes *atts);
 
+PyObject       *PyTopologyAttributes_StringRepresentation(const TopologyAttributes *atts);
+
 #endif
 

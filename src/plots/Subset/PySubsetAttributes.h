@@ -16,5 +16,7 @@ PyObject       *PySubsetAttributes_WrapPyObject(const SubsetAttributes *attr);
 void            PySubsetAttributes_SetLogging(bool val);
 void            PySubsetAttributes_SetDefaults(const SubsetAttributes *atts);
 
+PyObject       *PySubsetAttributes_StringRepresentation(const SubsetAttributes *atts);
+
 #endif
 

@@ -540,6 +540,9 @@ dnl
 dnl    Jeremy Meredith, Tue Feb 22 18:48:19 PST 2005
 dnl    Renamed "convert" to "visitconvert".
 dnl
+dnl    Hank Childs, Wed Apr  6 13:13:10 PDT 2005
+dnl    Added tools/writer.
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -3007,6 +3010,7 @@ TOOLS_FILES="tools/Makefile
              tools/silex/Makefile
              tools/surfcomp/Makefile
              tools/windowmaker/Makefile 
+             tools/writer/Makefile 
              tools/xml/Makefile
              tools/xmledit/Makefile"
 VISIT_VTK_FILES="visit_vtk/Makefile

@@ -2,6 +2,7 @@
 #include <DataNode.h>
 #include <ColorAttribute.h>
 
+
 // ****************************************************************************
 // Method: ColorAttributeList::ColorAttributeList
 //
@@ -295,6 +296,12 @@ ColorAttributeList::NewInstance(bool copy) const
 
 void
 ColorAttributeList::SelectAll()
+{
+    Select(0, (void *)&colors);
+}
+
+void
+ColorAttributeList::SelectColors()
 {
     Select(0, (void *)&colors);
 }

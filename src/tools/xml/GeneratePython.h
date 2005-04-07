@@ -84,6 +84,9 @@ inline char toupper(char c)
 //    Brad Whitlock, Wed Dec 8 15:55:24 PST 2004
 //    Added support for variable names.
 //
+//    Brad Whitlock, Wed Apr 6 11:55:26 PDT 2005
+//    Added support for generating code to set/get ColorAttributeList.
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -1516,8 +1519,8 @@ class AttsGeneratorVariableName : public virtual VariableName , public virtual P
 
     virtual void StringRepresentation(ostream &c, const QString &classname)
     {
-        c << "   SNPRINTF(tmpStr, 1000, \"" << name << " = \\\"%s\\\"\\n\", atts->" << MethodNameGet() << "().c_str());" << endl;
-        c << "   str += tmpStr;" << endl;
+        c << "    SNPRINTF(tmpStr, 1000, \"" << name << " = \\\"%s\\\"\\n\", atts->" << MethodNameGet() << "().c_str());" << endl;
+        c << "    str += tmpStr;" << endl;
     }
 };
 
@@ -1529,7 +1532,7 @@ class AttsGeneratorAtt : public virtual Att , public virtual PythonGeneratorFiel
 {
   public:
     AttsGeneratorAtt(const QString &t, const QString &n, const QString &l)
-        : Att(t,n,l), PythonGeneratorField("att",n,l), Field("att",n,l) { }
+        : Att(t,n,l), PythonGeneratorField("att",n,l), Field("att",n,l) { cerr << "**** AttType=" << AttType << endl;}
 
     virtual void WriteGetAttr(ostream &c, const QString &className)
     {
@@ -1546,17 +1549,279 @@ class AttsGeneratorAtt : public virtual Att , public virtual PythonGeneratorFiel
         return false;
     }
 
+    virtual void WriteSetMethodBody(ostream &c, const QString &className)
+    {
+        if(AttType == "ColorAttributeList")
+        {
+            c << "    PyObject *pyobj = NULL;" << endl;
+            c << "    ColorAttributeList &cL = obj->data->Get" << Name << "();" << endl;
+            c << "    int index = 0;" << endl;
+            c << "    int c[4] = {0,0,0,255};" << endl;
+            c << "    bool setTheColor = true;" << endl;
+            c << endl;
+            c << "    if(!PyArg_ParseTuple(args, \"iiiii\", &index, &c[0], &c[1], &c[2], &c[3]))" << endl;
+            c << "    {" << endl;
+            c << "        if(!PyArg_ParseTuple(args, \"iiii\", &index, &c[0], &c[1], &c[2]))" << endl;
+            c << "        {" << endl;
+            c << "            double dr, dg, db, da;" << endl;
+            c << "            if(PyArg_ParseTuple(args, \"idddd\", &index, &dr, &dg, &db, &da))" << endl;
+            c << "            {" << endl;
+            c << "                c[0] = int(dr);" << endl;
+            c << "                c[1] = int(dg);" << endl;
+            c << "                c[2] = int(db);" << endl;
+            c << "                c[3] = int(da);" << endl;
+            c << "            }" << endl;
+            c << "            else if(PyArg_ParseTuple(args, \"iddd\", &index, &dr, &dg, &db))" << endl;
+            c << "            {" << endl;
+            c << "                c[0] = int(dr);" << endl;
+            c << "                c[1] = int(dg);" << endl;
+            c << "                c[2] = int(db);" << endl;
+            c << "                c[3] = 255;" << endl;
+            c << "            }" << endl;
+            c << "            else" << endl;
+            c << "            {" << endl;
+            c << "                if(!PyArg_ParseTuple(args, \"iO\", &index, &pyobj))" << endl;
+            c << "                {" << endl;
+            c << "                    if(PyArg_ParseTuple(args, \"O\", &pyobj))" << endl;
+            c << "                    {" << endl;
+            c << "                        setTheColor = false;" << endl;
+            c << "                        if(PyTuple_Check(pyobj))" << endl;
+            c << "                        {" << endl;
+            c << "                            // Make sure that the tuple is the right size." << endl;
+            c << "                            if(PyTuple_Size(pyobj) < cL.GetNumColorAttributes())" << endl;
+            c << "                                return NULL;" << endl;
+            c << endl;
+            c << "                            // Make sure that the tuple is the right size." << endl;
+            c << "                            bool badInput = false;" << endl;
+            c << "                            int i, *C = new int[4 * cL.GetNumColorAttributes()];" << endl;
+            c << "                            for(i = 0; i < PyTuple_Size(pyobj) && !badInput; ++i)" << endl;
+            c << "                            {" << endl;
+            c << "                                PyObject *item = PyTuple_GET_ITEM(pyobj, i);" << endl;
+            c << "                                if(PyTuple_Check(item) &&" << endl;
+            c << "                                   PyTuple_Size(item) == 3 || PyTuple_Size(item) == 4)" << endl;
+            c << "                                {" << endl;
+            c << "                                    C[i*4] = 0;" << endl;
+            c << "                                    C[i*4+1] = 0;" << endl;
+            c << "                                    C[i*4+2] = 0;" << endl;
+            c << "                                    C[i*4+3] = 255;" << endl;
+            c << "                                    for(int j = 0; j < PyTuple_Size(item) && !badInput; ++j)" << endl;
+            c << "                                    {" << endl;
+            c << "                                        PyObject *colorcomp = PyTuple_GET_ITEM(item, j);" << endl;
+            c << "                                        if(PyInt_Check(colorcomp))" << endl;
+            c << "                                           C[i*4+j] = int(PyInt_AS_LONG(colorcomp));" << endl;
+            c << "                                        else if(PyFloat_Check(colorcomp))" << endl;
+            c << "                                           C[i*4+j] = int(PyFloat_AS_DOUBLE(colorcomp));" << endl;
+            c << "                                        else" << endl;
+            c << "                                           badInput = true;" << endl;
+            c << "                                    }" << endl;
+            c << "                                }" << endl;
+            c << "                                else" << endl;
+            c << "                                    badInput = true;" << endl;
+            c << "                            }" << endl;
+            c << endl;
+            c << "                            if(badInput)" << endl;
+            c << "                            {" << endl;
+            c << "                                delete [] C;" << endl;
+            c << "                                return NULL;" << endl;
+            c << "                            }" << endl;
+            c << endl;
+            c << "                            for(i = 0; i < cL.GetNumColorAttributes(); ++i)" << endl;
+            c << "                                cL[i].SetRgba(C[i*4], C[i*4+1], C[i*4+2], C[i*4+3]);" << endl;
+            c << "                            delete [] C;" << endl;
+            c << "                        }" << endl;
+            c << "                        else if(PyList_Check(pyobj))" << endl;
+            c << "                        {" << endl;
+            c << "                            // Make sure that the list is the right size." << endl;
+            c << "                            if(PyList_Size(pyobj) < cL.GetNumColorAttributes())" << endl;
+            c << "                                return NULL;" << endl;
+            c << endl;
+            c << "                            // Make sure that the tuple is the right size." << endl;
+            c << "                            bool badInput = false;" << endl;
+            c << "                            int i, *C = new int[4 * cL.GetNumColorAttributes()];" << endl;
+            c << "                            for(i = 0; i < PyList_Size(pyobj) && !badInput; ++i)" << endl;
+            c << "                            {" << endl;
+            c << "                                PyObject *item = PyList_GET_ITEM(pyobj, i);" << endl;
+            c << "                                if(PyTuple_Check(item) &&" << endl;
+            c << "                                   PyTuple_Size(item) == 3 || PyTuple_Size(item) == 4)" << endl;
+            c << "                                {" << endl;
+            c << "                                    C[i*4] = 0;" << endl;
+            c << "                                    C[i*4+1] = 0;" << endl;
+            c << "                                    C[i*4+2] = 0;" << endl;
+            c << "                                    C[i*4+3] = 255;" << endl;
+            c << "                                    for(int j = 0; j < PyTuple_Size(item) && !badInput; ++j)" << endl;
+            c << "                                    {" << endl;
+            c << "                                        PyObject *colorcomp = PyTuple_GET_ITEM(item, j);" << endl;
+            c << "                                        if(PyInt_Check(colorcomp))" << endl;
+            c << "                                           C[i*4+j] = int(PyInt_AS_LONG(colorcomp));" << endl;
+            c << "                                        else if(PyFloat_Check(colorcomp))" << endl;
+            c << "                                           C[i*4+j] = int(PyFloat_AS_DOUBLE(colorcomp));" << endl;
+            c << "                                        else" << endl;
+            c << "                                           badInput = true;" << endl;
+            c << "                                    }" << endl;
+            c << "                                }" << endl;
+            c << "                                else" << endl;
+            c << "                                    badInput = true;" << endl;
+            c << "                            }" << endl;
+            c << endl;
+            c << "                            if(badInput)" << endl;
+            c << "                            {" << endl;
+            c << "                                delete [] C;" << endl;
+            c << "                                return NULL;" << endl;
+            c << "                            }" << endl;
+            c << endl;
+            c << "                            for(i = 0; i < cL.GetNumColorAttributes(); ++i)" << endl;
+            c << "                                cL[i].SetRgba(C[i*4], C[i*4+1], C[i*4+2], C[i*4+3]);" << endl;
+            c << endl;
+            c << "                            delete [] C;" << endl;
+            c << "                        }" << endl;
+            c << "                        else" << endl;
+            c << "                            return NULL;" << endl;
+            c << "                    }" << endl;
+            c << "                }" << endl;
+            c << "                else" << endl;
+            c << "                {" << endl;
+            c << "                    if(!PyTuple_Check(pyobj))" << endl;
+            c << "                        return NULL;" << endl;
+            c << endl;
+            c << "                    // Make sure that the tuple is the right size." << endl;
+            c << "                    if(PyTuple_Size(pyobj) < 3 || PyTuple_Size(pyobj) > 4)" << endl;
+            c << "                        return NULL;" << endl;
+            c << endl;
+            c << "                    // Make sure that all elements in the tuple are ints." << endl;
+            c << "                    for(int i = 0; i < PyTuple_Size(pyobj); ++i)" << endl;
+            c << "                    {" << endl;
+            c << "                        PyObject *item = PyTuple_GET_ITEM(pyobj, i);" << endl;
+            c << "                        if(PyInt_Check(item))" << endl;
+            c << "                            c[i] = int(PyInt_AS_LONG(PyTuple_GET_ITEM(pyobj, i)));" << endl;
+            c << "                        else if(PyFloat_Check(item))" << endl;
+            c << "                            c[i] = int(PyFloat_AS_DOUBLE(PyTuple_GET_ITEM(pyobj, i)));" << endl;
+            c << "                        else" << endl;
+            c << "                            return NULL;" << endl;
+            c << "                    }" << endl;
+            c << "                }" << endl;
+            c << "            }" << endl;
+            c << "        }" << endl;
+            c << "        PyErr_Clear();" << endl;
+            c << "    }" << endl;
+            c << endl;
+            c << "    if(index < 0 || index >= cL.GetNumColorAttributes())" << endl;
+            c << "        return NULL;" << endl;
+            c << endl;
+            c << "    // Set the color in the object." << endl;
+            c << "    if(setTheColor)" << endl;
+            c << "        cL[index] = ColorAttribute(c[0], c[1], c[2], c[3]);" << endl;
+            c << "    cL.SelectColors();" << endl;
+            c << "    obj->data->Select" << Name << "();" << endl;
+        }
+        else
+        {
+            c << "    // NOT IMPLEMENTED!!!" << endl;
+            c << "    // name=" << name << ", type=" << type << endl;
+        }
+    }
+
+    virtual void WriteGetMethodBody(ostream &c, const QString &className)
+    {
+        if(AttType == "ColorAttributeList")
+        {
+            c << "    PyObject *retval = NULL;" << endl;
+            c << "    ColorAttributeList &cL = obj->data->Get" << Name << "();" << endl;
+            c << endl;
+            c << "    int index = 0;" << endl;
+            c << "    if(PyArg_ParseTuple(args, \"i\", &index))" << endl;
+            c << "    {" << endl;
+            c << "        if(index < 0 || index >= cL.GetNumColorAttributes())" << endl;
+            c << "            return NULL;" << endl;
+            c << endl;
+            c << "        // Allocate a tuple the with enough entries to hold the singleColor." << endl;
+            c << "        retval = PyTuple_New(4);" << endl;
+            c << "        const unsigned char *c = cL.GetColorAttribute(index).GetColor();" << endl;
+            c << "        PyTuple_SET_ITEM(retval, 0, PyInt_FromLong(long(c[0])));" << endl;
+            c << "        PyTuple_SET_ITEM(retval, 1, PyInt_FromLong(long(c[1])));" << endl;
+            c << "        PyTuple_SET_ITEM(retval, 2, PyInt_FromLong(long(c[2])));" << endl;
+            c << "        PyTuple_SET_ITEM(retval, 3, PyInt_FromLong(long(c[3])));" << endl;
+            c << "    }" << endl;
+            c << "    else" << endl;
+            c << "    {" << endl;
+            c << "        PyErr_Clear();" << endl;
+            c << endl;
+            c << "        // Return the whole thing." << endl;
+            c << "        retval = PyList_New(cL.GetNumColorAttributes());" << endl;
+            c << "        for(int i = 0; i < cL.GetNumColorAttributes(); ++i)" << endl;
+            c << "        {" << endl;
+            c << "            const unsigned char *c = cL.GetColorAttribute(i).GetColor();" << endl;
+            c << endl;
+            c << "            PyObject *t = PyTuple_New(4);" << endl;
+            c << "            PyTuple_SET_ITEM(t, 0, PyInt_FromLong(long(c[0])));" << endl;
+            c << "            PyTuple_SET_ITEM(t, 1, PyInt_FromLong(long(c[1])));" << endl;
+            c << "            PyTuple_SET_ITEM(t, 2, PyInt_FromLong(long(c[2])));" << endl;
+            c << "            PyTuple_SET_ITEM(t, 3, PyInt_FromLong(long(c[3])));" << endl;
+            c << endl;
+            c << "            PyList_SET_ITEM(retval, i, t);" << endl;
+            c << "        }" << endl;
+            c << "    }" << endl;
+        }
+        else
+        {
+            c << "    // NOT IMPLEMENTED!!!" << endl;
+            c << "    // name=" << name << ", type=" << type << endl;
+            c << "    PyObject *retval = NULL;" << endl;
+        }
+    }
+
+    virtual void PrintValue(ostream &c, const QString &classname)
+    {
+        if(AttType == "ColorAttributeList")
+        {
+            c << "    fprintf(fp, \"" << name << " = [\");" << endl;
+            c << "    {   const ColorAttributeList &cL = obj->data->Get" << Name << "();" << endl;
+            c << "        for(int i = 0; i < cL.GetNumColorAttributes(); ++i)" << endl;
+            c << "        {" << endl;
+            c << "            const unsigned char *c = cL[i].GetColor();" << endl;
+            c << "            fprintf(fp, \"(%d, %d, %d, %d)\"," << endl;
+            c << "                    int(c[0]), int(c[1]), int(c[2]), int(c[3]));" << endl;
+            c << "            if(i < cL.GetNumColorAttributes()-1)" << endl;
+            c << "                fprintf(fp, \", \");" << endl;
+            c << "        }" << endl;
+            c << "    }" << endl;
+            c << "    fprintf(fp, \"]\\n\");" << endl;
+        }
+        else
+        {
+            c << "// Code to print " << name << " not implemented." << endl;
+        }
+    }
+
     virtual void StringRepresentation(ostream &c, const QString &classname)
     {
-        c << "#if 0" << endl;
-        c << "// Ifdef this code out until all attributes have Python StringRepresentation methods" << endl;
-        c << "    { // new scope" << endl;
-        c << "         PyObject *obj = Py" << attType << "_StringRepresentation(atts->" << MethodNameGet() << "());" << endl;
-        c << "         str += \"" << name << " = {\";" << endl;
-        c << "         if(obj != 0) str += PyString_AS_STRING(obj);" << endl;
-        c << "         str += \"}\\n\";" << endl;
-        c << "    }" << endl;
-        c << "#endif" << endl;
+        if(AttType == "ColorAttributeList")
+        {
+            c << "    { const ColorAttributeList &cL = atts->Get" << Name << "();" << endl;
+            c << "        str += \"" << name << " = [\";" << endl;
+            c << "        for(int i = 0; i < cL.GetNumColorAttributes(); ++i)" << endl;
+            c << "        {" << endl;
+            c << "            const unsigned char *c = cL[i].GetColor();" << endl;
+            c << "            SNPRINTF(tmpStr, 1000, \"(%d, %d, %d, %d)\"," << endl;
+            c << "                    int(c[0]), int(c[1]), int(c[2]), int(c[3]));" << endl;
+            c << "            str += tmpStr;" << endl;
+            c << "            if(i < cL.GetNumColorAttributes()-1)" << endl;
+            c << "                str += \", \";" << endl;
+            c << "        }" << endl;
+            c << "        str += \"]\\n\";" << endl;
+            c << "    }" << endl;
+        }
+        else
+        {
+            c << "#if 0" << endl;
+            c << "// Ifdef this code out until all attributes have Python StringRepresentation methods" << endl;
+            c << "    { // new scope" << endl;
+            c << "         PyObject *obj = Py" << attType << "_StringRepresentation(atts->" << MethodNameGet() << "());" << endl;
+            c << "         str += \"" << name << " = {\";" << endl;
+            c << "         if(obj != 0) str += PyString_AS_STRING(obj);" << endl;
+            c << "         str += \"}\\n\";" << endl;
+            c << "    }" << endl;
+            c << "#endif" << endl;
+        }
     }
 };
 
