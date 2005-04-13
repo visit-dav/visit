@@ -423,7 +423,10 @@ avtLabelRenderer::GetCellCenterArray()
 // Creation:   Mon Oct 25 09:01:34 PDT 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Apr 13 13:08:36 PST 2005
+//   I removed a check that prevented the single cell label from showing up
+//   when a mesh is sliced.
+//
 // ****************************************************************************
 
 void
@@ -433,8 +436,7 @@ avtLabelRenderer::SetupSingleCellLabel()
     // Figure out where the single cell, if specified, should be plotted.
     //
     vtkIdType nCells = input->GetNumberOfCells();
-
-    if(singleCellIndex >= 0 && singleCellIndex < nCells)
+    if(singleCellIndex >= 0)
     {
         //
         // Look for the cell center array that the label filter calculated.
@@ -503,7 +505,10 @@ avtLabelRenderer::SetupSingleCellLabel()
 // Creation:   Mon Oct 25 09:02:31 PDT 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Apr 13 13:07:31 PST 2005
+//   Removed a check that prevented the single node label from showing up
+//   when a mesh is sliced.
+//
 // ****************************************************************************
 
 void
@@ -514,7 +519,7 @@ avtLabelRenderer::SetupSingleNodeLabel()
     //
     vtkPoints *p = input->GetPoints();
     vtkIdType npts = p ? p->GetNumberOfPoints() : 0;
-    if(singleNodeIndex >= 0 && singleNodeIndex < npts)
+    if(singleNodeIndex >= 0)
     {
         //
         // Look for the original cell number array.

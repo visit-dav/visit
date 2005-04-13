@@ -4232,6 +4232,10 @@ ViewerSubject::DeleteDatabaseCorrelation()
 //    Made it re-use command line arguments if we had some, as long as 
 //    we were in nowin mode and no explicit arguments were given.
 //
+//    Brad Whitlock, Wed Apr 13 14:58:21 PST 2005
+//    I made it issue a warning message if a compute engine is already
+//    running on the desired host.
+//
 // ****************************************************************************
 
 void
@@ -4249,18 +4253,32 @@ ViewerSubject::OpenComputeEngine()
     bool givenOptions = (options.size() > 0);
     bool givenCLArgs  = (engineParallelArguments.size() > 0);
 
-    if (givenOptions)
-        ViewerEngineManager::Instance()->CreateEngine(EngineKey(hostName,""),
+    EngineKey key(hostName, "");
+    if(ViewerEngineManager::Instance()->EngineExists(key))
+    {
+        string msg("VisIt did not open a new compute engine host ");
+        msg += hostName;
+        msg += " because a compute engine is already running there.";
+        Warning(msg.c_str());
+    }
+    else if (givenOptions)
+    {
+        ViewerEngineManager::Instance()->CreateEngine(key,
                                                       options, true,
                                                       numEngineRestarts);
+    }
     else if (nowin && givenCLArgs)
-        ViewerEngineManager::Instance()->CreateEngine(EngineKey(hostName,""),
+    {
+        ViewerEngineManager::Instance()->CreateEngine(key,
                                                       engineParallelArguments,
                                                       true, numEngineRestarts);
+    }
     else
-        ViewerEngineManager::Instance()->CreateEngine(EngineKey(hostName,""),
+    {
+        ViewerEngineManager::Instance()->CreateEngine(key,
                                                       options, false,
                                                       numEngineRestarts);
+    }
 }
 
 // ****************************************************************************

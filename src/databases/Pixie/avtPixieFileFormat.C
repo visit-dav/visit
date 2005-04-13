@@ -1221,8 +1221,11 @@ avtPixieFileFormat::ReadVariableFromFile(int timestate, const std::string &varna
 //   Converts an array to a float array.
 //
 // Arguments:
+//   data      : The data array to be converted.
+//   nels      : The number of elements in the data array.
+//   allocated : Whether a new data array had to be allocated.
 //
-// Returns:    
+// Returns:    Pointer to the converted data.
 //
 // Note:       
 //
@@ -1234,12 +1237,13 @@ avtPixieFileFormat::ReadVariableFromFile(int timestate, const std::string &varna
 // ****************************************************************************
 
 template <class T>
-float *ConvertToFloat(const T *data, int nels)
+float *ConvertToFloat(const T *data, int nels, bool &allocated)
 {
     float *f;
 
     if(sizeof(float) == sizeof(T))
     {
+        allocated = false;
         // Change to float in the same memory.
         f = (float *)data;
         for(int i = 0; i < nels; ++i)
@@ -1247,6 +1251,7 @@ float *ConvertToFloat(const T *data, int nels)
     }
     else
     {
+        allocated = true;
         f = new float[nels]; 
         for(int i = 0; i < nels; ++i)
             f[i] = (float)data[i];
@@ -1277,6 +1282,9 @@ float *ConvertToFloat(const T *data, int nels)
 //   Eric Brugger, Tue Oct 26 08:36:53 PDT 2004
 //   I modified the routine to read a hyperslab of the array.
 //
+//   Brad Whitlock, Wed Apr 13 11:27:03 PDT 2005
+//   I changed the calls to ConvertToFloat.
+//
 // ****************************************************************************
 
 bool
@@ -1305,7 +1313,8 @@ avtPixieFileFormat::ReadCoordinateFields(int timestate, const VarInfo &info,
         //
         for(i = 0; i < nDims; ++i)
         {
-            int nels = dims[0] * dims[1] * dims[2];
+            bool allocated;
+            int  nels = dims[0] * dims[1] * dims[2];
             if(H5Tequal(vars[i]->second.nativeVarType, H5T_NATIVE_INT) > 0 ||
                H5Tequal(vars[i]->second.nativeVarType, H5T_NATIVE_UINT) > 0)
             {
@@ -1314,8 +1323,9 @@ avtPixieFileFormat::ReadCoordinateFields(int timestate, const VarInfo &info,
                 {
                     ReadVariableFromFile(timestate, vars[i]->first,
                         vars[i]->second, dims, (void *)data);
-                    coords[i] = ConvertToFloat(data, nels);
-                    delete [] data;
+                    coords[i] = ConvertToFloat(data, nels, allocated);
+                    if(allocated)
+                        delete [] data;
                 }
                 CATCH(VisItException)
                 {
@@ -1337,8 +1347,9 @@ avtPixieFileFormat::ReadCoordinateFields(int timestate, const VarInfo &info,
                 {
                     ReadVariableFromFile(timestate, vars[i]->first,
                         vars[i]->second, dims, (void *)data);
-                    coords[i] = ConvertToFloat(data, nels);
-                    delete [] data;
+                    coords[i] = ConvertToFloat(data, nels, allocated);
+                    if(allocated)
+                        delete [] data;
                 }
                 CATCH(VisItException)
                 {

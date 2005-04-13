@@ -210,6 +210,9 @@ class avtDatabaseMetaData;
 //    Jeremy Meredith, Mon Mar 21 10:28:46 PST 2005
 //    Added SendSimulationCommand.
 //
+//    Brad Whitlock, Wed Apr 13 14:50:50 PST 2005
+//    Made EngineExists be public.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerEngineManager : public ViewerServerManager,
@@ -264,6 +267,7 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
     void ClearCacheForAllEngines();
 
     static EngineList *GetEngineList();
+    bool EngineExists(const EngineKey &ek) const;
 
     // Global engine computation attributes
     static MaterialAttributes *GetMaterialClientAtts();
@@ -315,7 +319,7 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
     ViewerEngineManager();
     void RemoveEngine(const EngineKey &ek, bool close);
     void RemoveFailedEngine(const EngineKey &ek);
-    bool EngineExists(const EngineKey &ek) const;
+
     void UpdateEngineList();
     EngineProxy *GetEngine(const EngineKey &ek);
     void LaunchMessage(const EngineKey &ek) const;

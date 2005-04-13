@@ -686,7 +686,10 @@ avtOpenGLLabelRenderer::DrawAllLabels2D(bool drawNodeLabels, bool drawCellLabels
 // Modifications:
 //    Jeremy Meredith, Mon Nov  8 17:16:21 PST 2004
 //    Caching is now done on a per-vtk-dataset basis.
-//   
+//
+//    Brad Whitlock, Wed Apr 13 12:01:21 PDT 2005
+//    I fixed a problem with how the bins array was allocated.
+//
 // ****************************************************************************
 
 void
@@ -718,7 +721,8 @@ avtOpenGLLabelRenderer::DrawDynamicallySelectedLabels2D(bool drawNodeLabels,
     // The cell aspect ratio is computed from the longest label.
     //
     const double char_aspect = 0.8;
-    double bin_aspect = maxLabelLength * char_aspect;
+    int LL = (maxLabelLength < 1) ? 1 : maxLabelLength;
+    double bin_aspect = LL * char_aspect;
     double nx_target = sqrt (atts.GetNumberOfLabels() * win_aspect / bin_aspect);
     double ny_target = sqrt (atts.GetNumberOfLabels() * bin_aspect / win_aspect);
 
@@ -763,8 +767,8 @@ avtOpenGLLabelRenderer::DrawDynamicallySelectedLabels2D(bool drawNodeLabels,
     // Create an array to record whether or not we've drawn a label
     // for a bin.
     //
-    char  *bins = new char[bin_x_n * bin_x_y];
-    memset (bins, -1, bin_x_n * bin_y_n * sizeof (char)); /* -1 */
+    char  *bins = new char[bin_x_y];
+    memset (bins, -1, bin_x_y * sizeof (char)); /* -1 */
 
     //
     // Iterate through the node labels and draw them if they fit into bins.
