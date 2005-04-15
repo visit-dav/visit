@@ -1,5 +1,5 @@
 #
-#                            Copyright 2000 - 2004
+#                            Copyright 2000 - 2005
 #                 The Regents of the University of California.
 #                             All rights reserved.
 # 
@@ -52,6 +52,9 @@
 #    Brad Whitlock, Mon Apr 26 09:07:26 PDT 2004
 #    I added a couple more libraries to get prebinding working on MacOS X.
 #
+#    Brad Whitlock, Fri Apr 15 10:29:41 PDT 2005
+#    I added PostponedAction.
+#
 ##############################################################################
 
 ##
@@ -66,8 +69,8 @@ CPPFLAGS=-I. @CPPFLAGS@
 ##
 ## Files...
 ##
-SRC=ViewerRPC.C
-HDR=ViewerRPC.h
+SRC=PostponedAction.C ViewerRPC.C
+HDR=PostponedAction.h ViewerRPC.h
 OBJ=$(SRC:.C=.o)
 LIB=libviewerrpc
 LIBS=-lmisc -lstate -lcomm -lutility

@@ -999,7 +999,9 @@ ViewerActionManager::GetAction(ActionIndex index) const
 // Creation:   Thu Jan 30 11:15:11 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Apr 15 09:12:03 PDT 2005
+//   Added code to tell the action its RPC type.
+//
 // ****************************************************************************
 
 void
@@ -1007,6 +1009,7 @@ ViewerActionManager::AddAction(ViewerActionBase *action, ActionIndex index)
 {
     int i(index);
     actions[i] = action;
+    action->SetRPCType((ViewerRPC::ViewerRPCType)index);
 }
 
 // ****************************************************************************

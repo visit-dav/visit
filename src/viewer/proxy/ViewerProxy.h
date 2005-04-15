@@ -32,6 +32,7 @@ class MessageAttributes;
 class PickAttributes;
 class PlotList;
 class PluginManagerAttributes;
+class PostponedAction;
 class PrinterAttributes;
 class ProcessAttributes;
 class QueryAttributes;
@@ -363,6 +364,9 @@ class Xfer;
 //    Jeremy Meredith, Mon Mar 21 08:50:53 PST 2005
 //    Added SendSimulationCommand methods.
 //
+//    Brad Whitlock, Fri Apr 15 11:02:14 PDT 2005
+//    Added postponedAction;
+//
 // ****************************************************************************
 
 class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
@@ -683,6 +687,7 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
     int                        iconifyOpcode;
 
     // State objects
+    PostponedAction            *postponedAction;
     SyncAttributes             *syncAtts;
     GlobalAttributes           *globalAtts;
     DatabaseCorrelationList    *correlationList;

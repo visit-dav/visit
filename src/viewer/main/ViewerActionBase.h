@@ -28,6 +28,9 @@ class ViewerWindowManager;
 //   Brad Whitlock, Tue Jul 1 10:17:46 PDT 2003
 //   I added CreateNode and SetFromNode.
 //
+//   Brad Whitlock, Fri Apr 15 09:10:55 PDT 2005
+//   I added SetRPCType, GetArgs.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerActionBase : public QObject
@@ -59,7 +62,10 @@ public:
     virtual void RemoveFromToolbar(QToolBar *toolbar) = 0;
     virtual void UpdateConstruction() { }
 
+    void         SetRPCType(ViewerRPC::ViewerRPCType);
+
     static  void SetArgs(const ViewerRPC &a);
+    static  const ViewerRPC &GetArgs();
 public slots:
     virtual void Activate();
     virtual void Activate(bool setup);
@@ -77,6 +83,7 @@ protected:
     ViewerWindow               *window;
     int                         windowId;
     bool                        allowVisualRepresentation;
+    ViewerRPC::ViewerRPCType    rpcType;
 
     static ViewerWindowManager *windowMgr;
     static ViewerRPC            args;

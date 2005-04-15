@@ -6525,30 +6525,6 @@ ViewerWindow::GetScalableAutoThreshold() const
 }
 
 // ****************************************************************************
-// Method: ViewerWindow::SetPopupEnabled
-//
-// Purpose: 
-//   Sets the enabled state for the popup menu.
-//
-// Arguments:
-//   val : The enabled state.
-//
-// Programmer: Brad Whitlock
-// Creation:   Wed Oct 30 15:22:13 PST 2002
-//
-// Modifications:
-//   Brad Whitlock, Tue Feb 4 15:45:44 PST 2003
-//   I removed the call to UpdateMenu since it no longer exists.
-//
-// ****************************************************************************
-
-void
-ViewerWindow::SetPopupEnabled(bool val)
-{
-    popupMenu->SetEnabled(val);
-}
-
-// ****************************************************************************
 // Method: ViewerWindow::CreateNode
 //
 // Purpose: 

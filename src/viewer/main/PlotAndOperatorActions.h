@@ -195,6 +195,9 @@ public:
 //   Brad Whitlock, Tue Mar 16 15:35:44 PST 2004
 //   I added changeMenuIconSize.
 //
+//   Brad Whitlock, Fri Apr 15 13:57:12 PST 2005
+//   I removed host and database.
+//
 // ****************************************************************************
 
 class QMenuBar;
@@ -230,7 +233,6 @@ private slots:
 private:
     QMenuBar              *menu;
     int                   maxPixmapWidth, maxPixmapHeight;
-    std::string           host, database;
     PluginEntryVector     pluginEntries;
     VariableMenuPopulator menuPopulator;
 };

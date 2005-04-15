@@ -128,6 +128,9 @@ import java.util.Vector;
 //   Brad Whitlock, Fri Apr 8 11:57:46 PDT 2005
 //   Overloaded AddOperator.
 //
+//   Brad Whitlock, Fri Apr 15 10:32:35 PDT 2005
+//   Added PostponedAction.
+//
 // ****************************************************************************
 
 public class ViewerProxy implements SimpleObserver
@@ -149,6 +152,7 @@ public class ViewerProxy implements SimpleObserver
 
         // State objects
         rpc = new ViewerRPC();
+        postponedAction = new PostponedAction();
         syncAtts = new SyncAttributes();
         appearanceAtts = new AppearanceAttributes();
         pluginAtts = new PluginManagerAttributes();
@@ -220,6 +224,7 @@ public class ViewerProxy implements SimpleObserver
             // Set up xfer and the RPC's
             xfer.SetRemoteProcess(viewer);
             xfer.Add(rpc);
+            xfer.Add(postponedAction);
             xfer.Add(syncAtts);
             xfer.Add(appearanceAtts);
             xfer.Add(pluginAtts);
@@ -1674,6 +1679,7 @@ public class ViewerProxy implements SimpleObserver
 // State objects
 //
     private ViewerRPC                rpc;
+    private PostponedAction          postponedAction;
     private SyncAttributes           syncAtts;
     private AppearanceAttributes     appearanceAtts;
     private PluginManagerAttributes  pluginAtts;

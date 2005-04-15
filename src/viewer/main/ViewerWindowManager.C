@@ -7998,7 +7998,9 @@ ViewerWindowManager::UsesLargeIcons() const
 // Creation:   Wed Oct 30 15:00:11 PST 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Apr 15 16:23:02 PST 2005
+//   Removed code to disable popup menus.
+//
 // ****************************************************************************
 
 void
@@ -8009,15 +8011,6 @@ ViewerWindowManager::BeginEngineExecute()
     //
     clientAtts->SetExecuting(true);
     UpdateGlobalAtts();
-
-    //
-    // Disable all of the popup menus.
-    //
-    for(int windowIndex = 0; windowIndex < maxWindows; ++windowIndex)
-    {
-        if(windows[windowIndex] != 0)
-            windows[windowIndex]->SetPopupEnabled(false);
-    }
 }
 
 // ****************************************************************************
@@ -8030,6 +8023,8 @@ ViewerWindowManager::BeginEngineExecute()
 // Creation:   Wed Oct 30 15:00:11 PST 2002
 //
 // Modifications:
+//   Brad Whitlock, Fri Apr 15 16:23:02 PST 2005
+//   Removed code to enable popup menus.
 //   
 // ****************************************************************************
 
@@ -8041,15 +8036,6 @@ ViewerWindowManager::EndEngineExecute()
     //
     clientAtts->SetExecuting(false);
     UpdateGlobalAtts();
-
-    //
-    // Enable all of the popup menus.
-    //
-    for(int windowIndex = 0; windowIndex < maxWindows; ++windowIndex)
-    {
-        if(windows[windowIndex] != 0)
-            windows[windowIndex]->SetPopupEnabled(true);
-    }
 }
 
 // ****************************************************************************

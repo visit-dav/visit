@@ -38,6 +38,7 @@
 #include <PickAttributes.h>
 #include <PlotList.h>
 #include <PluginManagerAttributes.h>
+#include <PostponedAction.h>
 #include <PrinterAttributes.h>
 #include <ProcessAttributes.h>
 #include <QueryAttributes.h>
@@ -168,6 +169,9 @@
 //    Mark C. Miller, Tue Mar  8 17:59:40 PST 2005
 //    Added ProcessAttributes
 //
+//    Brad Whitlock, Fri Apr 15 11:02:54 PDT 2005
+//    Added postponedAction.
+//
 // ****************************************************************************
 
 ViewerProxy::ViewerProxy() : SimpleObserver(), argv()
@@ -175,6 +179,7 @@ ViewerProxy::ViewerProxy() : SimpleObserver(), argv()
     //
     // Create the state objects.
     //
+    postponedAction      = new PostponedAction;
     syncAtts             = new SyncAttributes;
     hostProfiles         = new HostProfileList;
     globalAtts           = new GlobalAttributes;
@@ -351,6 +356,9 @@ ViewerProxy::ViewerProxy() : SimpleObserver(), argv()
 //    Mark C. Miller, Tue Mar  8 17:59:40 PST 2005
 //    Added ProcessAttributes
 //
+//    Brad Whitlock, Fri Apr 15 11:03:21 PDT 2005
+//    Added postponedAction.
+//
 // ****************************************************************************
 
 ViewerProxy::~ViewerProxy()
@@ -364,6 +372,7 @@ ViewerProxy::~ViewerProxy()
     //
     // Delete the state objects.
     //
+    delete postponedAction;
     delete hostProfiles;
     delete globalAtts;
     delete correlationList;
@@ -772,6 +781,11 @@ ViewerProxy::AddArgument(const std::string &arg)
 //    Mark C. Miller, Tue Mar  8 17:59:40 PST 2005
 //    Added ProcessAttributes
 //
+//    Brad Whitlock, Fri Apr 15 10:38:27 PDT 2005
+//    Added PostponedAction state object. The clients never need it but it
+//    has to be in place because the internal viewer implementation needs a
+//    slot in xfer to use to store postponed actions.
+//
 // ****************************************************************************
 
 void
@@ -814,6 +828,7 @@ ViewerProxy::Create()
     //
     // Attach the AttributeSubjects to the xfer object.
     //
+    xfer->Add(postponedAction);
     xfer->Add(syncAtts);
     xfer->Add(appearanceAtts);
     xfer->Add(pluginManagerAttributes);

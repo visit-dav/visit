@@ -1,7 +1,11 @@
 #include <ViewerActionBase.h>
 #include <ViewerActionManager.h>
+#include <ViewerSubject.h>
 #include <ViewerWindow.h>
 #include <ViewerWindowManager.h>
+
+// An external pointer to the ViewerSubject.
+extern ViewerSubject *viewerSubject;
 
 // Static members
 ViewerRPC ViewerActionBase::args;
@@ -14,16 +18,16 @@ ViewerWindowManager *ViewerActionBase::windowMgr = 0;
 //   Constructor
 //
 // Arguments:
-//
-// Returns:    
-//
-// Note:       
+//   win  : The viewer window that owns the action.
+//   name : The name of the object instance.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Feb 5 17:16:35 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Apr 15 09:06:46 PDT 2005
+//   Added rpcType initialization.
+//
 // ****************************************************************************
 
 ViewerActionBase::ViewerActionBase(ViewerWindow *win, const char *name) :
@@ -32,6 +36,7 @@ ViewerActionBase::ViewerActionBase(ViewerWindow *win, const char *name) :
     window = win;
     windowId = window->GetWindowId();
     allowVisualRepresentation = true;
+    rpcType = ViewerRPC::CloseRPC;
     windowMgr = ViewerWindowManager::Instance();
 }
 
@@ -77,6 +82,49 @@ ViewerActionBase::SetArgs(const ViewerRPC &a)
 }
 
 // ****************************************************************************
+// Method: ViewerActionBase::GetArgs
+//
+// Purpose: 
+//   Returns a reference to the args object.
+//
+// Returns:    A reference to the args object.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 15 10:46:22 PDT 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+const ViewerRPC &
+ViewerActionBase::GetArgs()
+{
+    return args;
+}
+
+// ****************************************************************************
+// Method: ViewerActionBase::SetRPCType
+//
+// Purpose: 
+//   Lets the action know which RPC it is associated with.
+//
+// Arguments:
+//   t : The RPC type that the action handles.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 15 09:09:21 PDT 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerActionBase::SetRPCType(ViewerRPC::ViewerRPCType t)
+{
+    rpcType = t;
+}
+
+// ****************************************************************************
 // Method: ViewerActionBase::Activate
 //
 // Purpose: 
@@ -112,23 +160,37 @@ ViewerActionBase::Activate()
 //   The window's HideMenu method does not seem to always be called so let's
 //   hide it after executing each action if it needs to be hidden.
 //
+//   Brad Whitlock, Thu Apr 14 16:16:11 PST 2005
+//   I added code to postpone the action's viewer rpc.
+//
 // ****************************************************************************
 
 void
-ViewerActionBase::Activate(bool setup)
+ViewerActionBase::Activate(bool interactive)
 {
-    // Allow the action to store values in the args object.
-    if(setup)
+    if(interactive)
+    {
+        // Allow the action to store values in the args object.      
         Setup();
 
-    // Before handling the action, do this.
-    PreExecute();
+        // Postpone the action until it is safe to execute it by scheduling it
+        // with the ViewerSubject. By always scheduling interactive actions
+        // in this way, we make it safe to handle them with other input that
+        // came in from the client.
+        args.SetRPCType(rpcType);
+        viewerSubject->PostponeAction(this);
+    }
+    else
+    {
+        // Before handling the action, do this.
+        PreExecute();
 
-    // Handle the action
-    Execute();
+        // Handle the action
+        Execute();
 
-    // Tell the action manager to update all of the actions.
-    window->GetActionManager()->Update();
+        // Tell the action manager to update all of the actions.
+        window->GetActionManager()->Update();
+    }
 
     // Hide the menu since we're done with the action.
     window->HideMenu();

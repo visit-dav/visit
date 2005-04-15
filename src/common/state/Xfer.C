@@ -573,6 +573,27 @@ Xfer::GetOutputConnection() const
 }
 
 // ****************************************************************************
+// Method: Xfer::GetBufferedInputConnection
+//
+// Purpose: 
+//   Returns a pointer to the buffered input connection.
+//
+// Returns:    Connection*
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Apr 14 16:39:09 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+Connection *
+Xfer::GetBufferedInputConnection()
+{
+    return &bufferedInput;
+}
+
+// ****************************************************************************
 // Method: Xfer::GetNextGuido
 //
 // Purpose: 

@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+  <Attribute name="PostponedAction" purpose="This class contains the attributes for controlling the viewer vis a postponed action." persistent="false" exportAPI="VIEWER_RPC_API" exportInclude="viewerrpc_exports.h">
+    <Field name="RPC" label="RPC" type="att" subtype="ViewerRPC">
+    </Field>
+    <Field name="window" label="window" type="int">
+      0
+    </Field>
+  </Attribute>

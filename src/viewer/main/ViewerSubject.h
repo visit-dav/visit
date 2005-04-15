@@ -12,6 +12,7 @@
 
 #include <ParentProcess.h>
 #include <ViewerRPC.h>
+#include <PostponedAction.h>
 #include <Xfer.h>
 #include <VisWindowTypes.h>
 #include <avtTypes.h>
@@ -34,6 +35,7 @@ class QTimer;
 class SILAttributes;
 class StatusAttributes;
 class SyncAttributes;
+class ViewerActionBase;
 class ViewerConfigManager;
 class ViewerMessageBuffer;
 class ViewerMetaDataObserver;
@@ -345,6 +347,9 @@ struct avtDefaultPlotMetaData;
 //    Jeremy Meredith, Mon Apr  4 17:36:13 PDT 2005
 //    Added SendSimulationCommand.
 //
+//    Brad Whitlock, Thu Apr 14 16:30:48 PST 2005
+//    Added PostponeViewerRPC.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerSubject : public QObject
@@ -383,6 +388,7 @@ public:
     void CreateNode(DataNode *node, bool detailed);
     void SetFromNode(DataNode *node);
 
+    void PostponeAction(ViewerActionBase *);
 public slots:
     bool ReadFromParentAndCheckForInterruption();
     void ProcessFromParent();
@@ -510,6 +516,7 @@ private:
 
 private slots:
     void HandleViewerRPC();
+    void HandlePostponedAction();
     void HandleSync();
     void HandleMetaDataUpdated(const std::string &host, const std::string &db,
                                const avtDatabaseMetaData *md);
@@ -557,6 +564,8 @@ private:
 
     ViewerRPCObserver     *viewerRPCObserver;
     ViewerRPC              viewerRPC;
+    PostponedAction        postponedAction;
+    ViewerRPCObserver     *postponedActionObserver;
     ViewerRPCObserver     *syncObserver;
 
     MessageAttributes     *messageAtts;
