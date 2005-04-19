@@ -46,6 +46,9 @@ $0 = shift @ARGV;
 #    Jeremy Meredith, Fri Jan  7 13:48:45 PST 2005
 #    My last fix wasn't completely portable across perl versions.  I fixed it.
 #
+#    Jeremy Meredith, Tue Apr 19 08:36:36 PDT 2005
+#    Made sure both "-convert" and "-visitconvert" work.
+#
 ###############################################################################
 
 
@@ -131,6 +134,7 @@ while (scalar(@ARGV) > 0) {
            $arg eq "-xmledit"         or
            $arg eq "-makemili"        or
            $arg eq "-convert"         or
+           $arg eq "-visitconvert"    or
            $arg eq "-silex"           or
            $arg eq "-surfcomp"        or
            $arg eq "-text2polys"      or
