@@ -1320,6 +1320,13 @@ vtkDataArray *vtkExodusReader::ReadPointDataVector(int exoid, int startIdx,
   
 //----------------------------------------------------------------------------
 // Read the first three vectors and put in vectors as displacement.
+//
+// Modifications:
+//
+//   Mark C. Miller, Thu Apr 21 09:37:41 PDT 2005
+//   Fixed off-by-one error in indexing the truth table
+//
+//----------------------------------------------------------------------------
 vtkDataArray *vtkExodusReader::ReadCellDataArray(int exoid, int varIndex)
 {
   int error, idx, blockIdx, num;
@@ -1351,7 +1358,7 @@ vtkDataArray *vtkExodusReader::ReadCellDataArray(int exoid, int varIndex)
       continue;
       }
     int index = blockIdx*this->CellDataArrayLength + varIndex;
-    if (this->CellVarTruthTable->GetValue(index) == 0)
+    if (this->CellVarTruthTable->GetValue(index-1) == 0)
       {
       for (idx = 0; idx < num; ++idx)
         {

@@ -45,6 +45,12 @@
 #include <string>
 using std::string;
 
+// We do this so that the strings command on the .o file
+// can tell us whether or not DEBUG_MEMORY_LEAKS was turned on
+#ifdef DEBUG_MEMORY_LEAKS
+const char *dummy_string1 = "DEBUG_MEMORY_LEAKS";
+#endif
+
 #ifdef PARALLEL
 #include <parallel.h>
 #else
@@ -83,6 +89,9 @@ const int INTERRUPT_MESSAGE_TAG = GetUniqueStaticMessageTag();
 //    Jeremy Meredith, Mon Apr  4 15:58:23 PDT 2005
 //    Added simulationCommandCallback.
 //
+//    Mark C. Miller Thu Apr 21 09:37:41 PDT 2005
+//    Set simulationCommandRPC to NULL
+//
 // ****************************************************************************
 Engine::Engine()
 {
@@ -116,6 +125,7 @@ Engine::Engine()
     setWinAnnotAttsRPC = NULL;
     cloneNetworkRPC = NULL;
     procInfoRPC = NULL;
+    simulationCommandRPC = NULL;
 }
 
 // ****************************************************************************
@@ -128,6 +138,9 @@ Engine::Engine()
 //
 //    Hank Childs, Mon Mar 21 11:21:42 PST 2005
 //    Delete RPCs.
+//
+//    Mark C. Miller, Thu Apr 21 09:37:41 PDT 2005
+//    deleted simulationCommandRPC
 //
 // ****************************************************************************
 Engine::~Engine()
@@ -161,6 +174,7 @@ Engine::~Engine()
     delete setWinAnnotAttsRPC;
     delete cloneNetworkRPC;
     delete procInfoRPC;
+    delete simulationCommandRPC;
 }
 
 // ****************************************************************************

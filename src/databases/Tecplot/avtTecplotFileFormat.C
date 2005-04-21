@@ -427,6 +427,11 @@ avtTecplotFileFormat::ParseElements(int numElements, const string &elemType)
 //  Programmer:  Jeremy Meredith
 //  Creation:    December 10, 2004
 //
+//  Modifications:
+//
+//    Mark C. Miller, Thu Apr 21 09:37:41 PDT 2005
+//    Fixed leak for 1D case
+//
 // ****************************************************************************
 void
 avtTecplotFileFormat::ParseFEBLOCK(int numNodes, int numElements,
@@ -440,6 +445,10 @@ avtTecplotFileFormat::ParseFEBLOCK(int numNodes, int numElements,
     if (topologicalDimension == 2 || topologicalDimension == 3)
     {
         meshes.push_back(ugrid);
+    }
+    else
+    {
+        ugrid->Delete();
     }
 }
 
@@ -457,6 +466,11 @@ avtTecplotFileFormat::ParseFEBLOCK(int numNodes, int numElements,
 //  Programmer:  Jeremy Meredith
 //  Creation:    December 10, 2004
 //
+//  Modifications:
+//
+//    Mark C. Miller, Thu Apr 21 09:37:41 PDT 2005
+//    Fixed leak for 1D case
+//
 // ****************************************************************************
 void
 avtTecplotFileFormat::ParseFEPOINT(int numNodes, int numElements,
@@ -471,6 +485,10 @@ avtTecplotFileFormat::ParseFEPOINT(int numNodes, int numElements,
     {
         meshes.push_back(ugrid);
     }
+    else
+    {
+        ugrid->Delete();
+    }
 }
 
 // ****************************************************************************
@@ -484,6 +502,11 @@ avtTecplotFileFormat::ParseFEPOINT(int numNodes, int numElements,
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    December 10, 2004
+//
+//  Modifications:
+//
+//    Mark C. Miller, Thu Apr 21 09:37:41 PDT 2005
+//    Fixed leak for 1D case
 //
 // ****************************************************************************
 void
@@ -511,6 +534,10 @@ avtTecplotFileFormat::ParseBLOCK(int numI, int numJ, int numK)
     {
         meshes.push_back(sgrid);
     }
+    else
+    {
+        sgrid->Delete();
+    }
 }
 
 // ****************************************************************************
@@ -524,6 +551,11 @@ avtTecplotFileFormat::ParseBLOCK(int numI, int numJ, int numK)
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    December 10, 2004
+//
+//  Modifications:
+//
+//    Mark C. Miller, Thu Apr 21 09:37:41 PDT 2005
+//    Fixed leak for 1D case
 //
 // ****************************************************************************
 void
@@ -550,6 +582,10 @@ avtTecplotFileFormat::ParsePOINT(int numI, int numJ, int numK)
     if (topologicalDimension == 2 || topologicalDimension == 3)
     {
         meshes.push_back(sgrid);
+    }
+    else
+    {
+        sgrid->Delete();
     }
 }
 

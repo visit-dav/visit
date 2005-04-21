@@ -6420,6 +6420,9 @@ avtSiloFileFormat::CalcSpecies(DBfile *dbfile, char *specname)
 //    Hank Childs, Mon Dec  9 13:21:13 PST 2002
 //    Use the facelist's origin rather than the unstructured meshes.
 //
+//    Mark C. Miller, Thu Apr 21 09:37:41 PDT 2005
+//    Freed ucdmesh prior to early return for null facelist
+//
 // ****************************************************************************
 
 avtFacelist *
@@ -6444,6 +6447,7 @@ avtSiloFileFormat::CalcExternalFacelist(DBfile *dbfile, char *mesh)
         //
         // There is no facelist object, this may be an interior block.
         //
+        DBFreeUcdmesh(um);
         return NULL;
     }
 

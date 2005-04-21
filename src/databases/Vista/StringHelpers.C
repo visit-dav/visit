@@ -210,6 +210,8 @@ StringHelpers::FindRE(const char *strToSearch, const char *re)
 
     int rval = regexec(&cre, strToSearch, 1, &pm, 0);
 
+    regfree(&cre);
+
     if (rval == REG_NOMATCH)
         return FindNone;
 

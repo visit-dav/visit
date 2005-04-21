@@ -3610,6 +3610,9 @@ avtGenericDatabase::AddOriginalNodesArray(vtkDataSet *ds, const int domain)
 //    Hank Childs, Thu Mar 10 16:48:19 PST 2005
 //    Fix memory leak with boundary plots.
 //
+//    Mark C. Miller, Thu Apr 21 09:37:41 PDT 2005
+//    Made error message a little clearer
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -3636,8 +3639,11 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
 
     if (mat == NULL || ds == NULL || mat->GetNZones() !=ds->GetNumberOfCells())
     {
-        EXCEPTION1(InvalidDBTypeException, "The material object and dataset "
-                                           "object are different sizes.");
+        char msg[128];
+        SNPRINTF(msg,sizeof(msg),"The material object with nzones=%d and dataset "
+            "object with ncells=%d do not agree.", mat->GetNZones(),
+            ds->GetNumberOfCells());
+        EXCEPTION1(InvalidDBTypeException, msg); 
     }
 
     //
@@ -5836,6 +5842,8 @@ avtGenericDatabase::CommunicateGhostNodesFromDomainBoundariesFromFile(
 //    Hank Childs, Mon Apr  4 13:21:09 PDT 2005
 //    Fix problem where curDisp was being deleted twice in parallel.
 //
+//    Mark C. Miller, Thu Apr 21 09:37:41 PDT 2005
+//    Fixed leak for 'ln' object
 // ****************************************************************************
 
 bool
@@ -5895,6 +5903,7 @@ avtGenericDatabase::CommunicateGhostZonesFromGlobalNodeIds(
             ptr[j] = j;
         ln->SetName("avtOriginalNodeId");
         copy->GetPointData()->AddArray(ln);
+        ln->Delete();
         vtkUnstructuredGridFacelistFilter *ff =
                                       vtkUnstructuredGridFacelistFilter::New();
         ff->SetInput(copy);

@@ -2337,6 +2337,9 @@ avtCurvilinearDomainBoundaries::ExchangeMesh(vector<int>         domainNum,
 //    Mark C. Miller, Mon Jan 12 19:21:22 PST 2004
 //    Added check and exception for wrong VTK grid type
 //
+//    Mark C. Miller, Thu Apr 21 09:37:41 PDT 2005
+//    Fixed leak for coord arrays
+//
 // ****************************************************************************
 
 vector<vtkDataSet*>
@@ -2415,6 +2418,8 @@ avtRectilinearDomainBoundaries::ExchangeMesh(vector<int>        domainNum,
 
         out[d] = outm;
     }
+
+    bhf_float->FreeBoundaryData(coord);
  
     return out;
 }

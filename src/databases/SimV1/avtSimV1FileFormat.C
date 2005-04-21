@@ -19,6 +19,8 @@
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
 #include <vtkUnstructuredGrid.h>
+#include <vtkCellArray.h>
+#include <vtkPolyData.h>
 
 using std::string;
 using std::vector;
@@ -130,6 +132,10 @@ avtSimV1FileFormat::FreeUpResources(void)
 //  Programmer: Jeremy Meredith
 //  Creation:   March 14, 2005
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Apr 14 16:48:04 PDT 2005
+//    Fixed groups.  Added curves and materials.
+//
 // ****************************************************************************
 
 void
@@ -190,10 +196,22 @@ avtSimV1FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         if (mesh->numGroups > 0 && mmd->groupPieceName)
             mesh->groupPieceName = mmd->groupPieceName;
 
-        // FILL IN GROUP NAME STUFF
-        vector<int> groupIds(mesh->numGroups);
+        mesh->groupIds.resize(mesh->numGroups);
+        for (int g = 0; g<mesh->numGroups; g++)
+        {
+            mesh->groupIds[g] = mmd->groupIds[g];
+        }
 
-        // OH, and units too; in fact, double check everything
+        mesh->xLabel = mmd->xLabel ? mmd->xLabel : "";
+        mesh->yLabel = mmd->yLabel ? mmd->yLabel : "";
+        mesh->zLabel = mmd->zLabel ? mmd->zLabel : "";
+
+        if (mmd->units)
+        {
+            mesh->xUnits = mmd->units;
+            mesh->yUnits = mmd->units;
+            mesh->zUnits = mmd->units;
+        }
 
         md->Add(mesh);
     }
@@ -224,8 +242,6 @@ avtSimV1FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         AddScalarVarToMetaData(md, smd->name, smd->meshName, (avtCentering)(smd->centering));
         //md->Add(scalar);
     }
-
-    md->Print(cout);
 
     for (int c=0; c<vsmd->numCommands; c++)
     {
@@ -258,7 +274,46 @@ avtSimV1FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         md->SetSimInfo(simInfo);
     }
 
-    // DO THE MATERIALS, EXPRESSIONS, CURVES, ETC.
+    for (int mat=0; mat<vsmd->numMaterials; mat++)
+    {
+        VisIt_MaterialMetaData *mmd = &vsmd->materials[mat];
+        avtMaterialMetaData *material = new avtMaterialMetaData;
+        material->name = mmd->name;
+        material->originalName = mmd->name;
+        material->meshName = mmd->meshName;
+        material->numMaterials = mmd->numMaterials;
+        material->materialNames.clear();
+        for (int m = 0; m < material->numMaterials; m++)
+        {
+            material->materialNames.push_back(mmd->materialNames[m]);
+        }
+
+        md->Add(material);
+    }
+
+    for (int cc=0; cc<vsmd->numCurves; cc++)
+    {
+        VisIt_CurveMetaData *cmd = &vsmd->curves[cc];
+        avtCurveMetaData *curve = new avtCurveMetaData;
+        curve->name = cmd->name;
+        curve->originalName = cmd->name;
+        if (cmd->xUnits)
+            curve->xUnits = cmd->xUnits;
+        if (cmd->yUnits)
+            curve->yUnits = cmd->yUnits;
+        if (cmd->xLabel)
+            curve->xLabel = cmd->xLabel;
+        if (cmd->yLabel)
+            curve->yLabel = cmd->yLabel;
+
+        curveMeshes.insert(curve->name);
+
+        md->Add(curve);
+    }
+
+    md->Print(cout);
+
+    // DO THE EXPRESSIONS, ETC.
 #endif
 }
 
@@ -280,6 +335,10 @@ avtSimV1FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //  Programmer: Jeremy Meredith
 //  Creation:   March 14, 2005
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Apr 21 09:26:12 PDT 2005
+//    Added rectilinear and fixed curvilinear support.
+//
 // ****************************************************************************
 vtkDataSet *
 avtSimV1FileFormat::GetMesh(int domain, const char *meshname)
@@ -287,6 +346,12 @@ avtSimV1FileFormat::GetMesh(int domain, const char *meshname)
 #ifdef MDSERVER
     return NULL;
 #else
+
+    if (curveMeshes.count(meshname))
+    {
+        return GetCurve(meshname);
+    }
+
     if (!cb.GetMesh)
         return NULL;
 
@@ -327,15 +392,72 @@ avtSimV1FileFormat::GetMesh(int domain, const char *meshname)
                 {
                     for (int k=0; k<nk; k++)
                     {
-                        pts[npts*3 + 0] = cmesh->xcoords[i];
-                        pts[npts*3 + 1] = cmesh->ycoords[j];
-                        pts[npts*3 + 2] = cmesh->zcoords[k];
+                        pts[npts*3 + 0] = cmesh->xcoords[npts];
+                        pts[npts*3 + 1] = cmesh->ycoords[npts];
+                        pts[npts*3 + 2] = cmesh->zcoords[npts];
                         npts++;
                     }
                 }
             }
 
             return sgrid;
+        }
+        break;
+      case VISIT_MESHTYPE_RECTILINEAR:
+        {
+            VisIt_RectilinearMesh *rmesh = vmesh->rmesh;
+            //
+            // Create the VTK objects and connect them up.
+            //
+            vtkRectilinearGrid   *rgrid   = vtkRectilinearGrid::New(); 
+
+            //
+            // Tell the grid what its dimensions are and populate the points array.
+            //
+            rgrid->SetDimensions(rmesh->dims);
+
+            //
+            // Populate the coordinates.
+            //
+            int ni = rmesh->dims[0];
+            int nj = rmesh->dims[1];
+            int nk = rmesh->dims[2];
+
+            // USE THE BASEINDEX AND REAL/GHOST ZONE STUFF!
+
+            vtkFloatArray *xcoords;
+            vtkFloatArray *ycoords;
+            vtkFloatArray *zcoords;
+
+            xcoords = vtkFloatArray::New();
+            xcoords->SetNumberOfTuples(ni);
+            for (int i=0; i<ni; i++)
+            {
+                xcoords->SetComponent(i, 0, rmesh->xcoords[i]);
+            }
+
+            ycoords = vtkFloatArray::New();
+            ycoords->SetNumberOfTuples(nj);
+            for (int j=0; j<nj; j++)
+            {
+                ycoords->SetComponent(j, 0, rmesh->ycoords[j]);
+            }
+
+            zcoords = vtkFloatArray::New();
+            zcoords->SetNumberOfTuples(nk);
+            for (int k=0; k<nk; k++)
+            {
+                zcoords->SetComponent(k, 0, rmesh->zcoords[k]);
+            }
+
+            rgrid->SetXCoordinates(xcoords);
+            xcoords->Delete();
+            rgrid->SetYCoordinates(ycoords);
+            ycoords->Delete();
+            rgrid->SetZCoordinates(zcoords);
+            zcoords->Delete();
+
+            return rgrid;
         }
         break;
       default:
@@ -414,4 +536,137 @@ vtkDataArray *
 avtSimV1FileFormat::GetVectorVar(int domain, const char *varname)
 {
     return NULL;
+}
+
+// ****************************************************************************
+//  Method:  avtSimV1FileFormat::GetAuxiliaryData
+//
+//  Purpose:
+//    Get auxiliary data.  E.g. material, species.
+//
+//  Arguments:
+//    var        variable name
+//    domain     the domain
+//    type       the type of auxiliary data
+//    df         (out) the destructor
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    April 11, 2005
+//
+// ****************************************************************************
+void *
+avtSimV1FileFormat::GetAuxiliaryData(const char *var, int domain,
+                              const char *type, void *, DestructorFunction &df)
+{
+    void *rv = NULL;
+    if (strcmp(type, AUXILIARY_DATA_MATERIAL) == 0)
+    {
+        rv = (void *) GetMaterial(domain, var);
+        df = avtMaterial::Destruct;
+    }
+    /*
+    else if (strcmp(type, AUXILIARY_DATA_SPECIES) == 0)
+    {
+        rv = (void *) GetSpecies(domain, var);
+        df = avtSpecies::Destruct;
+    }
+    */
+
+    //
+    // Note -- may want to do mixed variables here
+    //
+
+    return rv;
+}
+
+// ****************************************************************************
+//  Method:  avtSimV1FileFormat::GetMaterial
+//
+//  Purpose:
+//    Return a material for a domain.
+//
+//  Arguments:
+//      domain     The index of the domain.  If there are NDomains, this
+//                 value is guaranteed to be between 0 and NDomains-1,
+//                 regardless of block origin.
+//      varname    The name of the material variable requested.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    April 11, 2005
+//
+// ****************************************************************************
+avtMaterial *
+avtSimV1FileFormat::GetMaterial(int domain, const char *varname)
+{
+    if (!cb.GetMaterial)
+        return NULL;
+
+    VisIt_MaterialData *md = cb.GetMaterial(domain,varname);
+    if (!md)
+        return NULL;
+
+    vector<string> matNames(md->nMaterials);
+    for (int m=0; m<md->nMaterials; m++)
+        matNames[m] = md->materialNames[m];
+
+    avtMaterial *mat = new avtMaterial(md->nMaterials,
+                                       matNames,
+                                       md->nzones,
+                                       md->matlist,
+                                       md->mixlen,
+                                       md->mix_mat,
+                                       md->mix_next,
+                                       md->mix_zone,
+                                       md->mix_vf);
+
+    return mat;
+}
+
+// ****************************************************************************
+//  Method:  avtSimV1FileFormat::GetMaterial
+//
+//  Purpose:
+//    Return a curve by name.
+//
+//  Arguments:
+//      varname    The name of the curve requested.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    April 14, 2005
+//
+// ****************************************************************************
+
+vtkDataSet *
+avtSimV1FileFormat::GetCurve(const char *name)
+{
+    if (!cb.GetCurve)
+        return NULL;
+
+    VisIt_CurveData *cd = cb.GetCurve(name);
+    if (!cd)
+        return NULL;
+
+    vtkPolyData *pd  = vtkPolyData::New();
+    vtkPoints   *pts = vtkPoints::New();
+    pd->SetPoints(pts);
+    int npts = cd->len;
+    pts->SetNumberOfPoints(npts);
+    for (int j=0; j<npts; j++)
+    {
+        pts->SetPoint(j, cd->x[j], cd->y[j], 0);
+    }
+
+    vtkCellArray *line = vtkCellArray::New();
+    pd->SetLines(line);
+    for (int k = 1 ; k < npts ; k++)
+    {
+        line->InsertNextCell(2);
+        line->InsertCellPoint(k-1);
+        line->InsertCellPoint(k);
+    }
+
+    pts->Delete();
+    line->Delete();
+
+    return pd;
 }
