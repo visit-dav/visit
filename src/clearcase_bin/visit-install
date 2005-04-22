@@ -91,6 +91,9 @@
 #    Jeremy Meredith, Mon Apr 18 09:27:00 PDT 2005
 #    Renamed convert to visitconvert.
 #
+#    Jeremy Meredith, Wed Apr 20 15:36:36 PDT 2005
+#    I ensured that "internallauncher" had the right permissions.
+#
 #-----------------------------------------------------------------------
 
 set Compress = COMPRESS
@@ -353,6 +356,7 @@ endif
 
 if ($logging == true) then
     sed -e "s/logging[ \t]*= 0/logging        = 1/" distribution/visit/$version/bin/internallauncher > $dir/$version+/bin/internallauncher
+    chmod $dir_permission $dir/$version+/bin/internallauncher
     touch $dir/$version+/usagelog
     chmod 666 $dir/$version+/usagelog
     if ($group_ownership != none) then

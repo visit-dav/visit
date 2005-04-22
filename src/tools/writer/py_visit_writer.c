@@ -39,9 +39,23 @@ static void freeVarData( int nvars, int *vardim, char **varnames, int *centering
 static int setErrorAndReturnInt( int Flag, char *Msg, ... );
 static void setError( char *Msg, ... );
 
-/*
-****************************************************************
-*/
+
+/* ****************************************************************************
+ *  Function: writePointMesh
+ *
+ *  Purpose:
+ *      Python wrapping to routine to write point mesh.
+ *
+ *  Programmer: Bret Beck
+ *  Creation:   April 1, 2005
+ *
+ *  Modifications:
+ *
+ *    Hank Childs, Fri Apr 22 09:39:52 PDT 2005
+ *    Allow for empty variable lists.
+ *
+ * ************************************************************************* */
+
 static char writePointMeshDoc[] = 
     "writePointMesh( fileName, useBinary, points, nameDimensionAndVariables )\n   See modules documentation for more information.";
 
@@ -56,7 +70,7 @@ static PyObject *writePointMesh( PyObject *self, PyObject *args ) {
 
     if( ( npts = convertPts( -1, pts_py, &pts ) ) <= 0 ) return( NULL );
     npts = npts / 3;
-    if( ( nvars = convertVarData( npts, 0, nameDimAndVarList, &varnames, &vardim, &centering, &vars ) ) <= 0 ) {
+    if( ( nvars = convertVarData( npts, 0, nameDimAndVarList, &varnames, &vardim, &centering, &vars ) ) < 0 ) {
         free( pts );
         return( NULL );
     }
@@ -64,14 +78,30 @@ static PyObject *writePointMesh( PyObject *self, PyObject *args ) {
     write_point_mesh( fileName, useBinary, npts, pts, nvars, vardim, (const char * const *) varnames, vars );
 
     free( pts );
-    freeVarData( nvars, vardim, varnames, centering, vars );
+    if (nvars > 0)
+        freeVarData( nvars, vardim, varnames, centering, vars );
 
     Py_INCREF( Py_None );
     return( Py_None );
 }
-/*
-****************************************************************
-*/
+
+
+/* ****************************************************************************
+ *  Function: writeUnstructuredMesh
+ *
+ *  Purpose:
+ *      Python wrapping to routine to write an unstructured mesh.
+ *
+ *  Programmer: Bret Beck
+ *  Creation:   April 1, 2005
+ *
+ *  Modifications:
+ *
+ *    Hank Childs, Fri Apr 22 09:39:52 PDT 2005
+ *    Allow for empty variable lists.
+ *
+ * ************************************************************************* */
+
 static char writeUnstructuredMeshDoc[] = 
     "writeUnstructuredMesh( fileName, useBinary, points, cellTypeConnections, nameDimensionAndVariables )\n   See modules documentation for more information.";
 
@@ -90,7 +120,7 @@ static PyObject *writeUnstructuredMesh( PyObject *self, PyObject *args ) {
         free( pts );
         return( NULL );
     }
-    if( ( nvars = convertVarData( npts, ncells, nameDimAndVarList, &varnames, &vardim, &centering, &vars ) ) <= 0 ) {
+    if( ( nvars = convertVarData( npts, ncells, nameDimAndVarList, &varnames, &vardim, &centering, &vars ) ) < 0 ) {
         free( pts );
         free( cellTypes );
         free( conn );
@@ -102,14 +132,29 @@ static PyObject *writeUnstructuredMesh( PyObject *self, PyObject *args ) {
     free( pts );
     free( cellTypes );
     free( conn );
-    freeVarData( nvars, vardim, varnames, centering, vars );
+    if (nvars > 0)
+        freeVarData( nvars, vardim, varnames, centering, vars );
 
     Py_INCREF( Py_None );
     return( Py_None );
 }
-/*
-****************************************************************
-*/
+
+/* ****************************************************************************
+ *  Function: writeRegularMesh
+ *
+ *  Purpose:
+ *      Python wrapping to routine to write a regular mesh.
+ *
+ *  Programmer: Bret Beck
+ *  Creation:   April 1, 2005
+ *
+ *  Modifications:
+ *
+ *    Hank Childs, Fri Apr 22 09:39:52 PDT 2005
+ *    Allow for empty variable lists.
+ *
+ * ************************************************************************* */
+
 static char writeRegularMeshDoc[] = 
     "writeRegularMesh( fileName, useBinary, dimensions, nameDimensionAndVariables )\n   See modules documentation for more information.";
 
@@ -124,18 +169,33 @@ static PyObject *writeRegularMesh( PyObject *self, PyObject *args ) {
 
     if( ( npts = convertDims( dims_py, dims ) ) < 0 ) return( NULL );
     ncells = ( dims[0] - 1 ) * ( dims[1] - 1 ) * ( dims[2] - 1 );
-    if( ( nvars = convertVarData( npts, ncells, nameDimAndVarList, &varnames, &vardim, &centering, &vars ) ) <= 0 ) return( NULL );
+    if( ( nvars = convertVarData( npts, ncells, nameDimAndVarList, &varnames, &vardim, &centering, &vars ) ) < 0 ) return( NULL );
 
     write_regular_mesh( fileName, useBinary, dims, nvars, vardim, centering, (const char * const *) varnames, vars );
 
-    freeVarData( nvars, vardim, varnames, centering, vars );
+    if (nvars > 0)
+        freeVarData( nvars, vardim, varnames, centering, vars );
 
     Py_INCREF( Py_None );
     return( Py_None );
 }
-/*
-****************************************************************
-*/
+
+/* ****************************************************************************
+ *  Function: writeRectilinearMesh
+ *
+ *  Purpose:
+ *      Python wrapping to routine to write a rectilinear mesh.
+ *
+ *  Programmer: Bret Beck
+ *  Creation:   April 1, 2005
+ *
+ *  Modifications:
+ *
+ *    Hank Childs, Fri Apr 22 09:39:52 PDT 2005
+ *    Allow for empty variable lists.
+ *
+ * ************************************************************************* */
+
 static char writeRectilinearMeshDoc[] = 
     "writeRectilinearMesh( fileName, useBinary, x, y, z, nameDimensionAndVariables )\n   See modules documentation for more information.";
 
@@ -157,7 +217,7 @@ static PyObject *writeRectilinearMesh( PyObject *self, PyObject *args ) {
     if( doIt ) {
         npts = dims[0] * dims[1] * dims[2];
         ncells = ( dims[0] - 1 ) * ( dims[1] - 1 ) * ( dims[2] - 1 );
-        if( ( nvars = convertVarData( npts, ncells, nameDimAndVarList, &varnames, &vardim, &centering, &vars ) ) <= 0 ) doIt = 0;
+        if( ( nvars = convertVarData( npts, ncells, nameDimAndVarList, &varnames, &vardim, &centering, &vars ) ) < 0 ) doIt = 0;
     }
     if( !doIt ) {
         if( x ) free( x );
@@ -171,14 +231,29 @@ static PyObject *writeRectilinearMesh( PyObject *self, PyObject *args ) {
     free( x );
     free( y );
     free( z );
-    freeVarData( nvars, vardim, varnames, centering, vars );
+    if (nvars > 0)
+        freeVarData( nvars, vardim, varnames, centering, vars );
 
     Py_INCREF( Py_None );
     return( Py_None );
 }
-/*
-****************************************************************
-*/
+
+/* ****************************************************************************
+ *  Function: writeCurvilinearMesh
+ *
+ *  Purpose:
+ *      Python wrapping to routine to write a curvilinear mesh.
+ *
+ *  Programmer: Bret Beck
+ *  Creation:   April 1, 2005
+ *
+ *  Modifications:
+ *
+ *    Hank Childs, Fri Apr 22 09:39:52 PDT 2005
+ *    Allow for empty variable lists.
+ *
+ * ************************************************************************* */
+
 static char writeCurvilinearMeshDoc[] = 
     "writeCurvilinearMesh( fileName, useBinary, Mesh, nameDimensionAndVariables )\n   See modules documentation for more information.";
 
@@ -196,14 +271,15 @@ static PyObject *writeCurvilinearMesh( PyObject *self, PyObject *args ) {
 
     if( convertPts( npts * 3, pts_py, &pts ) <= 0 ) return( NULL );
     
-    if( ( nvars = convertVarData( npts, ncells, nameDimAndVarList, &varnames, &vardim, &centering, &vars ) ) <= 0 ) {
+    if( ( nvars = convertVarData( npts, ncells, nameDimAndVarList, &varnames, &vardim, &centering, &vars ) ) < 0 ) {
         free( pts );
         return( NULL );
     }
     write_curvilinear_mesh( fileName, useBinary, dims, pts, nvars, vardim, centering, (const char * const *) varnames, vars );
 
     free( pts );
-    freeVarData( nvars, vardim, varnames, centering, vars );
+    if (nvars > 0)
+        freeVarData( nvars, vardim, varnames, centering, vars );
 
     Py_INCREF( Py_None );
     return( Py_None );
@@ -258,9 +334,23 @@ static int convertPts( long size, PyObject *pts_py, float **pts ) {
     npts = checkMallocAndGetArrayOfNumbers( pts_py, pts, "pionts", 1 );
     return( npts );
 }
-/*
-****************************************************************
-*/
+
+/* ****************************************************************************
+ *  Function: convertVarData
+ *
+ *  Purpose:
+ *      Routine to get variable data out of Python arrays.
+ *
+ *  Programmer: Bret Beck
+ *  Creation:   April 1, 2005
+ *
+ *  Modifications:
+ *
+ *    Hank Childs, Fri Apr 22 09:39:52 PDT 2005
+ *    Allow for empty variable lists.
+ *
+ * ************************************************************************* */
+
 static int convertVarData( int npts, int ncells, PyObject *nameDimAndVarList, char ***varnames, int **vardim, int **centering, float ***vars ) {
 
     int n = 0, nvars, doIt = 1,  status, i;
@@ -268,7 +358,7 @@ static int convertVarData( int npts, int ncells, PyObject *nameDimAndVarList, ch
     PyObject *item;
 
     if( ( nvars = getLength( nameDimAndVarList, "nameDimensionAndVariables" ) ) < 0 ) return( -1 );
-    if( nvars == 0 ) return( setErrorAndReturnInt( -1, "nameDimensionAndVariables list is empty" ) );
+    if( nvars == 0 ) return( 0 );
     if( ( *varnames = (char **)  myGetMemory( nvars * sizeof( char ** ), doIt, "varnames" ) ) == NULL ) doIt = 0;
     if( ( *vardim = (int *) myGetMemory( nvars * sizeof( int * ), doIt, "vardim" ) ) == NULL ) doIt = 0;
     if( ( *centering = (int *) myGetMemory( nvars * sizeof( int * ), doIt, "centering" ) ) == NULL ) doIt = 0;

@@ -8,6 +8,8 @@
 #include <vtkStructuredGrid.h>
 #include <vtkUnstructuredGrid.h>
 
+#include <TimingsManager.h>
+
 
 // ****************************************************************************
 //  Method: avtStructuredChunkStreamer constructor
@@ -89,15 +91,22 @@ avtStructuredChunkStreamer::ExecuteDataTree(vtkDataSet *in_ds, int domain,
     dims[0] -= 1;
     dims[1] -= 1;
     dims[2] -= 1;
+    int t0 = visitTimer->StartTimer();
     GetAssignments(in_ds, dims, designation);
+    visitTimer->StopTimer(t0, "Structured Chunk Streamer: Getting assignments");
     
     vtkUnstructuredGrid *ugrid = NULL;
     vector<vtkDataSet *> grids;
+
+    int t1 = visitTimer->StartTimer();
     avtStructuredMeshChunker::ChunkStructuredMesh(in_ds, designation,
                    grids, ugrid, downstreamGhostType, downstreamOptimizations);
+    visitTimer->StopTimer(t1, "Identifying grids");
 
+    int t2 = visitTimer->StartTimer();
     vtkDataSet *out_ugrid = ProcessOneChunk(ugrid, domain, label, true);
-
+    visitTimer->StopTimer(t2, 
+                      "Structured Chunk Streamer: Processing ugrid leftovers");
     //
     // Create a data tree that has all of the structured meshes, as well
     // as the single unstructured mesh.

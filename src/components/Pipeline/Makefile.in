@@ -197,6 +197,9 @@
 #    Hank Childs, Sat Jan 29 20:02:01 PST 2005
 #    Add new sample point arbitrators.
 #
+#    Hank Childs, Fri Apr  8 09:43:05 PDT 2005
+#    Add new partition strategy.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -290,6 +293,7 @@ PrivateFilters_src= \
   PrivateFilters/avtFilter.C \
   PrivateFilters/avtImageToDataObjectFilter.C \
   PrivateFilters/avtImageToImageFilter.C \
+  PrivateFilters/avtMultiResolutionPartitionStrategy.C \
   PrivateFilters/avtMultipleInputToDataObjectFilter.C \
   PrivateFilters/avtMultipleInputToDatasetFilter.C \
   PrivateFilters/avtPluginStreamer.C \
