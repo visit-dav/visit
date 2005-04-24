@@ -8,9 +8,11 @@
 #include <vtkCell.h>
 #include <vtkCellData.h>
 #include <vtkDataSetToUnstructuredGridFilter.h>
+#include <vtkExtractRectilinearGrid.h>
 #include <vtkIdList.h>
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
+#include <vtkRectilinearGrid.h>
 #include <vtkUnstructuredGrid.h>
 
 #include <avtExtents.h>
@@ -538,6 +540,9 @@ avtBoxFilter::Equivalent(const AttributeGroup *a)
 //    Mark C. Miller, Tue Sep 28 19:57:42 PDT 2004
 //    Added code to bypass the operator if a plugin has applied the selection
 //
+//    Hank Childs, Sun Apr 24 11:11:46 PDT 2005
+//    Add special support for rectilinear grids.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -554,6 +559,44 @@ avtBoxFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
         return in_ds;
     }
 
+    vtkDataSet *outDS = NULL;
+    if (in_ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
+    {
+        outDS = RectilinearExecute((vtkRectilinearGrid *) in_ds);
+    }
+    else 
+    {
+        outDS = GeneralExecute(in_ds);
+    }
+
+    vtkDataSet *rv = outDS;
+    if (outDS != NULL)
+    {
+        if (outDS->GetNumberOfCells() <= 0)
+            rv = NULL;
+        else
+            ManageMemory(outDS);
+        outDS->Delete();  // We have to remove the extra reference.
+    }
+
+    return rv;
+}
+
+
+// ****************************************************************************
+//  Method: avtBoxFilter::GeneralExecute
+//
+//  Purpose:
+//      Intersects the box using the vtkBoxFilter.  Works on any grid type.
+//
+//  Programmer: Hank Childs
+//  Creation:   April 24, 2005
+//
+// ****************************************************************************
+
+vtkUnstructuredGrid *
+avtBoxFilter::GeneralExecute(vtkDataSet *in_ds)
+{
     vtkBoxFilter *bf = vtkBoxFilter::New();
     bf->SetInput(in_ds);
 
@@ -578,20 +621,114 @@ avtBoxFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
     //
     // Make this a dataset we can return even after we have freed memory.
     //
-    vtkDataSet *newDS = bf->GetOutput();
+    vtkUnstructuredGrid *newDS = bf->GetOutput();
     newDS->Update();
+    newDS->Register(NULL);
     newDS->SetSource(NULL);
+    bf->Delete();
+    return newDS;
 
-    vtkDataSet *outDS = newDS;
-    if (newDS->GetNumberOfCells() <= 0)
+}
+
+
+// ****************************************************************************
+//  Method: avtBoxFilter::RectilinearExecute
+//
+//  Purpose:
+//      Does a quick intersection using rectilinear properties of the mesh.
+//
+//  Programmer: Hank Childs
+//  Creation:   April 24, 2005
+//
+// ****************************************************************************
+
+static bool
+GetRange(vtkDataArray *c, float Rmin, float Rmax, bool needAll,
+         int &min, int &max)
+{
+    int i;
+    int nC = c->GetNumberOfTuples();
+
+    float cMin = c->GetTuple1(0);
+    float cMax = c->GetTuple1(nC-1);
+
+    if (cMin > Rmax)
+        return false;
+    if (cMax < Rmin)
+        return false;
+
+    bool setMin = false;
+    bool setMax = false;
+    for (int i = 0 ; i < nC-1 ; i++)
     {
-        outDS = newDS;
+        float zMin = c->GetTuple1(i);
+        float zMax = c->GetTuple1(i+1);
+        bool allZoneInRange = (zMin >= Rmin && zMax <= Rmax);
+        bool partZoneInRange = (zMax > Rmin && zMin < Rmax);
+        bool zoneInRange = (needAll ? allZoneInRange : partZoneInRange);
+        if (zoneInRange && !setMin)
+        {
+            min = i;
+            setMin = true;
+        }
+        if (setMin && !setMax && !zoneInRange)
+        {
+            max = i;
+            setMax = true;
+        }
+    }
+    if (setMin && !setMax)
+    {
+        max = nC-1;
+        setMax = true;
     }
 
-    ManageMemory(outDS);
-    bf->Delete();
+    if (!setMin || !setMax)
+        return false;
 
-    return outDS;
+    return true;
+}
+
+vtkRectilinearGrid *
+avtBoxFilter::RectilinearExecute(vtkRectilinearGrid *in_ds)
+{
+    int   i;
+    bool needAll = (atts.GetAmount() == BoxAttributes::All);
+
+    float minX = atts.GetMinx();
+    float maxX = atts.GetMaxx();
+    vtkDataArray *x = in_ds->GetXCoordinates();
+    int firstCellX = -1, lastCellX = -1;
+    if (!GetRange(x, minX, maxX, needAll, firstCellX, lastCellX))
+        return NULL;
+
+    float minY = atts.GetMiny();
+    float maxY = atts.GetMaxy();
+    vtkDataArray *y = in_ds->GetYCoordinates();
+    int firstCellY = -1, lastCellY = -1;
+    if (!GetRange(y, minY, maxY, needAll, firstCellY, lastCellY))
+        return NULL;
+
+    float minZ = atts.GetMinz();
+    float maxZ = atts.GetMaxz();
+    vtkDataArray *z = in_ds->GetZCoordinates();
+    int firstCellZ = -1, lastCellZ = -1;
+    if (!GetRange(z, minZ, maxZ, needAll, firstCellZ, lastCellZ))
+        return NULL;
+
+    vtkExtractRectilinearGrid *extract = vtkExtractRectilinearGrid::New();
+    int voi[6] = {firstCellX, lastCellX, firstCellY, lastCellY,
+                  firstCellZ, lastCellZ };
+    extract->SetInput(in_ds);
+    extract->SetVOI(voi);
+    extract->Update();
+
+    vtkRectilinearGrid *rv = extract->GetOutput();
+    rv->Register(NULL);
+    rv->SetSource(NULL);
+    extract->Delete();
+
+    return rv;
 }
 
 
