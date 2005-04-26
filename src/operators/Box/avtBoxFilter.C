@@ -640,6 +640,13 @@ avtBoxFilter::GeneralExecute(vtkDataSet *in_ds)
 //  Programmer: Hank Childs
 //  Creation:   April 24, 2005
 //
+//  Modidfications:
+//    Eric Brugger, Tue Apr 26 08:10:10 PDT 2005
+//    I added code to properly handle the case where the number of
+//    coordinates was one.  I also fixed the logic to properly handle
+//    the case where the end of the range corresponded to a coordinate
+//    value and the amount of cell in range flag was some.
+//
 // ****************************************************************************
 
 static bool
@@ -657,6 +664,19 @@ GetRange(vtkDataArray *c, float Rmin, float Rmax, bool needAll,
     if (cMax < Rmin)
         return false;
 
+    //
+    // Handle special case where the number of coordinates is one.
+    //
+    if (nC == 1)
+    {
+       min = 0;
+       max = 0;
+       return true;
+    }
+
+    //
+    // Handle the general case.
+    //
     bool setMin = false;
     bool setMax = false;
     for (int i = 0 ; i < nC-1 ; i++)
@@ -664,7 +684,7 @@ GetRange(vtkDataArray *c, float Rmin, float Rmax, bool needAll,
         float zMin = c->GetTuple1(i);
         float zMax = c->GetTuple1(i+1);
         bool allZoneInRange = (zMin >= Rmin && zMax <= Rmax);
-        bool partZoneInRange = (zMax > Rmin && zMin < Rmax);
+        bool partZoneInRange = (zMax >= Rmin && zMin <= Rmax);
         bool zoneInRange = (needAll ? allZoneInRange : partZoneInRange);
         if (zoneInRange && !setMin)
         {
