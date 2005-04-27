@@ -12,6 +12,8 @@
 #include <algorithm>
 
 #include <visit-config.h> // To get the version number
+#include <snprintf.h>
+
 #include <MDServerConnection.h>
 #include <avtDatabase.h>
 #include <avtDatabaseFactory.h>
@@ -1368,8 +1370,9 @@ MDServerConnection::FileMatchesFilterList(const std::string &fileName) const
 //   the file name.
 //
 // Arguments:
-//   file    : The filename.
-//   pattern : The pattern string to be returned.
+//   file        : The filename.
+//   pattern     : The pattern string to be returned.
+//   digitLength : The length of the digit string.
 //
 // Returns:    True if a pattern was detected.
 //
@@ -1379,11 +1382,17 @@ MDServerConnection::FileMatchesFilterList(const std::string &fileName) const
 // Creation:   Tue Mar 25 10:57:06 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Apr 26 13:29:38 PST 2005
+//   I made it acceptable to replace digits before an underscore with the
+//   wildcard so files with names like: foo_00000_root.ext work. I also made
+//   Flash file dumps ending in Z be considered for automatic grouping. Finally,
+//   I made it return the length of the digit string.
+//
 // ****************************************************************************
 
 bool
-MDServerConnection::GetPattern(const std::string &file, std::string &p) const
+MDServerConnection::GetPattern(const std::string &file, std::string &p,
+    int &digitLength) const
 {
     int i, isave = 0, ipat = 0;
     char pattern[256];
@@ -1404,12 +1413,24 @@ MDServerConnection::GetPattern(const std::string &file, std::string &p) const
     }
 
     /* Skip over the digit string.  */
+    digitLength = 0;
     for (i = isave; file[i] >= '0' && file[i] <= '9'; i++)
-        /* do nothing */ ;
+        ++digitLength;
+    char charAfterDigit = file[i];
+
+    // If we're doing extra smart file grouping then be a little more lenient
+    // when considering patterns.
+    bool specialMatch = false;
+    if(extraSmartFileGrouping)
+    {
+        specialMatch = (charAfterDigit == '_') ||
+                       (charAfterDigit == 'z' && (i == file.size()-1));
+    }
 
     /* We have a match on *[0-9]?.  Now let's determine the full pattern.  */
     if (file[isave] >= '0' && file[isave] <= '9' &&
-        (file[i] == '\0' || file[i] == '.'))
+        (charAfterDigit == '\0' || charAfterDigit == '.'  || specialMatch)
+       )
     {
         ipat = isave;
 
@@ -1546,6 +1567,9 @@ MDServerConnection::SetFileGroupingOptions(const std::string &filter,
 //   Brad Whitlock, Fri Feb 4 15:12:40 PST 2005
 //   I made the filter list and extraSmartFileGrouping flag be set elsewhere.
 //
+//   Brad Whitlock, Tue Apr 26 13:58:11 PST 2005
+//   Added code to group "abort" files into their related database.
+//
 // ****************************************************************************
 
 void
@@ -1578,7 +1602,8 @@ MDServerConnection::GetFilteredFileList(GetFileListRPC::FileList &files)
                 //
                 // See if the filename matches a pattern for related files.
                 //
-                bool matchesPattern = GetPattern(names[i], pattern);
+                int digitLength = 0;
+                bool matchesPattern = GetPattern(names[i], pattern, digitLength);
 
                 //
                 // See if the filename is a .visit file.
@@ -1591,23 +1616,67 @@ MDServerConnection::GetFilteredFileList(GetFileListRPC::FileList &files)
                 //
                 if(matchesPattern && notVisItFile)
                 {
-                    //
-                    // Try to not group certain ale3d files. Those files
-                    // are of the form: X, X.1, X.2, X.3, ... We only want
-                    // to group the X files and leave the X.1, X.2, X.3
-                    // files unrelated.
-                    //
-                    if(extraSmartFileGrouping &&
-                       pattern.size() >= 2 &&
-                       pattern.substr(pattern.size() - 2) == ".*")
+                    // Try some more advanced file grouping rules.
+                    if(extraSmartFileGrouping)
                     {
-                        std::string pattern2;
-                        bool found2ndPattern = GetPattern(pattern, pattern2);
-                        if(found2ndPattern)
+                        //
+                        // Try to not group certain ale3d files. Those files
+                        // are of the form: X, X.1, X.2, X.3, ... We only want
+                        // to group the X files and leave the X.1, X.2, X.3
+                        // files unrelated.
+                        //
+                        if(FileLooksLikePartFile(newVirtualFiles, pattern))
                         {
-                            std::string basepattern(pattern2.substr(0,pattern2.size() - 2));
-                            pos = newVirtualFiles.find(basepattern);
+                            // Add the filename to the list of
+                            // filtered files.
+                            files.names.push_back(names[i]);
+                            files.types.push_back(currentFileList.types[i]);
+                            files.sizes.push_back(currentFileList.sizes[i]);
+                            files.access.push_back(currentFileList.access[i]);
+                            continue;
+                        }
+
+                        //
+                        // If the pattern contains "_abort_" then it might be
+                        // an ale3d abort file. Take out the "_abort_" string 
+                        // and replace it with "_". If there's a pattern that
+                        // matches the new pattern without the "_abort_" string
+                        // then assume we have an abort file and the file should
+                        // be grouped with the pattern that we found.
+                        // 
+                        int apos;
+                        if((apos = pattern.find("_abort_")) != -1)
+                        {
+                            std::string pattern2(pattern);
+                            pattern2.replace(apos, 7, "_");
+                            pos = newVirtualFiles.find(pattern2);
                             if(pos != newVirtualFiles.end())
+                            {
+                                std::string altName(names[i]);
+                                apos = altName.find("_abort_");
+                                altName.replace(apos, 7, "_");
+                                // Since the abort filename is most likely to 
+                                // come after the regularly numbered files, we
+                                // have to insert the abort file name into the
+                                // virtual database definition to prevent the
+                                // name from just getting tacked on to the end.
+                                stringVector::iterator it = pos->second.files.begin();
+                                for( ; it != pos->second.files.end(); ++it)
+                                {
+                                    std::string listName(*it);
+                                    apos = listName.find("_abort_");
+                                    if(apos != -1)
+                                        listName.replace(apos, 7, "_");
+
+                                    if(listName >= altName)
+                                        break;
+                                }
+                                pos->second.files.insert(it, names[i]);
+                                debug4 << "Grouping " << names[i].c_str()
+                                       << " into " << pattern2.c_str() << endl;
+                                continue;
+                            }
+                            else if(FileLooksLikePartFile(newVirtualFiles, pattern2))
                             {
                                 // Add the filename to the list of
                                 // filtered files.
@@ -1640,6 +1709,7 @@ MDServerConnection::GetFilteredFileList(GetFileListRPC::FileList &files)
                         // Add a new virtual filename.
                         newVirtualFiles[pattern].path = currentWorkingDirectory;
                         newVirtualFiles[pattern].files.push_back(names[i]);
+                        newVirtualFiles[pattern].digitLength = digitLength;
                     }
                 }
                 else
@@ -1672,6 +1742,16 @@ MDServerConnection::GetFilteredFileList(GetFileListRPC::FileList &files)
     //
     if(newVirtualFiles.size() > 0)
     {
+        // Try and group virtual databases that have similar names into a 
+        // larger virtual database if the names look like what we'd get
+        // with Flash files.
+        if(extraSmartFileGrouping)
+            ConsolidateVirtualDatabases(newVirtualFiles, files);
+
+        //
+        // Create virtual databases using the information stored in the
+        // newVirtualFiles map.
+        //
         for(int fileIndex = 0; fileIndex < files.names.size(); ++fileIndex)
         {
             // Look for the current filename in the new virtual files map. If the
@@ -1718,6 +1798,238 @@ MDServerConnection::GetFilteredFileList(GetFileListRPC::FileList &files)
             }
         }
     }
+}
+
+// ****************************************************************************
+// Method: MDServerConnection::FileLooksLikePartFile
+//
+// Purpose: 
+//   Returns whether or not the pattern that was passed in corresponds to
+//   an ale3d part file (the sub-domain files that end in .1, .2, .3, ...).
+//
+// Arguments:
+//   newVirtualFiles : The virtual file definitions.
+//   pattern         : The pattern we're checking.
+//                     
+// Returns:    True if the file is looks like an ale3d part file; false otherwise.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Apr 26 14:30:03 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+MDServerConnection::FileLooksLikePartFile(const VirtualFileInformationMap &
+    newVirtualFiles, const std::string &pattern) const
+{
+    bool retval = false;
+    if(pattern.size() >= 2 &&
+       pattern.substr(pattern.size() - 2) == ".*")
+    {
+        std::string pattern2;
+        int digitLength;
+        bool found2ndPattern = GetPattern(pattern, pattern2, digitLength);
+        if(found2ndPattern)
+        {
+            std::string basepattern(pattern2.substr(0,pattern2.size() - 2));
+            VirtualFileInformationMap::const_iterator pos =
+                newVirtualFiles.find(basepattern);
+            if(pos != newVirtualFiles.end())
+            {
+                retval = true;
+            }
+        }
+    }
+
+    return retval;
+}
+
+// ****************************************************************************
+// Method: MDServerConnection::ConsolidateVirtualDatabases
+//
+// Purpose: 
+//   Consolidates related virtual databases into a single virtual database.
+//
+// Arguments:
+//   newVirtualFiles : The map that contains the virtual database definitions.
+//   files           : The object that contains the file information.
+//
+// Note:       This method is executed when we have smart file grouping on
+//             and it should only affect Flash virtual databases.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Apr 26 17:59:03 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+MDServerConnection::ConsolidateVirtualDatabases(
+    VirtualFileInformationMap &newVirtualFiles,
+    GetFileListRPC::FileList &files)
+{
+    //
+    // Make lists of all of the virtual databases that have their "*"
+    // character in the last or second to last position and that have
+    // the character immediately before the "*" character in ['a','z'].
+    //
+    VirtualFileInformationMap flashVirtualFiles;
+    VirtualFileInformationMap::iterator it;
+    for(it = newVirtualFiles.begin(); it != newVirtualFiles.end(); ++it)
+    {
+        std::string key(it->first.name);
+        int starpos = key.find("*");
+
+        bool lastCharIsStar = starpos == key.size()-1;
+        bool secondLastCharIsStarWithZ = starpos == key.size()-2 &&
+                                         key[key.size()-1] == 'z';
+        int beforeStar = starpos - 1;
+        bool beforeStarInAZ = false;
+        if(beforeStar >= 0)
+            beforeStarInAZ = (key[beforeStar] >= 'a') && (key[beforeStar] <= 'z');
+
+        if((lastCharIsStar || secondLastCharIsStarWithZ) && beforeStarInAZ)
+        {
+            // Replace the character before the string with a 2 character
+            // hex number that represents the length of the digit string
+            // in the original file's pattern string. We will not allow
+            // databases with different digit lengths to be merged.
+            char digitLenString[3];
+            int digitLen = (it->second.digitLength < 255) ?
+                it->second.digitLength : 255;
+            SNPRINTF(digitLenString, 3, "%02x", digitLen);
+            key.replace(beforeStar, 1, digitLenString);
+
+            // Add the virtual database under the altered key, containing the
+            // digit string.
+            VirtualFileInformationMap::iterator f =
+                flashVirtualFiles.find(key);
+            if(f == flashVirtualFiles.end())
+            {
+                stringVector sv; sv.push_back(it->first.name);
+                flashVirtualFiles[key].files = sv;
+            }
+            else
+                flashVirtualFiles[key].files.push_back(it->first.name);
+        }
+    }
+
+    //
+    // If we were able to group any Flash file virtual databases,
+    // consolidate those virtual databases now.
+    //
+    bool consolidatedDBs = false;
+    for(it = flashVirtualFiles.begin();
+        it != flashVirtualFiles.end(); ++it)
+    {
+        if(it->second.files.size() > 1)
+        {
+            VirtualFileInformation consolidatedInfo;
+            std::string            virtualDBNames, suffixes("{");
+
+            int vdb_access, vdb_types;
+            long vdb_sizes;
+            bool vdb_info_set = false;
+
+            for(int s = 0; s < it->second.files.size(); ++s)
+            {
+                VirtualFileInformationMap::iterator ci = 
+                    newVirtualFiles.find(it->second.files[s]);
+                if(ci != newVirtualFiles.end() &&
+                   ci->second.files.size() > 1)
+                {
+                    int charpos = ci->first.name.find("*")-1;
+                    if(charpos >= 0)
+                    {
+                        std::string suffixChar(ci->first.name.substr(
+                                               charpos, 1));
+                        if(suffixes == "{")
+                            suffixes += suffixChar;
+                        else
+                        {
+                            suffixes += ",";
+                            suffixes += suffixChar;
+                        }
+                    }
+                    virtualDBNames += (ci->first.name + " ");
+    
+                    consolidatedInfo.path = ci->second.path;
+                    for(int index = 0; index < ci->second.files.size(); ++index)
+                        consolidatedInfo.files.push_back(ci->second.files[index]);
+    
+                    // Get the file access information.
+                    stringVector::iterator vdb_names_it = files.names.begin();
+                    intVector::iterator vdb_access_it   = files.access.begin();
+                    intVector::iterator vdb_types_it    = files.types.begin();
+                    longVector::iterator vdb_sizes_it   = files.sizes.begin();
+                    for(int fileIndex = 0; fileIndex < files.names.size(); ++fileIndex)
+                    {
+                        if(files.names[fileIndex] == ci->first.name)
+                        {
+                            if(vdb_info_set)
+                            {
+                                vdb_access = files.access[fileIndex];
+                                vdb_sizes = files.sizes[fileIndex];
+                                vdb_types = files.types[fileIndex];
+                                vdb_info_set = true;
+                            }
+
+                            // We found the file that we're looking for so we
+                            // should remove it from the list of files since we're
+                            // going to consolidate it anyway.
+                            files.names.erase(vdb_names_it);
+                            files.access.erase(vdb_access_it);
+                            files.types.erase(vdb_types_it);
+                            files.sizes.erase(vdb_sizes_it);
+                            break;
+                        }
+                        else
+                        {
+                            ++vdb_names_it;
+                            ++vdb_access_it;
+                            ++vdb_types_it;
+                            ++vdb_sizes_it;
+                        }
+                    }
+
+                    newVirtualFiles.erase(ci);
+                }
+            }
+
+            if(consolidatedInfo.files.size() > 0)
+            {
+                // Erase the digit length from the name of the new database.
+                std::string key(it->first.name);
+                int starpos = key.find("*");
+                int digitPos = starpos - 2;
+                suffixes += "}";
+                key.replace(digitPos, 2, suffixes);
+
+                consolidatedDBs = true;
+                newVirtualFiles[key] = consolidatedInfo;
+
+                // Add the filename to the list of filtered files.
+                files.names.push_back(key);
+                files.types.push_back(vdb_types);
+                files.sizes.push_back(vdb_sizes);
+                files.access.push_back(vdb_access);
+
+                debug4 << "Consolidated virtual databases ("
+                       << virtualDBNames.c_str() << ") into "
+                       << key.c_str() << endl;
+            }
+        }
+    }
+
+    // If we consolidated any databases then we should resort the list of files
+    // since we appended the new virtual database to the end of the file list.
+    if(consolidatedDBs)
+        files.Sort();
 }
 
 // ****************************************************************************
@@ -2100,18 +2412,22 @@ MDServerConnection::VirtualFileName::operator < (const MDServerConnection::Virtu
 // Creation:   Wed Apr 2 12:32:24 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Apr 27 11:11:36 PDT 2005
+//   Added digitLength member.
+//
 // ****************************************************************************
 
 MDServerConnection::VirtualFileInformation::VirtualFileInformation() : path(),
     files()
 {
+    digitLength = 0;
 }
 
 MDServerConnection::VirtualFileInformation::VirtualFileInformation(
    const MDServerConnection::VirtualFileInformation &obj) : path(obj.path),
    files(obj.files)
 {
+    digitLength = obj.digitLength;
 }
 
 MDServerConnection::VirtualFileInformation::~VirtualFileInformation()
@@ -2124,4 +2440,5 @@ MDServerConnection::VirtualFileInformation::operator = (
 {
     path = obj.path;
     files = obj.files;
+    digitLength = obj.digitLength;
 }

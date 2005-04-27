@@ -164,6 +164,9 @@ public:
 //   Brad Whitlock, Thu Aug 14 16:12:22 PST 2003
 //   I added DeleteViewsFromInterface.
 //
+//   Brad Whitlock, Wed Apr 27 15:15:35 PST 2005
+//   I added CopyFrom.
+//
 // ****************************************************************************
 
 class VIEWER_API SaveViewAction : public ViewerMultipleAction
@@ -184,6 +187,8 @@ public:
     virtual ~SaveViewAction();
 
     virtual void Execute(int);
+
+    virtual bool CopyFrom(const ViewerActionBase *);
 
     virtual bool Enabled() const;
     virtual bool ChoiceEnabled(int i) const;

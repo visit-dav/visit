@@ -138,6 +138,7 @@ PlotList.java \
 Plugin.java \
 PluginManagerAttributes.java \
 Point.java \
+PostponedAction.java \
 PrinterAttributes.java \
 QueryAttributes.java \
 QueryList.java \
@@ -181,7 +182,7 @@ JARFILE=visit.jar
 ## Standard targets...
 ##
 
-all: package main
+all: package
 
 install: install_bin
 

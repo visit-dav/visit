@@ -60,10 +60,11 @@ extern ViewerSubject *viewerSubject;
 #define QUERY_VECTOR_VAR            0x0004
 #define QUERY_TENSOR_VAR            0x0008
 #define QUERY_SYMMETRIC_TENSOR_VAR  0x0010
-#define QUERY_MATERIAL_VAR          0x0020
-#define QUERY_MATSPECIES_VAR        0x0040
-#define QUERY_CURVE_VAR             0x0080
-#define QUERY_UNKNOWN_VAR           0x0100
+#define QUERY_LABEL_VAR             0x0020
+#define QUERY_MATERIAL_VAR          0x0040
+#define QUERY_MATSPECIES_VAR        0x0080
+#define QUERY_CURVE_VAR             0x0100
+#define QUERY_UNKNOWN_VAR           0x0200
 
 
 

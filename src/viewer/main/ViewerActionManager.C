@@ -461,6 +461,32 @@ ViewerActionManager::~ViewerActionManager()
 }
 
 // ****************************************************************************
+// Method: ViewerActionManager::CopyFrom
+//
+// Purpose: 
+//   Copies action attributes from 1 action manager to this action manager.
+//
+// Arguments:
+//   mgr : The source action manager.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 15 17:27:05 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerActionManager::CopyFrom(const ViewerActionManager *mgr)
+{
+    for(int i = 0; i < (int)ViewerRPC::MaxRPC; ++i)
+    {
+        if(actions[i] != 0 && mgr->actions[i] != 0)
+            actions[i]->CopyFrom(mgr->actions[i]);
+    }
+}
+
+// ****************************************************************************
 // Method: ViewerActionManager::EnableActions
 //
 // Purpose: 

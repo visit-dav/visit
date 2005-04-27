@@ -813,12 +813,18 @@ SetWindowLayoutAction::Setup()
 // Creation:   Fri Apr 4 15:43:56 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Apr 27 15:56:56 PST 2005
+//   Added code to set the active window before changing layouts.
+//
 // ****************************************************************************
 
 void
 SetWindowLayoutAction::Execute(int)
 {
+    // Set the active window, if necessary, before changing the layout.
+    if(window != windowMgr->GetActiveWindow())
+        windowMgr->SetActiveWindow(window->GetWindowId() + 1);
+
     windowMgr->SetWindowLayout(args.GetWindowLayout());
 }
 

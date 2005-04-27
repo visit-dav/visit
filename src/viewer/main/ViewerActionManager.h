@@ -38,6 +38,9 @@ typedef ViewerRPC::ViewerRPCType ActionIndex;
 //   Brad Whitlock, Tue Mar 16 14:25:11 PST 2004
 //   I added an argument to RealizeActionGroups.
 //
+//   Brad Whitlock, Fri Apr 15 17:08:31 PST 2005
+//   I added CopyFrom.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerActionManager
@@ -64,6 +67,8 @@ class VIEWER_API ViewerActionManager
 public:
     ViewerActionManager(ViewerWindow *window);
     virtual ~ViewerActionManager();
+
+    void CopyFrom(const ViewerActionManager *);
 
     void HandleAction(const ViewerRPC &rpc);
     void Update();
