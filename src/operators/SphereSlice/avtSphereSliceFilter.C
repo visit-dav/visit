@@ -4,7 +4,7 @@
 
 #include <avtSphereSliceFilter.h>
 
-#include <vtkCutter.h>
+#include <vtkVisItCutter.h>
 #include <vtkPolyData.h>
 #include <vtkQuadric.h>
 
@@ -138,12 +138,16 @@ avtSphereSliceFilter::Equivalent(const AttributeGroup *a)
 //    Hank Childs, Tue Sep 10 18:25:27 PDT 2002
 //    Made all memory management internal to this routine.
 //
+//    Kathleen Bonnell, Thu Apr 28 10:28:22 PDT 2005
+//    Use vtkVisItCutter instead of vtkCutter since it has logic to handle
+//    CellData correctly. 
+//
 // ****************************************************************************
 
 vtkDataSet *
 avtSphereSliceFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 {
-    vtkCutter *cutter = vtkCutter::New();
+    vtkVisItCutter *cutter = vtkVisItCutter::New();
     cutter->SetCutFunction(quadric);
     cutter->SetInput(in_ds);
     cutter->Update();

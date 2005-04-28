@@ -7,6 +7,7 @@
 
 #include "sim.h"
 
+#include <VisItV1.h>
 #include <VisItDataInterface_V1.h>
 
 #include <stdio.h>
@@ -20,6 +21,7 @@ VisIt_SimulationMetaData *VisItGetMetaData()
     VisIt_SimulationMetaData *md = malloc(sizeof(VisIt_SimulationMetaData));
     md->currentCycle = cycle;
     md->currentTime  = 0;
+    md->currentMode  = runflag ? VISIT_SIMMODE_RUNNING : VISIT_SIMMODE_STOPPED;
 
     md->numMeshes = 1;
     md->meshes = malloc(sizeof(VisIt_MeshMetaData) * md->numMeshes);
@@ -54,17 +56,24 @@ VisIt_SimulationMetaData *VisItGetMetaData()
     md->numCurves      = 0;
     md->numExpressions = 0;
 
-    md->numCommands = 3;
+    md->numCommands = 4;
     md->commands = malloc(sizeof(VisIt_SimulationControlCommand) * md->numCommands);
 
     md->commands[0].name = strdup("halt");
     md->commands[0].argType = VISIT_CMDARG_NONE;
+    md->commands[0].enabled = 1;
 
     md->commands[1].name = strdup("step");
     md->commands[1].argType = VISIT_CMDARG_NONE;
+    md->commands[1].enabled = 1;
 
     md->commands[2].name = strdup("run");
     md->commands[2].argType = VISIT_CMDARG_NONE;
+    md->commands[2].enabled = 1;
+
+    md->commands[3].name = strdup("testcommand");
+    md->commands[3].argType = VISIT_CMDARG_NONE;
+    md->commands[3].enabled = runflag ? 0 : 1;
 
     return md;
 }
@@ -78,9 +87,9 @@ VisIt_MeshData *VisItGetMesh(int domain,const char *name)
     mesh->rmesh->dims[0] = p_nx;
     mesh->rmesh->dims[1] = p_ny;
     mesh->rmesh->dims[2] = p_nz;
-    mesh->rmesh->xcoords = p_xcoords;
-    mesh->rmesh->ycoords = p_ycoords;
-    mesh->rmesh->zcoords = p_zcoords;
+    mesh->rmesh->xcoords = VisIt_CreateDataArrayFromFloat(VISIT_OWNER_SIM,p_xcoords);
+    mesh->rmesh->ycoords = VisIt_CreateDataArrayFromFloat(VISIT_OWNER_SIM,p_ycoords);
+    mesh->rmesh->zcoords = VisIt_CreateDataArrayFromFloat(VISIT_OWNER_SIM,p_zcoords);
 
     return mesh;
 }
@@ -97,14 +106,14 @@ VisIt_ScalarData *VisItGetScalar(int domain,const char *name)
     {
         VisIt_ScalarData *sd = malloc(sizeof(VisIt_ScalarData));
         sd->len  = (p_nx-1)*(p_ny-1)*(p_nz-1);
-        sd->data = p_zvalues;
+        sd->data = VisIt_CreateDataArrayFromFloat(VISIT_OWNER_SIM,p_zvalues);
         return sd;
     }
     else if (strcmp(name,"speed")==0)
     {
         VisIt_ScalarData *sd = malloc(sizeof(VisIt_ScalarData));
         sd->len  = (p_nx)*(p_ny)*(p_nz);
-        sd->data = p_nvalues;
+        sd->data = VisIt_CreateDataArrayFromFloat(VISIT_OWNER_SIM,p_nvalues);
         return sd;
     }
 

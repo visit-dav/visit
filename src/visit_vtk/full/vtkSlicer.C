@@ -19,7 +19,7 @@
 
 #include <vtkAppendPolyData.h>
 #include <vtkCellData.h>
-#include <vtkCutter.h>
+#include <vtkVisItCutter.h>
 #include <vtkDataSet.h>
 #include <vtkFloatArray.h>
 #include <vtkObjectFactory.h>
@@ -508,9 +508,15 @@ void vtkSlicer::GeneralExecute(void)
     SliceDataset(GetInput(), GetOutput());
 }
 
+// ****************************************************************************
+//  Modifications:
+//    Kathleen Bonnell, Wed Apr 27 18:47:18 PDT 2005
+//    Use vtkVisItCutter, which has modifications to correctly handle CellData. 
+//
+// ****************************************************************************
 void vtkSlicer::SliceDataset(vtkDataSet *in_ds, vtkPolyData *out_pd)
 {
-    vtkCutter *cutter = vtkCutter::New();
+    vtkVisItCutter *cutter = vtkVisItCutter::New();
     vtkPlane  *plane  = vtkPlane::New();
     plane->SetOrigin(Origin[0], Origin[1], Origin[2]);
     plane->SetNormal(Normal[0], Normal[1], Normal[2]);

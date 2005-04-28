@@ -197,6 +197,9 @@
 #    Jeremy Meredith, Thu Mar 17 11:31:49 PST 2005
 #    Added xml2plugin back into the distribution.
 #
+#    Jeremy Meredith, Mon Apr 25 10:48:08 PDT 2005
+#    Added some basic multi-compiler support.
+#
 #------------------------------------------------------------------------------
 
 set DataFiles = "TRUE"
@@ -207,6 +210,8 @@ set PythonExe = "TRUE"
 set Compress = GZIP
 set VisItDir = `pwd`
 set OSGiven = "FALSE"
+set CompilerGiven = "FALSE"
+set compiler = ""
 set Strip = "TRUE"
 set Help = "FALSE"
 
@@ -268,6 +273,12 @@ while ($#argv >= 1)
                set OSGiven = TRUE
                breaksw
 
+      case -compiler:
+               shift
+               set compiler = $1
+               set CompilerGiven = TRUE
+               breaksw
+
       default:
                echo " "
                echo ">>>>>>>>>>  Illegal option $1  <<<<<<<<<<"
@@ -293,6 +304,7 @@ if ($Help == TRUE) then
    echo "       -nstrip        Do not strip the execubles and libraries."
    echo "       -nvtk          No VTK libraries."
    echo "       -os os         Operating system."
+   echo "       -compiler cc   Compiler."
    exit (1)
 endif
 
@@ -452,7 +464,7 @@ endif
 mkdir distribution/visit/$Version
 mkdir distribution/visit/$Version/bin
 ln -s $Version distribution/visit/current
-set platforms="hp-hpux-pa sgi-irix6-mips2 sun4-sunos5-sparc ibm-aix-pwr ibm-aix-pwr64 dec-osf1-alpha linux-intel linux-ia64 linux-alpha linux-x86_64 darwin-ppc"
+set platforms="hp-hpux-pa sgi-irix6-mips2 sun4-sunos5-sparc ibm-aix-pwr ibm-aix-pwr64 dec-osf1-alpha linux-intel linux-intel-icc linux-ia64 linux-alpha linux-x86_64 darwin-ppc"
 foreach platform ($platforms)
    mkdir distribution/visit/$Version/$platform
    mkdir distribution/visit/$Version/$platform/bin
@@ -547,8 +559,13 @@ switch ($os)
          case i486:
          case i586:
          case i686:
-            set osver = linux
-            set visitbindir = linux-intel
+            if (("$CompilerGiven" == "TRUE") && ("$compiler" == "icc")) then
+                set osver = linux-icc
+                set visitbindir = linux-intel-icc
+            else
+                set osver = linux
+                set visitbindir = linux-intel
+            endif
             breaksw
          case ia64:
             set osver = linux-ia64

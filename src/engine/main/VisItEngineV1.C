@@ -1,4 +1,4 @@
-#include "VisItEngine.h"
+#include "VisItEngineV1.h"
 
 #include <Engine.h>
 #include <LostConnectionException.h>
@@ -9,7 +9,7 @@
 #include <visitstream.h>
 
 // ****************************************************************************
-//  Library:  VisItEngine
+//  Library:  VisItEngine, Version 1
 //
 //  Purpose:
 //    Wrapper for simulations to control an engine.
@@ -29,6 +29,9 @@
 //
 //    Jeremy Meredith, Fri Mar 18 08:36:54 PST 2005
 //    Added simulation command control.
+//
+//    Jeremy Meredith, Mon Apr 25 10:00:06 PDT 2005
+//    Added versioning.
 //
 // ****************************************************************************
 

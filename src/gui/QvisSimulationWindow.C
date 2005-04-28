@@ -14,6 +14,7 @@
 #include <ViewerProxy.h>
 #include <avtSimulationInformation.h>
 #include <avtSimulationCommandSpecification.h>
+#include <QualifiedFilename.h>
 #include <time.h>
 #include <string>
 #include <string>
@@ -113,9 +114,12 @@ QvisSimulationWindow::CreateWindowContents()
     //QLabel *totalStatusLabel = new QLabel("Total progress:", central, "totalStatusLabel");
     //topLayout->addWidget(totalStatusLabel);
 
+    simulationMode = new QLabel("Simulation Status: ", central);
+    topLayout->addWidget(simulationMode);
+
     QHBoxLayout *progressLayout = new QHBoxLayout(topLayout);
 
-    progressLayout->addWidget(new QLabel("VisIt Progress", central));
+    progressLayout->addWidget(new QLabel("VisIt Status", central));
 
     totalProgressBar = new QProgressBar(central, "totalProgressBar");
     totalProgressBar->setTotalSteps(100);
@@ -343,31 +347,39 @@ QvisSimulationWindow::UpdateWindow(bool doAll)
 // ****************************************************************************
 // Method: QvisSimulationWindow::SetNewMetaData
 //
-// Purpose: 
-//   
+// Purpose:
+//    Update the meta data for the given file.
 //
 // Arguments:
-//   
+//   qf        the host+file
+//   md        the new meta data
 //
 // Programmer: Jeremy Meredith
 // Creation:   March 21, 2005
 //
 // Modifications:
-//   
+//    Jeremy Meredith, Thu Apr 28 18:03:57 PDT 2005
+//    It needed more info to construct the key correctly.
+//
 // ****************************************************************************
 
 void
-QvisSimulationWindow::SetNewMetaData(const avtDatabaseMetaData *md)
+QvisSimulationWindow::SetNewMetaData(const QualifiedFilename &qf,
+                                     const avtDatabaseMetaData *md)
 {
     if (md && md->GetIsSimulation())
     {
-        avtSimulationInformation si = md->GetSimInfo();
         *metadata = *md;
 
         QString key;
-        key.sprintf("%s:%s",
-                    si.GetHost().c_str(),md->GetDatabaseName().c_str());
-        UpdateMetaDataEntry(key); 
+        std::string host = qf.host;
+        if (host == "localhost")
+            host = viewer->GetLocalHostName();
+
+        std::string path = qf.PathAndFile();
+
+        key.sprintf("%s:%s", host.c_str(), path.c_str());
+        UpdateMetaDataEntry(key);
 
         // If the sender of the status message is the engine that we're
         // currently looking at, update the status widgets.
@@ -393,6 +405,9 @@ QvisSimulationWindow::SetNewMetaData(const avtDatabaseMetaData *md)
 // Creation:   March 21, 2005
 //
 // Modifications:
+//    Jeremy Meredith, Thu Apr 28 18:05:36 PDT 2005
+//    Added concept of disabled control command.
+//    Added concept of a simulation mode (e.g. running/stopped).
 //
 // ****************************************************************************
 
@@ -475,6 +490,19 @@ QvisSimulationWindow::UpdateInformation(int index)
             simInfo->insertItem(item);
         }
 
+        switch (md->GetSimInfo().GetMode())
+        {
+          case avtSimulationInformation::Unknown:
+            simulationMode->setText("Simulation Status: ");
+            break;
+          case avtSimulationInformation::Running:
+            simulationMode->setText("Simulation Status: Running");
+            break;
+          case avtSimulationInformation::Stopped:
+            simulationMode->setText("Simulation Status: Stopped");
+            break;
+        }
+
         for (int c=0; c<9; c++)
         {
             if (md->GetSimInfo().GetNumAvtSimulationCommandSpecifications()<=c)
@@ -485,10 +513,12 @@ QvisSimulationWindow::UpdateInformation(int index)
             {
                 avtSimulationCommandSpecification::CommandArgumentType t;
                 t = md->GetSimInfo().GetAvtSimulationCommandSpecification(c).GetArgumentType();
+                bool e = md->GetSimInfo().GetAvtSimulationCommandSpecification(c).GetEnabled();
                 if (t == avtSimulationCommandSpecification::CmdArgNone)
                 {
                     cmdButtons[c]->setText(md->GetSimInfo().
                             GetAvtSimulationCommandSpecification(c).GetName());
+                    cmdButtons[c]->setEnabled(e);
                     cmdButtons[c]->show();
                 }
                 else

@@ -6730,6 +6730,12 @@ avtDatabaseMetaData::GetSimInfo() const
     return *simInfo;
 }
 
+avtSimulationInformation&
+avtDatabaseMetaData::GetSimInfo()
+{
+    return *simInfo;
+}
+
 // ****************************************************************************
 //  Function: avtDatabaseMetaData::VarIsCompound
 //

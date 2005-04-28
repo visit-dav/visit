@@ -41,10 +41,37 @@ extern "C"
 #define VISIT_CMDARG_FLOAT                2
 #define VISIT_CMDARG_STRING               3
 
+/* Simulation Mode */
+#define VISIT_SIMMODE_UNKNOWN             0
+#define VISIT_SIMMODE_RUNNING             1
+#define VISIT_SIMMODE_STOPPED             2
+
+/* Data Type */
+#define VISIT_DATATYPE_CHAR               0
+#define VISIT_DATATYPE_INT                1
+#define VISIT_DATATYPE_FLOAT              2
+#define VISIT_DATATYPE_DOUBLE             3
+
+/* Array Owner */
+#define VISIT_OWNER_SIM                   0
+#define VISIT_OWNER_VISIT                 1
+
+
+typedef struct VisIt_DataArray
+{
+    int         dataType; /* DATATYPE */
+    int         owner;    /* OWNER */
+    char       *cArray;
+    int        *iArray;
+    float      *fArray;
+    double     *dArray;
+} VisIt_DataArray;
+
 typedef struct VisIt_SimulationControlCommand
 {
     const char *name;
     int         argType;   /* CMDARG */
+    int         enabled;   /* boolean */
 } VisIt_SimulationControlCommand;
 
 typedef struct VisIt_MeshMetaData
@@ -108,6 +135,8 @@ typedef struct VisIt_ExpressionMetaData
 
 typedef struct VisIt_SimulationMetaData
 {
+    int      currentMode; /* SIMMODE */
+
     int      currentCycle;
     double   currentTime;
 
@@ -133,9 +162,9 @@ typedef struct VisIt_CurvilinearMesh
     int baseIndex[3];
     int firstRealZone[3];
     int lastRealZone[3];
-    float *xcoords;
-    float *ycoords;
-    float *zcoords;
+    VisIt_DataArray xcoords;
+    VisIt_DataArray ycoords;
+    VisIt_DataArray zcoords;
 } VisIt_CurvilinearMesh;
 
 typedef struct VisIt_RectilinearMesh
@@ -144,9 +173,9 @@ typedef struct VisIt_RectilinearMesh
     int baseIndex[3];
     int firstRealZone[3];
     int lastRealZone[3];
-    float *xcoords;
-    float *ycoords;
-    float *zcoords;
+    VisIt_DataArray xcoords;
+    VisIt_DataArray ycoords;
+    VisIt_DataArray zcoords;
 } VisIt_RectilinearMesh;
 
 typedef struct VisIt_UnstructuredMesh
@@ -171,13 +200,13 @@ typedef struct VisIt_MeshData
 typedef struct VisIt_ScalarData
 {
     int len;
-    float *data;
+    VisIt_DataArray data;
 } VisIt_ScalarData;
 
 typedef struct VisIt_MixedScalarData
 {
     int len;
-    float *data;
+    VisIt_DataArray data;
 } VisIt_MixedScalarData;
 
 typedef struct VisIt_MaterialData
@@ -187,20 +216,20 @@ typedef struct VisIt_MaterialData
     const char **materialNames;
 
     int  nzones;
-    int *matlist;
+    VisIt_DataArray matlist;
 
-    int  mixlen;
-    int *mix_mat;
-    int *mix_zone;
-    int *mix_next;
+    int    mixlen;
+    int   *mix_mat;
+    int   *mix_zone;
+    int   *mix_next;
     float *mix_vf;
 } VisIt_MaterialData;
 
 typedef struct VisIt_CurveData
 {
     int len;
-    float *x;
-    float *y;
+    VisIt_DataArray x;
+    VisIt_DataArray y;
 } VisIt_CurveData;
 
 typedef struct VisIt_SimulationCallback
@@ -212,6 +241,44 @@ typedef struct VisIt_SimulationCallback
     VisIt_CurveData          *(*GetCurve)(const char*);
     VisIt_MixedScalarData    *(*GetMixedScalar)(int,const char*);
 } VisIt_SimulationCallback;
+
+/* Helper Methods */
+
+static VisIt_DataArray VisIt_CreateDataArrayFromChar(int o, char *c)
+{
+    VisIt_DataArray da;
+    da.dataType = VISIT_DATATYPE_CHAR;
+    da.owner    = o;
+    da.cArray   = c;
+    return da;
+}
+
+static VisIt_DataArray VisIt_CreateDataArrayFromInt(int o, int *i)
+{
+    VisIt_DataArray da;
+    da.dataType = VISIT_DATATYPE_INT;
+    da.owner    = o;
+    da.iArray   = i;
+    return da;
+}
+
+static VisIt_DataArray VisIt_CreateDataArrayFromFloat(int o, float *f)
+{
+    VisIt_DataArray da;
+    da.dataType = VISIT_DATATYPE_FLOAT;
+    da.owner    = o;
+    da.fArray   = f;
+    return da;
+}
+
+static VisIt_DataArray VisIt_CreateDataArrayFromDouble(int o, double *d)
+{
+    VisIt_DataArray da;
+    da.dataType = VISIT_DATATYPE_DOUBLE;
+    da.owner    = o;
+    da.dArray   = d;
+    return da;
+}
 
 #ifdef __cplusplus
 }

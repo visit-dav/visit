@@ -30,6 +30,47 @@ using std::vector;
 extern "C" VisIt_SimulationCallback visitCallbacks;
 #endif
 
+
+// ****************************************************************************
+//  Function:  FreeDataArray
+//
+//  Purpose:
+//    Safely (i.e. only if we own it) frees a VisIt_DataArray.
+//
+//  Arguments:
+//    da         the data array structure
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    April 28, 2005
+//
+// ****************************************************************************
+static void FreeDataArray(VisIt_DataArray &da)
+{
+    if (da.owner != VISIT_OWNER_VISIT)
+        return;
+
+    switch (da.dataType)
+    {
+      case VISIT_DATATYPE_CHAR:
+        free(da.cArray);
+        da.cArray = NULL;
+        break;
+      case VISIT_DATATYPE_INT:
+        free(da.iArray);
+        da.iArray = NULL;
+        break;
+      case VISIT_DATATYPE_FLOAT:
+        free(da.fArray);
+        da.fArray = NULL;
+        break;
+      case VISIT_DATATYPE_DOUBLE:
+        free(da.dArray);
+        da.dArray = NULL;
+        break;
+    }
+}
+
+
 // ****************************************************************************
 //  Method: avtSimV1 constructor
 //
@@ -136,6 +177,9 @@ avtSimV1FileFormat::FreeUpResources(void)
 //    Jeremy Meredith, Thu Apr 14 16:48:04 PDT 2005
 //    Fixed groups.  Added curves and materials.
 //
+//    Jeremy Meredith, Thu Apr 28 17:59:48 PDT 2005
+//    Added cycle and time.  Fixed labels.  Added control command enabling.
+//
 // ****************************************************************************
 
 void
@@ -152,6 +196,23 @@ avtSimV1FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     }
 
     VisIt_SimulationMetaData *vsmd = cb.GetMetaData();
+
+    md->SetCycle(timestep, vsmd->currentCycle);
+    md->SetTime(timestep, vsmd->currentTime);
+
+    switch(vsmd->currentMode)
+    {
+      case VISIT_SIMMODE_UNKNOWN:
+        md->GetSimInfo().SetMode(avtSimulationInformation::Unknown);
+        break;
+      case VISIT_SIMMODE_RUNNING:
+        md->GetSimInfo().SetMode(avtSimulationInformation::Running);
+        break;
+      case VISIT_SIMMODE_STOPPED:
+        md->GetSimInfo().SetMode(avtSimulationInformation::Stopped);
+        break;
+    }
+
     for (int m=0; m<vsmd->numMeshes; m++)
     {
         VisIt_MeshMetaData *mmd = &vsmd->meshes[m];
@@ -202,9 +263,12 @@ avtSimV1FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             mesh->groupIds[g] = mmd->groupIds[g];
         }
 
-        mesh->xLabel = mmd->xLabel ? mmd->xLabel : "";
-        mesh->yLabel = mmd->yLabel ? mmd->yLabel : "";
-        mesh->zLabel = mmd->zLabel ? mmd->zLabel : "";
+        if (mmd->xLabel)
+            mesh->xLabel = mmd->xLabel;
+        if (mmd->yLabel)
+            mesh->yLabel = mmd->yLabel;
+        if (mmd->zLabel)
+            mesh->zLabel = mmd->zLabel;
 
         if (mmd->units)
         {
@@ -266,12 +330,11 @@ avtSimV1FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                        "Invalid command argument type in "
                        "VisIt_SimulationControlCommand.");
         }
-        avtSimulationInformation simInfo = md->GetSimInfo();
         avtSimulationCommandSpecification *scs = new avtSimulationCommandSpecification;
         scs->SetName(scc->name);
         scs->SetArgumentType(t);
-        simInfo.AddAvtSimulationCommandSpecification(*scs);
-        md->SetSimInfo(simInfo);
+        scs->SetEnabled(scc->enabled);
+        md->GetSimInfo().AddAvtSimulationCommandSpecification(*scs);
     }
 
     for (int mat=0; mat<vsmd->numMaterials; mat++)
@@ -311,7 +374,7 @@ avtSimV1FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         md->Add(curve);
     }
 
-    md->Print(cout);
+    //md->Print(cout);
 
     // DO THE EXPRESSIONS, ETC.
 #endif
@@ -338,6 +401,9 @@ avtSimV1FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //  Modifications:
 //    Jeremy Meredith, Thu Apr 21 09:26:12 PDT 2005
 //    Added rectilinear and fixed curvilinear support.
+//
+//    Jeremy Meredith, Thu Apr 28 18:00:32 PDT 2005
+//    Added true data array structures in place of raw array pointers.
 //
 // ****************************************************************************
 vtkDataSet *
@@ -385,20 +451,49 @@ avtSimV1FileFormat::GetMesh(int domain, const char *meshname)
 
             // USE THE BASEINDEX AND REAL/GHOST ZONE STUFF!
 
-            int npts = 0;
-            for (int i=0; i<ni; i++)
+            if (cmesh->xcoords.dataType == VISIT_DATATYPE_FLOAT)
             {
-                for (int j=0; j<nj; j++)
+                int npts = 0;
+                for (int i=0; i<ni; i++)
                 {
-                    for (int k=0; k<nk; k++)
+                    for (int j=0; j<nj; j++)
                     {
-                        pts[npts*3 + 0] = cmesh->xcoords[npts];
-                        pts[npts*3 + 1] = cmesh->ycoords[npts];
-                        pts[npts*3 + 2] = cmesh->zcoords[npts];
-                        npts++;
+                        for (int k=0; k<nk; k++)
+                        {
+                            pts[npts*3 + 0] = cmesh->xcoords.fArray[npts];
+                            pts[npts*3 + 1] = cmesh->ycoords.fArray[npts];
+                            pts[npts*3 + 2] = cmesh->zcoords.fArray[npts];
+                            npts++;
+                        }
                     }
                 }
             }
+            else if (cmesh->xcoords.dataType == VISIT_DATATYPE_DOUBLE)
+            {
+                int npts = 0;
+                for (int i=0; i<ni; i++)
+                {
+                    for (int j=0; j<nj; j++)
+                    {
+                        for (int k=0; k<nk; k++)
+                        {
+                            pts[npts*3 + 0] = cmesh->xcoords.dArray[npts];
+                            pts[npts*3 + 1] = cmesh->ycoords.dArray[npts];
+                            pts[npts*3 + 2] = cmesh->zcoords.dArray[npts];
+                            npts++;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                EXCEPTION1(ImproperUseException,
+                           "Coordinate arrays must be float or double.\n");
+            }
+
+            FreeDataArray(cmesh->xcoords);
+            FreeDataArray(cmesh->ycoords);
+            FreeDataArray(cmesh->zcoords);
 
             return sgrid;
         }
@@ -431,24 +526,42 @@ avtSimV1FileFormat::GetMesh(int domain, const char *meshname)
 
             xcoords = vtkFloatArray::New();
             xcoords->SetNumberOfTuples(ni);
-            for (int i=0; i<ni; i++)
-            {
-                xcoords->SetComponent(i, 0, rmesh->xcoords[i]);
-            }
-
             ycoords = vtkFloatArray::New();
             ycoords->SetNumberOfTuples(nj);
-            for (int j=0; j<nj; j++)
-            {
-                ycoords->SetComponent(j, 0, rmesh->ycoords[j]);
-            }
-
             zcoords = vtkFloatArray::New();
             zcoords->SetNumberOfTuples(nk);
-            for (int k=0; k<nk; k++)
+
+            if (rmesh->xcoords.dataType == VISIT_DATATYPE_FLOAT)
             {
-                zcoords->SetComponent(k, 0, rmesh->zcoords[k]);
+                for (int i=0; i<ni; i++)
+                    xcoords->SetComponent(i, 0, rmesh->xcoords.fArray[i]);
+
+                for (int j=0; j<nj; j++)
+                    ycoords->SetComponent(j, 0, rmesh->ycoords.fArray[j]);
+
+                for (int k=0; k<nk; k++)
+                    zcoords->SetComponent(k, 0, rmesh->zcoords.fArray[k]);
             }
+            else if (rmesh->xcoords.dataType == VISIT_DATATYPE_DOUBLE)
+            {
+                for (int i=0; i<ni; i++)
+                    xcoords->SetComponent(i, 0, rmesh->xcoords.dArray[i]);
+
+                for (int j=0; j<nj; j++)
+                    ycoords->SetComponent(j, 0, rmesh->ycoords.dArray[j]);
+
+                for (int k=0; k<nk; k++)
+                    zcoords->SetComponent(k, 0, rmesh->zcoords.dArray[k]);
+            }
+            else
+            {
+                EXCEPTION1(ImproperUseException,
+                           "Coordinate arrays must be float or double.\n");
+            }
+
+            FreeDataArray(rmesh->xcoords);
+            FreeDataArray(rmesh->ycoords);
+            FreeDataArray(rmesh->zcoords);
 
             rgrid->SetXCoordinates(xcoords);
             xcoords->Delete();
@@ -488,6 +601,10 @@ avtSimV1FileFormat::GetMesh(int domain, const char *meshname)
 //  Programmer: Jeremy Meredith
 //  Creation:   March 17, 2005
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Apr 28 18:00:32 PDT 2005
+//    Added true data array structures in place of raw array pointers.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -500,15 +617,28 @@ avtSimV1FileFormat::GetVar(int domain, const char *varname)
         return NULL;
 
     VisIt_ScalarData *sd = cb.GetScalar(domain,varname);
-    if (sd->len<=0 || !sd->data)
+    if (sd->len<=0)
         return NULL;
 
      vtkFloatArray *array = vtkFloatArray::New();
      array->SetNumberOfTuples(sd->len);
-     for (int i=0; i<sd->len; i++)
+     if (sd->data.dataType == VISIT_DATATYPE_FLOAT)
      {
-         array->SetTuple1(i, sd->data[i]);
+         for (int i=0; i<sd->len; i++)
+         {
+             array->SetTuple1(i, sd->data.fArray[i]);
+         }
      }
+     else
+     {
+         for (int i=0; i<sd->len; i++)
+         {
+             array->SetTuple1(i, sd->data.dArray[i]);
+         }
+     }
+
+     FreeDataArray(sd->data);
+
      return array;
 #endif
 }
@@ -553,6 +683,10 @@ avtSimV1FileFormat::GetVectorVar(int domain, const char *varname)
 //  Programmer:  Jeremy Meredith
 //  Creation:    April 11, 2005
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Apr 28 18:00:32 PDT 2005
+//    Added true data array structures in place of raw array pointers.
+//
 // ****************************************************************************
 void *
 avtSimV1FileFormat::GetAuxiliaryData(const char *var, int domain,
@@ -594,6 +728,10 @@ avtSimV1FileFormat::GetAuxiliaryData(const char *var, int domain,
 //  Programmer:  Jeremy Meredith
 //  Creation:    April 11, 2005
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Apr 28 18:00:32 PDT 2005
+//    Added true data array structures in place of raw array pointers.
+//
 // ****************************************************************************
 avtMaterial *
 avtSimV1FileFormat::GetMaterial(int domain, const char *varname)
@@ -605,6 +743,12 @@ avtSimV1FileFormat::GetMaterial(int domain, const char *varname)
     if (!md)
         return NULL;
 
+    if (md->matlist.dataType != VISIT_DATATYPE_INT)
+    {
+        EXCEPTION1(ImproperUseException,
+                   "matlist array must be integers");
+    }
+
     vector<string> matNames(md->nMaterials);
     for (int m=0; m<md->nMaterials; m++)
         matNames[m] = md->materialNames[m];
@@ -612,12 +756,14 @@ avtSimV1FileFormat::GetMaterial(int domain, const char *varname)
     avtMaterial *mat = new avtMaterial(md->nMaterials,
                                        matNames,
                                        md->nzones,
-                                       md->matlist,
+                                       md->matlist.iArray,
                                        md->mixlen,
                                        md->mix_mat,
                                        md->mix_next,
                                        md->mix_zone,
                                        md->mix_vf);
+
+    FreeDataArray(md->matlist);
 
     return mat;
 }
@@ -633,6 +779,10 @@ avtSimV1FileFormat::GetMaterial(int domain, const char *varname)
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    April 14, 2005
+//
+//  Modifications:
+//    Jeremy Meredith, Thu Apr 28 18:00:32 PDT 2005
+//    Added true data array structures in place of raw array pointers.
 //
 // ****************************************************************************
 
@@ -651,10 +801,29 @@ avtSimV1FileFormat::GetCurve(const char *name)
     pd->SetPoints(pts);
     int npts = cd->len;
     pts->SetNumberOfPoints(npts);
-    for (int j=0; j<npts; j++)
+
+    if (cd->x.dataType == VISIT_DATATYPE_FLOAT)
     {
-        pts->SetPoint(j, cd->x[j], cd->y[j], 0);
+        for (int j=0; j<npts; j++)
+        {
+            pts->SetPoint(j, cd->x.fArray[j], cd->y.fArray[j], 0);
+        }
     }
+    else if (cd->x.dataType == VISIT_DATATYPE_DOUBLE)
+    {
+        for (int j=0; j<npts; j++)
+        {
+            pts->SetPoint(j, cd->x.dArray[j], cd->y.dArray[j], 0);
+        }
+    }
+    else
+    {
+        EXCEPTION1(ImproperUseException,
+                   "Curve coordinate arrays must be float or double.\n");
+    }
+
+    FreeDataArray(cd->x);
+    FreeDataArray(cd->y);
 
     vtkCellArray *line = vtkCellArray::New();
     pd->SetLines(line);

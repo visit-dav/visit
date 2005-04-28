@@ -29,6 +29,9 @@ class QListView;
 // Creation:   March 21, 2005
 //
 // Modifications:
+//    Jeremy Meredith, Thu Apr 28 18:03:57 PDT 2005
+//    SetNewMetaData needed more info to construct the key correctly.
+//    Added simulation mode.
 //
 // ****************************************************************************
 
@@ -49,7 +52,8 @@ public:
     virtual void SubjectRemoved(Subject *TheRemovedSubject);
 
     void ConnectStatusAttributes(StatusAttributes *s);
-    void SetNewMetaData(const avtDatabaseMetaData *md);
+    void SetNewMetaData(const QualifiedFilename &qf,
+                        const avtDatabaseMetaData *md);
 private:
     void UpdateWindow(bool doAll);
     void UpdateStatusArea();
@@ -89,6 +93,7 @@ private:
 
     QComboBox        *simCombo;
     QListView        *simInfo;
+    QLabel           *simulationMode;
     QProgressBar     *totalProgressBar;
     QPushButton      *interruptEngineButton;
     QPushButton      *closeEngineButton;
