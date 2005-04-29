@@ -22,6 +22,42 @@
 using  std::string;
 using  std::vector;
 
+// ****************************************************************************
+// Method: VariableNamesEqual
+//
+// Purpose: 
+//   Compares variable names and allows "/var" to be the same as "var".
+//
+// Arguments:
+//   v1 : variable 1.
+//   v2 : variable 2.
+//
+// Returns:    True if the variables are equal; false otherwise.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 29 09:37:17 PDT 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+static bool
+VariableNamesEqual(const std::string &v1, const std::string &v2)
+{
+    bool v1BeginsWithSlash = (v1.size() >= 1) ? v1[0] == '/' : false;
+    bool v2BeginsWithSlash = (v2.size() >= 1) ? v2[0] == '/' : false;
+
+    if(v1BeginsWithSlash && v2BeginsWithSlash)
+        return v1 == v2;
+    else if(!v1BeginsWithSlash && !v2BeginsWithSlash)
+        return v1 == v2;
+    else if(v1BeginsWithSlash)
+        return v1.substr(1) == v2;
+    else
+        return v2.substr(1) == v1;
+}
 
 // ****************************************************************************
 //  Method: avtSILRestriction constructor
@@ -427,6 +463,9 @@ avtSILRestriction::SetTopSet(int ts)
 //    Hank Childs, Thu Nov 14 10:30:56 PST 2002
 //    Remove access to 'sets' data member to enable SIL matrices.
 //
+//    Brad Whitlock, Fri Apr 29 09:39:48 PDT 2005
+//    Made it use VariableNamesEqual instead of std::string operator ==.
+//
 // ****************************************************************************
 
 void
@@ -438,7 +477,7 @@ avtSILRestriction::SetTopSet(const char *meshname)
     {
         avtSILSet_p set = GetSILSet(wholesList[i]);
         const string &str = set->GetName();
-        if (strcmp(meshname, str.c_str()) == 0)
+        if (VariableNamesEqual(meshname, str))
         {
             setIndex = wholesList[i];
             break;

@@ -25,6 +25,43 @@ bool    avtDatabaseMetaData::haveWarningCallback = false;
 
 
 // ****************************************************************************
+// Method: VariableNamesEqual
+//
+// Purpose: 
+//   Compares variable names and allows "/var" to be the same as "var".
+//
+// Arguments:
+//   v1 : variable 1.
+//   v2 : variable 2.
+//
+// Returns:    True if the variables are equal; false otherwise.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Apr 29 09:37:17 PDT 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+static bool
+VariableNamesEqual(const std::string &v1, const std::string &v2)
+{
+    bool v1BeginsWithSlash = (v1.size() >= 1) ? v1[0] == '/' : false;
+    bool v2BeginsWithSlash = (v2.size() >= 1) ? v2[0] == '/' : false;
+
+    if(v1BeginsWithSlash && v2BeginsWithSlash)
+        return v1 == v2;
+    else if(!v1BeginsWithSlash && !v2BeginsWithSlash)
+        return v1 == v2;
+    else if(v1BeginsWithSlash)
+        return v1.substr(1) == v2;
+    else
+        return v2.substr(1) == v1;
+}
+
+// ****************************************************************************
 //  Method: avtMeshMetaData default constructor
 //
 //  Arguments:
@@ -4894,13 +4931,13 @@ avtDatabaseMetaData::GetNDomains(std::string var) const
 
     int nmeshes = meshes.size();
     for (i = 0 ; i < nmeshes ; i++)
-        if (meshes[i]->name == meshname)
+        if (VariableNamesEqual(meshes[i]->name, meshname))
             return meshes[i]->numBlocks;
 
     int ncurves = curves.size();
     for (i = 0 ; i < ncurves ; i++)
     {
-        if (curves[i]->name == meshname)
+        if (VariableNamesEqual(curves[i]->name, meshname))
         {
             return 1;
         }
@@ -5134,7 +5171,7 @@ avtDatabaseMetaData::MeshForVar(std::string var) const
     int nmeshes = meshes.size();
     for (i = 0 ; i < nmeshes ; i++)
     {
-        if (meshes[i]->name == var)
+        if (VariableNamesEqual(meshes[i]->name, var))
         {
             //
             // The mesh is defined on itself??  A little weird, but this is
@@ -5142,8 +5179,8 @@ avtDatabaseMetaData::MeshForVar(std::string var) const
             //
             return var;
         }
-        else if ((meshes[i]->blockTitle == var) ||
-                 (meshes[i]->groupTitle == var))
+        else if (VariableNamesEqual(meshes[i]->blockTitle, var) ||
+                 VariableNamesEqual(meshes[i]->groupTitle, var))
         {
             return meshes[i]->name;
         }
@@ -5153,7 +5190,7 @@ avtDatabaseMetaData::MeshForVar(std::string var) const
     int nvectors = vectors.size();
     for (i = 0 ; i < nvectors ; i++)
     {
-        if (vectors[i]->name == var)
+        if (VariableNamesEqual(vectors[i]->name, var))
         {
             return vectors[i]->meshName;
         }
@@ -5163,7 +5200,7 @@ avtDatabaseMetaData::MeshForVar(std::string var) const
     int ntensors = tensors.size();
     for (i = 0 ; i < ntensors ; i++)
     {
-        if (tensors[i]->name == var)
+        if (VariableNamesEqual(tensors[i]->name, var))
         {
             return tensors[i]->meshName;
         }
@@ -5173,7 +5210,7 @@ avtDatabaseMetaData::MeshForVar(std::string var) const
     int nsymmtensors = symm_tensors.size();
     for (i = 0 ; i < nsymmtensors ; i++)
     {
-        if (symm_tensors[i]->name == var)
+        if (VariableNamesEqual(symm_tensors[i]->name, var))
         {
             return symm_tensors[i]->meshName;
         }
@@ -5183,7 +5220,7 @@ avtDatabaseMetaData::MeshForVar(std::string var) const
     int nscalars = scalars.size();
     for (i = 0 ; i < nscalars ; i++)
     {
-        if (scalars[i]->name == var)
+        if (VariableNamesEqual(scalars[i]->name, var))
         {
             return scalars[i]->meshName;
         }
@@ -5193,7 +5230,7 @@ avtDatabaseMetaData::MeshForVar(std::string var) const
     int nmats = materials.size();
     for (i = 0 ; i < nmats ; i++)
     {
-        if (materials[i]->name == var)
+        if (VariableNamesEqual(materials[i]->name, var))
         {
             return materials[i]->meshName;
         }
@@ -5203,7 +5240,7 @@ avtDatabaseMetaData::MeshForVar(std::string var) const
     int nspecies = species.size();
     for (i = 0 ; i < nspecies ; i++)
     {
-        if (species[i]->name == var)
+        if (VariableNamesEqual(species[i]->name, var))
         {
             return species[i]->meshName;
         }
@@ -5213,7 +5250,7 @@ avtDatabaseMetaData::MeshForVar(std::string var) const
     int ncurves = curves.size();
     for (i = 0 ; i < ncurves ; i++)
     {
-        if (curves[i]->name == var)
+        if (VariableNamesEqual(curves[i]->name, var))
         {
             return var;
         }
@@ -5226,8 +5263,8 @@ avtDatabaseMetaData::MeshForVar(std::string var) const
                                                           sils[i]->collections;
         for (int j = 0; j < collections.size(); j++)
         {
-           if (collections[j]->classOfCollection == var)
-              return sils[i]->meshName;
+            if (VariableNamesEqual(collections[j]->classOfCollection, var))
+                return sils[i]->meshName;
         }
     }
 
@@ -5235,7 +5272,7 @@ avtDatabaseMetaData::MeshForVar(std::string var) const
     int nlabels = labels.size();
     for (i = 0 ; i < nlabels ; i++)
     {
-        if (labels[i]->name == var)
+        if (VariableNamesEqual(labels[i]->name, var))
         {
             return labels[i]->meshName;
         }
@@ -5279,7 +5316,7 @@ avtDatabaseMetaData::MaterialOnMesh(std::string mesh) const
     int nmats = materials.size();
     for (int i = 0 ; i < nmats ; i++)
     {
-        if (materials[i]->meshName == mesh)
+        if (VariableNamesEqual(materials[i]->meshName, mesh))
         {
             if (foundValue)
             {
@@ -5332,7 +5369,7 @@ avtDatabaseMetaData::SpeciesOnMesh(std::string mesh) const
     int nspecies = species.size();
     for (int i = 0 ; i < nspecies ; i++)
     {
-        if (species[i]->meshName == mesh)
+        if (VariableNamesEqual(species[i]->meshName, mesh))
         {
             return species[i]->name;
         }
@@ -5375,7 +5412,7 @@ avtDatabaseMetaData::GetMaterialOnMesh(std::string mesh) const
     int nmaterials = materials.size();
     for (int i = 0 ; i < nmaterials ; i++)
     {
-        if (materials[i]->meshName == mesh)
+        if (VariableNamesEqual(materials[i]->meshName, mesh))
         {
             if (rv != NULL)
             {
@@ -5420,7 +5457,7 @@ avtDatabaseMetaData::GetSpeciesOnMesh(std::string mesh) const
     int nspecies = species.size();
     for (int i = 0 ; i < nspecies ; i++)
     {
-        if (species[i]->meshName == mesh)
+        if (VariableNamesEqual(species[i]->meshName, mesh))
         {
             return species[i];
         }
@@ -5951,7 +5988,7 @@ const avtMeshMetaData *
 avtDatabaseMetaData::GetMesh(const std::string &n) const
 {
     for (int i=0; i<meshes.size(); i++)
-        if (meshes[i]->name == n)
+        if (VariableNamesEqual(meshes[i]->name, n))
             return meshes[i];
     return NULL;
 }
@@ -5998,7 +6035,7 @@ const avtScalarMetaData *
 avtDatabaseMetaData::GetScalar(const std::string &n) const
 {
     for (int i=0; i<scalars.size(); i++)
-        if (scalars[i]->name == n)
+        if (VariableNamesEqual(scalars[i]->name, n))
             return scalars[i];
     return NULL;
 }
@@ -6045,7 +6082,7 @@ const avtVectorMetaData *
 avtDatabaseMetaData::GetVector(const std::string &n) const
 {
     for (int i=0; i<vectors.size(); i++)
-        if (vectors[i]->name == n)
+        if (VariableNamesEqual(vectors[i]->name, n))
             return vectors[i];
     return NULL;
 }
@@ -6088,7 +6125,7 @@ const avtTensorMetaData *
 avtDatabaseMetaData::GetTensor(const std::string &n) const
 {
     for (int i=0; i<tensors.size(); i++)
-        if (tensors[i]->name == n)
+        if (VariableNamesEqual(tensors[i]->name, n))
             return tensors[i];
     return NULL;
 }
@@ -6132,7 +6169,7 @@ const avtSymmetricTensorMetaData *
 avtDatabaseMetaData::GetSymmTensor(const std::string &n) const
 {
     for (int i=0; i<symm_tensors.size(); i++)
-        if (symm_tensors[i]->name == n)
+        if (VariableNamesEqual(symm_tensors[i]->name, n))
             return symm_tensors[i];
     return NULL;
 }
@@ -6182,7 +6219,7 @@ avtDatabaseMetaData::GetMaterial(const std::string &n) const
     std::string n2;
     const_cast<avtDatabaseMetaData*>(this)->ParseCompoundForVar(n, n2);
     for (int i=0; i<materials.size(); i++)
-        if (materials[i]->name == n2)
+        if (VariableNamesEqual(materials[i]->name, n2))
             return materials[i];
     return NULL;
 }
@@ -6229,7 +6266,7 @@ const avtSpeciesMetaData *
 avtDatabaseMetaData::GetSpecies(const std::string &n) const
 {
     for (int i=0; i<species.size(); i++)
-        if (species[i]->name == n)
+        if (VariableNamesEqual(species[i]->name, n))
             return species[i];
     return NULL;
 }
@@ -6278,7 +6315,7 @@ const avtCurveMetaData *
 avtDatabaseMetaData::GetCurve(const std::string &n) const
 {
     for (int i=0; i<curves.size(); i++)
-        if (curves[i]->name == n)
+        if (VariableNamesEqual(curves[i]->name, n))
             return curves[i];
     return NULL;
 }
@@ -6320,7 +6357,7 @@ const avtSILMetaData *
 avtDatabaseMetaData::GetSIL(const std::string &n) const
 {
     for (int i=0; i<sils.size(); i++)
-        if (sils[i]->meshName == n)
+        if (VariableNamesEqual(sils[i]->meshName, n))
             return sils[i];
     return NULL;
 }
@@ -6367,7 +6404,7 @@ const avtLabelMetaData *
 avtDatabaseMetaData::GetLabel(const std::string &n) const
 {
     for (int i=0; i<labels.size(); i++)
-        if (labels[i]->name == n)
+        if (VariableNamesEqual(labels[i]->name, n))
             return labels[i];
     return NULL;
 }
@@ -7037,37 +7074,37 @@ avtDatabaseMetaData::GetAllVariableNames(const std::string &activeVar) const
     std::string meshName = MeshForVar(activeVar);
     for (i = 0; i < GetNumScalars(); i++) 
     {
-        if (GetScalar(i)->meshName == meshName)
+        if (VariableNamesEqual(GetScalar(i)->meshName, meshName))
             vars.push_back(GetScalar(i)->name);
     }
     for (i = 0; i < GetNumVectors(); i++) 
     {
-        if (GetVector(i)->meshName == meshName)
+        if (VariableNamesEqual(GetVector(i)->meshName, meshName))
             vars.push_back(GetVector(i)->name);
     }
     for (i = 0; i < GetNumTensors(); i++) 
     {
-        if (GetTensor(i)->meshName == meshName)
+        if (VariableNamesEqual(GetTensor(i)->meshName, meshName))
             vars.push_back(GetTensor(i)->name);
     }
     for (i = 0; i < GetNumSymmTensors(); i++) 
     {
-        if (GetSymmTensor(i)->meshName == meshName)
+        if (VariableNamesEqual(GetSymmTensor(i)->meshName, meshName))
             vars.push_back(GetSymmTensor(i)->name);
     }
     for (i = 0; i < GetNumMaterials(); i++) 
     {
-        if (GetMaterial(i)->meshName == meshName)
+        if (VariableNamesEqual(GetMaterial(i)->meshName, meshName))
             vars.push_back(GetMaterial(i)->name);
     }
     for (i = 0; i < GetNumSpecies(); i++) 
     {
-        if (GetSpecies(i)->meshName == meshName)
+        if (VariableNamesEqual(GetSpecies(i)->meshName, meshName))
             vars.push_back(GetSpecies(i)->name);
     }
     for (i = 0; i < GetNumLabels(); i++) 
     {
-        if (GetLabel(i)->meshName == meshName)
+        if (VariableNamesEqual(GetLabel(i)->meshName, meshName))
             vars.push_back(GetLabel(i)->name);
     }
     return vars;
