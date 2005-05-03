@@ -311,6 +311,9 @@ typedef struct {
 //    Added GetTimeLockedWindowIndices and made CreateMultiWindowCorrelation
 //    public.
 //
+//    Mark C. Miller, Tue May  3 21:49:22 PDT 2005
+//    Added bool arg to GetDatasets
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerWindowManager : public QObject
@@ -511,7 +514,7 @@ class VIEWER_API ViewerWindowManager : public QObject
     avtImage_p CreateSingleImage(int windowIndex, int width, int height,
                                  bool screenCapture, bool leftEye);
     avtImage_p CreateTiledImage(int width, int height, bool leftEye);
-    avtDataset_p GetDataset(int windowIndex);
+    avtDataset_p GetDataset(int windowIndex, bool&);
     void GetDatabasesForWindows(const intVector &,stringVector &) const;
     bool AskForCorrelationPermission(const char *, const char *,
                                      const stringVector &dbs) const;

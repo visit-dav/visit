@@ -1397,6 +1397,10 @@ ViewerWindowManager::ChooseCenterOfRotation(int windowIndex,
 //    Brad Whitlock, Wed Feb 23 17:19:41 PST 2005
 //    Added a call to ClearStatus.
 //
+//    Mark C. Miller, Tue May  3 21:49:22 PDT 2005
+//    Added error check for attempts to save curve formats from windows
+//    in SR mode
+//
 // ****************************************************************************
 
 void
@@ -1605,7 +1609,17 @@ ViewerWindowManager::SaveWindow(int windowIndex)
     }
     else
     {
-        avtDataset_p ds = GetDataset(windowIndex);
+        bool windowIsInScalableRenderingMode;
+        avtDataset_p ds = GetDataset(windowIndex,
+                                     windowIsInScalableRenderingMode);
+
+        if (windowIsInScalableRenderingMode)
+        {
+            Error("You cannot save curve formats (ultra, curve) from a window "
+                  "that is currently in scalable rendering mode.");
+            return;
+        }
+
         if (*ds != NULL)
             ds->Compact();
         CopyTo(dob, ds);
@@ -1883,15 +1897,22 @@ ViewerWindowManager::CreateTiledImage(int width, int height, bool leftEye)
 // Programmer: Hank Childs
 // Creation:   May 24, 2002
 //
+// Modifications:
+//
+//   Mark C. Miller, Tue May  3 21:49:22 PDT 2005
+//   Added windowIsInScalableRenderingMode
+//
 // ****************************************************************************
 
 avtDataset_p
-ViewerWindowManager::GetDataset(int windowIndex)
+ViewerWindowManager::GetDataset(int windowIndex,
+    bool& windowIsInScalableRenderingMode)
 {
     int          index = (windowIndex == -1 ? activeWindow : windowIndex);
     avtDataset_p rv    = NULL;
 
-    if(windows[index] != 0)
+    windowIsInScalableRenderingMode = windows[index]->GetScalableRendering();
+    if(!windowIsInScalableRenderingMode && windows[index] != 0)
     {
         rv = windows[index]->GetAllDatasets();
     }
