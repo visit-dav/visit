@@ -990,16 +990,21 @@ avtEnzoFileFormat::GetMesh(int domain, const char *meshname)
 //  Creation:   January 6, 2005
 //
 //  Modifications:
-//
 //    Hank Childs, Thu Jan 13 15:31:08 PST 2005
 //    Renamed "any_mesh" to "mesh", since the generic database can now use this
 //    information.
+//
+//    Jeremy Meredith, Thu May  5 10:28:28 PDT 2005
+//    Skip the whole thing if there's only one grid.
 //
 // ****************************************************************************
 
 void
 avtEnzoFileFormat::BuildDomainNesting()
 {
+    if (numGrids <= 1)
+        return;
+
     // first, look to see if we don't already have it cached
     void_ref_ptr vrTmp = cache->GetVoidRef("mesh",
                                    AUXILIARY_DATA_DOMAIN_NESTING_INFORMATION,
