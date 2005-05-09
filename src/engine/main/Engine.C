@@ -627,6 +627,9 @@ Engine::ConnectViewer(int *argc, char **argv[])
 //    but I needed a separate PAR_ProcessInput method that used the same
 //    buffer connection.
 //
+//    Kathleen Bonnell, Mon May  9 13:27:18 PDT 200 
+//    Changed the timeout to 10 minutes. 
+//
 // ****************************************************************************
 
 void
@@ -661,8 +664,8 @@ Engine::PAR_EventLoop()
             MPI_Bcast((void *)&par_buf, 1, PAR_STATEBUFFER, 0, MPI_COMM_WORLD);
 
             // We have work to do, so cancel the alarm.
-            int num_seconds_in_half_hour = 30*60;
-            ResetTimeout(num_seconds_in_half_hour);
+            int num_seconds_in_ten_minutes = 10*60;
+            ResetTimeout(num_seconds_in_ten_minutes);
 
             // Add the state information to the connection.
             par_conn.Append((unsigned char *)par_buf.buffer, par_buf.nbytes);
@@ -742,6 +745,9 @@ Engine::PAR_ProcessInput()
 //    Jeremy Meredith, Thu Jul 10 11:37:48 PDT 2003
 //    Made the engine an object.
 //
+//    Kathleen Bonnell, Mon May  9 13:27:18 PDT 200 
+//    Changed the timeout to 10 minutes. 
+//
 // ****************************************************************************
 
 bool
@@ -764,8 +770,8 @@ Engine::EventLoop()
             TRY
             {
                 // We've got some work to do.  Disable the alarm.
-                const int num_seconds_in_half_hour = 30*60;
-                ResetTimeout(num_seconds_in_half_hour);
+                const int num_seconds_in_ten_minutes = 10*60;
+                ResetTimeout(num_seconds_in_ten_minutes);
 
                 // Process input.
                 ProcessInput();

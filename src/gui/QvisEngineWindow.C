@@ -247,6 +247,9 @@ QvisEngineWindow::SubjectRemoved(Subject *TheRemovedSubject)
 //   Jeremy Meredith, Mon Apr  4 16:02:22 PDT 2005
 //   I made better names for simulations.
 //
+//   Kathleen Bonnell, Tue Apr 26 16:42:17 PDT 2005 
+//   Don't enable interruptEngineButton until the process has been fixed. 
+//
 // ****************************************************************************
 
 void
@@ -317,7 +320,8 @@ QvisEngineWindow::UpdateWindow(bool doAll)
         UpdateInformation(current);
 
         // Set the enabled state of the various widgets.
-        interruptEngineButton->setEnabled(host.size() > 0);
+        // KSB: When INTERRUPT ENGINE has been fixed, uncomment the next line.
+        //interruptEngineButton->setEnabled(host.size() > 0);
         closeEngineButton->setEnabled(host.size() > 0);
         clearCacheButton->setEnabled(host.size() > 0);
         engineCombo->setEnabled(host.size() > 0);

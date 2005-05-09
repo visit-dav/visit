@@ -9468,7 +9468,7 @@ avtGenericDatabase::QueryGlobalIds(const int dom, const string &var, const int t
         (vtkIntArray*)GetGlobalNodeIds(dom, var.c_str(), ts);
 
     globalElement = -1;
-    if (!globalIncEls.empty());
+    if (!globalIncEls.empty())
         globalIncEls.clear();
 
     if (zonal)

@@ -16,7 +16,7 @@ shell prompt.
     Mesa     5.0      3-D Graphics Library   http://www.mesa3d.org/
     Python   2.1.2    Scripting Language     http://www.python.org
     Qt       3.3.2    GUI Toolkit            http://www.trolltech.com
-    Silo     4.4.2    File I/O library       http://www.llnl.gov/bdiv/meshtv
+    Silo     4.4.3    File I/O library       http://www.llnl.gov/bdiv/meshtv
     VTK      20031028 Visualization Toolkit  http://www.kitware.com
 
 
@@ -556,8 +556,8 @@ CFLAGS=-O2 with CFLAGS="-64 -O2" in the configure command below.
 #
 # Build Silo
 #
-sh silo050228.sh
-cd silo050228
+sh silo050506.sh
+cd silo050506
 env CFLAGS=-O2 ./configure --without-readline --without-hdf5 --without-exodus
 make
 
@@ -565,12 +565,12 @@ make
 # Install it in the visit directory under the silo directory.
 #
 mkdir $VISITDIR/silo
-mkdir $VISITDIR/silo/4.4.2
-mkdir $VISITDIR/silo/4.4.2/$VISITARCH
-mkdir $VISITDIR/silo/4.4.2/$VISITARCH/{include,lib}
-cp silo/silo/silo.{h,inc}   $VISITDIR/silo/4.4.2/$VISITARCH/include
-cp silo/sdx/sdx.{h,inc}     $VISITDIR/silo/4.4.2/$VISITARCH/include
-cp lib/libsilo.a            $VISITDIR/silo/4.4.2/$VISITARCH/lib
+mkdir $VISITDIR/silo/4.4.3
+mkdir $VISITDIR/silo/4.4.3/$VISITARCH
+mkdir $VISITDIR/silo/4.4.3/$VISITARCH/{include,lib}
+cp silo/silo/silo.{h,inc}   $VISITDIR/silo/4.4.3/$VISITARCH/include
+cp silo/sdx/sdx.{h,inc}     $VISITDIR/silo/4.4.3/$VISITARCH/include
+cp lib/libsilo.a            $VISITDIR/silo/4.4.3/$VISITARCH/lib
 cd ..
 
 
@@ -801,9 +801,9 @@ env command for configure.
 #
 # Build and install it in the visit directory.
 #
-gunzip visit050307.tar.gz
-tar xf visit050307.tar
-cd visit050307/config-site
+gunzip visit050516.tar.gz
+tar xf visit050516.tar
+cd visit050516/config-site
 echo VISITHOME=$VISITDIR > `hostname`.conf
 sed "s/ARCH/$VISITARCH/" Template.conf >> `hostname`.conf
 cd ..
@@ -812,12 +812,12 @@ make
 clearcase_bin/visit-bin-dist
 # Use the appropriate install command based on the operating system on
 # which you built VisIt.
-clearcase_bin/visit-install 1.4.2 aix $VISITDIR
-clearcase_bin/visit-install 1.4.2 irix6 $VISITDIR
-clearcase_bin/visit-install 1.4.2 linux $VISITDIR
-clearcase_bin/visit-install 1.4.2 linux-ia64 $VISITDIR
-clearcase_bin/visit-install 1.4.2 osf1 $VISITDIR
-clearcase_bin/visit-install 1.4.2 sunos5 $VISITDIR
+clearcase_bin/visit-install 1.4.3 aix $VISITDIR
+clearcase_bin/visit-install 1.4.3 irix6 $VISITDIR
+clearcase_bin/visit-install 1.4.3 linux $VISITDIR
+clearcase_bin/visit-install 1.4.3 linux-ia64 $VISITDIR
+clearcase_bin/visit-install 1.4.3 osf1 $VISITDIR
+clearcase_bin/visit-install 1.4.3 sunos5 $VISITDIR
 
 When running the configure script you can enable or disable certain dependent
 packages.  All the configure options are listed at the beginning of the
