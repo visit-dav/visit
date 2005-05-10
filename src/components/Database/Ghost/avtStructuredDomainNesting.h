@@ -50,6 +50,13 @@ class vtkDataArray;
 //    Added ConfirmMesh.
 //
 // ****************************************************************************
+
+typedef struct {
+    int         level;
+    vector<int> childDomains;
+    vector<int> logicalExtents;
+} avtNestedDomainInfo_t; 
+
 class DATABASE_API avtStructuredDomainNesting : public avtDomainNesting
 {
     public:
@@ -84,12 +91,6 @@ class DATABASE_API avtStructuredDomainNesting : public avtDomainNesting
 
         void          GetSelectedDescendents(const vector<int>& allDomainList,
                           int dom, vector<int>& selectedDescendents) const;
-
-        typedef struct {
-           int         level;
-           vector<int> childDomains;
-           vector<int> logicalExtents;
-        } avtNestedDomainInfo_t; 
 
         int numDimensions;
 

@@ -265,7 +265,7 @@ QvisSimulationWindow::UpdateWindow(bool doAll)
                 simulationToEngineListMap[simCombo->count()] = i;
 
                 int lastSlashPos = QString(sim[i].c_str()).findRev('/');
-                QString newsim = sim[i].substr(lastSlashPos+1);
+                QString newsim = QString(sim[i].substr(lastSlashPos+1).c_str());
                 int lastDotPos =  newsim.findRev('.');
                 int firstDotPos =  newsim.find('.');
 
@@ -459,7 +459,7 @@ QvisSimulationWindow::UpdateInformation(int index)
         simInfo->insertItem(item);
 
         int lastSlashPos = QString(sim.c_str()).findRev('/');
-        QString newsim = sim.substr(lastSlashPos+1);
+        QString newsim = QString(sim.substr(lastSlashPos+1).c_str());
         int lastDotPos =  newsim.findRev('.');
         int firstDotPos =  newsim.find('.');
 
@@ -516,8 +516,9 @@ QvisSimulationWindow::UpdateInformation(int index)
                 bool e = md->GetSimInfo().GetAvtSimulationCommandSpecification(c).GetEnabled();
                 if (t == avtSimulationCommandSpecification::CmdArgNone)
                 {
-                    cmdButtons[c]->setText(md->GetSimInfo().
-                            GetAvtSimulationCommandSpecification(c).GetName());
+                    cmdButtons[c]->setText(QString(md->GetSimInfo().
+                            GetAvtSimulationCommandSpecification(c).
+                            GetName().c_str()));
                     cmdButtons[c]->setEnabled(e);
                     cmdButtons[c]->show();
                 }

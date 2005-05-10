@@ -101,6 +101,7 @@ hold the name of the architecture specific directory.  Some examples
 include:
 
 setenv VISITARCH aix_5_gcc_3.3.3
+setenv VISITARCH aix_5_xlc_64
 setenv VISITARCH irix64_cc_7.3.1.2_64
 setenv VISITARCH irix64_cc_7.4_64
 setenv VISITARCH linux_chaos_gcc_3.3.3
@@ -743,11 +744,21 @@ in the file ccse-mpi.H.
 # other name in the file ../mk/Make.defs.  For example if the compiler is
 # g++-3.2.3, then change all occurances of g++ to g++-3.2.3.
 #
+# If you are building with xlC, you should change "COMP      = KCC" to
+# "COMP      = xlC" and add the following lines to ../mk/Make.defs.
+#
+# ifeq ($(COMP),xlC)
+#     CXXPRFF    := -p
+#     CXXOPTF    += -O2
+#     CXXDEBF    += -g
+#     CXX        := xlC -qrtti=dynamiccast
+# endif
+#
 
 #
 # Start off by building the 3d version.
 #
-make -f GNUmakefile
+gmake -f GNUmakefile
 
 #
 # Install the 3d version in the visit directory under the boxlib directory.
@@ -761,13 +772,13 @@ cp libbox3d*.a $VISITDIR/boxlib/$VISITARCH/lib/libbox3D.a
 #
 # Now build the 2d version.
 #
-make clean
+gmake clean
 
 #
 # You will need to modify the GNUmakefile to set the dimension to 2.  This
 # will involve replacing "3" with "2" in the line "DIM       = 3".
 #
-make -f GNUmakefile
+gmake -f GNUmakefile
 
 #
 # Install the 2d version in the visit directory under the boxlib directory.
