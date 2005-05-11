@@ -78,6 +78,9 @@ class avtExpressionEvaluatorFilter;
 //    Kathleen Bonnell, Wed Dec 15 17:16:17 PST 2004 
 //    Add GetCurrentNodeForOriginal.
 // 
+//    Kathleen Bonnell, Wed May 11 17:50:53 PDT 2005 
+//    Added ConvertElNamesToGlobal.
+//
 // ****************************************************************************
 
 class QUERY_API avtPickQuery : public avtDatasetQuery
@@ -137,6 +140,7 @@ class QUERY_API avtPickQuery : public avtDatasetQuery
                                                               const intVector&);
     void                            SetGlobalIds(vtkDataSet *, int);
                                                               
+    void                            ConvertElNamesToGlobal(void);
 
     PickAttributes                  pickAtts;
     avtExpressionEvaluatorFilter   *eef;

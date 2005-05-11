@@ -273,6 +273,10 @@ avtPickQuery::PostExecute(void)
 //    Kathleen Bonnell, Mon Dec 20 14:09:21 PST 2004 
 //    Turn on OriginalZone/Node numbers when turning on Global versions.
 //
+//    Kathleen Bonnell, Wed May 11 16:46:51 PDT 2005 
+//    Reworked so that an 'Update' is issued only if secondary variables
+//    are needed, or input has been MatSelected, or global ids are necessary. 
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -311,6 +315,8 @@ avtPickQuery::ApplyFilters(avtDataObject_p inData)
         singleDomain = false;
     }
 
+    bool requiresUpdate = false;
+
     dspec = new avtDataSpecification(pickAtts.GetActiveVariable().c_str(),
                                      pickAtts.GetTimeStep(), querySILR);
     //  
@@ -319,15 +325,6 @@ avtPickQuery::ApplyFilters(avtDataObject_p inData)
     //  
     int maxDom = UnifyMaximumValue(pickAtts.GetDomain());
 
-    if (!singleDomain && maxDom != -1)
-    {
-        intVector dlist;
-        if (maxDom == pickAtts.GetDomain())
-        {
-            dlist.push_back(pickAtts.GetDomain());
-        }
-        dspec->GetRestriction()->RestrictDomains(dlist);
-    }
 
     // 
     // Only set vars and turn on zone/node numbers if this process
@@ -341,7 +338,10 @@ avtPickQuery::ApplyFilters(avtDataObject_p inData)
             if (dspec->GetVariable() != vars[i]) 
             {
                 if (!dspec->HasSecondaryVariable(vars[i].c_str()))
+                {
                     dspec->AddSecondaryVariable(vars[i].c_str());
+                    requiresUpdate = true;
+                }
             }
         }
 
@@ -349,6 +349,7 @@ avtPickQuery::ApplyFilters(avtDataObject_p inData)
         {
             dspec->TurnZoneNumbersOn();
             dspec->TurnNodeNumbersOn();
+            requiresUpdate = true;
         }
         if (pickAtts.GetDisplayGlobalIds() || pickAtts.GetElementIsGlobal()) 
         {
@@ -356,13 +357,32 @@ avtPickQuery::ApplyFilters(avtDataObject_p inData)
             dspec->TurnGlobalNodeNumbersOn();
             dspec->TurnZoneNumbersOn();
             dspec->TurnNodeNumbersOn();
+            requiresUpdate = true;
         }
     }
+    requiresUpdate = (bool)UnifyMaximumValue((int)requiresUpdate);
+
+    if (requiresUpdate && !singleDomain && maxDom != -1)
+    {
+        intVector dlist;
+        if (maxDom == pickAtts.GetDomain())
+        {
+            dlist.push_back(pickAtts.GetDomain());
+        }
+        dspec->GetRestriction()->RestrictDomains(dlist);
+        //requiresUpdate = true;
+    }
+
+    if (!requiresUpdate)
+        return inData;
 
     avtPipelineSpecification_p pspec = new avtPipelineSpecification(dspec, 0);
-
+    // We don't want to disturb the original pipeline, so get the
+    // terminating source's output, and tack on an EEF, in case any of
+    // the vars are Expressions.
+    avtDataObject_p t1 = inData->GetTerminatingSource()->GetOutput();
     avtDataObject_p temp;
-    CopyTo(temp, inData);
+    CopyTo(temp, t1);
     eef->SetInput(temp);
     avtDataObject_p retObj = eef->GetOutput();
     retObj->Update(pspec);
@@ -629,7 +649,8 @@ avtPickQuery::GetZoneCoords(vtkDataSet *ds, const int zoneId)
 void
 avtPickQuery::RetrieveVarInfo(vtkDataSet* ds)
 {
-    RetrieveVarInfo(ds, pickAtts.GetElementNumber(), pickAtts.GetIncidentElements());
+    RetrieveVarInfo(ds, pickAtts.GetElementNumber(), 
+                    pickAtts.GetIncidentElements());
 }
 
 
@@ -695,8 +716,6 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds, const int findElement,
     bool zoneCent;
     bool foundData = true;
 
-
-
     int numVars;
     if (pickAtts.GetFulfilled())
         numVars = pickAtts.GetNumPickVarInfos();
@@ -709,9 +728,9 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds, const int findElement,
         PickVarInfo::Centering centering;
         if (pickAtts.GetFulfilled())
         {
-            if (pickAtts.GetPickVarInfo(varNum).HasInfo() &&
-                pickAtts.GetPickVarInfo(varNum).GetVariableType() != "species" &&
-                pickAtts.GetPickVarInfo(varNum).GetVariableType() != "scalar") 
+            if (pickAtts.GetPickVarInfo(varNum).HasInfo() 
+             && pickAtts.GetPickVarInfo(varNum).GetVariableType() != "species" 
+             && pickAtts.GetPickVarInfo(varNum).GetVariableType() != "scalar") 
                 continue;
 
             vName = pickAtts.GetPickVarInfo(varNum).GetVariableName();
@@ -756,7 +775,7 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds, const int findElement,
             // Determine if the data is a label. All label variables have
             // this marker in their field data.
             labelData = (nComponents > 1) && 
-                        (ds->GetFieldData()->GetArray("avtLabelVariableSize") != 0);
+                   (ds->GetFieldData()->GetArray("avtLabelVariableSize") != 0);
 
             temp = new double[nComponents];
             intVector globalIncEl = pickAtts.GetGlobalIncidentElements();
@@ -927,13 +946,13 @@ avtPickQuery::RetrieveNodes(vtkDataSet *ds, int zone)
         unsigned char *gZones = NULL; 
         vtkIdList *cells;
         bool findGhosts = (ghostType == AVT_HAS_GHOSTS &&
-                         ((ds->GetPointData()->GetArray("avtGhostNodes") != NULL) ||
-                          (ds->GetCellData()->GetArray("avtGhostZones") != NULL)));
+                 ((ds->GetPointData()->GetArray("avtGhostNodes") != NULL) ||
+                  (ds->GetCellData()->GetArray("avtGhostZones") != NULL)));
         pickAtts.SetIncludeGhosts(findGhosts);
         if (findGhosts)
         {
-            vtkUnsignedCharArray *gn = 
-               (vtkUnsignedCharArray*)ds->GetPointData()->GetArray("avtGhostNodes");
+            vtkUnsignedCharArray *gn = (vtkUnsignedCharArray*)ds->
+                GetPointData()->GetArray("avtGhostNodes");
             if (gn)
             {
                 gNodes = gn->GetPointer(0);
@@ -997,7 +1016,8 @@ avtPickQuery::RetrieveNodes(vtkDataSet *ds, int zone)
                     }
                     else 
                     {
-                        SNPRINTF(buff, 80, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
+                        SNPRINTF(buff, 80, "<%d, %d, %d>", 
+                                 ijk[0], ijk[1], ijk[2]);
                     }
                     dnodeCoords.push_back(buff);
                 }
@@ -1011,7 +1031,8 @@ avtPickQuery::RetrieveNodes(vtkDataSet *ds, int zone)
                     }
                     else 
                     {
-                        SNPRINTF(buff, 80, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
+                        SNPRINTF(buff, 80, "<%d, %d, %d>", 
+                                 ijk[0], ijk[1], ijk[2]);
                     }
                     bnodeCoords.push_back(buff);
                 }
@@ -1025,7 +1046,8 @@ avtPickQuery::RetrieveNodes(vtkDataSet *ds, int zone)
                 }
                 else 
                 {
-                    SNPRINTF(buff, 80, "<%g, %g, %g>", coord[0], coord[1], coord[2]);
+                    SNPRINTF(buff, 80, "<%g, %g, %g>", 
+                             coord[0], coord[1], coord[2]);
                 }
                 pnodeCoords.push_back(buff);
             }
@@ -1165,8 +1187,8 @@ avtPickQuery::RetrieveZones(vtkDataSet *ds, int foundNode)
             {
                 if (pickAtts.GetShowZoneDomainLogicalCoords())
                 {
-                    vtkVisItUtility::GetLogicalIndices(ds, true, cells[i], ijk, 
-                      false);
+                    vtkVisItUtility::GetLogicalIndices(ds, true, cells[i], 
+                                                       ijk, false);
 
                     if (pickAtts.GetDimension() == 2)
                     {
@@ -1182,8 +1204,8 @@ avtPickQuery::RetrieveZones(vtkDataSet *ds, int foundNode)
                 }
                 if (pickAtts.GetShowZoneBlockLogicalCoords())
                 {
-                    vtkVisItUtility::GetLogicalIndices(ds, true, cells[i], ijk, 
-                      true);
+                    vtkVisItUtility::GetLogicalIndices(ds, true, cells[i], 
+                                                       ijk, true);
 
                     if (pickAtts.GetDimension() == 2)
                     {
@@ -1191,7 +1213,8 @@ avtPickQuery::RetrieveZones(vtkDataSet *ds, int foundNode)
                     }
                     else 
                     {
-                        SNPRINTF(buff, 80, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
+                        SNPRINTF(buff, 80, "<%d, %d, %d>", 
+                                 ijk[0], ijk[1], ijk[2]);
                     }
                     bzoneCoords.push_back(buff);
                 }
@@ -1218,7 +1241,7 @@ avtPickQuery::RetrieveZones(vtkDataSet *ds, int foundNode)
 //
 //  Purpose:
 //    Determines the zone in the dataset whose original node designation
-///   matches that of the passed node.
+//    matches that of the passed node.
 //
 //  Arguments:
 //    ds         The dataset to retrieve information from.
@@ -1331,7 +1354,8 @@ avtPickQuery::GetCurrentZoneForOriginal(vtkDataSet *ds, const int origZone)
 // ****************************************************************************
 
 intVector
-avtPickQuery::GetCurrentZoneForOriginal(vtkDataSet *ds, const intVector &origZones)
+avtPickQuery::GetCurrentZoneForOriginal(vtkDataSet *ds, 
+                                        const intVector &origZones)
 {
     intVector currentZones = origZones;
     vtkUnsignedIntArray *origCells = vtkUnsignedIntArray::SafeDownCast(
@@ -1408,4 +1432,60 @@ avtPickQuery::SetGlobalIds(vtkDataSet *ds, int element)
     
     }
     pickAtts.SetGlobalIncidentElements(gie);
+}
+
+
+// ****************************************************************************
+//  Method: avtPickQuery::ConvertElNamesToGlobal
+//
+//  Purpose:
+//    Converts the element names stored in pick atts to the global form. 
+//
+//  Programmer: Kathleen Bonnell  
+//  Creation:   May 11, 2005 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void 
+avtPickQuery::ConvertElNamesToGlobal(void)
+{
+    // var names were retrieved from DB, not global, so convert them. 
+    int i;
+    char buff[24];
+    stringVector globalElName;
+    SNPRINTF(buff, 24, "(%d)", pickAtts.GetGlobalElement());
+    globalElName.push_back(buff);
+    intVector globalIds = pickAtts.GetGlobalIncidentElements();   
+
+    stringVector names;
+    for (i = 0; i < globalIds.size(); i++)
+    { 
+        SNPRINTF(buff, 24, "(%d)", globalIds[i]);
+        names.push_back(buff);
+    }
+
+    bool zonePick = pickAtts.GetPickType() == PickAttributes::Zone ||
+                    pickAtts.GetPickType() == PickAttributes::DomainZone;
+
+    for (i = 0; i < pickAtts.GetNumPickVarInfos(); i++)
+    { 
+        if (zonePick)
+        {
+            if (pickAtts.GetPickVarInfo(i).GetCentering() == 
+                PickVarInfo::Zonal)
+                pickAtts.GetPickVarInfo(i).SetNames(globalElName);
+            else
+                pickAtts.GetPickVarInfo(i).SetNames(names);
+        }
+        else 
+        {
+            if (pickAtts.GetPickVarInfo(i).GetCentering() == 
+                PickVarInfo::Zonal)
+                pickAtts.GetPickVarInfo(i).SetNames(names);
+            else
+                pickAtts.GetPickVarInfo(i).SetNames(globalElName);
+        }
+    }
 }

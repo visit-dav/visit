@@ -315,7 +315,11 @@ void MainLoop()
                 {
                     fprintf(stderr, "GOT CONNECTION ATTEMPT ON LISTEN SOCKET!\n");
                     FakeConsoleCommand("visit_connect");
-                    VisItAttemptToCompleteConnection();
+                    if (!VisItAttemptToCompleteConnection())
+                    {
+                        fprintf(stderr, "Failed to connect!\n");
+                        continue;
+                    }
                     engineinputdescriptor = VisItGetEngineSocket();
                     VisItSetSlaveProcessCallback(SlaveProcessCallback);
                     VisItSetCommandCallback(ControlCommandCallback);
@@ -390,6 +394,10 @@ int main(int argc, char *argv[])
 
     InitializeVariables();
     MainLoop();
+
+#ifdef PARALLEL
+    MPI_Finalize();
+#endif
 
     return 0;
 }

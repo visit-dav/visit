@@ -28,6 +28,9 @@
 //   Jeremy Meredith, Tue Mar 30 10:06:33 PST 2004
 //   I added support for connecting to running simulations.
 //
+//   Jeremy Meredith, Mon May  9 16:09:06 PDT 2005
+//   I added security protocols for simulations.
+//
 // ****************************************************************************
 
 class LauncherApplication
@@ -38,7 +41,8 @@ public:
     void Execute(int *argc, char **argv[]);
     void LaunchProcess(const stringVector &launchArgs);
     void ConnectSimulation(const stringVector &launchArgs,
-                           const std::string &simHost, int simPort);
+                           const std::string &simHost, int simPort,
+                           const std::string &simSecurityKey);
 
 protected:
     LauncherApplication();

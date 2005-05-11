@@ -65,7 +65,8 @@ typedef enum
     LOAD_BALANCE_CONTIGUOUS_BLOCKS_TOGETHER    = 0,
     LOAD_BALANCE_STRIDE_ACROSS_BLOCKS,        /* 1 */
     LOAD_BALANCE_RANDOM_ASSIGNMENT,           /* 2 */
-    LOAD_BALANCE_DBPLUGIN_DYNAMIC             /* 3 */
+    LOAD_BALANCE_DBPLUGIN_DYNAMIC,            /* 3 */
+    LOAD_BALANCE_RESTRICTED                   /* 4 */
 } LoadBalanceScheme;
 
 
@@ -111,6 +112,10 @@ typedef enum
 //
 //    Hank Childs, Sun Mar  6 08:42:50 PST 2005
 //    Renamed ForceDynamic to AllowDynamic.
+//
+//    Jeremy Meredith, Wed May 11 09:07:15 PDT 2005
+//    Added "restricted" load balancing mode.  This is intended for
+//    non-global filesystems and simulation-mode engines.
 //
 // ****************************************************************************
 

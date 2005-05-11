@@ -13,3 +13,4 @@ extern float *p_zvalues;
 extern float *p_nvalues;
 
 extern int numdomains;
+extern int par_rank;

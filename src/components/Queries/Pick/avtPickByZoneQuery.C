@@ -10,6 +10,7 @@
 #include <vtkFieldData.h>
 #include <vtkIntArray.h>
 #include <vtkVisItUtility.h>
+#include <PickVarInfo.h>
 
 #include <avtMatrix.h>
 #include <avtTerminatingSource.h>
@@ -81,6 +82,9 @@ avtPickByZoneQuery::~avtPickByZoneQuery()
 //    Kathleen Bonnell, Tue Feb  8 08:29:44 PST 2005 
 //    Added test for presence of avtGlobalZoneNumbers array, create error
 //    message when not available but should be.
+//
+//    Kathleen Bonnell, Wed May 11 17:14:03 PDT 200 
+//    Convert varnmames to Global names when the DB supplied the ids. 
 //
 // ****************************************************************************
 
@@ -168,6 +172,7 @@ avtPickByZoneQuery::Execute(vtkDataSet *ds, const int dom)
     {
        zoneid =  GetCurrentZoneForOriginal(ds, pickAtts.GetElementNumber());
        userZoneId = zoneid;
+       ConvertElNamesToGlobal();
     }
 
     pickAtts.SetElementNumber(userZoneId+cellOrigin);

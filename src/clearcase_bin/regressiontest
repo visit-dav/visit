@@ -129,6 +129,11 @@
 #    Mark C. Miller, Tue May  3 21:49:22 PDT 2005
 #    Modified skipList
 #
+#    Mark C. Miller, Tue May 10 19:53:08 PDT 2005
+#    Removed HDF5 from nightly. Changed Sunday morning's modes
+#    Added a pass for an optimized build 
+#    Added calls to clean up ipc resources
+#
 # ----------------------------------------------------------------------------
 
 # list of users who want email every night with the log file
@@ -201,6 +206,11 @@ export DISPLAY
 PATH=/misc/gapps/mpich/1.2.4/Linux/serial/64/debug/bin:/home/visit/bin:/data_vobs/VisIt/clearcase_bin:/home/visit/clearcase_bin:/usr/atria/bin:/usr/security/bin:/sbin:/usr/sbin:/usr/bsd:/usr/local/bin:/usr/bin:/bin:/etc:/usr/bin/X11:/usr/local/X11:/usr/etc:/usr/lib:/usr/atria/bin:/usr/ccs/bin:/usr/SUNWspro/bin:.
 export PATH
 
+# clean up ipc resources
+ipcs -m | grep visit | cut -d' ' -f2 | xargs -n 1 ipcrm -m 1> /dev/null 2>&1
+ipcs -s | grep visit | cut -d' ' -f2 | xargs -n 1 ipcrm -s 1> /dev/null 2>&1
+ipcs -q | grep visit | cut -d' ' -f2 | xargs -n 1 ipcrm -q 1> /dev/null 2>&1
+
 # rebuild visit
 cleartool startview visit_VOBowner_test  1> /dev/null 2>&1
 cd /view/visit_VOBowner_test/data_vobs/VisIt 
@@ -253,9 +263,9 @@ cd ..
 curdate=`date +%Y-%m-%d-%p%I%M`
 
 # set mode to run in
-modes="serial parallel scalable,parallel hdf5"
+modes="serial parallel scalable,parallel purify"
 if test "`date +%A`" = "Sunday"; then
-    modes="serial,hdf5 parallel,hdf5 scalable,parallel,hdf5 dlb"
+    modes="hdf5 dlb serial,purify scalable,parallel,purify"
 fi
 
 # set list of tests/modes to skip
@@ -280,6 +290,50 @@ for m in $modes; do
         error=1
     fi
 done
+
+# clean up ipc resources
+ipcs -m | grep visit | cut -d' ' -f2 | xargs -n 1 ipcrm -m 1> /dev/null 2>&1
+ipcs -s | grep visit | cut -d' ' -f2 | xargs -n 1 ipcrm -s 1> /dev/null 2>&1
+ipcs -q | grep visit | cut -d' ' -f2 | xargs -n 1 ipcrm -q 1> /dev/null 2>&1
+
+# rebuild an optimized visit
+cleartool startview visit_VOBowner_testopt  1> /dev/null 2>&1
+cd /view/visit_VOBowner_testopt/data_vobs/VisIt 
+rm -f config.cache
+rm -f buildlog
+echo -e "LD_LIBRARY_PATH = $LD_LIBRARY_PATH" 1> buildlog 2>&1
+echo -e "Forcing LD_LIBRARY_PATH to /usr/local/lib" 1> buildlog 2>&1
+LD_LIBRARY_PATH=/usr/local/lib
+export LD_LIBRARY_PATH
+env CXXFLAGS="-O2" ./configure --enable-parallel 1>> buildlog 2>&1
+rm -f plugins/*/*.so
+(cd data; clearmake clean 1> /dev/null 2>&1 )
+clearmake -J 2 1>> buildlog 2>&1
+error=$?
+
+# make sure all needed data files exist
+cd data
+make test 1> /dev/null 2>&1
+#          (we should probably check for errors here)
+cd ..
+
+# run the test
+error=0
+cd test
+if test "$skipList" = ""; then
+    ./runtest -q -p -m optimized -d "$curdate" -notrackmem -minor-error 5 -major-error 20 
+else
+    ./runtest -q -s "$skipList" -p -m optimized -d "$curdate" -notrackmem -minor-error 5 -major-error 20
+fi
+curerror=$?
+if test ! "$curerror" = "0"; then
+    error=1
+fi
+
+# clean up ipc resources
+ipcs -m | grep visit | cut -d' ' -f2 | xargs -n 1 ipcrm -m 1> /dev/null 2>&1
+ipcs -s | grep visit | cut -d' ' -f2 | xargs -n 1 ipcrm -s 1> /dev/null 2>&1
+ipcs -q | grep visit | cut -d' ' -f2 | xargs -n 1 ipcrm -q 1> /dev/null 2>&1
 
 # restart the list of modifiers
 if test -f "/home/visit/public_html/modifiers"; then

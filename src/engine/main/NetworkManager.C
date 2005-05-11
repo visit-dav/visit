@@ -2661,6 +2661,11 @@ NetworkManager::StopQueryMode(void)
 //    the way data specifications are managed inside pipeline specifications
 //    (they are now copied rather than shared, which was incorrect).
 //
+//    Kathleen Bonnell, Wed May 11 17:14:03 PDT 2005
+//    Use EEF output instead of DB output for input to Pick Query. Added
+//    UnifyMaximumValue call to ensure all processors know if they should 
+//    perform an ActualCoords query.
+//
 // ****************************************************************************
 
 void
@@ -2860,8 +2865,8 @@ NetworkManager::Pick(const int id, const int winId, PickAttributes *pa)
                     pQ->SetSILRestriction(silr->MakeAttributes());
                 }
                 pQ->SetNeedTransform(queryInputVal.GetPointsWereTransformed());
+                pQ->SetInput(networkCache[id]->GetNodeList()[0]->GetOutput());
 
-                pQ->SetInput(networkCache[id]->GetNetDB()->GetOutput());
                 pQ->SetPickAtts(pa);
                 pQ->SetSkippedLocate(skipLocate);
                 int queryTimer = visitTimer->StartTimer();
@@ -2876,8 +2881,9 @@ NetworkManager::Pick(const int id, const int winId, PickAttributes *pa)
             }
 
             delete pQ;
-
-            if (pa->GetNeedActualCoords())
+            bool doACQuery = (bool)UnifyMaximumValue(
+                                   (int)pa->GetNeedActualCoords());
+            if (doACQuery)
             {
                 avtActualCoordsQuery *acq = NULL;
                 if (pa->GetPickType() == PickAttributes::DomainNode)

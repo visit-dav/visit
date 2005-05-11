@@ -213,6 +213,9 @@ class avtDatabaseMetaData;
 //    Brad Whitlock, Wed Apr 13 14:50:50 PST 2005
 //    Made EngineExists be public.
 //
+//    Jeremy Meredith, Mon May  9 14:39:44 PDT 2005
+//    Added security key to simulation connection.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerEngineManager : public ViewerServerManager,
@@ -236,7 +239,8 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
 
     bool ConnectSim(const EngineKey &ek,
                     const std::vector<std::string> &arguments,
-                    const std::string &simHost, int simPort);
+                    const std::string &simHost, int simPort,
+                    const string &simSecurityKey);
     void SendSimulationCommand(const EngineKey &ek,
                                const std::string &command,
                                const std::string &argument);

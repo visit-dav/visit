@@ -33,6 +33,9 @@
 //    Jeremy Meredith, Mon Apr 25 10:00:06 PDT 2005
 //    Added versioning.
 //
+//    Jeremy Meredith, Wed May 11 09:17:44 PDT 2005
+//    Forced the RESTRICTED load balancer mode.
+//
 // ****************************************************************************
 
 void *get_engine()
@@ -59,6 +62,7 @@ int connect_to_viewer(void *e, int argc, char *argv[])
     else
     {
         engine->SetUpViewerInterface(&argc, &argv);
+        LoadBalancer::SetScheme(LOAD_BALANCE_RESTRICTED);
         return 1;
     }
 }
