@@ -5,7 +5,7 @@
 #ifndef AVT_MULTIRESOLUTION_PARTITION_STRATEGY_H
 #define AVT_MULTIRESOLUTION_PARTITION_STRATEGY_H
 
-#include <filters_exports.h>
+#include <pipeline_exports.h>
 
 #include <vector>
 
@@ -24,7 +24,7 @@
 //
 // ****************************************************************************
 
-class AVTFILTERS_API avtMultiResolutionPartitionStrategy 
+class PIPELINE_API avtMultiResolutionPartitionStrategy 
     : public avtStructuredMeshPartitionStrategy
 {
   public:

@@ -83,6 +83,9 @@
 #   Added NIFGUI.java as an example of creating a GUI program that uses
 #   the Java client.
 #
+#   Brad Whitlock, Thu May 12 13:45:48 PST 2005
+#   Added ProcessAttributes.
+#
 ##############################################################################
 
 ##
@@ -140,6 +143,7 @@ PluginManagerAttributes.java \
 Point.java \
 PostponedAction.java \
 PrinterAttributes.java \
+ProcessAttributes.java \
 QueryAttributes.java \
 QueryList.java \
 QueryOverTimeAttributes.java \
@@ -218,7 +222,7 @@ pack: jar main
 	cp Makefile src
 	cp ../plots/*/*.java src/plots
 	cp ../operators/*/*.java src/operators
-	tar -cf jvisit.tar $(JARFILE) src $(MAIN_CLASS)
+	tar -cf jvisit.tar $(JARFILE) src $(MAIN_CLASS) images
 	$(RM) -rf src
 
 ##

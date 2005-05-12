@@ -115,6 +115,9 @@
 #    Brad Whitlock, Wed Jan 5 09:25:20 PDT 2005
 #    Added -lexpr for MacOS X.
 #
+#    Brad Whitlock, Fri Apr 29 12:07:54 PDT 2005
+#    Moved -lmir to -lmir_ser, -lmir_par for parallel MacOS X build.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -158,9 +161,9 @@ CPPFLAGS=-I../../include @COMPONENT_CPPFLAGS@ @CPPFLAGS@
 SEROBJ=$(SRC:.C=.o)
 PAROBJ=$(SRC:.C=_par.o)
 LIB=libdatabase
-COMMONLIBS=-ldbatts -lavtexceptions -lstate -lcomm -lmisc -lplugin -lexpr -lparser -lutility -lmir -lvisit_vtk -llightweight_visit_vtk
-SERLIBS=$(COMMONLIBS) -lpipeline_ser -lavtmath_ser $(VTK_LIBS)
-PARLIBS=$(COMMONLIBS) -lpipeline_par -lavtmath_par $(VTK_LIBS) @SHLIB_MPI_LIBS@
+COMMONLIBS=-ldbatts -lavtexceptions -lstate -lcomm -lmisc -lplugin -lexpr -lparser -lutility -lvisit_vtk -llightweight_visit_vtk
+SERLIBS=$(COMMONLIBS) -lmir_ser -lpipeline_ser -lavtmath_ser $(VTK_LIBS)
+PARLIBS=$(COMMONLIBS) -lmir_par -lpipeline_par -lavtmath_par $(VTK_LIBS) @SHLIB_MPI_LIBS@
 
 ##
 ## Standard targets...

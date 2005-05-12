@@ -543,6 +543,9 @@ dnl
 dnl    Hank Childs, Wed Apr  6 13:13:10 PDT 2005
 dnl    Added tools/writer.
 dnl
+dnl    Brad Whitlock, Mon Apr 11 16:58:53 PST 2005
+dnl    Changed the location of the linkedit.py script used on the Mac.
+dnl
 dnl    Jeremy Meredith, Thu Apr 28 17:46:44 PDT 2005
 dnl    Added explicit versioning for the VisIt Engine Library.
 dnl
@@ -2679,37 +2682,37 @@ case $SHORT_UNAME in
     # Set the post processing step to something really useless because we
     # don't need a postprocessing step since we're going to build directly
     # in the lib directory.
-    SHLIB_POSTPROCESS="$""(TOPDIR)/clearcase_bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -lib $""(LIBSHARED)"
-    SHLIB_POSTPROCESS_SER="$""(TOPDIR)/clearcase_bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -lib $""(LIBSHAREDSER)"
-    SHLIB_POSTPROCESS_PAR="$""(TOPDIR)/clearcase_bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -lib $""(LIBSHAREDPAR)"
+    SHLIB_POSTPROCESS="$""(TOPDIR)/bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -lib $""(LIBSHARED)"
+    SHLIB_POSTPROCESS_SER="$""(TOPDIR)/bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -lib $""(LIBSHAREDSER)"
+    SHLIB_POSTPROCESS_PAR="$""(TOPDIR)/bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -lib $""(LIBSHAREDPAR)"
 
-    SHLIB_POSTPROCESS_ILIBS="$""(TOPDIR)/clearcase_bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -lib $""(IDSO) ; sleep 1"
-    SHLIB_POSTPROCESS_GLIBS="$""(TOPDIR)/clearcase_bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -lib $""(GDSO) ; sleep 1"
-    SHLIB_POSTPROCESS_SLIBS="$""(TOPDIR)/clearcase_bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -lib $""(SDSO) ; sleep 1"
-    SHLIB_POSTPROCESS_VLIBS="$""(TOPDIR)/clearcase_bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -lib $""(VDSO) ; sleep 1"
-    SHLIB_POSTPROCESS_MLIBS="$""(TOPDIR)/clearcase_bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -lib $""(MDSO) ; sleep 1"
-    SHLIB_POSTPROCESS_ESERLIBS="$""(TOPDIR)/clearcase_bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -lib $""(ESERDSO) ; sleep 1"
-    SHLIB_POSTPROCESS_EPARLIBS="$""(TOPDIR)/clearcase_bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -lib $""(EPARDSO) ; sleep 1"
+    SHLIB_POSTPROCESS_ILIBS="$""(TOPDIR)/bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -lib $""(IDSO) ; sleep 1"
+    SHLIB_POSTPROCESS_GLIBS="$""(TOPDIR)/bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -lib $""(GDSO) ; sleep 1"
+    SHLIB_POSTPROCESS_SLIBS="$""(TOPDIR)/bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -lib $""(SDSO) ; sleep 1"
+    SHLIB_POSTPROCESS_VLIBS="$""(TOPDIR)/bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -lib $""(VDSO) ; sleep 1"
+    SHLIB_POSTPROCESS_MLIBS="$""(TOPDIR)/bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -lib $""(MDSO) ; sleep 1"
+    SHLIB_POSTPROCESS_ESERLIBS="$""(TOPDIR)/bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -lib $""(ESERDSO) ; sleep 1"
+    SHLIB_POSTPROCESS_EPARLIBS="$""(TOPDIR)/bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -lib $""(EPARDSO) ; sleep 1"
 
     # Set SHLIB_TMPDIR so that libraries are created directly in the lib directory.
     SHLIB_TMPDIR="$""(TOPDIR)/lib/"
     # Set SHLIB_LIBS so the right libraries are added to the link line but also ensure
     # that the shared library is created with a unique starting address so we can
     # prebind.
-    SHLIB_LIBS="$""(LIBS) -Wl,-seg1addr,$""(shell $""(TOPDIR)/clearcase_bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -readstart),-install_name,@executable_path/../lib/$""(LIB).dylib,-compatibility_version,$VERSION,-current_version,$VERSION -Wl,-M | grep __LINKEDIT > $""(TOPDIR)/address.txt"
-    SHLIB_SERLIBS="$""(SERLIBS) -Wl,-seg1addr,$""(shell $""(TOPDIR)/clearcase_bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -readstart),-install_name,@executable_path/../lib/$""(LIB)_ser.dylib,-compatibility_version,$VERSION,-current_version,$VERSION -Wl,-M | grep __LINKEDIT > $""(TOPDIR)/address.txt"
-    SHLIB_PARLIBS="$""(PARLIBS) -Wl,-seg1addr,$""(shell $""(TOPDIR)/clearcase_bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -readstart),-install_name,@executable_path/../lib/$""(LIB)_par.dylib,-compatibility_version,$VERSION,-current_version,$VERSION -Wl,-M | grep __LINKEDIT > $""(TOPDIR)/address.txt"
+    SHLIB_LIBS="$""(LIBS) -Wl,-seg1addr,$""(shell $""(TOPDIR)/bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -readstart),-install_name,@executable_path/../lib/$""(LIB).dylib,-compatibility_version,$VERSION,-current_version,$VERSION -Wl,-M | grep __LINKEDIT > $""(TOPDIR)/address.txt"
+    SHLIB_SERLIBS="$""(SERLIBS) -Wl,-seg1addr,$""(shell $""(TOPDIR)/bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -readstart),-install_name,@executable_path/../lib/$""(LIB)_ser.dylib,-compatibility_version,$VERSION,-current_version,$VERSION -Wl,-M | grep __LINKEDIT > $""(TOPDIR)/address.txt"
+    SHLIB_PARLIBS="$""(PARLIBS) -Wl,-seg1addr,$""(shell $""(TOPDIR)/bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -readstart),-install_name,@executable_path/../lib/$""(LIB)_par.dylib,-compatibility_version,$VERSION,-current_version,$VERSION -Wl,-M | grep __LINKEDIT > $""(TOPDIR)/address.txt"
 
     #
     # Targets for creating prebound plugins.
     #
-    SHLIB_ILIBS="$""(ILIBS) -Wl,-seg1addr,$""(shell $""(TOPDIR)/clearcase_bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -readstart),-install_name,@executable_path/../plugins/$""(PLUGINDIR)/libI$""(PLUGINNAME).dylib,-compatibility_version,$VERSION,-current_version,$VERSION -Wl,-M | grep __LINKEDIT > $""(TOPDIR)/address.txt"
-    SHLIB_GLIBS="$""(GLIBS) -Wl,-seg1addr,$""(shell $""(TOPDIR)/clearcase_bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -readstart),-install_name,@executable_path/../plugins/$""(PLUGINDIR)/libG$""(PLUGINNAME).dylib,-compatibility_version,$VERSION,-current_version,$VERSION -Wl,-M | grep __LINKEDIT > $""(TOPDIR)/address.txt"
-    SHLIB_SLIBS="$""(SLIBS) -Wl,-seg1addr,$""(shell $""(TOPDIR)/clearcase_bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -readstart),-install_name,@executable_path/../plugins/$""(PLUGINDIR)/libS$""(PLUGINNAME).dylib,-compatibility_version,$VERSION,-current_version,$VERSION -Wl,-M | grep __LINKEDIT > $""(TOPDIR)/address.txt"
-    SHLIB_VLIBS="$""(VLIBS) -Wl,-seg1addr,$""(shell $""(TOPDIR)/clearcase_bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -readstart),-install_name,@executable_path/../plugins/$""(PLUGINDIR)/libV$""(PLUGINNAME).dylib,-compatibility_version,$VERSION,-current_version,$VERSION -Wl,-M | grep __LINKEDIT > $""(TOPDIR)/address.txt"
-    SHLIB_MLIBS="$""(MLIBS) -Wl,-seg1addr,$""(shell $""(TOPDIR)/clearcase_bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -readstart),-install_name,@executable_path/../plugins/$""(PLUGINDIR)/libM$""(PLUGINNAME).dylib,-compatibility_version,$VERSION,-current_version,$VERSION -Wl,-M | grep __LINKEDIT > $""(TOPDIR)/address.txt"
-    SHLIB_ESERLIBS="$""(ESERLIBS) -Wl,-seg1addr,$""(shell $""(TOPDIR)/clearcase_bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -readstart),-install_name,@executable_path/../plugins/$""(PLUGINDIR)/libE$""(PLUGINNAME)_ser.dylib,-compatibility_version,$VERSION,-current_version,$VERSION -Wl,-M | grep __LINKEDIT > $""(TOPDIR)/address.txt"
-    SHLIB_EPARLIBS="$""(EPARLIBS) -Wl,-seg1addr,$""(shell $""(TOPDIR)/clearcase_bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -readstart),-install_name,@executable_path/../plugins/$""(PLUGINDIR)/libE$""(PLUGINNAME)_par.dylib,-compatibility_version,$VERSION,-current_version,$VERSION -Wl,-M | grep __LINKEDIT > $""(TOPDIR)/address.txt"
+    SHLIB_ILIBS="$""(ILIBS) -Wl,-seg1addr,$""(shell $""(TOPDIR)/bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -readstart),-install_name,@executable_path/../plugins/$""(PLUGINDIR)/libI$""(PLUGINNAME).dylib,-compatibility_version,$VERSION,-current_version,$VERSION -Wl,-M | grep __LINKEDIT > $""(TOPDIR)/address.txt"
+    SHLIB_GLIBS="$""(GLIBS) -Wl,-seg1addr,$""(shell $""(TOPDIR)/bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -readstart),-install_name,@executable_path/../plugins/$""(PLUGINDIR)/libG$""(PLUGINNAME).dylib,-compatibility_version,$VERSION,-current_version,$VERSION -Wl,-M | grep __LINKEDIT > $""(TOPDIR)/address.txt"
+    SHLIB_SLIBS="$""(SLIBS) -Wl,-seg1addr,$""(shell $""(TOPDIR)/bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -readstart),-install_name,@executable_path/../plugins/$""(PLUGINDIR)/libS$""(PLUGINNAME).dylib,-compatibility_version,$VERSION,-current_version,$VERSION -Wl,-M | grep __LINKEDIT > $""(TOPDIR)/address.txt"
+    SHLIB_VLIBS="$""(VLIBS) -Wl,-seg1addr,$""(shell $""(TOPDIR)/bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -readstart),-install_name,@executable_path/../plugins/$""(PLUGINDIR)/libV$""(PLUGINNAME).dylib,-compatibility_version,$VERSION,-current_version,$VERSION -Wl,-M | grep __LINKEDIT > $""(TOPDIR)/address.txt"
+    SHLIB_MLIBS="$""(MLIBS) -Wl,-seg1addr,$""(shell $""(TOPDIR)/bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -readstart),-install_name,@executable_path/../plugins/$""(PLUGINDIR)/libM$""(PLUGINNAME).dylib,-compatibility_version,$VERSION,-current_version,$VERSION -Wl,-M | grep __LINKEDIT > $""(TOPDIR)/address.txt"
+    SHLIB_ESERLIBS="$""(ESERLIBS) -Wl,-seg1addr,$""(shell $""(TOPDIR)/bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -readstart),-install_name,@executable_path/../plugins/$""(PLUGINDIR)/libE$""(PLUGINNAME)_ser.dylib,-compatibility_version,$VERSION,-current_version,$VERSION -Wl,-M | grep __LINKEDIT > $""(TOPDIR)/address.txt"
+    SHLIB_EPARLIBS="$""(EPARLIBS) -Wl,-seg1addr,$""(shell $""(TOPDIR)/bin/linkedit.py -input $""(TOPDIR)/address.txt -log $""(TOPDIR)/linkedit.log -readstart),-install_name,@executable_path/../plugins/$""(PLUGINDIR)/libE$""(PLUGINNAME)_par.dylib,-compatibility_version,$VERSION,-current_version,$VERSION -Wl,-M | grep __LINKEDIT > $""(TOPDIR)/address.txt"
 
     PREBIND_LIBS="$""(PREBIND_LIBS)"
     # Create the address.txt file with the initial offset for the VisIt libraries.

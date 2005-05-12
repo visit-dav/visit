@@ -131,6 +131,9 @@ import java.util.Vector;
 //   Brad Whitlock, Fri Apr 15 10:32:35 PDT 2005
 //   Added PostponedAction.
 //
+//   Brad Whitlock, Thu May 12 13:46:37 PST 2005
+//   Added ProcessAttributes.
+//
 // ****************************************************************************
 
 public class ViewerProxy implements SimpleObserver
@@ -186,6 +189,7 @@ public class ViewerProxy implements SimpleObserver
         queryOverTimeAtts = new QueryOverTimeAttributes();
         interactorAtts = new InteractorAttributes();
         silAtts = new SILRestrictionAttributes();
+        processAtts = new ProcessAttributes();
 
         // Create the plugin managers.
         plotPlugins = new PluginManager("plot");
@@ -257,6 +261,7 @@ public class ViewerProxy implements SimpleObserver
             xfer.Add(annotationObjectList);
             xfer.Add(queryOverTimeAtts);
             xfer.Add(interactorAtts);
+            xfer.Add(processAtts);
 
             // For simulations. Note that the metadata is being
             // added as a dummy so Xfer can skip its bytes when
@@ -1552,6 +1557,7 @@ public class ViewerProxy implements SimpleObserver
     public AnnotationObjectList GetAnnotationObjectList() { return annotationObjectList; }
     public QueryOverTimeAttributes GetQueryOverTimeAttributes() { return queryOverTimeAtts; }
     public InteractorAttributes GetInteractorAttributes() { return interactorAtts; }
+    public ProcessAttributes GetProcessAttributes() { return processAtts; }
 
     public int GetPlotIndex(String plotName)
     {
@@ -1713,4 +1719,5 @@ public class ViewerProxy implements SimpleObserver
     private QueryOverTimeAttributes  queryOverTimeAtts;
     private InteractorAttributes     interactorAtts;
     private SILRestrictionAttributes silAtts;
+    private ProcessAttributes        processAtts;
 }

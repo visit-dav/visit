@@ -26,6 +26,9 @@ class PIPELINE_API avtPluginStructuredChunkStreamer :
     public virtual avtStructuredChunkStreamer, 
     public virtual avtPluginFilter
 {
+public:
+    avtPluginStructuredChunkStreamer();
+    virtual ~avtPluginStructuredChunkStreamer();
 };
 
 #endif

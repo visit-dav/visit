@@ -5,7 +5,7 @@
 #ifndef AVT_STRUCTURED_MESH_PARTITION_STRATEGY_H
 #define AVT_STRUCTURED_MESH_PARTITION_STRATEGY_H
 
-#include <filters_exports.h>
+#include <pipeline_exports.h>
 
 #include <vector>
 
@@ -24,7 +24,7 @@
 //
 // ****************************************************************************
 
-class AVTFILTERS_API avtStructuredMeshPartitionStrategy
+class PIPELINE_API avtStructuredMeshPartitionStrategy
 {
   public:
                             avtStructuredMeshPartitionStrategy();

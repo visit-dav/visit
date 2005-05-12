@@ -5,7 +5,7 @@
 #ifndef AVT_STRUCTURED_MESH_CHUNKER_H
 #define AVT_STRUCTURED_MESH_CHUNKER_H
 
-#include <filters_exports.h>
+#include <pipeline_exports.h>
 
 class vtkCellData;
 class vtkDataArray;
@@ -45,7 +45,7 @@ class vtkUnstructuredGrid;
 //
 // ****************************************************************************
 
-class AVTFILTERS_API avtStructuredMeshChunker
+class PIPELINE_API avtStructuredMeshChunker
 {
   public:
     typedef enum

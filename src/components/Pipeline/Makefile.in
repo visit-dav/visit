@@ -1,4 +1,4 @@
-#                            Copyright 2000 - 2004
+#                            Copyright 2000 - 2005
 #                 The Regents of the University of California.
 #                             All rights reserved.
 # 
@@ -297,6 +297,7 @@ PrivateFilters_src= \
   PrivateFilters/avtMultipleInputToDataObjectFilter.C \
   PrivateFilters/avtMultipleInputToDatasetFilter.C \
   PrivateFilters/avtPluginStreamer.C \
+  PrivateFilters/avtPluginStructuredChunkStreamer.C \
   PrivateFilters/avtSamplePointsToDataObjectFilter.C \
   PrivateFilters/avtSamplePointsToDatasetFilter.C \
   PrivateFilters/avtSamplePointsToImageFilter.C \
