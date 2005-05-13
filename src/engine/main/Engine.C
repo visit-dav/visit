@@ -1877,10 +1877,19 @@ Engine::PopulateSimulationMetaData(const std::string &db,
 //  Programmer:  Jeremy Meredith
 //  Creation:    August 24, 2004
 //
+//  Modifications:
+//    Jeremy Meredith, Fri May 13 17:06:19 PDT 2005
+//    Skip this if there's not a filename -- it means we haven't had
+//    a chance to open the simulation file yet.
+//
 // ****************************************************************************
 void
 Engine::SimulationTimeStepChanged()
 {
+    // We may have not had a chance to open the file yet
+    if (filename == "")
+        return;
+
     // Get the database
     ref_ptr<avtDatabase> database = 
                  netmgr->GetDBFromCache(filename,0,format.c_str())->GetDB();
