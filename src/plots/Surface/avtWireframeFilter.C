@@ -191,6 +191,9 @@ avtWireframeFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
 //    Hank Childs, Fri Mar 11 07:37:05 PST 2005
 //    Fix non-problem size leak introduced with last fix.
 //
+//    Kathleen Bonnell, Fri May 13 15:39:41 PDT 2005 
+//    Fix memory leak.
+//
 // ****************************************************************************
 
 void
@@ -210,13 +213,13 @@ avtWireframeFilter::ReleaseData(void)
         appendFilter->SetInputByNumber(i, NULL);
     }
     p = vtkPolyData::New();
-    appendFilter->SetOutput(vtkPolyData::New());
+    appendFilter->SetOutput(p);
     p->Delete();
 
     edgesFilter->SetInput(NULL);
     edgesFilter->SetLocator(NULL);
     p = vtkPolyData::New();
-    edgesFilter->SetOutput(vtkPolyData::New());
+    edgesFilter->SetOutput(p);
     p->Delete();
 }
 

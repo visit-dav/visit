@@ -755,6 +755,8 @@ avtMinMaxQuery::CreateResultMessage(const int n)
 //  Creation:   July 1, 2004 
 //
 //  Modifications:
+//    Kathleen Bonnell, Fri May 13 13:45:58 PDT 2005
+//    Fix memory leak.
 //
 // ****************************************************************************
 
@@ -809,6 +811,7 @@ avtMinMaxQuery::InfoToString(const MinMaxInfo &info)
     }
     os << ">)" << ends;
     string str(os.str());
+    os.freeze(false);
     return str;
 }
 

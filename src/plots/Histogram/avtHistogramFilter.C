@@ -136,6 +136,9 @@ avtHistogramFilter::PreExecute(void)
 //    Kathleen Bonnell, Thu Jan  6 10:34:57 PST 2005 
 //    Remove TRY-CATCH block in favor of testing for ValidActiveVariable.
 //
+//    Kathleen Bonnell, Fri May 13 11:10:35 PDT 2005 
+//    Fix memory leak. 
+//
 // ****************************************************************************
 
 void
@@ -149,6 +152,8 @@ avtHistogramFilter::PostExecute(void)
     SumFloatArrayAcrossAllProcessors(bins, newBins, workingNumBins);
     for (i = 0 ; i < workingNumBins ; i++)
         bins[i] = newBins[i];
+
+    delete [] newBins;
 
     if (PAR_Rank() != 0)
     {

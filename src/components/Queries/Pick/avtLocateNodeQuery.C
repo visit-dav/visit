@@ -311,6 +311,9 @@ avtLocateNodeQuery::DeterminePickedNode(vtkDataSet *ds, int foundCell, float *pp
 //    keep the first node that has a valid OrigNode associated with it AND is
 //    part of the isectedCell.
 //
+//    Kathleen Bonnell, Fri May 13 15:16:12 PDT 2005 
+//    Fix memory leak. 
+//
 // ****************************************************************************
 
 int
@@ -358,6 +361,7 @@ avtLocateNodeQuery::FindClosestPoint(vtkDataSet *ds, const int isectedCell,
                     oNode = -1;
                 }
             }
+            cellPts->Delete();
         }
         else 
         {

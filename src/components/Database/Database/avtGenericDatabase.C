@@ -8974,6 +8974,9 @@ avtGenericDatabase::ScaleMesh(vtkDataSet *ds)
 //    Mark C. Miller, Tue Apr  5 10:30:16 PDT 2005
 //    Added dummy args for data type conversion for calls to get variable
 //
+//    Kathleen Bonnell, Fri May 13 16:26:41 PDT 2005 
+//    Fix memory leak.
+//
 // ****************************************************************************
 
 bool
@@ -9052,6 +9055,7 @@ avtGenericDatabase::QuerySpecies(const string &varName, const int dom,
         if (getVal)
             vals.push_back(species->GetTuple1(element));
     }
+    species->Delete();
 
     //
     // Retrieve the mass fractions for each species within each material
