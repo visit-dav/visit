@@ -323,13 +323,19 @@ avtRectFileFormat::GetNTimesteps()
 //
 //  Arguments:
 //    md         The meta-data structure to populate
+//    timeState  The time index to use (if metadata varies with time)
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    April  4, 2003
 //
+//  Modifications:
+//
+//    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
+//    Added timeState arg
 // ****************************************************************************
 void
-avtRectFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
+avtRectFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
+    int timeState)
 {
     avtMeshMetaData *mesh = new avtMeshMetaData;
     mesh->name = "Mesh";

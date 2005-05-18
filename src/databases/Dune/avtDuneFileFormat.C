@@ -427,10 +427,13 @@ avtDuneFileFormat::FreeUpResources(void)
 //      Thu Jul 2 09:44:32 PDT 2004 
 //          (DMS) - Added angularVelocity var.
 //
+//    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
+//    Added timeState arg to satisfy new interface
 // ****************************************************************************
 
 void
-avtDuneFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
+avtDuneFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
+    int timeState)
 {
     md->SetNumStates(ntimes);
     //

@@ -55,6 +55,9 @@ using std::vector;
 //    Hank Childs, Tue Jul 20 14:47:31 PDT 2004
 //    Added an array for the variable type.
 //
+//    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
+//    Added timeState arg to PopulateDatabaseMetaData to satisfy new interface
+//
 // ****************************************************************************
 
 class avtMiliFileFormat : public avtMTMDFileFormat
@@ -73,7 +76,7 @@ class avtMiliFileFormat : public avtMTMDFileFormat
     virtual vtkDataArray *GetVar(int, int, const char *);
     virtual vtkDataArray *GetVectorVar(int, int, const char *);
 
-    virtual void          PopulateDatabaseMetaData(avtDatabaseMetaData *);
+    virtual void          PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
 
     virtual void         *GetAuxiliaryData(const char *var, int, int,
                                            const char *type, void *args,

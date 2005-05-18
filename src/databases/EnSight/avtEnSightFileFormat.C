@@ -589,10 +589,14 @@ avtEnSightFileFormat::GetVectorVar(int ts, int dom, const char *name)
 //    Hank Childs, Fri Jul  9 07:37:46 PDT 2004
 //    Add support for multiple blocks.
 //
+//    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
+//    Added timeState arg to satisfy new interface
+//
 // ****************************************************************************
 
 void
-avtEnSightFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
+avtEnSightFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
+    int timeState)
 {
     reader->ExecuteInformation();
 

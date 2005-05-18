@@ -469,12 +469,15 @@ avtGenericDatabase::GetFilename(int ts)
 //    Hank Childs, Tue Feb 15 07:21:10 PST 2005
 //    Replace forbidden characters of expression language.
 //
+//    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
+//    Added bool arg, forceReadAllCyclesTimes
 // ****************************************************************************
 
 void
-avtGenericDatabase::SetDatabaseMetaData(avtDatabaseMetaData *md, int timeState)
+avtGenericDatabase::SetDatabaseMetaData(avtDatabaseMetaData *md, int timeState,
+    bool forceReadAllCyclesTimes)
 {
-    Interface->SetDatabaseMetaData(md, timeState);
+    Interface->SetDatabaseMetaData(md, timeState, forceReadAllCyclesTimes);
 
     std::vector<char>        forbiddenChars;
     std::vector<std::string> replacementStrs;
@@ -1339,6 +1342,9 @@ avtGenericDatabase::GetScalarVarDataset(const char *varname, int ts,
 //    Mark C. Miller, Tue Apr  5 10:30:16 PDT 2005
 //    Added support for data type conversion
 //
+//    Kathleen Bonnell, Tue May 17 10:03:38 PDT 2005 
+//    Fix memory leak related to species vars. 
+//
 // ****************************************************************************
 
 void
@@ -1488,6 +1494,8 @@ avtGenericDatabase::AddSecondaryVariables(vtkDataSet *ds, int ts, int domain,
            
         dat->SetName(varName);
         atts->AddArray(dat);
+        if (vt == AVT_MATSPECIES)
+            dat->Delete();
     }
 }
 

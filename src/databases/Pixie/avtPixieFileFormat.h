@@ -44,6 +44,8 @@
 //    Mark C. Miller, Mon Apr  4 14:55:14 PDT 2005
 //    Added rawExpressionString data member to support expressions
 //
+//    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
+//    Added timeState arg to PopulateDatabaseMetaData to satisfy new interface
 // ****************************************************************************
 
 class avtPixieFileFormat : public avtMTSDFileFormat
@@ -114,7 +116,7 @@ protected:
                                                 void *dest) const;
 
 
-    virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *);
+    virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
 
     hid_t                  fileId;
     VarInfoMap             variables;

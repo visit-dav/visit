@@ -48,7 +48,11 @@
     <Function name="GetCondensedCycleForState" user="true" member="true">
     </Function>
     <Function name="GetCondensedTimeForState" user="true" member="true">
-    </Function>    
+    </Function>
+    <Function name="GetMethodName" user="true" member="true">
+    </Function>
+    <Function name="GetMethodNameFromMethod" user="true" member="true">
+    </Function>
     <Include file="source" quoted="false">
       algorithm
     </Include>

@@ -1470,7 +1470,13 @@ avtBoxlib2DFileFormat::GetMaterial(const char *var, int patch,
         // When we're done, the last entry is a '0' in the mix_next
         mix_next[mix_next.size() - 1] = 0;
     }
-    
+
+    // we can now free up the vtkFloatArrays we obtained via GetVar calls
+    for (i = 1; i <= nMaterials; ++i)
+    {
+        if (floatArrays[i - 1] != 0)
+            floatArrays[i - 1]->Delete();
+    }
     
     int mixed_size = mix_zone.size();
     avtMaterial * mat = new avtMaterial(nMaterials, mnames, nCells,

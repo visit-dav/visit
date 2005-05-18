@@ -31,6 +31,10 @@
 //    Mark C. Miller, Tue Nov  9 13:41:33 PST 2004
 //    Removed unnused pointvarnames, pointvars. Added fext and CanCacheVariable
 //
+//    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
+//    Deleted a bunch of commented-out code that was hold-over from the
+//    plugin generation processes.
+//
 // ****************************************************************************
 
 class avtImageFileFormat : public avtSTSDFileFormat
@@ -38,25 +42,6 @@ class avtImageFileFormat : public avtSTSDFileFormat
   public:
                        avtImageFileFormat(const char *filename);
     virtual           ~avtImageFileFormat();
-
-    //
-    // This is used to return unconvention data -- ranging from material
-    // information to information about block connectivity.
-    //
-    // virtual void      &GetAuxiliaryData(const char *var, const char *type,
-    //                                  void *args, DestructorFunction &);
-    //
-
-    //
-    // These are used to declare what the current time and cycle are for the
-    // file.  These should only be defined if the file format knows what the
-    // time and/or cycle is.
-    //
-    // virtual bool      ReturnsValidCycle() const { return true; };
-    // virtual int       GetCycle(void);
-    // virtual bool      ReturnsValidTime() const { return true; };
-    // virtual double    GetTime(void);
-    //
 
     virtual const char    *GetType(void)   { return "Image"; };
     virtual void           FreeUpResources(void); 
@@ -72,7 +57,7 @@ class avtImageFileFormat : public avtSTSDFileFormat
                                std::vector<bool> *selectionsApplied);
 
   protected:
-    // DATA MEMBERS
+
     std::string                          fname;
     std::string                          fext;
     std::vector<std::vector<float> >     cellvars; 

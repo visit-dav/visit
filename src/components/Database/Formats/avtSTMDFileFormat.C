@@ -143,29 +143,6 @@ avtSTMDFileFormat::AddFile(const char *fname)
 
 
 // ****************************************************************************
-//  Method: avtSTMDFileFormat::GetCycle
-//
-//  Purpose:
-//      Tries to guess the cycle number from the filename.
-//
-//  Returns:     The guess at the cycle number.
-//
-//  Programmer:  Hank Childs
-//  Creation:    February 22, 2001
-//
-// ****************************************************************************
-
-int
-avtSTMDFileFormat::GetCycle(void)
-{
-    //
-    // Assume the first filename is representative.
-    //
-    return GuessCycle(filenames[0]);
-}
-
-
-// ****************************************************************************
 //  Method: avtSTMDFileFormat::GetAuxiliaryData
 //
 //  Purpose:

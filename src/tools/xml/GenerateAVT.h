@@ -58,6 +58,9 @@
 //    Use EXCEPTION1 macro instead of EXCEPTION0 ('5979) and also add skeleton
 //    for expressions and time ('4557).
 //
+//    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
+//    Moved PopulateDatabaseMetaData method down to format specific classes
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -843,7 +846,7 @@ class AVTGeneratorPlugin
             h << "  protected:" << endl;
             h << "    // DATA MEMBERS" << endl;
             h << "" << endl;
-            h << "    virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *);" << endl;
+            h << "    virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *, int);" << endl;
             h << "};" << endl;
             h << "" << endl;
             h << "" << endl;
@@ -972,7 +975,7 @@ class AVTGeneratorPlugin
             h << "  protected:" << endl;
             h << "    // DATA MEMBERS" << endl;
             h << "" << endl;
-            h << "    virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *);" << endl;
+            h << "    virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *, int);" << endl;
             h << "};" << endl;
             h << "" << endl;
             h << "" << endl;
@@ -1375,7 +1378,7 @@ class AVTGeneratorPlugin
             c << "// ****************************************************************************" << endl;
             c << "" << endl;
             c << "void" << endl;
-            c << "avt"<<name<<"FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)" << endl;
+            c << "avt"<<name<<"FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeState)" << endl;
             c << "{" << endl;
             c << "    //" << endl;
             c << "    // CODE TO ADD A MESH" << endl;
@@ -2012,7 +2015,7 @@ class AVTGeneratorPlugin
             c << "// ****************************************************************************" << endl;
             c << "" << endl;
             c << "void" << endl;
-            c << "avt"<<name<<"FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)" << endl;
+            c << "avt"<<name<<"FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeState)" << endl;
             c << "{" << endl;
             c << "    //" << endl;
             c << "    // CODE TO ADD A MESH" << endl;

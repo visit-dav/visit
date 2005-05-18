@@ -78,6 +78,8 @@ GetMetaDataRPCExecutor::~GetMetaDataRPCExecutor()
 //   Brad Whitlock, Wed Feb 9 11:36:17 PDT 2005
 //   I made it print the metadata to debug5 all the time.
 //
+//   Mark C. Miller, Tue May 17 18:48:38 PDT 2005
+//   Added call to GetForceReadAllCyclesAndTimes
 // ****************************************************************************
 
 void
@@ -91,7 +93,8 @@ GetMetaDataRPCExecutor::Update(Subject *s)
     TRY
     {
         // Either send a successful reply or send an error.
-        parent->ReadMetaData(rpc->GetFile(), rpc->GetTimeState());
+        parent->ReadMetaData(rpc->GetFile(), rpc->GetTimeState(),
+                             rpc->GetForceReadAllCyclesAndTimes());
 
         debug5 << "MetaData=" << endl;
         if(debug5_real)

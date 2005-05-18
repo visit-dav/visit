@@ -99,6 +99,8 @@ typedef struct
 //    Kathleen Bonnell, Tue Feb  8 13:41:05 PST 2005 
 //    Added int arg to GetQuadMesh. 
 //
+//    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
+//    Added methods to GetCycle/Time
 // ****************************************************************************
 
 class avtSiloFileFormat : public avtSTMDFileFormat
@@ -124,6 +126,10 @@ class avtSiloFileFormat : public avtSTMDFileFormat
 
     virtual void          PopulateDatabaseMetaData(avtDatabaseMetaData *);
     virtual void          PopulateIOInformation(avtIOInformation &);
+
+    int                   GetCycle();
+    int                   GetCycleFromFilename(const char *f) const;
+    double                GetTime();
 
     void                  ActivateTimestep(void);
 

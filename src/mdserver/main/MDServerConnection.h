@@ -113,6 +113,8 @@ class Xfer;
 //    Added PartFilePattern, ConsolidateVirtualDatabases methods and added
 //    digitLength member to VirtualFileInformation.
 //
+//    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
+//    Added bool arg to force reading all cycles/times to ReadMetaData  
 // ****************************************************************************
 
 class MDServerConnection
@@ -157,7 +159,7 @@ public:
     Connection *GetWriteConnection() const;
 
     // Functions used by the RPC Executors.
-    void ReadMetaData(std::string file, int timeState);
+    void ReadMetaData(std::string file, int timeState, bool forceReadAllCyclesAndTimes);
     avtDatabaseMetaData *GetCurrentMetaData() const;
 
     void ReadSIL(std::string file, int timeState);

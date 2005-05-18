@@ -32,6 +32,8 @@ class avtIOInformation;
 //    Mark C. Miller, Mon Feb 23 20:38:47 PST 2004
 //    Added ActivateTimestep method
 //
+//    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
+//    Added bool arg, forceReadAllCyclesTimes, to SetDatabaseMetaData
 // ****************************************************************************
 
 class DATABASE_API avtMTMDFileFormatInterface : public avtFileFormatInterface
@@ -48,7 +50,9 @@ class DATABASE_API avtMTMDFileFormatInterface : public avtFileFormatInterface
                                              DestructorFunction &);
 
     virtual const char     *GetFilename(int);
-    virtual void            SetDatabaseMetaData(avtDatabaseMetaData *,int=0);
+    virtual void            SetDatabaseMetaData(avtDatabaseMetaData *md,
+                                int timeState = 0,
+                                bool forceReadAllCyclesTimes = false);
     virtual void            FreeUpResources(int, int);
 
     virtual void            ActivateTimestep(int ts);

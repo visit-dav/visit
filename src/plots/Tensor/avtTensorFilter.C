@@ -257,6 +257,9 @@ avtTensorFilter::RefashionDataObjectInfo(void)
 //    Do not set outputs of filters to NULL, since this will prevent them
 //    from re-executing correctly in DLB-mode.
 //
+//    Kathleen Bonnell, Wed May 18 15:07:05 PDT 2005 
+//    Fix memory leak. 
+//
 // ****************************************************************************
 
 void
@@ -265,9 +268,13 @@ avtTensorFilter::ReleaseData(void)
     avtStreamer::ReleaseData();
 
     reduce->SetInput(NULL);
-    reduce->SetOutput(vtkPolyData::New());
+    vtkPolyData *p = vtkPolyData::New();
+    reduce->SetOutput(p);
+    p->Delete();
     vertex->SetInput(NULL);
-    vertex->SetOutput(vtkPolyData::New());
+    p = vtkPolyData::New();
+    vertex->SetOutput(p);
+    p->Delete();
 }
 
 

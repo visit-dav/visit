@@ -40,6 +40,12 @@ class     avtIOInformation;
 //    Mark C. Miller, Tue Mar 16 14:28:42 PST 2004
 //    Added method, PopulateIOInformation
 //
+//    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
+//    Moved GetCycles/Times to base class, avtFileFormat
+//    Added SetDatabaseMetaData (moved it down from base class)
+//    Added time-qualified and non-time-qualified PopulateDatabaseMetaData
+//    methods, the later for backward compatibility
+//
 // ****************************************************************************
 
 class DATABASE_API avtMTMDFileFormat : public avtFileFormat
@@ -52,8 +58,6 @@ class DATABASE_API avtMTMDFileFormat : public avtFileFormat
                                             const char *type, void *args,
                                             DestructorFunction &);
 
-    virtual void           GetCycles(std::vector<int> &);
-    virtual void           GetTimes(std::vector<double> &);
     virtual int            GetNTimesteps(void);
 
     virtual const char    *GetFilename(void) { return filename; };
@@ -66,9 +70,19 @@ class DATABASE_API avtMTMDFileFormat : public avtFileFormat
                                { avtFileFormat::ActivateTimestep(); };
     virtual void           PopulateIOInformation(int ts, avtIOInformation& ioInfo)
                                { avtFileFormat::PopulateIOInformation(ioInfo); };
-
+    virtual void           SetDatabaseMetaData(avtDatabaseMetaData *md, int ts = 0)
+                               { metadata = md; PopulateDatabaseMetaData(metadata, ts); };
   protected:
     char                  *filename;
+
+    // The second of these should really be pure virtual and the first
+    // non-existant. However, both are just virtual to maintain 
+    // backward compatibility with older MTXX plugins and to allow 
+    // MTXX plugins to implement a time-qualified request to populate
+    // database metadata.
+    virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *md);
+    virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *md, int);
+
 };
 
 

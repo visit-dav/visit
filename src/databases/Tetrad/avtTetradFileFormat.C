@@ -323,10 +323,13 @@ avtTetradFileFormat::GetVar(int ts, const char *var)
 //    Account for the timesteps being put in lexicographical, instead of
 //    numerical, order.
 //
+//    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
+//    Added timeState argument
 // ****************************************************************************
 
 void
-avtTetradFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
+avtTetradFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
+    int timeState)
 {
     int   i;
 

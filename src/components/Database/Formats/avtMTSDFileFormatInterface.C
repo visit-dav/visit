@@ -265,93 +265,156 @@ avtMTSDFileFormatInterface::GetFilename(int)
 //    Brad Whitlock, Mon Oct 13 13:46:43 PST 2003
 //    Added code to make sure that the times are also populated.
 //
+//    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
+//    Revamped the code to deal with getting cycles/times to make it more
+//    consistent with other plugin types. Added anonymous bool for force read
+//    all cycles/times to satisfy interface. Here, that bool can be ignored
+//    because issues with opening many files, etc. to obtain that information
+//    are not VisIt's concern. It is the plugin developers. Even if VisIt
+//    should be concerned with it, there isn't much VisIt can do except pass
+//    the request down to the plugin
+//
 // ****************************************************************************
 
 void
-avtMTSDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md, int)
+avtMTSDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
+    int timeState, bool)
 {
+    int i, j;
+
+    //
+    // Throw an exception if an invalid time state was requested.
+    //
+    int nTimesteps = domains[0]->GetNTimesteps();
+    if (timeState < 0 || timeState >= nTimesteps)
+    {
+        EXCEPTION2(BadIndexException, timeState, nTimesteps);
+    }
+
+    //
+    // We know for sure that the number of states is the number of timesteps.
+    //
+    md->SetNumStates(nTimesteps);
+
     //
     // Have a _domain timestep populate what variables, meshes, materials, etc
     // we can deal with for the whole database.  This is bad, but the
     // alternative (to read in all the files) is unattractive and we may not
     // know what to do with a variable that is in some domains and not others
-    // anyways.
+    // anyways. This may wind up setting cycles/times, too.
     //
-    domains[0]->SetDatabaseMetaData(md);
+    domains[0]->SetDatabaseMetaData(md, timeState);
 
     //
-    // We know for sure that the number of states is the number of timesteps.
+    // Note: In an MTXX format, a single file has multiple time steps in it
+    // So, we don't have the same kinds of semantics we do with STXX databases
+    // in, for example, trying to guess cycle numbers from file names
     //
-    md->SetNumStates(domains[0]->GetNTimesteps());
-
-    //
-    // We are going to try and guess at the naming convention.  If we ever get
-    // two consecutive domains that are not in increasing order, assume we
-    // are guessing incorrectly and give up.
-    //
-    vector<int> cycles;
-    domains[0]->GetCycles(cycles);
-    bool guessLooksGood = true;
-    int i;
-    for (i = 0 ; i < nDomains ; i++)
+    if (md->AreAllCyclesAccurateAndValid(nTimesteps) != true)
     {
-        if (i != 0)
+        vector<int> cycles;
+        domains[0]->FormatGetCycles(cycles);
+        bool cyclesLookGood = true;
+        for (i = 0; i < cycles.size(); i++)
         {
-            if (cycles[i] <= cycles[i-1])
+            if ((i != 0) && (cycles[i] <= cycles[i-1]))
             {
-                guessLooksGood = false;
+                cyclesLookGood = false;
                 break;
             }
         }
-    }
-    if (guessLooksGood)
-    {
-        md->SetCycles(cycles);
-    }
-    else
-    {
-        cycles.clear();
-        for (int j = 0 ; j < nDomains ; j++)
+        if (cycles.size() != nTimesteps)
+            cyclesLookGood = false;
+        if (cyclesLookGood == false)
         {
-            cycles.push_back(j);
-        }
-        md->SetCycles(cycles);
-    }
-    md->SetCyclesAreAccurate(guessLooksGood);
-
-    //
-    // Get the times for the file format and make aure that they are in
-    // ascending order or assume that they are not valid.
-    //
-    vector<double> times;
-    domains[0]->GetTimes(times);
-    guessLooksGood = true;
-    for (i = 0 ; i < times.size() ; i++)
-    {
-        if (i != 0)
-        {
-            if (times[i] <= times[i-1])
+            cycles.clear();
+            for (i = 0; i < nTimesteps; i++)
             {
-                guessLooksGood = false;
+                int c = domains[0]->FormatGetCycle(i);
+
+                cycles.push_back(c);
+
+                if ((c == -INT_MAX) || ((i != 0) && (cycles[i] <= cycles[i-1])))
+                {
+                    cyclesLookGood = false;
+                    break;
+                }
+            }
+        }
+
+        //
+        // Ok, now put cycles into the metadata
+        //
+        if (cyclesLookGood)
+        {
+            md->SetCycles(cycles);
+            md->SetCyclesAreAccurate(true);
+        }
+        else
+        {
+            cycles.clear();
+            for (j = 0 ; j < nTimesteps ; j++)
+            {
+                cycles.push_back(j);
+            }
+            md->SetCycles(cycles);
+            md->SetCyclesAreAccurate(false);
+        }
+    }
+
+    if (md->AreAllTimesAccurateAndValid(nTimesteps) != true)
+    {
+        // Set the times in the metadata.
+        vector<double> times;
+        domains[0]->FormatGetTimes(times);
+        bool timesLookGood = true;
+        for (i = 0; i < times.size(); i++)
+        {
+            if ((i != 0) && (times[i] <= times[i-1]))
+            {
+                timesLookGood = false;
                 break;
             }
         }
+        if (times.size() != nTimesteps)
+            timesLookGood = false;
+        if (timesLookGood == false)
+        {
+            times.clear();
+            for (i = 0; i < nTimesteps; i++)
+            {
+                double t = domains[0]->FormatGetTime(i);
+
+                times.push_back(t);
+
+                if ((t == -DBL_MAX) || ((i != 0) && (times[i] <= times[i-1])))
+                {
+                    timesLookGood = false;
+                    break;
+                }
+            }
+        }
+
+        //
+        // Ok, now put times into the metadata
+        //
+        if (timesLookGood)
+        {
+            md->SetTimes(times);
+            md->SetTimesAreAccurate(true);
+            md->SetTemporalExtents(times[0], times[times.size() - 1]);
+        }
+        else
+        {
+            times.clear();
+            for (j = 0 ; j < nTimesteps ; j++)
+            {
+                times.push_back((double)j);
+            }
+            md->SetTimes(times);
+            md->SetTimesAreAccurate(false);
+        }
     }
-    if (guessLooksGood)
-    {
-        md->SetTimes(times);
-    }
-    else
-    {
-        int nTimes = times.size();
-        times.clear();
-        for (int j = 0 ; j < nTimes ; j++)
-            times.push_back(double(j));
-        md->SetTimes(times);
-    }
-    md->SetTimesAreAccurate(guessLooksGood);
-    if(times.size() > 0)
-        md->SetTemporalExtents(times[0], times[times.size() - 1]);
 
     //
     // Each one of these domains thinks that it only has one domain.  Overwrite

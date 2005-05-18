@@ -1761,6 +1761,7 @@ avtSAMRAIFileFormat::GetSpecies(int patch, const char *specObjName)
                 for (j = 0; j < numSpecs; j++)
                     SAFE_DELETE(matSpecFracs[i][j]);
             }
+            currPatchMatId++;
         }
     }
 
@@ -3126,13 +3127,6 @@ avtSAMRAIFileFormat::ReadPatchExtents(hid_t &h5_file)
                H5Tget_size(h5_xup_datatype);
     hid_t h5_datatype = H5Tcreate (H5T_COMPOUND, size);
 
-    /*
-    int offset_lower = HOFFSET(patch_extents_t, lower);
-    int offset_upper = HOFFSET(patch_extents_t, upper);
-    int offset_xlo   = HOFFSET(patch_extents_t, xlo);
-    int offset_xup   = HOFFSET(patch_extents_t, xup);
-    */
-    
     int offset_lower = 0;
     int offset_upper = H5Tget_size(h5_lower_datatype);
     int offset_xlo   = offset_upper + H5Tget_size(h5_upper_datatype);
@@ -3172,8 +3166,16 @@ avtSAMRAIFileFormat::ReadPatchExtents(hid_t &h5_file)
             patch_extents[p].xup[0] = var_extents[v][0*num_patches].max;
             patch_extents[p].xlo[1] = var_extents[v][1*num_patches].min;
             patch_extents[p].xup[1] = var_extents[v][1*num_patches].max;
-            patch_extents[p].xlo[2] = var_extents[v][2*num_patches].min;
-            patch_extents[p].xup[2] = var_extents[v][2*num_patches].max;
+            if (num_dim_problem > 2)
+            {
+                patch_extents[p].xlo[2] = var_extents[v][2*num_patches].min;
+                patch_extents[p].xup[2] = var_extents[v][2*num_patches].max;
+            }
+            else
+            {
+                patch_extents[p].xlo[2] = 0.0;
+                patch_extents[p].xup[2] = 0.0; 
+            }
         }
     }
 }

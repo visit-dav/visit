@@ -28,6 +28,8 @@ class     vtkVisItGenericEnSightReader;
 //    Hank Childs, Fri Jul  9 07:37:46 PDT 2004
 //    Make the reader be an MTMD file format.
 //
+//    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
+//    Added timeState arg to PopulateDatabaseMetaData to satisfy new interface
 // ****************************************************************************
 
 class avtEnSightFileFormat : public avtMTMDFileFormat
@@ -42,7 +44,7 @@ class avtEnSightFileFormat : public avtMTMDFileFormat
     virtual vtkDataArray *GetVar(int, int, const char *);
     virtual vtkDataArray *GetVectorVar(int, int, const char *);
 
-    virtual void          PopulateDatabaseMetaData(avtDatabaseMetaData *);
+    virtual void          PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
 
     virtual int           GetNTimesteps(void);
 

@@ -688,14 +688,18 @@ avtCosmosPPFileFormat::GetNTimesteps()
 //
 //  Arguments:
 //    md         The meta-data structure to populate
+//    timeState  The time index to use (if metadata varies with time)
 //
 //  Programmer:  Hank Childs
 //  Creation:    November 24, 2003
 //
+//    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
+//    Added timeState arg to satisfy new interface
 // ****************************************************************************
 
 void
-avtCosmosPPFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
+avtCosmosPPFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
+    int timeState)
 {
     int i;
 

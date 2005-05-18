@@ -4326,10 +4326,15 @@ avtDatabaseMetaData::SetTemporalExtents(double min, double max)
 //  Programmer: Hank Childs
 //  Creation:   September 15, 2000
 //
+//  Modifications:
+//
+//    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
+//    const qualified arg
+//
 // ****************************************************************************
 
 void
-avtDatabaseMetaData::SetCycles(std::vector<int> &c)
+avtDatabaseMetaData::SetCycles(const std::vector<int> &c)
 {
     cycles = c;
 }
@@ -4344,10 +4349,15 @@ avtDatabaseMetaData::SetCycles(std::vector<int> &c)
 //  Programmer: Hank Childs
 //  Creation:   March 11, 2002
 //
+//  Modifications:
+//
+//    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
+//    const qualified arg
+//
 // ****************************************************************************
 
 void
-avtDatabaseMetaData::SetTimes(std::vector<double> &t)
+avtDatabaseMetaData::SetTimes(const std::vector<double> &t)
 {
     times = t;
 }
@@ -4464,6 +4474,39 @@ avtDatabaseMetaData::IsCycleAccurate(int ts) const
     return (cyclesAreAccurate[ts] != 0 ? true : false);
 }
 
+// ****************************************************************************
+//  Method: avtDatabaseMetaData::AreAllCyclesAccurateAndValid
+//
+//  Purpose: Convenience method for checking if ALL cycles are accurate and
+//  valid (are monotone increasing and there are numStates of them). If the
+//  caller doesn't know the expected number of states, it can pass void to 
+//  use the numStates known in avtDatabaseMetaData
+//
+//  Programmer:  Mark C. Miller 
+//  Creation:    March 16, 2005 
+//
+// ****************************************************************************
+
+bool
+avtDatabaseMetaData::AreAllCyclesAccurateAndValid(int expectedNumStates) const
+{
+    int useNumStates = expectedNumStates == -1 ? numStates : expectedNumStates;
+
+    if (cyclesAreAccurate.size() != useNumStates)
+        return false;
+
+    if (cyclesAreAccurate.size() != cycles.size())
+        return false;
+
+    for (int i = 0 ; i < useNumStates; i++)
+    {
+        if (cyclesAreAccurate[i] == 0)
+            return false;
+        if ((i > 0) && (cycles[i] <= cycles[i-1]))
+            return false;
+    }
+    return true;
+}
 
 // ****************************************************************************
 //  Method: avtDatabaseMetaData::SetTimeIsAccurate
@@ -4531,6 +4574,40 @@ bool
 avtDatabaseMetaData::IsTimeAccurate(int ts) const
 {
     return (timesAreAccurate[ts] != 0 ? true : false);
+}
+
+// ****************************************************************************
+//  Method: avtDatabaseMetaData::AreAllTimesAccurateAndValid
+//
+//  Purpose: Convenience method to check if all times are accurate and 
+//  monotone increasing. If the caller doesn't know the expected number of
+//  states, it can pass void (it will default to -1) and the numStates in
+//  avtDatabaseMetaData will be used
+//
+//  Programmer:  Mark C. Miller 
+//  Creation:    March 16, 2005 
+//
+// ****************************************************************************
+
+bool
+avtDatabaseMetaData::AreAllTimesAccurateAndValid(int expectedNumStates) const
+{
+    int useNumStates = expectedNumStates == -1 ? numStates : expectedNumStates;
+
+    if (timesAreAccurate.size() != useNumStates) 
+        return false;
+
+    if (timesAreAccurate.size() != times.size())
+        return false;
+
+    for (int i = 0 ; i < useNumStates; i++)
+    {
+        if (timesAreAccurate[i] == 0)
+            return false;
+        if ((i > 0) && (times[i] <= times[i-1]))
+            return false;
+    }
+    return true;
 }
 
 
@@ -5531,6 +5608,10 @@ avtDatabaseMetaData::GetSpeciesOnMesh(std::string mesh) const
 //    Brad Whitlock, Fri Apr 1 15:28:58 PST 2005
 //    Added labels.
 //
+//    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
+//    Added code to deal with printing of times and a friendlier format
+//    for printing of cycles and times
+//
 // ****************************************************************************
 
 void
@@ -5574,18 +5655,64 @@ avtDatabaseMetaData::Print(ostream &out, int indent) const
     }
 
     Indent(out, indent);
+    if (times.size() == 0)
+    {
+        out << "The times are not set." << endl;
+    }
+    else
+    {
+        bool shouldPrintTimes = false;
+        for (int i = 0; i < times.size(); ++i)
+        {
+            if (times[i] != (double) cycles[i])
+            {
+                shouldPrintTimes = true;
+                break;
+            }
+        }
+
+        if (AreAllTimesAccurateAndValid())
+            out << "All Times are Accurate" << endl;
+        else
+            out << "All Times are ***NOT*** Accurate" << endl;
+        if (shouldPrintTimes)
+        {
+            out << "Times: ";
+            for (int i = 0; i < times.size(); ++i)
+            {
+                out << times[i];
+                if(i < times.size() - 1)
+                    out << ", ";
+                if((i+1)%20 == 0)
+                    out << endl << "       ";
+            }
+        }
+        else
+        {
+            out << "Times: Are identical to cycles";
+        }
+        out << endl;
+    }
+
+    Indent(out, indent);
     if (cycles.size() == 0)
     {
         out << "The cycles are not set." << endl;
     }
     else
     {
+        if (AreAllCyclesAccurateAndValid())
+            out << "All Cycles are Accurate" << endl;
+        else
+            out << "All Cycles are ***NOT*** Accurate" << endl;
         out << "Cycles: ";
         for (int i = 0; i < cycles.size(); ++i)
         {
             out << cycles[i];
             if(i < cycles.size() - 1)
                 out << ", ";
+            if((i+1)%20 == 0)
+                out << endl << "        ";
         }
         out << endl;
     }

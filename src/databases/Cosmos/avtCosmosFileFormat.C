@@ -313,14 +313,13 @@ avtCosmosFileFormat::~avtCosmosFileFormat()
 //    Akira Haddox, Wed Jul 23 08:13:32 PDT 2003
 //    Added in call to read in times.
 //
+//    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
+//    Removed call to ReadInTimes
 // ****************************************************************************
 
 vtkDataSet *
 avtCosmosFileFormat::GetMesh(int ts, int dom, const char *mesh)
 {
-    if (!readInTimes)
-        ReadInTimes();
-    
     if (strcmp(mesh, "mesh"))
         EXCEPTION1(InvalidVariableException, mesh);
 
@@ -754,34 +753,6 @@ avtCosmosFileFormat::GetVectorVar(int ts, int dom, const char *name)
 
 
 // ****************************************************************************
-//  Method:  avtCosmosFileFormat::GetCycles
-//
-//  Purpose:
-//    Returns the actual cycle numbers for each time step.
-//
-//  Arguments:
-//   cycles      the output vector of cycle numbers 
-//
-//  Programmer:  Akira Haddox
-//  Creation:    June 4, 2003
-//
-// ****************************************************************************
-
-
-void
-avtCosmosFileFormat::GetCycles(vector<int> &cycles)
-{
-    int nTimesteps = GetNTimesteps();
-
-    cycles.resize(nTimesteps);
-    for (int i = 0 ; i < nTimesteps ; i++)
-    {
-        cycles[i] = i;
-    }
-}
-
-
-// ****************************************************************************
 //  Method:  avtCosmosFileFormat::GetNTimesteps
 //
 //  Purpose:
@@ -810,6 +781,7 @@ avtCosmosFileFormat::GetNTimesteps()
 //
 //  Arguments:
 //    md         The meta-data structure to populate
+//    timeState  The time index to use (if metadata varies with time)
 //
 //  Programmer:  Akira Haddox
 //  Creation:    June  4, 2003
@@ -821,10 +793,12 @@ avtCosmosFileFormat::GetNTimesteps()
 //    Akira Haddox, Wed Jul 23 08:14:56 PDT 2003
 //    Moved time reading code to seperate function called by GetMesh.
 //
+//    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
+//    Added timeState arg to satisfy new interface. Added call to ReadInTimes
 // ****************************************************************************
 
 void
-avtCosmosFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
+avtCosmosFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeState)
 {
     int i;
 
@@ -867,6 +841,9 @@ avtCosmosFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     for (i = 0; i < nvectors; i++)
         md->Add(new avtVectorMetaData(vectorVarNames[i], "mesh", 
                                       AVT_ZONECENT, 3));
+
+    if (!readInTimes)
+        ReadInTimes();
 }
 
 // ****************************************************************************
@@ -878,6 +855,9 @@ avtCosmosFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //  Programmer:  Akira Haddox
 //  Creation:    July 22, 2003
 //  
+//  Modifications:
+//    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
+//    Added call to indicate times are accurate
 // ****************************************************************************
 
 void
@@ -905,6 +885,7 @@ avtCosmosFileFormat::ReadInTimes()
         tf >> cycle >> time;
         metadata->SetTime(i, time);
     }
+    metadata->SetTimesAreAccurate(true);
     
     tf.close(); 
 }

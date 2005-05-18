@@ -341,6 +341,76 @@ avtSiloFileFormat::ReadGlobalInformation(DBfile *dbfile)
 
 
 // ****************************************************************************
+//  Method: avtSiloFileFormat::GetCycle
+//
+//  Purpose: Return the cycle number associated with this silo file
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   May 16, 2005 
+//
+// ****************************************************************************
+
+int
+avtSiloFileFormat::GetCycle()
+{
+    const bool canSkipGlobalInfo = true;
+    DBfile *dbfile = OpenFile(tocIndex, canSkipGlobalInfo);
+    if (DBInqVarExists(dbfile, "cycle"))
+    {
+        int cycle;
+        DBReadVar(dbfile, "cycle", &cycle);
+        return cycle;
+    }
+    return -INT_MAX;
+}
+
+// ****************************************************************************
+//  Method: avtSiloFileFormat::GetCycleFromFilename
+//
+//  Purpose: Try to get a cycle number from a file name 
+//
+//  Notes: Although all this method does is simply call the format's base
+//  class implementation of GuessCycle, doing this is a way for the Silo
+//  format to "bless" the guesses that that method makes. Otherwise, VisIt
+//  wouldn't know that Silo thinks those guesses are good. See notes in
+//  avtSTXXFileFormatInterface::SetDatabaseMetaData for further explanation.
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   May 16, 2005 
+//
+// ****************************************************************************
+
+int
+avtSiloFileFormat::GetCycleFromFilename(const char *f) const
+{
+    return GuessCycle(f);
+}
+
+// ****************************************************************************
+//  Method: avtSiloFileFormat::GetTime
+//
+//  Purpose: Return the time associated with this silo file
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   May 16, 2005 
+//
+// ****************************************************************************
+
+double
+avtSiloFileFormat::GetTime()
+{
+    const bool canSkipGlobalInfo = true;
+    DBfile *dbfile = OpenFile(tocIndex, canSkipGlobalInfo);
+    if (DBInqVarExists(dbfile, "dtime"))
+    {
+        double dtime;
+        DBReadVar(dbfile, "dtime", &dtime);
+        return dtime;
+    }
+    return -DBL_MAX;
+}
+
+// ****************************************************************************
 //  Method: avtSiloFileFormat::GetTimeVaryingInformation
 //
 //  Purpose:

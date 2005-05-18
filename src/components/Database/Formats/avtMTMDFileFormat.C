@@ -1,7 +1,11 @@
 // ************************************************************************* //
 //                            avtMTMDFileFormat.C                            //
 // ************************************************************************* //
+#include <limits.h>
 
+#include <snprintf.h>
+
+#include <avtDatabaseMetaData.h>
 #include <avtMTMDFileFormat.h>
 
 #include <ImproperUseException.h>
@@ -46,54 +50,6 @@ avtMTMDFileFormat::~avtMTMDFileFormat()
     }
 }
 
-
-// ****************************************************************************
-//  Method: avtMTMDFileFormat::GetCycles
-//
-//  Purpose:
-//      Gets each of the cycle numbers.
-//
-//  Arguments:
-//      cycles   A vector to store the cycles.
-//
-//  Programmer:  Hank Childs
-//  Creation:    April 4, 2003
-//
-// ****************************************************************************
-
-void
-avtMTMDFileFormat::GetCycles(vector<int> &cycles)
-{
-    cycles.clear();
-    int nstep = GetNTimesteps();
-    for (int i = 0 ; i < nstep ; i++)
-    {
-        cycles.push_back(i);
-    }
-}
-
-// ****************************************************************************
-//  Method: avtMTMDFileFormat::GetTimes
-//
-//  Purpose:
-//      Gets each of the times.
-//
-//  Arguments:
-//      times   A vector to store the times.
-//
-//  Programmer:  Brad Whitlock
-//  Creation:    Mon Oct 13 14:18:35 PST 2003
-//
-// ****************************************************************************
-
-void
-avtMTMDFileFormat::GetTimes(vector<double> &times)
-{
-    times.clear();
-    int nstep = GetNTimesteps();
-    for (int i = 0 ; i < nstep ; i++)
-        times.push_back(double(i));
-}
 
 // ****************************************************************************
 //  Method: avtMTMDFileFormat::GetNTimesteps
@@ -175,4 +131,70 @@ avtMTMDFileFormat::GetVectorVar(int, int, const char *)
 }
 
 
+// ****************************************************************************
+//  Method: avtMTMDFileFormat::PopulateDatabaseMetaData
+//
+//  Purpose: Provide a default implementation for the non-time-qualified
+//  request to populate metadata. We do this so the time-qualified version can
+//  distinguish between our (bad) default implementation and a plugin's real
+//  implementation.
+//
+//  Ordinarilly, we'd simply use pure virtual functions to enforce which
+//  PopulateDatabaseMetaData method should be implemented. However, since
+//  many plugins pre-date these changes, we decided NOT to use pure-virtual.
+//
+//  Programmer:  Mark C. Miller 
+//  Creation:    April 7, 2005
+//
+// ****************************************************************************
 
+void
+avtMTMDFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
+{
+    //
+    // Do something bogus to the metadata that we would never expect a 
+    // real plugin to do so that we can distinguish this method it later
+    //
+    md->SetNumStates(-INT_MAX);
+}
+
+// ****************************************************************************
+//  Method: avtMTMDFileFormat::PopulateDatabaseMetaData
+//
+//  Purpose: Provide a default implementation for the time-qualified
+//  request to populate metadata. This just turns around and calls the
+//  non-time-qualified method. And, typically, that method has been overridden
+//  by an MTXX plugin. However, it may not have been and we can catch that
+//  error here, at least at run time, and do something about it.
+//
+//  Programmer:  Mark C. Miller 
+//  Creation:    April 7, 2005
+//
+// ****************************************************************************
+void
+avtMTMDFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int ts)
+{
+    //
+    // Most plugins pre-dating the existence of a time qualified request to 
+    // populate database metadata implemented only this method.
+    //
+    PopulateDatabaseMetaData(md);
+
+    //
+    // If we're here, then a plugin has not overridden this method. However,
+    // a plugin may have overriden PopulateDatabaseMetaData(md). On the other
+    // hand we don't know for sure if that is indeed the case. So, we look
+    // for the bogus change our default PopulateDatabaseMetaData(md) would have
+    // resulted in and throw an exception if we see it.
+    //
+    if (md->GetNumStates() == -INT_MAX)
+    {
+        md->SetNumStates(0);
+        char msg[512];
+        SNPRINTF(msg, sizeof(msg), "It looks like the \"%s\" database plugin "
+            "did not implement either of the PopulateDatabaseMetaData methods. "
+            "Please contact the plugin developer. This error cannot be corrected "
+            "without changes to code", GetType());
+        EXCEPTION1(ImproperUseException, msg);
+    }
+}

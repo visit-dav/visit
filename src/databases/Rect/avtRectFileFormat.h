@@ -24,6 +24,11 @@ class     vtkUnstructuredGrid;
 //  Programmer:  Jeremy Meredith
 //  Creation:    April  4, 2003
 //
+//  Modifications:
+// 
+//    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
+//    Added timeState arg to PopulateDatabaseMetaData
+//
 // ****************************************************************************
 
 class avtRectFileFormat : public avtMTMDFileFormat
@@ -41,7 +46,7 @@ class avtRectFileFormat : public avtMTMDFileFormat
     virtual vtkDataSet   *GetMesh(int, int, const char *);
     virtual vtkDataArray *GetVar(int, int, const char *);
 
-    virtual void          PopulateDatabaseMetaData(avtDatabaseMetaData *);
+    virtual void          PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
 
   protected:
     vtkDataSet                        **cachedMeshes;
