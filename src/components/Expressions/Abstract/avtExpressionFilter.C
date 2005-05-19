@@ -211,29 +211,39 @@ avtExpressionFilter::PostExecute(void)
 //    Brad Whitlock, Tue Jul 20 17:08:42 PST 2004
 //    Added code to propagate units.
 //
+//    Hank Childs, Thu May 19 13:43:47 PDT 2005
+//    Do not assume output variable name has been already set.
+//
 // ****************************************************************************
  
 void
 avtExpressionFilter::RefashionDataObjectInfo(void)
 {
+    if (outputVariableName == NULL)
+        return;
+
     avtDataAttributes &inputAtts = GetInput()->GetInfo().GetAttributes();
     avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
 
-    if (inputAtts.ValidActiveVariable())
+    if (!outAtts.ValidVariable(outputVariableName))
     {
-        //
-        // Expressions should really do some kind of transformation on
-        // the units. For example if you multiply a variable that has
-        // Newtons (N) times a variable that is in Meters (m), the resulting
-        // units for the output variable should be Nm  (Newton meters).
-        // Since we don't have that kind of knowhow in the expressions code
-        // yet, preserve the units of the active variable even though that's
-        // not really the correct thing to do.
-        //
-        outAtts.AddVariable(outputVariableName, inputAtts.GetVariableUnits());
+       if (inputAtts.ValidActiveVariable())
+       {
+           //
+           // Expressions should really do some kind of transformation on
+           // the units. For example if you multiply a variable that has
+           // Newtons (N) times a variable that is in Meters (m), the resulting
+           // units for the output variable should be Nm  (Newton meters).
+           // Since we don't have that kind of knowhow in the expressions code
+           // yet, preserve the units of the active variable even though that's
+           // not really the correct thing to do.
+           //
+           outAtts.AddVariable(outputVariableName,
+                               inputAtts.GetVariableUnits());
+       }
+       else
+           outAtts.AddVariable(outputVariableName);
     }
-    else
-        outAtts.AddVariable(outputVariableName);
     outAtts.SetActiveVariable(outputVariableName);
     outAtts.SetVariableDimension(GetVariableDimension());
     outAtts.SetCentering(IsPointVariable()?AVT_NODECENT:AVT_ZONECENT);

@@ -7,6 +7,7 @@
 #include <vtkCellType.h>
 #include <vtkDataSet.h>
 #include <vtkFloatArray.h>
+#include <vtkRectilinearGrid.h>
 
 #include <verdict.h>
 
@@ -136,4 +137,72 @@ double avtVMetricVolume::Metric (double coords[][3], int type)
 #endif
 }
 
+
+// ****************************************************************************
+//  Method: avtVMetricVolume::OperateDirectlyOnMesh
+//
+//  Purpose:
+//      Determines if we want to speed up the operation by operating directly
+//      on the mesh.
+//
+//  Programmer: Hank Childs
+//  Creation:   May 19, 2005
+//
+// ****************************************************************************
+
+bool
+avtVMetricVolume::OperateDirectlyOnMesh(vtkDataSet *ds)
+{
+    return (ds->GetDataObjectType() == VTK_RECTILINEAR_GRID);
+}
+
+
+// ****************************************************************************
+//  Method: avtVMetricVolume::MetricForWholeMesh
+//
+//  Purpose:
+//      Determines the volume for each cell in the mesh.
+//
+//  Programmer: Hank Childs
+//  Creation:   May 19, 2005
+//
+// ****************************************************************************
+
+void
+avtVMetricVolume::MetricForWholeMesh(vtkDataSet *ds, vtkDataArray *rv)
+{
+    int  i, j, k;
+
+    if (ds->GetDataObjectType() != VTK_RECTILINEAR_GRID)
+        EXCEPTION0(ImproperUseException);
+
+    vtkRectilinearGrid *rg = (vtkRectilinearGrid *) ds;
+    vtkDataArray *X = rg->GetXCoordinates();
+    vtkDataArray *Y = rg->GetYCoordinates();
+    vtkDataArray *Z = rg->GetZCoordinates();
+    int dims[3];
+    rg->GetDimensions(dims);
+    float *Xdist = new float[dims[0]-1];
+    for (i = 0 ; i < dims[0]-1 ; i++)
+        Xdist[i] = X->GetTuple1(i+1) - X->GetTuple1(i);
+    float *Ydist = new float[dims[1]-1];
+    for (i = 0 ; i < dims[1]-1 ; i++)
+        Ydist[i] = Y->GetTuple1(i+1) - Y->GetTuple1(i);
+    float *Zdist = new float[dims[2]-1];
+    for (i = 0 ; i < dims[2]-1 ; i++)
+        Zdist[i] = Z->GetTuple1(i+1) - Z->GetTuple1(i);
+
+    for (k = 0 ; k < dims[2]-1 ; k++)
+        for (j = 0 ; j < dims[1]-1 ; j++)
+            for (i = 0 ; i < dims[0]-1 ; i++)
+            {
+                int idx = k*(dims[1]-1)*(dims[0]-1) + j*(dims[0]-1) + i;
+                float vol = Xdist[i]*Ydist[j]*Zdist[k];
+                rv->SetTuple1(idx, vol);
+            }
+
+    delete [] Xdist;
+    delete [] Ydist;
+    delete [] Zdist;
+}
 

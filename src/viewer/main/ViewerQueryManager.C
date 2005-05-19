@@ -2993,6 +2993,10 @@ GetUniqueVars(const stringVector &vars, const string &activeVar,
 //    Zone' and 'Variable by Node' queries, as those are coved by 
 //    PickByNode and PickByZone.
 //    exists.   Removed screen-coords pick 'Pick' and 'NodePick', changed
+//
+//    Hank Childs, Thu May 19 14:26:48 PDT 2005
+//    Added centroid, moment of inertia queries.
+//
 // ****************************************************************************
 
 void
@@ -3048,6 +3052,8 @@ ViewerQueryManager::InitializeQueryList()
     queryTypes->AddQuery("2D area", dq, mr, basic, 1, 0, true);
     queryTypes->AddQuery("3D surface area", dq, mr, basic, 1, 0, true);
     queryTypes->AddQuery("Volume", dq, mr, basic, 1, 0, true);
+    queryTypes->AddQuery("Moment of Inertia", dq, mr, basic, 1, 0, false);
+    queryTypes->AddQuery("Centroid", dq, mr, basic, 1, 0, false);
     queryTypes->AddQuery("Variable Sum", dq, vr, basic, 1, 0, true);
     queryTypes->AddQuery("Weighted Variable Sum", dq, vr, basic, 1, 0, true);
     queryTypes->AddQuery("Pick", pq, pr, sp, 1, 0, true);

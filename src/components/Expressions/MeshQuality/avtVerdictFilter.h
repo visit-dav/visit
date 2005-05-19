@@ -29,6 +29,9 @@ class     vtkDataArray;
 //    Moved inlined destructor definition to .C file because certain compilers
 //    have problems with them.
 //
+//    Hank Childs, Thu May 19 10:44:29 PDT 2005
+//    Add support for sub-types operating directly on the mesh.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtVerdictFilter : public avtSingleInputExpressionFilter
@@ -42,14 +45,19 @@ class EXPRESSION_API avtVerdictFilter : public avtSingleInputExpressionFilter
     virtual const char       *GetType(void)   { return "avtVerdictFilter"; };
     virtual const char       *GetDescription(void)
                                  { return "Calculating Verdict expression."; };
+
+    virtual bool              OperateDirectlyOnMesh(vtkDataSet *)
+                                       { return false; };
+    virtual void              MetricForWholeMesh(vtkDataSet *, vtkDataArray *);
+
   protected:
     virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
 
     virtual double            Metric(double coordinates[][3], int type) = 0;
 
-    virtual bool              RequiresSizeCalculation() { return false; }
+    virtual bool              RequiresSizeCalculation() { return false; };
 
-    virtual bool              IsPointVariable() {  return false; }
+    virtual bool              IsPointVariable() {  return false; };
 };
 
 #endif

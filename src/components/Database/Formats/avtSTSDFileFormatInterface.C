@@ -377,35 +377,51 @@ avtSTSDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
         bool canGetGoodTimeFromFilename =
                  timesteps[0][0]->FormatGetTimeFromFilename("") != -DBL_MAX+1;
 
+        //
+        // We are going to obtain cycle information from Filenames or from
+        // the format itself depending on whether forceReadAllCyclesTimes is true.
+        // If we ever get two consecutive timesteps that are not in increasing order,
+        // either from the Filename or from the format itself, or if we get "invalid"
+        // values back from the plugin, we give up.
+        //
         bool cyclesLookGood = true;
         bool timesLookGood = true;
         bool fallBackToCyclesFromFilename = false;
         bool fallBackToTimesFromFilename = false;
         vector<int> cycles;
         vector<double> times;
+        vector<bool> cycleIsAccurate;
+        vector<bool> timeIsAccurate;
         for (i = 0 ; i < nTimesteps; i++)
         {
 
-            if (md->AreAllCyclesAccurateAndValid(nTimesteps) != true && cyclesLookGood)
+            if (md->IsCycleAccurate(i) != true && cyclesLookGood)
             {
                 int c = -INT_MAX;
 
-                if (forceReadAllCyclesTimes && !fallBackToCyclesFromFilename)
+                if (forceReadAllCyclesTimes && !fallBackToCyclesFromFilename &&
+                    !canGetGoodCycleFromFilename)
                 {
                     c = timesteps[i][0]->FormatGetCycle();
 
                     // If we get back -INT_MAX from FormatGetCycle, this indicates the
                     // format was unable to return a valid cycle. So, we fall back
                     // to using the filenames.
-                        if (c == -INT_MAX)
+                    if (c == -INT_MAX)
                     {
                         fallBackToCyclesFromFilename = true;
                         c = timesteps[i][0]->FormatGetCycleFromFilename(timesteps[i][0]->GetFilename());
+                        cycleIsAccurate.push_back(false);
+                    }
+                    else
+                    {
+                        cycleIsAccurate.push_back(true);
                     }
                 }
                 else
                 {
                     c = timesteps[i][0]->FormatGetCycleFromFilename(timesteps[i][0]->GetFilename());
+                    cycleIsAccurate.push_back(true);
                 }
 
                 cycles.push_back(c);
@@ -413,13 +429,21 @@ avtSTSDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
                 if ((c == -INT_MAX) || ((i != 0) && (cycles[i] <= cycles[i-1])))
                     cyclesLookGood = false;
             }
+            else
+            {
+                if (cyclesLookGood)
+                {
+                    cycles.push_back(md->GetCycles()[i]);
+                    cycleIsAccurate.push_back(true);
+                }
+            }
 
-
-            if (md->AreAllTimesAccurateAndValid(nTimesteps) != true && timesLookGood)
+            if (md->IsTimeAccurate(i) != true && timesLookGood)
             {
                 double t = -DBL_MAX;
 
-                if (forceReadAllCyclesTimes && !fallBackToTimesFromFilename)
+                if (forceReadAllCyclesTimes && !fallBackToTimesFromFilename &&
+                    !canGetGoodTimeFromFilename)
                 {
                     t = timesteps[i][0]->FormatGetTime();
 
@@ -430,18 +454,31 @@ avtSTSDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
                     {
                         fallBackToTimesFromFilename = true;
                         t = timesteps[i][0]->FormatGetTimeFromFilename(timesteps[i][0]->GetFilename());
+                        timeIsAccurate.push_back(false);
                     }
-
+                    else
+                    {
+                        timeIsAccurate.push_back(true);
+                    }
                 }
                 else
                 {
                     t = timesteps[i][0]->FormatGetTimeFromFilename(timesteps[i][0]->GetFilename());
+                    timeIsAccurate.push_back(true);
                 }
 
                 times.push_back(t);
 
                 if ((t == -DBL_MAX) || ((i != 0) && (times[i] <= times[i-1])))
                     timesLookGood = false;
+            }
+            else
+            {
+                if (timesLookGood)
+                {
+                    times.push_back(md->GetTimes()[i]);
+                    timeIsAccurate.push_back(true);
+                }
             }
 
             if (cyclesLookGood == false && timesLookGood == false)
@@ -456,9 +493,8 @@ avtSTSDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
             if (cyclesLookGood)
             {
                 md->SetCycles(cycles);
-                md->SetCyclesAreAccurate(forceReadAllCyclesTimes &&
-                                         !fallBackToCyclesFromFilename ||
-                                         canGetGoodCycleFromFilename);
+                for (i = 0 ; i < nTimesteps; i++)
+                    md->SetCycleIsAccurate(cycleIsAccurate[i],i);
             }
             else
             {
@@ -477,9 +513,8 @@ avtSTSDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
             if (timesLookGood)
             {
                 md->SetTimes(times);
-                md->SetTimesAreAccurate(forceReadAllCyclesTimes &&
-                                        !fallBackToTimesFromFilename ||
-                                        canGetGoodTimeFromFilename);
+                for (i = 0 ; i < nTimesteps; i++)
+                    md->SetTimeIsAccurate(timeIsAccurate[i],i);
                 md->SetTemporalExtents(times[0], times[times.size() - 1]);
             }
             else

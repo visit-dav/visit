@@ -9805,6 +9805,12 @@ class     vtkDataArray;
 //  Programmer: Akira Haddox
 //  Creation:   June 13, 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Thu May 19 10:44:29 PDT 2005
+//    Add support for sub-types operating directly on the mesh.
+//
+//
 // ****************************************************************************
 
 class avtVerdictNoNamespaceConflict : public avtSingleInputEFNoNamespaceConflict
@@ -9818,6 +9824,11 @@ class avtVerdictNoNamespaceConflict : public avtSingleInputEFNoNamespaceConflict
     virtual const char       *GetType(void)   { return "avtVerdictNoNamespaceConflict"; };
     virtual const char       *GetDescription(void)
                                  { return "Calculating Verdict expression."; };
+
+    virtual bool              OperateDirectlyOnMesh(vtkDataSet *)
+                                       { return false; };
+    virtual void              MetricForWholeMesh(vtkDataSet *, vtkDataArray *);
+
   protected:
     virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
 
@@ -9936,75 +9947,94 @@ avtVerdictNoNamespaceConflict::DeriveVariable(vtkDataSet *in_ds)
 
     int nCells = in_ds->GetNumberOfCells();
 
-    double *results = new double[nCells];
-
-    //
-    // Iterate over each cell in the mesh and if it matches a
-    // testData prerequisites, run the corresponding metric
-    //
-    const int MAXPOINTS = 100;
-    double coordinates[MAXPOINTS][3];
-    for (i = 0; i < nCells; i++)    
-    {
-        vtkCell *cell = in_ds->GetCell(i);
-        
-        int numPointsForThisCell = cell->GetNumberOfPoints();
-        // Grab a pointer to the cell's points' underlying data array
-        vtkDataArray *pointData = cell->GetPoints()->GetData();
-
-        //
-        // Since the Verdict functions make their own copy of the data anyway
-        // it would be nice to get the coordinate data without copying (to cut
-        // down on unneeded copying). However, this might be infesible since
-        // Verdict expects doubles, and vtk (potentially) uses floats.
-        //
-        
-        if (pointData->GetNumberOfComponents() != 3)
-        {
-            EXCEPTION0(ImproperUseException);
-        }
-
-        // Fortunately, Verdict will convert to a double[3] for us
-        for (j = 0; j < numPointsForThisCell; j++)
-        {
-            coordinates[j][2] = 0; // In case of 2d coordinates
-            pointData->GetTuple(j,coordinates[j]);
-        }
-
-        int cellType = cell->GetCellType();
-        
-        // Convert Voxel format into hexahedron format.
-        if (cellType == VTK_VOXEL)
-        {
-            Swap3(coordinates, 2,3);
-            Swap3(coordinates, 6,7);
-        }
-
-        // Convert Pixel format into quad format.
-        if (cellType == VTK_PIXEL)
-        {
-            Swap3(coordinates, 2, 3);
-            cellType = VTK_QUAD;
-        }
-
-        results[i] = Metric(coordinates, cellType);
-    }
-
-
     //
     // Set up a VTK variable reflecting the results we have calculated.
     //
     vtkFloatArray *dv = vtkFloatArray::New();
     dv->SetNumberOfTuples(nCells);
-    for (i = 0 ; i < nCells ; i++)
+
+    //
+    // Iterate over each cell in the mesh and if it matches a
+    // testData prerequisites, run the corresponding metric
+    //
+    if (OperateDirectlyOnMesh(in_ds))
     {
-        float f = (float) results[i];
-        dv->SetTuple(i, &f);
+        MetricForWholeMesh(in_ds, dv);
     }
-    delete [] results;
+    else
+    {
+        const int MAXPOINTS = 100;
+        double coordinates[MAXPOINTS][3];
+        for (i = 0; i < nCells; i++)
+        {
+            vtkCell *cell = in_ds->GetCell(i);
+
+            int numPointsForThisCell = cell->GetNumberOfPoints();
+            // Grab a pointer to the cell's points' underlying data array
+            vtkDataArray *pointData = cell->GetPoints()->GetData();
+
+            //
+            // Since the Verdict functions make their own copy of the data
+            // anyway it would be nice to get the coordinate data without
+            // copying (to cut down on unneeded copying). However, this might
+            // be infeasible since Verdict expects doubles, and vtk
+            //(potentially) uses floats.
+            //
+
+            if (pointData->GetNumberOfComponents() != 3)
+            {
+                EXCEPTION0(ImproperUseException);
+            }
+
+            // Fortunately, Verdict will convert to a double[3] for us
+            for (j = 0; j < numPointsForThisCell; j++)
+            {
+                coordinates[j][2] = 0; // In case of 2d coordinates
+                pointData->GetTuple(j,coordinates[j]);
+            }
+
+            int cellType = cell->GetCellType();
+
+            // Convert Voxel format into hexahedron format.
+            if (cellType == VTK_VOXEL)
+            {
+                Swap3(coordinates, 2,3);
+                Swap3(coordinates, 6,7);
+            }
+
+            // Convert Pixel format into quad format.
+            if (cellType == VTK_PIXEL)
+            {
+                Swap3(coordinates, 2, 3);
+                cellType = VTK_QUAD;
+            }
+
+            float result = Metric(coordinates, cellType);
+            dv->SetTuple1(i, result);
+        }
+    }
 
     return dv;
 }
+
+// ****************************************************************************
+//  Method: avtVerdictFilter::MetricForWholeMesh
+//
+//  Purpose:
+//      Calculates a metric for the whole mesh.  This should be re-defined
+//      by derived types that re-define OperateDirectlyOnMesh to return true.
+//
+//  Programmer: Hank Childs
+//  Creation:   May 19, 2005
+//
+// ****************************************************************************
+
+void
+avtVerdictNoNamespaceConflict::MetricForWholeMesh(vtkDataSet *ds, vtkDataArray *rv)
+{
+    EXCEPTION0(ImproperUseException);
+}
+
 
 // ****************************************************************************
 //  Method: avtVerdictNoNamespaceConflict::PreExecute
@@ -10183,6 +10213,9 @@ void SumSize(avtDataRepresentation &adr, void *, bool &)
 //    Hank Childs, Sat Aug 31 12:25:02 PDT 2002
 //    Added ability to only consider absolute values of volumes.
 //
+//    Hank Childs, Thu May 19 10:55:30 PDT 2005
+//    Added support for operating on rectilinear meshes directly.
+//
 // ****************************************************************************
 
 class avtVolumeNoNamespaceConflict : public avtVerdictNoNamespaceConflict
@@ -10194,6 +10227,8 @@ class avtVolumeNoNamespaceConflict : public avtVerdictNoNamespaceConflict
 
     void               UseOnlyPositiveVolumes(bool val)
                                   { useOnlyPositiveVolumes = val; };
+    virtual bool       OperateDirectlyOnMesh(vtkDataSet *);
+    virtual void       MetricForWholeMesh(vtkDataSet *, vtkDataArray *);
 
   protected:
     bool               useOnlyPositiveVolumes;
@@ -10210,6 +10245,7 @@ class avtVolumeNoNamespaceConflict : public avtVerdictNoNamespaceConflict
 
 #include <vtkDataSet.h>
 #include <vtkFloatArray.h>
+#include <vtkRectilinearGrid.h>
 
 #include <verdict.h>
 
@@ -10339,6 +10375,75 @@ double avtVolumeNoNamespaceConflict::Metric (double coords[][3], int type)
 #endif
 }
 
+// ****************************************************************************
+//  Method: avtVMetricVolume::OperateDirectlyOnMesh
+//
+//  Purpose:
+//      Determines if we want to speed up the operation by operating directly
+//      on the mesh.
+//
+//  Programmer: Hank Childs
+//  Creation:   May 19, 2005
+//
+// ****************************************************************************
+
+bool
+avtVolumeNoNamespaceConflict::OperateDirectlyOnMesh(vtkDataSet *ds)
+{
+    return (ds->GetDataObjectType() == VTK_RECTILINEAR_GRID);
+}
+
+
+// ****************************************************************************
+//  Method: avtVMetricVolume::MetricForWholeMesh
+//
+//  Purpose:
+//      Determines the volume for each cell in the mesh.
+//
+//  Programmer: Hank Childs
+//  Creation:   May 19, 2005
+//
+// ****************************************************************************
+
+void
+avtVolumeNoNamespaceConflict::MetricForWholeMesh(vtkDataSet *ds, vtkDataArray *rv)
+{
+    int  i, j, k;
+
+    if (ds->GetDataObjectType() != VTK_RECTILINEAR_GRID)
+        EXCEPTION0(ImproperUseException);
+
+    vtkRectilinearGrid *rg = (vtkRectilinearGrid *) ds;
+    vtkDataArray *X = rg->GetXCoordinates();
+    vtkDataArray *Y = rg->GetYCoordinates();
+    vtkDataArray *Z = rg->GetZCoordinates();
+    int dims[3];
+    rg->GetDimensions(dims);
+    float *Xdist = new float[dims[0]-1];
+    for (i = 0 ; i < dims[0]-1 ; i++)
+        Xdist[i] = X->GetTuple1(i+1) - X->GetTuple1(i);
+    float *Ydist = new float[dims[1]-1];
+    for (i = 0 ; i < dims[1]-1 ; i++)
+        Ydist[i] = Y->GetTuple1(i+1) - Y->GetTuple1(i);
+    float *Zdist = new float[dims[2]-1];
+    for (i = 0 ; i < dims[2]-1 ; i++)
+        Zdist[i] = Z->GetTuple1(i+1) - Z->GetTuple1(i);
+
+    for (k = 0 ; k < dims[2]-1 ; k++)
+        for (j = 0 ; j < dims[1]-1 ; j++)
+            for (i = 0 ; i < dims[0]-1 ; i++)
+            {
+                int idx = k*(dims[1]-1)*(dims[0]-1) + j*(dims[0]-1) + i;
+                float vol = Xdist[i]*Ydist[j]*Zdist[k];
+                rv->SetTuple1(idx, vol);
+            }
+
+    delete [] Xdist;
+    delete [] Ydist;
+    delete [] Zdist;
+}
+
+
 
 // ************************************************************************* //
 //                          avtAreaNoNamespaceConflict.h                                 //
@@ -10357,12 +10462,21 @@ double avtVolumeNoNamespaceConflict::Metric (double coords[][3], int type)
 //  Programmer: Akira Haddox
 //  Creation:   June 13, 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Thu May 19 10:55:30 PDT 2005
+//    Added support for operating on rectilinear meshes directly.
+//
 // ****************************************************************************
 
 class avtAreaNoNamespaceConflict : public avtVerdictNoNamespaceConflict
 {
     public:
         double Metric(double coords[][3], int type);
+
+    virtual bool       OperateDirectlyOnMesh(vtkDataSet *);
+    virtual void       MetricForWholeMesh(vtkDataSet *, vtkDataArray *);
+
 };
 
 #endif
@@ -10416,6 +10530,77 @@ double avtAreaNoNamespaceConflict::Metric (double coords[][3], int type)
 #endif
     return -1;
 }
+
+// ****************************************************************************
+//  Method: avtVMetricArea::OperateDirectlyOnMesh
+//
+//  Purpose:
+//      Determines if we want to speed up the operation by operating directly
+//      on the mesh.
+//
+//  Programmer: Hank Childs
+//  Creation:   May 19, 2005
+//
+// ****************************************************************************
+
+bool
+avtAreaNoNamespaceConflict::OperateDirectlyOnMesh(vtkDataSet *ds)
+{
+    if (ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
+    {
+        int dims[3];
+        ((vtkRectilinearGrid *) ds)->GetDimensions(dims);
+        if (dims[0] > 1 && dims[1] > 1 && dims[2] == 1)
+            return true;
+    }
+
+    return false;
+}
+
+// ****************************************************************************
+//  Method: avtVMetricArea::MetricForWholeMesh
+//
+//  Purpose:
+//      Determines the area for each cell in the mesh.
+//
+//  Programmer: Hank Childs
+//  Creation:   May 19, 2005
+//
+// ****************************************************************************
+
+void
+avtAreaNoNamespaceConflict::MetricForWholeMesh(vtkDataSet *ds, vtkDataArray *rv)
+{
+    int  i, j;
+
+    if (ds->GetDataObjectType() != VTK_RECTILINEAR_GRID)
+        EXCEPTION0(ImproperUseException);
+
+    vtkRectilinearGrid *rg = (vtkRectilinearGrid *) ds;
+    vtkDataArray *X = rg->GetXCoordinates();
+    vtkDataArray *Y = rg->GetYCoordinates();
+    int dims[3];
+    rg->GetDimensions(dims);
+    float *Xdist = new float[dims[0]-1];
+    for (i = 0 ; i < dims[0]-1 ; i++)
+        Xdist[i] = X->GetTuple1(i+1) - X->GetTuple1(i);
+    float *Ydist = new float[dims[1]-1];
+    for (i = 0 ; i < dims[1]-1 ; i++)
+        Ydist[i] = Y->GetTuple1(i+1) - Y->GetTuple1(i);
+
+    for (j = 0 ; j < dims[1]-1 ; j++)
+        for (i = 0 ; i < dims[0]-1 ; i++)
+        {
+            int idx = j*(dims[0]-1) + i;
+            float area = Xdist[i]*Ydist[j];
+            rv->SetTuple1(idx, area);
+        }
+
+    delete [] Xdist;
+    delete [] Ydist;
+}
+
+
 // ************************************************************************* //
 //                          avtRevolvedVolumeNoNamespaceConflict.h                              //
 // ************************************************************************* //

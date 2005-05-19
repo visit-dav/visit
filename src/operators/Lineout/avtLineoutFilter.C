@@ -46,6 +46,7 @@ struct CellInfo
 } ;
 
 void ClosestPointOnLine(const float *, const float *, const float*, float *);
+bool CanUseCellPoints(float *pt1, float *pt2, float *cpt);
 
 // ****************************************************************************
 //  Method: avtLineoutFilter constructor
@@ -463,6 +464,10 @@ avtLineoutFilter::CreatePolys(vtkDataSet *ds, float *pt1, float *pt2,
 //    Hank Childs, Fri Mar 11 17:04:37 PST 2005
 //    Fix memory leak.
 //
+//    Kathleen Bonnell, Thu May 19 11:34:05 PDT 2005 
+//    Added logic to determine if the cell-centers or the intersection points
+//    should be used in creating the curve. 
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -479,13 +484,20 @@ avtLineoutFilter::NoSampling(vtkDataSet *in_ds, int domain)
     locator->SetIgnoreGhosts(true);
     locator->BuildLocator();
 
-    vtkPoints *pts = vtkPoints::New();
+    vtkPoints *ipts = vtkPoints::New();
+    vtkPoints *cpts = vtkPoints::New();
     vtkIdList *cells = vtkIdList::New();
     vtkDataSet *rv = NULL;
-    int success = locator->IntersectWithLine(pt1, pt2, pts, cells);
+    int success = locator->IntersectWithLine(pt1, pt2, ipts, cpts, cells);
 
     if (success)
     {
+        vtkPoints *pts;
+        if (CanUseCellPoints(pt1, pt2, cpts->GetPoint(0)))
+            pts = cpts;
+        else
+            pts = ipts;
+
         if (!useOriginalCells)
         {
             rv = CreatePolys(in_ds, pt1, pt2, pts, cells);
@@ -508,7 +520,8 @@ avtLineoutFilter::NoSampling(vtkDataSet *in_ds, int domain)
                << domain << "." << endl;
     }
 
-    pts->Delete();
+    cpts->Delete();
+    ipts->Delete();
     cells->Delete();
     locator->Delete();
 
@@ -835,7 +848,7 @@ avtLineoutFilter::CreatePolysFromOrigCells(vtkDataSet *ds, float *pt1, float *pt
 //    cpt     The point not-on-the-line.
 //    npt     The closest point.
 //
-//  Programmer: Kathleen bonnell
+//  Programmer: Kathleen Bonnell
 //  Creation:   October 20, 2004 
 //
 // ****************************************************************************
@@ -849,7 +862,8 @@ ClosestPointOnLine(const float *pt1, const float *pt2, const float *cpt,
     avtVector p2(pt2);
     avtVector cp(cpt);
 
-    // Create direction vectors of the line, and from the point to the lineorigin 
+    // Create direction vectors of the line, and from the point to the 
+    // line origin 
     avtVector v(p2-p1);
     avtVector R(cp-p1);
 
@@ -862,3 +876,38 @@ ClosestPointOnLine(const float *pt1, const float *pt2, const float *cpt,
     npt[2] = newPt.z;
 }
 
+
+// ****************************************************************************
+//  CanUseCellPoints
+//
+//  Purpose:  Determines whether the cell centers are close enough to the line 
+//            segment to be used in creating the curve.
+//
+//  Arguments:
+//    pt1     The origin of the line.
+//    pt2     The endpoint of the line.
+//    cpt     The first cell-center point. 
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   May 19, 2005 
+//
+// ****************************************************************************
+
+bool
+CanUseCellPoints(float *pt1, float *pt2, float *cpt)
+{
+    // 
+    //  Only want to use the cell-centers if the distance
+    //  to the line is less than the length of the line segment.
+    // 
+    avtVector p1(pt1);
+    avtVector p2(pt2);
+    avtVector cp(cpt);
+    avtVector BC(cp-p2);
+    avtVector AB(p2-p1);
+    double lenAB = AB.norm();
+    double c = (AB%BC).norm();
+    if (lenAB > 0)
+        c /= lenAB;
+    return (c < lenAB);
+}

@@ -3076,9 +3076,13 @@ EdgeLineIsect(vtkCell *cell, const float *p1, const float *p2, float *x)
 //   Kathleen Bonnell, Wed Oct 20 17:35:10 PDT 2004 
 //   Return the cell-centers in pts instead of intersection points. 
 //
+//   Kathleen Bonnell, Thu May 19 11:34:05 PDT 2005 
+//   Return both cell-centers AND intersection points. 
+//
 // ****************************************************************************
 int vtkVisItCellLocator::IntersectWithLine(float a0[3], float a1[3], 
-                                      vtkPoints *pts, vtkIdList *cells)
+                                      vtkPoints *ipts, vtkPoints *cpts,
+                                      vtkIdList *cells)
 {
   this->TestCoPlanar = true;
   vtkGenericCell *cell = vtkGenericCell::New();
@@ -3101,7 +3105,7 @@ int vtkVisItCellLocator::IntersectWithLine(float a0[3], float a1[3],
   int bestDir, cellIsGhost;
   float stopDist, currDist;
   float length, maxLength = 0.0;
-  float tempT, tempX[3], pc[3];
+  float tempT, tempX[3], pc[3] = {0., 0., 0.};
   int tempId;
   vtkUnsignedCharArray *ghosts = 
     (vtkUnsignedCharArray *)this->DataSet->GetCellData()->GetArray("avtGhostZones");
@@ -3224,8 +3228,9 @@ int vtkVisItCellLocator::IntersectWithLine(float a0[3], float a1[3],
                 if (CellIntersectWithLine(cell, a0, a1, tempT, tempX, pc, tempId))
                   {
                   cells->InsertNextId(cId);
+                  ipts->InsertNextPoint(tempX);
                   vtkVisItUtility::GetCellCenter(cell, tempX);
-                  pts->InsertNextPoint(tempX);
+                  cpts->InsertNextPoint(tempX);
                   } // cell Isected line
                 } // if (hitCellBounds)
               } // if !cellIsGhost
