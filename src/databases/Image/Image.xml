@@ -17,7 +17,16 @@
       TIF
       bmp
       BMP
+      sdt
+      SDT
+      spr
+      SPR
+      imgvol
     </Extensions>
+    <Files components="E">
+      vtkStimulateReader.C
+      avtImageFileFormat.C
+    </Files>
     <Attribute name="" purpose="" persistent="false" exportAPI="" exportInclude="">
     </Attribute>
   </Plugin>

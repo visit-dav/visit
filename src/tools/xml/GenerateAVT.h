@@ -58,6 +58,9 @@
 //    Use EXCEPTION1 macro instead of EXCEPTION0 ('5979) and also add skeleton
 //    for expressions and time ('4557).
 //
+//    Hank Childs, Fri Mar 18 10:50:37 PST 2005
+//    Return type of GetAuxiliaryData is void *, not void &.
+//
 //    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
 //    Moved PopulateDatabaseMetaData method down to format specific classes
 //
@@ -755,7 +758,7 @@ class AVTGeneratorPlugin
             h << "    // This is used to return unconvention data -- ranging from material" << endl;
             h << "    // information to information about block connectivity." << endl;
             h << "    //" << endl;
-            h << "    // virtual void      &GetAuxiliaryData(const char *var, const char *type," << endl;
+            h << "    // virtual void      *GetAuxiliaryData(const char *var, const char *type," << endl;
             h << "    //                                  void *args, DestructorFunction &);" << endl;
             h << "    //" << endl;
             h << "" << endl;
@@ -821,7 +824,7 @@ class AVTGeneratorPlugin
             h << "    // This is used to return unconvention data -- ranging from material" << endl;
             h << "    // information to information about block connectivity." << endl;
             h << "    //" << endl;
-            h << "    // virtual void      &GetAuxiliaryData(const char *var, const char *type," << endl;
+            h << "    // virtual void      *GetAuxiliaryData(const char *var, const char *type," << endl;
             h << "    //                                     int timestep, void *args, " << endl;
             h << "    //                                     DestructorFunction &);" << endl;
             h << "    //" << endl;
@@ -887,7 +890,7 @@ class AVTGeneratorPlugin
             h << "    // This is used to return unconvention data -- ranging from material" << endl;
             h << "    // information to information about block connectivity." << endl;
             h << "    //" << endl;
-            h << "    // virtual void      &GetAuxiliaryData(const char *var, const char *type," << endl;
+            h << "    // virtual void      *GetAuxiliaryData(const char *var, const char *type," << endl;
             h << "    //                                     int domain, void *args, " << endl;
             h << "    //                                     DestructorFunction &);" << endl;
             h << "    //" << endl;
@@ -950,7 +953,7 @@ class AVTGeneratorPlugin
             h << "    // This is used to return unconvention data -- ranging from material" << endl;
             h << "    // information to information about block connectivity." << endl;
             h << "    //" << endl;
-            h << "    // virtual void      &GetAuxiliaryData(const char *var, const char *type," << endl;
+            h << "    // virtual void      *GetAuxiliaryData(const char *var, const char *type," << endl;
             h << "    //                                     int timestep, int domain,void *args, " << endl;
             h << "    //                                     DestructorFunction &);" << endl;
             h << "    //" << endl;

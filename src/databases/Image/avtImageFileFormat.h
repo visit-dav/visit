@@ -1,4 +1,3 @@
-
 // ************************************************************************* //
 //                            avtImageFileFormat.h                           //
 // ************************************************************************* //
@@ -31,6 +30,9 @@
 //    Mark C. Miller, Tue Nov  9 13:41:33 PST 2004
 //    Removed unnused pointvarnames, pointvars. Added fext and CanCacheVariable
 //
+//    Hank Childs, Fri Mar 18 11:41:04 PST 2005
+//    Added support for image volumes.
+//
 //    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
 //    Deleted a bunch of commented-out code that was hold-over from the
 //    plugin generation processes.
@@ -45,6 +47,7 @@ class avtImageFileFormat : public avtSTSDFileFormat
 
     virtual const char    *GetType(void)   { return "Image"; };
     virtual void           FreeUpResources(void); 
+    virtual void           ActivateTimestep(void);
 
     virtual vtkDataSet    *GetMesh(const char *);
     virtual vtkDataArray  *GetVar(const char *);
@@ -57,20 +60,41 @@ class avtImageFileFormat : public avtSTSDFileFormat
                                std::vector<bool> *selectionsApplied);
 
   protected:
-
     std::string                          fname;
     std::string                          fext;
+    std::string                          image_fext;
     std::vector<std::vector<float> >     cellvars; 
     std::vector<std::string>             cellvarnames;
     vtkImageData                         *image;
     std::vector<avtDataSelection_p>      selList;
     std::vector<bool>                    *selsApplied;
+    bool                                 haveInitialized;
+
+    bool                                 haveImageVolume;
+    std::vector<std::string>             subImages;
+    float                                zStart;
+    bool                                 specifiedZStart;
+    float                                zStep;
+    bool                                 specifiedZStep;
+
     bool                                 haveReadWholeImage;
+    int                                  indexOfImageAlreadyRead;
+    int                                  indexOfImageToRead;
+
+    float                                xStart, yStart;
+    float                                xStep, yStep;
+
     void                                 ReadInImage(void);
+    void                                 ReadImageVolumeHeader(void);
+    void                                 Initialize(void);
     bool                                 ProcessDataSelections(
                                              int *xmin, int *xmax,
                                              int *ymin, int *ymax);
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *);
+    vtkDataSet                          *GetImageVolumeMesh(const char *);
+    vtkDataSet                          *GetOneMesh(const char *);
+    vtkDataArray                        *GetImageVolumeVar(const char *);
+    vtkDataArray                        *GetOneVar(const char *);
 };
 
 

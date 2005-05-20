@@ -142,12 +142,17 @@ avtFileFormat::TurnMaterialSelectionOn(const char *m)
 //  Programmer: Hank Childs
 //  Creation:   February 23, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Apr  1 08:48:50 PST 2005
+//    Use debug5 instead of debug1, since this isn't really a problem.
+//
 // ****************************************************************************
 
 void
 avtFileFormat::FreeUpResources(void)
 {
-    debug1 << "Asked " << GetType() << " to free up resources, but it did not "
+    debug5 << "Asked " << GetType() << " to free up resources, but it did not "
            << "define how to do that." << endl;
 }
 
@@ -162,12 +167,17 @@ avtFileFormat::FreeUpResources(void)
 //  Programmer: Mark C. Miller 
 //  Creation:   February 23, 2004
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Apr  1 08:48:50 PST 2005
+//    Use debug5 instead of debug1, since this isn't really a problem.
+//
 // ****************************************************************************
 
 void
 avtFileFormat::ActivateTimestep(void)
 {
-    debug1 << "Asked " << GetType() << " to activate timestep, but it did not "
+    debug5 << "Asked " << GetType() << " to activate timestep, but it did not "
            << "define how to do that." << endl;
 }
 

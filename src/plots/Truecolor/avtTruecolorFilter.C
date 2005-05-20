@@ -3,8 +3,10 @@
 // ************************************************************************* //
 
 #include <avtTruecolorFilter.h>
-#include <vtkDataSet.h>
+
 #include <vtkCellData.h>
+#include <vtkDataSet.h>
+#include <vtkPointData.h>
 #include <vtkUnsignedCharArray.h>
 
 
@@ -59,13 +61,17 @@ avtTruecolorFilter::~avtTruecolorFilter()
 //     Hank Childs, Wed Nov 10 11:33:59 PST 2004
 //     Fix memory leak.
 //
+//     Hank Childs, Fri May 20 14:52:21 PDT 2005
+//     Add support for nodal colors.
+//
 // ****************************************************************************
 
 vtkDataSet *
 avtTruecolorFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
 {
-    // if we do not know the name of the data array to display, we cannot display it
-    if(variable_name == NULL)
+    // if we do not know the name of the data array to display,
+    // we cannot display it
+    if (variable_name == NULL)
         return inDS;
 
     vtkDataSet *outDS = (vtkDataSet *) inDS->NewInstance();
@@ -73,10 +79,16 @@ avtTruecolorFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
 
     // convert RGB vectors into a RGBA unsigned char array
     // and use these data as colors
+    bool isZonal = true;
     vtkDataArray *vecdata = inDS->GetCellData()->GetArray(variable_name);
-    if(vecdata == NULL)
-        return inDS;
-    if(vecdata->GetNumberOfComponents() != 4)
+    if (vecdata == NULL)
+    {
+        vecdata = inDS->GetPointData()->GetArray(variable_name);
+        if (vecdata == NULL)
+            return inDS;
+        isZonal = false;
+    }
+    if (vecdata->GetNumberOfComponents() != 4)
         return inDS;
 
     vtkUnsignedCharArray *color_array = vtkUnsignedCharArray::New();
@@ -84,8 +96,16 @@ avtTruecolorFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
 
     // Add scalar array to the output dataset and make it active
     color_array->SetName("ucharColors");
-    outDS->GetCellData()->AddArray(color_array);
-    outDS->GetCellData()->SetActiveScalars("ucharColors");
+    if (isZonal)
+    {
+        outDS->GetCellData()->AddArray(color_array);
+        outDS->GetCellData()->SetActiveScalars("ucharColors");
+    }
+    else
+    {
+        outDS->GetPointData()->AddArray(color_array);
+        outDS->GetPointData()->SetActiveScalars("ucharColors");
+    }
 
     color_array->Delete();
 
@@ -96,19 +116,3 @@ avtTruecolorFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
 }
 
 
-// ****************************************************************************
-//  Method: avtTruecolorFilter::RefashionDataObjectInfo
-//
-//  Purpose:
-//      Allows the filter to change its output's data object information, which
-//      is a description of the data object.
-//
-//  Programmer: Chris Wojtan
-//  Creation:   Monday, June 15 2004
-//
-// ****************************************************************************
-
-void
-avtTruecolorFilter::RefashionDataObjectInfo(void)
-{
-}
