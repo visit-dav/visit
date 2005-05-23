@@ -561,7 +561,7 @@ avtFileFormat::GuessCycleOrTime(const char *fname, bool permitDot) const
     //
     // Example of atoi: atoi("1234str") = 1234.
     //
-    if (lastDigit >= 0)
+    if (lastDigit >= 0 && (!permitDot || fname[lastDigit] != '.' || isdigit(fname[lastDigit+1])))
     {
         return atof(fname+lastDigit);
     }

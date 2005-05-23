@@ -277,6 +277,9 @@ avtVistaDiabloFileFormat::GetFileNameForRead(int dom, char *fileName, int size)
 //    Mark C. Miller, Thu Apr 21 09:37:41 PDT 2005
 //    Fixed memory leaks
 //
+//    Kathleen Bonnell, Mon May 23 16:55:35 PDT 2005 
+//    Fixed memory leaks.
+//
 // ****************************************************************************
 
 void
@@ -383,7 +386,7 @@ avtVistaDiabloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     // Add the GLOBAL mesh object
     //
     avtMeshMetaData *mesh = new avtMeshMetaData;
-    mesh->name = CXX_strdup(top->child[0]->text);
+    mesh->name = top->child[0]->text;
     mesh->meshType = AVT_UNSTRUCTURED_MESH;
     mesh->topologicalDimension = spatialDim;
     mesh->spatialDimension = spatialDim;
@@ -422,6 +425,7 @@ avtVistaDiabloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                 fieldNames.push_back(tmpFieldName);
                 delete [] tmpFieldName;
             }
+            delete [] fieldNodes;
             StringHelpers::GroupStringsAsPaths(fieldNames, fieldGroups, groupNames);
 
             // iterate over the groups adding fields to the list of fields on
@@ -583,6 +587,9 @@ avtVistaDiabloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Mark C. Miller, Thu Apr 21 09:37:41 PDT 2005
 //    Fixed memory leaks
 //
+//    Kathleen Bonnell, Mon May 23 16:55:35 PDT 2005 
+//    Fixed memory leaks.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -708,6 +715,7 @@ avtVistaDiabloFileFormat::GetMesh(int domain, const char *meshname)
         ugrid->InsertNextCell(vtkCellType, numNodesPerElem, &elemToNode[i*numNodesPerElem]);
     }
     points->Delete();
+    delete [] elemToNode;
     return ugrid;
 }
 

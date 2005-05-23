@@ -443,6 +443,9 @@ avtMaterial::avtMaterial(int nMats, const vector<string> &mats, int nzon,
 //    Mark C. Miller, Wed May 19 21:31:28 PDT 2004
 //    corrected off by one error in mixed traversals
 //
+//    Kathleen Bonnell, Mon May 23 16:55:35 PDT 2005
+//    Fix memory leaks.
+//
 // ****************************************************************************
 
 avtMaterial::avtMaterial(int nTotMats, const int *mats, const char **names,
@@ -719,6 +722,16 @@ avtMaterial::avtMaterial(int nTotMats, const int *mats, const char **names,
 
     }
 
+    if (mixl)
+    {
+        delete [] mixv;
+        delete [] mixm;
+        delete [] mixn;
+        delete [] mixz;
+    }
+    delete [] ml;
+
+
     visitTimer->StopTimer(timerHandle, "Constructing avtMaterial object from "
                                        "material map");
 
@@ -745,6 +758,9 @@ avtMaterial::avtMaterial(int nTotMats, const int *mats, const char **names,
 //  Modifications:
 //    Mark C. Miller, Wed May 19 21:31:28 PDT 2004
 //    corrected off by one error in mixed traversals
+//
+//    Kathleen Bonnell, Mon May 23 16:55:35 PDT 2005
+//    Fix memory leaks.
 //
 // ****************************************************************************
 
@@ -975,6 +991,11 @@ avtMaterial::avtMaterial(int nTotMats, const int *mats, char **names,
         delete [] newmixm;
         delete [] newmats;
     }
+    delete [] mixv;
+    delete [] mixm;
+    delete [] mixz;
+    delete [] mixn;
+    delete [] ml;
 
     visitTimer->StopTimer(timerHandle, "Constructing avtMaterial object from "
                                        "dense vfrac arrays");
