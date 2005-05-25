@@ -10,7 +10,7 @@
 // 
 #include "sim.h"
 
-#include <VisItV1.h>
+#include <VisItControlInterface_V1.h>
 #include <VisItDataInterface_V1.h>
 
 #include <stdio.h>

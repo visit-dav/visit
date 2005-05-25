@@ -138,10 +138,13 @@ NewHandler(void)
 //    Hank Childs, Tue Jun  1 11:47:36 PDT 2004
 //    Removed atexit call, since that is buggy with gcc.
 //
+//    Jeremy Meredith, Tue May 17 11:20:51 PDT 2005
+//    Allow disabling of signal handlers.
+//
 // ****************************************************************************
 
 void
-Init::Initialize(int &argc, char *argv[], int r, int n, bool strip)
+Init::Initialize(int &argc, char *argv[], int r, int n, bool strip, bool sigs)
 {
     int i, debuglevel = 0;
 #if defined(_WIN32)
@@ -218,7 +221,7 @@ Init::Initialize(int &argc, char *argv[], int r, int n, bool strip)
 
     // Initialize the debug streams and also add the command line arguments
     // to the debug logs.
-    DebugStream::Initialize(progname, debuglevel);
+    DebugStream::Initialize(progname, debuglevel, sigs);
     for(i = 0; i < argc; ++i)
         debug1 << argv[i] << " ";
     debug1 << endl;

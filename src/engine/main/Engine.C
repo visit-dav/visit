@@ -226,9 +226,12 @@ Engine *Engine::Instance()
 //    but I needed a separate PAR_ProcessInput method that used the same
 //    buffer connection.
 //
+//    Jeremy Meredith, Tue May 17 11:20:51 PDT 2005
+//    Allow disabling of signal handlers.
+//
 // ****************************************************************************
 void
-Engine::Initialize(int *argc, char **argv[])
+Engine::Initialize(int *argc, char **argv[], bool sigs)
 {
 #ifdef PARALLEL
 
@@ -247,10 +250,10 @@ Engine::Initialize(int *argc, char **argv[])
     //
     // Initialize error logging
     //
-    Init::Initialize(*argc, *argv, PAR_Rank(), PAR_Size());
+    Init::Initialize(*argc, *argv, PAR_Rank(), PAR_Size(), true, sigs);
 #else
     xfer = new Xfer;
-    Init::Initialize(*argc, *argv);
+    Init::Initialize(*argc, *argv, 0,1, true, sigs);
 #endif
     Init::SetComponentName("engine");
 

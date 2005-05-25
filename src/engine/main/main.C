@@ -202,6 +202,9 @@
 //    Hank Childs, Sun Mar  6 08:56:30 PST 2005
 //    Remove call to LoadBalancer::ForceStatic.  This is now the default.
 //
+//    Jeremy Meredith, Tue May 17 11:20:51 PDT 2005
+//    Allow disabling of signal handlers for the engine library.
+//
 // ****************************************************************************
 
 int
@@ -210,7 +213,7 @@ main(int argc, char *argv[])
     Engine *engine = Engine::Instance();
 
     // Do some pre-connect initialization
-    engine->Initialize(&argc, &argv);
+    engine->Initialize(&argc, &argv, true);
 
     // Try to connect to the viewer
     if (engine->ConnectViewer(&argc, &argv))

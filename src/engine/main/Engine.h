@@ -96,6 +96,9 @@ class ProcessAttributes;
 //    Jeremy Meredith, Mon Apr  4 15:59:49 PDT 2005
 //    Added methods to control a simulation from VisIt.
 //
+//    Jeremy Meredith, Wed May 18 16:50:59 PDT 2005
+//    Allow disabling of signal handlers.
+//
 // ****************************************************************************
 
 class Engine
@@ -105,7 +108,7 @@ class Engine
     static Engine  *Instance();
 
     // Initialization routines
-    void            Initialize(int *argc, char **argv[]);
+    void            Initialize(int *argc, char **argv[], bool sigs);
     void            Finalize(void);
     bool            ConnectViewer(int *argc, char **argv[]);
     void            SetUpViewerInterface(int *argc, char **argv[]);
