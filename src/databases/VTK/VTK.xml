@@ -1,7 +1,9 @@
 <?xml version="1.0"?>
-  <Plugin name="VTK" label="VTK" type="database" dbtype="STSD" version="1.0" haswriter="yes">
-    <Extensions> vtk </Extensions>
-    <Files components="M,E">
+  <Plugin name="VTK" type="database" label="VTK" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" dbtype="STSD" haswriter="true" hasoptions="true">
+    <Extensions>
+      vtk
+    </Extensions>
+    <Files components="M">
       avtVTKFileFormat.C
       vtkVisItDataReader.C
       vtkVisItDataSetReader.C
@@ -11,5 +13,16 @@
       vtkVisItStructuredPointsReader.C
       vtkVisItUnstructuredGridReader.C
     </Files>
- 
+    <Files components="E">
+      avtVTKFileFormat.C
+      vtkVisItDataReader.C
+      vtkVisItDataSetReader.C
+      vtkVisItPolyDataReader.C
+      vtkVisItRectilinearGridReader.C
+      vtkVisItStructuredGridReader.C
+      vtkVisItStructuredPointsReader.C
+      vtkVisItUnstructuredGridReader.C
+    </Files>
+    <Attribute name="" purpose="" persistent="true">
+    </Attribute>
   </Plugin>

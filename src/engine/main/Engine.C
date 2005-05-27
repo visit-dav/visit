@@ -404,6 +404,7 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     cloneNetworkRPC                 = new CloneNetworkRPC;
     procInfoRPC                     = new ProcInfoRPC;
     simulationCommandRPC            = new SimulationCommandRPC;
+    exportDatabaseRPC               = new ExportDatabaseRPC;
 
     xfer->Add(quitRPC);
     xfer->Add(keepAliveRPC);
@@ -426,6 +427,7 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     xfer->Add(cloneNetworkRPC);
     xfer->Add(procInfoRPC);
     xfer->Add(simulationCommandRPC);
+    xfer->Add(exportDatabaseRPC);
 
     // Create an object to implement the RPCs
     rpcExecutors.push_back(new RPCExecutor<QuitRPC>(quitRPC));
@@ -452,6 +454,7 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     rpcExecutors.push_back(new RPCExecutor<CloneNetworkRPC>(cloneNetworkRPC));
     rpcExecutors.push_back(new RPCExecutor<ProcInfoRPC>(procInfoRPC));
     rpcExecutors.push_back(new RPCExecutor<SimulationCommandRPC>(simulationCommandRPC));
+    rpcExecutors.push_back(new RPCExecutor<ExportDatabaseRPC>(exportDatabaseRPC));
 
     // Hook up the expression list as an observed object.
     Parser *p = new ExprParser(new avtExprNodeFactory());

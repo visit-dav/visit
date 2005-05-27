@@ -350,6 +350,9 @@ struct avtDefaultPlotMetaData;
 //    Brad Whitlock, Thu Apr 14 16:30:48 PST 2005
 //    Added PostponeViewerRPC.
 //
+//    Hank Childs, Wed May 25 14:46:26 PDT 2005
+//    Added UpdateDBPluginInfo.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerSubject : public QObject
@@ -440,6 +443,8 @@ private:
     void OpenMDServer();
     void ClearCache();
     void ClearCacheForAllEngines();
+    void ExportDatabase();
+    void UpdateDBPluginInfo();
 
     void SendSimulationCommand();
 

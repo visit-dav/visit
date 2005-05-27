@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+  <Attribute name="DBPluginInfoAttributes" purpose="This class contains the attributes for all the database plugins." persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h">
+    <Field name="types" label="types" type="stringVector">
+    </Field>
+    <Field name="hasWriter" label="hasWriter" type="intVector">
+    </Field>
+    <Field name="dbOptions" label="dbOptions -- must pack read and write into one vector to get around '6283" type="attVector" subtype="DBOptionsAttributes">
+    </Field>
+    <Field name="typesFullNames" label="typesFullNames" type="stringVector">
+    </Field>
+  </Attribute>

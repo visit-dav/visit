@@ -33,12 +33,15 @@
 //    Jeremy Meredith, Wed Nov  5 13:49:32 PST 2003
 //    Added checkbox for "enabled by default".
 //
+//    Hank Childs, Tue May 24 09:26:14 PDT 2005
+//    Added hasOptions.
+//
 // ****************************************************************************
 
 XMLEditPlugin::XMLEditPlugin(QWidget *p, const QString &n)
     : QFrame(p, n)
 {
-    QGridLayout *topLayout = new QGridLayout(this, 12,2, 5);
+    QGridLayout *topLayout = new QGridLayout(this, 13,2, 5);
     int row = 0;
 
     attpluginGroup = new QButtonGroup();
@@ -87,8 +90,13 @@ XMLEditPlugin::XMLEditPlugin(QWidget *p, const QString &n)
     topLayout->addMultiCellWidget(hasWriter, row,row, 0,1);
     row++;
 
+    hasOptions = new QCheckBox("File format provides options for reading or writing data.", this);
+    hasOptions->setChecked(false);
+    topLayout->addMultiCellWidget(hasOptions, row,row, 0,1);
+    row++;
+
     enabledByDefault = new QCheckBox("Plugin is enabled by default", this);
-    hasWriter->setChecked(true);
+    enabledByDefault->setChecked(true);
     topLayout->addMultiCellWidget(enabledByDefault, row,row, 0,1);
     row++;
 
@@ -186,6 +194,8 @@ XMLEditPlugin::XMLEditPlugin(QWidget *p, const QString &n)
             this,  SLOT(iconFileTextChanged(const QString &)));
     connect(hasWriter, SIGNAL(toggled(bool)),
             this, SLOT(hasWriterChanged(bool)));
+    connect(hasOptions, SIGNAL(toggled(bool)),
+            this, SLOT(hasOptionsChanged(bool)));
     connect(enabledByDefault, SIGNAL(toggled(bool)),
             this, SLOT(enabledByDefaultChanged(bool)));
 }
@@ -211,6 +221,9 @@ XMLEditPlugin::XMLEditPlugin(QWidget *p, const QString &n)
 //
 //    Brad Whitlock, Fri Apr 1 16:07:24 PST 2005
 //    Added support for label vars.
+//
+//    Hank Childs, Tue May 24 09:26:14 PDT 2005
+//    Add hasOptions.
 //
 // ****************************************************************************
 
@@ -280,6 +293,7 @@ XMLEditPlugin::UpdateWindowContents()
             iconFile->setText("");
             hasIcon->setChecked(false);
             hasWriter->setChecked(xmldoc->plugin->haswriter);
+            hasOptions->setChecked(xmldoc->plugin->hasoptions);
 
             pluginType->setCurrentItem(3);
             extensions->setText(JoinValues(xmldoc->plugin->extensions, ' '));
@@ -299,6 +313,7 @@ XMLEditPlugin::UpdateWindowContents()
             iconFile->setText("");
             hasIcon->setChecked(false);
             hasWriter->setChecked(false);
+            hasOptions->setChecked(false);
             enabledByDefault->setChecked(true);
             pluginType->setCurrentItem(0);
         }
@@ -322,6 +337,7 @@ XMLEditPlugin::UpdateWindowContents()
         hasIcon->setChecked(false);
         iconFile->setText("");
         hasWriter->setChecked(false);
+        hasOptions->setChecked(false);
         pluginType->setCurrentItem(0);
         dbType->setCurrentItem(0);
         extensions->setText("");
@@ -355,6 +371,9 @@ XMLEditPlugin::UpdateWindowContents()
 //    Brad Whitlock, Fri Apr 1 16:08:18 PST 2005
 //    Added label vars.
 //
+//    Hank Childs, Tue May 24 09:26:14 PDT 2005
+//    Add hasOptions.
+//
 // ****************************************************************************
 
 void
@@ -383,6 +402,7 @@ XMLEditPlugin::UpdateWindowSensitivity()
     extensions->setEnabled(db);
     hasIcon->setEnabled(op || plot);
     hasWriter->setEnabled(db);
+    hasOptions->setEnabled(db);
     enabledByDefault->setEnabled(plugin);
     bool val = (op || plot) && (xmldoc->plugin->iconFile.length() > 0);
     iconFile->setEnabled(val);
@@ -438,6 +458,7 @@ XMLEditPlugin::BlockAllSignals(bool block)
     hasIcon->blockSignals(block);
     iconFile->blockSignals(block);
     hasWriter->blockSignals(block);
+    hasOptions->blockSignals(block);
     enabledByDefault->blockSignals(block);
 }
 
@@ -463,6 +484,9 @@ XMLEditPlugin::BlockAllSignals(bool block)
 //    Added the "no-engine" and "engine-only" options to the plugin
 //    constructor.
 //
+//    Hank Childs, Tue May 24 10:19:40 PDT 2005
+//    Added another argument to plugin constructor.
+//
 // ****************************************************************************
 void
 XMLEditPlugin::attpluginGroupChanged(int id)
@@ -472,7 +496,8 @@ XMLEditPlugin::attpluginGroupChanged(int id)
         xmldoc->docType = "Plugin";
         if (!xmldoc->plugin)
         {
-            xmldoc->plugin = new Plugin("","","","","","","",false,false,false);
+            xmldoc->plugin = new Plugin("","","","","","","",false,false,false,
+                                        false);
             xmldoc->plugin->atts = xmldoc->attribute;
         }
     }
@@ -592,6 +617,27 @@ XMLEditPlugin::hasWriterChanged(bool val)
         return;
 
     xmldoc->plugin->haswriter = val;
+
+    UpdateWindowSensitivity();
+}
+
+// ****************************************************************************
+// Method: XMLEditPlugin::hasOptionsChanged
+//
+// Programmer: Hank Childs
+// Creation:   May 24, 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+XMLEditPlugin::hasOptionsChanged(bool val)
+{
+    if (xmldoc->docType != "Plugin")
+        return;
+
+    xmldoc->plugin->hasoptions = val;
 
     UpdateWindowSensitivity();
 }

@@ -26,7 +26,10 @@
       false
     </Field>
     <Field name="dbName" label="dbName" type="string">
-      "__none__"
+      __none__
+    </Field>
+    <Field name="autoExpression" label="Expression created automatically by VisIt" type="bool">
+      false
     </Field>
     <Function name="GetNumTypes" user="true" member="true">
     </Function>

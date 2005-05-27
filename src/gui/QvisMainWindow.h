@@ -131,6 +131,9 @@ class WindowInformation;
 //   Brad Whitlock, Wed Feb 9 17:48:30 PST 2005
 //   Added a help option to update VisIt.
 //
+//   Hank Childs, Tue May 24 16:59:38 PDT 2005
+//   Added export database window.
+//
 // ****************************************************************************
 
 class GUI_API QvisMainWindow : public QvisWindowBase, public SimpleObserver
@@ -166,6 +169,7 @@ signals:
     void activateSimulationWindow();
     void activatePrintWindow();
     void activateSaveWindow();
+    void activateExportDBWindow();
     void activateMovieWindow();
     void activateAnimationWindow();
     void activateAnnotationWindow();

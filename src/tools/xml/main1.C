@@ -197,6 +197,9 @@ void ProcessFile(QString file);
 //    I removed the code to write a version file since the version is now
 //    stored in the common plugin info to make it easier for us on Windows.
 //
+//    Hank Childs, Tue May 24 09:41:53 PDT 2005
+//    Added hasoptions.
+//
 // ****************************************************************************
 
 int main(int argc, char *argv[])
@@ -546,10 +549,27 @@ ProcessFile(QString file)
                     wc.close();
                 }
             }
+            if (plugin->hasoptions)
+            {
+                // DB options mode.
+                ofstream wh;
+                if (Open(wh, QString("avt") + plugin->name + "Options.h"))
+                {
+                    plugin->WriteFileFormatOptionsHeader(wh);
+                    wh.close();
+                }
+
+                ofstream wc;
+                if (Open(wc, QString("avt") + plugin->name + "Options.C"))
+                {
+                    plugin->WriteFileFormatOptionsSource(wc);
+                    wc.close();
+                }
+            }
         }
         else
         {
-            // avt writer mode
+            // avt filters
             ofstream fh;
             if (Open(fh, QString("avt") + plugin->name + "Filter.h"))
             {

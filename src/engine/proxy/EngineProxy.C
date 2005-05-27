@@ -146,6 +146,9 @@ EngineProxy::~EngineProxy()
 //    Jeremy Meredith, Mon Apr  4 16:01:21 PDT 2005
 //    Added simulationCommandRPC.
 //
+//    Hank Childs, Thu May 26 11:42:40 PDT 2005
+//    Added exportDatabaseRPC.
+//
 // ****************************************************************************
 void
 EngineProxy::SetupComponentRPCs()
@@ -172,6 +175,7 @@ EngineProxy::SetupComponentRPCs()
     xfer.Add(&cloneNetworkRPC);
     xfer.Add(&procInfoRPC);
     xfer.Add(&simulationCommandRPC);
+    xfer.Add(&exportDatabaseRPC);
 
     //
     // Add other state objects to the transfer object
@@ -1289,6 +1293,33 @@ EngineProxy::CloneNetwork(const int id, const QueryOverTimeAttributes *qa)
     {
         RECONSTITUTE_EXCEPTION(cloneNetworkRPC.GetExceptionType(),
                                cloneNetworkRPC.Message());
+    }
+}
+
+
+// ****************************************************************************
+//  Method:  EngineProxy::ExportDatabase
+//
+//  Purpose:
+//      Have the engine export a database.
+//
+//  Arguments:
+//    id         the id of the network to be cloned.
+//    atts       the attributes to export the database.
+//
+//  Programmer:  Hank Childs
+//  Creation:    May 26, 2005
+//
+// ****************************************************************************
+
+void
+EngineProxy::ExportDatabase(const int id, const ExportDBAttributes *atts)
+{
+    exportDatabaseRPC(id, atts);
+    if (exportDatabaseRPC.GetStatus() == VisItRPC::error)
+    {
+        RECONSTITUTE_EXCEPTION(exportDatabaseRPC.GetExceptionType(),
+                               exportDatabaseRPC.Message());
     }
 }
 

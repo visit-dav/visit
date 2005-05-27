@@ -27,8 +27,10 @@
 #include <ColorTableAttributes.h>
 #include <DatabaseCorrelation.h>
 #include <DatabaseCorrelationList.h>
+#include <DBPluginInfoAttributes.h>
 #include <EngineKey.h>
 #include <EngineList.h>
+#include <ExportDBAttributes.h>
 #include <GlobalAttributes.h>
 #include <GlobalLineoutAttributes.h>
 #include <HostProfile.h>
@@ -71,6 +73,7 @@
 #include <ViewerMetaDataObserver.h>
 #include <ViewerOperatorFactory.h>
 #include <ViewerPasswordWindow.h>
+#include <ViewerPlot.h>
 #include <ViewerPlotFactory.h>
 #include <ViewerPlotList.h>
 #include <ViewerPopupMenu.h>
@@ -555,6 +558,9 @@ ViewerSubject::ReadConfigFiles(int argc, char **argv)
 //   Brad Whitlock, Fri Apr 15 10:42:00 PDT 2005
 //   Added postponedAction.
 //
+//   Hank Childs, Wed May 25 10:48:50 PDT 2005
+//   Added DBPluginInfoAtts.
+//
 // ****************************************************************************
 
 void
@@ -603,6 +609,8 @@ ViewerSubject::ConnectXfer()
     xfer.Add(ViewerWindowManager::GetAnnotationObjectList());
     xfer.Add(ViewerQueryManager::Instance()->GetQueryOverTimeClientAtts());
     xfer.Add(ViewerWindowManager::Instance()->GetInteractorClientAtts());
+    xfer.Add(ViewerFileServer::Instance()->GetDBPluginInfoAtts());
+    xfer.Add(ViewerEngineManager::Instance()->GetExportDBAtts());
     xfer.Add(metaData);
     xfer.Add(silAtts);
     xfer.Add(procAtts);
@@ -4379,6 +4387,82 @@ ViewerSubject::OpenMDServer()
 }
 
 // ****************************************************************************
+// Method: ViewerSubject::UpdateDBPluginInfo
+//
+// Purpose: 
+//    Updates the DB plugin info.
+//
+// Programmer: Hank Childs
+// Creation:   May 25, 2005
+//
+// ****************************************************************************
+
+void
+ViewerSubject::UpdateDBPluginInfo()
+{
+    //
+    // Get the rpc arguments.
+    //
+    const std::string &hostName = viewerRPC.GetProgramHost();
+
+    //
+    // Perform the RPC.
+    //
+    ViewerFileServer::Instance()->UpdateDBPluginInfo(hostName);
+}
+
+// ****************************************************************************
+// Method: ViewerSubject::ExportDatabase
+//
+// Purpose: 
+//     Exports a database.
+//
+// Programmer: Hank Childs
+// Creation:   May 25, 2005
+//
+// ****************************************************************************
+
+void
+ViewerSubject::ExportDatabase()
+{
+    //
+    // Perform the RPC.
+    //
+    ViewerWindow *win = ViewerWindowManager::Instance()->GetActiveWindow();
+    ViewerPlotList *plist = win->GetPlotList();
+    intVector plotIDs;
+    plist->GetActivePlotIDs(plotIDs);
+    if (plotIDs.size() <= 0)
+    {
+        Error("To export a database, you must have an active plot.  No database was saved.");
+        return;
+    }
+    if (plotIDs.size() > 1)
+        Message("Only one database can be exported at a time.  VisIt is exporting the first active plot.");
+
+    ViewerPlot *plot = plist->GetPlot(plotIDs[0]);
+    const EngineKey   &engineKey = plot->GetEngineKey();
+    int networkId = plot->GetNetworkID();
+    TRY
+    {
+        if (ViewerEngineManager::Instance()->ExportDatabase(engineKey, 
+                                                            networkId))
+        {
+            Message("Exported database");
+        }
+        else
+        {
+            Error("Unable to export database");
+        }
+    }
+    CATCH2(VisItException, e)
+    {
+        Error("Unable to export database");
+    }
+    ENDTRY
+}
+
+// ****************************************************************************
 // Method: ViewerSubject::ClearCache
 //
 // Purpose: 
@@ -4410,7 +4494,7 @@ ViewerSubject::ClearCache()
 }
 
 // ****************************************************************************
-// Method: ViewerSubject::ClearCacheForAllEngines.
+// Method: ViewerSubject::ClearCacheForAllEngines
 //
 // Purpose: 
 //   Execute the ClearCache RPC on all engines.
@@ -6560,6 +6644,9 @@ ViewerSubject::SendKeepAlives()
 //    so we don't attempt to update any of the actions, which can result in
 //    unwanted mdserver launches to update the plot and operator toolbars.
 //
+//    Hank Childs, Thu May 26 17:51:49 PDT 2005
+//    Added export database RPC.
+//
 // ****************************************************************************
 
 void
@@ -6850,6 +6937,12 @@ ViewerSubject::HandleViewerRPC()
         break;
     case ViewerRPC::SendSimulationCommandRPC:
         SendSimulationCommand();
+        break;
+    case ViewerRPC::UpdateDBPluginInfoRPC:
+        UpdateDBPluginInfo();
+        break;
+    case ViewerRPC::ExportDBRPC:
+        ExportDatabase();
         break;
     case ViewerRPC::MaxRPC:
         break;

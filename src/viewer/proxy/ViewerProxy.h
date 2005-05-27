@@ -18,6 +18,8 @@ class AttributeSubject;
 class ColorTableAttributes;
 class Connection;
 class DatabaseCorrelationList;
+class DBPluginInfoAttributes;
+class ExportDBAttributes;
 class ExpressionList;
 class EngineList;
 class GlobalAttributes;
@@ -367,6 +369,9 @@ class Xfer;
 //    Brad Whitlock, Fri Apr 15 11:02:14 PDT 2005
 //    Added postponedAction;
 //
+//    Hank Childs, Wed May 25 10:38:37 PDT 2005
+//    Added DBPluginInfo.
+//
 // ****************************************************************************
 
 class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
@@ -417,6 +422,8 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
     void OverlayDatabase(const std::string &database);
     void ClearCache(const std::string &hostName, const std::string &simName);
     void ClearCacheForAllEngines();
+    void UpdateDBPluginInfo(const std::string &hostName);
+    void ExportDatabase(void);
 
     void CreateDatabaseCorrelation(const std::string &name,
                                    const stringVector &dbs, int method,
@@ -611,6 +618,10 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
                                     {return colorTableAtts;};
     DatabaseCorrelationList    *GetDatabaseCorrelationList() const
                                     {return correlationList; };
+    DBPluginInfoAttributes     *GetDBPluginInfoAttributes() const
+                                    {return dbPluginInfoAtts;}
+    ExportDBAttributes         *GetExportDBAttributes() const
+                                    {return exportDBAtts;}
     EngineList                 *GetEngineList() const 
                                     {return engineList;};
     ExpressionList             *GetExpressionList() const 
@@ -691,6 +702,8 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
     SyncAttributes             *syncAtts;
     GlobalAttributes           *globalAtts;
     DatabaseCorrelationList    *correlationList;
+    DBPluginInfoAttributes     *dbPluginInfoAtts;
+    ExportDBAttributes         *exportDBAtts;
     PlotList                   *plotList;
     ColorTableAttributes       *colorTableAtts;
     ExpressionList             *exprList;

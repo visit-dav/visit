@@ -14,6 +14,7 @@
 #include <ClearCacheRPC.h>
 #include <CloneNetworkRPC.h>
 #include <DefineVirtualDatabaseRPC.h>
+#include <ExportDatabaseRPC.h>
 #include <MakePlotRPC.h>
 #include <OpenDatabaseRPC.h>
 #include <PickRPC.h>
@@ -37,6 +38,7 @@
 #include <vector>
 
 class StatusAttributes;
+class ExportDBAttributes;
 
 // ****************************************************************************
 //  Class: EngineProxy
@@ -315,6 +317,7 @@ public:
     void                     Query(const std::vector<int> &,
                                    const QueryAttributes *, 
                                    QueryAttributes &);
+    void                     ExportDatabase(int, const ExportDBAttributes *);
 
     void                     ReleaseData(const int);
     void                     CloneNetwork(const int,
@@ -359,6 +362,7 @@ private:
     CloneNetworkRPC          cloneNetworkRPC;
     ProcInfoRPC              procInfoRPC;
     SimulationCommandRPC     simulationCommandRPC;
+    ExportDatabaseRPC        exportDatabaseRPC;
 
     // For indicating status.
     StatusAttributes        *statusAtts;

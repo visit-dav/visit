@@ -7,6 +7,7 @@ class ClearCacheRPC;
 class CloneNetworkRPC;
 class DefineVirtualDatabaseRPC;
 class ExecuteRPC;
+class ExportDatabaseRPC;
 class KeepAliveRPC;
 class MakePlotRPC;
 class OpenDatabaseRPC;
@@ -98,6 +99,9 @@ class ProcessAttributes;
 //
 //    Jeremy Meredith, Wed May 18 16:50:59 PDT 2005
 //    Allow disabling of signal handlers.
+//
+//    Hank Childs, Thu May 26 11:50:45 PDT 2005
+//    Add ExportDatabase.
 //
 // ****************************************************************************
 
@@ -226,6 +230,7 @@ class Engine
     CloneNetworkRPC          *cloneNetworkRPC;
     ProcInfoRPC              *procInfoRPC;
     SimulationCommandRPC     *simulationCommandRPC;
+    ExportDatabaseRPC        *exportDatabaseRPC;
 
     // The metadata, filename, format, control data for a simulation
     std::string               filename;

@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+  <Attribute name="ExportDBAttributes" purpose="The attributes for export a database" persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h">
+    <Field name="db_type" label="db_type" type="string">
+    </Field>
+    <Field name="db_type_fullname" label="db_type_fullname" type="string">
+    </Field>
+    <Field name="filename" label="filename" type="string">
+      visit_ex_db
+    </Field>
+    <Field name="dirname" label="dirname" type="string">
+      "."
+    </Field>
+    <Field name="variables" label="variables" type="stringVector">
+    </Field>
+    <Field name="opts" label="opts" type="att" subtype="DBOptionsAttributes">
+    </Field>
+  </Attribute>

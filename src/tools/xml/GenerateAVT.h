@@ -64,6 +64,9 @@
 //    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
 //    Moved PopulateDatabaseMetaData method down to format specific classes
 //
+//    Hank Childs, Tue May 24 09:26:14 PDT 2005
+//    Added hasoptions.
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -101,6 +104,7 @@ class AVTGeneratorPlugin
     QString vartype;
     QString dbtype;
     bool    haswriter;
+    bool    hasoptions;
     bool    enabledByDefault;
     bool    has_MDS_specific_code;
 
@@ -123,8 +127,8 @@ class AVTGeneratorPlugin
 
     Attribute *atts;
   public:
-    AVTGeneratorPlugin(const QString &n,const QString &l,const QString &t,const QString &vt,const QString &dt,const QString &v,const QString &, bool hw,bool,bool)
-        : name(n), type(t), label(l), version(v), vartype(vt), dbtype(dt), haswriter(hw), atts(NULL)
+    AVTGeneratorPlugin(const QString &n,const QString &l,const QString &t,const QString &vt,const QString &dt,const QString &v,const QString &, bool hw,bool ho,bool,bool)
+        : name(n), type(t), label(l), version(v), vartype(vt), dbtype(dt), haswriter(hw), hasoptions(ho), atts(NULL)
     {
         enabledByDefault = true;
     }
@@ -736,6 +740,8 @@ class AVTGeneratorPlugin
             h << "" << endl;
             h << "#include <avtSTSDFileFormat.h>" << endl;
             h << "" << endl;
+            if (hasoptions)
+                h << "class DBOptionsAttributes;" << endl;
             h << "" << endl;
             h << "// ****************************************************************************" << endl;
             h << "//  Class: avt"<<name<<"FileFormat" << endl;
@@ -751,7 +757,10 @@ class AVTGeneratorPlugin
             h << "class avt"<<name<<"FileFormat : public avtSTSDFileFormat" << endl;
             h << "{" << endl;
             h << "  public:" << endl;
-            h << "                       avt"<<name<<"FileFormat(const char *filename);" << endl;
+            if (hasoptions)
+                h << "                       avt"<<name<<"FileFormat(const char *filename, DBOptionsAttributes *);" << endl;
+            else
+                h << "                       avt"<<name<<"FileFormat(const char *filename);" << endl;
             h << "    virtual           ~avt"<<name<<"FileFormat() {;};" << endl;
             h << "" << endl;
             h << "    //" << endl;
@@ -802,6 +811,11 @@ class AVTGeneratorPlugin
             h << "" << endl;
             h << "#include <vector>" << endl;
             h << "" << endl;
+            if (hasoptions)
+            {
+                h << "class DBOptionsAttributes;" << endl;
+                h << "" << endl;
+            }
             h << "" << endl;
             h << "// ****************************************************************************" << endl;
             h << "//  Class: avt"<<name<<"FileFormat" << endl;
@@ -817,7 +831,10 @@ class AVTGeneratorPlugin
             h << "class avt"<<name<<"FileFormat : public avtMTSDFileFormat" << endl;
             h << "{" << endl;
             h << "  public:" << endl;
-            h << "                       avt"<<name<<"FileFormat(const char *);" << endl;
+            if (hasoptions)
+                h << "                       avt"<<name<<"FileFormat(const char *, DBOptionsAttributes *);" << endl;
+            else
+                h << "                       avt"<<name<<"FileFormat(const char *);" << endl;
             h << "    virtual           ~avt"<<name<<"FileFormat() {;};" << endl;
             h << "" << endl;
             h << "    //" << endl;
@@ -868,6 +885,8 @@ class AVTGeneratorPlugin
             h << "" << endl;
             h << "#include <vector>" << endl;
             h << "" << endl;
+            if (hasoptions)
+                h << "class DBOptionsAttributes;" << endl;
             h << "" << endl;
             h << "// ****************************************************************************" << endl;
             h << "//  Class: avt"<<name<<"FileFormat" << endl;
@@ -883,7 +902,10 @@ class AVTGeneratorPlugin
             h << "class avt"<<name<<"FileFormat : public avtSTMDFileFormat" << endl;
             h << "{" << endl;
             h << "  public:" << endl;
-            h << "                       avt"<<name<<"FileFormat(const char *);" << endl;
+            if (hasoptions)
+                h << "                       avt"<<name<<"FileFormat(const char *, DBOptionsAttributes *);" << endl;
+            else
+                h << "                       avt"<<name<<"FileFormat(const char *);" << endl;
             h << "    virtual           ~avt"<<name<<"FileFormat() {;};" << endl;
             h << "" << endl;
             h << "    //" << endl;
@@ -931,6 +953,8 @@ class AVTGeneratorPlugin
             h << "" << endl;
             h << "#include <vector>" << endl;
             h << "" << endl;
+            if (hasoptions)
+                h << "class DBOptionsAttributes;" << endl;
             h << "" << endl;
             h << "// ****************************************************************************" << endl;
             h << "//  Class: avt"<<name<<"FileFormat" << endl;
@@ -946,7 +970,10 @@ class AVTGeneratorPlugin
             h << "class avt"<<name<<"FileFormat : public avtMTMDFileFormat" << endl;
             h << "{" << endl;
             h << "  public:" << endl;
-            h << "                       avt"<<name<<"FileFormat(const char *);" << endl;
+            if (hasoptions)
+                h << "                       avt"<<name<<"FileFormat(const char *, DBOptionsAttributes *);" << endl;
+            else
+                h << "                       avt"<<name<<"FileFormat(const char *);" << endl;
             h << "    virtual           ~avt"<<name<<"FileFormat() {;};" << endl;
             h << "" << endl;
             h << "    //" << endl;
@@ -1020,7 +1047,10 @@ class AVTGeneratorPlugin
             c << "//" << endl;
             c << "// ****************************************************************************" << endl;
             c << "" << endl;
-            c << "avt"<<name<<"FileFormat::avt"<<name<<"FileFormat(const char *filename)" << endl;
+            if (hasoptions)
+                c << "avt"<<name<<"FileFormat::avt"<<name<<"FileFormat(const char *filename, DBOptionsAttributes *readOpts)" << endl;
+            else
+                c << "avt"<<name<<"FileFormat::avt"<<name<<"FileFormat(const char *filename)" << endl;
             c << "    : avtSTSDFileFormat(filename)" << endl;
             c << "{" << endl;
             c << "    // INITIALIZE DATA MEMBERS" << endl;
@@ -1322,7 +1352,10 @@ class AVTGeneratorPlugin
             c << "//" << endl;
             c << "// ****************************************************************************" << endl;
             c << "" << endl;
-            c << "avt"<<name<<"FileFormat::avt"<<name<<"FileFormat(const char *filename)" << endl;
+            if (hasoptions)
+                c << "avt"<<name<<"FileFormat::avt"<<name<<"FileFormat(const char *filename, DBOptionsAttributes *readOpts)" << endl;
+            else
+                c << "avt"<<name<<"FileFormat::avt"<<name<<"FileFormat(const char *filename)" << endl;
             c << "    : avtMTSDFileFormat(&filename, 1)" << endl;
             c << "{" << endl;
             c << "    // INITIALIZE DATA MEMBERS" << endl;
@@ -1648,7 +1681,10 @@ class AVTGeneratorPlugin
             c << "//" << endl;
             c << "// ****************************************************************************" << endl;
             c << "" << endl;
-            c << "avt"<<name<<"FileFormat::avt"<<name<<"FileFormat(const char *filename)" << endl;
+            if (hasoptions)
+                c << "avt"<<name<<"FileFormat::avt"<<name<<"FileFormat(const char *filename, DBOptionsAttributes *readOpts)" << endl;
+            else
+                c << "avt"<<name<<"FileFormat::avt"<<name<<"FileFormat(const char *filename)" << endl;
             c << "    : avtSTMDFileFormat(&filename, 1)" << endl;
             c << "{" << endl;
             c << "    // INITIALIZE DATA MEMBERS" << endl;
@@ -1959,7 +1995,10 @@ class AVTGeneratorPlugin
             c << "//" << endl;
             c << "// ****************************************************************************" << endl;
             c << "" << endl;
-            c << "avt"<<name<<"FileFormat::avt"<<name<<"FileFormat(const char *filename)" << endl;
+            if (hasoptions)
+                c << "avt"<<name<<"FileFormat::avt"<<name<<"FileFormat(const char *filename, DBOptionsAttributes *readOpts)" << endl;
+            else
+                c << "avt"<<name<<"FileFormat::avt"<<name<<"FileFormat(const char *filename)" << endl;
             c << "    : avtMTMDFileFormat(filename)" << endl;
             c << "{" << endl;
             c << "    // INITIALIZE DATA MEMBERS" << endl;
@@ -2262,6 +2301,118 @@ class AVTGeneratorPlugin
             c << "}" << endl;
         }
     }
+    void WriteFileFormatOptionsHeader(ostream &h)
+    {
+        h << "// ************************************************************************* //" << endl;
+        h << "//                             avt"<<name<<"Options.h                              //" << endl;
+        h << "// ************************************************************************* //" << endl;
+        h << "" << endl;
+        h << "#ifndef AVT_"<<name<<"_OPTIONS_H" << endl;
+        h << "#define AVT_"<<name<<"_OPTIONS_H" << endl;
+        h << "" << endl;
+        h << "class DBOptionsAttributes;" << endl;
+        h << "" << endl;
+        h << "#include <string>" << endl;
+        h << "" << endl;
+        h << "" << endl;
+        h << "// ****************************************************************************" << endl;
+        h << "//  Functions: avt"<<name<<"Options" << endl;
+        h << "//" << endl;
+        h << "//  Purpose:" << endl;
+        h << "//      Creates the options for  "<<name<<" readers and/or writers." << endl;
+        h << "//" << endl;
+        h << "//  Programmer: "<<getenv("USER")<<" -- generated by xml2avt" << endl;
+        h << "//  Creation:   "<<CurrentTime()<< endl;
+        h << "//" << endl;
+        h << "// ****************************************************************************" << endl;
+        h << "" << endl;
+        h << "DBOptionsAttributes *Get"<<name<<"ReadOptions(void);" << endl;
+        h << "DBOptionsAttributes *Get"<<name<<"WriteOptions(void);" << endl;
+        h << "" << endl;
+        h << "" << endl;
+        h << "#endif" << endl;
+    }
+    void WriteFileFormatOptionsSource(ostream &h)
+    {
+        h << "// ************************************************************************* //" << endl;
+        h << "//                             avt"<<name<<"Options.C                              //" << endl;
+        h << "// ************************************************************************* //" << endl;
+        h << "" << endl;
+        h << "#include <avt"<<name<<"Options.h>" << endl;
+        h << "" << endl;
+        h << "#include <DBOptionsAttributes.h>" << endl;
+        h << "" << endl;
+        h << "#include <string>" << endl;
+        h << "" << endl;
+        h << "" << endl;
+        h << "// ****************************************************************************" << endl;
+        h << "//  Function: Get"<<name<<"ReadOptions" << endl;
+        h << "//" << endl;
+        h << "//  Purpose:" << endl;
+        h << "//      Creates the options for "<<name<<" readers." << endl;
+        h << "//" << endl;
+        h << "//  Important Note:" << endl;
+        h << "//      The code below sets up empty options.  If your format "
+          << endl;
+        h << "//      does not require read options, no modifications are "
+          << endl;
+        h << "//      necessary." << endl;
+        h << "//" << endl;
+        h << "//  Programmer: "<<getenv("USER")<<" -- generated by xml2avt" << endl;
+        h << "//  Creation:   "<<CurrentTime()<< endl;
+        h << "//" << endl;
+        h << "// ****************************************************************************" << endl;
+        h << "" << endl;
+        h << "DBOptionsAttributes *" << endl;
+        h << "Get"<<name<<"ReadOptions(void)" << endl;
+        h << "{" << endl;
+        h << "    DBOptionsAttributes *rv = new DBOptionsAttributes;" << endl;
+        h << "    return rv;" << endl;
+        h << "/* EXAMPLE OF OPTIONS" << endl;
+        h << "    rv->SetBool(\"Binary format\", true);" << endl;
+        h << "    rv->SetBool(\"Big Endian\", false);" << endl;
+        h << "    rv->SetEnum(\"Dimension\", 1);" << endl;
+        h << "    vector<string> dims;" << endl;
+        h << "    dims.push_back(\"0D\");" << endl;
+        h << "    dims.push_back(\"1D\");" << endl;
+        h << "    dims.push_back(\"2D\");" << endl;
+        h << "    dims.push_back(\"3D\");" << endl;
+        h << "    rv->SetEnumStrings(2, dims);" << endl;
+        h << "    rv->SetInt(\"Number of variables\", 5);" << endl;
+        h << "    rv->SetString(\"Name of auxiliary file\", "");" << endl;
+        h << "    rv->SetDouble(\"Displacement factor\", 1.0);" << endl;
+        h << "" << endl;
+        h << "    // When reading or writing the file, you can get the options out of this object like:" << endl;
+        h << "    rv->GetDouble(\"Displacement factor\");" << endl;
+        h << "*/" << endl;
+        h << "}" << endl;
+        h << "" << endl;
+        h << "" << endl;
+        h << "// ****************************************************************************" << endl;
+        h << "//  Function: Get"<<name<<"WriteOptions" << endl;
+        h << "//" << endl;
+        h << "//  Purpose:" << endl;
+        h << "//      Creates the options for "<<name<<" writers." << endl;
+        h << "//" << endl;
+        h << "//  Important Note:" << endl;
+        h << "//      The code below sets up empty options.  If your format "
+          << endl;
+        h << "//      does not require write options, no modifications are "
+          << endl;
+        h << "//      necessary." << endl;
+        h << "//" << endl;
+        h << "//  Programmer: "<<getenv("USER")<<" -- generated by xml2avt" << endl;
+        h << "//  Creation:   "<<CurrentTime()<< endl;
+        h << "//" << endl;
+        h << "// ****************************************************************************" << endl;
+        h << "" << endl;
+        h << "DBOptionsAttributes *" << endl;
+        h << "Get"<<name<<"WriteOptions(void)" << endl;
+        h << "{" << endl;
+        h << "    DBOptionsAttributes *rv = new DBOptionsAttributes;" << endl;
+        h << "    return rv;" << endl;
+        h << "}" << endl;
+    }
     void WriteFileFormatWriterHeader(ostream &h)
     {
         h << "// ************************************************************************* //" << endl;
@@ -2275,6 +2426,8 @@ class AVTGeneratorPlugin
         h << "" << endl;
         h << "#include <string>" << endl;
         h << "" << endl;
+        if (hasoptions)
+            h << "class DBOptionsAttributes;" << endl;
         h << "" << endl;
         h << "// ****************************************************************************" << endl;
         h << "//  Class: avt"<<name<<"Writer" << endl;
@@ -2291,7 +2444,10 @@ class AVTGeneratorPlugin
         h << "avt"<<name<<"Writer : public avtDatabaseWriter" << endl;
         h << "{" << endl;
         h << "  public:" << endl;
-        h << "                   avt"<<name<<"Writer() {;};" << endl;
+        if (hasoptions)
+            h << "                   avt"<<name<<"Writer(DBOptionsAttributes *);" << endl;
+        else
+            h << "                   avt"<<name<<"Writer();" << endl;
         h << "    virtual       ~avt"<<name<<"Writer() {;};" << endl;
         h << "" << endl;
         h << "  protected:" << endl;
@@ -2322,10 +2478,27 @@ class AVTGeneratorPlugin
         c << "#include <vtkDataSetWriter.h>" << endl;
         c << "" << endl;
         c << "#include <avtDatabaseMetaData.h>" << endl;
+        if (hasoptions)
+            c << "#include <DBOptionsAttributes.h>" << endl;
         c << "" << endl;
         c << "using     std::string;" << endl;
         c << "using     std::vector;" << endl;
         c << "" << endl;
+        c << "" << endl;
+        c << "// ****************************************************************************" << endl;
+        c << "//  Method: avt"<<name<<"Writer constructor" << endl;
+        c << "//" << endl;
+        c << "//  Programmer: "<<getenv("USER")<<" -- generated by xml2avt" << endl;
+        c << "//  Creation:   "<<CurrentTime()<< endl;
+        c << "//" << endl;
+        c << "// ****************************************************************************" << endl;
+        c << "" << endl;
+        if (hasoptions)
+            c << "avt"<<name<<"Writer::avt"<<name<<"Writer(DBOptionsAttributes *)" << endl;
+        else
+            c << "avt"<<name<<"Writer::avt"<<name<<"Writer(void)" << endl;
+        c << "{" << endl;
+        c << "}" << endl;
         c << "" << endl;
         c << "// ****************************************************************************" << endl;
         c << "//  Method: avt"<<name<<"Writer::OpenFile" << endl;

@@ -263,21 +263,32 @@ cd ..
 curdate=`date +%Y-%m-%d-%p%I%M`
 theDay=`date +%A`
 
-# set mode to run in
+# set mode to run in (optimized mode is handled below)
 modes="serial parallel scalable,parallel purify"
-if test "$theDay" = "Sunday"; then
-    modes="hdf5 dlb serial,purify scalable,parallel,purify"
-fi
+case $theDay in
+    "Saturday")
+        modes="serial parallel scalable,parallel"
+	;;
+    "Sunday")
+        modes="hdf5 dlb serial scalable,parallel"
+	;;
+esac
 
 # set list of tests/modes to skip
 skipList="scalable,parallel:tests/databases/boxlib.py \
           scalable,parallel:tests/hybrid/locus.py \
           dlb:tests/databases/global_node_ids.py \
           dlb:tests/queries/pick.py \
-          purify:tests/databases/global_node_ids.py \
-          purify:tests/databases/pdbdatabase.py \
-          purify:tests/queries/queriesOverTime.py \
-          purify:tests/queries/pick.py"
+	  serial:tests/databases/pdbdatabase.py \
+	  parallel:tests/databases/pdbdatabase.py \
+	  scalable,parallel:tests/databases/pdbdatabase.py \
+	  hdf5:tests/databases/pdbdatabase.py \
+	  dlb:tests/databases/pdbdatabase.py \
+	  serial:tests/hybrid/timelock.py \
+	  parallel:tests/hybrid/timelock.py \
+	  scalable,parallel:tests/hybrid/timelock.py \
+	  hdf5:tests/hybrid/timelock.py \
+	  dlb:tests/hybrid/timelock.py"
 
 # run the test(s)
 error=0

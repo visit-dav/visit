@@ -15,6 +15,7 @@
 #include <CreateGroupListRPC.h>
 #include <ExpandPathRPC.h>
 #include <GetFileListRPC.h>
+#include <GetDBPluginInfoRPC.h>
 #include <GetMetaDataRPC.h>
 #include <GetSILRPC.h>
 #include <LoadPluginsRPC.h>
@@ -26,6 +27,9 @@
 #include <vector>
 #include <maptypes.h>
 #include <vectortypes.h>
+
+class     DBPluginInfoAttributes;
+
 
 // ****************************************************************************
 //  Class: MDServerProxy
@@ -106,6 +110,10 @@
 //
 //    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
 //    Added bool forceReadAllCyclesAndTimes to GetMetaData
+//
+//    Hank Childs, Mon May 23 13:35:56 PDT 2005
+//    Added ability to get DB plugin info.
+//
 // ****************************************************************************
 
 class MDSERVER_PROXY_API MDServerProxy : public RemoteProxyBase
@@ -170,6 +178,8 @@ public:
     void                       CloseDatabase();
     void                       CloseDatabase(const std::string &);
     void                       LoadPlugins();
+    const DBPluginInfoAttributes *GetDBPluginInfo(void);
+
     std::string                GetPluginErrors();
 
     char                       GetSeparator() const;
@@ -192,6 +202,7 @@ private:
     CloseDatabaseRPC           closeDatabaseRPC;
     LoadPluginsRPC             loadPluginsRPC;
     GetPluginErrorsRPC         getPluginErrorsRPC;
+    GetDBPluginInfoRPC         getDBPluginInfoRPC;
 
     FileList                   fileList;
     avtDatabaseMetaData        metaData;

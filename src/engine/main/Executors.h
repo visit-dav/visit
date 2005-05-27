@@ -28,6 +28,7 @@
 #include <CloneNetworkRPC.h>
 #include <DefineVirtualDatabaseRPC.h>
 #include <ExecuteRPC.h>
+#include <ExportDatabaseRPC.h>
 #include <KeepAliveRPC.h>
 #include <MakePlotRPC.h>
 #include <OpenDatabaseRPC.h>
@@ -1338,6 +1339,49 @@ RPCExecutor<SimulationCommandRPC>::Execute(SimulationCommandRPC *rpc)
         rpc->SendError(e.Message(), e.GetExceptionType());
     }
     ENDTRY
+}
+
+// ****************************************************************************
+//  Method:  RPCExecutor<ExportDatabaseRPC>::Execute
+//
+//  Purpose:
+//      Exports a database.
+//
+//  Programmer:  Hank Childs
+//  Creation:    May 26, 2005
+//
+// ****************************************************************************
+template<>
+void
+RPCExecutor<ExportDatabaseRPC>::Execute(ExportDatabaseRPC *rpc)
+{
+    Engine *engine = Engine::Instance();
+    NetworkManager *netmgr = engine->GetNetMgr();
+
+    debug2 << "Executing ExportDatabaseRPC." << endl;
+
+    avtDataObjectSource::RegisterProgressCallback(NULL, NULL);
+    LoadBalancer::RegisterProgressCallback(NULL, NULL);
+    avtTerminatingSource::RegisterInitializeProgressCallback(NULL, NULL);
+    avtCallback::RegisterWarningCallback(Engine::EngineWarningCallback, (void*)rpc);
+    TRY
+    {
+        netmgr->ExportDatabase(rpc->GetID(), rpc->GetExportDBAtts());
+        rpc->SendReply();
+    }
+    CATCH2(VisItException, e)
+    {
+        rpc->SendError(e.Message(), e.GetExceptionType());
+    }
+    ENDTRY
+
+    avtDataObjectSource::RegisterProgressCallback(
+                               Engine::EngineUpdateProgressCallback, NULL);
+    LoadBalancer::RegisterProgressCallback(
+                               Engine::EngineUpdateProgressCallback, NULL);
+    avtTerminatingSource::RegisterInitializeProgressCallback(
+                               Engine::EngineInitializeProgressCallback, NULL);
+    avtCallback::RegisterWarningCallback(Engine::EngineWarningCallback, NULL);
 }
 
 #endif

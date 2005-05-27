@@ -92,6 +92,9 @@
 //    Brad Whitlock, Fri Apr 1 15:53:12 PST 2005
 //    Added support for label variables.
 //
+//    Hank Childs, Mon May 23 17:03:54 PDT 2005
+//    Add support for DBOptions.  Plus fix typo in comment (SetUp -> Setup).
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -130,6 +133,7 @@ class InfoGeneratorPlugin
     QString dbtype;
     QString iconFile;
     bool    haswriter;
+    bool    hasoptions;
     bool    enabledByDefault;
     bool    has_MDS_specific_code;
     bool    onlyEnginePlugin;
@@ -156,9 +160,10 @@ class InfoGeneratorPlugin
   public:
     InfoGeneratorPlugin(const QString &n,const QString &l,const QString &t,
         const QString &vt,const QString &dt,const QString &v,
-        const QString &ifile, bool hw, bool onlyengine, bool noengine) : name(n), type(t), label(l),
+        const QString &ifile, bool hw, bool ho, bool onlyengine, bool noengine) : name(n), type(t), label(l),
         version(v), vartype(vt), dbtype(dt), iconFile(ifile), haswriter(hw),
-        onlyEnginePlugin(onlyengine), noEnginePlugin(noengine), atts(NULL)
+        hasoptions(ho), onlyEnginePlugin(onlyengine), noEnginePlugin(noengine),
+        atts(NULL)
     {
         enabledByDefault = true;
     }
@@ -406,6 +411,13 @@ class InfoGeneratorPlugin
             h << "    virtual std::vector<std::string>  GetDefaultExtensions();" << endl;
             h << "    virtual avtDatabase              *SetupDatabase(const char * const *list," << endl;
             h << "                                                    int nList, int nBlock);" << endl;
+            if (hasoptions)
+            {
+                h << "    virtual DBOptionsAttributes *GetReadOptions() const;"
+                  << endl;
+                h << "    virtual DBOptionsAttributes *GetWriteOptions() const;"
+                  << endl;
+            }
             h << "};" << endl;
             h << "" << endl;
             h << "class "<<name<<"MDServerPluginInfo : public virtual MDServerDatabasePluginInfo, public virtual "<<name<<"CommonPluginInfo" << endl;
@@ -583,6 +595,8 @@ class InfoGeneratorPlugin
             {
                 c << "#include <avt"<<name<<"Database.h>" << endl;
             }
+            if (hasoptions)
+                c << "#include <avt"<<name<<"Options.h>" << endl;
             c << "" << endl;
             c << "// ****************************************************************************" << endl;
             c << "//  Method:  "<<name<<"CommonPluginInfo::GetDatabaseType" << endl;
@@ -623,7 +637,7 @@ class InfoGeneratorPlugin
             c << "}" << endl;
             c << "" << endl;
             c << "// ****************************************************************************" << endl;
-            c << "//  Method: "<<name<<"CommonPluginInfo::SetUp"<<name<<"Database" << endl;
+            c << "//  Method: "<<name<<"CommonPluginInfo::Setup"<<name<<"Database" << endl;
             c << "//" << endl;
             c << "//  Purpose:" << endl;
             c << "//      Sets up a "<<name<<" database." << endl;
@@ -656,7 +670,10 @@ class InfoGeneratorPlugin
                 c << "        ffl[i] = new avtSTSDFileFormat*[nBlock];" << endl;
                 c << "        for (int j = 0 ; j < nBlock ; j++)" << endl;
                 c << "        {" << endl;
-                c << "            ffl[i][j] = new avt"<<name<<"FileFormat(list[i*nBlock + j]);" << endl;
+                if (hasoptions)
+                    c << "            ffl[i][j] = new avt"<<name<<"FileFormat(list[i*nBlock + j], readOptions);" << endl;
+                else
+                    c << "            ffl[i][j] = new avt"<<name<<"FileFormat(list[i*nBlock + j]);" << endl;
                 c << "        }" << endl;
                 c << "    }" << endl;
                 c << "    avtSTSDFileFormatInterface *inter " << endl;
@@ -668,7 +685,10 @@ class InfoGeneratorPlugin
                 c << "    avtSTMDFileFormat **ffl = new avtSTMDFileFormat*[nList];" << endl;
                 c << "    for (int i = 0 ; i < nList ; i++)" << endl;
                 c << "    {" << endl;
-                c << "        ffl[i] = new avt"<<name<<"FileFormat(list[i]);" << endl;
+                if (hasoptions)
+                    c << "        ffl[i] = new avt"<<name<<"FileFormat(list[i], readOptions);" << endl;
+                else
+                    c << "        ffl[i] = new avt"<<name<<"FileFormat(list[i]);" << endl;
                 c << "    }" << endl;
                 c << "    avtSTMDFileFormatInterface *inter " << endl;
                 c << "           = new avtSTMDFileFormatInterface(ffl, nList);" << endl;
@@ -679,7 +699,10 @@ class InfoGeneratorPlugin
                 c << "    avtMTSDFileFormat **ffl = new avtMTSDFileFormat*[nList];" << endl;
                 c << "    for (int i = 0 ; i < nList ; i++)" << endl;
                 c << "    {" << endl;
-                c << "        ffl[i] = new avt"<<name<<"FileFormat(list[i]);" << endl;
+                if (hasoptions)
+                    c << "        ffl[i] = new avt"<<name<<"FileFormat(list[i], readOptions);" << endl;
+                else
+                    c << "        ffl[i] = new avt"<<name<<"FileFormat(list[i]);" << endl;
                 c << "    }" << endl;
                 c << "    avtMTSDFileFormatInterface *inter " << endl;
                 c << "           = new avtMTSDFileFormatInterface(ffl, nList);" << endl;
@@ -689,13 +712,52 @@ class InfoGeneratorPlugin
             {
                 c << "    return new avtGenericDatabase(" << endl;
                 c << "               new avtMTMDFileFormatInterface(" << endl;
-                c << "                   new avt"<<name<<"FileFormat(list[0])));" << endl;
+                if (hasoptions)
+                    c << "                   new avt"<<name<<"FileFormat(list[0], readOptions)));" << endl;
+                else
+                    c << "                   new avt"<<name<<"FileFormat(list[0])));" << endl;
             }
             else
             {
                 throw QString().sprintf("Unknown database type '%s'",dbtype.latin1());
             }
             c << "}" << endl;
+            if (hasoptions)
+            {
+                c << "" << endl;
+                c << "// ****************************************************************************" << endl;
+                c << "//  Method: "<<name<<"CommonPluginInfo::GetReadOptions" << endl;
+                c << "//" << endl;
+                c << "//  Purpose:" << endl;
+                c << "//      Gets the read options." << endl;
+                c << "//" << endl;
+                c << "//  Programmer: "<<getenv("USER")<<" -- generated by xml2info" << endl;
+                c << "//  Creation:   "<<CurrentTime()<< endl;
+                c << "//" << endl;
+                c << "// ****************************************************************************" << endl;
+                c << endl;
+                c << "DBOptionsAttributes *" << endl;
+                c << name<<"CommonPluginInfo::GetReadOptions() const" << endl;
+                c << "{" << endl;
+                c << "    return Get"<<name<<"ReadOptions();" << endl;
+                c << "}" << endl;
+                c << "// ****************************************************************************" << endl;
+                c << "//  Method: "<<name<<"CommonPluginInfo::GetWriteOptions" << endl;
+                c << "//" << endl;
+                c << "//  Purpose:" << endl;
+                c << "//      Gets the write options." << endl;
+                c << "//" << endl;
+                c << "//  Programmer: "<<getenv("USER")<<" -- generated by xml2info" << endl;
+                c << "//  Creation:   "<<CurrentTime()<< endl;
+                c << "//" << endl;
+                c << "// ****************************************************************************" << endl;
+                c << endl;
+                c << "DBOptionsAttributes *" << endl;
+                c << name<<"CommonPluginInfo::GetWriteOptions() const" << endl;
+                c << "{" << endl;
+                c << "    return Get"<<name<<"WriteOptions();" << endl;
+                c << "}" << endl;
+            }
 
         }
         else
@@ -1260,7 +1322,11 @@ class InfoGeneratorPlugin
             c << ""<<name<<"EnginePluginInfo::GetWriter(void)" << endl;
             c << "{" << endl;
             if (haswriter)
-                c << "    return new avt"<<name<<"Writer;" << endl;
+                if (hasoptions)
+                    c << "    return new avt"<<name<<"Writer(writeOptions);" 
+                      << endl;
+                else
+                    c << "    return new avt"<<name<<"Writer;" << endl;
             else
                 c << "    return NULL;" << endl;
             c << "}" << endl;

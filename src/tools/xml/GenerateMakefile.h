@@ -133,6 +133,9 @@
 //    which does not work when you build outside the vob. Changed certain
 //    libraries that are now ser/par in the LIBS.
 //
+//    Hank Childs, Tue May 24 09:41:53 PDT 2005
+//    Added hasoptions.
+//
 // ****************************************************************************
 
 class MakefileGeneratorPlugin
@@ -145,6 +148,7 @@ class MakefileGeneratorPlugin
     QString vartype;
     QString dbtype;
     bool    haswriter;
+    bool    hasoptions;
     bool    enabledByDefault;
     bool    has_MDS_specific_code;
     bool    onlyEnginePlugin;
@@ -177,9 +181,11 @@ class MakefileGeneratorPlugin
   public:
     MakefileGeneratorPlugin(const QString &n,const QString &l,const QString &t,
                             const QString &vt,const QString &dt,
-                            const QString &v, const QString&w, bool hw,
+                            const QString &v, const QString&w, bool hw,bool ho,
                             bool onlyengine, bool noengine)
-        : name(n), type(t), label(l), version(v), vartype(vt), dbtype(dt), haswriter(hw), onlyEnginePlugin(onlyengine), noEnginePlugin(noengine), atts(NULL)
+        : name(n), type(t), label(l), version(v), vartype(vt), dbtype(dt), 
+          haswriter(hw), hasoptions(ho), onlyEnginePlugin(onlyengine), 
+          noEnginePlugin(noengine), atts(NULL)
     {
         enabledByDefault = true;
         has_MDS_specific_code = false;
@@ -489,6 +495,10 @@ class MakefileGeneratorPlugin
             out << name<<"PluginInfo.C ";
 #endif
             out << name<<"CommonPluginInfo.C";
+            if (hasoptions)
+            {
+                out << " avt" << name << "Options.C";
+            }
             out << endl;
             out << "MSRC="<<name<<"MDServerPluginInfo.C";
             if (has_MDS_specific_code)

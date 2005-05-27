@@ -740,6 +740,9 @@ avtDatabase::GetNewMetaData(int timeState, bool forceReadAllCyclesTimes)
 //    Hank Childs, Thu Jan 20 15:47:25 PST 2005
 //    Added side volume.
 //
+//    Hank Childs, Thu May 26 15:45:48 PDT 2005
+//    Mark mesh quality expressions as auto-expressions.
+//
 // ****************************************************************************
 
 void
@@ -813,6 +816,7 @@ avtDatabase::AddMeshQualityExpressions(avtDatabaseMetaData *md)
                 sprintf(buff,"%s(%s)",exprs[i].mq_expr.c_str(),name.c_str());
             new_expr.SetDefinition(buff);
             new_expr.SetType(Expression::ScalarMeshVar);
+            new_expr.SetAutoExpression(true);
             md->AddExpression(&new_expr);
         }
     }

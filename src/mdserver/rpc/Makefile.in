@@ -72,6 +72,9 @@
 #    Jeremy Meredith, Mon Feb  7 15:52:53 PST 2005
 #    Added GetPluginErrorsRPC.  Removed unused HDR variable.
 #
+#    Hank Childs, Mon May 23 13:49:48 PDT 2005
+#    Added GetDBPluginInfoRPC.
+#
 ##############################################################################
 
 ##
@@ -90,7 +93,7 @@ SRC=ChangeDirectoryRPC.C ChangeDirectoryException.C CloseDatabaseRPC.C \
     GetFileListRPC.C GetFileListException.C \
     GetDirectoryRPC.C ConnectRPC.C CreateGroupListRPC.C \
     ExpandPathRPC.C GetMetaDataRPC.C GetMetaDataException.C \
-    GetSILRPC.C LoadPluginsRPC.C GetPluginErrorsRPC.C
+    GetSILRPC.C LoadPluginsRPC.C GetPluginErrorsRPC.C GetDBPluginInfoRPC.C
 OBJ=$(SRC:.C=.o)
 LIB=libmdserverrpc
 LIBS=-ldbatts -lmisc -lstate -lcomm -lexpr -lparser -lutility -lavtexceptions

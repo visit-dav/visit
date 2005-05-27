@@ -302,6 +302,9 @@
 #    Jeremy Meredith, Mon Mar 21 12:57:07 PST 2005
 #    Added QvisSimulationWindow.
 #
+#    Hank Childs, Tue May 24 17:11:00 PDT 2005
+#    Added QvisExportDBWindow.
+#
 ##############################################################################
 
 ##
@@ -350,6 +353,7 @@ HDRMOC = \
     QvisDelayedWindowObserver.h \
     QvisDelayedWindowSimpleObserver.h \
     QvisEngineWindow.h \
+    QvisExportDBWindow.h \
     QvisExpressionsWindow.h \
     QvisFileInformationWindow.h \
     QvisFilePanel.h \

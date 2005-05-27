@@ -22,6 +22,7 @@ enum DatabaseType
 // Forward declarations.
 class avtDatabase;
 class avtDatabaseWriter;
+class DBOptionsAttributes;
 
 // ****************************************************************************
 //  Class: *DatabasePluginInfo
@@ -53,6 +54,9 @@ class avtDatabaseWriter;
 //    Hank Childs, Tue Mar 22 16:06:15 PST 2005
 //    Make destructor virtual.
 //
+//    Hank Childs, Mon May 23 16:31:36 PDT 2005
+//    Add DBOptions.
+//
 // ****************************************************************************
 
 class PLUGIN_API GeneralDatabasePluginInfo
@@ -69,6 +73,9 @@ class PLUGIN_API GeneralDatabasePluginInfo
 class PLUGIN_API CommonDatabasePluginInfo : public virtual GeneralDatabasePluginInfo
 {
   public:
+                                      CommonDatabasePluginInfo();
+    virtual                          ~CommonDatabasePluginInfo();
+
     virtual DatabaseType              GetDatabaseType() = 0;
     virtual std::vector<std::string>  GetDefaultExtensions()
                                    { std::vector<std::string> rv; return rv; };
@@ -76,6 +83,15 @@ class PLUGIN_API CommonDatabasePluginInfo : public virtual GeneralDatabasePlugin
                                    { std::vector<std::string> rv; return rv; };
     virtual avtDatabase              *SetupDatabase(const char * const *list,
                                                     int nList, int nBlock) = 0;
+
+    virtual DBOptionsAttributes      *GetReadOptions(void) const;
+    virtual DBOptionsAttributes      *GetWriteOptions(void) const;
+    virtual void                      SetReadOptions(DBOptionsAttributes *);
+    virtual void                      SetWriteOptions(DBOptionsAttributes *);
+
+  protected:
+    DBOptionsAttributes              *readOptions;
+    DBOptionsAttributes              *writeOptions;
 };
 
 class PLUGIN_API MDServerDatabasePluginInfo : public virtual CommonDatabasePluginInfo

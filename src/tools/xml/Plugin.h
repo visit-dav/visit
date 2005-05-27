@@ -49,6 +49,9 @@
 //    Jeremy Meredith, Thu Mar 17 12:52:28 PST 2005
 //    The onlyengine/noengine flags were getting save as the wrong value.
 //
+//    Hank Childs, Tue May 24 09:41:53 PDT 2005
+//    Add hasoptions.
+//
 // ****************************************************************************
 
 class Plugin
@@ -63,6 +66,7 @@ class Plugin
     QString iconFile;
 
     bool haswriter;
+    bool hasoptions;
     bool enabledByDefault;
     bool has_MDS_specific_code;
     bool onlyEnginePlugin;
@@ -93,8 +97,13 @@ class Plugin
 
     Attribute *atts;
   public:
-    Plugin(const QString &n,const QString &l,const QString &t,const QString &vt,const QString &dt,const QString &v, const QString &ifile, bool hw, bool onlyengine, bool noengine)
-        : name(n), type(t), label(l), version(v), vartype(vt), dbtype(dt), iconFile(ifile), haswriter(hw), onlyEnginePlugin(onlyengine), noEnginePlugin(noengine), atts(NULL)
+    Plugin(const QString &n,const QString &l,const QString &t,
+           const QString &vt,const QString &dt,const QString &v, 
+           const QString &ifile, bool hw, bool ho, bool onlyengine,
+           bool noengine)
+        :  name(n), type(t), label(l), version(v), vartype(vt), dbtype(dt), 
+           iconFile(ifile), haswriter(hw), hasoptions(ho), 
+           onlyEnginePlugin(onlyengine), noEnginePlugin(noengine), atts(NULL)
     {
         enabledByDefault = true;
         has_MDS_specific_code = false;
@@ -164,6 +173,7 @@ class Plugin
         {
             WriteTagAttr(out, "dbtype", dbtype);
             WriteTagAttr(out, "haswriter", Bool2Text(haswriter));
+            WriteTagAttr(out, "hasoptions", Bool2Text(hasoptions));
         }
         FinishOpenTag(out);
 

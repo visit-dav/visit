@@ -46,6 +46,9 @@ class     avtDatabaseMetaData;
 //    Jeremy Meredith, Wed Feb 16 15:01:40 PST 2005
 //    Added ability to disable MIR and Expressions.
 //
+//    Hank Childs, Thu May 26 15:45:48 PDT 2005
+//    Add an "all-variables" option.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDatabaseWriter : public avtOriginatingDatasetSink
@@ -56,7 +59,7 @@ class PIPELINE_API avtDatabaseWriter : public avtOriginatingDatasetSink
    
     void               Write(const std::string &, const avtDatabaseMetaData *);
     void               Write(const std::string &, const avtDatabaseMetaData *,
-                             std::vector<std::string> &);
+                             std::vector<std::string> &, bool allVars = true);
 
     void               SetShouldAlwaysDoMIR(bool s)
                              { shouldAlwaysDoMIR = s; };

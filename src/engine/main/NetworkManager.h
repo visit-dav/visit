@@ -18,6 +18,7 @@ class LoadBalancer;
 class DataNetwork;
 class Netnode;
 class NetnodeDB;
+class ExportDBAttributes;
 class PickAttributes;
 class QueryAttributes;
 class QueryOverTimeAttributes;
@@ -219,6 +220,9 @@ typedef struct _EngineVisWinInfo
 //    execution modes (namely DLB) cannot be queried.  So when we do query,
 //    the viewer needs to clear plots, set this mode, and then re-execute.
 //
+//    Hank Childs, Thu May 26 13:34:01 PDT 2005
+//    Added ExportDatabase.
+//
 // ****************************************************************************
 class NetworkManager
 {
@@ -284,6 +288,7 @@ class NetworkManager
 
     void          Pick(const int, const int, PickAttributes *);
     void          Query(const std::vector<int> &, QueryAttributes*);
+    void          ExportDatabase(const int, ExportDBAttributes *);
 
     void          DumpRenders(void) { dumpRenders = true; };
 

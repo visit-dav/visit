@@ -87,6 +87,9 @@ inline char toupper(char c)
 //    Brad Whitlock, Wed Apr 6 11:55:26 PDT 2005
 //    Added support for generating code to set/get ColorAttributeList.
 //
+//    Hank Childs, Tue May 24 10:19:40 PDT 2005
+//    Added hasoptions.
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -2621,8 +2624,9 @@ class PythonGeneratorPlugin
   public:
     PythonGeneratorPlugin(const QString &n,const QString &l,const QString &t,
                           const QString &vt,const QString &dt,const QString &v,
-                          const QString &, bool,bool,bool) : name(n), type(t), 
-                          label(l), version(v), varType(vt), dbtype(dt), atts(NULL)
+                          const QString &, bool,bool,bool,bool) 
+          : name(n), type(t), label(l), version(v), varType(vt), dbtype(dt), 
+            atts(NULL)
     {
         enabledByDefault = true;
         has_MDS_specific_code = false;

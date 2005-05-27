@@ -1,0 +1,67 @@
+<?xml version="1.0"?>
+  <Attribute name="DBOptionsAttributes" purpose="Attributes of database options" persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="DBOptionsAttributes.code">
+    <Enum name="OptionType">
+      Bool
+      Int
+      Float
+      Double
+      String
+      Enum
+    </Enum>
+    <Field name="types" label="Format String" type="intVector">
+    </Field>
+    <Field name="names" label="Names" type="stringVector" internal="true">
+    </Field>
+    <Field name="optBools" label="Boolean options" type="intVector" internal="true">
+    </Field>
+    <Field name="optFloats" label="Float options" type="doubleVector" internal="true">
+    </Field>
+    <Field name="optDoubles" label="Double options" type="doubleVector" internal="true">
+    </Field>
+    <Field name="optInts" label="Integer options" type="intVector" internal="true">
+    </Field>
+    <Field name="optStrings" label="String options" type="stringVector" internal="true">
+    </Field>
+    <Field name="optEnums" label="Enumerated type options" type="intVector" internal="true">
+    </Field>
+    <Field name="enumStrings" label="Enumerated type strings" type="stringVector" internal="true">
+    </Field>
+    <Field name="enumStringsSizes" label="enumStringsSizes" type="intVector" internal="true">
+    </Field>
+    <Function name="FindIndex" user="true" member="true">
+    </Function>
+    <Function name="SetBool" user="true" member="true">
+    </Function>
+    <Function name="GetBool" user="true" member="true">
+    </Function>
+    <Function name="SetFloat" user="true" member="true">
+    </Function>
+    <Function name="GetFloat" user="true" member="true">
+    </Function>
+    <Function name="SetDouble" user="true" member="true">
+    </Function>
+    <Function name="GetDouble" user="true" member="true">
+    </Function>
+    <Function name="SetInt" user="true" member="true">
+    </Function>
+    <Function name="GetInt" user="true" member="true">
+    </Function>
+    <Function name="SetString" user="true" member="true">
+    </Function>
+    <Function name="GetString" user="true" member="true">
+    </Function>
+    <Function name="SetEnum" user="true" member="true">
+    </Function>
+    <Function name="GetEnum" user="true" member="true">
+    </Function>
+    <Function name="SetEnumStrings" user="true" member="true">
+    </Function>
+    <Function name="GetNumberOfOptions" user="true" member="true">
+    </Function>
+    <Function name="GetType" user="true" member="true">
+    </Function>
+    <Function name="GetEnumStrings" user="true" member="true">
+    </Function>
+    <Function name="GetName" user="true" member="true">
+    </Function>
+  </Attribute>

@@ -79,6 +79,9 @@ class ErrorHandler : public QXmlErrorHandler
 //    Added the "no-engine" and "engine-only" options to the plugin
 //    constructor.
 //
+//    Hank Childs, Tue May 24 10:19:40 PDT 2005
+//    Added argument for hasoptions.
+//
 // ****************************************************************************
 
 void
@@ -93,7 +96,7 @@ XMLDocument::open(const QString &file)
     if (!test)
     {
         docType = "Plugin";
-        plugin = new Plugin("","","","","","", "", false, false, false);
+        plugin = new Plugin("","","","","","", "", false, false, false, false);
         attribute = new Attribute("","",QString(),"","");
         plugin->atts = attribute;
         return;

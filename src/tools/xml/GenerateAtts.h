@@ -119,6 +119,9 @@ using std::vector;
 //    Jeremy Meredith, Mon Apr  4 16:45:55 PDT 2005
 //    Fixed capitalization for the att-vector helper methods.
 //
+//    Hank Childs, Tue May 24 09:54:36 PDT 2005
+//    Added new argument to constructor for hasoptions.
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -2543,7 +2546,7 @@ class AttsGeneratorPlugin
 
     AttsGeneratorAttribute *atts;
   public:
-    AttsGeneratorPlugin(const QString &n,const QString &l,const QString &t,const QString &vt,const QString &dt,const QString &v, const QString &, bool,bool,bool)
+    AttsGeneratorPlugin(const QString &n,const QString &l,const QString &t,const QString &vt,const QString &dt,const QString &v, const QString &, bool,bool,bool,bool)
         : name(n), type(t), label(l), version(v), vartype(vt), dbtype(dt), atts(NULL)
     {
         enabledByDefault = true;
