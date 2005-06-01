@@ -122,6 +122,8 @@ class SILAttributes;
 //    Hank Childs, Wed May 25 10:48:50 PDT 2005
 //    Added DBPluginInfo.
 //
+//    Mark C. Miller, Tue May 31 20:12:42 PDT 2005
+//    Added methods to Set/Get tryHarderCyclesTimes
 // ****************************************************************************
 
 class ViewerFileServer : public ViewerServerManager
@@ -251,6 +253,11 @@ public:
                                                  const std::string &db,
                                                  int state);
 
+    void                       SetTryHarderCyclesTimes(bool val)
+                                   { tryHarderCyclesTimes = val; }
+    bool                       GetTryHarderCyclesTimes() const
+                                   { return tryHarderCyclesTimes; }
+
     void                       CreateNode(DataNode *, bool detailed);
     void                       SetFromNode(DataNode *);
     std::string                GetPluginErrors(const std::string &host);
@@ -281,6 +288,7 @@ private:
     DBPluginInfoAttributes   *dbPluginInfoAtts;
     stringVector              declinedFiles;
     intVector                 declinedFilesLength;
+    bool                      tryHarderCyclesTimes;
 };
 
 #endif

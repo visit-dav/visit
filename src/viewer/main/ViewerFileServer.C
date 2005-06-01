@@ -64,6 +64,8 @@ ViewerFileServer *ViewerFileServer::instance = NULL;
 //   Hank Childs, Wed May 25 10:51:15 PDT 2005
 //   Added dbPluginInfoAtts.
 //
+//   Mark C. Miller, Tue May 31 20:12:42 PDT 2005
+//   Added initialization of tryHarderCyclesTimes
 // ****************************************************************************
 
 ViewerFileServer::ViewerFileServer() : ViewerServerManager(), servers(),
@@ -71,6 +73,7 @@ ViewerFileServer::ViewerFileServer() : ViewerServerManager(), servers(),
 {
     databaseCorrelationList = new DatabaseCorrelationList;
     dbPluginInfoAtts = new DBPluginInfoAttributes;
+    tryHarderCyclesTimes = false;
 }
 
 // ****************************************************************************
@@ -84,10 +87,13 @@ ViewerFileServer::ViewerFileServer() : ViewerServerManager(), servers(),
 //
 // Modifications:
 //   
+//   Mark C. Miller, Tue May 31 20:12:42 PDT 2005
+//   Added initialization of tryHarderCyclesTimes
 // ****************************************************************************
 
 ViewerFileServer::ViewerFileServer(const ViewerFileServer &) : ViewerServerManager()
 {
+    tryHarderCyclesTimes = false;
 }
 
 // ****************************************************************************
@@ -446,6 +452,9 @@ ViewerFileServer::GetMetaDataForState(const std::string &host,
 //   
 //   Mark C. Miller, Tue May 17 18:48:38 PDT 2005
 //   Added bool arg forceReadAllCyclesAndTimes
+//
+//   Mark C. Miller, Tue May 31 20:12:42 PDT 2005
+//   Added use of tryHarderCyclesTimes in call to GetMetaData
 // ****************************************************************************
 
 const avtDatabaseMetaData *
@@ -477,7 +486,8 @@ ViewerFileServer::GetMetaDataHelper(const std::string &host,
             {
                 const avtDatabaseMetaData *md =
                     servers[host]->proxy->GetMetaData(db, timeState,
-                                              forceReadAllCyclesAndTimes);
+                                              forceReadAllCyclesAndTimes ||
+                                              tryHarderCyclesTimes);
 
                 if(md != NULL)
                 {

@@ -348,6 +348,9 @@ avtSiloFileFormat::ReadGlobalInformation(DBfile *dbfile)
 //  Programmer: Mark C. Miller 
 //  Creation:   May 16, 2005 
 //
+//  Modifications:
+//    Mark C. Miller, Tue May 31 20:12:42 PDT 2005
+//    Made it return INVALID_CYCLE for a bad value
 // ****************************************************************************
 
 int
@@ -361,7 +364,7 @@ avtSiloFileFormat::GetCycle()
         DBReadVar(dbfile, "cycle", &cycle);
         return cycle;
     }
-    return -INT_MAX;
+    return INVALID_CYCLE;
 }
 
 // ****************************************************************************
@@ -407,7 +410,7 @@ avtSiloFileFormat::GetTime()
         DBReadVar(dbfile, "dtime", &dtime);
         return dtime;
     }
-    return -DBL_MAX;
+    return INVALID_TIME;
 }
 
 // ****************************************************************************

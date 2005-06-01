@@ -9,9 +9,6 @@
 // For NULL
 #include <stdlib.h>
 
-#include <limits.h> // for INT_MAX
-#include <float.h>  // for DBL_MAX
-
 #include <string>
 #include <vector>
 
@@ -61,6 +58,10 @@ class     avtVariableCache;
 //    Added slew of methods related to getting cycle(s)/time(s) from files
 //    See notes below for details
 //    Added methods to GetCycle/Time from a filename
+//
+//    Mark C. Miller, Tue May 31 20:12:42 PDT 2005
+//    Added const members for invalid cycles/times. Changed class to use
+//    these symbols instead of -INT_MAX and -DBL_MAX
 //
 // ****************************************************************************
 
@@ -131,6 +132,12 @@ class DATABASE_API avtFileFormat
     double                FormatGetTimeFromFilename(const char *f) const
                               { return GetTimeFromFilename(f); };
 
+    static const int      FORMAT_INVALID_CYCLE;
+    static const double   FORMAT_INVALID_TIME;
+
+    static const int      INVALID_CYCLE;
+    static const double   INVALID_TIME;
+
   protected:
     avtVariableCache     *cache;
     avtDatabaseMetaData  *metadata;
@@ -151,16 +158,16 @@ class DATABASE_API avtFileFormat
     // and MTXX the void versions.
     //
     virtual void          GetCycles(std::vector<int>&) { return; };
-    virtual int           GetCycle(void) { return -INT_MAX; };
-    virtual int           GetCycle(int) { return -INT_MAX; };
+    virtual int           GetCycle(void) { return INVALID_CYCLE; };
+    virtual int           GetCycle(int) { return INVALID_CYCLE; };
     virtual void          GetTimes(std::vector<double>&) { return; };
-    virtual double        GetTime(void) { return -DBL_MAX; };
-    virtual double        GetTime(int) { return -DBL_MAX; };
+    virtual double        GetTime(void) { return INVALID_TIME; };
+    virtual double        GetTime(int) { return INVALID_TIME; };
 
     //
     // These methods are designed so that we can distinguish between
     // the default implementation and one that is overridden in a plugin.
-    // A plugin is expected to return -INT_MAX or -DBL_MAX for any
+    // A plugin is expected to return INVALID_CYCLE or INVALID_TIME for any
     // situation in which it cannot return what it thinks is a valid
     // cycle/time from a filename. The default methods return something
     // slightly different. The reason we do this is that our guesses are
@@ -168,10 +175,10 @@ class DATABASE_API avtFileFormat
     // the difference.
     //
     virtual int           GetCycleFromFilename(const char *f) const
-                              { if (f[0] == '\0') return -INT_MAX+1; 
+                              { if (f[0] == '\0') return FORMAT_INVALID_CYCLE; 
                                 return GuessCycle(f); };
     virtual double        GetTimeFromFilename(const char *f) const
-                              { if (f[0] == '\0') return -DBL_MAX+1.0; 
+                              { if (f[0] == '\0') return FORMAT_INVALID_TIME; 
                                 return GuessTime(f); };
 
     void       AddMeshToMetaData(avtDatabaseMetaData *, std::string,
@@ -196,7 +203,7 @@ class DATABASE_API avtFileFormat
 
     int        GuessCycle(const char *fname) const
                    { double d = GuessCycleOrTime(fname, false);
-                     if (d == -DBL_MAX) return -INT_MAX;
+                     if (d == INVALID_TIME) return INVALID_CYCLE;
                      return (int) d;};
     double     GuessTime(const char *fname) const
                    { return GuessCycleOrTime(fname, true); };

@@ -40,6 +40,9 @@ class avtIOInformation;
 //
 //    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
 //    Added bool, forceReadAllCyclesTimes, to SetDatabaseMetaData
+//
+//    Mark C. Miller, Tue May 31 20:12:42 PDT 2005
+//    Added method SetCycleTimeInDatabaseMetaData
 // ****************************************************************************
 
 class DATABASE_API avtMTSDFileFormatInterface : public avtFileFormatInterface
@@ -59,6 +62,8 @@ class DATABASE_API avtMTSDFileFormatInterface : public avtFileFormatInterface
     virtual void            SetDatabaseMetaData(avtDatabaseMetaData *md,
                                 int timeState = 0,
                                 bool forceReadAllCyclesTimes = false);
+    virtual void            SetCycleTimeInDatabaseMetaData(
+                                avtDatabaseMetaData *md, int ts);
     virtual void            FreeUpResources(int, int);
 
     virtual void            ActivateTimestep(int ts);

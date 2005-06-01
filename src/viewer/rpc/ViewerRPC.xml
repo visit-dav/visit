@@ -152,6 +152,7 @@
       SendSimulationCommandRPC
       UpdateDBPluginInfoRPC
       ExportDBRPC
+      SetTryHarderCyclesTimesRPC
       MaxRPC
     </Enum>
     <Field name="RPCType" label="RPCType" type="enum" subtype="ViewerRPCType">

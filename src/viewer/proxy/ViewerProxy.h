@@ -372,6 +372,8 @@ class Xfer;
 //    Hank Childs, Wed May 25 10:38:37 PDT 2005
 //    Added DBPluginInfo.
 //
+//    Mark C. Miller, Tue May 31 20:12:42 PDT 2005
+//    Added SetTryHarderCyclesTimes
 // ****************************************************************************
 
 class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
@@ -563,6 +565,8 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
     void SetQueryOverTimeAttributes();
     void SetDefaultQueryOverTimeAttributes();
     void ResetQueryOverTimeAttributes();
+
+    void SetTryHarderCyclesTimes(int flag);
 
     void WriteConfigFile();
     void ExportEntireState(const std::string &filename);

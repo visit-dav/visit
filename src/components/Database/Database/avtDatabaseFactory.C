@@ -135,11 +135,15 @@ avtDatabaseFactory::SetDefaultFormat(const char *f)
 //    Vastly improved the error messages when failing to open a file.
 //    The extra error detection prevented crashes in some common situations.
 //
+//    Mark C. Miller, Tue May 31 20:12:42 PDT 2005
+//    Added bool arg to forceReadAllCyclesTimes
+//
 // ****************************************************************************
 
 avtDatabase *
 avtDatabaseFactory::FileList(const char * const * filelist, int filelistN,
-                             int timestep, const char *format)
+                             int timestep, const char *format,
+                             bool forceReadAllCyclesAndTimes)
 {
     int   i, j;
 
@@ -219,7 +223,7 @@ avtDatabaseFactory::FileList(const char * const * filelist, int filelistN,
         CommonDatabasePluginInfo *info = 
             dbmgr->GetCommonPluginInfo(formatid);
         rv = SetupDatabase(info, filelist, filelistN, timestep, fileIndex,
-                           nBlocks);
+                           nBlocks, forceReadAllCyclesAndTimes);
 
         if (rv == NULL)
         {
@@ -286,7 +290,7 @@ avtDatabaseFactory::FileList(const char * const * filelist, int filelistN,
             TRY
             {
                 rv = SetupDatabase(info, filelist, filelistN, timestep,
-                                   fileIndex, nBlocks);
+                                   fileIndex, nBlocks, forceReadAllCyclesAndTimes);
             }
             CATCH2(InvalidDBTypeException, e)
             {
@@ -309,7 +313,7 @@ avtDatabaseFactory::FileList(const char * const * filelist, int filelistN,
             CommonDatabasePluginInfo *info = 
                                          dbmgr->GetCommonPluginInfo(defaultid);
             rv = SetupDatabase(info, filelist, filelistN, timestep, fileIndex,
-                               nBlocks);
+                               nBlocks, forceReadAllCyclesAndTimes);
         }
         else
         {
@@ -352,12 +356,15 @@ avtDatabaseFactory::FileList(const char * const * filelist, int filelistN,
 //    Jeremy Meredith/Hank Childs, Tue Mar 23 12:26:55 PST 2004
 //    Set the file format with the database, not the meta-data.
 //
+//    Mark C. Miller, Tue May 31 20:12:42 PDT 2005
+//    Added bool arg to forceReadAllCyclesTimes
 // ****************************************************************************
 
 avtDatabase *
 avtDatabaseFactory::SetupDatabase(CommonDatabasePluginInfo *info,
                                   const char * const *filelist, int filelistN, 
-                                  int timestep, int fileIndex, int nBlocks)
+                                  int timestep, int fileIndex, int nBlocks,
+                                  bool forceReadAllCyclesAndTimes)
 {
     avtDatabase *rv = info->SetupDatabase(filelist+fileIndex,
                                           filelistN-fileIndex, nBlocks);
@@ -375,7 +382,7 @@ avtDatabaseFactory::SetupDatabase(CommonDatabasePluginInfo *info,
     {
         rv->ActivateTimestep(timestep);
         rv->SetFileFormat(info->GetID());
-        rv->GetMetaData(timestep);
+        rv->GetMetaData(timestep, forceReadAllCyclesAndTimes);
     }
 
     return rv;
@@ -422,11 +429,13 @@ avtDatabaseFactory::SetupDatabase(CommonDatabasePluginInfo *info,
 //    Hank Childs, Mon Mar 22 11:01:05 PST 2004
 //    Added format argument.
 //
+//    Mark C. Miller, Tue May 31 20:12:42 PDT 2005
+//    Added bool arg to forceReadAllCyclesTimes
 // ****************************************************************************
 
 avtDatabase *
 avtDatabaseFactory::VisitFile(const char *visitFile, int timestep,
-                              const char *format)
+                              const char *format, bool forceReadAllCyclesAndTimes)
 {
     //
     // Make sure we can read the file before we proceed.
@@ -480,7 +489,8 @@ avtDatabaseFactory::VisitFile(const char *visitFile, int timestep,
     //
     // Create a database using the list of files.
     //
-    avtDatabase *rv = FileList(reallist, listcount, timestep, format);
+    avtDatabase *rv = FileList(reallist, listcount, timestep, format,
+                               forceReadAllCyclesAndTimes);
 
     //
     // Clean up memory

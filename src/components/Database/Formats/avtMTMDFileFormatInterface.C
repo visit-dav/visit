@@ -206,6 +206,10 @@ avtMTMDFileFormatInterface::GetFilename(int)
 //    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
 //    Added anonymous bool arg satisfy interface. Added logic to populate
 //    cycles and times
+//
+//    Mark C. Miller, Tue May 31 20:12:42 PDT 2005
+//    Replaced -INT_MAX & -DBL_MAX with INVALID_CYCLE and INVALID_TIME
+//
 // ****************************************************************************
 
 void
@@ -263,7 +267,8 @@ avtMTMDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
 
                 cycles.push_back(c);
 
-                if ((c == -INT_MAX) || ((i != 0) && (cycles[i] <= cycles[i-1])))
+                if ((c == avtFileFormat::INVALID_CYCLE) ||
+                   ((i != 0) && (cycles[i] <= cycles[i-1])))
                 {
                     cyclesLookGood = false;
                     break;
@@ -316,7 +321,8 @@ avtMTMDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
 
                 times.push_back(t);
 
-                if ((t == -DBL_MAX) || ((i != 0) && (times[i] <= times[i-1])))
+                if ((t == avtFileFormat::INVALID_TIME) ||
+                    ((i != 0) && (times[i] <= times[i-1])))
                 {
                     timesLookGood = false;
                     break;
@@ -345,6 +351,90 @@ avtMTMDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
         }
     }
 
+}
+
+// ****************************************************************************
+//  Method: avtMTMDFileFormatInterface::SetCycleTimeInDatabaseMetaData
+//
+//  Purpose: Set cycles/times in metadata for all times if possible or just
+//      current time
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   May 31, 2005 
+//
+// ****************************************************************************
+
+void
+avtMTMDFileFormatInterface::SetCycleTimeInDatabaseMetaData(
+    avtDatabaseMetaData *md, int timeState)
+{
+    int i;
+
+    //
+    // Throw an exception if an invalid time state was requested.
+    //
+    int nTimesteps = format->GetNTimesteps();
+    if (timeState < 0 || timeState >= nTimesteps)
+    {
+        EXCEPTION2(BadIndexException, timeState, nTimesteps);
+    }
+
+    vector<int> cycles;
+    format->FormatGetCycles(cycles);
+    bool cyclesLookGood = true;
+    for (i = 0; i < cycles.size(); i++)
+    {
+        if ((i != 0) && (cycles[i] <= cycles[i-1]))
+        {
+            cyclesLookGood = false;
+            break;
+        }
+    }
+    if (cycles.size() != nTimesteps)
+        cyclesLookGood = false;
+    if (cyclesLookGood == false)
+    {
+        int c = format->FormatGetCycle(timeState);
+        if (c != avtFileFormat::INVALID_CYCLE)
+        {
+            md->SetCycle(timeState, c);
+            md->SetCycleIsAccurate(true, timeState);
+        }
+    }
+    else
+    {
+        md->SetCycles(cycles);
+        md->SetCyclesAreAccurate(true);
+    }
+
+    vector<double> times;
+    format->FormatGetTimes(times);
+    bool timesLookGood = true;
+    for (i = 0; i < times.size(); i++)
+    {
+        if ((i != 0) && (times[i] <= times[i-1]))
+        {
+            timesLookGood = false;
+            break;
+        }
+    }
+    if (times.size() != nTimesteps)
+        timesLookGood = false;
+    if (timesLookGood == false)
+    {
+        double t = format->FormatGetTime(timeState);
+        if (t != avtFileFormat::INVALID_TIME)
+        {
+            md->SetTime(timeState, t);
+            md->SetTimeIsAccurate(true, timeState);
+        }
+    }
+    else
+    {
+        md->SetTimes(times);
+        md->SetTimesAreAccurate(true);
+        md->SetTemporalExtents(times[0], times[times.size() - 1]);
+    }
 }
 
 // ****************************************************************************

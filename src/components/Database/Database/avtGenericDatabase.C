@@ -559,6 +559,20 @@ avtGenericDatabase::SetDatabaseMetaData(avtDatabaseMetaData *md, int timeState,
     md->ReplaceForbiddenCharacters(forbiddenChars, replacementStrs);
 }
 
+// ****************************************************************************
+//  Method: avtGenericDatabase::SetCycleTimeInDatabaseMetaData
+//
+//  Purpose: Set cycle/time values in metadata for current state
+//
+//  Programmer: Mark C. Miller
+//  Created:    May 31, 3005
+// ****************************************************************************
+
+void
+avtGenericDatabase::SetCycleTimeInDatabaseMetaData(avtDatabaseMetaData *md, int ts)
+{
+    Interface->SetCycleTimeInDatabaseMetaData(md, ts);
+}
 
 // ****************************************************************************
 //  Method: avtGenericDatabase::GetOutput

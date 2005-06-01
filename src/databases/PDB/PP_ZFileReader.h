@@ -53,8 +53,8 @@ public:
     virtual ~PP_ZFileReader();
 
     // Methods that help implement the file format methods.
-    void          PopulateDatabaseMetaData(avtDatabaseMetaData *);
-    void          GetTimeVaryingInformation(int ts, avtDatabaseMetaData *);
+    void          PopulateDatabaseMetaData(int ts, avtDatabaseMetaData *);
+    void          GetTimeVaryingInformation(avtDatabaseMetaData *);
     vtkDataSet   *GetMesh(int ts, const char *var);
     vtkDataArray *GetVar(int ts, const char *var);
     void         *GetAuxiliaryData(int ts,

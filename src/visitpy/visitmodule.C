@@ -1305,6 +1305,35 @@ visit_SetTimeSliderState(PyObject *self, PyObject *args)
 }
 
 // ****************************************************************************
+// Function: visit_SetTryHarderCyclesTimes
+//
+// Purpose: Tells the viewer to try harder to obtain accurate cycles/times
+//
+// Programmer: Mark C. Miller
+// Creation:   May 27, 2005 
+//
+// ****************************************************************************
+
+STATIC PyObject *
+visit_SetTryHarderCyclesTimes(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    int flag;
+    if (!PyArg_ParseTuple(args, "i", &flag))
+        return NULL;
+
+    MUTEX_LOCK();
+        viewer->SetTryHarderCyclesTimes(flag);
+        if(logging)
+            fprintf(logFile, "SetTryHarderCyclesTimes(%d)\n", flag);
+    MUTEX_UNLOCK();
+
+    // Return the success value.
+    return IntReturnValue(Synchronize());
+}
+
+// ****************************************************************************
 // Function: visit_SetActiveTimeSlider
 //
 // Purpose: 
@@ -9969,6 +9998,7 @@ AddDefaultMethods()
     AddMethod("SetSaveWindowAttributes", visit_SetSaveWindowAttributes);
     AddMethod("SetQueryOverTimeAttributes", visit_SetQueryOverTimeAttributes);
     AddMethod("SetTimeSliderState", visit_SetTimeSliderState);
+    AddMethod("SetTryHarderCyclesTimes", visit_SetTryHarderCyclesTimes);
     AddMethod("SetViewExtentsType", visit_SetViewExtentsType);
     AddMethod("SetViewCurve", visit_SetViewCurve);
     AddMethod("SetView2D", visit_SetView2D);

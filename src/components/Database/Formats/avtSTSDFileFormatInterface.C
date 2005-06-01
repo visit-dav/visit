@@ -332,6 +332,9 @@ avtSTSDFileFormatInterface::GetFilename(int ts)
 //    Added bool to forceReadAllCyclesTimes. Added logic to correctly
 //    deal with reading cycles/times from formats. Unified it so it behaves
 //    consistently with other format types
+//
+//    Mark C. Miller, Tue May 31 20:12:42 PDT 2005
+//    Replaced -INT_MAX & -DBL_MAX with INVALID_CYCLE and INVALID_TIME
 // ****************************************************************************
 
 void
@@ -373,9 +376,11 @@ avtSTSDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
         // implementation which will return -XXX_MAX+1 cannot be trusted.
         //
         bool canGetGoodCycleFromFilename =
-                 timesteps[0][0]->FormatGetCycleFromFilename("") != -INT_MAX+1;
+                 timesteps[0][0]->FormatGetCycleFromFilename("") !=
+                     avtFileFormat::FORMAT_INVALID_CYCLE;
         bool canGetGoodTimeFromFilename =
-                 timesteps[0][0]->FormatGetTimeFromFilename("") != -DBL_MAX+1;
+                 timesteps[0][0]->FormatGetTimeFromFilename("") !=
+                     avtFileFormat::FORMAT_INVALID_TIME;
 
         //
         // We are going to obtain cycle information from Filenames or from
@@ -390,20 +395,17 @@ avtSTSDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
         vector<bool> timeIsAccurate;
         for (i = 0 ; i < nTimesteps; i++)
         {
-            int c = -INT_MAX;
+            int c = avtFileFormat::INVALID_CYCLE;
             bool cIsAccurate = false;
 
             if (md->IsCycleAccurate(i) != true)
             {
-                if (forceReadAllCyclesTimes)
-                {
-                    if (canGetGoodCycleFromFilename)
-                        c = timesteps[i][0]->FormatGetCycleFromFilename(timesteps[i][0]->GetFilename());
-                    else
-                        c = timesteps[i][0]->FormatGetCycle();
-                }
+                if (canGetGoodCycleFromFilename)
+                    c = timesteps[i][0]->FormatGetCycleFromFilename(timesteps[i][0]->GetFilename());
+                else if (forceReadAllCyclesTimes)
+                    c = timesteps[i][0]->FormatGetCycle();
 
-                if (c != -INT_MAX)
+                if (c != avtFileFormat::INVALID_CYCLE)
                     cIsAccurate = true;
             }
             else
@@ -415,20 +417,17 @@ avtSTSDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
             cycles.push_back(c);
             cycleIsAccurate.push_back(cIsAccurate);
 
-            double t = -DBL_MAX;
+            double t = avtFileFormat::INVALID_TIME;
             bool tIsAccurate = false;
 
             if (md->IsTimeAccurate(i) != true)
             {
-                if (forceReadAllCyclesTimes)
-                {
-                    if (canGetGoodTimeFromFilename)
-                        t = timesteps[i][0]->FormatGetTimeFromFilename(timesteps[i][0]->GetFilename());
-                    else
-                        t = timesteps[i][0]->FormatGetTime();
-                }
+                if (canGetGoodTimeFromFilename)
+                    t = timesteps[i][0]->FormatGetTimeFromFilename(timesteps[i][0]->GetFilename());
+                else if (forceReadAllCyclesTimes)
+                    t = timesteps[i][0]->FormatGetTime();
 
-                if (t != -DBL_MAX)
+                if (t != avtFileFormat::INVALID_TIME)
                     tIsAccurate = true;
             }
             else
@@ -502,6 +501,42 @@ avtSTSDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
     }
 }
 
+// ****************************************************************************
+//  Method: avtSTSDFileFormatInterface::SetCycleTimeInDatabaseMetaDat
+//
+//  Purpose: Set specific cycle/time for current timestate in metadata
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   May 31, 2005 
+//
+// ****************************************************************************
+
+void
+avtSTSDFileFormatInterface::SetCycleTimeInDatabaseMetaData(
+    avtDatabaseMetaData *md, int timeState)
+{
+    //
+    // Throw an exception if an invalid time state was requested.
+    //
+    if (timeState < 0 || timeState >= nTimesteps)
+    {
+        EXCEPTION2(BadIndexException, timeState, nTimesteps);
+    }
+
+    int c = timesteps[timeState][0]->FormatGetCycle();
+    if (c != avtFileFormat::INVALID_CYCLE)
+    {
+        md->SetCycle(timeState, c);
+        md->SetCycleIsAccurate(true, timeState);
+    }
+
+    double t = timesteps[timeState][0]->FormatGetTime();
+    if (t != avtFileFormat::INVALID_TIME)
+    {
+        md->SetTime(timeState, t);
+        md->SetTimeIsAccurate(true, timeState);
+    }
+}
 
 // ****************************************************************************
 //  Method: avtSTSDFileFormatInterface::FreeUpResources
