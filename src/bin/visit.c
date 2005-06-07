@@ -90,6 +90,9 @@ int ReadKey(const char *key, char **keyval);
  *   I added support for adding any additional arguments in the registry's
  *   VISITARGS key to the component's command line.
  *
+ *   Brad Whitlock, Fri Jun 3 14:46:18 PST 2005
+ *   Added code to flush stderr so the Java client can start up the viewer.
+ *
  *****************************************************************************/
 
 int
@@ -98,7 +101,7 @@ main(int argc, char *argv[])
     int   nComponentArgs = 0;
     char *componentArgs[100], *command = 0, *printCommand = 0, *visitpath = 0,
          *visitargs = 0, *cptr = 0, *cptr2 = 0;
-    int i, size = 0, retval = 0, printRunInfo = 1, skipping = 0;
+    int i, size = 0, retval = 0, skipping = 0;
     int addMovieArguments = 0, addVISITARGS = 1, useShortFileName = 0;
 
     /*
@@ -269,8 +272,8 @@ main(int argc, char *argv[])
     /*
      * Print the run information.
      */
-    if(printRunInfo)
-        fprintf(stderr, "Running: %s\n", printCommand);
+    fprintf(stderr, "Running: %s\n", printCommand);
+    fflush(stderr);
 
     /*
      * Launch the appropriate VisIt component.

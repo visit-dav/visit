@@ -22,6 +22,9 @@ import llnl.visit.QueryAttributes;
 //   Brad Whitlock, Thu Jan 2 16:05:48 PST 2003
 //   Changed because of Lineout method interface change.
 //
+//   Brad Whitlock, Mon Jun 6 17:25:34 PST 2005
+//   I made it use GetDataPath to locate the data.
+//
 // ****************************************************************************
 
 public class TryQuery extends RunViewer implements SimpleObserver
@@ -38,7 +41,7 @@ public class TryQuery extends RunViewer implements SimpleObserver
     protected void work(String[] args)
     {
         // Try and open a database
-        if(viewer.OpenDatabase("localhost:/usr/gapps/visit/data/curv2d.silo"))
+        if(viewer.OpenDatabase(viewer.GetDataPath() + "curv2d.silo"))
         {
             viewer.AddPlot("Mesh", "curvmesh2d");
             viewer.AddPlot("Pseudocolor", "d");

@@ -29,6 +29,9 @@ import llnl.visit.View3DAttributes;
 //   Eric Brugger, Wed Aug 27 09:06:38 PDT 2003
 //   I modified it to use the new view interface.
 //
+//   Brad Whitlock, Mon Jun 6 17:25:34 PST 2005
+//   I made it use GetDataPath to locate the data.
+//
 // ****************************************************************************
 
 public class TryLighting extends RunViewer implements SimpleObserver
@@ -45,7 +48,7 @@ public class TryLighting extends RunViewer implements SimpleObserver
     protected void work(String[] args)
     {
         // Try and open a database
-        if(viewer.OpenDatabase("localhost:/usr/gapps/visit/data/globe.silo"))
+        if(viewer.OpenDatabase(viewer.GetDataPath() + "globe.silo"))
         {
             viewer.AddPlot("Pseudocolor", "w");
             viewer.DrawPlots();
