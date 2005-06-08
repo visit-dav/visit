@@ -55,6 +55,10 @@ Parser::Init()
 //  Programmer:  Jeremy Meredith
 //  Creation:    April  5, 2002
 //
+//  Modifications:
+//    Jeremy Meredith, Wed Jun  8 17:08:35 PDT 2005
+//    Added a symbol dictionary.
+//
 // ****************************************************************************
 void
 Parser::Shift(Token *t, int s)
@@ -62,7 +66,7 @@ Parser::Shift(Token *t, int s)
 #ifdef MOREDEBUG
     cerr << "Shifting token "; t->PrintNode(cerr); cerr << endl;
 #endif
-    elems.push_back(ParseElem(t));
+    elems.push_back(ParseElem(G->GetDictionary().Get(t->GetType()), t));
     states.push_back(s);
 
     PrintState(cerr);
@@ -183,11 +187,14 @@ Parser::PrintState(ostream &o)
 //    Hank Childs, Fri Jan 28 13:19:33 PST 2005
 //    Use exception macros.
 //
+//    Jeremy Meredith, Wed Jun  8 17:08:35 PDT 2005
+//    Added a symbol dictionary.
+//
 // ****************************************************************************
 void
 Parser::ParseOneToken(Token *t)
 {
-    const Symbol *tokensym = Symbol::Get(t->GetType());
+    const Symbol *tokensym = G->GetDictionary().Get(t->GetType());
 #ifdef MOREDEBUG
     if (!tokensym)
     {

@@ -23,6 +23,11 @@
 //  Programmer: Hank Childs
 //  Creation:   March 16, 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Jun  7 15:04:09 PDT 2005
+//    Use new interface for creating facaded filters.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtSingleFilterFacade : public avtFacadeFilter
@@ -31,11 +36,9 @@ class PIPELINE_API avtSingleFilterFacade : public avtFacadeFilter
                               avtSingleFilterFacade();
     virtual                  ~avtSingleFilterFacade();
 
-    virtual void              ReleaseData(void);
-
   protected:
-    virtual avtFilter        *GetFirstFilter(void);
-    virtual avtFilter        *GetLastFilter(void);
+    virtual int               GetNumberOfFacadedFilters(void) { return 1; };
+    virtual avtFilter        *GetIthFacadedFilter(int);
 
     virtual avtFilter        *GetFacadedFilter(void) = 0;
 };

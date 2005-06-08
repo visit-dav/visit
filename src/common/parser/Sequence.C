@@ -3,7 +3,8 @@
 
 using     std::vector;
 
-static const char dotchar = 183;
+//static const char dotchar = 183;
+static const char dotchar = 'o';
 static std::string dot = std::string() + TermBold + TermGreen + dotchar + TermReset;
 
 

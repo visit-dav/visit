@@ -90,8 +90,9 @@ clean:
 ##
 ## Intermediate targets...
 ##
-.NO_CONFIG_REC:  $(INITSRC)
-.NO_WINK_IN:     $(INITSRC)
+.NO_DO_FOR_SIBLING:  $(INITSRC)
+.NO_CONFIG_REC:      $(INITSRC)
+.NO_WINK_IN:         $(INITSRC)
 $(INITSRC):
 	./$(CONFIGPROG) $(INITSRC)
 
@@ -99,13 +100,13 @@ init: $(CONFIGPROG)
 	env LD_LIBRARY_PATH=../../lib:${LD_LIBRARY_PATH} ./$(CONFIGPROG) $(INITSRC)
 
 $(CONFIGPROG): $(COMMONOBJ) $(CONFIGOBJ)
-	$(CXX) -o $@ $(LDFLAGS) $(COMMONOBJ) $(CONFIGOBJ) -lparser $(LIBS)
+	$(CXX) -o $@ $(LDFLAGS) $(COMMONOBJ) $(CONFIGOBJ) -lparser $(LIBS) @PTHREAD_LIB@
 
 ##
 ## Test targets...
 ##
 $(TESTPROG1) test: $(INITOBJ) $(TESTOBJ1) $(LIBSHARED)
-	$(CXX) -o $(TESTPROG1) $(LDFLAGS) -lexpr -lparser $(TESTOBJ1) $(LIBS)
+	$(CXX) -o $(TESTPROG1) $(LDFLAGS) -lexpr -lparser $(TESTOBJ1) $(LIBS) @PTHREAD_LIB@
 
 
 ##

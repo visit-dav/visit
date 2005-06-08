@@ -1,4 +1,5 @@
 #include <snprintf.h>
+#include <AttributeSubject.h>
 #include <NetworkManager.h>
 #include <DataNetwork.h>
 #include <ClonedDataNetwork.h>
@@ -1516,7 +1517,33 @@ NetworkManager::GetOutput(bool respondWithNullData, bool calledForRender,
 }
 
 // ****************************************************************************
-//  Method:  NetworkManager::Render
+//  Method: NetworkManager::HasNonMeshPlots
+//
+//  Purpose: Scan the plot list to see if any plots in it are NOT mesh plots 
+//
+//  Programmer:  Mark C. Miller 
+//  Creation:    May 12, 2005 
+//
+// ****************************************************************************
+bool
+NetworkManager::HasNonMeshPlots(const intVector plotIds)
+{
+    bool hasNonMeshPlots = false;
+    for (int i = 0; i < plotIds.size(); i++)
+    {
+        workingNet = NULL;
+        UseNetwork(plotIds[i]);
+        if (string(workingNet->GetPlot()->GetName()) != "MeshPlot")
+        {
+            hasNonMeshPlots = true;
+            break;
+        }
+    }
+    return hasNonMeshPlots;
+}
+
+// ****************************************************************************
+//  Method: NetworkManager::Render
 //
 //  Purpose: do a software scalable render
 //
@@ -1630,6 +1657,8 @@ NetworkManager::GetOutput(bool respondWithNullData, bool calledForRender,
 //    Mark C. Miller, Mon Mar  7 12:06:08 PST 2005
 //    Changed calls from GetNumTriangles to GetNumPrimitives.
 //
+//    Mark C. Miller, Wed Jun  8 11:03:31 PDT 2005
+//    Added code to deal with opaque mesh plots correctly.
 // ****************************************************************************
 avtDataObjectWriter_p
 NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
@@ -1681,13 +1710,14 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
 
         if (needToSetUpWindowContents)
         {
-            // array to record cell counts of added networks
-
             int t2 = visitTimer->StartTimer();
             int t3 = visitTimer->StartTimer();
             viswin->ClearPlots();
             imageBasedPlots.clear();
             visitTimer->StopTimer(t3, "Clearing plots out of vis window");
+
+            // see if there are any non-mesh plots in the list
+            bool hasNonMeshPlots = HasNonMeshPlots(plotIds);
 
             for (i = 0; i < plotIds.size(); i++)
             {
@@ -1706,6 +1736,15 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
                 // merge polygon info output across processors 
                 dob->GetInfo().ParallelMerge(tmpWriter);
                 visitTimer->StopTimer(t4, "Merging data info in parallel");
+
+                if (hasNonMeshPlots &&
+                    string(workingNetSaved->GetPlot()->GetName()) == "MeshPlot")
+                {
+                   const AttributeSubject *meshAtts = workingNetSaved->GetPlot()->
+                                                      SetOpaqueMeshIsAppropriate(false);
+                   if (meshAtts != 0)
+                       workingNetSaved->GetPlot()->SetAtts(meshAtts);
+                }
 
                 int t5 = visitTimer->StartTimer();
                 avtActor_p anActor = workingNetSaved->GetActor(dob);

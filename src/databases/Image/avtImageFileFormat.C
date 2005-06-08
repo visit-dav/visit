@@ -12,6 +12,7 @@
 #include <vtkCellData.h>
 #include <vtkCellType.h>
 #include <vtkFloatArray.h>
+#include <vtkPointData.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
 #include <vtkUnstructuredGrid.h>
@@ -28,6 +29,7 @@
 
 #include <avtDatabaseMetaData.h>
 #include <avtDataSelection.h>
+#include <avtGhostData.h>
 #include <avtLogicalSelection.h>
 #include <avtParallel.h>
 #include <avtSpatialBoxSelection.h>
@@ -196,63 +198,110 @@ avtImageFileFormat::ActivateTimestep(void)
 //    Hank Childs, Fri May 20 10:33:16 PDT 2005
 //    Add support for relative paths.
 //
+//    Hank Childs, Mon Jun  6 16:19:23 PDT 2005
+//    Read in the header on processor 0 only and broadcast to the other
+//    processors.
+//
 // ****************************************************************************
 
 void
 avtImageFileFormat::ReadImageVolumeHeader(void)
 {
-    ifstream ifile(fname.c_str());
-    if (ifile.fail())
+    int rank = PAR_Rank();
+    if (PAR_UIProcess())
     {
-        debug1 << "Cannot open image volume file \"" << fname.c_str() << "\"."
-               << endl;
-        EXCEPTION1(InvalidFilesException, fname.c_str());
-    }
-
-    specifiedZStart = 0;
-    zStart = 0;
-    specifiedZStep = 0;
-    zStep = 1;
-
-    const char   *filename = fname.c_str();
-    char          dir[1024];
-    const char   *p = filename, *q = NULL;
-    while ((q = strstr(p, SLASH_STRING)) != NULL)
-    {
-        p = q+1;
-    }
-    strncpy(dir, filename, p-filename);
-    dir[p-filename] = '\0';
-
-    char line[1024];
-    while (!ifile.eof())
-    {
-        ifile.getline(line, 1024);
-        if (line[0] == '\0')
-            continue;
-        if (strncmp(line, "Z_START:", strlen("Z_START:")) == 0)
+        ifstream ifile(fname.c_str());
+        if (ifile.fail())
         {
-            zStart = atof(line + strlen("Z_START:"));
-            specifiedZStart = true;
-        }    
-        else if (strncmp(line, "Z_STEP:", strlen("Z_STEP:")) == 0)
+            debug1 << "Cannot open image volume file \"" << fname.c_str() 
+                   << "\"." << endl;
+            int success = 0;
+            BroadcastInt(success);
+            EXCEPTION1(InvalidFilesException, fname.c_str());
+        }
+
+        specifiedZStart = 0;
+        zStart = 0;
+        specifiedZStep = 0;
+        zStep = 1;
+    
+        const char   *filename = fname.c_str();
+        char          dir[1024];
+        const char   *p = filename, *q = NULL;
+        while ((q = strstr(p, SLASH_STRING)) != NULL)
         {
-            zStep = atof(line + strlen("Z_STEP:"));
-            specifiedZStep = true;
-        }    
-        else
+            p = q+1;
+        }
+        strncpy(dir, filename, p-filename);
+        dir[p-filename] = '\0';
+    
+        char line[1024];
+        while (!ifile.eof())
         {
-            char line_with_dir[1024];
-            if (line[0] == SLASH_CHAR)
+            ifile.getline(line, 1024);
+            if (line[0] == '\0')
+                continue;
+            if (strncmp(line, "Z_START:", strlen("Z_START:")) == 0)
             {
-                strcpy(line_with_dir, line);
-            }
+                zStart = atof(line + strlen("Z_START:"));
+                specifiedZStart = true;
+            }    
+            else if (strncmp(line, "Z_STEP:", strlen("Z_STEP:")) == 0)
+            {
+                zStep = atof(line + strlen("Z_STEP:"));
+                specifiedZStep = true;
+            }    
             else
             {
-                sprintf(line_with_dir, "%s%s", dir, line);
+                char line_with_dir[1024];
+                if (line[0] == SLASH_CHAR)
+                {
+                    strcpy(line_with_dir, line);
+                }
+                else
+                {
+                    sprintf(line_with_dir, "%s%s", dir, line);
+                }
+                subImages.push_back(line_with_dir);
             }
-            subImages.push_back(line_with_dir);
         }
+
+        //
+        // Now broadcast what we've read to other processors.
+        //
+        int success = 1;
+        BroadcastInt(success);
+        int iTmp = specifiedZStart;
+        BroadcastInt(iTmp);
+        double dTmp = zStart;
+        BroadcastDouble(dTmp);
+        iTmp = specifiedZStep;
+        BroadcastInt(iTmp);
+        dTmp = zStep;
+        BroadcastDouble(dTmp);
+        BroadcastStringVector(subImages, rank);
+    }
+    else
+    {
+        int success = 0;
+        BroadcastInt(success);
+        if (!success)
+        {
+            debug1 << "Processor 0 could not open file \"" << fname.c_str() 
+                   << "\"." << endl;
+            EXCEPTION1(InvalidFilesException, fname.c_str());
+        }
+        int iTmp;
+        BroadcastInt(iTmp);
+        specifiedZStart = (bool) iTmp;
+        double dTmp;
+        BroadcastDouble(dTmp);
+        zStart = dTmp;
+        BroadcastInt(iTmp);
+        specifiedZStep = (bool) iTmp;
+        BroadcastDouble(dTmp);
+        zStep = dTmp;
+        BroadcastStringVector(subImages, rank);
     }
 
     haveImageVolume = true;
@@ -270,13 +319,17 @@ avtImageFileFormat::ReadImageVolumeHeader(void)
 //    Hank Childs, Fri Mar 18 11:41:04 PST 2005
 //    Disallow caching of image volumes.
 //
+//    Hank Childs, Tue Jun  7 09:04:29 PDT 2005
+//    Re-allow caching of image volumes, because we aren't doing any smart
+//    data selections.
+//
 // **************************************************************************
 
 bool
 avtImageFileFormat::CanCacheVariable(const char*)
 {
     // if we've read the whole image, we can cache its variables
-    return (haveReadWholeImage && !haveImageVolume);
+    return haveReadWholeImage;
 }
 
 // ***************************************************************************
@@ -744,17 +797,26 @@ avtImageFileFormat::GetMesh(const char *meshname)
 //  Programmer: Hank Childs
 //  Creation:   March 23, 2005
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Jun  7 11:45:23 PDT 2005
+//    Added ghost nodes.
+//
 // ****************************************************************************
 
 vtkDataSet *
 avtImageFileFormat::GetImageVolumeMesh(const char *meshname)
 {
+    int i;
+    bool doGhostNodes = false;
+
     int addOne = 1;
     if (strcmp(meshname, "ImageMesh_nodal") == 0)
         addOne = 0;
 
     float myStart = (specifiedZStart ? zStart : 0.);
     int   mySteps = subImages.size();
+    int   startImg = 0;
     float myZStep = (specifiedZStep ? zStep : 1.);
 
 #ifdef PARALLEL
@@ -763,7 +825,7 @@ avtImageFileFormat::GetImageVolumeMesh(const char *meshname)
     int stepsPerProc = mySteps / nprocs;
     if ((mySteps % nprocs) != 0)
         stepsPerProc += 1;
-    int startImg = rank*stepsPerProc;
+    startImg = rank*stepsPerProc;
     if (startImg >= mySteps)
         startImg = mySteps;
     int endImg = (rank+1)*stepsPerProc;
@@ -781,6 +843,7 @@ avtImageFileFormat::GetImageVolumeMesh(const char *meshname)
     }
     myStart = myStart + startImg*myZStep;
     mySteps = endImg - startImg;
+    doGhostNodes = true;
 #endif
    
     // -1 means we will take any image.
@@ -805,7 +868,7 @@ avtImageFileFormat::GetImageVolumeMesh(const char *meshname)
 
     vtkFloatArray *z = vtkFloatArray::New();
     z->SetNumberOfTuples(mySteps+addOne);
-    for (int i = 0 ; i < mySteps+addOne ; i++)
+    for (i = 0 ; i < mySteps+addOne ; i++)
         z->SetTuple1(i, myStart + (i-addOne/2.)*myZStep);
 
     vtkRectilinearGrid *rgrid = (vtkRectilinearGrid *) one_slice;
@@ -815,6 +878,32 @@ avtImageFileFormat::GetImageVolumeMesh(const char *meshname)
     rgrid->SetDimensions(dims);
     rgrid->SetZCoordinates(z);
     z->Delete();
+
+    if (doGhostNodes)
+    {
+        int nvals = dims[0]*dims[1]*dims[2];
+        vtkUnsignedCharArray *ghost_nodes = vtkUnsignedCharArray::New();
+        ghost_nodes->SetName("avtGhostNodes");
+        ghost_nodes->SetNumberOfTuples(nvals);
+        unsigned char *gnp = ghost_nodes->GetPointer(0);
+        for (i = 0 ; i < nvals ; i++)
+            gnp[i] = 0;
+        if (startImg != 0)
+        {
+            int nplane = dims[0]*dims[1];
+            for (i = 0 ; i < nplane ; i++)
+                avtGhostData::AddGhostNodeType(gnp[i], DUPLICATED_NODE);
+        }
+        if ((startImg+mySteps) != subImages.size())
+        {
+            int nplane = dims[0]*dims[1];
+            int planeStart = nvals-nplane;
+            for (i = planeStart ; i < nvals ; i++)
+                avtGhostData::AddGhostNodeType(gnp[i], DUPLICATED_NODE);
+        }
+        rgrid->GetPointData()->AddArray(ghost_nodes);
+        ghost_nodes->Delete();
+    }
 
     return rgrid;
 }

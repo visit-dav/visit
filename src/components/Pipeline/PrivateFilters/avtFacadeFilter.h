@@ -28,6 +28,10 @@
 //    Moved inlined constructor and destructor definitions to .C files
 //    because certain compilers have problems with them.
 //
+//    Hank Childs, Tue Jun  7 14:48:49 PDT 2005
+//    Add methods to access all facaded filters, as well as populating common
+//    avtFilter methods (release data, perform restriction).
+//
 // ****************************************************************************
 
 class PIPELINE_API avtFacadeFilter : virtual public avtFilter
@@ -42,14 +46,18 @@ class PIPELINE_API avtFacadeFilter : virtual public avtFilter
     virtual avtTerminatingSource  *GetTerminatingSource(void);
     virtual avtQueryableSource    *GetQueryableSource(void);
     virtual bool                   Update(avtPipelineSpecification_p);
+    virtual void                   ReleaseData(void);
 
   protected:
     virtual void                   SetTypedInput(avtDataObject_p);
 
-    virtual avtFilter             *GetFirstFilter(void) = 0;
-    virtual avtFilter             *GetLastFilter(void) = 0;
+    virtual int                    GetNumberOfFacadedFilters(void) = 0;
+    virtual avtFilter             *GetIthFacadedFilter(int) = 0;
 
     virtual void                   Execute(void);
+
+    virtual avtPipelineSpecification_p PerformRestriction(
+                                                  avtPipelineSpecification_p);
 };
 
 

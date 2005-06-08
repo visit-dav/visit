@@ -1,14 +1,10 @@
 #include "Symbol.h"
+#include "Dictionary.h"
 #include "Rule.h"
 #include "Token.h"
 using std::vector;
 using std::string;
 using std::map;
-
-
-map<int,Symbol*>    *Symbol::allterminals    = NULL;
-map<string,Symbol*> *Symbol::allnonterminals = NULL;
-int                  Symbol::nsymbols        = 0;
 
 // ****************************************************************************
 //  Constructor:  Symbol::Symbol
@@ -19,14 +15,15 @@ int                  Symbol::nsymbols        = 0;
 //  Programmer:  Jeremy Meredith
 //  Creation:    April  5, 2002
 //
+//  Modifications:
+//    Jeremy Meredith, Wed Jun  8 17:08:35 PDT 2005
+//    All symbols are now added to a dictionary instead of static members.
+//
 // ****************************************************************************
-Symbol::Symbol(int tt)
+Symbol::Symbol(Dictionary &dict, int tt)
     : type(Terminal), terminaltype(tt), displaystring(GetTokenTypeString(tt))
 {
-    InitStatic();
-    if (nsymbols>=MAXSYMBOLS) { cerr << "Too many symbols! Increase MAXSYMBOLS\n"; exit(-1); }
-    index=nsymbols++;
-    (*allterminals)[tt] = this;
+    index = dict.AddTerminal(this);
 }
 
 // ****************************************************************************
@@ -39,14 +36,15 @@ Symbol::Symbol(int tt)
 //  Programmer:  Jeremy Meredith
 //  Creation:    November 24, 2004
 //
+//  Modifications:
+//    Jeremy Meredith, Wed Jun  8 17:08:35 PDT 2005
+//    All symbols are now added to a dictionary instead of static members.
+//
 // ****************************************************************************
-Symbol::Symbol(int tt, const string &s)
+Symbol::Symbol(Dictionary &dict, int tt, const string &s)
     : type(Terminal), terminaltype(tt), displaystring(s)
 {
-    InitStatic();
-    if (nsymbols>=MAXSYMBOLS) { cerr << "Too many symbols! Increase MAXSYMBOLS\n"; exit(-1); }
-    index=nsymbols++;
-    (*allterminals)[tt] = this;
+    index = dict.AddTerminal(this);
 }
 
 // ****************************************************************************
@@ -58,46 +56,15 @@ Symbol::Symbol(int tt, const string &s)
 //  Programmer:  Jeremy Meredith
 //  Creation:    April  5, 2002
 //
+//  Modifications:
+//    Jeremy Meredith, Wed Jun  8 17:08:35 PDT 2005
+//    All symbols are now added to a dictionary instead of static members.
+//
 // ****************************************************************************
-Symbol::Symbol(const string &s)
+Symbol::Symbol(Dictionary &dict, const string &s)
     : type(NonTerminal), terminaltype(0), displaystring(s)
 {
-    InitStatic();
-    if (nsymbols>=MAXSYMBOLS) { cerr << "Too many symbols! Increase MAXSYMBOLS\n"; exit(-1); }
-    index=nsymbols++;
-    (*allnonterminals)[s] = this;
-}
-
-// ****************************************************************************
-//  Method:  Symbol::Get
-//
-//  Purpose:
-//    Finds a terminal by the token type.
-//
-//  Programmer:  Jeremy Meredith
-//  Creation:    April  5, 2002
-//
-// ****************************************************************************
-Symbol*
-Symbol::Get(int tt)
-{
-    return (*allterminals)[tt];
-}
-
-// ****************************************************************************
-//  Method:  Symbol::Get
-//
-//  Purpose:
-//    Finds a nonterminal by its name.
-//
-//  Programmer:  Jeremy Meredith
-//  Creation:    April  5, 2002
-//
-// ****************************************************************************
-Symbol*
-Symbol::Get(const string &s)
-{
-    return (*allnonterminals)[s];
+    index = dict.AddNonTerminal(this);
 }
 
 // ****************************************************************************
@@ -114,27 +81,6 @@ bool
 Symbol::operator==(const Symbol &rhs) const
 {
     return displaystring == rhs.displaystring;
-}
-
-// ****************************************************************************
-//  Method:  Symbol::InitStatic
-//
-//  Purpose:
-//    Inits all the static data if it hasn't been done yet.
-//
-//  Programmer:  Jeremy Meredith
-//  Creation:    April  5, 2002
-//
-// ****************************************************************************
-void
-Symbol::InitStatic()
-{
-    if (!allterminals)
-    {
-        allterminals    = new map<int,Symbol*>;
-        allnonterminals = new map<string,Symbol*>;
-        nsymbols = 0;
-    }
 }
 
 // ****************************************************************************

@@ -6,6 +6,7 @@
 #include "Rule.h"
 #include "ConfiguratingSet.h"
 #include "State.h"
+#include "Dictionary.h"
 
 // ****************************************************************************
 //  Class:  Grammar
@@ -22,13 +23,17 @@
 //  Programmer:  Jeremy Meredith
 //  Creation:    April  5, 2002
 //
+//  Modifications:
+//    Jeremy Meredith, Wed Jun  8 17:07:55 PDT 2005
+//    Added a symbol dictionary.
+//
 // ****************************************************************************
 class PARSER_API Grammar
 {
   public:
     enum Associativity { Left, Right, NonAssoc };
 
-                   Grammar();
+                   Grammar(Dictionary&);
     virtual       ~Grammar();
     void           Print(ostream&);
 
@@ -41,6 +46,7 @@ class PARSER_API Grammar
     bool           Configure();
     virtual bool   Initialize() = 0;
 
+    Dictionary    &GetDictionary();
     const Symbol  *GetStartSymbol();
     const Rule    *GetRule(int i);
     State         &GetState(int i);
@@ -50,10 +56,11 @@ class PARSER_API Grammar
     void           WriteStateInitialization(const std::string&, ostream&);
 
   protected:
+    Dictionary &dictionary;
     ostream *out;
 
-    static Symbol eof;
-    static Symbol start;
+    Symbol eof;
+    Symbol start;
 
     Rule                                   startrule;
     std::vector<const Rule*>               rules;

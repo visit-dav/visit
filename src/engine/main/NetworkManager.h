@@ -223,6 +223,8 @@ typedef struct _EngineVisWinInfo
 //    Hank Childs, Thu May 26 13:34:01 PDT 2005
 //    Added ExportDatabase.
 //
+//    Mark C. Miller, Wed Jun  8 11:03:31 PDT 2005
+//    Added HasNonMeshPlots
 // ****************************************************************************
 class NetworkManager
 {
@@ -275,6 +277,7 @@ class NetworkManager
 
     void          SetLoadBalancer(LoadBalancer *lb) {loadBalancer = lb;};
 
+    bool          HasNonMeshPlots(const intVector plotids);
     avtDataObjectWriter_p GetOutput(bool respondWithNullData,
                                     bool calledForRender,
                                     float *cellCountMultiplier);

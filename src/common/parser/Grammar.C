@@ -9,17 +9,21 @@ using     std::set;
 using     std::string;
 using     std::vector;
 
-Symbol Grammar::eof(EOF_TOKEN_ID); // TT_EOF==256 for all grammars
-Symbol Grammar::start("START");
-
 // ****************************************************************************
 //  Constructor:  Grammar::Grammar
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    April  5, 2002
 //
+//  Modifications:
+//    Jeremy Meredith, Wed Jun  8 17:05:56 PDT 2005
+//    Added a symbol dictionary.
+//
 // ****************************************************************************
-Grammar::Grammar()
+Grammar::Grammar(Dictionary &d)
+    : dictionary(d),
+      eof(dictionary, EOF_TOKEN_ID),  // TT_EOF==256 for all grammars
+      start(dictionary, "START")
 {
     out = NULL;
     rules.push_back(NULL);
@@ -197,6 +201,22 @@ Grammar::GetRule(int i)
 }
 
 // ****************************************************************************
+//  Method:  Grammar::GetDictionary
+//
+//  Purpose:
+//    Returns the symbol dictionary.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    June  8, 2005
+//
+// ****************************************************************************
+Dictionary&
+Grammar::GetDictionary()
+{
+    return dictionary;
+}
+
+// ****************************************************************************
 //  Method:  Grammar::Configure
 //
 //  Purpose:
@@ -363,6 +383,9 @@ Grammar::Configure()
 //    Brad Whitlock, Fri Jun 28 15:12:49 PST 2002
 //    Made it work on Windows.
 //
+//    Jeremy Meredith, Wed Jun  8 17:06:40 PDT 2005
+//    Added a symbol dictionary to remove static data.
+//
 // ****************************************************************************
 
 void
@@ -390,7 +413,7 @@ Grammar::WriteStateInitialization(const string &name, ostream &o)
 
     for (i=0; i<states.size(); i++)
     {
-        o << "static void InitState_"<<i<<"(State &s)" << endl;
+        o << "static void InitState_"<<i<<"(Dictionary &d, State &s)" << endl;
         o << "{" << endl;
 
         // Write out the shift state symbol map
@@ -407,7 +430,7 @@ Grammar::WriteStateInitialization(const string &name, ostream &o)
 
             int tt = s->GetTerminalType();
 
-            o << "    SetShiftState(s,"<<str<<", Symbol::Get(";
+            o << "    SetShiftState(s,"<<str<<", d.Get(";
             if (s->IsNonTerminal())
                 o << "\"" << s->GetDisplayString() << "\"";
             else
@@ -448,7 +471,7 @@ Grammar::WriteStateInitialization(const string &name, ostream &o)
 
             int tt = s->GetTerminalType();
 
-            o << "    SetReduceRule(s,"<<str<<", Symbol::Get(";
+            o << "    SetReduceRule(s,"<<str<<", d.Get(";
             if (s->IsNonTerminal())
                 o << "\"" << s->GetDisplayString() << "\"";
             else
@@ -468,7 +491,7 @@ Grammar::WriteStateInitialization(const string &name, ostream &o)
     o << endl;
     for (i=0; i<states.size(); i++)
     {
-        o << "    InitState_"<<i<<"(states[" << i << "]);" << endl;
+        o << "    InitState_"<<i<<"(dictionary, states[" << i << "]);" << endl;
     }
     o << endl;
     o << "    return true;" << endl;

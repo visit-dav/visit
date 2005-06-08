@@ -59,6 +59,9 @@
 #   Brad Whitlock, Tue Jan 4 14:23:16 PST 2005
 #   Added Scanner.C
 #
+#   Jeremy Meredith, Wed Jun  8 11:27:24 PDT 2005
+#   Added Dictionary.
+#
 ##############################################################################
 
 ##
@@ -78,6 +81,7 @@ TESTSRC1=testparser.C
 COMMONSRC = \
     ConfiguratingItem.C \
     ConfiguratingSet.C \
+    Dictionary.C \
     Grammar.C \
     ParseTreeNode.C \
     Parser.C \
@@ -111,7 +115,7 @@ clean:
 ## Test targets...
 ##
 $(TESTPROG1) test: $(TESTOBJ1) $(LIBSHARED)
-	$(CXX) -o $(TESTPROG1) $(LDFLAGS) -lparser $(TESTOBJ1) @LIBS@
+	$(CXX) -o $(TESTPROG1) $(LDFLAGS) -lparser $(TESTOBJ1) -lmisc @LIBS@
 
 
 ##

@@ -53,12 +53,17 @@ avtFacadeFilter::~avtFacadeFilter()
 //  Programmer: Hank Childs
 //  Creation:   April 16, 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Jun  7 14:55:40 PDT 2005
+//    Modify method of accessing facaded filters to meet new interface.
+//
 // ****************************************************************************
 
 avtDataObject_p
 avtFacadeFilter::GetInput(void)
 {
-    return GetFirstFilter()->GetInput();
+    return GetIthFacadedFilter(0)->GetInput();
 }
 
 
@@ -72,12 +77,17 @@ avtFacadeFilter::GetInput(void)
 //  Programmer: Hank Childs
 //  Creation:   April 16, 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Jun  7 14:55:40 PDT 2005
+//    Modify method of accessing facaded filters to meet new interface.
+//
 // ****************************************************************************
 
 avtDataObject_p
 avtFacadeFilter::GetOutput(void)
 {
-    return GetLastFilter()->GetOutput();
+    return GetIthFacadedFilter(GetNumberOfFacadedFilters()-1)->GetOutput();
 }
 
 
@@ -93,12 +103,18 @@ avtFacadeFilter::GetOutput(void)
 //  Programmer: Hank Childs
 //  Creation:   April 16, 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Jun  7 14:55:40 PDT 2005
+//    Modify method of accessing facaded filters to meet new interface.
+//
 // ****************************************************************************
 
 avtTerminatingSource *
 avtFacadeFilter::GetTerminatingSource(void)
 {
-    return GetLastFilter()->GetTerminatingSource();
+    return GetIthFacadedFilter(GetNumberOfFacadedFilters()-1)->
+                                                        GetTerminatingSource();
 }
 
 
@@ -114,12 +130,18 @@ avtFacadeFilter::GetTerminatingSource(void)
 //  Programmer: Hank Childs
 //  Creation:   July 28, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Jun  7 14:55:40 PDT 2005
+//    Modify method of accessing facaded filters to meet new interface.
+//
 // ****************************************************************************
 
 avtQueryableSource *
 avtFacadeFilter::GetQueryableSource(void)
 {
-    return GetLastFilter()->GetQueryableSource();
+    return GetIthFacadedFilter(GetNumberOfFacadedFilters()-1)->
+                                                          GetQueryableSource();
 }
 
 
@@ -133,12 +155,17 @@ avtFacadeFilter::GetQueryableSource(void)
 //  Programmer: Hank Childs
 //  Creation:   April 16, 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Jun  7 14:55:40 PDT 2005
+//    Modify method of accessing facaded filters to meet new interface.
+//
 // ****************************************************************************
 
 bool
 avtFacadeFilter::Update(avtPipelineSpecification_p spec)
 {
-    return GetLastFilter()->Update(spec);
+    return GetIthFacadedFilter(GetNumberOfFacadedFilters()-1)->Update(spec);
 }
 
 
@@ -152,12 +179,17 @@ avtFacadeFilter::Update(avtPipelineSpecification_p spec)
 //  Programmer: Hank Childs
 //  Creation:   April 16, 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Jun  7 14:55:40 PDT 2005
+//    Modify method of accessing facaded filters to meet new interface.
+//
 // ****************************************************************************
 
 void
 avtFacadeFilter::SetTypedInput(avtDataObject_p input)
 {
-    GetFirstFilter()->SetInput(input);
+    GetIthFacadedFilter(0)->SetInput(input);
 }
 
 
@@ -179,6 +211,48 @@ void
 avtFacadeFilter::Execute(void)
 {
     EXCEPTION0(ImproperUseException);
+}
+
+
+// ****************************************************************************
+//  Method: avtFacadeFilter::PerformRestriction
+//
+//  Purpose:
+//      Calls perform restriction on all of the filters it is facading.
+//
+//  Programmer: Hank Childs
+//  Creation:   June 7, 2005
+//
+// ****************************************************************************
+
+avtPipelineSpecification_p
+avtFacadeFilter::PerformRestriction(avtPipelineSpecification_p spec)
+{
+    avtPipelineSpecification_p rv = spec;
+
+    for (int i = GetNumberOfFacadedFilters()-1 ; i >= 0 ; i--)
+        rv = GetIthFacadedFilter(i)->PerformRestriction(rv);
+
+    return rv;
+}
+
+
+// ****************************************************************************
+//  Method: avtFacadeFilter::ReleaseData
+//
+//  Purpose:
+//      Calls release data on all of the filters it is facading.
+//
+//  Programmer: Hank Childs
+//  Creation:   June 7, 2005
+//
+// ****************************************************************************
+
+void
+avtFacadeFilter::ReleaseData(void)
+{
+    for (int i = 0 ; i < GetNumberOfFacadedFilters() ; i++)
+        GetIthFacadedFilter(i)->ReleaseData();
 }
 
 

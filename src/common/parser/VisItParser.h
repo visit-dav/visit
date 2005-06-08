@@ -26,6 +26,11 @@
 //    Major refactoring.  Added storage of Token here because it no longer
 //    derives directly from a parse tree node.
 //
+//    Jeremy Meredith, Wed Jun  8 16:32:35 PDT 2005
+//    Changed token based constructor to take the symbol as passed in.
+//    This was to remove all static data and have the Parser look up
+//    the symbol in a dictionary.
+//
 // ****************************************************************************
 struct PARSER_API ParseElem
 {
@@ -33,13 +38,13 @@ struct PARSER_API ParseElem
     ParseTreeNode  *node;
     Token          *token;
 
-    ParseElem(Token * t)
+    ParseElem(const Symbol *s, Token * t)
     {
-        sym = Symbol::Get(t->GetType());
+        sym = s;
         node = new TokenParseTreeNode(t);
         token = t;
     }
-    ParseElem(const Symbol * s, ParseTreeNode * n)
+    ParseElem(const Symbol *s, ParseTreeNode *n)
     {
         sym = s;
         node = n;

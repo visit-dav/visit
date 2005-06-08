@@ -587,6 +587,9 @@ VisWinPlots::SetViewExtentsType(avtExtentType vt)
 //    Make the externally rendered images actor not render when in bounding
 //    box mode.
 //
+//    Mark C. Miller, Wed Jun  8 10:53:46 PDT 2005
+//    Used new SaveVisibility interface for externally rendered images actor
+//
 // ****************************************************************************
 
 void
@@ -614,7 +617,7 @@ VisWinPlots::StartBoundingBox(void)
         (*it)->VisibilityOff();
     }
     transparencyActor->VisibilityOff();
-    extRenderedImagesActor->SetVisibility(false);
+    extRenderedImagesActor->SaveVisibility(this, false);
 
     //
     // Create the bounding box and add it to the renderer.
@@ -652,6 +655,9 @@ VisWinPlots::StartBoundingBox(void)
 //    Make the externally rendered images actor render again now that we are
 //    ending bounding box mode.
 //
+//    Mark C. Miller, Wed Jun  8 10:53:46 PDT 2005
+//    Used new RestoreVisibility interface for externally rendered images actor
+//
 // ****************************************************************************
 
 void
@@ -676,7 +682,7 @@ VisWinPlots::EndBoundingBox(void)
         (*it)->VisibilityOn();
     }
     transparencyActor->VisibilityOn();
-    extRenderedImagesActor->SetVisibility(true);
+    extRenderedImagesActor->RestoreVisibility(this);
 
     //
     // We will not do an explicit render here -- only remember that we need

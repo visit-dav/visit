@@ -11,6 +11,7 @@
 #include <avtDataObject.h>
 #include <VisCallback.h>
 
+using std::map;
 
 class     vtkActor2D;
 class     vtkCamera;
@@ -75,6 +76,12 @@ class     vtkRenderer;
 //      An avtExternallyRenderedImagesActor does NOT inherit from avtActor
 //      because, like the avtTransparencyActor, it does not have a drawable.
 //
+//  Modifications:
+//
+//    Mark C. Miller, Wed Jun  8 11:03:31 PDT 2005
+//    Added alternative visibility interface that remembers state of
+//    visibility flag for each object that set it so that it can be
+//    easily restored to its prior state 
 // ****************************************************************************
 
 class PLOTTER_API avtExternallyRenderedImagesActor
@@ -102,6 +109,10 @@ class PLOTTER_API avtExternallyRenderedImagesActor
     bool                 SetVisibility(const bool mode);
     bool                 GetVisibility();
 
+    // like Set/Get but used to set and restore to value before set
+    bool                 SaveVisibility(void *theObj, const bool mode);
+    bool                 RestoreVisibility(void *theObj);
+
     // used to enable and disable external render requests 
     bool                 EnableExternalRenderRequests(void);
     bool                 DisableExternalRenderRequests(void);
@@ -113,6 +124,9 @@ class PLOTTER_API avtExternallyRenderedImagesActor
 
     // used to indicate if the ERIA is active or not
     bool                 makeExternalRenderRequests;
+
+    // used by Save/Restore Visibility interface
+    map<void*,bool>      savedVisibilityMap;
 
     // the actor that gets added to a renderer for a vis window that handles
     // ALL externally rendered images in that vis window. 
