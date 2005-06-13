@@ -219,6 +219,11 @@ class TestParser : public Parser
         }
     }
 
+    TestParser::~TestParser()
+    {
+        delete G;
+    }
+
     ParseTreeNode *Parse(const string &input)
     {
         TRY
@@ -226,24 +231,27 @@ class TestParser : public Parser
             Init();
             TestScanner scanner;
             scanner.SetInput(input);
+
+            Token *token = NULL;
             while (!Accept())
             {
-                Token *token = scanner.ScanOneToken();
+                token = scanner.ScanOneToken();
                 ParseOneToken(token);
             }
+            delete token;
         }
         CATCH2(UnhandledReductionException, e)
         {
             // This should only occur during debugging; print to cerr anyway
             cerr << e.Message() << endl;
             cerr << "Rule = " << *(e.GetRule()) << endl;
-            cerr << e.GetPos().GetText(input) << endl;
+            cerr << e.GetPos().GetErrorText(input) << endl;
             CATCH_RETURN2(1, NULL);
         }
         CATCH2(ParseException, e)
         {
             cerr << e.Message() << endl;
-            cerr << e.GetPos().GetText(input) << endl;
+            cerr << e.GetPos().GetErrorText(input) << endl;
             CATCH_RETURN2(1, NULL);
         }
         CATCHALL(...)
@@ -281,10 +289,13 @@ main(int argc, char *argv[])
         {
             cout << "----- PARSE TREE -----\n";
             node->Print(cout);
+            delete node;
         }
         else
             cout << "ERROR\n";
     }
+
+    delete parser;
 
     return 0;
 }

@@ -103,6 +103,9 @@
 #    Brad Whitlock, Thu Mar 17 11:21:29 PDT 2005
 #    Added PyDatabaseCorrelation.
 #
+#    Hank Childs, Mon Jun 13 11:25:47 PDT 2005
+#    Added PyMethodDoc.
+#
 ##############################################################################
 
 ##
@@ -124,6 +127,7 @@ SRC= \
     PyKeyframeAttributes.C \
     PyLightAttributes.C \
     PyMaterialAttributes.C \
+    PyMethodDoc.C \
     PyPickAttributes.C \
     PyPrinterAttributes.C \
     PyProcessAttributes.C \
@@ -150,6 +154,7 @@ HDR= \
     PyKeyframeAttributes.h \
     PyLightAttributes.h \
     PyMaterialAttributes.h \
+    PyMethodDoc.h \
     PyPickAttributes.h \
     PyPrinterAttributes.h \
     PyProcessAttributes.h \

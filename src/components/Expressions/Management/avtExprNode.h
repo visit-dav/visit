@@ -10,6 +10,11 @@ class ExprPipelineState;
 //    Jeremy Meredith, Wed Nov 24 12:24:12 PST 2004
 //    Renamed Engine to avt.
 //
+//    Jeremy Meredith, Mon Jun 13 15:46:22 PDT 2005
+//    Made ConstExpr abstract and split it into multiple concrete
+//    base classes.  Made FunctionExpr and MachExpr use names
+//    instead of Identifier tokens.  These two changes were to
+//    remove Token references from the parse tree node classes.
 
 
 class EXPRESSION_API avtExprNode : public virtual ExprNode
@@ -19,12 +24,39 @@ class EXPRESSION_API avtExprNode : public virtual ExprNode
     virtual void CreateFilters(ExprPipelineState *) = 0;
 };
 
-class EXPRESSION_API avtConstExpr
-    : public avtExprNode, public ConstExpr
+class EXPRESSION_API avtIntegerConstExpr
+    : public avtExprNode, public IntegerConstExpr
 {
   public:
-    avtConstExpr(const Pos &p, ExprToken *t)
-        : avtExprNode(p), ConstExpr(p,t), ExprNode(p) {}
+    avtIntegerConstExpr(const Pos &p, int v)
+        : avtExprNode(p), IntegerConstExpr(p,v), ExprNode(p) {}
+    virtual void CreateFilters(ExprPipelineState *);
+};
+
+class EXPRESSION_API avtFloatConstExpr
+    : public avtExprNode, public FloatConstExpr
+{
+  public:
+    avtFloatConstExpr(const Pos &p, float v)
+        : avtExprNode(p), FloatConstExpr(p,v), ExprNode(p) {}
+    virtual void CreateFilters(ExprPipelineState *);
+};
+
+class EXPRESSION_API avtStringConstExpr
+    : public avtExprNode, public StringConstExpr
+{
+  public:
+    avtStringConstExpr(const Pos &p, std::string v)
+        : avtExprNode(p), StringConstExpr(p,v), ExprNode(p) {}
+    virtual void CreateFilters(ExprPipelineState *);
+};
+
+class EXPRESSION_API avtBooleanConstExpr
+    : public avtExprNode, public BooleanConstExpr
+{
+  public:
+    avtBooleanConstExpr(const Pos &p, bool v)
+        : avtExprNode(p), BooleanConstExpr(p,v), ExprNode(p) {}
     virtual void CreateFilters(ExprPipelineState *);
 };
 
@@ -64,8 +96,8 @@ class EXPRESSION_API avtVectorExpr : public avtExprNode, public VectorExpr
 class EXPRESSION_API avtFunctionExpr : public avtExprNode, public FunctionExpr
 {
   public:
-    avtFunctionExpr(const Pos &p, Identifier *i, ArgsExpr *e=NULL)
-        : avtExprNode(p), FunctionExpr(p,i,e), ExprNode(p) {}
+    avtFunctionExpr(const Pos &p, std::string n, ArgsExpr *e=NULL)
+        : avtExprNode(p), FunctionExpr(p,n,e), ExprNode(p) {}
     virtual void CreateFilters(ExprPipelineState *);
 };
 

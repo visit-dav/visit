@@ -35,9 +35,15 @@ Grammar::Grammar(Dictionary &d)
 //  Programmer:  Jeremy Meredith
 //  Creation:    April  5, 2002
 //
+//  Modifications:
+//    Jeremy Meredith, Mon Jun 13 15:52:32 PDT 2005
+//    Free the rules.
+//
 // ****************************************************************************
 Grammar::~Grammar()
 {
+    for (int i=1; i<rules.size(); i++)
+        delete rules[i];
 }
 
 // ****************************************************************************

@@ -10,6 +10,11 @@
 //    Jeremy Meredith, Wed Nov 24 12:24:12 PST 2004
 //    Renamed Engine to avt.
 //
+//    Jeremy Meredith, Mon Jun 13 15:46:22 PDT 2005
+//    Made ConstExpr abstract and split it into multiple concrete
+//    base classes.  Made FunctionExpr and MachExpr use names
+//    instead of Identifier tokens.  These two changes were to
+//    remove Token references from the parse tree node classes.
 
 class EXPRESSION_API avtExprNodeFactory: public ExprNodeFactory
 {
@@ -18,7 +23,16 @@ public:
     avtExprNodeFactory() {}
 
     virtual ConstExpr*
-        CreateConstExpr(const Pos & p, ExprToken * t);
+        CreateIntegerConstExpr(const Pos & p, int v);
+
+    virtual ConstExpr*
+        CreateFloatConstExpr(const Pos & p, float v);
+
+    virtual ConstExpr*
+        CreateStringConstExpr(const Pos & p, std::string v);
+
+    virtual ConstExpr*
+        CreateBooleanConstExpr(const Pos & p, bool v);
 
     virtual UnaryExpr*
         CreateUnaryExpr(const Pos & p, char op, ExprNode * e);
@@ -35,7 +49,7 @@ public:
                          ExprNode * z = NULL);
 
     virtual FunctionExpr*
-        CreateFunctionExpr(const Pos & p, Identifier * i,
+        CreateFunctionExpr(const Pos & p, std::string n,
                            ArgsExpr * e = NULL);
 
     virtual VarExpr*
@@ -44,9 +58,27 @@ public:
 };
 
 inline ConstExpr*
-avtExprNodeFactory::CreateConstExpr(const Pos & p, ExprToken * t)
+avtExprNodeFactory::CreateIntegerConstExpr(const Pos & p, int v)
 {
-    return new avtConstExpr(p, t);
+    return new avtIntegerConstExpr(p, v);
+}
+
+inline ConstExpr*
+avtExprNodeFactory::CreateFloatConstExpr(const Pos & p, float v)
+{
+    return new avtFloatConstExpr(p, v);
+}
+
+inline ConstExpr*
+avtExprNodeFactory::CreateStringConstExpr(const Pos & p, std::string v)
+{
+    return new avtStringConstExpr(p, v);
+}
+
+inline ConstExpr*
+avtExprNodeFactory::CreateBooleanConstExpr(const Pos & p, bool v)
+{
+    return new avtBooleanConstExpr(p, v);
 }
 
 inline UnaryExpr*
@@ -76,10 +108,10 @@ avtExprNodeFactory::CreateVectorExpr(const Pos & p, ExprNode * x,
 }
 
 inline FunctionExpr*
-avtExprNodeFactory::CreateFunctionExpr(const Pos & p, Identifier * i,
+avtExprNodeFactory::CreateFunctionExpr(const Pos & p, std::string n,
                                        ArgsExpr * e )
 {
-    return new avtFunctionExpr(p, i, e);
+    return new avtFunctionExpr(p, n, e);
 }
 
 inline VarExpr*

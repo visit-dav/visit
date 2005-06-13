@@ -223,6 +223,9 @@ avtExpressionEvaluatorFilter::AdditionalPipelineFilters(void)
 //    Hank Childs, Thu Jan  6 11:08:56 PST 2005
 //    Beef up logic to insert identity filters.
 //
+//    Jeremy Meredith, Mon Jun 13 15:51:50 PDT 2005
+//    Delete the parse trees when we're done with them.  This fixes leaks.
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -324,9 +327,11 @@ avtExpressionEvaluatorFilter::PerformRestriction(
             // variables of the expression and put them on the candidate
             // list.
             expr_list.push_back(var);
-            avtExprNode *tree = dynamic_cast<avtExprNode*>
-                                    (ParsingExprList::GetExpressionTree(var));
-            set<string> roots = tree->GetVarLeaves();
+            ExprNode *tree = ParsingExprList::GetExpressionTree(var);
+            avtExprNode *avttree = dynamic_cast<avtExprNode*>(tree);
+            set<string> roots = avttree->GetVarLeaves();
+            delete tree;
+
             while (!roots.empty())
             {
                 std::set<string>::iterator front = roots.begin();
@@ -355,6 +360,7 @@ avtExpressionEvaluatorFilter::PerformRestriction(
         // Create the filters that the tree uses.  Put them into the
         // filters stack in pipelineState.
         tree->CreateFilters(&pipelineState);
+        delete tree;
 
         vector<avtExpressionFilter*> &filters = pipelineState.GetFilters();
         avtExpressionFilter *f = NULL;

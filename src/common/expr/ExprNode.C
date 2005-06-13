@@ -11,19 +11,59 @@ using     std::vector;
 //    Made expression language specific tokens have a more specific
 //    base class.  Renamed GrammarNode to ParseTreeNode.
 //
+//    Jeremy Meredith, Mon Jun 13 15:46:22 PDT 2005
+//    Made ConstExpr abstract and split it into multiple concrete
+//    base classes.  Made FunctionExpr and MachExpr use names
+//    instead of Identifier tokens.  These two changes were to
+//    remove Token references from the parse tree node classes.
+//    Also added some destructors.
+//
 
 
 // class ConstExpr
-ConstExpr::ConstExpr(const Pos &p, ExprToken *t) : ExprNode(p)
+ConstExpr::ConstExpr(const Pos &p, ConstType ct) : ExprNode(p)
 {
-    token = t;
+    constType = ct;
 }
 
 void
-ConstExpr::PrintNode(ostream &o)
+IntegerConstExpr::PrintNode(ostream &o)
 {
-    o << "Constant ";
-    token->PrintNode(o);
+    o << "IntegerConstant: "<<value << endl;
+}
+
+IntegerConstExpr::~IntegerConstExpr()
+{
+}
+
+void
+FloatConstExpr::PrintNode(ostream &o)
+{
+    o << "FloatConstant: "<<value << endl;
+}
+
+FloatConstExpr::~FloatConstExpr()
+{
+}
+
+void
+StringConstExpr::PrintNode(ostream &o)
+{
+    o << "StringConstant: "<<value << endl;
+}
+
+StringConstExpr::~StringConstExpr()
+{
+}
+
+void
+BooleanConstExpr::PrintNode(ostream &o)
+{
+    o << "BooleanConstant: "<<value << endl;
+}
+
+BooleanConstExpr::~BooleanConstExpr()
+{
 }
 
 void
@@ -126,6 +166,15 @@ ListExpr::ListExpr(const Pos &p, ListElemExpr *e) : ExprParseTreeNode(p)
     elems->push_back(e);
 }
 
+ListExpr::~ListExpr()
+{
+    for (int i=0; i<elems->size(); i++)
+    {
+        delete (*elems)[i];
+    }
+    delete elems;
+}
+
 void
 ListExpr::AddListElem(ListElemExpr *e)
 {
@@ -156,9 +205,9 @@ ListExpr::GetVarLeaves()
 void
 ArgExpr::PrintNode(ostream &o)
 {
-    if (id)
+    if (identifier != "")
     {
-        o << "name='" << id->GetVal().c_str() << "':";
+        o << "name='" << identifier << "':";
     }
     o << endl;
     expr->Print(o);
@@ -169,6 +218,15 @@ ArgsExpr::ArgsExpr(const Pos &p, ArgExpr *e) : ExprParseTreeNode(p)
 {
     args = new vector<ArgExpr*>;
     args->push_back(e);
+}
+
+ArgsExpr::~ArgsExpr()
+{
+    for (int i=0; i<args->size(); i++)
+    {
+        delete (*args)[i];
+    }
+    delete args;
 }
 
 void
@@ -192,7 +250,7 @@ ArgsExpr::PrintNode(ostream &o)
 void
 FunctionExpr::PrintNode(ostream &o)
 {
-    o << "Function '" << name->GetVal().c_str() << "' with ";
+    o << "Function '" << name << "' with ";
     if (args)
         args->PrintNode(o);
     else
@@ -254,7 +312,7 @@ PathExpr::PrintNode(ostream &o)
 void
 MachExpr::PrintNode(ostream &o)
 {
-    o << "Machine="<<host->GetVal().c_str()<<endl;
+    o << "Machine="<<host<<endl;
 }
 
 void
