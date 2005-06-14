@@ -683,7 +683,7 @@ avtOnionPeelFilter::PostExecute()
         if (encounteredBadSeed)
         {
             encounteredBadSeed = false;
-            if (!GetInput()->GetInfo().GetValidity().GetZonesPreserved())
+            if (GetInput()->GetInfo().GetValidity().GetZonesPreserved())
             {
                 if (atts.GetLogical())
                 {
