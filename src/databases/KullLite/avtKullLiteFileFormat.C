@@ -244,6 +244,9 @@ avtKullLiteFileFormat::~avtKullLiteFileFormat()
 //    Hank Childs, Fri Aug 27 16:54:45 PDT 2004
 //    Rename ghost data array.
 //
+//    Hank Childs, Tue Jun 14 16:31:33 PDT 2005
+//    Add support for RZ meshes.
+//
 // ****************************************************************************
 
 void
@@ -295,6 +298,7 @@ avtKullLiteFileFormat::ReadInPrimaryMesh(int fi)
     int nPoints = (meshIs3d ? m_kullmesh3d->npnts : m_kullmesh2d->npnts);
     points->SetNumberOfPoints(nPoints);
 
+    bool isRZ = IsRZ();
     for (i = 0; i < nPoints; i++)
     {
         if (meshIs3d)
@@ -305,9 +309,14 @@ avtKullLiteFileFormat::ReadInPrimaryMesh(int fi)
         }
         else
         {
-            points->SetPoint(i,m_kullmesh2d->positions[i].x,
-                               m_kullmesh2d->positions[i].y,
-                               0.);
+            if (isRZ)
+                points->SetPoint(i,m_kullmesh2d->positions[i].y,
+                                   m_kullmesh2d->positions[i].x,
+                                   0.);
+            else
+                points->SetPoint(i,m_kullmesh2d->positions[i].x,
+                                   m_kullmesh2d->positions[i].y,
+                                   0.);
         }
     }
 
@@ -1321,7 +1330,9 @@ avtKullLiteFileFormat::GetMeshTagMaterial(const char *var, int dom)
     int *ptr = new int[nelems];
     int index = 0;
     for (j = 0 ; j < tag_list->size() ; j++)
+    {
         for (i = 0 ; i < tags->num_tags ; i++)
+        {
             if ((*tag_list)[j] == tags->tags[i].tagname)
             {
                 for (k = 0 ; k < tags->tags[i].size ; k++)
@@ -1329,6 +1340,8 @@ avtKullLiteFileFormat::GetMeshTagMaterial(const char *var, int dom)
                     ptr[index++] = j;
                 }
             }
+        }
+    }
     avtMaterial *mat = new avtMaterial(tag_list->size(), *tag_list, nelems,
                                        ptr, 0, NULL, NULL, NULL, NULL);
 
@@ -1424,7 +1437,7 @@ avtKullLiteFileFormat::GetRealMaterial(int domain)
     }
 
     // Now we go through the materials, and deal with them accordingly. 
-    for (i = 0; i < num_materials; ++i)
+    for (i = 0; i < num_materials; i++)
     {
         string base = m_names[i];
        
@@ -1574,12 +1587,16 @@ avtKullLiteFileFormat::GetRealMaterial(int domain)
 //     Kathleen Bonnell, Wed Aug 25 11:21:56 PDT 2004 
 //     Set mesh-type for node_tags to AVT_POINT_MESH. 
 //
+//     Hank Childs, Tue Jun 14 16:25:52 PDT 2005
+//     Add support for RZ meshes.
+//
 // ****************************************************************************
 
 void
 avtKullLiteFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 {
     bool is3DMesh = true;
+    bool isRZ = false;
     if (my_filenames.size() > 0)
     {
         m_pdbFile = PD_open((char *) my_filenames[0].c_str(), "r");
@@ -1590,6 +1607,8 @@ avtKullLiteFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         }
 
         is3DMesh = GetMeshDimension();
+        if (!is3DMesh)
+            isRZ = IsRZ();
         Close();
     }
 
@@ -1608,6 +1627,11 @@ avtKullLiteFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     mesh->blockTitle = "Files";
     mesh->blockNames = vFilenames;
     mesh->hasSpatialExtents = false;
+    if (isRZ)
+    {
+        mesh->xLabel = "Z-Axis";
+        mesh->yLabel = "R-Axis";
+    }
     md->Add(mesh);
 
     if (NumberOfMaterials())
@@ -2152,6 +2176,26 @@ avtKullLiteFileFormat::GetMeshDimension(void)
   
     SFREE(typeofmesh);
     return meshIs3d;
+}
+
+
+// ****************************************************************************
+//  Method: avtKullLiteFileFormat::IsRZ
+//
+//  Purpose:
+//      Determines if a mesh is RZ.
+//
+//  Returns:   True if it is RZ, false otherwise.
+//
+//  Programmer: Hank Childs
+//  Creation:   June 14, 2005
+//
+// ****************************************************************************
+
+bool
+avtKullLiteFileFormat::IsRZ(void)
+{
+    return (PD_inquire_type(m_pdbFile, "rz") ? true : false);
 }
 
 
