@@ -30,6 +30,11 @@ import java.io.IOException;
 //   I added code code to make the working thread sleep a little to reduce
 //   workload on the CPU if nothing's getting processed.
 //
+//   Brad Whitlock, Thu Jun 16 17:22:46 PST 2005
+//   Moved the code that made the thread sleep into Yielder class because I
+//   needed the same logic elsewhere. The real solution is to figure out the
+//   Java equivalent of select() so we don't have to poll.
+//
 // ****************************************************************************
 
 class Xfer implements SimpleObserver, Runnable
@@ -256,45 +261,21 @@ class Xfer implements SimpleObserver, Runnable
     public void run()
     {
         int idlecount = 0;
+        Yielder y = new Yielder(2000);
         while(processing && viewerInit)
         {
             try
             {
                 if(!Process())
-                {
-                    ++idlecount;
-                    if(idlecount < 10)
-                    {
-                        // Yield to other threads.
-                        Thread.currentThread().yield();
-                    }
-                    else
-                    {
-                        // The thread has been idle for a while, sleep
-                        // instead of yield because sleep does not require
-                        // any work.
-                        int timeout = 200;
-                        if(idlecount > 50 && idlecount < 100)
-                            timeout = 500;
-                        else if(idlecount >= 100)
-                            timeout = 1000;
-                        else if(idlecount >= 500)
-                            timeout = 2000;
-
-                        try
-                        {
-                            Thread.currentThread().sleep(timeout);
-                        }
-                        catch(java.lang.InterruptedException e)
-                        {
-                            processing = false;
-                        }
-                    }
-                }
+                    y.yield();
                 else
-                    idlecount = 0;
+                    y.reset();
             }
             catch(LostConnectionException e3)
+            {
+                processing = false;
+            }
+            catch(java.lang.InterruptedException e)
             {
                 processing = false;
             }

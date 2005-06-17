@@ -86,6 +86,9 @@
 #   Brad Whitlock, Thu May 12 13:45:48 PST 2005
 #   Added ProcessAttributes.
 #
+#   Brad Whitlock, Thu Jun 16 16:58:51 PST 2005
+#   I added SyncNotifier and Yielder.
+#
 ##############################################################################
 
 ##
@@ -169,9 +172,11 @@ MessageObserver.java \
 PluginManager.java \
 RemoteProcess.java \
 SimpleObserver.java \
+SyncNotifier.java \
 Version.java \
 ViewerProxy.java \
-Xfer.java
+Xfer.java \
+Yielder.java
 
 MAIN_SRC = NIFGUI.java RunViewer.java TryLighting.java TryQuery.java
 MAIN_CLASS = $(MAIN_SRC:.java=.class)
