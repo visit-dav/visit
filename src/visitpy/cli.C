@@ -41,6 +41,10 @@ extern "C" int Py_Main(int, char **);
 //   Hank Childs, Thu Apr  1 08:57:11 PST 2004
 //   Prevent -fps from being passed as well.
 //
+//   Brad Whitlock, Wed May 4 08:34:04 PDT 2005
+//   I changed the code so argv[0] gets passed to the cli in argv2. I also
+//   made Python initialize its threading.
+//
 // ****************************************************************************
 
 int
@@ -54,7 +58,7 @@ main(int argc, char *argv[])
     int  argc2 = 0;
 
     // Parse the arguments
-    for(int i = 1; i < argc; ++i)
+    for(int i = 0; i < argc; ++i)
     {
         if(strcmp(argv[i], "-debug") == 0)
         {
@@ -126,6 +130,7 @@ main(int argc, char *argv[])
     {
         // Initialize python
         Py_Initialize();
+        PyEval_InitThreads();
         Py_SetProgramName(argv[0]);
         PySys_SetArgv(argc, argv);
 

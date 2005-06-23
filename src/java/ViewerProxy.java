@@ -136,6 +136,15 @@ import java.util.prefs.BackingStoreException;
 //   Brad Whitlock, Thu May 12 13:46:37 PST 2005
 //   Added ProcessAttributes.
 //
+//   Brad Whitlock, Wed May 4 09:53:34 PDT 2005
+//   Changed the order of some state objects in xfer and added support for
+//   reverse launching. I also added OpenClient, AssistOpenClient, and the
+//   new clientMethod, clientInformation, clientInformationList, and
+//   movieAttributes members.
+//
+//   Brad Whitlock, Thu Jun 2 11:15:40 PDT 2005
+//   Added SetTryHarderCyclesTimes.
+//
 //   Brad Whitlock, Mon Jun 6 09:39:33 PDT 2005
 //   Added some code to yield to other threads so we don't tie up the CPU
 //   in some of our blocking loops. I also added code to try and determine
@@ -209,6 +218,12 @@ public class ViewerProxy implements SimpleObserver
         interactorAtts = new InteractorAttributes();
         silAtts = new SILRestrictionAttributes();
         processAtts = new ProcessAttributes();
+        dbPluginInfoAtts = new DBPluginInfoAttributes();
+        exportDBAtts = new ExportDBAttributes();
+        clientMethod = new ClientMethod();
+        clientInformation = new ClientInformation();
+        clientInformationList = new ClientInformationList();
+        movieAtts = new MovieAttributes();
 
         // Create the plugin managers.
         plotPlugins = new PluginManager("plot");
@@ -290,15 +305,27 @@ public class ViewerProxy implements SimpleObserver
             xfer.Add(rpc);
             xfer.Add(postponedAction);
             xfer.Add(syncAtts);
-            xfer.Add(appearanceAtts);
+            xfer.Add(messageAtts);
+            xfer.Add(statusAtts);
+            // For simulations. Note that the metadata is being
+            // added as a dummy so Xfer can skip its bytes when
+            // messages come in because we don't have an object
+            // for it yet.
+            xfer.AddDummy(); // metadata
+            xfer.Add(silAtts);
+            xfer.Add(dbPluginInfoAtts);
+            xfer.Add(exportDBAtts);
+            xfer.Add(clientMethod);
+            xfer.Add(clientInformation);
+            xfer.Add(clientInformationList);
+
             xfer.Add(pluginAtts);
+            xfer.Add(appearanceAtts);
             xfer.Add(globalAtts);
             xfer.Add(correlationList);
             xfer.Add(plotList);
             xfer.Add(hostProfiles);
-            xfer.Add(messageAtts);
             xfer.Add(saveAtts);
-            xfer.Add(statusAtts);
             xfer.Add(engineList);
             xfer.Add(colorTableAtts);
             xfer.Add(expressionList);
@@ -322,13 +349,7 @@ public class ViewerProxy implements SimpleObserver
             xfer.Add(queryOverTimeAtts);
             xfer.Add(interactorAtts);
             xfer.Add(processAtts);
-
-            // For simulations. Note that the metadata is being
-            // added as a dummy so Xfer can skip its bytes when
-            // messages come in because we don't have an object
-            // for it yet.
-            xfer.AddDummy(); // metadata
-            xfer.Add(silAtts);
+            xfer.Add(movieAtts);
 
             // hook up the message observer.
             messageObserver.Attach(messageAtts);
@@ -1565,6 +1586,24 @@ public class ViewerProxy implements SimpleObserver
         return synchronous ? Synchronize() : true;
     }
 
+    public boolean OpenClient(String clientName, String program, Vector args)
+    {
+        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_OPENCLIENTRPC);
+        rpc.SetDatabase(clientName);
+        rpc.SetProgramHost(program);
+        rpc.SetProgramOptions(args);
+        rpc.Notify();
+        return synchronous ? Synchronize() : true;
+    }
+
+    public boolean SetTryHarderCyclesTimes(int flag)
+    {
+        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETTRYHARDERCYCLESTIMESRPC);
+        rpc.SetIntArg1(flag);
+        rpc.Notify();
+        return synchronous ? Synchronize() : true;
+    }
+
     public synchronized boolean Synchronize()
     {
         // Clear any error in the message observer.
@@ -1637,6 +1676,12 @@ public class ViewerProxy implements SimpleObserver
     public QueryOverTimeAttributes GetQueryOverTimeAttributes() { return queryOverTimeAtts; }
     public InteractorAttributes GetInteractorAttributes() { return interactorAtts; }
     public ProcessAttributes GetProcessAttributes() { return processAtts; }
+    public DBPluginInfoAttributes GetPluginInfoAttributes() { return dbPluginInfoAtts; }
+    public ExportDBAttributes GetExportDBAttributes() { return exportDBAtts; }
+    public ClientMethod GetClientMethod() { return clientMethod; }
+    public ClientInformation GetClientInformation() { return clientInformation; }
+    public final ClientInformationList GetClientInformationList() { return clientInformationList; }
+    public MovieAttributes GetMovieAttributes() { return movieAtts; }
 
     public int GetPlotIndex(String plotName)
     {
@@ -1801,4 +1846,10 @@ public class ViewerProxy implements SimpleObserver
     private InteractorAttributes     interactorAtts;
     private SILRestrictionAttributes silAtts;
     private ProcessAttributes        processAtts;
+    private DBPluginInfoAttributes   dbPluginInfoAtts;
+    private ExportDBAttributes       exportDBAtts;
+    private ClientMethod             clientMethod;
+    private ClientInformation        clientInformation;
+    private ClientInformationList    clientInformationList;
+    private MovieAttributes          movieAtts;
 }

@@ -30,6 +30,10 @@
 #define WINDOWINFO_ANIMATION        4
 // Use when the window flag could have changed.
 #define WINDOWINFO_WINDOWFLAGS      8
+// Use when the window's rendering information could have changed.
+#define WINDOWINFO_RENDERINFO       16
+// Use when the window size could have changed.
+#define WINDOWINFO_WINDOWSIZE       32
 
 
 class AnimationAttributes;

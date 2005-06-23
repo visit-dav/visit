@@ -28,6 +28,7 @@ public:
     QvisWizard(AttributeSubject *subj, QWidget *parent, const char *name = 0);
     virtual ~QvisWizard();
     virtual void SendAttributes();
+    bool UpdateAttributes();
 protected:
     AttributeSubject *atts;
     AttributeSubject *localCopy;

@@ -6,6 +6,7 @@
 #include <qcolor.h>
 #include <qcursor.h>
 #include <qfiledialog.h>
+#include <qlabel.h>
 #include <qmessagebox.h>
 #include <qprintdialog.h>
 #include <qprinter.h>
@@ -38,7 +39,9 @@
 #include <PlotPluginManager.h>
 #include <OperatorPluginInfo.h>
 #include <OperatorPluginManager.h>
-
+#include <ClientMethod.h>
+#include <ClientInformation.h>
+#include <ClientInformationList.h>
 #include <ChangeDirectoryException.h>
 #include <DatabaseCorrelationList.h>
 #include <GetFileListException.h>
@@ -49,6 +52,7 @@
 #include <HostProfile.h>
 #include <GlobalLineoutAttributes.h>
 #include <InteractorAttributes.h>
+#include <MovieAttributes.h>
 #include <ObserverToCallback.h>
 #include <PickAttributes.h>
 #include <QueryAttributes.h>
@@ -67,6 +71,7 @@
 #include <QvisAnnotationWindow.h>
 #include <QvisAppearanceWindow.h>
 #include <QvisColorTableWindow.h>
+#include <QvisCommandWindow.h>
 #include <QvisDatabaseCorrelationListWindow.h>
 #include <QvisEngineWindow.h>
 #include <QvisExportDBWindow.h>
@@ -77,11 +82,13 @@
 #include <QvisHelpWindow.h>
 #include <QvisHostProfileWindow.h>
 #include <QvisInteractorWindow.h>
+#include <QvisInterpreter.h>
 #include <QvisKeyframeWindow.h>
 #include <QvisLightingWindow.h>
 #include <QvisMainWindow.h>
 #include <QvisMaterialWindow.h>
 #include <QvisMessageWindow.h>
+#include <QvisMovieProgressDialog.h>
 #include <QvisOutputWindow.h>
 #include <QvisPickWindow.h>
 #include <QvisPlotManagerWidget.h>
@@ -89,6 +96,7 @@
 #include <QvisPreferencesWindow.h>
 #include <QvisQueryWindow.h>
 #include <QvisRenderingWindow.h>
+#include <QvisSaveMovieWizard.h>
 #include <QvisSaveWindow.h>
 #include <QvisSimulationWindow.h>
 #include <QvisSubsetWindow.h>
@@ -120,6 +128,8 @@
 #define VISIT_GUI_CONFIG_FILE "guiconfig"
 #define VIEWER_READY_TAG       100
 #define SET_FILE_HIGHLIGHT_TAG 101
+#define LOAD_ACTIVESOURCE_TAG  102
+#define INTERPRETER_SYNC_TAG   103
 
 #define WINDOW_FILE_SELECTION    0
 #define WINDOW_FILE_INFORMATION  1
@@ -150,6 +160,7 @@
 #define WINDOW_INTERACTOR       26
 #define WINDOW_SIMULATION       27
 #define WINDOW_EXPORT_DB        28
+#define WINDOW_COMMAND          29
 
 const char *QvisGUIApplication::windowNames[] = {
 "File selection",
@@ -180,7 +191,8 @@ const char *QvisGUIApplication::windowNames[] = {
 "QueryOverTime",
 "Interactors",
 "Simulations",
-"Export Database"
+"Export Database",
+"Commands"
 };
 
 // Some internal prototypes.
@@ -379,6 +391,10 @@ LongFileName(const char *shortName)
 //   Brad Whitlock, Wed Feb 9 17:53:05 PST 2005
 //   Added VisItUpdate and developmentVersion.
 //
+//   Brad Whitlock, Wed Apr 20 16:48:23 PST 2005
+//   Added saveMovieWizard, movieAtts, interpreter, and observer for
+//   client method.
+//
 // ****************************************************************************
 
 QvisGUIApplication::QvisGUIApplication(int &argc, char **argv) :
@@ -394,6 +410,9 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv) :
 
     // The viewer is initially not alive.
     viewerIsAlive = false;
+    closeAllClients = true;
+    viewerInitiatedQuit = false;
+    reverseLaunch = false;
 
     // Default border values.
     borders[0] = 26; // Top
@@ -424,6 +443,9 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv) :
     keepAliveTimer = 0;
     allowFileSelectionChange = true;
     visitUpdate = 0;
+    saveMovieWizard = 0;    
+    interpreter = 0;
+    movieProgress = 0;
 
     // Create the viewer, statusSubject, and fileServer for GUIBase.
     viewer = new ViewerProxy;
@@ -509,6 +531,12 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv) :
          QvisGUIApplication::UpdateMetaDataAttributes, this);
 
     //
+    // Create an observer for the client method attributes.
+    //
+    clientMethodObserver = new ObserverToCallback(viewer->GetClientMethod(),
+         QvisGUIApplication::ClientMethodCallback, this);
+
+    //
     // Start the heavy duty initialization from within the event loop.
     //
     QTimer::singleShot(10, this, SLOT(HeavyInitialization()));
@@ -546,6 +574,10 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv) :
 //   I prevented windows from being deleted on MacOS X since it was causing
 //   a crash.
 //
+//   Brad Whitlock, Wed Apr 20 16:48:11 PST 2005
+//   Added interpreter. I also made it possible to detach from the viewer
+//   rather than always telling it to close.
+//
 // ****************************************************************************
 
 QvisGUIApplication::~QvisGUIApplication()
@@ -576,7 +608,25 @@ QvisGUIApplication::~QvisGUIApplication()
 
     // Close down the viewer and delete it.
     if(viewerIsAlive)
-        viewer->Close();
+    {
+        if(viewerInitiatedQuit)
+        {
+            debug1 << "Quitting because viewer told us to." << endl;
+        }
+        else
+        {
+            if(closeAllClients)
+            {
+                debug1 << "Telling viewer to close." << endl;
+                viewer->Close();
+            }
+            else
+            {
+                debug1 << "Telling viewer to detach this GUI." << endl;
+                viewer->Detach();
+            }
+        }
+    }
     delete viewer;
     viewer = 0;
 
@@ -791,6 +841,10 @@ QvisGUIApplication::HeavyInitialization()
 //   Brad Whitlock, Thu May 6 14:51:29 PST 2004
 //   I removed the timers because they're now 1 level up.
 //
+//   Brad Whitlock, Tue May 3 16:16:51 PST 2005
+//   I passed qt_argc, qt_argv into ViewerProxy::Launch so we can support
+//   reverse launching without the GUI really knowing about it.
+//
 // ****************************************************************************
 
 void
@@ -801,7 +855,7 @@ QvisGUIApplication::LaunchViewer()
         // Add some more arguments and launch the viewer.
         AddViewerSpaceArguments();
         viewer->AddArgument("-defer");
-        viewer->Create();
+        viewer->Create(&qt_argc, &qt_argv);
         viewerIsAlive = true;
 
         // Set the default user name in the host profiles.
@@ -864,6 +918,9 @@ QvisGUIApplication::Synchronize(int tag)
 //   Brad Whitlock, Fri Apr 9 12:24:44 PDT 2004
 //   Added a tag to set the file panel's file highlight mode.
 //
+//   Brad Whitlock, Fri May 6 11:17:04 PDT 2005
+//   Added a tag to make the interpreter execute some commands.
+//
 // ****************************************************************************
 
 void
@@ -878,6 +935,17 @@ QvisGUIApplication::HandleSynchronize(int val)
         // Set the appropriate file highlight for the file panel now that
         // we're ready for user operation.
         mainWin->SetAllowFileSelectionChange(allowFileSelectionChange);
+    }
+    else if(val == LOAD_ACTIVESOURCE_TAG)
+    {
+        // Check the window information for the active source.
+        loadFile = QualifiedFilename(viewer->GetWindowInformation()->
+            GetActiveSource());
+        LoadFile(loadFile, false);
+    }
+    else if(val == INTERPRETER_SYNC_TAG)
+    {
+        QTimer::singleShot(10, interpreter, SLOT(ProcessCommands()));
     }
 }
 
@@ -904,6 +972,30 @@ QvisGUIApplication::SyncCallback(Subject *s, void *data)
     QvisGUIApplication *app = (QvisGUIApplication *)data;
     SyncAttributes *sync = (SyncAttributes *)s;
     app->HandleSynchronize(sync->GetSyncTag());
+}
+
+// ****************************************************************************
+// Method: QvisGUIApplication::ClientMethodCallback
+//
+// Purpose: 
+//   This method handles a clientmethod object.
+//
+// Arguments:
+//   s    : the client method object.
+//   data : callback data.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed May 4 18:03:04 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisGUIApplication::ClientMethodCallback(Subject *s, void *data)
+{
+    QvisGUIApplication *app = (QvisGUIApplication *)data;
+    app->HandleClientMethod();
 }
 
 // ****************************************************************************
@@ -1078,6 +1170,12 @@ QvisGUIApplication::FinalInitialization()
             if(code == CONFIGSTATE_FIRSTTIME)
                 QTimer::singleShot(1000, this, SLOT(displayReleaseNotesIfAvailable()));
         }
+
+        // If we were reverse launched, do a synchronize to try and open
+        // the active source later.
+        if(reverseLaunch)
+            Synchronize(LOAD_ACTIVESOURCE_TAG);
+
         visitTimer->StopTimer(timeid, "stage 10 - Incrementing run count");
         visitTimer->StopTimer(stagedInit, "FinalInitialization");
         visitTimer->StopTimer(completeInit, "VisIt to be ready");
@@ -1135,6 +1233,53 @@ QvisGUIApplication::Exec()
     ENDTRY
 
     return retval;
+}
+
+// ****************************************************************************
+// Method: QvisGUIApplication::Quit
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the user wants to
+//   quit VisIt.
+//
+// Note:       If there's more than 1 client attached to the viewer then ask
+//             the user if he wants to totally quit or just detach.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri May 6 12:18:37 PDT 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisGUIApplication::Quit()
+{
+    if(!viewerInitiatedQuit)
+    {
+        if(viewer->GetClientInformationList()->GetNumClientInformations() > 1)
+        {
+            // disconnect some slots so we don't keep getting the dialog.
+            disconnect(mainApp, SIGNAL(aboutToQuit()), mainApp, SLOT(closeAllWindows()));
+            disconnect(mainApp, SIGNAL(lastWindowClosed()), this, SLOT(Quit()));
+
+            if(QMessageBox::information(mainWin,
+               "VisIt", "There is more than 1 VisIt client connected to the "
+               "viewer. Do you want to quit everything? \n\n"
+               "Answering No will just detach the GUI and leave the viewer "
+               "and its remaining clients running.",
+               QMessageBox::Yes, QMessageBox::No) == QMessageBox::Yes)
+            {
+                closeAllClients = true;
+            }
+            else
+                closeAllClients = false;
+        }
+        else
+            closeAllClients = true;
+    }
+
+    mainApp->quit();
 }
 
 // ****************************************************************************
@@ -1201,6 +1346,10 @@ QvisGUIApplication::Exec()
 //    Brad Whitlock, Wed Feb 16 10:31:57 PDT 2005
 //    Added code to parse -dv.
 //
+//    Brad Whitlock, Wed May 4 13:15:25 PST 2005
+//    I made sure that host and port are preserved when we are reverse
+//    launching the gui.
+//
 // ****************************************************************************
 
 void
@@ -1208,15 +1357,36 @@ QvisGUIApplication::ProcessArguments(int &argc, char **argv)
 {
     AppearanceAttributes *aa = viewer->GetAppearanceAttributes();
 
+    //
+    // If we're reverse launching then there are certain arguments that we
+    // should not strip out here. They will be stripped out by ViewerProxy.
+    //
+    int i;
+    for(int i = 1; i < argc; ++i)
+    {
+        std::string current(argv[i]);
+        if(current == "-reverse_launch")
+        {
+            reverseLaunch = true;
+            break;
+        }
+    }
+
     for(int i = 1; i < argc; ++i)
     {
         std::string current(argv[i]);
 
-        // Remove any arguments that could be dangerous to the viewer.
+        // The host and port should only be stripped here if we're not
+        // doing a reverse launch.
+        bool stripHostAndPort = false;
         if(current == std::string("-host") ||
-           current == std::string("-port") ||
-           current == std::string("-nread") ||
-           current == std::string("-nwrite") ||
+           current == std::string("-port"))
+        {
+            stripHostAndPort = !reverseLaunch;
+        }
+
+        // Remove any arguments that could be dangerous to the viewer.
+        if(stripHostAndPort || 
            current == std::string("-borders") ||
            current == std::string("-geometry") ||
            current == std::string("-o") ||
@@ -1816,6 +1986,9 @@ QvisGUIApplication::AddViewerSpaceArguments()
 //   Brad Whitlock, Wed Mar 2 17:19:40 PST 2005
 //   Disable VisIt update with older Qt versions.
 //
+//   Brad Whitlock, Mon Mar 21 15:23:57 PST 2005
+//   Added save movie.
+//
 // ****************************************************************************
 
 void
@@ -1826,7 +1999,7 @@ QvisGUIApplication::CreateMainWindow()
     // Make it so the application terminates when the last
     // window is closed.
     connect(mainApp, SIGNAL(aboutToQuit()), mainApp, SLOT(closeAllWindows()));
-    connect(mainApp, SIGNAL(lastWindowClosed()), mainApp, SLOT(quit()));
+    connect(mainApp, SIGNAL(lastWindowClosed()), this, SLOT(Quit()));
     connect(mainApp, SIGNAL(hideApplication()), this, SLOT(NonSpontaneousIconifyWindows()));
     connect(mainApp, SIGNAL(showApplication()), this, SLOT(DeIconifyWindows()));
 
@@ -1836,11 +2009,13 @@ QvisGUIApplication::CreateMainWindow()
     std::string title("VisIt ");
     title += VERSION;
     mainWin = new QvisMainWindow(orientation, title.c_str());
+    connect(mainWin, SIGNAL(quit()), this, SLOT(Quit()));
     connect(mainWin, SIGNAL(saveSettings()), this, SLOT(SaveSettings()));
     connect(mainWin, SIGNAL(iconifyWindows(bool)), this, SLOT(IconifyWindows(bool)));
     connect(mainWin, SIGNAL(deIconifyWindows()), this, SLOT(DeIconifyWindows()));
     connect(mainWin, SIGNAL(activateAboutWindow()), this, SLOT(AboutVisIt()));
     connect(mainWin, SIGNAL(saveWindow()), this, SLOT(SaveWindow()));
+    connect(mainWin, SIGNAL(saveMovie()), this, SLOT(SaveMovie()));
     connect(mainWin, SIGNAL(printWindow()), this, SLOT(PrintWindow()));
     connect(mainWin, SIGNAL(activatePrintWindow()), this, SLOT(SetPrinterOptions()));
     connect(mainWin->GetPlotManager(), SIGNAL(activatePlotWindow(int)),
@@ -1904,6 +2079,9 @@ QvisGUIApplication::CreateMainWindow()
 //
 //   Hank Childs, Tue May 24 17:11:00 PDT 2005
 //   Added the Export DB window.
+//
+//   Brad Whitlock, Wed Apr 20 17:37:07 PST 2005
+//   Added command window.
 //
 // ****************************************************************************
 
@@ -2014,6 +2192,8 @@ QvisGUIApplication::SetupWindows()
              this, SLOT(showSimulationWindow()));
      connect(mainWin, SIGNAL(activateExportDBWindow()),
              this, SLOT(showExportDBWindow()));
+     connect(mainWin, SIGNAL(activateCommandWindow()),
+             this, SLOT(showCommandWindow()));
 }
 
 // ****************************************************************************
@@ -2038,6 +2218,9 @@ QvisGUIApplication::SetupWindows()
 //   
 //   Jeremy Meredith, Mon Apr  4 16:07:10 PDT 2005
 //   Added the Simulations window.
+//
+//   Brad Whitlock, Wed Apr 20 17:36:35 PST 2005
+//   Added the commands window.
 //
 //   Jeremy Meredith, Thu Apr 28 17:49:31 PDT 2005
 //   Changed the exact information sent to the Simulations window.
@@ -2237,6 +2420,12 @@ QvisGUIApplication::WindowFactory(int i)
         // Create the export DB window.
         win = new QvisExportDBWindow(viewer->GetExportDBAttributes(),
            windowNames[i], "Export Database", mainWin->GetNotepad());
+        break;
+    case WINDOW_COMMAND:
+        // Create the command window.
+        win = new QvisCommandWindow(windowNames[i], "Command", mainWin->GetNotepad());
+        connect(win, SIGNAL(runCommand(const QString &)),
+                this, SLOT(Interpret(const QString &)));
         break;
     }
 
@@ -2911,18 +3100,50 @@ QvisGUIApplication::SaveSession()
     // to that file.
     if(!fileName.isNull())
     {
-        // Force the file to have a .session extension.
-        if(fileName.right(sessionExtension.length()) != sessionExtension)
-            fileName += sessionExtension;
-
-        // Tell the viewer to save a session file.
         ++sessionCount;
-        viewer->ExportEntireState(fileName.latin1());
-
-        // Write the gui part of the session with a ".gui" extension.
-        fileName += ".gui";
-        WriteConfigFile(fileName.latin1());
+        SaveSessionFile(fileName);
     }
+}
+
+// ****************************************************************************
+// Method: QvisGUIApplication::SaveSessionFile
+//
+// Purpose: 
+//   Saves a session with the specified file name.
+//
+// Arguments:
+//   fileName : The filename to use when saving the session.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon May 9 14:57:08 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+QString
+QvisGUIApplication::SaveSessionFile(const QString &fileName)
+{
+#if defined(_WIN32)
+    QString sessionExtension(".vses");
+#else
+    QString sessionExtension(".session");
+#endif
+
+    // Force the file to have a .session extension.
+    QString sessionName(fileName);
+    if(sessionName.right(sessionExtension.length()) != sessionExtension)
+        sessionName += sessionExtension;
+
+    // Tell the viewer to save a session file.
+    viewer->ExportEntireState(sessionName.latin1());
+
+    // Write the gui part of the session with a ".gui" extension.
+    QString retval(sessionName);
+    sessionName += ".gui";
+    WriteConfigFile(sessionName.latin1());
+
+    return retval;
 }
 
 // ****************************************************************************
@@ -3200,7 +3421,9 @@ QvisGUIApplication::ProcessConfigSettings(DataNode *node, bool systemConfig)
 
     // Initialize the file server.
     if(!systemConfig)
+    {
         InitializeFileServer(guiNode);
+    }
 }
 
 // ****************************************************************************
@@ -5046,6 +5269,9 @@ QvisGUIApplication::updateVisIt()
 //   Brad Whitlock, Wed Mar 2 11:49:41 PDT 2005
 //   Fixed the code so it compiles on Windows.
 //
+//   Brad Whitlock, Fri May 6 12:14:14 PDT 2005
+//   I made it use the Quit method.
+//
 // ****************************************************************************
 
 void
@@ -5089,7 +5315,7 @@ QvisGUIApplication::updateVisItCompleted(const QString &program)
         newVisIt->start();
 
         // quit this version.
-        mainApp->quit();
+        Quit();
 #else
         // Write a script to launch the new version of VisIt       
         FILE *f = fopen("exec_new_visit", "w");
@@ -5142,10 +5368,611 @@ QvisGUIApplication::updateVisItCompleted(const QString &program)
             newVisIt->start();
 
             // quit this version.
-            mainApp->quit();
+            Quit();
         }
 #endif
     }
+}
+
+// ****************************************************************************
+// Method: QvisGUIApplication::SendInterface
+//
+// Purpose: 
+//   This is a Qt slot function that sends the GUI's client interface to
+//   the viewer.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri May 6 09:40:54 PDT 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisGUIApplication::SendInterface()
+{
+    // The viewer uses this method to discover information about the GUI.
+    ClientInformation *info = viewer->GetClientInformation();
+    info->SetClientName("gui");
+    info->ClearMethods();
+
+    // Populate the method names and prototypes that the GUI supports
+    // but don't advertise _QueryClientInformation.
+    info->DeclareMethod("Quit", "");
+    info->DeclareMethod("DeIconify", "");
+    info->DeclareMethod("Hide",      "");
+    info->DeclareMethod("Iconify",   "");
+    info->DeclareMethod("Show",      "");
+    info->DeclareMethod("MessageBoxYesNo",    "s");
+    info->DeclareMethod("MessageBoxOkCancel", "s");
+    info->DeclareMethod("MessageBoxOk",       "s");
+    info->DeclareMethod("MovieProgress",      "sii");
+    info->DeclareMethod("MovieProgressEnd",   "");
+    info->SelectAll();
+    info->Notify();
+
+    debug5 << "GUI info: " << info->GetClientName().c_str()
+           << endl;
+    debug5 << "methods:" << endl;
+    for(int j = 0; j < info->GetMethodNames().size(); ++j)
+    {
+        debug5 << "\t" << info->GetMethod(j).c_str() << "("
+               << info->GetMethodPrototype(j).c_str() << ")" << endl;
+    }
+    debug5 << endl;
+}
+
+// ****************************************************************************
+// Method: QvisGUIApplication::HandleClientMethod
+//
+// Purpose: 
+//   Handles GUI client methods, which are commands that can be called by
+//   other VisIt clients.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed May 4 18:07:21 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisGUIApplication::HandleClientMethod()
+{
+    ClientMethod *method = viewer->GetClientMethod();
+    int index;
+
+    if(method->GetMethodName() == "_QueryClientInformation")
+    {
+        debug5 << "GUI received _QueryClientInformation method. Tell the "
+                  "viewer which client methods the GUI supports." << endl;
+        // Xfer is disabled right now since we got here via Xfer::Process. We
+        // can't send anything back to the viewer until we get to the main
+        // event loop so schedule SendInterface.
+        QTimer::singleShot(10, this, SLOT(SendInterface()));
+    }
+    else
+    {
+        int okay = viewer->MethodRequestHasRequiredInformation();
+     
+        if(okay == 0)
+        {
+            debug5 << "Client method " << method->GetMethodName().c_str()
+                   << " is not supported by the GUI." << endl;
+        }
+        else if(okay == 1)
+        {
+            QString s;
+            s.sprintf("Client method %s is supported by the GUI but not "
+                      "enough information was passed in the method request.", 
+                      method->GetMethodName().c_str());
+            Warning(s);
+        }
+        else
+        {
+            // The method is supported and we have all of the information.
+            if(method->GetMethodName() == "Quit")
+            {
+                viewerInitiatedQuit = true;
+                Quit();
+            }
+            else if(method->GetMethodName() == "DeIconify")
+                DeIconifyWindows();
+            else if(method->GetMethodName() == "Hide")
+            {
+                mainWin->hide();
+
+                // Iconify all of the regular windows.
+                for(WindowBaseMap::iterator pos = otherWindows.begin();
+                    pos != otherWindows.end(); ++pos)
+                {
+                    pos->second->hide();
+                }
+
+                // Iconify all of the plot windows.
+                for(index = 0; index < plotWindows.size(); ++index)
+                {
+                    if(plotWindows[index] != 0)
+                        plotWindows[index]->hide();
+                }
+
+                // Iconify all of the operator windows.
+                for(index = 0; index < operatorWindows.size(); ++index)
+                {
+                    if(operatorWindows[index] != 0)
+                        operatorWindows[index]->hide();
+                }
+            }
+            else if(method->GetMethodName() == "Iconify")
+                IconifyWindows(false);
+            else if(method->GetMethodName() == "Show")
+            {
+                mainWin->show();
+
+                // Iconify all of the regular windows.
+                for(WindowBaseMap::iterator pos = otherWindows.begin();
+                    pos != otherWindows.end(); ++pos)
+                {
+                    pos->second->show();
+                }
+
+                // Iconify all of the plot windows.
+                for(index = 0; index < plotWindows.size(); ++index)
+                {
+                    if(plotWindows[index] != 0)
+                        plotWindows[index]->show();
+                }
+
+                // Iconify all of the operator windows.
+                for(index = 0; index < operatorWindows.size(); ++index)
+                {
+                    if(operatorWindows[index] != 0)
+                        operatorWindows[index]->show();
+                }
+            }
+            else if(method->GetMethodName() == "MessageBoxYesNo")
+            {
+                // Ask the user a question in a yes/no message box.
+                if(QMessageBox::information(mainWin, "VisIt",
+                   method->GetStringArgs()[0].c_str(),
+                   QMessageBox::Yes, QMessageBox::No) == QMessageBox::Yes)
+                {
+                    QTimer::singleShot(10, this, SLOT(SendMessageBoxResult0()));
+                }
+                else
+                    QTimer::singleShot(10, this, SLOT(SendMessageBoxResult1()));
+            }
+            else if(method->GetMethodName() == "MessageBoxOkCancel")
+            {
+                // Ask the user a question in a yes/no message box.
+                int result = 0;
+                if(QMessageBox::information(mainWin, "VisIt",
+                   method->GetStringArgs()[0].c_str(),
+                   QMessageBox::Ok, QMessageBox::Cancel) == QMessageBox::Cancel)
+                {
+                    QTimer::singleShot(10, this, SLOT(SendMessageBoxResult0()));
+                }
+                else
+                    QTimer::singleShot(10, this, SLOT(SendMessageBoxResult1()));
+            }
+            else if(method->GetMethodName() == "MessageBoxOk")
+            {
+                // Ask the user a question in a yes/no message box.
+                QMessageBox::information(mainWin, "VisIt",
+                    method->GetStringArgs()[0].c_str(),
+                    QMessageBox::Ok);
+                QTimer::singleShot(10, this, SLOT(SendMessageBoxResult0()));
+            }
+            else if(method->GetMethodName() == "MovieProgress")
+            {
+                // Set the movie progress dialog's properties.
+                if(movieProgress != 0)
+                {
+                    QString labelText(method->GetStringArgs()[0].c_str());
+                    int current = method->GetIntArgs()[0];
+                    int total   = method->GetIntArgs()[1];
+                    if(labelText != movieProgress->labelText())
+                        movieProgress->setLabelText(labelText);
+                    if(total != movieProgress->totalSteps())
+                        movieProgress->setTotalSteps(total);
+                    if(current != movieProgress->progress())
+                        movieProgress->setProgress(current);
+                }
+            }
+            else if(method->GetMethodName() == "MovieProgressEnd")
+            {
+                if(movieProgress != 0)
+                    movieProgress->hide();
+            }
+        }
+    }
+}
+
+// ****************************************************************************
+// Method: QvisGUIApplication::SendMessageBoxResult
+//
+// Purpose: 
+//   This is a Qt slot function that is called to send messagebox results
+//   as a client method.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon May 9 14:20:56 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisGUIApplication::SendMessageBoxResult0()
+{
+    ClientMethod *method = viewer->GetClientMethod();
+    method->SetMethodName("MessageBoxResult");
+    method->ClearArgs();
+    method->AddArgument(0);
+    clientMethodObserver->SetUpdate(false);
+    method->Notify();
+}
+
+void
+QvisGUIApplication::SendMessageBoxResult1()
+{
+    ClientMethod *method = viewer->GetClientMethod();
+    method->SetMethodName("MessageBoxResult");
+    method->ClearArgs();
+    method->AddArgument(1);
+    clientMethodObserver->SetUpdate(false);
+    method->Notify();
+}
+
+// ****************************************************************************
+// Function: GetMovieCommandLine
+//
+// Purpose: 
+//   This function creates a command line for "visit -movie" based on the 
+//   information stored in the movieAtts.
+//
+// Arguments:
+//   movieAtts : The movie attributes used to create the command line.
+//   args      : The return vector for the command line args.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jun 2 10:50:21 PDT 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+GetMovieCommandLine(const MovieAttributes *movieAtts, stringVector &args)
+{
+#if defined(_WIN32)
+    args.push_back(GetVisItInstallationDirectory() + "\\visit.exe");
+#else
+    args.push_back(GetVisItInstallationDirectory() + "/bin/visit");
+#endif
+    args.push_back("-movie");
+
+    // iterate over the formats
+    args.push_back("-format");
+    const stringVector &fmt = movieAtts->GetFileFormats();
+    int i;
+    std::string F;
+    for(i = 0; i < fmt.size(); ++i)
+    {
+        F += fmt[i];
+        if(i < (fmt.size() - 1))
+            F += ",";
+    }
+    args.push_back(F);
+
+    // iterate over the geometries
+    args.push_back("-geometry");
+    const intVector &w = movieAtts->GetWidths();
+    const intVector &h = movieAtts->GetHeights();
+    std::string G;
+    for(i = 0; i < w.size(); ++i)
+    {
+        char tmp[100];
+        SNPRINTF(tmp, 100, "%dx%d", w[i], h[i]);
+        G += tmp;
+        if(i < (w.size() - 1))
+            G += ",";
+    }
+    args.push_back(G);
+
+    if(movieAtts->GetStereo())
+        args.push_back("-stereo");
+
+    args.push_back("-output");
+    std::string dirFile(movieAtts->GetOutputDirectory());
+    if(dirFile == ".")
+        dirFile += SLASH_STRING;
+    dirFile += movieAtts->GetOutputName();
+    args.push_back(dirFile);
+}
+
+// ****************************************************************************
+// Function: UpdateCurrentWindowSizes
+//
+// Purpose: 
+//   This function updates the movieAtts with the correct window width and
+//   height.
+//
+// Arguments:
+//   movieAtts     : The movie attributes to update.
+//   currentWidth  : The current window width.
+//   currentHeight : The current window height.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jun 22 12:11:07 PDT 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+UpdateCurrentWindowSizes(MovieAttributes *movieAtts, int currentWidth,
+    int currentHeight)
+{
+    //
+    // Iterate through the movieAtts' useCurrentSize vector and substitute
+    // the active window's actual width and height.
+    //
+    intVector widths(movieAtts->GetWidths());
+    intVector heights(movieAtts->GetHeights());
+    const unsignedCharVector &useCurrentSize = movieAtts->GetUseCurrentSize();
+    const doubleVector &scales = movieAtts->GetScales();
+    for(int i = 0; i < widths.size(); ++i)
+    {
+        if(useCurrentSize[i] == 1)
+        {
+            const int MAX_WINDOW_SIZE = 4096;
+            int w = int(scales[i] * double(currentWidth));
+            widths[i] = (w > MAX_WINDOW_SIZE) ? MAX_WINDOW_SIZE : w;
+            int h = int(scales[i] * double(currentHeight));
+            heights[i] = (h > MAX_WINDOW_SIZE) ? MAX_WINDOW_SIZE : h;
+        }
+    }
+    movieAtts->SetWidths(widths);
+    movieAtts->SetHeights(heights);
+}
+
+// ****************************************************************************
+// Method: QvisGUIApplication::SaveMovie
+//
+// Purpose: 
+//   This is Qt slot function that opens the "Save movie" wizard and leads 
+//   the user through setting various movie options.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Mar 21 15:39:15 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisGUIApplication::SaveMovie()
+{
+    MovieAttributes *movieAtts = viewer->GetMovieAttributes();
+
+    // Replace the widths and heights of formats using the current window
+    // size with the current window size so the values shown will be right
+    // if the user changes the format to use a specific width, height.
+    WindowInformation *winInfo = viewer->GetWindowInformation();
+    int cw = winInfo->GetWindowSize()[0];
+    int ch = winInfo->GetWindowSize()[1];
+    UpdateCurrentWindowSizes(movieAtts, cw, ch);
+
+    if(saveMovieWizard == 0)
+    {
+        saveMovieWizard = new QvisSaveMovieWizard(movieAtts,
+            mainWin, "Save movie wizard");
+    }
+    else
+        saveMovieWizard->UpdateAttributes();
+
+    // Execute the save movie wizard to gather the requirements for the movie.
+    if(saveMovieWizard->Exec() == QDialog::Accepted)
+    {
+        // Make the wizard copy its local movieAtts into the viewer's movieAtts
+        // and send them to the viewer.
+        saveMovieWizard->SendAttributes();
+
+        // Determine the movie's output name.
+        QString dirFile(movieAtts->GetOutputDirectory().c_str());
+        if(dirFile == ".")
+            dirFile += SLASH_STRING;
+        dirFile += movieAtts->GetOutputName().c_str();
+
+        // Replace the widths and heights of formats using the current window
+        // size with the current window size.
+        UpdateCurrentWindowSizes(movieAtts, cw, ch);
+        movieAtts->Notify();
+
+        if(movieAtts->GetGenerationMethod() == MovieAttributes::NowCurrentInstance)
+        {
+            // Determine the location of the makemovie script.
+#if defined(_WIN32)
+            std::string makemovie(GetVisItInstallationDirectory() + "\\makemovie.py");
+#else
+            std::string makemovie(GetVisItInstallationDirectory() + "/bin/makemovie.py");
+#endif
+
+            // Assemble a string of code to execute.
+            QString code; code.sprintf("try:\n    Source('%s')\n", makemovie.c_str());
+            code += "    movie = MakeMovie()\n";
+            code += "    movie.usesCurrentPlots = 1\n";
+            code += "    movie.sendClientFeedback = 1\n";
+            const stringVector &formats = movieAtts->GetFileFormats();
+            const intVector &widths  = movieAtts->GetWidths();
+            const intVector &heights = movieAtts->GetHeights();
+            for(int i = 0; i < formats.size(); ++i)
+            {
+                QString order;
+                order.sprintf("    movie.RequestFormat(\"%s\", %d, %d)\n",
+                    formats[i].c_str(), widths[i], heights[i]);
+                code += order;
+            }
+            code += "    movie.movieBase = \"" + dirFile + "\"\n";
+            code += "    movie.screenCaptureImages = 0\n";
+            code += "    movie.stereo = ";
+            if(movieAtts->GetStereo())
+                code += "1\n";
+            else
+                code += "0\n";
+            code += "    movie.GenerateFrames()\n";
+            code += "    if(movie.EncodeFrames()):\n";
+            code += "        movie.Cleanup()\n";
+            code += "except VisItInterrupt:\n";
+            code += "    pass\n";
+            code += "except:\n";
+            code += "    ClientMethod(\"MovieProgressEnd\")\n";
+            code += "    ClientMethod(\"MessageBoxOk\", \"VisIt could not "
+                    "interpret the script to create your movie so no movie "
+                    "was generated.\")\n";
+            code += "    raise\n";
+            code += "ClientMethod(\"MovieProgressEnd\")\n";
+            Interpret(code);
+
+            // Hide all of the GUI and viewer windows.
+            // Start the "visit -movie" code in the interpreter on another thread.
+            // Pop up the Movie progress dialog.
+            // Show the GUI and viewer windows again.
+            if(movieProgress == 0)
+            {
+                movieProgress = new QvisMovieProgressDialog(mainWin, "movieProgress");
+                movieProgress->setCaption("VisIt movie progress");
+                connect(movieProgress, SIGNAL(cancelled()),
+                        this, SLOT(CancelMovie()));
+            }
+            movieProgress->setLabelText("Making movie");
+            movieProgress->setProgress(0);
+            movieProgress->show();
+        }
+        else
+        {
+            // Save the current session.
+            QString msg, sessionFile(SaveSessionFile(dirFile));
+            bool errFlag = false;
+
+            // Get the command line arguments.
+            stringVector args;
+            GetMovieCommandLine(movieAtts, args);
+            args.push_back("-sessionfile");
+            args.push_back(sessionFile.latin1());
+
+            if (movieAtts->GetGenerationMethod() == MovieAttributes::NowNewInstance)
+            {
+                msg = "VisIt executed ";
+
+                // Fire off "visit -movie" under the covers. Perhaps have some
+                // stuff to send back progress to this process.
+                QString program(args[0].c_str());
+                QProcess *movieMaker = new QProcess(program, this, "movieMaker");
+                for(int i = 1; i < args.size(); ++i)
+                    movieMaker->addArgument(args[i].c_str());
+                movieMaker->setCommunication(0);
+                if(!movieMaker->start())
+                {
+                    errFlag = true;
+                    Error(QString("VisIt could not run ") + program + QString("."));
+                }
+            }
+            else
+            {
+                msg = "Execute";
+            }
+
+            if(!errFlag)
+            {
+                // Finish creating the message.
+                msg += " the following command line to begin making your movie:\n\n";
+                for(int i = 0; i < args.size(); ++i)
+                {
+                    msg += args[i].c_str();
+                    msg += " ";
+                }
+
+                // Open a dialog that lists the "visit -movie" command that 
+                // you have to run to make the movie.
+                QMessageBox::information(mainWin, "VisIt", msg, QMessageBox::Ok);
+            }
+        }
+    }
+}
+
+// ****************************************************************************
+// Method: QvisGUIApplication::CancelMovie
+//
+// Purpose: 
+//   This is a Qt slot function that is called by the Movie Progress Dialog
+//   when we click its Cancel button.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jun 21 11:12:27 PDT 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisGUIApplication::CancelMovie()
+{
+    ClientMethod *method = viewer->GetClientMethod();
+    method->ClearArgs();
+    method->SetMethodName("Interrupt");
+    method->Notify();
+}
+
+// ****************************************************************************
+// Method: QvisGUIApplication::Interpret
+//
+// Purpose: 
+//   This is a Qt slot function that tells the interpreter to execute a string
+//   containing code of some type.
+//
+// Arguments:
+//   s : The code to execute.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri May 6 10:49:55 PDT 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisGUIApplication::Interpret(const QString &s)
+{
+    if(interpreter == 0)
+    {
+        interpreter = new QvisInterpreter(this, "Interpreter");
+        connect(interpreter, SIGNAL(Synchronize()),
+                this, SLOT(InterpreterSync()));
+    }
+
+    interpreter->Interpret(s);
+}
+
+// ****************************************************************************
+// Method: QvisGUIApplication::InterpreterSync
+//
+// Purpose: 
+//   Starts a GUI synchronization that will cause the interpreter to execute
+//   code when the synchronization returns.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri May 6 11:17:31 PDT 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisGUIApplication::InterpreterSync()
+{
+    Synchronize(INTERPRETER_SYNC_TAG);
 }
 
 //
@@ -5159,6 +5986,7 @@ void QvisGUIApplication::showSaveWindow()            { GetInitializedWindowPoint
 void QvisGUIApplication::showEngineWindow()          { GetInitializedWindowPointer(WINDOW_ENGINE)->show(); }
 void QvisGUIApplication::showAnimationWindow()       { GetInitializedWindowPointer(WINDOW_ANIMATION)->show(); }
 void QvisGUIApplication::showAnnotationWindow()      { GetInitializedWindowPointer(WINDOW_ANNOTATION)->show(); }
+void QvisGUIApplication::showCommandWindow()         { GetInitializedWindowPointer(WINDOW_COMMAND)->show(); }
 void QvisGUIApplication::showExpressionsWindow()     { GetInitializedWindowPointer(WINDOW_EXPRESSIONS)->show(); }
 void QvisGUIApplication::showSubsetWindow()          { GetInitializedWindowPointer(WINDOW_SUBSET)->show(); }
 void QvisGUIApplication::showViewWindow()            { GetInitializedWindowPointer(WINDOW_VIEW)->show(); }

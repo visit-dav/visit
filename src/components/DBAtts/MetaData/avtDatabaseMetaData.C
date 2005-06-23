@@ -4005,6 +4005,94 @@ avtDatabaseMetaData::avtDatabaseMetaData(const avtDatabaseMetaData &rhs)
         defaultPlots.push_back(new avtDefaultPlotMetaData(*rhs.defaultPlots[i]));
 }
 
+// ****************************************************************************
+// Method: avtDatabaseMetaData::TypeName
+//
+// Purpose: 
+//   Returns the name of the class.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon May 2 19:08:13 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+const std::string 
+avtDatabaseMetaData::TypeName() const
+{
+    return "avtDatabaseMetaData";
+}
+
+// ****************************************************************************
+// Method: avtDatabaseMetaData::CopyAttributes
+//
+// Purpose: 
+//   Tries to copy the rhs object into this and returns whether it worked.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon May 2 19:08:25 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+avtDatabaseMetaData::CopyAttributes(const AttributeGroup *rhs)
+{
+    bool retval = rhs->TypeName() == TypeName();
+    if(retval)
+    {
+        avtDatabaseMetaData *m = (avtDatabaseMetaData *)rhs;
+        *this = *m;
+    }
+
+    return retval;
+}
+
+// ****************************************************************************
+// Method: avtDatabaseMetaData::CreateCompatible
+//
+// Purpose: 
+//   Creates a compatible object.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon May 2 19:08:57 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+AttributeSubject *
+avtDatabaseMetaData::CreateCompatible(const std::string &t) const
+{
+    if(t == TypeName())
+        return NewInstance(true);
+
+    return 0;
+}
+
+// ****************************************************************************
+// Method: avtDatabaseMetaData::NewInstance
+//
+// Purpose: 
+//   Returns a new instance.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon May 2 19:09:19 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+AttributeSubject *
+avtDatabaseMetaData::NewInstance(bool copy) const
+{
+    if(copy)
+        return new avtDatabaseMetaData(*this);
+    else
+        return new avtDatabaseMetaData;
+}
 
 // ****************************************************************************
 //  Method: avtDatabaseMetaData::operator=

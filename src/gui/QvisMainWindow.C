@@ -35,10 +35,12 @@
 #include <icons/fileprint.xpm>
 #include <icons/animate.xpm>
 #include <icons/annot.xpm>
+#include <icons/command.xpm>
 #include <icons/light.xpm>
 #include <icons/pick.xpm>
 #include <icons/plugin.xpm>
 #include <icons/rainbow.xpm>
+#include <icons/savemovie.xpm>
 #include <icons/subset.xpm>
 #include <icons/view.xpm>
 #include <icons/output_blue.xpm>
@@ -212,6 +214,10 @@
 //    Brad Whitlock, Wed Feb 9 17:49:22 PST 2005
 //    Added a menu option to update VisIt.
 //
+//    Brad Whitlock, Mon Mar 21 15:17:31 PST 2005
+//    I enabled the save movie option, the command window, and made quitting
+//    emit a quit signal.
+//
 //    Jeremy Meredith, Mon Apr  4 16:35:02 PDT 2005
 //    Added the simulations window to the menu.
 //
@@ -227,6 +233,7 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     QPixmap openIcon, saveIcon, computerIcon, printIcon, rainbowIcon;
     QPixmap annotIcon, lightIcon, subsetIcon, viewIcon;
     QPixmap exprIcon, animIcon, pluginIcon, pickIcon, copyIcon, lockIcon;
+    QPixmap saveMovieIcon, commandIcon;
 
     // Make the main window observe the global status subject. This is
     // part of the mechanism that allows other windows to display status
@@ -265,6 +272,8 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     pickIcon = QPixmap(pick_xpm);
     copyIcon = QPixmap(copymenu_xpm);
     lockIcon = QPixmap(lock_xpm);
+    saveMovieIcon = QPixmap(savemovie_xpm);
+    commandIcon = QPixmap(command_xpm);
 
     outputBlue = new QPixmap( output_blue_xpm );
     outputRed = new QPixmap( output_red_xpm );
@@ -302,8 +311,7 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     filePopup->insertSeparator();
     filePopup->insertItem(saveIcon, tr("&Save window"), this, SIGNAL(saveWindow()), CTRL+Key_S );
     filePopup->insertItem( tr("Set Save &options . . ."), this, SIGNAL(activateSaveWindow()), CTRL+Key_O);
-//    id = file->insertItem( tr("Save movie . . ."), this, SIGNAL(saveMovie()));
-//    file->setItemEnabled(id, false);
+    filePopup->insertItem(saveMovieIcon, tr("Save movie . . ."), this, SIGNAL(saveMovie()));
     id = filePopup->insertItem(tr("Export database . . ."), this, SIGNAL(activateExportDBWindow()));
     id = filePopup->insertItem(printIcon, tr("Print window"), this, SIGNAL(printWindow()));
     id = filePopup->insertItem(tr("Set Print options . . ."), this, SIGNAL(activatePrintWindow()));
@@ -311,7 +319,7 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     id = filePopup->insertItem(tr("Restore session . . ."), this, SIGNAL(restoreSession()));
     id = filePopup->insertItem(tr("Save session . . ."), this, SIGNAL(saveSession()));
     filePopup->insertSeparator();
-    filePopup->insertItem( tr("E&xit"), qApp, SLOT(quit()), CTRL+Key_X );
+    filePopup->insertItem( tr("E&xit"), this, SIGNAL(quit()), CTRL+Key_X );
 
     //
     // Add the Controls menu.
@@ -321,6 +329,7 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     id = ctrls->insertItem(animIcon, tr("&Animation . . ."), this, SIGNAL(activateAnimationWindow()), CTRL+Key_A);
     id = ctrls->insertItem(annotIcon, tr("A&nnotation . . ."), this, SIGNAL(activateAnnotationWindow()), CTRL+Key_N);
     id = ctrls->insertItem(rainbowIcon, tr("Color &table . . ."), this, SIGNAL(activateColorTableWindow()), CTRL+Key_T);
+    id = ctrls->insertItem(commandIcon, tr("Command . . ."), this, SIGNAL(activateCommandWindow()), CTRL+SHIFT+Key_C);
     id = ctrls->insertItem( tr("&Database correlations . . ."), this, SIGNAL(activateCorrelationListWindow()), CTRL+Key_D);
     id = ctrls->insertItem(exprIcon, tr("&Expressions . . ."), this, SIGNAL(activateExpressionsWindow()), CTRL+SHIFT+Key_E );
     id = ctrls->insertItem( tr("&Keyframing . . ."), this, SIGNAL(activateKeyframeWindow()), CTRL+Key_K);

@@ -2675,14 +2675,28 @@ FileServerList::GetSeparatorString(const std::string &host)
 //  Programmer:  Jeremy Meredith
 //  Creation:    August 25, 2004
 //
+//  Modifications:
+//    Brad Whitlock, Wed May 4 14:25:27 PST 2005
+//    I made it check to make sure that the file exists before trying to 
+//    blindly insert the metadata into the cache.
+//
 // ****************************************************************************
+
 void
 FileServerList::SetOpenFileMetaData(const avtDatabaseMetaData *md)
 {
-    *(fileMetaData[openFile.FullName()]) = *md;
-    // hack to have it return that the file changed
-    fileAction=FILE_OPEN;
-    Select(5, (void *)&fileAction);
+    if(fileMetaData.find(openFile.FullName()) != fileMetaData.end())
+    {
+        *(fileMetaData[openFile.FullName()]) = *md;
+        // hack to have it return that the file changed
+        fileAction=FILE_OPEN;
+        Select(5, (void *)&fileAction);
+    }
+    else
+    {
+        debug1 << "Attempted to insert metadata for a file that has not been "
+                  "opened." << endl;
+    } 
 }
 
 // ****************************************************************************
@@ -2699,12 +2713,26 @@ FileServerList::SetOpenFileMetaData(const avtDatabaseMetaData *md)
 //  Programmer:  Jeremy Meredith
 //  Creation:    August 25, 2004
 //
+//  Modifications:
+//    Brad Whitlock, Wed May 4 14:25:27 PST 2005
+//    I made it check to make sure that the file exists before trying to 
+//    blindly insert the metadata into the cache.
+//
 // ****************************************************************************
+
 void
 FileServerList::SetOpenFileSIL(const avtSIL *sil)
 {
-    *(SILData[openFile.FullName()]) = *sil;
-    // hack to have it return that the file changed
-    fileAction=FILE_OPEN;
-    Select(5, (void *)&fileAction);
+    if(SILData.find(openFile.FullName()) != SILData.end())
+    {
+        *(SILData[openFile.FullName()]) = *sil;
+        // hack to have it return that the file changed
+        fileAction=FILE_OPEN;
+        Select(5, (void *)&fileAction);
+    }
+    else
+    {
+        debug1 << "Attempted to insert a SIL for a file that has not been "
+                  "opened." << endl;
+    } 
 }

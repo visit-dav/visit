@@ -1373,6 +1373,66 @@ AttributeGroup::Select(int index, void *address, int length)
 }
 
 // ****************************************************************************
+// Method: AttributeGroup::SelectField
+//
+// Purpose: 
+//   Lets the user select a field.
+//
+// Arguments:
+//   index : The field to select.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue May 3 11:11:08 PDT 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+AttributeGroup::SelectField(int index)
+{
+    if(index >= 0 && index < typeMap.size())
+    {
+        if(typeMap[index].address != 0)
+            typeMap[index].selected = true;
+    }
+}
+
+// ****************************************************************************
+// Method: AttributeGroup::SelectFields
+//
+// Purpose: 
+//   Lets the user select multiple fields.
+//
+// Arguments:
+//   indices : The indices of the fields to select.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue May 3 11:11:32 PDT 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+AttributeGroup::SelectFields(const std::vector<int> &indices)
+{
+    // Select and unselect to make sure that the addresses are all okay.
+    SelectAll();
+    if(indices.size() > 0)
+    {
+        UnSelectAll();
+
+        for(int i = 0; i < indices.size(); ++i)
+        {
+            int index = indices[i];
+            if(index >= 0 && index < typeMap.size())
+                typeMap[index].selected = true;
+        }
+    }
+}
+
+// ****************************************************************************
 // Method: AttributeGroup::UnSelectAll
 //
 // Purpose: 

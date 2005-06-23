@@ -24,6 +24,9 @@
 #include <AnnotationAttributes.h>
 #include <AnnotationObjectList.h>
 #include <AppearanceAttributes.h>
+#include <ClientMethod.h>
+#include <ClientInformation.h>
+#include <ClientInformationList.h>
 #include <ColorTableAttributes.h>
 #include <DatabaseCorrelation.h>
 #include <DatabaseCorrelationList.h>
@@ -43,6 +46,7 @@
 #include <LostConnectionException.h>
 #include <MaterialAttributes.h>
 #include <MessageAttributes.h>
+#include <MovieAttributes.h>
 #include <PickAttributes.h>
 #include <PlotList.h>
 #include <PluginManagerAttributes.h>
@@ -65,6 +69,7 @@
 #include <ViewerActionManager.h>
 #include <ViewerConnectionProgressDialog.h>
 #include <ParsingExprList.h>
+#include <ViewerClientConnection.h>
 #include <ViewerConfigManager.h>
 #include <ViewerEngineManager.h>
 #include <ViewerRemoteProcessChooser.h>
@@ -80,6 +85,7 @@
 #include <ViewerQueryManager.h>
 #include <ViewerRPCObserver.h>
 #include <ViewerServerManager.h>
+#include <ViewerState.h>
 #include <ViewerSILAttsObserver.h>
 #include <ViewerWindow.h>
 #include <ViewerWindowManager.h>
@@ -150,10 +156,15 @@ using std::string;
 //    Brad Whitlock, Fri Apr 15 10:42:31 PDT 2005
 //    Added postponedAction.
 //
+//    Brad Whitlock, Mon May 2 14:02:43 PST 2005
+//    Made parent be a pointer, added clients, viewerState, inputConnection,
+//    clientMethod, clientInformation, clientInformationList.
+//
 // ****************************************************************************
 
-ViewerSubject::ViewerSubject() : parent(), xfer(), viewerRPC(), 
-    postponedAction(), borders(), shift(), preshift(), geometry()
+ViewerSubject::ViewerSubject() : xfer(), clients(), viewerRPC(), 
+    postponedAction(), borders(), shift(), preshift(), geometry(),
+    engineParallelArguments(), unknownArguments(), clientArguments()
 {
     //
     // Initialize pointers to some Qt objects that don't get created
@@ -162,6 +173,13 @@ ViewerSubject::ViewerSubject() : parent(), xfer(), viewerRPC(),
     mainApp = 0;
     checkParent = 0;
     checkRenderer = 0;
+
+    //
+    // We start out with no ParentProcess object and it's only temporary anyway.
+    //
+    parent = 0;
+    viewerState = 0;
+    inputConnection = 0;
 
     //
     // By default we don't want to defer heavy initialization work.
@@ -213,6 +231,8 @@ ViewerSubject::ViewerSubject() : parent(), xfer(), viewerRPC(),
     keepAliveTimer = 0;
     viewerRPCObserver = 0;
     postponedActionObserver = 0;
+    clientMethodObserver = 0;
+    clientInformationObserver = 0;
     syncObserver = 0;
     messageAtts = 0;
     statusAtts = 0;
@@ -221,6 +241,10 @@ ViewerSubject::ViewerSubject() : parent(), xfer(), viewerRPC(),
     metaData = 0;
     silAtts = 0;
     procAtts = 0;
+    clientMethod = 0;
+    clientInformation = 0;
+    clientInformationList = 0;
+    movieAtts = 0;
 
     //
     // Set some flags related to viewer windows.
@@ -266,6 +290,10 @@ ViewerSubject::ViewerSubject() : parent(), xfer(), viewerRPC(),
 //    Brad Whitlock, Fri Apr 15 11:11:17 PDT 2005
 //    Added postponedActionObserver.
 //
+//    Brad Whitlock, Mon May 2 14:03:29 PST 2005
+//    Added viewerState, inputConnection, clientMethod, clientInformation
+//    clientInformationList, and movieAtts.
+//
 // ****************************************************************************
 
 ViewerSubject::~ViewerSubject()
@@ -273,6 +301,9 @@ ViewerSubject::~ViewerSubject()
     delete messageBuffer;
     delete viewerRPCObserver;
     delete postponedActionObserver;
+    delete clientMethodObserver;
+    delete clientInformationObserver;
+
     delete plotFactory;
     delete operatorFactory;
     delete configMgr;
@@ -286,14 +317,13 @@ ViewerSubject::~ViewerSubject()
     delete metaData;
     delete silAtts;
     delete procAtts;
+    delete clientMethod;
+    delete clientInformation;
+    delete clientInformationList;
+    delete movieAtts;
 
-#ifdef VIEWER_MT
-    if(messagePipe[0] != -1)
-        close(messagePipe[0]);
-
-    if(messagePipe[1] != -1)
-        close(messagePipe[1]);
-#endif
+    delete viewerState;
+    delete inputConnection;
 }
 
 // ****************************************************************************
@@ -335,6 +365,9 @@ ViewerSubject::~ViewerSubject()
 //    Mark C. Miller, Tue Mar  8 18:06:19 PST 2005
 //    Added procAtts
 //
+//    Brad Whitlock, Mon May 2 14:04:44 PST 2005
+//    I made parent be a pointer so we can donate it to another object later.
+//
 // ****************************************************************************
 
 void
@@ -345,27 +378,14 @@ ViewerSubject::Connect(int *argc, char ***argv)
     //
     int total = visitTimer->StartTimer();
     int timeid = visitTimer->StartTimer();
-    parent.Connect(1, 1, argc, argv, true);
+    parent = new ParentProcess;
+    parent->Connect(1, 1, argc, argv, true);
     visitTimer->StopTimer(timeid, "Connecting to client");
 
     //
-    // Create objects.
+    // Create and connect state objects.
     //
-
-    // Create the messaging attributes.
-    messageAtts = new MessageAttributes;
-    statusAtts = new StatusAttributes;
-    // Create the appearance attributes.
-    appearanceAtts = new AppearanceAttributes;
-    // Create the sync attributes.
-    syncAtts = new SyncAttributes;
-    // Create the plugin attributes
-    pluginAtts = new PluginManagerAttributes;
-    messageBuffer = new ViewerMessageBuffer;
-    // Create the metadata and sil attributes
-    metaData = new avtDatabaseMetaData;
-    silAtts = new SILAttributes;
-    procAtts = new ProcessAttributes;
+    CreateState();
 
     //
     // Read the config files.
@@ -525,6 +545,94 @@ ViewerSubject::ReadConfigFiles(int argc, char **argv)
 }
 
 // ****************************************************************************
+// Method: ViewerSubject::CreateState
+//
+// Purpose: 
+//   Creates the viewer's state objects and adds them to the viewerState
+//   object, which lets us more easily create copies of the viewer's state.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed May 4 16:19:53 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerSubject::CreateState()
+{
+    // Create the messaging attributes.
+    messageAtts = new MessageAttributes;
+    statusAtts = new StatusAttributes;
+    // Create the appearance attributes.
+    appearanceAtts = new AppearanceAttributes;
+    // Create the sync attributes.
+    syncAtts = new SyncAttributes;
+    // Create the plugin attributes
+    pluginAtts = new PluginManagerAttributes;
+    messageBuffer = new ViewerMessageBuffer;
+    // Create the metadata and sil attributes
+    metaData = new avtDatabaseMetaData;
+    silAtts = new SILAttributes;
+    procAtts = new ProcessAttributes;
+    clientMethod = new ClientMethod;
+    clientInformation = new ClientInformation;
+    clientInformationList = new ClientInformationList;
+    movieAtts = new MovieAttributes;
+
+    //
+    // Connect the client attribute subjects.
+    //
+    viewerState = new ViewerState;
+    // objects that we don't want to send to the client unless we have to.
+    viewerState->Add(&viewerRPC);
+    viewerState->Add(&postponedAction);
+    viewerState->Add(syncAtts,     false);
+    viewerState->Add(messageAtts,  false);
+    viewerState->Add(statusAtts,   false);
+    viewerState->Add(metaData,     false);
+    viewerState->Add(silAtts,      false);
+    viewerState->Add(ViewerFileServer::Instance()->GetDBPluginInfoAtts(), false);
+    viewerState->Add(ViewerEngineManager::Instance()->GetExportDBAtts(),  false);
+    viewerState->Add(clientMethod,          false);
+    viewerState->Add(clientInformation,     false);
+    viewerState->Add(clientInformationList, false);
+
+    // Objects that can go to the client whenever.
+    viewerState->Add(pluginAtts,   false);
+    viewerState->Add(appearanceAtts);
+    viewerState->Add(ViewerWindowManager::GetClientAtts());
+    viewerState->Add(ViewerFileServer::Instance()->GetDatabaseCorrelationList());
+    viewerState->Add(ViewerPlotList::GetClientAtts());
+    viewerState->Add(ViewerEngineManager::GetClientAtts());
+    viewerState->Add(ViewerWindowManager::GetSaveWindowClientAtts());
+    viewerState->Add(ViewerEngineManager::GetEngineList());
+    viewerState->Add(avtColorTables::Instance()->GetColorTables());
+    viewerState->Add(ParsingExprList::Instance()->GetList());
+    viewerState->Add(ViewerWindowManager::Instance()->GetAnnotationClientAtts());
+    viewerState->Add(ViewerPlotList::GetClientSILRestrictionAtts());
+    viewerState->Add(ViewerWindowManager::Instance()->GetViewCurveClientAtts());
+    viewerState->Add(ViewerWindowManager::Instance()->GetView2DClientAtts());
+    viewerState->Add(ViewerWindowManager::Instance()->GetView3DClientAtts());
+    viewerState->Add(ViewerWindowManager::Instance()->GetLightListClientAtts());
+    viewerState->Add(ViewerWindowManager::Instance()->GetAnimationClientAtts());
+    viewerState->Add(ViewerQueryManager::Instance()->GetPickClientAtts());
+    viewerState->Add(ViewerWindowManager::Instance()->GetPrinterClientAtts());
+    viewerState->Add(ViewerWindowManager::Instance()->GetWindowInformation());
+    viewerState->Add(ViewerWindowManager::Instance()->GetRenderingAttributes());
+    viewerState->Add(ViewerWindowManager::Instance()->GetKeyframeClientAtts());
+    viewerState->Add(ViewerQueryManager::Instance()->GetQueryTypes());
+    viewerState->Add(ViewerQueryManager::Instance()->GetQueryClientAtts());
+    viewerState->Add(ViewerEngineManager::GetMaterialClientAtts());
+    viewerState->Add(ViewerQueryManager::Instance()->GetGlobalLineoutClientAtts());
+    viewerState->Add(ViewerWindowManager::GetAnnotationObjectList());
+    viewerState->Add(ViewerQueryManager::Instance()->GetQueryOverTimeClientAtts());
+    viewerState->Add(ViewerWindowManager::Instance()->GetInteractorClientAtts());
+    viewerState->Add(procAtts);
+    viewerState->Add(movieAtts);
+}
+
+// ****************************************************************************
 // Method: ViewerSubject::ConnectXfer
 //
 // Purpose: 
@@ -534,32 +642,9 @@ ViewerSubject::ReadConfigFiles(int argc, char **argv)
 // Creation:   Tue Jun 17 14:56:01 PST 2003
 //
 // Modifications:
-//   Eric Brugger, Wed Aug 20 11:11:00 PDT 2003
-//   I added curve view client attributes.
-//
-//   Brad Whitlock, Wed Oct 29 11:03:56 PDT 2003
-//   Added the viewer window manager's annotation object list to xfer.
-//
-//   Brad Whitlock, Fri Jan 23 09:47:24 PDT 2004
-//   I added the file server's database correlation list to xfer.
-//
-//   Kathleen Bonnell, Wed Mar 31 11:08:05 PST 2004 
-//   Added ViewerQueryManger's QueryOverTimeAtts to xfer.
-//
-//   Kathleen Bonnell, Wed Aug 18 09:25:33 PDT 2004 
-//   Added ViewerWindowManger's InteractorAtts to xfer.
-//
-//   Jeremy Meredith, Wed Aug 25 10:32:18 PDT 2004
-//   Added metadata and SIL attributes (needed for simulations).
-//
-//   Mark C. Miller, Tue Mar  8 18:06:19 PST 2005
-//   Added procAtts
-//
-//   Brad Whitlock, Fri Apr 15 10:42:00 PDT 2005
-//   Added postponedAction.
-//
-//   Hank Childs, Wed May 25 10:48:50 PDT 2005
-//   Added DBPluginInfoAtts.
+//   Brad Whitlock, Mon May 2 11:41:32 PDT 2005
+//   I made it use the ViewerState object to connect the xfer object. I also
+//   made parent be a pointer.
 //
 // ****************************************************************************
 
@@ -567,53 +652,16 @@ void
 ViewerSubject::ConnectXfer()
 {
     //
-    // Create an xfer object for communicating the RPCs.
+    // Set up xfer's connections so it can send/receive the RPCs.
     //
-    xfer.Add(&viewerRPC);
-    xfer.SetInputConnection(parent.GetWriteConnection());
-    xfer.SetOutputConnection(parent.GetReadConnection());
+    xfer.SetInputConnection(parent->GetWriteConnection());
+    xfer.SetOutputConnection(parent->GetReadConnection());
 
     //
-    // Connect the client attribute subjects.
+    // Set up all of the objects that have been added to viewerState so far.
     //
-    xfer.Add(&postponedAction);
-    xfer.Add(syncAtts);
-    xfer.Add(appearanceAtts);
-    xfer.Add(pluginAtts);
-    xfer.Add(ViewerWindowManager::GetClientAtts());
-    xfer.Add(ViewerFileServer::Instance()->GetDatabaseCorrelationList());
-    xfer.Add(ViewerPlotList::GetClientAtts());
-    xfer.Add(ViewerEngineManager::GetClientAtts());
-    xfer.Add(messageAtts);
-    xfer.Add(ViewerWindowManager::GetSaveWindowClientAtts());
-    xfer.Add(statusAtts);
-    xfer.Add(ViewerEngineManager::GetEngineList());
-    xfer.Add(avtColorTables::Instance()->GetColorTables());
-    xfer.Add(ParsingExprList::Instance()->GetList());
-    xfer.Add(ViewerWindowManager::Instance()->GetAnnotationClientAtts());
-    xfer.Add(ViewerPlotList::GetClientSILRestrictionAtts());
-    xfer.Add(ViewerWindowManager::Instance()->GetViewCurveClientAtts());
-    xfer.Add(ViewerWindowManager::Instance()->GetView2DClientAtts());
-    xfer.Add(ViewerWindowManager::Instance()->GetView3DClientAtts());
-    xfer.Add(ViewerWindowManager::Instance()->GetLightListClientAtts());
-    xfer.Add(ViewerWindowManager::Instance()->GetAnimationClientAtts());
-    xfer.Add(ViewerQueryManager::Instance()->GetPickClientAtts());
-    xfer.Add(ViewerWindowManager::Instance()->GetPrinterClientAtts());
-    xfer.Add(ViewerWindowManager::Instance()->GetWindowInformation());
-    xfer.Add(ViewerWindowManager::Instance()->GetRenderingAttributes());
-    xfer.Add(ViewerWindowManager::Instance()->GetKeyframeClientAtts());
-    xfer.Add(ViewerQueryManager::Instance()->GetQueryTypes());
-    xfer.Add(ViewerQueryManager::Instance()->GetQueryClientAtts());
-    xfer.Add(ViewerEngineManager::GetMaterialClientAtts());
-    xfer.Add(ViewerQueryManager::Instance()->GetGlobalLineoutClientAtts());
-    xfer.Add(ViewerWindowManager::GetAnnotationObjectList());
-    xfer.Add(ViewerQueryManager::Instance()->GetQueryOverTimeClientAtts());
-    xfer.Add(ViewerWindowManager::Instance()->GetInteractorClientAtts());
-    xfer.Add(ViewerFileServer::Instance()->GetDBPluginInfoAtts());
-    xfer.Add(ViewerEngineManager::Instance()->GetExportDBAtts());
-    xfer.Add(metaData);
-    xfer.Add(silAtts);
-    xfer.Add(procAtts);
+    for(int i = 0; i < viewerState->GetNObjects(); ++i)
+        xfer.Add(viewerState->GetObject(i));
 
     //
     // Set up special opcodes and their handler.
@@ -640,6 +688,9 @@ ViewerSubject::ConnectXfer()
 //   Brad Whitlock, Fri Apr 15 11:13:18 PDT 2005
 //   Added a new observer to handle postponed actions.
 //
+//   Brad Whitlock, Thu May 5 19:22:00 PST 2005
+//   Added new observers for client information.
+//
 // ****************************************************************************
 
 void
@@ -648,39 +699,17 @@ ViewerSubject::ConnectObjectsAndHandlers()
     //
     // Create a QSocketNotifier that tells us to call ReadFromParentAndProcess.
     //
-    if(parent.GetWriteConnection())
+    if(parent->GetWriteConnection())
     {
-        if(parent.GetWriteConnection()->GetDescriptor() != -1)
+        if(parent->GetWriteConnection()->GetDescriptor() != -1)
         {
             checkParent = new QSocketNotifier(
-                parent.GetWriteConnection()->GetDescriptor(),
+                parent->GetWriteConnection()->GetDescriptor(),
                 QSocketNotifier::Read);
             connect(checkParent, SIGNAL(activated(int)),
                     this, SLOT(ReadFromParentAndProcess(int)));
         }
     }
-
-#ifdef VIEWER_MT
-    //
-    // Try to create a pipe to communicate with the rendering thread.
-    //
-    if (pipe(messagePipe) < 0)
-    {
-        cerr << "Can not create the pipe for communicating with the master\n";
-        cerr << "thread.\n";
-        messagePipe[0] = -1;
-        messagePipe[1] = -1;
-    }
-    else
-    {
-        // Create a QSocketNotifier that will tell us when to call
-        // ProcessRendererMessage.
-        checkRenderer = new QSocketNotifier(messagePipe[0],
-            QSocketNotifier::Read);
-        connect(checkRenderer, SIGNAL(activated(int)),
-                this, SLOT(ProcessRendererMessage()));
-    }
-#endif
 
     //
     // Create an observer for the viewerRPC object. The RPC's are actually
@@ -707,6 +736,23 @@ ViewerSubject::ConnectObjectsAndHandlers()
             this, SLOT(HandleSync()));
 
     //
+    // Create an observer for the clientMethod object. Each time the object
+    // updates, send it back to the client.
+    //
+    clientMethodObserver = new ViewerRPCObserver(clientMethod);
+    connect(clientMethodObserver, SIGNAL(executeRPC()),
+            this, SLOT(HandleClientMethod()));
+
+    //
+    // Create an observer for the clientInformation object. Each time the
+    // object updates, add it to the clientInformationList and send it back
+    // to the client.
+    //
+    clientInformationObserver = new ViewerRPCObserver(clientInformation);
+    connect(clientInformationObserver, SIGNAL(executeRPC()),
+            this, SLOT(HandleClientInformation()));
+
+    //
     // Create a timer that activates every 5 minutes to send a keep alive
     // signal to all of the remote processes. This will keep their connections
     // alive.
@@ -731,13 +777,13 @@ ViewerSubject::ConnectObjectsAndHandlers()
     // Get the localhost name from the parent and give it to the
     // ViewerEngineManager and EngineKey so it can use it when needed.
     //
-    ViewerServerManager::SetLocalHost(parent.GetHostName());
-    EngineKey::SetLocalHost(parent.GetHostName());
+    ViewerServerManager::SetLocalHost(parent->GetHostName());
+    EngineKey::SetLocalHost(parent->GetHostName());
 
     //
     // Set the default user name.
     //
-    HostProfile::SetDefaultUserName(parent.GetTheUserName());
+    HostProfile::SetDefaultUserName(parent->GetTheUserName());
 }
 
 // ****************************************************************************
@@ -764,6 +810,9 @@ ViewerSubject::ConnectObjectsAndHandlers()
 //
 //    Kathleen Bonnell, Wed Aug 18 09:25:33 PDT 2004 
 //    Added ViewerWindowManger's InteractorAtts to config manager.
+//
+//    Brad Whitlock, Wed Jun 22 10:23:00 PDT 2005
+//    Added movieAtts.
 //
 // ****************************************************************************
 
@@ -794,6 +843,7 @@ ViewerSubject::ConnectConfigManager()
     configMgr->Add(ViewerQueryManager::Instance()->GetPickDefaultAtts());
     configMgr->Add(ViewerQueryManager::Instance()->GetQueryOverTimeDefaultAtts());
     configMgr->Add(ViewerWindowManager::Instance()->GetInteractorDefaultAtts());
+    configMgr->Add(movieAtts);
 }
 
 // ****************************************************************************
@@ -845,6 +895,10 @@ ViewerSubject::InformClientOfPlugins() const
 //   Jeremy Meredith, Tue Feb  8 08:57:07 PST 2005
 //   Added detection of plot and operator plugin errors found during
 //   plugin initialization.
+//
+//   Brad Whitlock, Mon May 2 14:23:17 PST 2005
+//   Added code to turn the parent object and the checkParent objects into
+//   a ViewerClientConnection object now that the viewer is initialized.
 //
 // ****************************************************************************
 
@@ -899,8 +953,129 @@ ViewerSubject::HeavyInitialization()
             Warning(error.c_str());
         }
 
+        //
+        // Now that everything's been fully initialized, donate the
+        // ParentProcess object to the clients vector so we can keep track of the
+        // connection to the main client as we will for new clients that will
+        // be created later. Note that we silence xfer by turning off its
+        // output and we set an update callback function so that instead of
+        // just serializing the subject to a buffer, we broadcast it to each
+        // client using our BroadcastToAllClients callback function.
+        //
+        ViewerClientConnection *client = new ViewerClientConnection(parent,
+            checkParent, viewerState, this, "connection0");
+        client->SetupSpecialOpcodeHandler(SpecialOpcodeCallback, (void *)this);
+        parent = 0;
+        inputConnection = new BufferConnection;
+        xfer.SetInputConnection(inputConnection);
+        xfer.SetOutputConnection(0);
+        xfer.SetUpdateCallback(BroadcastToAllClients, (void *)this);
+        disconnect(checkParent, SIGNAL(activated(int)),
+                   this, SLOT(ReadFromParentAndProcess(int)));
+        connect(client, SIGNAL(InputFromClient(ViewerClientConnection *, AttributeSubject *)),
+                this,   SLOT(AddInputToXfer(ViewerClientConnection *, AttributeSubject *)));
+        connect(client, SIGNAL(DisconnectClient(ViewerClientConnection *)),
+                this,   SLOT(DisconnectClient(ViewerClientConnection *)));
+        clients.push_back(client);
+
+        // Discover the client's information.
+        QTimer::singleShot(100, this, SLOT(DiscoverClientInformation()));
+
         heavyInitializationDone = true;
         visitTimer->StopTimer(timeid, "Heavy initialization.");
+    }
+}
+
+// ****************************************************************************
+// Method: ViewerSubject::AddInputToXfer
+//
+// Purpose: 
+//   All ViewerClientConnection objects emit a signal that is connected to
+//   this method, which adds the client's input to the single xfer that we
+//   actually use to schedule execution of RPC's.
+//
+// Arguments:
+//   subj : The AttributeSubject that needs to be processed.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon May 2 13:51:34 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerSubject::AddInputToXfer(ViewerClientConnection *client,
+    AttributeSubject *subj)
+{
+    // Write the state object into the buffered input so we can process it
+    // later.
+    Connection *input = xfer.GetBufferedInputConnection();
+    input->WriteInt(subj->GetGuido());
+    int sz = subj->CalculateMessageSize(*input);
+    input->WriteInt(sz);
+    subj->Write(*input);
+
+    // In the meantime, to prevent problems with state inconsistency between
+    // clients, send the state object to all but the client that sent the
+    // state object if the state object is one that we can freely send. Note
+    // that we don't send ViewerRPC, postponedAction, syncAtts, messageAtts,
+    // statusAtts, metaData, silAtts.
+    if(client != 0 &&
+       subj->GetGuido() >= ViewerClientConnection::FreelyExchangedState)
+    {
+        for(int i = 0; i < clients.size(); ++i)
+        {
+            if(clients[i] != client)
+                clients[i]->BroadcastToClient(subj);
+        }
+    }
+
+    // Schedule the input to be processed by the main event loop.
+    QTimer::singleShot(10, this, SLOT(ProcessFromParent()));
+}
+
+// ****************************************************************************
+// Method: ViewerSubject::DisconnectClient
+//
+// Purpose: 
+//   This is a Qt slot function that is called when a client connection is lost.
+//
+// Arguments:
+//   client : The client connection that we lost.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon May 2 16:39:12 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerSubject::DisconnectClient(ViewerClientConnection *client)
+{
+    ViewerClientConnectionVector::iterator pos = std::find(clients.begin(),
+        clients.end(), client);
+    if(pos != clients.end())
+        clients.erase(pos);
+
+    disconnect(client, SIGNAL(InputFromClient(ViewerClientConnection *, AttributeSubject *)),
+               this, SLOT(AddInputToXfer(ViewerClientConnection *, AttributeSubject *)));
+    disconnect(client, SIGNAL(DisconnectClient(ViewerClientConnection *)),
+               this, SLOT(DisconnectClient(ViewerClientConnection *)));
+
+    debug1 << "VisIt's viewer lost a connection to one of its clients ("
+           << client->name() << ")." << endl;
+    client->deleteLater();
+
+    // If we ever get down to no client connections, quit.
+    if(clients.size() < 1)
+        Close();
+    else
+    {
+        // We have at least one client so we should discover the client's
+        // information.
+        QTimer::singleShot(100, this, SLOT(DiscoverClientInformation()));
     }
 }
 
@@ -1106,7 +1281,10 @@ ViewerSubject::InitializePluginManagers()
 //   to the config manager instead of hooking up the default plot attributes.
 //   This prevented the plot attributes from being correctly sent to the
 //   client.
-//   
+//
+//   Brad Whitlock, Mon May 2 11:47:10 PDT 2005
+//   I added code to add the plot attributes to the viewerState.
+//
 // ****************************************************************************
 
 void
@@ -1142,7 +1320,10 @@ ViewerSubject::LoadPlotPlugins()
         AttributeSubject *defaultAttr = plotFactory->GetDefaultAtts(i);
 
         if (attr != 0)
+        {
             xfer.Add(attr);
+            viewerState->Add(attr);
+        }
 
         if (defaultAttr != 0)
             configMgr->Add(defaultAttr);
@@ -1168,6 +1349,9 @@ ViewerSubject::LoadPlotPlugins()
 //   attributes to the config manager instead of hooking up the default
 //   operator attributes. This prevented the operator attributes from being
 //   correctly sent to the client
+//
+//   Brad Whitlock, Mon May 2 11:47:10 PDT 2005
+//   I added code to add the plot attributes to the viewerState.
 //
 // ****************************************************************************
 
@@ -1204,7 +1388,10 @@ ViewerSubject::LoadOperatorPlugins()
         AttributeSubject *defaultAttr = operatorFactory->GetDefaultAtts(i);
 
         if (attr != 0)
+        {
             xfer.Add(attr);
+            viewerState->Add(attr);
+        }
 
         if(defaultAttr)
             configMgr->Add(defaultAttr);
@@ -1833,6 +2020,10 @@ ViewerSubject::GetOperatorFactory() const
 //    take colons, so that would mess it up.  Commas are already used in
 //    the PSUB constraints (e.g. white,batch), so those wouldn't work either.
 //
+//    Brad Whitlock, Wed May 4 11:30:29 PDT 2005
+//    Added clientArguments, which get passed to any clients that the viewer
+//    reverese launches.
+//
 // ****************************************************************************
 
 void
@@ -1894,13 +2085,17 @@ ViewerSubject::ProcessCommandLine(int *argc, char ***argv)
         {
             int debugLevel = 1; 
             if (i+1 < argc2 && isdigit(*(argv2[i+1])))
-               debugLevel = atoi(argv2[++i]);
+               debugLevel = atoi(argv2[i+1]);
             else
                cerr << "Warning: debug level not specified, assuming 1" << endl;
             if (debugLevel > 0 && debugLevel < 6)
             {
                 ViewerServerManager::SetDebugLevel(debugLevel);
+
+                clientArguments.push_back(argv2[i]);
+                clientArguments.push_back(argv2[i+1]);
             }
+            i++;
         }
         else if (strcmp(argv2[i], "-host")     == 0 ||
                  strcmp(argv2[i], "-port")     == 0 ||
@@ -1926,6 +2121,10 @@ ViewerSubject::ProcessCommandLine(int *argc, char ***argv)
                      << endl;
                 continue;
             }
+
+            clientArguments.push_back(argv2[i]);
+            clientArguments.push_back(argv2[i+1]);
+
             // Store the background color in the viewer's appearance
             // attributes so the gui will be colored properly on startup.
             appearanceAtts->SetBackground(std::string(argv2[i+1]));
@@ -1946,6 +2145,10 @@ ViewerSubject::ProcessCommandLine(int *argc, char ***argv)
                      << endl;
                 continue;
             }
+
+            clientArguments.push_back(argv2[i]);
+            clientArguments.push_back(argv2[i+1]);
+
             // Store the foreground color in the viewer's appearance
             // attributes so the gui will be colored properly on startup.
             appearanceAtts->SetForeground(std::string(argv2[i+1]));
@@ -1974,6 +2177,9 @@ ViewerSubject::ProcessCommandLine(int *argc, char ***argv)
 #endif
                      )
             {
+                clientArguments.push_back(argv2[i]);
+                clientArguments.push_back(argv2[i+1]);
+
                 appearanceAtts->SetStyle(argv2[i+1]);
             }
             ++i;
@@ -1986,6 +2192,10 @@ ViewerSubject::ProcessCommandLine(int *argc, char ***argv)
                         "font description." << endl;
                 continue;
             }
+
+            clientArguments.push_back(argv2[i]);
+            clientArguments.push_back(argv2[i+1]);
+
             appearanceAtts->SetFontDescription(argv2[i + 1]);
             ++i;
         }
@@ -1996,6 +2206,7 @@ ViewerSubject::ProcessCommandLine(int *argc, char ***argv)
             //
             visitTimer->Enable();
 
+            clientArguments.push_back(argv2[i]);
             unknownArguments.push_back(argv2[i]);
         }
         else if (strcmp(argv2[i], "-noint") == 0)
@@ -2071,6 +2282,7 @@ ViewerSubject::ProcessCommandLine(int *argc, char ***argv)
         }
         else // Unknown argument -- add it to the list
         {
+            clientArguments.push_back(argv2[i]);
             unknownArguments.push_back(argv2[i]);
         }
     }
@@ -2262,7 +2474,7 @@ ViewerSubject::Status(const char *message)
 // Creation:   Fri Sep 21 13:24:52 PST 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2480,6 +2692,9 @@ ViewerSubject::SetFromNode(DataNode *parentNode)
 //    Brad Whitlock, Fri Dec 27 14:55:22 PST 2002
 //    I made it close down the meta-data servers too.
 //
+//    Brad Whitlock, Mon May 9 08:32:20 PDT 2005
+//    I made it tell all clients to quit.
+//
 // ****************************************************************************
 
 void
@@ -2492,6 +2707,13 @@ ViewerSubject::Close()
     ViewerWindowManager::Instance()->HideAllWindows();
     ViewerFileServer::Instance()->CloseServers();
     ViewerEngineManager::Instance()->CloseEngines();
+
+    //
+    // Tell all of the clients to quit.
+    //
+    clientMethod->SetMethodName("Quit");
+    clientMethod->ClearArgs();
+    HandleClientMethod();
 
     //
     // Break out of the application loop.
@@ -3511,7 +3733,7 @@ ViewerSubject::OpenDatabaseHelper(const std::string &entireDBName,
             {
                 int sock = vem->GetWriteSocket(ek);
                 QSocketNotifier *sn = new QSocketNotifier(sock,
-                                                        QSocketNotifier::Read);
+                    QSocketNotifier::Read, this, "originalNotifier");
 
                 simulationSocketToKey[sock] = ek;
 
@@ -5922,90 +6144,6 @@ ViewerSubject::LineQuery()
 }
 
 // ****************************************************************************
-//  Method: ViewerSubject::ReadFromParentAndCheckForInterruption
-//
-//  Purpose:
-//    Just like ReadFromParentAndProcess, but it only buffers the read data
-//    and looks for interruption messages.
-//
-//  Arguments:
-//    fd        The file descriptor to use for reading.
-//
-//  Programmer: Jeremy Meredith
-//  Creation:   July  3, 2001
-//
-//  Modifications:
-//    Brad Whitlock, Fri Oct 19 12:26:09 PDT 2001
-//    Added code to process some input from the client if there is any and
-//    we're playing an animation.
-//
-//    Eric Brugger, Mon Oct 29 09:47:30 PST 2001
-//    I removed the code to process the client input and moved it to the
-//    routine that is called by the timer.
-//
-//    Brad Whitlock, Fri Jan 4 17:28:51 PST 2002
-//    I changed the code so the check for interruption can be disabled.
-//
-//    Brad Whitlock, Tue May 14 12:42:24 PDT 2002
-//    I made interruption stop any animations that may be playing.
-//
-//    Brad Whitlock, Wed Feb 5 10:57:03 PDT 2003
-//    I changed the call that stops the animations.
-//
-//    Mark C. Miller, Tue Dec 14 13:37:51 PST 2004
-//    Added scheduling of timer call to ProcessFromParent(). The rationale is
-//    lengthy. Ordinarily, QT handles calls to ProcessFromParent by socket
-//    notification. However, during long engine tasks such as an execute or
-//    SR render, the engine reads from the sockets to check for possibility
-//    of interrupt by calling this method. When that happens, apparently,
-//    socket notification for QT is lost. The reason this is NOT an issue
-//    during an engine execute but IS an issue during an engine SR render is
-//    that an engine execute is always preceded FIRST by some action in the
-//    GUI. That action results in a call to ProcessFromParent during which
-//    calls to this method, ReadFromParentAndCheckForInterruption, simply
-//    add to Xfer's buffer for processing. However, this is NOT the case in
-//    an SR render. We wind up here, reading the socket that QT would use to
-//    trigger a call to ProcessFromParent AND we are not already processing
-//    from the parent. Furthermroe, we don't have the luxury of being able
-//    to make an explicit call to ProcessFromParent here because that call
-//    may block. So, we need to schedule it for the future. Eventually,
-//    a call to ProcessFromParent will be triggered. However, if the engine
-//    is executing (VEM->InExecute() returns true), then ProcessFromParent
-//    will simply continue to re-schedule itself until the engine is no
-//    longer executing and the input can actually be processed.
-//
-// ****************************************************************************
-
-bool
-ViewerSubject::ReadFromParentAndCheckForInterruption()
-{
-    bool retval = false;
-
-    if (interruptionEnabled)
-    {
-        // See if the connection needs to be read.
-        if (xfer.GetInputConnection()->NeedsRead())
-        {
-            xfer.GetInputConnection()->Fill();
-            QTimer::singleShot(200, this, SLOT(ProcessFromParent()));
-        }
-
-        //
-        // Process the input if there is any.
-        //
-        retval = xfer.ReadPendingMessages();
-
-        //
-        // If we interrupted then stop animations.
-        //
-        if (retval)
-            ViewerWindowManager::Instance()->Stop();
-    }
-
-    return retval;
-}
-
-// ****************************************************************************
 //  Method: ViewerSubject::ProcessFromParent
 //
 //  Purpose:
@@ -6381,8 +6519,10 @@ ViewerSubject::ProcessRendererMessage()
             int tag = 0; 
             int offset = 5; // strlen("Sync ");
             sscanf (&msg[offset], "%d",  &tag);
-            syncAtts->SetSyncTag(tag);
             syncObserver->SetUpdate(false);
+
+            // Send the sync to all clients.
+            syncAtts->SetSyncTag(tag);
             syncAtts->Notify();
         }
     }
@@ -6649,6 +6789,7 @@ ViewerSubject::SendKeepAlives()
 //
 //    Mark C. Miller, Tue May 31 20:12:42 PDT 2005
 //    Added SetTryHarderCyclesTimesRPC
+//
 // ****************************************************************************
 
 void
@@ -6949,6 +7090,9 @@ ViewerSubject::HandleViewerRPC()
     case ViewerRPC::SetTryHarderCyclesTimesRPC:
         SetTryHarderCyclesTimes();
         break;
+    case ViewerRPC::OpenClientRPC:
+        OpenClient();
+        break;
     case ViewerRPC::MaxRPC:
         break;
     default:
@@ -6966,6 +7110,10 @@ ViewerSubject::HandleViewerRPC()
     //
     if(!actionHandled)
         ViewerWindowManager::Instance()->UpdateActions();
+
+    debug5 << "Done handling "
+           << ViewerRPC::ViewerRPCType_ToString(viewerRPC.GetRPCType()).c_str()
+           << " RPC." << endl;
 }
 
 // ****************************************************************************
@@ -6989,7 +7137,9 @@ ViewerSubject::HandleViewerRPC()
 // Creation:   Thu Apr 14 16:27:31 PST 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon May 2 13:51:01 PST 2005
+//   I made it use AddInputToXfer.
+//
 // ****************************************************************************
 
 void
@@ -7011,18 +7161,11 @@ ViewerSubject::PostponeAction(ViewerActionBase *action)
     postponedAction.SetWindow(action->GetWindow()->GetWindowId());
     postponedAction.SetRPC(action->GetArgs());
 
-    // Write the postponedAction object into the buffered input.
-    Connection *input = xfer.GetBufferedInputConnection();
-    input->WriteInt(postponedAction.GetGuido());
-    int sz = postponedAction.CalculateMessageSize(*input);
-    input->WriteInt(sz);
-    postponedAction.Write(*input);
+    // Add the postponed input to the xfer object so it can be executed later.
+    AddInputToXfer(0, &postponedAction);
 
     debug4 << "Postponing execution of  " << action->GetName()
            << " action." << endl;
-
-    // Call ProcessFromParent on a timer so we can process the new input later.
-    QTimer::singleShot(100, this, SLOT(ProcessFromParent()));
 }
 
 // ****************************************************************************
@@ -7041,7 +7184,7 @@ ViewerSubject::PostponeAction(ViewerActionBase *action)
 // Creation:   Fri Apr 15 10:52:10 PDT 2005
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -7059,6 +7202,7 @@ ViewerSubject::HandlePostponedAction()
                << tName << " for window " << (win->GetWindowId()+1) << "."
                << endl;
 
+        // Handle the action.
         actionMgr->HandleAction(postponedAction.GetRPC());
     }
     else
@@ -7119,20 +7263,73 @@ ViewerSubject::SpecialOpcodeCallback(int opcode, void *data)
 //   Brad Whitlock, Wed Mar 12 10:35:08 PDT 2003
 //   I added code to process the new iconifyOpcode.
 //
+//   Brad Whitlock, Thu May 5 17:12:10 PST 2005
+//   I made interruption be handled as a special opcode.
+//
 // ****************************************************************************
 
 void
 ViewerSubject::ProcessSpecialOpcodes(int opcode)
 {
     ViewerWindowManager *wMgr = ViewerWindowManager::Instance();
+    const int interruptOpcode = -1;
 
-    if(opcode == animationStopOpcode)
+    if(opcode == interruptOpcode)
+    {
+        // Clear the queued input for the master xfer object.
+        debug1 << "Interrupt: flushing master xfer input." << endl;
+        xfer.GetInputConnection()->Flush();
+
+        // Tell all of the engines to interrupt. If we could ever run
+        // more than 1 engine at the same time then we would have to
+        // know which engine is executing right now.
+        debug1 << "Interrupt: telling engines to interrupt." << endl;
+        ViewerEngineManager *eM = ViewerEngineManager::Instance();
+        EngineList *engines = eM->GetEngineList();
+        const stringVector &hosts = engines->GetEngines();
+        const stringVector &sims  = engines->GetSimulationName();
+        for(int i = 0; i < hosts.size(); ++i)
+            eM->InterruptEngine(EngineKey(hosts[i], sims[i]));
+    }
+    else if(opcode == animationStopOpcode)
         wMgr->Stop();
     else if(opcode == iconifyOpcode)
         wMgr->IconifyAllWindows();
 
     // Update actions.
     wMgr->UpdateActions();
+}
+
+// ****************************************************************************
+// Method: ViewerSubject::BroadcastToAllClients
+//
+// Purpose: 
+//   This is a special callback for the master xfer object to be called when
+//   it needs to update. We use this method to tell all of the clients to
+//   update themselves.
+//
+// Arguments:
+//   data1 : The callback data. We store the "this" pointer in when we
+//           register the callback function.
+//   data2 : A pointer to the subject being sent to the client.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue May 3 15:14:41 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerSubject::BroadcastToAllClients(void *data1, Subject *data2)
+{
+    ViewerSubject *This = (ViewerSubject *)data1;
+    if(This != 0)
+    {
+        AttributeSubject *subj = (AttributeSubject *)data2;
+        for(int i = 0; i < This->clients.size(); ++i)
+            This->clients[i]->BroadcastToClient(subj);
+    }
 }
 
 // ****************************************************************************
@@ -7161,6 +7358,95 @@ ViewerSubject::HandleSync()
     char msg[100];
     SNPRINTF(msg, 100, "Sync %d;", syncAtts->GetSyncTag());
     MessageRendererThread(msg);
+}
+
+// ****************************************************************************
+// Method: ViewerSubject::HandleClientMethod
+//
+// Purpose: 
+//   The client method object is not normally sent automatically to the
+//   clients so we do it here.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed May 4 16:48:36 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerSubject::HandleClientMethod()
+{
+    debug1 << "Broadcasting client method: "
+           << clientMethod->GetMethodName().c_str() << " to all "
+           << clients.size() << " client(s)." << endl;
+    BroadcastToAllClients((void *)this, clientMethod);
+}
+
+// ****************************************************************************
+// Method: ViewerSubject::HandleClientInformation
+//
+// Purpose: 
+//   Adds the client information to the list and sends it back to the client.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu May 5 19:23:49 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerSubject::HandleClientInformation()
+{
+    debug5 << "Received client information. Sending new client information "
+              "list to all clients." << endl;
+    clientInformationList->AddClientInformation(*clientInformation);
+
+    // Print the client information list to the debug logs.
+    for(int i = 0; i < clientInformationList->GetNumClientInformations(); ++i)
+    {
+        const ClientInformation &client = clientInformationList->operator[](i);
+        debug5 << "client["<< i << "] = " << client.GetClientName().c_str()
+               << endl;
+        debug5 << "methods:" << endl;
+        for(int j = 0; j < client.GetMethodNames().size(); ++j)
+        {
+            debug5 << "\t" << client.GetMethod(j).c_str() << "("
+                   << client.GetMethodPrototype(j).c_str() << ")" << endl;
+        }
+        debug5 << endl;
+    }
+
+    BroadcastToAllClients((void *)this, clientInformationList);
+}
+
+// ****************************************************************************
+// Method: ViewerSubject::DiscoverClientInformation
+//
+// Purpose: 
+//   Invokes a special client method on all clients so we know which methods,
+//   etc that they have.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu May 5 19:26:45 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerSubject::DiscoverClientInformation()
+{
+    debug1 << "DiscoverClientInformation: clear the client information list "
+              "and send _QueryClientInformation to all clients. " << endl;
+    // Clear out what we know about the clients.
+    clientInformationList->ClearClientInformations();
+
+    // Ask the current set of clients to tell us about themselves.
+    clientMethod->SetMethodName("_QueryClientInformation");
+    clientMethod->ClearArgs();
+    HandleClientMethod();
 }
 
 // ****************************************************************************
@@ -7469,6 +7755,88 @@ ViewerSubject::GetProcessAttributes()
 }
 
 // ****************************************************************************
+// Method: ViewerSubject::OpenClient
+//
+// Purpose: 
+//   Handles the ViewerRPC that tells the viewer to reverse launch a new
+//   viewer client.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed May 4 11:36:45 PDT 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerSubject::OpenClient()
+{
+    const std::string &clientName = viewerRPC.GetDatabase();
+    const std::string &program = viewerRPC.GetProgramHost();
+    stringVector programOptions(viewerRPC.GetProgramOptions());
+
+    debug1 << "ViewerSubject::OpenClient" << endl;
+
+    //
+    // Create a new viewer client connection.
+    //
+    ViewerClientConnection *newClient = new 
+        ViewerClientConnection(viewerState, this, clientName.c_str());
+    newClient->SetupSpecialOpcodeHandler(SpecialOpcodeCallback, (void *)this);
+    ViewerConnectionProgressDialog *dialog = 0;
+
+    TRY
+    {
+        if(!avtCallback::GetNowinMode())
+        {
+            dialog = new ViewerConnectionProgressDialog(clientName.c_str(),
+                "localhost", false, 5);
+
+            // Register the dialog with the password window so we can set
+            // the dialog's timeout to zero if we have to prompt for a
+            // password.
+            ViewerPasswordWindow::SetConnectionProgressDialog(dialog);
+        }
+
+        //
+        // Try launch the client (unless a different client will) and start
+        // listening for a connection from the new client.
+        //
+        void *cbData[2];
+        cbData[0] = (void *)this;
+        cbData[1] = (void *)dialog;
+        stringVector args(clientArguments);
+        for(int i = 0; i < programOptions.size(); ++i)
+            args.push_back(programOptions[i]);
+        newClient->LaunchClient(program, args, 0, 0, LaunchProgressCB, cbData);
+        clients.push_back(newClient);
+
+        // Connect up the new client so we can handle its signals.
+        connect(newClient, SIGNAL(InputFromClient(ViewerClientConnection *, AttributeSubject *)),
+                this,      SLOT(AddInputToXfer(ViewerClientConnection *, AttributeSubject *)));
+        connect(newClient, SIGNAL(DisconnectClient(ViewerClientConnection *)),
+                this,      SLOT(DisconnectClient(ViewerClientConnection *)));
+
+        Message("Added a new client to the viewer.");
+
+        // Discover the client's information.
+        QTimer::singleShot(100, this, SLOT(DiscoverClientInformation()));
+    }
+    CATCH(VisItException)
+    {
+        delete newClient;
+
+        std::string msg("VisIt could not connect to the new client ");
+        msg += program;
+        msg += ".";
+        Error(msg.c_str());
+    }
+    ENDTRY
+
+    delete dialog;
+}
+
+// ****************************************************************************
 //  Method:  ViewerSubject::ReadFromSimulationAndProcess
 //
 //  Purpose:
@@ -7533,6 +7901,7 @@ ViewerSubject::ReadFromSimulationAndProcess(int socket)
 //    Made sure we notify clients about the right metadata.
 //
 // ****************************************************************************
+
 void
 ViewerSubject::HandleMetaDataUpdated(const string &host,
                                      const string &file,
@@ -7567,7 +7936,10 @@ ViewerSubject::HandleMetaDataUpdated(const string &host,
 //  Programmer:  Jeremy Meredith
 //  Creation:    August 25, 2004
 //
+//  Modifications:
+//
 // ****************************************************************************
+
 void
 ViewerSubject::HandleSILAttsUpdated(const string &host,
                                     const string &file,

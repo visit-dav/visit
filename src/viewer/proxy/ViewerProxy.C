@@ -21,6 +21,9 @@
 #include <AnnotationAttributes.h>
 #include <AnnotationObjectList.h>
 #include <AppearanceAttributes.h>
+#include <ClientMethod.h>
+#include <ClientInformation.h>
+#include <ClientInformationList.h>
 #include <ColorTableAttributes.h>
 #include <DatabaseCorrelationList.h>
 #include <DBPluginInfoAttributes.h>
@@ -37,6 +40,8 @@
 #include <LightList.h>
 #include <MaterialAttributes.h>
 #include <MessageAttributes.h>
+#include <MovieAttributes.h>
+#include <ParentProcess.h>
 #include <PickAttributes.h>
 #include <PlotList.h>
 #include <PluginManagerAttributes.h>
@@ -177,13 +182,22 @@
 //    Hank Childs, Wed May 25 10:38:37 PDT 2005
 //    Added dbPluginInfoAtts.
 //
+//    Brad Whitlock, Tue May 3 15:45:14 PST 2005
+//    Initialize viewer, viewerP, xfer. Added clientMethod, clientInformation,
+//    clientInformationList, and movieAtts.
+//
 // ****************************************************************************
 
 ViewerProxy::ViewerProxy() : SimpleObserver(), argv()
 {
+    viewer = 0;
+    viewerP = 0;
+    xfer = new Xfer;
+
     //
     // Create the state objects.
     //
+    viewerRPC            = new ViewerRPC;
     postponedAction      = new PostponedAction;
     syncAtts             = new SyncAttributes;
     hostProfiles         = new HostProfileList;
@@ -222,6 +236,10 @@ ViewerProxy::ViewerProxy() : SimpleObserver(), argv()
     procAtts             = new ProcessAttributes;
     dbPluginInfoAtts     = new DBPluginInfoAttributes;
     exportDBAtts         = new ExportDBAttributes;
+    clientMethod         = new ClientMethod;
+    clientInformation    = new ClientInformation;
+    clientInformationList = new ClientInformationList;
+    movieAtts            = new MovieAttributes;
 
     // Make the proxy observe the SIL restriction attributes.
     silRestrictionAtts->Attach(this);
@@ -369,6 +387,9 @@ ViewerProxy::ViewerProxy() : SimpleObserver(), argv()
 //    Hank Childs, Wed May 25 10:38:37 PDT 2005
 //    Added dbPluginInfoAtts.
 //
+//    Brad Whitlock, Wed May 4 16:16:22 PST 2005
+//    Added viewerP and clientMethod, clientInformation, clientInformationList.
+//
 // ****************************************************************************
 
 ViewerProxy::~ViewerProxy()
@@ -376,6 +397,7 @@ ViewerProxy::~ViewerProxy()
     int i;
 
     delete viewer;
+    delete viewerP;
     delete xfer;
     delete viewerRPC;
 
@@ -420,6 +442,10 @@ ViewerProxy::~ViewerProxy()
     delete procAtts;
     delete dbPluginInfoAtts;
     delete exportDBAtts;
+    delete clientMethod;
+    delete clientInformation;
+    delete clientInformationList;
+    delete movieAtts;
 
     //
     // Delete the plot attribute state objects.
@@ -487,15 +513,22 @@ ViewerProxy::Update(Subject *subj)
 //  Programmer: Eric Brugger
 //  Creation:   August 4, 2000
 //
+//  Modifications:
+//    Brad Whitlock, Tue May 3 15:46:49 PST 2005
+//    Added viewerP.
+//
 // ****************************************************************************
 
 Connection *
 ViewerProxy::GetReadConnection() const
 {
-    if (viewer == 0)
+    if (viewer == 0 && viewerP == 0)
         return 0;
 
-    return viewer->GetReadConnection();
+    if (viewer != 0)      
+        return viewer->GetReadConnection();
+
+    return viewerP->GetReadConnection();
 }
 
 // ****************************************************************************
@@ -509,15 +542,22 @@ ViewerProxy::GetReadConnection() const
 //  Programmer: Eric Brugger
 //  Creation:   August 4, 2000
 //
+//  Modifications:
+//    Brad Whitlock, Tue May 3 15:46:49 PST 2005
+//    Added viewerP.
+//
 // ****************************************************************************
 
 Connection *
 ViewerProxy::GetWriteConnection() const
 {
-    if (viewer == 0)
+    if (viewer == 0 && viewerP == 0)
         return 0;
 
-    return viewer->GetWriteConnection();
+    if(viewer != 0)
+        return viewer->GetWriteConnection();
+
+    return viewerP->GetWriteConnection();
 }
 
 // ****************************************************************************
@@ -532,18 +572,28 @@ ViewerProxy::GetWriteConnection() const
 // Creation:   Mon Sep 24 11:32:45 PDT 2001
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue May 3 15:49:40 PST 2005
+//   Added viewerP.
+//
 // ****************************************************************************
 
 const std::string &
 ViewerProxy::GetLocalHostName() const
 {
-    if(viewer == 0)
+    if(viewer == 0 && viewerP == 0)
     {
         EXCEPTION1(VisItException, "Viewer not created.");
     }
 
-    return viewer->GetLocalHostName();
+    if(viewer != 0)
+        return viewer->GetLocalHostName();
+
+#if 0
+    return viewerP->GetLocalHostName();
+#else
+    cerr << "Fix ViewerProxy::GetLocalHostName: " << __LINE__ << endl;
+    return *(new std::string("localhost"));
+#endif
 }
 
 // ****************************************************************************
@@ -558,18 +608,28 @@ ViewerProxy::GetLocalHostName() const
 // Creation:   Thu Feb 21 10:06:52 PDT 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue May 3 15:49:57 PST 2005
+//   Added viewerP.
+//
 // ****************************************************************************
 
 const std::string &
 ViewerProxy::GetLocalUserName() const
 {
-    if(viewer == 0)
+    if(viewer == 0 && viewerP == 0)
     {
         EXCEPTION1(VisItException, "Viewer not created.");
     }
 
-    return viewer->GetLocalUserName();
+    if(viewer != 0)
+        return viewer->GetLocalUserName();
+
+#if 0
+    return viewerP->GetLocalUserName();
+#else
+    cerr << "Fix ViewerProxy::GetLocalUserName: " << __LINE__ << endl;
+    return *(new std::string("whitlocb"));
+#endif
 }
 
 // ****************************************************************************
@@ -588,6 +648,9 @@ ViewerProxy::GetLocalUserName() const
 //    Brad Whitlock, Wed Mar 20 17:45:28 PST 2002
 //    I abstracted the read code.
 //
+//    Brad Whitlock, Tue May 3 15:52:06 PST 2005
+//    I made it get the connection from xfer instead of viewer.
+//
 // ****************************************************************************
 
 void
@@ -596,7 +659,7 @@ ViewerProxy::ProcessInput()
     //
     // Try and read from the viewer.
     //
-    int amountRead = viewer->GetWriteConnection()->Fill();
+    int amountRead = xfer->GetInputConnection()->Fill();
 
     //
     // Try and process the input.
@@ -801,59 +864,104 @@ ViewerProxy::AddArgument(const std::string &arg)
 //    Hank Childs, Wed May 25 10:38:37 PDT 2005
 //    Added dbPluginInfoAtts.
 //
+//    Brad Whitlock, Thu May 5 19:13:02 PST 2005
+//    Added support for reverse launching and client interface discovery.
+//
 // ****************************************************************************
 
 void
-ViewerProxy::Create()
+ViewerProxy::Create(int *inputArgc, char ***inputArgv)
 {
     //
-    // Create the viewer process.  The viewer is executed using
-    // "visit -viewer".
+    // Look for flags required for reverse launching.
     //
-    viewer = new RemoteProcess(std::string("visit"));
-    viewer->AddArgument(std::string("-viewer"));
+    bool haveRL = false;
+    bool haveKey = false;
+    bool havePort = false;
+    if(inputArgc != 0 && inputArgv != 0)
+    {
+        int count = *inputArgc;
+        char **arg = *inputArgv;
+        for(int i = 0; i < count; ++i)
+        {
+            if(strcmp(arg[i], "-reverse_launch") == 0)
+                haveRL = true;
+            else if(strcmp(arg[i], "-key") == 0)
+                haveKey = true;
+            else if(strcmp(arg[i], "-port") == 0)
+                havePort = true;
+        }
+    }
+    bool reverseLaunch = haveRL && haveKey && havePort;
 
-    //
-    // Add any extra arguments to the viewer before opening it.
-    //
-    for (int i = 0; i < argv.size(); ++i)
-        viewer->AddArgument(argv[i]);
+    if(!reverseLaunch)
+    {
+        //
+        // Create the viewer process.  The viewer is executed using
+        // "visit -viewer".
+        //
+        viewer = new RemoteProcess(std::string("visit"));
+        viewer->AddArgument(std::string("-viewer"));
 
-    //
-    // Open the viewer.
-    //
-    viewer->Open("localhost",
-                 HostProfile::MachineName, "", 
-                 false, 0,
-                 1, 1);
+        //
+        // Add any extra arguments to the viewer before opening it.
+        //
+        for (int i = 0; i < argv.size(); ++i)
+            viewer->AddArgument(argv[i]);
 
-    //
-    // Form the xfer object for the RPCs.
-    //
-    xfer      = new Xfer;
-    viewerRPC = new ViewerRPC;
-    xfer->Add(viewerRPC);
+        //
+        // Open the viewer.
+        //
+        viewer->Open("localhost",
+                     HostProfile::MachineName, "", 
+                     false, 0,
+                     1, 1);
 
-    //
-    // Hook up the viewer's SocketConnections to the xfer object.
-    //
-    xfer->SetInputConnection(viewer->GetWriteConnection());
-    xfer->SetOutputConnection(viewer->GetReadConnection());
+        // Use viewer's connections for xfer.
+        xfer->SetInputConnection(viewer->GetWriteConnection());
+        xfer->SetOutputConnection(viewer->GetReadConnection());
+    }
+    else
+    {
+        //
+        // Connect to the viewer process. Our command line arguments
+        // should contain  The viewer is executed using
+        // "visit -viewer".
+        //
+        viewerP = new ParentProcess;
+        viewerP->Connect(1, 1, inputArgc, inputArgv, true);
+
+        // Use viewerP's connections for xfer.
+        xfer->SetInputConnection(viewerP->GetWriteConnection());
+        xfer->SetOutputConnection(viewerP->GetReadConnection());
+    }
 
     //
     // Attach the AttributeSubjects to the xfer object.
     //
+
+    // objects that are not sent to the client unless it's necessary.
+    xfer->Add(viewerRPC);
     xfer->Add(postponedAction);
     xfer->Add(syncAtts);
-    xfer->Add(appearanceAtts);
+    xfer->Add(messageAtts);
+    xfer->Add(statusAtts);
+    xfer->Add(metaData);
+    xfer->Add(silAtts);
+    xfer->Add(dbPluginInfoAtts);
+    xfer->Add(exportDBAtts);
+    xfer->Add(clientMethod);
+    xfer->Add(clientInformation);
+    xfer->Add(clientInformationList);
+
+    // Objects that can come to the client whenever.
     xfer->Add(pluginManagerAttributes);
+    xfer->Add(appearanceAtts);
     xfer->Add(globalAtts);
     xfer->Add(correlationList);
     xfer->Add(plotList);
     xfer->Add(hostProfiles);
-    xfer->Add(messageAtts);
     xfer->Add(saveWindowAtts);
-    xfer->Add(statusAtts);
     xfer->Add(engineList);
     xfer->Add(colorTableAtts);
     xfer->Add(exprList);
@@ -876,11 +984,8 @@ ViewerProxy::Create()
     xfer->Add(annotationObjectList);
     xfer->Add(queryOverTimeAtts);
     xfer->Add(interactorAtts);
-    xfer->Add(dbPluginInfoAtts);
-    xfer->Add(exportDBAtts);
-    xfer->Add(metaData);
-    xfer->Add(silAtts);
     xfer->Add(procAtts);
+    xfer->Add(movieAtts);
 
     xfer->ListObjects();
 
@@ -953,7 +1058,7 @@ ViewerProxy::LoadPlugins()
                 else
                     EXCEPTION1(VisItException,
                                "A plot plugin enabled by the viewer "
-                               "was not availabe in the GUI.");
+                               "was not available in the GUI.");
             }
             else if (pluginManagerAttributes->GetType()[i] == "operator")
             {
@@ -962,7 +1067,7 @@ ViewerProxy::LoadPlugins()
                 else
                     EXCEPTION1(VisItException,
                                "A operator plugin enabled by the viewer "
-                               "was not availabe in the GUI.");
+                               "was not available in the GUI.");
             }
         }
     }
@@ -1032,6 +1137,9 @@ ViewerProxy::LoadPlugins()
 //    Brad Whitlock, Wed Apr 3 12:50:01 PDT 2002
 //    Called a new method of RemoteProcess to wait for the viewer to quit.
 //
+//    Brad Whitlock, Tue May 3 16:04:17 PST 2005
+//    Only wait for termination if we launched the viewer.
+//
 // ****************************************************************************
 
 void
@@ -1050,7 +1158,35 @@ ViewerProxy::Close()
     //
     // Wait for the viewer to exit.
     //
-    viewer->WaitForTermination();
+    if(viewer != 0)
+        viewer->WaitForTermination();
+}
+
+// ****************************************************************************
+// Method: ViewerProxy::Detach
+//
+// Purpose: 
+//   Tells the viewer to detach this client from the list of clients.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu May 5 17:37:55 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerProxy::Detach()
+{
+    //
+    // Set the rpc type and arguments.
+    //
+    viewerRPC->SetRPCType(ViewerRPC::DetachRPC);
+
+    //
+    // Issue the RPC.
+    //
+    viewerRPC->Notify();
 }
 
 // ****************************************************************************
@@ -5539,3 +5675,145 @@ ViewerProxy::QueryProcessAttributes(const std::string componentName,
 
     viewerRPC->Notify();
 }
+
+// ****************************************************************************
+// Method: ViewerProxy::OpenClient
+//
+// Purpose: 
+//   Tells the viewer to launch the specified VisIt client - a reverse launch!
+//
+// Arguments:
+//   clientName : The name to display when we're connecting.
+//   program    : The name of the program to launch.
+//   args       : Any arguments that we want to the client program to have.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue May 3 15:41:29 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerProxy::OpenClient(const std::string &clientName,
+    const std::string &program, const stringVector &args)
+{
+    viewerRPC->SetRPCType(ViewerRPC::OpenClientRPC);
+    viewerRPC->SetDatabase(clientName);
+    viewerRPC->SetProgramHost(program);
+    viewerRPC->SetProgramOptions(args);
+    viewerRPC->Notify();
+}
+
+// ****************************************************************************
+// Method: ViewerProxy::MethodRequestHasRequiredInformation
+//
+// Purpose: 
+//   Looks at the current method request and determines if the method is
+//   supported by the client and whether the method request has enough
+//   information to support the method.
+//
+// Returns:    0 for method not supported
+//             1 for method supported, not enough info
+//             2 for method supported, enough info
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu May 5 20:04:16 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+int
+ViewerProxy::MethodRequestHasRequiredInformation() const
+{
+    int retval;
+    int index = clientInformation->GetMethodIndex(
+        clientMethod->GetMethodName());
+
+    if(index == -1)
+    {
+        // Method not supported.
+        retval = 0;
+    }
+    else
+    {
+        std::string proto(clientInformation->GetMethodPrototype(index));
+        if(proto.size() < 1)
+        {
+            // Supported. Does not need args.
+            retval = 2; 
+        }
+        else
+        {
+            int sCount = 0; 
+            int dCount = 0;
+            int iCount = 0;
+            for(int i = 0; i < proto.size(); ++i)
+            {
+                if(proto[i] == 's')
+                    ++sCount;
+                else if(proto[i] == 'd')
+                    ++dCount;
+                else if(proto[i] == 'i')
+                    ++iCount;
+            }
+
+            if(clientMethod->GetIntArgs().size() >= iCount &&
+               clientMethod->GetDoubleArgs().size() >= dCount &&
+               clientMethod->GetStringArgs().size() >= sCount)
+            {
+                // Supported, has enough args.
+                retval = 2;
+            }
+            else
+            {
+                // Supported, not enough args.
+                retval = 1;
+            }
+        }
+    }
+ 
+    return retval;
+}
+
+// ****************************************************************************
+// Method: ViewerProxy::SetXferUpdate
+//
+// Purpose: 
+//   Sets Xfer's update flag.
+//
+// Arguments:
+//   val : Whether updates should be allowed.
+//
+// Note:       This method allows a state object observer to send back
+//             information to the viewer by following the following pattern:
+//
+//             SetXferUpdate(true);
+//             obj->Notify();
+//             SetXferUpdate(false);
+//
+//             Note that setting the xfer update flag to false after the
+//             object's Notify method is important or the object that we're
+//             observing will get back to the client. Be careful if the object
+//             that you're Notifying has any other observers.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri May 6 09:50:22 PDT 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerProxy::SetXferUpdate(bool val)
+{
+    xfer->SetUpdate(val);
+}
+
+
+
+
+

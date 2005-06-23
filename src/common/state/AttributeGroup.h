@@ -62,6 +62,9 @@ class DataNode;
 //    Hank Childs, Fri Jan 28 15:36:03 PST 2005
 //    Re-inherit exceptions from VisItException.
 //
+//    Brad Whitlock, Tue May 3 11:05:15 PDT 2005
+//    I added SelectField, SelectFields and made Select private.
+//
 // ****************************************************************************
 
 class STATE_API AttributeGroup
@@ -112,7 +115,8 @@ public:
 
     // Selects all of the attributes in the AttributeGroup
     virtual void SelectAll() = 0;
-    void Select(int index, void *address, int length = 0);
+    void SelectField(int);
+    void SelectFields(const std::vector<int> &);
     void UnSelectAll();
 
     virtual bool CreateNode(DataNode *node, bool, bool);
@@ -136,6 +140,8 @@ public:
 
     static bool VersionLessThan(const char *configVersion, const char *version);
 protected:
+    void Select(int index, void *address, int length = 0);
+
     // Used to instantiate a new sub attribute.
     virtual AttributeGroup *CreateSubAttributeGroup(int attrId);
 

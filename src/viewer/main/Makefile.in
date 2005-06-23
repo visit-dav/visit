@@ -255,6 +255,9 @@
 #    Brad Whitlock, Tue Apr 12 09:55:58 PDT 2005
 #    Made certain libraries be ser/par to link parallel VisIt on MacOS X.
 #
+#    Brad Whitlock, Mon May 2 10:39:56 PDT 2005
+#    Added support for multiple clients driving the viewer.
+#
 ##############################################################################
 
 ##
@@ -295,6 +298,7 @@ PUBLIC_SRC= \
     ViewerMessaging.C \
     ViewerOperator.C \
     ViewerPlot.C \
+    ViewerState.C \
     ViewerSubject.C
 
 PRIVATE_SRC=\
@@ -309,6 +313,7 @@ PRIVATE_SRC=\
     ViewerAction.C \
     ViewerActionBase.C \
     ViewerActionManager.C \
+    ViewerClientConnection.C \
     ViewerConfigManager.C \
     ViewerConnectionProgressDialog.C \
     ViewerEngineManager.C \
@@ -316,6 +321,7 @@ PRIVATE_SRC=\
     ViewerHostProfileSelector.C \
     ViewerHostProfileSelectorNoWin.C \
     ViewerHostProfileSelectorWithWin.C \
+    ViewerMasterXfer.C \
     ViewerMessageBuffer.C \
     ViewerMetaDataObserver.C \
     ViewerMultipleAction.C \
@@ -343,6 +349,7 @@ HDRMOC = \
     PlotAndOperatorActions.h \
     ViewerAction.h \
     ViewerActionBase.h \
+    ViewerClientConnection.h \
     ViewerConnectionProgressDialog.h \
     ViewerHostProfileSelectorWithWin.h \
     ViewerMetaDataObserver.h \

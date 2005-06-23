@@ -477,9 +477,13 @@ public:
 //    Jeremy Meredith, Thu Apr 28 17:48:21 PDT 2005
 //    Added a non-const accessor for the simulation info.
 //
+//    Brad Whitlock, Mon May 2 19:07:56 PST 2005
+//    Added some boilerplate AttributeSubject methods.
+//
 //    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
 //    const qualified args to SetCycles/SetTimes
 //    Added AreAllCycles/TimesAccurateAndValid
+//
 //----------------------------------------------------------------------------
 
 class DBATTS_API avtDatabaseMetaData : public AttributeSubject
@@ -528,6 +532,11 @@ public:
     avtDatabaseMetaData(const avtDatabaseMetaData&);
     const avtDatabaseMetaData &operator=(const avtDatabaseMetaData&);
     virtual ~avtDatabaseMetaData();
+
+    virtual const std::string TypeName() const;
+    virtual bool CopyAttributes(const AttributeGroup *);
+    virtual AttributeSubject *CreateCompatible(const std::string &) const;
+    virtual AttributeSubject *NewInstance(bool) const;
 
     int          GetNumStates(void) const { return numStates; };
     void         SetNumStates(int);

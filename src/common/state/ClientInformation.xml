@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+  <Attribute name="ClientInformation" purpose="This class contains the attributes that describe the client" persistent="false" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="ClientInformation.code">
+    <Field name="clientName" label="Client name" type="string">
+    </Field>
+    <Field name="methodNames" label="Method names" type="stringVector">
+    </Field>
+    <Field name="methodPrototypes" label="Method prototypes" type="stringVector">
+    </Field>
+    <Function name="DeclareMethod" user="true" member="true">
+    </Function>
+    <Function name="GetMethodIndex" user="true" member="true">
+    </Function>
+    <Function name="GetMethod" user="true" member="true">
+    </Function>
+    <Function name="GetMethodPrototype" user="true" member="true">
+    </Function>
+    <Function name="ClearMethods" user="true" member="true">
+    </Function>
+  </Attribute>

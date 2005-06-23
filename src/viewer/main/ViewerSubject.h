@@ -13,7 +13,7 @@
 #include <ParentProcess.h>
 #include <ViewerRPC.h>
 #include <PostponedAction.h>
-#include <Xfer.h>
+#include <ViewerMasterXfer.h>
 #include <VisWindowTypes.h>
 #include <avtTypes.h>
 #include <EngineKey.h>
@@ -25,9 +25,14 @@ struct avtViewInfo;
 class avtDatabaseMetaData;
 class AnnotationAttributes;
 class AppearanceAttributes;
+class BufferConnection;
+class ClientInformation;
+class ClientInformationList;
+class ClientMethod;
 class ColorTableAttributes;
 class InteractorAttributes;
 class MessageAttributes;
+class MovieAttributes;
 class ProcessAttributes;
 class QApplication;
 class QSocketNotifier;
@@ -36,6 +41,7 @@ class SILAttributes;
 class StatusAttributes;
 class SyncAttributes;
 class ViewerActionBase;
+class ViewerClientConnection;
 class ViewerConfigManager;
 class ViewerMessageBuffer;
 class ViewerMetaDataObserver;
@@ -44,6 +50,7 @@ class ViewerOperatorFactory;
 class ViewerPlotFactory;
 class ViewerRPCObserver;
 class ViewerRPC;
+class ViewerState;
 class ViewerWindow;
 class PluginManagerAttributes;
 class MaterialAttributes;
@@ -355,6 +362,13 @@ struct avtDefaultPlotMetaData;
 //
 //    Mark C. Miller, Tue May 31 20:12:42 PDT 2005
 //    Added SetTryHarderCyclesTimes
+//
+//    Brad Whitlock, Tue May 3 15:14:16 PST 2005
+//    Added new members that allow the viewer to talk to multiple clients. Part
+//    of my new coding allowed me to remove the hack method that used to allow
+//    the engine manager to check for interruption. Added movieAtts so they
+//    can be kept in sync between multiple clients.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerSubject : public QObject
@@ -395,9 +409,9 @@ public:
 
     void PostponeAction(ViewerActionBase *);
 public slots:
-    bool ReadFromParentAndCheckForInterruption();
     void ProcessFromParent();
 private:
+    void CreateState();
     void ConnectXfer();
     void ConnectObjectsAndHandlers();
     void ConnectConfigManager();
@@ -416,7 +430,6 @@ private:
     void ProcessCommandLine(int *argc, char ***argv);
     void CustomizeAppearance();
     void InitializeWorkArea();
-    void ProcessSpecialOpcodes(int opcode);
     int  OpenDatabaseHelper(const std::string &db, int timeState,
                             bool loadDefaultPlots, bool udpateWindowInfo);
 
@@ -523,10 +536,19 @@ private:
 
     void SetTryHarderCyclesTimes();
 
+    void OpenClient();
+
 private slots:
+    void AddInputToXfer(ViewerClientConnection *, AttributeSubject *subj);
+    void ProcessSpecialOpcodes(int opcode);
+    void DisconnectClient(ViewerClientConnection *client);
+    void DiscoverClientInformation();
+
     void HandleViewerRPC();
     void HandlePostponedAction();
     void HandleSync();
+    void HandleClientMethod();
+    void HandleClientInformation();
     void HandleMetaDataUpdated(const std::string &host, const std::string &db,
                                const avtDatabaseMetaData *md);
     void HandleSILAttsUpdated(const std::string &host, const std::string &db,
@@ -553,6 +575,9 @@ private slots:
     void CopyPlotsToWindow(int from, int to);
 
 private:
+    typedef std::vector<ViewerClientConnection *> ViewerClientConnectionVector;
+    static void BroadcastToAllClients(void *, Subject *);
+
     QApplication          *mainApp;
     QSocketNotifier       *checkParent;
     QSocketNotifier       *checkRenderer;
@@ -568,14 +593,19 @@ private:
     int                    iconifyOpcode;
     int                    numEngineRestarts;
 
-    ParentProcess          parent;
-    Xfer                   xfer;
+    ViewerMasterXfer       xfer;
+    ParentProcess         *parent;
+    ViewerState           *viewerState;
+    ViewerClientConnectionVector clients;
+    BufferConnection      *inputConnection;
 
     ViewerRPCObserver     *viewerRPCObserver;
     ViewerRPC              viewerRPC;
     PostponedAction        postponedAction;
     ViewerRPCObserver     *postponedActionObserver;
     ViewerRPCObserver     *syncObserver;
+    ViewerRPCObserver     *clientMethodObserver;
+    ViewerRPCObserver     *clientInformationObserver;
 
     MessageAttributes     *messageAtts;
     StatusAttributes      *statusAtts;
@@ -584,6 +614,10 @@ private:
     avtDatabaseMetaData   *metaData;
     SILAttributes         *silAtts;
     ProcessAttributes     *procAtts;
+    ClientMethod          *clientMethod;
+    ClientInformation     *clientInformation;
+    ClientInformationList *clientInformationList;
+    MovieAttributes       *movieAtts;
 
     bool                   nowin;
     std::string            borders;
@@ -615,6 +649,7 @@ private:
     // the first launch of an engine
     std::vector<std::string> engineParallelArguments;
     std::vector<std::string> unknownArguments;
+    std::vector<std::string> clientArguments;
 };
 
 #endif

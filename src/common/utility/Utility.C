@@ -1131,6 +1131,10 @@ ExpandUserPath(const std::string &path)
 //   Brad Whitlock, Mon Mar 7 14:23:59 PST 2005
 //   I fixed a bug that made it return the wrong part of the string.
 //
+//   Brad Whitlock, Mon May 9 16:26:43 PST 2005
+//   I prevented it from stripping the last directory off if we're in a
+//   development directory.
+//
 // ****************************************************************************
 
 std::string
@@ -1161,9 +1165,14 @@ GetVisItInstallationDirectory(const char *version)
     {
         // The directory often has a "/bin" on the end. Strip it off.
         std::string home(idir);
-        int lastSlash = home.rfind("/");
-        if(lastSlash != -1)
-            installDir = home.substr(0, lastSlash);
+        if(home.substr(0, 11) != "/data_vobs/")
+        {
+            int lastSlash = home.rfind("/");
+            if(lastSlash != -1)
+                installDir = home.substr(0, lastSlash);
+            else
+                installDir = idir;
+        }
         else
             installDir = idir;
     }

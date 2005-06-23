@@ -70,6 +70,10 @@
       0.000000
       0.000000
     </Field>
+    <Field name="windowSize" label="Window size" type="intArray" length="2">
+      0
+      0
+    </Field>
     <Function name="SetFromNode" user="false" member="true">
     </Function>
     <Function name="CreateNode" user="false" member="true">
