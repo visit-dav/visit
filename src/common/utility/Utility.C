@@ -1179,3 +1179,56 @@ GetVisItInstallationDirectory(const char *version)
     return installDir;
 #endif
 }
+
+// ****************************************************************************
+// Method: GetVisItArchitectureDirectory
+//
+// Purpose: 
+//   Gets the name of the directory where VisIt's current binary is installed.
+//   This directory typically contains the bin, lib, plugin, etc directories
+//   on UNIX installations.
+//
+// Arguments:
+//   version : The version number for which we want the archtecture dir.
+//
+// Returns:    The architecture dir.
+//
+// Note:       On Windows, this function returns the same as
+//             GetVisItInstallationDirectory.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jun 24 11:33:07 PDT 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+std::string
+GetVisItArchitectureDirectory()
+{
+    return GetVisItArchitectureDirectory(VERSION);
+}
+
+std::string
+GetVisItArchitectureDirectory(const char *version)
+{
+#if defined(_WIN32)
+    // Get the installation dir for the specified from the registry.
+    char *visitHome = 0;
+    std::string archDir("C:\\");
+    if(ReadKey(version, "VISITHOME", &visitHome) == 1)
+    {
+        archDir = visitHome;
+        delete [] visitHome;
+    }
+    return archDir;
+#else
+    // Get the installation dir for the version that's running. They all use
+    // the same "visit" script so it's okay to do this.
+    std::string archDir(std::string("/usr/local/visit/") + std::string(VERSION));
+    const char *adir = getenv("VISITARCHHOME");
+    if(adir != 0)
+        archDir = adir;
+    return archDir;
+#endif
+}

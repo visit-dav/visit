@@ -1632,6 +1632,13 @@ MDServerConnection::SetFileGroupingOptions(const std::string &filter,
 //   Brad Whitlock, Tue Apr 26 13:58:11 PST 2005
 //   Added code to group "abort" files into their related database.
 //
+//   Brad Whitlock, Mon Jun 27 14:22:59 PST 2005
+//   I made the code to consolidate virtual databases be off unless the 
+//   VISIT_CONSOLIDATE_VIRTUAL_DATABASES environment variable is set to "on".
+//   This prevents users from always running into it where it might cause
+//   problems for a small subset of users. Those who want the feature can
+//   set the environment variable.
+//
 // ****************************************************************************
 
 void
@@ -1808,7 +1815,12 @@ MDServerConnection::GetFilteredFileList(GetFileListRPC::FileList &files)
         // larger virtual database if the names look like what we'd get
         // with Flash files.
         if(extraSmartFileGrouping)
-            ConsolidateVirtualDatabases(newVirtualFiles, files);
+        {
+            const char *cvdbs = getenv("VISIT_CONSOLIDATE_VIRTUAL_DATABASES");
+            bool allowConsolidate = (cvdbs != 0 && strcmp(cvdbs,"on") == 0);
+            if(allowConsolidate)
+                ConsolidateVirtualDatabases(newVirtualFiles, files);
+        }
 
         //
         // Create virtual databases using the information stored in the

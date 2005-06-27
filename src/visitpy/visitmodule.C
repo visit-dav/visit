@@ -156,6 +156,7 @@ static void DelayedLoadPlugins();
 static void PlotPluginAddInterface();
 static void OperatorPluginAddInterface();
 static void InitializeExtensions();
+static void ExecuteClientMethod(ClientMethod *method, bool onNewThread);
 
 //
 // Type definitions
@@ -305,6 +306,8 @@ static char                **cli_argv = 0;
 
 static PyThreadState        *mainThreadState = NULL;
 
+static bool                  clientMethodsAllowed = false;
+static std::vector<ClientMethod *> cachedClientMethods;
 
 static std::vector<AnnotationObject *>   localObjectList;
 static std::map<AnnotationObject *, int> localObjectReferenceCount;
@@ -321,7 +324,7 @@ static  CRITICAL_SECTION     mutex;
 #else
 // pthreads thread-related stuff.
 static pthread_attr_t        thread_atts;
-static pthread_mutex_t       mutex, sync_mutex;
+static pthread_mutex_t       mutex;
 static pthread_cond_t        received_sync_from_viewer;
 static bool waitingForViewer = false;
 static ObserverToCallback   *synchronizeCallback = 0;
@@ -331,32 +334,41 @@ static ObserverToCallback   *synchronizeCallback = 0;
 #define MUTEX_LOCK()         pthread_mutex_lock(&mutex)
 #define MUTEX_UNLOCK()       pthread_mutex_unlock(&mutex)
 
-#define SYNC_MUTEX_LOCK()    pthread_mutex_lock(&sync_mutex);
-#define SYNC_MUTEX_UNLOCK()  pthread_mutex_unlock(&sync_mutex);
-
 #define SYNC_COND_WAIT()     if(keepGoing) \
                              {\
                                  waitingForViewer = true; \
                                  pthread_cond_wait(&received_sync_from_viewer, \
-                                 &sync_mutex); \
+                                                   &mutex); \
                                  waitingForViewer = false; \
-                             } \
-                             SYNC_MUTEX_UNLOCK();
+                             }
+
 #define SYNC_WAKE_MAIN_THREAD() if(waitingForViewer) \
                                     WakeMainThread(0, 0);
-#define SYNC_CREATE()        pthread_mutex_init(&sync_mutex, NULL); \
-                             pthread_cond_init(&received_sync_from_viewer, NULL);
+#define SYNC_CREATE()        pthread_cond_init(&received_sync_from_viewer, NULL);
 
-#define SYNC_DESTROY()       pthread_mutex_destroy(&sync_mutex); \
-                             pthread_cond_destroy(&received_sync_from_viewer);
+#define SYNC_DESTROY()       pthread_cond_destroy(&received_sync_from_viewer);
 
-// Called by the listener thread when SyncAttributes is read from the viewer.
+
+// ****************************************************************************
+// Function: WakeMainThread
+//
+// Purpose: 
+//   Called by the listener thread when SyncAttributes is read from the viewer.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Jun 27 09:58:06 PDT 2005
+//
+// Modifications:
+//   Brad Whitlock, Mon Jun 27 10:01:06 PDT 2005
+//   I removed the secondary mutexes since this method gets called only from
+//   the listener thread, which has already locked the viewer mutex.
+//
+// ****************************************************************************
+
 static void WakeMainThread(Subject *, void *)
-{
-    SYNC_MUTEX_LOCK();
+{      
     if(viewer->GetSyncAttributes()->GetSyncTag() == syncCount || !keepGoing)
         pthread_cond_signal(&received_sync_from_viewer);
-    SYNC_MUTEX_UNLOCK();
 }
 
 #endif
@@ -715,12 +727,19 @@ visit_Version(PyObject *self, PyObject *args)
 //   call to Synchronize. This ensures that all state objects have good
 //   default values from the viewer before we initialize local default values.
 //
+//   Brad Whitlock, Mon Jun 27 09:31:24 PDT 2005
+//   Added code to handle client events that come up during launch after the
+//   launch has happened. This prevents client methods from stalling the
+//   launch process.
+//
 // ****************************************************************************
 
 STATIC PyObject *
 visit_Launch(PyObject *self, PyObject *args)
 {
     NO_ARGUMENTS();
+
+    debug1 << "Launch: 0" << endl;
 
     //
     // Check to see if the viewer is already launched.
@@ -731,10 +750,14 @@ visit_Launch(PyObject *self, PyObject *args)
         return NULL;
     }
 
+    debug1 << "Launch: 1" << endl;
+
     //
     // Launch the viewer.
     //
     LaunchViewer();
+
+    debug1 << "Launch: 2" << endl;
 
     //
     // If the noViewer flag is false then the viewer could not launch.
@@ -745,21 +768,29 @@ visit_Launch(PyObject *self, PyObject *args)
         return NULL;
     }
 
+    debug1 << "Launch: 3" << endl;
+
     //
     // Wait for the viewer to tell us to load the plugins.
     //    
     DelayedLoadPlugins();
 
+    debug1 << "Launch: 4" << endl;
+
     // Create the thread that listens for input from the viewer. Then
     // synchronize to flush out any initialization that came from the viewer
     // before we allow more commands to execute.
     CreateListenerThread();
+    debug1 << "Launch: 5" << endl;
     int errorFlag = Synchronize();
+    debug1 << "Launch: 6" << endl;
 
     //
     // Initialize the extensions.
     //
     InitializeExtensions();
+
+    debug1 << "Launch: 7" << endl;
 
     //
     // Iterate over the plugins and add their methods to the VisIt module's
@@ -767,6 +798,38 @@ visit_Launch(PyObject *self, PyObject *args)
     //
     PlotPluginAddInterface();
     OperatorPluginAddInterface();
+
+    debug1 << "Launch: 8" << endl;
+
+    //
+    // Execute any client methods that came in during the Synchronize.
+    //
+    debug1 << "Launch: 9, executing cached client methods." << endl;
+    int size = 0;
+    do
+    {
+        ClientMethod *m = 0;
+
+        MUTEX_LOCK();
+        if(cachedClientMethods.size() > 0)
+        {
+            m = cachedClientMethods[0];
+            cachedClientMethods.erase(cachedClientMethods.begin());
+        }
+        size = cachedClientMethods.size();
+        MUTEX_UNLOCK();
+
+        if(m != 0)
+        {
+            ExecuteClientMethod(m, false);
+            delete m;
+        }
+    }
+    while(size > 0);
+
+    clientMethodsAllowed = true;
+
+    debug1 << "Launch, end" << endl;
 
     return IntReturnValue(errorFlag);
 }
@@ -7724,6 +7787,9 @@ visit_GetLight(PyObject *self, PyObject *args)
 //   I added a check to see if we're logging output before I write the
 //   Source command to the log.
 //
+//   Brad Whitlock, Fri Jun 24 10:50:12 PDT 2005
+//   Made the message include the name of the file that could not be sourced.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -7744,12 +7810,13 @@ visit_Source(PyObject *self, PyObject *args)
         //
         // Add a ".py" extension and try to open the file.
         //
-        char fileName2[1024];
-        SNPRINTF(fileName2, 1024, "%s.py", fileName);
-        fp = fopen(fileName2, "rb");
+        char buf[1024];
+        SNPRINTF(buf, 1024, "%s.py", fileName);
+        fp = fopen(buf, "rb");
         if(fp == NULL)
         {
-            VisItErrorFunc("Could not find file for sourcing.");
+            SNPRINTF(buf, 1024, "Could not find file %s for sourcing.", fileName);
+            VisItErrorFunc(buf);
             return NULL;
         }
     }
@@ -9891,19 +9958,25 @@ static void *
 visit_exec_client_method(void *data)
 #endif
 {
-    ClientMethod *m = (ClientMethod *)data;
+    void **cbData = (void **)data;
+    ClientMethod *m = (ClientMethod *)cbData[0];
+    bool onNewThread = ((int)cbData[1]) == 1;
 
-    // get the global lock
-    PyEval_AcquireLock();
+    PyThreadState *myThreadState = 0;
 
-    // get a reference to the PyInterpreterState
-    PyInterpreterState * mainInterpreterState = mainThreadState->interp;
-    // create a thread state object for this thread
-    PyThreadState * myThreadState = PyThreadState_New(mainInterpreterState);
+    if(onNewThread)
+    {
+        // get the global lock
+        PyEval_AcquireLock();
 
-    // swap in my thread state
-    PyThreadState_Swap(myThreadState);
-    
+        // get a reference to the PyInterpreterState
+        PyInterpreterState * mainInterpreterState = mainThreadState->interp;
+        // create a thread state object for this thread
+        myThreadState = PyThreadState_New(mainInterpreterState);
+        // swap in my thread state
+        PyThreadState_Swap(myThreadState);
+    }
+
     // Execute the method
     if(m->GetMethodName() == "Quit")
     {
@@ -9927,17 +10000,20 @@ visit_exec_client_method(void *data)
         }
     }
 
-    // clear the thread state
-    PyThreadState_Swap(NULL);
-    // clear out any cruft from thread state object
-    PyThreadState_Clear(myThreadState);
-    // delete my thread state object
-    PyThreadState_Delete(myThreadState);
+    if(onNewThread)
+    {
+        // clear the thread state
+        PyThreadState_Swap(NULL);
+        // clear out any cruft from thread state object
+        PyThreadState_Clear(myThreadState);
+        // delete my thread state object
+        PyThreadState_Delete(myThreadState);
+        // release our hold on the global interpreter
+        PyEval_ReleaseLock();
+    }
 
     delete m;
-
-    // release our hold on the global interpreter
-    PyEval_ReleaseLock();
+    delete [] cbData;
 
     return NULL;
 }
@@ -9955,6 +10031,11 @@ visit_exec_client_method(void *data)
 //             thread and it must return so it can listen for synchronizes
 //             and other data from the viewer.
 //
+//             We don't ever need MUTEX_LOCK here when accessing the
+//             cachedClientMethods vector because the 2nd thread always has
+//             MUTEX_LOCK locked when processing its input from the viewer,
+//             which is how we got here.
+//
 // Programmer: Brad Whitlock
 // Creation:   Wed May 4 16:58:15 PST 2005
 //
@@ -9963,15 +10044,26 @@ visit_exec_client_method(void *data)
 // ****************************************************************************
 
 static void
-ExecuteClientMethod(Subject *, void *)
+ExecuteClientMethodHelper(Subject *subj, void *)
 {
-    ClientMethod *method = viewer->GetClientMethod();
+    ClientMethod *method = (ClientMethod *)subj;
+    debug1 << "Received a " << method->GetMethodName().c_str()
+           << " client method." << endl;
+
+    if(!clientMethodsAllowed)
+        cachedClientMethods.push_back(new ClientMethod(*method));
+    else
+        ExecuteClientMethod(method, true);
+}
+
+static void
+ExecuteClientMethod(ClientMethod *method, bool onNewThread)
+{
+    debug1 << "ExecuteClientMethod: " << method->GetMethodName().c_str()
+           << endl;
 
     if(method->GetMethodName() == "_QueryClientInformation")
     {
-        debug1 << "CLI received _QueryClientInformation method. Tell the "
-                  "viewer which client methods the CLI supports." << endl;
-
         // The viewer uses this method to discover information about the GUI.
         ClientInformation *info = viewer->GetClientInformation();
         info->SetClientName("cli");
@@ -9989,7 +10081,6 @@ ExecuteClientMethod(Subject *, void *)
     }
     else if(method->GetMethodName() == "Interrupt")
     {
-        debug1 << "CLI received Interrupt method" << endl;
         interruptScript = true;
     }
     else
@@ -10015,26 +10106,39 @@ ExecuteClientMethod(Subject *, void *)
             // thread so this thread can get back to reading output from the
             // viewer.
             //
+            void **cbData = new void *[2];
             ClientMethod *m = new ClientMethod(*method);
+            cbData[0] = (void *)m;
+            cbData[1] = (void *)(onNewThread?1:0);
+            if(onNewThread)
+            {
 #if defined(_WIN32)
-            // Create the thread with the WIN32 API.
-            DWORD Id;
-            if(CreateThread(0, 0, visit_exec_client_method, (LPVOID)m, 0, &Id) == INVALID_HANDLE_VALUE)
-            {
-                delete m;
-                fprintf(stderr, "VisIt: Error - Could not create work thread to "
-                        "execute %s client method.\n", m->GetMethodName().c_str());
-            }
+                // Create the thread with the WIN32 API.
+                DWORD Id;
+                if(CreateThread(0, 0, visit_exec_client_method, (LPVOID)cbData, 0, &Id) == INVALID_HANDLE_VALUE)
+                {
+                    delete m;
+                    delete [] cbData;
+                    fprintf(stderr, "VisIt: Error - Could not create work thread to "
+                            "execute %s client method.\n", m->GetMethodName().c_str());
+                }
 #else
-            // Create the thread using PThreads.
-            pthread_t tid;
-            if(pthread_create(&tid, &thread_atts, visit_exec_client_method, (void *)m) == -1)
-            {
-                delete m;
-                fprintf(stderr, "VisIt: Error - Could not create work thread to "
-                        "execute %s client method.\n", m->GetMethodName().c_str());
-            }
+                // Create the thread using PThreads.
+                pthread_t tid;
+                if(pthread_create(&tid, &thread_atts, visit_exec_client_method, (void*)cbData) == -1)
+                {
+                    delete m;
+                    delete [] cbData;
+                    fprintf(stderr, "VisIt: Error - Could not create work thread to "
+                            "execute %s client method.\n", m->GetMethodName().c_str());
+                }
 #endif
+            }
+            else
+            {
+                // Execute the method on the current thread.
+                visit_exec_client_method(cbData);
+            }
         }
     }
 }
@@ -10981,6 +11085,8 @@ OperatorPluginAddInterface()
 static void
 DelayedLoadPlugins()
 {
+    debug1 << "DelayedLoadPlugins: start" << endl;
+
     // Start reading from the viewer. This will quit when we get a signal
     // from the viewer insicating that we need to load plugins. This means
     // that the NeedToLoadPlugins() function will be called from
@@ -10994,6 +11100,8 @@ DelayedLoadPlugins()
     // Tell the viewer proxy to load its plugins now that we know which
     // ones we need to load.
     viewer->LoadPlugins();
+
+    debug1 << "DelayedLoadPlugins: end" << endl;
 }
 
 // ****************************************************************************
@@ -11139,7 +11247,7 @@ InitializeModule()
     pluginLoader = new ObserverToCallback(viewer->GetPluginManagerAttributes(),
                                           NeedToLoadPlugins);
     clientMethodObserver = new ObserverToCallback(viewer->GetClientMethod(),
-                                          ExecuteClientMethod);
+                                          ExecuteClientMethodHelper);
 
 #ifndef POLLING_SYNCHRONIZE
     synchronizeCallback = new ObserverToCallback(viewer->GetSyncAttributes(),
@@ -11675,7 +11783,9 @@ visit_eventloop(void *)
 //   synchronizing. In that case, I also added code to set the error string.
 //
 //   Brad Whitlock, Tue Jun 21 10:59:04 PDT 2005
-//   Added support for script interruption.
+//   I changed the synchronization code so it uses the original viewer mutex
+//   instead of 2 mutexes so the code won't deadlock on some systems. I also
+//   added support for script interruption.
 //
 // ****************************************************************************
 
@@ -11701,33 +11811,29 @@ Synchronize()
         return -1;
     }
 
-    SyncAttributes *syncAtts = viewer->GetSyncAttributes();
-
-#ifndef POLLING_SYNCHRONIZE
-    SYNC_MUTEX_LOCK();
-#endif
+    // Disable logging.
+    bool logEnabled = logging;
+    if(logEnabled)
+        SetLogging(false);
 
     // Send the syncAtts to the viewer and then set the proxy's syncAtts tag
     // to -1. This will allow us to loop until the viewer sends back the
     // correct value.
-    ++syncCount;
     MUTEX_LOCK();
+    ++syncCount;
+    SyncAttributes *syncAtts = viewer->GetSyncAttributes();
     syncAtts->SetSyncTag(syncCount);
 #ifndef POLLING_SYNCHRONIZE
     synchronizeCallback->SetUpdate(false);
 #endif
     syncAtts->Notify();
     syncAtts->SetSyncTag(-1);
-    MUTEX_UNLOCK();
-
-    // Disable logging.
-    bool logEnabled = logging;
-    if(logEnabled)
-        SetLogging(false);
 
 #ifndef POLLING_SYNCHRONIZE
     SYNC_COND_WAIT();
+    MUTEX_UNLOCK();
 #else
+    MUTEX_UNLOCK();
     while((syncAtts->GetSyncTag() != syncCount) && keepGoing)
     {
         // Nothing here.

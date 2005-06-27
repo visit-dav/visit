@@ -256,6 +256,8 @@ def MovieClassSaveWindow():
 # Programmer: Brad Whitlock
 # Date:       Tue Aug 3 16:11:01 PST 2004
 #
+# Modifications:
+#
 ###############################################################################
 
 class EngineAttributesParser(XMLParser):
@@ -336,6 +338,83 @@ class EngineAttributesParser(XMLParser):
                 return
             self.engineProperties[name] = value
 
+###############################################################################
+# Class: WindowSizeParser
+#
+# Purpose:    This class parses session files for the windowSize field in
+#             the ViewerWindow and builds a list of [width,height] values.
+#
+# Programmer: Brad Whitlock
+# Date:       Fri Jun 24 10:03:23 PDT 2005
+#
+# Modifications:
+#
+###############################################################################
+
+class WindowSizeParser(XMLParser):
+    def __init__(self):
+        XMLParser.__init__(self)
+        self.elements = {"Object" : ("<Object>", "</Object>"), "Field" : ("<Field>", "</Field>")}
+        self.attributes = {"name" : "", "type" : None, "length" : 0}
+
+        self.readAtts = 0
+        self.readingField = 0
+        self.windowSizes = []
+        self.activeWindow = 0
+        self.objectNames = []
+        self.dataAtts = None
+
+    def handle_starttag(self, tag, method, attributes):
+        if tag == "Object":
+            if "name" in attributes.keys():
+                name = attributes["name"]
+                self.objectNames = self.objectNames + [name]
+                if name == "ViewerWindowManager":
+                    self.readAtts = 1
+        else:
+            self.readingField = 1
+            self.dataAtts = attributes
+
+    def handle_endtag(self, tag, method):
+        if tag == "Object":
+            name = self.objectNames[-1]
+            if name == "ViewerWindowManager":
+                self.readAtts = 0
+            self.objectNames = self.objectNames[:-1]
+        elif tag == "Field":
+            self.readingField = 0
+
+    def handle_data(self, data):
+        def not_all_spaces(s):
+            space = ""
+            for i in range(len(s)):
+                space = space + " "
+            return s != space
+        if self.readAtts and self.readingField and len(data) > 0:
+            name = self.dataAtts["name"]
+            type = self.dataAtts["type"]
+            value = []
+            if name == "activeWindow" and type == "int":
+                try:
+                    self.activeWindow = int(data)
+                    if self.activeWindow < 0:
+                        self.activeWindow = 0
+                except ValueError:
+                    return
+            elif name == "windowSize" and type == "intArray":
+                length = self.dataAtts["length"]
+                if length == "2":
+                    fragments = string.split(data, " ")
+                    value = []
+                    for s in fragments:
+                       if len(s) > 0:
+                           if not_all_spaces(s):
+                               try:
+                                   val = int(s)
+                                   value = value + [val]
+                               except ValueError:
+                                   continue
+                    self.windowSizes = self.windowSizes + [value[:2]]
 
 ###############################################################################
 # Class: MakeMovie
@@ -501,10 +580,13 @@ class MakeMovie:
     #   Brad Whitlock, Wed Jun 1 10:13:56 PDT 2005
     #   Added -stereo and support for multiple formats and geometries.
     #
+    #   Brad Whitlock, Fri Jun 24 10:25:36 PDT 2005
+    #   Added a note about omitting the -geometry flag.
+    #
     ###########################################################################
 
     def PrintUsage(self):
-        print "Usage: visit -movie [-format fmt] [-geometry size] -sessionfile name"
+        print "Usage: visit -movie [-format fmt] [-geometry size]"
         print "                    -sessionfile name | -scriptfile name "
         print "                    [-output moviename] [-framestep step]"
         print "                    [PARALLEL OPTIONS]"
@@ -552,6 +634,11 @@ class MakeMovie:
         print "                       You can specify multiple geometries by concatenating"
         print "                       more than one WxH using commas. Example:"
         print "                       -geometry 320x320,1024x768."
+        print ""
+        print "                       If you omit the -geometry argument then the"
+        print "                       window sizes stored in your session file will be"
+        print "                       used. If you are not using a session file then"
+        print "                       the default size will be 512x512."
         print ""
         print "    -sessionfile name  The sessionfile option lets you pick the name"
         print "                       of the VisIt session to use as input for your"
@@ -756,6 +843,9 @@ class MakeMovie:
     #
     #   Brad Whitlock, Wed Jun 1 13:51:27 PST 2005
     #   Added support for multiple formats and geometries and for stereo.
+    #
+    #   Brad Whitlock, Fri Jun 24 10:11:31 PDT 2005
+    #   Added support for reading the window sizes out of the session file.
     #
     ###########################################################################
 
@@ -1016,7 +1106,21 @@ class MakeMovie:
         if len(formatList) == 0:
             formatList = ["mpeg"]
         if len(sizeList) == 0:
-            sizeList = [(512, 512)]
+            if self.stateFile != "":
+                # No -geometry flag was specified but we're using a session file
+                # so let's parse the sizes out of the session file.
+                windowInfo = self.ReadWindowSizes(self.stateFile)
+                activeWindow = windowInfo[0]
+                windowSizes  = windowInfo[1]
+                if len(windowSizes) > 0:
+                    if activeWindow >= len(windowSizes):
+                        activeWindow = 0
+                    sizeList = [tuple(windowSizes[activeWindow])]
+                else:
+                    sizeList = [(512, 512)]
+            else:
+                sizeList = [(512, 512)]
+
         # If the formatList and sizeList are not the same size, make them 
         # be the same size by repeating the last value in the shorter of the
         # lists until the lists are the same length.
@@ -1317,6 +1421,36 @@ class MakeMovie:
             raise
         except:
             return {}
+
+    ###########################################################################
+    # Method: ReadWindowSizes
+    #
+    # Purpose:    This method reads the ViewerWindow sizes out of a session
+    #             file and returns the list of sizes.
+    #
+    # Programmer: Brad Whitlock
+    # Date:       Fri Jun 24 10:06:24 PDT 2005
+    #
+    ###########################################################################
+
+    def ReadWindowSizes(self, sessionFile):
+        try:
+            # Read the file.
+            f = open(sessionFile, "r")
+            lines = f.readlines()
+            f.close()
+
+            # Parse the file
+            p = WindowSizeParser()
+            for line in lines:
+                p.feed(line)
+            p.close()
+            
+            return (p.activeWindow, p.windowSizes)
+        except VisItInterrupt:
+            raise
+        except:
+            return (0, [])
 
     ###########################################################################
     # Method: CreateEngineArguments

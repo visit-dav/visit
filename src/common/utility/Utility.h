@@ -39,6 +39,8 @@ std::vector<std::string> UTILITY_API SplitValues(const std::string &buff,
 
 std::string UTILITY_API GetVisItInstallationDirectory();
 std::string UTILITY_API GetVisItInstallationDirectory(const char *version);
+std::string UTILITY_API GetVisItArchitectureDirectory();
+std::string UTILITY_API GetVisItArchitectureDirectory(const char *version);
 
 std::string UTILITY_API GetUserVisItDirectory();
 UTILITY_API char *      GetDefaultConfigFile(const char *filename = 0, const char *home = 0);

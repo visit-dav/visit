@@ -203,6 +203,9 @@
 #    Brad Whitlock, Thu May 12 11:30:24 PDT 2005
 #    Added code to copy MacOS X address computation script and address file.
 #
+#    Brad Whitlock, Thu Jun 23 17:11:21 PST 2005
+#    Made it copy makemoviemain.py
+#
 #------------------------------------------------------------------------------
 
 set DataFiles = "TRUE"
@@ -649,6 +652,7 @@ endif
 # Copy the MPEG encoder and the makemovie script.
 cp $VisItDir/exe/mpeg_encode   $bindir
 cp $VisItDir/bin/makemovie.py  $bindir
+cp $VisItDir/bin/makemoviemain.py  $bindir
 # copy surfcomp
 cp $VisItDir/exe/surfcomp      $bindir
 # Copy MacOS X address computation script and address file.

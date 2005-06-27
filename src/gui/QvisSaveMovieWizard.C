@@ -1056,7 +1056,7 @@ QvisSaveMovieWizard::UpdatePage()
                 outDir += SLASH_STRING;
             movieAtts->SetOutputDirectory(outDir);
         }
-        qDebug("Update the filename, output dir page.");
+        //qDebug("Update the filename, output dir page.");
         page11_outputDirectoryLineEdit->blockSignals(true);
         page11_outputDirectoryLineEdit->setText(movieAtts->
             GetOutputDirectory().c_str());
