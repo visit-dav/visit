@@ -6110,6 +6110,9 @@ avtSiloFileFormat::AllocAndDetermineMeshnameForUcdmesh(int dom, const char *mesh
 //    Moved code common to several auxiliary data 'Get' methods to 
 //    AllocAndDetermineMeshnameForUcdmesh
 //
+//    Mark C. Miller, Tue Jun 28 17:28:56 PDT 2005
+//    Made it handle the new "EMPTY" domain convention
+//
 // ****************************************************************************
 
 avtFacelist *
@@ -6121,7 +6124,7 @@ avtSiloFileFormat::GetExternalFacelist(int dom, const char *mesh)
     DBfile *dbfile = GetFile(tocIndex);
 
     char *meshname = AllocAndDetermineMeshnameForUcdmesh(dom, mesh);
-    if (meshname == NULL)
+    if (meshname == NULL || string(meshname) == "EMPTY")
         return NULL;
 
     //
@@ -6156,6 +6159,9 @@ avtSiloFileFormat::GetExternalFacelist(int dom, const char *mesh)
 //    Mark C. Miller, Thu Oct 14 15:18:31 PDT 2004
 //    Uncommented the data read mask
 //
+//    Mark C. Miller, Tue Jun 28 17:28:56 PDT 2005
+//    Made it handle the new "EMPTY" domain convention
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -6167,7 +6173,7 @@ avtSiloFileFormat::GetGlobalNodeIds(int dom, const char *mesh)
     DBfile *dbfile = GetFile(tocIndex);
 
     char *meshname = AllocAndDetermineMeshnameForUcdmesh(dom, mesh);
-    if (meshname == NULL)
+    if (meshname == NULL || string(meshname) == "EMPTY")
         return NULL;
 
     //
@@ -6223,6 +6229,9 @@ avtSiloFileFormat::GetGlobalNodeIds(int dom, const char *mesh)
 //    Mark C. Miller, Thu Oct 14 15:18:31 PDT 2004
 //    Uncommented the data read mask
 //
+//    Mark C. Miller, Tue Jun 28 17:28:56 PDT 2005
+//    Made it handle the new "EMPTY" domain convention
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -6234,7 +6243,7 @@ avtSiloFileFormat::GetGlobalZoneIds(int dom, const char *mesh)
     DBfile *dbfile = GetFile(tocIndex);
 
     char *meshname = AllocAndDetermineMeshnameForUcdmesh(dom, mesh);
-    if (meshname == NULL)
+    if (meshname == NULL || string(meshname) == "EMPTY")
         return NULL;
 
     //

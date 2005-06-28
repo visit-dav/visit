@@ -366,7 +366,7 @@ static ObserverToCallback   *synchronizeCallback = 0;
 // ****************************************************************************
 
 static void WakeMainThread(Subject *, void *)
-{      
+{
     if(viewer->GetSyncAttributes()->GetSyncTag() == syncCount || !keepGoing)
         pthread_cond_signal(&received_sync_from_viewer);
 }
@@ -9960,11 +9960,11 @@ visit_exec_client_method(void *data)
 {
     void **cbData = (void **)data;
     ClientMethod *m = (ClientMethod *)cbData[0];
-    bool onNewThread = ((int)cbData[1]) == 1;
+    bool acquireLock = ((int)cbData[1]) == 1;
 
     PyThreadState *myThreadState = 0;
 
-    if(onNewThread)
+    if(acquireLock)
     {
         // get the global lock
         PyEval_AcquireLock();
@@ -10000,7 +10000,7 @@ visit_exec_client_method(void *data)
         }
     }
 
-    if(onNewThread)
+    if(acquireLock)
     {
         // clear the thread state
         PyThreadState_Swap(NULL);
@@ -10019,19 +10019,13 @@ visit_exec_client_method(void *data)
 }
 
 // ****************************************************************************
-// Function: ExecuteClientMethod
+// Function: ExecuteClientMethodHelper
 //
 // Purpose:
 //   This method is called when the clientMethodObserver gets client method
 //   data from the viewer.
 //
-// Notes:      If the method being asked for is implemented here, try and 
-//             execute it. We execute the method on a new thread because this
-//             method is called by the 2nd thread, which is the messaging
-//             thread and it must return so it can listen for synchronizes
-//             and other data from the viewer.
-//
-//             We don't ever need MUTEX_LOCK here when accessing the
+// Notes:      We don't ever need MUTEX_LOCK here when accessing the
 //             cachedClientMethods vector because the 2nd thread always has
 //             MUTEX_LOCK locked when processing its input from the viewer,
 //             which is how we got here.
@@ -10056,6 +10050,33 @@ ExecuteClientMethodHelper(Subject *subj, void *)
         ExecuteClientMethod(method, true);
 }
 
+// ****************************************************************************
+// Function: ExecuteClientMethod
+//
+// Purpose:
+//   This method executes client methods and optionally spawns a new thread 
+//   to execute them.
+//
+// Notes:      If the method being asked for is implemented here, try and 
+//             execute it. We may execute the method on a new thread because
+//             this method is usually called by the 2nd thread, which is the
+//             messaging thread and it must return so it can listen for 
+//             synchronizes and other data from the viewer.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jun 28 11:01:02 PDT 2005
+//
+// Modifications:
+//   Brad Whitlock, Tue Jun 28 11:04:38 PDT 2005
+//   Removed some code to disable updates on Xfer when sending back the
+//   client information to the viewer. This was a holdover from an intermediate
+//   implementation and it was causing synchronization failures when we
+//   process a client method during the Launch method. I also made the
+//   Quit method be processed on the listener thread so we don't have problems
+//   with the 2nd thread coring when Python gets shut down by a worker thread.
+//
+// ****************************************************************************
+
 static void
 ExecuteClientMethod(ClientMethod *method, bool onNewThread)
 {
@@ -10074,14 +10095,22 @@ ExecuteClientMethod(ClientMethod *method, bool onNewThread)
         info->DeclareMethod("Quit", "");
         info->DeclareMethod("Interpret", "s");
         info->DeclareMethod("Interrupt", "");
-        viewer->SetXferUpdate(true);
         info->SelectAll();
         info->Notify();
-        viewer->SetXferUpdate(false);
     }
     else if(method->GetMethodName() == "Interrupt")
     {
         interruptScript = true;
+    }
+    else if(method->GetMethodName() == "Quit")
+    {
+        // Execute the Quit method here on the 2nd thread. Make it get
+        // the interpreter lock by calling it using visit_exec_client_method.
+        void **cbData = new void *[2];
+        ClientMethod *m = new ClientMethod(*method);
+        cbData[0] = (void *)m;
+        cbData[1] = (void *)1;
+        visit_exec_client_method(cbData);
     }
     else
     {
