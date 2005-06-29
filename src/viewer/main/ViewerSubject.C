@@ -2713,7 +2713,7 @@ ViewerSubject::Close()
     //
     clientMethod->SetMethodName("Quit");
     clientMethod->ClearArgs();
-    HandleClientMethod();
+    BroadcastToAllClients((void *)this, clientMethod);
 
     //
     // Break out of the application loop.
@@ -7377,10 +7377,21 @@ ViewerSubject::HandleSync()
 void
 ViewerSubject::HandleClientMethod()
 {
-    debug1 << "Broadcasting client method: "
-           << clientMethod->GetMethodName().c_str() << " to all "
-           << clients.size() << " client(s)." << endl;
-    BroadcastToAllClients((void *)this, clientMethod);
+    if(clientMethod->GetMethodName() == "_QueryClientInformation")
+    {
+        debug1 << "One of the clients is coded such that it sends the"
+                  " _QueryClientInformation method back to the viewer. "
+                  "We're preventing that situation because it causes an "
+                  "infinite loop." << endl;
+    }
+    else
+    {
+        debug1 << "Broadcasting client method: "
+               << clientMethod->GetMethodName().c_str() << " to all "
+               << clients.size() << " client(s)." << endl;
+    
+        BroadcastToAllClients((void *)this, clientMethod);
+    }
 }
 
 // ****************************************************************************
@@ -7407,15 +7418,15 @@ ViewerSubject::HandleClientInformation()
     for(int i = 0; i < clientInformationList->GetNumClientInformations(); ++i)
     {
         const ClientInformation &client = clientInformationList->operator[](i);
-        debug5 << "client["<< i << "] = " << client.GetClientName().c_str()
+        debug3 << "client["<< i << "] = " << client.GetClientName().c_str()
                << endl;
-        debug5 << "methods:" << endl;
+        debug3 << "methods:" << endl;
         for(int j = 0; j < client.GetMethodNames().size(); ++j)
         {
-            debug5 << "\t" << client.GetMethod(j).c_str() << "("
+            debug3 << "\t" << client.GetMethod(j).c_str() << "("
                    << client.GetMethodPrototype(j).c_str() << ")" << endl;
         }
-        debug5 << endl;
+        debug3 << endl;
     }
 
     BroadcastToAllClients((void *)this, clientInformationList);
@@ -7446,7 +7457,7 @@ ViewerSubject::DiscoverClientInformation()
     // Ask the current set of clients to tell us about themselves.
     clientMethod->SetMethodName("_QueryClientInformation");
     clientMethod->ClearArgs();
-    HandleClientMethod();
+    BroadcastToAllClients((void *)this, clientMethod);
 }
 
 // ****************************************************************************

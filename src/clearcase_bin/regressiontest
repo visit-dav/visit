@@ -281,7 +281,9 @@ skipList="scalable,parallel:tests/databases/boxlib.py \
           scalable,parallel:tests/hybrid/locus.py \
           dlb:tests/databases/global_node_ids.py \
           dlb:tests/queries/pick.py \
-	  optimized:tests/plots/tensor.py"
+	  optimized:tests/plots/tensor.py \
+	  optimized:tests/hybrid/lineout.py \
+	  optimized:tests/queries/database.py"
 
 # run the test(s)
 error=0

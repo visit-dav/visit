@@ -308,6 +308,10 @@
 #    Hank Childs, Tue May 24 17:11:00 PDT 2005
 #    Added QvisExportDBWindow.
 #
+#    Brad Whitlock, Tue Jun 28 11:43:16 PDT 2005
+#    Added John Anderson's QvisImageAnnotationInterface and
+#    QvisLine2DInterface.
+#
 ##############################################################################
 
 ##
@@ -368,11 +372,13 @@ HDRMOC = \
     QvisGUIApplication.h \
     QvisHelpWindow.h \
     QvisHostProfileWindow.h \
+    QvisImageAnnotationInterface.h \
     QvisInteractorWindow.h \
     QvisInterpreter.h \
     QvisKeyframeWindow.h \
     QvisLightingWidget.h \
     QvisLightingWindow.h \
+    QvisLine2DInterface.h \
     QvisLineStyleWidget.h \
     QvisLineWidthWidget.h \
     QvisMainWindow.h \

@@ -81,8 +81,10 @@
 #include <PyGlobalAttributes.h>
 #include <PyGlobalLineoutAttributes.h>
 #include <PyHostProfile.h>
+#include <PyImageObject.h>
 #include <PyInteractorAttributes.h>
 #include <PyKeyframeAttributes.h>
+#include <PyLineObject.h>
 #include <PyLightAttributes.h>
 #include <PyMaterialAttributes.h>
 #include <PyPickAttributes.h>
@@ -9467,7 +9469,9 @@ visit_Lineout(PyObject *self, PyObject *args)
 // Creation:   Wed Dec 3 17:23:24 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Jun 28 11:48:50 PDT 2005
+//   Added John Anderson's objects.
+//
 // ****************************************************************************
 
 PyObject *
@@ -9485,6 +9489,16 @@ CreateAnnotationWrapper(AnnotationObject *annot)
         // Create a Text2D wrapper for the new annotation object.
         retval = PyTimeSliderObject_WrapPyObject(annot);
     }
+    else if(annot->GetObjectType() == AnnotationObject::Line2D)
+    {
+        // Create a Line2D wrapper for the new annotation object.
+        retval = PyLineObject_WrapPyObject(annot);
+    }
+    else if(annot->GetObjectType() == AnnotationObject::Image)
+    {
+        // Create a Image wrapper for the new annotation object.
+        retval = PyImageObject_WrapPyObject(annot);
+    }
 
     // Add more cases here later...
 
@@ -9501,6 +9515,8 @@ CreateAnnotationWrapper(AnnotationObject *annot)
 // Creation:   Wed Dec 3 17:22:55 PST 2003
 //
 // Modifications:
+//   Brad Whitlock, Tue Jun 28 11:48:50 PDT 2005
+//   Added John Anderson's objects.
 //   
 // ****************************************************************************
 
@@ -9519,6 +9535,10 @@ visit_CreateAnnotationObject(PyObject *self, PyObject *args)
         annotTypeIndex = 2;
     else if(strcmp(annotType, "Text2D") == 0)
         annotTypeIndex = 0;
+    else if(strcmp(annotType, "Line2D") == 0)
+        annotTypeIndex = 3;
+    else if(strcmp(annotType, "Image") == 0)
+        annotTypeIndex = 7;
     else
     {
         char message[400];
@@ -10075,6 +10095,14 @@ ExecuteClientMethodHelper(Subject *subj, void *)
 //   Quit method be processed on the listener thread so we don't have problems
 //   with the 2nd thread coring when Python gets shut down by a worker thread.
 //
+//   Brad Whitlock, Wed Jun 29 15:02:01 PST 2005
+//   Put back the code to enable/disable updates on Xfer but made sure that it
+//   only takes effect when this routine is run from the listener thread. The
+//   absence of that code prevented client info from making it to the viewer
+//   when we execute this routine on the listener thread. We only do that
+//   code on the listener thread so we don't mess up synchronizes on the main
+//   thread during startup.
+//
 // ****************************************************************************
 
 static void
@@ -10096,7 +10124,20 @@ ExecuteClientMethod(ClientMethod *method, bool onNewThread)
         info->DeclareMethod("Interpret", "s");
         info->DeclareMethod("Interrupt", "");
         info->SelectAll();
+
+        // If onNewThread is true then we got into this method on the 2nd
+        // thread, which means that xfer's update will be set to false. That
+        // means that calling Notify on the client information would not make
+        // xfer send it to the viewer. To combat this problem, we set xfer's
+        // update to true temporarily so we can send the object to the viewer.
+        // We only do it on the 2nd thread because if this method is called 
+        // from the first thread, we did not arrive here from xfer and
+        // turning off its updates messes up Synchronize.
+        if(onNewThread)
+           viewer->SetXferUpdate(true);
         info->Notify();
+        if(onNewThread)
+           viewer->SetXferUpdate(false);
     }
     else if(method->GetMethodName() == "Interrupt")
     {
