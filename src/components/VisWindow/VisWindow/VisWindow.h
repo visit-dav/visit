@@ -308,6 +308,9 @@ class VisitInteractor;
 //    Mark C. Miller, Thu Mar  3 17:38:36 PST 2005
 //    Changed name of GetNumTriangles to GetNumPrimitives
 //
+//    Kathleen Bonnell, Mon Jun 27 14:54:36 PDT 2005 
+//    Added GetMaxPlotZShift.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindow
@@ -618,6 +621,7 @@ protected:
     static void          ProcessResizeEvent(void *);
     void                 ReAddColleaguesToRenderWindow(void);
     void                 ReAddToolsToRenderWindow(void);
+    float                GetMaxPlotZShift(void);
 };
 
 

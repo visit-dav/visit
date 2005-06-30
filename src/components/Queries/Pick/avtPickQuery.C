@@ -277,6 +277,10 @@ avtPickQuery::PostExecute(void)
 //    Reworked so that an 'Update' is issued only if secondary variables
 //    are needed, or input has been MatSelected, or global ids are necessary. 
 //
+//    Kathleen Bonnell, Tue Jun 28 15:49:03 PDT 2005 
+//    Change where we get ghostType from, as the inData's atts aren't always
+//    accurate. (What is stored in PickAtts was taken from the networkCache.)
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -287,7 +291,7 @@ avtPickQuery::ApplyFilters(avtDataObject_p inData)
     avtDataAttributes &inAtts = inData->GetInfo().GetAttributes();
     blockOrigin = inAtts.GetBlockOrigin();
     cellOrigin = inAtts.GetCellOrigin();
-    ghostType = inAtts.GetContainsGhostZones();
+    ghostType = (avtGhostType)pickAtts.GetGhostType();
     pickAtts.SetDimension(inAtts.GetSpatialDimension());
 
     Preparation();
@@ -1355,6 +1359,8 @@ avtPickQuery::GetCurrentZoneForOriginal(vtkDataSet *ds, const int origZone)
 //  Creation:   August 11, 2004
 //
 //  Modifications:
+//    Kathleen Bonnell, Thu Jun 30 15:39:03 PDT 2005
+//    Correct the logic for finding current zones.
 //
 // ****************************************************************************
 
@@ -1370,15 +1376,20 @@ avtPickQuery::GetCurrentZoneForOriginal(vtkDataSet *ds,
         int nTuples = origCells->GetNumberOfTuples();
         int nComp = origCells->GetNumberOfComponents();
         int comp = nComp -1;
+        int i, j;
         unsigned int *oc = origCells->GetPointer(0);
         int nFound = 0;
-        for (int i = 0; i < nTuples && nFound < origZones.size(); i++)
+        bool zoneFound[origZones.size()];
+        for (i = 0; i < origZones.size(); i++)
+            zoneFound[i] = false;
+        for (i = 0; i < nTuples && nFound < origZones.size(); i++)
         {
-            for (int j = 0; j < currentZones.size(); j++)
+            for (j = 0; j < currentZones.size(); j++)
             {
-                if (oc[i*nComp+comp] == origZones[j])
+                if (!zoneFound[j] && oc[i*nComp+comp] == origZones[j])
                 {
                     currentZones[j] = i; 
+                    zoneFound[j]= true;
                     nFound++;
                     break;
                 }
@@ -1387,7 +1398,6 @@ avtPickQuery::GetCurrentZoneForOriginal(vtkDataSet *ds,
     }
     return currentZones;
 }
-
 
 // ****************************************************************************
 //  Method: avtPickQuery::SetGlobalIds
@@ -1493,4 +1503,70 @@ avtPickQuery::ConvertElNamesToGlobal(void)
                 pickAtts.GetPickVarInfo(i).SetNames(globalElName);
         }
     }
+}
+
+
+// ****************************************************************************
+//  Method: avtPickQuery::SetRealIds
+//
+//  Purpose:
+//    Converts node/zone numbers to the 'correct' ids for the original mesh
+//    with no-ghost zones. 
+//
+//  Arguments:
+//    ds          The dataset to retrieve information from.
+//
+//  Programmer: Kathleen Bonnell  
+//  Creation:   June 28, 2005 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtPickQuery::SetRealIds(vtkDataSet *ds)
+{
+    int foundEl= pickAtts.GetElementNumber();
+    intVector incEls = pickAtts.GetIncidentElements();
+
+    int i, j; 
+    bool forCell = pickAtts.GetPickType() == PickAttributes::Zone || 
+                   pickAtts.GetPickType() == PickAttributes::DomainZone;
+    char fString[20], tmp[20];
+
+    stringVector elStrings;
+    foundEl = vtkVisItUtility::CalculateRealID(foundEl, forCell, ds);
+    SNPRINTF(fString, 20, "(%d)", foundEl);
+    for (i = 0; i < incEls.size(); i++)
+    {
+        incEls[i] = vtkVisItUtility::CalculateRealID(incEls[i], !forCell, ds);
+        SNPRINTF(tmp, 20, "(%d)", incEls[i]);
+        elStrings.push_back(tmp);
+    }
+
+    // need to change the zone/node names stored in all PickVarInfo
+    int numVars = pickAtts.GetNumPickVarInfos();
+    for (i = 0; i < numVars; i++)
+    {
+        if (pickAtts.GetPickVarInfo(i).GetVariableType() == "material")
+            continue;
+
+        stringVector &names = pickAtts.GetPickVarInfo(i).GetNames();
+        if (names.size() == 0) 
+            continue;
+        if (names.size() == incEls.size())
+        {
+            for (j = 0; j < names.size(); j++)
+            {
+                names[j] = elStrings[j]; 
+            }
+        }
+        else 
+        {
+            names[0] = fString;
+        }
+    }
+   
+    pickAtts.SetRealElementNumber(foundEl);
+    pickAtts.SetRealIncidentElements(incEls);
 }

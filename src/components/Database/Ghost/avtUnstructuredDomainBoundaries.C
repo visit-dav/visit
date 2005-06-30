@@ -5,6 +5,7 @@
 #include <avtUnstructuredDomainBoundaries.h>
 
 #include <vtkCellData.h>
+#include <vtkCellLinks.h>
 #include <vtkFloatArray.h>
 #include <vtkIdList.h>
 #include <vtkIntArray.h>
@@ -323,6 +324,9 @@ CopyPointer(T *src, T *dest, int components,
 //    Hank Childs, Fri Aug 27 16:34:46 PDT 2004
 //    Rename ghost data arrays.  Also properly mark ghost data type.
 //
+//    Hank Childs, Tue Jun 21 13:59:47 PDT 2005
+//    Fix UMR and memory leak.
+//
 // ****************************************************************************
 
 vector<vtkDataSet*>
@@ -460,6 +464,7 @@ avtUnstructuredDomainBoundaries::ExchangeMesh(vector<int>       domainNum,
         int nGhostCells = outm->GetNumberOfCells() - nOldCells;
         for (i = 0; i < nGhostCells; ++i)
         {
+            *ptr = 0;
             avtGhostData::AddGhostZoneType(*ptr,
                                           DUPLICATED_ZONE_INTERNAL_TO_PROBLEM);
             ptr++;

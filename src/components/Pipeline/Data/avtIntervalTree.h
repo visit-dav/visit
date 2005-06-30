@@ -33,6 +33,9 @@
 //    Mark C. Miller, Mon Oct 18 14:36:49 PDT 2004
 //    Added hasBeenCalculated variable
 //
+//    Hank Childs, Mon Jun 27 09:01:01 PDT 2005
+//    Remove unused methods for sorting.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtIntervalTree
@@ -73,9 +76,7 @@ class PIPELINE_API avtIntervalTree
 
     void                      CollectInformation(void);
     void                      ConstructTree(void);
-    bool                      Less(float *, float *, int);
     void                      SetIntervals(void);
-    void                      Sort(float *, int *, int, int);
     int                       SplitSize(int);
 };
 

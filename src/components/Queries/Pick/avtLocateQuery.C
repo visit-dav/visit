@@ -6,6 +6,8 @@
 
 #include <float.h>
 #include <vtkBox.h>
+#include <vtkCellData.h>
+#include <vtkDataArray.h>
 #include <vtkMath.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkVisItCellLocator.h>
@@ -177,22 +179,30 @@ avtLocateQuery::GetPickAtts()
 //    ds        The dataset to search.
 //    dist      The distance from the isect to the ray-origin. 
 //    isect     The intersection point. 
-//    ijk       The ijk indices of the cell containing the intersection point. 
+//
+//  Returns:
+//    Cell id of intersected cell. (-1 if ds not intersected, or cell
+//    was a ghost).
 //
 //  Programmer: Kathleen Bonnell
 //  Creation:   May 18, 2004
 //
+//  Modifications:
+//    Kathleen Bonnell, Mon Jun 27 15:46:29 PDT 2005
+//    Made method return int, removed ijk from arguments.  Test for ghosts.
+//
 // ****************************************************************************
 
-bool                            
+int                            
 avtLocateQuery::RGridIsect(vtkRectilinearGrid *rgrid, float &dist, 
-                           float isect[3], int ijk[3])
+                           float isect[3])
 {
-    int i;
+    int i, ijk[3];
     float t, dsBounds[6], rayDir[3];
     float *rayPt1 = pickAtts.GetRayPoint1();
     float *rayPt2 = pickAtts.GetRayPoint2();
     int success = 0;
+    int cellId = -1;
 
  
     rgrid->GetBounds(dsBounds);
@@ -201,7 +211,8 @@ avtLocateQuery::RGridIsect(vtkRectilinearGrid *rgrid, float &dist,
         rayPt1[1] == rayPt2[1] &&
         rayPt1[2] == rayPt2[2])
     { /* WORLD COORDINATE LOCATE */
-        success = vtkVisItUtility::ComputeStructuredCoordinates(rgrid, rayPt1, ijk);
+        success = vtkVisItUtility::ComputeStructuredCoordinates(rgrid, rayPt1,
+                                                                ijk);
         if (success)
         {
             isect[0] = rayPt1[0];
@@ -226,8 +237,17 @@ avtLocateQuery::RGridIsect(vtkRectilinearGrid *rgrid, float &dist,
             }
         }
     }
+    if (success)
+    {
+        cellId = rgrid->ComputeCellId(ijk);
+        vtkDataArray *ghosts = rgrid->GetCellData()->GetArray("avtGhostZones");
+        if (ghosts && ghosts->GetTuple1(cellId) > 0)
+        {
+            cellId = -1;
+        }
+    }
 
-    return success;
+    return cellId;
 }
 
 

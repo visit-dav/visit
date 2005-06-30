@@ -93,6 +93,9 @@ class     VisitInteractor;
 //    Added 4 functions for suspending and resuming opaque and
 //    translucent geometry.
 //
+//    Kathleen Bonnell, Mon Jun 27 14:54:36 PDT 2005 
+//    Added ProxiedGetMaxPlotZShift. 
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindowProtectionProxy
@@ -164,6 +167,8 @@ class VISWINDOW_API VisWindowProtectionProxy
     void                ProxiedSuspendTranslucentGeometry();
     void                ProxiedResumeOpaqueGeometry();
     void                ProxiedResumeTranslucentGeometry();
+    float               ProxiedGetMaxPlotZShift();
+                                  
 };
 
 

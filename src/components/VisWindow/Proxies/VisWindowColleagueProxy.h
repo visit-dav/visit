@@ -82,6 +82,9 @@
 //    Added RecalculateRenderOrder. Strangely, it was already implemented
 //    in VisWindowColleagueProxy.C
 //
+//    Kathleen Bonnell, Mon Jun 27 14:54:36 PDT 2005 
+//    Added GetMaxPlotZShift. 
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindowColleagueProxy : public VisWindowProtectionProxy
@@ -198,6 +201,8 @@ class VISWINDOW_API VisWindowColleagueProxy : public VisWindowProtectionProxy
 
     void                RecalculateRenderOrder()
                                   { ProxiedRecalculateRenderOrder(); };
+    float               GetMaxPlotZShift()
+                                  { return ProxiedGetMaxPlotZShift(); };
 };
 
 

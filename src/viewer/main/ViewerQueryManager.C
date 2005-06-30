@@ -4059,6 +4059,9 @@ ViewerQueryManager::VerifyMultipleInputQuery(ViewerPlotList *plist,
 //    Eric Brugger, Thu Jan  6 08:58:28 PST 2005
 //    Corrected a misuse of the CATCH_RETURN macro.
 //
+//    Hank Childs, Tue Jun 28 09:39:14 PDT 2005
+//    Create the correct return type so CLI's GetQueryOutputValue will work.
+//
 // ****************************************************************************
 
 void
@@ -4081,7 +4084,11 @@ ViewerQueryManager::DoSpatialExtentsQuery(ViewerPlot *oplot, bool actualData)
         }
 
         queryClientAtts->SetResultsMessage(s);
-        queryClientAtts->SetResultsValues(ext, dim);
+
+        doubleVector d;
+        for (int i = 0 ; i < 2*dim ; i++)
+            d.push_back(ext[i]);
+        queryClientAtts->SetResultsValue(d);
         delete [] ext;
         queryClientAtts->Notify();
         Message(s.c_str());

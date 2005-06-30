@@ -405,6 +405,9 @@ avtSILRestriction::EnableCorrectnessChecking(void)
 //    Hank Childs, Thu Nov 14 10:30:56 PST 2002
 //    Remove access to 'sets' data member to enable SIL matrices.
 //
+//    Hank Childs, Mon Jun 27 16:08:09 PDT 2005
+//    If we are just re-setting the current top set, treat it as a no-op.
+//
 // ****************************************************************************
 
 void
@@ -422,6 +425,12 @@ avtSILRestriction::SetTopSet(int ts)
     {
         EXCEPTION0(ImproperUseException);
     }
+
+    //
+    // Do we already have this value?
+    //
+    if (topSet == ts)
+        return;
 
     topSet = ts;
 

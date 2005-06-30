@@ -7,6 +7,7 @@
 #include <vtkDataSetWriter.h>
 
 #include <avtDataTree.h>
+#include <avtParallel.h>
 #include <avtStreamer.h>
 
 bool avtStreamer::debugDump = false;
@@ -133,6 +134,9 @@ avtStreamer::ReleaseData(void)
 //    Hank Childs, Wed Sep 11 09:17:46 PDT 2002
 //    Pass the label down to the derived types as well.
 //
+//    Hank Childs, Mon Jun 27 10:02:55 PDT 2005
+//    Choose better file names when doing a "-dump" in parallel.
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -143,7 +147,13 @@ avtStreamer::ExecuteDataTree(vtkDataSet* ds, int dom, std::string label)
 
     if (debugDump)
     {
-        sprintf(name, "before_%s%d.vtk", GetType(), times);
+        if (PAR_Size() > 1)
+        {
+            int rank = PAR_Rank();
+            sprintf(name, "before_%s%d.%d.vtk", GetType(), times, rank);
+        }
+        else
+            sprintf(name, "before_%s%d.vtk", GetType(), times);
         vtkDataSetWriter *wrtr = vtkDataSetWriter::New();
         wrtr->SetInput(ds);
         wrtr->SetFileName(name);
@@ -158,7 +168,13 @@ avtStreamer::ExecuteDataTree(vtkDataSet* ds, int dom, std::string label)
 
     if (debugDump)
     {
-        sprintf(name, "after_%s%d.vtk", GetType(), times++);
+        if (PAR_Size() > 1)
+        {
+            int rank = PAR_Rank();
+            sprintf(name, "after_%s%d.%d.vtk", GetType(), times, rank);
+        }
+        else
+            sprintf(name, "after_%s%d.vtk", GetType(), times);
         vtkDataSetWriter *wrtr2 = vtkDataSetWriter::New();
         wrtr2->SetInput(out_ds);
         wrtr2->SetFileName(name);

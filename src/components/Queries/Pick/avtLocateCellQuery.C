@@ -135,9 +135,9 @@ avtLocateCellQuery::Execute(vtkDataSet *ds, const int dom)
         return;
     }
 
-
-    int dim = GetInput()->GetInfo().GetAttributes().GetSpatialDimension(); 
-    int topodim = GetInput()->GetInfo().GetAttributes().GetTopologicalDimension(); 
+    avtDataObjectInformation &info = GetInput()->GetInfo();
+    int dim     = info.GetAttributes().GetSpatialDimension(); 
+    int topodim = info.GetAttributes().GetTopologicalDimension(); 
 
 
     float dist = minDist, isect[3] = { 0., 0., 0.};
@@ -156,11 +156,9 @@ avtLocateCellQuery::Execute(vtkDataSet *ds, const int dom)
     {
         foundCell = RGridFindCell(ds, dist, isect); 
     }
-
     if ((foundCell != -1) && (dist < minDist))
     {
         minDist = dist;
-
         pickAtts.SetPickPoint(isect);
 
         vtkDataArray *origCells = 
@@ -171,15 +169,14 @@ avtLocateCellQuery::Execute(vtkDataSet *ds, const int dom)
             int comp = origCells->GetNumberOfComponents() -1;
             foundElement = (int) origCells->GetComponent(foundCell, comp);
         }
-        else if (GetInput()->GetInfo().GetAttributes().
-                 GetContainsOriginalCells())
+        else if (info.GetAttributes().GetContainsOriginalCells())
         {
             debug5 << "PICK PROBLEM! Info says we should have original "
                    << " cells but the array was not found in the dataset."
                    << endl;
         }
-        else if (GetInput()->GetInfo().GetValidity().GetZonesPreserved() &&
-                 GetInput()->GetInfo().GetAttributes().GetContainsGhostZones() 
+        else if (info.GetValidity().GetZonesPreserved() &&
+                 info.GetAttributes().GetContainsGhostZones() 
                     != AVT_CREATED_GHOSTS)
         {
             foundElement = foundCell;
@@ -243,26 +240,15 @@ avtLocateCellQuery::Execute(vtkDataSet *ds, const int dom)
 //    Kathleen Bonnell, Thu Oct 21 18:02:50 PDT 2004 
 //    Correct test for whether a cell is ghost or not.
 //
+//    Kathleen Bonnell, Thu Jun 23 11:33:53 PDT 2005 
+//    Moved ghost-checking code to method RGridIsect, compressed code.
+//
 // ****************************************************************************
 
 int
 avtLocateCellQuery::RGridFindCell(vtkDataSet *ds, float &dist, float *isect)
 {
-    vtkRectilinearGrid *rgrid = vtkRectilinearGrid::SafeDownCast(ds);
-
-    int ijk[3], cellId = -1;
- 
-    if (RGridIsect(rgrid, dist, isect, ijk))
-    {
-        cellId = rgrid->ComputeCellId(ijk);
-        vtkUnsignedCharArray *ghosts = (vtkUnsignedCharArray *)ds->
-                     GetCellData()->GetArray("avtGhostZones");
-        if (ghosts && ghosts->GetValue(cellId) > 0)
-        {
-            cellId = -1;
-        }
-    }
-    return cellId;
+    return RGridIsect(vtkRectilinearGrid::SafeDownCast(ds), dist, isect); 
 }
 
 

@@ -568,6 +568,7 @@ PickAttributes::PrepareForNewPick()
     cellPoint[0] = cellPoint[1] = cellPoint[2] = 0;
     nodePoint[0] = nodePoint[1] = nodePoint[2] = 0;
     needTransformMessage = false;
+    ghostType = 0;
 
     if (!incidentElements.empty())
         incidentElements.clear();

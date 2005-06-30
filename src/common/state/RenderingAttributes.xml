@@ -9,6 +9,7 @@
       RedBlue
       Interlaced
       CrystalEyes
+      RedGreen
     </Enum>
     <Enum name="TriStateMode">
       Never

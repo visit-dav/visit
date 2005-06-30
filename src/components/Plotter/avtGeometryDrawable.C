@@ -583,3 +583,30 @@ avtGeometryDrawable::MakeUnPickable()
 }
 
 
+// ****************************************************************************
+//  Method: avtGeometryDrawable::GetZPosition
+//
+//  Purpose:
+//    Retrieves the z-position of the vtk actor.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   June 27, 2005 
+//
+// ****************************************************************************
+
+float
+avtGeometryDrawable::GetZPosition()
+{
+    float zpos = 0.f;
+    for (int i = 0 ; i < nActors ; i++)
+    {
+        if (actors[i] != NULL)
+        {
+            zpos = actors[i]->GetPosition()[2];
+            break; 
+        }
+    }
+    return zpos;
+}
+
+

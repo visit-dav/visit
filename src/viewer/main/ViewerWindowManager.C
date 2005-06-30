@@ -81,7 +81,7 @@ using std::string;
 ViewerWindowManager *ViewerWindowManager::instance=0;
 const int ViewerWindowManager::maxWindows=16;
 const int ViewerWindowManager::maxLayouts=6;
-const int ViewerWindowManager::validLayouts[]={1, 4, 9, 16, 2, 8};
+const int ViewerWindowManager::validLayouts[]={1, 4, 9, 2, 6, 8};
 GlobalAttributes *ViewerWindowManager::clientAtts=0;
 SaveWindowAttributes *ViewerWindowManager::saveWindowClientAtts=0;
 ViewCurveAttributes *ViewerWindowManager::viewCurveClientAtts=0;
@@ -154,6 +154,9 @@ extern ViewerSubject  *viewerSubject;
 //    Kathleen Bonnell, Thu Apr  1 19:13:59 PST 2004 
 //    Added timeQueryWindow. 
 //
+//    Eric Brugger, Thu Jun 30 11:43:22 PDT 2005
+//    Added a 2 x 3 layout and removed the 4 x 4 layout.
+//
 // ****************************************************************************
 
 ViewerWindowManager::ViewerWindowManager() : QObject()
@@ -195,8 +198,8 @@ ViewerWindowManager::ViewerWindowManager() : QObject()
     windowLimits[0] = new WindowLimits[1];
     windowLimits[1] = new WindowLimits[4];
     windowLimits[2] = new WindowLimits[9];
-    windowLimits[3] = new WindowLimits[16];
-    windowLimits[4] = new WindowLimits[2];
+    windowLimits[3] = new WindowLimits[2];
+    windowLimits[4] = new WindowLimits[6];
     windowLimits[5] = new WindowLimits[8];
 
     fileWriter  = new avtFileWriter();
@@ -3387,7 +3390,7 @@ ViewerWindowManager::UpdateColorTable(const char *ctName)
 //    Set the window layout.
 //
 //  Arguments:
-//    windowLayout  The window layout to use (1, 2, 4, 8, 9, or 16).
+//    windowLayout  The window layout to use (1, 2, 4, 6, 8, or 9).
 //
 //  Programmer: Eric Brugger
 //  Creation:   September 7, 2000
@@ -6703,6 +6706,11 @@ ViewerWindowManager::UpdateViewKeyframeInformation()
 //    the space as best as possible.  In the case of 1 x 2 and 2 x 4 layouts
 //    the height is restricted to the width.
 //
+//    Eric Brugger, Thu Jun 30 11:43:22 PDT 2005
+//    Added a 2 x 3 layout and removed the 4 x 4 layout.  I also changed the
+//    window size creation logic to always create the largest square windows
+//    in the allowed space.
+//
 // ****************************************************************************
 
 void
@@ -6713,7 +6721,7 @@ ViewerWindowManager::InitWindowLimits()
     //
     int       i, j;
     int       borderWidth, borderHeight;
-    int       tempWidth, tempHeight;
+    int       tempWidth, tempHeight, tempSize;
     int       x, y;
     int       cnt;
 
@@ -6727,10 +6735,11 @@ ViewerWindowManager::InitWindowLimits()
     y          = screenY + borderTop  - shiftY;
     tempWidth  = screenWidth - borderWidth;
     tempHeight = screenHeight - borderHeight;
+    tempSize   = tempWidth < tempHeight ? tempWidth : tempHeight;
     windowLimits[0][0].x      = x;
     windowLimits[0][0].y      = y;
-    windowLimits[0][0].width  = tempWidth;
-    windowLimits[0][0].height = tempHeight;
+    windowLimits[0][0].width  = tempSize;
+    windowLimits[0][0].height = tempSize;
 
     //
     // The layout for a 2x2 grid.
@@ -6739,6 +6748,7 @@ ViewerWindowManager::InitWindowLimits()
     y          = screenY + borderTop - shiftY;
     tempWidth  = (screenWidth/2)  - borderWidth;
     tempHeight = (screenHeight/2) - borderHeight;
+    tempSize   = tempWidth < tempHeight ? tempWidth : tempHeight;
     for (i = 0; i < 2; i++)
     {
         x = screenX + borderLeft - shiftX;
@@ -6746,8 +6756,8 @@ ViewerWindowManager::InitWindowLimits()
         {
             windowLimits[1][cnt].x      = x;
             windowLimits[1][cnt].y      = y;
-            windowLimits[1][cnt].width  = tempWidth;
-            windowLimits[1][cnt].height = tempHeight;
+            windowLimits[1][cnt].width  = tempSize;
+            windowLimits[1][cnt].height = tempSize;
             x = x + windowLimits[1][cnt].width + borderWidth;
             cnt ++;
         }
@@ -6761,6 +6771,7 @@ ViewerWindowManager::InitWindowLimits()
     y          = screenY + borderTop - shiftY;
     tempWidth  = (screenWidth/3)  - borderWidth;
     tempHeight = (screenHeight/3) - borderHeight;
+    tempSize   = tempWidth < tempHeight ? tempWidth : tempHeight;
     for (i = 0; i < 3; i++)
     {
         x = screenX + borderLeft - shiftX;
@@ -6768,8 +6779,8 @@ ViewerWindowManager::InitWindowLimits()
         {
             windowLimits[2][cnt].x      = x;
             windowLimits[2][cnt].y      = y;
-            windowLimits[2][cnt].width  = tempWidth;
-            windowLimits[2][cnt].height = tempHeight;
+            windowLimits[2][cnt].width  = tempSize;
+            windowLimits[2][cnt].height = tempSize;
             x = x + windowLimits[2][cnt].width + borderWidth;
             cnt ++;
         }
@@ -6777,44 +6788,45 @@ ViewerWindowManager::InitWindowLimits()
     }
 
     //
-    // The layout for a 4x4 grid.
-    //
-    cnt = 0;
-    y          = screenY + borderTop - shiftY;
-    tempWidth  = (screenWidth/4)  - borderWidth;
-    tempHeight = (screenHeight/4) - borderHeight;
-    for (i = 0; i < 4; i++)
-    {
-        x = screenX + borderLeft - shiftX;
-        for (j = 0; j < 4; j++)
-        {
-            windowLimits[3][cnt].x      = x;
-            windowLimits[3][cnt].y      = y;
-            windowLimits[3][cnt].width  = tempWidth;
-            windowLimits[3][cnt].height = tempHeight;
-            x = x + windowLimits[3][cnt].width + borderWidth;
-            cnt ++;
-        }
-        y = y + windowLimits[3][0].height + borderHeight;
-    }
-
-    //
-    // The layout for a 2x1 grid.
+    // The layout for a 1x2 grid.
     //
     cnt = 0;
     x          = screenX + borderLeft - shiftX;
     y          = screenY + borderTop  - shiftY;
     tempWidth  = (screenWidth/2) - borderWidth;
     tempHeight =  screenHeight   - borderHeight;
-    tempHeight = tempHeight < tempWidth ? tempHeight : tempWidth;
+    tempSize   = tempWidth < tempHeight ? tempWidth : tempHeight;
     for (i = 0; i < 2; i++)
     {
-        windowLimits[4][cnt].x      = x;
-        windowLimits[4][cnt].y      = y;
-        windowLimits[4][cnt].width  = tempWidth;
-        windowLimits[4][cnt].height = tempHeight;
-        x = x + windowLimits[4][cnt].width + borderWidth;
+        windowLimits[3][cnt].x      = x;
+        windowLimits[3][cnt].y      = y;
+        windowLimits[3][cnt].width  = tempSize;
+        windowLimits[3][cnt].height = tempSize;
+        x = x + windowLimits[3][cnt].width + borderWidth;
         cnt ++;
+    }
+
+    //
+    // The layout for a 2x3 grid.
+    //
+    cnt = 0;
+    y          = screenY + borderTop - shiftY;
+    tempWidth  = (screenWidth/3)  - borderWidth;
+    tempHeight = (screenHeight/2) - borderHeight;
+    tempSize   = tempWidth < tempHeight ? tempWidth : tempHeight;
+    for (i = 0; i < 2; i++)
+    {
+        x = screenX + borderLeft - shiftX;
+        for (j = 0; j < 3; j++)
+        {
+            windowLimits[4][cnt].x      = x;
+            windowLimits[4][cnt].y      = y;
+            windowLimits[4][cnt].width  = tempSize;
+            windowLimits[4][cnt].height = tempSize;
+            x = x + windowLimits[4][cnt].width + borderWidth;
+            cnt ++;
+        }
+        y = y + windowLimits[4][0].height + borderHeight;
     }
 
     //
@@ -6824,7 +6836,7 @@ ViewerWindowManager::InitWindowLimits()
     y          = screenY + borderTop - shiftY;
     tempWidth  = (screenWidth/4)  - borderWidth;
     tempHeight = (screenHeight/2) - borderHeight;
-    tempHeight = tempHeight < tempWidth ? tempHeight : tempWidth;
+    tempSize   = tempWidth < tempHeight ? tempWidth : tempHeight;
     for (i = 0; i < 2; i++)
     {
         x = screenX + borderLeft - shiftX;
@@ -6832,8 +6844,8 @@ ViewerWindowManager::InitWindowLimits()
         {
             windowLimits[5][cnt].x      = x;
             windowLimits[5][cnt].y      = y;
-            windowLimits[5][cnt].width  = tempWidth;
-            windowLimits[5][cnt].height = tempHeight;
+            windowLimits[5][cnt].width  = tempSize;
+            windowLimits[5][cnt].height = tempSize;
             x = x + windowLimits[5][cnt].width + borderWidth;
             cnt ++;
         }

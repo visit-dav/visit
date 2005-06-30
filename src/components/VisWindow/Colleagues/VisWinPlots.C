@@ -1900,3 +1900,33 @@ VisWinPlots::MakeAllUnPickable()
         (*it)->MakeUnPickable();
     }
 }
+
+
+// ****************************************************************************
+//  Method: VisWinPlots::GetMaxZShift
+//
+//  Purpose:
+//    Return the maximum that any plot has been shifted in z. 
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   June 27, 2005 
+//
+// ****************************************************************************
+
+float
+VisWinPlots::GetMaxZShift()
+{
+    float maxZShift = 0;
+    if (mediator.GetMode() ==  WINMODE_2D)
+    {
+        std::vector< avtActor_p >::iterator it;
+        float actorZPos;
+        for (it = plots.begin() ; it != plots.end() ; it++)
+        {
+            actorZPos = (*it)->GetZPosition();
+            if (actorZPos > maxZShift)
+                maxZShift = actorZPos;
+        }
+    }
+    return maxZShift;
+}

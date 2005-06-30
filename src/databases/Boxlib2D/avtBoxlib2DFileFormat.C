@@ -46,6 +46,7 @@
 #include <avtDatabaseMetaData.h>
 #include <avtIntervalTree.h>
 #include <avtMaterial.h>
+#include <avtParallel.h>
 #include <avtStructuredDomainBoundaries.h>
 #include <avtStructuredDomainNesting.h>
 #include <avtVariableCache.h>
@@ -83,6 +84,9 @@ static int    VSSearch(const vector<string> &, const string &);
 //    Hank Childs, Sun Mar  6 16:21:15 PST 2005
 //    Add support for GeoDyne material names.
 //
+//    Hank Childs, Thu Jun 23 14:39:04 PDT 2005
+//    Initialize haveReadTimeAndCycle.
+//
 // ****************************************************************************
 
 avtBoxlib2DFileFormat::avtBoxlib2DFileFormat(const char *fname)
@@ -113,6 +117,8 @@ avtBoxlib2DFileFormat::avtBoxlib2DFileFormat(const char *fname)
 
     initializedReader = false;
     vf_names_for_materials = false;
+    time = 0.;
+    haveReadTimeAndCycle = false;
 }
 
 
@@ -127,6 +133,24 @@ avtBoxlib2DFileFormat::avtBoxlib2DFileFormat(const char *fname)
 avtBoxlib2DFileFormat::~avtBoxlib2DFileFormat()
 {
     FreeUpResources();
+}
+
+
+// ****************************************************************************
+//  Method: avtBoxlib2DFileFormat::ActivateTimestep
+//
+//  Purpose:
+//      Calls InitializeReader, which does collective communication.
+//
+//  Programmer: Hank Childs
+//  Creation:   June 23, 2005
+//
+// ****************************************************************************
+
+void
+avtBoxlib2DFileFormat::ActivateTimestep(void)
+{
+    InitializeReader();
 }
 
 
@@ -474,63 +498,101 @@ avtBoxlib2DFileFormat::GetMesh(int patch, const char *mesh_name)
 //    Hank Childs, Sat Sep 18 08:58:23 PDT 2004
 //    Replace commas with underscores.
 //
+//    Hank Childs, Thu Jun 23 11:16:52 PDT 2005
+//    Have proc. 0 read the Header and then broadcast the info to the other 
+//    procs.
+//
 // ****************************************************************************
 
 void
 avtBoxlib2DFileFormat::ReadHeader(void)
 {
+    int failure = 1;
+    int success = 0;
+    int status = success;
+
+    bool iDoReading = false;
+    if (PAR_Rank() == 0)
+        iDoReading = true;
+
     ifstream in;
     string double_tmp;
 
     string headerFilename = rootPath + timestepPath + "/Header";
-    
-    in.open(headerFilename.c_str());
+        
+    if (iDoReading)
+        in.open(headerFilename.c_str());
     
     if (in.fail())
+        status = failure;
+
+    BroadcastInt(status);
+
+    if (status == failure)
         EXCEPTION1(InvalidFilesException, headerFilename.c_str());
 
     int integer;
     char buf[1024];
-    // Read in version
-    in.getline(buf, 1024);
-    // Read in nVars
-    in >> integer;
+    if (iDoReading)
+    {
+        // Read in version
+        in.getline(buf, 1024);
+        // Read in nVars
+        in >> integer;
 
-    nVars = integer;
+        nVars = integer;
+    }
+        
+    BroadcastInt(nVars);
     varNames.resize(nVars);
     varCentering.resize(nVars);
     
-    EatUpWhiteSpace(in);
     int i;
-    for (i = 0; i < nVars; ++i)
+    if (iDoReading)
     {
-        in.getline(buf, 1024); // Read in var names
-      
-        // Replace commas with underscores
-        int len = strlen(buf);
-        for (int j = 0 ; j < len ; j++)
-            if (buf[j] == ',')
-                buf[j] = '_';
+        EatUpWhiteSpace(in);
 
-        varNames[i] = buf;
+        for (i = 0; i < nVars; ++i)
+        {
+            in.getline(buf, 1024); // Read in var names
+          
+            // Replace commas with underscores
+            int len = strlen(buf);
+            for (int j = 0 ; j < len ; j++)
+                if (buf[j] == ',')
+                    buf[j] = '_';
+    
+            varNames[i] = buf;
+        }
     }
+    BroadcastStringVector(varNames, PAR_Rank());
+
     // Read in dimension
-    in >> integer;
+    if (iDoReading)
+        in >> integer;
+    BroadcastInt(integer);
     if (dimension != integer)
     {
         EXCEPTION1(InvalidDBTypeException,"This reader only handles 2D files.");
     }
 
     // Read in time
-    in >> double_tmp;
-    double time = atof(double_tmp.c_str());
-    metadata->SetTime(timestep, time);
-    metadata->SetCycle(timestep, cycle);
+    if (iDoReading)
+        in >> double_tmp;
+    time = atof(double_tmp.c_str());
+    BroadcastDouble(time);
+    haveReadTimeAndCycle = true;
+    if (metadata != NULL)
+    {
+        metadata->SetTime(timestep, time);
+        metadata->SetCycle(timestep, cycle);
+    }
 
     // Read in number of levels for this timestep.
-    in >> nLevels;
+    if (iDoReading)
+        in >> nLevels;
+    BroadcastInt(nLevels);
     ++nLevels;
-
     patchesPerLevel.resize(nLevels);
     fabfileIndex.resize(nLevels);
     componentIds.resize(nLevels);
@@ -542,40 +604,53 @@ avtBoxlib2DFileFormat::ReadHeader(void)
     }
 
     // Read the problem size
-    for (i = 0; i < dimension; ++i)
+    if (iDoReading)
     {
-        in >> double_tmp;
-        probLo[i] = atof(double_tmp.c_str());
+        for (i = 0; i < dimension; ++i)
+        {
+            in >> double_tmp;
+            probLo[i] = atof(double_tmp.c_str());
+        }
+        for (i = 0; i < dimension; ++i)
+        {
+            in >> double_tmp;
+            probHi[i] = atof(double_tmp.c_str());
+        }
     }
-    for (i = 0; i < dimension; ++i)
+    BroadcastDouble(probLo[0]);
+    BroadcastDouble(probLo[1]);
+    BroadcastDouble(probHi[0]);
+    BroadcastDouble(probHi[1]);
+
+    if (iDoReading)
+        EatUpWhiteSpace(in);
+
+    int levI;
+    if (iDoReading)
     {
-        in >> double_tmp;
-        probHi[i] = atof(double_tmp.c_str());
-    }
+        // Read in the refinement ratio line.
+        if (nLevels != 1)
+            in.getline(buf, 1024);
 
-    EatUpWhiteSpace(in);
-
-    // Read in the refinement ratio line.
-    if (nLevels != 1)
+        // Read in the problem domain for this level
+        in.getline(buf, 1024);
+    
+        // Read in the levelsteps
         in.getline(buf, 1024);
 
-    // Read in the problem domain for this level
-    in.getline(buf, 1024);
-    
-    // Read in the levelsteps
-    in.getline(buf, 1024);
-
-    // For each level, read in the gridSpacing
-    int levI;
-    deltaX.clear();
-    deltaY.clear();
-    for (levI = 0; levI < nLevels; levI++)
-    {
-        in >> double_tmp;
-        deltaX.push_back(atof(double_tmp.c_str()));
-        in >> double_tmp;
-        deltaY.push_back(atof(double_tmp.c_str()));
+        // For each level, read in the gridSpacing
+        deltaX.clear();
+        deltaY.clear();
+        for (levI = 0; levI < nLevels; levI++)
+        {
+            in >> double_tmp;
+            deltaX.push_back(atof(double_tmp.c_str()));
+            in >> double_tmp;
+            deltaY.push_back(atof(double_tmp.c_str()));
+        }
     }
+    BroadcastDoubleVector(deltaX, PAR_Rank());
+    BroadcastDoubleVector(deltaY, PAR_Rank());
 
     refinement_ratio.clear();
     for (levI = 1 ; levI < nLevels ; levI++)
@@ -586,14 +661,18 @@ avtBoxlib2DFileFormat::ReadHeader(void)
     }
  
     // Read in coord system;
-    in >> integer;
+    if (iDoReading)
+        in >> integer;
    
     // Read in width of boundary regions (ghost zones)
-    in >> integer;
-    if (integer)
+    if (iDoReading)
     {
-        avtCallback::IssueWarning(
+        in >> integer;
+        if (integer)
+        {
+            avtCallback::IssueWarning(
                               "Reader does not currently support ghostzones.");
+        }
     }
     
     // For each level
@@ -602,49 +681,59 @@ avtBoxlib2DFileFormat::ReadHeader(void)
     yMin.clear();
     yMax.clear();
     multifabFilenames.clear();
-    for (levI = 0; levI < nLevels; levI++)
+    if (iDoReading)
     {
-        // Read in which level
-        int myLevel;
-        in >> myLevel;
-
-        // Read in the number of patches
-        int myNPatch;
-        in >> myNPatch;
-        patchesPerLevel[levI] = myNPatch;
-
-        // Read in the time (again)
-        in >> double_tmp;
-        time = atof(double_tmp.c_str());
-
-        // Read in iLevelSteps
-        in >> integer;
-
-        // For each patch, read the spatial extents.
-        for (i = 0; i < myNPatch; ++i)
+        for (levI = 0; levI < nLevels; levI++)
         {
+            // Read in which level
+            int myLevel;
+            in >> myLevel;
+    
+            // Read in the number of patches
+            int myNPatch;
+            in >> myNPatch;
+            patchesPerLevel[levI] = myNPatch;
+    
+            // Read in the time (again) -- ignore this one.
             in >> double_tmp;
-            xMin.push_back(atof(double_tmp.c_str()));
-            in >> double_tmp;
-            xMax.push_back(atof(double_tmp.c_str()));
-            in >> double_tmp;
-            yMin.push_back(atof(double_tmp.c_str()));
-            in >> double_tmp;
-            yMax.push_back(atof(double_tmp.c_str()));
-        }
-            
-        EatUpWhiteSpace(in);
-        // Read in the MultiFab files (Until we hit an int or eof)
-        for (;;)
-        {
-            if (isdigit(in.peek()) || in.eof() || in.fail())
-                break;
-            in.getline(buf, 1024);
-            if (strcmp(buf, "") == 0)
-                continue;
-            multifabFilenames.push_back(buf);
+            //time = atof(double_tmp.c_str());
+    
+            // Read in iLevelSteps
+            in >> integer;
+    
+            // For each patch, read the spatial extents.
+            for (i = 0; i < myNPatch; ++i)
+            {
+                in >> double_tmp;
+                xMin.push_back(atof(double_tmp.c_str()));
+                in >> double_tmp;
+                xMax.push_back(atof(double_tmp.c_str()));
+                in >> double_tmp;
+                yMin.push_back(atof(double_tmp.c_str()));
+                in >> double_tmp;
+                yMax.push_back(atof(double_tmp.c_str()));
+            }
+                
+            EatUpWhiteSpace(in);
+            // Read in the MultiFab files (Until we hit an int or eof)
+            for (;;)
+            {
+                if (isdigit(in.peek()) || in.eof() || in.fail())
+                    break;
+                in.getline(buf, 1024);
+                if (strcmp(buf, "") == 0)
+                    continue;
+                multifabFilenames.push_back(buf);
+            }
         }
     }
+
+    BroadcastIntVector(patchesPerLevel, PAR_Rank());
+    BroadcastDoubleVector(xMin, PAR_Rank());
+    BroadcastDoubleVector(xMax, PAR_Rank());
+    BroadcastDoubleVector(yMin, PAR_Rank());
+    BroadcastDoubleVector(yMax, PAR_Rank());
+    BroadcastStringVector(multifabFilenames, PAR_Rank());
 }
 
 
@@ -1067,6 +1156,9 @@ avtBoxlib2DFileFormat::GetVisMF(int index)
 //    Hank Childs, Mon Feb 14 11:05:11 PST 2005
 //    Make materials be 1-indexed.
 //
+//    Hank Childs, Thu Jun 23 14:39:04 PDT 2005
+//    Set time if appropriate.
+//
 // ****************************************************************************
 
 void
@@ -1144,6 +1236,12 @@ avtBoxlib2DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             mnames[m] = str;
         }
         AddMaterialToMetaData(md, matname, mesh_name, nMaterials, mnames);
+    }
+
+    if (haveReadTimeAndCycle)
+    {
+        md->SetTime(timestep, time);
+        md->SetCycle(timestep, cycle);
     }
 }
 
