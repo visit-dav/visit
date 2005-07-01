@@ -23,25 +23,27 @@ enhancements and bug-fixes that were added to this release.</p>
 <li>VisIt's CLI now has embedded documentation for most of its functions, making it easy to see the argument list and usage information for each function.</li>
 <li>VisIt now supports image annotation objects, which allow you to place logos or other graphics in your visualizations. To add an image annotation, open the <b>Annotations</b> window, click on the <b>Objects</b> tab, and click on the <b>Image</b> button. Clicking on the <b>Image</b> button will tell VisIt to create an empty image annotation object. Once you select an image file using the <b>Image</b> annotation object's controls in the <b>Annotations</b> window and click the <b>Apply</b> button, VisIt will load your image and insert it into your visualization.</li>
 <li>VisIt now supports 2D line annotation objects, which allow you to point to objects within your visualization. The lines have optional arrow endpoints that can be used to indicate direction.To add a 2D line annotation, open the <b>Annotations</b> window, click on the <b>Objects</b> tab, and click on the <b>2D line</b> button.</li>
-<li>VisIt's Image database reader plugin has been improved in a number of ways. For example, only processor 0 will read the image header now. Caching has been re-enabled and the reader can now generate ghost data.</li>
 <li>VisIt now supports multimeshes, multivars, multimaterials, and multispecies where some domains have no data. This means that in the multi-object definition, which usually points to the name of another file's variable for a particular domain, you can now provide "EMPTY" to indicate that the domain has no data.</li>
 <li>VisIt now has <i>Moment of Inertia</i> and <i>Centroid</i> queries.</li>
 <li>VisIt can now read in a set of image slices as a 3D volume. Simply create a file ending in ".imgvol" that contains the names of the image files that make up the 3D volume and VisIt will use the images to construct a 3D volume. This feature is useful for viewing CT data, which is often stored as a set of 2D images.</li>
-<li>Expressions stored in a Silo file in the <i>meshtv_defvars</i> variable do not show up if their names contain slashes.</li>
+<li>VisIt's Image database reader plugin has been improved in a number of ways. For example, only processor 0 will read the image header now. Caching has been re-enabled and the reader can now generate ghost data.</li>
+<li>Expressions stored in a Silo file in the <i>meshtv_defvars</i> variable now show up if their names contain slashes.</li>
 <li>VisIt can now make movies using the window size stored in a session file if you omit the <i>-geometry</i> argument to the <i>visit -movie</i> script. There is also a new <i>Make movie</i> option that does this when you right-click on a session file on the Windows platform.</li>
-<li>The Verdict <i>volume</i> expression should be tuned for rectilinear meshes.</li>
+<li>VisIt's <i>volume</i> calculation is now tuned for rectilinear meshes.  This quantity is used in several data analysis operations, for example calculating a weighted sum</li>
 <li>The Transform operator now changes the axis labels when switching from Cartesian coordinates to cylindrical or spherical coordinates.</li>
 <li>The KullLite database reader plugin can now adaptively switch its axis labels from X-Y to R-Z.</li>
 <li>VisIt's metadata server no longer automatically consolidates virtual databases of Flash files into larger virtual databases since that behavior caused problems for some users. If you want to make VisIt do this again, set the <i>VISIT_CONSOLIDATE_VIRTUAL_DATABASES</i> environment variable to <i>on</i>.</li>
 <li>Many optimizations were put in place to support large AMR problems with large numbers of patches.</li>
 <li>VisIt's ghost zone communication was heavily optimized.</li>
+<li>The following new math expressions were added: mod, round, ceil, and floor</li>
+<li>VisIt can now use expressions to calculate what your mesh's coordinates are in cylindrical coordinates.  In addition, new expressions were added to access components of these coordinates -- cylindrical_radius and cylindrical_theta, as well as polar_radius, polar_theta, and polar_phi.</li>
 </ul>
 <p><b><font size="4">Bugs fixed in version 1.4.4</font></b></p>
 <ul>
 <li>VisIt's viewer can crash when picking on a vector field created using an expression.</li>
 <li>Expressions are being recalculated each time the user picks on a surface.</li>
 <li>It is not possible to select a high cell seed number for an OnionPeel operator that has been applied to a FilledBoundary plot.</li>
-<li>VisIt's Silo database reader plugin does not correctly recognize blocks/groups from Hydra.</li>
+<li>VisIt's Silo database reader plugin does not correctly recognize blocks/groups from HYDRA.</li>
 <li>Creating an elevated Surface of a 2D dataset using the Elevate operator makes VisIt lose the ability to control lighting on that surface.</li>
 <li>The <i>divergence</i> expression now works on 2D vectors.</li>
 <li>Unhiding a Mesh plot when VisIt is in scalable-rendering mode forces the Mesh plot to be opaque.</li>

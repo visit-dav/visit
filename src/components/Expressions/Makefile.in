@@ -98,6 +98,10 @@
 #   Kathleen Bonnell, Thu Mar  3 11:13:22 PST 2005 
 #   Added avtVariableSkewFilter. 
 #
+#   Hank Childs, Thu Jun 30 15:57:08 PDT 2005
+#   Added avtCylindricalFilter, avtExpressionComponentMacro, avtFloorFilter,
+#   avtCeilingFilter, avtModuloFilter, and avtRoundFilter.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -139,6 +143,7 @@ General_src= \
   General/avtDataIdFilter.C \
   General/avtDegreeFilter.C \
   General/avtDivergenceFilter.C \
+  General/avtExpressionComponentMacro.C \
   General/avtGradientFilter.C \
   General/avtLaplacianFilter.C \
   General/avtMIRvfFilter.C \
@@ -176,16 +181,21 @@ Math_src= \
   Math/avtBinaryMultiplyFilter.C \
   Math/avtBinaryPowerFilter.C \
   Math/avtBinarySubtractFilter.C \
+  Math/avtCeilingFilter.C \
   Math/avtCosFilter.C \
+  Math/avtCylindricalCoordinatesFilter.C \
   Math/avtDegreeToRadianFilter.C \
   Math/avtDeterminantFilter.C \
   Math/avtEigenvalueFilter.C \
   Math/avtEigenvectorFilter.C \
+  Math/avtFloorFilter.C \
   Math/avtIdentityFilter.C \
+  Math/avtModuloFilter.C \
   Math/avtInverseFilter.C \
   Math/avtNaturalLogFilter.C \
   Math/avtPolarCoordinatesFilter.C \
   Math/avtRadianToDegreeFilter.C \
+  Math/avtRoundFilter.C \
   Math/avtSinFilter.C \
   Math/avtSquareFilter.C \
   Math/avtSquareRootFilter.C \

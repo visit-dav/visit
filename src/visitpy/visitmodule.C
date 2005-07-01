@@ -47,7 +47,9 @@
 #include <ColorTableAttributes.h>
 #include <DatabaseCorrelationList.h>
 #include <DatabaseCorrelation.h>
+#include <DBPluginInfoAttributes.h>
 #include <EngineList.h>
+#include <ExportDBAttributes.h>
 #include <GlobalAttributes.h>
 #include <GlobalLineoutAttributes.h>
 #include <InteractorAttributes.h>
@@ -77,6 +79,7 @@
 // Extension include files.
 //
 #include <PyAnnotationAttributes.h>
+#include <PyExportDBAttributes.h>
 #include <PyDatabaseCorrelation.h>
 #include <PyGlobalAttributes.h>
 #include <PyGlobalLineoutAttributes.h>
@@ -1748,6 +1751,12 @@ visit_DeIconifyAllWindows(PyObject *self, PyObject *args)
 //   Brad Whitlock, Tue Mar 2 10:19:42 PDT 2004
 //   I removed the code to set the animation time state to 0.
 //
+//   Hank Childs, Thu Jun 30 14:30:39 PDT 2005
+//   Load plugin info.  The best way to do this would be to have a blocking
+//   RPC that can be called before exporting a database.  Since no facility
+//   exists for that at this time, make sure we load the info well in advance
+//   (ie in this function).
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -1772,6 +1781,12 @@ visit_OpenDatabase(PyObject *self, PyObject *args)
         {
             fprintf(logFile, "OpenDatabase(\"%s\", %d)\n", fileName,
                     timeIndex);
+        }
+        static bool loadedPluginInfo = false;
+        if (!loadedPluginInfo)
+        {
+            viewer->UpdateDBPluginInfo("localhost");
+            loadedPluginInfo = true;
         }
     MUTEX_UNLOCK();
 
@@ -2381,6 +2396,9 @@ ExpressionDefinitionHelper(PyObject *args, const char *name, Expression::ExprTyp
 //    Brad Whitlock, Tue May 20 15:21:08 PST 2003
 //    Made it work with the regenerated Expression state object.
 //
+//    Hank Childs, Thu Jun 30 10:57:47 PDT 2005
+//    Added DefineTensorExpression
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -2393,6 +2411,12 @@ STATIC PyObject *
 visit_DefineVectorExpression(PyObject *self, PyObject *args)
 {
     return ExpressionDefinitionHelper(args, "DefineVectorExpression", Expression::VectorMeshVar);
+}
+
+STATIC PyObject *
+visit_DefineTensorExpression(PyObject *self, PyObject *args)
+{
+    return ExpressionDefinitionHelper(args, "DefineTensorExpression", Expression::TensorMeshVar);
 }
 
 STATIC PyObject *
@@ -4709,6 +4733,95 @@ visit_GetSaveWindowAttributes(PyObject *self, PyObject *args)
     *aa = *(viewer->GetSaveWindowAttributes());
 
     return retval;
+}
+
+// ****************************************************************************
+// Function: visit_ExportDatabase
+//
+// Purpose:
+//   Tells the viewer to export the database.
+//
+// Notes:      
+//
+// Programmer: Hank Childs
+// Creation:   June 30, 2005
+//
+// ****************************************************************************
+
+STATIC PyObject *
+visit_ExportDatabase(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    PyObject *annot = NULL;
+    // Try and get the annotation pointer.
+    if(!PyArg_ParseTuple(args,"O",&annot))
+    {
+        VisItErrorFunc("ExportDatabase: Cannot parse object!");
+        return NULL;
+    }
+    if(!PyExportDBAttributes_Check(annot))
+    {
+        VisItErrorFunc("Argument is not a ExportDBAttributes object");
+        return NULL;
+    }
+
+    ExportDBAttributes *va = PyExportDBAttributes_FromPyObject(annot);
+    const std::string &db_type = va->GetDb_type();
+
+    MUTEX_LOCK();
+        DBPluginInfoAttributes *dbplugininfo = 
+                                          viewer->GetDBPluginInfoAttributes();
+    MUTEX_UNLOCK();
+
+    const stringVector &types = dbplugininfo->GetTypes();
+    bool foundMatch = false;
+    bool hasWriter = false;
+    for (int i = 0 ; i < types.size() ; i++)
+    {
+        if (types[i] == db_type)
+        {
+            foundMatch = true;
+            va->SetDb_type_fullname(dbplugininfo->GetTypesFullNames()[i]);
+            DBOptionsAttributes *opts = (DBOptionsAttributes *)
+                                           dbplugininfo->GetDbOptions()[2*i+1];
+            va->SetOpts(*opts);
+            if (dbplugininfo->GetHasWriter()[i] != 0)
+                hasWriter = true;
+            break;
+        }
+    }
+
+    if (!foundMatch)
+    {
+        char msg[1024];
+        sprintf(msg, "\"%s\" is not a valid plugin type.", db_type.c_str());
+        VisItErrorFunc(msg);
+        return NULL;
+    }
+    if (!hasWriter)
+    {
+        char msg[1024];
+        sprintf(msg, "\"%s\" is a valid plugin type.  But it does *not* have\n"
+                     "a database writer, so the database cannot be exported",
+                db_type.c_str());
+        VisItErrorFunc(msg);
+        return NULL;
+    }
+        
+        
+
+    MUTEX_LOCK();
+        // Copy the object into the view attributes.
+        *(viewer->GetExportDBAttributes()) = *va;
+        viewer->GetExportDBAttributes()->Notify();
+        viewer->ExportDatabase();
+
+        if(logging)
+            fprintf(logFile, "ExportDatabase()\n");
+    MUTEX_UNLOCK();
+
+    return IntReturnValue(Synchronize());
 }
 
 // ****************************************************************************
@@ -10519,6 +10632,7 @@ AddDefaultMethods()
     AddMethod("DisableRedraw", visit_DisableRedraw, visit_DisableRedraw_doc);
     AddMethod("DrawPlots", visit_DrawPlots, visit_DrawPlots_doc);
     AddMethod("EnableTool", visit_EnableTool, visit_EnableTool_doc);
+    AddMethod("ExportDatabase", visit_ExportDatabase, visit_ExportDatabase_doc);
     AddMethod("GetAnimationTimeout", visit_GetAnimationTimeout,
                                                 visit_GetAnimationTimeout_doc);
     AddMethod("GetAnnotationObject", visit_GetAnnotationObject,
@@ -10808,6 +10922,9 @@ AddDefaultMethods()
 //   Mark C. Miller, Tue Mar  8 18:06:19 PST 2005
 //   Added PyProcessAttributes
 //
+//   Hank Childs, Thu Jun 30 11:18:11 PDT 2005
+//   Added PyExportDBAttributes.
+//
 // ****************************************************************************
 
 static void
@@ -10817,6 +10934,7 @@ AddExtensions()
     PyMethodDef *methods;
 
     ADD_EXTENSION(PyAnnotationAttributes_GetMethodTable);
+    ADD_EXTENSION(PyExportDBAttributes_GetMethodTable);
     ADD_EXTENSION(PyGlobalAttributes_GetMethodTable);
     ADD_EXTENSION(PyHostProfile_GetMethodTable);
     ADD_EXTENSION(PyMaterialAttributes_GetMethodTable);
@@ -10867,12 +10985,16 @@ AddExtensions()
 //   Mark C. Miller, Tue Mar  8 18:06:19 PST 2005
 //   Added ProcessAttributes
 //
+//   Hank Childs, Thu Jun 30 11:18:11 PDT 2005
+//   Added PyExportDBAttributes.
+//
 // ****************************************************************************
 
 static void
 InitializeExtensions()
 {
     PyAnnotationAttributes_StartUp(viewer->GetAnnotationAttributes(), logFile);
+    PyExportDBAttributes_StartUp(viewer->GetExportDBAttributes(), logFile);
     PyGlobalAttributes_StartUp(viewer->GetGlobalAttributes(), logFile);
     PyHostProfile_StartUp(0, logFile);
     PyMaterialAttributes_StartUp(viewer->GetMaterialAttributes(), logFile);
@@ -10964,6 +11086,7 @@ SetLogging(bool val)
     // Set the logging flag in the extensions.
     //
     PyAnnotationAttributes_SetLogging(val);
+    PyExportDBAttributes_SetLogging(val);
     PyGlobalAttributes_SetLogging(val);
     PyMaterialAttributes_SetLogging(val);
     PyPrinterAttributes_SetLogging(val);

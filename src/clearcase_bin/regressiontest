@@ -344,7 +344,6 @@ env CXXFLAGS="-O2" ./configure --enable-parallel 1>> buildlog 2>&1
 rm -f plugins/*/*.so
 (cd data; clearmake clean 1> /dev/null 2>&1 )
 clearmake -J 2 1>> buildlog 2>&1
-error=$?
 
 # make sure all needed data files exist
 cd data
@@ -353,7 +352,6 @@ make test 1> /dev/null 2>&1
 cd ..
 
 # run the test
-error=0
 cd test
 if test "$skipList" = ""; then
     ./runtest -q -p -m optimized -d "$curdate" -notrackmem -minor-error 8 -major-error 20 
