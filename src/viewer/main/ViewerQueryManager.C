@@ -1671,6 +1671,10 @@ ViewerQueryManager::ClearPickPoints()
 //    Ensure that the engine has the correct expression list from the plot
 //    that we are picking, so that pick will not fail. 
 //
+//    Kathleen Bonnell, Tue Jul  5 15:38:58 PDT 2005 
+//    When setting pickAtts 'MatSelected' state, use the plot's 'real' var,
+//    in case there is an expression involved whose 'real' var is material. 
+//
 // ****************************************************************************
 
 bool
@@ -1780,8 +1784,13 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
                 invalidVars.push_back(uniqueVars[i]);
         }
         pickAtts->SetVariables(validVars);
+
+        //
+        // Use the 'real' var from the plot -- the plot's var may be
+        // an expression whose base is a material var.
+        //
         pickAtts->SetMatSelected(!usesAllMaterials || 
-                                 plot->GetVarType() == AVT_MATERIAL);
+                                 plot->GetRealVarType() == AVT_MATERIAL);
         pickAtts->SetPickLetter(designator);
         pickAtts->SetTimeStep(plot->GetState());
         pickAtts->SetDatabaseName(db);

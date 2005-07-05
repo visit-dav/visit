@@ -207,6 +207,9 @@ class avtToolInterface;
 //    Brad Whitlock, Fri Feb 18 10:08:36 PDT 2005
 //    Added GetExpressions method.
 //
+//    Kathleen Bonnell, Tue Jul  5 14:46:52 PDT 2005 
+//    Added GetRealVarType method.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerPlot
@@ -351,6 +354,8 @@ class VIEWER_API ViewerPlot
     PlotQueryInfo* GetPlotQueryInfo();
     avtVarType     GetVarType() const;
     avtVarType     GetVarType(const std::string &var) const;
+    avtVarType     GetRealVarType() const;
+    avtVarType     GetRealVarType(const std::string &var) const;
     void           SetOpaqueMeshIsAppropriate(bool);
     bool           IsMesh();
     bool           IsLabel();

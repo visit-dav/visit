@@ -2482,6 +2482,86 @@ ViewerFileServer::DetermineVarType(const std::string &host,
     return retval;
 }
 
+
+// ****************************************************************************
+// Method: ViewerFileServer::DetermineRealVarType
+//
+// Purpose: 
+//   Determines the AVT variable type for the 'real' variable behind
+//   the specified variable.
+//
+// Arguments:
+//   host  : The host where the file resides.
+//   db    : The database.
+//   var   : The variable that we want.
+//   state : The state at which we want information about the variable.
+//
+// Returns:    
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   July 5, 2005 
+//
+// Modifications:
+//
+// ****************************************************************************
+
+avtVarType
+ViewerFileServer::DetermineRealVarType(const std::string &host,
+    const std::string &db, const std::string &var, int state)
+{
+    avtVarType retval = AVT_UNKNOWN_TYPE;
+
+    // Check if the variable is an expression.
+    ExpressionList expressionList;
+    GetAllExpressions(expressionList, host, db, state);
+    Expression *exp = expressionList[var.c_str()];
+    string realVar = var;
+    if (exp != NULL)
+    {
+        string realVar = ParsingExprList::GetRealVariable(var);
+        if (realVar != var)
+            exp = NULL;
+    }
+    if (exp != NULL)
+    {
+        retval = ParsingExprList::GetAVTType(exp->GetType());
+    }
+    else
+    {
+        const avtDatabaseMetaData *md = GetMetaDataForState(host, db, state);
+        if (md != 0)
+        {
+            // 
+            // Get the type for the variable.
+            //
+            TRY
+            {
+                avtDatabaseMetaData *ncmd = (avtDatabaseMetaData *) md;
+                retval = ncmd->DetermineVarType(realVar);
+            }
+            CATCH(VisItException)
+            {
+                std::string message("VisIt was unable to determine "
+                    "the real variable type for ");
+                message += host; 
+                message += ":";
+                message += db;
+                message += "'s ";
+                message += var;
+                message += " variable.";
+                Error(message.c_str());
+                debug1 << "ViewerFileServer::DetermineVarType: Caught an "
+                          "exception!" << endl;
+                retval = AVT_UNKNOWN_TYPE;
+            }
+            ENDTRY
+        }
+    }
+
+    return retval;
+}
+
+
 // ****************************************************************************
 // Method: ViewerFileServer::GetUserExpressions
 //
