@@ -192,7 +192,7 @@
 #    launch tools without passing them as an argument to the visit script.
 #
 #    Jeremy Meredith, Tue Feb 22 18:55:53 PST 2005
-#    Renamed convert to the more unique visitconver.
+#    Renamed convert to the more unique visitconvert.
 #
 #    Jeremy Meredith, Thu Mar 17 11:31:49 PST 2005
 #    Added xml2plugin back into the distribution.
@@ -205,6 +205,9 @@
 #
 #    Brad Whitlock, Thu Jun 23 17:11:21 PST 2005
 #    Made it copy makemoviemain.py
+#
+#    Jeremy Meredith, Wed Jul  6 14:46:56 PDT 2005
+#    Added xlc compiler-specific support.
 #
 #------------------------------------------------------------------------------
 
@@ -470,7 +473,7 @@ endif
 mkdir distribution/visit/$Version
 mkdir distribution/visit/$Version/bin
 ln -s $Version distribution/visit/current
-set platforms="hp-hpux-pa sgi-irix6-mips2 sun4-sunos5-sparc ibm-aix-pwr ibm-aix-pwr64 dec-osf1-alpha linux-intel linux-intel-icc linux-ia64 linux-alpha linux-x86_64 darwin-ppc"
+set platforms="hp-hpux-pa sgi-irix6-mips2 sun4-sunos5-sparc ibm-aix-pwr ibm-aix-pwr-xlc ibm-aix-pwr64 ibm-aix-pwr64-xlc dec-osf1-alpha linux-intel linux-intel-icc linux-ia64 linux-alpha linux-x86_64 darwin-ppc"
 foreach platform ($platforms)
    mkdir distribution/visit/$Version/$platform
    mkdir distribution/visit/$Version/$platform/bin
@@ -540,11 +543,21 @@ switch ($os)
       echo "Found an AIX version of visit"
       if ("${?OBJECT_MODE}") then
           if ("${OBJECT_MODE}" == "64") then
-              set osver = aix64
-              set visitbindir = ibm-aix-pwr64
+              if (("$CompilerGiven" == "TRUE") && ("$compiler" == "xlc")) then
+                  set osver = aix64-xlc
+                  set visitbindir = ibm-aix-pwr64-xlc
+              else
+                  set osver = aix64
+                  set visitbindir = ibm-aix-pwr64
+              endif
           else
-              set osver = aix
-              set visitbindir = ibm-aix-pwr
+              if (("$CompilerGiven" == "TRUE") && ("$compiler" == "xlc")) then
+                  set osver = aix-xlc
+                  set visitbindir = ibm-aix-pwr-xlc
+              else
+                  set osver = aix
+                  set visitbindir = ibm-aix-pwr
+              endif
           endif
       else
           set osver = aix

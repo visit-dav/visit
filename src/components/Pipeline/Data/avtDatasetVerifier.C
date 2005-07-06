@@ -118,6 +118,9 @@ avtDatasetVerifier::VerifyDatasets(int nlist, vtkDataSet **list,
 //    Kathleen Bonnell, Tue Feb  1 10:36:59 PST 2005 
 //    Convert non-float Points to float.  Convert unsigned char data to float. 
 //
+//    Hank Childs, Tue Jul  5 16:22:56 PDT 2005
+//    Add variable names to warning message ['6368].
+//
 // ****************************************************************************
 
 void
@@ -186,7 +189,7 @@ avtDatasetVerifier::VerifyDataset(vtkDataSet *ds, int dom)
         if (nscalars != nPts)
         {
             CorrectVarMismatch(pt_var, ds->GetPointData(), nPts); 
-            IssueVarMismatchWarning(nscalars, nPts, true, dom);
+            IssueVarMismatchWarning(nscalars, nPts,true,dom,pt_var->GetName());
         }
         if (pt_var->GetDataType() == VTK_UNSIGNED_CHAR &&
             strncmp(pt_var->GetName(), "avt", 3) != 0)
@@ -234,7 +237,8 @@ avtDatasetVerifier::VerifyDataset(vtkDataSet *ds, int dom)
                 }
             }
             if (issueWarning)
-                IssueVarMismatchWarning(nscalars, nCells, false, dom);
+                IssueVarMismatchWarning(nscalars, nCells, false, dom, 
+                                        cell_var->GetName());
         }
         if (cell_var->GetDataType() == VTK_UNSIGNED_CHAR &&
             strncmp(cell_var->GetName(), "avt", 3) != 0)
@@ -277,26 +281,30 @@ avtDatasetVerifier::VerifyDataset(vtkDataSet *ds, int dom)
 //    Hank Childs, Fri Jan  9 09:43:13 PST 2004
 //    Added argument dom.
 //
+//    Hank Childs, Tue Jul  5 16:18:02 PDT 2005
+//    Added variable name. ['6368]
+//
 // ****************************************************************************
 
 void
-avtDatasetVerifier::IssueVarMismatchWarning(int nVars, int nUnits,
-                                            bool isPoint, int dom)
+avtDatasetVerifier::IssueVarMismatchWarning(int nVars, int nUnits,bool isPoint,
+                                            int dom, const char *varname)
 {
     if (issuedWarningForVarMismatch)
     {
         return;
     }
 
+    const char *vname = (varname != NULL ? varname : "<unnamed>");
     const char *unit_string = (isPoint ? "nodal" : "zonal");
     const char *action = ((nVars < nUnits)
                           ? "Extra 0.'s were added"
                           : "Some values were removed");
 
     char msg[1024];
-    sprintf(msg, "In domain %d, your %s variable has %d values, but it should "
-                 "have %d.  %s to ensure VisIt runs smoothly.",
-                 dom, unit_string, nVars, nUnits, action);
+    sprintf(msg, "In domain %d, your %s variable \"%s\" has %d values, but it "
+                 "should have %d.  %s to ensure VisIt runs smoothly.",
+                 dom, unit_string, vname, nVars, nUnits, action);
     avtCallback::IssueWarning(msg);
 
     issuedWarningForVarMismatch = true;

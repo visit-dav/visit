@@ -30,9 +30,17 @@ struct Neighbor
     int type;
 };
 
+// ****************************************************************************
 //
 //  Class:  Boundary
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Jul  5 14:05:09 PDT 2005
+//    Removed method FindNeighborIndex which did not work if two domains
+//    shared multiple boundaries.
+//
+// ****************************************************************************
 struct Boundary
 {
     enum BoundaryType
@@ -67,10 +75,9 @@ struct Boundary
     // Creation methods
     void   SetExtents(int[6]);
     void   AddNeighbor(int,int,int[3],int[6]);
-    void   DeleteNeighbor(int);
+    void   DeleteNeighbor(int, vector<Boundary> &);
     void   Finish();
     // Utility methods
-    int    FindNeighborIndex(int);
     bool   IsGhostZone(int,int);
     bool   IsGhostZone(int,int,int);
     int    OldPointIndex(int, int, int);

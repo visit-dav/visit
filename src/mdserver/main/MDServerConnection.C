@@ -778,6 +778,11 @@ MDServerConnection::GetCurrentSIL() const
 // Programmer: Hank Childs
 // Creation:   May 23, 2005
 //
+// Modifications:
+//
+//   Hank Childs, Wed Jul  6 07:19:03 PDT 2005
+//   Fix memory leak.
+//
 // ****************************************************************************
 
 DBPluginInfoAttributes *
@@ -800,8 +805,12 @@ MDServerConnection::GetDBPluginInfo()
         types[i] = name;
         hasWriter[i] = manager->PluginHasWriter(fullname);
         CommonDatabasePluginInfo *info =manager->GetCommonPluginInfo(fullname);
-        rv->AddDBOptionsAttributes(*(info->GetReadOptions()));
-        rv->AddDBOptionsAttributes(*(info->GetWriteOptions()));
+        DBOptionsAttributes *a = info->GetReadOptions();
+        rv->AddDBOptionsAttributes(*a);
+        delete a;
+        a = info->GetWriteOptions();
+        rv->AddDBOptionsAttributes(*a);
+        delete a;
     }
     rv->SetTypes(types);
     rv->SetTypesFullNames(fullnames);

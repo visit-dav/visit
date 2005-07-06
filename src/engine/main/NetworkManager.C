@@ -3395,6 +3395,9 @@ NetworkManager::CloneNetwork(const int id)
 //    Kathleen Bonnell, Tue May  4 14:35:08 PDT 2004 
 //    Send the SILRestriction to QueryOverTime filter (insted of UseSet).
 //
+//    Kathleen Bonnell, Wed May 11 17:14:03 PDT 2005
+//    Use EEF output instead of DB output for input to filters.
+//
 // ****************************************************************************
 
 void
@@ -3413,11 +3416,12 @@ NetworkManager::AddQueryOverTimeFilter(QueryOverTimeAttributes *qA,
     avtDataObject_p input;
     if (qA->GetQueryAtts().GetDataType() == QueryAttributes::OriginalData)
     {
-        input = workingNet->GetNetDB()->GetOutput();
+        input = workingNet->GetNodeList()[0]->GetOutput();
     }
     else 
     {
-        input = networkCache[clonedFromId]->GetPlot()->GetIntermediateDataObject();
+        input = networkCache[clonedFromId]->GetPlot()->
+                GetIntermediateDataObject();
     }
     qA->GetQueryAtts().SetPipeIndex(networkCache[clonedFromId]->
         GetPipelineSpec()->GetPipelineIndex());
