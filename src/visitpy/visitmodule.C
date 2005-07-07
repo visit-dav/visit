@@ -10080,6 +10080,9 @@ visit_ClientMethod(PyObject *self, PyObject *args)
 // Creation:   Wed May 4 16:58:15 PST 2005
 //
 // Modifications:
+//    Jeremy Meredith, Thu Jul  7 10:05:26 PDT 2005
+//    On 64-bit AIX, one cannot convert a void* to an int.  I instead compare
+//    the second void* pointer with NULL to construct the boolean result.
 //   
 // ****************************************************************************
 
@@ -10093,7 +10096,7 @@ visit_exec_client_method(void *data)
 {
     void **cbData = (void **)data;
     ClientMethod *m = (ClientMethod *)cbData[0];
-    bool acquireLock = ((int)cbData[1]) == 1;
+    bool acquireLock = cbData[1] ? true : false;
 
     PyThreadState *myThreadState = 0;
 
