@@ -774,3 +774,36 @@ vtkVisItUtility::GetLocalElementForGlobal(vtkDataSet* ds,
 }
 
 
+// ****************************************************************************
+//  Function: ContainsMixedGhostZoneTypes
+//
+//  Purpose:
+//    Searches the dataset for a cell containing the given point.
+//
+//  Arguments:
+//    ds     The dataset to search. 
+//
+//  Returns:
+//    false if the dataset contains no ghosts, or only AMR type ghosts, 
+//    true otherwise
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   July 8, 2005 
+//
+// ****************************************************************************
+
+bool       
+vtkVisItUtility::ContainsMixedGhostZoneTypes(vtkDataSet *ds)
+{
+    bool mixed = false;
+    vtkDataArray *ghosts = ds->GetCellData()->GetArray("avtGhostZones");
+    if (ghosts)
+    {
+        unsigned char *gz = (unsigned char*)ghosts->GetVoidPointer(0); 
+        for (int i = 0; i < ghosts->GetNumberOfTuples() && !mixed; i++)
+        {
+            mixed = !((int)gz[i] == 0 || (int)gz[i] == 8);
+        }
+    }
+    return mixed;
+}

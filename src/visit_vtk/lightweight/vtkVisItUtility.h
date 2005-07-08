@@ -40,6 +40,7 @@ namespace vtkVisItUtility
                                         const bool forCell);
 
     VISIT_VTK_LIGHT_API void       GetCellCenter(vtkCell* cell, float center[3]);
+    VISIT_VTK_LIGHT_API bool       ContainsMixedGhostZoneTypes(vtkDataSet *);
 }
 
 #endif

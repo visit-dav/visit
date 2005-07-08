@@ -80,6 +80,10 @@ avtLocateNodeQuery::~avtLocateNodeQuery()
 //    Hank Childs, Thu Mar 10 10:27:57 PST 2005
 //    Fix memory leak.
 //
+//    Kathleen Bonnell, Fri Jul  8 14:15:21 PDT 2005 
+//    Set foundElement = foundNode when points not transformed only if
+//    ghost zones not created.
+//
 // ****************************************************************************
 
 void
@@ -143,16 +147,12 @@ avtLocateNodeQuery::Execute(vtkDataSet *ds, const int dom)
                 int comp = origNodes->GetNumberOfComponents() -1;
                 foundElement = (int) origNodes->GetComponent(foundNode, comp);
             }
-            else if (info.GetValidity().GetZonesPreserved() &&
+            else if ((info.GetValidity().GetZonesPreserved()   ||
+                     !info.GetValidity().GetPointsWereTransformed()) &&
                      info.GetAttributes().GetContainsGhostZones() 
                         != AVT_CREATED_GHOSTS)
             {
                 foundElement = foundNode;
-            }
-            else if (!info.GetValidity().GetPointsWereTransformed())
-            {
-                // Points were not transformed, so node id found here is valid.
-                foundElement = foundNode; 
             }
             // else ... Zones not preserved or we created ghosts, or points 
             // were transformed, so node id found here is not valid, so don't 

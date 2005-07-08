@@ -179,6 +179,9 @@
     <Field name="ghostType" label="ghostType" type="int" internal="true">
       0
     </Field>
+    <Field name="hasMixedGhostTypes" label="hasMixedGhostTypes" type="int" internal="true">
+      -1
+    </Field>
     <Function name="PrintSelf" user="true" member="true">
     </Function>
     <Function name="CreateOutputString" user="true" member="true">

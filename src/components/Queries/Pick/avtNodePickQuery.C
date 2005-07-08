@@ -98,6 +98,11 @@ avtNodePickQuery::~avtNodePickQuery()
 //    the ghost array is available, we don't have the picked node right
 //    away and the ds is structured). 
 //
+//    Kathleen Bonnell, Fri Jul  8 14:15:21 PDT 2005 
+//    Changed test for determining if the 'real' id needs to be calculated. 
+//    Also, transform the point to be used as 'pick letter' when this
+//    pick did not use the locate query to determine that point.
+//
 // ****************************************************************************
 
 void
@@ -114,14 +119,17 @@ avtNodePickQuery::Execute(vtkDataSet *ds, const int dom)
 
     int pickedNode = pickAtts.GetElementNumber();
     int type = ds->GetDataObjectType();
-    bool hasGhosts = (ds->GetCellData()->GetArray("avtGhostZones") != NULL);
     //
     // We may need the real id when picking on a Contour plot of
     // an AMR dataset. 
     //
-    int needRealId = (pickedNode == -1 && hasGhosts &&
-                      ghostType == AVT_CREATED_GHOSTS &&
-                (type == VTK_STRUCTURED_GRID || type == VTK_RECTILINEAR_GRID));
+    bool needRealId = false;
+
+    if (pickedNode == -1 && ghostType == AVT_CREATED_GHOSTS &&
+        (type == VTK_STRUCTURED_GRID || type == VTK_RECTILINEAR_GRID))
+    {
+        needRealId = vtkVisItUtility::ContainsMixedGhostZoneTypes(ds);
+    }
 
     if (pickedNode == -1)
     {
@@ -254,7 +262,17 @@ avtNodePickQuery::Execute(vtkDataSet *ds, const int dom)
     //
     if (transform != NULL)
     {
-        pickAtts.SetPickPoint(pickAtts.GetNodePoint());
+        if (!skippedLocate)
+        {
+            pickAtts.SetPickPoint(pickAtts.GetNodePoint());
+        }
+        else 
+        {
+           avtVector v1(pickAtts.GetCellPoint());
+           v1 = (*transform) *v1;
+           float pp[3] = {v1.x, v1.y, v1.z};
+            pickAtts.SetPickPoint(pp);
+        }
     }
     else if (pickAtts.GetNeedTransformMessage())
     {

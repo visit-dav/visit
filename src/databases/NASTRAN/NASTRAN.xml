@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+  <Plugin name="NASTRAN" type="database" label="NASTRAN Bulk data" version="1.0" enabled="true" mdspecificcode="true" onlyengine="false" noengine="false" dbtype="STSD" haswriter="false" hasoptions="false">
+    <Extensions>
+      nas
+      f06
+    </Extensions>
+    <Attribute name="" purpose="" persistent="false">
+    </Attribute>
+  </Plugin>
