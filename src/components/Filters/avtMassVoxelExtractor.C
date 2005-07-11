@@ -1188,6 +1188,9 @@ inline int FindIndex(const float &pt, const int &last_hit, const int &n,
 //    Hank Childs, Fri Nov 19 14:50:58 PST 2004
 //    Renamed from Extract.
 //
+//    Hank Childs, Mon Jul 11 14:01:28 PDT 2005
+//    Fix indexing issue with ghost zones ['5712].
+//
 // ****************************************************************************
 
 void
@@ -1298,7 +1301,7 @@ avtMassVoxelExtractor::ExtractImageSpaceGrid(vtkRectilinearGrid *rgrid)
                 //
                 if (ghosts != NULL)
                 {
-                    int index = (zind)*nX*nY + (yind)*nX + (xind);
+                    int index = zind*((nX-1)*(nY-1)) + yind*(nX-1) + xind;
                     if (ghosts->GetValue(index) != 0)
                         continue;
                 }

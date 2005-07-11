@@ -682,9 +682,9 @@ More information about building VisIt follows after that.
 #
 # Unzipping VisIt's source code distribution
 #
-gunzip visit050516.tar.gz
-tar xf visit050516.tar
-cd visit050516
+gunzip visit050718.tar.gz
+tar xf visit050718.tar
+cd visit050718
 
 #
 # HDF5 and Silo
