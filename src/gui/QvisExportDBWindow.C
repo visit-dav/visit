@@ -122,7 +122,7 @@ QvisExportDBWindow::CreateWindowContents()
     int nTypes = dbPluginInfoAtts->GetTypes().size();
     for (int i = 0 ; i < nTypes ; i++)
         if (dbPluginInfoAtts->GetHasWriter()[i] > 0)
-            fileFormatComboBox->insertItem(dbPluginInfoAtts->GetTypes()[i]);
+            fileFormatComboBox->insertItem(dbPluginInfoAtts->GetTypes()[i].c_str());
     fileFormatComboBox->setCurrentItem(0);
         
     connect(fileFormatComboBox, SIGNAL(activated(int)),
@@ -214,7 +214,7 @@ QvisExportDBWindow::UpdateWindow(bool doAll)
                             curItem = nItems;
                         nItems++;
                         fileFormatComboBox->insertItem(
-                                              dbPluginInfoAtts->GetTypes()[j]);
+                            dbPluginInfoAtts->GetTypes()[j].c_str());
                     }
                 if (curItem >= 0)
                     fileFormatComboBox->setCurrentItem(curItem);

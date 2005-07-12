@@ -25,7 +25,8 @@ warp=false
 sc=true
 tidalwave=true
 white=true
-emperor=true
+uv=true
+lilac=true
 
 ver=undefined
 verflag=-private
@@ -45,7 +46,8 @@ do
          sc=false
          tidalwave=false
          white=false
-         emperor=false
+         uv=false
+         lilac=false
          shift
          ;;
       +bdiv)
@@ -57,7 +59,8 @@ do
          sc=true
          tidalwave=true
          white=true
-         emperor=true
+         uv=true
+         lilac=true
          shift
          ;;
       -hitit)
@@ -108,12 +111,20 @@ do
          white=true
          shift
          ;;
-      -emperor)
-         emperor=false
+      -uv)
+         uv=false
          shift
          ;;
-      +emperor)
-         emperor=true
+      +uv)
+         uv=true
+         shift
+         ;;
+      -lilac)
+         lilac=false
+         shift
+         ;;
+      +lilac)
+         lilac=true
          shift
          ;;
       -v)
@@ -319,7 +330,7 @@ then
    then
       cat sc >> lc
 
-      scp sc1:/nfs/tmp3/$user/sc/visitbuild/visit$ver2.osf1.tar.gz .
+      scp sc1:/nfs/tmp1/$user/sc/visitbuild/visit$ver2.osf1.tar.gz .
       scp visit$ver2.osf1.tar.gz sc1:
    fi
 fi
@@ -393,15 +404,49 @@ then
 fi
 
 #
-# Install on emperor.
+# Install on uv.
 #
-rm -f emperor
-cat <<EOF > emperor
+rm -f uv
+cat <<EOF > uv
+
+./visit-install -private -c closed -g visit -gw -l $ver aix /usr/gapps/visit > installlog 2>&1
+echo ""                                            >> resultlog 2>&1
+echo "        install of visit on uv"              >> resultlog 2>&1
+echo "       ------------------------"             >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+df -k /usr/gapps/visit                             >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+ls -l /usr/gapps/visit/$ver/ibm-aix-pwr64/bin      >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+echo "number of database plugins = "\`ls /usr/gapps/visit/$ver/ibm-aix-pwr64/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver/ibm-aix-pwr64/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver/ibm-aix-pwr64/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+echo "The database plugins:"                       >> resultlog 2>&1
+ls /usr/gapps/visit/$ver/ibm-aix-pwr64/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver\/ibm-aix-pwr64\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+EOF
+
+if [ $uv = true ]
+then
+   if [ $test = no ]
+   then
+      cat uv >> lc
+
+      scp uv:/p/guv1/$user/uv/visitbuild/visit$ver2.aix.tar.gz .
+      scp visit$ver2.aix.tar.gz sc1:
+   fi
+fi
+
+#
+# Install on lilac.
+#
+rm -f lilac
+cat <<EOF > lilac
 
 ./visit-install $verflag -c closed -g visit -gw -l $ver linux /usr/gapps/visit > installlog 2>&1
 echo ""                                            >> resultlog 2>&1
-echo "        install of visit on emperor"         >> resultlog 2>&1
-echo "       -----------------------------"        >> resultlog 2>&1
+echo "        install of visit on lilac"           >> resultlog 2>&1
+echo "       ---------------------------"          >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
 df -k /usr/gapps/visit                             >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
@@ -415,13 +460,13 @@ echo "The database plugins:"                       >> resultlog 2>&1
 ls /usr/gapps/visit/$ver/linux-intel/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver\/linux-intel\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
 EOF
  
-if [ $emperor = true ]
+if [ $lilac = true ]
 then
    if [ $test = no ]
    then
-      cat emperor >> lc
+      cat lilac >> lc
 
-      scp emperor0:/usr/tmp/$user/emperor/visitbuild/visit$ver2.linux.tar.gz .
+      scp lilac3:/usr/tmp/$user/lilac/visitbuild/visit$ver2.linux.tar.gz .
       scp visit$ver2.linux.tar.gz sc1:
    fi
 fi
@@ -441,5 +486,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f bdiv hitit sunset lc warp sc tidalwave white emperor
+   rm -f bdiv hitit sunset lc warp sc tidalwave white uv lilac
 fi

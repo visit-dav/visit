@@ -3,7 +3,7 @@
 // ************************************************************************* //
 #include <avtLine2DColleague.h>
 
-#include <cmath>
+#include <math.h>
 
 #include <snprintf.h>
 
@@ -200,7 +200,8 @@ avtLine2DColleague::makeArrows(vtkPolyData *a0, vtkPolyData *a1, bool makeLines)
     pcoordsBegin->SetNumberOfTuples(3);
 
     float ptsBegin[3][3] = { {0., 0., 0.}, {1., 1., 0.}, {1., 0., 0.} };
-    for(int i = 0; i < 3; i++)
+    int i;
+    for(i = 0; i < 3; i++)
         pcoordsBegin->SetTuple(i, ptsBegin[i]);
 
     // Create vtkPoints and assign pcoords as the internal data array.
@@ -238,7 +239,7 @@ avtLine2DColleague::makeArrows(vtkPolyData *a0, vtkPolyData *a1, bool makeLines)
     pcoordsEnd->SetNumberOfTuples(3);
 
     float ptsEnd[3][3] = { {0., 1., 0.}, {0., 0., 0.}, {1., 1., 0.} };
-    for(int i = 0; i < 3; i++)
+    for(i = 0; i < 3; i++)
         pcoordsEnd->SetTuple(i, ptsEnd[i]);
 
     // Create vtkPoints and assign pcoords as the internal data array.
@@ -480,7 +481,7 @@ avtLine2DColleague::SetOptions(const AnnotationObject &annot)
     else if(beginArrowStyle == 2)
         allData->AddInput(beginArrowSolid);
 
-    if(endArrowStyle && ! allData)
+    if(endArrowStyle && !allData)
         allData = vtkAppendPolyData::New();
 
     if(endArrowStyle == 1)
