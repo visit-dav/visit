@@ -2147,6 +2147,12 @@ avtKullLiteFileFormat::ReadMeshFromFile(void)
 //  Programmer: Hank Childs
 //  Creation:   July 23, 2004
 //
+//  Modifications:
+//
+//    Hank Childs, Wed Jul 13 09:58:36 PDT 2005
+//    Code around strstr deficiency.  If substring is longer than the
+//    search string, then some implementations of strstr lead to UMRs.
+//
 // ****************************************************************************
 
 bool
@@ -2161,10 +2167,17 @@ avtKullLiteFileFormat::GetMeshDimension(void)
     }
 
     bool meshIs3d = false;
-    if (strstr(typeofmesh, "polyhedral") != NULL || 
-        strstr(typeofmesh, "hexahedral") != NULL)
+    int search_str_len = strlen(typeofmesh);
+    if (search_str_len >= strlen("polyhedral") &&
+        strstr(typeofmesh, "polyhedral") != NULL)
         meshIs3d = true;
-    else if (strstr(typeofmesh, "polygonal") != NULL ||
+    else if (search_str_len >= strlen("hexahedral") &&
+             strstr(typeofmesh, "hexahedral") != NULL)
+        meshIs3d = true;
+    else if (search_str_len >= strlen("polygonal") &&
+             strstr(typeofmesh, "polygonal") != NULL)
+        meshIs3d = false;
+    else if (search_str_len >= strlen("quadrilateral") &&
              strstr(typeofmesh, "quadrilateral") != NULL)
         meshIs3d = false;
     else

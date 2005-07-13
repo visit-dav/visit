@@ -554,6 +554,9 @@ NetworkManager::GetDBFromCache(const string &filename, int time,
 //    Made format argument come first. I also made it possible for an empty
 //    format string to make the code behave as through no format was specified.
 //
+//    Hank Childs, Wed Jul 13 10:38:02 PDT 2005
+//    Added call to SetTime to prevent UMR when exporting databases.
+//
 // ****************************************************************************
 
 void
@@ -606,6 +609,7 @@ NetworkManager::StartNetwork(const string &format,
     dspec->SetNeedValidFaceConnectivity(matopts.GetNeedValidConnectivity());
     dspec->SetUseNewMIRAlgorithm(matopts.GetUseNewMIRAlgorithm());
     workingNet->SetDataSpec(dspec);
+    workingNet->SetTime(dspec->GetTimestep());
 
     // The plot starts out as NULL.
     workingNet->SetPlot(NULL);
