@@ -1,4 +1,4 @@
-#                            Copyright 2000 - 2004
+#                            Copyright 2000 - 2005
 #                 The Regents of the University of California.
 #                             All rights reserved.
 # 
@@ -67,6 +67,9 @@
 #    Jeremy Meredith, Wed Jul  7 12:12:52 PDT 2004
 #    I changed _ser.o to simply be .o.
 #
+#    Brad Whitlock, Thu Jul 14 16:22:03 PST 2005
+#    Added a few more libs for parallel on MacOS X.
+#
 ##############################################################################
 
 ##
@@ -87,7 +90,10 @@ SEROBJ=$(SRC:.C=.o)
 PAROBJ=$(SRC:.C=_par.o)
 
 LIB=libengineparstate
-LIBS=-lstate -lcomm -lmisc -lutility
+SERLIBS=-lstate -lcomm -lmisc -lutility -lpipeline_ser -ldbatts -lavtexceptions \
+        -lexpr -lparser -lavtmath_ser -llightweight_visit_vtk $(VTK_LIBS)
+PARLIBS=-lstate -lcomm -lmisc -lutility -lpipeline_par -ldbatts -lavtexceptions \
+        -lexpr -lparser -lavtmath_par -llightweight_visit_vtk $(VTK_LIBS)
 
 ##
 ## Standard targets...

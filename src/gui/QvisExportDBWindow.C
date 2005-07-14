@@ -76,6 +76,9 @@ QvisExportDBWindow::~QvisExportDBWindow()
 //   Brad Whitlock, Mon Jun 27 13:52:24 PST 2005
 //   I added a directory selection button.
 //
+//   Brad Whitlock, Thu Jul 14 13:50:15 PST 2005
+//   Prevented "..." button max width from being set on MacOS X.
+//
 // ****************************************************************************
 
 void
@@ -105,8 +108,10 @@ QvisExportDBWindow::CreateWindowContents()
         "Directory name", infoBox, "directoryNameLabel");
     QPushButton *directorySelectButton = new QPushButton("...",
          directoryParent, "directorySelectButton");
+#ifndef Q_WS_MACX
     directorySelectButton->setMaximumWidth(
          fontMetrics().boundingRect("...").width() + 6);
+#endif
     directorySelectButton->setSizePolicy(QSizePolicy(QSizePolicy::Fixed,
          QSizePolicy::Minimum));
     connect(directorySelectButton, SIGNAL(clicked()),

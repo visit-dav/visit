@@ -235,7 +235,7 @@ avtExternallyRenderedImagesActor::PrepareForRender(void)
 bool
 avtExternallyRenderedImagesActor::SaveVisibility(void *objptr, const bool mode)
 {
-    map<void*,bool>::iterator it = savedVisibilityMap.find(objptr);
+    std::map<void*,bool>::iterator it = savedVisibilityMap.find(objptr);
 
     if (it != savedVisibilityMap.end())
     {
@@ -262,7 +262,7 @@ avtExternallyRenderedImagesActor::SaveVisibility(void *objptr, const bool mode)
 bool
 avtExternallyRenderedImagesActor::RestoreVisibility(void *objptr)
 {
-    map<void*,bool>::iterator it = savedVisibilityMap.find(objptr);
+    std::map<void*,bool>::iterator it = savedVisibilityMap.find(objptr);
 
     if (it == savedVisibilityMap.end())
     {

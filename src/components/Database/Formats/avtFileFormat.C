@@ -304,16 +304,22 @@ avtFileFormat::AddMeshToMetaData(avtDatabaseMetaData *md, string name,
 //      mesh      The mesh the scalar var is defined on.
 //      cent      The centering type - node vs cell.
 //      extents   The extents of the scalar var. (optional)
+//      treatAsASCII   Whether the var is 'ascii' (optional)
 //
 //  Programmer: Hank Childs
 //  Creation:   February 23, 2001
+//
+//  Modifications:
+//    Kathleen Bonnell, Wed Jul 13 18:28:51 PDT 2005
+//    Add optional bool 'treatAsASCII' arg. 
 //
 // ****************************************************************************
 
 void
 avtFileFormat::AddScalarVarToMetaData(avtDatabaseMetaData *md, string name,
                                       string mesh, avtCentering cent,
-                                      const float *extents)
+                                      const float *extents, 
+                                      const bool treatAsASCII)
 {
     avtScalarMetaData *scalar = new avtScalarMetaData();
     scalar->name = name;
@@ -328,6 +334,7 @@ avtFileFormat::AddScalarVarToMetaData(avtDatabaseMetaData *md, string name,
     {
         scalar->hasDataExtents = false;
     }
+    scalar->treatAsASCII = treatAsASCII;
 
     md->Add(scalar);
 }

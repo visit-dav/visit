@@ -472,7 +472,6 @@ PP_ZFileReader::VariableIsNodal(const std::string &var) const
 // Creation:   Thu Jun 26 15:09:18 PST 2003
 //
 // Modifications:
-// 
 //    Mark C. Miller, Tue May 31 20:12:42 PDT 2005
 //    Added call to Initialize(). Always set cycles/times. Removed unused
 //    state argument
@@ -485,7 +484,8 @@ PP_ZFileReader::GetTimeVaryingInformation(avtDatabaseMetaData *md)
     debug4 << "PP_ZFileReader::GetTimeVaryingInformation" << endl;
 
     intVector c; c.reserve(nCycles);
-    for(int i = 0; i < nCycles; ++i)
+    int i;
+    for(i = 0; i < nCycles; ++i)
         c.push_back(cycles[i]);
 
     // Set all of the cycles at once.
@@ -494,7 +494,7 @@ PP_ZFileReader::GetTimeVaryingInformation(avtDatabaseMetaData *md)
 
     // Put the times into the metadata.
     doubleVector d; d.reserve(nTimes);
-    for(int i = 0; i < nTimes; ++i)
+    for(i = 0; i < nTimes; ++i)
         d.push_back(times[i]);
 
     // Set all of the cycles at once.

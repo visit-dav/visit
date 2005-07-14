@@ -130,5 +130,5 @@ private:
 };
 
 // User-defined functions
-ostream& operator << (ostream &os, const DatabaseCorrelation &);
+STATE_API ostream& operator << (ostream &os, const DatabaseCorrelation &);
 #endif

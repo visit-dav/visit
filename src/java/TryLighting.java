@@ -6,6 +6,8 @@ import llnl.visit.LightAttributes;
 import llnl.visit.SimpleObserver;
 import llnl.visit.View3DAttributes;
 
+import llnl.visit.plots.PseudocolorAttributes;
+
 // ****************************************************************************
 // Class: TryLighting
 //
@@ -32,6 +34,9 @@ import llnl.visit.View3DAttributes;
 //   Brad Whitlock, Mon Jun 6 17:25:34 PST 2005
 //   I made it use GetDataPath to locate the data.
 //
+//   Brad Whitlock, Thu Jul 14 12:08:42 PDT 2005
+//   I made it set the Pseudocolor plot atts's color table to "Default".
+//
 // ****************************************************************************
 
 public class TryLighting extends RunViewer implements SimpleObserver
@@ -51,6 +56,13 @@ public class TryLighting extends RunViewer implements SimpleObserver
         if(viewer.OpenDatabase(viewer.GetDataPath() + "globe.silo"))
         {
             viewer.AddPlot("Pseudocolor", "w");
+
+            // Set the pseudocolor attributes
+            PseudocolorAttributes p = (PseudocolorAttributes)viewer.GetPlotAttributes("Pseudocolor");
+            p.SetColorTableName("Default");
+            p.SetOpacity(1.);
+            p.Notify();
+            viewer.SetPlotOptions("Pseudocolor");
             viewer.DrawPlots();
 
             // Set the colortable to one that has white at the bottom values.
@@ -69,7 +81,9 @@ public class TryLighting extends RunViewer implements SimpleObserver
 
             LightList ll = viewer.GetLightList();
             ll.SetAllEnabled(false);
+
             // Create a red light
+            System.out.println("Setting up red light.");
             LightAttributes newLight1 = new LightAttributes();
             newLight1.SetType(LightAttributes.LIGHTTYPE_OBJECT);
             newLight1.SetDirection(0,0,-1);
@@ -81,6 +95,7 @@ public class TryLighting extends RunViewer implements SimpleObserver
             viewer.SaveWindow();
 
             // Create a green light
+            System.out.println("Setting up green light.");
             LightAttributes newLight2 = new LightAttributes();
             newLight2.SetType(LightAttributes.LIGHTTYPE_OBJECT);
             newLight2.SetDirection(-1,0,0);
@@ -92,6 +107,7 @@ public class TryLighting extends RunViewer implements SimpleObserver
             viewer.SaveWindow();
 
             // Create a blue light
+            System.out.println("Setting up blue light.");
             LightAttributes newLight3 = new LightAttributes();
             newLight3.SetType(LightAttributes.LIGHTTYPE_OBJECT);
             newLight3.SetDirection(0,-1,0);

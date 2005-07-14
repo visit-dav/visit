@@ -63,6 +63,10 @@ class     avtVariableCache;
 //    Added const members for invalid cycles/times. Changed class to use
 //    these symbols instead of -INT_MAX and -DBL_MAX
 //
+//    Kathleen Bonnell, Wed Jul 13 18:28:51 PDT 2005 
+//    Added bool to AddScalarVarToMetaData, in order to specify whether
+//    the var should be treated as ascii (default -- false). 
+//
 // ****************************************************************************
 
 class DATABASE_API avtFileFormat
@@ -186,7 +190,8 @@ class DATABASE_API avtFileFormat
                                  int = 0, int = 3, int = 3);
     void       AddScalarVarToMetaData(avtDatabaseMetaData *, std::string,
                                       std::string, avtCentering,
-                                      const float * = NULL);
+                                      const float * = NULL,
+                                      const bool = false);
     void       AddVectorVarToMetaData(avtDatabaseMetaData *, std::string,
                                       std::string, avtCentering, int = 3,
                                       const float * = NULL);

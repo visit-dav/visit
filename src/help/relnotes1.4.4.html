@@ -24,6 +24,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <li>VisIt now supports image annotation objects, which allow you to place logos or other graphics in your visualizations. To add an image annotation, open the <b>Annotations</b> window, click on the <b>Objects</b> tab, and click on the <b>Image</b> button. Clicking on the <b>Image</b> button will tell VisIt to create an empty image annotation object. Once you select an image file using the <b>Image</b> annotation object's controls in the <b>Annotations</b> window and click the <b>Apply</b> button, VisIt will load your image and insert it into your visualization.</li>
 <li>VisIt now supports 2D line annotation objects, which allow you to point to objects within your visualization. The lines have optional arrow endpoints that can be used to indicate direction.To add a 2D line annotation, open the <b>Annotations</b> window, click on the <b>Objects</b> tab, and click on the <b>2D line</b> button.</li>
 <li>VisIt now supports multimeshes, multivars, multimaterials, and multispecies where some domains have no data. This means that in the multi-object definition, which usually points to the name of another file's variable for a particular domain, you can now provide "EMPTY" to indicate that the domain has no data. This enhancement prevents VisIt from failing to recognize when a mesh's domain list changes between time steps for certain database types.</li>
+<li>The MacOS X version of VisIt can now save images offscreen and perform scalable rendering.</li>
 <li>VisIt now has <i>Moment of Inertia</i> and <i>Centroid</i> queries.</li>
 <li>VisIt can now read in a set of image slices as a 3D volume. Simply create a file ending in ".imgvol" that contains the names of the image files that make up the 3D volume and VisIt will use the images to construct a 3D volume. This feature is useful for viewing CT data, which is often stored as a set of 2D images.</li>
 <li>VisIt's Image database reader plugin has been improved in a number of ways. For example, only processor 0 will read the image header now. Caching has been re-enabled and the reader can now generate ghost data.</li>
@@ -41,6 +42,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <li>VisIt's rarely used 4x4 window layout has been replaced by a 2x3 window layout.</li>
 <li>VisIt now supports the creation of red/green stereo images.</li>
 <li>When VisIt issues a warning about bad input data, it now tells you which variables are incorrectly sized.</li>
+<li>The VisIt installation program for the Windows platform now migrates configuration files from earlier versions of VisIt (if any are found) to the new version of VisIt.</li>
 </ul>
 <p><b><font size="4">Bugs fixed in version 1.4.4</font></b></p>
 <ul>

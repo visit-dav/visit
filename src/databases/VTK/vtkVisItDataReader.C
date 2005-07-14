@@ -241,16 +241,22 @@ int vtkVisItDataReader::ReadString(char result[256])
 
 // Internal function to read in an integer value.
 // Returns zero if there was an error.
+
+// ***************************************************************************
+//  Modifications:
+//    Kathleen Bonnell, Wed Jul 13 18:28:51 PDT 2005
+//    Read the data as char instead of int.
+// ***************************************************************************
 int vtkVisItDataReader::Read(char *result)
 {
-  int intData;
-  *this->IS >> intData;
+  char charData;
+  *this->IS >> charData;
   if (this->IS->fail())
     {
     return 0;
     }
 
-  *result = (char) intData;
+  *result = charData;
   return 1;
 }
 

@@ -26,6 +26,11 @@ using std::vector;
 #include <pwd.h>
 #endif
 
+//
+// Static vars.
+//
+static bool isDevelopmentVersion = false;
+
 // ****************************************************************************
 //  Function: LongestCommonPrefixLength
 //
@@ -974,6 +979,9 @@ ConfigStateGetRunCount(ConfigStateEnum &code)
 //   Brad Whitlock, Mon Mar 7 11:31:35 PDT 2005
 //   Changed the Win32 logic.
 //
+//   Brad Whitlock, Mon Jul 11 09:58:13 PDT 2005
+//   I fixed a win32 coding problem.
+//
 // ****************************************************************************
 
 void
@@ -990,7 +998,7 @@ ConfigStateIncrementRunCount(ConfigStateEnum &code)
     }
     else if(code2 == CONFIGSTATE_SUCCESS)
     {
-        firstTime == (nStartups == 0);
+        firstTime = (nStartups == 0);
     }
 
     char keyval[100];
@@ -1112,6 +1120,44 @@ ExpandUserPath(const std::string &path)
 }
 
 // ****************************************************************************
+// Method: SetIsDevelopmentVersion
+//
+// Purpose: 
+//   Sets whether the version of VisIt is a development version.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jul 14 10:51:30 PDT 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+SetIsDevelopmentVersion(bool val)
+{
+    isDevelopmentVersion = val;
+}
+
+// ****************************************************************************
+// Method: GetIsDevelopmentVersion
+//
+// Purpose: 
+//   Returns whether VisIt is a development version of VisIt.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jul 14 10:50:35 PDT 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+GetIsDevelopmentVersion()
+{
+    return isDevelopmentVersion;
+}
+
+// ****************************************************************************
 // Method: GetVisItInstallationDirectory
 //
 // Purpose: 
@@ -1134,6 +1180,9 @@ ExpandUserPath(const std::string &path)
 //   Brad Whitlock, Mon May 9 16:26:43 PST 2005
 //   I prevented it from stripping the last directory off if we're in a
 //   development directory.
+//
+//   Brad Whitlock, Thu Jul 14 10:49:42 PDT 2005
+//   I made it use the isDevelopmentDir library variable.
 //
 // ****************************************************************************
 
@@ -1165,7 +1214,9 @@ GetVisItInstallationDirectory(const char *version)
     {
         // The directory often has a "/bin" on the end. Strip it off.
         std::string home(idir);
-        if(home.substr(0, 11) != "/data_vobs/")
+        if(isDevelopmentVersion)
+            installDir = idir;
+        else
         {
             int lastSlash = home.rfind("/");
             if(lastSlash != -1)
@@ -1173,8 +1224,6 @@ GetVisItInstallationDirectory(const char *version)
             else
                 installDir = idir;
         }
-        else
-            installDir = idir;
     }
     return installDir;
 #endif
@@ -1200,7 +1249,9 @@ GetVisItInstallationDirectory(const char *version)
 // Creation:   Fri Jun 24 11:33:07 PDT 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Jul 11 10:08:30 PDT 2005
+//   Made it work for the non-installed case on Windows.
+//
 // ****************************************************************************
 
 std::string
@@ -1221,6 +1272,25 @@ GetVisItArchitectureDirectory(const char *version)
         archDir = visitHome;
         delete [] visitHome;
     }
+    else
+    {
+        // Use the VISITDEVDIR environment var.
+        std::string visitdev;
+        char *devdir = getenv("VISITDEVDIR");
+        if(devdir == 0)
+            visitdev = std::string("C:\\VisItDev") + std::string(version);
+        else
+            visitdev = std::string(devdir);
+#ifdef USING_MSVC6
+#ifdef _DEBUG
+        archDir = visitdev + "\\bin\\Debug";
+#else
+        archDir = visitdev + "\\bin\\Release";
+#endif
+#else
+        archDir = visitdev + "\\MSVC7.Net\\bin\\Release";
+#endif
+    }
     return archDir;
 #else
     // Get the installation dir for the version that's running. They all use
@@ -1230,5 +1300,30 @@ GetVisItArchitectureDirectory(const char *version)
     if(adir != 0)
         archDir = adir;
     return archDir;
+#endif
+}
+
+// ****************************************************************************
+// Method: GetVisItLauncher
+//
+// Purpose: 
+//   Returns the name of the VisIt launch program, wherever it is found.
+//
+// Returns:    The full name of the VisIt launcher.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jul 14 10:54:33 PDT 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+std::string
+GetVisItLauncher()
+{
+#if defined(_WIN32)
+    return std::string(GetVisItInstallationDirectory() + "\\visit.exe");
+#else
+    return std::string(GetVisItInstallationDirectory() + "/bin/visit");
 #endif
 }

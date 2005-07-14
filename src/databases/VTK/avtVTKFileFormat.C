@@ -385,6 +385,9 @@ avtVTKFileFormat::FreeUpResources(void)
 //    Do not return variables with name "avt", since we may want to look
 //    at these variables and the generic DB will throw them away.
 //
+//    Kathleen Bonnell, Wed Jul 13 18:27:05 PDT 2005 
+//    Specify whether or not scalar data should be treated as ascii. 
+//    
 // ****************************************************************************
 
 void
@@ -494,7 +497,8 @@ avtVTKFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         }
         if (ncomp == 1)
         {
-            AddScalarVarToMetaData(md, name, MESHNAME, AVT_NODECENT);
+            bool ascii = arr->GetDataType() == VTK_CHAR;
+            AddScalarVarToMetaData(md, name, MESHNAME, AVT_NODECENT, NULL, ascii);
         }
         else if (ncomp <= 3)
         {
@@ -525,7 +529,8 @@ avtVTKFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         }
         if (ncomp == 1)
         {
-            AddScalarVarToMetaData(md, name, MESHNAME, AVT_ZONECENT);
+            bool ascii = arr->GetDataType() == VTK_CHAR;
+            AddScalarVarToMetaData(md, name, MESHNAME, AVT_ZONECENT, NULL, ascii);
         }
         else if (ncomp <= 3)
         {

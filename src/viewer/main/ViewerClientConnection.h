@@ -1,8 +1,8 @@
 #ifndef VIEWER_CLIENT_CONNECTION_H
 #define VIEWER_CLIENT_CONNECTION_H
 #include <qobject.h>
-#include <ConnectCallback.h>
 #include <SimpleObserver.h>
+#include <vectortypes.h>
 
 class QSocketNotifier;
 class AttributeSubject;
@@ -24,7 +24,11 @@ class ViewerState;
 // Creation:   Wed May 4 10:41:51 PDT 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Jul 8 10:33:23 PDT 2005
+//   I changed the ConnectCallback argument into a function pointer argument
+//   instead of using the typedef because that was causing a mysterious
+//   compilation error in MSVC6.0.
+//
 // ****************************************************************************
 
 class ViewerClientConnection : public QObject, public SimpleObserver
@@ -38,9 +42,10 @@ public:
 
     void LaunchClient(const std::string &program,
                       const stringVector &args,
-                      ConnectCallback cb, void *cbData = 0,
-                      bool (*connectProgressCB)(void *, int) = 0,
-                      void *connectProgressCBData = 0);
+                      void (*)(const std::string &, const stringVector &, void *),
+                      void *,
+                      bool (*)(void *, int),
+                      void *);
 
     void SetupSpecialOpcodeHandler(void (*cb)(int,void*), void *data);
 

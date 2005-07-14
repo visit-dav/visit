@@ -7,6 +7,7 @@
 #include <ClientInformation.h>
 #include <ClientInformationList.h>
 #include <DebugStream.h>
+#include <Utility.h>
 
 // ****************************************************************************
 // Method: QvisInterpreter::QvisInterpreter
@@ -104,7 +105,9 @@ QvisInterpreter::Interpret(const QString &s)
 // Creation:   Mon May 9 10:02:10 PDT 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Jul 11 09:48:06 PDT 2005
+//   Wrote interpreted code to debug2.
+//
 // ****************************************************************************
 
 void
@@ -123,6 +126,8 @@ QvisInterpreter::ProcessCommands()
             std::string code(pendingCommands.front());
             pendingCommands.pop_front();
         
+            debug2 << "Interpreting code:\n" << code.c_str() << endl;
+
             // Relay an "Interpret" method command to the viewer where it should
             // be routed to the CLI.
             ClientMethod *method = viewer->GetClientMethod();
@@ -145,7 +150,9 @@ QvisInterpreter::ProcessCommands()
 // Creation:   Mon May 9 10:04:27 PDT 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Jul 14 10:56:26 PDT 2005
+//   I made it use GetVisItLauncher.
+//
 // ****************************************************************************
 
 bool
@@ -162,7 +169,7 @@ QvisInterpreter::Initialize()
         stringVector args;
         args.push_back("-cli");
         args.push_back("-newconsole");
-        viewer->OpenClient("CLI", "visit", args);
+        viewer->OpenClient("CLI", GetVisItLauncher(), args);
         launched = true;
     }
 

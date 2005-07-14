@@ -11794,6 +11794,10 @@ initscriptfunctions()
 //   Added code to get a pointer to the main thread state. I also added the
 //   VisItInterrupt exception.
 //
+//   Brad Whitlock, Mon Jul 11 09:43:20 PDT 2005
+//   Removed code to release the interpreter lock because it was unnecessary
+//   and it was preventing code from running on Windows.
+//
 // ****************************************************************************
 
 void
@@ -11803,8 +11807,6 @@ initvisit()
 
     // save a pointer to the main PyThreadState object
     mainThreadState = PyThreadState_Get();
-    // release the lock
-    PyEval_ReleaseLock();
 
     //
     // Initialize the module, but only do it one time.

@@ -19,6 +19,7 @@
 #include <avtOriginalDataMinMaxQuery.h>
 #include <avtOriginalDataNumNodesQuery.h>
 #include <avtOriginalDataNumZonesQuery.h>
+#include <avtSphericalCompactnessFactorQuery.h>
 #include <avtTimeQuery.h>
 #include <avtTotalRevolvedSurfaceAreaQuery.h>
 #include <avtTotalRevolvedVolumeQuery.h>
@@ -133,6 +134,9 @@ avtQueryFactory::Instance()
 //    Hank Childs, Wed May 18 16:14:23 PDT 2005
 //    Added Moment of Inertia, Centroid queries.
 //
+//    Hank Childs, Thu Jul 14 14:12:12 PDT 2005
+//    Add Spherical Compactness Factor.
+//
 // ****************************************************************************
 
 
@@ -207,6 +211,10 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
     else if (qname == "Moment of Inertia")
     {
         query = new avtMomentOfInertiaQuery();
+    }
+    else if (qname == "Spherical Compactness Factor")
+    {
+        query = new avtSphericalCompactnessFactorQuery();
     }
     else if (qname == "Weighted Variable Sum")
     {

@@ -426,7 +426,7 @@ avtMTSDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
     // that with the true number of domains.
     //
     int nm = md->GetNumMeshes();
-    for (int j = 0 ; j < nm ; j++)
+    for (j = 0 ; j < nm ; j++)
     {
         md->SetBlocksForMesh(j, nDomains);
     }

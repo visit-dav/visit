@@ -811,7 +811,9 @@ avtMinMaxQuery::InfoToString(const MinMaxInfo &info)
     }
     os << ">)" << ends;
     string str(os.str());
+#if !defined(_WIN32)
     os.freeze(false);
+#endif
     return str;
 }
 
