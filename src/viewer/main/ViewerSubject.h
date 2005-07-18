@@ -369,6 +369,9 @@ struct avtDefaultPlotMetaData;
 //    the engine manager to check for interruption. Added movieAtts so they
 //    can be kept in sync between multiple clients.
 //
+//    Hank Childs, Mon Jul 18 16:00:32 PDT 2005
+//    Add qt_argv, which cannot be deleted until the program exits.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerSubject : public QObject
@@ -628,6 +631,7 @@ private:
     bool                   noconfig;
     bool                   defaultStereoToOn;
     char                  *configFileName;
+    char                 **qt_argv;
 
     ViewerPlotFactory     *plotFactory;
     ViewerOperatorFactory *operatorFactory;

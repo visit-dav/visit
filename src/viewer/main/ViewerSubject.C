@@ -160,6 +160,9 @@ using std::string;
 //    Made parent be a pointer, added clients, viewerState, inputConnection,
 //    clientMethod, clientInformation, clientInformationList.
 //
+//    Hank Childs, Mon Jul 18 16:00:32 PDT 2005
+//    Initialize qt_argv.
+//
 // ****************************************************************************
 
 ViewerSubject::ViewerSubject() : xfer(), clients(), viewerRPC(), 
@@ -270,6 +273,7 @@ ViewerSubject::ViewerSubject() : xfer(), clients(), viewerRPC(),
     messageBuffer = 0;
     messagePipe[0] = -1; messagePipe[1] = -1;
     pluginAtts = 0;
+    qt_argv = NULL;
 
     viewerSubject = this;   // FIX_ME Hack, this should be removed.
 }
@@ -293,6 +297,9 @@ ViewerSubject::ViewerSubject() : xfer(), clients(), viewerRPC(),
 //    Brad Whitlock, Mon May 2 14:03:29 PST 2005
 //    Added viewerState, inputConnection, clientMethod, clientInformation
 //    clientInformationList, and movieAtts.
+//
+//    Hank Childs, Mon Jul 18 16:00:32 PDT 2005
+//    Free qt_argv.
 //
 // ****************************************************************************
 
@@ -324,6 +331,9 @@ ViewerSubject::~ViewerSubject()
 
     delete viewerState;
     delete inputConnection;
+
+    if (qt_argv != NULL)
+        delete [] qt_argv;
 }
 
 // ****************************************************************************
@@ -368,6 +378,12 @@ ViewerSubject::~ViewerSubject()
 //    Brad Whitlock, Mon May 2 14:04:44 PST 2005
 //    I made parent be a pointer so we can donate it to another object later.
 //
+//    Hank Childs, Mon Jul 18 16:00:32 PDT 2005
+//    Instead of creating a temporary argv pointer and freeing it immediately
+//    after sending it down to Qt, create a more permanent one, since Qt 
+//    does *not* make a copy of the argv that is passed into it.  So if we
+//    free that buffer right away, Qt may have a dangling pointer.
+//
 // ****************************************************************************
 
 void
@@ -410,7 +426,11 @@ ViewerSubject::Connect(int *argc, char ***argv)
     argv2[*argc+2] = NULL;
     mainApp = new QApplication(argc2, argv2, !nowin);
     CustomizeAppearance();
-    delete [] argv2;
+   
+    qt_argv = argv2;
+    // Do not delete argv2, since Qt did not make a copy.  qt_argv will be
+    // deleted in the destructor.
+    //delete [] argv2;
 
 #ifdef Q_WS_MACX
     // Prevent the viewer from having anything in its menubar.

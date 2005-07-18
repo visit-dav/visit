@@ -19,6 +19,7 @@ extern "C" {
 class avtMaterial;
 class vtkDataArray;
 class vtkUnstructuredGrid;
+class vtkFloatArray;
 
 using std::vector;
 
@@ -58,6 +59,9 @@ using std::vector;
 //    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
 //    Added timeState arg to PopulateDatabaseMetaData to satisfy new interface
 //
+//    Mark C. Miller, Mon Jul 18 13:41:13 PDT 2005
+//    Added CanCacheVariable since we handle caching of "param arrays" here
+//    in the plugin and added data members to handle free nodes mesh
 // ****************************************************************************
 
 class avtMiliFileFormat : public avtMTMDFileFormat
@@ -84,6 +88,8 @@ class avtMiliFileFormat : public avtMTMDFileFormat
 
     virtual void          FreeUpResources(void);
 
+    virtual bool          CanCacheVariable(const char *varname);
+
   protected:
     char *famroot;
     char *fampath;
@@ -99,6 +105,10 @@ class avtMiliFileFormat : public avtMTMDFileFormat
     vector<bool>          readMesh;
     int                   dims;
 
+    int                                   *free_nodes;
+    int                                    free_nodes_ts;
+    int                                    num_free_nodes;
+
     vector<vector<int> >                   nnodes;
     vector<vector<int> >                   ncells;
     vector<vector<vtkUnstructuredGrid *> > connectivity;
@@ -110,6 +120,7 @@ class avtMiliFileFormat : public avtMTMDFileFormat
     vector<vector< int > >                 connectivity_offset;
     vector<vector< int > >                 group_mesh_associations;
 
+    vector< std::string >                  known_param_arrays;
     vector< std::string >                  vars;
     vector< avtCentering >                 centering;
     vector< vector< vector<bool> > >       vars_valid;
@@ -128,6 +139,8 @@ class avtMiliFileFormat : public avtMTMDFileFormat
     int                   GetVariableIndex(const char *);
     int                   GetVariableIndex(const char *, int mesh_id);
     void                  GetSizeInfoForGroup(const char *, int &, int &, int);
+
+    vtkFloatArray        *RestrictVarToFreeNodes(vtkFloatArray *, int ts) const;
 
     void                  DecodeMultiMeshVarname(const std::string &, 
                                                  std::string &, int &);
