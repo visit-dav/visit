@@ -409,21 +409,21 @@ fi
 rm -f uv
 cat <<EOF > uv
 
-./visit-install -private -c closed -g visit -gw -l $ver aix /usr/gapps/visit > installlog 2>&1
+./visit-install -private -c closed -g visit -gw -l $ver aix64-xlc /usr/gapps/visit > installlog 2>&1
 echo ""                                            >> resultlog 2>&1
 echo "        install of visit on uv"              >> resultlog 2>&1
 echo "       ------------------------"             >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
 df -k /usr/gapps/visit                             >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
-ls -l /usr/gapps/visit/$ver/ibm-aix-pwr64/bin      >> resultlog 2>&1
+ls -l /usr/gapps/visit/$ver/ibm-aix-pwr64-xlc/bin  >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
-echo "number of database plugins = "\`ls /usr/gapps/visit/$ver/ibm-aix-pwr64/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver/ibm-aix-pwr64/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver/ibm-aix-pwr64/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo "number of database plugins = "\`ls /usr/gapps/visit/$ver/ibm-aix-pwr64-xlc/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver/ibm-aix-pwr64-xlc/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver/ibm-aix-pwr64-xlc/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
 echo "The database plugins:"                       >> resultlog 2>&1
-ls /usr/gapps/visit/$ver/ibm-aix-pwr64/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver\/ibm-aix-pwr64\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+ls /usr/gapps/visit/$ver/ibm-aix-pwr64-xlc/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver\/ibm-aix-pwr64-xlc\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
 EOF
 
 if [ $uv = true ]
@@ -432,8 +432,8 @@ then
    then
       cat uv >> lc
 
-      scp uv:/p/guv1/$user/uv/visitbuild/visit$ver2.aix.tar.gz .
-      scp visit$ver2.aix.tar.gz sc1:
+      scp uv:/p/guv1/$user/uv/visitbuild/visit$ver2.aix64-xlc.tar.gz .
+      scp visit$ver2.aix64-xlc.tar.gz sc1:
    fi
 fi
 
