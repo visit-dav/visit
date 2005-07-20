@@ -125,6 +125,9 @@ avtIndexSelectFilter::SetAtts(const AttributeGroup *a)
 //    Always Set IncludeBoundary to true for filters, so they can handle
 //    modulo prolbems (eg sample rate of 3, but dimension is 10).
 //
+//    Kathleen Bonnell, Wed Jul 20 11:39:34 PDT 2005 
+//    Don't subtract 1 from the groupIndices. 
+//
 // ****************************************************************************
 
 void
@@ -136,9 +139,9 @@ avtIndexSelectFilter::PrepareFilters(int groupIndices[3])
     int bi[3];
     if (atts.GetWhichData() == IndexSelectAttributes::OneGroup)
     {
-        bi[0] = (groupIndices[0]-1 > 0 ? groupIndices[0]-1 : 0);
-        bi[1] = (groupIndices[1]-1 > 0 ? groupIndices[1]-1 : 0);
-        bi[2] = (groupIndices[2]-1 > 0 ? groupIndices[2]-1 : 0);
+        bi[0] = groupIndices[0];
+        bi[1] = groupIndices[1];
+        bi[2] = groupIndices[2];
     }
     else
     {
