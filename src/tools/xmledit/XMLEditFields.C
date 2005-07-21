@@ -30,6 +30,9 @@
 //    Brad Whitlock, Fri Apr 1 16:05:13 PST 2005
 //    Added Labels variable type.
 //
+//    Hank Childs, Tue Jul 19 14:08:19 PDT 2005
+//    Added arrays.
+//
 // ****************************************************************************
 
 XMLEditFields::XMLEditFields(QWidget *p, const QString &n)
@@ -139,6 +142,9 @@ XMLEditFields::XMLEditFields(QWidget *p, const QString &n)
     cb = new QCheckBox("Species", variableNameGroup);
     varNameButtons->insert(cb,5);
     vnLayout->addWidget(cb, 2, 1);
+    cb = new QCheckBox("Arrays", variableNameGroup);
+    varNameButtons->insert(cb,10);
+    vnLayout->addWidget(cb, 3, 1);
 
     cb = new QCheckBox("Curves", variableNameGroup);
     varNameButtons->insert(cb,6);

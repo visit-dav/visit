@@ -44,6 +44,9 @@
 //    keep track of whether the cache is invalidated independent of whether
 //    it was deallocated.
 //
+//    Hank Childs, Thu Jul 21 14:45:04 PDT 2005
+//    Initialize MAX_LABEL_SIZE.
+//
 // ****************************************************************************
 
 avtLabelRenderer::avtLabelRenderer() : avtCustomRenderer(), singleCellInfo(),
@@ -57,6 +60,7 @@ avtLabelRenderer::avtLabelRenderer() : avtCustomRenderer(), singleCellInfo(),
     singleCellIndex = -1;
     singleNodeIndex = -1;
     maxLabelLength = 0;
+    MAX_LABEL_SIZE = 36;
 
     fgColor[0] = 1.;
     fgColor[1] = 1.;
@@ -172,6 +176,9 @@ avtLabelRenderer::SetForegroundColor(const double *fg)
 //    Caching is now done on a per-vtk-dataset basis.  Also, added a call
 //    to free the geometry filter when we were done with it.
 //
+//    Hank Childs, Thu Jul 21 16:40:13 PDT 2005
+//    Initialize MAX_LABEL_SIZE based on variable type.
+//
 // ****************************************************************************
 
 void
@@ -214,6 +221,23 @@ avtLabelRenderer::Render(vtkDataSet *ds)
         // polydata we decided to use for it last time.
         input = inputMap[ds];
     }
+
+    // 
+    // Create an appropriate MAX_LABEL_SIZE for the data.
+    //
+    vtkDataArray *pointData = input->GetPointData()->GetArray(varname);
+    vtkDataArray *cellData = input->GetCellData()->GetArray(varname);
+    int biggest = 0;
+    if (pointData)
+        biggest = (biggest > pointData->GetNumberOfComponents() ? biggest
+                                       : pointData->GetNumberOfComponents());
+    if (cellData)
+        biggest = (biggest > cellData->GetNumberOfComponents() ? biggest
+                                       : cellData->GetNumberOfComponents());
+    // Check for Mesh plot
+    if (biggest == 0)
+        biggest = 3;
+    MAX_LABEL_SIZE = 12*biggest;
 
     //
     // Render the labels using the derived type's RenderLabels method.
@@ -577,10 +601,14 @@ avtLabelRenderer::SetupSingleNodeLabel()
 //    keep track of whether the cache is invalidated independent of whether
 //    it was deallocated.
 //   
+//    Hank Childs, Thu Jul 21 09:33:42 PDT 2005
+//    Modify BEGIN/CREATE/END _LABEL macros to accomodate multi-step label
+//    creation (necessary for arrays).
+//
 // ****************************************************************************
 
-#define BEGIN_LABEL  int L;
-#define CREATE_LABEL L = SNPRINTF
+#define BEGIN_LABEL  int L = 0;
+#define CREATE_LABEL L += SNPRINTF
 #define END_LABEL    L = (L == -1) ? MAX_LABEL_SIZE : L; \
                      maxLabelLength = (L > maxLabelLength) ? L : maxLabelLength; \
                      labelString += MAX_LABEL_SIZE;
@@ -624,10 +652,14 @@ avtLabelRenderer::CreateCachedCellLabels()
 //    keep track of whether the cache is invalidated independent of whether
 //    it was deallocated.
 //
+//    Hank Childs, Thu Jul 21 09:33:42 PDT 2005
+//    Modify BEGIN/CREATE/END _LABEL macros to accomodate multi-step label
+//    creation (necessary for arrays).
+//
 // ****************************************************************************
 
-#define BEGIN_LABEL  int L;
-#define CREATE_LABEL L = SNPRINTF
+#define BEGIN_LABEL  int L = 0;
+#define CREATE_LABEL L += SNPRINTF
 #define END_LABEL    L = (L == -1) ? MAX_LABEL_SIZE : L; \
                      maxLabelLength = (L > maxLabelLength) ? L : maxLabelLength; \
                      labelString += MAX_LABEL_SIZE;

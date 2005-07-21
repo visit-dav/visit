@@ -419,14 +419,12 @@ int main(int argc, char *argv[])
         printf("Probably not using mpirun; try again!!!!!!\n");
         exit(0);
     }
-#endif
 
-#ifdef PARALLEL
-   VisItSetBroadcastIntFunction(visit_broadcast_int_callback);
-   VisItSetBroadcastStringFunction(visit_broadcast_string_callback);
+    VisItSetBroadcastIntFunction(visit_broadcast_int_callback);
+    VisItSetBroadcastStringFunction(visit_broadcast_string_callback);
+    VisItSetParallel(par_size > 1);
+    VisItSetParallelRank(par_rank);
 #endif
-   VisItSetParallel(par_size > 1);
-   VisItSetParallelRank(par_rank);
 
     if (par_rank == 0)
     {

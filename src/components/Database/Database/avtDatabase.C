@@ -310,6 +310,9 @@ avtDatabase::GetOutput(const char *var, int ts)
 //    Brad Whitlock, Mon Apr 4 09:07:04 PDT 2005
 //    Added support for Label type variables.
 //
+//    Hank Childs, Tue Jul 19 15:54:14 PDT 2005
+//    Add support for array variables.
+//
 // ****************************************************************************
 
 void
@@ -493,6 +496,17 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
                 atts.AddVariable(var_list[i]);
             atts.SetVariableDimension(9, var_list[i]);
             atts.SetCentering(stmd->centering, var_list[i]);
+        }
+
+        const avtArrayMetaData *amd = GetMetaData(ts)->GetArray(var_list[i]);
+        if (amd != NULL)
+        {
+            if (amd->hasUnits)
+                atts.AddVariable(var_list[i], amd->units);
+            else
+                atts.AddVariable(var_list[i]);
+            atts.SetVariableDimension(amd->nVars, var_list[i]);
+            atts.SetCentering(amd->centering, var_list[i]);
         }
 
         const avtSpeciesMetaData *spmd = 
@@ -1392,6 +1406,9 @@ avtDatabase::GetFileListFromTextFile(const char *textfile,
 //    Brad Whitlock, Mon Apr 4 11:44:28 PDT 2005
 //    Added code to query label variables.
 //
+//    Hank Childs, Tue Jul 19 15:56:13 PDT 2005
+//    Added support for array variables.
+//
 // ****************************************************************************
 
 void               
@@ -1579,6 +1596,11 @@ avtDatabase::Query(PickAttributes *pa)
                    QuerySymmetricTensors(vName, foundDomain, foundEl, ts,
                                  incEls, pa->GetPickVarInfo(varNum), zonePick);
                    pa->GetPickVarInfo(varNum).SetVariableType("symm_tensor");
+                   break; 
+                case AVT_ARRAY_VAR : success = 
+                   QueryArrays(vName, foundDomain, foundEl, ts,
+                               incEls, pa->GetPickVarInfo(varNum), zonePick);
+                   pa->GetPickVarInfo(varNum).SetVariableType("array");
                    break; 
                 case AVT_MATERIAL : success = 
                    QueryMaterial(vName, foundDomain, matEl, ts, matIncEls, 

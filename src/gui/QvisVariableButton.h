@@ -29,6 +29,9 @@ class VariableMenuPopulator;
 //   Brad Whitlock, Fri Apr 1 16:23:43 PST 2005
 //   Added Label var support.
 //
+//   Hank Childs, Tue Jul 19 14:39:43 PDT 2005
+//   Added Array var support.
+//
 // ****************************************************************************
 
 class GUI_API QvisVariableButton : public QPushButton
@@ -65,6 +68,7 @@ public:
     static const int Tensors;
     static const int SymmetricTensors;
     static const int Labels;
+    static const int Arrays;
 signals:
     void activated(const QString &varName);
 public slots:

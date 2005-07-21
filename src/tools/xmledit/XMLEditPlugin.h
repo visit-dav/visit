@@ -38,6 +38,9 @@ class QCheckBox;
 //    Hank Childs, Tue May 24 09:26:14 PDT 2005
 //    Added hasOptions.
 //
+//    Hank Childs, Tue Jul 19 14:08:19 PDT 2005
+//    Added array var type.
+//
 // ****************************************************************************
 
 class XMLEditPlugin : public QFrame
@@ -86,6 +89,7 @@ class XMLEditPlugin : public QFrame
     QCheckBox       *varTypeTensor;
     QCheckBox       *varTypeSymmetricTensor;
     QCheckBox       *varTypeLabel;
+    QCheckBox       *varTypeArray;
     QComboBox       *dbType;
     QLineEdit       *extensions;
 };

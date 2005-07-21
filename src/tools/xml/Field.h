@@ -934,6 +934,11 @@ class LineWidth : public virtual Field
 //
 // ----------------------------------- VariableName ---------------------------
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Jul 19 14:03:23 PDT 2005
+//    Add support for arrays.
+//
 class VariableName : public virtual Field
 {
   public:
@@ -958,9 +963,9 @@ class VariableName : public virtual Field
     {
         if(a == "vartypes")
         {
-            if(v.length() < 10)
+            if(v.length() != 11)
             {
-                cout << "The vartypes attribute must be 10 characters long!" << endl;
+                cout << "The vartypes attribute must be 11 characters long!" << endl;
             }
             else
             {

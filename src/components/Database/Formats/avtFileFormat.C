@@ -4,6 +4,7 @@
 
 #include <limits.h> // for INT_MAX
 #include <float.h> // for DBL_MAX
+#include <snprintf.h>
 
 #include <avtFileFormat.h>
 
@@ -449,6 +450,78 @@ avtFileFormat::AddSymmetricTensorVarToMetaData(avtDatabaseMetaData *md,
     st->meshName = mesh;
     st->centering = cent;
     st->dim = dim;
+
+    md->Add(st);
+}
+
+
+// ****************************************************************************
+//  Method: avtFileFormat::AddArrayVarToMetaData
+//
+//  Purpose:
+//      A convenience routine to add a array variable to the meta-data.
+//
+//  Arguments:
+//      md        The meta-data object to add the tensor var to.
+//      name      The name of the array variable.
+//      cnames    The name of the components.
+//      mesh      The mesh the array var is defined on.
+//      cent      The centering type - node vs cell.
+//
+//  Programmer: Hank Childs
+//  Creation:   July 21, 2005
+//
+// ****************************************************************************
+
+void
+avtFileFormat::AddArrayVarToMetaData(avtDatabaseMetaData *md, string name, 
+                        vector<string> &cnames, string mesh, avtCentering cent)
+{
+    avtArrayMetaData *st = new avtArrayMetaData();
+    st->name = name;
+    st->compNames = cnames;
+    st->nVars = cnames.size();
+    st->meshName = mesh;
+    st->centering = cent;
+
+    md->Add(st);
+}
+
+
+// ****************************************************************************
+//  Method: avtFileFormat::AddArrayVarToMetaData
+//
+//  Purpose:
+//      A convenience routine to add a array variable to the meta-data.
+//
+//  Arguments:
+//      md        The meta-data object to add the tensor var to.
+//      name      The name of the array variable.
+//      ncomps    The number of components.
+//      mesh      The mesh the array var is defined on.
+//      cent      The centering type - node vs cell.
+//
+//  Programmer: Hank Childs
+//  Creation:   July 21, 2005
+//
+// ****************************************************************************
+
+void
+avtFileFormat::AddArrayVarToMetaData(avtDatabaseMetaData *md, string name, 
+                                     int ncomps, string mesh,avtCentering cent)
+{
+    avtArrayMetaData *st = new avtArrayMetaData();
+    st->name = name;
+    st->nVars = ncomps;
+    st->compNames.resize(ncomps);
+    for (int i = 0 ; i < ncomps ; i++)
+    {
+        char name[16];
+        SNPRINTF(name, 16, "comp%02d", i);
+        st->compNames[i] = name;
+    }
+    st->meshName = mesh;
+    st->centering = cent;
 
     md->Add(st);
 }

@@ -217,6 +217,10 @@ typedef struct {
 //    Mark C. Miller, Tue May 31 20:12:42 PDT 2005
 //    Added forceReadThisStateCycleTime bool to GetMetaData
 //    Added method SetCycleTimeInDatabaseMetaData
+//
+//    Hank Childs, Tue Jul 19 15:52:47 PDT 2005
+//    Add QueryArray.
+//
 // ****************************************************************************
 
 class DATABASE_API avtDatabase
@@ -338,6 +342,11 @@ class DATABASE_API avtDatabase
                                              PickVarInfo &, const bool) 
                                                   {return false; };
     virtual bool                QueryLabels(const std::string &, const int, 
+                                             const int, const int,
+                                             const intVector &,
+                                             PickVarInfo &, const bool) 
+                                                  {return false; };
+    virtual bool                QueryArrays(const std::string &, const int, 
                                              const int, const int,
                                              const intVector &,
                                              PickVarInfo &, const bool) 

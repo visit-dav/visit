@@ -102,6 +102,9 @@
 #   Added avtCylindricalFilter, avtExpressionComponentMacro, avtFloorFilter,
 #   avtCeilingFilter, avtModuloFilter, and avtRoundFilter.
 #
+#   Hank Childs, Thu Jul 21 11:24:46 PDT 2005
+#   Added avtArrayCompose/ArrayDecompose Filter.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -139,6 +142,8 @@ Derivations_src=\
   Derivations/avtPrincipalTensorFilter.C 
 
 General_src= \
+  General/avtArrayComposeFilter.C \
+  General/avtArrayDecomposeFilter.C \
   General/avtCurlFilter.C \
   General/avtDataIdFilter.C \
   General/avtDegreeFilter.C \

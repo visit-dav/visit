@@ -57,6 +57,8 @@
 #include <avtVectorComposeFilter.h>
 #include <avtVectorDecomposeFilter.h>
 #include <avtVectorCrossProductFilter.h>
+#include <avtArrayComposeFilter.h>
+#include <avtArrayDecomposeFilter.h>
 #include <avtMeshCoordinateFilter.h>
 #include <avtProcessorIdFilter.h>
 #include <avtDegreeFilter.h>
@@ -391,6 +393,9 @@ avtVectorExpr::CreateFilters(ExprPipelineState *state)
 //      Added cylindrical, components of cylindrical and polar, mod, floor,
 //      round, and ceil.
 //
+//      Hank Childs, Thu Jul 21 12:34:02 PDT 2005
+//      Added array_compose, array_decompose.
+//
 // ****************************************************************************
 void
 avtFunctionExpr::CreateFilters(ExprPipelineState *state)
@@ -439,6 +444,10 @@ avtFunctionExpr::CreateFilters(ExprPipelineState *state)
         f = new avtVectorCrossProductFilter();
     else if (functionName == "dot")
         f = new avtBinaryMultiplyFilter();
+    else if (functionName == "array_compose")
+        f = new avtArrayComposeFilter();
+    else if (functionName == "array_decompose")
+        f = new avtArrayDecomposeFilter();
     else if (functionName == "matvf")
         f = new avtMatvfFilter();
     else if (functionName == "mirvf")

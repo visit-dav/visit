@@ -36,6 +36,9 @@
 //    Hank Childs, Tue May 24 09:26:14 PDT 2005
 //    Added hasOptions.
 //
+//    Hank Childs, Tue Jul 19 14:08:19 PDT 2005
+//    Added array variable type.
+//
 // ****************************************************************************
 
 XMLEditPlugin::XMLEditPlugin(QWidget *p, const QString &n)
@@ -112,24 +115,26 @@ XMLEditPlugin::XMLEditPlugin(QWidget *p, const QString &n)
     varTypeTensor          = new QCheckBox("Tensor", this);
     varTypeSymmetricTensor = new QCheckBox("Symmetric Tensor", this);
     varTypeLabel           = new QCheckBox("Label", this);
+    varTypeArray           = new QCheckBox("Array", this);
 
     QHBoxLayout *varTypeLayout1 = new QHBoxLayout();
     varTypeLayout1->addWidget(varTypeMesh);
     varTypeLayout1->addWidget(varTypeScalar);
     varTypeLayout1->addWidget(varTypeVector);
     varTypeLayout1->addWidget(varTypeMaterial);
-    varTypeLayout1->addWidget(varTypeSubset);
     topLayout->addLayout(varTypeLayout1, row, 1);
     row++;
     QHBoxLayout *varTypeLayout2 = new QHBoxLayout();
+    varTypeLayout2->addWidget(varTypeSubset);
     varTypeLayout2->addWidget(varTypeSpecies);
     varTypeLayout2->addWidget(varTypeCurve);
-    varTypeLayout2->addWidget(varTypeTensor);
-    varTypeLayout2->addWidget(varTypeSymmetricTensor);
+    varTypeLayout2->addWidget(varTypeLabel);
     topLayout->addLayout(varTypeLayout2, row, 1);
     row++;
     QHBoxLayout *varTypeLayout3 = new QHBoxLayout();
-    varTypeLayout2->addWidget(varTypeLabel);
+    varTypeLayout3->addWidget(varTypeTensor);
+    varTypeLayout3->addWidget(varTypeSymmetricTensor);
+    varTypeLayout3->addWidget(varTypeArray);
     topLayout->addLayout(varTypeLayout3, row, 1);
     row++;
 
@@ -188,6 +193,8 @@ XMLEditPlugin::XMLEditPlugin(QWidget *p, const QString &n)
             this, SLOT(varTypesChanged()));
     connect(varTypeLabel, SIGNAL(clicked()),
             this, SLOT(varTypesChanged()));
+    connect(varTypeArray, SIGNAL(clicked()),
+            this, SLOT(varTypesChanged()));
     connect(hasIcon, SIGNAL(toggled(bool)),
             this, SLOT(hasIconChanged(bool)));
     connect(iconFile, SIGNAL(textChanged(const QString &)),
@@ -225,6 +232,9 @@ XMLEditPlugin::XMLEditPlugin(QWidget *p, const QString &n)
 //    Hank Childs, Tue May 24 09:26:14 PDT 2005
 //    Add hasOptions.
 //
+//    Hank Childs, Tue Jul 19 14:08:19 PDT 2005
+//    Added support for arrays.
+//
 // ****************************************************************************
 
 void
@@ -248,6 +258,7 @@ XMLEditPlugin::UpdateWindowContents()
         varTypeTensor->setChecked(false);
         varTypeSymmetricTensor->setChecked(false);
         varTypeLabel->setChecked(false);
+        varTypeArray->setChecked(false);
         enabledByDefault->setChecked(xmldoc->plugin->enabledByDefault);
 
         dbType->setCurrentItem(0);
@@ -280,6 +291,8 @@ XMLEditPlugin::UpdateWindowContents()
                     varTypeSymmetricTensor->setChecked(true);
                 else if (types[i] == "label")
                     varTypeLabel->setChecked(true);
+                else if (types[i] == "array")
+                    varTypeArray->setChecked(true);
             }
         }
         else if (xmldoc->plugin->type == "operator")
@@ -334,6 +347,7 @@ XMLEditPlugin::UpdateWindowContents()
         varTypeTensor->setChecked(false);
         varTypeSymmetricTensor->setChecked(false);
         varTypeLabel->setChecked(false);
+        varTypeArray->setChecked(false);
         hasIcon->setChecked(false);
         iconFile->setText("");
         hasWriter->setChecked(false);
@@ -374,6 +388,9 @@ XMLEditPlugin::UpdateWindowContents()
 //    Hank Childs, Tue May 24 09:26:14 PDT 2005
 //    Add hasOptions.
 //
+//    Hank Childs, Tue Jul 19 14:08:19 PDT 2005
+//    Added array vars.
+//
 // ****************************************************************************
 
 void
@@ -398,6 +415,7 @@ XMLEditPlugin::UpdateWindowSensitivity()
     varTypeTensor->setEnabled(plot);
     varTypeSymmetricTensor->setEnabled(plot);
     varTypeLabel->setEnabled(plot);
+    varTypeArray->setEnabled(plot);
     dbType->setEnabled(db);
     extensions->setEnabled(db);
     hasIcon->setEnabled(op || plot);
@@ -434,6 +452,9 @@ XMLEditPlugin::UpdateWindowSensitivity()
 //    Brad Whitlock, Fri Apr 1 16:08:37 PST 2005
 //    Added label.
 //
+//    Hank Childs, Tue Jul 19 14:08:19 PDT 2005
+//    Added array vars.
+//
 // ****************************************************************************
 
 void
@@ -453,6 +474,7 @@ XMLEditPlugin::BlockAllSignals(bool block)
     varTypeTensor->blockSignals(block);
     varTypeSymmetricTensor->blockSignals(block);
     varTypeLabel->blockSignals(block);
+    varTypeArray->blockSignals(block);
     dbType->blockSignals(block);
     extensions->blockSignals(block);
     hasIcon->blockSignals(block);
@@ -739,6 +761,9 @@ XMLEditPlugin::extensionsTextChanged(const QString &text)
 //    Brad Whitlock, Fri Apr 1 16:09:04 PST 2005
 //    Added label.
 //
+//    Hank Childs, Tue Jul 19 14:08:19 PDT 2005
+//    Added array vars.
+//
 // ****************************************************************************
 void
 XMLEditPlugin::varTypesChanged()
@@ -768,6 +793,8 @@ XMLEditPlugin::varTypesChanged()
         p->vartype += "symmetrictensor,";
     if (varTypeLabel->isChecked())
         p->vartype += "label,";
+    if (varTypeArray->isChecked())
+        p->vartype += "array,";
     if (!p->vartype.isEmpty())
         p->vartype = p->vartype.left(p->vartype.length()-1);
 }

@@ -1,3 +1,12 @@
+// ****************************************************************************
+//  Modifications:
+//
+//    Hank Childs, Wed Jul 20 17:21:46 PDT 2005
+//    Add support for tensors, arrays.
+//
+// ****************************************************************************
+
+
 //
 // Make sure that CREATE_LABEL defaults to SNPRINTF if we have not
 // defined it.
@@ -129,10 +138,56 @@ debug3 << "Labelling nodes with 3d vector data" << endl;
                 END_LABEL
             }
         }
+        else if(data->GetNumberOfComponents() == 9)
+        {
+debug3 << "Labelling nodes with 3d tensor data" << endl;
+            for(vtkIdType id = 0; id < npts; ++id)
+            {
+                // float *vert = cellCenters->GetTuple3(id);
+                BEGIN_LABEL
+                    float *tensorVal = data->GetTuple9(id);
+                    CREATE_LABEL(labelString, MAX_LABEL_SIZE,
+                      "(%g, %g, %g)\n(%g, %g, %g)\n(%g, %g, %g)",
+                             tensorVal[0], tensorVal[1], tensorVal[2],
+                             tensorVal[3], tensorVal[4], tensorVal[5],
+                             tensorVal[6], tensorVal[7], tensorVal[8]);
+                END_LABEL
+            }
+        }
         else
         {
-            debug3 << "The input vector has " << data->GetNumberOfComponents()
-                 << " components. We don't like that!" << endl;
+            debug3 << "Labelling points with arbitrary array data" << endl;
+            int nComps = data->GetNumberOfComponents();
+            int row_size = 1;
+            while (row_size*row_size < nComps)
+                row_size++;
+            char formatStringStart[8] = "(%g, ";
+            char formatStringMiddle[8] = "%g, ";
+            char formatStringEnd[8] = "%g)\n";
+            char formatStringLast[8] = "%g)";
+            for (vtkIdType id = 0 ; id < npts ; id += skipIncrement)
+            {
+                BEGIN_LABEL
+                    labelString[0] = '\0';
+                    float *vals = data->GetTuple(id);
+                    bool atStart = true;
+                    for (int comp = 0 ; comp < nComps ; comp++)
+                    {
+                        char *formatString = NULL;
+                        if ((comp % row_size) == 0)
+                            formatString = formatStringStart;
+                        else if (comp == nComps-1)
+                            formatString = formatStringLast;
+                        else if ((comp % row_size) == row_size-1)
+                            formatString = formatStringEnd;
+                        else
+                            formatString = formatStringMiddle;
+                        CREATE_LABEL(labelString + strlen(labelString),
+                                     MAX_LABEL_SIZE-strlen(labelString),
+                                     formatString, vals[comp]);
+                    }
+                END_LABEL
+            }
         }
     }
     else if(originalNodes != 0)

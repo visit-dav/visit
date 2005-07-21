@@ -1460,7 +1460,7 @@ avtVectorMetaData::SelectAll()
 //  Method: avtVectorMetaData::SetExtents
 //
 //  Purpose:
-//      Sets the extents of the :vector
+//      Sets the extents of the vector
 //
 //  Arguments:
 //      extents     vector extents as <min_v1, max_v1, min_v2, max_v2, ...>.
@@ -2044,6 +2044,255 @@ avtSymmetricTensorMetaData::Print(ostream &out, int indent) const
 
     Indent(out, indent);
     out << "Variable Dimension = " << dim << endl;
+
+    if (!validVariable)
+    {
+        Indent(out, indent);
+        out << "THIS IS NOT A VALID VARIABLE." << endl;
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtArrayMetaData default constructor
+//
+//  Arguments:
+//
+//  Programmer: Hank Childs
+//  Creation:   July 19, 2005
+//
+// ****************************************************************************
+
+avtArrayMetaData::avtArrayMetaData()
+    : AttributeSubject("sssiis*bbs")
+{
+    nVars = 0;
+    validVariable = true;
+    hasUnits = false;
+}
+
+
+// ****************************************************************************
+//  Method: avtArrayMetaData constructor
+//
+//  Arguments:
+//      n           The name of the array variable.
+//      mn          The name of the mesh the array var is defined on.
+//      nv          The number of components.
+//      c           The centering of the variable.
+//
+//  Programmer: Hank Childs
+//  Creation:   July 19, 2005
+//
+// ****************************************************************************
+
+avtArrayMetaData::avtArrayMetaData(std::string n, std::string mn,
+                                   avtCentering c, int nv)
+    : AttributeSubject("sssiis*bbs")
+{
+    name           = n;
+    originalName   = name;
+    meshName       = mn;
+    nVars          = nv;
+    compNames.resize(nVars);
+    for (int i = 0 ; i < nVars ; i++)
+    {
+        char name[1024];
+        SNPRINTF(name, 1024, "comp%d", i);
+    }
+    centering      = c;
+    validVariable  = true;
+    hasUnits       = false;
+}
+
+
+// ****************************************************************************
+//  Method: avtArrayMetaData constructor
+//
+//  Arguments:
+//      n           The name of the array variable.
+//      mn          The name of the mesh the array var is defined on.
+//      c           The centering of the variable.
+//      nv          The number of components.
+//      cn          The component names.
+//
+//  Programmer: Hank Childs
+//  Creation:   July 19, 2005
+//
+// ****************************************************************************
+
+avtArrayMetaData::avtArrayMetaData(std::string n, std::string mn, 
+                                   avtCentering c, int nv,
+                                   std::vector<std::string> &cn)
+    : AttributeSubject("sssiis*bbs")
+{
+    name           = n;
+    originalName   = name;
+    meshName       = mn;
+    nVars          = nv;
+    compNames      = cn;
+    centering      = c;
+    validVariable  = true;
+    hasUnits       = false;
+}
+
+
+// ****************************************************************************
+//  Method: avtArrayMetaData copy constructor
+//
+//  Arguments:
+//      rhs   :  the source object
+//
+//  Programmer: Hank Childs
+//  Creation:   July 19, 2005
+//
+// ****************************************************************************
+
+avtArrayMetaData::avtArrayMetaData(const avtArrayMetaData &rhs)
+    : AttributeSubject("sssiis*bbs")
+{
+    name           = rhs.name;
+    originalName   = name;
+    meshName       = rhs.meshName;
+    centering      = rhs.centering;
+    nVars          = rhs.nVars;
+    compNames      = rhs.compNames;
+    validVariable  = rhs.validVariable;
+    hasUnits       = rhs.hasUnits;
+    units          = rhs.units;
+}
+
+
+// ****************************************************************************
+// Method: avtArrayMetaData destructor
+//
+// Programmer: Hank Childs
+// Creation:   July 19, 2005
+//
+// ****************************************************************************
+
+avtArrayMetaData::~avtArrayMetaData()
+{
+}
+
+// ****************************************************************************
+//  Method: avtArrayMetaData::operator=
+//
+//  Arguments:
+//      rhs   :  the source object
+//
+//  Programmer: Hank Childs
+//  Creation:   July 19, 2005
+//
+// ****************************************************************************
+
+const avtArrayMetaData &
+avtArrayMetaData::operator=(const avtArrayMetaData &rhs)
+{
+    name           = rhs.name;
+    originalName   = name;
+    meshName       = rhs.meshName;
+    centering      = rhs.centering;
+    nVars          = rhs.nVars;
+    compNames      = rhs.compNames;
+    validVariable  = rhs.validVariable;
+    hasUnits       = rhs.hasUnits;
+    units          = rhs.units;
+    return *this;
+}
+
+
+// ****************************************************************************
+//  Method: avtArrayMetaData::SelectAll
+//
+//  Arguments:
+//
+//  Programmer: Hank Childs
+//  Creation:   July 19, 2005
+//
+// ****************************************************************************
+
+void
+avtArrayMetaData::SelectAll()
+{
+    Select(0, (void*)&name);
+    Select(1, (void*)&originalName);
+    Select(2, (void*)&meshName);
+    Select(3, (void*)&centering);
+    Select(4, (void*)&nVars);
+    Select(5, (void*)&compNames);
+    Select(6, (void*)&validVariable);
+    Select(7, (void*)&hasUnits);
+    Select(8, (void*)&units);
+}
+
+
+// ****************************************************************************
+//  Method: avtArrayMetaData::Print
+//
+//  Purpose:
+//      Print statement for debugging.
+//
+//  Arguments:
+//      out      The stream to output to.
+//      indent   The number of tabs to indent each line with.
+//
+//  Programmer:  Hank Childs
+//  Creation:    July 19, 2005
+//
+// ****************************************************************************
+
+void
+avtArrayMetaData::Print(ostream &out, int indent) const
+{
+    Indent(out, indent);
+    out << "Name = " << name.c_str() << endl;
+    if (name != originalName)
+    {
+        Indent(out, indent);
+        out << "Original Name = " << originalName.c_str() << endl;
+    }
+
+    Indent(out, indent);
+    out << "Mesh is = " << meshName.c_str() << endl;
+
+    Indent(out, indent);
+    out << "Centering = ";
+    switch (centering)
+    {
+      case AVT_NODECENT:
+        out << "node centered.";
+        break;
+
+      case AVT_ZONECENT:
+        out << "zone centered.";
+        break;
+
+      case AVT_UNKNOWN_CENT:
+      default:
+        out << "unknowing centering.";
+        break;
+    }
+    out << endl;
+
+    if(hasUnits)
+    {
+        Indent(out, indent);
+        out << "Units are: " << units.c_str() << endl;
+    }
+
+    Indent(out, indent);
+    out << "Number of variables = " << nVars << endl;
+    Indent(out, indent);
+    out << "Components are: ";
+    for (int i = 0 ; i < compNames.size() ; i++)
+    {
+        out << compNames[i];
+        if (i != compNames.size()-1)
+            out << ", ";
+        else
+            out << endl;
+    }
 
     if (!validVariable)
     {
@@ -3874,10 +4123,13 @@ avtDefaultPlotMetaData::Print(ostream &out, int indent) const
 //    Brad Whitlock, Fri Apr 1 15:36:10 PST 2005
 //    Changed format string to add labels.
 //
+//    Hank Childs, Tue Jul 19 11:37:43 PDT 2005
+//    Added arrays.
+//
 // ****************************************************************************
 
 avtDatabaseMetaData::avtDatabaseMetaData()
-    : AttributeSubject("sssbddibss*i*i*i*d*a*a*a*a*a*a*a*a*a*aba*a*babbb")
+    : AttributeSubject("sssbddibss*i*i*i*d*a*a*a*a*a*a*a*a*a*a*aba*a*babbb")
 {
     hasTemporalExtents             = false;
     minTemporalExtents             = 0.;
@@ -3952,10 +4204,13 @@ avtDatabaseMetaData::avtDatabaseMetaData()
 //    Brad Whitlock, Fri Apr 1 15:34:18 PST 2005
 //    Added labels.
 //
+//    Hank Childs, Tue Jul 19 11:37:43 PDT 2005
+//    Added arrays.
+//
 // ****************************************************************************
 
 avtDatabaseMetaData::avtDatabaseMetaData(const avtDatabaseMetaData &rhs)
-    : AttributeSubject("sssbddibss*i*i*i*d*a*a*a*a*a*a*a*a*a*aba*a*babbb")
+    : AttributeSubject("sssbddibss*i*i*i*d*a*a*a*a*a*a*a*a*a*a*aba*a*babbb")
 {
     databaseName       = rhs.databaseName;
     fileFormat         = rhs.fileFormat;
@@ -3991,6 +4246,8 @@ avtDatabaseMetaData::avtDatabaseMetaData(const avtDatabaseMetaData &rhs)
     for (i=0; i<rhs.symm_tensors.size(); i++)
         symm_tensors.push_back(
                          new avtSymmetricTensorMetaData(*rhs.symm_tensors[i]));
+    for (i=0; i<rhs.arrays.size(); i++)
+        arrays.push_back(new avtArrayMetaData(*rhs.arrays[i]));
     for (i=0; i<rhs.materials.size(); i++)
         materials.push_back(new avtMaterialMetaData(*rhs.materials[i]));
     for (i=0; i<rhs.species.size(); i++)
@@ -4153,6 +4410,9 @@ avtDatabaseMetaData::NewInstance(bool copy) const
 //    Brad Whitlock, Fri Apr 1 15:33:57 PST 2005
 //    Added labels.
 //
+//    Hank Childs, Tue Jul 19 11:37:43 PDT 2005
+//    Added arrays.
+//
 // ****************************************************************************
 
 const avtDatabaseMetaData &
@@ -4198,6 +4458,9 @@ avtDatabaseMetaData::operator=(const avtDatabaseMetaData &rhs)
     symm_tensors.clear();
     for (i=0; i<materials.size(); i++)
         delete materials[i];
+    for (i=0; i<arrays.size(); i++)
+        delete arrays[i];
+    arrays.clear();
     materials.clear();
     for (i=0; i<species.size(); i++)
         delete species[i];
@@ -4223,6 +4486,8 @@ avtDatabaseMetaData::operator=(const avtDatabaseMetaData &rhs)
     for (i=0; i<rhs.symm_tensors.size(); i++)
         symm_tensors.push_back(
                          new avtSymmetricTensorMetaData(*rhs.symm_tensors[i]));
+    for (i=0; i<rhs.arrays.size(); i++)
+        arrays.push_back(new avtArrayMetaData(*rhs.arrays[i]));
     for (i=0; i<rhs.materials.size(); i++)
         materials.push_back(new avtMaterialMetaData(*rhs.materials[i]));
     for (i=0; i<rhs.species.size(); i++)
@@ -4296,6 +4561,12 @@ avtDatabaseMetaData::~avtDatabaseMetaData()
     for (st_it = symm_tensors.begin() ; st_it != symm_tensors.end() ; st_it++)
     {
         delete (*st_it);
+    }
+
+    std::vector<avtArrayMetaData *>::iterator ait;
+    for (ait = arrays.begin() ; ait != arrays.end() ; ait++)
+    {
+        delete (*ait);
     }
 
     std::vector<avtMaterialMetaData *>::iterator mait;
@@ -4907,6 +5178,24 @@ avtDatabaseMetaData::Add(avtSymmetricTensorMetaData *stmd)
 //  Method: avtDatabaseMetaData::Add
 //
 //  Arguments:
+//      tmd    An array meta data object.
+//
+//  Programmer: Hank Childs
+//  Creation:   July 19, 2005
+//
+// ****************************************************************************
+
+void
+avtDatabaseMetaData::Add(avtArrayMetaData *tmd)
+{
+    arrays.push_back(tmd);
+}
+
+
+// ****************************************************************************
+//  Method: avtDatabaseMetaData::Add
+//
+//  Arguments:
 //      mmd    A material meta data object.
 //
 //  Programmer: Hank Childs
@@ -5162,6 +5451,9 @@ avtDatabaseMetaData::GetNDomains(std::string var) const
 //    Brad Whitlock, Fri Apr 1 15:27:41 PST 2005
 //    Added support for labels.
 //
+//    Hank Childs, Tue Jul 19 13:24:19 PDT 2005
+//    Added support for arrays.
+//
 // ****************************************************************************
 
 avtVarType
@@ -5223,6 +5515,15 @@ avtDatabaseMetaData::DetermineVarType(std::string var_in) const
         if (symm_tensors[i]->name == var)
         {
             return AVT_SYMMETRIC_TENSOR_VAR;
+        }
+    }
+
+    int narrays = arrays.size();
+    for (i = 0 ; i < narrays ; i++)
+    {
+        if (arrays[i]->name == var)
+        {
+            return AVT_ARRAY_VAR;
         }
     }
 
@@ -5317,6 +5618,9 @@ avtDatabaseMetaData::DetermineVarType(std::string var_in) const
 //    Brad Whitlock, Fri Apr 1 15:28:35 PST 2005
 //    Added support for labels.
 //
+//    Hank Childs, Tue Jul 19 13:24:19 PDT 2005
+//    Added support for arrays.
+//
 // ****************************************************************************
 
 std::string
@@ -5390,6 +5694,16 @@ avtDatabaseMetaData::MeshForVar(std::string var) const
         if (VariableNamesEqual(symm_tensors[i]->name, var))
         {
             return symm_tensors[i]->meshName;
+        }
+    }
+
+    // Look through the arrays.
+    int narrays = arrays.size();
+    for (i = 0 ; i < narrays ; i++)
+    {
+        if (VariableNamesEqual(arrays[i]->name, var))
+        {
+            return arrays[i]->meshName;
         }
     }
 
@@ -5712,6 +6026,9 @@ avtDatabaseMetaData::GetSpeciesOnMesh(std::string mesh) const
 //    Added code to deal with printing of times and a friendlier format
 //    for printing of cycles and times
 //
+//    Hank Childs, Tue Jul 19 13:25:53 PDT 2005
+//    Added arrays.
+//
 // ****************************************************************************
 
 void
@@ -5888,6 +6205,18 @@ avtDatabaseMetaData::Print(ostream &out, int indent) const
         out << endl;
     }
 
+    if(arrays.begin() != arrays.end())
+    {
+        Indent(out, indent);
+        out << "Arrays: " << endl;
+    }
+    std::vector< avtArrayMetaData * >::const_iterator ait;
+    for (ait = arrays.begin() ; ait != arrays.end() ; ait++)
+    {
+        (*ait)->Print(out, indent+1);
+        out << endl;
+    }
+
     if(materials.begin() != materials.end())
     {
         Indent(out, indent);
@@ -5974,6 +6303,9 @@ avtDatabaseMetaData::Print(ostream &out, int indent) const
               case Expression::SymmetricTensorMeshVar:
                 vartype = "symmetrictensor";
                 break;
+              case Expression::ArrayMeshVar:
+                vartype = "array";
+                break;
               case Expression::Material:
                 vartype = "material";
                 break;
@@ -6055,6 +6387,9 @@ avtDatabaseMetaData::Print(ostream &out, int indent) const
 //   Brad Whitlock, Fri Apr 1 15:31:22 PST 2005
 //   Added labels.
 //
+//   Hank Childs, Tue Jul 19 13:24:19 PDT 2005
+//   Added support for arrays.
+//
 // *******************************************************************
 
 void
@@ -6081,20 +6416,21 @@ avtDatabaseMetaData::SelectAll()
     Select(16, (void*)&vectors);
     Select(17, (void*)&tensors);
     Select(18, (void*)&symm_tensors);
-    Select(19, (void*)&materials);
-    Select(20, (void*)&species);
-    Select(21, (void*)&curves);
-    Select(22, (void*)&defaultPlots);
-    Select(23, (void*)&exprList);
-    Select(24, (void*)&mustRepopulateOnStateChange);
-    Select(25, (void*)&sils);
-    Select(26, (void*)&labels);
+    Select(19, (void*)&arrays);
+    Select(20, (void*)&materials);
+    Select(21, (void*)&species);
+    Select(22, (void*)&curves);
+    Select(23, (void*)&defaultPlots);
+    Select(24, (void*)&exprList);
+    Select(25, (void*)&mustRepopulateOnStateChange);
+    Select(26, (void*)&sils);
+    Select(27, (void*)&labels);
 
-    Select(27, (void*)&isSimulation);
-    Select(28, (void*)simInfo);
-    Select(29, (void*)&useCatchAllMesh);
-    Select(30, (void*)&mustAlphabetizeVariables);
-    Select(31, (void*)&formatCanDoDomainDecomposition);
+    Select(28, (void*)&isSimulation);
+    Select(29, (void*)simInfo);
+    Select(30, (void*)&useCatchAllMesh);
+    Select(31, (void*)&mustAlphabetizeVariables);
+    Select(32, (void*)&formatCanDoDomainDecomposition);
 }
 
 // *******************************************************************
@@ -6139,6 +6475,9 @@ avtDatabaseMetaData::SelectAll()
 //   Brad Whitlock, Fri Apr 1 15:31:03 PST 2005
 //   Added label.
 //
+//   Hank Childs, Tue Jul 19 13:24:19 PDT 2005
+//   Added support for arrays.
+//
 // *******************************************************************
 
 AttributeGroup *
@@ -6157,16 +6496,18 @@ avtDatabaseMetaData::CreateSubAttributeGroup(int n)
       case 18:
         return new avtSymmetricTensorMetaData;
       case 19:
-        return new avtMaterialMetaData;
+        return new avtArrayMetaData;
       case 20:
-        return new avtSpeciesMetaData;
+        return new avtMaterialMetaData;
       case 21:
-        return new avtCurveMetaData;
+        return new avtSpeciesMetaData;
       case 22:
+        return new avtCurveMetaData;
+      case 23:
         return new avtDefaultPlotMetaData;
-      case 25:
-        return new avtSILMetaData;
       case 26:
+        return new avtSILMetaData;
+      case 27:
         return new avtLabelMetaData;
       default:
         return NULL;
@@ -6398,6 +6739,49 @@ avtDatabaseMetaData::GetSymmTensor(const std::string &n) const
     for (int i=0; i<symm_tensors.size(); i++)
         if (VariableNamesEqual(symm_tensors[i]->name, n))
             return symm_tensors[i];
+    return NULL;
+}
+
+// ****************************************************************************
+// Method: avtDatabaseMetaData::GetArray
+//
+// Purpose: 
+//     This returns the metadata for the nth arrays in the file.
+//
+// Arguments:
+//     n  :  the index into the array
+//
+// Programmer: Hank Childs
+// Creation:   July 19, 2005
+//
+// ****************************************************************************
+
+const avtArrayMetaData *
+avtDatabaseMetaData::GetArray(int n) const
+{
+    return arrays[n];
+}
+
+// ****************************************************************************
+// Method: avtDatabaseMetaData::GetArray
+//
+// Purpose: 
+//     This returns the metadata for the arrays in the file whose name is n.
+//
+// Arguments:
+//     n  :  the name of the arrays object
+//
+// Programmer: Hank Childs
+// Creation:   July 19, 2005
+//
+// ****************************************************************************
+
+const avtArrayMetaData *
+avtDatabaseMetaData::GetArray(const std::string &n) const
+{
+    for (int i=0; i<arrays.size(); i++)
+        if (VariableNamesEqual(arrays[i]->name, n))
+            return arrays[i];
     return NULL;
 }
 
@@ -7291,6 +7675,9 @@ Indent(ostream &out, int indent)
 //    Brad Whitlock, Fri Apr 1 22:53:25 PST 2005
 //    Added labels.
 //
+//    Hank Childs, Tue Jul 19 13:24:19 PDT 2005
+//    Added support for arrays.
+//
 // ****************************************************************************
 
 const stringVector
@@ -7318,6 +7705,11 @@ avtDatabaseMetaData::GetAllVariableNames(const std::string &activeVar) const
     {
         if (VariableNamesEqual(GetSymmTensor(i)->meshName, meshName))
             vars.push_back(GetSymmTensor(i)->name);
+    }
+    for (i = 0; i < GetNumArrays(); i++) 
+    {
+        if (VariableNamesEqual(GetArray(i)->meshName, meshName))
+            vars.push_back(GetArray(i)->name);
     }
     for (i = 0; i < GetNumMaterials(); i++) 
     {
@@ -7383,6 +7775,9 @@ avtDatabaseMetaData::GetAllMeshNames() const
 //
 //    Hank Childs, Sun Apr 24 10:58:09 PDT 2005
 //    Add better support for meshes that are renamed.
+//
+//    Hank Childs, Tue Jul 19 13:24:19 PDT 2005
+//    Added support for arrays.
 //
 // ****************************************************************************
 
@@ -7532,6 +7927,26 @@ avtDatabaseMetaData::ReplaceForbiddenCharacters(std::vector<char> &badChars,
         if (IsForbidden(symm_tensors[i]->meshName, replacementName, badChars,
                         replacementStr))
             symm_tensors[i]->meshName = replacementName;
+    }
+    for (i = 0 ; i < arrays.size() ; i++)
+    {
+        if (arrays[i]->originalName == "")
+            arrays[i]->originalName = arrays[i]->name;
+        if (IsForbidden(arrays[i]->originalName, replacementName, badChars, 
+                        replacementStr))
+        {
+            char msg[1024];
+            SNPRINTF(msg, 1024, "The database contains an object named \"%s\""
+                             ", which contains characters not supported by "
+                             "VisIt.  VisIt is renaming it to \"%s\"",
+                             arrays[i]->originalName.c_str(), 
+                             replacementName.c_str());
+            IssueWarning(msg);
+            arrays[i]->name = replacementName;
+        }
+        if (IsForbidden(arrays[i]->meshName, replacementName, badChars,
+                        replacementStr))
+            arrays[i]->meshName = replacementName;
     }
     for (i = 0 ; i < materials.size() ; i++)
     {

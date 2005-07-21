@@ -21,22 +21,22 @@
 #include "visit-config.h"
 
 /* ****************************************************************************
-//  File:  VisItControlInterface.c
-//
-//  Purpose:
-//    Abstraction of VisIt Engine wrapper library.  Handles the
-//    grunt work of actually connecting to visit that must be done
-//    outside of the VisItEngine DLL, such as:
-//       1) setting up a listen socket
-//       2) writing a .sim file
-//       3) opening the VisItEngine .so and retrieving the functions from it
-//       4) accepting an incoming socket connection
-//       5) removing the .sim file when the program exits
-//
-//  Programmer:  Jeremy Meredith
-//  Creation:    May 5, 2005
-//
-// ***************************************************************************/
+ *  File:  VisItControlInterface.c
+ *
+ *  Purpose:
+ *    Abstraction of VisIt Engine wrapper library.  Handles the
+ *    grunt work of actually connecting to visit that must be done
+ *    outside of the VisItEngine DLL, such as:
+ *       1) setting up a listen socket
+ *       2) writing a .sim file
+ *       3) opening the VisItEngine .so and retrieving the functions from it
+ *       4) accepting an incoming socket connection
+ *       5) removing the .sim file when the program exits
+ *
+ *  Programmer:  Jeremy Meredith
+ *  Creation:    May 5, 2005
+ *
+ *****************************************************************************/
 
 #define INITIAL_PORT_NUMBER 5609
 
@@ -96,12 +96,17 @@ static char        lastError[256] = "";
 
 
 /*******************************************************************************
-* Function  : CreateRandomSecurityKey
-* Author(s) : Jeremy Meredith
-* Purpose   : Create a random key that clients will need to connect to us.
+*
+* Name: CreateRandomSecurityKey
+*
+* Purpose: Create a random key that clients will need to connect to us.
+*
+* Author: Jeremy Meredith, B Division, Lawrence Livermore National Laboratory
+*
+* Modifications:
 *
 *******************************************************************************/
-static void CreateRandomSecurityKey()
+static void CreateRandomSecurityKey(void)
 {
     int len = 8;
     int i;
@@ -125,20 +130,26 @@ static void CreateRandomSecurityKey()
 }
 
 /*******************************************************************************
-* Function  : ReceiveSingleLineFromSocket
-* Author(s) : Jeremy Meredith
-* Purpose   : Receive a single line character transmission from the socket.
-*             Note that this assumes it is not part of a larger transmission.
+*
+* Name: ReceiveSingleLineFromSocket
+*
+* Purpose: Receive a single line character transmission from the socket.
+*          Note that this assumes it is not part of a larger transmission.
+*
+* Author: Jeremy Meredith, B Division, Lawrence Livermore National Laboratory
+*
+* Modifications:
 *
 *******************************************************************************/
 static void ReceiveSingleLineFromSocket(char *buffer, int maxlen, int desc)
 {
-    strcpy(buffer, "");
     char *buf = buffer;
     char *ptr = buffer;
     int n;
+    char *tmp;
 
-    char *tmp = strstr(buf, "\n");
+    strcpy(buffer, "");
+    tmp = strstr(buf, "\n");
     while (!tmp)
     {
         n = recv(desc, ptr, maxlen, 0);
@@ -150,11 +161,17 @@ static void ReceiveSingleLineFromSocket(char *buffer, int maxlen, int desc)
 }
 
 /*******************************************************************************
-* Function  : ReceiveContinuousLineFromSocket
-* Author(s) : Jeremy Meredith
-* Purpose   : Receive a single line as part of a larger transmission.  Note that
-*             it assumes buffer is initialized for the first call to the empty
-*             string, and that it retains its values as an intermediate buffer
+*
+* Name: ReceiveContinuousLineFromSocket
+*
+* Purpose: Receive a single line as part of a larger transmission.  Note that
+*          it assumes buffer is initialized for the first call to the empty
+*          string, and that it retains its values as an intermediate buffer
+*          between calls.
+*
+* Author: Jeremy Meredith, B Division, Lawrence Livermore National Laboratory
+*
+* Modifications:
 *
 *******************************************************************************/
 static char *ReceiveContinuousLineFromSocket(char *buffer, int maxlen, int desc)
@@ -177,21 +194,26 @@ static char *ReceiveContinuousLineFromSocket(char *buffer, int maxlen, int desc)
 }
 
 /*******************************************************************************
-* Function  : SendStringOverSocket
-* Author(s) : Jeremy Meredith
-* Purpose   : Send a single null-terminated string over a socket.
+*
+* Name: SendStringOverSocket
+*
+* Purpose: Send a single null-terminated string over a socket.
+*
+* Author: Jeremy Meredith, B Division, Lawrence Livermore National Laboratory
+*
+* Modifications:
 *
 *******************************************************************************/
 static int SendStringOverSocket(char *buffer, int desc)
 {
     size_t      nleft, nwritten;
     const char *sptr;
-    // Send it!
+    /* Send it! */
     sptr = (const char*)buffer;
     nleft = strlen(buffer);
-    while (nleft > 0)
+    while (nleft >= 1)
     {
-        if ((nwritten = send(desc, (const char *)sptr, nleft, 0)) <= 0)
+        if ((nwritten = send(desc, (const char *)sptr, nleft, 0)) == 0)
             return FALSE;
 
         nleft -= nwritten;
@@ -202,10 +224,15 @@ static int SendStringOverSocket(char *buffer, int desc)
 }
 
 /*******************************************************************************
-* Function  : VerifySecurityKeys
-* Author(s) : Jeremy Meredith
-* Purpose   : Receive a security key over the socket and compare it to ours,
-*             sending the result of the comparison back to the client.
+*
+* Name: VerifySecurityKeys
+*
+* Purpose: Receive a security key over the socket and compare it to ours,
+*          sending the result of the comparison back to the client.
+*
+* Author: Jeremy Meredith, B Division, Lawrence Livermore National Laboratory
+*
+* Modifications:
 *
 *******************************************************************************/
 static int VerifySecurityKeys(int desc)
@@ -216,23 +243,23 @@ static int VerifySecurityKeys(int desc)
 
    if (parallelRank == 0)
    {
-      // The first thing the VCL sends is the key
+      /* The first thing the VCL sends is the key */
       ReceiveSingleLineFromSocket(offeredKey, 2000, desc);
 
       if (isParallel)
       {
-         // Broadcast the known key
+         /* Broadcast the known key */
          securityKeyLen = strlen(securityKey);
          BroadcastInt(&securityKeyLen, 0);
          BroadcastString(securityKey,  securityKeyLen+1, 0);
 
-         // Broadcast the received key
+         /* Broadcast the received key */
          offeredKeyLen = strlen(offeredKey);
          BroadcastInt(&offeredKeyLen, 0);
          BroadcastString(offeredKey,  offeredKeyLen+1, 0);
       }
 
-      // Make sure the keys match, and send a response
+      /* Make sure the keys match, and send a response */
       if (strcmp(securityKey, offeredKey) != 0)
       {
          SendStringOverSocket("failure\n", desc);
@@ -245,7 +272,7 @@ static int VerifySecurityKeys(int desc)
    }
    else
    {
-      // Receive the security keys and make sure they match
+      /* Receive the security keys and make sure they match */
       BroadcastInt(&securityKeyLen, 0);
       BroadcastString(securityKey, securityKeyLen+1, 0);
       BroadcastInt(&offeredKeyLen, 0);
@@ -253,7 +280,7 @@ static int VerifySecurityKeys(int desc)
 
       if (strcmp(securityKey, offeredKey) != 0)
       {
-         // Error: keys didn't match
+         /* Error: keys didn't match */
          return FALSE;
       }
    }
@@ -262,10 +289,14 @@ static int VerifySecurityKeys(int desc)
 }
 
 /*******************************************************************************
-* Function  : GetConnectionParameters
-* Author(s) : Jeremy Meredith
-* Purpose   : Receive the command line to be used to initialize
-*             the VisIt engine.
+*
+* Name: GetConnectionParameters
+*
+* Purpose: Receive the command line to be used to initialize the VisIt engine.
+*
+* Author: Jeremy Meredith, B Division, Lawrence Livermore National Laboratory
+*
+* Modifications:
 *
 *******************************************************************************/
 static int GetConnectionParameters(int desc)
@@ -279,7 +310,7 @@ static int GetConnectionParameters(int desc)
 
    if (parallelRank == 0)
    {
-      // Receive the ARGV over the socket
+      /* Receive the ARGV over the socket */
       engine_argc = 0;
 
       tmpbuf = buf;
@@ -295,7 +326,7 @@ static int GetConnectionParameters(int desc)
          tmpbuf = nxtbuf;
       }
 
-      // Broadcast them to the other processors if needed
+      /* Broadcast them to the other processors if needed */
       if (isParallel)
       {
          BroadcastInt(&engine_argc, 0);
@@ -309,7 +340,7 @@ static int GetConnectionParameters(int desc)
    }
    else
    {
-      // Receive the ARGV
+      /* Receive the ARGV */
       BroadcastInt(&engine_argc, 0);
       for (i = 0 ; i < engine_argc; i++)
       {
@@ -324,9 +355,14 @@ static int GetConnectionParameters(int desc)
 }
 
 /*******************************************************************************
-* Function  : CreateEngineAndConnectToViewer
-* Author(s) : Jeremy Meredith
-* Purpose   : Intialize the engine and connect to the viewer.
+*
+* Name: CreateEngineAndConnectToViewer
+*
+* Purpose: Intialize the engine and connect to the viewer.
+*
+* Author: Jeremy Meredith, B Division, Lawrence Livermore National Laboratory
+*
+* Modifications:
 *
 *******************************************************************************/
 static int CreateEngineAndConnectToViewer(void)
@@ -354,9 +390,14 @@ static int CreateEngineAndConnectToViewer(void)
 }
 
 /*******************************************************************************
-* Function  : GetLocalhostName
-* Author(s) : Jeremy Meredith
-* Purpose   : Determine the true local host name.
+*
+* Name: GetLocalhostName
+*
+* Purpose: Determine the true local host name.
+*
+* Author: Jeremy Meredith, B Division, Lawrence Livermore National Laboratory
+*
+* Modifications:
 *
 *******************************************************************************/
 static int GetLocalhostName(void)
@@ -365,14 +406,14 @@ static int GetLocalhostName(void)
     struct hostent *localhostEnt = NULL;
     if (gethostname(localhostStr, 256) == -1)
     {
-        // Couldn't get the hostname, it's probably invalid
+        /* Couldn't get the hostname, it's probably invalid */
         return FALSE;
     }
 
     localhostEnt = gethostbyname(localhostStr);
     if (localhostEnt == NULL)
     {
-        // Couldn't get the full host entry; it's probably invalid
+        /* Couldn't get the full host entry; it's probably invalid */
         return FALSE;
     }
     sprintf(localhost, localhostEnt->h_name);
@@ -380,9 +421,14 @@ static int GetLocalhostName(void)
 }
 
 /*******************************************************************************
-* Function  : StartListening
-* Author(s) : Jeremy Meredith
-* Purpose   : Find a port and start listening.
+*
+* Name: StartListening
+*
+* Purpose: Find a port and start listening.
+*
+* Author: Jeremy Meredith, B Division, Lawrence Livermore National Laboratory
+*
+* Modifications:
 *
 *******************************************************************************/
 static int StartListening(void)
@@ -394,13 +440,13 @@ static int StartListening(void)
     listenSocket = socket(AF_INET, SOCK_STREAM, 0);
     if (listenSocket < 0)
     {
-        // Cannot open a socket.
+        /* Cannot open a socket. */
         return FALSE;
     }
 
-    //
-    // Look for a port that can be used.
-    //
+    /*
+     * Look for a port that can be used.
+     */
     listenSockAddr.sin_family = AF_INET;
     listenSockAddr.sin_addr.s_addr = htonl(INADDR_ANY);
     listenPort = INITIAL_PORT_NUMBER;
@@ -424,7 +470,7 @@ static int StartListening(void)
     }
     if (!portFound)
     {
-        // Cannot find unused port.
+        /* Cannot find unused port. */
        listenSocket = -1;
        return FALSE;
     }
@@ -440,9 +486,14 @@ static int StartListening(void)
 }
 
 /*******************************************************************************
-* Function  : AcceptConnection
-* Author(s) : Jeremy Meredith
-* Purpose   : Perform the accept on the listen socket.
+*
+* Name: AcceptConnection
+*
+* Purpose: Perform the accept on the listen socket.
+*
+* Author: Jeremy Meredith, B Division, Lawrence Livermore National Laboratory
+*
+* Modifications:
 *
 *******************************************************************************/
 static int AcceptConnection(void)
@@ -450,7 +501,7 @@ static int AcceptConnection(void)
     int desc = -1;
     int opt = 1;
 
-    // Wait for the socket to become available on the other side.
+    /* Wait for the socket to become available on the other side. */
     do
     {
 #ifdef HAVE_SOCKLEN_T
@@ -463,7 +514,7 @@ static int AcceptConnection(void)
     }
     while (desc == -1 && errno != EWOULDBLOCK);
 
-    // Disable Nagle algorithm.
+    /* Disable Nagle algorithm. */
 #if defined(_WIN32)
     setsockopt(desc, IPPROTO_TCP, TCP_NODELAY,
                (const char FAR*)&opt, sizeof(int));
@@ -475,9 +526,14 @@ static int AcceptConnection(void)
 }
 
 /*******************************************************************************
-* Function  : GetHomeDirectory
-* Author(s) : Jeremy Meredith
-* Purpose   : Return the true home directory path.
+*
+* Name: GetHomeDirectory
+*
+* Purpose: Return the true home directory path.
+*
+* Author: Jeremy Meredith, B Division, Lawrence Livermore National Laboratory
+*
+* Modifications:
 *
 *******************************************************************************/
 static const char *GetHomeDirectory(void)
@@ -488,9 +544,14 @@ static const char *GetHomeDirectory(void)
 }
 
 /*******************************************************************************
-* Function  : EnsureSimulationDirectoryExists
-* Author(s) : Jeremy Meredith
-* Purpose   : Make the simulations directory.
+*
+* Name: EnsureSimulationDirectoryExists
+*
+* Purpose: Make the simulations directory.
+*
+* Author: Jeremy Meredith, B Division, Lawrence Livermore National Laboratory
+*
+* Modifications:
 *
 *******************************************************************************/
 static void EnsureSimulationDirectoryExists(void)
@@ -503,9 +564,14 @@ static void EnsureSimulationDirectoryExists(void)
 }
 
 /*******************************************************************************
-* Function  : RemoveSimFile
-* Author(s) : Jeremy Meredith
-* Purpose   : This will delete the sim file from the file system.
+*
+* Name: RemoveSimFile
+*
+* Purpose: This will delete the sim file from the file system.
+*
+* Author: Jeremy Meredith, B Division, Lawrence Livermore National Laboratory
+*
+* Modifications:
 *
 *******************************************************************************/
 static void RemoveSimFile(void)
@@ -514,10 +580,35 @@ static void RemoveSimFile(void)
 }
 
 /*******************************************************************************
-* Function  : LoadVisItLibrary
-* Author(s) : Jeremy Meredith
-* Purpose   : Load the DLL/SO of the VisIt Engine and get the needed function
-*             pointers from it.
+*
+* Name: dlsym_function
+*
+* Purpose: Call dlsym and cast the result to a function pointer.
+*          Basically, this exists because the OSF compiler won't let you
+*          cast from void* to void(*)() without a warning, and I can at
+*          least contain it to a single warning by creating this function.
+*
+* Author: Jeremy Meredith, B Division, Lawrence Livermore National Laboratory
+*
+* Modifications:
+*
+*******************************************************************************/
+typedef void (*function_pointer)();
+static function_pointer dlsym_function(void *h, const char *n)
+{
+    return (function_pointer)dlsym(h,n);
+}
+
+/*******************************************************************************
+*
+* Name: LoadVisItLibrary
+*
+* Purpose: Load the DLL/SO of the VisIt Engine and get the needed function
+*          pointers from it.
+*
+* Author: Jeremy Meredith, B Division, Lawrence Livermore National Laboratory
+*
+* Modifications:
 *
 *******************************************************************************/
 static int LoadVisItLibrary(void)
@@ -554,7 +645,7 @@ static int LoadVisItLibrary(void)
       {
          *ptr = 0;
 
-         if (isParallel)
+         if (isParallel) 
             sprintf(lib, "%s/libvisitenginev1_par.so", libpath);
          else
             sprintf(lib, "%s/libvisitenginev1_ser.so", libpath);
@@ -570,7 +661,7 @@ static int LoadVisItLibrary(void)
    }
 
 #define SAFE_DLSYM(f,t,n)                \
-   f = (t)dlsym(dl_handle, n); \
+   f = (t)dlsym_function(dl_handle, n); \
    if (!v_getengine) \
    { \
       sprintf(lastError, "Failed to open the VisIt library: "\
@@ -593,9 +684,14 @@ static int LoadVisItLibrary(void)
 }
 
 /*******************************************************************************
-* Function  : ReadEnvironmentFromCommand
-* Author(s) : Jeremy Meredith
-* Purpose   : Read the output of "visit -env" using the specified VisIt command.
+*
+* Name: ReadEnvironmentFromCommand
+*
+* Purpose: Read the output of "visit -env" using the specified VisIt command.
+*
+* Author: Jeremy Meredith, B Division, Lawrence Livermore National Laboratory
+*
+* Modifications:
 *
 *******************************************************************************/
 static int ReadEnvironmentFromCommand(const char *visitpath, char *output)
@@ -640,9 +736,14 @@ static int ReadEnvironmentFromCommand(const char *visitpath, char *output)
 
 
 /*******************************************************************************
-* Function  : VisItSetBroadcastIntFunction
-* Author(s) : Jeremy Meredith
-* Purpose   : Set the callback to broadcast an integer.
+*
+* Name: VisItSetBroadcastIntFunction
+*
+* Purpose: Set the callback to broadcast an integer.
+*
+* Author: Jeremy Meredith, B Division, Lawrence Livermore National Laboratory
+*
+* Modifications:
 *
 *******************************************************************************/
 void  VisItSetBroadcastIntFunction(int (*bi)(int *, int))
@@ -651,9 +752,14 @@ void  VisItSetBroadcastIntFunction(int (*bi)(int *, int))
 }
 
 /*******************************************************************************
-* Function  : VisItSetBroadcastStringFunction
-* Author(s) : Jeremy Meredith
-* Purpose   : Set the callback to broadcast a string.
+*
+* Name: VisItSetBroadcastStringFunction
+*
+* Purpose: Set the callback to broadcast a string.
+*
+* Author: Jeremy Meredith, B Division, Lawrence Livermore National Laboratory
+*
+* Modifications:
 *
 *******************************************************************************/
 void  VisItSetBroadcastStringFunction(int (*bs)(char *, int, int))
@@ -662,9 +768,14 @@ void  VisItSetBroadcastStringFunction(int (*bs)(char *, int, int))
 }
 
 /*******************************************************************************
-* Function  : VisItSetParallel
-* Author(s) : Jeremy Meredith
-* Purpose   : Set whether or not we have to work in parallel.
+*
+* Name: VisItSetParallel
+*
+* Purpose: Set whether or not we have to work in parallel.
+*
+* Author: Jeremy Meredith, B Division, Lawrence Livermore National Laboratory
+*
+* Modifications:
 *
 *******************************************************************************/
 void  VisItSetParallel(int ispar)
@@ -673,9 +784,14 @@ void  VisItSetParallel(int ispar)
 }
 
 /*******************************************************************************
-* Function  : VisItSetParallelRank
-* Author(s) : Jeremy Meredith
-* Purpose   : Set the rank of this processor.
+*
+* Name: VisItSetParallelRank
+*
+* Purpose: Set the rank of this processor.
+*
+* Author: Jeremy Meredith, B Division, Lawrence Livermore National Laboratory
+*
+* Modifications:
 *
 *******************************************************************************/
 void  VisItSetParallelRank(int pr)
@@ -684,10 +800,15 @@ void  VisItSetParallelRank(int pr)
 }
 
 /*******************************************************************************
-* Function  : VisItSetDirectory
-* Author(s) : Jeremy Meredith
-* Purpose   : Set the top-level directory for VisIt.  This can either be a
-*             installed or development version.
+*
+* Name: VisItSetDirectory
+*
+* Purpose: Set the top-level directory for VisIt.  This can either be a
+*          installed or development version.
+*
+* Author: Jeremy Meredith, B Division, Lawrence Livermore National Laboratory
+*
+* Modifications:
 *
 *******************************************************************************/
 void VisItSetDirectory(char *d)
@@ -698,9 +819,14 @@ void VisItSetDirectory(char *d)
 }
 
 /*******************************************************************************
-* Function  : VisItSetOptions
-* Author(s) : Jeremy Meredith
-* Purpose   : Set command-line options needed to pick up the right VisIt.
+*
+* Name: VisItSetOptions
+*
+* Purpose: Set command-line options needed to pick up the right VisIt.
+*
+* Author: Jeremy Meredith, B Division, Lawrence Livermore National Laboratory
+*
+* Modifications:
 *
 *******************************************************************************/
 void VisItSetOptions(char *o)
@@ -711,10 +837,15 @@ void VisItSetOptions(char *o)
 }
 
 /*******************************************************************************
-* Function  : VisItSetupEnvironment
-* Author(s) : Jeremy Meredith, B Division, Lawrence Livermore National Laboratory
-* Purpose   : Try to determine the environment variables that the VisIt Engine
-*             needs to run.  The VisIt script can tell us this.
+*
+* Name: VisItSetupEnvironment
+*
+* Purpose: Try to determine the environment variables that the VisIt Engine
+*          needs to run.  The VisIt script can tell us this.
+*
+* Author: Jeremy Meredith, B Division, Lawrence Livermore National Laboratory
+*
+* Modifications:
 *
 *******************************************************************************/
 int VisItSetupEnvironment(void)
@@ -763,10 +894,14 @@ int VisItSetupEnvironment(void)
 }
 
 /*******************************************************************************
-* Function  : VisItInitializeSocketAndDumpSimFile
-* Author(s) : Jeremy Meredith
-* Purpose   : Start listening, and write the file telling clients how 
-*             to connect.
+*
+* Name: VisItInitializeSocketAndDumpSimFile
+*
+* Purpose: Start listening, and write the file telling clients how to connect.
+*
+* Author: Jeremy Meredith, B Division, Lawrence Livermore National Laboratory
+*
+* Modifications:
 *
 *******************************************************************************/
 int VisItInitializeSocketAndDumpSimFile(const char *name,
@@ -812,10 +947,15 @@ int VisItInitializeSocketAndDumpSimFile(const char *name,
 }
 
 /*******************************************************************************
-* Function  : VisItDetectInput
-* Author(s) : Jeremy Meredith
-* Purpose   : Determine who needs attention: the listen socket, the client
-*             socket, or the console.
+*
+* Name: VisItDetectInput
+*
+* Purpose: Determine who needs attention: the listen socket, the client
+*          socket, or the console.
+*
+* Author: Jeremy Meredith, B Division, Lawrence Livermore National Laboratory
+*
+* Modifications:
 *
 *******************************************************************************/
 int  VisItDetectInput(int blocking, int consoleFileDescriptor)
@@ -911,15 +1051,20 @@ int  VisItDetectInput(int blocking, int consoleFileDescriptor)
          return -3;
       }
    }
-   return -5;
+   /*return -5; Compilers complain because this line cannot be reached */
 }
 
 /*******************************************************************************
-* Function  : VisItAttemptToCompleteConnection
-* Author(s) : Jeremy Meredith
-* Purpose   : Accept the socket, verify security keys, get the connection
-*             parameters from the client, load the VisIt engine library,
-*          s   create the Engine and connect to the viewer.
+*
+* Name: VisItAttemptToCompleteConnection
+*
+* Purpose: Accept the socket, verify security keys, get the connection
+*          parameters from the client, load the VisIt engine library,
+*          create the Engine and connect to the viewer.
+*
+* Author: Jeremy Meredith, B Division, Lawrence Livermore National Laboratory
+*
+* Modifications:
 *
 *******************************************************************************/
 int VisItAttemptToCompleteConnection(void)
@@ -961,10 +1106,15 @@ int VisItAttemptToCompleteConnection(void)
 }
 
 /*******************************************************************************
-* Function  : VisItSetSlaveProcessCallback
-* Author(s) : Jeremy Meredith
-* Purpose   : Set the callback to inform slave processes that they should
-*             call VisItProcessEngineCommand.
+*
+* Name: VisItSetSlaveProcessCallback
+*
+* Purpose: Set the callback to inform slave processes that they should
+*          call VisItProcessEngineCommand.
+*
+* Author: Jeremy Meredith, B Division, Lawrence Livermore National Laboratory
+*
+* Modifications:
 *
 *******************************************************************************/
 void VisItSetSlaveProcessCallback(void (*spic)())
@@ -973,9 +1123,14 @@ void VisItSetSlaveProcessCallback(void (*spic)())
 }
 
 /*******************************************************************************
-* Function  : VisItSetCommandCallback
-* Author(s) : Jeremy Meredith
-* Purpose   : Set the callback for processing control commands.
+*
+* Name: VisItSetCommandCallback
+*
+* Purpose: Set the callback for processing control commands.
+*
+* Author: Jeremy Meredith, B Division, Lawrence Livermore National Laboratory
+*
+* Modifications:
 *
 *******************************************************************************/
 void VisItSetCommandCallback(void (*scc)(const char*,int,float,const char*))
@@ -984,9 +1139,14 @@ void VisItSetCommandCallback(void (*scc)(const char*,int,float,const char*))
 }
 
 /*******************************************************************************
-* Function  : VisItProcessEngineCommand
-* Author(s) : Jeremy Meredith
-* Purpose   : Process requests coming from the client.
+*
+* Name: VisItProcessEngineCommand
+*
+* Purpose: Process requests coming from the client.
+*
+* Author: Jeremy Meredith, B Division, Lawrence Livermore National Laboratory
+*
+* Modifications:
 *
 *******************************************************************************/
 int VisItProcessEngineCommand(void)
@@ -998,14 +1158,19 @@ int VisItProcessEngineCommand(void)
 }
 
 /*******************************************************************************
-* Function  : VisItTimeStepChanged
-* Author(s) : Jeremy Meredith
-* Purpose   : Tell VisIt a new time step is ready.
+*
+* Name: VisItTimeStepChanged
+*
+* Purpose: Tell VisIt a new time step is ready.
+*
+* Author: Jeremy Meredith, B Division, Lawrence Livermore National Laboratory
+*
+* Modifications:
 *
 *******************************************************************************/
 void VisItTimeStepChanged(void)
 {
-    // Make sure the function exists before using it.
+    /* Make sure the function exists before using it. */
     if (engine && v_time_step_changed)
     {
         v_time_step_changed(engine);
@@ -1013,9 +1178,14 @@ void VisItTimeStepChanged(void)
 }
 
 /*******************************************************************************
-* Function  : VisItDisconnect
-* Author(s) : Jeremy Meredith
-* Purpose   : Disconnect from the client.
+*
+* Name: VisItDisconnect
+*
+* Purpose: Disconnect from the client.
+*
+* Author: Jeremy Meredith, B Division, Lawrence Livermore National Laboratory
+*
+* Modifications:
 *
 *******************************************************************************/
 void VisItDisconnect(void)
@@ -1027,9 +1197,14 @@ void VisItDisconnect(void)
 
 
 /*******************************************************************************
-* Function  : VisItGetLastError
-* Author(s) : Jeremy Meredith
-* Purpose   : Returns the last error message generated.
+*
+* Name: VisItGetLastError
+*
+* Purpose: Returns the last error message generated.
+*
+* Author: Jeremy Meredith, B Division, Lawrence Livermore National Laboratory
+*
+* Modifications:
 *
 *******************************************************************************/
 char *VisItGetLastError()
@@ -1038,4 +1213,3 @@ char *VisItGetLastError()
    strcpy(lastError, "");
    return err;
 }
-

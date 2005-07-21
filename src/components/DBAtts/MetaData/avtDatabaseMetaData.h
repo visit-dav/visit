@@ -161,6 +161,36 @@ public:
 };
 
 //----------------------------------------------------------------------------
+//  Class: avtArrayMetaData
+//
+//----------------------------------------------------------------------------
+struct DBATTS_API avtArrayMetaData : public AttributeSubject
+{
+    std::string          name;
+    std::string          originalName;
+    std::string          meshName;
+
+    avtCentering         centering;
+    int                  nVars;
+    stringVector         compNames;
+
+    bool                 validVariable;
+
+    bool                 hasUnits;
+    std::string          units;
+public:
+    avtArrayMetaData();
+    avtArrayMetaData(std::string, std::string, avtCentering, int);
+    avtArrayMetaData(std::string, std::string, avtCentering, int, 
+                     std::vector<std::string> &);
+    avtArrayMetaData(const avtArrayMetaData&);
+    virtual ~avtArrayMetaData();
+    const avtArrayMetaData &operator=(const avtArrayMetaData&);
+    virtual void SelectAll();
+    void Print(ostream &, int = 0) const;
+};
+
+//----------------------------------------------------------------------------
 //  Class: avtTensorMetaData
 //
 //  Modifications:
@@ -484,6 +514,9 @@ public:
 //    const qualified args to SetCycles/SetTimes
 //    Added AreAllCycles/TimesAccurateAndValid
 //
+//    Hank Childs, Tue Jul 19 11:04:49 PDT 2005
+//    Add array variables.
+//
 //----------------------------------------------------------------------------
 
 class DBATTS_API avtDatabaseMetaData : public AttributeSubject
@@ -517,6 +550,7 @@ class DBATTS_API avtDatabaseMetaData : public AttributeSubject
     std::vector<avtVectorMetaData *>            vectors;
     std::vector<avtTensorMetaData *>            tensors;
     std::vector<avtSymmetricTensorMetaData *>   symm_tensors;
+    std::vector<avtArrayMetaData *>             arrays;
     std::vector<avtMaterialMetaData *>          materials;
     std::vector<avtSpeciesMetaData *>           species;
     std::vector<avtCurveMetaData *>             curves;
@@ -609,6 +643,7 @@ public:
     void         Add(avtVectorMetaData *);
     void         Add(avtTensorMetaData *);
     void         Add(avtSymmetricTensorMetaData *);
+    void         Add(avtArrayMetaData *);
     void         Add(avtMaterialMetaData *);
     void         Add(avtSpeciesMetaData *);
     void         Add(avtCurveMetaData *);
@@ -621,6 +656,7 @@ public:
     int GetNumVectors()       const { return vectors.size();      };
     int GetNumTensors()       const { return tensors.size();      };
     int GetNumSymmTensors()   const { return symm_tensors.size();      };
+    int GetNumArrays()        const { return arrays.size();      };
     int GetNumMaterials()     const { return materials.size();    };
     int GetNumSpecies()       const { return species.size();      };
     int GetNumCurves()        const { return curves.size();       };
@@ -638,6 +674,8 @@ public:
     const avtTensorMetaData      *GetTensor(const std::string&) const;
     const avtSymmetricTensorMetaData *GetSymmTensor(int) const;
     const avtSymmetricTensorMetaData *GetSymmTensor(const std::string&) const;
+    const avtArrayMetaData       *GetArray(int) const;
+    const avtArrayMetaData       *GetArray(const std::string&) const;
     const avtMaterialMetaData    *GetMaterial(int) const;
     const avtMaterialMetaData    *GetMaterial(const std::string&) const;
     const avtSpeciesMetaData     *GetSpecies(int) const;

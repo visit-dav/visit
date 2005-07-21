@@ -21,12 +21,14 @@ const char *avtVariableCache::VECTORS_NAME = "VECTORS";
 const char *avtVariableCache::TENSORS_NAME = "TENSORS";
 const char *avtVariableCache::SYMMETRIC_TENSORS_NAME = "SYMMETRIC_TENSORS";
 const char *avtVariableCache::LABELS_NAME = "LABELS";
+const char *avtVariableCache::ARRAYS_NAME = "ARRAYS";
 const char *avtVariableCache::DATASET_NAME = "DATASET";
 const char *avtVariableCache::NATIVE_SCALARS_NAME = "NATIVE_SCALARS";
 const char *avtVariableCache::NATIVE_VECTORS_NAME = "NATIVE_VECTORS";
 const char *avtVariableCache::NATIVE_TENSORS_NAME = "NATIVE_TENSORS";
 const char *avtVariableCache::NATIVE_SYMMETRIC_TENSORS_NAME =
                                   "NATIVE_SYMMETRIC_TENSORS";
+const char *avtVariableCache::NATIVE_ARRAYS_NAME = "NATIVE_ARRAYS";
 const char *avtVariableCache::NATIVE_DATASET_NAME = "NATIVE_DATASET";
 
 

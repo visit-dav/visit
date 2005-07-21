@@ -965,6 +965,12 @@ class WindowGeneratorLineWidth : public virtual LineWidth , public virtual Windo
 //
 // -------------------------------- VariableName --------------------------------
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Jul 19 14:00:57 PDT 2005
+//    Added support for labels.
+//
+
 class WindowGeneratorVariableName : public virtual VariableName , public virtual WindowGeneratorField
 {
   public:
@@ -992,13 +998,14 @@ class WindowGeneratorVariableName : public virtual VariableName , public virtual
             "QvisVariableButton::Curves",
             "QvisVariableButton::Tensors",
             "QvisVariableButton::SymmetricTensors"
-            "QvisVariableButton::Labels"
+            "QvisVariableButton::Labels",
+            "QvisVariableButton::Arrays",
         };
 
         // Write the mask.
         c << "    int " << name <<"Mask = ";
         int m = 1, count = 0;
-        for(int i = 0; i < 10; ++i)
+        for(int i = 0; i < 11; ++i)
         {
             if(varTypes & m)
             {

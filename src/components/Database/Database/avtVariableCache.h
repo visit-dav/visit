@@ -52,6 +52,9 @@ class   vtkObject;
 //    Mark C. Miller, Tue Apr  5 10:30:16 PDT 2005
 //    Added native cache
 //
+//    Hank Childs, Tue Jul 19 15:49:08 PDT 2005
+//    Add support for arrays.
+//
 // ****************************************************************************
 
 class DATABASE_API avtVariableCache
@@ -65,11 +68,13 @@ class DATABASE_API avtVariableCache
     static const char     *TENSORS_NAME;
     static const char     *SYMMETRIC_TENSORS_NAME;
     static const char     *LABELS_NAME;
+    static const char     *ARRAYS_NAME;
     static const char     *DATASET_NAME;
     static const char     *NATIVE_SCALARS_NAME;
     static const char     *NATIVE_VECTORS_NAME;
     static const char     *NATIVE_TENSORS_NAME;
     static const char     *NATIVE_SYMMETRIC_TENSORS_NAME;
+    static const char     *NATIVE_ARRAYS_NAME;
     static const char     *NATIVE_DATASET_NAME;
 
     vtkObject             *GetVTKObject(const char *name, const char *type,

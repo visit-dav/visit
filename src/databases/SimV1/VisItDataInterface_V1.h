@@ -1,8 +1,8 @@
-// File      : VisItDataInterface_V1.h
-//
-// Programmer: Jeremy Meredith
-// Date      : March 17, 2005
-//
+/* File      : VisItDataInterface_V1.h
+ *
+ * Programmer: Jeremy Meredith
+ * Date      : March 17, 2005
+ */
 
 #ifndef VISIT_DATA_INTERFACE_V1_H
 #define VISIT_DATA_INTERFACE_V1_H

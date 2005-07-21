@@ -551,6 +551,12 @@ avtIndexSelectFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 //    Also, use domainIndex when determining chunk for trav.GetMaterials, when
 //    appropriate.
 //
+//    Kathleen Bonnell, Thu Jul 21 07:52:49 PDT 2005 
+//    For OneGroup selection, determine domains belonging to that group,
+//    and restrict by domains to ensure that sets that were previously
+//    turned off remains so.  When determining if StructuredIndices are
+//    required, ensure checking is done only on domains needed by this filter. 
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -558,14 +564,15 @@ avtIndexSelectFilter::PerformRestriction(avtPipelineSpecification_p spec)
 {
     avtPipelineSpecification_p rv = new avtPipelineSpecification(spec);
 
-    int chunk = 0;
+    intVector chunks;
     if (atts.GetWhichData() == IndexSelectAttributes::OneDomain)
     {
-        vector<int> domains;
+        int chunk = 0;
+        intVector domains;
         int blockOrigin 
                       = GetInput()->GetInfo().GetAttributes().GetBlockOrigin();
         rv->GetDataSpecification()->GetSIL().GetDomainList(domains);
-        int maxDomain = domains.size() - 1 + blockOrigin;
+        int maxDomain = domains[domains.size()-1] + blockOrigin;
         domains.clear();
         if (atts.GetDomainIndex() < blockOrigin)
         {
@@ -589,8 +596,7 @@ avtIndexSelectFilter::PerformRestriction(avtPipelineSpecification_p spec)
         {
             chunk = atts.GetDomainIndex()-blockOrigin;
         }
-        domains.push_back(chunk);
-        rv->GetDataSpecification()->GetRestriction()->RestrictDomains(domains);
+        chunks.push_back(chunk);
     }
     else if (atts.GetWhichData() == IndexSelectAttributes::OneGroup)
     {
@@ -610,20 +616,35 @@ avtIndexSelectFilter::PerformRestriction(avtPipelineSpecification_p spec)
                  //
                  const vector<int> &els = coll->GetSubsetList();
                  int group = atts.GetGroupIndex();
-                 if (group < els.size())  // Sanity check
+                 //
+                 // Only go through the restriction process if we have
+                 // more than 1 group 
+                 //
+                 if (group < els.size() && els.size() > 1)  // Sanity check
                  {
                      //
                      // We think we found the group, so set up the new spec.
+                     // We don't want to turn on any materials that are
+                     // already off, so make a copy of the current silr,
+                     // restrict it to the chosen group and determine
+                     // which domains are part of this group, then restrict
+                     // the silr by those domains.
                      //
                      rv = new avtPipelineSpecification(spec);
-                     silr = rv->GetDataSpecification()->GetRestriction();
-                     silr->TurnOffAll();
-                     silr->TurnOnSet(els[group]);
+                     avtSILRestriction_p sil2 = new avtSILRestriction(silr);
+                     sil2->TurnOffAll();
+                     sil2->TurnOnSet(els[group]);
+                     avtSILRestrictionTraverser trav(sil2);
+                     trav.GetDomainList(chunks);
                      break;
                  }
              }
         }
     }
+
+    if (chunks.size() > 0)
+        rv->GetDataSpecification()->GetRestriction()->RestrictDomains(chunks);
+
     if (!GetInput()->GetInfo().GetValidity().GetZonesPreserved())
     {
         rv->GetDataSpecification()->SetNeedStructuredIndices(true);
@@ -633,13 +654,27 @@ avtIndexSelectFilter::PerformRestriction(avtPipelineSpecification_p spec)
     {
         rv->GetDataSpecification()->SetNeedStructuredIndices(true);
     }
-    else
+    else 
     {
-        bool hasMats;
+        bool needSI = false;
         avtSILRestriction_p silr =rv->GetDataSpecification()->GetRestriction();
         avtSILRestrictionTraverser trav(silr);
-        trav.GetMaterials(chunk, hasMats);
-        if (hasMats)
+        if (chunks.size() > 0)
+        {
+            chunks.clear();
+            trav.GetDomainList(chunks);
+            for (int i = 0; i < chunks.size(); i++)
+            {
+                bool hasMats = false;
+                trav.GetMaterials(chunks[i], hasMats);
+                needSI |= hasMats;
+            }
+        }
+        else 
+        {
+            needSI = !trav.UsesAllMaterials();
+        }
+        if (needSI)
         {
             rv->GetDataSpecification()->SetNeedStructuredIndices(true);
         }

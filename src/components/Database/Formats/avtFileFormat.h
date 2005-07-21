@@ -205,6 +205,11 @@ class DATABASE_API avtFileFormat
                                     std::string, std::string, int,
                                     std::vector<int>,
                                     std::vector<std::vector<std::string> >);
+    void       AddArrayVarToMetaData(avtDatabaseMetaData *,
+                                     std::string, std::vector<std::string> &,
+                                     std::string, avtCentering);
+    void       AddArrayVarToMetaData(avtDatabaseMetaData *, std::string, int,
+                                     std::string, avtCentering);
 
     int        GuessCycle(const char *fname) const
                    { double d = GuessCycleOrTime(fname, false);

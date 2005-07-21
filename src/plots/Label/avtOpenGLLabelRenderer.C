@@ -262,6 +262,9 @@ avtOpenGLLabelRenderer::ClearCharacterDisplayLists()
 //
 // Modifications:
 //   
+//   Hank Childs, Thu Jul 21 08:58:01 PDT 2005
+//   Added support for newlines ('\n').
+//
 // ****************************************************************************
 
 void
@@ -304,16 +307,26 @@ avtOpenGLLabelRenderer::DrawLabel(const float *screenPoint, const char *label)
 
     glTranslatef(dx, dy, 0);
 
+    double total_translate = 0.;
     for(cptr = label; *cptr != '\0'; ++cptr)
     {
         unsigned int cIndex = (unsigned int)(*cptr);
-        if(characterDisplayListIndices[cIndex] != -1)
+        if (cIndex == '\n')
         {
-            glCallList(characterDisplayListIndices[cIndex]);
+            glTranslatef(-total_translate, 3*dy, 0);
+            total_translate = 0.;
         }
-
-        // To the next character location
-        glTranslatef(arial_triangle_spacing[cIndex],0,0);
+        else
+        {
+            if(characterDisplayListIndices[cIndex] != -1)
+            {
+                glCallList(characterDisplayListIndices[cIndex]);
+            }
+    
+            // To the next character location
+            total_translate += arial_triangle_spacing[cIndex];
+            glTranslatef(arial_triangle_spacing[cIndex],0,0);
+        }
     }
 }
 
@@ -336,6 +349,9 @@ avtOpenGLLabelRenderer::DrawLabel(const float *screenPoint, const char *label)
 // Modifications:
 //   Brad Whitlock, Wed Nov 3 09:23:01 PDT 2004
 //   Fixed for win32.
+//
+//   Hank Childs, Thu Jul 21 08:58:01 PDT 2005
+//   Added support for newlines ('\n').
 //
 // ****************************************************************************
 
@@ -376,16 +392,26 @@ avtOpenGLLabelRenderer::DrawLabel2(const float *screenPoint, const char *label)
     // Translate the text to the screen location
     glTranslatef(screenPoint[0]*x_scale + dx, screenPoint[1]*y_scale + dy, 0);
 
+    double total_translate = 0.;
     for(cptr = label; *cptr != '\0'; ++cptr)
     {
         unsigned int cIndex = (unsigned int)(*cptr);
-        if(characterDisplayListIndices[cIndex] != -1)
+        if (cIndex == '\n')
         {
-            glCallList(characterDisplayListIndices[cIndex]);
+            glTranslatef(-total_translate, 3*dy, 0);
+            total_translate = 0.;
         }
-
-        // To the next character location
-        glTranslatef(arial_triangle_spacing[cIndex], 0.f, 0.f);
+        else
+        {
+            if(characterDisplayListIndices[cIndex] != -1)
+            {
+                glCallList(characterDisplayListIndices[cIndex]);
+            }
+    
+            // To the next character location
+            total_translate += arial_triangle_spacing[cIndex];
+            glTranslatef(arial_triangle_spacing[cIndex],0.f,0.f);
+        }
     }
 
     glPopMatrix();

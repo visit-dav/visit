@@ -31,12 +31,16 @@ using std::map;
 //   Brad Whitlock, Fri Apr 1 16:17:09 PST 2005
 //   Added labelVars.
 //
+//   Hank Childs, Tue Jul 19 14:23:56 PDT 2005
+//   Added arrayVars.
+//
 // ****************************************************************************
 
 VariableMenuPopulator::VariableMenuPopulator() :
     cachedDBName(), cachedExpressionList(),
     meshVars(), scalarVars(), materialVars(), vectorVars(), subsetVars(),
-    speciesVars(), curveVars(), tensorVars(), symmTensorVars(), labelVars()
+    speciesVars(), curveVars(), tensorVars(), symmTensorVars(), labelVars(),
+    arrayVars()
 {
 }
 
@@ -151,6 +155,9 @@ VariableMenuPopulator::ClearDatabaseName()
 //   Brad Whitlock, Fri Apr 1 16:17:42 PST 2005
 //   Added support for label vars.
 //
+//   Hank Childs, Tue Jul 19 14:23:56 PDT 2005
+//   Added support for array vars.
+//
 // ****************************************************************************
 
 bool
@@ -201,6 +208,7 @@ VariableMenuPopulator::PopulateVariableLists(const std::string &dbName,
     tensorVars.Clear();      tensorVars.SetSorted(md->GetMustAlphabetizeVariables());
     symmTensorVars.Clear();  symmTensorVars.SetSorted(md->GetMustAlphabetizeVariables());
     labelVars.Clear();       labelVars.SetSorted(md->GetMustAlphabetizeVariables());
+    arrayVars.Clear();       arrayVars.SetSorted(md->GetMustAlphabetizeVariables());
 
     // Do stuff with the metadata
     int i;
@@ -245,6 +253,11 @@ VariableMenuPopulator::PopulateVariableLists(const std::string &dbName,
     {
         const avtLabelMetaData *tmd = md->GetLabel(i);
         labelVars.AddVariable(tmd->name, tmd->validVariable);
+    }
+    for (i = 0; i < md->GetNumArrays(); ++i)
+    {
+        const avtArrayMetaData *tmd = md->GetArray(i);
+        arrayVars.AddVariable(tmd->name, tmd->validVariable);
     }
 
     // Do stuff with the sil
@@ -354,6 +367,9 @@ VariableMenuPopulator::PopulateVariableLists(const std::string &dbName,
 //   Brad Whitlock, Thu Aug 5 14:35:26 PST 2004
 //   Made it use VariableList.
 //
+//   Hank Childs, Thu Jul 21 12:54:01 PDT 2005
+//   Add arrays.
+//
 // ****************************************************************************
 
 void
@@ -383,6 +399,9 @@ VariableMenuPopulator::AddExpression(const Expression &expr)
         break;
     case Expression::SymmetricTensorMeshVar:
         m = &symmTensorVars;
+        break;
+    case Expression::ArrayMeshVar:
+        m = &arrayVars;
         break;
     default:
         break;
@@ -481,6 +500,9 @@ VariableMenuPopulator::GetRelevantExpressions(ExpressionList &newExpressionList,
 //   Brad Whitlock, Fri Apr 1 16:18:52 PST 2005
 //   Added label var support.
 //
+//   Hank Childs, Tue Jul 19 14:23:56 PDT 2005
+//   Added array var support.
+//
 // ****************************************************************************
 
 int
@@ -512,6 +534,8 @@ VariableMenuPopulator::UpdateSingleVariableMenu(QvisVariablePopupMenu *menu,
        ++numVarTypes;
     if(varTypes & VAR_CATEGORY_LABEL)
        ++numVarTypes;
+    if(varTypes & VAR_CATEGORY_ARRAY)
+       ++numVarTypes;
 
     if(numVarTypes > 1)
     {
@@ -540,6 +564,8 @@ VariableMenuPopulator::UpdateSingleVariableMenu(QvisVariablePopupMenu *menu,
             AddVars(vars, symmTensorVars);
         if(varTypes & VAR_CATEGORY_LABEL)
             AddVars(vars, labelVars);
+        if(varTypes & VAR_CATEGORY_ARRAY)
+            AddVars(vars, arrayVars);
        
         // Update the menu with the composite variable list.
         UpdateSingleMenu(menu, vars, receiver, slot);
@@ -591,6 +617,10 @@ VariableMenuPopulator::UpdateSingleVariableMenu(QvisVariablePopupMenu *menu,
             UpdateSingleMenu(menu, labelVars, receiver, slot);
             retval = labelVars.Size();
             break;
+        case VAR_CATEGORY_ARRAY:
+            UpdateSingleMenu(menu, arrayVars, receiver, slot);
+            retval = arrayVars.Size();
+            break;
         }
     }
 
@@ -626,6 +656,9 @@ VariableMenuPopulator::UpdateSingleVariableMenu(QvisVariablePopupMenu *menu,
 //   Brad Whitlock, Fri Apr 1 16:20:10 PST 2005
 //   Added label var support.
 //
+//   Hank Childs, Tue Jul 19 14:23:56 PDT 2005
+//   Added array var suppor.
+//
 // ****************************************************************************
 
 bool
@@ -653,6 +686,8 @@ VariableMenuPopulator::ItemEnabled(int varType) const
        retval |= (symmTensorVars.Size() > 0);
     if(varType & VAR_CATEGORY_LABEL)
        retval |= (labelVars.Size() > 0);
+    if(varType & VAR_CATEGORY_ARRAY)
+       retval |= (arrayVars.Size() > 0);
 
     return retval;
 }

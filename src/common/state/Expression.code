@@ -11,11 +11,13 @@ Definition:
 //    Jeremy Meredith, Sun Oct 10 22:58:21 PDT 2004
 //    Changed it to 8 to reflect the current number of actual expressions.
 //
+//    Hank Childs, Tue Jul 19 13:25:53 PDT 2005
+//    Changed it to 9 for Array expressions.
 // ****************************************************************************
 const int
 Expression::GetNumTypes()
 {
-    return 8;
+    return 9;
 }
 
 Function: GetTypeString
@@ -34,6 +36,8 @@ Expression::GetTypeString(const Expression::ExprType t)
         return "Tensor Mesh Variable";
     case SymmetricTensorMeshVar:
         return "Symmetric Tensor Mesh Variable";
+    case ArrayMeshVar:
+        return "Array Mesh Variable";
     case Mesh:
         return "Mesh";
     case Material:
@@ -59,6 +63,8 @@ Expression::GetTypeId(const std::string s)
         return TensorMeshVar;
     else if (s == "Symmetric Tensor Mesh Variable")
         return SymmetricTensorMeshVar;
+    else if (s == "Array Mesh Variable")
+        return ArrayMeshVar;
     else if (s == "Mesh")
         return Mesh;
     else if (s == "Material")

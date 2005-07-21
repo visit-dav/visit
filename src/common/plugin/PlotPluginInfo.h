@@ -17,6 +17,7 @@
 #define VAR_CATEGORY_TENSOR            0x0080
 #define VAR_CATEGORY_SYMMETRIC_TENSOR  0x0100
 #define VAR_CATEGORY_LABEL             0x0200
+#define VAR_CATEGORY_ARRAY             0x0400
 
 // Forward declarations.
 class AttributeSubject;
@@ -86,6 +87,9 @@ class avtPlot;
 //
 //    Hank Childs, Tue Mar 22 16:06:15 PST 2005
 //    Made destructor virtual.
+//
+//    Hank Childs, Tue Jul 19 14:23:56 PDT 2005
+//    Added VAR_CATEGORY_ARRAY.
 //
 // ****************************************************************************
 

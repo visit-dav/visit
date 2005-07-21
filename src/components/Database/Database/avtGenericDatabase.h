@@ -243,6 +243,9 @@ class     PickVarInfo;
 //    Hank Childs, Mon Jun 27 16:24:23 PDT 2005
 //    Added argument to GetDataset.
 //
+//    Hank Childs, Tue Jul 19 14:52:08 PDT 2005
+//    Added support for array variables.
+//
 // ****************************************************************************
 
 class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
@@ -309,6 +312,9 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
     vtkDataSet                *GetTensorVarDataset(const char *, int, int,
                                                    const char *,
                                                    const bool, const vector<int>&);
+    vtkDataSet                *GetArrayVarDataset(const char *, int, int,
+                                                   const char *,
+                                                   const bool, const vector<int>&);
     vtkDataSet                *GetMaterialDataset(const char *, int, int,
                                                   const char *, const bool,
                                                   const vector<int>&);
@@ -329,6 +335,9 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
                                                           const bool,
                                                           const vector<int>&);
     vtkDataArray              *GetTensorVariable(const char *, int, int,
+                                                 const char *,
+                                                 const bool, const vector<int>&);
+    vtkDataArray              *GetArrayVariable(const char *, int, int,
                                                  const char *,
                                                  const bool, const vector<int>&);
     vtkDataArray              *GetSpeciesVariable(const char *, int, int,
@@ -447,6 +456,10 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
                                             const intVector &, 
                                             PickVarInfo &, const bool);
     virtual bool               QueryLabels(const std::string &, const int, 
+                                            const int , const int ,
+                                            const intVector &, 
+                                            PickVarInfo &, const bool);
+    virtual bool               QueryArrays(const std::string &, const int, 
                                             const int , const int ,
                                             const intVector &, 
                                             PickVarInfo &, const bool);
